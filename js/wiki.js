@@ -113,7 +113,14 @@ document.addEventListener('DOMContentLoaded', () => {
   initBackToTop();
   initActiveNav();
   initTOC();
+  initStatArticles();
 });
+
+/* ── AUTO-SYNC ARTICLE COUNT STAT ────────────────────────── */
+function initStatArticles() {
+  const el = document.getElementById('stat-articles');
+  if (el) el.textContent = WIKI_INDEX.length;
+}
 
 /* ── SIDEBAR TOGGLE ─────────────────────────────────────────────────────── */
 function initSidebar() {
