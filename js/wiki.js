@@ -103,6 +103,110 @@ const WIKI_INDEX = [
     category: "Cryptocurrencies",
     emoji: "🐶",
     tags: ["meme", "doge", "shib", "pepe", "memecoin", "community token", "moonboy"]
+  },
+  {
+    title: "HODL Wars Lore$",
+    url: "wiki/hodl-wars.html",
+    desc: "The central mythological lore of the Crypto Moonboys — an epic saga of Diamond Hands warriors, Paper Hands betrayals, and Moon Missions.",
+    category: "Lore",
+    emoji: "⚔️",
+    tags: ["hodl wars", "lore", "diamond hands", "paper hands", "moon mission", "wagmi", "ngmi", "crypto mythology"]
+  },
+  {
+    title: "The HODL Warriors",
+    url: "wiki/hodl-warriors.html",
+    desc: "The elite fighters of the HODL Wars universe who never sell and march toward the Moon Mission.",
+    category: "Lore",
+    emoji: "⚔️",
+    tags: ["hodl warriors", "diamond hands", "never sell", "lore", "faction"]
+  },
+  {
+    title: "Diamond Hands",
+    url: "wiki/diamond-hands.html",
+    desc: "The sacred trait of holding crypto through all volatility. The mark of a true HODL Warrior.",
+    category: "Lore",
+    emoji: "💎",
+    tags: ["diamond hands", "hold", "hodl", "never sell", "stonks", "wsb"]
+  },
+  {
+    title: "Paper Hands",
+    url: "wiki/paper-hands.html",
+    desc: "The weakness of selling too early under pressure. The opposite of Diamond Hands.",
+    category: "Lore",
+    emoji: "🧻",
+    tags: ["paper hands", "sell", "capitulate", "weak hands", "fud"]
+  },
+  {
+    title: "The Great Dip",
+    url: "wiki/the-great-dip.html",
+    desc: "The recurring cataclysm of the HODL Wars — sudden market crashes that test the mettle of every warrior.",
+    category: "Lore",
+    emoji: "📉",
+    tags: ["dip", "crash", "buy the dip", "bear market", "correction"]
+  },
+  {
+    title: "Moon Mission",
+    url: "wiki/moon-mission.html",
+    desc: "The ultimate quest of HODL Warriors — the prophesied journey to infinite gains. When Lambo?",
+    category: "Lore",
+    emoji: "🚀",
+    tags: ["moon", "lambo", "to the moon", "moon mission", "wagmi", "gains"]
+  },
+  {
+    title: "Rug Pull Wars",
+    url: "wiki/rug-pull-wars.html",
+    desc: "The treacherous chapter where dev teams abandon projects and flee with investor funds.",
+    category: "Lore",
+    emoji: "🪤",
+    tags: ["rug pull", "scam", "exit scam", "defi", "dev abandoned"]
+  },
+  {
+    title: "The Satoshi Scroll",
+    url: "wiki/satoshi-scroll.html",
+    desc: "The mythologised sacred text of the HODL Wars — the Bitcoin Whitepaper elevated to legend.",
+    category: "Lore",
+    emoji: "📜",
+    tags: ["satoshi", "bitcoin whitepaper", "sacred text", "decentralisation", "lore"]
+  },
+  {
+    title: "The Bear Market Siege",
+    url: "wiki/bear-market-siege.html",
+    desc: "The prolonged dark chapter of extended market downtrends where Diamond Hands warriors are tested.",
+    category: "Lore",
+    emoji: "🐻",
+    tags: ["bear market", "siege", "winter", "downturn", "crypto winter"]
+  },
+  {
+    title: "The Whale Lords",
+    url: "wiki/whale-lords.html",
+    desc: "The powerful market-moving entities holding thousands of BTC/ETH who shape the HODL Wars.",
+    category: "Lore",
+    emoji: "🐳",
+    tags: ["whale", "market manipulation", "big holders", "institutional", "accumulation"]
+  },
+  {
+    title: "The FOMO Plague",
+    url: "wiki/fomo-plague.html",
+    desc: "The epidemic of Fear Of Missing Out that spreads through social media and turns holders into sellers.",
+    category: "Lore",
+    emoji: "😱",
+    tags: ["fomo", "fear of missing out", "social media", "influencer", "shilling"]
+  },
+  {
+    title: "NGMI Chronicles",
+    url: "wiki/ngmi-chronicles.html",
+    desc: "The cautionary records of those who fell in the HODL Wars. Not Gonna Make It.",
+    category: "Lore",
+    emoji: "💀",
+    tags: ["ngmi", "not gonna make it", "sold the bottom", "rug", "loss"]
+  },
+  {
+    title: "The WAGMI Prophecy",
+    url: "wiki/wagmi-prophecy.html",
+    desc: "The ultimate declaration of optimism — We're All Gonna Make It. The guiding star of the HODL Wars.",
+    category: "Lore",
+    emoji: "🌙",
+    tags: ["wagmi", "we are all gonna make it", "optimism", "moon", "prophecy"]
   }
 ];
 
