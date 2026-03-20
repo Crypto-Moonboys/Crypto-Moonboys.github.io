@@ -20,6 +20,9 @@ jobs:
           PR_STATE=$(gh pr view 2 --repo ${{ github.repository }} --json state -q .state 2>/dev/null || echo "unknown")
           echo "pr_state=$PR_STATE" >> $GITHUB_OUTPUT
           echo "PR#2 state: $PR_STATE"
+          if [ "$PR_STATE" = "unknown" ]; then
+            echo "::warning::Could not determine PR#2 state (auth issue, network error, or PR not found). Skipping merge."
+          fi
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -41,13 +44,14 @@ jobs:
         run: |
           git fetch origin main copilot/fix-agent-infrastructure-issues
           git checkout copilot/fix-agent-infrastructure-issues
+          # PR#4 already merged all of PR#2's changes into main. Using -X theirs is safe here:
+          # it accepts main's version for every conflict, making the branch identical to main.
           git merge -X theirs origin/main --no-edit -m "Resolve conflicts: accept main's version (all changes already in main via PR#4)"
           git push origin copilot/fix-agent-infrastructure-issues
 
       - name: Merge PR#2 into main
         if: steps.check-pr.outputs.pr_state == 'OPEN'
         run: |
-          gh pr merge 2 --repo ${{ github.repository }} --merge \
-            --subject "Merge PR#2: Fix agent infrastructure (conflicts resolved, changes already in main via PR#4)"
+          gh pr merge 2 --repo ${{ github.repository }} --merge
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
