@@ -214,6 +214,7 @@ const WIKI_INDEX = [
 document.addEventListener('DOMContentLoaded', () => {
   initSidebar();
   initSearch();
+  initStatArticles();
   initBackToTop();
   initActiveNav();
   initTOC();
@@ -482,4 +483,10 @@ function initTOC() {
     toc.prepend(t);
   })();
   toc.appendChild(ol);
+}
+
+/* ── AUTO-SYNC ARTICLE COUNT STAT ────────────────────────────────────────── */
+function initStatArticles() {
+  const el = document.getElementById('stat-articles');
+  if (el) el.textContent = WIKI_INDEX.length;
 }
