@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - copilot/fix-agent-infrastructure-issues-again
+      - main
+  workflow_dispatch:
 
 jobs:
   merge-pr2:
