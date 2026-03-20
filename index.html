@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Crypto Moonboys Wiki — the fan-driven encyclopedia for crypto enthusiasts. Browse articles on Bitcoin, Ethereum, DeFi, NFTs, altcoins, and more.">
+  <meta name="robots" content="index, follow">
+  <meta property="og:title" content="Crypto Moonboys Wiki">
+  <meta property="og:description" content="The fan-driven crypto encyclopedia. No sign-up required — just knowledge.">
+  <meta property="og:type" content="website">
+  <title>Crypto Moonboys Wiki — Fan-Driven Crypto Encyclopedia</title>
+  <link rel="stylesheet" href="css/wiki.css">
+  <link rel="icon" href="img/favicon.svg" type="image/svg+xml">
+</head>
+<body>
+
+<a class="skip-link" href="#content">Skip to content</a>
+
+<!-- SITE HEADER -->
+<header id="site-header" role="banner">
+  <button class="hamburger" id="hamburger" aria-label="Toggle navigation" aria-expanded="false" aria-controls="sidebar">
+    ☰
+  </button>
+  <a href="index.html" class="site-logo" aria-label="Crypto Moonboys Wiki home">
+    <img src="img/logo.svg" alt="" aria-hidden="true">
+    <span>
+      <span class="logo-text">🌙 Moonboys Wiki</span>
+      <span class="logo-sub">Crypto Encyclopedia</span>
+    </span>
+  </a>
+
+  <div id="header-search" role="search" aria-label="Site search">
+    <input
+      type="search"
+      id="search-input"
+      placeholder="Search articles…"
+      aria-label="Search wiki articles"
+      autocomplete="off"
+    >
+    <button id="search-btn" aria-label="Submit search">🔍</button>
+    <div id="search-results" role="listbox" aria-label="Search results"></div>
+  </div>
+
+  <nav class="header-nav" aria-label="Main navigation">
+    <a href="index.html">Home</a>
+    <a href="categories/index.html">Categories</a>
+    <a href="search.html">All Articles</a>
+  </nav>
+</header>
+
+<!-- SIDEBAR OVERLAY (mobile) -->
+<div id="sidebar-overlay" aria-hidden="true"></div>
+
+<!-- LAYOUT -->
+<div id="layout">
+
+  <!-- LEFT SIDEBAR -->
+  <nav id="sidebar" aria-label="Wiki navigation">
+    <div class="sidebar-section">
+      <div class="sidebar-heading">Navigation</div>
+      <div class="sidebar-nav">
+        <a href="index.html"><span class="nav-icon">🏠</span> Main Page</a>
+        <a href="categories/index.html"><span class="nav-icon">📂</span> All Categories</a>
+        <a href="search.html"><span class="nav-icon">🔍</span> All Articles</a>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-heading">Cryptocurrencies</div>
+      <div class="sidebar-nav">
+        <a href="wiki/bitcoin.html"><span class="nav-icon">₿</span> Bitcoin (BTC)</a>
+        <a href="wiki/ethereum.html"><span class="nav-icon">Ξ</span> Ethereum (ETH)</a>
+        <a href="wiki/solana.html"><span class="nav-icon">◎</span> Solana (SOL)</a>
+        <a href="wiki/altcoins.html"><span class="nav-icon">🪙</span> Altcoins</a>
+        <a href="wiki/memecoins.html"><span class="nav-icon">🐶</span> Meme Coins</a>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-heading">Concepts</div>
+      <div class="sidebar-nav">
+        <a href="wiki/blockchain.html"><span class="nav-icon">⛓️</span> Blockchain</a>
+        <a href="wiki/defi.html"><span class="nav-icon">🏦</span> DeFi</a>
+        <a href="wiki/nfts.html"><span class="nav-icon">🎨</span> NFTs</a>
+        <a href="wiki/tokenomics.html"><span class="nav-icon">📊</span> Tokenomics</a>
+        <a href="wiki/web3.html"><span class="nav-icon">🌐</span> Web3</a>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-heading">Tools &amp; Platforms</div>
+      <div class="sidebar-nav">
+        <a href="wiki/wallets.html"><span class="nav-icon">👛</span> Wallets</a>
+        <a href="wiki/exchanges.html"><span class="nav-icon">🔄</span> Exchanges</a>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-heading">Wiki Info</div>
+      <div class="sidebar-nav">
+        <a href="about.html"><span class="nav-icon">ℹ️</span> About</a>
+        <a href="about.html#citation-policy"><span class="nav-icon">📝</span> Citation Policy</a>
+        <a href="about.html#sources"><span class="nav-icon">🔗</span> Source Types</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- MAIN -->
+  <div id="main-wrapper">
+    <main id="content" role="main">
+
+      <!-- HERO -->
+      <section class="home-hero" aria-labelledby="hero-title">
+        <h1 id="hero-title">🌙 Crypto Moonboys Wiki</h1>
+        <p>Your fan-driven encyclopedia for everything crypto. No sign-up. No login. Just pure knowledge from the community.</p>
+        <div class="home-search" role="search">
+          <input type="search" id="home-search-input" placeholder="Search Bitcoin, Ethereum, DeFi…" aria-label="Search wiki">
+          <button id="home-search-btn">Search</button>
+        </div>
+        <div class="hero-stats" aria-label="Wiki statistics">
+          <div class="hero-stat">
+            <div class="stat-num" id="stat-articles">12</div>
+            <div class="stat-label">Articles</div>
+          </div>
+          <div class="hero-stat">
+            <div class="stat-num">5</div>
+            <div class="stat-label">Categories</div>
+          </div>
+          <div class="hero-stat">
+            <div class="stat-num">∞</div>
+            <div class="stat-label">Sources allowed</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- FEATURED ARTICLE -->
+      <div class="featured-article" aria-label="Featured article">
+        <div class="fa-icon" aria-hidden="true">₿</div>
+        <div class="featured-article-body">
+          <div class="article-badge">⭐ Featured</div>
+          <h3><a href="wiki/bitcoin.html">Bitcoin (BTC)</a></h3>
+          <p>Bitcoin is the world's first and largest cryptocurrency by market cap. Created in 2009 by the pseudonymous Satoshi Nakamoto, it introduced the concept of a trustless, peer-to-peer digital money system using blockchain technology.</p>
+          <a href="wiki/bitcoin.html" class="btn btn-primary">Read Article →</a>
+        </div>
+      </div>
+
+      <!-- RECENT / POPULAR ARTICLES -->
+      <h2 class="section-heading">📚 Popular Articles</h2>
+      <div class="article-grid" aria-label="Popular articles">
+        <a href="wiki/bitcoin.html" class="article-card">
+          <div class="article-card-img" aria-hidden="true">₿</div>
+          <div class="article-card-body">
+            <div class="article-card-title">Bitcoin (BTC)</div>
+            <div class="article-card-desc">The original and largest cryptocurrency. Digital gold.</div>
+          </div>
+          <div class="article-card-cat">Cryptocurrencies</div>
+        </a>
+        <a href="wiki/ethereum.html" class="article-card">
+          <div class="article-card-img" aria-hidden="true">Ξ</div>
+          <div class="article-card-body">
+            <div class="article-card-title">Ethereum (ETH)</div>
+            <div class="article-card-desc">Smart contracts, DeFi, and dApps platform.</div>
+          </div>
+          <div class="article-card-cat">Cryptocurrencies</div>
+        </a>
+        <a href="wiki/defi.html" class="article-card">
+          <div class="article-card-img" aria-hidden="true">🏦</div>
+          <div class="article-card-body">
+            <div class="article-card-title">DeFi</div>
+            <div class="article-card-desc">Decentralised finance ecosystem and protocols.</div>
+          </div>
+          <div class="article-card-cat">Concepts</div>
+        </a>
+        <a href="wiki/nfts.html" class="article-card">
+          <div class="article-card-img" aria-hidden="true">🎨</div>
+          <div class="article-card-body">
+            <div class="article-card-title">NFTs</div>
+            <div class="article-card-desc">Non-fungible tokens and digital ownership.</div>
+          </div>
+          <div class="article-card-cat">Concepts</div>
+        </a>
+        <a href="wiki/solana.html" class="article-card">
+          <div class="article-card-img" aria-hidden="true">◎</div>
+          <div class="article-card-body">
+            <div class="article-card-title">Solana (SOL)</div>
+            <div class="article-card-desc">Ultra-fast blockchain for DeFi and NFTs.</div>
+          </div>
+          <div class="article-card-cat">Cryptocurrencies</div>
+        </a>
+        <a href="wiki/memecoins.html" class="article-card">
+          <div class="article-card-img" aria-hidden="true">🐶</div>
+          <div class="article-card-body">
+            <div class="article-card-title">Meme Coins</div>
+            <div class="article-card-desc">Community-driven tokens inspired by internet culture.</div>
+          </div>
+          <div class="article-card-cat">Cryptocurrencies</div>
+        </a>
+      </div>
+
+      <!-- CATEGORIES -->
+      <h2 class="section-heading">📂 Browse by Category</h2>
+      <div class="category-grid" aria-label="Browse by category">
+        <a href="categories/cryptocurrencies.html" class="category-card">
+          <span class="cat-icon" aria-hidden="true">🪙</span>
+          <div>
+            <div class="cat-name">Cryptocurrencies</div>
+            <div class="cat-count">5 articles</div>
+          </div>
+        </a>
+        <a href="categories/concepts.html" class="category-card">
+          <span class="cat-icon" aria-hidden="true">💡</span>
+          <div>
+            <div class="cat-name">Concepts</div>
+            <div class="cat-count">4 articles</div>
+          </div>
+        </a>
+        <a href="categories/technology.html" class="category-card">
+          <span class="cat-icon" aria-hidden="true">⚙️</span>
+          <div>
+            <div class="cat-name">Technology</div>
+            <div class="cat-count">2 articles</div>
+          </div>
+        </a>
+        <a href="categories/tools.html" class="category-card">
+          <span class="cat-icon" aria-hidden="true">🛠️</span>
+          <div>
+            <div class="cat-name">Tools &amp; Platforms</div>
+            <div class="cat-count">2 articles</div>
+          </div>
+        </a>
+      </div>
+
+      <!-- NOTICE: NO LOGIN -->
+      <div class="notice info" role="note">
+        <span class="notice-icon" aria-hidden="true">🔒</span>
+        <div>
+          <strong>Read-only Wiki</strong> — This wiki is maintained by an AI agent. There are no user accounts, no sign-up, and no login. Content is updated automatically from curated sources.
+        </div>
+      </div>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer id="site-footer" role="contentinfo">
+      <div class="footer-inner">
+        <div class="footer-col">
+          <h4>🌙 Moonboys Wiki</h4>
+          <p>Fan-driven encyclopedia for the crypto community. Sourced from blogs, social media, YouTube, and more.</p>
+        </div>
+        <div class="footer-col">
+          <h4>Explore</h4>
+          <ul>
+            <li><a href="index.html">Main Page</a></li>
+            <li><a href="categories/index.html">All Categories</a></li>
+            <li><a href="search.html">All Articles</a></li>
+            <li><a href="about.html">About this Wiki</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4>Top Articles</h4>
+          <ul>
+            <li><a href="wiki/bitcoin.html">Bitcoin</a></li>
+            <li><a href="wiki/ethereum.html">Ethereum</a></li>
+            <li><a href="wiki/defi.html">DeFi</a></li>
+            <li><a href="wiki/blockchain.html">Blockchain</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4>Legal</h4>
+          <ul>
+            <li><a href="about.html#disclaimer">Disclaimer</a></li>
+            <li><a href="about.html#citation-policy">Citation Policy</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>© 2024 Crypto Moonboys Wiki · Content is for informational purposes only. Not financial advice.</p>
+        <p><span class="no-login-note">🔒 No sign-up · No login · Bot-maintained</span></p>
+      </div>
+    </footer>
+  </div>
+</div>
+
+<!-- BACK TO TOP -->
+<button id="back-to-top" aria-label="Back to top">↑</button>
+
+<script src="js/wiki.js"></script>
+</body>
+</html>
