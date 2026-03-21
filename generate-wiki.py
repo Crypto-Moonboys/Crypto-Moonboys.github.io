@@ -11,22 +11,22 @@ os.makedirs('wiki', exist_ok=True)
 with open('_article-template.html', 'r') as f:
     template = f.read()
 
-# 🌙 OFFICIAL LOGO — centred under every page title, fully responsive
+# 🌙 OFFICIAL LOGO — centred under title, responsive on all devices
 logo_html = """
 <div style="text-align: center; margin: 30px 0 50px 0;">
-    <img src="crypto-moonboys-logo.png" 
+    <img src="logo.png" 
          alt="Crypto Moonboys Official Logo" 
          style="max-width: 90%; height: auto; display: block; margin: 0 auto; border-radius: 16px; box-shadow: 0 10px 30px rgba(255, 215, 0, 0.3);">
 </div>
 """
 
-# Update homepage[](https://crypto-moonboys.github.io/)
+# Update homepage
 with open('index.html', 'r') as f:
     homepage = f.read()
 homepage = homepage.replace("</h1>", "</h1>" + logo_html)
 with open('index.html', 'w') as f:
     f.write(homepage)
-print("🌙 Homepage updated with centred responsive logo")
+print("🌙 Homepage updated with centred logo")
 
 # Generate all wiki pages with clean URLs + logo
 for name, facts in data.get('facts', {}).items():
@@ -35,10 +35,8 @@ for name, facts in data.get('facts', {}).items():
     content = content.replace("EDIT: CONTENT", facts)
     content = content.replace("EDIT: DATE", datetime.now().strftime("%Y-%m-%d"))
     
-    # Insert logo under title on every wiki page
     content = content.replace("</h1>", "</h1>" + logo_html)
     
-    # Keep existing images + citations
     content = content.replace("EDIT: IMAGES", f"""
 ![Official GraffPUNKS Reference](https://graffpunks.live/assets/official-punk-style.png)
 <figure>
@@ -53,4 +51,4 @@ for name, facts in data.get('facts', {}).items():
     
     print(f"✅ Added page: {name}")
 
-print("🌙 All pages updated — logo centred + responsive on every device")
+print("🌙 All pages updated — logo now centred and responsive on every device")
