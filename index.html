@@ -13,6 +13,15 @@
   <title>🌙 Crypto Moonboys Wiki — Crypto Encyclopedia</title>
   <link rel="stylesheet" href="css/wiki.css">
   <link rel="icon" href="img/favicon.svg" type="image/svg+xml">
+  <style>
+    .hero-logo-img {
+      display: block;
+      margin: 0 auto 20px;
+      max-width: min(360px, 88vw);
+      width: 100%;
+      height: auto;
+    }
+  </style>
 </head>
 <body>
 
@@ -28,14 +37,14 @@
     </span>
   </a>
   <div id="header-search" role="search">
-    <input type="search" id="search-input" placeholder="Search articles…" aria-label="Search" autocomplete="off">
+    <input type="search" id="search-input" placeholder="Search the wiki…" aria-label="Search" autocomplete="off">
     <button id="search-btn" aria-label="Search">🔍</button>
     <div id="search-results" role="listbox"></div>
   </div>
   <nav class="header-nav" aria-label="Main navigation">
     <a href="index.html" class="active">Home</a>
     <a href="categories/index.html">Categories</a>
-    <a href="search.html">All Articles</a>
+    <a href="articles.html">All Articles</a>
   </nav>
 </header>
 
@@ -48,7 +57,7 @@
       <div class="sidebar-nav">
         <a href="index.html" class="active"><span class="nav-icon">🏠</span> Main Page</a>
         <a href="categories/index.html"><span class="nav-icon">📂</span> All Categories</a>
-        <a href="search.html"><span class="nav-icon">🔍</span> All Articles</a>
+        <a href="articles.html"><span class="nav-icon">🔍</span> All Articles</a>
       </div>
     </div>
     <div class="sidebar-section">
@@ -84,10 +93,12 @@
         <h1>🌙 Crypto Moonboys Wiki</h1>
         <p>Your fan-driven encyclopedia for everything crypto. No sign-up. No login.<br>Just pure knowledge from the community.</p>
 
-        <div class="home-search">
-          <input type="search" id="home-search-input" placeholder="Search Bitcoin, Ethereum, DeFi…" aria-label="Search articles">
-          <button id="home-search-btn" class="btn btn-primary">Search</button>
-        </div>
+        <img
+          src="CRYPTO-MOONBOYS-web3-nft-universe.png"
+          alt="Crypto Moonboys — Web3 NFT Universe"
+          class="hero-logo-img"
+          loading="lazy"
+        >
 
         <div class="hero-stats">
           <div class="hero-stat">
@@ -201,51 +212,26 @@
           </div>
           <div class="article-card-cat">Lore</div>
         </a>
-        <a href="wiki/blockchain.html" class="article-card">
-          <div class="article-card-img">⛓️</div>
+        <a href="wiki/solana.html" class="article-card">
+          <div class="article-card-img">◎</div>
           <div class="article-card-body">
-            <div class="article-card-title">Blockchain Technology</div>
-            <div class="article-card-desc">A distributed ledger recording transactions across many computers in an immutable, transparent way.</div>
+            <div class="article-card-title">Solana (SOL)</div>
+            <div class="article-card-desc">A high-performance blockchain popular with DeFi and NFT projects.</div>
           </div>
-          <div class="article-card-cat">Technology</div>
+          <div class="article-card-cat">Cryptocurrencies</div>
         </a>
       </div>
 
     </main>
-
     <footer id="site-footer" role="contentinfo">
       <div class="footer-inner">
-        <div class="footer-col">
-          <h4>🌙 Moonboys Wiki</h4>
-          <p>Fan-driven crypto encyclopedia.<br>No sign-up. No login. Bot-maintained.</p>
-        </div>
-        <div class="footer-col">
-          <h4>Explore</h4>
-          <ul>
-            <li><a href="index.html">Main Page</a></li>
-            <li><a href="categories/index.html">Categories</a></li>
-            <li><a href="search.html">All Articles</a></li>
-            <li><a href="about.html">About</a></li>
-          </ul>
-        </div>
-        <div class="footer-col">
-          <h4>Lore</h4>
-          <ul>
-            <li><a href="wiki/hodl-wars.html">HODL Wars</a></li>
-            <li><a href="wiki/moon-mission.html">Moon Mission</a></li>
-            <li><a href="wiki/wagmi-prophecy.html">The WAGMI Prophecy</a></li>
-            <li><a href="categories/lore.html">All Lore Articles</a></li>
-          </ul>
-        </div>
+        <div class="footer-col"><h4>🌙 Moonboys Wiki</h4><p>Fan-driven crypto encyclopedia.</p></div>
+        <div class="footer-col"><h4>Explore</h4><ul><li><a href="index.html">Main Page</a></li><li><a href="articles.html">All Articles</a></li><li><a href="about.html">About</a></li></ul></div>
       </div>
-      <div class="footer-bottom">
-        <p>© 2026 Crypto Moonboys Wiki · Not financial advice.</p>
-        <p><span class="no-login-note">🔒 No sign-up · No login · Bot-maintained</span></p>
-      </div>
+      <div class="footer-bottom"><p>© 2026 Crypto Moonboys Wiki · Not financial advice.</p><p><span class="no-login-note">🔒 No sign-up · No login · Bot-maintained</span></p></div>
     </footer>
   </div>
 </div>
-
 <button id="back-to-top" aria-label="Back to top">↑</button>
 <script src="js/wiki.js"></script>
 </body>
