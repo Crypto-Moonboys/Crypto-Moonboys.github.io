@@ -1,327 +1,376 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Crypto Moonboys Wiki — the fan-driven encyclopedia for crypto enthusiasts. Browse articles on Bitcoin, Ethereum, DeFi, NFTs, altcoins, and more.">
-  <meta name="robots" content="index, follow">
-  <meta property="og:title" content="Crypto Moonboys Wiki">
-  <meta property="og:description" content="The fan-driven crypto encyclopedia. No sign-up required — just knowledge.">
-  <meta property="og:type" content="website">
-  <meta property="og:url" content="https://crypto-moonboys.github.io/">
-  <meta property="og:image" content="https://crypto-moonboys.github.io/img/logo.svg">
-  <title>Crypto Moonboys Wiki — Fan-Driven Crypto Encyclopedia</title>
-  <link rel="stylesheet" href="css/wiki.css">
-  <link rel="icon" href="img/favicon.svg" type="image/svg+xml">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>🌙 Crypto Moonboys Wiki</title>
+
+  <style>
+    :root {
+      --bg-color: #050812;
+      --accent: #ffd54a;
+      --accent-soft: #ffb347;
+      --text-main: #fdfdfd;
+      --text-muted: #b3b9d4;
+      --card-bg: #0d1221;
+      --border-soft: rgba(255, 255, 255, 0.06);
+      --glow: 0 0 25px rgba(255, 213, 74, 0.45);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+        Roboto, sans-serif;
+      background: radial-gradient(circle at top, #161c35 0, #050812 55%, #02030a 100%);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: stretch;
+      padding: 16px;
+    }
+
+    .page {
+      width: 100%;
+      max-width: 1100px;
+      margin: 0 auto;
+      border-radius: 22px;
+      background: radial-gradient(circle at top, #151a30 0, #050812 55%, #020309 100%);
+      border: 1px solid var(--border-soft);
+      box-shadow:
+        0 0 0 1px rgba(255, 255, 255, 0.02),
+        0 25px 60px rgba(0, 0, 0, 0.8);
+      padding: 24px 18px 28px;
+    }
+
+    @media (min-width: 720px) {
+      .page {
+        padding: 32px 40px 36px;
+      }
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+
+    header h1 {
+      font-size: clamp(2.1rem, 3vw + 1.4rem, 3.2rem);
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      text-shadow:
+        0 0 16px rgba(255, 213, 74, 0.65),
+        0 0 40px rgba(255, 148, 0, 0.55);
+      margin-bottom: 8px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    header h1 span.moon {
+      font-size: 1.1em;
+    }
+
+    header p {
+      font-size: 0.95rem;
+      color: var(--text-muted);
+      max-width: 520px;
+      margin: 0 auto;
+    }
+
+    /* HERO IMAGE USING YOUR FILE */
+    .hero-wrapper {
+      margin: 22px auto 10px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .hero-logo-frame {
+      position: relative;
+      max-width: 520px;
+      width: 100%;
+      padding: 16px;
+      border-radius: 24px;
+      background: radial-gradient(circle at top, #242b4b 0, #080b16 55%, #03040a 100%);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      box-shadow: var(--glow), 0 18px 40px rgba(0, 0, 0, 0.85);
+      overflow: hidden;
+    }
+
+    .hero-logo {
+      width: 100%;
+      height: auto;
+      display: block;
+      max-height: 420px;
+      object-fit: contain;
+    }
+
+    .hero-logo-glow {
+      position: absolute;
+      inset: 14% 8% auto;
+      background: radial-gradient(circle, rgba(255, 213, 74, 0.3), transparent 60%);
+      filter: blur(12px);
+      opacity: 0.75;
+      pointer-events: none;
+      mix-blend-mode: screen;
+    }
+
+    .hero-tagline {
+      margin-top: 12px;
+      font-size: 0.85rem;
+      text-align: center;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+    }
+
+    .hero-tagline strong {
+      color: var(--accent);
+    }
+
+    main {
+      margin-top: 24px;
+      display: grid;
+      gap: 18px;
+    }
+
+    @media (min-width: 880px) {
+      main {
+        grid-template-columns: 3fr 2fr;
+        align-items: flex-start;
+        gap: 20px;
+      }
+    }
+
+    .card {
+      background: linear-gradient(145deg, rgba(12, 16, 35, 0.96), rgba(5, 8, 18, 0.98));
+      border-radius: 18px;
+      padding: 16px 16px 18px;
+      border: 1px solid var(--border-soft);
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.65);
+    }
+
+    @media (min-width: 720px) {
+      .card {
+        padding: 18px 20px 20px;
+      }
+    }
+
+    .card h2 {
+      font-size: 1.05rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+      color: var(--accent-soft);
+    }
+
+    .card p,
+    .card li {
+      font-size: 0.95rem;
+      line-height: 1.55;
+      color: var(--text-muted);
+    }
+
+    .pill-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 6px 0 4px;
+    }
+
+    .pill {
+      border-radius: 999px;
+      padding: 4px 10px;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      background: radial-gradient(circle, rgba(255, 213, 74, 0.12), rgba(7, 9, 18, 0.98));
+      color: var(--accent);
+      white-space: nowrap;
+    }
+
+    ul.checklist {
+      list-style: none;
+      margin-top: 4px;
+    }
+
+    ul.checklist li {
+      position: relative;
+      padding-left: 22px;
+      margin-bottom: 6px;
+    }
+
+    ul.checklist li::before {
+      content: "✔";
+      position: absolute;
+      left: 0;
+      top: 0;
+      font-size: 0.8rem;
+      color: var(--accent-soft);
+    }
+
+    .aside-stat {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.85rem;
+      margin-bottom: 6px;
+      color: var(--text-muted);
+    }
+
+    .aside-stat span.label {
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      font-size: 0.78rem;
+      color: rgba(179, 185, 212, 0.85);
+    }
+
+    .aside-stat span.value {
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    .lang-bar {
+      margin-top: 8px;
+      height: 8px;
+      border-radius: 999px;
+      overflow: hidden;
+      display: flex;
+      background: rgba(14, 18, 35, 0.9);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .lang-html {
+      width: 81.6%;
+      background: linear-gradient(90deg, #ff9800, #ffc107);
+    }
+
+    .lang-css {
+      width: 11.7%;
+      background: linear-gradient(90deg, #2196f3, #00bcd4);
+    }
+
+    .lang-js {
+      width: 6.7%;
+      background: linear-gradient(90deg, #ffeb3b, #ffc107);
+    }
+
+    footer {
+      margin-top: 22px;
+      padding-top: 12px;
+      border-top: 1px solid rgba(255, 255, 255, 0.06);
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    footer a {
+      color: var(--accent-soft);
+      text-decoration: none;
+    }
+
+    footer a:hover {
+      text-decoration: underline;
+    }
+  </style>
 </head>
 <body>
+  <div class="page">
+    <header>
+      <h1><span class="moon">🌙</span> Crypto Moonboys Wiki</h1>
+      <p>
+        The decentralized knowledge base for the <strong>CRYPTO MOONBOYS</strong> community.
+        Token lore, memes, missions and alpha — curated by the Moonboy hivemind.
+      </p>
+    </header>
 
-<a class="skip-link" href="#content">Skip to content</a>
-
-<!-- SITE HEADER -->
-<header id="site-header" role="banner">
-  <button class="hamburger" id="hamburger" aria-label="Toggle navigation" aria-expanded="false" aria-controls="sidebar">
-    ☰
-  </button>
-  <a href="index.html" class="site-logo" aria-label="Crypto Moonboys Wiki home">
-    <img src="img/logo.svg" alt="" aria-hidden="true">
-    <span>
-      <span class="logo-text">🌙 Moonboys Wiki</span>
-      <span class="logo-sub">Crypto Encyclopedia</span>
-    </span>
-  </a>
-
-  <div id="header-search" role="search" aria-label="Site search">
-    <input
-      type="search"
-      id="search-input"
-      placeholder="Search articles…"
-      aria-label="Search wiki articles"
-      autocomplete="off"
-    >
-    <button id="search-btn" aria-label="Submit search">🔍</button>
-    <div id="search-results" role="listbox" aria-label="Search results"></div>
-  </div>
-
-  <nav class="header-nav" aria-label="Main navigation">
-    <a href="index.html">Home</a>
-    <a href="categories/index.html">Categories</a>
-    <a href="search.html">All Articles</a>
-  </nav>
-</header>
-
-<!-- SIDEBAR OVERLAY (mobile) -->
-<div id="sidebar-overlay" aria-hidden="true"></div>
-
-<!-- LAYOUT -->
-<div id="layout">
-
-  <!-- LEFT SIDEBAR -->
-  <nav id="sidebar" aria-label="Wiki navigation">
-    <div class="sidebar-section">
-      <div class="sidebar-heading">Navigation</div>
-      <div class="sidebar-nav">
-        <a href="index.html"><span class="nav-icon">🏠</span> Main Page</a>
-        <a href="categories/index.html"><span class="nav-icon">📂</span> All Categories</a>
-        <a href="search.html"><span class="nav-icon">🔍</span> All Articles</a>
-      </div>
-    </div>
-
-    <div class="sidebar-section">
-      <div class="sidebar-heading">Cryptocurrencies</div>
-      <div class="sidebar-nav">
-        <a href="wiki/bitcoin.html"><span class="nav-icon">₿</span> Bitcoin (BTC)</a>
-        <a href="wiki/ethereum.html"><span class="nav-icon">Ξ</span> Ethereum (ETH)</a>
-        <a href="wiki/solana.html"><span class="nav-icon">◎</span> Solana (SOL)</a>
-        <a href="wiki/altcoins.html"><span class="nav-icon">🪙</span> Altcoins</a>
-        <a href="wiki/memecoins.html"><span class="nav-icon">🐶</span> Meme Coins</a>
-      </div>
-    </div>
-
-    <div class="sidebar-section">
-      <div class="sidebar-heading">Concepts</div>
-      <div class="sidebar-nav">
-        <a href="wiki/blockchain.html"><span class="nav-icon">⛓️</span> Blockchain</a>
-        <a href="wiki/defi.html"><span class="nav-icon">🏦</span> DeFi</a>
-        <a href="wiki/nfts.html"><span class="nav-icon">🎨</span> NFTs</a>
-        <a href="wiki/tokenomics.html"><span class="nav-icon">📊</span> Tokenomics</a>
-        <a href="wiki/web3.html"><span class="nav-icon">🌐</span> Web3</a>
-      </div>
-    </div>
-
-    <div class="sidebar-section">
-      <div class="sidebar-heading">Tools &amp; Platforms</div>
-      <div class="sidebar-nav">
-        <a href="wiki/wallets.html"><span class="nav-icon">👛</span> Wallets</a>
-        <a href="wiki/exchanges.html"><span class="nav-icon">🔄</span> Exchanges</a>
-      </div>
-    </div>
-
-    <div class="sidebar-section">
-      <div class="sidebar-heading">⚔️ HODL Wars Lore$</div>
-      <div class="sidebar-nav">
-        <a href="wiki/hodl-wars.html"><span class="nav-icon">📜</span> HODL Wars Lore$</a>
-        <a href="wiki/hodl-warriors.html"><span class="nav-icon">⚔️</span> The HODL Warriors</a>
-        <a href="wiki/diamond-hands.html"><span class="nav-icon">💎</span> Diamond Hands</a>
-        <a href="wiki/paper-hands.html"><span class="nav-icon">🧻</span> Paper Hands</a>
-        <a href="wiki/whale-lords.html"><span class="nav-icon">🐳</span> The Whale Lords</a>
-        <a href="wiki/moon-mission.html"><span class="nav-icon">🚀</span> Moon Mission</a>
-        <a href="wiki/the-great-dip.html"><span class="nav-icon">📉</span> The Great Dip</a>
-        <a href="wiki/bear-market-siege.html"><span class="nav-icon">🐻</span> Bear Market Siege</a>
-        <a href="wiki/rug-pull-wars.html"><span class="nav-icon">🪤</span> Rug Pull Wars</a>
-        <a href="wiki/satoshi-scroll.html"><span class="nav-icon">📜</span> The Satoshi Scroll</a>
-        <a href="wiki/fomo-plague.html"><span class="nav-icon">😱</span> The FOMO Plague</a>
-        <a href="wiki/ngmi-chronicles.html"><span class="nav-icon">💀</span> NGMI Chronicles</a>
-        <a href="wiki/wagmi-prophecy.html"><span class="nav-icon">🌙</span> The WAGMI Prophecy</a>
-      </div>
-    </div>
-
-    <div class="sidebar-section">
-      <div class="sidebar-heading">Wiki Info</div>
-      <div class="sidebar-nav">
-        <a href="about.html"><span class="nav-icon">ℹ️</span> About</a>
-        <a href="about.html#citation-policy"><span class="nav-icon">📝</span> Citation Policy</a>
-        <a href="about.html#sources"><span class="nav-icon">🔗</span> Source Types</a>
-      </div>
-    </div>
-  </nav>
-
-  <!-- MAIN -->
-  <div id="main-wrapper">
-    <main id="content" role="main">
-
-      <!-- HERO -->
-      <section class="home-hero" aria-labelledby="hero-title">
-        <h1 id="hero-title">🌙 Crypto Moonboys Wiki</h1>
-        <p>Your fan-driven encyclopedia for everything crypto. No sign-up. No login. Just pure knowledge from the community.</p>
-        <div class="home-search" role="search">
-          <input type="search" id="home-search-input" placeholder="Search Bitcoin, Ethereum, DeFi…" aria-label="Search wiki">
-          <button id="home-search-btn">Search</button>
+    <!-- HERO using CRYPTO-MOONBOYS-web3-nft-universe.png at repo root -->
+    <section class="hero-wrapper">
+      <div class="hero-logo-frame">
+        <div class="hero-logo-glow"></div>
+        <img
+          class="hero-logo"
+          src="CRYPTO-MOONBOYS-web3-nft-universe.png"
+          alt="CRYPTO MOONBOYS Web3 NFT Universe"
+        />
+        <div class="hero-tagline">
+          <strong>$IT£</strong> · Wiki · On‑chain degen history
         </div>
-        <div class="hero-stats" aria-label="Wiki statistics">
-          <div class="hero-stat">
-            <div class="stat-num" id="stat-articles">12</div>
-            <div class="stat-label">Articles</div>
-          </div>
-          <div class="hero-stat">
-            <div class="stat-num">5</div>
-            <div class="stat-label">Categories</div>
-          </div>
-          <div class="hero-stat">
-            <div class="stat-num">∞</div>
-            <div class="stat-label">Sources allowed</div>
-          </div>
+      </div>
+    </section>
+
+    <main>
+      <section class="card">
+        <h2>Welcome, Moonboy</h2>
+        <p>
+          This wiki is your launchpad for everything related to
+          <strong>CRYPTO MOONBOYS</strong> – lore, tokenomics, guides,
+          and the legendary missions that sent us to the moon (and back).
+        </p>
+
+        <div class="pill-row">
+          <div class="pill">Token: $IT£</div>
+          <div class="pill">Community Wiki</div>
+          <div class="pill">On‑chain Culture</div>
         </div>
+
+        <ul class="checklist">
+          <li>Read up on the origin story and Moonboy timeline.</li>
+          <li>Explore strategy notes from veteran degens.</li>
+          <li>Discover memes, callouts, and historic moments.</li>
+          <li>Contribute fixes &amp; new pages via GitHub.</li>
+        </ul>
       </section>
 
-      <!-- FEATURED ARTICLE -->
-      <div class="featured-article" aria-label="Featured article">
-        <div class="fa-icon" aria-hidden="true">₿</div>
-        <div class="featured-article-body">
-          <div class="article-badge">⭐ Featured</div>
-          <h3><a href="wiki/bitcoin.html">Bitcoin (BTC)</a></h3>
-          <p>Bitcoin is the world's first and largest cryptocurrency by market cap. Created in 2009 by the pseudonymous Satoshi Nakamoto, it introduced the concept of a trustless, peer-to-peer digital money system using blockchain technology.</p>
-          <a href="wiki/bitcoin.html" class="btn btn-primary">Read Article →</a>
+      <aside class="card">
+        <h2>Repo Stats</h2>
+
+        <div class="aside-stat">
+          <span class="label">Repository</span>
+          <span class="value">Crypto-Moonboys.github.io</span>
         </div>
-      </div>
-
-      <!-- HODL WARS FEATURED LORE -->
-      <div class="featured-article" aria-label="HODL Wars Lore" style="border-color:var(--color-accent);background:linear-gradient(135deg,var(--color-surface),var(--color-surface-2))">
-        <div class="fa-icon" aria-hidden="true">⚔️</div>
-        <div class="featured-article-body">
-          <div class="article-badge" style="background:rgba(247,201,72,.2);color:var(--color-accent);border-color:rgba(247,201,72,.4)">🌙 Featured Lore</div>
-          <h3><a href="wiki/hodl-wars.html">THE CRYPTO MOONBOYS — HODL WARS LORE$</a></h3>
-          <p>The central mythology of the Crypto Moonboys universe. Diamond Hands vs Paper Hands. Moon Missions. Rug Pull Wars. The WAGMI Prophecy. Enter the lore.</p>
-          <a href="wiki/hodl-wars.html" class="btn btn-primary">Enter the Lore →</a>
+        <div class="aside-stat">
+          <span class="label">Languages</span>
+          <span class="value">HTML · CSS · JavaScript</span>
         </div>
-      </div>
 
-      <!-- RECENT / POPULAR ARTICLES -->
-      <h2 class="section-heading">📚 Popular Articles</h2>
-      <div class="article-grid" aria-label="Popular articles">
-        <a href="wiki/bitcoin.html" class="article-card">
-          <div class="article-card-img" aria-hidden="true">₿</div>
-          <div class="article-card-body">
-            <div class="article-card-title">Bitcoin (BTC)</div>
-            <div class="article-card-desc">The original and largest cryptocurrency. Digital gold.</div>
-          </div>
-          <div class="article-card-cat">Cryptocurrencies</div>
-        </a>
-        <a href="wiki/ethereum.html" class="article-card">
-          <div class="article-card-img" aria-hidden="true">Ξ</div>
-          <div class="article-card-body">
-            <div class="article-card-title">Ethereum (ETH)</div>
-            <div class="article-card-desc">Smart contracts, DeFi, and dApps platform.</div>
-          </div>
-          <div class="article-card-cat">Cryptocurrencies</div>
-        </a>
-        <a href="wiki/defi.html" class="article-card">
-          <div class="article-card-img" aria-hidden="true">🏦</div>
-          <div class="article-card-body">
-            <div class="article-card-title">DeFi</div>
-            <div class="article-card-desc">Decentralised finance ecosystem and protocols.</div>
-          </div>
-          <div class="article-card-cat">Concepts</div>
-        </a>
-        <a href="wiki/nfts.html" class="article-card">
-          <div class="article-card-img" aria-hidden="true">🎨</div>
-          <div class="article-card-body">
-            <div class="article-card-title">NFTs</div>
-            <div class="article-card-desc">Non-fungible tokens and digital ownership.</div>
-          </div>
-          <div class="article-card-cat">Concepts</div>
-        </a>
-        <a href="wiki/solana.html" class="article-card">
-          <div class="article-card-img" aria-hidden="true">◎</div>
-          <div class="article-card-body">
-            <div class="article-card-title">Solana (SOL)</div>
-            <div class="article-card-desc">Ultra-fast blockchain for DeFi and NFTs.</div>
-          </div>
-          <div class="article-card-cat">Cryptocurrencies</div>
-        </a>
-        <a href="wiki/memecoins.html" class="article-card">
-          <div class="article-card-img" aria-hidden="true">🐶</div>
-          <div class="article-card-body">
-            <div class="article-card-title">Meme Coins</div>
-            <div class="article-card-desc">Community-driven tokens inspired by internet culture.</div>
-          </div>
-          <div class="article-card-cat">Cryptocurrencies</div>
-        </a>
-      </div>
-
-      <!-- CATEGORIES -->
-      <h2 class="section-heading">📂 Browse by Category</h2>
-      <div class="category-grid" aria-label="Browse by category">
-        <a href="categories/cryptocurrencies.html" class="category-card">
-          <span class="cat-icon" aria-hidden="true">🪙</span>
-          <div>
-            <div class="cat-name">Cryptocurrencies</div>
-            <div class="cat-count">5 articles</div>
-          </div>
-        </a>
-        <a href="categories/concepts.html" class="category-card">
-          <span class="cat-icon" aria-hidden="true">💡</span>
-          <div>
-            <div class="cat-name">Concepts</div>
-            <div class="cat-count">4 articles</div>
-          </div>
-        </a>
-        <a href="categories/technology.html" class="category-card">
-          <span class="cat-icon" aria-hidden="true">⚙️</span>
-          <div>
-            <div class="cat-name">Technology</div>
-            <div class="cat-count">2 articles</div>
-          </div>
-        </a>
-        <a href="categories/tools.html" class="category-card">
-          <span class="cat-icon" aria-hidden="true">🛠️</span>
-          <div>
-            <div class="cat-name">Tools &amp; Platforms</div>
-            <div class="cat-count">2 articles</div>
-          </div>
-        </a>
-        <a href="categories/lore.html" class="category-card">
-          <span class="cat-icon" aria-hidden="true">⚔️</span>
-          <div>
-            <div class="cat-name">Lore</div>
-            <div class="cat-count">13 articles</div>
-          </div>
-        </a>
-      </div>
-
-      <!-- NOTICE: NO LOGIN -->
-      <div class="notice info" role="note">
-        <span class="notice-icon" aria-hidden="true">🔒</span>
-        <div>
-          <strong>Read-only Wiki</strong> — This wiki is maintained by an AI agent. There are no user accounts, no sign-up, and no login. Content is updated automatically from curated sources.
+        <div class="lang-bar">
+          <div class="lang-html" title="HTML 81.6%"></div>
+          <div class="lang-css" title="CSS 11.7%"></div>
+          <div class="lang-js" title="JavaScript 6.7%"></div>
         </div>
-      </div>
 
+        <p style="margin-top: 10px;">
+          Static wiki hosted on GitHub Pages –
+          powered by <strong>81.6% HTML</strong>,
+          <strong>11.7% CSS</strong> and
+          <strong>6.7% JavaScript</strong>.
+        </p>
+      </aside>
     </main>
 
-    <!-- FOOTER -->
-    <footer id="site-footer" role="contentinfo">
-      <div class="footer-inner">
-        <div class="footer-col">
-          <h4>🌙 Moonboys Wiki</h4>
-          <p>Fan-driven encyclopedia for the crypto community. Sourced from blogs, social media, YouTube, and more.</p>
-        </div>
-        <div class="footer-col">
-          <h4>Explore</h4>
-          <ul>
-            <li><a href="index.html">Main Page</a></li>
-            <li><a href="categories/index.html">All Categories</a></li>
-            <li><a href="search.html">All Articles</a></li>
-            <li><a href="about.html">About this Wiki</a></li>
-          </ul>
-        </div>
-        <div class="footer-col">
-          <h4>Top Articles</h4>
-          <ul>
-            <li><a href="wiki/bitcoin.html">Bitcoin</a></li>
-            <li><a href="wiki/ethereum.html">Ethereum</a></li>
-            <li><a href="wiki/defi.html">DeFi</a></li>
-            <li><a href="wiki/blockchain.html">Blockchain</a></li>
-          </ul>
-        </div>
-        <div class="footer-col">
-          <h4>Legal</h4>
-          <ul>
-            <li><a href="about.html#disclaimer">Disclaimer</a></li>
-            <li><a href="about.html#citation-policy">Citation Policy</a></li>
-          </ul>
-        </div>
-      </div>
-      <div class="footer-bottom">
-        <p>© 2026 Crypto Moonboys Wiki · Content is for informational purposes only. Not financial advice.</p>
-        <p><span class="no-login-note">🔒 No sign-up · No login · Bot-maintained</span></p>
-      </div>
+    <footer>
+      <span>CRYPTO MOONBOYS WIKI $IT£ 🧨💥💥💥</span>
+      <span>
+        Edit this page on
+        <a href="https://github.com/Crypto-Moonboys/Crypto-Moonboys.github.io" target="_blank" rel="noopener">
+          GitHub
+        </a>
+      </span>
     </footer>
   </div>
-</div>
-
-<!-- BACK TO TOP -->
-<button id="back-to-top" aria-label="Back to top">↑</button>
+</body>
+</html>
 
 <script src="js/wiki.js"></script>
 </body>
