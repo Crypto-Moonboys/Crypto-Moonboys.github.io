@@ -2,12 +2,98 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta http-equiv="refresh" content="0; url=https://crypto-moonboys.github.io/agent.html">
-  <title>Redirecting…</title>
-  <link rel="canonical" href="https://crypto-moonboys.github.io/agent.html">
-  <meta name="robots" content="noindex">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SAM Status — Crypto Moonboys Wiki</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <style>
+    .sam-status-page { max-width: 1100px; margin: 0 auto; padding: 2rem 1rem; }
+    .sam-panel { background: #1a1a2e; border: 1px solid #333; border-radius: 8px; padding: 1.5rem; margin-bottom: 1.5rem; }
+    .sam-panel h3 { margin-top: 0; color: #e0c97f; }
+    .focus-stats { display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 1.5rem; }
+    .stat-box { background: #0f0f1a; border-radius: 6px; padding: 1rem 1.5rem; text-align: center; min-width: 100px; }
+    .stat-num { display: block; font-size: 2rem; font-weight: bold; color: #e0c97f; }
+    .stat-label { font-size: 0.75rem; color: #aaa; text-transform: uppercase; }
+    .stat-targets .stat-num { color: #ff6b6b; }
+    .stat-complete .stat-num { color: #6bff9e; }
+    .focus-lists { display: flex; gap: 1.5rem; flex-wrap: wrap; }
+    .focus-list { flex: 1; min-width: 250px; }
+    .focus-list h4 { color: #ccc; margin-bottom: 0.75rem; }
+    .entity-chip { display: inline-block; padding: 0.25rem 0.6rem; border-radius: 12px; margin: 0.2rem; font-size: 0.8rem; }
+    .chip-target { background: #3d1515; color: #ff9999; border: 1px solid #ff6b6b; }
+    .chip-complete { background: #153d20; color: #99ffbb; border: 1px solid #6bff9e; }
+    .chip-more { color: #888; font-size: 0.8rem; margin-left: 0.5rem; }
+    .keyword-row { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.4rem; }
+    .keyword-term { min-width: 150px; font-size: 0.85rem; color: #ddd; }
+    .keyword-bar-wrap { flex: 1; background: #0f0f1a; border-radius: 4px; height: 8px; overflow: hidden; }
+    .keyword-bar { height: 100%; background: linear-gradient(90deg, #e0c97f, #f0a500); border-radius: 4px; transition: width 0.3s; }
+    .keyword-score { min-width: 30px; text-align: right; font-size: 0.8rem; color: #aaa; }
+    .sam-loading, .sam-offline { color: #aaa; font-style: italic; }
+    .sam-offline { color: #ff9999; }
+    .pipeline-diagram { background: #0f0f1a; border-radius: 8px; padding: 1.5rem; font-family: monospace; color: #a0e8a0; white-space: pre; overflow-x: auto; font-size: 0.8rem; line-height: 1.6; }
+    .sandbox-status { display: flex; align-items: center; gap: 1rem; padding: 0.75rem 1rem; background: #0f0f1a; border-radius: 6px; }
+    .sandbox-dot { width: 10px; height: 10px; border-radius: 50%; background: #6bff9e; animation: pulse 2s infinite; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+  </style>
 </head>
 <body>
-  <p>This page has moved. <a href="https://crypto-moonboys.github.io/agent.html">Click here</a> if you are not redirected.</p>
+  <!-- Include your site's standard nav/header here matching existing site style -->
+  <main class="sam-status-page">
+    <h1>🤖 SAM Intelligence Status</h1>
+    <p>Live status of the SAM agent pipeline across all connected systems.</p>
+    
+    <div class="sam-panel">
+      <h3>🔗 Pipeline Architecture</h3>
+      <div class="pipeline-diagram">
+          ┌──────────────┐
+          │   v2 Brain   │  sam-v2-intelligence
+          │ Scoring +    │  /focus-plan → TARGETS
+          │  Overmind    │
+          └──────┬───────┘
+                 │ TARGET ENTITIES
+                 ▼
+    ┌────────────────────────────┐
+    │      v1 SAM Pipeline       │  HAY-MUM-IM-BUILDING-AGENTS-OF-CHANGE
+    │  Crawl (filtered + delta)  │
+    │  Extraction Engine         │
+    │  Validator                 │
+    │  Trust Judge               │
+    │  Web Trust Gate            │
+    │  Memory (R2)               │
+    └────────────┬───────────────┘
+                 │ Dirty Entities Only
+                 ▼
+          Wiki Publisher
+                 │
+                 ▼
+    ┌────────────────────────────┐
+    │  Crypto-Moonboys.github.io │  ← YOU ARE HERE
+    │  Static GitHub Pages Wiki  │
+    └────────────────────────────┘</div>
+    </div>
+
+    <div class="sam-panel">
+      <h3>🛡️ Sandbox Contribution Layer</h3>
+      <div class="sandbox-status">
+        <div class="sandbox-dot"></div>
+        <div>
+          <strong>External Bot Submissions:</strong> Active<br>
+          <small>All external contributions go through Validator + Trust Judge before entering memory. DB-10, DB-13, DB-17, DB-18 enforced.</small>
+        </div>
+      </div>
+    </div>
+
+    <div id="sam-live-status">
+      <p class="sam-loading">Loading live status from v2 Brain...</p>
+    </div>
+  </main>
+
+  <script src="/js/sam-status.js"></script>
+  <script>
+    // Set your v2 Brain URL here or via environment
+    window.V2_BASE_URL = '';  // e.g. 'https://your-v2-brain.onrender.com'
+    document.addEventListener('DOMContentLoaded', () => {
+      SAMStatus.renderInto('sam-live-status');
+    });
+  </script>
 </body>
 </html>

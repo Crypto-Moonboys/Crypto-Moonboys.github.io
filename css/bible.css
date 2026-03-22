@@ -1,0 +1,17 @@
+/* Bible deep content styles */
+.bible-deep-section { margin-top: 2rem; padding: 1.5rem; background: #1a1a2e; border: 1px solid #e0c97f44; border-radius: 8px; }
+.bible-header { display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
+.bible-badge { background: #e0c97f22; color: #e0c97f; padding: 0.3rem 0.8rem; border-radius: 12px; font-size: 0.85rem; border: 1px solid #e0c97f44; }
+.bible-mention-count, .bible-generated { font-size: 0.8rem; color: #aaa; }
+.bible-section { margin-bottom: 1.5rem; }
+.bible-section h3 { color: #e0c97f; margin-bottom: 0.75rem; }
+.timeline-list { display: flex; flex-direction: column; gap: 0.5rem; }
+.timeline-item { display: flex; gap: 1rem; padding: 0.5rem; background: #0f0f1a; border-radius: 4px; }
+.timeline-date { color: #e0c97f; font-weight: bold; min-width: 100px; font-size: 0.85rem; }
+.timeline-fact { color: #ddd; font-size: 0.85rem; }
+.crosslinks-grid { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.crosslink-chip { display: inline-flex; flex-direction: column; padding: 0.4rem 0.8rem; background: #0f0f1a; border: 1px solid #333; border-radius: 6px; text-decoration: none; color: #ddd; font-size: 0.8rem; transition: border-color 0.2s; }
+.crosslink-chip:hover { border-color: #e0c97f; }
+.shared-count { font-size: 0.7rem; color: #888; }
+.relationships-list { color: #ddd; padding-left: 1.5rem; }
+.relationships-list li { margin-bottom: 0.3rem; font-size: 0.85rem; }

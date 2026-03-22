@@ -26,6 +26,7 @@
   <meta property="og:image" content="https://crypto-moonboys.github.io/img/logo.svg">
   <title>ARTICLE TITLE — Crypto Moonboys Wiki</title>
   <link rel="stylesheet" href="../css/wiki.css">
+  <link rel="stylesheet" href="../css/bible.css">
   <link rel="icon" href="../img/favicon.svg" type="image/svg+xml">
 </head>
 <body>
@@ -205,6 +206,9 @@
         <a href="../categories/CATEGORY2.html">CATEGORY 2</a>
       </div>
 
+      <!-- Bible deep-content section — populated by bible-loader.js if bible exists -->
+      <div id="bible-deep-section" style="display:none;" class="bible-deep-section"></div>
+
     </main>
 
     <footer id="site-footer" role="contentinfo">
@@ -233,5 +237,7 @@
 
 <button id="back-to-top" aria-label="Back to top">↑</button>
 <script src="../js/wiki.js"></script>
+<script src="../js/bible-loader.js"></script>
+<!-- The publisher sets data-bible-slug on <body> when a bible exists for this entity -->
 </body>
 </html>
