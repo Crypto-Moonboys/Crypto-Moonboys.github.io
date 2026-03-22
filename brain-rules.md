@@ -1,3 +1,5 @@
+> **Note:** This file defines wiki publishing rules for SAM. The full Master Agent Bible (DB-1 to DB-46) lives in the agent repo at `HODLKONG64/HAY-MUM-IM-BUILDING-AGENTS-OF-CHANGE/brain-rules.md`.
+
 # 🧠 Crypto Moonboys Wiki — Brain Rules
 
 Rules enforced for every new page SAM creates. Non-negotiable.
