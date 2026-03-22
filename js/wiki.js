@@ -228,8 +228,8 @@ const WIKI_INDEX = [
     title: "Alfie 'The Bitcoin Kid' Blaze",
     url: "wiki/alfie-the-bitcoin-kid-blaze.html",
     desc: "Leader of the Bitcoin Kids, a rebel group in Block Topia",
-    category: "Cryptocurrencies",
-    emoji: "🪙",
+    category: "Lore",
+    emoji: "⚔️",
     tags: ["alfie", "the", "bitcoin", "kid", "blaze"]
   },
   {
@@ -363,7 +363,7 @@ const WIKI_INDEX = [
   {
     title: "Darren Cullen",
     url: "wiki/darren-cullen.html",
-    desc: "Founder and owner of Graffiti Kings, a collaboration of graffiti artists, street artists, animators, filmmakers, illustrators, music producers, DJs, e.",
+    desc: "Founder and owner of Graffiti Kings, a collaboration of graffiti artists, street artists, animators, filmmakers, illustrators, music producers and DJs.",
     category: "Community & People",
     emoji: "👥",
     tags: ["darren", "cullen"]
@@ -475,7 +475,7 @@ const WIKI_INDEX = [
   {
     title: "Graffiti Kings",
     url: "wiki/graffiti-kings.html",
-    desc: "A collaboration of graffiti artists, street artists, animators, filmmakers, illustrators, music producers, DJs, event planners, and digital/street mar.",
+    desc: "A collaboration of graffiti artists, street artists, animators, filmmakers, illustrators, music producers, DJs, event planners, and digital street marketers.",
     category: "Graffiti & Street Art",
     emoji: "🖌️",
     tags: ["graffiti", "kings"]
@@ -843,7 +843,7 @@ const WIKI_INDEX = [
   {
     title: "HODL WARS",
     url: "wiki/sam-hodl-wars.html",
-    desc: "Associated with a website preparing a battlefield (hodlwars.",
+    desc: "Associated with a website preparing a battlefield (hodlwars.com). Listed as a cryptocurrency token on OKX.",
     category: "Lore",
     emoji: "⚔️",
     tags: ["hodl", "wars", "sam"]
