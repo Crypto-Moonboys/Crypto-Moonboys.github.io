@@ -64,3 +64,23 @@ Every wiki article must link to at least 4 other pages in the wiki. No isolated 
 ## Rule 7 — sitemap.xml Must Be Updated
 
 Any PR that adds new HTML pages must also update `sitemap.xml` to include all new URLs with `lastmod` of the current date.
+
+---
+
+## 🔗 Agent Bible Rules Also Applicable to Site Contributors
+
+The following rules from the Master Agent Bible (`brain-rules.md` in `HODLKONG64/HAY-MUM-IM-BUILDING-AGENTS-OF-CHANGE`) directly govern work on this site repo. Site contributors MUST be aware of these:
+
+| Rule | Summary |
+|------|---------|
+| DB-40 | SAM can ONLY create/edit pages it creates itself — never touch existing site files |
+| DB-41 | All SAM-generated pages must use the exact current layout — zero styling changes |
+| DB-42 | New SAM pages created as HTML in `/wiki/` folder with correct structure |
+| DB-43 | Correct wiki tables, headings, lists — every SAM page matches site style exactly |
+| DB-44 | SAM can ONLY edit pages it creates — it will NEVER edit any current OG site pages |
+| DB-45 | Images: outside frames use `![Alt](url)`, inside frames use `<figure>` — always cite with source URL + date |
+| DB-46 | All images from official/user-uploaded GraffPUNKS refs only — cite every image |
+
+> ⚠️ If you are a human contributor: **do not edit `wiki/sam-*.html` files manually** — these are SAM's domain (DB-44). If you need to correct a SAM page, open an issue and SAM will re-generate it on the next cycle.
+>
+> The full Master Agent Bible is at: https://github.com/HODLKONG64/HAY-MUM-IM-BUILDING-AGENTS-OF-CHANGE/blob/main/brain-rules.md
