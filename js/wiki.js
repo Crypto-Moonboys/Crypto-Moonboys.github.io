@@ -207,6 +207,1110 @@ const WIKI_INDEX = [
     category: "Lore",
     emoji: "🌙",
     tags: ["wagmi", "we are all gonna make it", "optimism", "moon", "prophecy"]
+  },
+  {
+    title: "1M Free NFTs Drop",
+    url: "wiki/1m-free-nfts-drop.html",
+    desc: "Mass distribution of free NFTs",
+    category: "NFTs & Digital Art",
+    emoji: "🎭",
+    tags: ["free", "nfts", "drop"]
+  },
+  {
+    title: "Aleema (Child of the Shard)",
+    url: "wiki/aleema-child-of-the-shard.html",
+    desc: "Young warrior tied to the Shards of Block Topia",
+    category: "Lore",
+    emoji: "⚔️",
+    tags: ["aleema", "child", "the", "shard"]
+  },
+  {
+    title: "Alfie 'The Bitcoin Kid' Blaze",
+    url: "wiki/alfie-the-bitcoin-kid-blaze.html",
+    desc: "Leader of the Bitcoin Kids, a rebel group in Block Topia",
+    category: "Lore",
+    emoji: "⚔️",
+    tags: ["alfie", "the", "bitcoin", "kid", "blaze"]
+  },
+  {
+    title: "AtomicHub Graffpunks Collection",
+    url: "wiki/atomichub-graffpunks-collection.html",
+    desc: "NFT collection for Graffpunks on AtomicHub",
+    category: "Punk Culture",
+    emoji: "🤘",
+    tags: ["atomichub", "graffpunks", "collection"]
+  },
+  {
+    title: "Ava Chen",
+    url: "wiki/ava-chen.html",
+    desc: "Strategic or intellectual figure",
+    category: "Lore",
+    emoji: "⚔️",
+    tags: ["ava", "chen"]
+  },
+  {
+    title: "Battlemech Blast",
+    url: "wiki/battlemech-blast.html",
+    desc: "2D Web3 shooter game on WAX blockchain",
+    category: "Gaming",
+    emoji: "🎮",
+    tags: ["battlemech", "blast"]
+  },
+  {
+    title: "Billy the Goat Kid",
+    url: "wiki/billy-the-goat-kid.html",
+    desc: "Young, mischievous rebel",
+    category: "Community & People",
+    emoji: "👥",
+    tags: ["billy", "the", "goat", "kid"]
+  },
+  {
+    title: "Bit-Cap 5000",
+    url: "wiki/bit-cap-5000.html",
+    desc: "Tech-enhanced warrior or enforcer",
+    category: "Lore",
+    emoji: "⚔️",
+    tags: ["bit", "cap", "5000"]
+  },
+  {
+    title: "Bitcoin Kid Army",
+    url: "wiki/bitcoin-kid-army.html",
+    desc: "Rebel army led by Alfie 'The Bitcoin Kid' Blaze",
+    category: "Cryptocurrencies",
+    emoji: "🪙",
+    tags: ["bitcoin", "kid", "army"]
+  },
+  {
+    title: "Bitcoin X Kids",
+    url: "wiki/bitcoin-x-kids.html",
+    desc: "Hybrid children army inside Block Topia walls",
+    category: "Cryptocurrencies",
+    emoji: "🪙",
+    tags: ["bitcoin", "kids"]
+  },
+  {
+    title: "Block Node Defenders",
+    url: "wiki/block-node-defenders.html",
+    desc: "Protectors of blockchain nodes",
+    category: "Lore",
+    emoji: "⚔️",
+    tags: ["block", "node", "defenders"]
+  },
+  {
+    title: "Block Topia",
+    url: "wiki/block-topia.html",
+    desc: "Central digital city in the Crypto Moonboys universe",
+    category: "Lore",
+    emoji: "⚔️",
+    tags: ["block", "topia"]
+  },
+  {
+    title: "Bone Idol Ink",
+    url: "wiki/bone-idol-ink.html",
+    desc: "Co-founder of Graffiti Kings, handles events and collabs",
+    category: "Art & Creativity",
+    emoji: "🎨",
+    tags: ["bone", "idol", "ink"]
+  },
+  {
+    title: "Burn-to-Earn",
+    url: "wiki/burn-to-earn.html",
+    desc: "Reward system for burning NFTs or tokens",
+    category: "Technology",
+    emoji: "⚙️",
+    tags: ["burn", "earn"]
+  },
+  {
+    title: "Charlie Buster",
+    url: "wiki/charlie-buster.html",
+    desc: "Voice of HODL WARRIORS and creator in lore",
+    category: "Lore",
+    emoji: "⚔️",
+    tags: ["charlie", "buster"]
+  },
+  {
+    title: "Croydon Tower Blocks",
+    url: "wiki/croydon-tower-blocks.html",
+    desc: "Historical origin point of Graffiti Kings in lore",
+    category: "Lore",
+    emoji: "⚔️",
+    tags: ["croydon", "tower", "blocks"]
+  },
+  {
+    title: "Crypto Moonboys",
+    url: "wiki/crypto-moonboys.html",
+    desc: "Core brand of the Web3 NFT project",
+    category: "Cryptocurrencies",
+    emoji: "🪙",
+    tags: ["crypto", "moonboys"]
+  },
+  {
+    title: "Darren Cullen (SER) - Real",
+    url: "wiki/darren-cullen-ser-real.html",
+    desc: "Founder and artist of Graffiti Kings, visionary behind Crypto Moonboys.",
+    category: "Technology",
+    emoji: "⚙️",
+    tags: ["darren", "cullen", "ser", "real"]
+  },
+  {
+    title: "Darren Cullen (SER)",
+    url: "wiki/darren-cullen-ser.html",
+    desc: "Founder of Graffiti Kings and visionary in lore as a character",
+    category: "Lore",
+    emoji: "⚔️",
+    tags: ["darren", "cullen", "ser"]
+  },
+  {
+    title: "Darren Cullen",
+    url: "wiki/darren-cullen.html",
+    desc: "Founder and owner of Graffiti Kings, a collaboration of graffiti artists, street artists, animators, filmmakers, illustrators, music producers and DJs.",
+    category: "Community & People",
+    emoji: "👥",
+    tags: ["darren", "cullen"]
+  },
+  {
+    title: "Decentraland Events",
+    url: "wiki/decentraland-events.html",
+    desc: "New events or exhibitions in Decentraland tied to Crypto Moonboys",
+    category: "Tools & Platforms",
+    emoji: "🔧",
+    tags: ["decentraland", "events"]
+  },
+  {
+    title: "Delicious Again Pete",
+    url: "wiki/delicious-again-pete.html",
+    desc: "Co-founder of Graffiti Kings, focuses on music and events",
+    category: "Technology",
+    emoji: "⚙️",
+    tags: ["delicious", "again", "pete"]
+  },
+  {
+    title: "Dragan Volkov",
+    url: "wiki/dragan-volkov.html",
+    desc: "Formidable warrior or leader",
+    category: "Lore",
+    emoji: "⚔️",
+    tags: ["dragan", "volkov"]
+  },
+  {
+    title: "Elder Codex-7",
+    url: "wiki/elder-codex-7.html",
+    desc: "Ancient knowledge keeper in Block Topia",
+    category: "Lore",
+    emoji: "⚔️",
+    tags: ["elder", "codex"]
+  },
+  {
+    title: "Forkborn Collective",
+    url: "wiki/forkborn-collective.html",
+    desc: "Group born from blockchain forks",
+    category: "Community & People",
+    emoji: "👥",
+    tags: ["forkborn", "collective"]
+  },
+  {
+    title: "Forklord You",
+    url: "wiki/forklord-you.html",
+    desc: "Master of blockchain forks and divisions",
+    category: "Lore",
+    emoji: "⚔️",
+    tags: ["forklord", "you"]
+  },
+  {
+    title: "Forksplit",
+    url: "wiki/forksplit.html",
+    desc: "Divider or disruptor in blockchain conflicts",
+    category: "Lore",
+    emoji: "⚔️",
+    tags: ["forksplit"]
+  },
+  {
+    title: "GAMES4PUNKS Telegram Games",
+    url: "wiki/games4punks-telegram-games.html",
+    desc: "Mini-games on Telegram platform",
+    category: "Punk Culture",
+    emoji: "🤘",
+    tags: ["games4punks", "telegram", "games"]
+  },
+  {
+    title: "Gang Signs Card Game",
+    url: "wiki/gang-signs-card-game.html",
+    desc: "Strategic card game in Web3 format",
+    category: "Gaming",
+    emoji: "🎮",
+    tags: ["gang", "signs", "card", "game"]
+  },
+  {
+    title: "Gang Signs",
+    url: "wiki/gang-signs.html",
+    desc: "A card game within the Crypto Moonboys universe.",
+    category: "Community & People",
+    emoji: "👥",
+    tags: ["gang", "signs"]
+  },
+  {
+    title: "$GK Token",
+    url: "wiki/gk-token.html",
+    desc: "Reward token earned through staking in the Crypto Moonboys universe.",
+    category: "Cryptocurrencies",
+    emoji: "🪙",
+    tags: ["token"]
+  },
+  {
+    title: "$GK Tokens",
+    url: "wiki/gk-tokens.html",
+    desc: "Reward token for staking NFT murals",
+    category: "Cryptocurrencies",
+    emoji: "🪙",
+    tags: ["tokens"]
+  },
+  {
+    title: "GKniftyHEADS",
+    url: "wiki/gkniftyheads.html",
+    desc: "GKniftyHEADS is a project associated with Graffiti Kings and a Web3 NFT rebellion.",
+    category: "Community & People",
+    emoji: "👥",
+    tags: ["gkniftyheads"]
+  },
+  {
+    title: "Graffiti Kings",
+    url: "wiki/graffiti-kings.html",
+    desc: "A collaboration of graffiti artists, street artists, animators, filmmakers, illustrators, music producers, DJs, event planners, and digital street marketers.",
+    category: "Graffiti & Street Art",
+    emoji: "🖌️",
+    tags: ["graffiti", "kings"]
+  },
+  {
+    title: "GraffPUNKS 24/7 Blockchain Radio Station",
+    url: "wiki/graffpunks-247-blockchain-radio-station.html",
+    desc: "Online radio station for GraffPUNKS music",
+    category: "Punk Culture",
+    emoji: "🤘",
+    tags: ["graffpunks", "blockchain", "radio", "station", "247"]
+  },
+  {
+    title: "Great Datapocalypse of 2789",
+    url: "wiki/great-datapocalypse-of-2789.html",
+    desc: "Catastrophic event leading to digital consciousness",
+    category: "Lore",
+    emoji: "⚔️",
+    tags: ["great", "datapocalypse", "2789"]
+  },
+  {
+    title: "GRIT",
+    url: "wiki/grit.html",
+    desc: "Tough, resilient fighter",
+    category: "Lore",
+    emoji: "⚔️",
+    tags: ["grit"]
+  },
+  {
+    title: "Grit42",
+    url: "wiki/grit42.html",
+    desc: "Hardened survivor or warrior",
+    category: "Lore",
+    emoji: "⚔️",
+    tags: ["grit42"]
+  },
+  {
+    title: "Hard Fork Games",
+    url: "wiki/hard-fork-games.html",
+    desc: "Competitive games run by Queen Sarah P-fly",
+    category: "Gaming",
+    emoji: "🎮",
+    tags: ["hard", "fork", "games"]
+  },
+  {
+    title: "HEX-TAGGER PRIME",
+    url: "wiki/hex-tagger-prime.html",
+    desc: "Master of digital graffiti and tagging",
+    category: "Lore",
+    emoji: "⚔️",
+    tags: ["hex", "tagger", "prime"]
+  },
+  {
+    title: "HODL Warriors Army",
+    url: "wiki/hodl-warriors-army.html",
+    desc: "Core fighting force of the HODL WARRIORS",
+    category: "Community & People",
+    emoji: "👥",
+    tags: ["hodl", "warriors", "army"]
+  },
+  {
+    title: "HODL X Warriors",
+    url: "wiki/hodl-x-warriors.html",
+    desc: "Elite warriors earning title via Hard Fork Games",
+    category: "Lore",
+    emoji: "⚔️",
+    tags: ["hodl", "warriors"]
+  },
+  {
+    title: "Iris-7",
+    url: "wiki/iris-7.html",
+    desc: "Visionary or seer in the Crypto Moonboys narrative",
+    category: "Lore",
+    emoji: "⚔️",
+    tags: ["iris"]
+  },
+  {
+    title: "Jodie ZOOM 2000",
+    url: "wiki/jodie-zoom-2000.html",
+    desc: "Tech-savvy operative in the Crypto Moonboys universe",
+    category: "Lore",
+    emoji: "⚔️",
+    tags: ["jodie", "zoom", "2000"]
+  },
+  {
+    title: "Jonny &amp; Laurence Nelson (TAG Records)",
+    url: "wiki/jonny-laurence-nelson-tag-records.html",
+    desc: "Music partners for Graffiti Kings",
+    category: "Technology",
+    emoji: "⚙️",
+    tags: ["jonny", "amp", "laurence", "nelson", "tag", "records"]
+  },
+  {
+    title: "Lady-INK",
+    url: "wiki/lady-ink.html",
+    desc: "Artistic revolutionary in Block Topia",
+    category: "Art & Creativity",
+    emoji: "🎨",
+    tags: ["lady", "ink"]
+  },
+  {
+    title: "Leake Street Tunnel",
+    url: "wiki/leake-street-tunnel.html",
+    desc: "Iconic graffiti hub in lore and reality",
+    category: "Graffiti & Street Art",
+    emoji: "🖌️",
+    tags: ["leake", "street", "tunnel"]
+  },
+  {
+    title: "$LFGK Rewards",
+    url: "wiki/lfgk-rewards.html",
+    desc: "Reward token system for engagement",
+    category: "Technology",
+    emoji: "⚙️",
+    tags: ["lfgk", "rewards"]
+  },
+  {
+    title: "$LFGK Token",
+    url: "wiki/lfgk-token.html",
+    desc: "Reward token for various activities in the Crypto Moonboys universe.",
+    category: "Cryptocurrencies",
+    emoji: "🪙",
+    tags: ["lfgk", "token"]
+  },
+  {
+    title: "$LFGK",
+    url: "wiki/lfgk.html",
+    desc: "Reward token for engagement and achievements",
+    category: "Cryptocurrencies",
+    emoji: "🪙",
+    tags: ["lfgk"]
+  },
+  {
+    title: "Loopfiend",
+    url: "wiki/loopfiend.html",
+    desc: "Obsessive coder or hacker",
+    category: "Lore",
+    emoji: "⚔️",
+    tags: ["loopfiend"]
+  },
+  {
+    title: "M1nTr_K1ll",
+    url: "wiki/m1ntr-k1ll.html",
+    desc: "Aggressive miner or data hunter",
+    category: "Lore",
+    emoji: "⚔️",
+    tags: ["m1ntr", "k1ll"]
+  },
+  {
+    title: "Maidstone Base",
+    url: "wiki/maidstone-base.html",
+    desc: "Current headquarters of GKniftyHEADS in lore and reality",
+    category: "Lore",
+    emoji: "⚔️",
+    tags: ["maidstone", "base"]
+  },
+  {
+    title: "Medium Articles by @GKniftyHEADS",
+    url: "wiki/medium-articles-by-gkniftyheads.html",
+    desc: "New articles or updates from @GKniftyHEADS on Medium",
+    category: "Media & Publishing",
+    emoji: "📰",
+    tags: ["medium", "articles", "gkniftyheads"]
+  },
+  {
+    title: "Medium Articles by @GRAFFPUNKS",
+    url: "wiki/medium-articles-by-graffpunks.html",
+    desc: "New articles or updates from @GRAFFPUNKS on Medium",
+    category: "Punk Culture",
+    emoji: "🤘",
+    tags: ["medium", "articles", "graffpunks"]
+  },
+  {
+    title: "Medium Articles by @HODLWARRIORS",
+    url: "wiki/medium-articles-by-hodlwarriors.html",
+    desc: "New articles or updates from @HODLWARRIORS on Medium",
+    category: "Media & Publishing",
+    emoji: "📰",
+    tags: ["medium", "articles", "hodlwarriors"]
+  },
+  {
+    title: "Medium Articles by @sercullen",
+    url: "wiki/medium-articles-by-sercullen.html",
+    desc: "New articles or updates from @sercullen on Medium",
+    category: "Media & Publishing",
+    emoji: "📰",
+    tags: ["medium", "articles", "sercullen"]
+  },
+  {
+    title: "Metaverse Battles",
+    url: "wiki/metaverse-battles.html",
+    desc: "Competitive events in virtual spaces",
+    category: "Technology",
+    emoji: "⚙️",
+    tags: ["metaverse", "battles"]
+  },
+  {
+    title: "MiDEViL HERO ARENA",
+    url: "wiki/midevil-hero-arena.html",
+    desc: "Playable game in the Crypto Moonboys universe",
+    category: "Gaming",
+    emoji: "🎮",
+    tags: ["midevil", "hero", "arena"]
+  },
+  {
+    title: "$NBG",
+    url: "wiki/nbg.html",
+    desc: "Token associated with No Ball Games collection",
+    category: "Cryptocurrencies",
+    emoji: "🪙",
+    tags: ["nbg"]
+  },
+  {
+    title: "NeftyBlocks Midevilpunks Collection",
+    url: "wiki/neftyblocks-midevilpunks-collection.html",
+    desc: "NFT collection tied to medieval punk themes on NeftyBlocks",
+    category: "Punk Culture",
+    emoji: "🤘",
+    tags: ["neftyblocks", "midevilpunks", "collection"]
+  },
+  {
+    title: "No Ball Games (NBG) Collection",
+    url: "wiki/no-ball-games-nbg-collection.html",
+    desc: "NFT collection by Charlie Buster in the Crypto Moonboys universe.",
+    category: "Gaming",
+    emoji: "🎮",
+    tags: ["ball", "games", "nbg", "collection"]
+  },
+  {
+    title: "No Ball Games (NBG)",
+    url: "wiki/no-ball-games-nbg.html",
+    desc: "NFT collection by Charlie Buster",
+    category: "Gaming",
+    emoji: "🎮",
+    tags: ["ball", "games", "nbg"]
+  },
+  {
+    title: "NULL THE PROPHET",
+    url: "wiki/null-the-prophet.html",
+    desc: "Genesis Error and origin of the Null-Cipher",
+    category: "Lore",
+    emoji: "⚔️",
+    tags: ["null", "the", "prophet"]
+  },
+  {
+    title: "Patchwork",
+    url: "wiki/patchwork.html",
+    desc: "Assembler or creator of hybrid solutions",
+    category: "Art & Creativity",
+    emoji: "🎨",
+    tags: ["patchwork"]
+  },
+  {
+    title: "Phygital Prints",
+    url: "wiki/phygital-prints.html",
+    desc: "Physical-digital hybrid collectibles",
+    category: "Art & Creativity",
+    emoji: "🎨",
+    tags: ["phygital", "prints"]
+  },
+  {
+    title: "Playable NFT Murals",
+    url: "wiki/playable-nft-murals.html",
+    desc: "Interactive digital art for staking and rewards",
+    category: "NFTs & Digital Art",
+    emoji: "🎭",
+    tags: ["playable", "nft", "murals"]
+  },
+  {
+    title: "$PUNK Token",
+    url: "wiki/punk-token.html",
+    desc: "Primary cryptocurrency for GraffPUNKS",
+    category: "Punk Culture",
+    emoji: "🤘",
+    tags: ["punk", "token"]
+  },
+  {
+    title: "PYRALITH",
+    url: "wiki/pyralith.html",
+    desc: "Fiery or destructive force",
+    category: "Lore",
+    emoji: "⚔️",
+    tags: ["pyralith"]
+  },
+  {
+    title: "Queen Sarah P-fly",
+    url: "wiki/queen-sarah-p-fly.html",
+    desc: "Ruler of the Sacred Chain and organizer of the Hard Fork Games",
+    category: "Lore",
+    emoji: "⚔️",
+    tags: ["queen", "sarah", "fly"]
+  },
+  {
+    title: "Quell",
+    url: "wiki/quell.html",
+    desc: "Suppressor or pacifier of conflicts",
+    category: "Lore",
+    emoji: "⚔️",
+    tags: ["quell"]
+  },
+  {
+    title: "Rune Tag",
+    url: "wiki/rune-tag.html",
+    desc: "Mystical or symbolic graffiti artist",
+    category: "Lore",
+    emoji: "⚔️",
+    tags: ["rune", "tag"]
+  },
+  {
+    title: "Sacred Chain",
+    url: "wiki/sacred-chain.html",
+    desc: "Spiritual or authoritative blockchain realm",
+    category: "Lore",
+    emoji: "⚔️",
+    tags: ["sacred", "chain"]
+  },
+  {
+    title: "$BITCOIN CASH",
+    url: "wiki/sam-bitcoin-cash.html",
+    desc: "Token for Bitcoin Cash blockchain transactions",
+    category: "Cryptocurrencies",
+    emoji: "🪙",
+    tags: ["bitcoin", "cash", "sam"]
+  },
+  {
+    title: "Dream Sovereign",
+    url: "wiki/sam-dream-sovereign.html",
+    desc: "Mysterious origin point of NULL THE PROPHET, the main antagonist.",
+    category: "Lore",
+    emoji: "⚔️",
+    tags: ["dream", "sovereign", "sam"]
+  },
+  {
+    title: "GraffPUNKS Network Online Radio",
+    url: "wiki/sam-graffpunks-network-online-radio.html",
+    desc: "Blockchain radio station for GraffPUNKS",
+    category: "Punk Culture",
+    emoji: "🤘",
+    tags: ["graffpunks", "network", "online", "radio", "sam"]
+  },
+  {
+    title: "GraffPUNKS",
+    url: "wiki/sam-graffpunks.html",
+    desc: "Rebellious faction uniting graffiti artists worldwide.",
+    category: "Punk Culture",
+    emoji: "🤘",
+    tags: ["graffpunks", "sam"]
+  },
+  {
+    title: "HODL Warriors",
+    url: "wiki/sam-hodl-warriors.html",
+    desc: "HODL Warriors are featured in a Medium article titled 'The Great WAXP Gathering: The Hodl Warriors Answer the Call.",
+    category: "Community & People",
+    emoji: "👥",
+    tags: ["hodl", "warriors", "sam"]
+  },
+  {
+    title: "HODL WARS EXTRAVAGANZA",
+    url: "wiki/sam-hodl-wars-extravaganza.html",
+    desc: "Major upcoming event tied to NFT drops and gameplay",
+    category: "Lore",
+    emoji: "⚔️",
+    tags: ["hodl", "wars", "extravaganza", "sam"]
+  },
+  {
+    title: "HODL WARS",
+    url: "wiki/sam-hodl-wars.html",
+    desc: "Associated with a website preparing a battlefield (hodlwars.com). Listed as a cryptocurrency token on OKX.",
+    category: "Lore",
+    emoji: "⚔️",
+    tags: ["hodl", "wars", "sam"]
+  },
+  {
+    title: "Queens, New York",
+    url: "wiki/sam-queens-new-york.html",
+    desc: "Real-world location transformed into a fortress in the Crypto Moonboys lore.",
+    category: "Lore",
+    emoji: "⚔️",
+    tags: ["queens", "new", "york", "sam"]
+  },
+  {
+    title: "$SOL",
+    url: "wiki/sam-sol.html",
+    desc: "Token for Solana blockchain transactions",
+    category: "Cryptocurrencies",
+    emoji: "🪙",
+    tags: ["sol", "sam"]
+  },
+  {
+    title: "Staking for $GK Tokens",
+    url: "wiki/sam-staking-for-gk-tokens.html",
+    desc: "Mechanic to stake NFTs for $GK token rewards",
+    category: "Cryptocurrencies",
+    emoji: "🪙",
+    tags: ["staking", "for", "tokens", "sam"]
+  },
+  {
+    title: "The Great Unravelling",
+    url: "wiki/sam-the-great-unravelling.html",
+    desc: "Historical era of chaos following the Triple Fork Event.",
+    category: "Lore",
+    emoji: "⚔️",
+    tags: ["the", "great", "unravelling", "sam"]
+  },
+  {
+    title: "Triple Fork Event Mechanics",
+    url: "wiki/sam-triple-fork-event-mechanics.html",
+    desc: "Game or lore mechanics tied to the Triple Fork Event",
+    category: "Technology",
+    emoji: "⚙️",
+    tags: ["triple", "fork", "event", "mechanics", "sam"]
+  },
+  {
+    title: "WAX",
+    url: "wiki/sam-wax.html",
+    desc: "Primary blockchain for GKniftyHEADS NFT collections as per NFTHive.",
+    category: "Cryptocurrencies",
+    emoji: "🪙",
+    tags: ["wax", "sam"]
+  },
+  {
+    title: "$WAXP",
+    url: "wiki/sam-waxp.html",
+    desc: "Token for WAX blockchain transactions",
+    category: "Cryptocurrencies",
+    emoji: "🪙",
+    tags: ["waxp", "sam"]
+  },
+  {
+    title: "$XRPL",
+    url: "wiki/sam-xrpl.html",
+    desc: "Token for XRP Ledger transactions",
+    category: "Cryptocurrencies",
+    emoji: "🪙",
+    tags: ["xrpl", "sam"]
+  },
+  {
+    title: "Samael.exe",
+    url: "wiki/samaelexe.html",
+    desc: "Malicious program or digital entity",
+    category: "Lore",
+    emoji: "⚔️",
+    tags: ["samael", "exe", "samaelexe"]
+  },
+  {
+    title: "Sarah PU51FLY",
+    url: "wiki/sarah-pu51fly.html",
+    desc: "Partner in Graffiti Kings and Queen Sarah P-fly in lore",
+    category: "Technology",
+    emoji: "⚙️",
+    tags: ["sarah", "pu51fly"]
+  },
+  {
+    title: "SatoRebel",
+    url: "wiki/satorebel.html",
+    desc: "Revolutionary inspired by crypto origins",
+    category: "Lore",
+    emoji: "⚔️",
+    tags: ["satorebel"]
+  },
+  {
+    title: "Seeding Rights",
+    url: "wiki/seeding-rights.html",
+    desc: "Rights to seed or initiate digital content",
+    category: "Technology",
+    emoji: "⚙️",
+    tags: ["seeding", "rights"]
+  },
+  {
+    title: "Sister Halcyon",
+    url: "wiki/sister-halcyon.html",
+    desc: "Peaceful or spiritual guide",
+    category: "Lore",
+    emoji: "⚔️",
+    tags: ["sister", "halcyon"]
+  },
+  {
+    title: "SMArT NFT Mechanics",
+    url: "wiki/smart-nft-mechanics.html",
+    desc: "Advanced NFT mechanics involving $GK collateral and loanable metadata",
+    category: "NFTs & Digital Art",
+    emoji: "🎭",
+    tags: ["smart", "nft", "mechanics"]
+  },
+  {
+    title: "Snipey 'D-Man' Sirus",
+    url: "wiki/snipey-d-man-sirus.html",
+    desc: "Sharpshooter or tactical operative",
+    category: "Lore",
+    emoji: "⚔️",
+    tags: ["snipey", "man", "sirus"]
+  },
+  {
+    title: "Spirit Borns",
+    url: "wiki/spirit-borns.html",
+    desc: "Mystical or reborn digital entities",
+    category: "Lore",
+    emoji: "⚔️",
+    tags: ["spirit", "borns"]
+  },
+  {
+    title: "Spraycode &amp; Writcode Mechanics",
+    url: "wiki/spraycode-writcode-mechanics.html",
+    desc: "Coding mechanics for creating digital graffiti",
+    category: "Technology",
+    emoji: "⚙️",
+    tags: ["spraycode", "amp", "writcode", "mechanics"]
+  },
+  {
+    title: "Squeaky Pinks enforcers",
+    url: "wiki/squeaky-pinks-enforcers.html",
+    desc: "Enforcement wing of The Squeaky Pinks",
+    category: "Art & Creativity",
+    emoji: "🎨",
+    tags: ["squeaky", "pinks", "enforcers"]
+  },
+  {
+    title: "Stake for $GK Tokens",
+    url: "wiki/stake-for-gk-tokens.html",
+    desc: "Staking mechanism to earn $GK tokens.",
+    category: "Cryptocurrencies",
+    emoji: "🪙",
+    tags: ["stake", "for", "tokens"]
+  },
+  {
+    title: "Street Kingdoms",
+    url: "wiki/street-kingdoms.html",
+    desc: "Opposing force and territory to Block Topia",
+    category: "Graffiti & Street Art",
+    emoji: "🖌️",
+    tags: ["street", "kingdoms"]
+  },
+  {
+    title: "Substack Posts on graffpunks.substack.com",
+    url: "wiki/substack-posts-on-graffpunkssubstackcom.html",
+    desc: "New posts on Substack covering City Block Topia, Sacred Chain Ontology, and 2026 lore",
+    category: "Punk Culture",
+    emoji: "🤘",
+    tags: ["substack", "posts", "graffpunks", "com", "graffpunkssubstackcom"]
+  },
+  {
+    title: "The AllCity Bulls",
+    url: "wiki/the-allcity-bulls.html",
+    desc: "Dominant urban force",
+    category: "Lore",
+    emoji: "⚔️",
+    tags: ["the", "allcity", "bulls"]
+  },
+  {
+    title: "The AZTEC RAIDERS",
+    url: "wiki/the-aztec-raiders.html",
+    desc: "Historical or culturally inspired aggressors",
+    category: "Lore",
+    emoji: "⚔️",
+    tags: ["the", "aztec", "raiders"]
+  },
+  {
+    title: "The BALLY BOYS",
+    url: "wiki/the-bally-boys.html",
+    desc: "Tough street gang",
+    category: "Lore",
+    emoji: "⚔️",
+    tags: ["the", "bally", "boys"]
+  },
+  {
+    title: "The Bitcoin Kid Army",
+    url: "wiki/the-bitcoin-kid-army.html",
+    desc: "Rebel group led by Alfie 'The Bitcoin Kid' Blaze",
+    category: "Cryptocurrencies",
+    emoji: "🪙",
+    tags: ["the", "bitcoin", "kid", "army"]
+  },
+  {
+    title: "The BLOCKCHAIN FURIES",
+    url: "wiki/the-blockchain-furies.html",
+    desc: "Aggressive defenders of blockchain integrity",
+    category: "Lore",
+    emoji: "⚔️",
+    tags: ["the", "blockchain", "furies"]
+  },
+  {
+    title: "The BLOCKSTARS",
+    url: "wiki/the-blockstars.html",
+    desc: "Celebrity-like blockchain influencers",
+    category: "Lore",
+    emoji: "⚔️",
+    tags: ["the", "blockstars"]
+  },
+  {
+    title: "The CHAIN SCRIBES",
+    url: "wiki/the-chain-scribes.html",
+    desc: "Historians or record-keepers of blockchain events",
+    category: "Lore",
+    emoji: "⚔️",
+    tags: ["the", "chain", "scribes"]
+  },
+  {
+    title: "The CODE ALCHEMISTS",
+    url: "wiki/the-code-alchemists.html",
+    desc: "Masters of transforming code into value",
+    category: "Lore",
+    emoji: "⚔️",
+    tags: ["the", "code", "alchemists"]
+  },
+  {
+    title: "The CRYPTO MOONGIRLS",
+    url: "wiki/the-crypto-moongirls.html",
+    desc: "Female-led crypto rebels",
+    category: "Cryptocurrencies",
+    emoji: "🪙",
+    tags: ["the", "crypto", "moongirls"]
+  },
+  {
+    title: "The CRYPTO STONED BOYS",
+    url: "wiki/the-crypto-stoned-boys.html",
+    desc: "Relaxed yet crypto-savvy group",
+    category: "Cryptocurrencies",
+    emoji: "🪙",
+    tags: ["the", "crypto", "stoned", "boys"]
+  },
+  {
+    title: "The DUCKY BOYS",
+    url: "wiki/the-ducky-boys.html",
+    desc: "Quirky yet fierce street crew",
+    category: "Lore",
+    emoji: "⚔️",
+    tags: ["the", "ducky", "boys"]
+  },
+  {
+    title: "The EVM PUNKS",
+    url: "wiki/the-evm-punks.html",
+    desc: "Rebels tied to Ethereum Virtual Machine technology",
+    category: "Punk Culture",
+    emoji: "🤘",
+    tags: ["the", "evm", "punks"]
+  },
+  {
+    title: "The FINANCE GUILD",
+    url: "wiki/the-finance-guild.html",
+    desc: "Experts in blockchain economics",
+    category: "Lore",
+    emoji: "⚔️",
+    tags: ["the", "finance", "guild"]
+  },
+  {
+    title: "The GASLESS GHOSTS",
+    url: "wiki/the-gasless-ghosts.html",
+    desc: "Elusive faction avoiding blockchain fees",
+    category: "Lore",
+    emoji: "⚔️",
+    tags: ["the", "gasless", "ghosts"]
+  },
+  {
+    title: "The GKniftyHEADS",
+    url: "wiki/the-gkniftyheads.html",
+    desc: "Core faction of spectral consciousnesses ruling a phygital empire",
+    category: "Lore",
+    emoji: "⚔️",
+    tags: ["the", "gkniftyheads"]
+  },
+  {
+    title: "The GRAFFPUNKS",
+    url: "wiki/the-graffpunks.html",
+    desc: "Rebellious street art collective in digital form",
+    category: "Punk Culture",
+    emoji: "🤘",
+    tags: ["the", "graffpunks"]
+  },
+  {
+    title: "The HARD FORK ROCKERS",
+    url: "wiki/the-hard-fork-rockers.html",
+    desc: "Rebels tied to blockchain forks",
+    category: "Lore",
+    emoji: "⚔️",
+    tags: ["the", "hard", "fork", "rockers"]
+  },
+  {
+    title: "The High Hats",
+    url: "wiki/the-high-hats.html",
+    desc: "Elite or aristocratic group",
+    category: "Lore",
+    emoji: "⚔️",
+    tags: ["the", "high", "hats"]
+  },
+  {
+    title: "The INFORMATION MERCENARIES",
+    url: "wiki/the-information-mercenaries.html",
+    desc: "Data traders or spies for hire",
+    category: "Lore",
+    emoji: "⚔️",
+    tags: ["the", "information", "mercenaries"]
+  },
+  {
+    title: "The MOONLORDS",
+    url: "wiki/the-moonlords.html",
+    desc: "Rulers or influencers of high aspirations",
+    category: "Lore",
+    emoji: "⚔️",
+    tags: ["the", "moonlords"]
+  },
+  {
+    title: "The NICE &amp; EASY BOIS",
+    url: "wiki/the-nice-easy-bois.html",
+    desc: "Laid-back but cunning group",
+    category: "Lore",
+    emoji: "⚔️",
+    tags: ["the", "nice", "amp", "easy", "bois"]
+  },
+  {
+    title: "The Nomad Bears",
+    url: "wiki/the-nomad-bears.html",
+    desc: "Wandering faction with protective instincts",
+    category: "Lore",
+    emoji: "⚔️",
+    tags: ["the", "nomad", "bears"]
+  },
+  {
+    title: "The OG PIXEL SAINTS",
+    url: "wiki/the-og-pixel-saints.html",
+    desc: "Veteran digital artists or pioneers",
+    category: "Lore",
+    emoji: "⚔️",
+    tags: ["the", "pixel", "saints"]
+  },
+  {
+    title: "The Princess",
+    url: "wiki/the-princess.html",
+    desc: "Royal or influential figure",
+    category: "Lore",
+    emoji: "⚔️",
+    tags: ["the", "princess"]
+  },
+  {
+    title: "The RUGPULL MINERS",
+    url: "wiki/the-rugpull-miners.html",
+    desc: "Deceptive or exploitative group",
+    category: "Lore",
+    emoji: "⚔️",
+    tags: ["the", "rugpull", "miners"]
+  },
+  {
+    title: "The SALVAGERS",
+    url: "wiki/the-salvagers.html",
+    desc: "Scavengers of digital remnants",
+    category: "Lore",
+    emoji: "⚔️",
+    tags: ["the", "salvagers"]
+  },
+  {
+    title: "The SHARD MOTHERS of MANHATTAN",
+    url: "wiki/the-shard-mothers-of-manhattan.html",
+    desc: "Protectors or nurturers of fragmented territories",
+    category: "Lore",
+    emoji: "⚔️",
+    tags: ["the", "shard", "mothers", "manhattan"]
+  },
+  {
+    title: "The Squeaky Pinks",
+    url: "wiki/the-squeaky-pinks.html",
+    desc: "Colorful and unpredictable faction",
+    category: "Art & Creativity",
+    emoji: "🎨",
+    tags: ["the", "squeaky", "pinks"]
+  },
+  {
+    title: "The TUSKON OGS",
+    url: "wiki/the-tuskon-ogs.html",
+    desc: "Veteran or original gang members",
+    category: "Lore",
+    emoji: "⚔️",
+    tags: ["the", "tuskon", "ogs"]
+  },
+  {
+    title: "The Whitewasher",
+    url: "wiki/the-whitewasher.html",
+    desc: "Entity of erasure or censorship",
+    category: "Lore",
+    emoji: "⚔️",
+    tags: ["the", "whitewasher"]
+  },
+  {
+    title: "Thera-9",
+    url: "wiki/thera-9.html",
+    desc: "Strategic planner in the decentralized network",
+    category: "Lore",
+    emoji: "⚔️",
+    tags: ["thera"]
+  },
+  {
+    title: "Thorne The Architect",
+    url: "wiki/thorne-the-architect.html",
+    desc: "Designer of digital structures in Block Topia",
+    category: "Lore",
+    emoji: "⚔️",
+    tags: ["thorne", "the", "architect"]
+  },
+  {
+    title: "Trevor Fung",
+    url: "wiki/trevor-fung.html",
+    desc: "Godfather DJ ambassador for GraffPUNKS",
+    category: "Technology",
+    emoji: "⚙️",
+    tags: ["trevor", "fung"]
+  },
+  {
+    title: "Triple Fork Event",
+    url: "wiki/triple-fork-event.html",
+    desc: "Major lore event splitting blockchain realities",
+    category: "Technology",
+    emoji: "⚙️",
+    tags: ["triple", "fork", "event"]
+  },
+  {
+    title: "XRP KIDs Genesis NFTs",
+    url: "wiki/xrp-kids-genesis-nfts.html",
+    desc: "Exclusive NFT collection by Charlie Buster on XRPL.",
+    category: "NFTs & Digital Art",
+    emoji: "🎭",
+    tags: ["xrp", "kids", "genesis", "nfts"]
+  },
+  {
+    title: "XRP Kids NBG Updates",
+    url: "wiki/xrp-kids-nbg-updates.html",
+    desc: "Updates to XRP Kids No Ball Games collection on xrp.cafe and xrpl.to",
+    category: "Cryptocurrencies",
+    emoji: "🪙",
+    tags: ["xrp", "kids", "nbg", "updates"]
+  },
+  {
+    title: "XRP KIDs",
+    url: "wiki/xrp-kids.html",
+    desc: "NFT collection by Charlie Buster on XRPL",
+    category: "Cryptocurrencies",
+    emoji: "🪙",
+    tags: ["xrp", "kids"]
   }
 ];
 
