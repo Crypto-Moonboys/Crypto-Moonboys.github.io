@@ -210,11 +210,35 @@ const WIKI_INDEX = [
   }
 ];
 
+/* ── CATEGORY INDEX ────────────────────────────────────────────────────────
+   All wiki categories are registered here.
+   When a new category page is added, also add its name to this list so the
+   category count on the home page updates automatically.
+   ─────────────────────────────────────────────────────────────────────── */
+const CATEGORY_LIST = [
+  "Cryptocurrencies",
+  "Concepts",
+  "Technology",
+  "Tools & Platforms",
+  "Lore",
+  "Crypto Designer Toys",
+  "Guerilla Marketing",
+  "Graffiti & Street Art",
+  "NFTs & Digital Art",
+  "Punk Culture",
+  "Gaming",
+  "Community & People",
+  "Media & Publishing",
+  "Art & Creativity",
+  "Activism & Counter-Culture"
+];
+
 /* ── DOM READY ──────────────────────────────────────────────────────────── */
 document.addEventListener('DOMContentLoaded', () => {
   initSidebar();
   initSearch();
   initStatArticles();
+  initStatCategories();
   initBackToTop();
   initActiveNav();
   initTOC();
@@ -489,4 +513,10 @@ function initTOC() {
 function initStatArticles() {
   const el = document.getElementById('stat-articles');
   if (el) el.textContent = WIKI_INDEX.length;
+}
+
+/* ── AUTO-SYNC CATEGORY COUNT STAT ──────────────────────────────────────── */
+function initStatCategories() {
+  const el = document.getElementById('stat-categories');
+  if (el) el.textContent = CATEGORY_LIST.length;
 }
