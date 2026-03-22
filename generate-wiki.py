@@ -1,3 +1,6 @@
+# DEPRECATED — This file is a legacy artifact. Wiki pages are now generated and
+# published by sam-wiki-publisher.py in HODLKONG64/HAY-MUM-IM-BUILDING-AGENTS-OF-CHANGE.
+# This file is kept for historical reference only. Do not run.
 import json
 import os
 from datetime import datetime
