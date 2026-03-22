@@ -657,6 +657,18 @@ img { max-width: 100%; height: auto; }
 .hero-stat {
   text-align: center;
 }
+a.hero-stat-link {
+  text-decoration: none;
+  color: inherit;
+  display: inline-block;
+  border-radius: 8px;
+  padding: 6px 12px;
+  transition: background 0.2s, transform 0.15s;
+}
+a.hero-stat-link:hover {
+  background: var(--color-border);
+  transform: translateY(-2px);
+}
 .hero-stat .stat-num {
   font-size: 1.6rem;
   font-weight: 800;

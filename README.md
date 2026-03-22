@@ -50,7 +50,13 @@ This wiki is updated programmatically by an AI agent. All content lives as stati
    }
    ```
 4. **Link** the article from the relevant category page (`categories/<category>.html`)
-5. **Update** article counts in `index.html` and `categories/index.html`
+5. **Article count** on the home page updates automatically from `WIKI_INDEX.length`
+
+### Adding a New Category (Bot Steps)
+
+1. **Create** the category page at `categories/<new-slug>.html`
+2. **Add** the category to the `CATEGORY_LIST` array in `js/wiki.js` so the home page count auto-updates
+3. **Link** the category from `categories/index.html`
 
 ### Citation Types
 
