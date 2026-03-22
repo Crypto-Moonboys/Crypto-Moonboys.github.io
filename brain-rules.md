@@ -1,4 +1,4 @@
-> **Note:** This file defines wiki publishing rules for SAM. The full Master Agent Bible (DB-1 to DB-46) lives in the agent repo at `HODLKONG64/HAY-MUM-IM-BUILDING-AGENTS-OF-CHANGE/brain-rules.md`.
+> **Note:** This file defines wiki publishing rules for SAM. The full Master Agent Bible (DB-1 to DB-48) lives in the agent repo at `HODLKONG64/HAY-MUM-IM-BUILDING-AGENTS-OF-CHANGE/brain-rules.md`.
 
 # 🧠 Crypto Moonboys Wiki — Brain Rules
 
@@ -89,7 +89,7 @@ The following rules from the Master Agent Bible (`brain-rules.md` in `HODLKONG64
 
 ## DB-47 — No "sam" Prefix in New URL Slugs
 
-SAM must NEVER use "sam" as a prefix in any URL slug or filename going forward. All new article filenames must use descriptive slugs only (e.g. `wiki/alfie-blaze.html` not `wiki/sam-alfie-blaze.html`).
+SAM must NEVER use "sam" as a prefix in any URL slug or filename going forward. All new article filenames must use descriptive slugs only (e.g. `wiki/alfie-blaze.html` not `wiki/sam-alfie-blaze.html`). Legacy `wiki/sam-*.html` files are automatically redirected to their new URLs by sam-wiki-publisher.py each cycle. `sam.html` is redirected to `agent.html`. `categories/sam-generated.html` is redirected to `categories/lore.html`.
 
 ## DB-48 — Register Every New Article in articles.html and index.html
 
