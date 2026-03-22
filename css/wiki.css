@@ -1004,6 +1004,16 @@ a.hero-stat-link:hover {
   #header-search { display: none; }
 }
 
+/* ── BITCOIN LOGO ICON ─────────────────────────────────── */
+.btc-logo-icon {
+  height: 1em;
+  width: auto;
+  vertical-align: middle;
+  display: inline-block;
+  flex-shrink: 0;
+  object-fit: contain;
+}
+
 /* ── PRINT ─────────────────────────────────────────────── */
 @media print {
   #site-header, #sidebar, #back-to-top, #toc { display: none; }
