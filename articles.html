@@ -5,90 +5,38 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="All Articles on Crypto Moonboys Wiki — the complete index of every wiki article, grouped by category.">
   <meta name="robots" content="index, follow">
-  <meta property="og:title" content="🔍 All Articles — Crypto Moonboys Wiki">
+  <meta property="og:title" content="📄 All Articles — Crypto Moonboys Wiki">
   <meta property="og:description" content="The complete index of every article on Crypto Moonboys Wiki, grouped by category.">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://crypto-moonboys.github.io/articles.html">
   <meta property="og:image" content="https://crypto-moonboys.github.io/img/logo.svg">
-  <title>🔍 All Articles — Crypto Moonboys Wiki</title>
+  <title>📄 All Articles — Crypto Moonboys Wiki</title>
   <link rel="stylesheet" href="css/wiki.css">
   <link rel="icon" href="img/favicon.svg" type="image/svg+xml">
   <style>
-    .articles-filter-wrap {
-      display: flex;
-      gap: 10px;
-      max-width: 560px;
-      margin-bottom: 28px;
-    }
-    .articles-filter-wrap input {
-      flex: 1;
-      padding: 11px 18px;
-      background: var(--color-surface);
-      border: 1px solid var(--color-border);
-      border-radius: var(--radius);
-      color: var(--color-text);
-      font-size: .95rem;
-      outline: none;
-      transition: border-color .2s;
-    }
-    .articles-filter-wrap input:focus {
-      border-color: var(--color-accent);
-    }
-    .article-index-category {
-      margin-bottom: 36px;
-    }
-    .article-index-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-      gap: 8px;
-      margin-top: 12px;
-    }
-    .article-index-item a {
-      display: block;
-      padding: 9px 14px;
-      background: var(--color-surface);
-      border: 1px solid var(--color-border);
-      border-radius: var(--radius);
-      color: var(--color-link);
-      text-decoration: none;
-      font-size: .9rem;
-      transition: border-color .2s, background .2s;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    .article-index-item a:hover {
-      border-color: var(--color-accent);
-      background: var(--color-surface-raised, #1c2128);
-    }
-    .articles-summary {
-      color: var(--color-text-muted, #8b949e);
-      font-size: .9rem;
-      margin-bottom: 20px;
-    }
-    .no-results-msg {
-      color: var(--color-text-muted, #8b949e);
-      padding: 24px 0;
-      display: none;
-    }
+    .articles-search-wrap { display: flex; flex-direction: column; gap: 10px; max-width: 600px; margin-bottom: 28px; }
+    .articles-search-wrap label { font-size: .85rem; color: var(--color-text-muted, #8b949e); margin-bottom: 2px; }
+    .articles-search-wrap input { width: 100%; padding: 11px 18px; background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius); color: var(--color-text); font-size: .95rem; outline: none; transition: border-color .2s; box-sizing: border-box; }
+    .articles-search-wrap input:focus { border-color: var(--color-accent); }
+    .article-index-category { margin-bottom: 36px; }
+    .article-index-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 8px; margin-top: 12px; }
+    .article-index-item a { display: block; padding: 9px 14px; background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius); color: var(--color-link); text-decoration: none; font-size: .9rem; transition: border-color .2s, background .2s; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .article-index-item a:hover { border-color: var(--color-accent); background: var(--color-surface-raised, #1c2128); }
+    .articles-summary { color: var(--color-text-muted, #8b949e); font-size: .9rem; margin-bottom: 20px; }
+    .no-results-msg { color: var(--color-text-muted, #8b949e); padding: 24px 0; display: none; }
   </style>
 </head>
 <body>
-
 <a class="skip-link" href="#content">Skip to content</a>
-
 <header id="site-header" role="banner">
-  <button class="hamburger" id="hamburger" aria-label="Toggle navigation" aria-expanded="false" aria-controls="sidebar">☰</button>
+  <button class="hamburger" id="hamburger" aria-label="Toggle navigation" aria-expanded="false" aria-controls="sidebar">&#9776;</button>
   <a href="index.html" class="site-logo" aria-label="Crypto Moonboys Wiki home">
     <img src="img/logo.svg" alt="" aria-hidden="true">
-    <span>
-      <span class="logo-text">🌙 Moonboys Wiki</span>
-      <span class="logo-sub">Crypto Encyclopedia</span>
-    </span>
+    <span><span class="logo-text">&#127769; Moonboys Wiki</span><span class="logo-sub">Crypto Encyclopedia</span></span>
   </a>
   <div id="header-search" role="search">
-    <input type="search" id="search-input" placeholder="Search the wiki…" aria-label="Search" autocomplete="off">
-    <button id="search-btn" aria-label="Search">🔍</button>
+    <input type="search" id="search-input" placeholder="Search the wiki&#x2026;" aria-label="Search" autocomplete="off">
+    <button id="search-btn" aria-label="Search">&#128269;</button>
     <div id="search-results" role="listbox"></div>
   </div>
   <nav class="header-nav" aria-label="Main navigation">
@@ -97,75 +45,70 @@
     <a href="articles.html" class="active">All Articles</a>
   </nav>
 </header>
-
 <div id="sidebar-overlay" aria-hidden="true"></div>
-
 <div id="layout">
   <nav id="sidebar" aria-label="Wiki navigation">
     <div class="sidebar-section">
       <div class="sidebar-heading">Navigation</div>
       <div class="sidebar-nav">
-        <a href="index.html"><span class="nav-icon">🏠</span> Main Page</a>
-        <a href="categories/index.html"><span class="nav-icon">📂</span> All Categories</a>
-        <a href="articles.html" class="active"><span class="nav-icon">🔍</span> All Articles</a>
+        <a href="index.html"><span class="nav-icon">&#127968;</span> Main Page</a>
+        <a href="categories/index.html"><span class="nav-icon">&#128194;</span> All Categories</a>
+        <a href="articles.html" class="active"><span class="nav-icon">&#128196;</span> All Articles</a>
       </div>
     </div>
     <div class="sidebar-section">
-      <div class="sidebar-heading">Lore</div>
+      <div class="sidebar-heading">&#129302; SAM Agent</div>
       <div class="sidebar-nav">
-        <a href="wiki/paper-hands.html"><span class="nav-icon">🧻</span> Paper Hands</a>
-        <a href="wiki/whale-lords.html"><span class="nav-icon">🐳</span> The Whale Lords</a>
-        <a href="wiki/moon-mission.html"><span class="nav-icon">🚀</span> Moon Mission</a>
-        <a href="wiki/the-great-dip.html"><span class="nav-icon">📉</span> The Great Dip</a>
-        <a href="wiki/bear-market-siege.html"><span class="nav-icon">🐻</span> Bear Market Siege</a>
-        <a href="wiki/rug-pull-wars.html"><span class="nav-icon">🪤</span> Rug Pull Wars</a>
-        <a href="wiki/satoshi-scroll.html"><span class="nav-icon">📜</span> The Satoshi Scroll</a>
-        <a href="wiki/fomo-plague.html"><span class="nav-icon">😱</span> The FOMO Plague</a>
-        <a href="wiki/ngmi-chronicles.html"><span class="nav-icon">💀</span> NGMI Chronicles</a>
-        <a href="wiki/wagmi-prophecy.html"><span class="nav-icon">🌙</span> The WAGMI Prophecy</a>
+        <a href="sam.html"><span class="nav-icon">&#129302;</span> SAM's Page</a>
+        <a href="categories/sam-generated.html"><span class="nav-icon">&#128194;</span> SAM Generated Articles</a>
       </div>
     </div>
     <div class="sidebar-section">
       <div class="sidebar-heading">Wiki Info</div>
       <div class="sidebar-nav">
-        <a href="about.html"><span class="nav-icon">ℹ️</span> About</a>
-        <a href="about.html#citation"><span class="nav-icon">📋</span> Citation Policy</a>
-        <a href="about.html#sources"><span class="nav-icon">🔗</span> Source Types</a>
+        <a href="about.html"><span class="nav-icon">&#8505;&#65039;</span> About</a>
+        <a href="about.html#citation"><span class="nav-icon">&#128203;</span> Citation Policy</a>
+        <a href="about.html#sources"><span class="nav-icon">&#128279;</span> Source Types</a>
       </div>
     </div>
   </nav>
-
   <div id="main-wrapper">
     <main id="content" role="main">
-
-      <nav class="breadcrumb" aria-label="Breadcrumb">
-        <a href="index.html">Home</a><span class="sep">›</span><span aria-current="page">All Articles</span>
-      </nav>
-      <h1 class="page-title">🔍 All Articles</h1>
+      <nav class="breadcrumb" aria-label="Breadcrumb"><a href="index.html">Home</a><span class="sep">&#x203a;</span><span aria-current="page">All Articles</span></nav>
+      <h1 class="page-title">&#128196; All Articles</h1>
       <div class="page-title-line" aria-hidden="true"></div>
-
-      <p class="articles-summary">123 articles across 4 categories</p>
-
-      <div class="articles-filter-wrap">
-        <input type="search" id="articles-filter" placeholder="Filter articles by keyword…" aria-label="Filter articles" autocomplete="off">
+      <p class="articles-summary">All wiki articles across 16 categories &#x2014; hand-crafted and SAM-generated</p>
+      <div class="articles-search-wrap">
+        <div>
+          <label for="site-search-bar">&#127760; Full-site word search</label>
+          <input type="search" id="site-search-bar" placeholder="Search all words on the site&#x2026;" aria-label="Full-site word search" autocomplete="off">
+        </div>
+        <div>
+          <label for="articles-filter">&#128196; Filter articles by name</label>
+          <input type="search" id="articles-filter" placeholder="Filter article names in real-time&#x2026;" aria-label="Filter articles by name" autocomplete="off">
+        </div>
       </div>
       <p class="no-results-msg" id="no-results">No articles match your filter.</p>
-
-      <!-- ═══ CRYPTOCURRENCIES ═══ -->
+      <!-- CRYPTOCURRENCIES -->
       <section class="article-index-category" id="cat-cryptocurrencies">
-        <h2 class="section-heading">Cryptocurrencies</h2>
+        <h2 class="section-heading">&#129689; Cryptocurrencies</h2>
         <div class="article-index-grid">
           <div class="article-index-item"><a href="wiki/bitcoin.html">Bitcoin (BTC)</a></div>
           <div class="article-index-item"><a href="wiki/ethereum.html">Ethereum (ETH)</a></div>
           <div class="article-index-item"><a href="wiki/solana.html">Solana (SOL)</a></div>
           <div class="article-index-item"><a href="wiki/altcoins.html">Altcoins</a></div>
           <div class="article-index-item"><a href="wiki/memecoins.html">Meme Coins</a></div>
+          <div class="article-index-item"><a href="wiki/sam-bitcoin-cash.html">$Bitcoin Cash</a></div>
+          <div class="article-index-item"><a href="wiki/sam-sol.html">$SOL</a></div>
+          <div class="article-index-item"><a href="wiki/sam-wax.html">WAX</a></div>
+          <div class="article-index-item"><a href="wiki/sam-waxp.html">$WAXP</a></div>
+          <div class="article-index-item"><a href="wiki/sam-xrpl.html">$XRPL</a></div>
         </div>
       </section>
 
-      <!-- ═══ CONCEPTS ═══ -->
+      <!-- CONCEPTS -->
       <section class="article-index-category" id="cat-concepts">
-        <h2 class="section-heading">Concepts</h2>
+        <h2 class="section-heading">&#128161; Concepts</h2>
         <div class="article-index-grid">
           <div class="article-index-item"><a href="wiki/blockchain.html">Blockchain</a></div>
           <div class="article-index-item"><a href="wiki/defi.html">DeFi</a></div>
@@ -174,170 +117,373 @@
           <div class="article-index-item"><a href="wiki/web3.html">Web3</a></div>
           <div class="article-index-item"><a href="wiki/wallets.html">Wallets</a></div>
           <div class="article-index-item"><a href="wiki/exchanges.html">Exchanges</a></div>
-          <div class="article-index-item"><a href="wiki/hodl-wars.html">HODL Wars</a></div>
+          <div class="article-index-item"><a href="wiki/sam-burn-to-earn.html">Burn-to-Earn</a></div>
+          <div class="article-index-item"><a href="wiki/sam-seeding-rights.html">Seeding Rights</a></div>
+          <div class="article-index-item"><a href="wiki/sam-phygital-prints.html">Phygital Prints</a></div>
+          <div class="article-index-item"><a href="wiki/sam-playable-nft-murals.html">Playable NFT Murals</a></div>
+          <div class="article-index-item"><a href="wiki/sam-staking-for-gk-tokens.html">Staking for $GK Tokens</a></div>
+        </div>
+      </section>
+
+      <!-- TECHNOLOGY -->
+      <section class="article-index-category" id="cat-technology">
+        <h2 class="section-heading">&#9881;&#65039; Technology</h2>
+        <div class="article-index-grid">
+          <div class="article-index-item"><a href="wiki/sam-forksplit.html">Forksplit</a></div>
+          <div class="article-index-item"><a href="wiki/sam-forklord-you.html">Forklord You</a></div>
+          <div class="article-index-item"><a href="wiki/sam-triple-fork-event.html">Triple Fork Event</a></div>
+          <div class="article-index-item"><a href="wiki/sam-triple-fork-event-mechanics.html">Triple Fork Event Mechanics</a></div>
+          <div class="article-index-item"><a href="wiki/sam-spraycode-writcode-mechanics.html">Spraycode &amp; Writcode Mechanics</a></div>
+          <div class="article-index-item"><a href="wiki/sam-m1ntr-k1ll.html">M1nTr_K1ll</a></div>
+          <div class="article-index-item"><a href="wiki/sam-samaelexe.html">Samael.exe</a></div>
+        </div>
+      </section>
+
+      <!-- TOOLS &AMP; PLATFORMS -->
+      <section class="article-index-category" id="cat-tools">
+        <h2 class="section-heading">&#128295; Tools &amp; Platforms</h2>
+        <div class="article-index-grid">
+          <div class="article-index-item"><a href="wiki/sam-gk-tokens.html">$GK Tokens</a></div>
+          <div class="article-index-item"><a href="wiki/sam-punk-token.html">$PUNK Token</a></div>
+          <div class="article-index-item"><a href="wiki/sam-lfgk-token.html">$LFGK Token</a></div>
+          <div class="article-index-item"><a href="wiki/sam-lfgk-rewards.html">$LFGK Rewards</a></div>
+          <div class="article-index-item"><a href="wiki/sam-nbg.html">$NBG</a></div>
+          <div class="article-index-item"><a href="wiki/sam-1m-free-nfts-drop.html">1M Free NFTs Drop</a></div>
+        </div>
+      </section>
+
+      <!-- LORE -->
+      <section class="article-index-category" id="cat-lore">
+        <h2 class="section-heading">&#9876;&#65039; Lore</h2>
+        <div class="article-index-grid">
+          <div class="article-index-item"><a href="wiki/hodl-wars.html">HODL Wars Lore$</a></div>
           <div class="article-index-item"><a href="wiki/hodl-warriors.html">HODL Warriors</a></div>
           <div class="article-index-item"><a href="wiki/diamond-hands.html">Diamond Hands</a></div>
-        </div>
-      </section>
-
-      <!-- ═══ LORE ═══ -->
-      <section class="article-index-category" id="cat-lore">
-        <h2 class="section-heading">Lore</h2>
-        <div class="article-index-grid">
           <div class="article-index-item"><a href="wiki/paper-hands.html">Paper Hands</a></div>
+          <div class="article-index-item"><a href="wiki/whale-lords.html">The Whale Lords</a></div>
           <div class="article-index-item"><a href="wiki/moon-mission.html">Moon Mission</a></div>
+          <div class="article-index-item"><a href="wiki/the-great-dip.html">The Great Dip</a></div>
           <div class="article-index-item"><a href="wiki/bear-market-siege.html">Bear Market Siege</a></div>
           <div class="article-index-item"><a href="wiki/rug-pull-wars.html">Rug Pull Wars</a></div>
+          <div class="article-index-item"><a href="wiki/satoshi-scroll.html">The Satoshi Scroll</a></div>
           <div class="article-index-item"><a href="wiki/fomo-plague.html">FOMO Plague</a></div>
           <div class="article-index-item"><a href="wiki/ngmi-chronicles.html">NGMI Chronicles</a></div>
-          <div class="article-index-item"><a href="wiki/satoshi-scroll.html">The Satoshi Scroll</a></div>
-          <div class="article-index-item"><a href="wiki/the-great-dip.html">The Great Dip</a></div>
           <div class="article-index-item"><a href="wiki/wagmi-prophecy.html">The WAGMI Prophecy</a></div>
-          <div class="article-index-item"><a href="wiki/whale-lords.html">The Whale Lords</a></div>
+          <div class="article-index-item"><a href="wiki/sam-hodl-wars.html">HODL Wars (SAM)</a></div>
+          <div class="article-index-item"><a href="wiki/sam-hodl-warriors.html">HODL Warriors (SAM)</a></div>
+          <div class="article-index-item"><a href="wiki/sam-hodl-warriors-army.html">HODL Warriors Army</a></div>
+          <div class="article-index-item"><a href="wiki/sam-hodl-wars-extravaganza.html">HODL Wars Extravaganza</a></div>
+          <div class="article-index-item"><a href="wiki/sam-hodl-x-warriors.html">HODL X Warriors</a></div>
+          <div class="article-index-item"><a href="wiki/sam-sacred-chain.html">The Sacred Chain</a></div>
+          <div class="article-index-item"><a href="wiki/sam-great-datapocalypse-of-2789.html">The Great Datapocalypse of 2789</a></div>
+          <div class="article-index-item"><a href="wiki/sam-the-great-unravelling.html">The Great Unravelling</a></div>
+          <div class="article-index-item"><a href="wiki/sam-metaverse-battles.html">Metaverse Battles</a></div>
+          <div class="article-index-item"><a href="wiki/sam-hard-fork-games.html">Hard Fork Games</a></div>
+          <div class="article-index-item"><a href="wiki/sam-battlemech-blast.html">Battlemech Blast</a></div>
+          <div class="article-index-item"><a href="wiki/sam-midevil-hero-arena.html">MiDEViL Hero Arena</a></div>
         </div>
       </section>
 
-      <!-- ═══ SAM ARTICLES ═══ -->
-      <section class="article-index-category" id="cat-sam">
-        <h2 class="section-heading">Characters &amp; NFT Collections (SAM Articles)</h2>
+      <!-- CRYPTO DESIGNER TOYS -->
+      <section class="article-index-category" id="cat-designer-toys">
+        <h2 class="section-heading">&#129528; Crypto Designer Toys</h2>
         <div class="article-index-grid">
-          <div class="article-index-item"><a href="wiki/sam-1m-free-nfts-drop.html">Sam 1m Free Nfts Drop</a></div>
-          <div class="article-index-item"><a href="wiki/sam-aleema-child-of-the-shard.html">Sam Aleema Child Of The Shard</a></div>
-          <div class="article-index-item"><a href="wiki/sam-alfie-the-bitcoin-kid-blaze.html">Sam Alfie The Bitcoin Kid Blaze</a></div>
-          <div class="article-index-item"><a href="wiki/sam-ava-chen.html">Sam Ava Chen</a></div>
-          <div class="article-index-item"><a href="wiki/sam-billy-the-goat-kid.html">Sam Billy The Goat Kid</a></div>
-          <div class="article-index-item"><a href="wiki/sam-bit-cap-5000.html">Sam Bit Cap 5000</a></div>
-          <div class="article-index-item"><a href="wiki/sam-bitcoin-x-kids.html">Sam Bitcoin X Kids</a></div>
-          <div class="article-index-item"><a href="wiki/sam-block-node-defenders.html">Sam Block Node Defenders</a></div>
-          <div class="article-index-item"><a href="wiki/sam-block-topia.html">Sam Block Topia</a></div>
-          <div class="article-index-item"><a href="wiki/sam-bone-idol-ink.html">Sam Bone Idol Ink</a></div>
-          <div class="article-index-item"><a href="wiki/sam-charlie-buster.html">Sam Charlie Buster</a></div>
-          <div class="article-index-item"><a href="wiki/sam-crypto-moonboys.html">Sam Crypto Moonboys</a></div>
-          <div class="article-index-item"><a href="wiki/sam-darren-cullen-ser.html">Sam Darren Cullen Ser</a></div>
-          <div class="article-index-item"><a href="wiki/sam-delicious-again-pete.html">Sam Delicious Again Pete</a></div>
-          <div class="article-index-item"><a href="wiki/sam-dragan-volkov.html">Sam Dragan Volkov</a></div>
-          <div class="article-index-item"><a href="wiki/sam-dream-sovereign.html">Sam Dream Sovereign</a></div>
-          <div class="article-index-item"><a href="wiki/sam-elder-codex-7.html">Sam Elder Codex 7</a></div>
-          <div class="article-index-item"><a href="wiki/sam-forkborn-collective.html">Sam Forkborn Collective</a></div>
-          <div class="article-index-item"><a href="wiki/sam-forklord-you.html">Sam Forklord You</a></div>
-          <div class="article-index-item"><a href="wiki/sam-forksplit.html">Sam Forksplit</a></div>
-          <div class="article-index-item"><a href="wiki/sam-gk-tokens.html">Sam Gk Tokens</a></div>
-          <div class="article-index-item"><a href="wiki/sam-gkniftyheads.html">Sam Gkniftyheads</a></div>
-          <div class="article-index-item"><a href="wiki/sam-graffiti-kings.html">Sam Graffiti Kings</a></div>
-          <div class="article-index-item"><a href="wiki/sam-graffpunks.html">Sam Graffpunks</a></div>
-          <div class="article-index-item"><a href="wiki/sam-great-datapocalypse-of-2789.html">Sam Great Datapocalypse Of 2789</a></div>
-          <div class="article-index-item"><a href="wiki/sam-grit.html">Sam Grit</a></div>
-          <div class="article-index-item"><a href="wiki/sam-grit42.html">Sam Grit42</a></div>
-          <div class="article-index-item"><a href="wiki/sam-hard-fork-games.html">Sam Hard Fork Games</a></div>
-          <div class="article-index-item"><a href="wiki/sam-hex-tagger-prime.html">Sam Hex Tagger Prime</a></div>
-          <div class="article-index-item"><a href="wiki/sam-hodl-warriors-army.html">Sam Hodl Warriors Army</a></div>
-          <div class="article-index-item"><a href="wiki/sam-hodl-warriors.html">Sam Hodl Warriors</a></div>
-          <div class="article-index-item"><a href="wiki/sam-hodl-wars-extravaganza.html">Sam Hodl Wars Extravaganza</a></div>
-          <div class="article-index-item"><a href="wiki/sam-hodl-wars.html">Sam Hodl Wars</a></div>
-          <div class="article-index-item"><a href="wiki/sam-hodl-x-warriors.html">Sam Hodl X Warriors</a></div>
-          <div class="article-index-item"><a href="wiki/sam-iris-7.html">Sam Iris 7</a></div>
-          <div class="article-index-item"><a href="wiki/sam-jodie-zoom-2000.html">Sam Jodie Zoom 2000</a></div>
-          <div class="article-index-item"><a href="wiki/sam-jonny-laurence-nelson-tag-records.html">Sam Jonny Laurence Nelson Tag Records</a></div>
-          <div class="article-index-item"><a href="wiki/sam-lady-ink.html">Sam Lady Ink</a></div>
-          <div class="article-index-item"><a href="wiki/sam-lfgk-rewards.html">Sam Lfgk Rewards</a></div>
-          <div class="article-index-item"><a href="wiki/sam-loopfiend.html">Sam Loopfiend</a></div>
-          <div class="article-index-item"><a href="wiki/sam-m1ntr-k1ll.html">Sam M1ntr K1ll</a></div>
-          <div class="article-index-item"><a href="wiki/sam-metaverse-battles.html">Sam Metaverse Battles</a></div>
-          <div class="article-index-item"><a href="wiki/sam-midevil-hero-arena.html">Sam Midevil Hero Arena</a></div>
-          <div class="article-index-item"><a href="wiki/sam-no-ball-games-nbg.html">Sam No Ball Games Nbg</a></div>
-          <div class="article-index-item"><a href="wiki/sam-null-the-prophet.html">Sam Null The Prophet</a></div>
-          <div class="article-index-item"><a href="wiki/sam-patchwork.html">Sam Patchwork</a></div>
-          <div class="article-index-item"><a href="wiki/sam-punk-token.html">Sam Punk Token</a></div>
-          <div class="article-index-item"><a href="wiki/sam-pyralith.html">Sam Pyralith</a></div>
-          <div class="article-index-item"><a href="wiki/sam-queen-sarah-p-fly.html">Sam Queen Sarah P Fly</a></div>
-          <div class="article-index-item"><a href="wiki/sam-queens-new-york.html">Sam Queens New York</a></div>
-          <div class="article-index-item"><a href="wiki/sam-quell.html">Sam Quell</a></div>
-          <div class="article-index-item"><a href="wiki/sam-rune-tag.html">Sam Rune Tag</a></div>
-          <div class="article-index-item"><a href="wiki/sam-sacred-chain.html">Sam Sacred Chain</a></div>
-          <div class="article-index-item"><a href="wiki/sam-samaelexe.html">Sam Samaelexe</a></div>
-          <div class="article-index-item"><a href="wiki/sam-sarah-pu51fly.html">Sam Sarah Pu51fly</a></div>
-          <div class="article-index-item"><a href="wiki/sam-satorebel.html">Sam Satorebel</a></div>
-          <div class="article-index-item"><a href="wiki/sam-seeding-rights.html">Sam Seeding Rights</a></div>
-          <div class="article-index-item"><a href="wiki/sam-sister-halcyon.html">Sam Sister Halcyon</a></div>
-          <div class="article-index-item"><a href="wiki/sam-snipey-d-man-sirus.html">Sam Snipey D Man Sirus</a></div>
-          <div class="article-index-item"><a href="wiki/sam-spirit-borns.html">Sam Spirit Borns</a></div>
-          <div class="article-index-item"><a href="wiki/sam-squeaky-pinks-enforcers.html">Sam Squeaky Pinks Enforcers</a></div>
-          <div class="article-index-item"><a href="wiki/sam-street-kingdoms.html">Sam Street Kingdoms</a></div>
-          <div class="article-index-item"><a href="wiki/sam-the-allcity-bulls.html">Sam The Allcity Bulls</a></div>
-          <div class="article-index-item"><a href="wiki/sam-the-aztec-raiders.html">Sam The Aztec Raiders</a></div>
-          <div class="article-index-item"><a href="wiki/sam-the-bally-boys.html">Sam The Bally Boys</a></div>
-          <div class="article-index-item"><a href="wiki/sam-the-bitcoin-kid-army.html">Sam The Bitcoin Kid Army</a></div>
-          <div class="article-index-item"><a href="wiki/sam-the-blockchain-furies.html">Sam The Blockchain Furies</a></div>
-          <div class="article-index-item"><a href="wiki/sam-the-blockstars.html">Sam The Blockstars</a></div>
-          <div class="article-index-item"><a href="wiki/sam-the-chain-scribes.html">Sam The Chain Scribes</a></div>
-          <div class="article-index-item"><a href="wiki/sam-the-code-alchemists.html">Sam The Code Alchemists</a></div>
-          <div class="article-index-item"><a href="wiki/sam-the-crypto-moongirls.html">Sam The Crypto Moongirls</a></div>
-          <div class="article-index-item"><a href="wiki/sam-the-crypto-stoned-boys.html">Sam The Crypto Stoned Boys</a></div>
-          <div class="article-index-item"><a href="wiki/sam-the-ducky-boys.html">Sam The Ducky Boys</a></div>
-          <div class="article-index-item"><a href="wiki/sam-the-evm-punks.html">Sam The Evm Punks</a></div>
-          <div class="article-index-item"><a href="wiki/sam-the-finance-guild.html">Sam The Finance Guild</a></div>
-          <div class="article-index-item"><a href="wiki/sam-the-gasless-ghosts.html">Sam The Gasless Ghosts</a></div>
-          <div class="article-index-item"><a href="wiki/sam-the-gkniftyheads.html">Sam The Gkniftyheads</a></div>
-          <div class="article-index-item"><a href="wiki/sam-the-graffpunks.html">Sam The Graffpunks</a></div>
-          <div class="article-index-item"><a href="wiki/sam-the-great-unravelling.html">Sam The Great Unravelling</a></div>
-          <div class="article-index-item"><a href="wiki/sam-the-hard-fork-rockers.html">Sam The Hard Fork Rockers</a></div>
-          <div class="article-index-item"><a href="wiki/sam-the-high-hats.html">Sam The High Hats</a></div>
-          <div class="article-index-item"><a href="wiki/sam-the-information-mercenaries.html">Sam The Information Mercenaries</a></div>
-          <div class="article-index-item"><a href="wiki/sam-the-moonlords.html">Sam The Moonlords</a></div>
-          <div class="article-index-item"><a href="wiki/sam-the-nice-easy-bois.html">Sam The Nice Easy Bois</a></div>
-          <div class="article-index-item"><a href="wiki/sam-the-nomad-bears.html">Sam The Nomad Bears</a></div>
-          <div class="article-index-item"><a href="wiki/sam-the-og-pixel-saints.html">Sam The Og Pixel Saints</a></div>
-          <div class="article-index-item"><a href="wiki/sam-the-princess.html">Sam The Princess</a></div>
-          <div class="article-index-item"><a href="wiki/sam-the-rugpull-miners.html">Sam The Rugpull Miners</a></div>
-          <div class="article-index-item"><a href="wiki/sam-the-salvagers.html">Sam The Salvagers</a></div>
-          <div class="article-index-item"><a href="wiki/sam-the-shard-mothers-of-manhattan.html">Sam The Shard Mothers Of Manhattan</a></div>
-          <div class="article-index-item"><a href="wiki/sam-the-squeaky-pinks.html">Sam The Squeaky Pinks</a></div>
-          <div class="article-index-item"><a href="wiki/sam-the-tuskon-ogs.html">Sam The Tuskon Ogs</a></div>
-          <div class="article-index-item"><a href="wiki/sam-the-whitewasher.html">Sam The Whitewasher</a></div>
-          <div class="article-index-item"><a href="wiki/sam-thera-9.html">Sam Thera 9</a></div>
-          <div class="article-index-item"><a href="wiki/sam-thorne-the-architect.html">Sam Thorne The Architect</a></div>
-          <div class="article-index-item"><a href="wiki/sam-trevor-fung.html">Sam Trevor Fung</a></div>
-          <div class="article-index-item"><a href="wiki/sam-triple-fork-event.html">Sam Triple Fork Event</a></div>
-          <div class="article-index-item"><a href="wiki/sam-xrp-kids.html">Sam Xrp Kids</a></div>
+          <div class="article-index-item"><a href="wiki/sam-gkniftyheads.html">GKniftyHEADS</a></div>
+          <div class="article-index-item"><a href="wiki/sam-the-gkniftyheads.html">The GKniftyHEADS</a></div>
+          <div class="article-index-item"><a href="wiki/sam-bit-cap-5000.html">Bit-Cap 5000</a></div>
+        </div>
+      </section>
+
+      <!-- GUERILLA MARKETING -->
+      <section class="article-index-category" id="cat-guerilla-marketing">
+        <h2 class="section-heading">&#127912; Guerilla Marketing</h2>
+        <div class="article-index-grid">
+          <div class="article-index-item"><a href="wiki/sam-no-ball-games-nbg.html">No Ball Games (NBG)</a></div>
+          <div class="article-index-item"><a href="wiki/sam-rune-tag.html">Rune Tag</a></div>
+          <div class="article-index-item"><a href="wiki/sam-hex-tagger-prime.html">HEX-TAGGER PRIME</a></div>
+        </div>
+      </section>
+
+      <!-- GRAFFITI &AMP; STREET ART -->
+      <section class="article-index-category" id="cat-graffiti-street-art">
+        <h2 class="section-heading">&#127912; Graffiti &amp; Street Art</h2>
+        <div class="article-index-grid">
+          <div class="article-index-item"><a href="wiki/sam-graffiti-kings.html">Graffiti Kings</a></div>
+          <div class="article-index-item"><a href="wiki/sam-leake-street-tunnel.html">Leake Street Tunnel</a></div>
+          <div class="article-index-item"><a href="wiki/sam-croydon-tower-blocks.html">Croydon Tower Blocks</a></div>
+          <div class="article-index-item"><a href="wiki/sam-queens-new-york.html">Queens, New York</a></div>
+          <div class="article-index-item"><a href="wiki/sam-maidstone-base.html">Maidstone Base</a></div>
+          <div class="article-index-item"><a href="wiki/sam-street-kingdoms.html">Street Kingdoms</a></div>
+          <div class="article-index-item"><a href="wiki/sam-block-topia.html">Block Topia</a></div>
+          <div class="article-index-item"><a href="wiki/sam-the-whitewasher.html">The Whitewasher</a></div>
+          <div class="article-index-item"><a href="wiki/sam-the-tuskon-ogs.html">The TUSKON OGS</a></div>
+        </div>
+      </section>
+
+      <!-- NFTS &AMP; DIGITAL ART -->
+      <section class="article-index-category" id="cat-nfts-digital-art">
+        <h2 class="section-heading">&#128444;&#65039; NFTs &amp; Digital Art</h2>
+        <div class="article-index-grid">
+          <div class="article-index-item"><a href="wiki/sam-phygital-prints.html">Phygital Prints</a></div>
+          <div class="article-index-item"><a href="wiki/sam-playable-nft-murals.html">Playable NFT Murals</a></div>
+          <div class="article-index-item"><a href="wiki/sam-the-og-pixel-saints.html">The OG Pixel Saints</a></div>
+          <div class="article-index-item"><a href="wiki/sam-xrp-kids.html">XRP Kids</a></div>
+          <div class="article-index-item"><a href="wiki/sam-bitcoin-x-kids.html">Bitcoin X Kids</a></div>
+          <div class="article-index-item"><a href="wiki/sam-patchwork.html">Patchwork</a></div>
+        </div>
+      </section>
+
+      <!-- PUNK CULTURE -->
+      <section class="article-index-category" id="cat-punk-culture">
+        <h2 class="section-heading">&#9889;&#65039; Punk Culture</h2>
+        <div class="article-index-grid">
+          <div class="article-index-item"><a href="wiki/sam-graffpunks.html">GraffPUNKS</a></div>
+          <div class="article-index-item"><a href="wiki/sam-the-evm-punks.html">The EVM Punks</a></div>
+          <div class="article-index-item"><a href="wiki/sam-satorebel.html">SatoRebel</a></div>
+          <div class="article-index-item"><a href="wiki/sam-grit.html">GRIT</a></div>
+          <div class="article-index-item"><a href="wiki/sam-grit42.html">Grit42</a></div>
+          <div class="article-index-item"><a href="wiki/sam-null-the-prophet.html">NULL THE PROPHET</a></div>
+          <div class="article-index-item"><a href="wiki/sam-the-hard-fork-rockers.html">The Hard Fork Rockers</a></div>
+        </div>
+      </section>
+
+      <!-- GAMING -->
+      <section class="article-index-category" id="cat-gaming">
+        <h2 class="section-heading">&#127918; Gaming</h2>
+        <div class="article-index-grid">
+          <div class="article-index-item"><a href="wiki/sam-hard-fork-games.html">Hard Fork Games</a></div>
+          <div class="article-index-item"><a href="wiki/sam-battlemech-blast.html">Battlemech Blast</a></div>
+          <div class="article-index-item"><a href="wiki/sam-midevil-hero-arena.html">MiDEViL Hero Arena</a></div>
+          <div class="article-index-item"><a href="wiki/sam-metaverse-battles.html">Metaverse Battles</a></div>
+          <div class="article-index-item"><a href="wiki/sam-no-ball-games-nbg.html">No Ball Games (NBG)</a></div>
+          <div class="article-index-item"><a href="wiki/sam-block-node-defenders.html">Block Node Defenders</a></div>
+        </div>
+      </section>
+
+      <!-- COMMUNITY &AMP; PEOPLE -->
+      <section class="article-index-category" id="cat-community-people">
+        <h2 class="section-heading">&#128101; Community &amp; People</h2>
+        <div class="article-index-grid">
+          <div class="article-index-item"><a href="wiki/sam-darren-cullen-ser.html">Darren Cullen (SER)</a></div>
+          <div class="article-index-item"><a href="wiki/sam-darren-cullen-ser-real.html">Darren Cullen (SER) — Real</a></div>
+          <div class="article-index-item"><a href="wiki/sam-charlie-buster.html">Charlie Buster</a></div>
+          <div class="article-index-item"><a href="wiki/sam-trevor-fung.html">Trevor Fung</a></div>
+          <div class="article-index-item"><a href="wiki/sam-jonny-laurence-nelson-tag-records.html">Jonny &amp; Laurence Nelson (TAG Records)</a></div>
+          <div class="article-index-item"><a href="wiki/sam-sarah-pu51fly.html">Sarah PU51FLY</a></div>
+          <div class="article-index-item"><a href="wiki/sam-queen-sarah-p-fly.html">Queen Sarah P-fly</a></div>
+          <div class="article-index-item"><a href="wiki/sam-delicious-again-pete.html">Delicious Again Pete</a></div>
+          <div class="article-index-item"><a href="wiki/sam-alfie-the-bitcoin-kid-blaze.html">Alfie The Bitcoin Kid Blaze</a></div>
+          <div class="article-index-item"><a href="wiki/sam-billy-the-goat-kid.html">Billy the Goat Kid</a></div>
+          <div class="article-index-item"><a href="wiki/sam-bone-idol-ink.html">Bone Idol Ink</a></div>
+          <div class="article-index-item"><a href="wiki/sam-lady-ink.html">Lady-INK</a></div>
+          <div class="article-index-item"><a href="wiki/sam-snipey-d-man-sirus.html">Snipey D-Man Sirus</a></div>
+          <div class="article-index-item"><a href="wiki/sam-jodie-zoom-2000.html">Jodie ZOOM 2000</a></div>
+          <div class="article-index-item"><a href="wiki/sam-ava-chen.html">Ava Chen</a></div>
+          <div class="article-index-item"><a href="wiki/sam-dragan-volkov.html">Dragan Volkov</a></div>
+          <div class="article-index-item"><a href="wiki/sam-the-princess.html">The Princess</a></div>
+        </div>
+      </section>
+
+      <!-- MEDIA &AMP; PUBLISHING -->
+      <section class="article-index-category" id="cat-media-publishing">
+        <h2 class="section-heading">&#128251; Media &amp; Publishing</h2>
+        <div class="article-index-grid">
+          <div class="article-index-item"><a href="wiki/sam-graffpunks-network-online-radio.html">GraffPUNKS Network Online Radio</a></div>
+          <div class="article-index-item"><a href="wiki/sam-crypto-moonboys.html">Crypto Moonboys</a></div>
+        </div>
+      </section>
+
+      <!-- ART &AMP; CREATIVITY -->
+      <section class="article-index-category" id="cat-art-creativity">
+        <h2 class="section-heading">&#127917; Art &amp; Creativity</h2>
+        <div class="article-index-grid">
+          <div class="article-index-item"><a href="wiki/sam-phygital-prints.html">Phygital Prints</a></div>
+          <div class="article-index-item"><a href="wiki/sam-spraycode-writcode-mechanics.html">Spraycode &amp; Writcode Mechanics</a></div>
+          <div class="article-index-item"><a href="wiki/sam-rune-tag.html">Rune Tag</a></div>
+          <div class="article-index-item"><a href="wiki/sam-loopfiend.html">Loopfiend</a></div>
+          <div class="article-index-item"><a href="wiki/sam-patchwork.html">Patchwork</a></div>
+        </div>
+      </section>
+
+      <!-- ACTIVISM &AMP; COUNTER-CULTURE -->
+      <section class="article-index-category" id="cat-activism-counter-culture">
+        <h2 class="section-heading">&#9994; Activism &amp; Counter-Culture</h2>
+        <div class="article-index-grid">
+          <div class="article-index-item"><a href="wiki/sam-graffpunks.html">GraffPUNKS</a></div>
+          <div class="article-index-item"><a href="wiki/sam-the-evm-punks.html">The EVM Punks</a></div>
+          <div class="article-index-item"><a href="wiki/sam-null-the-prophet.html">NULL THE PROPHET</a></div>
+          <div class="article-index-item"><a href="wiki/sam-forklord-you.html">Forklord You</a></div>
+          <div class="article-index-item"><a href="wiki/sam-the-whitewasher.html">The Whitewasher</a></div>
+          <div class="article-index-item"><a href="wiki/sam-quell.html">Quell</a></div>
+        </div>
+      </section>
+
+      <!-- SAM GENERATED -->
+      <section class="article-index-category" id="cat-sam">
+        <h2 class="section-heading">&#129302; SAM Generated</h2>
+        <div class="article-index-grid">
+          <div class="article-index-item"><a href="wiki/sam-1m-free-nfts-drop.html">1M Free NFTs Drop</a></div>
+          <div class="article-index-item"><a href="wiki/sam-aleema-child-of-the-shard.html">Aleema (Child of the Shard)</a></div>
+          <div class="article-index-item"><a href="wiki/sam-alfie-the-bitcoin-kid-blaze.html">Alfie The Bitcoin Kid Blaze</a></div>
+          <div class="article-index-item"><a href="wiki/sam-ava-chen.html">Ava Chen</a></div>
+          <div class="article-index-item"><a href="wiki/sam-battlemech-blast.html">Battlemech Blast</a></div>
+          <div class="article-index-item"><a href="wiki/sam-billy-the-goat-kid.html">Billy the Goat Kid</a></div>
+          <div class="article-index-item"><a href="wiki/sam-bit-cap-5000.html">Bit-Cap 5000</a></div>
+          <div class="article-index-item"><a href="wiki/sam-bitcoin-cash.html">$Bitcoin Cash</a></div>
+          <div class="article-index-item"><a href="wiki/sam-bitcoin-x-kids.html">Bitcoin X Kids</a></div>
+          <div class="article-index-item"><a href="wiki/sam-block-node-defenders.html">Block Node Defenders</a></div>
+          <div class="article-index-item"><a href="wiki/sam-block-topia.html">Block Topia</a></div>
+          <div class="article-index-item"><a href="wiki/sam-bone-idol-ink.html">Bone Idol Ink</a></div>
+          <div class="article-index-item"><a href="wiki/sam-burn-to-earn.html">Burn-to-Earn</a></div>
+          <div class="article-index-item"><a href="wiki/sam-charlie-buster.html">Charlie Buster</a></div>
+          <div class="article-index-item"><a href="wiki/sam-croydon-tower-blocks.html">Croydon Tower Blocks</a></div>
+          <div class="article-index-item"><a href="wiki/sam-crypto-moonboys.html">Crypto Moonboys</a></div>
+          <div class="article-index-item"><a href="wiki/sam-darren-cullen-ser.html">Darren Cullen (SER)</a></div>
+          <div class="article-index-item"><a href="wiki/sam-darren-cullen-ser-real.html">Darren Cullen (SER) — Real</a></div>
+          <div class="article-index-item"><a href="wiki/sam-delicious-again-pete.html">Delicious Again Pete</a></div>
+          <div class="article-index-item"><a href="wiki/sam-dream-sovereign.html">Dream Sovereign</a></div>
+          <div class="article-index-item"><a href="wiki/sam-dragan-volkov.html">Dragan Volkov</a></div>
+          <div class="article-index-item"><a href="wiki/sam-elder-codex-7.html">Elder Codex-7</a></div>
+          <div class="article-index-item"><a href="wiki/sam-forkborn-collective.html">Forkborn Collective</a></div>
+          <div class="article-index-item"><a href="wiki/sam-forklord-you.html">Forklord You</a></div>
+          <div class="article-index-item"><a href="wiki/sam-forksplit.html">Forksplit</a></div>
+          <div class="article-index-item"><a href="wiki/sam-gk-tokens.html">$GK Tokens</a></div>
+          <div class="article-index-item"><a href="wiki/sam-gkniftyheads.html">GKniftyHEADS</a></div>
+          <div class="article-index-item"><a href="wiki/sam-graffiti-kings.html">Graffiti Kings</a></div>
+          <div class="article-index-item"><a href="wiki/sam-graffpunks-network-online-radio.html">GraffPUNKS Network Online Radio</a></div>
+          <div class="article-index-item"><a href="wiki/sam-graffpunks.html">GraffPUNKS</a></div>
+          <div class="article-index-item"><a href="wiki/sam-great-datapocalypse-of-2789.html">The Great Datapocalypse of 2789</a></div>
+          <div class="article-index-item"><a href="wiki/sam-grit.html">GRIT</a></div>
+          <div class="article-index-item"><a href="wiki/sam-grit42.html">Grit42</a></div>
+          <div class="article-index-item"><a href="wiki/sam-hard-fork-games.html">Hard Fork Games</a></div>
+          <div class="article-index-item"><a href="wiki/sam-hex-tagger-prime.html">HEX-TAGGER PRIME</a></div>
+          <div class="article-index-item"><a href="wiki/sam-hodl-warriors-army.html">HODL Warriors Army</a></div>
+          <div class="article-index-item"><a href="wiki/sam-hodl-warriors.html">HODL Warriors (SAM)</a></div>
+          <div class="article-index-item"><a href="wiki/sam-hodl-wars-extravaganza.html">HODL Wars Extravaganza</a></div>
+          <div class="article-index-item"><a href="wiki/sam-hodl-wars.html">HODL Wars (SAM)</a></div>
+          <div class="article-index-item"><a href="wiki/sam-hodl-x-warriors.html">HODL X Warriors</a></div>
+          <div class="article-index-item"><a href="wiki/sam-iris-7.html">Iris-7</a></div>
+          <div class="article-index-item"><a href="wiki/sam-jodie-zoom-2000.html">Jodie ZOOM 2000</a></div>
+          <div class="article-index-item"><a href="wiki/sam-jonny-laurence-nelson-tag-records.html">Jonny &amp; Laurence Nelson (TAG Records)</a></div>
+          <div class="article-index-item"><a href="wiki/sam-lady-ink.html">Lady-INK</a></div>
+          <div class="article-index-item"><a href="wiki/sam-leake-street-tunnel.html">Leake Street Tunnel</a></div>
+          <div class="article-index-item"><a href="wiki/sam-lfgk-rewards.html">$LFGK Rewards</a></div>
+          <div class="article-index-item"><a href="wiki/sam-lfgk-token.html">$LFGK Token</a></div>
+          <div class="article-index-item"><a href="wiki/sam-loopfiend.html">Loopfiend</a></div>
+          <div class="article-index-item"><a href="wiki/sam-m1ntr-k1ll.html">M1nTr_K1ll</a></div>
+          <div class="article-index-item"><a href="wiki/sam-maidstone-base.html">Maidstone Base</a></div>
+          <div class="article-index-item"><a href="wiki/sam-metaverse-battles.html">Metaverse Battles</a></div>
+          <div class="article-index-item"><a href="wiki/sam-midevil-hero-arena.html">MiDEViL Hero Arena</a></div>
+          <div class="article-index-item"><a href="wiki/sam-nbg.html">$NBG</a></div>
+          <div class="article-index-item"><a href="wiki/sam-no-ball-games-nbg.html">No Ball Games (NBG)</a></div>
+          <div class="article-index-item"><a href="wiki/sam-null-the-prophet.html">NULL THE PROPHET</a></div>
+          <div class="article-index-item"><a href="wiki/sam-patchwork.html">Patchwork</a></div>
+          <div class="article-index-item"><a href="wiki/sam-phygital-prints.html">Phygital Prints</a></div>
+          <div class="article-index-item"><a href="wiki/sam-playable-nft-murals.html">Playable NFT Murals</a></div>
+          <div class="article-index-item"><a href="wiki/sam-punk-token.html">$PUNK Token</a></div>
+          <div class="article-index-item"><a href="wiki/sam-pyralith.html">PYRALITH</a></div>
+          <div class="article-index-item"><a href="wiki/sam-queen-sarah-p-fly.html">Queen Sarah P-fly</a></div>
+          <div class="article-index-item"><a href="wiki/sam-queens-new-york.html">Queens, New York</a></div>
+          <div class="article-index-item"><a href="wiki/sam-quell.html">Quell</a></div>
+          <div class="article-index-item"><a href="wiki/sam-rune-tag.html">Rune Tag</a></div>
+          <div class="article-index-item"><a href="wiki/sam-sacred-chain.html">The Sacred Chain</a></div>
+          <div class="article-index-item"><a href="wiki/sam-samaelexe.html">Samael.exe</a></div>
+          <div class="article-index-item"><a href="wiki/sam-sarah-pu51fly.html">Sarah PU51FLY</a></div>
+          <div class="article-index-item"><a href="wiki/sam-satorebel.html">SatoRebel</a></div>
+          <div class="article-index-item"><a href="wiki/sam-seeding-rights.html">Seeding Rights</a></div>
+          <div class="article-index-item"><a href="wiki/sam-sister-halcyon.html">Sister Halcyon</a></div>
+          <div class="article-index-item"><a href="wiki/sam-snipey-d-man-sirus.html">Snipey D-Man Sirus</a></div>
+          <div class="article-index-item"><a href="wiki/sam-sol.html">$SOL</a></div>
+          <div class="article-index-item"><a href="wiki/sam-spirit-borns.html">Spirit Borns</a></div>
+          <div class="article-index-item"><a href="wiki/sam-spraycode-writcode-mechanics.html">Spraycode &amp; Writcode Mechanics</a></div>
+          <div class="article-index-item"><a href="wiki/sam-squeaky-pinks-enforcers.html">Squeaky Pinks Enforcers</a></div>
+          <div class="article-index-item"><a href="wiki/sam-staking-for-gk-tokens.html">Staking for $GK Tokens</a></div>
+          <div class="article-index-item"><a href="wiki/sam-street-kingdoms.html">Street Kingdoms</a></div>
+          <div class="article-index-item"><a href="wiki/sam-the-allcity-bulls.html">The AllCity Bulls</a></div>
+          <div class="article-index-item"><a href="wiki/sam-the-aztec-raiders.html">The AZTEC RAIDERS</a></div>
+          <div class="article-index-item"><a href="wiki/sam-the-bally-boys.html">The BALLY BOYS</a></div>
+          <div class="article-index-item"><a href="wiki/sam-the-bitcoin-kid-army.html">The Bitcoin Kid Army</a></div>
+          <div class="article-index-item"><a href="wiki/sam-the-blockchain-furies.html">The BLOCKCHAIN FURIES</a></div>
+          <div class="article-index-item"><a href="wiki/sam-the-blockstars.html">The BLOCKSTARS</a></div>
+          <div class="article-index-item"><a href="wiki/sam-the-chain-scribes.html">The CHAIN SCRIBES</a></div>
+          <div class="article-index-item"><a href="wiki/sam-the-code-alchemists.html">The CODE ALCHEMISTS</a></div>
+          <div class="article-index-item"><a href="wiki/sam-the-crypto-moongirls.html">The CRYPTO MOONGIRLS</a></div>
+          <div class="article-index-item"><a href="wiki/sam-the-crypto-stoned-boys.html">The CRYPTO STONED BOYS</a></div>
+          <div class="article-index-item"><a href="wiki/sam-the-ducky-boys.html">The DUCKY BOYS</a></div>
+          <div class="article-index-item"><a href="wiki/sam-the-evm-punks.html">The EVM PUNKS</a></div>
+          <div class="article-index-item"><a href="wiki/sam-the-finance-guild.html">The FINANCE GUILD</a></div>
+          <div class="article-index-item"><a href="wiki/sam-the-gasless-ghosts.html">The GASLESS GHOSTS</a></div>
+          <div class="article-index-item"><a href="wiki/sam-the-gkniftyheads.html">The GKniftyHEADS</a></div>
+          <div class="article-index-item"><a href="wiki/sam-the-great-unravelling.html">The Great Unravelling</a></div>
+          <div class="article-index-item"><a href="wiki/sam-the-hard-fork-rockers.html">The HARD FORK ROCKERS</a></div>
+          <div class="article-index-item"><a href="wiki/sam-the-high-hats.html">The High Hats</a></div>
+          <div class="article-index-item"><a href="wiki/sam-the-information-mercenaries.html">The INFORMATION MERCENARIES</a></div>
+          <div class="article-index-item"><a href="wiki/sam-the-moonlords.html">The MOONLORDS</a></div>
+          <div class="article-index-item"><a href="wiki/sam-the-nice-easy-bois.html">The NICE &amp; EASY BOIS</a></div>
+          <div class="article-index-item"><a href="wiki/sam-the-nomad-bears.html">The Nomad Bears</a></div>
+          <div class="article-index-item"><a href="wiki/sam-the-og-pixel-saints.html">The OG PIXEL SAINTS</a></div>
+          <div class="article-index-item"><a href="wiki/sam-the-princess.html">The Princess</a></div>
+          <div class="article-index-item"><a href="wiki/sam-the-rugpull-miners.html">The RUGPULL MINERS</a></div>
+          <div class="article-index-item"><a href="wiki/sam-the-salvagers.html">The SALVAGERS</a></div>
+          <div class="article-index-item"><a href="wiki/sam-the-shard-mothers-of-manhattan.html">The SHARD MOTHERS of MANHATTAN</a></div>
+          <div class="article-index-item"><a href="wiki/sam-the-squeaky-pinks.html">The Squeaky Pinks</a></div>
+          <div class="article-index-item"><a href="wiki/sam-the-tuskon-ogs.html">The TUSKON OGS</a></div>
+          <div class="article-index-item"><a href="wiki/sam-the-whitewasher.html">The Whitewasher</a></div>
+          <div class="article-index-item"><a href="wiki/sam-thera-9.html">Thera-9</a></div>
+          <div class="article-index-item"><a href="wiki/sam-thorne-the-architect.html">Thorne The Architect</a></div>
+          <div class="article-index-item"><a href="wiki/sam-trevor-fung.html">Trevor Fung</a></div>
+          <div class="article-index-item"><a href="wiki/sam-triple-fork-event-mechanics.html">Triple Fork Event Mechanics</a></div>
+          <div class="article-index-item"><a href="wiki/sam-triple-fork-event.html">Triple Fork Event</a></div>
+          <div class="article-index-item"><a href="wiki/sam-wax.html">WAX</a></div>
+          <div class="article-index-item"><a href="wiki/sam-waxp.html">$WAXP</a></div>
+          <div class="article-index-item"><a href="wiki/sam-xrp-kids.html">XRP Kids</a></div>
+          <div class="article-index-item"><a href="wiki/sam-xrpl.html">$XRPL</a></div>
         </div>
       </section>
 
     </main>
     <footer id="site-footer" role="contentinfo">
       <div class="footer-inner">
-        <div class="footer-col"><h4>🌙 Moonboys Wiki</h4><p>Fan-driven crypto encyclopedia.</p></div>
+        <div class="footer-col"><h4>&#127769; Moonboys Wiki</h4><p>Fan-driven crypto encyclopedia.</p></div>
         <div class="footer-col"><h4>Explore</h4><ul><li><a href="index.html">Main Page</a></li><li><a href="articles.html">All Articles</a></li><li><a href="about.html">About</a></li></ul></div>
       </div>
-      <div class="footer-bottom"><p>© 2026 Crypto Moonboys Wiki · Not financial advice.</p><p><span class="no-login-note">🔒 No sign-up · No login · Bot-maintained</span></p></div>
+      <div class="footer-bottom"><p>&#169; 2026 Crypto Moonboys Wiki &#xb7; Not financial advice.</p><p><span class="no-login-note">&#128274; No sign-up &#xb7; No login &#xb7; Bot-maintained</span></p></div>
     </footer>
   </div>
 </div>
-
-<button id="back-to-top" aria-label="Back to top">↑</button>
+<button id="back-to-top" aria-label="Back to top">&#8593;</button>
 <script src="js/wiki.js"></script>
 <script>
   (function () {
-    var input = document.getElementById('articles-filter');
+    /* Article-name real-time filter */
+    var filterInput = document.getElementById('articles-filter');
     var noResults = document.getElementById('no-results');
-
-    input.addEventListener('input', function () {
+    filterInput.addEventListener('input', function () {
       var term = this.value.trim().toLowerCase();
       var anyVisible = false;
-
       document.querySelectorAll('.article-index-category').forEach(function (section) {
         var items = section.querySelectorAll('.article-index-item');
         var sectionVisible = false;
-
         items.forEach(function (item) {
           var match = !term || item.textContent.toLowerCase().includes(term);
           item.style.display = match ? '' : 'none';
           if (match) { sectionVisible = true; anyVisible = true; }
         });
-
         section.style.display = sectionVisible ? '' : 'none';
       });
-
       noResults.style.display = anyVisible ? 'none' : 'block';
+    });
+    /* Full-site search delegates to wiki.js header search */
+    var siteSearchBar = document.getElementById('site-search-bar');
+    siteSearchBar.addEventListener('input', function () {
+      var h = document.getElementById('search-input');
+      if (h) { h.value = siteSearchBar.value; h.dispatchEvent(new Event('input')); }
+    });
+    siteSearchBar.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') {
+        var h = document.getElementById('search-input');
+        if (h) { h.value = siteSearchBar.value; h.dispatchEvent(new Event('input')); h.focus(); }
+      }
     });
   }());
 </script>

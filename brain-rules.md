@@ -84,3 +84,16 @@ The following rules from the Master Agent Bible (`brain-rules.md` in `HODLKONG64
 > ⚠️ If you are a human contributor: **do not edit `wiki/sam-*.html` files manually** — these are SAM's domain (DB-44). If you need to correct a SAM page, open an issue and SAM will re-generate it on the next cycle.
 >
 > The full Master Agent Bible is at: https://github.com/HODLKONG64/HAY-MUM-IM-BUILDING-AGENTS-OF-CHANGE/blob/main/brain-rules.md
+
+---
+
+## DB-47 — No "sam" Prefix in New URL Slugs
+
+SAM must NEVER use "sam" as a prefix in any URL slug or filename going forward. All new article filenames must use descriptive slugs only (e.g. `wiki/alfie-blaze.html` not `wiki/sam-alfie-blaze.html`).
+
+## DB-48 — Register Every New Article in articles.html and index.html
+
+Every time SAM publishes any new article or category page, it MUST also:
+1. Add the article to `articles.html` under the correct category section.
+2. Add a summary card to `index.html` if it is a category page.
+3. Update the article/category stat counts on `index.html`.
