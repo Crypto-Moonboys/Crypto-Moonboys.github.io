@@ -1,6 +1,13 @@
 # DEPRECATED — This file is a legacy artifact. Wiki pages are now generated and
 # published by sam-wiki-publisher.py in HODLKONG64/HAY-MUM-IM-BUILDING-AGENTS-OF-CHANGE.
 # This file is kept for historical reference only. Do not run.
+import sys
+print("⛔ DEPRECATED: generate-wiki.py is a legacy artifact and must not be run.")
+print("   Wiki pages are published by sam-wiki-publisher.py in the agent repo.")
+print("   See: https://github.com/HODLKONG64/HAY-MUM-IM-BUILDING-AGENTS-OF-CHANGE")
+sys.exit(1)
+
+# ── LEGACY CODE BELOW — FOR REFERENCE ONLY ──────────────────────────────────
 import json
 import os
 from datetime import datetime
@@ -33,7 +40,7 @@ print("🌙 Homepage updated with centred logo")
 
 # Generate all wiki pages with clean URLs + logo
 for name, facts in data.get('facts', {}).items():
-    slug = name.replace(' ', '-').lower().replace('“', '').replace('”', '').replace("'", "")
+    slug = name.replace(' ', '-').lower().replace('\u201c', '').replace('\u201d', '').replace("'", "")
     content = template.replace("EDIT: TITLE", name)
     content = content.replace("EDIT: CONTENT", facts)
     content = content.replace("EDIT: DATE", datetime.now().strftime("%Y-%m-%d"))
