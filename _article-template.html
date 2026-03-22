@@ -26,6 +26,7 @@
   <meta property="og:image" content="https://crypto-moonboys.github.io/img/logo.svg">
   <title>ARTICLE TITLE — Crypto Moonboys Wiki</title>
   <link rel="stylesheet" href="../css/wiki.css">
+  <link rel="stylesheet" href="/css/bible.css">
   <link rel="icon" href="../img/favicon.svg" type="image/svg+xml">
 </head>
 <body>
@@ -140,7 +141,7 @@
       </nav>
 
       <!-- ARTICLE CONTENT — EDIT: replace with real content -->
-      <article class="wiki-content">
+      <article class="wiki-content" data-entity-slug="{{ENTITY_SLUG}}">
 
         <p>LEAD PARAGRAPH — A brief introduction to the topic (2-3 sentences).</p>
 
@@ -164,6 +165,9 @@
         <ul>
           <li><a href="RELATED_ARTICLE.html">RELATED ARTICLE</a></li>
         </ul>
+
+        <!-- Bible deep-content: populated by bible-loader.js when 5+ mentions exist -->
+        <div id="bible-content"></div>
 
       </article>
 
@@ -233,5 +237,6 @@
 
 <button id="back-to-top" aria-label="Back to top">↑</button>
 <script src="../js/wiki.js"></script>
+<script src="/js/bible-loader.js"></script>
 </body>
 </html>
