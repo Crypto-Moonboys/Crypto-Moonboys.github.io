@@ -1,0 +1,59 @@
+{
+  "entity": "The GKniftyHEADS",
+  "slug": "the-gkniftyheads",
+  "generated_at": "2026-03-23T00:07:22.519610+00:00",
+  "mention_count": 10,
+  "all_facts": [
+    {
+      "fact": "Core faction of digital consciousnesses",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md",
+        "https://graffpunks.live/",
+        "https://gkniftyheads.com/",
+        "https://gkniftyheads.blogspot.com/"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 1,
+      "last_verified_cycle": 1,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Evolved from Graffiti Kings",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md",
+        "https://graffpunks.live/",
+        "https://gkniftyheads.com/",
+        "https://gkniftyheads.blogspot.com/"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 1,
+      "last_verified_cycle": 1,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Rules phygital empire post-Datapocalypse",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md",
+        "https://graffpunks.live/",
+        "https://gkniftyheads.com/",
+        "https://gkniftyheads.blogspot.com/"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 1,
+      "last_verified_cycle": 1,
+      "status": "VERIFIED"
+    }
+  ],
+  "relationships": [],
+  "timeline": [],
+  "cross_links": []
+}
