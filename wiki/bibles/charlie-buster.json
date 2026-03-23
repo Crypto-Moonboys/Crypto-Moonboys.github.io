@@ -1,0 +1,101 @@
+{
+  "entity": "Charlie Buster",
+  "slug": "charlie-buster",
+  "generated_at": "2026-03-23T00:07:22.519426+00:00",
+  "mention_count": 5,
+  "all_facts": [
+    {
+      "fact": "Son of Darren Cullen",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md",
+        "https://medium.com/@HODLWARRIORS/the-legend-of-charlie-buster-from-londons-walls-to-the-digital-grid-c589ab0589a8",
+        "https://medium.com/@iamcharliebuster"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 1,
+      "last_verified_cycle": 1,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Author of 'The Stencil Must Break'",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md",
+        "https://medium.com/@HODLWARRIORS/the-legend-of-charlie-buster-from-londons-walls-to-the-digital-grid-c589ab0589a8",
+        "https://medium.com/@iamcharliebuster"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 1,
+      "last_verified_cycle": 1,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Voice of HODL Warriors",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md",
+        "https://medium.com/@HODLWARRIORS/the-legend-of-charlie-buster-from-londons-walls-to-the-digital-grid-c589ab0589a8",
+        "https://medium.com/@iamcharliebuster"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 1,
+      "last_verified_cycle": 1,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Creator of XRP KIDs Genesis NFTs",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md",
+        "https://medium.com/@HODLWARRIORS/the-legend-of-charlie-buster-from-londons-walls-to-the-digital-grid-c589ab0589a8",
+        "https://medium.com/@iamcharliebuster"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 1,
+      "last_verified_cycle": 1,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Grew up at Leake Street Tunnel",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md",
+        "https://medium.com/@HODLWARRIORS/the-legend-of-charlie-buster-from-londons-walls-to-the-digital-grid-c589ab0589a8",
+        "https://medium.com/@iamcharliebuster"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 1,
+      "last_verified_cycle": 1,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Created No Ball Games (NBG) collection",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md",
+        "https://medium.com/@HODLWARRIORS/the-legend-of-charlie-buster-from-londons-walls-to-the-digital-grid-c589ab0589a8",
+        "https://medium.com/@iamcharliebuster"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 1,
+      "last_verified_cycle": 1,
+      "status": "VERIFIED"
+    }
+  ],
+  "relationships": [],
+  "timeline": [],
+  "cross_links": []
+}
