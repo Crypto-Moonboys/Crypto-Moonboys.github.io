@@ -1,0 +1,39 @@
+{
+  "entity": "The Squeaky Pinks",
+  "slug": "the-squeaky-pinks",
+  "generated_at": "2026-03-23T01:21:39.027109+00:00",
+  "mention_count": 6,
+  "all_facts": [
+    {
+      "fact": "Colorful and chaotic faction",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md",
+        "https://gkniftyheads.fandom.com/wiki/The_Squeaky_Pinks"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 1,
+      "last_verified_cycle": 1,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Has enforcer units",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md",
+        "https://gkniftyheads.fandom.com/wiki/The_Squeaky_Pinks"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 1,
+      "last_verified_cycle": 1,
+      "status": "VERIFIED"
+    }
+  ],
+  "relationships": [],
+  "timeline": [],
+  "cross_links": []
+}
