@@ -1,0 +1,53 @@
+{
+  "entity": "NULL THE PROPHET",
+  "slug": "null-the-prophet",
+  "generated_at": "2026-03-23T01:21:39.023258+00:00",
+  "mention_count": 6,
+  "all_facts": [
+    {
+      "fact": "Genesis Error entity",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md",
+        "https://gkniftyheads.fandom.com/wiki/GASLESS_GHOSTS_%26_NULL_THE_PROPHET"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 1,
+      "last_verified_cycle": 1,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Origin of Null-Cipher",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md",
+        "https://gkniftyheads.fandom.com/wiki/GASLESS_GHOSTS_%26_NULL_THE_PROPHET"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 1,
+      "last_verified_cycle": 1,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Unpredictable, not a faction leader",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md",
+        "https://gkniftyheads.fandom.com/wiki/GASLESS_GHOSTS_%26_NULL_THE_PROPHET"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 1,
+      "last_verified_cycle": 1,
+      "status": "VERIFIED"
+    }
+  ],
+  "relationships": [],
+  "timeline": [],
+  "cross_links": []
+}
