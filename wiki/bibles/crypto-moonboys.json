@@ -1,0 +1,43 @@
+{
+  "entity": "Crypto Moonboys",
+  "slug": "crypto-moonboys",
+  "generated_at": "2026-03-23T00:07:22.521009+00:00",
+  "mention_count": 5,
+  "all_facts": [
+    {
+      "fact": "Core brand for Web3 NFT project",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md",
+        "https://graffpunks.live/",
+        "https://gkniftyheads.com/",
+        "https://gkniftyheads.fandom.com/wiki/CRYPTO_MOONBOYS"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 1,
+      "last_verified_cycle": 1,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Evolved from Graffiti Kings",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md",
+        "https://graffpunks.live/",
+        "https://gkniftyheads.com/",
+        "https://gkniftyheads.fandom.com/wiki/CRYPTO_MOONBOYS"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 1,
+      "last_verified_cycle": 1,
+      "status": "VERIFIED"
+    }
+  ],
+  "relationships": [],
+  "timeline": [],
+  "cross_links": []
+}
