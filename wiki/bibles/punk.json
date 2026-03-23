@@ -1,0 +1,39 @@
+{
+  "entity": "$PUNK",
+  "slug": "punk",
+  "generated_at": "2026-03-23T01:21:39.029361+00:00",
+  "mention_count": 6,
+  "all_facts": [
+    {
+      "fact": "Primary token for GraffPUNKS ecosystem",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md",
+        "https://graffpunks.live/"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 1,
+      "last_verified_cycle": 1,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Secures transactions on WAX blockchain",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md",
+        "https://graffpunks.live/"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 1,
+      "last_verified_cycle": 1,
+      "status": "VERIFIED"
+    }
+  ],
+  "relationships": [],
+  "timeline": [],
+  "cross_links": []
+}
