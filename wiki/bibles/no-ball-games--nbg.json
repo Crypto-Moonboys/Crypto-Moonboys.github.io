@@ -1,0 +1,53 @@
+{
+  "entity": "No Ball Games (NBG)",
+  "slug": "no-ball-games--nbg",
+  "generated_at": "2026-03-23T01:21:39.031509+00:00",
+  "mention_count": 6,
+  "all_facts": [
+    {
+      "fact": "NFT collection by Charlie Buster",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md",
+        "https://medium.com/@iamcharliebuster/how-to-buy-set-up-waxp-and-buy-nbg-for-beginners-ebb91057ac5a"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 1,
+      "last_verified_cycle": 1,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Tied to cultural themes",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md",
+        "https://medium.com/@iamcharliebuster/how-to-buy-set-up-waxp-and-buy-nbg-for-beginners-ebb91057ac5a"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 1,
+      "last_verified_cycle": 1,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Associated with $NBG token on WAX blockchain",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md",
+        "https://medium.com/@iamcharliebuster/how-to-buy-set-up-waxp-and-buy-nbg-for-beginners-ebb91057ac5a"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 1,
+      "last_verified_cycle": 1,
+      "status": "VERIFIED"
+    }
+  ],
+  "relationships": [],
+  "timeline": [],
+  "cross_links": []
+}
