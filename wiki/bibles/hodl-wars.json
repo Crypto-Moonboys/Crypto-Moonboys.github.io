@@ -1,0 +1,59 @@
+{
+  "entity": "HODL WARS",
+  "slug": "hodl-wars",
+  "generated_at": "2026-03-23T00:07:22.520618+00:00",
+  "mention_count": 6,
+  "all_facts": [
+    {
+      "fact": "Live saga dropping every 10 minutes",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md",
+        "https://medium.com/@graffpunksuk/the-hodl-wars-warfare-chronicles-battlemech-blast-b588d8142917",
+        "https://dev.to/hodlkong64/the-hodl-wars-are-here-1agn",
+        "https://hodlwars.com/"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 1,
+      "last_verified_cycle": 1,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Upcoming playable NFT game",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md",
+        "https://medium.com/@graffpunksuk/the-hodl-wars-warfare-chronicles-battlemech-blast-b588d8142917",
+        "https://dev.to/hodlkong64/the-hodl-wars-are-here-1agn",
+        "https://hodlwars.com/"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 1,
+      "last_verified_cycle": 1,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Involves faction wars in Block Topia",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md",
+        "https://medium.com/@graffpunksuk/the-hodl-wars-warfare-chronicles-battlemech-blast-b588d8142917",
+        "https://dev.to/hodlkong64/the-hodl-wars-are-here-1agn",
+        "https://hodlwars.com/"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 1,
+      "last_verified_cycle": 1,
+      "status": "VERIFIED"
+    }
+  ],
+  "relationships": [],
+  "timeline": [],
+  "cross_links": []
+}
