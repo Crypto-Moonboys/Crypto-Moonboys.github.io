@@ -1,0 +1,42 @@
+{
+  "entity": "Hard Fork Games",
+  "slug": "hard-fork-games",
+  "generated_at": "2026-03-23T01:21:39.028908+00:00",
+  "mention_count": 6,
+  "all_facts": [
+    {
+      "fact": "Competitive event hosted by Queen Sarah P-fly",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 1,
+      "last_verified_cycle": 1,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Grants elite titles like HODL X Warriors",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 1,
+      "last_verified_cycle": 1,
+      "status": "VERIFIED"
+    }
+  ],
+  "relationships": [],
+  "timeline": [],
+  "cross_links": [
+    {
+      "entity": "Hard Fork Games Event",
+      "shared_count": 1
+    }
+  ]
+}
