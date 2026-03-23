@@ -1,0 +1,25 @@
+{
+  "entity": "HODL Warriors Army",
+  "slug": "hodl-warriors-army",
+  "generated_at": "2026-03-23T01:21:39.027754+00:00",
+  "mention_count": 6,
+  "all_facts": [
+    {
+      "fact": "Main fighting force of HODL Warriors",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md",
+        "https://gkniftyheads.fandom.com/wiki/HODL_WARRIORS"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 1,
+      "last_verified_cycle": 1,
+      "status": "VERIFIED"
+    }
+  ],
+  "relationships": [],
+  "timeline": [],
+  "cross_links": []
+}
