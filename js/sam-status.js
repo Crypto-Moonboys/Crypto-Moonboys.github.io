@@ -1,6 +1,7 @@
 /**
- * SAM Status — fetches live data from v2 Brain API and displays focus plan status.
+ * SAM Status — loads current data from the v2 Brain API and displays focus plan status.
  * Used by sam.html and optionally injected into other pages.
+ * Data is loaded once per renderInto() call; there is no automatic polling or refresh.
  *
  * Safety contract (3 explicit states):
  *   1. NOT CONFIGURED — V2_BASE_URL empty/unset → render _notConnectedHTML immediately, zero fetch

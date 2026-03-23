@@ -12,6 +12,7 @@ const IndexStats = {
   },
 
   async inject() {
+    if (!document.querySelector('[data-stat]')) return;
     const stats = await this.load();
     if (!stats) return;
     document.querySelectorAll('[data-stat]').forEach(el => {
