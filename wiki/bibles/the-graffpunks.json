@@ -1,0 +1,56 @@
+{
+  "entity": "The GRAFFPUNKS",
+  "slug": "the-graffpunks",
+  "generated_at": "2026-03-23T00:07:22.519793+00:00",
+  "mention_count": 8,
+  "all_facts": [
+    {
+      "fact": "Digital street-art rebels",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md",
+        "https://graffpunks.live/",
+        "https://gkniftyheads.blogspot.com/"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 1,
+      "last_verified_cycle": 1,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Evolution of Graffiti Kings",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md",
+        "https://graffpunks.live/",
+        "https://gkniftyheads.blogspot.com/"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 1,
+      "last_verified_cycle": 1,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Blends art with blockchain rebellion",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md",
+        "https://graffpunks.live/",
+        "https://gkniftyheads.blogspot.com/"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 1,
+      "last_verified_cycle": 1,
+      "status": "VERIFIED"
+    }
+  ],
+  "relationships": [],
+  "timeline": [],
+  "cross_links": []
+}
