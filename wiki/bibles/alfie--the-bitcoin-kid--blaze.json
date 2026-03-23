@@ -1,0 +1,37 @@
+{
+  "entity": "Alfie 'The Bitcoin Kid' Blaze",
+  "slug": "alfie--the-bitcoin-kid--blaze",
+  "generated_at": "2026-03-23T01:21:39.022385+00:00",
+  "mention_count": 6,
+  "all_facts": [
+    {
+      "fact": "Leader of escaped Bitcoin Kids rebels",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 1,
+      "last_verified_cycle": 1,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Founded The Bitcoin Kid Army",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 1,
+      "last_verified_cycle": 1,
+      "status": "VERIFIED"
+    }
+  ],
+  "relationships": [],
+  "timeline": [],
+  "cross_links": []
+}
