@@ -1,0 +1,39 @@
+{
+  "entity": "Darren Cullen (SER)",
+  "slug": "darren-cullen--ser",
+  "generated_at": "2026-03-23T00:07:22.519116+00:00",
+  "mention_count": 5,
+  "all_facts": [
+    {
+      "fact": "Founder and visionary in lore",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md",
+        "https://graffitikings.co.uk"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 1,
+      "last_verified_cycle": 1,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Based on real-world Darren Cullen",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md",
+        "https://graffitikings.co.uk"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 1,
+      "last_verified_cycle": 1,
+      "status": "VERIFIED"
+    }
+  ],
+  "relationships": [],
+  "timeline": [],
+  "cross_links": []
+}
