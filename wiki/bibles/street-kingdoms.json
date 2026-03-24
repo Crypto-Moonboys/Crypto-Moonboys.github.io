@@ -1,11 +1,11 @@
 {
   "entity": "Street Kingdoms",
   "slug": "street-kingdoms",
-  "generated_at": "2026-03-24T19:23:46.017028+00:00",
-  "mention_count": 8,
+  "generated_at": "2026-03-24T23:33:45.931623+00:00",
+  "mention_count": 5,
   "all_facts": [
     {
-      "fact": "Rulers of street zones",
+      "fact": "Rival force to Block Topia",
       "confidence": 80,
       "sources": [
         "PROJECT-DNA.md",
@@ -14,12 +14,12 @@
       "validated_by": [
         "legacy_migration"
       ],
-      "first_seen_cycle": 1,
-      "last_verified_cycle": 1,
+      "first_seen_cycle": 0,
+      "last_verified_cycle": 0,
       "status": "VERIFIED"
     },
     {
-      "fact": "Oppose Block Topia",
+      "fact": "Active post-Triple Fork Event",
       "confidence": 80,
       "sources": [
         "PROJECT-DNA.md",
@@ -28,8 +28,106 @@
       "validated_by": [
         "legacy_migration"
       ],
-      "first_seen_cycle": 1,
-      "last_verified_cycle": 1,
+      "first_seen_cycle": 0,
+      "last_verified_cycle": 0,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "A rival force to Block Topia\u2019s central authority, rising to power after the Triple Fork Event\u2019s chaos.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md",
+        "https://gkniftyheads.blogspot.com/2026/03/the-gkniftyheads-arent-just-surviving.html"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 3,
+      "last_verified_cycle": 3,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Composed of fragmented factions, they fight for digital territories with raw street-art warfare in metaverse arenas.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md",
+        "https://gkniftyheads.blogspot.com/2026/03/the-gkniftyheads-arent-just-surviving.html"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 3,
+      "last_verified_cycle": 3,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Challenge The GKniftyHEADS\u2019 dominance, turning every NFT mural into a contested symbol of decentralized struggle.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md",
+        "https://gkniftyheads.blogspot.com/2026/03/the-gkniftyheads-arent-just-surviving.html"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 3,
+      "last_verified_cycle": 3,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "A rival force to Block Topia\u2019s central authority, gaining power in the chaotic aftermath of the Triple Fork Event.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md",
+        "https://gkniftyheads.blogspot.com/2026/03/the-gkniftyheads-arent-just-surviving.html"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 5,
+      "last_verified_cycle": 5,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Composed of fragmented factions, they fight for digital territories with raw street-art warfare in metaverse battle arenas.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md",
+        "https://gkniftyheads.blogspot.com/2026/03/the-gkniftyheads-arent-just-surviving.html"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 5,
+      "last_verified_cycle": 5,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Challenge The GKniftyHEADS\u2019 dominance, turning every NFT mural into a contested symbol of decentralized struggle in the Crypto Moonboys universe.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md",
+        "https://gkniftyheads.blogspot.com/2026/03/the-gkniftyheads-arent-just-surviving.html"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 5,
+      "last_verified_cycle": 5,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Their emergence marks a shift to territorial chaos, often clashing with HODL Warriors and other factions for control.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md",
+        "https://gkniftyheads.blogspot.com/2026/03/the-gkniftyheads-arent-just-surviving.html"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 5,
+      "last_verified_cycle": 5,
       "status": "VERIFIED"
     }
   ],
