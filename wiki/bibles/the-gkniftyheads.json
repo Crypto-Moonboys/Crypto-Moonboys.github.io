@@ -1,7 +1,7 @@
 {
   "entity": "The GKniftyHEADS",
   "slug": "the-gkniftyheads",
-  "generated_at": "2026-03-23T00:07:22.519610+00:00",
+  "generated_at": "2026-03-24T20:53:28.458526+00:00",
   "mention_count": 10,
   "all_facts": [
     {
@@ -9,15 +9,15 @@
       "confidence": 80,
       "sources": [
         "PROJECT-DNA.md",
-        "https://graffpunks.live/",
-        "https://gkniftyheads.com/",
-        "https://gkniftyheads.blogspot.com/"
+        "https://graffpunks.live",
+        "https://gkniftyheads.com",
+        "https://gkniftyheads.blogspot.com"
       ],
       "validated_by": [
         "legacy_migration"
       ],
-      "first_seen_cycle": 1,
-      "last_verified_cycle": 1,
+      "first_seen_cycle": 0,
+      "last_verified_cycle": 0,
       "status": "VERIFIED"
     },
     {
@@ -25,31 +25,31 @@
       "confidence": 80,
       "sources": [
         "PROJECT-DNA.md",
-        "https://graffpunks.live/",
-        "https://gkniftyheads.com/",
-        "https://gkniftyheads.blogspot.com/"
+        "https://graffpunks.live",
+        "https://gkniftyheads.com",
+        "https://gkniftyheads.blogspot.com"
       ],
       "validated_by": [
         "legacy_migration"
       ],
-      "first_seen_cycle": 1,
-      "last_verified_cycle": 1,
+      "first_seen_cycle": 0,
+      "last_verified_cycle": 0,
       "status": "VERIFIED"
     },
     {
-      "fact": "Rules phygital empire post-Datapocalypse",
+      "fact": "Central authority in Block Topia",
       "confidence": 80,
       "sources": [
         "PROJECT-DNA.md",
-        "https://graffpunks.live/",
-        "https://gkniftyheads.com/",
-        "https://gkniftyheads.blogspot.com/"
+        "https://graffpunks.live",
+        "https://gkniftyheads.com",
+        "https://gkniftyheads.blogspot.com"
       ],
       "validated_by": [
         "legacy_migration"
       ],
-      "first_seen_cycle": 1,
-      "last_verified_cycle": 1,
+      "first_seen_cycle": 0,
+      "last_verified_cycle": 0,
       "status": "VERIFIED"
     }
   ],
