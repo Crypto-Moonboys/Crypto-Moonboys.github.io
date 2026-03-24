@@ -1,11 +1,11 @@
 {
   "entity": "The GASLESS GHOSTS",
   "slug": "the-gasless-ghosts",
-  "generated_at": "2026-03-24T19:23:46.014980+00:00",
-  "mention_count": 8,
+  "generated_at": "2026-03-24T23:33:45.915070+00:00",
+  "mention_count": 5,
   "all_facts": [
     {
-      "fact": "Stealth operatives avoiding detection",
+      "fact": "Stealth operatives in lore",
       "confidence": 80,
       "sources": [
         "PROJECT-DNA.md",
@@ -14,8 +14,120 @@
       "validated_by": [
         "legacy_migration"
       ],
-      "first_seen_cycle": 1,
-      "last_verified_cycle": 1,
+      "first_seen_cycle": 0,
+      "last_verified_cycle": 0,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Operate without transaction fees",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md",
+        "https://gkniftyheads.fandom.com/wiki/GASLESS_GHOSTS_%26_NULL_THE_PROPHET"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 0,
+      "last_verified_cycle": 0,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "A faction of stealth operatives who navigate Block Topia without transaction fees, embodying blockchain anonymity.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md",
+        "https://gkniftyheads.fandom.com/wiki/GASLESS_GHOSTS_%26_NULL_THE_PROPHET"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 3,
+      "last_verified_cycle": 3,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Linked to NULL THE PROPHET, they disrupt metaverse events with ghostly strikes against centralized powers.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md",
+        "https://gkniftyheads.fandom.com/wiki/GASLESS_GHOSTS_%26_NULL_THE_PROPHET"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 3,
+      "last_verified_cycle": 3,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Feared as unseen legends, their actions redefine rebellion in the Crypto Moonboys universe with silent precision.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md",
+        "https://gkniftyheads.fandom.com/wiki/GASLESS_GHOSTS_%26_NULL_THE_PROPHET"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 3,
+      "last_verified_cycle": 3,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "A faction of stealth operatives who navigate Block Topia without transaction fees, embodying the ultimate blockchain anonymity.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md",
+        "https://gkniftyheads.fandom.com/wiki/GASLESS_GHOSTS_%26_NULL_THE_PROPHET"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 5,
+      "last_verified_cycle": 5,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Linked to NULL THE PROPHET\u2019s chaotic Genesis Error, they strike with ghostly precision during metaverse battles and Hard Fork Games.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md",
+        "https://gkniftyheads.fandom.com/wiki/GASLESS_GHOSTS_%26_NULL_THE_PROPHET"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 5,
+      "last_verified_cycle": 5,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Feared as unseen legends, their silent disruptions challenge centralized powers, redefining rebellion in the Crypto Moonboys universe.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md",
+        "https://gkniftyheads.fandom.com/wiki/GASLESS_GHOSTS_%26_NULL_THE_PROPHET"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 5,
+      "last_verified_cycle": 5,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Their shadow operations often alter the course of digital conflicts, making them a mysterious force no faction can fully predict or counter.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md",
+        "https://gkniftyheads.fandom.com/wiki/GASLESS_GHOSTS_%26_NULL_THE_PROPHET"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 5,
+      "last_verified_cycle": 5,
       "status": "VERIFIED"
     }
   ],
