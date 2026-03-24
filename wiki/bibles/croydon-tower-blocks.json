@@ -1,11 +1,11 @@
 {
   "entity": "Croydon Tower Blocks",
   "slug": "croydon-tower-blocks",
-  "generated_at": "2026-03-24T19:23:46.020049+00:00",
-  "mention_count": 8,
+  "generated_at": "2026-03-24T23:33:45.935180+00:00",
+  "mention_count": 5,
   "all_facts": [
     {
-      "fact": "Origin of Graffiti Kings street culture",
+      "fact": "Historical origin of Graffiti Kings",
       "confidence": 80,
       "sources": [
         "https://gkniftyheads.blogspot.com/2026/03/the-gkniftyheads-arent-just-surviving.html"
@@ -13,12 +13,12 @@
       "validated_by": [
         "legacy_migration"
       ],
-      "first_seen_cycle": 1,
-      "last_verified_cycle": 1,
+      "first_seen_cycle": 0,
+      "last_verified_cycle": 0,
       "status": "VERIFIED"
     },
     {
-      "fact": "Symbolic lore location based on real-world Croydon",
+      "fact": "Located in South London",
       "confidence": 80,
       "sources": [
         "https://gkniftyheads.blogspot.com/2026/03/the-gkniftyheads-arent-just-surviving.html"
@@ -26,8 +26,99 @@
       "validated_by": [
         "legacy_migration"
       ],
-      "first_seen_cycle": 1,
-      "last_verified_cycle": 1,
+      "first_seen_cycle": 0,
+      "last_verified_cycle": 0,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "The historical birthplace of Graffiti Kings in 1980s South London, where street-art rebellion first took root.",
+      "confidence": 80,
+      "sources": [
+        "https://gkniftyheads.blogspot.com/2026/03/the-gkniftyheads-arent-just-surviving.html"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 3,
+      "last_verified_cycle": 3,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "A symbolic lore location in Block Topia, representing the raw origins of decentralized creativity and defiance.",
+      "confidence": 80,
+      "sources": [
+        "https://gkniftyheads.blogspot.com/2026/03/the-gkniftyheads-arent-just-surviving.html"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 3,
+      "last_verified_cycle": 3,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Inspires digital warriors of The GKniftyHEADS, tying every NFT and metaverse battle to Croydon\u2019s concrete legacy.",
+      "confidence": 80,
+      "sources": [
+        "https://gkniftyheads.blogspot.com/2026/03/the-gkniftyheads-arent-just-surviving.html"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 3,
+      "last_verified_cycle": 3,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "The historical birthplace of Graffiti Kings in 1980s South London, where street-art rebellion first took root on concrete walls.",
+      "confidence": 80,
+      "sources": [
+        "https://gkniftyheads.blogspot.com/2026/03/the-gkniftyheads-arent-just-surviving.html"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 5,
+      "last_verified_cycle": 5,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "A symbolic lore location in Block Topia, representing the raw origins of decentralized creativity and unyielding defiance.",
+      "confidence": 80,
+      "sources": [
+        "https://gkniftyheads.blogspot.com/2026/03/the-gkniftyheads-arent-just-surviving.html"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 5,
+      "last_verified_cycle": 5,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Inspires digital warriors of The GKniftyHEADS, tying every NFT and metaverse battle to Croydon\u2019s enduring concrete legacy.",
+      "confidence": 80,
+      "sources": [
+        "https://gkniftyheads.blogspot.com/2026/03/the-gkniftyheads-arent-just-surviving.html"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 5,
+      "last_verified_cycle": 5,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Serves as a pilgrimage site in the Crypto Moonboys universe, embodying the gritty spirit that drives the fight for digital freedom.",
+      "confidence": 80,
+      "sources": [
+        "https://gkniftyheads.blogspot.com/2026/03/the-gkniftyheads-arent-just-surviving.html"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 5,
+      "last_verified_cycle": 5,
       "status": "VERIFIED"
     }
   ],
