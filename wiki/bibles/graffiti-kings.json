@@ -1,23 +1,37 @@
 {
   "entity": "Graffiti Kings",
   "slug": "graffiti-kings",
-  "generated_at": "2026-03-23T00:07:22.521389+00:00",
-  "mention_count": 7,
+  "generated_at": "2026-03-24T20:53:28.459907+00:00",
+  "mention_count": 6,
   "all_facts": [
     {
-      "fact": "Original street-art collective since 1980s",
+      "fact": "Foundational street-art collective",
       "confidence": 80,
       "sources": [
         "PROJECT-DNA.md",
         "https://graffitikings.co.uk",
-        "https://medium.com/@GRAFFITIKINGS",
         "https://gkniftyheads.blogspot.com/2026/03/the-gkniftyheads-arent-just-surviving.html"
       ],
       "validated_by": [
         "legacy_migration"
       ],
-      "first_seen_cycle": 1,
-      "last_verified_cycle": 1,
+      "first_seen_cycle": 0,
+      "last_verified_cycle": 0,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Evolved into GKniftyHEADS",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md",
+        "https://graffitikings.co.uk",
+        "https://gkniftyheads.blogspot.com/2026/03/the-gkniftyheads-arent-just-surviving.html"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 0,
+      "last_verified_cycle": 0,
       "status": "VERIFIED"
     },
     {
@@ -26,30 +40,13 @@
       "sources": [
         "PROJECT-DNA.md",
         "https://graffitikings.co.uk",
-        "https://medium.com/@GRAFFITIKINGS",
         "https://gkniftyheads.blogspot.com/2026/03/the-gkniftyheads-arent-just-surviving.html"
       ],
       "validated_by": [
         "legacy_migration"
       ],
-      "first_seen_cycle": 1,
-      "last_verified_cycle": 1,
-      "status": "VERIFIED"
-    },
-    {
-      "fact": "Evolved into GKniftyHEADS and GRAFFPUNKS",
-      "confidence": 80,
-      "sources": [
-        "PROJECT-DNA.md",
-        "https://graffitikings.co.uk",
-        "https://medium.com/@GRAFFITIKINGS",
-        "https://gkniftyheads.blogspot.com/2026/03/the-gkniftyheads-arent-just-surviving.html"
-      ],
-      "validated_by": [
-        "legacy_migration"
-      ],
-      "first_seen_cycle": 1,
-      "last_verified_cycle": 1,
+      "first_seen_cycle": 0,
+      "last_verified_cycle": 0,
       "status": "VERIFIED"
     }
   ],
