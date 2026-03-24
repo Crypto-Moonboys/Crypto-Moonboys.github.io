@@ -1,11 +1,11 @@
 {
   "entity": "Block Topia",
   "slug": "block-topia",
-  "generated_at": "2026-03-23T00:07:22.520199+00:00",
+  "generated_at": "2026-03-24T20:53:28.459136+00:00",
   "mention_count": 5,
   "all_facts": [
     {
-      "fact": "Central digital city with neon-lit streets",
+      "fact": "Central city in lore",
       "confidence": 80,
       "sources": [
         "PROJECT-DNA.md",
@@ -14,12 +14,12 @@
       "validated_by": [
         "legacy_migration"
       ],
-      "first_seen_cycle": 1,
-      "last_verified_cycle": 1,
+      "first_seen_cycle": 0,
+      "last_verified_cycle": 0,
       "status": "VERIFIED"
     },
     {
-      "fact": "Code is law",
+      "fact": "Neon-lit streets where code is law",
       "confidence": 80,
       "sources": [
         "PROJECT-DNA.md",
@@ -28,8 +28,8 @@
       "validated_by": [
         "legacy_migration"
       ],
-      "first_seen_cycle": 1,
-      "last_verified_cycle": 1,
+      "first_seen_cycle": 0,
+      "last_verified_cycle": 0,
       "status": "VERIFIED"
     },
     {
@@ -42,12 +42,12 @@
       "validated_by": [
         "legacy_migration"
       ],
-      "first_seen_cycle": 1,
-      "last_verified_cycle": 1,
+      "first_seen_cycle": 0,
+      "last_verified_cycle": 0,
       "status": "VERIFIED"
     },
     {
-      "fact": "Setting post-Triple Fork Event",
+      "fact": "Setting post-Great Datapocalypse of 2789",
       "confidence": 80,
       "sources": [
         "PROJECT-DNA.md",
@@ -56,8 +56,8 @@
       "validated_by": [
         "legacy_migration"
       ],
-      "first_seen_cycle": 1,
-      "last_verified_cycle": 1,
+      "first_seen_cycle": 0,
+      "last_verified_cycle": 0,
       "status": "VERIFIED"
     }
   ],
