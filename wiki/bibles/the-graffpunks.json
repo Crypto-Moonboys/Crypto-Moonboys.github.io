@@ -1,8 +1,8 @@
 {
   "entity": "The GRAFFPUNKS",
   "slug": "the-graffpunks",
-  "generated_at": "2026-03-24T22:20:51.873441+00:00",
-  "mention_count": 9,
+  "generated_at": "2026-03-24T22:46:19.578348+00:00",
+  "mention_count": 10,
   "all_facts": [
     {
       "fact": "Street-art rebel faction",
@@ -92,6 +92,66 @@
       ],
       "first_seen_cycle": 3,
       "last_verified_cycle": 3,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Born from the 1980s London street-art scene under Graffiti Kings, now a leading force in blockchain rebellion with playable NFT murals as weapons.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md",
+        "https://graffpunks.live",
+        "https://gkniftyheads.blogspot.com"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 5,
+      "last_verified_cycle": 5,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Operate the GraffPUNKS 24/7 blockchain radio station, broadcasting music by DJs like Trevor Fung to energize warriors across Block Topia.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md",
+        "https://graffpunks.live",
+        "https://gkniftyheads.blogspot.com"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 5,
+      "last_verified_cycle": 5,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Blend visual art with sound to create a cultural force, uniting digital rebels in metaverse battles for a decentralized future.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md",
+        "https://graffpunks.live",
+        "https://gkniftyheads.blogspot.com"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 5,
+      "last_verified_cycle": 5,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Their rebellious spirit echoes through every spray-painted NFT and beat, inspiring resistance against centralized control in the Crypto Moonboys universe.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md",
+        "https://graffpunks.live",
+        "https://gkniftyheads.blogspot.com"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 5,
+      "last_verified_cycle": 5,
       "status": "VERIFIED"
     }
   ],
