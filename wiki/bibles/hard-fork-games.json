@@ -1,8 +1,8 @@
 {
   "entity": "Hard Fork Games",
   "slug": "hard-fork-games",
-  "generated_at": "2026-03-23T01:21:39.028908+00:00",
-  "mention_count": 6,
+  "generated_at": "2026-03-24T22:46:19.590362+00:00",
+  "mention_count": 5,
   "all_facts": [
     {
       "fact": "Competitive event hosted by Queen Sarah P-fly",
@@ -13,12 +13,12 @@
       "validated_by": [
         "legacy_migration"
       ],
-      "first_seen_cycle": 1,
-      "last_verified_cycle": 1,
+      "first_seen_cycle": 0,
+      "last_verified_cycle": 0,
       "status": "VERIFIED"
     },
     {
-      "fact": "Grants elite titles like HODL X Warriors",
+      "fact": "Determines HODL X Warriors title",
       "confidence": 80,
       "sources": [
         "PROJECT-DNA.md"
@@ -26,17 +26,103 @@
       "validated_by": [
         "legacy_migration"
       ],
-      "first_seen_cycle": 1,
-      "last_verified_cycle": 1,
+      "first_seen_cycle": 0,
+      "last_verified_cycle": 0,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "A competitive event hosted by Queen Sarah P-fly, determining the elite HODL X Warriors in Block Topia.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 3,
+      "last_verified_cycle": 3,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Warriors stake NFT murals and battle in metaverse arenas, testing strategy and rebellious spirit for glory.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 3,
+      "last_verified_cycle": 3,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "A cornerstone of GraffPUNKS lore, shaping decentralized power dynamics under The GKniftyHEADS\u2019 watchful gaze.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 3,
+      "last_verified_cycle": 3,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "A competitive event hosted by Queen Sarah P-fly, determining the elite HODL X Warriors through blockchain battles in Block Topia.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 5,
+      "last_verified_cycle": 5,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Warriors stake NFT murals and fight in metaverse arenas, testing strategy and rebellious spirit for ultimate glory and status.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 5,
+      "last_verified_cycle": 5,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "A cornerstone of GraffPUNKS lore, shaping decentralized power dynamics under The GKniftyHEADS\u2019 watchful gaze in the Crypto Moonboys universe.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 5,
+      "last_verified_cycle": 5,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Serves as a ritual of strength, often influencing factional hierarchies with each hard-fought victory or strategic fork.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 5,
+      "last_verified_cycle": 5,
       "status": "VERIFIED"
     }
   ],
   "relationships": [],
   "timeline": [],
-  "cross_links": [
-    {
-      "entity": "Hard Fork Games Event",
-      "shared_count": 1
-    }
-  ]
+  "cross_links": []
 }
