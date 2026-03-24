@@ -211,16 +211,16 @@
 
         <div class="hero-stats">
           <a href="articles.html" class="hero-stat hero-stat-link">
-            <div class="stat-num" id="stat-articles">25</div>
+            <div class="stat-num" data-stat="total_articles">—</div>
             <div class="stat-label">Articles</div>
           </a>
           <a href="categories/index.html" class="hero-stat hero-stat-link">
-            <div class="stat-num" id="stat-categories">15</div>
+            <div class="stat-num" data-stat="total_entities">—</div>
             <div class="stat-label">Categories</div>
           </a>
           <div class="hero-stat">
-            <div class="stat-num">∞</div>
-            <div class="stat-label">Sources allowed</div>
+            <div class="stat-num" data-stat="last_updated">—</div>
+            <div class="stat-label">Last updated</div>
           </div>
         </div>
       </section>
@@ -413,5 +413,6 @@
 </div>
 <button id="back-to-top" aria-label="Back to top">↑</button>
 <script src="js/wiki.js"></script>
+<script src="js/index_stats.js"></script>
 </body>
 </html>
