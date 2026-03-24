@@ -1,35 +1,97 @@
 {
   "entity": "Darren Cullen (SER)",
   "slug": "darren-cullen--ser",
-  "generated_at": "2026-03-23T00:07:22.519116+00:00",
+  "generated_at": "2026-03-24T20:53:28.457356+00:00",
   "mention_count": 5,
   "all_facts": [
     {
-      "fact": "Founder and visionary in lore",
+      "fact": "Founder of Graffiti Kings",
       "confidence": 80,
       "sources": [
         "PROJECT-DNA.md",
-        "https://graffitikings.co.uk"
+        "https://graffitikings.co.uk",
+        "https://grokipedia.com/page/darren_cullen_graffiti_artist"
       ],
       "validated_by": [
         "legacy_migration"
       ],
-      "first_seen_cycle": 1,
-      "last_verified_cycle": 1,
+      "first_seen_cycle": 0,
+      "last_verified_cycle": 0,
       "status": "VERIFIED"
     },
     {
-      "fact": "Based on real-world Darren Cullen",
+      "fact": "Active since 1983 in Croydon",
       "confidence": 80,
       "sources": [
         "PROJECT-DNA.md",
-        "https://graffitikings.co.uk"
+        "https://graffitikings.co.uk",
+        "https://grokipedia.com/page/darren_cullen_graffiti_artist"
       ],
       "validated_by": [
         "legacy_migration"
       ],
-      "first_seen_cycle": 1,
-      "last_verified_cycle": 1,
+      "first_seen_cycle": 0,
+      "last_verified_cycle": 0,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Painted sets for London 2012 Olympics",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md",
+        "https://graffitikings.co.uk",
+        "https://grokipedia.com/page/darren_cullen_graffiti_artist"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 0,
+      "last_verified_cycle": 0,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Created Kate Middleton mural in Kent (2013)",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md",
+        "https://graffitikings.co.uk",
+        "https://grokipedia.com/page/darren_cullen_graffiti_artist"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 0,
+      "last_verified_cycle": 0,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Collaborated with Adidas, Nike, Calvin Klein",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md",
+        "https://graffitikings.co.uk",
+        "https://grokipedia.com/page/darren_cullen_graffiti_artist"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 0,
+      "last_verified_cycle": 0,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Founded Graffiti Queens in Decentraland (April 2021)",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md",
+        "https://graffitikings.co.uk",
+        "https://grokipedia.com/page/darren_cullen_graffiti_artist"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 0,
+      "last_verified_cycle": 0,
       "status": "VERIFIED"
     }
   ],
