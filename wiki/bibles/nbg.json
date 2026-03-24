@@ -1,0 +1,37 @@
+{
+  "entity": "$NBG",
+  "slug": "nbg",
+  "generated_at": "2026-03-24T19:23:46.025218+00:00",
+  "mention_count": 8,
+  "all_facts": [
+    {
+      "fact": "Token for No Ball Games NFT collection",
+      "confidence": 80,
+      "sources": [
+        "https://medium.com/@iamcharliebuster/how-to-buy-set-up-waxp-and-buy-nbg-for-beginners-ebb91057ac5a"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 1,
+      "last_verified_cycle": 1,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Associated with Charlie Buster",
+      "confidence": 80,
+      "sources": [
+        "https://medium.com/@iamcharliebuster/how-to-buy-set-up-waxp-and-buy-nbg-for-beginners-ebb91057ac5a"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 1,
+      "last_verified_cycle": 1,
+      "status": "VERIFIED"
+    }
+  ],
+  "relationships": [],
+  "timeline": [],
+  "cross_links": []
+}
