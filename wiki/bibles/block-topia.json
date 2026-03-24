@@ -1,8 +1,8 @@
 {
   "entity": "Block Topia",
   "slug": "block-topia",
-  "generated_at": "2026-03-24T20:53:28.459136+00:00",
-  "mention_count": 5,
+  "generated_at": "2026-03-24T22:46:19.591565+00:00",
+  "mention_count": 6,
   "all_facts": [
     {
       "fact": "Central city in lore",
@@ -58,6 +58,62 @@
       ],
       "first_seen_cycle": 0,
       "last_verified_cycle": 0,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "A neon-lit city in the Crypto Moonboys universe where code is law, rebuilt after the Great Datapocalypse of 2789.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md",
+        "https://gkniftyheads.blogspot.com/2026/03/the-gkniftyheads-arent-just-surviving.html"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 5,
+      "last_verified_cycle": 5,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Districts evolve via smart contracts, reflecting the fluid, decentralized nature of Block Topia\u2019s digital landscape.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md",
+        "https://gkniftyheads.blogspot.com/2026/03/the-gkniftyheads-arent-just-surviving.html"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 5,
+      "last_verified_cycle": 5,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Central hub for The GKniftyHEADS, hosting critical events like the Hard Fork Games and metaverse battles for freedom.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md",
+        "https://gkniftyheads.blogspot.com/2026/03/the-gkniftyheads-arent-just-surviving.html"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 5,
+      "last_verified_cycle": 5,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Serves as the battleground for rebellion, where encrypted graffiti and blockchain energy fuel the fight against centralized oppression.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md",
+        "https://gkniftyheads.blogspot.com/2026/03/the-gkniftyheads-arent-just-surviving.html"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 5,
+      "last_verified_cycle": 5,
       "status": "VERIFIED"
     }
   ],
