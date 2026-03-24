@@ -1,8 +1,8 @@
 {
   "entity": "Darren Cullen (SER)",
   "slug": "darren-cullen--ser",
-  "generated_at": "2026-03-24T20:53:28.457356+00:00",
-  "mention_count": 5,
+  "generated_at": "2026-03-24T22:20:51.871691+00:00",
+  "mention_count": 6,
   "all_facts": [
     {
       "fact": "Founder of Graffiti Kings",
@@ -92,6 +92,51 @@
       ],
       "first_seen_cycle": 0,
       "last_verified_cycle": 0,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Founder of Graffiti Kings since 1983, transforming Croydon\u2019s streets into a canvas for global street-art culture.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md",
+        "https://graffitikings.co.uk",
+        "https://grokipedia.com/page/darren_cullen_graffiti_artist"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 3,
+      "last_verified_cycle": 3,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Notable works include sets for the London 2012 Olympics and the 2013 Kate Middleton mural in Kent, showcasing his impact.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md",
+        "https://graffitikings.co.uk",
+        "https://grokipedia.com/page/darren_cullen_graffiti_artist"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 3,
+      "last_verified_cycle": 3,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Pioneered Web3 art through GKniftyHEADS, launching Graffiti Queens in Decentraland (April 2021) and driving Crypto Moonboys innovation.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md",
+        "https://graffitikings.co.uk",
+        "https://grokipedia.com/page/darren_cullen_graffiti_artist"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 3,
+      "last_verified_cycle": 3,
       "status": "VERIFIED"
     }
   ],
