@@ -1,7 +1,7 @@
 {
   "entity": "Charlie Buster",
   "slug": "charlie-buster",
-  "generated_at": "2026-03-23T00:07:22.519426+00:00",
+  "generated_at": "2026-03-24T22:20:51.872267+00:00",
   "mention_count": 5,
   "all_facts": [
     {
@@ -10,58 +10,13 @@
       "sources": [
         "PROJECT-DNA.md",
         "https://medium.com/@HODLWARRIORS/the-legend-of-charlie-buster-from-londons-walls-to-the-digital-grid-c589ab0589a8",
-        "https://medium.com/@iamcharliebuster"
+        "https://xpmarket.com/nfts/collection/5b361-no-ball-games-by-charlie-buster"
       ],
       "validated_by": [
         "legacy_migration"
       ],
-      "first_seen_cycle": 1,
-      "last_verified_cycle": 1,
-      "status": "VERIFIED"
-    },
-    {
-      "fact": "Author of 'The Stencil Must Break'",
-      "confidence": 80,
-      "sources": [
-        "PROJECT-DNA.md",
-        "https://medium.com/@HODLWARRIORS/the-legend-of-charlie-buster-from-londons-walls-to-the-digital-grid-c589ab0589a8",
-        "https://medium.com/@iamcharliebuster"
-      ],
-      "validated_by": [
-        "legacy_migration"
-      ],
-      "first_seen_cycle": 1,
-      "last_verified_cycle": 1,
-      "status": "VERIFIED"
-    },
-    {
-      "fact": "Voice of HODL Warriors",
-      "confidence": 80,
-      "sources": [
-        "PROJECT-DNA.md",
-        "https://medium.com/@HODLWARRIORS/the-legend-of-charlie-buster-from-londons-walls-to-the-digital-grid-c589ab0589a8",
-        "https://medium.com/@iamcharliebuster"
-      ],
-      "validated_by": [
-        "legacy_migration"
-      ],
-      "first_seen_cycle": 1,
-      "last_verified_cycle": 1,
-      "status": "VERIFIED"
-    },
-    {
-      "fact": "Creator of XRP KIDs Genesis NFTs",
-      "confidence": 80,
-      "sources": [
-        "PROJECT-DNA.md",
-        "https://medium.com/@HODLWARRIORS/the-legend-of-charlie-buster-from-londons-walls-to-the-digital-grid-c589ab0589a8",
-        "https://medium.com/@iamcharliebuster"
-      ],
-      "validated_by": [
-        "legacy_migration"
-      ],
-      "first_seen_cycle": 1,
-      "last_verified_cycle": 1,
+      "first_seen_cycle": 0,
+      "last_verified_cycle": 0,
       "status": "VERIFIED"
     },
     {
@@ -70,28 +25,118 @@
       "sources": [
         "PROJECT-DNA.md",
         "https://medium.com/@HODLWARRIORS/the-legend-of-charlie-buster-from-londons-walls-to-the-digital-grid-c589ab0589a8",
-        "https://medium.com/@iamcharliebuster"
+        "https://xpmarket.com/nfts/collection/5b361-no-ball-games-by-charlie-buster"
       ],
       "validated_by": [
         "legacy_migration"
       ],
-      "first_seen_cycle": 1,
-      "last_verified_cycle": 1,
+      "first_seen_cycle": 0,
+      "last_verified_cycle": 0,
       "status": "VERIFIED"
     },
     {
-      "fact": "Created No Ball Games (NBG) collection",
+      "fact": "Author of 'The Stencil Must Break'",
       "confidence": 80,
       "sources": [
         "PROJECT-DNA.md",
         "https://medium.com/@HODLWARRIORS/the-legend-of-charlie-buster-from-londons-walls-to-the-digital-grid-c589ab0589a8",
-        "https://medium.com/@iamcharliebuster"
+        "https://xpmarket.com/nfts/collection/5b361-no-ball-games-by-charlie-buster"
       ],
       "validated_by": [
         "legacy_migration"
       ],
-      "first_seen_cycle": 1,
-      "last_verified_cycle": 1,
+      "first_seen_cycle": 0,
+      "last_verified_cycle": 0,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Creator of XRP KIDs Genesis NFTs (100 hand-crafted on XRPL)",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md",
+        "https://medium.com/@HODLWARRIORS/the-legend-of-charlie-buster-from-londons-walls-to-the-digital-grid-c589ab0589a8",
+        "https://xpmarket.com/nfts/collection/5b361-no-ball-games-by-charlie-buster"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 0,
+      "last_verified_cycle": 0,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Creator of No Ball Games (NBG) collection",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md",
+        "https://medium.com/@HODLWARRIORS/the-legend-of-charlie-buster-from-londons-walls-to-the-digital-grid-c589ab0589a8",
+        "https://xpmarket.com/nfts/collection/5b361-no-ball-games-by-charlie-buster"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 0,
+      "last_verified_cycle": 0,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Voice of HODL Warriors",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md",
+        "https://medium.com/@HODLWARRIORS/the-legend-of-charlie-buster-from-londons-walls-to-the-digital-grid-c589ab0589a8",
+        "https://xpmarket.com/nfts/collection/5b361-no-ball-games-by-charlie-buster"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 0,
+      "last_verified_cycle": 0,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Son of Darren Cullen, raised in the graffiti culture of Leake Street Tunnel, now a key artist in Web3 rebellion.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md",
+        "https://medium.com/@HODLWARRIORS/the-legend-of-charlie-buster-from-londons-walls-to-the-digital-grid-c589ab0589a8",
+        "https://xpmarket.com/nfts/collection/5b361-no-ball-games-by-charlie-buster"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 3,
+      "last_verified_cycle": 3,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Creator of XRP KIDs (100 hand-crafted NFTs on XRPL) and No Ball Games (NBG), embodying street-art defiance digitally.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md",
+        "https://medium.com/@HODLWARRIORS/the-legend-of-charlie-buster-from-londons-walls-to-the-digital-grid-c589ab0589a8",
+        "https://xpmarket.com/nfts/collection/5b361-no-ball-games-by-charlie-buster"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 3,
+      "last_verified_cycle": 3,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Author of 'The Stencil Must Break' and voice of HODL Warriors, weaving narratives of resistance into Crypto Moonboys lore.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md",
+        "https://medium.com/@HODLWARRIORS/the-legend-of-charlie-buster-from-londons-walls-to-the-digital-grid-c589ab0589a8",
+        "https://xpmarket.com/nfts/collection/5b361-no-ball-games-by-charlie-buster"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 3,
+      "last_verified_cycle": 3,
       "status": "VERIFIED"
     }
   ],
