@@ -1,8 +1,8 @@
 {
   "entity": "HODL WARS",
   "slug": "hodl-wars",
-  "generated_at": "2026-03-24T22:20:51.871090+00:00",
-  "mention_count": 6,
+  "generated_at": "2026-03-24T22:46:19.589150+00:00",
+  "mention_count": 7,
   "all_facts": [
     {
       "fact": "Live saga dropping every 10 minutes",
@@ -92,6 +92,66 @@
       ],
       "first_seen_cycle": 3,
       "last_verified_cycle": 3,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "A live saga dropping new narrative content every 10 minutes, chronicling the epic struggles of Block Topia\u2019s warriors in real-time.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md",
+        "https://medium.com/@graffpunksuk/the-hodl-wars-warfare-chronicles-battlemech-blast-b588d8142917",
+        "https://dev.to/hodlkong64/the-hodl-wars-are-here-1agn"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 5,
+      "last_verified_cycle": 5,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Set to become a playable NFT game, immersing players in blockchain battles alongside HODL Warriors for digital territory and glory.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md",
+        "https://medium.com/@graffpunksuk/the-hodl-wars-warfare-chronicles-battlemech-blast-b588d8142917",
+        "https://dev.to/hodlkong64/the-hodl-wars-are-here-1agn"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 5,
+      "last_verified_cycle": 5,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Represents the heart of rebellion in the Crypto Moonboys universe, tying gameplay and lore to the ethos of decentralized resistance.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md",
+        "https://medium.com/@graffpunksuk/the-hodl-wars-warfare-chronicles-battlemech-blast-b588d8142917",
+        "https://dev.to/hodlkong64/the-hodl-wars-are-here-1agn"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 5,
+      "last_verified_cycle": 5,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Each drop and battle echoes GraffPUNKS\u2019 raw energy, making every moment a fight for HODL values against centralized oppression.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md",
+        "https://medium.com/@graffpunksuk/the-hodl-wars-warfare-chronicles-battlemech-blast-b588d8142917",
+        "https://dev.to/hodlkong64/the-hodl-wars-are-here-1agn"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 5,
+      "last_verified_cycle": 5,
       "status": "VERIFIED"
     }
   ],
