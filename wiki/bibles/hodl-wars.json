@@ -1,8 +1,8 @@
 {
   "entity": "HODL WARS",
   "slug": "hodl-wars",
-  "generated_at": "2026-03-23T00:07:22.520618+00:00",
-  "mention_count": 6,
+  "generated_at": "2026-03-24T20:53:28.459518+00:00",
+  "mention_count": 5,
   "all_facts": [
     {
       "fact": "Live saga dropping every 10 minutes",
@@ -10,14 +10,13 @@
       "sources": [
         "PROJECT-DNA.md",
         "https://medium.com/@graffpunksuk/the-hodl-wars-warfare-chronicles-battlemech-blast-b588d8142917",
-        "https://dev.to/hodlkong64/the-hodl-wars-are-here-1agn",
-        "https://hodlwars.com/"
+        "https://dev.to/hodlkong64/the-hodl-wars-are-here-1agn"
       ],
       "validated_by": [
         "legacy_migration"
       ],
-      "first_seen_cycle": 1,
-      "last_verified_cycle": 1,
+      "first_seen_cycle": 0,
+      "last_verified_cycle": 0,
       "status": "VERIFIED"
     },
     {
@@ -26,30 +25,28 @@
       "sources": [
         "PROJECT-DNA.md",
         "https://medium.com/@graffpunksuk/the-hodl-wars-warfare-chronicles-battlemech-blast-b588d8142917",
-        "https://dev.to/hodlkong64/the-hodl-wars-are-here-1agn",
-        "https://hodlwars.com/"
+        "https://dev.to/hodlkong64/the-hodl-wars-are-here-1agn"
       ],
       "validated_by": [
         "legacy_migration"
       ],
-      "first_seen_cycle": 1,
-      "last_verified_cycle": 1,
+      "first_seen_cycle": 0,
+      "last_verified_cycle": 0,
       "status": "VERIFIED"
     },
     {
-      "fact": "Involves faction wars in Block Topia",
+      "fact": "Tied to HODL Warriors narrative",
       "confidence": 80,
       "sources": [
         "PROJECT-DNA.md",
         "https://medium.com/@graffpunksuk/the-hodl-wars-warfare-chronicles-battlemech-blast-b588d8142917",
-        "https://dev.to/hodlkong64/the-hodl-wars-are-here-1agn",
-        "https://hodlwars.com/"
+        "https://dev.to/hodlkong64/the-hodl-wars-are-here-1agn"
       ],
       "validated_by": [
         "legacy_migration"
       ],
-      "first_seen_cycle": 1,
-      "last_verified_cycle": 1,
+      "first_seen_cycle": 0,
+      "last_verified_cycle": 0,
       "status": "VERIFIED"
     }
   ],
