@@ -1542,6 +1542,17 @@ function escRegex(str) {
   return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
+/* ── URL NORMALIZATION ──────────────────────────────────────────────────── */
+function normalizeUrl(url) {
+  if (!url) return '';
+  url = url.trim().toLowerCase();
+  if (url.startsWith('https://www.'))     url = 'https://' + url.slice(12);
+  else if (url.startsWith('http://www.')) url = 'https://' + url.slice(11);
+  else if (url.startsWith('http://'))     url = 'https://' + url.slice(7);
+  if (url.endsWith('/')) url = url.slice(0, -1);
+  return url;
+}
+
 /* ── BACK TO TOP ────────────────────────────────────────────────────────── */
 function initBackToTop() {
   const btn = document.getElementById('back-to-top');
