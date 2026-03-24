@@ -1,52 +1,52 @@
 {
   "entity": "The GRAFFPUNKS",
   "slug": "the-graffpunks",
-  "generated_at": "2026-03-23T00:07:22.519793+00:00",
+  "generated_at": "2026-03-24T20:53:28.458714+00:00",
   "mention_count": 8,
   "all_facts": [
     {
-      "fact": "Digital street-art rebels",
+      "fact": "Street-art rebel faction",
       "confidence": 80,
       "sources": [
         "PROJECT-DNA.md",
-        "https://graffpunks.live/",
-        "https://gkniftyheads.blogspot.com/"
+        "https://graffpunks.live",
+        "https://gkniftyheads.blogspot.com"
       ],
       "validated_by": [
         "legacy_migration"
       ],
-      "first_seen_cycle": 1,
-      "last_verified_cycle": 1,
+      "first_seen_cycle": 0,
+      "last_verified_cycle": 0,
       "status": "VERIFIED"
     },
     {
-      "fact": "Evolution of Graffiti Kings",
+      "fact": "Tied to blockchain radio station",
       "confidence": 80,
       "sources": [
         "PROJECT-DNA.md",
-        "https://graffpunks.live/",
-        "https://gkniftyheads.blogspot.com/"
+        "https://graffpunks.live",
+        "https://gkniftyheads.blogspot.com"
       ],
       "validated_by": [
         "legacy_migration"
       ],
-      "first_seen_cycle": 1,
-      "last_verified_cycle": 1,
+      "first_seen_cycle": 0,
+      "last_verified_cycle": 0,
       "status": "VERIFIED"
     },
     {
-      "fact": "Blends art with blockchain rebellion",
+      "fact": "Rooted in Graffiti Kings history",
       "confidence": 80,
       "sources": [
         "PROJECT-DNA.md",
-        "https://graffpunks.live/",
-        "https://gkniftyheads.blogspot.com/"
+        "https://graffpunks.live",
+        "https://gkniftyheads.blogspot.com"
       ],
       "validated_by": [
         "legacy_migration"
       ],
-      "first_seen_cycle": 1,
-      "last_verified_cycle": 1,
+      "first_seen_cycle": 0,
+      "last_verified_cycle": 0,
       "status": "VERIFIED"
     }
   ],
