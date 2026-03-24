@@ -2,18 +2,19 @@
 
 [![GitHub Pages](https://img.shields.io/badge/GitHub%20Pages-Live-brightgreen)](https://crypto-moonboys.github.io)
 
-The public frontend of the **2-repo SAM system**. This site is a fan-driven crypto encyclopedia inspired by Fandom/MediaWiki design — maintained exclusively by the SAM AI agent.
+The public frontend of the **3-repo SAM system**. This site is a fan-driven crypto encyclopedia inspired by Fandom/MediaWiki design — maintained by the SAM AI agent.
 
 All wiki content is **published automatically** from the Brain repo ([`HODLKONG64/HAY-MUM-IM-BUILDING-AGENTS-OF-CHANGE`](https://github.com/HODLKONG64/HAY-MUM-IM-BUILDING-AGENTS-OF-CHANGE)) via `sam-wiki-publisher.py`. No manual content authoring happens in this repo.
 
 ---
 
-## 🏗️ Architecture — 2-Repo System
+## 🏗️ Architecture — 3-Repo System
 
 | Repo | Role |
 |------|------|
-| **Brain** — [`HODLKONG64/HAY-MUM-IM-BUILDING-AGENTS-OF-CHANGE`](https://github.com/HODLKONG64/HAY-MUM-IM-BUILDING-AGENTS-OF-CHANGE) | SAM Master Agent (`sam-master-agent.py`) crawls, validates, and stores knowledge. `sam-wiki-publisher.py` converts memory into HTML and pushes it here. |
-| **Wiki** — this repo | Public-facing GitHub Pages site. Serves 130+ articles across 17 categories. Receives automated commits from the Brain repo on each SAM cycle. |
+| **Brain / Orchestrator** — [`HODLKONG64/HAY-MUM-IM-BUILDING-AGENTS-OF-CHANGE`](https://github.com/HODLKONG64/HAY-MUM-IM-BUILDING-AGENTS-OF-CHANGE) | SAM Master Agent (`sam-master-agent.py`) crawls, validates, and stores knowledge. `sam-wiki-publisher.py` converts memory into HTML and pushes it here. |
+| **Intelligence / Backend** — [`HODLKONG64/sam-v2-intelligence`](https://github.com/HODLKONG64/sam-v2-intelligence) | SAM v2 Python + FastAPI layer. Scoring, ranking, memory, focus-plan, leaderboard, keyword-bank, and bible endpoints. |
+| **Wiki / Frontend** — this repo | Public-facing GitHub Pages site. Serves 314 articles · 158 entities. Receives automated commits from the Brain repo on each SAM cycle. |
 
 ---
 
@@ -22,6 +23,7 @@ All wiki content is **published automatically** from the Brain repo ([`HODLKONG6
 ```
 /
 ├── index.html              ← Homepage
+├── index_stats.json        ← Live stats: total_articles, total_entities, last_updated
 ├── articles.html           ← All Articles index
 ├── about.html              ← About / Citation Policy
 ├── agent.html              ← SAM Agent info page
@@ -32,15 +34,14 @@ All wiki content is **published automatically** from the Brain repo ([`HODLKONG6
 ├── css/
 │   └── wiki.css            ← All styles
 ├── js/
-│   └── wiki.js             ← Search index + UI logic
-├── img/
-│   ├── logo.svg
-│   └── favicon.svg
+│   ├── wiki.js             ← Search index + UI logic
+│   ├── index_stats.js      ← Homepage stats loader
+│   └── index_stats_v2.js   ← Stats loader v2
 ├── wiki/
-│   ├── bitcoin.html        ← OG hand-authored articles
+│   ├── bitcoin.html        ← Priority entity pages (SAM bible hooks active)
 │   ├── ethereum.html
 │   ├── sam-*.html          ← Legacy redirect stubs (see below)
-│   └── ... (130+ articles total)
+│   └── ... (314 articles total)
 └── categories/
     ├── index.html
     └── ... (17 categories)
@@ -50,40 +51,44 @@ All wiki content is **published automatically** from the Brain repo ([`HODLKONG6
 
 ## 🔄 How Publishing Works
 
-1. `sam-master-agent.py` (in the Brain repo) crawls sources, validates facts, and stores structured memory in Cloudflare R2.
-2. `sam-wiki-publisher.py` (in the Brain repo) reads that memory, generates or updates HTML articles, and pushes commits to this repo.
-3. Each new article is registered in `articles.html`, the relevant category page, `js/wiki.js` (`WIKI_INDEX`), and `sitemap.xml`.
-4. GitHub Pages serves the result at [crypto-moonboys.github.io](https://crypto-moonboys.github.io).
+1. `sam-master-agent.py` crawls sources, validates facts, stores memory in Cloudflare R2.
+2. `sam-wiki-publisher.py` reads memory, generates HTML, pushes commits here.
+3. Each new article updates `articles.html`, category pages, `js/wiki.js`, and `sitemap.xml`.
+4. GitHub Pages serves at [crypto-moonboys.github.io](https://crypto-moonboys.github.io).
+
+---
+
+## 📖 SAM Bible System
+
+The SAM v2 intelligence layer exposes `/bibles/{entity_name}`. Top 10 priority pages are wired with:
+
+- `data-entity-slug` on `<article>` — identifies the entity
+- `<div id="bible-content"></div>` before `</article>` — injection target
+
+**Hooked pages:** `bitcoin`, `ethereum`, `nfts`, `defi`, `graffpunks`, `hodl-wars`, `crypto-moonboys`, `blockchain`, `waxp`, `xrpl`
 
 ---
 
 ## 🔀 Legacy Redirect Stubs
 
-The following files are **redirect stubs** kept for backwards compatibility — they are not full articles:
+- **`sam.html`** → `agent.html`
+- **`categories/sam-generated.html`** → `categories/lore.html`
+- **`wiki/sam-*.html`** → canonical non-prefixed URLs
 
-- **`sam.html`** → redirects to `agent.html`
-- **`categories/sam-generated.html`** → redirects to `categories/lore.html`
-- **`wiki/sam-*.html`** (many) → redirect to their canonical non-prefixed URLs (e.g. `wiki/sam-bitcoin-kid-army.html` → `wiki/bitcoin-kid-army.html`)
-
-Per DB-47, SAM no longer creates `sam-` prefixed slugs. These stubs exist so old links don't break.
+Per DB-47, SAM no longer creates `sam-` prefixed slugs.
 
 ---
 
 ## 📖 Brain Rules
 
-This repo contains a `brain-rules.md` — this is a **wiki-specific publishing/presentation subset** covering page structure, emoji conventions, sidebar registration, cross-linking, and sitemap updates.
-
-The **full canonical rules** (DB-1 through DB-48, the Master Agent Bible) live in the Brain repo:
+Full canonical rules (DB-1 through DB-48) live in the Brain repo:
 👉 [`HODLKONG64/HAY-MUM-IM-BUILDING-AGENTS-OF-CHANGE/brain-rules.md`](https://github.com/HODLKONG64/HAY-MUM-IM-BUILDING-AGENTS-OF-CHANGE/blob/main/brain-rules.md)
 
 ---
 
 ## Design
 
-- Dark theme inspired by Fandom/MediaWiki · Gold accent (`#f7c948`)
-- Responsive — mobile sidebar with hamburger
-- No JS frameworks — vanilla JS only
-- Client-side search powered by `WIKI_INDEX` in `wiki.js`
+- Dark theme · Gold accent (`#f7c948`) · Responsive · Vanilla JS only
 
 ## License
 
