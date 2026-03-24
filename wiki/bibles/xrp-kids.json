@@ -1,0 +1,137 @@
+{
+  "entity": "XRP KIDs",
+  "slug": "xrp-kids",
+  "generated_at": "2026-03-24T23:33:45.923337+00:00",
+  "mention_count": 5,
+  "all_facts": [
+    {
+      "fact": "NFT collection by Charlie Buster",
+      "confidence": 80,
+      "sources": [
+        "Initial context",
+        "https://graffpunks.live/xrp-kids/"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 0,
+      "last_verified_cycle": 0,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "100 hand-crafted on XRPL",
+      "confidence": 80,
+      "sources": [
+        "Initial context",
+        "https://graffpunks.live/xrp-kids/"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 0,
+      "last_verified_cycle": 0,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "A genesis NFT collection of 100 hand-crafted pieces by Charlie Buster, rooted in XRPL blockchain technology.",
+      "confidence": 80,
+      "sources": [
+        "Initial context",
+        "https://graffpunks.live/xrp-kids/"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 3,
+      "last_verified_cycle": 3,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Represents the spirit of escaped Bitcoin Kids, aligning with HODL Warriors\u2019 fight for freedom in Block Topia.",
+      "confidence": 80,
+      "sources": [
+        "Initial context",
+        "https://graffpunks.live/xrp-kids/"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 3,
+      "last_verified_cycle": 3,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Serves as both a collectible and a narrative key, unlocking rewards and events within the Crypto Moonboys universe.",
+      "confidence": 80,
+      "sources": [
+        "Initial context",
+        "https://graffpunks.live/xrp-kids/"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 3,
+      "last_verified_cycle": 3,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "A genesis NFT collection of 100 hand-crafted pieces by Charlie Buster, rooted in XRPL blockchain technology as symbols of rebellion.",
+      "confidence": 80,
+      "sources": [
+        "Initial context",
+        "https://graffpunks.live/xrp-kids/"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 5,
+      "last_verified_cycle": 5,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Represents the spirit of escaped Bitcoin Kids, aligning with HODL Warriors\u2019 relentless fight for freedom in Block Topia.",
+      "confidence": 80,
+      "sources": [
+        "Initial context",
+        "https://graffpunks.live/xrp-kids/"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 5,
+      "last_verified_cycle": 5,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Serves as both a collectible and a narrative key, unlocking unique rewards and events within the Crypto Moonboys universe.",
+      "confidence": 80,
+      "sources": [
+        "Initial context",
+        "https://graffpunks.live/xrp-kids/"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 5,
+      "last_verified_cycle": 5,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Often staked in metaverse battles, embodying the youthful defiance of Alfie 'The Bitcoin Kid' Blaze\u2019s lore.",
+      "confidence": 80,
+      "sources": [
+        "Initial context",
+        "https://graffpunks.live/xrp-kids/"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 5,
+      "last_verified_cycle": 5,
+      "status": "VERIFIED"
+    }
+  ],
+  "relationships": [],
+  "timeline": [],
+  "cross_links": []
+}
