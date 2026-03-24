@@ -1,8 +1,8 @@
 {
   "entity": "HODL WARS",
   "slug": "hodl-wars",
-  "generated_at": "2026-03-24T20:53:28.459518+00:00",
-  "mention_count": 5,
+  "generated_at": "2026-03-24T22:20:51.871090+00:00",
+  "mention_count": 6,
   "all_facts": [
     {
       "fact": "Live saga dropping every 10 minutes",
@@ -47,6 +47,51 @@
       ],
       "first_seen_cycle": 0,
       "last_verified_cycle": 0,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "A live saga dropping new narrative content every 10 minutes, chronicling the struggles of Block Topia\u2019s warriors.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md",
+        "https://medium.com/@graffpunksuk/the-hodl-wars-warfare-chronicles-battlemech-blast-b588d8142917",
+        "https://dev.to/hodlkong64/the-hodl-wars-are-here-1agn"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 3,
+      "last_verified_cycle": 3,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Set to become a playable NFT game, allowing players to engage in blockchain battles with HODL Warriors.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md",
+        "https://medium.com/@graffpunksuk/the-hodl-wars-warfare-chronicles-battlemech-blast-b588d8142917",
+        "https://dev.to/hodlkong64/the-hodl-wars-are-here-1agn"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 3,
+      "last_verified_cycle": 3,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Represents the heart of rebellion in the Crypto Moonboys universe, tying gameplay to the ethos of decentralized resistance.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md",
+        "https://medium.com/@graffpunksuk/the-hodl-wars-warfare-chronicles-battlemech-blast-b588d8142917",
+        "https://dev.to/hodlkong64/the-hodl-wars-are-here-1agn"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 3,
+      "last_verified_cycle": 3,
       "status": "VERIFIED"
     }
   ],
