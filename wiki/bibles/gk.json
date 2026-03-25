@@ -1,11 +1,11 @@
 {
   "entity": "$GK",
   "slug": "gk",
-  "generated_at": "2026-03-24T19:23:46.023698+00:00",
-  "mention_count": 8,
+  "generated_at": "2026-03-25T00:15:52.336480+00:00",
+  "mention_count": 5,
   "all_facts": [
     {
-      "fact": "Staking reward token for GKniftyHEADS",
+      "fact": "Staking reward token",
       "confidence": 80,
       "sources": [
         "PROJECT-DNA.md"
@@ -13,8 +13,112 @@
       "validated_by": [
         "legacy_migration"
       ],
-      "first_seen_cycle": 1,
-      "last_verified_cycle": 1,
+      "first_seen_cycle": 0,
+      "last_verified_cycle": 0,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Earned via playable NFT murals",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 0,
+      "last_verified_cycle": 0,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "A staking reward token earned through playable NFT murals and metaverse battle victories in Block Topia.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 3,
+      "last_verified_cycle": 3,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Central to The GKniftyHEADS\u2019 economy, used for transactions, upgrades, and claiming digital territories.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 3,
+      "last_verified_cycle": 3,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Embodies the rebellious spirit of Graffiti Kings, making every token a digital tag of decentralized defiance.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 3,
+      "last_verified_cycle": 3,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "A staking reward token earned through playable NFT murals and metaverse battle triumphs in Block Topia\u2019s digital wars.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 5,
+      "last_verified_cycle": 5,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Central to The GKniftyHEADS\u2019 economy, used for transactions, upgrades, and claiming digital territories in the Crypto Moonboys universe.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 5,
+      "last_verified_cycle": 5,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Embodies the rebellious spirit of Graffiti Kings, making every token a digital tag of decentralized defiance and power.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 5,
+      "last_verified_cycle": 5,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Often distributed during major events like the Hard Fork Games, fueling warriors\u2019 efforts to resist centralized control.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 5,
+      "last_verified_cycle": 5,
       "status": "VERIFIED"
     }
   ],
