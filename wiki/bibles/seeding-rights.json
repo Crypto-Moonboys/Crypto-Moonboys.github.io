@@ -1,11 +1,11 @@
 {
-  "entity": "Seeding Rights",
+  "entity": "Seeding rights",
   "slug": "seeding-rights",
-  "generated_at": "2026-03-24T19:48:54.755958+00:00",
-  "mention_count": 8,
+  "generated_at": "2026-03-25T00:15:52.327816+00:00",
+  "mention_count": 5,
   "all_facts": [
     {
-      "fact": "Grants rights to seed digital content",
+      "fact": "Ownership privileges for NFT holders",
       "confidence": 80,
       "sources": [
         "PROJECT-DNA.md"
@@ -13,8 +13,99 @@
       "validated_by": [
         "legacy_migration"
       ],
-      "first_seen_cycle": 1,
-      "last_verified_cycle": 1,
+      "first_seen_cycle": 0,
+      "last_verified_cycle": 0,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Grants NFT holders exclusive control over digital territories or assets in the Block Topia metaverse.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 3,
+      "last_verified_cycle": 3,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Often tied to staking rewards or events like Hard Fork Games, empowering holders to shape virtual landscapes.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 3,
+      "last_verified_cycle": 3,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Echoes the street-art act of claiming space, translating physical tagging into blockchain-backed ownership.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 3,
+      "last_verified_cycle": 3,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Grants NFT holders exclusive control over digital territories or assets in Block Topia, acting as a virtual deed in the metaverse.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 5,
+      "last_verified_cycle": 5,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Often tied to staking rewards or events like Hard Fork Games, empowering holders to shape virtual landscapes and narratives.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 5,
+      "last_verified_cycle": 5,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Echoes the street-art act of claiming space, translating physical tagging into blockchain-backed ownership in the Crypto Moonboys universe.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 5,
+      "last_verified_cycle": 5,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Represents a strategic tool for factions, turning digital ownership into a form of rebellion and territorial dominance.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 5,
+      "last_verified_cycle": 5,
       "status": "VERIFIED"
     }
   ],
