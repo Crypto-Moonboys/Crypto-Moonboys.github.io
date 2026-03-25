@@ -1,21 +1,111 @@
 {
-  "entity": "1M Free NFTs Drop",
+  "entity": "1M free NFTs drop",
   "slug": "1m-free-nfts-drop",
-  "generated_at": "2026-03-24T19:23:46.022161+00:00",
-  "mention_count": 8,
+  "generated_at": "2026-03-25T00:15:52.332743+00:00",
+  "mention_count": 5,
   "all_facts": [
     {
-      "fact": "Distribution of 1 million free NFTs",
+      "fact": "Mass distribution of 1 million free NFTs",
       "confidence": 80,
       "sources": [
-        "PROJECT-DNA.md",
-        "https://gkniftyheads.blogspot.com/2024/02/nfts-play2earn-games-by-graffiti-kings.html"
+        "PROJECT-DNA.md"
       ],
       "validated_by": [
         "legacy_migration"
       ],
-      "first_seen_cycle": 1,
-      "last_verified_cycle": 1,
+      "first_seen_cycle": 0,
+      "last_verified_cycle": 0,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "A historic giveaway of 1 million free NFTs to the Crypto Moonboys community, symbolizing accessible rebellion.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 3,
+      "last_verified_cycle": 3,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Orchestrated by The GKniftyHEADS, it equips new players with digital tools for staking and metaverse battles.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 3,
+      "last_verified_cycle": 3,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Embodies the GraffPUNKS mission to democratize art and ownership through blockchain technology in Block Topia.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 3,
+      "last_verified_cycle": 3,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "A historic giveaway of 1 million free NFTs to the Crypto Moonboys community, symbolizing accessible rebellion and digital empowerment.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 5,
+      "last_verified_cycle": 5,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Orchestrated by The GKniftyHEADS, equipping new players with digital tools for staking and metaverse battles in Block Topia.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 5,
+      "last_verified_cycle": 5,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Embodies the GraffPUNKS mission to democratize art and ownership through blockchain technology, fueling the decentralized fight.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 5,
+      "last_verified_cycle": 5,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Transforms recipients into stakeholders, often tying NFTs to rewards and events that drive resistance in the Crypto Moonboys universe.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 5,
+      "last_verified_cycle": 5,
       "status": "VERIFIED"
     }
   ],
