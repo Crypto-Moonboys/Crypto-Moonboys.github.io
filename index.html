@@ -21,6 +21,125 @@
       width: 100%;
       height: auto;
     }
+
+    #blocktopia-panel {
+      position: fixed;
+      top: 90px;
+      right: 18px;
+      width: 260px;
+      background: rgba(0, 0, 0, 0.95);
+      border: 1px solid #00e5ff;
+      box-shadow: 0 0 18px rgba(0, 229, 255, 0.18);
+      padding: 12px;
+      z-index: 9999;
+      font-family: monospace;
+      border-radius: 10px;
+      backdrop-filter: blur(6px);
+    }
+
+    #blocktopia-panel .bt-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    #blocktopia-panel .bt-title {
+      color: #00e5ff;
+      font-weight: 700;
+      font-size: 14px;
+      letter-spacing: 0.5px;
+    }
+
+    #blocktopia-panel .bt-status {
+      color: #7CFC00;
+      font-size: 11px;
+    }
+
+    #blocktopia-panel .bt-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    #blocktopia-panel .bt-item {
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      padding-bottom: 8px;
+    }
+
+    #blocktopia-panel .bt-item:last-child {
+      border-bottom: 0;
+      padding-bottom: 0;
+    }
+
+    #blocktopia-panel .bt-rank {
+      color: #00e5ff;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    #blocktopia-panel .bt-name {
+      color: #fff;
+      font-size: 12px;
+      line-height: 1.35;
+      margin: 2px 0;
+    }
+
+    #blocktopia-panel .bt-score {
+      color: #7CFC00;
+      font-size: 11px;
+    }
+
+    #live-rank-badge {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: rgba(0, 0, 0, 0.95);
+      color: #7CFC00;
+      padding: 12px 14px;
+      border: 1px solid #7CFC00;
+      box-shadow: 0 0 18px rgba(124, 252, 0, 0.15);
+      border-radius: 10px;
+      font-family: monospace;
+      z-index: 9999;
+      min-width: 170px;
+      backdrop-filter: blur(6px);
+    }
+
+    #live-rank-badge .badge-title {
+      color: #00e5ff;
+      font-size: 11px;
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+    }
+
+    #live-rank-badge .badge-rank {
+      font-size: 18px;
+      font-weight: 700;
+      line-height: 1.1;
+      margin-bottom: 4px;
+    }
+
+    #live-rank-badge .badge-score {
+      font-size: 12px;
+      color: #fff;
+    }
+
+    @media (max-width: 980px) {
+      #blocktopia-panel {
+        position: static;
+        width: auto;
+        margin: 16px;
+      }
+
+      #live-rank-badge {
+        right: 12px;
+        bottom: 12px;
+        min-width: 150px;
+      }
+    }
   </style>
 </head>
 <body>
@@ -76,7 +195,6 @@
         <a href="wiki/fomo-plague.html"><span class="nav-icon">😱</span> The FOMO Plague</a>
         <a href="wiki/ngmi-chronicles.html"><span class="nav-icon">💀</span> NGMI Chronicles</a>
         <a href="wiki/wagmi-prophecy.html"><span class="nav-icon">🌙</span> The WAGMI Prophecy</a>
-        <!-- SAM Universe Pages -->
         <a href="wiki/sam-crypto-moonboys.html"><span class="nav-icon">🌙</span> Crypto Moonboys</a>
         <a href="wiki/sam-graffiti-kings.html"><span class="nav-icon">👑</span> Graffiti Kings</a>
         <a href="wiki/sam-gkniftyheads.html"><span class="nav-icon">🎨</span> GKniftyHEADS</a>
@@ -197,7 +315,6 @@
   <div id="main-wrapper">
     <main id="content" role="main">
 
-      <!-- HOME HERO -->
       <section class="home-hero">
         <h1>🌙 The Crypto Moonboys GK Wiki ⚡️⚡️⚡️</h1>
         <p>Your fan-driven encyclopedia for everything cryptoism. No sign-up. No login.<br>Just pure knowledge from the GKniftyHEADS community 💥💥💥🚀.</p>
@@ -210,22 +327,21 @@
         >
 
         <div class="hero-stats">
-  <a href="articles.html" class="hero-stat hero-stat-link">
-    <div class="stat-num stat-total-articles" data-stat="total_articles">—</div>
-    <div class="stat-label">Articles</div>
-  </a>
-  <a href="categories/index.html" class="hero-stat hero-stat-link">
-    <div class="stat-num stat-total-entities" data-stat="total_entities">—</div>
-    <div class="stat-label">Categories</div>
-  </a>
-  <div class="hero-stat">
-    <div class="stat-num stat-last-updated" data-stat="last_updated">—</div>
-    <div class="stat-label">Last updated</div>
-  </div>
-</div>
+          <a href="articles.html" class="hero-stat hero-stat-link">
+            <div class="stat-num stat-total-articles" data-stat="total_articles">—</div>
+            <div class="stat-label">Articles</div>
+          </a>
+          <a href="categories/index.html" class="hero-stat hero-stat-link">
+            <div class="stat-num stat-total-entities" data-stat="total_entities">—</div>
+            <div class="stat-label">Categories</div>
+          </a>
+          <div class="hero-stat">
+            <div class="stat-num stat-last-updated" data-stat="last_updated">—</div>
+            <div class="stat-label">Last updated</div>
+          </div>
+        </div>
       </section>
 
-      <!-- FEATURED ARTICLE -->
       <div class="featured-article">
         <div class="fa-icon"><img class="btc-logo-icon" src="/CRYPTO-MOONBOYS-BITCOIN-LOGO.png" alt="₿"></div>
         <div class="featured-article-body">
@@ -238,7 +354,6 @@
         </div>
       </div>
 
-      <!-- BROWSE BY CATEGORY -->
       <h2 class="section-heading">Browse by Category</h2>
       <div class="category-grid">
         <a href="categories/cryptocurrencies.html" class="category-card">
@@ -348,7 +463,6 @@
         </a>
       </div>
 
-      <!-- RECENT ARTICLES -->
       <h2 class="section-heading">Recent Articles</h2>
       <div class="article-grid">
         <a href="wiki/hodl-wars.html" class="article-card">
@@ -411,8 +525,97 @@
     </footer>
   </div>
 </div>
+
 <button id="back-to-top" aria-label="Back to top">↑</button>
+
 <script src="js/wiki.js"></script>
 <script src="js/index_stats_v2.js"></script>
+
+<script>
+(function () {
+  const API_BASE = "http://localhost:8000";
+
+  function removeExisting(id) {
+    const el = document.getElementById(id);
+    if (el) el.remove();
+  }
+
+  function makeBlockTopiaPanel(list) {
+    removeExisting("blocktopia-panel");
+
+    const panel = document.createElement("div");
+    panel.id = "blocktopia-panel";
+
+    const topItems = list.slice(0, 8).map((e, i) => {
+      return `
+        <div class="bt-item">
+          <div class="bt-rank">#${i + 1}</div>
+          <div class="bt-name">${e.name || "Unknown"}</div>
+          <div class="bt-score">Score: ${e.score ?? 0}</div>
+        </div>
+      `;
+    }).join("");
+
+    panel.innerHTML = `
+      <div class="bt-header">
+        <div class="bt-title">BLOCK TOPIA</div>
+        <div class="bt-status">LIVE</div>
+      </div>
+      <div class="bt-list">${topItems || "<div class='bt-name'>No data</div>"}</div>
+    `;
+
+    document.body.appendChild(panel);
+  }
+
+  function makeRankBadge(list) {
+    removeExisting("live-rank-badge");
+
+    const pageSignals = [
+      document.title || "",
+      window.location.pathname || "",
+      "crypto moonboys",
+      "moonboys",
+      "block topia"
+    ].join(" ").toLowerCase();
+
+    const found = list.find((e) => {
+      const name = (e.name || "").toLowerCase();
+      return name && pageSignals.includes(name);
+    });
+
+    if (!found) return;
+
+    const badge = document.createElement("div");
+    badge.id = "live-rank-badge";
+    badge.innerHTML = `
+      <div class="badge-title">Live Rank</div>
+      <div class="badge-rank">#${list.indexOf(found) + 1}</div>
+      <div class="badge-score">Score: ${found.score ?? 0}</div>
+    `;
+
+    document.body.appendChild(badge);
+  }
+
+  async function loadLeaderboard() {
+    try {
+      const res = await fetch(API_BASE + "/leaderboard");
+      if (!res.ok) throw new Error("Leaderboard request failed");
+      const data = await res.json();
+      const list = Array.isArray(data.leaderboard) ? data.leaderboard : [];
+
+      makeBlockTopiaPanel(list);
+      makeRankBadge(list);
+    } catch (err) {
+      removeExisting("blocktopia-panel");
+      removeExisting("live-rank-badge");
+      console.log("Block Topia API not connected", err);
+    }
+  }
+
+  loadLeaderboard();
+  setInterval(loadLeaderboard, 4000);
+})();
+</script>
+
 </body>
 </html>
