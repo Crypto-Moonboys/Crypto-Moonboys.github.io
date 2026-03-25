@@ -1,11 +1,11 @@
 {
   "entity": "Battlemech Blast",
   "slug": "battlemech-blast",
-  "generated_at": "2026-03-24T19:48:54.762091+00:00",
-  "mention_count": 8,
+  "generated_at": "2026-03-25T00:15:52.338928+00:00",
+  "mention_count": 5,
   "all_facts": [
     {
-      "fact": "2D web3 shooter in HODL WARS",
+      "fact": "2D Web3 shooter game",
       "confidence": 80,
       "sources": [
         "https://medium.com/@graffpunksuk/the-hodl-wars-warfare-chronicles-battlemech-blast-b588d8142917"
@@ -13,12 +13,12 @@
       "validated_by": [
         "legacy_migration"
       ],
-      "first_seen_cycle": 1,
-      "last_verified_cycle": 1,
+      "first_seen_cycle": 0,
+      "last_verified_cycle": 0,
       "status": "VERIFIED"
     },
     {
-      "fact": "Survive or scrap metal theme",
+      "fact": "Part of HODL WARS Warfare Chronicles",
       "confidence": 80,
       "sources": [
         "https://medium.com/@graffpunksuk/the-hodl-wars-warfare-chronicles-battlemech-blast-b588d8142917"
@@ -26,8 +26,112 @@
       "validated_by": [
         "legacy_migration"
       ],
-      "first_seen_cycle": 1,
-      "last_verified_cycle": 1,
+      "first_seen_cycle": 0,
+      "last_verified_cycle": 0,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "On WAX blockchain",
+      "confidence": 80,
+      "sources": [
+        "https://medium.com/@graffpunksuk/the-hodl-wars-warfare-chronicles-battlemech-blast-b588d8142917"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 0,
+      "last_verified_cycle": 0,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "A 2D Web3 shooter within the HODL WARS Warfare Chronicles, set in the battle-scarred arenas of Block Topia.",
+      "confidence": 80,
+      "sources": [
+        "https://medium.com/@graffpunksuk/the-hodl-wars-warfare-chronicles-battlemech-blast-b588d8142917"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 3,
+      "last_verified_cycle": 3,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Built on the WAX blockchain, it integrates NFT mechs and weapons as core gameplay and collectible elements.",
+      "confidence": 80,
+      "sources": [
+        "https://medium.com/@graffpunksuk/the-hodl-wars-warfare-chronicles-battlemech-blast-b588d8142917"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 3,
+      "last_verified_cycle": 3,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Embodies the rebellious energy of HODL Warriors, turning every match into a fight for survival and decentralized glory.",
+      "confidence": 80,
+      "sources": [
+        "https://medium.com/@graffpunksuk/the-hodl-wars-warfare-chronicles-battlemech-blast-b588d8142917"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 3,
+      "last_verified_cycle": 3,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "A 2D Web3 shooter within the HODL WARS Warfare Chronicles, set in Block Topia\u2019s chaotic battle arenas on the WAX blockchain.",
+      "confidence": 80,
+      "sources": [
+        "https://medium.com/@graffpunksuk/the-hodl-wars-warfare-chronicles-battlemech-blast-b588d8142917"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 5,
+      "last_verified_cycle": 5,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Integrates NFT mechs and weapons as core gameplay elements, serving as both tools of war and collectible assets for HODL Warriors.",
+      "confidence": 80,
+      "sources": [
+        "https://medium.com/@graffpunksuk/the-hodl-wars-warfare-chronicles-battlemech-blast-b588d8142917"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 5,
+      "last_verified_cycle": 5,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Embodies the rebellious energy of GraffPUNKS, turning every match into a fight for survival and decentralized glory in the Crypto Moonboys universe.",
+      "confidence": 80,
+      "sources": [
+        "https://medium.com/@graffpunksuk/the-hodl-wars-warfare-chronicles-battlemech-blast-b588d8142917"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 5,
+      "last_verified_cycle": 5,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Tests players\u2019 strategy and grit, offering a digital battlefield where every victory echoes the street-art spirit of resistance.",
+      "confidence": 80,
+      "sources": [
+        "https://medium.com/@graffpunksuk/the-hodl-wars-warfare-chronicles-battlemech-blast-b588d8142917"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 5,
+      "last_verified_cycle": 5,
       "status": "VERIFIED"
     }
   ],
