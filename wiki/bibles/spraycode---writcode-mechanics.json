@@ -1,11 +1,11 @@
 {
-  "entity": "Spraycode & Writcode Mechanics",
+  "entity": "Spraycode & Writcode mechanics",
   "slug": "spraycode---writcode-mechanics",
-  "generated_at": "2026-03-24T19:48:54.759015+00:00",
-  "mention_count": 8,
+  "generated_at": "2026-03-25T00:15:52.333936+00:00",
+  "mention_count": 5,
   "all_facts": [
     {
-      "fact": "Tools for digital graffiti and code art",
+      "fact": "Creative coding systems for NFTs",
       "confidence": 80,
       "sources": [
         "PROJECT-DNA.md"
@@ -13,8 +13,99 @@
       "validated_by": [
         "legacy_migration"
       ],
-      "first_seen_cycle": 1,
-      "last_verified_cycle": 1,
+      "first_seen_cycle": 0,
+      "last_verified_cycle": 0,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Innovative systems for encoding visual art (Spraycode) and hidden data or narratives (Writcode) into NFTs.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 3,
+      "last_verified_cycle": 3,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Reflect the street-art ethos of Graffiti Kings, enabling digital creators to tag the metaverse with rebellious intent.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 3,
+      "last_verified_cycle": 3,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Used by factions like The GRAFFPUNKS to embed lore, puzzles, or battle codes into blockchain assets in Block Topia.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 3,
+      "last_verified_cycle": 3,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Innovative systems for encoding visual art (Spraycode) and hidden data or narratives (Writcode) into NFTs, enhancing digital creativity.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 5,
+      "last_verified_cycle": 5,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Reflect the street-art ethos of Graffiti Kings, enabling creators to tag the metaverse with rebellious intent and hidden messages.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 5,
+      "last_verified_cycle": 5,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Used by factions like The GRAFFPUNKS to embed lore, puzzles, or battle codes into blockchain assets in Block Topia\u2019s conflicts.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 5,
+      "last_verified_cycle": 5,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Turn NFTs into multifaceted tools, blending art with strategy to enrich the Crypto Moonboys universe\u2019s decentralized narrative.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 5,
+      "last_verified_cycle": 5,
       "status": "VERIFIED"
     }
   ],
