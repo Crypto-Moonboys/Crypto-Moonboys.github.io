@@ -1,11 +1,11 @@
 {
-  "entity": "Phygital Prints",
+  "entity": "Phygital prints",
   "slug": "phygital-prints",
-  "generated_at": "2026-03-24T19:48:54.756353+00:00",
-  "mention_count": 8,
+  "generated_at": "2026-03-25T00:15:52.329019+00:00",
+  "mention_count": 5,
   "all_facts": [
     {
-      "fact": "Hybrid physical-digital art with NFT ownership",
+      "fact": "Physical-digital hybrid assets",
       "confidence": 80,
       "sources": [
         "PROJECT-DNA.md"
@@ -13,8 +13,99 @@
       "validated_by": [
         "legacy_migration"
       ],
-      "first_seen_cycle": 1,
-      "last_verified_cycle": 1,
+      "first_seen_cycle": 0,
+      "last_verified_cycle": 0,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Hybrid assets that fuse physical graffiti art with digital NFT ownership, rooted in Graffiti Kings tradition.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 3,
+      "last_verified_cycle": 3,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Can be staked for $GK tokens or used in metaverse battles, blending real-world value with virtual power.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 3,
+      "last_verified_cycle": 3,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Seen as symbols of rebellion in Block Topia, often tied to factions like The GKniftyHEADS as cultural artifacts.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 3,
+      "last_verified_cycle": 3,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Hybrid assets that fuse physical graffiti art with digital NFT ownership, rooted in the storied tradition of Graffiti Kings.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 5,
+      "last_verified_cycle": 5,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Can be staked for $GK tokens or used in metaverse battles, blending real-world cultural value with virtual strategic power.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 5,
+      "last_verified_cycle": 5,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Seen as powerful symbols of rebellion in Block Topia, often tied to factions like The GKniftyHEADS as cherished cultural artifacts.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 5,
+      "last_verified_cycle": 5,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Represent a unique intersection of tangible and digital art, carrying street-art defiance into the Crypto Moonboys universe.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 5,
+      "last_verified_cycle": 5,
       "status": "VERIFIED"
     }
   ],
