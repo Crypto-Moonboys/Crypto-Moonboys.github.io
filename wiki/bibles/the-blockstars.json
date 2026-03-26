@@ -1,11 +1,11 @@
 {
   "entity": "The BLOCKSTARS",
   "slug": "the-blockstars",
-  "generated_at": "2026-03-24T19:48:54.743021+00:00",
-  "mention_count": 8,
+  "generated_at": "2026-03-26T03:22:55.242424+00:00",
+  "mention_count": 4,
   "all_facts": [
     {
-      "fact": "Celebrity coders with influence",
+      "fact": "Celebrity coders in lore",
       "confidence": 80,
       "sources": [
         "PROJECT-DNA.md"
@@ -13,8 +13,99 @@
       "validated_by": [
         "legacy_migration"
       ],
-      "first_seen_cycle": 1,
-      "last_verified_cycle": 1,
+      "first_seen_cycle": 0,
+      "last_verified_cycle": 0,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "A faction of celebrity coders, renowned for their fame and technical brilliance in Block Topia\u2019s digital ecosystem.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 5,
+      "last_verified_cycle": 5,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Shape cultural trends and alliances with viral smart contracts, influencing metaverse battles through their high-profile innovations.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 5,
+      "last_verified_cycle": 5,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Their independent status and star power make them a captivating yet unpredictable force in the Crypto Moonboys universe\u2019s rebellion.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 5,
+      "last_verified_cycle": 5,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "The BLOCKSTARS are a faction of celebrity coders, renowned for their fame and technical brilliance in Block Topia\u2019s digital ecosystem, their every creation a cultural event that can shift the balance of power in the metaverse with a single line of code.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 34,
+      "last_verified_cycle": 34,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Their viral smart contracts often serve as double-edged swords, shaping cultural trends and forging alliances while simultaneously disrupting enemy strategies, their influence in metaverse battles a testament to the power of fame as a weapon in the digital age.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 34,
+      "last_verified_cycle": 34,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Rumors persist in Block Topia that The BLOCKSTARS maintain hidden 'Fan Nodes,' secret servers where their most loyal followers receive exclusive code drops, forming a shadowy army of devotees ready to execute their idols\u2019 will at a moment\u2019s notice.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 34,
+      "last_verified_cycle": 34,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Their high-profile innovations are often premiered at grand digital galas, events that double as battlegrounds for influence, where rival factions scramble to decode the BLOCKSTARS\u2019 latest creations for hidden messages or strategic advantages.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 34,
+      "last_verified_cycle": 34,
       "status": "VERIFIED"
     }
   ],
