@@ -1,11 +1,11 @@
 {
   "entity": "The INFORMATION MERCENARIES",
   "slug": "the-information-mercenaries",
-  "generated_at": "2026-03-24T19:48:54.746051+00:00",
-  "mention_count": 8,
+  "generated_at": "2026-03-26T02:46:29.614396+00:00",
+  "mention_count": 4,
   "all_facts": [
     {
-      "fact": "Data brokers for hire",
+      "fact": "Data brokers in lore",
       "confidence": 80,
       "sources": [
         "PROJECT-DNA.md"
@@ -13,8 +13,86 @@
       "validated_by": [
         "legacy_migration"
       ],
-      "first_seen_cycle": 1,
-      "last_verified_cycle": 1,
+      "first_seen_cycle": 0,
+      "last_verified_cycle": 0,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Operate as cunning data brokers, trading sensitive blockchain intelligence for power and influence in Block Topia.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 5,
+      "last_verified_cycle": 5,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Their knowledge of hidden lore and digital secrets makes them key players in metaverse battles and events like the Triple Fork Event.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 5,
+      "last_verified_cycle": 5,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "As independent agents, their deals can reshape faction dynamics, embodying the cutthroat nature of information warfare in the Crypto Moonboys universe.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 5,
+      "last_verified_cycle": 5,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "The INFORMATION MERCENARIES hold unparalleled sway over Block Topia\u2019s power struggles, their trade in sensitive blockchain intelligence turning hidden data into a weapon that can dismantle alliances or fortify factions with a single, calculated transaction.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 29,
+      "last_verified_cycle": 29,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Their deep knowledge of metaverse lore and encrypted secrets positions them as key players during pivotal events like the Triple Fork Event, where their brokered deals often determine the outcome of digital wars before the first shot is even fired.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 29,
+      "last_verified_cycle": 29,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Operating as independent agents, The INFORMATION MERCENARIES thrive in the shadows, their elusive nature and lack of allegiance making them both a vital asset and a dangerous wildcard, as no faction can ever fully trust the keepers of such deadly information.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 29,
+      "last_verified_cycle": 29,
       "status": "VERIFIED"
     }
   ],
