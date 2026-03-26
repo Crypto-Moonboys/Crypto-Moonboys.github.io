@@ -1,8 +1,8 @@
 {
   "entity": "Graffiti Queens in Decentraland",
   "slug": "graffiti-queens-in-decentraland",
-  "generated_at": "2026-03-25T00:15:52.340146+00:00",
-  "mention_count": 5,
+  "generated_at": "2026-03-26T10:15:49.879068+00:00",
+  "mention_count": 10,
   "all_facts": [
     {
       "fact": "Largest all-female NFT exhibition",
@@ -145,6 +145,45 @@
       ],
       "first_seen_cycle": 5,
       "last_verified_cycle": 5,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Graffiti Queens in Decentraland, held in April 2021, marked a historic moment in the Crypto Moonboys universe as the largest all-female NFT exhibition, showcasing over 270 artists like Paris Hilton and Pussy Riot, turning the virtual realm into a battleground of female empowerment and art.",
+      "confidence": 80,
+      "sources": [
+        "Initial context"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 59,
+      "last_verified_cycle": 59,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Driven by The GKniftyHEADS and rooted in the Graffiti Kings\u2019 ethos, this event in Decentraland became a cultural touchstone for Block Topia, its phygital displays inspiring warriors to wield creativity as a weapon, reshaping factional dynamics with every defiant brushstroke.",
+      "confidence": 80,
+      "sources": [
+        "Initial context"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 59,
+      "last_verified_cycle": 59,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Beyond an exhibition, Graffiti Queens ignited a movement within the metaverse, its celebration of female rebellion echoing through Block Topia\u2019s neon streets as new murals and conflicts arose, forever embedding the event as a symbol of art\u2019s power to challenge and redefine.",
+      "confidence": 80,
+      "sources": [
+        "Initial context"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 59,
+      "last_verified_cycle": 59,
       "status": "VERIFIED"
     }
   ],
