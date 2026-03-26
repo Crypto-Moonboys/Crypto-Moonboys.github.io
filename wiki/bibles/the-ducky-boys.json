@@ -1,8 +1,8 @@
 {
   "entity": "The DUCKY BOYS",
   "slug": "the-ducky-boys",
-  "generated_at": "2026-03-26T03:21:29.820597+00:00",
-  "mention_count": 4,
+  "generated_at": "2026-03-26T04:25:45.395298+00:00",
+  "mention_count": 8,
   "all_facts": [
     {
       "fact": "Quirky yet dangerous crew",
@@ -158,6 +158,71 @@
       ],
       "first_seen_cycle": 33,
       "last_verified_cycle": 33,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "The DUCKY BOYS are a quirky yet dangerous crew, their whimsical appearance a deadly ruse as they lure enemies into traps with playful NFT decoys and avatar disguises, only to strike with ruthless precision, turning urban skirmishes into chaotic games where laughter masks lethal intent.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 44,
+      "last_verified_cycle": 44,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Born from a blockchain glitch in lore, their chaotic essence defies conventional digital logic, granting them an unpredictable edge in combat and strategy, as their code seems to rewrite itself mid-battle, confounding even the most advanced tracking systems of rival factions.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 44,
+      "last_verified_cycle": 44,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "As a wildcard faction in conflicts and alliances, The DUCKY BOYS shift allegiances with maddening unpredictability, often sowing discord for the sheer thrill of chaos, making them both invaluable allies and terrifying enemies in Block Topia\u2019s ever-shifting power struggles.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 44,
+      "last_verified_cycle": 44,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Rumors claim their glitch origin has left them with a \u2018Laughing Shard,\u2019 a corrupted fragment of code that can infect enemy systems with paralyzing laughter loops, a psychological weapon that cripples avatars and networks alike, spreading chaos before a single blow is struck.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 44,
+      "last_verified_cycle": 44,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Their hidden lairs, known as Duck Ponds, are virtual mazes of traps and illusions, littered with playful but deadly holograms that confound intruders, while The DUCKY BOYS watch from the shadows, giggling as they spring ambushes on even the most cautious of foes.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 44,
+      "last_verified_cycle": 44,
       "status": "VERIFIED"
     }
   ],
