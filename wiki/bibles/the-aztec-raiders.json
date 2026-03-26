@@ -1,11 +1,11 @@
 {
   "entity": "The AZTEC RAIDERS",
   "slug": "the-aztec-raiders",
-  "generated_at": "2026-03-24T19:48:54.744168+00:00",
-  "mention_count": 8,
+  "generated_at": "2026-03-26T03:22:55.248236+00:00",
+  "mention_count": 4,
   "all_facts": [
     {
-      "fact": "Ancient-inspired aggressive raiders",
+      "fact": "Ancient-inspired invaders",
       "confidence": 80,
       "sources": [
         "PROJECT-DNA.md"
@@ -13,8 +13,138 @@
       "validated_by": [
         "legacy_migration"
       ],
-      "first_seen_cycle": 1,
-      "last_verified_cycle": 1,
+      "first_seen_cycle": 0,
+      "last_verified_cycle": 15,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Raid with brutal ferocity and war aesthetics",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 15,
+      "last_verified_cycle": 15,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Tied to a lost blockchain civilization in lore",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 15,
+      "last_verified_cycle": 15,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Leave cryptic glyphs inspiring NFT collections",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 15,
+      "last_verified_cycle": 15,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "The AZTEC RAIDERS draw their ferocious power from a mythical reboot of a lost blockchain civilization, believing themselves to be the rightful heirs to Block Topia\u2019s digital dominion, a belief that fuels their relentless raids and ritualistic conquests against urban and nomadic factions alike.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 29,
+      "last_verified_cycle": 29,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Their signature cryptic glyphs, left behind after each devastating attack, are more than mere markings; they are rumored to encode ancient blockchain secrets, sparking frenzied hunts among NFT collectors and rival factions who seek to decipher their hidden power.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 29,
+      "last_verified_cycle": 29,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Each raid by the AZTEC RAIDERS is a ceremonial act of terror, often involving the sacrifice of rival NFT caches in sacred territories, a practice they claim channels the favor of their data gods to strengthen their grip over the metaverse\u2019s fractured landscape.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 29,
+      "last_verified_cycle": 29,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "The AZTEC RAIDERS draw their ferocious power from a mythical reboot of a lost blockchain civilization, believing themselves to be the rightful heirs to Block Topia\u2019s digital dominion, a belief that fuels their relentless raids and ritualistic conquests against all who stand in their path.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 34,
+      "last_verified_cycle": 34,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Their obsidian-coded weapons are not mere tools but extensions of their ancient code, capable of slicing through modern defenses with brutal efficiency, leaving behind corrupted data trails that resemble the jagged edges of sacrificial altars from a bygone era.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 34,
+      "last_verified_cycle": 34,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "The cryptic glyphs left by The AZTEC RAIDERS after their raids are more than mere markings; they are believed to be fragments of ancient smart contracts, holding dormant power that, if deciphered, could unleash forgotten protocols capable of altering Block Topia\u2019s very foundation.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 34,
+      "last_verified_cycle": 34,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Survivors of their attacks often speak of a haunting phenomenon known as the 'Code Wail,' a sound emitted during their raids that mimics the crash of collapsing nodes, a sonic weapon that disorients enemies and leaves lasting psychological scars on those who hear it.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 34,
+      "last_verified_cycle": 34,
       "status": "VERIFIED"
     }
   ],
