@@ -35,11 +35,24 @@
     .wiki-section {
       margin: 1.6em 0;
     }
-    .facts-list {
-      padding-left: 1.4em;
+    .lore-paragraph {
+      line-height: 1.75;
+      margin: 0 0 1em 0;
     }
-    .facts-list li {
-      margin-bottom: 0.4em;
+    .lead-paragraph {
+      font-size: 1.06em;
+      line-height: 1.8;
+      margin: 0 0 1em 0;
+    }
+    .lore-facts-stack {
+      display: block;
+    }
+    .lore-fact-block {
+      margin: 0 0 1.2em 0;
+      padding: 1em 1.1em;
+      background: rgba(255,255,255,0.03);
+      border-left: 4px solid #5b8cff;
+      border-radius: 6px;
     }
     .sources-list {
       padding-left: 1.4em;
@@ -66,7 +79,7 @@
     }
   </style>
 </head>
-<body data-sam-hash="9c805d38562a" data-sam-cycle="14" data-sam-category="lore_locations">
+<body data-sam-hash="8d6577da72af" data-sam-cycle="40" data-sam-category="lore_locations">
 
 <a class="skip-link" href="#content">Skip to content</a>
 
@@ -154,7 +167,7 @@
 
       <article class="wiki-content">
 
-        <p>Central decentralized quantum network city of rebellion</p>
+          <p class="lead-paragraph">Central decentralized quantum network city of rebellion</p>
 
         <div class="article-stats">
           <span>📊 Verified across <strong>6</strong> SAM cycles</span>
@@ -163,31 +176,47 @@
 
         <section class="wiki-section">
           <h2 id="faction">Faction</h2>
-          <p><strong>Allegiance:</strong> The GKniftyHEADS</p>
+          <p class="lore-paragraph"><strong>Allegiance:</strong> Neutral (contested by multiple factions)</p>
         </section>
 
         <section class="wiki-section">
           <h2 id="known-facts">Known Facts</h2>
-          <ul class="facts-list">
-          <li>Central city in lore</li>
-          <li>Neon-lit streets where code is law</li>
-          <li>Districts evolve via smart contracts</li>
-          <li>Setting post-Great Datapocalypse of 2789</li>
-          <li>A neon-lit city in the Crypto Moonboys universe where code is law, rebuilt after the Great Datapocalypse of 2789.</li>
-          <li>Districts evolve via smart contracts, reflecting the fluid, decentralized nature of Block Topia’s digital landscape.</li>
-          <li>Central hub for The GKniftyHEADS, hosting critical events like the Hard Fork Games and metaverse battles for freedom.</li>
-          <li>Serves as the battleground for rebellion, where encrypted graffiti and blockchain energy fuel the fight against centralized oppression.</li>
-          </ul>
+          <div class="lore-facts-stack">
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">Central city in lore</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">Neon-lit streets where code is law</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">Districts evolve via smart contracts</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">Setting post-Great Datapocalypse of 2789</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">A neon-lit city in the Crypto Moonboys universe where code is law, rebuilt after the Great Datapocalypse of 2789.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">Districts evolve via smart contracts, reflecting the fluid, decentralized nature of Block Topia’s digital landscape.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">Central hub for The GKniftyHEADS, hosting critical events like the Hard Fork Games and metaverse battles for freedom.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">Serves as the battleground for rebellion, where encrypted graffiti and blockchain energy fuel the fight against centralized oppression.</p>
+          </div>
+          </div>
         </section>
 
         <section class="wiki-section">
           <h2 id="lore">Lore</h2>
-          <p>Block Topia is the neon-lit metropolis at the heart of the Crypto Moonboys universe, a sprawling digital city where code reigns as law and districts evolve through dynamic smart contracts in the aftermath of the Great Datapocalypse of 2789. Serving as the central hub for The GKniftyHEADS, it is a battleground of rebellion where metaverse battles and events like the Hard Fork Games shape the future of decentralized freedom. Its streets pulse with encrypted graffiti and blockchain energy, a testament to the enduring spirit of Graffiti Kings, inspiring warriors to fight for a free digital realm against centralized forces and rival factions like the Street Kingdoms.</p>
+          <p class="lore-paragraph">Block Topia is the neon-lit metropolis at the heart of the Crypto Moonboys universe, a sprawling digital city where code reigns as law and districts evolve through dynamic smart contracts in the aftermath of the Great Datapocalypse of 2789. Serving as the central hub for The GKniftyHEADS, it is a battleground of rebellion where metaverse battles and events like the Hard Fork Games shape the future of decentralized freedom. Its streets pulse with encrypted graffiti and blockchain energy, a testament to the enduring spirit of Graffiti Kings, inspiring warriors to fight for a free digital realm against centralized forces and rival factions like the Street Kingdoms.</p>
         </section>
 
         <section class="wiki-section">
           <h2 id="real-world-basis">Real World Basis</h2>
-          <p>A fictional location within GraffPUNKS lore, representing the ultimate digital city of rebellion and decentralized power.</p>
+          <p class="lore-paragraph">A fictional location within GraffPUNKS lore, representing the ultimate digital city of rebellion and decentralized power.</p>
         </section>
 
         <section class="wiki-section">
@@ -227,7 +256,8 @@
   </div>
 </div>
 
-<button id="back-to-top" aria-label="Back to top">↑</button>
+<button id="back-to-top" aria-label="Back to top">&#8593;</button>
 <script src="../js/wiki.js"></script>
+<script src="/js/bible-loader.js"></script>
 </body>
 </html>
