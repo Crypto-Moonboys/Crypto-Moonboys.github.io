@@ -1,11 +1,11 @@
 {
   "entity": "Hard Fork Games",
   "slug": "hard-fork-games",
-  "generated_at": "2026-03-25T00:14:22.947016+00:00",
-  "mention_count": 7,
+  "generated_at": "2026-03-26T02:41:56.073054+00:00",
+  "mention_count": 8,
   "all_facts": [
     {
-      "fact": "Competitive event hosted by Queen Sarah P-fly",
+      "fact": "Competitive event for elite status",
       "confidence": 80,
       "sources": [
         "PROJECT-DNA.md"
@@ -18,7 +18,7 @@
       "status": "VERIFIED"
     },
     {
-      "fact": "Determines HODL X Warriors title",
+      "fact": "Hosted by Queen Sarah P-fly",
       "confidence": 80,
       "sources": [
         "PROJECT-DNA.md"
@@ -31,7 +31,7 @@
       "status": "VERIFIED"
     },
     {
-      "fact": "A competitive event hosted by Queen Sarah P-fly, determining the elite HODL X Warriors in Block Topia.",
+      "fact": "Grants HODL X Warriors title",
       "confidence": 80,
       "sources": [
         "PROJECT-DNA.md"
@@ -39,12 +39,12 @@
       "validated_by": [
         "legacy_migration"
       ],
-      "first_seen_cycle": 3,
-      "last_verified_cycle": 3,
+      "first_seen_cycle": 0,
+      "last_verified_cycle": 0,
       "status": "VERIFIED"
     },
     {
-      "fact": "Warriors stake NFT murals and battle in metaverse arenas, testing strategy and rebellious spirit for glory.",
+      "fact": "The Hard Fork Games\u2019 most infamous trial, the 'Consensus Fracture,' forces competitors to split into opposing teams mid-battle, simulating a blockchain fork by altering the arena\u2019s rules in real-time, with the losing side often erased from the match\u2019s digital record as if they never existed.",
       "confidence": 80,
       "sources": [
         "PROJECT-DNA.md"
@@ -52,12 +52,12 @@
       "validated_by": [
         "legacy_migration"
       ],
-      "first_seen_cycle": 3,
-      "last_verified_cycle": 3,
+      "first_seen_cycle": 26,
+      "last_verified_cycle": 26,
       "status": "VERIFIED"
     },
     {
-      "fact": "A cornerstone of GraffPUNKS lore, shaping decentralized power dynamics under The GKniftyHEADS\u2019 watchful gaze.",
+      "fact": "Queen Sarah P-fly is said to infuse the Games with her own coded essence, embedding hidden 'Royal Directives' within the challenges that, if deciphered, grant competitors secret advantages, though failure to obey these unseen commands can lead to catastrophic penalties.",
       "confidence": 80,
       "sources": [
         "PROJECT-DNA.md"
@@ -65,12 +65,12 @@
       "validated_by": [
         "legacy_migration"
       ],
-      "first_seen_cycle": 3,
-      "last_verified_cycle": 3,
+      "first_seen_cycle": 26,
+      "last_verified_cycle": 26,
       "status": "VERIFIED"
     },
     {
-      "fact": "A competitive event hosted by Queen Sarah P-fly, determining the elite HODL X Warriors through blockchain battles in Block Topia.",
+      "fact": "The title of HODL X Warriors is not just honorary; it comes with a permanent 'HODL Mark,' a blockchain tattoo that enhances the bearer\u2019s stats in all GraffPUNKS games and events, a visible sign of their elite status that inspires both reverence and envy.",
       "confidence": 80,
       "sources": [
         "PROJECT-DNA.md"
@@ -78,47 +78,8 @@
       "validated_by": [
         "legacy_migration"
       ],
-      "first_seen_cycle": 5,
-      "last_verified_cycle": 5,
-      "status": "VERIFIED"
-    },
-    {
-      "fact": "Warriors stake NFT murals and fight in metaverse arenas, testing strategy and rebellious spirit for ultimate glory and status.",
-      "confidence": 80,
-      "sources": [
-        "PROJECT-DNA.md"
-      ],
-      "validated_by": [
-        "legacy_migration"
-      ],
-      "first_seen_cycle": 5,
-      "last_verified_cycle": 5,
-      "status": "VERIFIED"
-    },
-    {
-      "fact": "A cornerstone of GraffPUNKS lore, shaping decentralized power dynamics under The GKniftyHEADS\u2019 watchful gaze in the Crypto Moonboys universe.",
-      "confidence": 80,
-      "sources": [
-        "PROJECT-DNA.md"
-      ],
-      "validated_by": [
-        "legacy_migration"
-      ],
-      "first_seen_cycle": 5,
-      "last_verified_cycle": 5,
-      "status": "VERIFIED"
-    },
-    {
-      "fact": "Serves as a ritual of strength, often influencing factional hierarchies with each hard-fought victory or strategic fork.",
-      "confidence": 80,
-      "sources": [
-        "PROJECT-DNA.md"
-      ],
-      "validated_by": [
-        "legacy_migration"
-      ],
-      "first_seen_cycle": 5,
-      "last_verified_cycle": 5,
+      "first_seen_cycle": 26,
+      "last_verified_cycle": 26,
       "status": "VERIFIED"
     }
   ],
