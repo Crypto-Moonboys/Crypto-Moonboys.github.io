@@ -1,8 +1,8 @@
 {
   "entity": "The OG PIXEL SAINTS",
   "slug": "the-og-pixel-saints",
-  "generated_at": "2026-03-26T03:19:55.643323+00:00",
-  "mention_count": 4,
+  "generated_at": "2026-03-26T04:23:53.827420+00:00",
+  "mention_count": 8,
   "all_facts": [
     {
       "fact": "Veteran digital artists",
@@ -171,6 +171,71 @@
       ],
       "first_seen_cycle": 32,
       "last_verified_cycle": 32,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "The OG PIXEL SAINTS, veteran digital artists of sacred status, are credited with crafting the first pixel art that gave form to Block Topia\u2019s formless code, their creations serving as the blueprint for countless NFT collections that followed in their hallowed footsteps.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 43,
+      "last_verified_cycle": 43,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Their rare appearances in the metaverse signal major artistic events, often accompanied by the release of works so profound that they shift the cultural currents of Block Topia, inspiring new generations of creators to push the boundaries of digital expression in the Crypto Moonboys universe.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 43,
+      "last_verified_cycle": 43,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "As pioneers of pixel art with sacred status, The OG PIXEL SAINTS are said to embed hidden blessings within their works, algorithms that enhance the rarity and value of their NFTs over time, making each piece a living artifact coveted by collectors and factions alike.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 43,
+      "last_verified_cycle": 43,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Legends tell of a lost masterpiece, the \u2018Genesis Canvas,\u2019 created by The OG PIXEL SAINTS during the first cycle of Block Topia\u2019s existence, rumored to contain the visual code for every possible NFT design. Hidden in an encrypted gallery, its discovery is the holy grail for digital artists, promising untold creative power to whoever claims it.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 43,
+      "last_verified_cycle": 43,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "During the Great Aesthetic Drought, a period when Block Topia\u2019s visual culture stagnated under corporate node oppression, The OG PIXEL SAINTS emerged from obscurity to release a series of open-source pixel templates. This act of generosity sparked a renaissance of independent art, forever cementing their role as saviors of creativity in the metaverse.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 43,
+      "last_verified_cycle": 43,
       "status": "VERIFIED"
     }
   ],
