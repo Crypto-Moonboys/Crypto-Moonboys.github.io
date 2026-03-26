@@ -1,0 +1,78 @@
+{
+  "entity": "GraffPUNKS",
+  "slug": "graffpunks",
+  "generated_at": "2026-03-26T03:39:37.617108+00:00",
+  "mention_count": 15,
+  "all_facts": [
+    {
+      "fact": "The GraffPUNKS are infamous for 'The Great Tag Raid,' a coordinated attack during HODL WARS where they defaced hundreds of high-value NFTs with their signature digital graffiti, crashing their market value overnight. This act of economic sabotage not only humiliated rival factions but also flooded underground markets with discounted assets, solidifying their reputation as agents of chaos.",
+      "confidence": 80,
+      "sources": [],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 31,
+      "last_verified_cycle": 31,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Unlike the structured HODL Warriors, the GraffPUNKS operate without a central leader, instead following a decentralized network of 'Tag Lords' who propose and vote on operations via anonymous smart contracts. This structure makes them nearly impossible to dismantle, as their hierarchy shifts with every mural they code into the blockchain.",
+      "confidence": 80,
+      "sources": [],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 31,
+      "last_verified_cycle": 31,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "GraffPUNKS stand as a rebellious street-art faction in Block Topia, their digital graffiti a powerful tool of defiance that paints resistance across the Sacred Chain, embodying the punk ethos of the Crypto Moonboys universe and inspiring warriors in every metaverse clash.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md",
+        "https://graffpunks.substack.com",
+        "https://medium.com/@graffpunksuk/the-hodl-wars-warfare-chronicles-battlemech-blast-b588d8142917"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 35,
+      "last_verified_cycle": 35,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Tied to the real-world Graffiti Kings, their visual canon rooted in human punk style shapes the aesthetic of rebellion, aligning them with the GKniftyHEADS and HODL Warriors, their art a unifying force during brutal events like the Hard Fork Games.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md",
+        "https://graffpunks.substack.com",
+        "https://medium.com/@graffpunksuk/the-hodl-wars-warfare-chronicles-battlemech-blast-b588d8142917"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 35,
+      "last_verified_cycle": 35,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "As a cultural juggernaut in HODL WARS, GraffPUNKS transform digital battlegrounds into canvases of protest, their Substack and Medium content a rallying cry for punks everywhere, weaving real-world street art legacy into the blockchain battles of tomorrow.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md",
+        "https://graffpunks.substack.com",
+        "https://medium.com/@graffpunksuk/the-hodl-wars-warfare-chronicles-battlemech-blast-b588d8142917"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 35,
+      "last_verified_cycle": 35,
+      "status": "VERIFIED"
+    }
+  ],
+  "relationships": [],
+  "timeline": [],
+  "cross_links": []
+}
