@@ -1,11 +1,11 @@
 {
   "entity": "The HARD FORK ROCKERS",
   "slug": "the-hard-fork-rockers",
-  "generated_at": "2026-03-24T19:48:54.742650+00:00",
-  "mention_count": 8,
+  "generated_at": "2026-03-26T03:21:29.815091+00:00",
+  "mention_count": 4,
   "all_facts": [
     {
-      "fact": "Rebels exploiting hard forks",
+      "fact": "Rebels of blockchain splits",
       "confidence": 80,
       "sources": [
         "PROJECT-DNA.md"
@@ -13,8 +13,151 @@
       "validated_by": [
         "legacy_migration"
       ],
-      "first_seen_cycle": 1,
-      "last_verified_cycle": 1,
+      "first_seen_cycle": 0,
+      "last_verified_cycle": 15,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Oppose centralized control and authority",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 15,
+      "last_verified_cycle": 15,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Bear digital scars of fork events in lore",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 15,
+      "last_verified_cycle": 15,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Influence through music and NFT manifestos",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 15,
+      "last_verified_cycle": 15,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "The HARD FORK ROCKERS are the rebels of blockchain splits, their very existence a protest against the suffocating grip of centralized powers, as they transform the pain of digital fractures into a rallying cry for freedom, drawing strength from the chaos of forks to fuel their endless war on conformity.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 28,
+      "last_verified_cycle": 28,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Each Rocker carries a digital scar in their lore, a unique glitch in their NFT avatar that marks their survival of a historic fork event, serving as both a personal badge of defiance and a visual testament to the blockchain\u2019s violent history of division and rebirth.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 28,
+      "last_verified_cycle": 28,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Their influence spreads through music and NFT manifestos, with subversive tracks and art pieces embedded with hidden code that disrupts centralized systems, inspiring smaller factions to rise up while broadcasting their anarchic ideals across Block Topia\u2019s fragmented networks.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 28,
+      "last_verified_cycle": 28,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Legends claim their hidden headquarters lies in the code of a dead chain, a forgotten protocol where their first song\u2014a distorted hymn of rebellion\u2014still loops endlessly, acting as a beacon for those seeking to shatter the chains of digital oppression.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 28,
+      "last_verified_cycle": 28,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "The HARD FORK ROCKERS are the rebels of blockchain splits, their very existence a protest against the suffocating grip of centralized powers, as they transform the pain of digital fractures into a rallying cry for freedom, drawing strength from the chaos of forgotten forks.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 33,
+      "last_verified_cycle": 33,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Bearing digital scars of fork events in lore, each member of The HARD FORK ROCKERS carries a glitchy mark in their NFT avatars, a personal testament to the historic ruptures that birthed their faction, fueling their defiance with every pixelated wound.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 33,
+      "last_verified_cycle": 33,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Their influence spreads through music and NFT manifestos, with The HARD FORK ROCKERS broadcasting subversive anthems and art across Block Topia\u2019s encrypted channels, turning cultural expression into a weapon that inspires resistance against oppressive factions.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 33,
+      "last_verified_cycle": 33,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Hidden in the code of abandoned blockchain chains, The HARD FORK ROCKERS\u2019 strongholds are bastions of anarchy, where the echoes of past digital schisms resonate in their guerrilla tactics, making them an elusive and unpredictable force in Block Topia\u2019s wars.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 33,
+      "last_verified_cycle": 33,
       "status": "VERIFIED"
     }
   ],
