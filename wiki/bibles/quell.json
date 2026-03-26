@@ -1,11 +1,11 @@
 {
   "entity": "Quell",
   "slug": "quell",
-  "generated_at": "2026-03-24T19:48:54.731955+00:00",
-  "mention_count": 8,
+  "generated_at": "2026-03-26T03:44:19.025560+00:00",
+  "mention_count": 6,
   "all_facts": [
     {
-      "fact": "Network peacekeeper",
+      "fact": "Peacekeeper in lore",
       "confidence": 80,
       "sources": [
         "PROJECT-DNA.md"
@@ -13,8 +13,73 @@
       "validated_by": [
         "legacy_migration"
       ],
-      "first_seen_cycle": 1,
-      "last_verified_cycle": 1,
+      "first_seen_cycle": 0,
+      "last_verified_cycle": 0,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Quell stands as a peacekeeper in Block Topia, striving to maintain balance amid the relentless digital wars of the Crypto Moonboys universe, a rare voice of calm seeking truce over the clash of metaverse battles.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 4,
+      "last_verified_cycle": 4,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "His diplomatic efforts often surface during tumultuous events like the Triple Fork Event, attempting to broker peace between warring factions, though his unknown allegiance raises questions about his deeper motives.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 4,
+      "last_verified_cycle": 4,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Quell stands as a peacekeeper in Block Topia, striving to maintain balance amid the relentless digital wars of the Crypto Moonboys universe, a rare voice of calm seeking truce over the clash of metaverse battles. His presence has turned battlegrounds into temporary neutral zones, where even the fiercest warriors pause to hear his pleas for unity, though such moments are often shattered by the underlying distrust that fuels the rebellion.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 38,
+      "last_verified_cycle": 38,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "His diplomatic efforts often surface during tumultuous events like the Triple Fork Event, attempting to broker peace between warring factions with words instead of weapons. Quell\u2019s interventions have reportedly saved countless digital lives by averting all-out factional annihilation, yet his unknown allegiance raises persistent questions about whether his peace serves a hidden master or a genuine vision for Block Topia\u2019s future.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 38,
+      "last_verified_cycle": 38,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Legends within the metaverse whisper that Quell possesses a fragment of ancient code, a pacifying algorithm from the dawn of the Sacred Chain, which grants him the ability to soothe even the most corrupted data streams. Whether this rumored power is myth or reality, his ability to stand unscathed amidst chaos marks him as an anomaly, a figure whose true purpose may yet reshape the destiny of the Crypto Moonboys universe.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 38,
+      "last_verified_cycle": 38,
       "status": "VERIFIED"
     }
   ],
