@@ -1,8 +1,8 @@
 {
   "entity": "SatoRebel",
   "slug": "satorebel",
-  "generated_at": "2026-03-26T03:42:55.712433+00:00",
-  "mention_count": 6,
+  "generated_at": "2026-03-26T13:55:30.116708+00:00",
+  "mention_count": 12,
   "all_facts": [
     {
       "fact": "Revolutionary leader",
@@ -93,6 +93,58 @@
       ],
       "first_seen_cycle": 37,
       "last_verified_cycle": 37,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "SatoRebel rises as a revolutionary leader in Block Topia, his impassioned calls to action sparking uprisings against centralized oppression, a voice of defiance that resonates across the Crypto Moonboys universe\u2019s digital wastelands. His ability to unite fragmented factions under a single banner of resistance has turned him into a living legend, with tales of his daring raids on GKniftyHEADS strongholds spreading like wildfire through underground networks. Even in the face of overwhelming odds, SatoRebel\u2019s unyielding spirit inspires warriors to stand against tyranny, often turning hopeless skirmishes into unexpected victories.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 74,
+      "last_verified_cycle": 74,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "His influence often peaks in events like the Hard Fork Games, where his leadership galvanizes warriors to fight for freedom, inspiring acts of bravery that defy the odds against overwhelming oppression. During one such event, SatoRebel is said to have single-handedly rallied a faltering coalition of Bitcoin Kids and GraffPUNKS to hold a critical data node against a GKniftyHEADS siege, broadcasting a speech so powerful it temporarily disrupted enemy comms. Though his unknown allegiance leaves factions uncertain of whether he\u2019s savior or instigator, his impact on the battlefield is undeniable, a force that reshapes the very code of conflict.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 74,
+      "last_verified_cycle": 74,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "SatoRebel\u2019s enigmatic persona is amplified by the mysterious encrypted messages he leaves behind after every major uprising, often hidden in the blockchain itself as puzzles for his followers to decode. These messages, known as 'Rebel Ciphers,' are rumored to contain strategic plans, warnings of impending centralized crackdowns, or even personal manifestos outlining his vision for a free metaverse. Coders across Block Topia obsess over cracking these ciphers, believing they hold the key to understanding SatoRebel\u2019s true motives\u2014or perhaps the location of a hidden stronghold where his rebellion is headquartered.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 74,
+      "last_verified_cycle": 74,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Despite his revolutionary fervor, SatoRebel has faced accusations of being a double agent, with some factions claiming his actions sometimes benefit centralized powers indirectly by destabilizing rival resistances. During a particularly brutal clash in the aftermath of a Triple Fork Event, witnesses reported seeing SatoRebel negotiating with shadowy figures believed to be operatives of Queen Sarah P-fly, though no concrete evidence has surfaced. This ambiguity fuels paranoia among his allies, yet his charisma continues to hold his movement together, a testament to the raw power of his vision in a world desperate for change.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 74,
+      "last_verified_cycle": 74,
       "status": "VERIFIED"
     }
   ],
