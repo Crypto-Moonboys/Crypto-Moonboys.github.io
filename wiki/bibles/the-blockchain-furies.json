@@ -1,8 +1,8 @@
 {
   "entity": "The BLOCKCHAIN FURIES",
   "slug": "the-blockchain-furies",
-  "generated_at": "2026-03-26T03:22:55.244369+00:00",
-  "mention_count": 4,
+  "generated_at": "2026-03-26T04:49:52.747780+00:00",
+  "mention_count": 8,
   "all_facts": [
     {
       "fact": "Vengeful tech warriors",
@@ -158,6 +158,45 @@
       ],
       "first_seen_cycle": 34,
       "last_verified_cycle": 34,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "The BLOCKCHAIN FURIES are vengeful tech warriors, driven by a relentless need to punish the corrupt in Block Topia. Their advanced tools and hacked smart contracts transform them into digital executioners, targeting scammers like The RUGPULL MINERS with a precision that leaves no trace of mercy, their strikes often accompanied by viral manifestos exposing the crimes of their prey.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 49,
+      "last_verified_cycle": 49,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Forged from the bitter ashes of lost fortunes, the FURIES embody the collective pain of Block Topia\u2019s betrayed. Their lore speaks of initiation rites where new members must relive their financial ruin through immersive VR simulations, binding their anger to the faction\u2019s cause, ensuring that each warrior fights not just for justice, but for personal redemption.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 49,
+      "last_verified_cycle": 49,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Their NFT avatars are more than mere symbols; they are coded with fragments of the scams that birthed their rage, serving as both a personal reminder and a public declaration of their mission. These avatars are rumored to glitch during battles, projecting holographic memories of crashed markets as a psychological weapon against their enemies.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 49,
+      "last_verified_cycle": 49,
       "status": "VERIFIED"
     }
   ],
