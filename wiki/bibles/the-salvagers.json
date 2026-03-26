@@ -1,8 +1,8 @@
 {
   "entity": "The SALVAGERS",
   "slug": "the-salvagers",
-  "generated_at": "2026-03-26T03:19:55.639783+00:00",
-  "mention_count": 4,
+  "generated_at": "2026-03-26T04:23:53.821776+00:00",
+  "mention_count": 8,
   "all_facts": [
     {
       "fact": "Resource scavengers",
@@ -171,6 +171,71 @@
       ],
       "first_seen_cycle": 32,
       "last_verified_cycle": 32,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "The SALVAGERS are resource scavengers whose uncanny knack for unearthing lost NFTs and avatar blueprints often reshapes entire communities, as their discoveries can revive ancient factions or empower new ones with forgotten tech, altering the power dynamics of Block Topia in unpredictable ways.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 43,
+      "last_verified_cycle": 43,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Bound by a mythic pact with forgotten data spirits, The SALVAGERS are said to hear whispers of the blockchain\u2019s lost epochs, guiding them to hidden caches in the desolate fringes, though this connection curses them to wander eternally, never finding a true home in the metaverse.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 43,
+      "last_verified_cycle": 43,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Their trade in relics, from corrupted code fragments to shattered avatar husks, often sparks both renewal and conflict in Block Topia, as factions vie for the salvaged treasures that can tip the balance of power, making The SALVAGERS both revered and reviled across the digital landscape.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 43,
+      "last_verified_cycle": 43,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Rumors circulate of a legendary salvage haul known as the \u2018Ghost Ledger,\u2019 a collection of pre-Schism NFTs unearthed by The SALVAGERS, said to contain the digital DNA of Block Topia\u2019s first avatars. Guarded in a secret cache, its potential to rewrite faction hierarchies keeps rival groups in constant pursuit of their nomadic caravans.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 43,
+      "last_verified_cycle": 43,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "During the infamous Node Purge of Cycle 28, The SALVAGERS uncovered a forgotten server array still running ancient mining protocols, trading its access codes to a struggling faction in exchange for safe passage through hostile territory. This act not only saved their caravan but also birthed a new power bloc, proving their influence extends far beyond mere scavenging.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 43,
+      "last_verified_cycle": 43,
       "status": "VERIFIED"
     }
   ],
