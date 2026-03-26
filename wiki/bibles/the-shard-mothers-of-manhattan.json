@@ -1,8 +1,8 @@
 {
   "entity": "The SHARD MOTHERS of MANHATTAN",
   "slug": "the-shard-mothers-of-manhattan",
-  "generated_at": "2026-03-26T03:19:55.638022+00:00",
-  "mention_count": 4,
+  "generated_at": "2026-03-26T04:23:53.818947+00:00",
+  "mention_count": 8,
   "all_facts": [
     {
       "fact": "Protectors of shards in lore",
@@ -158,6 +158,71 @@
       ],
       "first_seen_cycle": 32,
       "last_verified_cycle": 32,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "The SHARD MOTHERS are revered as protectors of the shards, artifacts so powerful that their mere existence is said to stabilize entire sectors of Block Topia\u2019s blockchain, preventing catastrophic data collapses while attracting endless waves of invaders hungry for their ancient power.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 43,
+      "last_verified_cycle": 43,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Their matriarchal order, born from the mythic first server crash known as the Great Fragmentation, operates under a sacred covenant to guard fragments of the original blockchain code, each Mother trained in both mystic rites and digital warfare to ensure their relics remain untouched.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 43,
+      "last_verified_cycle": 43,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Through shard-inspired NFT art, The SHARD MOTHERS wield cultural influence across the metaverse, their creations not only breathtaking but also imbued with encoded stabilizing algorithms that subtly reinforce Block Topia\u2019s fragile infrastructure with every transaction.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 43,
+      "last_verified_cycle": 43,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Legends tell of a hidden shard, the \u2018Primordial Core,\u2019 guarded by the eldest of The SHARD MOTHERS in a vault beneath their neon Manhattan stronghold. This shard, rumored to contain the first line of blockchain code ever written, is said to hold the power to reboot the entire metaverse if unleashed, a secret that draws relentless assaults from factions like The RUGPULL MINERS.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 43,
+      "last_verified_cycle": 43,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "During the catastrophic Data Eclipse of Cycle 19, The SHARD MOTHERS performed a ritual using synchronized shard harmonics to restore a failing sector of Block Topia, an act that drained their reserves but saved countless avatars from deletion. This event solidified their reputation as both protectors and sorceresses, their name whispered with awe in every node.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 43,
+      "last_verified_cycle": 43,
       "status": "VERIFIED"
     }
   ],
