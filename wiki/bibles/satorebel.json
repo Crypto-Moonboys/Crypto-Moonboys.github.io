@@ -1,11 +1,11 @@
 {
   "entity": "SatoRebel",
   "slug": "satorebel",
-  "generated_at": "2026-03-24T19:48:54.728217+00:00",
-  "mention_count": 8,
+  "generated_at": "2026-03-26T03:42:55.712433+00:00",
+  "mention_count": 6,
   "all_facts": [
     {
-      "fact": "Hacker inspired by Satoshi",
+      "fact": "Revolutionary leader",
       "confidence": 80,
       "sources": [
         "PROJECT-DNA.md"
@@ -13,12 +13,12 @@
       "validated_by": [
         "legacy_migration"
       ],
-      "first_seen_cycle": 1,
-      "last_verified_cycle": 1,
+      "first_seen_cycle": 0,
+      "last_verified_cycle": 0,
       "status": "VERIFIED"
     },
     {
-      "fact": "Fights for decentralization",
+      "fact": "SatoRebel rises as a revolutionary leader in Block Topia, his impassioned calls to action sparking uprisings against centralized oppression, a voice of defiance that resonates across the Crypto Moonboys universe\u2019s digital wastelands.",
       "confidence": 80,
       "sources": [
         "PROJECT-DNA.md"
@@ -26,8 +26,73 @@
       "validated_by": [
         "legacy_migration"
       ],
-      "first_seen_cycle": 1,
-      "last_verified_cycle": 1,
+      "first_seen_cycle": 4,
+      "last_verified_cycle": 4,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "His influence often peaks in events like the Hard Fork Games, where his leadership galvanizes warriors to fight for freedom, though his unknown allegiance leaves factions uncertain of whether he\u2019s savior or instigator.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 4,
+      "last_verified_cycle": 4,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "SatoRebel rises as a revolutionary leader in Block Topia, his impassioned calls to action sparking uprisings against centralized oppression, a voice of defiance that resonates across the Crypto Moonboys universe\u2019s digital wastelands. His ability to unite the fragmented and forgotten under a single banner of resistance makes him a formidable force, one whose every speech can turn a quiet discontent into a roaring rebellion.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 37,
+      "last_verified_cycle": 37,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "His influence often peaks in events like the Hard Fork Games, where his leadership galvanizes warriors to fight for freedom, inspiring acts of bravery that defy the odds against overwhelming oppression. Though his unknown allegiance leaves factions uncertain of whether he\u2019s savior or instigator, his charisma ensures that his call to arms is rarely ignored, even by those who doubt his true intentions.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 37,
+      "last_verified_cycle": 37,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Rumors swirl of SatoRebel\u2019s possession of the \u2018Rebel Cipher,\u2019 a hacked protocol believed to grant access to hidden backdoors in Block Topia\u2019s centralized systems, allowing his forces to strike at the heart of tyranny with devastating precision. While unconfirmed, the mere possibility of such a weapon in his hands heightens the fear and fascination surrounding his crusade, driving both allies and enemies to seek its truth.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 37,
+      "last_verified_cycle": 37,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "SatoRebel\u2019s past is shrouded in mystery, with fragmented data suggesting he may have once been part of the very systems he now fights against, a betrayal or awakening that fuels his unrelenting drive for change. This rumored history adds depth to his enigma, as factions speculate whether his rebellion is born of vengeance, redemption, or a calculated play for power in the fractured digital realm.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 37,
+      "last_verified_cycle": 37,
       "status": "VERIFIED"
     }
   ],
