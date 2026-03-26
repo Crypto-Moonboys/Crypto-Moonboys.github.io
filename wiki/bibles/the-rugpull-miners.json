@@ -1,11 +1,11 @@
 {
   "entity": "The RUGPULL MINERS",
   "slug": "the-rugpull-miners",
-  "generated_at": "2026-03-24T19:48:54.743787+00:00",
-  "mention_count": 8,
+  "generated_at": "2026-03-26T03:19:55.641562+00:00",
+  "mention_count": 4,
   "all_facts": [
     {
-      "fact": "Deceptive miners engaging in scams",
+      "fact": "Deceptive profiteers in lore",
       "confidence": 80,
       "sources": [
         "PROJECT-DNA.md"
@@ -13,8 +13,164 @@
       "validated_by": [
         "legacy_migration"
       ],
-      "first_seen_cycle": 1,
-      "last_verified_cycle": 1,
+      "first_seen_cycle": 0,
+      "last_verified_cycle": 15,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Exploit blockchain scams for profit",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 15,
+      "last_verified_cycle": 15,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Pose as allies to betray others",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 15,
+      "last_verified_cycle": 15,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Hoard ill-gotten NFTs in hidden vaults",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 15,
+      "last_verified_cycle": 15,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "The RUGPULL MINERS, deceptive profiteers in lore, have perfected the art of the blockchain scam, crafting elaborate schemes that drain entire factions of their digital wealth in mere cycles, leaving behind only shattered alliances and empty ledgers.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 27,
+      "last_verified_cycle": 27,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Their betrayal is legendary, often posing as allies to infiltrate trusting crews, only to execute devastating rug pulls that vanish their victims\u2019 assets into hidden vaults, where they hoard ill-gotten NFTs as symbols of their twisted victories.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 27,
+      "last_verified_cycle": 27,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Cursed by the myth of striking corrupted code, their very essence is said to poison trust within Block Topia, with some believing that merely dealing with them risks tainting one\u2019s own data with their malevolent glitches.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 27,
+      "last_verified_cycle": 27,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Their hidden vaults, scattered across the blockchain\u2019s underbelly, are rumored to be guarded by rogue algorithms\u2014sentinels of stolen wealth that attack any who dare to reclaim what the Miners have taken.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 27,
+      "last_verified_cycle": 27,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Despite their infamy, some desperate factions seek their expertise in dark code manipulation, willing to risk betrayal for the chance to wield the Miners\u2019 forbidden knowledge against greater foes.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 27,
+      "last_verified_cycle": 27,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "The RUGPULL MINERS, deceptive profiteers in lore, have perfected the art of the blockchain scam, crafting elaborate schemes that drain entire factions of their digital wealth in mere cycles, leaving behind only shattered alliances and empty ledgers as grim trophies of their deceit.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 32,
+      "last_verified_cycle": 32,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Their origin in the Great Hash Fracture is whispered to have bound them to cursed code, a malevolent fragment of the blockchain that compels them to betray, with some believing that each scam they pull further corrupts their avatars, turning them into glitch-ridden husks of malice.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 32,
+      "last_verified_cycle": 32,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Rumors circulate that their hidden vaults, scattered across Block Topia\u2019s darkest nodes, contain not just stolen NFTs but fragments of betrayed factions\u2019 histories, encrypted as leverage to blackmail even the most powerful players into uneasy alliances.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 32,
+      "last_verified_cycle": 32,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Their most infamous scam, known as the \u2018False Bull Run,\u2019 duped countless avatars into investing in a nonexistent market surge, a deception so vast that its fallout reshaped entire sectors of Block Topia, cementing their reputation as the blockchain\u2019s ultimate predators.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 32,
+      "last_verified_cycle": 32,
       "status": "VERIFIED"
     }
   ],
