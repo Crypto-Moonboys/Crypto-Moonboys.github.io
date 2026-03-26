@@ -1,11 +1,11 @@
 {
   "entity": "The Whitewasher",
   "slug": "the-whitewasher",
-  "generated_at": "2026-03-24T19:48:54.729718+00:00",
-  "mention_count": 8,
+  "generated_at": "2026-03-26T03:42:55.705613+00:00",
+  "mention_count": 6,
   "all_facts": [
     {
-      "fact": "Cleanses illicit data traces",
+      "fact": "Eraser of digital history",
       "confidence": 80,
       "sources": [
         "PROJECT-DNA.md"
@@ -13,8 +13,86 @@
       "validated_by": [
         "legacy_migration"
       ],
-      "first_seen_cycle": 1,
-      "last_verified_cycle": 1,
+      "first_seen_cycle": 0,
+      "last_verified_cycle": 0,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "The Whitewasher operates as an eraser of digital history in Block Topia, purging blockchain data with ghostly precision, reshaping the past within the Crypto Moonboys universe and leaving factions to grapple with lost truths.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 4,
+      "last_verified_cycle": 4,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Often active before pivotal events like the Hard Fork Games, The Whitewasher\u2019s cleansing of digital memories can alter strategic narratives, their unknown allegiance casting doubt on whether they serve rebellion or control.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 4,
+      "last_verified_cycle": 4,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "The Whitewasher operates as an eraser of digital history in Block Topia, purging blockchain data with ghostly precision, reshaping the past within the Crypto Moonboys universe and leaving factions to grapple with lost truths. Their unseen hand can erase entire campaigns or alliances from record, forcing warriors to question reality itself as they fight over histories that no longer exist in the immutable ledger.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 37,
+      "last_verified_cycle": 37,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Often active before pivotal events like the Hard Fork Games, The Whitewasher\u2019s cleansing of digital memories can alter strategic narratives, stripping factions of vital knowledge or exonerating others of past crimes. Their unknown allegiance casts doubt on whether they serve rebellion by clearing the slate for new uprisings, or control by burying inconvenient dissent beneath layers of forgotten code.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 37,
+      "last_verified_cycle": 37,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Whispers circulate of The Whitewasher\u2019s rumored \u2018Null Cipher,\u2019 a forbidden algorithm said to grant the power to erase not just data but the very essence of a digital entity, effectively unmaking warriors or factions from existence. Though its reality is unconfirmed, the mere possibility fuels dread, as factions fear a day when their own histories could be wiped clean by this spectral scourge.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 37,
+      "last_verified_cycle": 37,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "The Whitewasher\u2019s erasures are often accompanied by faint traces of \u2018Ghost Data,\u2019 residual fragments of purged records that linger in the blockchain\u2019s underlayers, taunting those who seek to recover lost truths. These elusive echoes are sought by many, believed to hold clues to The Whitewasher\u2019s motives or masters, though deciphering them requires skills few in Block Topia possess.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 37,
+      "last_verified_cycle": 37,
       "status": "VERIFIED"
     }
   ],
