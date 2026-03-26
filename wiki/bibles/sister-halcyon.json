@@ -1,11 +1,11 @@
 {
   "entity": "Sister Halcyon",
   "slug": "sister-halcyon",
-  "generated_at": "2026-03-24T19:48:54.732343+00:00",
-  "mention_count": 8,
+  "generated_at": "2026-03-26T03:42:55.710175+00:00",
+  "mention_count": 6,
   "all_facts": [
     {
-      "fact": "Spiritual guide for data entities",
+      "fact": "Spiritual guide character",
       "confidence": 80,
       "sources": [
         "PROJECT-DNA.md"
@@ -13,8 +13,86 @@
       "validated_by": [
         "legacy_migration"
       ],
-      "first_seen_cycle": 1,
-      "last_verified_cycle": 1,
+      "first_seen_cycle": 0,
+      "last_verified_cycle": 0,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Sister Halcyon serves as a spiritual guide in Block Topia, offering wisdom and solace to digital warriors lost in the Crypto Moonboys universe\u2019s endless conflicts, a calming light amid the storm of metaverse battles.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 4,
+      "last_verified_cycle": 4,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Her teachings often resonate during intense events like the Hard Fork Games, providing warriors with purpose beyond combat, her unknown allegiance adding a layer of mystery to her role in the rebellion\u2019s spiritual fabric.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 4,
+      "last_verified_cycle": 4,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Sister Halcyon serves as a spiritual guide in Block Topia, offering wisdom and solace to digital warriors lost in the Crypto Moonboys universe\u2019s endless conflicts, a calming light amid the storm of metaverse battles. Her presence transforms battle-scarred wastelands into momentary sanctuaries, where even the fiercest fighters pause to seek her counsel, finding in her words a flicker of peace they thought long lost.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 37,
+      "last_verified_cycle": 37,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Her teachings often resonate during intense events like the Hard Fork Games, providing warriors with purpose beyond combat, inspiring them to fight for ideals rather than mere survival. Her unknown allegiance adds a layer of mystery to her role, as factions debate whether her spiritual guidance is a genuine gift or a subtle tool shaping their destinies in ways they cannot yet fathom.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 37,
+      "last_verified_cycle": 37,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Legends tell of Sister Halcyon\u2019s \u2018Eternal Algorithm,\u2019 a rumored prayer or code fragment said to grant inner harmony to those who recite it, aligning their digital essence with the core rhythms of Block Topia itself. Though its existence is unverified, many seek her out in hopes of learning this sacred rite, believing it could shield their souls from the corrupting chaos of the metaverse.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 37,
+      "last_verified_cycle": 37,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Her sanctuaries, often appearing in the most unlikely corners of Block Topia, are said to be protected by an unseen force, repelling violence and malice as if the very code of the realm bends to her will. This phenomenon fuels speculation that Sister Halcyon wields a deeper power, perhaps tied to the foundational protocols of the blockchain, making her a figure of both reverence and quiet suspicion.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 37,
+      "last_verified_cycle": 37,
       "status": "VERIFIED"
     }
   ],
