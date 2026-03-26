@@ -1,8 +1,8 @@
 {
   "entity": "Delicious Again Pete",
   "slug": "delicious-again-pete",
-  "generated_at": "2026-03-26T03:42:55.701057+00:00",
-  "mention_count": 4,
+  "generated_at": "2026-03-26T10:15:49.851740+00:00",
+  "mention_count": 8,
   "all_facts": [
     {
       "fact": "Co-founder of Graffiti Kings",
@@ -145,6 +145,45 @@
       ],
       "first_seen_cycle": 37,
       "last_verified_cycle": 37,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Delicious Again Pete, as a co-founder of the Graffiti Kings, transforms Block Topia\u2019s underground into a cultural battlefield, organizing raves and art events that serve as neutral zones where factions like GKniftyHEADS navigate the delicate dance of diplomacy and rivalry, each event a potential spark for war or unity.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 59,
+      "last_verified_cycle": 59,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "With a real-world foundation in music and street culture, Pete\u2019s influence in the Crypto Moonboys universe is a visceral force, his underground gatherings in Block Topia acting as modern-day agoras where the disenfranchised find voice, and the powerful are forced to listen, often shaping the narrative of entire factional conflicts.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 59,
+      "last_verified_cycle": 59,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Pete\u2019s events are legendary for their subversive energy, often held in hidden corners of the metaverse where the neon glow of Block Topia meets the raw edge of rebellion, drawing artists and warriors alike to spaces where a single mural or beat can shift the balance of power between HODL Warriors and GRAFFPUNKS.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 59,
+      "last_verified_cycle": 59,
       "status": "VERIFIED"
     }
   ],
