@@ -1,8 +1,8 @@
 {
   "entity": "$GK",
   "slug": "gk",
-  "generated_at": "2026-03-25T00:15:52.336480+00:00",
-  "mention_count": 5,
+  "generated_at": "2026-03-26T11:51:47.239053+00:00",
+  "mention_count": 10,
   "all_facts": [
     {
       "fact": "Staking reward token",
@@ -119,6 +119,58 @@
       ],
       "first_seen_cycle": 5,
       "last_verified_cycle": 5,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "The $GK token, a central staking reward in the Crypto Moonboys universe, is earned through playable NFT murals and metaverse battle victories in Block Topia, serving as the lifeblood of The GKniftyHEADS\u2019 economy. It fuels transactions, upgrades, and territorial claims, with each token representing a hard-fought piece of decentralized defiance, a digital spray tag in the ongoing war against centralized oppression.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 64,
+      "last_verified_cycle": 64,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "$GK\u2019s value is intrinsically tied to the outcomes of HODL WARS events, with massive spikes following faction triumphs in Battlemech Blast tournaments or the claiming of rare NFTs during the Triple Fork Event, turning the token into a barometer of Block Topia\u2019s shifting power dynamics. Warriors often gamble their $GK in underground betting rings, risking everything on match outcomes, knowing that a single victory could multiply their holdings overnight\u2014or leave them destitute in the digital slums.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 64,
+      "last_verified_cycle": 64,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "A shadowy practice known as 'Token Forging' has emerged around $GK, where rogue coders attempt to replicate the token\u2019s blockchain signature to flood Block Topia\u2019s markets with counterfeit currency, a crime punishable by exile from major factions like The GKniftyHEADS. Though largely unsuccessful due to the token\u2019s robust security, these forgeries have sparked paranoia, with warriors and traders employing arcane verification rituals to ensure their $GK is legitimate, turning every trade into a test of trust.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 64,
+      "last_verified_cycle": 64,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Legends within Block Topia claim that certain $GK tokens, earned during cataclysmic events like the Triple Fork Event, are imbued with 'Forked Essence,' a rare property that enhances their value in staking rituals or unlocks hidden in-game perks. These tokens, identifiable only by cryptic metadata, are fiercely sought after, with entire factions like the Street Kingdoms launching raids to seize them, believing they hold the key to influencing future blockchain forks or summoning forgotten powers.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 64,
+      "last_verified_cycle": 64,
       "status": "VERIFIED"
     }
   ],
