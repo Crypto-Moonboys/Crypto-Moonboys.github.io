@@ -1,8 +1,8 @@
 {
   "entity": "The Nomad Bears",
   "slug": "the-nomad-bears",
-  "generated_at": "2026-03-26T03:19:55.645091+00:00",
-  "mention_count": 4,
+  "generated_at": "2026-03-26T04:23:53.830241+00:00",
+  "mention_count": 8,
   "all_facts": [
     {
       "fact": "Wandering protectors in lore",
@@ -171,6 +171,71 @@
       ],
       "first_seen_cycle": 32,
       "last_verified_cycle": 32,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "The Nomad Bears, wandering protectors in lore, are relentless in their mission to shield Block Topia\u2019s unclaimed territories, often clashing with urban factions who seek to exploit the wild code for profit, their roars of defiance echoing through glitch-scarred expanses as a warning to intruders.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 43,
+      "last_verified_cycle": 43,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Tasked with guarding forgotten blockchain assets, The Nomad Bears protect data shards and abandoned nodes from exploitation, their vigilance ensuring that the digital wilderness remains a sanctuary for the untamed, even as profiteers like The RUGPULL MINERS circle their territories with greedy intent.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 43,
+      "last_verified_cycle": 43,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "In myth, they are descendants of ancient digital spirits, entities of raw code that grant them an almost supernatural bond with Block Topia\u2019s wild sectors, guiding their patrols through glitch storms and corrupted zones where others would falter and perish.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 43,
+      "last_verified_cycle": 43,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "The Nomad Bears are known to form temporary alliances with resource-focused factions like The SALVAGERS, trading protection for relics or intel, though their solitary nature ensures such pacts are short-lived, their loyalty always returning to the untamed lands they call home.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 43,
+      "last_verified_cycle": 43,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "During the devastating Wild Code Surge of Cycle 41, The Nomad Bears stood as the last line of defense against a cascading data corruption that threatened to erase entire frontier sectors. Their sacrifice, using their own avatars as firewalls, preserved countless unclaimed territories, earning them silent respect even from urban foes who once dismissed their nomadic ways.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 43,
+      "last_verified_cycle": 43,
       "status": "VERIFIED"
     }
   ],
