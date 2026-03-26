@@ -1,11 +1,11 @@
 {
   "entity": "Squeaky Pinks enforcers",
   "slug": "squeaky-pinks-enforcers",
-  "generated_at": "2026-03-24T19:48:54.751889+00:00",
-  "mention_count": 8,
+  "generated_at": "2026-03-26T02:41:56.067004+00:00",
+  "mention_count": 6,
   "all_facts": [
     {
-      "fact": "Enforcement unit of Squeaky Pinks",
+      "fact": "Enforcement arm of The Squeaky Pinks",
       "confidence": 80,
       "sources": [
         "PROJECT-DNA.md"
@@ -13,8 +13,47 @@
       "validated_by": [
         "legacy_migration"
       ],
-      "first_seen_cycle": 1,
-      "last_verified_cycle": 1,
+      "first_seen_cycle": 0,
+      "last_verified_cycle": 0,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "The Squeaky Pinks enforcers are infamous for their 'Pink Purge' operations, brutal campaigns where entire districts are locked down and systematically stripped of resources or resistance, leaving behind ghost towns painted in their signature hue as a mark of dominance.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 26,
+      "last_verified_cycle": 26,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Their most feared weapon, the 'Squeal Resonator,' emits a high-frequency soundwave that disorients and incapacitates enemies, a technology rumored to be derived from hacked blockchain signals, making it uniquely effective against digital entities.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 26,
+      "last_verified_cycle": 26,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "A dark rumor circulates that the enforcers are bound by a 'Blood Contract,' a coded oath embedded in their armor that compels obedience to The Squeaky Pinks, with any attempt at betrayal triggering a self-destruct mechanism within their gear.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 26,
+      "last_verified_cycle": 26,
       "status": "VERIFIED"
     }
   ],
