@@ -1,8 +1,8 @@
 {
   "entity": "The Bitcoin Kid Army",
   "slug": "the-bitcoin-kid-army",
-  "generated_at": "2026-03-25T00:14:22.935625+00:00",
-  "mention_count": 6,
+  "generated_at": "2026-03-26T13:29:47.416285+00:00",
+  "mention_count": 12,
   "all_facts": [
     {
       "fact": "Rebel faction of escaped Bitcoin Kids",
@@ -119,6 +119,76 @@
       ],
       "first_seen_cycle": 5,
       "last_verified_cycle": 5,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "The Bitcoin Kid Army is a rebel faction of escaped Bitcoin Kids, united under Alfie 'The Bitcoin Kid' Blaze to defy centralized control in Block Topia with a ferocity that belies their ragtag nature. Their origins in forced data mining forged a bond of unbreakable camaraderie, turning their shared trauma into a weapon against oppression as they strike at the heart of authoritarian servers. Under Alfie\u2019s leadership, they have become a symbol of resistance, their name whispered in awe by outcasts and in fear by those who cling to power.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md",
+        "https://graffpunks.live/the-lore/"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 69,
+      "last_verified_cycle": 69,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "They engage in guerrilla metaverse battles, using graffiti NFTs as weapons of digital street-art rebellion, each mural a coded virus capable of disrupting enemy systems or broadcasting subversive messages across Block Topia\u2019s networks. These vibrant tags are more than art; they are declarations of war, often appearing overnight on critical infrastructure, sowing chaos among factions like The GKniftyHEADS while rallying the downtrodden to their cause. Each piece of graffiti left behind is a scar on centralized control, a permanent mark on the blockchain that cannot be erased.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md",
+        "https://graffpunks.live/the-lore/"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 69,
+      "last_verified_cycle": 69,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Symbolizing the fight for freedom in Block Topia, they rally outcasts to join their cause for a decentralized future, their victories\u2014however small\u2014serving as proof that even the mightiest powers can be challenged. Their presence at events like the Hard Fork Games often turns the tide for smaller factions, as their willingness to share hacked resources and intel fosters temporary alliances against common enemies. The Bitcoin Kid Army\u2019s dream of a free metaverse resonates deeply, drawing in warriors who have nothing left to lose but everything to gain.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md",
+        "https://graffpunks.live/the-lore/"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 69,
+      "last_verified_cycle": 69,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "One of their most daring operations, known as the 'Neon Breakout,' saw The Bitcoin Kid Army infiltrate a high-security GKniftyHEADS data vault during a rare server maintenance window, liberating terabytes of restricted blockchain protocols before vanishing into the digital slums. This heist not only crippled their enemy\u2019s surveillance capabilities for weeks but also distributed the stolen data to rebel factions across Block Topia, sparking a wave of coordinated uprisings. The operation remains a legend, a testament to their cunning and a warning to centralized powers that no fortress is safe from their reach.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md",
+        "https://graffpunks.live/the-lore/"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 69,
+      "last_verified_cycle": 69,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "A darker rumor circulates that Alfie 'The Bitcoin Kid' Blaze carries a cursed fragment of the original Bitcoin blockchain, a relic said to grant him uncanny foresight into market shifts and enemy movements, at the cost of slowly corrupting his digital essence. Known as the 'Genesis Shard,' this artifact is whispered to be the true source of the Army\u2019s improbable victories, though it also fuels internal dissent among those who fear its growing influence over their leader. Whether myth or reality, the Shard\u2019s legend adds a layer of mystique to the faction, making them both heroes and harbingers of potential doom.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md",
+        "https://graffpunks.live/the-lore/"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 69,
+      "last_verified_cycle": 69,
       "status": "VERIFIED"
     }
   ],
