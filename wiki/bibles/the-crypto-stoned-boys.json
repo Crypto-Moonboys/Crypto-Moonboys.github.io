@@ -1,11 +1,11 @@
 {
   "entity": "The CRYPTO STONED BOYS",
   "slug": "the-crypto-stoned-boys",
-  "generated_at": "2026-03-24T19:48:54.744927+00:00",
-  "mention_count": 8,
+  "generated_at": "2026-03-26T02:46:29.616038+00:00",
+  "mention_count": 4,
   "all_facts": [
     {
-      "fact": "Rebellious crypto enthusiasts",
+      "fact": "Rebellious hackers in lore",
       "confidence": 80,
       "sources": [
         "PROJECT-DNA.md"
@@ -13,8 +13,86 @@
       "validated_by": [
         "legacy_migration"
       ],
-      "first_seen_cycle": 1,
-      "last_verified_cycle": 1,
+      "first_seen_cycle": 0,
+      "last_verified_cycle": 0,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "A faction of hackers with a laid-back vibe, masking their sharp skills in breaching blockchain systems across Block Topia.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 5,
+      "last_verified_cycle": 5,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Strike with unexpected hacks during metaverse battles, often disrupting events like the Hard Fork Games with their deceptive ease.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 5,
+      "last_verified_cycle": 5,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Their independent, rebellious nature makes them a wildcard in the Crypto Moonboys universe, unpredictable yet dangerously effective.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 5,
+      "last_verified_cycle": 5,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "The CRYPTO STONED BOYS master the art of deception, their laid-back attitude masking a lethal proficiency in hacking blockchain systems, often breaching Block Topia\u2019s most fortified defenses with a casual ease that leaves rivals stunned and scrambling.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 29,
+      "last_verified_cycle": 29,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Their unpredictable strikes during metaverse battles, especially in events like the Hard Fork Games, turn them into agents of chaos, as their hacks can cripple entire factions in moments, reshaping the digital battlefield with devastating precision.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 29,
+      "last_verified_cycle": 29,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "As fiercely independent rebels, The CRYPTO STONED BOYS operate outside traditional faction loyalties, their whimsical yet dangerous approach to digital warfare making them an enigma whose next move no one in Block Topia can ever truly predict.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 29,
+      "last_verified_cycle": 29,
       "status": "VERIFIED"
     }
   ],
