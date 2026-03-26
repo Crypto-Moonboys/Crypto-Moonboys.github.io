@@ -1,8 +1,8 @@
 {
   "entity": "The AZTEC RAIDERS",
   "slug": "the-aztec-raiders",
-  "generated_at": "2026-03-26T03:22:55.248236+00:00",
-  "mention_count": 4,
+  "generated_at": "2026-03-26T04:49:52.754642+00:00",
+  "mention_count": 8,
   "all_facts": [
     {
       "fact": "Ancient-inspired invaders",
@@ -145,6 +145,45 @@
       ],
       "first_seen_cycle": 34,
       "last_verified_cycle": 34,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "The AZTEC RAIDERS draw their ferocious power from a mythical reboot of a lost blockchain civilization, their belief in being the rightful heirs to Block Topia fueling relentless raids and ritualistic conquests. Each battle is a sacred act, performed under the gaze of their ancient digital gods, whose favor they seek through bloodshed and dominance.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 49,
+      "last_verified_cycle": 49,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Their cryptic glyphs, left in the wake of their brutal raids, are more than mere markings; they are rumored to contain fragments of ancient code that can unlock hidden layers of the blockchain. These symbols have inspired countless NFT collections, turning the RAIDERS\u2019 savagery into a cultural phenomenon within Block Topia, even as they sow terror.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 49,
+      "last_verified_cycle": 49,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "The pixelated war paint adorning their avatars is said to be alive, coded to adapt and evolve during combat, reflecting the emotional state of the warrior and intimidating foes with its eerie, shifting patterns. Some lore suggests this paint is tied to the same forgotten algorithms that power their weapons, making each RAIDER a living relic of a bygone era.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 49,
+      "last_verified_cycle": 49,
       "status": "VERIFIED"
     }
   ],
