@@ -1,8 +1,8 @@
 {
   "entity": "The BALLY BOYS",
   "slug": "the-bally-boys",
-  "generated_at": "2026-03-26T03:22:55.246299+00:00",
-  "mention_count": 4,
+  "generated_at": "2026-03-26T04:49:52.751211+00:00",
+  "mention_count": 8,
   "all_facts": [
     {
       "fact": "Masked street fighters",
@@ -158,6 +158,45 @@
       ],
       "first_seen_cycle": 34,
       "last_verified_cycle": 34,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "The BALLY BOYS are masked street fighters, their balaclava-clad avatars a symbol of terror as they strike from the shadows of Block Topia. Mastering hit-and-run combat tactics, they dominate urban battlegrounds, ambushing rivals with a ferocity that leaves no trace, their attacks often timed to exploit moments of factional weakness.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 49,
+      "last_verified_cycle": 49,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Bound by a mysterious pact of anonymity, their lore hints at a hidden origin tied to the first street wars of Block Topia, where disenfranchised coders and hackers banded together under masks to resist oppressive digital overlords. This pact is said to be renewed annually in a secret ritual, reinforcing their unbreakable bond and commitment to chaos.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 49,
+      "last_verified_cycle": 49,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Their presence in the streets often signals upcoming unrest, as their ambushes are rarely random but part of a larger strategy to destabilize rival territories. Some believe the BALLY BOYS are guided by an unseen leader, a figure known only through encrypted messages, whose vision drives their relentless campaign for control.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 49,
+      "last_verified_cycle": 49,
       "status": "VERIFIED"
     }
   ],
