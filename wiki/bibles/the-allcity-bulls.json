@@ -1,8 +1,8 @@
 {
   "entity": "The AllCity Bulls",
   "slug": "the-allcity-bulls",
-  "generated_at": "2026-03-26T03:22:55.250162+00:00",
-  "mention_count": 4,
+  "generated_at": "2026-03-26T04:49:52.758071+00:00",
+  "mention_count": 8,
   "all_facts": [
     {
       "fact": "Urban enforcers in lore",
@@ -145,6 +145,45 @@
       ],
       "first_seen_cycle": 34,
       "last_verified_cycle": 34,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "The AllCity Bulls trace their mythic origins to the blockchain arenas of old, where they fought as gladiators for digital overlords, a brutal past that forged their reputation as Block Topia\u2019s most fearsome urban enforcers. Their control of the city\u2019s core is absolute, their presence a deterrent to any faction foolish enough to challenge their rule, often crushing uprisings before they can even begin.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 49,
+      "last_verified_cycle": 49,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Often aligned with shadowy elite factions, the Bulls are rumored to serve as muscle in clandestine deals that shape Block Topia\u2019s power structure. Their loyalty, however, is not blind; lore suggests they demand hefty tributes in rare tokens or NFT artifacts, ensuring their strength remains a commodity only the wealthiest can afford.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 49,
+      "last_verified_cycle": 49,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Their towering avatars are said to be coded with remnants of ancient arena algorithms, granting them enhanced resilience in battle, as if the cheers of forgotten crowds still fuel their might. This connection to the past makes them both revered and feared, as some believe they carry the wrath of fallen digital empires in every devastating strike.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 49,
+      "last_verified_cycle": 49,
       "status": "VERIFIED"
     }
   ],
