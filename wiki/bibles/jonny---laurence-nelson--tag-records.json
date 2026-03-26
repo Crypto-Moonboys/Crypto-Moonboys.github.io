@@ -1,8 +1,8 @@
 {
   "entity": "Jonny & Laurence Nelson (TAG Records)",
   "slug": "jonny---laurence-nelson--tag-records",
-  "generated_at": "2026-03-24T19:48:54.738083+00:00",
-  "mention_count": 8,
+  "generated_at": "2026-03-26T03:22:55.254003+00:00",
+  "mention_count": 4,
   "all_facts": [
     {
       "fact": "Music partners for Graffiti Kings",
@@ -13,8 +13,8 @@
       "validated_by": [
         "legacy_migration"
       ],
-      "first_seen_cycle": 1,
-      "last_verified_cycle": 1,
+      "first_seen_cycle": 0,
+      "last_verified_cycle": 15,
       "status": "VERIFIED"
     },
     {
@@ -26,8 +26,125 @@
       "validated_by": [
         "legacy_migration"
       ],
-      "first_seen_cycle": 1,
-      "last_verified_cycle": 1,
+      "first_seen_cycle": 0,
+      "last_verified_cycle": 15,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Create music with encoded messages for factions",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 15,
+      "last_verified_cycle": 15,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Collaborate on major events with cultural impact",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 15,
+      "last_verified_cycle": 15,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Jonny & Laurence Nelson of TAG Records wield music as a strategic tool for the Graffiti Kings, embedding secret messages within their tracks that serve as encrypted communications for GKniftyHEADS operatives, guiding them through Block Topia\u2019s perilous faction wars.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 29,
+      "last_verified_cycle": 29,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Their anthems are the lifeblood of street battles, resonating through Block Topia\u2019s digital alleys as rallying cries that inspire rebellion, often crafted in collaboration with cultural heavyweights like Delicious Again Pete to maximize their revolutionary impact.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 29,
+      "last_verified_cycle": 29,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Drawing from their real-world mastery at TAG Records, the Nelsons transform their hidden studios into hubs of sonic warfare, producing soundscapes that not only entertain but also unite disparate crews, forging a cultural front against the metaverse\u2019s oppressive forces.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 29,
+      "last_verified_cycle": 29,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Jonny & Laurence Nelson of TAG Records wield music as a strategic tool for the Graffiti Kings, embedding secret messages within their tracks that serve as encrypted communications for GKniftyHEADS operatives, guiding them through Block Topia\u2019s perilous faction wars with the precision of a coded map.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 34,
+      "last_verified_cycle": 34,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Their virtual concerts are legendary in Block Topia, massive cultural events that double as strategic operations, where the bass drops mask data bursts that synchronize rebel movements, turning every attendee into a potential soldier in the Graffiti Kings\u2019 cause.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 34,
+      "last_verified_cycle": 34,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Rumors in the metaverse suggest that their music contains 'Sonic Smart Contracts,' hidden layers of code that can influence listener behavior, subtly aligning factions to their cause or disrupting enemy morale with dissonant frequencies that linger long after the track ends.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 34,
+      "last_verified_cycle": 34,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Their collaboration with major Block Topia events often results in limited-edition NFT albums, each track a collectible artifact imbued with cultural impact, sought after by rebels and collectors alike for the hidden lore and tactical data encoded within their beats.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 34,
+      "last_verified_cycle": 34,
       "status": "VERIFIED"
     }
   ],
