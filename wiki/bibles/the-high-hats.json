@@ -1,8 +1,8 @@
 {
   "entity": "The High Hats",
   "slug": "the-high-hats",
-  "generated_at": "2026-03-26T03:21:29.813220+00:00",
-  "mention_count": 4,
+  "generated_at": "2026-03-26T04:25:45.383584+00:00",
+  "mention_count": 8,
   "all_facts": [
     {
       "fact": "Elite manipulators in lore",
@@ -131,7 +131,7 @@
         "legacy_migration"
       ],
       "first_seen_cycle": 33,
-      "last_verified_cycle": 33,
+      "last_verified_cycle": 44,
       "status": "VERIFIED"
     },
     {
@@ -171,6 +171,58 @@
       ],
       "first_seen_cycle": 33,
       "last_verified_cycle": 33,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "As the original architects of blockchain elite in myth, they are said to have embedded hidden protocols into the very foundation of Block Topia, mechanisms of control that allow them to bend the digital world to their will, unseen and unchallenged for eons.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 44,
+      "last_verified_cycle": 44,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Their use of enforcers and proxies ensures their true identities remain shrouded, as these faceless agents execute their machinations with ruthless precision, often eliminating threats before they even realize they\u2019ve crossed an invisible line.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 44,
+      "last_verified_cycle": 44,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Legends tell of the Obsidian Node, a mythical digital sanctum where The High Hats convene, a fortress of code so impenetrable that even the most skilled hackers of The EVM PUNKS recoil at the thought of breaching it, knowing it guards secrets that could unravel the city itself.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 44,
+      "last_verified_cycle": 44,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Their influence is so pervasive that many believe every major faction owes its rise or fall to The High Hats\u2019 unseen interventions, a belief that breeds paranoia in the streets of Block Topia, where even the most loyal allies fear they are mere pawns in a grander game.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 44,
+      "last_verified_cycle": 44,
       "status": "VERIFIED"
     }
   ],
