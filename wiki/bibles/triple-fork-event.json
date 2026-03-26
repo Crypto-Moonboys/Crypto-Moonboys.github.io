@@ -1,11 +1,11 @@
 {
   "entity": "Triple Fork Event",
   "slug": "triple-fork-event",
-  "generated_at": "2026-03-25T00:15:52.325382+00:00",
+  "generated_at": "2026-03-26T02:41:56.071690+00:00",
   "mention_count": 6,
   "all_facts": [
     {
-      "fact": "Major lore event",
+      "fact": "Major narrative event",
       "confidence": 80,
       "sources": [
         "PROJECT-DNA.md",
@@ -19,7 +19,7 @@
       "status": "VERIFIED"
     },
     {
-      "fact": "Triggers rewards and narrative shifts",
+      "fact": "Shapes Block Topia vs. Street Kingdoms conflict",
       "confidence": 80,
       "sources": [
         "PROJECT-DNA.md",
@@ -33,7 +33,7 @@
       "status": "VERIFIED"
     },
     {
-      "fact": "A major lore event representing a blockchain fork that fractures Block Topia, creating new factions and rivalries.",
+      "fact": "Tied to rewards",
       "confidence": 80,
       "sources": [
         "PROJECT-DNA.md",
@@ -42,12 +42,12 @@
       "validated_by": [
         "legacy_migration"
       ],
-      "first_seen_cycle": 3,
-      "last_verified_cycle": 3,
+      "first_seen_cycle": 0,
+      "last_verified_cycle": 0,
       "status": "VERIFIED"
     },
     {
-      "fact": "Triggers significant rewards like rare NFTs and $GK tokens, often tied to burn-to-earn and staking mechanics.",
+      "fact": "During the height of the Triple Fork Event, a phenomenon known as the 'Triad Surge' occurred, where warriors who fought across all three forked realities gained temporary access to 'Tri-Chain Avatars,' powerful forms that combined traits from each chain, a power that some still seek to replicate in modern conflicts.",
       "confidence": 80,
       "sources": [
         "PROJECT-DNA.md",
@@ -56,12 +56,12 @@
       "validated_by": [
         "legacy_migration"
       ],
-      "first_seen_cycle": 3,
-      "last_verified_cycle": 3,
+      "first_seen_cycle": 26,
+      "last_verified_cycle": 26,
       "status": "VERIFIED"
     },
     {
-      "fact": "Marks the rise of opposing forces like Street Kingdoms, intensifying the decentralized rebellion in the metaverse.",
+      "fact": "The event\u2019s most contested prize, the 'Forked Crown,' is an NFT artifact said to grant its holder the ability to influence future blockchain consensus, making it a target for every faction, with its last known location lost in the chaos of the Street Kingdoms\u2019 uprising.",
       "confidence": 80,
       "sources": [
         "PROJECT-DNA.md",
@@ -70,12 +70,12 @@
       "validated_by": [
         "legacy_migration"
       ],
-      "first_seen_cycle": 3,
-      "last_verified_cycle": 3,
+      "first_seen_cycle": 26,
+      "last_verified_cycle": 26,
       "status": "VERIFIED"
     },
     {
-      "fact": "A major lore event representing a blockchain fork that fractures Block Topia, creating new factions and intensifying rivalries.",
+      "fact": "Survivors of the Triple Fork Event speak of the 'Echo Wraiths,' spectral entities born from the fractured data of the fork, which still haunt the borders of the splintered chains, attacking any who dare to mine too deeply into the corrupted ledgers.",
       "confidence": 80,
       "sources": [
         "PROJECT-DNA.md",
@@ -84,50 +84,8 @@
       "validated_by": [
         "legacy_migration"
       ],
-      "first_seen_cycle": 5,
-      "last_verified_cycle": 5,
-      "status": "VERIFIED"
-    },
-    {
-      "fact": "Triggers significant rewards like rare NFTs and $GK tokens, often tied to burn-to-earn and staking mechanics for players.",
-      "confidence": 80,
-      "sources": [
-        "PROJECT-DNA.md",
-        "https://gkniftyheads.blogspot.com/2026/03/the-gkniftyheads-arent-just-surviving.html"
-      ],
-      "validated_by": [
-        "legacy_migration"
-      ],
-      "first_seen_cycle": 5,
-      "last_verified_cycle": 5,
-      "status": "VERIFIED"
-    },
-    {
-      "fact": "Marks the rise of opposing forces like the Street Kingdoms, escalating the decentralized rebellion in the Crypto Moonboys universe\u2019s metaverse.",
-      "confidence": 80,
-      "sources": [
-        "PROJECT-DNA.md",
-        "https://gkniftyheads.blogspot.com/2026/03/the-gkniftyheads-arent-just-surviving.html"
-      ],
-      "validated_by": [
-        "legacy_migration"
-      ],
-      "first_seen_cycle": 5,
-      "last_verified_cycle": 5,
-      "status": "VERIFIED"
-    },
-    {
-      "fact": "Reshapes digital allegiances and territories, serving as a narrative catalyst for chaos and opportunity across multi-chain platforms.",
-      "confidence": 80,
-      "sources": [
-        "PROJECT-DNA.md",
-        "https://gkniftyheads.blogspot.com/2026/03/the-gkniftyheads-arent-just-surviving.html"
-      ],
-      "validated_by": [
-        "legacy_migration"
-      ],
-      "first_seen_cycle": 5,
-      "last_verified_cycle": 5,
+      "first_seen_cycle": 26,
+      "last_verified_cycle": 26,
       "status": "VERIFIED"
     }
   ],
