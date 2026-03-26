@@ -1,11 +1,11 @@
 {
   "entity": "The TUSKON OGS",
   "slug": "the-tuskon-ogs",
-  "generated_at": "2026-03-24T19:48:54.744555+00:00",
-  "mention_count": 8,
+  "generated_at": "2026-03-26T02:46:29.612696+00:00",
+  "mention_count": 4,
   "all_facts": [
     {
-      "fact": "Veteran warriors with deep conflict roots",
+      "fact": "Veteran street lords",
       "confidence": 80,
       "sources": [
         "PROJECT-DNA.md"
@@ -13,8 +13,86 @@
       "validated_by": [
         "legacy_migration"
       ],
-      "first_seen_cycle": 1,
-      "last_verified_cycle": 1,
+      "first_seen_cycle": 0,
+      "last_verified_cycle": 0,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Veteran street lords with deep roots in urban culture, commanding respect and fear across Block Topia\u2019s territories.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 5,
+      "last_verified_cycle": 5,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Employ old-school tactics in metaverse battles, defending their domains with a fierce loyalty to street codes.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 5,
+      "last_verified_cycle": 5,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Their independent status and historical legacy make them a powerful force in the Crypto Moonboys universe\u2019s decentralized conflicts.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 5,
+      "last_verified_cycle": 5,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "The TUSKON OGS wield a legacy of street dominance that stretches back to Block Topia\u2019s formative rebellions, their deep cultural roots and adherence to ancient street codes earning them a mythic status as both guardians and enforcers of the urban metaverse.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 29,
+      "last_verified_cycle": 29,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Their old-school tactics, refined through countless digital skirmishes, make them a devastating force in metaverse battles, often outmaneuvering modern factions with a brutal pragmatism that turns their gritty territories into impregnable fortresses.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 29,
+      "last_verified_cycle": 29,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "As independent operators, The TUSKON OGS balance their roles as protectors of their historic domains and predators to interlopers, their unpredictable nature ensuring that no faction can fully anticipate whether they will defend or destroy in the next conflict.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 29,
+      "last_verified_cycle": 29,
       "status": "VERIFIED"
     }
   ],
