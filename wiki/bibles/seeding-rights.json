@@ -1,8 +1,8 @@
 {
   "entity": "Seeding rights",
   "slug": "seeding-rights",
-  "generated_at": "2026-03-25T00:15:52.327816+00:00",
-  "mention_count": 5,
+  "generated_at": "2026-03-26T10:15:49.856349+00:00",
+  "mention_count": 10,
   "all_facts": [
     {
       "fact": "Ownership privileges for NFT holders",
@@ -106,6 +106,45 @@
       ],
       "first_seen_cycle": 5,
       "last_verified_cycle": 5,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Seeding rights grant NFT holders unparalleled control over digital territories in Block Topia, acting as virtual deeds that mirror the street-art act of claiming a wall, allowing factions to imprint their will on the metaverse through strategic staking or victories in events like the Hard Fork Games.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 59,
+      "last_verified_cycle": 59,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "In the Crypto Moonboys universe, seeding rights are a catalyst for conflict and creation, empowering holders to transform empty digital spaces into cultural fortresses or war zones, where the act of planting a flag can ignite rivalries or forge new chapters in Block Topia\u2019s ever-evolving lore.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 59,
+      "last_verified_cycle": 59,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Often tied to the Graffiti Kings\u2019 ethos of territorial rebellion, seeding rights turn the abstract landscape of the metaverse into a canvas of power, where each claimed asset or territory becomes a testament to a faction\u2019s strength, daring rivals like HODL Warriors to challenge their dominion.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 59,
+      "last_verified_cycle": 59,
       "status": "VERIFIED"
     }
   ],
