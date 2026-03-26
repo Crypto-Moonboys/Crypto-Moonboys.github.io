@@ -1,11 +1,11 @@
 {
   "entity": "The CODE ALCHEMISTS",
   "slug": "the-code-alchemists",
-  "generated_at": "2026-03-24T19:48:54.745305+00:00",
-  "mention_count": 8,
+  "generated_at": "2026-03-26T02:46:29.617669+00:00",
+  "mention_count": 4,
   "all_facts": [
     {
-      "fact": "Mystical coders creating digital artifacts",
+      "fact": "Tech mystics in lore",
       "confidence": 80,
       "sources": [
         "PROJECT-DNA.md"
@@ -13,8 +13,86 @@
       "validated_by": [
         "legacy_migration"
       ],
-      "first_seen_cycle": 1,
-      "last_verified_cycle": 1,
+      "first_seen_cycle": 0,
+      "last_verified_cycle": 0,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Tech mystics who blend blockchain coding with ancient rituals, creating powerful digital enchantments in Block Topia.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 5,
+      "last_verified_cycle": 5,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Their arcane interventions can alter metaverse battles, offering protections or curses through cryptic code-based spells.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 5,
+      "last_verified_cycle": 5,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "As independent operators, their mysterious practices make them both revered and feared in the Crypto Moonboys universe\u2019s rebellion.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 5,
+      "last_verified_cycle": 5,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "The CODE ALCHEMISTS wield a unique power in Block Topia, fusing blockchain coding with arcane rituals to create digital enchantments, their spells and protections capable of altering the course of metaverse battles with otherworldly precision and mystique.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 29,
+      "last_verified_cycle": 29,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Their cryptic interventions often come at pivotal moments, offering allies unbreakable shields or cursing enemies with data plagues, their mysterious methods earning them a reputation as both saviors and harbingers of doom in the digital realm.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 29,
+      "last_verified_cycle": 29,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "As independent tech mystics, The CODE ALCHEMISTS guard their forbidden knowledge in hidden network sanctuaries, their refusal to align with any faction amplifying the awe and fear they inspire across Block Topia\u2019s fractured landscape.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 29,
+      "last_verified_cycle": 29,
       "status": "VERIFIED"
     }
   ],
