@@ -1,8 +1,8 @@
 {
   "entity": "PMSL",
   "slug": "pmsl",
-  "generated_at": "2026-03-26T03:41:29.439031+00:00",
-  "mention_count": 4,
+  "generated_at": "2026-03-26T04:49:52.771702+00:00",
+  "mention_count": 8,
   "all_facts": [
     {
       "fact": "PMSL is often called 'The Jester's Coin' by traders, a nod to its unpredictable value and the dark humor surrounding its origins. Legends persist that owning a certain amount of PMSL grants access to a hidden digital speakeasy where faction secrets are traded like commodities, though no concrete evidence of this has surfaced in the public ledgers.",
@@ -145,6 +145,58 @@
       ],
       "first_seen_cycle": 36,
       "last_verified_cycle": 36,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "PMSL is often called 'The Jester's Coin' by traders, a nod to its unpredictable value and the dark humor surrounding its origins. Legends persist that owning a certain amount of PMSL grants access to a hidden digital speakeasy, a virtual den where faction secrets are traded under the table, making it a token of intrigue as much as currency, coveted by spies and schemers across Block Topia.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 49,
+      "last_verified_cycle": 49,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Despite its neutral status, PMSL has been spotted in the possession of both HODL Warriors and GraffPUNKS operatives during covert operations, hinting at its potential use as a black-market currency for cross-faction dealings. Some speculate that its lack of clear allegiance is by design, coded to evade blockchain audits, making it the perfect tool for those who operate in the shadows of the metaverse.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 49,
+      "last_verified_cycle": 49,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "As part of Graffiti Kings\u2019 real-world Web3 initiatives, PMSL\u2019s place in the Crypto Moonboys universe suggests a future where it could unlock obscure narratives or factional advantages. Rumors swirl that during pivotal events like the HODL WARS, PMSL might reveal hidden utilities, such as access to encrypted lore drops or temporary boosts in metaverse conflicts, positioning it as a token of untapped potential.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 49,
+      "last_verified_cycle": 49,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "PMSL stands as a tertiary token in the Crypto Moonboys economy, its role within Block Topia not yet fully unveiled, but hinting at niche significance tied to underground trades. Some lore suggests it was once used to fund a failed rebellion against digital overlords, embedding it with a rebellious spirit that still resonates with those who trade it in defiance of centralized control.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 49,
+      "last_verified_cycle": 49,
       "status": "VERIFIED"
     }
   ],
