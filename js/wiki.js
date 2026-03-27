@@ -793,124 +793,12 @@ const WIKI_INDEX = [
     tags: ["sacred", "chain"]
   },
   {
-    title: "$BITCOIN CASH",
-    url: "wiki/sam-bitcoin-cash.html",
-    desc: "Token for Bitcoin Cash blockchain transactions",
-    category: "Cryptocurrencies",
-    emoji: "🪙",
-    tags: ["bitcoin", "cash", "sam"]
-  },
-  {
-    title: "Dream Sovereign",
-    url: "wiki/sam-dream-sovereign.html",
-    desc: "Mysterious origin point of NULL THE PROPHET, the main antagonist.",
-    category: "Lore",
-    emoji: "⚔️",
-    tags: ["dream", "sovereign", "sam"]
-  },
-  {
-    title: "GraffPUNKS Network Online Radio",
-    url: "wiki/sam-graffpunks-network-online-radio.html",
-    desc: "Blockchain radio station for GraffPUNKS",
-    category: "Punk Culture",
-    emoji: "🤘",
-    tags: ["graffpunks", "network", "online", "radio", "sam"]
-  },
-  {
-    title: "GraffPUNKS",
-    url: "wiki/sam-graffpunks.html",
-    desc: "Rebellious faction uniting graffiti artists worldwide.",
-    category: "Punk Culture",
-    emoji: "🤘",
-    tags: ["graffpunks", "sam"]
-  },
-  {
-    title: "HODL Warriors",
-    url: "wiki/sam-hodl-warriors.html",
-    desc: "HODL Warriors are featured in a Medium article titled 'The Great WAXP Gathering: The Hodl Warriors Answer the Call.",
-    category: "Community & People",
-    emoji: "👥",
-    tags: ["hodl", "warriors", "sam"]
-  },
-  {
-    title: "HODL WARS EXTRAVAGANZA",
-    url: "wiki/sam-hodl-wars-extravaganza.html",
-    desc: "Major upcoming event tied to NFT drops and gameplay",
-    category: "Lore",
-    emoji: "⚔️",
-    tags: ["hodl", "wars", "extravaganza", "sam"]
-  },
-  {
-    title: "HODL WARS",
-    url: "wiki/sam-hodl-wars.html",
-    desc: "Associated with a website preparing a battlefield (hodlwars.com). Listed as a cryptocurrency token on OKX.",
-    category: "Lore",
-    emoji: "⚔️",
-    tags: ["hodl", "wars", "sam"]
-  },
-  {
-    title: "Queens, New York",
-    url: "wiki/sam-queens-new-york.html",
-    desc: "Real-world location transformed into a fortress in the Crypto Moonboys lore.",
-    category: "Lore",
-    emoji: "⚔️",
-    tags: ["queens", "new", "york", "sam"]
-  },
-  {
-    title: "$SOL",
-    url: "wiki/sam-sol.html",
-    desc: "Token for Solana blockchain transactions",
-    category: "Cryptocurrencies",
-    emoji: "🪙",
-    tags: ["sol", "sam"]
-  },
-  {
-    title: "Staking for $GK Tokens",
-    url: "wiki/sam-staking-for-gk-tokens.html",
-    desc: "Mechanic to stake NFTs for $GK token rewards",
-    category: "Cryptocurrencies",
-    emoji: "🪙",
-    tags: ["staking", "for", "tokens", "sam"]
-  },
-  {
-    title: "The Great Unravelling",
-    url: "wiki/sam-the-great-unravelling.html",
-    desc: "Historical era of chaos following the Triple Fork Event.",
-    category: "Lore",
-    emoji: "⚔️",
-    tags: ["the", "great", "unravelling", "sam"]
-  },
-  {
-    title: "Triple Fork Event Mechanics",
-    url: "wiki/sam-triple-fork-event-mechanics.html",
-    desc: "Game or lore mechanics tied to the Triple Fork Event",
-    category: "Technology",
-    emoji: "⚙️",
-    tags: ["triple", "fork", "event", "mechanics", "sam"]
-  },
-  {
-    title: "WAX",
-    url: "wiki/sam-wax.html",
-    desc: "Primary blockchain for GKniftyHEADS NFT collections as per NFTHive.",
-    category: "Cryptocurrencies",
-    emoji: "🪙",
-    tags: ["wax", "sam"]
-  },
-  {
     title: "$WAXP",
-    url: "wiki/sam-waxp.html",
+    url: "wiki/waxp.html",
     desc: "Token for WAX blockchain transactions",
     category: "Cryptocurrencies",
     emoji: "🪙",
-    tags: ["waxp", "sam"]
-  },
-  {
-    title: "$XRPL",
-    url: "wiki/sam-xrpl.html",
-    desc: "Token for XRP Ledger transactions",
-    category: "Cryptocurrencies",
-    emoji: "🪙",
-    tags: ["xrpl", "sam"]
+    tags: ["waxp"]
   },
   {
     title: "Samael.exe",
