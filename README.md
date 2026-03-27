@@ -21,7 +21,7 @@ All wiki content is **published automatically** from the Brain repo ([`HODLKONG6
 
 ## 📂 File Structure
 
-```
+```text
 /
 ├── index.html              ← Homepage
 ├── index_stats.json        ← Live stats: total_articles, total_entities, last_updated
@@ -47,55 +47,3 @@ All wiki content is **published automatically** from the Brain repo ([`HODLKONG6
 └── categories/
     ├── index.html
     └── ... (17 categories)
-```
-
----
-
-## 🔄 How Publishing Works
-
-1. `sam-master-agent.py` crawls sources, validates facts, stores memory in Cloudflare R2.
-2. `sam-wiki-publisher.py` reads memory, generates HTML, pushes commits here.
-3. Each new article updates `articles.html`, category pages, `js/wiki.js`, and `sitemap.xml`.
-4. GitHub Pages serves at [crypto-moonboys.github.io](https://crypto-moonboys.github.io).
-
----
-
-## 📖 SAM Bible System
-
-Bible JSON files for priority entities are stored in `wiki/bibles/{entity_slug}.json` and published here by `sam-wiki-publisher.py` in the Brain repo. The frontend loads them via `js/bible-loader.js`.
-
-**How it works:**
-- `js/bible-loader.js` reads `data-entity-slug` on the `<article>` element
-- Fetches `/wiki/bibles/{slug}.json` (static file, no live endpoint needed)
-- Injects timeline, relationships, and cross-links into `<div id="bible-content"></div>`
-- Silently fails if no bible file exists yet for that entity
-
-**Hooked pages:** `bitcoin`, `ethereum`, `nfts`, `defi`, `graffpunks`, `hodl-wars`, `crypto-moonboys`, `blockchain`, `waxp`, `xrpl`
-
----
-
-## 📡 SAM Status Panel (`js/sam-status.js`)
-
-`sam-status.js` renders a live focus plan and keyword bank panel into `#sam-status-panel` if present on a page.
-
-> ⚠️ **Under the 2-repo system:** This script reads from a `SAM_V2_URL` variable (set per-page if needed). If `SAM_V2_URL` is not defined or empty, the panel silently does nothing. There is **no required live backend** for the wiki to function — the status panel is an optional enhancement only. Core wiki content is 100% static HTML published by the Brain repo.
-
----
-
-## 🔀 Legacy Redirect Stubs
-
-- **`sam.html`** → `agent.html`
-- **`categories/sam-generated.html`** → `categories/lore.html`
-- **`wiki/sam-*.html`** → canonical non-prefixed URLs
-
-Per DB-47, SAM no longer creates `sam-` prefixed slugs.
-
----
-
-## Design
-
-- Dark theme · Gold accent (`#f7c948`) · Responsive · Vanilla JS only
-
-## License
-
-Fan content — not for commercial use. **Not financial advice.**
