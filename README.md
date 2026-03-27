@@ -2,18 +2,17 @@
 
 [![GitHub Pages](https://img.shields.io/badge/GitHub%20Pages-Live-brightgreen)](https://crypto-moonboys.github.io)
 
-The public frontend of the **3-repo SAM system**. This site is a fan-driven crypto encyclopedia inspired by Fandom/MediaWiki design — maintained by the SAM AI agent.
+The public frontend of the **2-repo SAM system**. This site is a fan-driven crypto encyclopedia inspired by Fandom/MediaWiki design — maintained by the SAM AI agent.
 
 All wiki content is **published automatically** from the Brain repo ([`HODLKONG64/HAY-MUM-IM-BUILDING-AGENTS-OF-CHANGE`](https://github.com/HODLKONG64/HAY-MUM-IM-BUILDING-AGENTS-OF-CHANGE)) via `sam-wiki-publisher.py`. No manual content authoring happens in this repo.
 
 ---
 
-## 🏗️ Architecture — 3-Repo System
+## 🏗️ Architecture — 2-Repo System
 
 | Repo | Role |
 |------|------|
-| **Brain / Orchestrator** — [`HODLKONG64/HAY-MUM-IM-BUILDING-AGENTS-OF-CHANGE`](https://github.com/HODLKONG64/HAY-MUM-IM-BUILDING-AGENTS-OF-CHANGE) | SAM Master Agent (`sam-master-agent.py`) crawls, validates, and stores knowledge. `sam-wiki-publisher.py` converts memory into HTML and pushes it here. |
-| **Intelligence / Backend** — [`HODLKONG64/sam-v2-intelligence`](https://github.com/HODLKONG64/sam-v2-intelligence) | SAM v2 Python + FastAPI layer. Scoring, ranking, memory, focus-plan, leaderboard, keyword-bank, and bible endpoints. |
+| **Brain / Orchestrator** — [`HODLKONG64/HAY-MUM-IM-BUILDING-AGENTS-OF-CHANGE`](https://github.com/HODLKONG64/HAY-MUM-IM-BUILDING-AGENTS-OF-CHANGE) | SAM Master Agent (`sam-master-agent.py`) crawls, validates, and stores knowledge. `sam-wiki-publisher.py` converts memory into HTML and pushes it here. Also hosts the full intelligence layer (scoring, ranking, memory, focus-plan, leaderboard, keyword-bank, bible endpoints). |
 | **Wiki / Frontend** — this repo | Public-facing GitHub Pages site. Serves 314 articles · 158 entities. Receives automated commits from the Brain repo on each SAM cycle. |
 
 ---
@@ -29,7 +28,6 @@ All wiki content is **published automatically** from the Brain repo ([`HODLKONG6
 ├── agent.html              ← SAM Agent info page
 ├── search.html             ← Search / All Articles
 ├── _article-template.html  ← TEMPLATE for new articles (bot uses this)
-├── brain-rules.md          ← Wiki-specific publishing rules (subset)
 ├── sitemap.xml             ← Auto-updated sitemap
 ├── css/
 │   └── wiki.css            ← All styles
@@ -76,13 +74,6 @@ The SAM v2 intelligence layer exposes `/bibles/{entity_name}`. Top 10 priority p
 - **`wiki/sam-*.html`** → canonical non-prefixed URLs
 
 Per DB-47, SAM no longer creates `sam-` prefixed slugs.
-
----
-
-## 📖 Brain Rules
-
-Full canonical rules (DB-1 through DB-48) live in the Brain repo:
-👉 [`HODLKONG64/HAY-MUM-IM-BUILDING-AGENTS-OF-CHANGE/brain-rules.md`](https://github.com/HODLKONG64/HAY-MUM-IM-BUILDING-AGENTS-OF-CHANGE/blob/main/brain-rules.md)
 
 ---
 
