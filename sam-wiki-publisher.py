@@ -1,17 +1,15 @@
 #!/usr/bin/env python3
 """
-sam-wiki-publisher.py — Crypto Moonboys Wiki build pipeline.
+sam-wiki-publisher.py
+=====================
+Single-source-of-truth wiki build pipeline for Crypto Moonboys Wiki.
 
-Enforces a clean, single-source-of-truth publish run:
-  1. Hard-cleans all wiki/*.html before writing anything.
-  2. Derives slugs ONLY from entity names (never from a JSON "slug" field).
-  3. Removes broken file types (e.g. XML sitemaps saved as .html).
-  4. Asserts slug uniqueness before writing any page.
-  5. Writes each page to wiki/{slug}.html and asserts the file exists.
-  6. Rebuilds sitemap.xml entirely from the filesystem after the build.
+Requirements:
+    pip install python-slugify
 
-Requires:  python-slugify
-Install:   pip install python-slugify
+Usage:
+    python3 sam-wiki-publisher.py                        # uses default: main-brain-export.json
+    python3 sam-wiki-publisher.py path/to/export.json
 """
 
 import argparse
@@ -19,94 +17,214 @@ import glob
 import json
 import os
 import sys
-from datetime import date
-
+from datetime import datetime
 from slugify import slugify
 
 BASE_URL = "https://crypto-moonboys.github.io/wiki/"
 WIKI_DIR = "wiki"
 SITEMAP_PATH = "sitemap.xml"
+DEFAULT_INPUT = "main-brain-export.json"
+
+
+# ---------------------------------------------------------------------------
+# Rule 1 – Hard clean
+# ---------------------------------------------------------------------------
+def hard_clean_wiki_dir():
+    """Delete all *.html files in wiki/ before the build starts."""
+    removed = 0
+    for f in glob.glob(f"{WIKI_DIR}/*.html"):
+        os.remove(f)
+        removed += 1
+    print(f"[CLEAN] Removed {removed} legacy HTML files from {WIKI_DIR}/")
+
+
+# ---------------------------------------------------------------------------
+# Rule 3 – Remove broken file types (XML sitemaps mis-saved as .html)
+# ---------------------------------------------------------------------------
+def remove_broken_html_files():
+    """Delete any wiki/*.html that contains '<urlset' (XML sitemap content)."""
+    removed = 0
+    for f in glob.glob(f"{WIKI_DIR}/*.html"):
+        try:
+            with open(f, "r", encoding="utf-8", errors="ignore") as fh:
+                if "<urlset" in fh.read():
+                    os.remove(f)
+                    print(f"[CLEAN] Removed broken XML-as-HTML: {f}")
+                    removed += 1
+        except OSError:
+            pass
+    if removed:
+        print(f"[CLEAN] Removed {removed} broken XML-as-HTML file(s).")
+
+
+# ---------------------------------------------------------------------------
+# Load + validate export
+# ---------------------------------------------------------------------------
+def load_and_validate_export(path: str) -> list:
+    """
+    Load the JSON export file and return a clean list of entity dicts.
+
+    Expected format (main-brain-export.json):
+        { "items": [ { "entity_name": "...", ... }, ... ] }
+
+    Rules enforced here (BEFORE any clean/delete):
+      - File must exist and be valid JSON.
+      - Top-level key must be "items".
+      - Every record must have a non-empty "entity_name".
+      - No duplicate entity_names are allowed (logged then asserted).
+
+    Returns list of raw item dicts.
+    Exits with a descriptive error message on any failure.
+    """
+    # --- file existence check (before any destructive operation) ---
+    if not os.path.exists(path):
+        sys.exit(
+            f"[ERROR] Input file not found: {path}\n"
+            f"        Provide a valid JSON export file as the first argument."
+        )
+
+    # --- parse JSON ---
+    try:
+        with open(path, "r", encoding="utf-8") as fh:
+            raw = json.load(fh)
+    except json.JSONDecodeError as exc:
+        sys.exit(f"[ERROR] JSON parse error in {path}: {exc}")
+
+    # --- top-level structure ---
+    if not isinstance(raw, dict) or "items" not in raw:
+        sys.exit(
+            f"[ERROR] Expected top-level key 'items' in {path}.\n"
+            f"        Got keys: {list(raw.keys()) if isinstance(raw, dict) else type(raw)}"
+        )
+
+    items = raw["items"]
+    if not isinstance(items, list):
+        sys.exit(f"[ERROR] 'items' must be a list, got {type(items)} in {path}")
+
+    # --- validate each record has entity_name ---
+    valid_items = []
+    for i, item in enumerate(items):
+        entity_name = item.get("entity_name", "").strip()
+        if not entity_name:
+            print(f"[WARN] Skipping record #{i} — missing or empty 'entity_name'")
+            continue
+        valid_items.append(item)
+
+    if not valid_items:
+        sys.exit(f"[ERROR] No valid records with 'entity_name' found in {path}")
+
+    # --- Rule 4 + 8: duplicate detection BEFORE any file operations ---
+    slugs = [slugify(item["entity_name"]) for item in valid_items]
+    seen = set()
+    duplicates_found = False
+    for item, slug in zip(valid_items, slugs):
+        entity_name = item["entity_name"]
+        if slug in seen:
+            # Rule 8 — log before asserting
+            print(f"[WARN] Duplicate entity detected: {entity_name}  (slug: {slug})")
+            duplicates_found = True
+        seen.add(slug)
+
+    if duplicates_found:
+        dupes = [s for s in slugs if slugs.count(s) > 1]
+        assert len(set(slugs)) == len(slugs), (
+            f"Duplicate slugs detected: {sorted(set(dupes))}"
+        )
+
+    print(f"[VALIDATE] Loaded {len(valid_items)} valid entities from {path}")
+    return valid_items
 
 
 # ---------------------------------------------------------------------------
 # HTML rendering
 # ---------------------------------------------------------------------------
+def render_html(item: dict, slug: str) -> str:
+    """
+    Render a wiki page from an entity dict.
 
-def render_html(entity: str, slug: str, facts: list[str], sources: list[str]) -> str:
-    """Return a minimal but valid HTML5 page for the given entity."""
-    title_safe = entity.replace("'", "&#39;").replace('"', "&quot;")
-    page_url = f"https://crypto-moonboys.github.io/wiki/{slug}.html"
+    Rich fields read (all optional, graceful fallback to empty string / 0):
+        entity_name    — page title                  (required by validator)
+        summary        — paragraph body text
+        source_url     — link to original source
+        source_name    — display label for source link
+        category       — badge / breadcrumb label
+        mention_count  — how many times entity was mentioned in source data
+    """
+    entity_name   = item.get("entity_name", "Unknown Entity")
+    summary       = item.get("summary", "")
+    source_url    = item.get("source_url", "")
+    source_name   = item.get("source_name", "")
+    category      = item.get("category", "Wiki")
+    mention_count = int(item.get("mention_count", 0))
 
-    facts_html = "\n".join(
-        f'          <li>{fact}</li>' for fact in facts
-    ) if facts else "          <li>No facts recorded yet.</li>"
+    if source_url:
+        label = source_name if source_name else source_url
+        source_block = (
+            f'<p class="source-link">\U0001f517 Source: '
+            f'<a href="{source_url}" target="_blank" rel="noopener noreferrer">'
+            f"{label}</a></p>"
+        )
+    else:
+        source_block = ""
 
-    sources_html = "\n".join(
-        f'          <li><a href="{src}" target="_blank" rel="noopener noreferrer">{src}</a></li>'
-        for src in sources
-    ) if sources else "          <li>No sources listed.</li>"
+    mention_block = (
+        f'<p class="mention-count">\U0001f4ca Mentions: <strong>{mention_count}</strong></p>'
+        if mention_count > 0
+        else ""
+    )
+
+    today = datetime.utcnow().strftime("%B %Y")
 
     return f"""<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="{title_safe} — Crypto Moonboys Wiki">
-  <meta name="robots" content="index, follow">
-  <meta property="og:title" content="{title_safe} — Crypto Moonboys Wiki">
-  <meta property="og:type" content="website">
-  <meta property="og:url" content="{page_url}">
-  <meta property="og:image" content="https://crypto-moonboys.github.io/img/logo.svg">
-  <title>{title_safe} — Crypto Moonboys Wiki</title>
-  <link rel="stylesheet" href="../css/wiki.css">
-  <link rel="icon" href="../img/favicon.svg" type="image/svg+xml">
+  <title>{{entity_name}} — Crypto Moonboys Wiki</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="icon" href="../favicon.png" type="image/png">
 </head>
 <body>
-<div id="wiki-wrap">
-  <div id="wiki-main">
-    <main id="wiki-content">
-      <article data-entity-slug="{slug}">
-        <header class="wiki-header">
-          <h1>{title_safe}</h1>
-        </header>
+<header class="site-header">
+  <a href="../index.html" class="site-logo">
+    <img src="../favicon.png" alt="Crypto Moonboys" width="32" height="32">
+    <span>Crypto Moonboys Wiki</span>
+  </a>
+  <nav class="header-nav" aria-label="Main navigation">
+    <a href="../index.html">Home</a>
+    <a href="../articles.html">All Articles</a>
+  </nav>
+</header>
 
-        <section class="wiki-section">
-          <h2 id="facts">Facts</h2>
-          <ul class="sources-list">
-{facts_html}
-          </ul>
-        </section>
+<div id="layout">
+  <main id="content" role="main">
+    <nav class="breadcrumb" aria-label="Breadcrumb">
+      <a href="../index.html">Home</a>
+      <span class="sep" aria-hidden="true">›</span>
+      <span>{{category}}</span>
+      <span class="sep" aria-hidden="true">›</span>
+      <span aria-current="page">{{entity_name}}</span>
+    </nav>
 
-        <section class="wiki-section">
-          <h2 id="sources">Sources</h2>
-          <ul class="sources-list">
-{sources_html}
-          </ul>
-        </section>
+    <h1 class="page-title">{{entity_name}}</h1>
+    <div class="page-title-line" aria-hidden="true"></div>
 
-        <div id="bible-content"></div>
-      </article>
-    </main>
+    <div class="article-meta">
+      <span class="article-badge">{{category}}</span>
+      <span class="meta-item">\U0001f4c5 Last updated: {{today}}</span>
+      {{mention_block}}
+    </div>
 
-    <footer id="site-footer" role="contentinfo">
-      <div class="footer-inner">
-        <div class="footer-col"><h4>🌙 Moonboys Wiki</h4><p>Fan-driven encyclopedia for the crypto community.</p></div>
-        <div class="footer-col"><h4>Explore</h4><ul>
-          <li><a href="../index.html">Main Page</a></li>
-          <li><a href="../categories/index.html">Categories</a></li>
-          <li><a href="../articles.html">All Articles</a></li>
-          <li><a href="../about.html">About</a></li>
-        </ul></div>
-      </div>
-      <div class="footer-bottom">
-        <p>© 2026 Crypto Moonboys Wiki · Not financial advice.</p>
-      </div>
-    </footer>
-  </div>
+    <div class="article-body">
+      {{f"<p>{{summary}}</p>" if summary else ""}}
+      {{source_block}}
+    </div>
+  </main>
 </div>
 
-<script src="../js/wiki.js"></script>
-<script src="/js/bible-loader.js"></script>
+<footer class="site-footer">
+  <p>&copy; Crypto Moonboys Wiki</p>
+</footer>
 </body>
 </html>
 """
@@ -115,11 +233,10 @@ def render_html(entity: str, slug: str, facts: list[str], sources: list[str]) ->
 # ---------------------------------------------------------------------------
 # Sitemap helpers
 # ---------------------------------------------------------------------------
-
-def read_existing_sitemap_non_wiki_entries(sitemap_path: str) -> list[str]:
+def read_existing_sitemap_non_wiki_entries(sitemap_path: str) -> list:
     """
     Parse existing sitemap.xml and return all <url> blocks that are NOT
-    wiki/*.html pages.  These are preserved verbatim so the full sitemap
+    wiki/*.html pages. These are preserved verbatim so the full sitemap
     is not lost.
     """
     if not os.path.exists(sitemap_path):
@@ -131,207 +248,96 @@ def read_existing_sitemap_non_wiki_entries(sitemap_path: str) -> list[str]:
         block = block.strip()
         if not block or "<urlset" in block:
             continue
-        # Strip closing </url> if present so we can re-wrap cleanly
         block = block.replace("</url>", "").strip()
         loc_start = block.find("<loc>")
         loc_end = block.find("</loc>")
         if loc_start == -1 or loc_end == -1:
             continue
         loc = block[loc_start + 5:loc_end]
-        # Keep only non-wiki-page entries (wiki/*.html are rebuilt below)
         if "/wiki/" not in loc or not loc.endswith(".html"):
-            entries.append(f"  <url>{block}</url>")
+            entries.append(f"  <url>{{block}}</url>")
     return entries
 
 
-def build_sitemap(html_files: list[str], existing_entries: list[str]) -> str:
-    """Return a complete sitemap.xml string."""
-    today = date.today().isoformat()
+def build_sitemap(html_files: list, existing_entries: list) -> str:
+    """Return a complete sitemap.xml string rebuilt from wiki/*.html files."""
+    today = datetime.utcnow().strftime("%Y-%m-%d")
     wiki_entries = []
     for fpath in sorted(html_files):
         fname = os.path.basename(fpath)
         loc = f"{BASE_URL}{fname}"
         wiki_entries.append(
-            f'  <url><loc>{loc}</loc><lastmod>{today}</lastmod>'
-            f'<changefreq>weekly</changefreq><priority>0.8</priority></url>'
+            f"  <url><loc>{{loc}}</loc><lastmod>{{today}}</lastmod>"
+            f"<changefreq>weekly</changefreq><priority>0.8</priority></url>"
         )
-
     all_entries = existing_entries + wiki_entries
     body = "\n".join(all_entries)
     return (
         '<?xml version="1.0" encoding="UTF-8"?>\n'
         '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
-        f'{body}\n'
-        '</urlset>\n'
+        f"{{body}}\n"
+        "</urlset>\n"
     )
-
-
-# ---------------------------------------------------------------------------
-# Rule 3 — scan for broken files (useful when not doing a fresh run)
-# ---------------------------------------------------------------------------
-
-def remove_broken_files(wiki_dir: str) -> int:
-    """
-    Delete any .html file in wiki_dir that contains '<urlset'
-    (i.e. an XML sitemap accidentally saved as .html).
-    Returns the number of files removed.
-    """
-    removed = 0
-    for fpath in glob.glob(os.path.join(wiki_dir, "*.html")):
-        try:
-            with open(fpath, encoding="utf-8", errors="replace") as fh:
-                content = fh.read(4096)  # Only need the start to detect <urlset>
-            if "<urlset" in content:
-                print(f"[CLEAN] Removing broken XML-in-HTML file: {fpath}")
-                os.remove(fpath)
-                removed += 1
-        except OSError as exc:
-            print(f"[WARN] Could not read {fpath}: {exc}")
-    return removed
 
 
 # ---------------------------------------------------------------------------
 # Main pipeline
 # ---------------------------------------------------------------------------
-
-def load_data(data_path: str) -> list[dict]:
-    """Load JSON data file; raise SystemExit with a helpful message on error."""
-    if not os.path.exists(data_path):
-        print(
-            f"[ERROR] Data file not found: {data_path}\n"
-            "Please provide a JSON file containing a list of entity dicts, e.g.:\n"
-            '  [{"entity": "Bitcoin", "facts": ["..."], "sources": ["..."]}]',
-            file=sys.stderr,
-        )
-        sys.exit(1)
-    try:
-        with open(data_path, encoding="utf-8") as fh:
-            data = json.load(fh)
-    except json.JSONDecodeError as exc:
-        print(f"[ERROR] Failed to parse JSON from {data_path}: {exc}", file=sys.stderr)
-        sys.exit(1)
-    if not isinstance(data, list):
-        print(
-            f"[ERROR] Expected a JSON array in {data_path}, got {type(data).__name__}.",
-            file=sys.stderr,
-        )
-        sys.exit(1)
-    return data
-
-
-def main() -> None:
+def main():
     parser = argparse.ArgumentParser(
-        description="Build Crypto Moonboys wiki pages from a JSON data file."
+        description="Build Crypto Moonboys wiki pages from a JSON export file."
     )
     parser.add_argument(
         "data_file",
         nargs="?",
-        default="wiki_data.json",
-        help="Path to the JSON data file (default: wiki_data.json).",
+        default=DEFAULT_INPUT,
+        help=f"Path to JSON export file (default: {DEFAULT_INPUT})",
     )
     args = parser.parse_args()
 
-    # ------------------------------------------------------------------
-    # Rule 1 — HARD CLEAN: delete all existing wiki/*.html before build
-    # ------------------------------------------------------------------
-    cleaned = 0
-    for fpath in glob.glob(os.path.join(WIKI_DIR, "*.html")):
-        os.remove(fpath)
-        cleaned += 1
-    print(f"[CLEAN] Removed {cleaned} existing wiki/*.html file(s).")
+    # Step 1: validate input BEFORE destructive operations
+    items = load_and_validate_export(args.data_file)
 
-    # ------------------------------------------------------------------
-    # Rule 3 — remove any remaining broken file types
-    # (belt-and-suspenders: Rule 1 already wiped them, but this handles
-    #  edge cases where the clean was skipped or files were re-added)
-    # ------------------------------------------------------------------
-    remove_broken_files(WIKI_DIR)
+    # Step 2: Rule 1 – hard clean wiki/*.html
+    hard_clean_wiki_dir()
 
-    # ------------------------------------------------------------------
-    # Load data
-    # ------------------------------------------------------------------
-    records = load_data(args.data_file)
-    print(f"[INFO] Loaded {len(records)} record(s) from {args.data_file}.")
+    # Step 3: Rule 3 – remove any XML-as-HTML stragglers (belt-and-suspenders)
+    remove_broken_html_files()
 
-    # ------------------------------------------------------------------
-    # Rule 2 & 4 & 8 — compute slugs, log duplicates, assert uniqueness
-    # ------------------------------------------------------------------
-    valid_records: list[dict] = []
-    slugs: list[str] = []
-    entities: list[str] = []
-    for record in records:
-        if "entity" not in record:
-            print(f"[WARN] Record missing 'entity' key, skipping: {record}")
-            continue
-        entity = record["entity"]
-        # Rule 2: slug is ALWAYS derived from entity name, never from JSON
-        slug = slugify(entity)
-        if slug in slugs:
-            # Rule 8: log before asserting
-            print(f"[WARN] Duplicate entity detected: {entity}")
-        valid_records.append(record)
-        slugs.append(slug)
-        entities.append(entity)
-
-    # Rule 4: assert uniqueness
-    assert len(set(slugs)) == len(slugs), (
-        f"Duplicate slugs detected: {[s for s in slugs if slugs.count(s) > 1]}"
-    )
-
-    # ------------------------------------------------------------------
-    # Rules 5 (prep) — read non-wiki entries from existing sitemap before
-    # we start writing (we will rebuild wiki entries from the filesystem)
-    # ------------------------------------------------------------------
+    # Step 4: preserve non-wiki sitemap entries before rebuild
     existing_sitemap_entries = read_existing_sitemap_non_wiki_entries(SITEMAP_PATH)
 
-    # ------------------------------------------------------------------
-    # Rules 2, 6, 7 — render and write each page
-    # ------------------------------------------------------------------
+    # Step 5: Rules 2, 6, 7 – render and write each page
     pages_written = 0
-    for record, slug, entity in zip(valid_records, slugs, entities):
-        # Use "facts" if explicitly present (even if empty); fall back to
-        # all_facts only when the key is absent entirely.
-        if "facts" in record:
-            facts = record["facts"]
-        else:
-            facts = [
-                f["fact"] for f in record.get("all_facts", [])
-                if isinstance(f, dict) and "fact" in f
-            ]
-        sources = record.get("sources", [])
+    os.makedirs(WIKI_DIR, exist_ok=True)
+    for item in items:
+        entity_name = item["entity_name"]
+        # Rule 2: slug ONLY from entity_name; never read a "slug" JSON field
+        slug = slugify(entity_name)
 
-        html = render_html(entity, slug, facts, sources)
+        html = render_html(item, slug)
 
         # Rule 6: strict output path wiki/{slug}.html
-        out_path = os.path.join(WIKI_DIR, f"{slug}.html")
+        out_path = os.path.join(WIKI_DIR, f"{{slug}}.html")
         with open(out_path, "w", encoding="utf-8") as fh:
             fh.write(html)
 
-        # Rule 7: post-write existence assertion
-        assert os.path.exists(os.path.join(WIKI_DIR, f"{slug}.html")), (
-            f"Expected output missing: {WIKI_DIR}/{slug}.html"
-        )
-
+        # Rule 7: post-write assertion
+        assert os.path.exists(out_path), f"Expected output missing: {{out_path}}"
         pages_written += 1
 
-    # ------------------------------------------------------------------
-    # Rule 5 — rebuild sitemap.xml from filesystem only
-    # ------------------------------------------------------------------
+    # Step 6: Rule 5 – rebuild sitemap from filesystem only
     html_files = glob.glob(os.path.join(WIKI_DIR, "*.html"))
     sitemap_content = build_sitemap(html_files, existing_sitemap_entries)
     with open(SITEMAP_PATH, "w", encoding="utf-8") as fh:
         fh.write(sitemap_content)
-    sitemap_entries = len(html_files)
 
-    # ------------------------------------------------------------------
-    # Summary
-    # ------------------------------------------------------------------
     print(
-        f"[DONE] {pages_written} page(s) written to {WIKI_DIR}/. "
-        f"Sitemap rebuilt with {sitemap_entries} wiki entries "
-        f"(+ {len(existing_sitemap_entries)} preserved non-wiki entries)."
+        f"[DONE] {{pages_written}} page(s) written to {{WIKI_DIR}}/. "
+        f"Sitemap rebuilt with {{len(html_files)}} wiki entries "
+        f"(+ {{len(existing_sitemap_entries)}} preserved non-wiki entries)."
     )
 
 
 if __name__ == "__main__":
-    main()
+    main()  
