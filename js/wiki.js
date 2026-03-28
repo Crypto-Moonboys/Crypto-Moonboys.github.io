@@ -1191,6 +1191,150 @@ const WIKI_INDEX = [
     category: "Cryptocurrencies",
     emoji: "🪙",
     tags: ["xrp", "kids"]
+  },
+  {
+    title: "$GK",
+    url: "wiki/gk.html",
+    desc: "The $GK token is the lifeblood of the Crypto Moonboys economy, earned through staking playable NFT murals or securing victories.",
+    category: "Cryptocurrencies",
+    emoji: "🪙",
+    tags: ["gk", "token", "crypto", "staking"]
+  },
+  {
+    title: "Graffiti Queens Exhibition",
+    url: "wiki/graffiti-queens-exhibition.html",
+    desc: "Largest all-female NFT exhibition in the Crypto Moonboys universe.",
+    category: "Lore",
+    emoji: "🎨",
+    tags: ["graffiti", "queens", "exhibition", "nft"]
+  },
+  {
+    title: "Graffiti Queens in Decentraland",
+    url: "wiki/graffiti-queens-in-decentraland.html",
+    desc: "Graffiti Queens in Decentraland stands as a transformative cultural milestone in the Crypto Moonboys universe.",
+    category: "Lore",
+    emoji: "🎨",
+    tags: ["graffiti", "queens", "decentraland", "metaverse"]
+  },
+  {
+    title: "GraffPUNKS",
+    url: "wiki/graffpunks.html",
+    desc: "Rebellious street art faction within the Crypto Moonboys universe uniting graffiti artists worldwide.",
+    category: "Lore",
+    emoji: "🤘",
+    tags: ["graffpunks", "street art", "punk"]
+  },
+  {
+    title: "Hard Fork Games Event",
+    url: "wiki/hard-fork-games-event.html",
+    desc: "Competitive lore event in the Crypto Moonboys universe.",
+    category: "Lore",
+    emoji: "⚔️",
+    tags: ["hard fork", "games", "event", "lore"]
+  },
+  {
+    title: "$NBG Token",
+    url: "wiki/nbg-token.html",
+    desc: "Token tied to No Ball Games collection by Charlie Buster.",
+    category: "Concepts",
+    emoji: "🪙",
+    tags: ["nbg", "token", "no ball games"]
+  },
+  {
+    title: "NBGX",
+    url: "wiki/nbgx.html",
+    desc: "Secondary token in the Crypto Moonboys ecosystem, a specialized variant of the NBG token.",
+    category: "Cryptocurrencies",
+    emoji: "🪙",
+    tags: ["nbgx", "token", "crypto"]
+  },
+  {
+    title: "PMSL",
+    url: "wiki/pmsl.html",
+    desc: "Enigmatic token within the Crypto Moonboys ecosystem.",
+    category: "Cryptocurrencies",
+    emoji: "🪙",
+    tags: ["pmsl", "token", "crypto"]
+  },
+  {
+    title: "PUNK Coin",
+    url: "wiki/punk-coin.html",
+    desc: "PUNK Coin fueling the GraffPUNKS ecosystem.",
+    category: "Lore",
+    emoji: "🤘",
+    tags: ["punk", "coin", "graffpunks"]
+  },
+  {
+    title: "$PUNK",
+    url: "wiki/punk.html",
+    desc: "Core currency token fueling the GraffPUNKS ecosystem.",
+    category: "Cryptocurrencies",
+    emoji: "🪙",
+    tags: ["punk", "token", "crypto"]
+  },
+  {
+    title: "Spraycode & Writcode",
+    url: "wiki/spraycode-writcode.html",
+    desc: "Coding mechanics for digital graffiti in the Crypto Moonboys universe.",
+    category: "Concepts",
+    emoji: "🎨",
+    tags: ["spraycode", "writcode", "mechanics", "graffiti"]
+  },
+  {
+    title: "Staking for $GK Tokens",
+    url: "wiki/staking-for-gk-tokens.html",
+    desc: "Reward system for staking NFTs to earn $GK tokens.",
+    category: "Concepts",
+    emoji: "💡",
+    tags: ["staking", "gk", "tokens", "rewards"]
+  },
+  {
+    title: "Staking",
+    url: "wiki/staking.html",
+    desc: "Mechanism to lock NFTs or tokens for rewards like $GK tokens.",
+    category: "Concepts",
+    emoji: "💡",
+    tags: ["staking", "nft", "tokens", "rewards"]
+  },
+  {
+    title: "THE GRIDS",
+    url: "wiki/the-grids.html",
+    desc: "Digital battleground in the Crypto Moonboys lore.",
+    category: "Lore",
+    emoji: "⚔️",
+    tags: ["grids", "battleground", "lore"]
+  },
+  {
+    title: "The HODL Warriors",
+    url: "wiki/the-hodl-warriors.html",
+    desc: "Elite warriors earning status through Hard Fork Games.",
+    category: "Lore",
+    emoji: "⚔️",
+    tags: ["hodl", "warriors", "lore"]
+  },
+  {
+    title: "The Sacred Chain",
+    url: "wiki/the-sacred-chain.html",
+    desc: "Spiritual blockchain realm in the Crypto Moonboys lore.",
+    category: "Lore",
+    emoji: "⚔️",
+    tags: ["sacred", "chain", "blockchain", "lore"]
+  },
+  {
+    title: "Tokens",
+    url: "wiki/tokens.html",
+    desc: "Overview of crypto tokens in the Crypto Moonboys ecosystem.",
+    category: "Lore",
+    emoji: "🪙",
+    tags: ["tokens", "crypto", "ecosystem"]
+  },
+  {
+    title: "$WAXP",
+    url: "wiki/waxp.html",
+    desc: "Blockchain token for the WAX platform used in Crypto Moonboys NFT collections.",
+    category: "Cryptocurrencies",
+    emoji: "🪙",
+    tags: ["waxp", "wax", "token", "blockchain"]
   }
 ];
 
