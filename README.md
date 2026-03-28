@@ -42,7 +42,6 @@ All wiki content is **published automatically** from the Brain repo ([`HODLKONG6
 │   ├── bitcoin.html        ← Priority entity pages (SAM bible hooks active)
 │   ├── ethereum.html
 │   ├── bibles/             ← Bible JSON files published by sam-wiki-publisher.py
-│   ├── sam-*.html          ← Legacy redirect stubs (see below)
 │   └── ... (314+ articles total, grows each SAM cycle)
 └── categories/
     ├── index.html
