@@ -17,6 +17,7 @@ import glob
 import json
 import os
 import sys
+import xml.etree.ElementTree as ET
 from datetime import date
 
 from slugify import slugify
@@ -139,7 +140,7 @@ def render_wiki_index(articles: list) -> str:
   <meta property="og:title" content="&#x1F4DA; Wiki Index &#x2014; Crypto Moonboys Wiki">
   <meta property="og:description" content="Browse all {count} {article_word} in the Crypto Moonboys Wiki.">
   <meta property="og:type" content="website">
-  <meta property="og:url" content="https://crypto-moonboys.github.io/wiki/">
+  <meta property="og:url" content="https://crypto-moonboys.github.io/wiki/index.html">
   <meta property="og:image" content="https://crypto-moonboys.github.io/img/logo.svg">
   <title>&#x1F4DA; Wiki Index &#x2014; Crypto Moonboys Wiki</title>
   <link rel="stylesheet" href="../css/wiki.css">
@@ -301,18 +302,50 @@ def render_wiki_index(articles: list) -> str:
 # Sitemap builder
 # ---------------------------------------------------------------------------
 
-def build_sitemap(html_files: list) -> str:
-    """Return a complete sitemap.xml string built only from wiki/*.html files."""
+def build_sitemap(html_files: list, sitemap_path: str) -> str:
+    """Return a complete sitemap.xml string.
+
+    Non-wiki <url> entries already present in *sitemap_path* are preserved
+    verbatim (lastmod, changefreq, priority untouched).  Wiki entries are
+    rebuilt from *html_files* and appended after the preserved entries.
+    """
     today = date.today().isoformat()
-    entries = []
+
+    # --- collect non-wiki entries from existing sitemap ---
+    non_wiki_blocks: list[str] = []
+    if os.path.exists(sitemap_path):
+        try:
+            tree = ET.parse(sitemap_path)
+            root = tree.getroot()
+            ns = {"sm": "http://www.sitemaps.org/schemas/sitemap/0.9"}
+            for url_el in root.findall("sm:url", ns):
+                loc_el = url_el.find("sm:loc", ns)
+                if loc_el is None:
+                    continue
+                if not loc_el.text.startswith(BASE_URL):
+                    # Reconstruct the <url> block preserving child element order
+                    parts = ["  <url>"]
+                    for child in url_el:
+                        tag = child.tag.split("}")[-1]  # strip namespace
+                        parts.append(f"    <{tag}>{child.text}</{tag}>")
+                    parts.append("  </url>")
+                    non_wiki_blocks.append("\n".join(parts))
+        except ET.ParseError:
+            pass  # if the existing file is malformed, start fresh
+
+    # --- build wiki entries ---
+    wiki_entries: list[str] = []
     for fpath in sorted(html_files):
         fname = os.path.basename(fpath)
         loc = f"{BASE_URL}{fname}"
-        entries.append(
+        priority = "0.9" if fname == "index.html" else "0.8"
+        wiki_entries.append(
             f'  <url><loc>{loc}</loc><lastmod>{today}</lastmod>'
-            f'<changefreq>weekly</changefreq><priority>0.8</priority></url>'
+            f'<changefreq>weekly</changefreq><priority>{priority}</priority></url>'
         )
-    body = "\n".join(entries)
+
+    all_entries = non_wiki_blocks + wiki_entries
+    body = "\n".join(all_entries)
     return (
         '<?xml version="1.0" encoding="UTF-8"?>\n'
         '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
@@ -434,7 +467,7 @@ def main():
 
     # Step 11: rebuild sitemap (picks up wiki/index.html automatically via glob)
     html_files = glob.glob(f"{WIKI_DIR}/*.html")
-    sitemap_content = build_sitemap(html_files)
+    sitemap_content = build_sitemap(html_files, SITEMAP_PATH)
     with open(SITEMAP_PATH, "w", encoding="utf-8") as fh:
         fh.write(sitemap_content)
     print(f"[SITEMAP] Rebuilt {SITEMAP_PATH} with {len(html_files)} entries.")
