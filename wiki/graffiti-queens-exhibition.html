@@ -3,10 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Largest all-female NFT exhibition">
+  <meta name="description" content="Featured Paris Hilton and Pussy Riot">
   <meta name="robots" content="index, follow">
   <meta property="og:title" content="Graffiti Queens Exhibition — Crypto Moonboys Wiki">
-  <meta property="og:description" content="Largest all-female NFT exhibition">
+  <meta property="og:description" content="Featured Paris Hilton and Pussy Riot">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://crypto-moonboys.github.io/wiki/graffiti-queens-exhibition.html">
   <meta property="og:image" content="https://crypto-moonboys.github.io/img/logo.svg">
@@ -17,11 +17,24 @@
     .wiki-section {
       margin: 1.6em 0;
     }
-    .facts-list {
-      padding-left: 1.4em;
+    .lore-paragraph {
+      line-height: 1.75;
+      margin: 0 0 1em 0;
     }
-    .facts-list li {
-      margin-bottom: 0.4em;
+    .lead-paragraph {
+      font-size: 1.06em;
+      line-height: 1.8;
+      margin: 0 0 1em 0;
+    }
+    .lore-facts-stack {
+      display: block;
+    }
+    .lore-fact-block {
+      margin: 0 0 1.2em 0;
+      padding: 1em 1.1em;
+      background: rgba(255,255,255,0.03);
+      border-left: 4px solid #5b8cff;
+      border-radius: 6px;
     }
     .sources-list {
       padding-left: 1.4em;
@@ -29,14 +42,6 @@
     .sources-list li {
       margin-bottom: 0.3em;
       word-break: break-all;
-    }
-    .article-stats {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 1em;
-      font-size: 0.85em;
-      color: #555;
-      margin-top: 0.5em;
     }
   </style>
 </head>
@@ -108,51 +113,49 @@
       </nav>
 
       <h1 class="page-title">
-        📅 Graffiti Queens Exhibition
+        🎭 Graffiti Queens Exhibition
       </h1>
       <div class="page-title-line" aria-hidden="true"></div>
 
       <div class="article-meta">
-        <span class="article-badge">📅 Lore</span>
-        <span class="meta-item">📅 Last updated: March 2026</span>
+        <span class="article-badge">🎭 Lore</span>
+        <span class="meta-item">📅 Last updated: 2026-03-28</span>
         <span class="meta-item">📂 <a href="../categories/lore.html">Lore</a></span>
       </div>
 
-      <article class="wiki-content">
+      <article class="wiki-content" data-entity-slug="graffiti-queens-exhibition">
 
-        <p>Largest all-female NFT exhibition</p>
-
-        <section class="wiki-section">
-          <h2 id="faction">Faction</h2>
-          <p><strong>Allegiance:</strong> GRAFFPUNKS / GKniftyHEADS</p>
-        </section>
+          <p class="lead-paragraph">Featured Paris Hilton and Pussy Riot</p>
 
         <section class="wiki-section">
           <h2 id="known-facts">Known Facts</h2>
-          <ul class="facts-list">
-          <li>Largest all-female NFT exhibition</li>
-          <li>Held in Decentraland April 2021</li>
-          <li>Over 270 artists</li>
-          <li>Featured Paris Hilton and Pussy Riot</li>
-          </ul>
+          <div class="lore-facts-stack">
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">Largest all-female NFT exhibition</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">Held in Decentraland April 2021</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">Over 270 artists</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">Featured Paris Hilton and Pussy Riot</p>
+          </div>
+          </div>
         </section>
 
-        <section class="wiki-section">
-          <h2 id="lore">Lore</h2>
-          <p>Event in Decentraland showcasing female NFT artists.</p>
-        </section>
-
-        <section class="wiki-section">
-          <h2 id="real-world-basis">Real World Basis</h2>
-          <p>Held in April 2021 in Decentraland, over 270 artists, featured Paris Hilton and Pussy Riot.</p>
-        </section>
 
         <section class="wiki-section">
           <h2 id="sources">Sources</h2>
           <ul class="sources-list">
+          <li><a href="PROJECT-DNA.md" target="_blank" rel="noopener noreferrer">PROJECT-DNA.md</a></li>
           </ul>
         </section>
-</article>
+
+        <div id="bible-content"></div>
+
+      </article>
 
       <div class="category-tags" aria-label="Article categories">
         <span class="cat-label">Categories:</span>
@@ -175,7 +178,8 @@
   </div>
 </div>
 
-<button id="back-to-top" aria-label="Back to top">↑</button>
+<button id="back-to-top" aria-label="Back to top">&#8593;</button>
 <script src="../js/wiki.js"></script>
+<script src="/js/bible-loader.js"></script>
 </body>
 </html>

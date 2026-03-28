@@ -3,10 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Iconic graffiti hub in lore">
+  <meta name="description" content="Based on real-world London location">
   <meta name="robots" content="index, follow">
   <meta property="og:title" content="Leake Street Tunnel — Crypto Moonboys Wiki">
-  <meta property="og:description" content="Iconic graffiti hub in lore">
+  <meta property="og:description" content="Based on real-world London location">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://crypto-moonboys.github.io/wiki/leake-street-tunnel.html">
   <meta property="og:image" content="https://crypto-moonboys.github.io/img/logo.svg">
@@ -17,11 +17,24 @@
     .wiki-section {
       margin: 1.6em 0;
     }
-    .facts-list {
-      padding-left: 1.4em;
+    .lore-paragraph {
+      line-height: 1.75;
+      margin: 0 0 1em 0;
     }
-    .facts-list li {
-      margin-bottom: 0.4em;
+    .lead-paragraph {
+      font-size: 1.06em;
+      line-height: 1.8;
+      margin: 0 0 1em 0;
+    }
+    .lore-facts-stack {
+      display: block;
+    }
+    .lore-fact-block {
+      margin: 0 0 1.2em 0;
+      padding: 1em 1.1em;
+      background: rgba(255,255,255,0.03);
+      border-left: 4px solid #5b8cff;
+      border-radius: 6px;
     }
     .sources-list {
       padding-left: 1.4em;
@@ -29,14 +42,6 @@
     .sources-list li {
       margin-bottom: 0.3em;
       word-break: break-all;
-    }
-    .article-stats {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 1em;
-      font-size: 0.85em;
-      color: #555;
-      margin-top: 0.5em;
     }
   </style>
 </head>
@@ -108,43 +113,35 @@
       </nav>
 
       <h1 class="page-title">
-        🗺️ Leake Street Tunnel
+        🎭 Leake Street Tunnel
       </h1>
       <div class="page-title-line" aria-hidden="true"></div>
 
       <div class="article-meta">
-        <span class="article-badge">🗺️ Lore</span>
-        <span class="meta-item">📅 Last updated: March 2026</span>
+        <span class="article-badge">🎭 Lore</span>
+        <span class="meta-item">📅 Last updated: 2026-03-28</span>
         <span class="meta-item">📂 <a href="../categories/lore.html">Lore</a></span>
       </div>
 
-      <article class="wiki-content">
+      <article class="wiki-content" data-entity-slug="leake-street-tunnel">
 
-        <p>Iconic graffiti hub in lore</p>
-
-        <section class="wiki-section">
-          <h2 id="faction">Faction</h2>
-          <p><strong>Allegiance:</strong> HODL Warriors / GRAFFPUNKS</p>
-        </section>
+          <p class="lead-paragraph">Based on real-world London location</p>
 
         <section class="wiki-section">
           <h2 id="known-facts">Known Facts</h2>
-          <ul class="facts-list">
-          <li>Iconic graffiti hub in lore</li>
-          <li>Tied to Charlie Buster</li>
-          <li>Based on real-world London location</li>
-          </ul>
+          <div class="lore-facts-stack">
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">Iconic graffiti hub in lore</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">Tied to Charlie Buster</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">Based on real-world London location</p>
+          </div>
+          </div>
         </section>
 
-        <section class="wiki-section">
-          <h2 id="lore">Lore</h2>
-          <p>Symbolic location tied to Charlie Buster and graffiti roots.</p>
-        </section>
-
-        <section class="wiki-section">
-          <h2 id="real-world-basis">Real World Basis</h2>
-          <p>Real-world graffiti hub in London where Charlie Buster grew up.</p>
-        </section>
 
         <section class="wiki-section">
           <h2 id="sources">Sources</h2>
@@ -152,7 +149,10 @@
           <li><a href="https://medium.com/@HODLWARRIORS/the-legend-of-charlie-buster-from-londons-walls-to-the-digital-grid-c589ab0589a8" target="_blank" rel="noopener noreferrer">https://medium.com/@HODLWARRIORS/the-legend-of-charlie-buster-from-londons-walls-to-the-digital-grid-c589ab0589a8</a></li>
           </ul>
         </section>
-</article>
+
+        <div id="bible-content"></div>
+
+      </article>
 
       <div class="category-tags" aria-label="Article categories">
         <span class="cat-label">Categories:</span>
@@ -175,7 +175,8 @@
   </div>
 </div>
 
-<button id="back-to-top" aria-label="Back to top">↑</button>
+<button id="back-to-top" aria-label="Back to top">&#8593;</button>
 <script src="../js/wiki.js"></script>
+<script src="/js/bible-loader.js"></script>
 </body>
 </html>

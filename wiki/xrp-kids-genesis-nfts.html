@@ -3,10 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="NFT collection by Charlie Buster">
+  <meta name="description" content="Created by Charlie Buster">
   <meta name="robots" content="index, follow">
   <meta property="og:title" content="XRP KIDs Genesis NFTs — Crypto Moonboys Wiki">
-  <meta property="og:description" content="NFT collection by Charlie Buster">
+  <meta property="og:description" content="Created by Charlie Buster">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://crypto-moonboys.github.io/wiki/xrp-kids-genesis-nfts.html">
   <meta property="og:image" content="https://crypto-moonboys.github.io/img/logo.svg">
@@ -17,11 +17,24 @@
     .wiki-section {
       margin: 1.6em 0;
     }
-    .facts-list {
-      padding-left: 1.4em;
+    .lore-paragraph {
+      line-height: 1.75;
+      margin: 0 0 1em 0;
     }
-    .facts-list li {
-      margin-bottom: 0.4em;
+    .lead-paragraph {
+      font-size: 1.06em;
+      line-height: 1.8;
+      margin: 0 0 1em 0;
+    }
+    .lore-facts-stack {
+      display: block;
+    }
+    .lore-fact-block {
+      margin: 0 0 1.2em 0;
+      padding: 1em 1.1em;
+      background: rgba(255,255,255,0.03);
+      border-left: 4px solid #5b8cff;
+      border-radius: 6px;
     }
     .sources-list {
       padding-left: 1.4em;
@@ -29,14 +42,6 @@
     .sources-list li {
       margin-bottom: 0.3em;
       word-break: break-all;
-    }
-    .article-stats {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 1em;
-      font-size: 0.85em;
-      color: #555;
-      margin-top: 0.5em;
     }
   </style>
 </head>
@@ -102,60 +107,56 @@
       <nav class="breadcrumb" aria-label="Breadcrumb">
         <a href="../index.html">Home</a>
         <span class="sep" aria-hidden="true">›</span>
-        <a href="../categories/community-people.html">Community &amp; People</a>
+        <a href="../categories/lore.html">Lore</a>
         <span class="sep" aria-hidden="true">›</span>
         <span aria-current="page">XRP KIDs Genesis NFTs</span>
       </nav>
 
       <h1 class="page-title">
-        🏷️ XRP KIDs Genesis NFTs
+        🎭 XRP KIDs Genesis NFTs
       </h1>
       <div class="page-title-line" aria-hidden="true"></div>
 
       <div class="article-meta">
-        <span class="article-badge">🏷️ Community &amp; People</span>
-        <span class="meta-item">📅 Last updated: March 2026</span>
-        <span class="meta-item">📂 <a href="../categories/community-people.html">Community &amp; People</a></span>
+        <span class="article-badge">🎭 Lore</span>
+        <span class="meta-item">📅 Last updated: 2026-03-28</span>
+        <span class="meta-item">📂 <a href="../categories/lore.html">Lore</a></span>
       </div>
 
-      <article class="wiki-content">
+      <article class="wiki-content" data-entity-slug="xrp-kids-genesis-nfts">
 
-        <p>NFT collection by Charlie Buster</p>
-
-        <section class="wiki-section">
-          <h2 id="faction">Faction</h2>
-          <p><strong>Allegiance:</strong> HODL Warriors</p>
-        </section>
+          <p class="lead-paragraph">Created by Charlie Buster</p>
 
         <section class="wiki-section">
           <h2 id="known-facts">Known Facts</h2>
-          <ul class="facts-list">
-          <li>Exclusive NFT collection</li>
-          <li>100 hand-crafted on XRPL</li>
-          <li>Created by Charlie Buster</li>
-          </ul>
+          <div class="lore-facts-stack">
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">Exclusive NFT collection</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">100 hand-crafted on XRPL</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">Created by Charlie Buster</p>
+          </div>
+          </div>
         </section>
 
-        <section class="wiki-section">
-          <h2 id="lore">Lore</h2>
-          <p>Exclusive hand-crafted NFT collection on XRPL.</p>
-        </section>
-
-        <section class="wiki-section">
-          <h2 id="real-world-basis">Real World Basis</h2>
-          <p>Collection of 100 hand-crafted NFTs on XRPL by Charlie Buster.</p>
-        </section>
 
         <section class="wiki-section">
           <h2 id="sources">Sources</h2>
           <ul class="sources-list">
+          <li><a href="PROJECT-DNA.md" target="_blank" rel="noopener noreferrer">PROJECT-DNA.md</a></li>
           </ul>
         </section>
-</article>
+
+        <div id="bible-content"></div>
+
+      </article>
 
       <div class="category-tags" aria-label="Article categories">
         <span class="cat-label">Categories:</span>
-        <a href="../categories/community-people.html">Community &amp; People</a>
+        <a href="../categories/lore.html">Lore</a>
       </div>
 
     </main>
@@ -174,7 +175,8 @@
   </div>
 </div>
 
-<button id="back-to-top" aria-label="Back to top">↑</button>
+<button id="back-to-top" aria-label="Back to top">&#8593;</button>
 <script src="../js/wiki.js"></script>
+<script src="/js/bible-loader.js"></script>
 </body>
 </html>

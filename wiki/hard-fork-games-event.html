@@ -3,10 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Competitive lore event">
+  <meta name="description" content="Determines elite warriors like HODL X Warriors">
   <meta name="robots" content="index, follow">
   <meta property="og:title" content="Hard Fork Games Event — Crypto Moonboys Wiki">
-  <meta property="og:description" content="Competitive lore event">
+  <meta property="og:description" content="Determines elite warriors like HODL X Warriors">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://crypto-moonboys.github.io/wiki/hard-fork-games-event.html">
   <meta property="og:image" content="https://crypto-moonboys.github.io/img/logo.svg">
@@ -17,11 +17,24 @@
     .wiki-section {
       margin: 1.6em 0;
     }
-    .facts-list {
-      padding-left: 1.4em;
+    .lore-paragraph {
+      line-height: 1.75;
+      margin: 0 0 1em 0;
     }
-    .facts-list li {
-      margin-bottom: 0.4em;
+    .lead-paragraph {
+      font-size: 1.06em;
+      line-height: 1.8;
+      margin: 0 0 1em 0;
+    }
+    .lore-facts-stack {
+      display: block;
+    }
+    .lore-fact-block {
+      margin: 0 0 1.2em 0;
+      padding: 1em 1.1em;
+      background: rgba(255,255,255,0.03);
+      border-left: 4px solid #5b8cff;
+      border-radius: 6px;
     }
     .sources-list {
       padding-left: 1.4em;
@@ -29,14 +42,6 @@
     .sources-list li {
       margin-bottom: 0.3em;
       word-break: break-all;
-    }
-    .article-stats {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 1em;
-      font-size: 0.85em;
-      color: #555;
-      margin-top: 0.5em;
     }
   </style>
 </head>
@@ -108,45 +113,49 @@
       </nav>
 
       <h1 class="page-title">
-        📅 Hard Fork Games Event
+        🎭 Hard Fork Games Event
       </h1>
       <div class="page-title-line" aria-hidden="true"></div>
 
       <div class="article-meta">
-        <span class="article-badge">📅 Lore</span>
-        <span class="meta-item">📅 Last updated: March 2026</span>
+        <span class="article-badge">🎭 Lore</span>
+        <span class="meta-item">📅 Last updated: 2026-03-28</span>
         <span class="meta-item">📂 <a href="../categories/lore.html">Lore</a></span>
       </div>
 
-      <article class="wiki-content">
+      <article class="wiki-content" data-entity-slug="hard-fork-games-event">
 
-        <p>Competitive lore event</p>
-
-        <section class="wiki-section">
-          <h2 id="faction">Faction</h2>
-          <p><strong>Allegiance:</strong> The Sacred Chain</p>
-        </section>
+          <p class="lead-paragraph">Determines elite warriors like HODL X Warriors</p>
 
         <section class="wiki-section">
           <h2 id="known-facts">Known Facts</h2>
-          <ul class="facts-list">
-          <li>Competitive event hosted by Queen Sarah P-fly</li>
-          <li>Determines elite warriors like HODL X Warriors</li>
-          </ul>
+          <div class="lore-facts-stack">
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">Competitive event hosted by Queen Sarah P-fly</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">Determines elite warriors like HODL X Warriors</p>
+          </div>
+          </div>
         </section>
 
         <section class="wiki-section">
-          <h2 id="lore">Lore</h2>
-          <p>Hosted by Queen Sarah P-fly to determine elite warriors.</p>
+          <h2 id="see-also">See Also</h2>
+          <ul>
+          <li><a href="hard-fork-games.html">Hard Fork Games</a></li>
+          </ul>
         </section>
-
 
         <section class="wiki-section">
           <h2 id="sources">Sources</h2>
           <ul class="sources-list">
+          <li><a href="PROJECT-DNA.md" target="_blank" rel="noopener noreferrer">PROJECT-DNA.md</a></li>
           </ul>
         </section>
-</article>
+
+        <div id="bible-content"></div>
+
+      </article>
 
       <div class="category-tags" aria-label="Article categories">
         <span class="cat-label">Categories:</span>
@@ -169,7 +178,8 @@
   </div>
 </div>
 
-<button id="back-to-top" aria-label="Back to top">↑</button>
+<button id="back-to-top" aria-label="Back to top">&#8593;</button>
 <script src="../js/wiki.js"></script>
+<script src="/js/bible-loader.js"></script>
 </body>
 </html>
