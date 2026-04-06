@@ -2193,13 +2193,21 @@
     ]
   },
   {
-    "title": "tokens",
+    "title": "Tokens",
     "url": "/wiki/tokens.html",
-    "desc": "",
-    "category": "Lore",
+    "desc": "Crypto tokens in the Moonboys universe — WAXP, GK Token, LFGK, NBG and more. Live prices and community context.",
+    "category": "Cryptocurrencies",
     "emoji": "🪙",
     "tags": [
-      "tokens"
+      "tokens",
+      "waxp",
+      "btc",
+      "eth",
+      "bch",
+      "xrp",
+      "gk",
+      "crypto",
+      "cryptocurrency"
     ]
   },
   {

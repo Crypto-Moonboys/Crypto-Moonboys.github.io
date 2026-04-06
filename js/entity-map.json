@@ -3183,12 +3183,20 @@
   },
   {
     "entity_id": "tokens",
-    "canonical_title": "tokens",
+    "canonical_title": "Tokens",
     "canonical_url": "/wiki/tokens.html",
-    "category": "Lore",
+    "category": "Cryptocurrencies",
     "aliases": [],
     "tags": [
-      "tokens"
+      "tokens",
+      "waxp",
+      "btc",
+      "eth",
+      "bch",
+      "xrp",
+      "gk",
+      "crypto",
+      "cryptocurrency"
     ],
     "source_urls": [
       "/wiki/tokens.html"

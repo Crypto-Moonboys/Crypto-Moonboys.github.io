@@ -26,10 +26,21 @@
   var BASE     = cfg.BASE_URL || null;
   var FEATURES = cfg.FEATURES || {};
 
+  // ── HTML escape (prevents XSS when API data is rendered via innerHTML) ──
+
+  function esc(str) {
+    return String(str == null ? '' : str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
   // ── Gravatar ─────────────────────────────────────────────────
 
   function avatarUrl(hash, size) {
-    return 'https://www.gravatar.com/avatar/' + (hash || '0') +
+    return 'https://www.gravatar.com/avatar/' + esc(hash || '0') +
            '?d=identicon&s=' + (size || 40);
   }
 
@@ -42,20 +53,20 @@
     }
     listEl.innerHTML = comments.map(function (c) {
       var tgBadge = c.telegram_username
-        ? '<span class="comment-tg">@' + c.telegram_username + '</span>'
+        ? '<span class="comment-tg">@' + esc(c.telegram_username) + '</span>'
         : '';
       return '<div class="comment-item">' +
-        '<img class="comment-avatar" src="' + avatarUrl(c.email_hash, 40) + '" alt="' + c.name + '" loading="lazy">' +
+        '<img class="comment-avatar" src="' + avatarUrl(c.email_hash, 40) + '" alt="' + esc(c.name) + '" loading="lazy">' +
         '<div class="comment-body">' +
           '<div class="comment-header">' +
-            '<span class="comment-name">' + c.name + '</span>' +
+            '<span class="comment-name">' + esc(c.name) + '</span>' +
             tgBadge +
-            '<span class="comment-time">' + (c.time_ago || '') + '</span>' +
+            '<span class="comment-time">' + esc(c.time_ago || '') + '</span>' +
           '</div>' +
-          '<div class="comment-text">' + c.text + '</div>' +
+          '<div class="comment-text">' + esc(c.text) + '</div>' +
           '<div class="comment-actions">' +
-            '<button class="comment-vote-btn" data-comment-id="' + c.id + '" data-vote="up" aria-label="Upvote">👍 ' + (c.votes_up || 0) + '</button>' +
-            '<button class="comment-vote-btn" data-comment-id="' + c.id + '" data-vote="down" aria-label="Downvote">👎 ' + (c.votes_down || 0) + '</button>' +
+            '<button class="comment-vote-btn" data-comment-id="' + esc(c.id) + '" data-vote="up" aria-label="Upvote">👍 ' + (parseInt(c.votes_up, 10) || 0) + '</button>' +
+            '<button class="comment-vote-btn" data-comment-id="' + esc(c.id) + '" data-vote="down" aria-label="Downvote">👎 ' + (parseInt(c.votes_down, 10) || 0) + '</button>' +
           '</div>' +
         '</div>' +
       '</div>';
@@ -203,7 +214,7 @@
   // ── Boot ─────────────────────────────────────────────────────
 
   function init() {
-    document.querySelectorAll('.wiki-comments').forEach(initSection);
+    Array.prototype.forEach.call(document.querySelectorAll('.wiki-comments'), initSection);
   }
 
   if (document.readyState === 'loading') {

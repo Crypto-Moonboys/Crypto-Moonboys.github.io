@@ -20,6 +20,25 @@
   var BASE     = cfg.BASE_URL || null;
   var FEATURES = cfg.FEATURES || {};
 
+  // ── HTML escape (prevents XSS when API data is rendered via innerHTML) ──
+
+  function esc(str) {
+    return String(str == null ? '' : str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  // ── Safe href: only allow relative paths and https:// URLs ──────────────
+
+  function safeHref(url) {
+    if (!url) return '#';
+    if (/^https?:\/\//i.test(url) || /^\//.test(url)) return esc(url);
+    return '#';
+  }
+
   // ── Gravatar helper ──────────────────────────────────────────
 
   function avatarUrl(hash, size) {
@@ -68,7 +87,7 @@
             '<div class="sam-status-icon" aria-hidden="true">🤖</div>' +
             '<div class="sam-status-body">' +
               '<div class="sam-status-title">SAM — Wiki Intelligence Agent</div>' +
-              '<div class="sam-status-sub">' + (data.message || 'Active and monitoring') + '</div>' +
+              '<div class="sam-status-sub">' + esc(data.message || 'Active and monitoring') + '</div>' +
             '</div>' +
             '<div class="sam-status-badge sam-online">ACTIVE</div>' +
           '</div>';
@@ -100,10 +119,10 @@
         }
         el.innerHTML = data.items.map(function (item) {
           return '<div class="feed-item">' +
-            '<span class="feed-icon" aria-hidden="true">' + (item.icon || '⚡️') + '</span>' +
+            '<span class="feed-icon" aria-hidden="true">' + esc(item.icon || '⚡️') + '</span>' +
             '<div class="feed-body">' +
-              '<div class="feed-text">' + item.text + '</div>' +
-              '<div class="feed-time">' + (item.time_ago || '') + '</div>' +
+              '<div class="feed-text">' + esc(item.text) + '</div>' +
+              '<div class="feed-time">' + esc(item.time_ago || '') + '</div>' +
             '</div>' +
           '</div>';
         }).join('');
@@ -136,9 +155,9 @@
         el.innerHTML = data.entries.map(function (e, i) {
           return '<div class="lb-row">' +
             '<span class="lb-rank">' + (i + 1) + '</span>' +
-            '<img class="lb-avatar" src="' + avatarUrl(e.email_hash, 32) + '" alt="' + e.name + '" loading="lazy">' +
-            '<span class="lb-name">' + e.name + '</span>' +
-            '<span class="lb-score">' + e.score + ' pts</span>' +
+            '<img class="lb-avatar" src="' + esc(avatarUrl(e.email_hash, 32)) + '" alt="' + esc(e.name) + '" loading="lazy">' +
+            '<span class="lb-name">' + esc(e.name) + '</span>' +
+            '<span class="lb-score">' + esc(e.score) + ' pts</span>' +
           '</div>';
         }).join('');
       })
@@ -153,7 +172,7 @@
     var el = document.getElementById('activity-panel');
     if (!el) return;
 
-    if (!BASE) {
+    if (!BASE || !FEATURES.ACTIVITY_PANEL) {
       el.innerHTML = placeholder('🔥',
         'Trending pages will appear here once the engagement API is connected. '
       );
@@ -169,9 +188,9 @@
         }
         el.innerHTML = data.pages.map(function (p) {
           return '<div class="activity-row">' +
-            '<span class="activity-icon" aria-hidden="true">' + (p.icon || '🔥') + '</span>' +
-            '<a href="' + p.url + '" class="activity-title">' + p.title + '</a>' +
-            '<span class="activity-heat">' + (p.views || 0) + ' views</span>' +
+            '<span class="activity-icon" aria-hidden="true">' + esc(p.icon || '🔥') + '</span>' +
+            '<a href="' + safeHref(p.url) + '" class="activity-title">' + esc(p.title) + '</a>' +
+            '<span class="activity-heat">' + esc(p.views || 0) + ' views</span>' +
           '</div>';
         }).join('');
       })
@@ -211,10 +230,10 @@
           '<div class="teaser-comments">' +
           data.comments.map(function (c) {
             return '<div class="teaser-comment">' +
-              '<img class="tc-avatar" src="' + avatarUrl(c.email_hash, 28) + '" alt="' + c.name + '" loading="lazy">' +
+              '<img class="tc-avatar" src="' + esc(avatarUrl(c.email_hash, 28)) + '" alt="' + esc(c.name) + '" loading="lazy">' +
               '<div class="tc-body">' +
-                '<span class="tc-name">' + c.name + '</span> ' +
-                '<span class="tc-text">' + c.text + '</span>' +
+                '<span class="tc-name">' + esc(c.name) + '</span> ' +
+                '<span class="tc-text">' + esc(c.text) + '</span>' +
               '</div>' +
             '</div>';
           }).join('') +

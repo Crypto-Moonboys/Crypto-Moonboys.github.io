@@ -27,6 +27,7 @@ window.MOONBOYS_API = {
     LEADERBOARD:     false,  // requires BASE_URL backend
     LIVE_FEED:       false,  // requires BASE_URL backend
     SAM_STATUS:      false,  // requires BASE_URL backend
+    ACTIVITY_PANEL:  false,  // requires BASE_URL backend
   },
 
   /* ── Tracked price assets ────────────────────────────────── */

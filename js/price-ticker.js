@@ -154,6 +154,14 @@
           });
         });
       });
+
+      // Clear aria-busy once all updates are complete
+      chain.then(function () {
+        containers.forEach(function (c) { c.removeAttribute('aria-busy'); });
+      });
+    }).catch(function () {
+      // On total failure, still clear aria-busy so screen readers don't hang
+      containers.forEach(function (c) { c.removeAttribute('aria-busy'); });
     });
   }
 
