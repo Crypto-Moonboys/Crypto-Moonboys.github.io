@@ -199,6 +199,8 @@ function scoreResult(item, query) {
   const desc  = (item.desc  || '').toLowerCase();
   const tags  = (item.tags  || []).join(' ').toLowerCase();
   const cat   = (item.category || '').toLowerCase();
+
+  // ── Canonical title scoring (highest priority) ──────────────────────────
   if (title === q)                    score += 100;
   if (title.startsWith(q))            score +=  60;
   if (title.includes(q))              score +=  40;
@@ -212,6 +214,24 @@ function scoreResult(item, query) {
       if (desc.includes(word))  score += 3;
     }
   });
+
+  // ── Alias scoring (medium priority) ─────────────────────────────────────
+  const aliases = item.aliases || [];
+  aliases.forEach(alias => {
+    const aTitle = (alias.title || '').toLowerCase();
+    const aTags  = (alias.tags  || []).join(' ').toLowerCase();
+    if (aTitle === q)             score += 80;
+    else if (aTitle.startsWith(q)) score += 45;
+    else if (aTitle.includes(q))   score += 25;
+    if (aTags.includes(q))         score += 20;
+    q.split(' ').forEach(word => {
+      if (word.length > 2) {
+        if (aTitle.includes(word)) score += 5;
+        if (aTags.includes(word))  score += 3;
+      }
+    });
+  });
+
   return score;
 }
 

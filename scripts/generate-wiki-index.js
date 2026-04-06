@@ -9,6 +9,16 @@
  * extracted from the HTML (title, desc, category) with sensible defaults
  * for emoji and tags.
  *
+ * Canonical entity system:
+ *   - Pages with identical normalised titles are treated as duplicates.
+ *   - Duplicates are merged: one entry becomes canonical, the rest become
+ *     aliases stored in the canonical entry's `aliases` array.
+ *   - Alias pages that contain no substantial body content (< 500 chars
+ *     of visible text) are replaced with a minimal HTML redirect stub.
+ *   - Only canonical entries appear in the final index.
+ *   - Alias entries can also be declared explicitly via the `aliases` field
+ *     in wiki-index.json (the alias URL files are then treated the same way).
+ *
  * Run after adding new wiki pages:
  *   node scripts/generate-wiki-index.js
  */
@@ -77,6 +87,8 @@ function loadExistingIndex() {
           title:    decodeHtmlEntities(item.title    || ''),
           desc:     decodeHtmlEntities(item.desc     || ''),
           category: decodeHtmlEntities(item.category || ''),
+          // Preserve aliases array if present
+          aliases:  Array.isArray(item.aliases) ? item.aliases : undefined,
         });
       });
       return lookup;
@@ -143,6 +155,103 @@ function loadExistingIndex() {
   return lookup;
 }
 
+/* ── Normalize a title for duplicate detection ──────────────────────────── */
+function normalizeTitle(title) {
+  return title
+    .toLowerCase()
+    .replace(/['''"""]/g, '')       // remove quotes/apostrophes
+    .replace(/[^a-z0-9]+/g, ' ')   // collapse non-alphanumeric runs to spaces
+    .trim();
+}
+
+/* ── Detect & merge duplicate entries ───────────────────────────────────── */
+// Returns { canonicalEntries, aliasUrls }
+// - canonicalEntries: deduplicated array of index entries (each may have .aliases)
+// - aliasUrls: Set of URL strings that are alias pages (excluded from the index)
+function deduplicateIndex(entries) {
+  // Group entries by normalised title
+  const byNorm = new Map();
+  for (const entry of entries) {
+    const norm = normalizeTitle(entry.title);
+    if (!byNorm.has(norm)) byNorm.set(norm, []);
+    byNorm.get(norm).push(entry);
+  }
+
+  const canonicalEntries = [];
+  const aliasUrls = new Set();
+
+  for (const [, group] of byNorm) {
+    if (group.length === 1) {
+      // No title-based duplicate; still honour explicit aliases already on entry.
+      if (group[0].aliases) {
+        group[0].aliases.forEach(a => aliasUrls.add(a.url));
+      }
+      canonicalEntries.push(group[0]);
+      continue;
+    }
+
+    // Multiple entries share the same normalised title — pick canonical.
+    // Preference order: entry already has aliases, then shortest URL.
+    const canonical = group.find(e => e.aliases && e.aliases.length > 0)
+      || group.slice().sort((a, b) => a.url.length - b.url.length)[0];
+
+    const mergedAliases = Array.isArray(canonical.aliases) ? [...canonical.aliases] : [];
+
+    for (const dupe of group) {
+      if (dupe === canonical) continue;
+      aliasUrls.add(dupe.url);
+      // Add to aliases list if not already present
+      if (!mergedAliases.some(a => a.url === dupe.url)) {
+        mergedAliases.push({ title: dupe.title, url: dupe.url });
+      }
+      console.log(`  ~ duplicate merged: "${dupe.title}" (${dupe.url}) → canonical "${canonical.title}" (${canonical.url})`);
+    }
+
+    canonical.aliases = mergedAliases.length > 0 ? mergedAliases : undefined;
+    // Register any pre-existing alias URLs
+    if (canonical.aliases) canonical.aliases.forEach(a => aliasUrls.add(a.url));
+    canonicalEntries.push(canonical);
+  }
+
+  return { canonicalEntries, aliasUrls };
+}
+
+/* ── Write a minimal HTML redirect stub ─────────────────────────────────── */
+// Writes only if the file is already a redirect, missing, or has < 500 chars
+// of visible text (i.e. is not a full article). Returns true if written.
+function generateRedirectFile(aliasFilePath, canonicalUrl) {
+  if (fs.existsSync(aliasFilePath)) {
+    const existing = fs.readFileSync(aliasFilePath, 'utf8');
+    // If already a redirect, always overwrite (keeps canonical URL current).
+    const isStub = existing.includes('http-equiv="refresh"');
+    if (!isStub) {
+      // Strip tags and check visible text length
+      const visibleText = existing.replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
+      if (visibleText.length >= 500) {
+        console.log(`  ! skipping redirect for ${path.basename(aliasFilePath)} (has substantial content, ${visibleText.length} chars)`);
+        return false;
+      }
+    }
+  }
+
+  const redirectHtml = `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="refresh" content="0; url=${canonicalUrl}">
+<link rel="canonical" href="https://crypto-moonboys.github.io${canonicalUrl}">
+<title>Redirecting\u2026</title>
+</head>
+<body>
+<p>Redirecting to <a href="${canonicalUrl}">canonical page</a>\u2026</p>
+</body>
+</html>
+`;
+  fs.writeFileSync(aliasFilePath, redirectHtml, 'utf8');
+  console.log(`  → wrote redirect: ${path.basename(aliasFilePath)} → ${canonicalUrl}`);
+  return true;
+}
+
 /* ── HTML metadata extractors ───────────────────────────────────────────── */
 function extractTitle(html) {
   const m = html.match(/<title>([^<]+)<\/title>/i);
@@ -185,28 +294,43 @@ function generateTags(title) {
 const existingLookup = loadExistingIndex();
 console.log(`Loaded ${Object.keys(existingLookup).length} existing entries from js/wiki.js`);
 
+// Build set of alias URLs from existing canonical entries so those files are
+// not added as standalone entries in the scan below.
+const knownAliasUrls = new Set();
+for (const entry of Object.values(existingLookup)) {
+  if (Array.isArray(entry.aliases)) {
+    entry.aliases.forEach(a => knownAliasUrls.add(a.url));
+  }
+}
+
 const htmlFiles = fs.readdirSync(WIKI_DIR)
   .filter(f => f.endsWith('.html'))
   .sort();
 
-const wikiIndex = [];
+const rawIndex = [];
 let fromExisting = 0;
 let fromHtml     = 0;
 
 for (const file of htmlFiles) {
+  const fileUrl  = `/wiki/${file}`;
+  // Skip files that are already declared as aliases by a canonical entry.
+  if (knownAliasUrls.has(fileUrl)) continue;
+
   const html     = fs.readFileSync(path.join(WIKI_DIR, file), 'utf8');
   const existing = existingLookup[file];
 
   if (existing) {
     // Preserve all curated metadata; normalise URL to root-absolute.
-    wikiIndex.push({
+    const entry = {
       title:    existing.title,
-      url:      `/wiki/${file}`,
+      url:      fileUrl,
       desc:     existing.desc,
       category: existing.category,
       emoji:    existing.emoji,
       tags:     existing.tags,
-    });
+    };
+    if (Array.isArray(existing.aliases)) entry.aliases = existing.aliases;
+    rawIndex.push(entry);
     fromExisting++;
   } else {
     // Extract what we can from the HTML file.
@@ -217,13 +341,59 @@ for (const file of htmlFiles) {
     const emoji    = CATEGORY_EMOJI[category] || '📄';
     const tags     = generateTags(title);
 
-    wikiIndex.push({ title, url: `/wiki/${file}`, desc, category, emoji, tags });
+    rawIndex.push({ title, url: fileUrl, desc, category, emoji, tags });
     fromHtml++;
     console.log(`  + extracted from HTML: ${file} (category: ${category})`);
   }
 }
 
+// ── Deduplication ─────────────────────────────────────────────────────────
+const { canonicalEntries, aliasUrls } = deduplicateIndex(rawIndex);
+let redirectsWritten = 0;
+let redirectsSkipped = 0;
+
+for (const aliasUrl of aliasUrls) {
+  const file = aliasUrl.replace(/^\/wiki\//, '');
+  const filePath = path.join(WIKI_DIR, file);
+  if (!fs.existsSync(filePath)) continue;
+
+  // Find the canonical URL for this alias
+  let canonicalUrl = null;
+  for (const entry of canonicalEntries) {
+    if (Array.isArray(entry.aliases) && entry.aliases.some(a => a.url === aliasUrl)) {
+      canonicalUrl = entry.url;
+      break;
+    }
+  }
+  if (!canonicalUrl) continue;
+
+  if (generateRedirectFile(filePath, canonicalUrl)) {
+    redirectsWritten++;
+  } else {
+    redirectsSkipped++;
+  }
+}
+
+// Remove undefined aliases fields (keeps JSON clean when no aliases exist)
+const wikiIndex = canonicalEntries.map(entry => {
+  const out = {
+    title:    entry.title,
+    url:      entry.url,
+    desc:     entry.desc,
+    category: entry.category,
+    emoji:    entry.emoji,
+    tags:     entry.tags,
+  };
+  if (Array.isArray(entry.aliases) && entry.aliases.length > 0) {
+    out.aliases = entry.aliases;
+  }
+  return out;
+});
+
 fs.writeFileSync(OUTPUT, JSON.stringify(wikiIndex, null, 2) + '\n');
-console.log(`\nGenerated js/wiki-index.json with ${wikiIndex.length} entries`);
+console.log(`\nGenerated js/wiki-index.json with ${wikiIndex.length} canonical entries`);
 console.log(`  ${fromExisting} from existing index (js/wiki-index.json or js/wiki.js WIKI_INDEX)`);
 console.log(`  ${fromHtml} extracted from HTML (new pages)`);
+if (aliasUrls.size > 0) {
+  console.log(`  ${aliasUrls.size} alias URL(s) deduplicated (${redirectsWritten} redirect(s) written, ${redirectsSkipped} skipped — substantial content)`);
+}
