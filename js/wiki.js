@@ -312,6 +312,13 @@ function scoreResult(item, query) {
     }
   }
 
+  // ── Stable base weight from generator-side rank_score ───────────────────
+  // rank_score encodes canonical page status, category priority, alias count,
+  // and optional manual priority flags.  Scaled to ~10-26 points so query
+  // relevance remains the dominant factor while rank_score breaks ties
+  // deterministically between articles with equal relevance.
+  score += Math.round((item.rank_score || 50) * 0.2);
+
   return score;
 }
 
@@ -394,7 +401,10 @@ function renderSearchPage(query) {
         .map(item => ({ item, score: scoreResult(item, q) }))
         .filter(r => r.score > 0)
         .sort((a, b) => b.score - a.score)
-    : WIKI_INDEX.map(item => ({ item, score: 0 }));
+    : WIKI_INDEX
+        .slice()
+        .sort((a, b) => (b.rank_score || 50) - (a.rank_score || 50))
+        .map(item => ({ item, score: item.rank_score || 50 }));
 
   items = dedupeResults(items);
 

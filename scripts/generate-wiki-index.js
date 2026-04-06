@@ -65,6 +65,39 @@ const CATEGORY_EMOJI = {
   'Activism & Counter-Culture': '✊',
 };
 
+/* ── Category → ranking priority (higher = more important) ─────────────── */
+// Used to populate rank_signals.category_priority on every index entry.
+// Categories with broader/foundational scope rank higher than niche/lore ones.
+const CATEGORY_PRIORITY = {
+  'Cryptocurrencies':           10,
+  'Technology':                  9,
+  'Concepts':                    8,
+  'Tools & Platforms':           7,
+  'Tools':                       7,
+  'NFTs & Digital Art':          6,
+  'Gaming':                      5,
+  'Community & People':          4,
+  'Lore':                        3,
+  'Crypto Designer Toys':        3,
+  'Guerilla Marketing':          3,
+  'Graffiti & Street Art':       3,
+  'Media & Publishing':          2,
+  'Art & Creativity':            2,
+  'Punk Culture':                2,
+  'Activism & Counter-Culture':  2,
+};
+
+/* ── Manual priority boosts for flagship pages ──────────────────────────── */
+// Additive points applied on top of the formula-derived rank_score.
+// Only list the most important canonical pages; all others default to 0.
+const MANUAL_PRIORITY = {
+  '/wiki/crypto-moonboys.html': 25,
+  '/wiki/bitcoin.html':         25,
+  '/wiki/block-topia.html':     20,
+  '/wiki/blockchain.html':      20,
+  '/wiki/gk-tokens.html':       15,
+};
+
 /* ── Decode HTML entities in plain text ─────────────────────────────────── */
 function decodeHtmlEntities(str) {
   // Named entities
@@ -475,6 +508,33 @@ function generateTags(title) {
   )];
 }
 
+/* ── Compute ranking signals for an index entry ─────────────────────────── */
+// All inputs are derived from repo-grounded data only (category list, aliases,
+// tags, URL).  No random values; every run with identical input produces
+// identical output.
+function computeRankSignals(entry) {
+  return {
+    is_canonical:      true,
+    alias_count:       Array.isArray(entry.aliases) ? entry.aliases.length : 0,
+    tag_count:         Array.isArray(entry.tags)    ? entry.tags.length    : 0,
+    category_priority: CATEGORY_PRIORITY[entry.category] || 1,
+    manual_priority:   MANUAL_PRIORITY[entry.url]   || 0,
+  };
+}
+
+/* ── Derive a deterministic integer rank score from signals ─────────────── */
+// Formula: 50 (base) + category_priority×2 + alias_count×5 + tag_count + manual_priority
+// Typical range: ~56 (minimal Lore, no aliases/tags) – ~115+ (flagship + many aliases).
+function computeRankScore(signals) {
+  return (
+    50 +
+    signals.category_priority * 2 +
+    signals.alias_count       * 5 +
+    signals.tag_count             +
+    signals.manual_priority
+  );
+}
+
 /* ── Main ───────────────────────────────────────────────────────────────── */
 const existingLookup = loadExistingIndex();
 console.log(`Loaded ${Object.keys(existingLookup).length} existing entries from js/wiki.js`);
@@ -561,13 +621,17 @@ for (const aliasUrl of aliasUrls) {
 
 // Remove undefined aliases fields (keeps JSON clean when no aliases exist)
 const wikiIndex = canonicalEntries.map(entry => {
+  const rank_signals = computeRankSignals(entry);
+  const rank_score   = computeRankScore(rank_signals);
   const out = {
-    title:    entry.title,
-    url:      entry.url,
-    desc:     entry.desc,
-    category: entry.category,
-    emoji:    entry.emoji,
-    tags:     entry.tags,
+    title:        entry.title,
+    url:          entry.url,
+    desc:         entry.desc,
+    category:     entry.category,
+    emoji:        entry.emoji,
+    tags:         entry.tags,
+    rank_score,
+    rank_signals,
   };
   if (Array.isArray(entry.aliases) && entry.aliases.length > 0) {
     out.aliases = entry.aliases;
