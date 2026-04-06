@@ -5,7 +5,7 @@
  * Generates js/site-stats.json from real repository contents:
  *   - article_count  : number of entries in js/wiki-index.json
  *   - category_count : number of /categories/*.html files, excluding index.html
- *   - last_updated   : ISO timestamp of the current build
+ *   - last_updated   : ISO timestamp of the build; preserved if counts are unchanged
  *
  * Also writes the legacy keys (total_articles / total_entities) so that
  * js/index_stats_v2.js can read the same file without changes.
@@ -47,8 +47,16 @@ if (fs.existsSync(CATS_DIR)) {
   console.error('Warning: categories/ directory not found — category_count will be 0');
 }
 
-/* ── Timestamp ───────────────────────────────────────────────────────────── */
-const lastUpdated = new Date().toISOString();
+/* ── Timestamp: preserve existing timestamp if counts haven't changed ────── */
+let lastUpdated = new Date().toISOString();
+if (fs.existsSync(OUTPUT)) {
+  try {
+    const existing = JSON.parse(fs.readFileSync(OUTPUT, 'utf8'));
+    if (existing.article_count === articleCount && existing.category_count === categoryCount) {
+      lastUpdated = existing.last_updated;
+    }
+  } catch (e) { /* ignore parse errors — use fresh timestamp */ }
+}
 
 /* ── Write output ────────────────────────────────────────────────────────── */
 const stats = {
