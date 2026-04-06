@@ -1,0 +1,63 @@
+name: Wiki Index Sync
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'wiki/**'
+      - 'js/wiki.js'
+      - 'scripts/generate-wiki-index.js'
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'wiki/**'
+      - 'js/wiki.js'
+      - 'scripts/generate-wiki-index.js'
+
+jobs:
+  sync-wiki-index:
+    runs-on: ubuntu-latest
+    if: "!contains(github.event.head_commit.message, 'chore: auto-update wiki search index')"
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Regenerate wiki search index
+        run: node scripts/generate-wiki-index.js
+
+      - name: Fail if index is out of date (PR only)
+        if: github.event_name == 'pull_request'
+        run: |
+          if ! git diff --quiet js/wiki-index.json; then
+            echo "::error file=js/wiki-index.json::js/wiki-index.json is out of date."
+            echo "Run 'node scripts/generate-wiki-index.js' locally and commit the result."
+            git diff js/wiki-index.json
+            exit 1
+          else
+            echo "js/wiki-index.json is up to date. ✅"
+          fi
+
+      - name: Commit and push updated index (main push only)
+        if: github.event_name == 'push'
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          if ! git diff --quiet js/wiki-index.json; then
+            git add js/wiki-index.json
+            git commit -m "chore: auto-update wiki search index"
+            git push
+            echo "Index updated and pushed. ✅"
+          else
+            echo "Index already up to date — nothing to commit. ✅"
+          fi
