@@ -10,7 +10,15 @@
       "free",
       "nfts",
       "drop"
-    ]
+    ],
+    "rank_score": 70,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 4,
+      "category_priority": 8,
+      "manual_priority": 0
+    }
   },
   {
     "title": "1M Free NFTs Program",
@@ -23,7 +31,15 @@
       "free",
       "nfts",
       "program"
-    ]
+    ],
+    "rank_score": 62,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 4,
+      "category_priority": 4,
+      "manual_priority": 0
+    }
   },
   {
     "title": "1M Free NFTs Programme",
@@ -36,7 +52,15 @@
       "free",
       "nfts",
       "programme"
-    ]
+    ],
+    "rank_score": 62,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 4,
+      "category_priority": 4,
+      "manual_priority": 0
+    }
   },
   {
     "title": "1M Free NFTs",
@@ -48,7 +72,15 @@
       "1m",
       "free",
       "nfts"
-    ]
+    ],
+    "rank_score": 69,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 3,
+      "category_priority": 8,
+      "manual_priority": 0
+    }
   },
   {
     "title": "2025 Metaverse Launch Party",
@@ -61,7 +93,15 @@
       "metaverse",
       "launch",
       "party"
-    ]
+    ],
+    "rank_score": 60,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 4,
+      "category_priority": 3,
+      "manual_priority": 0
+    }
   },
   {
     "title": "Aleema (Child of the Shard)",
@@ -73,7 +113,15 @@
       "aleema",
       "child",
       "shard"
-    ]
+    ],
+    "rank_score": 59,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 3,
+      "category_priority": 3,
+      "manual_priority": 0
+    }
   },
   {
     "title": "Alfie Blaze",
@@ -84,7 +132,15 @@
     "tags": [
       "alfie",
       "blaze"
-    ]
+    ],
+    "rank_score": 58,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 2,
+      "category_priority": 3,
+      "manual_priority": 0
+    }
   },
   {
     "title": "Alfie 'The Bitcoin Kid' Blaze",
@@ -98,6 +154,14 @@
       "kid",
       "blaze"
     ],
+    "rank_score": 65,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 1,
+      "tag_count": 4,
+      "category_priority": 3,
+      "manual_priority": 0
+    },
     "aliases": [
       {
         "title": "Alfie 'Bitcoin Kid' Blaze",
@@ -113,7 +177,15 @@
     "emoji": "🪙",
     "tags": [
       "altcoins"
-    ]
+    ],
+    "rank_score": 71,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 1,
+      "category_priority": 10,
+      "manual_priority": 0
+    }
   },
   {
     "title": "AtomicHub Graffpunks Collection",
@@ -125,7 +197,15 @@
       "atomichub",
       "graffpunks",
       "collection"
-    ]
+    ],
+    "rank_score": 61,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 3,
+      "category_priority": 4,
+      "manual_priority": 0
+    }
   },
   {
     "title": "Ava Chen",
@@ -136,7 +216,15 @@
     "tags": [
       "ava",
       "chen"
-    ]
+    ],
+    "rank_score": 58,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 2,
+      "category_priority": 3,
+      "manual_priority": 0
+    }
   },
   {
     "title": "Battlemech Blast",
@@ -147,7 +235,15 @@
     "tags": [
       "battlemech",
       "blast"
-    ]
+    ],
+    "rank_score": 58,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 2,
+      "category_priority": 3,
+      "manual_priority": 0
+    }
   },
   {
     "title": "The Bear Market Siege",
@@ -159,7 +255,15 @@
       "bear",
       "market",
       "siege"
-    ]
+    ],
+    "rank_score": 59,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 3,
+      "category_priority": 3,
+      "manual_priority": 0
+    }
   },
   {
     "title": "Billy the Goat Kid",
@@ -171,7 +275,15 @@
       "billy",
       "goat",
       "kid"
-    ]
+    ],
+    "rank_score": 59,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 3,
+      "category_priority": 3,
+      "manual_priority": 0
+    }
   },
   {
     "title": "Bit-Cap 5000",
@@ -183,7 +295,15 @@
       "bit",
       "cap",
       "5000"
-    ]
+    ],
+    "rank_score": 59,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 3,
+      "category_priority": 3,
+      "manual_priority": 0
+    }
   },
   {
     "title": "Bitcoin Kids",
@@ -194,7 +314,15 @@
     "tags": [
       "bitcoin",
       "kids"
-    ]
+    ],
+    "rank_score": 58,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 2,
+      "category_priority": 3,
+      "manual_priority": 0
+    }
   },
   {
     "title": "Bitcoin X Kids",
@@ -205,7 +333,15 @@
     "tags": [
       "bitcoin",
       "kids"
-    ]
+    ],
+    "rank_score": 58,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 2,
+      "category_priority": 3,
+      "manual_priority": 0
+    }
   },
   {
     "title": "Bitcoin (BTC)",
@@ -216,7 +352,15 @@
     "tags": [
       "bitcoin",
       "btc"
-    ]
+    ],
+    "rank_score": 97,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 2,
+      "category_priority": 10,
+      "manual_priority": 25
+    }
   },
   {
     "title": "Block Node Defenders",
@@ -228,7 +372,15 @@
       "block",
       "node",
       "defenders"
-    ]
+    ],
+    "rank_score": 59,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 3,
+      "category_priority": 3,
+      "manual_priority": 0
+    }
   },
   {
     "title": "Block Topia",
@@ -239,7 +391,15 @@
     "tags": [
       "block",
       "topia"
-    ]
+    ],
+    "rank_score": 88,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 2,
+      "category_priority": 8,
+      "manual_priority": 20
+    }
   },
   {
     "title": "Blockchain Technology",
@@ -250,7 +410,15 @@
     "tags": [
       "blockchain",
       "technology"
-    ]
+    ],
+    "rank_score": 90,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 2,
+      "category_priority": 9,
+      "manual_priority": 20
+    }
   },
   {
     "title": "Bone Idol Ink",
@@ -262,7 +430,15 @@
       "bone",
       "idol",
       "ink"
-    ]
+    ],
+    "rank_score": 59,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 3,
+      "category_priority": 3,
+      "manual_priority": 0
+    }
   },
   {
     "title": "Burn To Earn",
@@ -273,7 +449,15 @@
     "tags": [
       "burn",
       "earn"
-    ]
+    ],
+    "rank_score": 68,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 2,
+      "category_priority": 8,
+      "manual_priority": 0
+    }
   },
   {
     "title": "Canvas Clash",
@@ -284,7 +468,15 @@
     "tags": [
       "canvas",
       "clash"
-    ]
+    ],
+    "rank_score": 58,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 2,
+      "category_priority": 3,
+      "manual_priority": 0
+    }
   },
   {
     "title": "Charlie Buster",
@@ -295,7 +487,15 @@
     "tags": [
       "charlie",
       "buster"
-    ]
+    ],
+    "rank_score": 58,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 2,
+      "category_priority": 3,
+      "manual_priority": 0
+    }
   },
   {
     "title": "Croydon Tower Blocks",
@@ -307,7 +507,15 @@
       "croydon",
       "tower",
       "blocks"
-    ]
+    ],
+    "rank_score": 59,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 3,
+      "category_priority": 3,
+      "manual_priority": 0
+    }
   },
   {
     "title": "Crypto Moonboys",
@@ -318,7 +526,15 @@
     "tags": [
       "crypto",
       "moonboys"
-    ]
+    ],
+    "rank_score": 85,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 2,
+      "category_priority": 4,
+      "manual_priority": 25
+    }
   },
   {
     "title": "Darren Cullen (SER) - Real",
@@ -331,7 +547,15 @@
       "cullen",
       "ser",
       "real"
-    ]
+    ],
+    "rank_score": 70,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 4,
+      "category_priority": 8,
+      "manual_priority": 0
+    }
   },
   {
     "title": "Darren Cullen (SER)",
@@ -343,7 +567,15 @@
       "darren",
       "cullen",
       "ser"
-    ]
+    ],
+    "rank_score": 59,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 3,
+      "category_priority": 3,
+      "manual_priority": 0
+    }
   },
   {
     "title": "Darren Cullen",
@@ -354,7 +586,15 @@
     "tags": [
       "darren",
       "cullen"
-    ]
+    ],
+    "rank_score": 68,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 2,
+      "category_priority": 8,
+      "manual_priority": 0
+    }
   },
   {
     "title": "Decentraland Events",
@@ -365,7 +605,15 @@
     "tags": [
       "decentraland",
       "events"
-    ]
+    ],
+    "rank_score": 58,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 2,
+      "category_priority": 3,
+      "manual_priority": 0
+    }
   },
   {
     "title": "DeFi (Decentralised Finance)",
@@ -377,7 +625,15 @@
       "defi",
       "decentralised",
       "finance"
-    ]
+    ],
+    "rank_score": 69,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 3,
+      "category_priority": 8,
+      "manual_priority": 0
+    }
   },
   {
     "title": "Delicious Again Pete",
@@ -389,7 +645,15 @@
       "delicious",
       "again",
       "pete"
-    ]
+    ],
+    "rank_score": 59,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 3,
+      "category_priority": 3,
+      "manual_priority": 0
+    }
   },
   {
     "title": "Diamond Hands",
@@ -400,7 +664,15 @@
     "tags": [
       "diamond",
       "hands"
-    ]
+    ],
+    "rank_score": 58,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 2,
+      "category_priority": 3,
+      "manual_priority": 0
+    }
   },
   {
     "title": "Dragan Volkov",
@@ -411,7 +683,15 @@
     "tags": [
       "dragan",
       "volkov"
-    ]
+    ],
+    "rank_score": 58,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 2,
+      "category_priority": 3,
+      "manual_priority": 0
+    }
   },
   {
     "title": "Dream Sovereign",
@@ -422,7 +702,15 @@
     "tags": [
       "dream",
       "sovereign"
-    ]
+    ],
+    "rank_score": 68,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 2,
+      "category_priority": 8,
+      "manual_priority": 0
+    }
   },
   {
     "title": "Elder Codex-7",
@@ -433,7 +721,15 @@
     "tags": [
       "elder",
       "codex"
-    ]
+    ],
+    "rank_score": 58,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 2,
+      "category_priority": 3,
+      "manual_priority": 0
+    }
   },
   {
     "title": "Ethereum (ETH)",
@@ -444,7 +740,15 @@
     "tags": [
       "ethereum",
       "eth"
-    ]
+    ],
+    "rank_score": 72,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 2,
+      "category_priority": 10,
+      "manual_priority": 0
+    }
   },
   {
     "title": "Crypto Exchanges",
@@ -455,7 +759,15 @@
     "tags": [
       "crypto",
       "exchanges"
-    ]
+    ],
+    "rank_score": 66,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 2,
+      "category_priority": 7,
+      "manual_priority": 0
+    }
   },
   {
     "title": "The FOMO Plague",
@@ -466,7 +778,15 @@
     "tags": [
       "fomo",
       "plague"
-    ]
+    ],
+    "rank_score": 58,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 2,
+      "category_priority": 3,
+      "manual_priority": 0
+    }
   },
   {
     "title": "Forkborn Collective",
@@ -477,7 +797,15 @@
     "tags": [
       "forkborn",
       "collective"
-    ]
+    ],
+    "rank_score": 58,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 2,
+      "category_priority": 3,
+      "manual_priority": 0
+    }
   },
   {
     "title": "Forklord You",
@@ -488,7 +816,15 @@
     "tags": [
       "forklord",
       "you"
-    ]
+    ],
+    "rank_score": 58,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 2,
+      "category_priority": 3,
+      "manual_priority": 0
+    }
   },
   {
     "title": "Forksplit",
@@ -498,7 +834,15 @@
     "emoji": "⚔️",
     "tags": [
       "forksplit"
-    ]
+    ],
+    "rank_score": 57,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 1,
+      "category_priority": 3,
+      "manual_priority": 0
+    }
   },
   {
     "title": "GAMES4PUNKS Telegram Games",
@@ -510,7 +854,15 @@
       "games4punks",
       "telegram",
       "games"
-    ]
+    ],
+    "rank_score": 63,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 3,
+      "category_priority": 5,
+      "manual_priority": 0
+    }
   },
   {
     "title": "Games4punks Telegram",
@@ -521,7 +873,15 @@
     "tags": [
       "games4punks",
       "telegram"
-    ]
+    ],
+    "rank_score": 62,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 2,
+      "category_priority": 5,
+      "manual_priority": 0
+    }
   },
   {
     "title": "Gang Signs Card Game",
@@ -534,7 +894,15 @@
       "signs",
       "card",
       "game"
-    ]
+    ],
+    "rank_score": 64,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 4,
+      "category_priority": 5,
+      "manual_priority": 0
+    }
   },
   {
     "title": "Gang Signs",
@@ -545,7 +913,15 @@
     "tags": [
       "gang",
       "signs"
-    ]
+    ],
+    "rank_score": 62,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 2,
+      "category_priority": 5,
+      "manual_priority": 0
+    }
   },
   {
     "title": "Genesis Kernel",
@@ -556,7 +932,15 @@
     "tags": [
       "genesis",
       "kernel"
-    ]
+    ],
+    "rank_score": 58,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 2,
+      "category_priority": 3,
+      "manual_priority": 0
+    }
   },
   {
     "title": "Genesis Spray Drop",
@@ -568,7 +952,15 @@
       "genesis",
       "spray",
       "drop"
-    ]
+    ],
+    "rank_score": 59,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 3,
+      "category_priority": 3,
+      "manual_priority": 0
+    }
   },
   {
     "title": "Genesis Spray",
@@ -579,7 +971,15 @@
     "tags": [
       "genesis",
       "spray"
-    ]
+    ],
+    "rank_score": 60,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 2,
+      "category_priority": 4,
+      "manual_priority": 0
+    }
   },
   {
     "title": "$GK Tokens",
@@ -591,6 +991,14 @@
       "gk",
       "tokens"
     ],
+    "rank_score": 92,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 1,
+      "tag_count": 2,
+      "category_priority": 10,
+      "manual_priority": 15
+    },
     "aliases": [
       {
         "title": "$GK Token",
@@ -606,7 +1014,15 @@
     "emoji": "🪙",
     "tags": [
       "gk"
-    ]
+    ],
+    "rank_score": 71,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 1,
+      "category_priority": 10,
+      "manual_priority": 0
+    }
   },
   {
     "title": "GKniftyHEADS Phase One Two Three",
@@ -620,7 +1036,15 @@
       "one",
       "two",
       "three"
-    ]
+    ],
+    "rank_score": 71,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 5,
+      "category_priority": 8,
+      "manual_priority": 0
+    }
   },
   {
     "title": "Graffiti Kings",
@@ -631,7 +1055,15 @@
     "tags": [
       "graffiti",
       "kings"
-    ]
+    ],
+    "rank_score": 58,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 2,
+      "category_priority": 3,
+      "manual_priority": 0
+    }
   },
   {
     "title": "Graffiti Nexus",
@@ -642,7 +1074,15 @@
     "tags": [
       "graffiti",
       "nexus"
-    ]
+    ],
+    "rank_score": 68,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 2,
+      "category_priority": 8,
+      "manual_priority": 0
+    }
   },
   {
     "title": "Graffiti Queens Exhibition",
@@ -654,7 +1094,15 @@
       "graffiti",
       "queens",
       "exhibition"
-    ]
+    ],
+    "rank_score": 59,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 3,
+      "category_priority": 3,
+      "manual_priority": 0
+    }
   },
   {
     "title": "Graffiti Queens in Decentraland",
@@ -666,7 +1114,15 @@
       "graffiti",
       "queens",
       "decentraland"
-    ]
+    ],
+    "rank_score": 59,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 3,
+      "category_priority": 3,
+      "manual_priority": 0
+    }
   },
   {
     "title": "graffitikings",
@@ -676,7 +1132,15 @@
     "emoji": "👥",
     "tags": [
       "graffitikings"
-    ]
+    ],
+    "rank_score": 59,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 1,
+      "category_priority": 4,
+      "manual_priority": 0
+    }
   },
   {
     "title": "Graffpunks 24 7 Radio",
@@ -688,7 +1152,15 @@
       "graffpunks",
       "24",
       "radio"
-    ]
+    ],
+    "rank_score": 63,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 3,
+      "category_priority": 5,
+      "manual_priority": 0
+    }
   },
   {
     "title": "Graffpunks 24 7",
@@ -699,7 +1171,15 @@
     "tags": [
       "graffpunks",
       "24"
-    ]
+    ],
+    "rank_score": 62,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 2,
+      "category_priority": 5,
+      "manual_priority": 0
+    }
   },
   {
     "title": "GraffPUNKS 24/7 Blockchain Radio Station",
@@ -713,7 +1193,15 @@
       "blockchain",
       "radio",
       "station"
-    ]
+    ],
+    "rank_score": 63,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 5,
+      "category_priority": 4,
+      "manual_priority": 0
+    }
   },
   {
     "title": "Graffpunks 247 Radio",
@@ -725,7 +1213,15 @@
       "graffpunks",
       "247",
       "radio"
-    ]
+    ],
+    "rank_score": 69,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 3,
+      "category_priority": 8,
+      "manual_priority": 0
+    }
   },
   {
     "title": "Graffpunks 247",
@@ -736,7 +1232,15 @@
     "tags": [
       "graffpunks",
       "247"
-    ]
+    ],
+    "rank_score": 68,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 2,
+      "category_priority": 8,
+      "manual_priority": 0
+    }
   },
   {
     "title": "GraffPUNKS Collection",
@@ -747,7 +1251,15 @@
     "tags": [
       "graffpunks",
       "collection"
-    ]
+    ],
+    "rank_score": 60,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 2,
+      "category_priority": 4,
+      "manual_priority": 0
+    }
   },
   {
     "title": "Graffpunks Network",
@@ -758,7 +1270,15 @@
     "tags": [
       "graffpunks",
       "network"
-    ]
+    ],
+    "rank_score": 68,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 2,
+      "category_priority": 8,
+      "manual_priority": 0
+    }
   },
   {
     "title": "Graffpunks NFTs",
@@ -769,7 +1289,15 @@
     "tags": [
       "graffpunks",
       "nfts"
-    ]
+    ],
+    "rank_score": 60,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 2,
+      "category_priority": 4,
+      "manual_priority": 0
+    }
   },
   {
     "title": "Great Datapocalypse of 2789",
@@ -781,7 +1309,15 @@
       "great",
       "datapocalypse",
       "2789"
-    ]
+    ],
+    "rank_score": 59,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 3,
+      "category_priority": 3,
+      "manual_priority": 0
+    }
   },
   {
     "title": "GRIT",
@@ -791,7 +1327,15 @@
     "emoji": "⚔️",
     "tags": [
       "grit"
-    ]
+    ],
+    "rank_score": 57,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 1,
+      "category_priority": 3,
+      "manual_priority": 0
+    }
   },
   {
     "title": "Grit42",
@@ -801,7 +1345,15 @@
     "emoji": "⚔️",
     "tags": [
       "grit42"
-    ]
+    ],
+    "rank_score": 57,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 1,
+      "category_priority": 3,
+      "manual_priority": 0
+    }
   },
   {
     "title": "Hard Fork Games Event",
@@ -814,7 +1366,15 @@
       "fork",
       "games",
       "event"
-    ]
+    ],
+    "rank_score": 60,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 4,
+      "category_priority": 3,
+      "manual_priority": 0
+    }
   },
   {
     "title": "Hard Fork Games Game",
@@ -827,7 +1387,15 @@
       "fork",
       "games",
       "game"
-    ]
+    ],
+    "rank_score": 64,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 4,
+      "category_priority": 5,
+      "manual_priority": 0
+    }
   },
   {
     "title": "Hard Fork Games",
@@ -839,7 +1407,15 @@
       "hard",
       "fork",
       "games"
-    ]
+    ],
+    "rank_score": 63,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 3,
+      "category_priority": 5,
+      "manual_priority": 0
+    }
   },
   {
     "title": "Harrison Rift",
@@ -850,7 +1426,15 @@
     "tags": [
       "harrison",
       "rift"
-    ]
+    ],
+    "rank_score": 58,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 2,
+      "category_priority": 3,
+      "manual_priority": 0
+    }
   },
   {
     "title": "Head Tags",
@@ -861,7 +1445,15 @@
     "tags": [
       "head",
       "tags"
-    ]
+    ],
+    "rank_score": 60,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 2,
+      "category_priority": 4,
+      "manual_priority": 0
+    }
   },
   {
     "title": "HEX-TAGGER PRIME",
@@ -873,7 +1465,15 @@
       "hex",
       "tagger",
       "prime"
-    ]
+    ],
+    "rank_score": 59,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 3,
+      "category_priority": 3,
+      "manual_priority": 0
+    }
   },
   {
     "title": "HODL Warriors Army",
@@ -885,7 +1485,15 @@
       "hodl",
       "warriors",
       "army"
-    ]
+    ],
+    "rank_score": 59,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 3,
+      "category_priority": 3,
+      "manual_priority": 0
+    }
   },
   {
     "title": "Hodl Wars Game",
@@ -897,7 +1505,15 @@
       "hodl",
       "wars",
       "game"
-    ]
+    ],
+    "rank_score": 63,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 3,
+      "category_priority": 5,
+      "manual_priority": 0
+    }
   },
   {
     "title": "Hodl Wars",
@@ -908,7 +1524,15 @@
     "tags": [
       "hodl",
       "wars"
-    ]
+    ],
+    "rank_score": 62,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 2,
+      "category_priority": 5,
+      "manual_priority": 0
+    }
   },
   {
     "title": "Hodl X Warriors",
@@ -919,7 +1543,15 @@
     "tags": [
       "hodl",
       "warriors"
-    ]
+    ],
+    "rank_score": 60,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 2,
+      "category_priority": 4,
+      "manual_priority": 0
+    }
   },
   {
     "title": "Ian Harrison",
@@ -930,7 +1562,15 @@
     "tags": [
       "ian",
       "harrison"
-    ]
+    ],
+    "rank_score": 68,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 2,
+      "category_priority": 8,
+      "manual_priority": 0
+    }
   },
   {
     "title": "📚 Wiki Index — Crypto Moonboys Wiki",
@@ -943,7 +1583,15 @@
       "index",
       "crypto",
       "moonboys"
-    ]
+    ],
+    "rank_score": 60,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 4,
+      "category_priority": 3,
+      "manual_priority": 0
+    }
   },
   {
     "title": "Iris-7",
@@ -953,7 +1601,15 @@
     "emoji": "⚔️",
     "tags": [
       "iris"
-    ]
+    ],
+    "rank_score": 57,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 1,
+      "category_priority": 3,
+      "manual_priority": 0
+    }
   },
   {
     "title": "Jillian Godsil",
@@ -964,7 +1620,15 @@
     "tags": [
       "jillian",
       "godsil"
-    ]
+    ],
+    "rank_score": 68,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 2,
+      "category_priority": 8,
+      "manual_priority": 0
+    }
   },
   {
     "title": "Jodie ZOOM 2000",
@@ -976,7 +1640,15 @@
       "jodie",
       "zoom",
       "2000"
-    ]
+    ],
+    "rank_score": 59,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 3,
+      "category_priority": 3,
+      "manual_priority": 0
+    }
   },
   {
     "title": "Jonny & Laurence Nelson (TAG Records)",
@@ -991,7 +1663,15 @@
       "nelson",
       "tag",
       "records"
-    ]
+    ],
+    "rank_score": 62,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 6,
+      "category_priority": 3,
+      "manual_priority": 0
+    }
   },
   {
     "title": "Lady-INK",
@@ -1002,7 +1682,15 @@
     "tags": [
       "lady",
       "ink"
-    ]
+    ],
+    "rank_score": 58,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 2,
+      "category_priority": 3,
+      "manual_priority": 0
+    }
   },
   {
     "title": "Leake Street Tunnel",
@@ -1014,7 +1702,15 @@
       "leake",
       "street",
       "tunnel"
-    ]
+    ],
+    "rank_score": 59,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 3,
+      "category_priority": 3,
+      "manual_priority": 0
+    }
   },
   {
     "title": "$LFGK Rewards",
@@ -1025,7 +1721,15 @@
     "tags": [
       "lfgk",
       "rewards"
-    ]
+    ],
+    "rank_score": 68,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 2,
+      "category_priority": 8,
+      "manual_priority": 0
+    }
   },
   {
     "title": "$LFGK Token",
@@ -1036,7 +1740,15 @@
     "tags": [
       "lfgk",
       "token"
-    ]
+    ],
+    "rank_score": 72,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 2,
+      "category_priority": 10,
+      "manual_priority": 0
+    }
   },
   {
     "title": "$LFGK",
@@ -1046,7 +1758,15 @@
     "emoji": "🪙",
     "tags": [
       "lfgk"
-    ]
+    ],
+    "rank_score": 71,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 1,
+      "category_priority": 10,
+      "manual_priority": 0
+    }
   },
   {
     "title": "Loopfiend",
@@ -1056,7 +1776,15 @@
     "emoji": "⚔️",
     "tags": [
       "loopfiend"
-    ]
+    ],
+    "rank_score": 57,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 1,
+      "category_priority": 3,
+      "manual_priority": 0
+    }
   },
   {
     "title": "M1nTr K1ll",
@@ -1067,7 +1795,15 @@
     "tags": [
       "m1ntr",
       "k1ll"
-    ]
+    ],
+    "rank_score": 58,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 2,
+      "category_priority": 3,
+      "manual_priority": 0
+    }
   },
   {
     "title": "Maidstone Base",
@@ -1078,7 +1814,15 @@
     "tags": [
       "maidstone",
       "base"
-    ]
+    ],
+    "rank_score": 58,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 2,
+      "category_priority": 3,
+      "manual_priority": 0
+    }
   },
   {
     "title": "Medium Articles by @GKniftyHEADS",
@@ -1090,7 +1834,15 @@
       "medium",
       "articles",
       "gkniftyheads"
-    ]
+    ],
+    "rank_score": 61,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 3,
+      "category_priority": 4,
+      "manual_priority": 0
+    }
   },
   {
     "title": "Medium Articles by @GRAFFPUNKS",
@@ -1102,7 +1854,15 @@
       "medium",
       "articles",
       "graffpunks"
-    ]
+    ],
+    "rank_score": 61,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 3,
+      "category_priority": 4,
+      "manual_priority": 0
+    }
   },
   {
     "title": "Medium Articles by @HODLWARRIORS",
@@ -1114,7 +1874,15 @@
       "medium",
       "articles",
       "hodlwarriors"
-    ]
+    ],
+    "rank_score": 61,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 3,
+      "category_priority": 4,
+      "manual_priority": 0
+    }
   },
   {
     "title": "Medium Articles by @sercullen",
@@ -1126,7 +1894,15 @@
       "medium",
       "articles",
       "sercullen"
-    ]
+    ],
+    "rank_score": 61,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 3,
+      "category_priority": 4,
+      "manual_priority": 0
+    }
   },
   {
     "title": "Meme Coins",
@@ -1137,7 +1913,15 @@
     "tags": [
       "meme",
       "coins"
-    ]
+    ],
+    "rank_score": 72,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 2,
+      "category_priority": 10,
+      "manual_priority": 0
+    }
   },
   {
     "title": "Metaverse battles",
@@ -1148,7 +1932,15 @@
     "tags": [
       "metaverse",
       "battles"
-    ]
+    ],
+    "rank_score": 68,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 2,
+      "category_priority": 8,
+      "manual_priority": 0
+    }
   },
   {
     "title": "metropolis",
@@ -1158,7 +1950,15 @@
     "emoji": "💡",
     "tags": [
       "metropolis"
-    ]
+    ],
+    "rank_score": 67,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 1,
+      "category_priority": 8,
+      "manual_priority": 0
+    }
   },
   {
     "title": "Midevil Hero Arena Game",
@@ -1171,7 +1971,15 @@
       "hero",
       "arena",
       "game"
-    ]
+    ],
+    "rank_score": 64,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 4,
+      "category_priority": 5,
+      "manual_priority": 0
+    }
   },
   {
     "title": "Midevil Hero Arena",
@@ -1183,7 +1991,15 @@
       "midevil",
       "hero",
       "arena"
-    ]
+    ],
+    "rank_score": 63,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 3,
+      "category_priority": 5,
+      "manual_priority": 0
+    }
   },
   {
     "title": "midevilpunks",
@@ -1193,7 +2009,15 @@
     "emoji": "👥",
     "tags": [
       "midevilpunks"
-    ]
+    ],
+    "rank_score": 59,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 1,
+      "category_priority": 4,
+      "manual_priority": 0
+    }
   },
   {
     "title": "Moon Mission",
@@ -1204,7 +2028,15 @@
     "tags": [
       "moon",
       "mission"
-    ]
+    ],
+    "rank_score": 58,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 2,
+      "category_priority": 3,
+      "manual_priority": 0
+    }
   },
   {
     "title": "NBG Token",
@@ -1215,7 +2047,15 @@
     "tags": [
       "nbg",
       "token"
-    ]
+    ],
+    "rank_score": 72,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 2,
+      "category_priority": 10,
+      "manual_priority": 0
+    }
   },
   {
     "title": "nbg",
@@ -1225,7 +2065,15 @@
     "emoji": "🪙",
     "tags": [
       "nbg"
-    ]
+    ],
+    "rank_score": 71,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 1,
+      "category_priority": 10,
+      "manual_priority": 0
+    }
   },
   {
     "title": "NBGX Token",
@@ -1236,7 +2084,15 @@
     "tags": [
       "nbgx",
       "token"
-    ]
+    ],
+    "rank_score": 72,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 2,
+      "category_priority": 10,
+      "manual_priority": 0
+    }
   },
   {
     "title": "nbgx",
@@ -1246,7 +2102,15 @@
     "emoji": "🪙",
     "tags": [
       "nbgx"
-    ]
+    ],
+    "rank_score": 71,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 1,
+      "category_priority": 10,
+      "manual_priority": 0
+    }
   },
   {
     "title": "NeftyBlocks Midevilpunks Collection",
@@ -1258,7 +2122,15 @@
       "neftyblocks",
       "midevilpunks",
       "collection"
-    ]
+    ],
+    "rank_score": 61,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 3,
+      "category_priority": 4,
+      "manual_priority": 0
+    }
   },
   {
     "title": "NFTs (Non-Fungible Tokens)",
@@ -1271,7 +2143,15 @@
       "non",
       "fungible",
       "tokens"
-    ]
+    ],
+    "rank_score": 70,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 4,
+      "category_priority": 8,
+      "manual_priority": 0
+    }
   },
   {
     "title": "NGMI Chronicles",
@@ -1282,7 +2162,15 @@
     "tags": [
       "ngmi",
       "chronicles"
-    ]
+    ],
+    "rank_score": 58,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 2,
+      "category_priority": 3,
+      "manual_priority": 0
+    }
   },
   {
     "title": "Nifty Crowns",
@@ -1293,7 +2181,15 @@
     "tags": [
       "nifty",
       "crowns"
-    ]
+    ],
+    "rank_score": 60,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 2,
+      "category_priority": 4,
+      "manual_priority": 0
+    }
   },
   {
     "title": "Nine Armies",
@@ -1304,7 +2200,15 @@
     "tags": [
       "nine",
       "armies"
-    ]
+    ],
+    "rank_score": 58,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 2,
+      "category_priority": 3,
+      "manual_priority": 0
+    }
   },
   {
     "title": "No Ball Games (NBG) Collection",
@@ -1318,7 +2222,15 @@
       "games",
       "nbg",
       "collection"
-    ]
+    ],
+    "rank_score": 63,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 5,
+      "category_priority": 4,
+      "manual_priority": 0
+    }
   },
   {
     "title": "No Ball Games (NBG)",
@@ -1331,7 +2243,15 @@
       "ball",
       "games",
       "nbg"
-    ]
+    ],
+    "rank_score": 62,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 4,
+      "category_priority": 4,
+      "manual_priority": 0
+    }
   },
   {
     "title": "Null The Prophet",
@@ -1342,7 +2262,15 @@
     "tags": [
       "null",
       "prophet"
-    ]
+    ],
+    "rank_score": 58,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 2,
+      "category_priority": 3,
+      "manual_priority": 0
+    }
   },
   {
     "title": "One Million Free NFTs",
@@ -1355,7 +2283,15 @@
       "million",
       "free",
       "nfts"
-    ]
+    ],
+    "rank_score": 62,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 4,
+      "category_priority": 4,
+      "manual_priority": 0
+    }
   },
   {
     "title": "Paper Hands",
@@ -1366,7 +2302,15 @@
     "tags": [
       "paper",
       "hands"
-    ]
+    ],
+    "rank_score": 58,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 2,
+      "category_priority": 3,
+      "manual_priority": 0
+    }
   },
   {
     "title": "Patchwork",
@@ -1376,7 +2320,15 @@
     "emoji": "🎨",
     "tags": [
       "patchwork"
-    ]
+    ],
+    "rank_score": 57,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 1,
+      "category_priority": 3,
+      "manual_priority": 0
+    }
   },
   {
     "title": "Phygital prints",
@@ -1387,7 +2339,15 @@
     "tags": [
       "phygital",
       "prints"
-    ]
+    ],
+    "rank_score": 68,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 2,
+      "category_priority": 8,
+      "manual_priority": 0
+    }
   },
   {
     "title": "Playable NFT murals",
@@ -1399,7 +2359,15 @@
       "playable",
       "nft",
       "murals"
-    ]
+    ],
+    "rank_score": 69,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 3,
+      "category_priority": 8,
+      "manual_priority": 0
+    }
   },
   {
     "title": "PMSL Token",
@@ -1410,7 +2378,15 @@
     "tags": [
       "pmsl",
       "token"
-    ]
+    ],
+    "rank_score": 72,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 2,
+      "category_priority": 10,
+      "manual_priority": 0
+    }
   },
   {
     "title": "pmsl",
@@ -1420,7 +2396,15 @@
     "emoji": "🪙",
     "tags": [
       "pmsl"
-    ]
+    ],
+    "rank_score": 71,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 1,
+      "category_priority": 10,
+      "manual_priority": 0
+    }
   },
   {
     "title": "PUNK Coin",
@@ -1431,7 +2415,15 @@
     "tags": [
       "punk",
       "coin"
-    ]
+    ],
+    "rank_score": 58,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 2,
+      "category_priority": 3,
+      "manual_priority": 0
+    }
   },
   {
     "title": "Punk Token",
@@ -1442,7 +2434,15 @@
     "tags": [
       "punk",
       "token"
-    ]
+    ],
+    "rank_score": 72,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 2,
+      "category_priority": 10,
+      "manual_priority": 0
+    }
   },
   {
     "title": "punk",
@@ -1452,7 +2452,15 @@
     "emoji": "🪙",
     "tags": [
       "punk"
-    ]
+    ],
+    "rank_score": 71,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 1,
+      "category_priority": 10,
+      "manual_priority": 0
+    }
   },
   {
     "title": "PYRALITH",
@@ -1462,7 +2470,15 @@
     "emoji": "⚔️",
     "tags": [
       "pyralith"
-    ]
+    ],
+    "rank_score": 57,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 1,
+      "category_priority": 3,
+      "manual_priority": 0
+    }
   },
   {
     "title": "Queen Sarah P-fly",
@@ -1474,7 +2490,15 @@
       "queen",
       "sarah",
       "fly"
-    ]
+    ],
+    "rank_score": 59,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 3,
+      "category_priority": 3,
+      "manual_priority": 0
+    }
   },
   {
     "title": "Queen Sarah Pfly",
@@ -1486,7 +2510,15 @@
       "queen",
       "sarah",
       "pfly"
-    ]
+    ],
+    "rank_score": 59,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 3,
+      "category_priority": 3,
+      "manual_priority": 0
+    }
   },
   {
     "title": "Quell",
@@ -1496,7 +2528,15 @@
     "emoji": "⚔️",
     "tags": [
       "quell"
-    ]
+    ],
+    "rank_score": 57,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 1,
+      "category_priority": 3,
+      "manual_priority": 0
+    }
   },
   {
     "title": "Rave Relics",
@@ -1507,7 +2547,15 @@
     "tags": [
       "rave",
       "relics"
-    ]
+    ],
+    "rank_score": 60,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 2,
+      "category_priority": 4,
+      "manual_priority": 0
+    }
   },
   {
     "title": "Rug Pull Wars",
@@ -1519,7 +2567,15 @@
       "rug",
       "pull",
       "wars"
-    ]
+    ],
+    "rank_score": 59,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 3,
+      "category_priority": 3,
+      "manual_priority": 0
+    }
   },
   {
     "title": "Rune Tag",
@@ -1530,7 +2586,15 @@
     "tags": [
       "rune",
       "tag"
-    ]
+    ],
+    "rank_score": 58,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 2,
+      "category_priority": 3,
+      "manual_priority": 0
+    }
   },
   {
     "title": "Samael.exe",
@@ -1541,7 +2605,15 @@
     "tags": [
       "samael",
       "exe"
-    ]
+    ],
+    "rank_score": 58,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 2,
+      "category_priority": 3,
+      "manual_priority": 0
+    }
   },
   {
     "title": "Sarah PU51FLY",
@@ -1552,7 +2624,15 @@
     "tags": [
       "sarah",
       "pu51fly"
-    ]
+    ],
+    "rank_score": 58,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 2,
+      "category_priority": 3,
+      "manual_priority": 0
+    }
   },
   {
     "title": "SatoRebel",
@@ -1562,7 +2642,15 @@
     "emoji": "⚔️",
     "tags": [
       "satorebel"
-    ]
+    ],
+    "rank_score": 57,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 1,
+      "category_priority": 3,
+      "manual_priority": 0
+    }
   },
   {
     "title": "The Satoshi Scroll",
@@ -1573,7 +2661,15 @@
     "tags": [
       "satoshi",
       "scroll"
-    ]
+    ],
+    "rank_score": 58,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 2,
+      "category_priority": 3,
+      "manual_priority": 0
+    }
   },
   {
     "title": "Seeding rights",
@@ -1584,7 +2680,15 @@
     "tags": [
       "seeding",
       "rights"
-    ]
+    ],
+    "rank_score": 68,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 2,
+      "category_priority": 8,
+      "manual_priority": 0
+    }
   },
   {
     "title": "Sister Halcyon",
@@ -1595,7 +2699,15 @@
     "tags": [
       "sister",
       "halcyon"
-    ]
+    ],
+    "rank_score": 58,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 2,
+      "category_priority": 3,
+      "manual_priority": 0
+    }
   },
   {
     "title": "SMArT NFT Mechanics",
@@ -1607,7 +2719,15 @@
       "smart",
       "nft",
       "mechanics"
-    ]
+    ],
+    "rank_score": 69,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 3,
+      "category_priority": 8,
+      "manual_priority": 0
+    }
   },
   {
     "title": "sneakar",
@@ -1617,7 +2737,15 @@
     "emoji": "👥",
     "tags": [
       "sneakar"
-    ]
+    ],
+    "rank_score": 59,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 1,
+      "category_priority": 4,
+      "manual_priority": 0
+    }
   },
   {
     "title": "Snipey 'D-Man' Sirus",
@@ -1629,7 +2757,15 @@
       "snipey",
       "man",
       "sirus"
-    ]
+    ],
+    "rank_score": 59,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 3,
+      "category_priority": 3,
+      "manual_priority": 0
+    }
   },
   {
     "title": "Solana (SOL)",
@@ -1640,7 +2776,15 @@
     "tags": [
       "solana",
       "sol"
-    ]
+    ],
+    "rank_score": 72,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 2,
+      "category_priority": 10,
+      "manual_priority": 0
+    }
   },
   {
     "title": "Spirit Borns",
@@ -1651,7 +2795,15 @@
     "tags": [
       "spirit",
       "borns"
-    ]
+    ],
+    "rank_score": 58,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 2,
+      "category_priority": 3,
+      "manual_priority": 0
+    }
   },
   {
     "title": "Spraycode & Writcode mechanics",
@@ -1664,7 +2816,15 @@
       "amp",
       "writcode",
       "mechanics"
-    ]
+    ],
+    "rank_score": 70,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 4,
+      "category_priority": 8,
+      "manual_priority": 0
+    }
   },
   {
     "title": "Spraycode & Writcode",
@@ -1676,7 +2836,15 @@
       "spraycode",
       "amp",
       "writcode"
-    ]
+    ],
+    "rank_score": 69,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 3,
+      "category_priority": 8,
+      "manual_priority": 0
+    }
   },
   {
     "title": "Squeaky Pinks enforcers",
@@ -1688,7 +2856,15 @@
       "squeaky",
       "pinks",
       "enforcers"
-    ]
+    ],
+    "rank_score": 59,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 3,
+      "category_priority": 3,
+      "manual_priority": 0
+    }
   },
   {
     "title": "Stake for $GK Tokens",
@@ -1700,7 +2876,15 @@
       "stake",
       "gk",
       "tokens"
-    ]
+    ],
+    "rank_score": 69,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 3,
+      "category_priority": 8,
+      "manual_priority": 0
+    }
   },
   {
     "title": "Staking for $GK Tokens",
@@ -1712,7 +2896,15 @@
       "staking",
       "gk",
       "tokens"
-    ]
+    ],
+    "rank_score": 69,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 3,
+      "category_priority": 8,
+      "manual_priority": 0
+    }
   },
   {
     "title": "staking",
@@ -1722,7 +2914,15 @@
     "emoji": "💡",
     "tags": [
       "staking"
-    ]
+    ],
+    "rank_score": 67,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 1,
+      "category_priority": 8,
+      "manual_priority": 0
+    }
   },
   {
     "title": "stikfamwars",
@@ -1732,7 +2932,15 @@
     "emoji": "💡",
     "tags": [
       "stikfamwars"
-    ]
+    ],
+    "rank_score": 67,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 1,
+      "category_priority": 8,
+      "manual_priority": 0
+    }
   },
   {
     "title": "Street Kingdoms",
@@ -1743,7 +2951,15 @@
     "tags": [
       "street",
       "kingdoms"
-    ]
+    ],
+    "rank_score": 58,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 2,
+      "category_priority": 3,
+      "manual_priority": 0
+    }
   },
   {
     "title": "Substack Posts on graffpunks.substack.com",
@@ -1756,7 +2972,15 @@
       "posts",
       "graffpunks",
       "com"
-    ]
+    ],
+    "rank_score": 62,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 4,
+      "category_priority": 4,
+      "manual_priority": 0
+    }
   },
   {
     "title": "The AllCity Bulls",
@@ -1767,7 +2991,15 @@
     "tags": [
       "allcity",
       "bulls"
-    ]
+    ],
+    "rank_score": 58,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 2,
+      "category_priority": 3,
+      "manual_priority": 0
+    }
   },
   {
     "title": "The AZTEC RAIDERS",
@@ -1778,7 +3010,15 @@
     "tags": [
       "aztec",
       "raiders"
-    ]
+    ],
+    "rank_score": 58,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 2,
+      "category_priority": 3,
+      "manual_priority": 0
+    }
   },
   {
     "title": "The BALLY BOYS",
@@ -1789,7 +3029,15 @@
     "tags": [
       "bally",
       "boys"
-    ]
+    ],
+    "rank_score": 58,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 2,
+      "category_priority": 3,
+      "manual_priority": 0
+    }
   },
   {
     "title": "The Bitcoin Kid Army",
@@ -1802,6 +3050,14 @@
       "kid",
       "army"
     ],
+    "rank_score": 64,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 1,
+      "tag_count": 3,
+      "category_priority": 3,
+      "manual_priority": 0
+    },
     "aliases": [
       {
         "title": "Bitcoin Kid Army",
@@ -1818,7 +3074,15 @@
     "tags": [
       "blockchain",
       "furies"
-    ]
+    ],
+    "rank_score": 58,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 2,
+      "category_priority": 3,
+      "manual_priority": 0
+    }
   },
   {
     "title": "The BLOCKSTARS",
@@ -1828,7 +3092,15 @@
     "emoji": "⚔️",
     "tags": [
       "blockstars"
-    ]
+    ],
+    "rank_score": 57,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 1,
+      "category_priority": 3,
+      "manual_priority": 0
+    }
   },
   {
     "title": "The CHAIN SCRIBES",
@@ -1839,7 +3111,15 @@
     "tags": [
       "chain",
       "scribes"
-    ]
+    ],
+    "rank_score": 58,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 2,
+      "category_priority": 3,
+      "manual_priority": 0
+    }
   },
   {
     "title": "The CODE ALCHEMISTS",
@@ -1850,7 +3130,15 @@
     "tags": [
       "code",
       "alchemists"
-    ]
+    ],
+    "rank_score": 58,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 2,
+      "category_priority": 3,
+      "manual_priority": 0
+    }
   },
   {
     "title": "The CRYPTO MOONGIRLS",
@@ -1861,7 +3149,15 @@
     "tags": [
       "crypto",
       "moongirls"
-    ]
+    ],
+    "rank_score": 58,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 2,
+      "category_priority": 3,
+      "manual_priority": 0
+    }
   },
   {
     "title": "The CRYPTO STONED BOYS",
@@ -1873,7 +3169,15 @@
       "crypto",
       "stoned",
       "boys"
-    ]
+    ],
+    "rank_score": 59,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 3,
+      "category_priority": 3,
+      "manual_priority": 0
+    }
   },
   {
     "title": "The DUCKY BOYS",
@@ -1884,7 +3188,15 @@
     "tags": [
       "ducky",
       "boys"
-    ]
+    ],
+    "rank_score": 58,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 2,
+      "category_priority": 3,
+      "manual_priority": 0
+    }
   },
   {
     "title": "The EVM PUNKS",
@@ -1895,7 +3207,15 @@
     "tags": [
       "evm",
       "punks"
-    ]
+    ],
+    "rank_score": 58,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 2,
+      "category_priority": 3,
+      "manual_priority": 0
+    }
   },
   {
     "title": "The FINANCE GUILD",
@@ -1906,7 +3226,15 @@
     "tags": [
       "finance",
       "guild"
-    ]
+    ],
+    "rank_score": 58,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 2,
+      "category_priority": 3,
+      "manual_priority": 0
+    }
   },
   {
     "title": "The GASLESS GHOSTS",
@@ -1917,7 +3245,15 @@
     "tags": [
       "gasless",
       "ghosts"
-    ]
+    ],
+    "rank_score": 58,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 2,
+      "category_priority": 3,
+      "manual_priority": 0
+    }
   },
   {
     "title": "The GKniftyHEADS",
@@ -1928,6 +3264,14 @@
     "tags": [
       "gkniftyheads"
     ],
+    "rank_score": 62,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 1,
+      "tag_count": 1,
+      "category_priority": 3,
+      "manual_priority": 0
+    },
     "aliases": [
       {
         "title": "gkniftyheads",
@@ -1944,6 +3288,14 @@
     "tags": [
       "graffpunks"
     ],
+    "rank_score": 62,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 1,
+      "tag_count": 1,
+      "category_priority": 3,
+      "manual_priority": 0
+    },
     "aliases": [
       {
         "title": "graffpunks",
@@ -1960,7 +3312,15 @@
     "tags": [
       "great",
       "dip"
-    ]
+    ],
+    "rank_score": 58,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 2,
+      "category_priority": 3,
+      "manual_priority": 0
+    }
   },
   {
     "title": "THE GRIDS",
@@ -1970,7 +3330,15 @@
     "emoji": "⚔️",
     "tags": [
       "grids"
-    ]
+    ],
+    "rank_score": 57,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 1,
+      "category_priority": 3,
+      "manual_priority": 0
+    }
   },
   {
     "title": "The HARD FORK ROCKERS",
@@ -1982,7 +3350,15 @@
       "hard",
       "fork",
       "rockers"
-    ]
+    ],
+    "rank_score": 59,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 3,
+      "category_priority": 3,
+      "manual_priority": 0
+    }
   },
   {
     "title": "The High Hats",
@@ -1993,7 +3369,15 @@
     "tags": [
       "high",
       "hats"
-    ]
+    ],
+    "rank_score": 58,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 2,
+      "category_priority": 3,
+      "manual_priority": 0
+    }
   },
   {
     "title": "The HODL Warriors",
@@ -2005,6 +3389,14 @@
       "hodl",
       "warriors"
     ],
+    "rank_score": 63,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 1,
+      "tag_count": 2,
+      "category_priority": 3,
+      "manual_priority": 0
+    },
     "aliases": [
       {
         "title": "hodl_warriors",
@@ -2021,7 +3413,15 @@
     "tags": [
       "information",
       "mercenaries"
-    ]
+    ],
+    "rank_score": 58,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 2,
+      "category_priority": 3,
+      "manual_priority": 0
+    }
   },
   {
     "title": "The MOONLORDS",
@@ -2031,7 +3431,15 @@
     "emoji": "⚔️",
     "tags": [
       "moonlords"
-    ]
+    ],
+    "rank_score": 57,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 1,
+      "category_priority": 3,
+      "manual_priority": 0
+    }
   },
   {
     "title": "The NICE & EASY BOIS",
@@ -2044,7 +3452,15 @@
       "amp",
       "easy",
       "bois"
-    ]
+    ],
+    "rank_score": 60,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 4,
+      "category_priority": 3,
+      "manual_priority": 0
+    }
   },
   {
     "title": "The Nomad Bears",
@@ -2055,7 +3471,15 @@
     "tags": [
       "nomad",
       "bears"
-    ]
+    ],
+    "rank_score": 58,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 2,
+      "category_priority": 3,
+      "manual_priority": 0
+    }
   },
   {
     "title": "The OG PIXEL SAINTS",
@@ -2067,7 +3491,15 @@
       "og",
       "pixel",
       "saints"
-    ]
+    ],
+    "rank_score": 59,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 3,
+      "category_priority": 3,
+      "manual_priority": 0
+    }
   },
   {
     "title": "The Princess",
@@ -2077,7 +3509,15 @@
     "emoji": "⚔️",
     "tags": [
       "princess"
-    ]
+    ],
+    "rank_score": 57,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 1,
+      "category_priority": 3,
+      "manual_priority": 0
+    }
   },
   {
     "title": "The RUGPULL MINERS",
@@ -2088,7 +3528,15 @@
     "tags": [
       "rugpull",
       "miners"
-    ]
+    ],
+    "rank_score": 58,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 2,
+      "category_priority": 3,
+      "manual_priority": 0
+    }
   },
   {
     "title": "The Sacred Chain",
@@ -2100,6 +3548,14 @@
       "sacred",
       "chain"
     ],
+    "rank_score": 63,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 1,
+      "tag_count": 2,
+      "category_priority": 3,
+      "manual_priority": 0
+    },
     "aliases": [
       {
         "title": "sacred_chain",
@@ -2115,7 +3571,15 @@
     "emoji": "⚔️",
     "tags": [
       "salvagers"
-    ]
+    ],
+    "rank_score": 57,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 1,
+      "category_priority": 3,
+      "manual_priority": 0
+    }
   },
   {
     "title": "The SHARD MOTHERS of MANHATTAN",
@@ -2127,7 +3591,15 @@
       "shard",
       "mothers",
       "manhattan"
-    ]
+    ],
+    "rank_score": 59,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 3,
+      "category_priority": 3,
+      "manual_priority": 0
+    }
   },
   {
     "title": "The Squeaky Pinks",
@@ -2138,7 +3610,15 @@
     "tags": [
       "squeaky",
       "pinks"
-    ]
+    ],
+    "rank_score": 58,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 2,
+      "category_priority": 3,
+      "manual_priority": 0
+    }
   },
   {
     "title": "The TUSKON OGS",
@@ -2149,7 +3629,15 @@
     "tags": [
       "tuskon",
       "ogs"
-    ]
+    ],
+    "rank_score": 58,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 2,
+      "category_priority": 3,
+      "manual_priority": 0
+    }
   },
   {
     "title": "The Whitewasher",
@@ -2159,7 +3647,15 @@
     "emoji": "⚔️",
     "tags": [
       "whitewasher"
-    ]
+    ],
+    "rank_score": 57,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 1,
+      "category_priority": 3,
+      "manual_priority": 0
+    }
   },
   {
     "title": "Thera-9",
@@ -2169,7 +3665,15 @@
     "emoji": "⚔️",
     "tags": [
       "thera"
-    ]
+    ],
+    "rank_score": 57,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 1,
+      "category_priority": 3,
+      "manual_priority": 0
+    }
   },
   {
     "title": "Thorne The Architect",
@@ -2180,7 +3684,15 @@
     "tags": [
       "thorne",
       "architect"
-    ]
+    ],
+    "rank_score": 58,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 2,
+      "category_priority": 3,
+      "manual_priority": 0
+    }
   },
   {
     "title": "Tokenomics",
@@ -2190,7 +3702,15 @@
     "emoji": "📊",
     "tags": [
       "tokenomics"
-    ]
+    ],
+    "rank_score": 67,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 1,
+      "category_priority": 8,
+      "manual_priority": 0
+    }
   },
   {
     "title": "Tokens",
@@ -2208,7 +3728,15 @@
       "gk",
       "crypto",
       "cryptocurrency"
-    ]
+    ],
+    "rank_score": 79,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 9,
+      "category_priority": 10,
+      "manual_priority": 0
+    }
   },
   {
     "title": "Trevor Fung",
@@ -2219,7 +3747,15 @@
     "tags": [
       "trevor",
       "fung"
-    ]
+    ],
+    "rank_score": 68,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 2,
+      "category_priority": 8,
+      "manual_priority": 0
+    }
   },
   {
     "title": "Triple Fork Event",
@@ -2231,7 +3767,15 @@
       "triple",
       "fork",
       "event"
-    ]
+    ],
+    "rank_score": 59,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 3,
+      "category_priority": 3,
+      "manual_priority": 0
+    }
   },
   {
     "title": "The WAGMI Prophecy",
@@ -2242,7 +3786,15 @@
     "tags": [
       "wagmi",
       "prophecy"
-    ]
+    ],
+    "rank_score": 58,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 2,
+      "category_priority": 3,
+      "manual_priority": 0
+    }
   },
   {
     "title": "Crypto Wallets",
@@ -2253,7 +3805,15 @@
     "tags": [
       "crypto",
       "wallets"
-    ]
+    ],
+    "rank_score": 66,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 2,
+      "category_priority": 7,
+      "manual_priority": 0
+    }
   },
   {
     "title": "$WAXP",
@@ -2263,7 +3823,15 @@
     "emoji": "🪙",
     "tags": [
       "waxp"
-    ]
+    ],
+    "rank_score": 71,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 1,
+      "category_priority": 10,
+      "manual_priority": 0
+    }
   },
   {
     "title": "Web3",
@@ -2273,7 +3841,15 @@
     "emoji": "🌐",
     "tags": [
       "web3"
-    ]
+    ],
+    "rank_score": 69,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 1,
+      "category_priority": 9,
+      "manual_priority": 0
+    }
   },
   {
     "title": "The Whale Lords",
@@ -2284,7 +3860,15 @@
     "tags": [
       "whale",
       "lords"
-    ]
+    ],
+    "rank_score": 58,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 2,
+      "category_priority": 3,
+      "manual_priority": 0
+    }
   },
   {
     "title": "XRP KIDs Genesis NFTs",
@@ -2297,7 +3881,15 @@
       "kids",
       "genesis",
       "nfts"
-    ]
+    ],
+    "rank_score": 62,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 4,
+      "category_priority": 4,
+      "manual_priority": 0
+    }
   },
   {
     "title": "XRP Kids NBG Updates",
@@ -2310,7 +3902,15 @@
       "kids",
       "nbg",
       "updates"
-    ]
+    ],
+    "rank_score": 62,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 4,
+      "category_priority": 4,
+      "manual_priority": 0
+    }
   },
   {
     "title": "XRP Kids",
@@ -2321,6 +3921,14 @@
     "tags": [
       "xrp",
       "kids"
-    ]
+    ],
+    "rank_score": 60,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 2,
+      "category_priority": 4,
+      "manual_priority": 0
+    }
   }
 ]
