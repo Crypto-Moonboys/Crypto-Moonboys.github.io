@@ -73,7 +73,7 @@ const TITLE_WORD_MAP = {
   dao:   'DAO',
   gk:    'GK',
   nbg:   'NBG',
-  pmsl:  'PMSL',
+  nbgx:  'NBGX',
   dex:   'DEX',
   p2e:   'P2E',
   f2p:   'F2P',
@@ -85,7 +85,7 @@ const TITLE_WORD_MAP = {
   dj:    'DJ',
 };
 
-function cleanTitle(title) {
+function convertSlugToTitle(title) {
   // Only process titles that look like raw slugs (underscores, no spaces)
   if (!title.includes('_') || title.includes(' ')) return title;
 
@@ -212,7 +212,7 @@ for (const entry of wikiIndex) {
 
   const record = {
     entity_id:       entityId,
-    canonical_title: cleanTitle(entry.title),
+    canonical_title: convertSlugToTitle(entry.title),
     canonical_url:   entry.url,
     category:        entry.category || 'Lore',
     aliases:         approvedAliases,
