@@ -224,8 +224,9 @@ function deduplicateIndex(entries) {
 // (< 2 KB on disk, roughly equivalent to < 500 chars of visible text).
 // Returns true if written.
 function generateRedirectFile(aliasFilePath, canonicalUrl) {
-  // Validate canonical URL: must be a simple internal wiki path to prevent injection.
-  if (!/^\/wiki\/[a-z0-9][a-z0-9-]*\.html$/.test(canonicalUrl)) {
+  // Validate canonical URL: must be a safe internal wiki path to prevent injection.
+  // Allows lowercase letters, digits, hyphens, and underscores in the filename.
+  if (!/^\/wiki\/[a-z0-9][a-z0-9_-]*\.html$/.test(canonicalUrl)) {
     console.warn(`  ! invalid canonical URL format, skipping redirect: ${canonicalUrl}`);
     return false;
   }
