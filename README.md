@@ -47,343 +47,304 @@ All wiki content is **published automatically** from the Brain repo ([`HODLKONG6
     └── ... (17 categories)
 
 
-    🚀 Crypto Moonboys Wiki — System Overview
-🔥 What This Is
+# 🧠 Crypto Moonboys Wiki — SAM Intelligence System
 
-This is not a basic static site.
+## 🚀 Overview
 
-This is a self-organising Web3 knowledge engine built on GitHub Pages.
+This is not a standard website.
 
-It combines:
+This is a **self-structuring, data-driven intelligence platform** built on a static architecture — powered by:
 
-canonical entity intelligence
-automated indexing + memory export
-entity-aware search
-dynamic frontend modules
-future AI expansion (SAM-ready)
-🧠 Core System Architecture
-1. Canonical Entity System
-All pages are deduplicated into canonical entities
-Variants are stored as aliases
-Prevents:
-duplicate pages
-SEO fragmentation
-messy search results
-Output:
-js/entity-map.json → frontend entity registry
-sam-memory.json → AI memory export
-2. Search Engine (Entity-Aware)
+* Canonical entity mapping
+* Deterministic data pipelines
+* Automated indexing
+* Search intelligence
+* Visual system monitoring (SAM Dashboard)
 
-Search is no longer keyword-based.
+The system transforms raw wiki pages into a **connected knowledge graph with visible intelligence**.
 
-It now:
+---
 
-detects entities from query
-boosts canonical pages
-suppresses duplicates
-supports alias matching
-Result:
+## 🧩 Core Architecture
 
-👉 clean, intelligent search results
-👉 no more “same thing 3 times” problem
+### 1. Wiki Layer (Content)
 
-3. Auto-Generated System Files
+* `/wiki/*.html`
+* Human-written or generated lore/content pages
+* Canonical source of truth for all entities
 
-All critical data is generated automatically:
+---
 
-js/wiki-index.json → search index
-js/site-stats.json → stats + counts
-sitemap.xml → SEO structure
-js/entity-map.json → canon + aliases
-sam-memory.json → AI memory
-4. Workflow (Auto Sync Engine)
+### 2. Index Layer (Search + Discovery)
 
-GitHub Actions now:
+* `/js/wiki-index.json`
+* Generated via:
 
-On PR:
-validates generated files
-blocks stale data
-does NOT commit
-On main:
-regenerates all assets
-commits only if changed
-avoids loops (fixed trigger logic)
-5. Frontend Intelligence Layer
-Live Crypto Data
-WAXP, BTC, ETH, BCH, XRP
-CoinGecko powered
-no API keys required
-graceful fallback
-Engagement System (API-ready)
-comments (Gravatar-first)
-likes
-citation voting
-leaderboard hooks
-live activity feed
+  ```
+  scripts/generate-wiki-index.js
+  ```
+* Handles:
 
-⚠️ No fake data
-⚠️ API-driven only
+  * Search indexing
+  * Canonical URL structure
+  * Deduplication + alias merging
 
-Modular UI Widgets
-SAM status panel
-activity feed
-leaderboard snippet
-engagement blocks
+---
 
-All safe if backend is offline.
+### 3. Entity Layer (Intelligence Core)
 
-🔗 Entity Graph System
-Auto Linking (live)
-detects entity mentions in page text
-links to canonical pages
-builds internal knowledge graph
-Related Entities (live)
-shows strongest connections:
-in-page mentions
-shared category
-shared tags
+* `/js/entity-map.json`
+* `/sam-memory.json`
 
-👉 This turns the site into a connected intelligence graph
+Generated via:
 
-🧱 Architecture Rules (Locked)
-Static site only (GitHub Pages)
-No backend logic in repo
-No secrets
-No fake persistence
-All real data must come from APIs
-Deterministic generation only
-⚙️ Developer Workflow
-Rebuild generated assets locally
+```
+scripts/generate-entity-map.js
+```
+
+Each entity includes:
+
+* canonical_title
+* canonical_url
+* aliases
+* alias_candidates
+* tags
+* category
+* source_urls
+
+👉 This is the **brain structure**
+
+---
+
+### 4. Stats Layer (System State)
+
+* `/js/site-stats.json`
+
+Generated via:
+
+```
+scripts/generate-site-stats.js
+```
+
+Tracks:
+
+* total_articles
+* total_entities
+* category_count
+* last_updated
+
+👉 Now correctly synced with real data (no mismatches)
+
+---
+
+### 5. SAM Dashboard (Visible Intelligence)
+
+* `/sam.html`
+
+Displays:
+
+* entity rankings
+* system stats
+* activity feed
+* knowledge graph
+
+Powered by:
+
+* entity-map.json
+* site-stats.json
+* sam-memory.json
+
+👉 Turns system into **visible AI**
+
+---
+
+## 🔄 Data Pipeline (Deterministic)
+
+Full rebuild flow:
+
+```bash
 node scripts/generate-wiki-index.js
+node scripts/generate-sitemap.js
+node scripts/generate-site-stats.js
+node scripts/generate-entity-map.js
+```
 
-(also regenerates all dependent files)
+Or:
 
-Deployment Flow
-edit content
-→ push
-→ PR validation
-→ merge
-→ auto-sync
-→ site live
-🧪 System Status
-System	Status
-Workflow	✅ Stable
-Canonical entities	✅ Active
-Search engine	✅ Entity-aware
-Auto sync	✅ Fixed
-Frontend modules	✅ Working
-SAM memory export	✅ Ready
-🚀 What This Site Now Is
+```bash
+node scripts/generate-wiki-index.js && \
+node scripts/generate-sitemap.js && \
+node scripts/generate-site-stats.js && \
+node scripts/generate-entity-map.js
+```
 
-This is no longer:
+---
 
-❌ a static wiki
-❌ a content site
+## 🔍 Search System
+
+* Powered by `wiki-index.json`
+* Canonical-only results (no duplicates)
+* Fixed:
+
+  * ❌ `/wiki/wiki/...` bug
+  * ❌ stale index issues
+
+Auto-sync enabled via:
+
+```
+.github/workflows/wiki-index-sync.yml
+```
+
+👉 Rebuilds index automatically on commit
+
+---
+
+## 🧠 Entity System (Key Feature)
+
+Every page becomes a structured entity:
+
+* deduplicated via alias matching
+* merged into canonical records
+* cross-linked via tags
+
+Supports:
+
+* graph visualization
+* clustering
+* future AI expansion
+
+---
+
+## 📊 System Integrity (LOCKED)
+
+All data now aligned:
+
+| Layer      | Source             | Status |
+| ---------- | ------------------ | ------ |
+| wiki-index | HTML pages         | ✅      |
+| entity-map | wiki-index         | ✅      |
+| sam-memory | entity-map         | ✅      |
+| site-stats | entity-map + index | ✅      |
+
+No mismatches
+No fake counts
+No drift
+
+---
+
+## 🧭 Navigation
+
+Global header includes:
+
+* Home
+* Categories
+* All Articles
+* 🧠 SAM Dashboard
+
+Auto-injected across all pages (241+ files)
+
+---
+
+## 🧱 File Structure
+
+```
+/wiki/                  → content pages
+/js/
+  wiki-index.json       → search index
+  entity-map.json       → entity registry
+  site-stats.json       → system stats
+/scripts/
+  generate-wiki-index.js
+  generate-entity-map.js
+  generate-site-stats.js
+  generate-sitemap.js
+/sam.html               → dashboard
+/sam-memory.json        → machine memory
+.github/workflows/
+  wiki-index-sync.yml   → auto index rebuild
+```
+
+---
+
+## ⚙️ Key Fixes Applied
+
+### ✅ Search
+
+* Removed duplicate `/wiki/wiki/` paths
+* Rebuilt canonical index
+
+### ✅ Stats
+
+* Fixed `total_entities` (was using category count)
+* Now uses real entity-map length
+
+### ✅ Titles
+
+* Converted slug titles:
+
+  * `alfie_blaze` → `Alfie Blaze`
+  * `1m_free_nfts` → `1M Free NFTs`
+
+### ✅ Navigation
+
+* Added SAM link globally
+* Fixed relative paths per directory depth
+
+### ✅ Automation
+
+* Index rebuild auto-runs on commit
+* Prevents stale search results
+
+---
+
+## ⚡ Performance
+
+* Fully static → fast load
+* No backend required
+* No runtime dependencies
+* Lightweight JS only
+
+---
+
+## 🔐 Rules (Do Not Break)
+
+* Never manually edit generated JSON files
+* Always run generators after adding pages
+* Do not change canonical URLs
+* Do not introduce duplicate entities
+* Titles must be clean (no underscores)
+
+---
+
+## 🚀 What This System Is
 
 This is:
 
-👉 a structured knowledge engine
-👉 a Web3 entity graph
-👉 a SAM-ready AI frontend
+* a wiki
+* a structured data engine
+* a search system
+* an entity graph
+* a visible AI dashboard
 
-🔮 Future Upgrades (Next Phase)
-1. SAM Intelligence Layer
-auto-learning entities
-alias expansion
-conflict detection
-lore enrichment
-2. Real-Time Data Integration
-on-chain feeds (WAX, ETH, XRP)
-NFT activity tracking
-wallet-based stats
-3. AI Navigation Layer
-“related entities” expansion
-smart recommendations
-dynamic content surfacing
-4. Social / Battle Layer
-comment XP system
-leaderboard scoring
-daily keyword system
-engagement gamification
-5. Cross-Platform Publishing
-Telegram auto lore drops
-Substack / Medium sync
-Paragraph (Arweave logs)
-🧠 Final Note
+Combined into:
 
-Everything is now structured to scale.
+👉 **a self-organising intelligence platform**
 
-Canon is locked
-Memory is exportable
-Search understands meaning
-Frontend is modular
+---
 
-👉 This is the foundation for a fully autonomous content + intelligence system
+## 🧠 Final State
 
-🎯 Purpose
+* Fully operational
+* Fully synced
+* Fully deterministic
 
-This repo is a structured knowledge engine, not a normal content site.
+No missing components
+No broken systems
+No outstanding fixes
 
-Every change affects:
+---
 
-search
-entity system
-memory export
-SEO
-future AI behaviour
-⚠️ Rules (Non-Negotiable)
-❌ Do NOT create duplicate pages for same entity
-❌ Do NOT edit generated files manually
-❌ Do NOT add fake data / mock persistence
-❌ Do NOT bypass workflows
-✅ Always follow canonical naming
-✅ Always run generators after adding pages
-✅ Always test search + links
-🧱 Key Files
-wiki/ → all content
-js/wiki-index.json → generated search index
-js/entity-map.json → canonical entity system
-sam-memory.json → AI memory export
-scripts/ → generators
-🔁 Workflow
-create/edit page
-→ run generator
-→ commit
-→ PR
-→ validation check
-→ merge
-→ auto sync
-🧪 Before Merge Checklist
-page loads
-search finds it
-no duplicate entity created
-links correct
-no console errors
-🚫 Common Mistakes
-creating:
-“alfie blaze”
-“alfie bitcoin kid”
-“bitcoin kid alfie”
+## 📌 End
 
-👉 should be ONE canonical page
+This repository is now complete and stable.
 
-🧠 Golden Rule
-
-If two pages describe the same thing — they must be ONE entity.
-
-🤖 README — SAM / AI AGENTS
-🎯 Role
-
-SAM is the intelligence layer.
-
-This repo is:
-👉 frontend + memory surface
-👉 not the decision engine
-
-🧠 Core Data Sources
-sam-memory.json → canonical truth
-js/entity-map.json → frontend mapping
-js/wiki-index.json → searchable surface
-🧩 Entity Model
-
-Each entity:
-
-{
-  "canonical_title": "",
-  "canonical_url": "",
-  "aliases": [],
-  "category": "",
-  "tags": []
-}
-⚠️ Agent Rules
-NEVER create duplicate entities
-NEVER override canonical without validation
-NEVER promote alias_candidates automatically
-ALWAYS merge into existing entity
-🔄 Learning Flow
-new content
-→ extract entities
-→ compare with memory
-→ merge OR create
-→ update aliases
-→ export memory
-🧠 Intelligence Layers
-Layer	Function
-Canon	truth
-Aliases	access paths
-Candidates	learning
-Memory	persistence
-🚀 Future Capabilities
-entity expansion
-semantic linking
-auto content generation
-cross-platform publishing
-🧠 Prime Directive
-
-Preserve meaning, not just text.
-
-🌐 README — API / BACKEND
-🎯 Purpose
-
-This repo is frontend only.
-
-All dynamic features must come from:
-👉 external APIs
-
-🔌 Required Endpoints
-Comments
-GET  /comments?url=
-POST /comments
-Likes
-POST /like
-GET  /likes?url=
-Votes
-POST /vote
-Feed
-GET /feed
-Leaderboard
-GET /leaderboard
-⚠️ Rules
-❌ No fake data
-❌ No localStorage persistence
-❌ No secrets in repo
-✅ API must handle:
-auth
-validation
-storage
-🔐 Identity (Future)
-Gravatar (baseline)
-Telegram login
-wallet-based identity (future)
-📡 Frontend Contract
-
-If API is down:
-
-UI must NOT break
-show fallback states
-no console crashes
-🚀 Future Backend
-XP system
-daily keywords
-engagement scoring
-NFT-linked identity
-on-chain verification
-🧠 Architecture Split
-Layer	Role
-Repo	UI + structure
-API	logic + data
-SAM	intelligence
-⚡ Final Rule
-
-If it needs storage, validation, or identity — it belongs in the API, not this repo.
-
-🧠 FINAL NOTE
-
-You now have:
-
-system README
-contributor README
-AI README
-backend README
-
-👉 This is a complete operating stack, not just a site.
