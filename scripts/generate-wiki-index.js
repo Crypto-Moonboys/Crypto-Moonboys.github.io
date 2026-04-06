@@ -87,16 +87,6 @@ const CATEGORY_PRIORITY = {
   'Activism & Counter-Culture':  2,
 };
 
-/* ── Manual priority boosts for flagship pages ──────────────────────────── */
-// Additive points applied on top of the formula-derived rank_score.
-// Only list the most important canonical pages; all others default to 0.
-const MANUAL_PRIORITY = {
-  '/wiki/crypto-moonboys.html': 25,
-  '/wiki/bitcoin.html':         25,
-  '/wiki/block-topia.html':     20,
-  '/wiki/blockchain.html':      20,
-  '/wiki/gk-tokens.html':       15,
-};
 
 /* ── Decode HTML entities in plain text ─────────────────────────────────── */
 function decodeHtmlEntities(str) {
@@ -509,29 +499,30 @@ function generateTags(title) {
 }
 
 /* ── Compute ranking signals for an index entry ─────────────────────────── */
-// All inputs are derived from repo-grounded data only (category list, aliases,
-// tags, URL).  No random values; every run with identical input produces
-// identical output.
+// All inputs are derived from repo-grounded data only (canonical page status,
+// alias count, tag count, category priority).
+// - No hand-picked page boosts.
+// - No editorial overrides.
+// - Same input = same output (fully deterministic).
 function computeRankSignals(entry) {
   return {
     is_canonical:      true,
     alias_count:       Array.isArray(entry.aliases) ? entry.aliases.length : 0,
     tag_count:         Array.isArray(entry.tags)    ? entry.tags.length    : 0,
     category_priority: CATEGORY_PRIORITY[entry.category] || 1,
-    manual_priority:   MANUAL_PRIORITY[entry.url]   || 0,
   };
 }
 
 /* ── Derive a deterministic integer rank score from signals ─────────────── */
-// Formula: 50 (base) + category_priority×2 + alias_count×5 + tag_count + manual_priority
-// Typical range: ~56 (minimal Lore, no aliases/tags) – ~115+ (flagship + many aliases).
+// Formula: 50 (base) + category_priority×2 + alias_count×5 + tag_count
+// Typical range: ~53 (minimal Lore, no aliases/tags) – ~90+ (core category, many aliases).
+// No manual boosts; every run with identical input produces identical output.
 function computeRankScore(signals) {
   return (
     50 +
     signals.category_priority * 2 +
     signals.alias_count       * 5 +
-    signals.tag_count             +
-    signals.manual_priority
+    signals.tag_count
   );
 }
 
