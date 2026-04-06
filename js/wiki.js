@@ -5,8 +5,9 @@
 
 function resolveWikiUrl(url) {
   if (!url) return url;
-  if (url.startsWith('/')) return url;
-  if (url.startsWith('wiki/')) return '/' + url;
+  // Strip any leading slashes, then collapse repeated wiki/ prefixes (e.g. wiki/wiki/) down to one
+  let u = url.replace(/^\/+/, '').replace(/^(wiki\/)+/, 'wiki/');
+  if (u.startsWith('wiki/')) return '/' + u;
   return url;
 }
 
