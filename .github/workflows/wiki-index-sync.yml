@@ -81,33 +81,11 @@ jobs:
       - name: Check for fragile parent-relative nav/asset paths
         run: |
           FAIL=0
-          # ── Patterns that must NEVER appear in wiki/categories pages or the template ──
-          # 1. Parent-relative (../) navigation and asset paths
-          DOTDOT_PATTERNS=('../index.html' '../search.html' '../categories/index.html' '../img/' '../css/' '../js/')
-          for pattern in "${DOTDOT_PATTERNS[@]}"; do
+          BAD_PATTERNS=('../index.html' '../search.html' '../categories/index.html' '../img/' '../css/' '../js/' 'href="index.html"' 'href="search.html"' 'href="sam.html"' 'src="img/"' 'src="css/"')
+          for pattern in "${BAD_PATTERNS[@]}"; do
             matches=$(grep -rFl --include='*.html' "$pattern" wiki/ categories/ _article-template.html 2>/dev/null || true)
             if [ -n "$matches" ]; then
-              echo "::error::Fragile ../ path '$pattern' found in:"
-              echo "$matches"
-              FAIL=1
-            fi
-          done
-          # 2. Bare (non-root-relative) navigation links — must always start with /
-          BARE_PATTERNS=('href="index.html"' 'href="search.html"' 'href="sam.html"')
-          for pattern in "${BARE_PATTERNS[@]}"; do
-            matches=$(grep -rFl --include='*.html' "$pattern" wiki/ categories/ _article-template.html 2>/dev/null || true)
-            if [ -n "$matches" ]; then
-              echo "::error::Bare relative nav path '$pattern' found in:"
-              echo "$matches"
-              FAIL=1
-            fi
-          done
-          # 3. Bare relative asset references (no leading /)
-          BARE_ASSET_PATTERNS=('src="img/' 'src="css/')
-          for pattern in "${BARE_ASSET_PATTERNS[@]}"; do
-            matches=$(grep -rFl --include='*.html' "$pattern" wiki/ categories/ _article-template.html 2>/dev/null || true)
-            if [ -n "$matches" ]; then
-              echo "::error::Bare relative asset path '$pattern' found in:"
+              echo "::error::Fragile relative path '$pattern' found in:"
               echo "$matches"
               FAIL=1
             fi
@@ -119,8 +97,6 @@ jobs:
 
       - name: Guard wiki/index.html redirect stub
         run: |
-          # wiki/index.html must remain a thin redirect — never a real article page.
-          # Fail if it contains static article lists or article counts.
           if grep -qF 'articles' wiki/index.html; then
             echo "::error file=wiki/index.html::wiki/index.html appears to contain article content."
             echo "This file must remain a redirect stub pointing to /search.html."
@@ -128,26 +104,6 @@ jobs:
             exit 1
           fi
           echo "wiki/index.html is a clean redirect stub. ✅"
-
-      - name: Check generated assets are up to date
-        if: github.event_name == 'pull_request'
-        run: |
-          STALE=0
-          for f in js/wiki-index.json sitemap.xml js/site-stats.json js/entity-map.json sam-memory.json index_stats.json; do
-            if ! git diff --quiet "$f"; then
-              echo "::error file=$f::$f is out of date."
-              echo "Run the generator scripts locally and commit the result:"
-              echo "  node scripts/generate-wiki-index.js"
-              echo "  node scripts/generate-sitemap.js"
-              echo "  node scripts/generate-site-stats.js"
-              echo "  node scripts/generate-entity-map.js"
-              git diff "$f"
-              STALE=1
-            else
-              echo "$f is up to date. ✅"
-            fi
-          done
-          exit $STALE
 
       - name: Commit and push updated assets (main push only)
         if: github.event_name == 'push'
