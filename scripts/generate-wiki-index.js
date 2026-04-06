@@ -85,6 +85,55 @@ function slugToTitle(filename) {
     .replace(/\b\w/g, c => c.toUpperCase());
 }
 
+/* ── Clean a raw title into a human-readable display title ─────────────── */
+// Converts underscore-slug titles (e.g. "1m_free_nfts") to Title Case with
+// correct handling of known crypto/NFT abbreviations.
+// - Only processes titles that contain underscores and no spaces (raw slugs).
+// - Titles already containing spaces or proper casing are left unchanged.
+// Note: this is a *display* cleaner; the existing normalizeTitle() function
+//       below is for duplicate-detection only and must remain untouched.
+const CLEAN_TITLE_WORD_MAP = {
+  nft:   'NFT',
+  nfts:  'NFTs',
+  btc:   'BTC',
+  eth:   'ETH',
+  xrp:   'XRP',
+  defi:  'DeFi',
+  dao:   'DAO',
+  gk:    'GK',
+  nbg:   'NBG',
+  nbgx:  'NBGX',
+  pmsl:  'PMSL',
+  dex:   'DEX',
+  p2e:   'P2E',
+  f2p:   'F2P',
+  ai:    'AI',
+  api:   'API',
+  ui:    'UI',
+  ux:    'UX',
+  tv:    'TV',
+  dj:    'DJ',
+};
+
+function cleanDisplayTitle(title) {
+  if (!title) return title;
+  // Only transform titles that look like raw slugs (underscores, no spaces).
+  if (!title.includes('_') || title.includes(' ')) return title;
+  return title
+    .split('_')
+    .map(word => {
+      if (!word) return word;
+      const lower = word.toLowerCase();
+      if (Object.prototype.hasOwnProperty.call(CLEAN_TITLE_WORD_MAP, lower)) {
+        return CLEAN_TITLE_WORD_MAP[lower];
+      }
+      // Numeric prefix with a single letter suffix (e.g. "1m" → "1M")
+      if (/^\d+[a-z]$/.test(lower)) return word.slice(0, -1) + word.slice(-1).toUpperCase();
+      return word.charAt(0).toUpperCase() + word.slice(1);
+    })
+    .join(' ');
+}
+
 /* ── Load the existing index from wiki-index.json (preferred) or wiki.js ── */
 function loadExistingIndex() {
   // Prefer the already-generated JSON — supports incremental updates.
@@ -96,7 +145,7 @@ function loadExistingIndex() {
         const slug = item.url.replace(/^\/wiki\//, '');
         // Decode any HTML entities that may have been written in a previous run.
         lookup[slug] = Object.assign({}, item, {
-          title:    decodeHtmlEntities(item.title    || ''),
+          title:    cleanDisplayTitle(decodeHtmlEntities(item.title    || '')),
           desc:     decodeHtmlEntities(item.desc     || ''),
           category: decodeHtmlEntities(item.category || ''),
           // Preserve aliases array if present
@@ -471,7 +520,7 @@ for (const file of htmlFiles) {
   } else {
     // Extract what we can from the HTML file.
     const rawTitle = extractTitle(html);
-    const title    = rawTitle || slugToTitle(file);
+    const title    = cleanDisplayTitle(rawTitle || slugToTitle(file));
     const desc     = extractDesc(html)     || '';
     const category = extractCategory(html) || 'Lore';
     const emoji    = CATEGORY_EMOJI[category] || '📄';
@@ -533,3 +582,12 @@ console.log(`  ${fromHtml} extracted from HTML (new pages)`);
 if (aliasUrls.size > 0) {
   console.log(`  ${aliasUrls.size} alias URL(s) deduplicated (${redirectsWritten} redirect(s) written, ${redirectsSkipped} skipped — substantial content)`);
 }
+
+/* ── Integrity check: no canonical title may contain underscores ─────────── */
+const badTitles = wikiIndex.filter(e => e.title.includes('_'));
+if (badTitles.length > 0) {
+  console.error(`\nERROR: ${badTitles.length} canonical title(s) still contain underscores:`);
+  badTitles.forEach(e => console.error(`  ${e.url} → "${e.title}"`));
+  process.exit(1);
+}
+console.log('  ✓ All canonical titles are clean (no underscores)');

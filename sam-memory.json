@@ -1989,7 +1989,7 @@
     "pmsl_token": {
       "alias_candidates": [],
       "aliases": [],
-      "canonical_title": "Pmsl Token",
+      "canonical_title": "PMSL Token",
       "canonical_url": "/wiki/pmsl-token.html",
       "category": "Cryptocurrencies",
       "source_urls": [
@@ -3332,5 +3332,5 @@
       ]
     }
   },
-  "updated_at": "2026-04-06T19:19:54Z"
+  "updated_at": "2026-04-06T19:35:22Z"
 }
