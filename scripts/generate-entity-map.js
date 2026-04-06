@@ -237,7 +237,7 @@ for (const r of entityRecords) {
 }
 
 // Serialise with sorted keys for deterministic output (reusable replacer)
-function sortedKeysReplacer(key, val) {
+function deterministicReplacer(key, val) {
   if (val && typeof val === 'object' && !Array.isArray(val)) {
     return Object.fromEntries(Object.entries(val).sort(([a], [b]) => a.localeCompare(b)));
   }
@@ -250,12 +250,14 @@ let updatedAt = new Date().toISOString().replace(/\.\d{3}Z$/, 'Z');
 if (fs.existsSync(SAM_MEMORY_PATH)) {
   try {
     const existing = JSON.parse(fs.readFileSync(SAM_MEMORY_PATH, 'utf8'));
-    const existingEntitiesJson = JSON.stringify(existing.entities, sortedKeysReplacer);
-    const newEntitiesJson      = JSON.stringify(entities,          sortedKeysReplacer);
+    const existingEntitiesJson = JSON.stringify(existing.entities, deterministicReplacer);
+    const newEntitiesJson      = JSON.stringify(entities,          deterministicReplacer);
     if (existingEntitiesJson === newEntitiesJson) {
       updatedAt = existing.updated_at;
     }
-  } catch (e) { /* ignore parse errors — use fresh timestamp */ }
+  } catch (e) {
+    console.warn('Warning: could not parse existing sam-memory.json — using fresh timestamp.', e.message);
+  }
 }
 
 const samMemory = {
@@ -263,7 +265,7 @@ const samMemory = {
   updated_at: updatedAt,
 };
 
-const samJson = JSON.stringify(samMemory, sortedKeysReplacer, 2);
+const samJson = JSON.stringify(samMemory, deterministicReplacer, 2);
 
 fs.writeFileSync(SAM_MEMORY_PATH, samJson + '\n');
 console.log(`Generated sam-memory.json with ${Object.keys(entities).length} entities`);
