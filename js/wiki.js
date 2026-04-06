@@ -52,6 +52,30 @@ async function loadWikiIndex() {
    ─────────────────────────────────────────────────────────────────────── */
 let ENTITY_MAP = null; // null = not yet attempted; {} = attempted, empty/missing
 
+/* ── ENTITY LOOKUP ─────────────────────────────────────────────────────────
+   Flat map of normalised key → entity record, built once after ENTITY_MAP
+   loads.  Covers canonical titles, aliases, and alias_candidates so that
+   any spelling a user might type resolves to the right entity.
+   ─────────────────────────────────────────────────────────────────────── */
+let ENTITY_LOOKUP = {};
+
+function buildEntityLookup() {
+  if (!ENTITY_MAP) return;
+
+  Object.values(ENTITY_MAP).forEach(entity => {
+    const keys = [
+      entity.canonical_title,
+      ...(entity.aliases || []),
+      ...(entity.alias_candidates || [])
+    ];
+
+    keys.forEach(k => {
+      const key = normalizeEntityKey(k);
+      if (key) ENTITY_LOOKUP[key] = entity;
+    });
+  });
+}
+
 function getEntityMapUrl() {
   const scripts = document.querySelectorAll('script[src]');
   for (const s of scripts) {
@@ -117,8 +141,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     // is responsive right away; results appear once the JSON has loaded.
     initSearch();
 
-    // Fetch the search index, then update all index-dependent UI.
+    // Fetch the search index and entity map, then update all index-dependent UI.
     await loadWikiIndex();
+    await loadEntityMap();
+    buildEntityLookup();
     initStatArticles();
     initStatCategories();
 
@@ -268,6 +294,26 @@ function scoreResult(item, query) {
       if (word.length > 2 && aTitle.includes(word)) score += 5;
     });
   });
+
+  // ── Entity-aware scoring ─────────────────────────────────────────────────
+  const normalizedQuery = normalizeEntityKey(query);
+  const matchedEntity   = ENTITY_LOOKUP[normalizedQuery];
+
+  if (matchedEntity) {
+    if (item.url === matchedEntity.canonical_url) {
+      // Exact canonical entity match — strongly prefer this page
+      score += 120;
+
+      // Additional boost when the query arrived via an alias (not the canonical title)
+      const entityAliases = matchedEntity.aliases || [];
+      if (entityAliases.some(a => normalizeEntityKey(a) === normalizedQuery)) {
+        score += 70;
+      }
+    } else {
+      // Penalise every non-canonical page so the right result floats to the top
+      score -= 20;
+    }
+  }
 
   return score;
 }
