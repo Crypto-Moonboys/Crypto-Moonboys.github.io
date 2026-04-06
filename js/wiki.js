@@ -12,10 +12,38 @@ function resolveWikiUrl(url) {
 }
 
 /* ── SEARCH INDEX ──────────────────────────────────────────────────────────
-   Articles are registered here so the search box can find them.
-   When the AI agent adds a new article, it should also add an entry below.
+   Loaded at runtime from js/wiki-index.json (auto-generated).
+   Regenerate after adding new wiki pages:
+     node scripts/generate-wiki-index.js
    ─────────────────────────────────────────────────────────────────────── */
-const WIKI_INDEX = [
+let WIKI_INDEX = [];
+
+/* ── WIKI INDEX LOADER ──────────────────────────────────────────────────── */
+function getWikiIndexUrl() {
+  // Derive the JSON URL from the <script src> of this file so it resolves
+  // correctly regardless of which directory the page lives in.
+  const scripts = document.querySelectorAll('script[src]');
+  for (const s of scripts) {
+    if (/\/js\/wiki\.js([?#]|$)/.test(s.src)) {
+      return s.src.replace(/\/js\/wiki\.js([?#].*)?$/, '/js/wiki-index.json');
+    }
+  }
+  return '/js/wiki-index.json';
+}
+
+async function loadWikiIndex() {
+  try {
+    const res = await fetch(getWikiIndexUrl());
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    WIKI_INDEX = await res.json();
+  } catch (err) {
+    console.warn('[wiki] Failed to load wiki-index.json — search will return empty results.', err);
+    WIKI_INDEX = [];
+  }
+}
+
+/* ── LEGACY INLINE INDEX (preserved for reference — no longer used) ────────
+const LEGACY_WIKI_INDEX = [
   {
     title: "Bitcoin (BTC)",
     url: "wiki/bitcoin.html",
@@ -1345,6 +1373,7 @@ const WIKI_INDEX = [
     tags: ["waxp", "wax", "token", "blockchain"]
   }
 ];
+// ── END LEGACY INDEX ────────────────────────────────────────────────────── */
 
 /* ── CATEGORY INDEX ────────────────────────────────────────────────────────
    All wiki categories are registered here.
@@ -1370,14 +1399,34 @@ const CATEGORY_LIST = [
 ];
 
 /* ── DOM READY ──────────────────────────────────────────────────────────── */
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+  // Set up UI immediately (no index needed for these)
   initSidebar();
-  initSearch();
-  initStatArticles();
-  initStatCategories();
   initBackToTop();
   initActiveNav();
   initTOC();
+
+  // Wire up search event listeners before the index arrives so the input
+  // is responsive right away; results appear once the JSON has loaded.
+  initSearch();
+
+  // Fetch the search index, then update all index-dependent UI.
+  await loadWikiIndex();
+  initStatArticles();
+  initStatCategories();
+
+  // If we landed on search.html with a query, re-render now that the index
+  // is populated (initSearch may have rendered empty results on first call).
+  const searchPage = document.getElementById('search-page-input');
+  if (searchPage && searchPage.value) {
+    renderSearchPage(searchPage.value);
+  }
+  // Re-render the header dropdown if the input already has a value.
+  const searchInput   = document.getElementById('search-input');
+  const searchResults = document.getElementById('search-results');
+  if (searchInput && searchResults && searchInput.value) {
+    runSearch(searchInput.value, searchResults, searchInput);
+  }
 });
 
 /* ── SIDEBAR TOGGLE ─────────────────────────────────────────────────────── */
