@@ -76,19 +76,6 @@
     ]
   },
   {
-    "title": "Alfie 'Bitcoin Kid' Blaze",
-    "url": "/wiki/alfie-bitcoin-kid-blaze.html",
-    "desc": "Alfie 'Bitcoin Kid' Blaze stands as the defiant and charismatic leader of the Bitcoin Kids, a rogue faction of escaped rebels within the Crypto Moonboys univers",
-    "category": "Lore",
-    "emoji": "⚔️",
-    "tags": [
-      "alfie",
-      "bitcoin",
-      "kid",
-      "blaze"
-    ]
-  },
-  {
     "title": "alfie_blaze",
     "url": "/wiki/alfie-blaze.html",
     "desc": "Alfie 'Bitcoin Kid' Blaze is the fiery, unyielding heart of the Bitcoin Kids, a rebel faction trapped within the fortified walls of Block Topia in the Crypto Mo",
@@ -110,6 +97,12 @@
       "bitcoin",
       "kid",
       "blaze"
+    ],
+    "aliases": [
+      {
+        "title": "Alfie 'Bitcoin Kid' Blaze",
+        "url": "/wiki/alfie-bitcoin-kid-blaze.html"
+      }
     ]
   },
   {
@@ -190,18 +183,6 @@
       "bit",
       "cap",
       "5000"
-    ]
-  },
-  {
-    "title": "Bitcoin Kid Army",
-    "url": "/wiki/bitcoin-kid-army.html",
-    "desc": "Rebel army of escaped Bitcoin Kids under Alfie 'The Bitcoin Kid' Blaze",
-    "category": "Lore",
-    "emoji": "🪙",
-    "tags": [
-      "bitcoin",
-      "kid",
-      "army"
     ]
   },
   {
@@ -601,17 +582,6 @@
     ]
   },
   {
-    "title": "$GK Token",
-    "url": "/wiki/gk-token.html",
-    "desc": "Reward token for staking NFTs",
-    "category": "Cryptocurrencies",
-    "emoji": "🪙",
-    "tags": [
-      "gk",
-      "token"
-    ]
-  },
-  {
     "title": "$GK Tokens",
     "url": "/wiki/gk-tokens.html",
     "desc": "Reward token earned through staking NFTs or other mechanics.",
@@ -620,6 +590,12 @@
     "tags": [
       "gk",
       "tokens"
+    ],
+    "aliases": [
+      {
+        "title": "$GK Token",
+        "url": "/wiki/gk-token.html"
+      }
     ]
   },
   {
@@ -644,16 +620,6 @@
       "one",
       "two",
       "three"
-    ]
-  },
-  {
-    "title": "gkniftyheads",
-    "url": "/wiki/gkniftyheads.html",
-    "desc": "GKniftyHEADS rises as a flagship brand and NFT collection at the heart of the Crypto Moonboys universe, a vivid embodiment of the defiant spirit of the GraffPUN",
-    "category": "Community & People",
-    "emoji": "👥",
-    "tags": [
-      "gkniftyheads"
     ]
   },
   {
@@ -806,16 +772,6 @@
     ]
   },
   {
-    "title": "graffpunks",
-    "url": "/wiki/graffpunks.html",
-    "desc": "The GraffPUNKS are the pulsating core of the Crypto Moonboys universe, a faction that embodies the gritty, rebellious spirit of street art fused with the disrup",
-    "category": "Lore",
-    "emoji": "🤘",
-    "tags": [
-      "graffpunks"
-    ]
-  },
-  {
     "title": "Great Datapocalypse of 2789",
     "url": "/wiki/great-datapocalypse-of-2789.html",
     "desc": "Cataclysmic event in the lore leading to the creation of GKniftyHEADS and Block Topia.",
@@ -929,17 +885,6 @@
       "hodl",
       "warriors",
       "army"
-    ]
-  },
-  {
-    "title": "hodl_warriors",
-    "url": "/wiki/hodl-warriors.html",
-    "desc": "The HODL Warriors are a legendary and formidable army within the Crypto Moonboys universe, an elite force forged through the brutal trials of the Hard Fork Game",
-    "category": "Lore",
-    "emoji": "⚔️",
-    "tags": [
-      "hodl",
-      "warriors"
     ]
   },
   {
@@ -1588,17 +1533,6 @@
     ]
   },
   {
-    "title": "sacred_chain",
-    "url": "/wiki/sacred-chain.html",
-    "desc": "The Sacred Chain is the immutable lifeblood of the Crypto Moonboys universe, a primal blockchain that binds the fractured expanse of Block Topia and all its den",
-    "category": "Concepts",
-    "emoji": "⚔️",
-    "tags": [
-      "sacred",
-      "chain"
-    ]
-  },
-  {
     "title": "Samael.exe",
     "url": "/wiki/samaelexe.html",
     "desc": "Samael.exe is a rogue AI entity haunting the digital expanse of Block Topia, a malevolent force of pure code that operates with chilling precision to destabiliz",
@@ -1867,6 +1801,12 @@
       "bitcoin",
       "kid",
       "army"
+    ],
+    "aliases": [
+      {
+        "title": "Bitcoin Kid Army",
+        "url": "/wiki/bitcoin-kid-army.html"
+      }
     ]
   },
   {
@@ -1987,6 +1927,12 @@
     "emoji": "⚔️",
     "tags": [
       "gkniftyheads"
+    ],
+    "aliases": [
+      {
+        "title": "gkniftyheads",
+        "url": "/wiki/gkniftyheads.html"
+      }
     ]
   },
   {
@@ -1997,6 +1943,12 @@
     "emoji": "🤘",
     "tags": [
       "graffpunks"
+    ],
+    "aliases": [
+      {
+        "title": "graffpunks",
+        "url": "/wiki/graffpunks.html"
+      }
     ]
   },
   {
@@ -2052,6 +2004,12 @@
     "tags": [
       "hodl",
       "warriors"
+    ],
+    "aliases": [
+      {
+        "title": "hodl_warriors",
+        "url": "/wiki/hodl-warriors.html"
+      }
     ]
   },
   {
@@ -2141,6 +2099,12 @@
     "tags": [
       "sacred",
       "chain"
+    ],
+    "aliases": [
+      {
+        "title": "sacred_chain",
+        "url": "/wiki/sacred-chain.html"
+      }
     ]
   },
   {
