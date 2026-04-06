@@ -218,7 +218,7 @@
               '</div>' +
             '</div>';
           }).join('') +
-          '<a href="articles.html" class="btn btn-secondary" style="margin-top:12px">See all battles →</a>' +
+          '<a href="articles.html" class="btn btn-secondary teaser-see-all">See all battles →</a>' +
           '</div>';
       })
       .catch(function () {});

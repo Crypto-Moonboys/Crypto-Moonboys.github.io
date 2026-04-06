@@ -116,7 +116,7 @@
         .catch(function () {});
     }
 
-    el.querySelectorAll('.cite-vote-btn').forEach(function (btn) {
+    Array.prototype.forEach.call(el.querySelectorAll('.cite-vote-btn'), function (btn) {
       btn.addEventListener('click', function () {
         if (!BASE || !FEATURES.CITATION_VOTES || btn.disabled) return;
         btn.disabled = true;
@@ -142,8 +142,8 @@
   // ── Boot ─────────────────────────────────────────────────────
 
   function init() {
-    document.querySelectorAll('.page-like-widget').forEach(initPageLike);
-    document.querySelectorAll('.cite-vote').forEach(initCiteVote);
+    Array.prototype.forEach.call(document.querySelectorAll('.page-like-widget'), initPageLike);
+    Array.prototype.forEach.call(document.querySelectorAll('.cite-vote'), initCiteVote);
   }
 
   if (document.readyState === 'loading') {

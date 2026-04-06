@@ -1311,6 +1311,7 @@ a.hero-stat-link:hover {
 .tc-avatar { width: 24px; height: 24px; border-radius: 50%; flex-shrink: 0; margin-top: 2px; }
 .tc-name   { font-weight: 700; color: var(--color-text); margin-right: 6px; }
 .tc-text   { color: var(--color-text-muted); }
+.teaser-see-all { display: block; margin-top: 12px; text-align: center; font-size: .82rem; }
 
 /* ============================================================
    COMMENTS SECTION
