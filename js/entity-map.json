@@ -1,0 +1,3360 @@
+[
+  {
+    "entity_id": "1m_free_nfts",
+    "canonical_title": "1m_free_nfts",
+    "canonical_url": "/wiki/1m-free-nfts.html",
+    "category": "Concepts",
+    "aliases": [],
+    "tags": [
+      "1m",
+      "free",
+      "nfts"
+    ],
+    "source_urls": [
+      "/wiki/1m-free-nfts.html"
+    ],
+    "alias_candidates": [
+      "1m free nfts"
+    ]
+  },
+  {
+    "entity_id": "1m_free_nfts_drop",
+    "canonical_title": "1M free NFTs drop",
+    "canonical_url": "/wiki/1m-free-nfts-drop.html",
+    "category": "Concepts",
+    "aliases": [],
+    "tags": [
+      "1m",
+      "free",
+      "nfts",
+      "drop"
+    ],
+    "source_urls": [
+      "/wiki/1m-free-nfts-drop.html"
+    ]
+  },
+  {
+    "entity_id": "1m_free_nfts_program",
+    "canonical_title": "1m_free_nfts_program",
+    "canonical_url": "/wiki/1m-free-nfts-program.html",
+    "category": "Community & People",
+    "aliases": [],
+    "tags": [
+      "1m",
+      "free",
+      "nfts",
+      "program"
+    ],
+    "source_urls": [
+      "/wiki/1m-free-nfts-program.html"
+    ],
+    "alias_candidates": [
+      "1m free nfts program"
+    ]
+  },
+  {
+    "entity_id": "1m_free_nfts_programme",
+    "canonical_title": "1m_free_nfts_programme",
+    "canonical_url": "/wiki/1m-free-nfts-programme.html",
+    "category": "Community & People",
+    "aliases": [],
+    "tags": [
+      "1m",
+      "free",
+      "nfts",
+      "programme"
+    ],
+    "source_urls": [
+      "/wiki/1m-free-nfts-programme.html"
+    ],
+    "alias_candidates": [
+      "1m free nfts programme"
+    ]
+  },
+  {
+    "entity_id": "2025_metaverse_launch_party",
+    "canonical_title": "2025 Metaverse Launch Party",
+    "canonical_url": "/wiki/2025-metaverse-launch-party.html",
+    "category": "Lore",
+    "aliases": [],
+    "tags": [
+      "2025",
+      "metaverse",
+      "launch",
+      "party"
+    ],
+    "source_urls": [
+      "/wiki/2025-metaverse-launch-party.html"
+    ]
+  },
+  {
+    "entity_id": "aleema_child_of_the_shard",
+    "canonical_title": "Aleema (Child of the Shard)",
+    "canonical_url": "/wiki/aleema-child-of-the-shard.html",
+    "category": "Lore",
+    "aliases": [],
+    "tags": [
+      "aleema",
+      "child",
+      "shard"
+    ],
+    "source_urls": [
+      "/wiki/aleema-child-of-the-shard.html"
+    ],
+    "alias_candidates": [
+      "aleema child of the shard",
+      "aleema child shard"
+    ]
+  },
+  {
+    "entity_id": "alfie_blaze",
+    "canonical_title": "alfie_blaze",
+    "canonical_url": "/wiki/alfie-blaze.html",
+    "category": "Lore",
+    "aliases": [],
+    "tags": [
+      "alfie",
+      "blaze"
+    ],
+    "source_urls": [
+      "/wiki/alfie-blaze.html"
+    ],
+    "alias_candidates": [
+      "alfie blaze"
+    ]
+  },
+  {
+    "entity_id": "alfie_the_bitcoin_kid_blaze",
+    "canonical_title": "Alfie 'The Bitcoin Kid' Blaze",
+    "canonical_url": "/wiki/alfie-the-bitcoin-kid-blaze.html",
+    "category": "Lore",
+    "aliases": [
+      "Alfie 'Bitcoin Kid' Blaze"
+    ],
+    "tags": [
+      "alfie",
+      "bitcoin",
+      "kid",
+      "blaze"
+    ],
+    "source_urls": [
+      "/wiki/alfie-the-bitcoin-kid-blaze.html",
+      "/wiki/alfie-bitcoin-kid-blaze.html"
+    ],
+    "alias_candidates": [
+      "alfie bitcoin kid blaze",
+      "alfie the bitcoin kid blaze"
+    ]
+  },
+  {
+    "entity_id": "altcoins",
+    "canonical_title": "Altcoins",
+    "canonical_url": "/wiki/altcoins.html",
+    "category": "Cryptocurrencies",
+    "aliases": [],
+    "tags": [
+      "altcoins"
+    ],
+    "source_urls": [
+      "/wiki/altcoins.html"
+    ]
+  },
+  {
+    "entity_id": "atomichub_graffpunks_collection",
+    "canonical_title": "AtomicHub Graffpunks Collection",
+    "canonical_url": "/wiki/atomichub-graffpunks-collection.html",
+    "category": "Community & People",
+    "aliases": [],
+    "tags": [
+      "atomichub",
+      "graffpunks",
+      "collection"
+    ],
+    "source_urls": [
+      "/wiki/atomichub-graffpunks-collection.html"
+    ]
+  },
+  {
+    "entity_id": "ava_chen",
+    "canonical_title": "Ava Chen",
+    "canonical_url": "/wiki/ava-chen.html",
+    "category": "Lore",
+    "aliases": [],
+    "tags": [
+      "ava",
+      "chen"
+    ],
+    "source_urls": [
+      "/wiki/ava-chen.html"
+    ]
+  },
+  {
+    "entity_id": "battlemech_blast",
+    "canonical_title": "battlemech_blast",
+    "canonical_url": "/wiki/battlemech-blast.html",
+    "category": "Lore",
+    "aliases": [],
+    "tags": [
+      "battlemech",
+      "blast"
+    ],
+    "source_urls": [
+      "/wiki/battlemech-blast.html"
+    ],
+    "alias_candidates": [
+      "battlemech blast"
+    ]
+  },
+  {
+    "entity_id": "bear_market_siege",
+    "canonical_title": "The Bear Market Siege",
+    "canonical_url": "/wiki/bear-market-siege.html",
+    "category": "Lore",
+    "aliases": [],
+    "tags": [
+      "bear",
+      "market",
+      "siege"
+    ],
+    "source_urls": [
+      "/wiki/bear-market-siege.html"
+    ],
+    "alias_candidates": [
+      "Bear Market Siege",
+      "bear market siege"
+    ]
+  },
+  {
+    "entity_id": "billy_the_goat_kid",
+    "canonical_title": "Billy the Goat Kid",
+    "canonical_url": "/wiki/billy-the-goat-kid.html",
+    "category": "Lore",
+    "aliases": [],
+    "tags": [
+      "billy",
+      "goat",
+      "kid"
+    ],
+    "source_urls": [
+      "/wiki/billy-the-goat-kid.html"
+    ],
+    "alias_candidates": [
+      "billy goat kid"
+    ]
+  },
+  {
+    "entity_id": "bit_cap_5000",
+    "canonical_title": "Bit-Cap 5000",
+    "canonical_url": "/wiki/bit-cap-5000.html",
+    "category": "Lore",
+    "aliases": [],
+    "tags": [
+      "bit",
+      "cap",
+      "5000"
+    ],
+    "source_urls": [
+      "/wiki/bit-cap-5000.html"
+    ],
+    "alias_candidates": [
+      "bit cap 5000"
+    ]
+  },
+  {
+    "entity_id": "bitcoin",
+    "canonical_title": "Bitcoin (BTC)",
+    "canonical_url": "/wiki/bitcoin.html",
+    "category": "Cryptocurrencies",
+    "aliases": [],
+    "tags": [
+      "bitcoin",
+      "btc"
+    ],
+    "source_urls": [
+      "/wiki/bitcoin.html"
+    ],
+    "alias_candidates": [
+      "bitcoin",
+      "bitcoin btc"
+    ]
+  },
+  {
+    "entity_id": "bitcoin_kids",
+    "canonical_title": "bitcoin_kids",
+    "canonical_url": "/wiki/bitcoin-kids.html",
+    "category": "Lore",
+    "aliases": [],
+    "tags": [
+      "bitcoin",
+      "kids"
+    ],
+    "source_urls": [
+      "/wiki/bitcoin-kids.html"
+    ],
+    "alias_candidates": [
+      "bitcoin kids"
+    ]
+  },
+  {
+    "entity_id": "bitcoin_x_kids",
+    "canonical_title": "bitcoin_x_kids",
+    "canonical_url": "/wiki/bitcoin-x-kids.html",
+    "category": "Lore",
+    "aliases": [],
+    "tags": [
+      "bitcoin",
+      "kids"
+    ],
+    "source_urls": [
+      "/wiki/bitcoin-x-kids.html"
+    ],
+    "alias_candidates": [
+      "bitcoin kids",
+      "bitcoin x kids"
+    ]
+  },
+  {
+    "entity_id": "block_node_defenders",
+    "canonical_title": "Block Node Defenders",
+    "canonical_url": "/wiki/block-node-defenders.html",
+    "category": "Lore",
+    "aliases": [],
+    "tags": [
+      "block",
+      "node",
+      "defenders"
+    ],
+    "source_urls": [
+      "/wiki/block-node-defenders.html"
+    ]
+  },
+  {
+    "entity_id": "block_topia",
+    "canonical_title": "block_topia",
+    "canonical_url": "/wiki/block-topia.html",
+    "category": "Concepts",
+    "aliases": [],
+    "tags": [
+      "block",
+      "topia"
+    ],
+    "source_urls": [
+      "/wiki/block-topia.html"
+    ],
+    "alias_candidates": [
+      "block topia"
+    ]
+  },
+  {
+    "entity_id": "blockchain",
+    "canonical_title": "Blockchain Technology",
+    "canonical_url": "/wiki/blockchain.html",
+    "category": "Technology",
+    "aliases": [],
+    "tags": [
+      "blockchain",
+      "technology"
+    ],
+    "source_urls": [
+      "/wiki/blockchain.html"
+    ],
+    "alias_candidates": [
+      "blockchain"
+    ]
+  },
+  {
+    "entity_id": "bone_idol_ink",
+    "canonical_title": "Bone Idol Ink",
+    "canonical_url": "/wiki/bone-idol-ink.html",
+    "category": "Lore",
+    "aliases": [],
+    "tags": [
+      "bone",
+      "idol",
+      "ink"
+    ],
+    "source_urls": [
+      "/wiki/bone-idol-ink.html"
+    ]
+  },
+  {
+    "entity_id": "burn_to_earn",
+    "canonical_title": "burn_to_earn",
+    "canonical_url": "/wiki/burn-to-earn.html",
+    "category": "Concepts",
+    "aliases": [],
+    "tags": [
+      "burn",
+      "earn"
+    ],
+    "source_urls": [
+      "/wiki/burn-to-earn.html"
+    ],
+    "alias_candidates": [
+      "burn earn",
+      "burn to earn"
+    ]
+  },
+  {
+    "entity_id": "canvas_clash",
+    "canonical_title": "canvas_clash",
+    "canonical_url": "/wiki/canvas-clash.html",
+    "category": "Lore",
+    "aliases": [],
+    "tags": [
+      "canvas",
+      "clash"
+    ],
+    "source_urls": [
+      "/wiki/canvas-clash.html"
+    ],
+    "alias_candidates": [
+      "canvas clash"
+    ]
+  },
+  {
+    "entity_id": "charlie_buster",
+    "canonical_title": "charlie_buster",
+    "canonical_url": "/wiki/charlie-buster.html",
+    "category": "Lore",
+    "aliases": [],
+    "tags": [
+      "charlie",
+      "buster"
+    ],
+    "source_urls": [
+      "/wiki/charlie-buster.html"
+    ],
+    "alias_candidates": [
+      "charlie buster"
+    ]
+  },
+  {
+    "entity_id": "croydon_tower_blocks",
+    "canonical_title": "Croydon Tower Blocks",
+    "canonical_url": "/wiki/croydon-tower-blocks.html",
+    "category": "Lore",
+    "aliases": [],
+    "tags": [
+      "croydon",
+      "tower",
+      "blocks"
+    ],
+    "source_urls": [
+      "/wiki/croydon-tower-blocks.html"
+    ]
+  },
+  {
+    "entity_id": "crypto_moonboys",
+    "canonical_title": "crypto_moonboys",
+    "canonical_url": "/wiki/crypto-moonboys.html",
+    "category": "Community & People",
+    "aliases": [],
+    "tags": [
+      "crypto",
+      "moonboys"
+    ],
+    "source_urls": [
+      "/wiki/crypto-moonboys.html"
+    ],
+    "alias_candidates": [
+      "crypto moonboys"
+    ]
+  },
+  {
+    "entity_id": "darren_cullen",
+    "canonical_title": "darren_cullen",
+    "canonical_url": "/wiki/darren-cullen.html",
+    "category": "Concepts",
+    "aliases": [],
+    "tags": [
+      "darren",
+      "cullen"
+    ],
+    "source_urls": [
+      "/wiki/darren-cullen.html"
+    ],
+    "alias_candidates": [
+      "darren cullen"
+    ]
+  },
+  {
+    "entity_id": "darren_cullen_ser",
+    "canonical_title": "Darren Cullen (SER)",
+    "canonical_url": "/wiki/darren-cullen-ser.html",
+    "category": "Lore",
+    "aliases": [],
+    "tags": [
+      "darren",
+      "cullen",
+      "ser"
+    ],
+    "source_urls": [
+      "/wiki/darren-cullen-ser.html"
+    ],
+    "alias_candidates": [
+      "darren cullen ser"
+    ]
+  },
+  {
+    "entity_id": "darren_cullen_ser_real",
+    "canonical_title": "Darren Cullen (SER) - Real",
+    "canonical_url": "/wiki/darren-cullen-ser-real.html",
+    "category": "Concepts",
+    "aliases": [],
+    "tags": [
+      "darren",
+      "cullen",
+      "ser",
+      "real"
+    ],
+    "source_urls": [
+      "/wiki/darren-cullen-ser-real.html"
+    ],
+    "alias_candidates": [
+      "darren cullen ser real"
+    ]
+  },
+  {
+    "entity_id": "decentraland_events",
+    "canonical_title": "Decentraland Events",
+    "canonical_url": "/wiki/decentraland-events.html",
+    "category": "Lore",
+    "aliases": [],
+    "tags": [
+      "decentraland",
+      "events"
+    ],
+    "source_urls": [
+      "/wiki/decentraland-events.html"
+    ]
+  },
+  {
+    "entity_id": "defi",
+    "canonical_title": "DeFi (Decentralised Finance)",
+    "canonical_url": "/wiki/defi.html",
+    "category": "Concepts",
+    "aliases": [],
+    "tags": [
+      "defi",
+      "decentralised",
+      "finance"
+    ],
+    "source_urls": [
+      "/wiki/defi.html"
+    ],
+    "alias_candidates": [
+      "defi",
+      "defi decentralised finance"
+    ]
+  },
+  {
+    "entity_id": "delicious_again_pete",
+    "canonical_title": "Delicious Again Pete",
+    "canonical_url": "/wiki/delicious-again-pete.html",
+    "category": "Lore",
+    "aliases": [],
+    "tags": [
+      "delicious",
+      "again",
+      "pete"
+    ],
+    "source_urls": [
+      "/wiki/delicious-again-pete.html"
+    ]
+  },
+  {
+    "entity_id": "diamond_hands",
+    "canonical_title": "Diamond Hands",
+    "canonical_url": "/wiki/diamond-hands.html",
+    "category": "Lore",
+    "aliases": [],
+    "tags": [
+      "diamond",
+      "hands"
+    ],
+    "source_urls": [
+      "/wiki/diamond-hands.html"
+    ]
+  },
+  {
+    "entity_id": "dragan_volkov",
+    "canonical_title": "Dragan Volkov",
+    "canonical_url": "/wiki/dragan-volkov.html",
+    "category": "Lore",
+    "aliases": [],
+    "tags": [
+      "dragan",
+      "volkov"
+    ],
+    "source_urls": [
+      "/wiki/dragan-volkov.html"
+    ]
+  },
+  {
+    "entity_id": "dream_sovereign",
+    "canonical_title": "dream_sovereign",
+    "canonical_url": "/wiki/dream-sovereign.html",
+    "category": "Concepts",
+    "aliases": [],
+    "tags": [
+      "dream",
+      "sovereign"
+    ],
+    "source_urls": [
+      "/wiki/dream-sovereign.html"
+    ],
+    "alias_candidates": [
+      "dream sovereign"
+    ]
+  },
+  {
+    "entity_id": "elder_codex_7",
+    "canonical_title": "Elder Codex-7",
+    "canonical_url": "/wiki/elder-codex-7.html",
+    "category": "Lore",
+    "aliases": [],
+    "tags": [
+      "elder",
+      "codex"
+    ],
+    "source_urls": [
+      "/wiki/elder-codex-7.html"
+    ],
+    "alias_candidates": [
+      "elder codex",
+      "elder codex 7"
+    ]
+  },
+  {
+    "entity_id": "ethereum",
+    "canonical_title": "Ethereum (ETH)",
+    "canonical_url": "/wiki/ethereum.html",
+    "category": "Cryptocurrencies",
+    "aliases": [],
+    "tags": [
+      "ethereum",
+      "eth"
+    ],
+    "source_urls": [
+      "/wiki/ethereum.html"
+    ],
+    "alias_candidates": [
+      "ethereum",
+      "ethereum eth"
+    ]
+  },
+  {
+    "entity_id": "exchanges",
+    "canonical_title": "Crypto Exchanges",
+    "canonical_url": "/wiki/exchanges.html",
+    "category": "Tools & Platforms",
+    "aliases": [],
+    "tags": [
+      "crypto",
+      "exchanges"
+    ],
+    "source_urls": [
+      "/wiki/exchanges.html"
+    ],
+    "alias_candidates": [
+      "exchanges"
+    ]
+  },
+  {
+    "entity_id": "fomo_plague",
+    "canonical_title": "The FOMO Plague",
+    "canonical_url": "/wiki/fomo-plague.html",
+    "category": "Lore",
+    "aliases": [],
+    "tags": [
+      "fomo",
+      "plague"
+    ],
+    "source_urls": [
+      "/wiki/fomo-plague.html"
+    ],
+    "alias_candidates": [
+      "FOMO Plague",
+      "fomo plague"
+    ]
+  },
+  {
+    "entity_id": "forkborn_collective",
+    "canonical_title": "Forkborn Collective",
+    "canonical_url": "/wiki/forkborn-collective.html",
+    "category": "Lore",
+    "aliases": [],
+    "tags": [
+      "forkborn",
+      "collective"
+    ],
+    "source_urls": [
+      "/wiki/forkborn-collective.html"
+    ]
+  },
+  {
+    "entity_id": "forklord_you",
+    "canonical_title": "Forklord You",
+    "canonical_url": "/wiki/forklord-you.html",
+    "category": "Lore",
+    "aliases": [],
+    "tags": [
+      "forklord",
+      "you"
+    ],
+    "source_urls": [
+      "/wiki/forklord-you.html"
+    ]
+  },
+  {
+    "entity_id": "forksplit",
+    "canonical_title": "Forksplit",
+    "canonical_url": "/wiki/forksplit.html",
+    "category": "Lore",
+    "aliases": [],
+    "tags": [
+      "forksplit"
+    ],
+    "source_urls": [
+      "/wiki/forksplit.html"
+    ]
+  },
+  {
+    "entity_id": "games4punks_telegram",
+    "canonical_title": "games4punks_telegram",
+    "canonical_url": "/wiki/games4punks-telegram.html",
+    "category": "Gaming",
+    "aliases": [],
+    "tags": [
+      "games4punks",
+      "telegram"
+    ],
+    "source_urls": [
+      "/wiki/games4punks-telegram.html"
+    ],
+    "alias_candidates": [
+      "games4punks telegram"
+    ]
+  },
+  {
+    "entity_id": "games4punks_telegram_games",
+    "canonical_title": "GAMES4PUNKS Telegram Games",
+    "canonical_url": "/wiki/games4punks-telegram-games.html",
+    "category": "Gaming",
+    "aliases": [],
+    "tags": [
+      "games4punks",
+      "telegram",
+      "games"
+    ],
+    "source_urls": [
+      "/wiki/games4punks-telegram-games.html"
+    ]
+  },
+  {
+    "entity_id": "gang_signs",
+    "canonical_title": "gang_signs",
+    "canonical_url": "/wiki/gang-signs.html",
+    "category": "Gaming",
+    "aliases": [],
+    "tags": [
+      "gang",
+      "signs"
+    ],
+    "source_urls": [
+      "/wiki/gang-signs.html"
+    ],
+    "alias_candidates": [
+      "gang signs"
+    ]
+  },
+  {
+    "entity_id": "gang_signs_card_game",
+    "canonical_title": "Gang_Signs_Card_Game",
+    "canonical_url": "/wiki/gang-signs-card-game.html",
+    "category": "Gaming",
+    "aliases": [],
+    "tags": [
+      "gang",
+      "signs",
+      "card",
+      "game"
+    ],
+    "source_urls": [
+      "/wiki/gang-signs-card-game.html"
+    ],
+    "alias_candidates": [
+      "gang signs card game"
+    ]
+  },
+  {
+    "entity_id": "genesis_kernel",
+    "canonical_title": "genesis_kernel",
+    "canonical_url": "/wiki/genesis-kernel.html",
+    "category": "Lore",
+    "aliases": [],
+    "tags": [
+      "genesis",
+      "kernel"
+    ],
+    "source_urls": [
+      "/wiki/genesis-kernel.html"
+    ],
+    "alias_candidates": [
+      "genesis kernel"
+    ]
+  },
+  {
+    "entity_id": "genesis_spray",
+    "canonical_title": "genesis_spray",
+    "canonical_url": "/wiki/genesis-spray.html",
+    "category": "Community & People",
+    "aliases": [],
+    "tags": [
+      "genesis",
+      "spray"
+    ],
+    "source_urls": [
+      "/wiki/genesis-spray.html"
+    ],
+    "alias_candidates": [
+      "genesis spray"
+    ]
+  },
+  {
+    "entity_id": "genesis_spray_drop",
+    "canonical_title": "genesis_spray_drop",
+    "canonical_url": "/wiki/genesis-spray-drop.html",
+    "category": "Lore",
+    "aliases": [],
+    "tags": [
+      "genesis",
+      "spray",
+      "drop"
+    ],
+    "source_urls": [
+      "/wiki/genesis-spray-drop.html"
+    ],
+    "alias_candidates": [
+      "genesis spray drop"
+    ]
+  },
+  {
+    "entity_id": "gk",
+    "canonical_title": "$GK",
+    "canonical_url": "/wiki/gk.html",
+    "category": "Cryptocurrencies",
+    "aliases": [],
+    "tags": [
+      "gk"
+    ],
+    "source_urls": [
+      "/wiki/gk.html"
+    ]
+  },
+  {
+    "entity_id": "gk_tokens",
+    "canonical_title": "$GK Tokens",
+    "canonical_url": "/wiki/gk-tokens.html",
+    "category": "Cryptocurrencies",
+    "aliases": [
+      "$GK Token"
+    ],
+    "tags": [
+      "gk",
+      "tokens"
+    ],
+    "source_urls": [
+      "/wiki/gk-tokens.html",
+      "/wiki/gk-token.html"
+    ],
+    "alias_candidates": [
+      "gk tokens"
+    ]
+  },
+  {
+    "entity_id": "gkniftyheads_phase_one_two_three",
+    "canonical_title": "GKniftyHEADS_Phase_One_Two_Three",
+    "canonical_url": "/wiki/gkniftyheads-phase-one-two-three.html",
+    "category": "Concepts",
+    "aliases": [],
+    "tags": [
+      "gkniftyheads",
+      "phase",
+      "one",
+      "two",
+      "three"
+    ],
+    "source_urls": [
+      "/wiki/gkniftyheads-phase-one-two-three.html"
+    ],
+    "alias_candidates": [
+      "gkniftyheads phase one two three"
+    ]
+  },
+  {
+    "entity_id": "graffiti_kings",
+    "canonical_title": "Graffiti Kings",
+    "canonical_url": "/wiki/graffiti-kings.html",
+    "category": "Lore",
+    "aliases": [],
+    "tags": [
+      "graffiti",
+      "kings"
+    ],
+    "source_urls": [
+      "/wiki/graffiti-kings.html"
+    ]
+  },
+  {
+    "entity_id": "graffiti_nexus",
+    "canonical_title": "graffiti_nexus",
+    "canonical_url": "/wiki/graffiti-nexus.html",
+    "category": "Concepts",
+    "aliases": [],
+    "tags": [
+      "graffiti",
+      "nexus"
+    ],
+    "source_urls": [
+      "/wiki/graffiti-nexus.html"
+    ],
+    "alias_candidates": [
+      "graffiti nexus"
+    ]
+  },
+  {
+    "entity_id": "graffiti_queens_exhibition",
+    "canonical_title": "Graffiti Queens Exhibition",
+    "canonical_url": "/wiki/graffiti-queens-exhibition.html",
+    "category": "Lore",
+    "aliases": [],
+    "tags": [
+      "graffiti",
+      "queens",
+      "exhibition"
+    ],
+    "source_urls": [
+      "/wiki/graffiti-queens-exhibition.html"
+    ]
+  },
+  {
+    "entity_id": "graffiti_queens_in_decentraland",
+    "canonical_title": "Graffiti Queens in Decentraland",
+    "canonical_url": "/wiki/graffiti-queens-in-decentraland.html",
+    "category": "Lore",
+    "aliases": [],
+    "tags": [
+      "graffiti",
+      "queens",
+      "decentraland"
+    ],
+    "source_urls": [
+      "/wiki/graffiti-queens-in-decentraland.html"
+    ],
+    "alias_candidates": [
+      "graffiti queens decentraland"
+    ]
+  },
+  {
+    "entity_id": "graffitikings",
+    "canonical_title": "graffitikings",
+    "canonical_url": "/wiki/graffitikings.html",
+    "category": "Community & People",
+    "aliases": [],
+    "tags": [
+      "graffitikings"
+    ],
+    "source_urls": [
+      "/wiki/graffitikings.html"
+    ]
+  },
+  {
+    "entity_id": "graffpunks_24_7",
+    "canonical_title": "graffpunks_24_7",
+    "canonical_url": "/wiki/graffpunks-24-7.html",
+    "category": "Gaming",
+    "aliases": [],
+    "tags": [
+      "graffpunks",
+      "24"
+    ],
+    "source_urls": [
+      "/wiki/graffpunks-24-7.html"
+    ],
+    "alias_candidates": [
+      "graffpunks 24",
+      "graffpunks 24 7"
+    ]
+  },
+  {
+    "entity_id": "graffpunks_24_7_radio",
+    "canonical_title": "graffpunks_24_7_radio",
+    "canonical_url": "/wiki/graffpunks-24-7-radio.html",
+    "category": "Gaming",
+    "aliases": [],
+    "tags": [
+      "graffpunks",
+      "24",
+      "radio"
+    ],
+    "source_urls": [
+      "/wiki/graffpunks-24-7-radio.html"
+    ],
+    "alias_candidates": [
+      "graffpunks 24 7 radio",
+      "graffpunks 24 radio"
+    ]
+  },
+  {
+    "entity_id": "graffpunks_247",
+    "canonical_title": "graffpunks_247",
+    "canonical_url": "/wiki/graffpunks-247.html",
+    "category": "Concepts",
+    "aliases": [],
+    "tags": [
+      "graffpunks",
+      "247"
+    ],
+    "source_urls": [
+      "/wiki/graffpunks-247.html"
+    ],
+    "alias_candidates": [
+      "graffpunks 247"
+    ]
+  },
+  {
+    "entity_id": "graffpunks_247_blockchain_radio_station",
+    "canonical_title": "GraffPUNKS 24/7 Blockchain Radio Station",
+    "canonical_url": "/wiki/graffpunks-247-blockchain-radio-station.html",
+    "category": "Community & People",
+    "aliases": [],
+    "tags": [
+      "graffpunks",
+      "24",
+      "blockchain",
+      "radio",
+      "station"
+    ],
+    "source_urls": [
+      "/wiki/graffpunks-247-blockchain-radio-station.html"
+    ],
+    "alias_candidates": [
+      "graffpunks 24 blockchain radio station",
+      "graffpunks 247 blockchain radio station"
+    ]
+  },
+  {
+    "entity_id": "graffpunks_247_radio",
+    "canonical_title": "graffpunks_247_radio",
+    "canonical_url": "/wiki/graffpunks-247-radio.html",
+    "category": "Concepts",
+    "aliases": [],
+    "tags": [
+      "graffpunks",
+      "247",
+      "radio"
+    ],
+    "source_urls": [
+      "/wiki/graffpunks-247-radio.html"
+    ],
+    "alias_candidates": [
+      "graffpunks 247 radio"
+    ]
+  },
+  {
+    "entity_id": "graffpunks_collection",
+    "canonical_title": "GraffPUNKS_Collection",
+    "canonical_url": "/wiki/graffpunks-collection.html",
+    "category": "Community & People",
+    "aliases": [],
+    "tags": [
+      "graffpunks",
+      "collection"
+    ],
+    "source_urls": [
+      "/wiki/graffpunks-collection.html"
+    ],
+    "alias_candidates": [
+      "graffpunks collection"
+    ]
+  },
+  {
+    "entity_id": "graffpunks_network",
+    "canonical_title": "graffpunks_network",
+    "canonical_url": "/wiki/graffpunks-network.html",
+    "category": "Concepts",
+    "aliases": [],
+    "tags": [
+      "graffpunks",
+      "network"
+    ],
+    "source_urls": [
+      "/wiki/graffpunks-network.html"
+    ],
+    "alias_candidates": [
+      "graffpunks network"
+    ]
+  },
+  {
+    "entity_id": "graffpunks_nfts",
+    "canonical_title": "graffpunks_nfts",
+    "canonical_url": "/wiki/graffpunks-nfts.html",
+    "category": "Community & People",
+    "aliases": [],
+    "tags": [
+      "graffpunks",
+      "nfts"
+    ],
+    "source_urls": [
+      "/wiki/graffpunks-nfts.html"
+    ],
+    "alias_candidates": [
+      "graffpunks nfts"
+    ]
+  },
+  {
+    "entity_id": "great_datapocalypse_of_2789",
+    "canonical_title": "Great Datapocalypse of 2789",
+    "canonical_url": "/wiki/great-datapocalypse-of-2789.html",
+    "category": "Lore",
+    "aliases": [],
+    "tags": [
+      "great",
+      "datapocalypse",
+      "2789"
+    ],
+    "source_urls": [
+      "/wiki/great-datapocalypse-of-2789.html"
+    ],
+    "alias_candidates": [
+      "great datapocalypse 2789"
+    ]
+  },
+  {
+    "entity_id": "grit",
+    "canonical_title": "GRIT",
+    "canonical_url": "/wiki/grit.html",
+    "category": "Lore",
+    "aliases": [],
+    "tags": [
+      "grit"
+    ],
+    "source_urls": [
+      "/wiki/grit.html"
+    ]
+  },
+  {
+    "entity_id": "grit42",
+    "canonical_title": "Grit42",
+    "canonical_url": "/wiki/grit42.html",
+    "category": "Lore",
+    "aliases": [],
+    "tags": [
+      "grit42"
+    ],
+    "source_urls": [
+      "/wiki/grit42.html"
+    ]
+  },
+  {
+    "entity_id": "hard_fork_games",
+    "canonical_title": "hard_fork_games",
+    "canonical_url": "/wiki/hard-fork-games.html",
+    "category": "Gaming",
+    "aliases": [],
+    "tags": [
+      "hard",
+      "fork",
+      "games"
+    ],
+    "source_urls": [
+      "/wiki/hard-fork-games.html"
+    ],
+    "alias_candidates": [
+      "hard fork games"
+    ]
+  },
+  {
+    "entity_id": "hard_fork_games_event",
+    "canonical_title": "Hard Fork Games Event",
+    "canonical_url": "/wiki/hard-fork-games-event.html",
+    "category": "Lore",
+    "aliases": [],
+    "tags": [
+      "hard",
+      "fork",
+      "games",
+      "event"
+    ],
+    "source_urls": [
+      "/wiki/hard-fork-games-event.html"
+    ]
+  },
+  {
+    "entity_id": "hard_fork_games_game",
+    "canonical_title": "hard_fork_games_game",
+    "canonical_url": "/wiki/hard-fork-games-game.html",
+    "category": "Gaming",
+    "aliases": [],
+    "tags": [
+      "hard",
+      "fork",
+      "games",
+      "game"
+    ],
+    "source_urls": [
+      "/wiki/hard-fork-games-game.html"
+    ],
+    "alias_candidates": [
+      "hard fork games game"
+    ]
+  },
+  {
+    "entity_id": "harrison_rift",
+    "canonical_title": "harrison_rift",
+    "canonical_url": "/wiki/harrison-rift.html",
+    "category": "Lore",
+    "aliases": [],
+    "tags": [
+      "harrison",
+      "rift"
+    ],
+    "source_urls": [
+      "/wiki/harrison-rift.html"
+    ],
+    "alias_candidates": [
+      "harrison rift"
+    ]
+  },
+  {
+    "entity_id": "head_tags",
+    "canonical_title": "head_tags",
+    "canonical_url": "/wiki/head-tags.html",
+    "category": "Community & People",
+    "aliases": [],
+    "tags": [
+      "head",
+      "tags"
+    ],
+    "source_urls": [
+      "/wiki/head-tags.html"
+    ],
+    "alias_candidates": [
+      "head tags"
+    ]
+  },
+  {
+    "entity_id": "hex_tagger_prime",
+    "canonical_title": "HEX-TAGGER PRIME",
+    "canonical_url": "/wiki/hex-tagger-prime.html",
+    "category": "Lore",
+    "aliases": [],
+    "tags": [
+      "hex",
+      "tagger",
+      "prime"
+    ],
+    "source_urls": [
+      "/wiki/hex-tagger-prime.html"
+    ],
+    "alias_candidates": [
+      "hex tagger prime"
+    ]
+  },
+  {
+    "entity_id": "hodl_warriors_army",
+    "canonical_title": "HODL Warriors Army",
+    "canonical_url": "/wiki/hodl-warriors-army.html",
+    "category": "Lore",
+    "aliases": [],
+    "tags": [
+      "hodl",
+      "warriors",
+      "army"
+    ],
+    "source_urls": [
+      "/wiki/hodl-warriors-army.html"
+    ]
+  },
+  {
+    "entity_id": "hodl_wars",
+    "canonical_title": "hodl_wars",
+    "canonical_url": "/wiki/hodl-wars.html",
+    "category": "Gaming",
+    "aliases": [],
+    "tags": [
+      "hodl",
+      "wars"
+    ],
+    "source_urls": [
+      "/wiki/hodl-wars.html"
+    ],
+    "alias_candidates": [
+      "hodl wars"
+    ]
+  },
+  {
+    "entity_id": "hodl_wars_game",
+    "canonical_title": "hodl_wars_game",
+    "canonical_url": "/wiki/hodl-wars-game.html",
+    "category": "Gaming",
+    "aliases": [],
+    "tags": [
+      "hodl",
+      "wars",
+      "game"
+    ],
+    "source_urls": [
+      "/wiki/hodl-wars-game.html"
+    ],
+    "alias_candidates": [
+      "hodl wars game"
+    ]
+  },
+  {
+    "entity_id": "hodl_x_warriors",
+    "canonical_title": "hodl_x_warriors",
+    "canonical_url": "/wiki/hodl-x-warriors.html",
+    "category": "Community & People",
+    "aliases": [],
+    "tags": [
+      "hodl",
+      "warriors"
+    ],
+    "source_urls": [
+      "/wiki/hodl-x-warriors.html"
+    ],
+    "alias_candidates": [
+      "hodl warriors",
+      "hodl x warriors"
+    ]
+  },
+  {
+    "entity_id": "ian_harrison",
+    "canonical_title": "ian_harrison",
+    "canonical_url": "/wiki/ian-harrison.html",
+    "category": "Concepts",
+    "aliases": [],
+    "tags": [
+      "ian",
+      "harrison"
+    ],
+    "source_urls": [
+      "/wiki/ian-harrison.html"
+    ],
+    "alias_candidates": [
+      "ian harrison"
+    ]
+  },
+  {
+    "entity_id": "index",
+    "canonical_title": "📚 Wiki Index — Crypto Moonboys Wiki",
+    "canonical_url": "/wiki/index.html",
+    "category": "Lore",
+    "aliases": [],
+    "tags": [
+      "wiki",
+      "index",
+      "crypto",
+      "moonboys"
+    ],
+    "source_urls": [
+      "/wiki/index.html"
+    ],
+    "alias_candidates": [
+      "wiki index crypto moonboys"
+    ]
+  },
+  {
+    "entity_id": "iris_7",
+    "canonical_title": "Iris-7",
+    "canonical_url": "/wiki/iris-7.html",
+    "category": "Lore",
+    "aliases": [],
+    "tags": [
+      "iris"
+    ],
+    "source_urls": [
+      "/wiki/iris-7.html"
+    ],
+    "alias_candidates": [
+      "iris 7"
+    ]
+  },
+  {
+    "entity_id": "jillian_godsil",
+    "canonical_title": "jillian_godsil",
+    "canonical_url": "/wiki/jillian-godsil.html",
+    "category": "Concepts",
+    "aliases": [],
+    "tags": [
+      "jillian",
+      "godsil"
+    ],
+    "source_urls": [
+      "/wiki/jillian-godsil.html"
+    ],
+    "alias_candidates": [
+      "jillian godsil"
+    ]
+  },
+  {
+    "entity_id": "jodie_zoom_2000",
+    "canonical_title": "Jodie ZOOM 2000",
+    "canonical_url": "/wiki/jodie-zoom-2000.html",
+    "category": "Lore",
+    "aliases": [],
+    "tags": [
+      "jodie",
+      "zoom",
+      "2000"
+    ],
+    "source_urls": [
+      "/wiki/jodie-zoom-2000.html"
+    ]
+  },
+  {
+    "entity_id": "jonny_laurence_nelson_tag_records",
+    "canonical_title": "Jonny & Laurence Nelson (TAG Records)",
+    "canonical_url": "/wiki/jonny-laurence-nelson-tag-records.html",
+    "category": "Lore",
+    "aliases": [],
+    "tags": [
+      "jonny",
+      "amp",
+      "laurence",
+      "nelson",
+      "tag",
+      "records"
+    ],
+    "source_urls": [
+      "/wiki/jonny-laurence-nelson-tag-records.html"
+    ],
+    "alias_candidates": [
+      "jonny laurence nelson tag records"
+    ]
+  },
+  {
+    "entity_id": "lady_ink",
+    "canonical_title": "Lady-INK",
+    "canonical_url": "/wiki/lady-ink.html",
+    "category": "Lore",
+    "aliases": [],
+    "tags": [
+      "lady",
+      "ink"
+    ],
+    "source_urls": [
+      "/wiki/lady-ink.html"
+    ],
+    "alias_candidates": [
+      "lady ink"
+    ]
+  },
+  {
+    "entity_id": "leake_street_tunnel",
+    "canonical_title": "Leake Street Tunnel",
+    "canonical_url": "/wiki/leake-street-tunnel.html",
+    "category": "Lore",
+    "aliases": [],
+    "tags": [
+      "leake",
+      "street",
+      "tunnel"
+    ],
+    "source_urls": [
+      "/wiki/leake-street-tunnel.html"
+    ]
+  },
+  {
+    "entity_id": "lfgk",
+    "canonical_title": "$LFGK",
+    "canonical_url": "/wiki/lfgk.html",
+    "category": "Cryptocurrencies",
+    "aliases": [],
+    "tags": [
+      "lfgk"
+    ],
+    "source_urls": [
+      "/wiki/lfgk.html"
+    ],
+    "alias_candidates": [
+      "lfgk"
+    ]
+  },
+  {
+    "entity_id": "lfgk_rewards",
+    "canonical_title": "$LFGK Rewards",
+    "canonical_url": "/wiki/lfgk-rewards.html",
+    "category": "Concepts",
+    "aliases": [],
+    "tags": [
+      "lfgk",
+      "rewards"
+    ],
+    "source_urls": [
+      "/wiki/lfgk-rewards.html"
+    ],
+    "alias_candidates": [
+      "lfgk rewards"
+    ]
+  },
+  {
+    "entity_id": "lfgk_token",
+    "canonical_title": "$LFGK Token",
+    "canonical_url": "/wiki/lfgk-token.html",
+    "category": "Cryptocurrencies",
+    "aliases": [],
+    "tags": [
+      "lfgk",
+      "token"
+    ],
+    "source_urls": [
+      "/wiki/lfgk-token.html"
+    ],
+    "alias_candidates": [
+      "lfgk token"
+    ]
+  },
+  {
+    "entity_id": "loopfiend",
+    "canonical_title": "Loopfiend",
+    "canonical_url": "/wiki/loopfiend.html",
+    "category": "Lore",
+    "aliases": [],
+    "tags": [
+      "loopfiend"
+    ],
+    "source_urls": [
+      "/wiki/loopfiend.html"
+    ]
+  },
+  {
+    "entity_id": "m1ntr_k1ll",
+    "canonical_title": "M1nTr_K1ll",
+    "canonical_url": "/wiki/m1ntr-k1ll.html",
+    "category": "Lore",
+    "aliases": [],
+    "tags": [
+      "m1ntr",
+      "k1ll"
+    ],
+    "source_urls": [
+      "/wiki/m1ntr-k1ll.html"
+    ],
+    "alias_candidates": [
+      "m1ntr k1ll"
+    ]
+  },
+  {
+    "entity_id": "maidstone_base",
+    "canonical_title": "Maidstone Base",
+    "canonical_url": "/wiki/maidstone-base.html",
+    "category": "Lore",
+    "aliases": [],
+    "tags": [
+      "maidstone",
+      "base"
+    ],
+    "source_urls": [
+      "/wiki/maidstone-base.html"
+    ]
+  },
+  {
+    "entity_id": "medium_articles_by_gkniftyheads",
+    "canonical_title": "Medium Articles by @GKniftyHEADS",
+    "canonical_url": "/wiki/medium-articles-by-gkniftyheads.html",
+    "category": "Community & People",
+    "aliases": [],
+    "tags": [
+      "medium",
+      "articles",
+      "gkniftyheads"
+    ],
+    "source_urls": [
+      "/wiki/medium-articles-by-gkniftyheads.html"
+    ],
+    "alias_candidates": [
+      "medium articles by gkniftyheads",
+      "medium articles gkniftyheads"
+    ]
+  },
+  {
+    "entity_id": "medium_articles_by_graffpunks",
+    "canonical_title": "Medium Articles by @GRAFFPUNKS",
+    "canonical_url": "/wiki/medium-articles-by-graffpunks.html",
+    "category": "Community & People",
+    "aliases": [],
+    "tags": [
+      "medium",
+      "articles",
+      "graffpunks"
+    ],
+    "source_urls": [
+      "/wiki/medium-articles-by-graffpunks.html"
+    ],
+    "alias_candidates": [
+      "medium articles by graffpunks",
+      "medium articles graffpunks"
+    ]
+  },
+  {
+    "entity_id": "medium_articles_by_hodlwarriors",
+    "canonical_title": "Medium Articles by @HODLWARRIORS",
+    "canonical_url": "/wiki/medium-articles-by-hodlwarriors.html",
+    "category": "Community & People",
+    "aliases": [],
+    "tags": [
+      "medium",
+      "articles",
+      "hodlwarriors"
+    ],
+    "source_urls": [
+      "/wiki/medium-articles-by-hodlwarriors.html"
+    ],
+    "alias_candidates": [
+      "medium articles by hodlwarriors",
+      "medium articles hodlwarriors"
+    ]
+  },
+  {
+    "entity_id": "medium_articles_by_sercullen",
+    "canonical_title": "Medium Articles by @sercullen",
+    "canonical_url": "/wiki/medium-articles-by-sercullen.html",
+    "category": "Community & People",
+    "aliases": [],
+    "tags": [
+      "medium",
+      "articles",
+      "sercullen"
+    ],
+    "source_urls": [
+      "/wiki/medium-articles-by-sercullen.html"
+    ],
+    "alias_candidates": [
+      "medium articles by sercullen",
+      "medium articles sercullen"
+    ]
+  },
+  {
+    "entity_id": "memecoins",
+    "canonical_title": "Meme Coins",
+    "canonical_url": "/wiki/memecoins.html",
+    "category": "Cryptocurrencies",
+    "aliases": [],
+    "tags": [
+      "meme",
+      "coins"
+    ],
+    "source_urls": [
+      "/wiki/memecoins.html"
+    ],
+    "alias_candidates": [
+      "memecoins"
+    ]
+  },
+  {
+    "entity_id": "metaverse_battles",
+    "canonical_title": "Metaverse battles",
+    "canonical_url": "/wiki/metaverse-battles.html",
+    "category": "Concepts",
+    "aliases": [],
+    "tags": [
+      "metaverse",
+      "battles"
+    ],
+    "source_urls": [
+      "/wiki/metaverse-battles.html"
+    ]
+  },
+  {
+    "entity_id": "metropolis",
+    "canonical_title": "metropolis",
+    "canonical_url": "/wiki/metropolis.html",
+    "category": "Concepts",
+    "aliases": [],
+    "tags": [
+      "metropolis"
+    ],
+    "source_urls": [
+      "/wiki/metropolis.html"
+    ]
+  },
+  {
+    "entity_id": "midevil_hero_arena",
+    "canonical_title": "midevil_hero_arena",
+    "canonical_url": "/wiki/midevil-hero-arena.html",
+    "category": "Gaming",
+    "aliases": [],
+    "tags": [
+      "midevil",
+      "hero",
+      "arena"
+    ],
+    "source_urls": [
+      "/wiki/midevil-hero-arena.html"
+    ],
+    "alias_candidates": [
+      "midevil hero arena"
+    ]
+  },
+  {
+    "entity_id": "midevil_hero_arena_game",
+    "canonical_title": "midevil_hero_arena_game",
+    "canonical_url": "/wiki/midevil-hero-arena-game.html",
+    "category": "Gaming",
+    "aliases": [],
+    "tags": [
+      "midevil",
+      "hero",
+      "arena",
+      "game"
+    ],
+    "source_urls": [
+      "/wiki/midevil-hero-arena-game.html"
+    ],
+    "alias_candidates": [
+      "midevil hero arena game"
+    ]
+  },
+  {
+    "entity_id": "midevilpunks",
+    "canonical_title": "midevilpunks",
+    "canonical_url": "/wiki/midevilpunks.html",
+    "category": "Community & People",
+    "aliases": [],
+    "tags": [
+      "midevilpunks"
+    ],
+    "source_urls": [
+      "/wiki/midevilpunks.html"
+    ]
+  },
+  {
+    "entity_id": "moon_mission",
+    "canonical_title": "Moon Mission",
+    "canonical_url": "/wiki/moon-mission.html",
+    "category": "Lore",
+    "aliases": [],
+    "tags": [
+      "moon",
+      "mission"
+    ],
+    "source_urls": [
+      "/wiki/moon-mission.html"
+    ]
+  },
+  {
+    "entity_id": "nbg",
+    "canonical_title": "nbg",
+    "canonical_url": "/wiki/nbg.html",
+    "category": "Cryptocurrencies",
+    "aliases": [],
+    "tags": [
+      "nbg"
+    ],
+    "source_urls": [
+      "/wiki/nbg.html"
+    ]
+  },
+  {
+    "entity_id": "nbg_token",
+    "canonical_title": "nbg_token",
+    "canonical_url": "/wiki/nbg-token.html",
+    "category": "Cryptocurrencies",
+    "aliases": [],
+    "tags": [
+      "nbg",
+      "token"
+    ],
+    "source_urls": [
+      "/wiki/nbg-token.html"
+    ],
+    "alias_candidates": [
+      "nbg token"
+    ]
+  },
+  {
+    "entity_id": "nbgx",
+    "canonical_title": "nbgx",
+    "canonical_url": "/wiki/nbgx.html",
+    "category": "Cryptocurrencies",
+    "aliases": [],
+    "tags": [
+      "nbgx"
+    ],
+    "source_urls": [
+      "/wiki/nbgx.html"
+    ]
+  },
+  {
+    "entity_id": "nbgx_token",
+    "canonical_title": "nbgx_token",
+    "canonical_url": "/wiki/nbgx-token.html",
+    "category": "Cryptocurrencies",
+    "aliases": [],
+    "tags": [
+      "nbgx",
+      "token"
+    ],
+    "source_urls": [
+      "/wiki/nbgx-token.html"
+    ],
+    "alias_candidates": [
+      "nbgx token"
+    ]
+  },
+  {
+    "entity_id": "neftyblocks_midevilpunks_collection",
+    "canonical_title": "NeftyBlocks Midevilpunks Collection",
+    "canonical_url": "/wiki/neftyblocks-midevilpunks-collection.html",
+    "category": "Community & People",
+    "aliases": [],
+    "tags": [
+      "neftyblocks",
+      "midevilpunks",
+      "collection"
+    ],
+    "source_urls": [
+      "/wiki/neftyblocks-midevilpunks-collection.html"
+    ]
+  },
+  {
+    "entity_id": "nfts",
+    "canonical_title": "NFTs (Non-Fungible Tokens)",
+    "canonical_url": "/wiki/nfts.html",
+    "category": "Concepts",
+    "aliases": [],
+    "tags": [
+      "nfts",
+      "non",
+      "fungible",
+      "tokens"
+    ],
+    "source_urls": [
+      "/wiki/nfts.html"
+    ],
+    "alias_candidates": [
+      "nfts",
+      "nfts non fungible tokens"
+    ]
+  },
+  {
+    "entity_id": "ngmi_chronicles",
+    "canonical_title": "NGMI Chronicles",
+    "canonical_url": "/wiki/ngmi-chronicles.html",
+    "category": "Lore",
+    "aliases": [],
+    "tags": [
+      "ngmi",
+      "chronicles"
+    ],
+    "source_urls": [
+      "/wiki/ngmi-chronicles.html"
+    ]
+  },
+  {
+    "entity_id": "nifty_crowns",
+    "canonical_title": "nifty_crowns",
+    "canonical_url": "/wiki/nifty-crowns.html",
+    "category": "Community & People",
+    "aliases": [],
+    "tags": [
+      "nifty",
+      "crowns"
+    ],
+    "source_urls": [
+      "/wiki/nifty-crowns.html"
+    ],
+    "alias_candidates": [
+      "nifty crowns"
+    ]
+  },
+  {
+    "entity_id": "nine_armies",
+    "canonical_title": "nine_armies",
+    "canonical_url": "/wiki/nine-armies.html",
+    "category": "Lore",
+    "aliases": [],
+    "tags": [
+      "nine",
+      "armies"
+    ],
+    "source_urls": [
+      "/wiki/nine-armies.html"
+    ],
+    "alias_candidates": [
+      "nine armies"
+    ]
+  },
+  {
+    "entity_id": "no_ball_games_nbg",
+    "canonical_title": "No Ball Games (NBG)",
+    "canonical_url": "/wiki/no-ball-games-nbg.html",
+    "category": "Community & People",
+    "aliases": [],
+    "tags": [
+      "no",
+      "ball",
+      "games",
+      "nbg"
+    ],
+    "source_urls": [
+      "/wiki/no-ball-games-nbg.html"
+    ],
+    "alias_candidates": [
+      "no ball games nbg"
+    ]
+  },
+  {
+    "entity_id": "no_ball_games_nbg_collection",
+    "canonical_title": "No Ball Games (NBG) Collection",
+    "canonical_url": "/wiki/no-ball-games-nbg-collection.html",
+    "category": "Community & People",
+    "aliases": [],
+    "tags": [
+      "no",
+      "ball",
+      "games",
+      "nbg",
+      "collection"
+    ],
+    "source_urls": [
+      "/wiki/no-ball-games-nbg-collection.html"
+    ],
+    "alias_candidates": [
+      "no ball games nbg collection"
+    ]
+  },
+  {
+    "entity_id": "null_the_prophet",
+    "canonical_title": "null_the_prophet",
+    "canonical_url": "/wiki/null-the-prophet.html",
+    "category": "Lore",
+    "aliases": [],
+    "tags": [
+      "null",
+      "prophet"
+    ],
+    "source_urls": [
+      "/wiki/null-the-prophet.html"
+    ],
+    "alias_candidates": [
+      "null prophet",
+      "null the prophet"
+    ]
+  },
+  {
+    "entity_id": "one_million_free_nfts",
+    "canonical_title": "one_million_free_nfts",
+    "canonical_url": "/wiki/one-million-free-nfts.html",
+    "category": "Community & People",
+    "aliases": [],
+    "tags": [
+      "one",
+      "million",
+      "free",
+      "nfts"
+    ],
+    "source_urls": [
+      "/wiki/one-million-free-nfts.html"
+    ],
+    "alias_candidates": [
+      "one million free nfts"
+    ]
+  },
+  {
+    "entity_id": "paper_hands",
+    "canonical_title": "Paper Hands",
+    "canonical_url": "/wiki/paper-hands.html",
+    "category": "Lore",
+    "aliases": [],
+    "tags": [
+      "paper",
+      "hands"
+    ],
+    "source_urls": [
+      "/wiki/paper-hands.html"
+    ]
+  },
+  {
+    "entity_id": "patchwork",
+    "canonical_title": "Patchwork",
+    "canonical_url": "/wiki/patchwork.html",
+    "category": "Lore",
+    "aliases": [],
+    "tags": [
+      "patchwork"
+    ],
+    "source_urls": [
+      "/wiki/patchwork.html"
+    ]
+  },
+  {
+    "entity_id": "phygital_prints",
+    "canonical_title": "Phygital prints",
+    "canonical_url": "/wiki/phygital-prints.html",
+    "category": "Concepts",
+    "aliases": [],
+    "tags": [
+      "phygital",
+      "prints"
+    ],
+    "source_urls": [
+      "/wiki/phygital-prints.html"
+    ]
+  },
+  {
+    "entity_id": "playable_nft_murals",
+    "canonical_title": "Playable NFT murals",
+    "canonical_url": "/wiki/playable-nft-murals.html",
+    "category": "Concepts",
+    "aliases": [],
+    "tags": [
+      "playable",
+      "nft",
+      "murals"
+    ],
+    "source_urls": [
+      "/wiki/playable-nft-murals.html"
+    ]
+  },
+  {
+    "entity_id": "pmsl",
+    "canonical_title": "pmsl",
+    "canonical_url": "/wiki/pmsl.html",
+    "category": "Cryptocurrencies",
+    "aliases": [],
+    "tags": [
+      "pmsl"
+    ],
+    "source_urls": [
+      "/wiki/pmsl.html"
+    ]
+  },
+  {
+    "entity_id": "pmsl_token",
+    "canonical_title": "pmsl_token",
+    "canonical_url": "/wiki/pmsl-token.html",
+    "category": "Cryptocurrencies",
+    "aliases": [],
+    "tags": [
+      "pmsl",
+      "token"
+    ],
+    "source_urls": [
+      "/wiki/pmsl-token.html"
+    ],
+    "alias_candidates": [
+      "pmsl token"
+    ]
+  },
+  {
+    "entity_id": "punk",
+    "canonical_title": "punk",
+    "canonical_url": "/wiki/punk.html",
+    "category": "Cryptocurrencies",
+    "aliases": [],
+    "tags": [
+      "punk"
+    ],
+    "source_urls": [
+      "/wiki/punk.html"
+    ]
+  },
+  {
+    "entity_id": "punk_coin",
+    "canonical_title": "PUNK Coin",
+    "canonical_url": "/wiki/punk-coin.html",
+    "category": "Lore",
+    "aliases": [],
+    "tags": [
+      "punk",
+      "coin"
+    ],
+    "source_urls": [
+      "/wiki/punk-coin.html"
+    ]
+  },
+  {
+    "entity_id": "punk_token",
+    "canonical_title": "punk_token",
+    "canonical_url": "/wiki/punk-token.html",
+    "category": "Cryptocurrencies",
+    "aliases": [],
+    "tags": [
+      "punk",
+      "token"
+    ],
+    "source_urls": [
+      "/wiki/punk-token.html"
+    ],
+    "alias_candidates": [
+      "punk token"
+    ]
+  },
+  {
+    "entity_id": "pyralith",
+    "canonical_title": "PYRALITH",
+    "canonical_url": "/wiki/pyralith.html",
+    "category": "Lore",
+    "aliases": [],
+    "tags": [
+      "pyralith"
+    ],
+    "source_urls": [
+      "/wiki/pyralith.html"
+    ]
+  },
+  {
+    "entity_id": "queen_sarah_p_fly",
+    "canonical_title": "Queen Sarah P-fly",
+    "canonical_url": "/wiki/queen-sarah-p-fly.html",
+    "category": "Lore",
+    "aliases": [],
+    "tags": [
+      "queen",
+      "sarah",
+      "fly"
+    ],
+    "source_urls": [
+      "/wiki/queen-sarah-p-fly.html"
+    ],
+    "alias_candidates": [
+      "queen sarah fly",
+      "queen sarah p fly"
+    ]
+  },
+  {
+    "entity_id": "queen_sarah_pfly",
+    "canonical_title": "queen_sarah_pfly",
+    "canonical_url": "/wiki/queen-sarah-pfly.html",
+    "category": "Lore",
+    "aliases": [],
+    "tags": [
+      "queen",
+      "sarah",
+      "pfly"
+    ],
+    "source_urls": [
+      "/wiki/queen-sarah-pfly.html"
+    ],
+    "alias_candidates": [
+      "queen sarah pfly"
+    ]
+  },
+  {
+    "entity_id": "quell",
+    "canonical_title": "Quell",
+    "canonical_url": "/wiki/quell.html",
+    "category": "Lore",
+    "aliases": [],
+    "tags": [
+      "quell"
+    ],
+    "source_urls": [
+      "/wiki/quell.html"
+    ]
+  },
+  {
+    "entity_id": "rave_relics",
+    "canonical_title": "rave_relics",
+    "canonical_url": "/wiki/rave-relics.html",
+    "category": "Community & People",
+    "aliases": [],
+    "tags": [
+      "rave",
+      "relics"
+    ],
+    "source_urls": [
+      "/wiki/rave-relics.html"
+    ],
+    "alias_candidates": [
+      "rave relics"
+    ]
+  },
+  {
+    "entity_id": "rug_pull_wars",
+    "canonical_title": "Rug Pull Wars",
+    "canonical_url": "/wiki/rug-pull-wars.html",
+    "category": "Lore",
+    "aliases": [],
+    "tags": [
+      "rug",
+      "pull",
+      "wars"
+    ],
+    "source_urls": [
+      "/wiki/rug-pull-wars.html"
+    ]
+  },
+  {
+    "entity_id": "rune_tag",
+    "canonical_title": "Rune Tag",
+    "canonical_url": "/wiki/rune-tag.html",
+    "category": "Lore",
+    "aliases": [],
+    "tags": [
+      "rune",
+      "tag"
+    ],
+    "source_urls": [
+      "/wiki/rune-tag.html"
+    ]
+  },
+  {
+    "entity_id": "samaelexe",
+    "canonical_title": "Samael.exe",
+    "canonical_url": "/wiki/samaelexe.html",
+    "category": "Lore",
+    "aliases": [],
+    "tags": [
+      "samael",
+      "exe"
+    ],
+    "source_urls": [
+      "/wiki/samaelexe.html"
+    ],
+    "alias_candidates": [
+      "samael exe",
+      "samaelexe"
+    ]
+  },
+  {
+    "entity_id": "sarah_pu51fly",
+    "canonical_title": "Sarah PU51FLY",
+    "canonical_url": "/wiki/sarah-pu51fly.html",
+    "category": "Lore",
+    "aliases": [],
+    "tags": [
+      "sarah",
+      "pu51fly"
+    ],
+    "source_urls": [
+      "/wiki/sarah-pu51fly.html"
+    ]
+  },
+  {
+    "entity_id": "satorebel",
+    "canonical_title": "SatoRebel",
+    "canonical_url": "/wiki/satorebel.html",
+    "category": "Lore",
+    "aliases": [],
+    "tags": [
+      "satorebel"
+    ],
+    "source_urls": [
+      "/wiki/satorebel.html"
+    ]
+  },
+  {
+    "entity_id": "satoshi_scroll",
+    "canonical_title": "The Satoshi Scroll",
+    "canonical_url": "/wiki/satoshi-scroll.html",
+    "category": "Lore",
+    "aliases": [],
+    "tags": [
+      "satoshi",
+      "scroll"
+    ],
+    "source_urls": [
+      "/wiki/satoshi-scroll.html"
+    ],
+    "alias_candidates": [
+      "Satoshi Scroll",
+      "satoshi scroll"
+    ]
+  },
+  {
+    "entity_id": "seeding_rights",
+    "canonical_title": "Seeding rights",
+    "canonical_url": "/wiki/seeding-rights.html",
+    "category": "Concepts",
+    "aliases": [],
+    "tags": [
+      "seeding",
+      "rights"
+    ],
+    "source_urls": [
+      "/wiki/seeding-rights.html"
+    ]
+  },
+  {
+    "entity_id": "sister_halcyon",
+    "canonical_title": "Sister Halcyon",
+    "canonical_url": "/wiki/sister-halcyon.html",
+    "category": "Lore",
+    "aliases": [],
+    "tags": [
+      "sister",
+      "halcyon"
+    ],
+    "source_urls": [
+      "/wiki/sister-halcyon.html"
+    ]
+  },
+  {
+    "entity_id": "smart_nft_mechanics",
+    "canonical_title": "SMArT NFT Mechanics",
+    "canonical_url": "/wiki/smart-nft-mechanics.html",
+    "category": "Concepts",
+    "aliases": [],
+    "tags": [
+      "smart",
+      "nft",
+      "mechanics"
+    ],
+    "source_urls": [
+      "/wiki/smart-nft-mechanics.html"
+    ]
+  },
+  {
+    "entity_id": "sneakar",
+    "canonical_title": "sneakar",
+    "canonical_url": "/wiki/sneakar.html",
+    "category": "Community & People",
+    "aliases": [],
+    "tags": [
+      "sneakar"
+    ],
+    "source_urls": [
+      "/wiki/sneakar.html"
+    ]
+  },
+  {
+    "entity_id": "snipey_d_man_sirus",
+    "canonical_title": "Snipey 'D-Man' Sirus",
+    "canonical_url": "/wiki/snipey-d-man-sirus.html",
+    "category": "Lore",
+    "aliases": [],
+    "tags": [
+      "snipey",
+      "man",
+      "sirus"
+    ],
+    "source_urls": [
+      "/wiki/snipey-d-man-sirus.html"
+    ],
+    "alias_candidates": [
+      "snipey d man sirus",
+      "snipey man sirus"
+    ]
+  },
+  {
+    "entity_id": "solana",
+    "canonical_title": "Solana (SOL)",
+    "canonical_url": "/wiki/solana.html",
+    "category": "Cryptocurrencies",
+    "aliases": [],
+    "tags": [
+      "solana",
+      "sol"
+    ],
+    "source_urls": [
+      "/wiki/solana.html"
+    ],
+    "alias_candidates": [
+      "solana",
+      "solana sol"
+    ]
+  },
+  {
+    "entity_id": "spirit_borns",
+    "canonical_title": "Spirit Borns",
+    "canonical_url": "/wiki/spirit-borns.html",
+    "category": "Lore",
+    "aliases": [],
+    "tags": [
+      "spirit",
+      "borns"
+    ],
+    "source_urls": [
+      "/wiki/spirit-borns.html"
+    ]
+  },
+  {
+    "entity_id": "spraycode_writcode",
+    "canonical_title": "Spraycode & Writcode",
+    "canonical_url": "/wiki/spraycode-writcode.html",
+    "category": "Concepts",
+    "aliases": [],
+    "tags": [
+      "spraycode",
+      "amp",
+      "writcode"
+    ],
+    "source_urls": [
+      "/wiki/spraycode-writcode.html"
+    ],
+    "alias_candidates": [
+      "spraycode amp writcode",
+      "spraycode writcode"
+    ]
+  },
+  {
+    "entity_id": "spraycode_writcode_mechanics",
+    "canonical_title": "Spraycode & Writcode mechanics",
+    "canonical_url": "/wiki/spraycode-writcode-mechanics.html",
+    "category": "Concepts",
+    "aliases": [],
+    "tags": [
+      "spraycode",
+      "amp",
+      "writcode",
+      "mechanics"
+    ],
+    "source_urls": [
+      "/wiki/spraycode-writcode-mechanics.html"
+    ],
+    "alias_candidates": [
+      "spraycode amp writcode mechanics",
+      "spraycode writcode mechanics"
+    ]
+  },
+  {
+    "entity_id": "squeaky_pinks_enforcers",
+    "canonical_title": "Squeaky Pinks enforcers",
+    "canonical_url": "/wiki/squeaky-pinks-enforcers.html",
+    "category": "Lore",
+    "aliases": [],
+    "tags": [
+      "squeaky",
+      "pinks",
+      "enforcers"
+    ],
+    "source_urls": [
+      "/wiki/squeaky-pinks-enforcers.html"
+    ]
+  },
+  {
+    "entity_id": "stake_for_gk_tokens",
+    "canonical_title": "Stake for $GK Tokens",
+    "canonical_url": "/wiki/stake-for-gk-tokens.html",
+    "category": "Concepts",
+    "aliases": [],
+    "tags": [
+      "stake",
+      "gk",
+      "tokens"
+    ],
+    "source_urls": [
+      "/wiki/stake-for-gk-tokens.html"
+    ],
+    "alias_candidates": [
+      "stake for gk tokens",
+      "stake gk tokens"
+    ]
+  },
+  {
+    "entity_id": "staking",
+    "canonical_title": "staking",
+    "canonical_url": "/wiki/staking.html",
+    "category": "Concepts",
+    "aliases": [],
+    "tags": [
+      "staking"
+    ],
+    "source_urls": [
+      "/wiki/staking.html"
+    ]
+  },
+  {
+    "entity_id": "staking_for_gk_tokens",
+    "canonical_title": "Staking for $GK Tokens",
+    "canonical_url": "/wiki/staking-for-gk-tokens.html",
+    "category": "Concepts",
+    "aliases": [],
+    "tags": [
+      "staking",
+      "gk",
+      "tokens"
+    ],
+    "source_urls": [
+      "/wiki/staking-for-gk-tokens.html"
+    ],
+    "alias_candidates": [
+      "staking for gk tokens",
+      "staking gk tokens"
+    ]
+  },
+  {
+    "entity_id": "stikfamwars",
+    "canonical_title": "stikfamwars",
+    "canonical_url": "/wiki/stikfamwars.html",
+    "category": "Concepts",
+    "aliases": [],
+    "tags": [
+      "stikfamwars"
+    ],
+    "source_urls": [
+      "/wiki/stikfamwars.html"
+    ]
+  },
+  {
+    "entity_id": "street_kingdoms",
+    "canonical_title": "Street Kingdoms",
+    "canonical_url": "/wiki/street-kingdoms.html",
+    "category": "Lore",
+    "aliases": [],
+    "tags": [
+      "street",
+      "kingdoms"
+    ],
+    "source_urls": [
+      "/wiki/street-kingdoms.html"
+    ]
+  },
+  {
+    "entity_id": "substack_posts_on_graffpunkssubstackcom",
+    "canonical_title": "Substack Posts on graffpunks.substack.com",
+    "canonical_url": "/wiki/substack-posts-on-graffpunkssubstackcom.html",
+    "category": "Community & People",
+    "aliases": [],
+    "tags": [
+      "substack",
+      "posts",
+      "graffpunks",
+      "com"
+    ],
+    "source_urls": [
+      "/wiki/substack-posts-on-graffpunkssubstackcom.html"
+    ],
+    "alias_candidates": [
+      "substack posts graffpunks com",
+      "substack posts on graffpunkssubstackcom"
+    ]
+  },
+  {
+    "entity_id": "the_allcity_bulls",
+    "canonical_title": "The AllCity Bulls",
+    "canonical_url": "/wiki/the-allcity-bulls.html",
+    "category": "Lore",
+    "aliases": [],
+    "tags": [
+      "allcity",
+      "bulls"
+    ],
+    "source_urls": [
+      "/wiki/the-allcity-bulls.html"
+    ],
+    "alias_candidates": [
+      "AllCity Bulls",
+      "allcity bulls"
+    ]
+  },
+  {
+    "entity_id": "the_aztec_raiders",
+    "canonical_title": "The AZTEC RAIDERS",
+    "canonical_url": "/wiki/the-aztec-raiders.html",
+    "category": "Lore",
+    "aliases": [],
+    "tags": [
+      "aztec",
+      "raiders"
+    ],
+    "source_urls": [
+      "/wiki/the-aztec-raiders.html"
+    ],
+    "alias_candidates": [
+      "AZTEC RAIDERS",
+      "aztec raiders"
+    ]
+  },
+  {
+    "entity_id": "the_bally_boys",
+    "canonical_title": "The BALLY BOYS",
+    "canonical_url": "/wiki/the-bally-boys.html",
+    "category": "Lore",
+    "aliases": [],
+    "tags": [
+      "bally",
+      "boys"
+    ],
+    "source_urls": [
+      "/wiki/the-bally-boys.html"
+    ],
+    "alias_candidates": [
+      "BALLY BOYS",
+      "bally boys"
+    ]
+  },
+  {
+    "entity_id": "the_bitcoin_kid_army",
+    "canonical_title": "The Bitcoin Kid Army",
+    "canonical_url": "/wiki/the-bitcoin-kid-army.html",
+    "category": "Lore",
+    "aliases": [
+      "Bitcoin Kid Army"
+    ],
+    "tags": [
+      "bitcoin",
+      "kid",
+      "army"
+    ],
+    "source_urls": [
+      "/wiki/the-bitcoin-kid-army.html",
+      "/wiki/bitcoin-kid-army.html"
+    ]
+  },
+  {
+    "entity_id": "the_blockchain_furies",
+    "canonical_title": "The BLOCKCHAIN FURIES",
+    "canonical_url": "/wiki/the-blockchain-furies.html",
+    "category": "Lore",
+    "aliases": [],
+    "tags": [
+      "blockchain",
+      "furies"
+    ],
+    "source_urls": [
+      "/wiki/the-blockchain-furies.html"
+    ],
+    "alias_candidates": [
+      "BLOCKCHAIN FURIES",
+      "blockchain furies"
+    ]
+  },
+  {
+    "entity_id": "the_blockstars",
+    "canonical_title": "The BLOCKSTARS",
+    "canonical_url": "/wiki/the-blockstars.html",
+    "category": "Lore",
+    "aliases": [],
+    "tags": [
+      "blockstars"
+    ],
+    "source_urls": [
+      "/wiki/the-blockstars.html"
+    ],
+    "alias_candidates": [
+      "BLOCKSTARS"
+    ]
+  },
+  {
+    "entity_id": "the_chain_scribes",
+    "canonical_title": "The CHAIN SCRIBES",
+    "canonical_url": "/wiki/the-chain-scribes.html",
+    "category": "Lore",
+    "aliases": [],
+    "tags": [
+      "chain",
+      "scribes"
+    ],
+    "source_urls": [
+      "/wiki/the-chain-scribes.html"
+    ],
+    "alias_candidates": [
+      "CHAIN SCRIBES",
+      "chain scribes"
+    ]
+  },
+  {
+    "entity_id": "the_code_alchemists",
+    "canonical_title": "The CODE ALCHEMISTS",
+    "canonical_url": "/wiki/the-code-alchemists.html",
+    "category": "Lore",
+    "aliases": [],
+    "tags": [
+      "code",
+      "alchemists"
+    ],
+    "source_urls": [
+      "/wiki/the-code-alchemists.html"
+    ],
+    "alias_candidates": [
+      "CODE ALCHEMISTS",
+      "code alchemists"
+    ]
+  },
+  {
+    "entity_id": "the_crypto_moongirls",
+    "canonical_title": "The CRYPTO MOONGIRLS",
+    "canonical_url": "/wiki/the-crypto-moongirls.html",
+    "category": "Lore",
+    "aliases": [],
+    "tags": [
+      "crypto",
+      "moongirls"
+    ],
+    "source_urls": [
+      "/wiki/the-crypto-moongirls.html"
+    ],
+    "alias_candidates": [
+      "CRYPTO MOONGIRLS",
+      "crypto moongirls"
+    ]
+  },
+  {
+    "entity_id": "the_crypto_stoned_boys",
+    "canonical_title": "The CRYPTO STONED BOYS",
+    "canonical_url": "/wiki/the-crypto-stoned-boys.html",
+    "category": "Lore",
+    "aliases": [],
+    "tags": [
+      "crypto",
+      "stoned",
+      "boys"
+    ],
+    "source_urls": [
+      "/wiki/the-crypto-stoned-boys.html"
+    ],
+    "alias_candidates": [
+      "CRYPTO STONED BOYS",
+      "crypto stoned boys"
+    ]
+  },
+  {
+    "entity_id": "the_ducky_boys",
+    "canonical_title": "The DUCKY BOYS",
+    "canonical_url": "/wiki/the-ducky-boys.html",
+    "category": "Lore",
+    "aliases": [],
+    "tags": [
+      "ducky",
+      "boys"
+    ],
+    "source_urls": [
+      "/wiki/the-ducky-boys.html"
+    ],
+    "alias_candidates": [
+      "DUCKY BOYS",
+      "ducky boys"
+    ]
+  },
+  {
+    "entity_id": "the_evm_punks",
+    "canonical_title": "The EVM PUNKS",
+    "canonical_url": "/wiki/the-evm-punks.html",
+    "category": "Lore",
+    "aliases": [],
+    "tags": [
+      "evm",
+      "punks"
+    ],
+    "source_urls": [
+      "/wiki/the-evm-punks.html"
+    ],
+    "alias_candidates": [
+      "EVM PUNKS",
+      "evm punks"
+    ]
+  },
+  {
+    "entity_id": "the_finance_guild",
+    "canonical_title": "The FINANCE GUILD",
+    "canonical_url": "/wiki/the-finance-guild.html",
+    "category": "Lore",
+    "aliases": [],
+    "tags": [
+      "finance",
+      "guild"
+    ],
+    "source_urls": [
+      "/wiki/the-finance-guild.html"
+    ],
+    "alias_candidates": [
+      "FINANCE GUILD",
+      "finance guild"
+    ]
+  },
+  {
+    "entity_id": "the_gasless_ghosts",
+    "canonical_title": "The GASLESS GHOSTS",
+    "canonical_url": "/wiki/the-gasless-ghosts.html",
+    "category": "Lore",
+    "aliases": [],
+    "tags": [
+      "gasless",
+      "ghosts"
+    ],
+    "source_urls": [
+      "/wiki/the-gasless-ghosts.html"
+    ],
+    "alias_candidates": [
+      "GASLESS GHOSTS",
+      "gasless ghosts"
+    ]
+  },
+  {
+    "entity_id": "the_gkniftyheads",
+    "canonical_title": "The GKniftyHEADS",
+    "canonical_url": "/wiki/the-gkniftyheads.html",
+    "category": "Lore",
+    "aliases": [
+      "gkniftyheads"
+    ],
+    "tags": [
+      "gkniftyheads"
+    ],
+    "source_urls": [
+      "/wiki/the-gkniftyheads.html",
+      "/wiki/gkniftyheads.html"
+    ]
+  },
+  {
+    "entity_id": "the_graffpunks",
+    "canonical_title": "The GRAFFPUNKS",
+    "canonical_url": "/wiki/the-graffpunks.html",
+    "category": "Lore",
+    "aliases": [
+      "graffpunks"
+    ],
+    "tags": [
+      "graffpunks"
+    ],
+    "source_urls": [
+      "/wiki/the-graffpunks.html",
+      "/wiki/graffpunks.html"
+    ]
+  },
+  {
+    "entity_id": "the_great_dip",
+    "canonical_title": "The Great Dip",
+    "canonical_url": "/wiki/the-great-dip.html",
+    "category": "Lore",
+    "aliases": [],
+    "tags": [
+      "great",
+      "dip"
+    ],
+    "source_urls": [
+      "/wiki/the-great-dip.html"
+    ],
+    "alias_candidates": [
+      "Great Dip",
+      "great dip"
+    ]
+  },
+  {
+    "entity_id": "the_grids",
+    "canonical_title": "THE GRIDS",
+    "canonical_url": "/wiki/the-grids.html",
+    "category": "Lore",
+    "aliases": [],
+    "tags": [
+      "grids"
+    ],
+    "source_urls": [
+      "/wiki/the-grids.html"
+    ],
+    "alias_candidates": [
+      "GRIDS"
+    ]
+  },
+  {
+    "entity_id": "the_hard_fork_rockers",
+    "canonical_title": "The HARD FORK ROCKERS",
+    "canonical_url": "/wiki/the-hard-fork-rockers.html",
+    "category": "Lore",
+    "aliases": [],
+    "tags": [
+      "hard",
+      "fork",
+      "rockers"
+    ],
+    "source_urls": [
+      "/wiki/the-hard-fork-rockers.html"
+    ],
+    "alias_candidates": [
+      "HARD FORK ROCKERS",
+      "hard fork rockers"
+    ]
+  },
+  {
+    "entity_id": "the_high_hats",
+    "canonical_title": "The High Hats",
+    "canonical_url": "/wiki/the-high-hats.html",
+    "category": "Lore",
+    "aliases": [],
+    "tags": [
+      "high",
+      "hats"
+    ],
+    "source_urls": [
+      "/wiki/the-high-hats.html"
+    ],
+    "alias_candidates": [
+      "High Hats",
+      "high hats"
+    ]
+  },
+  {
+    "entity_id": "the_hodl_warriors",
+    "canonical_title": "The HODL Warriors",
+    "canonical_url": "/wiki/the-hodl-warriors.html",
+    "category": "Lore",
+    "aliases": [
+      "hodl_warriors"
+    ],
+    "tags": [
+      "hodl",
+      "warriors"
+    ],
+    "source_urls": [
+      "/wiki/the-hodl-warriors.html",
+      "/wiki/hodl-warriors.html"
+    ],
+    "alias_candidates": [
+      "HODL Warriors",
+      "hodl warriors"
+    ]
+  },
+  {
+    "entity_id": "the_information_mercenaries",
+    "canonical_title": "The INFORMATION MERCENARIES",
+    "canonical_url": "/wiki/the-information-mercenaries.html",
+    "category": "Lore",
+    "aliases": [],
+    "tags": [
+      "information",
+      "mercenaries"
+    ],
+    "source_urls": [
+      "/wiki/the-information-mercenaries.html"
+    ],
+    "alias_candidates": [
+      "INFORMATION MERCENARIES",
+      "information mercenaries"
+    ]
+  },
+  {
+    "entity_id": "the_moonlords",
+    "canonical_title": "The MOONLORDS",
+    "canonical_url": "/wiki/the-moonlords.html",
+    "category": "Lore",
+    "aliases": [],
+    "tags": [
+      "moonlords"
+    ],
+    "source_urls": [
+      "/wiki/the-moonlords.html"
+    ],
+    "alias_candidates": [
+      "MOONLORDS"
+    ]
+  },
+  {
+    "entity_id": "the_nice_easy_bois",
+    "canonical_title": "The NICE & EASY BOIS",
+    "canonical_url": "/wiki/the-nice-easy-bois.html",
+    "category": "Lore",
+    "aliases": [],
+    "tags": [
+      "nice",
+      "amp",
+      "easy",
+      "bois"
+    ],
+    "source_urls": [
+      "/wiki/the-nice-easy-bois.html"
+    ],
+    "alias_candidates": [
+      "NICE & EASY BOIS",
+      "nice amp easy bois",
+      "the nice easy bois"
+    ]
+  },
+  {
+    "entity_id": "the_nomad_bears",
+    "canonical_title": "The Nomad Bears",
+    "canonical_url": "/wiki/the-nomad-bears.html",
+    "category": "Lore",
+    "aliases": [],
+    "tags": [
+      "nomad",
+      "bears"
+    ],
+    "source_urls": [
+      "/wiki/the-nomad-bears.html"
+    ],
+    "alias_candidates": [
+      "Nomad Bears",
+      "nomad bears"
+    ]
+  },
+  {
+    "entity_id": "the_og_pixel_saints",
+    "canonical_title": "The OG PIXEL SAINTS",
+    "canonical_url": "/wiki/the-og-pixel-saints.html",
+    "category": "Lore",
+    "aliases": [],
+    "tags": [
+      "og",
+      "pixel",
+      "saints"
+    ],
+    "source_urls": [
+      "/wiki/the-og-pixel-saints.html"
+    ],
+    "alias_candidates": [
+      "OG PIXEL SAINTS",
+      "og pixel saints"
+    ]
+  },
+  {
+    "entity_id": "the_princess",
+    "canonical_title": "The Princess",
+    "canonical_url": "/wiki/the-princess.html",
+    "category": "Lore",
+    "aliases": [],
+    "tags": [
+      "princess"
+    ],
+    "source_urls": [
+      "/wiki/the-princess.html"
+    ],
+    "alias_candidates": [
+      "Princess"
+    ]
+  },
+  {
+    "entity_id": "the_rugpull_miners",
+    "canonical_title": "The RUGPULL MINERS",
+    "canonical_url": "/wiki/the-rugpull-miners.html",
+    "category": "Lore",
+    "aliases": [],
+    "tags": [
+      "rugpull",
+      "miners"
+    ],
+    "source_urls": [
+      "/wiki/the-rugpull-miners.html"
+    ],
+    "alias_candidates": [
+      "RUGPULL MINERS",
+      "rugpull miners"
+    ]
+  },
+  {
+    "entity_id": "the_sacred_chain",
+    "canonical_title": "The Sacred Chain",
+    "canonical_url": "/wiki/the-sacred-chain.html",
+    "category": "Lore",
+    "aliases": [
+      "sacred_chain"
+    ],
+    "tags": [
+      "sacred",
+      "chain"
+    ],
+    "source_urls": [
+      "/wiki/the-sacred-chain.html",
+      "/wiki/sacred-chain.html"
+    ],
+    "alias_candidates": [
+      "Sacred Chain",
+      "sacred chain"
+    ]
+  },
+  {
+    "entity_id": "the_salvagers",
+    "canonical_title": "The SALVAGERS",
+    "canonical_url": "/wiki/the-salvagers.html",
+    "category": "Lore",
+    "aliases": [],
+    "tags": [
+      "salvagers"
+    ],
+    "source_urls": [
+      "/wiki/the-salvagers.html"
+    ],
+    "alias_candidates": [
+      "SALVAGERS"
+    ]
+  },
+  {
+    "entity_id": "the_shard_mothers_of_manhattan",
+    "canonical_title": "The SHARD MOTHERS of MANHATTAN",
+    "canonical_url": "/wiki/the-shard-mothers-of-manhattan.html",
+    "category": "Lore",
+    "aliases": [],
+    "tags": [
+      "shard",
+      "mothers",
+      "manhattan"
+    ],
+    "source_urls": [
+      "/wiki/the-shard-mothers-of-manhattan.html"
+    ],
+    "alias_candidates": [
+      "SHARD MOTHERS of MANHATTAN",
+      "shard mothers manhattan"
+    ]
+  },
+  {
+    "entity_id": "the_squeaky_pinks",
+    "canonical_title": "The Squeaky Pinks",
+    "canonical_url": "/wiki/the-squeaky-pinks.html",
+    "category": "Lore",
+    "aliases": [],
+    "tags": [
+      "squeaky",
+      "pinks"
+    ],
+    "source_urls": [
+      "/wiki/the-squeaky-pinks.html"
+    ],
+    "alias_candidates": [
+      "Squeaky Pinks",
+      "squeaky pinks"
+    ]
+  },
+  {
+    "entity_id": "the_tuskon_ogs",
+    "canonical_title": "The TUSKON OGS",
+    "canonical_url": "/wiki/the-tuskon-ogs.html",
+    "category": "Lore",
+    "aliases": [],
+    "tags": [
+      "tuskon",
+      "ogs"
+    ],
+    "source_urls": [
+      "/wiki/the-tuskon-ogs.html"
+    ],
+    "alias_candidates": [
+      "TUSKON OGS",
+      "tuskon ogs"
+    ]
+  },
+  {
+    "entity_id": "the_whitewasher",
+    "canonical_title": "The Whitewasher",
+    "canonical_url": "/wiki/the-whitewasher.html",
+    "category": "Lore",
+    "aliases": [],
+    "tags": [
+      "whitewasher"
+    ],
+    "source_urls": [
+      "/wiki/the-whitewasher.html"
+    ],
+    "alias_candidates": [
+      "Whitewasher"
+    ]
+  },
+  {
+    "entity_id": "thera_9",
+    "canonical_title": "Thera-9",
+    "canonical_url": "/wiki/thera-9.html",
+    "category": "Lore",
+    "aliases": [],
+    "tags": [
+      "thera"
+    ],
+    "source_urls": [
+      "/wiki/thera-9.html"
+    ],
+    "alias_candidates": [
+      "thera 9"
+    ]
+  },
+  {
+    "entity_id": "thorne_the_architect",
+    "canonical_title": "Thorne The Architect",
+    "canonical_url": "/wiki/thorne-the-architect.html",
+    "category": "Lore",
+    "aliases": [],
+    "tags": [
+      "thorne",
+      "architect"
+    ],
+    "source_urls": [
+      "/wiki/thorne-the-architect.html"
+    ],
+    "alias_candidates": [
+      "thorne architect"
+    ]
+  },
+  {
+    "entity_id": "tokenomics",
+    "canonical_title": "Tokenomics",
+    "canonical_url": "/wiki/tokenomics.html",
+    "category": "Concepts",
+    "aliases": [],
+    "tags": [
+      "tokenomics"
+    ],
+    "source_urls": [
+      "/wiki/tokenomics.html"
+    ]
+  },
+  {
+    "entity_id": "tokens",
+    "canonical_title": "tokens",
+    "canonical_url": "/wiki/tokens.html",
+    "category": "Lore",
+    "aliases": [],
+    "tags": [
+      "tokens"
+    ],
+    "source_urls": [
+      "/wiki/tokens.html"
+    ]
+  },
+  {
+    "entity_id": "trevor_fung",
+    "canonical_title": "trevor_fung",
+    "canonical_url": "/wiki/trevor-fung.html",
+    "category": "Concepts",
+    "aliases": [],
+    "tags": [
+      "trevor",
+      "fung"
+    ],
+    "source_urls": [
+      "/wiki/trevor-fung.html"
+    ],
+    "alias_candidates": [
+      "trevor fung"
+    ]
+  },
+  {
+    "entity_id": "triple_fork_event",
+    "canonical_title": "Triple Fork Event",
+    "canonical_url": "/wiki/triple-fork-event.html",
+    "category": "Lore",
+    "aliases": [],
+    "tags": [
+      "triple",
+      "fork",
+      "event"
+    ],
+    "source_urls": [
+      "/wiki/triple-fork-event.html"
+    ]
+  },
+  {
+    "entity_id": "wagmi_prophecy",
+    "canonical_title": "The WAGMI Prophecy",
+    "canonical_url": "/wiki/wagmi-prophecy.html",
+    "category": "Lore",
+    "aliases": [],
+    "tags": [
+      "wagmi",
+      "prophecy"
+    ],
+    "source_urls": [
+      "/wiki/wagmi-prophecy.html"
+    ],
+    "alias_candidates": [
+      "WAGMI Prophecy",
+      "wagmi prophecy"
+    ]
+  },
+  {
+    "entity_id": "wallets",
+    "canonical_title": "Crypto Wallets",
+    "canonical_url": "/wiki/wallets.html",
+    "category": "Tools & Platforms",
+    "aliases": [],
+    "tags": [
+      "crypto",
+      "wallets"
+    ],
+    "source_urls": [
+      "/wiki/wallets.html"
+    ],
+    "alias_candidates": [
+      "wallets"
+    ]
+  },
+  {
+    "entity_id": "waxp",
+    "canonical_title": "$WAXP",
+    "canonical_url": "/wiki/waxp.html",
+    "category": "Cryptocurrencies",
+    "aliases": [],
+    "tags": [
+      "waxp"
+    ],
+    "source_urls": [
+      "/wiki/waxp.html"
+    ],
+    "alias_candidates": [
+      "waxp"
+    ]
+  },
+  {
+    "entity_id": "web3",
+    "canonical_title": "Web3",
+    "canonical_url": "/wiki/web3.html",
+    "category": "Technology",
+    "aliases": [],
+    "tags": [
+      "web3"
+    ],
+    "source_urls": [
+      "/wiki/web3.html"
+    ]
+  },
+  {
+    "entity_id": "whale_lords",
+    "canonical_title": "The Whale Lords",
+    "canonical_url": "/wiki/whale-lords.html",
+    "category": "Lore",
+    "aliases": [],
+    "tags": [
+      "whale",
+      "lords"
+    ],
+    "source_urls": [
+      "/wiki/whale-lords.html"
+    ],
+    "alias_candidates": [
+      "Whale Lords",
+      "whale lords"
+    ]
+  },
+  {
+    "entity_id": "xrp_kids",
+    "canonical_title": "xrp_kids",
+    "canonical_url": "/wiki/xrp-kids.html",
+    "category": "Community & People",
+    "aliases": [],
+    "tags": [
+      "xrp",
+      "kids"
+    ],
+    "source_urls": [
+      "/wiki/xrp-kids.html"
+    ],
+    "alias_candidates": [
+      "xrp kids"
+    ]
+  },
+  {
+    "entity_id": "xrp_kids_genesis_nfts",
+    "canonical_title": "XRP KIDs Genesis NFTs",
+    "canonical_url": "/wiki/xrp-kids-genesis-nfts.html",
+    "category": "Community & People",
+    "aliases": [],
+    "tags": [
+      "xrp",
+      "kids",
+      "genesis",
+      "nfts"
+    ],
+    "source_urls": [
+      "/wiki/xrp-kids-genesis-nfts.html"
+    ]
+  },
+  {
+    "entity_id": "xrp_kids_nbg_updates",
+    "canonical_title": "XRP Kids NBG Updates",
+    "canonical_url": "/wiki/xrp-kids-nbg-updates.html",
+    "category": "Community & People",
+    "aliases": [],
+    "tags": [
+      "xrp",
+      "kids",
+      "nbg",
+      "updates"
+    ],
+    "source_urls": [
+      "/wiki/xrp-kids-nbg-updates.html"
+    ]
+  }
+]

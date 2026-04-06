@@ -54,17 +54,21 @@ jobs:
       - name: Regenerate site stats
         run: node scripts/generate-site-stats.js
 
+      - name: Regenerate entity map and SAM memory
+        run: node scripts/generate-entity-map.js
+
       - name: Fail if generated files are stale (PR only)
         if: github.event_name == 'pull_request'
         run: |
           STALE=0
-          for f in js/wiki-index.json sitemap.xml js/site-stats.json; do
+          for f in js/wiki-index.json sitemap.xml js/site-stats.json js/entity-map.json sam-memory.json; do
             if ! git diff --quiet "$f"; then
               echo "::error file=$f::$f is out of date."
               echo "Run the generator scripts locally and commit the result:"
               echo "  node scripts/generate-wiki-index.js"
               echo "  node scripts/generate-sitemap.js"
               echo "  node scripts/generate-site-stats.js"
+              echo "  node scripts/generate-entity-map.js"
               git diff "$f"
               STALE=1
             else
@@ -79,7 +83,7 @@ jobs:
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           CHANGED=0
-          for f in js/wiki-index.json sitemap.xml js/site-stats.json; do
+          for f in js/wiki-index.json sitemap.xml js/site-stats.json js/entity-map.json sam-memory.json; do
             if ! git diff --quiet "$f"; then
               git add "$f"
               CHANGED=1
