@@ -45,12 +45,18 @@ const CATEGORY_EMOJI = {
 
 /* ── Decode HTML entities in plain text ─────────────────────────────────── */
 function decodeHtmlEntities(str) {
-  return str
-    .replace(/&amp;/g,  '&')
-    .replace(/&lt;/g,   '<')
-    .replace(/&gt;/g,   '>')
-    .replace(/&quot;/g, '"')
-    .replace(/&#39;/g,  "'");
+  // Single-pass replacement using a lookup table avoids any risk of
+  // double-unescaping (e.g. &amp;amp; → &amp; → &).
+  const entities = { amp: '&', lt: '<', gt: '>', quot: '"', '#39': "'" };
+  return str.replace(/&(amp|lt|gt|quot|#39);/g, (m, e) => entities[e] || m);
+}
+
+/* ── Convert a filename slug to a human-readable title ──────────────────── */
+function slugToTitle(filename) {
+  return filename
+    .replace('.html', '')
+    .replace(/-/g, ' ')
+    .replace(/\b\w/g, c => c.toUpperCase());
 }
 
 /* ── Load the existing index from wiki-index.json (preferred) or wiki.js ── */
@@ -201,10 +207,7 @@ for (const file of htmlFiles) {
   } else {
     // Extract what we can from the HTML file.
     const rawTitle = extractTitle(html);
-    // Convert slug to a readable title if HTML title is unavailable
-    // e.g. 'bitcoin-kids.html' → 'Bitcoin Kids'
-    const slugTitle = file.replace('.html', '').replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
-    const title    = rawTitle || slugTitle;
+    const title    = rawTitle || slugToTitle(file);
     const desc     = extractDesc(html)     || '';
     const category = extractCategory(html) || 'Lore';
     const emoji    = CATEGORY_EMOJI[category] || '📄';
@@ -218,5 +221,5 @@ for (const file of htmlFiles) {
 
 fs.writeFileSync(OUTPUT, JSON.stringify(wikiIndex, null, 2) + '\n');
 console.log(`\nGenerated js/wiki-index.json with ${wikiIndex.length} entries`);
-console.log(`  ${fromExisting} from existing WIKI_INDEX`);
+console.log(`  ${fromExisting} from existing index (js/wiki-index.json or js/wiki.js WIKI_INDEX)`);
 console.log(`  ${fromHtml} extracted from HTML (new pages)`);
