@@ -138,11 +138,6 @@ function generateAliasCandidates(entry) {
     .sort();
 }
 
-/* ── Sorted JSON serialiser (keys in deterministic order) ────────────────── */
-function sortedJson(obj) {
-  return JSON.stringify(obj, Object.keys(obj).sort(), 2);
-}
-
 /* ── Main ───────────────────────────────────────────────────────────────── */
 if (!fs.existsSync(WIKI_INDEX_PATH)) {
   console.error(`Error: ${WIKI_INDEX_PATH} not found.`);
