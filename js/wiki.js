@@ -3,6 +3,13 @@
  * Client-side search, sidebar toggle, UI helpers.
  */
 
+function resolveWikiUrl(url) {
+  if (!url) return url;
+  if (url.startsWith('/')) return url;
+  if (url.startsWith('wiki/')) return '/' + url;
+  return url;
+}
+
 /* ── SEARCH INDEX ──────────────────────────────────────────────────────────
    Articles are registered here so the search box can find them.
    When the AI agent adds a new article, it should also add an entry below.
@@ -1510,7 +1517,7 @@ function runSearch(query, resultsEl, inputEl) {
           <div class="sr-desc">${escHtml(item.desc.slice(0, 90))}…</div>
           <div class="sr-cat">${item.category}</div>
         </div>`;
-      div.addEventListener('click', () => { window.location.href = item.url; });
+      div.addEventListener('click', () => { window.location.href = resolveWikiUrl(item.url); });
       resultsEl.appendChild(div);
     });
   }
@@ -1538,7 +1545,7 @@ function renderSearchPage(query) {
   }
 
   container.innerHTML = items.map(({ item }) => `
-    <a href="${item.url}" class="article-list-item">
+    <a href="${resolveWikiUrl(item.url)}" class="article-list-item">
       <div class="ali-icon">${item.emoji || '📄'}</div>
       <div>
         <div class="ali-title">${highlight(item.title, q)}</div>
