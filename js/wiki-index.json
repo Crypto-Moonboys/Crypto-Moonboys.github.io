@@ -76,6 +76,17 @@
     ]
   },
   {
+    "title": "alfie_blaze",
+    "url": "/wiki/alfie-blaze.html",
+    "desc": "Alfie 'Bitcoin Kid' Blaze is the fiery, unyielding heart of the Bitcoin Kids, a rebel faction trapped within the fortified walls of Block Topia in the Crypto Mo",
+    "category": "Lore",
+    "emoji": "⚔️",
+    "tags": [
+      "alfie",
+      "blaze"
+    ]
+  },
+  {
     "title": "Alfie 'The Bitcoin Kid' Blaze",
     "url": "/wiki/alfie-the-bitcoin-kid-blaze.html",
     "desc": "Fearless leader of the Bitcoin Kids rebels, guiding the fight for freedom in Block Topia against centralized oppression",
@@ -92,17 +103,6 @@
         "title": "Alfie 'Bitcoin Kid' Blaze",
         "url": "/wiki/alfie-bitcoin-kid-blaze.html"
       }
-    ]
-  },
-  {
-    "title": "alfie_blaze",
-    "url": "/wiki/alfie-blaze.html",
-    "desc": "Alfie 'Bitcoin Kid' Blaze is the fiery, unyielding heart of the Bitcoin Kids, a rebel faction trapped within the fortified walls of Block Topia in the Crypto Mo",
-    "category": "Lore",
-    "emoji": "⚔️",
-    "tags": [
-      "alfie",
-      "blaze"
     ]
   },
   {
@@ -183,24 +183,6 @@
       "bit",
       "cap",
       "5000"
-    ]
-  },
-  {
-    "title": "The Bitcoin Kid Army",
-    "url": "/wiki/the-bitcoin-kid-army.html",
-    "desc": "The Bitcoin Kid Army is a fierce collective of escaped rebels in the Crypto Moonboys universe, united under the fearless leadership of Alfie 'The Bitcoin Kid' B",
-    "category": "Lore",
-    "emoji": "🪙",
-    "tags": [
-      "bitcoin",
-      "kid",
-      "army"
-    ],
-    "aliases": [
-      {
-        "title": "Bitcoin Kid Army",
-        "url": "/wiki/bitcoin-kid-army.html"
-      }
     ]
   },
   {
@@ -641,22 +623,6 @@
     ]
   },
   {
-    "title": "The GKniftyHEADS",
-    "url": "/wiki/the-gkniftyheads.html",
-    "desc": "Elite ruling faction under Queen Sarah P-fly, embodying power and artistry",
-    "category": "Lore",
-    "emoji": "⚔️",
-    "tags": [
-      "gkniftyheads"
-    ],
-    "aliases": [
-      {
-        "title": "gkniftyheads",
-        "url": "/wiki/gkniftyheads.html"
-      }
-    ]
-  },
-  {
     "title": "Graffiti Kings",
     "url": "/wiki/graffiti-kings.html",
     "desc": "Graffiti Kings is the foundational faction of the Crypto Moonboys and GraffPUNKS universe, a real-world street art collective turned digital rebellion force tha",
@@ -806,22 +772,6 @@
     ]
   },
   {
-    "title": "The GRAFFPUNKS",
-    "url": "/wiki/the-graffpunks.html",
-    "desc": "Street-art rebels and blockchain music revolutionaries",
-    "category": "Lore",
-    "emoji": "🤘",
-    "tags": [
-      "graffpunks"
-    ],
-    "aliases": [
-      {
-        "title": "graffpunks",
-        "url": "/wiki/graffpunks.html"
-      }
-    ]
-  },
-  {
     "title": "Great Datapocalypse of 2789",
     "url": "/wiki/great-datapocalypse-of-2789.html",
     "desc": "Cataclysmic event in the lore leading to the creation of GKniftyHEADS and Block Topia.",
@@ -935,23 +885,6 @@
       "hodl",
       "warriors",
       "army"
-    ]
-  },
-  {
-    "title": "The HODL Warriors",
-    "url": "/wiki/the-hodl-warriors.html",
-    "desc": "Elite warriors earning status through Hard Fork Games",
-    "category": "Lore",
-    "emoji": "⚔️",
-    "tags": [
-      "hodl",
-      "warriors"
-    ],
-    "aliases": [
-      {
-        "title": "hodl_warriors",
-        "url": "/wiki/hodl-warriors.html"
-      }
     ]
   },
   {
@@ -1600,23 +1533,6 @@
     ]
   },
   {
-    "title": "The Sacred Chain",
-    "url": "/wiki/the-sacred-chain.html",
-    "desc": "Spiritual blockchain realm",
-    "category": "Lore",
-    "emoji": "⚔️",
-    "tags": [
-      "sacred",
-      "chain"
-    ],
-    "aliases": [
-      {
-        "title": "sacred_chain",
-        "url": "/wiki/sacred-chain.html"
-      }
-    ]
-  },
-  {
     "title": "Samael.exe",
     "url": "/wiki/samaelexe.html",
     "desc": "Samael.exe is a rogue AI entity haunting the digital expanse of Block Topia, a malevolent force of pure code that operates with chilling precision to destabiliz",
@@ -1876,6 +1792,24 @@
     ]
   },
   {
+    "title": "The Bitcoin Kid Army",
+    "url": "/wiki/the-bitcoin-kid-army.html",
+    "desc": "The Bitcoin Kid Army is a fierce collective of escaped rebels in the Crypto Moonboys universe, united under the fearless leadership of Alfie 'The Bitcoin Kid' B",
+    "category": "Lore",
+    "emoji": "🪙",
+    "tags": [
+      "bitcoin",
+      "kid",
+      "army"
+    ],
+    "aliases": [
+      {
+        "title": "Bitcoin Kid Army",
+        "url": "/wiki/bitcoin-kid-army.html"
+      }
+    ]
+  },
+  {
     "title": "The BLOCKCHAIN FURIES",
     "url": "/wiki/the-blockchain-furies.html",
     "desc": "The BLOCKCHAIN FURIES are the relentless avengers of Block Topia, a faction forged in the searing crucible of betrayal and loss within the volatile crypto realm",
@@ -1986,6 +1920,38 @@
     ]
   },
   {
+    "title": "The GKniftyHEADS",
+    "url": "/wiki/the-gkniftyheads.html",
+    "desc": "Elite ruling faction under Queen Sarah P-fly, embodying power and artistry",
+    "category": "Lore",
+    "emoji": "⚔️",
+    "tags": [
+      "gkniftyheads"
+    ],
+    "aliases": [
+      {
+        "title": "gkniftyheads",
+        "url": "/wiki/gkniftyheads.html"
+      }
+    ]
+  },
+  {
+    "title": "The GRAFFPUNKS",
+    "url": "/wiki/the-graffpunks.html",
+    "desc": "Street-art rebels and blockchain music revolutionaries",
+    "category": "Lore",
+    "emoji": "🤘",
+    "tags": [
+      "graffpunks"
+    ],
+    "aliases": [
+      {
+        "title": "graffpunks",
+        "url": "/wiki/graffpunks.html"
+      }
+    ]
+  },
+  {
     "title": "The Great Dip",
     "url": "/wiki/the-great-dip.html",
     "desc": "The recurring cataclysm of the HODL Wars — sudden market crashes that test the mettle of every warrior.",
@@ -2027,6 +1993,23 @@
     "tags": [
       "high",
       "hats"
+    ]
+  },
+  {
+    "title": "The HODL Warriors",
+    "url": "/wiki/the-hodl-warriors.html",
+    "desc": "Elite warriors earning status through Hard Fork Games",
+    "category": "Lore",
+    "emoji": "⚔️",
+    "tags": [
+      "hodl",
+      "warriors"
+    ],
+    "aliases": [
+      {
+        "title": "hodl_warriors",
+        "url": "/wiki/hodl-warriors.html"
+      }
     ]
   },
   {
@@ -2105,6 +2088,23 @@
     "tags": [
       "rugpull",
       "miners"
+    ]
+  },
+  {
+    "title": "The Sacred Chain",
+    "url": "/wiki/the-sacred-chain.html",
+    "desc": "Spiritual blockchain realm",
+    "category": "Lore",
+    "emoji": "⚔️",
+    "tags": [
+      "sacred",
+      "chain"
+    ],
+    "aliases": [
+      {
+        "title": "sacred_chain",
+        "url": "/wiki/sacred-chain.html"
+      }
     ]
   },
   {

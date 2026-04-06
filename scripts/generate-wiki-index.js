@@ -40,6 +40,10 @@ const WIKI_DIR = path.join(ROOT, 'wiki');
 const OUTPUT   = path.join(ROOT, 'js', 'wiki-index.json');
 const WIKI_JS  = path.join(ROOT, 'js', 'wiki.js');
 const BASE_URL = 'https://crypto-moonboys.github.io';
+// Redirect stubs produced by this script are always much smaller than real
+// wiki articles.  Any file at or above this byte threshold is treated as a
+// full article and will NOT be overwritten with a redirect stub.
+const MIN_CONTENT_BYTES = 2000;
 
 /* ── Category → default emoji ───────────────────────────────────────────── */
 const CATEGORY_EMOJI = {
@@ -191,7 +195,9 @@ const KEYWORD_SUBS = {
   'decentralized':      ['decentralised'],
   'decentralised':      ['decentralized'],
   'nonfungible':        ['non fungible', 'nft'],
-  'non':                [],  // avoid spurious partial matches
+  'non':                [],  // 'non' alone has no useful substitution; listing it
+                             // explicitly prevents accidental partial matches in the
+                             // KEYWORD_SUBS loop (e.g. from 'nonfungible' tokenisation)
   'dao':                ['decentralized autonomous organization'],
   'blockchain':         ['chain'],
   'crypto':             ['cryptocurrency', 'cryptocurrencies'],
@@ -357,7 +363,7 @@ function generateRedirectFile(aliasFilePath, canonicalUrl) {
       // Use raw file size as a fast, injection-safe proxy for content length.
       // Real wiki articles are many kilobytes; stubs are under ~500 bytes.
       const byteSize = Buffer.byteLength(existing, 'utf8');
-      if (byteSize >= 2000) {
+      if (byteSize >= MIN_CONTENT_BYTES) {
         console.log(`  ! skipping redirect for ${path.basename(aliasFilePath)} (has substantial content, ${byteSize} bytes)`);
         return false;
       }
