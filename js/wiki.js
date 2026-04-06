@@ -219,16 +219,11 @@ function scoreResult(item, query) {
   const aliases = item.aliases || [];
   aliases.forEach(alias => {
     const aTitle = (alias.title || '').toLowerCase();
-    const aTags  = (alias.tags  || []).join(' ').toLowerCase();
-    if (aTitle === q)             score += 80;
+    if (aTitle === q)              score += 80;
     else if (aTitle.startsWith(q)) score += 45;
     else if (aTitle.includes(q))   score += 25;
-    if (aTags.includes(q))         score += 20;
     q.split(' ').forEach(word => {
-      if (word.length > 2) {
-        if (aTitle.includes(word)) score += 5;
-        if (aTags.includes(word))  score += 3;
-      }
+      if (word.length > 2 && aTitle.includes(word)) score += 5;
     });
   });
 

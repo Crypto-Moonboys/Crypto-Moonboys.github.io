@@ -32,6 +32,7 @@ const ROOT     = path.resolve(__dirname, '..');
 const WIKI_DIR = path.join(ROOT, 'wiki');
 const OUTPUT   = path.join(ROOT, 'js', 'wiki-index.json');
 const WIKI_JS  = path.join(ROOT, 'js', 'wiki.js');
+const BASE_URL = 'https://crypto-moonboys.github.io';
 
 /* ── Category → default emoji ───────────────────────────────────────────── */
 const CATEGORY_EMOJI = {
@@ -157,6 +158,7 @@ function loadExistingIndex() {
 
 /* ── Normalize a title for duplicate detection ──────────────────────────── */
 function normalizeTitle(title) {
+  if (!title) return '';
   return title
     .toLowerCase()
     .replace(/['''"""]/g, '')       // remove quotes/apostrophes
@@ -223,10 +225,15 @@ function generateRedirectFile(aliasFilePath, canonicalUrl) {
   if (fs.existsSync(aliasFilePath)) {
     const existing = fs.readFileSync(aliasFilePath, 'utf8');
     // If already a redirect, always overwrite (keeps canonical URL current).
-    const isStub = existing.includes('http-equiv="refresh"');
+    const isStub = /<meta\s[^>]*http-equiv\s*=\s*["']refresh["']/i.test(existing);
     if (!isStub) {
-      // Strip tags and check visible text length
-      const visibleText = existing.replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
+      // Strip script/style blocks first, then remaining tags, to estimate body length
+      const visibleText = existing
+        .replace(/<script[\s\S]*?<\/script>/gi, '')
+        .replace(/<style[\s\S]*?<\/style>/gi, '')
+        .replace(/<[^>]+>/g, '')
+        .replace(/\s+/g, ' ')
+        .trim();
       if (visibleText.length >= 500) {
         console.log(`  ! skipping redirect for ${path.basename(aliasFilePath)} (has substantial content, ${visibleText.length} chars)`);
         return false;
@@ -239,7 +246,7 @@ function generateRedirectFile(aliasFilePath, canonicalUrl) {
 <head>
 <meta charset="UTF-8">
 <meta http-equiv="refresh" content="0; url=${canonicalUrl}">
-<link rel="canonical" href="https://crypto-moonboys.github.io${canonicalUrl}">
+<link rel="canonical" href="${BASE_URL}${canonicalUrl}">
 <title>Redirecting\u2026</title>
 </head>
 <body>
