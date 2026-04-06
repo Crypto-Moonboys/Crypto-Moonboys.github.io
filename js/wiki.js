@@ -90,6 +90,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (searchPage && searchPage.value) {
       renderSearchPage(searchPage.value);
     }
+
     // Re-render the header dropdown if the input already has a value.
     const searchInput   = document.getElementById('search-input');
     const searchResults = document.getElementById('search-results');
@@ -194,6 +195,7 @@ function initSearch() {
 function scoreResult(item, query) {
   const q = query.toLowerCase().trim();
   if (!q) return 0;
+
   let score = 0;
   const title = item.title.toLowerCase();
   const desc  = (item.desc  || '').toLowerCase();
@@ -207,6 +209,7 @@ function scoreResult(item, query) {
   if (tags.includes(q))               score +=  30;
   if (desc.includes(q))               score +=  15;
   if (cat.includes(q))                score +=  10;
+
   q.split(' ').forEach(word => {
     if (word.length > 2) {
       if (title.includes(word)) score += 8;
@@ -222,6 +225,7 @@ function scoreResult(item, query) {
     if (aTitle === q)              score += 80;
     else if (aTitle.startsWith(q)) score += 45;
     else if (aTitle.includes(q))   score += 25;
+
     q.split(' ').forEach(word => {
       if (word.length > 2 && aTitle.includes(word)) score += 5;
     });
@@ -230,15 +234,50 @@ function scoreResult(item, query) {
   return score;
 }
 
+function normalizeEntityKey(text) {
+  return String(text || '')
+    .toLowerCase()
+    .replace(/&/g, 'and')
+    .replace(/[^a-z0-9]+/g, '');
+}
+
+function dedupeResults(scoredResults) {
+  const seen = new Set();
+  const deduped = [];
+
+  scoredResults.forEach(result => {
+    const item = result.item;
+    const baseKeys = [
+      normalizeEntityKey(item.title),
+      normalizeEntityKey(resolveWikiUrl(item.url).replace(/^\/wiki\//, '').replace(/\.html$/, ''))
+    ];
+
+    const aliasKeys = (item.aliases || []).map(alias => normalizeEntityKey(alias.title || ''));
+    const keys = [...baseKeys, ...aliasKeys].filter(Boolean);
+
+    const alreadySeen = keys.some(key => seen.has(key));
+    if (alreadySeen) return;
+
+    keys.forEach(key => seen.add(key));
+    deduped.push(result);
+  });
+
+  return deduped;
+}
+
 function runSearch(query, resultsEl, inputEl) {
   const q = query.trim();
-  if (!q) { resultsEl.classList.remove('open'); return; }
+  if (!q) {
+    resultsEl.classList.remove('open');
+    return;
+  }
 
-  const scored = WIKI_INDEX
+  let scored = WIKI_INDEX
     .map(item => ({ item, score: scoreResult(item, q) }))
     .filter(r => r.score > 0)
-    .sort((a, b) => b.score - a.score)
-    .slice(0, 6);
+    .sort((a, b) => b.score - a.score);
+
+  scored = dedupeResults(scored).slice(0, 6);
 
   resultsEl.innerHTML = '';
   if (scored.length === 0) {
@@ -251,7 +290,7 @@ function runSearch(query, resultsEl, inputEl) {
         <div style="font-size:1.4rem;flex-shrink:0;width:28px;text-align:center">${item.emoji || '📄'}</div>
         <div>
           <div class="sr-title">${highlight(item.title, q)}</div>
-          <div class="sr-desc">${escHtml(item.desc.slice(0, 90))}…</div>
+          <div class="sr-desc">${escHtml((item.desc || '').slice(0, 90))}…</div>
           <div class="sr-cat">${item.category}</div>
         </div>`;
       div.addEventListener('click', () => { window.location.href = resolveWikiUrl(item.url); });
@@ -269,12 +308,14 @@ function renderSearchPage(query) {
   const q = query.trim();
   if (heading) heading.textContent = q ? `Results for "${q}"` : 'All Articles';
 
-  const items = q
+  let items = q
     ? WIKI_INDEX
         .map(item => ({ item, score: scoreResult(item, q) }))
         .filter(r => r.score > 0)
         .sort((a, b) => b.score - a.score)
     : WIKI_INDEX.map(item => ({ item, score: 0 }));
+
+  items = dedupeResults(items);
 
   if (items.length === 0) {
     container.innerHTML = `<p style="color:var(--color-text-muted)">No articles found for "<strong>${escHtml(q)}</strong>". Try different keywords.</p>`;
@@ -286,7 +327,7 @@ function renderSearchPage(query) {
       <div class="ali-icon">${item.emoji || '📄'}</div>
       <div>
         <div class="ali-title">${highlight(item.title, q)}</div>
-        <div class="ali-desc">${escHtml(item.desc)}</div>
+        <div class="ali-desc">${escHtml(item.desc || '')}</div>
         <div class="ali-meta">${item.category}</div>
       </div>
     </a>`).join('');
@@ -339,7 +380,10 @@ function initTOC() {
   if (!toc || !content) return;
 
   const headings = Array.from(content.querySelectorAll('h2, h3'));
-  if (headings.length < 3) { toc.style.display = 'none'; return; }
+  if (headings.length < 3) {
+    toc.style.display = 'none';
+    return;
+  }
 
   let ol = document.createElement('ol');
   let subOl = null;
