@@ -81,18 +81,39 @@ jobs:
       - name: Check for fragile parent-relative nav/asset paths
         run: |
           FAIL=0
-          # Patterns that must never appear in wiki or category pages (shared nav/asset regressions)
-          BAD_PATTERNS=('../index.html' '../search.html' '../categories/index.html' '../img/' '../css/' '../js/')
-          for pattern in "${BAD_PATTERNS[@]}"; do
-            matches=$(grep -rl --include='*.html' "$pattern" wiki/ categories/ 2>/dev/null || true)
+          # ── Patterns that must NEVER appear in wiki/categories pages or the template ──
+          # 1. Parent-relative (../) navigation and asset paths
+          DOTDOT_PATTERNS=('../index.html' '../search.html' '../categories/index.html' '../img/' '../css/' '../js/')
+          for pattern in "${DOTDOT_PATTERNS[@]}"; do
+            matches=$(grep -rFl --include='*.html' "$pattern" wiki/ categories/ _article-template.html 2>/dev/null || true)
             if [ -n "$matches" ]; then
-              echo "::error::Fragile relative path '$pattern' found in:"
+              echo "::error::Fragile ../ path '$pattern' found in:"
+              echo "$matches"
+              FAIL=1
+            fi
+          done
+          # 2. Bare (non-root-relative) navigation links — must always start with /
+          BARE_PATTERNS=('href="index.html"' 'href="search.html"' 'href="sam.html"')
+          for pattern in "${BARE_PATTERNS[@]}"; do
+            matches=$(grep -rFl --include='*.html' "$pattern" wiki/ categories/ _article-template.html 2>/dev/null || true)
+            if [ -n "$matches" ]; then
+              echo "::error::Bare relative nav path '$pattern' found in:"
+              echo "$matches"
+              FAIL=1
+            fi
+          done
+          # 3. Bare relative asset references (no leading /)
+          BARE_ASSET_PATTERNS=('src="img/' 'src="css/')
+          for pattern in "${BARE_ASSET_PATTERNS[@]}"; do
+            matches=$(grep -rFl --include='*.html' "$pattern" wiki/ categories/ _article-template.html 2>/dev/null || true)
+            if [ -n "$matches" ]; then
+              echo "::error::Bare relative asset path '$pattern' found in:"
               echo "$matches"
               FAIL=1
             fi
           done
           if [ "$FAIL" = "0" ]; then
-            echo "No fragile parent-relative nav/asset paths found. ✅"
+            echo "All nav/asset paths are root-relative. ✅"
           fi
           exit $FAIL
 
