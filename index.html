@@ -130,6 +130,12 @@
         </div>
       </div>
 
+      <!-- ── LIVE PRICES ─────────────────────────────────────── -->
+      <div class="price-ticker-section">
+        <h2 class="section-heading">📈 Live Prices</h2>
+        <div class="price-ticker-grid" aria-label="Live cryptocurrency prices" aria-busy="true"></div>
+      </div>
+
       <h2 class="section-heading">Browse by Category</h2>
       <div class="category-grid">
         <a href="categories/cryptocurrencies.html" class="category-card">
@@ -239,6 +245,52 @@
         </a>
       </div>
 
+      <!-- ── BATTLE / ACTIVITY WIDGETS ─────────────────────── -->
+      <h2 class="section-heading">⚡️ Activity &amp; Battle Layer</h2>
+      <div class="home-widgets-grid">
+
+        <!-- SAM Status -->
+        <div class="home-widget">
+          <div class="home-widget-header">
+            <span class="home-widget-icon" aria-hidden="true">🤖</span> SAM Status
+          </div>
+          <div class="home-widget-body" id="sam-status-widget" aria-live="polite"></div>
+        </div>
+
+        <!-- Live Feed -->
+        <div class="home-widget">
+          <div class="home-widget-header">
+            <span class="home-widget-icon" aria-hidden="true">📡</span> Live Feed
+          </div>
+          <div class="home-widget-body" id="live-feed-widget" aria-live="polite"></div>
+        </div>
+
+        <!-- Leaderboard -->
+        <div class="home-widget">
+          <div class="home-widget-header">
+            <span class="home-widget-icon" aria-hidden="true">🏆</span> Leaderboard
+          </div>
+          <div class="home-widget-body" id="leaderboard-widget" aria-live="polite"></div>
+        </div>
+
+        <!-- Page Heat / Activity -->
+        <div class="home-widget">
+          <div class="home-widget-header">
+            <span class="home-widget-icon" aria-hidden="true">🔥</span> Trending Pages
+          </div>
+          <div class="home-widget-body" id="activity-panel" aria-live="polite"></div>
+        </div>
+
+        <!-- Comments / Battle teaser -->
+        <div class="home-widget">
+          <div class="home-widget-header">
+            <span class="home-widget-icon" aria-hidden="true">⚔️</span> Battle Layer
+          </div>
+          <div class="home-widget-body" id="comments-teaser" aria-live="polite"></div>
+        </div>
+
+      </div>
+
       <h2 class="section-heading">Recent Articles</h2>
       <div class="article-grid">
         <a href="wiki/hodl-wars.html" class="article-card">
@@ -304,8 +356,11 @@
 
 <button id="back-to-top" aria-label="Back to top">↑</button>
 
+<script src="js/api-config.js"></script>
 <script src="js/wiki.js"></script>
 <script src="js/index_stats_v2.js"></script>
+<script src="js/price-ticker.js"></script>
+<script src="js/home-widgets.js"></script>
 
 
 </body>
