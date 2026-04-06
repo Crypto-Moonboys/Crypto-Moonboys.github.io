@@ -58,7 +58,55 @@ function makeEntityId(title, url) {
     .replace(/^_|_$/g, '');
 }
 
-/* ── Generate tags from a title (same logic as generate-wiki-index.js) ───── */
+/* ── Clean a canonical title for human-readable display ─────────────────── */
+// Converts raw underscore/slug titles (e.g. "1m_free_nfts") into proper
+// Title Case ("1M Free NFTs").  Only applied when the title looks like a
+// raw slug — i.e. it contains underscores and no spaces.
+// Titles that already contain spaces or mixed-case are left unchanged.
+const TITLE_WORD_MAP = {
+  nft:   'NFT',
+  nfts:  'NFTs',
+  btc:   'BTC',
+  eth:   'ETH',
+  xrp:   'XRP',
+  defi:  'DeFi',
+  dao:   'DAO',
+  gk:    'GK',
+  nbg:   'NBG',
+  pmsl:  'PMSL',
+  dex:   'DEX',
+  p2e:   'P2E',
+  f2p:   'F2P',
+  ai:    'AI',
+  api:   'API',
+  ui:    'UI',
+  ux:    'UX',
+  tv:    'TV',
+  dj:    'DJ',
+};
+
+function cleanTitle(title) {
+  // Only process titles that look like raw slugs (underscores, no spaces)
+  if (!title.includes('_') || title.includes(' ')) return title;
+
+  return title
+    .split('_')
+    .map(word => {
+      if (!word) return word;
+      const lower = word.toLowerCase();
+      // Known word mappings (abbreviations, acronyms with special casing)
+      if (Object.prototype.hasOwnProperty.call(TITLE_WORD_MAP, lower)) {
+        return TITLE_WORD_MAP[lower];
+      }
+      // Numeric prefixes like "1m", "24" — uppercase the letter suffix
+      if (/^\d+[a-z]$/.test(lower)) return word.slice(0, -1) + word.slice(-1).toUpperCase();
+      // Default: Title Case
+      return word.charAt(0).toUpperCase() + word.slice(1);
+    })
+    .join(' ');
+}
+
+
 function generateTags(title) {
   const stopwords = new Set([
     'the', 'a', 'an', 'and', 'of', 'in', 'for', 'on', 'at', 'to', 'by',
@@ -164,7 +212,7 @@ for (const entry of wikiIndex) {
 
   const record = {
     entity_id:       entityId,
-    canonical_title: entry.title,
+    canonical_title: cleanTitle(entry.title),
     canonical_url:   entry.url,
     category:        entry.category || 'Lore',
     aliases:         approvedAliases,

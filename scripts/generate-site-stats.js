@@ -4,11 +4,15 @@
  *
  * Generates js/site-stats.json from real repository contents:
  *   - article_count  : number of entries in js/wiki-index.json
+ *   - entity_count   : number of entries in js/entity-map.json
  *   - category_count : number of /categories/*.html files, excluding index.html
  *   - last_updated   : ISO timestamp of the build; preserved if counts are unchanged
  *
  * Also writes the legacy keys (total_articles / total_entities) so that
  * js/index_stats_v2.js can read the same file without changes.
+ *
+ * NOTE: total_entities mirrors entity_count (actual entity count from entity-map),
+ * NOT category_count.
  *
  * Run:
  *   node scripts/generate-site-stats.js
@@ -21,6 +25,7 @@ const path = require('path');
 
 const ROOT        = path.resolve(__dirname, '..');
 const INDEX_JSON  = path.join(ROOT, 'js', 'wiki-index.json');
+const ENTITY_MAP  = path.join(ROOT, 'js', 'entity-map.json');
 const CATS_DIR    = path.join(ROOT, 'categories');
 const OUTPUT      = path.join(ROOT, 'js', 'site-stats.json');
 
@@ -47,12 +52,34 @@ if (fs.existsSync(CATS_DIR)) {
   console.error('Warning: categories/ directory not found — category_count will be 0');
 }
 
+/* ── Entity count from entity-map ───────────────────────────────────────── */
+let entityCount = 0;
+if (fs.existsSync(ENTITY_MAP)) {
+  const raw = fs.readFileSync(ENTITY_MAP, 'utf8');
+  try {
+    entityCount = JSON.parse(raw).length;
+  } catch (e) {
+    console.error('Warning: could not parse js/entity-map.json:', e.message);
+  }
+} else {
+  console.error('Warning: js/entity-map.json not found — entity_count will be 0');
+}
+
+/* ── Consistency check ───────────────────────────────────────────────────── */
+if (entityCount > 0 && articleCount > 0 && entityCount !== articleCount) {
+  console.warn(`Note: entity_count (${entityCount}) differs from article_count (${articleCount}) — this is expected when some articles cover multiple entities.`);
+}
+
 /* ── Timestamp: preserve existing timestamp if counts haven't changed ────── */
 let lastUpdated = new Date().toISOString();
 if (fs.existsSync(OUTPUT)) {
   try {
     const existing = JSON.parse(fs.readFileSync(OUTPUT, 'utf8'));
-    if (existing.article_count === articleCount && existing.category_count === categoryCount) {
+    if (
+      existing.article_count  === articleCount  &&
+      existing.entity_count   === entityCount   &&
+      existing.category_count === categoryCount
+    ) {
       lastUpdated = existing.last_updated;
     }
   } catch (e) { /* ignore parse errors — use fresh timestamp */ }
@@ -61,12 +88,13 @@ if (fs.existsSync(OUTPUT)) {
 /* ── Write output ────────────────────────────────────────────────────────── */
 const stats = {
   article_count:   articleCount,
+  entity_count:    entityCount,
   category_count:  categoryCount,
   last_updated:    lastUpdated,
   /* legacy keys consumed by js/index_stats_v2.js */
   total_articles:  articleCount,
-  total_entities:  categoryCount,
+  total_entities:  entityCount,
 };
 
 fs.writeFileSync(OUTPUT, JSON.stringify(stats, null, 2) + '\n', 'utf8');
-console.log(`js/site-stats.json written — ${articleCount} articles, ${categoryCount} categories (${lastUpdated})`);
+console.log(`js/site-stats.json written — ${articleCount} articles, ${entityCount} entities, ${categoryCount} categories (${lastUpdated})`);

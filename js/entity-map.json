@@ -1,7 +1,7 @@
 [
   {
     "entity_id": "1m_free_nfts",
-    "canonical_title": "1m_free_nfts",
+    "canonical_title": "1M Free NFTs",
     "canonical_url": "/wiki/1m-free-nfts.html",
     "category": "Concepts",
     "aliases": [],
@@ -12,9 +12,6 @@
     ],
     "source_urls": [
       "/wiki/1m-free-nfts.html"
-    ],
-    "alias_candidates": [
-      "1m free nfts"
     ]
   },
   {
@@ -35,7 +32,7 @@
   },
   {
     "entity_id": "1m_free_nfts_program",
-    "canonical_title": "1m_free_nfts_program",
+    "canonical_title": "1M Free NFTs Program",
     "canonical_url": "/wiki/1m-free-nfts-program.html",
     "category": "Community & People",
     "aliases": [],
@@ -47,14 +44,11 @@
     ],
     "source_urls": [
       "/wiki/1m-free-nfts-program.html"
-    ],
-    "alias_candidates": [
-      "1m free nfts program"
     ]
   },
   {
     "entity_id": "1m_free_nfts_programme",
-    "canonical_title": "1m_free_nfts_programme",
+    "canonical_title": "1M Free NFTs Programme",
     "canonical_url": "/wiki/1m-free-nfts-programme.html",
     "category": "Community & People",
     "aliases": [],
@@ -66,9 +60,6 @@
     ],
     "source_urls": [
       "/wiki/1m-free-nfts-programme.html"
-    ],
-    "alias_candidates": [
-      "1m free nfts programme"
     ]
   },
   {
@@ -108,7 +99,7 @@
   },
   {
     "entity_id": "alfie_blaze",
-    "canonical_title": "alfie_blaze",
+    "canonical_title": "Alfie Blaze",
     "canonical_url": "/wiki/alfie-blaze.html",
     "category": "Lore",
     "aliases": [],
@@ -118,9 +109,6 @@
     ],
     "source_urls": [
       "/wiki/alfie-blaze.html"
-    ],
-    "alias_candidates": [
-      "alfie blaze"
     ]
   },
   {
@@ -190,7 +178,7 @@
   },
   {
     "entity_id": "battlemech_blast",
-    "canonical_title": "battlemech_blast",
+    "canonical_title": "Battlemech Blast",
     "canonical_url": "/wiki/battlemech-blast.html",
     "category": "Lore",
     "aliases": [],
@@ -200,9 +188,6 @@
     ],
     "source_urls": [
       "/wiki/battlemech-blast.html"
-    ],
-    "alias_candidates": [
-      "battlemech blast"
     ]
   },
   {
@@ -280,7 +265,7 @@
   },
   {
     "entity_id": "bitcoin_kids",
-    "canonical_title": "bitcoin_kids",
+    "canonical_title": "Bitcoin Kids",
     "canonical_url": "/wiki/bitcoin-kids.html",
     "category": "Lore",
     "aliases": [],
@@ -290,14 +275,11 @@
     ],
     "source_urls": [
       "/wiki/bitcoin-kids.html"
-    ],
-    "alias_candidates": [
-      "bitcoin kids"
     ]
   },
   {
     "entity_id": "bitcoin_x_kids",
-    "canonical_title": "bitcoin_x_kids",
+    "canonical_title": "Bitcoin X Kids",
     "canonical_url": "/wiki/bitcoin-x-kids.html",
     "category": "Lore",
     "aliases": [],
@@ -307,10 +289,6 @@
     ],
     "source_urls": [
       "/wiki/bitcoin-x-kids.html"
-    ],
-    "alias_candidates": [
-      "bitcoin kids",
-      "bitcoin x kids"
     ]
   },
   {
@@ -330,7 +308,7 @@
   },
   {
     "entity_id": "block_topia",
-    "canonical_title": "block_topia",
+    "canonical_title": "Block Topia",
     "canonical_url": "/wiki/block-topia.html",
     "category": "Concepts",
     "aliases": [],
@@ -340,9 +318,6 @@
     ],
     "source_urls": [
       "/wiki/block-topia.html"
-    ],
-    "alias_candidates": [
-      "block topia"
     ]
   },
   {
@@ -379,7 +354,7 @@
   },
   {
     "entity_id": "burn_to_earn",
-    "canonical_title": "burn_to_earn",
+    "canonical_title": "Burn To Earn",
     "canonical_url": "/wiki/burn-to-earn.html",
     "category": "Concepts",
     "aliases": [],
@@ -391,13 +366,12 @@
       "/wiki/burn-to-earn.html"
     ],
     "alias_candidates": [
-      "burn earn",
-      "burn to earn"
+      "burn earn"
     ]
   },
   {
     "entity_id": "canvas_clash",
-    "canonical_title": "canvas_clash",
+    "canonical_title": "Canvas Clash",
     "canonical_url": "/wiki/canvas-clash.html",
     "category": "Lore",
     "aliases": [],
@@ -407,14 +381,11 @@
     ],
     "source_urls": [
       "/wiki/canvas-clash.html"
-    ],
-    "alias_candidates": [
-      "canvas clash"
     ]
   },
   {
     "entity_id": "charlie_buster",
-    "canonical_title": "charlie_buster",
+    "canonical_title": "Charlie Buster",
     "canonical_url": "/wiki/charlie-buster.html",
     "category": "Lore",
     "aliases": [],
@@ -424,9 +395,6 @@
     ],
     "source_urls": [
       "/wiki/charlie-buster.html"
-    ],
-    "alias_candidates": [
-      "charlie buster"
     ]
   },
   {
@@ -446,7 +414,7 @@
   },
   {
     "entity_id": "crypto_moonboys",
-    "canonical_title": "crypto_moonboys",
+    "canonical_title": "Crypto Moonboys",
     "canonical_url": "/wiki/crypto-moonboys.html",
     "category": "Community & People",
     "aliases": [],
@@ -456,14 +424,11 @@
     ],
     "source_urls": [
       "/wiki/crypto-moonboys.html"
-    ],
-    "alias_candidates": [
-      "crypto moonboys"
     ]
   },
   {
     "entity_id": "darren_cullen",
-    "canonical_title": "darren_cullen",
+    "canonical_title": "Darren Cullen",
     "canonical_url": "/wiki/darren-cullen.html",
     "category": "Concepts",
     "aliases": [],
@@ -473,9 +438,6 @@
     ],
     "source_urls": [
       "/wiki/darren-cullen.html"
-    ],
-    "alias_candidates": [
-      "darren cullen"
     ]
   },
   {
@@ -593,7 +555,7 @@
   },
   {
     "entity_id": "dream_sovereign",
-    "canonical_title": "dream_sovereign",
+    "canonical_title": "Dream Sovereign",
     "canonical_url": "/wiki/dream-sovereign.html",
     "category": "Concepts",
     "aliases": [],
@@ -603,9 +565,6 @@
     ],
     "source_urls": [
       "/wiki/dream-sovereign.html"
-    ],
-    "alias_candidates": [
-      "dream sovereign"
     ]
   },
   {
@@ -722,7 +681,7 @@
   },
   {
     "entity_id": "games4punks_telegram",
-    "canonical_title": "games4punks_telegram",
+    "canonical_title": "Games4punks Telegram",
     "canonical_url": "/wiki/games4punks-telegram.html",
     "category": "Gaming",
     "aliases": [],
@@ -732,9 +691,6 @@
     ],
     "source_urls": [
       "/wiki/games4punks-telegram.html"
-    ],
-    "alias_candidates": [
-      "games4punks telegram"
     ]
   },
   {
@@ -754,7 +710,7 @@
   },
   {
     "entity_id": "gang_signs",
-    "canonical_title": "gang_signs",
+    "canonical_title": "Gang Signs",
     "canonical_url": "/wiki/gang-signs.html",
     "category": "Gaming",
     "aliases": [],
@@ -764,14 +720,11 @@
     ],
     "source_urls": [
       "/wiki/gang-signs.html"
-    ],
-    "alias_candidates": [
-      "gang signs"
     ]
   },
   {
     "entity_id": "gang_signs_card_game",
-    "canonical_title": "Gang_Signs_Card_Game",
+    "canonical_title": "Gang Signs Card Game",
     "canonical_url": "/wiki/gang-signs-card-game.html",
     "category": "Gaming",
     "aliases": [],
@@ -783,14 +736,11 @@
     ],
     "source_urls": [
       "/wiki/gang-signs-card-game.html"
-    ],
-    "alias_candidates": [
-      "gang signs card game"
     ]
   },
   {
     "entity_id": "genesis_kernel",
-    "canonical_title": "genesis_kernel",
+    "canonical_title": "Genesis Kernel",
     "canonical_url": "/wiki/genesis-kernel.html",
     "category": "Lore",
     "aliases": [],
@@ -800,14 +750,11 @@
     ],
     "source_urls": [
       "/wiki/genesis-kernel.html"
-    ],
-    "alias_candidates": [
-      "genesis kernel"
     ]
   },
   {
     "entity_id": "genesis_spray",
-    "canonical_title": "genesis_spray",
+    "canonical_title": "Genesis Spray",
     "canonical_url": "/wiki/genesis-spray.html",
     "category": "Community & People",
     "aliases": [],
@@ -817,14 +764,11 @@
     ],
     "source_urls": [
       "/wiki/genesis-spray.html"
-    ],
-    "alias_candidates": [
-      "genesis spray"
     ]
   },
   {
     "entity_id": "genesis_spray_drop",
-    "canonical_title": "genesis_spray_drop",
+    "canonical_title": "Genesis Spray Drop",
     "canonical_url": "/wiki/genesis-spray-drop.html",
     "category": "Lore",
     "aliases": [],
@@ -835,9 +779,6 @@
     ],
     "source_urls": [
       "/wiki/genesis-spray-drop.html"
-    ],
-    "alias_candidates": [
-      "genesis spray drop"
     ]
   },
   {
@@ -875,7 +816,7 @@
   },
   {
     "entity_id": "gkniftyheads_phase_one_two_three",
-    "canonical_title": "GKniftyHEADS_Phase_One_Two_Three",
+    "canonical_title": "GKniftyHEADS Phase One Two Three",
     "canonical_url": "/wiki/gkniftyheads-phase-one-two-three.html",
     "category": "Concepts",
     "aliases": [],
@@ -888,9 +829,6 @@
     ],
     "source_urls": [
       "/wiki/gkniftyheads-phase-one-two-three.html"
-    ],
-    "alias_candidates": [
-      "gkniftyheads phase one two three"
     ]
   },
   {
@@ -909,7 +847,7 @@
   },
   {
     "entity_id": "graffiti_nexus",
-    "canonical_title": "graffiti_nexus",
+    "canonical_title": "Graffiti Nexus",
     "canonical_url": "/wiki/graffiti-nexus.html",
     "category": "Concepts",
     "aliases": [],
@@ -919,9 +857,6 @@
     ],
     "source_urls": [
       "/wiki/graffiti-nexus.html"
-    ],
-    "alias_candidates": [
-      "graffiti nexus"
     ]
   },
   {
@@ -972,7 +907,7 @@
   },
   {
     "entity_id": "graffpunks_24_7",
-    "canonical_title": "graffpunks_24_7",
+    "canonical_title": "Graffpunks 24 7",
     "canonical_url": "/wiki/graffpunks-24-7.html",
     "category": "Gaming",
     "aliases": [],
@@ -984,13 +919,12 @@
       "/wiki/graffpunks-24-7.html"
     ],
     "alias_candidates": [
-      "graffpunks 24",
-      "graffpunks 24 7"
+      "graffpunks 24"
     ]
   },
   {
     "entity_id": "graffpunks_24_7_radio",
-    "canonical_title": "graffpunks_24_7_radio",
+    "canonical_title": "Graffpunks 24 7 Radio",
     "canonical_url": "/wiki/graffpunks-24-7-radio.html",
     "category": "Gaming",
     "aliases": [],
@@ -1003,13 +937,12 @@
       "/wiki/graffpunks-24-7-radio.html"
     ],
     "alias_candidates": [
-      "graffpunks 24 7 radio",
       "graffpunks 24 radio"
     ]
   },
   {
     "entity_id": "graffpunks_247",
-    "canonical_title": "graffpunks_247",
+    "canonical_title": "Graffpunks 247",
     "canonical_url": "/wiki/graffpunks-247.html",
     "category": "Concepts",
     "aliases": [],
@@ -1019,9 +952,6 @@
     ],
     "source_urls": [
       "/wiki/graffpunks-247.html"
-    ],
-    "alias_candidates": [
-      "graffpunks 247"
     ]
   },
   {
@@ -1047,7 +977,7 @@
   },
   {
     "entity_id": "graffpunks_247_radio",
-    "canonical_title": "graffpunks_247_radio",
+    "canonical_title": "Graffpunks 247 Radio",
     "canonical_url": "/wiki/graffpunks-247-radio.html",
     "category": "Concepts",
     "aliases": [],
@@ -1058,14 +988,11 @@
     ],
     "source_urls": [
       "/wiki/graffpunks-247-radio.html"
-    ],
-    "alias_candidates": [
-      "graffpunks 247 radio"
     ]
   },
   {
     "entity_id": "graffpunks_collection",
-    "canonical_title": "GraffPUNKS_Collection",
+    "canonical_title": "GraffPUNKS Collection",
     "canonical_url": "/wiki/graffpunks-collection.html",
     "category": "Community & People",
     "aliases": [],
@@ -1075,14 +1002,11 @@
     ],
     "source_urls": [
       "/wiki/graffpunks-collection.html"
-    ],
-    "alias_candidates": [
-      "graffpunks collection"
     ]
   },
   {
     "entity_id": "graffpunks_network",
-    "canonical_title": "graffpunks_network",
+    "canonical_title": "Graffpunks Network",
     "canonical_url": "/wiki/graffpunks-network.html",
     "category": "Concepts",
     "aliases": [],
@@ -1092,14 +1016,11 @@
     ],
     "source_urls": [
       "/wiki/graffpunks-network.html"
-    ],
-    "alias_candidates": [
-      "graffpunks network"
     ]
   },
   {
     "entity_id": "graffpunks_nfts",
-    "canonical_title": "graffpunks_nfts",
+    "canonical_title": "Graffpunks NFTs",
     "canonical_url": "/wiki/graffpunks-nfts.html",
     "category": "Community & People",
     "aliases": [],
@@ -1109,9 +1030,6 @@
     ],
     "source_urls": [
       "/wiki/graffpunks-nfts.html"
-    ],
-    "alias_candidates": [
-      "graffpunks nfts"
     ]
   },
   {
@@ -1160,7 +1078,7 @@
   },
   {
     "entity_id": "hard_fork_games",
-    "canonical_title": "hard_fork_games",
+    "canonical_title": "Hard Fork Games",
     "canonical_url": "/wiki/hard-fork-games.html",
     "category": "Gaming",
     "aliases": [],
@@ -1171,9 +1089,6 @@
     ],
     "source_urls": [
       "/wiki/hard-fork-games.html"
-    ],
-    "alias_candidates": [
-      "hard fork games"
     ]
   },
   {
@@ -1194,7 +1109,7 @@
   },
   {
     "entity_id": "hard_fork_games_game",
-    "canonical_title": "hard_fork_games_game",
+    "canonical_title": "Hard Fork Games Game",
     "canonical_url": "/wiki/hard-fork-games-game.html",
     "category": "Gaming",
     "aliases": [],
@@ -1206,14 +1121,11 @@
     ],
     "source_urls": [
       "/wiki/hard-fork-games-game.html"
-    ],
-    "alias_candidates": [
-      "hard fork games game"
     ]
   },
   {
     "entity_id": "harrison_rift",
-    "canonical_title": "harrison_rift",
+    "canonical_title": "Harrison Rift",
     "canonical_url": "/wiki/harrison-rift.html",
     "category": "Lore",
     "aliases": [],
@@ -1223,14 +1135,11 @@
     ],
     "source_urls": [
       "/wiki/harrison-rift.html"
-    ],
-    "alias_candidates": [
-      "harrison rift"
     ]
   },
   {
     "entity_id": "head_tags",
-    "canonical_title": "head_tags",
+    "canonical_title": "Head Tags",
     "canonical_url": "/wiki/head-tags.html",
     "category": "Community & People",
     "aliases": [],
@@ -1240,9 +1149,6 @@
     ],
     "source_urls": [
       "/wiki/head-tags.html"
-    ],
-    "alias_candidates": [
-      "head tags"
     ]
   },
   {
@@ -1280,7 +1186,7 @@
   },
   {
     "entity_id": "hodl_wars",
-    "canonical_title": "hodl_wars",
+    "canonical_title": "Hodl Wars",
     "canonical_url": "/wiki/hodl-wars.html",
     "category": "Gaming",
     "aliases": [],
@@ -1290,14 +1196,11 @@
     ],
     "source_urls": [
       "/wiki/hodl-wars.html"
-    ],
-    "alias_candidates": [
-      "hodl wars"
     ]
   },
   {
     "entity_id": "hodl_wars_game",
-    "canonical_title": "hodl_wars_game",
+    "canonical_title": "Hodl Wars Game",
     "canonical_url": "/wiki/hodl-wars-game.html",
     "category": "Gaming",
     "aliases": [],
@@ -1308,14 +1211,11 @@
     ],
     "source_urls": [
       "/wiki/hodl-wars-game.html"
-    ],
-    "alias_candidates": [
-      "hodl wars game"
     ]
   },
   {
     "entity_id": "hodl_x_warriors",
-    "canonical_title": "hodl_x_warriors",
+    "canonical_title": "Hodl X Warriors",
     "canonical_url": "/wiki/hodl-x-warriors.html",
     "category": "Community & People",
     "aliases": [],
@@ -1327,13 +1227,12 @@
       "/wiki/hodl-x-warriors.html"
     ],
     "alias_candidates": [
-      "hodl warriors",
-      "hodl x warriors"
+      "hodl warriors"
     ]
   },
   {
     "entity_id": "ian_harrison",
-    "canonical_title": "ian_harrison",
+    "canonical_title": "Ian Harrison",
     "canonical_url": "/wiki/ian-harrison.html",
     "category": "Concepts",
     "aliases": [],
@@ -1343,9 +1242,6 @@
     ],
     "source_urls": [
       "/wiki/ian-harrison.html"
-    ],
-    "alias_candidates": [
-      "ian harrison"
     ]
   },
   {
@@ -1385,7 +1281,7 @@
   },
   {
     "entity_id": "jillian_godsil",
-    "canonical_title": "jillian_godsil",
+    "canonical_title": "Jillian Godsil",
     "canonical_url": "/wiki/jillian-godsil.html",
     "category": "Concepts",
     "aliases": [],
@@ -1395,9 +1291,6 @@
     ],
     "source_urls": [
       "/wiki/jillian-godsil.html"
-    ],
-    "alias_candidates": [
-      "jillian godsil"
     ]
   },
   {
@@ -1533,7 +1426,7 @@
   },
   {
     "entity_id": "m1ntr_k1ll",
-    "canonical_title": "M1nTr_K1ll",
+    "canonical_title": "M1nTr K1ll",
     "canonical_url": "/wiki/m1ntr-k1ll.html",
     "category": "Lore",
     "aliases": [],
@@ -1543,9 +1436,6 @@
     ],
     "source_urls": [
       "/wiki/m1ntr-k1ll.html"
-    ],
-    "alias_candidates": [
-      "m1ntr k1ll"
     ]
   },
   {
@@ -1684,7 +1574,7 @@
   },
   {
     "entity_id": "midevil_hero_arena",
-    "canonical_title": "midevil_hero_arena",
+    "canonical_title": "Midevil Hero Arena",
     "canonical_url": "/wiki/midevil-hero-arena.html",
     "category": "Gaming",
     "aliases": [],
@@ -1695,14 +1585,11 @@
     ],
     "source_urls": [
       "/wiki/midevil-hero-arena.html"
-    ],
-    "alias_candidates": [
-      "midevil hero arena"
     ]
   },
   {
     "entity_id": "midevil_hero_arena_game",
-    "canonical_title": "midevil_hero_arena_game",
+    "canonical_title": "Midevil Hero Arena Game",
     "canonical_url": "/wiki/midevil-hero-arena-game.html",
     "category": "Gaming",
     "aliases": [],
@@ -1714,9 +1601,6 @@
     ],
     "source_urls": [
       "/wiki/midevil-hero-arena-game.html"
-    ],
-    "alias_candidates": [
-      "midevil hero arena game"
     ]
   },
   {
@@ -1761,7 +1645,7 @@
   },
   {
     "entity_id": "nbg_token",
-    "canonical_title": "nbg_token",
+    "canonical_title": "NBG Token",
     "canonical_url": "/wiki/nbg-token.html",
     "category": "Cryptocurrencies",
     "aliases": [],
@@ -1771,9 +1655,6 @@
     ],
     "source_urls": [
       "/wiki/nbg-token.html"
-    ],
-    "alias_candidates": [
-      "nbg token"
     ]
   },
   {
@@ -1791,7 +1672,7 @@
   },
   {
     "entity_id": "nbgx_token",
-    "canonical_title": "nbgx_token",
+    "canonical_title": "Nbgx Token",
     "canonical_url": "/wiki/nbgx-token.html",
     "category": "Cryptocurrencies",
     "aliases": [],
@@ -1801,9 +1682,6 @@
     ],
     "source_urls": [
       "/wiki/nbgx-token.html"
-    ],
-    "alias_candidates": [
-      "nbgx token"
     ]
   },
   {
@@ -1857,7 +1735,7 @@
   },
   {
     "entity_id": "nifty_crowns",
-    "canonical_title": "nifty_crowns",
+    "canonical_title": "Nifty Crowns",
     "canonical_url": "/wiki/nifty-crowns.html",
     "category": "Community & People",
     "aliases": [],
@@ -1867,14 +1745,11 @@
     ],
     "source_urls": [
       "/wiki/nifty-crowns.html"
-    ],
-    "alias_candidates": [
-      "nifty crowns"
     ]
   },
   {
     "entity_id": "nine_armies",
-    "canonical_title": "nine_armies",
+    "canonical_title": "Nine Armies",
     "canonical_url": "/wiki/nine-armies.html",
     "category": "Lore",
     "aliases": [],
@@ -1884,9 +1759,6 @@
     ],
     "source_urls": [
       "/wiki/nine-armies.html"
-    ],
-    "alias_candidates": [
-      "nine armies"
     ]
   },
   {
@@ -1930,7 +1802,7 @@
   },
   {
     "entity_id": "null_the_prophet",
-    "canonical_title": "null_the_prophet",
+    "canonical_title": "Null The Prophet",
     "canonical_url": "/wiki/null-the-prophet.html",
     "category": "Lore",
     "aliases": [],
@@ -1942,13 +1814,12 @@
       "/wiki/null-the-prophet.html"
     ],
     "alias_candidates": [
-      "null prophet",
-      "null the prophet"
+      "null prophet"
     ]
   },
   {
     "entity_id": "one_million_free_nfts",
-    "canonical_title": "one_million_free_nfts",
+    "canonical_title": "One Million Free NFTs",
     "canonical_url": "/wiki/one-million-free-nfts.html",
     "category": "Community & People",
     "aliases": [],
@@ -1960,9 +1831,6 @@
     ],
     "source_urls": [
       "/wiki/one-million-free-nfts.html"
-    ],
-    "alias_candidates": [
-      "one million free nfts"
     ]
   },
   {
@@ -2036,7 +1904,7 @@
   },
   {
     "entity_id": "pmsl_token",
-    "canonical_title": "pmsl_token",
+    "canonical_title": "PMSL Token",
     "canonical_url": "/wiki/pmsl-token.html",
     "category": "Cryptocurrencies",
     "aliases": [],
@@ -2046,9 +1914,6 @@
     ],
     "source_urls": [
       "/wiki/pmsl-token.html"
-    ],
-    "alias_candidates": [
-      "pmsl token"
     ]
   },
   {
@@ -2080,7 +1945,7 @@
   },
   {
     "entity_id": "punk_token",
-    "canonical_title": "punk_token",
+    "canonical_title": "Punk Token",
     "canonical_url": "/wiki/punk-token.html",
     "category": "Cryptocurrencies",
     "aliases": [],
@@ -2090,9 +1955,6 @@
     ],
     "source_urls": [
       "/wiki/punk-token.html"
-    ],
-    "alias_candidates": [
-      "punk token"
     ]
   },
   {
@@ -2129,7 +1991,7 @@
   },
   {
     "entity_id": "queen_sarah_pfly",
-    "canonical_title": "queen_sarah_pfly",
+    "canonical_title": "Queen Sarah Pfly",
     "canonical_url": "/wiki/queen-sarah-pfly.html",
     "category": "Lore",
     "aliases": [],
@@ -2140,9 +2002,6 @@
     ],
     "source_urls": [
       "/wiki/queen-sarah-pfly.html"
-    ],
-    "alias_candidates": [
-      "queen sarah pfly"
     ]
   },
   {
@@ -2160,7 +2019,7 @@
   },
   {
     "entity_id": "rave_relics",
-    "canonical_title": "rave_relics",
+    "canonical_title": "Rave Relics",
     "canonical_url": "/wiki/rave-relics.html",
     "category": "Community & People",
     "aliases": [],
@@ -2170,9 +2029,6 @@
     ],
     "source_urls": [
       "/wiki/rave-relics.html"
-    ],
-    "alias_candidates": [
-      "rave relics"
     ]
   },
   {
@@ -3204,7 +3060,7 @@
   },
   {
     "entity_id": "trevor_fung",
-    "canonical_title": "trevor_fung",
+    "canonical_title": "Trevor Fung",
     "canonical_url": "/wiki/trevor-fung.html",
     "category": "Concepts",
     "aliases": [],
@@ -3214,9 +3070,6 @@
     ],
     "source_urls": [
       "/wiki/trevor-fung.html"
-    ],
-    "alias_candidates": [
-      "trevor fung"
     ]
   },
   {
@@ -3318,7 +3171,7 @@
   },
   {
     "entity_id": "xrp_kids",
-    "canonical_title": "xrp_kids",
+    "canonical_title": "XRP Kids",
     "canonical_url": "/wiki/xrp-kids.html",
     "category": "Community & People",
     "aliases": [],
@@ -3328,9 +3181,6 @@
     ],
     "source_urls": [
       "/wiki/xrp-kids.html"
-    ],
-    "alias_candidates": [
-      "xrp kids"
     ]
   },
   {
