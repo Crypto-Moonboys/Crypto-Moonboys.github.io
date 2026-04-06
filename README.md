@@ -219,3 +219,171 @@ Search understands meaning
 Frontend is modular
 
 👉 This is the foundation for a fully autonomous content + intelligence system
+
+🎯 Purpose
+
+This repo is a structured knowledge engine, not a normal content site.
+
+Every change affects:
+
+search
+entity system
+memory export
+SEO
+future AI behaviour
+⚠️ Rules (Non-Negotiable)
+❌ Do NOT create duplicate pages for same entity
+❌ Do NOT edit generated files manually
+❌ Do NOT add fake data / mock persistence
+❌ Do NOT bypass workflows
+✅ Always follow canonical naming
+✅ Always run generators after adding pages
+✅ Always test search + links
+🧱 Key Files
+wiki/ → all content
+js/wiki-index.json → generated search index
+js/entity-map.json → canonical entity system
+sam-memory.json → AI memory export
+scripts/ → generators
+🔁 Workflow
+create/edit page
+→ run generator
+→ commit
+→ PR
+→ validation check
+→ merge
+→ auto sync
+🧪 Before Merge Checklist
+page loads
+search finds it
+no duplicate entity created
+links correct
+no console errors
+🚫 Common Mistakes
+creating:
+“alfie blaze”
+“alfie bitcoin kid”
+“bitcoin kid alfie”
+
+👉 should be ONE canonical page
+
+🧠 Golden Rule
+
+If two pages describe the same thing — they must be ONE entity.
+
+🤖 README — SAM / AI AGENTS
+🎯 Role
+
+SAM is the intelligence layer.
+
+This repo is:
+👉 frontend + memory surface
+👉 not the decision engine
+
+🧠 Core Data Sources
+sam-memory.json → canonical truth
+js/entity-map.json → frontend mapping
+js/wiki-index.json → searchable surface
+🧩 Entity Model
+
+Each entity:
+
+{
+  "canonical_title": "",
+  "canonical_url": "",
+  "aliases": [],
+  "category": "",
+  "tags": []
+}
+⚠️ Agent Rules
+NEVER create duplicate entities
+NEVER override canonical without validation
+NEVER promote alias_candidates automatically
+ALWAYS merge into existing entity
+🔄 Learning Flow
+new content
+→ extract entities
+→ compare with memory
+→ merge OR create
+→ update aliases
+→ export memory
+🧠 Intelligence Layers
+Layer	Function
+Canon	truth
+Aliases	access paths
+Candidates	learning
+Memory	persistence
+🚀 Future Capabilities
+entity expansion
+semantic linking
+auto content generation
+cross-platform publishing
+🧠 Prime Directive
+
+Preserve meaning, not just text.
+
+🌐 README — API / BACKEND
+🎯 Purpose
+
+This repo is frontend only.
+
+All dynamic features must come from:
+👉 external APIs
+
+🔌 Required Endpoints
+Comments
+GET  /comments?url=
+POST /comments
+Likes
+POST /like
+GET  /likes?url=
+Votes
+POST /vote
+Feed
+GET /feed
+Leaderboard
+GET /leaderboard
+⚠️ Rules
+❌ No fake data
+❌ No localStorage persistence
+❌ No secrets in repo
+✅ API must handle:
+auth
+validation
+storage
+🔐 Identity (Future)
+Gravatar (baseline)
+Telegram login
+wallet-based identity (future)
+📡 Frontend Contract
+
+If API is down:
+
+UI must NOT break
+show fallback states
+no console crashes
+🚀 Future Backend
+XP system
+daily keywords
+engagement scoring
+NFT-linked identity
+on-chain verification
+🧠 Architecture Split
+Layer	Role
+Repo	UI + structure
+API	logic + data
+SAM	intelligence
+⚡ Final Rule
+
+If it needs storage, validation, or identity — it belongs in the API, not this repo.
+
+🧠 FINAL NOTE
+
+You now have:
+
+system README
+contributor README
+AI README
+backend README
+
+👉 This is a complete operating stack, not just a site.
