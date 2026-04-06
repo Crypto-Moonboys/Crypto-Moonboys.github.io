@@ -1,4 +1,4 @@
-name: Wiki Index Sync
+name: Wiki Generated Assets Sync
 
 on:
   push:
@@ -6,20 +6,32 @@ on:
       - main
     paths:
       - 'wiki/**'
+      - 'categories/**'
       - 'js/wiki.js'
-      - 'scripts/generate-wiki-index.js'
+      - 'js/index_stats_v2.js'
+      - 'scripts/**'
+      - 'about.html'
+      - 'articles.html'
+      - 'search.html'
+      - 'index.html'
   pull_request:
     branches:
       - main
     paths:
       - 'wiki/**'
+      - 'categories/**'
       - 'js/wiki.js'
-      - 'scripts/generate-wiki-index.js'
+      - 'js/index_stats_v2.js'
+      - 'scripts/**'
+      - 'about.html'
+      - 'articles.html'
+      - 'search.html'
+      - 'index.html'
 
 jobs:
-  sync-wiki-index:
+  sync-generated-assets:
     runs-on: ubuntu-latest
-    if: "!contains(github.event.head_commit.message, 'chore: auto-update wiki search index')"
+    if: "!contains(github.event.head_commit.message, 'chore: auto-update wiki generated assets')"
 
     steps:
       - name: Checkout repository
@@ -36,28 +48,47 @@ jobs:
       - name: Regenerate wiki search index
         run: node scripts/generate-wiki-index.js
 
-      - name: Fail if index is out of date (PR only)
+      - name: Regenerate sitemap
+        run: node scripts/generate-sitemap.js
+
+      - name: Regenerate site stats
+        run: node scripts/generate-site-stats.js
+
+      - name: Fail if generated files are stale (PR only)
         if: github.event_name == 'pull_request'
         run: |
-          if ! git diff --quiet js/wiki-index.json; then
-            echo "::error file=js/wiki-index.json::js/wiki-index.json is out of date."
-            echo "Run 'node scripts/generate-wiki-index.js' locally and commit the result."
-            git diff js/wiki-index.json
-            exit 1
-          else
-            echo "js/wiki-index.json is up to date. ✅"
-          fi
+          STALE=0
+          for f in js/wiki-index.json sitemap.xml js/site-stats.json; do
+            if ! git diff --quiet "$f"; then
+              echo "::error file=$f::$f is out of date."
+              echo "Run the generator scripts locally and commit the result:"
+              echo "  node scripts/generate-wiki-index.js"
+              echo "  node scripts/generate-sitemap.js"
+              echo "  node scripts/generate-site-stats.js"
+              git diff "$f"
+              STALE=1
+            else
+              echo "$f is up to date. ✅"
+            fi
+          done
+          exit $STALE
 
-      - name: Commit and push updated index (main push only)
+      - name: Commit and push updated assets (main push only)
         if: github.event_name == 'push'
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          if ! git diff --quiet js/wiki-index.json; then
-            git add js/wiki-index.json
-            git commit -m "chore: auto-update wiki search index"
+          CHANGED=0
+          for f in js/wiki-index.json sitemap.xml js/site-stats.json; do
+            if ! git diff --quiet "$f"; then
+              git add "$f"
+              CHANGED=1
+            fi
+          done
+          if [ "$CHANGED" = "1" ]; then
+            git commit -m "chore: auto-update wiki generated assets"
             git push
-            echo "Index updated and pushed. ✅"
+            echo "Generated assets updated and pushed. ✅"
           else
-            echo "Index already up to date — nothing to commit. ✅"
+            echo "All generated assets are up to date — nothing to commit. ✅"
           fi

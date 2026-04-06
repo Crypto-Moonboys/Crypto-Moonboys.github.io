@@ -1,5 +1,5 @@
 /**
- * Index Stats Loader — loads index_stats.json published by SAM and populates homepage stats
+ * Index Stats Loader — loads js/site-stats.json (auto-generated) and populates homepage stats.
  * Looks for:
  * - .stat-total-articles
  * - .stat-total-entities
@@ -8,7 +8,7 @@
 
 (function() {
   document.addEventListener('DOMContentLoaded', function() {
-    fetch('/index_stats.json')
+    fetch('/js/site-stats.json')
       .then(r => r.ok ? r.json() : null)
       .then(stats => {
         if (!stats) return;

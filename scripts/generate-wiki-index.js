@@ -45,10 +45,14 @@ const CATEGORY_EMOJI = {
 
 /* ── Decode HTML entities in plain text ─────────────────────────────────── */
 function decodeHtmlEntities(str) {
-  // Single-pass replacement using a lookup table avoids any risk of
-  // double-unescaping (e.g. &amp;amp; → &amp; → &).
-  const entities = { amp: '&', lt: '<', gt: '>', quot: '"', '#39': "'" };
-  return str.replace(/&(amp|lt|gt|quot|#39);/g, (m, e) => entities[e] || m);
+  // Named entities
+  const named = { amp: '&', lt: '<', gt: '>', quot: '"', '#39': "'" };
+  return str
+    .replace(/&(amp|lt|gt|quot|#39);/g, (m, e) => named[e] || m)
+    // Hex numeric entities (e.g. &#x1F4DA; &#x2014;)
+    .replace(/&#x([0-9a-fA-F]+);/g, (m, hex) => String.fromCodePoint(parseInt(hex, 16)))
+    // Decimal numeric entities (e.g. &#8212;)
+    .replace(/&#([0-9]+);/g, (m, dec) => String.fromCodePoint(parseInt(dec, 10)));
 }
 
 /* ── Convert a filename slug to a human-readable title ──────────────────── */
@@ -143,17 +147,17 @@ function loadExistingIndex() {
 function extractTitle(html) {
   const m = html.match(/<title>([^<]+)<\/title>/i);
   if (!m) return null;
-  return m[1]
+  return decodeHtmlEntities(m[1]
     .replace(/\s*[—–-]+\s*Crypto Moonboys Wiki\s*$/i, '')
-    .trim();
+    .trim());
 }
 
 function extractDesc(html) {
   // Prefer the og:description (usually the cleanest single sentence)
   const ogM = html.match(/<meta\s+property="og:description"\s+content="([^"]+)"/i);
-  if (ogM) return ogM[1].trim();
+  if (ogM) return decodeHtmlEntities(ogM[1].trim());
   const m = html.match(/<meta\s+name="description"\s+content="([^"]+)"/i);
-  return m ? m[1].trim() : '';
+  return m ? decodeHtmlEntities(m[1].trim()) : '';
 }
 
 function extractCategory(html) {
@@ -182,7 +186,7 @@ const existingLookup = loadExistingIndex();
 console.log(`Loaded ${Object.keys(existingLookup).length} existing entries from js/wiki.js`);
 
 const htmlFiles = fs.readdirSync(WIKI_DIR)
-  .filter(f => f.endsWith('.html') && f !== 'index.html')
+  .filter(f => f.endsWith('.html'))
   .sort();
 
 const wikiIndex = [];
