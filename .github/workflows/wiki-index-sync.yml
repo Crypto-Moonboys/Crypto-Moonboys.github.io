@@ -7,6 +7,7 @@ on:
     paths:
       - 'wiki/**'
       - 'categories/**'
+      - 'about/**'
       - 'js/wiki.js'
       - 'js/index_stats_v2.js'
       - 'scripts/**'
@@ -14,12 +15,14 @@ on:
       - 'articles.html'
       - 'search.html'
       - 'index.html'
+      - '*.html'
   pull_request:
     branches:
       - main
     paths:
       - 'wiki/**'
       - 'categories/**'
+      - 'about/**'
       - 'js/wiki.js'
       - 'js/index_stats_v2.js'
       - 'scripts/**'
@@ -27,8 +30,26 @@ on:
       - 'articles.html'
       - 'search.html'
       - 'index.html'
+      - '*.html'
 
 jobs:
+  check-internal-links:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Check internal links
+        run: node scripts/check-internal-links.js
+
   sync-generated-assets:
     runs-on: ubuntu-latest
     if: "!contains(github.event.head_commit.message, 'chore: auto-update wiki generated assets')"
