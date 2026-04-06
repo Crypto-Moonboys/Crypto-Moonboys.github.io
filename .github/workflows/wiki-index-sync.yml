@@ -129,6 +129,7 @@ jobs:
           fi
           echo "wiki/index.html is a clean redirect stub. ✅"
 
+      - name: Check generated assets are up to date
         if: github.event_name == 'pull_request'
         run: |
           STALE=0
