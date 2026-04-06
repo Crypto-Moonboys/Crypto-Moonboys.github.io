@@ -117,6 +117,17 @@ jobs:
           fi
           exit $FAIL
 
+      - name: Guard wiki/index.html redirect stub
+        run: |
+          # wiki/index.html must remain a thin redirect — never a real article page.
+          # Fail if it contains static article lists or article counts.
+          if grep -qF 'articles' wiki/index.html; then
+            echo "::error file=wiki/index.html::wiki/index.html appears to contain article content."
+            echo "This file must remain a redirect stub pointing to /search.html."
+            echo "Delete the content and replace with the redirect template."
+            exit 1
+          fi
+          echo "wiki/index.html is a clean redirect stub. ✅"
 
         if: github.event_name == 'pull_request'
         run: |
