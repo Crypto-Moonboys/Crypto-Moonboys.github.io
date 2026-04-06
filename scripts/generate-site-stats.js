@@ -23,11 +23,12 @@
 const fs   = require('fs');
 const path = require('path');
 
-const ROOT        = path.resolve(__dirname, '..');
-const INDEX_JSON  = path.join(ROOT, 'js', 'wiki-index.json');
-const ENTITY_MAP  = path.join(ROOT, 'js', 'entity-map.json');
-const CATS_DIR    = path.join(ROOT, 'categories');
-const OUTPUT      = path.join(ROOT, 'js', 'site-stats.json');
+const ROOT            = path.resolve(__dirname, '..');
+const INDEX_JSON      = path.join(ROOT, 'js', 'wiki-index.json');
+const ENTITY_MAP      = path.join(ROOT, 'js', 'entity-map.json');
+const CATS_DIR        = path.join(ROOT, 'categories');
+const OUTPUT          = path.join(ROOT, 'js', 'site-stats.json');
+const LEGACY_OUTPUT   = path.join(ROOT, 'index_stats.json');
 
 /* ── Article count from search index ────────────────────────────────────── */
 let articleCount = 0;
@@ -98,3 +99,15 @@ const stats = {
 
 fs.writeFileSync(OUTPUT, JSON.stringify(stats, null, 2) + '\n', 'utf8');
 console.log(`js/site-stats.json written — ${articleCount} articles, ${entityCount} entities, ${categoryCount} categories (${lastUpdated})`);
+
+/* ── Write legacy index_stats.json (root) ───────────────────────────────── */
+// index_stats.json is a root-level legacy file kept in sync for consistency.
+// It mirrors the core fields from js/site-stats.json.
+// Written as a compact single-line JSON to match its original format.
+const legacyStats = {
+  total_articles: articleCount,
+  total_entities: entityCount,
+  last_updated:   lastUpdated.slice(0, 10), // date-only string (YYYY-MM-DD)
+};
+fs.writeFileSync(LEGACY_OUTPUT, JSON.stringify(legacyStats) + '\n', 'utf8');
+console.log(`index_stats.json written — ${articleCount} articles, ${entityCount} entities`);

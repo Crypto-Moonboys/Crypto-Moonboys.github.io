@@ -213,14 +213,14 @@ function initSearch() {
     input.addEventListener('keydown', e => {
       if (e.key === 'Enter') {
         const q = input.value.trim();
-        if (q) window.location.href = `search.html?q=${encodeURIComponent(q)}`;
+        if (q) window.location.href = `/search.html?q=${encodeURIComponent(q)}`;
       }
     });
     // Header search button
     const btn = document.getElementById('search-btn');
     if (btn) btn.addEventListener('click', () => {
       const q = input.value.trim();
-      if (q) window.location.href = `search.html?q=${encodeURIComponent(q)}`;
+      if (q) window.location.href = `/search.html?q=${encodeURIComponent(q)}`;
     });
   }
 
@@ -231,14 +231,14 @@ function initSearch() {
     homeInput.addEventListener('keydown', e => {
       if (e.key === 'Enter') {
         const q = homeInput.value.trim();
-        if (q) window.location.href = `search.html?q=${encodeURIComponent(q)}`;
+        if (q) window.location.href = `/search.html?q=${encodeURIComponent(q)}`;
       }
     });
   }
   if (homeBtn && homeInput) {
     homeBtn.addEventListener('click', () => {
       const q = homeInput.value.trim();
-      if (q) window.location.href = `search.html?q=${encodeURIComponent(q)}`;
+      if (q) window.location.href = `/search.html?q=${encodeURIComponent(q)}`;
     });
   }
 
