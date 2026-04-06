@@ -10,14 +10,21 @@
  * for emoji and tags.
  *
  * Canonical entity system:
- *   - Pages with identical normalised titles are treated as duplicates.
- *   - Duplicates are merged: one entry becomes canonical, the rest become
- *     aliases stored in the canonical entry's `aliases` array.
- *   - Alias pages that contain no substantial body content (< 500 chars
- *     of visible text) are replaced with a minimal HTML redirect stub.
+ *   - For every entry a set of alias variations is generated via
+ *     generateAutoAliases(): normalised title, title without filler words,
+ *     URL-slug form, and phrase-level keyword substitutions (btc↔bitcoin,
+ *     nft↔nfts, eth↔ethereum, etc.).
+ *   - Entries whose alias sets share any common element are treated as
+ *     duplicates and merged via union-find (connected-components approach).
+ *     This detects duplicates across naming variations, not just identical
+ *     normalised titles.
+ *   - The most descriptive (longest-title) entry becomes canonical; others
+ *     become aliases stored in canonical.aliases: [{title, url}].
+ *   - Alias pages that contain no substantial body content (< 2 KB) are
+ *     replaced with a minimal HTML redirect stub.
  *   - Only canonical entries appear in the final index.
- *   - Alias entries can also be declared explicitly via the `aliases` field
- *     in wiki-index.json (the alias URL files are then treated the same way).
+ *   - Aliases can also be declared explicitly via the `aliases` field in
+ *     wiki-index.json; those files are treated as aliases on the next run.
  *
  * Run after adding new wiki pages:
  *   node scripts/generate-wiki-index.js
@@ -156,6 +163,42 @@ function loadExistingIndex() {
   return lookup;
 }
 
+/* ── Filler words stripped when comparing titles ────────────────────────── */
+const FILLER_WORDS = new Set([
+  'the', 'a', 'an', 'and', 'of', 'in', 'for', 'on', 'at', 'to', 'by',
+  'or', 'is', 'are', 'it', 'its', 'with', 'as',
+]);
+
+/* ── Known keyword substitutions for deduplication ─────────────────────── */
+// Each key maps to its canonical equivalents; applied at full-phrase level so
+// only entries whose entire normalised title overlaps after substitution merge.
+const KEYWORD_SUBS = {
+  'bitcoin':            ['btc'],
+  'btc':                ['bitcoin'],
+  'ethereum':           ['eth'],
+  'eth':                ['ethereum'],
+  'nft':                ['nfts'],
+  'nfts':               ['nft'],
+  'token':              ['tokens'],
+  'tokens':             ['token'],
+  'solana':             ['sol'],
+  'sol':                ['solana'],
+  'ripple':             ['xrp'],
+  'xrp':                ['ripple'],
+  'cardano':            ['ada'],
+  'ada':                ['cardano'],
+  'defi':               ['decentralized finance', 'decentralised finance'],
+  'decentralized':      ['decentralised'],
+  'decentralised':      ['decentralized'],
+  'nonfungible':        ['non fungible', 'nft'],
+  'non':                [],  // avoid spurious partial matches
+  'dao':                ['decentralized autonomous organization'],
+  'blockchain':         ['chain'],
+  'crypto':             ['cryptocurrency', 'cryptocurrencies'],
+  'cryptocurrency':     ['crypto'],
+  'cryptocurrencies':   ['crypto'],
+};
+
 /* ── Normalize a title for duplicate detection ──────────────────────────── */
 function normalizeTitle(title) {
   if (!title) return '';
@@ -166,44 +209,120 @@ function normalizeTitle(title) {
     .trim();
 }
 
-/* ── Detect & merge duplicate entries ───────────────────────────────────── */
+/* ── Generate all alias variations for one entry ───────────────────────── */
+// Returns a Set<string> of normalised phrase-level identifiers that represent
+// the same entity.  Overlap between two entries' alias sets → they are dupes.
+function generateAutoAliases(entry) {
+  const variations = new Set();
+
+  // 1. Normalised title (primary key)
+  const norm = normalizeTitle(entry.title);
+  if (norm) variations.add(norm);
+
+  // 2. Title without filler/stopwords (only when meaningfully different)
+  const noFiller = norm.split(' ').filter(w => !FILLER_WORDS.has(w)).join(' ').trim();
+  if (noFiller && noFiller !== norm) variations.add(noFiller);
+
+  // 3. Slug-based alias derived from the URL path
+  const slug = (entry.url || '')
+    .replace(/^\/wiki\//, '')
+    .replace(/\.html$/, '')
+    .replace(/[-_]+/g, ' ')
+    .trim();
+  const normSlug = normalizeTitle(slug);
+  if (normSlug && normSlug !== norm) variations.add(normSlug);
+
+  // 4. Keyword substitutions applied to the FULL normalised title phrase.
+  //    Substituting individual words keeps phrase structure intact and avoids
+  //    false-positive merges (e.g. "Bitcoin Cash" ≠ "Bitcoin").
+  const words = norm.split(' ');
+  for (let i = 0; i < words.length; i++) {
+    const subs = KEYWORD_SUBS[words[i]] || [];
+    for (const sub of subs) {
+      const variant = [...words.slice(0, i), sub, ...words.slice(i + 1)].join(' ').trim();
+      if (variant !== norm) variations.add(variant);
+    }
+  }
+
+  return variations;
+}
+
+/* ── Detect & merge duplicate entries (union-find over alias overlap) ───── */
+// Two entries are duplicates when their generateAutoAliases() sets share any
+// common element — i.e. they describe the same entity under different names.
+//
 // Returns { canonicalEntries, aliasUrls }
 // - canonicalEntries: deduplicated array of index entries (each may have .aliases)
 // - aliasUrls: Set of URL strings that are alias pages (excluded from the index)
 function deduplicateIndex(entries) {
-  // Group entries by normalised title
-  const byNorm = new Map();
-  for (const entry of entries) {
-    const norm = normalizeTitle(entry.title);
-    if (!byNorm.has(norm)) byNorm.set(norm, []);
-    byNorm.get(norm).push(entry);
+  // ── Step 1: generate alias sets for every entry ────────────────────────
+  const aliasSets = entries.map(e => generateAutoAliases(e));
+
+  // ── Step 2: build inverted index: alias string → [entry indices] ────────
+  const aliasToIndices = new Map();
+  aliasSets.forEach((aliasSet, idx) => {
+    aliasSet.forEach(alias => {
+      if (!aliasToIndices.has(alias)) aliasToIndices.set(alias, []);
+      aliasToIndices.get(alias).push(idx);
+    });
+  });
+
+  // ── Step 3: union-find to compute connected components ──────────────────
+  const parent = entries.map((_, i) => i);
+  function find(x) {
+    while (parent[x] !== x) {
+      parent[x] = parent[parent[x]]; // path-halving compression
+      x = parent[x];
+    }
+    return x;
+  }
+  function union(x, y) {
+    parent[find(x)] = find(y);
+  }
+  for (const [, indices] of aliasToIndices) {
+    for (let i = 1; i < indices.length; i++) {
+      union(indices[0], indices[i]);
+    }
   }
 
+  // ── Step 4: group entries by their union-find root ───────────────────────
+  const groups = new Map();
+  entries.forEach((entry, idx) => {
+    const root = find(idx);
+    if (!groups.has(root)) groups.set(root, []);
+    groups.get(root).push(entry);
+  });
+
+  // ── Step 5: for each group pick canonical and assign aliases ─────────────
   const canonicalEntries = [];
   const aliasUrls = new Set();
 
-  for (const [, group] of byNorm) {
-    if (group.length === 1) {
-      // No title-based duplicate; still honour explicit aliases already on entry.
-      if (group[0].aliases) {
-        group[0].aliases.forEach(a => aliasUrls.add(a.url));
-      }
-      canonicalEntries.push(group[0]);
-      continue;
+  for (const [, group] of groups) {
+    // Select canonical: longest title (most descriptive) first; prefer entries
+    // that already carry curated aliases; tiebreak by shortest URL for stability.
+    const canonical = group.slice().sort((a, b) => {
+      const aHasAliases = (a.aliases && a.aliases.length > 0) ? 1 : 0;
+      const bHasAliases = (b.aliases && b.aliases.length > 0) ? 1 : 0;
+      if (bHasAliases !== aHasAliases) return bHasAliases - aHasAliases;
+      if (b.title.length !== a.title.length) return b.title.length - a.title.length;
+      return a.url.length - b.url.length;
+    })[0];
+
+    // Register explicit aliases already present on any entry in the group
+    for (const e of group) {
+      if (Array.isArray(e.aliases)) e.aliases.forEach(a => aliasUrls.add(a.url));
     }
 
-    // Multiple entries share the same normalised title — pick canonical.
-    // Sort by URL length first for a stable, deterministic result, then prefer
-    // an entry that already carries aliases (preserves curated metadata).
-    const sorted = group.slice().sort((a, b) => a.url.length - b.url.length);
-    const canonical = sorted.find(e => e.aliases && e.aliases.length > 0) || sorted[0];
+    if (group.length === 1) {
+      canonicalEntries.push(canonical);
+      continue;
+    }
 
     const mergedAliases = Array.isArray(canonical.aliases) ? [...canonical.aliases] : [];
 
     for (const dupe of group) {
       if (dupe === canonical) continue;
       aliasUrls.add(dupe.url);
-      // Add to aliases list if not already present
       if (!mergedAliases.some(a => a.url === dupe.url)) {
         mergedAliases.push({ title: dupe.title, url: dupe.url });
       }
@@ -211,7 +330,6 @@ function deduplicateIndex(entries) {
     }
 
     canonical.aliases = mergedAliases.length > 0 ? mergedAliases : undefined;
-    // Register any pre-existing alias URLs
     if (canonical.aliases) canonical.aliases.forEach(a => aliasUrls.add(a.url));
     canonicalEntries.push(canonical);
   }
