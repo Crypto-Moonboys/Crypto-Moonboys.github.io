@@ -221,8 +221,6 @@ fs.writeFileSync(ENTITY_MAP_PATH, JSON.stringify(entityRecords, null, 2) + '\n')
 console.log(`\nGenerated js/entity-map.json with ${entityRecords.length} entity records`);
 
 // ── Emit sam-memory.json ─────────────────────────────────────────────────
-const updatedAt = new Date().toISOString().replace(/\.\d{3}Z$/, 'Z');
-
 const entities = {};
 for (const r of entityRecords) {
   const memEntry = {
@@ -238,18 +236,36 @@ for (const r of entityRecords) {
   entities[r.entity_id] = memEntry;
 }
 
+// Serialise with sorted keys for deterministic output (reusable replacer)
+function deterministicReplacer(key, val) {
+  if (val && typeof val === 'object' && !Array.isArray(val)) {
+    return Object.fromEntries(Object.entries(val).sort(([a], [b]) => a.localeCompare(b)));
+  }
+  return val;
+}
+
+// Preserve updated_at if the entity data hasn't changed — prevents the PR
+// staleness check from failing just because CI ran at a different time.
+let updatedAt = new Date().toISOString().replace(/\.\d{3}Z$/, 'Z');
+if (fs.existsSync(SAM_MEMORY_PATH)) {
+  try {
+    const existing = JSON.parse(fs.readFileSync(SAM_MEMORY_PATH, 'utf8'));
+    const existingEntitiesJson = JSON.stringify(existing.entities, deterministicReplacer);
+    const newEntitiesJson      = JSON.stringify(entities,          deterministicReplacer);
+    if (existingEntitiesJson === newEntitiesJson) {
+      updatedAt = existing.updated_at;
+    }
+  } catch (e) {
+    console.warn('Warning: could not parse existing sam-memory.json — using fresh timestamp.', e.message);
+  }
+}
+
 const samMemory = {
   entities,
   updated_at: updatedAt,
 };
 
-// Serialise with sorted keys for deterministic output
-const samJson = JSON.stringify(samMemory, (key, val) => {
-  if (val && typeof val === 'object' && !Array.isArray(val)) {
-    return Object.fromEntries(Object.entries(val).sort(([a], [b]) => a.localeCompare(b)));
-  }
-  return val;
-}, 2);
+const samJson = JSON.stringify(samMemory, deterministicReplacer, 2);
 
 fs.writeFileSync(SAM_MEMORY_PATH, samJson + '\n');
 console.log(`Generated sam-memory.json with ${Object.keys(entities).length} entities`);

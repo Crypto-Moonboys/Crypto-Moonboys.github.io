@@ -54,8 +54,9 @@ let ENTITY_MAP = null; // null = not yet attempted; {} = attempted, empty/missin
 
 /* ── ENTITY LOOKUP ─────────────────────────────────────────────────────────
    Flat map of normalised key → entity record, built once after ENTITY_MAP
-   loads.  Covers canonical titles, aliases, and alias_candidates so that
-   any spelling a user might type resolves to the right entity.
+   loads.  Covers canonical titles and confirmed aliases only.
+   alias_candidates are intentionally excluded: they are unconfirmed guesses
+   and must not influence search scoring.
    ─────────────────────────────────────────────────────────────────────── */
 let ENTITY_LOOKUP = {};
 
@@ -66,7 +67,6 @@ function buildEntityLookup() {
     const keys = [
       entity.canonical_title,
       ...(entity.aliases || []),
-      ...(entity.alias_candidates || [])
     ];
 
     keys.forEach(k => {
