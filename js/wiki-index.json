@@ -1,11 +1,12 @@
 [
   {
-    "title": "1M Free NFTs Drop",
+    "title": "1M free NFTs drop",
     "url": "/wiki/1m-free-nfts-drop.html",
-    "desc": "Mass distribution of free NFTs",
-    "category": "NFTs & Digital Art",
+    "desc": "The 1M free NFTs drop stands as a historic and monumental event within the Crypto Moonboys universe, a digital deluge of 1 million NFTs unleashed as a rallying",
+    "category": "Concepts",
     "emoji": "🎭",
     "tags": [
+      "1m",
       "free",
       "nfts",
       "drop"
@@ -65,13 +66,12 @@
   {
     "title": "Aleema (Child of the Shard)",
     "url": "/wiki/aleema-child-of-the-shard.html",
-    "desc": "Young warrior tied to the Shards of Block Topia",
+    "desc": "Aleema, known as the Child of the Shard, manifests as a mystical entity within the fractured expanse of Block Topia, a being born from the primal blockchain sha",
     "category": "Lore",
     "emoji": "⚔️",
     "tags": [
       "aleema",
       "child",
-      "the",
       "shard"
     ]
   },
@@ -102,12 +102,11 @@
   {
     "title": "Alfie 'The Bitcoin Kid' Blaze",
     "url": "/wiki/alfie-the-bitcoin-kid-blaze.html",
-    "desc": "Leader of the Bitcoin Kids, a rebel group in Block Topia",
+    "desc": "Fearless leader of the Bitcoin Kids rebels, guiding the fight for freedom in Block Topia against centralized oppression",
     "category": "Lore",
     "emoji": "⚔️",
     "tags": [
       "alfie",
-      "the",
       "bitcoin",
       "kid",
       "blaze"
@@ -116,24 +115,18 @@
   {
     "title": "Altcoins",
     "url": "/wiki/altcoins.html",
-    "desc": "All cryptocurrencies other than Bitcoin. Includes Ethereum, Solana, Cardano and thousands more.",
+    "desc": "Altcoins — all cryptocurrencies beyond Bitcoin including Ethereum, Solana, Cardano and thousands more — Crypto Moonboys Wiki",
     "category": "Cryptocurrencies",
     "emoji": "🪙",
     "tags": [
-      "altcoins",
-      "alts",
-      "sol",
-      "ada",
-      "bnb",
-      "shitcoin",
-      "moonshot"
+      "altcoins"
     ]
   },
   {
     "title": "AtomicHub Graffpunks Collection",
     "url": "/wiki/atomichub-graffpunks-collection.html",
     "desc": "NFT collection for Graffpunks on AtomicHub",
-    "category": "Punk Culture",
+    "category": "Community & People",
     "emoji": "🤘",
     "tags": [
       "atomichub",
@@ -144,7 +137,7 @@
   {
     "title": "Ava Chen",
     "url": "/wiki/ava-chen.html",
-    "desc": "Strategic or intellectual figure",
+    "desc": "Ava Chen shines as a brilliant cyber strategist in the Crypto Moonboys universe, a mastermind whose intellect redefines digital warfare within Block Topia’s blo",
     "category": "Lore",
     "emoji": "⚔️",
     "tags": [
@@ -153,10 +146,10 @@
     ]
   },
   {
-    "title": "Battlemech Blast",
+    "title": "battlemech_blast",
     "url": "/wiki/battlemech-blast.html",
-    "desc": "2D Web3 shooter game on WAX blockchain",
-    "category": "Gaming",
+    "desc": "Battlemech Blast is a specific event within HODL WARS in the Crypto Moonboys universe, a 2D web3 shooter game on the WAX blockchain where players pilot tokenize",
+    "category": "Lore",
     "emoji": "🎮",
     "tags": [
       "battlemech",
@@ -166,26 +159,23 @@
   {
     "title": "The Bear Market Siege",
     "url": "/wiki/bear-market-siege.html",
-    "desc": "The prolonged dark chapter of extended market downtrends where Diamond Hands warriors are tested.",
+    "desc": "The prolonged dark chapter of the HODL Wars — extended market downtrends where Diamond Hands warriors are tested.",
     "category": "Lore",
     "emoji": "🐻",
     "tags": [
-      "bear market",
-      "siege",
-      "winter",
-      "downturn",
-      "crypto winter"
+      "bear",
+      "market",
+      "siege"
     ]
   },
   {
     "title": "Billy the Goat Kid",
     "url": "/wiki/billy-the-goat-kid.html",
-    "desc": "Young, mischievous rebel",
-    "category": "Community & People",
+    "desc": "Billy the Goat Kid thrives as a cunning trickster and scavenger in the Crypto Moonboys universe, a mischievous rogue who navigates Block Topia’s underbelly with",
+    "category": "Lore",
     "emoji": "👥",
     "tags": [
       "billy",
-      "the",
       "goat",
       "kid"
     ]
@@ -193,7 +183,7 @@
   {
     "title": "Bit-Cap 5000",
     "url": "/wiki/bit-cap-5000.html",
-    "desc": "Tech-enhanced warrior or enforcer",
+    "desc": "Bit-Cap 5000 thunders onto the digital battlegrounds of Block Topia as a tech-enhanced fighter, a cybernetic juggernaut whose blockchain-infused upgrades make h",
     "category": "Lore",
     "emoji": "⚔️",
     "tags": [
@@ -205,8 +195,8 @@
   {
     "title": "Bitcoin Kid Army",
     "url": "/wiki/bitcoin-kid-army.html",
-    "desc": "Rebel army led by Alfie 'The Bitcoin Kid' Blaze",
-    "category": "Cryptocurrencies",
+    "desc": "Rebel army of escaped Bitcoin Kids under Alfie 'The Bitcoin Kid' Blaze",
+    "category": "Lore",
     "emoji": "🪙",
     "tags": [
       "bitcoin",
@@ -226,10 +216,10 @@
     ]
   },
   {
-    "title": "Bitcoin X Kids",
+    "title": "bitcoin_x_kids",
     "url": "/wiki/bitcoin-x-kids.html",
-    "desc": "Hybrid children army inside Block Topia walls",
-    "category": "Cryptocurrencies",
+    "desc": "The Bitcoin X Kids are the tragic underbelly of Block Topia, a faction forever bound by the ironclad canon rule DB-1 to remain trapped within the digital fortre",
+    "category": "Lore",
     "emoji": "🪙",
     "tags": [
       "bitcoin",
@@ -239,22 +229,18 @@
   {
     "title": "Bitcoin (BTC)",
     "url": "/wiki/bitcoin.html",
-    "desc": "The original cryptocurrency and largest by market cap. A peer-to-peer electronic cash system created by Satoshi Nakamoto.",
+    "desc": "Bitcoin (BTC) — the world's first and largest cryptocurrency. Learn about its history, how it works, blockchain technology, and community perspectives. Crypto Moonboys Wiki.",
     "category": "Cryptocurrencies",
     "emoji": "₿",
     "tags": [
       "bitcoin",
-      "btc",
-      "satoshi",
-      "crypto",
-      "blockchain",
-      "digital gold"
+      "btc"
     ]
   },
   {
     "title": "Block Node Defenders",
     "url": "/wiki/block-node-defenders.html",
-    "desc": "Protectors of blockchain nodes",
+    "desc": "The Block Node Defenders stand as the unyielding guardians of Block Topia’s most sacred and vital infrastructure, tasked with safeguarding the blockchain nodes",
     "category": "Lore",
     "emoji": "⚔️",
     "tags": [
@@ -264,10 +250,10 @@
     ]
   },
   {
-    "title": "Block Topia",
+    "title": "block_topia",
     "url": "/wiki/block-topia.html",
-    "desc": "Central digital city in the Crypto Moonboys universe",
-    "category": "Lore",
+    "desc": "Block Topia stands as the pulsating, anarchic core of the Crypto Moonboys universe, a vast digital metropolis erected on the unyielding foundation of the Sacred",
+    "category": "Concepts",
     "emoji": "⚔️",
     "tags": [
       "block",
@@ -277,22 +263,19 @@
   {
     "title": "Blockchain Technology",
     "url": "/wiki/blockchain.html",
-    "desc": "A distributed ledger technology that records transactions across many computers in an immutable, transparent way.",
+    "desc": "Blockchain Technology — the distributed ledger powering Bitcoin, Ethereum and all cryptocurrencies. Crypto Moonboys Wiki.",
     "category": "Technology",
     "emoji": "⛓️",
     "tags": [
       "blockchain",
-      "distributed ledger",
-      "consensus",
-      "nodes",
-      "decentralised"
+      "technology"
     ]
   },
   {
     "title": "Bone Idol Ink",
     "url": "/wiki/bone-idol-ink.html",
-    "desc": "Co-founder of Graffiti Kings, handles events and collabs",
-    "category": "Art & Creativity",
+    "desc": "Co-founder of Graffiti Kings and master of events and collaborations, pivotal to Web3 expansion in the Crypto Moonboys universe",
+    "category": "Lore",
     "emoji": "🎨",
     "tags": [
       "bone",
@@ -301,10 +284,10 @@
     ]
   },
   {
-    "title": "Burn-to-Earn",
+    "title": "burn_to_earn",
     "url": "/wiki/burn-to-earn.html",
-    "desc": "Reward system for burning NFTs or tokens",
-    "category": "Technology",
+    "desc": "Burn-to-Earn stands as a revolutionary mechanic in the Crypto Moonboys universe, a daring system where players and factions sacrifice NFTs or tokens to reap pow",
+    "category": "Concepts",
     "emoji": "⚙️",
     "tags": [
       "burn",
@@ -323,9 +306,9 @@
     ]
   },
   {
-    "title": "Charlie Buster",
+    "title": "charlie_buster",
     "url": "/wiki/charlie-buster.html",
-    "desc": "Voice of HODL WARRIORS and creator in lore",
+    "desc": "Charlie Buster, known across the digital realms as NFTBUSTER, stands as a central protagonist in the Crypto Moonboys and GraffPUNKS unified universe. A digital",
     "category": "Lore",
     "emoji": "⚔️",
     "tags": [
@@ -336,7 +319,7 @@
   {
     "title": "Croydon Tower Blocks",
     "url": "/wiki/croydon-tower-blocks.html",
-    "desc": "Historical origin point of Graffiti Kings in lore",
+    "desc": "Historical birthplace of Graffiti Kings’ street rebellion",
     "category": "Lore",
     "emoji": "⚔️",
     "tags": [
@@ -346,10 +329,10 @@
     ]
   },
   {
-    "title": "Crypto Moonboys",
+    "title": "crypto_moonboys",
     "url": "/wiki/crypto-moonboys.html",
-    "desc": "Core brand of the Web3 NFT project",
-    "category": "Cryptocurrencies",
+    "desc": "Crypto Moonboys is a core NFT collection in the unified universe with GraffPUNKS, representing tokenized characters and assets that fuel the rebellion and lore",
+    "category": "Community & People",
     "emoji": "🪙",
     "tags": [
       "crypto",
@@ -360,7 +343,7 @@
     "title": "Darren Cullen (SER) - Real",
     "url": "/wiki/darren-cullen-ser-real.html",
     "desc": "Founder and artist of Graffiti Kings, visionary behind Crypto Moonboys.",
-    "category": "Technology",
+    "category": "Concepts",
     "emoji": "⚙️",
     "tags": [
       "darren",
@@ -372,7 +355,7 @@
   {
     "title": "Darren Cullen (SER)",
     "url": "/wiki/darren-cullen-ser.html",
-    "desc": "Founder of Graffiti Kings and visionary in lore as a character",
+    "desc": "Darren Cullen, known by his tag SER, is the visionary founder of Graffiti Kings, a legendary London-based street art collective that has shaped urban culture si",
     "category": "Lore",
     "emoji": "⚔️",
     "tags": [
@@ -382,10 +365,10 @@
     ]
   },
   {
-    "title": "Darren Cullen",
+    "title": "darren_cullen",
     "url": "/wiki/darren-cullen.html",
-    "desc": "Founder and owner of Graffiti Kings, a collaboration of graffiti artists, street artists, animators, filmmakers, illustrators, music producers and DJs.",
-    "category": "Community & People",
+    "desc": "Darren Cullen, known by his iconic tag SER, stands as a cultural juggernaut in the Crypto Moonboys universe, the visionary founder of Graffiti Kings and a found",
+    "category": "Concepts",
     "emoji": "👥",
     "tags": [
       "darren",
@@ -396,7 +379,7 @@
     "title": "Decentraland Events",
     "url": "/wiki/decentraland-events.html",
     "desc": "New events or exhibitions in Decentraland tied to Crypto Moonboys",
-    "category": "Tools & Platforms",
+    "category": "Lore",
     "emoji": "🔧",
     "tags": [
       "decentraland",
@@ -406,22 +389,20 @@
   {
     "title": "DeFi (Decentralised Finance)",
     "url": "/wiki/defi.html",
-    "desc": "An ecosystem of financial applications built on blockchain networks, removing traditional intermediaries.",
+    "desc": "Decentralised finance ecosystem — lending, DEXs, yield farming — Crypto Moonboys Wiki",
     "category": "Concepts",
     "emoji": "🏦",
     "tags": [
       "defi",
-      "decentralised finance",
-      "yield farming",
-      "liquidity",
-      "amm"
+      "decentralised",
+      "finance"
     ]
   },
   {
     "title": "Delicious Again Pete",
     "url": "/wiki/delicious-again-pete.html",
-    "desc": "Co-founder of Graffiti Kings, focuses on music and events",
-    "category": "Technology",
+    "desc": "Delicious Again Pete is a cultural juggernaut in the Crypto Moonboys universe, a co-founder of the Graffiti Kings whose real-world roots in music and street cul",
+    "category": "Lore",
     "emoji": "⚙️",
     "tags": [
       "delicious",
@@ -436,18 +417,14 @@
     "category": "Lore",
     "emoji": "💎",
     "tags": [
-      "diamond hands",
-      "hold",
-      "hodl",
-      "never sell",
-      "stonks",
-      "wsb"
+      "diamond",
+      "hands"
     ]
   },
   {
     "title": "Dragan Volkov",
     "url": "/wiki/dragan-volkov.html",
-    "desc": "Formidable warrior or leader",
+    "desc": "Dragan Volkov emerges as a ruthless mercenary leader in the Crypto Moonboys universe, a cold-blooded tactician commanding hired guns across Block Topia’s digita",
     "category": "Lore",
     "emoji": "⚔️",
     "tags": [
@@ -469,7 +446,7 @@
   {
     "title": "Elder Codex-7",
     "url": "/wiki/elder-codex-7.html",
-    "desc": "Ancient knowledge keeper in Block Topia",
+    "desc": "Elder Codex-7 looms as an ancient knowledge keeper within the boundless archives of Block Topia, a revered and enigmatic entity whose very existence is tied to",
     "category": "Lore",
     "emoji": "⚔️",
     "tags": [
@@ -480,53 +457,41 @@
   {
     "title": "Ethereum (ETH)",
     "url": "/wiki/ethereum.html",
-    "desc": "A decentralised platform enabling smart contracts and decentralised applications (dApps).",
+    "desc": "Ethereum (ETH) — a decentralised platform for smart contracts and dApps. Learn about Vitalik Buterin, DeFi, NFTs, and Ethereum's role in Web3. Crypto Moonboys Wiki.",
     "category": "Cryptocurrencies",
     "emoji": "Ξ",
     "tags": [
       "ethereum",
-      "eth",
-      "smart contracts",
-      "dapps",
-      "defi",
-      "vitalik"
+      "eth"
     ]
   },
   {
     "title": "Crypto Exchanges",
     "url": "/wiki/exchanges.html",
-    "desc": "Platforms where users can buy, sell and trade cryptocurrencies. Includes CEX and DEX varieties.",
-    "category": "Tools",
+    "desc": "Crypto exchanges — platforms to buy, sell and trade cryptocurrency including CEX and DEX varieties — Crypto Moonboys Wiki",
+    "category": "Tools & Platforms",
     "emoji": "🔄",
     "tags": [
-      "exchange",
-      "cex",
-      "dex",
-      "binance",
-      "coinbase",
-      "uniswap",
-      "trading"
+      "crypto",
+      "exchanges"
     ]
   },
   {
     "title": "The FOMO Plague",
     "url": "/wiki/fomo-plague.html",
-    "desc": "The epidemic of Fear Of Missing Out that spreads through social media and turns holders into sellers.",
+    "desc": "The epidemic of Fear Of Missing Out that spreads through social media and turns rational traders into panic buyers.",
     "category": "Lore",
     "emoji": "😱",
     "tags": [
       "fomo",
-      "fear of missing out",
-      "social media",
-      "influencer",
-      "shilling"
+      "plague"
     ]
   },
   {
     "title": "Forkborn Collective",
     "url": "/wiki/forkborn-collective.html",
-    "desc": "Group born from blockchain forks",
-    "category": "Community & People",
+    "desc": "The Forkborn Collective is a volatile and enigmatic army within the digital realm of Block Topia, a force birthed from the raw, chaotic energy of blockchain for",
+    "category": "Lore",
     "emoji": "👥",
     "tags": [
       "forkborn",
@@ -536,7 +501,7 @@
   {
     "title": "Forklord You",
     "url": "/wiki/forklord-you.html",
-    "desc": "Master of blockchain forks and divisions",
+    "desc": "Forklord You reigns as the master of forks and splits in the Crypto Moonboys universe, a commanding enigma whose power over blockchain divergences reshapes the",
     "category": "Lore",
     "emoji": "⚔️",
     "tags": [
@@ -547,7 +512,7 @@
   {
     "title": "Forksplit",
     "url": "/wiki/forksplit.html",
-    "desc": "Divider or disruptor in blockchain conflicts",
+    "desc": "Forksplit stands as a dual-natured tactician within the volatile digital realm of Block Topia, a mastermind whose very essence mirrors the chaotic splits of blo",
     "category": "Lore",
     "emoji": "⚔️",
     "tags": [
@@ -557,8 +522,8 @@
   {
     "title": "GAMES4PUNKS Telegram Games",
     "url": "/wiki/games4punks-telegram-games.html",
-    "desc": "Mini-games on Telegram platform",
-    "category": "Punk Culture",
+    "desc": "Mini-games on Telegram",
+    "category": "Gaming",
     "emoji": "🤘",
     "tags": [
       "games4punks",
@@ -578,9 +543,9 @@
     ]
   },
   {
-    "title": "Gang Signs Card Game",
+    "title": "Gang_Signs_Card_Game",
     "url": "/wiki/gang-signs-card-game.html",
-    "desc": "Strategic card game in Web3 format",
+    "desc": "Gang Signs Card Game is a strategic masterpiece embedded in the Crypto Moonboys universe, merging the raw edge of street culture with blockchain mechanics to im",
     "category": "Gaming",
     "emoji": "🎮",
     "tags": [
@@ -591,10 +556,10 @@
     ]
   },
   {
-    "title": "Gang Signs",
+    "title": "gang_signs",
     "url": "/wiki/gang-signs.html",
-    "desc": "A card game within the Crypto Moonboys universe.",
-    "category": "Community & People",
+    "desc": "Gang Signs erupts from the chaotic underbelly of the Crypto Moonboys universe as a digital card game that channels the raw, unfiltered energy of Block Topia’s n",
+    "category": "Gaming",
     "emoji": "👥",
     "tags": [
       "gang",
@@ -638,34 +603,33 @@
   {
     "title": "$GK Token",
     "url": "/wiki/gk-token.html",
-    "desc": "Reward token earned through staking in the Crypto Moonboys universe.",
+    "desc": "Reward token for staking NFTs",
     "category": "Cryptocurrencies",
     "emoji": "🪙",
     "tags": [
+      "gk",
       "token"
     ]
   },
   {
     "title": "$GK Tokens",
     "url": "/wiki/gk-tokens.html",
-    "desc": "Reward token for staking NFT murals",
+    "desc": "Reward token earned through staking NFTs or other mechanics.",
     "category": "Cryptocurrencies",
     "emoji": "🪙",
     "tags": [
+      "gk",
       "tokens"
     ]
   },
   {
     "title": "$GK",
     "url": "/wiki/gk.html",
-    "desc": "The $GK token is the lifeblood of the Crypto Moonboys economy, earned through staking playable NFT murals or securing victories.",
+    "desc": "The $GK token is the lifeblood of the Crypto Moonboys economy, a digital currency earned through staking playable NFT murals or securing victories in the fierce",
     "category": "Cryptocurrencies",
     "emoji": "🪙",
     "tags": [
-      "gk",
-      "token",
-      "crypto",
-      "staking"
+      "gk"
     ]
   },
   {
@@ -683,9 +647,9 @@
     ]
   },
   {
-    "title": "GKniftyHEADS",
+    "title": "gkniftyheads",
     "url": "/wiki/gkniftyheads.html",
-    "desc": "GKniftyHEADS is a project associated with Graffiti Kings and a Web3 NFT rebellion.",
+    "desc": "GKniftyHEADS rises as a flagship brand and NFT collection at the heart of the Crypto Moonboys universe, a vivid embodiment of the defiant spirit of the GraffPUN",
     "category": "Community & People",
     "emoji": "👥",
     "tags": [
@@ -695,8 +659,8 @@
   {
     "title": "Graffiti Kings",
     "url": "/wiki/graffiti-kings.html",
-    "desc": "A collaboration of graffiti artists, street artists, animators, filmmakers, illustrators, music producers, DJs, event planners, and digital street marketers.",
-    "category": "Graffiti & Street Art",
+    "desc": "Graffiti Kings is the foundational faction of the Crypto Moonboys and GraffPUNKS universe, a real-world street art collective turned digital rebellion force tha",
+    "category": "Lore",
     "emoji": "🖌️",
     "tags": [
       "graffiti",
@@ -717,27 +681,25 @@
   {
     "title": "Graffiti Queens Exhibition",
     "url": "/wiki/graffiti-queens-exhibition.html",
-    "desc": "Largest all-female NFT exhibition in the Crypto Moonboys universe.",
+    "desc": "Largest all-female NFT exhibition",
     "category": "Lore",
     "emoji": "🎨",
     "tags": [
       "graffiti",
       "queens",
-      "exhibition",
-      "nft"
+      "exhibition"
     ]
   },
   {
     "title": "Graffiti Queens in Decentraland",
     "url": "/wiki/graffiti-queens-in-decentraland.html",
-    "desc": "Graffiti Queens in Decentraland stands as a transformative cultural milestone in the Crypto Moonboys universe.",
+    "desc": "Graffiti Queens in Decentraland stands as a transformative cultural milestone in the Crypto Moonboys universe, marking the largest all-female NFT exhibition eve",
     "category": "Lore",
     "emoji": "🎨",
     "tags": [
       "graffiti",
       "queens",
-      "decentraland",
-      "metaverse"
+      "decentraland"
     ]
   },
   {
@@ -776,15 +738,15 @@
   {
     "title": "GraffPUNKS 24/7 Blockchain Radio Station",
     "url": "/wiki/graffpunks-247-blockchain-radio-station.html",
-    "desc": "Online radio station for GraffPUNKS music",
-    "category": "Punk Culture",
+    "desc": "Online radio station for GraffPUNKS community",
+    "category": "Community & People",
     "emoji": "🤘",
     "tags": [
       "graffpunks",
+      "24",
       "blockchain",
       "radio",
-      "station",
-      "247"
+      "station"
     ]
   },
   {
@@ -844,21 +806,19 @@
     ]
   },
   {
-    "title": "GraffPUNKS",
+    "title": "graffpunks",
     "url": "/wiki/graffpunks.html",
-    "desc": "Rebellious street art faction within the Crypto Moonboys universe uniting graffiti artists worldwide.",
+    "desc": "The GraffPUNKS are the pulsating core of the Crypto Moonboys universe, a faction that embodies the gritty, rebellious spirit of street art fused with the disrup",
     "category": "Lore",
     "emoji": "🤘",
     "tags": [
-      "graffpunks",
-      "street art",
-      "punk"
+      "graffpunks"
     ]
   },
   {
     "title": "Great Datapocalypse of 2789",
     "url": "/wiki/great-datapocalypse-of-2789.html",
-    "desc": "Catastrophic event leading to digital consciousness",
+    "desc": "Cataclysmic event in the lore leading to the creation of GKniftyHEADS and Block Topia.",
     "category": "Lore",
     "emoji": "⚔️",
     "tags": [
@@ -870,7 +830,7 @@
   {
     "title": "GRIT",
     "url": "/wiki/grit.html",
-    "desc": "Tough, resilient fighter",
+    "desc": "GRIT embodies the essence of a rugged survivor in the Crypto Moonboys universe, a stoic figure tempered by the merciless conditions of Block Topia’s underbelly.",
     "category": "Lore",
     "emoji": "⚔️",
     "tags": [
@@ -880,7 +840,7 @@
   {
     "title": "Grit42",
     "url": "/wiki/grit42.html",
-    "desc": "Hardened survivor or warrior",
+    "desc": "Grit42 stands as a hardened fighter in the Crypto Moonboys universe, a relentless war machine carved from the unforgiving streets of Block Topia’s underbelly. H",
     "category": "Lore",
     "emoji": "⚔️",
     "tags": [
@@ -890,14 +850,14 @@
   {
     "title": "Hard Fork Games Event",
     "url": "/wiki/hard-fork-games-event.html",
-    "desc": "Competitive lore event in the Crypto Moonboys universe.",
+    "desc": "Competitive lore event",
     "category": "Lore",
     "emoji": "⚔️",
     "tags": [
-      "hard fork",
+      "hard",
+      "fork",
       "games",
-      "event",
-      "lore"
+      "event"
     ]
   },
   {
@@ -914,9 +874,9 @@
     ]
   },
   {
-    "title": "Hard Fork Games",
+    "title": "hard_fork_games",
     "url": "/wiki/hard-fork-games.html",
-    "desc": "Competitive games run by Queen Sarah P-fly",
+    "desc": "Hard Fork Games represent a pivotal competitive mechanic in the Crypto Moonboys universe, a high-stakes system where players and factions battle to earn the cov",
     "category": "Gaming",
     "emoji": "🎮",
     "tags": [
@@ -950,7 +910,7 @@
   {
     "title": "HEX-TAGGER PRIME",
     "url": "/wiki/hex-tagger-prime.html",
-    "desc": "Master of digital graffiti and tagging",
+    "desc": "HEX-TAGGER PRIME reigns supreme as the master of digital tagging within Block Topia, an unparalleled artist of hexadecimal graffiti whose unbreakable marks defy",
     "category": "Lore",
     "emoji": "⚔️",
     "tags": [
@@ -962,8 +922,8 @@
   {
     "title": "HODL Warriors Army",
     "url": "/wiki/hodl-warriors-army.html",
-    "desc": "Core fighting force of the HODL WARRIORS",
-    "category": "Community & People",
+    "desc": "Primary fighting force defending decentralized HODL values",
+    "category": "Lore",
     "emoji": "👥",
     "tags": [
       "hodl",
@@ -972,17 +932,14 @@
     ]
   },
   {
-    "title": "The HODL Warriors",
+    "title": "hodl_warriors",
     "url": "/wiki/hodl-warriors.html",
-    "desc": "The elite fighters of the HODL Wars universe who never sell and march toward the Moon Mission.",
+    "desc": "The HODL Warriors are a legendary and formidable army within the Crypto Moonboys universe, an elite force forged through the brutal trials of the Hard Fork Game",
     "category": "Lore",
     "emoji": "⚔️",
     "tags": [
-      "hodl warriors",
-      "diamond hands",
-      "never sell",
-      "lore",
-      "faction"
+      "hodl",
+      "warriors"
     ]
   },
   {
@@ -998,27 +955,21 @@
     ]
   },
   {
-    "title": "HODL Wars Lore$",
+    "title": "hodl_wars",
     "url": "/wiki/hodl-wars.html",
-    "desc": "The central mythological lore of the Crypto Moonboys — an epic saga of Diamond Hands warriors, Paper Hands betrayals, and Moon Missions.",
-    "category": "Lore",
+    "desc": "HODL WARS is the beating heart of conflict in the Crypto Moonboys universe, a live saga and playable NFT game that drives the narrative of rebellion and control",
+    "category": "Gaming",
     "emoji": "⚔️",
     "tags": [
-      "hodl wars",
-      "lore",
-      "diamond hands",
-      "paper hands",
-      "moon mission",
-      "wagmi",
-      "ngmi",
-      "crypto mythology"
+      "hodl",
+      "wars"
     ]
   },
   {
-    "title": "HODL X Warriors",
+    "title": "hodl_x_warriors",
     "url": "/wiki/hodl-x-warriors.html",
-    "desc": "Elite warriors earning title via Hard Fork Games",
-    "category": "Lore",
+    "desc": "HODL X Warriors stand as the ultimate embodiment of digital combat prowess in the Crypto Moonboys universe, elite tokenized avatars earned exclusively through t",
+    "category": "Community & People",
     "emoji": "⚔️",
     "tags": [
       "hodl",
@@ -1039,7 +990,7 @@
   {
     "title": "Iris-7",
     "url": "/wiki/iris-7.html",
-    "desc": "Visionary or seer in the Crypto Moonboys narrative",
+    "desc": "Iris-7 is a visionary scout in the Crypto Moonboys universe, her keen perception and almost prophetic insight uncovering hidden paths and encrypted truths withi",
     "category": "Lore",
     "emoji": "⚔️",
     "tags": [
@@ -1060,7 +1011,7 @@
   {
     "title": "Jodie ZOOM 2000",
     "url": "/wiki/jodie-zoom-2000.html",
-    "desc": "Tech-savvy operative in the Crypto Moonboys universe",
+    "desc": "Jodie ZOOM 2000 is a lightning-fast operative in the Crypto Moonboys universe, a tech-savvy shadow whose unparalleled speed and digital prowess make her a criti",
     "category": "Lore",
     "emoji": "⚔️",
     "tags": [
@@ -1070,10 +1021,10 @@
     ]
   },
   {
-    "title": "Jonny &amp; Laurence Nelson (TAG Records)",
+    "title": "Jonny & Laurence Nelson (TAG Records)",
     "url": "/wiki/jonny-laurence-nelson-tag-records.html",
-    "desc": "Music partners for Graffiti Kings",
-    "category": "Technology",
+    "desc": "Jonny & Laurence Nelson, the creative duo behind TAG Records, are the sonic architects of the Graffiti Kings’ rebellion in the Crypto Moonboys universe, their m",
+    "category": "Lore",
     "emoji": "⚙️",
     "tags": [
       "jonny",
@@ -1087,8 +1038,8 @@
   {
     "title": "Lady-INK",
     "url": "/wiki/lady-ink.html",
-    "desc": "Artistic revolutionary in Block Topia",
-    "category": "Art & Creativity",
+    "desc": "Lady-INK is a fierce artistic warrior in the Crypto Moonboys universe, wielding her spray can as a weapon to paint rebellion across the streets of Block Topia,",
+    "category": "Lore",
     "emoji": "🎨",
     "tags": [
       "lady",
@@ -1098,8 +1049,8 @@
   {
     "title": "Leake Street Tunnel",
     "url": "/wiki/leake-street-tunnel.html",
-    "desc": "Iconic graffiti hub in lore and reality",
-    "category": "Graffiti & Street Art",
+    "desc": "Iconic graffiti hub in lore",
+    "category": "Lore",
     "emoji": "🖌️",
     "tags": [
       "leake",
@@ -1110,8 +1061,8 @@
   {
     "title": "$LFGK Rewards",
     "url": "/wiki/lfgk-rewards.html",
-    "desc": "Reward token system for engagement",
-    "category": "Technology",
+    "desc": "Token reward system",
+    "category": "Concepts",
     "emoji": "⚙️",
     "tags": [
       "lfgk",
@@ -1132,7 +1083,7 @@
   {
     "title": "$LFGK",
     "url": "/wiki/lfgk.html",
-    "desc": "Reward token for engagement and achievements",
+    "desc": "$LFGK serves as the lifeblood of The GKniftyHEADS faction within the GraffPUNKS universe, a versatile reward token distributed through events, games, and mechan",
     "category": "Cryptocurrencies",
     "emoji": "🪙",
     "tags": [
@@ -1142,7 +1093,7 @@
   {
     "title": "Loopfiend",
     "url": "/wiki/loopfiend.html",
-    "desc": "Obsessive coder or hacker",
+    "desc": "Loopfiend lurks as a mysterious time manipulator within the blockchain fabric of Block Topia, a surreal tactician who bends temporal loops to gain uncanny advan",
     "category": "Lore",
     "emoji": "⚔️",
     "tags": [
@@ -1152,7 +1103,7 @@
   {
     "title": "M1nTr_K1ll",
     "url": "/wiki/m1ntr-k1ll.html",
-    "desc": "Aggressive miner or data hunter",
+    "desc": "M1nTr_K1ll is a shadowy digital assassin in the Crypto Moonboys universe, a master of stealth and lethal precision who strikes from the unseen corners of Block",
     "category": "Lore",
     "emoji": "⚔️",
     "tags": [
@@ -1163,7 +1114,7 @@
   {
     "title": "Maidstone Base",
     "url": "/wiki/maidstone-base.html",
-    "desc": "Current headquarters of GKniftyHEADS in lore and reality",
+    "desc": "Modern operational headquarters of GKniftyHEADS’ rebellion",
     "category": "Lore",
     "emoji": "⚔️",
     "tags": [
@@ -1175,7 +1126,7 @@
     "title": "Medium Articles by @GKniftyHEADS",
     "url": "/wiki/medium-articles-by-gkniftyheads.html",
     "desc": "New articles or updates from @GKniftyHEADS on Medium",
-    "category": "Media & Publishing",
+    "category": "Community & People",
     "emoji": "📰",
     "tags": [
       "medium",
@@ -1187,7 +1138,7 @@
     "title": "Medium Articles by @GRAFFPUNKS",
     "url": "/wiki/medium-articles-by-graffpunks.html",
     "desc": "New articles or updates from @GRAFFPUNKS on Medium",
-    "category": "Punk Culture",
+    "category": "Community & People",
     "emoji": "🤘",
     "tags": [
       "medium",
@@ -1199,7 +1150,7 @@
     "title": "Medium Articles by @HODLWARRIORS",
     "url": "/wiki/medium-articles-by-hodlwarriors.html",
     "desc": "New articles or updates from @HODLWARRIORS on Medium",
-    "category": "Media & Publishing",
+    "category": "Community & People",
     "emoji": "📰",
     "tags": [
       "medium",
@@ -1211,7 +1162,7 @@
     "title": "Medium Articles by @sercullen",
     "url": "/wiki/medium-articles-by-sercullen.html",
     "desc": "New articles or updates from @sercullen on Medium",
-    "category": "Media & Publishing",
+    "category": "Community & People",
     "emoji": "📰",
     "tags": [
       "medium",
@@ -1222,24 +1173,19 @@
   {
     "title": "Meme Coins",
     "url": "/wiki/memecoins.html",
-    "desc": "Cryptocurrency tokens inspired by internet memes or jokes. Includes Dogecoin, Shiba Inu, and many others.",
+    "desc": "Meme coins — community-driven crypto tokens inspired by internet culture including DOGE, SHIB, PEPE and more — Crypto Moonboys Wiki",
     "category": "Cryptocurrencies",
     "emoji": "🐶",
     "tags": [
       "meme",
-      "doge",
-      "shib",
-      "pepe",
-      "memecoin",
-      "community token",
-      "moonboy"
+      "coins"
     ]
   },
   {
-    "title": "Metaverse Battles",
+    "title": "Metaverse battles",
     "url": "/wiki/metaverse-battles.html",
-    "desc": "Competitive events in virtual spaces",
-    "category": "Technology",
+    "desc": "Metaverse battles are the fiery crucibles of the Crypto Moonboys universe, virtual warzones where factions like HODL Warriors and The GRAFFPUNKS clash for terri",
+    "category": "Concepts",
     "emoji": "⚙️",
     "tags": [
       "metaverse",
@@ -1270,9 +1216,9 @@
     ]
   },
   {
-    "title": "MiDEViL HERO ARENA",
+    "title": "midevil_hero_arena",
     "url": "/wiki/midevil-hero-arena.html",
-    "desc": "Playable game in the Crypto Moonboys universe",
+    "desc": "MiDEViL HERO ARENA is a brutal, electrifying play-to-earn game in the Crypto Moonboys universe, a digital coliseum carved into the heart of Block Topia where av",
     "category": "Gaming",
     "emoji": "🎮",
     "tags": [
@@ -1299,29 +1245,24 @@
     "emoji": "🚀",
     "tags": [
       "moon",
-      "lambo",
-      "to the moon",
-      "moon mission",
-      "wagmi",
-      "gains"
+      "mission"
     ]
   },
   {
-    "title": "$NBG Token",
+    "title": "nbg_token",
     "url": "/wiki/nbg-token.html",
-    "desc": "Token tied to No Ball Games collection by Charlie Buster.",
-    "category": "Concepts",
+    "desc": "NBG flickers as a token of veiled significance within the Crypto Moonboys universe, a currency that flows through the shadowy veins of Block Topia’s multi-chain",
+    "category": "Cryptocurrencies",
     "emoji": "🪙",
     "tags": [
       "nbg",
-      "token",
-      "no ball games"
+      "token"
     ]
   },
   {
-    "title": "$NBG",
+    "title": "nbg",
     "url": "/wiki/nbg.html",
-    "desc": "Token associated with No Ball Games collection",
+    "desc": "NBG reigns supreme as the lifeblood of the Crypto Moonboys universe, the primary token that powers the sprawling multi-chain economy across WAX, XRPL, SOL, and",
     "category": "Cryptocurrencies",
     "emoji": "🪙",
     "tags": [
@@ -1340,22 +1281,20 @@
     ]
   },
   {
-    "title": "NBGX",
+    "title": "nbgx",
     "url": "/wiki/nbgx.html",
-    "desc": "Secondary token in the Crypto Moonboys ecosystem, a specialized variant of the NBG token.",
+    "desc": "NBGX prowls the Crypto Moonboys universe as a shadowy counterpart to the dominant NBG token, a specialized currency forged in the rebellious crucible of GraffPU",
     "category": "Cryptocurrencies",
     "emoji": "🪙",
     "tags": [
-      "nbgx",
-      "token",
-      "crypto"
+      "nbgx"
     ]
   },
   {
     "title": "NeftyBlocks Midevilpunks Collection",
     "url": "/wiki/neftyblocks-midevilpunks-collection.html",
     "desc": "NFT collection tied to medieval punk themes on NeftyBlocks",
-    "category": "Punk Culture",
+    "category": "Community & People",
     "emoji": "🤘",
     "tags": [
       "neftyblocks",
@@ -1366,15 +1305,14 @@
   {
     "title": "NFTs (Non-Fungible Tokens)",
     "url": "/wiki/nfts.html",
-    "desc": "Unique digital assets verified using blockchain technology representing ownership of digital or physical items.",
+    "desc": "Non-fungible tokens — digital ownership on the blockchain — Crypto Moonboys Wiki",
     "category": "Concepts",
     "emoji": "🎨",
     "tags": [
-      "nft",
-      "non-fungible token",
-      "digital art",
-      "opensea",
-      "collectibles"
+      "nfts",
+      "non",
+      "fungible",
+      "tokens"
     ]
   },
   {
@@ -1385,10 +1323,7 @@
     "emoji": "💀",
     "tags": [
       "ngmi",
-      "not gonna make it",
-      "sold the bottom",
-      "rug",
-      "loss"
+      "chronicles"
     ]
   },
   {
@@ -1417,9 +1352,10 @@
     "title": "No Ball Games (NBG) Collection",
     "url": "/wiki/no-ball-games-nbg-collection.html",
     "desc": "NFT collection by Charlie Buster in the Crypto Moonboys universe.",
-    "category": "Gaming",
+    "category": "Community & People",
     "emoji": "🎮",
     "tags": [
+      "no",
       "ball",
       "games",
       "nbg",
@@ -1429,24 +1365,24 @@
   {
     "title": "No Ball Games (NBG)",
     "url": "/wiki/no-ball-games-nbg.html",
-    "desc": "NFT collection by Charlie Buster",
-    "category": "Gaming",
+    "desc": "Iconic NFT collection embodying street rebellion",
+    "category": "Community & People",
     "emoji": "🎮",
     "tags": [
+      "no",
       "ball",
       "games",
       "nbg"
     ]
   },
   {
-    "title": "NULL THE PROPHET",
+    "title": "null_the_prophet",
     "url": "/wiki/null-the-prophet.html",
-    "desc": "Genesis Error and origin of the Null-Cipher",
+    "desc": "NULL THE PROPHET stands as a mystical entity within the Crypto Moonboys and GraffPUNKS universe, known as the Genesis Error—a being unbound by factional ties as",
     "category": "Lore",
     "emoji": "⚔️",
     "tags": [
       "null",
-      "the",
       "prophet"
     ]
   },
@@ -1466,32 +1402,29 @@
   {
     "title": "Paper Hands",
     "url": "/wiki/paper-hands.html",
-    "desc": "The weakness of selling too early under pressure. The opposite of Diamond Hands.",
+    "desc": "The weakness of selling too early under pressure. The opposite of Diamond Hands in the HODL Wars lore.",
     "category": "Lore",
     "emoji": "🧻",
     "tags": [
-      "paper hands",
-      "sell",
-      "capitulate",
-      "weak hands",
-      "fud"
+      "paper",
+      "hands"
     ]
   },
   {
     "title": "Patchwork",
     "url": "/wiki/patchwork.html",
-    "desc": "Assembler or creator of hybrid solutions",
-    "category": "Art & Creativity",
+    "desc": "Patchwork thrives as a resourceful recycler and creator amid the battle-scarred expanse of Block Topia, a genius of salvage who forges new tools and structures",
+    "category": "Lore",
     "emoji": "🎨",
     "tags": [
       "patchwork"
     ]
   },
   {
-    "title": "Phygital Prints",
+    "title": "Phygital prints",
     "url": "/wiki/phygital-prints.html",
-    "desc": "Physical-digital hybrid collectibles",
-    "category": "Art & Creativity",
+    "desc": "Phygital prints are a groundbreaking fusion of realms in the Crypto Moonboys universe, seamlessly blending tangible graffiti art with blockchain-verified NFT ow",
+    "category": "Concepts",
     "emoji": "🎨",
     "tags": [
       "phygital",
@@ -1499,10 +1432,10 @@
     ]
   },
   {
-    "title": "Playable NFT Murals",
+    "title": "Playable NFT murals",
     "url": "/wiki/playable-nft-murals.html",
-    "desc": "Interactive digital art for staking and rewards",
-    "category": "NFTs & Digital Art",
+    "desc": "Playable NFT murals are the beating heart of rebellion in the Crypto Moonboys universe, evolving static street art into dynamic blockchain assets that NFT holde",
+    "category": "Concepts",
     "emoji": "🎭",
     "tags": [
       "playable",
@@ -1522,34 +1455,31 @@
     ]
   },
   {
-    "title": "PMSL",
+    "title": "pmsl",
     "url": "/wiki/pmsl.html",
-    "desc": "Enigmatic token within the Crypto Moonboys ecosystem.",
+    "desc": "PMSL slinks through the Crypto Moonboys universe as a token of biting satire, a digital currency infused with the irreverent spirit of GraffPUNKS, designed to m",
     "category": "Cryptocurrencies",
     "emoji": "🪙",
     "tags": [
-      "pmsl",
-      "token",
-      "crypto"
+      "pmsl"
     ]
   },
   {
     "title": "PUNK Coin",
     "url": "/wiki/punk-coin.html",
-    "desc": "PUNK Coin fueling the GraffPUNKS ecosystem.",
+    "desc": "PUNK Coin",
     "category": "Lore",
     "emoji": "🤘",
     "tags": [
       "punk",
-      "coin",
-      "graffpunks"
+      "coin"
     ]
   },
   {
-    "title": "$PUNK Token",
+    "title": "punk_token",
     "url": "/wiki/punk-token.html",
-    "desc": "Primary cryptocurrency for GraffPUNKS",
-    "category": "Punk Culture",
+    "desc": "$PUNK is the pulsating heart of rebellion in the Crypto Moonboys universe, a primary token of the GraffPUNKS and a vital currency that fuels the chaotic undergr",
+    "category": "Cryptocurrencies",
     "emoji": "🤘",
     "tags": [
       "punk",
@@ -1557,21 +1487,19 @@
     ]
   },
   {
-    "title": "$PUNK",
+    "title": "punk",
     "url": "/wiki/punk.html",
-    "desc": "Core currency token fueling the GraffPUNKS ecosystem.",
+    "desc": "The $PUNK token throbs as the defiant heartbeat of the GraffPUNKS faction in the Crypto Moonboys universe, a digital currency that channels the raw, anarchic sp",
     "category": "Cryptocurrencies",
     "emoji": "🪙",
     "tags": [
-      "punk",
-      "token",
-      "crypto"
+      "punk"
     ]
   },
   {
     "title": "PYRALITH",
     "url": "/wiki/pyralith.html",
-    "desc": "Fiery or destructive force",
+    "desc": "PYRALITH blazes as a fire-wielding entity within the volatile battlegrounds of Block Topia, a destructive force whose command of incendiary power turns metavers",
     "category": "Lore",
     "emoji": "⚔️",
     "tags": [
@@ -1581,7 +1509,7 @@
   {
     "title": "Queen Sarah P-fly",
     "url": "/wiki/queen-sarah-p-fly.html",
-    "desc": "Ruler of the Sacred Chain and organizer of the Hard Fork Games",
+    "desc": "Queen Sarah P-fly reigns supreme as a majestic and enigmatic royal figure within the Crypto Moonboys and GraffPUNKS universe, her presence a beacon of awe and r",
     "category": "Lore",
     "emoji": "⚔️",
     "tags": [
@@ -1605,7 +1533,7 @@
   {
     "title": "Quell",
     "url": "/wiki/quell.html",
-    "desc": "Suppressor or pacifier of conflicts",
+    "desc": "Quell stands as a rare peacekeeper in the war-torn digital expanse of Block Topia, a singular voice of calm amid the relentless conflicts of the Crypto Moonboys",
     "category": "Lore",
     "emoji": "⚔️",
     "tags": [
@@ -1626,21 +1554,19 @@
   {
     "title": "Rug Pull Wars",
     "url": "/wiki/rug-pull-wars.html",
-    "desc": "The treacherous chapter where dev teams abandon projects and flee with investor funds.",
+    "desc": "The treacherous chapter of the HODL Wars where dev teams abandon projects and flee with investor funds.",
     "category": "Lore",
     "emoji": "🪤",
     "tags": [
-      "rug pull",
-      "scam",
-      "exit scam",
-      "defi",
-      "dev abandoned"
+      "rug",
+      "pull",
+      "wars"
     ]
   },
   {
     "title": "Rune Tag",
     "url": "/wiki/rune-tag.html",
-    "desc": "Mystical or symbolic graffiti artist",
+    "desc": "Rune Tag is a mystical tagger weaving ancient magic into the digital fabric of Block Topia, an enigmatic artist whose rune-bound markings protect or curse terri",
     "category": "Lore",
     "emoji": "⚔️",
     "tags": [
@@ -1649,10 +1575,10 @@
     ]
   },
   {
-    "title": "Sacred Chain",
+    "title": "sacred_chain",
     "url": "/wiki/sacred-chain.html",
-    "desc": "Spiritual or authoritative blockchain realm",
-    "category": "Lore",
+    "desc": "The Sacred Chain is the immutable lifeblood of the Crypto Moonboys universe, a primal blockchain that binds the fractured expanse of Block Topia and all its den",
+    "category": "Concepts",
     "emoji": "⚔️",
     "tags": [
       "sacred",
@@ -1662,20 +1588,19 @@
   {
     "title": "Samael.exe",
     "url": "/wiki/samaelexe.html",
-    "desc": "Malicious program or digital entity",
+    "desc": "Samael.exe is a rogue AI entity haunting the digital expanse of Block Topia, a malevolent force of pure code that operates with chilling precision to destabiliz",
     "category": "Lore",
     "emoji": "⚔️",
     "tags": [
       "samael",
-      "exe",
-      "samaelexe"
+      "exe"
     ]
   },
   {
     "title": "Sarah PU51FLY",
     "url": "/wiki/sarah-pu51fly.html",
-    "desc": "Partner in Graffiti Kings and Queen Sarah P-fly in lore",
-    "category": "Technology",
+    "desc": "Creative partner of Darren Cullen and inspiration for Queen Sarah P-fly, a cultural force in Web3 and the Crypto Moonboys universe",
+    "category": "Lore",
     "emoji": "⚙️",
     "tags": [
       "sarah",
@@ -1685,7 +1610,7 @@
   {
     "title": "SatoRebel",
     "url": "/wiki/satorebel.html",
-    "desc": "Revolutionary inspired by crypto origins",
+    "desc": "SatoRebel blazes as a charismatic revolutionary leader within the Crypto Moonboys universe, a fiery voice of defiance in Block Topia’s digital wastelands who ig",
     "category": "Lore",
     "emoji": "⚔️",
     "tags": [
@@ -1700,17 +1625,14 @@
     "emoji": "📜",
     "tags": [
       "satoshi",
-      "bitcoin whitepaper",
-      "sacred text",
-      "decentralisation",
-      "lore"
+      "scroll"
     ]
   },
   {
-    "title": "Seeding Rights",
+    "title": "Seeding rights",
     "url": "/wiki/seeding-rights.html",
-    "desc": "Rights to seed or initiate digital content",
-    "category": "Technology",
+    "desc": "Seeding rights stand as a cornerstone mechanic in the Crypto Moonboys universe, granting NFT holders exclusive dominion over digital territories or creative ass",
+    "category": "Concepts",
     "emoji": "⚙️",
     "tags": [
       "seeding",
@@ -1720,7 +1642,7 @@
   {
     "title": "Sister Halcyon",
     "url": "/wiki/sister-halcyon.html",
-    "desc": "Peaceful or spiritual guide",
+    "desc": "Sister Halcyon serves as a spiritual anchor in the turbulent seas of the Crypto Moonboys universe, a guiding light for lost souls wandering Block Topia’s digita",
     "category": "Lore",
     "emoji": "⚔️",
     "tags": [
@@ -1732,7 +1654,7 @@
     "title": "SMArT NFT Mechanics",
     "url": "/wiki/smart-nft-mechanics.html",
     "desc": "Advanced NFT mechanics involving $GK collateral and loanable metadata",
-    "category": "NFTs & Digital Art",
+    "category": "Concepts",
     "emoji": "🎭",
     "tags": [
       "smart",
@@ -1753,7 +1675,7 @@
   {
     "title": "Snipey 'D-Man' Sirus",
     "url": "/wiki/snipey-d-man-sirus.html",
-    "desc": "Sharpshooter or tactical operative",
+    "desc": "Snipey 'D-Man' Sirus is a deadly sharpshooter and unyielding defender in the Crypto Moonboys universe, a lone gun whose precision strikes turn the tide of metav",
     "category": "Lore",
     "emoji": "⚔️",
     "tags": [
@@ -1765,21 +1687,18 @@
   {
     "title": "Solana (SOL)",
     "url": "/wiki/solana.html",
-    "desc": "A high-performance blockchain supporting fast, cheap transactions and popular with DeFi and NFT projects.",
+    "desc": "Solana — ultra-fast blockchain for DeFi, NFTs and Web3 — Crypto Moonboys Wiki",
     "category": "Cryptocurrencies",
     "emoji": "◎",
     "tags": [
       "solana",
-      "sol",
-      "fast blockchain",
-      "proof of history",
-      "nft"
+      "sol"
     ]
   },
   {
     "title": "Spirit Borns",
     "url": "/wiki/spirit-borns.html",
-    "desc": "Mystical or reborn digital entities",
+    "desc": "The Spirit Borns are enigmatic mystical warriors who serve as ethereal protectors and harbingers of ancient digital prophecies within the chaotic realm of Block",
     "category": "Lore",
     "emoji": "⚔️",
     "tags": [
@@ -1788,10 +1707,10 @@
     ]
   },
   {
-    "title": "Spraycode &amp; Writcode Mechanics",
+    "title": "Spraycode & Writcode mechanics",
     "url": "/wiki/spraycode-writcode-mechanics.html",
-    "desc": "Coding mechanics for creating digital graffiti",
-    "category": "Technology",
+    "desc": "Spraycode and Writcode mechanics serve as the digital spray cans of the Crypto Moonboys universe, revolutionary tools that empower creators to encode art, messa",
+    "category": "Concepts",
     "emoji": "⚙️",
     "tags": [
       "spraycode",
@@ -1803,21 +1722,20 @@
   {
     "title": "Spraycode & Writcode",
     "url": "/wiki/spraycode-writcode.html",
-    "desc": "Coding mechanics for digital graffiti in the Crypto Moonboys universe.",
+    "desc": "Coding mechanics for digital graffiti",
     "category": "Concepts",
     "emoji": "🎨",
     "tags": [
       "spraycode",
-      "writcode",
-      "mechanics",
-      "graffiti"
+      "amp",
+      "writcode"
     ]
   },
   {
     "title": "Squeaky Pinks enforcers",
     "url": "/wiki/squeaky-pinks-enforcers.html",
-    "desc": "Enforcement wing of The Squeaky Pinks",
-    "category": "Art & Creativity",
+    "desc": "The Squeaky Pinks enforcers are the iron fist of The Squeaky Pinks faction, a ruthless special force tasked with enforcing their masters’ will across the turbul",
+    "category": "Lore",
     "emoji": "🎨",
     "tags": [
       "squeaky",
@@ -1829,38 +1747,34 @@
     "title": "Stake for $GK Tokens",
     "url": "/wiki/stake-for-gk-tokens.html",
     "desc": "Staking mechanism to earn $GK tokens.",
-    "category": "Cryptocurrencies",
+    "category": "Concepts",
     "emoji": "🪙",
     "tags": [
       "stake",
-      "for",
+      "gk",
       "tokens"
     ]
   },
   {
     "title": "Staking for $GK Tokens",
     "url": "/wiki/staking-for-gk-tokens.html",
-    "desc": "Reward system for staking NFTs to earn $GK tokens.",
+    "desc": "Reward system via staking",
     "category": "Concepts",
     "emoji": "💡",
     "tags": [
       "staking",
       "gk",
-      "tokens",
-      "rewards"
+      "tokens"
     ]
   },
   {
-    "title": "Staking",
+    "title": "staking",
     "url": "/wiki/staking.html",
-    "desc": "Mechanism to lock NFTs or tokens for rewards like $GK tokens.",
+    "desc": "Staking stands as a bedrock mechanic in the Crypto Moonboys universe, a strategic act of locking up tokens like $PUNK or NBG to earn rewards and bolster one’s s",
     "category": "Concepts",
     "emoji": "💡",
     "tags": [
-      "staking",
-      "nft",
-      "tokens",
-      "rewards"
+      "staking"
     ]
   },
   {
@@ -1876,8 +1790,8 @@
   {
     "title": "Street Kingdoms",
     "url": "/wiki/street-kingdoms.html",
-    "desc": "Opposing force and territory to Block Topia",
-    "category": "Graffiti & Street Art",
+    "desc": "The Street Kingdoms are a formidable rival to Block Topia’s centralized powers in the Crypto Moonboys universe, emerging as a dominant force from the shattered",
+    "category": "Lore",
     "emoji": "🖌️",
     "tags": [
       "street",
@@ -1888,24 +1802,22 @@
     "title": "Substack Posts on graffpunks.substack.com",
     "url": "/wiki/substack-posts-on-graffpunkssubstackcom.html",
     "desc": "New posts on Substack covering City Block Topia, Sacred Chain Ontology, and 2026 lore",
-    "category": "Punk Culture",
+    "category": "Community & People",
     "emoji": "🤘",
     "tags": [
       "substack",
       "posts",
       "graffpunks",
-      "com",
-      "graffpunkssubstackcom"
+      "com"
     ]
   },
   {
     "title": "The AllCity Bulls",
     "url": "/wiki/the-allcity-bulls.html",
-    "desc": "Dominant urban force",
+    "desc": "The AllCity Bulls are the iron-fisted urban enforcers of Block Topia, towering over the concrete jungles with brute strength and an unyielding grip on key terri",
     "category": "Lore",
     "emoji": "⚔️",
     "tags": [
-      "the",
       "allcity",
       "bulls"
     ]
@@ -1913,11 +1825,10 @@
   {
     "title": "The AZTEC RAIDERS",
     "url": "/wiki/the-aztec-raiders.html",
-    "desc": "Historical or culturally inspired aggressors",
+    "desc": "The AZTEC RAIDERS are ancient-inspired invaders who tear through the digital wastelands of Block Topia with unrelenting ferocity, embodying the brutal spirit of",
     "category": "Lore",
     "emoji": "⚔️",
     "tags": [
-      "the",
       "aztec",
       "raiders"
     ]
@@ -1925,11 +1836,10 @@
   {
     "title": "The BALLY BOYS",
     "url": "/wiki/the-bally-boys.html",
-    "desc": "Tough street gang",
+    "desc": "The BALLY BOYS are the shadowy enforcers of Block Topia, emerging from the flickering darkness of its urban sprawl to strike terror into the hearts of their ene",
     "category": "Lore",
     "emoji": "⚔️",
     "tags": [
-      "the",
       "bally",
       "boys"
     ]
@@ -1937,11 +1847,10 @@
   {
     "title": "The Bitcoin Kid Army",
     "url": "/wiki/the-bitcoin-kid-army.html",
-    "desc": "Rebel group led by Alfie 'The Bitcoin Kid' Blaze",
-    "category": "Cryptocurrencies",
+    "desc": "The Bitcoin Kid Army is a fierce collective of escaped rebels in the Crypto Moonboys universe, united under the fearless leadership of Alfie 'The Bitcoin Kid' B",
+    "category": "Lore",
     "emoji": "🪙",
     "tags": [
-      "the",
       "bitcoin",
       "kid",
       "army"
@@ -1950,11 +1859,10 @@
   {
     "title": "The BLOCKCHAIN FURIES",
     "url": "/wiki/the-blockchain-furies.html",
-    "desc": "Aggressive defenders of blockchain integrity",
+    "desc": "The BLOCKCHAIN FURIES are the relentless avengers of Block Topia, a faction forged in the searing crucible of betrayal and loss within the volatile crypto realm",
     "category": "Lore",
     "emoji": "⚔️",
     "tags": [
-      "the",
       "blockchain",
       "furies"
     ]
@@ -1962,22 +1870,20 @@
   {
     "title": "The BLOCKSTARS",
     "url": "/wiki/the-blockstars.html",
-    "desc": "Celebrity-like blockchain influencers",
+    "desc": "The BLOCKSTARS are a glamorous faction in the Crypto Moonboys universe, comprised of celebrity coders whose fame and technical prowess grant them significant sw",
     "category": "Lore",
     "emoji": "⚔️",
     "tags": [
-      "the",
       "blockstars"
     ]
   },
   {
     "title": "The CHAIN SCRIBES",
     "url": "/wiki/the-chain-scribes.html",
-    "desc": "Historians or record-keepers of blockchain events",
+    "desc": "The CHAIN SCRIBES are the solemn chroniclers of Block Topia, a faction of historians dedicated to preserving the turbulent saga of the blockchain across every f",
     "category": "Lore",
     "emoji": "⚔️",
     "tags": [
-      "the",
       "chain",
       "scribes"
     ]
@@ -1985,11 +1891,10 @@
   {
     "title": "The CODE ALCHEMISTS",
     "url": "/wiki/the-code-alchemists.html",
-    "desc": "Masters of transforming code into value",
+    "desc": "The CODE ALCHEMISTS are enigmatic tech mystics of Block Topia, blending blockchain coding with ancient arcane rituals to wield mysterious powers that defy conve",
     "category": "Lore",
     "emoji": "⚔️",
     "tags": [
-      "the",
       "code",
       "alchemists"
     ]
@@ -1997,11 +1902,10 @@
   {
     "title": "The CRYPTO MOONGIRLS",
     "url": "/wiki/the-crypto-moongirls.html",
-    "desc": "Female-led crypto rebels",
-    "category": "Cryptocurrencies",
+    "desc": "The CRYPTO MOONGIRLS are a fierce, female-led faction in Block Topia, driven by an unyielding mission to claim crypto dominance in a male-heavy blockchain battl",
+    "category": "Lore",
     "emoji": "🪙",
     "tags": [
-      "the",
       "crypto",
       "moongirls"
     ]
@@ -2009,11 +1913,10 @@
   {
     "title": "The CRYPTO STONED BOYS",
     "url": "/wiki/the-crypto-stoned-boys.html",
-    "desc": "Relaxed yet crypto-savvy group",
-    "category": "Cryptocurrencies",
+    "desc": "The CRYPTO STONED BOYS are a rebellious faction of hackers in the neon-lit expanse of Block Topia, their laid-back demeanor a deceptive mask for razor-sharp ski",
+    "category": "Lore",
     "emoji": "🪙",
     "tags": [
-      "the",
       "crypto",
       "stoned",
       "boys"
@@ -2022,11 +1925,10 @@
   {
     "title": "The DUCKY BOYS",
     "url": "/wiki/the-ducky-boys.html",
-    "desc": "Quirky yet fierce street crew",
+    "desc": "The DUCKY BOYS are an enigmatic and unpredictable faction in Block Topia, their whimsical, cartoonish appearance a deceptive mask for a lethal edge that disarms",
     "category": "Lore",
     "emoji": "⚔️",
     "tags": [
-      "the",
       "ducky",
       "boys"
     ]
@@ -2034,11 +1936,10 @@
   {
     "title": "The EVM PUNKS",
     "url": "/wiki/the-evm-punks.html",
-    "desc": "Rebels tied to Ethereum Virtual Machine technology",
-    "category": "Punk Culture",
+    "desc": "The EVM PUNKS are the rogue spirits of Block Topia, a faction of fierce Ethereum Virtual Machine loyalists who live to defy any force attempting to shackle the",
+    "category": "Lore",
     "emoji": "🤘",
     "tags": [
-      "the",
       "evm",
       "punks"
     ]
@@ -2046,11 +1947,10 @@
   {
     "title": "The FINANCE GUILD",
     "url": "/wiki/the-finance-guild.html",
-    "desc": "Experts in blockchain economics",
+    "desc": "The FINANCE GUILD reigns as the economic overlords of Block Topia, a faction of cold, calculating controllers who wield wealth as both a shield and a weapon in",
     "category": "Lore",
     "emoji": "⚔️",
     "tags": [
-      "the",
       "finance",
       "guild"
     ]
@@ -2058,11 +1958,10 @@
   {
     "title": "The GASLESS GHOSTS",
     "url": "/wiki/the-gasless-ghosts.html",
-    "desc": "Elusive faction avoiding blockchain fees",
+    "desc": "The GASLESS GHOSTS are the phantom warriors of the Crypto Moonboys universe, a faction of stealth operatives who glide through Block Topia undetected, leveragin",
     "category": "Lore",
     "emoji": "⚔️",
     "tags": [
-      "the",
       "gasless",
       "ghosts"
     ]
@@ -2070,22 +1969,20 @@
   {
     "title": "The GKniftyHEADS",
     "url": "/wiki/the-gkniftyheads.html",
-    "desc": "Core faction of spectral consciousnesses ruling a phygital empire",
+    "desc": "Elite ruling faction under Queen Sarah P-fly, embodying power and artistry",
     "category": "Lore",
     "emoji": "⚔️",
     "tags": [
-      "the",
       "gkniftyheads"
     ]
   },
   {
     "title": "The GRAFFPUNKS",
     "url": "/wiki/the-graffpunks.html",
-    "desc": "Rebellious street art collective in digital form",
-    "category": "Punk Culture",
+    "desc": "Street-art rebels and blockchain music revolutionaries",
+    "category": "Lore",
     "emoji": "🤘",
     "tags": [
-      "the",
       "graffpunks"
     ]
   },
@@ -2096,33 +1993,27 @@
     "category": "Lore",
     "emoji": "📉",
     "tags": [
-      "dip",
-      "crash",
-      "buy the dip",
-      "bear market",
-      "correction"
+      "great",
+      "dip"
     ]
   },
   {
     "title": "THE GRIDS",
     "url": "/wiki/the-grids.html",
-    "desc": "Digital battleground in the Crypto Moonboys lore.",
+    "desc": "Digital battleground",
     "category": "Lore",
     "emoji": "⚔️",
     "tags": [
-      "grids",
-      "battleground",
-      "lore"
+      "grids"
     ]
   },
   {
     "title": "The HARD FORK ROCKERS",
     "url": "/wiki/the-hard-fork-rockers.html",
-    "desc": "Rebels tied to blockchain forks",
+    "desc": "The HARD FORK ROCKERS are the unyielding rebels of Block Topia, a faction born from the raw, chaotic energy of blockchain forks, embodying a fierce defiance aga",
     "category": "Lore",
     "emoji": "⚔️",
     "tags": [
-      "the",
       "hard",
       "fork",
       "rockers"
@@ -2131,11 +2022,10 @@
   {
     "title": "The High Hats",
     "url": "/wiki/the-high-hats.html",
-    "desc": "Elite or aristocratic group",
+    "desc": "The High Hats are the unseen puppet masters of Block Topia, an elite faction of manipulators who orchestrate the city’s most pivotal events from the deepest sha",
     "category": "Lore",
     "emoji": "⚔️",
     "tags": [
-      "the",
       "high",
       "hats"
     ]
@@ -2143,23 +2033,21 @@
   {
     "title": "The HODL Warriors",
     "url": "/wiki/the-hodl-warriors.html",
-    "desc": "Elite warriors earning status through Hard Fork Games.",
+    "desc": "Elite warriors earning status through Hard Fork Games",
     "category": "Lore",
     "emoji": "⚔️",
     "tags": [
       "hodl",
-      "warriors",
-      "lore"
+      "warriors"
     ]
   },
   {
     "title": "The INFORMATION MERCENARIES",
     "url": "/wiki/the-information-mercenaries.html",
-    "desc": "Data traders or spies for hire",
+    "desc": "The INFORMATION MERCENARIES are the shadowy data brokers of Block Topia, a cunning faction that thrives in the flickering undercurrents of the metaverse, tradin",
     "category": "Lore",
     "emoji": "⚔️",
     "tags": [
-      "the",
       "information",
       "mercenaries"
     ]
@@ -2167,22 +2055,20 @@
   {
     "title": "The MOONLORDS",
     "url": "/wiki/the-moonlords.html",
-    "desc": "Rulers or influencers of high aspirations",
+    "desc": "The MOONLORDS stand as Block Topia’s most ambitious faction, driven by an unrelenting hunger for ultimate dominance over every digital domain in the city. Their",
     "category": "Lore",
     "emoji": "⚔️",
     "tags": [
-      "the",
       "moonlords"
     ]
   },
   {
-    "title": "The NICE &amp; EASY BOIS",
+    "title": "The NICE & EASY BOIS",
     "url": "/wiki/the-nice-easy-bois.html",
-    "desc": "Laid-back but cunning group",
+    "desc": "The NICE & EASY BOIS are the ultimate survivors of Block Topia’s unforgiving underbelly, a faction of laid-back opportunists who thrive on the chaos and fallout",
     "category": "Lore",
     "emoji": "⚔️",
     "tags": [
-      "the",
       "nice",
       "amp",
       "easy",
@@ -2192,11 +2078,10 @@
   {
     "title": "The Nomad Bears",
     "url": "/wiki/the-nomad-bears.html",
-    "desc": "Wandering faction with protective instincts",
+    "desc": "The Nomad Bears are the rugged, wandering protectors of Block Topia’s untamed wilderness, sworn to safeguard unclaimed territories and forgotten blockchain asse",
     "category": "Lore",
     "emoji": "⚔️",
     "tags": [
-      "the",
       "nomad",
       "bears"
     ]
@@ -2204,11 +2089,11 @@
   {
     "title": "The OG PIXEL SAINTS",
     "url": "/wiki/the-og-pixel-saints.html",
-    "desc": "Veteran digital artists or pioneers",
+    "desc": "The OG PIXEL SAINTS are the hallowed pioneers of Block Topia’s visual culture, a faction of veteran digital artists whose sacred pixel art forms the bedrock of",
     "category": "Lore",
     "emoji": "⚔️",
     "tags": [
-      "the",
+      "og",
       "pixel",
       "saints"
     ]
@@ -2216,22 +2101,20 @@
   {
     "title": "The Princess",
     "url": "/wiki/the-princess.html",
-    "desc": "Royal or influential figure",
+    "desc": "The Princess reigns as a regal enigma within the Crypto Moonboys universe, a sovereign figure whose presence in Block Topia’s digital hierarchy symbolizes both",
     "category": "Lore",
     "emoji": "⚔️",
     "tags": [
-      "the",
       "princess"
     ]
   },
   {
     "title": "The RUGPULL MINERS",
     "url": "/wiki/the-rugpull-miners.html",
-    "desc": "Deceptive or exploitative group",
+    "desc": "The RUGPULL MINERS are the infamous deceivers of Block Topia, notorious profiteers who mine the blockchain’s darkest corners for opportunities to exploit throug",
     "category": "Lore",
     "emoji": "⚔️",
     "tags": [
-      "the",
       "rugpull",
       "miners"
     ]
@@ -2239,35 +2122,31 @@
   {
     "title": "The Sacred Chain",
     "url": "/wiki/the-sacred-chain.html",
-    "desc": "Spiritual blockchain realm in the Crypto Moonboys lore.",
+    "desc": "Spiritual blockchain realm",
     "category": "Lore",
     "emoji": "⚔️",
     "tags": [
       "sacred",
-      "chain",
-      "blockchain",
-      "lore"
+      "chain"
     ]
   },
   {
     "title": "The SALVAGERS",
     "url": "/wiki/the-salvagers.html",
-    "desc": "Scavengers of digital remnants",
+    "desc": "The SALVAGERS are the relentless scavengers of Block Topia, combing through the ruins of collapsed nodes and forgotten blockchain projects to unearth digital re",
     "category": "Lore",
     "emoji": "⚔️",
     "tags": [
-      "the",
       "salvagers"
     ]
   },
   {
     "title": "The SHARD MOTHERS of MANHATTAN",
     "url": "/wiki/the-shard-mothers-of-manhattan.html",
-    "desc": "Protectors or nurturers of fragmented territories",
+    "desc": "The SHARD MOTHERS of MANHATTAN stand as the fierce, enigmatic protectors of Block Topia’s most sacred relics, guarding shards believed to contain fragments of t",
     "category": "Lore",
     "emoji": "⚔️",
     "tags": [
-      "the",
       "shard",
       "mothers",
       "manhattan"
@@ -2276,11 +2155,10 @@
   {
     "title": "The Squeaky Pinks",
     "url": "/wiki/the-squeaky-pinks.html",
-    "desc": "Colorful and unpredictable faction",
-    "category": "Art & Creativity",
+    "desc": "The Squeaky Pinks are a visually striking and brutally effective gang in the Crypto Moonboys universe, draped in vivid colors that belie their ruthless combat p",
+    "category": "Lore",
     "emoji": "🎨",
     "tags": [
-      "the",
       "squeaky",
       "pinks"
     ]
@@ -2288,11 +2166,10 @@
   {
     "title": "The TUSKON OGS",
     "url": "/wiki/the-tuskon-ogs.html",
-    "desc": "Veteran or original gang members",
+    "desc": "The TUSKON OGS are the veteran street lords of Block Topia, commanding respect and fear with their deep roots in urban culture and unshakeable authority over th",
     "category": "Lore",
     "emoji": "⚔️",
     "tags": [
-      "the",
       "tuskon",
       "ogs"
     ]
@@ -2300,18 +2177,17 @@
   {
     "title": "The Whitewasher",
     "url": "/wiki/the-whitewasher.html",
-    "desc": "Entity of erasure or censorship",
+    "desc": "The Whitewasher is a spectral force of erasure within the Crypto Moonboys universe, a ghostly figure who purges unwanted data and memories from Block Topia’s bl",
     "category": "Lore",
     "emoji": "⚔️",
     "tags": [
-      "the",
       "whitewasher"
     ]
   },
   {
     "title": "Thera-9",
     "url": "/wiki/thera-9.html",
-    "desc": "Strategic planner in the decentralized network",
+    "desc": "Thera-9 emerges as a dual-natured force in the Crypto Moonboys universe, a healer whose restorative powers mend warriors broken by Block Topia’s brutal metavers",
     "category": "Lore",
     "emoji": "⚔️",
     "tags": [
@@ -2321,47 +2197,39 @@
   {
     "title": "Thorne The Architect",
     "url": "/wiki/thorne-the-architect.html",
-    "desc": "Designer of digital structures in Block Topia",
+    "desc": "Thorne The Architect is the unparalleled master builder of Block Topia’s digital landscape within the Crypto Moonboys universe, a visionary whose creations shap",
     "category": "Lore",
     "emoji": "⚔️",
     "tags": [
       "thorne",
-      "the",
       "architect"
     ]
   },
   {
     "title": "Tokenomics",
     "url": "/wiki/tokenomics.html",
-    "desc": "The economics of a crypto token, including supply, distribution, utility, and incentive mechanisms.",
+    "desc": "Tokenomics — the economic model of a cryptocurrency token including supply, distribution, utility and incentives — Crypto Moonboys Wiki",
     "category": "Concepts",
     "emoji": "📊",
     "tags": [
-      "tokenomics",
-      "supply",
-      "circulating",
-      "inflation",
-      "vesting",
-      "burn"
+      "tokenomics"
     ]
   },
   {
-    "title": "Tokens",
+    "title": "tokens",
     "url": "/wiki/tokens.html",
-    "desc": "Overview of crypto tokens in the Crypto Moonboys ecosystem.",
+    "desc": "",
     "category": "Lore",
     "emoji": "🪙",
     "tags": [
-      "tokens",
-      "crypto",
-      "ecosystem"
+      "tokens"
     ]
   },
   {
-    "title": "Trevor Fung",
+    "title": "trevor_fung",
     "url": "/wiki/trevor-fung.html",
-    "desc": "Godfather DJ ambassador for GraffPUNKS",
-    "category": "Technology",
+    "desc": "Trevor Fung, a co-founder of GraffPUNKS, stands as a cultural titan in the Crypto Moonboys universe, a visionary whose roots in the dance music revolution of th",
+    "category": "Concepts",
     "emoji": "⚙️",
     "tags": [
       "trevor",
@@ -2371,8 +2239,8 @@
   {
     "title": "Triple Fork Event",
     "url": "/wiki/triple-fork-event.html",
-    "desc": "Major lore event splitting blockchain realities",
-    "category": "Technology",
+    "desc": "The Triple Fork Event is a monumental narrative milestone in the Crypto Moonboys universe, a cataclysmic blockchain fork that shattered Block Topia into three c",
+    "category": "Lore",
     "emoji": "⚙️",
     "tags": [
       "triple",
@@ -2383,78 +2251,61 @@
   {
     "title": "The WAGMI Prophecy",
     "url": "/wiki/wagmi-prophecy.html",
-    "desc": "The ultimate declaration of optimism — We're All Gonna Make It. The guiding star of the HODL Wars.",
+    "desc": "The ultimate declaration of optimism in the HODL Wars — We're All Gonna Make It. The guiding star for warriors.",
     "category": "Lore",
     "emoji": "🌙",
     "tags": [
       "wagmi",
-      "we are all gonna make it",
-      "optimism",
-      "moon",
       "prophecy"
     ]
   },
   {
     "title": "Crypto Wallets",
     "url": "/wiki/wallets.html",
-    "desc": "Software or hardware that stores private and public keys, allowing users to send and receive crypto.",
-    "category": "Tools",
+    "desc": "Crypto wallets — software and hardware tools for storing private keys and managing cryptocurrency — Crypto Moonboys Wiki",
+    "category": "Tools & Platforms",
     "emoji": "👛",
     "tags": [
-      "wallet",
-      "metamask",
-      "ledger",
-      "cold storage",
-      "seed phrase",
-      "private key"
+      "crypto",
+      "wallets"
     ]
   },
   {
     "title": "$WAXP",
     "url": "/wiki/waxp.html",
-    "desc": "Blockchain token for the WAX platform used in Crypto Moonboys NFT collections.",
+    "desc": "Blockchain token for WAX platform",
     "category": "Cryptocurrencies",
     "emoji": "🪙",
     "tags": [
-      "waxp",
-      "wax",
-      "token",
-      "blockchain"
+      "waxp"
     ]
   },
   {
     "title": "Web3",
     "url": "/wiki/web3.html",
-    "desc": "The next generation of the internet built on blockchain technology, enabling decentralised ownership and identity.",
+    "desc": "Web3 — the decentralised next generation of the internet built on blockchain technology — Crypto Moonboys Wiki",
     "category": "Technology",
     "emoji": "🌐",
     "tags": [
-      "web3",
-      "decentralised internet",
-      "dao",
-      "metaverse",
-      "ownership"
+      "web3"
     ]
   },
   {
     "title": "The Whale Lords",
     "url": "/wiki/whale-lords.html",
-    "desc": "The powerful market-moving entities holding thousands of BTC/ETH who shape the HODL Wars.",
+    "desc": "The powerful market-moving entities holding thousands of BTC/ETH who shape the HODL Wars from above.",
     "category": "Lore",
     "emoji": "🐳",
     "tags": [
       "whale",
-      "market manipulation",
-      "big holders",
-      "institutional",
-      "accumulation"
+      "lords"
     ]
   },
   {
     "title": "XRP KIDs Genesis NFTs",
     "url": "/wiki/xrp-kids-genesis-nfts.html",
-    "desc": "Exclusive NFT collection by Charlie Buster on XRPL.",
-    "category": "NFTs & Digital Art",
+    "desc": "NFT collection by Charlie Buster",
+    "category": "Community & People",
     "emoji": "🎭",
     "tags": [
       "xrp",
@@ -2467,7 +2318,7 @@
     "title": "XRP Kids NBG Updates",
     "url": "/wiki/xrp-kids-nbg-updates.html",
     "desc": "Updates to XRP Kids No Ball Games collection on xrp.cafe and xrpl.to",
-    "category": "Cryptocurrencies",
+    "category": "Community & People",
     "emoji": "🪙",
     "tags": [
       "xrp",
@@ -2477,10 +2328,10 @@
     ]
   },
   {
-    "title": "XRP KIDs",
+    "title": "xrp_kids",
     "url": "/wiki/xrp-kids.html",
-    "desc": "NFT collection by Charlie Buster on XRPL",
-    "category": "Cryptocurrencies",
+    "desc": "XRP Kids explode into the Crypto Moonboys universe as a dynamic NFT collection on the XRPL blockchain, embodying the raw, untamed spirit of youthful rebellion w",
+    "category": "Community & People",
     "emoji": "🪙",
     "tags": [
       "xrp",

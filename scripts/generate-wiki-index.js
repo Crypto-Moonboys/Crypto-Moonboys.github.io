@@ -43,8 +43,39 @@ const CATEGORY_EMOJI = {
   'Activism & Counter-Culture': '✊',
 };
 
-/* ── Parse the existing WIKI_INDEX from wiki.js ─────────────────────────── */
+/* ── Decode HTML entities in plain text ─────────────────────────────────── */
+function decodeHtmlEntities(str) {
+  return str
+    .replace(/&amp;/g,  '&')
+    .replace(/&lt;/g,   '<')
+    .replace(/&gt;/g,   '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g,  "'");
+}
+
+/* ── Load the existing index from wiki-index.json (preferred) or wiki.js ── */
 function loadExistingIndex() {
+  // Prefer the already-generated JSON — supports incremental updates.
+  if (fs.existsSync(OUTPUT)) {
+    try {
+      const arr = JSON.parse(fs.readFileSync(OUTPUT, 'utf8'));
+      const lookup = {};
+      arr.forEach(item => {
+        const slug = item.url.replace(/^\/wiki\//, '');
+        // Decode any HTML entities that may have been written in a previous run.
+        lookup[slug] = Object.assign({}, item, {
+          title:    decodeHtmlEntities(item.title    || ''),
+          desc:     decodeHtmlEntities(item.desc     || ''),
+          category: decodeHtmlEntities(item.category || ''),
+        });
+      });
+      return lookup;
+    } catch (e) {
+      console.warn('Could not parse existing wiki-index.json, falling back to wiki.js parse.', e.message);
+    }
+  }
+
+  // Fallback: parse WIKI_INDEX entries from wiki.js source.
   if (!fs.existsSync(WIKI_JS)) return {};
 
   const src = fs.readFileSync(WIKI_JS, 'utf8');
@@ -79,9 +110,9 @@ function loadExistingIndex() {
 
     const block  = entrySrc.slice(start, end + 1);
 
-    const titleM = block.match(/title:\s*"([^"]+)"/);
-    const descM  = block.match(/desc:\s*"([^"]+)"/);
-    const catM   = block.match(/category:\s*"([^"]+)"/);
+    const titleM = block.match(/title:\s*"((?:[^"\\]|\\.)*)"/);
+    const descM  = block.match(/desc:\s*"((?:[^"\\]|\\.)*)"/);
+    const catM   = block.match(/category:\s*"((?:[^"\\]|\\.)*)"/);
     const emojiM = block.match(/emoji:\s*"([^"]+)"/);
     const tagsM  = block.match(/tags:\s*\[([^\]]*)\]/s);
 
@@ -123,7 +154,7 @@ function extractCategory(html) {
   const divM = html.match(/<div class="category-tags"[^>]*>([\s\S]*?)<\/div>/i);
   if (!divM) return null;
   const links = [...divM[1].matchAll(/href="[^"]*categories\/[^"]*"[^>]*>([^<]+)<\/a>/gi)];
-  return links.length ? links[0][1].trim() : null;
+  return links.length ? decodeHtmlEntities(links[0][1].trim()) : null;
 }
 
 function generateTags(title) {
@@ -169,7 +200,11 @@ for (const file of htmlFiles) {
     fromExisting++;
   } else {
     // Extract what we can from the HTML file.
-    const title    = extractTitle(html)    || file.replace('.html', '');
+    const rawTitle = extractTitle(html);
+    // Convert slug to a readable title if HTML title is unavailable
+    // e.g. 'bitcoin-kids.html' → 'Bitcoin Kids'
+    const slugTitle = file.replace('.html', '').replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+    const title    = rawTitle || slugTitle;
     const desc     = extractDesc(html)     || '';
     const category = extractCategory(html) || 'Lore';
     const emoji    = CATEGORY_EMOJI[category] || '📄';
