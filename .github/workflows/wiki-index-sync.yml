@@ -78,7 +78,25 @@ jobs:
       - name: Regenerate entity map and SAM memory
         run: node scripts/generate-entity-map.js
 
-      - name: Fail if generated files are stale (PR only)
+      - name: Check for fragile parent-relative nav/asset paths
+        run: |
+          FAIL=0
+          # Patterns that must never appear in wiki or category pages (shared nav/asset regressions)
+          BAD_PATTERNS=('../index.html' '../search.html' '../categories/index.html' '../img/' '../css/' '../js/')
+          for pattern in "${BAD_PATTERNS[@]}"; do
+            matches=$(grep -rl --include='*.html' "$pattern" wiki/ categories/ 2>/dev/null || true)
+            if [ -n "$matches" ]; then
+              echo "::error::Fragile relative path '$pattern' found in:"
+              echo "$matches"
+              FAIL=1
+            fi
+          done
+          if [ "$FAIL" = "0" ]; then
+            echo "No fragile parent-relative nav/asset paths found. ✅"
+          fi
+          exit $FAIL
+
+
         if: github.event_name == 'pull_request'
         run: |
           STALE=0

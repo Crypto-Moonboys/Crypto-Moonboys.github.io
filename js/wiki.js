@@ -5,10 +5,19 @@
 
 function resolveWikiUrl(url) {
   if (!url) return url;
-  // Strip any leading slashes, then collapse repeated wiki/ prefixes (e.g. wiki/wiki/) down to one
+  // Already root-relative — just collapse any repeated wiki/ prefixes (e.g. /wiki/wiki/)
+  if (url.startsWith('/')) {
+    return url.replace(/^\/(wiki\/)+/, '/wiki/');
+  }
+  // Strip any leading slashes, then collapse repeated wiki/ prefixes down to one
   let u = url.replace(/^\/+/, '').replace(/^(wiki\/)+/, 'wiki/');
   if (u.startsWith('wiki/')) return '/' + u;
-  return url;
+  // Non-empty relative URL that isn't a wiki/ path — make it root-relative as a safe fallback
+  return '/' + u;
+}
+
+function goToSearch(q) {
+  if (q) window.location.href = `/search.html?q=${encodeURIComponent(q)}`;
 }
 
 /* ── SEARCH INDEX ──────────────────────────────────────────────────────────
@@ -211,17 +220,11 @@ function initSearch() {
       }
     });
     input.addEventListener('keydown', e => {
-      if (e.key === 'Enter') {
-        const q = input.value.trim();
-        if (q) window.location.href = `/search.html?q=${encodeURIComponent(q)}`;
-      }
+      if (e.key === 'Enter') goToSearch(input.value.trim());
     });
     // Header search button
     const btn = document.getElementById('search-btn');
-    if (btn) btn.addEventListener('click', () => {
-      const q = input.value.trim();
-      if (q) window.location.href = `/search.html?q=${encodeURIComponent(q)}`;
-    });
+    if (btn) btn.addEventListener('click', () => goToSearch(input.value.trim()));
   }
 
   // Home page search
@@ -229,17 +232,11 @@ function initSearch() {
   const homeBtn   = document.getElementById('home-search-btn');
   if (homeInput) {
     homeInput.addEventListener('keydown', e => {
-      if (e.key === 'Enter') {
-        const q = homeInput.value.trim();
-        if (q) window.location.href = `/search.html?q=${encodeURIComponent(q)}`;
-      }
+      if (e.key === 'Enter') goToSearch(homeInput.value.trim());
     });
   }
   if (homeBtn && homeInput) {
-    homeBtn.addEventListener('click', () => {
-      const q = homeInput.value.trim();
-      if (q) window.location.href = `/search.html?q=${encodeURIComponent(q)}`;
-    });
+    homeBtn.addEventListener('click', () => goToSearch(homeInput.value.trim()));
   }
 
   // Search page
