@@ -300,21 +300,17 @@ function scoreResult(item, query) {
   const matchedEntity   = ENTITY_LOOKUP[normalizedQuery];
 
   if (matchedEntity) {
-    // Exact canonical entity match — strongly prefer this page
     if (item.url === matchedEntity.canonical_url) {
+      // Exact canonical entity match — strongly prefer this page
       score += 120;
-    }
 
-    // Alias match — moderately boost the canonical page reached via an alias
-    const entityAliases = matchedEntity.aliases || [];
-    entityAliases.forEach(a => {
-      if (normalizeEntityKey(a) === normalizedQuery) {
+      // Additional boost when the query arrived via an alias (not the canonical title)
+      const entityAliases = matchedEntity.aliases || [];
+      if (entityAliases.some(a => normalizeEntityKey(a) === normalizedQuery)) {
         score += 70;
       }
-    });
-
-    // Penalise every other page so the canonical result floats to the top
-    if (item.url !== matchedEntity.canonical_url) {
+    } else {
+      // Penalise every non-canonical page so the right result floats to the top
       score -= 20;
     }
   }
