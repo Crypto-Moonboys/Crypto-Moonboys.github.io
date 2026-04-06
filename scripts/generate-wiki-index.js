@@ -193,9 +193,10 @@ function deduplicateIndex(entries) {
     }
 
     // Multiple entries share the same normalised title — pick canonical.
-    // Preference order: entry already has aliases, then shortest URL.
-    const canonical = group.find(e => e.aliases && e.aliases.length > 0)
-      || group.slice().sort((a, b) => a.url.length - b.url.length)[0];
+    // Sort by URL length first for a stable, deterministic result, then prefer
+    // an entry that already carries aliases (preserves curated metadata).
+    const sorted = group.slice().sort((a, b) => a.url.length - b.url.length);
+    const canonical = sorted.find(e => e.aliases && e.aliases.length > 0) || sorted[0];
 
     const mergedAliases = Array.isArray(canonical.aliases) ? [...canonical.aliases] : [];
 
@@ -219,23 +220,26 @@ function deduplicateIndex(entries) {
 }
 
 /* ── Write a minimal HTML redirect stub ─────────────────────────────────── */
-// Writes only if the file is already a redirect, missing, or has < 500 chars
-// of visible text (i.e. is not a full article). Returns true if written.
+// Writes only if the file is already a redirect stub, missing, or small
+// (< 2 KB on disk, roughly equivalent to < 500 chars of visible text).
+// Returns true if written.
 function generateRedirectFile(aliasFilePath, canonicalUrl) {
+  // Validate canonical URL: must be a simple internal wiki path to prevent injection.
+  if (!/^\/wiki\/[a-z0-9][a-z0-9-]*\.html$/.test(canonicalUrl)) {
+    console.warn(`  ! invalid canonical URL format, skipping redirect: ${canonicalUrl}`);
+    return false;
+  }
+
   if (fs.existsSync(aliasFilePath)) {
     const existing = fs.readFileSync(aliasFilePath, 'utf8');
-    // If already a redirect, always overwrite (keeps canonical URL current).
-    const isStub = /<meta\s[^>]*http-equiv\s*=\s*["']refresh["']/i.test(existing);
+    // Detect existing redirect: look for both http-equiv and refresh in any meta tag.
+    const isStub = /http-equiv/i.test(existing) && /\brefresh\b/i.test(existing);
     if (!isStub) {
-      // Strip script/style blocks first, then remaining tags, to estimate body length
-      const visibleText = existing
-        .replace(/<script[\s\S]*?<\/script>/gi, '')
-        .replace(/<style[\s\S]*?<\/style>/gi, '')
-        .replace(/<[^>]+>/g, '')
-        .replace(/\s+/g, ' ')
-        .trim();
-      if (visibleText.length >= 500) {
-        console.log(`  ! skipping redirect for ${path.basename(aliasFilePath)} (has substantial content, ${visibleText.length} chars)`);
+      // Use raw file size as a fast, injection-safe proxy for content length.
+      // Real wiki articles are many kilobytes; stubs are under ~500 bytes.
+      const byteSize = Buffer.byteLength(existing, 'utf8');
+      if (byteSize >= 2000) {
+        console.log(`  ! skipping redirect for ${path.basename(aliasFilePath)} (has substantial content, ${byteSize} bytes)`);
         return false;
       }
     }

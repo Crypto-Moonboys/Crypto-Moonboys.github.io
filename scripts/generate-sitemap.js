@@ -52,7 +52,7 @@ function wikiPageFiles() {
         .filter(f => f.endsWith('.html'))
         .sort();
     } catch (e) {
-      console.warn('Could not parse wiki-index.json for sitemap; falling back to file scan.', e.message);
+      console.warn('Warning: Could not parse wiki-index.json; falling back to scanning wiki/*.html directly.', e.message);
     }
   }
   return htmlFiles(path.join(ROOT, 'wiki'));
