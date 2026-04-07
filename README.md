@@ -2,7 +2,7 @@
 
 [![GitHub Pages](https://img.shields.io/badge/GitHub%20Pages-Live-brightgreen)](https://crypto-moonboys.github.io)
 
-**This repo is the static frontend only.** It is a fan-driven crypto encyclopedia served via GitHub Pages. No backend logic, no agents, no pipelines live here.
+It is a fan-driven crypto encyclopedia served via GitHub Pages.
 
 All wiki content is **published automatically** from the Brain repo ([`HODLKONG64/HAY-MUM-IM-BUILDING-AGENTS-OF-CHANGE`](https://github.com/HODLKONG64/HAY-MUM-IM-BUILDING-AGENTS-OF-CHANGE)). No manual content authoring happens in this repo.
 
@@ -12,339 +12,327 @@ All wiki content is **published automatically** from the Brain repo ([`HODLKONG6
 
 | Repo | Role |
 |------|------|
-| **Brain / Content** — [`HODLKONG64/HAY-MUM-IM-BUILDING-AGENTS-OF-CHANGE`](https://github.com/HODLKONG64/HAY-MUM-IM-BUILDING-AGENTS-OF-CHANGE) | Hosts the SAM AI agent, all intelligence logic, scoring, memory, and publishing scripts. Pushes HTML and JSON to this repo on each cycle. |
-| **Wiki / Frontend** — this repo | Public-facing GitHub Pages site. **Static display only.** Receives automated commits from the Brain repo. No logic runs here. |
+| **Brain / Content** — [`HODLKONG64/HAY-MUM-IM-BUILDING-AGENTS-OF-CHANGE`](https://github.com/HODLKONG64/HAY-MUM-IM-BUILDING-AGENTS-OF-CHANGE) | Hosts the SAM AI agent, all intelligence logic, scoring, memory, and publishing scripts. 
 
-> ⚠️ This repo is **static frontend only** — HTML, CSS, and minimal JS for display. All intelligence, scoring, and publishing logic live in the Brain repo. This repo is locked to frontend concerns.
+# 🌙 Crypto Moonboys Wiki — System README (LOCKED BUILD)
 
----
+## 🚨 READ THIS FIRST (NON-NEGOTIABLE RULES)
 
-## 📂 File Structure
+This repository is now in a **stable, production-safe state**.
 
-```text
-/
-├── index.html              ← Homepage
-├── index_stats.json        ← Live stats: total_articles, total_entities, last_updated
-├── articles.html           ← All Articles index
-├── about.html              ← About / Citation Policy
-├── agent.html              ← SAM Agent info page
-├── search.html             ← Search / All Articles
-├── _article-template.html  ← TEMPLATE for new articles (bot uses this)
-├── sitemap.xml             ← Auto-updated sitemap
-├── css/
-│   └── wiki.css            ← All styles
-├── js/
-│   ├── wiki.js             ← Search index + UI logic
-│   ├── index_stats_v2.js   ← Homepage stats loader
-│   └── bible-loader.js     ← Entity bible JSON loader for priority article pages
-├── wiki/
-│   ├── bitcoin.html        ← Priority entity pages (bible hooks active)
-│   ├── ethereum.html
-│   ├── bibles/             ← Bible JSON files published from Brain repo
-│   └── ... (314+ articles total, grows each Brain repo cycle)
-└── categories/
-    ├── index.html
-    └── ... (17 categories)
+### ❌ DO NOT EVER:
 
+* Delete `wiki/*.html` files in bulk
+* Rebuild pages from JSON or SAM memory
+* Replace real article bodies with summaries
+* Reintroduce `../` relative paths
+* Use relative internal links like `bitcoin.html`
+* Modify working HTML structure “for cleanup”
+* Change publisher behavior without explicit instruction
 
-# 🧠 Crypto Moonboys Wiki — SAM Intelligence System
+### ✅ ALWAYS:
 
-## 🚀 Overview
+* Preserve existing article content
+* Use **root-relative paths** (`/css/`, `/js/`, `/wiki/...`)
+* Use **canonical internal links** (`/wiki/{slug}.html`)
+* Treat SAM memory as **metadata only**
+* Validate all changes against CI before merge
 
-This is not a standard website.
-
-This is a **self-structuring, data-driven intelligence platform** built on a static architecture — powered by:
-
-* Canonical entity mapping
-* Deterministic data pipelines
-* Automated indexing
-* Search intelligence
-* Visual system monitoring (SAM Dashboard)
-
-The system transforms raw wiki pages into a **connected knowledge graph with visible intelligence**.
+👉 This system is **LOCKED**. Changes must be additive, not destructive.
 
 ---
 
-## 🧩 Core Architecture
+# 🧠 SYSTEM OVERVIEW
 
-### 1. Wiki Layer (Content)
+This is a **static wiki + AI-assisted publishing system**.
 
-* `/wiki/*.html`
-* Human-written or generated lore/content pages
-* Canonical source of truth for all entities
+It separates **content** from **metadata**, which is the core principle that must never be broken.
 
----
+## Architecture
 
-### 2. Index Layer (Search + Discovery)
-
-* `/js/wiki-index.json`
-* Generated via:
-
-  ```
-  scripts/generate-wiki-index.js
-  ```
-* Handles:
-
-  * Search indexing
-  * Canonical URL structure
-  * Deduplication + alias merging
-
----
-
-### 3. Entity Layer (Intelligence Core)
-
-* `/js/entity-map.json`
-* `/sam-memory.json`
-
-Generated via:
+### 1. Content Layer (SOURCE OF TRUTH)
 
 ```
-scripts/generate-entity-map.js
+/wiki/*.html
+/about/*.html
 ```
 
-Each entity includes:
+* Full article bodies live here
+* These files are canonical
+* Never auto-generated or overwritten
 
-* canonical_title
-* canonical_url
-* aliases
-* alias_candidates
+---
+
+### 2. Metadata Layer (SAM / JSON)
+
+Used for:
+
+* ranking
+* categories
 * tags
-* category
-* source_urls
+* aliases
+* mention counts
+* indexing
 
-👉 This is the **brain structure**
+**NOT used for:**
+
+* full page generation
 
 ---
 
-### 4. Stats Layer (System State)
+### 3. Build / Index Layer
 
-* `/js/site-stats.json`
-
-Generated via:
+Scripts:
 
 ```
+scripts/generate-wiki-index.js
+scripts/generate-entity-map.js
+scripts/generate-sitemap.js
 scripts/generate-site-stats.js
+scripts/validate-generated-assets.js
 ```
 
-Tracks:
+These:
 
-* total_articles
-* total_entities
-* category_count
-* last_updated
+* read HTML content
+* extract signals
+* build JSON indexes
 
-👉 Now correctly synced with real data (no mismatches)
+👉 They DO NOT create content
 
 ---
 
-### 5. SAM Dashboard (Visible Intelligence)
+### 4. Publisher (CONTROLLED GENERATOR)
 
-* `/sam.html`
+```
+sam-wiki-publisher.py
+```
 
-Displays:
+Now behaves as:
 
-* entity rankings
-* system stats
-* activity feed
-* knowledge graph
+* stub generator (only if page missing)
+* metadata enhancer
+* path normalizer
 
-Powered by:
+👉 It must NEVER:
 
-* entity-map.json
-* site-stats.json
-* sam-memory.json
-
-👉 Turns system into **visible AI**
+* delete pages
+* overwrite real content
 
 ---
 
-## 🔄 Data Pipeline (Deterministic)
-
-Full rebuild flow:
-
-```bash
-node scripts/generate-wiki-index.js
-node scripts/generate-sitemap.js
-node scripts/generate-site-stats.js
-node scripts/generate-entity-map.js
-```
-
-Or:
-
-```bash
-node scripts/generate-wiki-index.js && \
-node scripts/generate-sitemap.js && \
-node scripts/generate-site-stats.js && \
-node scripts/generate-entity-map.js
-```
-
----
-
-## 🔍 Search System
-
-* Powered by `wiki-index.json`
-* Canonical-only results (no duplicates)
-* Fixed:
-
-  * ❌ `/wiki/wiki/...` bug
-  * ❌ stale index issues
-
-Auto-sync enabled via:
+### 5. CI Enforcement
 
 ```
 .github/workflows/wiki-index-sync.yml
 ```
 
-👉 Rebuilds index automatically on commit
+Validates:
 
----
+* no `../` paths
+* correct root-relative structure
+* generated assets consistency
 
-## 🧠 Entity System (Key Feature)
-
-Every page becomes a structured entity:
-
-* deduplicated via alias matching
-* merged into canonical records
-* cross-linked via tags
-
-Supports:
-
-* graph visualization
-* clustering
-* future AI expansion
-
----
-
-## 📊 System Integrity (LOCKED)
-
-All data now aligned:
-
-| Layer      | Source             | Status |
-| ---------- | ------------------ | ------ |
-| wiki-index | HTML pages         | ✅      |
-| entity-map | wiki-index         | ✅      |
-| sam-memory | entity-map         | ✅      |
-| site-stats | entity-map + index | ✅      |
-
-No mismatches
-No fake counts
-No drift
-
----
-
-## 🧭 Navigation
-
-Global header includes:
-
-* Home
-* Categories
-* All Articles
-* 🧠 SAM Dashboard
-
-Auto-injected across all pages (241+ files)
-
----
-
-## 🧱 File Structure
+Now includes:
 
 ```
-/wiki/                  → content pages
+wiki/
+categories/
+about/
+about.html
+```
+
+---
+
+# 🔧 WHAT WAS FIXED (CRITICAL HISTORY)
+
+## Phase 1 — BREAKAGE
+
+* Publisher deleted all `wiki/*.html`
+* Rebuilt pages from metadata
+* Destroyed real content
+
+## Phase 2 — RESTORE
+
+* Recovered pages from git history
+* Reintroduced full article bodies
+
+## Phase 3 — PATH NORMALIZATION
+
+* Removed all `../` paths
+* Standardized:
+
+```
+/css/
 /js/
-  wiki-index.json       → search index
-  entity-map.json       → entity registry
-  site-stats.json       → system stats
-/scripts/
-  generate-wiki-index.js
-  generate-entity-map.js
-  generate-site-stats.js
-  generate-sitemap.js
-/sam.html               → dashboard
-/sam-memory.json        → machine memory
-.github/workflows/
-  wiki-index-sync.yml   → auto index rebuild
+/img/
+/index.html
+/search.html
+/categories/
+```
+
+## Phase 4 — INTERNAL LINK FIX
+
+Replaced:
+
+```
+bitcoin.html
+```
+
+with:
+
+```
+/wiki/bitcoin.html
+```
+
+## Phase 5 — SYSTEM HARDENING
+
+* Added path normalization to publisher
+* Extended CI to cover `/about/`
+* Eliminated all fragile links
+
+---
+
+# 📏 CURRENT SYSTEM RULES
+
+## Paths (STRICT)
+
+| Type       | Format                                           |
+| ---------- | ------------------------------------------------ |
+| CSS        | `/css/...`                                       |
+| JS         | `/js/...`                                        |
+| Images     | `/img/...`                                       |
+| Wiki pages | `/wiki/{slug}.html`                              |
+| Navigation | `/index.html`, `/search.html`, `/categories/...` |
+
+---
+
+## Internal Linking (STRICT)
+
+```html
+<a href="/wiki/bitcoin.html">Bitcoin</a>
+```
+
+Never:
+
+```html
+<a href="bitcoin.html">
+<a href="../bitcoin.html">
 ```
 
 ---
 
-## ⚙️ Key Fixes Applied
+## Stub Pages
 
-### ✅ Search
+If generated:
 
-* Removed duplicate `/wiki/wiki/` paths
-* Rebuilt canonical index
+Must include:
 
-### ✅ Stats
+```html
+<body data-wiki-stub="true">
+```
 
-* Fixed `total_entities` (was using category count)
-* Now uses real entity-map length
+And clearly indicate:
 
-### ✅ Titles
-
-* Converted slug titles:
-
-  * `alfie_blaze` → `Alfie Blaze`
-  * `1m_free_nfts` → `1M Free NFTs`
-
-### ✅ Navigation
-
-* Added SAM link globally
-* Fixed relative paths per directory depth
-
-### ✅ Automation
-
-* Index rebuild auto-runs on commit
-* Prevents stale search results
+> This is a stub article generated from metadata.
 
 ---
 
-## ⚡ Performance
+# ⚙️ PUBLISHER SAFETY MODEL
 
-* Fully static → fast load
-* No backend required
-* No runtime dependencies
-* Lightweight JS only
+The publisher now enforces:
 
----
+### Preservation-first logic
 
-## 🔐 Rules (Do Not Break)
+```
+IF page exists AND is full → KEEP
+IF page missing → CREATE stub
+IF page restored → NORMALIZE paths
+```
 
-* Never manually edit generated JSON files
-* Always run generators after adding pages
-* Do not change canonical URLs
-* Do not introduce duplicate entities
-* Titles must be clean (no underscores)
+### Path normalization
 
----
+All generated/restored content passes through:
 
-## 🚀 What This System Is
+```
+normalize_legacy_paths()
+```
 
-This is:
+Prevents:
 
-* a wiki
-* a structured data engine
-* a search system
-* an entity graph
-* a visible AI dashboard
-
-Combined into:
-
-👉 **a self-organising intelligence platform**
+* `../css/`
+* `../js/`
+* `../img/`
+* `../articles.html`
 
 ---
 
-## 🧠 Final State
+# 🛡️ CI SAFETY MODEL
 
-* Fully operational
-* Fully synced
-* Fully deterministic
+CI blocks:
 
-No missing components
-No broken systems
-No outstanding fixes
+* relative paths
+* broken navigation
+* outdated structures
+
+If CI fails → DO NOT MERGE
 
 ---
 
-## 📌 End
+# 📊 CURRENT STATUS
 
-This repository is now complete and stable.
+* ✅ 0 fragile paths
+* ✅ 0 relative internal links
+* ✅ 100% root-relative structure
+* ✅ publisher safe
+* ✅ CI enforced
+* ✅ full article content restored
 
+---
+
+# ⚠️ FUTURE AGENT WARNING
+
+If you are an automated agent:
+
+### STOP if you are about to:
+
+* regenerate HTML from JSON
+* “simplify” page structure
+* refactor navigation paths
+* clean “duplicate-looking” files
+* remove HTML content
+
+👉 These actions will BREAK the system.
+
+---
+
+# 🚀 SAFE FUTURE IMPROVEMENTS
+
+Allowed:
+
+* improve ranking (JSON layer only)
+* add new articles
+* enhance metadata
+* expand lore content
+* improve search/indexing
+
+NOT allowed:
+
+* altering content generation model
+* destructive rebuild logic
+
+---
+
+# 🧭 FINAL NOTE
+
+This repo is no longer experimental.
+
+It is a:
+
+> **deterministic, CI-enforced, preservation-first publishing system**
+
+Respect that — or you will break it again.
+
+---
+
+END OF FILE
