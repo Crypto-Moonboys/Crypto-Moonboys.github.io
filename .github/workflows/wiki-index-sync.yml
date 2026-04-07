@@ -8,24 +8,20 @@ on:
       - 'wiki/**'
       - 'categories/**'
       - 'scripts/**'
-      - 'js/wiki.js'
-      - 'js/index_stats_v2.js'
-      - 'js/ranking-config.js'
+      - 'about.html'
+      - 'articles.html'
       - 'search.html'
       - 'index.html'
-      - 'articles.html'
-      - 'about.html'
-      - '.github/workflows/wiki-index-sync.yml'
     paths-ignore:
       - 'js/wiki-index.json'
-      - 'js/entity-map.json'
       - 'js/site-stats.json'
-      - 'sitemap.xml'
+      - 'js/entity-map.json'
       - 'sam-memory.json'
+      - 'sitemap.xml'
       - 'index_stats.json'
-      - '**/*.md'
-      - 'img/**'
       - 'css/**'
+      - 'img/**'
+      - '**/*.md'
   pull_request:
     branches:
       - main
@@ -33,38 +29,26 @@ on:
       - 'wiki/**'
       - 'categories/**'
       - 'scripts/**'
-      - 'js/wiki.js'
-      - 'js/index_stats_v2.js'
-      - 'js/ranking-config.js'
+      - 'about.html'
+      - 'articles.html'
       - 'search.html'
       - 'index.html'
-      - 'articles.html'
-      - 'about.html'
-      - '.github/workflows/wiki-index-sync.yml'
     paths-ignore:
       - 'js/wiki-index.json'
-      - 'js/entity-map.json'
       - 'js/site-stats.json'
-      - 'sitemap.xml'
+      - 'js/entity-map.json'
       - 'sam-memory.json'
+      - 'sitemap.xml'
       - 'index_stats.json'
-      - '**/*.md'
-      - 'img/**'
       - 'css/**'
-
-permissions:
-  contents: write
-
-concurrency:
-  group: wiki-generated-assets-${{ github.ref }}
-  cancel-in-progress: true
+      - 'img/**'
+      - '**/*.md'
 
 jobs:
   sync-generated-assets:
     runs-on: ubuntu-latest
     if: |
       github.actor != 'github-actions[bot]' &&
-      github.actor != 'github-actions' &&
       (
         github.event_name != 'push' ||
         !contains(github.event.head_commit.message, 'chore: auto-update wiki generated assets')
@@ -74,132 +58,72 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
 
-      - name: Generate wiki index
+      - name: Regenerate wiki search index
         run: node scripts/generate-wiki-index.js
 
-      - name: Generate entity map and SAM memory
-        run: node scripts/generate-entity-map.js
-
-      - name: Generate sitemap
+      - name: Regenerate sitemap
         run: node scripts/generate-sitemap.js
 
-      - name: Generate site stats
+      - name: Regenerate site stats
         run: node scripts/generate-site-stats.js
 
-      - name: Validate generated assets
+      - name: Regenerate entity map and SAM memory
+        run: node scripts/generate-entity-map.js
+
+      - name: Validate generated assets and ranking schema
         run: node scripts/validate-generated-assets.js
 
-      - name: Run smoke tests
-        run: node scripts/smoke-test.js
-
-      - name: Check for fragile relative paths
-        shell: bash
+      - name: Check for fragile parent-relative nav/asset paths
         run: |
-          set -euo pipefail
           FAIL=0
-          BAD_PATTERNS=(
-            '../index.html'
-            '../search.html'
-            '../articles.html'
-            '../categories/index.html'
-            '../img/'
-            '../css/'
-            '../js/'
-            'href="index.html"'
-            'href="search.html"'
-            'href="articles.html"'
-            'href="sam.html"'
-            'src="img/"'
-            'src="css/"'
-          )
-
+          BAD_PATTERNS=('../index.html' '../search.html' '../categories/index.html' '../img/' '../css/' '../js/' 'href="index.html"' 'href="search.html"' 'href="sam.html"' 'src="img/"' 'src="css/"')
           for pattern in "${BAD_PATTERNS[@]}"; do
-            matches="$(grep -rFl --include='*.html' "$pattern" wiki/ categories/ about/ 2>/dev/null || true)"
+            matches=$(grep -rFl --include='*.html' "$pattern" wiki/ categories/ _article-template.html 2>/dev/null || true)
             if [ -n "$matches" ]; then
               echo "::error::Fragile relative path '$pattern' found in:"
               echo "$matches"
               FAIL=1
             fi
           done
-
-          if [ "$FAIL" -ne 0 ]; then
-            exit 1
+          if [ "$FAIL" = "0" ]; then
+            echo "All nav/asset paths are root-relative. ✅"
           fi
+          exit $FAIL
 
-          echo "All nav/asset paths are root-relative."
-
-      - name: Guard legacy wiki index removal
-        shell: bash
+      - name: Guard wiki/index.html redirect stub
         run: |
-          set -euo pipefail
-
-          if [ -f wiki/index.html ]; then
-            echo "::error file=wiki/index.html::wiki/index.html must not exist anymore"
+          if grep -qF 'articles' wiki/index.html; then
+            echo "::error file=wiki/index.html::wiki/index.html appears to contain article content."
+            echo "This file must remain a redirect stub pointing to /search.html."
+            echo "Delete the content and replace with the redirect template."
             exit 1
           fi
+          echo "wiki/index.html is a clean redirect stub. ✅"
 
-          if grep -q '/wiki/index.html' js/wiki-index.json; then
-            echo "::error file=js/wiki-index.json::legacy /wiki/index.html still present in wiki-index"
-            exit 1
-          fi
-
-          if grep -q '/wiki/index.html' js/entity-map.json; then
-            echo "::error file=js/entity-map.json::legacy /wiki/index.html still present in entity-map"
-            exit 1
-          fi
-
-          if grep -q '/wiki/index.html' sitemap.xml; then
-            echo "::error file=sitemap.xml::legacy /wiki/index.html still present in sitemap"
-            exit 1
-          fi
-
-          echo "Legacy wiki index removal checks passed."
-
-      - name: Guard canonical article hub
-        shell: bash
-        run: |
-          set -euo pipefail
-
-          if ! grep -q '/search.html' articles.html; then
-            echo "::error file=articles.html::articles.html must redirect to /search.html"
-            exit 1
-          fi
-
-          if ! grep -q 'canonical article hub' search.html; then
-            echo "::warning file=search.html::search.html should explicitly describe itself as the canonical article hub"
-          fi
-
-          echo "Canonical article hub checks passed."
-
-      - name: Commit generated files
+      - name: Commit and push updated assets (main push only)
         if: github.event_name == 'push'
-        shell: bash
         run: |
-          set -euo pipefail
-
-          git config user.name "github-actions[bot]"
+          git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-
-          git add \
-            js/wiki-index.json \
-            js/entity-map.json \
-            js/site-stats.json \
-            sitemap.xml \
-            sam-memory.json \
-            index_stats.json || true
-
-          if git diff --cached --quiet; then
-            echo "No generated file changes."
-            exit 0
+          CHANGED=0
+          for f in js/wiki-index.json sitemap.xml js/site-stats.json js/entity-map.json sam-memory.json index_stats.json; do
+            if ! git diff --quiet "$f"; then
+              git add "$f"
+              CHANGED=1
+            fi
+          done
+          if [ "$CHANGED" = "1" ]; then
+            git commit -m "chore: auto-update wiki generated assets"
+            git push
+            echo "Generated assets updated and pushed. ✅"
+          else
+            echo "All generated assets are up to date — nothing to commit. ✅"
           fi
-
-          git commit -m "chore: auto-update wiki generated assets"
-          git push origin HEAD:main

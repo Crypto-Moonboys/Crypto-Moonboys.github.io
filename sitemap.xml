@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url><loc>https://crypto-moonboys.github.io/</loc><lastmod>2026-04-07</lastmod><changefreq>weekly</changefreq><priority>1.0</priority></url>
-  <url><loc>https://crypto-moonboys.github.io/about.html</loc><lastmod>2026-04-07</lastmod><changefreq>weekly</changefreq><priority>1.0</priority></url>
+  <url><loc>https://crypto-moonboys.github.io/about.html</loc><lastmod>2026-04-07</lastmod><changefreq>weekly</changefreq><priority>0.9</priority></url>
   <url><loc>https://crypto-moonboys.github.io/search.html</loc><lastmod>2026-04-07</lastmod><changefreq>weekly</changefreq><priority>1.0</priority></url>
-  <url><loc>https://crypto-moonboys.github.io/articles.html</loc><lastmod>2026-04-07</lastmod><changefreq>weekly</changefreq><priority>1.0</priority></url>
+  <url><loc>https://crypto-moonboys.github.io/articles.html</loc><lastmod>2026-04-07</lastmod><changefreq>weekly</changefreq><priority>0.9</priority></url>
   <url><loc>https://crypto-moonboys.github.io/agent.html</loc><lastmod>2026-04-07</lastmod><changefreq>weekly</changefreq><priority>0.9</priority></url>
   <url><loc>https://crypto-moonboys.github.io/block-topia.html</loc><lastmod>2026-04-07</lastmod><changefreq>daily</changefreq><priority>0.9</priority></url>
   <url><loc>https://crypto-moonboys.github.io/about/graffiti-kings.html</loc><lastmod>2026-04-07</lastmod><changefreq>monthly</changefreq><priority>0.6</priority></url>
@@ -16,13 +16,8 @@
   <url><loc>https://crypto-moonboys.github.io/about/our-mission.html</loc><lastmod>2026-04-07</lastmod><changefreq>monthly</changefreq><priority>0.6</priority></url>
   <url><loc>https://crypto-moonboys.github.io/about/rackin-sats.html</loc><lastmod>2026-04-07</lastmod><changefreq>monthly</changefreq><priority>0.6</priority></url>
   <url><loc>https://crypto-moonboys.github.io/about/what-is-crypto-moonboys.html</loc><lastmod>2026-04-07</lastmod><changefreq>monthly</changefreq><priority>0.6</priority></url>
-  <url><loc>https://crypto-moonboys.github.io/categories/_article-template.html</loc><lastmod>2026-04-07</lastmod><changefreq>weekly</changefreq><priority>0.9</priority></url>
-  <url><loc>https://crypto-moonboys.github.io/categories/about.html</loc><lastmod>2026-04-07</lastmod><changefreq>weekly</changefreq><priority>0.9</priority></url>
   <url><loc>https://crypto-moonboys.github.io/categories/activism-counter-culture.html</loc><lastmod>2026-04-07</lastmod><changefreq>weekly</changefreq><priority>0.9</priority></url>
-  <url><loc>https://crypto-moonboys.github.io/categories/agent.html</loc><lastmod>2026-04-07</lastmod><changefreq>weekly</changefreq><priority>0.9</priority></url>
   <url><loc>https://crypto-moonboys.github.io/categories/art-creativity.html</loc><lastmod>2026-04-07</lastmod><changefreq>weekly</changefreq><priority>0.9</priority></url>
-  <url><loc>https://crypto-moonboys.github.io/categories/articles.html</loc><lastmod>2026-04-07</lastmod><changefreq>weekly</changefreq><priority>0.9</priority></url>
-  <url><loc>https://crypto-moonboys.github.io/categories/block-topia.html</loc><lastmod>2026-04-07</lastmod><changefreq>weekly</changefreq><priority>0.9</priority></url>
   <url><loc>https://crypto-moonboys.github.io/categories/community-people.html</loc><lastmod>2026-04-07</lastmod><changefreq>weekly</changefreq><priority>0.9</priority></url>
   <url><loc>https://crypto-moonboys.github.io/categories/concepts.html</loc><lastmod>2026-04-07</lastmod><changefreq>weekly</changefreq><priority>0.9</priority></url>
   <url><loc>https://crypto-moonboys.github.io/categories/cryptocurrencies.html</loc><lastmod>2026-04-07</lastmod><changefreq>weekly</changefreq><priority>0.9</priority></url>
@@ -35,8 +30,6 @@
   <url><loc>https://crypto-moonboys.github.io/categories/media-publishing.html</loc><lastmod>2026-04-07</lastmod><changefreq>weekly</changefreq><priority>0.9</priority></url>
   <url><loc>https://crypto-moonboys.github.io/categories/nfts-digital-art.html</loc><lastmod>2026-04-07</lastmod><changefreq>weekly</changefreq><priority>0.9</priority></url>
   <url><loc>https://crypto-moonboys.github.io/categories/punk-culture.html</loc><lastmod>2026-04-07</lastmod><changefreq>weekly</changefreq><priority>0.9</priority></url>
-  <url><loc>https://crypto-moonboys.github.io/categories/sam.html</loc><lastmod>2026-04-07</lastmod><changefreq>weekly</changefreq><priority>0.9</priority></url>
-  <url><loc>https://crypto-moonboys.github.io/categories/search.html</loc><lastmod>2026-04-07</lastmod><changefreq>weekly</changefreq><priority>0.9</priority></url>
   <url><loc>https://crypto-moonboys.github.io/categories/technology.html</loc><lastmod>2026-04-07</lastmod><changefreq>weekly</changefreq><priority>0.9</priority></url>
   <url><loc>https://crypto-moonboys.github.io/categories/tools.html</loc><lastmod>2026-04-07</lastmod><changefreq>weekly</changefreq><priority>0.9</priority></url>
   <url><loc>https://crypto-moonboys.github.io/wiki/1m-free-nfts-drop.html</loc><lastmod>2026-04-07</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
@@ -45,6 +38,7 @@
   <url><loc>https://crypto-moonboys.github.io/wiki/1m-free-nfts.html</loc><lastmod>2026-04-07</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
   <url><loc>https://crypto-moonboys.github.io/wiki/2025-metaverse-launch-party.html</loc><lastmod>2026-04-07</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
   <url><loc>https://crypto-moonboys.github.io/wiki/aleema-child-of-the-shard.html</loc><lastmod>2026-04-07</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://crypto-moonboys.github.io/wiki/alfie-bitcoin-kid-blaze.html</loc><lastmod>2026-04-07</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
   <url><loc>https://crypto-moonboys.github.io/wiki/alfie-blaze.html</loc><lastmod>2026-04-07</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
   <url><loc>https://crypto-moonboys.github.io/wiki/alfie-the-bitcoin-kid-blaze.html</loc><lastmod>2026-04-07</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
   <url><loc>https://crypto-moonboys.github.io/wiki/altcoins.html</loc><lastmod>2026-04-07</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
@@ -54,6 +48,7 @@
   <url><loc>https://crypto-moonboys.github.io/wiki/bear-market-siege.html</loc><lastmod>2026-04-07</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
   <url><loc>https://crypto-moonboys.github.io/wiki/billy-the-goat-kid.html</loc><lastmod>2026-04-07</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
   <url><loc>https://crypto-moonboys.github.io/wiki/bit-cap-5000.html</loc><lastmod>2026-04-07</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://crypto-moonboys.github.io/wiki/bitcoin-kid-army.html</loc><lastmod>2026-04-07</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
   <url><loc>https://crypto-moonboys.github.io/wiki/bitcoin-kids.html</loc><lastmod>2026-04-07</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
   <url><loc>https://crypto-moonboys.github.io/wiki/bitcoin-x-kids.html</loc><lastmod>2026-04-07</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
   <url><loc>https://crypto-moonboys.github.io/wiki/bitcoin.html</loc><lastmod>2026-04-07</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
@@ -89,9 +84,11 @@
   <url><loc>https://crypto-moonboys.github.io/wiki/genesis-kernel.html</loc><lastmod>2026-04-07</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
   <url><loc>https://crypto-moonboys.github.io/wiki/genesis-spray-drop.html</loc><lastmod>2026-04-07</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
   <url><loc>https://crypto-moonboys.github.io/wiki/genesis-spray.html</loc><lastmod>2026-04-07</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://crypto-moonboys.github.io/wiki/gk-token.html</loc><lastmod>2026-04-07</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
   <url><loc>https://crypto-moonboys.github.io/wiki/gk-tokens.html</loc><lastmod>2026-04-07</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
   <url><loc>https://crypto-moonboys.github.io/wiki/gk.html</loc><lastmod>2026-04-07</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
   <url><loc>https://crypto-moonboys.github.io/wiki/gkniftyheads-phase-one-two-three.html</loc><lastmod>2026-04-07</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://crypto-moonboys.github.io/wiki/gkniftyheads.html</loc><lastmod>2026-04-07</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
   <url><loc>https://crypto-moonboys.github.io/wiki/graffiti-kings.html</loc><lastmod>2026-04-07</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
   <url><loc>https://crypto-moonboys.github.io/wiki/graffiti-nexus.html</loc><lastmod>2026-04-07</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
   <url><loc>https://crypto-moonboys.github.io/wiki/graffiti-queens-exhibition.html</loc><lastmod>2026-04-07</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
@@ -105,6 +102,7 @@
   <url><loc>https://crypto-moonboys.github.io/wiki/graffpunks-collection.html</loc><lastmod>2026-04-07</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
   <url><loc>https://crypto-moonboys.github.io/wiki/graffpunks-network.html</loc><lastmod>2026-04-07</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
   <url><loc>https://crypto-moonboys.github.io/wiki/graffpunks-nfts.html</loc><lastmod>2026-04-07</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://crypto-moonboys.github.io/wiki/graffpunks.html</loc><lastmod>2026-04-07</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
   <url><loc>https://crypto-moonboys.github.io/wiki/great-datapocalypse-of-2789.html</loc><lastmod>2026-04-07</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
   <url><loc>https://crypto-moonboys.github.io/wiki/grit.html</loc><lastmod>2026-04-07</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
   <url><loc>https://crypto-moonboys.github.io/wiki/grit42.html</loc><lastmod>2026-04-07</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
@@ -115,6 +113,7 @@
   <url><loc>https://crypto-moonboys.github.io/wiki/head-tags.html</loc><lastmod>2026-04-07</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
   <url><loc>https://crypto-moonboys.github.io/wiki/hex-tagger-prime.html</loc><lastmod>2026-04-07</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
   <url><loc>https://crypto-moonboys.github.io/wiki/hodl-warriors-army.html</loc><lastmod>2026-04-07</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://crypto-moonboys.github.io/wiki/hodl-warriors.html</loc><lastmod>2026-04-07</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
   <url><loc>https://crypto-moonboys.github.io/wiki/hodl-wars-game.html</loc><lastmod>2026-04-07</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
   <url><loc>https://crypto-moonboys.github.io/wiki/hodl-wars.html</loc><lastmod>2026-04-07</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
   <url><loc>https://crypto-moonboys.github.io/wiki/hodl-x-warriors.html</loc><lastmod>2026-04-07</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
@@ -171,6 +170,7 @@
   <url><loc>https://crypto-moonboys.github.io/wiki/rave-relics.html</loc><lastmod>2026-04-07</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
   <url><loc>https://crypto-moonboys.github.io/wiki/rug-pull-wars.html</loc><lastmod>2026-04-07</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
   <url><loc>https://crypto-moonboys.github.io/wiki/rune-tag.html</loc><lastmod>2026-04-07</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://crypto-moonboys.github.io/wiki/sacred-chain.html</loc><lastmod>2026-04-07</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
   <url><loc>https://crypto-moonboys.github.io/wiki/samaelexe.html</loc><lastmod>2026-04-07</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
   <url><loc>https://crypto-moonboys.github.io/wiki/sarah-pu51fly.html</loc><lastmod>2026-04-07</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
   <url><loc>https://crypto-moonboys.github.io/wiki/satorebel.html</loc><lastmod>2026-04-07</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
