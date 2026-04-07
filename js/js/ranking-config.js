@@ -1,4 +1,4 @@
-window.RANKING_CONFIG = {
+module.exports = {
   CATEGORY_PRIORITY: {
     core: 10,
     characters: 8,
@@ -12,7 +12,7 @@ window.RANKING_CONFIG = {
     canonical: 20,
     description: 10,
     category: 5,
-    word_count: 0.1,
+    word_count: 0.05,
     keyword_bag: 1
   }
 };
