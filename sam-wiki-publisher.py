@@ -7,6 +7,7 @@ Single-source-of-truth wiki build pipeline for Crypto Moonboys Wiki.
 Supports either:
 - direct export JSON with {"items": [...]}
 - SAM memory JSON with {"facts": {...}}
+- SAM entity-map JSON with {"entities": {...}}
 
 Requirements:
     pip install python-slugify
@@ -46,16 +47,43 @@ def first_non_empty(*values: Any) -> str:
     return ""
 
 
+def clean_title(value: str) -> str:
+    value = first_non_empty(value)
+    return value.replace(" — Crypto Moonboys Wiki", "").strip()
+
+
 def extract_first_source_url(data: dict) -> str:
-    sources = data.get("sources", [])
-    if isinstance(sources, list):
-        for source in sources:
-            if isinstance(source, str) and source.strip():
-                return source.strip()
+    for key in ("sources", "source_urls"):
+        sources = data.get(key, [])
+        if isinstance(sources, list):
+            for source in sources:
+                if isinstance(source, str) and source.strip():
+                    return source.strip()
+    canonical_url = data.get("canonical_url")
+    if isinstance(canonical_url, str) and canonical_url.strip():
+        return canonical_url.strip()
     return "#"
 
 
 def infer_summary(data: dict) -> str:
+    aliases = data.get("alias_candidates", [])
+    tags = data.get("tags", [])
+    category = first_non_empty(data.get("category"))
+
+    alias_text = ", ".join(a for a in aliases if isinstance(a, str) and a.strip())
+    tag_text = ", ".join(t for t in tags if isinstance(t, str) and t.strip())
+
+    fallback = ""
+    if category or alias_text or tag_text:
+        parts = []
+        if category:
+            parts.append(f"Category: {category}.")
+        if alias_text:
+            parts.append(f"Aliases: {alias_text}.")
+        if tag_text:
+            parts.append(f"Tags: {tag_text}.")
+        fallback = " ".join(parts)
+
     return first_non_empty(
         data.get("summary"),
         data.get("description"),
@@ -63,32 +91,22 @@ def infer_summary(data: dict) -> str:
         data.get("overview"),
         data.get("lore"),
         data.get("text"),
+        fallback,
         "",
     )
 
 
 def infer_mention_count(data: dict) -> int:
-    raw_value = data.get("mention_count", 0)
-    try:
-        return int(raw_value)
-    except (TypeError, ValueError):
-        return 0
+    for key in ("mention_count", "mentions"):
+        raw_value = data.get(key, 0)
+        try:
+            return int(raw_value)
+        except (TypeError, ValueError):
+            continue
+    return 0
 
 
-def sam_memory_to_items(raw: dict) -> list[dict]:
-    """
-    Convert SAM memory format into publisher items format.
-
-    Expected SAM memory shape:
-    {
-      "facts": {
-        "characters": {
-          "Entity Name": { ...entity data... }
-        },
-        "factions": { ... }
-      }
-    }
-    """
+def sam_facts_to_items(raw: dict) -> list[dict]:
     facts = raw.get("facts", {})
     if not isinstance(facts, dict):
         return []
@@ -102,7 +120,6 @@ def sam_memory_to_items(raw: dict) -> list[dict]:
         for entity_name, data in entities.items():
             if not isinstance(entity_name, str) or not entity_name.strip():
                 continue
-
             if not isinstance(data, dict):
                 data = {}
 
@@ -115,6 +132,38 @@ def sam_memory_to_items(raw: dict) -> list[dict]:
                 "mention_count": infer_mention_count(data),
             }
             items.append(item)
+
+    return items
+
+
+def sam_entities_to_items(raw: dict) -> list[dict]:
+    entities = raw.get("entities", {})
+    if not isinstance(entities, dict):
+        return []
+
+    items: list[dict] = []
+
+    for entity_key, data in entities.items():
+        if not isinstance(data, dict):
+            continue
+
+        entity_name = clean_title(
+            data.get("canonical_title") or data.get("title") or str(entity_key)
+        )
+
+        if not entity_name:
+            continue
+
+        source_url = extract_first_source_url(data)
+        item = {
+            "entity_name": entity_name,
+            "summary": infer_summary(data),
+            "source_url": source_url,
+            "source_name": "SAM Entity Memory",
+            "category": first_non_empty(data.get("category"), "entities"),
+            "mention_count": infer_mention_count(data),
+        }
+        items.append(item)
 
     return items
 
@@ -317,7 +366,7 @@ def build_sitemap(html_files: list[str], sitemap_path: str) -> str:
 # ---------------------------------------------------------------------------
 
 def validate(data_path: str) -> list[dict]:
-    """Load and validate input. Supports export JSON and SAM memory JSON."""
+    """Load and validate input. Supports export JSON, SAM facts JSON, and entity memory JSON."""
     if not os.path.exists(data_path):
         print(f"[ERROR] Input file not found: {data_path}", file=sys.stderr)
         sys.exit(1)
@@ -336,7 +385,10 @@ def validate(data_path: str) -> list[dict]:
     items = raw.get("items")
 
     if not items:
-        items = sam_memory_to_items(raw)
+        items = sam_facts_to_items(raw)
+
+    if not items:
+        items = sam_entities_to_items(raw)
 
     if not isinstance(items, list):
         print("[ERROR] Could not derive an items list from input JSON.", file=sys.stderr)
