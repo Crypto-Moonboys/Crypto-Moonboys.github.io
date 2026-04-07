@@ -1,0 +1,193 @@
+{
+  "entity": "The AllCity Bulls",
+  "slug": "the-allcity-bulls",
+  "generated_at": "2026-03-26T04:49:52.758071+00:00",
+  "mention_count": 8,
+  "all_facts": [
+    {
+      "fact": "Urban enforcers in lore",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 0,
+      "last_verified_cycle": 15,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Control key urban zones with brute strength",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 15,
+      "last_verified_cycle": 15,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Former gladiators of blockchain arenas in myth",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 15,
+      "last_verified_cycle": 15,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Often aligned with shadowy elite factions for deals",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 15,
+      "last_verified_cycle": 15,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "The AllCity Bulls trace their mythic origins to the blockchain arenas of old, where they fought as gladiators for digital overlords, a brutal past that forged their reputation as Block Topia\u2019s most fearsome urban enforcers, unyielding in their control of the concrete jungles.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 29,
+      "last_verified_cycle": 29,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Their alliances with shadowy elite factions like The High Hats reveal a deeper game of power, as they often act as the muscle behind underground deals, enforcing a fragile order in Block Topia\u2019s chaotic economy while reaping the benefits of secret pacts.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 29,
+      "last_verified_cycle": 29,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Territorial clashes with nomadic factions like The Nomad Bears are a constant threat to their dominance, turning every urban zone they control into a contested battlefield where their brute strength is both their greatest weapon and their most visible vulnerability.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 29,
+      "last_verified_cycle": 29,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "The AllCity Bulls trace their mythic origins to the blockchain arenas of old, where they fought as gladiators for digital overlords, a brutal past that forged their reputation as Block Topia\u2019s most fearsome urban enforcers, unyielding in their control of the city\u2019s heart.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 34,
+      "last_verified_cycle": 34,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Their alliances with shadowy elite factions are often sealed in secret 'Iron Pacts,' agreements coded into unbreakable smart contracts that grant the Bulls access to cutting-edge tech in exchange for their ruthless enforcement, creating a web of power that few dare to challenge.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 34,
+      "last_verified_cycle": 34,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "The NFT totems that mark their territories are more than symbols; they are rumored to be imbued with fragments of ancient arena code, radiating a low-frequency hum that intimidates intruders and bolsters the morale of the Bulls\u2019 ranks during territorial disputes.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 34,
+      "last_verified_cycle": 34,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Legends in Block Topia speak of the 'Crush Protocol,' a devastating combat algorithm passed down through generations of AllCity Bulls, allowing them to overload enemy systems with raw data surges, mimicking the brutal final blows of their gladiatorial ancestors.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 34,
+      "last_verified_cycle": 34,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "The AllCity Bulls trace their mythic origins to the blockchain arenas of old, where they fought as gladiators for digital overlords, a brutal past that forged their reputation as Block Topia\u2019s most fearsome urban enforcers. Their control of the city\u2019s core is absolute, their presence a deterrent to any faction foolish enough to challenge their rule, often crushing uprisings before they can even begin.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 49,
+      "last_verified_cycle": 49,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Often aligned with shadowy elite factions, the Bulls are rumored to serve as muscle in clandestine deals that shape Block Topia\u2019s power structure. Their loyalty, however, is not blind; lore suggests they demand hefty tributes in rare tokens or NFT artifacts, ensuring their strength remains a commodity only the wealthiest can afford.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 49,
+      "last_verified_cycle": 49,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Their towering avatars are said to be coded with remnants of ancient arena algorithms, granting them enhanced resilience in battle, as if the cheers of forgotten crowds still fuel their might. This connection to the past makes them both revered and feared, as some believe they carry the wrath of fallen digital empires in every devastating strike.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 49,
+      "last_verified_cycle": 49,
+      "status": "VERIFIED"
+    }
+  ],
+  "relationships": [],
+  "timeline": [],
+  "cross_links": []
+}

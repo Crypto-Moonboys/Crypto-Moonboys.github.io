@@ -1,0 +1,180 @@
+{
+  "entity": "Playable NFT murals",
+  "slug": "playable-nft-murals",
+  "generated_at": "2026-03-26T10:15:49.860960+00:00",
+  "mention_count": 10,
+  "all_facts": [
+    {
+      "fact": "Interactive NFTs",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 0,
+      "last_verified_cycle": 0,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Stakeable for rewards",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 0,
+      "last_verified_cycle": 0,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Usable in metaverse battles",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 0,
+      "last_verified_cycle": 0,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Interactive NFTs that embody street art, stakeable for $GK tokens or usable in metaverse battle arenas.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 3,
+      "last_verified_cycle": 3,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Rooted in Graffiti Kings\u2019 legacy, turning digital murals into tools of rebellion and storytelling in Block Topia.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 3,
+      "last_verified_cycle": 3,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Highly valued by factions like HODL Warriors for their dual role as cultural artifacts and strategic assets.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 3,
+      "last_verified_cycle": 3,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Interactive NFTs that embody street art, stakeable for $GK tokens or usable as strategic tools in metaverse battle arenas.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 5,
+      "last_verified_cycle": 5,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Rooted in Graffiti Kings\u2019 legacy, turning digital murals into powerful symbols of rebellion and storytelling in Block Topia.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 5,
+      "last_verified_cycle": 5,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Highly valued by factions like HODL Warriors for their dual role as cultural artifacts and tactical assets in digital conflicts.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 5,
+      "last_verified_cycle": 5,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Enable holders to engage with lore by defending territories, making every mural a pixelated fight for freedom in the Crypto Moonboys universe.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 5,
+      "last_verified_cycle": 5,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Playable NFT murals embody the Graffiti Kings\u2019 spirit of rebellion in Block Topia, transforming digital art into stakeable assets for $GK tokens or powerful weapons in metaverse battles, each mural a living piece of lore that can defend a faction\u2019s turf or strike fear into rivals.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 59,
+      "last_verified_cycle": 59,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "In the Crypto Moonboys universe, these interactive NFTs are gateways to hidden narratives, allowing holders to unlock ancient Block Topia secrets or fortify their territories, turning every mural into a strategic asset that factions like HODL Warriors fight tooth and nail to control.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 59,
+      "last_verified_cycle": 59,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Rooted in the raw energy of street art, playable NFT murals are not just visual spectacles but instruments of power, their vibrant tags and symbols echoing real-world graffiti wars as they become the battle cries of digital warriors in Block Topia\u2019s endless conflicts.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 59,
+      "last_verified_cycle": 59,
+      "status": "VERIFIED"
+    }
+  ],
+  "relationships": [],
+  "timeline": [],
+  "cross_links": []
+}

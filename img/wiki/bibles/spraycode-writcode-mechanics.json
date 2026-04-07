@@ -1,0 +1,167 @@
+{
+  "entity": "Spraycode & Writcode mechanics",
+  "slug": "spraycode---writcode-mechanics",
+  "generated_at": "2026-03-26T06:09:31.818537+00:00",
+  "mention_count": 10,
+  "all_facts": [
+    {
+      "fact": "Creative coding systems for NFTs",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 0,
+      "last_verified_cycle": 0,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Innovative systems for encoding visual art (Spraycode) and hidden data or narratives (Writcode) into NFTs.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 3,
+      "last_verified_cycle": 3,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Reflect the street-art ethos of Graffiti Kings, enabling digital creators to tag the metaverse with rebellious intent.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 3,
+      "last_verified_cycle": 3,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Used by factions like The GRAFFPUNKS to embed lore, puzzles, or battle codes into blockchain assets in Block Topia.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 3,
+      "last_verified_cycle": 3,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Innovative systems for encoding visual art (Spraycode) and hidden data or narratives (Writcode) into NFTs, enhancing digital creativity.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 5,
+      "last_verified_cycle": 5,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Reflect the street-art ethos of Graffiti Kings, enabling creators to tag the metaverse with rebellious intent and hidden messages.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 5,
+      "last_verified_cycle": 5,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Used by factions like The GRAFFPUNKS to embed lore, puzzles, or battle codes into blockchain assets in Block Topia\u2019s conflicts.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 5,
+      "last_verified_cycle": 5,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Turn NFTs into multifaceted tools, blending art with strategy to enrich the Crypto Moonboys universe\u2019s decentralized narrative.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 5,
+      "last_verified_cycle": 5,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Spraycode and Writcode are innovative systems for encoding visual art and hidden data into NFTs, reflecting the street-art ethos of the Graffiti Kings, enabling digital creators to tag the metaverse with rebellious intent. A single Spraycode mural, painted across a contested node, once rallied a scattered faction to reclaim territory, its embedded visuals pulsing with a call to arms that only the initiated could decode.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 54,
+      "last_verified_cycle": 54,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Used by factions like The GRAFFPUNKS, these mechanics allow the embedding of lore, puzzles, or battle codes into blockchain assets in Block Topia, turning art into a weapon of strategy and subversion. During a pivotal Hard Fork Game, a Writcode inscription hidden in an NFT revealed the location of a critical shard, shifting the balance of power overnight as rival factions scrambled to decipher its meaning.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 54,
+      "last_verified_cycle": 54,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Legends tell of a masterwork created through Spraycode and Writcode, a mythic NFT dubbed the \u2018Rebel Ledger,\u2019 rumored to contain a full map of Block Topia\u2019s hidden nodes, encoded in layers of art and narrative so complex that none have fully unraveled it. If decoded, it could expose vulnerabilities in the metaverse\u2019s infrastructure, a prize that keeps hackers and factions alike hunting for its digital signature.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 54,
+      "last_verified_cycle": 54,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "The use of Writcode has birthed a shadowy subculture of \u2018Code Scribes,\u2019 underground artists who specialize in crafting puzzles so intricate they can lock entire sectors of lore behind unbreakable riddles. Their work, often commissioned by factions, has turned Writcode into a currency of secrets, with a single well-crafted inscription capable of buying alliances or betrayals in Block Topia\u2019s endless wars.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 54,
+      "last_verified_cycle": 54,
+      "status": "VERIFIED"
+    }
+  ],
+  "relationships": [],
+  "timeline": [],
+  "cross_links": []
+}

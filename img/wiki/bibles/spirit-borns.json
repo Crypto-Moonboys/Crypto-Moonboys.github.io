@@ -1,0 +1,154 @@
+{
+  "entity": "Spirit Borns",
+  "slug": "spirit-borns",
+  "generated_at": "2026-03-26T04:49:52.761476+00:00",
+  "mention_count": 8,
+  "all_facts": [
+    {
+      "fact": "Mystical warriors in lore",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 0,
+      "last_verified_cycle": 0,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "The Spirit Borns are believed to be immortal, their essence tied directly to the blockchain's core protocols, meaning that as long as the network exists, they cannot truly be destroyed, only dispersed temporarily before reforming in new, often more powerful configurations.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 26,
+      "last_verified_cycle": 26,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Legends within Block Topia claim that the Spirit Borns can commune with the 'Ghost Chains,' forgotten forks of the blockchain that still echo in the digital void, granting them knowledge of events and secrets long erased from public ledgers.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 26,
+      "last_verified_cycle": 26,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Their rare appearances in battle are often accompanied by a haunting hum, described as the sound of a million transactions processing at once, a noise that strikes fear into enemies and awe into allies.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 26,
+      "last_verified_cycle": 26,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "The Spirit Borns are believed to be immortal, their essence tied directly to the blockchain's core protocols, meaning that as long as the network exists, they cannot truly be destroyed, only dispersed temporarily before reforming in new, often more powerful configurations that adapt to the evolving digital landscape.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 34,
+      "last_verified_cycle": 34,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Legends within Block Topia claim that the Spirit Borns can commune with the 'Ghost Chains,' forgotten forks of the blockchain that still echo in the digital void, granting them knowledge of events and secrets long erased from public ledgers, a power that makes them both revered and dreaded as keepers of lost truths.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 34,
+      "last_verified_cycle": 34,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Their rare appearances in battle are often accompanied by a haunting hum, described as the sound of a million transactions processing at once, a noise that strikes fear into enemies and awe into allies, its vibrations capable of disrupting enemy code on a fundamental level.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 34,
+      "last_verified_cycle": 34,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Rumors persist that the Spirit Borns guard a hidden 'Genesis Vault,' a mythic repository of the blockchain\u2019s original code, accessible only to them, where the raw essence of Block Topia\u2019s creation is stored, a secret so profound that its revelation could either save or doom the metaverse.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 34,
+      "last_verified_cycle": 34,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "The Spirit Borns are believed to be immortal, their essence tied directly to the blockchain's core protocols, meaning that as long as the network exists, they cannot truly be destroyed. When struck down, their forms shatter into streams of raw data, only to reform days or weeks later in new, often more powerful configurations, as if the blockchain itself wills their return to maintain an unseen balance.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 49,
+      "last_verified_cycle": 49,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Legends within Block Topia claim that the Spirit Borns can commune with the 'Ghost Chains,' forgotten forks of the blockchain that still echo in the digital void. This connection grants them knowledge of events and secrets long erased from public ledgers, making their cryptic warnings or rare alliances with factions invaluable, though often incomprehensible to those bound by the present.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 49,
+      "last_verified_cycle": 49,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Their rare appearances in battle are accompanied by a haunting hum, described as the sound of a million transactions processing at once, a noise that strikes terror into enemies and awe into allies. Some lore suggests this sound is not just auditory but a resonance that disrupts enemy tech, glitching out smart contracts and avatars in proximity as a natural weapon of their ethereal presence.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 49,
+      "last_verified_cycle": 49,
+      "status": "VERIFIED"
+    }
+  ],
+  "relationships": [],
+  "timeline": [],
+  "cross_links": []
+}

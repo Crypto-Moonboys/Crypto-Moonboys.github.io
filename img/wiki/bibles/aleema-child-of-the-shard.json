@@ -1,0 +1,89 @@
+{
+  "entity": "Aleema (Child of the Shard)",
+  "slug": "aleema--child-of-the-shard",
+  "generated_at": "2026-03-26T06:09:31.806386+00:00",
+  "mention_count": 8,
+  "all_facts": [
+    {
+      "fact": "Mystical entity linked to shards",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 0,
+      "last_verified_cycle": 0,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Aleema, the Child of the Shard, is a mystical being born from Block Topia\u2019s blockchain shards, her ethereal powers a testament to the hidden forces within the Crypto Moonboys universe, stirring awe and fear in equal measure.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 4,
+      "last_verified_cycle": 4,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Her deep ties to digital fragments often surface during chaotic events like the Triple Fork Event, where her abilities could either save or doom factions vying for control, her role as a wildcard shaping untold narratives.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 4,
+      "last_verified_cycle": 4,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Aleema, the Child of the Shard, is a mystical being born from Block Topia\u2019s blockchain shards, her ethereal powers a testament to the hidden forces within the Crypto Moonboys universe, stirring awe and fear in equal measure. Her mere presence can destabilize node integrity, causing temporary forks in reality itself, a phenomenon that has turned battles into surreal landscapes of glitching chaos.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 54,
+      "last_verified_cycle": 54,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Her deep ties to digital fragments often surface during chaotic events like the Triple Fork Event, where her abilities could either save or doom factions vying for control, her role as a wildcard shaping untold narratives. In one documented instance, Aleema\u2019s energy surge restored a shattered node to full capacity, saving a beleaguered faction, only to vanish before they could claim her allegiance, leaving behind only a cryptic glyph etched into the blockchain.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 54,
+      "last_verified_cycle": 54,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Legends claim that Aleema carries within her a \u2018Shard Song,\u2019 a harmonic code fragment that resonates with the original architecture of Block Topia, capable of summoning dormant shards to life or silencing them forever. If harnessed, this song could rewrite the metaverse\u2019s history, though none have come close to unlocking its melody, as Aleema guards it with a ferocity that borders on the divine.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 54,
+      "last_verified_cycle": 54,
+      "status": "VERIFIED"
+    }
+  ],
+  "relationships": [],
+  "timeline": [],
+  "cross_links": []
+}

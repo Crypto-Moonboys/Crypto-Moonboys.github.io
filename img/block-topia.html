@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Block Topia — SAM Intelligence Dashboard. Live rankings, focus plan, keyword bank, and trend data from the Brain repo.">
+  <meta name="robots" content="index, follow">
+  <meta property="og:title" content="⚙️ Block Topia Intelligence — Crypto Moonboys Wiki">
+  <meta property="og:description" content="Live SAM intelligence dashboard: entity rankings, focus plan, keyword bank, and trend data.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://crypto-moonboys.github.io/block-topia.html">
+  <meta property="og:image" content="https://crypto-moonboys.github.io/img/logo.svg">
+  <title>⚙️ Block Topia Intelligence — Crypto Moonboys Wiki</title>
+  <link rel="stylesheet" href="css/wiki.css">
+  <link rel="icon" href="img/favicon.svg" type="image/svg+xml">
+</head>
+<body>
+<a class="skip-link" href="#content">Skip to content</a>
+<header id="site-header" role="banner">
+  <button class="hamburger" id="hamburger" aria-label="Toggle navigation" aria-expanded="false" aria-controls="sidebar">☰</button>
+  <a href="index.html" class="site-logo" aria-label="Crypto Moonboys Wiki home">
+    <img src="img/logo.svg" alt="" aria-hidden="true">
+    <span>
+      <span class="logo-text">🌙 Moonboys Wiki</span>
+      <span class="logo-sub">Crypto Encyclopedia</span>
+    </span>
+  </a>
+  <div id="header-search" role="search">
+    <input type="search" id="search-input" placeholder="Search the wiki…" aria-label="Search" autocomplete="off">
+    <button id="search-btn" aria-label="Search">🔍</button>
+    <div id="search-results" role="listbox"></div>
+  </div>
+  <nav class="header-nav" aria-label="Main navigation">
+    <a href="index.html">Home</a>
+    <a href="categories/index.html">Categories</a>
+    <a href="articles.html">All Articles</a>
+    <a href="sam.html">🧠 SAM</a>
+  </nav>
+</header>
+<div id="sidebar-overlay" aria-hidden="true"></div>
+<div id="layout">
+  <nav id="sidebar" aria-label="Wiki navigation">
+    <div class="sidebar-section">
+      <div class="sidebar-heading">Navigation</div>
+      <div class="sidebar-nav">
+        <a href="index.html"><span class="nav-icon">🏠</span> Main Page</a>
+        <a href="categories/index.html"><span class="nav-icon">📂</span> All Categories</a>
+        <a href="articles.html"><span class="nav-icon">📄</span> All Articles</a>
+      </div>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-heading">🤖 SAM Intelligence</div>
+      <div class="sidebar-nav">
+        <a href="block-topia.html" class="active"><span class="nav-icon">⚙️</span> Block Topia</a>
+        <a href="agent.html"><span class="nav-icon">🤖</span> SAM Agent</a>
+      </div>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-heading">Wiki Info</div>
+      <div class="sidebar-nav">
+        <a href="about.html"><span class="nav-icon">ℹ️</span> About</a>
+        <a href="about.html#citation"><span class="nav-icon">📋</span> Citation Policy</a>
+      </div>
+    </div>
+  </nav>
+
+  <div id="main-wrapper">
+    <main id="content" role="main">
+      <nav class="breadcrumb" aria-label="Breadcrumb">
+        <a href="index.html">Home</a><span class="sep">›</span><span aria-current="page">Block Topia Intelligence</span>
+      </nav>
+
+      <h1 class="page-title">⚙️ Block Topia Intelligence</h1>
+      <div class="page-title-line" aria-hidden="true"></div>
+
+      <div class="notice info" style="text-align:center; font-size:1.05em;">
+        <span class="notice-icon" aria-hidden="true">⚙️</span>
+        <div>
+          <strong>Live SAM intelligence dashboard.</strong><br>
+          Rankings, focus plan, keyword bank, and trend data — published from the
+          <a href="https://github.com/HODLKONG64/HAY-MUM-IM-BUILDING-AGENTS-OF-CHANGE" target="_blank" rel="noopener noreferrer">Brain repo</a>
+          each SAM cycle.
+        </div>
+      </div>
+
+      <div id="bt-loading" style="text-align:center; padding:2em 0; color:var(--color-text-muted);">
+        ⏳ Loading live data…
+      </div>
+
+      <div id="bt-offline" class="notice" style="display:none;">
+        <span class="notice-icon" aria-hidden="true">⚠️</span>
+        <div>
+          <strong>Live data unavailable.</strong><br>
+          The Brain repo has not yet published <code>main-brain-export.json</code> to this site,
+          or the data could not be loaded. Check back after the next SAM cycle.
+          <br><small style="color:var(--color-text-muted);" id="bt-error-detail"></small>
+        </div>
+      </div>
+
+      <div id="bt-content" style="display:none;">
+
+        <section>
+          <h2 id="bt-rankings-heading">📊 Entity Rankings</h2>
+          <p>Top entities scored by SAM this cycle.</p>
+          <div id="bt-rankings"></div>
+        </section>
+
+        <section>
+          <h2 id="bt-focus-heading">🎯 Current Focus Plan</h2>
+          <p>SAM's active publishing priorities for this cycle.</p>
+          <div id="bt-focus"></div>
+        </section>
+
+        <section>
+          <h2 id="bt-keywords-heading">🔑 Keyword Bank</h2>
+          <p>High-priority keywords tracked by SAM.</p>
+          <div id="bt-keywords"></div>
+        </section>
+
+        <section>
+          <h2 id="bt-trends-heading">📈 Trend Data</h2>
+          <p>Trending topics and signals from the latest SAM cycle.</p>
+          <div id="bt-trends"></div>
+        </section>
+
+        <p style="margin-top:2em; font-size:0.85em; color:var(--color-text-muted);">
+          Data source: <code>main-brain-export.json</code> — published by
+          <a href="https://github.com/HODLKONG64/HAY-MUM-IM-BUILDING-AGENTS-OF-CHANGE" target="_blank" rel="noopener noreferrer">HODLKONG64/HAY-MUM-IM-BUILDING-AGENTS-OF-CHANGE</a>.
+          Last updated: <span id="bt-last-updated">—</span>
+        </p>
+
+      </div><!-- /#bt-content -->
+
+    </main>
+    <footer id="site-footer" role="contentinfo">
+      <div class="footer-inner">
+        <div class="footer-col"><h4>🌙 Moonboys Wiki</h4><p>Fan-driven crypto encyclopedia.</p></div>
+        <div class="footer-col"><h4>Explore</h4><ul><li><a href="index.html">Main Page</a></li><li><a href="articles.html">All Articles</a></li><li><a href="about.html">About</a></li></ul></div>
+        <div class="footer-col"><h4>⚙️ Intelligence</h4><ul><li><a href="block-topia.html">Block Topia</a></li><li><a href="agent.html">SAM Agent</a></li></ul></div>
+      </div>
+      <div class="footer-bottom"><p>© 2026 Crypto Moonboys Wiki · Not financial advice.</p><p><span class="no-login-note">🔒 No sign-up · No login · Bot-maintained</span></p></div>
+    </footer>
+  </div>
+</div>
+<button id="back-to-top" aria-label="Back to top">↑</button>
+<script src="js/wiki.js"></script>
+<script>
+(function () {
+  'use strict';
+
+  var EXPORT_URL = 'main-brain-export.json';
+
+  function escHtml(s) {
+    return String(s)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  function showOffline(reason) {
+    document.getElementById('bt-loading').style.display = 'none';
+    var offline = document.getElementById('bt-offline');
+    offline.style.display = '';
+    if (reason) {
+      document.getElementById('bt-error-detail').textContent = reason;
+    }
+  }
+
+  function renderRankings(data) {
+    var el = document.getElementById('bt-rankings');
+    var rankings = data.rankings || data.entity_rankings || data.leaderboard || null;
+    if (!rankings || !rankings.length) {
+      el.innerHTML = '<p style="color:var(--color-text-muted)">No rankings data available yet.</p>';
+      return;
+    }
+    var rows = rankings.slice(0, 20).map(function (item, i) {
+      var name = escHtml(item.name || item.entity || item.slug || '—');
+      var score = item.score !== undefined ? escHtml(String(item.score)) : '—';
+      var safeUrl = item.url && /^https?:\/\//.test(item.url) ? item.url : null;
+      var url = safeUrl ? '<a href="' + escHtml(safeUrl) + '">' + name + '</a>' : name;
+      return '<tr><td>' + (i + 1) + '</td><td>' + url + '</td><td>' + score + '</td></tr>';
+    }).join('');
+    el.innerHTML = '<table class="wiki-table"><thead><tr><th>#</th><th>Entity</th><th>Score</th></tr></thead><tbody>' + rows + '</tbody></table>';
+  }
+
+  function renderFocusPlan(data) {
+    var el = document.getElementById('bt-focus');
+    var plan = data.focus_plan || data.focusPlan || data.focus || null;
+    if (!plan) {
+      el.innerHTML = '<p style="color:var(--color-text-muted)">No focus plan published yet.</p>';
+      return;
+    }
+    if (Array.isArray(plan)) {
+      el.innerHTML = '<ul>' + plan.map(function (item) {
+        return '<li>' + escHtml(typeof item === 'string' ? item : JSON.stringify(item)) + '</li>';
+      }).join('') + '</ul>';
+    } else if (typeof plan === 'object') {
+      var lines = Object.entries(plan).map(function (kv) {
+        return '<li><strong>' + escHtml(kv[0]) + '</strong>: ' + escHtml(String(kv[1])) + '</li>';
+      });
+      el.innerHTML = '<ul>' + lines.join('') + '</ul>';
+    } else {
+      el.innerHTML = '<p>' + escHtml(String(plan)) + '</p>';
+    }
+  }
+
+  function renderKeywords(data) {
+    var el = document.getElementById('bt-keywords');
+    var kw = data.keyword_bank || data.keywords || data.keywordBank || null;
+    if (!kw || !kw.length) {
+      el.innerHTML = '<p style="color:var(--color-text-muted)">No keyword bank published yet.</p>';
+      return;
+    }
+    var tags = kw.slice(0, 50).map(function (k) {
+      return '<span style="display:inline-block;margin:3px 4px;padding:3px 10px;background:rgba(255,255,255,0.07);border-radius:12px;font-size:0.88em;">' + escHtml(typeof k === 'string' ? k : k.keyword || JSON.stringify(k)) + '</span>';
+    });
+    el.innerHTML = '<div style="margin-top:0.5em;">' + tags.join('') + '</div>';
+  }
+
+  function renderTrends(data) {
+    var el = document.getElementById('bt-trends');
+    var trends = data.trends || data.trend_data || data.trending || null;
+    if (!trends) {
+      el.innerHTML = '<p style="color:var(--color-text-muted)">No trend data published yet.</p>';
+      return;
+    }
+    if (Array.isArray(trends)) {
+      el.innerHTML = '<ul>' + trends.slice(0, 20).map(function (item) {
+        return '<li>' + escHtml(typeof item === 'string' ? item : JSON.stringify(item)) + '</li>';
+      }).join('') + '</ul>';
+    } else if (typeof trends === 'object') {
+      var lines = Object.entries(trends).slice(0, 20).map(function (kv) {
+        return '<li><strong>' + escHtml(kv[0]) + '</strong>: ' + escHtml(String(kv[1])) + '</li>';
+      });
+      el.innerHTML = '<ul>' + lines.join('') + '</ul>';
+    } else {
+      el.innerHTML = '<p>' + escHtml(String(trends)) + '</p>';
+    }
+  }
+
+  function renderAll(data) {
+    document.getElementById('bt-loading').style.display = 'none';
+    document.getElementById('bt-content').style.display = '';
+    renderRankings(data);
+    renderFocusPlan(data);
+    renderKeywords(data);
+    renderTrends(data);
+    var updated = data.last_updated || data.lastUpdated || data.updated_at || null;
+    document.getElementById('bt-last-updated').textContent = updated ? escHtml(String(updated)) : '—';
+  }
+
+  fetch(EXPORT_URL)
+    .then(function (res) {
+      if (!res.ok) { throw new Error('HTTP ' + res.status); }
+      return res.json();
+    })
+    .then(function (data) {
+      renderAll(data);
+    })
+    .catch(function (err) {
+      showOffline(err && err.message ? err.message : String(err));
+    });
+})();
+</script>
+</body>
+</html>

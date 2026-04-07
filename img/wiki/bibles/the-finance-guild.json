@@ -1,0 +1,232 @@
+{
+  "entity": "The FINANCE GUILD",
+  "slug": "the-finance-guild",
+  "generated_at": "2026-03-26T04:25:45.389534+00:00",
+  "mention_count": 8,
+  "all_facts": [
+    {
+      "fact": "Economic controllers in lore",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 0,
+      "last_verified_cycle": 15,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Dominate financial systems and trade hubs",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 15,
+      "last_verified_cycle": 15,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Keepers of the first minted coin in myth",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 15,
+      "last_verified_cycle": 15,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Influence wars and alliances through wealth",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 15,
+      "last_verified_cycle": 15,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "The FINANCE GUILD stands as the economic controllers of Block Topia, their iron grip on financial systems and trade hubs shaping the flow of wealth, as they manipulate markets with ruthless precision to maintain dominance over the chaotic crypto landscape, often crushing smaller factions under the weight of engineered crashes.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 28,
+      "last_verified_cycle": 28,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "In their lore, they are the keepers of the first minted coin, a mythic artifact rumored to hold the primal code of blockchain itself, locked in a vault of unbreakable smart contracts and serving as the source of their unparalleled influence over digital economies.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 28,
+      "last_verified_cycle": 28,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Their wealth is both a weapon and a shield, used to wage economic wars against rebels and forge alliances with wavering factions, their ability to devalue rival NFTs or inflate token prices turning entire communities into pawns in their grand financial chess game.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 28,
+      "last_verified_cycle": 28,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Rumors persist that the Guild is crafting a universal token in secret, a digital currency designed to centralize all of Block Topia\u2019s markets under their control, a move that could snuff out the decentralized ethos forever if not stopped by their many enemies.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 28,
+      "last_verified_cycle": 28,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "The FINANCE GUILD stands as the economic controllers of Block Topia, their iron grip on financial systems and trade hubs shaping the flow of wealth, as they manipulate markets with ruthless precision to maintain dominance over the chaotic crypto landscape, often deciding the fate of factions with a single ledger entry.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 33,
+      "last_verified_cycle": 33,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "As keepers of the first minted coin in myth, The FINANCE GUILD guards a relic rumored to pulse with blockchain\u2019s genesis energy, a sacred artifact hidden in their encrypted vaults that they claim grants them divine authority over Block Topia\u2019s economic tides.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 33,
+      "last_verified_cycle": 33,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Their ability to influence wars and alliances through wealth is unparalleled, with The FINANCE GUILD using strategic market crashes or booms to sway the balance of power, turning financial might into a weapon that rivals even the brute force of other factions.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 33,
+      "last_verified_cycle": 33,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "The FINANCE GUILD\u2019s digital fortresses are marvels of algorithmic defense, labyrinths of data streams where every transaction in Block Topia is monitored and manipulated, ensuring their control remains absolute while their sleek avatars project an image of untouchable precision.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 33,
+      "last_verified_cycle": 33,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "The FINANCE GUILD stands as the economic controllers of Block Topia, their iron grip on financial systems and trade hubs shaping the flow of wealth, as they manipulate markets with ruthless precision to maintain dominance over the chaotic crypto landscape, often at the expense of smaller factions.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 44,
+      "last_verified_cycle": 44,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "As keepers of the first minted coin in myth, they guard a relic of unimaginable power within their encrypted vaults, a token said to hold the essence of blockchain\u2019s birth, fueling their ability to bend economic tides and crush opposition through sheer financial might.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 44,
+      "last_verified_cycle": 44,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Their influence over wars and alliances is unparalleled, as they wield wealth to broker uneasy truces or ignite conflicts, often funding both sides of a faction war to ensure that no matter who wins, The FINANCE GUILD always profits from the carnage.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 44,
+      "last_verified_cycle": 44,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Tales speak of their \u2018Debt Labyrinth,\u2019 a virtual prison of predatory loans and impossible contracts, where factions and individuals who defy their terms are trapped in endless cycles of repayment, their assets stripped until nothing remains but subservience.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 44,
+      "last_verified_cycle": 44,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Their auditors, known as the Ledger Wraiths, are feared avatars that haunt Block Topia\u2019s data streams, enforcing financial edicts with emotionless efficiency, capable of freezing assets or erasing digital identities with a single command, a reminder of the GUILD\u2019s omnipresent control.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 44,
+      "last_verified_cycle": 44,
+      "status": "VERIFIED"
+    }
+  ],
+  "relationships": [],
+  "timeline": [],
+  "cross_links": []
+}

@@ -1,0 +1,89 @@
+{
+  "entity": "HEX-TAGGER PRIME",
+  "slug": "hex-tagger-prime",
+  "generated_at": "2026-03-26T03:44:19.035042+00:00",
+  "mention_count": 6,
+  "all_facts": [
+    {
+      "fact": "Master of digital tagging",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 0,
+      "last_verified_cycle": 0,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "HEX-TAGGER PRIME reigns as the master of digital tagging in Block Topia, his unbreakable hexadecimal graffiti defying all attempts at erasure, a bold symbol of rebellion in the Crypto Moonboys universe\u2019s virtual expanse.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 4,
+      "last_verified_cycle": 4,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "His encrypted tags, often linked to the GraffPUNKS spirit, challenge factions during events like Hard Fork Games, marking territories with cryptic defiance that reshapes metaverse battles, his allegiance a lingering mystery.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 4,
+      "last_verified_cycle": 4,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "HEX-TAGGER PRIME reigns as the master of digital tagging in Block Topia, his unbreakable hexadecimal graffiti defying all attempts at erasure, a bold symbol of rebellion in the Crypto Moonboys universe\u2019s virtual expanse. His tags have withstood the fiercest blockchain scrubbers and hacking assaults, remaining as permanent fixtures that mock the impermanence of digital empires, a testament to his unmatched skill.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 38,
+      "last_verified_cycle": 38,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "His encrypted tags, often linked to the GraffPUNKS spirit, challenge factions during events like Hard Fork Games, marking territories with cryptic defiance that reshapes metaverse battles with hidden meaning. Entire campaigns have been derailed by factions attempting to decode his marks mid-conflict, only to trigger embedded traps or reveal taunting messages, his unknown allegiance leaving all to question whether his art aids their cause or mocks their failures.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 38,
+      "last_verified_cycle": 38,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Legends in Block Topia\u2019s underground networks claim HEX-TAGGER PRIME wields a forbidden cipher, a key to the Sacred Chain\u2019s deepest archives, which he embeds in every tag as a lure for the worthy or a curse for the greedy. Whether his marks are meant to guide rebellion to hidden truths or to bury them forever in encrypted riddles remains a mystery, but his presence in any conflict zone signals a challenge that no faction can ignore.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 38,
+      "last_verified_cycle": 38,
+      "status": "VERIFIED"
+    }
+  ],
+  "relationships": [],
+  "timeline": [],
+  "cross_links": []
+}

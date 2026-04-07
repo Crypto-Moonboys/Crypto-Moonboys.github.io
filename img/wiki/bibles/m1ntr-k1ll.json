@@ -1,0 +1,89 @@
+{
+  "entity": "M1nTr_K1ll",
+  "slug": "m1ntr-k1ll",
+  "generated_at": "2026-03-26T04:49:52.768294+00:00",
+  "mention_count": 8,
+  "all_facts": [
+    {
+      "fact": "Digital assassin in lore",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 0,
+      "last_verified_cycle": 0,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "M1nTr_K1ll operates as a digital assassin within Block Topia, his stealth and lethal precision making him a ghost in blockchain networks, striking fear into factions across the Crypto Moonboys universe with unseen kills.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 4,
+      "last_verified_cycle": 4,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "His covert skills peak during tumultuous moments like the Triple Fork Event, where his targeted strikes can dismantle key players in metaverse battles, his unknown allegiance adding to the terror of his presence.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 4,
+      "last_verified_cycle": 4,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "M1nTr_K1ll operates as a digital assassin within Block Topia, his stealth and lethal precision making him a ghost in blockchain networks, striking fear into factions across the Crypto Moonboys universe with unseen kills. His attacks are so precise that victims often don\u2019t register the strike until their avatars dissolve into corrupted data, a signature of his deadly craft.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 49,
+      "last_verified_cycle": 49,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "His covert skills peak during tumultuous moments like the Triple Fork Event, where his targeted strikes can dismantle key players in metaverse battles, often eliminating leaders or critical assets before their factions can react. His unknown allegiance adds to the terror, as no one knows who he serves\u2014or if he serves anyone at all, driven by a purpose beyond mortal understanding.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 49,
+      "last_verified_cycle": 49,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Legends in Block Topia claim that M1nTr_K1ll\u2019s avatar is invisible to standard detection protocols, woven from strands of orphaned code that allow him to slip through firewalls and encrypted barriers like smoke. This ability, if true, makes him the ultimate predator in the digital jungle, a killer who can strike from within the very systems factions rely on for safety.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 49,
+      "last_verified_cycle": 49,
+      "status": "VERIFIED"
+    }
+  ],
+  "relationships": [],
+  "timeline": [],
+  "cross_links": []
+}
