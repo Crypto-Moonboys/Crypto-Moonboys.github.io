@@ -353,6 +353,93 @@ function dedupeResults(scoredResults) {
   return deduped;
 }
 
+function compareStringsStable(a, b) {
+  return String(a || '').localeCompare(String(b || ''), undefined, { sensitivity: 'base' });
+}
+
+function compareSearchResultsStable(a, b) {
+  if (b.score !== a.score) return b.score - a.score;
+  const aRank = Number(a.item.rank_score || 0);
+  const bRank = Number(b.item.rank_score || 0);
+  if (bRank !== aRank) return bRank - aRank;
+  const titleCmp = compareStringsStable(a.item.title, b.item.title);
+  if (titleCmp !== 0) return titleCmp;
+  return compareStringsStable(resolveWikiUrl(a.item.url), resolveWikiUrl(b.item.url));
+}
+
+function compareIndexItemsStable(a, b) {
+  const aRank = Number(a.rank_score || 0);
+  const bRank = Number(b.rank_score || 0);
+  if (bRank !== aRank) return bRank - aRank;
+  const titleCmp = compareStringsStable(a.title, b.title);
+  if (titleCmp !== 0) return titleCmp;
+  return compareStringsStable(resolveWikiUrl(a.url), resolveWikiUrl(b.url));
+}
+
+function isRankDebugEnabled() {
+  try {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('debug') === 'ranking' || params.get('rankdebug') === '1') return true;
+    if (window.WIKI_RANK_DEBUG === true) return true;
+    if (window.localStorage && window.localStorage.getItem('wiki-rank-debug') === '1') return true;
+  } catch (err) {
+    console.warn('[wiki] Failed to read ranking debug state.', err);
+  }
+  return false;
+}
+
+function renderRankingDebug(query, scoredItems) {
+  const panel = document.getElementById('ranking-debug');
+  if (!panel) return;
+
+  if (!isRankDebugEnabled()) {
+    panel.hidden = true;
+    panel.innerHTML = '';
+    return;
+  }
+
+  panel.hidden = false;
+  const rows = scoredItems.slice(0, 50).map(({ item, score }) => `
+    <tr>
+      <td><a href="${resolveWikiUrl(item.url)}">${escHtml(item.title)}</a></td>
+      <td>${score}</td>
+      <td>${Number(item.rank_score || 0)}</td>
+      <td><code>${escHtml(JSON.stringify(item.rank_signals || {}))}</code></td>
+    </tr>`).join('');
+
+  panel.innerHTML = `
+    <div class="rank-debug-header">
+      <strong>Ranking debug</strong>
+      <span>${query ? `Query: <code>${escHtml(query)}</code>` : 'All articles view'}</span>
+    </div>
+    <div class="rank-debug-table-wrap">
+      <table class="rank-debug-table">
+        <thead>
+          <tr>
+            <th>Title</th>
+            <th>Query score</th>
+            <th>Rank score</th>
+            <th>Rank signals</th>
+          </tr>
+        </thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>`;
+
+  try {
+    window.__WIKI_LAST_SEARCH_DEBUG = scoredItems.map(({ item, score }) => ({
+      title: item.title,
+      url: resolveWikiUrl(item.url),
+      query_score: score,
+      rank_score: Number(item.rank_score || 0),
+      rank_signals: item.rank_signals || {},
+    }));
+    console.table(window.__WIKI_LAST_SEARCH_DEBUG);
+  } catch (err) {
+    console.warn('[wiki] Failed to publish ranking debug output.', err);
+  }
+}
+
 function runSearch(query, resultsEl, inputEl) {
   const q = query.trim();
   if (!q) {
@@ -363,7 +450,7 @@ function runSearch(query, resultsEl, inputEl) {
   let scored = WIKI_INDEX
     .map(item => ({ item, score: scoreResult(item, q) }))
     .filter(r => r.score > 0)
-    .sort((a, b) => b.score - a.score);
+    .sort(compareSearchResultsStable);
 
   scored = dedupeResults(scored).slice(0, 6);
 
@@ -400,13 +487,14 @@ function renderSearchPage(query) {
     ? WIKI_INDEX
         .map(item => ({ item, score: scoreResult(item, q) }))
         .filter(r => r.score > 0)
-        .sort((a, b) => b.score - a.score)
+        .sort(compareSearchResultsStable)
     : WIKI_INDEX
         .slice()
-        .sort((a, b) => (b.rank_score || 50) - (a.rank_score || 50))
+        .sort(compareIndexItemsStable)
         .map(item => ({ item, score: item.rank_score || 50 }));
 
   items = dedupeResults(items);
+  renderRankingDebug(q, items);
 
   if (items.length === 0) {
     container.innerHTML = `<p style="color:var(--color-text-muted)">No articles found for "<strong>${escHtml(q)}</strong>". Try different keywords.</p>`;

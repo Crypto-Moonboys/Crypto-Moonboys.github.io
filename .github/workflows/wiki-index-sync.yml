@@ -78,6 +78,9 @@ jobs:
       - name: Regenerate entity map and SAM memory
         run: node scripts/generate-entity-map.js
 
+      - name: Validate generated assets and ranking schema
+        run: node scripts/validate-generated-assets.js
+
       - name: Check for fragile parent-relative nav/asset paths
         run: |
           FAIL=0

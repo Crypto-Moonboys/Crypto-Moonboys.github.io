@@ -26,6 +26,14 @@
  *   - Aliases can also be declared explicitly via the `aliases` field in
  *     wiki-index.json; those files are treated as aliases on the next run.
  *
+ * Ranking system:
+ *   - Generator-side rank_score is deterministic and query-independent.
+ *   - Frontend search remains query-first, with rank_score used as a stable
+ *     authority/base-order tie-break.
+ *   - Every output entry includes rank_signals, rank_diagnostics, and
+ *     precomputed search fields so bad ordering can be inspected without
+ *     guessing in the browser.
+ *
  * Run after adding new wiki pages:
  *   node scripts/generate-wiki-index.js
  */
@@ -40,6 +48,8 @@ const WIKI_DIR = path.join(ROOT, 'wiki');
 const OUTPUT   = path.join(ROOT, 'js', 'wiki-index.json');
 const WIKI_JS  = path.join(ROOT, 'js', 'wiki.js');
 const BASE_URL = 'https://crypto-moonboys.github.io';
+const SEARCH_PHILOSOPHY = 'mixed';
+const RANK_FORMULA_VERSION = 2;
 // Redirect stubs produced by this script are always much smaller than real
 // wiki articles.  Any file at or above this byte threshold is treated as a
 // full article and will NOT be overwritten with a redirect stub.
@@ -65,9 +75,12 @@ const CATEGORY_EMOJI = {
   'Activism & Counter-Culture': '✊',
 };
 
-/* ── Category → ranking priority (higher = more important) ─────────────── */
-// Used to populate rank_signals.category_priority on every index entry.
-// Categories with broader/foundational scope rank higher than niche/lore ones.
+/* ── Category → ranking priority (higher = more important) ───────────────
+   Locked ranking strategy:
+   - Broad crypto / infrastructure categories sit above niche/lore buckets.
+   - This affects deterministic base ordering only.
+   - Frontend query relevance still decides the primary match order.
+   Change these weights deliberately and document why. ───────────────────── */
 const CATEGORY_PRIORITY = {
   'Cryptocurrencies':           10,
   'Technology':                  9,
@@ -87,20 +100,25 @@ const CATEGORY_PRIORITY = {
   'Activism & Counter-Culture':  2,
 };
 
+const REQUIRED_RANK_SIGNAL_KEYS = [
+  'is_canonical',
+  'alias_count',
+  'tag_count',
+  'category_priority',
+  'has_description',
+  'article_word_count',
+  'keyword_bag_size',
+];
 
 /* ── Decode HTML entities in plain text ─────────────────────────────────── */
 function decodeHtmlEntities(str) {
-  // Named entities
   const named = { amp: '&', lt: '<', gt: '>', quot: '"', '#39': "'" };
   return str
     .replace(/&(amp|lt|gt|quot|#39);/g, (m, e) => named[e] || m)
-    // Hex numeric entities (e.g. &#x1F4DA; &#x2014;)
     .replace(/&#x([0-9a-fA-F]+);/g, (m, hex) => String.fromCodePoint(parseInt(hex, 16)))
-    // Decimal numeric entities (e.g. &#8212;)
     .replace(/&#([0-9]+);/g, (m, dec) => String.fromCodePoint(parseInt(dec, 10)));
 }
 
-/* ── Convert a filename slug to a human-readable title ──────────────────── */
 function slugToTitle(filename) {
   return filename
     .replace('.html', '')
@@ -108,13 +126,6 @@ function slugToTitle(filename) {
     .replace(/\b\w/g, c => c.toUpperCase());
 }
 
-/* ── Clean a raw title into a human-readable display title ─────────────── */
-// Converts underscore-slug titles (e.g. "1m_free_nfts") to Title Case with
-// correct handling of known crypto/NFT abbreviations.
-// - Only processes titles that contain underscores and no spaces (raw slugs).
-// - Titles already containing spaces or proper casing are left unchanged.
-// Note: this is a *display* cleaner; the existing normalizeTitle() function
-//       below is for duplicate-detection only and must remain untouched.
 const CLEAN_TITLE_WORD_MAP = {
   nft:   'NFT',
   nfts:  'NFTs',
@@ -140,7 +151,6 @@ const CLEAN_TITLE_WORD_MAP = {
 
 function cleanDisplayTitle(title) {
   if (!title) return title;
-  // Only transform titles that look like raw slugs (underscores, no spaces).
   if (!title.includes('_') || title.includes(' ')) return title;
   return title
     .split('_')
@@ -150,28 +160,23 @@ function cleanDisplayTitle(title) {
       if (Object.prototype.hasOwnProperty.call(CLEAN_TITLE_WORD_MAP, lower)) {
         return CLEAN_TITLE_WORD_MAP[lower];
       }
-      // Numeric prefix with a single letter suffix (e.g. "1m" → "1M")
       if (/^\d+[a-z]$/.test(lower)) return word.slice(0, -1) + word.slice(-1).toUpperCase();
       return word.charAt(0).toUpperCase() + word.slice(1);
     })
     .join(' ');
 }
 
-/* ── Load the existing index from wiki-index.json (preferred) or wiki.js ── */
 function loadExistingIndex() {
-  // Prefer the already-generated JSON — supports incremental updates.
   if (fs.existsSync(OUTPUT)) {
     try {
       const arr = JSON.parse(fs.readFileSync(OUTPUT, 'utf8'));
       const lookup = {};
       arr.forEach(item => {
         const slug = item.url.replace(/^\/wiki\//, '');
-        // Decode any HTML entities that may have been written in a previous run.
         lookup[slug] = Object.assign({}, item, {
           title:    cleanDisplayTitle(decodeHtmlEntities(item.title    || '')),
           desc:     decodeHtmlEntities(item.desc     || ''),
           category: decodeHtmlEntities(item.category || ''),
-          // Preserve aliases array if present
           aliases:  Array.isArray(item.aliases) ? item.aliases : undefined,
         });
       });
@@ -181,7 +186,6 @@ function loadExistingIndex() {
     }
   }
 
-  // Fallback: parse WIKI_INDEX entries from wiki.js source.
   if (!fs.existsSync(WIKI_JS)) return {};
 
   const src = fs.readFileSync(WIKI_JS, 'utf8');
@@ -192,7 +196,6 @@ function loadExistingIndex() {
   const entrySrc = src.slice(startIdx);
   const lookup   = {};
 
-  // Walk through every `url:` key and extract the surrounding entry block.
   const urlRe = /url:\s*"(wiki\/[^"]+)"/g;
   let m;
   while ((m = urlRe.exec(entrySrc)) !== null) {
@@ -200,11 +203,9 @@ function loadExistingIndex() {
     const slug     = urlValue.replace('wiki/', '');
     const pos      = m.index;
 
-    // Find opening '{' before this url: occurrence
     let start = pos;
     while (start > 0 && entrySrc[start] !== '{') start--;
 
-    // Find closing '}' after this url: occurrence (skip nested '[...]')
     let end   = pos;
     let depth = 0;
     while (end < entrySrc.length) {
@@ -239,15 +240,11 @@ function loadExistingIndex() {
   return lookup;
 }
 
-/* ── Filler words stripped when comparing titles ────────────────────────── */
 const FILLER_WORDS = new Set([
   'the', 'a', 'an', 'and', 'of', 'in', 'for', 'on', 'at', 'to', 'by',
   'or', 'is', 'are', 'it', 'its', 'with', 'as',
 ]);
 
-/* ── Known keyword substitutions for deduplication ─────────────────────── */
-// Each key maps to its canonical equivalents; applied at full-phrase level so
-// only entries whose entire normalised title overlaps after substitution merge.
 const KEYWORD_SUBS = {
   'bitcoin':            ['btc'],
   'btc':                ['bitcoin'],
@@ -267,9 +264,7 @@ const KEYWORD_SUBS = {
   'decentralized':      ['decentralised'],
   'decentralised':      ['decentralized'],
   'nonfungible':        ['non fungible', 'nft'],
-  'non':                [],  // 'non' alone has no useful substitution; listing it
-                             // explicitly prevents accidental partial matches in the
-                             // KEYWORD_SUBS loop (e.g. from 'nonfungible' tokenisation)
+  'non':                [],
   'dao':                ['decentralized autonomous organization'],
   'blockchain':         ['chain'],
   'crypto':             ['cryptocurrency', 'cryptocurrencies'],
@@ -277,31 +272,29 @@ const KEYWORD_SUBS = {
   'cryptocurrencies':   ['crypto'],
 };
 
-/* ── Normalize a title for duplicate detection ──────────────────────────── */
 function normalizeTitle(title) {
   if (!title) return '';
   return title
     .toLowerCase()
-    .replace(/['''"""]/g, '')       // remove quotes/apostrophes
-    .replace(/[^a-z0-9]+/g, ' ')   // collapse non-alphanumeric runs to spaces
+    .replace(/['''"""]/g, '')
+    .replace(/[^a-z0-9]+/g, ' ')
     .trim();
 }
 
-/* ── Generate all alias variations for one entry ───────────────────────── */
-// Returns a Set<string> of normalised phrase-level identifiers that represent
-// the same entity.  Overlap between two entries' alias sets → they are dupes.
+function tokenizeText(text) {
+  return normalizeTitle(text)
+    .split(/\s+/)
+    .filter(Boolean);
+}
+
 function generateAutoAliases(entry) {
   const variations = new Set();
-
-  // 1. Normalised title (primary key)
   const norm = normalizeTitle(entry.title);
   if (norm) variations.add(norm);
 
-  // 2. Title without filler/stopwords (only when meaningfully different)
   const noFiller = norm.split(' ').filter(w => !FILLER_WORDS.has(w)).join(' ').trim();
   if (noFiller && noFiller !== norm) variations.add(noFiller);
 
-  // 3. Slug-based alias derived from the URL path
   const slug = (entry.url || '')
     .replace(/^\/wiki\//, '')
     .replace(/\.html$/, '')
@@ -310,9 +303,6 @@ function generateAutoAliases(entry) {
   const normSlug = normalizeTitle(slug);
   if (normSlug && normSlug !== norm) variations.add(normSlug);
 
-  // 4. Keyword substitutions applied to the FULL normalised title phrase.
-  //    Substituting individual words keeps phrase structure intact and avoids
-  //    false-positive merges (e.g. "Bitcoin Cash" ≠ "Bitcoin").
   const words = norm.split(' ');
   for (let i = 0; i < words.length; i++) {
     const subs = KEYWORD_SUBS[words[i]] || [];
@@ -325,18 +315,8 @@ function generateAutoAliases(entry) {
   return variations;
 }
 
-/* ── Detect & merge duplicate entries (union-find over alias overlap) ───── */
-// Two entries are duplicates when their generateAutoAliases() sets share any
-// common element — i.e. they describe the same entity under different names.
-//
-// Returns { canonicalEntries, aliasUrls }
-// - canonicalEntries: deduplicated array of index entries (each may have .aliases)
-// - aliasUrls: Set of URL strings that are alias pages (excluded from the index)
 function deduplicateIndex(entries) {
-  // ── Step 1: generate alias sets for every entry ────────────────────────
   const aliasSets = entries.map(e => generateAutoAliases(e));
-
-  // ── Step 2: build inverted index: alias string → [entry indices] ────────
   const aliasToIndices = new Map();
   aliasSets.forEach((aliasSet, idx) => {
     aliasSet.forEach(alias => {
@@ -345,11 +325,10 @@ function deduplicateIndex(entries) {
     });
   });
 
-  // ── Step 3: union-find to compute connected components ──────────────────
   const parent = entries.map((_, i) => i);
   function find(x) {
     while (parent[x] !== x) {
-      parent[x] = parent[parent[x]]; // path-halving compression
+      parent[x] = parent[parent[x]];
       x = parent[x];
     }
     return x;
@@ -363,7 +342,6 @@ function deduplicateIndex(entries) {
     }
   }
 
-  // ── Step 4: group entries by their union-find root ───────────────────────
   const groups = new Map();
   entries.forEach((entry, idx) => {
     const root = find(idx);
@@ -371,13 +349,10 @@ function deduplicateIndex(entries) {
     groups.get(root).push(entry);
   });
 
-  // ── Step 5: for each group pick canonical and assign aliases ─────────────
   const canonicalEntries = [];
   const aliasUrls = new Set();
 
   for (const [, group] of groups) {
-    // Select canonical: longest title (most descriptive) first; prefer entries
-    // that already carry curated aliases; tiebreak by shortest URL for stability.
     const canonical = group.slice().sort((a, b) => {
       const aHasAliases = (a.aliases && a.aliases.length > 0) ? 1 : 0;
       const bHasAliases = (b.aliases && b.aliases.length > 0) ? 1 : 0;
@@ -386,7 +361,6 @@ function deduplicateIndex(entries) {
       return a.url.length - b.url.length;
     })[0];
 
-    // Register explicit aliases already present on any entry in the group
     for (const e of group) {
       if (Array.isArray(e.aliases)) e.aliases.forEach(a => aliasUrls.add(a.url));
     }
@@ -415,13 +389,7 @@ function deduplicateIndex(entries) {
   return { canonicalEntries, aliasUrls };
 }
 
-/* ── Write a minimal HTML redirect stub ─────────────────────────────────── */
-// Writes only if the file is already a redirect stub, missing, or small
-// (< 2 KB on disk, roughly equivalent to < 500 chars of visible text).
-// Returns true if written.
 function generateRedirectFile(aliasFilePath, canonicalUrl) {
-  // Validate canonical URL: must be a safe internal wiki path to prevent injection.
-  // Allows lowercase letters, digits, hyphens, and underscores in the filename.
   if (!/^\/wiki\/[a-z0-9][a-z0-9_-]*\.html$/.test(canonicalUrl)) {
     console.warn(`  ! invalid canonical URL format, skipping redirect: ${canonicalUrl}`);
     return false;
@@ -429,11 +397,8 @@ function generateRedirectFile(aliasFilePath, canonicalUrl) {
 
   if (fs.existsSync(aliasFilePath)) {
     const existing = fs.readFileSync(aliasFilePath, 'utf8');
-    // Detect existing redirect: look for both http-equiv and refresh in any meta tag.
     const isStub = /http-equiv/i.test(existing) && /\brefresh\b/i.test(existing);
     if (!isStub) {
-      // Use raw file size as a fast, injection-safe proxy for content length.
-      // Real wiki articles are many kilobytes; stubs are under ~500 bytes.
       const byteSize = Buffer.byteLength(existing, 'utf8');
       if (byteSize >= MIN_CONTENT_BYTES) {
         console.log(`  ! skipping redirect for ${path.basename(aliasFilePath)} (has substantial content, ${byteSize} bytes)`);
@@ -448,10 +413,10 @@ function generateRedirectFile(aliasFilePath, canonicalUrl) {
 <meta charset="UTF-8">
 <meta http-equiv="refresh" content="0; url=${canonicalUrl}">
 <link rel="canonical" href="${BASE_URL}${canonicalUrl}">
-<title>Redirecting\u2026</title>
+<title>Redirecting…</title>
 </head>
 <body>
-<p>Redirecting to <a href="${canonicalUrl}">canonical page</a>\u2026</p>
+<p>Redirecting to <a href="${canonicalUrl}">canonical page</a>…</p>
 </body>
 </html>
 `;
@@ -460,7 +425,6 @@ function generateRedirectFile(aliasFilePath, canonicalUrl) {
   return true;
 }
 
-/* ── HTML metadata extractors ───────────────────────────────────────────── */
 function extractTitle(html) {
   const m = html.match(/<title>([^<]+)<\/title>/i);
   if (!m) return null;
@@ -470,7 +434,6 @@ function extractTitle(html) {
 }
 
 function extractDesc(html) {
-  // Prefer the og:description (usually the cleanest single sentence)
   const ogM = html.match(/<meta\s+property="og:description"\s+content="([^"]+)"/i);
   if (ogM) return decodeHtmlEntities(ogM[1].trim());
   const m = html.match(/<meta\s+name="description"\s+content="([^"]+)"/i);
@@ -482,6 +445,18 @@ function extractCategory(html) {
   if (!divM) return null;
   const links = [...divM[1].matchAll(/href="[^"]*categories\/[^"]*"[^>]*>([^<]+)<\/a>/gi)];
   return links.length ? decodeHtmlEntities(links[0][1].trim()) : null;
+}
+
+function extractBodyText(html) {
+  return decodeHtmlEntities(
+    String(html || '')
+      .replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, ' ')
+      .replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi, ' ')
+      .replace(/<noscript\b[^>]*>[\s\S]*?<\/noscript>/gi, ' ')
+      .replace(/<[^>]+>/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim()
+  );
 }
 
 function generateTags(title) {
@@ -498,25 +473,27 @@ function generateTags(title) {
   )];
 }
 
-/* ── Compute ranking signals for an index entry ─────────────────────────── */
-// All inputs are derived from repo-grounded data only (canonical page status,
-// alias count, tag count, category priority).
-// - No hand-picked page boosts.
-// - No editorial overrides.
-// - Same input = same output (fully deterministic).
+function buildKeywordBag(entry) {
+  const bag = new Set();
+  tokenizeText(entry.title).forEach(t => bag.add(t));
+  tokenizeText(entry.desc || '').forEach(t => bag.add(t));
+  (entry.tags || []).forEach(tag => tokenizeText(tag).forEach(t => bag.add(t)));
+  (entry.aliases || []).forEach(alias => tokenizeText(alias.title || '').forEach(t => bag.add(t)));
+  return [...bag].sort();
+}
+
 function computeRankSignals(entry) {
   return {
     is_canonical:      true,
     alias_count:       Array.isArray(entry.aliases) ? entry.aliases.length : 0,
     tag_count:         Array.isArray(entry.tags)    ? entry.tags.length    : 0,
     category_priority: CATEGORY_PRIORITY[entry.category] || 1,
+    has_description:   Boolean(String(entry.desc || '').trim()),
+    article_word_count: Number(entry.article_word_count || 0),
+    keyword_bag_size:  Array.isArray(entry.keyword_bag) ? entry.keyword_bag.length : 0,
   };
 }
 
-/* ── Derive a deterministic integer rank score from signals ─────────────── */
-// Formula: 50 (base) + category_priority×2 + alias_count×5 + tag_count
-// Typical range: ~53 (minimal Lore, no aliases/tags) – ~90+ (core category, many aliases).
-// No manual boosts; every run with identical input produces identical output.
 function computeRankScore(signals) {
   return (
     50 +
@@ -526,12 +503,79 @@ function computeRankScore(signals) {
   );
 }
 
-/* ── Main ───────────────────────────────────────────────────────────────── */
+function buildRankDiagnostics(entry, signals, score) {
+  return {
+    philosophy: SEARCH_PHILOSOPHY,
+    formula_version: RANK_FORMULA_VERSION,
+    deterministic: true,
+    base_score: 50,
+    score_formula: '50 + (category_priority * 2) + (alias_count * 5) + tag_count',
+    score_components: {
+      base_score: 50,
+      category_priority_points: signals.category_priority * 2,
+      alias_points: signals.alias_count * 5,
+      tag_points: signals.tag_count,
+    },
+    final_rank_score: score,
+    title_normalized: normalizeTitle(entry.title),
+    alias_titles: (entry.aliases || []).map(a => a.title).sort((a, b) => a.localeCompare(b)),
+    searchable_fields: {
+      keyword_bag: entry.keyword_bag,
+      alias_tokens: entry.alias_tokens,
+      title_tokens: entry.title_tokens,
+    },
+    content_signals: {
+      has_description: signals.has_description,
+      article_word_count: signals.article_word_count,
+      description_length: String(entry.desc || '').trim().length,
+    },
+  };
+}
+
+function validateWikiIndex(index) {
+  if (!Array.isArray(index)) {
+    throw new Error('wiki-index output is not an array');
+  }
+  index.forEach((entry, idx) => {
+    if (!entry || typeof entry !== 'object') {
+      throw new Error(`Entry ${idx} is not an object`);
+    }
+    ['title', 'url', 'desc', 'category', 'emoji'].forEach(key => {
+      if (typeof entry[key] !== 'string') {
+        throw new Error(`Entry ${idx} missing string field '${key}'`);
+      }
+    });
+    if (!Array.isArray(entry.tags)) {
+      throw new Error(`Entry ${idx} missing tags array`);
+    }
+    if (typeof entry.rank_score !== 'number' || Number.isNaN(entry.rank_score)) {
+      throw new Error(`Entry ${idx} has invalid rank_score`);
+    }
+    if (!entry.rank_signals || typeof entry.rank_signals !== 'object') {
+      throw new Error(`Entry ${idx} missing rank_signals`);
+    }
+    for (const key of REQUIRED_RANK_SIGNAL_KEYS) {
+      if (!(key in entry.rank_signals)) {
+        throw new Error(`Entry ${idx} rank_signals missing '${key}'`);
+      }
+    }
+    if (!entry.rank_diagnostics || typeof entry.rank_diagnostics !== 'object') {
+      throw new Error(`Entry ${idx} missing rank_diagnostics`);
+    }
+    if (!entry.search_index || typeof entry.search_index !== 'object') {
+      throw new Error(`Entry ${idx} missing search_index`);
+    }
+    ['keyword_bag', 'title_tokens', 'alias_tokens'].forEach(key => {
+      if (!Array.isArray(entry.search_index[key])) {
+        throw new Error(`Entry ${idx} search_index.${key} must be an array`);
+      }
+    });
+  });
+}
+
 const existingLookup = loadExistingIndex();
 console.log(`Loaded ${Object.keys(existingLookup).length} existing entries from js/wiki.js`);
 
-// Build set of alias URLs from existing canonical entries so those files are
-// not added as standalone entries in the scan below.
 const knownAliasUrls = new Set();
 for (const entry of Object.values(existingLookup)) {
   if (Array.isArray(entry.aliases)) {
@@ -549,14 +593,13 @@ let fromHtml     = 0;
 
 for (const file of htmlFiles) {
   const fileUrl  = `/wiki/${file}`;
-  // Skip files that are already declared as aliases by a canonical entry.
   if (knownAliasUrls.has(fileUrl)) continue;
 
   const html     = fs.readFileSync(path.join(WIKI_DIR, file), 'utf8');
   const existing = existingLookup[file];
+  const articleWordCount = extractBodyText(html).split(/\s+/).filter(Boolean).length;
 
   if (existing) {
-    // Preserve all curated metadata; normalise URL to root-absolute.
     const entry = {
       title:    existing.title,
       url:      fileUrl,
@@ -564,12 +607,12 @@ for (const file of htmlFiles) {
       category: existing.category,
       emoji:    existing.emoji,
       tags:     existing.tags,
+      article_word_count: articleWordCount,
     };
     if (Array.isArray(existing.aliases)) entry.aliases = existing.aliases;
     rawIndex.push(entry);
     fromExisting++;
   } else {
-    // Extract what we can from the HTML file.
     const rawTitle = extractTitle(html);
     const title    = cleanDisplayTitle(rawTitle || slugToTitle(file));
     const desc     = extractDesc(html)     || '';
@@ -577,13 +620,12 @@ for (const file of htmlFiles) {
     const emoji    = CATEGORY_EMOJI[category] || '📄';
     const tags     = generateTags(title);
 
-    rawIndex.push({ title, url: fileUrl, desc, category, emoji, tags });
+    rawIndex.push({ title, url: fileUrl, desc, category, emoji, tags, article_word_count: articleWordCount });
     fromHtml++;
     console.log(`  + extracted from HTML: ${file} (category: ${category})`);
   }
 }
 
-// ── Deduplication ─────────────────────────────────────────────────────────
 const { canonicalEntries, aliasUrls } = deduplicateIndex(rawIndex);
 let redirectsWritten = 0;
 let redirectsSkipped = 0;
@@ -593,7 +635,6 @@ for (const aliasUrl of aliasUrls) {
   const filePath = path.join(WIKI_DIR, file);
   if (!fs.existsSync(filePath)) continue;
 
-  // Find the canonical URL for this alias
   let canonicalUrl = null;
   for (const entry of canonicalEntries) {
     if (Array.isArray(entry.aliases) && entry.aliases.some(a => a.url === aliasUrl)) {
@@ -610,9 +651,17 @@ for (const aliasUrl of aliasUrls) {
   }
 }
 
-// Remove undefined aliases fields (keeps JSON clean when no aliases exist)
 const wikiIndex = canonicalEntries.map(entry => {
-  const rank_signals = computeRankSignals(entry);
+  const keyword_bag = buildKeywordBag(entry);
+  const title_tokens = tokenizeText(entry.title);
+  const alias_tokens = [...new Set((entry.aliases || []).flatMap(alias => tokenizeText(alias.title || '')))].sort();
+  const enriched = {
+    ...entry,
+    keyword_bag,
+    title_tokens,
+    alias_tokens,
+  };
+  const rank_signals = computeRankSignals(enriched);
   const rank_score   = computeRankScore(rank_signals);
   const out = {
     title:        entry.title,
@@ -623,6 +672,12 @@ const wikiIndex = canonicalEntries.map(entry => {
     tags:         entry.tags,
     rank_score,
     rank_signals,
+    rank_diagnostics: buildRankDiagnostics(enriched, rank_signals, rank_score),
+    search_index: {
+      title_tokens,
+      alias_tokens,
+      keyword_bag,
+    },
   };
   if (Array.isArray(entry.aliases) && entry.aliases.length > 0) {
     out.aliases = entry.aliases;
@@ -630,6 +685,7 @@ const wikiIndex = canonicalEntries.map(entry => {
   return out;
 });
 
+validateWikiIndex(wikiIndex);
 fs.writeFileSync(OUTPUT, JSON.stringify(wikiIndex, null, 2) + '\n');
 console.log(`\nGenerated js/wiki-index.json with ${wikiIndex.length} canonical entries`);
 console.log(`  ${fromExisting} from existing index (js/wiki-index.json or js/wiki.js WIKI_INDEX)`);
@@ -638,7 +694,6 @@ if (aliasUrls.size > 0) {
   console.log(`  ${aliasUrls.size} alias URL(s) deduplicated (${redirectsWritten} redirect(s) written, ${redirectsSkipped} skipped — substantial content)`);
 }
 
-/* ── Integrity check: no canonical title may contain underscores ─────────── */
 const badTitles = wikiIndex.filter(e => e.title.includes('_'));
 if (badTitles.length > 0) {
   console.error(`\nERROR: ${badTitles.length} canonical title(s) still contain underscores:`);
@@ -646,3 +701,4 @@ if (badTitles.length > 0) {
   process.exit(1);
 }
 console.log('  ✓ All canonical titles are clean (no underscores)');
+console.log('  ✓ Ranking schema validation passed');
