@@ -34,7 +34,9 @@ This prevents random tie flips between runs or browsers.
 
 `/search.html` is the canonical article hub.
 
-`/wiki/index.html` is only a redirect stub and must never become a second article index.
+`/articles.html` is legacy-only and must redirect to `/search.html`.
+
+`/wiki/index.html` is not part of the canonical system and must not exist or appear in generated data.
 
 ## Category weighting
 
