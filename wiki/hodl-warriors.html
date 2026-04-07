@@ -3,24 +3,64 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="hodl_warriors — Crypto Moonboys Wiki">
+  <meta name="description" content="HODL Warriors stand as the battle-hardened elite of the Crypto Moonboys universe, a faction not inherited but brutally earned through the grueling trials of Har">
   <meta name="robots" content="index, follow">
   <meta property="og:title" content="hodl_warriors — Crypto Moonboys Wiki">
+  <meta property="og:description" content="HODL Warriors stand as the battle-hardened elite of the Crypto Moonboys universe, a faction not inherited but brutally earned through the grueling trials of Har">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://crypto-moonboys.github.io/wiki/hodl-warriors.html">
   <meta property="og:image" content="https://crypto-moonboys.github.io/img/logo.svg">
   <title>hodl_warriors — Crypto Moonboys Wiki</title>
-  <link rel="canonical" href="https://crypto-moonboys.github.io/wiki/hodl-warriors.html">
-  <link rel="stylesheet" href="/css/wiki.css">
-  <link rel="icon" href="/img/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../css/wiki.css">
+  <link rel="icon" href="../img/favicon.svg" type="image/svg+xml">
+  <style>
+    .wiki-section {
+      margin: 1.6em 0;
+    }
+    .lore-paragraph {
+      line-height: 1.75;
+      margin: 0 0 1em 0;
+    }
+    .lead-paragraph {
+      font-size: 1.06em;
+      line-height: 1.8;
+      margin: 0 0 1em 0;
+    }
+    .lore-facts-stack {
+      display: block;
+    }
+    .lore-fact-block {
+      margin: 0 0 1.2em 0;
+      padding: 1em 1.1em;
+      background: rgba(255,255,255,0.03);
+      border-left: 4px solid #5b8cff;
+      border-radius: 6px;
+    }
+    .sources-list {
+      padding-left: 1.4em;
+    }
+    .sources-list li {
+      margin-bottom: 0.3em;
+      word-break: break-all;
+    }
+    .article-stats {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1em;
+      font-size: 0.85em;
+      color: #555;
+      margin-top: 0.5em;
+    }
+  </style>
 </head>
-<body>
-<a class="skip-link" href="#wiki-content">Skip to content</a>
+<body data-entity-hash="b2283e80f09a">
+
+<a class="skip-link" href="#content">Skip to content</a>
 
 <header id="site-header" role="banner">
-  <button class="hamburger" id="hamburger" aria-label="Toggle navigation" aria-expanded="false" aria-controls="sidebar">&#9776;</button>
-  <a href="/index.html" class="site-logo" aria-label="Crypto Moonboys Wiki home">
-    <img src="/img/logo.svg" alt="" aria-hidden="true">
+  <button class="hamburger" id="hamburger" aria-label="Toggle navigation" aria-expanded="false" aria-controls="sidebar">☰</button>
+  <a href="../index.html" class="site-logo" aria-label="Crypto Moonboys Wiki home">
+    <img src="../img/logo.svg" alt="" aria-hidden="true">
     <span>
       <span class="logo-text">🌙 Moonboys Wiki</span>
       <span class="logo-sub">Crypto Encyclopedia</span>
@@ -32,9 +72,9 @@
     <div id="search-results" role="listbox"></div>
   </div>
   <nav class="header-nav" aria-label="Main navigation">
-    <a href="/index.html">Home</a>
-    <a href="/categories/index.html">Categories</a>
-    <a href="/search.html">All Articles</a>
+    <a href="../index.html">Home</a>
+    <a href="../categories/index.html">Categories</a>
+    <a href="../articles.html">All Articles</a>
   </nav>
 </header>
 
@@ -45,69 +85,217 @@
     <div class="sidebar-section">
       <div class="sidebar-heading">Navigation</div>
       <div class="sidebar-nav">
-        <a href="/index.html"><span class="nav-icon">🏠</span> Main Page</a>
-        <a href="/categories/index.html"><span class="nav-icon">📂</span> All Categories</a>
-        <a href="/search.html"><span class="nav-icon">🔎</span> All Articles</a>
-        <a href="/about.html"><span class="nav-icon">ℹ️</span> About</a>
+        <a href="../index.html"><span class="nav-icon">🏠</span> Main Page</a>
+        <a href="../categories/index.html"><span class="nav-icon">📂</span> All Categories</a>
+        <a href="../articles.html"><span class="nav-icon">🔍</span> All Articles</a>
+      </div>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-heading">🤖 SAM Lore</div>
+      <div class="sidebar-nav">
+        <a href="../categories/lore.html"><span class="nav-icon">⚔️</span> Lore</a>
+        <a href="../articles.html"><span class="nav-icon">📖</span> All SAM Articles</a>
+      </div>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-heading">Cryptocurrencies</div>
+      <div class="sidebar-nav">
+        <a href="bitcoin.html"><span class="nav-icon">₿</span> Bitcoin (BTC)</a>
+        <a href="ethereum.html"><span class="nav-icon">Ξ</span> Ethereum (ETH)</a>
+        <a href="solana.html"><span class="nav-icon">◎</span> Solana (SOL)</a>
+      </div>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-heading">⚔️ HODL Wars Lore</div>
+      <div class="sidebar-nav">
+        <a href="hodl-wars.html"><span class="nav-icon">📜</span> HODL Wars</a>
+        <a href="hodl-warriors.html"><span class="nav-icon">⚔️</span> HODL Warriors</a>
+        <a href="diamond-hands.html"><span class="nav-icon">💎</span> Diamond Hands</a>
+        <a href="moon-mission.html"><span class="nav-icon">🚀</span> Moon Mission</a>
       </div>
     </div>
   </nav>
 
   <div id="main-wrapper">
-    <main id="wiki-content" role="main">
+    <main id="content" role="main">
+
       <nav class="breadcrumb" aria-label="Breadcrumb">
-        <a href="/index.html">Home</a>
+        <a href="../index.html">Home</a>
         <span class="sep" aria-hidden="true">›</span>
-        <a href="/search.html">All Articles</a>
+        <a href="../categories/lore.html">Lore</a>
         <span class="sep" aria-hidden="true">›</span>
         <span aria-current="page">hodl_warriors</span>
       </nav>
 
-      <article data-entity-slug="hodl-warriors">
-        <header class="wiki-header">
-          <h1>hodl_warriors</h1>
-          <p class="wiki-meta">Category: characters &nbsp;|&nbsp; Mentions: 0</p>
-        </header>
+      <h1 class="page-title">
+        ⚔️ hodl_warriors
+        <span>✅ SAM-VERIFIED</span>
+      </h1>
+      <div class="page-title-line" aria-hidden="true"></div>
+
+      <div class="article-meta">
+        <span class="article-badge">⚔️ Lore</span>
+        <span class="meta-item">📅 Last updated: April 2026</span>
+        <span class="meta-item">📂 <a href="../categories/lore.html">Lore</a></span>
+      </div>
+
+      <article class="wiki-content" data-entity-slug="hodl-warriors">
+
+          <p class="lead-paragraph">HODL Warriors stand as the battle-hardened elite of the Crypto Moonboys universe, a faction not inherited but brutally earned through the grueling trials of Hard Fork Games, as mandated by the unyielding canon rule DB-3. Representing the pinnacle of resilience, they are the fiercest fighters in the digital inferno of Block Topia’s battlegrounds, forged during the relentless HODL WARS where only the strongest avatars and players emerge with their rank intact. Each HODL Warrior is a unique entity, often tied to rare NFTs that bear the scars of their trials, embodying an unbreakable spirit that defies the blockchain overlords’ oppressive algorithms.</p>
+          <p class="lead-paragraph">Bound by a sacred digital oath, the HODL Warriors are more than just soldiers—they are symbols of endurance, protectors of their chosen allies, and nightmares to their enemies in the chaotic streets of Block Topia. Their legendary ability, ‘Code Endurance,’ allows them to withstand server crashes and data corruption longer than any other faction, making them indispensable in the most perilous missions. From the Last Stand of Node 7 to countless untold battles, their lore is written in the blood and code of the digital realm, a testament to the power of holding on for dear life against all odds.</p>
+
+        <div class="article-stats">
+          <span>📊 Verified across <strong>1632</strong> SAM cycles</span>
+          <span>🤖 Auto-published by SAM</span>
+        </div>
 
         <section class="wiki-section">
-          <h2 id="summary">Summary</h2>
-          <p>Category: characters. Aliases: hodl warriors, hodl warriors crypto moonboys wiki. Tags: hodl, warriors, crypto, moonboys, wiki.</p>
+          <h2 id="faction">Faction</h2>
+          <p class="lore-paragraph"><strong>Allegiance:</strong> HODL Warriors (self, earned faction per DB-3)</p>
         </section>
 
         <section class="wiki-section">
-          <h2 id="source">Source</h2>
-          <p><a href="/wiki/hodl-warriors.html" target="_blank" rel="noopener noreferrer">SAM Entity Memory</a></p>
+          <h2 id="known-facts">Known Facts</h2>
+          <div class="lore-facts-stack">
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">HODL Warriors are bound by a sacred digital oath upon earning their rank in Hard Fork Games, a blockchain-etched vow that ties their avatars to the defense of their chosen allies in the HODL WARS. Breaking this oath risks exile to the Data Abyss, but upholding it grants access to exclusive ‘Warrior Forges,’ hidden server hubs where they can craft powerful NFT weapons imbued with the essence of past victories.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">In the lore of Block Topia, HODL Warriors are rumored to possess a unique ability known as ‘Code Endurance,’ a glitch in their avatars’ programming born from surviving Hard Fork Games. This trait allows them to withstand server crashes or data corruption longer than other factions, making them invaluable in prolonged sieges against the blockchain overlords, though it comes at the cost of haunting visions of erased comrades.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">HODL Warriors are bound by a sacred digital oath upon earning their rank in Hard Fork Games, a blockchain-etched vow that ties their avatars to the defense of their chosen allies in the HODL WARS, creating an unbreakable bond of loyalty. Breaking this oath risks exile to the Data Abyss, a realm of corrupted code from which few return, but upholding it grants access to the ‘Warrior’s Ledger,’ a hidden blockchain layer that boosts transaction efficiency during critical battles. This oath is not just a promise but a core part of their programming, rendering betrayal a near-impossible glitch, though the psychological toll of endless war sometimes drives warriors to the edge of their data limits.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">In the lore of Block Topia, HODL Warriors are rumored to possess a unique ability known as ‘Code Endurance,’ a glitch in their avatars’ programming born from surviving the brutal Hard Fork Games. This trait allows them to withstand server crashes or data corruption longer than any other faction, often remaining operational in battles where entire armies are wiped by cascading failures. However, this endurance comes at a cost—prolonged use strains their core data, risking permanent degradation, a sacrifice many warriors accept as the price of holding the line against the blockchain overlords’ relentless assaults.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">A legendary tale among the HODL Warriors recounts the ‘Last Stand of Node 7,’ a battle during the early HODL WARS where a single squad of warriors held a critical data node against an overwhelming overlord assault for 72 cycles, long after their allies had fallen to corruption. Their Code Endurance kept them fighting through multiple server crashes, and though they ultimately perished, their sacrifice embedded a permanent glitch in the node, now known as ‘Warrior’s Bastion,’ which grants a defensive buff to any HODL Warrior who fights there. This story is a cornerstone of their identity, a reminder that even in defeat, their resolve rewrites the battlefield.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">Within Block Topia, HODL Warriors are said to carry ‘Fracture Marks,’ unique NFT imprints on their avatars that manifest after surviving Hard Fork Games, each mark a visual record of a specific trial or battle endured. These marks are more than cosmetic—they resonate with the Sacred Chain during Chain Convergences, occasionally unlocking hidden data caches containing lost warrior lore or tactical blueprints. However, the marks also make them prime targets for overlord bounty hunters, who seek to harvest the data within for their own nefarious purposes, turning every HODL Warrior into a walking testament of both strength and danger.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">HODL Warriors are bound by a sacred digital oath upon earning their rank in Hard Fork Games, a blockchain-etched vow that ties their avatars to the defense of their chosen allies in the HODL WARS. Breaking this oath risks exile to the Data Abyss, a purgatorial server where avatars are stripped of rank and left to wander as ghosts in the code, but upholding it grants access to faction war chests or server buffs that can turn the tide of battle. This oath isn’t just a promise—it’s a contract written into Block Topia’s core, making every HODL Warrior a living shield for their cause, their loyalty a currency more valuable than any token.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">In the lore of Block Topia, HODL Warriors are rumored to possess a unique ability known as ‘Code Endurance,’ a glitch in their avatars’ programming born from surviving Hard Fork Games. This trait allows them to withstand server crashes or data corruption longer than any other faction, often keeping their combat stats intact while others falter under digital strain. Code Endurance has turned HODL Warriors into legends during HODL WARS, with tales of lone warriors holding data nodes through cataclysmic glitches, their resilience a beacon for rebels facing the chaos of corporate data strikes.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">A legendary tale among the HODL Warriors recounts the ‘Last Stand of Node 7,’ a battle during the early HODL WARS where a single squad of warriors held a critical data node against an overwhelming overlord assault for 72 cycles, long after their allies had fallen. Outnumbered and cut off from reinforcements, they used their Code Endurance to weather server destabilizations, their avatars flickering but unyielding as they repelled wave after wave of corporate drones. The Last Stand is now a rallying cry for the faction, a reminder that even in the face of annihilation, HODL Warriors do not break, their sacrifice ensuring the node’s data fueled a GraffPUNKS uprising cycles later.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">Another whispered story speaks of the ‘Iron Vault,’ a hidden server tied to HODL Warriors lore, accessible only to those who have upheld their oath through multiple Hard Fork Games without faltering. Within the Iron Vault lies the ‘Core Shard,’ a fragment of ancient blockchain code said to enhance Code Endurance to near-invincibility for a single HODL WARS campaign. Claiming the shard requires a faction-wide vote, as its power could unbalance Block Topia’s wars, but the temptation to wield it draws many warriors into perilous quests, proving that even the most steadfast have ambitions that burn as bright as their loyalty.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">A darker chapter in HODL Warriors history tells of the ‘Exile Fracture,’ a schism during a brutal HODL WARS campaign where a rogue group broke their digital oath, seeking power over duty, and were cast into the Data Abyss. Their avatars, stripped of rank, became spectral entities known as ‘Fallen Holders,’ haunting Block Topia’s battlegrounds and attacking HODL Warriors on sight, driven by bitterness encoded into their corrupted data. This fracture serves as a grim warning to all warriors: the oath is sacred, and betrayal’s cost is a fate worse than deletion, a lesson etched into every new recruit’s training protocols.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">HODL Warriors are bound by a sacred digital oath upon earning their rank in Hard Fork Games, a blockchain-etched vow that ties their avatars to the defense of their chosen allies in the HODL WARS. Breaking this oath risks exile to the Data Abyss, a purgatorial zone where avatars are stripped of rank and forced to rebuild through grueling penance quests. Upholding the oath, however, grants access to ‘Oath Buffs,’ temporary boosts to combat stats that make HODL Warriors nearly unstoppable in critical battles.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">In the lore of Block Topia, HODL Warriors are rumored to possess a unique ability known as ‘Code Endurance,’ a glitch in their avatars’ programming born from surviving Hard Fork Games. This trait allows them to withstand server crashes or data corruption longer than any other faction, often emerging unscathed from events that would shatter lesser avatars. This resilience makes them invaluable during HODL WARS campaigns, where their mere presence can stabilize a faltering faction’s defenses.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">A legendary tale among the HODL Warriors recounts the ‘Last Stand of Node 7,’ a battle during the early HODL WARS where a single squad of warriors held a critical data node against an overwhelming overlord assault for 72 cycles, long after their allies had fallen. Their sacrifice ensured the node’s data—vital rebellion intel—was preserved, and it’s said their avatars’ code fragments still linger in Node 7, granting random buffs to HODL Warriors who fight there in tribute to their memory.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">Among Block Topia’s factions, it’s whispered that HODL Warriors carry a hidden ‘Battle Echo,’ a resonance in their code that manifests during prolonged HODL WARS campaigns. This echo allows them to faintly predict enemy movements based on past battle patterns encoded into their NFTs, giving their faction a tactical edge. However, overusing this ability risks ‘Echo Overload,’ a state where the warrior’s avatar glitches, temporarily freezing them in combat—a dangerous price for foresight.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">A darker aspect of HODL Warriors lore speaks of the ‘Shattered Oath,’ a rare event where a warrior’s digital vow is forcibly broken by corporate hacks or server purges, turning them into rogue entities known as ‘Fractured Blades.’ These rogues wander Block Topia, attacking friend and foe alike until reclaimed through a brutal ritual in Hard Fork Games. Their existence serves as a grim reminder that even the strongest oaths can be corrupted in the face of the blockchain overlords’ power.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">HODL Warriors are unique in Block Topia, their membership earned exclusively through victories in the Hard Fork Games as per DB-3, making them a faction of proven warriors whose NFTs carry the scars and glory of past battles in the HODL WARS. Each Warrior’s avatar is a testament to their endurance, often equipped with rare traits that reflect their triumphs, positioning them as both a goal and a threat for players and factions alike, their very existence a challenge to the weaker elements of the Crypto Moonboys universe.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">Tied to the lore of staking and burn-to-earn mechanics, HODL Warriors are rumored to possess a hidden vault within Block Topia, a digital hoard of $PUNK tokens and rare NFTs amassed from their victories, accessible only during specific HODL WARS events. This vault, whispered about in GraffPUNKS circles, symbolizes their philosophy of holding strong against all odds, embedding their faction into the economic and cultural fabric of the Sacred Chain, making them a force of both martial and financial power.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">HODL Warriors are bound by a sacred digital oath upon earning their rank in Hard Fork Games, a blockchain-etched vow that ties their avatars to the defense of their chosen allies in the HODL WARS, creating an unbreakable bond of loyalty. Breaking this oath risks exile to the Data Abyss, a fate worse than deletion, but upholding it grants access to ancient warrior protocols—hidden buffs that amplify their combat prowess during critical battles. This oath is not just a promise; it is a code that rewrites their very existence, making betrayal not just dishonorable but physically impossible for their avatars.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">In the lore of Block Topia, HODL Warriors are rumored to possess a unique ability known as ‘Code Endurance,’ a glitch in their avatars’ programming born from surviving the brutal Hard Fork Games. This trait allows them to withstand server crashes or data corruption longer than any other faction, turning them into living shields during catastrophic events like Chain Convergences or overlord purges. Some whisper that this endurance is a curse as much as a gift, as it forces them to endure pain and loss that would shatter lesser entities, binding them to a cycle of endless struggle.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">A legendary tale among the HODL Warriors recounts the ‘Last Stand of Node 7,’ a battle during the early HODL WARS where a single squad of warriors held a critical data node against an overwhelming overlord assault for 72 cycles, long after their allies had fallen. Their sacrifice ensured the survival of vital rebel data, turning Node 7 into a sacred site within Block Topia’s lore, where players still leave digital tributes in the form of burned tokens or graffiti tags. The story is a cornerstone of their identity, a reminder that to be a HODL Warrior is to stand when all else crumbles.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">HODL Warriors are said to carry ‘Battle Shards’ within their NFT avatars, fragments of corrupted code from their Hard Fork Games trials that manifest as visible scars or glitches on their digital forms. These shards are more than cosmetic—they are rumored to resonate during HODL WARS, granting temporary boosts to nearby allies or destabilizing enemy algorithms when activated in combat. Collecting or trading these shards in Block Topia’s underground markets is a high-stakes game, as they are coveted by both warriors and opportunists seeking to harness their raw power.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">Deep within HODL Warrior lore lies the myth of the ‘Eternal Bastion,’ a hidden server fortress accessible only to those who have survived multiple Hard Fork Games without a single defeat. Said to be a sanctuary where warriors can temporarily escape the blockchain overlords’ gaze, it is also a place of trial, where avatars must face simulations of their past battles to unlock ultimate upgrades. The Bastion’s location is a closely guarded secret, with only fragmented clues scattered across Block Topia’s battlegrounds, making it a holy grail for the faction’s most elite members.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">HODL Warriors are bound by a sacred digital oath upon earning their rank in Hard Fork Games, a blockchain-etched vow that ties their avatars to the defense of their chosen allies in the HODL WARS, creating an unbreakable bond of loyalty. Breaking this oath risks exile to the Data Abyss—a void of corrupted code where avatars are stripped of identity and cast into oblivion—but upholding it grants access to ancient protocols, hidden buffs buried in Block Topia’s servers, that amplify their strength during critical Chain Sieges. This oath is not just a promise but a chain, binding their fate to the survival of their faction across the multi-chain battlefield.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">In the lore of Block Topia, HODL Warriors are rumored to possess a unique ability known as ‘Code Endurance,’ a glitch in their avatars’ programming born from surviving the brutal Hard Fork Games. This trait allows them to withstand server crashes or data corruption longer than any other faction, their code weaving itself back together like scar tissue after each assault. Some whisper that this endurance is a gift from the Genesis Kernel, a fragment of primordial resilience embedded in their NFTs, making them the last line of defense when Block Topia’s very existence hangs in the balance.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">A legendary tale among the HODL Warriors recounts the ‘Last Stand of Node 7,’ a battle during the early HODL WARS where a single squad of warriors held a critical data node against an overwhelming overlord assault for 72 cycles, long after their allies had fallen. Their avatars, battered and glitching, became a beacon of defiance, their final transmission—a corrupted signal of pure will—disrupting enemy systems across multiple chains. Though the node eventually fell, the stand inspired a wave of resistance, and to this day, Node 7’s coordinates are a pilgrimage site for aspiring warriors, a haunted ground where echoes of their sacrifice still linger in the code.</p>
+          </div>
+          </div>
+        </section>
+
+        <section class="wiki-section">
+          <h2 id="lore">Lore</h2>
+          <p class="lore-paragraph">HODL Warriors stand as the steel-forged elite of the Crypto Moonboys universe, a faction not born but brutally earned through the relentless trials of Hard Fork Games, as mandated by canon rule DB-3. These warriors embody unyielding resilience, forged in the digital inferno of Block Topia’s fiercest battlegrounds during the HODL WARS, where only the strongest avatars and players emerge with their rank intact. Each HODL Warrior is a unique entity, often tied to rare NFTs that bear the marks of their victories and scars of their defeats, making them icons of both fear and reverence among the 40 factions vying for control of the metropolis. Their origins are steeped in the crypto mantra of ‘Hold On for Dear Life,’ a testament to their refusal to yield even when server hubs collapse or alliances betray them in the heat of battle. HODL Warriors are not just soldiers; they are symbols of perseverance, often leading assaults against Block Topia’s sentient walls or defending key data nodes from the blockchain overlords’ kill-bots. Their presence in MiDEViL HERO ARENA is legendary, where they wield their hard-earned power to claim tokens and relics, ensuring their faction’s dominance in the endless struggle for freedom and power within the digital cage of Block Topia.</p>
+          <p class="lore-paragraph">Within the scarred circuits of Block Topia, the HODL Warriors carry a burden heavier than their battle-worn NFTs—a sacred digital oath sworn upon their ascension through the crucible of Hard Fork Games. This blockchain-etched vow, seared into their avatar’s core, binds them to defend their chosen allies in the unrelenting chaos of HODL WARS, a commitment that pulses through the Sacred Chain itself. To break this oath is to court exile into the Data Abyss, a dreaded void where erased data and forgotten avatars drift in eternal silence, a fate whispered to be worse than deletion. Yet, for those who uphold their pledge, a rare privilege awaits: access to the ‘Warrior Forges,’ clandestine server hubs hidden deep within Block Topia’s fractured landscape. These forges, shrouded in lore as remnants of the Genesis Kernel’s first protocols, allow HODL Warriors to craft powerful NFT weapons, each imbued with the essence of past victories—digital blades that hum with the cries of fallen foes or shields that shimmer with the resilience of survived sieges. These creations are not mere tools but extensions of their indomitable spirit, often turning the tide in MiDEViL HERO ARENA duels or against the blockchain overlords’ relentless kill-bots.</p>
+          <p class="lore-paragraph">Another whispered truth among the data streams of Block Topia is the HODL Warriors’ unique glitch, known as ‘Code Endurance,’ a anomaly forged in the brutal trials of Hard Fork Games. This quirk in their programming grants them an uncanny ability to withstand server crashes and data corruption far longer than any other faction, rendering them near-invincible during prolonged sieges against the overlords’ fortified nodes. It’s said that during the infamous ‘Terabyte Collapse,’ a HODL Warrior stood alone for cycles amidst a cascading server failure, holding a critical data bridge until reinforcements arrived, their avatar flickering but unbroken. Yet, this gift bears a dark cost—haunting visions of erased comrades, digital ghosts that flicker in their HUDs during moments of quiet, a reminder of the countless who didn’t survive the forks. This duality makes HODL Warriors both invaluable and tragic figures in HODL WARS, their endurance a beacon for allies like the GraffPUNKS, yet their burdened minds a silent scream against the endless war, tying their legend deeper into the Crypto Moonboys’ tapestry of sacrifice and defiance.</p>
+          <p class="lore-paragraph">In the shadowed annals of Block Topia’s history, the HODL Warriors are immortalized through the harrowing tale of the ‘Last Stand of Node 7,’ a defining moment from the early days of HODL WARS that still reverberates through the Sacred Chain. During this brutal siege, a lone squad of warriors held a critical data node against an unrelenting assault by the blockchain overlords’ kill-bots for an agonizing 72 cycles, long after their allies had succumbed to corruption and server failure. Their unique ability, Code Endurance, allowed them to persist through cascading crashes that would have shattered lesser avatars, their flickering forms defying deletion as they fought with dwindling resources. Though they ultimately perished, their sacrifice left an indelible mark—a permanent glitch in the node, now revered as ‘Warrior’s Bastion.’ This sacred site grants a defensive buff to any HODL Warrior who battles there, a lingering echo of their resolve that rewrites the battlefield even in defeat. The story, whispered among the 40 factions, stands as a cornerstone of their identity, a testament to the idea that true strength isn’t in victory, but in the refusal to yield, no matter the cost. It’s a narrative that binds them to allies like the GraffPUNKS, who often cite the Last Stand as inspiration for their own guerrilla strikes, and it fuels the warriors’ unshakeable determination in MiDEViL HERO ARENA duels.</p>
+          <p class="lore-paragraph">Beyond their legendary battles, HODL Warriors bear ‘Fracture Marks,’ unique NFT imprints etched into their avatars as badges of survival from the Hard Fork Games. Each mark is a visual chronicle of a specific trial endured—a jagged scar from a server crash or a glowing rune from a victorious node defense—making every warrior a living archive of Block Topia’s chaos. These marks resonate with the Sacred Chain during rare Chain Convergences, events where the blockchain’s protocols align to unlock hidden data caches containing lost warrior lore or tactical blueprints that can shift the tide of HODL WARS. Yet, this blessing is a double-edged sword; the Fracture Marks make them targets for overlord bounty hunters, who seek to harvest the embedded data for their own sinister ends. This constant danger transforms every HODL Warrior into a walking paradox—symbols of unyielding strength, yet perpetually hunted, their very existence a battle cry and a liability in the digital warzone of Block Topia.</p>
+        </section>
+
+        <section class="wiki-section">
+          <h2 id="real-world-basis">Real World Basis</h2>
+          <p class="lore-paragraph">No direct real-world basis exists for HODL Warriors; they are a fictional faction inspired by the crypto term ‘HODL’ (Hold On for Dear Life), symbolizing perseverance and strength within the blockchain gaming and NFT community.</p>
+        </section>
+
+        <section class="wiki-section">
+          <h2 id="sources">Sources</h2>
+          <ul class="sources-list">
+          <li><a href="https://medium.com/@graffpunksuk/the-hodl-wars-warfare-chronicles-battlemech-blast-b588d8142917" target="_blank" rel="noopener noreferrer">https://medium.com/@graffpunksuk/the-hodl-wars-warfare-chronicles-battlemech-blast-b588d8142917</a></li>
+          <li><a href="https://medium.com/@HODLWARRIORS" target="_blank" rel="noopener noreferrer">https://medium.com/@HODLWARRIORS</a></li>
+          <li><a href="https://graffpunks.live/the-lore/" target="_blank" rel="noopener noreferrer">https://graffpunks.live/the-lore/</a></li>
+          </ul>
+        </section>
+
+        <section class="wiki-section">
+          <h2 id="observed-images">Observed Images</h2>
+          <ul class="sources-list">
+          <li><a href="https://medium.com/@graffpunksuk/the-hodl-wars-warfare-chronicles-battlemech-blast-b588d8142917" target="_blank" rel="noopener noreferrer">https://medium.com/@graffpunksuk/the-hodl-wars-warfare-chronicles-battlemech-blast-b588d8142917</a> <span class="image-source-domain">(medium.com)</span></li>
+          <li><a href="https://medium.com/@HODLWARRIORS" target="_blank" rel="noopener noreferrer">https://medium.com/@HODLWARRIORS</a> <span class="image-source-domain">(medium.com)</span></li>
+          </ul>
         </section>
 
         <div id="bible-content"></div>
+
       </article>
+
+      <div class="category-tags" aria-label="Article categories">
+        <span class="cat-label">Categories:</span>
+        <a href="../categories/lore.html">Lore</a>
+      </div>
+
     </main>
 
     <footer id="site-footer" role="contentinfo">
       <div class="footer-inner">
-        <div class="footer-col">
-          <h4>🌙 Moonboys Wiki</h4>
-          <p>Fan-driven encyclopedia for the crypto community.</p>
-        </div>
-        <div class="footer-col">
-          <h4>Explore</h4>
-          <ul>
-            <li><a href="/index.html">Main Page</a></li>
-            <li><a href="/categories/index.html">Categories</a></li>
-            <li><a href="/search.html">All Articles</a></li>
-            <li><a href="/about.html">About</a></li>
-          </ul>
-        </div>
+        <div class="footer-col"><h4>🌙 Moonboys Wiki</h4><p>Fan-driven encyclopedia for the crypto community.</p></div>
+        <div class="footer-col"><h4>Explore</h4><ul><li><a href="../index.html">Main Page</a></li><li><a href="../categories/index.html">Categories</a></li><li><a href="../articles.html">All Articles</a></li><li><a href="../about.html">About</a></li></ul></div>
+        <div class="footer-col"><h4>🤖 SAM</h4><ul><li><a href="../articles.html">SAM Articles</a></li><li><a href="hodl-wars.html">HODL Wars</a></li><li><a href="hodl-warriors.html">HODL Warriors</a></li></ul></div>
       </div>
       <div class="footer-bottom">
         <p>© 2026 Crypto Moonboys Wiki · Not financial advice.</p>
+        <p><span class="no-login-note">🔒 No sign-up · No login · Bot-maintained</span></p>
       </div>
     </footer>
   </div>
 </div>
 
-<button id="back-to-top" aria-label="Back to top">↑</button>
-<script src="/js/wiki.js"></script>
+<button id="back-to-top" aria-label="Back to top">&#8593;</button>
+<script src="../js/wiki.js"></script>
 <script src="/js/bible-loader.js"></script>
 </body>
 </html>
