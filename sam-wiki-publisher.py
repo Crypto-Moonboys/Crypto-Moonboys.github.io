@@ -40,6 +40,33 @@ def esc(value: str) -> str:
     return escape(str(value or ""), quote=True)
 
 
+# Ordered list of (old, new) replacements.  ../articles.html must come first so
+# it maps to /search.html before the generic ../search.html rule runs.
+_LEGACY_PATH_REPLACEMENTS: list[tuple[str, str]] = [
+    ("../articles.html", "/search.html"),
+    ("../css/", "/css/"),
+    ("../js/", "/js/"),
+    ("../img/", "/img/"),
+    ("../index.html", "/index.html"),
+    ("../search.html", "/search.html"),
+    ("../categories/", "/categories/"),
+    ("../about.html", "/about.html"),
+    ("../wiki/", "/wiki/"),
+    ("../sam.html", "/sam.html"),
+]
+
+
+def normalize_legacy_paths(html: str) -> str:
+    """Replace any legacy ``../`` relative paths with root-relative equivalents.
+
+    Call this on every HTML string before writing it to disk so that no
+    depth-fragile paths can ever be committed.
+    """
+    for old, new in _LEGACY_PATH_REPLACEMENTS:
+        html = html.replace(old, new)
+    return html
+
+
 def first_non_empty(*values: Any) -> str:
     for value in values:
         if isinstance(value, str) and value.strip():
@@ -452,7 +479,7 @@ def main() -> None:
         mention_count = int(item.get("mention_count", 0))
 
         out_path = os.path.join(WIKI_DIR, f"{slug}.html")
-        html = render_html(
+        html = normalize_legacy_paths(render_html(
             entity_name=entity_name,
             slug=slug,
             summary=summary,
@@ -460,7 +487,7 @@ def main() -> None:
             source_name=source_name,
             category=category,
             mention_count=mention_count,
-        )
+        ))
 
         with open(out_path, "w", encoding="utf-8") as fh:
             fh.write(html)

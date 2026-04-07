@@ -108,7 +108,7 @@ jobs:
           )
 
           for pattern in "${BAD_PATTERNS[@]}"; do
-            matches="$(grep -rFl --include='*.html' "$pattern" wiki/ categories/ about.html 2>/dev/null || true)"
+            matches="$(grep -rFl --include='*.html' "$pattern" wiki/ categories/ about/ about.html 2>/dev/null || true)"
             if [ -n "$matches" ]; then
               echo "::error::Fragile relative path '$pattern' found in:"
               echo "$matches"
