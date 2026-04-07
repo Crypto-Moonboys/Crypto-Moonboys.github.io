@@ -30,16 +30,19 @@ function extractTitle(html) {
 }
 
 function extractDescription(html) {
-  const match = html.match(/<meta\s+name=["']description["']\s+content=["']([^"']*)["']/i)
-    || html.match(/<meta\s+content=["']([^"']*)["']\s+name=["']description["']/i);
+  const match =
+    html.match(/<meta\s+name=["']description["']\s+content=["']([^"']*)["']/i) ||
+    html.match(/<meta\s+content=["']([^"']*)["']\s+name=["']description["']/i);
   return match ? match[1].trim() : '';
 }
 
 function extractKeywords(html) {
-  const match = html.match(/<meta\s+name=["']keywords["']\s+content=["']([^"']*)["']/i)
-    || html.match(/<meta\s+content=["']([^"']*)["']\s+name=["']keywords["']/i);
+  const match =
+    html.match(/<meta\s+name=["']keywords["']\s+content=["']([^"']*)["']/i) ||
+    html.match(/<meta\s+content=["']([^"']*)["']\s+name=["']keywords["']/i);
 
   if (!match) return [];
+
   return match[1]
     .split(',')
     .map(s => s.trim())
@@ -130,13 +133,16 @@ function buildContentSignals(html, title, description, keywords) {
     (html.match(/<ul\b/gi) || []).length +
     (html.match(/<ol\b/gi) || []).length;
 
+  const internalWikiLinks = (html.match(/href=["']\/wiki\/[^"']+["']/gi) || []).length;
+
   return {
     article_word_count: wordCount,
     has_description: hasDescription,
     description_length: descriptionLength,
     keyword_bag_size: keywordBagSize,
     heading_count: headingCount,
-    list_count: listCount
+    list_count: listCount,
+    internal_link_count: internalWikiLinks
   };
 }
 
@@ -164,10 +170,47 @@ function computeContentQualityScore(signals) {
   return score;
 }
 
+function computeAuthorityScore(signals) {
+  let score = 0;
+
+  if (signals.internal_link_count >= 3) {
+    score += CONFIG.AUTHORITY.internal_links.tier_3;
+  }
+  if (signals.internal_link_count >= 8) {
+    score += CONFIG.AUTHORITY.internal_links.tier_2 - CONFIG.AUTHORITY.internal_links.tier_3;
+  }
+  if (signals.internal_link_count >= 15) {
+    score += CONFIG.AUTHORITY.internal_links.tier_1 - CONFIG.AUTHORITY.internal_links.tier_2;
+  }
+
+  if (signals.article_word_count >= 600) {
+    score += CONFIG.AUTHORITY.title_depth.tier_3;
+  }
+  if (signals.article_word_count >= 1200) {
+    score += CONFIG.AUTHORITY.title_depth.tier_2 - CONFIG.AUTHORITY.title_depth.tier_3;
+  }
+  if (signals.article_word_count >= 2400) {
+    score += CONFIG.AUTHORITY.title_depth.tier_1 - CONFIG.AUTHORITY.title_depth.tier_2;
+  }
+
+  if (signals.keyword_bag_size >= 12) {
+    score += CONFIG.AUTHORITY.metadata.keywords_bonus;
+  }
+  if (signals.heading_count >= 4) {
+    score += CONFIG.AUTHORITY.metadata.headings_bonus;
+  }
+  if (signals.list_count >= 2) {
+    score += CONFIG.AUTHORITY.metadata.lists_bonus;
+  }
+
+  return score;
+}
+
 function buildRankSignals(html, filePath, title, description, keywords) {
   const category = detectCategory(filePath, html);
   const contentSignals = buildContentSignals(html, title, description, keywords);
   const contentQualityScore = computeContentQualityScore(contentSignals);
+  const authorityScore = computeAuthorityScore(contentSignals);
 
   return {
     is_canonical: true,
@@ -180,7 +223,9 @@ function buildRankSignals(html, filePath, title, description, keywords) {
     keyword_bag_size: contentSignals.keyword_bag_size,
     heading_count: contentSignals.heading_count,
     list_count: contentSignals.list_count,
-    content_quality_score: contentQualityScore
+    internal_link_count: contentSignals.internal_link_count,
+    content_quality_score: contentQualityScore,
+    authority_score: authorityScore
   };
 }
 
@@ -193,8 +238,8 @@ function computeRankScore(signals) {
   score += signals.category_priority * CONFIG.WEIGHTS.category;
   score += signals.article_word_count * CONFIG.WEIGHTS.word_count;
   score += signals.keyword_bag_size * CONFIG.WEIGHTS.keyword_bag;
-
   score += signals.content_quality_score;
+  score += signals.authority_score * CONFIG.WEIGHTS.authority;
 
   return Math.round(score);
 }
@@ -207,6 +252,7 @@ function buildRankDiagnostics(signals, rankScore) {
     word_count_points: Math.round(signals.article_word_count * CONFIG.WEIGHTS.word_count),
     keyword_bag_points: Math.round(signals.keyword_bag_size * CONFIG.WEIGHTS.keyword_bag),
     content_quality_points: signals.content_quality_score,
+    authority_points: signals.authority_score * CONFIG.WEIGHTS.authority,
     final_rank_score: rankScore
   };
 }
