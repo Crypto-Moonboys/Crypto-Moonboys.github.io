@@ -8,7 +8,7 @@ Requirements:
     pip install python-slugify
 
 Usage:
-    python3 sam-wiki-publisher.py                        # uses default: main-brain-export.json
+    python3 sam-wiki-publisher.py
     python3 sam-wiki-publisher.py path/to/data.json
 """
 
@@ -19,6 +19,7 @@ import os
 import sys
 import xml.etree.ElementTree as ET
 from datetime import date
+from html import escape
 
 from slugify import slugify
 
@@ -29,15 +30,30 @@ SITEMAP_PATH = "sitemap.xml"
 DEFAULT_INPUT = "main-brain-export.json"
 
 
+def esc(value: str) -> str:
+    return escape(str(value or ""), quote=True)
+
+
 # ---------------------------------------------------------------------------
 # HTML rendering
 # ---------------------------------------------------------------------------
 
-def render_html(entity_name: str, slug: str, summary: str, source_url: str,
-                source_name: str, category: str, mention_count: int) -> str:
-    """Return a minimal but valid HTML5 page for the given entity."""
-    title_safe = entity_name.replace("'", "&#39;").replace('"', "&quot;")
-    page_url = f"https://crypto-moonboys.github.io/wiki/{slug}.html"
+def render_html(
+    entity_name: str,
+    slug: str,
+    summary: str,
+    source_url: str,
+    source_name: str,
+    category: str,
+    mention_count: int,
+) -> str:
+    """Return a valid HTML5 page for the given entity with root-relative paths."""
+    title_safe = esc(entity_name)
+    summary_safe = esc(summary)
+    source_url_safe = esc(source_url if source_url else "#")
+    source_name_safe = esc(source_name if source_name else source_url if source_url else "Source")
+    category_safe = esc(category)
+    page_url = f"{BASE_URL}{slug}.html"
 
     return f"""<!DOCTYPE html>
 <html lang="en">
@@ -51,29 +67,73 @@ def render_html(entity_name: str, slug: str, summary: str, source_url: str,
   <meta property="og:url" content="{page_url}">
   <meta property="og:image" content="https://crypto-moonboys.github.io/img/logo.svg">
   <title>{title_safe} — Crypto Moonboys Wiki</title>
-  <link rel="stylesheet" href="../css/wiki.css">
-  <link rel="icon" href="../img/favicon.svg" type="image/svg+xml">
+  <link rel="canonical" href="{page_url}">
+  <link rel="stylesheet" href="/css/wiki.css">
+  <link rel="icon" href="/img/favicon.svg" type="image/svg+xml">
 </head>
 <body>
-<div id="wiki-wrap">
-  <div id="wiki-main">
-    <main id="wiki-content">
+<a class="skip-link" href="#wiki-content">Skip to content</a>
+
+<header id="site-header" role="banner">
+  <button class="hamburger" id="hamburger" aria-label="Toggle navigation" aria-expanded="false" aria-controls="sidebar">&#9776;</button>
+  <a href="/index.html" class="site-logo" aria-label="Crypto Moonboys Wiki home">
+    <img src="/img/logo.svg" alt="" aria-hidden="true">
+    <span>
+      <span class="logo-text">🌙 Moonboys Wiki</span>
+      <span class="logo-sub">Crypto Encyclopedia</span>
+    </span>
+  </a>
+  <div id="header-search" role="search">
+    <input type="search" id="search-input" placeholder="Search articles…" aria-label="Search" autocomplete="off">
+    <button id="search-btn" aria-label="Search">🔍</button>
+    <div id="search-results" role="listbox"></div>
+  </div>
+  <nav class="header-nav" aria-label="Main navigation">
+    <a href="/index.html">Home</a>
+    <a href="/categories/index.html">Categories</a>
+    <a href="/search.html">All Articles</a>
+  </nav>
+</header>
+
+<div id="sidebar-overlay" aria-hidden="true"></div>
+
+<div id="layout">
+  <nav id="sidebar" aria-label="Wiki navigation">
+    <div class="sidebar-section">
+      <div class="sidebar-heading">Navigation</div>
+      <div class="sidebar-nav">
+        <a href="/index.html"><span class="nav-icon">🏠</span> Main Page</a>
+        <a href="/categories/index.html"><span class="nav-icon">📂</span> All Categories</a>
+        <a href="/search.html"><span class="nav-icon">🔎</span> All Articles</a>
+        <a href="/about.html"><span class="nav-icon">ℹ️</span> About</a>
+      </div>
+    </div>
+  </nav>
+
+  <div id="main-wrapper">
+    <main id="wiki-content" role="main">
+      <nav class="breadcrumb" aria-label="Breadcrumb">
+        <a href="/index.html">Home</a>
+        <span class="sep" aria-hidden="true">›</span>
+        <a href="/search.html">All Articles</a>
+        <span class="sep" aria-hidden="true">›</span>
+        <span aria-current="page">{title_safe}</span>
+      </nav>
+
       <article data-entity-slug="{slug}">
         <header class="wiki-header">
           <h1>{title_safe}</h1>
-          <p class="wiki-meta">Category: {category} &nbsp;|&nbsp; Mentions: {mention_count}</p>
+          <p class="wiki-meta">Category: {category_safe} &nbsp;|&nbsp; Mentions: {mention_count}</p>
         </header>
 
         <section class="wiki-section">
           <h2 id="summary">Summary</h2>
-          <p>{summary}</p>
+          <p>{summary_safe}</p>
         </section>
 
         <section class="wiki-section">
           <h2 id="source">Source</h2>
-          <p>
-            <a href="{source_url}" target="_blank" rel="noopener noreferrer">{source_name}</a>
-          </p>
+          <p><a href="{source_url_safe}" target="_blank" rel="noopener noreferrer">{source_name_safe}</a></p>
         </section>
 
         <div id="bible-content"></div>
@@ -82,13 +142,19 @@ def render_html(entity_name: str, slug: str, summary: str, source_url: str,
 
     <footer id="site-footer" role="contentinfo">
       <div class="footer-inner">
-        <div class="footer-col"><h4>🌙 Moonboys Wiki</h4><p>Fan-driven encyclopedia for the crypto community.</p></div>
-        <div class="footer-col"><h4>Explore</h4><ul>
-          <li><a href="../index.html">Main Page</a></li>
-          <li><a href="../categories/index.html">Categories</a></li>
-          <li><a href="../search.html">All Articles</a></li>
-          <li><a href="../about.html">About</a></li>
-        </ul></div>
+        <div class="footer-col">
+          <h4>🌙 Moonboys Wiki</h4>
+          <p>Fan-driven encyclopedia for the crypto community.</p>
+        </div>
+        <div class="footer-col">
+          <h4>Explore</h4>
+          <ul>
+            <li><a href="/index.html">Main Page</a></li>
+            <li><a href="/categories/index.html">Categories</a></li>
+            <li><a href="/search.html">All Articles</a></li>
+            <li><a href="/about.html">About</a></li>
+          </ul>
+        </div>
       </div>
       <div class="footer-bottom">
         <p>© 2026 Crypto Moonboys Wiki · Not financial advice.</p>
@@ -97,7 +163,8 @@ def render_html(entity_name: str, slug: str, summary: str, source_url: str,
   </div>
 </div>
 
-<script src="../js/wiki.js"></script>
+<button id="back-to-top" aria-label="Back to top">↑</button>
+<script src="/js/wiki.js"></script>
 <script src="/js/bible-loader.js"></script>
 </body>
 </html>
@@ -108,12 +175,11 @@ def render_html(entity_name: str, slug: str, summary: str, source_url: str,
 # Sitemap builder
 # ---------------------------------------------------------------------------
 
-def build_sitemap(html_files: list, sitemap_path: str) -> str:
-    """Return a complete sitemap.xml string.
-
-    Non-wiki <url> entries already present in *sitemap_path* are preserved
-    verbatim (lastmod, changefreq, priority untouched). Wiki entries are
-    rebuilt from *html_files* and appended after the preserved entries.
+def build_sitemap(html_files: list[str], sitemap_path: str) -> str:
+    """
+    Preserve non-wiki URLs from the existing sitemap.
+    Rebuild wiki article URLs only.
+    Excludes any legacy wiki/index.html entry.
     """
     today = date.today().isoformat()
 
@@ -123,6 +189,7 @@ def build_sitemap(html_files: list, sitemap_path: str) -> str:
             tree = ET.parse(sitemap_path)
             root = tree.getroot()
             ns = {"sm": "http://www.sitemaps.org/schemas/sitemap/0.9"}
+
             for url_el in root.findall("sm:url", ns):
                 loc_el = url_el.find("sm:loc", ns)
                 if loc_el is None or not loc_el.text:
@@ -132,10 +199,10 @@ def build_sitemap(html_files: list, sitemap_path: str) -> str:
                     parts = ["  <url>"]
                     for child in url_el:
                         tag = child.tag.split("}")[-1]
-                        parts.append(f"    <{tag}>{child.text}</{tag}>")
+                        text = child.text or ""
+                        parts.append(f"    <{tag}>{text}</{tag}>")
                     parts.append("  </url>")
-                    non_wiki_blocks.append("
-".join(parts))
+                    non_wiki_blocks.append("\n".join(parts))
         except ET.ParseError:
             pass
 
@@ -144,25 +211,19 @@ def build_sitemap(html_files: list, sitemap_path: str) -> str:
         fname = os.path.basename(fpath)
         if fname == "index.html":
             continue
+
         loc = f"{BASE_URL}{fname}"
-        priority = "0.8"
         wiki_entries.append(
-            f'  <url><loc>{loc}</loc><lastmod>{today}</lastmod>'
-            f'<changefreq>weekly</changefreq><priority>{priority}</priority></url>'
+            f"  <url><loc>{loc}</loc><lastmod>{today}</lastmod>"
+            f"<changefreq>weekly</changefreq><priority>0.8</priority></url>"
         )
 
-    all_entries = non_wiki_blocks + wiki_entries
-    body = "
-".join(all_entries)
+    body = "\n".join(non_wiki_blocks + wiki_entries)
     return (
-        '<?xml version="1.0" encoding="UTF-8"?>
-'
-        '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-'
-        f'{body}
-'
-        '</urlset>
-'
+        '<?xml version="1.0" encoding="UTF-8"?>\n'
+        '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
+        f"{body}\n"
+        "</urlset>\n"
     )
 
 
@@ -170,9 +231,8 @@ def build_sitemap(html_files: list, sitemap_path: str) -> str:
 # Validation
 # ---------------------------------------------------------------------------
 
-def validate(data_path: str):
-    """Load and validate input. Returns list of item dicts. Exits on any error."""
-
+def validate(data_path: str) -> list[dict]:
+    """Load and validate input. Exits on any hard error."""
     if not os.path.exists(data_path):
         print(f"[ERROR] Input file not found: {data_path}", file=sys.stderr)
         sys.exit(1)
@@ -199,8 +259,9 @@ def validate(data_path: str):
         sys.exit(1)
 
     slugs = [slugify(it["entity_name"]) for it in valid_items]
-    seen = {}
-    duplicates = []
+    seen: dict[str, int] = {}
+    duplicates: list[str] = []
+
     for i, slug in enumerate(slugs):
         if slug in seen:
             entity = valid_items[i]["entity_name"]
@@ -210,7 +271,7 @@ def validate(data_path: str):
             seen[slug] = i
 
     if duplicates:
-        print(f"[ERROR] Duplicate slugs detected: {list(set(duplicates))}", file=sys.stderr)
+        print(f"[ERROR] Duplicate slugs detected: {sorted(set(duplicates))}", file=sys.stderr)
         sys.exit(1)
 
     return valid_items
@@ -220,18 +281,17 @@ def validate(data_path: str):
 # Main
 # ---------------------------------------------------------------------------
 
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser(description="Crypto Moonboys Wiki publisher")
     parser.add_argument(
         "input",
         nargs="?",
         default=DEFAULT_INPUT,
-        help=f"Path to JSON data file (default: {DEFAULT_INPUT})"
+        help=f"Path to JSON data file (default: {DEFAULT_INPUT})",
     )
     args = parser.parse_args()
 
     items = validate(args.input)
-
     os.makedirs(WIKI_DIR, exist_ok=True)
 
     removed = 0
@@ -250,29 +310,38 @@ def main():
         category = item.get("category", "").strip()
         mention_count = int(item.get("mention_count", 0))
 
-        out_path = f"{WIKI_DIR}/{slug}.html"
+        out_path = os.path.join(WIKI_DIR, f"{slug}.html")
         html = render_html(
-            entity_name,
-            slug,
-            summary,
-            source_url,
-            source_name,
-            category,
-            mention_count
+            entity_name=entity_name,
+            slug=slug,
+            summary=summary,
+            source_url=source_url,
+            source_name=source_name,
+            category=category,
+            mention_count=mention_count,
         )
+
         with open(out_path, "w", encoding="utf-8") as fh:
             fh.write(html)
 
-        assert os.path.exists(out_path), f"Expected output missing: {out_path}"
+        if not os.path.exists(out_path):
+            raise RuntimeError(f"Expected output missing: {out_path}")
+
         print(f"[BUILD] {out_path}")
         written += 1
+
+    # hard guard: legacy wiki/index.html must not exist
+    legacy_index = os.path.join(WIKI_DIR, "index.html")
+    if os.path.exists(legacy_index):
+        os.remove(legacy_index)
+        print(f"[CLEAN] Removed legacy file: {legacy_index}")
 
     html_files = glob.glob(f"{WIKI_DIR}/*.html")
     sitemap_content = build_sitemap(html_files, SITEMAP_PATH)
     with open(SITEMAP_PATH, "w", encoding="utf-8") as fh:
         fh.write(sitemap_content)
-    print(f"[SITEMAP] Rebuilt {SITEMAP_PATH} with {len(html_files)} wiki entries.")
 
+    print(f"[SITEMAP] Rebuilt {SITEMAP_PATH} with {len(html_files)} wiki article entries.")
     print(f"[DONE] {written} pages written. Canonical article hub: {SEARCH_HUB_URL}")
 
 
