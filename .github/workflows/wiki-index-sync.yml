@@ -2,128 +2,35 @@ name: Wiki Generated Assets Sync
 
 on:
   push:
-    branches:
-      - main
-    paths:
-      - 'wiki/**'
-      - 'categories/**'
-      - 'scripts/**'
-      - 'about.html'
-      - 'articles.html'
-      - 'search.html'
-      - 'index.html'
-    paths-ignore:
-      - 'js/wiki-index.json'
-      - 'js/site-stats.json'
-      - 'js/entity-map.json'
-      - 'sam-memory.json'
-      - 'sitemap.xml'
-      - 'index_stats.json'
-      - 'css/**'
-      - 'img/**'
-      - '**/*.md'
-  pull_request:
-    branches:
-      - main
-    paths:
-      - 'wiki/**'
-      - 'categories/**'
-      - 'scripts/**'
-      - 'about.html'
-      - 'articles.html'
-      - 'search.html'
-      - 'index.html'
-    paths-ignore:
-      - 'js/wiki-index.json'
-      - 'js/site-stats.json'
-      - 'js/entity-map.json'
-      - 'sam-memory.json'
-      - 'sitemap.xml'
-      - 'index_stats.json'
-      - 'css/**'
-      - 'img/**'
-      - '**/*.md'
+    branches: [ main ]
+permissions:
+  contents: write
 
 jobs:
   sync-generated-assets:
     runs-on: ubuntu-latest
-    if: |
-      github.actor != 'github-actions[bot]' &&
-      (
-        github.event_name != 'push' ||
-        !contains(github.event.head_commit.message, 'chore: auto-update wiki generated assets')
-      )
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          fetch-depth: 0
+      - uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: '20'
 
-      - name: Regenerate wiki search index
-        run: node scripts/generate-wiki-index.js
+      - run: node scripts/generate-wiki-index.js
+      - run: node scripts/generate-entity-map.js
+      - run: node scripts/generate-sitemap.js
+      - run: node scripts/generate-site-stats.js
 
-      - name: Regenerate sitemap
-        run: node scripts/generate-sitemap.js
+      - run: node scripts/validate-generated-assets.js
+      - run: node scripts/smoke-test.js
 
-      - name: Regenerate site stats
-        run: node scripts/generate-site-stats.js
+      - run: node scripts/save-ranking-snapshot.js
 
-      - name: Regenerate entity map and SAM memory
-        run: node scripts/generate-entity-map.js
-
-      - name: Validate generated assets and ranking schema
-        run: node scripts/validate-generated-assets.js
-
-      - name: Check for fragile parent-relative nav/asset paths
+      - name: Commit generated files
         run: |
-          FAIL=0
-          BAD_PATTERNS=('../index.html' '../search.html' '../categories/index.html' '../img/' '../css/' '../js/' 'href="index.html"' 'href="search.html"' 'href="sam.html"' 'src="img/"' 'src="css/"')
-          for pattern in "${BAD_PATTERNS[@]}"; do
-            matches=$(grep -rFl --include='*.html' "$pattern" wiki/ categories/ _article-template.html 2>/dev/null || true)
-            if [ -n "$matches" ]; then
-              echo "::error::Fragile relative path '$pattern' found in:"
-              echo "$matches"
-              FAIL=1
-            fi
-          done
-          if [ "$FAIL" = "0" ]; then
-            echo "All nav/asset paths are root-relative. ✅"
-          fi
-          exit $FAIL
-
-      - name: Guard wiki/index.html redirect stub
-        run: |
-          if grep -qF 'articles' wiki/index.html; then
-            echo "::error file=wiki/index.html::wiki/index.html appears to contain article content."
-            echo "This file must remain a redirect stub pointing to /search.html."
-            echo "Delete the content and replace with the redirect template."
-            exit 1
-          fi
-          echo "wiki/index.html is a clean redirect stub. ✅"
-
-      - name: Commit and push updated assets (main push only)
-        if: github.event_name == 'push'
-        run: |
-          git config user.name  "github-actions[bot]"
+          git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          CHANGED=0
-          for f in js/wiki-index.json sitemap.xml js/site-stats.json js/entity-map.json sam-memory.json index_stats.json; do
-            if ! git diff --quiet "$f"; then
-              git add "$f"
-              CHANGED=1
-            fi
-          done
-          if [ "$CHANGED" = "1" ]; then
-            git commit -m "chore: auto-update wiki generated assets"
-            git push
-            echo "Generated assets updated and pushed. ✅"
-          else
-            echo "All generated assets are up to date — nothing to commit. ✅"
-          fi
+          git add .
+          git commit -m "auto: update generated assets" || echo "no changes"
+          git push

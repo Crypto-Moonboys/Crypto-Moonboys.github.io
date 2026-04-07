@@ -19,7 +19,6 @@ if (!Array.isArray(data)) {
   process.exit(1);
 }
 
-// take top 50 only
 const snapshot = data.slice(0, 50).map(item => ({
   title: item.title,
   url: item.url,
