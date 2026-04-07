@@ -16,17 +16,6 @@ on:
       - 'articles.html'
       - 'about.html'
       - '.github/workflows/wiki-index-sync.yml'
-    paths-ignore:
-      - 'js/wiki-index.json'
-      - 'js/entity-map.json'
-      - 'js/site-stats.json'
-      - 'sitemap.xml'
-      - 'sam-memory.json'
-      - 'index_stats.json'
-      - 'snapshots/**'
-      - '**/*.md'
-      - 'img/**'
-      - 'css/**'
 
   pull_request:
     branches:
@@ -43,17 +32,6 @@ on:
       - 'articles.html'
       - 'about.html'
       - '.github/workflows/wiki-index-sync.yml'
-    paths-ignore:
-      - 'js/wiki-index.json'
-      - 'js/entity-map.json'
-      - 'js/site-stats.json'
-      - 'sitemap.xml'
-      - 'sam-memory.json'
-      - 'index_stats.json'
-      - 'snapshots/**'
-      - '**/*.md'
-      - 'img/**'
-      - 'css/**'
 
 permissions:
   contents: write
