@@ -78,8 +78,11 @@ jobs:
       - name: Regenerate entity map and SAM memory
         run: node scripts/generate-entity-map.js
 
-      - name: Validate generated assets and ranking schema
+      - name: Validate generated assets
         run: node scripts/validate-generated-assets.js
+
+      - name: Run smoke tests
+        run: node scripts/smoke-test.js
 
       - name: Check for fragile parent-relative nav/asset paths
         run: |
