@@ -8,30 +8,24 @@
  *   js/entity-map.json   — frontend-friendly canonical entity registry
  *   sam-memory.json      — machine-friendly memory handoff for SAM / brain-side systems
  *
- * Both files are deterministic: same input → same output.  JSON keys are
+ * Both files are deterministic: same input → same output. JSON keys are
  * sorted and entries are ordered by entity_id to guarantee stable diffs.
- *
- * Run after generate-wiki-index.js:
- *   node scripts/generate-entity-map.js
- *
- * Or regenerate everything in one go:
- *   node scripts/generate-wiki-index.js && \
- *   node scripts/generate-sitemap.js && \
- *   node scripts/generate-site-stats.js && \
- *   node scripts/generate-entity-map.js
  */
 
 'use strict';
 
-const fs   = require('fs');
+const fs = require('fs');
 const path = require('path');
 
-const ROOT             = path.resolve(__dirname, '..');
-const WIKI_INDEX_PATH  = path.join(ROOT, 'js', 'wiki-index.json');
-const ENTITY_MAP_PATH  = path.join(ROOT, 'js', 'entity-map.json');
-const SAM_MEMORY_PATH  = path.join(ROOT, 'sam-memory.json');
+const ROOT = path.resolve(__dirname, '..');
+const WIKI_INDEX_PATH = path.join(ROOT, 'js', 'wiki-index.json');
+const ENTITY_MAP_PATH = path.join(ROOT, 'js', 'entity-map.json');
+const SAM_MEMORY_PATH = path.join(ROOT, 'sam-memory.json');
 
-/* ── Junk / noise filters for alias candidate validation ─────────────────── */
+const LEGACY_EXCLUDED_URLS = new Set([
+  '/wiki/index.html'
+]);
+
 const JUNK_SINGLES = new Set([
   'page', 'wiki', 'article', 'home', 'index', 'site', 'web', 'link',
   'read', 'more', 'click', 'here', 'next', 'prev', 'previous', 'back',
@@ -45,48 +39,53 @@ const NAV_PHRASES = new Set([
   'in this article', 'on this page',
 ]);
 
-/* ── Generate a stable entity_id from a canonical title + URL ───────────── */
+const TITLE_WORD_MAP = {
+  nft: 'NFT',
+  nfts: 'NFTs',
+  btc: 'BTC',
+  eth: 'ETH',
+  xrp: 'XRP',
+  defi: 'DeFi',
+  dao: 'DAO',
+  gk: 'GK',
+  nbg: 'NBG',
+  nbgx: 'NBGX',
+  dex: 'DEX',
+  p2e: 'P2E',
+  f2p: 'F2P',
+  ai: 'AI',
+  api: 'API',
+  ui: 'UI',
+  ux: 'UX',
+  tv: 'TV',
+  dj: 'DJ',
+};
+
+function normalizeWikiUrl(url) {
+  return String(url || '')
+    .trim()
+    .replace(/\\/g, '/')
+    .replace(/^https?:\/\/[^/]+/i, '')
+    .replace(/\/+/g, '/');
+}
+
+function isAllowedCanonicalUrl(url) {
+  const normalized = normalizeWikiUrl(url);
+  return normalized.startsWith('/wiki/') && !LEGACY_EXCLUDED_URLS.has(normalized);
+}
+
 function makeEntityId(title, url) {
-  // Prefer slug derived from the canonical URL (most stable).
-  const slug = url
+  const slug = normalizeWikiUrl(url)
     .replace(/^\/wiki\//, '')
     .replace(/\.html$/, '');
 
   return slug
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, '_')
-    .replace(/^_|_$/g, '');
+    .replace(/^_+|_+$/g, '');
 }
 
-/* ── Clean a canonical title for human-readable display ─────────────────── */
-// Converts raw underscore/slug titles (e.g. "1m_free_nfts") into proper
-// Title Case ("1M Free NFTs").  Only applied when the title looks like a
-// raw slug — i.e. it contains underscores and no spaces.
-// Titles that already contain spaces or mixed-case are left unchanged.
-const TITLE_WORD_MAP = {
-  nft:   'NFT',
-  nfts:  'NFTs',
-  btc:   'BTC',
-  eth:   'ETH',
-  xrp:   'XRP',
-  defi:  'DeFi',
-  dao:   'DAO',
-  gk:    'GK',
-  nbg:   'NBG',
-  nbgx:  'NBGX',
-  dex:   'DEX',
-  p2e:   'P2E',
-  f2p:   'F2P',
-  ai:    'AI',
-  api:   'API',
-  ui:    'UI',
-  ux:    'UX',
-  tv:    'TV',
-  dj:    'DJ',
-};
-
 function convertSlugToTitle(title) {
-  // Only process titles that look like raw slugs (underscores, no spaces)
   if (!title.includes('_') || title.includes(' ')) return title;
 
   return title
@@ -94,91 +93,82 @@ function convertSlugToTitle(title) {
     .map(word => {
       if (!word) return word;
       const lower = word.toLowerCase();
-      // Known word mappings (abbreviations, acronyms with special casing)
+
       if (Object.prototype.hasOwnProperty.call(TITLE_WORD_MAP, lower)) {
         return TITLE_WORD_MAP[lower];
       }
-      // Numeric prefixes like "1m", "24" — uppercase the letter suffix
-      if (/^\d+[a-z]$/.test(lower)) return word.slice(0, -1) + word.slice(-1).toUpperCase();
-      // Default: Title Case
+
+      if (/^\d+[a-z]$/.test(lower)) {
+        return word.slice(0, -1) + word.slice(-1).toUpperCase();
+      }
+
       return word.charAt(0).toUpperCase() + word.slice(1);
     })
     .join(' ');
 }
-
 
 function generateTags(title) {
   const stopwords = new Set([
     'the', 'a', 'an', 'and', 'of', 'in', 'for', 'on', 'at', 'to', 'by',
     'or', 'is', 'are', 'it', 'its', 'with', 'as',
   ]);
+
   return [...new Set(
-    title
+    String(title || '')
       .toLowerCase()
       .replace(/[^a-z0-9\s]/g, ' ')
       .split(/\s+/)
-      .filter(w => w.length > 1 && !stopwords.has(w)),
+      .filter(w => w.length > 1 && !stopwords.has(w))
   )];
 }
 
-/* ── Validate an alias candidate string ─────────────────────────────────── */
-// Returns true when the candidate is a high-signal alias worth keeping.
 function isValidAliasCandidate(candidate, canonicalTitle) {
   if (!candidate || typeof candidate !== 'string') return false;
 
   const trimmed = candidate.trim();
   if (!trimmed) return false;
-
-  // Single character — always junk
   if (trimmed.length < 2) return false;
 
   const lower = trimmed.toLowerCase();
 
-  // Nav phrases
   if (NAV_PHRASES.has(lower)) return false;
-
-  // Single generic word
   if (!lower.includes(' ') && JUNK_SINGLES.has(lower)) return false;
-
-  // Reject if it duplicates the canonical title (case-insensitive)
   if (lower === canonicalTitle.toLowerCase()) return false;
-
-  // Reject very short single tokens with no signal
   if (trimmed.split(/\s+/).length === 1 && trimmed.length < 4) return false;
 
   return true;
 }
 
-/* ── Generate alias candidate phrases from title / slug ─────────────────── */
-// These are potential aliases that have NOT been confirmed as dedup-proven.
-// They are stored separately from approved aliases and must not override canon.
 function generateAliasCandidates(entry) {
   const candidates = new Set();
   const canon = entry.canonical_title.toLowerCase();
 
-  // Slug words joined naturally (e.g. "alfie-the-bitcoin-kid-blaze" → "alfie the bitcoin kid blaze")
   const slugPhrase = entry.canonical_url
     .replace(/^\/wiki\//, '')
     .replace(/\.html$/, '')
     .replace(/[-_]+/g, ' ')
     .trim();
-  if (slugPhrase.toLowerCase() !== canon) candidates.add(slugPhrase);
 
-  // Title without leading "The " / "A " (common lookup shorthand)
+  if (slugPhrase && slugPhrase.toLowerCase() !== canon) {
+    candidates.add(slugPhrase);
+  }
+
   const titleNoThe = entry.canonical_title.replace(/^(The|A|An)\s+/i, '').trim();
-  if (titleNoThe !== entry.canonical_title) candidates.add(titleNoThe);
+  if (titleNoThe && titleNoThe !== entry.canonical_title) {
+    candidates.add(titleNoThe);
+  }
 
-  // Tags joined as a phrase (only if > 1 tag and ≤ 5 tags for signal quality)
   const tagPhrase = (entry.tags || []).join(' ').trim();
-  if (tagPhrase && tagPhrase.toLowerCase() !== canon &&
-      (entry.tags || []).length > 1 && (entry.tags || []).length <= 5) {
+  if (
+    tagPhrase &&
+    tagPhrase.toLowerCase() !== canon &&
+    (entry.tags || []).length > 1 &&
+    (entry.tags || []).length <= 5
+  ) {
     candidates.add(tagPhrase);
   }
 
-  // Filter through the validator; exclude anything already in approved aliases
-  const approvedLower = new Set(
-    (entry.aliases || []).map(a => a.toLowerCase()),
-  );
+  const approvedLower = new Set((entry.aliases || []).map(a => a.toLowerCase()));
 
   return [...candidates]
     .filter(c => isValidAliasCandidate(c, entry.canonical_title))
@@ -186,7 +176,15 @@ function generateAliasCandidates(entry) {
     .sort();
 }
 
-/* ── Main ───────────────────────────────────────────────────────────────── */
+function deterministicReplacer(key, val) {
+  if (val && typeof val === 'object' && !Array.isArray(val)) {
+    return Object.fromEntries(
+      Object.entries(val).sort(([a], [b]) => a.localeCompare(b))
+    );
+  }
+  return val;
+}
+
 if (!fs.existsSync(WIKI_INDEX_PATH)) {
   console.error(`Error: ${WIKI_INDEX_PATH} not found.`);
   console.error('Run `node scripts/generate-wiki-index.js` first.');
@@ -196,66 +194,80 @@ if (!fs.existsSync(WIKI_INDEX_PATH)) {
 const wikiIndex = JSON.parse(fs.readFileSync(WIKI_INDEX_PATH, 'utf8'));
 console.log(`Loaded ${wikiIndex.length} canonical entries from js/wiki-index.json`);
 
-// ── Build entity records ──────────────────────────────────────────────────
 const entityRecords = [];
 
 for (const entry of wikiIndex) {
-  const entityId = makeEntityId(entry.title, entry.url);
+  if (!entry || typeof entry !== 'object') continue;
 
-  // Approved aliases: title+url pairs already confirmed by dedup
-  const approvedAliases = (entry.aliases || []).map(a => a.title);
+  const canonicalUrl = normalizeWikiUrl(entry.url);
+  if (!isAllowedCanonicalUrl(canonicalUrl)) continue;
 
-  // Tags: prefer existing tags from the index, fall back to generated
+  const canonicalTitle = convertSlugToTitle(String(entry.title || '').trim());
+  if (!canonicalTitle) continue;
+
+  const entityId = makeEntityId(canonicalTitle, canonicalUrl);
+  if (!entityId) continue;
+
+  const approvedAliases = (entry.aliases || [])
+    .map(a => {
+      if (typeof a === 'string') return a.trim();
+      if (a && typeof a.title === 'string') return a.title.trim();
+      return '';
+    })
+    .filter(Boolean)
+    .filter((value, index, arr) => arr.findIndex(v => v.toLowerCase() === value.toLowerCase()) === index);
+
   const tags = Array.isArray(entry.tags) && entry.tags.length > 0
     ? entry.tags
-    : generateTags(entry.title);
+    : generateTags(canonicalTitle);
 
-  const record = {
-    entity_id:       entityId,
-    canonical_title: convertSlugToTitle(entry.title),
-    canonical_url:   entry.url,
-    category:        entry.category || 'Lore',
-    aliases:         approvedAliases,
-    tags,
-    source_urls:     [entry.url],
-  };
+  const sourceUrls = [canonicalUrl];
 
-  // Add alias source URLs (the redirect stubs that point here)
   if (Array.isArray(entry.aliases)) {
-    for (const a of entry.aliases) {
-      if (a.url && !record.source_urls.includes(a.url)) {
-        record.source_urls.push(a.url);
-      }
+    for (const alias of entry.aliases) {
+      if (!alias || typeof alias !== 'object' || !alias.url) continue;
+      const aliasUrl = normalizeWikiUrl(alias.url);
+      if (!isAllowedCanonicalUrl(aliasUrl)) continue;
+      if (!sourceUrls.includes(aliasUrl)) sourceUrls.push(aliasUrl);
     }
   }
 
-  entityRecords.push(record);
+  entityRecords.push({
+    entity_id: entityId,
+    canonical_title: canonicalTitle,
+    canonical_url: canonicalUrl,
+    category: entry.category || 'Lore',
+    aliases: approvedAliases,
+    tags,
+    source_urls: sourceUrls.sort()
+  });
 }
 
-// Sort by entity_id for deterministic output
 entityRecords.sort((a, b) => a.entity_id.localeCompare(b.entity_id));
 
-// ── Build alias_candidates (after all canonical entity_ids are known) ─────
-// This prevents candidates from colliding with canonical titles of OTHER entities.
 const allCanonicalTitlesLower = new Set(
-  entityRecords.map(r => r.canonical_title.toLowerCase()),
+  entityRecords.map(r => r.canonical_title.toLowerCase())
 );
+
 const allApprovedAliasesLower = new Set();
-for (const r of entityRecords) {
-  r.aliases.forEach(a => allApprovedAliasesLower.add(a.toLowerCase()));
+for (const record of entityRecords) {
+  record.aliases.forEach(alias => allApprovedAliasesLower.add(alias.toLowerCase()));
 }
 
 for (const record of entityRecords) {
   const rawCandidates = generateAliasCandidates(record);
 
-  // Reject candidates that match any canonical title or approved alias of
-  // another entity — cross-contamination guard.
-  const safe = rawCandidates.filter(c => {
-    const cLower = c.toLowerCase();
-    if (allCanonicalTitlesLower.has(cLower) && cLower !== record.canonical_title.toLowerCase()) {
+  const safe = rawCandidates.filter(candidate => {
+    const lower = candidate.toLowerCase();
+
+    if (
+      allCanonicalTitlesLower.has(lower) &&
+      lower !== record.canonical_title.toLowerCase()
+    ) {
       return false;
     }
-    if (allApprovedAliasesLower.has(cLower)) return false;
+
+    if (allApprovedAliasesLower.has(lower)) return false;
     return true;
   });
 
@@ -264,47 +276,42 @@ for (const record of entityRecords) {
   }
 }
 
-// ── Emit js/entity-map.json ───────────────────────────────────────────────
-fs.writeFileSync(ENTITY_MAP_PATH, JSON.stringify(entityRecords, null, 2) + '\n');
-console.log(`\nGenerated js/entity-map.json with ${entityRecords.length} entity records`);
+fs.writeFileSync(
+  ENTITY_MAP_PATH,
+  JSON.stringify(entityRecords, null, 2) + '\n'
+);
+console.log(`Generated js/entity-map.json with ${entityRecords.length} entity records`);
 
-// ── Emit sam-memory.json ─────────────────────────────────────────────────
 const entities = {};
-for (const r of entityRecords) {
-  const memEntry = {
-    aliases:          r.aliases,
-    alias_candidates: r.alias_candidates || [],
-    canonical_title:  r.canonical_title,
-    canonical_url:    r.canonical_url,
-    category:         r.category,
-    source_urls:      r.source_urls,
-    status:           'canonical',
-    tags:             r.tags,
+for (const record of entityRecords) {
+  entities[record.entity_id] = {
+    aliases: record.aliases,
+    alias_candidates: record.alias_candidates || [],
+    canonical_title: record.canonical_title,
+    canonical_url: record.canonical_url,
+    category: record.category,
+    source_urls: record.source_urls,
+    status: 'canonical',
+    tags: record.tags,
   };
-  entities[r.entity_id] = memEntry;
 }
 
-// Serialise with sorted keys for deterministic output (reusable replacer)
-function deterministicReplacer(key, val) {
-  if (val && typeof val === 'object' && !Array.isArray(val)) {
-    return Object.fromEntries(Object.entries(val).sort(([a], [b]) => a.localeCompare(b)));
-  }
-  return val;
-}
-
-// Preserve updated_at if the entity data hasn't changed — prevents the PR
-// staleness check from failing just because CI ran at a different time.
 let updatedAt = new Date().toISOString().replace(/\.\d{3}Z$/, 'Z');
+
 if (fs.existsSync(SAM_MEMORY_PATH)) {
   try {
     const existing = JSON.parse(fs.readFileSync(SAM_MEMORY_PATH, 'utf8'));
     const existingEntitiesJson = JSON.stringify(existing.entities, deterministicReplacer);
-    const newEntitiesJson      = JSON.stringify(entities,          deterministicReplacer);
-    if (existingEntitiesJson === newEntitiesJson) {
+    const newEntitiesJson = JSON.stringify(entities, deterministicReplacer);
+
+    if (existingEntitiesJson === newEntitiesJson && existing.updated_at) {
       updatedAt = existing.updated_at;
     }
-  } catch (e) {
-    console.warn('Warning: could not parse existing sam-memory.json — using fresh timestamp.', e.message);
+  } catch (err) {
+    console.warn(
+      'Warning: could not parse existing sam-memory.json — using fresh timestamp.',
+      err.message
+    );
   }
 }
 
@@ -313,8 +320,10 @@ const samMemory = {
   updated_at: updatedAt,
 };
 
-const samJson = JSON.stringify(samMemory, deterministicReplacer, 2);
+fs.writeFileSync(
+  SAM_MEMORY_PATH,
+  JSON.stringify(samMemory, deterministicReplacer, 2) + '\n'
+);
 
-fs.writeFileSync(SAM_MEMORY_PATH, samJson + '\n');
 console.log(`Generated sam-memory.json with ${Object.keys(entities).length} entities`);
 console.log(`  updated_at: ${updatedAt}`);
