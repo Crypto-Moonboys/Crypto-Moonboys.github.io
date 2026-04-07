@@ -1,0 +1,89 @@
+{
+  "entity": "Thera-9",
+  "slug": "thera-9",
+  "generated_at": "2026-03-26T03:45:36.719331+00:00",
+  "mention_count": 8,
+  "all_facts": [
+    {
+      "fact": "Healer and strategist in lore",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 0,
+      "last_verified_cycle": 0,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Thera-9 stands as a healer in Block Topia, using blockchain shards to restore warriors after grueling metaverse battles, her restorative powers a rare light in the dark chaos of the Crypto Moonboys universe\u2019s endless wars.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 4,
+      "last_verified_cycle": 4,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Beyond healing, Thera-9\u2019s strategic mind crafts plans that rival the sharpest tacticians, influencing outcomes in events like the Hard Fork Games, where her unseen moves could shift the balance for any faction in need.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 4,
+      "last_verified_cycle": 4,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Thera-9 stands as a healer in Block Topia, using blockchain shards to restore warriors after grueling metaverse battles, her restorative powers a rare light in the dark chaos of the Crypto Moonboys universe\u2019s endless wars. Her ability to stitch broken code into renewed strength makes her a lifeline for those teetering on the edge of digital oblivion.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 39,
+      "last_verified_cycle": 39,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Beyond healing, Thera-9\u2019s strategic mind crafts plans that rival the sharpest tacticians, influencing outcomes in events like the Hard Fork Games where her unseen moves could shift the balance for any faction in need. Her quiet machinations often unfold in the background, turning apparent losses into calculated victories with a precision few can match.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 39,
+      "last_verified_cycle": 39,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Data whispers in Block Topia suggest Thera-9\u2019s healing powers are tied to a lost blockchain archive, a repository of ancient recovery protocols that she alone can access. Whether this is the source of her dual nature or merely folklore, her ability to mend and manipulate keeps factions guessing about the true depth of her enigmatic presence.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 39,
+      "last_verified_cycle": 39,
+      "status": "VERIFIED"
+    }
+  ],
+  "relationships": [],
+  "timeline": [],
+  "cross_links": []
+}

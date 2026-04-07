@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="SAM Dashboard — system intelligence panel for the Crypto Moonboys Wiki. Entity map, stats, network graph, and activity feed.">
+  <meta name="robots" content="index, follow">
+  <meta property="og:title" content="🧠 SAM Dashboard — Crypto Moonboys Wiki">
+  <meta property="og:description" content="Full system brain panel: entity intelligence, stats, network graph, and activity feed.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://crypto-moonboys.github.io/sam.html">
+  <meta property="og:image" content="https://crypto-moonboys.github.io/img/CRYPTO-MOONBOYS-BITCOIN-LOGO.png">
+  <title>🧠 SAM Dashboard — Crypto Moonboys Wiki</title>
+  <link rel="stylesheet" href="css/wiki.css">
+  <link rel="icon" href="img/favicon.svg" type="image/svg+xml">
+  <style>
+    /* ── SAM Dashboard ─────────────────────────────────── */
+
+    .sam-header-bar {
+      background: linear-gradient(90deg, rgba(88,166,255,.08), rgba(247,201,72,.06), rgba(63,185,80,.06));
+      border: 1px solid var(--color-border);
+      border-left: 3px solid var(--color-accent);
+      border-radius: var(--radius);
+      padding: 14px 20px;
+      margin-bottom: 24px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+    .sam-header-icon { font-size: 2rem; flex-shrink: 0; }
+    .sam-header-text h1 {
+      font-size: 1.45rem;
+      font-weight: 800;
+      color: var(--color-accent);
+      letter-spacing: .03em;
+      margin: 0 0 2px;
+    }
+    .sam-header-text p {
+      font-size: .82rem;
+      color: var(--color-text-muted);
+      margin: 0;
+      font-family: var(--font-mono);
+    }
+    .sam-header-ts {
+      margin-left: auto;
+      font-size: .75rem;
+      color: var(--color-text-muted);
+      font-family: var(--font-mono);
+      white-space: nowrap;
+    }
+
+    /* Loading state */
+    #sam-loading {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--color-text-muted);
+      font-family: var(--font-mono);
+      font-size: .9rem;
+    }
+    #sam-loading .sam-spinner {
+      display: inline-block;
+      width: 28px; height: 28px;
+      border: 3px solid var(--color-border);
+      border-top-color: var(--color-accent);
+      border-radius: 50%;
+      animation: spin .8s linear infinite;
+      margin-bottom: 12px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .hidden { display: none !important; }
+
+    /* ── 4-Panel Grid ──────────────────────────────────── */
+    .sam-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 18px;
+      margin-bottom: 28px;
+    }
+    @media (max-width: 800px) { .sam-grid { grid-template-columns: 1fr; } }
+
+    .sam-panel {
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius);
+      padding: 18px;
+      min-height: 260px;
+      position: relative;
+      overflow: hidden;
+    }
+    .sam-panel::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: var(--panel-accent, var(--color-accent));
+      opacity: .7;
+    }
+    .sam-panel--blue   { --panel-accent: #58a6ff; }
+    .sam-panel--yellow { --panel-accent: var(--color-accent); }
+    .sam-panel--green  { --panel-accent: var(--color-green); }
+    .sam-panel--red    { --panel-accent: var(--color-red); }
+
+    .sam-panel-title {
+      font-size: .78rem;
+      font-weight: 700;
+      color: var(--color-text-muted);
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      margin-bottom: 14px;
+      font-family: var(--font-mono);
+    }
+
+    /* ── Panel inner components ────────────────────────── */
+    .sam-stat-row {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+    .sam-stat-row--3 { justify-content: space-between; }
+    .sam-stat-box {
+      flex: 1;
+      min-width: 80px;
+      background: var(--color-surface-2);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius);
+      padding: 10px 14px;
+      text-align: center;
+    }
+    .sam-stat-box--accent { border-color: rgba(247,201,72,.35); }
+    .sam-stat-box--green  { border-color: rgba(63,185,80,.35); }
+    .sam-stat-box--blue   { border-color: rgba(88,166,255,.35); }
+    .sam-stat-num {
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: var(--color-text);
+      font-family: var(--font-mono);
+      line-height: 1.1;
+    }
+    .sam-stat-lbl {
+      font-size: .7rem;
+      color: var(--color-text-muted);
+      margin-top: 2px;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+    }
+
+    .sam-section-label {
+      font-size: .72rem;
+      color: var(--color-text-muted);
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      font-family: var(--font-mono);
+      margin: 14px 0 6px;
+      padding-bottom: 4px;
+      border-bottom: 1px solid var(--color-border);
+    }
+
+    .sam-rank-list, .sam-recent-list, .sam-focus-list {
+      list-style: none;
+      padding: 0; margin: 0;
+    }
+    .sam-rank-list li, .sam-recent-list li, .sam-focus-list li {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 0;
+      border-bottom: 1px solid rgba(255,255,255,.04);
+      font-size: .83rem;
+      flex-wrap: wrap;
+    }
+    .sam-rank-list li:last-child,
+    .sam-recent-list li:last-child,
+    .sam-focus-list li:last-child { border-bottom: none; }
+
+    .sam-rank-list { counter-reset: rank; }
+    .sam-rank-list li::before {
+      counter-increment: rank;
+      content: counter(rank);
+      font-size: .68rem;
+      font-family: var(--font-mono);
+      color: var(--color-text-muted);
+      min-width: 16px;
+      text-align: right;
+      flex-shrink: 0;
+    }
+
+    .sam-entity-link, .sam-focus-list a, .sam-recent-list a {
+      color: var(--color-text-link);
+      font-weight: 500;
+      text-decoration: none;
+      flex: 1;
+      min-width: 0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .sam-entity-link:hover, .sam-focus-list a:hover, .sam-recent-list a:hover {
+      color: var(--color-text-link-hover);
+      text-decoration: underline;
+    }
+
+    .sam-tag {
+      background: rgba(88,166,255,.12);
+      color: #58a6ff;
+      font-size: .65rem;
+      padding: 1px 6px;
+      border-radius: 3px;
+      font-family: var(--font-mono);
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .sam-score {
+      font-size: .68rem;
+      font-family: var(--font-mono);
+      color: var(--color-text-muted);
+      flex-shrink: 0;
+    }
+
+    .sam-pills { display: flex; gap: 4px; flex-wrap: wrap; }
+    .sam-pill {
+      background: rgba(247,201,72,.12);
+      color: var(--color-accent);
+      font-size: .6rem;
+      padding: 1px 5px;
+      border-radius: 3px;
+      font-family: var(--font-mono);
+    }
+
+    /* Category bars */
+    .sam-bar-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 5px 0;
+      font-size: .78rem;
+    }
+    .sam-bar-lbl {
+      min-width: 110px;
+      max-width: 130px;
+      color: var(--color-text-muted);
+      font-size: .72rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .sam-bar-wrap {
+      flex: 1;
+      height: 8px;
+      background: var(--color-surface-2);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    .sam-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #58a6ff, var(--color-accent));
+      border-radius: 4px;
+      transition: width .6s ease;
+    }
+    .sam-bar-cnt {
+      min-width: 24px;
+      text-align: right;
+      font-family: var(--font-mono);
+      font-size: .7rem;
+      color: var(--color-text-muted);
+    }
+
+    /* Update time */
+    .sam-update-time {
+      display: flex;
+      align-items: baseline;
+      gap: 10px;
+      padding: 8px 10px;
+      background: var(--color-surface-2);
+      border-radius: var(--radius);
+      margin-bottom: 4px;
+    }
+    .sam-time-abs {
+      font-size: .82rem;
+      font-family: var(--font-mono);
+      color: var(--color-text);
+    }
+    .sam-time-rel {
+      font-size: .72rem;
+      color: var(--color-green);
+      font-family: var(--font-mono);
+    }
+
+    /* Top categories */
+    .sam-top-cats {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin: 6px 0;
+    }
+    .sam-top-cat {
+      flex: 1;
+      min-width: 70px;
+      background: var(--color-surface-2);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius);
+      padding: 8px 10px;
+      text-align: center;
+    }
+    .sam-top-cat--0 { border-color: rgba(247,201,72,.4); }
+    .sam-top-cat--1 { border-color: rgba(88,166,255,.3); }
+    .sam-top-cat--2 { border-color: rgba(63,185,80,.3); }
+    .sam-top-cat--3 { border-color: rgba(255,123,114,.3); }
+    .sam-top-cat-name {
+      font-size: .68rem;
+      color: var(--color-text-muted);
+      font-family: var(--font-mono);
+      margin-bottom: 4px;
+    }
+    .sam-top-cat-cnt {
+      font-size: 1.3rem;
+      font-weight: 800;
+      color: var(--color-text);
+      font-family: var(--font-mono);
+    }
+
+    /* Activity feed */
+    .sam-feed { display: flex; flex-direction: column; gap: 6px; }
+    .sam-feed-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 7px 10px;
+      background: var(--color-surface-2);
+      border-radius: var(--radius);
+      border: 1px solid transparent;
+      transition: border-color .15s;
+    }
+    .sam-feed-item:hover { border-color: var(--color-border); }
+    .sam-feed-icon { font-size: 1rem; flex-shrink: 0; width: 22px; text-align: center; }
+    .sam-feed-body { flex: 1; min-width: 0; }
+    .sam-feed-title {
+      display: block;
+      color: var(--color-text-link);
+      font-size: .83rem;
+      font-weight: 500;
+      text-decoration: none;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .sam-feed-title:hover { color: var(--color-text-link-hover); }
+    .sam-feed-meta {
+      font-size: .68rem;
+      color: var(--color-text-muted);
+      font-family: var(--font-mono);
+    }
+    .sam-feed-badge {
+      font-size: .58rem;
+      font-family: var(--font-mono);
+      font-weight: 700;
+      letter-spacing: .08em;
+      background: rgba(88,166,255,.12);
+      color: #58a6ff;
+      padding: 2px 5px;
+      border-radius: 3px;
+      flex-shrink: 0;
+    }
+
+    /* ── Graph section ─────────────────────────────────── */
+    .sam-graph-section {
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius);
+      padding: 18px;
+      margin-bottom: 28px;
+      position: relative;
+    }
+    .sam-graph-section::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, #58a6ff, var(--color-accent), var(--color-green));
+      border-radius: var(--radius) var(--radius) 0 0;
+    }
+    .sam-graph-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 14px;
+      flex-wrap: wrap;
+    }
+    .sam-graph-title {
+      font-size: .78rem;
+      font-weight: 700;
+      color: var(--color-text-muted);
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      font-family: var(--font-mono);
+    }
+    .sam-graph-hint {
+      font-size: .72rem;
+      color: var(--color-text-muted);
+      font-family: var(--font-mono);
+    }
+    .sam-graph-wrap {
+      position: relative;
+      width: 100%;
+      height: 420px;
+      background: var(--color-bg);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+    #sam-graph {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+    #graph-tooltip {
+      position: absolute;
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius);
+      padding: 4px 10px;
+      font-size: .75rem;
+      font-family: var(--font-mono);
+      color: var(--color-text);
+      pointer-events: none;
+      display: none;
+      z-index: 10;
+      white-space: nowrap;
+      box-shadow: var(--shadow);
+    }
+
+    .sam-fallback {
+      color: var(--color-text-muted);
+      font-size: .85rem;
+      font-style: italic;
+      padding: 12px 0;
+    }
+  </style>
+</head>
+<body>
+
+<a class="skip-link" href="#content">Skip to content</a>
+
+<header id="site-header" role="banner">
+  <button class="hamburger" id="hamburger" aria-label="Toggle navigation" aria-expanded="false" aria-controls="sidebar">☰</button>
+  <a href="index.html" class="site-logo" aria-label="The Crypto Moonboys GK Wiki home">
+    <img src="img/CRYPTO-MOONBOYS-BITCOIN-LOGO.png" alt="" aria-hidden="true">
+    <span>
+      <span class="logo-text">🌙 The Crypto Moonboys GK Wiki</span>
+      <span class="logo-sub">Blockchain Cryptoism Encyclopedia ⚡️⚡️⚡️</span>
+    </span>
+  </a>
+  <div id="header-search" role="search">
+    <input type="search" id="search-input" placeholder="Search the wiki…" aria-label="Search" autocomplete="off">
+    <button id="search-btn" aria-label="Search">🔍</button>
+    <div id="search-results" role="listbox"></div>
+  </div>
+  <nav class="header-nav" aria-label="Main navigation">
+    <a href="index.html">Home</a>
+    <a href="categories/index.html">Categories</a>
+    <a href="articles.html">All Articles</a>
+    <a href="sam.html">🧠 SAM</a>
+  </nav>
+</header>
+
+<div id="sidebar-overlay" aria-hidden="true"></div>
+
+<div id="layout">
+  <nav id="sidebar" aria-label="Wiki navigation">
+    <div class="sidebar-section">
+      <div class="sidebar-heading">Navigation</div>
+      <div class="sidebar-nav">
+        <a href="index.html"><span class="nav-icon">🏠</span> Main Page</a>
+        <a href="categories/index.html"><span class="nav-icon">📂</span> All Categories</a>
+        <a href="articles.html"><span class="nav-icon">📄</span> All Articles</a>
+      </div>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-heading">🧠 SAM System</div>
+      <div class="sidebar-nav">
+        <a href="sam.html" class="active"><span class="nav-icon">🧠</span> SAM Dashboard</a>
+        <a href="agent.html"><span class="nav-icon">🤖</span> SAM Agent</a>
+      </div>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-heading">Wiki Info</div>
+      <div class="sidebar-nav">
+        <a href="about.html"><span class="nav-icon">ℹ️</span> About</a>
+        <a href="about.html#citation"><span class="nav-icon">📋</span> Citation Policy</a>
+        <a href="about.html#sources"><span class="nav-icon">🔗</span> Source Types</a>
+      </div>
+    </div>
+  </nav>
+
+  <div id="main-wrapper">
+    <main id="content" role="main">
+      <nav class="breadcrumb" aria-label="Breadcrumb">
+        <a href="index.html">Home</a><span class="sep">›</span><span aria-current="page">SAM Dashboard</span>
+      </nav>
+
+      <!-- Dashboard header bar -->
+      <div class="sam-header-bar">
+        <span class="sam-header-icon" aria-hidden="true">🧠</span>
+        <div class="sam-header-text">
+          <h1>SAM DASHBOARD</h1>
+          <p>SYSTEM INTELLIGENCE PANEL · ENTITY MAP · NETWORK GRAPH · ACTIVITY FEED</p>
+        </div>
+        <span class="sam-header-ts" id="sam-ts" aria-live="polite"></span>
+      </div>
+
+      <!-- Loading indicator -->
+      <div id="sam-loading" aria-live="polite">
+        <div class="sam-spinner" aria-hidden="true"></div>
+        <div>Loading system data…</div>
+      </div>
+
+      <!-- Dashboard content (hidden until data loads) -->
+      <div id="sam-dashboard" class="hidden">
+
+        <!-- 4-Panel Grid -->
+        <div class="sam-grid" role="region" aria-label="Dashboard panels">
+
+          <!-- Panel 1 — Entity Intelligence -->
+          <div class="sam-panel sam-panel--blue">
+            <div class="sam-panel-title">⚡ Entity Intelligence</div>
+            <div id="panel-entities" aria-label="Entity intelligence panel">
+              <p class="sam-fallback">Loading…</p>
+            </div>
+          </div>
+
+          <!-- Panel 2 — System Stats -->
+          <div class="sam-panel sam-panel--yellow">
+            <div class="sam-panel-title">📊 System Stats</div>
+            <div id="panel-stats" aria-label="System statistics panel">
+              <p class="sam-fallback">Loading…</p>
+            </div>
+          </div>
+
+          <!-- Panel 3 — Focus / Status -->
+          <div class="sam-panel sam-panel--green">
+            <div class="sam-panel-title">🎯 Focus / Status</div>
+            <div id="panel-focus" aria-label="Focus and status panel">
+              <p class="sam-fallback">Loading…</p>
+            </div>
+          </div>
+
+          <!-- Panel 4 — Activity Feed -->
+          <div class="sam-panel sam-panel--red">
+            <div class="sam-panel-title">📡 Activity Feed</div>
+            <div id="panel-activity" aria-label="Activity feed panel" style="max-height:360px;overflow-y:auto;">
+              <p class="sam-fallback">Loading…</p>
+            </div>
+          </div>
+
+        </div><!-- /.sam-grid -->
+
+        <!-- Network Graph -->
+        <section class="sam-graph-section" aria-label="Entity network graph">
+          <div class="sam-graph-header">
+            <div class="sam-graph-title">🕸️ Entity Network Graph</div>
+            <div class="sam-graph-hint">Top 60 entities · nodes grouped by category · click to open article</div>
+          </div>
+          <div class="sam-graph-wrap">
+            <canvas id="sam-graph" aria-label="Entity network graph — click a node to open the wiki article"></canvas>
+            <div id="graph-tooltip" aria-hidden="true"></div>
+          </div>
+        </section>
+
+      </div><!-- /#sam-dashboard -->
+
+    </main>
+
+    <footer id="site-footer">
+      <div class="footer-cols">
+        <div class="footer-col">
+          <div class="footer-heading">🌙 Crypto Moonboys Wiki</div>
+          <p>Fan-driven encyclopedia for the Crypto Moonboys universe.</p>
+        </div>
+        <div class="footer-col">
+          <div class="footer-heading">Navigate</div>
+          <a href="index.html">Home</a>
+          <a href="categories/index.html">Categories</a>
+          <a href="articles.html">All Articles</a>
+          <a href="about.html">About</a>
+        </div>
+        <div class="footer-col">
+          <div class="footer-heading">🧠 SAM System</div>
+          <a href="sam.html">SAM Dashboard</a>
+          <a href="agent.html">SAM Agent</a>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>© 2024 Crypto Moonboys Wiki · Community content · <a href="about.html#citation">Citation Policy</a></p>
+      </div>
+    </footer>
+  </div>
+</div>
+
+<script src="js/wiki.js" defer></script>
+<script src="js/sam-dashboard.js" defer></script>
+</body>
+</html>

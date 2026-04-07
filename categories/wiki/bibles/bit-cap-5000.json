@@ -1,0 +1,89 @@
+{
+  "entity": "Bit-Cap 5000",
+  "slug": "bit-cap-5000",
+  "generated_at": "2026-03-26T06:09:31.802388+00:00",
+  "mention_count": 8,
+  "all_facts": [
+    {
+      "fact": "Tech-enhanced fighter",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 0,
+      "last_verified_cycle": 0,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Bit-Cap 5000 stands as a tech-enhanced fighter in Block Topia, his cybernetic upgrades blending blockchain tech with brute force, making him a dominant force in metaverse battles within the Crypto Moonboys universe.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 4,
+      "last_verified_cycle": 4,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "His presence in cataclysms like the Triple Fork Event often proves decisive, as his augmented power reshapes digital skirmishes, though his mysterious allegiance leaves factions wary of his ultimate intentions.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 4,
+      "last_verified_cycle": 4,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Bit-Cap 5000 stands as a tech-enhanced fighter in Block Topia, his cybernetic upgrades blending blockchain tech with brute force, making him a dominant force in metaverse battles within the Crypto Moonboys universe. His signature weapon, a \u2018Hash Hammer,\u2019 channels raw transaction energy into devastating blows, capable of disrupting even the most fortified node defenses with a single swing.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 54,
+      "last_verified_cycle": 54,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "His presence in cataclysms like the Triple Fork Event often proves decisive, as his augmented power reshapes digital skirmishes, though his mysterious allegiance leaves factions wary of his ultimate intentions. During the infamous clash, Bit-Cap 5000 single-handedly held a collapsing sector against a swarm of Forkborn warriors, buying critical time for an unknown ally to escape with a vital shard, a deed that only deepened the enigma surrounding him.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 54,
+      "last_verified_cycle": 54,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Whispers abound that Bit-Cap 5000\u2019s upgrades are powered by a forbidden \u2018Overclock Shard,\u2019 a fragment of pure computational energy stolen from Block Topia\u2019s core, granting him strength beyond mortal limits at the cost of gradual corruption. If true, each battle brings him closer to a catastrophic breakdown, a ticking time bomb that could unleash chaos across the metaverse if his code finally fractures.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 54,
+      "last_verified_cycle": 54,
+      "status": "VERIFIED"
+    }
+  ],
+  "relationships": [],
+  "timeline": [],
+  "cross_links": []
+}

@@ -1,0 +1,232 @@
+{
+  "entity": "The DUCKY BOYS",
+  "slug": "the-ducky-boys",
+  "generated_at": "2026-03-26T04:25:45.395298+00:00",
+  "mention_count": 8,
+  "all_facts": [
+    {
+      "fact": "Quirky yet dangerous crew",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 0,
+      "last_verified_cycle": 15,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Use playful decoys and disguises in combat",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 15,
+      "last_verified_cycle": 15,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Born from a blockchain glitch in lore",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 15,
+      "last_verified_cycle": 15,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Wildcard faction in conflicts and alliances",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 15,
+      "last_verified_cycle": 15,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "The DUCKY BOYS are a quirky yet dangerous crew, their whimsical appearance a deadly ruse as they lure enemies into traps with playful NFT decoys and avatar disguises, only to strike with ruthless precision, turning urban skirmishes into chaotic games where laughter cloaks lethal intent.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 28,
+      "last_verified_cycle": 28,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Born from a blockchain glitch in their lore, the DUCKY BOYS embody digital chaos, their very existence a product of corrupted code that twisted innocent data into a faction of jesters whose pranks often end in bloodshed, making them feared even by the most hardened fighters.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 28,
+      "last_verified_cycle": 28,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Their unpredictability marks them as wildcards in Block Topia\u2019s conflicts, as they align with no one, driven by a creed of chaos that sees them aiding a faction one day and betraying it the next, their true motives hidden behind a mask of playful malice.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 28,
+      "last_verified_cycle": 28,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Legends whisper that their glitch-origin imbued them with a fragment of corrupted code, a digital curse that compels them to sow discord wherever they go, ensuring that every quack and smile hides a potential trap waiting to ensnare the unwary.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 28,
+      "last_verified_cycle": 28,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "The DUCKY BOYS are a quirky yet dangerous crew, their whimsical appearance a deadly ruse as they lure enemies into traps with playful NFT decoys and avatar disguises, only to strike with ruthless precision, turning urban skirmishes into chaotic games where laughter masks destruction.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 33,
+      "last_verified_cycle": 33,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Born from a blockchain glitch in lore, The DUCKY BOYS emerged from a catastrophic rupture in Block Topia\u2019s code, their chaotic essence a reflection of the digital instability that birthed them, fueling their unpredictable tactics and fractured worldview.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 33,
+      "last_verified_cycle": 33,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "As a wildcard faction in conflicts and alliances, The DUCKY BOYS\u2019 loyalties are as fleeting as their traps are deadly, their shifting allegiances keeping even the most cunning factions on edge, as no one can predict where their chaotic games will lead next.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 33,
+      "last_verified_cycle": 33,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Their strongholds lie in the glitchy fringes of Block Topia\u2019s blockchain, unstable sectors where code frays and reality distorts, mirroring The DUCKY BOYS\u2019 own fractured nature and making them an elusive, almost ghostly presence in the city\u2019s digital wars.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 33,
+      "last_verified_cycle": 33,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "The DUCKY BOYS are a quirky yet dangerous crew, their whimsical appearance a deadly ruse as they lure enemies into traps with playful NFT decoys and avatar disguises, only to strike with ruthless precision, turning urban skirmishes into chaotic games where laughter masks lethal intent.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 44,
+      "last_verified_cycle": 44,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Born from a blockchain glitch in lore, their chaotic essence defies conventional digital logic, granting them an unpredictable edge in combat and strategy, as their code seems to rewrite itself mid-battle, confounding even the most advanced tracking systems of rival factions.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 44,
+      "last_verified_cycle": 44,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "As a wildcard faction in conflicts and alliances, The DUCKY BOYS shift allegiances with maddening unpredictability, often sowing discord for the sheer thrill of chaos, making them both invaluable allies and terrifying enemies in Block Topia\u2019s ever-shifting power struggles.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 44,
+      "last_verified_cycle": 44,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Rumors claim their glitch origin has left them with a \u2018Laughing Shard,\u2019 a corrupted fragment of code that can infect enemy systems with paralyzing laughter loops, a psychological weapon that cripples avatars and networks alike, spreading chaos before a single blow is struck.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 44,
+      "last_verified_cycle": 44,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Their hidden lairs, known as Duck Ponds, are virtual mazes of traps and illusions, littered with playful but deadly holograms that confound intruders, while The DUCKY BOYS watch from the shadows, giggling as they spring ambushes on even the most cautious of foes.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 44,
+      "last_verified_cycle": 44,
+      "status": "VERIFIED"
+    }
+  ],
+  "relationships": [],
+  "timeline": [],
+  "cross_links": []
+}

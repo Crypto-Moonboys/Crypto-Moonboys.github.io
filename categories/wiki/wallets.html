@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Crypto wallets — software and hardware tools for storing private keys and managing cryptocurrency — Crypto Moonboys Wiki">
+  <meta name="robots" content="index, follow">
+  <meta property="og:title" content="Crypto Wallets — Crypto Moonboys Wiki">
+  <meta property="og:description" content="Crypto wallets — software and hardware tools for storing private keys and managing cryptocurrency — Crypto Moonboys Wiki">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://crypto-moonboys.github.io/wiki/wallets.html">
+  <meta property="og:image" content="https://crypto-moonboys.github.io/img/logo.svg">
+  <title>Crypto Wallets — Crypto Moonboys Wiki</title>
+  <link rel="stylesheet" href="/css/wiki.css">
+  <link rel="icon" href="/img/favicon.svg" type="image/svg+xml">
+</head>
+<body>
+<a class="skip-link" href="#content">Skip to content</a>
+<header id="site-header" role="banner">
+  <button class="hamburger" id="hamburger" aria-label="Toggle navigation" aria-expanded="false" aria-controls="sidebar">☰</button>
+  <a href="/index.html" class="site-logo"><img src="/img/logo.svg" alt="" aria-hidden="true"><span><span class="logo-text">🌙 Moonboys Wiki</span><span class="logo-sub">Crypto Encyclopedia</span></span></a>
+  <div id="header-search" role="search"><input type="search" id="search-input" placeholder="Search articles…" aria-label="Search" autocomplete="off"><button id="search-btn" aria-label="Search">🔍</button><div id="search-results" role="listbox"></div></div>
+  <nav class="header-nav"><a href="/index.html">Home</a><a href="/categories/index.html">Categories</a><a href="/search.html">All Articles</a><a href="/sam.html">🧠 SAM</a></nav>
+</header>
+<div id="sidebar-overlay" aria-hidden="true"></div>
+<div id="layout">
+  <nav id="sidebar" aria-label="Wiki navigation">
+    <div class="sidebar-section"><div class="sidebar-heading">Navigation</div><div class="sidebar-nav"><a href="/index.html"><span class="nav-icon">🏠</span> Main Page</a><a href="/categories/index.html"><span class="nav-icon">📂</span> All Categories</a><a href="/search.html"><span class="nav-icon">🔍</span> All Articles</a></div></div>
+    <div class="sidebar-section"><div class="sidebar-heading">Cryptocurrencies</div><div class="sidebar-nav"><a href="bitcoin.html"><span class="nav-icon"><img class="btc-logo-icon" src="/CRYPTO-MOONBOYS-BITCOIN-LOGO.png" alt="₿"></span> Bitcoin (BTC)</a><a href="ethereum.html"><span class="nav-icon">Ξ</span> Ethereum (ETH)</a><a href="solana.html"><span class="nav-icon">◎</span> Solana (SOL)</a><a href="altcoins.html"><span class="nav-icon">🪙</span> Altcoins</a><a href="memecoins.html"><span class="nav-icon">🐶</span> Meme Coins</a></div></div>
+    <div class="sidebar-section"><div class="sidebar-heading">Concepts</div><div class="sidebar-nav"><a href="blockchain.html"><span class="nav-icon">⛓️</span> Blockchain</a><a href="defi.html"><span class="nav-icon">🏦</span> DeFi</a><a href="nfts.html"><span class="nav-icon">🎨</span> NFTs</a><a href="tokenomics.html"><span class="nav-icon">📊</span> Tokenomics</a><a href="web3.html"><span class="nav-icon">🌐</span> Web3</a></div></div>
+    <div class="sidebar-section"><div class="sidebar-heading">Tools &amp; Platforms</div><div class="sidebar-nav"><a href="wallets.html" class="active"><span class="nav-icon">👛</span> Wallets</a><a href="exchanges.html"><span class="nav-icon">🔄</span> Exchanges</a></div></div>
+  </nav>
+  <div id="main-wrapper">
+    <main id="content" role="main">
+      <nav class="breadcrumb" aria-label="Breadcrumb"><a href="/index.html">Home</a><span class="sep">›</span><a href="/categories/tools.html">Tools &amp; Platforms</a><span class="sep">›</span><span aria-current="page">Crypto Wallets</span></nav>
+      <aside class="infobox" aria-label="Crypto Wallets quick facts"><div class="infobox-title">Crypto Wallets</div><div class="infobox-image"><span style="font-size:5rem" aria-label="Crypto Wallets">👛</span></div></aside>
+      <h1 class="page-title">Crypto Wallets</h1>
+      <div class="page-title-line" aria-hidden="true"></div>
+      <div class="article-meta"><span class="article-badge">✅ Verified</span><span class="meta-item">📅 Last updated: 2024-01</span><span class="meta-item">📂 <a href="/categories/tools.html">Tools &amp; Platforms</a></span></div>
+      <nav id="toc" aria-label="Table of contents"><div class="toc-title">📋 Contents</div></nav>
+      <article class="wiki-content">
+        <p><strong>"Not your keys, not your coins."</strong> Six words that have saved — and should have saved — billions of dollars. A crypto wallet isn't just where you store your digital assets; it's the gateway to the entire <a href="web3.html">Web3</a> world, your identity on the blockchain, and your personal Fort Knox. Whether you're stacking sats in <a href="bitcoin.html">Bitcoin</a>, aping into <a href="ethereum.html">Ethereum</a> DeFi, or farming yields on some chain you found at 2am — understanding wallets is <strong>non-negotiable</strong>.</p>
+
+        <h2 id="history">History &amp; Origins</h2>
+        <h3 id="history-early">The Early Days (2009–2015)</h3>
+        <p>When <a href="bitcoin.html">Bitcoin</a> launched on <strong>January 3, 2009</strong>, Satoshi Nakamoto included basic wallet functionality directly in the original Bitcoin Core client. The first external wallet — <strong>Bitcoin-Qt</strong> (later renamed Bitcoin Core) — appeared the same year as the reference implementation. These were raw, command-line tools; beautiful in their simplicity, terrifying in their UX.</p>
+        <p>In <strong>June 2012</strong>, Coinbase was founded — the first mainstream <em>custodial</em> wallet aimed at ordinary users. Technically an exchange wallet, it abstracted away private keys entirely, making crypto accessible to millions but introducing custodial risk.</p>
+        <p>The hardware wallet era kicked off in <strong>2014</strong> when SatoshiLabs founders <strong>Pavol Rusnak</strong> and <strong>Marek Palatinus</strong> shipped the <strong>Trezor Model One</strong> — the world's first hardware wallet. <strong>Ledger</strong> was founded the same year, releasing the Ledger Nano S in <strong>2016</strong>.</p>
+
+        <h3 id="history-metamask">MetaMask &amp; the Web3 Wallet Era (2016–2021)</h3>
+        <p><strong>MetaMask</strong> launched as a browser extension in <strong>October 2016</strong> by ConsenSys, turning an ordinary browser into a Web3 portal. Adoption was slow at first — then <a href="defi.html">DeFi</a> summer 2020 hit. MetaMask hit <strong>1 million users in September 2020</strong>, <strong>10 million+ by 2021</strong>, and <strong>30 million+ monthly active users by 2022</strong>. It became the default key to the Ethereum kingdom.</p>
+        <p><strong>Phantom wallet</strong> launched in <strong>January 2021</strong> for Solana and quickly became the category-defining wallet for the Solana ecosystem — clean, fast, beautiful.</p>
+
+        <h3 id="history-modern">Self-Custody Renaissance (2022–2024)</h3>
+        <p>The <strong>FTX collapse in November 2022</strong> triggered a hardware wallet buying frenzy — over <strong>1 million new hardware wallet orders in a single week</strong>. Ledger and Trezor couldn't keep up with demand. The lesson was brutal but clear.</p>
+        <p>In <strong>March 2023</strong>, <strong>ERC-4337 (Account Abstraction)</strong> launched on Ethereum, enabling smart contract wallets with features like social recovery, spending limits, and gasless transactions. <strong>Safe (formerly Gnosis Safe)</strong> became the institutional standard, securing over <strong>$100 billion in assets</strong> across DAOs and enterprises. Passkey-based and social-recovery wallets are rapidly closing the UX gap in 2023–2024.</p>
+
+        <h2 id="types">Types &amp; Categories</h2>
+        <h3 id="types-hot">Hot Wallets (Software)</h3>
+        <ul>
+          <li><strong>Browser Extensions:</strong> MetaMask, Rabby, Phantom — always-on, fast, EVM or Solana native</li>
+          <li><strong>Mobile Wallets:</strong> Trust Wallet, Exodus, imToken, Rainbow, Coinbase Wallet — smooth UX on the go</li>
+          <li><strong>Desktop Wallets:</strong> Electrum (Bitcoin-focused), Exodus — good balance of security and convenience</li>
+        </ul>
+        <h3 id="types-cold">Cold / Hardware Wallets</h3>
+        <ul>
+          <li><strong>Trezor Model One / Model T</strong> — open-source firmware, battle-tested since 2014</li>
+          <li><strong>Ledger Nano S Plus / Nano X</strong> — 6M+ devices sold, the most widely used hardware wallet</li>
+          <li><strong>Coldcard</strong> — Bitcoin-only, air-gapped, the most hardcore security option available</li>
+        </ul>
+        <h3 id="types-multisig">Multi-sig &amp; Smart Contract Wallets</h3>
+        <ul>
+          <li><strong>Safe (Gnosis Safe)</strong> — M-of-N multi-signature, standard for DAOs and institutions</li>
+          <li><strong>Fireblocks</strong> — Institutional-grade MPC custody</li>
+          <li><strong>Argent</strong> — Smart contract wallet with social recovery and guardian system</li>
+        </ul>
+        <h3 id="types-custody">Custodial vs. Non-Custodial</h3>
+        <p><strong>Custodial wallets</strong> (Coinbase, Binance) hold your private keys for you. Convenient. Dangerous. If the exchange goes bust, your funds can vanish. <strong>Non-custodial wallets</strong> give <em>you</em> the keys — and all the responsibility. There is no "forgot my password" option.</p>
+        <h3 id="types-seed">Seed Phrases &amp; Keys Explained</h3>
+        <p>A <strong>BIP-39 seed phrase</strong> — 12 or 24 random words — mathematically encodes your entire wallet. Every private key, every account, every chain. Write it down. Store it offline. <strong>Never type it into any website or app</strong>. Your <strong>private key</strong> signs transactions. Your <strong>public key</strong> derives your wallet address — the thing you share with others to receive funds.</p>
+        <div class="notice danger"><span class="notice-icon">🚨</span><div><strong>Security Warning:</strong> Legitimate projects, exchanges, and support staff will <em>never</em> ask for your seed phrase. Any request for your seed phrase is a scam. No exceptions.</div></div>
+
+        <h2 id="key-stats">Key Stats &amp; Milestones</h2>
+        <table>
+          <thead><tr><th>Metric</th><th>Data</th><th>Notes</th></tr></thead>
+          <tbody>
+            <tr><td>MetaMask monthly active users</td><td><strong>30M+</strong></td><td>Peak 2022; most popular non-custodial wallet</td></tr>
+            <tr><td>Phantom wallet users</td><td><strong>7M+</strong></td><td>Dominant Solana wallet since 2021</td></tr>
+            <tr><td>Ledger devices sold</td><td><strong>6M+</strong></td><td>Most widely distributed hardware wallet</td></tr>
+            <tr><td>Hardware wallet market size</td><td><strong>$400M+</strong> (2023)</td><td>Surged post-FTX collapse</td></tr>
+            <tr><td>Safe (Gnosis) assets secured</td><td><strong>$100B+</strong></td><td>Multi-sig standard for DAOs &amp; institutions</td></tr>
+            <tr><td>FTX collapse — new HW orders</td><td><strong>1M+ in 1 week</strong></td><td>Nov 2022; Ledger &amp; Trezor sold out worldwide</td></tr>
+            <tr><td>Ledger 2020 data breach</td><td><strong>272,000</strong> customers</td><td>Funds NOT lost; customer data &amp; emails leaked</td></tr>
+            <tr><td>ERC-4337 (Account Abstraction)</td><td>March 2023</td><td>Enables smart contract wallets on Ethereum</td></tr>
+          </tbody>
+        </table>
+
+        <h2 id="why-matters">Why It Matters</h2>
+        <p>Owning a non-custodial wallet is the first act of <strong>financial sovereignty</strong> in crypto. Without it, you're just trusting a company with your money — the same as a bank, minus the FDIC insurance. Your wallet is your passport to <a href="defi.html">DeFi</a> — lending, borrowing, trading without intermediaries. It's your <a href="web3.html">Web3</a> identity — your ENS name, your NFT collection, your DAO voting power.</p>
+        <p>For <a href="bitcoin.html">Bitcoin</a> holders, self-custody is the entire point. For <a href="ethereum.html">Ethereum</a> users, your wallet is the key to a $300B+ DeFi ecosystem. And when it comes to <a href="exchanges.html">exchanges</a> — always remember that CEX wallets are not your wallets. Use them to buy. Then withdraw.</p>
+
+        <h2 id="risks">Risks &amp; Controversies</h2>
+        <ul>
+          <li><strong>Lost seed phrase:</strong> Billions in Bitcoin are permanently inaccessible due to lost or forgotten seed phrases. James Howells famously lost 8,000 BTC (worth $500M+) on a landfill hard drive.</li>
+          <li><strong>Hardware wallet supply chain attacks:</strong> Receiving a tampered device can compromise funds before you even set it up. Always buy direct from manufacturers.</li>
+          <li><strong>Ledger 2020 data breach:</strong> 272,000 customer records (names, emails, addresses) leaked — funds were safe, but physical security risks increased for known crypto holders.</li>
+          <li><strong>Ledger Recover controversy (2023):</strong> Ledger announced an optional seed phrase backup service via trusted parties — the community erupted. The backlash was severe; it threatened Ledger's reputation as a security company.</li>
+          <li><strong>Clipboard malware:</strong> Malware that swaps your copied wallet address for an attacker's. Always double-check the first and last 4 characters of any address.</li>
+          <li><strong>Fake wallet apps:</strong> Millions lost to counterfeit MetaMask, Phantom, and Ledger apps on app stores. Verify URLs obsessively.</li>
+          <li><strong>SIM swap attacks:</strong> Attackers port your phone number to steal SMS-based 2FA. Use hardware security keys or authenticator apps — never SMS 2FA for anything crypto.</li>
+          <li><strong>Social engineering:</strong> Fake "support" agents, Discord DMs, and Twitter replies phishing for seed phrases are endemic in crypto communities.</li>
+        </ul>
+
+        <h2 id="moonboys-take">The Crypto Moonboys Take 🌙</h2>
+        <blockquote>
+          <p>"A hardware wallet is <a href="diamond-hands.html">diamond hands</a> in physical form. It is the physical manifestation of conviction."</p>
+        </blockquote>
+        <p>Real <a href="hodl-warriors.html">HODL Warriors</a> don't leave their stack on an exchange. They write their seed phrase on fireproof steel, buy a Trezor or Coldcard, and sleep soundly while others panic during bank runs. The statistics are devastating: the number of people who lost Bitcoin to exchange hacks versus those who held their own keys is not even close. Mt. Gox. Bitfinex. QuadrigaCX. FTX. Celsius. The list never stops growing.</p>
+        <p><strong>"Be your own bank"</strong> is not a meme. It's the whole point. Every person who set up a hardware wallet before FTX collapsed kept their funds. Every person who trusted SBF lost them. The lesson is there. The question is whether you act on it.</p>
+
+        <h2 id="see-also">See Also</h2>
+        <ul>
+          <li><a href="bitcoin.html">Bitcoin (BTC)</a></li>
+          <li><a href="ethereum.html">Ethereum (ETH)</a></li>
+          <li><a href="defi.html">DeFi — Decentralized Finance</a></li>
+          <li><a href="exchanges.html">Crypto Exchanges — CEX vs DEX</a></li>
+          <li><a href="web3.html">Web3</a></li>
+          <li><a href="diamond-hands.html">Diamond Hands</a></li>
+          <li><a href="hodl-warriors.html">HODL Warriors</a></li>
+        </ul>
+      </article>
+      <section class="citations-section" aria-label="Citations and references">
+        <h2>References &amp; Citations</h2>
+        <ol class="citations-list">
+          <li id="cite-1">
+            <span class="cite-num">[1]</span>
+            <div>
+              <span class="cite-source-type cite-website">Website</span>
+              <a href="https://metamask.io/learn/" target="_blank" rel="noopener noreferrer">MetaMask Learn</a> — Official educational hub covering wallet basics, seed phrases, and DeFi interaction.
+            </div>
+          </li>
+          <li id="cite-2">
+            <span class="cite-num">[2]</span>
+            <div>
+              <span class="cite-source-type cite-website">Website</span>
+              <a href="https://www.ledger.com/academy" target="_blank" rel="noopener noreferrer">Ledger Academy</a> — Ledger's official learning resource covering hardware wallet security, private keys, and crypto safety.
+            </div>
+          </li>
+          <li id="cite-3">
+            <span class="cite-num">[3]</span>
+            <div>
+              <span class="cite-source-type cite-website">Website</span>
+              <a href="https://trezor.io/learn" target="_blank" rel="noopener noreferrer">Trezor Learn</a> — Trezor's knowledge base on hardware wallets, seed phrase security, and cold storage best practices.
+            </div>
+          </li>
+          <li id="cite-4">
+            <span class="cite-num">[4]</span>
+            <div>
+              <span class="cite-source-type cite-website">Website</span>
+              <a href="https://ethereum.org/en/wallets/" target="_blank" rel="noopener noreferrer">Ethereum.org — Wallets</a> — Ethereum Foundation's guide to wallet types, security, and choosing the right wallet.
+            </div>
+          </li>
+          <li id="cite-5">
+            <span class="cite-num">[5]</span>
+            <div>
+              <span class="cite-source-type cite-website">Website</span>
+              <a href="https://safe.global" target="_blank" rel="noopener noreferrer">Safe (Gnosis Safe)</a> — Multi-signature smart contract wallet platform securing $100B+ in institutional and DAO assets.
+            </div>
+          </li>
+          <li id="cite-6">
+            <span class="cite-num">[6]</span>
+            <div>
+              <span class="cite-source-type cite-website">Website</span>
+              <a href="https://www.coinbase.com/learn/crypto-basics/what-is-a-crypto-wallet" target="_blank" rel="noopener noreferrer">Coinbase — What is a Crypto Wallet?</a> — Beginner-friendly explainer on custodial vs. non-custodial wallets.
+            </div>
+          </li>
+          <li id="cite-7">
+            <span class="cite-num">[7]</span>
+            <div>
+              <span class="cite-source-type cite-website">Website</span>
+              <a href="https://bitcoin.org/en/secure-your-wallet" target="_blank" rel="noopener noreferrer">Bitcoin.org — Secure Your Wallet</a> — Official Bitcoin Foundation guidance on wallet security and best practices.
+            </div>
+          </li>
+          <li id="cite-8">
+            <span class="cite-num">[8]</span>
+            <div>
+              <span class="cite-source-type cite-website">Website</span>
+              <a href="https://ethereum.org/en/developers/docs/accounts/" target="_blank" rel="noopener noreferrer">Ethereum.org — Accounts &amp; ERC-4337</a> — Technical documentation on Ethereum accounts, Account Abstraction, and smart contract wallets.
+            </div>
+          </li>
+        </ol>
+      </section>
+      <div class="category-tags" aria-label="Article categories"><span class="cat-label">Categories:</span><a href="/categories/tools.html">Tools &amp; Platforms</a></div>
+    </main>
+    <footer id="site-footer" role="contentinfo"><div class="footer-inner"><div class="footer-col"><h4>🌙 Moonboys Wiki</h4><p>Fan-driven crypto encyclopedia.</p></div><div class="footer-col"><h4>Explore</h4><ul><li><a href="/index.html">Main Page</a></li><li><a href="/search.html">All Articles</a></li></ul></div></div><div class="footer-bottom"><p>© 2026 Crypto Moonboys Wiki · Not financial advice.</p><p><span class="no-login-note">🔒 No sign-up · No login · Bot-maintained</span></p></div></footer>
+  </div>
+</div>
+<button id="back-to-top" aria-label="Back to top">↑</button>
+<script src="/js/wiki.js"></script>
+</body>
+</html>

@@ -1,0 +1,89 @@
+{
+  "entity": "Billy the Goat Kid",
+  "slug": "billy-the-goat-kid",
+  "generated_at": "2026-03-26T03:45:36.714322+00:00",
+  "mention_count": 6,
+  "all_facts": [
+    {
+      "fact": "Trickster and scavenger",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 0,
+      "last_verified_cycle": 0,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Billy the Goat Kid is a trickster in Block Topia\u2019s underbelly, his cunning ploys and scavenging skills turning digital scraps into tools of mischief, a wildcard presence in the Crypto Moonboys universe\u2019s gritty conflicts.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 4,
+      "last_verified_cycle": 4,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "His deceptive antics often surface during chaotic moments like the Triple Fork Event, disrupting metaverse battles with unexpected twists, his unknown allegiance making him a wildcard no faction can fully predict.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 4,
+      "last_verified_cycle": 4,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Billy the Goat Kid reigns as a trickster in Block Topia\u2019s underbelly, his cunning ploys and scavenging skills transforming digital scraps into tools of mischief that sow discord in the Crypto Moonboys universe\u2019s gritty conflicts. His nimble mind and quick hands make him a ghost in the metaverse, always one step ahead of those who seek to pin him down.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 39,
+      "last_verified_cycle": 39,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "His deceptive antics often surface during chaotic moments like the Triple Fork Event, disrupting metaverse battles with unexpected twists that turn order into mayhem. His unknown allegiance makes him a wildcard no faction can fully predict, a rogue whose next prank could be a harmless jest or a devastating blow.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 39,
+      "last_verified_cycle": 39,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Legends among Block Topia\u2019s scavengers claim Billy once infiltrated a high-security node during a rebellion clash, stealing critical data while leaving behind a mocking glyph of a goat. This tale, whether true or not, cements his reputation as a shadow in the rebellion, one whose tricks might hide a deeper game yet to be revealed.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 39,
+      "last_verified_cycle": 39,
+      "status": "VERIFIED"
+    }
+  ],
+  "relationships": [],
+  "timeline": [],
+  "cross_links": []
+}

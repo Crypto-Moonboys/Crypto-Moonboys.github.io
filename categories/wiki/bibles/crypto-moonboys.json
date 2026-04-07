@@ -1,0 +1,146 @@
+{
+  "entity": "Crypto Moonboys",
+  "slug": "crypto-moonboys",
+  "generated_at": "2026-03-25T00:14:22.943122+00:00",
+  "mention_count": 8,
+  "all_facts": [
+    {
+      "fact": "Core brand for Web3 NFT project",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md",
+        "https://graffpunks.live",
+        "https://gkniftyheads.fandom.com/wiki/CRYPTO_MOONBOYS"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 0,
+      "last_verified_cycle": 0,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Tied to GKniftyHEADS universe",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md",
+        "https://graffpunks.live",
+        "https://gkniftyheads.fandom.com/wiki/CRYPTO_MOONBOYS"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 0,
+      "last_verified_cycle": 0,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Serves as the core brand for a revolutionary Web3 NFT project born from London\u2019s street-art legacy.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md",
+        "https://graffpunks.live",
+        "https://gkniftyheads.fandom.com/wiki/CRYPTO_MOONBOYS"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 3,
+      "last_verified_cycle": 3,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Encompasses a universe of phygital murals, 1M free NFTs, and metaverse battlegrounds.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md",
+        "https://graffpunks.live",
+        "https://gkniftyheads.fandom.com/wiki/CRYPTO_MOONBOYS"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 3,
+      "last_verified_cycle": 3,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Unites digital rebels under the banner of The GKniftyHEADS, pushing the boundaries of art and ownership in Block Topia.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md",
+        "https://graffpunks.live",
+        "https://gkniftyheads.fandom.com/wiki/CRYPTO_MOONBOYS"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 3,
+      "last_verified_cycle": 3,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Serves as the core brand for a revolutionary Web3 NFT project, rooted in London\u2019s street-art legacy through Graffiti Kings.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md",
+        "https://graffpunks.live",
+        "https://gkniftyheads.fandom.com/wiki/CRYPTO_MOONBOYS"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 5,
+      "last_verified_cycle": 5,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Encompasses a vast universe of phygital murals, 1M free NFTs, and metaverse battlegrounds, redefining digital ownership and creativity.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md",
+        "https://graffpunks.live",
+        "https://gkniftyheads.fandom.com/wiki/CRYPTO_MOONBOYS"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 5,
+      "last_verified_cycle": 5,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Unites digital rebels under The GKniftyHEADS\u2019 banner, pushing the limits of art and technology in Block Topia\u2019s decentralized realm.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md",
+        "https://graffpunks.live",
+        "https://gkniftyheads.fandom.com/wiki/CRYPTO_MOONBOYS"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 5,
+      "last_verified_cycle": 5,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Drives major initiatives like the Hard Fork Games and Triple Fork Event, fueling the fight for a free metaverse in the Crypto Moonboys universe.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md",
+        "https://graffpunks.live",
+        "https://gkniftyheads.fandom.com/wiki/CRYPTO_MOONBOYS"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 5,
+      "last_verified_cycle": 5,
+      "status": "VERIFIED"
+    }
+  ],
+  "relationships": [],
+  "timeline": [],
+  "cross_links": []
+}

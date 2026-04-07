@@ -1,0 +1,133 @@
+{
+  "entity": "Bitcoin Kid Army",
+  "slug": "bitcoin-kid-army",
+  "generated_at": "2026-03-25T00:14:22.950695+00:00",
+  "mention_count": 6,
+  "all_facts": [
+    {
+      "fact": "Rebel force of Bitcoin Kids",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 0,
+      "last_verified_cycle": 0,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Led by Alfie 'The Bitcoin Kid' Blaze",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 0,
+      "last_verified_cycle": 0,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "A rebel army of escaped Bitcoin Kids, led by Alfie 'The Bitcoin Kid' Blaze to defy Block Topia\u2019s central powers.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 3,
+      "last_verified_cycle": 3,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Engage in metaverse battles with graffiti-inspired NFTs, embodying street-art rebellion in every digital skirmish.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 3,
+      "last_verified_cycle": 3,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Serve as a symbol of youthful resistance, inspiring outcasts to fight for a decentralized destiny in the Crypto Moonboys universe.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 3,
+      "last_verified_cycle": 3,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "A rebel army of escaped Bitcoin Kids, led by Alfie 'The Bitcoin Kid' Blaze to defy Block Topia\u2019s oppressive central powers.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 5,
+      "last_verified_cycle": 5,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Engage in daring metaverse battles with graffiti-inspired NFTs, embodying street-art rebellion in every digital skirmish they fight.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 5,
+      "last_verified_cycle": 5,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Serve as a powerful symbol of youthful resistance, inspiring digital outcasts to fight for a decentralized destiny in the Crypto Moonboys universe.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 5,
+      "last_verified_cycle": 5,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Their battles often escalate during events like the Triple Fork Event, clashing with rival forces to reclaim digital freedom.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 5,
+      "last_verified_cycle": 5,
+      "status": "VERIFIED"
+    }
+  ],
+  "relationships": [],
+  "timeline": [],
+  "cross_links": [
+    {
+      "entity": "The Bitcoin Kid Army",
+      "shared_count": 1
+    }
+  ]
+}

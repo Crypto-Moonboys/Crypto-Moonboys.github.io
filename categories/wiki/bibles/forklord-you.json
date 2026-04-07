@@ -1,0 +1,89 @@
+{
+  "entity": "Forklord You",
+  "slug": "forklord-you",
+  "generated_at": "2026-03-26T03:45:36.709422+00:00",
+  "mention_count": 6,
+  "all_facts": [
+    {
+      "fact": "Master of forks and splits",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 0,
+      "last_verified_cycle": 0,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Forklord You reigns as the master of blockchain forks in Block Topia, his ability to split digital realities crafting new paths and battlegrounds, a transformative force in the Crypto Moonboys universe\u2019s evolving conflicts.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 4,
+      "last_verified_cycle": 4,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "His influence over forks shapes pivotal events like the Hard Fork Games, where his created divergences can spawn parallel wars, his unknown allegiance leaving factions uncertain of whether he\u2019s creator or destroyer.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 4,
+      "last_verified_cycle": 4,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Forklord You reigns supreme as the master of blockchain forks in Block Topia, his unparalleled ability to split digital realities crafting new paths and battlegrounds that redefine the Crypto Moonboys universe\u2019s evolving conflicts. Each fork is a stroke of his will, a deliberate act that can spawn entire worlds or doom them to oblivion in an instant.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 39,
+      "last_verified_cycle": 39,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "His influence over forks shapes pivotal events like the Hard Fork Games, where his created divergences spawn parallel wars that challenge the strongest factions. His unknown allegiance leaves all sides in suspense, uncertain if Forklord You is a creator forging hope or a destroyer reveling in the chaos of fractured realities.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 39,
+      "last_verified_cycle": 39,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Rumors persist in Block Topia\u2019s data streams that Forklord You\u2019s power stems from a forbidden node, a core of ancient blockchain logic that grants him dominion over splits. Whether this node is a myth or a guarded secret, its whispers fuel fear that his next fork could unravel the metaverse itself if left unchecked.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 39,
+      "last_verified_cycle": 39,
+      "status": "VERIFIED"
+    }
+  ],
+  "relationships": [],
+  "timeline": [],
+  "cross_links": []
+}

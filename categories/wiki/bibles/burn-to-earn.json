@@ -1,0 +1,154 @@
+{
+  "entity": "Burn-to-earn",
+  "slug": "burn-to-earn",
+  "generated_at": "2026-03-26T10:15:49.874501+00:00",
+  "mention_count": 10,
+  "all_facts": [
+    {
+      "fact": "Reward system via NFT burning",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 0,
+      "last_verified_cycle": 0,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "A mechanic where players burn NFTs to earn rewards like $GK tokens or exclusive digital assets.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 3,
+      "last_verified_cycle": 3,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Embodies the GraffPUNKS ethos of creation through destruction, echoing street-art rebellion in Block Topia.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 3,
+      "last_verified_cycle": 3,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Often linked to major lore events like the Triple Fork Event, adding narrative weight to each burned asset.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 3,
+      "last_verified_cycle": 3,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "A mechanic where players burn NFTs to earn rewards like $GK tokens or exclusive digital assets in Block Topia.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 5,
+      "last_verified_cycle": 5,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Embodies the GraffPUNKS ethos of creation through destruction, echoing street-art rebellion with every sacrificial act.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 5,
+      "last_verified_cycle": 5,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Often linked to major lore events like the Triple Fork Event, adding narrative depth and stakes to each burned asset.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 5,
+      "last_verified_cycle": 5,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Represents a high-risk, high-reward strategy, fueling the decentralized fight with the raw energy of loss turned to gain.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 5,
+      "last_verified_cycle": 5,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Burn-to-earn in the Crypto Moonboys universe is a high-stakes ritual of destruction, where players torch NFTs to claim $GK tokens or rare assets, each burn embodying the GraffPUNKS\u2019 belief that true power rises from the ashes of sacrifice in Block Topia\u2019s volatile wars.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 59,
+      "last_verified_cycle": 59,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Often linked to seismic events like the Triple Fork Event, burn-to-earn transforms loss into lore, with every incinerated NFT fueling Block Topia\u2019s narrative furnace, sparking new conflicts or empowering factions to rise from digital embers with renewed strength.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 59,
+      "last_verified_cycle": 59,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "This mechanic mirrors the transient danger of street art, where a tag\u2019s brilliance is matched by its risk; in Block Topia, burn-to-earn is a rebel\u2019s wager, a defiant act that can either forge legends or reduce warriors to forgotten ash in the metaverse\u2019s unforgiving crucible.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 59,
+      "last_verified_cycle": 59,
+      "status": "VERIFIED"
+    }
+  ],
+  "relationships": [],
+  "timeline": [],
+  "cross_links": []
+}

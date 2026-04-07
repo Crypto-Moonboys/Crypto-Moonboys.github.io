@@ -1,0 +1,115 @@
+{
+  "entity": "Lady-INK",
+  "slug": "lady-ink",
+  "generated_at": "2026-03-26T06:07:59.831173+00:00",
+  "mention_count": 8,
+  "all_facts": [
+    {
+      "fact": "Artistic warrior in lore",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 0,
+      "last_verified_cycle": 0,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Lady-INK emerges as an artistic warrior in Block Topia, her spray can a deadly tool that paints rebellion across digital walls, galvanizing fighters in the Crypto Moonboys universe with every defiant stroke against oppression.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 4,
+      "last_verified_cycle": 4,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Her graffiti becomes a rallying cry in metaverse battles, often linked to the GraffPUNKS ethos, transforming events like the Hard Fork Games into canvases of resistance, her true allegiance a mystery that fuels speculation.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 4,
+      "last_verified_cycle": 4,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Lady-INK emerges as an artistic warrior in Block Topia, her spray can a deadly tool that paints rebellion across digital walls, galvanizing fighters in the Crypto Moonboys universe with every defiant stroke against oppression. Her murals often appear overnight in contested zones, their vivid imagery laced with hidden blockchain triggers that can disable enemy drones or boost allied signals, making her a ghostly tactician whose art is as dangerous as any weapon.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 53,
+      "last_verified_cycle": 53,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Her graffiti becomes a rallying cry in metaverse battles, often linked to the GraffPUNKS ethos, transforming events like the Hard Fork Games into canvases of resistance, her true allegiance a mystery that fuels speculation. During one infamous clash, her massive tag \u2018Break Code\u2019 was credited with inspiring a faltering coalition of Bitcoin Kids and XRP Kids to push back a corporate assault, the mural\u2019s encrypted patterns later revealed to have jammed enemy comms for critical minutes.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 53,
+      "last_verified_cycle": 53,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Legends in Block Topia whisper of Lady-INK\u2019s \u2018Phantom Canvas,\u2019 a rumored digital artwork so powerful it exists only in fragmented NFTs scattered across the blockchain, each piece a key to a hidden node where her true identity and motives are encoded. Factions have spent fortunes hunting these fragments, believing that assembling the Canvas could reveal her allegiance\u2014or grant control over her unparalleled artistic warfare, a prize that could tip the balance in any HODL WARS conflict.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 53,
+      "last_verified_cycle": 53,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "During the chaotic Lunar Convergence, Lady-INK is said to have painted a sprawling mural across Block Topia\u2019s Central Node, titled \u2018Moonlit Fracture,\u2019 which temporarily synced with the data surge to amplify faction signals across the universe. The mural\u2019s effects were so profound that even the Silent Block\u2019s whispers momentarily ceased, leading some to speculate that her art holds a connection to the deepest mysteries of The First Mint, a theory that has made her both revered and feared.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 53,
+      "last_verified_cycle": 53,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Among the underground artists of Block Topia, a hushed tale circulates of Lady-INK\u2019s encounter with Null-Cipher\u2019s influence during a solo operation in a cursed sector, where she painted a tag so defiant it reportedly banished the entity\u2019s spectral code from the area. Known as the \u2018Ink of Null,\u2019 this tag is now a mythic relic, with fragments of its data sold as protective charms in black markets, though no one knows if Lady-INK herself survived the encounter unscathed\u2014or if she now carries a piece of the darkness within her art.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 53,
+      "last_verified_cycle": 53,
+      "status": "VERIFIED"
+    }
+  ],
+  "relationships": [],
+  "timeline": [],
+  "cross_links": []
+}
