@@ -4,6 +4,10 @@ sam-wiki-publisher.py
 =====================
 Single-source-of-truth wiki build pipeline for Crypto Moonboys Wiki.
 
+Supports either:
+- direct export JSON with {"items": [...]}
+- SAM memory JSON with {"facts": {...}}
+
 Requirements:
     pip install python-slugify
 
@@ -20,6 +24,7 @@ import sys
 import xml.etree.ElementTree as ET
 from datetime import date
 from html import escape
+from typing import Any
 
 from slugify import slugify
 
@@ -32,6 +37,86 @@ DEFAULT_INPUT = "main-brain-export.json"
 
 def esc(value: str) -> str:
     return escape(str(value or ""), quote=True)
+
+
+def first_non_empty(*values: Any) -> str:
+    for value in values:
+        if isinstance(value, str) and value.strip():
+            return value.strip()
+    return ""
+
+
+def extract_first_source_url(data: dict) -> str:
+    sources = data.get("sources", [])
+    if isinstance(sources, list):
+        for source in sources:
+            if isinstance(source, str) and source.strip():
+                return source.strip()
+    return "#"
+
+
+def infer_summary(data: dict) -> str:
+    return first_non_empty(
+        data.get("summary"),
+        data.get("description"),
+        data.get("bio"),
+        data.get("overview"),
+        data.get("lore"),
+        data.get("text"),
+        "",
+    )
+
+
+def infer_mention_count(data: dict) -> int:
+    raw_value = data.get("mention_count", 0)
+    try:
+        return int(raw_value)
+    except (TypeError, ValueError):
+        return 0
+
+
+def sam_memory_to_items(raw: dict) -> list[dict]:
+    """
+    Convert SAM memory format into publisher items format.
+
+    Expected SAM memory shape:
+    {
+      "facts": {
+        "characters": {
+          "Entity Name": { ...entity data... }
+        },
+        "factions": { ... }
+      }
+    }
+    """
+    facts = raw.get("facts", {})
+    if not isinstance(facts, dict):
+        return []
+
+    items: list[dict] = []
+
+    for category, entities in facts.items():
+        if not isinstance(entities, dict):
+            continue
+
+        for entity_name, data in entities.items():
+            if not isinstance(entity_name, str) or not entity_name.strip():
+                continue
+
+            if not isinstance(data, dict):
+                data = {}
+
+            item = {
+                "entity_name": entity_name.strip(),
+                "summary": infer_summary(data),
+                "source_url": extract_first_source_url(data),
+                "source_name": "SAM Memory",
+                "category": str(category).strip(),
+                "mention_count": infer_mention_count(data),
+            }
+            items.append(item)
+
+    return items
 
 
 # ---------------------------------------------------------------------------
@@ -232,7 +317,7 @@ def build_sitemap(html_files: list[str], sitemap_path: str) -> str:
 # ---------------------------------------------------------------------------
 
 def validate(data_path: str) -> list[dict]:
-    """Load and validate input. Exits on any hard error."""
+    """Load and validate input. Supports export JSON and SAM memory JSON."""
     if not os.path.exists(data_path):
         print(f"[ERROR] Input file not found: {data_path}", file=sys.stderr)
         sys.exit(1)
@@ -245,12 +330,16 @@ def validate(data_path: str) -> list[dict]:
         sys.exit(1)
 
     if not isinstance(raw, dict):
-        print("[ERROR] JSON root must be an object with an 'items' key.", file=sys.stderr)
+        print("[ERROR] JSON root must be an object.", file=sys.stderr)
         sys.exit(1)
 
     items = raw.get("items")
+
+    if not items:
+        items = sam_memory_to_items(raw)
+
     if not isinstance(items, list):
-        print("[ERROR] JSON must contain an 'items' list.", file=sys.stderr)
+        print("[ERROR] Could not derive an items list from input JSON.", file=sys.stderr)
         sys.exit(1)
 
     valid_items = [it for it in items if isinstance(it, dict) and it.get("entity_name", "").strip()]
@@ -330,7 +419,6 @@ def main() -> None:
         print(f"[BUILD] {out_path}")
         written += 1
 
-    # hard guard: legacy wiki/index.html must not exist
     legacy_index = os.path.join(WIKI_DIR, "index.html")
     if os.path.exists(legacy_index):
         os.remove(legacy_index)
