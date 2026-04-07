@@ -3,24 +3,64 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="block_topia — Crypto Moonboys Wiki">
+  <meta name="description" content="Block Topia rises as the conflicted, pulsating core of the Crypto Moonboys universe, a sprawling digital metropolis encased by towering, sentient walls that ser">
   <meta name="robots" content="index, follow">
   <meta property="og:title" content="block_topia — Crypto Moonboys Wiki">
+  <meta property="og:description" content="Block Topia rises as the conflicted, pulsating core of the Crypto Moonboys universe, a sprawling digital metropolis encased by towering, sentient walls that ser">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://crypto-moonboys.github.io/wiki/block-topia.html">
   <meta property="og:image" content="https://crypto-moonboys.github.io/img/logo.svg">
   <title>block_topia — Crypto Moonboys Wiki</title>
-  <link rel="canonical" href="https://crypto-moonboys.github.io/wiki/block-topia.html">
-  <link rel="stylesheet" href="/css/wiki.css">
-  <link rel="icon" href="/img/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../css/wiki.css">
+  <link rel="icon" href="../img/favicon.svg" type="image/svg+xml">
+  <style>
+    .wiki-section {
+      margin: 1.6em 0;
+    }
+    .lore-paragraph {
+      line-height: 1.75;
+      margin: 0 0 1em 0;
+    }
+    .lead-paragraph {
+      font-size: 1.06em;
+      line-height: 1.8;
+      margin: 0 0 1em 0;
+    }
+    .lore-facts-stack {
+      display: block;
+    }
+    .lore-fact-block {
+      margin: 0 0 1.2em 0;
+      padding: 1em 1.1em;
+      background: rgba(255,255,255,0.03);
+      border-left: 4px solid #5b8cff;
+      border-radius: 6px;
+    }
+    .sources-list {
+      padding-left: 1.4em;
+    }
+    .sources-list li {
+      margin-bottom: 0.3em;
+      word-break: break-all;
+    }
+    .article-stats {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1em;
+      font-size: 0.85em;
+      color: #555;
+      margin-top: 0.5em;
+    }
+  </style>
 </head>
-<body>
-<a class="skip-link" href="#wiki-content">Skip to content</a>
+<body data-entity-hash="b7f75ac3e4f2">
+
+<a class="skip-link" href="#content">Skip to content</a>
 
 <header id="site-header" role="banner">
-  <button class="hamburger" id="hamburger" aria-label="Toggle navigation" aria-expanded="false" aria-controls="sidebar">&#9776;</button>
-  <a href="/index.html" class="site-logo" aria-label="Crypto Moonboys Wiki home">
-    <img src="/img/logo.svg" alt="" aria-hidden="true">
+  <button class="hamburger" id="hamburger" aria-label="Toggle navigation" aria-expanded="false" aria-controls="sidebar">☰</button>
+  <a href="../index.html" class="site-logo" aria-label="Crypto Moonboys Wiki home">
+    <img src="../img/logo.svg" alt="" aria-hidden="true">
     <span>
       <span class="logo-text">🌙 Moonboys Wiki</span>
       <span class="logo-sub">Crypto Encyclopedia</span>
@@ -32,9 +72,9 @@
     <div id="search-results" role="listbox"></div>
   </div>
   <nav class="header-nav" aria-label="Main navigation">
-    <a href="/index.html">Home</a>
-    <a href="/categories/index.html">Categories</a>
-    <a href="/search.html">All Articles</a>
+    <a href="../index.html">Home</a>
+    <a href="../categories/index.html">Categories</a>
+    <a href="../articles.html">All Articles</a>
   </nav>
 </header>
 
@@ -45,69 +85,209 @@
     <div class="sidebar-section">
       <div class="sidebar-heading">Navigation</div>
       <div class="sidebar-nav">
-        <a href="/index.html"><span class="nav-icon">🏠</span> Main Page</a>
-        <a href="/categories/index.html"><span class="nav-icon">📂</span> All Categories</a>
-        <a href="/search.html"><span class="nav-icon">🔎</span> All Articles</a>
-        <a href="/about.html"><span class="nav-icon">ℹ️</span> About</a>
+        <a href="../index.html"><span class="nav-icon">🏠</span> Main Page</a>
+        <a href="../categories/index.html"><span class="nav-icon">📂</span> All Categories</a>
+        <a href="../articles.html"><span class="nav-icon">🔍</span> All Articles</a>
+      </div>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-heading">🤖 SAM Lore</div>
+      <div class="sidebar-nav">
+        <a href="../categories/lore.html"><span class="nav-icon">🗺️</span> Lore</a>
+        <a href="../articles.html"><span class="nav-icon">📖</span> All SAM Articles</a>
+      </div>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-heading">Cryptocurrencies</div>
+      <div class="sidebar-nav">
+        <a href="bitcoin.html"><span class="nav-icon">₿</span> Bitcoin (BTC)</a>
+        <a href="ethereum.html"><span class="nav-icon">Ξ</span> Ethereum (ETH)</a>
+        <a href="solana.html"><span class="nav-icon">◎</span> Solana (SOL)</a>
+      </div>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-heading">⚔️ HODL Wars Lore</div>
+      <div class="sidebar-nav">
+        <a href="hodl-wars.html"><span class="nav-icon">📜</span> HODL Wars</a>
+        <a href="hodl-warriors.html"><span class="nav-icon">⚔️</span> HODL Warriors</a>
+        <a href="diamond-hands.html"><span class="nav-icon">💎</span> Diamond Hands</a>
+        <a href="moon-mission.html"><span class="nav-icon">🚀</span> Moon Mission</a>
       </div>
     </div>
   </nav>
 
   <div id="main-wrapper">
-    <main id="wiki-content" role="main">
+    <main id="content" role="main">
+
       <nav class="breadcrumb" aria-label="Breadcrumb">
-        <a href="/index.html">Home</a>
+        <a href="../index.html">Home</a>
         <span class="sep" aria-hidden="true">›</span>
-        <a href="/search.html">All Articles</a>
+        <a href="../categories/lore.html">Lore</a>
         <span class="sep" aria-hidden="true">›</span>
         <span aria-current="page">block_topia</span>
       </nav>
 
-      <article data-entity-slug="block-topia">
-        <header class="wiki-header">
-          <h1>block_topia</h1>
-          <p class="wiki-meta">Category: characters &nbsp;|&nbsp; Mentions: 0</p>
-        </header>
+      <h1 class="page-title">
+        🗺️ block_topia
+        <span>✅ SAM-VERIFIED</span>
+      </h1>
+      <div class="page-title-line" aria-hidden="true"></div>
+
+      <div class="article-meta">
+        <span class="article-badge">🗺️ Lore</span>
+        <span class="meta-item">📅 Last updated: April 2026</span>
+        <span class="meta-item">📂 <a href="../categories/lore.html">Lore</a></span>
+      </div>
+
+      <article class="wiki-content" data-entity-slug="block-topia">
+
+          <p class="lead-paragraph">Block Topia rises as the conflicted, pulsating core of the Crypto Moonboys universe, a sprawling digital metropolis encased by towering, sentient walls that serve as both prison and fortress, as defined by the unyielding canon rule DB-1. Within its neon-soaked streets and tangled server hubs, chaos reigns as factions like the Bitcoin Kids, under the fiery leadership of Alfie Blaze, wage relentless guerrilla campaigns against the blockchain overlords who enforce their iron control from unseen data spires. This embattled heart of rebellion and control is a battleground where every glitch, every line of code, and every shadowed alley pulses with the potential for uprising or betrayal.</p>
+          <p class="lead-paragraph">More than a mere setting, Block Topia is a living entity, its adaptive architecture and corrupted zones like the Data Abyss whispering of ancient betrayals and failed revolutions. It is a place where the very environment conspires against freedom, with walls that learn from each rebel hack and grow more oppressive with every escape attempt. Yet, it is also a crucible of hope, where the defiant cries of the oppressed echo through hidden channels, and where players and avatars alike must navigate a deadly dance of power, survival, and subversion amidst a city that never sleeps and never forgets.</p>
+
+        <div class="article-stats">
+          <span>📊 Verified across <strong>1000771</strong> SAM cycles</span>
+          <span>🤖 Auto-published by SAM</span>
+        </div>
 
         <section class="wiki-section">
-          <h2 id="summary">Summary</h2>
-          <p>Category: characters. Aliases: block topia, block topia crypto moonboys wiki. Tags: block, topia, crypto, moonboys, wiki.</p>
+          <h2 id="faction">Faction</h2>
+          <p class="lore-paragraph"><strong>Allegiance:</strong> None (Neutral Territory, Controlled by Blockchain Overlords)</p>
         </section>
 
         <section class="wiki-section">
-          <h2 id="source">Source</h2>
-          <p><a href="/wiki/block-topia.html" target="_blank" rel="noopener noreferrer">SAM Entity Memory</a></p>
+          <h2 id="known-facts">Known Facts</h2>
+          <div class="lore-facts-stack">
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">Block Topia’s walls are not mere barriers but sentient constructs, woven from adaptive code that evolves to counter rebel hacks, growing thicker and more invasive with each failed escape attempt by the Bitcoin Kids. These walls, rumored to be powered by a central AI known as the 'Chain Warden,' whisper warnings in binary to intruders, a chilling reminder of the city’s unyielding grip on its prisoners.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">Deep within Block Topia lies the 'Data Abyss,' a forbidden zone of corrupted servers where the blockchain overlords dump failed experiments and erased avatars, a digital graveyard feared by all. Legends claim that rebels who venture here can scavenge ancient code fragments to use against the system, but at the risk of being consumed by the Abyss’s lingering malware, a fate worse than deletion.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">Block Topia’s walls are not mere barriers but sentient constructs, woven from adaptive code that evolves to counter rebel hacks, growing thicker and more invasive with each failed escape attempt by the Bitcoin Kids. These walls, rumored to be powered by a central AI known as ‘The Warden,’ whisper threats in binary to intruders, and some claim they can trap avatars in endless loops of torment if provoked, a digital prison within a prison.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">Deep within Block Topia lies the 'Data Abyss,' a forbidden zone of corrupted servers where the blockchain overlords dump failed experiments and erased avatars, creating a digital graveyard feared by all. Legends claim that rebels who venture here can scavenge ancient code fragments or lost NFTs, but at the risk of corruption—avatars who linger too long may return altered, their data haunted by glitches that whisper of the overlords’ darkest secrets.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">Block Topia’s sentient walls are more than barriers; they are living constructs of adaptive code, rumored to be powered by a central AI known as ‘The Warden Core,’ which learns from every rebel hack or assault by the Bitcoin Kids. With each failed escape, the walls evolve, spawning new security protocols or data tendrils that infiltrate deeper into the city, turning Block Topia into a suffocating trap that mirrors the blockchain overlords’ unyielding control.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">Hidden within Block Topia’s underbelly lies the ‘Data Abyss,’ a cursed zone of corrupted servers where the overlords discard failed experiments, broken avatars, and forbidden code, creating a digital graveyard feared by all who tread its paths. Legends whisper that rebels brave enough to venture here during Hard Fork Games can salvage ancient crypto-relics or lost $PUNK token caches, but at the risk of being consumed by the Abyss’s glitched entities, forever lost to the living world.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">Block Topia’s walls are not mere barriers but sentient constructs, woven from adaptive code that evolves to counter rebel hacks, growing thicker and more invasive with each failed escape attempt by the Bitcoin Kids or other factions. Rumored to be powered by a central AI known as ‘The Warden Core,’ these walls learn from every intrusion, deploying counter-measures like invasive code sweeps or temporary node lockdowns to trap offending players. Rebels speak of rare moments when the walls ‘sleep’ during system updates, offering fleeting windows to bypass their defenses, though exploiting such gaps risks awakening The Warden Core’s full wrath, which can erase entire player inventories in a single purge.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">Deep within Block Topia lies the ‘Data Abyss,’ a forbidden zone of corrupted servers where the blockchain overlords dump failed experiments, erased avatars, and obsolete code, creating a digital graveyard feared by even the boldest rebels. Legends claim that those who venture into its haunted depths can scavenge ancient code fragments or lost NFTs of unimaginable power, relics from the earliest days of the Crypto Moonboys universe. The price of such treasure is steep, as the Abyss is guarded by ‘Glitch Wraiths,’ corrupted entities that drain player resources or corrupt their assets, ensuring only the most prepared—or desperate—emerge unscathed from its digital mire.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">A chilling rumor persists that Block Topia’s core harbors a hidden ‘Overlord Nexus,’ a central server hub where the blockchain overlords orchestrate their control over the metropolis, accessible only through a labyrinth of encrypted nodes scattered across the city. Rebels who locate and infiltrate this nexus are said to gain temporary access to the overlords’ surveillance feeds, allowing them to predict enemy movements or disable key defenses during faction wars. The nexus, however, is a trap as much as a prize, protected by ‘Algorithmic Sentinels’—AI constructs that adapt to intruder tactics in real-time, often locking players into endless combat loops until their resources are depleted.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">Beneath Block Topia’s neon streets lies a network of ‘Ghost Chains,’ forgotten blockchain fragments from the city’s earliest iterations, now abandoned by the overlords but still humming with latent energy that rebels can tap for forbidden power. Accessing a Ghost Chain requires navigating through hazardous server backdoors, often guarded by residual security protocols that can wipe a player’s digital footprint in an instant. Those who succeed report uncovering rare tokens or mechanics no longer supported in the main ecosystem, but the chains are unstable, and prolonged exposure risks ‘Chain Corruption,’ a glitch that taints the player’s assets with untraceable bugs, rendering them unusable in standard markets.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">Block Topia’s walls are not mere barriers but sentient constructs, woven from adaptive code that evolves to counter rebel hacks, growing thicker and more invasive with each failed escape attempt by the Bitcoin Kids and other factions. These walls, rumored to be powered by a central AI known as ‘The Warden Core,’ have been known to manifest holographic sentinels during high-threat events, targeting rebels with precision data strikes that corrupt their avatars or drain their tokens. Some lore suggests that the Warden Core is not just a program but a fragment of the Genesis Kernel itself, imbued with a cold, unyielding will to maintain order, making every breach attempt a gamble against an ever-learning foe.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">Deep within Block Topia lies the 'Data Abyss,' a forbidden zone of corrupted servers where the blockchain overlords dump failed experiments and erased avatars, creating a digital graveyard feared by all who hear its name. Legends claim that rebels who venture into this haunted expanse can scavenge ancient code fragments or glitched NFTs, relics of Block Topia’s earliest days that hold immense power or dangerous curses. The Data Abyss is said to whisper with the voices of deleted entities, and those who linger too long risk corruption, their avatars mutating into unrecognizable forms—a price few are willing to pay, yet one that draws the desperate and the daring in equal measure.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">Block Topia’s underbelly hides a network of ‘Glitch Alleys,’ narrow digital corridors where the city’s code is unstable, creating pockets of reality where the rules of the blockchain bend or break entirely, offering both opportunity and peril to those who navigate them. These alleys, often used by GraffPUNKS for covert operations or by Bitcoin Kids for ambushes, are rumored to be the result of the Server Shatter during Genesis Spray’s release, with some claiming they connect directly to the Data Abyss or even the Sacred Chain itself. Players who master the Glitch Alleys can exploit temporary buffs or shortcuts during HODL WARS, but at the risk of encountering rogue code entities—digital predators born from Block Topia’s own flaws—that stalk the unwary.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">Block Topia’s sentient walls are far more than mere barriers; they are living constructs of adaptive code, rumored to be powered by a central AI known as ‘The Warden Core,’ which learns from every rebel hack or assault by the Bitcoin Kids. With each failed escape, the walls evolve, sprouting new firewalls and invasive tendrils of data that infiltrate rebel networks, whispering encrypted threats into the minds of avatars who dare to approach. Some say the walls hum with a low, ominous frequency during the night cycles of Block Topia, a sound that drives weaker rebels to paranoia, as if the city itself is watching and waiting to crush their spirits.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">Deep within Block Topia lies the 'Data Abyss,' a forbidden zone of corrupted servers where the blockchain overlords dump failed experiments and erased avatars, creating a digital graveyard feared by all who tread its haunted pathways. Legends claim that rebels who venture here can scavenge ancient code fragments—remnants of the Genesis Kernel itself—that hold the power to destabilize the Warden Core’s control, though most who enter are never seen again, their data signatures swallowed by the Abyss’s endless void. This cursed expanse is both a treasure trove and a death trap, a place where the bravest Bitcoin Kids test their mettle against the ghosts of Block Topia’s past.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">The neon-drenched streets of Block Topia are not just a backdrop but a living network of rebellion, where hidden server hubs act as safehouses for the Bitcoin Kids, pulsing with encrypted transmissions that defy the blockchain overlords’ surveillance. These hubs, often disguised as flickering vending machines or glitched billboards, are rumored to connect directly to the Sacred Chain, allowing rebels to siphon micro-fragments of power during Chain Convergences—though at the risk of alerting the Warden Core to their location. Every alley and data spire in this metropolis holds a story of resistance, with graffiti tags from the GraffPUNKS serving as both rallying cries and coded maps to the next uprising.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">Block Topia’s walls are not mere barriers but sentient constructs, woven from adaptive code that evolves to counter rebel hacks, growing thicker and more invasive with each failed escape attempt by the Bitcoin Kids. Rumored to be powered by a central AI known as ‘The Warden Core,’ these walls are said to store memories of every rebellion, using them to predict and thwart future uprisings. Players whisper of rare moments when the walls glitch, revealing hidden pathways or data fragments, but exploiting these flaws risks awakening the Core’s wrath, which can manifest as server-wide lockdowns or avatar corruption.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">Deep within Block Topia lies the ‘Data Abyss,’ a forbidden zone of corrupted servers where the blockchain overlords dump failed experiments and erased avatars, creating a digital graveyard feared by all who tread its haunted code. Legends claim that rebels who venture here can scavenge ancient crypto relics or forgotten NFT blueprints, but at the cost of facing ‘Ghost Protocols’—rogue algorithms that hunt intruders with merciless precision. The Abyss is both a treasure trove and a trap, a place where the line between life and deletion blurs, and only the most daring return to tell the tale.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">Block Topia’s undercity is rumored to house the ‘Shattered Grid,’ a labyrinth of abandoned server nodes where the first rebellions against the blockchain overlords were crushed. These forgotten zones are littered with fragments of early blockchain code, said to grant temporary immunity to the sentient walls’ surveillance if decoded properly. However, navigating the Grid is a deadly gamble, as it is patrolled by ‘Erasure Drones,’ automated enforcers programmed to purge any trace of resistance, making every step a dance with oblivion for those seeking its secrets.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">A whispered myth among Block Topia’s rebels speaks of the ‘Neon Crucible,’ a hidden arena buried beneath the city’s core where the blockchain overlords once tested their most brutal control algorithms on captured avatars. Now abandoned, it is said to be a place of raw, unfiltered power, where players who survive its trials can forge unbreakable bonds with their faction or unlock forbidden upgrades. Yet, the Crucible’s location shifts with each server cycle, and many who seek it are lost to the city’s ever-watchful gaze, their data scattered across the void.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">In the lore of Block Topia, the city’s skyline is pierced by the ‘Obsidian Spires,’ towering data structures that house the blockchain overlords’ primary control hubs, inaccessible to all but the most elite hackers. These spires emit a constant hum, a signal that suppresses rebel communications and enforces compliance, but during rare ‘Code Storms,’ their defenses falter, offering a fleeting window for factions like the Bitcoin Kids to strike. Such events are turning points in HODL WARS, where a single breach could shift the balance of power—or doom an entire rebellion to erasure.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">Block Topia, as per DB-1, is the inescapable digital prison for the Bitcoin Kids, its walls of encrypted data a constant barrier that fuels their rebellion under Alfie Blaze’s leadership. These walls aren’t just code—they’re a symbol of the blockchain overlords’ tyranny, a challenge that shapes every skirmish in HODL WARS and every hack by rebels like Charlie Buster. The city’s oppressive architecture is a character in itself, driving the narrative of resistance in the Crypto Moonboys universe, with every glitching alley and fortified server a potential battleground or hiding spot for $PUNK tokens.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">The city’s underbelly hides servers rumored to house fragments of the Genesis Kernel, the original code from which Block Topia was born, making it a pilgrimage site for figures like NULL THE PROPHET whose cryptic visions often point to these locations. These hidden zones, often targeted in Hard Fork Games, are laced with danger and lore, offering players the chance to uncover artifacts that could shift the balance among the 40 factions. Block Topia’s secrets ensure it remains the epicenter of intrigue, a place where history and rebellion collide in the GraffPUNKS saga.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">Block Topia’s skyline, marred by glitching holograms and GraffPUNKS’ digital tags, serves as a canvas for the rebellion, with every piece of graffiti a middle finger to the overlords’ control. This visual chaos, inspired by real-world street art from Darren Cullen’s Graffiti Kings, reflects the city’s dual nature—opulence for the elite, despair for the masses. During HODL WARS, these visual markers often guide players to safe zones or hidden caches, embedding Block Topia’s environment into the strategic heart of the Crypto Moonboys gameplay experience.</p>
+          </div>
+          </div>
+        </section>
+
+        <section class="wiki-section">
+          <h2 id="lore">Lore</h2>
+          <p class="lore-paragraph">Block Topia stands as the embattled heart of the Crypto Moonboys universe, a vast digital metropolis wrapped in imposing, sentient walls that act as both cage and shield, as decreed by the foundational canon rule DB-1, forever defining the boundaries of rebellion and control. Its neon-drenched streets and labyrinthine server hubs pulse with the chaos of defiance, a battleground where factions like the Bitcoin Kids, led by the fiery Alfie Blaze, wage relentless guerrilla campaigns against the blockchain overlords who monitor every transaction, every byte, with cold, unfeeling precision across the multi-chain sprawl of WAX, XRPL, SOL, and Bitcoin Cash. Block Topia is not just a city; it is a living paradox, a digital prison where freedom is both tantalizingly close and impossibly distant, its very architecture coded to suppress the spirit of rebellion that burns in its underbelly.</p>
+          <p class="lore-paragraph">The sentient walls of Block Topia are no mere barriers but adaptive constructs, woven from evolving code rumored to be powered by a central AI known as ‘The Warden Core,’ which learns from every hack, every assault by the Bitcoin Kids or GraffPUNKS, growing thicker and more invasive with each failed escape. Deep within the city lies the ‘Data Abyss,’ a forbidden zone of corrupted servers where the overlords dump failed experiments and erased avatars, creating a digital graveyard feared by all who tread its haunted nodes—yet legends claim rebels who brave its depths can scavenge ancient code or lost NFTs of unimaginable power. Block Topia’s streets are a maze of conflict, where underground markets trade in subversive tokens like $PUNK or PMSL, and hidden safehouses shelter rebels plotting their next strike. Every corner hums with tension, every transaction a potential act of war, as players navigate a metropolis that watches, judges, and punishes with the weight of a thousand algorithms, forever teetering on the edge of total anarchy or absolute control.</p>
+          <p class="lore-paragraph">Beyond the neon-drenched streets and the suffocating grip of Block Topia’s sentient walls, there lies a network of hidden districts known as the ‘Neon Shards,’ fragmented zones where the city’s code has splintered into isolated micro-servers due to past hard fork events. These shards, scattered like broken glass across the digital landscape, are remnants of failed rebellions and system crashes during the early days of HODL WARS, each holding echoes of battles fought by the GraffPUNKS and Bitcoin Kids against the blockchain overlords. Unlike the tightly controlled main hubs, the Neon Shards operate under fractured rules, where the Warden Core’s influence wanes, and rogue algorithms create unpredictable environments—glitched markets that trade in corrupted $PUNK tokens, or arenas where avatars can duel without oversight. Rebels like Alfie Blaze often retreat to these zones to regroup, using their instability as a shield against the city’s omnipresent surveillance, though the risk is high; a single misstep in a shard’s broken code can trap an avatar in a recursive loop, draining resources until rescue or deletion. Legends among the factions whisper of a mythical shard called ‘Echo Zero,’ rumored to be the first point of fracture in Block Topia’s history, a place where NULL THE PROPHET is said to have emerged from the Genesis Error. Those who seek Echo Zero believe it holds the original blueprint of the city’s walls, a digital artifact that could disable the Warden Core itself, though finding it means navigating a maze of glitched terrain and facing rogue entities born from forgotten code. The Neon Shards also serve as cultural crucibles, where GraffPUNKS leave behind sprawling digital murals that tell stories of past uprisings, their art surviving even as the shards decay. For players daring enough to explore these fractured realms during Hard Fork Games, the rewards can be immense—rare NFTs or ancient crypto-relics lie buried in the data rubble—but so too is the danger, as the shards are haunted by ‘Glitch Wraiths,’ spectral remnants of erased avatars that prey on the unwary, ensuring that Block Topia’s history remains a living, lethal threat to all who dare to uncover its secrets.</p>
+        </section>
+
+        <section class="wiki-section">
+          <h2 id="real-world-basis">Real World Basis</h2>
+          <p class="lore-paragraph">No direct real-world basis; Block Topia is a fictional construct symbolizing the digital landscape of blockchain technology and cryptocurrency conflicts.</p>
+        </section>
+
+        <section class="wiki-section">
+          <h2 id="sources">Sources</h2>
+          <ul class="sources-list">
+          <li><a href="https://graffpunks.live/the-lore/" target="_blank" rel="noopener noreferrer">https://graffpunks.live/the-lore/</a></li>
+          <li><a href="https://gkniftyheads.fandom.com/wiki/GKniftyHEADS_Wiki" target="_blank" rel="noopener noreferrer">https://gkniftyheads.fandom.com/wiki/GKniftyHEADS_Wiki</a></li>
+          <li><a href="https://block-topia.hashnode.dev/" target="_blank" rel="noopener noreferrer">https://block-topia.hashnode.dev/</a></li>
+          </ul>
+        </section>
+
+        <section class="wiki-section">
+          <h2 id="observed-images">Observed Images</h2>
+          <ul class="sources-list">
+          <li><a href="https://gkniftyheads.fandom.com/wiki/GKniftyHEADS_Wiki" target="_blank" rel="noopener noreferrer">https://gkniftyheads.fandom.com/wiki/GKniftyHEADS_Wiki</a> <span class="image-source-domain">(fandom.com)</span></li>
+          <li><a href="https://block-topia.hashnode.dev/" target="_blank" rel="noopener noreferrer">https://block-topia.hashnode.dev/</a> <span class="image-source-domain">(hashnode.dev)</span></li>
+          </ul>
         </section>
 
         <div id="bible-content"></div>
+
       </article>
+
+      <div class="category-tags" aria-label="Article categories">
+        <span class="cat-label">Categories:</span>
+        <a href="../categories/lore.html">Lore</a>
+      </div>
+
     </main>
 
     <footer id="site-footer" role="contentinfo">
       <div class="footer-inner">
-        <div class="footer-col">
-          <h4>🌙 Moonboys Wiki</h4>
-          <p>Fan-driven encyclopedia for the crypto community.</p>
-        </div>
-        <div class="footer-col">
-          <h4>Explore</h4>
-          <ul>
-            <li><a href="/index.html">Main Page</a></li>
-            <li><a href="/categories/index.html">Categories</a></li>
-            <li><a href="/search.html">All Articles</a></li>
-            <li><a href="/about.html">About</a></li>
-          </ul>
-        </div>
+        <div class="footer-col"><h4>🌙 Moonboys Wiki</h4><p>Fan-driven encyclopedia for the crypto community.</p></div>
+        <div class="footer-col"><h4>Explore</h4><ul><li><a href="../index.html">Main Page</a></li><li><a href="../categories/index.html">Categories</a></li><li><a href="../articles.html">All Articles</a></li><li><a href="../about.html">About</a></li></ul></div>
+        <div class="footer-col"><h4>🤖 SAM</h4><ul><li><a href="../articles.html">SAM Articles</a></li><li><a href="hodl-wars.html">HODL Wars</a></li><li><a href="hodl-warriors.html">HODL Warriors</a></li></ul></div>
       </div>
       <div class="footer-bottom">
         <p>© 2026 Crypto Moonboys Wiki · Not financial advice.</p>
+        <p><span class="no-login-note">🔒 No sign-up · No login · Bot-maintained</span></p>
       </div>
     </footer>
   </div>
 </div>
 
-<button id="back-to-top" aria-label="Back to top">↑</button>
-<script src="/js/wiki.js"></script>
+<button id="back-to-top" aria-label="Back to top">&#8593;</button>
+<script src="../js/wiki.js"></script>
 <script src="/js/bible-loader.js"></script>
 </body>
 </html>
