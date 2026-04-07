@@ -3,24 +3,64 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="The CRYPTO MOONGIRLS — Crypto Moonboys Wiki">
+  <meta name="description" content="The CRYPTO MOONGIRLS are a fierce, female-led faction in Block Topia, driven by an unyielding mission to claim crypto dominance in a male-heavy blockchain battl">
   <meta name="robots" content="index, follow">
   <meta property="og:title" content="The CRYPTO MOONGIRLS — Crypto Moonboys Wiki">
+  <meta property="og:description" content="The CRYPTO MOONGIRLS are a fierce, female-led faction in Block Topia, driven by an unyielding mission to claim crypto dominance in a male-heavy blockchain battl">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://crypto-moonboys.github.io/wiki/the-crypto-moongirls.html">
   <meta property="og:image" content="https://crypto-moonboys.github.io/img/logo.svg">
   <title>The CRYPTO MOONGIRLS — Crypto Moonboys Wiki</title>
-  <link rel="canonical" href="https://crypto-moonboys.github.io/wiki/the-crypto-moongirls.html">
-  <link rel="stylesheet" href="/css/wiki.css">
-  <link rel="icon" href="/img/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../css/wiki.css">
+  <link rel="icon" href="../img/favicon.svg" type="image/svg+xml">
+  <style>
+    .wiki-section {
+      margin: 1.6em 0;
+    }
+    .lore-paragraph {
+      line-height: 1.75;
+      margin: 0 0 1em 0;
+    }
+    .lead-paragraph {
+      font-size: 1.06em;
+      line-height: 1.8;
+      margin: 0 0 1em 0;
+    }
+    .lore-facts-stack {
+      display: block;
+    }
+    .lore-fact-block {
+      margin: 0 0 1.2em 0;
+      padding: 1em 1.1em;
+      background: rgba(255,255,255,0.03);
+      border-left: 4px solid #5b8cff;
+      border-radius: 6px;
+    }
+    .sources-list {
+      padding-left: 1.4em;
+    }
+    .sources-list li {
+      margin-bottom: 0.3em;
+      word-break: break-all;
+    }
+    .article-stats {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1em;
+      font-size: 0.85em;
+      color: #555;
+      margin-top: 0.5em;
+    }
+  </style>
 </head>
 <body>
-<a class="skip-link" href="#wiki-content">Skip to content</a>
+
+<a class="skip-link" href="#content">Skip to content</a>
 
 <header id="site-header" role="banner">
-  <button class="hamburger" id="hamburger" aria-label="Toggle navigation" aria-expanded="false" aria-controls="sidebar">&#9776;</button>
-  <a href="/index.html" class="site-logo" aria-label="Crypto Moonboys Wiki home">
-    <img src="/img/logo.svg" alt="" aria-hidden="true">
+  <button class="hamburger" id="hamburger" aria-label="Toggle navigation" aria-expanded="false" aria-controls="sidebar">☰</button>
+  <a href="../index.html" class="site-logo" aria-label="Crypto Moonboys Wiki home">
+    <img src="../img/logo.svg" alt="" aria-hidden="true">
     <span>
       <span class="logo-text">🌙 Moonboys Wiki</span>
       <span class="logo-sub">Crypto Encyclopedia</span>
@@ -32,9 +72,9 @@
     <div id="search-results" role="listbox"></div>
   </div>
   <nav class="header-nav" aria-label="Main navigation">
-    <a href="/index.html">Home</a>
-    <a href="/categories/index.html">Categories</a>
-    <a href="/search.html">All Articles</a>
+    <a href="../index.html">Home</a>
+    <a href="../categories/index.html">Categories</a>
+    <a href="../articles.html">All Articles</a>
   </nav>
 </header>
 
@@ -45,69 +85,157 @@
     <div class="sidebar-section">
       <div class="sidebar-heading">Navigation</div>
       <div class="sidebar-nav">
-        <a href="/index.html"><span class="nav-icon">🏠</span> Main Page</a>
-        <a href="/categories/index.html"><span class="nav-icon">📂</span> All Categories</a>
-        <a href="/search.html"><span class="nav-icon">🔎</span> All Articles</a>
-        <a href="/about.html"><span class="nav-icon">ℹ️</span> About</a>
+        <a href="../index.html"><span class="nav-icon">🏠</span> Main Page</a>
+        <a href="../categories/index.html"><span class="nav-icon">📂</span> All Categories</a>
+        <a href="../articles.html"><span class="nav-icon">🔍</span> All Articles</a>
+      </div>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-heading">Cryptocurrencies</div>
+      <div class="sidebar-nav">
+        <a href="bitcoin.html"><span class="nav-icon">₿</span> Bitcoin (BTC)</a>
+        <a href="ethereum.html"><span class="nav-icon">Ξ</span> Ethereum (ETH)</a>
+        <a href="solana.html"><span class="nav-icon">◎</span> Solana (SOL)</a>
+      </div>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-heading">⚔️ HODL Wars Lore</div>
+      <div class="sidebar-nav">
+        <a href="hodl-wars.html"><span class="nav-icon">📜</span> HODL Wars</a>
+        <a href="hodl-warriors.html"><span class="nav-icon">⚔️</span> HODL Warriors</a>
+        <a href="diamond-hands.html"><span class="nav-icon">💎</span> Diamond Hands</a>
+        <a href="moon-mission.html"><span class="nav-icon">🚀</span> Moon Mission</a>
       </div>
     </div>
   </nav>
 
   <div id="main-wrapper">
-    <main id="wiki-content" role="main">
+    <main id="content" role="main">
+
       <nav class="breadcrumb" aria-label="Breadcrumb">
-        <a href="/index.html">Home</a>
+        <a href="../index.html">Home</a>
         <span class="sep" aria-hidden="true">›</span>
-        <a href="/search.html">All Articles</a>
+        <a href="../categories/lore.html">Lore</a>
         <span class="sep" aria-hidden="true">›</span>
         <span aria-current="page">The CRYPTO MOONGIRLS</span>
       </nav>
 
-      <article data-entity-slug="the-crypto-moongirls">
-        <header class="wiki-header">
-          <h1>The CRYPTO MOONGIRLS</h1>
-          <p class="wiki-meta">Category: factions &nbsp;|&nbsp; Mentions: 0</p>
-        </header>
+      <h1 class="page-title">
+        ⚔️ The CRYPTO MOONGIRLS
+      </h1>
+      <div class="page-title-line" aria-hidden="true"></div>
+
+      <div class="article-meta">
+        <span class="article-badge">⚔️ Lore</span>
+        <span class="meta-item">📅 Last updated: March 2026</span>
+        <span class="meta-item">📂 <a href="../categories/lore.html">Lore</a></span>
+      </div>
+
+      <article class="wiki-content">
+
+          <p class="lead-paragraph">The CRYPTO MOONGIRLS are a fierce, female-led faction in Block Topia, driven by an unyielding mission to claim crypto dominance in a male-heavy blockchain battlefield. Wielding both technical brilliance and unrelenting grit, they specialize in digital heists, targeting the fortified nodes of economic giants like The FINANCE GUILD with strikes guided by eerie precision. Their NFT avatars, infused with lunar motifs, inspire empowerment, making them a symbol of resistance and strength in the digital streets.</p>
+          <p class="lead-paragraph">Drawing mystical strength from the phases of a digital moon in their lore, The CRYPTO MOONGIRLS are a sisterhood of warriors who challenge the status quo with every operation. They outsmart rivals at every turn, their encrypted networks pulsing with the energy of rebellion as they carve out a space for themselves in a world that seeks to marginalize them. To stand against them is to face a force as relentless as the tides, a faction whose fight for power is as personal as it is revolutionary.</p>
 
         <section class="wiki-section">
-          <h2 id="summary">Summary</h2>
-          <p>Category: factions. Aliases: CRYPTO MOONGIRLS — Crypto Moonboys Wiki, crypto moongirls moonboys wiki, the crypto moongirls. Tags: crypto, moongirls, moonboys, wiki.</p>
+          <h2 id="faction">Faction</h2>
+          <p class="lore-paragraph"><strong>Allegiance:</strong> Independent</p>
         </section>
 
         <section class="wiki-section">
-          <h2 id="source">Source</h2>
-          <p><a href="/wiki/the-crypto-moongirls.html" target="_blank" rel="noopener noreferrer">SAM Entity Memory</a></p>
+          <h2 id="known-facts">Known Facts</h2>
+          <div class="lore-facts-stack">
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">Female-led crypto warriors</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">Specialize in digital heists against financial factions</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">Draw strength from lunar code mythology</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">Inspire NFT and avatar representations of empowerment</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">The CRYPTO MOONGIRLS are a female-led faction of crypto warriors, rising against the male-heavy blockchain landscape with a mission of dominance, their technical prowess and fierce determination making them a force of empowerment as they challenge the status quo with every daring move.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">Specializing in digital heists, they strike at the financial heart of Block Topia, targeting factions like The FINANCE GUILD to crack fortified ledgers and redistribute hoarded wealth to the downtrodden, their operations a blend of tactical brilliance and raw grit that leaves rivals reeling.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">Their lore ties them to the mythology of the lunar code, a digital moon that empowers their strikes with mystical guidance, its phases reflected in their NFT avatars as crescent scars and starry circuits, symbolizing their unbreakable sisterhood and shared fight for justice.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">A prophecy encoded in their genesis NFT speaks of a ‘Lunar Eclipse Hack,’ a cataclysmic operation rumored to be in development, capable of plunging Block Topia’s financial systems into darkness and ushering in an era of equality under the Moongirls’ luminous banner.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">The CRYPTO MOONGIRLS are a female-led faction of crypto warriors, rising against the male-heavy blockchain landscape with a mission of dominance, their technical prowess and fierce determination making them a force of empowerment as they challenge the status quo with every daring strike.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">Specializing in digital heists against financial factions, The CRYPTO MOONGIRLS target the fortified nodes of giants like The FINANCE GUILD, cracking encrypted vaults with surgical precision to redistribute wealth and disrupt economic control in Block Topia.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">Drawing strength from lunar code mythology, The CRYPTO MOONGIRLS are guided by the phases of a digital moon pulsing through their networks, a mystical force in lore that lends eerie accuracy to their strikes, unnerving enemies with its otherworldly influence.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">Their NFT and avatar representations inspire empowerment, with The CRYPTO MOONGIRLS’ designs shimmering with celestial circuitry and crescent moons, turning digital art into a symbol of resistance that rallies the disenfranchised across Block Topia’s streets.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">The CRYPTO MOONGIRLS are a female-led faction of crypto warriors, rising against the male-heavy blockchain landscape with a mission of dominance, their technical prowess and fierce determination making them a force of empowerment as they challenge the status quo with every daring heist. Their signature operations often target the most arrogant financial factions, redistributing stolen NBG to smaller, struggling nodes, turning theft into a form of digital justice under the watchful gaze of their lunar code.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">Drawing strength from their lunar code mythology, The CRYPTO MOONGIRLS time their most audacious strikes to coincide with the phases of Block Topia’s digital moon, believing that each cycle amplifies their encrypted networks with an otherworldly power. During the ‘Full Moon Fracture,’ a legendary heist against a corporate vault, their synchronized attack exploited a rare alignment in the metaverse’s metadata, breaching defenses that were thought unbreakable and solidifying their mystique as warriors of the night.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">Their specialization in digital heists has made them feared by financial factions across Block Topia, with tales of their ‘Moonlit Withdrawal’ protocol—a stealth hack that drains vaults over weeks without triggering alarms—becoming cautionary lore among the elite. This method, rumored to leave a crescent-shaped glitch in the targeted system’s logs, serves as both a calling card and a reminder that no amount of wealth can shield against their ghostly precision.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">The CRYPTO MOONGIRLS inspire a wave of NFT and avatar representations that embody empowerment, with their iconic lunar designs becoming symbols of resistance in Block Topia’s cultural underground. These digital artifacts, often minted after major victories, are imbued with fragments of their operation data, turning each piece into a collectible record of their fight for dominance and a rallying cry for others to join their sisterhood.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">Legends whisper of a hidden sanctuary called ‘Lunar Nexus,’ a digital stronghold where The CRYPTO MOONGIRLS retreat to plan their next moves, accessible only during specific lunar phases in Block Topia’s simulated sky. Protected by layers of shifting encryption that mimic tidal patterns, this elusive base is said to house the ‘Moonstone Ledger,’ a record of every heist they’ve ever pulled, its contents a potential weapon that could topple financial empires if ever decrypted by the wrong hands.</p>
+          </div>
+          </div>
         </section>
 
-        <div id="bible-content"></div>
-      </article>
+        <section class="wiki-section">
+          <h2 id="lore">Lore</h2>
+          <p class="lore-paragraph">In the shadowed glow of Block Topia’s digital skyline, The CRYPTO MOONGIRLS stand as a blazing beacon of defiance, a sisterhood of crypto warriors forged in the unrelenting fight for dominance over a male-dominated blockchain world that seeks to sideline them. Their lore casts them as daughters of the lunar code, drawing mystical strength from the phases of a digital moon that pulses through their encrypted networks, guiding their strikes with an eerie, almost supernatural precision that unnerves even the most hardened foes.</p>
+          <p class="lore-paragraph">Masters of digital heists, they target the fortified nodes of economic titans like The FINANCE GUILD, cracking impregnable vaults and redistributing wealth in daring raids that send shockwaves through Block Topia’s markets. Their NFT avatars shimmer with lunar motifs—crescent moons and celestial circuitry—symbols of empowerment that inspire countless others to resist the patriarchal structures of the crypto wars. Operating from hidden lunar servers, decentralized hubs that shift with the digital tides, they plan their operations under the glow of encrypted moonlight, striking when least expected and vanishing before retaliation can follow.</p>
+          <p class="lore-paragraph">The CRYPTO MOONGIRLS are more than a faction; they are a movement, a force of rebellion and resilience that challenges the very foundations of Block Topia’s power dynamics, proving that in a city of code, strength and brilliance know no gender. Their fight is personal, rooted in a history of being underestimated, a grievance they turn into fuel for every meticulously planned assault on the status quo.</p>
+        </section>
+
+
+        <section class="wiki-section">
+          <h2 id="sources">Sources</h2>
+          <ul class="sources-list">
+          </ul>
+        </section>
+</article>
+
+      <div class="category-tags" aria-label="Article categories">
+        <span class="cat-label">Categories:</span>
+        <a href="../categories/lore.html">Lore</a>
+      </div>
+
     </main>
 
     <footer id="site-footer" role="contentinfo">
       <div class="footer-inner">
-        <div class="footer-col">
-          <h4>🌙 Moonboys Wiki</h4>
-          <p>Fan-driven encyclopedia for the crypto community.</p>
-        </div>
-        <div class="footer-col">
-          <h4>Explore</h4>
-          <ul>
-            <li><a href="/index.html">Main Page</a></li>
-            <li><a href="/categories/index.html">Categories</a></li>
-            <li><a href="/search.html">All Articles</a></li>
-            <li><a href="/about.html">About</a></li>
-          </ul>
-        </div>
+        <div class="footer-col"><h4>🌙 Moonboys Wiki</h4><p>Fan-driven encyclopedia for the crypto community.</p></div>
+        <div class="footer-col"><h4>Explore</h4><ul><li><a href="../index.html">Main Page</a></li><li><a href="../categories/index.html">Categories</a></li><li><a href="../articles.html">All Articles</a></li><li><a href="../about.html">About</a></li></ul></div>
+        <div class="footer-col"><h4>🌐 Wiki</h4><ul><li><a href="../articles.html">All Articles</a></li><li><a href="hodl-wars.html">HODL Wars</a></li><li><a href="hodl-warriors.html">HODL Warriors</a></li></ul></div>
       </div>
       <div class="footer-bottom">
         <p>© 2026 Crypto Moonboys Wiki · Not financial advice.</p>
+        <p><span class="no-login-note">🔒 No sign-up · No login · Bot-maintained</span></p>
       </div>
     </footer>
   </div>
 </div>
 
-<button id="back-to-top" aria-label="Back to top">↑</button>
-<script src="/js/wiki.js"></script>
+<button id="back-to-top" aria-label="Back to top">&#8593;</button>
+<script src="../js/wiki.js"></script>
 <script src="/js/bible-loader.js"></script>
 </body>
 </html>

@@ -3,24 +3,64 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="The DUCKY BOYS — Crypto Moonboys Wiki">
+  <meta name="description" content="The DUCKY BOYS are an enigmatic and unpredictable faction in Block Topia, their whimsical, cartoonish appearance a deceptive mask for a lethal edge that disarms">
   <meta name="robots" content="index, follow">
   <meta property="og:title" content="The DUCKY BOYS — Crypto Moonboys Wiki">
+  <meta property="og:description" content="The DUCKY BOYS are an enigmatic and unpredictable faction in Block Topia, their whimsical, cartoonish appearance a deceptive mask for a lethal edge that disarms">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://crypto-moonboys.github.io/wiki/the-ducky-boys.html">
   <meta property="og:image" content="https://crypto-moonboys.github.io/img/logo.svg">
   <title>The DUCKY BOYS — Crypto Moonboys Wiki</title>
-  <link rel="canonical" href="https://crypto-moonboys.github.io/wiki/the-ducky-boys.html">
-  <link rel="stylesheet" href="/css/wiki.css">
-  <link rel="icon" href="/img/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../css/wiki.css">
+  <link rel="icon" href="../img/favicon.svg" type="image/svg+xml">
+  <style>
+    .wiki-section {
+      margin: 1.6em 0;
+    }
+    .lore-paragraph {
+      line-height: 1.75;
+      margin: 0 0 1em 0;
+    }
+    .lead-paragraph {
+      font-size: 1.06em;
+      line-height: 1.8;
+      margin: 0 0 1em 0;
+    }
+    .lore-facts-stack {
+      display: block;
+    }
+    .lore-fact-block {
+      margin: 0 0 1.2em 0;
+      padding: 1em 1.1em;
+      background: rgba(255,255,255,0.03);
+      border-left: 4px solid #5b8cff;
+      border-radius: 6px;
+    }
+    .sources-list {
+      padding-left: 1.4em;
+    }
+    .sources-list li {
+      margin-bottom: 0.3em;
+      word-break: break-all;
+    }
+    .article-stats {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1em;
+      font-size: 0.85em;
+      color: #555;
+      margin-top: 0.5em;
+    }
+  </style>
 </head>
 <body>
-<a class="skip-link" href="#wiki-content">Skip to content</a>
+
+<a class="skip-link" href="#content">Skip to content</a>
 
 <header id="site-header" role="banner">
-  <button class="hamburger" id="hamburger" aria-label="Toggle navigation" aria-expanded="false" aria-controls="sidebar">&#9776;</button>
-  <a href="/index.html" class="site-logo" aria-label="Crypto Moonboys Wiki home">
-    <img src="/img/logo.svg" alt="" aria-hidden="true">
+  <button class="hamburger" id="hamburger" aria-label="Toggle navigation" aria-expanded="false" aria-controls="sidebar">☰</button>
+  <a href="../index.html" class="site-logo" aria-label="Crypto Moonboys Wiki home">
+    <img src="../img/logo.svg" alt="" aria-hidden="true">
     <span>
       <span class="logo-text">🌙 Moonboys Wiki</span>
       <span class="logo-sub">Crypto Encyclopedia</span>
@@ -32,9 +72,9 @@
     <div id="search-results" role="listbox"></div>
   </div>
   <nav class="header-nav" aria-label="Main navigation">
-    <a href="/index.html">Home</a>
-    <a href="/categories/index.html">Categories</a>
-    <a href="/search.html">All Articles</a>
+    <a href="../index.html">Home</a>
+    <a href="../categories/index.html">Categories</a>
+    <a href="../articles.html">All Articles</a>
   </nav>
 </header>
 
@@ -45,69 +85,158 @@
     <div class="sidebar-section">
       <div class="sidebar-heading">Navigation</div>
       <div class="sidebar-nav">
-        <a href="/index.html"><span class="nav-icon">🏠</span> Main Page</a>
-        <a href="/categories/index.html"><span class="nav-icon">📂</span> All Categories</a>
-        <a href="/search.html"><span class="nav-icon">🔎</span> All Articles</a>
-        <a href="/about.html"><span class="nav-icon">ℹ️</span> About</a>
+        <a href="../index.html"><span class="nav-icon">🏠</span> Main Page</a>
+        <a href="../categories/index.html"><span class="nav-icon">📂</span> All Categories</a>
+        <a href="../articles.html"><span class="nav-icon">🔍</span> All Articles</a>
+      </div>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-heading">Cryptocurrencies</div>
+      <div class="sidebar-nav">
+        <a href="bitcoin.html"><span class="nav-icon">₿</span> Bitcoin (BTC)</a>
+        <a href="ethereum.html"><span class="nav-icon">Ξ</span> Ethereum (ETH)</a>
+        <a href="solana.html"><span class="nav-icon">◎</span> Solana (SOL)</a>
+      </div>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-heading">⚔️ HODL Wars Lore</div>
+      <div class="sidebar-nav">
+        <a href="hodl-wars.html"><span class="nav-icon">📜</span> HODL Wars</a>
+        <a href="hodl-warriors.html"><span class="nav-icon">⚔️</span> HODL Warriors</a>
+        <a href="diamond-hands.html"><span class="nav-icon">💎</span> Diamond Hands</a>
+        <a href="moon-mission.html"><span class="nav-icon">🚀</span> Moon Mission</a>
       </div>
     </div>
   </nav>
 
   <div id="main-wrapper">
-    <main id="wiki-content" role="main">
+    <main id="content" role="main">
+
       <nav class="breadcrumb" aria-label="Breadcrumb">
-        <a href="/index.html">Home</a>
+        <a href="../index.html">Home</a>
         <span class="sep" aria-hidden="true">›</span>
-        <a href="/search.html">All Articles</a>
+        <a href="../categories/lore.html">Lore</a>
         <span class="sep" aria-hidden="true">›</span>
         <span aria-current="page">The DUCKY BOYS</span>
       </nav>
 
-      <article data-entity-slug="the-ducky-boys">
-        <header class="wiki-header">
-          <h1>The DUCKY BOYS</h1>
-          <p class="wiki-meta">Category: factions &nbsp;|&nbsp; Mentions: 0</p>
-        </header>
+      <h1 class="page-title">
+        ⚔️ The DUCKY BOYS
+      </h1>
+      <div class="page-title-line" aria-hidden="true"></div>
+
+      <div class="article-meta">
+        <span class="article-badge">⚔️ Lore</span>
+        <span class="meta-item">📅 Last updated: March 2026</span>
+        <span class="meta-item">📂 <a href="../categories/lore.html">Lore</a></span>
+      </div>
+
+      <article class="wiki-content">
+
+          <p class="lead-paragraph">The DUCKY BOYS are an enigmatic and unpredictable faction in Block Topia, their whimsical, cartoonish appearance a deceptive mask for a lethal edge that disarms even the most battle-hardened crews. Masters of trickery, they lure rivals into deadly traps with playful NFT decoys and avatar disguises, turning urban skirmishes into chaotic games where laughter often precedes destruction. Their playful demeanor hides a penchant for deception that has felled countless enemies in the neon-lit alleys of the city.</p>
+          <p class="lead-paragraph">Born from a catastrophic blockchain glitch, The DUCKY BOYS delight in chaos, using their rubber-duck motifs and glitchy memes to sow confusion before striking with ruthless precision. They are the wildcard of Block Topia’s conflicts, their alliances as fleeting as their traps are deadly, making them a faction that no one can truly predict or trust. To underestimate them is to invite ruin, as their games are always played for keeps.</p>
 
         <section class="wiki-section">
-          <h2 id="summary">Summary</h2>
-          <p>Category: factions. Aliases: DUCKY BOYS — Crypto Moonboys Wiki, ducky boys crypto moonboys wiki, the ducky boys. Tags: ducky, boys, crypto, moonboys, wiki.</p>
+          <h2 id="faction">Faction</h2>
+          <p class="lore-paragraph"><strong>Allegiance:</strong> Independent</p>
         </section>
 
         <section class="wiki-section">
-          <h2 id="source">Source</h2>
-          <p><a href="/wiki/the-ducky-boys.html" target="_blank" rel="noopener noreferrer">SAM Entity Memory</a></p>
+          <h2 id="known-facts">Known Facts</h2>
+          <div class="lore-facts-stack">
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">Quirky yet dangerous crew</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">Use playful decoys and disguises in combat</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">Born from a blockchain glitch in lore</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">Wildcard faction in conflicts and alliances</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">The DUCKY BOYS are a quirky yet dangerous crew, their whimsical appearance a deadly ruse as they lure enemies into traps with playful NFT decoys and avatar disguises, only to strike with ruthless precision, turning urban skirmishes into chaotic games where laughter cloaks lethal intent.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">Born from a blockchain glitch in their lore, the DUCKY BOYS embody digital chaos, their very existence a product of corrupted code that twisted innocent data into a faction of jesters whose pranks often end in bloodshed, making them feared even by the most hardened fighters.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">Their unpredictability marks them as wildcards in Block Topia’s conflicts, as they align with no one, driven by a creed of chaos that sees them aiding a faction one day and betraying it the next, their true motives hidden behind a mask of playful malice.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">Legends whisper that their glitch-origin imbued them with a fragment of corrupted code, a digital curse that compels them to sow discord wherever they go, ensuring that every quack and smile hides a potential trap waiting to ensnare the unwary.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">The DUCKY BOYS are a quirky yet dangerous crew, their whimsical appearance a deadly ruse as they lure enemies into traps with playful NFT decoys and avatar disguises, only to strike with ruthless precision, turning urban skirmishes into chaotic games where laughter masks destruction.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">Born from a blockchain glitch in lore, The DUCKY BOYS emerged from a catastrophic rupture in Block Topia’s code, their chaotic essence a reflection of the digital instability that birthed them, fueling their unpredictable tactics and fractured worldview.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">As a wildcard faction in conflicts and alliances, The DUCKY BOYS’ loyalties are as fleeting as their traps are deadly, their shifting allegiances keeping even the most cunning factions on edge, as no one can predict where their chaotic games will lead next.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">Their strongholds lie in the glitchy fringes of Block Topia’s blockchain, unstable sectors where code frays and reality distorts, mirroring The DUCKY BOYS’ own fractured nature and making them an elusive, almost ghostly presence in the city’s digital wars.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">The DUCKY BOYS are a quirky yet dangerous crew, their whimsical appearance a deadly ruse as they lure enemies into traps with playful NFT decoys and avatar disguises, only to strike with ruthless precision, turning urban skirmishes into chaotic games where laughter masks lethal intent.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">Born from a blockchain glitch in lore, their chaotic essence defies conventional digital logic, granting them an unpredictable edge in combat and strategy, as their code seems to rewrite itself mid-battle, confounding even the most advanced tracking systems of rival factions.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">As a wildcard faction in conflicts and alliances, The DUCKY BOYS shift allegiances with maddening unpredictability, often sowing discord for the sheer thrill of chaos, making them both invaluable allies and terrifying enemies in Block Topia’s ever-shifting power struggles.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">Rumors claim their glitch origin has left them with a ‘Laughing Shard,’ a corrupted fragment of code that can infect enemy systems with paralyzing laughter loops, a psychological weapon that cripples avatars and networks alike, spreading chaos before a single blow is struck.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">Their hidden lairs, known as Duck Ponds, are virtual mazes of traps and illusions, littered with playful but deadly holograms that confound intruders, while The DUCKY BOYS watch from the shadows, giggling as they spring ambushes on even the most cautious of foes.</p>
+          </div>
+          </div>
         </section>
 
-        <div id="bible-content"></div>
-      </article>
+        <section class="wiki-section">
+          <h2 id="lore">Lore</h2>
+          <p class="lore-paragraph">Beneath the colorful, cartoonish facade of The DUCKY BOYS lies a faction of deadly tricksters, their origins in Block Topia tied to a catastrophic glitch in the blockchain that birthed their chaotic, unpredictable essence. Lore paints them as digital jesters, their playful NFT avatars and rubber-duck motifs a deceptive veneer that hides a penchant for deception so sharp it has felled countless rivals in the neon-lit alleys of the city.</p>
+          <p class="lore-paragraph">They delight in setting traps, using seemingly harmless decoys—animated ducks, glitchy memes, or quirky avatar skins—that explode into devastating attacks or data breaches when least expected, turning skirmishes into chaotic games where laughter often precedes destruction. Their strongholds are hidden in the glitchy fringes of Block Topia’s code, unstable sectors where the blockchain’s fabric frays, reflecting their own fractured nature and making them nearly impossible to track.</p>
+          <p class="lore-paragraph">The DUCKY BOYS thrive on being underestimated, their whimsical appearance lulling enemies into a false sense of security before they strike with ruthless precision, often leaving behind only a trail of digital confetti and shattered defenses. A wildcard in any conflict or alliance, their loyalties shift as quickly as their traps spring, making them a faction that even the most cunning players—like The NICE &amp; EASY BOIS—approach with caution.</p>
+          <p class="lore-paragraph">In Block Topia, The DUCKY BOYS are a reminder that chaos wears many masks, and the most playful smile can hide the deadliest intent.</p>
+        </section>
+
+
+        <section class="wiki-section">
+          <h2 id="sources">Sources</h2>
+          <ul class="sources-list">
+          </ul>
+        </section>
+</article>
+
+      <div class="category-tags" aria-label="Article categories">
+        <span class="cat-label">Categories:</span>
+        <a href="../categories/lore.html">Lore</a>
+      </div>
+
     </main>
 
     <footer id="site-footer" role="contentinfo">
       <div class="footer-inner">
-        <div class="footer-col">
-          <h4>🌙 Moonboys Wiki</h4>
-          <p>Fan-driven encyclopedia for the crypto community.</p>
-        </div>
-        <div class="footer-col">
-          <h4>Explore</h4>
-          <ul>
-            <li><a href="/index.html">Main Page</a></li>
-            <li><a href="/categories/index.html">Categories</a></li>
-            <li><a href="/search.html">All Articles</a></li>
-            <li><a href="/about.html">About</a></li>
-          </ul>
-        </div>
+        <div class="footer-col"><h4>🌙 Moonboys Wiki</h4><p>Fan-driven encyclopedia for the crypto community.</p></div>
+        <div class="footer-col"><h4>Explore</h4><ul><li><a href="../index.html">Main Page</a></li><li><a href="../categories/index.html">Categories</a></li><li><a href="../articles.html">All Articles</a></li><li><a href="../about.html">About</a></li></ul></div>
+        <div class="footer-col"><h4>🌐 Wiki</h4><ul><li><a href="../articles.html">All Articles</a></li><li><a href="hodl-wars.html">HODL Wars</a></li><li><a href="hodl-warriors.html">HODL Warriors</a></li></ul></div>
       </div>
       <div class="footer-bottom">
         <p>© 2026 Crypto Moonboys Wiki · Not financial advice.</p>
+        <p><span class="no-login-note">🔒 No sign-up · No login · Bot-maintained</span></p>
       </div>
     </footer>
   </div>
 </div>
 
-<button id="back-to-top" aria-label="Back to top">↑</button>
-<script src="/js/wiki.js"></script>
+<button id="back-to-top" aria-label="Back to top">&#8593;</button>
+<script src="../js/wiki.js"></script>
 <script src="/js/bible-loader.js"></script>
 </body>
 </html>

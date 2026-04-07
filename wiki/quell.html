@@ -3,24 +3,64 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Quell — Crypto Moonboys Wiki">
+  <meta name="description" content="Quell stands as a rare peacekeeper in the war-torn digital expanse of Block Topia, a singular voice of calm amid the relentless conflicts of the Crypto Moonboys">
   <meta name="robots" content="index, follow">
   <meta property="og:title" content="Quell — Crypto Moonboys Wiki">
+  <meta property="og:description" content="Quell stands as a rare peacekeeper in the war-torn digital expanse of Block Topia, a singular voice of calm amid the relentless conflicts of the Crypto Moonboys">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://crypto-moonboys.github.io/wiki/quell.html">
   <meta property="og:image" content="https://crypto-moonboys.github.io/img/logo.svg">
   <title>Quell — Crypto Moonboys Wiki</title>
-  <link rel="canonical" href="https://crypto-moonboys.github.io/wiki/quell.html">
-  <link rel="stylesheet" href="/css/wiki.css">
-  <link rel="icon" href="/img/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../css/wiki.css">
+  <link rel="icon" href="../img/favicon.svg" type="image/svg+xml">
+  <style>
+    .wiki-section {
+      margin: 1.6em 0;
+    }
+    .lore-paragraph {
+      line-height: 1.75;
+      margin: 0 0 1em 0;
+    }
+    .lead-paragraph {
+      font-size: 1.06em;
+      line-height: 1.8;
+      margin: 0 0 1em 0;
+    }
+    .lore-facts-stack {
+      display: block;
+    }
+    .lore-fact-block {
+      margin: 0 0 1.2em 0;
+      padding: 1em 1.1em;
+      background: rgba(255,255,255,0.03);
+      border-left: 4px solid #5b8cff;
+      border-radius: 6px;
+    }
+    .sources-list {
+      padding-left: 1.4em;
+    }
+    .sources-list li {
+      margin-bottom: 0.3em;
+      word-break: break-all;
+    }
+    .article-stats {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1em;
+      font-size: 0.85em;
+      color: #555;
+      margin-top: 0.5em;
+    }
+  </style>
 </head>
 <body>
-<a class="skip-link" href="#wiki-content">Skip to content</a>
+
+<a class="skip-link" href="#content">Skip to content</a>
 
 <header id="site-header" role="banner">
-  <button class="hamburger" id="hamburger" aria-label="Toggle navigation" aria-expanded="false" aria-controls="sidebar">&#9776;</button>
-  <a href="/index.html" class="site-logo" aria-label="Crypto Moonboys Wiki home">
-    <img src="/img/logo.svg" alt="" aria-hidden="true">
+  <button class="hamburger" id="hamburger" aria-label="Toggle navigation" aria-expanded="false" aria-controls="sidebar">☰</button>
+  <a href="../index.html" class="site-logo" aria-label="Crypto Moonboys Wiki home">
+    <img src="../img/logo.svg" alt="" aria-hidden="true">
     <span>
       <span class="logo-text">🌙 Moonboys Wiki</span>
       <span class="logo-sub">Crypto Encyclopedia</span>
@@ -32,9 +72,9 @@
     <div id="search-results" role="listbox"></div>
   </div>
   <nav class="header-nav" aria-label="Main navigation">
-    <a href="/index.html">Home</a>
-    <a href="/categories/index.html">Categories</a>
-    <a href="/search.html">All Articles</a>
+    <a href="../index.html">Home</a>
+    <a href="../categories/index.html">Categories</a>
+    <a href="../articles.html">All Articles</a>
   </nav>
 </header>
 
@@ -45,69 +85,142 @@
     <div class="sidebar-section">
       <div class="sidebar-heading">Navigation</div>
       <div class="sidebar-nav">
-        <a href="/index.html"><span class="nav-icon">🏠</span> Main Page</a>
-        <a href="/categories/index.html"><span class="nav-icon">📂</span> All Categories</a>
-        <a href="/search.html"><span class="nav-icon">🔎</span> All Articles</a>
-        <a href="/about.html"><span class="nav-icon">ℹ️</span> About</a>
+        <a href="../index.html"><span class="nav-icon">🏠</span> Main Page</a>
+        <a href="../categories/index.html"><span class="nav-icon">📂</span> All Categories</a>
+        <a href="../articles.html"><span class="nav-icon">🔍</span> All Articles</a>
+      </div>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-heading">Cryptocurrencies</div>
+      <div class="sidebar-nav">
+        <a href="bitcoin.html"><span class="nav-icon">₿</span> Bitcoin (BTC)</a>
+        <a href="ethereum.html"><span class="nav-icon">Ξ</span> Ethereum (ETH)</a>
+        <a href="solana.html"><span class="nav-icon">◎</span> Solana (SOL)</a>
+      </div>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-heading">⚔️ HODL Wars Lore</div>
+      <div class="sidebar-nav">
+        <a href="hodl-wars.html"><span class="nav-icon">📜</span> HODL Wars</a>
+        <a href="hodl-warriors.html"><span class="nav-icon">⚔️</span> HODL Warriors</a>
+        <a href="diamond-hands.html"><span class="nav-icon">💎</span> Diamond Hands</a>
+        <a href="moon-mission.html"><span class="nav-icon">🚀</span> Moon Mission</a>
       </div>
     </div>
   </nav>
 
   <div id="main-wrapper">
-    <main id="wiki-content" role="main">
+    <main id="content" role="main">
+
       <nav class="breadcrumb" aria-label="Breadcrumb">
-        <a href="/index.html">Home</a>
+        <a href="../index.html">Home</a>
         <span class="sep" aria-hidden="true">›</span>
-        <a href="/search.html">All Articles</a>
+        <a href="../categories/lore.html">Lore</a>
         <span class="sep" aria-hidden="true">›</span>
         <span aria-current="page">Quell</span>
       </nav>
 
-      <article data-entity-slug="quell">
-        <header class="wiki-header">
-          <h1>Quell</h1>
-          <p class="wiki-meta">Category: characters &nbsp;|&nbsp; Mentions: 0</p>
-        </header>
+      <h1 class="page-title">
+        🎭 Quell
+      </h1>
+      <div class="page-title-line" aria-hidden="true"></div>
+
+      <div class="article-meta">
+        <span class="article-badge">🎭 Lore</span>
+        <span class="meta-item">📅 Last updated: March 2026</span>
+        <span class="meta-item">📂 <a href="../categories/lore.html">Lore</a></span>
+      </div>
+
+      <article class="wiki-content">
+
+          <p class="lead-paragraph">Quell stands as a rare peacekeeper in the war-torn digital expanse of Block Topia, a singular voice of calm amid the relentless conflicts of the Crypto Moonboys universe. His mission is to broker truce and maintain balance between warring factions, often stepping unarmed into the heart of metaverse battlegrounds with nothing but his charisma and unshakable resolve to end bloodshed before it consumes all. Quell’s presence can transform raging conflicts into uneasy stalemates, his words carrying a weight that even the most hardened warriors cannot ignore.</p>
+          <p class="lead-paragraph">Though his unknown allegiance raises questions about his deeper motives, Quell’s diplomatic efforts often surface during tumultuous events like the Triple Fork Event, where his interventions have saved countless digital lives by averting all-out slaughter. In a metaverse defined by chaos and vengeance, Quell is an anomaly—a figure who believes that peace, however fleeting, is worth fighting for, even if it means standing alone against the tide of war.</p>
+          <p class="lead-paragraph">His quiet strength is a beacon for those weary of endless strife, a reminder that not all power in Block Topia is born of violence.</p>
 
         <section class="wiki-section">
-          <h2 id="summary">Summary</h2>
-          <p>Category: characters. Aliases: quell, quell crypto moonboys wiki. Tags: quell, crypto, moonboys, wiki.</p>
+          <h2 id="faction">Faction</h2>
+          <p class="lore-paragraph"><strong>Allegiance:</strong> Unknown</p>
         </section>
 
         <section class="wiki-section">
-          <h2 id="source">Source</h2>
-          <p><a href="/wiki/quell.html" target="_blank" rel="noopener noreferrer">SAM Entity Memory</a></p>
+          <h2 id="known-facts">Known Facts</h2>
+          <div class="lore-facts-stack">
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">Peacekeeper in lore</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">Quell stands as a peacekeeper in Block Topia, striving to maintain balance amid the relentless digital wars of the Crypto Moonboys universe, a rare voice of calm seeking truce over the clash of metaverse battles.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">His diplomatic efforts often surface during tumultuous events like the Triple Fork Event, attempting to broker peace between warring factions, though his unknown allegiance raises questions about his deeper motives.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">Quell stands as a peacekeeper in Block Topia, striving to maintain balance amid the relentless digital wars of the Crypto Moonboys universe, a rare voice of calm seeking truce over the clash of metaverse battles. His presence has turned battlegrounds into temporary neutral zones, where even the fiercest warriors pause to hear his pleas for unity, though such moments are often shattered by the underlying distrust that fuels the rebellion.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">His diplomatic efforts often surface during tumultuous events like the Triple Fork Event, attempting to broker peace between warring factions with words instead of weapons. Quell’s interventions have reportedly saved countless digital lives by averting all-out factional annihilation, yet his unknown allegiance raises persistent questions about whether his peace serves a hidden master or a genuine vision for Block Topia’s future.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">Legends within the metaverse whisper that Quell possesses a fragment of ancient code, a pacifying algorithm from the dawn of the Sacred Chain, which grants him the ability to soothe even the most corrupted data streams. Whether this rumored power is myth or reality, his ability to stand unscathed amidst chaos marks him as an anomaly, a figure whose true purpose may yet reshape the destiny of the Crypto Moonboys universe.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">Quell stands as a peacekeeper in Block Topia, striving to maintain balance amid the relentless digital wars of the Crypto Moonboys universe, a rare voice of calm seeking truce over the clash of metaverse battles. His presence has turned battlegrounds into temporary sanctuaries, where warriors from opposing factions have laid down arms long enough to negotiate, often under the weight of Quell’s unflinching gaze. Reports from survivors of these encounters describe an almost tangible aura of serenity around him, a force that seems to dampen the aggression coded into the very fabric of Block Topia’s networks.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">His diplomatic efforts often surface during tumultuous events like the Triple Fork Event, attempting to broker peace between warring factions, though his unknown allegiance raises questions about his deeper motives. During one such crisis, Quell is said to have walked into the heart of a battlefield between HODL Warriors and GraffPUNKS, halting a massacre by negotiating a temporary data-sharing pact that benefited both sides. His interventions have reportedly saved countless digital lives by averting all-out slaughter, yet whispers persist that his actions may serve a hidden agenda, one that even his most ardent supporters cannot decipher.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">Quell’s reputation as a mediator has led to the creation of ‘Quell Zones,’ unofficial neutral territories in Block Topia where factions agree to meet under his protection to resolve disputes without bloodshed. These zones, often marked by simple, unadorned data nodes, have become rare havens in a metaverse of war, though they are not without risk—rogue elements and entities like Samael.exe have been known to target them, viewing Quell’s efforts as a threat to their own chaotic designs. Despite these dangers, Quell continues to uphold these spaces, believing they are the first step toward a lasting peace, however distant that dream may seem.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">Legends among Block Topia’s warriors speak of Quell possessing a hidden ability to ‘mute’ digital aggression, a power that temporarily disables hostile protocols in mechs and networks within his vicinity, forcing combatants to confront each other without the crutch of violence. While no concrete evidence supports this claim, accounts from multiple factions describe battles grinding to a halt in his presence, as if the very code of conflict refuses to execute. Whether this is a coded ability, a glitch, or pure myth, it only adds to Quell’s mystique, painting him as a figure who wields peace as others wield weapons.</p>
+          </div>
+          </div>
         </section>
 
-        <div id="bible-content"></div>
-      </article>
+        <section class="wiki-section">
+          <h2 id="lore">Lore</h2>
+          <p class="lore-paragraph">In the fractious realm of Block Topia, Quell emerges as an unlikely beacon of peace, a peacekeeper whose very existence defies the ceaseless violence that defines the Crypto Moonboys universe. Amidst the clashing of factions and the roar of metaverse battles, Quell strides into conflict zones unarmed by conventional means, wielding instead a rare charisma and an unshakable resolve to end bloodshed before it consumes all.</p>
+          <p class="lore-paragraph">His calming influence often manifests during the most tumultuous events, such as the Triple Fork Event, where his mere presence has turned battlegrounds into temporary zones of truce, warriors lowering their weapons—if only for a moment—to hear his pleas for balance. Quell’s origins are as enigmatic as his motives; some say he was once a warrior who lost everything to the HODL WARS, turning to peace as a form of redemption, while others believe he is a construct, a protocol designed by forgotten coders to stabilize a metaverse spiraling into chaos.</p>
+          <p class="lore-paragraph">Despite his lack of weapons, Quell is no stranger to danger, often placing himself directly in the line of fire to mediate between bitter enemies like the Bitcoin Kids and the GKniftyHEADS, his words cutting through the static of war with a clarity that demands attention. His unknown allegiance breeds suspicion among factions, with many questioning whether his pursuit of peace hides a deeper agenda—perhaps a ploy to weaken defenses or gather intelligence for an unseen master.</p>
+          <p class="lore-paragraph">Yet, time and again, Quell has proven his sincerity, brokering ceasefires that have saved entire sectors from annihilation, even if those truces rarely last. In a world where violence is currency, Quell stands as a reminder of what could be, a solitary figure whose quiet defiance of war’s inevitability inspires hope in the hearts of the weary, even as the shadow of doubt lingers over his true purpose in Block Topia’s endless conflicts.</p>
+        </section>
+
+        <section class="wiki-section">
+          <h2 id="real-world-basis">Real World Basis</h2>
+          <p class="lore-paragraph">A purely fictional character within GraffPUNKS lore, representing peace in a conflict-driven world.</p>
+        </section>
+
+        <section class="wiki-section">
+          <h2 id="sources">Sources</h2>
+          <ul class="sources-list">
+          </ul>
+        </section>
+</article>
+
+      <div class="category-tags" aria-label="Article categories">
+        <span class="cat-label">Categories:</span>
+        <a href="../categories/lore.html">Lore</a>
+      </div>
+
     </main>
 
     <footer id="site-footer" role="contentinfo">
       <div class="footer-inner">
-        <div class="footer-col">
-          <h4>🌙 Moonboys Wiki</h4>
-          <p>Fan-driven encyclopedia for the crypto community.</p>
-        </div>
-        <div class="footer-col">
-          <h4>Explore</h4>
-          <ul>
-            <li><a href="/index.html">Main Page</a></li>
-            <li><a href="/categories/index.html">Categories</a></li>
-            <li><a href="/search.html">All Articles</a></li>
-            <li><a href="/about.html">About</a></li>
-          </ul>
-        </div>
+        <div class="footer-col"><h4>🌙 Moonboys Wiki</h4><p>Fan-driven encyclopedia for the crypto community.</p></div>
+        <div class="footer-col"><h4>Explore</h4><ul><li><a href="../index.html">Main Page</a></li><li><a href="../categories/index.html">Categories</a></li><li><a href="../articles.html">All Articles</a></li><li><a href="../about.html">About</a></li></ul></div>
+        <div class="footer-col"><h4>🌐 Wiki</h4><ul><li><a href="../articles.html">All Articles</a></li><li><a href="hodl-wars.html">HODL Wars</a></li><li><a href="hodl-warriors.html">HODL Warriors</a></li></ul></div>
       </div>
       <div class="footer-bottom">
         <p>© 2026 Crypto Moonboys Wiki · Not financial advice.</p>
+        <p><span class="no-login-note">🔒 No sign-up · No login · Bot-maintained</span></p>
       </div>
     </footer>
   </div>
 </div>
 
-<button id="back-to-top" aria-label="Back to top">↑</button>
-<script src="/js/wiki.js"></script>
+<button id="back-to-top" aria-label="Back to top">&#8593;</button>
+<script src="../js/wiki.js"></script>
 <script src="/js/bible-loader.js"></script>
 </body>
 </html>
