@@ -1245,25 +1245,6 @@
     ]
   },
   {
-    "entity_id": "index",
-    "canonical_title": "📚 Wiki Index — Crypto Moonboys Wiki",
-    "canonical_url": "/wiki/index.html",
-    "category": "Lore",
-    "aliases": [],
-    "tags": [
-      "wiki",
-      "index",
-      "crypto",
-      "moonboys"
-    ],
-    "source_urls": [
-      "/wiki/index.html"
-    ],
-    "alias_candidates": [
-      "wiki index crypto moonboys"
-    ]
-  },
-  {
     "entity_id": "iris_7",
     "canonical_title": "Iris-7",
     "canonical_url": "/wiki/iris-7.html",
