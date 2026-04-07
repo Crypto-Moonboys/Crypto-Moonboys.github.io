@@ -69,6 +69,9 @@ let ENTITY_MAP = null; // null = not yet attempted; {} = attempted, empty/missin
    ─────────────────────────────────────────────────────────────────────── */
 let ENTITY_LOOKUP = {};
 
+const FINAL_QUERY_WEIGHT = 2.5;
+const FINAL_RANK_WEIGHT = 1;
+
 function buildEntityLookup() {
   if (!ENTITY_MAP) return;
 
@@ -255,27 +258,27 @@ function initSearch() {
 
 function scoreResult(item, query) {
   const q = query.toLowerCase().trim();
-  if (!q) return 0;
+  if (!q) return { queryScore: 0, rankScore: item.rank_score || 50, finalScore: 0 };
 
-  let score = 0;
+  let queryScore = 0;
   const title = item.title.toLowerCase();
   const desc  = (item.desc  || '').toLowerCase();
   const tags  = (item.tags  || []).join(' ').toLowerCase();
   const cat   = (item.category || '').toLowerCase();
 
   // ── Canonical title scoring (highest priority) ──────────────────────────
-  if (title === q)                    score += 100;
-  if (title.startsWith(q))            score +=  60;
-  if (title.includes(q))              score +=  40;
-  if (tags.includes(q))               score +=  30;
-  if (desc.includes(q))               score +=  15;
-  if (cat.includes(q))                score +=  10;
+  if (title === q)         queryScore += 100;
+  if (title.startsWith(q)) queryScore +=  60;
+  if (title.includes(q))   queryScore +=  40;
+  if (tags.includes(q))    queryScore +=  30;
+  if (desc.includes(q))    queryScore +=  15;
+  if (cat.includes(q))     queryScore +=  10;
 
   q.split(' ').forEach(word => {
     if (word.length > 2) {
-      if (title.includes(word)) score += 8;
-      if (tags.includes(word))  score += 5;
-      if (desc.includes(word))  score += 3;
+      if (title.includes(word)) queryScore += 8;
+      if (tags.includes(word))  queryScore += 5;
+      if (desc.includes(word))  queryScore += 3;
     }
   });
 
@@ -283,12 +286,12 @@ function scoreResult(item, query) {
   const aliases = item.aliases || [];
   aliases.forEach(alias => {
     const aTitle = (alias.title || '').toLowerCase();
-    if (aTitle === q)              score += 80;
-    else if (aTitle.startsWith(q)) score += 45;
-    else if (aTitle.includes(q))   score += 25;
+    if (aTitle === q)              queryScore += 80;
+    else if (aTitle.startsWith(q)) queryScore += 45;
+    else if (aTitle.includes(q))   queryScore += 25;
 
     q.split(' ').forEach(word => {
-      if (word.length > 2 && aTitle.includes(word)) score += 5;
+      if (word.length > 2 && aTitle.includes(word)) queryScore += 5;
     });
   });
 
@@ -299,27 +302,23 @@ function scoreResult(item, query) {
   if (matchedEntity) {
     if (item.url === matchedEntity.canonical_url) {
       // Exact canonical entity match — strongly prefer this page
-      score += 120;
+      queryScore += 120;
 
       // Additional boost when the query arrived via an alias (not the canonical title)
       const entityAliases = matchedEntity.aliases || [];
       if (entityAliases.some(a => normalizeEntityKey(a) === normalizedQuery)) {
-        score += 70;
+        queryScore += 70;
       }
     } else {
       // Penalise every non-canonical page so the right result floats to the top
-      score -= 20;
+      queryScore -= 20;
     }
   }
 
-  // ── Stable base weight from generator-side rank_score ───────────────────
-  // rank_score encodes canonical page status, category priority, alias count,
-  // and optional manual priority flags.  Scaled to ~10-26 points so query
-  // relevance remains the dominant factor while rank_score breaks ties
-  // deterministically between articles with equal relevance.
-  score += Math.round((item.rank_score || 50) * 0.2);
+  const rankScore = item.rank_score || 50;
+  const finalScore = (queryScore * FINAL_QUERY_WEIGHT) + (rankScore * FINAL_RANK_WEIGHT);
 
-  return score;
+  return { queryScore, rankScore, finalScore };
 }
 
 function normalizeEntityKey(text) {
@@ -327,6 +326,20 @@ function normalizeEntityKey(text) {
     .toLowerCase()
     .replace(/&/g, 'and')
     .replace(/[^a-z0-9]+/g, '');
+}
+
+function compareScoredResults(a, b) {
+  if (b.finalScore !== a.finalScore) return b.finalScore - a.finalScore;
+  if (b.queryScore !== a.queryScore) return b.queryScore - a.queryScore;
+  if (b.rankScore !== a.rankScore) return b.rankScore - a.rankScore;
+
+  const titleA = String(a.item.title || '').toLowerCase();
+  const titleB = String(b.item.title || '').toLowerCase();
+  if (titleA !== titleB) return titleA.localeCompare(titleB);
+
+  const urlA = resolveWikiUrl(a.item.url || '');
+  const urlB = resolveWikiUrl(b.item.url || '');
+  return urlA.localeCompare(urlB);
 }
 
 function dedupeResults(scoredResults) {
@@ -353,93 +366,6 @@ function dedupeResults(scoredResults) {
   return deduped;
 }
 
-function compareStringsStable(a, b) {
-  return String(a || '').localeCompare(String(b || ''), undefined, { sensitivity: 'base' });
-}
-
-function compareSearchResultsStable(a, b) {
-  if (b.score !== a.score) return b.score - a.score;
-  const aRank = Number(a.item.rank_score || 0);
-  const bRank = Number(b.item.rank_score || 0);
-  if (bRank !== aRank) return bRank - aRank;
-  const titleCmp = compareStringsStable(a.item.title, b.item.title);
-  if (titleCmp !== 0) return titleCmp;
-  return compareStringsStable(resolveWikiUrl(a.item.url), resolveWikiUrl(b.item.url));
-}
-
-function compareIndexItemsStable(a, b) {
-  const aRank = Number(a.rank_score || 0);
-  const bRank = Number(b.rank_score || 0);
-  if (bRank !== aRank) return bRank - aRank;
-  const titleCmp = compareStringsStable(a.title, b.title);
-  if (titleCmp !== 0) return titleCmp;
-  return compareStringsStable(resolveWikiUrl(a.url), resolveWikiUrl(b.url));
-}
-
-function isRankDebugEnabled() {
-  try {
-    const params = new URLSearchParams(window.location.search);
-    if (params.get('debug') === 'ranking' || params.get('rankdebug') === '1') return true;
-    if (window.WIKI_RANK_DEBUG === true) return true;
-    if (window.localStorage && window.localStorage.getItem('wiki-rank-debug') === '1') return true;
-  } catch (err) {
-    console.warn('[wiki] Failed to read ranking debug state.', err);
-  }
-  return false;
-}
-
-function renderRankingDebug(query, scoredItems) {
-  const panel = document.getElementById('ranking-debug');
-  if (!panel) return;
-
-  if (!isRankDebugEnabled()) {
-    panel.hidden = true;
-    panel.innerHTML = '';
-    return;
-  }
-
-  panel.hidden = false;
-  const rows = scoredItems.slice(0, 50).map(({ item, score }) => `
-    <tr>
-      <td><a href="${resolveWikiUrl(item.url)}">${escHtml(item.title)}</a></td>
-      <td>${score}</td>
-      <td>${Number(item.rank_score || 0)}</td>
-      <td><code>${escHtml(JSON.stringify(item.rank_signals || {}))}</code></td>
-    </tr>`).join('');
-
-  panel.innerHTML = `
-    <div class="rank-debug-header">
-      <strong>Ranking debug</strong>
-      <span>${query ? `Query: <code>${escHtml(query)}</code>` : 'All articles view'}</span>
-    </div>
-    <div class="rank-debug-table-wrap">
-      <table class="rank-debug-table">
-        <thead>
-          <tr>
-            <th>Title</th>
-            <th>Query score</th>
-            <th>Rank score</th>
-            <th>Rank signals</th>
-          </tr>
-        </thead>
-        <tbody>${rows}</tbody>
-      </table>
-    </div>`;
-
-  try {
-    window.__WIKI_LAST_SEARCH_DEBUG = scoredItems.map(({ item, score }) => ({
-      title: item.title,
-      url: resolveWikiUrl(item.url),
-      query_score: score,
-      rank_score: Number(item.rank_score || 0),
-      rank_signals: item.rank_signals || {},
-    }));
-    console.table(window.__WIKI_LAST_SEARCH_DEBUG);
-  } catch (err) {
-    console.warn('[wiki] Failed to publish ranking debug output.', err);
-  }
-}
-
 function runSearch(query, resultsEl, inputEl) {
   const q = query.trim();
   if (!q) {
@@ -448,9 +374,17 @@ function runSearch(query, resultsEl, inputEl) {
   }
 
   let scored = WIKI_INDEX
-    .map(item => ({ item, score: scoreResult(item, q) }))
-    .filter(r => r.score > 0)
-    .sort(compareSearchResultsStable);
+    .map(item => {
+      const scoredResult = scoreResult(item, q);
+      return {
+        item,
+        queryScore: scoredResult.queryScore,
+        rankScore: scoredResult.rankScore,
+        finalScore: scoredResult.finalScore
+      };
+    })
+    .filter(r => r.finalScore > 0)
+    .sort(compareScoredResults);
 
   scored = dedupeResults(scored).slice(0, 6);
 
@@ -478,23 +412,70 @@ function runSearch(query, resultsEl, inputEl) {
 function renderSearchPage(query) {
   const container = document.getElementById('search-results-page');
   const heading   = document.getElementById('search-heading');
+  const debugTable = document.getElementById('ranking-debug-table');
+  const debugQuery = document.getElementById('ranking-debug-query');
   if (!container) return;
 
   const q = query.trim();
+  const isDebugMode = new URLSearchParams(window.location.search).has('debug')
+    || new URLSearchParams(window.location.search).has('rankdebug');
+
   if (heading) heading.textContent = q ? `Results for "${q}"` : 'All Articles';
 
   let items = q
     ? WIKI_INDEX
-        .map(item => ({ item, score: scoreResult(item, q) }))
-        .filter(r => r.score > 0)
-        .sort(compareSearchResultsStable)
+        .map(item => {
+          const scoredResult = scoreResult(item, q);
+          return {
+            item,
+            queryScore: scoredResult.queryScore,
+            rankScore: scoredResult.rankScore,
+            finalScore: scoredResult.finalScore
+          };
+        })
+        .filter(r => r.finalScore > 0)
+        .sort(compareScoredResults)
     : WIKI_INDEX
         .slice()
-        .sort(compareIndexItemsStable)
-        .map(item => ({ item, score: item.rank_score || 50 }));
+        .sort((a, b) => {
+          const rankA = a.rank_score || 50;
+          const rankB = b.rank_score || 50;
+          if (rankB !== rankA) return rankB - rankA;
+
+          const titleA = String(a.title || '').toLowerCase();
+          const titleB = String(b.title || '').toLowerCase();
+          if (titleA !== titleB) return titleA.localeCompare(titleB);
+
+          const urlA = resolveWikiUrl(a.url || '');
+          const urlB = resolveWikiUrl(b.url || '');
+          return urlA.localeCompare(urlB);
+        })
+        .map(item => ({
+          item,
+          queryScore: 0,
+          rankScore: item.rank_score || 50,
+          finalScore: item.rank_score || 50
+        }));
 
   items = dedupeResults(items);
-  renderRankingDebug(q, items);
+
+  if (debugTable) {
+    if (isDebugMode && items.length) {
+      debugTable.innerHTML = items.map(({ item, queryScore, rankScore, finalScore }) => `
+        <tr>
+          <td>${escHtml(item.title || '')}</td>
+          <td>${queryScore}</td>
+          <td>${rankScore}</td>
+          <td>${finalScore}</td>
+          <td><code>${escHtml(JSON.stringify(item.rank_signals || {}))}</code></td>
+        </tr>
+      `).join('');
+      if (debugQuery) debugQuery.textContent = q || '(all articles)';
+    } else {
+      debugTable.innerHTML = '';
+      if (debugQuery) debugQuery.textContent = '';
+    }
+  }
 
   if (items.length === 0) {
     container.innerHTML = `<p style="color:var(--color-text-muted)">No articles found for "<strong>${escHtml(q)}</strong>". Try different keywords.</p>`;
@@ -606,12 +587,15 @@ function initTOC() {
 
 /* ── AUTO-SYNC ARTICLE COUNT STAT ────────────────────────────────────────── */
 function initStatArticles() {
-  const el = document.getElementById('stat-articles');
-  if (el) el.textContent = WIKI_INDEX.length;
+  const statEls = document.querySelectorAll('[data-stat="article-count"]');
+  if (!statEls.length) return;
+  const count = Array.isArray(WIKI_INDEX) ? WIKI_INDEX.length : 0;
+  statEls.forEach(el => { el.textContent = count; });
 }
 
-/* ── AUTO-SYNC CATEGORY COUNT STAT ──────────────────────────────────────── */
+/* ── AUTO-SYNC CATEGORY COUNT STAT ───────────────────────────────────────── */
 function initStatCategories() {
-  const el = document.getElementById('stat-categories');
-  if (el) el.textContent = CATEGORY_LIST.length;
+  const statEls = document.querySelectorAll('[data-stat="category-count"]');
+  if (!statEls.length) return;
+  statEls.forEach(el => { el.textContent = CATEGORY_LIST.length; });
 }
