@@ -3,24 +3,64 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Alfie &#x27;The Bitcoin Kid&#x27; Blaze — Crypto Moonboys Wiki">
+  <meta name="description" content="Fearless leader of the Bitcoin Kids rebels, guiding the fight for freedom in Block Topia against centralized oppression">
   <meta name="robots" content="index, follow">
-  <meta property="og:title" content="Alfie &#x27;The Bitcoin Kid&#x27; Blaze — Crypto Moonboys Wiki">
+  <meta property="og:title" content="Alfie 'The Bitcoin Kid' Blaze — Crypto Moonboys Wiki">
+  <meta property="og:description" content="Fearless leader of the Bitcoin Kids rebels, guiding the fight for freedom in Block Topia against centralized oppression">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://crypto-moonboys.github.io/wiki/alfie-the-bitcoin-kid-blaze.html">
   <meta property="og:image" content="https://crypto-moonboys.github.io/img/logo.svg">
-  <title>Alfie &#x27;The Bitcoin Kid&#x27; Blaze — Crypto Moonboys Wiki</title>
-  <link rel="canonical" href="https://crypto-moonboys.github.io/wiki/alfie-the-bitcoin-kid-blaze.html">
-  <link rel="stylesheet" href="/css/wiki.css">
-  <link rel="icon" href="/img/favicon.svg" type="image/svg+xml">
+  <title>Alfie 'The Bitcoin Kid' Blaze — Crypto Moonboys Wiki</title>
+  <link rel="stylesheet" href="../css/wiki.css">
+  <link rel="icon" href="../img/favicon.svg" type="image/svg+xml">
+  <style>
+    .wiki-section {
+      margin: 1.6em 0;
+    }
+    .lore-paragraph {
+      line-height: 1.75;
+      margin: 0 0 1em 0;
+    }
+    .lead-paragraph {
+      font-size: 1.06em;
+      line-height: 1.8;
+      margin: 0 0 1em 0;
+    }
+    .lore-facts-stack {
+      display: block;
+    }
+    .lore-fact-block {
+      margin: 0 0 1.2em 0;
+      padding: 1em 1.1em;
+      background: rgba(255,255,255,0.03);
+      border-left: 4px solid #5b8cff;
+      border-radius: 6px;
+    }
+    .sources-list {
+      padding-left: 1.4em;
+    }
+    .sources-list li {
+      margin-bottom: 0.3em;
+      word-break: break-all;
+    }
+    .article-stats {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1em;
+      font-size: 0.85em;
+      color: #555;
+      margin-top: 0.5em;
+    }
+  </style>
 </head>
 <body>
-<a class="skip-link" href="#wiki-content">Skip to content</a>
+
+<a class="skip-link" href="#content">Skip to content</a>
 
 <header id="site-header" role="banner">
-  <button class="hamburger" id="hamburger" aria-label="Toggle navigation" aria-expanded="false" aria-controls="sidebar">&#9776;</button>
-  <a href="/index.html" class="site-logo" aria-label="Crypto Moonboys Wiki home">
-    <img src="/img/logo.svg" alt="" aria-hidden="true">
+  <button class="hamburger" id="hamburger" aria-label="Toggle navigation" aria-expanded="false" aria-controls="sidebar">☰</button>
+  <a href="../index.html" class="site-logo" aria-label="Crypto Moonboys Wiki home">
+    <img src="../img/logo.svg" alt="" aria-hidden="true">
     <span>
       <span class="logo-text">🌙 Moonboys Wiki</span>
       <span class="logo-sub">Crypto Encyclopedia</span>
@@ -32,9 +72,9 @@
     <div id="search-results" role="listbox"></div>
   </div>
   <nav class="header-nav" aria-label="Main navigation">
-    <a href="/index.html">Home</a>
-    <a href="/categories/index.html">Categories</a>
-    <a href="/search.html">All Articles</a>
+    <a href="../index.html">Home</a>
+    <a href="../categories/index.html">Categories</a>
+    <a href="../articles.html">All Articles</a>
   </nav>
 </header>
 
@@ -45,69 +85,166 @@
     <div class="sidebar-section">
       <div class="sidebar-heading">Navigation</div>
       <div class="sidebar-nav">
-        <a href="/index.html"><span class="nav-icon">🏠</span> Main Page</a>
-        <a href="/categories/index.html"><span class="nav-icon">📂</span> All Categories</a>
-        <a href="/search.html"><span class="nav-icon">🔎</span> All Articles</a>
-        <a href="/about.html"><span class="nav-icon">ℹ️</span> About</a>
+        <a href="../index.html"><span class="nav-icon">🏠</span> Main Page</a>
+        <a href="../categories/index.html"><span class="nav-icon">📂</span> All Categories</a>
+        <a href="../articles.html"><span class="nav-icon">🔍</span> All Articles</a>
+      </div>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-heading">Cryptocurrencies</div>
+      <div class="sidebar-nav">
+        <a href="bitcoin.html"><span class="nav-icon">₿</span> Bitcoin (BTC)</a>
+        <a href="ethereum.html"><span class="nav-icon">Ξ</span> Ethereum (ETH)</a>
+        <a href="solana.html"><span class="nav-icon">◎</span> Solana (SOL)</a>
+      </div>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-heading">⚔️ HODL Wars Lore</div>
+      <div class="sidebar-nav">
+        <a href="hodl-wars.html"><span class="nav-icon">📜</span> HODL Wars</a>
+        <a href="hodl-warriors.html"><span class="nav-icon">⚔️</span> HODL Warriors</a>
+        <a href="diamond-hands.html"><span class="nav-icon">💎</span> Diamond Hands</a>
+        <a href="moon-mission.html"><span class="nav-icon">🚀</span> Moon Mission</a>
       </div>
     </div>
   </nav>
 
   <div id="main-wrapper">
-    <main id="wiki-content" role="main">
+    <main id="content" role="main">
+
       <nav class="breadcrumb" aria-label="Breadcrumb">
-        <a href="/index.html">Home</a>
+        <a href="../index.html">Home</a>
         <span class="sep" aria-hidden="true">›</span>
-        <a href="/search.html">All Articles</a>
+        <a href="../categories/lore.html">Lore</a>
         <span class="sep" aria-hidden="true">›</span>
-        <span aria-current="page">Alfie &#x27;The Bitcoin Kid&#x27; Blaze</span>
+        <span aria-current="page">Alfie 'The Bitcoin Kid' Blaze</span>
       </nav>
 
-      <article data-entity-slug="alfie-the-bitcoin-kid-blaze">
-        <header class="wiki-header">
-          <h1>Alfie &#x27;The Bitcoin Kid&#x27; Blaze</h1>
-          <p class="wiki-meta">Category: factions &nbsp;|&nbsp; Mentions: 0</p>
-        </header>
+      <h1 class="page-title">
+        🎭 Alfie 'The Bitcoin Kid' Blaze
+      </h1>
+      <div class="page-title-line" aria-hidden="true"></div>
+
+      <div class="article-meta">
+        <span class="article-badge">🎭 Lore</span>
+        <span class="meta-item">📅 Last updated: March 2026</span>
+        <span class="meta-item">📂 <a href="../categories/lore.html">Lore</a></span>
+      </div>
+
+      <article class="wiki-content">
+
+          <p class="lead-paragraph">Fearless leader of the Bitcoin Kids rebels, guiding the fight for freedom in Block Topia against centralized oppression</p>
 
         <section class="wiki-section">
-          <h2 id="summary">Summary</h2>
-          <p>Category: factions. Aliases: alfie the bitcoin kid blaze. Tags: alfie, bitcoin, kid, blaze, crypto, moonboys, wiki.</p>
+          <h2 id="faction">Faction</h2>
+          <p class="lore-paragraph"><strong>Allegiance:</strong> The Bitcoin Kid Army</p>
         </section>
 
         <section class="wiki-section">
-          <h2 id="source">Source</h2>
-          <p><a href="/wiki/alfie-the-bitcoin-kid-blaze.html" target="_blank" rel="noopener noreferrer">SAM Entity Memory</a></p>
+          <h2 id="known-facts">Known Facts</h2>
+          <div class="lore-facts-stack">
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">Leader of escaped Bitcoin Kids rebels</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">Leader of the escaped Bitcoin Kids, embodying the fight for freedom against Block Topia’s centralized forces.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">Combines street-art guerrilla tactics with blockchain savvy, striking fear into rival factions during metaverse battles.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">A symbol of unrelenting rebellion, inspiring a growing army of digital outcasts to reclaim their decentralized destiny.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">Alfie 'The Bitcoin Kid' Blaze stands as the fearless leader of the escaped Bitcoin Kids, embodying the raw, unfiltered spirit of rebellion against Block Topia’s centralized overlords, a fight that defines the core struggle of the Crypto Moonboys universe.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">Emerging from the confines of Block Topia’s walls, Alfie’s escape marked the birth of the Bitcoin Kid Army, a pivotal moment that continues to inspire digital outcasts to join his cause for a decentralized future across metaverse battlegrounds.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">Wielding street-art guerrilla tactics alongside blockchain savvy, Alfie strikes fear into rival factions like the Street Kingdoms, turning every metaverse battle into a canvas of defiance, echoing the GraffPUNKS ethos of resistance.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">Fearless leader of the escaped Bitcoin Kids, embodying the raw spirit of rebellion against Block Topia’s centralized overlords.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">Combines street-art guerrilla tactics with blockchain expertise, striking fear into rivals during metaverse battles in the Crypto Moonboys universe.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">Inspires a growing army of digital outcasts to fight for a decentralized destiny, often leading clashes post-Triple Fork Event.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">His escape from Block Topia’s walls marked the birth of the Bitcoin Kid Army, a pivotal moment of defiance in lore.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">Alfie 'The Bitcoin Kid' Blaze stands as the fearless leader of the escaped Bitcoin Kids, embodying the raw, unfiltered spirit of rebellion against Block Topia’s centralized overlords, a fight that defines the core struggle of the Crypto Moonboys universe and galvanizes outcasts across digital territories.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">Emerging from the confines of Block Topia’s walls, Alfie’s daring escape marked the birth of the Bitcoin Kid Army, a pivotal moment that continues to inspire digital outcasts to join his cause for a decentralized future across metaverse battlegrounds, shaping the narrative of resistance.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">Wielding street-art guerrilla tactics alongside blockchain savvy, Alfie strikes fear into rival factions like the Street Kingdoms, turning every metaverse battle into a canvas of defiance, echoing the GraffPUNKS ethos of resistance and claiming virtual streets as his own.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">His strategic brilliance often turns the tide in chaotic events like the Triple Fork Event, where his leadership transforms fractured networks into opportunities for rebellion, positioning him as a key figure in reshaping Block Topia’s power dynamics against centralized forces.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">Alfie’s legend grows with each victory, inspiring not just his army but also independent warriors across Block Topia to challenge oppression, making him a symbol of hope whose spray-painted mark becomes a rallying cry for freedom in the Crypto Moonboys universe.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">Alfie 'The Bitcoin Kid' Blaze leads the escaped Bitcoin Kids rebels, embodying the raw fight for freedom against Block Topia’s centralized forces, a beacon of defiance in a world of control where his every move sparks hope among the downtrodden.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">His unique blend of street-art guerrilla tactics and blockchain expertise turns metaverse battles into stunning displays of resistance, striking fear into rival factions and making him a prime target during high-stakes events like the Hard Fork Games, where his strategies could shift the balance of power.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">As the heart of the Bitcoin Kid Army, Alfie’s influence extends beyond mere combat, inspiring a generation of digital warriors to rise against oppression, his name becoming a rallying cry across the Sacred Chain and a symbol of what it means to HODL not just tokens, but ideals.</p>
+          </div>
+          </div>
         </section>
 
-        <div id="bible-content"></div>
-      </article>
+        <section class="wiki-section">
+          <h2 id="lore">Lore</h2>
+          <p class="lore-paragraph">Alfie 'The Bitcoin Kid' Blaze is the blazing soul of rebellion in the Crypto Moonboys universe, a fearless leader who shattered the confines of Block Topia’s walls to lead the escaped Bitcoin Kids in a relentless fight against centralized tyranny. Wielding a spray can and blockchain savvy, he guides the Bitcoin Kid Army through the digital wilderness, striking rival factions with guerrilla tactics rooted in street-art defiance during metaverse battles.</p>
+          <p class="lore-paragraph">His growing legend inspires digital outcasts to rally under his banner, forging a path to a decentralized future amidst conflicts like the Triple Fork Event, often clashing with forces such as the Street Kingdoms. His influence extends to pivotal moments where his strategic mind turns the tide, making him a beacon of hope for those yearning for freedom.</p>
+        </section>
+
+        <section class="wiki-section">
+          <h2 id="real-world-basis">Real World Basis</h2>
+          <p class="lore-paragraph">Inspired by the ethos of rebellion and innovation within the crypto and street art communities, though not directly tied to a specific individual.</p>
+        </section>
+
+        <section class="wiki-section">
+          <h2 id="sources">Sources</h2>
+          <ul class="sources-list">
+          <li><a href="https://graffpunks.live/the-lore/" target="_blank" rel="noopener noreferrer">https://graffpunks.live/the-lore/</a></li>
+          </ul>
+        </section>
+</article>
+
+      <div class="category-tags" aria-label="Article categories">
+        <span class="cat-label">Categories:</span>
+        <a href="../categories/lore.html">Lore</a>
+      </div>
+
     </main>
 
     <footer id="site-footer" role="contentinfo">
       <div class="footer-inner">
-        <div class="footer-col">
-          <h4>🌙 Moonboys Wiki</h4>
-          <p>Fan-driven encyclopedia for the crypto community.</p>
-        </div>
-        <div class="footer-col">
-          <h4>Explore</h4>
-          <ul>
-            <li><a href="/index.html">Main Page</a></li>
-            <li><a href="/categories/index.html">Categories</a></li>
-            <li><a href="/search.html">All Articles</a></li>
-            <li><a href="/about.html">About</a></li>
-          </ul>
-        </div>
+        <div class="footer-col"><h4>🌙 Moonboys Wiki</h4><p>Fan-driven encyclopedia for the crypto community.</p></div>
+        <div class="footer-col"><h4>Explore</h4><ul><li><a href="../index.html">Main Page</a></li><li><a href="../categories/index.html">Categories</a></li><li><a href="../articles.html">All Articles</a></li><li><a href="../about.html">About</a></li></ul></div>
+        <div class="footer-col"><h4>🌐 Wiki</h4><ul><li><a href="../articles.html">All Articles</a></li><li><a href="hodl-wars.html">HODL Wars</a></li><li><a href="hodl-warriors.html">HODL Warriors</a></li></ul></div>
       </div>
       <div class="footer-bottom">
         <p>© 2026 Crypto Moonboys Wiki · Not financial advice.</p>
+        <p><span class="no-login-note">🔒 No sign-up · No login · Bot-maintained</span></p>
       </div>
     </footer>
   </div>
 </div>
 
-<button id="back-to-top" aria-label="Back to top">↑</button>
-<script src="/js/wiki.js"></script>
+<button id="back-to-top" aria-label="Back to top">&#8593;</button>
+<script src="../js/wiki.js"></script>
 <script src="/js/bible-loader.js"></script>
 </body>
 </html>

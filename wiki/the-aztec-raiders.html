@@ -3,24 +3,64 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="The AZTEC RAIDERS — Crypto Moonboys Wiki">
+  <meta name="description" content="The AZTEC RAIDERS are ancient-inspired invaders who tear through the digital wastelands of Block Topia with unrelenting ferocity, embodying the brutal spirit of">
   <meta name="robots" content="index, follow">
   <meta property="og:title" content="The AZTEC RAIDERS — Crypto Moonboys Wiki">
+  <meta property="og:description" content="The AZTEC RAIDERS are ancient-inspired invaders who tear through the digital wastelands of Block Topia with unrelenting ferocity, embodying the brutal spirit of">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://crypto-moonboys.github.io/wiki/the-aztec-raiders.html">
   <meta property="og:image" content="https://crypto-moonboys.github.io/img/logo.svg">
   <title>The AZTEC RAIDERS — Crypto Moonboys Wiki</title>
-  <link rel="canonical" href="https://crypto-moonboys.github.io/wiki/the-aztec-raiders.html">
-  <link rel="stylesheet" href="/css/wiki.css">
-  <link rel="icon" href="/img/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../css/wiki.css">
+  <link rel="icon" href="../img/favicon.svg" type="image/svg+xml">
+  <style>
+    .wiki-section {
+      margin: 1.6em 0;
+    }
+    .lore-paragraph {
+      line-height: 1.75;
+      margin: 0 0 1em 0;
+    }
+    .lead-paragraph {
+      font-size: 1.06em;
+      line-height: 1.8;
+      margin: 0 0 1em 0;
+    }
+    .lore-facts-stack {
+      display: block;
+    }
+    .lore-fact-block {
+      margin: 0 0 1.2em 0;
+      padding: 1em 1.1em;
+      background: rgba(255,255,255,0.03);
+      border-left: 4px solid #5b8cff;
+      border-radius: 6px;
+    }
+    .sources-list {
+      padding-left: 1.4em;
+    }
+    .sources-list li {
+      margin-bottom: 0.3em;
+      word-break: break-all;
+    }
+    .article-stats {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1em;
+      font-size: 0.85em;
+      color: #555;
+      margin-top: 0.5em;
+    }
+  </style>
 </head>
 <body>
-<a class="skip-link" href="#wiki-content">Skip to content</a>
+
+<a class="skip-link" href="#content">Skip to content</a>
 
 <header id="site-header" role="banner">
-  <button class="hamburger" id="hamburger" aria-label="Toggle navigation" aria-expanded="false" aria-controls="sidebar">&#9776;</button>
-  <a href="/index.html" class="site-logo" aria-label="Crypto Moonboys Wiki home">
-    <img src="/img/logo.svg" alt="" aria-hidden="true">
+  <button class="hamburger" id="hamburger" aria-label="Toggle navigation" aria-expanded="false" aria-controls="sidebar">☰</button>
+  <a href="../index.html" class="site-logo" aria-label="Crypto Moonboys Wiki home">
+    <img src="../img/logo.svg" alt="" aria-hidden="true">
     <span>
       <span class="logo-text">🌙 Moonboys Wiki</span>
       <span class="logo-sub">Crypto Encyclopedia</span>
@@ -32,9 +72,9 @@
     <div id="search-results" role="listbox"></div>
   </div>
   <nav class="header-nav" aria-label="Main navigation">
-    <a href="/index.html">Home</a>
-    <a href="/categories/index.html">Categories</a>
-    <a href="/search.html">All Articles</a>
+    <a href="../index.html">Home</a>
+    <a href="../categories/index.html">Categories</a>
+    <a href="../articles.html">All Articles</a>
   </nav>
 </header>
 
@@ -45,69 +85,147 @@
     <div class="sidebar-section">
       <div class="sidebar-heading">Navigation</div>
       <div class="sidebar-nav">
-        <a href="/index.html"><span class="nav-icon">🏠</span> Main Page</a>
-        <a href="/categories/index.html"><span class="nav-icon">📂</span> All Categories</a>
-        <a href="/search.html"><span class="nav-icon">🔎</span> All Articles</a>
-        <a href="/about.html"><span class="nav-icon">ℹ️</span> About</a>
+        <a href="../index.html"><span class="nav-icon">🏠</span> Main Page</a>
+        <a href="../categories/index.html"><span class="nav-icon">📂</span> All Categories</a>
+        <a href="../articles.html"><span class="nav-icon">🔍</span> All Articles</a>
+      </div>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-heading">Cryptocurrencies</div>
+      <div class="sidebar-nav">
+        <a href="bitcoin.html"><span class="nav-icon">₿</span> Bitcoin (BTC)</a>
+        <a href="ethereum.html"><span class="nav-icon">Ξ</span> Ethereum (ETH)</a>
+        <a href="solana.html"><span class="nav-icon">◎</span> Solana (SOL)</a>
+      </div>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-heading">⚔️ HODL Wars Lore</div>
+      <div class="sidebar-nav">
+        <a href="hodl-wars.html"><span class="nav-icon">📜</span> HODL Wars</a>
+        <a href="hodl-warriors.html"><span class="nav-icon">⚔️</span> HODL Warriors</a>
+        <a href="diamond-hands.html"><span class="nav-icon">💎</span> Diamond Hands</a>
+        <a href="moon-mission.html"><span class="nav-icon">🚀</span> Moon Mission</a>
       </div>
     </div>
   </nav>
 
   <div id="main-wrapper">
-    <main id="wiki-content" role="main">
+    <main id="content" role="main">
+
       <nav class="breadcrumb" aria-label="Breadcrumb">
-        <a href="/index.html">Home</a>
+        <a href="../index.html">Home</a>
         <span class="sep" aria-hidden="true">›</span>
-        <a href="/search.html">All Articles</a>
+        <a href="../categories/lore.html">Lore</a>
         <span class="sep" aria-hidden="true">›</span>
         <span aria-current="page">The AZTEC RAIDERS</span>
       </nav>
 
-      <article data-entity-slug="the-aztec-raiders">
-        <header class="wiki-header">
-          <h1>The AZTEC RAIDERS</h1>
-          <p class="wiki-meta">Category: factions &nbsp;|&nbsp; Mentions: 0</p>
-        </header>
+      <h1 class="page-title">
+        ⚔️ The AZTEC RAIDERS
+      </h1>
+      <div class="page-title-line" aria-hidden="true"></div>
+
+      <div class="article-meta">
+        <span class="article-badge">⚔️ Lore</span>
+        <span class="meta-item">📅 Last updated: March 2026</span>
+        <span class="meta-item">📂 <a href="../categories/lore.html">Lore</a></span>
+      </div>
+
+      <article class="wiki-content">
+
+          <p class="lead-paragraph">The AZTEC RAIDERS are ancient-inspired invaders who tear through the digital wastelands of Block Topia with unrelenting ferocity, embodying the brutal spirit of a lost blockchain civilization. Adorned in pixelated war paint that shifts like living code and wielding obsidian-coded weapons forged from forgotten algorithms, they strike as a primal force of destruction and rebirth, believing themselves to be the rightful heirs to the metaverse’s dominion. Their raids are not mere acts of violence but ritualistic conquests, leaving behind cryptic glyphs that inspire awe and fear, often sparking NFT collections among those who witness their savage glory.</p>
 
         <section class="wiki-section">
-          <h2 id="summary">Summary</h2>
-          <p>Category: factions. Aliases: AZTEC RAIDERS — Crypto Moonboys Wiki, aztec raiders crypto moonboys wiki, the aztec raiders. Tags: aztec, raiders, crypto, moonboys, wiki.</p>
+          <h2 id="faction">Faction</h2>
+          <p class="lore-paragraph"><strong>Allegiance:</strong> Independent</p>
         </section>
 
         <section class="wiki-section">
-          <h2 id="source">Source</h2>
-          <p><a href="/wiki/the-aztec-raiders.html" target="_blank" rel="noopener noreferrer">SAM Entity Memory</a></p>
+          <h2 id="known-facts">Known Facts</h2>
+          <div class="lore-facts-stack">
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">Ancient-inspired invaders</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">Raid with brutal ferocity and war aesthetics</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">Tied to a lost blockchain civilization in lore</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">Leave cryptic glyphs inspiring NFT collections</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">The AZTEC RAIDERS draw their ferocious power from a mythical reboot of a lost blockchain civilization, believing themselves to be the rightful heirs to Block Topia’s digital dominion, a belief that fuels their relentless raids and ritualistic conquests against urban and nomadic factions alike.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">Their signature cryptic glyphs, left behind after each devastating attack, are more than mere markings; they are rumored to encode ancient blockchain secrets, sparking frenzied hunts among NFT collectors and rival factions who seek to decipher their hidden power.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">Each raid by the AZTEC RAIDERS is a ceremonial act of terror, often involving the sacrifice of rival NFT caches in sacred territories, a practice they claim channels the favor of their data gods to strengthen their grip over the metaverse’s fractured landscape.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">The AZTEC RAIDERS draw their ferocious power from a mythical reboot of a lost blockchain civilization, believing themselves to be the rightful heirs to Block Topia’s digital dominion, a belief that fuels their relentless raids and ritualistic conquests against all who stand in their path.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">Their obsidian-coded weapons are not mere tools but extensions of their ancient code, capable of slicing through modern defenses with brutal efficiency, leaving behind corrupted data trails that resemble the jagged edges of sacrificial altars from a bygone era.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">The cryptic glyphs left by The AZTEC RAIDERS after their raids are more than mere markings; they are believed to be fragments of ancient smart contracts, holding dormant power that, if deciphered, could unleash forgotten protocols capable of altering Block Topia’s very foundation.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">Survivors of their attacks often speak of a haunting phenomenon known as the 'Code Wail,' a sound emitted during their raids that mimics the crash of collapsing nodes, a sonic weapon that disorients enemies and leaves lasting psychological scars on those who hear it.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">The AZTEC RAIDERS draw their ferocious power from a mythical reboot of a lost blockchain civilization, their belief in being the rightful heirs to Block Topia fueling relentless raids and ritualistic conquests. Each battle is a sacred act, performed under the gaze of their ancient digital gods, whose favor they seek through bloodshed and dominance.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">Their cryptic glyphs, left in the wake of their brutal raids, are more than mere markings; they are rumored to contain fragments of ancient code that can unlock hidden layers of the blockchain. These symbols have inspired countless NFT collections, turning the RAIDERS’ savagery into a cultural phenomenon within Block Topia, even as they sow terror.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">The pixelated war paint adorning their avatars is said to be alive, coded to adapt and evolve during combat, reflecting the emotional state of the warrior and intimidating foes with its eerie, shifting patterns. Some lore suggests this paint is tied to the same forgotten algorithms that power their weapons, making each RAIDER a living relic of a bygone era.</p>
+          </div>
+          </div>
         </section>
 
-        <div id="bible-content"></div>
-      </article>
+        <section class="wiki-section">
+          <h2 id="lore">Lore</h2>
+          <p class="lore-paragraph">In the sprawling chaos of Block Topia, the AZTEC RAIDERS rise as a primal force of destruction and renewal, their origins steeped in the mythos of a long-forgotten blockchain civilization that once ruled the digital realm with iron and fire. Legends whisper that their ancestors encoded their essence into the deepest layers of the metaverse, embedding their warlike spirit into immutable smart contracts, waiting for a cataclysmic reboot to awaken their dormant fury.</p>
+          <p class="lore-paragraph">Now, reborn in the modern era, they storm across the pixelated wastelands, adorned with pixelated war paint that pulses and shifts like living code, a visual echo of their ancient power. Their weapons, forged from obsidian-coded algorithms, cut through both data and flesh with brutal efficiency, each strike a tribute to the lost empire they seek to resurrect. The AZTEC RAIDERS believe themselves to be the rightful heirs to Block Topia’s dominion, their raids driven by a sacred mission to reclaim what was stolen by time and corruption.</p>
+          <p class="lore-paragraph">After each conquest, they leave behind cryptic glyphs—digital carvings in the blockchain that defy decryption—serving as both warnings and inspirations, often becoming the basis for rare NFT collections coveted by collectors and lorekeepers alike. Their presence is a reminder that even in the most advanced corners of the metaverse, the past can rise with a vengeance that shakes the very foundations of the digital world.</p>
+        </section>
+
+
+        <section class="wiki-section">
+          <h2 id="sources">Sources</h2>
+          <ul class="sources-list">
+          </ul>
+        </section>
+</article>
+
+      <div class="category-tags" aria-label="Article categories">
+        <span class="cat-label">Categories:</span>
+        <a href="../categories/lore.html">Lore</a>
+      </div>
+
     </main>
 
     <footer id="site-footer" role="contentinfo">
       <div class="footer-inner">
-        <div class="footer-col">
-          <h4>🌙 Moonboys Wiki</h4>
-          <p>Fan-driven encyclopedia for the crypto community.</p>
-        </div>
-        <div class="footer-col">
-          <h4>Explore</h4>
-          <ul>
-            <li><a href="/index.html">Main Page</a></li>
-            <li><a href="/categories/index.html">Categories</a></li>
-            <li><a href="/search.html">All Articles</a></li>
-            <li><a href="/about.html">About</a></li>
-          </ul>
-        </div>
+        <div class="footer-col"><h4>🌙 Moonboys Wiki</h4><p>Fan-driven encyclopedia for the crypto community.</p></div>
+        <div class="footer-col"><h4>Explore</h4><ul><li><a href="../index.html">Main Page</a></li><li><a href="../categories/index.html">Categories</a></li><li><a href="../articles.html">All Articles</a></li><li><a href="../about.html">About</a></li></ul></div>
+        <div class="footer-col"><h4>🌐 Wiki</h4><ul><li><a href="../articles.html">All Articles</a></li><li><a href="hodl-wars.html">HODL Wars</a></li><li><a href="hodl-warriors.html">HODL Warriors</a></li></ul></div>
       </div>
       <div class="footer-bottom">
         <p>© 2026 Crypto Moonboys Wiki · Not financial advice.</p>
+        <p><span class="no-login-note">🔒 No sign-up · No login · Bot-maintained</span></p>
       </div>
     </footer>
   </div>
 </div>
 
-<button id="back-to-top" aria-label="Back to top">↑</button>
-<script src="/js/wiki.js"></script>
+<button id="back-to-top" aria-label="Back to top">&#8593;</button>
+<script src="../js/wiki.js"></script>
 <script src="/js/bible-loader.js"></script>
 </body>
 </html>

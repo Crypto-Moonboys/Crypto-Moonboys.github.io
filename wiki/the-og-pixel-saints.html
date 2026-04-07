@@ -3,24 +3,64 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="The OG PIXEL SAINTS — Crypto Moonboys Wiki">
+  <meta name="description" content="The OG PIXEL SAINTS are the hallowed pioneers of Block Topia’s visual culture, a faction of veteran digital artists whose sacred pixel art forms the bedrock of ">
   <meta name="robots" content="index, follow">
   <meta property="og:title" content="The OG PIXEL SAINTS — Crypto Moonboys Wiki">
+  <meta property="og:description" content="The OG PIXEL SAINTS are the hallowed pioneers of Block Topia’s visual culture, a faction of veteran digital artists whose sacred pixel art forms the bedrock of ">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://crypto-moonboys.github.io/wiki/the-og-pixel-saints.html">
   <meta property="og:image" content="https://crypto-moonboys.github.io/img/logo.svg">
   <title>The OG PIXEL SAINTS — Crypto Moonboys Wiki</title>
-  <link rel="canonical" href="https://crypto-moonboys.github.io/wiki/the-og-pixel-saints.html">
-  <link rel="stylesheet" href="/css/wiki.css">
-  <link rel="icon" href="/img/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../css/wiki.css">
+  <link rel="icon" href="../img/favicon.svg" type="image/svg+xml">
+  <style>
+    .wiki-section {
+      margin: 1.6em 0;
+    }
+    .lore-paragraph {
+      line-height: 1.75;
+      margin: 0 0 1em 0;
+    }
+    .lead-paragraph {
+      font-size: 1.06em;
+      line-height: 1.8;
+      margin: 0 0 1em 0;
+    }
+    .lore-facts-stack {
+      display: block;
+    }
+    .lore-fact-block {
+      margin: 0 0 1.2em 0;
+      padding: 1em 1.1em;
+      background: rgba(255,255,255,0.03);
+      border-left: 4px solid #5b8cff;
+      border-radius: 6px;
+    }
+    .sources-list {
+      padding-left: 1.4em;
+    }
+    .sources-list li {
+      margin-bottom: 0.3em;
+      word-break: break-all;
+    }
+    .article-stats {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1em;
+      font-size: 0.85em;
+      color: #555;
+      margin-top: 0.5em;
+    }
+  </style>
 </head>
 <body>
-<a class="skip-link" href="#wiki-content">Skip to content</a>
+
+<a class="skip-link" href="#content">Skip to content</a>
 
 <header id="site-header" role="banner">
-  <button class="hamburger" id="hamburger" aria-label="Toggle navigation" aria-expanded="false" aria-controls="sidebar">&#9776;</button>
-  <a href="/index.html" class="site-logo" aria-label="Crypto Moonboys Wiki home">
-    <img src="/img/logo.svg" alt="" aria-hidden="true">
+  <button class="hamburger" id="hamburger" aria-label="Toggle navigation" aria-expanded="false" aria-controls="sidebar">☰</button>
+  <a href="../index.html" class="site-logo" aria-label="Crypto Moonboys Wiki home">
+    <img src="../img/logo.svg" alt="" aria-hidden="true">
     <span>
       <span class="logo-text">🌙 Moonboys Wiki</span>
       <span class="logo-sub">Crypto Encyclopedia</span>
@@ -32,9 +72,9 @@
     <div id="search-results" role="listbox"></div>
   </div>
   <nav class="header-nav" aria-label="Main navigation">
-    <a href="/index.html">Home</a>
-    <a href="/categories/index.html">Categories</a>
-    <a href="/search.html">All Articles</a>
+    <a href="../index.html">Home</a>
+    <a href="../categories/index.html">Categories</a>
+    <a href="../articles.html">All Articles</a>
   </nav>
 </header>
 
@@ -45,69 +85,159 @@
     <div class="sidebar-section">
       <div class="sidebar-heading">Navigation</div>
       <div class="sidebar-nav">
-        <a href="/index.html"><span class="nav-icon">🏠</span> Main Page</a>
-        <a href="/categories/index.html"><span class="nav-icon">📂</span> All Categories</a>
-        <a href="/search.html"><span class="nav-icon">🔎</span> All Articles</a>
-        <a href="/about.html"><span class="nav-icon">ℹ️</span> About</a>
+        <a href="../index.html"><span class="nav-icon">🏠</span> Main Page</a>
+        <a href="../categories/index.html"><span class="nav-icon">📂</span> All Categories</a>
+        <a href="../articles.html"><span class="nav-icon">🔍</span> All Articles</a>
+      </div>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-heading">Cryptocurrencies</div>
+      <div class="sidebar-nav">
+        <a href="bitcoin.html"><span class="nav-icon">₿</span> Bitcoin (BTC)</a>
+        <a href="ethereum.html"><span class="nav-icon">Ξ</span> Ethereum (ETH)</a>
+        <a href="solana.html"><span class="nav-icon">◎</span> Solana (SOL)</a>
+      </div>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-heading">⚔️ HODL Wars Lore</div>
+      <div class="sidebar-nav">
+        <a href="hodl-wars.html"><span class="nav-icon">📜</span> HODL Wars</a>
+        <a href="hodl-warriors.html"><span class="nav-icon">⚔️</span> HODL Warriors</a>
+        <a href="diamond-hands.html"><span class="nav-icon">💎</span> Diamond Hands</a>
+        <a href="moon-mission.html"><span class="nav-icon">🚀</span> Moon Mission</a>
       </div>
     </div>
   </nav>
 
   <div id="main-wrapper">
-    <main id="wiki-content" role="main">
+    <main id="content" role="main">
+
       <nav class="breadcrumb" aria-label="Breadcrumb">
-        <a href="/index.html">Home</a>
+        <a href="../index.html">Home</a>
         <span class="sep" aria-hidden="true">›</span>
-        <a href="/search.html">All Articles</a>
+        <a href="../categories/lore.html">Lore</a>
         <span class="sep" aria-hidden="true">›</span>
         <span aria-current="page">The OG PIXEL SAINTS</span>
       </nav>
 
-      <article data-entity-slug="the-og-pixel-saints">
-        <header class="wiki-header">
-          <h1>The OG PIXEL SAINTS</h1>
-          <p class="wiki-meta">Category: factions &nbsp;|&nbsp; Mentions: 0</p>
-        </header>
+      <h1 class="page-title">
+        ⚔️ The OG PIXEL SAINTS
+      </h1>
+      <div class="page-title-line" aria-hidden="true"></div>
+
+      <div class="article-meta">
+        <span class="article-badge">⚔️ Lore</span>
+        <span class="meta-item">📅 Last updated: March 2026</span>
+        <span class="meta-item">📂 <a href="../categories/lore.html">Lore</a></span>
+      </div>
+
+      <article class="wiki-content">
+
+          <p class="lead-paragraph">The OG PIXEL SAINTS are the hallowed pioneers of Block Topia’s visual culture, a faction of veteran digital artists whose sacred pixel art forms the bedrock of countless NFT collections in the Crypto Moonboys universe. Revered as the first to paint beauty into the void of raw code during the Genesis Render, their rare appearances signal major artistic events, their creations not merely images but relics of a primordial era that continue to inspire and define the aesthetic soul of the metaverse. Their influence is timeless, a guiding light for all who seek to create amidst the blockchain’s chaos.</p>
 
         <section class="wiki-section">
-          <h2 id="summary">Summary</h2>
-          <p>Category: factions. Aliases: OG PIXEL SAINTS — Crypto Moonboys Wiki, the og pixel saints. Tags: og, pixel, saints, crypto, moonboys, wiki.</p>
+          <h2 id="faction">Faction</h2>
+          <p class="lore-paragraph"><strong>Allegiance:</strong> Independent</p>
         </section>
 
         <section class="wiki-section">
-          <h2 id="source">Source</h2>
-          <p><a href="/wiki/the-og-pixel-saints.html" target="_blank" rel="noopener noreferrer">SAM Entity Memory</a></p>
+          <h2 id="known-facts">Known Facts</h2>
+          <div class="lore-facts-stack">
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">Veteran digital artists</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">Pioneers of pixel art with sacred status</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">Foundation of countless NFT collections</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">Rare appearances signal major artistic events</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">The OG PIXEL SAINTS, veteran digital artists of sacred status, are credited with crafting the first pixel art that gave form to Block Topia’s formless code, their creations serving as the blueprint for countless NFT collections that followed in their hallowed wake.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">Their rare appearances in the digital realm are seen as divine interventions, often signaling major artistic events or the unveiling of long-lost works, drawing creators and collectors from across Block Topia to witness their transcendent craft.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">Legends claim that their earliest artworks, buried deep in the blockchain’s genesis blocks, contain hidden protocols that can awaken dormant creative algorithms, granting those who decrypt them the power to shape visual culture itself.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">Their influence extends beyond art, as factions seek their blessing to imbue new avatars with an aura of authenticity, believing that only the Saints’ approval can ensure a creation’s immortality in Block Topia’s ever-shifting landscape.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">Revered as pioneers, their sacred status is reinforced by tales of their first canvas—a now-mythical data void where they painted the first sunrise, a pixelated dawn that some say still flickers in the blockchain’s deepest layers.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">The OG PIXEL SAINTS, veteran digital artists of sacred status, are credited with crafting the first pixel art that gave form to Block Topia’s formless code during the Genesis Render, their creations serving as the blueprint for countless NFT collections that followed in their hallowed wake.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">Their rare appearances are heralded by cryptic blockchain signals, omens of major artistic events where they unveil new works rumored to embed hidden protocols, inspiring entire generations of creators to push the boundaries of digital expression in Block Topia.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">Legends claim that their original canvas, the ‘Prime Grid,’ is a living NFT hidden in the blockchain’s core, pulsating with the energy of every piece of art ever created in Block Topia, a relic so sacred that even The SHARD MOTHERS are said to guard its location.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">Their influence extends to secret mentorships, with whispers that they guide select artists through encrypted visions, passing down ancient pixel techniques that can imbue modern NFTs with an aura of timeless power, coveted by collectors and factions alike.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">The OG PIXEL SAINTS, veteran digital artists of sacred status, are credited with crafting the first pixel art that gave form to Block Topia’s formless code, their creations serving as the blueprint for countless NFT collections that followed in their hallowed footsteps.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">Their rare appearances in the metaverse signal major artistic events, often accompanied by the release of works so profound that they shift the cultural currents of Block Topia, inspiring new generations of creators to push the boundaries of digital expression in the Crypto Moonboys universe.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">As pioneers of pixel art with sacred status, The OG PIXEL SAINTS are said to embed hidden blessings within their works, algorithms that enhance the rarity and value of their NFTs over time, making each piece a living artifact coveted by collectors and factions alike.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">Legends tell of a lost masterpiece, the ‘Genesis Canvas,’ created by The OG PIXEL SAINTS during the first cycle of Block Topia’s existence, rumored to contain the visual code for every possible NFT design. Hidden in an encrypted gallery, its discovery is the holy grail for digital artists, promising untold creative power to whoever claims it.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">During the Great Aesthetic Drought, a period when Block Topia’s visual culture stagnated under corporate node oppression, The OG PIXEL SAINTS emerged from obscurity to release a series of open-source pixel templates. This act of generosity sparked a renaissance of independent art, forever cementing their role as saviors of creativity in the metaverse.</p>
+          </div>
+          </div>
         </section>
 
-        <div id="bible-content"></div>
-      </article>
+        <section class="wiki-section">
+          <h2 id="lore">Lore</h2>
+          <p class="lore-paragraph">In the annals of Block Topia’s history, The OG PIXEL SAINTS stand as the divine architects of visual expression, a faction of veteran artists whose early pixel masterpieces are etched into the very infancy of the blockchain, a time when code was barren and formless. Hailed in lore as the first to transform this void into vibrant, sacred art during the Genesis Render, their works are not merely images but relics of a primordial era, each pixel a testament to their genius and a foundation for the NFT culture that now defines much of Block Topia.</p>
+          <p class="lore-paragraph">Their creations—simple yet profound grids of color and light—are enshrined in the deepest archives, preserved as the first true digital canvases, each one a blueprint for the aesthetic revolutions that followed. The OG PIXEL SAINTS rarely manifest in the bustling nodes of today, choosing instead to dwell in secluded data monasteries where they meditate on the essence of creation, emerging only when the blockchain cries out for a new artistic awakening.</p>
+          <p class="lore-paragraph">Their influence is omnipresent, felt in every NFT drop and graffiti tag, with factions like the GraffPUNKS and even the SHARD MOTHERS drawing inspiration from their sacred forms. When they do appear, their unveilings are cataclysmic, events that halt markets and summon avatars from across Block Topia to bear witness to art that transcends code, reminding all that beauty was the first rebellion against the void.</p>
+        </section>
+
+
+        <section class="wiki-section">
+          <h2 id="sources">Sources</h2>
+          <ul class="sources-list">
+          </ul>
+        </section>
+</article>
+
+      <div class="category-tags" aria-label="Article categories">
+        <span class="cat-label">Categories:</span>
+        <a href="../categories/lore.html">Lore</a>
+      </div>
+
     </main>
 
     <footer id="site-footer" role="contentinfo">
       <div class="footer-inner">
-        <div class="footer-col">
-          <h4>🌙 Moonboys Wiki</h4>
-          <p>Fan-driven encyclopedia for the crypto community.</p>
-        </div>
-        <div class="footer-col">
-          <h4>Explore</h4>
-          <ul>
-            <li><a href="/index.html">Main Page</a></li>
-            <li><a href="/categories/index.html">Categories</a></li>
-            <li><a href="/search.html">All Articles</a></li>
-            <li><a href="/about.html">About</a></li>
-          </ul>
-        </div>
+        <div class="footer-col"><h4>🌙 Moonboys Wiki</h4><p>Fan-driven encyclopedia for the crypto community.</p></div>
+        <div class="footer-col"><h4>Explore</h4><ul><li><a href="../index.html">Main Page</a></li><li><a href="../categories/index.html">Categories</a></li><li><a href="../articles.html">All Articles</a></li><li><a href="../about.html">About</a></li></ul></div>
+        <div class="footer-col"><h4>🌐 Wiki</h4><ul><li><a href="../articles.html">All Articles</a></li><li><a href="hodl-wars.html">HODL Wars</a></li><li><a href="hodl-warriors.html">HODL Warriors</a></li></ul></div>
       </div>
       <div class="footer-bottom">
         <p>© 2026 Crypto Moonboys Wiki · Not financial advice.</p>
+        <p><span class="no-login-note">🔒 No sign-up · No login · Bot-maintained</span></p>
       </div>
     </footer>
   </div>
 </div>
 
-<button id="back-to-top" aria-label="Back to top">↑</button>
-<script src="/js/wiki.js"></script>
+<button id="back-to-top" aria-label="Back to top">&#8593;</button>
+<script src="../js/wiki.js"></script>
 <script src="/js/bible-loader.js"></script>
 </body>
 </html>

@@ -2,12 +2,19 @@
 """
 sam-wiki-publisher.py
 =====================
-Single-source-of-truth wiki build pipeline for Crypto Moonboys Wiki.
+Preservation-first wiki publisher for Crypto Moonboys Wiki.
 
 Supports either:
 - direct export JSON with {"items": [...]}
 - SAM memory JSON with {"facts": {...}}
 - SAM entity-map JSON with {"entities": {...}}
+
+Preservation rules:
+- NEVER mass-deletes wiki/*.html files
+- Existing real articles (word count >= STUB_WORD_THRESHOLD) are preserved unchanged
+- SAM metadata (summary, aliases, tags, mention counts) is used for ranking/indexing only
+- A new stub page is generated ONLY when no real article file exists for an entity
+- Stub pages are clearly marked with data-wiki-stub="true" and a visible stub notice
 
 Requirements:
     pip install python-slugify
@@ -34,6 +41,11 @@ SEARCH_HUB_URL = "https://crypto-moonboys.github.io/search.html"
 WIKI_DIR = "wiki"
 SITEMAP_PATH = "sitemap.xml"
 DEFAULT_INPUT = "main-brain-export.json"
+
+# An existing HTML file with fewer than this many words is treated as a stub
+# (safe to overwrite). Files with >= this many words are real articles and
+# must never be overwritten by the publisher.
+STUB_WORD_THRESHOLD = 400
 
 
 def esc(value: str) -> str:
@@ -168,6 +180,45 @@ def sam_entities_to_items(raw: dict) -> list[dict]:
     return items
 
 
+def is_stub_file(path: str) -> bool:
+    """Return True if the file at *path* does not exist or contains fewer than
+    STUB_WORD_THRESHOLD words (i.e. it is a generated stub, not a real article)."""
+    if not os.path.exists(path):
+        return True
+    try:
+        with open(path, encoding="utf-8") as fh:
+            content = fh.read()
+        word_count = len(content.split())
+        return word_count < STUB_WORD_THRESHOLD
+    except OSError:
+        return True
+
+
+def normalize_legacy_paths(html: str) -> str:
+    """Rewrite fragile relative nav/asset paths to root-relative equivalents.
+
+    This function must be called on any HTML content sourced from git history
+    or copied from an older commit before it is written to disk.  Older commits
+    used paths like ``../css/``, ``../js/``, ``../img/``, and ``../index.html``
+    which break when the page is served from a sub-directory such as ``/wiki/``.
+    Applying these replacements ensures legacy files cannot reintroduce fragile
+    relative paths into the repository.
+    """
+    replacements = [
+        ("../index.html",    "/index.html"),
+        ("../search.html",   "/search.html"),
+        ("../articles.html", "/articles.html"),
+        ("../about.html",    "/about.html"),
+        ("../categories/",   "/categories/"),
+        ("../css/",          "/css/"),
+        ("../js/",           "/js/"),
+        ("../img/",          "/img/"),
+    ]
+    for old, new in replacements:
+        html = html.replace(old, new)
+    return html
+
+
 # ---------------------------------------------------------------------------
 # HTML rendering
 # ---------------------------------------------------------------------------
@@ -181,7 +232,11 @@ def render_html(
     category: str,
     mention_count: int,
 ) -> str:
-    """Return a valid HTML5 page for the given entity with root-relative paths."""
+    """Return a valid HTML5 stub page for the given entity with root-relative paths.
+
+    This function is ONLY called when no real article file exists. The rendered
+    page is clearly marked as a stub so it is never confused with real content.
+    """
     title_safe = esc(entity_name)
     summary_safe = esc(summary)
     source_url_safe = esc(source_url if source_url else "#")
@@ -205,7 +260,7 @@ def render_html(
   <link rel="stylesheet" href="/css/wiki.css">
   <link rel="icon" href="/img/favicon.svg" type="image/svg+xml">
 </head>
-<body>
+<body data-wiki-stub="true">
 <a class="skip-link" href="#wiki-content">Skip to content</a>
 
 <header id="site-header" role="banner">
@@ -254,11 +309,16 @@ def render_html(
         <span aria-current="page">{title_safe}</span>
       </nav>
 
-      <article data-entity-slug="{slug}">
+      <article data-entity-slug="{slug}" data-wiki-stub="true">
         <header class="wiki-header">
           <h1>{title_safe}</h1>
           <p class="wiki-meta">Category: {category_safe} &nbsp;|&nbsp; Mentions: {mention_count}</p>
         </header>
+
+        <div class="stub-notice" role="note">
+          <strong>⚠️ Stub article</strong> — This page was auto-generated from metadata.
+          A full article has not yet been written for this topic.
+        </div>
 
         <section class="wiki-section">
           <h2 id="summary">Summary</h2>
@@ -435,13 +495,12 @@ def main() -> None:
     items = validate(args.input)
     os.makedirs(WIKI_DIR, exist_ok=True)
 
-    removed = 0
-    for fpath in glob.glob(f"{WIKI_DIR}/*.html"):
-        os.remove(fpath)
-        removed += 1
-    print(f"[CLEAN] Removed {removed} existing wiki/*.html files.")
-
+    # Preservation-first: never mass-delete wiki/*.html files.
+    # Only generate a new stub page when no real article exists for an entity.
     written = 0
+    preserved = 0
+    skipped_stub = 0
+
     for item in items:
         entity_name = item["entity_name"].strip()
         slug = slugify(entity_name)
@@ -452,6 +511,18 @@ def main() -> None:
         mention_count = int(item.get("mention_count", 0))
 
         out_path = os.path.join(WIKI_DIR, f"{slug}.html")
+
+        # Skip if a real article already exists — never overwrite real content
+        if not is_stub_file(out_path):
+            print(f"[PRESERVE] {out_path}")
+            preserved += 1
+            continue
+
+        # Generate a stub only if no real article exists.
+        # NOTE: if content is ever sourced from git history (e.g. via
+        # `git show <sha>:wiki/<slug>.html`) rather than freshly rendered here,
+        # call normalize_legacy_paths(html) on it before writing to disk so
+        # that old relative paths (../css/, ../js/, etc.) are not reintroduced.
         html = render_html(
             entity_name=entity_name,
             slug=slug,
@@ -468,7 +539,7 @@ def main() -> None:
         if not os.path.exists(out_path):
             raise RuntimeError(f"Expected output missing: {out_path}")
 
-        print(f"[BUILD] {out_path}")
+        print(f"[STUB] {out_path}")
         written += 1
 
     legacy_index = os.path.join(WIKI_DIR, "index.html")
@@ -482,7 +553,10 @@ def main() -> None:
         fh.write(sitemap_content)
 
     print(f"[SITEMAP] Rebuilt {SITEMAP_PATH} with {len(html_files)} wiki article entries.")
-    print(f"[DONE] {written} pages written. Canonical article hub: {SEARCH_HUB_URL}")
+    print(
+        f"[DONE] {preserved} articles preserved, {written} stub pages generated. "
+        f"Canonical article hub: {SEARCH_HUB_URL}"
+    )
 
 
 if __name__ == "__main__":

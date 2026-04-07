@@ -3,111 +3,205 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Web3 — Crypto Moonboys Wiki">
+  <meta name="description" content="Web3 — the decentralised next generation of the internet built on blockchain technology — Crypto Moonboys Wiki">
   <meta name="robots" content="index, follow">
   <meta property="og:title" content="Web3 — Crypto Moonboys Wiki">
+  <meta property="og:description" content="Web3 — the decentralised next generation of the internet built on blockchain technology — Crypto Moonboys Wiki">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://crypto-moonboys.github.io/wiki/web3.html">
   <meta property="og:image" content="https://crypto-moonboys.github.io/img/logo.svg">
   <title>Web3 — Crypto Moonboys Wiki</title>
-  <link rel="canonical" href="https://crypto-moonboys.github.io/wiki/web3.html">
-  <link rel="stylesheet" href="/css/wiki.css">
-  <link rel="icon" href="/img/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../css/wiki.css">
+  <link rel="icon" href="../img/favicon.svg" type="image/svg+xml">
 </head>
 <body>
-<a class="skip-link" href="#wiki-content">Skip to content</a>
-
+<a class="skip-link" href="#content">Skip to content</a>
 <header id="site-header" role="banner">
-  <button class="hamburger" id="hamburger" aria-label="Toggle navigation" aria-expanded="false" aria-controls="sidebar">&#9776;</button>
-  <a href="/index.html" class="site-logo" aria-label="Crypto Moonboys Wiki home">
-    <img src="/img/logo.svg" alt="" aria-hidden="true">
-    <span>
-      <span class="logo-text">🌙 Moonboys Wiki</span>
-      <span class="logo-sub">Crypto Encyclopedia</span>
-    </span>
-  </a>
-  <div id="header-search" role="search">
-    <input type="search" id="search-input" placeholder="Search articles…" aria-label="Search" autocomplete="off">
-    <button id="search-btn" aria-label="Search">🔍</button>
-    <div id="search-results" role="listbox"></div>
-  </div>
-  <nav class="header-nav" aria-label="Main navigation">
-    <a href="/index.html">Home</a>
-    <a href="/categories/index.html">Categories</a>
-    <a href="/search.html">All Articles</a>
-  </nav>
+  <button class="hamburger" id="hamburger" aria-label="Toggle navigation" aria-expanded="false" aria-controls="sidebar">☰</button>
+  <a href="../index.html" class="site-logo"><img src="../img/logo.svg" alt="" aria-hidden="true"><span><span class="logo-text">🌙 Moonboys Wiki</span><span class="logo-sub">Crypto Encyclopedia</span></span></a>
+  <div id="header-search" role="search"><input type="search" id="search-input" placeholder="Search articles…" aria-label="Search" autocomplete="off"><button id="search-btn" aria-label="Search">🔍</button><div id="search-results" role="listbox"></div></div>
+  <nav class="header-nav"><a href="../index.html">Home</a><a href="../categories/index.html">Categories</a><a href="../search.html">All Articles</a></nav>
 </header>
-
 <div id="sidebar-overlay" aria-hidden="true"></div>
-
 <div id="layout">
   <nav id="sidebar" aria-label="Wiki navigation">
-    <div class="sidebar-section">
-      <div class="sidebar-heading">Navigation</div>
-      <div class="sidebar-nav">
-        <a href="/index.html"><span class="nav-icon">🏠</span> Main Page</a>
-        <a href="/categories/index.html"><span class="nav-icon">📂</span> All Categories</a>
-        <a href="/search.html"><span class="nav-icon">🔎</span> All Articles</a>
-        <a href="/about.html"><span class="nav-icon">ℹ️</span> About</a>
-      </div>
-    </div>
+    <div class="sidebar-section"><div class="sidebar-heading">Navigation</div><div class="sidebar-nav"><a href="../index.html"><span class="nav-icon">🏠</span> Main Page</a><a href="../categories/index.html"><span class="nav-icon">📂</span> All Categories</a><a href="../search.html"><span class="nav-icon">🔍</span> All Articles</a></div></div>
+    <div class="sidebar-section"><div class="sidebar-heading">Cryptocurrencies</div><div class="sidebar-nav"><a href="bitcoin.html"><span class="nav-icon"><img class="btc-logo-icon" src="/CRYPTO-MOONBOYS-BITCOIN-LOGO.png" alt="₿"></span> Bitcoin (BTC)</a><a href="ethereum.html"><span class="nav-icon">Ξ</span> Ethereum (ETH)</a><a href="solana.html"><span class="nav-icon">◎</span> Solana (SOL)</a><a href="altcoins.html"><span class="nav-icon">🪙</span> Altcoins</a><a href="memecoins.html"><span class="nav-icon">🐶</span> Meme Coins</a></div></div>
+    <div class="sidebar-section"><div class="sidebar-heading">Concepts</div><div class="sidebar-nav"><a href="blockchain.html"><span class="nav-icon">⛓️</span> Blockchain</a><a href="defi.html"><span class="nav-icon">🏦</span> DeFi</a><a href="nfts.html"><span class="nav-icon">🎨</span> NFTs</a><a href="tokenomics.html"><span class="nav-icon">📊</span> Tokenomics</a><a href="web3.html" class="active"><span class="nav-icon">🌐</span> Web3</a></div></div>
+    <div class="sidebar-section"><div class="sidebar-heading">Tools &amp; Platforms</div><div class="sidebar-nav"><a href="wallets.html"><span class="nav-icon">👛</span> Wallets</a><a href="exchanges.html"><span class="nav-icon">🔄</span> Exchanges</a></div></div>
   </nav>
-
   <div id="main-wrapper">
-    <main id="wiki-content" role="main">
-      <nav class="breadcrumb" aria-label="Breadcrumb">
-        <a href="/index.html">Home</a>
-        <span class="sep" aria-hidden="true">›</span>
-        <a href="/search.html">All Articles</a>
-        <span class="sep" aria-hidden="true">›</span>
-        <span aria-current="page">Web3</span>
-      </nav>
+    <main id="content" role="main">
+      <nav class="breadcrumb" aria-label="Breadcrumb"><a href="../index.html">Home</a><span class="sep">›</span><a href="../categories/technology.html">Technology</a><span class="sep">›</span><span aria-current="page">Web3</span></nav>
+      <aside class="infobox" aria-label="Web3 quick facts"><div class="infobox-title">Web3</div><div class="infobox-image"><span style="font-size:5rem" aria-label="Web3">🌐</span></div></aside>
+      <h1 class="page-title">Web3</h1>
+      <div class="page-title-line" aria-hidden="true"></div>
+      <div class="article-meta"><span class="article-badge">✅ Verified</span><span class="meta-item">📅 Last updated: 2024-01</span><span class="meta-item">📂 <a href="../categories/technology.html">Technology</a></span></div>
+      <nav id="toc" aria-label="Table of contents"><div class="toc-title">📋 Contents</div></nav>
+      <article class="wiki-content">
+        <p>Web3 is the vision of an internet <strong>owned by its users</strong> — not by Google, Facebook, Amazon, or any corporation. It's the internet where you own your data, your assets, your identity. Built on <a href="blockchain.html">blockchain technology</a>, powered by <a href="ethereum.html">Ethereum</a> and other networks, governed by communities through DAOs. Web3 is either the future of the internet or the biggest hype cycle ever. <em>Probably both.</em> But the infrastructure being built right now will matter regardless of what we call it.</p>
 
-      <article data-entity-slug="web3">
-        <header class="wiki-header">
-          <h1>Web3</h1>
-          <p class="wiki-meta">Category: tokens &nbsp;|&nbsp; Mentions: 0</p>
-        </header>
+        <h2 id="history">History &amp; Origins</h2>
+        <h3 id="history-web1-2">Web 1.0 and Web 2.0 (1991–2014)</h3>
+        <p><strong>Web 1.0</strong> (roughly 1991–2004) was the read-only internet: static HTML pages, GeoCities, AltaVista, and a web where you consumed content but never created it. Beautiful in its simplicity. Limited by design.</p>
+        <p><strong>Web 2.0</strong> (2004–present) was the read-write revolution: blogs, social media, user-generated content. YouTube, Facebook, Twitter, Instagram. The problem? Everything you created, contributed, and shared was owned by the platform. Your data was the product. Your attention was sold. The companies that built the "social web" extracted all the value from it.</p>
 
-        <section class="wiki-section">
-          <h2 id="summary">Summary</h2>
-          <p>Category: tokens. Aliases: web3, web3 crypto moonboys wiki. Tags: web3, crypto, moonboys, wiki.</p>
-        </section>
+        <h3 id="history-gavin">Gavin Wood Coins "Web3" (2014)</h3>
+        <p>In <strong>2014</strong>, <strong>Gavin Wood</strong> — co-founder of <a href="ethereum.html">Ethereum</a> and later founder of Polkadot — coined the term <strong>"Web 3.0"</strong> in a blog post describing a future decentralized internet built on Ethereum as its foundational infrastructure layer. The vision: replace trusted intermediaries with cryptographic proof and smart contracts.</p>
+        <p><a href="ethereum.html">Ethereum</a> launched in <strong>July 2015</strong> as the practical foundation for that vision — a programmable blockchain enabling smart contracts, dApps, and eventually the entire DeFi and NFT ecosystem.</p>
 
-        <section class="wiki-section">
-          <h2 id="source">Source</h2>
-          <p><a href="/wiki/web3.html" target="_blank" rel="noopener noreferrer">SAM Entity Memory</a></p>
-        </section>
+        <h3 id="history-infrastructure">Building the Infrastructure (2015–2020)</h3>
+        <p><strong>IPFS</strong> (InterPlanetary File System) launched in <strong>2015</strong> by <strong>Juan Benet</strong> and Protocol Labs — a peer-to-peer hypermedia protocol for decentralized file storage. Where HTTP says "download this file from this server," IPFS says "find this file, wherever it lives." The decentralized storage backbone of Web3.</p>
+        <p><strong>ENS</strong> (Ethereum Name Service) launched in <strong>2017</strong>, enabling human-readable <code>.eth</code> domain names that map to Ethereum addresses. <code>vitalik.eth</code> instead of <code>0xd8dA6BF2...</code>. Your Web3 identity.</p>
+        <p><strong>MetaMask</strong> launched in <strong>2016</strong> as the browser extension that made Ethereum accessible — your wallet, your Web3 passport, your dApp browser. The Web3 on-ramp for tens of millions of users.</p>
 
-        <div id="bible-content"></div>
+        <h3 id="history-killer-apps">Killer Apps &amp; The Hype Peak (2020–2022)</h3>
+        <p><strong>DeFi Summer 2020</strong> was the first Web3 killer app moment — <a href="defi.html">DeFi</a> protocols exploded, TVL went from $1B to $15B in months, and the world suddenly understood that you could do finance on a blockchain without a bank. Then the <strong>NFT boom of 2021</strong> brought <a href="nfts.html">NFTs</a> into mainstream consciousness — digital ownership became a talking point for everyone from artists to athletes to Fortune 500 companies.</p>
+        <p><strong>ConstitutionDAO</strong> (November 2021) raised <strong>$47 million in 5 days</strong> through a DAO to buy a copy of the US Constitution at Sotheby's. They lost the auction to a billionaire, but the world had seen DAOs in action. In the same year, Facebook rebranded to Meta, committing $10B+ to the metaverse — Decentraland and The Sandbox pumped accordingly.</p>
+        <p>The <strong>Ethereum Merge</strong> in <strong>September 2022</strong> — transitioning from Proof-of-Work to Proof-of-Stake — was the most significant infrastructure upgrade in Web3 history, reducing Ethereum's energy consumption by ~99.95%.</p>
+
+        <h3 id="history-maturation">Maturation &amp; New Frontiers (2023–2024)</h3>
+        <p>Web3 social emerged as a new frontier: <strong>Lens Protocol</strong>, <strong>Farcaster</strong>, and <strong>Friend.tech</strong> explored what social media looks like when users own their social graph and content. <strong>AI + Web3 convergence</strong> became a theme — decentralized AI compute, verifiable credentials, and identity projects like <strong>Worldcoin / World ID</strong>. <strong>Base</strong> (Coinbase's L2, launched 2023) brought a new wave of mainstream users into Web3 via Coinbase's existing user base.</p>
+
+        <h2 id="core-concepts">Core Concepts</h2>
+        <h3 id="concepts-identity">Self-Sovereign Identity (SSI)</h3>
+        <p>In Web 2.0, your identity is a Facebook account or a Google login — controlled by a corporation that can delete you at will. In Web3, your identity is your wallet address and your <code>.eth</code> ENS name — cryptographically yours, controlled by no one but you. This is <strong>self-sovereign identity</strong>: you are the issuer, holder, and controller of your own credentials.</p>
+
+        <h3 id="concepts-storage">Decentralized Storage</h3>
+        <ul>
+          <li><strong>IPFS</strong> — Content-addressed peer-to-peer storage; 280,000+ nodes globally</li>
+          <li><strong>Arweave</strong> — Permanent, pay-once storage on a "permaweb"</li>
+          <li><strong>Filecoin</strong> — Incentivized decentralized storage marketplace built on IPFS</li>
+        </ul>
+
+        <h3 id="concepts-ens">ENS Domains</h3>
+        <p>Your <code>.eth</code> name is your Web3 address — resolves to your Ethereum wallet, links to your avatar, social links, and on-chain identity. Over <strong>2.5 million ENS names</strong> registered. Think of it as DNS for the decentralized internet.</p>
+
+        <h3 id="concepts-daos">DAOs — Decentralized Autonomous Organizations</h3>
+        <p>DAOs replace traditional corporate governance with <strong>on-chain voting by token holders</strong>. No CEO, no board of directors — just smart contract rules and community governance. DAOs currently manage over <strong>$20 billion in treasuries</strong>. Examples: MakerDAO (governs DAI stablecoin), Uniswap DAO (governs the DEX), ConstitutionDAO (tried to buy the Constitution).</p>
+
+        <h3 id="concepts-dapps">dApps &amp; Smart Contracts</h3>
+        <p>Decentralized applications run on smart contracts — code that lives on the <a href="blockchain.html">blockchain</a> and executes automatically without a central server. No single point of failure. No "we're down for maintenance." No ability to censor users. The backend of Web3.</p>
+
+        <h3 id="concepts-ownership">The Ownership Economy</h3>
+        <p>Web3's core thesis: the people who build, use, and contribute to a network should own a piece of it. Token-gating, governance tokens, creator monetization without platform cuts — the ownership economy is the antithesis of Web 2.0's "your engagement is our revenue" model. <a href="defi.html">DeFi</a> and <a href="nfts.html">NFTs</a> are its two biggest expressions to date.</p>
+
+        <h2 id="key-stats">Key Stats &amp; Milestones</h2>
+        <table>
+          <thead><tr><th>Metric</th><th>Data</th><th>Notes</th></tr></thead>
+          <tbody>
+            <tr><td>ENS domains registered</td><td><strong>2.5M+</strong></td><td>Your .eth name on Ethereum</td></tr>
+            <tr><td>MetaMask monthly active users</td><td><strong>30M+</strong></td><td>Primary Web3 browser wallet</td></tr>
+            <tr><td>IPFS nodes globally</td><td><strong>280,000+</strong></td><td>Decentralized storage backbone</td></tr>
+            <tr><td>Ethereum dApps</td><td><strong>3,000+</strong></td><td>Active dApps across DeFi, NFTs, gaming, social</td></tr>
+            <tr><td>DAOs treasury total</td><td><strong>$20B+</strong></td><td>Community-governed on-chain treasuries</td></tr>
+            <tr><td>Farcaster registered users</td><td><strong>300k+</strong></td><td>Decentralized social protocol (2024)</td></tr>
+            <tr><td>Lens Protocol profiles</td><td><strong>100k+</strong></td><td>On-chain social graph on Polygon</td></tr>
+            <tr><td>Web3 VC investment (2021)</td><td><strong>$33B</strong></td><td>Peak year; dropped to $7B in 2023</td></tr>
+          </tbody>
+        </table>
+
+        <h2 id="why-matters">Why It Matters</h2>
+        <p>Web3 matters because the alternative — a world where Google, Apple, Facebook, and Amazon control your digital identity, financial access, and online expression — has visible, documented problems. Censorship. Data exploitation. Platform deplatforming. De-banking.</p>
+        <p><strong>Financial sovereignty</strong> starts with a <a href="wallets.html">wallet</a> — your key to accessing a global, permissionless financial system. <strong>Censorship resistance</strong> is non-negotiable for billions of people in countries where free expression is dangerous. <strong>Creator monetization</strong> without a 30% platform tax changes the economics for artists, musicians, and writers. Cross-border transactions without SWIFT or Western Union fees open up financial access for the unbanked.</p>
+        <p><a href="defi.html">DeFi</a> and <a href="nfts.html">NFTs</a> are the current killer apps. The next generation of Web3 applications — decentralized social, AI-powered identity, programmable money — is being built right now. <strong>Composability</strong> ("money legos") means each new protocol can build on every existing one — a compounding innovation advantage that Web 2.0 walled gardens can never replicate.</p>
+
+        <h2 id="risks">Risks &amp; Controversies</h2>
+        <ul>
+          <li><strong>UX complexity:</strong> Seed phrases, gas fees, wallet addresses — Web3 onboarding is still a nightmare for normal people. Until this is solved, mass adoption will be limited.</li>
+          <li><strong>The centralization paradox:</strong> Most NFT metadata is stored on AWS. Most Ethereum nodes run on Infura (which runs on AWS). The "decentralized" web often runs on centralized infrastructure. Moxie Marlinspike's 2022 essay on this remains the definitive critique.</li>
+          <li><strong>VC capture:</strong> Early investors hold large token allocations and can dump on retail. The "decentralized" governance of many protocols is dominated by VC-funded foundations.</li>
+          <li><strong>Regulatory uncertainty:</strong> SEC enforcement actions, EU MiCA regulations, and global crackdowns create legal risk for Web3 protocols, developers, and users.</li>
+          <li><strong>Scams &amp; phishing at scale:</strong> The permissionless nature of Web3 makes it an ideal environment for scammers. Phishing sites, fake mints, rug pulls, and social engineering are endemic.</li>
+          <li><strong>Scalability limits:</strong> The Merge improved Ethereum's energy use but didn't solve gas fees or throughput. Layer 2 solutions (Arbitrum, Optimism, Base) help, but cross-L2 fragmentation creates new UX challenges.</li>
+          <li><strong>Real adoption gap:</strong> Despite $33B in VC funding at peak, daily active Web3 users remain a fraction of Web 2.0 platforms. Most dApps have thousands of users, not millions.</li>
+        </ul>
+
+        <h2 id="moonboys-take">The Crypto Moonboys Take 🌙</h2>
+        <blockquote>
+          <p>"We're not early. We're still on the launchpad. The rocket hasn't even ignited."</p>
+        </blockquote>
+        <p>Web3 is the <a href="moon-mission.html">moon mission</a> we're all on together. The infrastructure — Ethereum, Layer 2s, IPFS, ENS, DeFi, DAOs — is being built in real time by some of the smartest developers on the planet. The critics are right that we haven't reached mass adoption. They're wrong to think that means it won't happen.</p>
+        <p><a href="wagmi-prophecy.html">WAGMI</a> isn't just a meme — it's a prophecy. The internet of value, where you are the bank, the creator, the sovereign, and the owner — is being assembled block by block, transaction by transaction. Every wallet download, every ENS name registered, every DAO vote cast is a brick in that foundation. <strong>We are going to make it.</strong></p>
+
+        <h2 id="see-also">See Also</h2>
+        <ul>
+          <li><a href="blockchain.html">Blockchain Technology</a></li>
+          <li><a href="ethereum.html">Ethereum (ETH)</a></li>
+          <li><a href="defi.html">DeFi — Decentralized Finance</a></li>
+          <li><a href="nfts.html">NFTs — Non-Fungible Tokens</a></li>
+          <li><a href="wallets.html">Crypto Wallets</a></li>
+          <li><a href="moon-mission.html">Moon Mission</a></li>
+          <li><a href="wagmi-prophecy.html">WAGMI Prophecy</a></li>
+        </ul>
       </article>
+      <section class="citations-section" aria-label="Citations and references">
+        <h2>References &amp; Citations</h2>
+        <ol class="citations-list">
+          <li id="cite-1">
+            <span class="cite-num">[1]</span>
+            <div>
+              <span class="cite-source-type cite-website">Website</span>
+              <a href="https://ethereum.org/en/web3/" target="_blank" rel="noopener noreferrer">Ethereum.org — What is Web3?</a> — The Ethereum Foundation's comprehensive explainer on Web3, its principles, and why it matters.
+            </div>
+          </li>
+          <li id="cite-2">
+            <span class="cite-num">[2]</span>
+            <div>
+              <span class="cite-source-type cite-website">Website</span>
+              <a href="https://ipfs.tech" target="_blank" rel="noopener noreferrer">IPFS — InterPlanetary File System</a> — Official site for the decentralized storage protocol powering Web3 infrastructure with 280,000+ nodes.
+            </div>
+          </li>
+          <li id="cite-3">
+            <span class="cite-num">[3]</span>
+            <div>
+              <span class="cite-source-type cite-website">Website</span>
+              <a href="https://ens.domains" target="_blank" rel="noopener noreferrer">ENS Domains</a> — Ethereum Name Service: the decentralized naming system giving every wallet a human-readable .eth identity.
+            </div>
+          </li>
+          <li id="cite-4">
+            <span class="cite-num">[4]</span>
+            <div>
+              <span class="cite-source-type cite-website">Website</span>
+              <a href="https://metamask.io" target="_blank" rel="noopener noreferrer">MetaMask</a> — The leading Web3 browser wallet with 30M+ monthly active users; the primary gateway to dApps and DeFi.
+            </div>
+          </li>
+          <li id="cite-5">
+            <span class="cite-num">[5]</span>
+            <div>
+              <span class="cite-source-type cite-website">Website</span>
+              <a href="https://www.farcaster.xyz" target="_blank" rel="noopener noreferrer">Farcaster</a> — Decentralized social protocol built on Ethereum; 300k+ users building a censorship-resistant social web.
+            </div>
+          </li>
+          <li id="cite-6">
+            <span class="cite-num">[6]</span>
+            <div>
+              <span class="cite-source-type cite-website">Website</span>
+              <a href="https://ethereum.org/en/dao/" target="_blank" rel="noopener noreferrer">Ethereum.org — DAOs</a> — Ethereum Foundation explainer on Decentralized Autonomous Organizations and their governance models.
+            </div>
+          </li>
+          <li id="cite-7">
+            <span class="cite-num">[7]</span>
+            <div>
+              <span class="cite-source-type cite-website">Website</span>
+              <a href="https://ethereum.org/en/developers/docs/dapps/" target="_blank" rel="noopener noreferrer">Ethereum.org — dApps</a> — Technical and conceptual overview of decentralized applications and the Web3 application stack.
+            </div>
+          </li>
+          <li id="cite-8">
+            <span class="cite-num">[8]</span>
+            <div>
+              <span class="cite-source-type cite-website">Website</span>
+              <a href="https://lens.xyz" target="_blank" rel="noopener noreferrer">Lens Protocol</a> — Decentralized social graph protocol on Polygon; 100k+ profiles in the Web3 social frontier.
+            </div>
+          </li>
+        </ol>
+      </section>
+      <div class="category-tags" aria-label="Article categories"><span class="cat-label">Categories:</span><a href="../categories/technology.html">Technology</a><a href="../categories/concepts.html">Concepts</a></div>
     </main>
-
-    <footer id="site-footer" role="contentinfo">
-      <div class="footer-inner">
-        <div class="footer-col">
-          <h4>🌙 Moonboys Wiki</h4>
-          <p>Fan-driven encyclopedia for the crypto community.</p>
-        </div>
-        <div class="footer-col">
-          <h4>Explore</h4>
-          <ul>
-            <li><a href="/index.html">Main Page</a></li>
-            <li><a href="/categories/index.html">Categories</a></li>
-            <li><a href="/search.html">All Articles</a></li>
-            <li><a href="/about.html">About</a></li>
-          </ul>
-        </div>
-      </div>
-      <div class="footer-bottom">
-        <p>© 2026 Crypto Moonboys Wiki · Not financial advice.</p>
-      </div>
-    </footer>
+    <footer id="site-footer" role="contentinfo"><div class="footer-inner"><div class="footer-col"><h4>🌙 Moonboys Wiki</h4><p>Fan-driven crypto encyclopedia.</p></div><div class="footer-col"><h4>Explore</h4><ul><li><a href="../index.html">Main Page</a></li><li><a href="../search.html">All Articles</a></li></ul></div></div><div class="footer-bottom"><p>© 2026 Crypto Moonboys Wiki · Not financial advice.</p><p><span class="no-login-note">🔒 No sign-up · No login · Bot-maintained</span></p></div></footer>
   </div>
 </div>
-
 <button id="back-to-top" aria-label="Back to top">↑</button>
-<script src="/js/wiki.js"></script>
-<script src="/js/bible-loader.js"></script>
+<script src="../js/wiki.js"></script>
 </body>
 </html>

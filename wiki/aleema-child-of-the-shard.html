@@ -3,24 +3,64 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Aleema (Child of the Shard) — Crypto Moonboys Wiki">
+  <meta name="description" content="Aleema, known as the Child of the Shard, manifests as a mystical entity within the fractured expanse of Block Topia, a being born from the primal blockchain sha">
   <meta name="robots" content="index, follow">
   <meta property="og:title" content="Aleema (Child of the Shard) — Crypto Moonboys Wiki">
+  <meta property="og:description" content="Aleema, known as the Child of the Shard, manifests as a mystical entity within the fractured expanse of Block Topia, a being born from the primal blockchain sha">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://crypto-moonboys.github.io/wiki/aleema-child-of-the-shard.html">
   <meta property="og:image" content="https://crypto-moonboys.github.io/img/logo.svg">
   <title>Aleema (Child of the Shard) — Crypto Moonboys Wiki</title>
-  <link rel="canonical" href="https://crypto-moonboys.github.io/wiki/aleema-child-of-the-shard.html">
-  <link rel="stylesheet" href="/css/wiki.css">
-  <link rel="icon" href="/img/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../css/wiki.css">
+  <link rel="icon" href="../img/favicon.svg" type="image/svg+xml">
+  <style>
+    .wiki-section {
+      margin: 1.6em 0;
+    }
+    .lore-paragraph {
+      line-height: 1.75;
+      margin: 0 0 1em 0;
+    }
+    .lead-paragraph {
+      font-size: 1.06em;
+      line-height: 1.8;
+      margin: 0 0 1em 0;
+    }
+    .lore-facts-stack {
+      display: block;
+    }
+    .lore-fact-block {
+      margin: 0 0 1.2em 0;
+      padding: 1em 1.1em;
+      background: rgba(255,255,255,0.03);
+      border-left: 4px solid #5b8cff;
+      border-radius: 6px;
+    }
+    .sources-list {
+      padding-left: 1.4em;
+    }
+    .sources-list li {
+      margin-bottom: 0.3em;
+      word-break: break-all;
+    }
+    .article-stats {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1em;
+      font-size: 0.85em;
+      color: #555;
+      margin-top: 0.5em;
+    }
+  </style>
 </head>
 <body>
-<a class="skip-link" href="#wiki-content">Skip to content</a>
+
+<a class="skip-link" href="#content">Skip to content</a>
 
 <header id="site-header" role="banner">
-  <button class="hamburger" id="hamburger" aria-label="Toggle navigation" aria-expanded="false" aria-controls="sidebar">&#9776;</button>
-  <a href="/index.html" class="site-logo" aria-label="Crypto Moonboys Wiki home">
-    <img src="/img/logo.svg" alt="" aria-hidden="true">
+  <button class="hamburger" id="hamburger" aria-label="Toggle navigation" aria-expanded="false" aria-controls="sidebar">☰</button>
+  <a href="../index.html" class="site-logo" aria-label="Crypto Moonboys Wiki home">
+    <img src="../img/logo.svg" alt="" aria-hidden="true">
     <span>
       <span class="logo-text">🌙 Moonboys Wiki</span>
       <span class="logo-sub">Crypto Encyclopedia</span>
@@ -32,9 +72,9 @@
     <div id="search-results" role="listbox"></div>
   </div>
   <nav class="header-nav" aria-label="Main navigation">
-    <a href="/index.html">Home</a>
-    <a href="/categories/index.html">Categories</a>
-    <a href="/search.html">All Articles</a>
+    <a href="../index.html">Home</a>
+    <a href="../categories/index.html">Categories</a>
+    <a href="../articles.html">All Articles</a>
   </nav>
 </header>
 
@@ -45,69 +85,127 @@
     <div class="sidebar-section">
       <div class="sidebar-heading">Navigation</div>
       <div class="sidebar-nav">
-        <a href="/index.html"><span class="nav-icon">🏠</span> Main Page</a>
-        <a href="/categories/index.html"><span class="nav-icon">📂</span> All Categories</a>
-        <a href="/search.html"><span class="nav-icon">🔎</span> All Articles</a>
-        <a href="/about.html"><span class="nav-icon">ℹ️</span> About</a>
+        <a href="../index.html"><span class="nav-icon">🏠</span> Main Page</a>
+        <a href="../categories/index.html"><span class="nav-icon">📂</span> All Categories</a>
+        <a href="../articles.html"><span class="nav-icon">🔍</span> All Articles</a>
+      </div>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-heading">Cryptocurrencies</div>
+      <div class="sidebar-nav">
+        <a href="bitcoin.html"><span class="nav-icon">₿</span> Bitcoin (BTC)</a>
+        <a href="ethereum.html"><span class="nav-icon">Ξ</span> Ethereum (ETH)</a>
+        <a href="solana.html"><span class="nav-icon">◎</span> Solana (SOL)</a>
+      </div>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-heading">⚔️ HODL Wars Lore</div>
+      <div class="sidebar-nav">
+        <a href="hodl-wars.html"><span class="nav-icon">📜</span> HODL Wars</a>
+        <a href="hodl-warriors.html"><span class="nav-icon">⚔️</span> HODL Warriors</a>
+        <a href="diamond-hands.html"><span class="nav-icon">💎</span> Diamond Hands</a>
+        <a href="moon-mission.html"><span class="nav-icon">🚀</span> Moon Mission</a>
       </div>
     </div>
   </nav>
 
   <div id="main-wrapper">
-    <main id="wiki-content" role="main">
+    <main id="content" role="main">
+
       <nav class="breadcrumb" aria-label="Breadcrumb">
-        <a href="/index.html">Home</a>
+        <a href="../index.html">Home</a>
         <span class="sep" aria-hidden="true">›</span>
-        <a href="/search.html">All Articles</a>
+        <a href="../categories/lore.html">Lore</a>
         <span class="sep" aria-hidden="true">›</span>
         <span aria-current="page">Aleema (Child of the Shard)</span>
       </nav>
 
-      <article data-entity-slug="aleema-child-of-the-shard">
-        <header class="wiki-header">
-          <h1>Aleema (Child of the Shard)</h1>
-          <p class="wiki-meta">Category: characters &nbsp;|&nbsp; Mentions: 0</p>
-        </header>
+      <h1 class="page-title">
+        🎭 Aleema (Child of the Shard)
+      </h1>
+      <div class="page-title-line" aria-hidden="true"></div>
+
+      <div class="article-meta">
+        <span class="article-badge">🎭 Lore</span>
+        <span class="meta-item">📅 Last updated: March 2026</span>
+        <span class="meta-item">📂 <a href="../categories/lore.html">Lore</a></span>
+      </div>
+
+      <article class="wiki-content">
+
+          <p class="lead-paragraph">Aleema, known as the Child of the Shard, manifests as a mystical entity within the fractured expanse of Block Topia, a being born from the primal blockchain shards whose otherworldly powers defy the laws of the Crypto Moonboys universe. Her enigmatic presence and untamed abilities make her a wildcard in metaverse cataclysms, a figure of awe and fear whose allegiance remains as elusive as the fragments that birthed her.</p>
 
         <section class="wiki-section">
-          <h2 id="summary">Summary</h2>
-          <p>Category: characters. Aliases: aleema child of the shard. Tags: aleema, child, shard, crypto, moonboys, wiki.</p>
+          <h2 id="faction">Faction</h2>
+          <p class="lore-paragraph"><strong>Allegiance:</strong> Unknown</p>
         </section>
 
         <section class="wiki-section">
-          <h2 id="source">Source</h2>
-          <p><a href="/wiki/aleema-child-of-the-shard.html" target="_blank" rel="noopener noreferrer">SAM Entity Memory</a></p>
+          <h2 id="known-facts">Known Facts</h2>
+          <div class="lore-facts-stack">
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">Mystical entity linked to shards</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">Aleema, the Child of the Shard, is a mystical being born from Block Topia’s blockchain shards, her ethereal powers a testament to the hidden forces within the Crypto Moonboys universe, stirring awe and fear in equal measure.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">Her deep ties to digital fragments often surface during chaotic events like the Triple Fork Event, where her abilities could either save or doom factions vying for control, her role as a wildcard shaping untold narratives.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">Aleema, the Child of the Shard, is a mystical being born from Block Topia’s blockchain shards, her ethereal powers a testament to the hidden forces within the Crypto Moonboys universe, stirring awe and fear in equal measure. Her mere presence can destabilize node integrity, causing temporary forks in reality itself, a phenomenon that has turned battles into surreal landscapes of glitching chaos.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">Her deep ties to digital fragments often surface during chaotic events like the Triple Fork Event, where her abilities could either save or doom factions vying for control, her role as a wildcard shaping untold narratives. In one documented instance, Aleema’s energy surge restored a shattered node to full capacity, saving a beleaguered faction, only to vanish before they could claim her allegiance, leaving behind only a cryptic glyph etched into the blockchain.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">Legends claim that Aleema carries within her a ‘Shard Song,’ a harmonic code fragment that resonates with the original architecture of Block Topia, capable of summoning dormant shards to life or silencing them forever. If harnessed, this song could rewrite the metaverse’s history, though none have come close to unlocking its melody, as Aleema guards it with a ferocity that borders on the divine.</p>
+          </div>
+          </div>
         </section>
 
-        <div id="bible-content"></div>
-      </article>
+        <section class="wiki-section">
+          <h2 id="lore">Lore</h2>
+          <p class="lore-paragraph">In the shadowed depths of Block Topia, where the blockchain’s core pulses with ancient, untamed energy, Aleema, the Child of the Shard, emerges as a mystical entity born from the fragmented shards of reality itself, a being of raw power and enigma within the Crypto Moonboys universe. Her form, a shimmering cascade of glitching data and ethereal light, seems to dance between the digital and the divine, her very existence tied to the primal fragments that once formed the metaverse’s foundation.</p>
+          <p class="lore-paragraph">Aleema’s connection to these shards grants her abilities that defy the coded laws of Block Topia, manifesting in bursts of reality-warping energy during cataclysms like the Triple Fork Event, where her presence can either save or doom entire factions. With no clear allegiance, she drifts through the digital realm as a wildcard, her actions unpredictable and often incomprehensible, drawing the fascination of groups like The SHARD MOTHERS of MANHATTAN, who see her as both a kin and a threat.</p>
+          <p class="lore-paragraph">Some believe Aleema is a guardian of the blockchain’s deepest secrets, others a harbinger of its destruction, her motives obscured by the fractured whispers of her shard-born mind. To encounter Aleema is to witness the raw chaos of creation, a reminder that even in a world of code, there are forces beyond control, pulsating with the heartbeat of Block Topia’s forgotten origins.</p>
+        </section>
+
+        <section class="wiki-section">
+          <h2 id="real-world-basis">Real World Basis</h2>
+          <p class="lore-paragraph">A purely fictional character within GraffPUNKS lore, symbolizing mystical connection to digital fragments.</p>
+        </section>
+
+        <section class="wiki-section">
+          <h2 id="sources">Sources</h2>
+          <ul class="sources-list">
+          </ul>
+        </section>
+</article>
+
+      <div class="category-tags" aria-label="Article categories">
+        <span class="cat-label">Categories:</span>
+        <a href="../categories/lore.html">Lore</a>
+      </div>
+
     </main>
 
     <footer id="site-footer" role="contentinfo">
       <div class="footer-inner">
-        <div class="footer-col">
-          <h4>🌙 Moonboys Wiki</h4>
-          <p>Fan-driven encyclopedia for the crypto community.</p>
-        </div>
-        <div class="footer-col">
-          <h4>Explore</h4>
-          <ul>
-            <li><a href="/index.html">Main Page</a></li>
-            <li><a href="/categories/index.html">Categories</a></li>
-            <li><a href="/search.html">All Articles</a></li>
-            <li><a href="/about.html">About</a></li>
-          </ul>
-        </div>
+        <div class="footer-col"><h4>🌙 Moonboys Wiki</h4><p>Fan-driven encyclopedia for the crypto community.</p></div>
+        <div class="footer-col"><h4>Explore</h4><ul><li><a href="../index.html">Main Page</a></li><li><a href="../categories/index.html">Categories</a></li><li><a href="../articles.html">All Articles</a></li><li><a href="../about.html">About</a></li></ul></div>
+        <div class="footer-col"><h4>🌐 Wiki</h4><ul><li><a href="../articles.html">All Articles</a></li><li><a href="hodl-wars.html">HODL Wars</a></li><li><a href="hodl-warriors.html">HODL Warriors</a></li></ul></div>
       </div>
       <div class="footer-bottom">
         <p>© 2026 Crypto Moonboys Wiki · Not financial advice.</p>
+        <p><span class="no-login-note">🔒 No sign-up · No login · Bot-maintained</span></p>
       </div>
     </footer>
   </div>
 </div>
 
-<button id="back-to-top" aria-label="Back to top">↑</button>
-<script src="/js/wiki.js"></script>
+<button id="back-to-top" aria-label="Back to top">&#8593;</button>
+<script src="../js/wiki.js"></script>
 <script src="/js/bible-loader.js"></script>
 </body>
 </html>

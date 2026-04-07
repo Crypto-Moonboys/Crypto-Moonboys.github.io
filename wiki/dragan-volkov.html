@@ -3,24 +3,64 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Dragan Volkov — Crypto Moonboys Wiki">
+  <meta name="description" content="Dragan Volkov emerges as a ruthless mercenary leader in the Crypto Moonboys universe, a cold-blooded tactician commanding hired guns across Block Topia’s digita">
   <meta name="robots" content="index, follow">
   <meta property="og:title" content="Dragan Volkov — Crypto Moonboys Wiki">
+  <meta property="og:description" content="Dragan Volkov emerges as a ruthless mercenary leader in the Crypto Moonboys universe, a cold-blooded tactician commanding hired guns across Block Topia’s digita">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://crypto-moonboys.github.io/wiki/dragan-volkov.html">
   <meta property="og:image" content="https://crypto-moonboys.github.io/img/logo.svg">
   <title>Dragan Volkov — Crypto Moonboys Wiki</title>
-  <link rel="canonical" href="https://crypto-moonboys.github.io/wiki/dragan-volkov.html">
-  <link rel="stylesheet" href="/css/wiki.css">
-  <link rel="icon" href="/img/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../css/wiki.css">
+  <link rel="icon" href="../img/favicon.svg" type="image/svg+xml">
+  <style>
+    .wiki-section {
+      margin: 1.6em 0;
+    }
+    .lore-paragraph {
+      line-height: 1.75;
+      margin: 0 0 1em 0;
+    }
+    .lead-paragraph {
+      font-size: 1.06em;
+      line-height: 1.8;
+      margin: 0 0 1em 0;
+    }
+    .lore-facts-stack {
+      display: block;
+    }
+    .lore-fact-block {
+      margin: 0 0 1.2em 0;
+      padding: 1em 1.1em;
+      background: rgba(255,255,255,0.03);
+      border-left: 4px solid #5b8cff;
+      border-radius: 6px;
+    }
+    .sources-list {
+      padding-left: 1.4em;
+    }
+    .sources-list li {
+      margin-bottom: 0.3em;
+      word-break: break-all;
+    }
+    .article-stats {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1em;
+      font-size: 0.85em;
+      color: #555;
+      margin-top: 0.5em;
+    }
+  </style>
 </head>
 <body>
-<a class="skip-link" href="#wiki-content">Skip to content</a>
+
+<a class="skip-link" href="#content">Skip to content</a>
 
 <header id="site-header" role="banner">
-  <button class="hamburger" id="hamburger" aria-label="Toggle navigation" aria-expanded="false" aria-controls="sidebar">&#9776;</button>
-  <a href="/index.html" class="site-logo" aria-label="Crypto Moonboys Wiki home">
-    <img src="/img/logo.svg" alt="" aria-hidden="true">
+  <button class="hamburger" id="hamburger" aria-label="Toggle navigation" aria-expanded="false" aria-controls="sidebar">☰</button>
+  <a href="../index.html" class="site-logo" aria-label="Crypto Moonboys Wiki home">
+    <img src="../img/logo.svg" alt="" aria-hidden="true">
     <span>
       <span class="logo-text">🌙 Moonboys Wiki</span>
       <span class="logo-sub">Crypto Encyclopedia</span>
@@ -32,9 +72,9 @@
     <div id="search-results" role="listbox"></div>
   </div>
   <nav class="header-nav" aria-label="Main navigation">
-    <a href="/index.html">Home</a>
-    <a href="/categories/index.html">Categories</a>
-    <a href="/search.html">All Articles</a>
+    <a href="../index.html">Home</a>
+    <a href="../categories/index.html">Categories</a>
+    <a href="../articles.html">All Articles</a>
   </nav>
 </header>
 
@@ -45,69 +85,126 @@
     <div class="sidebar-section">
       <div class="sidebar-heading">Navigation</div>
       <div class="sidebar-nav">
-        <a href="/index.html"><span class="nav-icon">🏠</span> Main Page</a>
-        <a href="/categories/index.html"><span class="nav-icon">📂</span> All Categories</a>
-        <a href="/search.html"><span class="nav-icon">🔎</span> All Articles</a>
-        <a href="/about.html"><span class="nav-icon">ℹ️</span> About</a>
+        <a href="../index.html"><span class="nav-icon">🏠</span> Main Page</a>
+        <a href="../categories/index.html"><span class="nav-icon">📂</span> All Categories</a>
+        <a href="../articles.html"><span class="nav-icon">🔍</span> All Articles</a>
+      </div>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-heading">Cryptocurrencies</div>
+      <div class="sidebar-nav">
+        <a href="bitcoin.html"><span class="nav-icon">₿</span> Bitcoin (BTC)</a>
+        <a href="ethereum.html"><span class="nav-icon">Ξ</span> Ethereum (ETH)</a>
+        <a href="solana.html"><span class="nav-icon">◎</span> Solana (SOL)</a>
+      </div>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-heading">⚔️ HODL Wars Lore</div>
+      <div class="sidebar-nav">
+        <a href="hodl-wars.html"><span class="nav-icon">📜</span> HODL Wars</a>
+        <a href="hodl-warriors.html"><span class="nav-icon">⚔️</span> HODL Warriors</a>
+        <a href="diamond-hands.html"><span class="nav-icon">💎</span> Diamond Hands</a>
+        <a href="moon-mission.html"><span class="nav-icon">🚀</span> Moon Mission</a>
       </div>
     </div>
   </nav>
 
   <div id="main-wrapper">
-    <main id="wiki-content" role="main">
+    <main id="content" role="main">
+
       <nav class="breadcrumb" aria-label="Breadcrumb">
-        <a href="/index.html">Home</a>
+        <a href="../index.html">Home</a>
         <span class="sep" aria-hidden="true">›</span>
-        <a href="/search.html">All Articles</a>
+        <a href="../categories/lore.html">Lore</a>
         <span class="sep" aria-hidden="true">›</span>
         <span aria-current="page">Dragan Volkov</span>
       </nav>
 
-      <article data-entity-slug="dragan-volkov">
-        <header class="wiki-header">
-          <h1>Dragan Volkov</h1>
-          <p class="wiki-meta">Category: characters &nbsp;|&nbsp; Mentions: 0</p>
-        </header>
+      <h1 class="page-title">
+        🎭 Dragan Volkov
+      </h1>
+      <div class="page-title-line" aria-hidden="true"></div>
+
+      <div class="article-meta">
+        <span class="article-badge">🎭 Lore</span>
+        <span class="meta-item">📅 Last updated: March 2026</span>
+        <span class="meta-item">📂 <a href="../categories/lore.html">Lore</a></span>
+      </div>
+
+      <article class="wiki-content">
+
+          <p class="lead-paragraph">Dragan Volkov emerges as a ruthless mercenary leader in the Crypto Moonboys universe, a cold-blooded tactician commanding hired guns across Block Topia’s digital warzones. His iron grip on his forces and brutal efficiency make him a terror in metaverse battles, a name synonymous with violence for hire. With allegiance unknown, Volkov’s fleeting loyalties—bound only by the highest bidder—position him as a dangerous wildcard in the decentralized rebellion, capable of turning any conflict with his deadly services.</p>
 
         <section class="wiki-section">
-          <h2 id="summary">Summary</h2>
-          <p>Category: characters. Aliases: dragan volkov, dragan volkov crypto moonboys wiki. Tags: dragan, volkov, crypto, moonboys, wiki.</p>
+          <h2 id="faction">Faction</h2>
+          <p class="lore-paragraph"><strong>Allegiance:</strong> Unknown</p>
         </section>
 
         <section class="wiki-section">
-          <h2 id="source">Source</h2>
-          <p><a href="/wiki/dragan-volkov.html" target="_blank" rel="noopener noreferrer">SAM Entity Memory</a></p>
+          <h2 id="known-facts">Known Facts</h2>
+          <div class="lore-facts-stack">
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">Mercenary leader in lore</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">Dragan Volkov leads as a mercenary captain in Block Topia, his ruthless command of hired warriors a brutal force in metaverse battles, shaping conflicts within the Crypto Moonboys universe through sheer tactical violence.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">His mercenaries often sway chaotic events like the Triple Fork Event, fighting for the highest bidder with cold efficiency, his unknown allegiance ensuring no faction can predict where his deadly services will strike next.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">Dragan Volkov dominates as a mercenary captain in Block Topia, his ruthless command of hired warriors turning metaverse battles into brutal displays of tactical violence within the Crypto Moonboys universe. His iron will forges his band of killers into a machine of war, feared by all who stand against or even alongside them.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">During chaotic events like the Triple Fork Event, Volkov’s mercenaries often sway the tide, fighting for the highest bidder with a cold efficiency that leaves no room for mercy. His unknown allegiance ensures no faction can predict where his deadly services will strike next, making every contract a gamble with devastating stakes.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">Whispers in Block Topia’s war-torn channels suggest Volkov harbors a hidden vendetta, a past betrayal that drives his mercenary empire. Some believe he seeks a specific target among the rebellion’s leaders, using each contract as a step closer to a personal reckoning that could shake the foundations of the decentralized struggle.</p>
+          </div>
+          </div>
         </section>
 
-        <div id="bible-content"></div>
-      </article>
+        <section class="wiki-section">
+          <h2 id="lore">Lore</h2>
+          <p class="lore-paragraph">In the blood-soaked arenas of Block Topia, Dragan Volkov stands as the epitome of mercenary might, a ruthless leader whose name strikes dread into the hearts of friend and foe alike in the Crypto Moonboys universe. His command over a legion of hired warriors transforms any metaverse battle into a calculated slaughter, his tactical brutality honed through years of profiting from digital chaos. During pivotal clashes like the Triple Fork Event, Volkov’s mercenaries become the deciding factor, their allegiance swaying to whoever offers the most lucrative contract.</p>
+          <p class="lore-paragraph">Yet, his unknown loyalties ensure that no faction can ever truly trust him—his cold efficiency is a double-edged sword that could just as easily turn against his employers. Rumors swirl that Volkov’s past is tied to a fallen faction, a betrayal that fuels his relentless opportunism. Whether driven by vengeance or pure greed, Dragan Volkov remains a specter of war, a force whose presence in the rebellion guarantees bloodshed for the right price, reshaping the decentralized struggle with every battle he chooses to fight.</p>
+        </section>
+
+        <section class="wiki-section">
+          <h2 id="real-world-basis">Real World Basis</h2>
+          <p class="lore-paragraph">A purely fictional character within GraffPUNKS lore, representing mercenary leadership and opportunism.</p>
+        </section>
+
+        <section class="wiki-section">
+          <h2 id="sources">Sources</h2>
+          <ul class="sources-list">
+          </ul>
+        </section>
+</article>
+
+      <div class="category-tags" aria-label="Article categories">
+        <span class="cat-label">Categories:</span>
+        <a href="../categories/lore.html">Lore</a>
+      </div>
+
     </main>
 
     <footer id="site-footer" role="contentinfo">
       <div class="footer-inner">
-        <div class="footer-col">
-          <h4>🌙 Moonboys Wiki</h4>
-          <p>Fan-driven encyclopedia for the crypto community.</p>
-        </div>
-        <div class="footer-col">
-          <h4>Explore</h4>
-          <ul>
-            <li><a href="/index.html">Main Page</a></li>
-            <li><a href="/categories/index.html">Categories</a></li>
-            <li><a href="/search.html">All Articles</a></li>
-            <li><a href="/about.html">About</a></li>
-          </ul>
-        </div>
+        <div class="footer-col"><h4>🌙 Moonboys Wiki</h4><p>Fan-driven encyclopedia for the crypto community.</p></div>
+        <div class="footer-col"><h4>Explore</h4><ul><li><a href="../index.html">Main Page</a></li><li><a href="../categories/index.html">Categories</a></li><li><a href="../articles.html">All Articles</a></li><li><a href="../about.html">About</a></li></ul></div>
+        <div class="footer-col"><h4>🌐 Wiki</h4><ul><li><a href="../articles.html">All Articles</a></li><li><a href="hodl-wars.html">HODL Wars</a></li><li><a href="hodl-warriors.html">HODL Warriors</a></li></ul></div>
       </div>
       <div class="footer-bottom">
         <p>© 2026 Crypto Moonboys Wiki · Not financial advice.</p>
+        <p><span class="no-login-note">🔒 No sign-up · No login · Bot-maintained</span></p>
       </div>
     </footer>
   </div>
 </div>
 
-<button id="back-to-top" aria-label="Back to top">↑</button>
-<script src="/js/wiki.js"></script>
+<button id="back-to-top" aria-label="Back to top">&#8593;</button>
+<script src="../js/wiki.js"></script>
 <script src="/js/bible-loader.js"></script>
 </body>
 </html>
