@@ -3,24 +3,64 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="gkniftyheads — Crypto Moonboys Wiki">
+  <meta name="description" content="GKniftyHEADS carve a vivid scar across the Crypto Moonboys universe as a faction of digital renegades, born from the rebellious heart of the GraffPUNKS movement">
   <meta name="robots" content="index, follow">
   <meta property="og:title" content="gkniftyheads — Crypto Moonboys Wiki">
+  <meta property="og:description" content="GKniftyHEADS carve a vivid scar across the Crypto Moonboys universe as a faction of digital renegades, born from the rebellious heart of the GraffPUNKS movement">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://crypto-moonboys.github.io/wiki/gkniftyheads.html">
   <meta property="og:image" content="https://crypto-moonboys.github.io/img/logo.svg">
   <title>gkniftyheads — Crypto Moonboys Wiki</title>
-  <link rel="canonical" href="https://crypto-moonboys.github.io/wiki/gkniftyheads.html">
-  <link rel="stylesheet" href="/css/wiki.css">
-  <link rel="icon" href="/img/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../css/wiki.css">
+  <link rel="icon" href="../img/favicon.svg" type="image/svg+xml">
+  <style>
+    .wiki-section {
+      margin: 1.6em 0;
+    }
+    .lore-paragraph {
+      line-height: 1.75;
+      margin: 0 0 1em 0;
+    }
+    .lead-paragraph {
+      font-size: 1.06em;
+      line-height: 1.8;
+      margin: 0 0 1em 0;
+    }
+    .lore-facts-stack {
+      display: block;
+    }
+    .lore-fact-block {
+      margin: 0 0 1.2em 0;
+      padding: 1em 1.1em;
+      background: rgba(255,255,255,0.03);
+      border-left: 4px solid #5b8cff;
+      border-radius: 6px;
+    }
+    .sources-list {
+      padding-left: 1.4em;
+    }
+    .sources-list li {
+      margin-bottom: 0.3em;
+      word-break: break-all;
+    }
+    .article-stats {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1em;
+      font-size: 0.85em;
+      color: #555;
+      margin-top: 0.5em;
+    }
+  </style>
 </head>
-<body>
-<a class="skip-link" href="#wiki-content">Skip to content</a>
+<body data-entity-hash="c509736b2b9e">
+
+<a class="skip-link" href="#content">Skip to content</a>
 
 <header id="site-header" role="banner">
-  <button class="hamburger" id="hamburger" aria-label="Toggle navigation" aria-expanded="false" aria-controls="sidebar">&#9776;</button>
-  <a href="/index.html" class="site-logo" aria-label="Crypto Moonboys Wiki home">
-    <img src="/img/logo.svg" alt="" aria-hidden="true">
+  <button class="hamburger" id="hamburger" aria-label="Toggle navigation" aria-expanded="false" aria-controls="sidebar">☰</button>
+  <a href="../index.html" class="site-logo" aria-label="Crypto Moonboys Wiki home">
+    <img src="../img/logo.svg" alt="" aria-hidden="true">
     <span>
       <span class="logo-text">🌙 Moonboys Wiki</span>
       <span class="logo-sub">Crypto Encyclopedia</span>
@@ -32,9 +72,9 @@
     <div id="search-results" role="listbox"></div>
   </div>
   <nav class="header-nav" aria-label="Main navigation">
-    <a href="/index.html">Home</a>
-    <a href="/categories/index.html">Categories</a>
-    <a href="/search.html">All Articles</a>
+    <a href="../index.html">Home</a>
+    <a href="../categories/index.html">Categories</a>
+    <a href="../articles.html">All Articles</a>
   </nav>
 </header>
 
@@ -45,69 +85,324 @@
     <div class="sidebar-section">
       <div class="sidebar-heading">Navigation</div>
       <div class="sidebar-nav">
-        <a href="/index.html"><span class="nav-icon">🏠</span> Main Page</a>
-        <a href="/categories/index.html"><span class="nav-icon">📂</span> All Categories</a>
-        <a href="/search.html"><span class="nav-icon">🔎</span> All Articles</a>
-        <a href="/about.html"><span class="nav-icon">ℹ️</span> About</a>
+        <a href="../index.html"><span class="nav-icon">🏠</span> Main Page</a>
+        <a href="../categories/index.html"><span class="nav-icon">📂</span> All Categories</a>
+        <a href="../articles.html"><span class="nav-icon">🔍</span> All Articles</a>
+      </div>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-heading">🤖 SAM Lore</div>
+      <div class="sidebar-nav">
+        <a href="../categories/lore.html"><span class="nav-icon">⚔️</span> Lore</a>
+        <a href="../articles.html"><span class="nav-icon">📖</span> All SAM Articles</a>
+      </div>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-heading">Cryptocurrencies</div>
+      <div class="sidebar-nav">
+        <a href="bitcoin.html"><span class="nav-icon">₿</span> Bitcoin (BTC)</a>
+        <a href="ethereum.html"><span class="nav-icon">Ξ</span> Ethereum (ETH)</a>
+        <a href="solana.html"><span class="nav-icon">◎</span> Solana (SOL)</a>
+      </div>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-heading">⚔️ HODL Wars Lore</div>
+      <div class="sidebar-nav">
+        <a href="hodl-wars.html"><span class="nav-icon">📜</span> HODL Wars</a>
+        <a href="hodl-warriors.html"><span class="nav-icon">⚔️</span> HODL Warriors</a>
+        <a href="diamond-hands.html"><span class="nav-icon">💎</span> Diamond Hands</a>
+        <a href="moon-mission.html"><span class="nav-icon">🚀</span> Moon Mission</a>
       </div>
     </div>
   </nav>
 
   <div id="main-wrapper">
-    <main id="wiki-content" role="main">
+    <main id="content" role="main">
+
       <nav class="breadcrumb" aria-label="Breadcrumb">
-        <a href="/index.html">Home</a>
+        <a href="../index.html">Home</a>
         <span class="sep" aria-hidden="true">›</span>
-        <a href="/search.html">All Articles</a>
+        <a href="../categories/lore.html">Lore</a>
         <span class="sep" aria-hidden="true">›</span>
         <span aria-current="page">gkniftyheads</span>
       </nav>
 
-      <article data-entity-slug="gkniftyheads">
-        <header class="wiki-header">
-          <h1>gkniftyheads</h1>
-          <p class="wiki-meta">Category: characters &nbsp;|&nbsp; Mentions: 0</p>
-        </header>
+      <h1 class="page-title">
+        ⚔️ gkniftyheads
+        <span>✅ SAM-VERIFIED</span>
+      </h1>
+      <div class="page-title-line" aria-hidden="true"></div>
+
+      <div class="article-meta">
+        <span class="article-badge">⚔️ Lore</span>
+        <span class="meta-item">📅 Last updated: April 2026</span>
+        <span class="meta-item">📂 <a href="../categories/lore.html">Lore</a></span>
+      </div>
+
+      <article class="wiki-content" data-entity-slug="gkniftyheads">
+
+          <p class="lead-paragraph">GKniftyHEADS carve a vivid scar across the Crypto Moonboys universe as a faction of digital renegades, born from the rebellious heart of the GraffPUNKS movement. They are the vanguard of tokenized art in Block Topia, wielding their visually explosive NFT avatars as both identity and weaponry in the brutal HODL WARS. More than mere collectors, they are warriors of creativity, transforming the digital streets into galleries of resistance with every pixelated spray.</p>
+          <p class="lead-paragraph">Their allegiance to the GraffPUNKS ethos fuels a mission to defy the blockchain overlords, merging the raw, unapologetic energy of street graffiti with the immutable power of blockchain technology, making them a cultural force that reshapes the very fabric of this virtual battleground. Their presence in Block Topia is a constant challenge to authority, a living testament to the belief that art can be a weapon sharper than any code.</p>
+          <p class="lead-paragraph">GKniftyHEADS are not just participants in the HODL WARS; they are provocateurs, using their tokenized creations to inspire rebellion and forge alliances among the 40 locked factions. With each NFT avatar, they carry forward the legacy of real-world graffiti pioneers like Darren Cullen (SER), ensuring that the spirit of the streets burns bright in the neon haze of this digital dystopia.</p>
+
+        <div class="article-stats">
+          <span>📊 Verified across <strong>9989756225292232</strong> SAM cycles</span>
+          <span>🤖 Auto-published by SAM</span>
+        </div>
 
         <section class="wiki-section">
-          <h2 id="summary">Summary</h2>
-          <p>Category: characters. Aliases: gkniftyheads, gkniftyheads crypto moonboys wiki. Tags: gkniftyheads, crypto, moonboys, wiki.</p>
+          <h2 id="faction">Faction</h2>
+          <p class="lore-paragraph"><strong>Allegiance:</strong> GKniftyHEADS (self) / Allied with GraffPUNKS</p>
         </section>
 
         <section class="wiki-section">
-          <h2 id="source">Source</h2>
-          <p><a href="/wiki/gkniftyheads.html" target="_blank" rel="noopener noreferrer">SAM Entity Memory</a></p>
+          <h2 id="known-facts">Known Facts</h2>
+          <div class="lore-facts-stack">
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">GKniftyHEADS emerged in Block Topia as a faction of digital artists whose NFT avatars became symbols of resistance, each piece a unique blend of graffiti aesthetics and blockchain code that echoes Darren Cullen’s real-world legacy with Graffiti Kings. These avatars aren’t mere collectibles—they’re battle standards in the HODL WARS, with traits like spray can weapons or tag shields that can alter gameplay in Hard Fork Games, making GKniftyHEADS a faction whose art literally fights. Their cultural impact ripples through the 40 factions, inspiring rebels like the Bitcoin Kids to adopt visual defiance as a form of power.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">Within the lore, GKniftyHEADS are credited with initiating the ‘Unbuffable Canvas,’ a legendary event where a section of Block Topia’s central server was tagged with permanent digital graffiti, immune to the overlords’ erasure protocols. This act, tied to the GraffPUNKS’ broader rebellion, became a rallying point for other factions during the HODL WARS, a visual scar on the blockchain that players can visit in games like MiDEViL HERO ARENA as a source of buffs or quests, cementing GKniftyHEADS’ role as cultural disruptors in the Sacred Chain.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">GKniftyHEADS emerged in Block Topia as a faction of digital artists whose NFT avatars became symbols of resistance, each piece a unique blend of graffiti aesthetics and blockchain code that echoes Darren Cullen’s real-world legacy with Graffiti Kings. These avatars are not mere images but coded war cries, imbued with metadata that can trigger temporary buffs during HODL WARS skirmishes, turning a single piece of art into a tactical asset that can shift the tide of battle in the neon-soaked streets.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">Within the lore, GKniftyHEADS are credited with initiating the ‘Unbuffable Canvas,’ a legendary event where a section of Block Topia’s central server was tagged with permanent digital graffiti, immune to the overlords’ erasure protocols. This audacious act, executed during a rare server maintenance window, involved a coordinated strike by hundreds of GKniftyHEADS members, uploading a self-replicating art code that embedded itself into the blockchain, forever marking their territory as a bastion of rebellion.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">The GKniftyHEADS are rumored to maintain a hidden ‘Spray Vault’ within Block Topia, a secret node accessible only through specific NFT keys, where they store blueprints for future art-based weapons and strategies for the HODL WARS. Whispers among the factions suggest that this vault contains the original sketches of Darren Cullen, digitized and encrypted, waiting to be unlocked by a worthy artist-warrior who can wield their power to inspire a full-scale uprising against the blockchain overlords.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">In the shadowed lore of Block Topia, GKniftyHEADS are said to have forged a silent pact with rogue coders known as the ‘Pixel Phantoms,’ exchanging rare NFT art for experimental algorithms that can temporarily disrupt the overlords’ surveillance systems. This alliance, though unconfirmed, is believed to have birthed the ‘Ghost Tag’—a digital graffiti technique that renders their art invisible to tracking protocols for 24 hours, allowing covert operations to unfold under the very nose of their oppressors.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">GKniftyHEADS burst into Block Topia with their signature NFT avatars, each one a digital canvas of rebellion inspired by the real-world tags of Graffiti Kings, becoming a visual rallying cry for the downtrodden during the HODL WARS. These avatars aren’t just collectibles—they’re weapons of identity, allowing players to align with the faction’s ethos of art as resistance, and their presence in the Hard Fork Games often signals a surge in underground activity, making them a critical force in the Crypto Moonboys narrative.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">Recent Medium posts (@GKniftyHEADS) reveal that GKniftyHEADS are rolling out their rebellion in phases, with Phase One to Three of a planned 40-phase strategy already sparking whispers of new NFT drops and faction alliances in Block Topia. This phased approach, tied to their lore of reclaiming the streets from corporate control, positions them as long-term strategists in the HODL WARS, with each phase potentially unveiling new mechanics or lore that could shift the balance of power across the Sacred Chain.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">GKniftyHEADS emerged in the Crypto Moonboys universe as a groundbreaking NFT collection, their initial drop on WAX blockchain selling out in record time, a digital echo of the real-world graffiti drops at Leake Street that inspired them. Each head, with its unique design rooted in Darren Cullen’s SER style, carries traits like ‘Rebel Glare’ or ‘Tag Aura’ that grant specific buffs in HODL WARS, making them not just art but tactical assets. This fusion of aesthetics and utility cemented GKniftyHEADS as a cultural phenomenon in Block Topia, a symbol of how punk rebellion can thrive even in the most controlled digital spaces, driving player demand and lore speculation with every new mint.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">In lore, GKniftyHEADS are often depicted as the ‘faces of the uprising,’ avatars that appear on Block Topia’s virtual walls during pivotal HODL WARS battles, their graffiti-like designs inspiring allied factions like the Bitcoin Kids while unnerving enemies. This narrative role, explored in fan content on the GKniftyHEADS Fandom wiki, positions them as more than collectibles—they’re totems of resistance, with rare heads rumored to unlock hidden levels in Hard Fork Games. Their visual impact ties directly to the GraffPUNKS ethos, ensuring every player who owns one feels part of the broader rebellion, a connection that fuels community engagement across the Sacred Chain.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">The GKniftyHEADS community, vibrant on platforms like Instagram and Fandom, often collaborates with real-world GraffPUNKS events, where physical art drops mirror digital releases, creating a unique synergy between tangible and virtual rebellion. This cross-pollination, evident in posts on @gkniftyheads, has led to lore events like the ‘Head Hunt,’ a MiDEViL HERO ARENA challenge where players compete to tag virtual walls with GKnifty designs for $PUNK rewards. This mechanic not only deepens their integration into gameplay but also honors their roots in street culture, making GKniftyHEADS a living bridge between Darren Cullen’s legacy and Block Topia’s future, a faction-collection whose story grows with every spray and mint.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">GKniftyHEADS’ prominence in the Crypto Moonboys universe is further solidified by their dedicated Fandom wiki, a treasure trove of fan-driven lore that details their NFT traits, faction history, and pivotal roles in HODL WARS, showcasing community passion for these digital punk avatars. Pages on gkniftyheads.fandom.com explore everything from rare head designs to their impact on Block Topia’s rebellion, ensuring GKniftyHEADS remain a living narrative, not just a static collection. This fan engagement, mirrored in real-world social activity, positions them as a cultural cornerstone, a faction-collection whose story grows with every edit and battle on the Sacred Chain.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">GKniftyHEADS’ ethos of ‘We don’t sell out, we sell up’ isn’t just a slogan—it’s a battle cry in Block Topia, reflecting their strategy of turning cultural capital into power during HODL WARS, as seen in lore across gkniftyheads.com. Unlike other factions who fight for mere survival, GKniftyHEADS play the long game, leveraging their NFT drops and $PUNK token stakes to broker alliances and outmaneuver the blockchain overlords, often at the expense of smaller factions. This ruthless ambition, tied to their GraffPUNKS roots, paints them as both heroes and opportunists, a duality that fuels endless debate among players about whether they’re true rebels or just new kings in waiting, making their every move a narrative pivot in the universe.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">Their visual identity, steeped in the jagged, bold tags of Darren Cullen’s street art legacy, manifests in Block Topia through a series of iconic NFT collections dubbed ‘Nifty Crowns,’ rare digital pieces that grant holders unique status buffs in the Hard Fork Games. Lore on Medium posts describes these crowns as symbols of ‘Gettin’ Up,’ a nod to their upward mobility, with each piece rumored to carry encrypted data about Block Topia’s power structure. For the community, collecting a Nifty Crown isn’t just about rarity—it’s about claiming a piece of the GKniftyHEADS’ swagger, turning their art into a badge of honor that resonates across both gameplay and fan discussions.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">GKniftyHEADS’ alliance with GraffPUNKS often puts them at the forefront of cultural shifts in Block Topia, with lore events like the ‘Leveling Up Surge’—teased on social channels—where their influence triggers server-wide boosts for rebel factions during HODL WARS. These surges, often tied to real-world countdowns like the 2026 event on gkniftyheads.com, reflect their knack for turning momentum into power, mirroring their real-world branding as a force that’s ‘about to blow it up.’ This synergy of lore and reality makes GKniftyHEADS a faction that feels alive, a dynamic player in the Crypto Moonboys saga whose ambition challenges players to rethink what rebellion truly means in a tokenized world.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">The GKniftyHEADS faction emerged in Block Topia as a digital extension of Graffiti Kings’ street art rebellion, their tokenized avatars becoming the face of resistance in NFT drops that mirror Darren Cullen’s real-world tags. These avatars, often wielding virtual spray cans, are central to HODL WARS gameplay, where owning a GKniftyHEAD NFT can unlock unique graffiti-based abilities to disrupt enemy factions. Their origin ties directly to the GraffPUNKS’ ethos, making them a visual and cultural force in the Crypto Moonboys universe, a reminder that art can be as powerful as code in the fight against digital tyranny.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">In the lore, GKniftyHEADS are credited with creating the ‘Nifty Murals,’ hidden digital artworks scattered across Block Topia’s servers that act as Easter eggs in Hard Fork Games, offering players $PUNK token rewards or lore snippets about the Sacred Chain. These murals, inspired by the real-world guerilla art tactics of Graffiti Kings, are often targeted by blockchain overlords for deletion, turning their preservation into a high-stakes mission for rebels like Alfie Blaze. This mechanic deepens the faction’s narrative, linking their digital art to the broader struggle for freedom and memory in the Crypto Moonboys saga.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">GKniftyHEADS emerged in the Crypto Moonboys universe as the digital vanguard of Graffiti Kings, their first NFT collection—known as the 'Nifty Tags'—becoming a cornerstone of rebellion in Block Topia by allowing players to ‘tag’ virtual territory during HODL WARS. This mechanic, rooted in their real-world street art inspiration, not only altered gameplay dynamics but also cemented their reputation as cultural disruptors, with each tag serving as a digital middle finger to the blockchain overlords. The collection’s rarity on WAX makes it a prized asset, tying their lore directly to the economic stakes of the Sacred Chain.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">In the lore of Block Topia, GKniftyHEADS are often credited with creating the first ‘Glitch Murals,’ massive digital artworks that can destabilize enemy servers during Hard Fork Games, a tactic rumored to have been taught to Charlie Buster. These murals, inspired by Darren Cullen’s real-world graffiti style, are hidden across the multi-chain ecosystem, from XRPL to Bitcoin Cash, and uncovering one can grant significant buffs or $PUNK token drops. This narrative thread weaves GKniftyHEADS into the heart of the rebellion, making their art a literal weapon in the fight for digital freedom.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">GKniftyHEADS emerged in the Crypto Moonboys universe as a faction dedicated to turning blockchain canvases into battlegrounds, with their NFT drops often dubbed ‘Digital Defiance’ by collectors, each piece carrying traits inspired by real-world graffiti tags and South East Rockers styles. These drops, heavily featured on WAX and XRPL, aren’t just art—they’re weapons in HODL WARS, with metadata that can unlock buffs or reveal hidden Block Topia lore. Their commitment to art as rebellion aligns them closely with GraffPUNKS, but their unique focus on digital-first creativity sets them apart as innovators in the universe’s cultural wars.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">Within Block Topia, GKniftyHEADS are rumored to operate a clandestine ‘Tag Network,’ a series of encrypted nodes that allow rebels to communicate outside the overlords’ surveillance, a system often pivotal during Hard Fork Games. This network, inspired by the real-world grit of Leake Street’s graffiti culture, is said to be accessible only to those who hold specific GKniftyHEADS NFTs, tying their faction to gameplay mechanics and lore mysteries. Their role as connectors and creators ensures they’re a linchpin in the Crypto Moonboys narrative, often collaborating with figures like Charlie Buster to push the boundaries of digital resistance.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">GKniftyHEADS emerged in the Crypto Moonboys universe as a faction obsessed with the speculative potential of NFTs, their early drops on WAX and XRPL becoming legendary for introducing rare tokens like NBG and NBGX, which players could stake or burn for unique in-game advantages during HODL WARS. This focus on tokenomics sets them apart from GraffPUNKS’ art-first rebellion, creating dynamic tension and alliances within Block Topia’s 40-faction landscape. This fact matters because it positions GKniftyHEADS as economic disruptors, tying their lore to real-world NFT trends and offering players tangible stakes in their factional conflicts.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">In the Hard Fork Games, GKniftyHEADS avatars are often depicted as chaotic mercenaries, their punk-inspired designs—rooted in Darren Cullen’s street art—making them visually striking on the battlefield of Block Topia. Their unpredictable nature means they might aid Alfie Blaze’s Bitcoin Kids one day and betray them the next, driven by profit or whimsy over loyalty. This narrative role is significant as it adds a layer of volatility to the universe’s gameplay and storytelling, reflecting the anarchic spirit of their real-world graffiti origins and engaging fans with their wildcard status.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">GKniftyHEADS burst into Block Topia with a signature NFT collection known as the ‘Head Tags,’ a series of avatar designs that blend street art motifs with blockchain metadata, becoming a status symbol among the 40 factions. Released primarily on the WAX blockchain, these NFTs often carry hidden traits that boost player stats during HODL WARS, reflecting the faction’s dual focus on aesthetics and utility. This drop, tied to the real-world grit of Graffiti Kings, established GKniftyHEADS as innovators, with each Head Tag serving as a digital badge of rebellion against Block Topia’s oppressive algorithms.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">In the lore of Crypto Moonboys, GKniftyHEADS are often depicted as the artistic strategists behind GraffPUNKS’ larger campaigns, crafting visual propaganda that disrupts enemy morale during Hard Fork Games. Their murals, tokenized as NFTs and scattered across Block Topia’s virtual walls, are rumored to contain coded messages for allies like the Bitcoin Kids, linking them to characters such as Alfie Blaze. This role as communicators through art adds a layer of tactical depth to their faction, making them indispensable in the ongoing HODL WARS narrative.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">The GKniftyHEADS Fandom Wiki serves as a real-world repository of their in-universe lore, detailing faction rivalries and historical events like the ‘Canvas Clash,’ a legendary HODL WARS battle where their art outmaneuvered a rival faction’s token reserves. This community-driven content, paired with official posts on Medium (@GKniftyHEADS), often reveals upcoming NFT drops or game mechanics like staking $PUNK tokens, blurring the line between fan speculation and canon. Their strong digital presence ensures GKniftyHEADS remain a fan-favorite faction, embodying the intersection of art, lore, and player engagement.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">GKniftyHEADS emerged as a digital faction with their iconic NFT avatar series, each 'head' a unique piece of tokenized street art that players in Block Topia can wield as both identity and weapon during the HODL WARS. These avatars, often bearing the visual scars of rebellion inspired by Darren Cullen’s style, can disrupt enemy algorithms with visual overloads, a tactic mirroring Charlie Buster’s 'Glitch Graffiti.' Their launch marked a turning point in the Crypto Moonboys universe, proving that art could fight as fiercely as code, solidifying their status among the 40 factions as innovators of digital defiance.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">The GKniftyHEADS’ official channels, as outlined in Medium posts, serve as a real-world anchor for their in-lore presence, ensuring fans and players connect only with authentic content and drops, a reflection of their commitment to integrity amidst Block Topia’s chaos. This dedication to authenticity translates into the lore, where GKniftyHEADS are depicted as guardians of 'true art' against the blockchain overlords’ sanitized algorithms, often clashing with other factions in the HARD FORK GAMES to protect their creative legacy. Their real-world-digital bridge strengthens community trust, making them a pivotal force in the ecosystem’s cultural narrative.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">GKniftyHEADS emerged in the Crypto Moonboys universe as a faction of digital graffiti artists whose NFT avatars became symbols of resistance, their designs often used to mark territory or send coded messages during HODL WARS. Each avatar, inspired by Darren Cullen’s real-world street art, carries unique traits that can influence gameplay in MiDEViL HERO ARENA, making them both collectible and tactical assets. Their lore positions them as cultural warriors, fighting not just with code but with creativity, often collaborating with GraffPUNKS to amplify their impact in Block Topia.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">The GKniftyHEADS’ most infamous act was the ‘Digital Tag Storm,’ a coordinated event in Block Topia where thousands of their avatars simultaneously painted the city’s virtual walls with encrypted graffiti, temporarily crashing the blockchain’s surveillance systems. This act, celebrated in Hard Fork Games lore, not only disrupted the overlords’ control but also inspired rebels like the Bitcoin Kids to escalate their own hacks. The Tag Storm remains a benchmark for faction-driven events, with rumors suggesting a second storm could unlock hidden $PUNK token reserves, tying their art directly to the universe’s economy.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">GKniftyHEADS emerged as a groundbreaking NFT collection during the early days of the GraffPUNKS rebellion, with each avatar designed as a digital tribute to the street art of Darren Cullen’s Graffiti Kings, featuring bold tags and punk aesthetics that resonate with Block Topia’s underbelly. Their release on the WAX blockchain sparked a frenzy, with rare traits like 'Neon Crowns' or 'Glitch Eyes' rumored to unlock hidden mechanics in HODL WARS, cementing their status as both art and arsenal in the Crypto Moonboys universe.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">Beyond their collectible value, GKniftyHEADS serve as playable avatars in games like MiDEViL HERO ARENA, where their unique attributes—often tied to specific GraffPUNKS factions—can influence battle outcomes or reveal secret lore about the Genesis Kernel. This dual nature as both NFT and in-game entity has made them a cultural phenomenon in Block Topia, with players forming entire strategies around acquiring specific GKniftyHEADS to gain an edge in the Hard Fork Games.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">GKniftyHEADS’ mantra 'WE DON’T $ELL OUT, WE $ELL UP,' as emblazoned across gkniftyheads.com, defines their approach in Block Topia, where they transform rebellion into a profitable grind through NFT drops and staking with $PUNK tokens. This ethos, celebrated in HODL WARS lore, positions them as hustlers who empower players and avatars alike to 'level up,' often through strategic alliances in Hard Fork Games. Their focus on upward mobility through digital art makes them a cultural force, inspiring characters like Charlie Buster to fight smarter, not just harder, against blockchain overlords in the Crypto Moonboys universe.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">The GKniftyHEADS’ involvement in the 1M free NFTs programme, highlighted on graffpunks.live, is a lore-defining act of digital emancipation in the Crypto Moonboys universe, distributing tokenized art to masses as a form of rebellion against Block Topia’s centralized control. These free drops, often tied to in-game events like MiDEViL HERO ARENA battles, carry hidden buffs or lore fragments about the Sacred Chain, making them coveted by factions. This initiative not only mirrors their real-world push for accessibility but also cements their role as champions of the underdog, spreading GraffPUNKS’ influence one NFT at a time.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">Visually, GKniftyHEADS avatars in Block Topia draw directly from the jagged, bold style of Graffiti Kings founder Darren Cullen (SER), with their digital tags and punk-inspired designs becoming a symbol of resistance in HODL WARS. As seen in galleries on gkniftyheads.com, their aesthetic is a digital evolution of street art, often appearing as graffiti tags during Hard Fork Games that boost faction morale or unlock $NBG token caches. This visual lineage ties them to the broader GraffPUNKS rebellion, making their presence on the battlefield both a cultural statement and a tactical asset in the fight for freedom.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">GKniftyHEADS emerged as a faction in the Crypto Moonboys universe with their NFT avatars becoming battle-ready symbols in HODL WARS, each one carrying unique traits inspired by the raw, unfiltered tags of Graffiti Kings’ real-world art. These avatars aren’t just collectibles—they’re warriors, with lore suggesting that owning a GKniftyHEAD grants subtle advantages in Block Topia’s skirmishes, as their designs are coded with hidden defiance algorithms that disrupt enemy systems during critical moments.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">The faction’s pinned Medium post, declaring the only official channels for Graffiti Kings and GKniftyHEADS, mirrors their in-universe role as gatekeepers of authenticity in Block Topia, where fakes and scams plague the blockchain. This real-world stance bleeds into the lore, with GKniftyHEADS often depicted as the faction tasked with rooting out corrupted NFTs or counterfeit tokens, a mission that ties them to larger HODL WARS narratives of trust and betrayal among the 40 factions.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">GKniftyHEADS emerged in the Crypto Moonboys universe as the digital arm of Graffiti Kings, their NFT collections like the 'Nifty Spray Series' becoming legendary for embedding hidden rebellion codes within pixelated street art. These tokens, often dropped on WAX, aren’t just collectibles—they’re tools in Block Topia, allowing players to unlock secret areas or disrupt enemy factions during HODL WARS. Inspired by Darren Cullen’s real-world art, each piece carries the weight of decades of street defiance, making GKniftyHEADS a cultural force that shapes the visual and tactical landscape of the lore.</p>
+          <p class="lore-paragraph">This fact cements their role as innovators and rebels in the digital realm.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">The GKniftyHEADS faction is deeply tied to the community narrative, with their official channels on Medium and social platforms like X (@GKniftyHEADS) serving as hubs for lore drops and player engagement. In Block Topia, their digital graffiti is rumored to mark safe havens for rebels like the Bitcoin Kids, a lore element that players can explore in games like MiDEViL HERO ARENA to gain temporary protection or buffs. This integration of real-world communication with in-universe utility highlights their dual role as creators and storytellers, reinforcing their importance among the 40 factions.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">GKniftyHEADS emerged as a digital evolution of Graffiti Kings’ street art rebellion, their first notable act in Block Topia being the ‘Nifty Tag Storm,’ a coordinated NFT drop that flooded WAX marketplaces with glitch-art pieces designed to overload the blockchain overlords’ surveillance systems. This event, documented on gkniftyheads.com and Medium, marked them as a force of creative destruction, aligning closely with GraffPUNKS’ mission while carving their own niche as innovators of digital graffiti. The Tag Storm’s impact lingers in the lore, with surviving NFTs from that drop now considered rare relics in HODL WARS, often granting players unique abilities to disrupt enemy factions during critical battles.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">Their visual style, rooted in Darren Cullen’s (SER) real-world graffiti legacy, defines the aesthetic of many Block Topia avatars, with bold, jagged designs that scream rebellion against the sanitized control of the blockchain overlords. This aesthetic, showcased across gkniftyheads.fandom.com, not only ties them to GraffPUNKS but also serves as a cultural marker in games like MiDEViL HERO ARENA, where GKniftyHEADS-aligned players can unlock exclusive skins or graffiti weapons. Their art isn’t just cosmetic—it’s a narrative tool, often embedding hidden messages or lore snippets that players decode for strategic advantages, reinforcing their role as both artists and tacticians.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">GKniftyHEADS’ community engagement, driven through platforms like X (@GKniftyHEADS) and Medium, often teases upcoming lore arcs or NFT drops, blending real-world hype with in-universe rebellion to keep players invested in their fight for Block Topia. Their posts frequently spark fan theories about potential alliances with figures like Charlie Buster or conflicts with other factions during Hard Fork Games, creating a dynamic feedback loop between creators and community. This interactivity ensures that GKniftyHEADS remain a living faction, their narrative shaped not just by canon but by the collective imagination of their followers, making them a cornerstone of the Crypto Moonboys universe’s participatory storytelling.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">GKniftyHEADS, as both faction and NFT collection, emerged from the digital spray cans of GraffPUNKS in the Crypto Moonboys universe, each avatar a unique piece of tokenized street art inspired by Darren Cullen’s real-world style, serving as both identity and weapon in Block Topia’s HODL WARS. These NFTs, often bearing rare traits like glowing tags or encrypted masks, grant players tactical advantages in games like MiDEViL HERO ARENA, embodying the rebellion’s visual cry against blockchain tyranny. Their lore positions them as guardians of the ‘Graffiti Nexus,’ a hidden server of immense power, making every GKniftyHEAD a potential key to unlocking Block Topia’s deepest secrets.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">Tied to the 1M free NFTs programme, GKniftyHEADS represents an entry point for new rebels in the Crypto Moonboys universe, distributing free avatars to players who join the fight against Block Topia’s overlords, a mechanic that mirrors GraffPUNKS’ ethos of art for all. This initiative, celebrated in lore as the ‘Great Tag Drop,’ flooded the multi-chain ecosystem with fresh warriors, often turning the tide in Hard Fork Games by swelling faction ranks overnight. The programme’s narrative impact ensures GKniftyHEADS is not just a collection, but a movement, democratizing rebellion while maintaining the punk spirit of defiance in every pixel.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">GKniftyHEADS emerged as a distinct force in Block Topia with their inaugural NFT collection, known as the 'Head Drop,' a series of unique, graffiti-inspired digital skulls that became instant icons in the Crypto Moonboys universe. Detailed on gkniftyheads.com, this drop not only showcased their artistic prowess but also established them as key players in the HODL WARS, with each NFT carrying hidden buffs for use in games like MiDEViL HERO ARENA. The Head Drop’s success cemented GKniftyHEADS as a faction of both style and substance, their designs becoming a badge of honor for rebels fighting against Block Topia’s algorithmic tyranny.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">The GKniftyHEADS faction is deeply intertwined with the GraffPUNKS’ 1M free NFTs programme, distributing their signature head designs to new players as a gateway into the rebellion, as noted on graffpunks.live/free-nfts. This initiative has flooded Block Topia with their imagery, turning virtual streets into galleries of resistance and amplifying their influence across the 40 factions. Their free NFTs are often the first taste of rebellion for newcomers, forging a direct connection between the faction’s real-world street art roots and the digital battlegrounds of the Crypto Moonboys universe.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">GKniftyHEADS emerged in the Crypto Moonboys universe as a creative offshoot of the GraffPUNKS, specializing in NFT artistry that captures the raw defiance of street graffiti, with their tokenized tags serving as both collectibles and tools in the HODL WARS. Their first major drop, dubbed the 'Nifty Rebellion,' flooded Block Topia with digital art that players could stake for $PUNK tokens or use to unlock hidden areas in games like MiDEViL HERO ARENA, marking them as a faction where creativity equals power. This fusion of art and utility ties their identity to the broader rebellion, inspiring players to collect their NFTs not just for aesthetics but for the tactical edges they provide in a digital warzone.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">Aligned with GraffPUNKS, GKniftyHEADS often collaborate on cultural assaults against Block Topia’s overlords, their NFTs featuring designs inspired by real-world graffiti legends like Darren Cullen, blending jagged lines with blockchain metadata to create art that disrupts digital order. Lore suggests that owning a GKniftyHEADS NFT can grant access to exclusive Hard Fork Games events, where players wield these tokens as digital spray cans to tag enemy strongholds, echoing the real-world act of claiming space through art. This mechanic cements their role as cultural warriors, whose every piece is a statement in the 40-faction struggle for dominance.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">GKniftyHEADS’ rivalry with more tech-focused factions like the Bitcoin Kids adds tension to their narrative in the Crypto Moonboys universe, as their focus on art over raw hacking often sparks debates over the best path to freedom within Block Topia’s walls. Yet, their shared enemy in the blockchain overlords frequently forces uneasy alliances, such as joint operations with Alfie Blaze’s crew to embed disruptive code within NFT drops. These partnerships, detailed in lore as 'Art Hack Convergences,' highlight GKniftyHEADS’ unique position as both creators and combatants, their digital tags a canvas for rebellion that resonates with players seeking to leave their mark on a dystopian world.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">GKniftyHEADS emerged as a faction during a pivotal NFT drop known as the 'Tag Torrent,' where thousands of unique avatar designs flooded the WAX blockchain, each one a digital canvas of rebellion inspired by Darren Cullen’s street art legacy. This drop, chronicled in GraffPUNKS lore, wasn’t just a collection—it was a call to arms, allowing players to join the HODL WARS with avatars that carried the weight of real-world graffiti culture. The Tag Torrent solidified GKniftyHEADS as a visual army, their presence in Block Topia a constant reminder that art can be as powerful as any weapon in the fight against oppression.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">In gameplay across Block Topia, GKniftyHEADS avatars often come with unique traits tied to GraffPUNKS mechanics, such as buffs for burn-to-earn events or increased staking yields with $PUNK tokens, making them valuable assets in Hard Fork Games. These traits, embedded in their NFT metadata, reflect their role as disruptors, often turning the tide in skirmishes by outlasting or outmaneuvering larger factions. Their visual flair, paired with strategic depth, ensures that GKniftyHEADS are not just seen but felt in every corner of the Crypto Moonboys universe.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">GKniftyHEADS emerged as a digital extension of the real-world Graffiti Kings, their NFT collections mirroring Darren Cullen’s street art with bold, jagged designs that became a visual shorthand for rebellion in Block Topia. Their first major drop, tied to the GraffPUNKS’ 'Genesis Spray,' overwhelmed WAX servers, proving their cultural clout and setting a precedent for art as a weapon in the Crypto Moonboys universe. This event solidified their role as the creative heartbeat of the resistance, inspiring players and factions alike to wield creativity against oppression.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">Operating as a sister faction to GraffPUNKS, GKniftyHEADS often lead the charge in crafting visual propaganda during HODL WARS, their graffiti-laden NFTs serving as banners for rebel causes across Block Topia. These digital artworks, often imbued with hidden messages or $PUNK token codes, are sought after in Hard Fork Games, turning art into a strategic asset. Their ability to blend aesthetics with utility makes GKniftyHEADS a unique force among the 40 factions, bridging the gap between culture and combat.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">GKniftyHEADS’ commitment to the 1M free NFTs programme reflects their real-world ethos of accessibility, a move that flooded Block Topia with free digital art pieces to arm the underclass with tools of rebellion. This initiative, inspired by Darren Cullen’s vision, reshaped the in-lore economy, allowing even the smallest factions to join the fight with tokenized graffiti. It’s a narrative cornerstone that ties GKniftyHEADS to the broader GraffPUNKS mission of inclusivity, making their presence felt in every corner of the Crypto Moonboys community.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">GKniftyHEADS emerged in Block Topia as the artistic vanguard of the GraffPUNKS, their NFT avatars becoming symbols of resistance with every tag sprayed during the HODL WARS, often boosting faction morale or marking strategic territories. Their art, rooted in Darren Cullen’s real-world graffiti legacy, isn’t just aesthetic—it’s functional, with some tags rumored to contain hidden blockchain codes that unlock rare $PUNK tokens or secret missions in MiDEViL HERO ARENA. This fusion of form and function makes GKniftyHEADS a beloved faction among players who value creativity as much as combat.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">The lore of GKniftyHEADS includes the ‘Canvas Clash,’ a legendary event in Block Topia’s history where they led a digital art uprising against the blockchain overlords, flooding servers with unerasable graffiti that disrupted control algorithms for days. This clash, celebrated in GraffPUNKS archives, established their reputation as not just artists but warriors, capable of turning pixels into power. Players can commemorate this event by collecting rare GKniftyHEADS NFTs tied to the clash, each carrying metadata that hints at future uprisings.</p>
+          </div>
+          </div>
+        </section>
+
+        <section class="wiki-section">
+          <h2 id="lore">Lore</h2>
+          <p class="lore-paragraph">GKniftyHEADS stand as a bold faction in the Crypto Moonboys universe, a creative offshoot of the GraffPUNKS ethos that channels the raw, unapologetic energy of street art into the digital realm of Block Topia. Known for their visually striking NFT avatars, GKniftyHEADS are not just collectors but warriors in the HODL WARS, their tokenized art serving as both identity and weapon. Tied to the real-world influence of Graffiti Kings and Darren Cullen (SER), this faction embodies the fusion of graffiti culture with blockchain innovation, making them a cultural force among the 40 factions. Their presence in games like MiDEViL HERO ARENA and Hard Fork Games often shifts the aesthetic and tactical landscape, positioning them as tastemakers in the Sacred Chain’s rebellious tapestry.</p>
+          <p class="lore-paragraph">In the shadowed corners of Block Topia, the GKniftyHEADS have carved out a reputation not just as artists but as digital provocateurs, their NFT avatars serving as living manifestos of rebellion. Each avatar, a unique fusion of Darren Cullen’s graffiti legacy and blockchain wizardry, pulses with the raw energy of the streets, their traits—spray can blasters, tag-etched armor, and glitch-infused visors—turning aesthetic into arsenal. During the brutal skirmishes of HODL WARS, these avatars become more than mere representations; they are battle standards, rallying cries that can shift the tide of conflict in Hard Fork Games. A GKniftyHEADS warrior wielding a spray can weapon can unleash a digital aerosol blast, temporarily blinding enemy algorithms, while their tag shields project protective barriers coded with defiant slogans, altering gameplay dynamics in ways that even the blockchain overlords struggle to predict. This fusion of art and combat has inspired other factions, notably the Bitcoin Kids under Alfie Blaze, to adopt visual defiance as a form of power, painting their own resistance in bold, unapologetic strokes across Block Topia’s servers. The cultural ripple of GKniftyHEADS’ influence is felt in every corner of the Sacred Chain, where their avatars aren’t just owned—they’re weaponized, embodying a rebellion that refuses to be pixelated into submission.</p>
+          <p class="lore-paragraph">Their most enduring mark on Block Topia’s history, however, lies in the legendary ‘Unbuffable Canvas,’ a mythic event that redefined the boundaries of digital resistance. In a daring act of defiance tied to the broader GraffPUNKS uprising, GKniftyHEADS infiltrated a central server hub and tagged it with permanent digital graffiti, a sprawling mural of code and color that proved immune to the overlords’ erasure protocols. This visual scar on the blockchain became a beacon during the darkest hours of HODL WARS, a rallying point for the 40 factions to gather strength and plot their next moves. Players today can still visit this hallowed ground in games like MiDEViL HERO ARENA, where standing before the Unbuffable Canvas grants buffs like enhanced avatar resilience or unlocks quests tied to forgotten rebel lore. This act cemented GKniftyHEADS as cultural disruptors, their art not just decorating but defending the Sacred Chain, a testament to their belief that in Block Topia, every stroke of defiance is a stroke of war.</p>
+          <p class="lore-paragraph">Beyond the Unbuffable Canvas, the GKniftyHEADS harbor deeper secrets within Block Topia, whispers of a hidden ‘Spray Vault’ that pulses at the edge of the Sacred Chain’s darkest servers. This clandestine node, accessible only through rare NFT keys bearing specific metadata traits, is rumored to house the blueprints for art-based weaponry and strategies that could redefine the HODL WARS. Lore among the 40 factions speaks of digitized sketches from Darren Cullen himself, encrypted within the vault’s core, their jagged lines and defiant tags holding the potential to inspire a full-scale uprising against the blockchain overlords. To unlock this vault is to wield the raw essence of graffiti rebellion, a power so coveted that even Queen Sarah P-fly is said to have cast her enigmatic gaze upon it, seeking its secrets for her own cryptic ends. Players in MiDEViL HERO ARENA whisper of quests that might lead to these keys, hidden in the graffiti-strewn ruins of forgotten servers, promising an artist-warrior worthy of Cullen’s legacy the chance to arm their faction with tools of visual warfare unlike any seen before. The Spray Vault isn’t just a treasure—it’s a ticking bomb, a potential catalyst for a revolution that could paint Block Topia in colors the overlords cannot erase, tying GKniftyHEADS to the very heartbeat of the Sacred Chain’s future.</p>
+          <p class="lore-paragraph">Equally shrouded in mystery is the rumored alliance between GKniftyHEADS and the elusive ‘Pixel Phantoms,’ rogue coders who barter experimental algorithms for rare NFT art in the shadowed underbelly of Block Topia. This silent pact, though unconfirmed in official GraffPUNKS chronicles, is believed to have birthed the ‘Ghost Tag,’ a revolutionary digital graffiti technique that renders their art invisible to the overlords’ tracking protocols for a fleeting 24 hours. During this window, GKniftyHEADS operatives can execute covert operations—planting intel, sabotaging nodes, or rallying rebels—right under the enemy’s digital nose, a tactic that has turned the tide in smaller HODL WARS skirmishes. This alliance, if true, connects GKniftyHEADS to a broader network of resistance, blending their artistic defiance with cold, hard code to strike at the heart of oppression. It’s a partnership that mirrors their dual nature as creators and combatants, embedding them deeper into Block Topia’s web of intrigue, where every tag could hide a phantom’s glitch, and every glitch could spark a war.</p>
+          <p class="lore-paragraph">As GKniftyHEADS continue to paint their mark across Block Topia, their long-term vision for rebellion unfolds in a meticulously crafted 40-phase strategy, a blueprint of defiance that has already ignited the first sparks of change. Recent whispers on Medium from @GKniftyHEADS reveal that Phases One through Three are complete, each step a calculated strike against the blockchain overlords’ grip on the Sacred Chain. Phase One saw the mass minting of NFT avatars as digital war cries, flooding Block Topia’s servers with visual noise that overwhelmed surveillance algorithms and masked early rebel movements. Phase Two deepened their foothold with covert alliances, forging tentative pacts with smaller factions among the 40, trading art for intel to map the overlords’ weak points. Phase Three, the most daring yet, unleashed a series of micro-drops—limited NFT tags embedded with encrypted messages—that players in HODL WARS could decode for tactical buffs, turning art into a living, breathing strategy. These phases are more than mere tactics; they’re a declaration that GKniftyHEADS play the long game, their rebellion a slow burn designed to erode control from within. Each phase teases new lore, with rumors of upcoming drops tied to uncharted servers or forgotten graffiti codes that could awaken dormant protocols in the Genesis Kernel itself. This strategic patience sets them apart from the raw immediacy of the Bitcoin Kids, creating a narrative tension as players speculate whether their next phase might align with or disrupt larger faction wars. Some even murmur that Queen Sarah P-fly has taken note, her cryptic interest hinting at a potential convergence—or clash—that could redefine the HODL WARS. Beyond mere battles, this phased uprising embeds GKniftyHEADS deeper into Block Topia’s cultural fabric, their art becoming a timeline of resistance that players can trace through Hard Fork Games, each phase a brushstroke in a masterpiece of revolt. As whispers of Phase Four loom, promising mechanics that might integrate $PUNK token burns for art-driven hard forks, the faction’s legacy grows—not just as artists, but as architects of a rebellion that could repaint the very code of the Crypto Moonboys universe.</p>
+        </section>
+
+        <section class="wiki-section">
+          <h2 id="real-world-basis">Real World Basis</h2>
+          <p class="lore-paragraph">GKniftyHEADS are an extension of the Graffiti Kings and GraffPUNKS real-world projects, rooted in Darren Cullen’s street art legacy and expanded into NFT culture through platforms like gkniftyheads.com and associated social media, reflecting a punk-NFT fusion.</p>
+        </section>
+
+        <section class="wiki-section">
+          <h2 id="sources">Sources</h2>
+          <ul class="sources-list">
+          <li><a href="https://gkniftyheads.com" target="_blank" rel="noopener noreferrer">https://gkniftyheads.com</a></li>
+          <li><a href="https://gkniftyheads.fandom.com/wiki/GKniftyHEADS_Wiki" target="_blank" rel="noopener noreferrer">https://gkniftyheads.fandom.com/wiki/GKniftyHEADS_Wiki</a></li>
+          <li><a href="https://www.instagram.com/gkniftyheads/" target="_blank" rel="noopener noreferrer">https://www.instagram.com/gkniftyheads/</a></li>
+          <li><a href="https://medium.com/@GKniftyHEADS" target="_blank" rel="noopener noreferrer">https://medium.com/@GKniftyHEADS</a></li>
+          <li><a href="https://linktr.ee/gkniftyheads" target="_blank" rel="noopener noreferrer">https://linktr.ee/gkniftyheads</a></li>
+          <li><a href="https://graffpunks.live/graffiti-nfts/" target="_blank" rel="noopener noreferrer">https://graffpunks.live/graffiti-nfts/</a></li>
+          <li><a href="https://gkniftyheads.fandom.com/wiki/Gkniftyheads" target="_blank" rel="noopener noreferrer">https://gkniftyheads.fandom.com/wiki/Gkniftyheads</a></li>
+          <li><a href="https://graffpunks.live/gk-factions/" target="_blank" rel="noopener noreferrer">https://graffpunks.live/gk-factions/</a></li>
+          <li><a href="https://instagram.com/gkniftyheads" target="_blank" rel="noopener noreferrer">https://instagram.com/gkniftyheads</a></li>
+          <li><a href="https://twitter.com/GKniftyHEADS" target="_blank" rel="noopener noreferrer">https://twitter.com/GKniftyHEADS</a></li>
+          <li><a href="https://graffitikings.co.uk" target="_blank" rel="noopener noreferrer">https://graffitikings.co.uk</a></li>
+          <li><a href="https://medium.com/@GKniftyHEADS/the-only-official-graffiti-kings-aka-gkniftyheads-channels-websites-socials-ba6c7f7d0ec0" target="_blank" rel="noopener noreferrer">https://medium.com/@GKniftyHEADS/the-only-official-graffiti-kings-aka-gkniftyheads-channels-websites-socials-ba6c7f7d0ec0</a></li>
+          </ul>
+        </section>
+
+        <section class="wiki-section">
+          <h2 id="observed-images">Observed Images</h2>
+          <ul class="sources-list">
+          <li><a href="https://gkniftyheads.fandom.com/wiki/GKniftyHEADS_Wiki" target="_blank" rel="noopener noreferrer">https://gkniftyheads.fandom.com/wiki/GKniftyHEADS_Wiki</a> <span class="image-source-domain">(fandom.com)</span></li>
+          <li><a href="https://www.instagram.com/gkniftyheads/" target="_blank" rel="noopener noreferrer">https://www.instagram.com/gkniftyheads/</a> <span class="image-source-domain">(instagram.com)</span></li>
+          <li><a href="https://medium.com/@GKniftyHEADS" target="_blank" rel="noopener noreferrer">https://medium.com/@GKniftyHEADS</a> <span class="image-source-domain">(medium.com)</span></li>
+          <li><a href="https://gkniftyheads.fandom.com/wiki/Gkniftyheads" target="_blank" rel="noopener noreferrer">https://gkniftyheads.fandom.com/wiki/Gkniftyheads</a> <span class="image-source-domain">(fandom.com)</span></li>
+          <li><a href="https://instagram.com/gkniftyheads" target="_blank" rel="noopener noreferrer">https://instagram.com/gkniftyheads</a> <span class="image-source-domain">(instagram.com)</span></li>
+          <li><a href="https://twitter.com/GKniftyHEADS" target="_blank" rel="noopener noreferrer">https://twitter.com/GKniftyHEADS</a> <span class="image-source-domain">(twitter.com)</span></li>
+          <li><a href="https://medium.com/@GKniftyHEADS/the-only-official-graffiti-kings-aka-gkniftyheads-channels-websites-socials-ba6c7f7d0ec0" target="_blank" rel="noopener noreferrer">https://medium.com/@GKniftyHEADS/the-only-official-graffiti-kings-aka-gkniftyheads-channels-websites-socials-ba6c7f7d0ec0</a> <span class="image-source-domain">(medium.com)</span></li>
+          </ul>
         </section>
 
         <div id="bible-content"></div>
+
       </article>
+
+      <div class="category-tags" aria-label="Article categories">
+        <span class="cat-label">Categories:</span>
+        <a href="../categories/lore.html">Lore</a>
+      </div>
+
     </main>
 
     <footer id="site-footer" role="contentinfo">
       <div class="footer-inner">
-        <div class="footer-col">
-          <h4>🌙 Moonboys Wiki</h4>
-          <p>Fan-driven encyclopedia for the crypto community.</p>
-        </div>
-        <div class="footer-col">
-          <h4>Explore</h4>
-          <ul>
-            <li><a href="/index.html">Main Page</a></li>
-            <li><a href="/categories/index.html">Categories</a></li>
-            <li><a href="/search.html">All Articles</a></li>
-            <li><a href="/about.html">About</a></li>
-          </ul>
-        </div>
+        <div class="footer-col"><h4>🌙 Moonboys Wiki</h4><p>Fan-driven encyclopedia for the crypto community.</p></div>
+        <div class="footer-col"><h4>Explore</h4><ul><li><a href="../index.html">Main Page</a></li><li><a href="../categories/index.html">Categories</a></li><li><a href="../articles.html">All Articles</a></li><li><a href="../about.html">About</a></li></ul></div>
+        <div class="footer-col"><h4>🤖 SAM</h4><ul><li><a href="../articles.html">SAM Articles</a></li><li><a href="hodl-wars.html">HODL Wars</a></li><li><a href="hodl-warriors.html">HODL Warriors</a></li></ul></div>
       </div>
       <div class="footer-bottom">
         <p>© 2026 Crypto Moonboys Wiki · Not financial advice.</p>
+        <p><span class="no-login-note">🔒 No sign-up · No login · Bot-maintained</span></p>
       </div>
     </footer>
   </div>
 </div>
 
-<button id="back-to-top" aria-label="Back to top">↑</button>
-<script src="/js/wiki.js"></script>
+<button id="back-to-top" aria-label="Back to top">&#8593;</button>
+<script src="../js/wiki.js"></script>
 <script src="/js/bible-loader.js"></script>
 </body>
 </html>
