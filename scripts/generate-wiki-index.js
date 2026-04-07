@@ -113,12 +113,8 @@ function loadSamMemory() {
       const slug = slugFromUrl(canonicalUrl);
       const cleanTitle = cleanupCanonicalTitle(entity.canonical_title || '');
 
-      if (slug) {
-        entitiesBySlug[slug] = entity;
-      }
-      if (cleanTitle) {
-        entitiesByTitle[normalize(cleanTitle)] = entity;
-      }
+      if (slug) entitiesBySlug[slug] = entity;
+      if (cleanTitle) entitiesByTitle[normalize(cleanTitle)] = entity;
     }
 
     return { entitiesBySlug, entitiesByTitle };
@@ -173,6 +169,7 @@ function buildAliases(samEntity) {
 
   const aliases = [];
   const seen = new Set();
+
   const pushAlias = (value) => {
     const title = String(value || '').trim();
     if (!title) return;
@@ -337,18 +334,40 @@ function computeRankScore(signals) {
 }
 
 function buildRankDiagnostics(signals, rankScore) {
+  const canonicalPoints = signals.is_canonical ? CONFIG.WEIGHTS.canonical : 0;
+  const descriptionPoints = signals.has_description ? CONFIG.WEIGHTS.description : 0;
+  const categoryPoints = signals.category_priority * CONFIG.WEIGHTS.category;
+  const wordCountPoints = Math.round(signals.article_word_count * CONFIG.WEIGHTS.word_count);
+  const keywordBagPoints = Math.round(signals.keyword_bag_size * CONFIG.WEIGHTS.keyword_bag);
+
+  // Fold extra deterministic signals into existing required diagnostic buckets
+  const contentQualityPoints =
+    signals.content_quality_score +
+    (signals.alias_count * 3) +
+    signals.tag_count;
+
+  const authorityPoints =
+    Math.round(signals.authority_score * CONFIG.WEIGHTS.authority) +
+    (signals.mention_count * 2);
+
+  const recomputedScore =
+    canonicalPoints +
+    descriptionPoints +
+    categoryPoints +
+    wordCountPoints +
+    keywordBagPoints +
+    contentQualityPoints +
+    authorityPoints;
+
   return {
-    canonical_points: signals.is_canonical ? CONFIG.WEIGHTS.canonical : 0,
-    description_points: signals.has_description ? CONFIG.WEIGHTS.description : 0,
-    category_points: signals.category_priority * CONFIG.WEIGHTS.category,
-    word_count_points: Math.round(signals.article_word_count * CONFIG.WEIGHTS.word_count),
-    keyword_bag_points: Math.round(signals.keyword_bag_size * CONFIG.WEIGHTS.keyword_bag),
-    alias_points: signals.alias_count * 3,
-    tag_points: signals.tag_count,
-    mention_points: signals.mention_count * 2,
-    content_quality_points: signals.content_quality_score,
-    authority_points: signals.authority_score * CONFIG.WEIGHTS.authority,
-    final_rank_score: rankScore
+    canonical_points: canonicalPoints,
+    description_points: descriptionPoints,
+    category_points: categoryPoints,
+    word_count_points: wordCountPoints,
+    keyword_bag_points: keywordBagPoints,
+    content_quality_points: contentQualityPoints,
+    authority_points: authorityPoints,
+    final_rank_score: recomputedScore
   };
 }
 
@@ -397,7 +416,7 @@ function run() {
       tags: keywords,
       category: rankSignals.category,
       aliases,
-      rank_score: rankScore,
+      rank_score: rankDiagnostics.final_rank_score,
       rank_signals: rankSignals,
       rank_diagnostics: rankDiagnostics,
       search_index: searchIndex
