@@ -5,6 +5,7 @@ const CONFIG = require('../js/ranking-config.js');
 const ROOT = path.join(__dirname, '..');
 const WIKI_DIR = path.join(ROOT, 'wiki');
 const OUTPUT = path.join(ROOT, 'js', 'wiki-index.json');
+const SAM_MEMORY_PATH = path.join(ROOT, 'sam-memory.json');
 
 function walk(dir) {
   let results = [];
@@ -64,6 +65,7 @@ function stripHtml(html) {
 function normalize(str) {
   return String(str || '')
     .toLowerCase()
+    .replace(/&/g, ' and ')
     .replace(/[^a-z0-9]+/g, ' ')
     .trim();
 }
@@ -75,13 +77,65 @@ function tokenize(str) {
     .filter(Boolean);
 }
 
-function buildSearchIndex(title, description, keywords) {
+function slugFromUrl(url) {
+  return String(url || '')
+    .replace(/^\/wiki\//, '')
+    .replace(/\.html$/i, '')
+    .trim();
+}
+
+function cleanupCanonicalTitle(title) {
+  return String(title || '')
+    .replace(/\s+—\s+Crypto Moonboys Wiki$/i, '')
+    .trim();
+}
+
+function loadSamMemory() {
+  if (!fs.existsSync(SAM_MEMORY_PATH)) {
+    return { entitiesBySlug: {}, entitiesByTitle: {} };
+  }
+
+  try {
+    const raw = JSON.parse(fs.readFileSync(SAM_MEMORY_PATH, 'utf8'));
+    const entities = raw && typeof raw === 'object' ? raw.entities : null;
+
+    if (!entities || typeof entities !== 'object') {
+      return { entitiesBySlug: {}, entitiesByTitle: {} };
+    }
+
+    const entitiesBySlug = {};
+    const entitiesByTitle = {};
+
+    for (const [, entity] of Object.entries(entities)) {
+      if (!entity || typeof entity !== 'object') continue;
+
+      const canonicalUrl = entity.canonical_url || '';
+      const slug = slugFromUrl(canonicalUrl);
+      const cleanTitle = cleanupCanonicalTitle(entity.canonical_title || '');
+
+      if (slug) {
+        entitiesBySlug[slug] = entity;
+      }
+      if (cleanTitle) {
+        entitiesByTitle[normalize(cleanTitle)] = entity;
+      }
+    }
+
+    return { entitiesBySlug, entitiesByTitle };
+  } catch (err) {
+    console.warn(`[wiki-index] Failed to read sam-memory.json: ${err.message}`);
+    return { entitiesBySlug: {}, entitiesByTitle: {} };
+  }
+}
+
+function buildSearchIndex(title, description, keywords, aliases = []) {
   const normalizedTitle = normalize(title);
   const keywordBag = Array.from(
     new Set([
       ...tokenize(title),
       ...tokenize(description),
-      ...keywords.flatMap(tokenize)
+      ...keywords.flatMap(tokenize),
+      ...aliases.flatMap(alias => tokenize(alias && alias.title ? alias.title : ''))
     ])
   );
 
@@ -92,7 +146,11 @@ function buildSearchIndex(title, description, keywords) {
   };
 }
 
-function detectCategory(filePath, html) {
+function detectCategory(filePath, html, samEntity) {
+  if (samEntity && samEntity.category) {
+    return String(samEntity.category).toLowerCase();
+  }
+
   const lowerPath = filePath.toLowerCase();
   const lowerHtml = html.toLowerCase();
 
@@ -110,7 +168,33 @@ function detectCategory(filePath, html) {
   return 'misc';
 }
 
-function buildContentSignals(html, title, description, keywords) {
+function buildAliases(samEntity) {
+  if (!samEntity) return [];
+
+  const aliases = [];
+  const seen = new Set();
+  const pushAlias = (value) => {
+    const title = String(value || '').trim();
+    if (!title) return;
+    const key = normalize(title);
+    if (!key || seen.has(key)) return;
+    seen.add(key);
+    aliases.push({ title });
+  };
+
+  (samEntity.aliases || []).forEach(pushAlias);
+  (samEntity.alias_candidates || []).forEach(pushAlias);
+
+  const canonicalTitle = cleanupCanonicalTitle(samEntity.canonical_title || '');
+  if (canonicalTitle) {
+    const normalizedCanonical = normalize(canonicalTitle);
+    return aliases.filter(alias => normalize(alias.title) !== normalizedCanonical);
+  }
+
+  return aliases;
+}
+
+function buildContentSignals(html, title, description, keywords, aliases = []) {
   const text = stripHtml(html);
   const wordCount = text ? text.split(/\s+/).length : 0;
   const hasDescription = Boolean(description);
@@ -119,7 +203,8 @@ function buildContentSignals(html, title, description, keywords) {
     new Set([
       ...tokenize(title),
       ...tokenize(description),
-      ...keywords.flatMap(tokenize)
+      ...keywords.flatMap(tokenize),
+      ...aliases.flatMap(alias => tokenize(alias && alias.title ? alias.title : ''))
     ])
   );
   const keywordBagSize = keywordBag.length;
@@ -206,16 +291,20 @@ function computeAuthorityScore(signals) {
   return score;
 }
 
-function buildRankSignals(html, filePath, title, description, keywords) {
-  const category = detectCategory(filePath, html);
-  const contentSignals = buildContentSignals(html, title, description, keywords);
+function buildRankSignals(html, filePath, title, description, keywords, aliases, samEntity) {
+  const category = detectCategory(filePath, html, samEntity);
+  const contentSignals = buildContentSignals(html, title, description, keywords, aliases);
   const contentQualityScore = computeContentQualityScore(contentSignals);
   const authorityScore = computeAuthorityScore(contentSignals);
+  const mentionCount = Number.isFinite(Number(samEntity && samEntity.mention_count))
+    ? Number(samEntity.mention_count)
+    : 0;
 
   return {
     is_canonical: true,
-    alias_count: 0,
+    alias_count: aliases.length,
     tag_count: keywords.length,
+    mention_count: mentionCount,
     category,
     category_priority: CONFIG.CATEGORY_PRIORITY[category] || CONFIG.CATEGORY_PRIORITY.misc || 3,
     has_description: contentSignals.has_description,
@@ -240,6 +329,9 @@ function computeRankScore(signals) {
   score += signals.keyword_bag_size * CONFIG.WEIGHTS.keyword_bag;
   score += signals.content_quality_score;
   score += signals.authority_score * CONFIG.WEIGHTS.authority;
+  score += signals.alias_count * 3;
+  score += signals.tag_count;
+  score += signals.mention_count * 2;
 
   return Math.round(score);
 }
@@ -251,6 +343,9 @@ function buildRankDiagnostics(signals, rankScore) {
     category_points: signals.category_priority * CONFIG.WEIGHTS.category,
     word_count_points: Math.round(signals.article_word_count * CONFIG.WEIGHTS.word_count),
     keyword_bag_points: Math.round(signals.keyword_bag_size * CONFIG.WEIGHTS.keyword_bag),
+    alias_points: signals.alias_count * 3,
+    tag_points: signals.tag_count,
+    mention_points: signals.mention_count * 2,
     content_quality_points: signals.content_quality_score,
     authority_points: signals.authority_score * CONFIG.WEIGHTS.authority,
     final_rank_score: rankScore
@@ -260,6 +355,7 @@ function buildRankDiagnostics(signals, rankScore) {
 function run() {
   console.log('Generating wiki index...');
 
+  const samMemory = loadSamMemory();
   const files = walk(WIKI_DIR);
   const index = [];
 
@@ -273,13 +369,26 @@ function run() {
     if (!title) return;
 
     const description = extractDescription(html);
-    const keywords = extractKeywords(html);
+    const htmlKeywords = extractKeywords(html);
     const url = '/' + relative;
+    const slug = slugFromUrl(url);
 
-    const rankSignals = buildRankSignals(html, filePath, title, description, keywords);
+    const samEntity =
+      samMemory.entitiesBySlug[slug] ||
+      samMemory.entitiesByTitle[normalize(cleanupCanonicalTitle(title))] ||
+      null;
+
+    const memoryTags = samEntity && Array.isArray(samEntity.tags)
+      ? samEntity.tags.filter(Boolean)
+      : [];
+
+    const keywords = Array.from(new Set([...htmlKeywords, ...memoryTags]));
+    const aliases = buildAliases(samEntity);
+
+    const rankSignals = buildRankSignals(html, filePath, title, description, keywords, aliases, samEntity);
     const rankScore = computeRankScore(rankSignals);
     const rankDiagnostics = buildRankDiagnostics(rankSignals, rankScore);
-    const searchIndex = buildSearchIndex(title, description, keywords);
+    const searchIndex = buildSearchIndex(title, description, keywords, aliases);
 
     index.push({
       title,
@@ -287,7 +396,7 @@ function run() {
       url,
       tags: keywords,
       category: rankSignals.category,
-      aliases: [],
+      aliases,
       rank_score: rankScore,
       rank_signals: rankSignals,
       rank_diagnostics: rankDiagnostics,
