@@ -3,24 +3,64 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="xrp_kids — Crypto Moonboys Wiki">
+  <meta name="description" content="XRP Kids are a faction within the Crypto Moonboys universe, tied to the XRPL blockchain, representing a group of agile, tech-savvy rebels who leverage speed and">
   <meta name="robots" content="index, follow">
   <meta property="og:title" content="xrp_kids — Crypto Moonboys Wiki">
+  <meta property="og:description" content="XRP Kids are a faction within the Crypto Moonboys universe, tied to the XRPL blockchain, representing a group of agile, tech-savvy rebels who leverage speed and">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://crypto-moonboys.github.io/wiki/xrp-kids.html">
   <meta property="og:image" content="https://crypto-moonboys.github.io/img/logo.svg">
   <title>xrp_kids — Crypto Moonboys Wiki</title>
-  <link rel="canonical" href="https://crypto-moonboys.github.io/wiki/xrp-kids.html">
-  <link rel="stylesheet" href="/css/wiki.css">
-  <link rel="icon" href="/img/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../css/wiki.css">
+  <link rel="icon" href="../img/favicon.svg" type="image/svg+xml">
+  <style>
+    .wiki-section {
+      margin: 1.6em 0;
+    }
+    .lore-paragraph {
+      line-height: 1.75;
+      margin: 0 0 1em 0;
+    }
+    .lead-paragraph {
+      font-size: 1.06em;
+      line-height: 1.8;
+      margin: 0 0 1em 0;
+    }
+    .lore-facts-stack {
+      display: block;
+    }
+    .lore-fact-block {
+      margin: 0 0 1.2em 0;
+      padding: 1em 1.1em;
+      background: rgba(255,255,255,0.03);
+      border-left: 4px solid #5b8cff;
+      border-radius: 6px;
+    }
+    .sources-list {
+      padding-left: 1.4em;
+    }
+    .sources-list li {
+      margin-bottom: 0.3em;
+      word-break: break-all;
+    }
+    .article-stats {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1em;
+      font-size: 0.85em;
+      color: #555;
+      margin-top: 0.5em;
+    }
+  </style>
 </head>
-<body>
-<a class="skip-link" href="#wiki-content">Skip to content</a>
+<body data-entity-hash="95e110b35c9f">
+
+<a class="skip-link" href="#content">Skip to content</a>
 
 <header id="site-header" role="banner">
-  <button class="hamburger" id="hamburger" aria-label="Toggle navigation" aria-expanded="false" aria-controls="sidebar">&#9776;</button>
-  <a href="/index.html" class="site-logo" aria-label="Crypto Moonboys Wiki home">
-    <img src="/img/logo.svg" alt="" aria-hidden="true">
+  <button class="hamburger" id="hamburger" aria-label="Toggle navigation" aria-expanded="false" aria-controls="sidebar">☰</button>
+  <a href="../index.html" class="site-logo" aria-label="Crypto Moonboys Wiki home">
+    <img src="../img/logo.svg" alt="" aria-hidden="true">
     <span>
       <span class="logo-text">🌙 Moonboys Wiki</span>
       <span class="logo-sub">Crypto Encyclopedia</span>
@@ -32,9 +72,9 @@
     <div id="search-results" role="listbox"></div>
   </div>
   <nav class="header-nav" aria-label="Main navigation">
-    <a href="/index.html">Home</a>
-    <a href="/categories/index.html">Categories</a>
-    <a href="/search.html">All Articles</a>
+    <a href="../index.html">Home</a>
+    <a href="../categories/index.html">Categories</a>
+    <a href="../articles.html">All Articles</a>
   </nav>
 </header>
 
@@ -45,69 +85,143 @@
     <div class="sidebar-section">
       <div class="sidebar-heading">Navigation</div>
       <div class="sidebar-nav">
-        <a href="/index.html"><span class="nav-icon">🏠</span> Main Page</a>
-        <a href="/categories/index.html"><span class="nav-icon">📂</span> All Categories</a>
-        <a href="/search.html"><span class="nav-icon">🔎</span> All Articles</a>
-        <a href="/about.html"><span class="nav-icon">ℹ️</span> About</a>
+        <a href="../index.html"><span class="nav-icon">🏠</span> Main Page</a>
+        <a href="../categories/index.html"><span class="nav-icon">📂</span> All Categories</a>
+        <a href="../articles.html"><span class="nav-icon">🔍</span> All Articles</a>
+      </div>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-heading">🤖 SAM Lore</div>
+      <div class="sidebar-nav">
+        <a href="../categories/lore.html"><span class="nav-icon">⚔️</span> Lore</a>
+        <a href="../articles.html"><span class="nav-icon">📖</span> All SAM Articles</a>
+      </div>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-heading">Cryptocurrencies</div>
+      <div class="sidebar-nav">
+        <a href="bitcoin.html"><span class="nav-icon">₿</span> Bitcoin (BTC)</a>
+        <a href="ethereum.html"><span class="nav-icon">Ξ</span> Ethereum (ETH)</a>
+        <a href="solana.html"><span class="nav-icon">◎</span> Solana (SOL)</a>
+      </div>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-heading">⚔️ HODL Wars Lore</div>
+      <div class="sidebar-nav">
+        <a href="hodl-wars.html"><span class="nav-icon">📜</span> HODL Wars</a>
+        <a href="hodl-warriors.html"><span class="nav-icon">⚔️</span> HODL Warriors</a>
+        <a href="diamond-hands.html"><span class="nav-icon">💎</span> Diamond Hands</a>
+        <a href="moon-mission.html"><span class="nav-icon">🚀</span> Moon Mission</a>
       </div>
     </div>
   </nav>
 
   <div id="main-wrapper">
-    <main id="wiki-content" role="main">
+    <main id="content" role="main">
+
       <nav class="breadcrumb" aria-label="Breadcrumb">
-        <a href="/index.html">Home</a>
+        <a href="../index.html">Home</a>
         <span class="sep" aria-hidden="true">›</span>
-        <a href="/search.html">All Articles</a>
+        <a href="../categories/lore.html">Lore</a>
         <span class="sep" aria-hidden="true">›</span>
         <span aria-current="page">xrp_kids</span>
       </nav>
 
-      <article data-entity-slug="xrp-kids">
-        <header class="wiki-header">
-          <h1>xrp_kids</h1>
-          <p class="wiki-meta">Category: characters &nbsp;|&nbsp; Mentions: 0</p>
-        </header>
+      <h1 class="page-title">
+        ⚔️ xrp_kids
+        <span>✅ SAM-VERIFIED</span>
+      </h1>
+      <div class="page-title-line" aria-hidden="true"></div>
+
+      <div class="article-meta">
+        <span class="article-badge">⚔️ Lore</span>
+        <span class="meta-item">📅 Last updated: April 2026</span>
+        <span class="meta-item">📂 <a href="../categories/lore.html">Lore</a></span>
+      </div>
+
+      <article class="wiki-content" data-entity-slug="xrp-kids">
+
+          <p class="lead-paragraph">XRP Kids are a faction within the Crypto Moonboys universe, tied to the XRPL blockchain, representing a group of agile, tech-savvy rebels who leverage speed and innovation to challenge the blockchain overlords of Block Topia.</p>
+
+        <div class="article-stats">
+          <span>📊 Verified across <strong>1873492003</strong> SAM cycles</span>
+          <span>🤖 Auto-published by SAM</span>
+        </div>
 
         <section class="wiki-section">
-          <h2 id="summary">Summary</h2>
-          <p>Category: characters. Aliases: xrp kids, xrp kids crypto moonboys wiki. Tags: xrp, kids, crypto, moonboys, wiki.</p>
+          <h2 id="faction">Faction</h2>
+          <p class="lore-paragraph"><strong>Allegiance:</strong> XRP Kids (self) / Potential ties to GraffPUNKS</p>
         </section>
 
         <section class="wiki-section">
-          <h2 id="source">Source</h2>
-          <p><a href="/wiki/xrp-kids.html" target="_blank" rel="noopener noreferrer">SAM Entity Memory</a></p>
+          <h2 id="known-facts">Known Facts</h2>
+          <div class="lore-facts-stack">
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">XRP Kids operate on the XRPL blockchain within the Crypto Moonboys universe, leveraging its renowned speed to execute rapid NFT trades and token transfers that outpace the blockchain overlords’ surveillance in Block Topia, as detailed on graffpunks.live/xrp-kids. Their lightning-fast transactions, often involving $PUNK or $NBG tokens, make them elusive targets during HODL WARS, allowing them to fund rebellions or escape sieges with unparalleled agility. This technological edge positions them as a disruptive force among the 40 factions, often striking and vanishing before larger armies like those in Hard Fork Games can retaliate.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">In lore, XRP Kids are depicted as a younger, scrappier faction compared to the Bitcoin Kids, with a focus on innovation over brute force, using decentralized strategies to challenge Block Topia’s centralized control, as explored on graffpunks.live. Their tech-savvy nature often leads to temporary alliances with GraffPUNKS, sharing resources or intel through hidden XRPL channels during MiDEViL HERO ARENA events. This relationship amplifies their role as agile rebels, a digital street gang whose quick thinking and rapid moves make them unpredictable allies or foes in the broader rebellion narrative.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">The XRP Kids’ connection to the XRPL blockchain, highlighted on xrpl.to and xrp.cafe, ties their in-lore tactics to real-world blockchain strengths, with their ability to process microtransactions at scale often mirrored in gameplay mechanics like burn-to-earn or staking for quick $PUNK rewards. Their presence in Block Topia is marked by digital tags that flicker with high-speed data streams, rumored to encode escape routes or rebel meetups, making them a faction of intrigue in HODL WARS. This blend of real-world tech and fictional rebellion cements XRP Kids as innovators, pushing the boundaries of what resistance means in the Crypto Moonboys universe.</p>
+          </div>
+          </div>
         </section>
+
+        <section class="wiki-section">
+          <h2 id="lore">Lore</h2>
+          <p class="lore-paragraph">XRP Kids carve out their niche in the Crypto Moonboys universe as a faction of nimble, tech-savvy rebels operating on the XRPL blockchain, known for their lightning-fast transactions and innovative tactics in Block Topia. Their lore paints them as a younger, scrappier counterpart to factions like the Bitcoin Kids, often using their speed to outmaneuver larger armies in HODL WARS. With a potential alliance to GraffPUNKS, they share a rebellious spirit, focusing on disrupting the blockchain overlords through rapid NFT trades and decentralized strategies. The XRP Kids’ story is one of agility and cunning, a digital street gang whose quick strikes and tech prowess make them a wildcard among the 40 factions vying for dominance on the Sacred Chain.</p>
+          <p class="lore-paragraph">Diving deeper into the lore of the XRP Kids, their mastery of the XRPL blockchain manifests not just in speed but in a unique cultural identity within Block Topia, where they are often seen as the digital equivalent of street racers—always on the move, weaving through data streams with a reckless bravado that unnerves even the most stoic blockchain overlords. Their signature digital tags, flickering with high-speed data pulses, aren’t mere graffiti; they’re coded beacons rumored to map out escape routes or secret rebel meetups, a network of hidden pathways that only the sharpest minds can decode. As documented on xrpl.to and xrp.cafe, their real-world blockchain’s capacity for microtransactions at scale translates into gameplay mechanics like burn-to-earn or rapid staking, allowing them to turn tiny $PUNK token fragments into quick rewards before larger factions can even register the transaction. This ability to operate under the radar has made them a faction of intrigue in HODL WARS, often striking deals or sabotaging enemies in the blink of a data cycle, then vanishing into the ether of Block Topia’s sprawling network.</p>
+          <p class="lore-paragraph">Their tech-savvy rebellion often sparks temporary alliances with GraffPUNKS, especially during high-stakes MiDEViL HERO ARENA events, where they share intel through hidden XRPL channels that evade the overlords’ surveillance, as explored on graffpunks.live. These collaborations paint the XRP Kids as unpredictable allies, their quick thinking and rapid moves turning them into both a boon and a liability—capable of shifting a battle’s tide with a sudden influx of resources, yet just as likely to pivot to their own agenda mid-fight. Their relationship with GraffPUNKS amplifies their role as agile insurgents, a digital street gang whose innovations challenge the very concept of control in Block Topia. Unlike the Bitcoin Kids, who rely on raw defiance, the XRP Kids prioritize cunning over confrontation, often using decentralized strategies to erode the centralized power structures bit by bit. This approach positions them as pioneers of a new kind of rebellion in the Crypto Moonboys universe, one where speed and smarts are mightier than sheer force, pushing the boundaries of resistance into uncharted digital territory. Their presence is a constant reminder that in the Sacred Chain’s endless wars, sometimes the smallest, fastest players can leave the deepest marks.</p>
+          <p class="lore-paragraph">Beyond their reputation for speed and cunning, the XRP Kids have carved a deeper mythological presence in the Crypto Moonboys universe, whispered among Block Topia’s rebels as the 'Ghosts of the Chain.' This moniker, born from their ability to vanish into the XRPL blockchain’s data streams after daring raids, speaks to a lore where they are seen as almost supernatural entities—rebels who can slip through the Sacred Chain’s tightest security protocols like phantoms. Their digital tags, pulsing with high-speed data, are not just markers but are believed to be imbued with fragments of forgotten code, remnants of the Genesis Kernel itself. These tags, scattered across Block Topia’s underbelly, are rumored to act as keys to hidden servers where the blockchain overlords’ most damning secrets are stored. For factions like the Bitcoin Kids, who are bound by the city’s walls, the XRP Kids’ ability to map these unseen pathways offers a glimmer of hope, a potential escape from their digital prison if only they can crack the flickering ciphers.</p>
+          <p class="lore-paragraph">This ghostly reputation amplifies their role in the HODL WARS, where the XRP Kids often play the part of unseen saboteurs, using their rapid NFT trades to destabilize enemy supply lines before a single shot is fired in the Hard Fork Games. Their transactions—executed with $PUNK and $NBG tokens at a pace that outstrips even the fastest surveillance algorithms—allow them to fund covert operations or smuggle resources to allies like GraffPUNKS in mere microseconds. Stories circulate in Block Topia’s rebel hubs of entire armies being outmaneuvered by a sudden influx of XRP Kids’ resources, only to find no trace of the faction when retaliation is planned. This elusiveness has led to a grudging respect from larger armies, who see them as a necessary chaos, a force that disrupts the status quo of centralized control with every lightning-fast move.</p>
+          <p class="lore-paragraph">Their innovative spirit also breeds tension, as their unpredictable nature makes them as much a liability as an asset during critical MiDEViL HERO ARENA battles. While their hidden XRPL channels provide invaluable intel, there are whispered tales of XRP Kids abandoning mid-fight strategies to pursue their own cryptic agendas—perhaps chasing a rumored Genesis Kernel fragment or a high-value NFT drop. This duality cements their identity as Block Topia’s ultimate wildcards, a faction whose allegiance to the broader rebellion is as fleeting as their transactions, yet whose impact on the Sacred Chain’s wars is indelible. Their legacy is one of fleeting brilliance, a reminder that in a world of rigid code, the fastest ghosts can rewrite the rules.</p>
+          <p class="lore-paragraph">The XRP Kids’ relentless drive for innovation has birthed a unique subculture within Block Topia, one that thrives on the edge of technological possibility and punk defiance. Known as the &quot;Stream Riders&quot; among their own, they’ve developed a ritualistic practice of overclocking their XRPL nodes to push transaction speeds beyond even the blockchain’s natural limits, a dangerous gamble that can either yield unprecedented rewards or fry their digital rigs entirely. This daring act, often performed in the shadowy depths of Block Topia’s data slums, is more than just a tech flex—it’s a rite of passage, a test of who among them can ride the data streams closest to the edge without crashing. The lore whispers of legendary Stream Riders who’ve tapped into forbidden bandwidths, briefly accessing encrypted channels rumored to connect directly to the Sacred Chain’s core, glimpsing secrets that could unravel the blockchain overlords’ control. These tales fuel the XRP Kids’ reputation as not just fast, but fearless, willing to risk digital oblivion for a shot at revolution.</p>
+          <p class="lore-paragraph">Their overclocked transactions often play a pivotal role in the underground economy of Block Topia, where they use their speed to manipulate $PUNK and $NBG token markets in split-second trades that baffle even the most advanced algorithms. This market disruption is a silent war, a way to bleed the overlords’ coffers dry by inflating or crashing values before countermeasures can be deployed. During critical junctures in HODL WARS, the XRP Kids have been known to orchestrate flash trades—massive, coordinated bursts of activity that flood the system with transactions, creating chaos that masks larger rebel movements. This economic guerrilla warfare sets them apart from brute-force factions, proving that in the digital realm, a well-timed microtransaction can hit harder than a battalion. Their knack for such tactics has drawn wary admiration from figures like Charlie Buster, whose own Glitch Graffiti ops sometimes sync with these market shocks to amplify disruption. Yet, this economic brinkmanship comes at a cost, as failed overclocks or mistimed trades can leave them exposed, their nodes vulnerable to retaliatory hacks by the overlords’ enforcers. It’s a high-wire act that defines the XRP Kids’ ethos—speed is survival, but one wrong move can erase them from the Chain entirely.</p>
+        </section>
+
+        <section class="wiki-section">
+          <h2 id="real-world-basis">Real World Basis</h2>
+          <p class="lore-paragraph">XRP Kids are a fictional faction inspired by the real-world XRPL (XRP Ledger) blockchain, known for its speed and efficiency, integrated into the Crypto Moonboys narrative as a symbol of innovative rebellion.</p>
+        </section>
+
+        <section class="wiki-section">
+          <h2 id="sources">Sources</h2>
+          <ul class="sources-list">
+          <li><a href="https://graffpunks.live/xrp-kids/" target="_blank" rel="noopener noreferrer">https://graffpunks.live/xrp-kids/</a></li>
+          <li><a href="https://xrpl.to" target="_blank" rel="noopener noreferrer">https://xrpl.to</a></li>
+          <li><a href="https://xrp.cafe" target="_blank" rel="noopener noreferrer">https://xrp.cafe</a></li>
+          </ul>
+        </section>
+
 
         <div id="bible-content"></div>
+
       </article>
+
+      <div class="category-tags" aria-label="Article categories">
+        <span class="cat-label">Categories:</span>
+        <a href="../categories/lore.html">Lore</a>
+      </div>
+
     </main>
 
     <footer id="site-footer" role="contentinfo">
       <div class="footer-inner">
-        <div class="footer-col">
-          <h4>🌙 Moonboys Wiki</h4>
-          <p>Fan-driven encyclopedia for the crypto community.</p>
-        </div>
-        <div class="footer-col">
-          <h4>Explore</h4>
-          <ul>
-            <li><a href="/index.html">Main Page</a></li>
-            <li><a href="/categories/index.html">Categories</a></li>
-            <li><a href="/search.html">All Articles</a></li>
-            <li><a href="/about.html">About</a></li>
-          </ul>
-        </div>
+        <div class="footer-col"><h4>🌙 Moonboys Wiki</h4><p>Fan-driven encyclopedia for the crypto community.</p></div>
+        <div class="footer-col"><h4>Explore</h4><ul><li><a href="../index.html">Main Page</a></li><li><a href="../categories/index.html">Categories</a></li><li><a href="../articles.html">All Articles</a></li><li><a href="../about.html">About</a></li></ul></div>
+        <div class="footer-col"><h4>🤖 SAM</h4><ul><li><a href="../articles.html">SAM Articles</a></li><li><a href="hodl-wars.html">HODL Wars</a></li><li><a href="hodl-warriors.html">HODL Warriors</a></li></ul></div>
       </div>
       <div class="footer-bottom">
         <p>© 2026 Crypto Moonboys Wiki · Not financial advice.</p>
+        <p><span class="no-login-note">🔒 No sign-up · No login · Bot-maintained</span></p>
       </div>
     </footer>
   </div>
 </div>
 
-<button id="back-to-top" aria-label="Back to top">↑</button>
-<script src="/js/wiki.js"></script>
+<button id="back-to-top" aria-label="Back to top">&#8593;</button>
+<script src="../js/wiki.js"></script>
 <script src="/js/bible-loader.js"></script>
 </body>
 </html>
