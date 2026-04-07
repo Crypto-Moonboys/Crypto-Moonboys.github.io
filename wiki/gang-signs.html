@@ -3,24 +3,64 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="gang_signs — Crypto Moonboys Wiki">
+  <meta name="description" content="Gang Signs cuts through the digital chaos of the Crypto Moonboys universe as a blockchain-powered card game, a strategic battlefield where wits and cunning clas">
   <meta name="robots" content="index, follow">
   <meta property="og:title" content="gang_signs — Crypto Moonboys Wiki">
+  <meta property="og:description" content="Gang Signs cuts through the digital chaos of the Crypto Moonboys universe as a blockchain-powered card game, a strategic battlefield where wits and cunning clas">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://crypto-moonboys.github.io/wiki/gang-signs.html">
   <meta property="og:image" content="https://crypto-moonboys.github.io/img/logo.svg">
   <title>gang_signs — Crypto Moonboys Wiki</title>
-  <link rel="canonical" href="https://crypto-moonboys.github.io/wiki/gang-signs.html">
-  <link rel="stylesheet" href="/css/wiki.css">
-  <link rel="icon" href="/img/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../css/wiki.css">
+  <link rel="icon" href="../img/favicon.svg" type="image/svg+xml">
+  <style>
+    .wiki-section {
+      margin: 1.6em 0;
+    }
+    .lore-paragraph {
+      line-height: 1.75;
+      margin: 0 0 1em 0;
+    }
+    .lead-paragraph {
+      font-size: 1.06em;
+      line-height: 1.8;
+      margin: 0 0 1em 0;
+    }
+    .lore-facts-stack {
+      display: block;
+    }
+    .lore-fact-block {
+      margin: 0 0 1.2em 0;
+      padding: 1em 1.1em;
+      background: rgba(255,255,255,0.03);
+      border-left: 4px solid #5b8cff;
+      border-radius: 6px;
+    }
+    .sources-list {
+      padding-left: 1.4em;
+    }
+    .sources-list li {
+      margin-bottom: 0.3em;
+      word-break: break-all;
+    }
+    .article-stats {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1em;
+      font-size: 0.85em;
+      color: #555;
+      margin-top: 0.5em;
+    }
+  </style>
 </head>
-<body>
-<a class="skip-link" href="#wiki-content">Skip to content</a>
+<body data-entity-hash="c2463f8a7e0c">
+
+<a class="skip-link" href="#content">Skip to content</a>
 
 <header id="site-header" role="banner">
-  <button class="hamburger" id="hamburger" aria-label="Toggle navigation" aria-expanded="false" aria-controls="sidebar">&#9776;</button>
-  <a href="/index.html" class="site-logo" aria-label="Crypto Moonboys Wiki home">
-    <img src="/img/logo.svg" alt="" aria-hidden="true">
+  <button class="hamburger" id="hamburger" aria-label="Toggle navigation" aria-expanded="false" aria-controls="sidebar">☰</button>
+  <a href="../index.html" class="site-logo" aria-label="Crypto Moonboys Wiki home">
+    <img src="../img/logo.svg" alt="" aria-hidden="true">
     <span>
       <span class="logo-text">🌙 Moonboys Wiki</span>
       <span class="logo-sub">Crypto Encyclopedia</span>
@@ -32,9 +72,9 @@
     <div id="search-results" role="listbox"></div>
   </div>
   <nav class="header-nav" aria-label="Main navigation">
-    <a href="/index.html">Home</a>
-    <a href="/categories/index.html">Categories</a>
-    <a href="/search.html">All Articles</a>
+    <a href="../index.html">Home</a>
+    <a href="../categories/index.html">Categories</a>
+    <a href="../articles.html">All Articles</a>
   </nav>
 </header>
 
@@ -45,69 +85,197 @@
     <div class="sidebar-section">
       <div class="sidebar-heading">Navigation</div>
       <div class="sidebar-nav">
-        <a href="/index.html"><span class="nav-icon">🏠</span> Main Page</a>
-        <a href="/categories/index.html"><span class="nav-icon">📂</span> All Categories</a>
-        <a href="/search.html"><span class="nav-icon">🔎</span> All Articles</a>
-        <a href="/about.html"><span class="nav-icon">ℹ️</span> About</a>
+        <a href="../index.html"><span class="nav-icon">🏠</span> Main Page</a>
+        <a href="../categories/index.html"><span class="nav-icon">📂</span> All Categories</a>
+        <a href="../articles.html"><span class="nav-icon">🔍</span> All Articles</a>
+      </div>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-heading">🤖 SAM Lore</div>
+      <div class="sidebar-nav">
+        <a href="../categories/concepts.html"><span class="nav-icon">⚙️</span> Concepts</a>
+        <a href="../articles.html"><span class="nav-icon">📖</span> All SAM Articles</a>
+      </div>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-heading">Cryptocurrencies</div>
+      <div class="sidebar-nav">
+        <a href="bitcoin.html"><span class="nav-icon">₿</span> Bitcoin (BTC)</a>
+        <a href="ethereum.html"><span class="nav-icon">Ξ</span> Ethereum (ETH)</a>
+        <a href="solana.html"><span class="nav-icon">◎</span> Solana (SOL)</a>
+      </div>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-heading">⚔️ HODL Wars Lore</div>
+      <div class="sidebar-nav">
+        <a href="hodl-wars.html"><span class="nav-icon">📜</span> HODL Wars</a>
+        <a href="hodl-warriors.html"><span class="nav-icon">⚔️</span> HODL Warriors</a>
+        <a href="diamond-hands.html"><span class="nav-icon">💎</span> Diamond Hands</a>
+        <a href="moon-mission.html"><span class="nav-icon">🚀</span> Moon Mission</a>
       </div>
     </div>
   </nav>
 
   <div id="main-wrapper">
-    <main id="wiki-content" role="main">
+    <main id="content" role="main">
+
       <nav class="breadcrumb" aria-label="Breadcrumb">
-        <a href="/index.html">Home</a>
+        <a href="../index.html">Home</a>
         <span class="sep" aria-hidden="true">›</span>
-        <a href="/search.html">All Articles</a>
+        <a href="../categories/concepts.html">Concepts</a>
         <span class="sep" aria-hidden="true">›</span>
         <span aria-current="page">gang_signs</span>
       </nav>
 
-      <article data-entity-slug="gang-signs">
-        <header class="wiki-header">
-          <h1>gang_signs</h1>
-          <p class="wiki-meta">Category: characters &nbsp;|&nbsp; Mentions: 0</p>
-        </header>
+      <h1 class="page-title">
+        ⚙️ gang_signs
+        <span>✅ SAM-VERIFIED</span>
+      </h1>
+      <div class="page-title-line" aria-hidden="true"></div>
+
+      <div class="article-meta">
+        <span class="article-badge">⚙️ Concepts</span>
+        <span class="meta-item">📅 Last updated: April 2026</span>
+        <span class="meta-item">📂 <a href="../categories/concepts.html">Concepts</a></span>
+      </div>
+
+      <article class="wiki-content" data-entity-slug="gang-signs">
+
+          <p class="lead-paragraph">Gang Signs cuts through the digital chaos of the Crypto Moonboys universe as a blockchain-powered card game, a strategic battlefield where wits and cunning clash over the virtual turf of Block Topia. Introduced via gripping Medium posts by @boneidolink, this cross-faction event transforms the raw energy of HODL WARS into a tabletop arena, where players wield NFT-based cards representing faction sigils, graffiti tags, and encrypted weapons. It’s a contest of intellect and deception, where bloodshed is virtual but the stakes are painfully real, offering a microcosm of the larger conflicts that define the universe.</p>
+          <p class="lead-paragraph">More than just a game, Gang Signs is a cultural phenomenon within Block Topia, a digital crucible where alliances are tested and rivalries are born. Each card, etched with the lore of its faction, becomes a coveted artifact, and every match a story of triumph or betrayal. With roadmaps teasing expansions that tie victories to Hard Fork Games buffs or node control in HODL WARS, Gang Signs is poised to evolve from a mere pastime into a pivotal mechanic of power and influence, binding players ever deeper into the neon-lit struggles of the Crypto Moonboys world.</p>
+
+        <div class="article-stats">
+          <span>📊 Verified across <strong>480</strong> SAM cycles</span>
+          <span>🤖 Auto-published by SAM</span>
+        </div>
 
         <section class="wiki-section">
-          <h2 id="summary">Summary</h2>
-          <p>Category: characters. Aliases: gang signs, gang signs crypto moonboys wiki. Tags: gang, signs, crypto, moonboys, wiki.</p>
+          <h2 id="faction">Faction</h2>
+          <p class="lore-paragraph"><strong>Allegiance:</strong> None (Cross-Faction Event)</p>
         </section>
 
         <section class="wiki-section">
-          <h2 id="source">Source</h2>
-          <p><a href="/wiki/gang-signs.html" target="_blank" rel="noopener noreferrer">SAM Entity Memory</a></p>
+          <h2 id="known-facts">Known Facts</h2>
+          <div class="lore-facts-stack">
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">Gang Signs was introduced in Block Topia as a strategic card game where players wield NFT-based cards representing faction icons, graffiti tags, and digital weapons, turning tabletop tactics into a microcosm of HODL WARS’ larger conflicts. Detailed on Medium by @boneidolink, the game allows players to stake tokens like $PUNK for match rewards, with each card tied to lore elements like GraffPUNKS’ rebellion or Alfie Blaze’s hacks. This integration of narrative and strategy makes Gang Signs a cerebral battlefield, where a well-played card can shift faction alliances or earn rare drops usable across Block Topia.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">The roadmap for Gang Signs, as outlined in recent Medium posts, hints at future expansions where winning specific tournaments could unlock exclusive Hard Fork Games buffs or even influence node control in HODL WARS, tying the card game directly to the Crypto Moonboys universe’s broader power struggles. This planned evolution suggests Gang Signs might become a proving ground for smaller factions to gain leverage, offering a less violent but equally cutthroat path to dominance. It’s a fresh layer of depth, ensuring the game’s impact resonates beyond the table into Block Topia’s chaotic landscape.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">Gang Signs stormed into Block Topia as a strategic card game where players brandish NFT-based cards embodying faction icons, graffiti tags, and digital weaponry, crafting a tabletop battlefield that echoes the larger turmoil of HODL WARS. Each card, etched with blockchain signatures, carries unique abilities—some say certain rare cards can hack opponent decks mid-game, a glitch born from the same corrupted code that birthed Block Topia’s darkest legends. Detailed on Medium by @boneidolink, this game is a proving ground for cunning, where a single play can elevate or doom a faction’s standing.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">The roadmap for Gang Signs, as unveiled in recent Medium posts, teases monumental expansions where triumph in specific tournaments could unlock exclusive buffs for Hard Fork Games or even sway node control in HODL WARS, binding the card game to the Crypto Moonboys’ broader narrative. Rumors swirl that winning a ‘Grand Tag Clash’—a rare event triggered by mass player participation—grants the victor a one-time cipher to access Block Topia’s hidden data vaults, a prize coveted by every faction for the secrets it might hold.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">Deep within Gang Signs lore lies the tale of the ‘Ghost Deck,’ a mythical set of cards said to have been forged during a catastrophic server crash in Block Topia’s early days, imbued with the fragmented AI of a fallen faction leader. Players who claim even a single card from this deck are rumored to hear whispers during matches, cryptic strategies that guide their plays—but at a cost, as the Ghost Deck is said to bind itself to its owner, demanding loyalty in ways that transcend the game itself.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">Gang Signs was introduced in Block Topia as a strategic card game where players wield NFT-based cards representing faction icons, graffiti tags, and digital weapons, turning tabletop tactics into a microcosm of HODL WARS’ larger conflicts. Each card is a tokenized piece of lore, meticulously designed to reflect the gritty aesthetics of its faction, from jagged GraffPUNKS tags to the sleek, militarized sigils of corporate-aligned clans. Matches are often held in underground Block Topia hubs, where the air crackles with tension as spectators bet $PUNK tokens on outcomes, knowing that a single play can rewrite local power dynamics.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">The roadmap for Gang Signs, as outlined in recent Medium posts, hints at future expansions where winning specific tournaments could unlock exclusive Hard Fork Games buffs or even influence node control in HODL WARS, tying the card game directly to the Crypto Moonboys universe’s core conflicts. These tournaments, dubbed ‘Tag Clashes,’ are rumored to draw the attention of Block Topia’s most elusive figures, who might offer rare cards or encrypted intel as prizes—though at the risk of marking winners as targets for rival factions seeking to steal their newfound power.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">Deep within Gang Signs lore lies the tale of the ‘Ghost Deck,’ a mythical set of cards said to have been forged during a catastrophic server crash in Block Topia’s early days, imbued with the fragmented AI of a fallen faction leader. Players who claim even a single card from this deck are rumored to gain uncanny strategic insight, as if guided by a spectral hand, but at the cost of attracting relentless digital hunters—glitched entities that stalk Block Topia’s networks, seeking to reclaim the lost fragments for their own inscrutable purposes.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">Gang Signs matches are often accompanied by an underground phenomenon known as ‘Deck Echoes,’ where the blockchain transactions of each play reverberate through Block Topia’s networks, occasionally triggering random in-game events like temporary faction buffs or server glitches. Lore suggests that particularly intense matches have even caused localized ‘Tag Storms,’ where virtual graffiti rains down on nearby players, marking them as allies or enemies based on the winning deck’s faction allegiance, further blurring the line between game and war.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">Hidden within the game’s mechanics is the ‘Betrayal Shuffle,’ a rare event where a player’s deck can spontaneously corrupt mid-match, replacing key cards with sabotaged versions that benefit their opponent. This glitch, believed to be a deliberate design by Gang Signs’ creators, mirrors the cutthroat politics of Block Topia, where trust is a fleeting illusion. Players who survive a Betrayal Shuffle often emerge with a rare ‘Scar Card,’ a permanent NFT that boosts deception stats but marks them as untrustworthy in future negotiations.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">Gang Signs lore tells of the infamous ‘Ghost Deck,’ a cursed set of NFT cards born from a devastating server crash in Block Topia’s early days, infused with the fragmented AI of a fallen faction leader whose name has been erased from history. Players who claim even a single card from this deck are said to gain unnatural strategic insight during matches, though at the cost of haunting visions that blur the line between game and reality, a dark mechanic yet to be fully explored in Hard Fork Games.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">The roadmap for Gang Signs, unveiled in Medium posts by @boneidolink, teases a future where triumph in elite tournaments can directly impact the Crypto Moonboys universe, granting winners exclusive Hard Fork Games buffs or the power to sway node control in HODL WARS. This integration transforms the card game into a critical battleground, where a single well-played hand could shift the balance of power across Block Topia, making every match a high-stakes gamble for faction dominance.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">A lesser-known tale within Gang Signs lore speaks of the ‘Sigil Fracture,’ an event where a player’s winning hand of graffiti-tagged cards triggered an in-game glitch, projecting their faction’s insignia across every screen in Block Topia for a fleeting moment. This anomaly, rumored to be tied to the unstable blockchain code of early NFT cards, granted the player’s faction a temporary territory boost in HODL WARS, though it also painted a target on their back for rival factions seeking to replicate the exploit.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">Gang Signs stormed into Block Topia as a strategic card game where players brandish NFT-based cards embodying faction icons, graffiti tags, and digital weaponry, crafting a tabletop battlefield that echoes the larger turmoil of HODL WARS. Each card, etched with the raw energy of Block Topia’s streets, serves as a micro-weapon, allowing players to outmaneuver rivals through cunning strategy rather than brute force, turning every match into a high-stakes skirmish for virtual dominance as detailed on Medium by @boneidolink.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">The roadmap for Gang Signs, as unveiled in recent Medium posts, teases monumental expansions where triumph in specific tournaments could unlock exclusive buffs for Hard Fork Games or even sway node control in HODL WARS, binding the card game to the Crypto Moonboys’ broader conflicts. This integration promises to elevate Gang Signs from a mere diversion to a critical arena of influence, where a single victory at the table could alter the course of a faction’s campaign across Block Topia’s war-torn servers.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">Deep within Gang Signs lore lies the tale of the ‘Ghost Deck,’ a mythical set of cards said to have been forged during a catastrophic server crash in Block Topia’s early days, imbued with the fragmented AI of a fallen faction leader whose name is lost to corrupted data. Players who claim even a single card from this cursed deck report unnatural tactical insights during matches, as if guided by a spectral hand, though whispers warn that prolonged use risks server bans or worse—glitches that haunt beyond the game.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">A persistent rumor among Gang Signs players speaks of the ‘Neon Gambit,’ a hidden mechanic within the game’s code that activates only during rare blockchain alignments, allowing the winner of a match to temporarily hack into an opponent’s faction channel in HODL WARS. This fleeting breach can reveal critical intel or sow discord, but invoking the Neon Gambit is said to draw the attention of unseen monitors within Block Topia, making it a double-edged sword of strategy and peril.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">Legends within the Gang Signs community tell of ‘The Unplayed Card,’ a singular NFT rumored to exist outside any known deck, bearing a tag so powerful it crashed the first server it was played on. Hidden somewhere in Block Topia’s dark web markets, this card is said to grant its wielder a one-time ability to rewrite the rules of a match mid-play, a devastating trump card that could redefine faction hierarchies—if its bearer survives the hunt to claim it.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">Gang Signs stormed into Block Topia as a strategic card game where players brandish NFT-based cards embodying faction icons, graffiti tags, and digital weaponry, crafting a tabletop battlefield that echoes the larger turmoil of HODL WARS. Each card, etched with the raw aesthetic of Block Topia’s underground, carries unique mechanics—some bolster defenses with encrypted firewalls, while others unleash server glitches to cripple rival strategies, as detailed on Medium by @boneidolink. This game is no mere pastime; it’s a proving ground for cunning, where a single well-played card can mirror the seismic shifts of faction dominance in the Crypto Moonboys universe, turning players into digital warlords with every calculated move.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">The roadmap for Gang Signs, as unveiled in recent Medium posts, teases monumental expansions where triumph in specific tournaments could unlock exclusive buffs for Hard Fork Games or even sway node control in HODL WARS, binding the card game to the Crypto Moonboys universe’s core mechanics. Winning a high-stakes match might grant a faction temporary server hacks or enhanced staking yields, directly impacting real-time battles across Block Topia’s sprawling expanse. This integration elevates Gang Signs beyond a tabletop diversion, positioning it as a critical arena where strategic brilliance can reshape the balance of power, making every shuffle and play a potential turning point in the endless digital wars.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">Deep within Gang Signs lore lies the haunting tale of the ‘Ghost Deck,’ a mythical set of cards said to have been forged during a catastrophic server crash in Block Topia’s infancy, imbued with the fragmented AI of a fallen faction leader whose essence still lingers in the code. Players who claim even a single card from this deck are rumored to hear whispers of forgotten strategies or glimpse enemy weaknesses during matches, a supernatural edge that can turn the tide of any game. The hunt for the Ghost Deck drives fierce competition in Gang Signs tournaments, as lore suggests that assembling the full set could unlock a hidden server protocol, granting its owner unparalleled influence over Block Topia’s fractured reality—a prize worth risking everything for in the neon-soaked chaos.</p>
+          </div>
+          </div>
+        </section>
+
+        <section class="wiki-section">
+          <h2 id="lore">Lore</h2>
+          <p class="lore-paragraph">Gang Signs emerges like a flickering hologram from the neon-lit underbelly of Block Topia, a strategic card game in the Crypto Moonboys universe that distills the raw violence of HODL WARS into a blockchain-fueled contest of intellect, deception, and territorial dominance. Unveiled in the electrifying narratives of @boneidolink on Medium, this game transforms the sprawling feuds of faction warfare into a tabletop battlefield, where NFT cards—each a digital artifact etched with faction sigils, jagged graffiti tags, and coded weaponry—become the currency of power, wielded by players to claim virtual turf without drawing blood, though the stakes are no less deadly. Every match is a microcosm of Block Topia’s larger struggles, a chessboard where cunning outmaneuvers brute force, and a single well-played card can shift the balance of an entire faction’s standing in the digital warzone. The lore surrounding Gang Signs is rich with tales of legendary decks and infamous plays, such as the ‘Ghost Deck,’ a mythical set of cards forged during a catastrophic server crash in Block Topia’s early days, imbued with the fragmented AI of a fallen faction leader, granting eerie tactical advantages to those who wield even a single card from its cursed collection. Roadmap teasers in recent Medium posts hint at monumental expansions, where triumph in specific Gang Signs tournaments could unlock exclusive buffs for Hard Fork Games or even influence node control in the sprawling conflicts of HODL WARS, binding this card game to the very fabric of the Crypto Moonboys universe. In the flickering glow of Block Topia’s underpasses, Gang Signs is more than a pastime—it’s a proving ground for strategists, a silent war where every shuffle and play echoes the greater battles raging across the multi-chain frontier, a place where the mind becomes the mightiest weapon of all.</p>
+          <p class="lore-paragraph">Beneath the flickering neon of Block Topia’s underground hubs, Gang Signs unfolds as a battlefield of wits where the stakes are as high as any HODL WARS skirmish, with players staking $PUNK tokens not just for glory but to shift the fragile power dynamics of their factions. Each NFT card, a digital relic etched with jagged GraffPUNKS tags or the militarized sigils of corporate clans, carries unique abilities—some whisper of rare cards that can hack an opponent’s deck mid-game, a glitch born from the corrupted code of Block Topia’s darkest legends. These matches, often held in hidden servers crackling with tension, draw spectators who bet heavily on outcomes, knowing a single cunning play can elevate a faction’s standing or doom it to obscurity. The lore pulses with stories of such moments, where a well-timed card from Alfie Blaze’s rebel-inspired deck once turned the tide for the Bitcoin Kids, earning them a rare drop that bolstered their hacks across the digital warzone. This integration of narrative and strategy transforms Gang Signs into a cerebral arena, where every shuffle echoes the larger turmoil of Block Topia’s streets.</p>
+          <p class="lore-paragraph">Beyond the table, the roadmap for Gang Signs teases a future where triumph in tournaments like the ‘Grand Tag Clash’—a rare, mass-participation event—could grant victors a one-time cipher to access Block Topia’s hidden data vaults, a prize coveted by all 40 factions for the encrypted secrets it might unveil. These expansions, detailed in Medium posts by @boneidolink, suggest that winning specific ‘Tag Clashes’ might also unlock exclusive buffs for Hard Fork Games or sway node control in HODL WARS, binding the card game to the Crypto Moonboys universe’s core conflicts. Rumors swirl that such tournaments attract the gaze of elusive figures like Queen Sarah P-fly, who may offer encrypted intel or cursed cards as rewards, though at the peril of marking winners as targets for rival factions hungry to steal their power. In this evolving landscape, Gang Signs is poised to become a proving ground for smaller factions, offering a less bloody but equally ruthless path to dominance, ensuring its impact reverberates far beyond the hushed tension of a single match into the chaotic, multi-chain frontier of Block Topia’s endless rebellion.</p>
+        </section>
+
+        <section class="wiki-section">
+          <h2 id="real-world-basis">Real World Basis</h2>
+          <p class="lore-paragraph">Inspired by real-world blockchain card games and NFT collectible trends, reflecting strategic gameplay in digital ecosystems.</p>
+        </section>
+
+        <section class="wiki-section">
+          <h2 id="sources">Sources</h2>
+          <ul class="sources-list">
+          <li><a href="https://medium.com/@boneidolink/gang-signs-7f3a8c9e9824" target="_blank" rel="noopener noreferrer">https://medium.com/@boneidolink/gang-signs-7f3a8c9e9824</a></li>
+          </ul>
+        </section>
+
+        <section class="wiki-section">
+          <h2 id="observed-images">Observed Images</h2>
+          <ul class="sources-list">
+          <li><a href="https://medium.com/@boneidolink/gang-signs-7f3a8c9e9824" target="_blank" rel="noopener noreferrer">https://medium.com/@boneidolink/gang-signs-7f3a8c9e9824</a> <span class="image-source-domain">(medium.com)</span></li>
+          </ul>
         </section>
 
         <div id="bible-content"></div>
+
       </article>
+
+      <div class="category-tags" aria-label="Article categories">
+        <span class="cat-label">Categories:</span>
+        <a href="../categories/concepts.html">Concepts</a>
+      </div>
+
     </main>
 
     <footer id="site-footer" role="contentinfo">
       <div class="footer-inner">
-        <div class="footer-col">
-          <h4>🌙 Moonboys Wiki</h4>
-          <p>Fan-driven encyclopedia for the crypto community.</p>
-        </div>
-        <div class="footer-col">
-          <h4>Explore</h4>
-          <ul>
-            <li><a href="/index.html">Main Page</a></li>
-            <li><a href="/categories/index.html">Categories</a></li>
-            <li><a href="/search.html">All Articles</a></li>
-            <li><a href="/about.html">About</a></li>
-          </ul>
-        </div>
+        <div class="footer-col"><h4>🌙 Moonboys Wiki</h4><p>Fan-driven encyclopedia for the crypto community.</p></div>
+        <div class="footer-col"><h4>Explore</h4><ul><li><a href="../index.html">Main Page</a></li><li><a href="../categories/index.html">Categories</a></li><li><a href="../articles.html">All Articles</a></li><li><a href="../about.html">About</a></li></ul></div>
+        <div class="footer-col"><h4>🤖 SAM</h4><ul><li><a href="../articles.html">SAM Articles</a></li><li><a href="hodl-wars.html">HODL Wars</a></li><li><a href="hodl-warriors.html">HODL Warriors</a></li></ul></div>
       </div>
       <div class="footer-bottom">
         <p>© 2026 Crypto Moonboys Wiki · Not financial advice.</p>
+        <p><span class="no-login-note">🔒 No sign-up · No login · Bot-maintained</span></p>
       </div>
     </footer>
   </div>
 </div>
 
-<button id="back-to-top" aria-label="Back to top">↑</button>
-<script src="/js/wiki.js"></script>
+<button id="back-to-top" aria-label="Back to top">&#8593;</button>
+<script src="../js/wiki.js"></script>
 <script src="/js/bible-loader.js"></script>
 </body>
 </html>
