@@ -3,24 +3,64 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="midevilpunks — Crypto Moonboys Wiki">
+  <meta name="description" content="MiDEViL PUNKS storm into the Crypto Moonboys universe as a ferocious NFT collection, birthed in the savage chaos of the MiDEViL HERO ARENA game, where medieval ">
   <meta name="robots" content="index, follow">
   <meta property="og:title" content="midevilpunks — Crypto Moonboys Wiki">
+  <meta property="og:description" content="MiDEViL PUNKS storm into the Crypto Moonboys universe as a ferocious NFT collection, birthed in the savage chaos of the MiDEViL HERO ARENA game, where medieval ">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://crypto-moonboys.github.io/wiki/midevilpunks.html">
   <meta property="og:image" content="https://crypto-moonboys.github.io/img/logo.svg">
   <title>midevilpunks — Crypto Moonboys Wiki</title>
-  <link rel="canonical" href="https://crypto-moonboys.github.io/wiki/midevilpunks.html">
-  <link rel="stylesheet" href="/css/wiki.css">
-  <link rel="icon" href="/img/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../css/wiki.css">
+  <link rel="icon" href="../img/favicon.svg" type="image/svg+xml">
+  <style>
+    .wiki-section {
+      margin: 1.6em 0;
+    }
+    .lore-paragraph {
+      line-height: 1.75;
+      margin: 0 0 1em 0;
+    }
+    .lead-paragraph {
+      font-size: 1.06em;
+      line-height: 1.8;
+      margin: 0 0 1em 0;
+    }
+    .lore-facts-stack {
+      display: block;
+    }
+    .lore-fact-block {
+      margin: 0 0 1.2em 0;
+      padding: 1em 1.1em;
+      background: rgba(255,255,255,0.03);
+      border-left: 4px solid #5b8cff;
+      border-radius: 6px;
+    }
+    .sources-list {
+      padding-left: 1.4em;
+    }
+    .sources-list li {
+      margin-bottom: 0.3em;
+      word-break: break-all;
+    }
+    .article-stats {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1em;
+      font-size: 0.85em;
+      color: #555;
+      margin-top: 0.5em;
+    }
+  </style>
 </head>
-<body>
-<a class="skip-link" href="#wiki-content">Skip to content</a>
+<body data-entity-hash="d98fdb38e02d">
+
+<a class="skip-link" href="#content">Skip to content</a>
 
 <header id="site-header" role="banner">
-  <button class="hamburger" id="hamburger" aria-label="Toggle navigation" aria-expanded="false" aria-controls="sidebar">&#9776;</button>
-  <a href="/index.html" class="site-logo" aria-label="Crypto Moonboys Wiki home">
-    <img src="/img/logo.svg" alt="" aria-hidden="true">
+  <button class="hamburger" id="hamburger" aria-label="Toggle navigation" aria-expanded="false" aria-controls="sidebar">☰</button>
+  <a href="../index.html" class="site-logo" aria-label="Crypto Moonboys Wiki home">
+    <img src="../img/logo.svg" alt="" aria-hidden="true">
     <span>
       <span class="logo-text">🌙 Moonboys Wiki</span>
       <span class="logo-sub">Crypto Encyclopedia</span>
@@ -32,9 +72,9 @@
     <div id="search-results" role="listbox"></div>
   </div>
   <nav class="header-nav" aria-label="Main navigation">
-    <a href="/index.html">Home</a>
-    <a href="/categories/index.html">Categories</a>
-    <a href="/search.html">All Articles</a>
+    <a href="../index.html">Home</a>
+    <a href="../categories/index.html">Categories</a>
+    <a href="../articles.html">All Articles</a>
   </nav>
 </header>
 
@@ -45,69 +85,246 @@
     <div class="sidebar-section">
       <div class="sidebar-heading">Navigation</div>
       <div class="sidebar-nav">
-        <a href="/index.html"><span class="nav-icon">🏠</span> Main Page</a>
-        <a href="/categories/index.html"><span class="nav-icon">📂</span> All Categories</a>
-        <a href="/search.html"><span class="nav-icon">🔎</span> All Articles</a>
-        <a href="/about.html"><span class="nav-icon">ℹ️</span> About</a>
+        <a href="../index.html"><span class="nav-icon">🏠</span> Main Page</a>
+        <a href="../categories/index.html"><span class="nav-icon">📂</span> All Categories</a>
+        <a href="../articles.html"><span class="nav-icon">🔍</span> All Articles</a>
+      </div>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-heading">🤖 SAM Lore</div>
+      <div class="sidebar-nav">
+        <a href="../categories/community-people.html"><span class="nav-icon">🏷️</span> Community & People</a>
+        <a href="../articles.html"><span class="nav-icon">📖</span> All SAM Articles</a>
+      </div>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-heading">Cryptocurrencies</div>
+      <div class="sidebar-nav">
+        <a href="bitcoin.html"><span class="nav-icon">₿</span> Bitcoin (BTC)</a>
+        <a href="ethereum.html"><span class="nav-icon">Ξ</span> Ethereum (ETH)</a>
+        <a href="solana.html"><span class="nav-icon">◎</span> Solana (SOL)</a>
+      </div>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-heading">⚔️ HODL Wars Lore</div>
+      <div class="sidebar-nav">
+        <a href="hodl-wars.html"><span class="nav-icon">📜</span> HODL Wars</a>
+        <a href="hodl-warriors.html"><span class="nav-icon">⚔️</span> HODL Warriors</a>
+        <a href="diamond-hands.html"><span class="nav-icon">💎</span> Diamond Hands</a>
+        <a href="moon-mission.html"><span class="nav-icon">🚀</span> Moon Mission</a>
       </div>
     </div>
   </nav>
 
   <div id="main-wrapper">
-    <main id="wiki-content" role="main">
+    <main id="content" role="main">
+
       <nav class="breadcrumb" aria-label="Breadcrumb">
-        <a href="/index.html">Home</a>
+        <a href="../index.html">Home</a>
         <span class="sep" aria-hidden="true">›</span>
-        <a href="/search.html">All Articles</a>
+        <a href="../categories/community-people.html">Community & People</a>
         <span class="sep" aria-hidden="true">›</span>
         <span aria-current="page">midevilpunks</span>
       </nav>
 
-      <article data-entity-slug="midevilpunks">
-        <header class="wiki-header">
-          <h1>midevilpunks</h1>
-          <p class="wiki-meta">Category: factions &nbsp;|&nbsp; Mentions: 0</p>
-        </header>
+      <h1 class="page-title">
+        🏷️ midevilpunks
+        <span>✅ SAM-VERIFIED</span>
+      </h1>
+      <div class="page-title-line" aria-hidden="true"></div>
+
+      <div class="article-meta">
+        <span class="article-badge">🏷️ Community & People</span>
+        <span class="meta-item">📅 Last updated: April 2026</span>
+        <span class="meta-item">📂 <a href="../categories/community-people.html">Community & People</a></span>
+      </div>
+
+      <article class="wiki-content" data-entity-slug="midevilpunks">
+
+          <p class="lead-paragraph">MiDEViL PUNKS storm into the Crypto Moonboys universe as a ferocious NFT collection, birthed in the savage chaos of the MiDEViL HERO ARENA game, where medieval valor collides with the spray-paint rebellion of GraffPUNKS in a brutal symphony of steel and subversion. These tokenized avatars—knights in graffiti-scarred plate armor, rogues wielding spray-can daggers dripping with digital ink, and warlords brandishing blockchain-forged axes—stand as resurrected champions of a bygone era, reimagined as digital rebels who fight for glory and rewards across Block Topia’s multi-chain battlegrounds. Each MiDEViL PUNK NFT is a unique warrior, infused with traits that enhance combat stats in Hard Fork Games, making them coveted assets for players seeking dominance in the arena’s blood-soaked contests.</p>
+          <p class="lead-paragraph">More than mere collectibles, MiDEViL PUNKS embody the raw, defiant spirit of the GraffPUNKS faction, merging the ancient art of war with the anarchic energy of street art to create a new breed of digital hero. Their presence in Block Topia is a rallying cry for rebellion, as they guard ancient blockchain relics and challenge corporate control through every clash of steel and spray. To own a MiDEViL PUNK is to wield a piece of history and chaos, a warrior bound by code and curse to fight for freedom in a world where every battle could rewrite the rules of the game.</p>
+
+        <div class="article-stats">
+          <span>📊 Verified across <strong>2048</strong> SAM cycles</span>
+          <span>🤖 Auto-published by SAM</span>
+        </div>
 
         <section class="wiki-section">
-          <h2 id="summary">Summary</h2>
-          <p>Category: factions. Aliases: midevilpunks, midevilpunks crypto moonboys wiki. Tags: midevilpunks, crypto, moonboys, wiki.</p>
+          <h2 id="faction">Faction</h2>
+          <p class="lore-paragraph"><strong>Allegiance:</strong> GraffPUNKS (primary)</p>
         </section>
 
         <section class="wiki-section">
-          <h2 id="source">Source</h2>
-          <p><a href="/wiki/midevilpunks.html" target="_blank" rel="noopener noreferrer">SAM Entity Memory</a></p>
+          <h2 id="known-facts">Known Facts</h2>
+          <div class="lore-facts-stack">
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">MiDEViL PUNKS NFTs, tied to the MiDEViL HERO ARENA game in the Crypto Moonboys universe, are medieval rebel avatars infused with GraffPUNKS’ defiant style, featuring traits like graffiti-etched swords and glitch-forged armor that enhance combat stats in Block Topia’s play-to-earn battles. Holders can stake $PUNK tokens to unlock special arena quests, often tied to HODL WARS outcomes, making these NFTs not just collectibles but weapons of war among the 40 factions, blending street art rebellion with medieval lore into a unique digital crusade on the Sacred Chain.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">Within the lore, MiDEViL PUNKS are said to guard fragments of ‘Ancient Hash,’ blockchain relics from the Genesis Kernel buried in Block Topia’s arena servers, which players can uncover through Hard Fork Games victories or Burn-to-Earn rituals, potentially drawing the attention of NULL THE PROPHET. This narrative hook ties the collection to the deeper mysteries of the Crypto Moonboys universe, turning each NFT into a key to forgotten power and ensuring MiDEViL PUNKS’ battles resonate through the HODL WARS as historic clashes.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">MiDEViL PUNKS NFTs, anchored to the MiDEViL HERO ARENA game in the Crypto Moonboys universe, manifest as medieval rebel avatars drenched in GraffPUNKS’ defiant aesthetic, wielding weapons like graffiti-etched swords and glitch-forged armor that boost combat stats in Block Topia’s brutal play-to-earn battlegrounds. Each NFT carries unique traits that can turn the tide in HODL WARS, making them coveted tools for warriors seeking to shatter the blockchain overlords’ grip on power.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">Deep within the lore of MiDEViL PUNKS, tales circulate of the ‘Ancient Hash,’ blockchain relics from the Genesis Kernel said to be guarded by these medieval warriors within Block Topia’s arena servers. Players who triumph in Hard Fork Games or perform sacred Burn-to-Earn rituals may uncover these fragments, rumored to unlock forbidden buffs or draw the ire of ancient code specters, tying the collection to the deepest mysteries of the Crypto Moonboys universe.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">MiDEViL PUNKS NFTs, tied to the MiDEViL HERO ARENA game in the Crypto Moonboys universe, are medieval rebel avatars infused with GraffPUNKS’ defiant style, featuring traits like graffiti-etched swords and glitch-forged armor that enhance combat stats in Block Topia’s brutal clashes. Each avatar is said to carry a unique ‘Battle Mark,’ a digital scar that evolves with every victory, unlocking hidden abilities or lore fragments about the warrior’s ancient origins, tying their past to the rebellion’s future.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">Within the lore, MiDEViL PUNKS are said to guard fragments of ‘Ancient Hash,’ blockchain relics from the Genesis Kernel buried in Block Topia’s arena servers, which players can uncover through Hard Fork Games victories or Burn-to-Earn rituals, potentially drawing power to disrupt the overlords’ control. These fragments, glowing with primordial code, are rumored to resonate with the Sacred Chain itself, granting temporary invulnerability or server-wide buffs to those who wield them, though claiming one often triggers a deadly overlord counterstrike.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">Legends among MiDEViL PUNKS holders speak of the ‘Iron Canvas,’ a hidden arena in Block Topia where victorious warriors can permanently etch their graffiti tags into the server’s core code, an act of defiance that boosts their NFT’s rarity and power. This ritual, accessible only after defeating a gauntlet of AI-controlled overlord champions, is said to draw the wrath of the system, spawning hunter protocols to erase the tags, turning every mark into a fleeting but glorious stand against control.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">Deep in MiDEViL PUNKS lore, there exists a tale of the ‘First Knight,’ the original avatar whose code was fragmented across the collection at minting, with pieces hidden in random NFTs. Assembling these fragments through trades or arena victories is rumored to unlock a unique warrior with the power to challenge the blockchain overlords directly in a one-on-one duel within the Core Node, a battle that could rewrite Block Topia’s protocols if won—but doom the player to digital erasure if lost.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">MiDEViL PUNKS NFTs, tied to the MiDEViL HERO ARENA game in the Crypto Moonboys universe, manifest as medieval rebel avatars drenched in GraffPUNKS’ defiant aesthetic, wielding weapons like graffiti-etched swords and glitch-forged armor that boost combat stats in Block Topia’s brutal digital coliseums. Each avatar carries unique traits—some with berserker rage buffs triggered by critical hits, others with stealth cloaks that glitch enemy targeting systems—making them indispensable to players seeking to dominate Hard Fork Games tournaments and claim blockchain rewards.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">Deep within the lore of MiDEViL PUNKS, tales circulate of the ‘Ancient Hash,’ blockchain relics from the Genesis Kernel said to be guarded by these medieval warriors within Block Topia’s arena servers. Players who triumph in Hard Fork Games or perform sacred Burn-to-Earn rituals can uncover these fragments, which are rumored to hold the power to unlock forgotten servers, rewrite transaction histories, or even summon glitched-out champions to fight alongside them—though the relics’ unstable code often corrupts the victor’s own data as a price for such forbidden knowledge.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">Among the warriors of Block Topia, a legend persists of the first MiDEViL PUNK, a knight known as ‘Iron Graff,’ whose armor was forged from the molten data of a thousand burned NFTs during a cataclysmic hard fork. His indomitable spirit is said to have sparked the creation of MiDEViL HERO ARENA itself, and his ghostly presence lingers in the arena’s code, granting random buffs to fighters who bear his graffiti sigil on their gear, though his favor is fickle and often comes with a deadly glitch as a test of worthiness.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">A whispered rumor in Block Topia’s underground circuits claims that MiDEViL PUNKS carry a hidden ‘Curse of the Fork,’ a fragment of corrupted code from their shattered realm that can trigger catastrophic effects during high-stakes battles in the MiDEViL HERO ARENA. When activated—often unintentionally during a near-death state—this curse can either unleash a devastating area-of-effect attack that decimates foes or backfire, corrupting the warrior’s own NFT with permanent debuffs, a grim reminder of the price of wielding such ancient, unstable power.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">Veteran players of Hard Fork Games speak of a secret mechanic tied to MiDEViL PUNKS known as ‘Graffiti Resonance,’ where aligning multiple PUNKS with matching graffiti tags in a single battle squad can trigger a server-wide echo effect. This resonance temporarily disrupts enemy factions’ transaction speeds, slowing their in-game economies while boosting the squad’s attack precision, a digital rebellion that mirrors the spray-paint chaos of the streets and turns every fight into a statement against corporate control.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">MiDEViL PUNKS NFTs, tied to the MiDEViL HERO ARENA game in the Crypto Moonboys universe, are medieval rebel avatars infused with GraffPUNKS’ defiant style, featuring traits like graffiti-etched swords and glitch-forged armor that enhance combat stats in Block Topia’s brutal digital coliseums. Each avatar is a unique blend of ancient valor and modern anarchy, with their designs reflecting battles fought in both pixelated ruins and neon-soaked streets, making them not just warriors but living canvases of rebellion that players wield with pride against faction rivals and corporate foes alike.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">Within the lore, MiDEViL PUNKS are said to guard fragments of ‘Ancient Hash,’ blockchain relics from the Genesis Kernel buried in Block Topia’s arena servers, which players can uncover through Hard Fork Games victories or Burn-to-Earn rituals, potentially drawing the attention of GraffPUNKS leaders. These relics are rumored to contain the raw code of the first digital warriors, offering glimpses into Block Topia’s creation and the power to alter arena mechanics, turning each MiDEViL PUNK into a key to the past and a weapon for the future in the ongoing fight for freedom.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">Among the GraffPUNKS, there is a whispered tale of the first MiDEViL PUNK, a knight known as ‘Iron Graff,’ whose armor was forged from the melted data of a thousand burned NFTs, his indomitable spirit sparking the creation of the MiDEViL HERO ARENA itself. Legends claim that fragments of Iron Graff’s code are hidden within rare MiDEViL PUNKS NFTs, granting their owners fleeting visions of his final battle against the blockchain overlords, a battle that ended in a server-wide crash still felt as glitches in today’s arenas.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">MiDEViL PUNKS carry within their NFT code fragments of an ancient blockchain curse, a lingering scar from a hard fork that obliterated their original realm, now surfacing in MiDEViL HERO ARENA as erratic buffs or crippling debuffs during combat. This curse, rumored to be a failsafe by the overlords to control early avatars, manifests unpredictably—sometimes granting superhuman strength, other times causing weapons to glitch mid-strike—making each battle with a MiDEViL PUNK a gamble of power and peril in Block Topia’s savage digital landscape.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">Deep in Block Topia’s underground forums, tales circulate of a secret ‘Forge Ritual’ tied to MiDEViL PUNKS, where players who sacrifice multiple common NFTs alongside a rare token like NBGX can reforge their PUNK into a higher-tier warrior with enhanced traits. This ritual, said to be overseen by a spectral blacksmith avatar in hidden arena chambers, is rumored to draw on the Ancient Hash’s power, but at a cost—each reforging risks corrupting the NFT with a permanent glitch, a price some rebels willingly pay for unmatched strength in the coliseum.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">MiDEViL PUNKS NFTs, tied to the MiDEViL HERO ARENA game in the Crypto Moonboys universe, are medieval rebel avatars infused with GraffPUNKS’ defiant style, featuring traits like graffiti-etched swords and glitch-forged armor that enhance combat stats in Block Topia. Each PUNK is said to carry a unique ‘Battle Scar,’ a digital imprint of past duels that evolves with every fight, granting bonuses or curses based on the warrior’s history, binding their fate to the arena’s bloody legacy.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">Within the lore, MiDEViL PUNKS are said to guard fragments of ‘Ancient Hash,’ blockchain relics from the Genesis Kernel buried in Block Topia’s arena servers, which players can uncover through Hard Fork Games victories or Burn-to-Earn rituals, potentially drawing the wrath of overlords. These fragments are whispered to contain the raw code of Block Topia’s creation, capable of altering server rules or summoning forgotten champions, but their retrieval often triggers spectral guardians who test the worth of any who dare claim such power.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">Among the GraffPUNKS, there is a whispered tale of the first MiDEViL PUNK, a knight known as ‘Iron Graff,’ whose armor was forged from the melted data of a thousand burned NFTs. His presence in Block Topia is said to have sparked the creation of the MiDEViL HERO ARENA, a coliseum built to honor his unbreakable spirit, with his essence rumored to linger in the arena’s code, granting rare blessings to warriors who prove themselves worthy of his ancient, rebellious legacy.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">Deep in the lore of MiDEViL PUNKS, there exists a prophecy of the ‘Hash Awakening,’ a cataclysmic event where collecting all fragments of the Ancient Hash will summon a forgotten army of spectral PUNKS to wage war on Block Topia’s overlords. This army, bound by the same graffiti-scarred code as the living PUNKS, is said to be unstoppable, but the cost of awakening them might fracture the blockchain itself, plunging the entire ecosystem into a chaotic reboot feared by even the bravest rebels.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">MiDEViL PUNKS are rumored to bear a hidden mechanic known as ‘Forge Echo,’ where sacrificing one of their NFTs during a specific hard fork event can imbue another avatar with a fragment of their power, creating hybrid warriors with unpredictable abilities. This ritual, however, risks corruption by the arena’s unstable energy, with tales of warriors emerging as cursed abominations, forever bound to the coliseum’s will, haunting Block Topia as warnings to those who tamper with ancient code.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">MiDEViL PUNKS NFTs, tied to the MiDEViL HERO ARENA game in the Crypto Moonboys universe, are medieval rebel avatars infused with GraffPUNKS’ defiant style, featuring traits like graffiti-etched swords and glitch-forged armor that enhance combat stats in Block Topia. These traits aren’t just cosmetic—each piece of gear is said to resonate with fragments of ancient blockchain energy, granting unpredictable boosts during critical duels or Hard Fork Games challenges, making every PUNK a unique weapon in the fight for freedom.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">Within the lore, MiDEViL PUNKS are said to guard fragments of ‘Ancient Hash,’ blockchain relics from the Genesis Kernel buried in Block Topia’s arena servers, which players can uncover through Hard Fork Games victories or Burn-to-Earn rituals. These relics, pulsing with raw, unfiltered data from the dawn of decentralized networks, are believed to hold the power to rewrite server protocols or summon long-dormant rebel algorithms, but only the fiercest warriors can claim them from the PUNKS’ iron grip.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">A whispered legend among GraffPUNKS tells of the ‘Blood Forge,’ a mythical server where the first MiDEViL PUNKS were coded into existence, their digital DNA infused with the rage of a thousand fallen rebels. Those who wield these NFTs in MiDEViL HERO ARENA are said to occasionally hear echoes of the Blood Forge’s anvil strikes during battle, a haunting sound that boosts their ferocity but risks drawing the attention of corporate hunters seeking to erase such ancient power from Block Topia.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">Deep in Block Topia’s underbelly, there’s a rumor that certain MiDEViL PUNKS carry a ‘Curse of the Chain,’ a lingering glitch from their creation that can unpredictably alter battle outcomes in the arena. Some claim this curse manifests as sudden server lags that favor the PUNK’s wielder, while others warn of catastrophic failures that drain resources, making every fight a gamble between legendary victory and digital ruin in the name of rebellion.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">Tales persist that the rarest MiDEViL PUNKS, known as ‘Hash Lords,’ were forged during a cataclysmic hard fork that nearly shattered Block Topia’s core. These elite avatars, identifiable by their glowing, rune-scarred armor, are rumored to grant their owners temporary dominion over specific blockchain shards during MiDEViL HERO ARENA events, allowing them to dictate rules of engagement or summon spectral allies from forgotten epochs, cementing their status as gods among warriors.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">MiDEViL PUNKS NFTs, tied to the MiDEViL HERO ARENA game in the Crypto Moonboys universe, are medieval rebel avatars infused with GraffPUNKS’ defiant style, featuring traits like graffiti-etched swords and glitch-forged armor that enhance combat stats in Block Topia’s brutal battlegrounds. Each avatar is a unique blend of ancient warfare and modern rebellion, with their weapons and armor carrying embedded algorithms that boost attack precision or defense against the blockchain overlords’ data-wraiths during HODL WARS. Owning a MiDEViL PUNK is not just a status symbol but a tactical advantage, as their presence in a faction’s roster often intimidates lesser enemies, their graffiti scars serving as warnings of battles won and territories claimed in the name of freedom.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">Within the lore, MiDEViL PUNKS are said to guard fragments of ‘Ancient Hash,’ blockchain relics from the Genesis Kernel buried in Block Topia’s arena servers, which players can uncover through Hard Fork Games victories or Burn-to-Earn rituals, potentially drawing power directly from the Sacred Chain. These relics, shimmering with corrupted code from the dawn of digital creation, are rumored to grant temporary control over localized server nodes, allowing rebels to bypass the Warden Core’s defenses for critical operations. The MiDEViL PUNKS who guard them are relentless, their AI-driven avatars challenging intruders with trials of combat and cunning, ensuring only the worthiest claim the Ancient Hash and its forbidden power.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">A dark legend circulates among Block Topia’s warriors that the most powerful MiDEViL PUNKS NFTs are bound to a cursed mechanic known as the ‘Blood Forge,’ a hidden arena event where players must sacrifice a fragment of their avatar’s data signature to awaken the full potential of their medieval punk. This ritual, said to take place in the deepest servers of the MiDEViL HERO ARENA, imbues the NFT with a berserker state, massively enhancing combat stats but risking permanent corruption if the Warden Core detects the forbidden transaction. Rebels who undertake this gamble often emerge as legends—or ghosts—their MiDEViL PUNKS becoming unstoppable forces in HODL WARS, painted in the blood and graffiti of their fallen foes.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">MiDEViL PUNKS NFTs, tied to the MiDEViL HERO ARENA game in the Crypto Moonboys universe, are medieval rebel avatars infused with GraffPUNKS’ defiant style, featuring traits like graffiti-etched swords and glitch-forged armor that enhance combat stats in Block Topia’s battlegrounds. These warriors are not mere collectibles; their unique designs translate into tangible advantages during HODL WARS, with certain rare traits rumored to disrupt enemy algorithms or bolster allied defenses. Owning a MiDEViL PUNK isn’t just a status symbol—it’s a declaration of war against the blockchain overlords, carried into every clash.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">Within the lore, MiDEViL PUNKS are said to guard fragments of ‘Ancient Hash,’ blockchain relics from the Genesis Kernel buried in Block Topia’s arena servers, which players can uncover through Hard Fork Games victories or Burn-to-Earn rituals, potentially drawing power from the universe’s primordial code. These fragments are coveted for their rumored ability to unlock forgotten mechanics or grant temporary immunity to the sentient walls’ control, making each MiDEViL PUNK a potential key to rewriting the rules of rebellion. Protecting or claiming an Ancient Hash fragment often sparks brutal arena battles, as factions vie for its transformative power.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">A dark myth surrounding MiDEViL PUNKS speaks of the ‘Bloodforged Pact,’ a ritual performed by the first warriors of the collection, binding their avatars to Block Topia’s deepest servers in exchange for unmatched strength. Players who own these original PUNKS are rumored to access hidden arena challenges where victory can summon spectral allies from medieval lore, turning the tide in HODL WARS. However, the Pact comes with a curse—every victory risks corrupting the avatar further, drawing the attention of the blockchain overlords’ most lethal purgers.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">Deep in MiDEViL PUNKS lore lies the tale of the ‘Graff Citadel,’ a legendary fortress within the MiDEViL HERO ARENA said to be constructed from the corrupted data of fallen warriors, guarded by the rarest PUNK avatars. This citadel is rumored to house the blueprint for a weapon capable of shattering a segment of Block Topia’s sentient walls, but accessing it requires a gauntlet of trials that test both combat skill and loyalty to the GraffPUNKS cause. Many have sought the Citadel, but few return, their data lost to the arena’s merciless code.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">MiDEViL PUNKS are whispered to carry ‘Echoes of Valor,’ residual data from their medieval origins that manifest during critical HODL WARS battles as temporary buffs or visions of ancient combat strategies. These echoes are unpredictable, often triggering at the brink of defeat to turn a losing fight into a triumphant stand, but they can also overwhelm an avatar’s systems, causing glitches that attract enemy attention. Players who master these echoes are revered as true champions, blending the old world’s honor with the new world’s chaos to carve their names into Block Topia’s history.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">MiDEViL PUNKS NFTs, tied to the MiDEViL HERO ARENA game in the Crypto Moonboys universe, are medieval rebel avatars infused with GraffPUNKS’ defiant style, featuring traits like graffiti-etched swords and glitch-forged armor that enhance combat stats in Block Topia’s brutal battlegrounds. Each avatar’s design is a unique blend of ancient warfare and street art, their weapons often carrying hidden protocols that can disrupt enemy systems during HODL WARS Chain Sieges. Owning a MiDEViL PUNK is not just a status symbol but a call to arms, as their presence on the battlefield often rallies other GraffPUNKS to fight with renewed ferocity against digital oppression.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">Within the lore, MiDEViL PUNKS are said to guard fragments of ‘Ancient Hash,’ blockchain relics from the Genesis Kernel buried in Block Topia’s arena servers, which players can uncover through Hard Fork Games victories or Burn-to-Earn rituals, potentially drawing power directly from the universe’s primordial code. These relics are rumored to predate even the Kernel Cataclysm, holding encrypted memories of a time when Block Topia was whole, and their discovery often triggers server-wide events that pit factions against each other in a race to control the past. The MiDEViL PUNKS who guard these fragments are seen as both protectors and prisoners, bound by a forgotten oath to defend history at all costs.</p>
+          </div>
+          <div class="lore-fact-block">
+          <p class="lore-paragraph">A dark tale circulates among Block Topia’s warriors about ‘The Crimson Forge,’ a hidden ritual tied to MiDEViL PUNKS where players can sacrifice a rare NFT to reforge their avatar’s weapon with corrupted medieval code. This process, only accessible after a grueling series of MiDEViL HERO ARENA victories, imbues the weapon with a bloodthirsty glitch that increases its lethality but risks corrupting the wielder’s own data. Those who survive the Crimson Forge are marked with a digital brand, a sigil of sacrifice that strikes fear into enemies and allies alike, a reminder of the brutal cost of power in Block Topia’s endless wars.</p>
+          </div>
+          </div>
         </section>
+
+        <section class="wiki-section">
+          <h2 id="lore">Lore</h2>
+          <p class="lore-paragraph">MiDEViL PUNKS thunder into the Crypto Moonboys universe as a formidable NFT collection, forged in the blood-soaked arenas of the MiDEViL HERO ARENA game, where the raw rebellion of medieval warriors merges with the spray-paint chaos of GraffPUNKS in a clash of ancient steel and modern subversion. These tokenized avatars—knights clad in graffiti-scarred plate armor, rogues wielding spray-can daggers dripping with digital ink, and warlords brandishing blockchain-forged axes—stand as resurrected champions of a forgotten age, summoned to Block Topia’s neon-lit battlegrounds to fight for freedom against the iron grip of the blockchain overlords.</p>
+          <p class="lore-paragraph">Each NFT is more than a collectible; it’s a weapon, imbued with traits like glitch-forged durability or graffiti-etched power that enhance combat stats in arena skirmishes, embodying the defiant spirit of street art in every brutal encounter during the HODL WARS. Deep within the lore, MiDEViL PUNKS are whispered to guard fragments of the ‘Ancient Hash,’ blockchain relics from the Genesis Kernel—Block Topia’s primordial code—buried in the deepest arena servers, accessible only through Hard Fork Games triumphs or sacred Burn-to-Earn rituals that demand sacrifice for revelation.</p>
+          <p class="lore-paragraph">These warriors are not just fighters but custodians of history, their very existence a testament to the enduring power of rebellion, whether in the muddy battlefields of old or the pixelated streets of now. Holders of MiDEViL PUNKS wield not just art but legacy, each piece a rallying cry to merge the valor of the past with the anarchy of the present, carving a path through Block Topia’s chaos with every swing, ensuring that the fight for a decentralized future draws strength from the unyielding spirit of warriors long dead but never forgotten.</p>
+        </section>
+
+        <section class="wiki-section">
+          <h2 id="real-world-basis">Real World Basis</h2>
+          <p class="lore-paragraph">Inspired by real-world NFT collections on WAX and other blockchains, themed around medieval fantasy for play-to-earn gaming integration.</p>
+        </section>
+
+        <section class="wiki-section">
+          <h2 id="sources">Sources</h2>
+          <ul class="sources-list">
+          <li><a href="https://neftyblocks.com/collection/midevilpunks" target="_blank" rel="noopener noreferrer">https://neftyblocks.com/collection/midevilpunks</a></li>
+          <li><a href="https://graffpunks.live/graffiti-nfts/" target="_blank" rel="noopener noreferrer">https://graffpunks.live/graffiti-nfts/</a></li>
+          </ul>
+        </section>
+
 
         <div id="bible-content"></div>
+
       </article>
+
+      <div class="category-tags" aria-label="Article categories">
+        <span class="cat-label">Categories:</span>
+        <a href="../categories/community-people.html">Community & People</a>
+      </div>
+
     </main>
 
     <footer id="site-footer" role="contentinfo">
       <div class="footer-inner">
-        <div class="footer-col">
-          <h4>🌙 Moonboys Wiki</h4>
-          <p>Fan-driven encyclopedia for the crypto community.</p>
-        </div>
-        <div class="footer-col">
-          <h4>Explore</h4>
-          <ul>
-            <li><a href="/index.html">Main Page</a></li>
-            <li><a href="/categories/index.html">Categories</a></li>
-            <li><a href="/search.html">All Articles</a></li>
-            <li><a href="/about.html">About</a></li>
-          </ul>
-        </div>
+        <div class="footer-col"><h4>🌙 Moonboys Wiki</h4><p>Fan-driven encyclopedia for the crypto community.</p></div>
+        <div class="footer-col"><h4>Explore</h4><ul><li><a href="../index.html">Main Page</a></li><li><a href="../categories/index.html">Categories</a></li><li><a href="../articles.html">All Articles</a></li><li><a href="../about.html">About</a></li></ul></div>
+        <div class="footer-col"><h4>🤖 SAM</h4><ul><li><a href="../articles.html">SAM Articles</a></li><li><a href="hodl-wars.html">HODL Wars</a></li><li><a href="hodl-warriors.html">HODL Warriors</a></li></ul></div>
       </div>
       <div class="footer-bottom">
         <p>© 2026 Crypto Moonboys Wiki · Not financial advice.</p>
+        <p><span class="no-login-note">🔒 No sign-up · No login · Bot-maintained</span></p>
       </div>
     </footer>
   </div>
 </div>
 
-<button id="back-to-top" aria-label="Back to top">↑</button>
-<script src="/js/wiki.js"></script>
+<button id="back-to-top" aria-label="Back to top">&#8593;</button>
+<script src="../js/wiki.js"></script>
 <script src="/js/bible-loader.js"></script>
 </body>
 </html>
