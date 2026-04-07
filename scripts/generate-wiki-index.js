@@ -1,6 +1,9 @@
 const fs = require('fs');
 const path = require('path');
 
+// 🔥 LOAD CONFIG
+const CONFIG = require('../js/ranking-config.js');
+
 const ROOT = path.join(__dirname, '..');
 const WIKI_DIR = path.join(ROOT, 'wiki');
 const OUTPUT = path.join(ROOT, 'js', 'wiki-index.json');
@@ -33,20 +36,34 @@ function normalize(str) {
 }
 
 function buildSearchIndex(title) {
+  const normalized = normalize(title);
   return {
-    normalized_title: normalize(title),
-    tokens: normalize(title).split(' ')
+    normalized_title: normalized,
+    tokens: normalized.split(' ')
   };
 }
 
-function buildRankSignals(html) {
+function detectCategory(filePath) {
+  const lower = filePath.toLowerCase();
+
+  if (lower.includes('character')) return 'characters';
+  if (lower.includes('faction')) return 'factions';
+  if (lower.includes('token')) return 'tokens';
+  if (lower.includes('concept')) return 'concepts';
+
+  return 'misc';
+}
+
+function buildRankSignals(html, filePath) {
   const wordCount = html.split(/\s+/).length;
+  const category = detectCategory(filePath);
 
   return {
     is_canonical: true,
     alias_count: 0,
     tag_count: 0,
-    category_priority: 3,
+    category,
+    category_priority: CONFIG.CATEGORY_PRIORITY[category] || 3,
     has_description: html.includes('<meta name="description"'),
     article_word_count: wordCount,
     keyword_bag_size: Math.min(25, Math.floor(wordCount / 50))
@@ -56,14 +73,14 @@ function buildRankSignals(html) {
 function computeRankScore(signals) {
   let score = 0;
 
-  if (signals.is_canonical) score += 20;
-  if (signals.has_description) score += 10;
+  if (signals.is_canonical) score += CONFIG.WEIGHTS.canonical;
+  if (signals.has_description) score += CONFIG.WEIGHTS.description;
 
-  score += signals.category_priority * 5;
-  score += Math.min(20, Math.floor(signals.article_word_count / 100));
-  score += signals.keyword_bag_size;
+  score += signals.category_priority * CONFIG.WEIGHTS.category;
+  score += signals.article_word_count * CONFIG.WEIGHTS.word_count;
+  score += signals.keyword_bag_size * CONFIG.WEIGHTS.keyword_bag;
 
-  return score;
+  return Math.round(score);
 }
 
 function run() {
@@ -75,7 +92,7 @@ function run() {
   files.forEach(filePath => {
     const relative = path.relative(ROOT, filePath).replace(/\\/g, '/');
 
-    // 🔥 CRITICAL FIX — REMOVE LEGACY INDEX PAGE
+    // 🔥 REMOVE LEGACY INDEX PAGE
     if (relative === 'wiki/index.html') return;
 
     const html = fs.readFileSync(filePath, 'utf8');
@@ -85,7 +102,7 @@ function run() {
 
     const url = '/' + relative;
 
-    const rank_signals = buildRankSignals(html);
+    const rank_signals = buildRankSignals(html, filePath);
     const rank_score = computeRankScore(rank_signals);
     const search_index = buildSearchIndex(title);
 
@@ -98,8 +115,13 @@ function run() {
     });
   });
 
+  // 🔥 DETERMINISTIC SORT (FINAL FORM)
   index.sort((a, b) => {
-    return b.rank_score - a.rank_score || a.title.localeCompare(b.title);
+    return (
+      b.rank_score - a.rank_score ||
+      a.title.localeCompare(b.title) ||
+      a.url.localeCompare(b.url)
+    );
   });
 
   fs.writeFileSync(OUTPUT, JSON.stringify(index, null, 2));
