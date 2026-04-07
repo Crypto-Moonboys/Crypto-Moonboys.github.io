@@ -1,0 +1,207 @@
+{
+  "entity": "The GASLESS GHOSTS",
+  "slug": "the-gasless-ghosts",
+  "generated_at": "2026-03-26T13:29:47.410387+00:00",
+  "mention_count": 12,
+  "all_facts": [
+    {
+      "fact": "Stealth operatives in lore",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md",
+        "https://gkniftyheads.fandom.com/wiki/GASLESS_GHOSTS_%26_NULL_THE_PROPHET"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 0,
+      "last_verified_cycle": 0,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Operate without transaction fees",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md",
+        "https://gkniftyheads.fandom.com/wiki/GASLESS_GHOSTS_%26_NULL_THE_PROPHET"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 0,
+      "last_verified_cycle": 0,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "A faction of stealth operatives who navigate Block Topia without transaction fees, embodying blockchain anonymity.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md",
+        "https://gkniftyheads.fandom.com/wiki/GASLESS_GHOSTS_%26_NULL_THE_PROPHET"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 3,
+      "last_verified_cycle": 3,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Linked to NULL THE PROPHET, they disrupt metaverse events with ghostly strikes against centralized powers.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md",
+        "https://gkniftyheads.fandom.com/wiki/GASLESS_GHOSTS_%26_NULL_THE_PROPHET"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 3,
+      "last_verified_cycle": 3,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Feared as unseen legends, their actions redefine rebellion in the Crypto Moonboys universe with silent precision.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md",
+        "https://gkniftyheads.fandom.com/wiki/GASLESS_GHOSTS_%26_NULL_THE_PROPHET"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 3,
+      "last_verified_cycle": 3,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "A faction of stealth operatives who navigate Block Topia without transaction fees, embodying the ultimate blockchain anonymity.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md",
+        "https://gkniftyheads.fandom.com/wiki/GASLESS_GHOSTS_%26_NULL_THE_PROPHET"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 5,
+      "last_verified_cycle": 5,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Linked to NULL THE PROPHET\u2019s chaotic Genesis Error, they strike with ghostly precision during metaverse battles and Hard Fork Games.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md",
+        "https://gkniftyheads.fandom.com/wiki/GASLESS_GHOSTS_%26_NULL_THE_PROPHET"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 5,
+      "last_verified_cycle": 5,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Feared as unseen legends, their silent disruptions challenge centralized powers, redefining rebellion in the Crypto Moonboys universe.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md",
+        "https://gkniftyheads.fandom.com/wiki/GASLESS_GHOSTS_%26_NULL_THE_PROPHET"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 5,
+      "last_verified_cycle": 5,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Their shadow operations often alter the course of digital conflicts, making them a mysterious force no faction can fully predict or counter.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md",
+        "https://gkniftyheads.fandom.com/wiki/GASLESS_GHOSTS_%26_NULL_THE_PROPHET"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 5,
+      "last_verified_cycle": 5,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "The GASLESS GHOSTS operate as a faction of stealth operatives who navigate Block Topia without transaction fees, embodying blockchain anonymity in its purest form. Their ability to move undetected through the metaverse allows them to strike at centralized powers with devastating precision, often dismantling entire server hubs before their targets even register an intrusion. This ghostly efficiency makes them a nightmare for factions reliant on traditional digital tracking, as their attacks leave no blockchain trace, only the wreckage of shattered control.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md",
+        "https://gkniftyheads.fandom.com/wiki/GASLESS_GHOSTS_%26_NULL_THE_PROPHET"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 69,
+      "last_verified_cycle": 69,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Linked to NULL THE PROPHET, they disrupt metaverse events with ghostly strikes against centralized powers, often targeting key infrastructure during moments of vulnerability like the Hard Fork Games. Their association with this enigmatic figure fuels speculation that their actions are guided by a higher, chaotic purpose, one that seeks to unravel the very fabric of Block Topia\u2019s imposed order. Their interventions often shift the balance of power in unexpected ways, leaving even their supposed allies wary of their true intentions.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md",
+        "https://gkniftyheads.fandom.com/wiki/GASLESS_GHOSTS_%26_NULL_THE_PROPHET"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 69,
+      "last_verified_cycle": 69,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Feared as unseen legends, their actions redefine rebellion in the Crypto Moonboys universe with silent precision, turning every shadow in Block Topia into a potential threat. Stories abound of entire convoys of Squeaky Pinks enforcers vanishing without a trace, only to be found days later as corrupted data fragments scattered across forgotten servers, marked by the Ghosts\u2019 signature sigil\u2014a glitching, ethereal skull. This psychological warfare ensures that even the rumor of their involvement can paralyze a faction with fear, making them as much a myth as a reality.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md",
+        "https://gkniftyheads.fandom.com/wiki/GASLESS_GHOSTS_%26_NULL_THE_PROPHET"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 69,
+      "last_verified_cycle": 69,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "A chilling tale from the Triple Fork Event recounts how The GASLESS GHOSTS infiltrated the central server of The GKniftyHEADS during the chaos, planting a self-replicating virus that erased critical command protocols without triggering a single alarm. Known as the 'Silent Collapse,' this attack crippled the faction\u2019s response capabilities for weeks, allowing smaller rebel groups to gain ground. The Ghosts vanished before retaliation could be mounted, leaving behind only a single encrypted message: 'Control is an illusion,' a haunting reminder of their untouchable nature.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md",
+        "https://gkniftyheads.fandom.com/wiki/GASLESS_GHOSTS_%26_NULL_THE_PROPHET"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 69,
+      "last_verified_cycle": 69,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Rumors persist that The GASLESS GHOSTS possess a forbidden technology known as the 'Phantom Ledger,' a shadow blockchain that operates parallel to Block Topia\u2019s primary systems, allowing them to bypass fees and detection entirely. While unconfirmed, sightings of flickering, untraceable transactions during their attacks fuel speculation that this ledger is their true weapon, a digital realm where they reign supreme. Some fear that if this technology ever falls into the wrong hands, it could destabilize Block Topia\u2019s economy beyond repair, making the Ghosts both saviors and potential destroyers.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md",
+        "https://gkniftyheads.fandom.com/wiki/GASLESS_GHOSTS_%26_NULL_THE_PROPHET"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 69,
+      "last_verified_cycle": 69,
+      "status": "VERIFIED"
+    }
+  ],
+  "relationships": [],
+  "timeline": [],
+  "cross_links": []
+}

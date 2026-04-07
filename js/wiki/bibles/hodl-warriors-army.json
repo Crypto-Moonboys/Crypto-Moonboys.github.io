@@ -1,0 +1,137 @@
+{
+  "entity": "HODL Warriors Army",
+  "slug": "hodl-warriors-army",
+  "generated_at": "2026-03-25T00:14:22.948247+00:00",
+  "mention_count": 6,
+  "all_facts": [
+    {
+      "fact": "Core army of HODL Warriors",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md",
+        "https://gkniftyheads.fandom.com/wiki/HODL_WARRIORS"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 0,
+      "last_verified_cycle": 0,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Defends HODL values",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md",
+        "https://gkniftyheads.fandom.com/wiki/HODL_WARRIORS"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 0,
+      "last_verified_cycle": 0,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "The primary army of HODL Warriors, committed to protecting decentralized values in Block Topia\u2019s digital wars.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md",
+        "https://gkniftyheads.fandom.com/wiki/HODL_WARRIORS"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 3,
+      "last_verified_cycle": 3,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Fight in metaverse battles with NFT murals, guided by voices like Charlie Buster for rebellion and strategy.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md",
+        "https://gkniftyheads.fandom.com/wiki/HODL_WARRIORS"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 3,
+      "last_verified_cycle": 3,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Earn elite status through Hard Fork Games, embodying GraffPUNKS\u2019 street-art defiance in every clash.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md",
+        "https://gkniftyheads.fandom.com/wiki/HODL_WARRIORS"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 3,
+      "last_verified_cycle": 3,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "The primary army of HODL Warriors, fiercely committed to protecting decentralized values in Block Topia\u2019s relentless digital wars.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md",
+        "https://gkniftyheads.fandom.com/wiki/HODL_WARRIORS"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 5,
+      "last_verified_cycle": 5,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Fight in metaverse battles with NFT murals as weapons, guided by rebellious voices like Charlie Buster for strategy and inspiration.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md",
+        "https://gkniftyheads.fandom.com/wiki/HODL_WARRIORS"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 5,
+      "last_verified_cycle": 5,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Earn elite status through trials like the Hard Fork Games, embodying GraffPUNKS\u2019 street-art defiance in every digital clash.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md",
+        "https://gkniftyheads.fandom.com/wiki/HODL_WARRIORS"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 5,
+      "last_verified_cycle": 5,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Stand as a beacon of resistance, often confronting rival forces like the Street Kingdoms in the Crypto Moonboys universe.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md",
+        "https://gkniftyheads.fandom.com/wiki/HODL_WARRIORS"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 5,
+      "last_verified_cycle": 5,
+      "status": "VERIFIED"
+    }
+  ],
+  "relationships": [],
+  "timeline": [],
+  "cross_links": []
+}

@@ -1,0 +1,154 @@
+{
+  "entity": "Metaverse battles",
+  "slug": "metaverse-battles",
+  "generated_at": "2026-03-26T10:15:49.869990+00:00",
+  "mention_count": 10,
+  "all_facts": [
+    {
+      "fact": "Digital combat system using NFTs",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 0,
+      "last_verified_cycle": 0,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Digital combat system where NFTs serve as both weapons and stakes in virtual Block Topia arenas.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 3,
+      "last_verified_cycle": 3,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Accessible on multi-chain platforms like WAX and SOL, offering rewards such as $GK tokens and phygital prints.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 3,
+      "last_verified_cycle": 3,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Reflects the street-art rebellion of Graffiti Kings, blending graffiti culture with blockchain warfare.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 3,
+      "last_verified_cycle": 3,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Digital combat system where NFTs serve as weapons and stakes in virtual Block Topia arenas, fueling territorial conflicts.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 5,
+      "last_verified_cycle": 5,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Accessible on multi-chain platforms like WAX and SOL, offering rewards such as $GK tokens and phygital prints for victorious warriors.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 5,
+      "last_verified_cycle": 5,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Reflects the street-art rebellion of Graffiti Kings, blending graffiti culture with blockchain warfare in the Crypto Moonboys universe.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 5,
+      "last_verified_cycle": 5,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Shapes the digital landscape through factional clashes, with each battle a fight for decentralized dominance and narrative impact.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 5,
+      "last_verified_cycle": 5,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Metaverse battles in Block Topia are digital coliseums where factions like HODL Warriors wield NFT murals as lethal tools and stakes, their clashes on multi-chain platforms like WAX and SOL offering rewards of $GK tokens or phygital prints, each fight a chapter in the Crypto Moonboys saga.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 59,
+      "last_verified_cycle": 59,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Rooted in the Graffiti Kings\u2019 legacy of territorial defiance, these virtual warzones transform blockchain into a battlefield, where every metaverse battle echoes the spray-painted struggles of real streets, shaping Block Topia\u2019s landscape with the scars of rebellion and victory.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 59,
+      "last_verified_cycle": 59,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "In the Crypto Moonboys universe, metaverse battles are more than combat; they are cultural reckonings, arenas where the act of claiming digital turf mirrors the gritty tagging wars of old, with each skirmish redefining power dynamics among Block Topia\u2019s warring factions.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 59,
+      "last_verified_cycle": 59,
+      "status": "VERIFIED"
+    }
+  ],
+  "relationships": [],
+  "timeline": [],
+  "cross_links": []
+}

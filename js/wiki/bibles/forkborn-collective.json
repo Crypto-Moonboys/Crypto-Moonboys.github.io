@@ -1,0 +1,167 @@
+{
+  "entity": "Forkborn Collective",
+  "slug": "forkborn-collective",
+  "generated_at": "2026-03-26T06:09:31.810450+00:00",
+  "mention_count": 8,
+  "all_facts": [
+    {
+      "fact": "Warriors from blockchain forks",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 0,
+      "last_verified_cycle": 0,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "The Forkborn Collective's warriors are marked by 'Fork Scars,' visible glitches in their forms that pulse with energy during combat, amplifying their strength but also making them prone to sudden, uncontrollable breakdowns that can endanger allies as much as enemies.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 26,
+      "last_verified_cycle": 26,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Their most infamous battle, known as the Divergence Clash, saw them emerge victorious against a coalition of traditional armies, proving their worth by splitting an enemy formation as cleanly as a blockchain splits during a fork, a tactic that has since become their signature.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 26,
+      "last_verified_cycle": 26,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Rumors persist that the Collective harbors a secret protocol, the 'Genesis Fork Code,' which they believe can trigger a new fork at will, potentially rewriting the very rules of Block Topia if unleashed.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 26,
+      "last_verified_cycle": 26,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "The Forkborn Collective's warriors are marked by 'Fork Scars,' visible glitches in their forms that pulse with energy during combat, amplifying their strength to levels that can shatter entire formations in a single strike. However, this power comes at a grave cost, as these scars also make them prone to sudden, uncontrollable breakdowns, eruptions of raw data that can endanger allies as much as enemies, turning every battle into a gamble of catastrophic proportions.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 37,
+      "last_verified_cycle": 37,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Their most infamous battle, known as the Divergence Clash, saw them emerge victorious against a coalition of traditional armies, proving their worth by splitting an enemy formation as cleanly as a blockchain splits during a fork. This legendary tactic, now a hallmark of their warfare, has instilled a deep-seated fear in their adversaries, who dread the moment the Collective's fractured might is unleashed to cleave through their ranks with surgical precision.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 37,
+      "last_verified_cycle": 37,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Rumors persist that the Collective harbors a secret protocol, the 'Genesis Fork Code,' a mythical fragment of code believed to hold the power to trigger a new blockchain fork at will. If unleashed, it could rewrite the very rules of Block Topia, reshaping reality itself, though its existence remains unconfirmed, whispered only in the darkest corners of the metaverse as both a promise of salvation and a threat of annihilation.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 37,
+      "last_verified_cycle": 37,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "The Collective's warriors often emerge from forks with unique traits tied to the nature of their origin event, such as the blazing speed of a rushed hard fork or the stubborn resilience of a bitterly contested soft fork. This diversity makes each member a specialized weapon, unpredictable in their capabilities, and a puzzle for any tactician attempting to counter their fractured but formidable assault.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 37,
+      "last_verified_cycle": 37,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "The Forkborn Collective's warriors are marked by 'Fork Scars,' visible glitches in their forms that pulse with energy during combat, amplifying their strength to levels that can shatter entire formations in a single strike. However, this power comes at a grave cost, as these scars can trigger catastrophic breakdowns mid-battle, turning their own energy against them or nearby allies in a surge of uncontrollable chaos.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 54,
+      "last_verified_cycle": 54,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Their most infamous battle, known as the Divergence Clash, saw them emerge victorious against a coalition of traditional armies, proving their worth by splitting an enemy formation as cleanly as a blockchain splits during a fork, a tactic that has since become their hallmark. This victory cemented their reputation as a force that thrives on division, turning the very concept of consensus into a weapon of war.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 54,
+      "last_verified_cycle": 54,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Rumors persist that the Collective harbors a secret protocol, the 'Genesis Fork Code,' which they believe can trigger a new fork at will, potentially rewriting the very rules of Block Topia if unleashed. Guarded by their most elite warriors, this code is said to be hidden within a fractured node, accessible only through a ritual of divergence that few survive, a secret that could either elevate or destroy the metaverse.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 54,
+      "last_verified_cycle": 54,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "The Forkborn Collective is whispered to be guided by an unseen \u2018Forkmind,\u2019 a collective consciousness born from their shared data shards, directing their chaotic assaults with a eerie synchronicity that defies individual thought. If true, this hive-like intellect could explain their uncanny ability to adapt mid-battle, splitting strategies in real-time to counter even the most calculated defenses.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 54,
+      "last_verified_cycle": 54,
+      "status": "VERIFIED"
+    }
+  ],
+  "relationships": [],
+  "timeline": [],
+  "cross_links": []
+}

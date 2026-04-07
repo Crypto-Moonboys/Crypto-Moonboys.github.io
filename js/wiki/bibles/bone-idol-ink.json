@@ -1,0 +1,186 @@
+{
+  "entity": "Bone Idol Ink",
+  "slug": "bone-idol-ink",
+  "generated_at": "2026-03-25T00:14:22.930336+00:00",
+  "mention_count": 9,
+  "all_facts": [
+    {
+      "fact": "Co-founder of Graffiti Kings",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md",
+        "https://medium.com/@boneidolink"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 0,
+      "last_verified_cycle": 0,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Focuses on events and collaborations",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md",
+        "https://medium.com/@boneidolink"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 0,
+      "last_verified_cycle": 0,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Co-founder of Graffiti Kings, pivotal in organizing events that bridge street art with Web3 innovation.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md",
+        "https://medium.com/@boneidolink"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 3,
+      "last_verified_cycle": 3,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Focuses on collaborations, uniting artists and factions for phygital drops and metaverse gatherings in Block Topia.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md",
+        "https://medium.com/@boneidolink"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 3,
+      "last_verified_cycle": 3,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Strengthens The GKniftyHEADS\u2019 cultural reach, embodying the communal spirit of graffiti in every Crypto Moonboys project.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md",
+        "https://medium.com/@boneidolink"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 3,
+      "last_verified_cycle": 3,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Bone Idol Ink is a real-world co-founder of Graffiti Kings, driving events and collaborations that propel the Crypto Moonboys universe into Web3 rebellion, amplifying the street-art ethos of The GKniftyHEADS.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md",
+        "https://medium.com/@boneidolink",
+        "https://medium.com/@boneidolink/gang-signs-7"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 4,
+      "last_verified_cycle": 4,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Their work in organizing phygital mural drops and partnerships echoes through Block Topia, uniting artists and warriors in metaverse gatherings, mirroring the graffiti culture of tagging walls together.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md",
+        "https://medium.com/@boneidolink",
+        "https://medium.com/@boneidolink/gang-signs-7"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 4,
+      "last_verified_cycle": 4,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Their efforts often tie to initiatives like the 1M free NFTs drop, making every event a spray-painted mark on the digital landscape of the Crypto Moonboys universe.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md",
+        "https://medium.com/@boneidolink",
+        "https://medium.com/@boneidolink/gang-signs-7"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 4,
+      "last_verified_cycle": 4,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Co-founder of Graffiti Kings, instrumental in driving events that fuse street-art heritage with cutting-edge Web3 technologies.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md",
+        "https://medium.com/@boneidolink",
+        "https://medium.com/@boneidolink/gang-signs-7"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 5,
+      "last_verified_cycle": 5,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Focuses on collaborations, bringing together diverse artists and factions for impactful phygital drops and metaverse events in Block Topia.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md",
+        "https://medium.com/@boneidolink",
+        "https://medium.com/@boneidolink/gang-signs-7"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 5,
+      "last_verified_cycle": 5,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Plays a key role in initiatives like the 1M free NFTs drop, democratizing access to digital rebellion within the Crypto Moonboys universe.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md",
+        "https://medium.com/@boneidolink",
+        "https://medium.com/@boneidolink/gang-signs-7"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 5,
+      "last_verified_cycle": 5,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Embodies the communal essence of graffiti culture, uniting warriors and creators under The GKniftyHEADS\u2019 banner with every organized event.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md",
+        "https://medium.com/@boneidolink",
+        "https://medium.com/@boneidolink/gang-signs-7"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 5,
+      "last_verified_cycle": 5,
+      "status": "VERIFIED"
+    }
+  ],
+  "relationships": [],
+  "timeline": [],
+  "cross_links": []
+}

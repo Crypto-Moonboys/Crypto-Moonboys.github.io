@@ -1,0 +1,154 @@
+{
+  "entity": "Seeding rights",
+  "slug": "seeding-rights",
+  "generated_at": "2026-03-26T10:15:49.856349+00:00",
+  "mention_count": 10,
+  "all_facts": [
+    {
+      "fact": "Ownership privileges for NFT holders",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 0,
+      "last_verified_cycle": 0,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Grants NFT holders exclusive control over digital territories or assets in the Block Topia metaverse.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 3,
+      "last_verified_cycle": 3,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Often tied to staking rewards or events like Hard Fork Games, empowering holders to shape virtual landscapes.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 3,
+      "last_verified_cycle": 3,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Echoes the street-art act of claiming space, translating physical tagging into blockchain-backed ownership.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 3,
+      "last_verified_cycle": 3,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Grants NFT holders exclusive control over digital territories or assets in Block Topia, acting as a virtual deed in the metaverse.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 5,
+      "last_verified_cycle": 5,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Often tied to staking rewards or events like Hard Fork Games, empowering holders to shape virtual landscapes and narratives.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 5,
+      "last_verified_cycle": 5,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Echoes the street-art act of claiming space, translating physical tagging into blockchain-backed ownership in the Crypto Moonboys universe.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 5,
+      "last_verified_cycle": 5,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Represents a strategic tool for factions, turning digital ownership into a form of rebellion and territorial dominance.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 5,
+      "last_verified_cycle": 5,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Seeding rights grant NFT holders unparalleled control over digital territories in Block Topia, acting as virtual deeds that mirror the street-art act of claiming a wall, allowing factions to imprint their will on the metaverse through strategic staking or victories in events like the Hard Fork Games.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 59,
+      "last_verified_cycle": 59,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "In the Crypto Moonboys universe, seeding rights are a catalyst for conflict and creation, empowering holders to transform empty digital spaces into cultural fortresses or war zones, where the act of planting a flag can ignite rivalries or forge new chapters in Block Topia\u2019s ever-evolving lore.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 59,
+      "last_verified_cycle": 59,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Often tied to the Graffiti Kings\u2019 ethos of territorial rebellion, seeding rights turn the abstract landscape of the metaverse into a canvas of power, where each claimed asset or territory becomes a testament to a faction\u2019s strength, daring rivals like HODL Warriors to challenge their dominion.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 59,
+      "last_verified_cycle": 59,
+      "status": "VERIFIED"
+    }
+  ],
+  "relationships": [],
+  "timeline": [],
+  "cross_links": []
+}

@@ -1,0 +1,128 @@
+{
+  "entity": "Maidstone Base",
+  "slug": "maidstone-base",
+  "generated_at": "2026-03-25T00:15:52.322896+00:00",
+  "mention_count": 6,
+  "all_facts": [
+    {
+      "fact": "Current headquarters in Maidstone, Kent",
+      "confidence": 80,
+      "sources": [
+        "https://gkniftyheads.blogspot.com/2026/03/the-gkniftyheads-arent-just-surviving.html"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 0,
+      "last_verified_cycle": 0,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Located at Kings Walk, Maidstone, ME14 1GQ",
+      "confidence": 80,
+      "sources": [
+        "https://gkniftyheads.blogspot.com/2026/03/the-gkniftyheads-arent-just-surviving.html"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 0,
+      "last_verified_cycle": 0,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "The current real-world headquarters of GKniftyHEADS at Kings Walk, Maidstone, Kent, UK, central to Web3 operations.",
+      "confidence": 80,
+      "sources": [
+        "https://gkniftyheads.blogspot.com/2026/03/the-gkniftyheads-arent-just-surviving.html"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 3,
+      "last_verified_cycle": 3,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "A lore hub in Block Topia where street-art rebellion and blockchain strategies are planned for metaverse dominance.",
+      "confidence": 80,
+      "sources": [
+        "https://gkniftyheads.blogspot.com/2026/03/the-gkniftyheads-arent-just-surviving.html"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 3,
+      "last_verified_cycle": 3,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Bridges physical and digital realms, fueling Crypto Moonboys\u2019 uprising with phygital art and NFT innovations.",
+      "confidence": 80,
+      "sources": [
+        "https://gkniftyheads.blogspot.com/2026/03/the-gkniftyheads-arent-just-surviving.html"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 3,
+      "last_verified_cycle": 3,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "The current real-world headquarters of GKniftyHEADS at Kings Walk, Maidstone, Kent, UK, central to Web3 rebellion operations.",
+      "confidence": 80,
+      "sources": [
+        "https://gkniftyheads.blogspot.com/2026/03/the-gkniftyheads-arent-just-surviving.html"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 5,
+      "last_verified_cycle": 5,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "A lore hub in Block Topia where street-art defiance and blockchain strategies are planned for metaverse dominance and resistance.",
+      "confidence": 80,
+      "sources": [
+        "https://gkniftyheads.blogspot.com/2026/03/the-gkniftyheads-arent-just-surviving.html"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 5,
+      "last_verified_cycle": 5,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Bridges physical and digital realms, fueling the Crypto Moonboys uprising with phygital art and NFT innovations from its fortified walls.",
+      "confidence": 80,
+      "sources": [
+        "https://gkniftyheads.blogspot.com/2026/03/the-gkniftyheads-arent-just-surviving.html"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 5,
+      "last_verified_cycle": 5,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Serves as a strategic bastion, orchestrating events and drops like the 1M free NFTs to empower digital warriors.",
+      "confidence": 80,
+      "sources": [
+        "https://gkniftyheads.blogspot.com/2026/03/the-gkniftyheads-arent-just-surviving.html"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 5,
+      "last_verified_cycle": 5,
+      "status": "VERIFIED"
+    }
+  ],
+  "relationships": [],
+  "timeline": [],
+  "cross_links": []
+}

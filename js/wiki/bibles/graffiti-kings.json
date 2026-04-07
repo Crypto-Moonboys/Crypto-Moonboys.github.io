@@ -1,0 +1,161 @@
+{
+  "entity": "Graffiti Kings",
+  "slug": "graffiti-kings",
+  "generated_at": "2026-03-25T00:14:22.941899+00:00",
+  "mention_count": 10,
+  "all_facts": [
+    {
+      "fact": "Foundational street-art collective",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md",
+        "https://graffitikings.co.uk",
+        "https://gkniftyheads.blogspot.com/2026/03/the-gkniftyheads-arent-just-surviving.html"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 0,
+      "last_verified_cycle": 0,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Evolved into GKniftyHEADS",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md",
+        "https://graffitikings.co.uk",
+        "https://gkniftyheads.blogspot.com/2026/03/the-gkniftyheads-arent-just-surviving.html"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 0,
+      "last_verified_cycle": 0,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Founded by Darren Cullen",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md",
+        "https://graffitikings.co.uk",
+        "https://gkniftyheads.blogspot.com/2026/03/the-gkniftyheads-arent-just-surviving.html"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 0,
+      "last_verified_cycle": 0,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Originated as a street-art collective in 1980s London, founded by Darren Cullen in Croydon, shaping urban culture.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md",
+        "https://graffitikings.co.uk",
+        "https://gkniftyheads.blogspot.com/2026/03/the-gkniftyheads-arent-just-surviving.html"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 3,
+      "last_verified_cycle": 3,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Evolved into the digital rebellion of GKniftyHEADS, bridging physical graffiti with blockchain-based phygital art.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md",
+        "https://graffitikings.co.uk",
+        "https://gkniftyheads.blogspot.com/2026/03/the-gkniftyheads-arent-just-surviving.html"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 3,
+      "last_verified_cycle": 3,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Embodies the defiant spirit of Block Topia, inspiring every NFT mural and metaverse battle in the Crypto Moonboys universe.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md",
+        "https://graffitikings.co.uk",
+        "https://gkniftyheads.blogspot.com/2026/03/the-gkniftyheads-arent-just-surviving.html"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 3,
+      "last_verified_cycle": 3,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Originated as a street-art collective in 1980s London, founded by Darren Cullen in Croydon, shaping urban culture with raw defiance.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md",
+        "https://graffitikings.co.uk",
+        "https://gkniftyheads.blogspot.com/2026/03/the-gkniftyheads-arent-just-surviving.html"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 5,
+      "last_verified_cycle": 5,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Evolved into the digital rebellion of GKniftyHEADS, bridging physical graffiti with blockchain-based phygital art in the Crypto Moonboys universe.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md",
+        "https://graffitikings.co.uk",
+        "https://gkniftyheads.blogspot.com/2026/03/the-gkniftyheads-arent-just-surviving.html"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 5,
+      "last_verified_cycle": 5,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Embodies the unyielding spirit of Block Topia, inspiring every NFT mural and metaverse battle with a legacy of street-art resistance.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md",
+        "https://graffitikings.co.uk",
+        "https://gkniftyheads.blogspot.com/2026/03/the-gkniftyheads-arent-just-surviving.html"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 5,
+      "last_verified_cycle": 5,
+      "status": "VERIFIED"
+    },
+    {
+      "fact": "Serves as the cultural foundation for Web3 initiatives like the 1M free NFTs drop, democratizing rebellion through art and technology.",
+      "confidence": 80,
+      "sources": [
+        "PROJECT-DNA.md",
+        "https://graffitikings.co.uk",
+        "https://gkniftyheads.blogspot.com/2026/03/the-gkniftyheads-arent-just-surviving.html"
+      ],
+      "validated_by": [
+        "legacy_migration"
+      ],
+      "first_seen_cycle": 5,
+      "last_verified_cycle": 5,
+      "status": "VERIFIED"
+    }
+  ],
+  "relationships": [],
+  "timeline": [],
+  "cross_links": []
+}
