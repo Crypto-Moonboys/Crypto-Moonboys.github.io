@@ -194,6 +194,31 @@ def is_stub_file(path: str) -> bool:
         return True
 
 
+def normalize_legacy_paths(html: str) -> str:
+    """Rewrite fragile relative nav/asset paths to root-relative equivalents.
+
+    This function must be called on any HTML content sourced from git history
+    or copied from an older commit before it is written to disk.  Older commits
+    used paths like ``../css/``, ``../js/``, ``../img/``, and ``../index.html``
+    which break when the page is served from a sub-directory such as ``/wiki/``.
+    Applying these replacements ensures legacy files cannot reintroduce fragile
+    relative paths into the repository.
+    """
+    replacements = [
+        ("../index.html",    "/index.html"),
+        ("../search.html",   "/search.html"),
+        ("../articles.html", "/articles.html"),
+        ("../about.html",    "/about.html"),
+        ("../categories/",   "/categories/"),
+        ("../css/",          "/css/"),
+        ("../js/",           "/js/"),
+        ("../img/",          "/img/"),
+    ]
+    for old, new in replacements:
+        html = html.replace(old, new)
+    return html
+
+
 # ---------------------------------------------------------------------------
 # HTML rendering
 # ---------------------------------------------------------------------------
@@ -493,7 +518,11 @@ def main() -> None:
             preserved += 1
             continue
 
-        # Generate a stub only if no real article exists
+        # Generate a stub only if no real article exists.
+        # NOTE: if content is ever sourced from git history (e.g. via
+        # `git show <sha>:wiki/<slug>.html`) rather than freshly rendered here,
+        # call normalize_legacy_paths(html) on it before writing to disk so
+        # that old relative paths (../css/, ../js/, etc.) are not reintroduced.
         html = render_html(
             entity_name=entity_name,
             slug=slug,
