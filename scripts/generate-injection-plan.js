@@ -7,6 +7,9 @@
  * finds candidate anchor text matches (derived from URL slugs),
  * and outputs js/injection-plan.json with up to 3 planned link insertions per page.
  *
+ * Candidate selection uses entity-graph scores (js/entity-graph.json) when
+ * available; falls back to alphabetical order (original keyword/title match).
+ *
  * Rules:
  * - NO HTML modification — script only reads HTML, never writes it.
  * - Scans paragraph/body content only (p, li, .lore-paragraph, .lead-paragraph, etc.)
@@ -24,10 +27,11 @@
 const fs   = require('fs');
 const path = require('path');
 
-const ROOT         = path.resolve(__dirname, '..');
-const LINK_MAP_PATH = path.join(ROOT, 'js', 'link-map.json');
-const OUTPUT_PATH   = path.join(ROOT, 'js', 'injection-plan.json');
-const WIKI_DIR      = path.join(ROOT, 'wiki');
+const ROOT              = path.resolve(__dirname, '..');
+const LINK_MAP_PATH     = path.join(ROOT, 'js', 'link-map.json');
+const ENTITY_GRAPH_PATH = path.join(ROOT, 'js', 'entity-graph.json');
+const OUTPUT_PATH       = path.join(ROOT, 'js', 'injection-plan.json');
+const WIKI_DIR          = path.join(ROOT, 'wiki');
 
 const MAX_PER_PAGE    = 3;
 const SNIPPET_RADIUS  = 60; // chars before/after match
@@ -166,6 +170,13 @@ function main() {
   // Load link-map
   const linkMap = JSON.parse(fs.readFileSync(LINK_MAP_PATH, 'utf8'));
 
+  // Load entity-graph for score-based candidate ranking (optional – falls back
+  // to alphabetical order if the file does not exist yet)
+  let entityGraph = {};
+  if (fs.existsSync(ENTITY_GRAPH_PATH)) {
+    entityGraph = JSON.parse(fs.readFileSync(ENTITY_GRAPH_PATH, 'utf8'));
+  }
+
   const plan = {};
 
   // Sort pages alphabetically for determinism
@@ -191,8 +202,24 @@ function main() {
     const matches = [];
     const usedTargets = new Set();
 
-    // Sort suggested links alphabetically for determinism
-    const sortedLinks = [...suggestedLinks].sort();
+    // Build a score lookup for candidates on this page from entity-graph.
+    // Entity-graph scores are used to rank candidates; ties broken
+    // alphabetically so output remains deterministic.
+    const pageGraphEntry = entityGraph[pageKey];
+    const graphScoreMap  = {};
+    if (pageGraphEntry && Array.isArray(pageGraphEntry.related_pages)) {
+      for (const rel of pageGraphEntry.related_pages) {
+        graphScoreMap[rel.target_url] = rel.score;
+      }
+    }
+
+    // Rank candidates: entity-graph score DESC, then URL ASC (fallback).
+    const sortedLinks = [...suggestedLinks].sort((a, b) => {
+      const scoreA = graphScoreMap[a] || 0;
+      const scoreB = graphScoreMap[b] || 0;
+      if (scoreB !== scoreA) return scoreB - scoreA;
+      return a.localeCompare(b);
+    });
 
     for (const targetUrl of sortedLinks) {
       if (matches.length >= MAX_PER_PAGE) break;
