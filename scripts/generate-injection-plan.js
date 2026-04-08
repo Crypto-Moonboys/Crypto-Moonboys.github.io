@@ -10,10 +10,12 @@
  * Candidate selection uses entity-graph scores (js/entity-graph.json) when
  * available; falls back to alphabetical order (original keyword/title match).
  * Entity-graph scores include authority-weighted boosts (rank_score_boost,
- * authority_score_boost, graph_centrality_boost) from Phase 10 and
+ * authority_score_boost, graph_centrality_boost) from Phase 10,
  * reinforcement boosts (reinforcement_boost, cluster_support_boost,
- * co_citation_boost) from Phase 11, so candidates with higher authority and
- * stronger graph position naturally win limited injection slots.
+ * co_citation_boost) from Phase 11, and freshness/decay adjustments
+ * (freshness_boost, decay_penalty, recency_balance) from Phase 12.
+ * The final_score field from Phase 12 is used for candidate ranking so that
+ * stale dominant targets lose priority and newly-relevant targets can rise.
  *
  * Section-aware placement:
  * - Each candidate match is scored by the section type of the paragraph it
@@ -304,17 +306,20 @@ function main() {
     if (!eligibleParagraphs.length) continue;
 
     // Build a score lookup for candidates on this page from entity-graph.
-    // Entity-graph scores are used to rank candidates; ties broken
-    // alphabetically so output remains deterministic.
+    // Use final_score (Phase 12 freshness-aware score) when available; fall back
+    // to score (Phase 11) so output is deterministic across graph versions.
     const pageGraphEntry = entityGraph[pageKey];
     const graphScoreMap  = {};
     if (pageGraphEntry && Array.isArray(pageGraphEntry.related_pages)) {
       for (const rel of pageGraphEntry.related_pages) {
-        graphScoreMap[rel.target_url] = rel.score;
+        graphScoreMap[rel.target_url] = rel.final_score !== undefined
+          ? rel.final_score
+          : rel.score;
       }
     }
 
-    // Rank candidates: entity-graph score DESC (includes authority + reinforcement),
+    // Rank candidates: freshness-aware entity-graph final_score DESC (Phase 12;
+    // includes authority + reinforcement + freshness/decay),
     // then URL ASC (deterministic fallback).
     const sortedLinks = [...suggestedLinks].sort((a, b) => {
       const scoreA = graphScoreMap[a] || 0;

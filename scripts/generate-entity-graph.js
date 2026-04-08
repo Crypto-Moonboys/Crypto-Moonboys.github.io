@@ -48,6 +48,8 @@
  *  10. reinforcement_boost   – prior graph inbound popularity (+0–5, Phase 11)
  *  11. cluster_support_boost – shared cluster membership in prior graph (+0–3, Phase 11)
  *  12. co_citation_boost     – co-cited by same pages in prior graph (+0–3, Phase 11)
+ *  13. freshness_boost       – strong organic relationship + low prior dominance (+0–4, Phase 12)
+ *  14. decay_penalty         – target over-dominant from prior reinforcement (−0–4, Phase 12)
  *
  * Rules:
  *   - No self-links
@@ -55,7 +57,12 @@
  *   - Authority boosts only applied when base relationship score > 0
  *   - Reinforcement boosts only applied when organic score > 0 (capped at
  *     min(REINFORCE_ABS_MAX, floor(organic_score * REINFORCE_SCORE_CAP_PCT)))
- *   - Output is deterministic: sorted by score DESC, then target_url ASC
+ *   - Freshness boost only applied when organic score > 0 and target has low prior dominance
+ *   - Decay penalty only applied when target has high prior dominance; cannot push final
+ *     score below organic (base) score
+ *   - Combined freshness/decay net adjustment capped at min(RECENCY_ABS_NET_CAP,
+ *     floor(organic_score * RECENCY_NET_CAP_PCT))
+ *   - Output is deterministic: sorted by final_score DESC, then target_url ASC
  *
  * Usage: node scripts/generate-entity-graph.js
  */
@@ -152,6 +159,34 @@ const CO_CITE_MAX     = 3;
 //   and ensures weak targets never outrank strongly related ones just from graph history.
 const REINFORCE_SCORE_CAP_PCT = 0.30;
 const REINFORCE_ABS_MAX       = 10;
+
+// ---------------------------------------------------------------------------
+// Freshness / decay constants (Phase 12 – lifecycle control)
+// ---------------------------------------------------------------------------
+
+// freshness_boost: rewarded when organic relationship is strong but target has not
+//   yet been reinforced by many prior graph runs (low prior inbound popularity).
+//   raw = floor(organicScore / FRESH_DIVISOR), capped at FRESH_BOOST_MAX.
+//   Only applied when organicScore >= FRESH_ORGANIC_MIN AND priorInbound < FRESH_INBOUND_THRESHOLD.
+const FRESH_BOOST_MAX          = 4;
+const FRESH_DIVISOR            = 20;
+const FRESH_ORGANIC_MIN        = 8;   // minimum organic score to earn freshness boost
+const FRESH_INBOUND_THRESHOLD  = 10;  // target priorInbound must be below this
+
+// decay_penalty: applied when target is over-dominant from repeated prior reinforcement
+//   (many pages already list it in their top-N related-pages).
+//   raw = floor(priorInbound / DECAY_DIVISOR), capped at DECAY_PENALTY_MAX.
+//   Only applied when priorInbound >= DECAY_INBOUND_THRESHOLD.
+//   Cannot push final_score below organicScore (organic floor is always preserved).
+const DECAY_PENALTY_MAX        = 4;
+const DECAY_DIVISOR            = 5;
+const DECAY_INBOUND_THRESHOLD  = 15;  // target priorInbound must be at or above this
+
+// Safety cap on combined freshness/decay net adjustment per (source, target) pair.
+//   |recency_balance| ≤ min(RECENCY_ABS_NET_CAP, floor(organicScore * RECENCY_NET_CAP_PCT))
+//   Keeps freshness/decay a controlled minority of the total score.
+const RECENCY_NET_CAP_PCT  = 0.20;
+const RECENCY_ABS_NET_CAP  = 5;
 
 // ---------------------------------------------------------------------------
 // Module-level prior-graph state (populated once in main())
@@ -336,6 +371,74 @@ function computeReinforcementBoosts(srcUrl, tgtUrl, organicScore) {
   return { reinforcement_boost, cluster_support_boost, co_citation_boost, reinforcementReasons };
 }
 
+/**
+ * Compute freshness boost and decay penalty for a (source, target) pair using
+ * prior graph inbound popularity signals (Phase 12).
+ *
+ * freshness_boost: rewarded when this pair has a meaningful organic relationship
+ *   but the target has not yet accumulated high graph inbound popularity —
+ *   indicating a newly-relevant or under-reinforced relationship.
+ *
+ * decay_penalty: applied when the target is already over-dominant in the prior
+ *   graph (many pages list it in their top-N), reducing stale graph centrality.
+ *   Can never push final_score below organicScore (organic floor preserved).
+ *
+ * Both signals are deterministic (no randomness), individually capped, and the
+ * combined net adjustment is capped at a small minority of organicScore.
+ *
+ * @param {string} tgtUrl
+ * @param {number} organicScore  Organic relationship score (base_score)
+ * @param {number} currentScore  Score after organic + authority + reinforcement
+ * @returns {{ freshness_boost, decay_penalty, recency_balance, final_score }}
+ */
+function computeFreshnessDecay(tgtUrl, organicScore, currentScore) {
+  const priorInbound = (priorRelInbound[tgtUrl] || new Set()).size;
+
+  // --- freshness_boost ---
+  // Conditions: strong organic relationship + target not yet graph-dominant.
+  let freshness_boost = 0;
+  if (organicScore >= FRESH_ORGANIC_MIN && priorInbound < FRESH_INBOUND_THRESHOLD) {
+    const raw = Math.floor(organicScore / FRESH_DIVISOR);
+    freshness_boost = Math.min(raw, FRESH_BOOST_MAX);
+  }
+
+  // --- decay_penalty ---
+  // Condition: target has high prior inbound popularity (over-dominant).
+  // Cannot bring currentScore below organicScore (organic floor).
+  let decay_penalty = 0;
+  if (priorInbound >= DECAY_INBOUND_THRESHOLD) {
+    const raw = Math.floor(priorInbound / DECAY_DIVISOR);
+    decay_penalty = Math.min(raw, DECAY_PENALTY_MAX);
+    // Enforce organic floor: decay cannot exceed (currentScore - organicScore)
+    const headroom = currentScore - organicScore;
+    if (headroom > 0) {
+      decay_penalty = Math.min(decay_penalty, headroom);
+    } else {
+      decay_penalty = 0;
+    }
+  }
+
+  // --- net cap: combined adjustment must remain a minority of organicScore ---
+  const netCap = Math.min(RECENCY_ABS_NET_CAP, Math.floor(organicScore * RECENCY_NET_CAP_PCT));
+  let netRaw = freshness_boost - decay_penalty;
+
+  if (netRaw > netCap) {
+    // Freshness is too large — trim it down.
+    freshness_boost = decay_penalty + netCap;
+    netRaw = netCap;
+  } else if (netRaw < -netCap) {
+    // Decay is too large — trim it down (re-check organic floor after trim).
+    decay_penalty = freshness_boost + netCap;
+    netRaw = -netCap;
+  }
+
+  const recency_balance = netRaw;
+  // Apply recency_balance; always respect organic floor.
+  const final_score = Math.max(currentScore + recency_balance, organicScore);
+
+  return { freshness_boost, decay_penalty, recency_balance, final_score };
+}
+
 // ---------------------------------------------------------------------------
 // Main
 // ---------------------------------------------------------------------------
@@ -467,14 +570,19 @@ function main() {
       // These are capped at 30% of organic score and have hard per-boost limits.
       const reinforce = computeReinforcementBoosts(srcUrl, tgtUrl, rel.organicScore);
 
-      const finalScore = rel.score
+      const scoreAfterReinforcement = rel.score
         + reinforce.reinforcement_boost
         + reinforce.cluster_support_boost
         + reinforce.co_citation_boost;
 
+      // Compute freshness boost and decay penalty (Phase 12).
+      // freshness_boost and decay_penalty are deterministic, capped, and keep the
+      // freshness/decay layer as a controlled minority of the total score.
+      const recency = computeFreshnessDecay(tgtUrl, rel.organicScore, scoreAfterReinforcement);
+
       relatedPages.push({
         target_url:             tgtUrl,
-        score:                  finalScore,
+        score:                  scoreAfterReinforcement,
         base_score:             rel.organicScore,
         reasons:                [...rel.reasons, ...reinforce.reinforcementReasons],
         rank_score_boost:       rel.rank_score_boost,
@@ -483,12 +591,29 @@ function main() {
         reinforcement_boost:    reinforce.reinforcement_boost,
         cluster_support_boost:  reinforce.cluster_support_boost,
         co_citation_boost:      reinforce.co_citation_boost,
+        freshness_boost:        recency.freshness_boost,
+        decay_penalty:          recency.decay_penalty,
+        recency_balance:        recency.recency_balance,
+        final_score:            recency.final_score,
+        score_breakdown: {
+          base_score:             rel.organicScore,
+          rank_score_boost:       rel.rank_score_boost,
+          authority_score_boost:  rel.authority_score_boost,
+          graph_centrality_boost: rel.graph_centrality_boost,
+          reinforcement_boost:    reinforce.reinforcement_boost,
+          cluster_support_boost:  reinforce.cluster_support_boost,
+          co_citation_boost:      reinforce.co_citation_boost,
+          freshness_boost:        recency.freshness_boost,
+          decay_penalty:          recency.decay_penalty,
+          recency_balance:        recency.recency_balance,
+          final_score:            recency.final_score,
+        },
       });
     }
 
-    // Sort: highest score first, then target_url alphabetically for determinism
+    // Sort: highest final_score first, then target_url alphabetically for determinism
     relatedPages.sort((a, b) => {
-      if (b.score !== a.score) return b.score - a.score;
+      if (b.final_score !== a.final_score) return b.final_score - a.final_score;
       return a.target_url.localeCompare(b.target_url);
     });
 
