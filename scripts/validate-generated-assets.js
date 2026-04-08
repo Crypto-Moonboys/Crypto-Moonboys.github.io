@@ -194,7 +194,7 @@ function validateWikiIndex() {
     const maxStubScore = Math.max(...stubs.map(e => e.rank_score));
     const minNonStubScore = Math.min(...nonStubs.map(e => e.rank_score));
     assert(
-      maxStubScore < minNonStubScore || minNonStubScore === 0,
+      maxStubScore < minNonStubScore,
       `Stub pages must not outrank real pages. Highest stub score: ${maxStubScore}, lowest non-stub score: ${minNonStubScore}`
     );
   }

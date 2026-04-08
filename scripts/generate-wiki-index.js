@@ -418,9 +418,11 @@ function computeRankScore(signals) {
   if (signals.has_bible) score += 15;
 
   // Stub penalty: stubs must never outrank real pages.
-  if (signals.is_stub) score = score * STUB_SCORE_MULTIPLIER;
-
-  return Math.round(score);
+  // Compute the rounded post-penalty score directly so the delta stored in
+  // rank_diagnostics.stub_penalty_points is unambiguous.
+  const rawScore = score;
+  const finalScore = signals.is_stub ? Math.round(rawScore * STUB_SCORE_MULTIPLIER) : Math.round(rawScore);
+  return finalScore;
 }
 
 function buildRankDiagnostics(signals, rankScore) {
