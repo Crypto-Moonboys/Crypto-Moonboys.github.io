@@ -10,6 +10,13 @@
  * Candidate selection uses entity-graph scores (js/entity-graph.json) when
  * available; falls back to alphabetical order (original keyword/title match).
  *
+ * Section-aware placement:
+ * - Each candidate match is scored by the section type of the paragraph it
+ *   appears in: lead (4) > summary/explainer (3) > lore (2) > list (1) > fallback (0)
+ * - For each target URL, the best-scoring paragraph is chosen; ties broken by
+ *   entity-graph score then by document order (earlier first).
+ * - section_type and placement_score are stored in each plan entry.
+ *
  * Rules:
  * - NO HTML modification — script only reads HTML, never writes it.
  * - Scans paragraph/body content only (p, li, .lore-paragraph, .lead-paragraph, etc.)
@@ -45,6 +52,47 @@ const ANCHOR_BLOCKLIST = new Set([
 ]);
 
 // ---------------------------------------------------------------------------
+// Section-aware placement scoring
+// ---------------------------------------------------------------------------
+
+// Placement scores by section type (higher = better placement)
+const PLACEMENT_SCORES = {
+  lead:      4,
+  summary:   3,
+  explainer: 3,
+  lore:      2,
+  list:      1,
+  fallback:  0,
+};
+
+/**
+ * Determine the section type of a paragraph element.
+ *
+ * @param {string} tag            - Lowercase tag name ('p' or 'li')
+ * @param {string} cls            - Lowercase class attribute value
+ * @param {string} headingText    - Lowercase text of the most recent heading
+ * @param {boolean} isFirstParagraph - True if this is the first <p> in the article
+ * @returns {string} section type key
+ */
+function determineSectionType(tag, cls, headingText, isFirstParagraph) {
+  if (cls.includes('lead'))      return 'lead';
+  if (cls.includes('lore'))      return 'lore';
+  if (cls.includes('summary'))   return 'summary';
+  if (cls.includes('explainer')) return 'explainer';
+  if (tag === 'li')              return 'list';
+
+  // Plain <p> element: use position and nearest heading context
+  if (isFirstParagraph) return 'lead';
+
+  const h = headingText.toLowerCase();
+  if (/summar|overview|tl.?dr/.test(h))                      return 'summary';
+  if (/explain|how it|what is|mechanism|how does/.test(h))   return 'explainer';
+  if (/lore|story|legend|myth|origin|background/.test(h))    return 'lore';
+
+  return 'fallback';
+}
+
+// ---------------------------------------------------------------------------
 // Minimal HTML parser using pure regex (no external deps)
 // ---------------------------------------------------------------------------
 
@@ -70,16 +118,13 @@ function extractArticleBlock(html) {
 }
 
 /**
- * Remove content from block-level tags that should be skipped entirely.
- * Returns the HTML with those blocks replaced by empty string.
+ * Remove content from block-level tags that should be skipped entirely,
+ * but keep heading elements for section-context detection.
  */
-function removeSkippedBlocks(html) {
-  // Remove: script, style, headings, nav, existing <a> links
-  // Also remove TOC elements and <aside> blocks (infoboxes)
+function removeSkippedBlocksKeepHeadings(html) {
   const blockPatterns = [
     /<script[\s\S]*?<\/script\s*>/gi,
     /<style[\s\S]*?<\/style\s*>/gi,
-    /<h[1-6][^>]*>[\s\S]*?<\/h[1-6]\s*>/gi,
     /<nav[^>]*>[\s\S]*?<\/nav\s*>/gi,
     /<aside[^>]*>[\s\S]*?<\/aside\s*>/gi,
     // TOC by id/class/aria-label
@@ -95,32 +140,56 @@ function removeSkippedBlocks(html) {
 }
 
 /**
- * Extract plain text from eligible paragraph-like content only.
- * Returns a flat string of the combined eligible text content.
+ * Extract eligible paragraphs from a wiki page with section-type metadata.
+ *
+ * Returns an array of:
+ *   { text: string, section_type: string, document_order: number }
+ *
+ * Headings are scanned in document order to provide section context for
+ * subsequent plain <p> elements. Skipped blocks (nav, aside, TOC, links)
+ * are stripped before scanning.
  */
-function extractEligibleText(html) {
-  // First, isolate the article content block (avoids header/footer/nav pollution)
+function extractEligibleParagraphs(html) {
   const articleBlock = extractArticleBlock(html);
+  // Keep headings for section-context detection; strip nav/aside/toc/links
+  const content = removeSkippedBlocksKeepHeadings(articleBlock);
 
-  // Then strip skipped inner blocks (headings, nav, aside, existing links, etc.)
-  const stripped = removeSkippedBlocks(articleBlock);
+  const paragraphs = [];
+  let isFirstParagraph = true;
+  let currentHeadingText = '';
 
-  // Collect text from eligible elements:
-  // <p>, <li> elements (both capture groups in the alternation)
-  const eligiblePattern = /<(?:p|li)[^>]*>([\s\S]*?)<\/(?:p|li)>/gi;
-
-  const textParts = [];
+  // Match headings and paragraph-like elements in document order.
+  // Backreference \1 ensures the closing tag matches the opening tag.
+  const elemRe = /<(h[1-6]|p|li)([^>]*?)>([\s\S]*?)<\/\1\s*>/gi;
   let match;
-  while ((match = eligiblePattern.exec(stripped)) !== null) {
-    const inner = match[1] || '';
-    // Strip remaining HTML tags from inner content
+
+  while ((match = elemRe.exec(content)) !== null) {
+    const [, tag, attrs, inner] = match;
+    const tagLower = tag.toLowerCase();
     const text = inner.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
-    if (text.length >= MIN_PARAGRAPH_CHARS) { // skip paragraphs shorter than minimum
-      textParts.push(text);
+
+    // Update heading context; headings are not themselves eligible paragraphs
+    if (/^h[1-6]$/.test(tagLower)) {
+      currentHeadingText = text;
+      continue;
     }
+
+    // Skip paragraphs below minimum length
+    if (text.length < MIN_PARAGRAPH_CHARS) {
+      if (tagLower === 'p') isFirstParagraph = false;
+      continue;
+    }
+
+    const classMatch = attrs.match(/class\s*=\s*["']([^"']*)["']/i);
+    const cls = (classMatch ? classMatch[1] : '').toLowerCase();
+
+    const section_type = determineSectionType(tagLower, cls, currentHeadingText, isFirstParagraph);
+    if (tagLower === 'p') isFirstParagraph = false;
+
+    paragraphs.push({ text, section_type, document_order: paragraphs.length });
   }
 
-  return textParts.join(' ');
+  return paragraphs;
 }
 
 /**
@@ -195,9 +264,9 @@ function main() {
     if (!fs.existsSync(filePath)) continue;
 
     const html = fs.readFileSync(filePath, 'utf8');
-    const eligibleText = extractEligibleText(html);
+    const eligibleParagraphs = extractEligibleParagraphs(html);
 
-    if (!eligibleText) continue;
+    if (!eligibleParagraphs.length) continue;
 
     const matches = [];
     const usedTargets = new Set();
@@ -229,27 +298,50 @@ function main() {
       if (targetUrl === pageKey) continue;
 
       const candidates = deriveAnchorCandidates(targetUrl);
+      const graphScore = graphScoreMap[targetUrl] || 0;
+
+      // Find the best-placed occurrence across all eligible paragraphs.
+      // Priority: placement_score DESC → graph_score (constant per URL) →
+      //           document_order ASC (earlier first).
+      let bestMatch = null;
 
       for (const phrase of candidates) {
-        if (phrase.length < MIN_ANCHOR_CHARS) continue; // skip short anchor phrases
+        if (phrase.length < MIN_ANCHOR_CHARS) continue;
 
         // Skip blocklisted anchor terms
         if (ANCHOR_BLOCKLIST.has(phrase.toLowerCase())) continue;
 
-        const found = findFirstOccurrence(eligibleText, phrase);
-        if (!found) continue;
+        for (const para of eligibleParagraphs) {
+          const found = findFirstOccurrence(para.text, phrase);
+          if (!found) continue;
 
-        const snippet = buildSnippet(eligibleText, found.index, found.matched.length);
+          const placement_score = PLACEMENT_SCORES[para.section_type] || 0;
 
-        matches.push({
-          target_url:      targetUrl,
-          anchor_text:     found.matched,
-          match_type:      'title',
-          context_snippet: snippet,
-        });
+          if (
+            !bestMatch ||
+            placement_score > bestMatch.placement_score ||
+            (placement_score === bestMatch.placement_score &&
+              para.document_order < bestMatch._docOrder)
+          ) {
+            bestMatch = {
+              target_url:      targetUrl,
+              anchor_text:     found.matched,
+              match_type:      'title',
+              section_type:    para.section_type,
+              placement_score,
+              context_snippet: buildSnippet(para.text, found.index, found.matched.length),
+              _docOrder:       para.document_order,
+            };
+          }
+        }
 
+        if (bestMatch) break; // use first candidate phrase that yields any match
+      }
+
+      if (bestMatch) {
+        const { _docOrder, ...entry } = bestMatch;
+        matches.push(entry);
         usedTargets.add(targetUrl);
-        break; // only use first candidate phrase that matches
       }
     }
 
