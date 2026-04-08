@@ -4,8 +4,32 @@ const CONFIG = require('../js/ranking-config.js');
 
 const ROOT = path.join(__dirname, '..');
 const WIKI_DIR = path.join(ROOT, 'wiki');
+const BIBLES_DIR = path.join(WIKI_DIR, 'bibles');
 const OUTPUT = path.join(ROOT, 'js', 'wiki-index.json');
 const SAM_MEMORY_PATH = path.join(ROOT, 'sam-memory.json');
+
+/**
+ * Ranking formula version. Bump this string whenever the scoring formula changes
+ * so consumers can detect stale cached data.
+ */
+const RANK_VERSION = 'v1';
+
+/**
+ * Rank buckets — assigned by score thresholds after all bonuses/penalties.
+ * Stubs are always capped at 'stub' bucket regardless of score.
+ *
+ * primary  : rank_score >= 200
+ * secondary: rank_score >= 80
+ * tertiary : rank_score >= 30
+ * stub     : is_stub === true  OR  rank_score < 30
+ */
+const RANK_BUCKET_THRESHOLDS = { primary: 200, secondary: 80, tertiary: 30 };
+
+/**
+ * Penalty multiplier applied to the raw score when a page is a stub.
+ * Makes it virtually impossible for a stub to outrank a real article.
+ */
+const STUB_SCORE_MULTIPLIER = 0.1;
 
 function walk(dir) {
   let results = [];
@@ -191,6 +215,39 @@ function buildAliases(samEntity) {
   return aliases;
 }
 
+/**
+ * Detects whether an HTML page is a stub.
+ * A page is a stub if it carries the `data-wiki-stub="true"` attribute.
+ */
+function detectIsStub(html) {
+  return /data-wiki-stub=["']true["']/i.test(html);
+}
+
+/**
+ * Returns true if a bible JSON file exists in wiki/bibles/ for this slug.
+ * Bible files live at wiki/bibles/{slug}.json.
+ */
+function detectHasBible(slug) {
+  const biblePath = path.join(BIBLES_DIR, `${slug}.json`);
+  return fs.existsSync(biblePath);
+}
+
+/**
+ * Assigns a rank bucket string based on final score and stub status.
+ *
+ *   'primary'   — rank_score >= 200 (and not a stub)
+ *   'secondary' — rank_score >= 80  (and not a stub)
+ *   'tertiary'  — rank_score >= 30  (and not a stub)
+ *   'stub'      — is_stub === true OR rank_score < 30
+ */
+function computeRankBucket(rankScore, isStub) {
+  if (isStub) return 'stub';
+  if (rankScore >= RANK_BUCKET_THRESHOLDS.primary) return 'primary';
+  if (rankScore >= RANK_BUCKET_THRESHOLDS.secondary) return 'secondary';
+  if (rankScore >= RANK_BUCKET_THRESHOLDS.tertiary) return 'tertiary';
+  return 'stub';
+}
+
 function buildContentSignals(html, title, description, keywords, aliases = []) {
   const text = stripHtml(html);
   const wordCount = text ? text.split(/\s+/).length : 0;
@@ -288,7 +345,7 @@ function computeAuthorityScore(signals) {
   return score;
 }
 
-function buildRankSignals(html, filePath, title, description, keywords, aliases, samEntity) {
+function buildRankSignals(html, filePath, title, description, keywords, aliases, samEntity, slug) {
   const category = detectCategory(filePath, html, samEntity);
   const contentSignals = buildContentSignals(html, title, description, keywords, aliases);
   const contentQualityScore = computeContentQualityScore(contentSignals);
@@ -296,9 +353,13 @@ function buildRankSignals(html, filePath, title, description, keywords, aliases,
   const mentionCount = Number.isFinite(Number(samEntity && samEntity.mention_count))
     ? Number(samEntity.mention_count)
     : 0;
+  const isStub = detectIsStub(html);
+  const hasBible = detectHasBible(slug);
 
   return {
     is_canonical: true,
+    is_stub: isStub,
+    has_bible: hasBible,
     alias_count: aliases.length,
     tag_count: keywords.length,
     mention_count: mentionCount,
@@ -315,6 +376,30 @@ function buildRankSignals(html, filePath, title, description, keywords, aliases,
   };
 }
 
+/**
+ * Rank score formula (generator-owned, deterministic).
+ *
+ * Base:
+ *   + WEIGHTS.canonical (20)    — always awarded to canonical pages
+ *   + WEIGHTS.description (10)  — article has a meta description
+ *   + category_priority × WEIGHTS.category (5)  — higher for core/characters
+ *   + article_word_count × WEIGHTS.word_count (0.05)  — depth bonus
+ *   + keyword_bag_size × WEIGHTS.keyword_bag (1)      — breadth bonus
+ *   + content_quality_score  — tiered bonus for word-count milestones,
+ *                              heading structure, lists (see computeContentQualityScore)
+ *   + authority_score × WEIGHTS.authority (1)  — internal links + depth tiers
+ *                                                (see computeAuthorityScore)
+ *   + alias_count × 3          — cross-reference richness
+ *   + tag_count                — metadata richness
+ *   + mention_count × 2        — SAM-recorded cross-article mentions
+ *
+ * Stub penalty:
+ *   Final score × STUB_SCORE_MULTIPLIER (0.1)  — stubs always rank far below
+ *   real articles; bucket is hard-capped at 'stub'.
+ *
+ * Bible bonus:
+ *   + 15  — article has a published deep-dive bible
+ */
 function computeRankScore(signals) {
   let score = 0;
 
@@ -329,6 +414,11 @@ function computeRankScore(signals) {
   score += signals.alias_count * 3;
   score += signals.tag_count;
   score += signals.mention_count * 2;
+
+  if (signals.has_bible) score += 15;
+
+  // Stub penalty: stubs must never outrank real pages.
+  if (signals.is_stub) score = score * STUB_SCORE_MULTIPLIER;
 
   return Math.round(score);
 }
@@ -350,14 +440,21 @@ function buildRankDiagnostics(signals, rankScore) {
     Math.round(signals.authority_score * CONFIG.WEIGHTS.authority) +
     (signals.mention_count * 2);
 
-  const recomputedScore =
+  const bibleBonusPoints = signals.has_bible ? 15 : 0;
+
+  const prePenaltyScore =
     canonicalPoints +
     descriptionPoints +
     categoryPoints +
     wordCountPoints +
     keywordBagPoints +
     contentQualityPoints +
-    authorityPoints;
+    authorityPoints +
+    bibleBonusPoints;
+
+  // Stub penalty stored as the signed delta so all components always sum to final_rank_score.
+  // For non-stubs this is 0; for stubs it is negative (final = round(raw * 0.1)).
+  const stubPenaltyPoints = rankScore - prePenaltyScore;
 
   return {
     canonical_points: canonicalPoints,
@@ -367,7 +464,9 @@ function buildRankDiagnostics(signals, rankScore) {
     keyword_bag_points: keywordBagPoints,
     content_quality_points: contentQualityPoints,
     authority_points: authorityPoints,
-    final_rank_score: recomputedScore
+    bible_bonus_points: bibleBonusPoints,
+    stub_penalty_points: stubPenaltyPoints,
+    final_rank_score: rankScore
   };
 }
 
@@ -404,19 +503,28 @@ function run() {
     const keywords = Array.from(new Set([...htmlKeywords, ...memoryTags]));
     const aliases = buildAliases(samEntity);
 
-    const rankSignals = buildRankSignals(html, filePath, title, description, keywords, aliases, samEntity);
+    const rankSignals = buildRankSignals(html, filePath, title, description, keywords, aliases, samEntity, slug);
     const rankScore = computeRankScore(rankSignals);
     const rankDiagnostics = buildRankDiagnostics(rankSignals, rankScore);
+    const rankBucket = computeRankBucket(rankDiagnostics.final_rank_score, rankSignals.is_stub);
     const searchIndex = buildSearchIndex(title, description, keywords, aliases);
 
     index.push({
+      slug,
       title,
       desc: description,
       url,
       tags: keywords,
       category: rankSignals.category,
       aliases,
+      mention_count: rankSignals.mention_count,
+      word_count: rankSignals.article_word_count,
+      internal_link_count: rankSignals.internal_link_count,
+      has_bible: rankSignals.has_bible,
+      is_stub: rankSignals.is_stub,
       rank_score: rankDiagnostics.final_rank_score,
+      rank_bucket: rankBucket,
+      rank_version: RANK_VERSION,
       rank_signals: rankSignals,
       rank_diagnostics: rankDiagnostics,
       search_index: searchIndex

@@ -15,6 +15,8 @@ const HOME_PATH = path.join(ROOT, 'index.html');
 
 const REQUIRED_RANK_SIGNAL_KEYS = [
   'is_canonical',
+  'is_stub',
+  'has_bible',
   'alias_count',
   'tag_count',
   'category',
@@ -37,8 +39,12 @@ const REQUIRED_RANK_DIAGNOSTIC_KEYS = [
   'keyword_bag_points',
   'content_quality_points',
   'authority_points',
+  'bible_bonus_points',
+  'stub_penalty_points',
   'final_rank_score'
 ];
+
+const VALID_RANK_BUCKETS = new Set(['primary', 'secondary', 'tertiary', 'stub']);
 
 function readJson(file) {
   return JSON.parse(fs.readFileSync(file, 'utf8'));
@@ -61,6 +67,8 @@ function validateWikiIndex() {
   assert(Array.isArray(wikiIndex), 'js/wiki-index.json must be an array');
   assert(wikiIndex.length > 0, 'js/wiki-index.json is empty');
 
+  const slugsSeen = new Map(); // slug -> first index
+
   for (const [idx, entry] of wikiIndex.entries()) {
     assert(entry && typeof entry === 'object', `wiki-index entry ${idx} is not an object`);
 
@@ -69,6 +77,28 @@ function validateWikiIndex() {
     assert(entry.url !== '/wiki/index.html', `wiki-index entry ${idx} must not include legacy /wiki/index.html`);
     assert(!entry.url.includes('../'), `wiki-index entry ${idx} contains fragile relative url`);
     assert(isNumber(entry.rank_score), `wiki-index entry ${idx} has invalid rank_score`);
+    assert(typeof entry.rank_version === 'string' && entry.rank_version.trim(), `wiki-index entry ${idx} missing rank_version`);
+    assert(typeof entry.rank_bucket === 'string' && VALID_RANK_BUCKETS.has(entry.rank_bucket), `wiki-index entry ${idx} has invalid rank_bucket "${entry.rank_bucket}"`);
+    assert(typeof entry.is_stub === 'boolean', `wiki-index entry ${idx} missing is_stub boolean`);
+    assert(typeof entry.has_bible === 'boolean', `wiki-index entry ${idx} missing has_bible boolean`);
+    assert(typeof entry.slug === 'string' && entry.slug.trim(), `wiki-index entry ${idx} missing slug`);
+    assert(isNumber(entry.mention_count), `wiki-index entry ${idx} missing numeric mention_count`);
+    assert(isNumber(entry.word_count), `wiki-index entry ${idx} missing numeric word_count`);
+    assert(isNumber(entry.internal_link_count), `wiki-index entry ${idx} missing numeric internal_link_count`);
+
+    // Duplicate slug check
+    const slugKey = entry.slug;
+    if (slugsSeen.has(slugKey)) {
+      const firstIdx = slugsSeen.get(slugKey);
+      assert(false, `wiki-index entries ${firstIdx} and ${idx} have duplicate slug "${slugKey}"`);
+    }
+    slugsSeen.set(slugKey, idx);
+
+    // Stub bucket invariant: stubs must carry rank_bucket 'stub'
+    assert(
+      !entry.is_stub || entry.rank_bucket === 'stub',
+      `wiki-index entry ${idx} is_stub but rank_bucket is "${entry.rank_bucket}" (must be "stub")`
+    );
 
     assert(entry.rank_signals && typeof entry.rank_signals === 'object', `wiki-index entry ${idx} missing rank_signals`);
     for (const key of REQUIRED_RANK_SIGNAL_KEYS) {
@@ -81,6 +111,8 @@ function validateWikiIndex() {
     assert(typeof entry.rank_signals.category === 'string' && entry.rank_signals.category.trim(), `wiki-index entry ${idx} has invalid rank_signals.category`);
     assert(isNumber(entry.rank_signals.category_priority), `wiki-index entry ${idx} has invalid rank_signals.category_priority`);
     assert(typeof entry.rank_signals.has_description === 'boolean', `wiki-index entry ${idx} has invalid rank_signals.has_description`);
+    assert(typeof entry.rank_signals.is_stub === 'boolean', `wiki-index entry ${idx} has invalid rank_signals.is_stub`);
+    assert(typeof entry.rank_signals.has_bible === 'boolean', `wiki-index entry ${idx} has invalid rank_signals.has_bible`);
     assert(isNumber(entry.rank_signals.article_word_count), `wiki-index entry ${idx} has invalid rank_signals.article_word_count`);
     assert(isNumber(entry.rank_signals.keyword_bag_size), `wiki-index entry ${idx} has invalid rank_signals.keyword_bag_size`);
     assert(isNumber(entry.rank_signals.heading_count), `wiki-index entry ${idx} has invalid rank_signals.heading_count`);
@@ -103,6 +135,7 @@ function validateWikiIndex() {
       `wiki-index entry ${idx} rank_diagnostics.final_rank_score must equal rank_score`
     );
 
+    // All diagnostic components (including bible bonus and stub penalty) must sum to rank_score.
     const recomputedScore =
       entry.rank_diagnostics.canonical_points +
       entry.rank_diagnostics.description_points +
@@ -110,11 +143,23 @@ function validateWikiIndex() {
       entry.rank_diagnostics.word_count_points +
       entry.rank_diagnostics.keyword_bag_points +
       entry.rank_diagnostics.content_quality_points +
-      entry.rank_diagnostics.authority_points;
+      entry.rank_diagnostics.authority_points +
+      entry.rank_diagnostics.bible_bonus_points +
+      entry.rank_diagnostics.stub_penalty_points;
 
     assert(
       recomputedScore === entry.rank_score,
       `wiki-index entry ${idx} rank diagnostics sum (${recomputedScore}) does not equal rank_score (${entry.rank_score})`
+    );
+
+    // Stub penalty must be non-positive; real pages must have zero penalty.
+    assert(
+      entry.rank_diagnostics.stub_penalty_points <= 0,
+      `wiki-index entry ${idx} stub_penalty_points must be <= 0 (got ${entry.rank_diagnostics.stub_penalty_points})`
+    );
+    assert(
+      entry.is_stub || entry.rank_diagnostics.stub_penalty_points === 0,
+      `wiki-index entry ${idx} non-stub page has non-zero stub_penalty_points (${entry.rank_diagnostics.stub_penalty_points})`
     );
 
     assert(entry.search_index && typeof entry.search_index === 'object', `wiki-index entry ${idx} missing search_index`);
@@ -138,6 +183,20 @@ function validateWikiIndex() {
         ensureFile(aliasPath);
       }
     }
+  }
+
+  // Cross-entry check: stubs must never outrank non-stubs.
+  // We allow a small tolerance for edge cases where a stub has marginally higher raw signals
+  // but the penalty should ensure it never matches a real article.
+  const stubs = wikiIndex.filter(e => e.is_stub);
+  const nonStubs = wikiIndex.filter(e => !e.is_stub);
+  if (stubs.length > 0 && nonStubs.length > 0) {
+    const maxStubScore = Math.max(...stubs.map(e => e.rank_score));
+    const minNonStubScore = Math.min(...nonStubs.map(e => e.rank_score));
+    assert(
+      maxStubScore < minNonStubScore || minNonStubScore === 0,
+      `Stub pages must not outrank real pages. Highest stub score: ${maxStubScore}, lowest non-stub score: ${minNonStubScore}`
+    );
   }
 
   console.log(`wiki-index.json validated (${wikiIndex.length} entries) ✅`);

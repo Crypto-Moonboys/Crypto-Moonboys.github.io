@@ -102,6 +102,61 @@ These:
 
 ---
 
+### 🏆 Ranking Rule (Enforced by CI)
+
+> **Ranking is generated in build scripts, not in frontend runtime.**
+> `js/wiki.js` may consume `rank_score` but must not compute its own authority logic.
+
+All article ranking is **fully deterministic** and owned exclusively by `scripts/generate-wiki-index.js`.
+
+#### What the generator produces (per article entry in `js/wiki-index.json`)
+
+| Field | Description |
+|-------|-------------|
+| `rank_score` | Final numeric score (integer). Primary sort key. |
+| `rank_bucket` | `"primary"` / `"secondary"` / `"tertiary"` / `"stub"` |
+| `rank_version` | Formula version string (e.g. `"v1"`) — bump when formula changes |
+| `is_stub` | `true` if page carries `data-wiki-stub="true"` |
+| `has_bible` | `true` if `wiki/bibles/{slug}.json` exists |
+| `mention_count` | Cross-article mention count from SAM memory |
+| `word_count` | Article body word count |
+| `internal_link_count` | Number of internal `/wiki/` links in the page |
+
+#### Rank formula summary (v1)
+
+```
+base = canonical(20) + description(10) + category_priority×5
+     + word_count×0.05 + keyword_bag×1
+     + content_quality_score   (tiered word/heading/list bonuses)
+     + authority_score×1       (tiered internal-link + depth bonuses)
+     + alias_count×3 + tag_count + mention_count×2
+
+bible bonus  = +15 if has_bible
+stub penalty = base × 0.1 if is_stub  (stubs always rank far below real pages)
+
+rank_score   = round(final)
+rank_bucket  = "stub" if is_stub or score<30
+             | "tertiary" if score<80
+             | "secondary" if score<200
+             | "primary"
+```
+
+#### What `js/wiki.js` MUST do
+
+* Sort using `rank_score` (pre-computed) as the primary key
+* Fall back to `title` asc then `url` asc for ties
+
+#### What `js/wiki.js` MUST NOT do
+
+* Compute content importance, popularity, or freshness scores
+* Define `CATEGORY_PRIORITY` maps or scoring weights
+* Multiply `article_word_count`, `keyword_bag_size`, or `authority_score` into a local score
+* Implement any "smart ranking" fallback heuristic
+
+A CI step (`Guard frontend ranking drift`) fails the build if any forbidden pattern is found in `js/wiki.js`.
+
+---
+
 ### 4. Publisher (CONTROLLED GENERATOR)
 
 ```

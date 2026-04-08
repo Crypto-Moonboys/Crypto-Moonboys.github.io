@@ -1,6 +1,13 @@
 /**
  * Crypto Moonboys Wiki — Main JavaScript
  * Client-side search, sidebar toggle, ranking debug, and UI helpers.
+ *
+ * RANKING RULE (enforced by CI):
+ *   This file must NOT compute article importance, popularity, or freshness scores.
+ *   All ranking is pre-computed by scripts/generate-wiki-index.js and stored in
+ *   js/wiki-index.json as `rank_score`, `rank_bucket`, and `rank_version`.
+ *   Sorting uses `rank_score` (pre-computed) as the primary key.
+ *   `scoreResult` may compute query-relevance scores for search matching only.
  */
 
 function resolveWikiUrl(url) {
