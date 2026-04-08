@@ -10,6 +10,7 @@
  *   js/wiki-index.json   – per-page rank signals and link_score
  *   js/link-map.json     – per-page existing_links arrays
  *   js/link-graph.json   – per-page inbound/outbound link counts (graph centrality)
+ *   js/entity-graph.json – prior graph state for reinforcement signals (Phase 11)
  *
  * Output shape (js/entity-graph.json):
  * {
@@ -18,10 +19,14 @@
  *       {
  *         "target_url": "/wiki/other.html",
  *         "score": 123,
+ *         "base_score": 40,
  *         "reasons": ["same_category:factions", ...],
  *         "rank_score_boost": 7,
  *         "authority_score_boost": 5,
- *         "graph_centrality_boost": 2
+ *         "graph_centrality_boost": 2,
+ *         "reinforcement_boost": 3,
+ *         "cluster_support_boost": 1,
+ *         "co_citation_boost": 1
  *       },
  *       ...
  *     ]
@@ -40,11 +45,16 @@
  *   7. rank_score_boost   – target page rank_score quality (+0–10)
  *   8. authority_score_boost – target inbound link authority (+0–15)
  *   9. graph_centrality_boost – target graph centrality via inbound count (+0–8)
+ *  10. reinforcement_boost   – prior graph inbound popularity (+0–5, Phase 11)
+ *  11. cluster_support_boost – shared cluster membership in prior graph (+0–3, Phase 11)
+ *  12. co_citation_boost     – co-cited by same pages in prior graph (+0–3, Phase 11)
  *
  * Rules:
  *   - No self-links
  *   - No duplicates
  *   - Authority boosts only applied when base relationship score > 0
+ *   - Reinforcement boosts only applied when organic score > 0 (capped at
+ *     min(REINFORCE_ABS_MAX, floor(organic_score * REINFORCE_SCORE_CAP_PCT)))
  *   - Output is deterministic: sorted by score DESC, then target_url ASC
  *
  * Usage: node scripts/generate-entity-graph.js
@@ -61,6 +71,7 @@ const WIKI_INDEX_PATH = path.join(ROOT, 'js', 'wiki-index.json');
 const LINK_MAP_PATH   = path.join(ROOT, 'js', 'link-map.json');
 const LINK_GRAPH_PATH = path.join(ROOT, 'js', 'link-graph.json');
 const OUTPUT_PATH     = path.join(ROOT, 'js', 'entity-graph.json');
+const PRIOR_GRAPH_PATH = OUTPUT_PATH; // read existing output as reinforcement input
 
 // ---------------------------------------------------------------------------
 // Tag classification
@@ -112,6 +123,47 @@ const CENTRALITY_TIERS = [
 ];
 
 // ---------------------------------------------------------------------------
+// Reinforcement signal constants (Phase 11 – feedback loop)
+// ---------------------------------------------------------------------------
+
+// Only consider the top-N related_pages from the prior graph when building
+// reinforcement data structures.  A smaller window keeps signals tight and
+// avoids noise from low-relevance relationships.
+const PRIOR_GRAPH_TOP_N = 15;
+
+// reinforcement_boost: floor(prior_top_N_inbound_count / divisor), capped at max
+//   Measures how many other pages already list this target in their top-N related.
+const REINFORCE_DIVISOR = 20;
+const REINFORCE_MAX     = 5;
+
+// cluster_support_boost: floor(shared_neighbour_count / divisor), capped at max
+//   Measures overlap between source and target's top-N neighbourhoods (cluster cohesion).
+const CLUSTER_DIVISOR = 3;
+const CLUSTER_MAX     = 3;
+
+// co_citation_boost: floor(co_cited_by_count / divisor), capped at max
+//   Measures how many pages co-cite both source and target in their top-N related lists.
+const CO_CITE_DIVISOR = 2;
+const CO_CITE_MAX     = 3;
+
+// Safety cap on total reinforcement per (source, target) pair.
+//   Total ≤ min(REINFORCE_ABS_MAX, floor(organic_score * REINFORCE_SCORE_CAP_PCT))
+//   This prevents reinforcement from overpowering genuine organic relationships
+//   and ensures weak targets never outrank strongly related ones just from graph history.
+const REINFORCE_SCORE_CAP_PCT = 0.30;
+const REINFORCE_ABS_MAX       = 10;
+
+// ---------------------------------------------------------------------------
+// Module-level prior-graph state (populated once in main())
+// ---------------------------------------------------------------------------
+
+// url → Set of pages that include this url in their top-N related_pages
+let priorRelInbound = {};
+
+// url → Set of top-N target urls in that url's prior related_pages
+let priorRelatedSets = {};
+
+// ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
 
@@ -127,17 +179,20 @@ function contentTags(entityEntry) {
 }
 
 /**
- * Compute score + reasons for a (source, target) pair.
+ * Compute organic score + reasons for a (source, target) pair.
  * tgtBoosts contains pre-computed authority boost fields for the target URL.
- * Returns null if base relationship score === 0 (no organic relationship).
+ * Returns null if organic relationship score === 0 (no real relationship).
+ *
+ * @returns {{ score, organicScore, reasons, rank_score_boost,
+ *             authority_score_boost, graph_centrality_boost } | null}
  */
 function computeRelationship(srcEntry, tgtEntry, srcLinks, tgtLinks, tgtBoosts) {
-  let score = 0;
+  let organicScore = 0;
   const reasons = [];
 
   // 1 / 5 – same category (covers "same faction" and "same category")
   if (srcEntry.category && srcEntry.category === tgtEntry.category) {
-    score += SCORE_SAME_CATEGORY;
+    organicScore += SCORE_SAME_CATEGORY;
     reasons.push(`same_category:${srcEntry.category}`);
   }
 
@@ -147,7 +202,7 @@ function computeRelationship(srcEntry, tgtEntry, srcLinks, tgtLinks, tgtBoosts) 
   // 2 – same storyline / event
   for (const t of srcTags) {
     if (EVENT_TAGS.has(t) && tgtTags.has(t)) {
-      score += SCORE_EVENT_TAG;
+      organicScore += SCORE_EVENT_TAG;
       reasons.push(`same_event_tag:${t}`);
     }
   }
@@ -155,7 +210,7 @@ function computeRelationship(srcEntry, tgtEntry, srcLinks, tgtLinks, tgtBoosts) 
   // 3 – same location
   for (const t of srcTags) {
     if (LOCATION_TAGS.has(t) && tgtTags.has(t)) {
-      score += SCORE_LOCATION_TAG;
+      organicScore += SCORE_LOCATION_TAG;
       reasons.push(`same_location_tag:${t}`);
     }
   }
@@ -163,7 +218,7 @@ function computeRelationship(srcEntry, tgtEntry, srcLinks, tgtLinks, tgtBoosts) 
   // 4 – shared entity / character tags (non-generic, non-event, non-location)
   for (const t of srcTags) {
     if (!EVENT_TAGS.has(t) && !LOCATION_TAGS.has(t) && tgtTags.has(t)) {
-      score += SCORE_ENTITY_TAG;
+      organicScore += SCORE_ENTITY_TAG;
       reasons.push(`shared_tag:${t}`);
     }
   }
@@ -174,16 +229,17 @@ function computeRelationship(srcEntry, tgtEntry, srcLinks, tgtLinks, tgtBoosts) 
     if (tgtLinks.has(u)) overlapCount++;
   }
   if (overlapCount > 0) {
-    score += overlapCount * SCORE_LINK_OVERLAP;
+    organicScore += overlapCount * SCORE_LINK_OVERLAP;
     reasons.push(`link_overlap:${overlapCount}`);
   }
 
-  // Only include authority boosts when there is an organic relationship
-  if (score === 0) return null;
+  // Only include authority / reinforcement boosts when there is an organic relationship
+  if (organicScore === 0) return null;
 
   // 7–9 – authority boosts for the target page
   const { rank_score_boost, authority_score_boost, graph_centrality_boost } = tgtBoosts;
 
+  let score = organicScore;
   if (rank_score_boost > 0) {
     score += rank_score_boost;
     reasons.push(`rank_score_boost:${rank_score_boost}`);
@@ -197,7 +253,87 @@ function computeRelationship(srcEntry, tgtEntry, srcLinks, tgtLinks, tgtBoosts) 
     reasons.push(`graph_centrality_boost:${graph_centrality_boost}`);
   }
 
-  return { score, reasons, rank_score_boost, authority_score_boost, graph_centrality_boost };
+  return {
+    score,
+    organicScore,
+    reasons,
+    rank_score_boost,
+    authority_score_boost,
+    graph_centrality_boost,
+  };
+}
+
+/**
+ * Compute controlled reinforcement boosts for a (source, target) pair using
+ * the prior entity-graph state.
+ *
+ * All three boosts are:
+ *   - Capped individually at their own hard limits
+ *   - Capped collectively at min(REINFORCE_ABS_MAX, floor(organicScore * PCT))
+ *   - Only applied when organicScore > 0 (caller enforces this)
+ *   - Entirely deterministic (no randomness)
+ *
+ * @param {string} srcUrl
+ * @param {string} tgtUrl
+ * @param {number} organicScore  Organic relationship score (before any boosts)
+ * @returns {{ reinforcement_boost, cluster_support_boost, co_citation_boost,
+ *             reinforcementReasons: string[] }}
+ */
+function computeReinforcementBoosts(srcUrl, tgtUrl, organicScore) {
+  // Safety cap on total reinforcement relative to organic relationship strength.
+  // floor(organicScore * PCT) means: for organic=8 → cap=2; organic=40 → cap=12 (→ ABS_MAX).
+  const pctCap = Math.floor(organicScore * REINFORCE_SCORE_CAP_PCT);
+  const maxTotal = Math.min(REINFORCE_ABS_MAX, pctCap);
+
+  // If organic score is too weak to allow any reinforcement, bail early.
+  if (maxTotal <= 0) {
+    return { reinforcement_boost: 0, cluster_support_boost: 0, co_citation_boost: 0, reinforcementReasons: [] };
+  }
+
+  // 10 – reinforcement_boost: prior graph inbound popularity of the target.
+  //   How many other pages (excluding source) already list target in their top-N
+  //   related pages.  Rewards targets that are organically popular across the graph.
+  const tgtInbound = priorRelInbound[tgtUrl] || new Set();
+  const inboundCount = tgtInbound.has(srcUrl) ? tgtInbound.size - 1 : tgtInbound.size;
+  let reinforcement_boost = Math.min(Math.floor(inboundCount / REINFORCE_DIVISOR), REINFORCE_MAX);
+
+  // 11 – cluster_support_boost: neighbourhood overlap between source and target.
+  //   Counts how many URLs appear in both the source's and the target's top-N
+  //   related-page sets (shared neighbours = cluster cohesion).
+  const srcRel = priorRelatedSets[srcUrl] || new Set();
+  const tgtRel = priorRelatedSets[tgtUrl] || new Set();
+  let clusterOverlap = 0;
+  for (const url of srcRel) {
+    if (url !== tgtUrl && tgtRel.has(url)) clusterOverlap++;
+  }
+  let cluster_support_boost = Math.min(Math.floor(clusterOverlap / CLUSTER_DIVISOR), CLUSTER_MAX);
+
+  // 12 – co_citation_boost: how many pages co-cite both source and target.
+  //   Intersection of pages that have src in their top-N AND pages that have
+  //   tgt in their top-N.  Co-cited pairs share context across the graph.
+  const srcInbound = priorRelInbound[srcUrl] || new Set();
+  const tgtInboundSet = priorRelInbound[tgtUrl] || new Set();
+  let coCiteCount = 0;
+  for (const pageUrl of srcInbound) {
+    if (pageUrl !== tgtUrl && tgtInboundSet.has(pageUrl)) coCiteCount++;
+  }
+  let co_citation_boost = Math.min(Math.floor(coCiteCount / CO_CITE_DIVISOR), CO_CITE_MAX);
+
+  // Apply collective safety cap: scale down proportionally if sum exceeds cap.
+  const totalRaw = reinforcement_boost + cluster_support_boost + co_citation_boost;
+  if (totalRaw > maxTotal && totalRaw > 0) {
+    const factor = maxTotal / totalRaw;
+    reinforcement_boost  = Math.floor(reinforcement_boost  * factor);
+    cluster_support_boost = Math.floor(cluster_support_boost * factor);
+    co_citation_boost     = Math.floor(co_citation_boost     * factor);
+  }
+
+  const reinforcementReasons = [];
+  if (reinforcement_boost  > 0) reinforcementReasons.push(`reinforcement_boost:${reinforcement_boost}`);
+  if (cluster_support_boost > 0) reinforcementReasons.push(`cluster_support_boost:${cluster_support_boost}`);
+  if (co_citation_boost     > 0) reinforcementReasons.push(`co_citation_boost:${co_citation_boost}`);
+
+  return { reinforcement_boost, cluster_support_boost, co_citation_boost, reinforcementReasons };
 }
 
 // ---------------------------------------------------------------------------
@@ -209,6 +345,38 @@ function main() {
   const wikiIndex  = JSON.parse(fs.readFileSync(WIKI_INDEX_PATH, 'utf8'));
   const linkMap    = JSON.parse(fs.readFileSync(LINK_MAP_PATH,   'utf8'));
   const linkGraph  = JSON.parse(fs.readFileSync(LINK_GRAPH_PATH, 'utf8'));
+
+  // ---------------------------------------------------------------------------
+  // Load prior graph and build reinforcement data structures (Phase 11)
+  // ---------------------------------------------------------------------------
+  // priorRelInbound[url]  = Set of pages whose top-N related_pages include url
+  // priorRelatedSets[url] = Set of the top-N target urls from url's related_pages
+  //
+  // Both are built from the current entity-graph.json before we overwrite it,
+  // forming a controlled single-step feedback loop.
+  if (fs.existsSync(PRIOR_GRAPH_PATH)) {
+    const priorGraph = JSON.parse(fs.readFileSync(PRIOR_GRAPH_PATH, 'utf8'));
+    for (const [srcUrl, data] of Object.entries(priorGraph)) {
+      // Sort by base_score (organic relationship quality) when available, falling
+      // back to score.  Using the organic-only base_score for top-N selection
+      // ensures the priorRelInbound and priorRelatedSets sets are stable across
+      // successive runs: reinforcement boosts never shift which neighbours are
+      // considered "top-N", so the feedback loop converges deterministically.
+      const relPages = data.related_pages || [];
+      const sorted = relPages.slice().sort((a, b) => {
+        const bBase = b.base_score !== undefined ? b.base_score : b.score;
+        const aBase = a.base_score !== undefined ? a.base_score : a.score;
+        if (bBase !== aBase) return bBase - aBase;
+        return a.target_url.localeCompare(b.target_url);
+      });
+      const topRel = sorted.slice(0, PRIOR_GRAPH_TOP_N);
+      priorRelatedSets[srcUrl] = new Set(topRel.map(r => r.target_url));
+      for (const rel of topRel) {
+        if (!priorRelInbound[rel.target_url]) priorRelInbound[rel.target_url] = new Set();
+        priorRelInbound[rel.target_url].add(srcUrl);
+      }
+    }
+  }
 
   // Build url → entity-map entry lookup
   const entityByUrl = {};
@@ -291,16 +459,30 @@ function main() {
       const tgtBoosts = authorityBoosts[tgtUrl] || {
         rank_score_boost: 0, authority_score_boost: 0, graph_centrality_boost: 0,
       };
+
       const rel = computeRelationship(srcEntity, tgtEntity, srcLinks, tgtLinks, tgtBoosts);
       if (!rel) continue;
 
+      // Compute reinforcement boosts from prior graph state (Phase 11).
+      // These are capped at 30% of organic score and have hard per-boost limits.
+      const reinforce = computeReinforcementBoosts(srcUrl, tgtUrl, rel.organicScore);
+
+      const finalScore = rel.score
+        + reinforce.reinforcement_boost
+        + reinforce.cluster_support_boost
+        + reinforce.co_citation_boost;
+
       relatedPages.push({
-        target_url:            tgtUrl,
-        score:                 rel.score,
-        reasons:               rel.reasons,
-        rank_score_boost:      rel.rank_score_boost,
-        authority_score_boost: rel.authority_score_boost,
+        target_url:             tgtUrl,
+        score:                  finalScore,
+        base_score:             rel.organicScore,
+        reasons:                [...rel.reasons, ...reinforce.reinforcementReasons],
+        rank_score_boost:       rel.rank_score_boost,
+        authority_score_boost:  rel.authority_score_boost,
         graph_centrality_boost: rel.graph_centrality_boost,
+        reinforcement_boost:    reinforce.reinforcement_boost,
+        cluster_support_boost:  reinforce.cluster_support_boost,
+        co_citation_boost:      reinforce.co_citation_boost,
       });
     }
 
