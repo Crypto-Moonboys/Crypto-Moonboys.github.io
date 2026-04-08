@@ -8,6 +8,8 @@
  * Rules:
  * - ONLY injects inside <article class="wiki-content"> blocks
  * - Skips text inside: <a>, h1-h6, <script>, <style>, <nav>, <aside>
+ * - Respects section_type from the injection plan: tries to inject in the
+ *   planned section first; falls back to first valid occurrence if needed
  * - Injects ONLY the FIRST qualifying match per (page, target_url) pair
  * - Skips injection if target_url is already linked in the article block
  * - Idempotent: running twice does not add duplicate links
@@ -106,19 +108,43 @@ function buildAnchorRegex(anchorText) {
 }
 
 /**
- * Inject one link (<a href="targetUrl">anchorText</a>) into articleHtml.
+ * Determine the section type of a <p> or <li> element from its opening tag.
  *
- * Replaces only the FIRST occurrence of anchorText (case-insensitive, whole-
- * word boundaries where applicable) that sits in a plain text node outside
- * any restricted element.
+ * @param {string} tagName        - Lowercase tag name ('p' or 'li')
+ * @param {string} classAttr      - Value of the class attribute (may be empty)
+ * @param {boolean} isFirstParagraph - True if this is the first <p> seen outside restricted blocks
+ * @returns {string} section_type key
+ */
+function detectSectionType(tagName, classAttr, isFirstParagraph) {
+  const cls = (classAttr || '').toLowerCase();
+  if (cls.includes('lead'))      return 'lead';
+  if (cls.includes('lore'))      return 'lore';
+  if (cls.includes('summary'))   return 'summary';
+  if (cls.includes('explainer')) return 'explainer';
+  if (tagName === 'li')          return 'list';
+  if (tagName === 'p' && isFirstParagraph) return 'lead';
+  return 'fallback';
+}
+
+/**
+ * Core injection worker.
+ *
+ * Iterates tokens of articleHtml and injects one link at the first valid
+ * text node that satisfies:
+ *   1. Not inside a restricted element (RESTRICTED_TAGS)
+ *   2. If requiredSectionType is non-null, the text node must be inside a
+ *      <p> or <li> whose detected section type matches requiredSectionType.
  *
  * Returns { html: string, injected: boolean }.
  */
-function injectLink(articleHtml, anchorText, targetUrl) {
-  const tokens    = tokenise(articleHtml);
-  const anchorRe  = buildAnchorRegex(anchorText);
+function injectLinkCore(articleHtml, anchorText, targetUrl, requiredSectionType) {
+  const tokens   = tokenise(articleHtml);
+  const anchorRe = buildAnchorRegex(anchorText);
 
-  let restrictedDepth = 0;
+  let restrictedDepth   = 0;
+  let sectionElemDepth  = 0;
+  let currentSectionType = null;
+  let isFirstParagraph  = true;
   let injected = false;
   const parts  = [];
 
@@ -130,6 +156,7 @@ function injectLink(articleHtml, anchorText, targetUrl) {
         const isClose     = tok.value.startsWith('</');
         const isSelfClose = /\/>$/.test(tok.value);
 
+        // --- Restricted-tag depth tracking ---
         if (RESTRICTED_TAGS.has(tagName)) {
           if (isClose) {
             restrictedDepth = Math.max(0, restrictedDepth - 1);
@@ -137,24 +164,44 @@ function injectLink(articleHtml, anchorText, targetUrl) {
             restrictedDepth += 1;
           }
         }
+
+        // --- Section-element depth tracking (only outside restricted blocks) ---
+        if (tagName === 'p' || tagName === 'li') {
+          if (!isClose && !isSelfClose && restrictedDepth === 0) {
+            if (sectionElemDepth === 0) {
+              // Entering a new top-level section element – determine its type
+              const classM = tok.value.match(/class\s*=\s*["']([^"']*)["']/i);
+              const cls    = classM ? classM[1] : '';
+              currentSectionType = detectSectionType(tagName, cls, isFirstParagraph);
+              if (tagName === 'p') isFirstParagraph = false;
+            }
+            sectionElemDepth++;
+          } else if (isClose && restrictedDepth === 0 && sectionElemDepth > 0) {
+            sectionElemDepth--;
+            if (sectionElemDepth === 0) currentSectionType = null;
+          }
+        }
       }
       parts.push(tok.value);
       continue;
     }
 
-    // text node — only attempt replacement when outside restricted elements
+    // --- Text node ---
     if (!injected && restrictedDepth === 0) {
-      const m = anchorRe.exec(tok.value);
-      if (m) {
-        const matched = m[0];
-        const idx     = m.index;
-        parts.push(
-          tok.value.slice(0, idx) +
-          `<a href="${targetUrl}">${matched}</a>` +
-          tok.value.slice(idx + matched.length),
-        );
-        injected = true;
-        continue;
+      const sectionOk = !requiredSectionType || currentSectionType === requiredSectionType;
+      if (sectionOk) {
+        const m = anchorRe.exec(tok.value);
+        if (m) {
+          const matched = m[0];
+          const idx     = m.index;
+          parts.push(
+            tok.value.slice(0, idx) +
+            `<a href="${targetUrl}">${matched}</a>` +
+            tok.value.slice(idx + matched.length),
+          );
+          injected = true;
+          continue;
+        }
       }
     }
 
@@ -162,6 +209,32 @@ function injectLink(articleHtml, anchorText, targetUrl) {
   }
 
   return { html: parts.join(''), injected };
+}
+
+/**
+ * Inject one link into articleHtml, respecting the planned section type.
+ *
+ * Strategy:
+ *   1. If plannedSectionType is a specific section (not 'fallback' / absent),
+ *      first attempt injection only within elements of that section type.
+ *   2. If that yields no injection (section not found or anchor absent there),
+ *      fall back to the first valid occurrence anywhere in the article.
+ *
+ * Returns { html: string, injected: boolean }.
+ */
+function injectLink(articleHtml, anchorText, targetUrl, plannedSectionType) {
+  const targetSection =
+    plannedSectionType && plannedSectionType !== 'fallback'
+      ? plannedSectionType
+      : null;
+
+  if (targetSection) {
+    const result = injectLinkCore(articleHtml, anchorText, targetUrl, targetSection);
+    if (result.injected) return result;
+  }
+
+  // Fallback: first valid occurrence regardless of section type
+  return injectLinkCore(articleHtml, anchorText, targetUrl, null);
 }
 
 // ---------------------------------------------------------------------------
@@ -214,7 +287,7 @@ function main() {
         continue;
       }
 
-      const result = injectLink(content, anchorText, targetUrl);
+      const result = injectLink(content, anchorText, targetUrl, entry.section_type);
       if (result.injected) {
         content = result.html;
         fileInjected++;
