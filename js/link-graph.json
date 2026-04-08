@@ -125,11 +125,9 @@
     "inbound_from": []
   },
   "/wiki/1m-free-nfts.html": {
-    "outbound_count": 10,
-    "inbound_count": 1,
-    "existing_outbound": [
-      "/wiki/1m-free-nfts.html"
-    ],
+    "outbound_count": 9,
+    "inbound_count": 0,
+    "existing_outbound": [],
     "suggested_outbound": [
       "/wiki/1m-free-nfts-drop.html",
       "/wiki/1m-free-nfts-program.html",
@@ -141,9 +139,7 @@
       "/wiki/one-million-free-nfts.html",
       "/wiki/xrp-kids-genesis-nfts.html"
     ],
-    "inbound_from": [
-      "/wiki/1m-free-nfts.html"
-    ]
+    "inbound_from": []
   },
   "/wiki/2025-metaverse-launch-party.html": {
     "outbound_count": 40,
@@ -735,10 +731,9 @@
     "inbound_from": []
   },
   "/wiki/bitcoin.html": {
-    "outbound_count": 29,
-    "inbound_count": 157,
+    "outbound_count": 28,
+    "inbound_count": 156,
     "existing_outbound": [
-      "/wiki/bitcoin.html",
       "/wiki/diamond-hands.html",
       "/wiki/ethereum.html",
       "/wiki/hodl-warriors.html",
@@ -784,7 +779,6 @@
       "/wiki/bit-cap-5000.html",
       "/wiki/bitcoin-btc.html",
       "/wiki/bitcoin-kid-army.html",
-      "/wiki/bitcoin.html",
       "/wiki/block-node-defenders.html",
       "/wiki/blockchain.html",
       "/wiki/bone-idol-ink.html",
@@ -1576,11 +1570,10 @@
     "inbound_from": []
   },
   "/wiki/diamond-hands.html": {
-    "outbound_count": 34,
-    "inbound_count": 148,
+    "outbound_count": 33,
+    "inbound_count": 147,
     "existing_outbound": [
       "/wiki/bitcoin.html",
-      "/wiki/diamond-hands.html",
       "/wiki/ethereum.html",
       "/wiki/hodl-warriors.html",
       "/wiki/hodl-wars.html",
@@ -1638,7 +1631,6 @@
       "/wiki/darren-cullen-ser.html",
       "/wiki/decentraland-events.html",
       "/wiki/delicious-again-pete.html",
-      "/wiki/diamond-hands.html",
       "/wiki/dragan-volkov.html",
       "/wiki/elder-codex-7.html",
       "/wiki/fomo-plague.html",
@@ -1794,17 +1786,13 @@
     "inbound_from": []
   },
   "/wiki/dream-sovereign.html": {
-    "outbound_count": 2,
-    "inbound_count": 1,
-    "existing_outbound": [
-      "/wiki/dream-sovereign.html"
-    ],
+    "outbound_count": 1,
+    "inbound_count": 0,
+    "existing_outbound": [],
     "suggested_outbound": [
       "/wiki/crypto-moonboys.html"
     ],
-    "inbound_from": [
-      "/wiki/dream-sovereign.html"
-    ]
+    "inbound_from": []
   },
   "/wiki/elder-codex-7.html": {
     "outbound_count": 18,
@@ -1846,11 +1834,10 @@
     "inbound_from": []
   },
   "/wiki/ethereum.html": {
-    "outbound_count": 29,
-    "inbound_count": 157,
+    "outbound_count": 28,
+    "inbound_count": 156,
     "existing_outbound": [
       "/wiki/bitcoin.html",
-      "/wiki/ethereum.html",
       "/wiki/hodl-wars.html",
       "/wiki/solana.html"
     ],
@@ -1910,7 +1897,6 @@
       "/wiki/dragan-volkov.html",
       "/wiki/elder-codex-7.html",
       "/wiki/ethereum-eth.html",
-      "/wiki/ethereum.html",
       "/wiki/exchanges.html",
       "/wiki/fomo-plague.html",
       "/wiki/forkborn-collective.html",
@@ -2380,11 +2366,9 @@
     "inbound_from": []
   },
   "/wiki/genesis-spray-drop.html": {
-    "outbound_count": 6,
-    "inbound_count": 1,
-    "existing_outbound": [
-      "/wiki/genesis-spray-drop.html"
-    ],
+    "outbound_count": 5,
+    "inbound_count": 0,
+    "existing_outbound": [],
     "suggested_outbound": [
       "/wiki/1m-free-nfts-drop.html",
       "/wiki/crypto-moonboys.html",
@@ -2392,9 +2376,7 @@
       "/wiki/genesis-spray.html",
       "/wiki/xrp-kids-genesis-nfts.html"
     ],
-    "inbound_from": [
-      "/wiki/genesis-spray-drop.html"
-    ]
+    "inbound_from": []
   },
   "/wiki/genesis-spray.html": {
     "outbound_count": 58,
@@ -2741,20 +2723,16 @@
     "inbound_from": []
   },
   "/wiki/graffiti-nexus.html": {
-    "outbound_count": 5,
-    "inbound_count": 1,
-    "existing_outbound": [
-      "/wiki/graffiti-nexus.html"
-    ],
+    "outbound_count": 4,
+    "inbound_count": 0,
+    "existing_outbound": [],
     "suggested_outbound": [
       "/wiki/crypto-moonboys.html",
       "/wiki/graffiti-kings.html",
       "/wiki/graffiti-queens-exhibition.html",
       "/wiki/graffiti-queens-in-decentraland.html"
     ],
-    "inbound_from": [
-      "/wiki/graffiti-nexus.html"
-    ]
+    "inbound_from": []
   },
   "/wiki/graffiti-queens-exhibition.html": {
     "outbound_count": 17,
@@ -3098,11 +3076,9 @@
     "inbound_from": []
   },
   "/wiki/graffpunks-247.html": {
-    "outbound_count": 17,
-    "inbound_count": 1,
-    "existing_outbound": [
-      "/wiki/graffpunks-247.html"
-    ],
+    "outbound_count": 16,
+    "inbound_count": 0,
+    "existing_outbound": [],
     "suggested_outbound": [
       "/wiki/atomichub-graffpunks-collection.html",
       "/wiki/crypto-moonboys.html",
@@ -3121,9 +3097,7 @@
       "/wiki/substack-posts-on-graffpunkssubstackcom.html",
       "/wiki/the-graffpunks.html"
     ],
-    "inbound_from": [
-      "/wiki/graffpunks-247.html"
-    ]
+    "inbound_from": []
   },
   "/wiki/graffpunks-collection.html": {
     "outbound_count": 46,
@@ -3181,11 +3155,9 @@
     "inbound_from": []
   },
   "/wiki/graffpunks-network.html": {
-    "outbound_count": 17,
-    "inbound_count": 1,
-    "existing_outbound": [
-      "/wiki/graffpunks-network.html"
-    ],
+    "outbound_count": 16,
+    "inbound_count": 0,
+    "existing_outbound": [],
     "suggested_outbound": [
       "/wiki/atomichub-graffpunks-collection.html",
       "/wiki/crypto-moonboys.html",
@@ -3204,16 +3176,12 @@
       "/wiki/substack-posts-on-graffpunkssubstackcom.html",
       "/wiki/the-graffpunks.html"
     ],
-    "inbound_from": [
-      "/wiki/graffpunks-network.html"
-    ]
+    "inbound_from": []
   },
   "/wiki/graffpunks-nfts.html": {
-    "outbound_count": 25,
-    "inbound_count": 1,
-    "existing_outbound": [
-      "/wiki/graffpunks-nfts.html"
-    ],
+    "outbound_count": 24,
+    "inbound_count": 0,
+    "existing_outbound": [],
     "suggested_outbound": [
       "/wiki/1m-free-nfts-drop.html",
       "/wiki/1m-free-nfts-program.html",
@@ -3240,9 +3208,7 @@
       "/wiki/the-graffpunks.html",
       "/wiki/xrp-kids-genesis-nfts.html"
     ],
-    "inbound_from": [
-      "/wiki/graffpunks-nfts.html"
-    ]
+    "inbound_from": []
   },
   "/wiki/graffpunks.html": {
     "outbound_count": 64,
@@ -3433,11 +3399,9 @@
     "inbound_from": []
   },
   "/wiki/hard-fork-games-game.html": {
-    "outbound_count": 12,
-    "inbound_count": 1,
-    "existing_outbound": [
-      "/wiki/hard-fork-games-game.html"
-    ],
+    "outbound_count": 11,
+    "inbound_count": 0,
+    "existing_outbound": [],
     "suggested_outbound": [
       "/wiki/crypto-moonboys.html",
       "/wiki/games4punks-telegram-games.html",
@@ -3451,9 +3415,7 @@
       "/wiki/the-hard-fork-rockers.html",
       "/wiki/triple-fork-event.html"
     ],
-    "inbound_from": [
-      "/wiki/hard-fork-games-game.html"
-    ]
+    "inbound_from": []
   },
   "/wiki/hard-fork-games.html": {
     "outbound_count": 32,
@@ -3526,17 +3488,13 @@
     "inbound_from": []
   },
   "/wiki/head-tags.html": {
-    "outbound_count": 2,
-    "inbound_count": 1,
-    "existing_outbound": [
-      "/wiki/head-tags.html"
-    ],
+    "outbound_count": 1,
+    "inbound_count": 0,
+    "existing_outbound": [],
     "suggested_outbound": [
       "/wiki/crypto-moonboys.html"
     ],
-    "inbound_from": [
-      "/wiki/head-tags.html"
-    ]
+    "inbound_from": []
   },
   "/wiki/hex-tagger-prime.html": {
     "outbound_count": 24,
@@ -4744,11 +4702,9 @@
     "inbound_from": []
   },
   "/wiki/midevil-hero-arena-game.html": {
-    "outbound_count": 6,
-    "inbound_count": 1,
-    "existing_outbound": [
-      "/wiki/midevil-hero-arena-game.html"
-    ],
+    "outbound_count": 5,
+    "inbound_count": 0,
+    "existing_outbound": [],
     "suggested_outbound": [
       "/wiki/crypto-moonboys.html",
       "/wiki/gang-signs-card-game.html",
@@ -4756,9 +4712,7 @@
       "/wiki/hodl-wars-game.html",
       "/wiki/midevil-hero-arena.html"
     ],
-    "inbound_from": [
-      "/wiki/midevil-hero-arena-game.html"
-    ]
+    "inbound_from": []
   },
   "/wiki/midevil-hero-arena.html": {
     "outbound_count": 40,
@@ -4853,15 +4807,14 @@
     "inbound_from": []
   },
   "/wiki/moon-mission.html": {
-    "outbound_count": 32,
-    "inbound_count": 147,
+    "outbound_count": 31,
+    "inbound_count": 146,
     "existing_outbound": [
       "/wiki/bitcoin.html",
       "/wiki/diamond-hands.html",
       "/wiki/ethereum.html",
       "/wiki/hodl-warriors.html",
       "/wiki/hodl-wars.html",
-      "/wiki/moon-mission.html",
       "/wiki/solana.html"
     ],
     "suggested_outbound": [
@@ -4957,7 +4910,6 @@
       "/wiki/medium-articles-by-sercullen.html",
       "/wiki/metaverse-battles.html",
       "/wiki/midevilpunks.html",
-      "/wiki/moon-mission.html",
       "/wiki/nbgx-token.html",
       "/wiki/neftyblocks-midevilpunks-collection.html",
       "/wiki/nfts.html",
@@ -5400,17 +5352,13 @@
     "inbound_from": []
   },
   "/wiki/nine-armies.html": {
-    "outbound_count": 2,
-    "inbound_count": 1,
-    "existing_outbound": [
-      "/wiki/nine-armies.html"
-    ],
+    "outbound_count": 1,
+    "inbound_count": 0,
+    "existing_outbound": [],
     "suggested_outbound": [
       "/wiki/crypto-moonboys.html"
     ],
-    "inbound_from": [
-      "/wiki/nine-armies.html"
-    ]
+    "inbound_from": []
   },
   "/wiki/no-ball-games-nbg-collection.html": {
     "outbound_count": 21,
@@ -5536,11 +5484,9 @@
     "inbound_from": []
   },
   "/wiki/one-million-free-nfts.html": {
-    "outbound_count": 10,
-    "inbound_count": 1,
-    "existing_outbound": [
-      "/wiki/one-million-free-nfts.html"
-    ],
+    "outbound_count": 9,
+    "inbound_count": 0,
+    "existing_outbound": [],
     "suggested_outbound": [
       "/wiki/1m-free-nfts-drop.html",
       "/wiki/1m-free-nfts-program.html",
@@ -5552,9 +5498,7 @@
       "/wiki/nfts.html",
       "/wiki/xrp-kids-genesis-nfts.html"
     ],
-    "inbound_from": [
-      "/wiki/one-million-free-nfts.html"
-    ]
+    "inbound_from": []
   },
   "/wiki/paper-hands.html": {
     "outbound_count": 31,
@@ -6612,13 +6556,12 @@
     "inbound_from": []
   },
   "/wiki/solana.html": {
-    "outbound_count": 31,
-    "inbound_count": 157,
+    "outbound_count": 30,
+    "inbound_count": 156,
     "existing_outbound": [
       "/wiki/bitcoin.html",
       "/wiki/ethereum.html",
-      "/wiki/moon-mission.html",
-      "/wiki/solana.html"
+      "/wiki/moon-mission.html"
     ],
     "suggested_outbound": [
       "/wiki/1m-free-nfts-drop.html",
@@ -6752,7 +6695,6 @@
       "/wiki/smart-nft-mechanics.html",
       "/wiki/snipey-d-man-sirus.html",
       "/wiki/solana-sol.html",
-      "/wiki/solana.html",
       "/wiki/spirit-borns.html",
       "/wiki/spraycode-writcode-mechanics.html",
       "/wiki/spraycode-writcode.html",
@@ -7042,17 +6984,13 @@
     "inbound_from": []
   },
   "/wiki/stikfamwars.html": {
-    "outbound_count": 2,
-    "inbound_count": 1,
-    "existing_outbound": [
-      "/wiki/stikfamwars.html"
-    ],
+    "outbound_count": 1,
+    "inbound_count": 0,
+    "existing_outbound": [],
     "suggested_outbound": [
       "/wiki/crypto-moonboys.html"
     ],
-    "inbound_from": [
-      "/wiki/stikfamwars.html"
-    ]
+    "inbound_from": []
   },
   "/wiki/street-kingdoms.html": {
     "outbound_count": 24,

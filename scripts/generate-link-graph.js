@@ -14,6 +14,7 @@
  * Rules:
  *   - No HTML files are read or modified
  *   - No ranking / SAM / publisher data is used or changed
+ *   - Self-links are excluded from all three arrays and counts
  *   - Output keys and array values are deterministically sorted
  */
 
@@ -32,10 +33,12 @@ function main() {
   const pages = Object.keys(linkMap).sort();
 
   // Build inbound index: page → Set of pages whose existing_links contain it
+  // Self-links are excluded: a page is never counted as its own inbound source.
   const inboundMap = new Map();
   for (const page of pages) {
     if (!inboundMap.has(page)) inboundMap.set(page, new Set());
     for (const target of (linkMap[page].existing_links || [])) {
+      if (target === page) continue;          // skip self-link
       if (!inboundMap.has(target)) inboundMap.set(target, new Set());
       inboundMap.get(target).add(page);
     }
@@ -43,8 +46,8 @@ function main() {
 
   const graph = {};
   for (const page of pages) {
-    const existingOutbound  = (linkMap[page].existing_links  || []).slice().sort();
-    const suggestedOutbound = (linkMap[page].suggested_links || []).slice().sort();
+    const existingOutbound  = (linkMap[page].existing_links  || []).filter(t => t !== page).sort();
+    const suggestedOutbound = (linkMap[page].suggested_links || []).filter(t => t !== page).sort();
     const inboundFrom       = Array.from(inboundMap.get(page) || []).sort();
 
     graph[page] = {
