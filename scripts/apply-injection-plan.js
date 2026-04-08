@@ -92,16 +92,31 @@ function tokenise(html) {
 }
 
 /**
+ * Build a word-boundary-aware RegExp for anchorText.
+ *
+ * \b is only added at each end when the boundary character is a word char
+ * (\w), so that phrases starting/ending with symbols (e.g. "$GK") still
+ * match correctly while whole-word constraints are enforced where they apply.
+ */
+function buildAnchorRegex(anchorText) {
+  const escaped = anchorText.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const prefix  = /\w/.test(anchorText[0])                           ? '\\b' : '';
+  const suffix  = /\w/.test(anchorText[anchorText.length - 1])       ? '\\b' : '';
+  return new RegExp(prefix + escaped + suffix, 'i');
+}
+
+/**
  * Inject one link (<a href="targetUrl">anchorText</a>) into articleHtml.
  *
- * Replaces only the FIRST occurrence of anchorText (case-insensitive) that
- * sits in a plain text node outside any restricted element.
+ * Replaces only the FIRST occurrence of anchorText (case-insensitive, whole-
+ * word boundaries where applicable) that sits in a plain text node outside
+ * any restricted element.
  *
  * Returns { html: string, injected: boolean }.
  */
 function injectLink(articleHtml, anchorText, targetUrl) {
-  const tokens = tokenise(articleHtml);
-  const needle  = anchorText.toLowerCase();
+  const tokens    = tokenise(articleHtml);
+  const anchorRe  = buildAnchorRegex(anchorText);
 
   let restrictedDepth = 0;
   let injected = false;
@@ -129,13 +144,14 @@ function injectLink(articleHtml, anchorText, targetUrl) {
 
     // text node — only attempt replacement when outside restricted elements
     if (!injected && restrictedDepth === 0) {
-      const idx = tok.value.toLowerCase().indexOf(needle);
-      if (idx !== -1) {
-        const matched = tok.value.slice(idx, idx + anchorText.length);
+      const m = anchorRe.exec(tok.value);
+      if (m) {
+        const matched = m[0];
+        const idx     = m.index;
         parts.push(
           tok.value.slice(0, idx) +
           `<a href="${targetUrl}">${matched}</a>` +
-          tok.value.slice(idx + anchorText.length),
+          tok.value.slice(idx + matched.length),
         );
         injected = true;
         continue;
