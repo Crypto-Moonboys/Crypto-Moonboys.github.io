@@ -12,14 +12,18 @@
  *
  * Output: js/link-map.json
  *   {
- *     "<source-url>": ["<target-url>", ...],   // sorted, deduped
+ *     "<source-url>": {
+ *       "existing_links": ["<target-url>", ...],   // sorted, deduped
+ *       "suggested_links": ["<target-url>", ...]   // sorted, deduped
+ *     },
  *     ...
  *   }
  *
  * Rules:
+ *   - Every scanned wiki page is included, even if arrays are empty
  *   - No HTML files are modified
  *   - Self-links excluded
- *   - Already-present links excluded
+ *   - Already-present links excluded from suggested_links
  *   - Duplicates excluded
  *   - Output is deterministically sorted (keys and values)
  */
@@ -146,9 +150,10 @@ function main() {
       }
     }
 
-    if (suggested.size > 0) {
-      linkMap[sourceUrl] = Array.from(suggested).sort();
-    }
+    linkMap[sourceUrl] = {
+      existing_links: Array.from(existingLinks).sort(),
+      suggested_links: Array.from(suggested).sort(),
+    };
   }
 
   // 3. Sort keys for deterministic output
@@ -159,7 +164,7 @@ function main() {
 
   fs.writeFileSync(OUTPUT_PATH, JSON.stringify(sorted, null, 2) + '\n', 'utf8');
 
-  const totalSuggestions = Object.values(sorted).reduce((s, v) => s + v.length, 0);
+  const totalSuggestions = Object.values(sorted).reduce((s, v) => s + v.suggested_links.length, 0);
   console.log(`✅  link-map written: ${Object.keys(sorted).length} source pages, ${totalSuggestions} suggestions → ${OUTPUT_PATH}`);
 }
 
