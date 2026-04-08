@@ -114,16 +114,61 @@ function findEligibleIndex(innerHtml, anchorText) {
  * inside an <a> tag and is at a word boundary.  Replaces the first eligible
  * occurrence with a hyperlink.
  * Returns the modified HTML string, or null if no replacement was made.
+ *
+ * Guard rules applied inside this function:
+ *   Rule A — Skip metadata paragraphs (containing "Category:", "Tags:", "Aliases:")
+ *   Rule B — Skip short paragraphs (inner text < 40 characters)
+ *   Rule C — Skip duplicate paragraphs (same innerHtml appears more than once)
+ *   Rule D — Scope to <article class="wiki-content"> only
  */
 function applyInsertion(html, targetUrl, anchorText) {
-  // Regex to find each <p>...</p> block (non-greedy, multi-line).
-  const pPattern = /<p(?:\s[^>]*)?>([\s\S]*?)<\/p\s*>/gi;
+  // Rule D: Only inject inside <article class="wiki-content">.
+  // If no such block exists on the page, skip entirely.
+  const articleRe    = /<article[^>]*class="[^"]*wiki-content[^"]*"[^>]*>([\s\S]*?)<\/article\s*>/i;
+  const articleMatch = articleRe.exec(html);
+  if (!articleMatch) return null; // Rule D: no wiki-content article — skip page
+
+  const articleStart = articleMatch.index;
+  const articleEnd   = articleStart + articleMatch[0].length;
+  const articleHtml  = articleMatch[1];
+
+  // Rule C: Pre-compute how many times each innerHtml appears within the article.
+  // Any paragraph whose exact innerHTML occurs more than once is a duplicate.
+  const P_TAG_RE = /<p(?:\s[^>]*)?>([\s\S]*?)<\/p\s*>/gi;
+  const innerHtmlCounts = new Map();
+  {
+    let s;
+    const scanRe = new RegExp(P_TAG_RE.source, 'gi');
+    while ((s = scanRe.exec(articleHtml)) !== null) {
+      const inner = s[1];
+      innerHtmlCounts.set(inner, (innerHtmlCounts.get(inner) || 0) + 1);
+    }
+  }
+
+  // Regex to find each <p>...</p> block in the full HTML (non-greedy, multi-line).
+  const pPattern = new RegExp(P_TAG_RE.source, 'gi');
 
   let match;
   while ((match = pPattern.exec(html)) !== null) {
     const pStart    = match.index;
     const pFull     = match[0];
     const innerHtml = match[1];
+
+    // Rule D: Skip <p> tags outside <article class="wiki-content">
+    if (pStart < articleStart || pStart + pFull.length > articleEnd) continue;
+
+    // Rule A: Skip metadata paragraphs (tag lists / category lines)
+    const plainText = innerHtml.replace(/<[^>]+>/g, ' ');
+    if (plainText.includes('Category:') ||
+        plainText.includes('Tags:')     ||
+        plainText.includes('Aliases:')) continue;
+
+    // Rule B: Skip short paragraphs (fewer than 40 characters of visible text)
+    const strippedText = plainText.replace(/\s+/g, ' ').trim();
+    if (strippedText.length < 40) continue;
+
+    // Rule C: Skip duplicate paragraphs (same innerHtml more than once on page)
+    if ((innerHtmlCounts.get(innerHtml) || 0) > 1) continue;
 
     const anchorIdx = findEligibleIndex(innerHtml, anchorText);
     if (anchorIdx === -1) continue;
@@ -148,6 +193,14 @@ function applyInsertion(html, targetUrl, anchorText) {
 // ---------------------------------------------------------------------------
 // Main
 // ---------------------------------------------------------------------------
+
+/**
+ * Rule E — Generic single-word anchor texts that must be rejected regardless
+ * of context.  These are fully-lowercase and carry no meaningful link value.
+ */
+const GENERIC_ANCHOR_WORDS = new Set([
+  'nfts', 'token', 'tokens', 'crypto', 'blockchain', 'defi', 'wiki', 'punk', 'grit',
+]);
 
 function main() {
   const plan = JSON.parse(fs.readFileSync(PLAN_PATH, 'utf8'));
@@ -195,6 +248,19 @@ function main() {
       if (isAlreadyLinked(html, targetUrl)) {
         totalSkipped++;
         usedTargets.add(targetUrl);
+        continue;
+      }
+
+      // Rule E: Minimum anchor text length and quality checks.
+      // Reject anchor texts that are too short or are known generic single words.
+      const trimmedAnchor = anchorText.trim();
+      if (trimmedAnchor.length < 6) {
+        totalSkipped++;
+        continue;
+      }
+      const lowerAnchor = trimmedAnchor.toLowerCase();
+      if (trimmedAnchor === lowerAnchor && GENERIC_ANCHOR_WORDS.has(lowerAnchor)) {
+        totalSkipped++;
         continue;
       }
 
