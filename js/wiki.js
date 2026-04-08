@@ -78,11 +78,16 @@ function getDerivedJsonUrl(fileName) {
 }
 
 async function loadWikiIndex() {
+  const url = getDerivedJsonUrl('wiki-index.json');
+  console.debug('[wiki.js] loading wiki-index from:', url);
   try {
-    const res = await fetch(getDerivedJsonUrl('wiki-index.json'));
+    const res = await fetch(url);
+    console.debug('[wiki.js] wiki-index fetch status:', res.status);
     const data = await res.json();
     WIKI_INDEX = data.filter(x => x.url !== '/wiki/index.html');
-  } catch {
+    console.debug('[wiki.js] WIKI_INDEX loaded, entries:', WIKI_INDEX.length);
+  } catch (err) {
+    console.error('[wiki.js] wiki-index load failed:', err);
     WIKI_INDEX = [];
   }
 }
@@ -110,11 +115,141 @@ function buildEntityLookup() {
   });
 }
 
+/* ── HTML ESCAPE ─────────────────────────────────────────────────────────── */
+function escapeHtml(str) {
+  return String(str || '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+/* ── SEARCH PAGE RENDERER ────────────────────────────────────────────────── */
+function renderSearchPage(query) {
+  const container = document.getElementById('search-results-page');
+  const heading   = document.getElementById('search-heading');
+  if (!container) return;
+
+  const q = String(query || '').trim();
+
+  if (!WIKI_INDEX.length) {
+    container.innerHTML = '<p class="search-empty">Loading articles…</p>';
+    if (heading) heading.textContent = 'All Articles';
+    return;
+  }
+
+  let items;
+  if (q) {
+    const scored = WIKI_INDEX
+      .map(item => ({ item, ...scoreResult(item, q) }))
+      .filter(r => r.queryScore > 0)
+      .sort(compareScoredResults);
+    items = scored.map(r => r.item);
+    if (heading) heading.textContent = `Results for "${q}" (${items.length})`;
+  } else {
+    items = [...WIKI_INDEX].sort(compareIndexItemsStable);
+    if (heading) heading.textContent = `All Articles (${items.length})`;
+  }
+
+  if (!items.length) {
+    container.innerHTML = `<p class="search-empty">No articles found for "${escapeHtml(q)}".</p>`;
+    return;
+  }
+
+  container.innerHTML = items.map(item => {
+    const href    = resolveWikiUrl(item.url);
+    const title   = item.title || href;
+    const summary = item.summary ? `<p class="article-card-summary">${escapeHtml(item.summary)}</p>` : '';
+    const tags    = (item.tags || []).length
+      ? `<div class="article-card-tags">${item.tags.map(t => `<span class="tag">${escapeHtml(t)}</span>`).join('')}</div>`
+      : '';
+    return `<div class="article-card">
+  <a href="${escapeHtml(href)}" class="article-card-title">${escapeHtml(title)}</a>
+  ${summary}
+  ${tags}
+</div>`;
+  }).join('\n');
+}
+
 /* ── DOM READY ───────────────────────────────────────────────────────────── */
 document.addEventListener('DOMContentLoaded', async () => {
   await loadWikiIndex();
   await loadEntityMap();
   buildEntityLookup();
+
+  // ── Search page ─────────────────────────────────────────────────────────
+  const _q = new URLSearchParams(window.location.search).get('q') || '';
+  renderSearchPage(_q);
+
+  const _searchInput = document.getElementById('search-page-input');
+  if (_searchInput) {
+    _searchInput.value = _q;
+    _searchInput.addEventListener('input', () => {
+      const newQ = _searchInput.value.trim();
+      renderSearchPage(newQ);
+      const url = new URL(window.location.href);
+      if (newQ) { url.searchParams.set('q', newQ); } else { url.searchParams.delete('q'); }
+      history.replaceState(null, '', url.toString());
+    });
+  }
+
+  // ── Header search bar ────────────────────────────────────────────────────
+  const _headerInput = document.getElementById('search-input');
+  const _headerBtn   = document.getElementById('search-btn');
+  const _dropdown    = document.getElementById('search-results');
+
+  function _showHeaderDropdown(val) {
+    if (!_dropdown) return;
+    const v = String(val || '').trim();
+    if (!v || !WIKI_INDEX.length) { _dropdown.innerHTML = ''; return; }
+    const scored = WIKI_INDEX
+      .map(item => ({ item, ...scoreResult(item, v) }))
+      .filter(r => r.queryScore > 0)
+      .sort(compareScoredResults)
+      .slice(0, 5);
+    if (!scored.length) { _dropdown.innerHTML = ''; return; }
+    _dropdown.innerHTML = scored.map(r => {
+      const href  = resolveWikiUrl(r.item.url);
+      const title = r.item.title || href;
+      return `<a class="search-result-item" href="${escapeHtml(href)}" role="option">${escapeHtml(title)}</a>`;
+    }).join('');
+  }
+
+  if (_headerInput) {
+    _headerInput.addEventListener('input', () => _showHeaderDropdown(_headerInput.value));
+    _headerInput.addEventListener('keydown', e => {
+      if (e.key === 'Enter') { goToSearch(_headerInput.value); }
+    });
+  }
+  if (_headerBtn) {
+    _headerBtn.addEventListener('click', () => goToSearch(_headerInput ? _headerInput.value : ''));
+  }
+
+  // ── Sidebar / hamburger ──────────────────────────────────────────────────
+  const _hamburger = document.getElementById('hamburger');
+  const _sidebar   = document.getElementById('sidebar');
+  const _overlay   = document.getElementById('sidebar-overlay');
+
+  function _toggleSidebar(open) {
+    if (!_sidebar) return;
+    const expanded = open !== undefined ? open : !_sidebar.classList.contains('open');
+    _sidebar.classList.toggle('open', expanded);
+    if (_hamburger) _hamburger.setAttribute('aria-expanded', String(expanded));
+    if (_overlay)   _overlay.classList.toggle('active', expanded);
+  }
+
+  if (_hamburger) _hamburger.addEventListener('click', () => _toggleSidebar());
+  if (_overlay)   _overlay.addEventListener('click',   () => _toggleSidebar(false));
+
+  // ── Back to top ──────────────────────────────────────────────────────────
+  const _backToTop = document.getElementById('back-to-top');
+  if (_backToTop) {
+    window.addEventListener('scroll', () => {
+      _backToTop.classList.toggle('visible', window.scrollY > 300);
+    }, { passive: true });
+    _backToTop.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+  }
 });
 
 /* scoreResult — ranking contract enforcement */
