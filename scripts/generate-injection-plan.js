@@ -57,9 +57,17 @@ function urlToSlug(url) {
   return path.basename(url, '.html');
 }
 
-/** Strip all HTML tags from a string (leaves inner text). */
+/**
+ * Strip all HTML tags from a string (leaves inner text).
+ * Assumes well-formed wiki HTML; a second pass removes any residual `<` fragments
+ * so the returned string contains no angle-bracket sequences.
+ */
 function stripTags(html) {
-  return html.replace(/<[^>]+>/g, '');
+  // First pass: remove complete tags
+  let text = html.replace(/<[^>]*>/g, '');
+  // Second pass: remove any incomplete tag fragments (e.g. a lone `<script` without `>`)
+  text = text.replace(/<[^<]*/g, '');
+  return text;
 }
 
 /**
@@ -169,8 +177,8 @@ function main() {
       const titlePhrase = slugToTitle(targetSlug);
 
       // Case-insensitive, whole-word regex for the title phrase
-      const escaped  = titlePhrase.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-      const phraseRe = new RegExp(`\\b${escaped}\\b`, 'i');
+      const escapedPhrase = titlePhrase.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const phraseRe      = new RegExp(`\\b${escapedPhrase}\\b`, 'i');
 
       // Search paragraphs in document order; use the first match found
       for (const paraText of paragraphs) {
