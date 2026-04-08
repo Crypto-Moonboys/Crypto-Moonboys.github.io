@@ -59,9 +59,60 @@ function isAlreadyLinked(html, targetUrl) {
 }
 
 /**
+ * Return true if the occurrence of anchorText at position idx in str is at a
+ * word boundary on both sides.  Word characters are [A-Za-z0-9_$] — the '$'
+ * is included to protect compound token names like $LFGK.
+ */
+function isAtWordBoundary(str, idx, len) {
+  const WORD_CHAR = /[A-Za-z0-9_$]/;
+  if (idx > 0 && WORD_CHAR.test(str[idx - 1])) return false;
+  if (idx + len < str.length && WORD_CHAR.test(str[idx + len])) return false;
+  return true;
+}
+
+/**
+ * Find the first occurrence of anchorText in innerHtml that:
+ *   1. Is at a word boundary on both sides.
+ *   2. Is not already inside an <a> tag.
+ * Returns the index of the match, or -1 if not found.
+ */
+function findEligibleIndex(innerHtml, anchorText) {
+  let searchFrom = 0;
+  while (searchFrom < innerHtml.length) {
+    const idx = innerHtml.indexOf(anchorText, searchFrom);
+    if (idx === -1) return -1;
+
+    // Word-boundary check
+    if (!isAtWordBoundary(innerHtml, idx, anchorText.length)) {
+      searchFrom = idx + 1;
+      continue;
+    }
+
+    // Check that this occurrence is not already inside an <a> tag
+    let insideAnchor = false;
+    const aPattern = /<a(?:\s[^>]*)?>([\s\S]*?)<\/a\s*>/gi;
+    let am;
+    while ((am = aPattern.exec(innerHtml)) !== null) {
+      if (idx >= am.index && idx < am.index + am[0].length) {
+        insideAnchor = true;
+        break;
+      }
+    }
+    if (insideAnchor) {
+      searchFrom = idx + 1;
+      continue;
+    }
+
+    return idx;
+  }
+  return -1;
+}
+
+/**
  * Apply one insertion to the HTML string.
  * Scans <p>...</p> blocks; within each, checks that anchor_text is not already
- * inside an <a> tag.  Replaces the first bare occurrence with a hyperlink.
+ * inside an <a> tag and is at a word boundary.  Replaces the first eligible
+ * occurrence with a hyperlink.
  * Returns the modified HTML string, or null if no replacement was made.
  */
 function applyInsertion(html, targetUrl, anchorText) {
@@ -70,27 +121,14 @@ function applyInsertion(html, targetUrl, anchorText) {
 
   let match;
   while ((match = pPattern.exec(html)) !== null) {
-    const pStart   = match.index;
-    const pFull    = match[0];
+    const pStart    = match.index;
+    const pFull     = match[0];
     const innerHtml = match[1];
 
-    // Check if anchor_text appears in the inner HTML at all
-    const anchorIdx = innerHtml.indexOf(anchorText);
+    const anchorIdx = findEligibleIndex(innerHtml, anchorText);
     if (anchorIdx === -1) continue;
 
-    // Check that the occurrence is not already inside an <a> tag.
-    let insideAnchor = false;
-    const aPattern = /<a(?:\s[^>]*)?>([\s\S]*?)<\/a\s*>/gi;
-    let am;
-    while ((am = aPattern.exec(innerHtml)) !== null) {
-      if (anchorIdx >= am.index && anchorIdx < am.index + am[0].length) {
-        insideAnchor = true;
-        break;
-      }
-    }
-    if (insideAnchor) continue;
-
-    // Find the opening tag end position within pFull to compute offset
+    // Find the opening tag end position within pFull
     const openTagEnd = pFull.indexOf('>') + 1;
 
     // Perform the replacement using string slicing (avoids $ back-reference issues).
