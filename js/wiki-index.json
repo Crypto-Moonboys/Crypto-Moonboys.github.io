@@ -74,6 +74,13 @@
         "with",
         "disrup"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 64,
+      "existing_outbound_count": 0,
+      "suggested_outbound_count": 64,
+      "authority": 0
     }
   },
   {
@@ -153,6 +160,13 @@
         "foundation",
         "sacred"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 44,
+      "existing_outbound_count": 0,
+      "suggested_outbound_count": 44,
+      "authority": 0
     }
   },
   {
@@ -233,6 +247,13 @@
         "decentralization",
         "in"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 45,
+      "existing_outbound_count": 0,
+      "suggested_outbound_count": 45,
+      "authority": 0
     }
   },
   {
@@ -314,6 +335,13 @@
         "factional",
         "ties"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 51,
+      "existing_outbound_count": 0,
+      "suggested_outbound_count": 51,
+      "authority": 0
     }
   },
   {
@@ -394,6 +422,13 @@
         "chaotic",
         "undergr"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 67,
+      "existing_outbound_count": 0,
+      "suggested_outbound_count": 67,
+      "authority": 0
     }
   },
   {
@@ -475,6 +510,13 @@
         "whose",
         "presence"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 44,
+      "existing_outbound_count": 0,
+      "suggested_outbound_count": 44,
+      "authority": 0
     }
   },
   {
@@ -553,6 +595,13 @@
         "unified",
         "universe"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 47,
+      "existing_outbound_count": 0,
+      "suggested_outbound_count": 47,
+      "authority": 0
     }
   },
   {
@@ -615,6 +664,13 @@
         "moonboys",
         "wiki"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 33,
+      "existing_outbound_count": 0,
+      "suggested_outbound_count": 33,
+      "authority": 0
     }
   },
   {
@@ -699,6 +755,13 @@
         "reap",
         "pow"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 51,
+      "existing_outbound_count": 0,
+      "suggested_outbound_count": 51,
+      "authority": 0
     }
   },
   {
@@ -777,6 +840,13 @@
         "of",
         "graffpu"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 42,
+      "existing_outbound_count": 0,
+      "suggested_outbound_count": 42,
+      "authority": 0
     }
   },
   {
@@ -861,6 +931,13 @@
         "one",
         "s"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 48,
+      "existing_outbound_count": 0,
+      "suggested_outbound_count": 48,
+      "authority": 0
     }
   },
   {
@@ -940,6 +1017,13 @@
         "to",
         "m"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 53,
+      "existing_outbound_count": 0,
+      "suggested_outbound_count": 53,
+      "authority": 0
     }
   },
   {
@@ -1019,6 +1103,13 @@
         "sol",
         "and"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 44,
+      "existing_outbound_count": 0,
+      "suggested_outbound_count": 44,
+      "authority": 0
     }
   },
   {
@@ -1102,6 +1193,13 @@
         "rebellion",
         "broadca"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 49,
+      "existing_outbound_count": 0,
+      "suggested_outbound_count": 49,
+      "authority": 0
     }
   },
   {
@@ -1184,6 +1282,13 @@
         "groundbreaking",
         "legacy"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 32,
+      "existing_outbound_count": 7,
+      "suggested_outbound_count": 25,
+      "authority": 3.5
     }
   },
   {
@@ -1261,6 +1366,13 @@
         "spirit",
         "graffpun"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 56,
+      "existing_outbound_count": 0,
+      "suggested_outbound_count": 56,
+      "authority": 0
     }
   },
   {
@@ -1343,6 +1455,13 @@
         "multi",
         "chain"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 41,
+      "existing_outbound_count": 0,
+      "suggested_outbound_count": 41,
+      "authority": 0
     }
   },
   {
@@ -1423,6 +1542,13 @@
         "that",
         "redefin"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 58,
+      "existing_outbound_count": 7,
+      "suggested_outbound_count": 51,
+      "authority": 3.5
     }
   },
   {
@@ -1504,6 +1630,13 @@
         "and",
         "cod"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 50,
+      "existing_outbound_count": 0,
+      "suggested_outbound_count": 50,
+      "authority": 0
     }
   },
   {
@@ -1584,6 +1717,13 @@
         "where",
         "medi"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 35,
+      "existing_outbound_count": 7,
+      "suggested_outbound_count": 28,
+      "authority": 3.5
     }
   },
   {
@@ -1666,6 +1806,13 @@
         "rebellion",
         "w"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 39,
+      "existing_outbound_count": 0,
+      "suggested_outbound_count": 39,
+      "authority": 0
     }
   },
   {
@@ -1746,6 +1893,13 @@
         "earn",
         "cov"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 32,
+      "existing_outbound_count": 0,
+      "suggested_outbound_count": 32,
+      "authority": 0
     }
   },
   {
@@ -1829,6 +1983,13 @@
         "s",
         "n"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 30,
+      "existing_outbound_count": 0,
+      "suggested_outbound_count": 30,
+      "authority": 0
     }
   },
   {
@@ -1911,6 +2072,13 @@
         "fork",
         "game"
       ]
+    },
+    "link_score": {
+      "inbound_count": 146,
+      "outbound_count": 33,
+      "existing_outbound_count": 0,
+      "suggested_outbound_count": 33,
+      "authority": 292
     }
   },
   {
@@ -1990,6 +2158,13 @@
         "that",
         "disti"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 29,
+      "existing_outbound_count": 0,
+      "suggested_outbound_count": 29,
+      "authority": 0
     }
   },
   {
@@ -2072,6 +2247,13 @@
         "rebellion",
         "control"
       ]
+    },
+    "link_score": {
+      "inbound_count": 147,
+      "outbound_count": 35,
+      "existing_outbound_count": 0,
+      "suggested_outbound_count": 35,
+      "authority": 294
     }
   },
   {
@@ -2155,6 +2337,13 @@
         "and",
         "found"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 35,
+      "existing_outbound_count": 0,
+      "suggested_outbound_count": 35,
+      "authority": 0
     }
   },
   {
@@ -2236,6 +2425,13 @@
         "cullen",
         "ser"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 37,
+      "existing_outbound_count": 7,
+      "suggested_outbound_count": 30,
+      "authority": 3.5
     }
   },
   {
@@ -2318,6 +2514,13 @@
         "and",
         "other"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 31,
+      "existing_outbound_count": 0,
+      "suggested_outbound_count": 31,
+      "authority": 0
     }
   },
   {
@@ -2399,6 +2602,13 @@
         "its",
         "den"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 38,
+      "existing_outbound_count": 0,
+      "suggested_outbound_count": 38,
+      "authority": 0
     }
   },
   {
@@ -2480,6 +2690,13 @@
         "revolution",
         "th"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 38,
+      "existing_outbound_count": 0,
+      "suggested_outbound_count": 38,
+      "authority": 0
     }
   },
   {
@@ -2561,6 +2778,13 @@
         "and",
         "beyon"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 37,
+      "existing_outbound_count": 0,
+      "suggested_outbound_count": 37,
+      "authority": 0
     }
   },
   {
@@ -2643,6 +2867,13 @@
         "where",
         "av"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 40,
+      "existing_outbound_count": 0,
+      "suggested_outbound_count": 40,
+      "authority": 0
     }
   },
   {
@@ -2721,6 +2952,13 @@
         "universe",
         "where"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 23,
+      "existing_outbound_count": 0,
+      "suggested_outbound_count": 23,
+      "authority": 0
     }
   },
   {
@@ -2803,6 +3041,13 @@
         "through",
         "t"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 19,
+      "existing_outbound_count": 0,
+      "suggested_outbound_count": 19,
+      "authority": 0
     }
   },
   {
@@ -2882,6 +3127,13 @@
         "defi",
         "nfts"
       ]
+    },
+    "link_score": {
+      "inbound_count": 156,
+      "outbound_count": 28,
+      "existing_outbound_count": 3,
+      "suggested_outbound_count": 25,
+      "authority": 313.5
     }
   },
   {
@@ -2949,6 +3201,13 @@
         "the",
         "world"
       ]
+    },
+    "link_score": {
+      "inbound_count": 156,
+      "outbound_count": 28,
+      "existing_outbound_count": 5,
+      "suggested_outbound_count": 23,
+      "authority": 314.5
     }
   },
   {
@@ -3036,6 +3295,13 @@
         "digital",
         "fortre"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 34,
+      "existing_outbound_count": 0,
+      "suggested_outbound_count": 34,
+      "authority": 0
     }
   },
   {
@@ -3109,6 +3375,13 @@
         "and",
         "web3"
       ]
+    },
+    "link_score": {
+      "inbound_count": 156,
+      "outbound_count": 30,
+      "existing_outbound_count": 3,
+      "suggested_outbound_count": 27,
+      "authority": 313.5
     }
   },
   {
@@ -3187,6 +3460,13 @@
         "rebellion",
         "lore"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 44,
+      "existing_outbound_count": 7,
+      "suggested_outbound_count": 37,
+      "authority": 3.5
     }
   },
   {
@@ -3267,6 +3547,13 @@
         "subversive",
         "beats"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 50,
+      "existing_outbound_count": 0,
+      "suggested_outbound_count": 50,
+      "authority": 0
     }
   },
   {
@@ -3346,6 +3633,13 @@
         "that",
         "trans"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 44,
+      "existing_outbound_count": 0,
+      "suggested_outbound_count": 44,
+      "authority": 0
     }
   },
   {
@@ -3432,6 +3726,13 @@
         "curse",
         "terri"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 23,
+      "existing_outbound_count": 7,
+      "suggested_outbound_count": 16,
+      "authority": 3.5
     }
   },
   {
@@ -3521,6 +3822,13 @@
         "destabiliz",
         "samaelexe"
       ]
+    },
+    "link_score": {
+      "inbound_count": 1,
+      "outbound_count": 24,
+      "existing_outbound_count": 7,
+      "suggested_outbound_count": 17,
+      "authority": 5.5
     }
   },
   {
@@ -3604,6 +3912,13 @@
         "s",
         "digita"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 22,
+      "existing_outbound_count": 7,
+      "suggested_outbound_count": 15,
+      "authority": 3.5
     }
   },
   {
@@ -3684,6 +3999,13 @@
         "who",
         "ig"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 24,
+      "existing_outbound_count": 7,
+      "suggested_outbound_count": 17,
+      "authority": 3.5
     }
   },
   {
@@ -3765,6 +4087,13 @@
         "tools",
         "structures"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 21,
+      "existing_outbound_count": 7,
+      "suggested_outbound_count": 14,
+      "authority": 3.5
     }
   },
   {
@@ -3845,6 +4174,13 @@
         "symbolizes",
         "both"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 23,
+      "existing_outbound_count": 7,
+      "suggested_outbound_count": 16,
+      "authority": 3.5
     }
   },
   {
@@ -3924,6 +4260,13 @@
         "relentless",
         "conflicts"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 24,
+      "existing_outbound_count": 7,
+      "suggested_outbound_count": 17,
+      "authority": 3.5
     }
   },
   {
@@ -4006,6 +4349,13 @@
         "s",
         "bl"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 21,
+      "existing_outbound_count": 7,
+      "suggested_outbound_count": 14,
+      "authority": 3.5
     }
   },
   {
@@ -4078,6 +4428,13 @@
         "and",
         "incentives"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 21,
+      "existing_outbound_count": 4,
+      "suggested_outbound_count": 17,
+      "authority": 2
     }
   },
   {
@@ -4158,6 +4515,13 @@
         "turns",
         "metavers"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 24,
+      "existing_outbound_count": 7,
+      "suggested_outbound_count": 17,
+      "authority": 3.5
     }
   },
   {
@@ -4244,6 +4608,13 @@
         "blockchain",
         "battl"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 21,
+      "existing_outbound_count": 7,
+      "suggested_outbound_count": 14,
+      "authority": 3.5
     }
   },
   {
@@ -4341,6 +4712,13 @@
         "chaos",
         "fallout"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 17,
+      "existing_outbound_count": 7,
+      "suggested_outbound_count": 10,
+      "authority": 3.5
     }
   },
   {
@@ -4422,6 +4800,13 @@
         "from",
         "shattered"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 24,
+      "existing_outbound_count": 7,
+      "suggested_outbound_count": 17,
+      "authority": 3.5
     }
   },
   {
@@ -4495,6 +4880,13 @@
         "managing",
         "cryptocurrency"
       ]
+    },
+    "link_score": {
+      "inbound_count": 1,
+      "outbound_count": 17,
+      "existing_outbound_count": 5,
+      "suggested_outbound_count": 12,
+      "authority": 4.5
     }
   },
   {
@@ -4568,6 +4960,13 @@
         "the",
         "blockchain"
       ]
+    },
+    "link_score": {
+      "inbound_count": 1,
+      "outbound_count": 33,
+      "existing_outbound_count": 4,
+      "suggested_outbound_count": 29,
+      "authority": 4
     }
   },
   {
@@ -4649,6 +5048,13 @@
         "creations",
         "shap"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 22,
+      "existing_outbound_count": 7,
+      "suggested_outbound_count": 15,
+      "authority": 3.5
     }
   },
   {
@@ -4728,6 +5134,13 @@
         "across",
         "turbul"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 18,
+      "existing_outbound_count": 7,
+      "suggested_outbound_count": 11,
+      "authority": 3.5
     }
   },
   {
@@ -4797,6 +5210,13 @@
         "blockchain",
         "technology"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 22,
+      "existing_outbound_count": 4,
+      "suggested_outbound_count": 18,
+      "authority": 2
     }
   },
   {
@@ -4871,6 +5291,13 @@
         "all",
         "cryptocurrencies"
       ]
+    },
+    "link_score": {
+      "inbound_count": 1,
+      "outbound_count": 26,
+      "existing_outbound_count": 4,
+      "suggested_outbound_count": 22,
+      "authority": 4
     }
   },
   {
@@ -4953,6 +5380,13 @@
         "every",
         "f"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 20,
+      "existing_outbound_count": 7,
+      "suggested_outbound_count": 13,
+      "authority": 3.5
     }
   },
   {
@@ -5044,6 +5478,13 @@
         "their",
         "m"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 23,
+      "existing_outbound_count": 7,
+      "suggested_outbound_count": 16,
+      "authority": 3.5
     }
   },
   {
@@ -5118,6 +5559,13 @@
         "dex",
         "varieties"
       ]
+    },
+    "link_score": {
+      "inbound_count": 1,
+      "outbound_count": 16,
+      "existing_outbound_count": 3,
+      "suggested_outbound_count": 13,
+      "authority": 3.5
     }
   },
   {
@@ -5201,6 +5649,13 @@
         "blockchain",
         "for"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 21,
+      "existing_outbound_count": 7,
+      "suggested_outbound_count": 14,
+      "authority": 3.5
     }
   },
   {
@@ -5283,6 +5738,13 @@
         "up",
         "a"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 25,
+      "existing_outbound_count": 7,
+      "suggested_outbound_count": 18,
+      "authority": 3.5
     }
   },
   {
@@ -5367,6 +5829,13 @@
         "weapon",
         "in"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 18,
+      "existing_outbound_count": 7,
+      "suggested_outbound_count": 11,
+      "authority": 3.5
     }
   },
   {
@@ -5446,6 +5915,13 @@
         "more",
         "memecoins"
       ]
+    },
+    "link_score": {
+      "inbound_count": 1,
+      "outbound_count": 20,
+      "existing_outbound_count": 4,
+      "suggested_outbound_count": 16,
+      "authority": 4
     }
   },
   {
@@ -5526,6 +6002,13 @@
         "undetected",
         "leveragin"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 27,
+      "existing_outbound_count": 7,
+      "suggested_outbound_count": 20,
+      "authority": 3.5
     }
   },
   {
@@ -5603,6 +6086,13 @@
         "leadership",
         "alfie"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 32,
+      "existing_outbound_count": 7,
+      "suggested_outbound_count": 25,
+      "authority": 3.5
     }
   },
   {
@@ -5688,6 +6178,13 @@
         "that",
         "disarms"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 16,
+      "existing_outbound_count": 7,
+      "suggested_outbound_count": 9,
+      "authority": 3.5
     }
   },
   {
@@ -5774,6 +6271,13 @@
         "defiance",
         "aga"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 25,
+      "existing_outbound_count": 7,
+      "suggested_outbound_count": 18,
+      "authority": 3.5
     }
   },
   {
@@ -5858,6 +6362,13 @@
         "city",
         "their"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 18,
+      "existing_outbound_count": 7,
+      "suggested_outbound_count": 11,
+      "authority": 3.5
     }
   },
   {
@@ -5944,6 +6455,13 @@
         "forms",
         "bedrock"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 18,
+      "existing_outbound_count": 7,
+      "suggested_outbound_count": 11,
+      "authority": 3.5
     }
   },
   {
@@ -6023,6 +6541,13 @@
         "blockchain",
         "nodes"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 21,
+      "existing_outbound_count": 7,
+      "suggested_outbound_count": 14,
+      "authority": 3.5
     }
   },
   {
@@ -6108,6 +6633,13 @@
         "deepest",
         "sha"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 18,
+      "existing_outbound_count": 7,
+      "suggested_outbound_count": 11,
+      "authority": 3.5
     }
   },
   {
@@ -6193,6 +6725,13 @@
         "attempting",
         "shackle"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 18,
+      "existing_outbound_count": 7,
+      "suggested_outbound_count": 11,
+      "authority": 3.5
     }
   },
   {
@@ -6280,6 +6819,13 @@
         "fragments",
         "t"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 18,
+      "existing_outbound_count": 7,
+      "suggested_outbound_count": 11,
+      "authority": 3.5
     }
   },
   {
@@ -6363,6 +6909,13 @@
         "exploit",
         "throug"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 21,
+      "existing_outbound_count": 7,
+      "suggested_outbound_count": 14,
+      "authority": 3.5
     }
   },
   {
@@ -6446,6 +6999,13 @@
         "blockchain",
         "asse"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 21,
+      "existing_outbound_count": 7,
+      "suggested_outbound_count": 14,
+      "authority": 3.5
     }
   },
   {
@@ -6526,6 +7086,13 @@
         "digital",
         "re"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 19,
+      "existing_outbound_count": 7,
+      "suggested_outbound_count": 12,
+      "authority": 3.5
     }
   },
   {
@@ -6607,6 +7174,13 @@
         "street",
         "cul"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 23,
+      "existing_outbound_count": 7,
+      "suggested_outbound_count": 16,
+      "authority": 3.5
     }
   },
   {
@@ -6689,6 +7263,13 @@
         "volatile",
         "realm"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 18,
+      "existing_outbound_count": 7,
+      "suggested_outbound_count": 11,
+      "authority": 3.5
     }
   },
   {
@@ -6769,6 +7350,13 @@
         "significant",
         "sw"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 15,
+      "existing_outbound_count": 7,
+      "suggested_outbound_count": 8,
+      "authority": 3.5
     }
   },
   {
@@ -6859,6 +7447,13 @@
         "sharp",
         "ski"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 20,
+      "existing_outbound_count": 7,
+      "suggested_outbound_count": 13,
+      "authority": 3.5
     }
   },
   {
@@ -6937,6 +7532,13 @@
         "three",
         "c"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 33,
+      "existing_outbound_count": 7,
+      "suggested_outbound_count": 26,
+      "authority": 3.5
     }
   },
   {
@@ -7007,6 +7609,13 @@
         "yield",
         "farming"
       ]
+    },
+    "link_score": {
+      "inbound_count": 1,
+      "outbound_count": 19,
+      "existing_outbound_count": 3,
+      "suggested_outbound_count": 16,
+      "authority": 3.5
     }
   },
   {
@@ -7091,6 +7700,13 @@
         "block",
         "topia"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 22,
+      "existing_outbound_count": 7,
+      "suggested_outbound_count": 15,
+      "authority": 3.5
     }
   },
   {
@@ -7176,6 +7792,13 @@
         "defy",
         "conve"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 21,
+      "existing_outbound_count": 7,
+      "suggested_outbound_count": 14,
+      "authority": 3.5
     }
   },
   {
@@ -7255,6 +7878,13 @@
         "tied",
         "graf"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 35,
+      "existing_outbound_count": 0,
+      "suggested_outbound_count": 35,
+      "authority": 0
     }
   },
   {
@@ -7337,6 +7967,13 @@
         "realm",
         "block"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 17,
+      "existing_outbound_count": 7,
+      "suggested_outbound_count": 10,
+      "authority": 3.5
     }
   },
   {
@@ -7423,6 +8060,13 @@
         "key",
         "terri"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 17,
+      "existing_outbound_count": 7,
+      "suggested_outbound_count": 10,
+      "authority": 3.5
     }
   },
   {
@@ -7504,6 +8148,13 @@
         "her",
         "criti"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 18,
+      "existing_outbound_count": 7,
+      "suggested_outbound_count": 11,
+      "authority": 3.5
     }
   },
   {
@@ -7588,6 +8239,13 @@
         "their",
         "ene"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 16,
+      "existing_outbound_count": 7,
+      "suggested_outbound_count": 9,
+      "authority": 3.5
     }
   },
   {
@@ -7669,6 +8327,13 @@
         "truths",
         "withi"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 19,
+      "existing_outbound_count": 7,
+      "suggested_outbound_count": 12,
+      "authority": 3.5
     }
   },
   {
@@ -7755,6 +8420,13 @@
         "over",
         "th"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 21,
+      "existing_outbound_count": 7,
+      "suggested_outbound_count": 14,
+      "authority": 3.5
     }
   },
   {
@@ -7837,6 +8509,13 @@
         "brutal",
         "spirit"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 14,
+      "existing_outbound_count": 7,
+      "suggested_outbound_count": 7,
+      "authority": 3.5
     }
   },
   {
@@ -7925,6 +8604,13 @@
         "tied",
         "to"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 18,
+      "existing_outbound_count": 7,
+      "suggested_outbound_count": 11,
+      "authority": 3.5
     }
   },
   {
@@ -8004,6 +8690,13 @@
         "in",
         "fierce"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 35,
+      "existing_outbound_count": 7,
+      "suggested_outbound_count": 28,
+      "authority": 3.5
     }
   },
   {
@@ -8085,6 +8778,13 @@
         "unleashed",
         "rallying"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 35,
+      "existing_outbound_count": 7,
+      "suggested_outbound_count": 28,
+      "authority": 3.5
     }
   },
   {
@@ -8172,6 +8872,13 @@
         "art",
         "messa"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 21,
+      "existing_outbound_count": 7,
+      "suggested_outbound_count": 14,
+      "authority": 3.5
     }
   },
   {
@@ -8254,6 +8961,13 @@
         "uncanny",
         "advan"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 24,
+      "existing_outbound_count": 7,
+      "suggested_outbound_count": 17,
+      "authority": 3.5
     }
   },
   {
@@ -8338,6 +9052,13 @@
         "are",
         "tested"
       ]
+    },
+    "link_score": {
+      "inbound_count": 1,
+      "outbound_count": 33,
+      "existing_outbound_count": 7,
+      "suggested_outbound_count": 26,
+      "authority": 5.5
     }
   },
   {
@@ -8421,6 +9142,13 @@
         "combat",
         "p"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 22,
+      "existing_outbound_count": 7,
+      "suggested_outbound_count": 15,
+      "authority": 3.5
     }
   },
   {
@@ -8491,6 +9219,13 @@
         "thousands",
         "more"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 21,
+      "existing_outbound_count": 3,
+      "suggested_outbound_count": 18,
+      "authority": 1.5
     }
   },
   {
@@ -8572,6 +9307,13 @@
         "marks",
         "defy"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 24,
+      "existing_outbound_count": 7,
+      "suggested_outbound_count": 17,
+      "authority": 3.5
     }
   },
   {
@@ -8654,6 +9396,13 @@
         "corners",
         "block"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 17,
+      "existing_outbound_count": 7,
+      "suggested_outbound_count": 10,
+      "authority": 3.5
     }
   },
   {
@@ -8736,6 +9485,13 @@
         "blockchain",
         "sha"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 23,
+      "existing_outbound_count": 7,
+      "suggested_outbound_count": 16,
+      "authority": 3.5
     }
   },
   {
@@ -8817,6 +9573,13 @@
         "centralized",
         "oppression"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 32,
+      "existing_outbound_count": 7,
+      "suggested_outbound_count": 25,
+      "authority": 3.5
     }
   },
   {
@@ -8899,6 +9662,13 @@
         "make",
         "h"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 22,
+      "existing_outbound_count": 7,
+      "suggested_outbound_count": 15,
+      "authority": 3.5
     }
   },
   {
@@ -8980,6 +9750,13 @@
         "splits",
         "blo"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 17,
+      "existing_outbound_count": 7,
+      "suggested_outbound_count": 10,
+      "authority": 3.5
     }
   },
   {
@@ -9063,6 +9840,13 @@
         "brutal",
         "metavers"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 20,
+      "existing_outbound_count": 7,
+      "suggested_outbound_count": 13,
+      "authority": 3.5
     }
   },
   {
@@ -9145,6 +9929,13 @@
         "s",
         "blo"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 17,
+      "existing_outbound_count": 7,
+      "suggested_outbound_count": 10,
+      "authority": 3.5
     }
   },
   {
@@ -9227,6 +10018,13 @@
         "s",
         "digita"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 17,
+      "existing_outbound_count": 7,
+      "suggested_outbound_count": 10,
+      "authority": 3.5
     }
   },
   {
@@ -9307,6 +10105,13 @@
         "underbelly",
         "h"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 18,
+      "existing_outbound_count": 7,
+      "suggested_outbound_count": 11,
+      "authority": 3.5
     }
   },
   {
@@ -9388,6 +10193,13 @@
         "underbelly",
         "with"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 18,
+      "existing_outbound_count": 7,
+      "suggested_outbound_count": 11,
+      "authority": 3.5
     }
   },
   {
@@ -9463,6 +10275,13 @@
         "hodl",
         "warrior"
       ]
+    },
+    "link_score": {
+      "inbound_count": 147,
+      "outbound_count": 33,
+      "existing_outbound_count": 6,
+      "suggested_outbound_count": 27,
+      "authority": 297
     }
   },
   {
@@ -9544,6 +10363,13 @@
         "divergences",
         "reshapes"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 20,
+      "existing_outbound_count": 7,
+      "suggested_outbound_count": 13,
+      "authority": 3.5
     }
   },
   {
@@ -9625,6 +10451,13 @@
         "metaverse",
         "tradin"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 20,
+      "existing_outbound_count": 7,
+      "suggested_outbound_count": 13,
+      "authority": 3.5
     }
   },
   {
@@ -9702,6 +10535,13 @@
         "unbridled",
         "energ"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 39,
+      "existing_outbound_count": 7,
+      "suggested_outbound_count": 32,
+      "authority": 3.5
     }
   },
   {
@@ -9783,6 +10623,13 @@
         "creative",
         "ass"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 20,
+      "existing_outbound_count": 7,
+      "suggested_outbound_count": 13,
+      "authority": 3.5
     }
   },
   {
@@ -9864,6 +10711,13 @@
         "nft",
         "ow"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 31,
+      "existing_outbound_count": 7,
+      "suggested_outbound_count": 24,
+      "authority": 3.5
     }
   },
   {
@@ -9943,6 +10797,13 @@
         "that",
         "holde"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 32,
+      "existing_outbound_count": 7,
+      "suggested_outbound_count": 25,
+      "authority": 3.5
     }
   },
   {
@@ -10025,6 +10886,13 @@
         "from",
         "above"
       ]
+    },
+    "link_score": {
+      "inbound_count": 1,
+      "outbound_count": 33,
+      "existing_outbound_count": 7,
+      "suggested_outbound_count": 26,
+      "authority": 5.5
     }
   },
   {
@@ -10109,6 +10977,13 @@
         "topia",
         "to"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 38,
+      "existing_outbound_count": 7,
+      "suggested_outbound_count": 31,
+      "authority": 3.5
     }
   },
   {
@@ -10186,6 +11061,13 @@
         "every",
         "warrior"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 34,
+      "existing_outbound_count": 7,
+      "suggested_outbound_count": 27,
+      "authority": 3.5
     }
   },
   {
@@ -10261,6 +11143,13 @@
         "when",
         "lambo"
       ]
+    },
+    "link_score": {
+      "inbound_count": 146,
+      "outbound_count": 31,
+      "existing_outbound_count": 6,
+      "suggested_outbound_count": 25,
+      "authority": 295
     }
   },
   {
@@ -10339,6 +11228,13 @@
         "exhibition",
         "eve"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 18,
+      "existing_outbound_count": 7,
+      "suggested_outbound_count": 11,
+      "authority": 3.5
     }
   },
   {
@@ -10417,6 +11313,13 @@
         "s",
         "underbelly"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 17,
+      "existing_outbound_count": 7,
+      "suggested_outbound_count": 10,
+      "authority": 3.5
     }
   },
   {
@@ -10497,6 +11400,13 @@
         "for",
         "terri"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 43,
+      "existing_outbound_count": 7,
+      "suggested_outbound_count": 36,
+      "authority": 3.5
     }
   },
   {
@@ -10581,6 +11491,13 @@
         "panic",
         "buyers"
       ]
+    },
+    "link_score": {
+      "inbound_count": 1,
+      "outbound_count": 28,
+      "existing_outbound_count": 7,
+      "suggested_outbound_count": 21,
+      "authority": 5.5
     }
   },
   {
@@ -10657,6 +11574,13 @@
         "wars",
         "lore"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 31,
+      "existing_outbound_count": 7,
+      "suggested_outbound_count": 24,
+      "authority": 3.5
     }
   },
   {
@@ -10732,6 +11656,13 @@
         "wars",
         "we"
       ]
+    },
+    "link_score": {
+      "inbound_count": 1,
+      "outbound_count": 31,
+      "existing_outbound_count": 7,
+      "suggested_outbound_count": 24,
+      "authority": 5.5
     }
   },
   {
@@ -10808,6 +11739,13 @@
         "investor",
         "funds"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 32,
+      "existing_outbound_count": 7,
+      "suggested_outbound_count": 25,
+      "authority": 3.5
     }
   },
   {
@@ -10891,6 +11829,13 @@
         "pilot",
         "tokenize"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 39,
+      "existing_outbound_count": 0,
+      "suggested_outbound_count": 39,
+      "authority": 0
     }
   },
   {
@@ -10974,6 +11919,13 @@
         "where",
         "unera"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 36,
+      "existing_outbound_count": 7,
+      "suggested_outbound_count": 29,
+      "authority": 3.5
     }
   },
   {
@@ -11052,6 +12004,13 @@
         "to",
         "legend"
       ]
+    },
+    "link_score": {
+      "inbound_count": 1,
+      "outbound_count": 39,
+      "existing_outbound_count": 7,
+      "suggested_outbound_count": 32,
+      "authority": 5.5
     }
   },
   {
@@ -11129,6 +12088,13 @@
         "the",
         "universe"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 25,
+      "existing_outbound_count": 7,
+      "suggested_outbound_count": 18,
+      "authority": 3.5
     }
   },
   {
@@ -11207,6 +12173,13 @@
         "energy",
         "street"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 46,
+      "existing_outbound_count": 7,
+      "suggested_outbound_count": 39,
+      "authority": 3.5
     }
   },
   {
@@ -11283,6 +12256,13 @@
         "make",
         "it"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 32,
+      "existing_outbound_count": 7,
+      "suggested_outbound_count": 25,
+      "authority": 3.5
     }
   },
   {
@@ -11368,6 +12348,13 @@
         "culture",
         "si"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 29,
+      "existing_outbound_count": 7,
+      "suggested_outbound_count": 22,
+      "authority": 3.5
     }
   },
   {
@@ -11452,6 +12439,13 @@
         "within",
         "cryp"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 22,
+      "existing_outbound_count": 7,
+      "suggested_outbound_count": 15,
+      "authority": 3.5
     }
   },
   {
@@ -11532,6 +12526,13 @@
         "splinter",
         "f"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 21,
+      "existing_outbound_count": 7,
+      "suggested_outbound_count": 14,
+      "authority": 3.5
     }
   },
   {
@@ -11615,6 +12616,13 @@
         "to",
         "im"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 32,
+      "existing_outbound_count": 7,
+      "suggested_outbound_count": 25,
+      "authority": 3.5
     }
   },
   {
@@ -11698,6 +12706,13 @@
         "fully",
         "rev"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 26,
+      "existing_outbound_count": 7,
+      "suggested_outbound_count": 19,
+      "authority": 3.5
     }
   },
   {
@@ -11780,6 +12795,13 @@
         "awe",
         "r"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 34,
+      "existing_outbound_count": 7,
+      "suggested_outbound_count": 27,
+      "authority": 3.5
     }
   },
   {
@@ -11861,6 +12883,13 @@
         "force",
         "tha"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 43,
+      "existing_outbound_count": 7,
+      "suggested_outbound_count": 36,
+      "authority": 3.5
     }
   },
   {
@@ -11941,6 +12970,13 @@
         "the",
         "universe"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 26,
+      "existing_outbound_count": 7,
+      "suggested_outbound_count": 19,
+      "authority": 3.5
     }
   },
   {
@@ -12020,6 +13056,13 @@
         "and",
         "mechan"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 50,
+      "existing_outbound_count": 7,
+      "suggested_outbound_count": 43,
+      "authority": 3.5
     }
   },
   {
@@ -12088,6 +13131,13 @@
         "music",
         "revolutionaries"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 45,
+      "existing_outbound_count": 7,
+      "suggested_outbound_count": 38,
+      "authority": 3.5
     }
   },
   {
@@ -12168,6 +13218,13 @@
         "by",
         "gknif"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 40,
+      "existing_outbound_count": 7,
+      "suggested_outbound_count": 33,
+      "authority": 3.5
     }
   },
   {
@@ -12248,6 +13305,13 @@
         "and",
         "sacr"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 35,
+      "existing_outbound_count": 0,
+      "suggested_outbound_count": 35,
+      "authority": 0
     }
   },
   {
@@ -12326,6 +13390,13 @@
         "cultural",
         "undercurrents"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 24,
+      "existing_outbound_count": 7,
+      "suggested_outbound_count": 17,
+      "authority": 3.5
     }
   },
   {
@@ -12407,6 +13478,13 @@
         "block",
         "topia"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 30,
+      "existing_outbound_count": 0,
+      "suggested_outbound_count": 30,
+      "authority": 0
     }
   },
   {
@@ -12470,6 +13548,13 @@
         "moonboys",
         "wiki"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 16,
+      "existing_outbound_count": 7,
+      "suggested_outbound_count": 9,
+      "authority": 3.5
     }
   },
   {
@@ -12543,6 +13628,13 @@
         "and",
         "artistry"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 23,
+      "existing_outbound_count": 7,
+      "suggested_outbound_count": 16,
+      "authority": 3.5
     }
   },
   {
@@ -12626,6 +13718,13 @@
         "lore",
         "graffpunkssubstackcom"
       ]
+    },
+    "link_score": {
+      "inbound_count": 1,
+      "outbound_count": 33,
+      "existing_outbound_count": 7,
+      "suggested_outbound_count": 26,
+      "authority": 5.5
     }
   },
   {
@@ -12696,6 +13795,13 @@
         "street",
         "rebellion"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 25,
+      "existing_outbound_count": 7,
+      "suggested_outbound_count": 18,
+      "authority": 3.5
     }
   },
   {
@@ -12764,6 +13870,13 @@
         "street",
         "rebellion"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 21,
+      "existing_outbound_count": 7,
+      "suggested_outbound_count": 14,
+      "authority": 3.5
     }
   },
   {
@@ -12831,6 +13944,13 @@
         "under",
         "alfie"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 26,
+      "existing_outbound_count": 7,
+      "suggested_outbound_count": 19,
+      "authority": 3.5
     }
   },
   {
@@ -12906,6 +14026,13 @@
         "block",
         "topia"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 23,
+      "existing_outbound_count": 7,
+      "suggested_outbound_count": 16,
+      "authority": 3.5
     }
   },
   {
@@ -12973,6 +14100,13 @@
         "decentralized",
         "values"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 25,
+      "existing_outbound_count": 7,
+      "suggested_outbound_count": 18,
+      "authority": 3.5
     }
   },
   {
@@ -13041,6 +14175,13 @@
         "gkniftyheads",
         "rebellion"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 20,
+      "existing_outbound_count": 7,
+      "suggested_outbound_count": 13,
+      "authority": 3.5
     }
   },
   {
@@ -13105,6 +14246,13 @@
         "moonboys",
         "wiki"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 25,
+      "existing_outbound_count": 7,
+      "suggested_outbound_count": 18,
+      "authority": 3.5
     }
   },
   {
@@ -13177,6 +14325,13 @@
         "visionary",
         "behind"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 21,
+      "existing_outbound_count": 7,
+      "suggested_outbound_count": 14,
+      "authority": 3.5
     }
   },
   {
@@ -13250,6 +14405,13 @@
         "and",
         "xrpl"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 28,
+      "existing_outbound_count": 7,
+      "suggested_outbound_count": 21,
+      "authority": 3.5
     }
   },
   {
@@ -13327,6 +14489,13 @@
         "community",
         "247"
       ]
+    },
+    "link_score": {
+      "inbound_count": 1,
+      "outbound_count": 30,
+      "existing_outbound_count": 7,
+      "suggested_outbound_count": 23,
+      "authority": 5.5
     }
   },
   {
@@ -13401,6 +14570,13 @@
         "the",
         "universe"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 21,
+      "existing_outbound_count": 7,
+      "suggested_outbound_count": 14,
+      "authority": 3.5
     }
   },
   {
@@ -13472,6 +14648,13 @@
         "other",
         "mechanics"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 36,
+      "existing_outbound_count": 7,
+      "suggested_outbound_count": 29,
+      "authority": 3.5
     }
   },
   {
@@ -13543,6 +14726,13 @@
         "fork",
         "games"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 26,
+      "existing_outbound_count": 7,
+      "suggested_outbound_count": 19,
+      "authority": 3.5
     }
   },
   {
@@ -13615,6 +14805,13 @@
         "digital",
         "graffiti"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 20,
+      "existing_outbound_count": 7,
+      "suggested_outbound_count": 13,
+      "authority": 3.5
     }
   },
   {
@@ -13684,6 +14881,13 @@
         "the",
         "universe"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 22,
+      "existing_outbound_count": 7,
+      "suggested_outbound_count": 15,
+      "authority": 3.5
     }
   },
   {
@@ -13752,6 +14956,13 @@
         "themes",
         "on"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 22,
+      "existing_outbound_count": 7,
+      "suggested_outbound_count": 15,
+      "authority": 3.5
     }
   },
   {
@@ -13820,6 +15031,13 @@
         "loanable",
         "metadata"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 16,
+      "existing_outbound_count": 7,
+      "suggested_outbound_count": 9,
+      "authority": 3.5
     }
   },
   {
@@ -13889,6 +15107,13 @@
         "charlie",
         "buster"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 31,
+      "existing_outbound_count": 7,
+      "suggested_outbound_count": 24,
+      "authority": 3.5
     }
   },
   {
@@ -13957,6 +15182,13 @@
         "from",
         "on"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 18,
+      "existing_outbound_count": 7,
+      "suggested_outbound_count": 11,
+      "authority": 3.5
     }
   },
   {
@@ -14025,6 +15257,13 @@
         "from",
         "on"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 30,
+      "existing_outbound_count": 7,
+      "suggested_outbound_count": 23,
+      "authority": 3.5
     }
   },
   {
@@ -14093,6 +15332,13 @@
         "from",
         "on"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 16,
+      "existing_outbound_count": 7,
+      "suggested_outbound_count": 9,
+      "authority": 3.5
     }
   },
   {
@@ -14161,6 +15407,13 @@
         "from",
         "on"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 21,
+      "existing_outbound_count": 7,
+      "suggested_outbound_count": 14,
+      "authority": 3.5
     }
   },
   {
@@ -14229,6 +15482,13 @@
         "tied",
         "to"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 17,
+      "existing_outbound_count": 7,
+      "suggested_outbound_count": 10,
+      "authority": 3.5
     }
   },
   {
@@ -14295,6 +15555,13 @@
         "staking",
         "nfts"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 32,
+      "existing_outbound_count": 7,
+      "suggested_outbound_count": 25,
+      "authority": 3.5
     }
   },
   {
@@ -14361,6 +15628,13 @@
         "in",
         "lore"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 19,
+      "existing_outbound_count": 7,
+      "suggested_outbound_count": 12,
+      "authority": 3.5
     }
   },
   {
@@ -14428,6 +15702,13 @@
         "to",
         "earn"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 24,
+      "existing_outbound_count": 7,
+      "suggested_outbound_count": 17,
+      "authority": 3.5
     }
   },
   {
@@ -14493,6 +15774,13 @@
         "female",
         "nft"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 17,
+      "existing_outbound_count": 7,
+      "suggested_outbound_count": 10,
+      "authority": 3.5
     }
   },
   {
@@ -14560,6 +15848,13 @@
         "blockchain",
         "realm"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 19,
+      "existing_outbound_count": 7,
+      "suggested_outbound_count": 12,
+      "authority": 3.5
     }
   },
   {
@@ -14624,6 +15919,13 @@
         "wax",
         "platform"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 25,
+      "existing_outbound_count": 7,
+      "suggested_outbound_count": 18,
+      "authority": 3.5
     }
   },
   {
@@ -14688,6 +15990,13 @@
         "for",
         "on"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 30,
+      "existing_outbound_count": 7,
+      "suggested_outbound_count": 23,
+      "authority": 3.5
     }
   },
   {
@@ -14754,6 +16063,13 @@
         "competitive",
         "lore"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 22,
+      "existing_outbound_count": 7,
+      "suggested_outbound_count": 15,
+      "authority": 3.5
     }
   },
   {
@@ -14820,6 +16136,13 @@
         "system",
         "via"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 22,
+      "existing_outbound_count": 7,
+      "suggested_outbound_count": 15,
+      "authority": 3.5
     }
   },
   {
@@ -14885,6 +16208,13 @@
         "reward",
         "system"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 21,
+      "existing_outbound_count": 7,
+      "suggested_outbound_count": 14,
+      "authority": 3.5
     }
   },
   {
@@ -14948,6 +16278,13 @@
         "mini",
         "on"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 19,
+      "existing_outbound_count": 7,
+      "suggested_outbound_count": 12,
+      "authority": 3.5
     }
   },
   {
@@ -15011,6 +16348,13 @@
         "digital",
         "battleground"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 12,
+      "existing_outbound_count": 7,
+      "suggested_outbound_count": 5,
+      "authority": 3.5
     }
   },
   {
@@ -15085,6 +16429,13 @@
         "wiki",
         "247"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 19,
+      "existing_outbound_count": 1,
+      "suggested_outbound_count": 18,
+      "authority": 0.5
     }
   },
   {
@@ -15155,6 +16506,13 @@
         "moonboys",
         "wiki"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 2,
+      "existing_outbound_count": 1,
+      "suggested_outbound_count": 1,
+      "authority": 0.5
     }
   },
   {
@@ -15227,6 +16585,13 @@
         "wiki",
         "graffpunkssubstackcom"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 16,
+      "existing_outbound_count": 1,
+      "suggested_outbound_count": 15,
+      "authority": 0.5
     }
   },
   {
@@ -15295,6 +16660,13 @@
         "moonboys",
         "wiki"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 13,
+      "existing_outbound_count": 1,
+      "suggested_outbound_count": 12,
+      "authority": 0.5
     }
   },
   {
@@ -15361,6 +16733,13 @@
         "wiki",
         "samaelexe"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 2,
+      "existing_outbound_count": 1,
+      "suggested_outbound_count": 1,
+      "authority": 0.5
     }
   },
   {
@@ -15428,6 +16807,13 @@
         "moonboys",
         "wiki"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 2,
+      "existing_outbound_count": 1,
+      "suggested_outbound_count": 1,
+      "authority": 0.5
     }
   },
   {
@@ -15490,6 +16876,13 @@
         "moonboys",
         "wiki"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 19,
+      "existing_outbound_count": 7,
+      "suggested_outbound_count": 12,
+      "authority": 3.5
     }
   },
   {
@@ -15553,6 +16946,13 @@
         "moonboys",
         "wiki"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 2,
+      "existing_outbound_count": 1,
+      "suggested_outbound_count": 1,
+      "authority": 0.5
     }
   },
   {
@@ -15617,6 +17017,13 @@
         "moonboys",
         "wiki"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 5,
+      "existing_outbound_count": 0,
+      "suggested_outbound_count": 5,
+      "authority": 0
     }
   },
   {
@@ -15679,6 +17086,13 @@
         "moonboys",
         "wiki"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 4,
+      "existing_outbound_count": 0,
+      "suggested_outbound_count": 4,
+      "authority": 0
     }
   },
   {
@@ -15741,6 +17155,13 @@
         "moonboys",
         "wiki"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 24,
+      "existing_outbound_count": 0,
+      "suggested_outbound_count": 24,
+      "authority": 0
     }
   },
   {
@@ -15808,6 +17229,13 @@
         "moonboys",
         "wiki"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 2,
+      "existing_outbound_count": 1,
+      "suggested_outbound_count": 1,
+      "authority": 0.5
     }
   },
   {
@@ -15869,6 +17297,13 @@
         "moonboys",
         "wiki"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 5,
+      "existing_outbound_count": 0,
+      "suggested_outbound_count": 5,
+      "authority": 0
     }
   },
   {
@@ -15933,6 +17368,13 @@
         "moonboys",
         "wiki"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 11,
+      "existing_outbound_count": 0,
+      "suggested_outbound_count": 11,
+      "authority": 0
     }
   },
   {
@@ -15997,6 +17439,13 @@
         "moonboys",
         "wiki"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 9,
+      "existing_outbound_count": 0,
+      "suggested_outbound_count": 9,
+      "authority": 0
     }
   },
   {
@@ -16059,6 +17508,13 @@
         "moonboys",
         "wiki"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 1,
+      "existing_outbound_count": 0,
+      "suggested_outbound_count": 1,
+      "authority": 0
     }
   },
   {
@@ -16121,6 +17577,13 @@
         "moonboys",
         "wiki"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 16,
+      "existing_outbound_count": 0,
+      "suggested_outbound_count": 16,
+      "authority": 0
     }
   },
   {
@@ -16183,6 +17646,13 @@
         "moonboys",
         "wiki"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 16,
+      "existing_outbound_count": 0,
+      "suggested_outbound_count": 16,
+      "authority": 0
     }
   },
   {
@@ -16245,6 +17715,13 @@
         "moonboys",
         "wiki"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 1,
+      "existing_outbound_count": 0,
+      "suggested_outbound_count": 1,
+      "authority": 0
     }
   },
   {
@@ -16307,6 +17784,13 @@
         "moonboys",
         "wiki"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 1,
+      "existing_outbound_count": 0,
+      "suggested_outbound_count": 1,
+      "authority": 0
     }
   },
   {
@@ -16373,6 +17857,13 @@
         "wiki",
         "memecoins"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 3,
+      "existing_outbound_count": 1,
+      "suggested_outbound_count": 2,
+      "authority": 0.5
     }
   },
   {
@@ -16440,6 +17931,13 @@
         "moonboys",
         "wiki"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 3,
+      "existing_outbound_count": 1,
+      "suggested_outbound_count": 2,
+      "authority": 0.5
     }
   },
   {
@@ -16507,6 +18005,13 @@
         "moonboys",
         "wiki"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 3,
+      "existing_outbound_count": 1,
+      "suggested_outbound_count": 2,
+      "authority": 0.5
     }
   },
   {
@@ -16568,6 +18073,13 @@
         "moonboys",
         "wiki"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 9,
+      "existing_outbound_count": 0,
+      "suggested_outbound_count": 9,
+      "authority": 0
     }
   },
   {
@@ -16633,6 +18145,13 @@
         "moonboys",
         "wiki"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 9,
+      "existing_outbound_count": 1,
+      "suggested_outbound_count": 8,
+      "authority": 0.5
     }
   },
   {
@@ -16698,6 +18217,13 @@
         "moonboys",
         "wiki"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 6,
+      "existing_outbound_count": 1,
+      "suggested_outbound_count": 5,
+      "authority": 0.5
     }
   },
   {
@@ -16763,6 +18289,13 @@
         "moonboys",
         "wiki"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 3,
+      "existing_outbound_count": 1,
+      "suggested_outbound_count": 2,
+      "authority": 0.5
     }
   },
   {
@@ -16828,6 +18361,13 @@
         "moonboys",
         "wiki"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 3,
+      "existing_outbound_count": 1,
+      "suggested_outbound_count": 2,
+      "authority": 0.5
     }
   },
   {
@@ -16893,6 +18433,13 @@
         "moonboys",
         "wiki"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 4,
+      "existing_outbound_count": 1,
+      "suggested_outbound_count": 3,
+      "authority": 0.5
     }
   },
   {
@@ -16952,6 +18499,13 @@
         "moonboys",
         "wiki"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 1,
+      "existing_outbound_count": 0,
+      "suggested_outbound_count": 1,
+      "authority": 0
     }
   },
   {
@@ -17015,6 +18569,13 @@
         "moonboys",
         "wiki"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 3,
+      "existing_outbound_count": 1,
+      "suggested_outbound_count": 2,
+      "authority": 0.5
     }
   },
   {
@@ -17074,6 +18635,13 @@
         "moonboys",
         "wiki"
       ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 16,
+      "existing_outbound_count": 7,
+      "suggested_outbound_count": 9,
+      "authority": 3.5
     }
   }
 ]

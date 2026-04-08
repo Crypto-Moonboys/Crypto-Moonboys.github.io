@@ -6,6 +6,7 @@ const ROOT = path.join(__dirname, '..');
 const WIKI_DIR = path.join(ROOT, 'wiki');
 const OUTPUT = path.join(ROOT, 'js', 'wiki-index.json');
 const SAM_MEMORY_PATH = path.join(ROOT, 'sam-memory.json');
+const LINK_GRAPH_PATH = path.join(ROOT, 'js', 'link-graph.json');
 
 function walk(dir) {
   let results = [];
@@ -371,10 +372,45 @@ function buildRankDiagnostics(signals, rankScore) {
   };
 }
 
+function loadLinkGraph() {
+  if (!fs.existsSync(LINK_GRAPH_PATH)) {
+    console.warn('[wiki-index] link-graph.json not found; link_score defaults to 0');
+    return {};
+  }
+  try {
+    return JSON.parse(fs.readFileSync(LINK_GRAPH_PATH, 'utf8'));
+  } catch (err) {
+    console.warn(`[wiki-index] Failed to read link-graph.json: ${err.message}`);
+    return {};
+  }
+}
+
+function buildLinkScore(url, linkGraph) {
+  const entry = linkGraph[url] || null;
+  const inbound_count = entry ? (Number(entry.inbound_count) || 0) : 0;
+  const outbound_count = entry ? (Number(entry.outbound_count) || 0) : 0;
+  const existing_outbound_count = entry && Array.isArray(entry.existing_outbound)
+    ? entry.existing_outbound.length
+    : 0;
+  const suggested_outbound_count = entry && Array.isArray(entry.suggested_outbound)
+    ? entry.suggested_outbound.length
+    : 0;
+  const authority = (inbound_count * 2) + (existing_outbound_count * 0.5);
+
+  return {
+    inbound_count,
+    outbound_count,
+    existing_outbound_count,
+    suggested_outbound_count,
+    authority
+  };
+}
+
 function run() {
   console.log('Generating wiki index...');
 
   const samMemory = loadSamMemory();
+  const linkGraph = loadLinkGraph();
   const files = walk(WIKI_DIR);
   const index = [];
 
@@ -408,6 +444,7 @@ function run() {
     const rankScore = computeRankScore(rankSignals);
     const rankDiagnostics = buildRankDiagnostics(rankSignals, rankScore);
     const searchIndex = buildSearchIndex(title, description, keywords, aliases);
+    const linkScore = buildLinkScore(url, linkGraph);
 
     index.push({
       title,
@@ -419,7 +456,8 @@ function run() {
       rank_score: rankDiagnostics.final_rank_score,
       rank_signals: rankSignals,
       rank_diagnostics: rankDiagnostics,
-      search_index: searchIndex
+      search_index: searchIndex,
+      link_score: linkScore
     });
   });
 
