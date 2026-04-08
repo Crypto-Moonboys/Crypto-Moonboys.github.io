@@ -32,6 +32,14 @@ const WIKI_DIR      = path.join(ROOT, 'wiki');
 const MAX_PER_PAGE    = 3;
 const SNIPPET_RADIUS  = 60; // chars before/after match
 
+const MIN_PARAGRAPH_CHARS = 40; // eligible paragraph must be >= 40 chars
+const MIN_ANCHOR_CHARS    = 6;  // anchor phrase must be >= 6 chars
+
+// Anchors that must not be used as link text
+const ANCHOR_BLOCKLIST = new Set([
+  'nfts', 'token', 'tokens', 'crypto', 'blockchain', 'defi', 'wiki', 'punk',
+]);
+
 // ---------------------------------------------------------------------------
 // Minimal HTML parser using pure regex (no external deps)
 // ---------------------------------------------------------------------------
@@ -103,7 +111,7 @@ function extractEligibleText(html) {
     const inner = match[1] || '';
     // Strip remaining HTML tags from inner content
     const text = inner.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
-    if (text.length > 10) { // skip trivially short pieces
+    if (text.length >= MIN_PARAGRAPH_CHARS) { // skip paragraphs shorter than minimum
       textParts.push(text);
     }
   }
@@ -125,14 +133,17 @@ function deriveAnchorCandidates(targetUrl) {
 }
 
 /**
- * Find the first occurrence of phrase (case-insensitive) in text.
+ * Find the first occurrence of phrase (case-insensitive, word-boundary safe) in text.
  * Returns the matched text and its index, or null.
  */
 function findFirstOccurrence(text, phrase) {
-  const idx = text.toLowerCase().indexOf(phrase.toLowerCase());
-  if (idx === -1) return null;
-  const matchedText = text.slice(idx, idx + phrase.length);
-  return { index: idx, matched: matchedText };
+  // Escape regex special chars in the phrase
+  const escaped = phrase.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  // Use word boundaries to avoid mid-word matches
+  const regex = new RegExp(`\\b${escaped}\\b`, 'i');
+  const match = regex.exec(text);
+  if (!match) return null;
+  return { index: match.index, matched: match[0] };
 }
 
 /**
@@ -193,7 +204,10 @@ function main() {
       const candidates = deriveAnchorCandidates(targetUrl);
 
       for (const phrase of candidates) {
-        if (phrase.length < 3) continue; // skip very short phrases
+        if (phrase.length < MIN_ANCHOR_CHARS) continue; // skip short anchor phrases
+
+        // Skip blocklisted anchor terms
+        if (ANCHOR_BLOCKLIST.has(phrase.toLowerCase())) continue;
 
         const found = findFirstOccurrence(eligibleText, phrase);
         if (!found) continue;

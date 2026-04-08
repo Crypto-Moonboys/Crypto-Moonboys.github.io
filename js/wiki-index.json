@@ -15,7 +15,7 @@
         "title": "graffpunks crypto moonboys wiki"
       }
     ],
-    "rank_score": 745,
+    "rank_score": 749,
     "rank_signals": {
       "is_canonical": true,
       "alias_count": 1,
@@ -24,13 +24,13 @@
       "category": "characters",
       "category_priority": 8,
       "has_description": true,
-      "article_word_count": 11228,
+      "article_word_count": 11229,
       "keyword_bag_size": 22,
       "heading_count": 7,
       "list_count": 4,
-      "internal_link_count": 2,
+      "internal_link_count": 3,
       "content_quality_score": 67,
-      "authority_score": 18
+      "authority_score": 22
     },
     "rank_diagnostics": {
       "canonical_points": 20,
@@ -39,8 +39,8 @@
       "word_count_points": 561,
       "keyword_bag_points": 22,
       "content_quality_points": 74,
-      "authority_points": 18,
-      "final_rank_score": 745,
+      "authority_points": 22,
+      "final_rank_score": 749,
       "authority_graph_points": 0
     },
     "search_index": {
@@ -349,96 +349,6 @@
     }
   },
   {
-    "title": "hodl_warriors — Crypto Moonboys Wiki",
-    "desc": "The HODL Warriors are a legendary and formidable army within the Crypto Moonboys universe, an elite force forged through the brutal trials of the Hard Fork Game",
-    "url": "/wiki/hodl-warriors.html",
-    "tags": [
-      "hodl",
-      "warriors",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "characters",
-    "aliases": [
-      {
-        "title": "hodl warriors crypto moonboys wiki"
-      }
-    ],
-    "rank_score": 666,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 1,
-      "tag_count": 5,
-      "mention_count": 0,
-      "category": "characters",
-      "category_priority": 8,
-      "has_description": true,
-      "article_word_count": 3561,
-      "keyword_bag_size": 25,
-      "heading_count": 7,
-      "list_count": 4,
-      "internal_link_count": 3,
-      "content_quality_score": 71,
-      "authority_score": 22
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 40,
-      "word_count_points": 178,
-      "keyword_bag_points": 25,
-      "content_quality_points": 79,
-      "authority_points": 314,
-      "final_rank_score": 666,
-      "authority_graph_points": 292
-    },
-    "search_index": {
-      "normalized_title": "hodl warriors crypto moonboys wiki",
-      "tokens": [
-        "hodl",
-        "warriors",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "hodl",
-        "warriors",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "the",
-        "are",
-        "a",
-        "legendary",
-        "and",
-        "formidable",
-        "army",
-        "within",
-        "universe",
-        "an",
-        "elite",
-        "force",
-        "forged",
-        "through",
-        "brutal",
-        "trials",
-        "of",
-        "hard",
-        "fork",
-        "game"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 146,
-      "outbound_count": 33,
-      "existing_outbound_count": 0,
-      "suggested_outbound_count": 33,
-      "authority": 292
-    }
-  },
-  {
     "title": "hodl_wars — Crypto Moonboys Wiki",
     "desc": "HODL WARS is the beating heart of conflict in the Crypto Moonboys universe, a live saga and playable NFT game that drives the narrative of rebellion and control",
     "url": "/wiki/hodl-wars.html",
@@ -526,6 +436,94 @@
       "existing_outbound_count": 0,
       "suggested_outbound_count": 35,
       "authority": 294
+    }
+  },
+  {
+    "title": "punk_token — Crypto Moonboys Wiki",
+    "desc": "$PUNK is the pulsating heart of rebellion in the Crypto Moonboys universe, a primary token of the GraffPUNKS and a vital currency that fuels the chaotic undergr",
+    "url": "/wiki/punk-token.html",
+    "tags": [
+      "punk",
+      "token",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "characters",
+    "aliases": [
+      {
+        "title": "punk token crypto moonboys wiki"
+      }
+    ],
+    "rank_score": 659,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 1,
+      "tag_count": 5,
+      "mention_count": 0,
+      "category": "characters",
+      "category_priority": 8,
+      "has_description": true,
+      "article_word_count": 9383,
+      "keyword_bag_size": 23,
+      "heading_count": 7,
+      "list_count": 4,
+      "internal_link_count": 3,
+      "content_quality_score": 67,
+      "authority_score": 22
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 40,
+      "word_count_points": 469,
+      "keyword_bag_points": 23,
+      "content_quality_points": 75,
+      "authority_points": 22,
+      "final_rank_score": 659,
+      "authority_graph_points": 0
+    },
+    "search_index": {
+      "normalized_title": "punk token crypto moonboys wiki",
+      "tokens": [
+        "punk",
+        "token",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "punk",
+        "token",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "is",
+        "the",
+        "pulsating",
+        "heart",
+        "of",
+        "rebellion",
+        "in",
+        "universe",
+        "a",
+        "primary",
+        "graffpunks",
+        "and",
+        "vital",
+        "currency",
+        "that",
+        "fuels",
+        "chaotic",
+        "undergr"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 67,
+      "existing_outbound_count": 0,
+      "suggested_outbound_count": 67,
+      "authority": 0
     }
   },
   {
@@ -618,94 +616,6 @@
     }
   },
   {
-    "title": "punk_token — Crypto Moonboys Wiki",
-    "desc": "$PUNK is the pulsating heart of rebellion in the Crypto Moonboys universe, a primary token of the GraffPUNKS and a vital currency that fuels the chaotic undergr",
-    "url": "/wiki/punk-token.html",
-    "tags": [
-      "punk",
-      "token",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "characters",
-    "aliases": [
-      {
-        "title": "punk token crypto moonboys wiki"
-      }
-    ],
-    "rank_score": 655,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 1,
-      "tag_count": 5,
-      "mention_count": 0,
-      "category": "characters",
-      "category_priority": 8,
-      "has_description": true,
-      "article_word_count": 9383,
-      "keyword_bag_size": 23,
-      "heading_count": 7,
-      "list_count": 4,
-      "internal_link_count": 2,
-      "content_quality_score": 67,
-      "authority_score": 18
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 40,
-      "word_count_points": 469,
-      "keyword_bag_points": 23,
-      "content_quality_points": 75,
-      "authority_points": 18,
-      "final_rank_score": 655,
-      "authority_graph_points": 0
-    },
-    "search_index": {
-      "normalized_title": "punk token crypto moonboys wiki",
-      "tokens": [
-        "punk",
-        "token",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "punk",
-        "token",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "is",
-        "the",
-        "pulsating",
-        "heart",
-        "of",
-        "rebellion",
-        "in",
-        "universe",
-        "a",
-        "primary",
-        "graffpunks",
-        "and",
-        "vital",
-        "currency",
-        "that",
-        "fuels",
-        "chaotic",
-        "undergr"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 0,
-      "outbound_count": 67,
-      "existing_outbound_count": 0,
-      "suggested_outbound_count": 67,
-      "authority": 0
-    }
-  },
-  {
     "title": "charlie_buster — Crypto Moonboys Wiki",
     "desc": "Charlie Buster, known across the digital realms as NFTBUSTER, stands as a central protagonist in the Crypto Moonboys and GraffPUNKS unified universe. A digital",
     "url": "/wiki/charlie-buster.html",
@@ -735,7 +645,7 @@
       "keyword_bag_size": 21,
       "heading_count": 7,
       "list_count": 4,
-      "internal_link_count": 3,
+      "internal_link_count": 4,
       "content_quality_score": 67,
       "authority_score": 22
     },
@@ -824,7 +734,7 @@
       "keyword_bag_size": 19,
       "heading_count": 25,
       "list_count": 7,
-      "internal_link_count": 9,
+      "internal_link_count": 10,
       "content_quality_score": 67,
       "authority_score": 23
     },
@@ -954,6 +864,96 @@
     }
   },
   {
+    "title": "hodl_warriors — Crypto Moonboys Wiki",
+    "desc": "The HODL Warriors are a legendary and formidable army within the Crypto Moonboys universe, an elite force forged through the brutal trials of the Hard Fork Game",
+    "url": "/wiki/hodl-warriors.html",
+    "tags": [
+      "hodl",
+      "warriors",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "characters",
+    "aliases": [
+      {
+        "title": "hodl warriors crypto moonboys wiki"
+      }
+    ],
+    "rank_score": 603,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 1,
+      "tag_count": 5,
+      "mention_count": 0,
+      "category": "characters",
+      "category_priority": 8,
+      "has_description": true,
+      "article_word_count": 2367,
+      "keyword_bag_size": 25,
+      "heading_count": 7,
+      "list_count": 4,
+      "internal_link_count": 4,
+      "content_quality_score": 71,
+      "authority_score": 19
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 40,
+      "word_count_points": 118,
+      "keyword_bag_points": 25,
+      "content_quality_points": 79,
+      "authority_points": 311,
+      "final_rank_score": 603,
+      "authority_graph_points": 292
+    },
+    "search_index": {
+      "normalized_title": "hodl warriors crypto moonboys wiki",
+      "tokens": [
+        "hodl",
+        "warriors",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "hodl",
+        "warriors",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "the",
+        "are",
+        "a",
+        "legendary",
+        "and",
+        "formidable",
+        "army",
+        "within",
+        "universe",
+        "an",
+        "elite",
+        "force",
+        "forged",
+        "through",
+        "brutal",
+        "trials",
+        "of",
+        "hard",
+        "fork",
+        "game"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 146,
+      "outbound_count": 33,
+      "existing_outbound_count": 0,
+      "suggested_outbound_count": 33,
+      "authority": 292
+    }
+  },
+  {
     "title": "alfie_blaze — Crypto Moonboys Wiki",
     "desc": "Alfie",
     "url": "/wiki/alfie-blaze.html",
@@ -983,7 +983,7 @@
       "keyword_bag_size": 5,
       "heading_count": 7,
       "list_count": 4,
-      "internal_link_count": 3,
+      "internal_link_count": 4,
       "content_quality_score": 54,
       "authority_score": 18
     },
@@ -1052,11 +1052,11 @@
       "category": "tokens",
       "category_priority": 6,
       "has_description": true,
-      "article_word_count": 2133,
+      "article_word_count": 2134,
       "keyword_bag_size": 13,
       "heading_count": 20,
       "list_count": 7,
-      "internal_link_count": 8,
+      "internal_link_count": 9,
       "content_quality_score": 58,
       "authority_score": 23
     },
@@ -1121,7 +1121,7 @@
         "title": "burn earn crypto moonboys wiki"
       }
     ],
-    "rank_score": 568,
+    "rank_score": 572,
     "rank_signals": {
       "is_canonical": true,
       "alias_count": 1,
@@ -1130,13 +1130,13 @@
       "category": "characters",
       "category_priority": 8,
       "has_description": true,
-      "article_word_count": 7493,
+      "article_word_count": 7494,
       "keyword_bag_size": 26,
       "heading_count": 7,
       "list_count": 4,
-      "internal_link_count": 1,
+      "internal_link_count": 4,
       "content_quality_score": 71,
-      "authority_score": 18
+      "authority_score": 22
     },
     "rank_diagnostics": {
       "canonical_points": 20,
@@ -1145,8 +1145,8 @@
       "word_count_points": 375,
       "keyword_bag_points": 26,
       "content_quality_points": 79,
-      "authority_points": 18,
-      "final_rank_score": 568,
+      "authority_points": 22,
+      "final_rank_score": 572,
       "authority_graph_points": 0
     },
     "search_index": {
@@ -1221,11 +1221,11 @@
       "category": "characters",
       "category_priority": 8,
       "has_description": true,
-      "article_word_count": 7442,
+      "article_word_count": 7443,
       "keyword_bag_size": 23,
       "heading_count": 7,
       "list_count": 4,
-      "internal_link_count": 3,
+      "internal_link_count": 4,
       "content_quality_score": 67,
       "authority_score": 22
     },
@@ -1399,11 +1399,11 @@
       "category": "factions",
       "category_priority": 7,
       "has_description": true,
-      "article_word_count": 7318,
+      "article_word_count": 7319,
       "keyword_bag_size": 24,
       "heading_count": 7,
       "list_count": 4,
-      "internal_link_count": 3,
+      "internal_link_count": 4,
       "content_quality_score": 71,
       "authority_score": 22
     },
@@ -1477,7 +1477,7 @@
         "title": "nbg crypto moonboys wiki"
       }
     ],
-    "rank_score": 539,
+    "rank_score": 543,
     "rank_signals": {
       "is_canonical": true,
       "alias_count": 1,
@@ -1486,13 +1486,13 @@
       "category": "characters",
       "category_priority": 8,
       "has_description": true,
-      "article_word_count": 6973,
+      "article_word_count": 6974,
       "keyword_bag_size": 24,
       "heading_count": 7,
       "list_count": 4,
-      "internal_link_count": 1,
+      "internal_link_count": 4,
       "content_quality_score": 71,
-      "authority_score": 18
+      "authority_score": 22
     },
     "rank_diagnostics": {
       "canonical_points": 20,
@@ -1501,8 +1501,8 @@
       "word_count_points": 349,
       "keyword_bag_points": 24,
       "content_quality_points": 78,
-      "authority_points": 18,
-      "final_rank_score": 539,
+      "authority_points": 22,
+      "final_rank_score": 543,
       "authority_graph_points": 0
     },
     "search_index": {
@@ -1835,7 +1835,7 @@
       "keyword_bag_size": 25,
       "heading_count": 7,
       "list_count": 4,
-      "internal_link_count": 3,
+      "internal_link_count": 4,
       "content_quality_score": 71,
       "authority_score": 22
     },
@@ -1912,7 +1912,7 @@
         "title": "genesis spray crypto moonboys wiki"
       }
     ],
-    "rank_score": 411,
+    "rank_score": 416,
     "rank_signals": {
       "is_canonical": true,
       "alias_count": 1,
@@ -1921,23 +1921,23 @@
       "category": "factions",
       "category_priority": 7,
       "has_description": true,
-      "article_word_count": 4529,
+      "article_word_count": 4530,
       "keyword_bag_size": 23,
       "heading_count": 7,
       "list_count": 4,
-      "internal_link_count": 2,
+      "internal_link_count": 3,
       "content_quality_score": 67,
-      "authority_score": 18
+      "authority_score": 22
     },
     "rank_diagnostics": {
       "canonical_points": 20,
       "description_points": 10,
       "category_points": 35,
-      "word_count_points": 226,
+      "word_count_points": 227,
       "keyword_bag_points": 23,
       "content_quality_points": 75,
-      "authority_points": 22,
-      "final_rank_score": 411,
+      "authority_points": 26,
+      "final_rank_score": 416,
       "authority_graph_points": 4
     },
     "search_index": {
@@ -1999,7 +1999,7 @@
         "title": "gkniftyheads crypto moonboys wiki"
       }
     ],
-    "rank_score": 410,
+    "rank_score": 414,
     "rank_signals": {
       "is_canonical": true,
       "alias_count": 1,
@@ -2012,9 +2012,9 @@
       "keyword_bag_size": 22,
       "heading_count": 7,
       "list_count": 4,
-      "internal_link_count": 1,
+      "internal_link_count": 4,
       "content_quality_score": 67,
-      "authority_score": 18
+      "authority_score": 22
     },
     "rank_diagnostics": {
       "canonical_points": 20,
@@ -2023,8 +2023,8 @@
       "word_count_points": 226,
       "keyword_bag_points": 22,
       "content_quality_points": 74,
-      "authority_points": 18,
-      "final_rank_score": 410,
+      "authority_points": 22,
+      "final_rank_score": 414,
       "authority_graph_points": 0
     },
     "search_index": {
@@ -2085,7 +2085,7 @@
         "title": "nbg token crypto moonboys wiki"
       }
     ],
-    "rank_score": 409,
+    "rank_score": 413,
     "rank_signals": {
       "is_canonical": true,
       "alias_count": 1,
@@ -2098,9 +2098,9 @@
       "keyword_bag_size": 25,
       "heading_count": 7,
       "list_count": 4,
-      "internal_link_count": 2,
+      "internal_link_count": 5,
       "content_quality_score": 71,
-      "authority_score": 18
+      "authority_score": 22
     },
     "rank_diagnostics": {
       "canonical_points": 20,
@@ -2109,8 +2109,8 @@
       "word_count_points": 222,
       "keyword_bag_points": 25,
       "content_quality_points": 79,
-      "authority_points": 18,
-      "final_rank_score": 409,
+      "authority_points": 22,
+      "final_rank_score": 413,
       "authority_graph_points": 0
     },
     "search_index": {
@@ -2183,11 +2183,11 @@
       "category": "factions",
       "category_priority": 7,
       "has_description": true,
-      "article_word_count": 4101,
+      "article_word_count": 4102,
       "keyword_bag_size": 25,
       "heading_count": 6,
       "list_count": 3,
-      "internal_link_count": 3,
+      "internal_link_count": 4,
       "content_quality_score": 71,
       "authority_score": 22
     },
@@ -2269,11 +2269,11 @@
       "category": "characters",
       "category_priority": 8,
       "has_description": true,
-      "article_word_count": 4003,
+      "article_word_count": 4005,
       "keyword_bag_size": 26,
       "heading_count": 7,
       "list_count": 4,
-      "internal_link_count": 3,
+      "internal_link_count": 6,
       "content_quality_score": 71,
       "authority_score": 22
     },
@@ -2365,7 +2365,7 @@
       "keyword_bag_size": 25,
       "heading_count": 6,
       "list_count": 3,
-      "internal_link_count": 3,
+      "internal_link_count": 5,
       "content_quality_score": 71,
       "authority_score": 22
     },
@@ -2543,7 +2543,7 @@
       "keyword_bag_size": 26,
       "heading_count": 7,
       "list_count": 4,
-      "internal_link_count": 3,
+      "internal_link_count": 5,
       "content_quality_score": 71,
       "authority_score": 22
     },
@@ -2634,7 +2634,7 @@
       "keyword_bag_size": 22,
       "heading_count": 7,
       "list_count": 4,
-      "internal_link_count": 3,
+      "internal_link_count": 4,
       "content_quality_score": 67,
       "authority_score": 22
     },
@@ -2720,7 +2720,7 @@
       "keyword_bag_size": 26,
       "heading_count": 7,
       "list_count": 4,
-      "internal_link_count": 3,
+      "internal_link_count": 4,
       "content_quality_score": 71,
       "authority_score": 22
     },
@@ -3165,11 +3165,11 @@
       "category": "factions",
       "category_priority": 7,
       "has_description": true,
-      "article_word_count": 3245,
+      "article_word_count": 3246,
       "keyword_bag_size": 24,
       "heading_count": 7,
       "list_count": 4,
-      "internal_link_count": 3,
+      "internal_link_count": 5,
       "content_quality_score": 71,
       "authority_score": 22
     },
@@ -3251,11 +3251,11 @@
       "category": "characters",
       "category_priority": 8,
       "has_description": true,
-      "article_word_count": 2973,
+      "article_word_count": 2974,
       "keyword_bag_size": 27,
       "heading_count": 7,
       "list_count": 4,
-      "internal_link_count": 3,
+      "internal_link_count": 6,
       "content_quality_score": 71,
       "authority_score": 22
     },
@@ -3343,11 +3343,11 @@
       "category": "factions",
       "category_priority": 7,
       "has_description": true,
-      "article_word_count": 2924,
+      "article_word_count": 2925,
       "keyword_bag_size": 23,
       "heading_count": 7,
       "list_count": 4,
-      "internal_link_count": 3,
+      "internal_link_count": 5,
       "content_quality_score": 67,
       "authority_score": 22
     },
@@ -3421,7 +3421,7 @@
         "title": "hodl warriors crypto moonboys wiki"
       }
     ],
-    "rank_score": 304,
+    "rank_score": 308,
     "rank_signals": {
       "is_canonical": true,
       "alias_count": 1,
@@ -3434,9 +3434,9 @@
       "keyword_bag_size": 24,
       "heading_count": 7,
       "list_count": 4,
-      "internal_link_count": 2,
+      "internal_link_count": 4,
       "content_quality_score": 71,
-      "authority_score": 15
+      "authority_score": 19
     },
     "rank_diagnostics": {
       "canonical_points": 20,
@@ -3445,8 +3445,8 @@
       "word_count_points": 116,
       "keyword_bag_points": 24,
       "content_quality_points": 79,
-      "authority_points": 15,
-      "final_rank_score": 304,
+      "authority_points": 19,
+      "final_rank_score": 308,
       "authority_graph_points": 0
     },
     "search_index": {
@@ -3604,7 +3604,7 @@
         "title": "crypto moonboys wiki"
       }
     ],
-    "rank_score": 270,
+    "rank_score": 274,
     "rank_signals": {
       "is_canonical": true,
       "alias_count": 1,
@@ -3613,13 +3613,13 @@
       "category": "characters",
       "category_priority": 8,
       "has_description": true,
-      "article_word_count": 1868,
+      "article_word_count": 1869,
       "keyword_bag_size": 23,
       "heading_count": 7,
       "list_count": 4,
-      "internal_link_count": 2,
+      "internal_link_count": 5,
       "content_quality_score": 59,
-      "authority_score": 15
+      "authority_score": 19
     },
     "rank_diagnostics": {
       "canonical_points": 20,
@@ -3628,8 +3628,8 @@
       "word_count_points": 93,
       "keyword_bag_points": 23,
       "content_quality_points": 65,
-      "authority_points": 19,
-      "final_rank_score": 270,
+      "authority_points": 23,
+      "final_rank_score": 274,
       "authority_graph_points": 4
     },
     "search_index": {
@@ -3792,7 +3792,7 @@
       "keyword_bag_size": 24,
       "heading_count": 7,
       "list_count": 4,
-      "internal_link_count": 3,
+      "internal_link_count": 4,
       "content_quality_score": 63,
       "authority_score": 19
     },
@@ -3883,7 +3883,7 @@
       "keyword_bag_size": 29,
       "heading_count": 6,
       "list_count": 3,
-      "internal_link_count": 12,
+      "internal_link_count": 13,
       "content_quality_score": 63,
       "authority_score": 23
     },
@@ -3977,7 +3977,7 @@
       "keyword_bag_size": 29,
       "heading_count": 6,
       "list_count": 3,
-      "internal_link_count": 12,
+      "internal_link_count": 13,
       "content_quality_score": 63,
       "authority_score": 23
     },
@@ -4071,7 +4071,7 @@
       "keyword_bag_size": 26,
       "heading_count": 6,
       "list_count": 3,
-      "internal_link_count": 12,
+      "internal_link_count": 14,
       "content_quality_score": 63,
       "authority_score": 23
     },
@@ -4161,7 +4161,7 @@
       "keyword_bag_size": 26,
       "heading_count": 6,
       "list_count": 3,
-      "internal_link_count": 12,
+      "internal_link_count": 13,
       "content_quality_score": 63,
       "authority_score": 23
     },
@@ -4250,7 +4250,7 @@
       "keyword_bag_size": 25,
       "heading_count": 6,
       "list_count": 3,
-      "internal_link_count": 12,
+      "internal_link_count": 13,
       "content_quality_score": 63,
       "authority_score": 23
     },
@@ -4422,11 +4422,11 @@
       "category": "characters",
       "category_priority": 8,
       "has_description": true,
-      "article_word_count": 1291,
+      "article_word_count": 1292,
       "keyword_bag_size": 24,
       "heading_count": 6,
       "list_count": 3,
-      "internal_link_count": 12,
+      "internal_link_count": 13,
       "content_quality_score": 63,
       "authority_score": 23
     },
@@ -4509,11 +4509,11 @@
       "category": "characters",
       "category_priority": 8,
       "has_description": true,
-      "article_word_count": 1266,
+      "article_word_count": 1267,
       "keyword_bag_size": 26,
       "heading_count": 6,
       "list_count": 3,
-      "internal_link_count": 12,
+      "internal_link_count": 13,
       "content_quality_score": 63,
       "authority_score": 23
     },
@@ -4680,11 +4680,11 @@
       "category": "characters",
       "category_priority": 8,
       "has_description": true,
-      "article_word_count": 1265,
+      "article_word_count": 1266,
       "keyword_bag_size": 25,
       "heading_count": 6,
       "list_count": 3,
-      "internal_link_count": 12,
+      "internal_link_count": 13,
       "content_quality_score": 63,
       "authority_score": 23
     },
@@ -4855,7 +4855,7 @@
       "keyword_bag_size": 26,
       "heading_count": 5,
       "list_count": 3,
-      "internal_link_count": 12,
+      "internal_link_count": 13,
       "content_quality_score": 63,
       "authority_score": 23
     },
@@ -4951,11 +4951,11 @@
       "category": "factions",
       "category_priority": 7,
       "has_description": true,
-      "article_word_count": 1133,
+      "article_word_count": 1134,
       "keyword_bag_size": 28,
       "heading_count": 5,
       "list_count": 3,
-      "internal_link_count": 11,
+      "internal_link_count": 12,
       "content_quality_score": 63,
       "authority_score": 20
     },
@@ -5137,11 +5137,11 @@
       "category": "characters",
       "category_priority": 8,
       "has_description": true,
-      "article_word_count": 1270,
+      "article_word_count": 1271,
       "keyword_bag_size": 23,
       "heading_count": 6,
       "list_count": 3,
-      "internal_link_count": 12,
+      "internal_link_count": 13,
       "content_quality_score": 59,
       "authority_score": 23
     },
@@ -5823,7 +5823,7 @@
       "keyword_bag_size": 25,
       "heading_count": 6,
       "list_count": 3,
-      "internal_link_count": 12,
+      "internal_link_count": 13,
       "content_quality_score": 63,
       "authority_score": 20
     },
@@ -6009,7 +6009,7 @@
       "keyword_bag_size": 26,
       "heading_count": 5,
       "list_count": 3,
-      "internal_link_count": 10,
+      "internal_link_count": 12,
       "content_quality_score": 63,
       "authority_score": 20
     },
@@ -6188,7 +6188,7 @@
       "keyword_bag_size": 22,
       "heading_count": 6,
       "list_count": 3,
-      "internal_link_count": 12,
+      "internal_link_count": 13,
       "content_quality_score": 59,
       "authority_score": 23
     },
@@ -6273,11 +6273,11 @@
       "category": "factions",
       "category_priority": 7,
       "has_description": true,
-      "article_word_count": 1090,
+      "article_word_count": 1091,
       "keyword_bag_size": 26,
       "heading_count": 5,
       "list_count": 3,
-      "internal_link_count": 12,
+      "internal_link_count": 14,
       "content_quality_score": 63,
       "authority_score": 20
     },
@@ -6363,11 +6363,11 @@
       "category": "factions",
       "category_priority": 7,
       "has_description": true,
-      "article_word_count": 1261,
+      "article_word_count": 1262,
       "keyword_bag_size": 21,
       "heading_count": 6,
       "list_count": 3,
-      "internal_link_count": 12,
+      "internal_link_count": 13,
       "content_quality_score": 59,
       "authority_score": 23
     },
@@ -6543,11 +6543,11 @@
       "category": "factions",
       "category_priority": 7,
       "has_description": true,
-      "article_word_count": 1078,
+      "article_word_count": 1079,
       "keyword_bag_size": 28,
       "heading_count": 5,
       "list_count": 3,
-      "internal_link_count": 11,
+      "internal_link_count": 13,
       "content_quality_score": 63,
       "authority_score": 20
     },
@@ -6821,7 +6821,7 @@
       "keyword_bag_size": 27,
       "heading_count": 5,
       "list_count": 3,
-      "internal_link_count": 11,
+      "internal_link_count": 12,
       "content_quality_score": 63,
       "authority_score": 20
     },
@@ -7005,11 +7005,11 @@
       "category": "factions",
       "category_priority": 7,
       "has_description": true,
-      "article_word_count": 1039,
+      "article_word_count": 1040,
       "keyword_bag_size": 27,
       "heading_count": 5,
       "list_count": 3,
-      "internal_link_count": 12,
+      "internal_link_count": 13,
       "content_quality_score": 63,
       "authority_score": 20
     },
@@ -7098,11 +7098,11 @@
       "category": "factions",
       "category_priority": 7,
       "has_description": true,
-      "article_word_count": 1050,
+      "article_word_count": 1051,
       "keyword_bag_size": 25,
       "heading_count": 5,
       "list_count": 3,
-      "internal_link_count": 12,
+      "internal_link_count": 14,
       "content_quality_score": 63,
       "authority_score": 20
     },
@@ -7193,7 +7193,7 @@
       "keyword_bag_size": 25,
       "heading_count": 5,
       "list_count": 3,
-      "internal_link_count": 12,
+      "internal_link_count": 13,
       "content_quality_score": 63,
       "authority_score": 20
     },
@@ -7283,7 +7283,7 @@
       "keyword_bag_size": 24,
       "heading_count": 5,
       "list_count": 3,
-      "internal_link_count": 12,
+      "internal_link_count": 13,
       "content_quality_score": 63,
       "authority_score": 20
     },
@@ -7730,11 +7730,11 @@
       "category": "factions",
       "category_priority": 7,
       "has_description": true,
-      "article_word_count": 1061,
+      "article_word_count": 1063,
       "keyword_bag_size": 23,
       "heading_count": 5,
       "list_count": 3,
-      "internal_link_count": 12,
+      "internal_link_count": 14,
       "content_quality_score": 59,
       "authority_score": 20
     },
@@ -7901,7 +7901,7 @@
       "keyword_bag_size": 27,
       "heading_count": 6,
       "list_count": 3,
-      "internal_link_count": 12,
+      "internal_link_count": 13,
       "content_quality_score": 55,
       "authority_score": 20
     },
@@ -7993,7 +7993,7 @@
       "keyword_bag_size": 27,
       "heading_count": 6,
       "list_count": 3,
-      "internal_link_count": 12,
+      "internal_link_count": 13,
       "content_quality_score": 55,
       "authority_score": 20
     },
@@ -8054,6 +8054,93 @@
       "existing_outbound_count": 7,
       "suggested_outbound_count": 14,
       "authority": 3.5
+    }
+  },
+  {
+    "title": "1m_free_nfts_programme — Crypto Moonboys Wiki",
+    "desc": "The 1M Free NFTs Programme is a massive initiative in the Crypto Moonboys universe, distributing a million free NFTs to players and collectors, tied to the Graf",
+    "url": "/wiki/1m-free-nfts-programme.html",
+    "tags": [
+      "1m",
+      "free",
+      "nfts",
+      "programme",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "characters",
+    "aliases": [],
+    "rank_score": 227,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 7,
+      "mention_count": 0,
+      "category": "characters",
+      "category_priority": 8,
+      "has_description": true,
+      "article_word_count": 1067,
+      "keyword_bag_size": 22,
+      "heading_count": 7,
+      "list_count": 4,
+      "internal_link_count": 3,
+      "content_quality_score": 59,
+      "authority_score": 16
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 40,
+      "word_count_points": 53,
+      "keyword_bag_points": 22,
+      "content_quality_points": 66,
+      "authority_points": 16,
+      "final_rank_score": 227,
+      "authority_graph_points": 0
+    },
+    "search_index": {
+      "normalized_title": "1m free nfts programme crypto moonboys wiki",
+      "tokens": [
+        "1m",
+        "free",
+        "nfts",
+        "programme",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "1m",
+        "free",
+        "nfts",
+        "programme",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "the",
+        "is",
+        "a",
+        "massive",
+        "initiative",
+        "in",
+        "universe",
+        "distributing",
+        "million",
+        "to",
+        "players",
+        "and",
+        "collectors",
+        "tied",
+        "graf"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 35,
+      "existing_outbound_count": 0,
+      "suggested_outbound_count": 35,
+      "authority": 0
     }
   },
   {
@@ -8267,7 +8354,7 @@
       "keyword_bag_size": 26,
       "heading_count": 6,
       "list_count": 3,
-      "internal_link_count": 12,
+      "internal_link_count": 13,
       "content_quality_score": 55,
       "authority_score": 20
     },
@@ -8450,7 +8537,7 @@
       "keyword_bag_size": 25,
       "heading_count": 6,
       "list_count": 3,
-      "internal_link_count": 12,
+      "internal_link_count": 13,
       "content_quality_score": 55,
       "authority_score": 20
     },
@@ -8536,11 +8623,11 @@
       "category": "factions",
       "category_priority": 7,
       "has_description": true,
-      "article_word_count": 892,
+      "article_word_count": 893,
       "keyword_bag_size": 28,
       "heading_count": 6,
       "list_count": 3,
-      "internal_link_count": 12,
+      "internal_link_count": 13,
       "content_quality_score": 55,
       "authority_score": 20
     },
@@ -8602,93 +8689,6 @@
       "existing_outbound_count": 7,
       "suggested_outbound_count": 14,
       "authority": 3.5
-    }
-  },
-  {
-    "title": "1m_free_nfts_programme — Crypto Moonboys Wiki",
-    "desc": "The 1M Free NFTs Programme is a massive initiative in the Crypto Moonboys universe, distributing a million free NFTs to players and collectors, tied to the Graf",
-    "url": "/wiki/1m-free-nfts-programme.html",
-    "tags": [
-      "1m",
-      "free",
-      "nfts",
-      "programme",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "characters",
-    "aliases": [],
-    "rank_score": 223,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 0,
-      "tag_count": 7,
-      "mention_count": 0,
-      "category": "characters",
-      "category_priority": 8,
-      "has_description": true,
-      "article_word_count": 1066,
-      "keyword_bag_size": 22,
-      "heading_count": 7,
-      "list_count": 4,
-      "internal_link_count": 2,
-      "content_quality_score": 59,
-      "authority_score": 12
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 40,
-      "word_count_points": 53,
-      "keyword_bag_points": 22,
-      "content_quality_points": 66,
-      "authority_points": 12,
-      "final_rank_score": 223,
-      "authority_graph_points": 0
-    },
-    "search_index": {
-      "normalized_title": "1m free nfts programme crypto moonboys wiki",
-      "tokens": [
-        "1m",
-        "free",
-        "nfts",
-        "programme",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "1m",
-        "free",
-        "nfts",
-        "programme",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "the",
-        "is",
-        "a",
-        "massive",
-        "initiative",
-        "in",
-        "universe",
-        "distributing",
-        "million",
-        "to",
-        "players",
-        "and",
-        "collectors",
-        "tied",
-        "graf"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 0,
-      "outbound_count": 35,
-      "existing_outbound_count": 0,
-      "suggested_outbound_count": 35,
-      "authority": 0
     }
   },
   {
@@ -8811,7 +8811,7 @@
       "keyword_bag_size": 30,
       "heading_count": 6,
       "list_count": 3,
-      "internal_link_count": 12,
+      "internal_link_count": 13,
       "content_quality_score": 55,
       "authority_score": 20
     },
@@ -8992,7 +8992,7 @@
       "keyword_bag_size": 24,
       "heading_count": 6,
       "list_count": 3,
-      "internal_link_count": 12,
+      "internal_link_count": 13,
       "content_quality_score": 55,
       "authority_score": 20
     },
@@ -9347,7 +9347,7 @@
       "keyword_bag_size": 27,
       "heading_count": 6,
       "list_count": 3,
-      "internal_link_count": 12,
+      "internal_link_count": 13,
       "content_quality_score": 55,
       "authority_score": 20
     },
@@ -9614,11 +9614,11 @@
       "category": "characters",
       "category_priority": 8,
       "has_description": true,
-      "article_word_count": 693,
+      "article_word_count": 694,
       "keyword_bag_size": 25,
       "heading_count": 6,
       "list_count": 3,
-      "internal_link_count": 12,
+      "internal_link_count": 13,
       "content_quality_score": 55,
       "authority_score": 20
     },
@@ -9705,7 +9705,7 @@
       "keyword_bag_size": 25,
       "heading_count": 6,
       "list_count": 3,
-      "internal_link_count": 12,
+      "internal_link_count": 13,
       "content_quality_score": 55,
       "authority_score": 20
     },
@@ -9884,7 +9884,7 @@
       "keyword_bag_size": 27,
       "heading_count": 6,
       "list_count": 3,
-      "internal_link_count": 12,
+      "internal_link_count": 13,
       "content_quality_score": 55,
       "authority_score": 20
     },
@@ -9972,11 +9972,11 @@
       "category": "characters",
       "category_priority": 8,
       "has_description": true,
-      "article_word_count": 657,
+      "article_word_count": 658,
       "keyword_bag_size": 26,
       "heading_count": 6,
       "list_count": 3,
-      "internal_link_count": 12,
+      "internal_link_count": 13,
       "content_quality_score": 55,
       "authority_score": 20
     },
@@ -10151,11 +10151,11 @@
       "category": "characters",
       "category_priority": 8,
       "has_description": true,
-      "article_word_count": 636,
+      "article_word_count": 637,
       "keyword_bag_size": 27,
       "heading_count": 6,
       "list_count": 3,
-      "internal_link_count": 12,
+      "internal_link_count": 13,
       "content_quality_score": 55,
       "authority_score": 20
     },
@@ -10243,11 +10243,11 @@
       "category": "characters",
       "category_priority": 8,
       "has_description": true,
-      "article_word_count": 635,
+      "article_word_count": 636,
       "keyword_bag_size": 25,
       "heading_count": 6,
       "list_count": 3,
-      "internal_link_count": 12,
+      "internal_link_count": 13,
       "content_quality_score": 55,
       "authority_score": 20
     },
@@ -10333,11 +10333,11 @@
       "category": "characters",
       "category_priority": 8,
       "has_description": true,
-      "article_word_count": 615,
+      "article_word_count": 616,
       "keyword_bag_size": 25,
       "heading_count": 6,
       "list_count": 3,
-      "internal_link_count": 12,
+      "internal_link_count": 13,
       "content_quality_score": 55,
       "authority_score": 20
     },
@@ -10422,11 +10422,11 @@
       "category": "characters",
       "category_priority": 8,
       "has_description": true,
-      "article_word_count": 643,
+      "article_word_count": 644,
       "keyword_bag_size": 25,
       "heading_count": 6,
       "list_count": 3,
-      "internal_link_count": 12,
+      "internal_link_count": 13,
       "content_quality_score": 55,
       "authority_score": 20
     },
@@ -10515,7 +10515,7 @@
       "keyword_bag_size": 23,
       "heading_count": 6,
       "list_count": 3,
-      "internal_link_count": 12,
+      "internal_link_count": 13,
       "content_quality_score": 51,
       "authority_score": 20
     },
@@ -10597,11 +10597,11 @@
       "category": "characters",
       "category_priority": 8,
       "has_description": true,
-      "article_word_count": 631,
+      "article_word_count": 632,
       "keyword_bag_size": 25,
       "heading_count": 6,
       "list_count": 3,
-      "internal_link_count": 12,
+      "internal_link_count": 13,
       "content_quality_score": 55,
       "authority_score": 20
     },
@@ -10693,7 +10693,7 @@
       "keyword_bag_size": 24,
       "heading_count": 6,
       "list_count": 3,
-      "internal_link_count": 12,
+      "internal_link_count": 13,
       "content_quality_score": 55,
       "authority_score": 20
     },
@@ -10870,11 +10870,11 @@
       "category": "factions",
       "category_priority": 7,
       "has_description": true,
-      "article_word_count": 671,
+      "article_word_count": 672,
       "keyword_bag_size": 24,
       "heading_count": 6,
       "list_count": 3,
-      "internal_link_count": 12,
+      "internal_link_count": 13,
       "content_quality_score": 55,
       "authority_score": 20
     },
@@ -11130,11 +11130,11 @@
       "category": "factions",
       "category_priority": 7,
       "has_description": true,
-      "article_word_count": 705,
+      "article_word_count": 706,
       "keyword_bag_size": 24,
       "heading_count": 6,
       "list_count": 3,
-      "internal_link_count": 12,
+      "internal_link_count": 13,
       "content_quality_score": 55,
       "authority_score": 20
     },
@@ -11220,11 +11220,11 @@
       "category": "tokens",
       "category_priority": 6,
       "has_description": true,
-      "article_word_count": 817,
+      "article_word_count": 818,
       "keyword_bag_size": 19,
       "heading_count": 6,
       "list_count": 5,
-      "internal_link_count": 20,
+      "internal_link_count": 21,
       "content_quality_score": 51,
       "authority_score": 24
     },
@@ -11306,7 +11306,7 @@
       "keyword_bag_size": 21,
       "heading_count": 7,
       "list_count": 6,
-      "internal_link_count": 15,
+      "internal_link_count": 16,
       "content_quality_score": 51,
       "authority_score": 24
     },
@@ -11485,7 +11485,7 @@
       "keyword_bag_size": 26,
       "heading_count": 7,
       "list_count": 4,
-      "internal_link_count": 3,
+      "internal_link_count": 4,
       "content_quality_score": 55,
       "authority_score": 16
     },
@@ -11657,11 +11657,11 @@
       "category": "characters",
       "category_priority": 8,
       "has_description": true,
-      "article_word_count": 602,
+      "article_word_count": 603,
       "keyword_bag_size": 23,
       "heading_count": 6,
       "list_count": 3,
-      "internal_link_count": 12,
+      "internal_link_count": 13,
       "content_quality_score": 51,
       "authority_score": 20
     },
@@ -11744,11 +11744,11 @@
       "category": "factions",
       "category_priority": 7,
       "has_description": true,
-      "article_word_count": 673,
+      "article_word_count": 674,
       "keyword_bag_size": 23,
       "heading_count": 6,
       "list_count": 3,
-      "internal_link_count": 11,
+      "internal_link_count": 12,
       "content_quality_score": 51,
       "authority_score": 20
     },
@@ -12089,7 +12089,7 @@
       "keyword_bag_size": 26,
       "heading_count": 7,
       "list_count": 4,
-      "internal_link_count": 3,
+      "internal_link_count": 5,
       "content_quality_score": 55,
       "authority_score": 16
     },
@@ -12173,11 +12173,11 @@
       "category": "factions",
       "category_priority": 7,
       "has_description": true,
-      "article_word_count": 621,
+      "article_word_count": 622,
       "keyword_bag_size": 22,
       "heading_count": 6,
       "list_count": 3,
-      "internal_link_count": 12,
+      "internal_link_count": 14,
       "content_quality_score": 51,
       "authority_score": 20
     },
@@ -12261,11 +12261,11 @@
       "category": "factions",
       "category_priority": 7,
       "has_description": true,
-      "article_word_count": 606,
+      "article_word_count": 607,
       "keyword_bag_size": 21,
       "heading_count": 7,
       "list_count": 4,
-      "internal_link_count": 12,
+      "internal_link_count": 14,
       "content_quality_score": 51,
       "authority_score": 20
     },
@@ -12615,7 +12615,7 @@
       "keyword_bag_size": 25,
       "heading_count": 7,
       "list_count": 4,
-      "internal_link_count": 12,
+      "internal_link_count": 13,
       "content_quality_score": 47,
       "authority_score": 18
     },
@@ -12706,7 +12706,7 @@
       "keyword_bag_size": 26,
       "heading_count": 7,
       "list_count": 4,
-      "internal_link_count": 12,
+      "internal_link_count": 13,
       "content_quality_score": 47,
       "authority_score": 18
     },
@@ -13156,7 +13156,7 @@
       "keyword_bag_size": 24,
       "heading_count": 6,
       "list_count": 3,
-      "internal_link_count": 11,
+      "internal_link_count": 12,
       "content_quality_score": 47,
       "authority_score": 18
     },
@@ -13239,11 +13239,11 @@
       "category": "factions",
       "category_priority": 7,
       "has_description": true,
-      "article_word_count": 784,
+      "article_word_count": 785,
       "keyword_bag_size": 12,
       "heading_count": 6,
       "list_count": 3,
-      "internal_link_count": 12,
+      "internal_link_count": 14,
       "content_quality_score": 42,
       "authority_score": 20
     },
@@ -13404,11 +13404,11 @@
       "category": "characters",
       "category_priority": 8,
       "has_description": true,
-      "article_word_count": 554,
+      "article_word_count": 555,
       "keyword_bag_size": 23,
       "heading_count": 7,
       "list_count": 4,
-      "internal_link_count": 3,
+      "internal_link_count": 5,
       "content_quality_score": 43,
       "authority_score": 14
     },
@@ -13580,7 +13580,7 @@
       "keyword_bag_size": 24,
       "heading_count": 6,
       "list_count": 3,
-      "internal_link_count": 3,
+      "internal_link_count": 4,
       "content_quality_score": 47,
       "authority_score": 14
     },
@@ -13664,11 +13664,11 @@
       "category": "characters",
       "category_priority": 8,
       "has_description": true,
-      "article_word_count": 722,
+      "article_word_count": 723,
       "keyword_bag_size": 7,
       "heading_count": 6,
       "list_count": 3,
-      "internal_link_count": 12,
+      "internal_link_count": 13,
       "content_quality_score": 38,
       "authority_score": 16
     },
@@ -13744,7 +13744,7 @@
       "keyword_bag_size": 20,
       "heading_count": 6,
       "list_count": 4,
-      "internal_link_count": 12,
+      "internal_link_count": 13,
       "content_quality_score": 35,
       "authority_score": 18
     },
@@ -13832,7 +13832,7 @@
       "keyword_bag_size": 17,
       "heading_count": 6,
       "list_count": 3,
-      "internal_link_count": 12,
+      "internal_link_count": 13,
       "content_quality_score": 38,
       "authority_score": 18
     },
@@ -14140,7 +14140,7 @@
       "keyword_bag_size": 19,
       "heading_count": 5,
       "list_count": 4,
-      "internal_link_count": 12,
+      "internal_link_count": 13,
       "content_quality_score": 35,
       "authority_score": 18
     },
@@ -14297,11 +14297,11 @@
       "category": "factions",
       "category_priority": 7,
       "has_description": true,
-      "article_word_count": 383,
+      "article_word_count": 384,
       "keyword_bag_size": 11,
       "heading_count": 6,
       "list_count": 3,
-      "internal_link_count": 12,
+      "internal_link_count": 13,
       "content_quality_score": 34,
       "authority_score": 14
     },
@@ -14447,7 +14447,7 @@
       "keyword_bag_size": 15,
       "heading_count": 6,
       "list_count": 4,
-      "internal_link_count": 12,
+      "internal_link_count": 13,
       "content_quality_score": 26,
       "authority_score": 18
     },
@@ -14612,7 +14612,7 @@
       "keyword_bag_size": 16,
       "heading_count": 6,
       "list_count": 4,
-      "internal_link_count": 12,
+      "internal_link_count": 13,
       "content_quality_score": 30,
       "authority_score": 18
     },
@@ -14777,7 +14777,7 @@
       "keyword_bag_size": 14,
       "heading_count": 5,
       "list_count": 4,
-      "internal_link_count": 11,
+      "internal_link_count": 13,
       "content_quality_score": 26,
       "authority_score": 18
     },
@@ -15701,7 +15701,7 @@
       "keyword_bag_size": 9,
       "heading_count": 6,
       "list_count": 4,
-      "internal_link_count": 12,
+      "internal_link_count": 13,
       "content_quality_score": 26,
       "authority_score": 14
     },
@@ -15842,11 +15842,11 @@
       "category": "factions",
       "category_priority": 7,
       "has_description": true,
-      "article_word_count": 181,
+      "article_word_count": 182,
       "keyword_bag_size": 11,
       "heading_count": 6,
       "list_count": 4,
-      "internal_link_count": 11,
+      "internal_link_count": 13,
       "content_quality_score": 26,
       "authority_score": 14
     },
@@ -16657,11 +16657,11 @@
       "category": "tokens",
       "category_priority": 6,
       "has_description": true,
-      "article_word_count": 207,
+      "article_word_count": 208,
       "keyword_bag_size": 5,
       "heading_count": 2,
       "list_count": 2,
-      "internal_link_count": 12,
+      "internal_link_count": 13,
       "content_quality_score": 16,
       "authority_score": 10
     },
