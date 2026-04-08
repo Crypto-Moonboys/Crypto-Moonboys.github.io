@@ -35,12 +35,12 @@
       "context_snippet": "In lore, the 1M Free NFTs Programme is framed as a digital uprising, a way to flood B…"
     },
     {
-      "target_url": "/wiki/hard-fork-games.html",
-      "anchor_text": "Hard Fork Games",
+      "target_url": "/wiki/hodl-wars.html",
+      "anchor_text": "HODL WARS",
       "match_type": "title",
       "section_type": "lore",
       "placement_score": 2,
-      "context_snippet": "…graffiti tags to rare artifacts, can be used in games like Hard Fork Games for buffs or staked for $PUNK rewards, making them both cul…"
+      "context_snippet": "…enging the blockchain overlords’ grip on Block Topia during HODL WARS. These NFTs, ranging from digital graffiti tags to rare art…"
     },
     {
       "target_url": "/wiki/one-million-free-nfts.html",
@@ -52,14 +52,6 @@
     }
   ],
   "/wiki/1m-free-nfts-programme.html": [
-    {
-      "target_url": "/wiki/alfie-blaze.html",
-      "anchor_text": "Alfie Blaze",
-      "match_type": "title",
-      "section_type": "lore",
-      "placement_score": 2,
-      "context_snippet": "…he blockchain overlords. Characters like Charlie Buster and Alfie Blaze rely on these free drops to arm their resistance, making th…"
-    },
     {
       "target_url": "/wiki/bitcoin-kids.html",
       "anchor_text": "Bitcoin Kids",
@@ -75,6 +67,14 @@
       "section_type": "lore",
       "placement_score": 2,
       "context_snippet": "…ibute one million tokenized pieces of rebellious art across Block Topia, a massive onboarding effort to arm new players with digita…"
+    },
+    {
+      "target_url": "/wiki/graffpunks.html",
+      "anchor_text": "GraffPUNKS",
+      "match_type": "title",
+      "section_type": "lead",
+      "placement_score": 4,
+      "context_snippet": "…a million free NFTs to players and collectors, tied to the GraffPUNKS’ mission of digital democratization."
     }
   ],
   "/wiki/2025-metaverse-launch-party.html": [
@@ -173,12 +173,12 @@
       "context_snippet": "…overlords’ coffers, redistributing it to the downtrodden of Block Topia. This act, though it painted a permanent target on his back…"
     },
     {
-      "target_url": "/wiki/charlie-buster.html",
-      "anchor_text": "Charlie Buster",
+      "target_url": "/wiki/graffpunks.html",
+      "anchor_text": "GraffPUNKS",
       "match_type": "title",
       "section_type": "lore",
       "placement_score": 2,
-      "context_snippet": "…odds with other factions, including occasional allies like Charlie Buster, as their methods of rebellion sometimes clash. Where Charl…"
+      "context_snippet": "…fortified systems could be breached. It’s a tale retold in GraffPUNKS 24/7 broadcasts, a reminder that resistance isn’t futile, a…"
     }
   ],
   "/wiki/alfie-the-bitcoin-kid-blaze.html": [
@@ -369,14 +369,6 @@
   ],
   "/wiki/bitcoin-kids.html": [
     {
-      "target_url": "/wiki/alfie-blaze.html",
-      "anchor_text": "Alfie Blaze",
-      "match_type": "title",
-      "section_type": "lore",
-      "placement_score": 2,
-      "context_snippet": "…arned their name through a series of audacious hacks led by Alfie Blaze, siphoning microtransactions from the blockchain overlords…"
-    },
-    {
       "target_url": "/wiki/bitcoin-x-kids.html",
       "anchor_text": "Bitcoin X Kids",
       "match_type": "title",
@@ -391,17 +383,17 @@
       "section_type": "lead",
       "placement_score": 4,
       "context_snippet": "…g warriors trapped within the towering, oppressive walls of Block Topia, their every move a defiant scream against the blockchain o…"
-    }
-  ],
-  "/wiki/bitcoin-x-kids.html": [
+    },
     {
-      "target_url": "/wiki/alfie-blaze.html",
-      "anchor_text": "Alfie Blaze",
+      "target_url": "/wiki/graffpunks.html",
+      "anchor_text": "GraffPUNKS",
       "match_type": "title",
       "section_type": "lore",
       "placement_score": 2,
-      "context_snippet": "…sh reality fuels the external rebellion led by figures like Alfie Blaze, who once belonged to their ranks before escaping, and thei…"
-    },
+      "context_snippet": "Allegiance: Bitcoin Kids (self) / Loosely allied with GraffPUNKS"
+    }
+  ],
+  "/wiki/bitcoin-x-kids.html": [
     {
       "target_url": "/wiki/bitcoin-kids.html",
       "anchor_text": "Bitcoin Kids",
@@ -417,6 +409,14 @@
       "section_type": "lead",
       "placement_score": 4,
       "context_snippet": "The X Kids are the tragic underbelly of Block Topia, a faction forever bound by the ironclad canon rule DB-1 to…"
+    },
+    {
+      "target_url": "/wiki/graffpunks.html",
+      "anchor_text": "GraffPUNKS",
+      "match_type": "title",
+      "section_type": "lore",
+      "placement_score": 2,
+      "context_snippet": "…anks before escaping, and their suffering is often cited in GraffPUNKS broadcasts as the ultimate justification for war. Their pli…"
     }
   ],
   "/wiki/bitcoin.html": [
@@ -441,14 +441,6 @@
   ],
   "/wiki/block-topia.html": [
     {
-      "target_url": "/wiki/alfie-blaze.html",
-      "anchor_text": "Alfie Blaze",
-      "match_type": "title",
-      "section_type": "lore",
-      "placement_score": 2,
-      "context_snippet": "…acred Chain, creating temporary safe havens for rebels like Alfie Blaze during Hard Fork Games. These zones, though fleeting, have…"
-    },
-    {
       "target_url": "/wiki/bitcoin-kids.html",
       "anchor_text": "Bitcoin Kids",
       "match_type": "title",
@@ -457,12 +449,20 @@
       "context_snippet": "…lockchain overlords to contain rebellious factions like the Bitcoin Kids while allowing the HODL WARS to rage within as a controlled…"
     },
     {
-      "target_url": "/wiki/bitcoin-x-kids.html",
-      "anchor_text": "Bitcoin X Kids",
+      "target_url": "/wiki/graffpunks.html",
+      "anchor_text": "GraffPUNKS",
       "match_type": "title",
       "section_type": "lore",
       "placement_score": 2,
-      "context_snippet": "…rs—they are algorithmic prisons that trap entities like the Bitcoin X Kids, preventing escape unless through daring hacks or events li…"
+      "context_snippet": "…len’s real-world Leake Street base, where the raw energy of GraffPUNKS’ art is said to manifest as a digital sanctuary for rebels.…"
+    },
+    {
+      "target_url": "/wiki/hodl-warriors.html",
+      "anchor_text": "HODL Warriors",
+      "match_type": "title",
+      "section_type": "lore",
+      "placement_score": 2,
+      "context_snippet": "…g them a coveted prize for factions like the GraffPUNKS and HODL Warriors, and tying the location to the deepest mysteries of the Cry…"
     }
   ],
   "/wiki/blockchain-technology.html": [
@@ -503,28 +503,28 @@
   ],
   "/wiki/burn-to-earn.html": [
     {
-      "target_url": "/wiki/alfie-blaze.html",
-      "anchor_text": "Alfie Blaze",
-      "match_type": "title",
-      "section_type": "lore",
-      "placement_score": 2,
-      "context_snippet": "…ith faction dynamics, as groups like the Bitcoin Kids under Alfie Blaze often burn stolen NFTs from the blockchain overlords as a s…"
-    },
-    {
-      "target_url": "/wiki/bitcoin-kids.html",
-      "anchor_text": "Bitcoin Kids",
-      "match_type": "title",
-      "section_type": "lore",
-      "placement_score": 2,
-      "context_snippet": "…ypto Moonboys universe allows players and factions like the Bitcoin Kids to incinerate $PUNK tokens or lesser NFTs in a ritualistic…"
-    },
-    {
       "target_url": "/wiki/block-topia.html",
       "anchor_text": "Block Topia",
       "match_type": "title",
       "section_type": "lead",
       "placement_score": 4,
       "context_snippet": "Across the neon battlegrounds of Block Topia, Burn-to-Earn is both a ritual and a rebellion, a defiance…"
+    },
+    {
+      "target_url": "/wiki/graffpunks.html",
+      "anchor_text": "GraffPUNKS",
+      "match_type": "title",
+      "section_type": "lead",
+      "placement_score": 4,
+      "context_snippet": "…s of destruction as a path to creation. Tied closely to the GraffPUNKS’ anarchist ideals, this high-stakes gamble fuels the fires…"
+    },
+    {
+      "target_url": "/wiki/hodl-warriors.html",
+      "anchor_text": "HODL Warriors",
+      "match_type": "title",
+      "section_type": "lore",
+      "placement_score": 2,
+      "context_snippet": "…aks of the ‘Ashbound Covenant,’ a secret pact among veteran HODL Warriors who use burns not for immediate gain, but to seed long-term…"
     }
   ],
   "/wiki/canvas-clash.html": [
@@ -571,12 +571,12 @@
       "context_snippet": "…Graffiti,' a form of digital art that temporarily overloads Block Topia’s control algorithms, allowing brief windows of unmonitored…"
     },
     {
-      "target_url": "/wiki/crypto-moonboys.html",
-      "anchor_text": "Crypto Moonboys",
+      "target_url": "/wiki/graffpunks.html",
+      "anchor_text": "GraffPUNKS",
       "match_type": "title",
       "section_type": "lead",
       "placement_score": 4,
-      "context_snippet": "…realms as NFTBUSTER, stands as a central protagonist in the Crypto Moonboys and GraffPUNKS unified universe. A digital renegade with a…"
+      "context_snippet": "…stands as a central protagonist in the Crypto Moonboys and GraffPUNKS unified universe. A digital renegade with a flair for rebel…"
     }
   ],
   "/wiki/croydon-tower-blocks.html": [
@@ -607,14 +607,6 @@
   ],
   "/wiki/crypto-moonboys.html": [
     {
-      "target_url": "/wiki/alfie-blaze.html",
-      "anchor_text": "Alfie Blaze",
-      "match_type": "title",
-      "section_type": "lore",
-      "placement_score": 2,
-      "context_snippet": "…ENA often gain access to exclusive missions, such as aiding Alfie Blaze’s Bitcoin Kids, with lore suggesting some Moonboys hold fra…"
-    },
-    {
       "target_url": "/wiki/bitcoin-kids.html",
       "anchor_text": "Bitcoin Kids",
       "match_type": "title",
@@ -629,6 +621,14 @@
       "section_type": "lore",
       "placement_score": 2,
       "context_snippet": "…niverse, representing digital rebels as playable avatars in Block Topia, often tied to key figures like Charlie Buster, with unique…"
+    },
+    {
+      "target_url": "/wiki/graffpunks.html",
+      "anchor_text": "GraffPUNKS",
+      "match_type": "title",
+      "section_type": "lead",
+      "placement_score": 4,
+      "context_snippet": "…nboys is a core NFT collection in the unified universe with GraffPUNKS, representing tokenized characters and assets that fuel the…"
     }
   ],
   "/wiki/darren-cullen-ser-real.html": [
@@ -693,12 +693,12 @@
       "context_snippet": "…ating the ‘Graff Vault,’ a secret digital archive hidden in Block Topia’s underbelly, preserving Earth’s street art as NFTs and ens…"
     },
     {
-      "target_url": "/wiki/charlie-buster.html",
-      "anchor_text": "Charlie Buster",
+      "target_url": "/wiki/graffpunks.html",
+      "anchor_text": "GraffPUNKS",
       "match_type": "title",
-      "section_type": "lore",
-      "placement_score": 2,
-      "context_snippet": "…exus' within Block Topia, a hidden server where rebels like Charlie Buster and the draw inspiration. This nexus, though inaccessible t…"
+      "section_type": "lead",
+      "placement_score": 4,
+      "context_snippet": "…founder of Graffiti Kings and a foundational pillar of the GraffPUNKS faction. A London street artist active since 1983, his real…"
     }
   ],
   "/wiki/decentraland-events.html": [
@@ -963,20 +963,20 @@
       "context_snippet": "…currency, and every match mirrors the cutthroat politics of Block Topia’s factions. Within the lore, Gang Signs is more than a game…"
     },
     {
-      "target_url": "/wiki/crypto-moonboys.html",
-      "anchor_text": "Crypto Moonboys",
+      "target_url": "/wiki/graffpunks.html",
+      "anchor_text": "GraffPUNKS",
       "match_type": "title",
-      "section_type": "lore",
-      "placement_score": 2,
-      "context_snippet": "…reflecting the cutthroat nature of faction politics in the Crypto Moonboys universe, where trust is a currency few can afford."
+      "section_type": "lead",
+      "placement_score": 4,
+      "context_snippet": "…nal feuds of HODL WARS into a tabletop arena. Born from the GraffPUNKS’ spirit of rebellion, it lets players build decks with toke…"
     },
     {
-      "target_url": "/wiki/darren-cullen.html",
-      "anchor_text": "Darren Cullen",
+      "target_url": "/wiki/punk-token.html",
+      "anchor_text": "PUNK token",
       "match_type": "title",
       "section_type": "lore",
       "placement_score": 2,
-      "context_snippet": "…or rare NFT rewards. Rooted in the street art rebellion of Darren Cullen’s real-world legacy, the game mirrors HODL WARS’ competitiv…"
+      "context_snippet": "…ight of player stakes. These underground events, fueled by $PUNK token wagers, are said to draw the attention of ‘The Tag Dealer,’…"
     }
   ],
   "/wiki/genesis-kernel.html": [
@@ -989,20 +989,20 @@
       "context_snippet": "The Genesis Kernel, as the origin of Block Topia in the Crypto Moonboys universe, is said to be the first co…"
     },
     {
-      "target_url": "/wiki/crypto-moonboys.html",
-      "anchor_text": "Crypto Moonboys",
-      "match_type": "title",
-      "section_type": "lore",
-      "placement_score": 2,
-      "context_snippet": "The Genesis Kernel, as the origin of Block Topia in the Crypto Moonboys universe, is said to be the first coded framework of the Sa…"
-    },
-    {
       "target_url": "/wiki/graffpunks.html",
       "anchor_text": "GraffPUNKS",
       "match_type": "title",
       "section_type": "lore",
       "placement_score": 2,
       "context_snippet": "…rking it with imperfection. This origin story, whispered in GraffPUNKS archives, positions the Kernel as the ultimate prize in HOD…"
+    },
+    {
+      "target_url": "/wiki/null-the-prophet.html",
+      "anchor_text": "NULL THE PROPHET",
+      "match_type": "title",
+      "section_type": "lead",
+      "placement_score": 4,
+      "context_snippet": "…r moment from which and the Sacred Chain were born, tied to NULL THE PROPHET’s origin as the Genesis Error."
     }
   ],
   "/wiki/genesis-spray-drop.html": [
@@ -1095,12 +1095,12 @@
       "context_snippet": "Legends within Block Topia claim that certain $GK tokens, earned during cataclysmic events like the Triple Fork Even…"
     },
     {
-      "target_url": "/wiki/graffiti-kings.html",
-      "anchor_text": "Graffiti Kings",
+      "target_url": "/wiki/metaverse-battles.html",
+      "anchor_text": "metaverse battles",
       "match_type": "title",
       "section_type": "lead",
       "placement_score": 4,
-      "context_snippet": "…an mere currency, $GK embodies the rebellious spirit of the Graffiti Kings, transforming each reward into a spray-painted mark of resi…"
+      "context_snippet": "…ing playable NFT murals or securing victories in the fierce metaverse battles of . Revered by The GKniftyHEADS as a symbol of decentraliz…"
     }
   ],
   "/wiki/gkniftyheads-phase-one-two-three.html": [
@@ -1131,14 +1131,6 @@
   ],
   "/wiki/gkniftyheads.html": [
     {
-      "target_url": "/wiki/alfie-blaze.html",
-      "anchor_text": "Alfie Blaze",
-      "match_type": "title",
-      "section_type": "lore",
-      "placement_score": 2,
-      "context_snippet": "…mnants of the Genesis Spray drop, are sought by rebels like Alfie Blaze to bolster the Kids’ fight, turning every GKniftyHEAD into…"
-    },
-    {
       "target_url": "/wiki/bitcoin-kids.html",
       "anchor_text": "Bitcoin Kids",
       "match_type": "title",
@@ -1153,6 +1145,14 @@
       "section_type": "lead",
       "placement_score": 4,
       "context_snippet": "…ectibles that pulse across the multi-chain battlegrounds of Block Topia. These NFTs are more than art; they are weapons of identity…"
+    },
+    {
+      "target_url": "/wiki/graffpunks.html",
+      "anchor_text": "GraffPUNKS",
+      "match_type": "title",
+      "section_type": "lead",
+      "placement_score": 4,
+      "context_snippet": "…s universe, a vivid embodiment of the defiant spirit of the GraffPUNKS faction with whom it shares an unbreakable bond of rebellio…"
     }
   ],
   "/wiki/graffiti-kings.html": [
@@ -1235,12 +1235,12 @@
       "context_snippet": "…en (SER) in 1983, is the real-world cultural bedrock of the Crypto Moonboys universe, its bold, rebellious street art style shaping the…"
     },
     {
-      "target_url": "/wiki/darren-cullen.html",
-      "anchor_text": "Darren Cullen",
+      "target_url": "/wiki/graffpunks.html",
+      "anchor_text": "GraffPUNKS",
       "match_type": "title",
-      "section_type": "lore",
-      "placement_score": 2,
-      "context_snippet": "Graffiti Kings, founded by Darren Cullen (SER) in 1983, is the real-world cultural bedrock of the Cr…"
+      "section_type": "lead",
+      "placement_score": 4,
+      "context_snippet": "…e directly fuels the rebellious aesthetics and ethos of the GraffPUNKS and GKniftyHEADS factions. From their historic base at Leak…"
     }
   ],
   "/wiki/graffpunks-24-7-blockchain-radio-station.html": [
@@ -1439,28 +1439,28 @@
   ],
   "/wiki/graffpunks.html": [
     {
-      "target_url": "/wiki/1m-free-nfts-programme.html",
-      "anchor_text": "1M free NFTs programme",
-      "match_type": "title",
-      "section_type": "lore",
-      "placement_score": 2,
-      "context_snippet": "…ir ethos of accessibility and disruption, mirrored in their 1M free NFTs programme. The Genesis Spray remains a coveted artifact in Block Topi…"
-    },
-    {
-      "target_url": "/wiki/alfie-blaze.html",
-      "anchor_text": "Alfie Blaze",
-      "match_type": "title",
-      "section_type": "lore",
-      "placement_score": 2,
-      "context_snippet": "…is more than entertainment—it’s a lifeline for rebels like Alfie Blaze’s Bitcoin Kids, offering intel on faction movements or toke…"
-    },
-    {
       "target_url": "/wiki/bitcoin-kids.html",
       "anchor_text": "Bitcoin Kids",
       "match_type": "title",
       "section_type": "lore",
       "placement_score": 2,
       "context_snippet": "…of Graffiti Kings, connects them to characters like , whose Bitcoin Kids rely on such covert tactics to survive Block Topia’s walls."
+    },
+    {
+      "target_url": "/wiki/block-topia.html",
+      "anchor_text": "Block Topia",
+      "match_type": "title",
+      "section_type": "lore",
+      "placement_score": 2,
+      "context_snippet": "…WARS, where every tag and token became a battle cry against Block Topia’s overlords. It’s a foundational story that ties GraffPUNKS…"
+    },
+    {
+      "target_url": "/wiki/charlie-buster.html",
+      "anchor_text": "Charlie Buster",
+      "match_type": "title",
+      "section_type": "lore",
+      "placement_score": 2,
+      "context_snippet": "…ld tactics of hiding messages in murals, allows allies like Charlie Buster to coordinate unseen by Block Topia’s overlords, making the…"
     }
   ],
   "/wiki/great-datapocalypse-of-2789.html": [
@@ -1675,38 +1675,30 @@
       "context_snippet": "Lore within Block Topia recounts the 'Shard Awakening,' a rare event where a HODL W…"
     },
     {
-      "target_url": "/wiki/crypto-moonboys.html",
-      "anchor_text": "Crypto Moonboys",
-      "match_type": "title",
-      "section_type": "lead",
-      "placement_score": 4,
-      "context_snippet": "…nks a living leaderboard of the fiercest competitors in the Crypto Moonboys ecosystem."
-    },
-    {
-      "target_url": "/wiki/genesis-kernel.html",
-      "anchor_text": "Genesis Kernel",
+      "target_url": "/wiki/graffpunks.html",
+      "anchor_text": "GraffPUNKS",
       "match_type": "title",
       "section_type": "lore",
       "placement_score": 2,
-      "context_snippet": "…ritual, as a fully stabilized hybrid shard could rival the Genesis Kernel’s power, making the HODL Warriors who undertake it both rev…"
+      "context_snippet": "…nderdog factions like the or bolster the already formidable GraffPUNKS, with their deployment often marking pivotal moments in the…"
+    },
+    {
+      "target_url": "/wiki/midevil-hero-arena.html",
+      "anchor_text": "MiDEViL HERO ARENA",
+      "match_type": "title",
+      "section_type": "lore",
+      "placement_score": 2,
+      "context_snippet": "…g their combat algorithms in brutal showdowns like those in MiDEViL HERO ARENA. Lore whispers that these shards contain echoes of past war…"
     }
   ],
   "/wiki/hodl-wars-game.html": [
     {
-      "target_url": "/wiki/alfie-blaze.html",
-      "anchor_text": "Alfie Blaze",
+      "target_url": "/wiki/block-topia.html",
+      "anchor_text": "Block Topia",
       "match_type": "title",
       "section_type": "lore",
       "placement_score": 2,
-      "context_snippet": "Characters like Alfie Blaze lead daring raids, while Charlie Buster’s 'Glitch Graffiti'…"
-    },
-    {
-      "target_url": "/wiki/bitcoin-kids.html",
-      "anchor_text": "Bitcoin Kids",
-      "match_type": "title",
-      "section_type": "lore",
-      "placement_score": 2,
-      "context_snippet": "…ct where players align with factions like the GraffPUNKS or Bitcoin Kids to battle for dominance in Block Topia. Hosted across chain…"
+      "context_snippet": "…ARS, as a playable NFT game (per DB-5), immerses players in Block Topia’s factional conflicts, where aligning with the GraffPUNKS o…"
     },
     {
       "target_url": "/wiki/crypto-moonboys.html",
@@ -1715,6 +1707,14 @@
       "section_type": "lead",
       "placement_score": 4,
       "context_snippet": "…WARS is a playable NFT game and live saga (per DB-5) in the Crypto Moonboys universe, where players engage in faction-based conflicts w…"
+    },
+    {
+      "target_url": "/wiki/graffpunks.html",
+      "anchor_text": "GraffPUNKS",
+      "match_type": "title",
+      "section_type": "lore",
+      "placement_score": 2,
+      "context_snippet": "…Block Topia’s factional conflicts, where aligning with the GraffPUNKS or during HODL WARS battles can yield rare tokens like $PUN…"
     }
   ],
   "/wiki/hodl-wars.html": [
@@ -1779,20 +1779,20 @@
       "context_snippet": "…tories but battle cries, etched into the digital streets of Block Topia as a testament to the power of art and defiance in the HODL…"
     },
     {
-      "target_url": "/wiki/crypto-moonboys.html",
-      "anchor_text": "Crypto Moonboys",
-      "match_type": "title",
-      "section_type": "lore",
-      "placement_score": 2,
-      "context_snippet": "The ‘Harrison Rift’ is a pivotal event in Crypto Moonboys lore, a narrative crafted by Ian Harrison himself, depictin…"
-    },
-    {
       "target_url": "/wiki/graffpunks.html",
       "anchor_text": "GraffPUNKS",
       "match_type": "title",
       "section_type": "lead",
       "placement_score": 4,
       "context_snippet": "…the jagged, defiant lore of . As a driving force behind the GraffPUNKS faction, Harrison imbues the saga with a raw, rebellious et…"
+    },
+    {
+      "target_url": "/wiki/punk-token.html",
+      "anchor_text": "PUNK token",
+      "match_type": "title",
+      "section_type": "lore",
+      "placement_score": 2,
+      "context_snippet": "…Scribe,’ a mythical figure said to have scrawled the first $PUNK token’s code into Block Topia’s foundation. This character appear…"
     }
   ],
   "/wiki/iris-7.html": [
@@ -2105,20 +2105,20 @@
       "context_snippet": "…chain platforms like WAX and SOL, offering rewards such as $GK tokens and phygital prints."
     },
     {
-      "target_url": "/wiki/graffiti-kings.html",
-      "anchor_text": "Graffiti Kings",
-      "match_type": "title",
-      "section_type": "lead",
-      "placement_score": 4,
-      "context_snippet": "…l prints, all while echoing the street-art rebellion of the Graffiti Kings through blockchain warfare."
-    },
-    {
       "target_url": "/wiki/phygital-prints.html",
       "anchor_text": "phygital prints",
       "match_type": "title",
       "section_type": "lead",
       "placement_score": 4,
       "context_snippet": "…conflict into opportunity, offering rewards like $ or rare phygital prints, all while echoing the street-art rebellion of the Graffiti…"
+    },
+    {
+      "target_url": "/wiki/playable-nft-murals.html",
+      "anchor_text": "playable NFT murals",
+      "match_type": "title",
+      "section_type": "lead",
+      "placement_score": 4,
+      "context_snippet": "…nd The GRAFFPUNKS clash for territorial dominance, wielding playable NFT murals as both weapons and stakes in ’s neon-lit arenas. Accessibl…"
     }
   ],
   "/wiki/metropolis.html": [
@@ -2167,20 +2167,20 @@
       "context_snippet": "…d others vie for dominance, their victories echoing through Block Topia as legends of valor or infamy. In this arena, every swing o…"
     },
     {
-      "target_url": "/wiki/charlie-buster.html",
-      "anchor_text": "Charlie Buster",
+      "target_url": "/wiki/graffpunks.html",
+      "anchor_text": "GraffPUNKS",
       "match_type": "title",
-      "section_type": "lore",
-      "placement_score": 2,
-      "context_snippet": "…ominate with their glitch-art buffs, but rogue players like Charlie Buster soon turned the tide with hacked avatars, proving the arena…"
+      "section_type": "lead",
+      "placement_score": 4,
+      "context_snippet": "…. Here, victory means claiming $PUNK tokens, rare NFTs like GraffPUNKS warriors, and faction prestige, as medieval ferocity meets…"
     },
     {
-      "target_url": "/wiki/crypto-moonboys.html",
-      "anchor_text": "Crypto Moonboys",
+      "target_url": "/wiki/hodl-warriors.html",
+      "anchor_text": "HODL Warriors",
       "match_type": "title",
-      "section_type": "lore",
-      "placement_score": 2,
-      "context_snippet": "…uiring Burn-to-Earn sacrifices, connect the game to broader Crypto Moonboys narratives, turning each victory into a piece of unfolding…"
+      "section_type": "lead",
+      "placement_score": 4,
+      "context_snippet": "…tions, it’s a neutral battleground where GraffPUNKS rebels, HODL Warriors, and others vie for dominance, their victories echoing thro…"
     }
   ],
   "/wiki/midevilpunks.html": [
@@ -2237,28 +2237,28 @@
   ],
   "/wiki/nbg.html": [
     {
-      "target_url": "/wiki/alfie-blaze.html",
-      "anchor_text": "Alfie Blaze",
-      "match_type": "title",
-      "section_type": "lore",
-      "placement_score": 2,
-      "context_snippet": "…en spiking after major victories or hard forks. Rebels like Alfie Blaze and the Bitcoin Kids have been known to hack NBG reserves,…"
-    },
-    {
-      "target_url": "/wiki/bitcoin-kids.html",
-      "anchor_text": "Bitcoin Kids",
-      "match_type": "title",
-      "section_type": "lore",
-      "placement_score": 2,
-      "context_snippet": "…imbuing it with a near-sacred status among rebels like the Bitcoin Kids, who hoard it as a symbol of defiance. Its fluctuating valu…"
-    },
-    {
       "target_url": "/wiki/block-topia.html",
       "anchor_text": "Block Topia",
       "match_type": "title",
       "section_type": "lead",
       "placement_score": 4,
       "context_snippet": "…e for decentralization. In the neon-soaked battlegrounds of Block Topia, NBG is far more than digital currency—it’s the heartbeat o…"
+    },
+    {
+      "target_url": "/wiki/graffpunks.html",
+      "anchor_text": "GraffPUNKS",
+      "match_type": "title",
+      "section_type": "lead",
+      "placement_score": 4,
+      "context_snippet": "…and Bitcoin Cash, born from the fierce anarchist ideals of GraffPUNKS and their unrelenting drive for decentralization. In the ne…"
+    },
+    {
+      "target_url": "/wiki/hodl-warriors.html",
+      "anchor_text": "HODL Warriors",
+      "match_type": "title",
+      "section_type": "lore",
+      "placement_score": 2,
+      "context_snippet": "…knowledge guarded by rogue algorithms. Stories passed among HODL Warriors claim that amassing enough NBG during specific hard fork ev…"
     }
   ],
   "/wiki/nbgx-token.html": [
@@ -2305,12 +2305,12 @@
       "context_snippet": "…n the shadows of the HODL WARS. In the gritty underbelly of Block Topia, NBGX is the currency of influence, used to unlock hidden ‘…"
     },
     {
-      "target_url": "/wiki/charlie-buster.html",
-      "anchor_text": "Charlie Buster",
+      "target_url": "/wiki/graffpunks.html",
+      "anchor_text": "GraffPUNKS",
       "match_type": "title",
-      "section_type": "lore",
-      "placement_score": 2,
-      "context_snippet": "…cs. Its rarity fuels intense competition, with figures like Charlie Buster rumored to have once stolen a massive NBGX stash using Glit…"
+      "section_type": "lead",
+      "placement_score": 4,
+      "context_snippet": "…a specialized currency forged in the rebellious crucible of GraffPUNKS’ vision for a decentralized future, circulating across the…"
     }
   ],
   "/wiki/nifty-crowns.html": [
@@ -2395,28 +2395,28 @@
   ],
   "/wiki/null-the-prophet.html": [
     {
-      "target_url": "/wiki/alfie-blaze.html",
-      "anchor_text": "Alfie Blaze",
-      "match_type": "title",
-      "section_type": "lore",
-      "placement_score": 2,
-      "context_snippet": "…interactions with other key figures like Charlie Buster and Alfie Blaze are rare but significant, often marked by cryptic exchanges…"
-    },
-    {
-      "target_url": "/wiki/bitcoin-kids.html",
-      "anchor_text": "Bitcoin Kids",
-      "match_type": "title",
-      "section_type": "lore",
-      "placement_score": 2,
-      "context_snippet": "…HODL WARS, with factions like the GraffPUNKS and even rogue Bitcoin Kids seeking their counsel, though often at great peril. Their p…"
-    },
-    {
       "target_url": "/wiki/block-topia.html",
       "anchor_text": "Block Topia",
       "match_type": "title",
       "section_type": "lead",
       "placement_score": 4,
       "context_snippet": "…s warnings that reverberate across the blockchain realms of Block Topia. Their presence is a constant reminder of the universe’s in…"
+    },
+    {
+      "target_url": "/wiki/graffpunks.html",
+      "anchor_text": "GraffPUNKS",
+      "match_type": "title",
+      "section_type": "lead",
+      "placement_score": 4,
+      "context_snippet": "…stands as a mystical entity within the Crypto Moonboys and GraffPUNKS universe, known as the Genesis Error—a being unbound by fac…"
+    },
+    {
+      "target_url": "/wiki/hodl-warriors.html",
+      "anchor_text": "HODL Warriors",
+      "match_type": "title",
+      "section_type": "lead",
+      "placement_score": 4,
+      "context_snippet": "…, speaking in fragmented riddles that only the most attuned HODL Warriors dare to decipher. Their role is not to guide but to unsettl…"
     }
   ],
   "/wiki/patchwork.html": [
@@ -2561,28 +2561,28 @@
   ],
   "/wiki/punk-token.html": [
     {
-      "target_url": "/wiki/1m-free-nfts-programme.html",
-      "anchor_text": "1M free NFTs programme",
-      "match_type": "title",
-      "section_type": "lore",
-      "placement_score": 2,
-      "context_snippet": "Through the 1M free NFTs programme, $PUNK tokens are often distributed alongside tokenized str…"
-    },
-    {
-      "target_url": "/wiki/alfie-blaze.html",
-      "anchor_text": "Alfie Blaze",
-      "match_type": "title",
-      "section_type": "lore",
-      "placement_score": 2,
-      "context_snippet": "…ies the weight of resistance, often tied to characters like Alfie Blaze who redistribute stolen $PUNK to the oppressed. This token…"
-    },
-    {
       "target_url": "/wiki/bitcoin-kids.html",
       "anchor_text": "Bitcoin Kids",
       "match_type": "title",
       "section_type": "lore",
       "placement_score": 2,
       "context_snippet": "…power into a weapon, allowing even small factions like the Bitcoin Kids to punch above their weight with strategic burns. This toke…"
+    },
+    {
+      "target_url": "/wiki/block-topia.html",
+      "anchor_text": "Block Topia",
+      "match_type": "title",
+      "section_type": "lead",
+      "placement_score": 4,
+      "context_snippet": "…ital currency that fuels the chaotic underground economy of Block Topia across its multi-chain sprawl. More than mere digital coin,…"
+    },
+    {
+      "target_url": "/wiki/graffpunks.html",
+      "anchor_text": "GraffPUNKS",
+      "match_type": "title",
+      "section_type": "lead",
+      "placement_score": 4,
+      "context_snippet": "…ion in the Crypto Moonboys universe, a primary token of the GraffPUNKS and a vital currency that fuels the chaotic underground eco…"
     }
   ],
   "/wiki/punk.html": [
@@ -2665,14 +2665,6 @@
   ],
   "/wiki/queen-sarah-pfly.html": [
     {
-      "target_url": "/wiki/alfie-blaze.html",
-      "anchor_text": "Alfie Blaze",
-      "match_type": "title",
-      "section_type": "lore",
-      "placement_score": 2,
-      "context_snippet": "…in code, yet they carry weight that even rebel leaders like Alfie Blaze heed with caution. This recurring motif of her as an oracle…"
-    },
-    {
       "target_url": "/wiki/bitcoin-kids.html",
       "anchor_text": "Bitcoin Kids",
       "match_type": "title",
@@ -2687,6 +2679,14 @@
       "section_type": "lead",
       "placement_score": 4,
       "context_snippet": "…s whose presence looms over the blockchain battlegrounds of Block Topia. Her title evokes regal authority laced with punk defiance,…"
+    },
+    {
+      "target_url": "/wiki/graffpunks.html",
+      "anchor_text": "GraffPUNKS",
+      "match_type": "title",
+      "section_type": "lead",
+      "placement_score": 4,
+      "context_snippet": "…-fly reigns as a cryptic monarch in the Crypto Moonboys and GraffPUNKS universe, a figure of immense power and unfathomable motive…"
     }
   ],
   "/wiki/quell.html": [
@@ -2857,12 +2857,12 @@
       "context_snippet": "…ellion, merging real-world passion with digital defiance in Crypto Moonboys lore."
     },
     {
-      "target_url": "/wiki/darren-cullen.html",
-      "anchor_text": "Darren Cullen",
+      "target_url": "/wiki/graffpunks.html",
+      "anchor_text": "GraffPUNKS",
       "match_type": "title",
       "section_type": "lore",
       "placement_score": 2,
-      "context_snippet": "Partner of Darren Cullen, deeply involved in Graffiti Kings’ street-art and Web3 ini…"
+      "context_snippet": "…fting visual and thematic elements for NFT collections like GraffPUNKS, her creativity a driving force behind the GKniftyHEADS’ ae…"
     }
   ],
   "/wiki/satorebel.html": [
@@ -2883,12 +2883,12 @@
       "context_snippet": "…d oppression, a voice of defiance that resonates across the Crypto Moonboys universe’s digital wastelands."
     },
     {
-      "target_url": "/wiki/gkniftyheads.html",
-      "anchor_text": "GKniftyHEADS",
+      "target_url": "/wiki/graffpunks.html",
+      "anchor_text": "GraffPUNKS",
       "match_type": "title",
       "section_type": "lore",
       "placement_score": 2,
-      "context_snippet": "…him into a living legend, with tales of his daring raids on GKniftyHEADS strongholds spreading like wildfire through underground net…"
+      "context_snippet": "…o have single-handedly rallied a faltering coalition of and GraffPUNKS to hold a critical data node against a GKniftyHEADS siege,…"
     }
   ],
   "/wiki/satoshi-scroll.html": [
@@ -3073,20 +3073,20 @@
   ],
   "/wiki/squeaky-pinks-enforcers.html": [
     {
-      "target_url": "/wiki/bitcoin-kid-army.html",
-      "anchor_text": "Bitcoin Kid Army",
-      "match_type": "title",
-      "section_type": "lore",
-      "placement_score": 2,
-      "context_snippet": "…m from the blockchain entirely. Feared by factions like the Bitcoin Kid Army and the Street Kingdoms, the enforcers are a constant threa…"
-    },
-    {
       "target_url": "/wiki/street-kingdoms.html",
       "anchor_text": "Street Kingdoms",
       "match_type": "title",
       "section_type": "lore",
       "placement_score": 2,
       "context_snippet": "…enforcers unleashed a coordinated assault on a coalition of Street Kingdoms factions, using a prototype Resonator array to disable enti…"
+    },
+    {
+      "target_url": "/wiki/the-bitcoin-kid-army.html",
+      "anchor_text": "the Bitcoin Kid Army",
+      "match_type": "title",
+      "section_type": "lore",
+      "placement_score": 2,
+      "context_snippet": "…them from the blockchain entirely. Feared by factions like the Bitcoin Kid Army and the Street Kingdoms, the enforcers are a constant threa…"
     },
     {
       "target_url": "/wiki/the-squeaky-pinks.html",
@@ -3135,28 +3135,28 @@
   ],
   "/wiki/staking.html": [
     {
-      "target_url": "/wiki/alfie-blaze.html",
-      "anchor_text": "Alfie Blaze",
-      "match_type": "title",
-      "section_type": "lore",
-      "placement_score": 2,
-      "context_snippet": "…have saved factions from collapse or funded rebel hacks by Alfie Blaze. Its integration into Block Topia’s narrative ensures every…"
-    },
-    {
-      "target_url": "/wiki/bitcoin-kids.html",
-      "anchor_text": "Bitcoin Kids",
-      "match_type": "title",
-      "section_type": "lore",
-      "placement_score": 2,
-      "context_snippet": "…often unavailable for immediate use, forcing factions like Bitcoin Kids to balance short-term survival with long-term power gains.…"
-    },
-    {
       "target_url": "/wiki/block-topia.html",
       "anchor_text": "Block Topia",
       "match_type": "title",
       "section_type": "lead",
       "placement_score": 4,
       "context_snippet": "…oring players and factions to the battle-scarred streets of Block Topia across the multi-chain ecosystem of WAX, XRPL, SOL, and Cas…"
+    },
+    {
+      "target_url": "/wiki/graffpunks.html",
+      "anchor_text": "GraffPUNKS",
+      "match_type": "title",
+      "section_type": "lead",
+      "placement_score": 4,
+      "context_snippet": "…act, a testament of allegiance to the punk rebellion led by GraffPUNKS, anchoring players and factions to the battle-scarred stree…"
+    },
+    {
+      "target_url": "/wiki/hodl-warriors.html",
+      "anchor_text": "HODL Warriors",
+      "match_type": "title",
+      "section_type": "lore",
+      "placement_score": 2,
+      "context_snippet": "…a, a commitment that can bolster a group like GraffPUNKS or HODL Warriors with enhanced server defenses or combat stats during HODL W…"
     }
   ],
   "/wiki/stikfamwars.html": [
@@ -3297,12 +3297,12 @@
       "context_snippet": "…Queen Sarah P-fly’s GKniftyHEADS, often clashing in brutal metaverse battles where their graffiti NFTs serve as both weapons and symbols…"
     },
     {
-      "target_url": "/wiki/the-gkniftyheads.html",
-      "anchor_text": "The GKniftyHEADS",
+      "target_url": "/wiki/triple-fork-event.html",
+      "anchor_text": "Triple Fork Event",
       "match_type": "title",
       "section_type": "lore",
       "placement_score": 2,
-      "context_snippet": "…n critical infrastructure, sowing chaos among factions like The GKniftyHEADS while rallying the downtrodden to their cause. Each piece o…"
+      "context_snippet": "…ashing with rival forces during cataclysmic events like the Triple Fork Event."
     }
   ],
   "/wiki/the-blockchain-furies.html": [
@@ -3503,12 +3503,12 @@
       "context_snippet": "…nto a potential threat. Stories abound of entire convoys of Squeaky Pinks enforcers vanishing without a trace, only to be found days later as c…"
     },
     {
-      "target_url": "/wiki/the-gkniftyheads.html",
-      "anchor_text": "The GKniftyHEADS",
+      "target_url": "/wiki/triple-fork-event.html",
+      "anchor_text": "Triple Fork Event",
       "match_type": "title",
       "section_type": "lore",
       "placement_score": 2,
-      "context_snippet": "…rgical, often dismantling entire data hubs of factions like The GKniftyHEADS before vanishing into the ether, leaving behind only crypti…"
+      "context_snippet": "A chilling tale from the Triple Fork Event recounts how The GASLESS GHOSTS infiltrated the central ser…"
     }
   ],
   "/wiki/the-gkniftyheads.html": [
@@ -3767,12 +3767,12 @@
       "context_snippet": "…ck Topia, her regal authority a beacon or puzzle within the Crypto Moonboys universe, influencing the digital hierarchy amidst the chao…"
     },
     {
-      "target_url": "/wiki/gkniftyheads.html",
-      "anchor_text": "GKniftyHEADS",
+      "target_url": "/wiki/graffpunks.html",
+      "anchor_text": "GraffPUNKS",
       "match_type": "title",
       "section_type": "lore",
       "placement_score": 2,
-      "context_snippet": "…sence alone halting a devastating clash between The and The GKniftyHEADS. Without a word, she raised a hand, and a wave of calming c…"
+      "context_snippet": "A purely fictional character within GraffPUNKS lore, representing royalty in a digital realm."
     }
   ],
   "/wiki/the-rugpull-miners.html": [

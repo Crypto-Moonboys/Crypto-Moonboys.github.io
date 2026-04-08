@@ -9,6 +9,9 @@
  *
  * Candidate selection uses entity-graph scores (js/entity-graph.json) when
  * available; falls back to alphabetical order (original keyword/title match).
+ * Entity-graph scores include authority-weighted boosts (rank_score_boost,
+ * authority_score_boost, graph_centrality_boost) from Phase 10, so candidates
+ * with higher authority naturally win limited injection slots.
  *
  * Section-aware placement:
  * - Each candidate match is scored by the section type of the paragraph it

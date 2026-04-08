@@ -9,12 +9,20 @@
  *   js/entity-map.json   – entity metadata (canonical_url, category, tags)
  *   js/wiki-index.json   – per-page rank signals and link_score
  *   js/link-map.json     – per-page existing_links arrays
+ *   js/link-graph.json   – per-page inbound/outbound link counts (graph centrality)
  *
  * Output shape (js/entity-graph.json):
  * {
  *   "/wiki/page.html": {
  *     "related_pages": [
- *       { "target_url": "/wiki/other.html", "score": 123, "reasons": ["same_category:factions", ...] },
+ *       {
+ *         "target_url": "/wiki/other.html",
+ *         "score": 123,
+ *         "reasons": ["same_category:factions", ...],
+ *         "rank_score_boost": 7,
+ *         "authority_score_boost": 5,
+ *         "graph_centrality_boost": 2
+ *       },
  *       ...
  *     ]
  *   },
@@ -29,10 +37,14 @@
  *   5. same_category      – category match (covered by #1 above; retained
  *                           as explicit reason label when applicable)
  *   6. link_overlap       – shared existing-link URLs (+3 each)
+ *   7. rank_score_boost   – target page rank_score quality (+0–10)
+ *   8. authority_score_boost – target inbound link authority (+0–15)
+ *   9. graph_centrality_boost – target graph centrality via inbound count (+0–8)
  *
  * Rules:
  *   - No self-links
  *   - No duplicates
+ *   - Authority boosts only applied when base relationship score > 0
  *   - Output is deterministic: sorted by score DESC, then target_url ASC
  *
  * Usage: node scripts/generate-entity-graph.js
@@ -47,6 +59,7 @@ const ROOT            = path.resolve(__dirname, '..');
 const ENTITY_MAP_PATH = path.join(ROOT, 'js', 'entity-map.json');
 const WIKI_INDEX_PATH = path.join(ROOT, 'js', 'wiki-index.json');
 const LINK_MAP_PATH   = path.join(ROOT, 'js', 'link-map.json');
+const LINK_GRAPH_PATH = path.join(ROOT, 'js', 'link-graph.json');
 const OUTPUT_PATH     = path.join(ROOT, 'js', 'entity-graph.json');
 
 // ---------------------------------------------------------------------------
@@ -78,6 +91,26 @@ const SCORE_LOCATION_TAG   = 15;
 const SCORE_ENTITY_TAG     = 8;
 const SCORE_LINK_OVERLAP   = 3;
 
+// Authority boost caps (applied only when base relationship score > 0)
+// rank_score_boost: floor(rank_score / 100), capped at 10
+//   e.g. rank 749 → +7, rank 200 → +2, rank 100 → +1
+const RANK_BOOST_DIVISOR   = 100;
+const RANK_BOOST_MAX       = 10;
+
+// authority_score_boost: floor(inbound_count / 10), capped at 15
+//   rewards pages that many other pages already link to
+const AUTHORITY_BOOST_DIVISOR = 10;
+const AUTHORITY_BOOST_MAX     = 15;
+
+// graph_centrality_boost: tiered by link-graph inbound_count
+//   50+ → 8,  20–49 → 5,  5–19 → 2,  0–4 → 0
+const CENTRALITY_TIERS = [
+  { threshold: 50, boost: 8 },
+  { threshold: 20, boost: 5 },
+  { threshold: 5,  boost: 2 },
+  { threshold: 0,  boost: 0 },
+];
+
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
@@ -95,9 +128,10 @@ function contentTags(entityEntry) {
 
 /**
  * Compute score + reasons for a (source, target) pair.
- * Returns null if score === 0 (no relationship).
+ * tgtBoosts contains pre-computed authority boost fields for the target URL.
+ * Returns null if base relationship score === 0 (no organic relationship).
  */
-function computeRelationship(srcEntry, tgtEntry, srcLinks, tgtLinks) {
+function computeRelationship(srcEntry, tgtEntry, srcLinks, tgtLinks, tgtBoosts) {
   let score = 0;
   const reasons = [];
 
@@ -144,8 +178,26 @@ function computeRelationship(srcEntry, tgtEntry, srcLinks, tgtLinks) {
     reasons.push(`link_overlap:${overlapCount}`);
   }
 
+  // Only include authority boosts when there is an organic relationship
   if (score === 0) return null;
-  return { score, reasons };
+
+  // 7–9 – authority boosts for the target page
+  const { rank_score_boost, authority_score_boost, graph_centrality_boost } = tgtBoosts;
+
+  if (rank_score_boost > 0) {
+    score += rank_score_boost;
+    reasons.push(`rank_score_boost:${rank_score_boost}`);
+  }
+  if (authority_score_boost > 0) {
+    score += authority_score_boost;
+    reasons.push(`authority_score_boost:${authority_score_boost}`);
+  }
+  if (graph_centrality_boost > 0) {
+    score += graph_centrality_boost;
+    reasons.push(`graph_centrality_boost:${graph_centrality_boost}`);
+  }
+
+  return { score, reasons, rank_score_boost, authority_score_boost, graph_centrality_boost };
 }
 
 // ---------------------------------------------------------------------------
@@ -156,6 +208,7 @@ function main() {
   const entityMap  = JSON.parse(fs.readFileSync(ENTITY_MAP_PATH, 'utf8'));
   const wikiIndex  = JSON.parse(fs.readFileSync(WIKI_INDEX_PATH, 'utf8'));
   const linkMap    = JSON.parse(fs.readFileSync(LINK_MAP_PATH,   'utf8'));
+  const linkGraph  = JSON.parse(fs.readFileSync(LINK_GRAPH_PATH, 'utf8'));
 
   // Build url → entity-map entry lookup
   const entityByUrl = {};
@@ -173,6 +226,42 @@ function main() {
   const existingLinksMap = {};
   for (const [pageUrl, data] of Object.entries(linkMap)) {
     existingLinksMap[pageUrl] = new Set(data.existing_links || []);
+  }
+
+  // Pre-compute authority boost fields for every URL (target-side only).
+  // These are deterministic functions of publicly available signals.
+  const authorityBoosts = {};
+  const allEntityUrls = new Set([
+    ...Object.keys(entityByUrl),
+    ...Object.keys(wikiByUrl),
+  ]);
+  for (const url of allEntityUrls) {
+    const wiki = wikiByUrl[url];
+    const graph = linkGraph[url];
+
+    // rank_score_boost: floor(rank_score / 100), capped at RANK_BOOST_MAX
+    const rankScore = (wiki && wiki.rank_score) ? wiki.rank_score : 0;
+    const rank_score_boost = Math.min(Math.floor(rankScore / RANK_BOOST_DIVISOR), RANK_BOOST_MAX);
+
+    // authority_score_boost: floor(inbound_count / 10), capped at AUTHORITY_BOOST_MAX
+    const inboundCount = (wiki && wiki.link_score && wiki.link_score.inbound_count)
+      ? wiki.link_score.inbound_count : 0;
+    const authority_score_boost = Math.min(
+      Math.floor(inboundCount / AUTHORITY_BOOST_DIVISOR),
+      AUTHORITY_BOOST_MAX
+    );
+
+    // graph_centrality_boost: tiered by link-graph inbound_count
+    const graphInbound = (graph && graph.inbound_count) ? graph.inbound_count : 0;
+    let graph_centrality_boost = 0;
+    for (const tier of CENTRALITY_TIERS) {
+      if (graphInbound >= tier.threshold) {
+        graph_centrality_boost = tier.boost;
+        break;
+      }
+    }
+
+    authorityBoosts[url] = { rank_score_boost, authority_score_boost, graph_centrality_boost };
   }
 
   // Collect all page URLs to process (union of entity-map and wiki-index URLs)
@@ -199,13 +288,19 @@ function main() {
       if (!tgtEntity) continue;
 
       const tgtLinks = existingLinksMap[tgtUrl] || new Set();
-      const rel = computeRelationship(srcEntity, tgtEntity, srcLinks, tgtLinks);
+      const tgtBoosts = authorityBoosts[tgtUrl] || {
+        rank_score_boost: 0, authority_score_boost: 0, graph_centrality_boost: 0,
+      };
+      const rel = computeRelationship(srcEntity, tgtEntity, srcLinks, tgtLinks, tgtBoosts);
       if (!rel) continue;
 
       relatedPages.push({
-        target_url: tgtUrl,
-        score:      rel.score,
-        reasons:    rel.reasons,
+        target_url:            tgtUrl,
+        score:                 rel.score,
+        reasons:               rel.reasons,
+        rank_score_boost:      rel.rank_score_boost,
+        authority_score_boost: rel.authority_score_boost,
+        graph_centrality_boost: rel.graph_centrality_boost,
       });
     }
 
