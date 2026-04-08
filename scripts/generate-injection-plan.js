@@ -10,8 +10,10 @@
  * Candidate selection uses entity-graph scores (js/entity-graph.json) when
  * available; falls back to alphabetical order (original keyword/title match).
  * Entity-graph scores include authority-weighted boosts (rank_score_boost,
- * authority_score_boost, graph_centrality_boost) from Phase 10, so candidates
- * with higher authority naturally win limited injection slots.
+ * authority_score_boost, graph_centrality_boost) from Phase 10 and
+ * reinforcement boosts (reinforcement_boost, cluster_support_boost,
+ * co_citation_boost) from Phase 11, so candidates with higher authority and
+ * stronger graph position naturally win limited injection slots.
  *
  * Section-aware placement:
  * - Each candidate match is scored by the section type of the paragraph it
@@ -19,6 +21,16 @@
  * - For each target URL, the best-scoring paragraph is chosen; ties broken by
  *   entity-graph score then by document order (earlier first).
  * - section_type and placement_score are stored in each plan entry.
+ *
+ * Cluster-balance logic (Phase 11):
+ * - Up to MAX_SCAN_LINKS candidates are evaluated per page (instead of stopping
+ *   at the first 3 matches) so that candidates from different categories can be
+ *   considered together.
+ * - When selecting the final MAX_PER_PAGE insertions, at most MAX_SAME_CATEGORY
+ *   targets from the same entity category are selected.  If no other-category
+ *   candidates exist, the cap is relaxed so all 3 slots are still filled.
+ * - Final selection order: placement_score DESC → entity-graph score DESC →
+ *   target_url ASC (deterministic).
  *
  * Rules:
  * - NO HTML modification — script only reads HTML, never writes it.
@@ -40,6 +52,7 @@ const path = require('path');
 const ROOT              = path.resolve(__dirname, '..');
 const LINK_MAP_PATH     = path.join(ROOT, 'js', 'link-map.json');
 const ENTITY_GRAPH_PATH = path.join(ROOT, 'js', 'entity-graph.json');
+const ENTITY_MAP_PATH   = path.join(ROOT, 'js', 'entity-map.json');
 const OUTPUT_PATH       = path.join(ROOT, 'js', 'injection-plan.json');
 const WIKI_DIR          = path.join(ROOT, 'wiki');
 
@@ -48,6 +61,13 @@ const SNIPPET_RADIUS  = 60; // chars before/after match
 
 const MIN_PARAGRAPH_CHARS = 40; // eligible paragraph must be >= 40 chars
 const MIN_ANCHOR_CHARS    = 6;  // anchor phrase must be >= 6 chars
+
+// Cluster-balance constants (Phase 11)
+// Scan up to this many suggested links per page to enable diversity selection.
+const MAX_SCAN_LINKS    = 20;
+// At most this many injection targets from the same entity category per page.
+// Falls back to selecting over-represented categories if no alternatives exist.
+const MAX_SAME_CATEGORY = 2;
 
 // Anchors that must not be used as link text
 const ANCHOR_BLOCKLIST = new Set([
@@ -249,6 +269,18 @@ function main() {
     entityGraph = JSON.parse(fs.readFileSync(ENTITY_GRAPH_PATH, 'utf8'));
   }
 
+  // Load entity-map to obtain category per URL (for cluster-balance logic).
+  // Build url → category lookup.
+  const entityCategoryMap = {};
+  if (fs.existsSync(ENTITY_MAP_PATH)) {
+    const entityMap = JSON.parse(fs.readFileSync(ENTITY_MAP_PATH, 'utf8'));
+    for (const entry of entityMap) {
+      if (entry.canonical_url && entry.category) {
+        entityCategoryMap[entry.canonical_url] = entry.category;
+      }
+    }
+  }
+
   const plan = {};
 
   // Sort pages alphabetically for determinism
@@ -271,9 +303,6 @@ function main() {
 
     if (!eligibleParagraphs.length) continue;
 
-    const matches = [];
-    const usedTargets = new Set();
-
     // Build a score lookup for candidates on this page from entity-graph.
     // Entity-graph scores are used to rank candidates; ties broken
     // alphabetically so output remains deterministic.
@@ -285,7 +314,8 @@ function main() {
       }
     }
 
-    // Rank candidates: entity-graph score DESC, then URL ASC (fallback).
+    // Rank candidates: entity-graph score DESC (includes authority + reinforcement),
+    // then URL ASC (deterministic fallback).
     const sortedLinks = [...suggestedLinks].sort((a, b) => {
       const scoreA = graphScoreMap[a] || 0;
       const scoreB = graphScoreMap[b] || 0;
@@ -293,12 +323,20 @@ function main() {
       return a.localeCompare(b);
     });
 
-    for (const targetUrl of sortedLinks) {
-      if (matches.length >= MAX_PER_PAGE) break;
-      if (usedTargets.has(targetUrl)) continue;
+    // ---------------------------------------------------------------------------
+    // Phase 1: Scan up to MAX_SCAN_LINKS candidates and collect all valid matches.
+    // Scanning beyond MAX_PER_PAGE allows cluster-balance logic to choose a more
+    // diverse set in Phase 2.
+    // ---------------------------------------------------------------------------
+    const scannedTargets = new Set();
+    const candidateMatches = [];
 
-      // Don't link to self
-      if (targetUrl === pageKey) continue;
+    for (const targetUrl of sortedLinks) {
+      if (scannedTargets.size >= MAX_SCAN_LINKS) break;
+      if (scannedTargets.has(targetUrl)) continue;
+      if (targetUrl === pageKey) continue;  // no self-links
+
+      scannedTargets.add(targetUrl);
 
       const candidates = deriveAnchorCandidates(targetUrl);
       const graphScore = graphScoreMap[targetUrl] || 0;
@@ -334,6 +372,8 @@ function main() {
               placement_score,
               context_snippet: buildSnippet(para.text, found.index, found.matched.length),
               _docOrder:       para.document_order,
+              _graphScore:     graphScore,
+              _category:       entityCategoryMap[targetUrl] || '',
             };
           }
         }
@@ -342,11 +382,49 @@ function main() {
       }
 
       if (bestMatch) {
-        const { _docOrder, ...entry } = bestMatch;
-        matches.push(entry);
-        usedTargets.add(targetUrl);
+        candidateMatches.push(bestMatch);
       }
     }
+
+    if (candidateMatches.length === 0) continue;
+
+    // ---------------------------------------------------------------------------
+    // Phase 2: Select up to MAX_PER_PAGE insertions with cluster-balance logic.
+    //
+    // Sort by: placement_score DESC → graph_score DESC → target_url ASC
+    // Then greedily select, capping same-category picks at MAX_SAME_CATEGORY.
+    // Deferred (over-represented category) candidates fill remaining slots if
+    // no diverse alternatives exist.
+    // ---------------------------------------------------------------------------
+    candidateMatches.sort((a, b) => {
+      if (b.placement_score !== a.placement_score) return b.placement_score - a.placement_score;
+      if (b._graphScore !== a._graphScore)         return b._graphScore - a._graphScore;
+      return a.target_url.localeCompare(b.target_url);
+    });
+
+    const selectedCategories = {};
+    const selected = [];
+    const deferred = [];
+
+    for (const m of candidateMatches) {
+      if (selected.length >= MAX_PER_PAGE) break;
+      const cat = m._category;
+      if ((selectedCategories[cat] || 0) < MAX_SAME_CATEGORY) {
+        selected.push(m);
+        selectedCategories[cat] = (selectedCategories[cat] || 0) + 1;
+      } else {
+        deferred.push(m);
+      }
+    }
+
+    // Fill remaining slots with deferred candidates (all diverse categories exhausted)
+    for (const m of deferred) {
+      if (selected.length >= MAX_PER_PAGE) break;
+      selected.push(m);
+    }
+
+    // Strip internal fields and build the final matches array
+    const matches = selected.map(({ _docOrder, _graphScore, _category, ...entry }) => entry);
 
     if (matches.length > 0) {
       // Sort matches by target_url for determinism
