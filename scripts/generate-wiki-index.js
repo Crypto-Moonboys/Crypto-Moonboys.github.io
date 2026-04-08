@@ -435,6 +435,12 @@ function run() {
     const searchIndex = buildSearchIndex(title, description, keywords, aliases);
     const linkScore = buildLinkScore(url, linkGraph);
 
+    const authorityGraphPoints = Math.round(linkScore.authority * 1);
+    const updatedRankDiagnostics = Object.assign({}, rankDiagnostics, {
+      authority_graph_points: authorityGraphPoints,
+      final_rank_score: rankDiagnostics.final_rank_score + authorityGraphPoints
+    });
+
     index.push({
       title,
       desc: description,
@@ -442,9 +448,9 @@ function run() {
       tags: keywords,
       category: rankSignals.category,
       aliases,
-      rank_score: rankDiagnostics.final_rank_score,
+      rank_score: updatedRankDiagnostics.final_rank_score,
       rank_signals: rankSignals,
-      rank_diagnostics: rankDiagnostics,
+      rank_diagnostics: updatedRankDiagnostics,
       search_index: searchIndex,
       link_score: linkScore
     });
