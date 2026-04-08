@@ -65,15 +65,15 @@ function removeSkippedBlocks(html) {
   // Remove: script, style, headings, nav, existing <a> links
   // Also remove TOC elements and <aside> blocks (infoboxes)
   const blockPatterns = [
-    /<script[\s\S]*?<\/script>/gi,
-    /<style[\s\S]*?<\/style>/gi,
-    /<h[1-6][^>]*>[\s\S]*?<\/h[1-6]>/gi,
-    /<nav[^>]*>[\s\S]*?<\/nav>/gi,
-    /<aside[^>]*>[\s\S]*?<\/aside>/gi,
+    /<script[\s\S]*?<\/script\s*>/gi,
+    /<style[\s\S]*?<\/style\s*>/gi,
+    /<h[1-6][^>]*>[\s\S]*?<\/h[1-6]\s*>/gi,
+    /<nav[^>]*>[\s\S]*?<\/nav\s*>/gi,
+    /<aside[^>]*>[\s\S]*?<\/aside\s*>/gi,
     // TOC by id/class/aria-label
-    /<[^>]+(?:id\s*=\s*["']toc["']|class\s*=\s*["'][^"']*\btoc\b[^"']*["']|aria-label\s*=\s*["'][^"']*contents[^"']*["'])[^>]*>[\s\S]*?<\/[a-z]+>/gi,
+    /<[^>]+(?:id\s*=\s*["']toc["']|class\s*=\s*["'][^"']*\btoc\b[^"']*["']|aria-label\s*=\s*["'][^"']*contents[^"']*["'])[^>]*>[\s\S]*?<\/[a-z]+\s*>/gi,
     // Existing links (strip text so matches don't collide with current anchor text)
-    /<a(?:\s[^>]*)?>[\s\S]*?<\/a>/gi,
+    /<a(?:\s[^>]*)?>[\s\S]*?<\/a\s*>/gi,
   ];
   let result = html;
   for (const pat of blockPatterns) {
