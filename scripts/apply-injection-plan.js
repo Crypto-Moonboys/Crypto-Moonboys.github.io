@@ -134,10 +134,11 @@ function applyInsertion(html, targetUrl, anchorText) {
 
   // Rule C: Pre-compute how many times each innerHtml appears within the article.
   // Any paragraph whose exact innerHTML occurs more than once is a duplicate.
+  const P_TAG_RE = /<p(?:\s[^>]*)?>([\s\S]*?)<\/p\s*>/gi;
   const innerHtmlCounts = new Map();
   {
-    const scanRe = /<p(?:\s[^>]*)?>([\s\S]*?)<\/p\s*>/gi;
     let s;
+    const scanRe = new RegExp(P_TAG_RE.source, 'gi');
     while ((s = scanRe.exec(articleHtml)) !== null) {
       const inner = s[1];
       innerHtmlCounts.set(inner, (innerHtmlCounts.get(inner) || 0) + 1);
@@ -145,7 +146,7 @@ function applyInsertion(html, targetUrl, anchorText) {
   }
 
   // Regex to find each <p>...</p> block in the full HTML (non-greedy, multi-line).
-  const pPattern = /<p(?:\s[^>]*)?>([\s\S]*?)<\/p\s*>/gi;
+  const pPattern = new RegExp(P_TAG_RE.source, 'gi');
 
   let match;
   while ((match = pPattern.exec(html)) !== null) {
@@ -257,7 +258,8 @@ function main() {
         totalSkipped++;
         continue;
       }
-      if (trimmedAnchor === trimmedAnchor.toLowerCase() && GENERIC_ANCHOR_WORDS.has(trimmedAnchor)) {
+      const lowerAnchor = trimmedAnchor.toLowerCase();
+      if (trimmedAnchor === lowerAnchor && GENERIC_ANCHOR_WORDS.has(lowerAnchor)) {
         totalSkipped++;
         continue;
       }
