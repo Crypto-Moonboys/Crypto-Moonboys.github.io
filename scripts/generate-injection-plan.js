@@ -31,8 +31,18 @@
  * - When selecting the final MAX_PER_PAGE insertions, at most MAX_SAME_CATEGORY
  *   targets from the same entity category are selected.  If no other-category
  *   candidates exist, the cap is relaxed so all 3 slots are still filled.
- * - Final selection order: placement_score DESC → entity-graph score DESC →
- *   target_url ASC (deterministic).
+ * - Final selection order: placement_score DESC → intent_match_score DESC →
+ *   entity-graph score DESC → target_url ASC (deterministic).
+ *
+ * Intent-aware linking (Phase 13):
+ * - Each eligible paragraph is classified with a deterministic intent label
+ *   (explainer, lore, technical, strategic, economic, fallback) using heading
+ *   context, section_type, and keyword signals in the paragraph text.
+ * - Each candidate target receives an intent_match_score (0–3) based on how
+ *   well its entity category and URL slug align with the paragraph's intent.
+ * - Intent scores break ties after placement_score and before entity-graph score.
+ * - intent_match_score never overrides strong placement rules and falls back
+ *   cleanly to 0 when no meaningful signal exists.
  *
  * Rules:
  * - NO HTML modification — script only reads HTML, never writes it.
@@ -77,6 +87,57 @@ const ANCHOR_BLOCKLIST = new Set([
 ]);
 
 // ---------------------------------------------------------------------------
+// Intent-aware linking constants (Phase 13)
+// ---------------------------------------------------------------------------
+
+// Heading keyword patterns → deterministic intent label (evaluated in order)
+const HEADING_INTENT_PATTERNS = [
+  { pattern: /\b(war|wars|battle|conflict|strategic|strategy|attack|fight|defeat|alliance|siege|raid|skirmish)\b/, intent: 'strategic'  },
+  { pattern: /\b(token|staking|protocol|smart.?contract|blockchain|hash|mining|consensus|wallet|nft|defi)\b/,       intent: 'technical'  },
+  { pattern: /\b(economy|economic|economics|market|price|trade|trading|fee|cost|value|invest|wealth|earn|reward)\b/, intent: 'economic'   },
+  { pattern: /\b(explain|what is|how it|how does|mechanism|overview|introduction|guide)\b/,                         intent: 'explainer'  },
+  { pattern: /\b(lore|story|legend|myth|origin|background|history|tale|saga|chronicle)\b/,                          intent: 'lore'       },
+];
+
+// Paragraph text keyword → (intent, score) pairs; multiple patterns accumulate
+const TEXT_INTENT_SIGNALS = [
+  // explainer
+  [/\b(refer[s]? to|known as|defined as|is a type of|stands for|describes|represents)\b/i, 'explainer', 2],
+  [/\b(concept|mechanism|process|protocol|function|purpose|overview)\b/i,                   'explainer', 1],
+  // lore
+  [/\b(lore|legend|myth|tale|story|origin|background|legendary|ancient|saga|chronicle)\b/i, 'lore', 2],
+  [/\b(character|faction|crew|gang|alliance|rival|hero|villain|warrior|figure)\b/i,          'lore', 1],
+  // technical
+  [/\b(token|tokens|nft|nfts|blockchain|wallet|smart.?contract|hash|mining|stake|staking|consensus|defi|transaction)\b/i, 'technical', 2],
+  [/\b(technical|system|network|node|algorithm|code|digital|cryptographic)\b/i,              'technical', 1],
+  // strategic
+  [/\b(war|wars|battle|conflict|attack|fight|defeat|victory|tactical|army|enemy|threat|defend)\b/i, 'strategic', 2],
+  [/\b(control|power|dominate|territory|force|campaign|mission|operation)\b/i,               'strategic', 1],
+  // economic
+  [/\b(price|market|trade|trading|value|cost|fee|invest|economy|economic|wealth|earn|profit|reward)\b/i, 'economic', 2],
+  [/\b(currency|exchange|asset|supply|demand|buy|sell|hold|hodl)\b/i,                         'economic', 1],
+];
+
+// Intent → entity category → affinity score (0–3); used as base intent_match_score
+const INTENT_CATEGORY_AFFINITY = {
+  explainer: { characters: 2, factions: 2, tokens: 2 },
+  lore:      { characters: 3, factions: 2, tokens: 0 },
+  technical: { tokens: 3,     factions: 1, characters: 0 },
+  strategic: { factions: 3,   characters: 2, tokens: 0 },
+  economic:  { tokens: 3,     factions: 1,   characters: 0 },
+  fallback:  { characters: 0, factions: 0,   tokens: 0 },
+};
+
+// URL slug keyword patterns that add +1 bonus to intent_match_score (capped at 3)
+const URL_INTENT_BOOST_PATTERNS = [
+  { pattern: /war|battle|conflict|siege|hodl.war/i,    intent: 'strategic'  },
+  { pattern: /token|staking|nft|gk.token|defi/i,       intent: 'technical'  },
+  { pattern: /econom|market|price|trade/i,              intent: 'economic'   },
+  { pattern: /lore|legend|story|saga|origin/i,          intent: 'lore'       },
+  { pattern: /explain|guide|what.is|how.to|overview/i,  intent: 'explainer'  },
+];
+
+// ---------------------------------------------------------------------------
 // Section-aware placement scoring
 // ---------------------------------------------------------------------------
 
@@ -115,6 +176,75 @@ function determineSectionType(tag, cls, headingText, isFirstParagraph) {
   if (/lore|story|legend|myth|origin|background/.test(h))    return 'lore';
 
   return 'fallback';
+}
+
+/**
+ * Classify the intent of a paragraph deterministically.
+ * Priority: section_type → heading keywords → paragraph text signals.
+ *
+ * @param {string} section_type   - Section type from determineSectionType()
+ * @param {string} headingText    - Lowercased text of the most recent heading
+ * @param {string} paragraphText  - Visible paragraph text (tags stripped)
+ * @returns {string} Intent label: explainer | lore | technical | strategic | economic | fallback
+ */
+function classifyParagraphIntent(section_type, headingText, paragraphText) {
+  // section_type is the strongest structural signal
+  if (section_type === 'explainer') return 'explainer';
+  if (section_type === 'lore')      return 'lore';
+
+  const h = headingText.toLowerCase();
+
+  // Heading-based detection (evaluated in priority order)
+  for (const { pattern, intent } of HEADING_INTENT_PATTERNS) {
+    if (pattern.test(h)) return intent;
+  }
+
+  // Accumulate text-based keyword scores across all intent categories
+  const scores = { explainer: 0, lore: 0, technical: 0, strategic: 0, economic: 0 };
+  for (const [pattern, intent, score] of TEXT_INTENT_SIGNALS) {
+    if (pattern.test(paragraphText)) scores[intent] += score;
+  }
+
+  // Return the highest-scoring intent; ties resolved by INTENT_LABELS order
+  let bestIntent = 'fallback';
+  let bestScore  = 0;
+  for (const [intent, score] of Object.entries(scores)) {
+    if (score > bestScore) {
+      bestScore  = score;
+      bestIntent = intent;
+    }
+  }
+
+  return bestIntent;
+}
+
+/**
+ * Compute how well a candidate target's type matches the paragraph's intent.
+ * Returns an integer score 0–3 (higher = stronger match).
+ * Returns 0 when paragraph_intent is 'fallback' (no signal) so that intent
+ * logic never forces a weak match or overrides graph-based ranking.
+ *
+ * @param {string} paragraphIntent - Intent label from classifyParagraphIntent()
+ * @param {string} targetUrl       - Candidate target URL (e.g. /wiki/hodl-wars.html)
+ * @param {string} targetCategory  - Entity category from entity-map (or '')
+ * @returns {number} Intent match score 0–3
+ */
+function computeIntentMatchScore(paragraphIntent, targetUrl, targetCategory) {
+  if (paragraphIntent === 'fallback') return 0;
+
+  const affinityMap = INTENT_CATEGORY_AFFINITY[paragraphIntent] || {};
+  let score = affinityMap[targetCategory] || 0;
+
+  // URL slug bonus: +1 when the target URL contains intent-aligned keywords
+  const urlSlug = targetUrl.toLowerCase();
+  for (const { pattern, intent } of URL_INTENT_BOOST_PATTERNS) {
+    if (intent === paragraphIntent && pattern.test(urlSlug)) {
+      score = Math.min(3, score + 1);
+      break;
+    }
+  }
+
+  return score;
 }
 
 // ---------------------------------------------------------------------------
@@ -168,7 +298,7 @@ function removeSkippedBlocksKeepHeadings(html) {
  * Extract eligible paragraphs from a wiki page with section-type metadata.
  *
  * Returns an array of:
- *   { text: string, section_type: string, document_order: number }
+ *   { text: string, section_type: string, intent: string, document_order: number }
  *
  * Headings are scanned in document order to provide section context for
  * subsequent plain <p> elements. Skipped blocks (nav, aside, TOC, links)
@@ -211,7 +341,8 @@ function extractEligibleParagraphs(html) {
     const section_type = determineSectionType(tagLower, cls, currentHeadingText, isFirstParagraph);
     if (tagLower === 'p') isFirstParagraph = false;
 
-    paragraphs.push({ text, section_type, document_order: paragraphs.length });
+    const intent = classifyParagraphIntent(section_type, currentHeadingText, text);
+    paragraphs.push({ text, section_type, intent, document_order: paragraphs.length });
   }
 
   return paragraphs;
@@ -361,7 +492,9 @@ function main() {
           const found = findFirstOccurrence(para.text, phrase);
           if (!found) continue;
 
-          const placement_score = PLACEMENT_SCORES[para.section_type] || 0;
+          const placement_score   = PLACEMENT_SCORES[para.section_type] || 0;
+          const targetCategory    = entityCategoryMap[targetUrl] || '';
+          const intent_match_score = computeIntentMatchScore(para.intent, targetUrl, targetCategory);
 
           if (
             !bestMatch ||
@@ -370,15 +503,17 @@ function main() {
               para.document_order < bestMatch._docOrder)
           ) {
             bestMatch = {
-              target_url:      targetUrl,
-              anchor_text:     found.matched,
-              match_type:      'title',
-              section_type:    para.section_type,
+              target_url:        targetUrl,
+              anchor_text:       found.matched,
+              match_type:        'title',
+              section_type:      para.section_type,
               placement_score,
-              context_snippet: buildSnippet(para.text, found.index, found.matched.length),
-              _docOrder:       para.document_order,
-              _graphScore:     graphScore,
-              _category:       entityCategoryMap[targetUrl] || '',
+              paragraph_intent:  para.intent,
+              intent_match_score,
+              context_snippet:   buildSnippet(para.text, found.index, found.matched.length),
+              _docOrder:         para.document_order,
+              _graphScore:       graphScore,
+              _category:         targetCategory,
             };
           }
         }
@@ -396,14 +531,16 @@ function main() {
     // ---------------------------------------------------------------------------
     // Phase 2: Select up to MAX_PER_PAGE insertions with cluster-balance logic.
     //
-    // Sort by: placement_score DESC → graph_score DESC → target_url ASC
+    // Sort by: placement_score DESC → intent_match_score DESC →
+    //          graph_score DESC → target_url ASC
     // Then greedily select, capping same-category picks at MAX_SAME_CATEGORY.
     // Deferred (over-represented category) candidates fill remaining slots if
     // no diverse alternatives exist.
     // ---------------------------------------------------------------------------
     candidateMatches.sort((a, b) => {
-      if (b.placement_score !== a.placement_score) return b.placement_score - a.placement_score;
-      if (b._graphScore !== a._graphScore)         return b._graphScore - a._graphScore;
+      if (b.placement_score    !== a.placement_score)    return b.placement_score    - a.placement_score;
+      if (b.intent_match_score !== a.intent_match_score) return b.intent_match_score - a.intent_match_score;
+      if (b._graphScore        !== a._graphScore)        return b._graphScore        - a._graphScore;
       return a.target_url.localeCompare(b.target_url);
     });
 
