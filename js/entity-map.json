@@ -392,7 +392,9 @@
     "canonical_title": "Bitcoin &amp; Graffpunks — Crypto Moonboys Wiki",
     "canonical_url": "/wiki/bitcoin-graffpunks.html",
     "category": "factions",
-    "aliases": [],
+    "aliases": [
+      "bitcoin graffpunks"
+    ],
     "tags": [
       "bitcoin",
       "amp",
@@ -403,9 +405,6 @@
     ],
     "source_urls": [
       "/wiki/bitcoin-graffpunks.html"
-    ],
-    "alias_candidates": [
-      "bitcoin graffpunks"
     ]
   },
   {
@@ -1125,7 +1124,9 @@
     "canonical_title": "Games &amp; Graffpunks — Crypto Moonboys Wiki",
     "canonical_url": "/wiki/games-graffpunks.html",
     "category": "factions",
-    "aliases": [],
+    "aliases": [
+      "games graffpunks"
+    ],
     "tags": [
       "games",
       "amp",
@@ -1136,9 +1137,6 @@
     ],
     "source_urls": [
       "/wiki/games-graffpunks.html"
-    ],
-    "alias_candidates": [
-      "games graffpunks"
     ]
   },
   {
@@ -1731,7 +1729,9 @@
     "canonical_title": "Graffpunks &amp; Token — Crypto Moonboys Wiki",
     "canonical_url": "/wiki/graffpunks-token.html",
     "category": "factions",
-    "aliases": [],
+    "aliases": [
+      "graffpunks token"
+    ],
     "tags": [
       "graffpunks",
       "amp",
@@ -1742,9 +1742,6 @@
     ],
     "source_urls": [
       "/wiki/graffpunks-token.html"
-    ],
-    "alias_candidates": [
-      "graffpunks token"
     ]
   },
   {

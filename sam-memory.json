@@ -391,10 +391,10 @@
       ]
     },
     "bitcoin_graffpunks": {
-      "alias_candidates": [
+      "alias_candidates": [],
+      "aliases": [
         "bitcoin graffpunks"
       ],
-      "aliases": [],
       "canonical_title": "Bitcoin &amp; Graffpunks — Crypto Moonboys Wiki",
       "canonical_url": "/wiki/bitcoin-graffpunks.html",
       "category": "factions",
@@ -1128,10 +1128,10 @@
       ]
     },
     "games_graffpunks": {
-      "alias_candidates": [
+      "alias_candidates": [],
+      "aliases": [
         "games graffpunks"
       ],
-      "aliases": [],
       "canonical_title": "Games &amp; Graffpunks — Crypto Moonboys Wiki",
       "canonical_url": "/wiki/games-graffpunks.html",
       "category": "factions",
@@ -1736,10 +1736,10 @@
       ]
     },
     "graffpunks_token": {
-      "alias_candidates": [
+      "alias_candidates": [],
+      "aliases": [
         "graffpunks token"
       ],
-      "aliases": [],
       "canonical_title": "Graffpunks &amp; Token — Crypto Moonboys Wiki",
       "canonical_url": "/wiki/graffpunks-token.html",
       "category": "factions",
@@ -4958,5 +4958,5 @@
       ]
     }
   },
-  "updated_at": "2026-04-09T02:02:27Z"
+  "updated_at": "2026-04-09T02:56:46Z"
 }

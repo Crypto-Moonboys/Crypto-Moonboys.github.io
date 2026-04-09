@@ -13642,6 +13642,273 @@
     }
   },
   {
+    "title": "Bitcoin &amp; Graffpunks — Crypto Moonboys Wiki",
+    "desc": "Exploring the intersection of bitcoin and graffpunks within the Crypto Moonboys universe. Related: The GraffPUNKS are the pulsating core of the Crypto Moonboys universe, a faction that embodies the…",
+    "url": "/wiki/bitcoin-graffpunks.html",
+    "tags": [
+      "bitcoin",
+      "amp",
+      "graffpunks",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "factions",
+    "aliases": [
+      {
+        "title": "bitcoin graffpunks"
+      }
+    ],
+    "rank_score": 179,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 1,
+      "tag_count": 6,
+      "mention_count": 0,
+      "category": "factions",
+      "category_priority": 7,
+      "has_description": true,
+      "article_word_count": 384,
+      "keyword_bag_size": 21,
+      "heading_count": 8,
+      "list_count": 6,
+      "internal_link_count": 35,
+      "content_quality_score": 43,
+      "authority_score": 22
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 35,
+      "word_count_points": 19,
+      "keyword_bag_points": 21,
+      "content_quality_points": 52,
+      "authority_points": 22,
+      "final_rank_score": 179,
+      "authority_graph_points": 0
+    },
+    "search_index": {
+      "normalized_title": "bitcoin and amp graffpunks crypto moonboys wiki",
+      "tokens": [
+        "bitcoin",
+        "and",
+        "amp",
+        "graffpunks",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "bitcoin",
+        "and",
+        "amp",
+        "graffpunks",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "exploring",
+        "the",
+        "intersection",
+        "of",
+        "within",
+        "universe",
+        "related",
+        "are",
+        "pulsating",
+        "core",
+        "a",
+        "faction",
+        "that",
+        "embodies"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 0,
+      "existing_outbound_count": 0,
+      "suggested_outbound_count": 0,
+      "authority": 0
+    }
+  },
+  {
+    "title": "Games &amp; Graffpunks — Crypto Moonboys Wiki",
+    "desc": "Exploring the intersection of games and graffpunks within the Crypto Moonboys universe. Related: The GraffPUNKS are the pulsating core of the Crypto Moonboys universe, a faction that embodies the…",
+    "url": "/wiki/games-graffpunks.html",
+    "tags": [
+      "games",
+      "amp",
+      "graffpunks",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "factions",
+    "aliases": [
+      {
+        "title": "games graffpunks"
+      }
+    ],
+    "rank_score": 179,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 1,
+      "tag_count": 6,
+      "mention_count": 0,
+      "category": "factions",
+      "category_priority": 7,
+      "has_description": true,
+      "article_word_count": 381,
+      "keyword_bag_size": 21,
+      "heading_count": 8,
+      "list_count": 6,
+      "internal_link_count": 35,
+      "content_quality_score": 43,
+      "authority_score": 22
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 35,
+      "word_count_points": 19,
+      "keyword_bag_points": 21,
+      "content_quality_points": 52,
+      "authority_points": 22,
+      "final_rank_score": 179,
+      "authority_graph_points": 0
+    },
+    "search_index": {
+      "normalized_title": "games and amp graffpunks crypto moonboys wiki",
+      "tokens": [
+        "games",
+        "and",
+        "amp",
+        "graffpunks",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "games",
+        "and",
+        "amp",
+        "graffpunks",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "exploring",
+        "the",
+        "intersection",
+        "of",
+        "within",
+        "universe",
+        "related",
+        "are",
+        "pulsating",
+        "core",
+        "a",
+        "faction",
+        "that",
+        "embodies"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 0,
+      "existing_outbound_count": 0,
+      "suggested_outbound_count": 0,
+      "authority": 0
+    }
+  },
+  {
+    "title": "Graffpunks &amp; Token — Crypto Moonboys Wiki",
+    "desc": "Exploring the intersection of graffpunks and token within the Crypto Moonboys universe. Related: The GraffPUNKS are the pulsating core of the Crypto Moonboys universe, a faction that embodies the…",
+    "url": "/wiki/graffpunks-token.html",
+    "tags": [
+      "graffpunks",
+      "amp",
+      "token",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "factions",
+    "aliases": [
+      {
+        "title": "graffpunks token"
+      }
+    ],
+    "rank_score": 179,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 1,
+      "tag_count": 6,
+      "mention_count": 0,
+      "category": "factions",
+      "category_priority": 7,
+      "has_description": true,
+      "article_word_count": 378,
+      "keyword_bag_size": 21,
+      "heading_count": 8,
+      "list_count": 6,
+      "internal_link_count": 35,
+      "content_quality_score": 43,
+      "authority_score": 22
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 35,
+      "word_count_points": 19,
+      "keyword_bag_points": 21,
+      "content_quality_points": 52,
+      "authority_points": 22,
+      "final_rank_score": 179,
+      "authority_graph_points": 0
+    },
+    "search_index": {
+      "normalized_title": "graffpunks and amp token crypto moonboys wiki",
+      "tokens": [
+        "graffpunks",
+        "and",
+        "amp",
+        "token",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "graffpunks",
+        "and",
+        "amp",
+        "token",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "exploring",
+        "the",
+        "intersection",
+        "of",
+        "within",
+        "universe",
+        "related",
+        "are",
+        "pulsating",
+        "core",
+        "a",
+        "faction",
+        "that",
+        "embodies"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 0,
+      "existing_outbound_count": 0,
+      "suggested_outbound_count": 0,
+      "authority": 0
+    }
+  },
+  {
     "title": "Snipey 'D-Man' Sirus — Crypto Moonboys Wiki",
     "desc": "Snipey",
     "url": "/wiki/snipey-d-man-sirus.html",
@@ -13710,243 +13977,6 @@
       "existing_outbound_count": 7,
       "suggested_outbound_count": 9,
       "authority": 3.5
-    }
-  },
-  {
-    "title": "Bitcoin &amp; Graffpunks — Crypto Moonboys Wiki",
-    "desc": "Exploring the intersection of bitcoin and graffpunks within the Crypto Moonboys universe. Related: The GraffPUNKS are the pulsating core of the Crypto Moonboys universe, a faction that embodies the g",
-    "url": "/wiki/bitcoin-graffpunks.html",
-    "tags": [],
-    "category": "factions",
-    "aliases": [],
-    "rank_score": 171,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 0,
-      "tag_count": 0,
-      "mention_count": 0,
-      "category": "factions",
-      "category_priority": 7,
-      "has_description": true,
-      "article_word_count": 384,
-      "keyword_bag_size": 22,
-      "heading_count": 8,
-      "list_count": 6,
-      "internal_link_count": 35,
-      "content_quality_score": 43,
-      "authority_score": 22
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 35,
-      "word_count_points": 19,
-      "keyword_bag_points": 22,
-      "content_quality_points": 43,
-      "authority_points": 22,
-      "final_rank_score": 171,
-      "authority_graph_points": 0
-    },
-    "search_index": {
-      "normalized_title": "bitcoin and amp graffpunks crypto moonboys wiki",
-      "tokens": [
-        "bitcoin",
-        "and",
-        "amp",
-        "graffpunks",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "bitcoin",
-        "and",
-        "amp",
-        "graffpunks",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "exploring",
-        "the",
-        "intersection",
-        "of",
-        "within",
-        "universe",
-        "related",
-        "are",
-        "pulsating",
-        "core",
-        "a",
-        "faction",
-        "that",
-        "embodies",
-        "g"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 0,
-      "outbound_count": 0,
-      "existing_outbound_count": 0,
-      "suggested_outbound_count": 0,
-      "authority": 0
-    }
-  },
-  {
-    "title": "Games &amp; Graffpunks — Crypto Moonboys Wiki",
-    "desc": "Exploring the intersection of games and graffpunks within the Crypto Moonboys universe. Related: The GraffPUNKS are the pulsating core of the Crypto Moonboys universe, a faction that embodies the g",
-    "url": "/wiki/games-graffpunks.html",
-    "tags": [],
-    "category": "factions",
-    "aliases": [],
-    "rank_score": 171,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 0,
-      "tag_count": 0,
-      "mention_count": 0,
-      "category": "factions",
-      "category_priority": 7,
-      "has_description": true,
-      "article_word_count": 381,
-      "keyword_bag_size": 22,
-      "heading_count": 8,
-      "list_count": 6,
-      "internal_link_count": 35,
-      "content_quality_score": 43,
-      "authority_score": 22
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 35,
-      "word_count_points": 19,
-      "keyword_bag_points": 22,
-      "content_quality_points": 43,
-      "authority_points": 22,
-      "final_rank_score": 171,
-      "authority_graph_points": 0
-    },
-    "search_index": {
-      "normalized_title": "games and amp graffpunks crypto moonboys wiki",
-      "tokens": [
-        "games",
-        "and",
-        "amp",
-        "graffpunks",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "games",
-        "and",
-        "amp",
-        "graffpunks",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "exploring",
-        "the",
-        "intersection",
-        "of",
-        "within",
-        "universe",
-        "related",
-        "are",
-        "pulsating",
-        "core",
-        "a",
-        "faction",
-        "that",
-        "embodies",
-        "g"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 0,
-      "outbound_count": 0,
-      "existing_outbound_count": 0,
-      "suggested_outbound_count": 0,
-      "authority": 0
-    }
-  },
-  {
-    "title": "Graffpunks &amp; Token — Crypto Moonboys Wiki",
-    "desc": "Exploring the intersection of graffpunks and token within the Crypto Moonboys universe. Related: The GraffPUNKS are the pulsating core of the Crypto Moonboys universe, a faction that embodies the g",
-    "url": "/wiki/graffpunks-token.html",
-    "tags": [],
-    "category": "factions",
-    "aliases": [],
-    "rank_score": 171,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 0,
-      "tag_count": 0,
-      "mention_count": 0,
-      "category": "factions",
-      "category_priority": 7,
-      "has_description": true,
-      "article_word_count": 378,
-      "keyword_bag_size": 22,
-      "heading_count": 8,
-      "list_count": 6,
-      "internal_link_count": 35,
-      "content_quality_score": 43,
-      "authority_score": 22
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 35,
-      "word_count_points": 19,
-      "keyword_bag_points": 22,
-      "content_quality_points": 43,
-      "authority_points": 22,
-      "final_rank_score": 171,
-      "authority_graph_points": 0
-    },
-    "search_index": {
-      "normalized_title": "graffpunks and amp token crypto moonboys wiki",
-      "tokens": [
-        "graffpunks",
-        "and",
-        "amp",
-        "token",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "graffpunks",
-        "and",
-        "amp",
-        "token",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "exploring",
-        "the",
-        "intersection",
-        "of",
-        "within",
-        "universe",
-        "related",
-        "are",
-        "pulsating",
-        "core",
-        "a",
-        "faction",
-        "that",
-        "embodies",
-        "g"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 0,
-      "outbound_count": 0,
-      "existing_outbound_count": 0,
-      "suggested_outbound_count": 0,
-      "authority": 0
     }
   },
   {
