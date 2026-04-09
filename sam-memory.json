@@ -390,6 +390,28 @@
         "wiki"
       ]
     },
+    "bitcoin_ecosystem": {
+      "alias_candidates": [
+        "bitcoin ecosystem"
+      ],
+      "aliases": [
+        "bitcoin ecosystem crypto moonboys wiki"
+      ],
+      "canonical_title": "Bitcoin Ecosystem — Crypto Moonboys Wiki",
+      "canonical_url": "/wiki/bitcoin-ecosystem.html",
+      "category": "characters",
+      "source_urls": [
+        "/wiki/bitcoin-ecosystem.html"
+      ],
+      "status": "canonical",
+      "tags": [
+        "bitcoin",
+        "ecosystem",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ]
+    },
     "bitcoin_graffpunks": {
       "alias_candidates": [],
       "aliases": [
@@ -1384,6 +1406,28 @@
         "wiki"
       ]
     },
+    "gkniftyheads_ecosystem": {
+      "alias_candidates": [
+        "gkniftyheads ecosystem"
+      ],
+      "aliases": [
+        "gkniftyheads ecosystem crypto moonboys wiki"
+      ],
+      "canonical_title": "GKniftyHEADS Ecosystem — Crypto Moonboys Wiki",
+      "canonical_url": "/wiki/gkniftyheads-ecosystem.html",
+      "category": "factions",
+      "source_urls": [
+        "/wiki/gkniftyheads-ecosystem.html"
+      ],
+      "status": "canonical",
+      "tags": [
+        "gkniftyheads",
+        "ecosystem",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ]
+    },
     "gkniftyheads_phase_one_two_three": {
       "alias_candidates": [
         "gkniftyheads phase one two three"
@@ -1686,6 +1730,28 @@
       "tags": [
         "graffpunks",
         "collection",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ]
+    },
+    "graffpunks_ecosystem": {
+      "alias_candidates": [
+        "graffpunks ecosystem"
+      ],
+      "aliases": [
+        "graffpunks ecosystem crypto moonboys wiki"
+      ],
+      "canonical_title": "GraffPUNKS Ecosystem — Crypto Moonboys Wiki",
+      "canonical_url": "/wiki/graffpunks-ecosystem.html",
+      "category": "characters",
+      "source_urls": [
+        "/wiki/graffpunks-ecosystem.html"
+      ],
+      "status": "canonical",
+      "tags": [
+        "graffpunks",
+        "ecosystem",
         "crypto",
         "moonboys",
         "wiki"
@@ -2009,6 +2075,27 @@
       "tags": [
         "hodl",
         "wars",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ]
+    },
+    "hodl_wars_ecosystem": {
+      "alias_candidates": [
+        "hodl wars ecosystem"
+      ],
+      "aliases": [],
+      "canonical_title": "HODL Wars Ecosystem — Crypto Moonboys Wiki",
+      "canonical_url": "/wiki/hodl-wars-ecosystem.html",
+      "category": "characters",
+      "source_urls": [
+        "/wiki/hodl-wars-ecosystem.html"
+      ],
+      "status": "canonical",
+      "tags": [
+        "hodl",
+        "wars",
+        "ecosystem",
         "crypto",
         "moonboys",
         "wiki"
@@ -2697,6 +2784,28 @@
         "neftyblocks",
         "midevilpunks",
         "collection",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ]
+    },
+    "nft_ecosystem": {
+      "alias_candidates": [
+        "nft ecosystem"
+      ],
+      "aliases": [
+        "nft ecosystem crypto moonboys wiki"
+      ],
+      "canonical_title": "NFT Ecosystem — Crypto Moonboys Wiki",
+      "canonical_url": "/wiki/nft-ecosystem.html",
+      "category": "factions",
+      "source_urls": [
+        "/wiki/nft-ecosystem.html"
+      ],
+      "status": "canonical",
+      "tags": [
+        "nft",
+        "ecosystem",
         "crypto",
         "moonboys",
         "wiki"
@@ -4958,5 +5067,5 @@
       ]
     }
   },
-  "updated_at": "2026-04-09T06:08:57Z"
+  "updated_at": "2026-04-09T13:50:10Z"
 }

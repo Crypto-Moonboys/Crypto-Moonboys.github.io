@@ -340,7 +340,7 @@ function buildRankSignals(html, filePath, title, description, keywords, aliases,
   const contentSignals = buildContentSignals(html, title, description, keywords, aliases);
   const contentQualityScore = computeContentQualityScore(contentSignals);
   const authorityScore = computeAuthorityScore(contentSignals);
-  const mentionCount = Number.isFinite(Number(samEntity && samEntity.mention_count))
+  const mentionCount = samEntity && Number.isFinite(Number(samEntity.mention_count))
     ? Number(samEntity.mention_count)
     : 0;
 

@@ -7726,6 +7726,106 @@
     }
   },
   {
+    "title": "GraffPUNKS Ecosystem — Crypto Moonboys Wiki",
+    "desc": "The GraffPUNKS Ecosystem is the creative and cultural engine of the Crypto Moonboys universe — a multi-chain insurgency of street-art rebels, blockchain radio, NFT collections, and digital lore spanning WAX, XRPL, SOL, and Bitcoin Cash.",
+    "url": "/wiki/graffpunks-ecosystem.html",
+    "tags": [
+      "graffpunks",
+      "ecosystem",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "characters",
+    "aliases": [
+      {
+        "title": "graffpunks ecosystem crypto moonboys wiki"
+      }
+    ],
+    "rank_score": 259,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 1,
+      "tag_count": 5,
+      "mention_count": 0,
+      "category": "characters",
+      "category_priority": 8,
+      "has_description": true,
+      "article_word_count": 928,
+      "keyword_bag_size": 32,
+      "heading_count": 6,
+      "list_count": 4,
+      "internal_link_count": 50,
+      "paragraph_count": 13,
+      "section_count": 5,
+      "lore_paragraph_count": 8,
+      "content_quality_score": 79,
+      "authority_score": 24
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 40,
+      "word_count_points": 46,
+      "keyword_bag_points": 32,
+      "content_quality_points": 87,
+      "authority_points": 24,
+      "final_rank_score": 259,
+      "authority_graph_points": 0
+    },
+    "search_index": {
+      "normalized_title": "graffpunks ecosystem crypto moonboys wiki",
+      "tokens": [
+        "graffpunks",
+        "ecosystem",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "graffpunks",
+        "ecosystem",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "the",
+        "is",
+        "creative",
+        "and",
+        "cultural",
+        "engine",
+        "of",
+        "universe",
+        "a",
+        "multi",
+        "chain",
+        "insurgency",
+        "street",
+        "art",
+        "rebels",
+        "blockchain",
+        "radio",
+        "nft",
+        "collections",
+        "digital",
+        "lore",
+        "spanning",
+        "wax",
+        "xrpl",
+        "sol",
+        "bitcoin",
+        "cash"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 0,
+      "existing_outbound_count": 0,
+      "suggested_outbound_count": 0,
+      "authority": 0
+    }
+  },
+  {
     "title": "Web3 — Crypto Moonboys Wiki",
     "desc": "Web3 — the decentralised next generation of the internet built on blockchain technology — Crypto Moonboys Wiki",
     "url": "/wiki/web3.html",
@@ -8997,6 +9097,106 @@
     }
   },
   {
+    "title": "NFT Ecosystem — Crypto Moonboys Wiki",
+    "desc": "The NFT Ecosystem covers the full range of non-fungible token activity in the Crypto Moonboys universe — from foundational technology articles to lore-rich collection pages, free NFT campaigns, playable murals, and genesis drops.",
+    "url": "/wiki/nft-ecosystem.html",
+    "tags": [
+      "nft",
+      "ecosystem",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "factions",
+    "aliases": [
+      {
+        "title": "nft ecosystem crypto moonboys wiki"
+      }
+    ],
+    "rank_score": 253,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 1,
+      "tag_count": 5,
+      "mention_count": 0,
+      "category": "factions",
+      "category_priority": 7,
+      "has_description": true,
+      "article_word_count": 892,
+      "keyword_bag_size": 32,
+      "heading_count": 6,
+      "list_count": 4,
+      "internal_link_count": 46,
+      "paragraph_count": 13,
+      "section_count": 5,
+      "lore_paragraph_count": 8,
+      "content_quality_score": 79,
+      "authority_score": 24
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 35,
+      "word_count_points": 45,
+      "keyword_bag_points": 32,
+      "content_quality_points": 87,
+      "authority_points": 24,
+      "final_rank_score": 253,
+      "authority_graph_points": 0
+    },
+    "search_index": {
+      "normalized_title": "nft ecosystem crypto moonboys wiki",
+      "tokens": [
+        "nft",
+        "ecosystem",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "nft",
+        "ecosystem",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "the",
+        "covers",
+        "full",
+        "range",
+        "of",
+        "non",
+        "fungible",
+        "token",
+        "activity",
+        "in",
+        "universe",
+        "from",
+        "foundational",
+        "technology",
+        "articles",
+        "to",
+        "lore",
+        "rich",
+        "collection",
+        "pages",
+        "free",
+        "campaigns",
+        "playable",
+        "murals",
+        "and",
+        "genesis",
+        "drops"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 0,
+      "existing_outbound_count": 0,
+      "suggested_outbound_count": 0,
+      "authority": 0
+    }
+  },
+  {
     "title": "Spraycode &amp; Writcode mechanics — Crypto Moonboys Wiki",
     "desc": "Spraycode and Writcode mechanics serve as the digital spray cans of the Crypto Moonboys universe, revolutionary tools that empower creators to encode art, messa",
     "url": "/wiki/spraycode-writcode-mechanics.html",
@@ -9184,6 +9384,198 @@
       "existing_outbound_count": 7,
       "suggested_outbound_count": 25,
       "authority": 3.5
+    }
+  },
+  {
+    "title": "Bitcoin Ecosystem — Crypto Moonboys Wiki",
+    "desc": "The Bitcoin Ecosystem covers BTC as both real-world cryptocurrency and as the cultural backbone of the Crypto Moonboys universe — from technical fundamentals to the Bitcoin Kids faction and their Block Topia resistance.",
+    "url": "/wiki/bitcoin-ecosystem.html",
+    "tags": [
+      "bitcoin",
+      "ecosystem",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "characters",
+    "aliases": [
+      {
+        "title": "bitcoin ecosystem crypto moonboys wiki"
+      }
+    ],
+    "rank_score": 251,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 1,
+      "tag_count": 5,
+      "mention_count": 0,
+      "category": "characters",
+      "category_priority": 8,
+      "has_description": true,
+      "article_word_count": 839,
+      "keyword_bag_size": 28,
+      "heading_count": 6,
+      "list_count": 4,
+      "internal_link_count": 50,
+      "paragraph_count": 13,
+      "section_count": 5,
+      "lore_paragraph_count": 8,
+      "content_quality_score": 79,
+      "authority_score": 24
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 40,
+      "word_count_points": 42,
+      "keyword_bag_points": 28,
+      "content_quality_points": 87,
+      "authority_points": 24,
+      "final_rank_score": 251,
+      "authority_graph_points": 0
+    },
+    "search_index": {
+      "normalized_title": "bitcoin ecosystem crypto moonboys wiki",
+      "tokens": [
+        "bitcoin",
+        "ecosystem",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "bitcoin",
+        "ecosystem",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "the",
+        "covers",
+        "btc",
+        "as",
+        "both",
+        "real",
+        "world",
+        "cryptocurrency",
+        "and",
+        "cultural",
+        "backbone",
+        "of",
+        "universe",
+        "from",
+        "technical",
+        "fundamentals",
+        "to",
+        "kids",
+        "faction",
+        "their",
+        "block",
+        "topia",
+        "resistance"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 0,
+      "existing_outbound_count": 0,
+      "suggested_outbound_count": 0,
+      "authority": 0
+    }
+  },
+  {
+    "title": "GKniftyHEADS Ecosystem — Crypto Moonboys Wiki",
+    "desc": "The GKniftyHEADS Ecosystem covers the GK token economy, NBG/NBGX assets, staking mechanics, and the collector-community infrastructure that connects the Graffiti Kings digital identity to the wider Crypto Moonboys lore.",
+    "url": "/wiki/gkniftyheads-ecosystem.html",
+    "tags": [
+      "gkniftyheads",
+      "ecosystem",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "factions",
+    "aliases": [
+      {
+        "title": "gkniftyheads ecosystem crypto moonboys wiki"
+      }
+    ],
+    "rank_score": 251,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 1,
+      "tag_count": 5,
+      "mention_count": 0,
+      "category": "factions",
+      "category_priority": 7,
+      "has_description": true,
+      "article_word_count": 935,
+      "keyword_bag_size": 28,
+      "heading_count": 6,
+      "list_count": 4,
+      "internal_link_count": 50,
+      "paragraph_count": 13,
+      "section_count": 5,
+      "lore_paragraph_count": 8,
+      "content_quality_score": 79,
+      "authority_score": 24
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 35,
+      "word_count_points": 47,
+      "keyword_bag_points": 28,
+      "content_quality_points": 87,
+      "authority_points": 24,
+      "final_rank_score": 251,
+      "authority_graph_points": 0
+    },
+    "search_index": {
+      "normalized_title": "gkniftyheads ecosystem crypto moonboys wiki",
+      "tokens": [
+        "gkniftyheads",
+        "ecosystem",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "gkniftyheads",
+        "ecosystem",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "the",
+        "covers",
+        "gk",
+        "token",
+        "economy",
+        "nbg",
+        "nbgx",
+        "assets",
+        "staking",
+        "mechanics",
+        "and",
+        "collector",
+        "community",
+        "infrastructure",
+        "that",
+        "connects",
+        "graffiti",
+        "kings",
+        "digital",
+        "identity",
+        "to",
+        "wider",
+        "lore"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 0,
+      "existing_outbound_count": 0,
+      "suggested_outbound_count": 0,
+      "authority": 0
     }
   },
   {
@@ -9376,6 +9768,99 @@
       "existing_outbound_count": 7,
       "suggested_outbound_count": 11,
       "authority": 3.5
+    }
+  },
+  {
+    "title": "HODL Wars Ecosystem — Crypto Moonboys Wiki",
+    "desc": "The HODL Wars Ecosystem is the conflict engine of the Crypto Moonboys universe — a live NFT saga of faction warfare, chain sieges, and blockchain-native combat across Block Topia",
+    "url": "/wiki/hodl-wars-ecosystem.html",
+    "tags": [
+      "hodl",
+      "wars",
+      "ecosystem",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "characters",
+    "aliases": [],
+    "rank_score": 250,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 6,
+      "mention_count": 0,
+      "category": "characters",
+      "category_priority": 8,
+      "has_description": true,
+      "article_word_count": 877,
+      "keyword_bag_size": 27,
+      "heading_count": 6,
+      "list_count": 4,
+      "internal_link_count": 45,
+      "paragraph_count": 13,
+      "section_count": 5,
+      "lore_paragraph_count": 8,
+      "content_quality_score": 79,
+      "authority_score": 24
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 40,
+      "word_count_points": 44,
+      "keyword_bag_points": 27,
+      "content_quality_points": 85,
+      "authority_points": 24,
+      "final_rank_score": 250,
+      "authority_graph_points": 0
+    },
+    "search_index": {
+      "normalized_title": "hodl wars ecosystem crypto moonboys wiki",
+      "tokens": [
+        "hodl",
+        "wars",
+        "ecosystem",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "hodl",
+        "wars",
+        "ecosystem",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "the",
+        "is",
+        "conflict",
+        "engine",
+        "of",
+        "universe",
+        "a",
+        "live",
+        "nft",
+        "saga",
+        "faction",
+        "warfare",
+        "chain",
+        "sieges",
+        "and",
+        "blockchain",
+        "native",
+        "combat",
+        "across",
+        "block",
+        "topia"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 0,
+      "existing_outbound_count": 0,
+      "suggested_outbound_count": 0,
+      "authority": 0
     }
   },
   {
