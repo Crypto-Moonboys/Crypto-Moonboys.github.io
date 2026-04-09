@@ -333,6 +333,30 @@ It is a:
 
 Respect that — or you will break it again.
 
----
+# 🌙 Crypto Moonboys Wiki
+
+![Version](https://img.shields.io/badge/version-v1.0.0-blue)
+![Status](https://img.shields.io/badge/status-stable-brightgreen)
+![License](https://img.shields.io/badge/license-MIT-lightgrey)
+
+## 🚀 Autonomous Lore Engine
+
+The Crypto Moonboys Wiki is a deterministic, self-evolving lore ecosystem powered by knowledge graph intelligence and automated content expansion. This repository represents the first stable release (**v1.0.0**) of the platform.
+
+## 📦 Release Information
+
+**Current Version:** v1.0.0  
+**Status:** Stable  
+**Release Date:** 2026  
+
+This milestone marks the completion of the multi-phase stabilization and enhancement of the repository, including:
+
+- Knowledge graph integration
+- Deterministic ranking system
+- Cluster hub generation
+- Related pages UI
+- Growth priority engine
+- SEO and accessibility compliance
+- Final repository-wide sanity audit
 
 END OF FILE
