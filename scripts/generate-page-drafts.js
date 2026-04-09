@@ -149,22 +149,26 @@ function extractArticleText(absHtmlPath) {
     const articleMatch = html.match(/<article[^>]*>([\s\S]*?)<\/article>/i);
     const source = articleMatch ? articleMatch[1] : '';
     if (!source) return '';
+    // Strip script/style blocks first to prevent content leakage through tag stripping
+    const stripped = source
+      .replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, ' ')
+      .replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi, ' ');
     // Collect text from <p> tags (skip headings/lists to get clean prose only)
     const paragraphs = [];
     const pPat = /<p[^>]*>([\s\S]*?)<\/p>/gi;
     let m;
-    while ((m = pPat.exec(source)) !== null) {
+    while ((m = pPat.exec(stripped)) !== null) {
       const text = m[1]
-        .replace(/<[^>]+>/g, '')
-        .replace(/&amp;/g, '&')
-        .replace(/&lt;/g, '<')
-        .replace(/&gt;/g, '>')
-        .replace(/&quot;/g, '"')
-        .replace(/&#39;/g, "'")
-        .replace(/&ldquo;/g, '\u201c')
-        .replace(/&rdquo;/g, '\u201d')
+        .replace(/<[^>]+>/g, ' ')
+        // Decode only safe Unicode-symbol entities; leave &amp; &lt; &gt; &quot; intact
+        // (they will be handled by embedText() when placed back into HTML)
         .replace(/&mdash;/g, '\u2014')
         .replace(/&ndash;/g, '\u2013')
+        .replace(/&ldquo;/g, '\u201c')
+        .replace(/&rdquo;/g, '\u201d')
+        .replace(/&rsquo;/g, '\u2019')
+        .replace(/&lsquo;/g, '\u2018')
+        .replace(/&hellip;/g, '\u2026')
         .replace(/\s+/g, ' ')
         .trim();
       if (text.length > 30) paragraphs.push(text);
@@ -375,13 +379,13 @@ function buildLeadParagraph(action) {
     const paras = [];
 
     if (aText) {
-      paras.push(`<p>${escapeHtml(truncateAtWordBoundary(aText, 380))}</p>`);
+      paras.push(`<p>${embedText(truncateAtWordBoundary(aText, 380))}</p>`);
     } else {
       paras.push(`<p><strong>${escapeHtml(ca)}</strong> is one of the defining factions of the Crypto Moonboys universe, shaping culture, economy, and conflict across Block Topia.</p>`);
     }
 
     if (bText) {
-      paras.push(`<p>${escapeHtml(truncateAtWordBoundary(bText, 340))}</p>`);
+      paras.push(`<p>${embedText(truncateAtWordBoundary(bText, 340))}</p>`);
     }
 
     // Bridge paragraph linking both clusters
@@ -402,7 +406,7 @@ function buildLeadParagraph(action) {
 
   const paras = [];
   if (mainText) {
-    paras.push(`<p>${escapeHtml(truncateAtWordBoundary(mainText, 550))}</p>`);
+    paras.push(`<p>${embedText(truncateAtWordBoundary(mainText, 550))}</p>`);
   } else {
     const mainInfo = pageInfoByUrl.get(mainUrl);
     const cleanedTopic = mainInfo ? cleanPageTitle(mainInfo.title) : slugToTitle(topic);
@@ -412,7 +416,7 @@ function buildLeadParagraph(action) {
   for (const url of relPages.slice(1, 3)) {
     const text = pageFullTextByUrl.get(url) || (pageInfoByUrl.get(url) || {}).desc || '';
     if (text.length > 50) {
-      paras.push(`<p>${escapeHtml(truncateAtWordBoundary(text, 400))}</p>`);
+      paras.push(`<p>${embedText(truncateAtWordBoundary(text, 400))}</p>`);
       break;
     }
   }
@@ -638,15 +642,15 @@ function buildSectionProse(block, d) {
     const novelPages = pages.length > 2 ? pages.slice(2) : pages;
     for (const p of novelPages.slice(0, 2)) {
       if (p.text.length > 40) {
-        paras.push(`<p>${escapeHtml(truncateAtWordBoundary(p.text, 480))}</p>`);
+        paras.push(`<p>${embedText(truncateAtWordBoundary(p.text, 480))}</p>`);
       }
     }
   } else if (isContext) {
     // Cluster context: 2 paragraphs from this cluster's pages
     const primary = pages[0];
-    paras.push(`<p>${escapeHtml(truncateAtWordBoundary(primary.text, 520))}</p>`);
+    paras.push(`<p>${embedText(truncateAtWordBoundary(primary.text, 520))}</p>`);
     if (pages.length > 1 && pages[1].text.length > 50) {
-      paras.push(`<p>${escapeHtml(truncateAtWordBoundary(pages[1].text, 380))}</p>`);
+      paras.push(`<p>${embedText(truncateAtWordBoundary(pages[1].text, 380))}</p>`);
     }
   } else if (isEntities) {
     // Entities / Key forces: each page gets a named paragraph with its description
@@ -654,7 +658,7 @@ function buildSectionProse(block, d) {
       if (p.text.length > 30) {
         const snippet = truncateAtWordBoundary(p.text, 220);
         paras.push(
-          `<p><a href="${p.url}"><strong>${escapeHtml(p.title)}</strong></a> \u2014 ${escapeHtml(snippet)}</p>`
+          `<p><a href="${p.url}"><strong>${escapeHtml(p.title)}</strong></a> \u2014 ${embedText(snippet)}</p>`
         );
       }
     }
@@ -662,14 +666,14 @@ function buildSectionProse(block, d) {
     // Related / explore: linked list with brief descriptions
     const items = pages.map(p => {
       const snippet = truncateAtWordBoundary(p.text, 130);
-      return `<li><a href="${p.url}"><strong>${escapeHtml(p.title)}</strong></a>${snippet ? ` \u2014 ${escapeHtml(snippet)}` : ''}</li>`;
+      return `<li><a href="${p.url}"><strong>${escapeHtml(p.title)}</strong></a>${snippet ? ` \u2014 ${embedText(snippet)}` : ''}</li>`;
     }).join('\n');
     paras.push(`<ul class="lore-related-list">\n${items}\n</ul>`);
   } else {
     // Default: first two pages as prose paragraphs
     for (const p of pages.slice(0, 2)) {
       if (p.text.length > 30) {
-        paras.push(`<p>${escapeHtml(truncateAtWordBoundary(p.text, 480))}</p>`);
+        paras.push(`<p>${embedText(truncateAtWordBoundary(p.text, 480))}</p>`);
       }
     }
   }
@@ -822,7 +826,7 @@ ${prose}`;
         const info  = pageInfoByUrl.get(url);
         const label = info ? cleanPageTitle(info.title) : url;
         const text  = pageFullTextByUrl.get(url) || (info && info.desc) || '';
-        const snippet = text ? ` \u2014 ${escapeHtml(truncateAtWordBoundary(text, 120))}` : '';
+        const snippet = text ? ` \u2014 ${embedText(truncateAtWordBoundary(text, 120))}` : '';
         return `      <li><a href="${url}"><strong>${escapeHtml(label)}</strong></a>${snippet}</li>`;
       }).join('\n')}\n    </ul>`
     : '<p>No internal link targets resolved.</p>';
@@ -962,6 +966,23 @@ function escapeHtml(str) {
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#39;');
+}
+
+/**
+ * Encode article text for safe HTML embedding without double-encoding
+ * pre-existing HTML entities (e.g. &amp; &lt; &gt; &quot; &#NN;).
+ * Use this instead of escapeHtml() when the source text may already contain
+ * HTML entity references extracted from wiki pages.
+ * @param {string} str
+ * @returns {string}
+ */
+function embedText(str) {
+  return String(str)
+    // Only encode bare & that are NOT already part of a named/numeric entity
+    .replace(/&(?!(?:amp|lt|gt|quot|apos|#\d+|#x[\da-fA-F]+|[a-zA-Z]{2,8});)/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
 }
 
 console.log('generate-page-drafts.js complete ✅');
