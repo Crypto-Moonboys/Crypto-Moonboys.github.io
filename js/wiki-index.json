@@ -9019,7 +9019,7 @@
       "category": "characters",
       "category_priority": 8,
       "has_description": true,
-      "article_word_count": 899,
+      "article_word_count": 891,
       "keyword_bag_size": 32,
       "heading_count": 5,
       "list_count": 6,
@@ -9686,7 +9686,7 @@
       "category": "characters",
       "category_priority": 8,
       "has_description": true,
-      "article_word_count": 864,
+      "article_word_count": 856,
       "keyword_bag_size": 29,
       "heading_count": 5,
       "list_count": 6,
@@ -11863,101 +11863,6 @@
     }
   },
   {
-    "title": "Ethereum (ETH) Ecosystem — Crypto Moonboys Wiki",
-    "desc": "Ethereum (ETH) — a decentralised platform for smart contracts and dApps. Learn about Vitalik Buterin, DeFi, NFTs, and Ethereum… Cluster hub for 27 related pages.",
-    "url": "/wiki/ethereum-ecosystem.html",
-    "tags": [
-      "ethereum",
-      "eth",
-      "ecosystem",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "tokens",
-    "aliases": [
-      {
-        "title": "ethereum ecosystem"
-      }
-    ],
-    "rank_score": 233,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 1,
-      "tag_count": 6,
-      "mention_count": 0,
-      "category": "tokens",
-      "category_priority": 6,
-      "has_description": true,
-      "article_word_count": 804,
-      "keyword_bag_size": 25,
-      "heading_count": 5,
-      "list_count": 6,
-      "internal_link_count": 42,
-      "paragraph_count": 11,
-      "section_count": 4,
-      "lore_paragraph_count": 7,
-      "content_quality_score": 75,
-      "authority_score": 24
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 30,
-      "word_count_points": 40,
-      "keyword_bag_points": 25,
-      "content_quality_points": 84,
-      "authority_points": 24,
-      "final_rank_score": 233,
-      "authority_graph_points": 0
-    },
-    "search_index": {
-      "normalized_title": "ethereum eth ecosystem crypto moonboys wiki",
-      "tokens": [
-        "ethereum",
-        "eth",
-        "ecosystem",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "ethereum",
-        "eth",
-        "ecosystem",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "a",
-        "decentralised",
-        "platform",
-        "for",
-        "smart",
-        "contracts",
-        "and",
-        "dapps",
-        "learn",
-        "about",
-        "vitalik",
-        "buterin",
-        "defi",
-        "nfts",
-        "cluster",
-        "hub",
-        "27",
-        "related",
-        "pages"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 0,
-      "outbound_count": 0,
-      "existing_outbound_count": 0,
-      "suggested_outbound_count": 0,
-      "authority": 0
-    }
-  },
-  {
     "title": "GRIT — Crypto Moonboys Wiki",
     "desc": "GRIT embodies the essence of a rugged survivor in the Crypto Moonboys universe, a stoic figure tempered by the merciless conditions of Block Topia’s underbelly.",
     "url": "/wiki/grit.html",
@@ -12135,6 +12040,101 @@
       "existing_outbound_count": 7,
       "suggested_outbound_count": 36,
       "authority": 3.5
+    }
+  },
+  {
+    "title": "Ethereum (ETH) Ecosystem — Crypto Moonboys Wiki",
+    "desc": "Ethereum (ETH) — a decentralised platform for smart contracts and dApps. Learn about Vitalik Buterin, DeFi, NFTs, and Ethereum… Cluster hub for 27 related pages.",
+    "url": "/wiki/ethereum-ecosystem.html",
+    "tags": [
+      "ethereum",
+      "eth",
+      "ecosystem",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "tokens",
+    "aliases": [
+      {
+        "title": "ethereum ecosystem"
+      }
+    ],
+    "rank_score": 232,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 1,
+      "tag_count": 6,
+      "mention_count": 0,
+      "category": "tokens",
+      "category_priority": 6,
+      "has_description": true,
+      "article_word_count": 788,
+      "keyword_bag_size": 25,
+      "heading_count": 5,
+      "list_count": 6,
+      "internal_link_count": 42,
+      "paragraph_count": 11,
+      "section_count": 4,
+      "lore_paragraph_count": 7,
+      "content_quality_score": 75,
+      "authority_score": 24
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 30,
+      "word_count_points": 39,
+      "keyword_bag_points": 25,
+      "content_quality_points": 84,
+      "authority_points": 24,
+      "final_rank_score": 232,
+      "authority_graph_points": 0
+    },
+    "search_index": {
+      "normalized_title": "ethereum eth ecosystem crypto moonboys wiki",
+      "tokens": [
+        "ethereum",
+        "eth",
+        "ecosystem",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "ethereum",
+        "eth",
+        "ecosystem",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "a",
+        "decentralised",
+        "platform",
+        "for",
+        "smart",
+        "contracts",
+        "and",
+        "dapps",
+        "learn",
+        "about",
+        "vitalik",
+        "buterin",
+        "defi",
+        "nfts",
+        "cluster",
+        "hub",
+        "27",
+        "related",
+        "pages"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 0,
+      "existing_outbound_count": 0,
+      "suggested_outbound_count": 0,
+      "authority": 0
     }
   },
   {
