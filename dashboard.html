@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Editorial Intelligence Dashboard for the Crypto Moonboys Wiki — monitor content health, authority drift, cluster metrics, and growth priorities.">
+  <meta name="robots" content="index, follow">
+  <meta property="og:title" content="📊 Editorial Dashboard — Crypto Moonboys Wiki">
+  <meta property="og:description" content="Editorial dashboard for monitoring ecosystem health, content gaps, and growth opportunities.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://crypto-moonboys.github.io/dashboard.html">
+  <link rel="canonical" href="https://crypto-moonboys.github.io/dashboard.html">
+  <title>📊 Editorial Dashboard — Crypto Moonboys Wiki</title>
+  <link rel="stylesheet" href="/css/wiki.css">
+  <link rel="icon" href="/img/favicon.svg" type="image/svg+xml">
+  <style>
+    /* ── Dashboard layout ───────────────────────────────────────────────── */
+    .dash-page {
+      padding: 24px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    .dash-page > h1 {
+      font-size: 1.45rem;
+      color: var(--color-accent);
+      margin-bottom: 6px;
+    }
+    .dash-page > p.dash-intro {
+      color: var(--color-text-muted);
+      font-size: .9rem;
+      margin-bottom: 24px;
+    }
+
+    /* ── Summary metrics ────────────────────────────────────────────────── */
+    #dash-summary {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px;
+      margin-bottom: 32px;
+    }
+    .dash-metric {
+      flex: 1 1 120px;
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius);
+      padding: 16px 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+    }
+    .dash-metric--warn { border-color: #f7c948; }
+    .dash-metric--alert { border-color: #ff7b72; }
+    .dash-metric-value {
+      font-size: 1.9rem;
+      font-weight: 700;
+      color: var(--color-text);
+      line-height: 1;
+    }
+    .dash-metric--warn .dash-metric-value  { color: #f7c948; }
+    .dash-metric--alert .dash-metric-value { color: #ff7b72; }
+    .dash-metric-label {
+      font-size: .75rem;
+      color: var(--color-text-muted);
+      text-align: center;
+    }
+
+    /* ── Sections ────────────────────────────────────────────────────────── */
+    .dash-section {
+      margin-bottom: 36px;
+    }
+    .dash-section-heading {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--color-accent);
+      border-bottom: 1px solid var(--color-border);
+      padding-bottom: 8px;
+      margin-bottom: 14px;
+    }
+    .dash-section-note {
+      font-size: .8rem;
+      color: var(--color-text-muted);
+      margin-bottom: 10px;
+    }
+    .dash-section-note .badge { margin-right: 6px; }
+
+    /* ── Tables ──────────────────────────────────────────────────────────── */
+    .dash-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: .85rem;
+    }
+    .dash-table th {
+      text-align: left;
+      padding: 7px 10px;
+      color: var(--color-text-muted);
+      font-weight: 600;
+      border-bottom: 1px solid var(--color-border);
+      font-size: .78rem;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+    }
+    .dash-table td {
+      padding: 7px 10px;
+      border-bottom: 1px solid var(--color-border);
+      vertical-align: middle;
+    }
+    .dash-table tr:last-child td { border-bottom: none; }
+    .dash-table tr:hover td { background: var(--color-surface); }
+    .dash-table .num {
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+      color: var(--color-text-muted);
+    }
+    .dash-table a { color: var(--color-text-link); }
+    .cluster-name { font-weight: 600; color: var(--color-text); }
+
+    /* ── Bar chart cells ─────────────────────────────────────────────────── */
+    .bar-wrap {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .bar-fill {
+      height: 12px;
+      border-radius: 3px;
+      min-width: 2px;
+      transition: width .3s;
+    }
+    .bar-label {
+      font-size: .78rem;
+      color: var(--color-text-muted);
+      white-space: nowrap;
+    }
+
+    /* ── Badges ──────────────────────────────────────────────────────────── */
+    .badge {
+      display: inline-block;
+      padding: 2px 7px;
+      border-radius: 9px;
+      font-size: .72rem;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+    .badge-red    { background: rgba(255,123,114,.18); color: #ff7b72; }
+    .badge-yellow { background: rgba(247,201,72,.18);  color: #f7c948; }
+    .badge-blue   { background: rgba(88,166,255,.18);  color: #58a6ff; }
+    .badge-green  { background: rgba(63,185,80,.18);   color: #3fb950; }
+
+    /* ── Trend colours ───────────────────────────────────────────────────── */
+    .trend-up   { color: #3fb950; font-weight: 600; }
+    .trend-down { color: #ff7b72; font-weight: 600; }
+
+    /* ── Responsive ──────────────────────────────────────────────────────── */
+    @media (max-width: 640px) {
+      .dash-page { padding: 14px; }
+      .dash-table th:nth-child(n+4),
+      .dash-table td:nth-child(n+4) { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<a class="skip-link" href="#content">Skip to content</a>
+
+<header id="site-header" role="banner">
+  <button class="hamburger" id="hamburger" aria-label="Toggle navigation" aria-expanded="false" aria-controls="sidebar">☰</button>
+  <a href="/index.html" class="site-logo" aria-label="The Crypto Moonboys GK Wiki home">
+    <img src="/img/CRYPTO-MOONBOYS-BITCOIN-LOGO.png" alt="" aria-hidden="true">
+    <span>
+      <span class="logo-text">🌙 The Crypto Moonboys GK Wiki</span>
+      <span class="logo-sub">Blockchain Cryptoism Encyclopedia ⚡️⚡️⚡️</span>
+    </span>
+  </a>
+  <div id="header-search" role="search">
+    <input type="search" id="search-input" placeholder="Search the wiki…" aria-label="Search" autocomplete="off">
+    <button id="search-btn" aria-label="Search">🔍</button>
+    <div id="search-results" role="listbox"></div>
+  </div>
+  <nav class="header-nav" aria-label="Main navigation">
+    <a href="/index.html">Home</a>
+    <a href="/categories/index.html">Categories</a>
+    <a href="/search.html">All Articles</a>
+    <a href="/graph.html">🌐 Graph</a>
+    <a href="/dashboard.html" class="active" aria-current="page">📊 Dashboard</a>
+  </nav>
+</header>
+
+<div id="sidebar-overlay" aria-hidden="true"></div>
+
+<div id="layout">
+  <nav id="sidebar" aria-label="Wiki navigation">
+    <div class="sidebar-section">
+      <div class="sidebar-heading">Navigation</div>
+      <div class="sidebar-nav">
+        <a href="/index.html"><span class="nav-icon">🏠</span> Main Page</a>
+        <a href="/categories/index.html"><span class="nav-icon">📂</span> Categories</a>
+        <a href="/search.html"><span class="nav-icon">🔍</span> All Articles</a>
+        <a href="/graph.html"><span class="nav-icon">🌐</span> Entity Graph</a>
+        <a href="/dashboard.html" class="active" aria-current="page"><span class="nav-icon">📊</span> Dashboard</a>
+        <a href="/about.html"><span class="nav-icon">ℹ️</span> About</a>
+      </div>
+    </div>
+  </nav>
+
+  <main id="content" role="main">
+    <div class="dash-page">
+
+      <h1>📊 Editorial Intelligence Dashboard</h1>
+      <p class="dash-intro">
+        Real-time metrics for ecosystem health, content gaps, authority distribution, and strategic growth priorities.
+        All data is derived from local metadata — no external API calls.
+      </p>
+
+      <!-- Summary Metrics -->
+      <div id="dash-summary" aria-label="Summary metrics"></div>
+
+      <!-- Cluster Health -->
+      <section class="dash-section" aria-labelledby="cluster-heading">
+        <h2 class="dash-section-heading" id="cluster-heading">
+          <span>🧩</span> Cluster Health Scores
+        </h2>
+        <div id="dash-cluster-health"></div>
+      </section>
+
+      <!-- Content Gaps -->
+      <section class="dash-section" aria-labelledby="gaps-heading">
+        <h2 class="dash-section-heading" id="gaps-heading">
+          <span>⚠️</span> Content Gaps
+        </h2>
+        <div id="dash-content-gaps"></div>
+      </section>
+
+      <!-- Authority Drift Alerts -->
+      <section class="dash-section" aria-labelledby="drift-heading">
+        <h2 class="dash-section-heading" id="drift-heading">
+          <span>🔍</span> Authority Drift Alerts
+        </h2>
+        <div id="dash-authority-drift"></div>
+      </section>
+
+      <!-- Entity Changelog -->
+      <section class="dash-section" aria-labelledby="changelog-heading">
+        <h2 class="dash-section-heading" id="changelog-heading">
+          <span>📜</span> Entity Change Log
+        </h2>
+        <div id="dash-entity-changelog"></div>
+      </section>
+
+      <!-- Growth Priorities -->
+      <section class="dash-section" aria-labelledby="growth-heading">
+        <h2 class="dash-section-heading" id="growth-heading">
+          <span>🚀</span> Growth Priorities
+        </h2>
+        <div id="dash-growth-priority"></div>
+      </section>
+
+      <!-- Expansion Plan -->
+      <section class="dash-section" aria-labelledby="expansion-heading">
+        <h2 class="dash-section-heading" id="expansion-heading">
+          <span>🗺️</span> Expansion Plan
+        </h2>
+        <div id="dash-expansion-plan"></div>
+      </section>
+
+    </div><!-- /.dash-page -->
+  </main>
+</div>
+
+<button id="back-to-top" aria-label="Back to top">↑</button>
+
+<script src="/js/api-config.js"></script>
+<script src="/js/wiki.js"></script>
+<script src="/js/dashboard.js"></script>
+
+</body>
+</html>

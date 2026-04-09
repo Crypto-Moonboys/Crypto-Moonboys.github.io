@@ -1,0 +1,48 @@
+{
+  "generated_at": "2026-04-09T23:44:02.175Z",
+  "summary": {
+    "total_clusters": 3,
+    "total_pages": 230
+  },
+  "clusters": [
+    {
+      "cluster_id": "tokens",
+      "page_count": 29,
+      "avg_internal_links": 24.1,
+      "total_internal_links": 699,
+      "avg_rank_score": 236.72,
+      "avg_authority_score": 16.34,
+      "avg_content_quality": 48.83,
+      "avg_word_count": 884.9,
+      "centrality_score": 130.48,
+      "content_depth_score": 24.92,
+      "health_score": 47.39
+    },
+    {
+      "cluster_id": "characters",
+      "page_count": 74,
+      "avg_internal_links": 13.93,
+      "total_internal_links": 1031,
+      "avg_rank_score": 336.69,
+      "avg_authority_score": 20.22,
+      "avg_content_quality": 81.12,
+      "avg_word_count": 2513.31,
+      "centrality_score": 133.11,
+      "content_depth_score": 43.76,
+      "health_score": 40.83
+    },
+    {
+      "cluster_id": "factions",
+      "page_count": 127,
+      "avg_internal_links": 11.5,
+      "total_internal_links": 1461,
+      "avg_rank_score": 232,
+      "avg_authority_score": 17.84,
+      "avg_content_quality": 68.85,
+      "avg_word_count": 957.93,
+      "centrality_score": 173.89,
+      "content_depth_score": 32.51,
+      "health_score": 32.75
+    }
+  ]
+}
