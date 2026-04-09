@@ -58,7 +58,23 @@ for (const entry of wikiIndex) {
 // ---------------------------------------------------------------------------
 
 /**
- * Convert a slug like "games-graffpunks" to a display title "Games & Graffpunks"
+ * Truncate a string at a word boundary at or before maxLen characters.
+ * Appends "…" if truncated.
+ * @param {string} str
+ * @param {number} maxLen
+ * @returns {string}
+ */
+function truncateAtWordBoundary(str, maxLen) {
+  if (str.length <= maxLen) return str;
+  const cut = str.slice(0, maxLen);
+  const lastSpace = cut.lastIndexOf(' ');
+  return (lastSpace > 0 ? cut.slice(0, lastSpace) : cut).trimEnd() + '…';
+}
+
+/**
+ * Convert a slug like "games-graffpunks" to a display title "Games Graffpunks".
+ * @param {string} slug
+ * @returns {string}
  */
 function slugToTitle(slug) {
   return slug
@@ -100,16 +116,20 @@ function buildMetaDescription(action) {
     const clusters = action.supporting_clusters || [];
     const clusterStr = clusters.join(' and ');
     const base = `Exploring the intersection of ${clusterStr} within the Crypto Moonboys universe.`;
-    return descs.length > 0
-      ? `${base} Related: ${descs[0].slice(0, 100).trim()}`
-      : base;
+    if (descs.length > 0) {
+      const snippet = truncateAtWordBoundary(descs[0], 100);
+      return `${base} Related: ${snippet}`;
+    }
+    return base;
   }
 
   const topic = action.target_topic || action.target_url_slug;
   const base = `${slugToTitle(topic)} topic hub for the Crypto Moonboys Wiki.`;
-  return descs.length > 0
-    ? `${base} ${descs[0].slice(0, 100).trim()}`
-    : base;
+  if (descs.length > 0) {
+    const snippet = truncateAtWordBoundary(descs[0], 100);
+    return `${base} ${snippet}`;
+  }
+  return base;
 }
 
 /**

@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-04-09T02:02:33.309Z",
+  "generated_at": "2026-04-09T02:08:56.651Z",
   "summary": {
     "total_drafts": 5,
     "topic_page_drafts": 1,
@@ -45,7 +45,7 @@
       ],
       "draft": {
         "title": "Graffpunks & Nfts — Crypto Moonboys Wiki",
-        "meta_description": "Exploring the intersection of graffpunks and nfts within the Crypto Moonboys universe. Related: The GraffPUNKS are the pulsating core of the Crypto Moonboys universe, a faction that embodies the g",
+        "meta_description": "Exploring the intersection of graffpunks and nfts within the Crypto Moonboys universe. Related: The GraffPUNKS are the pulsating core of the Crypto Moonboys universe, a faction that embodies the…",
         "lead_paragraph": "This page bridges the <strong>graffpunks</strong> and <strong>nfts</strong> topic clusters within the Crypto Moonboys universe. Key pages in this cluster include those described as: &ldquo;The GraffPUNKS are the pulsating core of the Crypto Moonboys universe, a faction that embodies the gritty, rebellious sp&rdquo; Core keywords: 24, 247, fungible, graffpunks, nfts.",
         "section_blocks": [
           {
@@ -157,7 +157,7 @@
       ],
       "draft": {
         "title": "Games & Graffpunks — Crypto Moonboys Wiki",
-        "meta_description": "Exploring the intersection of games and graffpunks within the Crypto Moonboys universe. Related: The GraffPUNKS are the pulsating core of the Crypto Moonboys universe, a faction that embodies the g",
+        "meta_description": "Exploring the intersection of games and graffpunks within the Crypto Moonboys universe. Related: The GraffPUNKS are the pulsating core of the Crypto Moonboys universe, a faction that embodies the…",
         "lead_paragraph": "This page bridges the <strong>games</strong> and <strong>graffpunks</strong> topic clusters within the Crypto Moonboys universe. Key pages in this cluster include those described as: &ldquo;The GraffPUNKS are the pulsating core of the Crypto Moonboys universe, a faction that embodies the gritty, rebellious sp&rdquo; Core keywords: 24, 247, fork, games, graffpunks.",
         "section_blocks": [
           {
@@ -228,8 +228,7 @@
           "/wiki/hard-fork-games-event.html",
           "/wiki/hard-fork-games-game.html"
         ]
-      },
-      "existing_page_conflict": true
+      }
     },
     {
       "action_type": "create_bridge_page",
@@ -269,7 +268,7 @@
       ],
       "draft": {
         "title": "Bitcoin & Graffpunks — Crypto Moonboys Wiki",
-        "meta_description": "Exploring the intersection of bitcoin and graffpunks within the Crypto Moonboys universe. Related: The GraffPUNKS are the pulsating core of the Crypto Moonboys universe, a faction that embodies the g",
+        "meta_description": "Exploring the intersection of bitcoin and graffpunks within the Crypto Moonboys universe. Related: The GraffPUNKS are the pulsating core of the Crypto Moonboys universe, a faction that embodies the…",
         "lead_paragraph": "This page bridges the <strong>bitcoin</strong> and <strong>graffpunks</strong> topic clusters within the Crypto Moonboys universe. Key pages in this cluster include those described as: &ldquo;The GraffPUNKS are the pulsating core of the Crypto Moonboys universe, a faction that embodies the gritty, rebellious sp&rdquo; Core keywords: 24, 247, bitcoin, btc, graffpunks.",
         "section_blocks": [
           {
@@ -340,8 +339,7 @@
           "/wiki/bitcoin-x-kids.html",
           "/wiki/xrp-kids.html"
         ]
-      },
-      "existing_page_conflict": true
+      }
     },
     {
       "action_type": "create_bridge_page",
@@ -381,7 +379,7 @@
       ],
       "draft": {
         "title": "Graffpunks & Token — Crypto Moonboys Wiki",
-        "meta_description": "Exploring the intersection of graffpunks and token within the Crypto Moonboys universe. Related: The GraffPUNKS are the pulsating core of the Crypto Moonboys universe, a faction that embodies the g",
+        "meta_description": "Exploring the intersection of graffpunks and token within the Crypto Moonboys universe. Related: The GraffPUNKS are the pulsating core of the Crypto Moonboys universe, a faction that embodies the…",
         "lead_paragraph": "This page bridges the <strong>graffpunks</strong> and <strong>token</strong> topic clusters within the Crypto Moonboys universe. Key pages in this cluster include those described as: &ldquo;The GraffPUNKS are the pulsating core of the Crypto Moonboys universe, a faction that embodies the gritty, rebellious sp&rdquo; Core keywords: 24, 247, graffpunks, nbg, punk.",
         "section_blocks": [
           {
@@ -452,8 +450,7 @@
           "/wiki/null-the-prophet.html",
           "/wiki/queen-sarah-pfly.html"
         ]
-      },
-      "existing_page_conflict": true
+      }
     },
     {
       "action_type": "create_topic_page",
