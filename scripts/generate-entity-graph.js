@@ -45,11 +45,14 @@
  *   7. rank_score_boost   – target page rank_score quality (+0–10)
  *   8. authority_score_boost – target inbound link authority (+0–15)
  *   9. graph_centrality_boost – target graph centrality via inbound count (+0–8)
- *  10. reinforcement_boost   – prior graph inbound popularity (+0–5, Phase 11)
- *  11. cluster_support_boost – shared cluster membership in prior graph (+0–3, Phase 11)
- *  12. co_citation_boost     – co-cited by same pages in prior graph (+0–3, Phase 11)
- *  13. freshness_boost       – strong organic relationship + low prior dominance (+0–4, Phase 12)
- *  14. decay_penalty         – target over-dominant from prior reinforcement (−0–4, Phase 12)
+ *  10. content_depth_boost   – target lore depth + content quality signals (+0–8, Phase 21)
+ *                              Uses paragraph_count, lore_paragraph_count, section_count,
+ *                              content_quality_score from wiki-index rank_signals.
+ *  11. reinforcement_boost   – prior graph inbound popularity (+0–5, Phase 11)
+ *  12. cluster_support_boost – shared cluster membership in prior graph (+0–3, Phase 11)
+ *  13. co_citation_boost     – co-cited by same pages in prior graph (+0–3, Phase 11)
+ *  14. freshness_boost       – strong organic relationship + low prior dominance (+0–4, Phase 12)
+ *  15. decay_penalty         – target over-dominant from prior reinforcement (−0–4, Phase 12)
  *
  * Rules:
  *   - No self-links
@@ -128,6 +131,32 @@ const CENTRALITY_TIERS = [
   { threshold: 5,  boost: 2 },
   { threshold: 0,  boost: 0 },
 ];
+
+// ---------------------------------------------------------------------------
+// Content depth boost constants (Phase 21 – content strength reinforcement)
+// ---------------------------------------------------------------------------
+
+// content_depth_boost: rewards target pages with genuine lore depth and
+//   structural richness as measured by wiki-index rank_signals.
+//
+//   raw = floor((paragraph_count
+//              + lore_paragraph_count * CONTENT_DEPTH_LORE_WEIGHT
+//              + content_quality_score
+//              + section_count * CONTENT_DEPTH_SECTION_WEIGHT) / DIVISOR)
+//   capped at CONTENT_DEPTH_MAX.
+//
+//   Only applied when organicScore > 0 (same rule as all authority boosts).
+//   Calibration examples (DIVISOR=55, CAP=8):
+//     graffpunks  (para=117, lore=112, cqs=103, sect=6) → raw=474 → boost=8
+//     alfie-blaze (para=107, lore=103, cqs=90,  sect=6) → raw=433 → boost=7
+//     hodl-wars   (para=39,  lore=34,  cqs=107, sect=6) → raw=244 → boost=4
+//     hodl-warriors(para=24, lore=19,  cqs=103, sect=6) → raw=195 → boost=3
+//     bitcoin-btc (para=5,   lore=0,   cqs=24,  sect=2) → raw=39  → boost=0
+//     tokens      (para=4,   lore=0,   cqs=6,   sect=0) → raw=10  → boost=0
+const CONTENT_DEPTH_LORE_WEIGHT    = 2;   // lore_paragraph_count counts double
+const CONTENT_DEPTH_SECTION_WEIGHT = 5;   // section_count weight
+const CONTENT_DEPTH_DIVISOR        = 55;  // raw score divisor
+const CONTENT_DEPTH_MAX            = 8;   // hard cap
 
 // ---------------------------------------------------------------------------
 // Reinforcement signal constants (Phase 11 – feedback loop)
@@ -219,7 +248,8 @@ function contentTags(entityEntry) {
  * Returns null if organic relationship score === 0 (no real relationship).
  *
  * @returns {{ score, organicScore, reasons, rank_score_boost,
- *             authority_score_boost, graph_centrality_boost } | null}
+ *             authority_score_boost, graph_centrality_boost,
+ *             content_depth_boost } | null}
  */
 function computeRelationship(srcEntry, tgtEntry, srcLinks, tgtLinks, tgtBoosts) {
   let organicScore = 0;
@@ -271,8 +301,8 @@ function computeRelationship(srcEntry, tgtEntry, srcLinks, tgtLinks, tgtBoosts) 
   // Only include authority / reinforcement boosts when there is an organic relationship
   if (organicScore === 0) return null;
 
-  // 7–9 – authority boosts for the target page
-  const { rank_score_boost, authority_score_boost, graph_centrality_boost } = tgtBoosts;
+  // 7–10 – authority boosts for the target page (Phase 10 + Phase 21)
+  const { rank_score_boost, authority_score_boost, graph_centrality_boost, content_depth_boost } = tgtBoosts;
 
   let score = organicScore;
   if (rank_score_boost > 0) {
@@ -287,6 +317,10 @@ function computeRelationship(srcEntry, tgtEntry, srcLinks, tgtLinks, tgtBoosts) 
     score += graph_centrality_boost;
     reasons.push(`graph_centrality_boost:${graph_centrality_boost}`);
   }
+  if (content_depth_boost > 0) {
+    score += content_depth_boost;
+    reasons.push(`content_depth_boost:${content_depth_boost}`);
+  }
 
   return {
     score,
@@ -295,6 +329,7 @@ function computeRelationship(srcEntry, tgtEntry, srcLinks, tgtLinks, tgtBoosts) 
     rank_score_boost,
     authority_score_boost,
     graph_centrality_boost,
+    content_depth_boost,
   };
 }
 
@@ -532,7 +567,24 @@ function main() {
       }
     }
 
-    authorityBoosts[url] = { rank_score_boost, authority_score_boost, graph_centrality_boost };
+    // content_depth_boost (Phase 21): rewards pages with genuine lore depth and
+    // structural richness using paragraph_count, lore_paragraph_count,
+    // section_count, and content_quality_score from wiki-index rank_signals.
+    const signals = (wiki && wiki.rank_signals) ? wiki.rank_signals : {};
+    const paraCount    = signals.paragraph_count       || 0;
+    const lorePara     = signals.lore_paragraph_count  || 0;
+    const sectionCount = signals.section_count         || 0;
+    const contentQuality = signals.content_quality_score || 0;
+    const rawContentDepth = paraCount
+      + lorePara * CONTENT_DEPTH_LORE_WEIGHT
+      + contentQuality
+      + sectionCount * CONTENT_DEPTH_SECTION_WEIGHT;
+    const content_depth_boost = Math.min(
+      Math.floor(rawContentDepth / CONTENT_DEPTH_DIVISOR),
+      CONTENT_DEPTH_MAX
+    );
+
+    authorityBoosts[url] = { rank_score_boost, authority_score_boost, graph_centrality_boost, content_depth_boost };
   }
 
   // Collect all page URLs to process (union of entity-map and wiki-index URLs)
@@ -560,7 +612,7 @@ function main() {
 
       const tgtLinks = existingLinksMap[tgtUrl] || new Set();
       const tgtBoosts = authorityBoosts[tgtUrl] || {
-        rank_score_boost: 0, authority_score_boost: 0, graph_centrality_boost: 0,
+        rank_score_boost: 0, authority_score_boost: 0, graph_centrality_boost: 0, content_depth_boost: 0,
       };
 
       const rel = computeRelationship(srcEntity, tgtEntity, srcLinks, tgtLinks, tgtBoosts);
@@ -588,6 +640,7 @@ function main() {
         rank_score_boost:       rel.rank_score_boost,
         authority_score_boost:  rel.authority_score_boost,
         graph_centrality_boost: rel.graph_centrality_boost,
+        content_depth_boost:    rel.content_depth_boost,
         reinforcement_boost:    reinforce.reinforcement_boost,
         cluster_support_boost:  reinforce.cluster_support_boost,
         co_citation_boost:      reinforce.co_citation_boost,
@@ -600,6 +653,7 @@ function main() {
           rank_score_boost:       rel.rank_score_boost,
           authority_score_boost:  rel.authority_score_boost,
           graph_centrality_boost: rel.graph_centrality_boost,
+          content_depth_boost:    rel.content_depth_boost,
           reinforcement_boost:    reinforce.reinforcement_boost,
           cluster_support_boost:  reinforce.cluster_support_boost,
           co_citation_boost:      reinforce.co_citation_boost,
