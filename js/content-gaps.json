@@ -1,0 +1,2265 @@
+{
+  "generated_at": "2026-04-09T00:59:25.943Z",
+  "summary": {
+    "total_pages": 224,
+    "underlinked_targets": 58,
+    "isolated_pages": 13,
+    "bridge_gaps": 90,
+    "topic_gaps": 8,
+    "stale_coverage_gaps": 4
+  },
+  "underlinked_pages": [
+    {
+      "url": "/wiki/metaverse-battles.html",
+      "score": 477,
+      "rank_score": 205,
+      "inbound_links": 0,
+      "injection_plan_hits": 29,
+      "reasons": [
+        "over_saturated_injection_target:29",
+        "under_covered_strong_adjacents:93",
+        "reinforcement_concentration_signal"
+      ]
+    },
+    {
+      "url": "/wiki/graffiti-kings.html",
+      "score": 472,
+      "rank_score": 193,
+      "inbound_links": 0,
+      "injection_plan_hits": 17,
+      "reasons": [
+        "over_saturated_injection_target:17",
+        "under_covered_strong_adjacents:93",
+        "reinforcement_concentration_signal"
+      ]
+    },
+    {
+      "url": "/wiki/queen-sarah-pfly.html",
+      "score": 123,
+      "rank_score": 657,
+      "inbound_links": 0,
+      "injection_plan_hits": 0,
+      "reasons": [
+        "low_inbound_links:0",
+        "low_injection_plan_coverage:0",
+        "high_authority_underserved:22"
+      ]
+    },
+    {
+      "url": "/wiki/burn-to-earn.html",
+      "score": 119,
+      "rank_score": 572,
+      "inbound_links": 0,
+      "injection_plan_hits": 0,
+      "reasons": [
+        "low_inbound_links:0",
+        "low_injection_plan_coverage:0",
+        "high_authority_underserved:22"
+      ]
+    },
+    {
+      "url": "/wiki/punk-token.html",
+      "score": 119,
+      "rank_score": 659,
+      "inbound_links": 0,
+      "injection_plan_hits": 2,
+      "reasons": [
+        "low_inbound_links:0",
+        "low_injection_plan_coverage:2",
+        "high_authority_underserved:22"
+      ]
+    },
+    {
+      "url": "/wiki/charlie-buster.html",
+      "score": 118,
+      "rank_score": 630,
+      "inbound_links": 0,
+      "injection_plan_hits": 2,
+      "reasons": [
+        "low_inbound_links:0",
+        "low_injection_plan_coverage:2",
+        "high_authority_underserved:22"
+      ]
+    },
+    {
+      "url": "/wiki/nbgx.html",
+      "score": 118,
+      "rank_score": 561,
+      "inbound_links": 0,
+      "injection_plan_hits": 0,
+      "reasons": [
+        "low_inbound_links:0",
+        "low_injection_plan_coverage:0",
+        "high_authority_underserved:22"
+      ]
+    },
+    {
+      "url": "/wiki/pmsl.html",
+      "score": 118,
+      "rank_score": 555,
+      "inbound_links": 0,
+      "injection_plan_hits": 0,
+      "reasons": [
+        "low_inbound_links:0",
+        "low_injection_plan_coverage:0",
+        "high_authority_underserved:22"
+      ]
+    },
+    {
+      "url": "/wiki/nbg.html",
+      "score": 117,
+      "rank_score": 543,
+      "inbound_links": 0,
+      "injection_plan_hits": 0,
+      "reasons": [
+        "low_inbound_links:0",
+        "low_injection_plan_coverage:0",
+        "high_authority_underserved:22"
+      ]
+    },
+    {
+      "url": "/wiki/bitcoin-kids.html",
+      "score": 116,
+      "rank_score": 683,
+      "inbound_links": 0,
+      "injection_plan_hits": 4,
+      "reasons": [
+        "low_inbound_links:0",
+        "low_injection_plan_coverage:4",
+        "high_authority_underserved:22"
+      ]
+    },
+    {
+      "url": "/wiki/alfie-blaze.html",
+      "score": 115,
+      "rank_score": 589,
+      "inbound_links": 0,
+      "injection_plan_hits": 2,
+      "reasons": [
+        "low_inbound_links:0",
+        "low_injection_plan_coverage:2",
+        "high_authority_underserved:18"
+      ]
+    },
+    {
+      "url": "/wiki/graffpunks-24-7.html",
+      "score": 113,
+      "rank_score": 458,
+      "inbound_links": 0,
+      "injection_plan_hits": 0,
+      "reasons": [
+        "low_inbound_links:0",
+        "low_injection_plan_coverage:0",
+        "high_authority_underserved:22"
+      ]
+    },
+    {
+      "url": "/wiki/graffpunks-247-radio.html",
+      "score": 110,
+      "rank_score": 395,
+      "inbound_links": 0,
+      "injection_plan_hits": 0,
+      "reasons": [
+        "low_inbound_links:0",
+        "low_injection_plan_coverage:0",
+        "high_authority_underserved:22"
+      ]
+    },
+    {
+      "url": "/wiki/midevilpunks.html",
+      "score": 110,
+      "rank_score": 399,
+      "inbound_links": 0,
+      "injection_plan_hits": 0,
+      "reasons": [
+        "low_inbound_links:0",
+        "low_injection_plan_coverage:0",
+        "high_authority_underserved:22"
+      ]
+    },
+    {
+      "url": "/wiki/games4punks-telegram.html",
+      "score": 109,
+      "rank_score": 372,
+      "inbound_links": 0,
+      "injection_plan_hits": 0,
+      "reasons": [
+        "low_inbound_links:0",
+        "low_injection_plan_coverage:0",
+        "high_authority_underserved:22"
+      ]
+    },
+    {
+      "url": "/wiki/genesis-spray.html",
+      "score": 109,
+      "rank_score": 416,
+      "inbound_links": 0,
+      "injection_plan_hits": 1,
+      "reasons": [
+        "low_inbound_links:0",
+        "low_injection_plan_coverage:1",
+        "high_authority_underserved:22"
+      ]
+    },
+    {
+      "url": "/wiki/nbg-token.html",
+      "score": 109,
+      "rank_score": 413,
+      "inbound_links": 0,
+      "injection_plan_hits": 1,
+      "reasons": [
+        "low_inbound_links:0",
+        "low_injection_plan_coverage:1",
+        "high_authority_underserved:22"
+      ]
+    },
+    {
+      "url": "/wiki/graffitikings.html",
+      "score": 108,
+      "rank_score": 366,
+      "inbound_links": 0,
+      "injection_plan_hits": 0,
+      "reasons": [
+        "low_inbound_links:0",
+        "low_injection_plan_coverage:0",
+        "high_authority_underserved:22"
+      ]
+    },
+    {
+      "url": "/wiki/rave-relics.html",
+      "score": 108,
+      "rank_score": 449,
+      "inbound_links": 0,
+      "injection_plan_hits": 2,
+      "reasons": [
+        "low_inbound_links:0",
+        "low_injection_plan_coverage:2",
+        "high_authority_underserved:22"
+      ]
+    },
+    {
+      "url": "/wiki/gang-signs.html",
+      "score": 107,
+      "rank_score": 374,
+      "inbound_links": 0,
+      "injection_plan_hits": 1,
+      "reasons": [
+        "low_inbound_links:0",
+        "low_injection_plan_coverage:1",
+        "high_authority_underserved:22"
+      ]
+    },
+    {
+      "url": "/wiki/ian-harrison.html",
+      "score": 106,
+      "rank_score": 361,
+      "inbound_links": 0,
+      "injection_plan_hits": 1,
+      "reasons": [
+        "low_inbound_links:0",
+        "low_injection_plan_coverage:1",
+        "high_authority_underserved:22"
+      ]
+    },
+    {
+      "url": "/wiki/jillian-godsil.html",
+      "score": 106,
+      "rank_score": 352,
+      "inbound_links": 0,
+      "injection_plan_hits": 1,
+      "reasons": [
+        "low_inbound_links:0",
+        "low_injection_plan_coverage:1",
+        "high_authority_underserved:22"
+      ]
+    },
+    {
+      "url": "/wiki/sacred-chain.html",
+      "score": 106,
+      "rank_score": 358,
+      "inbound_links": 0,
+      "injection_plan_hits": 1,
+      "reasons": [
+        "low_inbound_links:0",
+        "low_injection_plan_coverage:1",
+        "high_authority_underserved:22"
+      ]
+    },
+    {
+      "url": "/wiki/midevil-hero-arena.html",
+      "score": 105,
+      "rank_score": 345,
+      "inbound_links": 0,
+      "injection_plan_hits": 1,
+      "reasons": [
+        "low_inbound_links:0",
+        "low_injection_plan_coverage:1",
+        "high_authority_underserved:22"
+      ]
+    },
+    {
+      "url": "/wiki/bitcoin-x-kids.html",
+      "score": 104,
+      "rank_score": 279,
+      "inbound_links": 0,
+      "injection_plan_hits": 0,
+      "reasons": [
+        "low_inbound_links:0",
+        "low_injection_plan_coverage:0",
+        "high_authority_underserved:19"
+      ]
+    },
+    {
+      "url": "/wiki/darren-cullen.html",
+      "score": 104,
+      "rank_score": 364,
+      "inbound_links": 0,
+      "injection_plan_hits": 2,
+      "reasons": [
+        "low_inbound_links:0",
+        "low_injection_plan_coverage:2",
+        "high_authority_underserved:22"
+      ]
+    },
+    {
+      "url": "/wiki/trevor-fung.html",
+      "score": 104,
+      "rank_score": 356,
+      "inbound_links": 0,
+      "injection_plan_hits": 2,
+      "reasons": [
+        "low_inbound_links:0",
+        "low_injection_plan_coverage:2",
+        "high_authority_underserved:22"
+      ]
+    },
+    {
+      "url": "/wiki/gkniftyheads.html",
+      "score": 103,
+      "rank_score": 414,
+      "inbound_links": 0,
+      "injection_plan_hits": 4,
+      "reasons": [
+        "low_inbound_links:0",
+        "low_injection_plan_coverage:4",
+        "high_authority_underserved:22"
+      ]
+    },
+    {
+      "url": "/wiki/graffpunks-24-7-radio.html",
+      "score": 103,
+      "rank_score": 269,
+      "inbound_links": 0,
+      "injection_plan_hits": 0,
+      "reasons": [
+        "low_inbound_links:0",
+        "low_injection_plan_coverage:0",
+        "high_authority_underserved:19"
+      ]
+    },
+    {
+      "url": "/wiki/hodl-x-warriors.html",
+      "score": 103,
+      "rank_score": 308,
+      "inbound_links": 0,
+      "injection_plan_hits": 1,
+      "reasons": [
+        "low_inbound_links:0",
+        "low_injection_plan_coverage:1",
+        "high_authority_underserved:19"
+      ]
+    },
+    {
+      "url": "/wiki/pyralith.html",
+      "score": 103,
+      "rank_score": 255,
+      "inbound_links": 0,
+      "injection_plan_hits": 0,
+      "reasons": [
+        "low_inbound_links:0",
+        "low_injection_plan_coverage:0",
+        "high_authority_underserved:23"
+      ]
+    },
+    {
+      "url": "/wiki/quell.html",
+      "score": 103,
+      "rank_score": 256,
+      "inbound_links": 0,
+      "injection_plan_hits": 0,
+      "reasons": [
+        "low_inbound_links:0",
+        "low_injection_plan_coverage:0",
+        "high_authority_underserved:23"
+      ]
+    },
+    {
+      "url": "/wiki/rune-tag.html",
+      "score": 103,
+      "rank_score": 263,
+      "inbound_links": 0,
+      "injection_plan_hits": 0,
+      "reasons": [
+        "low_inbound_links:0",
+        "low_injection_plan_coverage:0",
+        "high_authority_underserved:23"
+      ]
+    },
+    {
+      "url": "/wiki/satorebel.html",
+      "score": 103,
+      "rank_score": 259,
+      "inbound_links": 0,
+      "injection_plan_hits": 0,
+      "reasons": [
+        "low_inbound_links:0",
+        "low_injection_plan_coverage:0",
+        "high_authority_underserved:23"
+      ]
+    },
+    {
+      "url": "/wiki/sister-halcyon.html",
+      "score": 103,
+      "rank_score": 260,
+      "inbound_links": 0,
+      "injection_plan_hits": 0,
+      "reasons": [
+        "low_inbound_links:0",
+        "low_injection_plan_coverage:0",
+        "high_authority_underserved:23"
+      ]
+    },
+    {
+      "url": "/wiki/sneakar.html",
+      "score": 103,
+      "rank_score": 266,
+      "inbound_links": 0,
+      "injection_plan_hits": 0,
+      "reasons": [
+        "low_inbound_links:0",
+        "low_injection_plan_coverage:0",
+        "high_authority_underserved:19"
+      ]
+    },
+    {
+      "url": "/wiki/the-crypto-moongirls.html",
+      "score": 103,
+      "rank_score": 253,
+      "inbound_links": 0,
+      "injection_plan_hits": 0,
+      "reasons": [
+        "low_inbound_links:0",
+        "low_injection_plan_coverage:0",
+        "high_authority_underserved:23"
+      ]
+    },
+    {
+      "url": "/wiki/the-nice-easy-bois.html",
+      "score": 103,
+      "rank_score": 253,
+      "inbound_links": 0,
+      "injection_plan_hits": 0,
+      "reasons": [
+        "low_inbound_links:0",
+        "low_injection_plan_coverage:0",
+        "high_authority_underserved:20"
+      ]
+    },
+    {
+      "url": "/wiki/the-princess.html",
+      "score": 103,
+      "rank_score": 258,
+      "inbound_links": 0,
+      "injection_plan_hits": 0,
+      "reasons": [
+        "low_inbound_links:0",
+        "low_injection_plan_coverage:0",
+        "high_authority_underserved:23"
+      ]
+    },
+    {
+      "url": "/wiki/the-whitewasher.html",
+      "score": 103,
+      "rank_score": 256,
+      "inbound_links": 0,
+      "injection_plan_hits": 0,
+      "reasons": [
+        "low_inbound_links:0",
+        "low_injection_plan_coverage:0",
+        "high_authority_underserved:23"
+      ]
+    },
+    {
+      "url": "/wiki/tokenomics.html",
+      "score": 103,
+      "rank_score": 254,
+      "inbound_links": 0,
+      "injection_plan_hits": 0,
+      "reasons": [
+        "low_inbound_links:0",
+        "low_injection_plan_coverage:0",
+        "high_authority_underserved:23"
+      ]
+    },
+    {
+      "url": "/wiki/xrp-kids.html",
+      "score": 103,
+      "rank_score": 378,
+      "inbound_links": 0,
+      "injection_plan_hits": 3,
+      "reasons": [
+        "low_inbound_links:0",
+        "low_injection_plan_coverage:3",
+        "high_authority_underserved:22"
+      ]
+    },
+    {
+      "url": "/wiki/metropolis.html",
+      "score": 101,
+      "rank_score": 330,
+      "inbound_links": 0,
+      "injection_plan_hits": 3,
+      "reasons": [
+        "low_inbound_links:0",
+        "low_injection_plan_coverage:3",
+        "high_authority_underserved:22"
+      ]
+    },
+    {
+      "url": "/wiki/patchwork.html",
+      "score": 101,
+      "rank_score": 259,
+      "inbound_links": 0,
+      "injection_plan_hits": 1,
+      "reasons": [
+        "low_inbound_links:0",
+        "low_injection_plan_coverage:1",
+        "high_authority_underserved:23"
+      ]
+    },
+    {
+      "url": "/wiki/samaelexe.html",
+      "score": 98,
+      "rank_score": 264,
+      "inbound_links": 1,
+      "injection_plan_hits": 0,
+      "reasons": [
+        "low_inbound_links:1",
+        "low_injection_plan_coverage:0",
+        "high_authority_underserved:23"
+      ]
+    },
+    {
+      "url": "/wiki/graffpunks.html",
+      "score": 97,
+      "rank_score": 749,
+      "inbound_links": 0,
+      "injection_plan_hits": 35,
+      "reasons": [
+        "low_inbound_links:0",
+        "high_authority_underserved:22"
+      ]
+    },
+    {
+      "url": "/wiki/block-topia.html",
+      "score": 96,
+      "rank_score": 715,
+      "inbound_links": 0,
+      "injection_plan_hits": 89,
+      "reasons": [
+        "low_inbound_links:0",
+        "high_authority_underserved:22"
+      ]
+    },
+    {
+      "url": "/wiki/wallets.html",
+      "score": 96,
+      "rank_score": 255,
+      "inbound_links": 1,
+      "injection_plan_hits": 1,
+      "reasons": [
+        "low_inbound_links:1",
+        "low_injection_plan_coverage:1",
+        "high_authority_underserved:27"
+      ]
+    },
+    {
+      "url": "/wiki/null-the-prophet.html",
+      "score": 94,
+      "rank_score": 679,
+      "inbound_links": 0,
+      "injection_plan_hits": 6,
+      "reasons": [
+        "low_inbound_links:0",
+        "high_authority_underserved:22"
+      ]
+    },
+    {
+      "url": "/wiki/staking.html",
+      "score": 88,
+      "rank_score": 560,
+      "inbound_links": 0,
+      "injection_plan_hits": 5,
+      "reasons": [
+        "low_inbound_links:0",
+        "high_authority_underserved:22"
+      ]
+    },
+    {
+      "url": "/wiki/hard-fork-games.html",
+      "score": 79,
+      "rank_score": 375,
+      "inbound_links": 0,
+      "injection_plan_hits": 27,
+      "reasons": [
+        "low_inbound_links:0",
+        "high_authority_underserved:22"
+      ]
+    },
+    {
+      "url": "/wiki/crypto-moonboys.html",
+      "score": 74,
+      "rank_score": 274,
+      "inbound_links": 0,
+      "injection_plan_hits": 104,
+      "reasons": [
+        "low_inbound_links:0",
+        "high_authority_underserved:19"
+      ]
+    },
+    {
+      "url": "/wiki/ethereum.html",
+      "score": 61,
+      "rank_score": 612,
+      "inbound_links": 156,
+      "injection_plan_hits": 0,
+      "reasons": [
+        "low_injection_plan_coverage:0"
+      ]
+    },
+    {
+      "url": "/wiki/solana.html",
+      "score": 59,
+      "rank_score": 586,
+      "inbound_links": 156,
+      "injection_plan_hits": 0,
+      "reasons": [
+        "low_injection_plan_coverage:0"
+      ]
+    },
+    {
+      "url": "/wiki/diamond-hands.html",
+      "score": 55,
+      "rank_score": 509,
+      "inbound_links": 147,
+      "injection_plan_hits": 0,
+      "reasons": [
+        "low_injection_plan_coverage:0"
+      ]
+    },
+    {
+      "url": "/wiki/moon-mission.html",
+      "score": 55,
+      "rank_score": 497,
+      "inbound_links": 146,
+      "injection_plan_hits": 0,
+      "reasons": [
+        "low_injection_plan_coverage:0"
+      ]
+    },
+    {
+      "url": "/wiki/bitcoin.html",
+      "score": 52,
+      "rank_score": 605,
+      "inbound_links": 156,
+      "injection_plan_hits": 4,
+      "reasons": [
+        "low_injection_plan_coverage:4"
+      ]
+    },
+    {
+      "url": "/wiki/hodl-warriors.html",
+      "score": 52,
+      "rank_score": 603,
+      "inbound_links": 146,
+      "injection_plan_hits": 4,
+      "reasons": [
+        "low_injection_plan_coverage:4"
+      ]
+    }
+  ],
+  "isolated_pages": [
+    {
+      "url": "/wiki/dream-sovereign.html",
+      "score": 63,
+      "rank_score": 101,
+      "strong_peers": 1,
+      "inbound_links": 0,
+      "outbound_links": 1,
+      "reasons": [
+        "weak_entity_graph_peers:1",
+        "zero_inbound_links",
+        "minimal_outbound_links:1"
+      ]
+    },
+    {
+      "url": "/wiki/head-tags.html",
+      "score": 63,
+      "rank_score": 101,
+      "strong_peers": 1,
+      "inbound_links": 0,
+      "outbound_links": 1,
+      "reasons": [
+        "weak_entity_graph_peers:1",
+        "zero_inbound_links",
+        "minimal_outbound_links:1"
+      ]
+    },
+    {
+      "url": "/wiki/nine-armies.html",
+      "score": 63,
+      "rank_score": 101,
+      "strong_peers": 1,
+      "inbound_links": 0,
+      "outbound_links": 1,
+      "reasons": [
+        "weak_entity_graph_peers:1",
+        "zero_inbound_links",
+        "minimal_outbound_links:1"
+      ]
+    },
+    {
+      "url": "/wiki/stikfamwars.html",
+      "score": 63,
+      "rank_score": 98,
+      "strong_peers": 1,
+      "inbound_links": 0,
+      "outbound_links": 1,
+      "reasons": [
+        "weak_entity_graph_peers:1",
+        "zero_inbound_links",
+        "minimal_outbound_links:1"
+      ]
+    },
+    {
+      "url": "/wiki/battlemech-blast.html",
+      "score": 53,
+      "rank_score": 201,
+      "strong_peers": 1,
+      "inbound_links": 0,
+      "outbound_links": 39,
+      "reasons": [
+        "weak_entity_graph_peers:1",
+        "zero_inbound_links"
+      ]
+    },
+    {
+      "url": "/wiki/graffpunks-247.html",
+      "score": 53,
+      "rank_score": 101,
+      "strong_peers": 1,
+      "inbound_links": 0,
+      "outbound_links": 16,
+      "reasons": [
+        "weak_entity_graph_peers:1",
+        "zero_inbound_links"
+      ]
+    },
+    {
+      "url": "/wiki/graffpunks-network.html",
+      "score": 53,
+      "rank_score": 101,
+      "strong_peers": 1,
+      "inbound_links": 0,
+      "outbound_links": 16,
+      "reasons": [
+        "weak_entity_graph_peers:1",
+        "zero_inbound_links"
+      ]
+    },
+    {
+      "url": "/wiki/jillian-godsil.html",
+      "score": 53,
+      "rank_score": 352,
+      "strong_peers": 1,
+      "inbound_links": 0,
+      "outbound_links": 37,
+      "reasons": [
+        "weak_entity_graph_peers:1",
+        "zero_inbound_links"
+      ]
+    },
+    {
+      "url": "/wiki/metropolis.html",
+      "score": 53,
+      "rank_score": 330,
+      "strong_peers": 1,
+      "inbound_links": 0,
+      "outbound_links": 23,
+      "reasons": [
+        "weak_entity_graph_peers:1",
+        "zero_inbound_links"
+      ]
+    },
+    {
+      "url": "/wiki/nbg-token.html",
+      "score": 53,
+      "rank_score": 413,
+      "strong_peers": 1,
+      "inbound_links": 0,
+      "outbound_links": 41,
+      "reasons": [
+        "weak_entity_graph_peers:1",
+        "zero_inbound_links"
+      ]
+    },
+    {
+      "url": "/wiki/pmsl.html",
+      "score": 53,
+      "rank_score": 555,
+      "strong_peers": 1,
+      "inbound_links": 0,
+      "outbound_links": 53,
+      "reasons": [
+        "weak_entity_graph_peers:1",
+        "zero_inbound_links"
+      ]
+    },
+    {
+      "url": "/wiki/sneakar.html",
+      "score": 53,
+      "rank_score": 266,
+      "strong_peers": 1,
+      "inbound_links": 0,
+      "outbound_links": 44,
+      "reasons": [
+        "weak_entity_graph_peers:1",
+        "zero_inbound_links"
+      ]
+    },
+    {
+      "url": "/wiki/trevor-fung.html",
+      "score": 53,
+      "rank_score": 356,
+      "strong_peers": 1,
+      "inbound_links": 0,
+      "outbound_links": 38,
+      "reasons": [
+        "weak_entity_graph_peers:1",
+        "zero_inbound_links"
+      ]
+    }
+  ],
+  "bridge_opportunities": [
+    {
+      "cluster_a": "graffpunks",
+      "cluster_b": "nfts",
+      "score": 385,
+      "cross_cluster_edge_count": 184,
+      "reasons": [
+        "cross_tag_cluster_edges:184",
+        "cluster_a_pages:15",
+        "cluster_b_pages:9",
+        "existing_bridge_pages:0"
+      ],
+      "suggested_page_topic": "graffpunks + nfts (via free)"
+    },
+    {
+      "cluster_a": "games",
+      "cluster_b": "graffpunks",
+      "score": 280,
+      "cross_cluster_edge_count": 132,
+      "reasons": [
+        "cross_tag_cluster_edges:132",
+        "cluster_a_pages:6",
+        "cluster_b_pages:15",
+        "existing_bridge_pages:0"
+      ],
+      "suggested_page_topic": "games + graffpunks (via collection)"
+    },
+    {
+      "cluster_a": "bitcoin",
+      "cluster_b": "graffpunks",
+      "score": 273,
+      "cross_cluster_edge_count": 128,
+      "reasons": [
+        "cross_tag_cluster_edges:128",
+        "cluster_a_pages:8",
+        "cluster_b_pages:15",
+        "existing_bridge_pages:0"
+      ],
+      "suggested_page_topic": "bitcoin + graffpunks (via kid)"
+    },
+    {
+      "cluster_a": "graffpunks",
+      "cluster_b": "token",
+      "score": 252,
+      "cross_cluster_edge_count": 118,
+      "reasons": [
+        "cross_tag_cluster_edges:118",
+        "cluster_a_pages:15",
+        "cluster_b_pages:6",
+        "existing_bridge_pages:0"
+      ],
+      "suggested_page_topic": "graffpunks + token (via radio)"
+    },
+    {
+      "cluster_a": "fork",
+      "cluster_b": "graffpunks",
+      "score": 236,
+      "cross_cluster_edge_count": 110,
+      "reasons": [
+        "cross_tag_cluster_edges:110",
+        "cluster_a_pages:5",
+        "cluster_b_pages:15",
+        "existing_bridge_pages:0"
+      ],
+      "suggested_page_topic": "fork + graffpunks (via hard)"
+    },
+    {
+      "cluster_a": "gk",
+      "cluster_b": "graffpunks",
+      "score": 236,
+      "cross_cluster_edge_count": 110,
+      "reasons": [
+        "cross_tag_cluster_edges:110",
+        "cluster_a_pages:5",
+        "cluster_b_pages:15",
+        "existing_bridge_pages:0"
+      ],
+      "suggested_page_topic": "gk + graffpunks (via radio)"
+    },
+    {
+      "cluster_a": "graffpunks",
+      "cluster_b": "kid",
+      "score": 232,
+      "cross_cluster_edge_count": 108,
+      "reasons": [
+        "cross_tag_cluster_edges:108",
+        "cluster_a_pages:15",
+        "cluster_b_pages:5",
+        "existing_bridge_pages:0"
+      ],
+      "suggested_page_topic": "graffpunks + kid (via bitcoin)"
+    },
+    {
+      "cluster_a": "graffpunks",
+      "cluster_b": "tokens",
+      "score": 228,
+      "cross_cluster_edge_count": 106,
+      "reasons": [
+        "cross_tag_cluster_edges:106",
+        "cluster_a_pages:15",
+        "cluster_b_pages:6",
+        "existing_bridge_pages:0"
+      ],
+      "suggested_page_topic": "graffpunks + tokens (via radio)"
+    },
+    {
+      "cluster_a": "free",
+      "cluster_b": "graffpunks",
+      "score": 224,
+      "cross_cluster_edge_count": 104,
+      "reasons": [
+        "cross_tag_cluster_edges:104",
+        "cluster_a_pages:5",
+        "cluster_b_pages:15",
+        "existing_bridge_pages:0"
+      ],
+      "suggested_page_topic": "free + graffpunks (via nfts)"
+    },
+    {
+      "cluster_a": "graffpunks",
+      "cluster_b": "hodl",
+      "score": 220,
+      "cross_cluster_edge_count": 102,
+      "reasons": [
+        "cross_tag_cluster_edges:102",
+        "cluster_a_pages:15",
+        "cluster_b_pages:6",
+        "existing_bridge_pages:0"
+      ],
+      "suggested_page_topic": "graffpunks + hodl (via radio)"
+    },
+    {
+      "cluster_a": "graffpunks",
+      "cluster_b": "nbg",
+      "score": 208,
+      "cross_cluster_edge_count": 96,
+      "reasons": [
+        "cross_tag_cluster_edges:96",
+        "cluster_a_pages:15",
+        "cluster_b_pages:5",
+        "existing_bridge_pages:0"
+      ],
+      "suggested_page_topic": "graffpunks + nbg (via radio)"
+    },
+    {
+      "cluster_a": "blockchain",
+      "cluster_b": "graffpunks",
+      "score": 200,
+      "cross_cluster_edge_count": 92,
+      "reasons": [
+        "cross_tag_cluster_edges:92",
+        "cluster_a_pages:5",
+        "cluster_b_pages:15",
+        "existing_bridge_pages:0"
+      ],
+      "suggested_page_topic": "blockchain + graffpunks (via radio)"
+    },
+    {
+      "cluster_a": "bitcoin",
+      "cluster_b": "nfts",
+      "score": 175,
+      "cross_cluster_edge_count": 80,
+      "reasons": [
+        "cross_tag_cluster_edges:80",
+        "cluster_a_pages:8",
+        "cluster_b_pages:9",
+        "existing_bridge_pages:0"
+      ],
+      "suggested_page_topic": "bitcoin + nfts (via free)"
+    },
+    {
+      "cluster_a": "nfts",
+      "cluster_b": "tokens",
+      "score": 166,
+      "cross_cluster_edge_count": 78,
+      "reasons": [
+        "cross_tag_cluster_edges:78",
+        "cluster_a_pages:9",
+        "cluster_b_pages:6",
+        "existing_bridge_pages:1"
+      ],
+      "suggested_page_topic": "nfts + tokens (via free)"
+    },
+    {
+      "cluster_a": "graffpunks",
+      "cluster_b": "kids",
+      "score": 156,
+      "cross_cluster_edge_count": 70,
+      "reasons": [
+        "cross_tag_cluster_edges:70",
+        "cluster_a_pages:15",
+        "cluster_b_pages:5",
+        "existing_bridge_pages:0"
+      ],
+      "suggested_page_topic": "graffpunks + kids (via radio)"
+    },
+    {
+      "cluster_a": "games",
+      "cluster_b": "nfts",
+      "score": 151,
+      "cross_cluster_edge_count": 68,
+      "reasons": [
+        "cross_tag_cluster_edges:68",
+        "cluster_a_pages:6",
+        "cluster_b_pages:9",
+        "existing_bridge_pages:0"
+      ],
+      "suggested_page_topic": "games + nfts (via free)"
+    },
+    {
+      "cluster_a": "bitcoin",
+      "cluster_b": "tokens",
+      "score": 150,
+      "cross_cluster_edge_count": 68,
+      "reasons": [
+        "cross_tag_cluster_edges:68",
+        "cluster_a_pages:8",
+        "cluster_b_pages:6",
+        "existing_bridge_pages:0"
+      ],
+      "suggested_page_topic": "bitcoin + tokens (via kid)"
+    },
+    {
+      "cluster_a": "nfts",
+      "cluster_b": "token",
+      "score": 147,
+      "cross_cluster_edge_count": 66,
+      "reasons": [
+        "cross_tag_cluster_edges:66",
+        "cluster_a_pages:9",
+        "cluster_b_pages:6",
+        "existing_bridge_pages:0"
+      ],
+      "suggested_page_topic": "nfts + token (via free)"
+    },
+    {
+      "cluster_a": "gk",
+      "cluster_b": "nfts",
+      "score": 146,
+      "cross_cluster_edge_count": 66,
+      "reasons": [
+        "cross_tag_cluster_edges:66",
+        "cluster_a_pages:5",
+        "cluster_b_pages:9",
+        "existing_bridge_pages:0"
+      ],
+      "suggested_page_topic": "gk + nfts (via tokens)"
+    },
+    {
+      "cluster_a": "bitcoin",
+      "cluster_b": "games",
+      "score": 142,
+      "cross_cluster_edge_count": 64,
+      "reasons": [
+        "cross_tag_cluster_edges:64",
+        "cluster_a_pages:8",
+        "cluster_b_pages:6",
+        "existing_bridge_pages:0"
+      ],
+      "suggested_page_topic": "bitcoin + games (via kid)"
+    },
+    {
+      "cluster_a": "hodl",
+      "cluster_b": "nfts",
+      "score": 139,
+      "cross_cluster_edge_count": 62,
+      "reasons": [
+        "cross_tag_cluster_edges:62",
+        "cluster_a_pages:6",
+        "cluster_b_pages:9",
+        "existing_bridge_pages:0"
+      ],
+      "suggested_page_topic": "hodl + nfts (via free)"
+    },
+    {
+      "cluster_a": "bitcoin",
+      "cluster_b": "gk",
+      "score": 134,
+      "cross_cluster_edge_count": 60,
+      "reasons": [
+        "cross_tag_cluster_edges:60",
+        "cluster_a_pages:8",
+        "cluster_b_pages:5",
+        "existing_bridge_pages:0"
+      ],
+      "suggested_page_topic": "bitcoin + gk (via kid)"
+    },
+    {
+      "cluster_a": "bitcoin",
+      "cluster_b": "token",
+      "score": 134,
+      "cross_cluster_edge_count": 60,
+      "reasons": [
+        "cross_tag_cluster_edges:60",
+        "cluster_a_pages:8",
+        "cluster_b_pages:6",
+        "existing_bridge_pages:0"
+      ],
+      "suggested_page_topic": "bitcoin + token (via kid)"
+    },
+    {
+      "cluster_a": "games",
+      "cluster_b": "token",
+      "score": 134,
+      "cross_cluster_edge_count": 60,
+      "reasons": [
+        "cross_tag_cluster_edges:60",
+        "cluster_a_pages:6",
+        "cluster_b_pages:6",
+        "existing_bridge_pages:0"
+      ],
+      "suggested_page_topic": "games + token (via fork)"
+    },
+    {
+      "cluster_a": "kid",
+      "cluster_b": "nfts",
+      "score": 134,
+      "cross_cluster_edge_count": 60,
+      "reasons": [
+        "cross_tag_cluster_edges:60",
+        "cluster_a_pages:5",
+        "cluster_b_pages:9",
+        "existing_bridge_pages:0"
+      ],
+      "suggested_page_topic": "kid + nfts (via free)"
+    },
+    {
+      "cluster_a": "games",
+      "cluster_b": "gk",
+      "score": 133,
+      "cross_cluster_edge_count": 60,
+      "reasons": [
+        "cross_tag_cluster_edges:60",
+        "cluster_a_pages:6",
+        "cluster_b_pages:5",
+        "existing_bridge_pages:0"
+      ],
+      "suggested_page_topic": "games + gk (via fork)"
+    },
+    {
+      "cluster_a": "kids",
+      "cluster_b": "nfts",
+      "score": 130,
+      "cross_cluster_edge_count": 58,
+      "reasons": [
+        "cross_tag_cluster_edges:58",
+        "cluster_a_pages:5",
+        "cluster_b_pages:9",
+        "existing_bridge_pages:0"
+      ],
+      "suggested_page_topic": "kids + nfts (via free)"
+    },
+    {
+      "cluster_a": "bitcoin",
+      "cluster_b": "hodl",
+      "score": 126,
+      "cross_cluster_edge_count": 56,
+      "reasons": [
+        "cross_tag_cluster_edges:56",
+        "cluster_a_pages:8",
+        "cluster_b_pages:6",
+        "existing_bridge_pages:0"
+      ],
+      "suggested_page_topic": "bitcoin + hodl (via kid)"
+    },
+    {
+      "cluster_a": "fork",
+      "cluster_b": "nfts",
+      "score": 126,
+      "cross_cluster_edge_count": 56,
+      "reasons": [
+        "cross_tag_cluster_edges:56",
+        "cluster_a_pages:5",
+        "cluster_b_pages:9",
+        "existing_bridge_pages:0"
+      ],
+      "suggested_page_topic": "fork + nfts (via free)"
+    },
+    {
+      "cluster_a": "games",
+      "cluster_b": "kid",
+      "score": 125,
+      "cross_cluster_edge_count": 56,
+      "reasons": [
+        "cross_tag_cluster_edges:56",
+        "cluster_a_pages:6",
+        "cluster_b_pages:5",
+        "existing_bridge_pages:0"
+      ],
+      "suggested_page_topic": "games + kid (via bitcoin)"
+    },
+    {
+      "cluster_a": "nbg",
+      "cluster_b": "nfts",
+      "score": 122,
+      "cross_cluster_edge_count": 54,
+      "reasons": [
+        "cross_tag_cluster_edges:54",
+        "cluster_a_pages:5",
+        "cluster_b_pages:9",
+        "existing_bridge_pages:0"
+      ],
+      "suggested_page_topic": "nbg + nfts (via free)"
+    },
+    {
+      "cluster_a": "bitcoin",
+      "cluster_b": "nbg",
+      "score": 118,
+      "cross_cluster_edge_count": 52,
+      "reasons": [
+        "cross_tag_cluster_edges:52",
+        "cluster_a_pages:8",
+        "cluster_b_pages:5",
+        "existing_bridge_pages:0"
+      ],
+      "suggested_page_topic": "bitcoin + nbg (via kid)"
+    },
+    {
+      "cluster_a": "bitcoin",
+      "cluster_b": "fork",
+      "score": 118,
+      "cross_cluster_edge_count": 52,
+      "reasons": [
+        "cross_tag_cluster_edges:52",
+        "cluster_a_pages:8",
+        "cluster_b_pages:5",
+        "existing_bridge_pages:0"
+      ],
+      "suggested_page_topic": "bitcoin + fork (via hard)"
+    },
+    {
+      "cluster_a": "games",
+      "cluster_b": "tokens",
+      "score": 118,
+      "cross_cluster_edge_count": 52,
+      "reasons": [
+        "cross_tag_cluster_edges:52",
+        "cluster_a_pages:6",
+        "cluster_b_pages:6",
+        "existing_bridge_pages:0"
+      ],
+      "suggested_page_topic": "games + tokens (via fork)"
+    },
+    {
+      "cluster_a": "kid",
+      "cluster_b": "tokens",
+      "score": 117,
+      "cross_cluster_edge_count": 52,
+      "reasons": [
+        "cross_tag_cluster_edges:52",
+        "cluster_a_pages:5",
+        "cluster_b_pages:6",
+        "existing_bridge_pages:0"
+      ],
+      "suggested_page_topic": "kid + tokens (via bitcoin)"
+    },
+    {
+      "cluster_a": "token",
+      "cluster_b": "tokens",
+      "score": 114,
+      "cross_cluster_edge_count": 50,
+      "reasons": [
+        "cross_tag_cluster_edges:50",
+        "cluster_a_pages:6",
+        "cluster_b_pages:6",
+        "existing_bridge_pages:0"
+      ],
+      "suggested_page_topic": "token + tokens (via gk)"
+    },
+    {
+      "cluster_a": "fork",
+      "cluster_b": "gk",
+      "score": 113,
+      "cross_cluster_edge_count": 50,
+      "reasons": [
+        "cross_tag_cluster_edges:50",
+        "cluster_a_pages:5",
+        "cluster_b_pages:5",
+        "existing_bridge_pages:0"
+      ],
+      "suggested_page_topic": "fork + gk (via hard)"
+    },
+    {
+      "cluster_a": "fork",
+      "cluster_b": "token",
+      "score": 113,
+      "cross_cluster_edge_count": 50,
+      "reasons": [
+        "cross_tag_cluster_edges:50",
+        "cluster_a_pages:5",
+        "cluster_b_pages:6",
+        "existing_bridge_pages:0"
+      ],
+      "suggested_page_topic": "fork + token (via hard)"
+    },
+    {
+      "cluster_a": "gk",
+      "cluster_b": "kid",
+      "score": 113,
+      "cross_cluster_edge_count": 50,
+      "reasons": [
+        "cross_tag_cluster_edges:50",
+        "cluster_a_pages:5",
+        "cluster_b_pages:5",
+        "existing_bridge_pages:0"
+      ],
+      "suggested_page_topic": "gk + kid (via bitcoin)"
+    },
+    {
+      "cluster_a": "gk",
+      "cluster_b": "token",
+      "score": 113,
+      "cross_cluster_edge_count": 50,
+      "reasons": [
+        "cross_tag_cluster_edges:50",
+        "cluster_a_pages:5",
+        "cluster_b_pages:6",
+        "existing_bridge_pages:0"
+      ],
+      "suggested_page_topic": "gk + token (via tokens)"
+    },
+    {
+      "cluster_a": "kid",
+      "cluster_b": "token",
+      "score": 113,
+      "cross_cluster_edge_count": 50,
+      "reasons": [
+        "cross_tag_cluster_edges:50",
+        "cluster_a_pages:5",
+        "cluster_b_pages:6",
+        "existing_bridge_pages:0"
+      ],
+      "suggested_page_topic": "kid + token (via bitcoin)"
+    },
+    {
+      "cluster_a": "bitcoin",
+      "cluster_b": "blockchain",
+      "score": 110,
+      "cross_cluster_edge_count": 48,
+      "reasons": [
+        "cross_tag_cluster_edges:48",
+        "cluster_a_pages:8",
+        "cluster_b_pages:5",
+        "existing_bridge_pages:0"
+      ],
+      "suggested_page_topic": "bitcoin + blockchain (via kid)"
+    },
+    {
+      "cluster_a": "bitcoin",
+      "cluster_b": "kid",
+      "score": 110,
+      "cross_cluster_edge_count": 48,
+      "reasons": [
+        "cross_tag_cluster_edges:48",
+        "cluster_a_pages:8",
+        "cluster_b_pages:5",
+        "existing_bridge_pages:0"
+      ],
+      "suggested_page_topic": "bitcoin + kid (via alfie)"
+    },
+    {
+      "cluster_a": "free",
+      "cluster_b": "games",
+      "score": 109,
+      "cross_cluster_edge_count": 48,
+      "reasons": [
+        "cross_tag_cluster_edges:48",
+        "cluster_a_pages:5",
+        "cluster_b_pages:6",
+        "existing_bridge_pages:0"
+      ],
+      "suggested_page_topic": "free + games (via nfts)"
+    },
+    {
+      "cluster_a": "games",
+      "cluster_b": "hodl",
+      "score": 106,
+      "cross_cluster_edge_count": 46,
+      "reasons": [
+        "cross_tag_cluster_edges:46",
+        "cluster_a_pages:6",
+        "cluster_b_pages:6",
+        "existing_bridge_pages:0"
+      ],
+      "suggested_page_topic": "games + hodl (via fork)"
+    },
+    {
+      "cluster_a": "hodl",
+      "cluster_b": "tokens",
+      "score": 106,
+      "cross_cluster_edge_count": 46,
+      "reasons": [
+        "cross_tag_cluster_edges:46",
+        "cluster_a_pages:6",
+        "cluster_b_pages:6",
+        "existing_bridge_pages:0"
+      ],
+      "suggested_page_topic": "hodl + tokens (via warriors)"
+    },
+    {
+      "cluster_a": "fork",
+      "cluster_b": "kid",
+      "score": 105,
+      "cross_cluster_edge_count": 46,
+      "reasons": [
+        "cross_tag_cluster_edges:46",
+        "cluster_a_pages:5",
+        "cluster_b_pages:5",
+        "existing_bridge_pages:0"
+      ],
+      "suggested_page_topic": "fork + kid (via bitcoin)"
+    },
+    {
+      "cluster_a": "free",
+      "cluster_b": "tokens",
+      "score": 105,
+      "cross_cluster_edge_count": 46,
+      "reasons": [
+        "cross_tag_cluster_edges:46",
+        "cluster_a_pages:5",
+        "cluster_b_pages:6",
+        "existing_bridge_pages:0"
+      ],
+      "suggested_page_topic": "free + tokens (via nfts)"
+    },
+    {
+      "cluster_a": "blockchain",
+      "cluster_b": "nfts",
+      "score": 102,
+      "cross_cluster_edge_count": 44,
+      "reasons": [
+        "cross_tag_cluster_edges:44",
+        "cluster_a_pages:5",
+        "cluster_b_pages:9",
+        "existing_bridge_pages:0"
+      ],
+      "suggested_page_topic": "blockchain + nfts (via free)"
+    },
+    {
+      "cluster_a": "hodl",
+      "cluster_b": "token",
+      "score": 102,
+      "cross_cluster_edge_count": 44,
+      "reasons": [
+        "cross_tag_cluster_edges:44",
+        "cluster_a_pages:6",
+        "cluster_b_pages:6",
+        "existing_bridge_pages:0"
+      ],
+      "suggested_page_topic": "hodl + token (via warriors)"
+    },
+    {
+      "cluster_a": "blockchain",
+      "cluster_b": "games",
+      "score": 101,
+      "cross_cluster_edge_count": 44,
+      "reasons": [
+        "cross_tag_cluster_edges:44",
+        "cluster_a_pages:5",
+        "cluster_b_pages:6",
+        "existing_bridge_pages:0"
+      ],
+      "suggested_page_topic": "blockchain + games (via fork)"
+    },
+    {
+      "cluster_a": "games",
+      "cluster_b": "nbg",
+      "score": 101,
+      "cross_cluster_edge_count": 44,
+      "reasons": [
+        "cross_tag_cluster_edges:44",
+        "cluster_a_pages:6",
+        "cluster_b_pages:5",
+        "existing_bridge_pages:0"
+      ],
+      "suggested_page_topic": "games + nbg (via fork)"
+    },
+    {
+      "cluster_a": "fork",
+      "cluster_b": "tokens",
+      "score": 97,
+      "cross_cluster_edge_count": 42,
+      "reasons": [
+        "cross_tag_cluster_edges:42",
+        "cluster_a_pages:5",
+        "cluster_b_pages:6",
+        "existing_bridge_pages:0"
+      ],
+      "suggested_page_topic": "fork + tokens (via hard)"
+    },
+    {
+      "cluster_a": "free",
+      "cluster_b": "token",
+      "score": 97,
+      "cross_cluster_edge_count": 42,
+      "reasons": [
+        "cross_tag_cluster_edges:42",
+        "cluster_a_pages:5",
+        "cluster_b_pages:6",
+        "existing_bridge_pages:0"
+      ],
+      "suggested_page_topic": "free + token (via nfts)"
+    },
+    {
+      "cluster_a": "hodl",
+      "cluster_b": "kid",
+      "score": 97,
+      "cross_cluster_edge_count": 42,
+      "reasons": [
+        "cross_tag_cluster_edges:42",
+        "cluster_a_pages:6",
+        "cluster_b_pages:5",
+        "existing_bridge_pages:0"
+      ],
+      "suggested_page_topic": "hodl + kid (via bitcoin)"
+    },
+    {
+      "cluster_a": "kid",
+      "cluster_b": "kids",
+      "score": 97,
+      "cross_cluster_edge_count": 42,
+      "reasons": [
+        "cross_tag_cluster_edges:42",
+        "cluster_a_pages:5",
+        "cluster_b_pages:5",
+        "existing_bridge_pages:0"
+      ],
+      "suggested_page_topic": "kid + kids (via bitcoin)"
+    },
+    {
+      "cluster_a": "nbg",
+      "cluster_b": "token",
+      "score": 96,
+      "cross_cluster_edge_count": 44,
+      "reasons": [
+        "cross_tag_cluster_edges:44",
+        "cluster_a_pages:5",
+        "cluster_b_pages:6",
+        "existing_bridge_pages:1"
+      ],
+      "suggested_page_topic": "nbg + token (via ball)"
+    },
+    {
+      "cluster_a": "bitcoin",
+      "cluster_b": "free",
+      "score": 94,
+      "cross_cluster_edge_count": 40,
+      "reasons": [
+        "cross_tag_cluster_edges:40",
+        "cluster_a_pages:8",
+        "cluster_b_pages:5",
+        "existing_bridge_pages:0"
+      ],
+      "suggested_page_topic": "bitcoin + free (via nfts)"
+    },
+    {
+      "cluster_a": "free",
+      "cluster_b": "nfts",
+      "score": 94,
+      "cross_cluster_edge_count": 40,
+      "reasons": [
+        "cross_tag_cluster_edges:40",
+        "cluster_a_pages:5",
+        "cluster_b_pages:9",
+        "existing_bridge_pages:0"
+      ],
+      "suggested_page_topic": "free + nfts (via 1m)"
+    },
+    {
+      "cluster_a": "blockchain",
+      "cluster_b": "gk",
+      "score": 93,
+      "cross_cluster_edge_count": 40,
+      "reasons": [
+        "cross_tag_cluster_edges:40",
+        "cluster_a_pages:5",
+        "cluster_b_pages:5",
+        "existing_bridge_pages:0"
+      ],
+      "suggested_page_topic": "blockchain + gk (via tokens)"
+    },
+    {
+      "cluster_a": "fork",
+      "cluster_b": "free",
+      "score": 93,
+      "cross_cluster_edge_count": 40,
+      "reasons": [
+        "cross_tag_cluster_edges:40",
+        "cluster_a_pages:5",
+        "cluster_b_pages:5",
+        "existing_bridge_pages:0"
+      ],
+      "suggested_page_topic": "fork + free (via hard)"
+    },
+    {
+      "cluster_a": "fork",
+      "cluster_b": "nbg",
+      "score": 93,
+      "cross_cluster_edge_count": 40,
+      "reasons": [
+        "cross_tag_cluster_edges:40",
+        "cluster_a_pages:5",
+        "cluster_b_pages:5",
+        "existing_bridge_pages:0"
+      ],
+      "suggested_page_topic": "fork + nbg (via games)"
+    },
+    {
+      "cluster_a": "free",
+      "cluster_b": "gk",
+      "score": 93,
+      "cross_cluster_edge_count": 40,
+      "reasons": [
+        "cross_tag_cluster_edges:40",
+        "cluster_a_pages:5",
+        "cluster_b_pages:5",
+        "existing_bridge_pages:0"
+      ],
+      "suggested_page_topic": "free + gk (via nfts)"
+    },
+    {
+      "cluster_a": "gk",
+      "cluster_b": "hodl",
+      "score": 93,
+      "cross_cluster_edge_count": 40,
+      "reasons": [
+        "cross_tag_cluster_edges:40",
+        "cluster_a_pages:5",
+        "cluster_b_pages:6",
+        "existing_bridge_pages:0"
+      ],
+      "suggested_page_topic": "gk + hodl (via tokens)"
+    },
+    {
+      "cluster_a": "gk",
+      "cluster_b": "nbg",
+      "score": 93,
+      "cross_cluster_edge_count": 40,
+      "reasons": [
+        "cross_tag_cluster_edges:40",
+        "cluster_a_pages:5",
+        "cluster_b_pages:5",
+        "existing_bridge_pages:0"
+      ],
+      "suggested_page_topic": "gk + nbg (via tokens)"
+    },
+    {
+      "cluster_a": "kid",
+      "cluster_b": "nbg",
+      "score": 93,
+      "cross_cluster_edge_count": 40,
+      "reasons": [
+        "cross_tag_cluster_edges:40",
+        "cluster_a_pages:5",
+        "cluster_b_pages:5",
+        "existing_bridge_pages:0"
+      ],
+      "suggested_page_topic": "kid + nbg (via bitcoin)"
+    },
+    {
+      "cluster_a": "nbg",
+      "cluster_b": "tokens",
+      "score": 93,
+      "cross_cluster_edge_count": 40,
+      "reasons": [
+        "cross_tag_cluster_edges:40",
+        "cluster_a_pages:5",
+        "cluster_b_pages:6",
+        "existing_bridge_pages:0"
+      ],
+      "suggested_page_topic": "nbg + tokens (via gk)"
+    },
+    {
+      "cluster_a": "fork",
+      "cluster_b": "games",
+      "score": 92,
+      "cross_cluster_edge_count": 42,
+      "reasons": [
+        "cross_tag_cluster_edges:42",
+        "cluster_a_pages:5",
+        "cluster_b_pages:6",
+        "existing_bridge_pages:1"
+      ],
+      "suggested_page_topic": "fork + games (via hard)"
+    },
+    {
+      "cluster_a": "blockchain",
+      "cluster_b": "kid",
+      "score": 89,
+      "cross_cluster_edge_count": 38,
+      "reasons": [
+        "cross_tag_cluster_edges:38",
+        "cluster_a_pages:5",
+        "cluster_b_pages:5",
+        "existing_bridge_pages:0"
+      ],
+      "suggested_page_topic": "blockchain + kid (via bitcoin)"
+    },
+    {
+      "cluster_a": "blockchain",
+      "cluster_b": "tokens",
+      "score": 89,
+      "cross_cluster_edge_count": 38,
+      "reasons": [
+        "cross_tag_cluster_edges:38",
+        "cluster_a_pages:5",
+        "cluster_b_pages:6",
+        "existing_bridge_pages:0"
+      ],
+      "suggested_page_topic": "blockchain + tokens (via gk)"
+    },
+    {
+      "cluster_a": "blockchain",
+      "cluster_b": "token",
+      "score": 89,
+      "cross_cluster_edge_count": 38,
+      "reasons": [
+        "cross_tag_cluster_edges:38",
+        "cluster_a_pages:5",
+        "cluster_b_pages:6",
+        "existing_bridge_pages:0"
+      ],
+      "suggested_page_topic": "blockchain + token (via graffpunks)"
+    },
+    {
+      "cluster_a": "fork",
+      "cluster_b": "hodl",
+      "score": 89,
+      "cross_cluster_edge_count": 38,
+      "reasons": [
+        "cross_tag_cluster_edges:38",
+        "cluster_a_pages:5",
+        "cluster_b_pages:6",
+        "existing_bridge_pages:0"
+      ],
+      "suggested_page_topic": "fork + hodl (via hard)"
+    },
+    {
+      "cluster_a": "gk",
+      "cluster_b": "tokens",
+      "score": 89,
+      "cross_cluster_edge_count": 38,
+      "reasons": [
+        "cross_tag_cluster_edges:38",
+        "cluster_a_pages:5",
+        "cluster_b_pages:6",
+        "existing_bridge_pages:0"
+      ],
+      "suggested_page_topic": "gk + tokens (via fungible)"
+    },
+    {
+      "cluster_a": "blockchain",
+      "cluster_b": "fork",
+      "score": 85,
+      "cross_cluster_edge_count": 36,
+      "reasons": [
+        "cross_tag_cluster_edges:36",
+        "cluster_a_pages:5",
+        "cluster_b_pages:5",
+        "existing_bridge_pages:0"
+      ],
+      "suggested_page_topic": "blockchain + fork (via hard)"
+    },
+    {
+      "cluster_a": "free",
+      "cluster_b": "kid",
+      "score": 85,
+      "cross_cluster_edge_count": 36,
+      "reasons": [
+        "cross_tag_cluster_edges:36",
+        "cluster_a_pages:5",
+        "cluster_b_pages:5",
+        "existing_bridge_pages:0"
+      ],
+      "suggested_page_topic": "free + kid (via nfts)"
+    },
+    {
+      "cluster_a": "hodl",
+      "cluster_b": "nbg",
+      "score": 85,
+      "cross_cluster_edge_count": 36,
+      "reasons": [
+        "cross_tag_cluster_edges:36",
+        "cluster_a_pages:6",
+        "cluster_b_pages:5",
+        "existing_bridge_pages:0"
+      ],
+      "suggested_page_topic": "hodl + nbg (via warriors)"
+    },
+    {
+      "cluster_a": "free",
+      "cluster_b": "nbg",
+      "score": 81,
+      "cross_cluster_edge_count": 34,
+      "reasons": [
+        "cross_tag_cluster_edges:34",
+        "cluster_a_pages:5",
+        "cluster_b_pages:5",
+        "existing_bridge_pages:0"
+      ],
+      "suggested_page_topic": "free + nbg (via nfts)"
+    },
+    {
+      "cluster_a": "hodl",
+      "cluster_b": "kids",
+      "score": 81,
+      "cross_cluster_edge_count": 34,
+      "reasons": [
+        "cross_tag_cluster_edges:34",
+        "cluster_a_pages:6",
+        "cluster_b_pages:5",
+        "existing_bridge_pages:0"
+      ],
+      "suggested_page_topic": "hodl + kids (via warriors)"
+    },
+    {
+      "cluster_a": "kids",
+      "cluster_b": "tokens",
+      "score": 81,
+      "cross_cluster_edge_count": 34,
+      "reasons": [
+        "cross_tag_cluster_edges:34",
+        "cluster_a_pages:5",
+        "cluster_b_pages:6",
+        "existing_bridge_pages:0"
+      ],
+      "suggested_page_topic": "kids + tokens (via gk)"
+    },
+    {
+      "cluster_a": "free",
+      "cluster_b": "hodl",
+      "score": 77,
+      "cross_cluster_edge_count": 32,
+      "reasons": [
+        "cross_tag_cluster_edges:32",
+        "cluster_a_pages:5",
+        "cluster_b_pages:6",
+        "existing_bridge_pages:0"
+      ],
+      "suggested_page_topic": "free + hodl (via nfts)"
+    },
+    {
+      "cluster_a": "blockchain",
+      "cluster_b": "nbg",
+      "score": 73,
+      "cross_cluster_edge_count": 30,
+      "reasons": [
+        "cross_tag_cluster_edges:30",
+        "cluster_a_pages:5",
+        "cluster_b_pages:5",
+        "existing_bridge_pages:0"
+      ],
+      "suggested_page_topic": "blockchain + nbg (via ball)"
+    },
+    {
+      "cluster_a": "blockchain",
+      "cluster_b": "hodl",
+      "score": 69,
+      "cross_cluster_edge_count": 28,
+      "reasons": [
+        "cross_tag_cluster_edges:28",
+        "cluster_a_pages:5",
+        "cluster_b_pages:6",
+        "existing_bridge_pages:0"
+      ],
+      "suggested_page_topic": "blockchain + hodl (via graffpunks)"
+    },
+    {
+      "cluster_a": "kids",
+      "cluster_b": "nbg",
+      "score": 69,
+      "cross_cluster_edge_count": 28,
+      "reasons": [
+        "cross_tag_cluster_edges:28",
+        "cluster_a_pages:5",
+        "cluster_b_pages:5",
+        "existing_bridge_pages:0"
+      ],
+      "suggested_page_topic": "kids + nbg (via xrp)"
+    },
+    {
+      "cluster_a": "blockchain",
+      "cluster_b": "free",
+      "score": 65,
+      "cross_cluster_edge_count": 26,
+      "reasons": [
+        "cross_tag_cluster_edges:26",
+        "cluster_a_pages:5",
+        "cluster_b_pages:5",
+        "existing_bridge_pages:0"
+      ],
+      "suggested_page_topic": "blockchain + free (via nfts)"
+    },
+    {
+      "cluster_a": "kids",
+      "cluster_b": "token",
+      "score": 65,
+      "cross_cluster_edge_count": 26,
+      "reasons": [
+        "cross_tag_cluster_edges:26",
+        "cluster_a_pages:5",
+        "cluster_b_pages:6",
+        "existing_bridge_pages:0"
+      ],
+      "suggested_page_topic": "kids + token (via xrp)"
+    },
+    {
+      "cluster_a": "free",
+      "cluster_b": "kids",
+      "score": 61,
+      "cross_cluster_edge_count": 24,
+      "reasons": [
+        "cross_tag_cluster_edges:24",
+        "cluster_a_pages:5",
+        "cluster_b_pages:5",
+        "existing_bridge_pages:0"
+      ],
+      "suggested_page_topic": "free + kids (via nfts)"
+    },
+    {
+      "cluster_a": "games",
+      "cluster_b": "kids",
+      "score": 61,
+      "cross_cluster_edge_count": 24,
+      "reasons": [
+        "cross_tag_cluster_edges:24",
+        "cluster_a_pages:6",
+        "cluster_b_pages:5",
+        "existing_bridge_pages:0"
+      ],
+      "suggested_page_topic": "games + kids (via fork)"
+    },
+    {
+      "cluster_a": "fork",
+      "cluster_b": "kids",
+      "score": 53,
+      "cross_cluster_edge_count": 20,
+      "reasons": [
+        "cross_tag_cluster_edges:20",
+        "cluster_a_pages:5",
+        "cluster_b_pages:5",
+        "existing_bridge_pages:0"
+      ],
+      "suggested_page_topic": "fork + kids (via hard)"
+    },
+    {
+      "cluster_a": "gk",
+      "cluster_b": "kids",
+      "score": 53,
+      "cross_cluster_edge_count": 20,
+      "reasons": [
+        "cross_tag_cluster_edges:20",
+        "cluster_a_pages:5",
+        "cluster_b_pages:5",
+        "existing_bridge_pages:0"
+      ],
+      "suggested_page_topic": "gk + kids (via tokens)"
+    },
+    {
+      "cluster_a": "blockchain",
+      "cluster_b": "kids",
+      "score": 45,
+      "cross_cluster_edge_count": 16,
+      "reasons": [
+        "cross_tag_cluster_edges:16",
+        "cluster_a_pages:5",
+        "cluster_b_pages:5",
+        "existing_bridge_pages:0"
+      ],
+      "suggested_page_topic": "blockchain + kids (via graffpunks)"
+    }
+  ],
+  "topic_expansion_opportunities": [
+    {
+      "suggested_topic": "nfts",
+      "score": 185,
+      "tag_page_count": 9,
+      "dedicated_strong_pages": 0,
+      "source_signals": [
+        "avg_rank_score:160",
+        "dedicated_strong_pages:0",
+        "entity_graph_co_citations:72",
+        "tag_page_count:9",
+        "total_injection_hits:4"
+      ],
+      "candidate_related_pages": [
+        "/wiki/nfts.html",
+        "/wiki/1m-free-nfts-programme.html",
+        "/wiki/1m-free-nfts-drop.html",
+        "/wiki/1m-free-nfts-program.html",
+        "/wiki/xrp-kids-genesis-nfts.html"
+      ]
+    },
+    {
+      "suggested_topic": "tokens",
+      "score": 142,
+      "tag_page_count": 6,
+      "dedicated_strong_pages": 0,
+      "source_signals": [
+        "avg_rank_score:143",
+        "dedicated_strong_pages:0",
+        "entity_graph_co_citations:57",
+        "tag_page_count:6",
+        "total_injection_hits:2"
+      ],
+      "candidate_related_pages": [
+        "/wiki/nfts.html",
+        "/wiki/gk-tokens.html",
+        "/wiki/stake-for-gk-tokens.html",
+        "/wiki/staking-for-gk-tokens.html",
+        "/wiki/nfts-non-fungible-tokens.html"
+      ]
+    },
+    {
+      "suggested_topic": "games",
+      "score": 104,
+      "tag_page_count": 6,
+      "dedicated_strong_pages": 1,
+      "source_signals": [
+        "avg_rank_score:175",
+        "dedicated_strong_pages:1",
+        "entity_graph_co_citations:31",
+        "tag_page_count:6",
+        "total_injection_hits:28"
+      ],
+      "candidate_related_pages": [
+        "/wiki/hard-fork-games.html",
+        "/wiki/no-ball-games-nbg.html",
+        "/wiki/no-ball-games-nbg-collection.html",
+        "/wiki/hard-fork-games-event.html",
+        "/wiki/games4punks-telegram-games.html"
+      ]
+    },
+    {
+      "suggested_topic": "fork",
+      "score": 82,
+      "tag_page_count": 5,
+      "dedicated_strong_pages": 1,
+      "source_signals": [
+        "avg_rank_score:216",
+        "dedicated_strong_pages:1",
+        "entity_graph_co_citations:20",
+        "tag_page_count:5",
+        "total_injection_hits:35"
+      ],
+      "candidate_related_pages": [
+        "/wiki/hard-fork-games.html",
+        "/wiki/the-hard-fork-rockers.html",
+        "/wiki/triple-fork-event.html",
+        "/wiki/hard-fork-games-event.html",
+        "/wiki/hard-fork-games-game.html"
+      ]
+    },
+    {
+      "suggested_topic": "free",
+      "score": 65,
+      "tag_page_count": 5,
+      "dedicated_strong_pages": 0,
+      "source_signals": [
+        "avg_rank_score:166",
+        "dedicated_strong_pages:0",
+        "entity_graph_co_citations:20",
+        "tag_page_count:5",
+        "total_injection_hits:4"
+      ],
+      "candidate_related_pages": [
+        "/wiki/1m-free-nfts-programme.html",
+        "/wiki/1m-free-nfts-drop.html",
+        "/wiki/1m-free-nfts-program.html",
+        "/wiki/one-million-free-nfts.html",
+        "/wiki/1m-free-nfts.html"
+      ]
+    },
+    {
+      "suggested_topic": "gk",
+      "score": 65,
+      "tag_page_count": 5,
+      "dedicated_strong_pages": 0,
+      "source_signals": [
+        "avg_rank_score:154",
+        "dedicated_strong_pages:0",
+        "entity_graph_co_citations:20",
+        "tag_page_count:5",
+        "total_injection_hits:3"
+      ],
+      "candidate_related_pages": [
+        "/wiki/gk.html",
+        "/wiki/gk-tokens.html",
+        "/wiki/gk-token.html",
+        "/wiki/stake-for-gk-tokens.html",
+        "/wiki/staking-for-gk-tokens.html"
+      ]
+    },
+    {
+      "suggested_topic": "kid",
+      "score": 65,
+      "tag_page_count": 5,
+      "dedicated_strong_pages": 0,
+      "source_signals": [
+        "avg_rank_score:196",
+        "dedicated_strong_pages:0",
+        "entity_graph_co_citations:20",
+        "tag_page_count:5",
+        "total_injection_hits:3"
+      ],
+      "candidate_related_pages": [
+        "/wiki/the-bitcoin-kid-army.html",
+        "/wiki/alfie-the-bitcoin-kid-blaze.html",
+        "/wiki/billy-the-goat-kid.html",
+        "/wiki/bitcoin-kid-army.html",
+        "/wiki/alfie-bitcoin-kid-blaze.html"
+      ]
+    },
+    {
+      "suggested_topic": "blockchain",
+      "score": 63,
+      "tag_page_count": 5,
+      "dedicated_strong_pages": 0,
+      "source_signals": [
+        "avg_rank_score:169",
+        "dedicated_strong_pages:0",
+        "entity_graph_co_citations:20",
+        "tag_page_count:5",
+        "total_injection_hits:0"
+      ],
+      "candidate_related_pages": [
+        "/wiki/blockchain.html",
+        "/wiki/the-blockchain-furies.html",
+        "/wiki/graffpunks-247-blockchain-radio-station.html",
+        "/wiki/graffpunks-24-7-blockchain-radio-station.html",
+        "/wiki/blockchain-technology.html"
+      ]
+    }
+  ],
+  "stale_coverage_gaps": [
+    {
+      "url": "/wiki/metaverse-battles.html",
+      "score": 477,
+      "rank_score": 205,
+      "injection_plan_hits": 29,
+      "strong_related_count": 99,
+      "under_covered_adjacents": [
+        "/wiki/2025-metaverse-launch-party.html",
+        "/wiki/genesis-spray.html",
+        "/wiki/rave-relics.html",
+        "/wiki/midevilpunks.html",
+        "/wiki/gk.html"
+      ],
+      "reasons": [
+        "over_saturated_injection_target:29",
+        "under_covered_strong_adjacents:93",
+        "reinforcement_concentration_signal"
+      ]
+    },
+    {
+      "url": "/wiki/graffiti-kings.html",
+      "score": 472,
+      "rank_score": 193,
+      "injection_plan_hits": 17,
+      "strong_related_count": 99,
+      "under_covered_adjacents": [
+        "/wiki/graffiti-queens-in-decentraland.html",
+        "/wiki/graffiti-queens-exhibition.html",
+        "/wiki/genesis-spray.html",
+        "/wiki/rave-relics.html",
+        "/wiki/midevilpunks.html"
+      ],
+      "reasons": [
+        "over_saturated_injection_target:17",
+        "under_covered_strong_adjacents:93",
+        "reinforcement_concentration_signal"
+      ]
+    },
+    {
+      "url": "/wiki/crypto-moonboys.html",
+      "score": 232,
+      "rank_score": 274,
+      "injection_plan_hits": 104,
+      "strong_related_count": 38,
+      "under_covered_adjacents": [
+        "/wiki/diamond-hands.html",
+        "/wiki/hodl-warriors.html",
+        "/wiki/hodl-wars-game.html",
+        "/wiki/hex-tagger-prime.html",
+        "/wiki/iris-7.html"
+      ],
+      "reasons": [
+        "over_saturated_injection_target:104",
+        "under_covered_strong_adjacents:38",
+        "reinforcement_concentration_signal"
+      ]
+    },
+    {
+      "url": "/wiki/hard-fork-games.html",
+      "score": 41,
+      "rank_score": 375,
+      "injection_plan_hits": 27,
+      "strong_related_count": 8,
+      "under_covered_adjacents": [
+        "/wiki/hard-fork-games-event.html",
+        "/wiki/hard-fork-games-game.html",
+        "/wiki/the-hard-fork-rockers.html",
+        "/wiki/no-ball-games-nbg.html",
+        "/wiki/no-ball-games-nbg-collection.html"
+      ],
+      "reasons": [
+        "over_saturated_injection_target:27",
+        "under_covered_strong_adjacents:6",
+        "reinforcement_concentration_signal"
+      ]
+    }
+  ]
+}
