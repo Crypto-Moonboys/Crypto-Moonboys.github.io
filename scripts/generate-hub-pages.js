@@ -641,11 +641,13 @@ function memberListHtml(members, wikiIndex) {
   const items = members.map(m => {
     const entry = byUrl[m.url] || {};
     // Titles and descs from wiki-index.json are already HTML-encoded by the
-    // generator. Apply cleanDisplayTitle (strips suffix, replaces underscores)
-    // without further escaping to avoid double-encoding.
+    // generator (e.g. "&amp;" for "&"). cleanDisplayTitle only strips the
+    // "— Crypto Moonboys Wiki" suffix and replaces underscores with spaces —
+    // neither operation introduces unencoded HTML characters — so the result
+    // remains safe to embed directly in HTML without further escaping.
     const rawTitle = entry.title || '';
     const displayTitle = rawTitle
-      ? cleanDisplayTitle(rawTitle)   // still HTML-safe: only strips text suffix
+      ? cleanDisplayTitle(rawTitle)   // preserves existing HTML encoding
       : escapeHtml(urlToTitle(m.url));
     // desc is also already HTML-safe from the generator
     const rawDesc = entry.desc || '';
