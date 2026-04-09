@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-04-09T04:48:06.563Z",
+  "generated_at": "2026-04-09T05:37:22.585Z",
   "summary": {
     "total_drafts": 5,
     "topic_page_drafts": 1,
@@ -53,10 +53,10 @@
       "draft": {
         "title": "GraffPUNKS & NFTs — Crypto Moonboys Wiki",
         "meta_description": "Connecting GraffPUNKS and NFTs in the Crypto Moonboys universe. The GraffPUNKS are the pulsating core of the Crypto Moonboys universe, a faction that embodies the gritty,…",
-        "lead_paragraph": "<strong>GraffPUNKS</strong> and <strong>NFTs</strong> are two interconnected topic clusters in the Crypto Moonboys universe. The GraffPUNKS are the pulsating core of the Crypto Moonboys universe, a faction that embodies the gritty, rebellious spirit of… Key topics include: fungible, graffpunks, nfts, tokens.",
+        "lead_paragraph": "<p>The GraffPUNKS are the pulsating core of the Crypto Moonboys universe, a faction that embodies the gritty, rebellious spirit of street art fused with the disruptive power of blockchain technology. They are not merely a collective but a digital uprising, a force that splashes vibrant defiance across the decentralized canvases of WAX, XRPL, SOL, and Bitcoin Cash. As the vanguard…</p>\n<p>NFTs made artists millionaires, turned JPEGs into $69 million assets, and then crashed 95%. But underneath the hype, NFTs solved something genuinely revolutionary: provable digital ownership on the blockchain. From CryptoPunks to Bored Apes to digital music royalties to in-game items — NFTs are the ownership layer of the internet. The…</p>\n<p>The intersection of <strong>GraffPUNKS</strong> and <strong>NFTs</strong> within the Crypto Moonboys universe is one of the most charged dynamics in Block Topia, where themes of fungible, graffpunks, nfts, tokens converge. Together they represent a layered system of rebellion, identity, and economic power in the digital frontier.</p>",
         "section_blocks": [
           {
-            "heading": "Bridge overview: GraffPUNKS and NFTs",
+            "heading": "Overview",
             "purpose": "Introduce the topic or bridge concept grounded in existing wiki content",
             "source_pages": [
               "/wiki/graffpunks.html",
@@ -67,7 +67,7 @@
             ]
           },
           {
-            "heading": "GraffPUNKS context",
+            "heading": "GraffPUNKS in the Crypto Moonboys Universe",
             "purpose": "Describe the cluster context using signals from related wiki pages",
             "source_pages": [
               "/wiki/graffpunks.html",
@@ -77,14 +77,14 @@
             ]
           },
           {
-            "heading": "NFTs context",
+            "heading": "NFTs in the Crypto Moonboys Universe",
             "purpose": "Describe the cluster context using signals from related wiki pages",
             "source_pages": [
               "/wiki/nfts.html"
             ]
           },
           {
-            "heading": "Key cross-cluster entities",
+            "heading": "Key Forces and Connections",
             "purpose": "List key entity connections linking the two clusters",
             "source_pages": [
               "/wiki/graffpunks.html",
@@ -95,7 +95,7 @@
             ]
           },
           {
-            "heading": "Related topics",
+            "heading": "Explore Further",
             "purpose": "Surface related topic pages for navigation and discovery",
             "source_pages": [
               "/wiki/graffpunks.html",
@@ -167,10 +167,10 @@
       "draft": {
         "title": "Games & GraffPUNKS — Crypto Moonboys Wiki",
         "meta_description": "Connecting Games and GraffPUNKS in the Crypto Moonboys universe. The GraffPUNKS are the pulsating core of the Crypto Moonboys universe, a faction that embodies the gritty,…",
-        "lead_paragraph": "<strong>Games</strong> and <strong>GraffPUNKS</strong> are two interconnected topic clusters in the Crypto Moonboys universe. The GraffPUNKS are the pulsating core of the Crypto Moonboys universe, a faction that embodies the gritty, rebellious spirit of… Key topics include: fork, games, graffpunks, hard.",
+        "lead_paragraph": "<p>Hard Fork Games represent a pivotal competitive mechanic in the Crypto Moonboys universe, a high-stakes system where players and factions battle to earn the coveted title of HODL Warriors, as enshrined in canon rule DB-3. Operating across the sprawling multi-chain ecosystem of WAX, XRPL, SOL, and Bitcoin Cash, these games are digital schisms—metaphorical hard forks in the…</p>\n<p>The GraffPUNKS are the pulsating core of the Crypto Moonboys universe, a faction that embodies the gritty, rebellious spirit of street art fused with the disruptive power of blockchain technology. They are not merely a collective but a digital uprising, a force that splashes vibrant defiance across the decentralized canvases of WAX,…</p>\n<p>The intersection of <strong>Games</strong> and <strong>GraffPUNKS</strong> within the Crypto Moonboys universe is one of the most charged dynamics in Block Topia, where themes of fork, games, graffpunks, hard converge. Together they represent a layered system of rebellion, identity, and economic power in the digital frontier.</p>",
         "section_blocks": [
           {
-            "heading": "Bridge overview: Games and GraffPUNKS",
+            "heading": "Overview",
             "purpose": "Introduce the topic or bridge concept grounded in existing wiki content",
             "source_pages": [
               "/wiki/hard-fork-games.html",
@@ -181,14 +181,14 @@
             ]
           },
           {
-            "heading": "Games context",
+            "heading": "Games in the Crypto Moonboys Universe",
             "purpose": "Describe the cluster context using signals from related wiki pages",
             "source_pages": [
               "/wiki/hard-fork-games.html"
             ]
           },
           {
-            "heading": "GraffPUNKS context",
+            "heading": "GraffPUNKS in the Crypto Moonboys Universe",
             "purpose": "Describe the cluster context using signals from related wiki pages",
             "source_pages": [
               "/wiki/graffpunks.html",
@@ -198,7 +198,7 @@
             ]
           },
           {
-            "heading": "Key cross-cluster entities",
+            "heading": "Key Forces and Connections",
             "purpose": "List key entity connections linking the two clusters",
             "source_pages": [
               "/wiki/hard-fork-games.html",
@@ -209,7 +209,7 @@
             ]
           },
           {
-            "heading": "Related topics",
+            "heading": "Explore Further",
             "purpose": "Surface related topic pages for navigation and discovery",
             "source_pages": [
               "/wiki/graffpunks.html",
@@ -280,10 +280,10 @@
       "draft": {
         "title": "Bitcoin & GraffPUNKS — Crypto Moonboys Wiki",
         "meta_description": "Connecting Bitcoin and GraffPUNKS in the Crypto Moonboys universe. The GraffPUNKS are the pulsating core of the Crypto Moonboys universe, a faction that embodies the gritty,…",
-        "lead_paragraph": "<strong>Bitcoin</strong> and <strong>GraffPUNKS</strong> are two interconnected topic clusters in the Crypto Moonboys universe. The GraffPUNKS are the pulsating core of the Crypto Moonboys universe, a faction that embodies the gritty, rebellious spirit of… Key topics include: bitcoin, btc, graffpunks, kids.",
+        "lead_paragraph": "<p>The Bitcoin Kids stand as a fierce and unyielding rebel faction within the Crypto Moonboys universe, embodying the raw, untamed spirit of decentralization in a world suffocated by digital tyranny. Led by the indomitable Alfie &#39;Bitcoin Kid&#39; Blaze, they are a band of young warriors trapped within the towering, oppressive walls of Block Topia, their every move a defiant scream…</p>\n<p>The GraffPUNKS are the pulsating core of the Crypto Moonboys universe, a faction that embodies the gritty, rebellious spirit of street art fused with the disruptive power of blockchain technology. They are not merely a collective but a digital uprising, a force that splashes vibrant defiance across the decentralized canvases of WAX,…</p>\n<p>The intersection of <strong>Bitcoin</strong> and <strong>GraffPUNKS</strong> within the Crypto Moonboys universe is one of the most charged dynamics in Block Topia, where themes of bitcoin, btc, graffpunks, kids converge. Together they represent a layered system of rebellion, identity, and economic power in the digital frontier.</p>",
         "section_blocks": [
           {
-            "heading": "Bridge overview: Bitcoin and GraffPUNKS",
+            "heading": "Overview",
             "purpose": "Introduce the topic or bridge concept grounded in existing wiki content",
             "source_pages": [
               "/wiki/bitcoin-kids.html",
@@ -294,7 +294,7 @@
             ]
           },
           {
-            "heading": "Bitcoin context",
+            "heading": "Bitcoin in the Crypto Moonboys Universe",
             "purpose": "Describe the cluster context using signals from related wiki pages",
             "source_pages": [
               "/wiki/bitcoin-kids.html",
@@ -302,7 +302,7 @@
             ]
           },
           {
-            "heading": "GraffPUNKS context",
+            "heading": "GraffPUNKS in the Crypto Moonboys Universe",
             "purpose": "Describe the cluster context using signals from related wiki pages",
             "source_pages": [
               "/wiki/graffpunks.html",
@@ -311,7 +311,7 @@
             ]
           },
           {
-            "heading": "Key cross-cluster entities",
+            "heading": "Key Forces and Connections",
             "purpose": "List key entity connections linking the two clusters",
             "source_pages": [
               "/wiki/bitcoin-kids.html",
@@ -322,7 +322,7 @@
             ]
           },
           {
-            "heading": "Related topics",
+            "heading": "Explore Further",
             "purpose": "Surface related topic pages for navigation and discovery",
             "source_pages": [
               "/wiki/graffpunks.html",
@@ -393,10 +393,10 @@
       "draft": {
         "title": "GraffPUNKS & Crypto Tokens — Crypto Moonboys Wiki",
         "meta_description": "Connecting GraffPUNKS and Crypto Tokens in the Crypto Moonboys universe. The GraffPUNKS are the pulsating core of the Crypto Moonboys universe, a faction that embodies the gritty,…",
-        "lead_paragraph": "<strong>GraffPUNKS</strong> and <strong>Crypto Tokens</strong> are two interconnected topic clusters in the Crypto Moonboys universe. The GraffPUNKS are the pulsating core of the Crypto Moonboys universe, a faction that embodies the gritty, rebellious spirit of… Key topics include: graffpunks, nbg, punk, token.",
+        "lead_paragraph": "<p>The GraffPUNKS are the pulsating core of the Crypto Moonboys universe, a faction that embodies the gritty, rebellious spirit of street art fused with the disruptive power of blockchain technology. They are not merely a collective but a digital uprising, a force that splashes vibrant defiance across the decentralized canvases of WAX, XRPL, SOL, and Bitcoin Cash. As the vanguard…</p>\n<p>$PUNK is the pulsating heart of rebellion in the Crypto Moonboys universe, a primary token of the GraffPUNKS and a vital currency that fuels the chaotic underground economy of Block Topia across its multi-chain sprawl. More than mere digital coin, $PUNK embodies the defiant spirit of the punks, powering transactions, staking, and burns…</p>\n<p>The intersection of <strong>GraffPUNKS</strong> and <strong>Crypto Tokens</strong> within the Crypto Moonboys universe is one of the most charged dynamics in Block Topia, where themes of graffpunks, nbg, punk, token converge. Together they represent a layered system of rebellion, identity, and economic power in the digital frontier.</p>",
         "section_blocks": [
           {
-            "heading": "Bridge overview: GraffPUNKS and Crypto Tokens",
+            "heading": "Overview",
             "purpose": "Introduce the topic or bridge concept grounded in existing wiki content",
             "source_pages": [
               "/wiki/graffpunks.html",
@@ -407,7 +407,7 @@
             ]
           },
           {
-            "heading": "GraffPUNKS context",
+            "heading": "GraffPUNKS in the Crypto Moonboys Universe",
             "purpose": "Describe the cluster context using signals from related wiki pages",
             "source_pages": [
               "/wiki/graffpunks.html",
@@ -416,7 +416,7 @@
             ]
           },
           {
-            "heading": "Crypto Tokens context",
+            "heading": "Crypto Tokens in the Crypto Moonboys Universe",
             "purpose": "Describe the cluster context using signals from related wiki pages",
             "source_pages": [
               "/wiki/punk-token.html",
@@ -424,7 +424,7 @@
             ]
           },
           {
-            "heading": "Key cross-cluster entities",
+            "heading": "Key Forces and Connections",
             "purpose": "List key entity connections linking the two clusters",
             "source_pages": [
               "/wiki/graffpunks.html",
@@ -435,7 +435,7 @@
             ]
           },
           {
-            "heading": "Related topics",
+            "heading": "Explore Further",
             "purpose": "Surface related topic pages for navigation and discovery",
             "source_pages": [
               "/wiki/graffpunks.html",
@@ -504,10 +504,10 @@
       "draft": {
         "title": "NFTs (Non-Fungible Tokens) — Crypto Moonboys Wiki",
         "meta_description": "Non-fungible tokens — digital ownership on the blockchain — Crypto Moonboys Wiki",
-        "lead_paragraph": "<strong>NFTs (Non-Fungible Tokens)</strong> is a key topic in the Crypto Moonboys Wiki. Non-fungible tokens — digital ownership on the blockchain — Crypto Moonboys Wiki",
+        "lead_paragraph": "<p>NFTs made artists millionaires, turned JPEGs into $69 million assets, and then crashed 95%. But underneath the hype, NFTs solved something genuinely revolutionary: provable digital ownership on the blockchain. From CryptoPunks to Bored Apes to digital music royalties to in-game items — NFTs are the ownership layer of the internet. The mania may have cooled, but the technology didn&#39;t go anywhere. The concept of unique digital assets on the blockchain predates Ethereum. Colored Coins (2012) on Bitcoin attempted to represent real-world assets.…</p>\n<p>The 1M Free NFTs Programme is a massive initiative in the Crypto Moonboys universe, distributing a million free NFTs to players and collectors, tied to the GraffPUNKS’ mission of digital democratization. Allegiance: GraffPUNKS (Primary Association) The 1M Free NFTs Programme, launched by GraffPUNKS, aims to distribute one million tokenized pieces of rebellious art across Block Topia, a massive…</p>",
         "section_blocks": [
           {
-            "heading": "Topic overview",
+            "heading": "Overview",
             "purpose": "Introduce the topic or bridge concept grounded in existing wiki content",
             "source_pages": [
               "/wiki/nfts.html",
@@ -518,7 +518,7 @@
             ]
           },
           {
-            "heading": "Key pages in this topic",
+            "heading": "Key Pages",
             "purpose": "Index the most important pages within this topic area",
             "source_pages": [
               "/wiki/nfts.html",
@@ -529,7 +529,7 @@
             ]
           },
           {
-            "heading": "Related entities",
+            "heading": "Related Entities",
             "purpose": "Surface related topic pages for navigation and discovery",
             "source_pages": [
               "/wiki/nfts.html",
@@ -540,7 +540,7 @@
             ]
           },
           {
-            "heading": "Cross-topic connections",
+            "heading": "Cross-Topic Connections",
             "purpose": "Connect this topic to other clusters via link-graph edges",
             "source_pages": [
               "/wiki/nfts.html",

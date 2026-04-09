@@ -6,6 +6,8 @@
  * Phase 16: Controlled page builder from expansion plan.
  * Phase 18: Added provenance tracking fields.
  * Phase 19: Improved generated page quality (titles, descriptions, sections, keywords).
+ * Phase 19 (lore expansion): Generates long-form lore pages with prose sections
+ *   grounded in existing wiki page article content.
  *
  * Reads high-confidence create_topic_page and create_bridge_page actions
  * from js/expansion-plan.json and builds structured draft plans in
@@ -128,6 +130,56 @@ for (const entry of wikiIndex) {
     title: entry.title || '',
     desc:  entry.desc  || ''
   });
+}
+
+// ---------------------------------------------------------------------------
+// Phase 19 (lore expansion): Load full article prose from existing wiki pages
+// ---------------------------------------------------------------------------
+
+/**
+ * Extracts clean plain-text prose from the <article> section of an HTML file.
+ * Decodes basic HTML entities so the result is raw text safe to re-escape.
+ * @param {string} absHtmlPath
+ * @returns {string}
+ */
+function extractArticleText(absHtmlPath) {
+  if (!fs.existsSync(absHtmlPath)) return '';
+  try {
+    const html = fs.readFileSync(absHtmlPath, 'utf8');
+    const articleMatch = html.match(/<article[^>]*>([\s\S]*?)<\/article>/i);
+    const source = articleMatch ? articleMatch[1] : '';
+    if (!source) return '';
+    // Collect text from <p> tags (skip headings/lists to get clean prose only)
+    const paragraphs = [];
+    const pPat = /<p[^>]*>([\s\S]*?)<\/p>/gi;
+    let m;
+    while ((m = pPat.exec(source)) !== null) {
+      const text = m[1]
+        .replace(/<[^>]+>/g, '')
+        .replace(/&amp;/g, '&')
+        .replace(/&lt;/g, '<')
+        .replace(/&gt;/g, '>')
+        .replace(/&quot;/g, '"')
+        .replace(/&#39;/g, "'")
+        .replace(/&ldquo;/g, '\u201c')
+        .replace(/&rdquo;/g, '\u201d')
+        .replace(/&mdash;/g, '\u2014')
+        .replace(/&ndash;/g, '\u2013')
+        .replace(/\s+/g, ' ')
+        .trim();
+      if (text.length > 30) paragraphs.push(text);
+    }
+    return paragraphs.join(' ');
+  } catch (_) { return ''; }
+}
+
+/** @type {Map<string, string>} url -> full article prose text */
+const pageFullTextByUrl = new Map();
+for (const entry of wikiIndex) {
+  if (!entry.url || !entry.url.startsWith('/wiki/')) continue;
+  const absPath = path.join(ROOT, entry.url.slice(1));
+  const text = extractArticleText(absPath);
+  if (text) pageFullTextByUrl.set(entry.url, text);
 }
 
 // ---------------------------------------------------------------------------
@@ -298,54 +350,74 @@ function buildMetaDescription(action) {
 }
 
 /**
- * Build a conservative lead paragraph from existing signals only.
+ * Build a rich multi-paragraph lead using full article text from related pages.
+ * Returns HTML (safe to embed directly).
  */
 function buildLeadParagraph(action) {
   const relPages = action.related_pages || [];
-  const keywords = filterKeywords(action.recommended_keywords || []);
   const clusters = action.supporting_clusters || [];
+  const keywords = filterKeywords(action.recommended_keywords || []);
 
   if (action.action_type === 'create_bridge_page') {
-    const a = clusterDisplayName(clusters[0] || 'cluster A');
-    const b = clusterDisplayName(clusters[1] || 'cluster B');
-    const keyStr = keywords.slice(0, 5).join(', ');
-    const pageDescs = relPages
-      .map(url => pageInfoByUrl.get(url))
-      .filter(Boolean)
-      .map(p => p.desc)
-      .filter(d => d && d.length > 15)
-      .slice(0, 2);
+    const ca = clusterDisplayName(clusters[0] || 'cluster A');
+    const cb = clusterDisplayName(clusters[1] || 'cluster B');
 
-    let lead = `<strong>${a}</strong> and <strong>${b}</strong> are two interconnected topic clusters in the Crypto Moonboys universe.`;
-    if (pageDescs.length > 0) {
-      const snippet = truncateAtWordBoundary(pageDescs[0], 130);
-      lead += ` ${snippet}`;
+    // Primary page for each cluster
+    const aPages = relPages.filter(url => url.includes((clusters[0] || '').toLowerCase()));
+    const bPages = relPages.filter(url => url.includes((clusters[1] || '').toLowerCase()));
+
+    const aUrl  = aPages[0] || relPages[0] || '';
+    const bUrl  = bPages[0] || relPages[1] || aUrl;
+
+    const aText = (aUrl && (pageFullTextByUrl.get(aUrl) || (pageInfoByUrl.get(aUrl) || {}).desc)) || '';
+    const bText = (bUrl && bUrl !== aUrl && (pageFullTextByUrl.get(bUrl) || (pageInfoByUrl.get(bUrl) || {}).desc)) || '';
+
+    const paras = [];
+
+    if (aText) {
+      paras.push(`<p>${escapeHtml(truncateAtWordBoundary(aText, 380))}</p>`);
+    } else {
+      paras.push(`<p><strong>${escapeHtml(ca)}</strong> is one of the defining factions of the Crypto Moonboys universe, shaping culture, economy, and conflict across Block Topia.</p>`);
     }
-    if (keyStr) {
-      lead += ` Key topics include: ${keyStr}.`;
+
+    if (bText) {
+      paras.push(`<p>${escapeHtml(truncateAtWordBoundary(bText, 340))}</p>`);
     }
-    return lead;
+
+    // Bridge paragraph linking both clusters
+    const keyStr = keywords.slice(0, 4).join(', ');
+    let bridge = `<p>The intersection of <strong>${escapeHtml(ca)}</strong> and <strong>${escapeHtml(cb)}</strong> within the Crypto Moonboys universe is one of the most charged dynamics in Block Topia`;
+    if (keyStr) bridge += `, where themes of ${escapeHtml(keyStr)} converge`;
+    bridge += `. Together they represent a layered system of rebellion, identity, and economic power in the digital frontier.</p>`;
+    paras.push(bridge);
+
+    return paras.join('\n');
   }
 
   // Topic page
   const topic = action.target_topic || action.target_url_slug;
   const slug   = action.target_url_slug || topic.toLowerCase().replace(/\s+/g, '-');
-  const mainInfo = pageInfoByUrl.get(`/wiki/${slug}.html`);
-  const cleanedTopic = mainInfo ? cleanPageTitle(mainInfo.title) : slugToTitle(topic);
+  const mainUrl = `/wiki/${slug}.html`;
+  const mainText = pageFullTextByUrl.get(mainUrl) || (pageInfoByUrl.get(mainUrl) || {}).desc || '';
 
-  const pageDescs = relPages
-    .map(url => pageInfoByUrl.get(url))
-    .filter(Boolean)
-    .map(p => p.desc)
-    .filter(d => d && d.length > 15)
-    .slice(0, 2);
-
-  let lead = `<strong>${cleanedTopic}</strong> is a key topic in the Crypto Moonboys Wiki.`;
-  if (pageDescs.length > 0) {
-    const snippet = truncateAtWordBoundary(pageDescs[0], 130);
-    lead += ` ${snippet}`;
+  const paras = [];
+  if (mainText) {
+    paras.push(`<p>${escapeHtml(truncateAtWordBoundary(mainText, 550))}</p>`);
+  } else {
+    const mainInfo = pageInfoByUrl.get(mainUrl);
+    const cleanedTopic = mainInfo ? cleanPageTitle(mainInfo.title) : slugToTitle(topic);
+    paras.push(`<p><strong>${escapeHtml(cleanedTopic)}</strong> is a key topic in the Crypto Moonboys Wiki.</p>`);
   }
-  return lead;
+
+  for (const url of relPages.slice(1, 3)) {
+    const text = pageFullTextByUrl.get(url) || (pageInfoByUrl.get(url) || {}).desc || '';
+    if (text.length > 50) {
+      paras.push(`<p>${escapeHtml(truncateAtWordBoundary(text, 400))}</p>`);
+      break;
+    }
+  }
+
+  return paras.join('\n');
 }
 
 /**
@@ -412,7 +484,7 @@ function buildSectionBlocks(action) {
     }
 
     return {
-      heading: cleanSectionHeading(heading, clusters),
+      heading: loreSectionHeading(heading, clusters),
       purpose: sectionPurpose(action, heading),  // use raw heading for purpose matching
       source_pages: srcPages
     };
@@ -443,6 +515,47 @@ function sectionPurpose(action, heading) {
     return 'Connect this topic to other clusters via link-graph edges';
   }
   return 'Support content grounded in existing related pages';
+}
+
+/**
+ * Upgrade generic expansion-plan section headings to lore-appropriate labels.
+ * Uses cluster display names for "X context" headings.
+ * @param {string} heading - raw heading from expansion plan
+ * @param {string[]} clusters - supporting cluster labels
+ * @returns {string}
+ */
+function loreSectionHeading(heading, clusters) {
+  const h = heading.toLowerCase().trim();
+  const ca = clusters[0] ? clusterDisplayName(clusters[0]) : '';
+  const cb = clusters[1] ? clusterDisplayName(clusters[1]) : '';
+
+  // "Bridge overview: X and Y" → "Overview"
+  if (h.startsWith('bridge overview')) {
+    return 'Overview';
+  }
+  // "X context" → "X in the Crypto Moonboys Universe"
+  if (clusters[0] && h === `${clusters[0]} context`) {
+    return `${ca} in the Crypto Moonboys Universe`;
+  }
+  if (clusters[1] && h === `${clusters[1]} context`) {
+    return `${cb} in the Crypto Moonboys Universe`;
+  }
+  // "Key cross-cluster entities" → "Key Forces and Connections"
+  if (h.includes('cross-cluster') || h.includes('key cross')) {
+    return 'Key Forces and Connections';
+  }
+  // "Related topics" → "Explore Further"
+  if (h === 'related topics' || h === 'related') {
+    return 'Explore Further';
+  }
+  // Topic page standard sections
+  if (h.includes('topic overview') || h.includes('overview')) return 'Overview';
+  if (h.includes('key pages')) return 'Key Pages';
+  if (h.includes('related entities')) return 'Related Entities';
+  if (h.includes('cross-topic')) return 'Cross-Topic Connections';
+
+  // Fallback: apply existing cleanSectionHeading logic
+  return cleanSectionHeading(heading, clusters);
 }
 
 /**
@@ -479,6 +592,89 @@ function buildInternalLinkTargets(action) {
   }
 
   return deduped.slice(0, 10);
+}
+
+// ---------------------------------------------------------------------------
+// Phase 19 (lore expansion): Generate rich lore prose for a section block
+// ---------------------------------------------------------------------------
+
+/**
+ * Build lore prose HTML for a section block.
+ * Uses full article text from related wiki pages.
+ * @param {object} block - {heading, purpose, source_pages}
+ * @param {object} d - draft entry (for clusters context)
+ * @returns {string} HTML string (safe to embed directly)
+ */
+function buildSectionProse(block, d) {
+  const heading = block.heading.toLowerCase();
+  const sourceUrls = block.source_pages || [];
+  const clusters = d.supporting_clusters || [];
+
+  // Build rich page objects for each source URL
+  const pages = sourceUrls.map(url => {
+    const info = pageInfoByUrl.get(url) || {};
+    const fullText = pageFullTextByUrl.get(url) || info.desc || '';
+    return {
+      url,
+      title: info.title ? cleanPageTitle(info.title) : url.replace('/wiki/', '').replace('.html', ''),
+      text:  fullText,
+    };
+  }).filter(p => p.text && p.text.length > 20);
+
+  if (pages.length === 0) {
+    return '<p>See related pages in the Crypto Moonboys Wiki for more information on this topic.</p>';
+  }
+
+  const paras = [];
+
+  const isOverview  = heading.includes('overview');
+  const isContext   = heading.includes('context') || heading.includes('in the');
+  const isEntities  = heading.includes('cross-cluster') || heading.includes('key cross') || heading.includes('entities') || heading.includes('forces') || heading.includes('connections');
+  const isRelated   = heading.includes('related') || heading.includes('explore') || heading.includes('further') || heading.includes('adjacent');
+
+  if (isOverview) {
+    // pages[0] and [1] are typically the same as the lead paragraph content.
+    // Use pages starting from index 2 for fresh context not already shown in the lead.
+    const novelPages = pages.length > 2 ? pages.slice(2) : pages;
+    for (const p of novelPages.slice(0, 2)) {
+      if (p.text.length > 40) {
+        paras.push(`<p>${escapeHtml(truncateAtWordBoundary(p.text, 480))}</p>`);
+      }
+    }
+  } else if (isContext) {
+    // Cluster context: 2 paragraphs from this cluster's pages
+    const primary = pages[0];
+    paras.push(`<p>${escapeHtml(truncateAtWordBoundary(primary.text, 520))}</p>`);
+    if (pages.length > 1 && pages[1].text.length > 50) {
+      paras.push(`<p>${escapeHtml(truncateAtWordBoundary(pages[1].text, 380))}</p>`);
+    }
+  } else if (isEntities) {
+    // Entities / Key forces: each page gets a named paragraph with its description
+    for (const p of pages.slice(0, 5)) {
+      if (p.text.length > 30) {
+        const snippet = truncateAtWordBoundary(p.text, 220);
+        paras.push(
+          `<p><a href="${p.url}"><strong>${escapeHtml(p.title)}</strong></a> \u2014 ${escapeHtml(snippet)}</p>`
+        );
+      }
+    }
+  } else if (isRelated) {
+    // Related / explore: linked list with brief descriptions
+    const items = pages.map(p => {
+      const snippet = truncateAtWordBoundary(p.text, 130);
+      return `<li><a href="${p.url}"><strong>${escapeHtml(p.title)}</strong></a>${snippet ? ` \u2014 ${escapeHtml(snippet)}` : ''}</li>`;
+    }).join('\n');
+    paras.push(`<ul class="lore-related-list">\n${items}\n</ul>`);
+  } else {
+    // Default: first two pages as prose paragraphs
+    for (const p of pages.slice(0, 2)) {
+      if (p.text.length > 30) {
+        paras.push(`<p>${escapeHtml(truncateAtWordBoundary(p.text, 480))}</p>`);
+      }
+    }
+  }
+
+  return paras.join('\n');
 }
 
 // ---------------------------------------------------------------------------
@@ -613,33 +809,23 @@ function buildDraftHtml(d) {
   const slug = d.target_url_slug;
   const canonicalUrl = `https://crypto-moonboys.github.io/wiki/${slug}.html`;
 
+  // Rich lore-style section HTML (prose, not source lists)
   const sectionHtml = d.draft.section_blocks.map(block => {
-    const sourcesHtml = block.source_pages.length > 0
-      ? `<ul class="draft-source-list">\n${block.source_pages.map(p => {
-          const info = pageInfoByUrl.get(p);
-          const label = info ? cleanPageTitle(info.title) : p;
-          return `        <li><a href="${p}">${escapeHtml(label)}</a></li>`;
-        }).join('\n')}\n      </ul>`
-      : '';
+    const prose = buildSectionProse(block, d);
+    return `      <h2>${escapeHtml(block.heading)}</h2>
+${prose}`;
+  }).join('\n\n');
 
-    return `
-      <h2>${escapeHtml(block.heading)}</h2>
-      <p class="draft-section-purpose"><em>${escapeHtml(block.purpose)}</em></p>
-      ${sourcesHtml}`;
-  }).join('\n');
-
+  // Contextual internal links with descriptions
   const internalLinksHtml = d.draft.internal_link_targets.length > 0
-    ? `<ul>\n${d.draft.internal_link_targets.map(url => {
-        const info = pageInfoByUrl.get(url);
+    ? `<ul class="lore-related-list">\n${d.draft.internal_link_targets.map(url => {
+        const info  = pageInfoByUrl.get(url);
         const label = info ? cleanPageTitle(info.title) : url;
-        return `      <li><a href="${url}">${escapeHtml(label)}</a></li>`;
+        const text  = pageFullTextByUrl.get(url) || (info && info.desc) || '';
+        const snippet = text ? ` \u2014 ${escapeHtml(truncateAtWordBoundary(text, 120))}` : '';
+        return `      <li><a href="${url}"><strong>${escapeHtml(label)}</strong></a>${snippet}</li>`;
       }).join('\n')}\n    </ul>`
     : '<p>No internal link targets resolved.</p>';
-
-  const filteredKeywords = filterKeywords(d.recommended_keywords || []);
-  const keywordsHtml = filteredKeywords.length > 0
-    ? filteredKeywords.map(k => `<code>${escapeHtml(k)}</code>`).join(' ')
-    : '—';
 
   // Use supporting_clusters for display; fall back to raw (unfiltered) recommended_keywords
   // so the sidebar always shows meaningful cluster labels rather than filtered-out terms.
@@ -732,14 +918,12 @@ function buildDraftHtml(d) {
 
       <article class="wiki-content" data-entity-slug="${escapeHtml(slug)}">
 
-  <p>${d.draft.lead_paragraph}</p>
+${d.draft.lead_paragraph}
+
 ${sectionHtml}
 
-      <h2>Internal Links</h2>
+      <h2>See Also</h2>
       ${internalLinksHtml}
-
-      <h2>Recommended Keywords</h2>
-      <p>${keywordsHtml}</p>
 
       </article>
 
