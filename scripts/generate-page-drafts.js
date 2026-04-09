@@ -149,10 +149,11 @@ function extractArticleText(absHtmlPath) {
     const articleMatch = html.match(/<article[^>]*>([\s\S]*?)<\/article>/i);
     const source = articleMatch ? articleMatch[1] : '';
     if (!source) return '';
-    // Strip script/style blocks first to prevent content leakage through tag stripping
+    // Strip script/style blocks first to prevent content leakage through tag stripping.
+    // \s* in end-tags handles edge cases like </script > with trailing spaces.
     const stripped = source
-      .replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, ' ')
-      .replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi, ' ');
+      .replace(/<script\b[^>]*>[\s\S]*?<\/script\s*>/gi, ' ')
+      .replace(/<style\b[^>]*>[\s\S]*?<\/style\s*>/gi, ' ');
     // Collect text from <p> tags (skip headings/lists to get clean prose only)
     const paragraphs = [];
     const pPat = /<p[^>]*>([\s\S]*?)<\/p>/gi;
@@ -978,8 +979,9 @@ function escapeHtml(str) {
  */
 function embedText(str) {
   return String(str)
-    // Only encode bare & that are NOT already part of a named/numeric entity
-    .replace(/&(?!(?:amp|lt|gt|quot|apos|#\d+|#x[\da-fA-F]+|[a-zA-Z]{2,8});)/g, '&amp;')
+    // Only skip re-encoding for the 5 core XML/HTML entities and numeric character refs.
+    // Any other &name; sequences get their & encoded, which is intentionally conservative.
+    .replace(/&(?!(amp|lt|gt|quot|apos|#\d+|#x[\da-fA-F]+);)/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;');
