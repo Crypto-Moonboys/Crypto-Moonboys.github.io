@@ -388,6 +388,27 @@
     ]
   },
   {
+    "entity_id": "bitcoin_graffpunks",
+    "canonical_title": "Bitcoin &amp; Graffpunks — Crypto Moonboys Wiki",
+    "canonical_url": "/wiki/bitcoin-graffpunks.html",
+    "category": "factions",
+    "aliases": [],
+    "tags": [
+      "bitcoin",
+      "amp",
+      "graffpunks",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "source_urls": [
+      "/wiki/bitcoin-graffpunks.html"
+    ],
+    "alias_candidates": [
+      "bitcoin graffpunks"
+    ]
+  },
+  {
     "entity_id": "bitcoin_kid_army",
     "canonical_title": "Bitcoin Kid Army — Crypto Moonboys Wiki",
     "canonical_url": "/wiki/bitcoin-kid-army.html",
@@ -1100,6 +1121,27 @@
     ]
   },
   {
+    "entity_id": "games_graffpunks",
+    "canonical_title": "Games &amp; Graffpunks — Crypto Moonboys Wiki",
+    "canonical_url": "/wiki/games-graffpunks.html",
+    "category": "factions",
+    "aliases": [],
+    "tags": [
+      "games",
+      "amp",
+      "graffpunks",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "source_urls": [
+      "/wiki/games-graffpunks.html"
+    ],
+    "alias_candidates": [
+      "games graffpunks"
+    ]
+  },
+  {
     "entity_id": "games4punks_telegram",
     "canonical_title": "games4punks_telegram — Crypto Moonboys Wiki",
     "canonical_url": "/wiki/games4punks-telegram.html",
@@ -1682,6 +1724,27 @@
     ],
     "alias_candidates": [
       "graffpunks nfts"
+    ]
+  },
+  {
+    "entity_id": "graffpunks_token",
+    "canonical_title": "Graffpunks &amp; Token — Crypto Moonboys Wiki",
+    "canonical_url": "/wiki/graffpunks-token.html",
+    "category": "factions",
+    "aliases": [],
+    "tags": [
+      "graffpunks",
+      "amp",
+      "token",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "source_urls": [
+      "/wiki/graffpunks-token.html"
+    ],
+    "alias_candidates": [
+      "graffpunks token"
     ]
   },
   {
