@@ -608,11 +608,11 @@
     },
     "canvas_clash": {
       "alias_candidates": [
-        "Canvas Clash — Crypto Moonboys Wiki",
-        "canvas clash"
+        "Canvas Clash — Crypto Moonboys Wiki"
       ],
       "aliases": [
-        "canvas clash crypto moonboys wiki"
+        "canvas clash crypto moonboys wiki",
+        "canvas clash"
       ],
       "canonical_title": "The Canvas Clash — Crypto Moonboys Wiki",
       "canonical_url": "/wiki/canvas-clash.html",
@@ -1516,11 +1516,10 @@
       ]
     },
     "graffitikings": {
-      "alias_candidates": [
-        "graffitikings"
-      ],
+      "alias_candidates": [],
       "aliases": [
-        "graffitikings crypto moonboys wiki"
+        "graffitikings crypto moonboys wiki",
+        "graffitikings"
       ],
       "canonical_title": "Graffiti Kings — Crypto Moonboys Wiki",
       "canonical_url": "/wiki/graffitikings.html",
@@ -1907,10 +1906,10 @@
       ]
     },
     "hard_fork_games_game": {
-      "alias_candidates": [
+      "alias_candidates": [],
+      "aliases": [
         "hard fork games game"
       ],
-      "aliases": [],
       "canonical_title": "Hard Fork Games — Crypto Moonboys Wiki",
       "canonical_url": "/wiki/hard-fork-games-game.html",
       "category": "factions",
@@ -1930,11 +1929,11 @@
     },
     "harrison_rift": {
       "alias_candidates": [
-        "Harrison Rift — Crypto Moonboys Wiki",
-        "harrison rift"
+        "Harrison Rift — Crypto Moonboys Wiki"
       ],
       "aliases": [
-        "harrison rift crypto moonboys wiki"
+        "harrison rift crypto moonboys wiki",
+        "harrison rift"
       ],
       "canonical_title": "The Harrison Rift — Crypto Moonboys Wiki",
       "canonical_url": "/wiki/harrison-rift.html",
@@ -2621,11 +2620,10 @@
       ]
     },
     "midevilpunks": {
-      "alias_candidates": [
-        "midevilpunks"
-      ],
+      "alias_candidates": [],
       "aliases": [
-        "midevilpunks crypto moonboys wiki"
+        "midevilpunks crypto moonboys wiki",
+        "midevilpunks"
       ],
       "canonical_title": "MiDEViL PUNKS — Crypto Moonboys Wiki",
       "canonical_url": "/wiki/midevilpunks.html",
@@ -3206,10 +3204,10 @@
       ]
     },
     "queen_sarah_pfly": {
-      "alias_candidates": [
+      "alias_candidates": [],
+      "aliases": [
         "queen sarah pfly"
       ],
-      "aliases": [],
       "canonical_title": "Queen Sarah P-Fly — Crypto Moonboys Wiki",
       "canonical_url": "/wiki/queen-sarah-pfly.html",
       "category": "characters",
@@ -3313,11 +3311,10 @@
       ]
     },
     "sacred_chain": {
-      "alias_candidates": [
-        "sacred chain"
-      ],
+      "alias_candidates": [],
       "aliases": [
-        "sacred chain crypto moonboys wiki"
+        "sacred chain crypto moonboys wiki",
+        "sacred chain"
       ],
       "canonical_title": "The Sacred Chain — Crypto Moonboys Wiki",
       "canonical_url": "/wiki/sacred-chain.html",
@@ -5024,5 +5021,5 @@
       ]
     }
   },
-  "updated_at": "2026-04-09T21:16:32Z"
+  "updated_at": "2026-04-09T22:15:04Z"
 }

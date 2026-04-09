@@ -454,6 +454,103 @@
     }
   },
   {
+    "title": "Queen Sarah P-Fly — Crypto Moonboys Wiki",
+    "desc": "Queen Sarah P-fly reigns as a cryptic monarch in the Crypto Moonboys and GraffPUNKS universe, a figure of immense power and unfathomable motives whose presence",
+    "url": "/wiki/queen-sarah-pfly.html",
+    "tags": [
+      "queen",
+      "sarah",
+      "pfly",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "characters",
+    "aliases": [
+      {
+        "title": "queen sarah pfly"
+      }
+    ],
+    "rank_score": 700,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 1,
+      "tag_count": 6,
+      "mention_count": 0,
+      "category": "characters",
+      "category_priority": 8,
+      "has_description": true,
+      "article_word_count": 9242,
+      "keyword_bag_size": 26,
+      "heading_count": 7,
+      "list_count": 4,
+      "internal_link_count": 12,
+      "paragraph_count": 110,
+      "section_count": 6,
+      "lore_paragraph_count": 106,
+      "content_quality_score": 107,
+      "authority_score": 26
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 40,
+      "word_count_points": 462,
+      "keyword_bag_points": 26,
+      "content_quality_points": 116,
+      "authority_points": 26,
+      "final_rank_score": 700,
+      "authority_graph_points": 0
+    },
+    "search_index": {
+      "normalized_title": "queen sarah p fly crypto moonboys wiki",
+      "tokens": [
+        "queen",
+        "sarah",
+        "p",
+        "fly",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "queen",
+        "sarah",
+        "p",
+        "fly",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "reigns",
+        "as",
+        "a",
+        "cryptic",
+        "monarch",
+        "in",
+        "the",
+        "and",
+        "graffpunks",
+        "universe",
+        "figure",
+        "of",
+        "immense",
+        "power",
+        "unfathomable",
+        "motives",
+        "whose",
+        "presence",
+        "pfly"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 44,
+      "existing_outbound_count": 0,
+      "suggested_outbound_count": 44,
+      "authority": 0
+    }
+  },
+  {
     "title": "$PUNK Token — Crypto Moonboys Wiki",
     "desc": "$PUNK is the pulsating heart of rebellion in the Crypto Moonboys universe, a primary token of the GraffPUNKS and a vital currency that fuels the chaotic undergr",
     "url": "/wiki/punk-token.html",
@@ -541,99 +638,6 @@
       "outbound_count": 67,
       "existing_outbound_count": 0,
       "suggested_outbound_count": 67,
-      "authority": 0
-    }
-  },
-  {
-    "title": "Queen Sarah P-Fly — Crypto Moonboys Wiki",
-    "desc": "Queen Sarah P-fly reigns as a cryptic monarch in the Crypto Moonboys and GraffPUNKS universe, a figure of immense power and unfathomable motives whose presence",
-    "url": "/wiki/queen-sarah-pfly.html",
-    "tags": [
-      "queen",
-      "sarah",
-      "pfly",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "characters",
-    "aliases": [],
-    "rank_score": 697,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 0,
-      "tag_count": 6,
-      "mention_count": 0,
-      "category": "characters",
-      "category_priority": 8,
-      "has_description": true,
-      "article_word_count": 9242,
-      "keyword_bag_size": 26,
-      "heading_count": 7,
-      "list_count": 4,
-      "internal_link_count": 12,
-      "paragraph_count": 110,
-      "section_count": 6,
-      "lore_paragraph_count": 106,
-      "content_quality_score": 107,
-      "authority_score": 26
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 40,
-      "word_count_points": 462,
-      "keyword_bag_points": 26,
-      "content_quality_points": 113,
-      "authority_points": 26,
-      "final_rank_score": 697,
-      "authority_graph_points": 0
-    },
-    "search_index": {
-      "normalized_title": "queen sarah p fly crypto moonboys wiki",
-      "tokens": [
-        "queen",
-        "sarah",
-        "p",
-        "fly",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "queen",
-        "sarah",
-        "p",
-        "fly",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "reigns",
-        "as",
-        "a",
-        "cryptic",
-        "monarch",
-        "in",
-        "the",
-        "and",
-        "graffpunks",
-        "universe",
-        "figure",
-        "of",
-        "immense",
-        "power",
-        "unfathomable",
-        "motives",
-        "whose",
-        "presence",
-        "pfly"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 0,
-      "outbound_count": 44,
-      "existing_outbound_count": 0,
-      "suggested_outbound_count": 44,
       "authority": 0
     }
   },
@@ -2235,6 +2239,101 @@
     }
   },
   {
+    "title": "MiDEViL PUNKS — Crypto Moonboys Wiki",
+    "desc": "MiDEViL PUNKS emerges as a striking NFT collection within the Crypto Moonboys universe, intricately tied to the play-to-earn game MiDEViL HERO ARENA, where medi",
+    "url": "/wiki/midevilpunks.html",
+    "tags": [
+      "midevilpunks",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "factions",
+    "aliases": [
+      {
+        "title": "midevilpunks crypto moonboys wiki"
+      },
+      {
+        "title": "midevilpunks"
+      }
+    ],
+    "rank_score": 442,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 2,
+      "tag_count": 4,
+      "mention_count": 0,
+      "category": "factions",
+      "category_priority": 7,
+      "has_description": true,
+      "article_word_count": 4105,
+      "keyword_bag_size": 25,
+      "heading_count": 6,
+      "list_count": 3,
+      "internal_link_count": 13,
+      "paragraph_count": 48,
+      "section_count": 5,
+      "lore_paragraph_count": 43,
+      "content_quality_score": 107,
+      "authority_score": 26
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 35,
+      "word_count_points": 205,
+      "keyword_bag_points": 25,
+      "content_quality_points": 117,
+      "authority_points": 30,
+      "final_rank_score": 442,
+      "authority_graph_points": 4
+    },
+    "search_index": {
+      "normalized_title": "midevil punks crypto moonboys wiki",
+      "tokens": [
+        "midevil",
+        "punks",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "midevil",
+        "punks",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "emerges",
+        "as",
+        "a",
+        "striking",
+        "nft",
+        "collection",
+        "within",
+        "the",
+        "universe",
+        "intricately",
+        "tied",
+        "to",
+        "play",
+        "earn",
+        "game",
+        "hero",
+        "arena",
+        "where",
+        "medi",
+        "midevilpunks"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 35,
+      "existing_outbound_count": 7,
+      "suggested_outbound_count": 28,
+      "authority": 3.5
+    }
+  },
+  {
     "title": "GraffPUNKS 247 Radio — Crypto Moonboys Wiki",
     "desc": "GraffPUNKS 24/7 is the unrelenting sonic heartbeat of rebellion in the Crypto Moonboys universe, a blockchain radio station that pumps underground beats and cod",
     "url": "/wiki/graffpunks-247-radio.html",
@@ -2324,98 +2423,6 @@
       "existing_outbound_count": 0,
       "suggested_outbound_count": 50,
       "authority": 0
-    }
-  },
-  {
-    "title": "MiDEViL PUNKS — Crypto Moonboys Wiki",
-    "desc": "MiDEViL PUNKS emerges as a striking NFT collection within the Crypto Moonboys universe, intricately tied to the play-to-earn game MiDEViL HERO ARENA, where medi",
-    "url": "/wiki/midevilpunks.html",
-    "tags": [
-      "midevilpunks",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "factions",
-    "aliases": [
-      {
-        "title": "midevilpunks crypto moonboys wiki"
-      }
-    ],
-    "rank_score": 439,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 1,
-      "tag_count": 4,
-      "mention_count": 0,
-      "category": "factions",
-      "category_priority": 7,
-      "has_description": true,
-      "article_word_count": 4105,
-      "keyword_bag_size": 25,
-      "heading_count": 6,
-      "list_count": 3,
-      "internal_link_count": 13,
-      "paragraph_count": 48,
-      "section_count": 5,
-      "lore_paragraph_count": 43,
-      "content_quality_score": 107,
-      "authority_score": 26
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 35,
-      "word_count_points": 205,
-      "keyword_bag_points": 25,
-      "content_quality_points": 114,
-      "authority_points": 30,
-      "final_rank_score": 439,
-      "authority_graph_points": 4
-    },
-    "search_index": {
-      "normalized_title": "midevil punks crypto moonboys wiki",
-      "tokens": [
-        "midevil",
-        "punks",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "midevil",
-        "punks",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "emerges",
-        "as",
-        "a",
-        "striking",
-        "nft",
-        "collection",
-        "within",
-        "the",
-        "universe",
-        "intricately",
-        "tied",
-        "to",
-        "play",
-        "earn",
-        "game",
-        "hero",
-        "arena",
-        "where",
-        "medi",
-        "midevilpunks"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 0,
-      "outbound_count": 35,
-      "existing_outbound_count": 7,
-      "suggested_outbound_count": 28,
-      "authority": 3.5
     }
   },
   {
@@ -2800,12 +2807,15 @@
     "aliases": [
       {
         "title": "graffitikings crypto moonboys wiki"
+      },
+      {
+        "title": "graffitikings"
       }
     ],
-    "rank_score": 406,
+    "rank_score": 409,
     "rank_signals": {
       "is_canonical": true,
-      "alias_count": 1,
+      "alias_count": 2,
       "tag_count": 4,
       "mention_count": 0,
       "category": "characters",
@@ -2828,9 +2838,9 @@
       "category_points": 40,
       "word_count_points": 166,
       "keyword_bag_points": 26,
-      "content_quality_points": 114,
+      "content_quality_points": 117,
       "authority_points": 30,
-      "final_rank_score": 406,
+      "final_rank_score": 409,
       "authority_graph_points": 4
     },
     "search_index": {
@@ -3081,12 +3091,15 @@
     "aliases": [
       {
         "title": "sacred chain crypto moonboys wiki"
+      },
+      {
+        "title": "sacred chain"
       }
     ],
-    "rank_score": 398,
+    "rank_score": 401,
     "rank_signals": {
       "is_canonical": true,
-      "alias_count": 1,
+      "alias_count": 2,
       "tag_count": 5,
       "mention_count": 0,
       "category": "factions",
@@ -3109,9 +3122,9 @@
       "category_points": 35,
       "word_count_points": 168,
       "keyword_bag_points": 24,
-      "content_quality_points": 115,
+      "content_quality_points": 118,
       "authority_points": 26,
-      "final_rank_score": 398,
+      "final_rank_score": 401,
       "authority_graph_points": 0
     },
     "search_index": {
@@ -10120,7 +10133,7 @@
   },
   {
     "title": "M1nTr K1ll — Crypto Moonboys Wiki",
-    "desc": "M1nTr_K1ll is a shadowy digital assassin in the Crypto Moonboys universe, a master of stealth and lethal precision who strikes from the unseen corners of Block",
+    "desc": "M1nTr K1ll is a shadowy digital assassin in the Crypto Moonboys universe, a master of stealth and lethal precision who strikes from the unseen corners of Block",
     "url": "/wiki/m1ntr-k1ll.html",
     "tags": [
       "m1ntr",
@@ -10144,7 +10157,7 @@
       "category": "characters",
       "category_priority": 8,
       "has_description": true,
-      "article_word_count": 697,
+      "article_word_count": 700,
       "keyword_bag_size": 25,
       "heading_count": 6,
       "list_count": 3,
@@ -11779,6 +11792,104 @@
     }
   },
   {
+    "title": "The Canvas Clash — Crypto Moonboys Wiki",
+    "desc": "The Canvas Clash is a legendary uprising etched into the annals of Block Topia, a digital rebellion led by GKniftyHEADS under the GraffPUNKS banner, where unera",
+    "url": "/wiki/canvas-clash.html",
+    "tags": [
+      "canvas",
+      "clash",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "factions",
+    "aliases": [
+      {
+        "title": "canvas clash crypto moonboys wiki"
+      },
+      {
+        "title": "canvas clash"
+      }
+    ],
+    "rank_score": 237,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 2,
+      "tag_count": 5,
+      "mention_count": 0,
+      "category": "factions",
+      "category_priority": 7,
+      "has_description": true,
+      "article_word_count": 630,
+      "keyword_bag_size": 26,
+      "heading_count": 7,
+      "list_count": 4,
+      "internal_link_count": 13,
+      "paragraph_count": 11,
+      "section_count": 6,
+      "lore_paragraph_count": 7,
+      "content_quality_score": 79,
+      "authority_score": 20
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 35,
+      "word_count_points": 32,
+      "keyword_bag_points": 26,
+      "content_quality_points": 90,
+      "authority_points": 24,
+      "final_rank_score": 237,
+      "authority_graph_points": 4
+    },
+    "search_index": {
+      "normalized_title": "the canvas clash crypto moonboys wiki",
+      "tokens": [
+        "the",
+        "canvas",
+        "clash",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "the",
+        "canvas",
+        "clash",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "is",
+        "a",
+        "legendary",
+        "uprising",
+        "etched",
+        "into",
+        "annals",
+        "of",
+        "block",
+        "topia",
+        "digital",
+        "rebellion",
+        "led",
+        "by",
+        "gkniftyheads",
+        "under",
+        "graffpunks",
+        "banner",
+        "where",
+        "unera"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 36,
+      "existing_outbound_count": 7,
+      "suggested_outbound_count": 29,
+      "authority": 3.5
+    }
+  },
+  {
     "title": "$PUNK — Crypto Moonboys Wiki",
     "desc": "The $PUNK token pulses as the lifeblood of the GraffPUNKS faction within the Crypto Moonboys universe, a digital currency that embodies the raw, unbridled energ",
     "url": "/wiki/punk.html",
@@ -11863,101 +11974,6 @@
       "outbound_count": 39,
       "existing_outbound_count": 7,
       "suggested_outbound_count": 32,
-      "authority": 3.5
-    }
-  },
-  {
-    "title": "The Canvas Clash — Crypto Moonboys Wiki",
-    "desc": "The Canvas Clash is a legendary uprising etched into the annals of Block Topia, a digital rebellion led by GKniftyHEADS under the GraffPUNKS banner, where unera",
-    "url": "/wiki/canvas-clash.html",
-    "tags": [
-      "canvas",
-      "clash",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "factions",
-    "aliases": [
-      {
-        "title": "canvas clash crypto moonboys wiki"
-      }
-    ],
-    "rank_score": 234,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 1,
-      "tag_count": 5,
-      "mention_count": 0,
-      "category": "factions",
-      "category_priority": 7,
-      "has_description": true,
-      "article_word_count": 630,
-      "keyword_bag_size": 26,
-      "heading_count": 7,
-      "list_count": 4,
-      "internal_link_count": 13,
-      "paragraph_count": 11,
-      "section_count": 6,
-      "lore_paragraph_count": 7,
-      "content_quality_score": 79,
-      "authority_score": 20
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 35,
-      "word_count_points": 32,
-      "keyword_bag_points": 26,
-      "content_quality_points": 87,
-      "authority_points": 24,
-      "final_rank_score": 234,
-      "authority_graph_points": 4
-    },
-    "search_index": {
-      "normalized_title": "the canvas clash crypto moonboys wiki",
-      "tokens": [
-        "the",
-        "canvas",
-        "clash",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "the",
-        "canvas",
-        "clash",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "is",
-        "a",
-        "legendary",
-        "uprising",
-        "etched",
-        "into",
-        "annals",
-        "of",
-        "block",
-        "topia",
-        "digital",
-        "rebellion",
-        "led",
-        "by",
-        "gkniftyheads",
-        "under",
-        "graffpunks",
-        "banner",
-        "where",
-        "unera"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 0,
-      "outbound_count": 36,
-      "existing_outbound_count": 7,
-      "suggested_outbound_count": 29,
       "authority": 3.5
     }
   },
@@ -12406,6 +12422,101 @@
     }
   },
   {
+    "title": "The Harrison Rift — Crypto Moonboys Wiki",
+    "desc": "The Harrison Rift marks a seismic fracture in the Crypto Moonboys universe, a fictional hard fork event inspired by storyteller Ian Harrison, where a splinter f",
+    "url": "/wiki/harrison-rift.html",
+    "tags": [
+      "harrison",
+      "rift",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "factions",
+    "aliases": [
+      {
+        "title": "harrison rift crypto moonboys wiki"
+      },
+      {
+        "title": "harrison rift"
+      }
+    ],
+    "rank_score": 230,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 2,
+      "tag_count": 5,
+      "mention_count": 0,
+      "category": "factions",
+      "category_priority": 7,
+      "has_description": true,
+      "article_word_count": 649,
+      "keyword_bag_size": 23,
+      "heading_count": 7,
+      "list_count": 4,
+      "internal_link_count": 12,
+      "paragraph_count": 12,
+      "section_count": 6,
+      "lore_paragraph_count": 8,
+      "content_quality_score": 75,
+      "authority_score": 20
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 35,
+      "word_count_points": 32,
+      "keyword_bag_points": 23,
+      "content_quality_points": 86,
+      "authority_points": 24,
+      "final_rank_score": 230,
+      "authority_graph_points": 4
+    },
+    "search_index": {
+      "normalized_title": "the harrison rift crypto moonboys wiki",
+      "tokens": [
+        "the",
+        "harrison",
+        "rift",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "the",
+        "harrison",
+        "rift",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "marks",
+        "a",
+        "seismic",
+        "fracture",
+        "in",
+        "universe",
+        "fictional",
+        "hard",
+        "fork",
+        "event",
+        "inspired",
+        "by",
+        "storyteller",
+        "ian",
+        "where",
+        "splinter",
+        "f"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 21,
+      "existing_outbound_count": 7,
+      "suggested_outbound_count": 14,
+      "authority": 3.5
+    }
+  },
+  {
     "title": "Battlemech Blast — Crypto Moonboys Wiki",
     "desc": "Battlemech Blast is a specific event within HODL WARS in the Crypto Moonboys universe, a 2D web3 shooter game on the WAX blockchain where players pilot tokenize",
     "url": "/wiki/battlemech-blast.html",
@@ -12592,98 +12703,6 @@
       "existing_outbound_count": 7,
       "suggested_outbound_count": 26,
       "authority": 5.5
-    }
-  },
-  {
-    "title": "The Harrison Rift — Crypto Moonboys Wiki",
-    "desc": "The Harrison Rift marks a seismic fracture in the Crypto Moonboys universe, a fictional hard fork event inspired by storyteller Ian Harrison, where a splinter f",
-    "url": "/wiki/harrison-rift.html",
-    "tags": [
-      "harrison",
-      "rift",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "factions",
-    "aliases": [
-      {
-        "title": "harrison rift crypto moonboys wiki"
-      }
-    ],
-    "rank_score": 227,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 1,
-      "tag_count": 5,
-      "mention_count": 0,
-      "category": "factions",
-      "category_priority": 7,
-      "has_description": true,
-      "article_word_count": 649,
-      "keyword_bag_size": 23,
-      "heading_count": 7,
-      "list_count": 4,
-      "internal_link_count": 12,
-      "paragraph_count": 12,
-      "section_count": 6,
-      "lore_paragraph_count": 8,
-      "content_quality_score": 75,
-      "authority_score": 20
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 35,
-      "word_count_points": 32,
-      "keyword_bag_points": 23,
-      "content_quality_points": 83,
-      "authority_points": 24,
-      "final_rank_score": 227,
-      "authority_graph_points": 4
-    },
-    "search_index": {
-      "normalized_title": "the harrison rift crypto moonboys wiki",
-      "tokens": [
-        "the",
-        "harrison",
-        "rift",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "the",
-        "harrison",
-        "rift",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "marks",
-        "a",
-        "seismic",
-        "fracture",
-        "in",
-        "universe",
-        "fictional",
-        "hard",
-        "fork",
-        "event",
-        "inspired",
-        "by",
-        "storyteller",
-        "ian",
-        "where",
-        "splinter",
-        "f"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 0,
-      "outbound_count": 21,
-      "existing_outbound_count": 7,
-      "suggested_outbound_count": 14,
-      "authority": 3.5
     }
   },
   {
@@ -18427,7 +18446,7 @@
       "category": "characters",
       "category_priority": 8,
       "has_description": true,
-      "article_word_count": 137,
+      "article_word_count": 140,
       "keyword_bag_size": 7,
       "heading_count": 3,
       "list_count": 1,
@@ -18504,7 +18523,7 @@
       "category": "characters",
       "category_priority": 8,
       "has_description": true,
-      "article_word_count": 134,
+      "article_word_count": 135,
       "keyword_bag_size": 5,
       "heading_count": 3,
       "list_count": 1,
@@ -18577,7 +18596,7 @@
       "category": "characters",
       "category_priority": 8,
       "has_description": true,
-      "article_word_count": 134,
+      "article_word_count": 135,
       "keyword_bag_size": 5,
       "heading_count": 3,
       "list_count": 1,
@@ -18725,7 +18744,7 @@
       "category": "characters",
       "category_priority": 8,
       "has_description": true,
-      "article_word_count": 133,
+      "article_word_count": 135,
       "keyword_bag_size": 6,
       "heading_count": 3,
       "list_count": 1,
@@ -18788,17 +18807,21 @@
       "wiki"
     ],
     "category": "factions",
-    "aliases": [],
-    "rank_score": 110,
+    "aliases": [
+      {
+        "title": "hard fork games game"
+      }
+    ],
+    "rank_score": 113,
     "rank_signals": {
       "is_canonical": true,
-      "alias_count": 0,
+      "alias_count": 1,
       "tag_count": 7,
       "mention_count": 0,
       "category": "factions",
       "category_priority": 7,
       "has_description": true,
-      "article_word_count": 135,
+      "article_word_count": 137,
       "keyword_bag_size": 7,
       "heading_count": 3,
       "list_count": 1,
@@ -18815,9 +18838,9 @@
       "category_points": 35,
       "word_count_points": 7,
       "keyword_bag_points": 7,
-      "content_quality_points": 31,
+      "content_quality_points": 34,
       "authority_points": 0,
-      "final_rank_score": 110,
+      "final_rank_score": 113,
       "authority_graph_points": 0
     },
     "search_index": {
@@ -18872,7 +18895,7 @@
       "category": "factions",
       "category_priority": 7,
       "has_description": true,
-      "article_word_count": 137,
+      "article_word_count": 140,
       "keyword_bag_size": 7,
       "heading_count": 3,
       "list_count": 1,
@@ -18949,7 +18972,7 @@
       "category": "factions",
       "category_priority": 7,
       "has_description": true,
-      "article_word_count": 134,
+      "article_word_count": 135,
       "keyword_bag_size": 5,
       "heading_count": 3,
       "list_count": 1,
@@ -19022,7 +19045,7 @@
       "category": "factions",
       "category_priority": 7,
       "has_description": true,
-      "article_word_count": 134,
+      "article_word_count": 135,
       "keyword_bag_size": 5,
       "heading_count": 3,
       "list_count": 1,
@@ -19095,7 +19118,7 @@
       "category": "factions",
       "category_priority": 7,
       "has_description": true,
-      "article_word_count": 134,
+      "article_word_count": 135,
       "keyword_bag_size": 5,
       "heading_count": 3,
       "list_count": 1,
@@ -19168,7 +19191,7 @@
       "category": "factions",
       "category_priority": 7,
       "has_description": true,
-      "article_word_count": 134,
+      "article_word_count": 135,
       "keyword_bag_size": 5,
       "heading_count": 3,
       "list_count": 1,
@@ -19318,7 +19341,7 @@
       "category": "factions",
       "category_priority": 7,
       "has_description": true,
-      "article_word_count": 134,
+      "article_word_count": 135,
       "keyword_bag_size": 5,
       "heading_count": 3,
       "list_count": 1,
@@ -19544,7 +19567,7 @@
       "category": "factions",
       "category_priority": 7,
       "has_description": true,
-      "article_word_count": 133,
+      "article_word_count": 135,
       "keyword_bag_size": 6,
       "heading_count": 3,
       "list_count": 1,
