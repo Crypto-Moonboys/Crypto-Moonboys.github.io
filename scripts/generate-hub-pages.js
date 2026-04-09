@@ -49,15 +49,6 @@ function normaliseTitle(title) {
   return title.toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
 }
 
-function decodeHtmlEntities(str) {
-  return String(str || '')
-    .replace(/&amp;/g, '&')
-    .replace(/&lt;/g, '<')
-    .replace(/&gt;/g, '>')
-    .replace(/&quot;/g, '"')
-    .replace(/&#39;/g, "'");
-}
-
 function escapeHtml(str) {
   return String(str || '')
     .replace(/&/g, '&amp;')
@@ -273,9 +264,9 @@ const CLUSTER_DEFS = [
     slug:    'bitcoin-ecosystem',
     label:   'Bitcoin Ecosystem',
     emoji:   '₿',
-    badge:   '🪙 Tokens',
-    category:'tokens',
-    catLabel:'Tokens',
+    badge:   '₿ Lore',
+    category:'lore',
+    catLabel:'Lore',
     matchTags:    ['bitcoin', 'btc'],
     matchUrlFrag: 'bitcoin',
     coreUrls: [
@@ -649,15 +640,20 @@ function memberListHtml(members, wikiIndex) {
 
   const items = members.map(m => {
     const entry = byUrl[m.url] || {};
-    const displayTitle = entry.title
-      ? cleanDisplayTitle(decodeHtmlEntities(entry.title))
-      : urlToTitle(m.url);
-    const desc = decodeHtmlEntities(entry.desc || '');
-    const shortDesc = desc.length > 110 ? desc.slice(0, 108) + '…' : desc;
+    // Titles and descs from wiki-index.json are already HTML-encoded by the
+    // generator. Apply cleanDisplayTitle (strips suffix, replaces underscores)
+    // without further escaping to avoid double-encoding.
+    const rawTitle = entry.title || '';
+    const displayTitle = rawTitle
+      ? cleanDisplayTitle(rawTitle)   // still HTML-safe: only strips text suffix
+      : escapeHtml(urlToTitle(m.url));
+    // desc is also already HTML-safe from the generator
+    const rawDesc = entry.desc || '';
+    const shortDesc = rawDesc.length > 110 ? rawDesc.slice(0, 108) + '…' : rawDesc;
     return (
       `        <li class="hub-member-item">\n` +
-      `          <a href="${escapeHtml(m.url)}" class="hub-member-link">${escapeHtml(displayTitle)}</a>` +
-      (shortDesc ? `<span class="hub-member-desc"> — ${escapeHtml(shortDesc)}</span>` : '') +
+      `          <a href="${escapeHtml(m.url)}" class="hub-member-link">${displayTitle}</a>` +
+      (shortDesc ? `<span class="hub-member-desc"> — ${shortDesc}</span>` : '') +
       `\n        </li>`
     );
   });
