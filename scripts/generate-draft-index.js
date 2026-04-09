@@ -3,20 +3,25 @@
 
 /**
  * generate-draft-index.js
- * Phase 17: Safe indexing and visibility for generated draft pages.
+ * Phase 18: Safe indexing and visibility for generated draft pages.
+ * Fixes Phase 17 deadlock by using provenance fields from page-drafts.json.
  *
  * Reads Phase 16 draft plans from js/page-drafts.json and outputs
  * js/draft-index.json with deterministic visibility classification.
  *
+ * Uses provenance fields (preexisting_before_generation, phase_generated_html)
+ * written by generate-page-drafts.js for accurate classification, so only
+ * genuinely pre-existing pages become hidden_conflict.
+ *
  * Visibility status values:
- *   hidden_conflict     - existing_page_conflict=true; kept only in this index.
+ *   hidden_conflict     - pre-existing non-draft page; kept only in this index.
  *   draft_index_only    - valid new draft, tracked but not yet broadly discoverable.
- *   safe_search_visible - strongest new drafts; may be added to wiki-index/sitemap/entity-map.
+ *   safe_search_visible - strongest new Phase 16 drafts eligible for discovery.
  *
  * Eligibility for safe_search_visible:
- *   - generated_html_page = true
+ *   - phase_generated_html = true
+ *   - preexisting_before_generation = false
  *   - confidence = 'high'
- *   - existing_page_conflict = false
  *   - valid title + meta_description in draft plan
  *   - >= 3 related_pages
  *   - >= 3 section_blocks
@@ -87,22 +92,30 @@ const wikiIndexUrls = new Set(
 // ---------------------------------------------------------------------------
 
 const evaluated = drafts.map(draft => {
-  const slug                  = draft.target_url_slug;
-  const htmlExists            = fileExists(`wiki/${slug}.html`);
-  const generated_html_page   = htmlExists && isPhase16GeneratedPage(slug);
-  const existing_page_conflict = draft.existing_page_conflict === true;
-  const confidence            = typeof draft.confidence === 'string' ? draft.confidence : 'unknown';
+  const slug = draft.target_url_slug;
 
-  const draftData   = draft.draft || {};
+  // Prefer provenance fields written by Phase 18's generate-page-drafts.js.
+  // Fall back to HTML-marker heuristic for older page-drafts.json without them.
+  const phase_generated_html = (typeof draft.phase_generated_html === 'boolean')
+    ? draft.phase_generated_html
+    : (fileExists(`wiki/${slug}.html`) && isPhase16GeneratedPage(slug));
+
+  const preexisting_before_generation = (typeof draft.preexisting_before_generation === 'boolean')
+    ? draft.preexisting_before_generation
+    : (draft.existing_page_conflict === true && !phase_generated_html);
+
+  const confidence = typeof draft.confidence === 'string' ? draft.confidence : 'unknown';
+
+  const draftData        = draft.draft || {};
   const hasValidTitle    = typeof draftData.title === 'string' && draftData.title.trim().length > 0;
   const hasValidMetaDesc = typeof draftData.meta_description === 'string' && draftData.meta_description.trim().length > 0;
-  const relatedCount  = Array.isArray(draft.related_pages)       ? draft.related_pages.length       : 0;
-  const sectionCount  = Array.isArray(draftData.section_blocks)  ? draftData.section_blocks.length  : 0;
+  const relatedCount     = Array.isArray(draft.related_pages)      ? draft.related_pages.length      : 0;
+  const sectionCount     = Array.isArray(draftData.section_blocks) ? draftData.section_blocks.length : 0;
 
   const eligible_for_indexing = (
-    generated_html_page &&
+    phase_generated_html &&
+    !preexisting_before_generation &&
     confidence === 'high' &&
-    !existing_page_conflict &&
     hasValidTitle &&
     hasValidMetaDesc &&
     relatedCount  >= MIN_RELATED_PAGES &&
@@ -111,26 +124,29 @@ const evaluated = drafts.map(draft => {
 
   // Collect reasons (always present for transparency)
   const reasons = [];
-  if (existing_page_conflict) reasons.push('existing_page_conflict');
-  if (!htmlExists)             reasons.push('html_file_missing');
-  else if (!generated_html_page) reasons.push('not_phase16_generated_html');
-  if (confidence !== 'high')   reasons.push(`confidence_not_high:${confidence}`);
-  if (!hasValidTitle)          reasons.push('missing_valid_title');
-  if (!hasValidMetaDesc)       reasons.push('missing_valid_meta_description');
+  if (preexisting_before_generation) reasons.push('preexisting_before_generation');
+  if (!fileExists(`wiki/${slug}.html`)) reasons.push('html_file_missing');
+  else if (!phase_generated_html)       reasons.push('not_phase16_generated_html');
+  if (confidence !== 'high')            reasons.push(`confidence_not_high:${confidence}`);
+  if (!hasValidTitle)                   reasons.push('missing_valid_title');
+  if (!hasValidMetaDesc)                reasons.push('missing_valid_meta_description');
   if (relatedCount < MIN_RELATED_PAGES)
     reasons.push(`insufficient_related_pages:${relatedCount}`);
   if (sectionCount < MIN_SECTION_BLOCKS)
     reasons.push(`insufficient_section_blocks:${sectionCount}`);
 
   return {
-    target_path:             draft.target_path,
-    title:                   draftData.title || '',
-    action_type:             draft.action_type,
+    target_path:                    draft.target_path,
+    title:                          draftData.title || '',
+    action_type:                    draft.action_type,
     confidence,
-    existing_page_conflict,
-    generated_html_page,
+    generated_by_phase:             draft.generated_by_phase || 'phase_16',
+    phase_generated_html,
+    preexisting_before_generation,
+    // Keep existing_page_conflict for backward-compatibility readers
+    existing_page_conflict:         draft.existing_page_conflict === true,
     eligible_for_indexing,
-    visibility_status:       null,   // assigned in second pass
+    visibility_status:              null,   // assigned in second pass
     reasons
   };
 });
@@ -142,7 +158,7 @@ const evaluated = drafts.map(draft => {
 let safeVisibleCount = 0;
 
 for (const entry of evaluated) {
-  if (entry.existing_page_conflict) {
+  if (entry.preexisting_before_generation) {
     entry.visibility_status = 'hidden_conflict';
   } else if (entry.eligible_for_indexing && safeVisibleCount < MAX_SAFE_VISIBLE) {
     entry.visibility_status = 'safe_search_visible';
@@ -168,13 +184,13 @@ const summary = {
 
 const draftIndex = {
   generated_at: new Date().toISOString(),
-  phase: 'phase_17',
+  phase: 'phase_18',
   policy: {
     max_safe_search_visible: MAX_SAFE_VISIBLE,
     description: [
-      'hidden_conflict: target page already existed at draft-plan time; kept in draft-index.json only.',
-      'draft_index_only: valid new draft page tracked but not yet broadly discoverable.',
-      'safe_search_visible: strongest new drafts eligible for wiki-index/sitemap/entity-map inclusion.',
+      'hidden_conflict: target page was pre-existing before Phase 16 ran; kept in draft-index.json only.',
+      'draft_index_only: valid Phase 16 draft page tracked but not yet broadly discoverable.',
+      'safe_search_visible: strongest Phase 16 draft pages eligible for wiki-index/sitemap/entity-map inclusion.',
     ].join(' | ')
   },
   summary,
