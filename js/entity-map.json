@@ -994,7 +994,9 @@
     "canonical_title": "Ethereum (ETH) Ecosystem — Crypto Moonboys Wiki",
     "canonical_url": "/wiki/ethereum-ecosystem.html",
     "category": "tokens",
-    "aliases": [],
+    "aliases": [
+      "ethereum ecosystem"
+    ],
     "tags": [
       "ethereum",
       "eth",
@@ -1005,9 +1007,6 @@
     ],
     "source_urls": [
       "/wiki/ethereum-ecosystem.html"
-    ],
-    "alias_candidates": [
-      "ethereum ecosystem"
     ]
   },
   {

@@ -161,12 +161,32 @@ function buildGraphClusters(entityGraph, rankByUrl, linkGraph) {
 // ── hub metadata derivation ──────────────────────────────────────────────────
 
 const CATEGORY_EMOJI = {
-  characters: '🎭',
-  factions:   '⚔️',
-  tokens:     '🪙',
-  concepts:   '💡',
-  core:       '📖',
-  misc:       '🌐',
+  characters:              '🎭',
+  factions:                '⚔️',
+  tokens:                  '🪙',
+  concepts:                '💡',
+  core:                    '📖',
+  misc:                    '🌐',
+  cryptocurrencies:        '₿',
+  'nfts-digital-art':      '🖼️',
+  gaming:                  '🎮',
+  lore:                    '📜',
+};
+
+// Map wiki-index internal category names to valid /categories/*.html page slugs.
+// Only the slugs listed here have real category pages on the site.
+const CATEGORY_PAGE_SLUG = {
+  factions:                 'lore',
+  characters:               'lore',
+  tokens:                   'cryptocurrencies',
+  concepts:                 'concepts',
+  core:                     'lore',
+  misc:                     'lore',
+  cryptocurrencies:         'cryptocurrencies',
+  'nfts-digital-art':       'nfts-digital-art',
+  gaming:                   'gaming',
+  lore:                     'lore',
+  technology:               'technology',
 };
 
 /**
@@ -184,8 +204,9 @@ function deriveHubMeta(cluster, rankByUrl, byUrl, entityGraph) {
   const hubLabel = `${anchorTitle} Ecosystem`;
 
   // Emoji from anchor's category (data-derived, not keyword)
-  const category = anchorEntry.category || 'misc';
-  const emoji    = CATEGORY_EMOJI[category] || '🌐';
+  const category     = anchorEntry.category || 'misc';
+  const categorySlug = CATEGORY_PAGE_SLUG[category] || 'lore';
+  const emoji        = CATEGORY_EMOJI[category] || '🌐';
 
   // Description from anchor's real desc
   const anchorDesc = anchorEntry.desc || '';
@@ -234,6 +255,7 @@ function deriveHubMeta(cluster, rankByUrl, byUrl, entityGraph) {
     avgRank,
     internalLinks,
     catSummary,
+    categorySlug,
   };
 }
 
@@ -246,19 +268,37 @@ function deriveHubMeta(cluster, rankByUrl, byUrl, entityGraph) {
 function buildContent(meta, byUrl) {
   const {
     anchorTitle, anchorDesc, anchorEntry, topMembers, topConnections,
-    memberCount, catSummary, rankSum, avgRank, internalLinks, hubLabel,
-    anchorSlug,
+    memberCount, catSummary, rankSum, avgRank, internalLinks,
+    anchorSlug, label: hubLabel,
   } = meta;
 
   // ── Lead paragraphs ──
   const anchorLink = `<a href="/wiki/${escapeHtml(anchorSlug)}.html">${escapeHtml(anchorTitle)}</a>`;
-  const lead1 = anchorDesc.length > 60
-    ? `${anchorLink} — ${anchorDesc} This ecosystem hub maps the ${memberCount} pages most strongly connected to ${escapeHtml(anchorTitle)} by graph relationship and content signals.`
+
+  // Trim desc to a clean sentence boundary; avoid mid-word truncation
+  let descSnippet = '';
+  if (anchorDesc.length > 60) {
+    const shortened = anchorDesc.slice(0, 200);
+    // Prefer to end at a sentence boundary (period followed by space or end of string)
+    const sentMatch = shortened.match(/^(.*?)\.\s/s);
+    const lastFullStop = sentMatch ? sentMatch[1].length : shortened.lastIndexOf('. ');
+    if (lastFullStop > 40) {
+      descSnippet = shortened.slice(0, lastFullStop + 1);   // include the period
+    } else {
+      // No clean sentence: trim to the last complete word boundary, add ellipsis
+      const lastSpace = shortened.lastIndexOf(' ');
+      const base = lastSpace > 30 ? shortened.slice(0, lastSpace) : shortened;
+      descSnippet = base.replace(/[,;:\s]+$/, '') + '…';
+    }
+  }
+
+  const lead1 = descSnippet.length > 0
+    ? `${anchorLink} — ${descSnippet} This ecosystem hub maps the ${memberCount} pages most strongly connected to ${escapeHtml(anchorTitle)} by graph relationship and content signals.`
     : `This ecosystem hub maps the ${memberCount} pages most strongly connected to ${anchorLink} by graph relationship and content signals.`;
 
   // Second lead: cluster stats in plain language
   const avgRankRounded = Math.round(avgRank);
-  const lead2 = `The ${escapeHtml(hubLabel)} contains ${memberCount} pages with an average rank score of ${avgRankRounded}, ${internalLinks} internal cross-links, and a combined authority of ${rankSum}. Cluster members span: ${escapeHtml(catSummary)}.`;
+  const lead2 = `The ${escapeHtml(hubLabel)} contains ${memberCount} pages with an average rank score of ${avgRankRounded}, ${internalLinks} internal cross-links, and a combined authority score of ${rankSum}. Cluster members span: ${escapeHtml(catSummary)}.`;
 
   const leadParagraphs = [lead1, lead2];
 
@@ -348,7 +388,7 @@ function memberListHtml(meta, byUrl) {
 }
 
 function generateHubPageHtml(meta, byUrl, allHubMetas) {
-  const { slug, label, emoji, category, description, leadParagraphs, sections } = meta;
+  const { slug, label, emoji, category, categorySlug, description, leadParagraphs, sections } = meta;
   const { membersHtml } = meta._html;
 
   const pageUrl    = `https://crypto-moonboys.github.io/wiki/${slug}.html`;
@@ -485,7 +525,7 @@ ${sidebarHubLinks}
       <nav class="breadcrumb" aria-label="Breadcrumb">
         <a href="/index.html">Home</a>
         <span class="sep" aria-hidden="true">›</span>
-        <a href="/categories/${escapeHtml(category)}.html">${escapeHtml(catLabel)}</a>
+        <a href="/categories/${escapeHtml(categorySlug)}.html">${escapeHtml(catLabel)}</a>
         <span class="sep" aria-hidden="true">›</span>
         <span aria-current="page">${escapeHtml(label)}</span>
       </nav>
@@ -496,7 +536,7 @@ ${sidebarHubLinks}
       <div class="article-meta">
         <span class="article-badge">${emoji} Cluster Hub</span>
         <span class="meta-item">📅 Last updated: April 2026</span>
-        <span class="meta-item">📂 <a href="/categories/${escapeHtml(category)}.html">${escapeHtml(catLabel)}</a></span>
+        <span class="meta-item">📂 <a href="/categories/${escapeHtml(categorySlug)}.html">${escapeHtml(catLabel)}</a></span>
         <span class="meta-item hub-badge">🌐 Graph-Derived</span>
       </div>
 
@@ -525,7 +565,7 @@ ${membersHtml}
 
       <div class="category-tags" aria-label="Article categories">
         <span class="cat-label">Categories:</span>
-        <a href="/categories/${escapeHtml(category)}.html">${escapeHtml(catLabel)}</a>
+        <a href="/categories/${escapeHtml(categorySlug)}.html">${escapeHtml(catLabel)}</a>
       </div>
 
     </main>
