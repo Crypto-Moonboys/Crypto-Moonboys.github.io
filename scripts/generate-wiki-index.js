@@ -241,6 +241,11 @@ function buildContentSignals(html, title, description, keywords, aliases = []) {
 
   const internalWikiLinks = (html.match(/href=["']\/wiki\/[^"']+["']/gi) || []).length;
 
+  // Content-depth signals: paragraph, section, and lore structure
+  const paragraphCount = (html.match(/<p\b/gi) || []).length;
+  const sectionCount = (html.match(/<section\b/gi) || []).length;
+  const loreParagraphCount = (html.match(/class=["'](?:[^"']*\s)?lore-paragraph(?:\s[^"']*)?["']/gi) || []).length;
+
   return {
     article_word_count: wordCount,
     has_description: hasDescription,
@@ -248,7 +253,10 @@ function buildContentSignals(html, title, description, keywords, aliases = []) {
     keyword_bag_size: keywordBagSize,
     heading_count: headingCount,
     list_count: listCount,
-    internal_link_count: internalWikiLinks
+    internal_link_count: internalWikiLinks,
+    paragraph_count: paragraphCount,
+    section_count: sectionCount,
+    lore_paragraph_count: loreParagraphCount
   };
 }
 
@@ -272,6 +280,21 @@ function computeContentQualityScore(signals) {
 
   if (signals.list_count >= 1) score += 2;
   if (signals.list_count >= 3) score += 2;
+
+  // Content-depth bonuses: paragraph richness
+  if (signals.paragraph_count >= 4) score += 4;
+  if (signals.paragraph_count >= 10) score += 4;
+  if (signals.paragraph_count >= 20) score += 4;
+
+  // Content-depth bonuses: section structure
+  if (signals.section_count >= 2) score += 4;
+  if (signals.section_count >= 5) score += 4;
+
+  // Content-depth bonuses: lore-specific prose depth
+  if (signals.lore_paragraph_count >= 2) score += 4;
+  if (signals.lore_paragraph_count >= 5) score += 4;
+  if (signals.lore_paragraph_count >= 10) score += 4;
+  if (signals.lore_paragraph_count >= 20) score += 4;
 
   return score;
 }
@@ -334,6 +357,9 @@ function buildRankSignals(html, filePath, title, description, keywords, aliases,
     heading_count: contentSignals.heading_count,
     list_count: contentSignals.list_count,
     internal_link_count: contentSignals.internal_link_count,
+    paragraph_count: contentSignals.paragraph_count,
+    section_count: contentSignals.section_count,
+    lore_paragraph_count: contentSignals.lore_paragraph_count,
     content_quality_score: contentQualityScore,
     authority_score: authorityScore
   };
