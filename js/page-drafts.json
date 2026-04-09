@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-04-09T02:08:56.651Z",
+  "generated_at": "2026-04-09T02:23:44.296Z",
   "summary": {
     "total_drafts": 5,
     "topic_page_drafts": 1,
@@ -228,7 +228,8 @@
           "/wiki/hard-fork-games-event.html",
           "/wiki/hard-fork-games-game.html"
         ]
-      }
+      },
+      "existing_page_conflict": true
     },
     {
       "action_type": "create_bridge_page",
@@ -339,7 +340,8 @@
           "/wiki/bitcoin-x-kids.html",
           "/wiki/xrp-kids.html"
         ]
-      }
+      },
+      "existing_page_conflict": true
     },
     {
       "action_type": "create_bridge_page",
@@ -450,7 +452,8 @@
           "/wiki/null-the-prophet.html",
           "/wiki/queen-sarah-pfly.html"
         ]
-      }
+      },
+      "existing_page_conflict": true
     },
     {
       "action_type": "create_topic_page",
