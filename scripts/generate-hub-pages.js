@@ -198,13 +198,24 @@ function deriveHubMeta(cluster, rankByUrl, byUrl, entityGraph) {
 
   const anchorEntry = byUrl[anchor] || {};
   const anchorSlug  = slugFromUrl(anchor);
-  const anchorTitle = cleanDisplayTitle(anchorEntry.title || urlToTitle(anchor));
+  // Prefer the real wiki-index title; only fall back to slug-derived when absent
+  const anchorTitle = anchorEntry.title
+    ? cleanDisplayTitle(anchorEntry.title)
+    : urlToTitle(anchor);
 
   const hubSlug  = `${anchorSlug}-ecosystem`;
-  const hubLabel = `${anchorTitle} Ecosystem`;
+  // Guard: ensure label is never empty (prevents "The  contains…" in lead copy)
+  const hubLabel = `${anchorTitle || urlToTitle(anchor)} Ecosystem`;
 
   // Emoji from anchor's category (data-derived, not keyword)
-  const category     = anchorEntry.category || 'misc';
+  // Optional: remap factions that are game/system/platform to a more precise category
+  let category = anchorEntry.category || 'misc';
+  if (category === 'factions') {
+    const descLower = (anchorEntry.desc || '').toLowerCase();
+    if (/\b(game|system|platform)\b/.test(descLower)) {
+      category = 'core';
+    }
+  }
   const categorySlug = CATEGORY_PAGE_SLUG[category] || 'lore';
   const emoji        = CATEGORY_EMOJI[category] || '🌐';
 
@@ -279,21 +290,33 @@ function buildContent(meta, byUrl) {
   let descSnippet = '';
   if (anchorDesc.length > 60) {
     const shortened = anchorDesc.slice(0, 200);
-    // Prefer to end at a sentence boundary (period followed by space or end of string)
-    const sentMatch = shortened.match(/^(.*?)\.\s/s);
-    const lastFullStop = sentMatch ? sentMatch[1].length : shortened.lastIndexOf('. ');
+    // Prefer to end at the LAST sentence boundary (period + space or period at end)
+    const lastDotSpace = shortened.lastIndexOf('. ');
+    const lastFullStop = lastDotSpace >= 0
+      ? lastDotSpace
+      : (shortened.endsWith('.') ? shortened.length - 1 : -1);
     if (lastFullStop > 40) {
       descSnippet = shortened.slice(0, lastFullStop + 1);   // include the period
+    } else if (anchorDesc.length <= 200) {
+      // Short desc that fits entirely — use as-is; no word-boundary cut needed.
+      // Note: if the source meta description is itself truncated mid-word (data quality
+      // issue in the wiki page), the incomplete word will appear here.
+      descSnippet = shortened.replace(/[,;:\s]+$/, '');
     } else {
-      // No clean sentence: trim to the last complete word boundary, add ellipsis
+      // Long desc without a sentence boundary — trim to last complete word, add ellipsis
       const lastSpace = shortened.lastIndexOf(' ');
       const base = lastSpace > 30 ? shortened.slice(0, lastSpace) : shortened;
       descSnippet = base.replace(/[,;:\s]+$/, '') + '…';
     }
   }
 
-  const lead1 = descSnippet.length > 0
-    ? `${anchorLink} — ${descSnippet} This ecosystem hub maps the ${memberCount} pages most strongly connected to ${escapeHtml(anchorTitle)} by graph relationship and content signals.`
+  // Ensure descSnippet closes with sentence-ending punctuation before joining with "This ecosystem hub"
+  const snippetForJoin = descSnippet.endsWith('.')
+    ? descSnippet
+    : descSnippet.replace(/…$/, '').replace(/[,;:\s]+$/, '') + '.';
+
+  const lead1 = snippetForJoin.length > 1
+    ? `${anchorLink} — ${snippetForJoin} This ecosystem hub maps the ${memberCount} pages most strongly connected to ${escapeHtml(anchorTitle)} by graph relationship and content signals.`
     : `This ecosystem hub maps the ${memberCount} pages most strongly connected to ${anchorLink} by graph relationship and content signals.`;
 
   // Second lead: cluster stats in plain language
