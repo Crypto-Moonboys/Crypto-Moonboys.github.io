@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-04-09T04:19:05.631Z",
+  "generated_at": "2026-04-09T04:45:16.241Z",
   "summary": {
     "total_drafts": 5,
     "topic_page_drafts": 1,
@@ -26,6 +26,10 @@
         "/wiki/graffpunks-24-7-radio.html",
         "/wiki/nfts.html"
       ],
+      "supporting_clusters": [
+        "graffpunks",
+        "nfts"
+      ],
       "recommended_keywords": [
         "24",
         "247",
@@ -47,40 +51,35 @@
       "phase_generated_html": false,
       "preexisting_before_generation": true,
       "draft": {
-        "title": "Graffpunks & Nfts — Crypto Moonboys Wiki",
-        "meta_description": "Exploring the intersection of graffpunks and nfts within the Crypto Moonboys universe. Related: The GraffPUNKS are the pulsating core of the Crypto Moonboys universe, a faction that embodies the…",
-        "lead_paragraph": "This page bridges the <strong>graffpunks</strong> and <strong>nfts</strong> topic clusters within the Crypto Moonboys universe. Key pages in this cluster include those described as: &ldquo;The GraffPUNKS are the pulsating core of the Crypto Moonboys universe, a faction that embodies the gritty, rebellious sp&rdquo; Core keywords: 24, 247, fungible, graffpunks, nfts.",
+        "title": "GraffPUNKS & NFTs — Crypto Moonboys Wiki",
+        "meta_description": "Connecting GraffPUNKS and NFTs in the Crypto Moonboys universe. The GraffPUNKS are the pulsating core of the Crypto Moonboys universe, a faction that embodies the gritty,…",
+        "lead_paragraph": "<strong>GraffPUNKS</strong> and <strong>NFTs</strong> are two interconnected topic clusters in the Crypto Moonboys universe. The GraffPUNKS are the pulsating core of the Crypto Moonboys universe, a faction that embodies the gritty, rebellious spirit of… Key topics include: fungible, graffpunks, nfts, tokens.",
         "section_blocks": [
           {
-            "heading": "Bridge overview: graffpunks and nfts",
+            "heading": "Bridge overview: GraffPUNKS and NFTs",
             "purpose": "Introduce the topic or bridge concept grounded in existing wiki content",
             "source_pages": [
               "/wiki/graffpunks.html",
+              "/wiki/nfts.html",
               "/wiki/graffpunks-24-7.html",
               "/wiki/graffpunks-247-radio.html",
-              "/wiki/graffpunks-24-7-radio.html",
-              "/wiki/nfts.html"
+              "/wiki/graffpunks-24-7-radio.html"
             ]
           },
           {
-            "heading": "graffpunks context",
+            "heading": "GraffPUNKS context",
             "purpose": "Describe the cluster context using signals from related wiki pages",
             "source_pages": [
               "/wiki/graffpunks.html",
               "/wiki/graffpunks-24-7.html",
               "/wiki/graffpunks-247-radio.html",
-              "/wiki/graffpunks-24-7-radio.html",
-              "/wiki/nfts.html"
+              "/wiki/graffpunks-24-7-radio.html"
             ]
           },
           {
-            "heading": "nfts context",
+            "heading": "NFTs context",
             "purpose": "Describe the cluster context using signals from related wiki pages",
             "source_pages": [
-              "/wiki/graffpunks.html",
-              "/wiki/graffpunks-24-7.html",
-              "/wiki/graffpunks-247-radio.html",
-              "/wiki/graffpunks-24-7-radio.html",
               "/wiki/nfts.html"
             ]
           },
@@ -89,10 +88,10 @@
             "purpose": "List key entity connections linking the two clusters",
             "source_pages": [
               "/wiki/graffpunks.html",
+              "/wiki/nfts.html",
               "/wiki/graffpunks-24-7.html",
               "/wiki/graffpunks-247-radio.html",
-              "/wiki/graffpunks-24-7-radio.html",
-              "/wiki/nfts.html"
+              "/wiki/graffpunks-24-7-radio.html"
             ]
           },
           {
@@ -109,7 +108,6 @@
         ],
         "internal_link_targets": [
           "/wiki/graffpunks.html",
-          "/wiki/graffpunks-24-7.html",
           "/wiki/graffpunks-247-radio.html",
           "/wiki/graffpunks-24-7-radio.html",
           "/wiki/nfts.html",
@@ -117,7 +115,8 @@
           "/wiki/diamond-hands.html",
           "/wiki/graffpunks-nfts.html",
           "/wiki/graffpunks-24-7-blockchain-radio-station.html",
-          "/wiki/hodl-wars.html"
+          "/wiki/hodl-wars.html",
+          "/wiki/graffpunks-247-blockchain-radio-station.html"
         ]
       },
       "existing_page_conflict": true
@@ -142,6 +141,10 @@
         "/wiki/hard-fork-games.html",
         "/wiki/graffpunks-24-7-radio.html"
       ],
+      "supporting_clusters": [
+        "games",
+        "graffpunks"
+      ],
       "recommended_keywords": [
         "24",
         "247",
@@ -162,40 +165,35 @@
       "phase_generated_html": true,
       "preexisting_before_generation": false,
       "draft": {
-        "title": "Games & Graffpunks — Crypto Moonboys Wiki",
-        "meta_description": "Exploring the intersection of games and graffpunks within the Crypto Moonboys universe. Related: The GraffPUNKS are the pulsating core of the Crypto Moonboys universe, a faction that embodies the…",
-        "lead_paragraph": "This page bridges the <strong>games</strong> and <strong>graffpunks</strong> topic clusters within the Crypto Moonboys universe. Key pages in this cluster include those described as: &ldquo;The GraffPUNKS are the pulsating core of the Crypto Moonboys universe, a faction that embodies the gritty, rebellious sp&rdquo; Core keywords: 24, 247, fork, games, graffpunks.",
+        "title": "Games & GraffPUNKS — Crypto Moonboys Wiki",
+        "meta_description": "Connecting Games and GraffPUNKS in the Crypto Moonboys universe. The GraffPUNKS are the pulsating core of the Crypto Moonboys universe, a faction that embodies the gritty,…",
+        "lead_paragraph": "<strong>Games</strong> and <strong>GraffPUNKS</strong> are two interconnected topic clusters in the Crypto Moonboys universe. The GraffPUNKS are the pulsating core of the Crypto Moonboys universe, a faction that embodies the gritty, rebellious spirit of… Key topics include: fork, games, graffpunks, hard.",
         "section_blocks": [
           {
-            "heading": "Bridge overview: games and graffpunks",
+            "heading": "Bridge overview: Games and GraffPUNKS",
             "purpose": "Introduce the topic or bridge concept grounded in existing wiki content",
             "source_pages": [
+              "/wiki/hard-fork-games.html",
               "/wiki/graffpunks.html",
               "/wiki/graffpunks-24-7.html",
               "/wiki/graffpunks-247-radio.html",
-              "/wiki/hard-fork-games.html",
               "/wiki/graffpunks-24-7-radio.html"
             ]
           },
           {
-            "heading": "games context",
+            "heading": "Games context",
+            "purpose": "Describe the cluster context using signals from related wiki pages",
+            "source_pages": [
+              "/wiki/hard-fork-games.html"
+            ]
+          },
+          {
+            "heading": "GraffPUNKS context",
             "purpose": "Describe the cluster context using signals from related wiki pages",
             "source_pages": [
               "/wiki/graffpunks.html",
               "/wiki/graffpunks-24-7.html",
               "/wiki/graffpunks-247-radio.html",
-              "/wiki/hard-fork-games.html",
-              "/wiki/graffpunks-24-7-radio.html"
-            ]
-          },
-          {
-            "heading": "graffpunks context",
-            "purpose": "Describe the cluster context using signals from related wiki pages",
-            "source_pages": [
-              "/wiki/graffpunks.html",
-              "/wiki/graffpunks-24-7.html",
-              "/wiki/graffpunks-247-radio.html",
-              "/wiki/hard-fork-games.html",
               "/wiki/graffpunks-24-7-radio.html"
             ]
           },
@@ -203,10 +201,10 @@
             "heading": "Key cross-cluster entities",
             "purpose": "List key entity connections linking the two clusters",
             "source_pages": [
+              "/wiki/hard-fork-games.html",
               "/wiki/graffpunks.html",
               "/wiki/graffpunks-24-7.html",
               "/wiki/graffpunks-247-radio.html",
-              "/wiki/hard-fork-games.html",
               "/wiki/graffpunks-24-7-radio.html"
             ]
           },
@@ -224,7 +222,6 @@
         ],
         "internal_link_targets": [
           "/wiki/graffpunks.html",
-          "/wiki/graffpunks-24-7.html",
           "/wiki/graffpunks-247-radio.html",
           "/wiki/hard-fork-games.html",
           "/wiki/graffpunks-24-7-radio.html",
@@ -232,7 +229,8 @@
           "/wiki/diamond-hands.html",
           "/wiki/graffpunks-nfts.html",
           "/wiki/hard-fork-games-event.html",
-          "/wiki/hard-fork-games-game.html"
+          "/wiki/hard-fork-games-game.html",
+          "/wiki/the-hard-fork-rockers.html"
         ]
       }
     },
@@ -256,6 +254,10 @@
         "/wiki/graffpunks-24-7.html",
         "/wiki/graffpunks-247-radio.html"
       ],
+      "supporting_clusters": [
+        "bitcoin",
+        "graffpunks"
+      ],
       "recommended_keywords": [
         "24",
         "247",
@@ -276,39 +278,34 @@
       "phase_generated_html": true,
       "preexisting_before_generation": false,
       "draft": {
-        "title": "Bitcoin & Graffpunks — Crypto Moonboys Wiki",
-        "meta_description": "Exploring the intersection of bitcoin and graffpunks within the Crypto Moonboys universe. Related: The GraffPUNKS are the pulsating core of the Crypto Moonboys universe, a faction that embodies the…",
-        "lead_paragraph": "This page bridges the <strong>bitcoin</strong> and <strong>graffpunks</strong> topic clusters within the Crypto Moonboys universe. Key pages in this cluster include those described as: &ldquo;The GraffPUNKS are the pulsating core of the Crypto Moonboys universe, a faction that embodies the gritty, rebellious sp&rdquo; Core keywords: 24, 247, bitcoin, btc, graffpunks.",
+        "title": "Bitcoin & GraffPUNKS — Crypto Moonboys Wiki",
+        "meta_description": "Connecting Bitcoin and GraffPUNKS in the Crypto Moonboys universe. The GraffPUNKS are the pulsating core of the Crypto Moonboys universe, a faction that embodies the gritty,…",
+        "lead_paragraph": "<strong>Bitcoin</strong> and <strong>GraffPUNKS</strong> are two interconnected topic clusters in the Crypto Moonboys universe. The GraffPUNKS are the pulsating core of the Crypto Moonboys universe, a faction that embodies the gritty, rebellious spirit of… Key topics include: bitcoin, btc, graffpunks, kids.",
         "section_blocks": [
           {
-            "heading": "Bridge overview: bitcoin and graffpunks",
+            "heading": "Bridge overview: Bitcoin and GraffPUNKS",
             "purpose": "Introduce the topic or bridge concept grounded in existing wiki content",
             "source_pages": [
-              "/wiki/graffpunks.html",
               "/wiki/bitcoin-kids.html",
+              "/wiki/graffpunks.html",
               "/wiki/bitcoin.html",
               "/wiki/graffpunks-24-7.html",
               "/wiki/graffpunks-247-radio.html"
             ]
           },
           {
-            "heading": "bitcoin context",
+            "heading": "Bitcoin context",
             "purpose": "Describe the cluster context using signals from related wiki pages",
             "source_pages": [
-              "/wiki/graffpunks.html",
               "/wiki/bitcoin-kids.html",
-              "/wiki/bitcoin.html",
-              "/wiki/graffpunks-24-7.html",
-              "/wiki/graffpunks-247-radio.html"
+              "/wiki/bitcoin.html"
             ]
           },
           {
-            "heading": "graffpunks context",
+            "heading": "GraffPUNKS context",
             "purpose": "Describe the cluster context using signals from related wiki pages",
             "source_pages": [
               "/wiki/graffpunks.html",
-              "/wiki/bitcoin-kids.html",
-              "/wiki/bitcoin.html",
               "/wiki/graffpunks-24-7.html",
               "/wiki/graffpunks-247-radio.html"
             ]
@@ -317,8 +314,8 @@
             "heading": "Key cross-cluster entities",
             "purpose": "List key entity connections linking the two clusters",
             "source_pages": [
-              "/wiki/graffpunks.html",
               "/wiki/bitcoin-kids.html",
+              "/wiki/graffpunks.html",
               "/wiki/bitcoin.html",
               "/wiki/graffpunks-24-7.html",
               "/wiki/graffpunks-247-radio.html"
@@ -340,13 +337,13 @@
           "/wiki/graffpunks.html",
           "/wiki/bitcoin-kids.html",
           "/wiki/bitcoin.html",
-          "/wiki/graffpunks-24-7.html",
           "/wiki/graffpunks-247-radio.html",
           "/wiki/hodl-warriors.html",
           "/wiki/diamond-hands.html",
           "/wiki/graffpunks-nfts.html",
           "/wiki/bitcoin-x-kids.html",
-          "/wiki/xrp-kids.html"
+          "/wiki/xrp-kids.html",
+          "/wiki/moon-mission.html"
         ]
       }
     },
@@ -370,6 +367,10 @@
         "/wiki/nbg-token.html",
         "/wiki/graffpunks-247-radio.html"
       ],
+      "supporting_clusters": [
+        "graffpunks",
+        "token"
+      ],
       "recommended_keywords": [
         "24",
         "247",
@@ -390,12 +391,12 @@
       "phase_generated_html": true,
       "preexisting_before_generation": false,
       "draft": {
-        "title": "Graffpunks & Token — Crypto Moonboys Wiki",
-        "meta_description": "Exploring the intersection of graffpunks and token within the Crypto Moonboys universe. Related: The GraffPUNKS are the pulsating core of the Crypto Moonboys universe, a faction that embodies the…",
-        "lead_paragraph": "This page bridges the <strong>graffpunks</strong> and <strong>token</strong> topic clusters within the Crypto Moonboys universe. Key pages in this cluster include those described as: &ldquo;The GraffPUNKS are the pulsating core of the Crypto Moonboys universe, a faction that embodies the gritty, rebellious sp&rdquo; Core keywords: 24, 247, graffpunks, nbg, punk.",
+        "title": "GraffPUNKS & Crypto Tokens — Crypto Moonboys Wiki",
+        "meta_description": "Connecting GraffPUNKS and Crypto Tokens in the Crypto Moonboys universe. The GraffPUNKS are the pulsating core of the Crypto Moonboys universe, a faction that embodies the gritty,…",
+        "lead_paragraph": "<strong>GraffPUNKS</strong> and <strong>Crypto Tokens</strong> are two interconnected topic clusters in the Crypto Moonboys universe. The GraffPUNKS are the pulsating core of the Crypto Moonboys universe, a faction that embodies the gritty, rebellious spirit of… Key topics include: graffpunks, nbg, punk, token.",
         "section_blocks": [
           {
-            "heading": "Bridge overview: graffpunks and token",
+            "heading": "Bridge overview: GraffPUNKS and Crypto Tokens",
             "purpose": "Introduce the topic or bridge concept grounded in existing wiki content",
             "source_pages": [
               "/wiki/graffpunks.html",
@@ -406,25 +407,20 @@
             ]
           },
           {
-            "heading": "graffpunks context",
+            "heading": "GraffPUNKS context",
             "purpose": "Describe the cluster context using signals from related wiki pages",
             "source_pages": [
               "/wiki/graffpunks.html",
-              "/wiki/punk-token.html",
               "/wiki/graffpunks-24-7.html",
-              "/wiki/nbg-token.html",
               "/wiki/graffpunks-247-radio.html"
             ]
           },
           {
-            "heading": "token context",
+            "heading": "Crypto Tokens context",
             "purpose": "Describe the cluster context using signals from related wiki pages",
             "source_pages": [
-              "/wiki/graffpunks.html",
               "/wiki/punk-token.html",
-              "/wiki/graffpunks-24-7.html",
-              "/wiki/nbg-token.html",
-              "/wiki/graffpunks-247-radio.html"
+              "/wiki/nbg-token.html"
             ]
           },
           {
@@ -453,14 +449,14 @@
         "internal_link_targets": [
           "/wiki/graffpunks.html",
           "/wiki/punk-token.html",
-          "/wiki/graffpunks-24-7.html",
           "/wiki/nbg-token.html",
           "/wiki/graffpunks-247-radio.html",
           "/wiki/hodl-warriors.html",
           "/wiki/diamond-hands.html",
           "/wiki/graffpunks-nfts.html",
           "/wiki/null-the-prophet.html",
-          "/wiki/queen-sarah-pfly.html"
+          "/wiki/queen-sarah-pfly.html",
+          "/wiki/hodl-wars.html"
         ]
       }
     },
@@ -483,6 +479,9 @@
         "/wiki/1m-free-nfts-program.html",
         "/wiki/xrp-kids-genesis-nfts.html"
       ],
+      "supporting_clusters": [
+        "nfts"
+      ],
       "recommended_keywords": [
         "1m",
         "drop",
@@ -503,9 +502,9 @@
       "phase_generated_html": false,
       "preexisting_before_generation": true,
       "draft": {
-        "title": "Nfts — Crypto Moonboys Wiki",
-        "meta_description": "Nfts topic hub for the Crypto Moonboys Wiki. Non-fungible tokens — digital ownership on the blockchain — Crypto Moonboys Wiki",
-        "lead_paragraph": "This page is a topic hub for <strong>Nfts</strong> within the Crypto Moonboys Wiki. Related content includes: &ldquo;Non-fungible tokens — digital ownership on the blockchain — Crypto Moonboys Wiki&rdquo;",
+        "title": "NFTs (Non-Fungible Tokens) — Crypto Moonboys Wiki",
+        "meta_description": "Non-fungible tokens — digital ownership on the blockchain — Crypto Moonboys Wiki",
+        "lead_paragraph": "<strong>NFTs (Non-Fungible Tokens)</strong> is a key topic in the Crypto Moonboys Wiki. Non-fungible tokens — digital ownership on the blockchain — Crypto Moonboys Wiki",
         "section_blocks": [
           {
             "heading": "Topic overview",
@@ -556,13 +555,13 @@
           "/wiki/nfts.html",
           "/wiki/1m-free-nfts-programme.html",
           "/wiki/1m-free-nfts-drop.html",
-          "/wiki/1m-free-nfts-program.html",
           "/wiki/xrp-kids-genesis-nfts.html",
           "/wiki/diamond-hands.html",
           "/wiki/nfts-non-fungible-tokens.html",
           "/wiki/hodl-warriors.html",
           "/wiki/hodl-wars-game.html",
-          "/wiki/iris-7.html"
+          "/wiki/iris-7.html",
+          "/wiki/graffpunks-nfts.html"
         ]
       },
       "existing_page_conflict": true

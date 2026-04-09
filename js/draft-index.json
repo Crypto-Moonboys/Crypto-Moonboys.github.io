@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-04-09T04:19:05.671Z",
+  "generated_at": "2026-04-09T04:46:08.659Z",
   "phase": "phase_18",
   "policy": {
     "max_safe_search_visible": 3,
@@ -14,7 +14,7 @@
   "drafts": [
     {
       "target_path": "/wiki/graffpunks-nfts.html",
-      "title": "Graffpunks & Nfts — Crypto Moonboys Wiki",
+      "title": "GraffPUNKS & NFTs — Crypto Moonboys Wiki",
       "action_type": "create_bridge_page",
       "confidence": "high",
       "generated_by_phase": "phase_16",
@@ -30,7 +30,7 @@
     },
     {
       "target_path": "/wiki/games-graffpunks.html",
-      "title": "Games & Graffpunks — Crypto Moonboys Wiki",
+      "title": "Games & GraffPUNKS — Crypto Moonboys Wiki",
       "action_type": "create_bridge_page",
       "confidence": "high",
       "generated_by_phase": "phase_16",
@@ -43,7 +43,7 @@
     },
     {
       "target_path": "/wiki/bitcoin-graffpunks.html",
-      "title": "Bitcoin & Graffpunks — Crypto Moonboys Wiki",
+      "title": "Bitcoin & GraffPUNKS — Crypto Moonboys Wiki",
       "action_type": "create_bridge_page",
       "confidence": "high",
       "generated_by_phase": "phase_16",
@@ -56,7 +56,7 @@
     },
     {
       "target_path": "/wiki/graffpunks-token.html",
-      "title": "Graffpunks & Token — Crypto Moonboys Wiki",
+      "title": "GraffPUNKS & Crypto Tokens — Crypto Moonboys Wiki",
       "action_type": "create_bridge_page",
       "confidence": "high",
       "generated_by_phase": "phase_16",
@@ -69,7 +69,7 @@
     },
     {
       "target_path": "/wiki/nfts.html",
-      "title": "Nfts — Crypto Moonboys Wiki",
+      "title": "NFTs (Non-Fungible Tokens) — Crypto Moonboys Wiki",
       "action_type": "create_topic_page",
       "confidence": "high",
       "generated_by_phase": "phase_16",

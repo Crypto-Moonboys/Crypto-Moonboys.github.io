@@ -5,6 +5,7 @@
  * generate-page-drafts.js
  * Phase 16: Controlled page builder from expansion plan.
  * Phase 18: Added provenance tracking fields.
+ * Phase 19: Improved generated page quality (titles, descriptions, sections, keywords).
  *
  * Reads high-confidence create_topic_page and create_bridge_page actions
  * from js/expansion-plan.json and builds structured draft plans in
@@ -38,6 +39,59 @@ function fileExists(relPath) {
 // Markers that identify a Phase 16-generated draft HTML page.
 const PHASE16_ROBOTS_MARKER = 'content="noindex, follow"';
 const PHASE16_DRAFT_CLASS   = 'class="draft-notice"';
+
+// ---------------------------------------------------------------------------
+// Phase 19: Quality constants
+// ---------------------------------------------------------------------------
+
+/**
+ * Proper display names for known cluster labels.
+ * Grounded in repo wiki page titles and faction names.
+ */
+const CLUSTER_DISPLAY_NAMES = {
+  'graffpunks':  'GraffPUNKS',
+  'nfts':        'NFTs',
+  'bitcoin':     'Bitcoin',
+  'btc':         'BTC',
+  'games':       'Games',
+  'token':       'Crypto Tokens',
+  'xrp':         'XRP',
+  'kids':        'Kids',
+  'metaverse':   'Metaverse',
+  'battles':     'Battles',
+  'graffiti':    'Graffiti',
+  'kings':       'Kings',
+  'defi':        'DeFi',
+  'eth':         'ETH',
+  'nft':         'NFT',
+};
+
+/**
+ * Word-level substitutions for page title display only.
+ * Only include unambiguous proper nouns / acronyms that are safe to substitute
+ * within compound titles without changing meaning.
+ */
+const PAGE_TITLE_WORD_FIXES = {
+  'graffpunks': 'GraffPUNKS',
+  'nfts':       'NFTs',
+  'btc':        'BTC',
+  'xrp':        'XRP',
+  'nbg':        'NBG',
+  'gk':         'GK',
+  'defi':       'DeFi',
+  'eth':        'ETH',
+  'nft':        'NFT',
+};
+
+/**
+ * Noisy/weak keywords to filter from display output.
+ * These are raw number fragments or stop words with little informational value.
+ */
+const NOISY_KEYWORDS = new Set([
+  '24', '247', '1m', '2m', '5m', '10m',
+  'non', 'radio', 'free', 'drop', 'via',
+  'and', 'the', 'of', 'in', 'a', 'an',
+]);
 
 /**
  * Returns true if the HTML file at relPath was written by Phase 16's builder
@@ -107,19 +161,98 @@ function slugToTitle(slug) {
 }
 
 /**
+ * Get the proper display name for a cluster label.
+ * Falls back to capitalising the label if no mapping exists.
+ * @param {string} cluster
+ * @returns {string}
+ */
+function clusterDisplayName(cluster) {
+  return CLUSTER_DISPLAY_NAMES[cluster] ||
+    (cluster.charAt(0).toUpperCase() + cluster.slice(1));
+}
+
+/**
+ * Strip the " — Crypto Moonboys Wiki" suffix from a wiki-index title
+ * and clean up underscores so it reads as a human-friendly label.
+ * Applies basic title casing. Does NOT substitute cluster display names
+ * (those are only used for bridge page titles, not individual page labels).
+ * @param {string} rawTitle
+ * @returns {string}
+ */
+function cleanPageTitle(rawTitle) {
+  const stripped = rawTitle
+    .replace(/\s*[—–-]+\s*Crypto Moonboys Wiki\s*$/i, '')
+    .replace(/_/g, ' ')
+    .trim();
+
+  // If already mixed-case (e.g. "Bitcoin (BTC)", "NFTs (Non-Fungible Tokens)"), return as-is.
+  if (/[A-Z]/.test(stripped) && stripped.length > 3) return stripped;
+
+  // Apply basic title casing with known acronym/proper-noun fixes
+  return stripped
+    .split(' ')
+    .map(w => {
+      const lower = w.toLowerCase();
+      if (PAGE_TITLE_WORD_FIXES[lower]) return PAGE_TITLE_WORD_FIXES[lower];
+      return w.charAt(0).toUpperCase() + w.slice(1);
+    })
+    .join(' ');
+}
+
+/**
+ * Clean a section heading by replacing raw cluster labels with proper display names.
+ * e.g. "graffpunks context" → "GraffPUNKS Context"
+ * e.g. "Bridge overview: graffpunks and token" → "Bridge Overview: GraffPUNKS and Crypto Tokens"
+ * @param {string} heading
+ * @param {string[]} clusters
+ * @returns {string}
+ */
+function cleanSectionHeading(heading, clusters) {
+  let h = heading;
+  // Replace known cluster labels with display names
+  for (const c of clusters) {
+    const display = clusterDisplayName(c);
+    if (display !== c) {
+      h = h.replace(new RegExp(`\\b${c}\\b`, 'gi'), display);
+    }
+  }
+  // Capitalise first letter of first word if lowercase
+  return h.charAt(0).toUpperCase() + h.slice(1);
+}
+
+/**
+ * Filter a keyword list to remove noisy/weak entries.
+ * @param {string[]} keywords
+ * @returns {string[]}
+ */
+function filterKeywords(keywords) {
+  return keywords.filter(k => !NOISY_KEYWORDS.has(k.toLowerCase()));
+}
+
+/**
  * Build a clean display title for a bridge page ("A & B — Crypto Moonboys Wiki")
  * or a topic page ("Topic — Crypto Moonboys Wiki").
+ *
+ * For topic pages, prefer the wiki-index canonical title when available
+ * (e.g. "NFTs (Non-Fungible Tokens)" instead of "Nfts").
  */
 function buildTitle(action) {
   if (action.action_type === 'create_bridge_page') {
     const clusters = action.supporting_clusters || [];
     if (clusters.length >= 2) {
-      const a = clusters[0].charAt(0).toUpperCase() + clusters[0].slice(1);
-      const b = clusters[1].charAt(0).toUpperCase() + clusters[1].slice(1);
+      const a = clusterDisplayName(clusters[0]);
+      const b = clusterDisplayName(clusters[1]);
       return `${a} & ${b} — Crypto Moonboys Wiki`;
     }
   }
   const topic = action.target_topic || action.target_url_slug;
+  const slug  = action.target_url_slug || topic.toLowerCase().replace(/\s+/g, '-');
+  const mainUrl = `/wiki/${slug}.html`;
+  const pageInfo = pageInfoByUrl.get(mainUrl);
+  if (pageInfo && pageInfo.title) {
+    const cleaned = cleanPageTitle(pageInfo.title);
+    if (cleaned) return `${cleaned} — Crypto Moonboys Wiki`;
+  }
   return `${slugToTitle(topic)} — Crypto Moonboys Wiki`;
 }
 
@@ -133,23 +266,32 @@ function buildMetaDescription(action) {
     .map(url => pageInfoByUrl.get(url))
     .filter(Boolean)
     .map(p => p.desc)
-    .filter(d => d && d.trim().length > 10);
+    .filter(d => d && d.trim().length > 20);
 
   if (action.action_type === 'create_bridge_page') {
     const clusters = action.supporting_clusters || [];
-    const clusterStr = clusters.join(' and ');
-    const base = `Exploring the intersection of ${clusterStr} within the Crypto Moonboys universe.`;
+    const a = clusterDisplayName(clusters[0] || '');
+    const b = clusterDisplayName(clusters[1] || '');
+    const base = `Connecting ${a} and ${b} in the Crypto Moonboys universe.`;
     if (descs.length > 0) {
-      const snippet = truncateAtWordBoundary(descs[0], 100);
-      return `${base} Related: ${snippet}`;
+      // Use a clean sentence from the strongest related page description.
+      const snippet = truncateAtWordBoundary(descs[0], 110);
+      return `${base} ${snippet}`;
     }
     return base;
   }
 
+  // Topic page: prefer the wiki-index title of the target page itself
   const topic = action.target_topic || action.target_url_slug;
-  const base = `${slugToTitle(topic)} topic hub for the Crypto Moonboys Wiki.`;
+  const slug   = action.target_url_slug || topic.toLowerCase().replace(/\s+/g, '-');
+  const mainInfo = pageInfoByUrl.get(`/wiki/${slug}.html`);
+  if (mainInfo && mainInfo.desc && mainInfo.desc.trim().length > 20) {
+    return truncateAtWordBoundary(mainInfo.desc, 150);
+  }
+  const cleanedTopic = mainInfo ? cleanPageTitle(mainInfo.title) : slugToTitle(topic);
+  const base = `${cleanedTopic} — a topic hub for the Crypto Moonboys Wiki.`;
   if (descs.length > 0) {
-    const snippet = truncateAtWordBoundary(descs[0], 100);
+    const snippet = truncateAtWordBoundary(descs[0], 110);
     return `${base} ${snippet}`;
   }
   return base;
@@ -160,12 +302,12 @@ function buildMetaDescription(action) {
  */
 function buildLeadParagraph(action) {
   const relPages = action.related_pages || [];
-  const keywords = action.recommended_keywords || [];
+  const keywords = filterKeywords(action.recommended_keywords || []);
   const clusters = action.supporting_clusters || [];
 
   if (action.action_type === 'create_bridge_page') {
-    const a = clusters[0] || 'cluster A';
-    const b = clusters[1] || 'cluster B';
+    const a = clusterDisplayName(clusters[0] || 'cluster A');
+    const b = clusterDisplayName(clusters[1] || 'cluster B');
     const keyStr = keywords.slice(0, 5).join(', ');
     const pageDescs = relPages
       .map(url => pageInfoByUrl.get(url))
@@ -174,18 +316,23 @@ function buildLeadParagraph(action) {
       .filter(d => d && d.length > 15)
       .slice(0, 2);
 
-    let lead = `This page bridges the <strong>${a}</strong> and <strong>${b}</strong> topic clusters within the Crypto Moonboys universe.`;
+    let lead = `<strong>${a}</strong> and <strong>${b}</strong> are two interconnected topic clusters in the Crypto Moonboys universe.`;
     if (pageDescs.length > 0) {
-      lead += ` Key pages in this cluster include those described as: &ldquo;${pageDescs[0].slice(0, 120).trim()}&rdquo;`;
+      const snippet = truncateAtWordBoundary(pageDescs[0], 130);
+      lead += ` ${snippet}`;
     }
     if (keyStr) {
-      lead += ` Core keywords: ${keyStr}.`;
+      lead += ` Key topics include: ${keyStr}.`;
     }
     return lead;
   }
 
-  // topic page
+  // Topic page
   const topic = action.target_topic || action.target_url_slug;
+  const slug   = action.target_url_slug || topic.toLowerCase().replace(/\s+/g, '-');
+  const mainInfo = pageInfoByUrl.get(`/wiki/${slug}.html`);
+  const cleanedTopic = mainInfo ? cleanPageTitle(mainInfo.title) : slugToTitle(topic);
+
   const pageDescs = relPages
     .map(url => pageInfoByUrl.get(url))
     .filter(Boolean)
@@ -193,31 +340,81 @@ function buildLeadParagraph(action) {
     .filter(d => d && d.length > 15)
     .slice(0, 2);
 
-  let lead = `This page is a topic hub for <strong>${slugToTitle(topic)}</strong> within the Crypto Moonboys Wiki.`;
+  let lead = `<strong>${cleanedTopic}</strong> is a key topic in the Crypto Moonboys Wiki.`;
   if (pageDescs.length > 0) {
-    lead += ` Related content includes: &ldquo;${pageDescs[0].slice(0, 120).trim()}&rdquo;`;
+    const snippet = truncateAtWordBoundary(pageDescs[0], 130);
+    lead += ` ${snippet}`;
   }
   return lead;
 }
 
 /**
- * For each recommended section, list source_pages from related_pages that are
- * plausibly relevant (all related_pages are used as general sources; each section
- * draws from the full related list since the expansion plan doesn't give per-section
- * page assignments).
+ * For each recommended section, list source_pages that are plausibly relevant.
+ * For bridge pages: partition related pages by cluster membership so that each
+ * context section gets pages primarily from its own cluster, giving each section
+ * a differentiated source list.
  */
 function buildSectionBlocks(action) {
   const relPages = action.related_pages || [];
   const sections = action.recommended_sections || [];
+  const clusters = action.supporting_clusters || [];
+
+  // For bridge pages with two clear clusters, partition related pages by cluster
+  let clusterAPages = relPages.slice(0, 5);
+  let clusterBPages = relPages.slice(0, 5);
+  let bridgePages   = relPages.slice(0, 5);
+
+  if (action.action_type === 'create_bridge_page' && clusters.length >= 2) {
+    const ca = clusters[0].toLowerCase();
+    const cb = clusters[1].toLowerCase();
+
+    const aPages = relPages.filter(url => url.includes(ca));
+    const bPages = relPages.filter(url => url.includes(cb));
+    const other  = relPages.filter(url => !url.includes(ca) && !url.includes(cb));
+
+    clusterAPages = aPages.length > 0 ? [...aPages, ...other].slice(0, 5) : relPages.slice(0, 5);
+    clusterBPages = bPages.length > 0 ? [...bPages, ...other].slice(0, 5) : relPages.slice(0, 5);
+    // Bridge overview uses the top page from each cluster then fills in
+    const bridgeSet = new Set([
+      ...(aPages.length > 0 ? [aPages[0]] : []),
+      ...(bPages.length > 0 ? [bPages[0]] : []),
+      ...relPages,
+    ]);
+    bridgePages = [...bridgeSet].slice(0, 5);
+  }
 
   return sections.map(heading => {
-    // Assign source pages round-robin style across sections to avoid duplication
-    // We use all related_pages as supporting sources for each section — they are the
-    // real signal basis for this section existing.
+    const h = heading.toLowerCase();
+    let srcPages = relPages.slice(0, 5);
+
+    if (action.action_type === 'create_bridge_page' && clusters.length >= 2) {
+      const ca = clusters[0].toLowerCase();
+      const cb = clusters[1].toLowerCase();
+      if (h.includes('overview') || h.includes('bridge overview')) {
+        srcPages = bridgePages;
+      } else if (h.includes(`${ca} context`) || (h.includes('context') && h.includes(ca))) {
+        srcPages = clusterAPages;
+      } else if (h.includes(`${cb} context`) || (h.includes('context') && h.includes(cb))) {
+        srcPages = clusterBPages;
+      } else if (h.includes('cross-cluster') || h.includes('key cross') || h.includes('entities')) {
+        // Entity connections: use a blend of A and B pages
+        const aPage = clusterAPages[0];
+        const bPage = clusterBPages[0];
+        const blended = new Set([
+          ...(aPage ? [aPage] : []),
+          ...(bPage ? [bPage] : []),
+          ...relPages,
+        ]);
+        srcPages = [...blended].slice(0, 5);
+      } else {
+        srcPages = relPages.slice(0, 5);
+      }
+    }
+
     return {
-      heading,
-      purpose: sectionPurpose(action, heading),
-      source_pages: relPages.slice(0, 5)
+      heading: cleanSectionHeading(heading, clusters),
+      purpose: sectionPurpose(action, heading),  // use raw heading for purpose matching
+      source_pages: srcPages
     };
   });
 }
@@ -250,6 +447,8 @@ function sectionPurpose(action, heading) {
 
 /**
  * Collect internal link targets from related_pages + entity graph.
+ * Prefers diverse targets — deduplicates near-identical slug variants
+ * (e.g. graffpunks-247-radio vs graffpunks-24-7-radio).
  */
 function buildInternalLinkTargets(action) {
   const relPages = action.related_pages || [];
@@ -266,7 +465,20 @@ function buildInternalLinkTargets(action) {
     }
   }
 
-  return [...targets].slice(0, 10);
+  // Deduplicate near-identical slugs: keep the shorter canonical form
+  const seen = new Set();
+  const deduped = [];
+  for (const url of targets) {
+    const slug = url.replace('/wiki/', '').replace('.html', '');
+    // Normalise: strip trailing numbers / common variant suffixes for dedup key
+    const normKey = slug.replace(/-\d+(-\d+)*$/, '').replace(/-radio$/, '').replace(/-programme$|-program$/, '-prog');
+    if (!seen.has(normKey)) {
+      seen.add(normKey);
+      deduped.push(url);
+    }
+  }
+
+  return deduped.slice(0, 10);
 }
 
 // ---------------------------------------------------------------------------
@@ -318,6 +530,7 @@ const drafts = highConfidenceActions.map(action => {
     source_action_priority: action.priority_score,
     reasons:                action.reasons || [],
     related_pages:          relatedPages,
+    supporting_clusters:    action.supporting_clusters || [],
     recommended_keywords:   action.recommended_keywords || [],
     recommended_sections:   recommendedSections,
     // Provenance tracking (Phase 18)
@@ -377,14 +590,17 @@ console.log(`${qualifying.length} draft(s) qualify for HTML generation; generati
 
 for (const d of toGenerate) {
   const htmlPath = path.join(ROOT, 'wiki', `${d.target_url_slug}.html`);
-  if (fs.existsSync(htmlPath)) {
-    console.warn(`  SKIP (already exists): wiki/${d.target_url_slug}.html`);
+  const relPath  = `wiki/${d.target_url_slug}.html`;
+  if (fs.existsSync(htmlPath) && !isPhase16GeneratedDraft(relPath)) {
+    // Only skip if this is a genuine pre-existing (non-draft) page — never overwrite those.
+    console.warn(`  SKIP (pre-existing non-draft page): wiki/${d.target_url_slug}.html`);
     continue;
   }
 
   const html = buildDraftHtml(d);
   fs.writeFileSync(htmlPath, html, 'utf8');
-  console.log(`  Created: wiki/${d.target_url_slug}.html`);
+  const action = fs.existsSync(htmlPath) ? 'Updated' : 'Created';
+  console.log(`  ${action}: wiki/${d.target_url_slug}.html`);
 }
 
 // ---------------------------------------------------------------------------
@@ -401,7 +617,7 @@ function buildDraftHtml(d) {
     const sourcesHtml = block.source_pages.length > 0
       ? `<ul class="draft-source-list">\n${block.source_pages.map(p => {
           const info = pageInfoByUrl.get(p);
-          const label = info ? info.title : p;
+          const label = info ? cleanPageTitle(info.title) : p;
           return `        <li><a href="${p}">${escapeHtml(label)}</a></li>`;
         }).join('\n')}\n      </ul>`
       : '';
@@ -415,14 +631,18 @@ function buildDraftHtml(d) {
   const internalLinksHtml = d.draft.internal_link_targets.length > 0
     ? `<ul>\n${d.draft.internal_link_targets.map(url => {
         const info = pageInfoByUrl.get(url);
-        const label = info ? info.title : url;
+        const label = info ? cleanPageTitle(info.title) : url;
         return `      <li><a href="${url}">${escapeHtml(label)}</a></li>`;
       }).join('\n')}\n    </ul>`
     : '<p>No internal link targets resolved.</p>';
 
-  const keywordsHtml = d.recommended_keywords.length > 0
-    ? d.recommended_keywords.map(k => `<code>${escapeHtml(k)}</code>`).join(' ')
+  const filteredKeywords = filterKeywords(d.recommended_keywords || []);
+  const keywordsHtml = filteredKeywords.length > 0
+    ? filteredKeywords.map(k => `<code>${escapeHtml(k)}</code>`).join(' ')
     : '—';
+
+  const clustersDisplay = (d.supporting_clusters || []).map(c => clusterDisplayName(c)).join(', ') ||
+    filteredKeywords.slice(0, 4).join(', ') || '—';
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -527,7 +747,7 @@ ${sectionHtml}
         <div class="sidebar-body">
           <p><strong>Priority score:</strong> ${d.source_action_priority}</p>
           <p><strong>Type:</strong> ${escapeHtml(d.action_type)}</p>
-          <p><strong>Clusters:</strong> ${escapeHtml((d.recommended_keywords || []).slice(0, 4).join(', '))}</p>
+          <p><strong>Clusters:</strong> ${escapeHtml(clustersDisplay)}</p>
         </div>
       </div>
     </aside>
