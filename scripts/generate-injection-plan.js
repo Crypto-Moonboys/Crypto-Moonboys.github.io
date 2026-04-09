@@ -439,13 +439,15 @@ function main() {
     // Build a score lookup for candidates on this page from entity-graph.
     // Use final_score (Phase 12 freshness-aware score) when available; fall back
     // to score (Phase 11) so output is deterministic across graph versions.
+    // rank_score_boost is added to make high-rank targets even more dominant
+    // (Change 3, Phase 21: weight rank score into graph score map).
     const pageGraphEntry = entityGraph[pageKey];
     const graphScoreMap  = {};
     if (pageGraphEntry && Array.isArray(pageGraphEntry.related_pages)) {
       for (const rel of pageGraphEntry.related_pages) {
-        graphScoreMap[rel.target_url] = rel.final_score !== undefined
-          ? rel.final_score
-          : rel.score;
+        const base = rel.final_score !== undefined ? rel.final_score : rel.score;
+        const rankBoost = Math.min(10, Math.floor((rel.rank_score_boost || 0)));
+        graphScoreMap[rel.target_url] = base + rankBoost;
       }
     }
 
@@ -531,16 +533,30 @@ function main() {
     // ---------------------------------------------------------------------------
     // Phase 2: Select up to MAX_PER_PAGE insertions with cluster-balance logic.
     //
-    // Sort by: placement_score DESC → intent_match_score DESC →
-    //          graph_score DESC → target_url ASC
+    // Sort by: graph_score DESC (primary, Phase 21) → placement_score DESC →
+    //          intent_match_score DESC → target_url ASC
     // Then greedily select, capping same-category picks at MAX_SAME_CATEGORY.
     // Deferred (over-represented category) candidates fill remaining slots if
     // no diverse alternatives exist.
     // ---------------------------------------------------------------------------
+
+    // Amplify already-strong targets before sorting so dominant pages win more
+    // consistently without introducing randomness (Change 2, Phase 21).
+    for (const m of candidateMatches) {
+      m._graphScore = m._graphScore + Math.min(10, Math.floor(m._graphScore * 0.15));
+    }
+
+    // Soft floor: push the weakest candidate again so lightly-linked pages still
+    // have a chance to fill slots deferred by the diversity cap (Change 5, Phase 21).
+    if (candidateMatches.length > 5) {
+      candidateMatches.push(candidateMatches[candidateMatches.length - 1]);
+    }
+
+    // graph_score is now the PRIMARY sort key (Change 1, Phase 21).
     candidateMatches.sort((a, b) => {
+      if (b._graphScore        !== a._graphScore)        return b._graphScore        - a._graphScore;
       if (b.placement_score    !== a.placement_score)    return b.placement_score    - a.placement_score;
       if (b.intent_match_score !== a.intent_match_score) return b.intent_match_score - a.intent_match_score;
-      if (b._graphScore        !== a._graphScore)        return b._graphScore        - a._graphScore;
       return a.target_url.localeCompare(b.target_url);
     });
 
