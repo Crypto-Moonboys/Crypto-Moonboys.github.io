@@ -597,10 +597,10 @@ for (const d of toGenerate) {
     continue;
   }
 
+  const existsBefore = fs.existsSync(htmlPath);
   const html = buildDraftHtml(d);
   fs.writeFileSync(htmlPath, html, 'utf8');
-  const action = fs.existsSync(htmlPath) ? 'Updated' : 'Created';
-  console.log(`  ${action}: wiki/${d.target_url_slug}.html`);
+  console.log(`  ${existsBefore ? 'Updated' : 'Created'}: wiki/${d.target_url_slug}.html`);
 }
 
 // ---------------------------------------------------------------------------
@@ -641,8 +641,12 @@ function buildDraftHtml(d) {
     ? filteredKeywords.map(k => `<code>${escapeHtml(k)}</code>`).join(' ')
     : '—';
 
-  const clustersDisplay = (d.supporting_clusters || []).map(c => clusterDisplayName(c)).join(', ') ||
-    filteredKeywords.slice(0, 4).join(', ') || '—';
+  // Use supporting_clusters for display; fall back to raw (unfiltered) recommended_keywords
+  // so the sidebar always shows meaningful cluster labels rather than filtered-out terms.
+  const rawClusters = d.supporting_clusters || [];
+  const clustersDisplay = rawClusters.length > 0
+    ? rawClusters.map(c => clusterDisplayName(c)).join(', ')
+    : (d.recommended_keywords || []).slice(0, 4).join(', ') || '—';
 
   return `<!DOCTYPE html>
 <html lang="en">
