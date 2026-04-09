@@ -2,28 +2,41 @@
 'use strict';
 
 /**
- * Phase 23 — generate-hub-pages.js
+ * Phase 23 (fix) — generate-hub-pages.js
  *
- * Produces cluster hub pages from real graph + content signals:
- *   js/entity-graph.json, js/wiki-index.json, js/entity-map.json,
- *   js/link-graph.json, js/link-map.json
+ * Produces cluster hub pages from real graph signals ONLY.
+ * Cluster detection uses mutual-adjacency union-find on entity-graph.json.
+ * No keyword matching, no tag scanning, no manual cluster lists.
  *
- * Outputs new wiki/*.html hub pages for the strongest ecosystems.
- * Does NOT touch ranking logic, search logic, or existing page content.
+ * Algorithm:
+ *   1. Build directed adjacency from entity-graph.json (score >= SCORE_THRESHOLD)
+ *   2. Build mutual edges: a↔b iff score(a→b) >= threshold AND score(b→a) >= threshold
+ *   3. Union-find connected components
+ *   4. Filter: size >= MIN_CLUSTER_SIZE
+ *   5. Score: rank_sum = Σ rank_score(members)
+ *   6. Keep top MAX_HUBS by rank_sum
+ *   7. For each hub: anchor = highest rank_score member
+ *      hub_slug = anchor_slug + "-ecosystem"
+ *   8. Content synthesised from real wiki-index descriptions + graph data
  */
 
 const fs   = require('fs');
 const path = require('path');
 
-const ROOT             = path.resolve(__dirname, '..');
-const WIKI_DIR         = path.join(ROOT, 'wiki');
-const WIKI_INDEX_PATH  = path.join(ROOT, 'js', 'wiki-index.json');
-const ENTITY_GRAPH_PATH= path.join(ROOT, 'js', 'entity-graph.json');
-const ENTITY_MAP_PATH  = path.join(ROOT, 'js', 'entity-map.json');
-const LINK_GRAPH_PATH  = path.join(ROOT, 'js', 'link-graph.json');
-const LINK_MAP_PATH    = path.join(ROOT, 'js', 'link-map.json');
+const ROOT              = path.resolve(__dirname, '..');
+const WIKI_DIR          = path.join(ROOT, 'wiki');
+const WIKI_INDEX_PATH   = path.join(ROOT, 'js', 'wiki-index.json');
+const ENTITY_GRAPH_PATH = path.join(ROOT, 'js', 'entity-graph.json');
+const LINK_GRAPH_PATH   = path.join(ROOT, 'js', 'link-graph.json');
 
-// ── helpers ────────────────────────────────────────────────────────────────
+// ── tunables ────────────────────────────────────────────────────────────────
+
+const SCORE_THRESHOLD   = 55;   // minimum entity-graph score for a mutual edge
+const MIN_CLUSTER_SIZE  = 4;    // discard clusters smaller than this
+const MAX_HUBS          = 5;    // generate at most this many hub pages
+const MAX_HUB_MEMBERS   = 15;   // max cluster members shown on each hub page
+
+// ── helpers ─────────────────────────────────────────────────────────────────
 
 function readJson(p) {
   return JSON.parse(fs.readFileSync(p, 'utf8'));
@@ -34,19 +47,14 @@ function slugFromUrl(url) {
 }
 
 function urlToTitle(url) {
-  const slug = slugFromUrl(url);
-  return slug.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+  return slugFromUrl(url).replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
 }
 
 function cleanDisplayTitle(title) {
-  return title
+  return String(title || '')
     .replace(/\s+[—–-]\s+Crypto Moonboys Wiki$/i, '')
     .replace(/_/g, ' ')
     .trim();
-}
-
-function normaliseTitle(title) {
-  return title.toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
 }
 
 function escapeHtml(str) {
@@ -57,620 +65,296 @@ function escapeHtml(str) {
     .replace(/"/g, '&quot;');
 }
 
-// ── cluster definitions ────────────────────────────────────────────────────
-//
-// Each definition drives both member selection AND page content generation.
-// Content is synthesised ONLY from real repo signals — no invented canon.
+// ── graph-based cluster detection ───────────────────────────────────────────
 
-const CLUSTER_DEFS = [
-  {
-    id:      'graffpunks-ecosystem',
-    slug:    'graffpunks-ecosystem',
-    label:   'GraffPUNKS Ecosystem',
-    emoji:   '🎨',
-    badge:   '🎨 Lore',
-    category:'lore',
-    catLabel:'Lore',
-    // signals used to decide membership
-    matchTags:    ['graffpunks', 'punk'],
-    matchUrlFrag: 'graffpunks',
-    coreUrls: [
-      '/wiki/graffpunks.html',
-      '/wiki/block-topia.html',
-      '/wiki/darren-cullen-ser.html',
-      '/wiki/punk-token.html',
-      '/wiki/graffpunks-24-7.html',
-    ],
-    maxMembers: 15,
-    description:
-      'The GraffPUNKS Ecosystem is the creative and cultural engine of the Crypto Moonboys universe — ' +
-      'a multi-chain insurgency of street-art rebels, blockchain radio, NFT collections, and digital lore ' +
-      'spanning WAX, XRPL, SOL, and Bitcoin Cash.',
-    leadParagraphs: [
-      'The GraffPUNKS Ecosystem sits at the pulsating core of the Crypto Moonboys universe. ' +
-      'Born from the real-world Graffiti Kings collective founded by Darren Cullen (SER) in London, ' +
-      'it extends four decades of street-art defiance into the blockchain space — minting rebellion as NFTs, ' +
-      'blasting subversive frequencies via the GraffPUNKS 24/7 radio, and weaving a rich vein of lore ' +
-      'across Block Topia\'s neon-lit datascape.',
-      'More than a faction, the GraffPUNKS Ecosystem is a complete creative infrastructure: ' +
-      'a native token ($PUNK), an ever-growing NFT collection on AtomicHub and multi-chain platforms, ' +
-      'a blockchain radio station, a Substack and Medium publication network, and a web of interconnected ' +
-      'characters, games, and factions that make it the most graph-central cluster in the wiki.',
-    ],
-    sections: [
-      {
-        id:    'overview',
-        title: 'Ecosystem Overview',
-        body: [
-          'The GraffPUNKS Ecosystem emerged when real-world street-art culture collided with crypto-native ' +
-          'technology. Its foundation is the GraffPUNKS faction — a digital uprising that treats every NFT ' +
-          'drop as a spray-can strike against centralised control. The ecosystem radiates outward through ' +
-          'affiliated tokens, radio broadcasts, games, and lore pages, all reinforcing a shared aesthetic ' +
-          'of creative resistance.',
-          'Key pillars of the ecosystem include the <a href="/wiki/graffpunks.html">GraffPUNKS faction</a>, ' +
-          'the <a href="/wiki/punk-token.html">$PUNK token</a>, the ' +
-          '<a href="/wiki/graffpunks-24-7.html">GraffPUNKS 24/7 blockchain radio</a>, ' +
-          'the <a href="/wiki/graffpunks-collection.html">GraffPUNKS NFT collection</a>, and ' +
-          '<a href="/wiki/block-topia.html">Block Topia</a> as the shared digital arena for all activity.',
-        ],
-      },
-      {
-        id:    'key-entities',
-        title: 'Key Entities',
-        body: [
-          'At the centre stands <a href="/wiki/graffpunks.html">GraffPUNKS</a>, the founding faction whose ' +
-          'graph centrality and rank score dominate this cluster. ' +
-          '<a href="/wiki/darren-cullen-ser.html">Darren Cullen (SER)</a> provides the real-world graffiti ' +
-          'heritage. <a href="/wiki/block-topia.html">Block Topia</a> is the shared digital metropolis where ' +
-          'ecosystem activity concentrates. The <a href="/wiki/punk-token.html">$PUNK token</a> fuels ' +
-          'economic activity across NFT trades, staking, and in-game mechanics.',
-          'The <a href="/wiki/graffpunks-24-7.html">GraffPUNKS 24/7</a> blockchain radio is both a ' +
-          'cultural touchstone and a tactical asset — broadcasting coded lore frequencies used in ' +
-          '<a href="/wiki/hard-fork-games.html">Hard Fork Games</a>. ' +
-          'The <a href="/wiki/graffpunks-collection.html">GraffPUNKS Collection</a> and ' +
-          '<a href="/wiki/atomichub-graffpunks-collection.html">AtomicHub listing</a> form the NFT backbone, ' +
-          'while the Substack and Medium channels sustain the narrative layer.',
-        ],
-      },
-      {
-        id:    'lore-context',
-        title: 'Lore Context',
-        body: [
-          'Within Block Topia\'s lore, GraffPUNKS operate as a clandestine creative insurgency. ' +
-          'Their origin event — the "Genesis Spray" NFT drop — crashed WAX servers under overwhelming demand, ' +
-          'and is commemorated annually as "Spray Day." The hidden "CipherCanvas" protocol embeds encrypted ' +
-          'resistance dispatches inside NFT artworks, connecting the faction to allied groups like the ' +
-          '<a href="/wiki/bitcoin-kids.html">Bitcoin Kids</a>.',
-          'The 1M Free NFTs programme extends ecosystem reach to new players, flooding the Sacred Chain ' +
-          'with accessible tokenised tags and turning every free drop into a tactical battleground. ' +
-          'GraffPUNKS\' multi-chain presence across WAX, XRPL, SOL, and Bitcoin Cash ensures no single ' +
-          'chain can contain — or censor — the uprising.',
-        ],
-      },
-      {
-        id:    'graph-connections',
-        title: 'Graph Connections',
-        body: [
-          'GraffPUNKS sits at the intersection of multiple high-density graph clusters: it links directly ' +
-          'to the <a href="/wiki/hodl-wars-ecosystem.html">HODL Wars Ecosystem</a>, the ' +
-          '<a href="/wiki/bitcoin-ecosystem.html">Bitcoin Ecosystem</a>, the ' +
-          '<a href="/wiki/nft-ecosystem.html">NFT Ecosystem</a>, and the ' +
-          '<a href="/wiki/gkniftyheads-ecosystem.html">GKniftyHEADS Ecosystem</a>. ' +
-          'This cross-cluster density makes it the primary navigational hub of the entire wiki.',
-        ],
-      },
-    ],
-  },
-
-  {
-    id:      'hodl-wars-ecosystem',
-    slug:    'hodl-wars-ecosystem',
-    label:   'HODL Wars Ecosystem',
-    emoji:   '⚔️',
-    badge:   '⚔️ Lore',
-    category:'lore',
-    catLabel:'Lore',
-    matchTags:    ['hodl', 'war', 'warriors'],
-    matchUrlFrag: 'hodl',
-    coreUrls: [
-      '/wiki/hodl-wars.html',
-      '/wiki/hodl-warriors.html',
-      '/wiki/diamond-hands.html',
-      '/wiki/moon-mission.html',
-      '/wiki/hodl-wars-game.html',
-    ],
-    maxMembers: 12,
-    description:
-      'The HODL Wars Ecosystem is the conflict engine of the Crypto Moonboys universe — ' +
-      'a live NFT saga of faction warfare, chain sieges, and blockchain-native combat ' +
-      'across Block Topia\'s contested datascape.',
-    leadParagraphs: [
-      'HODL Wars is the beating heart of conflict in the Crypto Moonboys universe — a live saga and ' +
-      'playable NFT game that transforms Block Topia into a relentless warzone. ' +
-      'Factions and armies clash across WAX, XRPL, SOL, and Bitcoin Cash battlefields, ' +
-      'fighting Chain Sieges, triggering Hard Fork ruptures, and burning tokens in the ' +
-      'pursuit of digital supremacy.',
-      'The HODL Wars Ecosystem encompasses not only the central conflict mechanic but also ' +
-      'the factions, armies, tokens, and game modes that give the wars their structure. ' +
-      'From the elite <a href="/wiki/hodl-warriors.html">HODL Warriors</a> to the volatile ' +
-      '<a href="/wiki/diamond-hands.html">Diamond Hands</a> philosophy, every element of this ' +
-      'cluster feeds directly into the main conflict narrative.',
-    ],
-    sections: [
-      {
-        id:    'overview',
-        title: 'Ecosystem Overview',
-        body: [
-          'HODL Wars is defined by perpetual, multi-faction conflict over blockchain nodes and economic ' +
-          'resources in Block Topia. The ecosystem centres on ' +
-          '<a href="/wiki/hodl-wars.html">HODL Wars</a> (the saga and game), ' +
-          '<a href="/wiki/hodl-warriors.html">HODL Warriors</a> (the premier fighting faction), and ' +
-          'mechanics like Burn-to-Earn and Chain Sieges that tie real token activity to in-game outcomes.',
-          'The ecosystem\'s graph centrality is second only to GraffPUNKS, with strong inbound link density ' +
-          'from character pages, token pages, and game pages alike. Its rank scores reflect deep content: ' +
-          'HODL Wars and HODL Warriors are consistently in the top five pages by authority across the wiki.',
-        ],
-      },
-      {
-        id:    'key-entities',
-        title: 'Key Entities',
-        body: [
-          '<a href="/wiki/hodl-wars.html">HODL Wars</a> is the canonical conflict saga — the lore vehicle ' +
-          'and playable NFT game at the centre of this cluster. ' +
-          '<a href="/wiki/hodl-warriors.html">HODL Warriors</a> is the faction that prosecutes its battles ' +
-          'most aggressively. <a href="/wiki/hodl-x-warriors.html">HODL × Warriors</a> and ' +
-          '<a href="/wiki/hodl-warriors-army.html">HODL Warriors Army</a> extend the faction\'s military depth.',
-          '<a href="/wiki/diamond-hands.html">Diamond Hands</a> represents the ideological core of the ' +
-          'HODL philosophy — the refusal to sell under pressure — which is both a game mechanic and a ' +
-          'lore principle. <a href="/wiki/moon-mission.html">Moon Mission</a> is the ' +
-          'aspirational end-state that HODL Wars factions ultimately fight to reach. ' +
-          '<a href="/wiki/hodl-wars-game.html">HODL Wars Game</a> provides the playable mechanics layer.',
-        ],
-      },
-      {
-        id:    'lore-context',
-        title: 'Lore Context',
-        body: [
-          'HODL Wars was not born of rebellion alone — lore suggests it was originally a corporate ' +
-          'simulation designed by blockchain overlords to predict and suppress insurgent movements, ' +
-          'before GraffPUNKS hackers infiltrated and turned it into a real battleground. ' +
-          'This origin haunts every Chain Siege: players fight a war whose rules were written by the enemy.',
-          'Rare events like the "Echo of the Fork" resurrect fallen warriors as spectral avatars, ' +
-          'and the mythic "Null Zone" — a hidden battlefield accessible only during massive token burns — ' +
-          'is rumoured to hold ancient AI guardians protecting secrets that could end the conflict entirely. ' +
-          'The ' +
-          '<a href="/wiki/rug-pull-wars.html">Rug Pull Wars</a> and ' +
-          '<a href="/wiki/the-fomo-plague.html">FOMO Plague</a> represent destabilising sub-conflicts ' +
-          'that flare within the larger war.',
-        ],
-      },
-      {
-        id:    'graph-connections',
-        title: 'Graph Connections',
-        body: [
-          'The HODL Wars cluster connects directly to the ' +
-          '<a href="/wiki/graffpunks-ecosystem.html">GraffPUNKS Ecosystem</a> (shared battleground in ' +
-          'Block Topia), the <a href="/wiki/bitcoin-ecosystem.html">Bitcoin Ecosystem</a> (Bitcoin Kids ' +
-          'are major faction combatants), and the <a href="/wiki/nft-ecosystem.html">NFT Ecosystem</a> ' +
-          '(Burn-to-Earn and playable NFTs are central mechanics). ' +
-          'High cross-link density makes this hub a natural navigation entry-point for conflict-related lore.',
-        ],
-      },
-    ],
-  },
-
-  {
-    id:      'bitcoin-ecosystem',
-    slug:    'bitcoin-ecosystem',
-    label:   'Bitcoin Ecosystem',
-    emoji:   '₿',
-    badge:   '₿ Lore',
-    category:'lore',
-    catLabel:'Lore',
-    matchTags:    ['bitcoin', 'btc'],
-    matchUrlFrag: 'bitcoin',
-    coreUrls: [
-      '/wiki/bitcoin.html',
-      '/wiki/bitcoin-kids.html',
-      '/wiki/bitcoin-btc.html',
-      '/wiki/alfie-blaze.html',
-      '/wiki/bitcoin-graffpunks.html',
-    ],
-    maxMembers: 12,
-    description:
-      'The Bitcoin Ecosystem covers BTC as both real-world cryptocurrency and as the cultural ' +
-      'backbone of the Crypto Moonboys universe — from technical fundamentals to the ' +
-      'Bitcoin Kids faction and their Block Topia resistance.',
-    leadParagraphs: [
-      'Bitcoin (BTC) is the foundational asset of the Crypto Moonboys universe — both as the ' +
-      'real-world first cryptocurrency and as the ideological bedrock on which Block Topia\'s ' +
-      'resistance culture is built. The Bitcoin Ecosystem hub surfaces the full depth of this ' +
-      'cluster: technical articles, lore factions, key characters, and cross-chain connections ' +
-      'that make BTC central to every major narrative thread.',
-      'At the lore level, Bitcoin\'s ethos of decentralisation and self-custody maps directly onto ' +
-      'Block Topia\'s resistance against blockchain overlords. The ' +
-      '<a href="/wiki/bitcoin-kids.html">Bitcoin Kids</a> are among the wiki\'s highest-ranked pages, ' +
-      'reflecting both content depth and graph centrality — their story of digital-native youth ' +
-      'fighting for financial sovereignty resonates throughout the entire narrative.',
-    ],
-    sections: [
-      {
-        id:    'overview',
-        title: 'Ecosystem Overview',
-        body: [
-          'The Bitcoin Ecosystem spans two overlapping domains. ' +
-          'The first is technical and encyclopedic: ' +
-          '<a href="/wiki/bitcoin.html">Bitcoin (BTC)</a> covers blockchain fundamentals, ' +
-          'the halving cycle, proof-of-work, and real-world adoption signals. ' +
-          '<a href="/wiki/bitcoin-btc.html">Bitcoin BTC</a> extends this with detailed token analysis. ' +
-          'These pages serve readers seeking factual grounding in the asset.',
-          'The second domain is lore-native: the ' +
-          '<a href="/wiki/bitcoin-kids.html">Bitcoin Kids</a> faction, ' +
-          '<a href="/wiki/alfie-blaze.html">Alfie Blaze</a> as their figurehead, and the ' +
-          '<a href="/wiki/bitcoin-graffpunks.html">Bitcoin × GraffPUNKS</a> intersection represent ' +
-          'how Bitcoin\'s philosophy has been absorbed into Block Topia\'s resistance culture. ' +
-          'The Bitcoin Kids are one of the most graph-connected factions in the wiki, with strong ' +
-          'inbound links from characters, tokens, and game pages.',
-        ],
-      },
-      {
-        id:    'key-entities',
-        title: 'Key Entities',
-        body: [
-          '<a href="/wiki/bitcoin.html">Bitcoin</a> is the canonical technology article — the entry point ' +
-          'for readers seeking to understand BTC in both real-world and lore contexts. ' +
-          '<a href="/wiki/bitcoin-kids.html">Bitcoin Kids</a> is the primary lore faction, ' +
-          'ranking among the top three pages by score in the entire wiki. ' +
-          '<a href="/wiki/alfie-blaze.html">Alfie Blaze</a> and ' +
-          '<a href="/wiki/alfie-the-bitcoin-kid-blaze.html">Alfie the Bitcoin Kid Blaze</a> ' +
-          'are key character entries that personalise the faction\'s story.',
-          '<a href="/wiki/bitcoin-x-kids.html">Bitcoin × Kids</a> and ' +
-          '<a href="/wiki/the-bitcoin-kid-army.html">The Bitcoin Kid Army</a> extend the faction\'s ' +
-          'scale, while <a href="/wiki/bitcoin-graffpunks.html">Bitcoin GraffPUNKS</a> documents the ' +
-          'intersection of Bitcoin ideology with the GraffPUNKS creative insurgency — a bridge page ' +
-          'that gives this cluster strong cross-ecosystem connectivity.',
-        ],
-      },
-      {
-        id:    'lore-context',
-        title: 'Lore Context',
-        body: [
-          'In Block Topia\'s lore, Bitcoin represents the primordial chain — the original act of ' +
-          'financial defiance from which all subsequent resistance movements draw inspiration. ' +
-          'The Bitcoin Kids embody a new generation raised entirely inside this digital-native ' +
-          'paradigm: they have never known a world without decentralised currency, and they fight ' +
-          'with the uncompromising certainty that sovereign money is a birthright.',
-          'Alfie Blaze leads the Bitcoin Kids with a combination of street smarts and blockchain ' +
-          'fluency, coordinating faction movements partly via encrypted broadcasts from the ' +
-          '<a href="/wiki/graffpunks-24-7.html">GraffPUNKS 24/7 radio</a>. ' +
-          'The faction\'s alliance with GraffPUNKS and participation in ' +
-          '<a href="/wiki/hodl-wars.html">HODL Wars</a> battlefields makes them central ' +
-          'to Block Topia\'s conflict narrative.',
-        ],
-      },
-      {
-        id:    'graph-connections',
-        title: 'Graph Connections',
-        body: [
-          'The Bitcoin Ecosystem is a high-centrality cluster linked strongly to the ' +
-          '<a href="/wiki/graffpunks-ecosystem.html">GraffPUNKS Ecosystem</a>, the ' +
-          '<a href="/wiki/hodl-wars-ecosystem.html">HODL Wars Ecosystem</a>, and the ' +
-          '<a href="/wiki/nft-ecosystem.html">NFT Ecosystem</a>. ' +
-          'Bitcoin\'s token page connects outward to ' +
-          '<a href="/wiki/ethereum.html">Ethereum</a>, <a href="/wiki/solana.html">Solana</a>, ' +
-          'and <a href="/wiki/blockchain.html">Blockchain</a> for readers seeking broader ' +
-          'crypto-technology context.',
-        ],
-      },
-    ],
-  },
-
-  {
-    id:      'nft-ecosystem',
-    slug:    'nft-ecosystem',
-    label:   'NFT Ecosystem',
-    emoji:   '🖼️',
-    badge:   '🖼️ Lore',
-    category:'lore',
-    catLabel:'Lore',
-    matchTags:    ['nfts', 'nft', 'collection', 'genesis'],
-    matchUrlFrag: 'nft',
-    coreUrls: [
-      '/wiki/nfts.html',
-      '/wiki/graffpunks-collection.html',
-      '/wiki/1m-free-nfts-programme.html',
-      '/wiki/playable-nft-murals.html',
-      '/wiki/xrp-kids-genesis-nfts.html',
-    ],
-    maxMembers: 14,
-    description:
-      'The NFT Ecosystem covers the full range of non-fungible token activity in the Crypto Moonboys ' +
-      'universe — from foundational technology articles to lore-rich collection pages, ' +
-      'free NFT campaigns, playable murals, and genesis drops.',
-    leadParagraphs: [
-      'NFTs are not merely collectibles in the Crypto Moonboys universe — they are deeds, weapons, ' +
-      'cultural statements, and access keys. The NFT Ecosystem hub surfaces the full depth of this ' +
-      'cluster: foundational technology, faction-defining collections, democratisation campaigns, ' +
-      'and gameplay mechanics that make non-fungible tokens central to Block Topia\'s economy and lore.',
-      'The ecosystem spans WAX, XRPL, SOL, and Bitcoin Cash chains, reflecting the multi-chain ' +
-      'strategy of the GraffPUNKS and affiliated factions. Its richest signal is breadth: ' +
-      'the <a href="/wiki/1m-free-nfts-programme.html">1M Free NFTs programme</a> alone demonstrates ' +
-      'a commitment to open access that distinguishes this ecosystem from purely speculative NFT projects.',
-    ],
-    sections: [
-      {
-        id:    'overview',
-        title: 'Ecosystem Overview',
-        body: [
-          'The NFT Ecosystem is the primary interface between the Crypto Moonboys lore and the real-world ' +
-          'blockchain infrastructure that powers it. Every major faction deploys NFTs as artefacts of ' +
-          'identity, loyalty, and tactical advantage: the GraffPUNKS\' collection on AtomicHub, ' +
-          'the 1M Free NFTs campaign, XRP Kids genesis drops, and playable NFT murals all contribute ' +
-          'distinct content and graph weight to this cluster.',
-          'The technical foundation is documented in <a href="/wiki/nfts.html">NFTs</a> and ' +
-          '<a href="/wiki/smart-nft-mechanics.html">Smart NFT Mechanics</a>, giving readers both ' +
-          'educational grounding and lore context. The ecosystem is tightly linked to the ' +
-          '<a href="/wiki/graffpunks-ecosystem.html">GraffPUNKS Ecosystem</a> and the ' +
-          '<a href="/wiki/gkniftyheads-ecosystem.html">GKniftyHEADS Ecosystem</a>, which generate the ' +
-          'largest volume of NFT activity in the wiki.',
-        ],
-      },
-      {
-        id:    'key-entities',
-        title: 'Key Entities',
-        body: [
-          '<a href="/wiki/nfts.html">NFTs</a> is the canonical technology overview. ' +
-          '<a href="/wiki/graffpunks-collection.html">GraffPUNKS Collection</a> is the culturally ' +
-          'dominant NFT series, rooted in Darren Cullen\'s Graffiti Kings heritage. ' +
-          '<a href="/wiki/1m-free-nfts-programme.html">1M Free NFTs Programme</a> is the ' +
-          'democratisation campaign that has the widest reach across new players and communities.',
-          '<a href="/wiki/playable-nft-murals.html">Playable NFT Murals</a> represents a novel mechanics ' +
-          'layer — NFTs that function as in-game objects, not merely collectibles. ' +
-          '<a href="/wiki/xrp-kids-genesis-nfts.html">XRP Kids Genesis NFTs</a> documents the ' +
-          'founding collection of the XRP Kids faction. ' +
-          '<a href="/wiki/atomichub-graffpunks-collection.html">AtomicHub GraffPUNKS Collection</a> ' +
-          'provides the primary marketplace entry point for the GraffPUNKS NFT series.',
-        ],
-      },
-      {
-        id:    'lore-context',
-        title: 'Lore Context',
-        body: [
-          'Every NFT drop in Block Topia carries lore weight. The "Genesis Spray" was not just the ' +
-          'first GraffPUNKS collection — it was the spark that proved the blockchain could be a canvas. ' +
-          'Free NFTs are not charity; they are tactical infiltration, flooding the Sacred Chain with ' +
-          'tokenised resistance and lowering the barrier to entry for new rebels joining the fight.',
-          'Playable NFT Murals blur the boundary between art and gameplay: a mural in Block Topia can ' +
-          'function as a buff zone, a meeting point, or a hidden code-carrier, making the act of ' +
-          'collecting inseparable from the act of participating in the lore. ' +
-          'Rare genesis drops from factions like the XRP Kids establish provenance and faction identity ' +
-          'in a way that transcends simple token ownership.',
-        ],
-      },
-      {
-        id:    'graph-connections',
-        title: 'Graph Connections',
-        body: [
-          'The NFT Ecosystem links outward to all major cluster hubs: the ' +
-          '<a href="/wiki/graffpunks-ecosystem.html">GraffPUNKS Ecosystem</a> (primary NFT producer), ' +
-          'the <a href="/wiki/hodl-wars-ecosystem.html">HODL Wars Ecosystem</a> (Burn-to-Earn mechanics), ' +
-          'the <a href="/wiki/bitcoin-ecosystem.html">Bitcoin Ecosystem</a> (XRP Kids and Bitcoin Kids ' +
-          'NFT activity), and the ' +
-          '<a href="/wiki/gkniftyheads-ecosystem.html">GKniftyHEADS Ecosystem</a> ' +
-          '(GK token staking tied to NFT drops).',
-        ],
-      },
-    ],
-  },
-
-  {
-    id:      'gkniftyheads-ecosystem',
-    slug:    'gkniftyheads-ecosystem',
-    label:   'GKniftyHEADS Ecosystem',
-    emoji:   '👑',
-    badge:   '👑 Lore',
-    category:'lore',
-    catLabel:'Lore',
-    matchTags:    ['gk', 'gkniftyheads', 'lfgk', 'nbg'],
-    matchUrlFrag: 'gk',
-    coreUrls: [
-      '/wiki/gkniftyheads.html',
-      '/wiki/nbgx.html',
-      '/wiki/nbg.html',
-      '/wiki/nbg-token.html',
-      '/wiki/lfgk.html',
-    ],
-    maxMembers: 14,
-    description:
-      'The GKniftyHEADS Ecosystem covers the GK token economy, NBG/NBGX assets, staking mechanics, ' +
-      'and the collector-community infrastructure that connects the Graffiti Kings digital identity ' +
-      'to the wider Crypto Moonboys lore.',
-    leadParagraphs: [
-      'GKniftyHEADS is the collector-community arm of the Graffiti Kings digital universe — a structured ' +
-      'token economy built around $GK, $NBG, and $NBGX assets, with staking mechanics, phased drops, ' +
-      'and a dedicated community infrastructure. The GKniftyHEADS Ecosystem hub maps this cluster\'s ' +
-      'full depth: from the core GK token to the No Ball Games (NBG) collection and the LFGK rallying cry ' +
-      'that has become a community identity marker.',
-      'With twelve pages in its core cluster and strong inbound link density from the GraffPUNKS and ' +
-      'NFT ecosystems, GKniftyHEADS is one of the most graph-connected clusters in the wiki. ' +
-      'Its token pages — <a href="/wiki/nbgx.html">NBGX</a>, <a href="/wiki/nbg.html">NBG</a>, ' +
-      '<a href="/wiki/nbg-token.html">NBG Token</a> — carry significant authority scores and ' +
-      'represent the economic backbone of the broader GK ecosystem.',
-    ],
-    sections: [
-      {
-        id:    'overview',
-        title: 'Ecosystem Overview',
-        body: [
-          'GKniftyHEADS is the collector and community layer of the Graffiti Kings / GraffPUNKS digital ' +
-          'universe. While GraffPUNKS handles the creative-insurgency narrative, GKniftyHEADS provides ' +
-          'the token infrastructure: $GK as the governance and staking asset, $NBG and $NBGX as the ' +
-          'No Ball Games collection tokens, and a phased release structure (' +
-          '<a href="/wiki/gkniftyheads-phase-one-two-three.html">Phases One, Two, Three</a>) that ' +
-          'manages community growth and drop cadence.',
-          'The ecosystem is documented across multiple overlapping pages — ' +
-          '<a href="/wiki/gkniftyheads.html">GKniftyHEADS</a>, ' +
-          '<a href="/wiki/gk.html">GK</a>, ' +
-          '<a href="/wiki/the-gkniftyheads.html">The GKniftyHEADS</a> — reflecting both the ' +
-          'community\'s multi-channel presence and the wiki\'s depth of coverage for this cluster.',
-        ],
-      },
-      {
-        id:    'key-entities',
-        title: 'Key Entities',
-        body: [
-          '<a href="/wiki/gkniftyheads.html">GKniftyHEADS</a> is the canonical hub for the ' +
-          'collector community. <a href="/wiki/nbgx.html">NBGX</a> and ' +
-          '<a href="/wiki/nbg.html">NBG</a> are the two highest-ranked token pages in the cluster, ' +
-          'with strong authority scores driven by content depth and inbound link density. ' +
-          '<a href="/wiki/nbg-token.html">NBG Token</a> provides extended technical coverage of the asset.',
-          '<a href="/wiki/lfgk.html">LFGK</a> — "Let\'s F***ing GK" — is the community rallying cry ' +
-          'and an article in its own right, reflecting the strength of community identity around this token. ' +
-          '<a href="/wiki/gk-tokens.html">GK Tokens</a> and <a href="/wiki/lfgk-token.html">LFGK Token</a> ' +
-          'extend the token layer. <a href="/wiki/no-ball-games-nbg.html">No Ball Games (NBG)</a> and ' +
-          '<a href="/wiki/no-ball-games-nbg-collection.html">NBG Collection</a> document the NFT series.',
-        ],
-      },
-      {
-        id:    'lore-context',
-        title: 'Lore Context',
-        body: [
-          'In Block Topia\'s lore, GKniftyHEADS represent the institutional memory of the Graffiti Kings — ' +
-          'the archivists and token-keepers who ensure the GK legacy persists across hard forks, chain splits, ' +
-          'and server wipes. They are less a fighting faction and more a cultural custodianship: ' +
-          'maintaining the canon, certifying authenticity of GK-linked NFTs, and stewarding the ' +
-          'staking infrastructure that lets community members earn from their belief in the project.',
-          'The "No Ball Games" name carries deliberate punk irony — a reference to the ubiquitous ' +
-          'prohibition signs that graffiti writers have always subverted. In Block Topia, NBG tokens ' +
-          'represent the act of playing anyway: taking up space in a system that was designed to exclude you. ' +
-          'LFGK is the war cry of this ethos — blunt, communal, and deliberately anti-institutional.',
-        ],
-      },
-      {
-        id:    'graph-connections',
-        title: 'Graph Connections',
-        body: [
-          'The GKniftyHEADS Ecosystem sits at the intersection of the ' +
-          '<a href="/wiki/graffpunks-ecosystem.html">GraffPUNKS Ecosystem</a> (shared Graffiti Kings ' +
-          'heritage), the <a href="/wiki/nft-ecosystem.html">NFT Ecosystem</a> (NBG and GK token drops), ' +
-          'and the <a href="/wiki/hodl-wars-ecosystem.html">HODL Wars Ecosystem</a> ' +
-          '(GK staking used in Burn-to-Earn mechanics). ' +
-          'Medium article pages in this cluster link outward to external community documentation, ' +
-          'giving GKniftyHEADS one of the strongest off-wiki citation networks in the project.',
-        ],
-      },
-    ],
-  },
-];
-
-// ── member selection ───────────────────────────────────────────────────────
-
-function buildMemberSet(clusterDef, wikiIndex, linkGraph) {
-  const {
-    matchTags, matchUrlFrag, coreUrls, maxMembers,
-  } = clusterDef;
-
-  const byUrl = {};
-  for (const entry of wikiIndex) {
-    byUrl[entry.url] = entry;
+/**
+ * Build clusters using mutual-adjacency union-find.
+ * Returns an array of { members: string[], anchor: string } objects,
+ * sorted descending by cluster rank_sum, capped at MAX_HUBS.
+ */
+function buildGraphClusters(entityGraph, rankByUrl, linkGraph) {
+  // Step 1: directed adjacency sets (score >= SCORE_THRESHOLD)
+  const adjacency = new Map();
+  for (const [srcUrl, data] of Object.entries(entityGraph)) {
+    const neighbors = new Set();
+    for (const rp of data.related_pages || []) {
+      if ((rp.score || 0) >= SCORE_THRESHOLD) {
+        neighbors.add(rp.target_url);
+      }
+    }
+    adjacency.set(srcUrl, neighbors);
   }
 
-  // score every candidate
-  const scored = {};
+  // Step 2: union-find over MUTUAL edges
+  const parent = new Map();
+  const rank   = new Map();
 
-  const bump = (url, delta, reason) => {
-    if (!byUrl[url]) return;
-    if (!scored[url]) scored[url] = { url, score: 0, reasons: [] };
-    scored[url].score += delta;
-    scored[url].reasons.push(reason);
+  const find = (x) => {
+    if (!parent.has(x)) { parent.set(x, x); rank.set(x, 0); }
+    if (parent.get(x) === x) return x;
+    const root = find(parent.get(x));
+    parent.set(x, root);
+    return root;
   };
 
-  for (const entry of wikiIndex) {
-    const url = entry.url;
-    // skip hub pages themselves
-    if (url.includes('-ecosystem.html')) continue;
+  const union = (a, b) => {
+    const pa = find(a), pb = find(b);
+    if (pa === pb) return;
+    if ((rank.get(pa) || 0) < (rank.get(pb) || 0)) { parent.set(pa, pb); }
+    else if ((rank.get(pa) || 0) > (rank.get(pb) || 0)) { parent.set(pb, pa); }
+    else { parent.set(pb, pa); rank.set(pa, (rank.get(pa) || 0) + 1); }
+  };
 
-    const tags = (entry.tags || []).map(t => t.toLowerCase());
-    const urlLower = url.toLowerCase();
-
-    if (matchUrlFrag && urlLower.includes(matchUrlFrag)) {
-      bump(url, 30, 'url_match');
-    }
-    for (const tag of matchTags || []) {
-      if (tags.includes(tag)) {
-        bump(url, 20, `tag:${tag}`);
-        break;
-      }
-    }
-    if (coreUrls && coreUrls.includes(url)) {
-      bump(url, 50, 'core_url');
-    }
-    // add base rank signal
-    bump(url, Math.round((entry.rank_score || 0) / 10), 'rank_score');
-  }
-
-  // inbound link density bonus
-  if (linkGraph) {
-    for (const [src, data] of Object.entries(linkGraph)) {
-      const outLinks = (data.existing_outbound || data.existingLinks || []);
-      for (const target of outLinks) {
-        if (scored[target]) {
-          scored[target].score += 2;
-        }
+  const allUrls = new Set(adjacency.keys());
+  for (const [src, neighbors] of adjacency) {
+    for (const nbr of neighbors) {
+      // Mutual edge: nbr must also strongly relate back to src
+      if (adjacency.has(nbr) && adjacency.get(nbr).has(src)) {
+        union(src, nbr);
       }
     }
   }
 
-  const sorted = Object.values(scored)
-    .filter(m => m.score > 0)
-    .sort((a, b) => {
-      const ra = (byUrl[a.url] || {}).rank_score || 0;
-      const rb = (byUrl[b.url] || {}).rank_score || 0;
-      return b.score - a.score || rb - ra;
-    });
+  // Step 3: collect connected components
+  const groups = new Map();
+  for (const url of allUrls) {
+    const root = find(url);
+    if (!groups.has(root)) groups.set(root, []);
+    groups.get(root).push(url);
+  }
 
-  return sorted.slice(0, maxMembers);
+  // Step 4: filter and score each qualifying cluster
+  const scored = [];
+  for (const members of groups.values()) {
+    // Exclude hub pages themselves from cluster membership consideration
+    const coreMembers = members.filter(u => !u.includes('-ecosystem.html'));
+    if (coreMembers.length < MIN_CLUSTER_SIZE) continue;
+
+    const rankSum  = coreMembers.reduce((s, u) => s + (rankByUrl[u] || 0), 0);
+    const avgRank  = rankSum / coreMembers.length;
+
+    // Link density: inbound links from cluster members to cluster members
+    let internalLinks = 0;
+    if (linkGraph) {
+      const memberSet = new Set(coreMembers);
+      for (const m of coreMembers) {
+        const data = linkGraph[m] || {};
+        const out  = data.existing_outbound || [];
+        internalLinks += out.filter(t => memberSet.has(t)).length;
+      }
+    }
+
+    // Anchor = member with highest rank_score
+    const anchor = coreMembers.reduce(
+      (best, u) => (rankByUrl[u] || 0) > (rankByUrl[best] || 0) ? u : best,
+      coreMembers[0]
+    );
+
+    scored.push({ members: coreMembers, anchor, rankSum, avgRank, internalLinks });
+  }
+
+  // Step 5: sort by rank_sum, keep top MAX_HUBS
+  scored.sort((a, b) => b.rankSum - a.rankSum);
+  return scored.slice(0, MAX_HUBS);
 }
 
-// ── HTML generation ────────────────────────────────────────────────────────
+// ── hub metadata derivation ──────────────────────────────────────────────────
 
-function memberListHtml(members, wikiIndex) {
-  const byUrl = {};
-  for (const e of wikiIndex) byUrl[e.url] = e;
+const CATEGORY_EMOJI = {
+  characters: '🎭',
+  factions:   '⚔️',
+  tokens:     '🪙',
+  concepts:   '💡',
+  core:       '📖',
+  misc:       '🌐',
+};
 
-  const items = members.map(m => {
-    const entry = byUrl[m.url] || {};
-    // Titles and descs from wiki-index.json are already HTML-encoded by the
-    // generator (e.g. "&amp;" for "&"). cleanDisplayTitle only strips the
-    // "— Crypto Moonboys Wiki" suffix and replaces underscores with spaces —
-    // neither operation introduces unencoded HTML characters — so the result
-    // remains safe to embed directly in HTML without further escaping.
-    const rawTitle = entry.title || '';
-    const displayTitle = rawTitle
-      ? cleanDisplayTitle(rawTitle)   // preserves existing HTML encoding
-      : escapeHtml(urlToTitle(m.url));
-    // desc is also already HTML-safe from the generator
+/**
+ * Derive all hub page metadata from the cluster + real data.
+ * No keywords, no manual labels — everything comes from the anchor entry.
+ */
+function deriveHubMeta(cluster, rankByUrl, byUrl, entityGraph) {
+  const { members, anchor, rankSum, avgRank, internalLinks } = cluster;
+
+  const anchorEntry = byUrl[anchor] || {};
+  const anchorSlug  = slugFromUrl(anchor);
+  const anchorTitle = cleanDisplayTitle(anchorEntry.title || urlToTitle(anchor));
+
+  const hubSlug  = `${anchorSlug}-ecosystem`;
+  const hubLabel = `${anchorTitle} Ecosystem`;
+
+  // Emoji from anchor's category (data-derived, not keyword)
+  const category = anchorEntry.category || 'misc';
+  const emoji    = CATEGORY_EMOJI[category] || '🌐';
+
+  // Description from anchor's real desc
+  const anchorDesc = anchorEntry.desc || '';
+  const description = anchorDesc.length > 50
+    ? `${anchorDesc.slice(0, 160).trimEnd()}… Cluster hub for ${members.length} related pages.`
+    : `Ecosystem hub for ${hubLabel} — ${members.length} pages interconnected by graph relationships.`;
+
+  // Top members sorted by rank_score
+  const topMembers = [...members]
+    .sort((a, b) => (rankByUrl[b] || 0) - (rankByUrl[a] || 0))
+    .slice(0, MAX_HUB_MEMBERS);
+
+  // Top graph connections from anchor (for "Connections" section)
+  const anchorGraph = entityGraph[anchor] || {};
+  const topConnections = (anchorGraph.related_pages || [])
+    .sort((a, b) => (b.score || 0) - (a.score || 0))
+    .slice(0, 6)
+    .filter(r => byUrl[r.target_url]);   // only link to known pages
+
+  // Category distribution for the overview section
+  const catCounts = {};
+  for (const m of members) {
+    const cat = (byUrl[m] || {}).category || 'misc';
+    catCounts[cat] = (catCounts[cat] || 0) + 1;
+  }
+  const catSummary = Object.entries(catCounts)
+    .sort((a, b) => b[1] - a[1])
+    .map(([c, n]) => `${n} ${c}`)
+    .join(', ');
+
+  return {
+    slug: hubSlug,
+    label: hubLabel,
+    emoji,
+    category,
+    anchorSlug,
+    anchorTitle,
+    anchorEntry,
+    anchorDesc,
+    description,
+    topMembers,
+    topConnections,
+    allMembers: members,
+    memberCount: members.length,
+    rankSum,
+    avgRank,
+    internalLinks,
+    catSummary,
+  };
+}
+
+// ── content generation from real data ────────────────────────────────────────
+
+/**
+ * Build structured page sections from real repo data.
+ * No invented prose — everything is derived from descriptions and graph data.
+ */
+function buildContent(meta, byUrl) {
+  const {
+    anchorTitle, anchorDesc, anchorEntry, topMembers, topConnections,
+    memberCount, catSummary, rankSum, avgRank, internalLinks, hubLabel,
+    anchorSlug,
+  } = meta;
+
+  // ── Lead paragraphs ──
+  const anchorLink = `<a href="/wiki/${escapeHtml(anchorSlug)}.html">${escapeHtml(anchorTitle)}</a>`;
+  const lead1 = anchorDesc.length > 60
+    ? `${anchorLink} — ${anchorDesc} This ecosystem hub maps the ${memberCount} pages most strongly connected to ${escapeHtml(anchorTitle)} by graph relationship and content signals.`
+    : `This ecosystem hub maps the ${memberCount} pages most strongly connected to ${anchorLink} by graph relationship and content signals.`;
+
+  // Second lead: cluster stats in plain language
+  const avgRankRounded = Math.round(avgRank);
+  const lead2 = `The ${escapeHtml(hubLabel)} contains ${memberCount} pages with an average rank score of ${avgRankRounded}, ${internalLinks} internal cross-links, and a combined authority of ${rankSum}. Cluster members span: ${escapeHtml(catSummary)}.`;
+
+  const leadParagraphs = [lead1, lead2];
+
+  // ── Section: Ecosystem Overview ──
+  const topThree = topMembers.slice(0, 3).map(u => {
+    const e = byUrl[u] || {};
+    const t = cleanDisplayTitle(e.title || urlToTitle(u));
+    const slug = slugFromUrl(u);
+    return `<a href="/wiki/${escapeHtml(slug)}.html">${t}</a>`;
+  });
+  const overviewBody = [
+    `This cluster emerged from the entity graph by mutual-adjacency clustering at a graph score threshold of ${SCORE_THRESHOLD}. ` +
+    `Its ${memberCount} members share the strongest relationship signals in the wiki, measured by co-citation strength, link overlap, rank score, and content depth.`,
+    `The three highest-ranked members are ${topThree.join(', ')}, which collectively anchor the cluster\'s authority. ` +
+    `With ${internalLinks} internal cross-links between cluster pages and an average rank score of ${avgRankRounded}, ` +
+    `this ecosystem represents one of the most densely connected topic groups in the wiki.`,
+  ];
+
+  // ── Section: Key Entities ──
+  const keyEntityItems = topMembers.slice(0, 8).map(u => {
+    const e    = byUrl[u] || {};
+    const t    = cleanDisplayTitle(e.title || urlToTitle(u));
+    const slug = slugFromUrl(u);
+    const desc = (e.desc || '').slice(0, 120);
+    const rankScore = e.rank_score || 0;
+    return desc
+      ? `<a href="/wiki/${escapeHtml(slug)}.html">${t}</a> (rank: ${rankScore}) — ${desc}`
+      : `<a href="/wiki/${escapeHtml(slug)}.html">${t}</a> (rank: ${rankScore})`;
+  });
+  const keyEntitiesBody = [
+    `The following pages are the strongest members of this cluster, ordered by rank score:`,
+    `<ul class="hub-entity-list">${keyEntityItems.map(i => `<li>${i}</li>`).join('')}</ul>`,
+  ];
+
+  // ── Section: Graph Connections ──
+  let connBody;
+  if (topConnections.length > 0) {
+    const connItems = topConnections.map(r => {
+      const e    = byUrl[r.target_url] || {};
+      const t    = cleanDisplayTitle(e.title || urlToTitle(r.target_url));
+      const slug = slugFromUrl(r.target_url);
+      return `<a href="/wiki/${escapeHtml(slug)}.html">${t}</a> (graph score: ${r.score || 0})`;
+    });
+    connBody = [
+      `The following pages have the strongest direct graph connections to ${escapeHtml(anchorTitle)}, ` +
+      `based on entity-graph relationship scores:`,
+      `<ul class="hub-entity-list">${connItems.map(i => `<li>${i}</li>`).join('')}</ul>`,
+    ];
+  } else {
+    connBody = [`Graph connection data is derived from entity-graph.json relationship scores.`];
+  }
+
+  return {
+    leadParagraphs,
+    sections: [
+      { id: 'overview',     title: 'Ecosystem Overview',  body: overviewBody },
+      { id: 'key-entities', title: 'Key Entities',        body: keyEntitiesBody },
+      { id: 'connections',  title: 'Graph Connections',   body: connBody },
+    ],
+  };
+}
+
+// ── HTML generation ──────────────────────────────────────────────────────────
+
+function memberListHtml(meta, byUrl) {
+  const { topMembers, allMembers, memberCount } = meta;
+  const items = topMembers.map(u => {
+    const entry = byUrl[u] || {};
+    // Titles from wiki-index are already HTML-encoded by the generator.
+    // cleanDisplayTitle only strips the suffix and underscores — preserving encoding.
+    const rawTitle    = entry.title || '';
+    const displayTitle = rawTitle ? cleanDisplayTitle(rawTitle) : escapeHtml(urlToTitle(u));
+    // desc is already HTML-safe
     const rawDesc = entry.desc || '';
     const shortDesc = rawDesc.length > 110 ? rawDesc.slice(0, 108) + '…' : rawDesc;
     return (
       `        <li class="hub-member-item">\n` +
-      `          <a href="${escapeHtml(m.url)}" class="hub-member-link">${displayTitle}</a>` +
+      `          <a href="${escapeHtml(u)}" class="hub-member-link">${displayTitle}</a>` +
       (shortDesc ? `<span class="hub-member-desc"> — ${shortDesc}</span>` : '') +
       `\n        </li>`
     );
   });
-  return `      <ul class="hub-member-list">\n${items.join('\n')}\n      </ul>`;
+  const note = memberCount > MAX_HUB_MEMBERS
+    ? `\n      <p class="hub-member-note">Showing ${MAX_HUB_MEMBERS} of ${memberCount} cluster members (ordered by rank score).</p>`
+    : '';
+  return `      <ul class="hub-member-list">\n${items.join('\n')}\n      </ul>${note}`;
 }
 
-function generateHubPageHtml(clusterDef, members, wikiIndex) {
-  const {
-    slug, label, emoji, badge, catLabel, description,
-    leadParagraphs, sections,
-  } = clusterDef;
+function generateHubPageHtml(meta, byUrl, allHubMetas) {
+  const { slug, label, emoji, category, description, leadParagraphs, sections } = meta;
+  const { membersHtml } = meta._html;
 
-  const pageUrl     = `https://crypto-moonboys.github.io/wiki/${slug}.html`;
-  const fullTitle   = `${label} — Crypto Moonboys Wiki`;
-  const entitySlug  = slug.replace(/-/g, '_');
+  const pageUrl    = `https://crypto-moonboys.github.io/wiki/${slug}.html`;
+  const fullTitle  = `${label} — Crypto Moonboys Wiki`;
+  const entitySlug = slug.replace(/-/g, '_');
+  const catLabel   = category.charAt(0).toUpperCase() + category.slice(1);
 
   const leadHtml = leadParagraphs
     .map(p => `          <p class="lead-paragraph">${p}</p>`)
@@ -688,13 +372,21 @@ function generateHubPageHtml(clusterDef, members, wikiIndex) {
     );
   });
 
-  const membersHtml = memberListHtml(members, wikiIndex);
-
-  // TOC entries from sections + member-pages
   const tocLinks = [
-    ...sections.map(s => `<a href="#${s.id}" class="toc-link">${s.title}</a>`),
+    ...sections.map(s => `<a href="#${s.id}" class="toc-link">${escapeHtml(s.title)}</a>`),
     '<a href="#cluster-members" class="toc-link">Cluster Members</a>',
   ].map(l => `          <li>${l}</li>`).join('\n');
+
+  // Sidebar hub links — derived from actually-generated hubs
+  const sidebarHubLinks = allHubMetas.map(m => {
+    const active = m.slug === slug ? ' aria-current="page"' : '';
+    return `        <a href="/wiki/${escapeHtml(m.slug)}.html"${active}><span class="nav-icon">${m.emoji}</span> ${escapeHtml(m.anchorTitle)}</a>`;
+  }).join('\n');
+
+  // Footer hub links
+  const footerHubLinks = allHubMetas.map(m =>
+    `<li><a href="/wiki/${escapeHtml(m.slug)}.html">${escapeHtml(m.anchorTitle)}</a></li>`
+  ).join('');
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -725,23 +417,13 @@ function generateHubPageHtml(clusterDef, members, wikiIndex) {
       font-weight: 600;
       margin-bottom: 0.6em;
     }
-    .hub-member-list {
-      list-style: none;
-      padding: 0;
-      margin: 0;
-    }
-    .hub-member-item {
-      padding: 0.5em 0;
-      border-bottom: 1px solid rgba(255,255,255,0.07);
-    }
-    .hub-member-link {
-      font-weight: 600;
-      color: #5b8cff;
-    }
-    .hub-member-desc {
-      color: #aaa;
-      font-size: 0.93em;
-    }
+    .hub-member-list { list-style: none; padding: 0; margin: 0; }
+    .hub-member-item { padding: 0.5em 0; border-bottom: 1px solid rgba(255,255,255,0.07); }
+    .hub-member-link { font-weight: 600; color: #5b8cff; }
+    .hub-member-desc { color: #aaa; font-size: 0.93em; }
+    .hub-member-note { color: #888; font-size: 0.9em; margin-top: 0.5em; }
+    .hub-entity-list { margin: 0.4em 0 0.4em 1.4em; }
+    .hub-entity-list li { margin-bottom: 0.35em; line-height: 1.65; }
   </style>
 </head>
 <body>
@@ -784,11 +466,7 @@ function generateHubPageHtml(clusterDef, members, wikiIndex) {
     <div class="sidebar-section">
       <div class="sidebar-heading">🌐 Ecosystem Hubs</div>
       <div class="sidebar-nav">
-        <a href="/wiki/graffpunks-ecosystem.html"><span class="nav-icon">🎨</span> GraffPUNKS</a>
-        <a href="/wiki/hodl-wars-ecosystem.html"><span class="nav-icon">⚔️</span> HODL Wars</a>
-        <a href="/wiki/bitcoin-ecosystem.html"><span class="nav-icon">₿</span> Bitcoin</a>
-        <a href="/wiki/nft-ecosystem.html"><span class="nav-icon">🖼️</span> NFTs</a>
-        <a href="/wiki/gkniftyheads-ecosystem.html"><span class="nav-icon">👑</span> GKniftyHEADS</a>
+${sidebarHubLinks}
       </div>
     </div>
     <div class="sidebar-section">
@@ -799,15 +477,6 @@ function generateHubPageHtml(clusterDef, members, wikiIndex) {
         <a href="/wiki/solana.html"><span class="nav-icon">◎</span> Solana (SOL)</a>
       </div>
     </div>
-    <div class="sidebar-section">
-      <div class="sidebar-heading">⚔️ HODL Wars Lore</div>
-      <div class="sidebar-nav">
-        <a href="/wiki/hodl-wars.html"><span class="nav-icon">📜</span> HODL Wars</a>
-        <a href="/wiki/hodl-warriors.html"><span class="nav-icon">⚔️</span> HODL Warriors</a>
-        <a href="/wiki/diamond-hands.html"><span class="nav-icon">💎</span> Diamond Hands</a>
-        <a href="/wiki/moon-mission.html"><span class="nav-icon">🚀</span> Moon Mission</a>
-      </div>
-    </div>
   </nav>
 
   <div id="main-wrapper">
@@ -816,21 +485,19 @@ function generateHubPageHtml(clusterDef, members, wikiIndex) {
       <nav class="breadcrumb" aria-label="Breadcrumb">
         <a href="/index.html">Home</a>
         <span class="sep" aria-hidden="true">›</span>
-        <a href="/categories/lore.html">${escapeHtml(catLabel)}</a>
+        <a href="/categories/${escapeHtml(category)}.html">${escapeHtml(catLabel)}</a>
         <span class="sep" aria-hidden="true">›</span>
         <span aria-current="page">${escapeHtml(label)}</span>
       </nav>
 
-      <h1 class="page-title">
-        ${emoji} ${escapeHtml(label)}
-      </h1>
+      <h1 class="page-title">${emoji} ${escapeHtml(label)}</h1>
       <div class="page-title-line" aria-hidden="true"></div>
 
       <div class="article-meta">
-        <span class="article-badge">${escapeHtml(badge)}</span>
+        <span class="article-badge">${emoji} Cluster Hub</span>
         <span class="meta-item">📅 Last updated: April 2026</span>
-        <span class="meta-item">📂 <a href="/categories/lore.html">${escapeHtml(catLabel)}</a></span>
-        <span class="meta-item hub-badge">🌐 Cluster Hub</span>
+        <span class="meta-item">📂 <a href="/categories/${escapeHtml(category)}.html">${escapeHtml(catLabel)}</a></span>
+        <span class="meta-item hub-badge">🌐 Graph-Derived</span>
       </div>
 
       <nav id="toc" aria-label="Table of contents">
@@ -848,7 +515,7 @@ ${sectionHtmlParts.join('\n\n')}
 
         <section class="wiki-section">
           <h2 id="cluster-members">Cluster Members</h2>
-          <p class="lore-paragraph">The following pages have been identified as core members of the ${escapeHtml(label)} cluster, ranked by combined graph centrality, rank score, content depth, and link density signals:</p>
+          <p class="lore-paragraph">All pages in this cluster, ordered by rank score. Membership is determined by mutual graph adjacency (entity-graph score ≥ ${SCORE_THRESHOLD}):</p>
 ${membersHtml}
         </section>
 
@@ -858,7 +525,7 @@ ${membersHtml}
 
       <div class="category-tags" aria-label="Article categories">
         <span class="cat-label">Categories:</span>
-        <a href="/categories/lore.html">${escapeHtml(catLabel)}</a>
+        <a href="/categories/${escapeHtml(category)}.html">${escapeHtml(catLabel)}</a>
       </div>
 
     </main>
@@ -867,7 +534,7 @@ ${membersHtml}
       <div class="footer-inner">
         <div class="footer-col"><h4>🌙 Moonboys Wiki</h4><p>Fan-driven encyclopedia for the crypto community.</p></div>
         <div class="footer-col"><h4>Explore</h4><ul><li><a href="/index.html">Main Page</a></li><li><a href="/categories/index.html">Categories</a></li><li><a href="/articles.html">All Articles</a></li><li><a href="/about.html">About</a></li></ul></div>
-        <div class="footer-col"><h4>🌐 Hubs</h4><ul><li><a href="/wiki/graffpunks-ecosystem.html">GraffPUNKS</a></li><li><a href="/wiki/hodl-wars-ecosystem.html">HODL Wars</a></li><li><a href="/wiki/bitcoin-ecosystem.html">Bitcoin</a></li><li><a href="/wiki/nft-ecosystem.html">NFTs</a></li><li><a href="/wiki/gkniftyheads-ecosystem.html">GKniftyHEADS</a></li></ul></div>
+        <div class="footer-col"><h4>🌐 Hubs</h4><ul>${footerHubLinks}</ul></div>
       </div>
       <div class="footer-bottom">
         <p>© 2026 Crypto Moonboys Wiki · Not financial advice.</p>
@@ -885,50 +552,88 @@ ${membersHtml}
 `;
 }
 
-// ── main ───────────────────────────────────────────────────────────────────
+// ── main ─────────────────────────────────────────────────────────────────────
 
 function main() {
-  console.log('Phase 23 — generating cluster hub pages…');
+  console.log('Phase 23 fix — graph-derived cluster hub page generator');
+  console.log(`  Score threshold: ${SCORE_THRESHOLD}, min cluster size: ${MIN_CLUSTER_SIZE}, max hubs: ${MAX_HUBS}`);
 
-  const wikiIndex  = readJson(WIKI_INDEX_PATH);
-  const linkGraph  = fs.existsSync(LINK_GRAPH_PATH) ? readJson(LINK_GRAPH_PATH) : null;
+  if (!fs.existsSync(ENTITY_GRAPH_PATH)) {
+    console.error(`  ERROR: entity-graph.json not found at ${ENTITY_GRAPH_PATH}`);
+    process.exit(1);
+  }
 
-  // Verify we have all expected data
+  const entityGraph = readJson(ENTITY_GRAPH_PATH);
+  const wikiIndex   = readJson(WIKI_INDEX_PATH);
+  const linkGraph   = fs.existsSync(LINK_GRAPH_PATH) ? readJson(LINK_GRAPH_PATH) : null;
+
+  console.log(`  Loaded entity-graph: ${Object.keys(entityGraph).length} pages`);
   console.log(`  Loaded wiki-index: ${wikiIndex.length} entries`);
 
-  const generated = [];
+  // Build lookup maps
+  const byUrl       = {};
+  const rankByUrl   = {};
+  for (const e of wikiIndex) {
+    byUrl[e.url]     = e;
+    rankByUrl[e.url] = e.rank_score || 0;
+  }
 
-  for (const clusterDef of CLUSTER_DEFS) {
-    const outPath = path.join(WIKI_DIR, `${clusterDef.slug}.html`);
+  // ── Step 1: graph-based cluster detection ──────────────────────────────────
+  const clusters = buildGraphClusters(entityGraph, rankByUrl, linkGraph);
+  console.log(`\n  Clusters found: ${clusters.length}`);
+  for (const c of clusters) {
+    console.log(`    ${c.members.length} members, anchor: ${c.anchor} (rank=${rankByUrl[c.anchor] || 0})`);
+  }
 
-    if (fs.existsSync(outPath)) {
-      console.log(`  Skipping ${clusterDef.slug}.html — already exists (delete to regenerate)`);
-      continue;
+  if (clusters.length === 0) {
+    console.log('  No qualifying clusters found. Exiting without generating hub pages.');
+    return;
+  }
+
+  // ── Step 2: derive hub metadata from graph data ────────────────────────────
+  const hubMetas = clusters.map(c => {
+    const meta = deriveHubMeta(c, rankByUrl, byUrl, entityGraph);
+    const content = buildContent(meta, byUrl);
+    meta.leadParagraphs = content.leadParagraphs;
+    meta.sections       = content.sections;
+    meta._html          = { membersHtml: memberListHtml(meta, byUrl) };
+    return meta;
+  });
+
+  // ── Step 3: remove old hub pages that are no longer graph-supported ─────────
+  const validHubSlugs = new Set(hubMetas.map(m => m.slug));
+  const wikiFiles = fs.readdirSync(WIKI_DIR);
+  let removedCount = 0;
+  for (const f of wikiFiles) {
+    if (!f.endsWith('-ecosystem.html')) continue;
+    const slug = f.replace('.html', '');
+    if (!validHubSlugs.has(slug)) {
+      const filePath = path.join(WIKI_DIR, f);
+      fs.unlinkSync(filePath);
+      console.log(`  🗑  Removed stale hub: wiki/${f}`);
+      removedCount++;
     }
+  }
+  if (removedCount === 0) console.log('  No stale hub pages to remove.');
 
-    console.log(`  Building ${clusterDef.slug}.html…`);
-
-    const members = buildMemberSet(clusterDef, wikiIndex, linkGraph);
-    console.log(`    → ${members.length} cluster members selected`);
-
-    const html = generateHubPageHtml(clusterDef, members, wikiIndex);
+  // ── Step 4: generate hub pages ─────────────────────────────────────────────
+  const generated = [];
+  for (const meta of hubMetas) {
+    const outPath = path.join(WIKI_DIR, `${meta.slug}.html`);
+    const html    = generateHubPageHtml(meta, byUrl, hubMetas);
     fs.writeFileSync(outPath, html, 'utf8');
-    console.log(`    ✅ Written: wiki/${clusterDef.slug}.html`);
-    generated.push(clusterDef.slug);
+    console.log(`  ✅ Written: wiki/${meta.slug}.html (${meta.memberCount} cluster members)`);
+    generated.push(meta.slug);
   }
 
-  if (generated.length === 0) {
-    console.log('  All hub pages already exist. Nothing to generate.');
-  } else {
-    console.log(`\nGenerated ${generated.length} hub page(s): ${generated.join(', ')}`);
-    console.log('\nNext steps:');
-    console.log('  node scripts/generate-wiki-index.js');
-    console.log('  node scripts/generate-sitemap.js');
-    console.log('  node scripts/generate-site-stats.js');
-    console.log('  node scripts/generate-entity-map.js');
-    console.log('  node scripts/validate-generated-assets.js');
-    console.log('  node scripts/smoke-test.js');
-  }
+  console.log(`\nGenerated ${generated.length} graph-derived hub page(s): ${generated.join(', ')}`);
+  console.log('\nNext steps:');
+  console.log('  node scripts/generate-wiki-index.js');
+  console.log('  node scripts/generate-sitemap.js');
+  console.log('  node scripts/generate-site-stats.js');
+  console.log('  node scripts/generate-entity-map.js');
+  console.log('  node scripts/validate-generated-assets.js');
+  console.log('  node scripts/smoke-test.js');
 }
 
 main();
