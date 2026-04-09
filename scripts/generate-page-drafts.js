@@ -4,12 +4,19 @@
 /**
  * generate-page-drafts.js
  * Phase 16: Controlled page builder from expansion plan.
+ * Phase 18: Added provenance tracking fields.
  *
  * Reads high-confidence create_topic_page and create_bridge_page actions
  * from js/expansion-plan.json and builds structured draft plans in
  * js/page-drafts.json. For qualifying drafts (no existing page conflict,
  * >=3 related_pages, >=3 recommended_sections) also writes real draft
  * HTML pages under wiki/ (max 5 new files).
+ *
+ * Each draft entry now includes provenance fields:
+ *   generated_by_phase          - always "phase_16"
+ *   phase_generated_html        - true if Phase 16 actually wrote the HTML file
+ *   preexisting_before_generation - true only if a non-draft page existed before
+ *                                  Phase 16 ran (genuine conflict)
  *
  * Does NOT modify ranking, search, wiki.js, or any existing wiki pages.
  */
@@ -26,6 +33,22 @@ function readJson(relPath) {
 
 function fileExists(relPath) {
   return fs.existsSync(path.join(ROOT, relPath));
+}
+
+// Markers that identify a Phase 16-generated draft HTML page.
+const PHASE16_ROBOTS_MARKER = 'content="noindex, follow"';
+const PHASE16_DRAFT_CLASS   = 'class="draft-notice"';
+
+/**
+ * Returns true if the HTML file at relPath was written by Phase 16's builder
+ * (detected by noindex directive + draft-notice element).
+ * Returns false if the file does not exist or is a real pre-existing page.
+ */
+function isPhase16GeneratedDraft(relPath) {
+  const abs = path.join(ROOT, relPath);
+  if (!fs.existsSync(abs)) return false;
+  const html = fs.readFileSync(abs, 'utf8');
+  return html.includes(PHASE16_ROBOTS_MARKER) && html.includes(PHASE16_DRAFT_CLASS);
 }
 
 // ---------------------------------------------------------------------------
@@ -266,7 +289,14 @@ const drafts = highConfidenceActions.map(action => {
   const slug  = action.target_url_slug || action.target_topic.toLowerCase().replace(/\s+/g, '-');
   const targetPath = `/wiki/${slug}.html`;
   const relPath    = `wiki/${slug}.html`;
-  const pageConflict = fileExists(relPath);
+
+  // Provenance: distinguish Phase 16-generated pages from genuinely pre-existing pages.
+  const pageExists               = fileExists(relPath);
+  const phase_generated_html     = isPhase16GeneratedDraft(relPath);
+  // preexisting_before_generation = a real (non-draft) page was already there
+  const preexisting_before_generation = pageExists && !phase_generated_html;
+  // Only flag as a conflict when a non-draft page already existed
+  const pageConflict = preexisting_before_generation;
 
   const relatedPages = action.related_pages || [];
   const recommendedSections = action.recommended_sections || [];
@@ -290,6 +320,10 @@ const drafts = highConfidenceActions.map(action => {
     related_pages:          relatedPages,
     recommended_keywords:   action.recommended_keywords || [],
     recommended_sections:   recommendedSections,
+    // Provenance tracking (Phase 18)
+    generated_by_phase:             'phase_16',
+    phase_generated_html:           phase_generated_html,
+    preexisting_before_generation:  preexisting_before_generation,
     draft
   };
 
@@ -332,7 +366,8 @@ const MAX_HTML_PAGES = 5;
 
 const qualifying = drafts.filter(d =>
   d.confidence === 'high' &&
-  !d.existing_page_conflict &&
+  // Use provenance field when available; fall back to existing_page_conflict for older entries.
+  !(d.preexisting_before_generation === true || (!('preexisting_before_generation' in d) && d.existing_page_conflict === true)) &&
   d.related_pages.length >= 3 &&
   d.recommended_sections.length >= 3
 );

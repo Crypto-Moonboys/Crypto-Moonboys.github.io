@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-04-09T02:23:44.296Z",
+  "generated_at": "2026-04-09T04:19:05.631Z",
   "summary": {
     "total_drafts": 5,
     "topic_page_drafts": 1,
@@ -43,6 +43,9 @@
         "Key cross-cluster entities",
         "Related topics"
       ],
+      "generated_by_phase": "phase_16",
+      "phase_generated_html": false,
+      "preexisting_before_generation": true,
       "draft": {
         "title": "Graffpunks & Nfts — Crypto Moonboys Wiki",
         "meta_description": "Exploring the intersection of graffpunks and nfts within the Crypto Moonboys universe. Related: The GraffPUNKS are the pulsating core of the Crypto Moonboys universe, a faction that embodies the…",
@@ -155,6 +158,9 @@
         "Key cross-cluster entities",
         "Related topics"
       ],
+      "generated_by_phase": "phase_16",
+      "phase_generated_html": true,
+      "preexisting_before_generation": false,
       "draft": {
         "title": "Games & Graffpunks — Crypto Moonboys Wiki",
         "meta_description": "Exploring the intersection of games and graffpunks within the Crypto Moonboys universe. Related: The GraffPUNKS are the pulsating core of the Crypto Moonboys universe, a faction that embodies the…",
@@ -228,8 +234,7 @@
           "/wiki/hard-fork-games-event.html",
           "/wiki/hard-fork-games-game.html"
         ]
-      },
-      "existing_page_conflict": true
+      }
     },
     {
       "action_type": "create_bridge_page",
@@ -267,6 +272,9 @@
         "Key cross-cluster entities",
         "Related topics"
       ],
+      "generated_by_phase": "phase_16",
+      "phase_generated_html": true,
+      "preexisting_before_generation": false,
       "draft": {
         "title": "Bitcoin & Graffpunks — Crypto Moonboys Wiki",
         "meta_description": "Exploring the intersection of bitcoin and graffpunks within the Crypto Moonboys universe. Related: The GraffPUNKS are the pulsating core of the Crypto Moonboys universe, a faction that embodies the…",
@@ -340,8 +348,7 @@
           "/wiki/bitcoin-x-kids.html",
           "/wiki/xrp-kids.html"
         ]
-      },
-      "existing_page_conflict": true
+      }
     },
     {
       "action_type": "create_bridge_page",
@@ -379,6 +386,9 @@
         "Key cross-cluster entities",
         "Related topics"
       ],
+      "generated_by_phase": "phase_16",
+      "phase_generated_html": true,
+      "preexisting_before_generation": false,
       "draft": {
         "title": "Graffpunks & Token — Crypto Moonboys Wiki",
         "meta_description": "Exploring the intersection of graffpunks and token within the Crypto Moonboys universe. Related: The GraffPUNKS are the pulsating core of the Crypto Moonboys universe, a faction that embodies the…",
@@ -452,8 +462,7 @@
           "/wiki/null-the-prophet.html",
           "/wiki/queen-sarah-pfly.html"
         ]
-      },
-      "existing_page_conflict": true
+      }
     },
     {
       "action_type": "create_topic_page",
@@ -490,6 +499,9 @@
         "Related entities",
         "Cross-topic connections"
       ],
+      "generated_by_phase": "phase_16",
+      "phase_generated_html": false,
+      "preexisting_before_generation": true,
       "draft": {
         "title": "Nfts — Crypto Moonboys Wiki",
         "meta_description": "Nfts topic hub for the Crypto Moonboys Wiki. Non-fungible tokens — digital ownership on the blockchain — Crypto Moonboys Wiki",

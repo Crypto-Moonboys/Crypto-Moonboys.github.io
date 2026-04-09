@@ -1,0 +1,87 @@
+{
+  "generated_at": "2026-04-09T04:19:05.671Z",
+  "phase": "phase_18",
+  "policy": {
+    "max_safe_search_visible": 3,
+    "description": "hidden_conflict: target page was pre-existing before Phase 16 ran; kept in draft-index.json only. | draft_index_only: valid Phase 16 draft page tracked but not yet broadly discoverable. | safe_search_visible: strongest Phase 16 draft pages eligible for wiki-index/sitemap/entity-map inclusion."
+  },
+  "summary": {
+    "total_drafts": 5,
+    "hidden_conflict": 2,
+    "draft_index_only": 0,
+    "safe_search_visible": 3
+  },
+  "drafts": [
+    {
+      "target_path": "/wiki/graffpunks-nfts.html",
+      "title": "Graffpunks & Nfts — Crypto Moonboys Wiki",
+      "action_type": "create_bridge_page",
+      "confidence": "high",
+      "generated_by_phase": "phase_16",
+      "phase_generated_html": false,
+      "preexisting_before_generation": true,
+      "existing_page_conflict": true,
+      "eligible_for_indexing": false,
+      "visibility_status": "hidden_conflict",
+      "reasons": [
+        "preexisting_before_generation",
+        "not_phase16_generated_html"
+      ]
+    },
+    {
+      "target_path": "/wiki/games-graffpunks.html",
+      "title": "Games & Graffpunks — Crypto Moonboys Wiki",
+      "action_type": "create_bridge_page",
+      "confidence": "high",
+      "generated_by_phase": "phase_16",
+      "phase_generated_html": true,
+      "preexisting_before_generation": false,
+      "existing_page_conflict": false,
+      "eligible_for_indexing": true,
+      "visibility_status": "safe_search_visible",
+      "reasons": []
+    },
+    {
+      "target_path": "/wiki/bitcoin-graffpunks.html",
+      "title": "Bitcoin & Graffpunks — Crypto Moonboys Wiki",
+      "action_type": "create_bridge_page",
+      "confidence": "high",
+      "generated_by_phase": "phase_16",
+      "phase_generated_html": true,
+      "preexisting_before_generation": false,
+      "existing_page_conflict": false,
+      "eligible_for_indexing": true,
+      "visibility_status": "safe_search_visible",
+      "reasons": []
+    },
+    {
+      "target_path": "/wiki/graffpunks-token.html",
+      "title": "Graffpunks & Token — Crypto Moonboys Wiki",
+      "action_type": "create_bridge_page",
+      "confidence": "high",
+      "generated_by_phase": "phase_16",
+      "phase_generated_html": true,
+      "preexisting_before_generation": false,
+      "existing_page_conflict": false,
+      "eligible_for_indexing": true,
+      "visibility_status": "safe_search_visible",
+      "reasons": []
+    },
+    {
+      "target_path": "/wiki/nfts.html",
+      "title": "Nfts — Crypto Moonboys Wiki",
+      "action_type": "create_topic_page",
+      "confidence": "high",
+      "generated_by_phase": "phase_16",
+      "phase_generated_html": false,
+      "preexisting_before_generation": true,
+      "existing_page_conflict": true,
+      "eligible_for_indexing": false,
+      "visibility_status": "hidden_conflict",
+      "reasons": [
+        "preexisting_before_generation",
+        "not_phase16_generated_html"
+      ]
+    }
+  ]
+}
