@@ -402,7 +402,12 @@ function generateHubPageHtml(meta, byUrl, allHubMetas) {
 
   const sectionHtmlParts = sections.map(sec => {
     const bodyHtml = sec.body
-      .map(p => `          <p class="lore-paragraph">${p}</p>`)
+      .map(p => {
+        // Use <div> wrapper when content contains block-level elements (e.g. <ul>)
+        // to avoid generating invalid <p><ul>…</ul></p> markup.
+        const tag = /<[uod]l[ >]/i.test(p) ? 'div' : 'p';
+        return `          <${tag} class="lore-paragraph">${p}</${tag}>`;
+      })
       .join('\n');
     return (
       `        <section class="wiki-section">\n` +
