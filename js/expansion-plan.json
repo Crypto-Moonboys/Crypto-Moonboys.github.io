@@ -1,0 +1,1634 @@
+{
+  "generated_at": "2026-04-09T01:21:39.184Z",
+  "summary": {
+    "total_actions": 36,
+    "strengthen_existing_page": 14,
+    "create_bridge_page": 13,
+    "create_topic_page": 5,
+    "expand_cluster_support": 4
+  },
+  "actions": [
+    {
+      "action_type": "expand_cluster_support",
+      "priority_score": 564,
+      "target_topic": "Metaverse battles",
+      "target_url_slug": "metaverse-battles",
+      "reasons": [
+        "over_saturated_injection_target:29",
+        "under_covered_strong_adjacents:93",
+        "reinforcement_concentration_signal"
+      ],
+      "source_signals": [
+        "gap_score:477",
+        "rank_score:205",
+        "injection_plan_hits:29",
+        "strong_related_count:99",
+        "under_covered_adjacents:5"
+      ],
+      "related_pages": [
+        "/wiki/2025-metaverse-launch-party.html",
+        "/wiki/genesis-spray.html",
+        "/wiki/rave-relics.html",
+        "/wiki/midevilpunks.html",
+        "/wiki/gk.html"
+      ],
+      "supporting_clusters": [
+        "metaverse",
+        "battles"
+      ],
+      "recommended_sections": [
+        "Cluster overview",
+        "Under-covered adjacent pages",
+        "Strong adjacents to strengthen",
+        "Key connections to develop"
+      ],
+      "recommended_keywords": [
+        "2025",
+        "battles",
+        "genesis",
+        "gk",
+        "launch",
+        "metaverse",
+        "midevilpunks",
+        "party"
+      ],
+      "confidence": "high"
+    },
+    {
+      "action_type": "expand_cluster_support",
+      "priority_score": 544,
+      "target_topic": "crypto moonboys",
+      "target_url_slug": "crypto-moonboys",
+      "reasons": [
+        "over_saturated_injection_target:104",
+        "under_covered_strong_adjacents:38",
+        "reinforcement_concentration_signal"
+      ],
+      "source_signals": [
+        "gap_score:232",
+        "rank_score:274",
+        "injection_plan_hits:104",
+        "strong_related_count:38",
+        "under_covered_adjacents:5"
+      ],
+      "related_pages": [
+        "/wiki/diamond-hands.html",
+        "/wiki/hodl-warriors.html",
+        "/wiki/hodl-wars-game.html",
+        "/wiki/hex-tagger-prime.html",
+        "/wiki/iris-7.html"
+      ],
+      "supporting_clusters": [],
+      "recommended_sections": [
+        "Cluster overview",
+        "Under-covered adjacent pages",
+        "Strong adjacents to strengthen",
+        "Key connections to develop"
+      ],
+      "recommended_keywords": [
+        "diamond",
+        "game",
+        "hands",
+        "hex",
+        "hodl",
+        "iris",
+        "prime",
+        "tagger"
+      ],
+      "confidence": "medium"
+    },
+    {
+      "action_type": "expand_cluster_support",
+      "priority_score": 523,
+      "target_topic": "Graffiti Kings",
+      "target_url_slug": "graffiti-kings",
+      "reasons": [
+        "over_saturated_injection_target:17",
+        "under_covered_strong_adjacents:93",
+        "reinforcement_concentration_signal"
+      ],
+      "source_signals": [
+        "gap_score:472",
+        "rank_score:193",
+        "injection_plan_hits:17",
+        "strong_related_count:99",
+        "under_covered_adjacents:5"
+      ],
+      "related_pages": [
+        "/wiki/graffiti-queens-in-decentraland.html",
+        "/wiki/graffiti-queens-exhibition.html",
+        "/wiki/genesis-spray.html",
+        "/wiki/rave-relics.html",
+        "/wiki/midevilpunks.html"
+      ],
+      "supporting_clusters": [
+        "graffiti",
+        "kings"
+      ],
+      "recommended_sections": [
+        "Cluster overview",
+        "Under-covered adjacent pages",
+        "Strong adjacents to strengthen",
+        "Key connections to develop"
+      ],
+      "recommended_keywords": [
+        "decentraland",
+        "exhibition",
+        "genesis",
+        "graffiti",
+        "kings",
+        "midevilpunks",
+        "queens",
+        "rave"
+      ],
+      "confidence": "high"
+    },
+    {
+      "action_type": "create_bridge_page",
+      "priority_score": 385,
+      "target_topic": "graffpunks-nfts",
+      "target_url_slug": "graffpunks-nfts",
+      "reasons": [
+        "cross_tag_cluster_edges:184",
+        "cluster_a_pages:15",
+        "cluster_b_pages:9",
+        "existing_bridge_pages:0"
+      ],
+      "source_signals": [
+        "bridge_score:385",
+        "cross_cluster_edge_count:184",
+        "cluster_a:graffpunks",
+        "cluster_b:nfts",
+        "suggested_page_topic:graffpunks + nfts (via free)"
+      ],
+      "related_pages": [
+        "/wiki/graffpunks.html",
+        "/wiki/graffpunks-24-7.html",
+        "/wiki/graffpunks-247-radio.html",
+        "/wiki/graffpunks-24-7-radio.html",
+        "/wiki/nfts.html"
+      ],
+      "supporting_clusters": [
+        "graffpunks",
+        "nfts"
+      ],
+      "recommended_sections": [
+        "Bridge overview: graffpunks and nfts",
+        "graffpunks context",
+        "nfts context",
+        "Key cross-cluster entities",
+        "Related topics"
+      ],
+      "recommended_keywords": [
+        "24",
+        "247",
+        "fungible",
+        "graffpunks",
+        "nfts",
+        "non",
+        "radio",
+        "tokens"
+      ],
+      "confidence": "high"
+    },
+    {
+      "action_type": "create_bridge_page",
+      "priority_score": 280,
+      "target_topic": "games-graffpunks",
+      "target_url_slug": "games-graffpunks",
+      "reasons": [
+        "cross_tag_cluster_edges:132",
+        "cluster_a_pages:6",
+        "cluster_b_pages:15",
+        "existing_bridge_pages:0"
+      ],
+      "source_signals": [
+        "bridge_score:280",
+        "cross_cluster_edge_count:132",
+        "cluster_a:games",
+        "cluster_b:graffpunks",
+        "suggested_page_topic:games + graffpunks (via collection)"
+      ],
+      "related_pages": [
+        "/wiki/graffpunks.html",
+        "/wiki/graffpunks-24-7.html",
+        "/wiki/graffpunks-247-radio.html",
+        "/wiki/hard-fork-games.html",
+        "/wiki/graffpunks-24-7-radio.html"
+      ],
+      "supporting_clusters": [
+        "games",
+        "graffpunks"
+      ],
+      "recommended_sections": [
+        "Bridge overview: games and graffpunks",
+        "games context",
+        "graffpunks context",
+        "Key cross-cluster entities",
+        "Related topics"
+      ],
+      "recommended_keywords": [
+        "24",
+        "247",
+        "fork",
+        "games",
+        "graffpunks",
+        "hard",
+        "radio"
+      ],
+      "confidence": "high"
+    },
+    {
+      "action_type": "create_bridge_page",
+      "priority_score": 273,
+      "target_topic": "bitcoin-graffpunks",
+      "target_url_slug": "bitcoin-graffpunks",
+      "reasons": [
+        "cross_tag_cluster_edges:128",
+        "cluster_a_pages:8",
+        "cluster_b_pages:15",
+        "existing_bridge_pages:0"
+      ],
+      "source_signals": [
+        "bridge_score:273",
+        "cross_cluster_edge_count:128",
+        "cluster_a:bitcoin",
+        "cluster_b:graffpunks",
+        "suggested_page_topic:bitcoin + graffpunks (via kid)"
+      ],
+      "related_pages": [
+        "/wiki/graffpunks.html",
+        "/wiki/bitcoin-kids.html",
+        "/wiki/bitcoin.html",
+        "/wiki/graffpunks-24-7.html",
+        "/wiki/graffpunks-247-radio.html"
+      ],
+      "supporting_clusters": [
+        "bitcoin",
+        "graffpunks"
+      ],
+      "recommended_sections": [
+        "Bridge overview: bitcoin and graffpunks",
+        "bitcoin context",
+        "graffpunks context",
+        "Key cross-cluster entities",
+        "Related topics"
+      ],
+      "recommended_keywords": [
+        "24",
+        "247",
+        "bitcoin",
+        "btc",
+        "graffpunks",
+        "kids",
+        "radio"
+      ],
+      "confidence": "high"
+    },
+    {
+      "action_type": "create_bridge_page",
+      "priority_score": 252,
+      "target_topic": "graffpunks-token",
+      "target_url_slug": "graffpunks-token",
+      "reasons": [
+        "cross_tag_cluster_edges:118",
+        "cluster_a_pages:15",
+        "cluster_b_pages:6",
+        "existing_bridge_pages:0"
+      ],
+      "source_signals": [
+        "bridge_score:252",
+        "cross_cluster_edge_count:118",
+        "cluster_a:graffpunks",
+        "cluster_b:token",
+        "suggested_page_topic:graffpunks + token (via radio)"
+      ],
+      "related_pages": [
+        "/wiki/graffpunks.html",
+        "/wiki/punk-token.html",
+        "/wiki/graffpunks-24-7.html",
+        "/wiki/nbg-token.html",
+        "/wiki/graffpunks-247-radio.html"
+      ],
+      "supporting_clusters": [
+        "graffpunks",
+        "token"
+      ],
+      "recommended_sections": [
+        "Bridge overview: graffpunks and token",
+        "graffpunks context",
+        "token context",
+        "Key cross-cluster entities",
+        "Related topics"
+      ],
+      "recommended_keywords": [
+        "24",
+        "247",
+        "graffpunks",
+        "nbg",
+        "punk",
+        "radio",
+        "token"
+      ],
+      "confidence": "high"
+    },
+    {
+      "action_type": "create_bridge_page",
+      "priority_score": 236,
+      "target_topic": "fork-graffpunks",
+      "target_url_slug": "fork-graffpunks",
+      "reasons": [
+        "cross_tag_cluster_edges:110",
+        "cluster_a_pages:5",
+        "cluster_b_pages:15",
+        "existing_bridge_pages:0"
+      ],
+      "source_signals": [
+        "bridge_score:236",
+        "cross_cluster_edge_count:110",
+        "cluster_a:fork",
+        "cluster_b:graffpunks",
+        "suggested_page_topic:fork + graffpunks (via hard)"
+      ],
+      "related_pages": [
+        "/wiki/graffpunks.html",
+        "/wiki/graffpunks-24-7.html",
+        "/wiki/graffpunks-247-radio.html",
+        "/wiki/hard-fork-games.html",
+        "/wiki/graffpunks-24-7-radio.html"
+      ],
+      "supporting_clusters": [
+        "fork",
+        "graffpunks"
+      ],
+      "recommended_sections": [
+        "Bridge overview: fork and graffpunks",
+        "fork context",
+        "graffpunks context",
+        "Key cross-cluster entities",
+        "Related topics"
+      ],
+      "recommended_keywords": [
+        "24",
+        "247",
+        "fork",
+        "games",
+        "graffpunks",
+        "hard",
+        "radio"
+      ],
+      "confidence": "medium"
+    },
+    {
+      "action_type": "create_bridge_page",
+      "priority_score": 236,
+      "target_topic": "gk-graffpunks",
+      "target_url_slug": "gk-graffpunks",
+      "reasons": [
+        "cross_tag_cluster_edges:110",
+        "cluster_a_pages:5",
+        "cluster_b_pages:15",
+        "existing_bridge_pages:0"
+      ],
+      "source_signals": [
+        "bridge_score:236",
+        "cross_cluster_edge_count:110",
+        "cluster_a:gk",
+        "cluster_b:graffpunks",
+        "suggested_page_topic:gk + graffpunks (via radio)"
+      ],
+      "related_pages": [
+        "/wiki/graffpunks.html",
+        "/wiki/graffpunks-24-7.html",
+        "/wiki/graffpunks-247-radio.html",
+        "/wiki/graffpunks-24-7-radio.html",
+        "/wiki/gk.html"
+      ],
+      "supporting_clusters": [
+        "gk",
+        "graffpunks"
+      ],
+      "recommended_sections": [
+        "Bridge overview: gk and graffpunks",
+        "gk context",
+        "graffpunks context",
+        "Key cross-cluster entities",
+        "Related topics"
+      ],
+      "recommended_keywords": [
+        "24",
+        "247",
+        "gk",
+        "graffpunks",
+        "radio"
+      ],
+      "confidence": "medium"
+    },
+    {
+      "action_type": "create_bridge_page",
+      "priority_score": 232,
+      "target_topic": "graffpunks-kid",
+      "target_url_slug": "graffpunks-kid",
+      "reasons": [
+        "cross_tag_cluster_edges:108",
+        "cluster_a_pages:15",
+        "cluster_b_pages:5",
+        "existing_bridge_pages:0"
+      ],
+      "source_signals": [
+        "bridge_score:232",
+        "cross_cluster_edge_count:108",
+        "cluster_a:graffpunks",
+        "cluster_b:kid",
+        "suggested_page_topic:graffpunks + kid (via bitcoin)"
+      ],
+      "related_pages": [
+        "/wiki/graffpunks.html",
+        "/wiki/graffpunks-24-7.html",
+        "/wiki/graffpunks-247-radio.html",
+        "/wiki/graffpunks-24-7-radio.html",
+        "/wiki/the-bitcoin-kid-army.html"
+      ],
+      "supporting_clusters": [
+        "graffpunks",
+        "kid"
+      ],
+      "recommended_sections": [
+        "Bridge overview: graffpunks and kid",
+        "graffpunks context",
+        "kid context",
+        "Key cross-cluster entities",
+        "Related topics"
+      ],
+      "recommended_keywords": [
+        "24",
+        "247",
+        "army",
+        "bitcoin",
+        "graffpunks",
+        "kid",
+        "radio"
+      ],
+      "confidence": "medium"
+    },
+    {
+      "action_type": "create_bridge_page",
+      "priority_score": 220,
+      "target_topic": "graffpunks-hodl",
+      "target_url_slug": "graffpunks-hodl",
+      "reasons": [
+        "cross_tag_cluster_edges:102",
+        "cluster_a_pages:15",
+        "cluster_b_pages:6",
+        "existing_bridge_pages:0"
+      ],
+      "source_signals": [
+        "bridge_score:220",
+        "cross_cluster_edge_count:102",
+        "cluster_a:graffpunks",
+        "cluster_b:hodl",
+        "suggested_page_topic:graffpunks + hodl (via radio)"
+      ],
+      "related_pages": [
+        "/wiki/graffpunks.html",
+        "/wiki/hodl-wars.html",
+        "/wiki/hodl-warriors.html",
+        "/wiki/graffpunks-24-7.html",
+        "/wiki/graffpunks-247-radio.html"
+      ],
+      "supporting_clusters": [
+        "graffpunks",
+        "hodl"
+      ],
+      "recommended_sections": [
+        "Bridge overview: graffpunks and hodl",
+        "graffpunks context",
+        "hodl context",
+        "Key cross-cluster entities",
+        "Related topics"
+      ],
+      "recommended_keywords": [
+        "24",
+        "247",
+        "graffpunks",
+        "hodl",
+        "radio",
+        "warriors",
+        "wars"
+      ],
+      "confidence": "medium"
+    },
+    {
+      "action_type": "create_bridge_page",
+      "priority_score": 208,
+      "target_topic": "graffpunks-nbg",
+      "target_url_slug": "graffpunks-nbg",
+      "reasons": [
+        "cross_tag_cluster_edges:96",
+        "cluster_a_pages:15",
+        "cluster_b_pages:5",
+        "existing_bridge_pages:0"
+      ],
+      "source_signals": [
+        "bridge_score:208",
+        "cross_cluster_edge_count:96",
+        "cluster_a:graffpunks",
+        "cluster_b:nbg",
+        "suggested_page_topic:graffpunks + nbg (via radio)"
+      ],
+      "related_pages": [
+        "/wiki/graffpunks.html",
+        "/wiki/nbg.html",
+        "/wiki/graffpunks-24-7.html",
+        "/wiki/nbg-token.html",
+        "/wiki/graffpunks-247-radio.html"
+      ],
+      "supporting_clusters": [
+        "graffpunks",
+        "nbg"
+      ],
+      "recommended_sections": [
+        "Bridge overview: graffpunks and nbg",
+        "graffpunks context",
+        "nbg context",
+        "Key cross-cluster entities",
+        "Related topics"
+      ],
+      "recommended_keywords": [
+        "24",
+        "247",
+        "graffpunks",
+        "nbg",
+        "radio",
+        "token"
+      ],
+      "confidence": "medium"
+    },
+    {
+      "action_type": "create_bridge_page",
+      "priority_score": 200,
+      "target_topic": "blockchain-graffpunks",
+      "target_url_slug": "blockchain-graffpunks",
+      "reasons": [
+        "cross_tag_cluster_edges:92",
+        "cluster_a_pages:5",
+        "cluster_b_pages:15",
+        "existing_bridge_pages:0"
+      ],
+      "source_signals": [
+        "bridge_score:200",
+        "cross_cluster_edge_count:92",
+        "cluster_a:blockchain",
+        "cluster_b:graffpunks",
+        "suggested_page_topic:blockchain + graffpunks (via radio)"
+      ],
+      "related_pages": [
+        "/wiki/graffpunks.html",
+        "/wiki/graffpunks-24-7.html",
+        "/wiki/graffpunks-247-radio.html",
+        "/wiki/graffpunks-24-7-radio.html",
+        "/wiki/blockchain.html"
+      ],
+      "supporting_clusters": [
+        "blockchain",
+        "graffpunks"
+      ],
+      "recommended_sections": [
+        "Bridge overview: blockchain and graffpunks",
+        "blockchain context",
+        "graffpunks context",
+        "Key cross-cluster entities",
+        "Related topics"
+      ],
+      "recommended_keywords": [
+        "24",
+        "247",
+        "blockchain",
+        "graffpunks",
+        "radio",
+        "technology"
+      ],
+      "confidence": "medium"
+    },
+    {
+      "action_type": "create_topic_page",
+      "priority_score": 193,
+      "target_topic": "nfts",
+      "target_url_slug": "nfts",
+      "reasons": [
+        "dedicated_strong_pages:0",
+        "tag_page_count:9",
+        "topic_score:185"
+      ],
+      "source_signals": [
+        "avg_rank_score:160",
+        "dedicated_strong_pages:0",
+        "entity_graph_co_citations:72",
+        "tag_page_count:9",
+        "total_injection_hits:4"
+      ],
+      "related_pages": [
+        "/wiki/nfts.html",
+        "/wiki/1m-free-nfts-programme.html",
+        "/wiki/1m-free-nfts-drop.html",
+        "/wiki/1m-free-nfts-program.html",
+        "/wiki/xrp-kids-genesis-nfts.html"
+      ],
+      "supporting_clusters": [
+        "nfts"
+      ],
+      "recommended_sections": [
+        "Topic overview",
+        "Key pages in this topic",
+        "Related entities",
+        "Cross-topic connections"
+      ],
+      "recommended_keywords": [
+        "1m",
+        "drop",
+        "free",
+        "fungible",
+        "genesis",
+        "kids",
+        "nfts",
+        "non"
+      ],
+      "confidence": "high"
+    },
+    {
+      "action_type": "create_bridge_page",
+      "priority_score": 175,
+      "target_topic": "bitcoin-nfts",
+      "target_url_slug": "bitcoin-nfts",
+      "reasons": [
+        "cross_tag_cluster_edges:80",
+        "cluster_a_pages:8",
+        "cluster_b_pages:9",
+        "existing_bridge_pages:0"
+      ],
+      "source_signals": [
+        "bridge_score:175",
+        "cross_cluster_edge_count:80",
+        "cluster_a:bitcoin",
+        "cluster_b:nfts",
+        "suggested_page_topic:bitcoin + nfts (via free)"
+      ],
+      "related_pages": [
+        "/wiki/bitcoin-kids.html",
+        "/wiki/bitcoin.html",
+        "/wiki/bitcoin-x-kids.html",
+        "/wiki/nfts.html",
+        "/wiki/the-bitcoin-kid-army.html"
+      ],
+      "supporting_clusters": [
+        "bitcoin",
+        "nfts"
+      ],
+      "recommended_sections": [
+        "Bridge overview: bitcoin and nfts",
+        "bitcoin context",
+        "nfts context",
+        "Key cross-cluster entities",
+        "Related topics"
+      ],
+      "recommended_keywords": [
+        "army",
+        "bitcoin",
+        "btc",
+        "fungible",
+        "kid",
+        "kids",
+        "nfts",
+        "non"
+      ],
+      "confidence": "medium"
+    },
+    {
+      "action_type": "strengthen_existing_page",
+      "priority_score": 156,
+      "target_topic": "queen sarah pfly",
+      "target_url_slug": "queen-sarah-pfly",
+      "reasons": [
+        "low_inbound_links:0",
+        "low_injection_plan_coverage:0",
+        "high_authority_underserved:22"
+      ],
+      "source_signals": [
+        "gap_score:123",
+        "rank_score:657",
+        "inbound_links:0",
+        "injection_plan_hits:0"
+      ],
+      "related_pages": [
+        "/wiki/alfie-blaze.html",
+        "/wiki/atomichub-graffpunks-collection.html",
+        "/wiki/bitcoin-btc.html",
+        "/wiki/bitcoin-kids.html",
+        "/wiki/bitcoin.html"
+      ],
+      "supporting_clusters": [
+        "queen",
+        "sarah",
+        "pfly"
+      ],
+      "recommended_sections": [
+        "Key related pages to link",
+        "Cross-cluster connections",
+        "Authority-building context"
+      ],
+      "recommended_keywords": [
+        "alfie",
+        "atomichub",
+        "bitcoin",
+        "blaze",
+        "btc",
+        "collection",
+        "graffpunks",
+        "kids"
+      ],
+      "confidence": "high"
+    },
+    {
+      "action_type": "strengthen_existing_page",
+      "priority_score": 152,
+      "target_topic": "punk token",
+      "target_url_slug": "punk-token",
+      "reasons": [
+        "low_inbound_links:0",
+        "low_injection_plan_coverage:2",
+        "high_authority_underserved:22"
+      ],
+      "source_signals": [
+        "gap_score:119",
+        "rank_score:659",
+        "inbound_links:0",
+        "injection_plan_hits:2"
+      ],
+      "related_pages": [
+        "/wiki/1m-free-nfts-program.html",
+        "/wiki/1m-free-nfts-programme.html",
+        "/wiki/1m-free-nfts.html",
+        "/wiki/alfie-blaze.html",
+        "/wiki/atomichub-graffpunks-collection.html"
+      ],
+      "supporting_clusters": [
+        "punk",
+        "token"
+      ],
+      "recommended_sections": [
+        "Key related pages to link",
+        "Cross-cluster connections",
+        "Authority-building context"
+      ],
+      "recommended_keywords": [
+        "1m",
+        "alfie",
+        "atomichub",
+        "blaze",
+        "collection",
+        "free",
+        "graffpunks",
+        "nfts"
+      ],
+      "confidence": "high"
+    },
+    {
+      "action_type": "create_bridge_page",
+      "priority_score": 151,
+      "target_topic": "games-nfts",
+      "target_url_slug": "games-nfts",
+      "reasons": [
+        "cross_tag_cluster_edges:68",
+        "cluster_a_pages:6",
+        "cluster_b_pages:9",
+        "existing_bridge_pages:0"
+      ],
+      "source_signals": [
+        "bridge_score:151",
+        "cross_cluster_edge_count:68",
+        "cluster_a:games",
+        "cluster_b:nfts",
+        "suggested_page_topic:games + nfts (via free)"
+      ],
+      "related_pages": [
+        "/wiki/hard-fork-games.html",
+        "/wiki/nfts.html",
+        "/wiki/1m-free-nfts-programme.html",
+        "/wiki/1m-free-nfts-drop.html",
+        "/wiki/1m-free-nfts-program.html"
+      ],
+      "supporting_clusters": [
+        "games",
+        "nfts"
+      ],
+      "recommended_sections": [
+        "Bridge overview: games and nfts",
+        "games context",
+        "nfts context",
+        "Key cross-cluster entities",
+        "Related topics"
+      ],
+      "recommended_keywords": [
+        "1m",
+        "drop",
+        "fork",
+        "free",
+        "fungible",
+        "games",
+        "hard",
+        "nfts"
+      ],
+      "confidence": "medium"
+    },
+    {
+      "action_type": "strengthen_existing_page",
+      "priority_score": 150,
+      "target_topic": "bitcoin kids",
+      "target_url_slug": "bitcoin-kids",
+      "reasons": [
+        "low_inbound_links:0",
+        "low_injection_plan_coverage:4",
+        "high_authority_underserved:22"
+      ],
+      "source_signals": [
+        "gap_score:116",
+        "rank_score:683",
+        "inbound_links:0",
+        "injection_plan_hits:4"
+      ],
+      "related_pages": [
+        "/wiki/alfie-bitcoin-kid-blaze.html",
+        "/wiki/alfie-blaze.html",
+        "/wiki/alfie-the-bitcoin-kid-blaze.html",
+        "/wiki/bitcoin-btc.html",
+        "/wiki/bitcoin-kid-army.html"
+      ],
+      "supporting_clusters": [
+        "bitcoin",
+        "kids"
+      ],
+      "recommended_sections": [
+        "Key related pages to link",
+        "Cross-cluster connections",
+        "Authority-building context"
+      ],
+      "recommended_keywords": [
+        "alfie",
+        "army",
+        "bitcoin",
+        "blaze",
+        "btc",
+        "kid",
+        "kids"
+      ],
+      "confidence": "high"
+    },
+    {
+      "action_type": "create_bridge_page",
+      "priority_score": 150,
+      "target_topic": "bitcoin-tokens",
+      "target_url_slug": "bitcoin-tokens",
+      "reasons": [
+        "cross_tag_cluster_edges:68",
+        "cluster_a_pages:8",
+        "cluster_b_pages:6",
+        "existing_bridge_pages:0"
+      ],
+      "source_signals": [
+        "bridge_score:150",
+        "cross_cluster_edge_count:68",
+        "cluster_a:bitcoin",
+        "cluster_b:tokens",
+        "suggested_page_topic:bitcoin + tokens (via kid)"
+      ],
+      "related_pages": [
+        "/wiki/bitcoin-kids.html",
+        "/wiki/bitcoin.html",
+        "/wiki/bitcoin-x-kids.html",
+        "/wiki/nfts.html",
+        "/wiki/the-bitcoin-kid-army.html"
+      ],
+      "supporting_clusters": [
+        "bitcoin",
+        "tokens"
+      ],
+      "recommended_sections": [
+        "Bridge overview: bitcoin and tokens",
+        "bitcoin context",
+        "tokens context",
+        "Key cross-cluster entities",
+        "Related topics"
+      ],
+      "recommended_keywords": [
+        "army",
+        "bitcoin",
+        "btc",
+        "fungible",
+        "kid",
+        "kids",
+        "nfts",
+        "non"
+      ],
+      "confidence": "medium"
+    },
+    {
+      "action_type": "strengthen_existing_page",
+      "priority_score": 150,
+      "target_topic": "charlie buster",
+      "target_url_slug": "charlie-buster",
+      "reasons": [
+        "low_inbound_links:0",
+        "low_injection_plan_coverage:2",
+        "high_authority_underserved:22"
+      ],
+      "source_signals": [
+        "gap_score:118",
+        "rank_score:630",
+        "inbound_links:0",
+        "injection_plan_hits:2"
+      ],
+      "related_pages": [
+        "/wiki/alfie-blaze.html",
+        "/wiki/atomichub-graffpunks-collection.html",
+        "/wiki/bitcoin-btc.html",
+        "/wiki/bitcoin-kids.html",
+        "/wiki/bitcoin.html"
+      ],
+      "supporting_clusters": [
+        "charlie",
+        "buster"
+      ],
+      "recommended_sections": [
+        "Key related pages to link",
+        "Cross-cluster connections",
+        "Authority-building context"
+      ],
+      "recommended_keywords": [
+        "alfie",
+        "atomichub",
+        "bitcoin",
+        "blaze",
+        "btc",
+        "buster",
+        "charlie",
+        "collection"
+      ],
+      "confidence": "high"
+    },
+    {
+      "action_type": "create_topic_page",
+      "priority_score": 149,
+      "target_topic": "tokens",
+      "target_url_slug": "tokens",
+      "reasons": [
+        "dedicated_strong_pages:0",
+        "tag_page_count:6",
+        "topic_score:142"
+      ],
+      "source_signals": [
+        "avg_rank_score:143",
+        "dedicated_strong_pages:0",
+        "entity_graph_co_citations:57",
+        "tag_page_count:6",
+        "total_injection_hits:2"
+      ],
+      "related_pages": [
+        "/wiki/nfts.html",
+        "/wiki/gk-tokens.html",
+        "/wiki/stake-for-gk-tokens.html",
+        "/wiki/staking-for-gk-tokens.html",
+        "/wiki/nfts-non-fungible-tokens.html"
+      ],
+      "supporting_clusters": [
+        "tokens"
+      ],
+      "recommended_sections": [
+        "Topic overview",
+        "Key pages in this topic",
+        "Related entities",
+        "Cross-topic connections"
+      ],
+      "recommended_keywords": [
+        "fungible",
+        "gk",
+        "nfts",
+        "non",
+        "stake",
+        "staking",
+        "tokens"
+      ],
+      "confidence": "medium"
+    },
+    {
+      "action_type": "strengthen_existing_page",
+      "priority_score": 148,
+      "target_topic": "burn to earn",
+      "target_url_slug": "burn-to-earn",
+      "reasons": [
+        "low_inbound_links:0",
+        "low_injection_plan_coverage:0",
+        "high_authority_underserved:22"
+      ],
+      "source_signals": [
+        "gap_score:119",
+        "rank_score:572",
+        "inbound_links:0",
+        "injection_plan_hits:0"
+      ],
+      "related_pages": [
+        "/wiki/1m-free-nfts-drop.html",
+        "/wiki/1m-free-nfts-program.html",
+        "/wiki/1m-free-nfts-programme.html",
+        "/wiki/1m-free-nfts.html",
+        "/wiki/alfie-blaze.html"
+      ],
+      "supporting_clusters": [
+        "burn",
+        "earn"
+      ],
+      "recommended_sections": [
+        "Key related pages to link",
+        "Cross-cluster connections",
+        "Authority-building context"
+      ],
+      "recommended_keywords": [
+        "1m",
+        "alfie",
+        "blaze",
+        "burn",
+        "drop",
+        "earn",
+        "free",
+        "nfts"
+      ],
+      "confidence": "medium"
+    },
+    {
+      "action_type": "strengthen_existing_page",
+      "priority_score": 146,
+      "target_topic": "nbgx",
+      "target_url_slug": "nbgx",
+      "reasons": [
+        "low_inbound_links:0",
+        "low_injection_plan_coverage:0",
+        "high_authority_underserved:22"
+      ],
+      "source_signals": [
+        "gap_score:118",
+        "rank_score:561",
+        "inbound_links:0",
+        "injection_plan_hits:0"
+      ],
+      "related_pages": [
+        "/wiki/alfie-blaze.html",
+        "/wiki/bitcoin-btc.html",
+        "/wiki/bitcoin-kids.html",
+        "/wiki/bitcoin.html",
+        "/wiki/block-topia.html"
+      ],
+      "supporting_clusters": [
+        "nbgx"
+      ],
+      "recommended_sections": [
+        "Key related pages to link",
+        "Cross-cluster connections",
+        "Authority-building context"
+      ],
+      "recommended_keywords": [
+        "alfie",
+        "bitcoin",
+        "blaze",
+        "block",
+        "btc",
+        "kids",
+        "nbgx",
+        "topia"
+      ],
+      "confidence": "medium"
+    },
+    {
+      "action_type": "strengthen_existing_page",
+      "priority_score": 146,
+      "target_topic": "pmsl",
+      "target_url_slug": "pmsl",
+      "reasons": [
+        "low_inbound_links:0",
+        "low_injection_plan_coverage:0",
+        "high_authority_underserved:22"
+      ],
+      "source_signals": [
+        "gap_score:118",
+        "rank_score:555",
+        "inbound_links:0",
+        "injection_plan_hits:0"
+      ],
+      "related_pages": [
+        "/wiki/alfie-blaze.html",
+        "/wiki/atomichub-graffpunks-collection.html",
+        "/wiki/bitcoin-btc.html",
+        "/wiki/bitcoin-kids.html",
+        "/wiki/bitcoin.html"
+      ],
+      "supporting_clusters": [
+        "pmsl"
+      ],
+      "recommended_sections": [
+        "Key related pages to link",
+        "Cross-cluster connections",
+        "Authority-building context"
+      ],
+      "recommended_keywords": [
+        "alfie",
+        "atomichub",
+        "bitcoin",
+        "blaze",
+        "btc",
+        "collection",
+        "graffpunks",
+        "kids"
+      ],
+      "confidence": "medium"
+    },
+    {
+      "action_type": "strengthen_existing_page",
+      "priority_score": 144,
+      "target_topic": "alfie blaze",
+      "target_url_slug": "alfie-blaze",
+      "reasons": [
+        "low_inbound_links:0",
+        "low_injection_plan_coverage:2",
+        "high_authority_underserved:18"
+      ],
+      "source_signals": [
+        "gap_score:115",
+        "rank_score:589",
+        "inbound_links:0",
+        "injection_plan_hits:2"
+      ],
+      "related_pages": [
+        "/wiki/alfie-bitcoin-kid-blaze.html",
+        "/wiki/alfie-the-bitcoin-kid-blaze.html",
+        "/wiki/bitcoin-btc.html",
+        "/wiki/bitcoin-kids.html",
+        "/wiki/bitcoin-x-kids.html"
+      ],
+      "supporting_clusters": [
+        "alfie",
+        "blaze"
+      ],
+      "recommended_sections": [
+        "Key related pages to link",
+        "Cross-cluster connections",
+        "Authority-building context"
+      ],
+      "recommended_keywords": [
+        "alfie",
+        "bitcoin",
+        "blaze",
+        "btc",
+        "kid",
+        "kids"
+      ],
+      "confidence": "medium"
+    },
+    {
+      "action_type": "strengthen_existing_page",
+      "priority_score": 144,
+      "target_topic": "nbg",
+      "target_url_slug": "nbg",
+      "reasons": [
+        "low_inbound_links:0",
+        "low_injection_plan_coverage:0",
+        "high_authority_underserved:22"
+      ],
+      "source_signals": [
+        "gap_score:117",
+        "rank_score:543",
+        "inbound_links:0",
+        "injection_plan_hits:0"
+      ],
+      "related_pages": [
+        "/wiki/1m-free-nfts-program.html",
+        "/wiki/1m-free-nfts-programme.html",
+        "/wiki/1m-free-nfts.html",
+        "/wiki/alfie-blaze.html",
+        "/wiki/altcoins.html"
+      ],
+      "supporting_clusters": [
+        "nbg"
+      ],
+      "recommended_sections": [
+        "Key related pages to link",
+        "Cross-cluster connections",
+        "Authority-building context"
+      ],
+      "recommended_keywords": [
+        "1m",
+        "alfie",
+        "altcoins",
+        "blaze",
+        "free",
+        "nbg",
+        "nfts",
+        "program"
+      ],
+      "confidence": "medium"
+    },
+    {
+      "action_type": "strengthen_existing_page",
+      "priority_score": 136,
+      "target_topic": "graffpunks 24 7",
+      "target_url_slug": "graffpunks-24-7",
+      "reasons": [
+        "low_inbound_links:0",
+        "low_injection_plan_coverage:0",
+        "high_authority_underserved:22"
+      ],
+      "source_signals": [
+        "gap_score:113",
+        "rank_score:458",
+        "inbound_links:0",
+        "injection_plan_hits:0"
+      ],
+      "related_pages": [
+        "/wiki/alfie-blaze.html",
+        "/wiki/atomichub-graffpunks-collection.html",
+        "/wiki/bitcoin-btc.html",
+        "/wiki/bitcoin-kids.html",
+        "/wiki/bitcoin.html"
+      ],
+      "supporting_clusters": [
+        "graffpunks",
+        "24"
+      ],
+      "recommended_sections": [
+        "Key related pages to link",
+        "Cross-cluster connections",
+        "Authority-building context"
+      ],
+      "recommended_keywords": [
+        "24",
+        "alfie",
+        "atomichub",
+        "bitcoin",
+        "blaze",
+        "btc",
+        "collection",
+        "graffpunks"
+      ],
+      "confidence": "medium"
+    },
+    {
+      "action_type": "strengthen_existing_page",
+      "priority_score": 130,
+      "target_topic": "genesis spray",
+      "target_url_slug": "genesis-spray",
+      "reasons": [
+        "low_inbound_links:0",
+        "low_injection_plan_coverage:1",
+        "high_authority_underserved:22"
+      ],
+      "source_signals": [
+        "gap_score:109",
+        "rank_score:416",
+        "inbound_links:0",
+        "injection_plan_hits:1"
+      ],
+      "related_pages": [
+        "/wiki/1m-free-nfts-program.html",
+        "/wiki/1m-free-nfts-programme.html",
+        "/wiki/1m-free-nfts.html",
+        "/wiki/alfie-blaze.html",
+        "/wiki/atomichub-graffpunks-collection.html"
+      ],
+      "supporting_clusters": [
+        "genesis",
+        "spray"
+      ],
+      "recommended_sections": [
+        "Key related pages to link",
+        "Cross-cluster connections",
+        "Authority-building context"
+      ],
+      "recommended_keywords": [
+        "1m",
+        "alfie",
+        "atomichub",
+        "blaze",
+        "collection",
+        "free",
+        "genesis",
+        "graffpunks"
+      ],
+      "confidence": "medium"
+    },
+    {
+      "action_type": "strengthen_existing_page",
+      "priority_score": 130,
+      "target_topic": "nbg token",
+      "target_url_slug": "nbg-token",
+      "reasons": [
+        "low_inbound_links:0",
+        "low_injection_plan_coverage:1",
+        "high_authority_underserved:22"
+      ],
+      "source_signals": [
+        "gap_score:109",
+        "rank_score:413",
+        "inbound_links:0",
+        "injection_plan_hits:1"
+      ],
+      "related_pages": [
+        "/wiki/1m-free-nfts-program.html",
+        "/wiki/1m-free-nfts-programme.html",
+        "/wiki/1m-free-nfts.html",
+        "/wiki/alfie-blaze.html",
+        "/wiki/bitcoin-btc.html"
+      ],
+      "supporting_clusters": [
+        "nbg",
+        "token"
+      ],
+      "recommended_sections": [
+        "Key related pages to link",
+        "Cross-cluster connections",
+        "Authority-building context"
+      ],
+      "recommended_keywords": [
+        "1m",
+        "alfie",
+        "bitcoin",
+        "blaze",
+        "btc",
+        "free",
+        "nbg",
+        "nfts"
+      ],
+      "confidence": "medium"
+    },
+    {
+      "action_type": "strengthen_existing_page",
+      "priority_score": 130,
+      "target_topic": "rave relics",
+      "target_url_slug": "rave-relics",
+      "reasons": [
+        "low_inbound_links:0",
+        "low_injection_plan_coverage:2",
+        "high_authority_underserved:22"
+      ],
+      "source_signals": [
+        "gap_score:108",
+        "rank_score:449",
+        "inbound_links:0",
+        "injection_plan_hits:2"
+      ],
+      "related_pages": [
+        "/wiki/alfie-blaze.html",
+        "/wiki/atomichub-graffpunks-collection.html",
+        "/wiki/bitcoin-btc.html",
+        "/wiki/bitcoin-kids.html",
+        "/wiki/block-topia.html"
+      ],
+      "supporting_clusters": [
+        "rave",
+        "relics"
+      ],
+      "recommended_sections": [
+        "Key related pages to link",
+        "Cross-cluster connections",
+        "Authority-building context"
+      ],
+      "recommended_keywords": [
+        "alfie",
+        "atomichub",
+        "bitcoin",
+        "blaze",
+        "block",
+        "btc",
+        "collection",
+        "graffpunks"
+      ],
+      "confidence": "medium"
+    },
+    {
+      "action_type": "strengthen_existing_page",
+      "priority_score": 124,
+      "target_topic": "gkniftyheads",
+      "target_url_slug": "gkniftyheads",
+      "reasons": [
+        "low_inbound_links:0",
+        "low_injection_plan_coverage:4",
+        "high_authority_underserved:22"
+      ],
+      "source_signals": [
+        "gap_score:103",
+        "rank_score:414",
+        "inbound_links:0",
+        "injection_plan_hits:4"
+      ],
+      "related_pages": [
+        "/wiki/1m-free-nfts-program.html",
+        "/wiki/1m-free-nfts-programme.html",
+        "/wiki/1m-free-nfts.html",
+        "/wiki/alfie-blaze.html",
+        "/wiki/atomichub-graffpunks-collection.html"
+      ],
+      "supporting_clusters": [
+        "gkniftyheads"
+      ],
+      "recommended_sections": [
+        "Key related pages to link",
+        "Cross-cluster connections",
+        "Authority-building context"
+      ],
+      "recommended_keywords": [
+        "1m",
+        "alfie",
+        "atomichub",
+        "blaze",
+        "collection",
+        "free",
+        "gkniftyheads",
+        "graffpunks"
+      ],
+      "confidence": "medium"
+    },
+    {
+      "action_type": "expand_cluster_support",
+      "priority_score": 122,
+      "target_topic": "hard fork games",
+      "target_url_slug": "hard-fork-games",
+      "reasons": [
+        "over_saturated_injection_target:27",
+        "under_covered_strong_adjacents:6",
+        "reinforcement_concentration_signal"
+      ],
+      "source_signals": [
+        "gap_score:41",
+        "rank_score:375",
+        "injection_plan_hits:27",
+        "strong_related_count:8",
+        "under_covered_adjacents:5"
+      ],
+      "related_pages": [
+        "/wiki/hard-fork-games-event.html",
+        "/wiki/hard-fork-games-game.html",
+        "/wiki/the-hard-fork-rockers.html",
+        "/wiki/no-ball-games-nbg.html",
+        "/wiki/no-ball-games-nbg-collection.html"
+      ],
+      "supporting_clusters": [
+        "hard",
+        "fork",
+        "games"
+      ],
+      "recommended_sections": [
+        "Cluster overview",
+        "Under-covered adjacent pages",
+        "Strong adjacents to strengthen",
+        "Key connections to develop"
+      ],
+      "recommended_keywords": [
+        "ball",
+        "collection",
+        "event",
+        "fork",
+        "game",
+        "games",
+        "hard",
+        "nbg"
+      ],
+      "confidence": "medium"
+    },
+    {
+      "action_type": "create_topic_page",
+      "priority_score": 75,
+      "target_topic": "kid",
+      "target_url_slug": "kid",
+      "reasons": [
+        "dedicated_strong_pages:0",
+        "tag_page_count:5",
+        "topic_score:65"
+      ],
+      "source_signals": [
+        "avg_rank_score:196",
+        "dedicated_strong_pages:0",
+        "entity_graph_co_citations:20",
+        "tag_page_count:5",
+        "total_injection_hits:3"
+      ],
+      "related_pages": [
+        "/wiki/the-bitcoin-kid-army.html",
+        "/wiki/alfie-the-bitcoin-kid-blaze.html",
+        "/wiki/billy-the-goat-kid.html",
+        "/wiki/bitcoin-kid-army.html",
+        "/wiki/alfie-bitcoin-kid-blaze.html"
+      ],
+      "supporting_clusters": [
+        "kid"
+      ],
+      "recommended_sections": [
+        "Topic overview",
+        "Key pages in this topic",
+        "Related entities",
+        "Cross-topic connections"
+      ],
+      "recommended_keywords": [
+        "alfie",
+        "army",
+        "billy",
+        "bitcoin",
+        "blaze",
+        "goat",
+        "kid"
+      ],
+      "confidence": "medium"
+    },
+    {
+      "action_type": "create_topic_page",
+      "priority_score": 73,
+      "target_topic": "gk",
+      "target_url_slug": "gk",
+      "reasons": [
+        "dedicated_strong_pages:0",
+        "tag_page_count:5",
+        "topic_score:65"
+      ],
+      "source_signals": [
+        "avg_rank_score:154",
+        "dedicated_strong_pages:0",
+        "entity_graph_co_citations:20",
+        "tag_page_count:5",
+        "total_injection_hits:3"
+      ],
+      "related_pages": [
+        "/wiki/gk.html",
+        "/wiki/gk-tokens.html",
+        "/wiki/gk-token.html",
+        "/wiki/stake-for-gk-tokens.html",
+        "/wiki/staking-for-gk-tokens.html"
+      ],
+      "supporting_clusters": [
+        "gk"
+      ],
+      "recommended_sections": [
+        "Topic overview",
+        "Key pages in this topic",
+        "Related entities",
+        "Cross-topic connections"
+      ],
+      "recommended_keywords": [
+        "gk",
+        "stake",
+        "staking",
+        "token",
+        "tokens"
+      ],
+      "confidence": "medium"
+    },
+    {
+      "action_type": "create_topic_page",
+      "priority_score": 71,
+      "target_topic": "blockchain",
+      "target_url_slug": "blockchain",
+      "reasons": [
+        "dedicated_strong_pages:0",
+        "tag_page_count:5",
+        "topic_score:63"
+      ],
+      "source_signals": [
+        "avg_rank_score:169",
+        "dedicated_strong_pages:0",
+        "entity_graph_co_citations:20",
+        "tag_page_count:5",
+        "total_injection_hits:0"
+      ],
+      "related_pages": [
+        "/wiki/blockchain.html",
+        "/wiki/the-blockchain-furies.html",
+        "/wiki/graffpunks-247-blockchain-radio-station.html",
+        "/wiki/graffpunks-24-7-blockchain-radio-station.html",
+        "/wiki/blockchain-technology.html"
+      ],
+      "supporting_clusters": [
+        "blockchain"
+      ],
+      "recommended_sections": [
+        "Topic overview",
+        "Key pages in this topic",
+        "Related entities",
+        "Cross-topic connections"
+      ],
+      "recommended_keywords": [
+        "24",
+        "blockchain",
+        "furies",
+        "graffpunks",
+        "radio",
+        "station",
+        "technology"
+      ],
+      "confidence": "medium"
+    }
+  ]
+}
