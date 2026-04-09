@@ -322,7 +322,16 @@ function buildContent(meta, byUrl) {
     const e    = byUrl[u] || {};
     const t    = cleanDisplayTitle(e.title || urlToTitle(u));
     const slug = slugFromUrl(u);
-    const desc = (e.desc || '').slice(0, 120);
+    // Skip fragmentary descriptions (< 40 chars); truncate long ones at word boundary
+    const rawDesc   = e.desc || '';
+    let desc = '';
+    if (rawDesc.length >= 40) {
+      const cut = rawDesc.slice(0, 120);
+      const lastSpace = cut.lastIndexOf(' ');
+      desc = rawDesc.length > 120
+        ? (lastSpace > 60 ? cut.slice(0, lastSpace) : cut).replace(/[,;:\s]+$/, '') + '…'
+        : rawDesc;
+    }
     const rankScore = e.rank_score || 0;
     return desc
       ? `<a href="/wiki/${escapeHtml(slug)}.html">${t}</a> (rank: ${rankScore}) — ${desc}`
@@ -371,9 +380,18 @@ function memberListHtml(meta, byUrl) {
     // cleanDisplayTitle only strips the suffix and underscores — preserving encoding.
     const rawTitle    = entry.title || '';
     const displayTitle = rawTitle ? cleanDisplayTitle(rawTitle) : escapeHtml(urlToTitle(u));
-    // desc is already HTML-safe
+    // desc is already HTML-safe; skip if too short (source fragment), truncate at word boundary
     const rawDesc = entry.desc || '';
-    const shortDesc = rawDesc.length > 110 ? rawDesc.slice(0, 108) + '…' : rawDesc;
+    let shortDesc = '';
+    if (rawDesc.length >= 40) {
+      if (rawDesc.length > 110) {
+        const cut = rawDesc.slice(0, 110);
+        const lastSpace = cut.lastIndexOf(' ');
+        shortDesc = (lastSpace > 60 ? cut.slice(0, lastSpace) : cut).replace(/[,;:\s]+$/, '') + '…';
+      } else {
+        shortDesc = rawDesc;
+      }
+    }
     return (
       `        <li class="hub-member-item">\n` +
       `          <a href="${escapeHtml(u)}" class="hub-member-link">${displayTitle}</a>` +
