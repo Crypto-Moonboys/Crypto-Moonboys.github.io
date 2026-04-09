@@ -8997,6 +8997,104 @@
     }
   },
   {
+    "title": "hodl wars Ecosystem — Crypto Moonboys Wiki",
+    "desc": "HODL WARS is the beating heart of conflict in the Crypto Moonboys universe, a live saga and playable NFT game that drives the narrative of rebellion and control… Cluster hub for 115 related pages.",
+    "url": "/wiki/hodl-wars-ecosystem.html",
+    "tags": [
+      "hodl",
+      "wars",
+      "ecosystem",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "characters",
+    "aliases": [],
+    "rank_score": 252,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 6,
+      "mention_count": 0,
+      "category": "characters",
+      "category_priority": 8,
+      "has_description": true,
+      "article_word_count": 899,
+      "keyword_bag_size": 32,
+      "heading_count": 5,
+      "list_count": 6,
+      "internal_link_count": 42,
+      "paragraph_count": 11,
+      "section_count": 4,
+      "lore_paragraph_count": 7,
+      "content_quality_score": 75,
+      "authority_score": 24
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 40,
+      "word_count_points": 45,
+      "keyword_bag_points": 32,
+      "content_quality_points": 81,
+      "authority_points": 24,
+      "final_rank_score": 252,
+      "authority_graph_points": 0
+    },
+    "search_index": {
+      "normalized_title": "hodl wars ecosystem crypto moonboys wiki",
+      "tokens": [
+        "hodl",
+        "wars",
+        "ecosystem",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "hodl",
+        "wars",
+        "ecosystem",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "is",
+        "the",
+        "beating",
+        "heart",
+        "of",
+        "conflict",
+        "in",
+        "universe",
+        "a",
+        "live",
+        "saga",
+        "and",
+        "playable",
+        "nft",
+        "game",
+        "that",
+        "drives",
+        "narrative",
+        "rebellion",
+        "control",
+        "cluster",
+        "hub",
+        "for",
+        "115",
+        "related",
+        "pages"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 0,
+      "existing_outbound_count": 0,
+      "suggested_outbound_count": 0,
+      "authority": 0
+    }
+  },
+  {
     "title": "Spraycode &amp; Writcode mechanics — Crypto Moonboys Wiki",
     "desc": "Spraycode and Writcode mechanics serve as the digital spray cans of the Crypto Moonboys universe, revolutionary tools that empower creators to encode art, messa",
     "url": "/wiki/spraycode-writcode-mechanics.html",
@@ -9560,6 +9658,103 @@
       "existing_outbound_count": 7,
       "suggested_outbound_count": 15,
       "authority": 3.5
+    }
+  },
+  {
+    "title": "graffpunks Ecosystem — Crypto Moonboys Wiki",
+    "desc": "The GraffPUNKS are the pulsating core of the Crypto Moonboys universe, a faction that embodies the gritty, rebellious spirit of street art fused with the disrup… Cluster hub for 61 related pages.",
+    "url": "/wiki/graffpunks-ecosystem.html",
+    "tags": [
+      "graffpunks",
+      "ecosystem",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "characters",
+    "aliases": [
+      {
+        "title": "graffpunks ecosystem crypto moonboys wiki"
+      }
+    ],
+    "rank_score": 249,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 1,
+      "tag_count": 5,
+      "mention_count": 0,
+      "category": "characters",
+      "category_priority": 8,
+      "has_description": true,
+      "article_word_count": 864,
+      "keyword_bag_size": 29,
+      "heading_count": 5,
+      "list_count": 6,
+      "internal_link_count": 42,
+      "paragraph_count": 11,
+      "section_count": 4,
+      "lore_paragraph_count": 7,
+      "content_quality_score": 75,
+      "authority_score": 24
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 40,
+      "word_count_points": 43,
+      "keyword_bag_points": 29,
+      "content_quality_points": 83,
+      "authority_points": 24,
+      "final_rank_score": 249,
+      "authority_graph_points": 0
+    },
+    "search_index": {
+      "normalized_title": "graffpunks ecosystem crypto moonboys wiki",
+      "tokens": [
+        "graffpunks",
+        "ecosystem",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "graffpunks",
+        "ecosystem",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "the",
+        "are",
+        "pulsating",
+        "core",
+        "of",
+        "universe",
+        "a",
+        "faction",
+        "that",
+        "embodies",
+        "gritty",
+        "rebellious",
+        "spirit",
+        "street",
+        "art",
+        "fused",
+        "with",
+        "disrup",
+        "cluster",
+        "hub",
+        "for",
+        "61",
+        "related",
+        "pages"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 0,
+      "existing_outbound_count": 0,
+      "suggested_outbound_count": 0,
+      "authority": 0
     }
   },
   {
@@ -11665,6 +11860,101 @@
       "existing_outbound_count": 7,
       "suggested_outbound_count": 32,
       "authority": 3.5
+    }
+  },
+  {
+    "title": "Ethereum (ETH) Ecosystem — Crypto Moonboys Wiki",
+    "desc": "Ethereum (ETH) — a decentralised platform for smart contracts and dApps. Learn about Vitalik Buterin, DeFi, NFTs, and Ethereum… Cluster hub for 27 related pages.",
+    "url": "/wiki/ethereum-ecosystem.html",
+    "tags": [
+      "ethereum",
+      "eth",
+      "ecosystem",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "tokens",
+    "aliases": [
+      {
+        "title": "ethereum ecosystem"
+      }
+    ],
+    "rank_score": 233,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 1,
+      "tag_count": 6,
+      "mention_count": 0,
+      "category": "tokens",
+      "category_priority": 6,
+      "has_description": true,
+      "article_word_count": 804,
+      "keyword_bag_size": 25,
+      "heading_count": 5,
+      "list_count": 6,
+      "internal_link_count": 42,
+      "paragraph_count": 11,
+      "section_count": 4,
+      "lore_paragraph_count": 7,
+      "content_quality_score": 75,
+      "authority_score": 24
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 30,
+      "word_count_points": 40,
+      "keyword_bag_points": 25,
+      "content_quality_points": 84,
+      "authority_points": 24,
+      "final_rank_score": 233,
+      "authority_graph_points": 0
+    },
+    "search_index": {
+      "normalized_title": "ethereum eth ecosystem crypto moonboys wiki",
+      "tokens": [
+        "ethereum",
+        "eth",
+        "ecosystem",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "ethereum",
+        "eth",
+        "ecosystem",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "a",
+        "decentralised",
+        "platform",
+        "for",
+        "smart",
+        "contracts",
+        "and",
+        "dapps",
+        "learn",
+        "about",
+        "vitalik",
+        "buterin",
+        "defi",
+        "nfts",
+        "cluster",
+        "hub",
+        "27",
+        "related",
+        "pages"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 0,
+      "existing_outbound_count": 0,
+      "suggested_outbound_count": 0,
+      "authority": 0
     }
   },
   {

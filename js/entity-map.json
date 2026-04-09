@@ -990,6 +990,26 @@
     ]
   },
   {
+    "entity_id": "ethereum_ecosystem",
+    "canonical_title": "Ethereum (ETH) Ecosystem — Crypto Moonboys Wiki",
+    "canonical_url": "/wiki/ethereum-ecosystem.html",
+    "category": "tokens",
+    "aliases": [
+      "ethereum ecosystem"
+    ],
+    "tags": [
+      "ethereum",
+      "eth",
+      "ecosystem",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "source_urls": [
+      "/wiki/ethereum-ecosystem.html"
+    ]
+  },
+  {
     "entity_id": "ethereum_eth",
     "canonical_title": "Ethereum (ETH) — Crypto Moonboys Wiki",
     "canonical_url": "/wiki/ethereum-eth.html",
@@ -1681,6 +1701,28 @@
     ]
   },
   {
+    "entity_id": "graffpunks_ecosystem",
+    "canonical_title": "graffpunks Ecosystem — Crypto Moonboys Wiki",
+    "canonical_url": "/wiki/graffpunks-ecosystem.html",
+    "category": "characters",
+    "aliases": [
+      "graffpunks ecosystem crypto moonboys wiki"
+    ],
+    "tags": [
+      "graffpunks",
+      "ecosystem",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "source_urls": [
+      "/wiki/graffpunks-ecosystem.html"
+    ],
+    "alias_candidates": [
+      "graffpunks ecosystem"
+    ]
+  },
+  {
     "entity_id": "graffpunks_network",
     "canonical_title": "graffpunks_network — Crypto Moonboys Wiki",
     "canonical_url": "/wiki/graffpunks-network.html",
@@ -2000,6 +2042,27 @@
     ],
     "alias_candidates": [
       "hodl wars"
+    ]
+  },
+  {
+    "entity_id": "hodl_wars_ecosystem",
+    "canonical_title": "hodl wars Ecosystem — Crypto Moonboys Wiki",
+    "canonical_url": "/wiki/hodl-wars-ecosystem.html",
+    "category": "characters",
+    "aliases": [],
+    "tags": [
+      "hodl",
+      "wars",
+      "ecosystem",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "source_urls": [
+      "/wiki/hodl-wars-ecosystem.html"
+    ],
+    "alias_candidates": [
+      "hodl wars ecosystem"
     ]
   },
   {
