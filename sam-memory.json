@@ -390,6 +390,27 @@
         "wiki"
       ]
     },
+    "bitcoin_graffpunks": {
+      "alias_candidates": [
+        "bitcoin graffpunks"
+      ],
+      "aliases": [],
+      "canonical_title": "Bitcoin &amp; Graffpunks — Crypto Moonboys Wiki",
+      "canonical_url": "/wiki/bitcoin-graffpunks.html",
+      "category": "factions",
+      "source_urls": [
+        "/wiki/bitcoin-graffpunks.html"
+      ],
+      "status": "canonical",
+      "tags": [
+        "bitcoin",
+        "amp",
+        "graffpunks",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ]
+    },
     "bitcoin_kid_army": {
       "alias_candidates": [
         "bitcoin kid army"
@@ -1106,6 +1127,27 @@
         "wiki"
       ]
     },
+    "games_graffpunks": {
+      "alias_candidates": [
+        "games graffpunks"
+      ],
+      "aliases": [],
+      "canonical_title": "Games &amp; Graffpunks — Crypto Moonboys Wiki",
+      "canonical_url": "/wiki/games-graffpunks.html",
+      "category": "factions",
+      "source_urls": [
+        "/wiki/games-graffpunks.html"
+      ],
+      "status": "canonical",
+      "tags": [
+        "games",
+        "amp",
+        "graffpunks",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ]
+    },
     "games4punks_telegram": {
       "alias_candidates": [
         "games4punks telegram"
@@ -1688,6 +1730,27 @@
       "tags": [
         "graffpunks",
         "nfts",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ]
+    },
+    "graffpunks_token": {
+      "alias_candidates": [
+        "graffpunks token"
+      ],
+      "aliases": [],
+      "canonical_title": "Graffpunks &amp; Token — Crypto Moonboys Wiki",
+      "canonical_url": "/wiki/graffpunks-token.html",
+      "category": "factions",
+      "source_urls": [
+        "/wiki/graffpunks-token.html"
+      ],
+      "status": "canonical",
+      "tags": [
+        "graffpunks",
+        "amp",
+        "token",
         "crypto",
         "moonboys",
         "wiki"
@@ -4895,5 +4958,5 @@
       ]
     }
   },
-  "updated_at": "2026-04-07T21:06:40Z"
+  "updated_at": "2026-04-09T02:02:27Z"
 }

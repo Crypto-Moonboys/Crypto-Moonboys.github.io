@@ -317,9 +317,8 @@ function buildRankSignals(html, filePath, title, description, keywords, aliases,
   const contentSignals = buildContentSignals(html, title, description, keywords, aliases);
   const contentQualityScore = computeContentQualityScore(contentSignals);
   const authorityScore = computeAuthorityScore(contentSignals);
-  const mentionCount = Number.isFinite(Number(samEntity && samEntity.mention_count))
-    ? Number(samEntity.mention_count)
-    : 0;
+  const rawMentionCount = samEntity ? samEntity.mention_count : null;
+  const mentionCount = Number.isFinite(Number(rawMentionCount)) ? Number(rawMentionCount) : 0;
 
   return {
     is_canonical: true,
