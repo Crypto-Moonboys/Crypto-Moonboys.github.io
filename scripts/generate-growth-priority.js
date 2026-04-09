@@ -55,6 +55,26 @@ const linkGraph      = readJson('js/link-graph.json');
 const wikiPages = Array.isArray(wikiIndexRaw) ? wikiIndexRaw : Object.values(wikiIndexRaw);
 
 // ---------------------------------------------------------------------------
+// Scoring constants
+// ---------------------------------------------------------------------------
+
+/**
+ * Divisor applied to underlinked-page gap scores when computing the base
+ * priority contribution for expand_existing_page candidates.
+ * Gap scores range roughly 50–600; dividing by 12 maps them into a 0–50
+ * point range that is balanced against other signal addends.
+ */
+const GAP_SCORE_DIVISOR = 12;
+
+/**
+ * Minimum priority score below which a candidate is considered too weak
+ * to be actionable.  Scores below this threshold are almost entirely noise
+ * (tiny clusters, near-zero centrality, no link demand) and would waste
+ * growth bandwidth.
+ */
+const MIN_PRIORITY_SCORE = 10;
+
+// ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
 
@@ -355,7 +375,7 @@ function collectExpandExisting() {
     const signals  = [`gap_score:${gap.score}`, `rank_score:${gap.rank_score || 0}`, `inbound_links:${gap.inbound_links || 0}`];
 
     // Base: gap score contribution (0–50), scaled down
-    let score = clamp(Math.round((gap.score || 0) / 12), 0, 50);
+    let score = clamp(Math.round((gap.score || 0) / GAP_SCORE_DIVISOR), 0, 50);
 
     const cws  = contentWeakness(url);
     const ld   = linkDemand(url);
@@ -776,8 +796,6 @@ function sortCandidates(candidates) {
 // ---------------------------------------------------------------------------
 // Noise filters
 // ---------------------------------------------------------------------------
-
-const MIN_PRIORITY_SCORE = 10;
 
 /**
  * Remove low-signal candidates that would not meaningfully improve the wiki.
