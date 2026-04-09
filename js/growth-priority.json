@@ -1,0 +1,6086 @@
+{
+  "generated_at": "2026-04-09T19:12:42.470Z",
+  "phase": "phase_24",
+  "summary": {
+    "total_targets": 326,
+    "expand_existing_page": 41,
+    "generate_bridge_page": 102,
+    "reinforce_hub": 7,
+    "strengthen_cluster_member": 176
+  },
+  "priorities": [
+    {
+      "target_url": "/wiki/crypto-moonboys.html",
+      "target_slug": "crypto-moonboys",
+      "action_type": "reinforce_hub",
+      "priority_score": 138,
+      "reasons": [
+        "expansion_plan_cluster_support",
+        "over_saturated_injection_target:104",
+        "under_covered_strong_adjacents:38",
+        "reinforcement_concentration_signal"
+      ],
+      "supporting_signals": [
+        "gap_score:232",
+        "rank_score:274",
+        "injection_plan_hits:104",
+        "strong_related_count:38"
+      ],
+      "cluster_context": null,
+      "recommended_source_pages": [
+        "/wiki/diamond-hands.html",
+        "/wiki/hodl-warriors.html",
+        "/wiki/hodl-wars-game.html",
+        "/wiki/hex-tagger-prime.html",
+        "/wiki/iris-7.html"
+      ]
+    },
+    {
+      "target_url": "/wiki/graffiti-kings.html",
+      "target_slug": "graffiti-kings",
+      "action_type": "reinforce_hub",
+      "priority_score": 137,
+      "reasons": [
+        "expansion_plan_cluster_support",
+        "over_saturated_injection_target:17",
+        "under_covered_strong_adjacents:93",
+        "reinforcement_concentration_signal"
+      ],
+      "supporting_signals": [
+        "gap_score:472",
+        "rank_score:193",
+        "injection_plan_hits:17",
+        "strong_related_count:99"
+      ],
+      "cluster_context": "graffiti,kings",
+      "recommended_source_pages": [
+        "/wiki/graffiti-queens-in-decentraland.html",
+        "/wiki/graffiti-queens-exhibition.html",
+        "/wiki/genesis-spray.html",
+        "/wiki/rave-relics.html",
+        "/wiki/midevilpunks.html"
+      ]
+    },
+    {
+      "target_url": "/wiki/metaverse-battles.html",
+      "target_slug": "metaverse-battles",
+      "action_type": "reinforce_hub",
+      "priority_score": 137,
+      "reasons": [
+        "expansion_plan_cluster_support",
+        "over_saturated_injection_target:29",
+        "under_covered_strong_adjacents:93",
+        "reinforcement_concentration_signal"
+      ],
+      "supporting_signals": [
+        "gap_score:477",
+        "rank_score:205",
+        "injection_plan_hits:29",
+        "strong_related_count:99"
+      ],
+      "cluster_context": "metaverse,battles",
+      "recommended_source_pages": [
+        "/wiki/2025-metaverse-launch-party.html",
+        "/wiki/genesis-spray.html",
+        "/wiki/rave-relics.html",
+        "/wiki/midevilpunks.html",
+        "/wiki/gk.html"
+      ]
+    },
+    {
+      "target_url": "/wiki/tokens.html",
+      "target_slug": "tokens",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 132,
+      "reasons": [
+        "strong_cluster_weak_page",
+        "cluster_size:227"
+      ],
+      "supporting_signals": [
+        "rank_score:88",
+        "graph_centrality_raw:165",
+        "cluster_size:227"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/bitcoin-btc.html",
+      "target_slug": "bitcoin-btc",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 131,
+      "reasons": [
+        "strong_cluster_weak_page",
+        "cluster_size:227"
+      ],
+      "supporting_signals": [
+        "rank_score:108",
+        "graph_centrality_raw:167",
+        "cluster_size:227"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/ethereum-eth.html",
+      "target_slug": "ethereum-eth",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 131,
+      "reasons": [
+        "strong_cluster_weak_page",
+        "cluster_size:227"
+      ],
+      "supporting_signals": [
+        "rank_score:108",
+        "graph_centrality_raw:164",
+        "cluster_size:227"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/solana-sol.html",
+      "target_slug": "solana-sol",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 131,
+      "reasons": [
+        "strong_cluster_weak_page",
+        "cluster_size:227"
+      ],
+      "supporting_signals": [
+        "rank_score:108",
+        "graph_centrality_raw:164",
+        "cluster_size:227"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/games4punks-telegram-games.html",
+      "target_slug": "games4punks-telegram-games",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 127,
+      "reasons": [
+        "strong_cluster_weak_page",
+        "cluster_size:227"
+      ],
+      "supporting_signals": [
+        "rank_score:143",
+        "graph_centrality_raw:186",
+        "cluster_size:227"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/lfgk-rewards.html",
+      "target_slug": "lfgk-rewards",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 127,
+      "reasons": [
+        "strong_cluster_weak_page",
+        "cluster_size:227"
+      ],
+      "supporting_signals": [
+        "rank_score:145",
+        "graph_centrality_raw:186",
+        "cluster_size:227"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/the-grids.html",
+      "target_slug": "the-grids",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 127,
+      "reasons": [
+        "strong_cluster_weak_page",
+        "cluster_size:227"
+      ],
+      "supporting_signals": [
+        "rank_score:134",
+        "graph_centrality_raw:186",
+        "cluster_size:227"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/the-sacred-chain.html",
+      "target_slug": "the-sacred-chain",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 127,
+      "reasons": [
+        "strong_cluster_weak_page",
+        "cluster_size:227"
+      ],
+      "supporting_signals": [
+        "rank_score:142",
+        "graph_centrality_raw:186",
+        "cluster_size:227"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/medium-articles-by-hodlwarriors.html",
+      "target_slug": "medium-articles-by-hodlwarriors",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 126,
+      "reasons": [
+        "strong_cluster_weak_page",
+        "cluster_size:227"
+      ],
+      "supporting_signals": [
+        "rank_score:152",
+        "graph_centrality_raw:186",
+        "cluster_size:227"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/hard-fork-games.html",
+      "target_slug": "hard-fork-games",
+      "action_type": "reinforce_hub",
+      "priority_score": 125,
+      "reasons": [
+        "expansion_plan_cluster_support",
+        "over_saturated_injection_target:27",
+        "under_covered_strong_adjacents:6",
+        "reinforcement_concentration_signal"
+      ],
+      "supporting_signals": [
+        "gap_score:41",
+        "rank_score:375",
+        "injection_plan_hits:27",
+        "strong_related_count:8"
+      ],
+      "cluster_context": "hard,fork,games",
+      "recommended_source_pages": [
+        "/wiki/hard-fork-games-event.html",
+        "/wiki/hard-fork-games-game.html",
+        "/wiki/the-hard-fork-rockers.html",
+        "/wiki/no-ball-games-nbg.html",
+        "/wiki/no-ball-games-nbg-collection.html"
+      ]
+    },
+    {
+      "target_url": "/wiki/xrp-kids-genesis-nfts.html",
+      "target_slug": "xrp-kids-genesis-nfts",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 125,
+      "reasons": [
+        "strong_cluster_weak_page",
+        "cluster_size:227"
+      ],
+      "supporting_signals": [
+        "rank_score:153",
+        "graph_centrality_raw:194",
+        "cluster_size:227"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/atomichub-graffpunks-collection.html",
+      "target_slug": "atomichub-graffpunks-collection",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 124,
+      "reasons": [
+        "strong_cluster_weak_page",
+        "cluster_size:227"
+      ],
+      "supporting_signals": [
+        "rank_score:145",
+        "graph_centrality_raw:190",
+        "cluster_size:227"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/staking-for-gk-tokens.html",
+      "target_slug": "staking-for-gk-tokens",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 124,
+      "reasons": [
+        "strong_cluster_weak_page",
+        "cluster_size:227"
+      ],
+      "supporting_signals": [
+        "rank_score:145",
+        "graph_centrality_raw:188",
+        "cluster_size:227"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/darren-cullen-ser-real.html",
+      "target_slug": "darren-cullen-ser-real",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 123,
+      "reasons": [
+        "strong_cluster_weak_page",
+        "cluster_size:227"
+      ],
+      "supporting_signals": [
+        "rank_score:165",
+        "graph_centrality_raw:192",
+        "cluster_size:227"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/graffpunks-247-blockchain-radio-station.html",
+      "target_slug": "graffpunks-247-blockchain-radio-station",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 123,
+      "reasons": [
+        "strong_cluster_weak_page",
+        "cluster_size:227"
+      ],
+      "supporting_signals": [
+        "rank_score:162",
+        "graph_centrality_raw:191",
+        "cluster_size:227"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": [
+        "/wiki/graffpunks-24-7-blockchain-radio-station.html"
+      ]
+    },
+    {
+      "target_url": "/wiki/medium-articles-by-graffpunks.html",
+      "target_slug": "medium-articles-by-graffpunks",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 123,
+      "reasons": [
+        "strong_cluster_weak_page",
+        "cluster_size:227"
+      ],
+      "supporting_signals": [
+        "rank_score:152",
+        "graph_centrality_raw:190",
+        "cluster_size:227"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/the-hodl-warriors.html",
+      "target_slug": "the-hodl-warriors",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 123,
+      "reasons": [
+        "strong_cluster_weak_page",
+        "cluster_size:227"
+      ],
+      "supporting_signals": [
+        "rank_score:156",
+        "graph_centrality_raw:188",
+        "cluster_size:227"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/xrp-kids-nbg-updates.html",
+      "target_slug": "xrp-kids-nbg-updates",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 123,
+      "reasons": [
+        "strong_cluster_weak_page",
+        "cluster_size:227"
+      ],
+      "supporting_signals": [
+        "rank_score:162",
+        "graph_centrality_raw:190",
+        "cluster_size:227"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/decentraland-events.html",
+      "target_slug": "decentraland-events",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 122,
+      "reasons": [
+        "strong_cluster_weak_page",
+        "cluster_size:227"
+      ],
+      "supporting_signals": [
+        "rank_score:149",
+        "graph_centrality_raw:186",
+        "cluster_size:227"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/gk-token.html",
+      "target_slug": "gk-token",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 122,
+      "reasons": [
+        "strong_cluster_weak_page",
+        "cluster_size:227"
+      ],
+      "supporting_signals": [
+        "rank_score:147",
+        "graph_centrality_raw:187",
+        "cluster_size:227"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/graffiti-queens-exhibition.html",
+      "target_slug": "graffiti-queens-exhibition",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 122,
+      "reasons": [
+        "strong_cluster_weak_page",
+        "cluster_size:227"
+      ],
+      "supporting_signals": [
+        "rank_score:146",
+        "graph_centrality_raw:187",
+        "cluster_size:227"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/hard-fork-games-event.html",
+      "target_slug": "hard-fork-games-event",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 122,
+      "reasons": [
+        "strong_cluster_weak_page",
+        "cluster_size:227"
+      ],
+      "supporting_signals": [
+        "rank_score:141",
+        "graph_centrality_raw:186",
+        "cluster_size:227"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/leake-street-tunnel.html",
+      "target_slug": "leake-street-tunnel",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 122,
+      "reasons": [
+        "strong_cluster_weak_page",
+        "cluster_size:227"
+      ],
+      "supporting_signals": [
+        "rank_score:147",
+        "graph_centrality_raw:186",
+        "cluster_size:227"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/stake-for-gk-tokens.html",
+      "target_slug": "stake-for-gk-tokens",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 122,
+      "reasons": [
+        "strong_cluster_weak_page",
+        "cluster_size:227"
+      ],
+      "supporting_signals": [
+        "rank_score:147",
+        "graph_centrality_raw:187",
+        "cluster_size:227"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/substack-posts-on-graffpunkssubstackcom.html",
+      "target_slug": "substack-posts-on-graffpunkssubstackcom",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 122,
+      "reasons": [
+        "strong_cluster_weak_page",
+        "cluster_size:227"
+      ],
+      "supporting_signals": [
+        "rank_score:176",
+        "graph_centrality_raw:190",
+        "cluster_size:227"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": [
+        "/wiki/substack-posts-on-graffpunks-substack-com.html"
+      ]
+    },
+    {
+      "target_url": "/wiki/waxp.html",
+      "target_slug": "waxp",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 122,
+      "reasons": [
+        "strong_cluster_weak_page",
+        "cluster_size:227"
+      ],
+      "supporting_signals": [
+        "rank_score:145",
+        "graph_centrality_raw:186",
+        "cluster_size:227"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/gk-tokens.html",
+      "target_slug": "gk-tokens",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 121,
+      "reasons": [
+        "strong_cluster_weak_page",
+        "cluster_size:227"
+      ],
+      "supporting_signals": [
+        "rank_score:152",
+        "graph_centrality_raw:187",
+        "cluster_size:227"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/great-datapocalypse-of-2789.html",
+      "target_slug": "great-datapocalypse-of-2789",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 121,
+      "reasons": [
+        "strong_cluster_weak_page",
+        "cluster_size:227"
+      ],
+      "supporting_signals": [
+        "rank_score:166",
+        "graph_centrality_raw:186",
+        "cluster_size:227"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/lfgk-token.html",
+      "target_slug": "lfgk-token",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 121,
+      "reasons": [
+        "strong_cluster_weak_page",
+        "cluster_size:227"
+      ],
+      "supporting_signals": [
+        "rank_score:154",
+        "graph_centrality_raw:187",
+        "cluster_size:227"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/medium-articles-by-gkniftyheads.html",
+      "target_slug": "medium-articles-by-gkniftyheads",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 121,
+      "reasons": [
+        "strong_cluster_weak_page",
+        "cluster_size:227"
+      ],
+      "supporting_signals": [
+        "rank_score:152",
+        "graph_centrality_raw:187",
+        "cluster_size:227"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/medium-articles-by-sercullen.html",
+      "target_slug": "medium-articles-by-sercullen",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 121,
+      "reasons": [
+        "strong_cluster_weak_page",
+        "cluster_size:227"
+      ],
+      "supporting_signals": [
+        "rank_score:152",
+        "graph_centrality_raw:186",
+        "cluster_size:227"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/neftyblocks-midevilpunks-collection.html",
+      "target_slug": "neftyblocks-midevilpunks-collection",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 121,
+      "reasons": [
+        "strong_cluster_weak_page",
+        "cluster_size:227"
+      ],
+      "supporting_signals": [
+        "rank_score:153",
+        "graph_centrality_raw:186",
+        "cluster_size:227"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/no-ball-games-nbg-collection.html",
+      "target_slug": "no-ball-games-nbg-collection",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 121,
+      "reasons": [
+        "strong_cluster_weak_page",
+        "cluster_size:227"
+      ],
+      "supporting_signals": [
+        "rank_score:158",
+        "graph_centrality_raw:187",
+        "cluster_size:227"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/smart-nft-mechanics.html",
+      "target_slug": "smart-nft-mechanics",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 121,
+      "reasons": [
+        "strong_cluster_weak_page",
+        "cluster_size:227"
+      ],
+      "supporting_signals": [
+        "rank_score:153",
+        "graph_centrality_raw:186",
+        "cluster_size:227"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/spraycode-writcode.html",
+      "target_slug": "spraycode-writcode",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 121,
+      "reasons": [
+        "strong_cluster_weak_page",
+        "cluster_size:227"
+      ],
+      "supporting_signals": [
+        "rank_score:155",
+        "graph_centrality_raw:186",
+        "cluster_size:227"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/1m-free-nfts.html",
+      "target_slug": "1m-free-nfts",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 117,
+      "reasons": [
+        "strong_cluster_weak_page",
+        "cluster_size:227"
+      ],
+      "supporting_signals": [
+        "rank_score:107",
+        "graph_centrality_raw:130",
+        "cluster_size:227"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/hard-fork-games-game.html",
+      "target_slug": "hard-fork-games-game",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 117,
+      "reasons": [
+        "strong_cluster_weak_page",
+        "cluster_size:227"
+      ],
+      "supporting_signals": [
+        "rank_score:110",
+        "graph_centrality_raw:128",
+        "cluster_size:227"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/one-million-free-nfts.html",
+      "target_slug": "one-million-free-nfts",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 117,
+      "reasons": [
+        "strong_cluster_weak_page",
+        "cluster_size:227"
+      ],
+      "supporting_signals": [
+        "rank_score:110",
+        "graph_centrality_raw:130",
+        "cluster_size:227"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/graffpunks-24-7-blockchain-radio-station.html",
+      "target_slug": "graffpunks-24-7-blockchain-radio-station",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 116,
+      "reasons": [
+        "strong_cluster_weak_page",
+        "cluster_size:227"
+      ],
+      "supporting_signals": [
+        "rank_score:122",
+        "graph_centrality_raw:132",
+        "cluster_size:227"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/hodl-wars-game.html",
+      "target_slug": "hodl-wars-game",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 116,
+      "reasons": [
+        "strong_cluster_weak_page",
+        "cluster_size:227"
+      ],
+      "supporting_signals": [
+        "rank_score:236",
+        "graph_centrality_raw:194",
+        "cluster_size:227"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/substack-posts-on-graffpunks-substack-com.html",
+      "target_slug": "substack-posts-on-graffpunks-substack-com",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 116,
+      "reasons": [
+        "strong_cluster_weak_page",
+        "cluster_size:227"
+      ],
+      "supporting_signals": [
+        "rank_score:120",
+        "graph_centrality_raw:130",
+        "cluster_size:227"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/punk-coin.html",
+      "target_slug": "punk-coin",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 115,
+      "reasons": [
+        "strong_cluster_weak_page",
+        "cluster_size:227"
+      ],
+      "supporting_signals": [
+        "rank_score:117",
+        "graph_centrality_raw:165",
+        "cluster_size:227"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/the-whale-lords.html",
+      "target_slug": "the-whale-lords",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 114,
+      "reasons": [
+        "strong_cluster_weak_page",
+        "cluster_size:227"
+      ],
+      "supporting_signals": [
+        "rank_score:114",
+        "graph_centrality_raw:126",
+        "cluster_size:227"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/canvas-clash.html",
+      "target_slug": "canvas-clash",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 113,
+      "reasons": [
+        "strong_cluster_weak_page",
+        "cluster_size:227"
+      ],
+      "supporting_signals": [
+        "rank_score:229",
+        "graph_centrality_raw:186",
+        "cluster_size:227"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/harrison-rift.html",
+      "target_slug": "harrison-rift",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 113,
+      "reasons": [
+        "strong_cluster_weak_page",
+        "cluster_size:227"
+      ],
+      "supporting_signals": [
+        "rank_score:223",
+        "graph_centrality_raw:187",
+        "cluster_size:227"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/alfie-bitcoin-kid-blaze.html",
+      "target_slug": "alfie-bitcoin-kid-blaze",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 112,
+      "reasons": [
+        "strong_cluster_weak_page",
+        "cluster_size:227"
+      ],
+      "supporting_signals": [
+        "rank_score:177",
+        "graph_centrality_raw:189",
+        "cluster_size:227"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/bitcoin-kid-army.html",
+      "target_slug": "bitcoin-kid-army",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 112,
+      "reasons": [
+        "strong_cluster_weak_page",
+        "cluster_size:227"
+      ],
+      "supporting_signals": [
+        "rank_score:187",
+        "graph_centrality_raw:188",
+        "cluster_size:227"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/hodl-warriors-army.html",
+      "target_slug": "hodl-warriors-army",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 112,
+      "reasons": [
+        "strong_cluster_weak_page",
+        "cluster_size:227"
+      ],
+      "supporting_signals": [
+        "rank_score:186",
+        "graph_centrality_raw:188",
+        "cluster_size:227"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/snipey-d-man-sirus.html",
+      "target_slug": "snipey-d-man-sirus",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 111,
+      "reasons": [
+        "strong_cluster_weak_page",
+        "cluster_size:227"
+      ],
+      "supporting_signals": [
+        "rank_score:205",
+        "graph_centrality_raw:192",
+        "cluster_size:227"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/bear-market-siege.html",
+      "target_slug": "bear-market-siege",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 110,
+      "reasons": [
+        "strong_cluster_weak_page",
+        "cluster_size:227"
+      ],
+      "supporting_signals": [
+        "rank_score:229",
+        "graph_centrality_raw:192",
+        "cluster_size:227"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": [
+        "/wiki/the-bear-market-siege.html"
+      ]
+    },
+    {
+      "target_url": "/wiki/croydon-tower-blocks.html",
+      "target_slug": "croydon-tower-blocks",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 110,
+      "reasons": [
+        "strong_cluster_weak_page",
+        "cluster_size:227"
+      ],
+      "supporting_signals": [
+        "rank_score:188",
+        "graph_centrality_raw:186",
+        "cluster_size:227"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/gang-signs-card-game.html",
+      "target_slug": "gang-signs-card-game",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 110,
+      "reasons": [
+        "strong_cluster_weak_page",
+        "cluster_size:227"
+      ],
+      "supporting_signals": [
+        "rank_score:218",
+        "graph_centrality_raw:188",
+        "cluster_size:227"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/graffpunks-collection.html",
+      "target_slug": "graffpunks-collection",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 110,
+      "reasons": [
+        "strong_cluster_weak_page",
+        "cluster_size:227"
+      ],
+      "supporting_signals": [
+        "rank_score:223",
+        "graph_centrality_raw:190",
+        "cluster_size:227"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/maidstone-base.html",
+      "target_slug": "maidstone-base",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 110,
+      "reasons": [
+        "strong_cluster_weak_page",
+        "cluster_size:227"
+      ],
+      "supporting_signals": [
+        "rank_score:183",
+        "graph_centrality_raw:186",
+        "cluster_size:227"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/nbgx-token.html",
+      "target_slug": "nbgx-token",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 110,
+      "reasons": [
+        "strong_cluster_weak_page",
+        "cluster_size:227"
+      ],
+      "supporting_signals": [
+        "rank_score:218",
+        "graph_centrality_raw:188",
+        "cluster_size:227"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/nfts.html",
+      "target_slug": "nfts",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 110,
+      "reasons": [
+        "strong_cluster_weak_page",
+        "cluster_size:227"
+      ],
+      "supporting_signals": [
+        "rank_score:258",
+        "graph_centrality_raw:195",
+        "cluster_size:227"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": [
+        "/wiki/nfts-non-fungible-tokens.html"
+      ]
+    },
+    {
+      "target_url": "/wiki/no-ball-games-nbg.html",
+      "target_slug": "no-ball-games-nbg",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 110,
+      "reasons": [
+        "strong_cluster_weak_page",
+        "cluster_size:227"
+      ],
+      "supporting_signals": [
+        "rank_score:189",
+        "graph_centrality_raw:187",
+        "cluster_size:227"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/sarah-pu51fly.html",
+      "target_slug": "sarah-pu51fly",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 110,
+      "reasons": [
+        "strong_cluster_weak_page",
+        "cluster_size:227"
+      ],
+      "supporting_signals": [
+        "rank_score:225",
+        "graph_centrality_raw:192",
+        "cluster_size:227"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/the-gkniftyheads.html",
+      "target_slug": "the-gkniftyheads",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 110,
+      "reasons": [
+        "strong_cluster_weak_page",
+        "cluster_size:227"
+      ],
+      "supporting_signals": [
+        "rank_score:184",
+        "graph_centrality_raw:187",
+        "cluster_size:227"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/the-graffpunks.html",
+      "target_slug": "the-graffpunks",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 110,
+      "reasons": [
+        "strong_cluster_weak_page",
+        "cluster_size:227"
+      ],
+      "supporting_signals": [
+        "rank_score:221",
+        "graph_centrality_raw:190",
+        "cluster_size:227"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/wagmi-prophecy.html",
+      "target_slug": "wagmi-prophecy",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 110,
+      "reasons": [
+        "strong_cluster_weak_page",
+        "cluster_size:227"
+      ],
+      "supporting_signals": [
+        "rank_score:213",
+        "graph_centrality_raw:192",
+        "cluster_size:227"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": [
+        "/wiki/the-wagmi-prophecy.html"
+      ]
+    },
+    {
+      "target_url": "/wiki/2025-metaverse-launch-party.html",
+      "target_slug": "2025-metaverse-launch-party",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 109,
+      "reasons": [
+        "strong_cluster_weak_page",
+        "cluster_size:227"
+      ],
+      "supporting_signals": [
+        "rank_score:210",
+        "graph_centrality_raw:186",
+        "cluster_size:227"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/aleema-child-of-the-shard.html",
+      "target_slug": "aleema-child-of-the-shard",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 109,
+      "reasons": [
+        "strong_cluster_weak_page",
+        "cluster_size:227"
+      ],
+      "supporting_signals": [
+        "rank_score:244",
+        "graph_centrality_raw:192",
+        "cluster_size:227"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/ava-chen.html",
+      "target_slug": "ava-chen",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 109,
+      "reasons": [
+        "strong_cluster_weak_page",
+        "cluster_size:227"
+      ],
+      "supporting_signals": [
+        "rank_score:242",
+        "graph_centrality_raw:192",
+        "cluster_size:227"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/billy-the-goat-kid.html",
+      "target_slug": "billy-the-goat-kid",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 109,
+      "reasons": [
+        "strong_cluster_weak_page",
+        "cluster_size:227"
+      ],
+      "supporting_signals": [
+        "rank_score:240",
+        "graph_centrality_raw:192",
+        "cluster_size:227"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/bit-cap-5000.html",
+      "target_slug": "bit-cap-5000",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 109,
+      "reasons": [
+        "strong_cluster_weak_page",
+        "cluster_size:227"
+      ],
+      "supporting_signals": [
+        "rank_score:243",
+        "graph_centrality_raw:192",
+        "cluster_size:227"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/dragan-volkov.html",
+      "target_slug": "dragan-volkov",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 109,
+      "reasons": [
+        "strong_cluster_weak_page",
+        "cluster_size:227"
+      ],
+      "supporting_signals": [
+        "rank_score:241",
+        "graph_centrality_raw:192",
+        "cluster_size:227"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/elder-codex-7.html",
+      "target_slug": "elder-codex-7",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 109,
+      "reasons": [
+        "strong_cluster_weak_page",
+        "cluster_size:227"
+      ],
+      "supporting_signals": [
+        "rank_score:250",
+        "graph_centrality_raw:192",
+        "cluster_size:227"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/forklord-you.html",
+      "target_slug": "forklord-you",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 109,
+      "reasons": [
+        "strong_cluster_weak_page",
+        "cluster_size:227"
+      ],
+      "supporting_signals": [
+        "rank_score:240",
+        "graph_centrality_raw:192",
+        "cluster_size:227"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/forksplit.html",
+      "target_slug": "forksplit",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 109,
+      "reasons": [
+        "strong_cluster_weak_page",
+        "cluster_size:227"
+      ],
+      "supporting_signals": [
+        "rank_score:243",
+        "graph_centrality_raw:192",
+        "cluster_size:227"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": null,
+      "target_slug": "games-nfts",
+      "action_type": "generate_bridge_page",
+      "priority_score": 109,
+      "reasons": [
+        "expansion_plan_target",
+        "create_bridge_page",
+        "cross_tag_cluster_edges:68",
+        "cluster_a_pages:6"
+      ],
+      "supporting_signals": [
+        "bridge_score:151",
+        "cross_cluster_edge_count:68",
+        "cluster_a:games",
+        "cluster_b:nfts",
+        "related_avg_centrality:29"
+      ],
+      "cluster_context": "games,nfts",
+      "recommended_source_pages": [
+        "/wiki/hard-fork-games.html",
+        "/wiki/nfts.html",
+        "/wiki/1m-free-nfts-programme.html",
+        "/wiki/1m-free-nfts-drop.html",
+        "/wiki/1m-free-nfts-program.html"
+      ]
+    },
+    {
+      "target_url": "/wiki/grit.html",
+      "target_slug": "grit",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 109,
+      "reasons": [
+        "strong_cluster_weak_page",
+        "cluster_size:227"
+      ],
+      "supporting_signals": [
+        "rank_score:233",
+        "graph_centrality_raw:192",
+        "cluster_size:227"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/grit42.html",
+      "target_slug": "grit42",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 109,
+      "reasons": [
+        "strong_cluster_weak_page",
+        "cluster_size:227"
+      ],
+      "supporting_signals": [
+        "rank_score:241",
+        "graph_centrality_raw:192",
+        "cluster_size:227"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/hex-tagger-prime.html",
+      "target_slug": "hex-tagger-prime",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 109,
+      "reasons": [
+        "strong_cluster_weak_page",
+        "cluster_size:227"
+      ],
+      "supporting_signals": [
+        "rank_score:245",
+        "graph_centrality_raw:192",
+        "cluster_size:227"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/loopfiend.html",
+      "target_slug": "loopfiend",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 109,
+      "reasons": [
+        "strong_cluster_weak_page",
+        "cluster_size:227"
+      ],
+      "supporting_signals": [
+        "rank_score:247",
+        "graph_centrality_raw:192",
+        "cluster_size:227"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/m1ntr-k1ll.html",
+      "target_slug": "m1ntr-k1ll",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 109,
+      "reasons": [
+        "strong_cluster_weak_page",
+        "cluster_size:227"
+      ],
+      "supporting_signals": [
+        "rank_score:245",
+        "graph_centrality_raw:192",
+        "cluster_size:227"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/pmsl-token.html",
+      "target_slug": "pmsl-token",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 109,
+      "reasons": [
+        "strong_cluster_weak_page",
+        "cluster_size:227"
+      ],
+      "supporting_signals": [
+        "rank_score:209",
+        "graph_centrality_raw:187",
+        "cluster_size:227"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/thera-9.html",
+      "target_slug": "thera-9",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 109,
+      "reasons": [
+        "strong_cluster_weak_page",
+        "cluster_size:227"
+      ],
+      "supporting_signals": [
+        "rank_score:243",
+        "graph_centrality_raw:192",
+        "cluster_size:227"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": null,
+      "target_slug": "bitcoin-nfts",
+      "action_type": "generate_bridge_page",
+      "priority_score": 108,
+      "reasons": [
+        "expansion_plan_target",
+        "create_bridge_page",
+        "cross_tag_cluster_edges:80",
+        "cluster_a_pages:8"
+      ],
+      "supporting_signals": [
+        "bridge_score:175",
+        "cross_cluster_edge_count:80",
+        "cluster_a:bitcoin",
+        "cluster_b:nfts",
+        "related_avg_centrality:28"
+      ],
+      "cluster_context": "bitcoin,nfts",
+      "recommended_source_pages": [
+        "/wiki/bitcoin-kids.html",
+        "/wiki/bitcoin.html",
+        "/wiki/bitcoin-x-kids.html",
+        "/wiki/nfts.html",
+        "/wiki/the-bitcoin-kid-army.html"
+      ]
+    },
+    {
+      "target_url": null,
+      "target_slug": "bitcoin-tokens",
+      "action_type": "generate_bridge_page",
+      "priority_score": 108,
+      "reasons": [
+        "expansion_plan_target",
+        "create_bridge_page",
+        "cross_tag_cluster_edges:68",
+        "cluster_a_pages:8"
+      ],
+      "supporting_signals": [
+        "bridge_score:150",
+        "cross_cluster_edge_count:68",
+        "cluster_a:bitcoin",
+        "cluster_b:tokens",
+        "related_avg_centrality:28"
+      ],
+      "cluster_context": "bitcoin,tokens",
+      "recommended_source_pages": [
+        "/wiki/bitcoin-kids.html",
+        "/wiki/bitcoin.html",
+        "/wiki/bitcoin-x-kids.html",
+        "/wiki/nfts.html",
+        "/wiki/the-bitcoin-kid-army.html"
+      ]
+    },
+    {
+      "target_url": "/wiki/darren-cullen-ser.html",
+      "target_slug": "darren-cullen-ser",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 108,
+      "reasons": [
+        "strong_cluster_weak_page",
+        "cluster_size:227"
+      ],
+      "supporting_signals": [
+        "rank_score:221",
+        "graph_centrality_raw:187",
+        "cluster_size:227"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/gkniftyheads-phase-one-two-three.html",
+      "target_slug": "gkniftyheads-phase-one-two-three",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 108,
+      "reasons": [
+        "strong_cluster_weak_page",
+        "cluster_size:227"
+      ],
+      "supporting_signals": [
+        "rank_score:219",
+        "graph_centrality_raw:187",
+        "cluster_size:227"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/lfgk.html",
+      "target_slug": "lfgk",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 108,
+      "reasons": [
+        "strong_cluster_weak_page",
+        "cluster_size:227"
+      ],
+      "supporting_signals": [
+        "rank_score:215",
+        "graph_centrality_raw:186",
+        "cluster_size:227"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/queen-sarah-p-fly.html",
+      "target_slug": "queen-sarah-p-fly",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 108,
+      "reasons": [
+        "strong_cluster_weak_page",
+        "cluster_size:227"
+      ],
+      "supporting_signals": [
+        "rank_score:218",
+        "graph_centrality_raw:187",
+        "cluster_size:227"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/whale-lords.html",
+      "target_slug": "whale-lords",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 108,
+      "reasons": [
+        "strong_cluster_weak_page",
+        "cluster_size:227"
+      ],
+      "supporting_signals": [
+        "rank_score:223",
+        "graph_centrality_raw:186",
+        "cluster_size:227"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": [
+        "/wiki/the-whale-lords.html"
+      ]
+    },
+    {
+      "target_url": "/wiki/bone-idol-ink.html",
+      "target_slug": "bone-idol-ink",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 107,
+      "reasons": [
+        "strong_cluster_weak_page",
+        "cluster_size:227"
+      ],
+      "supporting_signals": [
+        "rank_score:231",
+        "graph_centrality_raw:186",
+        "cluster_size:227"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/graffiti-queens-in-decentraland.html",
+      "target_slug": "graffiti-queens-in-decentraland",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 107,
+      "reasons": [
+        "strong_cluster_weak_page",
+        "cluster_size:227"
+      ],
+      "supporting_signals": [
+        "rank_score:237",
+        "graph_centrality_raw:187",
+        "cluster_size:227"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/phygital-prints.html",
+      "target_slug": "phygital-prints",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 107,
+      "reasons": [
+        "strong_cluster_weak_page",
+        "cluster_size:227"
+      ],
+      "supporting_signals": [
+        "rank_score:242",
+        "graph_centrality_raw:186",
+        "cluster_size:227"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/playable-nft-murals.html",
+      "target_slug": "playable-nft-murals",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 107,
+      "reasons": [
+        "strong_cluster_weak_page",
+        "cluster_size:227"
+      ],
+      "supporting_signals": [
+        "rank_score:241",
+        "graph_centrality_raw:186",
+        "cluster_size:227"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/seeding-rights.html",
+      "target_slug": "seeding-rights",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 107,
+      "reasons": [
+        "strong_cluster_weak_page",
+        "cluster_size:227"
+      ],
+      "supporting_signals": [
+        "rank_score:242",
+        "graph_centrality_raw:186",
+        "cluster_size:227"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/spirit-borns.html",
+      "target_slug": "spirit-borns",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 106,
+      "reasons": [
+        "strong_cluster_weak_page",
+        "cluster_size:227"
+      ],
+      "supporting_signals": [
+        "rank_score:255",
+        "graph_centrality_raw:186",
+        "cluster_size:227"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/the-aztec-raiders.html",
+      "target_slug": "the-aztec-raiders",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 106,
+      "reasons": [
+        "strong_cluster_weak_page",
+        "cluster_size:227"
+      ],
+      "supporting_signals": [
+        "rank_score:251",
+        "graph_centrality_raw:186",
+        "cluster_size:227"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/nifty-crowns.html",
+      "target_slug": "nifty-crowns",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 105,
+      "reasons": [
+        "strong_cluster_weak_page",
+        "cluster_size:227"
+      ],
+      "supporting_signals": [
+        "rank_score:275",
+        "graph_centrality_raw:186",
+        "cluster_size:227"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/the-ducky-boys.html",
+      "target_slug": "the-ducky-boys",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 105,
+      "reasons": [
+        "strong_cluster_weak_page",
+        "cluster_size:227"
+      ],
+      "supporting_signals": [
+        "rank_score:273",
+        "graph_centrality_raw:186",
+        "cluster_size:227"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/1m-free-nfts-drop.html",
+      "target_slug": "1m-free-nfts-drop",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 103,
+      "reasons": [
+        "strong_cluster_weak_page",
+        "cluster_size:227"
+      ],
+      "supporting_signals": [
+        "rank_score:253",
+        "graph_centrality_raw:190",
+        "cluster_size:227"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/alfie-the-bitcoin-kid-blaze.html",
+      "target_slug": "alfie-the-bitcoin-kid-blaze",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 103,
+      "reasons": [
+        "strong_cluster_weak_page",
+        "cluster_size:227"
+      ],
+      "supporting_signals": [
+        "rank_score:251",
+        "graph_centrality_raw:189",
+        "cluster_size:227"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": null,
+      "target_slug": "gk-graffpunks",
+      "action_type": "generate_bridge_page",
+      "priority_score": 103,
+      "reasons": [
+        "expansion_plan_target",
+        "create_bridge_page",
+        "cross_tag_cluster_edges:110",
+        "cluster_a_pages:5"
+      ],
+      "supporting_signals": [
+        "bridge_score:236",
+        "cross_cluster_edge_count:110",
+        "cluster_a:gk",
+        "cluster_b:graffpunks",
+        "related_avg_centrality:23"
+      ],
+      "cluster_context": "gk,graffpunks",
+      "recommended_source_pages": [
+        "/wiki/graffpunks.html",
+        "/wiki/graffpunks-24-7.html",
+        "/wiki/graffpunks-247-radio.html",
+        "/wiki/graffpunks-24-7-radio.html",
+        "/wiki/gk.html"
+      ]
+    },
+    {
+      "target_url": null,
+      "target_slug": "graffpunks-kid",
+      "action_type": "generate_bridge_page",
+      "priority_score": 103,
+      "reasons": [
+        "expansion_plan_target",
+        "create_bridge_page",
+        "cross_tag_cluster_edges:108",
+        "cluster_a_pages:15"
+      ],
+      "supporting_signals": [
+        "bridge_score:232",
+        "cross_cluster_edge_count:108",
+        "cluster_a:graffpunks",
+        "cluster_b:kid",
+        "related_avg_centrality:23"
+      ],
+      "cluster_context": "graffpunks,kid",
+      "recommended_source_pages": [
+        "/wiki/graffpunks.html",
+        "/wiki/graffpunks-24-7.html",
+        "/wiki/graffpunks-247-radio.html",
+        "/wiki/graffpunks-24-7-radio.html",
+        "/wiki/the-bitcoin-kid-army.html"
+      ]
+    },
+    {
+      "target_url": "/wiki/iris-7.html",
+      "target_slug": "iris-7",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 103,
+      "reasons": [
+        "strong_cluster_weak_page",
+        "cluster_size:227"
+      ],
+      "supporting_signals": [
+        "rank_score:253",
+        "graph_centrality_raw:192",
+        "cluster_size:227"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/jodie-zoom-2000.html",
+      "target_slug": "jodie-zoom-2000",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 103,
+      "reasons": [
+        "strong_cluster_weak_page",
+        "cluster_size:227"
+      ],
+      "supporting_signals": [
+        "rank_score:254",
+        "graph_centrality_raw:192",
+        "cluster_size:227"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/lady-ink.html",
+      "target_slug": "lady-ink",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 103,
+      "reasons": [
+        "strong_cluster_weak_page",
+        "cluster_size:227"
+      ],
+      "supporting_signals": [
+        "rank_score:257",
+        "graph_centrality_raw:192",
+        "cluster_size:227"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/wallets.html",
+      "target_slug": "wallets",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 103,
+      "reasons": [
+        "strong_cluster_weak_page",
+        "cluster_size:227"
+      ],
+      "supporting_signals": [
+        "rank_score:263",
+        "graph_centrality_raw:192",
+        "cluster_size:227"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": [
+        "/wiki/crypto-wallets.html"
+      ]
+    },
+    {
+      "target_url": null,
+      "target_slug": "blockchain-graffpunks",
+      "action_type": "generate_bridge_page",
+      "priority_score": 102,
+      "reasons": [
+        "expansion_plan_target",
+        "create_bridge_page",
+        "cross_tag_cluster_edges:92",
+        "cluster_a_pages:5"
+      ],
+      "supporting_signals": [
+        "bridge_score:200",
+        "cross_cluster_edge_count:92",
+        "cluster_a:blockchain",
+        "cluster_b:graffpunks",
+        "related_avg_centrality:22"
+      ],
+      "cluster_context": "blockchain,graffpunks",
+      "recommended_source_pages": [
+        "/wiki/graffpunks.html",
+        "/wiki/graffpunks-24-7.html",
+        "/wiki/graffpunks-247-radio.html",
+        "/wiki/graffpunks-24-7-radio.html",
+        "/wiki/blockchain.html"
+      ]
+    },
+    {
+      "target_url": "/wiki/punk.html",
+      "target_slug": "punk",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 102,
+      "reasons": [
+        "strong_cluster_weak_page",
+        "cluster_size:227"
+      ],
+      "supporting_signals": [
+        "rank_score:234",
+        "graph_centrality_raw:187",
+        "cluster_size:227"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/pyralith.html",
+      "target_slug": "pyralith",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 102,
+      "reasons": [
+        "strong_cluster_weak_page",
+        "cluster_size:227"
+      ],
+      "supporting_signals": [
+        "rank_score:287",
+        "graph_centrality_raw:192",
+        "cluster_size:227"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/quell.html",
+      "target_slug": "quell",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 102,
+      "reasons": [
+        "strong_cluster_weak_page",
+        "cluster_size:227"
+      ],
+      "supporting_signals": [
+        "rank_score:288",
+        "graph_centrality_raw:192",
+        "cluster_size:227"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/the-bitcoin-kid-army.html",
+      "target_slug": "the-bitcoin-kid-army",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 102,
+      "reasons": [
+        "strong_cluster_weak_page",
+        "cluster_size:227"
+      ],
+      "supporting_signals": [
+        "rank_score:273",
+        "graph_centrality_raw:188",
+        "cluster_size:227"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/the-information-mercenaries.html",
+      "target_slug": "the-information-mercenaries",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 102,
+      "reasons": [
+        "strong_cluster_weak_page",
+        "cluster_size:227"
+      ],
+      "supporting_signals": [
+        "rank_score:245",
+        "graph_centrality_raw:186",
+        "cluster_size:227"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/the-princess.html",
+      "target_slug": "the-princess",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 102,
+      "reasons": [
+        "strong_cluster_weak_page",
+        "cluster_size:227"
+      ],
+      "supporting_signals": [
+        "rank_score:290",
+        "graph_centrality_raw:192",
+        "cluster_size:227"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/the-squeaky-pinks.html",
+      "target_slug": "the-squeaky-pinks",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 102,
+      "reasons": [
+        "strong_cluster_weak_page",
+        "cluster_size:227"
+      ],
+      "supporting_signals": [
+        "rank_score:250",
+        "graph_centrality_raw:186",
+        "cluster_size:227"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/the-whitewasher.html",
+      "target_slug": "the-whitewasher",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 102,
+      "reasons": [
+        "strong_cluster_weak_page",
+        "cluster_size:227"
+      ],
+      "supporting_signals": [
+        "rank_score:288",
+        "graph_centrality_raw:192",
+        "cluster_size:227"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/thorne-the-architect.html",
+      "target_slug": "thorne-the-architect",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 102,
+      "reasons": [
+        "strong_cluster_weak_page",
+        "cluster_size:227"
+      ],
+      "supporting_signals": [
+        "rank_score:283",
+        "graph_centrality_raw:192",
+        "cluster_size:227"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/block-node-defenders.html",
+      "target_slug": "block-node-defenders",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 101,
+      "reasons": [
+        "strong_cluster_weak_page",
+        "cluster_size:227"
+      ],
+      "supporting_signals": [
+        "rank_score:268",
+        "graph_centrality_raw:187",
+        "cluster_size:227"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/delicious-again-pete.html",
+      "target_slug": "delicious-again-pete",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 101,
+      "reasons": [
+        "strong_cluster_weak_page",
+        "cluster_size:227"
+      ],
+      "supporting_signals": [
+        "rank_score:267",
+        "graph_centrality_raw:186",
+        "cluster_size:227"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/gk.html",
+      "target_slug": "gk",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 101,
+      "reasons": [
+        "strong_cluster_weak_page",
+        "cluster_size:227"
+      ],
+      "supporting_signals": [
+        "rank_score:253",
+        "graph_centrality_raw:186",
+        "cluster_size:227"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/ngmi-chronicles.html",
+      "target_slug": "ngmi-chronicles",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 101,
+      "reasons": [
+        "strong_cluster_weak_page",
+        "cluster_size:227"
+      ],
+      "supporting_signals": [
+        "rank_score:205",
+        "graph_centrality_raw:164",
+        "cluster_size:227"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/patchwork.html",
+      "target_slug": "patchwork",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 101,
+      "reasons": [
+        "strong_cluster_weak_page",
+        "cluster_size:227"
+      ],
+      "supporting_signals": [
+        "rank_score:291",
+        "graph_centrality_raw:192",
+        "cluster_size:227"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/rune-tag.html",
+      "target_slug": "rune-tag",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 101,
+      "reasons": [
+        "strong_cluster_weak_page",
+        "cluster_size:227"
+      ],
+      "supporting_signals": [
+        "rank_score:295",
+        "graph_centrality_raw:192",
+        "cluster_size:227"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/samaelexe.html",
+      "target_slug": "samaelexe",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 101,
+      "reasons": [
+        "strong_cluster_weak_page",
+        "cluster_size:227"
+      ],
+      "supporting_signals": [
+        "rank_score:296",
+        "graph_centrality_raw:192",
+        "cluster_size:227"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": [
+        "/wiki/samael-exe.html"
+      ]
+    },
+    {
+      "target_url": "/wiki/satorebel.html",
+      "target_slug": "satorebel",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 101,
+      "reasons": [
+        "strong_cluster_weak_page",
+        "cluster_size:227"
+      ],
+      "supporting_signals": [
+        "rank_score:291",
+        "graph_centrality_raw:192",
+        "cluster_size:227"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/sister-halcyon.html",
+      "target_slug": "sister-halcyon",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 101,
+      "reasons": [
+        "strong_cluster_weak_page",
+        "cluster_size:227"
+      ],
+      "supporting_signals": [
+        "rank_score:292",
+        "graph_centrality_raw:192",
+        "cluster_size:227"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/spraycode-writcode-mechanics.html",
+      "target_slug": "spraycode-writcode-mechanics",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 101,
+      "reasons": [
+        "strong_cluster_weak_page",
+        "cluster_size:227"
+      ],
+      "supporting_signals": [
+        "rank_score:252",
+        "graph_centrality_raw:186",
+        "cluster_size:227"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/the-allcity-bulls.html",
+      "target_slug": "the-allcity-bulls",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 101,
+      "reasons": [
+        "strong_cluster_weak_page",
+        "cluster_size:227"
+      ],
+      "supporting_signals": [
+        "rank_score:255",
+        "graph_centrality_raw:186",
+        "cluster_size:227"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/the-bally-boys.html",
+      "target_slug": "the-bally-boys",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 101,
+      "reasons": [
+        "strong_cluster_weak_page",
+        "cluster_size:227"
+      ],
+      "supporting_signals": [
+        "rank_score:254",
+        "graph_centrality_raw:186",
+        "cluster_size:227"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/the-blockchain-furies.html",
+      "target_slug": "the-blockchain-furies",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 101,
+      "reasons": [
+        "strong_cluster_weak_page",
+        "cluster_size:227"
+      ],
+      "supporting_signals": [
+        "rank_score:263",
+        "graph_centrality_raw:187",
+        "cluster_size:227"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/the-blockstars.html",
+      "target_slug": "the-blockstars",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 101,
+      "reasons": [
+        "strong_cluster_weak_page",
+        "cluster_size:227"
+      ],
+      "supporting_signals": [
+        "rank_score:267",
+        "graph_centrality_raw:186",
+        "cluster_size:227"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/the-code-alchemists.html",
+      "target_slug": "the-code-alchemists",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 101,
+      "reasons": [
+        "strong_cluster_weak_page",
+        "cluster_size:227"
+      ],
+      "supporting_signals": [
+        "rank_score:261",
+        "graph_centrality_raw:186",
+        "cluster_size:227"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/the-crypto-stoned-boys.html",
+      "target_slug": "the-crypto-stoned-boys",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 101,
+      "reasons": [
+        "strong_cluster_weak_page",
+        "cluster_size:227"
+      ],
+      "supporting_signals": [
+        "rank_score:264",
+        "graph_centrality_raw:186",
+        "cluster_size:227"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/the-nomad-bears.html",
+      "target_slug": "the-nomad-bears",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 101,
+      "reasons": [
+        "strong_cluster_weak_page",
+        "cluster_size:227"
+      ],
+      "supporting_signals": [
+        "rank_score:270",
+        "graph_centrality_raw:186",
+        "cluster_size:227"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/the-rugpull-miners.html",
+      "target_slug": "the-rugpull-miners",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 101,
+      "reasons": [
+        "strong_cluster_weak_page",
+        "cluster_size:227"
+      ],
+      "supporting_signals": [
+        "rank_score:270",
+        "graph_centrality_raw:186",
+        "cluster_size:227"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/the-salvagers.html",
+      "target_slug": "the-salvagers",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 101,
+      "reasons": [
+        "strong_cluster_weak_page",
+        "cluster_size:227"
+      ],
+      "supporting_signals": [
+        "rank_score:269",
+        "graph_centrality_raw:186",
+        "cluster_size:227"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/the-tuskon-ogs.html",
+      "target_slug": "the-tuskon-ogs",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 101,
+      "reasons": [
+        "strong_cluster_weak_page",
+        "cluster_size:227"
+      ],
+      "supporting_signals": [
+        "rank_score:257",
+        "graph_centrality_raw:186",
+        "cluster_size:227"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/triple-fork-event.html",
+      "target_slug": "triple-fork-event",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 101,
+      "reasons": [
+        "strong_cluster_weak_page",
+        "cluster_size:227"
+      ],
+      "supporting_signals": [
+        "rank_score:258",
+        "graph_centrality_raw:186",
+        "cluster_size:227"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/altcoins.html",
+      "target_slug": "altcoins",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 100,
+      "reasons": [
+        "strong_cluster_weak_page",
+        "cluster_size:227"
+      ],
+      "supporting_signals": [
+        "rank_score:227",
+        "graph_centrality_raw:164",
+        "cluster_size:227"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/fomo-plague.html",
+      "target_slug": "fomo-plague",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 100,
+      "reasons": [
+        "strong_cluster_weak_page",
+        "cluster_size:227"
+      ],
+      "supporting_signals": [
+        "rank_score:214",
+        "graph_centrality_raw:164",
+        "cluster_size:227"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": [
+        "/wiki/the-fomo-plague.html"
+      ]
+    },
+    {
+      "target_url": null,
+      "target_slug": "fork-graffpunks",
+      "action_type": "generate_bridge_page",
+      "priority_score": 100,
+      "reasons": [
+        "expansion_plan_target",
+        "create_bridge_page",
+        "cross_tag_cluster_edges:110",
+        "cluster_a_pages:5"
+      ],
+      "supporting_signals": [
+        "bridge_score:236",
+        "cross_cluster_edge_count:110",
+        "cluster_a:fork",
+        "cluster_b:graffpunks",
+        "related_avg_centrality:20"
+      ],
+      "cluster_context": "fork,graffpunks",
+      "recommended_source_pages": [
+        "/wiki/graffpunks.html",
+        "/wiki/graffpunks-24-7.html",
+        "/wiki/graffpunks-247-radio.html",
+        "/wiki/hard-fork-games.html",
+        "/wiki/graffpunks-24-7-radio.html"
+      ]
+    },
+    {
+      "target_url": "/wiki/forkborn-collective.html",
+      "target_slug": "forkborn-collective",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 100,
+      "reasons": [
+        "strong_cluster_weak_page",
+        "cluster_size:227"
+      ],
+      "supporting_signals": [
+        "rank_score:272",
+        "graph_centrality_raw:186",
+        "cluster_size:227"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/graffpunks-nfts.html",
+      "target_slug": "graffpunks-nfts",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 100,
+      "reasons": [
+        "strong_cluster_weak_page",
+        "cluster_size:227"
+      ],
+      "supporting_signals": [
+        "rank_score:114",
+        "graph_centrality_raw:90",
+        "cluster_size:227"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/jonny-laurence-nelson-tag-records.html",
+      "target_slug": "jonny-laurence-nelson-tag-records",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 100,
+      "reasons": [
+        "strong_cluster_weak_page",
+        "cluster_size:227"
+      ],
+      "supporting_signals": [
+        "rank_score:282",
+        "graph_centrality_raw:186",
+        "cluster_size:227"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/paper-hands.html",
+      "target_slug": "paper-hands",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 100,
+      "reasons": [
+        "strong_cluster_weak_page",
+        "cluster_size:227"
+      ],
+      "supporting_signals": [
+        "rank_score:211",
+        "graph_centrality_raw:164",
+        "cluster_size:227"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/satoshi-scroll.html",
+      "target_slug": "satoshi-scroll",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 100,
+      "reasons": [
+        "strong_cluster_weak_page",
+        "cluster_size:227"
+      ],
+      "supporting_signals": [
+        "rank_score:211",
+        "graph_centrality_raw:164",
+        "cluster_size:227"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": [
+        "/wiki/the-satoshi-scroll.html"
+      ]
+    },
+    {
+      "target_url": "/wiki/squeaky-pinks-enforcers.html",
+      "target_slug": "squeaky-pinks-enforcers",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 100,
+      "reasons": [
+        "strong_cluster_weak_page",
+        "cluster_size:227"
+      ],
+      "supporting_signals": [
+        "rank_score:273",
+        "graph_centrality_raw:186",
+        "cluster_size:227"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/street-kingdoms.html",
+      "target_slug": "street-kingdoms",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 100,
+      "reasons": [
+        "strong_cluster_weak_page",
+        "cluster_size:227"
+      ],
+      "supporting_signals": [
+        "rank_score:283",
+        "graph_centrality_raw:186",
+        "cluster_size:227"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/the-chain-scribes.html",
+      "target_slug": "the-chain-scribes",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 100,
+      "reasons": [
+        "strong_cluster_weak_page",
+        "cluster_size:227"
+      ],
+      "supporting_signals": [
+        "rank_score:279",
+        "graph_centrality_raw:186",
+        "cluster_size:227"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/the-crypto-moongirls.html",
+      "target_slug": "the-crypto-moongirls",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 100,
+      "reasons": [
+        "strong_cluster_weak_page",
+        "cluster_size:227"
+      ],
+      "supporting_signals": [
+        "rank_score:285",
+        "graph_centrality_raw:186",
+        "cluster_size:227"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/the-evm-punks.html",
+      "target_slug": "the-evm-punks",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 100,
+      "reasons": [
+        "strong_cluster_weak_page",
+        "cluster_size:227"
+      ],
+      "supporting_signals": [
+        "rank_score:271",
+        "graph_centrality_raw:186",
+        "cluster_size:227"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/the-finance-guild.html",
+      "target_slug": "the-finance-guild",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 100,
+      "reasons": [
+        "strong_cluster_weak_page",
+        "cluster_size:227"
+      ],
+      "supporting_signals": [
+        "rank_score:275",
+        "graph_centrality_raw:187",
+        "cluster_size:227"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/the-gasless-ghosts.html",
+      "target_slug": "the-gasless-ghosts",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 100,
+      "reasons": [
+        "strong_cluster_weak_page",
+        "cluster_size:227"
+      ],
+      "supporting_signals": [
+        "rank_score:274",
+        "graph_centrality_raw:186",
+        "cluster_size:227"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/the-hard-fork-rockers.html",
+      "target_slug": "the-hard-fork-rockers",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 100,
+      "reasons": [
+        "strong_cluster_weak_page",
+        "cluster_size:227"
+      ],
+      "supporting_signals": [
+        "rank_score:274",
+        "graph_centrality_raw:186",
+        "cluster_size:227"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/the-high-hats.html",
+      "target_slug": "the-high-hats",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 100,
+      "reasons": [
+        "strong_cluster_weak_page",
+        "cluster_size:227"
+      ],
+      "supporting_signals": [
+        "rank_score:272",
+        "graph_centrality_raw:186",
+        "cluster_size:227"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/the-moonlords.html",
+      "target_slug": "the-moonlords",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 100,
+      "reasons": [
+        "strong_cluster_weak_page",
+        "cluster_size:227"
+      ],
+      "supporting_signals": [
+        "rank_score:273",
+        "graph_centrality_raw:186",
+        "cluster_size:227"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/the-nice-easy-bois.html",
+      "target_slug": "the-nice-easy-bois",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 100,
+      "reasons": [
+        "strong_cluster_weak_page",
+        "cluster_size:227"
+      ],
+      "supporting_signals": [
+        "rank_score:285",
+        "graph_centrality_raw:186",
+        "cluster_size:227"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/the-og-pixel-saints.html",
+      "target_slug": "the-og-pixel-saints",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 100,
+      "reasons": [
+        "strong_cluster_weak_page",
+        "cluster_size:227"
+      ],
+      "supporting_signals": [
+        "rank_score:273",
+        "graph_centrality_raw:186",
+        "cluster_size:227"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/the-shard-mothers-of-manhattan.html",
+      "target_slug": "the-shard-mothers-of-manhattan",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 100,
+      "reasons": [
+        "strong_cluster_weak_page",
+        "cluster_size:227"
+      ],
+      "supporting_signals": [
+        "rank_score:272",
+        "graph_centrality_raw:186",
+        "cluster_size:227"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/defi.html",
+      "target_slug": "defi",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 99,
+      "reasons": [
+        "strong_cluster_weak_page",
+        "cluster_size:227"
+      ],
+      "supporting_signals": [
+        "rank_score:237",
+        "graph_centrality_raw:164",
+        "cluster_size:227"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": [
+        "/wiki/defi-decentralised-finance.html"
+      ]
+    },
+    {
+      "target_url": "/wiki/memecoins.html",
+      "target_slug": "memecoins",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 99,
+      "reasons": [
+        "strong_cluster_weak_page",
+        "cluster_size:227"
+      ],
+      "supporting_signals": [
+        "rank_score:250",
+        "graph_centrality_raw:164",
+        "cluster_size:227"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": [
+        "/wiki/meme-coins.html"
+      ]
+    },
+    {
+      "target_url": "/wiki/exchanges.html",
+      "target_slug": "exchanges",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 98,
+      "reasons": [
+        "strong_cluster_weak_page",
+        "cluster_size:227"
+      ],
+      "supporting_signals": [
+        "rank_score:260",
+        "graph_centrality_raw:164",
+        "cluster_size:227"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": [
+        "/wiki/crypto-exchanges.html"
+      ]
+    },
+    {
+      "target_url": null,
+      "target_slug": "graffpunks-hodl",
+      "action_type": "generate_bridge_page",
+      "priority_score": 98,
+      "reasons": [
+        "expansion_plan_target",
+        "create_bridge_page",
+        "cross_tag_cluster_edges:102",
+        "cluster_a_pages:15"
+      ],
+      "supporting_signals": [
+        "bridge_score:220",
+        "cross_cluster_edge_count:102",
+        "cluster_a:graffpunks",
+        "cluster_b:hodl",
+        "related_avg_centrality:18"
+      ],
+      "cluster_context": "graffpunks,hodl",
+      "recommended_source_pages": [
+        "/wiki/graffpunks.html",
+        "/wiki/hodl-wars.html",
+        "/wiki/hodl-warriors.html",
+        "/wiki/graffpunks-24-7.html",
+        "/wiki/graffpunks-247-radio.html"
+      ]
+    },
+    {
+      "target_url": null,
+      "target_slug": "graffpunks-nbg",
+      "action_type": "generate_bridge_page",
+      "priority_score": 98,
+      "reasons": [
+        "expansion_plan_target",
+        "create_bridge_page",
+        "cross_tag_cluster_edges:96",
+        "cluster_a_pages:15"
+      ],
+      "supporting_signals": [
+        "bridge_score:208",
+        "cross_cluster_edge_count:96",
+        "cluster_a:graffpunks",
+        "cluster_b:nbg",
+        "related_avg_centrality:18"
+      ],
+      "cluster_context": "graffpunks,nbg",
+      "recommended_source_pages": [
+        "/wiki/graffpunks.html",
+        "/wiki/nbg.html",
+        "/wiki/graffpunks-24-7.html",
+        "/wiki/nbg-token.html",
+        "/wiki/graffpunks-247-radio.html"
+      ]
+    },
+    {
+      "target_url": "/wiki/genesis-spray.html",
+      "target_slug": "genesis-spray",
+      "action_type": "expand_existing_page",
+      "priority_score": 97,
+      "reasons": [
+        "underlinked_page",
+        "high_link_demand",
+        "strong_cluster_member",
+        "high_graph_centrality"
+      ],
+      "supporting_signals": [
+        "gap_score:109",
+        "rank_score:416",
+        "inbound_links:0",
+        "link_demand:30",
+        "cluster_size_bonus:20",
+        "graph_centrality:38"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/graffitikings.html",
+      "target_slug": "graffitikings",
+      "action_type": "expand_existing_page",
+      "priority_score": 97,
+      "reasons": [
+        "underlinked_page",
+        "high_link_demand",
+        "strong_cluster_member",
+        "high_graph_centrality"
+      ],
+      "supporting_signals": [
+        "gap_score:108",
+        "rank_score:366",
+        "inbound_links:0",
+        "link_demand:30",
+        "cluster_size_bonus:20",
+        "graph_centrality:38"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/midevilpunks.html",
+      "target_slug": "midevilpunks",
+      "action_type": "expand_existing_page",
+      "priority_score": 96,
+      "reasons": [
+        "underlinked_page",
+        "high_link_demand",
+        "strong_cluster_member",
+        "high_graph_centrality"
+      ],
+      "supporting_signals": [
+        "gap_score:110",
+        "rank_score:399",
+        "inbound_links:0",
+        "link_demand:30",
+        "cluster_size_bonus:20",
+        "graph_centrality:37"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/nfts-non-fungible-tokens.html",
+      "target_slug": "nfts-non-fungible-tokens",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 96,
+      "reasons": [
+        "strong_cluster_weak_page",
+        "cluster_size:227"
+      ],
+      "supporting_signals": [
+        "rank_score:119",
+        "graph_centrality_raw:80",
+        "cluster_size:227"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/rave-relics.html",
+      "target_slug": "rave-relics",
+      "action_type": "expand_existing_page",
+      "priority_score": 96,
+      "reasons": [
+        "underlinked_page",
+        "high_link_demand",
+        "strong_cluster_member",
+        "high_graph_centrality"
+      ],
+      "supporting_signals": [
+        "gap_score:108",
+        "rank_score:449",
+        "inbound_links:0",
+        "link_demand:30",
+        "cluster_size_bonus:20",
+        "graph_centrality:37"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/rug-pull-wars.html",
+      "target_slug": "rug-pull-wars",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 95,
+      "reasons": [
+        "strong_cluster_weak_page",
+        "cluster_size:227"
+      ],
+      "supporting_signals": [
+        "rank_score:214",
+        "graph_centrality_raw:165",
+        "cluster_size:227"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/the-great-dip.html",
+      "target_slug": "the-great-dip",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 95,
+      "reasons": [
+        "strong_cluster_weak_page",
+        "cluster_size:227"
+      ],
+      "supporting_signals": [
+        "rank_score:215",
+        "graph_centrality_raw:164",
+        "cluster_size:227"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/genesis-spray-drop.html",
+      "target_slug": "genesis-spray-drop",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 94,
+      "reasons": [
+        "strong_cluster_weak_page",
+        "cluster_size:227"
+      ],
+      "supporting_signals": [
+        "rank_score:112",
+        "graph_centrality_raw:74",
+        "cluster_size:227"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/graffiti-nexus.html",
+      "target_slug": "graffiti-nexus",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 94,
+      "reasons": [
+        "strong_cluster_weak_page",
+        "cluster_size:227"
+      ],
+      "supporting_signals": [
+        "rank_score:114",
+        "graph_centrality_raw:74",
+        "cluster_size:227"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/midevil-hero-arena-game.html",
+      "target_slug": "midevil-hero-arena-game",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 94,
+      "reasons": [
+        "strong_cluster_weak_page",
+        "cluster_size:227"
+      ],
+      "supporting_signals": [
+        "rank_score:115",
+        "graph_centrality_raw:73",
+        "cluster_size:227"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/blockchain.html",
+      "target_slug": "blockchain",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 93,
+      "reasons": [
+        "strong_cluster_weak_page",
+        "cluster_size:227"
+      ],
+      "supporting_signals": [
+        "rank_score:255",
+        "graph_centrality_raw:165",
+        "cluster_size:227"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": [
+        "/wiki/blockchain-technology.html"
+      ]
+    },
+    {
+      "target_url": "/wiki/diamond-hands.html",
+      "target_slug": "diamond-hands",
+      "action_type": "expand_existing_page",
+      "priority_score": 93,
+      "reasons": [
+        "underlinked_page",
+        "high_link_demand",
+        "strong_cluster_member",
+        "high_graph_centrality"
+      ],
+      "supporting_signals": [
+        "gap_score:55",
+        "rank_score:509",
+        "inbound_links:147",
+        "link_demand:30",
+        "cluster_size_bonus:20",
+        "graph_centrality:38"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": [
+        "/wiki/1m-free-nfts-drop.html",
+        "/wiki/2025-metaverse-launch-party.html",
+        "/wiki/aleema-child-of-the-shard.html",
+        "/wiki/alfie-bitcoin-kid-blaze.html",
+        "/wiki/alfie-the-bitcoin-kid-blaze.html"
+      ]
+    },
+    {
+      "target_url": "/wiki/tokenomics.html",
+      "target_slug": "tokenomics",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 93,
+      "reasons": [
+        "strong_cluster_weak_page",
+        "cluster_size:227"
+      ],
+      "supporting_signals": [
+        "rank_score:262",
+        "graph_centrality_raw:164",
+        "cluster_size:227"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/web3.html",
+      "target_slug": "web3",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 93,
+      "reasons": [
+        "strong_cluster_weak_page",
+        "cluster_size:227"
+      ],
+      "supporting_signals": [
+        "rank_score:259",
+        "graph_centrality_raw:164",
+        "cluster_size:227"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/1m-free-nfts-program.html",
+      "target_slug": "1m-free-nfts-program",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 92,
+      "reasons": [
+        "strong_cluster_weak_page",
+        "cluster_size:227"
+      ],
+      "supporting_signals": [
+        "rank_score:207",
+        "graph_centrality_raw:130",
+        "cluster_size:227"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/crypto-wallets.html",
+      "target_slug": "crypto-wallets",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 92,
+      "reasons": [
+        "strong_cluster_weak_page",
+        "cluster_size:227"
+      ],
+      "supporting_signals": [
+        "rank_score:116",
+        "graph_centrality_raw:71",
+        "cluster_size:227"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/samael-exe.html",
+      "target_slug": "samael-exe",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 92,
+      "reasons": [
+        "strong_cluster_weak_page",
+        "cluster_size:227"
+      ],
+      "supporting_signals": [
+        "rank_score:119",
+        "graph_centrality_raw:71",
+        "cluster_size:227"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/the-bear-market-siege.html",
+      "target_slug": "the-bear-market-siege",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 92,
+      "reasons": [
+        "strong_cluster_weak_page",
+        "cluster_size:227"
+      ],
+      "supporting_signals": [
+        "rank_score:121",
+        "graph_centrality_raw:71",
+        "cluster_size:227"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/the-wagmi-prophecy.html",
+      "target_slug": "the-wagmi-prophecy",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 92,
+      "reasons": [
+        "strong_cluster_weak_page",
+        "cluster_size:227"
+      ],
+      "supporting_signals": [
+        "rank_score:119",
+        "graph_centrality_raw:71",
+        "cluster_size:227"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/graffpunks-24-7-radio.html",
+      "target_slug": "graffpunks-24-7-radio",
+      "action_type": "expand_existing_page",
+      "priority_score": 90,
+      "reasons": [
+        "underlinked_page",
+        "weak_content_depth",
+        "high_link_demand",
+        "strong_cluster_member",
+        "high_graph_centrality"
+      ],
+      "supporting_signals": [
+        "gap_score:103",
+        "rank_score:269",
+        "inbound_links:0",
+        "content_weakness:5",
+        "link_demand:30",
+        "cluster_size_bonus:20",
+        "graph_centrality:26"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/sneakar.html",
+      "target_slug": "sneakar",
+      "action_type": "expand_existing_page",
+      "priority_score": 89,
+      "reasons": [
+        "underlinked_page",
+        "weak_content_depth",
+        "high_link_demand",
+        "strong_cluster_member",
+        "high_graph_centrality"
+      ],
+      "supporting_signals": [
+        "gap_score:103",
+        "rank_score:266",
+        "inbound_links:0",
+        "content_weakness:5",
+        "link_demand:30",
+        "cluster_size_bonus:20",
+        "graph_centrality:25"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/ethereum.html",
+      "target_slug": "ethereum",
+      "action_type": "expand_existing_page",
+      "priority_score": 88,
+      "reasons": [
+        "underlinked_page",
+        "high_link_demand",
+        "strong_cluster_member",
+        "high_graph_centrality"
+      ],
+      "supporting_signals": [
+        "gap_score:61",
+        "rank_score:612",
+        "inbound_links:156",
+        "link_demand:30",
+        "cluster_size_bonus:20",
+        "graph_centrality:33"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": [
+        "/wiki/1m-free-nfts-drop.html",
+        "/wiki/2025-metaverse-launch-party.html",
+        "/wiki/aleema-child-of-the-shard.html",
+        "/wiki/alfie-bitcoin-kid-blaze.html",
+        "/wiki/alfie-the-bitcoin-kid-blaze.html"
+      ]
+    },
+    {
+      "target_url": "/wiki/moon-mission.html",
+      "target_slug": "moon-mission",
+      "action_type": "expand_existing_page",
+      "priority_score": 88,
+      "reasons": [
+        "underlinked_page",
+        "high_link_demand",
+        "strong_cluster_member",
+        "high_graph_centrality"
+      ],
+      "supporting_signals": [
+        "gap_score:55",
+        "rank_score:497",
+        "inbound_links:146",
+        "link_demand:30",
+        "cluster_size_bonus:20",
+        "graph_centrality:33"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": [
+        "/wiki/1m-free-nfts-drop.html",
+        "/wiki/2025-metaverse-launch-party.html",
+        "/wiki/aleema-child-of-the-shard.html",
+        "/wiki/alfie-bitcoin-kid-blaze.html",
+        "/wiki/alfie-the-bitcoin-kid-blaze.html"
+      ]
+    },
+    {
+      "target_url": "/wiki/solana.html",
+      "target_slug": "solana",
+      "action_type": "expand_existing_page",
+      "priority_score": 88,
+      "reasons": [
+        "underlinked_page",
+        "high_link_demand",
+        "strong_cluster_member",
+        "high_graph_centrality"
+      ],
+      "supporting_signals": [
+        "gap_score:59",
+        "rank_score:586",
+        "inbound_links:156",
+        "link_demand:30",
+        "cluster_size_bonus:20",
+        "graph_centrality:33"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": [
+        "/wiki/1m-free-nfts-drop.html",
+        "/wiki/2025-metaverse-launch-party.html",
+        "/wiki/aleema-child-of-the-shard.html",
+        "/wiki/alfie-bitcoin-kid-blaze.html",
+        "/wiki/alfie-the-bitcoin-kid-blaze.html"
+      ]
+    },
+    {
+      "target_url": "/wiki/bitcoin.html",
+      "target_slug": "bitcoin",
+      "action_type": "expand_existing_page",
+      "priority_score": 87,
+      "reasons": [
+        "underlinked_page",
+        "high_link_demand",
+        "strong_cluster_member",
+        "high_graph_centrality"
+      ],
+      "supporting_signals": [
+        "gap_score:52",
+        "rank_score:605",
+        "inbound_links:156",
+        "link_demand:30",
+        "cluster_size_bonus:20",
+        "graph_centrality:33"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": [
+        "/wiki/1m-free-nfts-drop.html",
+        "/wiki/2025-metaverse-launch-party.html",
+        "/wiki/aleema-child-of-the-shard.html",
+        "/wiki/alfie-bitcoin-kid-blaze.html",
+        "/wiki/alfie-the-bitcoin-kid-blaze.html"
+      ]
+    },
+    {
+      "target_url": "/wiki/nbg-token.html",
+      "target_slug": "nbg-token",
+      "action_type": "expand_existing_page",
+      "priority_score": 85,
+      "reasons": [
+        "underlinked_page",
+        "high_link_demand",
+        "strong_cluster_member",
+        "high_graph_centrality"
+      ],
+      "supporting_signals": [
+        "gap_score:109",
+        "rank_score:413",
+        "inbound_links:0",
+        "link_demand:30",
+        "cluster_size_bonus:20",
+        "graph_centrality:26"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/pmsl.html",
+      "target_slug": "pmsl",
+      "action_type": "expand_existing_page",
+      "priority_score": 85,
+      "reasons": [
+        "underlinked_page",
+        "high_link_demand",
+        "strong_cluster_member",
+        "high_graph_centrality"
+      ],
+      "supporting_signals": [
+        "gap_score:118",
+        "rank_score:555",
+        "inbound_links:0",
+        "link_demand:30",
+        "cluster_size_bonus:20",
+        "graph_centrality:25"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/games4punks-telegram.html",
+      "target_slug": "games4punks-telegram",
+      "action_type": "expand_existing_page",
+      "priority_score": 84,
+      "reasons": [
+        "underlinked_page",
+        "high_link_demand",
+        "strong_cluster_member",
+        "high_graph_centrality"
+      ],
+      "supporting_signals": [
+        "gap_score:109",
+        "rank_score:372",
+        "inbound_links:0",
+        "link_demand:30",
+        "cluster_size_bonus:20",
+        "graph_centrality:25"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/jillian-godsil.html",
+      "target_slug": "jillian-godsil",
+      "action_type": "expand_existing_page",
+      "priority_score": 84,
+      "reasons": [
+        "underlinked_page",
+        "high_link_demand",
+        "strong_cluster_member",
+        "high_graph_centrality"
+      ],
+      "supporting_signals": [
+        "gap_score:106",
+        "rank_score:352",
+        "inbound_links:0",
+        "link_demand:30",
+        "cluster_size_bonus:20",
+        "graph_centrality:25"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/sacred-chain.html",
+      "target_slug": "sacred-chain",
+      "action_type": "expand_existing_page",
+      "priority_score": 84,
+      "reasons": [
+        "underlinked_page",
+        "high_link_demand",
+        "strong_cluster_member",
+        "high_graph_centrality"
+      ],
+      "supporting_signals": [
+        "gap_score:106",
+        "rank_score:358",
+        "inbound_links:0",
+        "link_demand:30",
+        "cluster_size_bonus:20",
+        "graph_centrality:25"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/trevor-fung.html",
+      "target_slug": "trevor-fung",
+      "action_type": "expand_existing_page",
+      "priority_score": 84,
+      "reasons": [
+        "underlinked_page",
+        "high_link_demand",
+        "strong_cluster_member",
+        "high_graph_centrality"
+      ],
+      "supporting_signals": [
+        "gap_score:104",
+        "rank_score:356",
+        "inbound_links:0",
+        "link_demand:30",
+        "cluster_size_bonus:20",
+        "graph_centrality:25"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/dream-sovereign.html",
+      "target_slug": "dream-sovereign",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 83,
+      "reasons": [
+        "isolated_page",
+        "needs_cluster_integration"
+      ],
+      "supporting_signals": [
+        "gap_score:63",
+        "rank_score:101",
+        "inbound_links:0",
+        "strong_peers:1"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/graffpunks-247.html",
+      "target_slug": "graffpunks-247",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 83,
+      "reasons": [
+        "isolated_page",
+        "needs_cluster_integration"
+      ],
+      "supporting_signals": [
+        "gap_score:53",
+        "rank_score:101",
+        "inbound_links:0",
+        "strong_peers:1"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/graffpunks-network.html",
+      "target_slug": "graffpunks-network",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 83,
+      "reasons": [
+        "isolated_page",
+        "needs_cluster_integration"
+      ],
+      "supporting_signals": [
+        "gap_score:53",
+        "rank_score:101",
+        "inbound_links:0",
+        "strong_peers:1"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/head-tags.html",
+      "target_slug": "head-tags",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 83,
+      "reasons": [
+        "isolated_page",
+        "needs_cluster_integration"
+      ],
+      "supporting_signals": [
+        "gap_score:63",
+        "rank_score:101",
+        "inbound_links:0",
+        "strong_peers:1"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/metropolis.html",
+      "target_slug": "metropolis",
+      "action_type": "expand_existing_page",
+      "priority_score": 83,
+      "reasons": [
+        "underlinked_page",
+        "high_link_demand",
+        "strong_cluster_member",
+        "high_graph_centrality"
+      ],
+      "supporting_signals": [
+        "gap_score:101",
+        "rank_score:330",
+        "inbound_links:0",
+        "link_demand:30",
+        "cluster_size_bonus:20",
+        "graph_centrality:25"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/nine-armies.html",
+      "target_slug": "nine-armies",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 83,
+      "reasons": [
+        "isolated_page",
+        "needs_cluster_integration"
+      ],
+      "supporting_signals": [
+        "gap_score:63",
+        "rank_score:101",
+        "inbound_links:0",
+        "strong_peers:1"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/stikfamwars.html",
+      "target_slug": "stikfamwars",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 83,
+      "reasons": [
+        "isolated_page",
+        "needs_cluster_integration"
+      ],
+      "supporting_signals": [
+        "gap_score:63",
+        "rank_score:98",
+        "inbound_links:0",
+        "strong_peers:1"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/bitcoin-graffpunks.html",
+      "target_slug": "bitcoin-graffpunks",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 82,
+      "reasons": [
+        "strong_cluster_weak_page",
+        "cluster_size:227"
+      ],
+      "supporting_signals": [
+        "rank_score:246",
+        "graph_centrality_raw:134",
+        "cluster_size:227"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/bitcoin-x-kids.html",
+      "target_slug": "bitcoin-x-kids",
+      "action_type": "expand_existing_page",
+      "priority_score": 80,
+      "reasons": [
+        "underlinked_page",
+        "weak_content_depth",
+        "high_link_demand",
+        "strong_cluster_member",
+        "high_graph_centrality"
+      ],
+      "supporting_signals": [
+        "gap_score:104",
+        "rank_score:279",
+        "inbound_links:0",
+        "content_weakness:5",
+        "link_demand:30",
+        "cluster_size_bonus:20",
+        "graph_centrality:16"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/games-graffpunks.html",
+      "target_slug": "games-graffpunks",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 80,
+      "reasons": [
+        "strong_cluster_weak_page",
+        "cluster_size:227"
+      ],
+      "supporting_signals": [
+        "rank_score:239",
+        "graph_centrality_raw:130",
+        "cluster_size:227"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/graffpunks-token.html",
+      "target_slug": "graffpunks-token",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 80,
+      "reasons": [
+        "strong_cluster_weak_page",
+        "cluster_size:227"
+      ],
+      "supporting_signals": [
+        "rank_score:244",
+        "graph_centrality_raw:131",
+        "cluster_size:227"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/blockchain-technology.html",
+      "target_slug": "blockchain-technology",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 77,
+      "reasons": [
+        "strong_cluster_weak_page",
+        "cluster_size:227"
+      ],
+      "supporting_signals": [
+        "rank_score:108",
+        "graph_centrality_raw:30",
+        "cluster_size:227"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": null,
+      "target_slug": "graffpunks-nfts-via-free",
+      "action_type": "generate_bridge_page",
+      "priority_score": 77,
+      "reasons": [
+        "bridge_opportunity",
+        "cluster_a:graffpunks",
+        "cluster_b:nfts"
+      ],
+      "supporting_signals": [
+        "cross_cluster_edge_count:184",
+        "gap_score:385",
+        "cluster_a_pages:cluster_a_pages:15"
+      ],
+      "cluster_context": "graffpunks↔nfts",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/bitcoin-kids.html",
+      "target_slug": "bitcoin-kids",
+      "action_type": "expand_existing_page",
+      "priority_score": 76,
+      "reasons": [
+        "underlinked_page",
+        "high_link_demand",
+        "strong_cluster_member",
+        "high_graph_centrality"
+      ],
+      "supporting_signals": [
+        "gap_score:116",
+        "rank_score:683",
+        "inbound_links:0",
+        "link_demand:30",
+        "cluster_size_bonus:20",
+        "graph_centrality:16"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/graffpunks-24-7.html",
+      "target_slug": "graffpunks-24-7",
+      "action_type": "expand_existing_page",
+      "priority_score": 76,
+      "reasons": [
+        "underlinked_page",
+        "high_link_demand",
+        "strong_cluster_member",
+        "high_graph_centrality"
+      ],
+      "supporting_signals": [
+        "gap_score:113",
+        "rank_score:458",
+        "inbound_links:0",
+        "link_demand:30",
+        "cluster_size_bonus:20",
+        "graph_centrality:17"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/graffpunks-247-radio.html",
+      "target_slug": "graffpunks-247-radio",
+      "action_type": "expand_existing_page",
+      "priority_score": 76,
+      "reasons": [
+        "underlinked_page",
+        "high_link_demand",
+        "strong_cluster_member",
+        "high_graph_centrality"
+      ],
+      "supporting_signals": [
+        "gap_score:110",
+        "rank_score:395",
+        "inbound_links:0",
+        "link_demand:30",
+        "cluster_size_bonus:20",
+        "graph_centrality:17"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/punk-token.html",
+      "target_slug": "punk-token",
+      "action_type": "expand_existing_page",
+      "priority_score": 76,
+      "reasons": [
+        "underlinked_page",
+        "high_link_demand",
+        "strong_cluster_member",
+        "high_graph_centrality"
+      ],
+      "supporting_signals": [
+        "gap_score:119",
+        "rank_score:659",
+        "inbound_links:0",
+        "link_demand:30",
+        "cluster_size_bonus:20",
+        "graph_centrality:16"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/alfie-blaze.html",
+      "target_slug": "alfie-blaze",
+      "action_type": "expand_existing_page",
+      "priority_score": 75,
+      "reasons": [
+        "underlinked_page",
+        "high_link_demand",
+        "strong_cluster_member",
+        "high_graph_centrality"
+      ],
+      "supporting_signals": [
+        "gap_score:115",
+        "rank_score:589",
+        "inbound_links:0",
+        "link_demand:30",
+        "cluster_size_bonus:20",
+        "graph_centrality:15"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/graffpunks.html",
+      "target_slug": "graffpunks",
+      "action_type": "expand_existing_page",
+      "priority_score": 75,
+      "reasons": [
+        "underlinked_page",
+        "high_link_demand",
+        "strong_cluster_member",
+        "high_graph_centrality"
+      ],
+      "supporting_signals": [
+        "gap_score:97",
+        "rank_score:749",
+        "inbound_links:0",
+        "link_demand:30",
+        "cluster_size_bonus:20",
+        "graph_centrality:17"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/nbg.html",
+      "target_slug": "nbg",
+      "action_type": "expand_existing_page",
+      "priority_score": 75,
+      "reasons": [
+        "underlinked_page",
+        "high_link_demand",
+        "strong_cluster_member",
+        "high_graph_centrality"
+      ],
+      "supporting_signals": [
+        "gap_score:117",
+        "rank_score:543",
+        "inbound_links:0",
+        "link_demand:30",
+        "cluster_size_bonus:20",
+        "graph_centrality:15"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/burn-to-earn.html",
+      "target_slug": "burn-to-earn",
+      "action_type": "expand_existing_page",
+      "priority_score": 74,
+      "reasons": [
+        "underlinked_page",
+        "high_link_demand",
+        "strong_cluster_member",
+        "high_graph_centrality"
+      ],
+      "supporting_signals": [
+        "gap_score:119",
+        "rank_score:572",
+        "inbound_links:0",
+        "link_demand:30",
+        "cluster_size_bonus:20",
+        "graph_centrality:14"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/charlie-buster.html",
+      "target_slug": "charlie-buster",
+      "action_type": "expand_existing_page",
+      "priority_score": 74,
+      "reasons": [
+        "underlinked_page",
+        "high_link_demand",
+        "strong_cluster_member",
+        "high_graph_centrality"
+      ],
+      "supporting_signals": [
+        "gap_score:118",
+        "rank_score:630",
+        "inbound_links:0",
+        "link_demand:30",
+        "cluster_size_bonus:20",
+        "graph_centrality:14"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/gkniftyheads.html",
+      "target_slug": "gkniftyheads",
+      "action_type": "expand_existing_page",
+      "priority_score": 74,
+      "reasons": [
+        "underlinked_page",
+        "high_link_demand",
+        "strong_cluster_member",
+        "high_graph_centrality"
+      ],
+      "supporting_signals": [
+        "gap_score:103",
+        "rank_score:414",
+        "inbound_links:0",
+        "link_demand:30",
+        "cluster_size_bonus:20",
+        "graph_centrality:15"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/nbgx.html",
+      "target_slug": "nbgx",
+      "action_type": "expand_existing_page",
+      "priority_score": 74,
+      "reasons": [
+        "underlinked_page",
+        "high_link_demand",
+        "strong_cluster_member",
+        "high_graph_centrality"
+      ],
+      "supporting_signals": [
+        "gap_score:118",
+        "rank_score:561",
+        "inbound_links:0",
+        "link_demand:30",
+        "cluster_size_bonus:20",
+        "graph_centrality:14"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/queen-sarah-pfly.html",
+      "target_slug": "queen-sarah-pfly",
+      "action_type": "expand_existing_page",
+      "priority_score": 74,
+      "reasons": [
+        "underlinked_page",
+        "high_link_demand",
+        "strong_cluster_member",
+        "high_graph_centrality"
+      ],
+      "supporting_signals": [
+        "gap_score:123",
+        "rank_score:657",
+        "inbound_links:0",
+        "link_demand:30",
+        "cluster_size_bonus:20",
+        "graph_centrality:14"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/xrp-kids.html",
+      "target_slug": "xrp-kids",
+      "action_type": "expand_existing_page",
+      "priority_score": 74,
+      "reasons": [
+        "underlinked_page",
+        "high_link_demand",
+        "strong_cluster_member",
+        "high_graph_centrality"
+      ],
+      "supporting_signals": [
+        "gap_score:103",
+        "rank_score:378",
+        "inbound_links:0",
+        "link_demand:30",
+        "cluster_size_bonus:20",
+        "graph_centrality:15"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/darren-cullen.html",
+      "target_slug": "darren-cullen",
+      "action_type": "expand_existing_page",
+      "priority_score": 73,
+      "reasons": [
+        "underlinked_page",
+        "high_link_demand",
+        "strong_cluster_member",
+        "high_graph_centrality"
+      ],
+      "supporting_signals": [
+        "gap_score:104",
+        "rank_score:364",
+        "inbound_links:0",
+        "link_demand:30",
+        "cluster_size_bonus:20",
+        "graph_centrality:14"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/gang-signs.html",
+      "target_slug": "gang-signs",
+      "action_type": "expand_existing_page",
+      "priority_score": 73,
+      "reasons": [
+        "underlinked_page",
+        "high_link_demand",
+        "strong_cluster_member",
+        "high_graph_centrality"
+      ],
+      "supporting_signals": [
+        "gap_score:107",
+        "rank_score:374",
+        "inbound_links:0",
+        "link_demand:30",
+        "cluster_size_bonus:20",
+        "graph_centrality:14"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/hodl-x-warriors.html",
+      "target_slug": "hodl-x-warriors",
+      "action_type": "expand_existing_page",
+      "priority_score": 73,
+      "reasons": [
+        "underlinked_page",
+        "high_link_demand",
+        "strong_cluster_member",
+        "high_graph_centrality"
+      ],
+      "supporting_signals": [
+        "gap_score:103",
+        "rank_score:308",
+        "inbound_links:0",
+        "link_demand:29",
+        "cluster_size_bonus:20",
+        "graph_centrality:15"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/ian-harrison.html",
+      "target_slug": "ian-harrison",
+      "action_type": "expand_existing_page",
+      "priority_score": 73,
+      "reasons": [
+        "underlinked_page",
+        "high_link_demand",
+        "strong_cluster_member",
+        "high_graph_centrality"
+      ],
+      "supporting_signals": [
+        "gap_score:106",
+        "rank_score:361",
+        "inbound_links:0",
+        "link_demand:30",
+        "cluster_size_bonus:20",
+        "graph_centrality:14"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/midevil-hero-arena.html",
+      "target_slug": "midevil-hero-arena",
+      "action_type": "expand_existing_page",
+      "priority_score": 73,
+      "reasons": [
+        "underlinked_page",
+        "high_link_demand",
+        "strong_cluster_member",
+        "high_graph_centrality"
+      ],
+      "supporting_signals": [
+        "gap_score:105",
+        "rank_score:345",
+        "inbound_links:0",
+        "link_demand:30",
+        "cluster_size_bonus:20",
+        "graph_centrality:14"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/block-topia.html",
+      "target_slug": "block-topia",
+      "action_type": "expand_existing_page",
+      "priority_score": 72,
+      "reasons": [
+        "underlinked_page",
+        "high_link_demand",
+        "strong_cluster_member",
+        "high_graph_centrality"
+      ],
+      "supporting_signals": [
+        "gap_score:96",
+        "rank_score:715",
+        "inbound_links:0",
+        "link_demand:30",
+        "cluster_size_bonus:20",
+        "graph_centrality:14"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/null-the-prophet.html",
+      "target_slug": "null-the-prophet",
+      "action_type": "expand_existing_page",
+      "priority_score": 72,
+      "reasons": [
+        "underlinked_page",
+        "high_link_demand",
+        "strong_cluster_member",
+        "high_graph_centrality"
+      ],
+      "supporting_signals": [
+        "gap_score:94",
+        "rank_score:679",
+        "inbound_links:0",
+        "link_demand:30",
+        "cluster_size_bonus:20",
+        "graph_centrality:14"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/staking.html",
+      "target_slug": "staking",
+      "action_type": "expand_existing_page",
+      "priority_score": 71,
+      "reasons": [
+        "underlinked_page",
+        "high_link_demand",
+        "strong_cluster_member",
+        "high_graph_centrality"
+      ],
+      "supporting_signals": [
+        "gap_score:88",
+        "rank_score:560",
+        "inbound_links:0",
+        "link_demand:30",
+        "cluster_size_bonus:20",
+        "graph_centrality:14"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": null,
+      "target_slug": "games",
+      "action_type": "generate_bridge_page",
+      "priority_score": 70,
+      "reasons": [
+        "topic_gap",
+        "topic:games"
+      ],
+      "supporting_signals": [
+        "avg_rank_score:175",
+        "dedicated_strong_pages:1",
+        "entity_graph_co_citations:31",
+        "tag_page_count:6",
+        "related_avg_centrality:35"
+      ],
+      "cluster_context": "games",
+      "recommended_source_pages": [
+        "/wiki/hard-fork-games.html",
+        "/wiki/no-ball-games-nbg.html",
+        "/wiki/no-ball-games-nbg-collection.html",
+        "/wiki/hard-fork-games-event.html",
+        "/wiki/games4punks-telegram-games.html"
+      ]
+    },
+    {
+      "target_url": "/wiki/genesis-kernel.html",
+      "target_slug": "genesis-kernel",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 70,
+      "reasons": [
+        "strong_cluster_weak_page",
+        "cluster_size:227"
+      ],
+      "supporting_signals": [
+        "rank_score:206",
+        "graph_centrality_raw:73",
+        "cluster_size:227"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/hodl-warriors.html",
+      "target_slug": "hodl-warriors",
+      "action_type": "expand_existing_page",
+      "priority_score": 69,
+      "reasons": [
+        "underlinked_page",
+        "high_link_demand",
+        "strong_cluster_member",
+        "high_graph_centrality"
+      ],
+      "supporting_signals": [
+        "gap_score:52",
+        "rank_score:603",
+        "inbound_links:146",
+        "link_demand:30",
+        "cluster_size_bonus:20",
+        "graph_centrality:15"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": [
+        "/wiki/1m-free-nfts-drop.html",
+        "/wiki/2025-metaverse-launch-party.html",
+        "/wiki/aleema-child-of-the-shard.html",
+        "/wiki/alfie-bitcoin-kid-blaze.html",
+        "/wiki/alfie-the-bitcoin-kid-blaze.html"
+      ]
+    },
+    {
+      "target_url": "/wiki/ethereum-ecosystem.html",
+      "target_slug": "ethereum-ecosystem",
+      "action_type": "reinforce_hub",
+      "priority_score": 65,
+      "reasons": [
+        "hub_page",
+        "ecosystem_anchor",
+        "needs_depth"
+      ],
+      "supporting_signals": [
+        "rank_score:232",
+        "content_weakness:5"
+      ],
+      "cluster_context": "ethereum-ecosystem",
+      "recommended_source_pages": [
+        "/wiki/ethereum-ecosystem.html"
+      ]
+    },
+    {
+      "target_url": "/wiki/1m-free-nfts-programme.html",
+      "target_slug": "1m-free-nfts-programme",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 62,
+      "reasons": [
+        "strong_cluster_weak_page",
+        "cluster_size:227"
+      ],
+      "supporting_signals": [
+        "rank_score:255",
+        "graph_centrality_raw:76",
+        "cluster_size:227"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/battlemech-blast.html",
+      "target_slug": "battlemech-blast",
+      "action_type": "strengthen_cluster_member",
+      "priority_score": 62,
+      "reasons": [
+        "isolated_page",
+        "needs_cluster_integration"
+      ],
+      "supporting_signals": [
+        "gap_score:53",
+        "rank_score:201",
+        "inbound_links:0",
+        "strong_peers:1"
+      ],
+      "cluster_context": "the-whale-lords",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": "/wiki/graffpunks-ecosystem.html",
+      "target_slug": "graffpunks-ecosystem",
+      "action_type": "reinforce_hub",
+      "priority_score": 60,
+      "reasons": [
+        "hub_page",
+        "ecosystem_anchor"
+      ],
+      "supporting_signals": [
+        "rank_score:249"
+      ],
+      "cluster_context": "graffpunks-ecosystem",
+      "recommended_source_pages": [
+        "/wiki/graffpunks-ecosystem.html"
+      ]
+    },
+    {
+      "target_url": "/wiki/hodl-wars-ecosystem.html",
+      "target_slug": "hodl-wars-ecosystem",
+      "action_type": "reinforce_hub",
+      "priority_score": 60,
+      "reasons": [
+        "hub_page",
+        "ecosystem_anchor"
+      ],
+      "supporting_signals": [
+        "rank_score:252"
+      ],
+      "cluster_context": "hodl-wars-ecosystem",
+      "recommended_source_pages": [
+        "/wiki/hodl-wars-ecosystem.html"
+      ]
+    },
+    {
+      "target_url": null,
+      "target_slug": "kid",
+      "action_type": "generate_bridge_page",
+      "priority_score": 60,
+      "reasons": [
+        "topic_gap",
+        "topic:kid"
+      ],
+      "supporting_signals": [
+        "avg_rank_score:196",
+        "dedicated_strong_pages:0",
+        "entity_graph_co_citations:20",
+        "tag_page_count:5",
+        "related_avg_centrality:38"
+      ],
+      "cluster_context": "kid",
+      "recommended_source_pages": [
+        "/wiki/the-bitcoin-kid-army.html",
+        "/wiki/alfie-the-bitcoin-kid-blaze.html",
+        "/wiki/billy-the-goat-kid.html",
+        "/wiki/bitcoin-kid-army.html",
+        "/wiki/alfie-bitcoin-kid-blaze.html"
+      ]
+    },
+    {
+      "target_url": null,
+      "target_slug": "fork",
+      "action_type": "generate_bridge_page",
+      "priority_score": 59,
+      "reasons": [
+        "topic_gap",
+        "topic:fork"
+      ],
+      "supporting_signals": [
+        "avg_rank_score:216",
+        "dedicated_strong_pages:1",
+        "entity_graph_co_citations:20",
+        "tag_page_count:5",
+        "related_avg_centrality:32"
+      ],
+      "cluster_context": "fork",
+      "recommended_source_pages": [
+        "/wiki/hard-fork-games.html",
+        "/wiki/the-hard-fork-rockers.html",
+        "/wiki/triple-fork-event.html",
+        "/wiki/hard-fork-games-event.html",
+        "/wiki/hard-fork-games-game.html"
+      ]
+    },
+    {
+      "target_url": null,
+      "target_slug": "games-graffpunks-via-collection",
+      "action_type": "generate_bridge_page",
+      "priority_score": 56,
+      "reasons": [
+        "bridge_opportunity",
+        "cluster_a:games",
+        "cluster_b:graffpunks"
+      ],
+      "supporting_signals": [
+        "cross_cluster_edge_count:132",
+        "gap_score:280",
+        "cluster_a_pages:cluster_a_pages:6"
+      ],
+      "cluster_context": "games↔graffpunks",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": null,
+      "target_slug": "bitcoin-graffpunks-via-kid",
+      "action_type": "generate_bridge_page",
+      "priority_score": 55,
+      "reasons": [
+        "bridge_opportunity",
+        "cluster_a:bitcoin",
+        "cluster_b:graffpunks"
+      ],
+      "supporting_signals": [
+        "cross_cluster_edge_count:128",
+        "gap_score:273",
+        "cluster_a_pages:cluster_a_pages:8"
+      ],
+      "cluster_context": "bitcoin↔graffpunks",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": null,
+      "target_slug": "graffpunks-token-via-radio",
+      "action_type": "generate_bridge_page",
+      "priority_score": 50,
+      "reasons": [
+        "bridge_opportunity",
+        "cluster_a:graffpunks",
+        "cluster_b:token"
+      ],
+      "supporting_signals": [
+        "cross_cluster_edge_count:118",
+        "gap_score:252",
+        "cluster_a_pages:cluster_a_pages:15"
+      ],
+      "cluster_context": "graffpunks↔token",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": null,
+      "target_slug": "free",
+      "action_type": "generate_bridge_page",
+      "priority_score": 48,
+      "reasons": [
+        "topic_gap",
+        "topic:free"
+      ],
+      "supporting_signals": [
+        "avg_rank_score:166",
+        "dedicated_strong_pages:0",
+        "entity_graph_co_citations:20",
+        "tag_page_count:5",
+        "related_avg_centrality:26"
+      ],
+      "cluster_context": "free",
+      "recommended_source_pages": [
+        "/wiki/1m-free-nfts-programme.html",
+        "/wiki/1m-free-nfts-drop.html",
+        "/wiki/1m-free-nfts-program.html",
+        "/wiki/one-million-free-nfts.html",
+        "/wiki/1m-free-nfts.html"
+      ]
+    },
+    {
+      "target_url": null,
+      "target_slug": "fork-graffpunks-via-hard",
+      "action_type": "generate_bridge_page",
+      "priority_score": 47,
+      "reasons": [
+        "bridge_opportunity",
+        "cluster_a:fork",
+        "cluster_b:graffpunks"
+      ],
+      "supporting_signals": [
+        "cross_cluster_edge_count:110",
+        "gap_score:236",
+        "cluster_a_pages:cluster_a_pages:5"
+      ],
+      "cluster_context": "fork↔graffpunks",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": null,
+      "target_slug": "gk-graffpunks-via-radio",
+      "action_type": "generate_bridge_page",
+      "priority_score": 47,
+      "reasons": [
+        "bridge_opportunity",
+        "cluster_a:gk",
+        "cluster_b:graffpunks"
+      ],
+      "supporting_signals": [
+        "cross_cluster_edge_count:110",
+        "gap_score:236",
+        "cluster_a_pages:cluster_a_pages:5"
+      ],
+      "cluster_context": "gk↔graffpunks",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": null,
+      "target_slug": "graffpunks-kid-via-bitcoin",
+      "action_type": "generate_bridge_page",
+      "priority_score": 46,
+      "reasons": [
+        "bridge_opportunity",
+        "cluster_a:graffpunks",
+        "cluster_b:kid"
+      ],
+      "supporting_signals": [
+        "cross_cluster_edge_count:108",
+        "gap_score:232",
+        "cluster_a_pages:cluster_a_pages:15"
+      ],
+      "cluster_context": "graffpunks↔kid",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": null,
+      "target_slug": "graffpunks-tokens-via-radio",
+      "action_type": "generate_bridge_page",
+      "priority_score": 46,
+      "reasons": [
+        "bridge_opportunity",
+        "cluster_a:graffpunks",
+        "cluster_b:tokens"
+      ],
+      "supporting_signals": [
+        "cross_cluster_edge_count:106",
+        "gap_score:228",
+        "cluster_a_pages:cluster_a_pages:15"
+      ],
+      "cluster_context": "graffpunks↔tokens",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": null,
+      "target_slug": "free-graffpunks-via-nfts",
+      "action_type": "generate_bridge_page",
+      "priority_score": 45,
+      "reasons": [
+        "bridge_opportunity",
+        "cluster_a:free",
+        "cluster_b:graffpunks"
+      ],
+      "supporting_signals": [
+        "cross_cluster_edge_count:104",
+        "gap_score:224",
+        "cluster_a_pages:cluster_a_pages:5"
+      ],
+      "cluster_context": "free↔graffpunks",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": null,
+      "target_slug": "graffpunks-hodl-via-radio",
+      "action_type": "generate_bridge_page",
+      "priority_score": 44,
+      "reasons": [
+        "bridge_opportunity",
+        "cluster_a:graffpunks",
+        "cluster_b:hodl"
+      ],
+      "supporting_signals": [
+        "cross_cluster_edge_count:102",
+        "gap_score:220",
+        "cluster_a_pages:cluster_a_pages:15"
+      ],
+      "cluster_context": "graffpunks↔hodl",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": null,
+      "target_slug": "graffpunks-nbg-via-radio",
+      "action_type": "generate_bridge_page",
+      "priority_score": 42,
+      "reasons": [
+        "bridge_opportunity",
+        "cluster_a:graffpunks",
+        "cluster_b:nbg"
+      ],
+      "supporting_signals": [
+        "cross_cluster_edge_count:96",
+        "gap_score:208",
+        "cluster_a_pages:cluster_a_pages:15"
+      ],
+      "cluster_context": "graffpunks↔nbg",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": null,
+      "target_slug": "blockchain-graffpunks-via-radio",
+      "action_type": "generate_bridge_page",
+      "priority_score": 40,
+      "reasons": [
+        "bridge_opportunity",
+        "cluster_a:blockchain",
+        "cluster_b:graffpunks"
+      ],
+      "supporting_signals": [
+        "cross_cluster_edge_count:92",
+        "gap_score:200",
+        "cluster_a_pages:cluster_a_pages:5"
+      ],
+      "cluster_context": "blockchain↔graffpunks",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": null,
+      "target_slug": "bitcoin-nfts-via-free",
+      "action_type": "generate_bridge_page",
+      "priority_score": 35,
+      "reasons": [
+        "bridge_opportunity",
+        "cluster_a:bitcoin",
+        "cluster_b:nfts"
+      ],
+      "supporting_signals": [
+        "cross_cluster_edge_count:80",
+        "gap_score:175",
+        "cluster_a_pages:cluster_a_pages:8"
+      ],
+      "cluster_context": "bitcoin↔nfts",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": null,
+      "target_slug": "nfts-tokens-via-free",
+      "action_type": "generate_bridge_page",
+      "priority_score": 33,
+      "reasons": [
+        "bridge_opportunity",
+        "cluster_a:nfts",
+        "cluster_b:tokens"
+      ],
+      "supporting_signals": [
+        "cross_cluster_edge_count:78",
+        "gap_score:166",
+        "cluster_a_pages:cluster_a_pages:9"
+      ],
+      "cluster_context": "nfts↔tokens",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": null,
+      "target_slug": "graffpunks-kids-via-radio",
+      "action_type": "generate_bridge_page",
+      "priority_score": 31,
+      "reasons": [
+        "bridge_opportunity",
+        "cluster_a:graffpunks",
+        "cluster_b:kids"
+      ],
+      "supporting_signals": [
+        "cross_cluster_edge_count:70",
+        "gap_score:156",
+        "cluster_a_pages:cluster_a_pages:15"
+      ],
+      "cluster_context": "graffpunks↔kids",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": null,
+      "target_slug": "bitcoin-tokens-via-kid",
+      "action_type": "generate_bridge_page",
+      "priority_score": 30,
+      "reasons": [
+        "bridge_opportunity",
+        "cluster_a:bitcoin",
+        "cluster_b:tokens"
+      ],
+      "supporting_signals": [
+        "cross_cluster_edge_count:68",
+        "gap_score:150",
+        "cluster_a_pages:cluster_a_pages:8"
+      ],
+      "cluster_context": "bitcoin↔tokens",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": null,
+      "target_slug": "games-nfts-via-free",
+      "action_type": "generate_bridge_page",
+      "priority_score": 30,
+      "reasons": [
+        "bridge_opportunity",
+        "cluster_a:games",
+        "cluster_b:nfts"
+      ],
+      "supporting_signals": [
+        "cross_cluster_edge_count:68",
+        "gap_score:151",
+        "cluster_a_pages:cluster_a_pages:6"
+      ],
+      "cluster_context": "games↔nfts",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": null,
+      "target_slug": "gk-nfts-via-tokens",
+      "action_type": "generate_bridge_page",
+      "priority_score": 29,
+      "reasons": [
+        "bridge_opportunity",
+        "cluster_a:gk",
+        "cluster_b:nfts"
+      ],
+      "supporting_signals": [
+        "cross_cluster_edge_count:66",
+        "gap_score:146",
+        "cluster_a_pages:cluster_a_pages:5"
+      ],
+      "cluster_context": "gk↔nfts",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": null,
+      "target_slug": "nfts-token-via-free",
+      "action_type": "generate_bridge_page",
+      "priority_score": 29,
+      "reasons": [
+        "bridge_opportunity",
+        "cluster_a:nfts",
+        "cluster_b:token"
+      ],
+      "supporting_signals": [
+        "cross_cluster_edge_count:66",
+        "gap_score:147",
+        "cluster_a_pages:cluster_a_pages:9"
+      ],
+      "cluster_context": "nfts↔token",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": null,
+      "target_slug": "bitcoin-games-via-kid",
+      "action_type": "generate_bridge_page",
+      "priority_score": 28,
+      "reasons": [
+        "bridge_opportunity",
+        "cluster_a:bitcoin",
+        "cluster_b:games"
+      ],
+      "supporting_signals": [
+        "cross_cluster_edge_count:64",
+        "gap_score:142",
+        "cluster_a_pages:cluster_a_pages:8"
+      ],
+      "cluster_context": "bitcoin↔games",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": null,
+      "target_slug": "hodl-nfts-via-free",
+      "action_type": "generate_bridge_page",
+      "priority_score": 28,
+      "reasons": [
+        "bridge_opportunity",
+        "cluster_a:hodl",
+        "cluster_b:nfts"
+      ],
+      "supporting_signals": [
+        "cross_cluster_edge_count:62",
+        "gap_score:139",
+        "cluster_a_pages:cluster_a_pages:6"
+      ],
+      "cluster_context": "hodl↔nfts",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": null,
+      "target_slug": "bitcoin-gk-via-kid",
+      "action_type": "generate_bridge_page",
+      "priority_score": 27,
+      "reasons": [
+        "bridge_opportunity",
+        "cluster_a:bitcoin",
+        "cluster_b:gk"
+      ],
+      "supporting_signals": [
+        "cross_cluster_edge_count:60",
+        "gap_score:134",
+        "cluster_a_pages:cluster_a_pages:8"
+      ],
+      "cluster_context": "bitcoin↔gk",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": null,
+      "target_slug": "bitcoin-token-via-kid",
+      "action_type": "generate_bridge_page",
+      "priority_score": 27,
+      "reasons": [
+        "bridge_opportunity",
+        "cluster_a:bitcoin",
+        "cluster_b:token"
+      ],
+      "supporting_signals": [
+        "cross_cluster_edge_count:60",
+        "gap_score:134",
+        "cluster_a_pages:cluster_a_pages:8"
+      ],
+      "cluster_context": "bitcoin↔token",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": null,
+      "target_slug": "games-gk-via-fork",
+      "action_type": "generate_bridge_page",
+      "priority_score": 27,
+      "reasons": [
+        "bridge_opportunity",
+        "cluster_a:games",
+        "cluster_b:gk"
+      ],
+      "supporting_signals": [
+        "cross_cluster_edge_count:60",
+        "gap_score:133",
+        "cluster_a_pages:cluster_a_pages:6"
+      ],
+      "cluster_context": "games↔gk",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": null,
+      "target_slug": "games-token-via-fork",
+      "action_type": "generate_bridge_page",
+      "priority_score": 27,
+      "reasons": [
+        "bridge_opportunity",
+        "cluster_a:games",
+        "cluster_b:token"
+      ],
+      "supporting_signals": [
+        "cross_cluster_edge_count:60",
+        "gap_score:134",
+        "cluster_a_pages:cluster_a_pages:6"
+      ],
+      "cluster_context": "games↔token",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": null,
+      "target_slug": "kid-nfts-via-free",
+      "action_type": "generate_bridge_page",
+      "priority_score": 27,
+      "reasons": [
+        "bridge_opportunity",
+        "cluster_a:kid",
+        "cluster_b:nfts"
+      ],
+      "supporting_signals": [
+        "cross_cluster_edge_count:60",
+        "gap_score:134",
+        "cluster_a_pages:cluster_a_pages:5"
+      ],
+      "cluster_context": "kid↔nfts",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": null,
+      "target_slug": "kids-nfts-via-free",
+      "action_type": "generate_bridge_page",
+      "priority_score": 26,
+      "reasons": [
+        "bridge_opportunity",
+        "cluster_a:kids",
+        "cluster_b:nfts"
+      ],
+      "supporting_signals": [
+        "cross_cluster_edge_count:58",
+        "gap_score:130",
+        "cluster_a_pages:cluster_a_pages:5"
+      ],
+      "cluster_context": "kids↔nfts",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": null,
+      "target_slug": "bitcoin-hodl-via-kid",
+      "action_type": "generate_bridge_page",
+      "priority_score": 25,
+      "reasons": [
+        "bridge_opportunity",
+        "cluster_a:bitcoin",
+        "cluster_b:hodl"
+      ],
+      "supporting_signals": [
+        "cross_cluster_edge_count:56",
+        "gap_score:126",
+        "cluster_a_pages:cluster_a_pages:8"
+      ],
+      "cluster_context": "bitcoin↔hodl",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": null,
+      "target_slug": "fork-nfts-via-free",
+      "action_type": "generate_bridge_page",
+      "priority_score": 25,
+      "reasons": [
+        "bridge_opportunity",
+        "cluster_a:fork",
+        "cluster_b:nfts"
+      ],
+      "supporting_signals": [
+        "cross_cluster_edge_count:56",
+        "gap_score:126",
+        "cluster_a_pages:cluster_a_pages:5"
+      ],
+      "cluster_context": "fork↔nfts",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": null,
+      "target_slug": "games-kid-via-bitcoin",
+      "action_type": "generate_bridge_page",
+      "priority_score": 25,
+      "reasons": [
+        "bridge_opportunity",
+        "cluster_a:games",
+        "cluster_b:kid"
+      ],
+      "supporting_signals": [
+        "cross_cluster_edge_count:56",
+        "gap_score:125",
+        "cluster_a_pages:cluster_a_pages:6"
+      ],
+      "cluster_context": "games↔kid",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": null,
+      "target_slug": "bitcoin-fork-via-hard",
+      "action_type": "generate_bridge_page",
+      "priority_score": 24,
+      "reasons": [
+        "bridge_opportunity",
+        "cluster_a:bitcoin",
+        "cluster_b:fork"
+      ],
+      "supporting_signals": [
+        "cross_cluster_edge_count:52",
+        "gap_score:118",
+        "cluster_a_pages:cluster_a_pages:8"
+      ],
+      "cluster_context": "bitcoin↔fork",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": null,
+      "target_slug": "bitcoin-nbg-via-kid",
+      "action_type": "generate_bridge_page",
+      "priority_score": 24,
+      "reasons": [
+        "bridge_opportunity",
+        "cluster_a:bitcoin",
+        "cluster_b:nbg"
+      ],
+      "supporting_signals": [
+        "cross_cluster_edge_count:52",
+        "gap_score:118",
+        "cluster_a_pages:cluster_a_pages:8"
+      ],
+      "cluster_context": "bitcoin↔nbg",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": null,
+      "target_slug": "games-tokens-via-fork",
+      "action_type": "generate_bridge_page",
+      "priority_score": 24,
+      "reasons": [
+        "bridge_opportunity",
+        "cluster_a:games",
+        "cluster_b:tokens"
+      ],
+      "supporting_signals": [
+        "cross_cluster_edge_count:52",
+        "gap_score:118",
+        "cluster_a_pages:cluster_a_pages:6"
+      ],
+      "cluster_context": "games↔tokens",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": null,
+      "target_slug": "nbg-nfts-via-free",
+      "action_type": "generate_bridge_page",
+      "priority_score": 24,
+      "reasons": [
+        "bridge_opportunity",
+        "cluster_a:nbg",
+        "cluster_b:nfts"
+      ],
+      "supporting_signals": [
+        "cross_cluster_edge_count:54",
+        "gap_score:122",
+        "cluster_a_pages:cluster_a_pages:5"
+      ],
+      "cluster_context": "nbg↔nfts",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": null,
+      "target_slug": "fork-gk-via-hard",
+      "action_type": "generate_bridge_page",
+      "priority_score": 23,
+      "reasons": [
+        "bridge_opportunity",
+        "cluster_a:fork",
+        "cluster_b:gk"
+      ],
+      "supporting_signals": [
+        "cross_cluster_edge_count:50",
+        "gap_score:113",
+        "cluster_a_pages:cluster_a_pages:5"
+      ],
+      "cluster_context": "fork↔gk",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": null,
+      "target_slug": "fork-token-via-hard",
+      "action_type": "generate_bridge_page",
+      "priority_score": 23,
+      "reasons": [
+        "bridge_opportunity",
+        "cluster_a:fork",
+        "cluster_b:token"
+      ],
+      "supporting_signals": [
+        "cross_cluster_edge_count:50",
+        "gap_score:113",
+        "cluster_a_pages:cluster_a_pages:5"
+      ],
+      "cluster_context": "fork↔token",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": null,
+      "target_slug": "gk-kid-via-bitcoin",
+      "action_type": "generate_bridge_page",
+      "priority_score": 23,
+      "reasons": [
+        "bridge_opportunity",
+        "cluster_a:gk",
+        "cluster_b:kid"
+      ],
+      "supporting_signals": [
+        "cross_cluster_edge_count:50",
+        "gap_score:113",
+        "cluster_a_pages:cluster_a_pages:5"
+      ],
+      "cluster_context": "gk↔kid",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": null,
+      "target_slug": "gk-token-via-tokens",
+      "action_type": "generate_bridge_page",
+      "priority_score": 23,
+      "reasons": [
+        "bridge_opportunity",
+        "cluster_a:gk",
+        "cluster_b:token"
+      ],
+      "supporting_signals": [
+        "cross_cluster_edge_count:50",
+        "gap_score:113",
+        "cluster_a_pages:cluster_a_pages:5"
+      ],
+      "cluster_context": "gk↔token",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": null,
+      "target_slug": "kid-token-via-bitcoin",
+      "action_type": "generate_bridge_page",
+      "priority_score": 23,
+      "reasons": [
+        "bridge_opportunity",
+        "cluster_a:kid",
+        "cluster_b:token"
+      ],
+      "supporting_signals": [
+        "cross_cluster_edge_count:50",
+        "gap_score:113",
+        "cluster_a_pages:cluster_a_pages:5"
+      ],
+      "cluster_context": "kid↔token",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": null,
+      "target_slug": "kid-tokens-via-bitcoin",
+      "action_type": "generate_bridge_page",
+      "priority_score": 23,
+      "reasons": [
+        "bridge_opportunity",
+        "cluster_a:kid",
+        "cluster_b:tokens"
+      ],
+      "supporting_signals": [
+        "cross_cluster_edge_count:52",
+        "gap_score:117",
+        "cluster_a_pages:cluster_a_pages:5"
+      ],
+      "cluster_context": "kid↔tokens",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": null,
+      "target_slug": "token-tokens-via-gk",
+      "action_type": "generate_bridge_page",
+      "priority_score": 23,
+      "reasons": [
+        "bridge_opportunity",
+        "cluster_a:token",
+        "cluster_b:tokens"
+      ],
+      "supporting_signals": [
+        "cross_cluster_edge_count:50",
+        "gap_score:114",
+        "cluster_a_pages:cluster_a_pages:6"
+      ],
+      "cluster_context": "token↔tokens",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": null,
+      "target_slug": "bitcoin-blockchain-via-kid",
+      "action_type": "generate_bridge_page",
+      "priority_score": 22,
+      "reasons": [
+        "bridge_opportunity",
+        "cluster_a:bitcoin",
+        "cluster_b:blockchain"
+      ],
+      "supporting_signals": [
+        "cross_cluster_edge_count:48",
+        "gap_score:110",
+        "cluster_a_pages:cluster_a_pages:8"
+      ],
+      "cluster_context": "bitcoin↔blockchain",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": null,
+      "target_slug": "bitcoin-kid-via-alfie",
+      "action_type": "generate_bridge_page",
+      "priority_score": 22,
+      "reasons": [
+        "bridge_opportunity",
+        "cluster_a:bitcoin",
+        "cluster_b:kid"
+      ],
+      "supporting_signals": [
+        "cross_cluster_edge_count:48",
+        "gap_score:110",
+        "cluster_a_pages:cluster_a_pages:8"
+      ],
+      "cluster_context": "bitcoin↔kid",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": null,
+      "target_slug": "free-games-via-nfts",
+      "action_type": "generate_bridge_page",
+      "priority_score": 22,
+      "reasons": [
+        "bridge_opportunity",
+        "cluster_a:free",
+        "cluster_b:games"
+      ],
+      "supporting_signals": [
+        "cross_cluster_edge_count:48",
+        "gap_score:109",
+        "cluster_a_pages:cluster_a_pages:5"
+      ],
+      "cluster_context": "free↔games",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": null,
+      "target_slug": "fork-kid-via-bitcoin",
+      "action_type": "generate_bridge_page",
+      "priority_score": 21,
+      "reasons": [
+        "bridge_opportunity",
+        "cluster_a:fork",
+        "cluster_b:kid"
+      ],
+      "supporting_signals": [
+        "cross_cluster_edge_count:46",
+        "gap_score:105",
+        "cluster_a_pages:cluster_a_pages:5"
+      ],
+      "cluster_context": "fork↔kid",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": null,
+      "target_slug": "free-tokens-via-nfts",
+      "action_type": "generate_bridge_page",
+      "priority_score": 21,
+      "reasons": [
+        "bridge_opportunity",
+        "cluster_a:free",
+        "cluster_b:tokens"
+      ],
+      "supporting_signals": [
+        "cross_cluster_edge_count:46",
+        "gap_score:105",
+        "cluster_a_pages:cluster_a_pages:5"
+      ],
+      "cluster_context": "free↔tokens",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": null,
+      "target_slug": "games-hodl-via-fork",
+      "action_type": "generate_bridge_page",
+      "priority_score": 21,
+      "reasons": [
+        "bridge_opportunity",
+        "cluster_a:games",
+        "cluster_b:hodl"
+      ],
+      "supporting_signals": [
+        "cross_cluster_edge_count:46",
+        "gap_score:106",
+        "cluster_a_pages:cluster_a_pages:6"
+      ],
+      "cluster_context": "games↔hodl",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": null,
+      "target_slug": "hodl-tokens-via-warriors",
+      "action_type": "generate_bridge_page",
+      "priority_score": 21,
+      "reasons": [
+        "bridge_opportunity",
+        "cluster_a:hodl",
+        "cluster_b:tokens"
+      ],
+      "supporting_signals": [
+        "cross_cluster_edge_count:46",
+        "gap_score:106",
+        "cluster_a_pages:cluster_a_pages:6"
+      ],
+      "cluster_context": "hodl↔tokens",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": null,
+      "target_slug": "blockchain-games-via-fork",
+      "action_type": "generate_bridge_page",
+      "priority_score": 20,
+      "reasons": [
+        "bridge_opportunity",
+        "cluster_a:blockchain",
+        "cluster_b:games"
+      ],
+      "supporting_signals": [
+        "cross_cluster_edge_count:44",
+        "gap_score:101",
+        "cluster_a_pages:cluster_a_pages:5"
+      ],
+      "cluster_context": "blockchain↔games",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": null,
+      "target_slug": "blockchain-nfts-via-free",
+      "action_type": "generate_bridge_page",
+      "priority_score": 20,
+      "reasons": [
+        "bridge_opportunity",
+        "cluster_a:blockchain",
+        "cluster_b:nfts"
+      ],
+      "supporting_signals": [
+        "cross_cluster_edge_count:44",
+        "gap_score:102",
+        "cluster_a_pages:cluster_a_pages:5"
+      ],
+      "cluster_context": "blockchain↔nfts",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": null,
+      "target_slug": "games-nbg-via-fork",
+      "action_type": "generate_bridge_page",
+      "priority_score": 20,
+      "reasons": [
+        "bridge_opportunity",
+        "cluster_a:games",
+        "cluster_b:nbg"
+      ],
+      "supporting_signals": [
+        "cross_cluster_edge_count:44",
+        "gap_score:101",
+        "cluster_a_pages:cluster_a_pages:6"
+      ],
+      "cluster_context": "games↔nbg",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": null,
+      "target_slug": "hodl-token-via-warriors",
+      "action_type": "generate_bridge_page",
+      "priority_score": 20,
+      "reasons": [
+        "bridge_opportunity",
+        "cluster_a:hodl",
+        "cluster_b:token"
+      ],
+      "supporting_signals": [
+        "cross_cluster_edge_count:44",
+        "gap_score:102",
+        "cluster_a_pages:cluster_a_pages:6"
+      ],
+      "cluster_context": "hodl↔token",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": null,
+      "target_slug": "bitcoin-free-via-nfts",
+      "action_type": "generate_bridge_page",
+      "priority_score": 19,
+      "reasons": [
+        "bridge_opportunity",
+        "cluster_a:bitcoin",
+        "cluster_b:free"
+      ],
+      "supporting_signals": [
+        "cross_cluster_edge_count:40",
+        "gap_score:94",
+        "cluster_a_pages:cluster_a_pages:8"
+      ],
+      "cluster_context": "bitcoin↔free",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": null,
+      "target_slug": "blockchain-gk-via-tokens",
+      "action_type": "generate_bridge_page",
+      "priority_score": 19,
+      "reasons": [
+        "bridge_opportunity",
+        "cluster_a:blockchain",
+        "cluster_b:gk"
+      ],
+      "supporting_signals": [
+        "cross_cluster_edge_count:40",
+        "gap_score:93",
+        "cluster_a_pages:cluster_a_pages:5"
+      ],
+      "cluster_context": "blockchain↔gk",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": null,
+      "target_slug": "fork-free-via-hard",
+      "action_type": "generate_bridge_page",
+      "priority_score": 19,
+      "reasons": [
+        "bridge_opportunity",
+        "cluster_a:fork",
+        "cluster_b:free"
+      ],
+      "supporting_signals": [
+        "cross_cluster_edge_count:40",
+        "gap_score:93",
+        "cluster_a_pages:cluster_a_pages:5"
+      ],
+      "cluster_context": "fork↔free",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": null,
+      "target_slug": "fork-nbg-via-games",
+      "action_type": "generate_bridge_page",
+      "priority_score": 19,
+      "reasons": [
+        "bridge_opportunity",
+        "cluster_a:fork",
+        "cluster_b:nbg"
+      ],
+      "supporting_signals": [
+        "cross_cluster_edge_count:40",
+        "gap_score:93",
+        "cluster_a_pages:cluster_a_pages:5"
+      ],
+      "cluster_context": "fork↔nbg",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": null,
+      "target_slug": "fork-tokens-via-hard",
+      "action_type": "generate_bridge_page",
+      "priority_score": 19,
+      "reasons": [
+        "bridge_opportunity",
+        "cluster_a:fork",
+        "cluster_b:tokens"
+      ],
+      "supporting_signals": [
+        "cross_cluster_edge_count:42",
+        "gap_score:97",
+        "cluster_a_pages:cluster_a_pages:5"
+      ],
+      "cluster_context": "fork↔tokens",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": null,
+      "target_slug": "free-gk-via-nfts",
+      "action_type": "generate_bridge_page",
+      "priority_score": 19,
+      "reasons": [
+        "bridge_opportunity",
+        "cluster_a:free",
+        "cluster_b:gk"
+      ],
+      "supporting_signals": [
+        "cross_cluster_edge_count:40",
+        "gap_score:93",
+        "cluster_a_pages:cluster_a_pages:5"
+      ],
+      "cluster_context": "free↔gk",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": null,
+      "target_slug": "free-nfts-via-1m",
+      "action_type": "generate_bridge_page",
+      "priority_score": 19,
+      "reasons": [
+        "bridge_opportunity",
+        "cluster_a:free",
+        "cluster_b:nfts"
+      ],
+      "supporting_signals": [
+        "cross_cluster_edge_count:40",
+        "gap_score:94",
+        "cluster_a_pages:cluster_a_pages:5"
+      ],
+      "cluster_context": "free↔nfts",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": null,
+      "target_slug": "free-token-via-nfts",
+      "action_type": "generate_bridge_page",
+      "priority_score": 19,
+      "reasons": [
+        "bridge_opportunity",
+        "cluster_a:free",
+        "cluster_b:token"
+      ],
+      "supporting_signals": [
+        "cross_cluster_edge_count:42",
+        "gap_score:97",
+        "cluster_a_pages:cluster_a_pages:5"
+      ],
+      "cluster_context": "free↔token",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": null,
+      "target_slug": "gk-hodl-via-tokens",
+      "action_type": "generate_bridge_page",
+      "priority_score": 19,
+      "reasons": [
+        "bridge_opportunity",
+        "cluster_a:gk",
+        "cluster_b:hodl"
+      ],
+      "supporting_signals": [
+        "cross_cluster_edge_count:40",
+        "gap_score:93",
+        "cluster_a_pages:cluster_a_pages:5"
+      ],
+      "cluster_context": "gk↔hodl",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": null,
+      "target_slug": "gk-nbg-via-tokens",
+      "action_type": "generate_bridge_page",
+      "priority_score": 19,
+      "reasons": [
+        "bridge_opportunity",
+        "cluster_a:gk",
+        "cluster_b:nbg"
+      ],
+      "supporting_signals": [
+        "cross_cluster_edge_count:40",
+        "gap_score:93",
+        "cluster_a_pages:cluster_a_pages:5"
+      ],
+      "cluster_context": "gk↔nbg",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": null,
+      "target_slug": "hodl-kid-via-bitcoin",
+      "action_type": "generate_bridge_page",
+      "priority_score": 19,
+      "reasons": [
+        "bridge_opportunity",
+        "cluster_a:hodl",
+        "cluster_b:kid"
+      ],
+      "supporting_signals": [
+        "cross_cluster_edge_count:42",
+        "gap_score:97",
+        "cluster_a_pages:cluster_a_pages:6"
+      ],
+      "cluster_context": "hodl↔kid",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": null,
+      "target_slug": "kid-kids-via-bitcoin",
+      "action_type": "generate_bridge_page",
+      "priority_score": 19,
+      "reasons": [
+        "bridge_opportunity",
+        "cluster_a:kid",
+        "cluster_b:kids"
+      ],
+      "supporting_signals": [
+        "cross_cluster_edge_count:42",
+        "gap_score:97",
+        "cluster_a_pages:cluster_a_pages:5"
+      ],
+      "cluster_context": "kid↔kids",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": null,
+      "target_slug": "kid-nbg-via-bitcoin",
+      "action_type": "generate_bridge_page",
+      "priority_score": 19,
+      "reasons": [
+        "bridge_opportunity",
+        "cluster_a:kid",
+        "cluster_b:nbg"
+      ],
+      "supporting_signals": [
+        "cross_cluster_edge_count:40",
+        "gap_score:93",
+        "cluster_a_pages:cluster_a_pages:5"
+      ],
+      "cluster_context": "kid↔nbg",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": null,
+      "target_slug": "nbg-token-via-ball",
+      "action_type": "generate_bridge_page",
+      "priority_score": 19,
+      "reasons": [
+        "bridge_opportunity",
+        "cluster_a:nbg",
+        "cluster_b:token"
+      ],
+      "supporting_signals": [
+        "cross_cluster_edge_count:44",
+        "gap_score:96",
+        "cluster_a_pages:cluster_a_pages:5"
+      ],
+      "cluster_context": "nbg↔token",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": null,
+      "target_slug": "nbg-tokens-via-gk",
+      "action_type": "generate_bridge_page",
+      "priority_score": 19,
+      "reasons": [
+        "bridge_opportunity",
+        "cluster_a:nbg",
+        "cluster_b:tokens"
+      ],
+      "supporting_signals": [
+        "cross_cluster_edge_count:40",
+        "gap_score:93",
+        "cluster_a_pages:cluster_a_pages:5"
+      ],
+      "cluster_context": "nbg↔tokens",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": null,
+      "target_slug": "blockchain-kid-via-bitcoin",
+      "action_type": "generate_bridge_page",
+      "priority_score": 18,
+      "reasons": [
+        "bridge_opportunity",
+        "cluster_a:blockchain",
+        "cluster_b:kid"
+      ],
+      "supporting_signals": [
+        "cross_cluster_edge_count:38",
+        "gap_score:89",
+        "cluster_a_pages:cluster_a_pages:5"
+      ],
+      "cluster_context": "blockchain↔kid",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": null,
+      "target_slug": "blockchain-token-via-graffpunks",
+      "action_type": "generate_bridge_page",
+      "priority_score": 18,
+      "reasons": [
+        "bridge_opportunity",
+        "cluster_a:blockchain",
+        "cluster_b:token"
+      ],
+      "supporting_signals": [
+        "cross_cluster_edge_count:38",
+        "gap_score:89",
+        "cluster_a_pages:cluster_a_pages:5"
+      ],
+      "cluster_context": "blockchain↔token",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": null,
+      "target_slug": "blockchain-tokens-via-gk",
+      "action_type": "generate_bridge_page",
+      "priority_score": 18,
+      "reasons": [
+        "bridge_opportunity",
+        "cluster_a:blockchain",
+        "cluster_b:tokens"
+      ],
+      "supporting_signals": [
+        "cross_cluster_edge_count:38",
+        "gap_score:89",
+        "cluster_a_pages:cluster_a_pages:5"
+      ],
+      "cluster_context": "blockchain↔tokens",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": null,
+      "target_slug": "fork-games-via-hard",
+      "action_type": "generate_bridge_page",
+      "priority_score": 18,
+      "reasons": [
+        "bridge_opportunity",
+        "cluster_a:fork",
+        "cluster_b:games"
+      ],
+      "supporting_signals": [
+        "cross_cluster_edge_count:42",
+        "gap_score:92",
+        "cluster_a_pages:cluster_a_pages:5"
+      ],
+      "cluster_context": "fork↔games",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": null,
+      "target_slug": "fork-hodl-via-hard",
+      "action_type": "generate_bridge_page",
+      "priority_score": 18,
+      "reasons": [
+        "bridge_opportunity",
+        "cluster_a:fork",
+        "cluster_b:hodl"
+      ],
+      "supporting_signals": [
+        "cross_cluster_edge_count:38",
+        "gap_score:89",
+        "cluster_a_pages:cluster_a_pages:5"
+      ],
+      "cluster_context": "fork↔hodl",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": null,
+      "target_slug": "gk-tokens-via-fungible",
+      "action_type": "generate_bridge_page",
+      "priority_score": 18,
+      "reasons": [
+        "bridge_opportunity",
+        "cluster_a:gk",
+        "cluster_b:tokens"
+      ],
+      "supporting_signals": [
+        "cross_cluster_edge_count:38",
+        "gap_score:89",
+        "cluster_a_pages:cluster_a_pages:5"
+      ],
+      "cluster_context": "gk↔tokens",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": null,
+      "target_slug": "blockchain-fork-via-hard",
+      "action_type": "generate_bridge_page",
+      "priority_score": 17,
+      "reasons": [
+        "bridge_opportunity",
+        "cluster_a:blockchain",
+        "cluster_b:fork"
+      ],
+      "supporting_signals": [
+        "cross_cluster_edge_count:36",
+        "gap_score:85",
+        "cluster_a_pages:cluster_a_pages:5"
+      ],
+      "cluster_context": "blockchain↔fork",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": null,
+      "target_slug": "free-kid-via-nfts",
+      "action_type": "generate_bridge_page",
+      "priority_score": 17,
+      "reasons": [
+        "bridge_opportunity",
+        "cluster_a:free",
+        "cluster_b:kid"
+      ],
+      "supporting_signals": [
+        "cross_cluster_edge_count:36",
+        "gap_score:85",
+        "cluster_a_pages:cluster_a_pages:5"
+      ],
+      "cluster_context": "free↔kid",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": null,
+      "target_slug": "hodl-nbg-via-warriors",
+      "action_type": "generate_bridge_page",
+      "priority_score": 17,
+      "reasons": [
+        "bridge_opportunity",
+        "cluster_a:hodl",
+        "cluster_b:nbg"
+      ],
+      "supporting_signals": [
+        "cross_cluster_edge_count:36",
+        "gap_score:85",
+        "cluster_a_pages:cluster_a_pages:6"
+      ],
+      "cluster_context": "hodl↔nbg",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": null,
+      "target_slug": "free-nbg-via-nfts",
+      "action_type": "generate_bridge_page",
+      "priority_score": 16,
+      "reasons": [
+        "bridge_opportunity",
+        "cluster_a:free",
+        "cluster_b:nbg"
+      ],
+      "supporting_signals": [
+        "cross_cluster_edge_count:34",
+        "gap_score:81",
+        "cluster_a_pages:cluster_a_pages:5"
+      ],
+      "cluster_context": "free↔nbg",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": null,
+      "target_slug": "hodl-kids-via-warriors",
+      "action_type": "generate_bridge_page",
+      "priority_score": 16,
+      "reasons": [
+        "bridge_opportunity",
+        "cluster_a:hodl",
+        "cluster_b:kids"
+      ],
+      "supporting_signals": [
+        "cross_cluster_edge_count:34",
+        "gap_score:81",
+        "cluster_a_pages:cluster_a_pages:6"
+      ],
+      "cluster_context": "hodl↔kids",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": null,
+      "target_slug": "kids-tokens-via-gk",
+      "action_type": "generate_bridge_page",
+      "priority_score": 16,
+      "reasons": [
+        "bridge_opportunity",
+        "cluster_a:kids",
+        "cluster_b:tokens"
+      ],
+      "supporting_signals": [
+        "cross_cluster_edge_count:34",
+        "gap_score:81",
+        "cluster_a_pages:cluster_a_pages:5"
+      ],
+      "cluster_context": "kids↔tokens",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": null,
+      "target_slug": "blockchain-nbg-via-ball",
+      "action_type": "generate_bridge_page",
+      "priority_score": 15,
+      "reasons": [
+        "bridge_opportunity",
+        "cluster_a:blockchain",
+        "cluster_b:nbg"
+      ],
+      "supporting_signals": [
+        "cross_cluster_edge_count:30",
+        "gap_score:73",
+        "cluster_a_pages:cluster_a_pages:5"
+      ],
+      "cluster_context": "blockchain↔nbg",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": null,
+      "target_slug": "free-hodl-via-nfts",
+      "action_type": "generate_bridge_page",
+      "priority_score": 15,
+      "reasons": [
+        "bridge_opportunity",
+        "cluster_a:free",
+        "cluster_b:hodl"
+      ],
+      "supporting_signals": [
+        "cross_cluster_edge_count:32",
+        "gap_score:77",
+        "cluster_a_pages:cluster_a_pages:5"
+      ],
+      "cluster_context": "free↔hodl",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": null,
+      "target_slug": "blockchain-hodl-via-graffpunks",
+      "action_type": "generate_bridge_page",
+      "priority_score": 14,
+      "reasons": [
+        "bridge_opportunity",
+        "cluster_a:blockchain",
+        "cluster_b:hodl"
+      ],
+      "supporting_signals": [
+        "cross_cluster_edge_count:28",
+        "gap_score:69",
+        "cluster_a_pages:cluster_a_pages:5"
+      ],
+      "cluster_context": "blockchain↔hodl",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": null,
+      "target_slug": "kids-nbg-via-xrp",
+      "action_type": "generate_bridge_page",
+      "priority_score": 14,
+      "reasons": [
+        "bridge_opportunity",
+        "cluster_a:kids",
+        "cluster_b:nbg"
+      ],
+      "supporting_signals": [
+        "cross_cluster_edge_count:28",
+        "gap_score:69",
+        "cluster_a_pages:cluster_a_pages:5"
+      ],
+      "cluster_context": "kids↔nbg",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": null,
+      "target_slug": "blockchain-free-via-nfts",
+      "action_type": "generate_bridge_page",
+      "priority_score": 13,
+      "reasons": [
+        "bridge_opportunity",
+        "cluster_a:blockchain",
+        "cluster_b:free"
+      ],
+      "supporting_signals": [
+        "cross_cluster_edge_count:26",
+        "gap_score:65",
+        "cluster_a_pages:cluster_a_pages:5"
+      ],
+      "cluster_context": "blockchain↔free",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": null,
+      "target_slug": "kids-token-via-xrp",
+      "action_type": "generate_bridge_page",
+      "priority_score": 13,
+      "reasons": [
+        "bridge_opportunity",
+        "cluster_a:kids",
+        "cluster_b:token"
+      ],
+      "supporting_signals": [
+        "cross_cluster_edge_count:26",
+        "gap_score:65",
+        "cluster_a_pages:cluster_a_pages:5"
+      ],
+      "cluster_context": "kids↔token",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": null,
+      "target_slug": "free-kids-via-nfts",
+      "action_type": "generate_bridge_page",
+      "priority_score": 12,
+      "reasons": [
+        "bridge_opportunity",
+        "cluster_a:free",
+        "cluster_b:kids"
+      ],
+      "supporting_signals": [
+        "cross_cluster_edge_count:24",
+        "gap_score:61",
+        "cluster_a_pages:cluster_a_pages:5"
+      ],
+      "cluster_context": "free↔kids",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": null,
+      "target_slug": "games-kids-via-fork",
+      "action_type": "generate_bridge_page",
+      "priority_score": 12,
+      "reasons": [
+        "bridge_opportunity",
+        "cluster_a:games",
+        "cluster_b:kids"
+      ],
+      "supporting_signals": [
+        "cross_cluster_edge_count:24",
+        "gap_score:61",
+        "cluster_a_pages:cluster_a_pages:6"
+      ],
+      "cluster_context": "games↔kids",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": null,
+      "target_slug": "fork-kids-via-hard",
+      "action_type": "generate_bridge_page",
+      "priority_score": 11,
+      "reasons": [
+        "bridge_opportunity",
+        "cluster_a:fork",
+        "cluster_b:kids"
+      ],
+      "supporting_signals": [
+        "cross_cluster_edge_count:20",
+        "gap_score:53",
+        "cluster_a_pages:cluster_a_pages:5"
+      ],
+      "cluster_context": "fork↔kids",
+      "recommended_source_pages": []
+    },
+    {
+      "target_url": null,
+      "target_slug": "gk-kids-via-tokens",
+      "action_type": "generate_bridge_page",
+      "priority_score": 11,
+      "reasons": [
+        "bridge_opportunity",
+        "cluster_a:gk",
+        "cluster_b:kids"
+      ],
+      "supporting_signals": [
+        "cross_cluster_edge_count:20",
+        "gap_score:53",
+        "cluster_a_pages:cluster_a_pages:5"
+      ],
+      "cluster_context": "gk↔kids",
+      "recommended_source_pages": []
+    }
+  ]
+}
