@@ -36,6 +36,9 @@ let WIKI_INDEX = [];
 let ENTITY_MAP = null;
 let ENTITY_LOOKUP = {};
 
+/* ── ENTITY GRAPH (related pages) ───────────────────────────────────────── */
+let ENTITY_GRAPH = null;
+
 /* ── RANKING CONTRACT ────────────────────────────────────────────────────────
  *
  * SOURCE OF TRUTH: item.rank_score from js/wiki-index.json.
@@ -115,6 +118,60 @@ function buildEntityLookup() {
   });
 }
 
+async function loadEntityGraph() {
+  if (ENTITY_GRAPH !== null) return;
+  try {
+    const res = await fetch(getDerivedJsonUrl('entity-graph.json'));
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    ENTITY_GRAPH = await res.json();
+  } catch {
+    ENTITY_GRAPH = {};
+  }
+}
+
+function renderRelatedPages() {
+  const pathname = window.location.pathname;
+  if (!pathname.startsWith('/wiki/') || !ENTITY_GRAPH) return;
+
+  const pageEntry = ENTITY_GRAPH[pathname];
+  if (!pageEntry || !Array.isArray(pageEntry.related_pages) || !pageEntry.related_pages.length) return;
+
+  const indexByUrl = {};
+  for (const item of WIKI_INDEX) {
+    indexByUrl[item.url] = item;
+  }
+
+  const MAX_RELATED = 8;
+  const MAX_DESC_LENGTH = 120;
+  const related = pageEntry.related_pages
+    .filter(r => r.target_url && r.target_url !== pathname)
+    .slice(0, MAX_RELATED);
+
+  if (!related.length) return;
+
+  const items = related.map(r => {
+    const entry = indexByUrl[r.target_url];
+    const rawTitle = entry ? (entry.title || r.target_url) : r.target_url;
+    const title = escapeHtml(rawTitle);
+    const href  = escapeHtml(r.target_url);
+    const rawDesc = entry && entry.desc ? entry.desc : '';
+    const snippet = rawDesc
+      ? `<p class="related-page-desc">${escapeHtml(rawDesc.length > MAX_DESC_LENGTH ? rawDesc.slice(0, MAX_DESC_LENGTH) + '…' : rawDesc)}</p>`
+      : '';
+    return `<li class="related-page-item"><a class="related-page-link" href="${href}">${title}</a>${snippet}</li>`;
+  }).join('');
+
+  const block = `<section class="related-pages" aria-label="Related pages">
+  <h2 class="related-pages-heading">🔗 Related Pages</h2>
+  <ul class="related-pages-list">${items}</ul>
+</section>`;
+
+  const article = document.querySelector('article');
+  if (article) {
+    article.insertAdjacentHTML('afterend', block);
+  }
+}
+
 /* ── HTML ESCAPE ─────────────────────────────────────────────────────────── */
 function escapeHtml(str) {
   return String(str || '')
@@ -177,6 +234,12 @@ document.addEventListener('DOMContentLoaded', async () => {
   await loadWikiIndex();
   await loadEntityMap();
   buildEntityLookup();
+
+  // ── Related pages (wiki pages only) ─────────────────────────────────────
+  if (window.location.pathname.startsWith('/wiki/')) {
+    await loadEntityGraph();
+    renderRelatedPages();
+  }
 
   // ── Search page ─────────────────────────────────────────────────────────
   const _q = new URLSearchParams(window.location.search).get('q') || '';

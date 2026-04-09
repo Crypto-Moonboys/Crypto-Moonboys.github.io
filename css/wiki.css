@@ -1621,3 +1621,63 @@ a.hero-stat-link:hover {
   word-break: break-word;
   font-size: 0.8rem;
 }
+
+/* ============================================================
+   RELATED PAGES BLOCK
+   ============================================================ */
+.related-pages {
+  margin: 32px 0 0;
+  padding: 20px 24px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+}
+.related-pages-heading {
+  margin: 0 0 14px;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--color-accent);
+  border: none;
+  padding: 0;
+}
+.related-pages-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 10px;
+}
+.related-page-item {
+  background: var(--color-surface-2);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: 10px 12px;
+  transition: border-color .15s;
+}
+.related-page-item:hover {
+  border-color: var(--color-accent);
+}
+.related-page-link {
+  display: block;
+  font-weight: 600;
+  font-size: .9rem;
+  color: var(--color-text-link);
+  text-decoration: none;
+  margin-bottom: 4px;
+}
+.related-page-link:hover {
+  color: var(--color-text-link-hover);
+  text-decoration: underline;
+}
+.related-page-desc {
+  margin: 0;
+  font-size: .78rem;
+  color: var(--color-text-muted);
+  line-height: 1.4;
+}
+@media (max-width: 600px) {
+  .related-pages-list {
+    grid-template-columns: 1fr;
+  }
+}
