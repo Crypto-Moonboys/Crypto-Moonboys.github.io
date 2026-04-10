@@ -1,0 +1,118 @@
+name: Autonomous Editorial Operations
+
+on:
+  schedule:
+    # Runs daily at 03:00 UTC
+    - cron: '0 3 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: autonomous-editorial-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  autonomous-editorial:
+    runs-on: ubuntu-latest
+    # Never run as a bot commit to avoid self-triggering loops
+    if: |
+      github.actor != 'github-actions[bot]' &&
+      github.actor != 'github-actions'
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      # ── Phase 4: Autonomous Editorial Scripts ──────────────────────────────
+
+      - name: Apply stub promotions
+        run: node scripts/apply-stub-promotions.js
+
+      - name: Generate content expansion
+        run: node scripts/generate-content-expansion.js
+
+      - name: Ingest external intelligence
+        run: node scripts/ingest-external-intelligence.js
+
+      - name: Apply hub reinforcement
+        run: node scripts/apply-hub-reinforcement.js
+
+      # ── Regenerate downstream assets ──────────────────────────────────────
+
+      - name: Generate wiki index
+        run: node scripts/generate-wiki-index.js
+
+      - name: Generate entity map and SAM memory
+        run: node scripts/generate-entity-map.js
+
+      - name: Generate sitemap
+        run: node scripts/generate-sitemap.js
+
+      - name: Generate site stats
+        run: node scripts/generate-site-stats.js
+
+      - name: Generate graph data
+        continue-on-error: true
+        run: node scripts/generate-graph-data.js
+
+      - name: Generate cluster health
+        continue-on-error: true
+        run: node scripts/generate-cluster-health.js
+
+      - name: Generate authority drift
+        continue-on-error: true
+        run: node scripts/generate-authority-drift.js
+
+      - name: Generate entity changelog
+        continue-on-error: true
+        run: node scripts/generate-entity-changelog.js
+
+      # ── Validation ────────────────────────────────────────────────────────
+
+      - name: Validate generated assets
+        run: node scripts/validate-generated-assets.js
+
+      - name: Run smoke tests
+        run: node scripts/smoke-test.js
+
+      # ── Commit deterministic changes ──────────────────────────────────────
+
+      - name: Commit autonomous editorial outputs
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          git add \
+            js/editorial-changelog.json \
+            js/ingested-intelligence.json \
+            js/wiki-index.json \
+            js/entity-map.json \
+            js/site-stats.json \
+            js/graph-data.json \
+            js/cluster-health.json \
+            js/authority-drift.json \
+            js/entity-changelog.json \
+            sitemap.xml \
+            sam-memory.json \
+            index_stats.json \
+            wiki/ \
+            snapshots || true
+
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+            exit 0
+          fi
+
+          git commit -m "chore: autonomous editorial operations [skip ci]"
+          git push origin HEAD:main || echo "Push skipped"
