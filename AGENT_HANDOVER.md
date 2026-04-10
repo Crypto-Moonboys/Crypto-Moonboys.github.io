@@ -2,50 +2,184 @@
 
 ## 📌 Repository Status
 
-**Version:** v1.0.0  
-**Status:** Stable & Production Ready  
+**Version:** v2.0.0  
+**Status:** Stable, Production-Ready & Pre–Phase 7 Stabilized  
+**Architecture:** Multi-Repository Autonomous Editorial System
 
-This repository represents a deterministic, self-evolving lore ecosystem. All core systems have been stabilized and validated.
+This repository represents a deterministic, self-evolving lore ecosystem powered by knowledge graph intelligence and AI-assisted editorial automation. All core systems have been stabilized and validated through Phases 1–6, with additional pre–Phase 7 safeguards implemented.
+
+---
+
+## 🏗️ Multi-Repository Architecture
+
+| Repository | Role | Description |
+|-----------|------|-------------|
+| **Frontend / Publisher** | 🌐 Public Wiki | `Crypto-Moonboys.github.io` — Hosts all static HTML pages and generated intelligence layers served via GitHub Pages. |
+| **Brain / Intelligence Engine** | 🧠 AI Orchestrator | `HODLKONG64/HAY-MUM-IM-BUILDING-AGENTS-OF-CHANGE` — Hosts the SAM AI agent, canonical memory, and autonomous publishing logic. |
+| **Lorewars Integration** | ⚔️ Cross-Platform Agents | `HODLKONG64/lorewars` — Provides cross-platform narrative and intelligence expansion for future phases. |
+
+### 🧠 SAM Memory
+- Canonical shared memory stored in **Cloudflare R2** as `sam-memory.json`.
+- Used for intelligence, relationships, and publishing decisions.
+- **Never used to regenerate or overwrite existing HTML article content.**
+
+---
 
 ## 🧠 Core Systems
 
-### 1. Generated Assets
-The following files are authoritative and must remain consistent with their generators:
+### 1. Content Layer (Source of Truth)
+/wiki/*.html
+/index.html
+/about.html
+/categories/
 
-- `js/wiki-index.json`
-- `js/entity-map.json`
-- `js/entity-graph.json`
-- `js/link-graph.json`
-- `js/link-map.json`
-- `js/content-gaps.json`
-- `js/expansion-plan.json`
-- `js/page-drafts.json`
-- `js/draft-index.json`
-- `js/growth-priority.json`
-- `js/site-stats.json`
-- `sitemap.xml`
 
-### 2. Deterministic Principles
-- No randomness in generation.
-- Same input must always produce the same output.
-- Frontend logic (`wiki.js`) must remain aligned with generated data.
-- Avoid manual overrides of generated assets.
+- Contains full article bodies.
+- These files are canonical and must never be overwritten by generators.
+- Redirect alias pages (e.g., `the-hodl-warriors.html`) are allowed but must remain `noindex`.
 
-### 3. Branding Consistency
-Ensure consistent usage of canonical names:
-- **GraffPUNKS**
-- **HODL Wars**
-- **HODL Warriors**
-- **Crypto Moonboys**
+---
 
-### 4. Validation Requirements
-Before any change is merged, run:
+### 2. Intelligence & Metadata Layer
 
-```bash
-node scripts/validate-generated-assets.js
-node scripts/smoke-test.js
 
-SEO & Metadata Standards
+/js/.json
+/api/.json
+
+
+#### Phase 1–4 Assets
+- `wiki-index.json`
+- `entity-map.json`
+- `entity-graph.json`
+- `link-graph.json`
+- `link-map.json`
+- `content-gaps.json`
+- `expansion-plan.json`
+- `growth-priority.json`
+- `site-stats.json`
+
+#### Phase 5 Assets
+- `authority-trust.json`
+- `timeline-intelligence.json`
+
+#### Phase 6 Assets
+- `predictive-growth.json`
+- `governance-signals.json`
+- `publishing-readiness.json`
+
+These assets provide deterministic intelligence for ranking, governance, and future expansion.
+
+---
+
+### 3. Knowledge Graph System
+
+- `entity-graph.json` remains the canonical dataset for relationship intelligence.
+- Due to its size (~37 MB), workflows now include memory safeguards:
+
+NODE_OPTIONS=--max-old-space-size=4096
+
+- Frontend visualizations may optionally use a lightweight derivative (`entity-graph-lite.json`) for performance.
+
+---
+
+### 4. Autonomous Editorial Workflow
+
+Primary workflow:
+
+.github/workflows/autonomous-editorial.yml
+
+#### Key Features
+- Deterministic generation of all intelligence layers.
+- Stub promotion and editorial expansion.
+- API mirror synchronization.
+- Post–Phase 6 validation of generated assets.
+- Visibility into optional (`continue-on-error`) steps.
+- CI loop prevention and safe auto-commit logic.
+
+#### Validation Order (Updated)
+1. Phase 1–4 generators
+2. Phase 5 intelligence generation
+3. Phase 6 predictive/governance generation
+4. **Structural validation** via `validate-generated-assets.js`
+5. **Integration checks** via `smoke-test.js`
+
+---
+
+## 📊 Phase Breakdown
+
+### 🔹 Phase 1 — Knowledge Graph & Visualization
+- Interactive entity graph (`/graph.html`)
+- Editorial dashboard (`/dashboard.html`)
+- Cluster health and authority drift analytics
+
+### 🔹 Phase 2 — Deterministic Ranking
+- Canonical ranking signals in `wiki-index.json`
+- Entity relationships formalized in `entity-map.json`
+
+### 🔹 Phase 3 — Stub Integrity & Canonicalization
+- Correct isolation of stub pages using `data-wiki-stub="true"`
+- Real pages cleaned of incorrect stub markers
+- Redirect alias protection introduced
+
+### 🔹 Phase 4 — Autonomous Editorial Operations
+- Stub promotion engine
+- External intelligence ingestion
+- Hub reinforcement and editorial changelog
+
+### 🔹 Phase 5 — Authority & Timeline Intelligence
+- Authority and trust scoring
+- Narrative chronology and event mapping
+- API-ready intelligence layers
+
+### 🔹 Phase 6 — Predictive Governance & Publishing
+- Predictive growth modeling
+- Governance prioritization
+- Publishing readiness for cross-platform expansion
+
+---
+
+## 🛠️ Pre–Phase 7 Stabilization Fixes
+
+### ✅ Navigation Parity
+- `about.html` and `timeline.html` now include:
+  - 🌐 Graph (`/graph.html`)
+  - 📊 Dashboard (`/dashboard.html`)
+
+### ✅ Redirect Alias Protection
+- `apply-stub-promotions.js` skips pages containing:
+  ```html
+  <meta http-equiv="refresh">
+
+  Prevents accidental promotion of redirect alias pages such as:
+
+/wiki/the-hodl-warriors.html
+✅ Structural Validation of Phase 5/6 Outputs
+
+validate-generated-assets.js now validates:
+
+Existence and JSON integrity
+Required schema keys (generated_at, schema_version, entries)
+Non-empty datasets
+✅ Workflow Memory Safeguards
+Node.js heap increased to handle large graph assets.
+Warning logs emitted when entity-graph.json exceeds safe thresholds.
+✅ Fault-Tolerance Visibility
+Workflow summary steps expose results of optional generation stages.
+🧭 Deterministic Principles
+No randomness in generation.
+Identical inputs must produce identical outputs.
+Generated JSON is authoritative for metadata only.
+HTML content remains the canonical source of truth.
+Frontend logic must remain synchronized with generated data.
+🎨 Canonical Branding
+
+Ensure consistent usage of the following names:
+
+Crypto Moonboys
+GraffPUNKS
+HODL Wars
+HODL Warriors
+🔍 SEO & Metadata Standards
 
 All wiki pages must include:
 
@@ -56,63 +190,43 @@ twitter:card
 Schema.org Article JSON-LD
 Root-relative internal links
 
-Hub Pages
+Redirect alias pages must include:
 
-Current ecosystem hubs:
+<meta name="robots" content="noindex, follow">
+<link rel="canonical" href="https://crypto-moonboys.github.io/wiki/{canonical}.html">
+🧪 Validation Requirements
 
-/wiki/graffpunks-ecosystem.html
-/wiki/hodl-wars-ecosystem.html
-/wiki/ethereum-ecosystem.html
+Before merging any change:
 
-Future hubs should be derived from graph signals, not manually created.
+node scripts/validate-generated-assets.js
+node scripts/smoke-test.js
 
-Draft Visibility
+CI failures must block merges.
 
-The draft-index.json file controls page visibility:
-
-safe_search_visible: visible in search
-hidden_conflict: reserved for future resolution
-Do Not Modify Without Justification
-
-Future agents should not:
-
-Rewrite ranking logic.
-Introduce randomness.
-Break deterministic outputs.
-Alter canonical branding.
-Replace generated assets manually.
-🧭 Future Opportunities
-Automated expansion execution based on growth-priority.json
-Interactive visualization of the entity graph
-Editorial dashboard for monitoring ecosystem health
+🚫 Actions Future Agents Must NOT Perform
+Regenerate HTML articles from JSON.
+Delete or overwrite existing wiki/*.html content.
+Introduce randomness into generation.
+Modify canonical navigation structures.
+Promote redirect alias pages.
+Manually edit generated JSON assets.
+🧭 Future Opportunities (Phase 7+)
+Cross-platform intelligence synchronization (Lorewars integration)
+Lightweight graph streaming and visualization
 Multilingual lore expansion
-Timeline-based narrative navigation
-🏁 Final Note
+Advanced editorial governance dashboards
+Timeline-driven narrative navigation
+📊 Final Checklist
+Task	Status
+Multi-repo architecture	✅
+Phases 1–6 implemented	✅
+Pre–Phase 7 stabilization	✅
+Workflow validation updated	✅
+Navigation parity achieved	✅
+Redirect alias protection	✅
+Documentation updated	✅
+🎉 Conclusion
 
-This repository is now a stable, self-evolving knowledge system. Any future enhancements should respect the deterministic architecture established in version v1.0.0.
+The Crypto Moonboys Wiki is now a deterministic, CI-enforced, multi-repository autonomous editorial system. It is stable, scalable, and ready for Phase 7 cross-platform intelligence expansion.
 
-
----
-
-## ✅ Final Checklist
-
-| Task | Status |
-|------|--------|
-| Merge final PR | ✅ |
-| Create GitHub Release `v1.0.0` | ✅ |
-| Update `README.md` | ✅ |
-| Create/Update `AGENT_HANDOVER.md` | ✅ |
-| Tag repository milestone | ✅ |
-
----
-
-## 🎉 Conclusion
-
-You now have a **fully stabilized, production-ready release** of the Crypto Moonboys Wiki. Creating the `v1.0.0` release and updating documentation ensures:
-
-- Clear milestone recognition
-- Easier onboarding for future contributors and agents
-- Preservation of architectural intent
-- Professional presentation of the project
-
-If you’d like, I can also help draft a **GitHub Release announcement** or **social media post** to showcase this milestone. 🚀
+Future enhancements must remain additive and respect the preservation-first architecture established in this release.
