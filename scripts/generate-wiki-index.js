@@ -435,6 +435,11 @@ function run() {
     if (relative === 'wiki/index.html') return;
 
     const html = fs.readFileSync(filePath, 'utf8');
+
+    // Skip redirect stubs and noindex pages
+    if (/data-wiki-stub=["']true["']/i.test(html)) return;
+    if (/<meta\s+name=["']robots["']\s+content=["'][^"']*noindex/i.test(html)) return;
+
     const title = extractTitle(html);
     if (!title) return;
 
