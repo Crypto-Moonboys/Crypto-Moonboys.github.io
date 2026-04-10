@@ -75,6 +75,22 @@ jobs:
       - name: Generate site stats
         run: node scripts/generate-site-stats.js
 
+      - name: Generate graph data
+        continue-on-error: true
+        run: node scripts/generate-graph-data.js
+
+      - name: Generate cluster health
+        continue-on-error: true
+        run: node scripts/generate-cluster-health.js
+
+      - name: Generate authority drift
+        continue-on-error: true
+        run: node scripts/generate-authority-drift.js
+
+      - name: Generate entity changelog
+        continue-on-error: true
+        run: node scripts/generate-entity-changelog.js
+
       - name: Validate generated assets
         run: node scripts/validate-generated-assets.js
 
@@ -176,6 +192,10 @@ jobs:
             js/wiki-index.json \
             js/entity-map.json \
             js/site-stats.json \
+            js/graph-data.json \
+            js/cluster-health.json \
+            js/authority-drift.json \
+            js/entity-changelog.json \
             sitemap.xml \
             sam-memory.json \
             index_stats.json \

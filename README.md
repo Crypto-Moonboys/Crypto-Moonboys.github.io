@@ -359,4 +359,48 @@ This milestone marks the completion of the multi-phase stabilization and enhance
 - SEO and accessibility compliance
 - Final repository-wide sanity audit
 
-END OF FILE
+---
+
+## 🌐 Phase 1 Upgrades — Graph Visualization & Editorial Intelligence
+
+The following features were added as part of Phase 1 (April 2026). All are additive and operate through the JSON metadata layer without touching any `wiki/*.html` content.
+
+### New Pages
+
+| Page | Description |
+|------|-------------|
+| [`/graph.html`](https://crypto-moonboys.github.io/graph.html) | Interactive force-directed entity relationship graph (Canvas 2D). Pan, zoom, drag, filter by category, search by name. |
+| [`/dashboard.html`](https://crypto-moonboys.github.io/dashboard.html) | Editorial intelligence dashboard: cluster health, content gaps, authority drift alerts, entity changelog, growth priorities. |
+
+### New Data Generators
+
+All scripts are deterministic and idempotent. Run them in any order after the core generators.
+
+| Script | Output | Description |
+|--------|--------|-------------|
+| `scripts/generate-graph-data.js` | `js/graph-data.json` | Derives nodes + edges from `entity-graph.json` (top-5 edges per source, score ≥ 40). |
+| `scripts/generate-cluster-health.js` | `js/cluster-health.json` | Computes per-cluster health scores (avg links, rank, authority, centrality, content depth). |
+| `scripts/generate-authority-drift.js` | `js/authority-drift.json` | Compares `wiki-index.json` authority scores against entity-graph in-degree centrality. Emits `high`/`medium`/`ok` alert levels. |
+| `scripts/generate-entity-changelog.js` | `js/entity-changelog.json` | Diffs `snapshots/ranking-*.json` to track per-entity rank score changes over time. |
+
+### Running Phase 1 Generators
+
+```bash
+# Core generators (run first)
+node scripts/generate-wiki-index.js
+node scripts/generate-entity-map.js
+node scripts/generate-site-stats.js
+node scripts/generate-entity-graph.js
+
+# Phase 1 generators
+node scripts/generate-graph-data.js
+node scripts/generate-cluster-health.js
+node scripts/generate-authority-drift.js
+node scripts/generate-entity-changelog.js
+
+# Validation
+node scripts/validate-generated-assets.js
+node scripts/smoke-test.js
+```
+
+All Phase 1 generators are integrated into the CI workflow (`wiki-index-sync.yml`) and run with `continue-on-error: true` so they never block core validation.
