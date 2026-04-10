@@ -80,7 +80,8 @@ jobs:
         env:
           NODE_OPTIONS: --max-old-space-size=4096
         run: |
-          # Warn if entity-graph.json exceeds 50 MB threshold
+          # entity-graph.json is consumed as input by this script.
+          # Warn before loading if it exceeds 50 MB so large-heap failures are visible.
           GRAPH_SIZE=$(stat -c%s js/entity-graph.json 2>/dev/null || echo 0)
           THRESHOLD=$((50 * 1024 * 1024))
           if [ "$GRAPH_SIZE" -gt "$THRESHOLD" ]; then

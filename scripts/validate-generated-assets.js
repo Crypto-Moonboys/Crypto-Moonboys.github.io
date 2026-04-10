@@ -229,7 +229,7 @@ function validatePhase5And6() {
 
     assert(
       data.summary && typeof data.summary === 'object' && !Array.isArray(data.summary),
-      `${relPath} summary must be a non-empty object`
+      `${relPath} summary must be an object`
     );
 
     console.log(`${relPath} validated (${data.entries.length} entries) ✅`);
