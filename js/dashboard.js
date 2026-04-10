@@ -18,6 +18,9 @@
     editorialChangelog:     '/js/editorial-changelog.json',
     authorityTrust:         '/js/authority-trust.json',
     timelineIntelligence:   '/js/timeline-intelligence.json',
+    predictiveGrowth:       '/js/predictive-growth.json',
+    governanceSignals:      '/js/governance-signals.json',
+    publishingReadiness:    '/js/publishing-readiness.json',
   };
 
   // ── Bootstrap ────────────────────────────────────────────────────────────
@@ -53,6 +56,9 @@
     renderAuthorityTrust(d.authorityTrust);
     renderTimelineIntelligence(d.timelineIntelligence);
     renderEditorialChangelog(d.editorialChangelog);
+    renderPredictiveGrowth(d.predictiveGrowth);
+    renderGovernanceSignals(d.governanceSignals);
+    renderPublishingReadiness(d.publishingReadiness);
   }
 
   // ── Summary Metrics ──────────────────────────────────────────────────────
@@ -594,6 +600,238 @@
         <span class="badge badge-green">${summary.unique_eras || 0} eras</span>
       </p>
       ${eraBlocks}
+    `;
+  }
+
+  // ── Predictive Growth ─────────────────────────────────────────────────────
+  function renderPredictiveGrowth(data) {
+    const container = qs('#dash-predictive-growth');
+    if (!container) return;
+
+    if (!data || !Array.isArray(data.entries) || !data.entries.length) {
+      container.innerHTML = noData('Predictive growth data not available.');
+      return;
+    }
+
+    const summary = data.summary || {};
+    const RECO_BADGE = {
+      expand:    'badge-green',
+      reinforce: 'badge-blue',
+      monitor:   'badge-yellow',
+      hold:      'badge-red'
+    };
+
+    const top = data.entries.slice(0, 20);
+    const maxMomentum = Math.max(...top.map(e => e.momentum_score), 1);
+
+    const rows = top.map(e => {
+      const title = e.title.replace(/\s*[—–-]\s*Crypto Moonboys Wiki.*$/i, '').trim() || e.url;
+      const momPct = Math.round((e.momentum_score / maxMomentum) * 100);
+      const momColour = e.momentum_score >= 70 ? '#3fb950' : e.momentum_score >= 40 ? '#f7c948' : '#58a6ff';
+      const trendIcon = e.authority_trend === 'rising' ? '↑' : e.authority_trend === 'declining' ? '↓' : '→';
+      const trendCls  = e.authority_trend === 'rising' ? 'trend-up' : e.authority_trend === 'declining' ? 'trend-down' : '';
+      const recoBadge = `<span class="badge ${RECO_BADGE[e.recommendation] || 'badge-blue'}">${e.recommendation}</span>`;
+      return `
+        <tr>
+          <td><a href="${e.url}">${title}</a></td>
+          <td>
+            <div class="bar-wrap">
+              <div class="bar-fill" style="width:${momPct}%;background:${momColour}"></div>
+              <span class="bar-label">${e.momentum_score}</span>
+            </div>
+          </td>
+          <td class="num"><span class="${trendCls}">${trendIcon} ${e.authority_trend}</span></td>
+          <td class="num">${e.editorial_activity_score}</td>
+          <td class="num">${e.predicted_priority}</td>
+          <td>${recoBadge}</td>
+        </tr>
+      `;
+    }).join('');
+
+    const moreCount = data.entries.length - top.length;
+    const moreNote  = moreCount > 0 ? `<p class="dash-section-note">… and ${moreCount} more entries</p>` : '';
+
+    container.innerHTML = `
+      <p class="dash-section-note">
+        <span class="badge badge-green">expand: ${summary.expand || 0}</span>
+        <span class="badge badge-blue">reinforce: ${summary.reinforce || 0}</span>
+        <span class="badge badge-yellow">monitor: ${summary.monitor || 0}</span>
+        <span class="badge badge-red">hold: ${summary.hold || 0}</span>
+      </p>
+      <table class="dash-table">
+        <thead>
+          <tr>
+            <th>Page</th>
+            <th>Momentum</th>
+            <th>Authority Trend</th>
+            <th>Editorial Activity</th>
+            <th>Predicted Priority</th>
+            <th>Recommendation</th>
+          </tr>
+        </thead>
+        <tbody>${rows}</tbody>
+      </table>
+      ${moreNote}
+    `;
+  }
+
+  // ── Governance Signals ────────────────────────────────────────────────────
+  function renderGovernanceSignals(data) {
+    const container = qs('#dash-governance-signals');
+    if (!container) return;
+
+    if (!data || !Array.isArray(data.entries) || !data.entries.length) {
+      container.innerHTML = noData('Governance signals data not available.');
+      return;
+    }
+
+    const summary = data.summary || {};
+    const ACTION_BADGE = {
+      prioritize: 'badge-red',
+      review:     'badge-yellow',
+      watch:      'badge-blue',
+      defer:      'badge-green'
+    };
+    const TRUST_BADGE = {
+      high:   'badge-green',
+      medium: 'badge-blue',
+      low:    'badge-yellow'
+    };
+    const AUTH_BADGE = {
+      authoritative: 'badge-green',
+      developing:    'badge-blue',
+      weak:          'badge-yellow'
+    };
+
+    const top = data.entries.slice(0, 20);
+    const maxScore = Math.max(...top.map(e => e.governance_priority_score), 1);
+
+    const rows = top.map(e => {
+      const title = e.title.replace(/\s*[—–-]\s*Crypto Moonboys Wiki.*$/i, '').trim() || e.url;
+      const scorePct = Math.round((e.governance_priority_score / maxScore) * 100);
+      const scoreColour = e.governance_priority_score >= 70 ? '#3fb950' : e.governance_priority_score >= 45 ? '#f7c948' : '#58a6ff';
+      const trustBadge  = `<span class="badge ${TRUST_BADGE[e.trust_band] || 'badge-blue'}">${e.trust_band}</span>`;
+      const authBadge   = `<span class="badge ${AUTH_BADGE[e.authority_band] || 'badge-blue'}">${e.authority_band}</span>`;
+      const actionBadge = `<span class="badge ${ACTION_BADGE[e.governance_action] || 'badge-blue'}">${e.governance_action}</span>`;
+      return `
+        <tr>
+          <td><a href="${e.url}">${title}</a></td>
+          <td>
+            <div class="bar-wrap">
+              <div class="bar-fill" style="width:${scorePct}%;background:${scoreColour}"></div>
+              <span class="bar-label">${e.governance_priority_score}</span>
+            </div>
+          </td>
+          <td>${trustBadge}</td>
+          <td>${authBadge}</td>
+          <td class="num">${e.narrative_importance}</td>
+          <td class="num">${e.editorial_risk}</td>
+          <td>${actionBadge}</td>
+        </tr>
+      `;
+    }).join('');
+
+    const moreCount = data.entries.length - top.length;
+    const moreNote  = moreCount > 0 ? `<p class="dash-section-note">… and ${moreCount} more entries</p>` : '';
+    const byAction  = summary.by_governance_action || {};
+    const byTrust   = summary.by_trust_band || {};
+
+    container.innerHTML = `
+      <p class="dash-section-note">
+        <span class="badge badge-red">prioritize: ${byAction.prioritize || 0}</span>
+        <span class="badge badge-yellow">review: ${byAction.review || 0}</span>
+        <span class="badge badge-blue">watch: ${byAction.watch || 0}</span>
+        <span class="badge badge-green">defer: ${byAction.defer || 0}</span>
+        &nbsp;|&nbsp;
+        trust bands —
+        <span class="badge badge-green">high: ${byTrust.high || 0}</span>
+        <span class="badge badge-blue">medium: ${byTrust.medium || 0}</span>
+        <span class="badge badge-yellow">low: ${byTrust.low || 0}</span>
+      </p>
+      <table class="dash-table">
+        <thead>
+          <tr>
+            <th>Page</th>
+            <th>Governance Score</th>
+            <th>Trust Band</th>
+            <th>Authority Band</th>
+            <th>Narrative</th>
+            <th>Risk</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>${rows}</tbody>
+      </table>
+      ${moreNote}
+    `;
+  }
+
+  // ── Publishing Readiness ──────────────────────────────────────────────────
+  function renderPublishingReadiness(data) {
+    const container = qs('#dash-publishing-readiness');
+    if (!container) return;
+
+    if (!data || !Array.isArray(data.entries) || !data.entries.length) {
+      container.innerHTML = noData('Publishing readiness data not available.');
+      return;
+    }
+
+    const summary = data.summary || {};
+    const ready   = summary.ready_by_platform || {};
+    const PLATFORMS = ['fandom', 'telegram', 'substack', 'paragraph'];
+
+    const top = data.entries.slice(0, 20);
+    const maxScore = Math.max(...top.map(e => e.readiness_score), 1);
+
+    const rows = top.map(e => {
+      const scorePct = Math.round((e.readiness_score / maxScore) * 100);
+      const scoreColour = e.readiness_score >= 65 ? '#3fb950' : e.readiness_score >= 40 ? '#f7c948' : '#58a6ff';
+      const platformCells = PLATFORMS.map(p => {
+        const isReady = e.platform_readiness && e.platform_readiness[p];
+        return `<td class="num">${isReady ? '<span class="badge badge-green">✓</span>' : '<span style="color:var(--color-text-muted)">—</span>'}</td>`;
+      }).join('');
+      return `
+        <tr>
+          <td><a href="${e.url}">${e.readable_title || e.url}</a></td>
+          <td>
+            <div class="bar-wrap">
+              <div class="bar-fill" style="width:${scorePct}%;background:${scoreColour}"></div>
+              <span class="bar-label">${e.readiness_score}</span>
+            </div>
+          </td>
+          <td class="num">${e.summary_quality}</td>
+          <td class="num">${e.authority_score}</td>
+          <td class="num">${e.narrative_strength}</td>
+          ${platformCells}
+        </tr>
+      `;
+    }).join('');
+
+    const moreCount = data.entries.length - top.length;
+    const moreNote  = moreCount > 0 ? `<p class="dash-section-note">… and ${moreCount} more entries</p>` : '';
+
+    const platformSummary = PLATFORMS.map(p =>
+      `<span class="badge badge-blue">${p}: ${ready[p] || 0} ready</span>`
+    ).join(' ');
+
+    container.innerHTML = `
+      <p class="dash-section-note">
+        ${data.summary.total_entries || 0} pages evaluated (planning only, no live publishing) &nbsp;|&nbsp; ${platformSummary}
+      </p>
+      <table class="dash-table">
+        <thead>
+          <tr>
+            <th>Page</th>
+            <th>Readiness</th>
+            <th>Summary Quality</th>
+            <th>Authority</th>
+            <th>Narrative</th>
+            ${PLATFORMS.map(p => `<th>${capitalize(p)}</th>`).join('')}
+          </tr>
+        </thead>
+        <tbody>${rows}</tbody>
+      </table>
+      ${moreNote}
     `;
   }
 

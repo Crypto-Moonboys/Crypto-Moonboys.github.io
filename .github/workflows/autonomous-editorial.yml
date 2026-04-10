@@ -102,6 +102,27 @@ jobs:
           cp js/timeline-intelligence.json api/timeline.json
           cp js/editorial-changelog.json api/editorial.json
 
+      # ── Phase 6: Predictive Intelligence & Governance ─────────────────────
+
+      - name: Generate Predictive Growth
+        continue-on-error: true
+        run: node scripts/generate-predictive-growth.js
+
+      - name: Generate Governance Signals
+        continue-on-error: true
+        run: node scripts/generate-governance-signals.js
+
+      - name: Generate Publishing Readiness
+        continue-on-error: true
+        run: node scripts/generate-publishing-readiness.js
+
+      - name: Copy Phase 6 API Outputs
+        run: |
+          mkdir -p api
+          cp js/predictive-growth.json api/predictive-growth.json
+          cp js/governance-signals.json api/governance.json
+          cp js/publishing-readiness.json api/publishing.json
+
       # ── Commit deterministic changes ──────────────────────────────────────
 
       - name: Commit autonomous editorial outputs
@@ -122,9 +143,15 @@ jobs:
             js/entity-changelog.json \
             js/authority-trust.json \
             js/timeline-intelligence.json \
+            js/predictive-growth.json \
+            js/governance-signals.json \
+            js/publishing-readiness.json \
             api/authority.json \
             api/timeline.json \
             api/editorial.json \
+            api/predictive-growth.json \
+            api/governance.json \
+            api/publishing.json \
             sitemap.xml \
             sam-memory.json \
             index_stats.json \
