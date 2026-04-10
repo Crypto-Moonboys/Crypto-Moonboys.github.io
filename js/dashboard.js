@@ -8,13 +8,14 @@
   'use strict';
 
   const DATA = {
-    siteStats:      '/js/site-stats.json',
-    contentGaps:    '/js/content-gaps.json',
-    expansionPlan:  '/js/expansion-plan.json',
-    growthPriority: '/js/growth-priority.json',
-    clusterHealth:  '/js/cluster-health.json',
-    authorityDrift: '/js/authority-drift.json',
-    entityChangelog:'/js/entity-changelog.json',
+    siteStats:         '/js/site-stats.json',
+    contentGaps:       '/js/content-gaps.json',
+    expansionPlan:     '/js/expansion-plan.json',
+    growthPriority:    '/js/growth-priority.json',
+    clusterHealth:     '/js/cluster-health.json',
+    authorityDrift:    '/js/authority-drift.json',
+    entityChangelog:   '/js/entity-changelog.json',
+    editorialChangelog:'/js/editorial-changelog.json',
   };
 
   // ── Bootstrap ────────────────────────────────────────────────────────────
@@ -47,6 +48,7 @@
     renderEntityChangelog(d.entityChangelog);
     renderGrowthPriority(d.growthPriority);
     renderExpansionPlan(d.expansionPlan);
+    renderEditorialChangelog(d.editorialChangelog);
   }
 
   // ── Summary Metrics ──────────────────────────────────────────────────────
@@ -366,6 +368,83 @@
         <thead><tr><th>Topic</th><th>Priority</th><th>Reasons</th></tr></thead>
         <tbody>${rows}</tbody>
       </table>
+    `;
+  }
+
+  // ── Editorial Changelog ───────────────────────────────────────────────────
+  function renderEditorialChangelog(data) {
+    const container = qs('#dash-editorial-changelog');
+    if (!container) return;
+
+    if (!data || !data.runs || !data.runs.length) {
+      container.innerHTML = noData('No autonomous editorial runs recorded yet.');
+      return;
+    }
+
+    // Show most recent runs first (up to 10)
+    const runs = data.runs.slice().reverse().slice(0, 10);
+
+    const ACTION_BADGE = {
+      stub_promotion_recorded:   'badge-blue',
+      content_expansion_created: 'badge-green',
+      content_expansion_skipped: 'badge-yellow',
+      intelligence_ingested:     'badge-green',
+      intelligence_skipped:      'badge-yellow',
+      hub_reinforcement_created: 'badge-green',
+      hub_reinforcement_skipped: 'badge-yellow',
+    };
+
+    const SCRIPT_LABEL = {
+      'apply-stub-promotions':       '🔖 Stub Promotions',
+      'generate-content-expansion':  '📄 Content Expansion',
+      'ingest-external-intelligence':'🌐 External Intelligence',
+      'apply-hub-reinforcement':     '🌐 Hub Reinforcement',
+    };
+
+    const runBlocks = runs.map(run => {
+      const label    = SCRIPT_LABEL[run.script] || run.script;
+      const ts       = run.timestamp ? run.timestamp.slice(0, 19).replace('T', ' ') : '—';
+      const summary  = run.summary || {};
+      const sumItems = Object.entries(summary)
+        .map(([k, v]) => `<span style="margin-right:10px"><strong>${v}</strong> <small>${k.replace(/_/g, ' ')}</small></span>`)
+        .join('');
+
+      // Show up to 8 actions
+      const appliedActions = (run.actions || []).filter(a => a.status === 'applied').slice(0, 8);
+      const actionRows = appliedActions.map(a => {
+        const badgeCls = ACTION_BADGE[a.action_type] || 'badge-blue';
+        const badge    = `<span class="badge ${badgeCls}">${(a.action_type || '').replace(/_/g, ' ')}</span>`;
+        const link     = a.target_url
+          ? `<a href="${a.target_url}">${a.target_url}</a>`
+          : (a.entry_title || a.entry_id || '—');
+        return `<tr><td>${link}</td><td>${badge}</td></tr>`;
+      }).join('');
+
+      const moreCount = (run.actions || []).filter(a => a.status === 'applied').length - appliedActions.length;
+      const moreNote  = moreCount > 0 ? `<p class="dash-section-note">… and ${moreCount} more applied actions</p>` : '';
+
+      return `
+        <div style="margin-bottom:20px;border:1px solid var(--color-border);border-radius:var(--radius);padding:14px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+            <strong>${label}</strong>
+            <small style="color:var(--color-text-muted)">${ts}</small>
+          </div>
+          <div style="font-size:.82rem;margin-bottom:10px">${sumItems}</div>
+          ${appliedActions.length > 0 ? `
+          <table class="dash-table">
+            <thead><tr><th>Target</th><th>Action</th></tr></thead>
+            <tbody>${actionRows}</tbody>
+          </table>
+          ${moreNote}` : '<p class="dash-section-note">No applied actions in this run.</p>'}
+        </div>
+      `;
+    }).join('');
+
+    container.innerHTML = `
+      <p class="dash-section-note">
+        ${runs.length} run(s) shown (most recent first) · Schema: ${data.schema_version || '1.0'}
+      </p>
+      ${runBlocks}
     `;
   }
 
