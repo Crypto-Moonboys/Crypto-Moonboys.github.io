@@ -77,7 +77,17 @@ jobs:
 
       - name: Generate graph data
         continue-on-error: true
-        run: node scripts/generate-graph-data.js
+        env:
+          NODE_OPTIONS: --max-old-space-size=4096
+        run: |
+          # entity-graph.json is consumed as input by this script.
+          # Warn before loading if it exceeds 50 MB so large-heap failures are visible.
+          GRAPH_SIZE=$(stat -c%s js/entity-graph.json 2>/dev/null || echo 0)
+          THRESHOLD=$((50 * 1024 * 1024))
+          if [ "$GRAPH_SIZE" -gt "$THRESHOLD" ]; then
+            echo "::warning file=js/entity-graph.json::entity-graph.json is ${GRAPH_SIZE} bytes, which exceeds the ${THRESHOLD}-byte threshold"
+          fi
+          node scripts/generate-graph-data.js
 
       - name: Generate cluster health
         continue-on-error: true
@@ -90,6 +100,15 @@ jobs:
       - name: Generate entity changelog
         continue-on-error: true
         run: node scripts/generate-entity-changelog.js
+
+      - name: Summarise optional-step outcomes
+        if: always()
+        shell: bash
+        run: |
+          echo "--- Optional step summary ---"
+          echo "Note: steps with continue-on-error:true may have failed silently above."
+          echo "Check the individual step logs for: generate-graph-data, generate-cluster-health,"
+          echo "  generate-authority-drift, generate-entity-changelog."
 
       - name: Validate generated assets
         run: node scripts/validate-generated-assets.js

@@ -21,7 +21,7 @@
     {
       "run_id": "apply-stub-promotions:2026-04-10",
       "script": "apply-stub-promotions",
-      "timestamp": "2026-04-10T05:30:25.717Z",
+      "timestamp": "2026-04-10T13:28:16.656Z",
       "summary": {
         "total_candidates": 332,
         "applied_count": 0,
