@@ -85,6 +85,23 @@ jobs:
       - name: Run smoke tests
         run: node scripts/smoke-test.js
 
+      # ── Phase 5: Authority, Trust & Timeline Intelligence ─────────────────
+
+      - name: Generate Authority & Trust
+        continue-on-error: true
+        run: node scripts/generate-authority-trust.js
+
+      - name: Generate Timeline Intelligence
+        continue-on-error: true
+        run: node scripts/generate-timeline-intelligence.js
+
+      - name: Copy API Outputs
+        run: |
+          mkdir -p api
+          cp js/authority-trust.json api/authority.json
+          cp js/timeline-intelligence.json api/timeline.json
+          cp js/editorial-changelog.json api/editorial.json
+
       # ── Commit deterministic changes ──────────────────────────────────────
 
       - name: Commit autonomous editorial outputs
@@ -103,6 +120,11 @@ jobs:
             js/cluster-health.json \
             js/authority-drift.json \
             js/entity-changelog.json \
+            js/authority-trust.json \
+            js/timeline-intelligence.json \
+            api/authority.json \
+            api/timeline.json \
+            api/editorial.json \
             sitemap.xml \
             sam-memory.json \
             index_stats.json \

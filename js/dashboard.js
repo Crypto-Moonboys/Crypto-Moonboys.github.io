@@ -8,14 +8,16 @@
   'use strict';
 
   const DATA = {
-    siteStats:         '/js/site-stats.json',
-    contentGaps:       '/js/content-gaps.json',
-    expansionPlan:     '/js/expansion-plan.json',
-    growthPriority:    '/js/growth-priority.json',
-    clusterHealth:     '/js/cluster-health.json',
-    authorityDrift:    '/js/authority-drift.json',
-    entityChangelog:   '/js/entity-changelog.json',
-    editorialChangelog:'/js/editorial-changelog.json',
+    siteStats:              '/js/site-stats.json',
+    contentGaps:            '/js/content-gaps.json',
+    expansionPlan:          '/js/expansion-plan.json',
+    growthPriority:         '/js/growth-priority.json',
+    clusterHealth:          '/js/cluster-health.json',
+    authorityDrift:         '/js/authority-drift.json',
+    entityChangelog:        '/js/entity-changelog.json',
+    editorialChangelog:     '/js/editorial-changelog.json',
+    authorityTrust:         '/js/authority-trust.json',
+    timelineIntelligence:   '/js/timeline-intelligence.json',
   };
 
   // ── Bootstrap ────────────────────────────────────────────────────────────
@@ -48,6 +50,8 @@
     renderEntityChangelog(d.entityChangelog);
     renderGrowthPriority(d.growthPriority);
     renderExpansionPlan(d.expansionPlan);
+    renderAuthorityTrust(d.authorityTrust);
+    renderTimelineIntelligence(d.timelineIntelligence);
     renderEditorialChangelog(d.editorialChangelog);
   }
 
@@ -445,6 +449,151 @@
         ${runs.length} run(s) shown (most recent first) · Schema: ${data.schema_version || '1.0'}
       </p>
       ${runBlocks}
+    `;
+  }
+
+  // ── Authority & Trust Overview ─────────────────────────────────────────
+  function renderAuthorityTrust(data) {
+    const container = qs('#dash-authority-trust');
+    if (!container) return;
+
+    if (!data || !data.entries || !data.entries.length) {
+      container.innerHTML = noData('Authority and trust data not available.');
+      return;
+    }
+
+    const summary = data.summary || {};
+    const top = data.entries.slice(0, 15);
+    const maxAuth = Math.max(...top.map(e => e.authority_score), 1);
+
+    const rows = top.map(e => {
+      const title = e.title.replace(/\s*[—–-]\s*Crypto Moonboys Wiki.*$/i, '').trim() || e.url;
+      const authPct = Math.round((e.authority_score / maxAuth) * 100);
+      const authColour = e.authority_score >= 75 ? '#3fb950' : e.authority_score >= 40 ? '#f7c948' : '#58a6ff';
+      const trustBadge = e.trust_score >= 75
+        ? `<span class="badge badge-green">${e.trust_score}</span>`
+        : e.trust_score >= 50
+          ? `<span class="badge badge-blue">${e.trust_score}</span>`
+          : `<span class="badge badge-yellow">${e.trust_score}</span>`;
+      const narrativeMark = e.narrative_presence ? '✓' : '';
+      return `
+        <tr>
+          <td><a href="${e.url}">${title}</a></td>
+          <td class="num">${capitalize(e.category)}</td>
+          <td>
+            <div class="bar-wrap">
+              <div class="bar-fill" style="width:${authPct}%;background:${authColour}"></div>
+              <span class="bar-label">${e.authority_score}</span>
+            </div>
+          </td>
+          <td class="num">${trustBadge}</td>
+          <td class="num">${e.inbound_links}</td>
+          <td class="num" style="color:var(--color-green)">${narrativeMark}</td>
+        </tr>
+      `;
+    }).join('');
+
+    container.innerHTML = `
+      <p class="dash-section-note">
+        <span class="badge badge-blue">avg authority: ${summary.avg_authority_score || 0}</span>
+        <span class="badge badge-green">avg trust: ${summary.avg_trust_score || 0}</span>
+        &nbsp;${summary.high_authority_count || 0} high-authority &nbsp;
+        ${summary.narrative_present_count || 0} narrative-present
+      </p>
+      <table class="dash-table">
+        <thead>
+          <tr>
+            <th>Entity</th>
+            <th>Category</th>
+            <th>Authority Score</th>
+            <th>Trust Score</th>
+            <th>Inbound Links</th>
+            <th>Narrative</th>
+          </tr>
+        </thead>
+        <tbody>${rows}</tbody>
+      </table>
+    `;
+  }
+
+  // ── Timeline Intelligence ──────────────────────────────────────────────
+  function renderTimelineIntelligence(data) {
+    const container = qs('#dash-timeline-intelligence');
+    if (!container) return;
+
+    if (!data || !data.entries || !data.entries.length) {
+      container.innerHTML = noData('Timeline intelligence data not available.');
+      return;
+    }
+
+    const summary = data.summary || {};
+
+    // Group by era for display
+    const eraMap = new Map();
+    for (const entry of data.entries) {
+      const era = entry.era || 'Unknown';
+      if (!eraMap.has(era)) eraMap.set(era, []);
+      eraMap.get(era).push(entry);
+    }
+
+    const maxNarrative = Math.max(...data.entries.map(e => e.narrative_weight), 1);
+
+    const eraBlocks = [...eraMap.entries()].map(([era, events]) => {
+      const shown = events.slice(0, 8);
+      const rows = shown.map(e => {
+        const weightPct = Math.round((e.narrative_weight / maxNarrative) * 100);
+        const weightBar = e.narrative_weight > 0
+          ? `<div class="bar-wrap">
+               <div class="bar-fill" style="width:${weightPct}%;background:#f7c948"></div>
+               <span class="bar-label">${e.narrative_weight}</span>
+             </div>`
+          : '<span style="color:var(--color-text-muted)">—</span>';
+        const relCount = e.related_entities.length;
+        return `
+          <tr>
+            <td class="num" style="color:var(--color-text-muted);width:40px">${e.timeline_position}</td>
+            <td><a href="${e.canonical_url}">${e.event_name}</a></td>
+            <td class="num">${capitalize(e.category)}</td>
+            <td>${weightBar}</td>
+            <td class="num">${relCount}</td>
+          </tr>
+        `;
+      }).join('');
+
+      const moreCount = events.length - shown.length;
+      const moreNote = moreCount > 0
+        ? `<p class="dash-section-note">… and ${moreCount} more events in this era</p>` : '';
+
+      return `
+        <div style="margin-bottom:20px">
+          <div style="font-size:.85rem;font-weight:700;color:var(--color-accent);margin-bottom:6px">
+            📅 ${era}
+            <span style="font-weight:400;color:var(--color-text-muted);margin-left:6px">(${events.length} events)</span>
+          </div>
+          <table class="dash-table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Event</th>
+                <th>Category</th>
+                <th>Narrative Weight</th>
+                <th>Related</th>
+              </tr>
+            </thead>
+            <tbody>${rows}</tbody>
+          </table>
+          ${moreNote}
+        </div>
+      `;
+    }).join('');
+
+    container.innerHTML = `
+      <p class="dash-section-note">
+        <span class="badge badge-blue">${summary.total_events || 0} events</span>
+        <span class="badge badge-yellow">${summary.total_with_narrative_weight || 0} in narrative paths</span>
+        <span class="badge badge-green">${summary.unique_eras || 0} eras</span>
+      </p>
+      ${eraBlocks}
     `;
   }
 
