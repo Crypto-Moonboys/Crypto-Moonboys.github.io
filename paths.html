@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Guided narrative reading journeys through the Crypto Moonboys GK Wiki — explore characters, factions, tokens and lore in curated paths.">
+  <meta name="robots" content="index, follow">
+  <meta property="og:title" content="📖 Reading Paths — The Crypto Moonboys GK Wiki">
+  <meta property="og:description" content="Guided narrative reading journeys through the Crypto Moonboys GK Wiki — explore characters, factions, tokens and lore in curated paths.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://crypto-moonboys.github.io/paths.html">
+  <meta property="og:image" content="https://crypto-moonboys.github.io/img/CRYPTO-MOONBOYS-BITCOIN-LOGO.png">
+  <link rel="canonical" href="https://crypto-moonboys.github.io/paths.html">
+  <title>📖 Reading Paths — The Crypto Moonboys GK Wiki</title>
+  <link rel="stylesheet" href="/css/wiki.css">
+  <link rel="icon" href="/img/favicon.svg" type="image/svg+xml">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    "name": "Reading Paths — The Crypto Moonboys GK Wiki",
+    "description": "Guided narrative reading journeys through the Crypto Moonboys GK Wiki.",
+    "url": "https://crypto-moonboys.github.io/paths.html",
+    "isPartOf": {
+      "@type": "WebSite",
+      "name": "The Crypto Moonboys GK Wiki",
+      "url": "https://crypto-moonboys.github.io/"
+    }
+  }
+  </script>
+  <style>
+    .paths-page {
+      padding: 24px;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+    .paths-page > h1 {
+      font-size: 1.5rem;
+      color: var(--color-accent);
+      margin-bottom: 6px;
+    }
+    .paths-intro {
+      color: var(--color-text-muted);
+      font-size: .92rem;
+      margin-bottom: 20px;
+    }
+    .breadcrumb {
+      font-size: .82rem;
+      color: var(--color-text-muted);
+      margin-bottom: 16px;
+    }
+    .breadcrumb a { color: var(--color-accent); text-decoration: none; }
+    .breadcrumb a:hover { text-decoration: underline; }
+    .breadcrumb span { margin: 0 4px; }
+
+    /* Filter bar */
+    .filter-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 28px;
+    }
+    .filter-btn {
+      padding: .3em .85em;
+      border-radius: 6px;
+      border: 1px solid var(--color-border);
+      background: transparent;
+      color: inherit;
+      cursor: pointer;
+      font-size: .85rem;
+      transition: background .15s, border-color .15s;
+    }
+    .filter-btn:hover { background: var(--color-surface); }
+    .filter-btn.active {
+      background: var(--color-accent);
+      color: #fff;
+      border-color: transparent;
+    }
+
+    /* Path cards */
+    .path-card {
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius);
+      padding: 20px 22px;
+      margin-bottom: 18px;
+      transition: border-color .15s;
+    }
+    .path-card:hover { border-color: var(--color-accent); }
+    .path-card[hidden] { display: none; }
+
+    .path-card-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 8px;
+    }
+    .path-card-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--color-text);
+      margin: 0;
+    }
+    .path-card-title a {
+      color: var(--color-accent);
+      text-decoration: none;
+    }
+    .path-card-title a:hover { text-decoration: underline; }
+
+    .path-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      font-size: .8rem;
+      color: var(--color-text-muted);
+      margin-bottom: 10px;
+    }
+    .path-meta-item {
+      background: rgba(255,255,255,.06);
+      border-radius: 4px;
+      padding: .15em .5em;
+    }
+
+    .category-badge {
+      display: inline-block;
+      padding: .15em .55em;
+      border-radius: 4px;
+      font-size: .75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .03em;
+      background: var(--color-accent);
+      color: #fff;
+    }
+    .category-badge.characters { background: #5b8cff; }
+    .category-badge.factions   { background: #e07c3a; }
+    .category-badge.tokens     { background: #4caf7d; }
+
+    .path-desc {
+      font-size: .9rem;
+      color: var(--color-text-muted);
+      margin: 0 0 14px 0;
+    }
+
+    /* Step list */
+    .path-steps {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+    .path-step {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 7px 0;
+      border-bottom: 1px solid rgba(255,255,255,.05);
+      font-size: .88rem;
+    }
+    .path-step:last-child { border-bottom: none; }
+    .step-num {
+      flex-shrink: 0;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: var(--color-border);
+      color: var(--color-text-muted);
+      font-size: .72rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-top: 1px;
+    }
+    .path-step.is-gateway .step-num {
+      background: var(--color-accent);
+      color: #fff;
+    }
+    .step-body { flex: 1; min-width: 0; }
+    .step-title a {
+      color: var(--color-text);
+      text-decoration: none;
+    }
+    .step-title a:hover { color: var(--color-accent); text-decoration: underline; }
+    .step-gateway-label {
+      display: inline-block;
+      margin-left: 6px;
+      font-size: .72rem;
+      background: var(--color-accent);
+      color: #fff;
+      border-radius: 3px;
+      padding: .1em .4em;
+      vertical-align: middle;
+    }
+    .step-rank {
+      font-size: .75rem;
+      color: var(--color-text-muted);
+      margin-top: 2px;
+    }
+
+    /* Empty / loading states */
+    #paths-loading { text-align: center; padding: 2rem; color: var(--color-text-muted); }
+    #paths-error   { color: #e05555; padding: 1rem; display: none; }
+    #paths-empty   { color: var(--color-text-muted); padding: 1.5rem 0; display: none; }
+  </style>
+</head>
+<body>
+
+<a class="skip-link" href="#content">Skip to content</a>
+
+<header id="site-header" role="banner">
+  <button class="hamburger" id="hamburger" aria-label="Toggle navigation" aria-expanded="false" aria-controls="sidebar">☰</button>
+  <a href="/index.html" class="site-logo" aria-label="The Crypto Moonboys GK Wiki home">
+    <img src="/img/CRYPTO-MOONBOYS-BITCOIN-LOGO.png" alt="" aria-hidden="true">
+    <span>
+      <span class="logo-text">🌙 The Crypto Moonboys GK Wiki</span>
+      <span class="logo-sub">Blockchain Cryptoism Encyclopedia ⚡️⚡️⚡️</span>
+    </span>
+  </a>
+  <div id="header-search" role="search">
+    <input type="search" id="search-input" placeholder="Search the wiki…" aria-label="Search" autocomplete="off">
+    <button id="search-btn" aria-label="Search">🔍</button>
+    <div id="search-results" role="listbox"></div>
+  </div>
+  <nav class="header-nav" aria-label="Main navigation">
+    <a href="/index.html">Home</a>
+    <a href="/categories/index.html">Categories</a>
+    <a href="/search.html">All Articles</a>
+    <a href="/timeline.html">📅 Timeline</a>
+    <a href="/graph.html">🌐 Graph</a>
+    <a href="/dashboard.html">📊 Dashboard</a>
+    <a href="/sam.html">🧠 SAM</a>
+    <a href="/paths.html" class="active" aria-current="page">📖 Paths</a>
+    <a href="/hubs.html">🏛️ Hubs</a>
+  </nav>
+</header>
+
+<div id="sidebar-overlay" aria-hidden="true"></div>
+
+<div id="layout">
+  <nav id="sidebar" aria-label="Wiki navigation">
+    <div class="sidebar-section">
+      <div class="sidebar-heading">Navigation</div>
+      <div class="sidebar-nav">
+        <a href="/index.html"><span class="nav-icon">🏠</span> Main Page</a>
+        <a href="/categories/index.html"><span class="nav-icon">📂</span> All Categories</a>
+        <a href="/search.html"><span class="nav-icon">🔍</span> All Articles</a>
+        <a href="/timeline.html"><span class="nav-icon">📅</span> Timeline</a>
+        <a href="/graph.html"><span class="nav-icon">🌐</span> Entity Graph</a>
+        <a href="/dashboard.html"><span class="nav-icon">📊</span> Dashboard</a>
+        <a href="/paths.html" class="active" aria-current="page"><span class="nav-icon">📖</span> Reading Paths</a>
+        <a href="/hubs.html"><span class="nav-icon">🏛️</span> Hub Recommendations</a>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-heading">⚔️ HODL WARS LORE$ ⚡️⚡️⚡️</div>
+      <div class="sidebar-nav">
+        <a href="/wiki/hodl-wars.html"><span class="nav-icon">⚔️</span> HODL WAR$</a>
+        <a href="/wiki/hodl-warriors.html"><span class="nav-icon">💎</span> HODL WARRIORS</a>
+        <a href="/wiki/diamond-hands.html"><span class="nav-icon">💎</span> Diamond Hands</a>
+        <a href="/wiki/paper-hands.html"><span class="nav-icon">🧻</span> Paper Hands</a>
+        <a href="/wiki/whale-lords.html"><span class="nav-icon">🐳</span> The Whale Lords</a>
+        <a href="/wiki/moon-mission.html"><span class="nav-icon">🚀</span> Moon Mission</a>
+        <a href="/wiki/the-great-dip.html"><span class="nav-icon">📉</span> The Great Dip</a>
+        <a href="/wiki/bear-market-siege.html"><span class="nav-icon">🐻</span> Bear Market Siege</a>
+        <a href="/wiki/rug-pull-wars.html"><span class="nav-icon">🪤</span> Rug Pull Wars</a>
+        <a href="/wiki/satoshi-scroll.html"><span class="nav-icon">📜</span> The Satoshi Scroll</a>
+        <a href="/wiki/fomo-plague.html"><span class="nav-icon">😱</span> The FOMO Plague</a>
+        <a href="/wiki/ngmi-chronicles.html"><span class="nav-icon">💀</span> NGMI Chronicles</a>
+        <a href="/wiki/wagmi-prophecy.html"><span class="nav-icon">🌙</span> The WAGMI Prophecy</a>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-heading">GK Wiki Info</div>
+      <div class="sidebar-nav">
+        <a href="/about.html"><span class="nav-icon">ℹ️</span> About</a>
+        <a href="/about.html#citation"><span class="nav-icon">📋</span> Citation Policy</a>
+        <a href="/about.html#sources"><span class="nav-icon">🔗</span> Source Types</a>
+      </div>
+    </div>
+  </nav>
+
+  <div id="main-wrapper">
+    <main id="content" role="main">
+      <div class="paths-page">
+
+        <nav class="breadcrumb" aria-label="Breadcrumb">
+          <a href="/index.html">Home</a>
+          <span aria-hidden="true">›</span>
+          <span>Reading Paths</span>
+        </nav>
+
+        <h1>📖 Reading Paths</h1>
+        <p class="paths-intro">Curated narrative journeys through the Crypto Moonboys universe. Each path guides you through related wiki pages in a meaningful sequence — start at the gateway and follow the chain.</p>
+
+        <!-- Filter bar -->
+        <div class="filter-bar" role="group" aria-label="Filter paths by category">
+          <button class="filter-btn active" data-filter="all">All</button>
+          <button class="filter-btn" data-filter="characters">Characters</button>
+          <button class="filter-btn" data-filter="factions">Factions</button>
+          <button class="filter-btn" data-filter="tokens">Tokens</button>
+        </div>
+
+        <div id="paths-loading" aria-live="polite">⏳ Loading reading paths…</div>
+        <div id="paths-error" role="alert"></div>
+        <div id="paths-empty">No reading paths match the selected filter.</div>
+        <div id="paths-list" aria-label="Reading paths"></div>
+
+      </div>
+    </main>
+
+    <footer id="site-footer" role="contentinfo">
+      <div class="footer-inner">
+        <div class="footer-col">
+          <h4>🌙 The Crypto Moonboys GK Wiki ⚡️⚡️⚡️</h4>
+          <p>Fan-driven crypto encyclopedia 💥💥💥🚀.</p>
+        </div>
+        <div class="footer-col">
+          <h4>Explore</h4>
+          <ul>
+            <li><a href="/index.html">Main Page</a></li>
+            <li><a href="/search.html">All Articles</a></li>
+            <li><a href="/timeline.html">Timeline</a></li>
+            <li><a href="/paths.html">Reading Paths</a></li>
+            <li><a href="/hubs.html">Hub Recommendations</a></li>
+            <li><a href="/about.html">About</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>Crypto Moonboys GK Wiki ⚡️⚡️⚡️ a GKiftyHEADS $LAP PRODUCTION$ · Not financial advice.</p>
+        <p><span class="no-login-note">🔒 No sign-up · No login · NO F#K$ G1V£N 🖕👀 Bot-maintained 🤖</span></p>
+      </div>
+    </footer>
+  </div>
+</div>
+
+<button id="back-to-top" aria-label="Back to top">↑</button>
+
+<script src="/js/api-config.js"></script>
+<script src="/js/wiki.js"></script>
+<script>
+(function () {
+  'use strict';
+
+  const loadingEl = document.getElementById('paths-loading');
+  const errorEl   = document.getElementById('paths-error');
+  const emptyEl   = document.getElementById('paths-empty');
+  const listEl    = document.getElementById('paths-list');
+  const filterBtns = document.querySelectorAll('.filter-btn');
+
+  let allPaths = [];
+  let activeFilter = 'all';
+
+  function esc(str) {
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  function categoryClass(cat) {
+    if (!cat) return '';
+    return cat.toLowerCase();
+  }
+
+  function renderPaths(paths) {
+    if (!paths.length) {
+      emptyEl.style.display = 'block';
+      listEl.innerHTML = '';
+      return;
+    }
+    emptyEl.style.display = 'none';
+
+    listEl.innerHTML = paths.map(p => {
+      const cat = p.category ? p.category.toLowerCase() : null;
+      const badgeHtml = cat
+        ? `<span class="category-badge ${esc(cat)}">${esc(p.category)}</span>`
+        : '';
+
+      const stepsHtml = (p.steps || []).map(step => {
+        const gatewayClass = step.is_gateway ? ' is-gateway' : '';
+        const gatewayLabel = step.is_gateway ? '<span class="step-gateway-label">Gateway</span>' : '';
+        return `<li class="path-step${gatewayClass}">
+          <div class="step-num" aria-hidden="true">${esc(step.step)}</div>
+          <div class="step-body">
+            <div class="step-title"><a href="${esc(step.url)}">${esc(step.title)}</a>${gatewayLabel}</div>
+            <div class="step-rank">Rank score: ${esc(step.rank_score)}</div>
+          </div>
+        </li>`;
+      }).join('');
+
+      return `<article class="path-card" data-category="${esc(cat || '')}">
+        <div class="path-card-header">
+          <h2 class="path-card-title">${esc(p.name)}</h2>
+          ${badgeHtml}
+        </div>
+        <div class="path-meta">
+          <span class="path-meta-item">📄 ${esc(p.step_count)} steps</span>
+          <span class="path-meta-item">⭐ Avg rank: ${esc(p.avg_rank_score)}</span>
+          <span class="path-meta-item">🚪 Gateway: <a href="${esc(p.gateway_url)}">${esc(p.gateway_title)}</a></span>
+        </div>
+        <p class="path-desc">${esc(p.description)}</p>
+        <ol class="path-steps" aria-label="Reading order for ${esc(p.name)}">
+          ${stepsHtml}
+        </ol>
+      </article>`;
+    }).join('');
+  }
+
+  function applyFilter(filter) {
+    activeFilter = filter;
+    filterBtns.forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.filter === filter);
+    });
+    const filtered = filter === 'all'
+      ? allPaths
+      : allPaths.filter(p => (p.category || '').toLowerCase() === filter);
+    renderPaths(filtered);
+  }
+
+  filterBtns.forEach(btn => {
+    btn.addEventListener('click', () => applyFilter(btn.dataset.filter));
+  });
+
+  fetch('/js/narrative-paths.json')
+    .then(res => {
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      return res.json();
+    })
+    .then(data => {
+      loadingEl.style.display = 'none';
+      allPaths = (data.paths || []).slice(); // already sorted by step_count DESC
+      applyFilter('all');
+    })
+    .catch(err => {
+      loadingEl.style.display = 'none';
+      errorEl.style.display = 'block';
+      errorEl.textContent = '⚠️ Could not load reading paths. Please try again later. (' + err.message + ')';
+    });
+})();
+</script>
+
+</body>
+</html>

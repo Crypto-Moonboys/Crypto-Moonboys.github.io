@@ -1,0 +1,992 @@
+{
+  "generated_at": "2026-04-10T01:30:07.822Z",
+  "phase": "phase_3",
+  "schema_version": "1.0",
+  "summary": {
+    "total_items": 59,
+    "by_type": {
+      "external-lore-candidate": 0,
+      "hub-recommendation": 1,
+      "narrative-path": 10,
+      "stub-promotion-candidate": 48
+    },
+    "pending": 59,
+    "approved": 0,
+    "rejected": 0
+  },
+  "queue": [
+    {
+      "id": "hub-recommendation::decentraland-events",
+      "type": "hub-recommendation",
+      "title": "Graffiti Queens in Decentraland",
+      "url": "/wiki/graffiti-queens-in-decentraland.html",
+      "target_url": "/wiki/graffiti-queens-in-decentraland-ecosystem.html",
+      "source": "js/hub-recommendations.json",
+      "confidence": 0.258,
+      "status": "pending",
+      "reasons": [
+        "cluster_size:5",
+        "avg_rank:173",
+        "link_density:0%",
+        "entity_density:90%"
+      ]
+    },
+    {
+      "id": "narrative-path::bitcoin-origins",
+      "type": "narrative-path",
+      "title": "The Bitcoin Origins Journey",
+      "url": "/wiki/bitcoin-kids.html",
+      "target_url": null,
+      "source": "js/narrative-paths.json",
+      "confidence": 0.433,
+      "status": "pending",
+      "reasons": [
+        "step_count:8",
+        "avg_rank_score:433"
+      ]
+    },
+    {
+      "id": "narrative-path::crypto-characters",
+      "type": "narrative-path",
+      "title": "Meet the Characters",
+      "url": "/wiki/graffpunks.html",
+      "target_url": null,
+      "source": "js/narrative-paths.json",
+      "confidence": 0.441,
+      "status": "pending",
+      "reasons": [
+        "step_count:8",
+        "avg_rank_score:441",
+        "category:characters"
+      ]
+    },
+    {
+      "id": "narrative-path::ethereum-trail",
+      "type": "narrative-path",
+      "title": "The Ethereum Trail",
+      "url": "/wiki/ethereum.html",
+      "target_url": null,
+      "source": "js/narrative-paths.json",
+      "confidence": 0.394,
+      "status": "pending",
+      "reasons": [
+        "step_count:8",
+        "avg_rank_score:394"
+      ]
+    },
+    {
+      "id": "narrative-path::factions-overview",
+      "type": "narrative-path",
+      "title": "Factions of the Moonboys",
+      "url": "/wiki/hodl-wars.html",
+      "target_url": null,
+      "source": "js/narrative-paths.json",
+      "confidence": 0.303,
+      "status": "pending",
+      "reasons": [
+        "step_count:8",
+        "avg_rank_score:303",
+        "category:factions"
+      ]
+    },
+    {
+      "id": "narrative-path::games-and-battles",
+      "type": "narrative-path",
+      "title": "Games and Battles",
+      "url": "/wiki/hard-fork-games.html",
+      "target_url": null,
+      "source": "js/narrative-paths.json",
+      "confidence": 0.352,
+      "status": "pending",
+      "reasons": [
+        "step_count:8",
+        "avg_rank_score:352"
+      ]
+    },
+    {
+      "id": "narrative-path::graffpunks-lore",
+      "type": "narrative-path",
+      "title": "GraffPUNKS Universe",
+      "url": "/wiki/graffpunks.html",
+      "target_url": null,
+      "source": "js/narrative-paths.json",
+      "confidence": 0.441,
+      "status": "pending",
+      "reasons": [
+        "step_count:8",
+        "avg_rank_score:441"
+      ]
+    },
+    {
+      "id": "narrative-path::kids-army",
+      "type": "narrative-path",
+      "title": "The Bitcoin Kids Army",
+      "url": "/wiki/bitcoin-kids.html",
+      "target_url": null,
+      "source": "js/narrative-paths.json",
+      "confidence": 0.433,
+      "status": "pending",
+      "reasons": [
+        "step_count:8",
+        "avg_rank_score:433"
+      ]
+    },
+    {
+      "id": "narrative-path::metaverse-journey",
+      "type": "narrative-path",
+      "title": "Into the Metaverse",
+      "url": "/wiki/metaverse-battles.html",
+      "target_url": null,
+      "source": "js/narrative-paths.json",
+      "confidence": 0.321,
+      "status": "pending",
+      "reasons": [
+        "step_count:8",
+        "avg_rank_score:321"
+      ]
+    },
+    {
+      "id": "narrative-path::nft-ecosystem",
+      "type": "narrative-path",
+      "title": "NFT Ecosystem Deep Dive",
+      "url": "/wiki/nfts.html",
+      "target_url": null,
+      "source": "js/narrative-paths.json",
+      "confidence": 0.526,
+      "status": "pending",
+      "reasons": [
+        "step_count:8",
+        "avg_rank_score:526"
+      ]
+    },
+    {
+      "id": "narrative-path::token-landscape",
+      "type": "narrative-path",
+      "title": "Token Landscape",
+      "url": "/wiki/ethereum.html",
+      "target_url": null,
+      "source": "js/narrative-paths.json",
+      "confidence": 0.394,
+      "status": "pending",
+      "reasons": [
+        "step_count:8",
+        "avg_rank_score:394",
+        "category:tokens"
+      ]
+    },
+    {
+      "id": "stub-promotion-candidate::alfie-blaze",
+      "type": "stub-promotion-candidate",
+      "title": "Alfie Blaze — Crypto Moonboys Wiki",
+      "url": "/wiki/alfie-blaze.html",
+      "target_url": "/wiki/alfie-blaze.html",
+      "source": "js/growth-priority.json",
+      "confidence": 0.375,
+      "status": "pending",
+      "reasons": [
+        "action_type:expand_existing_page",
+        "underlinked_page",
+        "high_link_demand",
+        "strong_cluster_member",
+        "high_graph_centrality"
+      ]
+    },
+    {
+      "id": "stub-promotion-candidate::bitcoin",
+      "type": "stub-promotion-candidate",
+      "title": "Bitcoin (BTC) — Crypto Moonboys Wiki",
+      "url": "/wiki/bitcoin.html",
+      "target_url": "/wiki/bitcoin.html",
+      "source": "js/growth-priority.json",
+      "confidence": 0.435,
+      "status": "pending",
+      "reasons": [
+        "action_type:expand_existing_page",
+        "underlinked_page",
+        "high_link_demand",
+        "strong_cluster_member",
+        "high_graph_centrality"
+      ]
+    },
+    {
+      "id": "stub-promotion-candidate::bitcoin-kids",
+      "type": "stub-promotion-candidate",
+      "title": "Bitcoin Kids — Crypto Moonboys Wiki",
+      "url": "/wiki/bitcoin-kids.html",
+      "target_url": "/wiki/bitcoin-kids.html",
+      "source": "js/growth-priority.json",
+      "confidence": 0.38,
+      "status": "pending",
+      "reasons": [
+        "action_type:expand_existing_page",
+        "underlinked_page",
+        "high_link_demand",
+        "strong_cluster_member",
+        "high_graph_centrality"
+      ]
+    },
+    {
+      "id": "stub-promotion-candidate::bitcoin-x-kids",
+      "type": "stub-promotion-candidate",
+      "title": "Bitcoin X Kids — Crypto Moonboys Wiki",
+      "url": "/wiki/bitcoin-x-kids.html",
+      "target_url": "/wiki/bitcoin-x-kids.html",
+      "source": "js/growth-priority.json",
+      "confidence": 0.4,
+      "status": "pending",
+      "reasons": [
+        "action_type:expand_existing_page",
+        "underlinked_page",
+        "weak_content_depth",
+        "high_link_demand",
+        "strong_cluster_member",
+        "high_graph_centrality"
+      ]
+    },
+    {
+      "id": "stub-promotion-candidate::block-topia",
+      "type": "stub-promotion-candidate",
+      "title": "Block Topia — Crypto Moonboys Wiki",
+      "url": "/wiki/block-topia.html",
+      "target_url": "/wiki/block-topia.html",
+      "source": "js/growth-priority.json",
+      "confidence": 0.36,
+      "status": "pending",
+      "reasons": [
+        "action_type:expand_existing_page",
+        "underlinked_page",
+        "high_link_demand",
+        "strong_cluster_member",
+        "high_graph_centrality"
+      ]
+    },
+    {
+      "id": "stub-promotion-candidate::burn-to-earn",
+      "type": "stub-promotion-candidate",
+      "title": "Burn-to-Earn — Crypto Moonboys Wiki",
+      "url": "/wiki/burn-to-earn.html",
+      "target_url": "/wiki/burn-to-earn.html",
+      "source": "js/growth-priority.json",
+      "confidence": 0.37,
+      "status": "pending",
+      "reasons": [
+        "action_type:expand_existing_page",
+        "underlinked_page",
+        "high_link_demand",
+        "strong_cluster_member",
+        "high_graph_centrality"
+      ]
+    },
+    {
+      "id": "stub-promotion-candidate::charlie-buster",
+      "type": "stub-promotion-candidate",
+      "title": "Charlie Buster — Crypto Moonboys Wiki",
+      "url": "/wiki/charlie-buster.html",
+      "target_url": "/wiki/charlie-buster.html",
+      "source": "js/growth-priority.json",
+      "confidence": 0.37,
+      "status": "pending",
+      "reasons": [
+        "action_type:expand_existing_page",
+        "underlinked_page",
+        "high_link_demand",
+        "strong_cluster_member",
+        "high_graph_centrality"
+      ]
+    },
+    {
+      "id": "stub-promotion-candidate::crypto-moonboys",
+      "type": "stub-promotion-candidate",
+      "title": "Crypto Moonboys — Crypto Moonboys Wiki",
+      "url": "/wiki/crypto-moonboys.html",
+      "target_url": "/wiki/crypto-moonboys.html",
+      "source": "js/growth-priority.json",
+      "confidence": 0.69,
+      "status": "pending",
+      "reasons": [
+        "action_type:reinforce_hub",
+        "expansion_plan_cluster_support",
+        "over_saturated_injection_target:104",
+        "under_covered_strong_adjacents:38",
+        "reinforcement_concentration_signal"
+      ]
+    },
+    {
+      "id": "stub-promotion-candidate::darren-cullen",
+      "type": "stub-promotion-candidate",
+      "title": "Darren Cullen — Crypto Moonboys Wiki",
+      "url": "/wiki/darren-cullen.html",
+      "target_url": "/wiki/darren-cullen.html",
+      "source": "js/growth-priority.json",
+      "confidence": 0.365,
+      "status": "pending",
+      "reasons": [
+        "action_type:expand_existing_page",
+        "underlinked_page",
+        "high_link_demand",
+        "strong_cluster_member",
+        "high_graph_centrality"
+      ]
+    },
+    {
+      "id": "stub-promotion-candidate::diamond-hands",
+      "type": "stub-promotion-candidate",
+      "title": "Diamond Hands — Crypto Moonboys Wiki",
+      "url": "/wiki/diamond-hands.html",
+      "target_url": "/wiki/diamond-hands.html",
+      "source": "js/growth-priority.json",
+      "confidence": 0.465,
+      "status": "pending",
+      "reasons": [
+        "action_type:expand_existing_page",
+        "underlinked_page",
+        "high_link_demand",
+        "strong_cluster_member",
+        "high_graph_centrality"
+      ]
+    },
+    {
+      "id": "stub-promotion-candidate::ethereum",
+      "type": "stub-promotion-candidate",
+      "title": "Ethereum (ETH) — Crypto Moonboys Wiki",
+      "url": "/wiki/ethereum.html",
+      "target_url": "/wiki/ethereum.html",
+      "source": "js/growth-priority.json",
+      "confidence": 0.44,
+      "status": "pending",
+      "reasons": [
+        "action_type:expand_existing_page",
+        "underlinked_page",
+        "high_link_demand",
+        "strong_cluster_member",
+        "high_graph_centrality"
+      ]
+    },
+    {
+      "id": "stub-promotion-candidate::ethereum-ecosystem",
+      "type": "stub-promotion-candidate",
+      "title": "Ethereum (ETH) Ecosystem — Crypto Moonboys Wiki",
+      "url": "/wiki/ethereum-ecosystem.html",
+      "target_url": "/wiki/ethereum-ecosystem.html",
+      "source": "js/growth-priority.json",
+      "confidence": 0.325,
+      "status": "pending",
+      "reasons": [
+        "action_type:reinforce_hub",
+        "hub_page",
+        "ecosystem_anchor",
+        "needs_depth"
+      ]
+    },
+    {
+      "id": "stub-promotion-candidate::games4punks-telegram",
+      "type": "stub-promotion-candidate",
+      "title": "Games4Punks Telegram — Crypto Moonboys Wiki",
+      "url": "/wiki/games4punks-telegram.html",
+      "target_url": "/wiki/games4punks-telegram.html",
+      "source": "js/growth-priority.json",
+      "confidence": 0.42,
+      "status": "pending",
+      "reasons": [
+        "action_type:expand_existing_page",
+        "underlinked_page",
+        "high_link_demand",
+        "strong_cluster_member",
+        "high_graph_centrality"
+      ]
+    },
+    {
+      "id": "stub-promotion-candidate::gang-signs",
+      "type": "stub-promotion-candidate",
+      "title": "Gang Signs — Crypto Moonboys Wiki",
+      "url": "/wiki/gang-signs.html",
+      "target_url": "/wiki/gang-signs.html",
+      "source": "js/growth-priority.json",
+      "confidence": 0.365,
+      "status": "pending",
+      "reasons": [
+        "action_type:expand_existing_page",
+        "underlinked_page",
+        "high_link_demand",
+        "strong_cluster_member",
+        "high_graph_centrality"
+      ]
+    },
+    {
+      "id": "stub-promotion-candidate::genesis-spray",
+      "type": "stub-promotion-candidate",
+      "title": "Genesis Spray — Crypto Moonboys Wiki",
+      "url": "/wiki/genesis-spray.html",
+      "target_url": "/wiki/genesis-spray.html",
+      "source": "js/growth-priority.json",
+      "confidence": 0.485,
+      "status": "pending",
+      "reasons": [
+        "action_type:expand_existing_page",
+        "underlinked_page",
+        "high_link_demand",
+        "strong_cluster_member",
+        "high_graph_centrality"
+      ]
+    },
+    {
+      "id": "stub-promotion-candidate::gkniftyheads",
+      "type": "stub-promotion-candidate",
+      "title": "GKniftyHEADS — Crypto Moonboys Wiki",
+      "url": "/wiki/gkniftyheads.html",
+      "target_url": "/wiki/gkniftyheads.html",
+      "source": "js/growth-priority.json",
+      "confidence": 0.37,
+      "status": "pending",
+      "reasons": [
+        "action_type:expand_existing_page",
+        "underlinked_page",
+        "high_link_demand",
+        "strong_cluster_member",
+        "high_graph_centrality"
+      ]
+    },
+    {
+      "id": "stub-promotion-candidate::graffiti-kings",
+      "type": "stub-promotion-candidate",
+      "title": "Graffiti Kings — Crypto Moonboys Wiki",
+      "url": "/wiki/graffiti-kings.html",
+      "target_url": "/wiki/graffiti-kings.html",
+      "source": "js/growth-priority.json",
+      "confidence": 0.685,
+      "status": "pending",
+      "reasons": [
+        "action_type:reinforce_hub",
+        "expansion_plan_cluster_support",
+        "over_saturated_injection_target:17",
+        "under_covered_strong_adjacents:93",
+        "reinforcement_concentration_signal"
+      ]
+    },
+    {
+      "id": "stub-promotion-candidate::graffitikings",
+      "type": "stub-promotion-candidate",
+      "title": "Graffiti Kings — Crypto Moonboys Wiki",
+      "url": "/wiki/graffitikings.html",
+      "target_url": "/wiki/graffitikings.html",
+      "source": "js/growth-priority.json",
+      "confidence": 0.485,
+      "status": "pending",
+      "reasons": [
+        "action_type:expand_existing_page",
+        "underlinked_page",
+        "high_link_demand",
+        "strong_cluster_member",
+        "high_graph_centrality"
+      ]
+    },
+    {
+      "id": "stub-promotion-candidate::graffpunks",
+      "type": "stub-promotion-candidate",
+      "title": "GraffPUNKS — Crypto Moonboys Wiki",
+      "url": "/wiki/graffpunks.html",
+      "target_url": "/wiki/graffpunks.html",
+      "source": "js/growth-priority.json",
+      "confidence": 0.375,
+      "status": "pending",
+      "reasons": [
+        "action_type:expand_existing_page",
+        "underlinked_page",
+        "high_link_demand",
+        "strong_cluster_member",
+        "high_graph_centrality"
+      ]
+    },
+    {
+      "id": "stub-promotion-candidate::graffpunks-24-7",
+      "type": "stub-promotion-candidate",
+      "title": "GraffPUNKS 24/7 — Crypto Moonboys Wiki",
+      "url": "/wiki/graffpunks-24-7.html",
+      "target_url": "/wiki/graffpunks-24-7.html",
+      "source": "js/growth-priority.json",
+      "confidence": 0.38,
+      "status": "pending",
+      "reasons": [
+        "action_type:expand_existing_page",
+        "underlinked_page",
+        "high_link_demand",
+        "strong_cluster_member",
+        "high_graph_centrality"
+      ]
+    },
+    {
+      "id": "stub-promotion-candidate::graffpunks-24-7-radio",
+      "type": "stub-promotion-candidate",
+      "title": "GraffPUNKS 24/7 Radio — Crypto Moonboys Wiki",
+      "url": "/wiki/graffpunks-24-7-radio.html",
+      "target_url": "/wiki/graffpunks-24-7-radio.html",
+      "source": "js/growth-priority.json",
+      "confidence": 0.45,
+      "status": "pending",
+      "reasons": [
+        "action_type:expand_existing_page",
+        "underlinked_page",
+        "weak_content_depth",
+        "high_link_demand",
+        "strong_cluster_member",
+        "high_graph_centrality"
+      ]
+    },
+    {
+      "id": "stub-promotion-candidate::graffpunks-247-radio",
+      "type": "stub-promotion-candidate",
+      "title": "GraffPUNKS 247 Radio — Crypto Moonboys Wiki",
+      "url": "/wiki/graffpunks-247-radio.html",
+      "target_url": "/wiki/graffpunks-247-radio.html",
+      "source": "js/growth-priority.json",
+      "confidence": 0.38,
+      "status": "pending",
+      "reasons": [
+        "action_type:expand_existing_page",
+        "underlinked_page",
+        "high_link_demand",
+        "strong_cluster_member",
+        "high_graph_centrality"
+      ]
+    },
+    {
+      "id": "stub-promotion-candidate::graffpunks-ecosystem",
+      "type": "stub-promotion-candidate",
+      "title": "GraffPUNKS Ecosystem — Crypto Moonboys Wiki",
+      "url": "/wiki/graffpunks-ecosystem.html",
+      "target_url": "/wiki/graffpunks-ecosystem.html",
+      "source": "js/growth-priority.json",
+      "confidence": 0.3,
+      "status": "pending",
+      "reasons": [
+        "action_type:reinforce_hub",
+        "hub_page",
+        "ecosystem_anchor"
+      ]
+    },
+    {
+      "id": "stub-promotion-candidate::hard-fork-games",
+      "type": "stub-promotion-candidate",
+      "title": "Hard Fork Games — Crypto Moonboys Wiki",
+      "url": "/wiki/hard-fork-games.html",
+      "target_url": "/wiki/hard-fork-games.html",
+      "source": "js/growth-priority.json",
+      "confidence": 0.625,
+      "status": "pending",
+      "reasons": [
+        "action_type:reinforce_hub",
+        "expansion_plan_cluster_support",
+        "over_saturated_injection_target:27",
+        "under_covered_strong_adjacents:6",
+        "reinforcement_concentration_signal"
+      ]
+    },
+    {
+      "id": "stub-promotion-candidate::hodl-warriors",
+      "type": "stub-promotion-candidate",
+      "title": "HODL Warriors — Crypto Moonboys Wiki",
+      "url": "/wiki/hodl-warriors.html",
+      "target_url": "/wiki/hodl-warriors.html",
+      "source": "js/growth-priority.json",
+      "confidence": 0.345,
+      "status": "pending",
+      "reasons": [
+        "action_type:expand_existing_page",
+        "underlinked_page",
+        "high_link_demand",
+        "strong_cluster_member",
+        "high_graph_centrality"
+      ]
+    },
+    {
+      "id": "stub-promotion-candidate::hodl-wars-ecosystem",
+      "type": "stub-promotion-candidate",
+      "title": "HODL Wars Ecosystem — Crypto Moonboys Wiki",
+      "url": "/wiki/hodl-wars-ecosystem.html",
+      "target_url": "/wiki/hodl-wars-ecosystem.html",
+      "source": "js/growth-priority.json",
+      "confidence": 0.3,
+      "status": "pending",
+      "reasons": [
+        "action_type:reinforce_hub",
+        "hub_page",
+        "ecosystem_anchor"
+      ]
+    },
+    {
+      "id": "stub-promotion-candidate::hodl-x-warriors",
+      "type": "stub-promotion-candidate",
+      "title": "HODL X Warriors — Crypto Moonboys Wiki",
+      "url": "/wiki/hodl-x-warriors.html",
+      "target_url": "/wiki/hodl-x-warriors.html",
+      "source": "js/growth-priority.json",
+      "confidence": 0.365,
+      "status": "pending",
+      "reasons": [
+        "action_type:expand_existing_page",
+        "underlinked_page",
+        "high_link_demand",
+        "strong_cluster_member",
+        "high_graph_centrality"
+      ]
+    },
+    {
+      "id": "stub-promotion-candidate::ian-harrison",
+      "type": "stub-promotion-candidate",
+      "title": "Ian Harrison — Crypto Moonboys Wiki",
+      "url": "/wiki/ian-harrison.html",
+      "target_url": "/wiki/ian-harrison.html",
+      "source": "js/growth-priority.json",
+      "confidence": 0.365,
+      "status": "pending",
+      "reasons": [
+        "action_type:expand_existing_page",
+        "underlinked_page",
+        "high_link_demand",
+        "strong_cluster_member",
+        "high_graph_centrality"
+      ]
+    },
+    {
+      "id": "stub-promotion-candidate::jillian-godsil",
+      "type": "stub-promotion-candidate",
+      "title": "Jillian Godsil — Crypto Moonboys Wiki",
+      "url": "/wiki/jillian-godsil.html",
+      "target_url": "/wiki/jillian-godsil.html",
+      "source": "js/growth-priority.json",
+      "confidence": 0.42,
+      "status": "pending",
+      "reasons": [
+        "action_type:expand_existing_page",
+        "underlinked_page",
+        "high_link_demand",
+        "strong_cluster_member",
+        "high_graph_centrality"
+      ]
+    },
+    {
+      "id": "stub-promotion-candidate::metaverse-battles",
+      "type": "stub-promotion-candidate",
+      "title": "Metaverse Battles — Crypto Moonboys Wiki",
+      "url": "/wiki/metaverse-battles.html",
+      "target_url": "/wiki/metaverse-battles.html",
+      "source": "js/growth-priority.json",
+      "confidence": 0.685,
+      "status": "pending",
+      "reasons": [
+        "action_type:reinforce_hub",
+        "expansion_plan_cluster_support",
+        "over_saturated_injection_target:29",
+        "under_covered_strong_adjacents:93",
+        "reinforcement_concentration_signal"
+      ]
+    },
+    {
+      "id": "stub-promotion-candidate::metropolis",
+      "type": "stub-promotion-candidate",
+      "title": "Metropolis — Crypto Moonboys Wiki",
+      "url": "/wiki/metropolis.html",
+      "target_url": "/wiki/metropolis.html",
+      "source": "js/growth-priority.json",
+      "confidence": 0.415,
+      "status": "pending",
+      "reasons": [
+        "action_type:expand_existing_page",
+        "underlinked_page",
+        "high_link_demand",
+        "strong_cluster_member",
+        "high_graph_centrality"
+      ]
+    },
+    {
+      "id": "stub-promotion-candidate::midevil-hero-arena",
+      "type": "stub-promotion-candidate",
+      "title": "MiDEViL Hero Arena — Crypto Moonboys Wiki",
+      "url": "/wiki/midevil-hero-arena.html",
+      "target_url": "/wiki/midevil-hero-arena.html",
+      "source": "js/growth-priority.json",
+      "confidence": 0.365,
+      "status": "pending",
+      "reasons": [
+        "action_type:expand_existing_page",
+        "underlinked_page",
+        "high_link_demand",
+        "strong_cluster_member",
+        "high_graph_centrality"
+      ]
+    },
+    {
+      "id": "stub-promotion-candidate::midevilpunks",
+      "type": "stub-promotion-candidate",
+      "title": "MiDEViL PUNKS — Crypto Moonboys Wiki",
+      "url": "/wiki/midevilpunks.html",
+      "target_url": "/wiki/midevilpunks.html",
+      "source": "js/growth-priority.json",
+      "confidence": 0.48,
+      "status": "pending",
+      "reasons": [
+        "action_type:expand_existing_page",
+        "underlinked_page",
+        "high_link_demand",
+        "strong_cluster_member",
+        "high_graph_centrality"
+      ]
+    },
+    {
+      "id": "stub-promotion-candidate::moon-mission",
+      "type": "stub-promotion-candidate",
+      "title": "Moon Mission — Crypto Moonboys Wiki",
+      "url": "/wiki/moon-mission.html",
+      "target_url": "/wiki/moon-mission.html",
+      "source": "js/growth-priority.json",
+      "confidence": 0.44,
+      "status": "pending",
+      "reasons": [
+        "action_type:expand_existing_page",
+        "underlinked_page",
+        "high_link_demand",
+        "strong_cluster_member",
+        "high_graph_centrality"
+      ]
+    },
+    {
+      "id": "stub-promotion-candidate::nbg",
+      "type": "stub-promotion-candidate",
+      "title": "NBG — Crypto Moonboys Wiki",
+      "url": "/wiki/nbg.html",
+      "target_url": "/wiki/nbg.html",
+      "source": "js/growth-priority.json",
+      "confidence": 0.375,
+      "status": "pending",
+      "reasons": [
+        "action_type:expand_existing_page",
+        "underlinked_page",
+        "high_link_demand",
+        "strong_cluster_member",
+        "high_graph_centrality"
+      ]
+    },
+    {
+      "id": "stub-promotion-candidate::nbg-token",
+      "type": "stub-promotion-candidate",
+      "title": "NBG Token — Crypto Moonboys Wiki",
+      "url": "/wiki/nbg-token.html",
+      "target_url": "/wiki/nbg-token.html",
+      "source": "js/growth-priority.json",
+      "confidence": 0.425,
+      "status": "pending",
+      "reasons": [
+        "action_type:expand_existing_page",
+        "underlinked_page",
+        "high_link_demand",
+        "strong_cluster_member",
+        "high_graph_centrality"
+      ]
+    },
+    {
+      "id": "stub-promotion-candidate::nbgx",
+      "type": "stub-promotion-candidate",
+      "title": "NBGX — Crypto Moonboys Wiki",
+      "url": "/wiki/nbgx.html",
+      "target_url": "/wiki/nbgx.html",
+      "source": "js/growth-priority.json",
+      "confidence": 0.37,
+      "status": "pending",
+      "reasons": [
+        "action_type:expand_existing_page",
+        "underlinked_page",
+        "high_link_demand",
+        "strong_cluster_member",
+        "high_graph_centrality"
+      ]
+    },
+    {
+      "id": "stub-promotion-candidate::null-the-prophet",
+      "type": "stub-promotion-candidate",
+      "title": "NULL THE PROPHET — Crypto Moonboys Wiki",
+      "url": "/wiki/null-the-prophet.html",
+      "target_url": "/wiki/null-the-prophet.html",
+      "source": "js/growth-priority.json",
+      "confidence": 0.36,
+      "status": "pending",
+      "reasons": [
+        "action_type:expand_existing_page",
+        "underlinked_page",
+        "high_link_demand",
+        "strong_cluster_member",
+        "high_graph_centrality"
+      ]
+    },
+    {
+      "id": "stub-promotion-candidate::pmsl",
+      "type": "stub-promotion-candidate",
+      "title": "PMSL — Crypto Moonboys Wiki",
+      "url": "/wiki/pmsl.html",
+      "target_url": "/wiki/pmsl.html",
+      "source": "js/growth-priority.json",
+      "confidence": 0.425,
+      "status": "pending",
+      "reasons": [
+        "action_type:expand_existing_page",
+        "underlinked_page",
+        "high_link_demand",
+        "strong_cluster_member",
+        "high_graph_centrality"
+      ]
+    },
+    {
+      "id": "stub-promotion-candidate::punk-token",
+      "type": "stub-promotion-candidate",
+      "title": "$PUNK Token — Crypto Moonboys Wiki",
+      "url": "/wiki/punk-token.html",
+      "target_url": "/wiki/punk-token.html",
+      "source": "js/growth-priority.json",
+      "confidence": 0.38,
+      "status": "pending",
+      "reasons": [
+        "action_type:expand_existing_page",
+        "underlinked_page",
+        "high_link_demand",
+        "strong_cluster_member",
+        "high_graph_centrality"
+      ]
+    },
+    {
+      "id": "stub-promotion-candidate::queen-sarah-pfly",
+      "type": "stub-promotion-candidate",
+      "title": "Queen Sarah P-Fly — Crypto Moonboys Wiki",
+      "url": "/wiki/queen-sarah-pfly.html",
+      "target_url": "/wiki/queen-sarah-pfly.html",
+      "source": "js/growth-priority.json",
+      "confidence": 0.37,
+      "status": "pending",
+      "reasons": [
+        "action_type:expand_existing_page",
+        "underlinked_page",
+        "high_link_demand",
+        "strong_cluster_member",
+        "high_graph_centrality"
+      ]
+    },
+    {
+      "id": "stub-promotion-candidate::rave-relics",
+      "type": "stub-promotion-candidate",
+      "title": "Rave Relics — Crypto Moonboys Wiki",
+      "url": "/wiki/rave-relics.html",
+      "target_url": "/wiki/rave-relics.html",
+      "source": "js/growth-priority.json",
+      "confidence": 0.48,
+      "status": "pending",
+      "reasons": [
+        "action_type:expand_existing_page",
+        "underlinked_page",
+        "high_link_demand",
+        "strong_cluster_member",
+        "high_graph_centrality"
+      ]
+    },
+    {
+      "id": "stub-promotion-candidate::sacred-chain",
+      "type": "stub-promotion-candidate",
+      "title": "The Sacred Chain — Crypto Moonboys Wiki",
+      "url": "/wiki/sacred-chain.html",
+      "target_url": "/wiki/sacred-chain.html",
+      "source": "js/growth-priority.json",
+      "confidence": 0.42,
+      "status": "pending",
+      "reasons": [
+        "action_type:expand_existing_page",
+        "underlinked_page",
+        "high_link_demand",
+        "strong_cluster_member",
+        "high_graph_centrality"
+      ]
+    },
+    {
+      "id": "stub-promotion-candidate::sneakar",
+      "type": "stub-promotion-candidate",
+      "title": "SNEAKAR — Crypto Moonboys Wiki",
+      "url": "/wiki/sneakar.html",
+      "target_url": "/wiki/sneakar.html",
+      "source": "js/growth-priority.json",
+      "confidence": 0.445,
+      "status": "pending",
+      "reasons": [
+        "action_type:expand_existing_page",
+        "underlinked_page",
+        "weak_content_depth",
+        "high_link_demand",
+        "strong_cluster_member",
+        "high_graph_centrality"
+      ]
+    },
+    {
+      "id": "stub-promotion-candidate::solana",
+      "type": "stub-promotion-candidate",
+      "title": "Solana (SOL) — Crypto Moonboys Wiki",
+      "url": "/wiki/solana.html",
+      "target_url": "/wiki/solana.html",
+      "source": "js/growth-priority.json",
+      "confidence": 0.44,
+      "status": "pending",
+      "reasons": [
+        "action_type:expand_existing_page",
+        "underlinked_page",
+        "high_link_demand",
+        "strong_cluster_member",
+        "high_graph_centrality"
+      ]
+    },
+    {
+      "id": "stub-promotion-candidate::staking",
+      "type": "stub-promotion-candidate",
+      "title": "Staking — Crypto Moonboys Wiki",
+      "url": "/wiki/staking.html",
+      "target_url": "/wiki/staking.html",
+      "source": "js/growth-priority.json",
+      "confidence": 0.355,
+      "status": "pending",
+      "reasons": [
+        "action_type:expand_existing_page",
+        "underlinked_page",
+        "high_link_demand",
+        "strong_cluster_member",
+        "high_graph_centrality"
+      ]
+    },
+    {
+      "id": "stub-promotion-candidate::trevor-fung",
+      "type": "stub-promotion-candidate",
+      "title": "Trevor Fung — Crypto Moonboys Wiki",
+      "url": "/wiki/trevor-fung.html",
+      "target_url": "/wiki/trevor-fung.html",
+      "source": "js/growth-priority.json",
+      "confidence": 0.42,
+      "status": "pending",
+      "reasons": [
+        "action_type:expand_existing_page",
+        "underlinked_page",
+        "high_link_demand",
+        "strong_cluster_member",
+        "high_graph_centrality"
+      ]
+    },
+    {
+      "id": "stub-promotion-candidate::xrp-kids",
+      "type": "stub-promotion-candidate",
+      "title": "XRP Kids — Crypto Moonboys Wiki",
+      "url": "/wiki/xrp-kids.html",
+      "target_url": "/wiki/xrp-kids.html",
+      "source": "js/growth-priority.json",
+      "confidence": 0.37,
+      "status": "pending",
+      "reasons": [
+        "action_type:expand_existing_page",
+        "underlinked_page",
+        "high_link_demand",
+        "strong_cluster_member",
+        "high_graph_centrality"
+      ]
+    }
+  ]
+}

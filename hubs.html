@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Hub page recommendations for the Crypto Moonboys GK Wiki — review suggested hub pages, cluster members, and scores.">
+  <meta name="robots" content="index, follow">
+  <meta property="og:title" content="🏛️ Hub Recommendations — The Crypto Moonboys GK Wiki">
+  <meta property="og:description" content="Review hub page recommendations based on cluster analysis, entity density, and link scores.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://crypto-moonboys.github.io/hubs.html">
+  <meta property="og:image" content="https://crypto-moonboys.github.io/img/CRYPTO-MOONBOYS-BITCOIN-LOGO.png">
+  <link rel="canonical" href="https://crypto-moonboys.github.io/hubs.html">
+  <title>🏛️ Hub Recommendations — The Crypto Moonboys GK Wiki</title>
+  <link rel="stylesheet" href="/css/wiki.css">
+  <link rel="icon" href="/img/favicon.svg" type="image/svg+xml">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    "name": "Hub Recommendations — The Crypto Moonboys GK Wiki",
+    "description": "Review hub page recommendations based on cluster analysis, entity density, and link scores.",
+    "url": "https://crypto-moonboys.github.io/hubs.html",
+    "isPartOf": {
+      "@type": "WebSite",
+      "name": "The Crypto Moonboys GK Wiki",
+      "url": "https://crypto-moonboys.github.io/"
+    }
+  }
+  </script>
+  <style>
+    .hubs-page {
+      padding: 24px;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+    .hubs-page > h1 {
+      font-size: 1.5rem;
+      color: var(--color-accent);
+      margin-bottom: 6px;
+    }
+    .hubs-intro {
+      color: var(--color-text-muted);
+      font-size: .92rem;
+      margin-bottom: 20px;
+    }
+    .breadcrumb {
+      font-size: .82rem;
+      color: var(--color-text-muted);
+      margin-bottom: 16px;
+    }
+    .breadcrumb a { color: var(--color-accent); text-decoration: none; }
+    .breadcrumb a:hover { text-decoration: underline; }
+    .breadcrumb span { margin: 0 4px; }
+
+    /* Summary stats */
+    .hubs-summary {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 28px;
+    }
+    .hubs-stat {
+      flex: 1 1 120px;
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius);
+      padding: 14px 18px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+    }
+    .hubs-stat-value {
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: var(--color-accent);
+      line-height: 1;
+    }
+    .hubs-stat-label {
+      font-size: .78rem;
+      color: var(--color-text-muted);
+      text-align: center;
+    }
+
+    /* Hub cards */
+    .hub-card {
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius);
+      padding: 20px 22px;
+      margin-bottom: 22px;
+      transition: border-color .15s;
+    }
+    .hub-card:hover { border-color: var(--color-accent); }
+
+    .hub-card-title {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--color-text);
+      margin: 0 0 4px 0;
+    }
+    .hub-card-title a {
+      color: var(--color-accent);
+      text-decoration: none;
+    }
+    .hub-card-title a:hover { text-decoration: underline; }
+
+    .hub-suggested {
+      font-size: .85rem;
+      color: var(--color-text-muted);
+      margin-bottom: 12px;
+    }
+    .hub-suggested a {
+      color: var(--color-accent);
+      text-decoration: none;
+    }
+    .hub-suggested a:hover { text-decoration: underline; }
+
+    .hub-metrics {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+    .hub-metric {
+      background: rgba(255,255,255,.05);
+      border-radius: 4px;
+      padding: .2em .6em;
+      font-size: .8rem;
+      color: var(--color-text-muted);
+    }
+    .hub-metric strong { color: var(--color-text); }
+
+    .hub-reasons {
+      margin: 0 0 14px 0;
+      padding-left: 18px;
+      font-size: .84rem;
+      color: var(--color-text-muted);
+    }
+    .hub-reasons li { margin-bottom: 2px; }
+
+    /* Cluster members table */
+    .cluster-heading {
+      font-size: .88rem;
+      font-weight: 600;
+      color: var(--color-text-muted);
+      text-transform: uppercase;
+      letter-spacing: .04em;
+      margin: 0 0 8px 0;
+    }
+    .cluster-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: .83rem;
+    }
+    .cluster-table th,
+    .cluster-table td {
+      text-align: left;
+      padding: 6px 10px;
+      border-bottom: 1px solid rgba(255,255,255,.06);
+    }
+    .cluster-table th {
+      font-weight: 600;
+      color: var(--color-text-muted);
+      font-size: .75rem;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+    }
+    .cluster-table td a {
+      color: var(--color-accent);
+      text-decoration: none;
+    }
+    .cluster-table td a:hover { text-decoration: underline; }
+    .cluster-table tr:last-child td { border-bottom: none; }
+    .cat-badge {
+      display: inline-block;
+      padding: .1em .4em;
+      border-radius: 3px;
+      font-size: .72rem;
+      background: rgba(255,255,255,.08);
+      color: var(--color-text-muted);
+    }
+
+    /* Empty / loading states */
+    #hubs-loading { text-align: center; padding: 2rem; color: var(--color-text-muted); }
+    #hubs-error   { color: #e05555; padding: 1rem; display: none; }
+    #hubs-empty   { color: var(--color-text-muted); padding: 1.5rem 0; display: none; }
+  </style>
+</head>
+<body>
+
+<a class="skip-link" href="#content">Skip to content</a>
+
+<header id="site-header" role="banner">
+  <button class="hamburger" id="hamburger" aria-label="Toggle navigation" aria-expanded="false" aria-controls="sidebar">☰</button>
+  <a href="/index.html" class="site-logo" aria-label="The Crypto Moonboys GK Wiki home">
+    <img src="/img/CRYPTO-MOONBOYS-BITCOIN-LOGO.png" alt="" aria-hidden="true">
+    <span>
+      <span class="logo-text">🌙 The Crypto Moonboys GK Wiki</span>
+      <span class="logo-sub">Blockchain Cryptoism Encyclopedia ⚡️⚡️⚡️</span>
+    </span>
+  </a>
+  <div id="header-search" role="search">
+    <input type="search" id="search-input" placeholder="Search the wiki…" aria-label="Search" autocomplete="off">
+    <button id="search-btn" aria-label="Search">🔍</button>
+    <div id="search-results" role="listbox"></div>
+  </div>
+  <nav class="header-nav" aria-label="Main navigation">
+    <a href="/index.html">Home</a>
+    <a href="/categories/index.html">Categories</a>
+    <a href="/search.html">All Articles</a>
+    <a href="/timeline.html">📅 Timeline</a>
+    <a href="/graph.html">🌐 Graph</a>
+    <a href="/dashboard.html">📊 Dashboard</a>
+    <a href="/sam.html">🧠 SAM</a>
+    <a href="/paths.html">📖 Paths</a>
+    <a href="/hubs.html" class="active" aria-current="page">🏛️ Hubs</a>
+  </nav>
+</header>
+
+<div id="sidebar-overlay" aria-hidden="true"></div>
+
+<div id="layout">
+  <nav id="sidebar" aria-label="Wiki navigation">
+    <div class="sidebar-section">
+      <div class="sidebar-heading">Navigation</div>
+      <div class="sidebar-nav">
+        <a href="/index.html"><span class="nav-icon">🏠</span> Main Page</a>
+        <a href="/categories/index.html"><span class="nav-icon">📂</span> All Categories</a>
+        <a href="/search.html"><span class="nav-icon">🔍</span> All Articles</a>
+        <a href="/timeline.html"><span class="nav-icon">📅</span> Timeline</a>
+        <a href="/graph.html"><span class="nav-icon">🌐</span> Entity Graph</a>
+        <a href="/dashboard.html"><span class="nav-icon">📊</span> Dashboard</a>
+        <a href="/paths.html"><span class="nav-icon">📖</span> Reading Paths</a>
+        <a href="/hubs.html" class="active" aria-current="page"><span class="nav-icon">🏛️</span> Hub Recommendations</a>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-heading">⚔️ HODL WARS LORE$ ⚡️⚡️⚡️</div>
+      <div class="sidebar-nav">
+        <a href="/wiki/hodl-wars.html"><span class="nav-icon">⚔️</span> HODL WAR$</a>
+        <a href="/wiki/hodl-warriors.html"><span class="nav-icon">💎</span> HODL WARRIORS</a>
+        <a href="/wiki/diamond-hands.html"><span class="nav-icon">💎</span> Diamond Hands</a>
+        <a href="/wiki/paper-hands.html"><span class="nav-icon">🧻</span> Paper Hands</a>
+        <a href="/wiki/whale-lords.html"><span class="nav-icon">🐳</span> The Whale Lords</a>
+        <a href="/wiki/moon-mission.html"><span class="nav-icon">🚀</span> Moon Mission</a>
+        <a href="/wiki/the-great-dip.html"><span class="nav-icon">📉</span> The Great Dip</a>
+        <a href="/wiki/bear-market-siege.html"><span class="nav-icon">🐻</span> Bear Market Siege</a>
+        <a href="/wiki/rug-pull-wars.html"><span class="nav-icon">🪤</span> Rug Pull Wars</a>
+        <a href="/wiki/satoshi-scroll.html"><span class="nav-icon">📜</span> The Satoshi Scroll</a>
+        <a href="/wiki/fomo-plague.html"><span class="nav-icon">😱</span> The FOMO Plague</a>
+        <a href="/wiki/ngmi-chronicles.html"><span class="nav-icon">💀</span> NGMI Chronicles</a>
+        <a href="/wiki/wagmi-prophecy.html"><span class="nav-icon">🌙</span> The WAGMI Prophecy</a>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-heading">GK Wiki Info</div>
+      <div class="sidebar-nav">
+        <a href="/about.html"><span class="nav-icon">ℹ️</span> About</a>
+        <a href="/about.html#citation"><span class="nav-icon">📋</span> Citation Policy</a>
+        <a href="/about.html#sources"><span class="nav-icon">🔗</span> Source Types</a>
+      </div>
+    </div>
+  </nav>
+
+  <div id="main-wrapper">
+    <main id="content" role="main">
+      <div class="hubs-page">
+
+        <nav class="breadcrumb" aria-label="Breadcrumb">
+          <a href="/index.html">Home</a>
+          <span aria-hidden="true">›</span>
+          <span>Hub Recommendations</span>
+        </nav>
+
+        <h1>🏛️ Hub Recommendations</h1>
+        <p class="hubs-intro">Algorithmically identified hub page candidates based on cluster size, entity density, and link structure. Review each recommendation to understand why a hub page is suggested and who would be in its cluster.</p>
+
+        <!-- Summary stats populated by JS -->
+        <div class="hubs-summary" id="hubs-summary" aria-label="Summary statistics"></div>
+
+        <div id="hubs-loading" aria-live="polite">⏳ Loading hub recommendations…</div>
+        <div id="hubs-error" role="alert"></div>
+        <div id="hubs-empty">No hub recommendations are currently available.</div>
+        <div id="hubs-list" aria-label="Hub recommendations"></div>
+
+      </div>
+    </main>
+
+    <footer id="site-footer" role="contentinfo">
+      <div class="footer-inner">
+        <div class="footer-col">
+          <h4>🌙 The Crypto Moonboys GK Wiki ⚡️⚡️⚡️</h4>
+          <p>Fan-driven crypto encyclopedia 💥💥💥🚀.</p>
+        </div>
+        <div class="footer-col">
+          <h4>Explore</h4>
+          <ul>
+            <li><a href="/index.html">Main Page</a></li>
+            <li><a href="/search.html">All Articles</a></li>
+            <li><a href="/timeline.html">Timeline</a></li>
+            <li><a href="/paths.html">Reading Paths</a></li>
+            <li><a href="/hubs.html">Hub Recommendations</a></li>
+            <li><a href="/about.html">About</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>Crypto Moonboys GK Wiki ⚡️⚡️⚡️ a GKiftyHEADS $LAP PRODUCTION$ · Not financial advice.</p>
+        <p><span class="no-login-note">🔒 No sign-up · No login · NO F#K$ G1V£N 🖕👀 Bot-maintained 🤖</span></p>
+      </div>
+    </footer>
+  </div>
+</div>
+
+<button id="back-to-top" aria-label="Back to top">↑</button>
+
+<script src="/js/api-config.js"></script>
+<script src="/js/wiki.js"></script>
+<script>
+(function () {
+  'use strict';
+
+  const loadingEl = document.getElementById('hubs-loading');
+  const errorEl   = document.getElementById('hubs-error');
+  const emptyEl   = document.getElementById('hubs-empty');
+  const listEl    = document.getElementById('hubs-list');
+  const summaryEl = document.getElementById('hubs-summary');
+
+  function esc(str) {
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  function pct(v) {
+    return (typeof v === 'number' ? Math.round(v * 100) : 0) + '%';
+  }
+
+  function renderSummary(data) {
+    const s = data.summary || {};
+    const stats = [
+      { value: s.top_recommendations ?? (data.recommendations || []).length, label: 'Candidates' },
+      { value: s.existing_hubs ?? '—', label: 'Existing Hubs' },
+      { value: s.min_cluster_size ?? '—', label: 'Min Cluster Size' },
+    ];
+    summaryEl.innerHTML = stats.map(st =>
+      `<div class="hubs-stat">
+        <div class="hubs-stat-value">${esc(st.value)}</div>
+        <div class="hubs-stat-label">${esc(st.label)}</div>
+      </div>`
+    ).join('');
+  }
+
+  function renderMembersTable(members) {
+    if (!members || !members.length) return '<p style="color:var(--color-text-muted);font-size:.82rem">No cluster members listed.</p>';
+    const rows = members.map(m =>
+      `<tr>
+        <td>${esc(m.title)}</td>
+        <td><a href="${esc(m.url)}">${esc(m.url)}</a></td>
+        <td>${esc(m.rank_score)}</td>
+        <td><span class="cat-badge">${esc(m.category || '—')}</span></td>
+      </tr>`
+    ).join('');
+    return `<table class="cluster-table" aria-label="Cluster members">
+      <thead>
+        <tr>
+          <th>Title</th>
+          <th>URL</th>
+          <th>Rank Score</th>
+          <th>Category</th>
+        </tr>
+      </thead>
+      <tbody>${rows}</tbody>
+    </table>`;
+  }
+
+  function renderHubs(recs) {
+    if (!recs.length) {
+      emptyEl.style.display = 'block';
+      listEl.innerHTML = '';
+      return;
+    }
+    emptyEl.style.display = 'none';
+
+    listEl.innerHTML = recs.map(rec => {
+      const reasonsHtml = Array.isArray(rec.reasons) && rec.reasons.length
+        ? `<ul class="hub-reasons">${rec.reasons.map(r => `<li>${esc(r)}</li>`).join('')}</ul>`
+        : '';
+
+      return `<article class="hub-card">
+        <h2 class="hub-card-title"><a href="${esc(rec.anchor_url)}">${esc(rec.anchor_title)}</a></h2>
+        <div class="hub-suggested">
+          Suggested hub: <a href="${esc(rec.suggested_hub_url)}">${esc(rec.suggested_hub_url)}</a>
+          ${rec.hub_already_exists ? '<span style="color:#4caf7d;margin-left:6px">✓ Hub exists</span>' : ''}
+        </div>
+        <div class="hub-metrics">
+          <span class="hub-metric">🏆 Hub score: <strong>${esc(rec.hub_score)}</strong></span>
+          <span class="hub-metric">👥 Cluster size: <strong>${esc(rec.cluster_size)}</strong></span>
+          <span class="hub-metric">⭐ Avg rank: <strong>${esc(rec.avg_rank_score)}</strong></span>
+          <span class="hub-metric">🔗 Link density: <strong>${esc(pct(rec.link_density))}</strong></span>
+          <span class="hub-metric">🧬 Entity density: <strong>${esc(pct(rec.entity_density))}</strong></span>
+        </div>
+        ${reasonsHtml}
+        <p class="cluster-heading">Cluster Members</p>
+        ${renderMembersTable(rec.members)}
+      </article>`;
+    }).join('');
+  }
+
+  fetch('/js/hub-recommendations.json')
+    .then(res => {
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      return res.json();
+    })
+    .then(data => {
+      loadingEl.style.display = 'none';
+      renderSummary(data);
+      const recs = (data.recommendations || []).slice(); // already sorted by hub_score DESC
+      renderHubs(recs);
+    })
+    .catch(err => {
+      loadingEl.style.display = 'none';
+      errorEl.style.display = 'block';
+      errorEl.textContent = '⚠️ Could not load hub recommendations. Please try again later. (' + err.message + ')';
+    });
+})();
+</script>
+
+</body>
+</html>
