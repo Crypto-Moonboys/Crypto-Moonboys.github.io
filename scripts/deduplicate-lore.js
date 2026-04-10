@@ -16,20 +16,13 @@ function normalize(text) {
 
 // Remove near-identical paragraphs
 function deduplicateParagraphs(html) {
-  const paragraphs = html.match(/<p[\s\S]*?<\/p>/gi) || [];
   const seen = new Set();
-  const uniqueParagraphs = [];
-
-  paragraphs.forEach(p => {
-    const key = normalize(p);
-    if (!seen.has(key)) {
-      seen.add(key);
-      uniqueParagraphs.push(p);
-    }
+  return html.replace(/<p[\s\S]*?<\/p>/gi, match => {
+    const key = normalize(match);
+    if (seen.has(key)) return '';
+    seen.add(key);
+    return match;
   });
-
-  let index = 0;
-  return html.replace(/<p[\s\S]*?<\/p>/gi, () => uniqueParagraphs[index++] || '');
 }
 
 function processFile(filePath) {
