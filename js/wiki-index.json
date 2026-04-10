@@ -17487,6 +17487,83 @@
     }
   },
   {
+    "title": "Graffiti Queens In Decentraland Ecosystem — Crypto Moonboys Wiki",
+    "desc": "Graffiti Queens In Decentraland Ecosystem — Crypto Moonboys Wiki",
+    "url": "/wiki/graffiti-queens-in-decentraland-ecosystem.html",
+    "tags": [
+      "graffiti",
+      "queens",
+      "decentraland",
+      "ecosystem",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "core",
+    "aliases": [],
+    "rank_score": 143,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 7,
+      "mention_count": 0,
+      "category": "core",
+      "category_priority": 10,
+      "has_description": true,
+      "article_word_count": 167,
+      "keyword_bag_size": 8,
+      "heading_count": 4,
+      "list_count": 3,
+      "internal_link_count": 6,
+      "paragraph_count": 6,
+      "section_count": 3,
+      "lore_paragraph_count": 0,
+      "content_quality_score": 30,
+      "authority_score": 10
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 50,
+      "word_count_points": 8,
+      "keyword_bag_points": 8,
+      "content_quality_points": 37,
+      "authority_points": 10,
+      "final_rank_score": 143,
+      "authority_graph_points": 0
+    },
+    "search_index": {
+      "normalized_title": "graffiti queens in decentraland ecosystem crypto moonboys wiki",
+      "tokens": [
+        "graffiti",
+        "queens",
+        "in",
+        "decentraland",
+        "ecosystem",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "graffiti",
+        "queens",
+        "in",
+        "decentraland",
+        "ecosystem",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 0,
+      "existing_outbound_count": 0,
+      "suggested_outbound_count": 0,
+      "authority": 0
+    }
+  },
+  {
     "title": "The Sacred Chain — Crypto Moonboys Wiki",
     "desc": "Spiritual blockchain realm",
     "url": "/wiki/the-sacred-chain.html",
@@ -17639,75 +17716,6 @@
       "existing_outbound_count": 7,
       "suggested_outbound_count": 15,
       "authority": 3.5
-    }
-  },
-  {
-    "title": "Graffiti Queens In Decentraland Ecosystem — Crypto Moonboys Wiki",
-    "desc": "Graffiti Queens In Decentraland Ecosystem — Crypto Moonboys Wiki",
-    "url": "/wiki/graffiti-queens-in-decentraland-ecosystem.html",
-    "tags": [],
-    "category": "core",
-    "aliases": [],
-    "rank_score": 136,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 0,
-      "tag_count": 0,
-      "mention_count": 0,
-      "category": "core",
-      "category_priority": 10,
-      "has_description": true,
-      "article_word_count": 167,
-      "keyword_bag_size": 8,
-      "heading_count": 4,
-      "list_count": 3,
-      "internal_link_count": 6,
-      "paragraph_count": 6,
-      "section_count": 3,
-      "lore_paragraph_count": 0,
-      "content_quality_score": 30,
-      "authority_score": 10
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 50,
-      "word_count_points": 8,
-      "keyword_bag_points": 8,
-      "content_quality_points": 30,
-      "authority_points": 10,
-      "final_rank_score": 136,
-      "authority_graph_points": 0
-    },
-    "search_index": {
-      "normalized_title": "graffiti queens in decentraland ecosystem crypto moonboys wiki",
-      "tokens": [
-        "graffiti",
-        "queens",
-        "in",
-        "decentraland",
-        "ecosystem",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "graffiti",
-        "queens",
-        "in",
-        "decentraland",
-        "ecosystem",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 0,
-      "outbound_count": 0,
-      "existing_outbound_count": 0,
-      "suggested_outbound_count": 0,
-      "authority": 0
     }
   },
   {
