@@ -1,0 +1,860 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SnakeRun 3008 | Crypto Moonboys</title>
+  <meta name="description" content="Play SnakeRun 3008 inside the Crypto Moonboys universe. Neon arcade action with keyboard, touch controls, local best score, difficulty modes, and lore-driven Moonboys UI." />
+  <meta name="theme-color" content="#060816" />
+  <style>
+    :root {
+      --bg: #050816;
+      --panel: rgba(10, 14, 33, 0.86);
+      --panel-2: rgba(16, 23, 51, 0.95);
+      --line: rgba(93, 130, 255, 0.28);
+      --text: #eef2ff;
+      --muted: #a6b0d0;
+      --cyan: #63f3ff;
+      --pink: #ff4fd8;
+      --gold: #ffd86b;
+      --green: #6aff9a;
+      --danger: #ff6c82;
+      --shadow: 0 20px 80px rgba(0,0,0,0.45);
+      --glow: 0 0 20px rgba(99,243,255,0.25), 0 0 38px rgba(255,79,216,0.12);
+    }
+
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      min-height: 100%;
+      background:
+        radial-gradient(circle at top, rgba(91, 139, 255, 0.16), transparent 32%),
+        radial-gradient(circle at 85% 20%, rgba(255, 79, 216, 0.14), transparent 25%),
+        linear-gradient(180deg, #07101f 0%, #04060f 100%);
+      color: var(--text);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+      background-size: 22px 22px;
+      mask-image: linear-gradient(180deg, rgba(255,255,255,0.55), transparent 90%);
+      opacity: 0.32;
+    }
+
+    a { color: inherit; text-decoration: none; }
+
+    .shell {
+      width: min(1420px, calc(100vw - 32px));
+      margin: 0 auto;
+      padding: 22px 0 48px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 20px;
+      padding: 16px 18px;
+      border: 1px solid var(--line);
+      background: rgba(4, 8, 18, 0.62);
+      border-radius: 24px;
+      backdrop-filter: blur(12px);
+      box-shadow: var(--shadow);
+    }
+
+    .brand {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .eyebrow {
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--cyan);
+    }
+
+    .title {
+      font-size: clamp(1.4rem, 2vw, 2rem);
+      font-weight: 900;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .nav {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+
+    .nav a,
+    .button,
+    button,
+    select {
+      border: 1px solid rgba(255,255,255,0.12);
+      background: linear-gradient(180deg, rgba(30,40,78,0.95), rgba(11,16,34,0.98));
+      color: var(--text);
+      border-radius: 14px;
+      padding: 11px 14px;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      box-shadow: var(--glow);
+    }
+
+    .nav a:hover,
+    .button:hover,
+    button:hover,
+    select:hover {
+      transform: translateY(-1px);
+      border-color: rgba(99,243,255,0.45);
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: 1.15fr 0.85fr;
+      gap: 22px;
+      margin-bottom: 22px;
+    }
+
+    .panel {
+      border: 1px solid var(--line);
+      background: linear-gradient(180deg, rgba(12,18,39,0.92), rgba(7,10,24,0.94));
+      border-radius: 28px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      position: relative;
+    }
+
+    .panel::after {
+      content: "";
+      position: absolute;
+      inset: auto -20% -45% auto;
+      width: 260px;
+      height: 260px;
+      background: radial-gradient(circle, rgba(99,243,255,0.14), transparent 65%);
+      pointer-events: none;
+    }
+
+    .hero-copy {
+      padding: 28px;
+    }
+
+    .hero-copy h1 {
+      margin: 0 0 10px;
+      font-size: clamp(2.3rem, 4.7vw, 4rem);
+      line-height: 0.94;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+
+    .gradient {
+      background: linear-gradient(90deg, var(--cyan), var(--pink), var(--gold));
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+
+    .hero-copy p {
+      margin: 0 0 18px;
+      color: var(--muted);
+      max-width: 65ch;
+      line-height: 1.6;
+      font-size: 1rem;
+    }
+
+    .chip-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    .chip {
+      padding: 10px 12px;
+      border: 1px solid rgba(99,243,255,0.24);
+      border-radius: 999px;
+      font-size: 0.84rem;
+      color: var(--text);
+      background: rgba(8, 16, 35, 0.88);
+    }
+
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .primary {
+      background: linear-gradient(90deg, rgba(99,243,255,0.2), rgba(255,79,216,0.18));
+      border-color: rgba(99,243,255,0.5);
+    }
+
+    .side-stack {
+      display: grid;
+      gap: 18px;
+      padding: 20px;
+    }
+
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+
+    .stat-card {
+      padding: 16px;
+      border-radius: 20px;
+      background: linear-gradient(180deg, rgba(16,24,53,0.95), rgba(8,12,29,0.96));
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .stat-card .label {
+      color: var(--muted);
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      margin-bottom: 8px;
+    }
+
+    .stat-card .value {
+      font-size: clamp(1.5rem, 3vw, 2.25rem);
+      font-weight: 900;
+    }
+
+    .subnote {
+      color: var(--muted);
+      font-size: 0.9rem;
+      line-height: 1.5;
+    }
+
+    .arena {
+      display: grid;
+      grid-template-columns: minmax(0, 1.1fr) minmax(320px, 0.9fr);
+      gap: 22px;
+      align-items: start;
+    }
+
+    .game-panel {
+      padding: 22px;
+    }
+
+    .hud {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .hud .tile {
+      padding: 14px;
+      border-radius: 18px;
+      background: linear-gradient(180deg, rgba(18,26,57,0.95), rgba(10,14,30,0.98));
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .hud .tile span {
+      display: block;
+      font-size: 0.78rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      margin-bottom: 7px;
+    }
+
+    .hud strong {
+      font-size: 1.4rem;
+    }
+
+    .canvas-frame {
+      position: relative;
+      border-radius: 28px;
+      overflow: hidden;
+      border: 1px solid rgba(99,243,255,0.24);
+      background: #02050d;
+      box-shadow: var(--shadow);
+    }
+
+    canvas {
+      display: block;
+      width: 100%;
+      max-width: 100%;
+      aspect-ratio: 1 / 1;
+      background:
+        radial-gradient(circle at center, rgba(38,73,158,0.25), rgba(2,5,13,0.96) 58%),
+        linear-gradient(180deg, #081021, #03050d);
+      image-rendering: pixelated;
+    }
+
+    .overlay {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      background: linear-gradient(180deg, rgba(4,6,16,0.18), rgba(4,6,16,0.82));
+      transition: opacity 180ms ease;
+      pointer-events: none;
+    }
+
+    .overlay.hidden {
+      opacity: 0;
+      visibility: hidden;
+    }
+
+    .overlay-card {
+      width: min(100%, 460px);
+      padding: 24px;
+      text-align: center;
+      border-radius: 24px;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(8,12,28,0.92);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(12px);
+    }
+
+    .overlay-card h2 {
+      margin: 0 0 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .overlay-card p {
+      margin: 0 0 16px;
+      line-height: 1.55;
+      color: var(--muted);
+    }
+
+    .control-row,
+    .option-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .stack {
+      display: grid;
+      gap: 18px;
+    }
+
+    .info-panel {
+      padding: 22px;
+    }
+
+    .section-title {
+      margin: 0 0 14px;
+      font-size: 1rem;
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      color: var(--cyan);
+    }
+
+    .mission {
+      padding: 18px;
+      border-radius: 20px;
+      background: linear-gradient(180deg, rgba(16,24,53,0.9), rgba(8,12,28,0.95));
+      border: 1px solid rgba(255,255,255,0.1);
+      color: var(--muted);
+      line-height: 1.55;
+    }
+
+    .legend {
+      display: grid;
+      gap: 10px;
+    }
+
+    .legend-item {
+      display: grid;
+      grid-template-columns: 16px 1fr;
+      gap: 12px;
+      align-items: start;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    .dot {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      margin-top: 4px;
+      box-shadow: 0 0 18px currentColor;
+    }
+
+    .controls-pad {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(64px, 1fr));
+      gap: 10px;
+      margin-top: 8px;
+    }
+
+    .controls-pad button {
+      min-height: 60px;
+      font-size: 1.15rem;
+      font-weight: 900;
+      touch-action: manipulation;
+    }
+
+    .controls-pad .blank {
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    .footer-note {
+      margin-top: 18px;
+      color: var(--muted);
+      font-size: 0.92rem;
+      line-height: 1.55;
+    }
+
+    @media (max-width: 1100px) {
+      .hero,
+      .arena {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 720px) {
+      .shell { width: min(100vw - 18px, 100%); }
+      .topbar,
+      .hero-copy,
+      .game-panel,
+      .info-panel,
+      .side-stack { padding: 16px; }
+      .hud,
+      .stat-grid { grid-template-columns: repeat(2, 1fr); }
+      .title { font-size: 1.1rem; }
+      .hero-copy h1 { font-size: 2.2rem; }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <header class="topbar">
+      <div class="brand">
+        <div class="eyebrow">Crypto Moonboys // Arcade Division</div>
+        <div class="title">SnakeRun 3008</div>
+      </div>
+      <nav class="nav" aria-label="Primary navigation">
+        <a href="/index.html">Home</a>
+        <a href="/search.html">All Articles</a>
+        <a href="/categories/gaming.html">Gaming</a>
+        <a href="/graph.html">Graph</a>
+      </nav>
+    </header>
+
+    <section class="hero">
+      <article class="panel hero-copy">
+        <div class="eyebrow">Built for the Moonboys site</div>
+        <h1><span class="gradient">Run the Grid.</span><br />Own the lane.</h1>
+        <p>
+          SnakeRun 3008 is a rebuilt, site-native version of the SnakeRun concept from your attached repo, reworked to feel like a proper Moonboys arcade drop instead of a loose standalone page. It keeps the fast pick-up-and-play loop, then adds a bigger neon HUD, cleaner touch controls, difficulty modes, pause flow, tighter local best tracking, and a more premium lore-driven UI shell.
+        </p>
+        <div class="chip-row">
+          <div class="chip">Responsive canvas</div>
+          <div class="chip">Keyboard + touch</div>
+          <div class="chip">Local best save</div>
+          <div class="chip">Difficulty modes</div>
+          <div class="chip">Moonboys-styled interface</div>
+        </div>
+        <div class="hero-actions">
+          <a class="button primary" href="#play">Play now</a>
+          <a class="button" href="/categories/gaming.html">More gaming lore</a>
+        </div>
+      </article>
+
+      <aside class="panel side-stack">
+        <div class="stat-grid">
+          <div class="stat-card">
+            <div class="label">Mode</div>
+            <div class="value" id="heroMode">Normal</div>
+          </div>
+          <div class="stat-card">
+            <div class="label">Best Run</div>
+            <div class="value" id="heroBest">0</div>
+          </div>
+          <div class="stat-card">
+            <div class="label">Session Status</div>
+            <div class="value" id="heroStatus">Idle</div>
+          </div>
+          <div class="stat-card">
+            <div class="label">Grid</div>
+            <div class="value">24x24</div>
+          </div>
+        </div>
+        <div class="subnote">
+          Objective: stay alive, hoover up signal orbs, and keep your run clean. Each pickup grows the chain, raises the pressure, and pushes the speed. Smash your local best and keep the lane under rebel control.
+        </div>
+      </aside>
+    </section>
+
+    <section class="arena" id="play">
+      <article class="panel game-panel">
+        <div class="hud">
+          <div class="tile"><span>Score</span><strong id="score">0</strong></div>
+          <div class="tile"><span>Best</span><strong id="best">0</strong></div>
+          <div class="tile"><span>Speed</span><strong id="speed">1.00x</strong></div>
+          <div class="tile"><span>Length</span><strong id="length">3</strong></div>
+        </div>
+
+        <div class="option-row" style="margin-bottom: 14px;">
+          <button id="startBtn" class="primary" type="button">Start Run</button>
+          <button id="pauseBtn" type="button">Pause</button>
+          <button id="restartBtn" type="button">Restart</button>
+          <select id="difficulty" aria-label="Difficulty select">
+            <option value="easy">Easy</option>
+            <option value="normal" selected>Normal</option>
+            <option value="hard">Hard</option>
+            <option value="insane">Insane</option>
+          </select>
+        </div>
+
+        <div class="canvas-frame">
+          <canvas id="game" width="720" height="720" aria-label="SnakeRun 3008 game canvas"></canvas>
+          <div class="overlay" id="overlay">
+            <div class="overlay-card">
+              <h2 id="overlayTitle">SnakeRun 3008</h2>
+              <p id="overlayText">Launch the run. Use arrow keys, WASD, or the touch pad. Stay off the walls, dodge your own trail, and keep farming signal orbs.</p>
+              <div class="control-row" style="justify-content:center;">
+                <button id="overlayStart" class="primary" type="button">Start</button>
+                <button id="overlayRestart" type="button">Reset</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <p class="footer-note">
+          Controls: Arrow keys / WASD on desktop. Touch pad below on mobile. Space toggles pause. Difficulty changes apply on restart for a clean run state.
+        </p>
+      </article>
+
+      <aside class="stack">
+        <section class="panel info-panel">
+          <h2 class="section-title">Mission Feed</h2>
+          <div class="mission" id="missionText">
+            Rebel signal is live. Harvest the cyan orbs, expand the chain, and hold your nerve when the pace starts climbing. Harder modes ramp faster and punish bad turns quicker.
+          </div>
+        </section>
+
+        <section class="panel info-panel">
+          <h2 class="section-title">Run Intel</h2>
+          <div class="legend">
+            <div class="legend-item"><div class="dot" style="color: var(--cyan); background: currentColor;"></div><div><strong>Signal orb:</strong> adds score, grows the chain, and boosts pace.</div></div>
+            <div class="legend-item"><div class="dot" style="color: var(--pink); background: currentColor;"></div><div><strong>Head trail:</strong> current lead position. One bad turn and the run is done.</div></div>
+            <div class="legend-item"><div class="dot" style="color: var(--green); background: currentColor;"></div><div><strong>Body segments:</strong> your wake. Do not cross it unless you want a hard reset.</div></div>
+          </div>
+        </section>
+
+        <section class="panel info-panel">
+          <h2 class="section-title">Mobile Controls</h2>
+          <div class="controls-pad">
+            <button class="blank" type="button" aria-hidden="true"></button>
+            <button data-dir="up" type="button">▲</button>
+            <button class="blank" type="button" aria-hidden="true"></button>
+            <button data-dir="left" type="button">◀</button>
+            <button data-dir="down" type="button">▼</button>
+            <button data-dir="right" type="button">▶</button>
+          </div>
+        </section>
+      </aside>
+    </section>
+  </div>
+
+  <script>
+    (() => {
+      const GRID = 24;
+      const canvas = document.getElementById('game');
+      const ctx = canvas.getContext('2d');
+      const overlay = document.getElementById('overlay');
+      const overlayTitle = document.getElementById('overlayTitle');
+      const overlayText = document.getElementById('overlayText');
+      const scoreEl = document.getElementById('score');
+      const bestEl = document.getElementById('best');
+      const speedEl = document.getElementById('speed');
+      const lengthEl = document.getElementById('length');
+      const heroBest = document.getElementById('heroBest');
+      const heroStatus = document.getElementById('heroStatus');
+      const heroMode = document.getElementById('heroMode');
+      const missionText = document.getElementById('missionText');
+      const difficultyEl = document.getElementById('difficulty');
+
+      const STORAGE_KEY = 'moonboys_snakerun_best';
+      const DIFFICULTY = {
+        easy:   { label: 'Easy',   base: 178, step: 2.0 },
+        normal: { label: 'Normal', base: 145, step: 2.7 },
+        hard:   { label: 'Hard',   base: 118, step: 3.7 },
+        insane: { label: 'Insane', base: 96,  step: 4.9 },
+      };
+
+      let snake = [];
+      let dir = { x: 1, y: 0 };
+      let nextDir = { x: 1, y: 0 };
+      let food = { x: 10, y: 10 };
+      let running = false;
+      let paused = false;
+      let score = 0;
+      let tickMs = DIFFICULTY.normal.base;
+      let lastTick = 0;
+      let currentMode = 'normal';
+      let best = Number(localStorage.getItem(STORAGE_KEY) || 0);
+
+      function randomCell() {
+        return {
+          x: Math.floor(Math.random() * GRID),
+          y: Math.floor(Math.random() * GRID),
+        };
+      }
+
+      function syncStats() {
+        scoreEl.textContent = score;
+        bestEl.textContent = best;
+        heroBest.textContent = best;
+        lengthEl.textContent = snake.length;
+        speedEl.textContent = (DIFFICULTY[currentMode].base / tickMs).toFixed(2) + 'x';
+        heroMode.textContent = DIFFICULTY[currentMode].label;
+        heroStatus.textContent = !running ? 'Idle' : paused ? 'Paused' : 'Live';
+      }
+
+      function placeFood() {
+        do {
+          food = randomCell();
+        } while (snake.some(part => part.x === food.x && part.y === food.y));
+      }
+
+      function resetGame() {
+        currentMode = difficultyEl.value;
+        const mid = Math.floor(GRID / 2);
+        snake = [
+          { x: mid, y: mid },
+          { x: mid - 1, y: mid },
+          { x: mid - 2, y: mid },
+        ];
+        dir = { x: 1, y: 0 };
+        nextDir = { x: 1, y: 0 };
+        score = 0;
+        tickMs = DIFFICULTY[currentMode].base;
+        running = false;
+        paused = false;
+        lastTick = 0;
+        placeFood();
+        missionText.textContent = 'Run reset. Lane is clean. Launch when ready and stack the highest score you can.';
+        overlayTitle.textContent = 'SnakeRun 3008';
+        overlayText.textContent = 'Launch the run. Use arrow keys, WASD, or the touch pad. Stay off the walls, dodge your own trail, and keep farming signal orbs.';
+        overlay.classList.remove('hidden');
+        syncStats();
+        draw();
+      }
+
+      function startGame() {
+        if (!running) {
+          currentMode = difficultyEl.value;
+          if (snake.length === 0) resetGame();
+          running = true;
+          paused = false;
+          overlay.classList.add('hidden');
+          missionText.textContent = 'Signal live. Every orb increases the heat. Keep the route clean and do not panic-turn into your own trail.';
+          syncStats();
+          requestAnimationFrame(loop);
+          return;
+        }
+
+        if (paused) {
+          paused = false;
+          overlay.classList.add('hidden');
+          missionText.textContent = 'Back in motion. Tight turns only. The lane gets uglier from here.';
+          syncStats();
+          requestAnimationFrame(loop);
+        }
+      }
+
+      function togglePause() {
+        if (!running) return;
+        paused = !paused;
+        if (paused) {
+          overlayTitle.textContent = 'Run Paused';
+          overlayText.textContent = 'Take a breath, then jump back in. Space also resumes the run.';
+          overlay.classList.remove('hidden');
+          missionText.textContent = 'Run paused. Current chain preserved.';
+        } else {
+          overlay.classList.add('hidden');
+          missionText.textContent = 'Run resumed. Watch the trail and keep your turns early.';
+          requestAnimationFrame(loop);
+        }
+        syncStats();
+      }
+
+      function setDirection(x, y) {
+        if (!running && !paused) return;
+        if (x === -dir.x && y === -dir.y) return;
+        nextDir = { x, y };
+      }
+
+      function gameOver() {
+        running = false;
+        paused = false;
+        if (score > best) {
+          best = score;
+          localStorage.setItem(STORAGE_KEY, String(best));
+        }
+        overlayTitle.textContent = score >= best ? 'New Best Locked' : 'Run Crashed';
+        overlayText.textContent = 'Final score: ' + score + '. Reset and go again. Higher difficulty means faster escalation and less room for sloppy movement.';
+        overlay.classList.remove('hidden');
+        missionText.textContent = 'Run ended. Review the turn that killed you, then go beat the number.';
+        syncStats();
+        draw();
+      }
+
+      function step() {
+        dir = nextDir;
+        const head = { x: snake[0].x + dir.x, y: snake[0].y + dir.y };
+
+        if (head.x < 0 || head.y < 0 || head.x >= GRID || head.y >= GRID) {
+          gameOver();
+          return;
+        }
+
+        if (snake.some(part => part.x === head.x && part.y === head.y)) {
+          gameOver();
+          return;
+        }
+
+        snake.unshift(head);
+
+        if (head.x === food.x && head.y === food.y) {
+          score += 10;
+          tickMs = Math.max(54, tickMs - DIFFICULTY[currentMode].step);
+          placeFood();
+          missionText.textContent = 'Orb captured. Pace increased. Score climbing. Keep the line disciplined.';
+        } else {
+          snake.pop();
+        }
+
+        syncStats();
+      }
+
+      function drawGrid() {
+        const size = canvas.width / GRID;
+        ctx.strokeStyle = 'rgba(255,255,255,0.06)';
+        ctx.lineWidth = 1;
+        for (let i = 0; i <= GRID; i += 1) {
+          const pos = Math.round(i * size) + 0.5;
+          ctx.beginPath();
+          ctx.moveTo(pos, 0);
+          ctx.lineTo(pos, canvas.height);
+          ctx.stroke();
+          ctx.beginPath();
+          ctx.moveTo(0, pos);
+          ctx.lineTo(canvas.width, pos);
+          ctx.stroke();
+        }
+      }
+
+      function roundedRect(x, y, w, h, r) {
+        ctx.beginPath();
+        ctx.moveTo(x + r, y);
+        ctx.arcTo(x + w, y, x + w, y + h, r);
+        ctx.arcTo(x + w, y + h, x, y + h, r);
+        ctx.arcTo(x, y + h, x, y, r);
+        ctx.arcTo(x, y, x + w, y, r);
+        ctx.closePath();
+      }
+
+      function draw() {
+        const size = canvas.width / GRID;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        const bg = ctx.createLinearGradient(0, 0, 0, canvas.height);
+        bg.addColorStop(0, '#081224');
+        bg.addColorStop(1, '#03050d');
+        ctx.fillStyle = bg;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        drawGrid();
+
+        ctx.save();
+        ctx.shadowBlur = 18;
+        ctx.shadowColor = 'rgba(99,243,255,0.45)';
+        ctx.fillStyle = '#63f3ff';
+        const fx = food.x * size + size * 0.18;
+        const fy = food.y * size + size * 0.18;
+        roundedRect(fx, fy, size * 0.64, size * 0.64, 8);
+        ctx.fill();
+        ctx.restore();
+
+        snake.forEach((part, index) => {
+          const x = part.x * size + 3;
+          const y = part.y * size + 3;
+          const w = size - 6;
+          const h = size - 6;
+          ctx.save();
+          ctx.shadowBlur = index === 0 ? 22 : 12;
+          ctx.shadowColor = index === 0 ? 'rgba(255,79,216,0.55)' : 'rgba(106,255,154,0.33)';
+          ctx.fillStyle = index === 0 ? '#ff4fd8' : '#6aff9a';
+          roundedRect(x, y, w, h, Math.max(6, size * 0.18));
+          ctx.fill();
+          ctx.restore();
+        });
+      }
+
+      function loop(ts) {
+        if (!running || paused) return;
+        if (!lastTick) lastTick = ts;
+        if (ts - lastTick >= tickMs) {
+          step();
+          lastTick = ts;
+        }
+        draw();
+        if (running && !paused) requestAnimationFrame(loop);
+      }
+
+      document.getElementById('startBtn').addEventListener('click', startGame);
+      document.getElementById('pauseBtn').addEventListener('click', togglePause);
+      document.getElementById('restartBtn').addEventListener('click', resetGame);
+      document.getElementById('overlayStart').addEventListener('click', startGame);
+      document.getElementById('overlayRestart').addEventListener('click', resetGame);
+      difficultyEl.addEventListener('change', () => {
+        heroMode.textContent = DIFFICULTY[difficultyEl.value].label;
+        missionText.textContent = 'Difficulty set to ' + DIFFICULTY[difficultyEl.value].label + '. Restart the run to apply the new pace curve cleanly.';
+      });
+
+      document.addEventListener('keydown', (event) => {
+        const key = event.key.toLowerCase();
+        if (key === 'arrowup' || key === 'w') setDirection(0, -1);
+        else if (key === 'arrowdown' || key === 's') setDirection(0, 1);
+        else if (key === 'arrowleft' || key === 'a') setDirection(-1, 0);
+        else if (key === 'arrowright' || key === 'd') setDirection(1, 0);
+        else if (key === ' ') {
+          event.preventDefault();
+          if (!running) startGame();
+          else togglePause();
+        }
+      });
+
+      document.querySelectorAll('[data-dir]').forEach(button => {
+        button.addEventListener('click', () => {
+          const dirName = button.getAttribute('data-dir');
+          if (dirName === 'up') setDirection(0, -1);
+          if (dirName === 'down') setDirection(0, 1);
+          if (dirName === 'left') setDirection(-1, 0);
+          if (dirName === 'right') setDirection(1, 0);
+        });
+      });
+
+      resetGame();
+    })();
+  </script>
+</body>
+</html>
