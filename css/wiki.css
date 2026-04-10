@@ -18,7 +18,7 @@
   --color-green:       #3fb950;
   --color-sidebar-w:   260px;
   --color-header-h:    56px;
-  --font-sans:         'Segoe UI', system-ui, -apple-system, sans-serif;
+  --font-sans:         'Segoe UI', system-ui, -apple-system, 'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji', sans-serif;
   --font-mono:         'Cascadia Code', 'Fira Code', monospace;
   --radius:            6px;
   --shadow:            0 2px 8px rgba(0,0,0,.45);
