@@ -1,406 +1,242 @@
-# Crypto Moonboys Wiki 🌙
+# 🌙 Crypto Moonboys Wiki
 
 [![GitHub Pages](https://img.shields.io/badge/GitHub%20Pages-Live-brightgreen)](https://crypto-moonboys.github.io)
+![Version](https://img.shields.io/badge/version-v2.0.0-blue)
+![Status](https://img.shields.io/badge/status-stable-brightgreen)
+![Architecture](https://img.shields.io/badge/architecture-multi--repo-purple)
+![License](https://img.shields.io/badge/license-MIT-lightgrey)
 
-It is a fan-driven crypto encyclopedia served via GitHub Pages.
+The **Crypto Moonboys Wiki** is a deterministic, self-evolving lore and knowledge ecosystem powered by AI-driven editorial intelligence. It operates as a **multi-repository system**, separating content, intelligence, and publishing to ensure stability, scalability, and long-term maintainability.
 
-All wiki content is **published automatically** from the Brain repo ([`HODLKONG64/HAY-MUM-IM-BUILDING-AGENTS-OF-CHANGE`](https://github.com/HODLKONG64/HAY-MUM-IM-BUILDING-AGENTS-OF-CHANGE)). No manual content authoring happens in this repo.
-
----
-
-## 🏗️ Architecture — 2-Repo System
-
-| Repo | Role |
-|------|------|
-| **Brain / Content** — [`HODLKONG64/HAY-MUM-IM-BUILDING-AGENTS-OF-CHANGE`](https://github.com/HODLKONG64/HAY-MUM-IM-BUILDING-AGENTS-OF-CHANGE) | Hosts the SAM AI agent, all intelligence logic, scoring, memory, and publishing scripts. 
-
-# 🌙 Crypto Moonboys Wiki — System README (LOCKED BUILD)
-
-## 🚨 READ THIS FIRST (NON-NEGOTIABLE RULES)
-
-This repository is now in a **stable, production-safe state**.
-
-### ❌ DO NOT EVER:
-
-* Delete `wiki/*.html` files in bulk
-* Rebuild pages from JSON or SAM memory
-* Replace real article bodies with summaries
-* Reintroduce `../` relative paths
-* Use relative internal links like `bitcoin.html`
-* Modify working HTML structure “for cleanup”
-* Change publisher behavior without explicit instruction
-
-### ✅ ALWAYS:
-
-* Preserve existing article content
-* Use **root-relative paths** (`/css/`, `/js/`, `/wiki/...`)
-* Use **canonical internal links** (`/wiki/{slug}.html`)
-* Treat SAM memory as **metadata only**
-* Validate all changes against CI before merge
-
-👉 This system is **LOCKED**. Changes must be additive, not destructive.
+🌐 **Live Site:** https://crypto-moonboys.github.io
 
 ---
 
-# 🧠 SYSTEM OVERVIEW
+## 🏗️ Multi-Repository Architecture
 
-This is a **static wiki + AI-assisted publishing system**.
+The platform is built on a **two-repo system**, ensuring a clear separation of responsibilities.
 
-It separates **content** from **metadata**, which is the core principle that must never be broken.
+| Repository | Role | Description |
+|-----------|------|-------------|
+| **Frontend / Publisher** | 🌐 Public Wiki | [`Crypto-Moonboys.github.io`](https://github.com/Crypto-Moonboys/Crypto-Moonboys.github.io) — Hosts all static HTML content, UI, and generated JSON intelligence layers served via GitHub Pages. |
+| **Brain / Intelligence Engine** | 🧠 AI Orchestrator | [`HODLKONG64/HAY-MUM-IM-BUILDING-AGENTS-OF-CHANGE`](https://github.com/HODLKONG64/HAY-MUM-IM-BUILDING-AGENTS-OF-CHANGE) — Hosts the SAM AI agent, memory, scoring logic, and autonomous editorial operations. |
 
-## Architecture
+### 🧠 SAM Memory
+- Canonical shared memory stored in **Cloudflare R2**: `sam-memory.json`
+- Used for intelligence, entity relationships, and publishing decisions.
+- **Never used to regenerate or overwrite existing HTML content.**
 
-### 1. Content Layer (SOURCE OF TRUTH)
+---
 
-```
+## 🚨 Non-Negotiable System Rules
+
+### ❌ DO NOT EVER
+- Delete or overwrite existing `wiki/*.html` article bodies.
+- Regenerate full HTML pages from JSON or SAM memory.
+- Reintroduce `../` relative paths.
+- Modify canonical navigation or layout structures.
+- Promote redirect alias pages (e.g., `the-hodl-warriors.html`).
+- Alter CI or publisher behavior without explicit instruction.
+
+### ✅ ALWAYS
+- Preserve existing article content (source of truth).
+- Use **root-relative paths** (`/css/`, `/js/`, `/img/`, `/wiki/...`).
+- Maintain **canonical internal links** (`/wiki/{slug}.html`).
+- Treat JSON and SAM memory as **metadata only**.
+- Validate all changes through CI before merging.
+
+---
+
+## 🧠 System Overview
+
+### 1. Content Layer (Source of Truth)
 /wiki/*.html
-/about/*.html
-```
+/about.html
+/index.html
 
-* Full article bodies live here
-* These files are canonical
-* Never auto-generated or overwritten
+- Contains full article bodies.
+- Never auto-generated or overwritten.
+- Canonical source for all knowledge.
 
----
+### 2. Metadata & Intelligence Layer
 
-### 2. Metadata Layer (SAM / JSON)
+/js/.json
+/api/.json
 
 Used for:
+- Ranking and authority scoring
+- Knowledge graph relationships
+- Editorial intelligence
+- Predictive growth and governance
 
-* ranking
-* categories
-* tags
-* aliases
-* mention counts
-* indexing
+Not used for:
+- Full page generation.
 
-**NOT used for:**
+### 3. Build & Index Layer
+Key scripts:
 
-* full page generation
-
----
-
-### 3. Build / Index Layer
-
-Scripts:
-
-```
 scripts/generate-wiki-index.js
 scripts/generate-entity-map.js
 scripts/generate-sitemap.js
 scripts/generate-site-stats.js
 scripts/validate-generated-assets.js
-```
+scripts/smoke-test.js
 
-These:
+These scripts **extract signals from HTML** and build deterministic JSON assets.
 
-* read HTML content
-* extract signals
-* build JSON indexes
+### 4. Autonomous Editorial Engine
 
-👉 They DO NOT create content
+.github/workflows/autonomous-editorial.yml
 
----
-
-### 4. Publisher (CONTROLLED GENERATOR)
-
-```
-sam-wiki-publisher.py
-```
-
-Now behaves as:
-
-* stub generator (only if page missing)
-* metadata enhancer
-* path normalizer
-
-👉 It must NEVER:
-
-* delete pages
-* overwrite real content
+Runs daily to:
+- Apply stub promotions
+- Expand and reinforce content hubs
+- Generate intelligence layers
+- Publish API-ready outputs
+- Commit deterministic updates
 
 ---
 
-### 5. CI Enforcement
+## 📊 Phase Breakdown — System Evolution
 
-```
-.github/workflows/wiki-index-sync.yml
-```
+### 🔹 Phase 1 — Knowledge Graph & Visualization
+- Interactive **Graph** (`/graph.html`)
+- **Dashboard** (`/dashboard.html`) with cluster health and authority insights
+- Graph data derived from `entity-graph.json`
 
-Validates:
+### 🔹 Phase 2 — Deterministic Ranking & Entity Mapping
+- Canonical ranking signals embedded in `wiki-index.json`
+- Entity relationships formalized in `entity-map.json`
 
-* no `../` paths
-* correct root-relative structure
-* generated assets consistency
+### 🔹 Phase 3 — Stub Integrity & Canonicalization
+- Correct isolation of stub pages using `data-wiki-stub="true"`
+- Real content pages cleaned of incorrect stub markers
+- Sitemap and search index exclude stub-only pages
 
-Now includes:
+### 🔹 Phase 4 — Autonomous Editorial Operations
+- Stub promotion engine (`apply-stub-promotions.js`)
+- External intelligence ingestion
+- Hub reinforcement and controlled expansion
+- Editorial changelog for deterministic history
 
-```
-wiki/
-categories/
-about/
-about.html
-```
+### 🔹 Phase 5 — Authority, Trust & Timeline Intelligence
+Generated assets:
+js/authority-trust.json
+js/timeline-intelligence.json
+api/authority.json
+api/timeline.json
 
----
+Capabilities:
+- Authority and trust scoring
+- Narrative and event chronology
+- API-ready intelligence for external platforms
 
-# 🔧 WHAT WAS FIXED (CRITICAL HISTORY)
+### 🔹 Phase 6 — Predictive Intelligence & Governance
+Generated assets:
 
-## Phase 1 — BREAKAGE
+js/predictive-growth.json
+js/governance-signals.json
+js/publishing-readiness.json
+api/predictive-growth.json
+api/governance.json
+api/publishing.json
 
-* Publisher deleted all `wiki/*.html`
-* Rebuilt pages from metadata
-* Destroyed real content
-
-## Phase 2 — RESTORE
-
-* Recovered pages from git history
-* Reintroduced full article bodies
-
-## Phase 3 — PATH NORMALIZATION
-
-* Removed all `../` paths
-* Standardized:
-
-```
-/css/
-/js/
-/img/
-/index.html
-/search.html
-/categories/
-```
-
-## Phase 4 — INTERNAL LINK FIX
-
-Replaced:
-
-```
-bitcoin.html
-```
-
-with:
-
-```
-/wiki/bitcoin.html
-```
-
-## Phase 5 — SYSTEM HARDENING
-
-* Added path normalization to publisher
-* Extended CI to cover `/about/`
-* Eliminated all fragile links
+Capabilities:
+- Predictive content expansion
+- Governance prioritization
+- Cross-platform publishing readiness
 
 ---
 
-# 📏 CURRENT SYSTEM RULES
+## 🛠️ Pre–Phase 7 Stabilization Fixes
 
-## Paths (STRICT)
+### ✅ Navigation Parity
+- `about.html` and `timeline.html` now include:
+  - 🌐 Graph (`/graph.html`)
+  - 📊 Dashboard (`/dashboard.html`)
 
-| Type       | Format                                           |
-| ---------- | ------------------------------------------------ |
-| CSS        | `/css/...`                                       |
-| JS         | `/js/...`                                        |
-| Images     | `/img/...`                                       |
-| Wiki pages | `/wiki/{slug}.html`                              |
-| Navigation | `/index.html`, `/search.html`, `/categories/...` |
+### ✅ Redirect Alias Protection
+- `apply-stub-promotions.js` skips pages containing:
+  ```html
+  <meta http-equiv="refresh">
 
----
+Prevents accidental promotion of alias pages such as:
 
-## Internal Linking (STRICT)
+/wiki/the-hodl-warriors.html
+✅ Structural Validation for Phase 5/6 Outputs
+validate-generated-assets.js now validates:
+authority-trust.json
+timeline-intelligence.json
+predictive-growth.json
+governance-signals.json
+publishing-readiness.json
+Ensures required schema and non-empty entries.
+✅ Graph Memory Safeguard
 
-```html
-<a href="/wiki/bitcoin.html">Bitcoin</a>
-```
+Workflows set:
 
-Never:
-
-```html
-<a href="bitcoin.html">
-<a href="../bitcoin.html">
-```
-
----
-
-## Stub Pages
-
-If generated:
-
-Must include:
-
-```html
-<body data-wiki-stub="true">
-```
-
-And clearly indicate:
-
-> This is a stub article generated from metadata.
-
----
-
-# ⚙️ PUBLISHER SAFETY MODEL
-
-The publisher now enforces:
-
-### Preservation-first logic
-
-```
-IF page exists AND is full → KEEP
-IF page missing → CREATE stub
-IF page restored → NORMALIZE paths
-```
-
-### Path normalization
-
-All generated/restored content passes through:
-
-```
-normalize_legacy_paths()
-```
-
-Prevents:
-
-* `../css/`
-* `../js/`
-* `../img/`
-* `../articles.html`
-
----
-
-# 🛡️ CI SAFETY MODEL
-
-CI blocks:
-
-* relative paths
-* broken navigation
-* outdated structures
-
-If CI fails → DO NOT MERGE
-
----
-
-# 📊 CURRENT STATUS
-
-* ✅ 0 fragile paths
-* ✅ 0 relative internal links
-* ✅ 100% root-relative structure
-* ✅ publisher safe
-* ✅ CI enforced
-* ✅ full article content restored
-
----
-
-# ⚠️ FUTURE AGENT WARNING
+NODE_OPTIONS=--max-old-space-size=4096
+Emits warnings if entity-graph.json becomes excessively large.
+✅ Fault-Tolerance Visibility
+Workflow summary steps ensure that optional (continue-on-error) tasks are visible in CI logs.
+📁 Key Directories
+Directory	Purpose
+/wiki/	Canonical article content
+/js/	Generated intelligence and metadata
+/api/	API-ready mirrors of intelligence layers
+/scripts/	Deterministic build and editorial logic
+/.github/workflows/	CI/CD automation
+/snapshots/	Historical ranking and intelligence data
+🧪 Local Development
+Install Dependencies
+npm install
+Run Generators
+node scripts/generate-wiki-index.js
+node scripts/generate-entity-map.js
+node scripts/generate-sitemap.js
+node scripts/generate-site-stats.js
+node scripts/generate-graph-data.js
+node scripts/generate-authority-trust.js
+node scripts/generate-timeline-intelligence.js
+node scripts/generate-predictive-growth.js
+node scripts/generate-governance-signals.js
+node scripts/generate-publishing-readiness.js
+Validate the Build
+node scripts/validate-generated-assets.js
+node scripts/smoke-test.js
+📊 Current System Status
+Category	Status
+Multi-repo architecture	✅ Operational
+Deterministic ranking	✅ Implemented
+Knowledge graph	✅ Integrated
+Autonomous editorial engine	✅ Active
+Stub integrity	✅ Enforced
+Phase 5/6 intelligence	✅ Validated
+Navigation consistency	✅ Fixed
+CI safety & determinism	✅ Enforced
+⚠️ Future Agent Warning
 
 If you are an automated agent:
 
-### STOP if you are about to:
+STOP if you are about to:
+Regenerate HTML from JSON.
+Simplify or refactor page structures.
+Remove or overwrite article content.
+Modify canonical navigation.
+Promote redirect alias pages.
+SAFE Improvements:
+Enhance metadata and intelligence layers.
+Add new articles.
+Improve ranking or search.
+Expand lore and narrative depth.
+🧭 Final Note
 
-* regenerate HTML from JSON
-* “simplify” page structure
-* refactor navigation paths
-* clean “duplicate-looking” files
-* remove HTML content
+The Crypto Moonboys Wiki is no longer experimental. It is a:
 
-👉 These actions will BREAK the system.
+Deterministic, CI-enforced, preservation-first, multi-repository autonomous editorial system.
 
----
+Respect the architecture, preserve the content, and build forward—never destructively.
 
-# 🚀 SAFE FUTURE IMPROVEMENTS
+📜 License
 
-Allowed:
-
-* improve ranking (JSON layer only)
-* add new articles
-* enhance metadata
-* expand lore content
-* improve search/indexing
-
-NOT allowed:
-
-* altering content generation model
-* destructive rebuild logic
-
----
-
-# 🧭 FINAL NOTE
-
-This repo is no longer experimental.
-
-It is a:
-
-> **deterministic, CI-enforced, preservation-first publishing system**
-
-Respect that — or you will break it again.
-
-# 🌙 Crypto Moonboys Wiki
-
-![Version](https://img.shields.io/badge/version-v1.0.0-blue)
-![Status](https://img.shields.io/badge/status-stable-brightgreen)
-![License](https://img.shields.io/badge/license-MIT-lightgrey)
-
-## 🚀 Autonomous Lore Engine
-
-The Crypto Moonboys Wiki is a deterministic, self-evolving lore ecosystem powered by knowledge graph intelligence and automated content expansion. This repository represents the first stable release (**v1.0.0**) of the platform.
-
-## 📦 Release Information
-
-**Current Version:** v1.0.0  
-**Status:** Stable  
-**Release Date:** 2026  
-
-This milestone marks the completion of the multi-phase stabilization and enhancement of the repository, including:
-
-- Knowledge graph integration
-- Deterministic ranking system
-- Cluster hub generation
-- Related pages UI
-- Growth priority engine
-- SEO and accessibility compliance
-- Final repository-wide sanity audit
-
----
-
-## 🌐 Phase 1 Upgrades — Graph Visualization & Editorial Intelligence
-
-The following features were added as part of Phase 1 (April 2026). All are additive and operate through the JSON metadata layer without touching any `wiki/*.html` content.
-
-### New Pages
-
-| Page | Description |
-|------|-------------|
-| [`/graph.html`](https://crypto-moonboys.github.io/graph.html) | Interactive force-directed entity relationship graph (Canvas 2D). Pan, zoom, drag, filter by category, search by name. |
-| [`/dashboard.html`](https://crypto-moonboys.github.io/dashboard.html) | Editorial intelligence dashboard: cluster health, content gaps, authority drift alerts, entity changelog, growth priorities. |
-
-### New Data Generators
-
-All scripts are deterministic and idempotent. Run them in any order after the core generators.
-
-| Script | Output | Description |
-|--------|--------|-------------|
-| `scripts/generate-graph-data.js` | `js/graph-data.json` | Derives nodes + edges from `entity-graph.json` (top-5 edges per source, score ≥ 40). |
-| `scripts/generate-cluster-health.js` | `js/cluster-health.json` | Computes per-cluster health scores (avg links, rank, authority, centrality, content depth). |
-| `scripts/generate-authority-drift.js` | `js/authority-drift.json` | Compares `wiki-index.json` authority scores against entity-graph in-degree centrality. Emits `high`/`medium`/`ok` alert levels. |
-| `scripts/generate-entity-changelog.js` | `js/entity-changelog.json` | Diffs `snapshots/ranking-*.json` to track per-entity rank score changes over time. |
-
-### Running Phase 1 Generators
-
-```bash
-# Core generators (run first)
-node scripts/generate-wiki-index.js
-node scripts/generate-entity-map.js
-node scripts/generate-site-stats.js
-node scripts/generate-entity-graph.js
-
-# Phase 1 generators
-node scripts/generate-graph-data.js
-node scripts/generate-cluster-health.js
-node scripts/generate-authority-drift.js
-node scripts/generate-entity-changelog.js
-
-# Validation
-node scripts/validate-generated-assets.js
-node scripts/smoke-test.js
-```
-
-All Phase 1 generators are integrated into the CI workflow (`wiki-index-sync.yml`) and run with `continue-on-error: true` so they never block core validation.
+MIT License © 2026 Crypto Moonboys 🚀
