@@ -133,6 +133,21 @@ for (const candidate of sorted) {
   }
 
   const originalHtml = fs.readFileSync(filePath, 'utf8');
+
+  // Guard: skip redirect alias pages — they must never be promoted
+  if (originalHtml.includes('<meta http-equiv="refresh"')) {
+    console.log(`  Skipping alias/redirect: ${candidate.url}`);
+    actions.push({
+      action_type:  'stub_promotion_skipped',
+      status:       'skipped',
+      target_url:   candidate.url,
+      target_title: candidate.title,
+      reason:       'alias_redirect',
+      note:         'Page contains <meta http-equiv="refresh">; treated as redirect alias, never promotable.',
+    });
+    continue;
+  }
+
   const { html: updatedHtml, changed } = applyStubPromotion(originalHtml);
 
   if (changed) {

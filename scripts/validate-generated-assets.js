@@ -13,6 +13,14 @@ const SEARCH_PATH = path.join(ROOT, 'search.html');
 const CATEGORY_INDEX_PATH = path.join(ROOT, 'categories', 'index.html');
 const HOME_PATH = path.join(ROOT, 'index.html');
 
+const PHASE5_6_PATHS = {
+  'js/authority-trust.json':      path.join(ROOT, 'js', 'authority-trust.json'),
+  'js/timeline-intelligence.json': path.join(ROOT, 'js', 'timeline-intelligence.json'),
+  'js/predictive-growth.json':    path.join(ROOT, 'js', 'predictive-growth.json'),
+  'js/governance-signals.json':   path.join(ROOT, 'js', 'governance-signals.json'),
+  'js/publishing-readiness.json': path.join(ROOT, 'js', 'publishing-readiness.json'),
+};
+
 const REQUIRED_RANK_SIGNAL_KEYS = [
   'is_canonical',
   'alias_count',
@@ -192,6 +200,42 @@ function validateCorePages() {
   console.log('Core page smoke tests passed ✅');
 }
 
+const PHASE5_6_REQUIRED_KEYS = ['generated_at', 'phase', 'schema_version', 'summary', 'entries'];
+
+function validatePhase5And6() {
+  for (const [relPath, absPath] of Object.entries(PHASE5_6_PATHS)) {
+    ensureFile(absPath);
+
+    let data;
+    try {
+      data = readJson(absPath);
+    } catch (e) {
+      throw new Error(`${relPath} is not valid JSON: ${e.message}`);
+    }
+
+    assert(data && typeof data === 'object' && !Array.isArray(data), `${relPath} top-level must be an object`);
+
+    for (const key of PHASE5_6_REQUIRED_KEYS) {
+      assert(
+        Object.prototype.hasOwnProperty.call(data, key),
+        `${relPath} missing required key: ${key}`
+      );
+    }
+
+    assert(
+      Array.isArray(data.entries) && data.entries.length > 0,
+      `${relPath} entries must be a non-empty array`
+    );
+
+    assert(
+      data.summary && typeof data.summary === 'object' && !Array.isArray(data.summary),
+      `${relPath} summary must be a non-empty object`
+    );
+
+    console.log(`${relPath} validated (${data.entries.length} entries) ✅`);
+  }
+}
+
 function main() {
   [
     WIKI_INDEX_PATH,
@@ -200,7 +244,8 @@ function main() {
     SITEMAP_PATH,
     SEARCH_PATH,
     CATEGORY_INDEX_PATH,
-    HOME_PATH
+    HOME_PATH,
+    ...Object.values(PHASE5_6_PATHS)
   ].forEach(ensureFile);
 
   validateWikiIndex();
@@ -208,6 +253,7 @@ function main() {
   validateSiteStats();
   validateSitemap();
   validateCorePages();
+  validatePhase5And6();
 
   console.log('All generated asset checks passed ✅');
 }
