@@ -1,0 +1,2970 @@
+{
+  "generated_at": "2026-04-09T23:44:02.004Z",
+  "snapshot_dates": [
+    "2026-04-07",
+    "2026-04-08",
+    "2026-04-09"
+  ],
+  "summary": {
+    "total_entities": 230,
+    "changed_rank": 52,
+    "new_entities": 178,
+    "trending_up": 52,
+    "trending_down": 0,
+    "stable": 178
+  },
+  "entries": [
+    {
+      "url": "/wiki/ethereum.html",
+      "title": "Ethereum (ETH) — Crypto Moonboys Wiki",
+      "category": "tokens",
+      "current_rank_score": 628,
+      "rank_history": [
+        {
+          "date": "2026-04-07",
+          "rank_score": 294
+        },
+        {
+          "date": "2026-04-08",
+          "rank_score": 612
+        },
+        {
+          "date": "2026-04-09",
+          "rank_score": 628
+        }
+      ],
+      "rank_delta": 334,
+      "rank_trend": "up",
+      "is_new": false
+    },
+    {
+      "url": "/wiki/solana.html",
+      "title": "Solana (SOL) — Crypto Moonboys Wiki",
+      "category": "tokens",
+      "current_rank_score": 602,
+      "rank_history": [
+        {
+          "date": "2026-04-07",
+          "rank_score": 268
+        },
+        {
+          "date": "2026-04-08",
+          "rank_score": 586
+        },
+        {
+          "date": "2026-04-09",
+          "rank_score": 602
+        }
+      ],
+      "rank_delta": 334,
+      "rank_trend": "up",
+      "is_new": false
+    },
+    {
+      "url": "/wiki/bitcoin.html",
+      "title": "Bitcoin (BTC) — Crypto Moonboys Wiki",
+      "category": "tokens",
+      "current_rank_score": 621,
+      "rank_history": [
+        {
+          "date": "2026-04-07",
+          "rank_score": 290
+        },
+        {
+          "date": "2026-04-08",
+          "rank_score": 605
+        },
+        {
+          "date": "2026-04-09",
+          "rank_score": 621
+        }
+      ],
+      "rank_delta": 331,
+      "rank_trend": "up",
+      "is_new": false
+    },
+    {
+      "url": "/wiki/hodl-wars.html",
+      "title": "HODL Wars — Crypto Moonboys Wiki",
+      "category": "factions",
+      "current_rank_score": 706,
+      "rank_history": [
+        {
+          "date": "2026-04-07",
+          "rank_score": 376
+        },
+        {
+          "date": "2026-04-08",
+          "rank_score": 666
+        },
+        {
+          "date": "2026-04-09",
+          "rank_score": 706
+        }
+      ],
+      "rank_delta": 330,
+      "rank_trend": "up",
+      "is_new": false
+    },
+    {
+      "url": "/wiki/hodl-warriors.html",
+      "title": "HODL Warriors — Crypto Moonboys Wiki",
+      "category": "characters",
+      "current_rank_score": 640,
+      "rank_history": [
+        {
+          "date": "2026-04-07",
+          "rank_score": 378
+        },
+        {
+          "date": "2026-04-08",
+          "rank_score": 603
+        },
+        {
+          "date": "2026-04-09",
+          "rank_score": 640
+        }
+      ],
+      "rank_delta": 262,
+      "rank_trend": "up",
+      "is_new": false
+    },
+    {
+      "url": "/wiki/graffitikings.html",
+      "title": "Graffiti Kings — Crypto Moonboys Wiki",
+      "category": "characters",
+      "current_rank_score": 409,
+      "rank_history": [
+        {
+          "date": "2026-04-07",
+          "rank_score": 366
+        },
+        {
+          "date": "2026-04-08",
+          "rank_score": 366
+        },
+        {
+          "date": "2026-04-09",
+          "rank_score": 409
+        }
+      ],
+      "rank_delta": 43,
+      "rank_trend": "up",
+      "is_new": false
+    },
+    {
+      "url": "/wiki/midevilpunks.html",
+      "title": "MiDEViL PUNKS — Crypto Moonboys Wiki",
+      "category": "factions",
+      "current_rank_score": 442,
+      "rank_history": [
+        {
+          "date": "2026-04-07",
+          "rank_score": 399
+        },
+        {
+          "date": "2026-04-08",
+          "rank_score": 399
+        },
+        {
+          "date": "2026-04-09",
+          "rank_score": 442
+        }
+      ],
+      "rank_delta": 43,
+      "rank_trend": "up",
+      "is_new": false
+    },
+    {
+      "url": "/wiki/genesis-spray.html",
+      "title": "Genesis Spray — Crypto Moonboys Wiki",
+      "category": "factions",
+      "current_rank_score": 456,
+      "rank_history": [
+        {
+          "date": "2026-04-07",
+          "rank_score": 415
+        },
+        {
+          "date": "2026-04-08",
+          "rank_score": 416
+        },
+        {
+          "date": "2026-04-09",
+          "rank_score": 456
+        }
+      ],
+      "rank_delta": 41,
+      "rank_trend": "up",
+      "is_new": false
+    },
+    {
+      "url": "/wiki/graffpunks-247-radio.html",
+      "title": "GraffPUNKS 247 Radio — Crypto Moonboys Wiki",
+      "category": "characters",
+      "current_rank_score": 440,
+      "rank_history": [
+        {
+          "date": "2026-04-07",
+          "rank_score": 399
+        },
+        {
+          "date": "2026-04-08",
+          "rank_score": 395
+        },
+        {
+          "date": "2026-04-09",
+          "rank_score": 440
+        }
+      ],
+      "rank_delta": 41,
+      "rank_trend": "up",
+      "is_new": false
+    },
+    {
+      "url": "/wiki/midevil-hero-arena.html",
+      "title": "MiDEViL Hero Arena — Crypto Moonboys Wiki",
+      "category": "characters",
+      "current_rank_score": 389,
+      "rank_history": [
+        {
+          "date": "2026-04-07",
+          "rank_score": 349
+        },
+        {
+          "date": "2026-04-08",
+          "rank_score": 345
+        },
+        {
+          "date": "2026-04-09",
+          "rank_score": 389
+        }
+      ],
+      "rank_delta": 40,
+      "rank_trend": "up",
+      "is_new": false
+    },
+    {
+      "url": "/wiki/rave-relics.html",
+      "title": "Rave Relics — Crypto Moonboys Wiki",
+      "category": "factions",
+      "current_rank_score": 489,
+      "rank_history": [
+        {
+          "date": "2026-04-07",
+          "rank_score": 449
+        },
+        {
+          "date": "2026-04-08",
+          "rank_score": 449
+        },
+        {
+          "date": "2026-04-09",
+          "rank_score": 489
+        }
+      ],
+      "rank_delta": 40,
+      "rank_trend": "up",
+      "is_new": false
+    },
+    {
+      "url": "/wiki/queen-sarah-pfly.html",
+      "title": "Queen Sarah P-Fly — Crypto Moonboys Wiki",
+      "category": "characters",
+      "current_rank_score": 700,
+      "rank_history": [
+        {
+          "date": "2026-04-07",
+          "rank_score": 661
+        },
+        {
+          "date": "2026-04-08",
+          "rank_score": 657
+        },
+        {
+          "date": "2026-04-09",
+          "rank_score": 700
+        }
+      ],
+      "rank_delta": 39,
+      "rank_trend": "up",
+      "is_new": false
+    },
+    {
+      "url": "/wiki/sacred-chain.html",
+      "title": "The Sacred Chain — Crypto Moonboys Wiki",
+      "category": "factions",
+      "current_rank_score": 401,
+      "rank_history": [
+        {
+          "date": "2026-04-07",
+          "rank_score": 362
+        },
+        {
+          "date": "2026-04-08",
+          "rank_score": 358
+        },
+        {
+          "date": "2026-04-09",
+          "rank_score": 401
+        }
+      ],
+      "rank_delta": 39,
+      "rank_trend": "up",
+      "is_new": false
+    },
+    {
+      "url": "/wiki/samaelexe.html",
+      "title": "Samael.exe — Crypto Moonboys Wiki",
+      "category": "characters",
+      "current_rank_score": 296,
+      "rank_history": [
+        {
+          "date": "2026-04-07",
+          "rank_score": 258
+        },
+        {
+          "date": "2026-04-08",
+          "rank_score": 264
+        },
+        {
+          "date": "2026-04-09",
+          "rank_score": 296
+        }
+      ],
+      "rank_delta": 38,
+      "rank_trend": "up",
+      "is_new": false
+    },
+    {
+      "url": "/wiki/bitcoin-kids.html",
+      "title": "Bitcoin Kids — Crypto Moonboys Wiki",
+      "category": "characters",
+      "current_rank_score": 724,
+      "rank_history": [
+        {
+          "date": "2026-04-07",
+          "rank_score": 687
+        },
+        {
+          "date": "2026-04-08",
+          "rank_score": 683
+        },
+        {
+          "date": "2026-04-09",
+          "rank_score": 724
+        }
+      ],
+      "rank_delta": 37,
+      "rank_trend": "up",
+      "is_new": false
+    },
+    {
+      "url": "/wiki/charlie-buster.html",
+      "title": "Charlie Buster — Crypto Moonboys Wiki",
+      "category": "characters",
+      "current_rank_score": 671,
+      "rank_history": [
+        {
+          "date": "2026-04-07",
+          "rank_score": 634
+        },
+        {
+          "date": "2026-04-08",
+          "rank_score": 630
+        },
+        {
+          "date": "2026-04-09",
+          "rank_score": 671
+        }
+      ],
+      "rank_delta": 37,
+      "rank_trend": "up",
+      "is_new": false
+    },
+    {
+      "url": "/wiki/darren-cullen.html",
+      "title": "Darren Cullen — Crypto Moonboys Wiki",
+      "category": "characters",
+      "current_rank_score": 405,
+      "rank_history": [
+        {
+          "date": "2026-04-07",
+          "rank_score": 368
+        },
+        {
+          "date": "2026-04-08",
+          "rank_score": 364
+        },
+        {
+          "date": "2026-04-09",
+          "rank_score": 405
+        }
+      ],
+      "rank_delta": 37,
+      "rank_trend": "up",
+      "is_new": false
+    },
+    {
+      "url": "/wiki/patchwork.html",
+      "title": "Patchwork — Crypto Moonboys Wiki",
+      "category": "characters",
+      "current_rank_score": 291,
+      "rank_history": [
+        {
+          "date": "2026-04-07",
+          "rank_score": 254
+        },
+        {
+          "date": "2026-04-08",
+          "rank_score": 259
+        },
+        {
+          "date": "2026-04-09",
+          "rank_score": 291
+        }
+      ],
+      "rank_delta": 37,
+      "rank_trend": "up",
+      "is_new": false
+    },
+    {
+      "url": "/wiki/alfie-blaze.html",
+      "title": "Alfie Blaze — Crypto Moonboys Wiki",
+      "category": "characters",
+      "current_rank_score": 629,
+      "rank_history": [
+        {
+          "date": "2026-04-07",
+          "rank_score": 593
+        },
+        {
+          "date": "2026-04-08",
+          "rank_score": 589
+        },
+        {
+          "date": "2026-04-09",
+          "rank_score": 629
+        }
+      ],
+      "rank_delta": 36,
+      "rank_trend": "up",
+      "is_new": false
+    },
+    {
+      "url": "/wiki/block-topia.html",
+      "title": "Block Topia — Crypto Moonboys Wiki",
+      "category": "characters",
+      "current_rank_score": 755,
+      "rank_history": [
+        {
+          "date": "2026-04-07",
+          "rank_score": 719
+        },
+        {
+          "date": "2026-04-08",
+          "rank_score": 715
+        },
+        {
+          "date": "2026-04-09",
+          "rank_score": 755
+        }
+      ],
+      "rank_delta": 36,
+      "rank_trend": "up",
+      "is_new": false
+    },
+    {
+      "url": "/wiki/burn-to-earn.html",
+      "title": "Burn-to-Earn — Crypto Moonboys Wiki",
+      "category": "characters",
+      "current_rank_score": 612,
+      "rank_history": [
+        {
+          "date": "2026-04-07",
+          "rank_score": 576
+        },
+        {
+          "date": "2026-04-08",
+          "rank_score": 572
+        },
+        {
+          "date": "2026-04-09",
+          "rank_score": 612
+        }
+      ],
+      "rank_delta": 36,
+      "rank_trend": "up",
+      "is_new": false
+    },
+    {
+      "url": "/wiki/games4punks-telegram.html",
+      "title": "Games4Punks Telegram — Crypto Moonboys Wiki",
+      "category": "factions",
+      "current_rank_score": 412,
+      "rank_history": [
+        {
+          "date": "2026-04-07",
+          "rank_score": 376
+        },
+        {
+          "date": "2026-04-08",
+          "rank_score": 372
+        },
+        {
+          "date": "2026-04-09",
+          "rank_score": 412
+        }
+      ],
+      "rank_delta": 36,
+      "rank_trend": "up",
+      "is_new": false
+    },
+    {
+      "url": "/wiki/gang-signs.html",
+      "title": "Gang Signs — Crypto Moonboys Wiki",
+      "category": "characters",
+      "current_rank_score": 414,
+      "rank_history": [
+        {
+          "date": "2026-04-07",
+          "rank_score": 378
+        },
+        {
+          "date": "2026-04-08",
+          "rank_score": 374
+        },
+        {
+          "date": "2026-04-09",
+          "rank_score": 414
+        }
+      ],
+      "rank_delta": 36,
+      "rank_trend": "up",
+      "is_new": false
+    },
+    {
+      "url": "/wiki/gkniftyheads.html",
+      "title": "GKniftyHEADS — Crypto Moonboys Wiki",
+      "category": "characters",
+      "current_rank_score": 454,
+      "rank_history": [
+        {
+          "date": "2026-04-07",
+          "rank_score": 418
+        },
+        {
+          "date": "2026-04-08",
+          "rank_score": 414
+        },
+        {
+          "date": "2026-04-09",
+          "rank_score": 454
+        }
+      ],
+      "rank_delta": 36,
+      "rank_trend": "up",
+      "is_new": false
+    },
+    {
+      "url": "/wiki/graffpunks-24-7.html",
+      "title": "GraffPUNKS 24/7 — Crypto Moonboys Wiki",
+      "category": "characters",
+      "current_rank_score": 498,
+      "rank_history": [
+        {
+          "date": "2026-04-07",
+          "rank_score": 462
+        },
+        {
+          "date": "2026-04-08",
+          "rank_score": 458
+        },
+        {
+          "date": "2026-04-09",
+          "rank_score": 498
+        }
+      ],
+      "rank_delta": 36,
+      "rank_trend": "up",
+      "is_new": false
+    },
+    {
+      "url": "/wiki/graffpunks.html",
+      "title": "GraffPUNKS — Crypto Moonboys Wiki",
+      "category": "characters",
+      "current_rank_score": 789,
+      "rank_history": [
+        {
+          "date": "2026-04-07",
+          "rank_score": 753
+        },
+        {
+          "date": "2026-04-08",
+          "rank_score": 749
+        },
+        {
+          "date": "2026-04-09",
+          "rank_score": 789
+        }
+      ],
+      "rank_delta": 36,
+      "rank_trend": "up",
+      "is_new": false
+    },
+    {
+      "url": "/wiki/hard-fork-games.html",
+      "title": "Hard Fork Games — Crypto Moonboys Wiki",
+      "category": "factions",
+      "current_rank_score": 415,
+      "rank_history": [
+        {
+          "date": "2026-04-07",
+          "rank_score": 379
+        },
+        {
+          "date": "2026-04-08",
+          "rank_score": 375
+        },
+        {
+          "date": "2026-04-09",
+          "rank_score": 415
+        }
+      ],
+      "rank_delta": 36,
+      "rank_trend": "up",
+      "is_new": false
+    },
+    {
+      "url": "/wiki/ian-harrison.html",
+      "title": "Ian Harrison — Crypto Moonboys Wiki",
+      "category": "characters",
+      "current_rank_score": 401,
+      "rank_history": [
+        {
+          "date": "2026-04-07",
+          "rank_score": 365
+        },
+        {
+          "date": "2026-04-08",
+          "rank_score": 361
+        },
+        {
+          "date": "2026-04-09",
+          "rank_score": 401
+        }
+      ],
+      "rank_delta": 36,
+      "rank_trend": "up",
+      "is_new": false
+    },
+    {
+      "url": "/wiki/jillian-godsil.html",
+      "title": "Jillian Godsil — Crypto Moonboys Wiki",
+      "category": "factions",
+      "current_rank_score": 392,
+      "rank_history": [
+        {
+          "date": "2026-04-07",
+          "rank_score": 356
+        },
+        {
+          "date": "2026-04-08",
+          "rank_score": 352
+        },
+        {
+          "date": "2026-04-09",
+          "rank_score": 392
+        }
+      ],
+      "rank_delta": 36,
+      "rank_trend": "up",
+      "is_new": false
+    },
+    {
+      "url": "/wiki/metropolis.html",
+      "title": "Metropolis — Crypto Moonboys Wiki",
+      "category": "factions",
+      "current_rank_score": 370,
+      "rank_history": [
+        {
+          "date": "2026-04-07",
+          "rank_score": 334
+        },
+        {
+          "date": "2026-04-08",
+          "rank_score": 330
+        },
+        {
+          "date": "2026-04-09",
+          "rank_score": 370
+        }
+      ],
+      "rank_delta": 36,
+      "rank_trend": "up",
+      "is_new": false
+    },
+    {
+      "url": "/wiki/nbg-token.html",
+      "title": "NBG Token — Crypto Moonboys Wiki",
+      "category": "factions",
+      "current_rank_score": 453,
+      "rank_history": [
+        {
+          "date": "2026-04-07",
+          "rank_score": 417
+        },
+        {
+          "date": "2026-04-08",
+          "rank_score": 413
+        },
+        {
+          "date": "2026-04-09",
+          "rank_score": 453
+        }
+      ],
+      "rank_delta": 36,
+      "rank_trend": "up",
+      "is_new": false
+    },
+    {
+      "url": "/wiki/nbg.html",
+      "title": "NBG — Crypto Moonboys Wiki",
+      "category": "characters",
+      "current_rank_score": 583,
+      "rank_history": [
+        {
+          "date": "2026-04-07",
+          "rank_score": 547
+        },
+        {
+          "date": "2026-04-08",
+          "rank_score": 543
+        },
+        {
+          "date": "2026-04-09",
+          "rank_score": 583
+        }
+      ],
+      "rank_delta": 36,
+      "rank_trend": "up",
+      "is_new": false
+    },
+    {
+      "url": "/wiki/nbgx.html",
+      "title": "NBGX — Crypto Moonboys Wiki",
+      "category": "characters",
+      "current_rank_score": 601,
+      "rank_history": [
+        {
+          "date": "2026-04-07",
+          "rank_score": 565
+        },
+        {
+          "date": "2026-04-08",
+          "rank_score": 561
+        },
+        {
+          "date": "2026-04-09",
+          "rank_score": 601
+        }
+      ],
+      "rank_delta": 36,
+      "rank_trend": "up",
+      "is_new": false
+    },
+    {
+      "url": "/wiki/null-the-prophet.html",
+      "title": "NULL THE PROPHET — Crypto Moonboys Wiki",
+      "category": "characters",
+      "current_rank_score": 719,
+      "rank_history": [
+        {
+          "date": "2026-04-07",
+          "rank_score": 683
+        },
+        {
+          "date": "2026-04-08",
+          "rank_score": 679
+        },
+        {
+          "date": "2026-04-09",
+          "rank_score": 719
+        }
+      ],
+      "rank_delta": 36,
+      "rank_trend": "up",
+      "is_new": false
+    },
+    {
+      "url": "/wiki/pmsl.html",
+      "title": "PMSL — Crypto Moonboys Wiki",
+      "category": "factions",
+      "current_rank_score": 595,
+      "rank_history": [
+        {
+          "date": "2026-04-07",
+          "rank_score": 559
+        },
+        {
+          "date": "2026-04-08",
+          "rank_score": 555
+        },
+        {
+          "date": "2026-04-09",
+          "rank_score": 595
+        }
+      ],
+      "rank_delta": 36,
+      "rank_trend": "up",
+      "is_new": false
+    },
+    {
+      "url": "/wiki/punk-token.html",
+      "title": "$PUNK Token — Crypto Moonboys Wiki",
+      "category": "characters",
+      "current_rank_score": 699,
+      "rank_history": [
+        {
+          "date": "2026-04-07",
+          "rank_score": 663
+        },
+        {
+          "date": "2026-04-08",
+          "rank_score": 659
+        },
+        {
+          "date": "2026-04-09",
+          "rank_score": 699
+        }
+      ],
+      "rank_delta": 36,
+      "rank_trend": "up",
+      "is_new": false
+    },
+    {
+      "url": "/wiki/quell.html",
+      "title": "Quell — Crypto Moonboys Wiki",
+      "category": "characters",
+      "current_rank_score": 288,
+      "rank_history": [
+        {
+          "date": "2026-04-07",
+          "rank_score": 252
+        }
+      ],
+      "rank_delta": 36,
+      "rank_trend": "up",
+      "is_new": false
+    },
+    {
+      "url": "/wiki/rune-tag.html",
+      "title": "Rune Tag — Crypto Moonboys Wiki",
+      "category": "characters",
+      "current_rank_score": 295,
+      "rank_history": [
+        {
+          "date": "2026-04-07",
+          "rank_score": 259
+        },
+        {
+          "date": "2026-04-08",
+          "rank_score": 263
+        },
+        {
+          "date": "2026-04-09",
+          "rank_score": 295
+        }
+      ],
+      "rank_delta": 36,
+      "rank_trend": "up",
+      "is_new": false
+    },
+    {
+      "url": "/wiki/satorebel.html",
+      "title": "SatoRebel — Crypto Moonboys Wiki",
+      "category": "characters",
+      "current_rank_score": 291,
+      "rank_history": [
+        {
+          "date": "2026-04-07",
+          "rank_score": 255
+        },
+        {
+          "date": "2026-04-08",
+          "rank_score": 259
+        },
+        {
+          "date": "2026-04-09",
+          "rank_score": 291
+        }
+      ],
+      "rank_delta": 36,
+      "rank_trend": "up",
+      "is_new": false
+    },
+    {
+      "url": "/wiki/sister-halcyon.html",
+      "title": "Sister Halcyon — Crypto Moonboys Wiki",
+      "category": "characters",
+      "current_rank_score": 292,
+      "rank_history": [
+        {
+          "date": "2026-04-07",
+          "rank_score": 256
+        },
+        {
+          "date": "2026-04-08",
+          "rank_score": 260
+        },
+        {
+          "date": "2026-04-09",
+          "rank_score": 292
+        }
+      ],
+      "rank_delta": 36,
+      "rank_trend": "up",
+      "is_new": false
+    },
+    {
+      "url": "/wiki/staking.html",
+      "title": "Staking — Crypto Moonboys Wiki",
+      "category": "characters",
+      "current_rank_score": 600,
+      "rank_history": [
+        {
+          "date": "2026-04-07",
+          "rank_score": 564
+        },
+        {
+          "date": "2026-04-08",
+          "rank_score": 560
+        },
+        {
+          "date": "2026-04-09",
+          "rank_score": 600
+        }
+      ],
+      "rank_delta": 36,
+      "rank_trend": "up",
+      "is_new": false
+    },
+    {
+      "url": "/wiki/the-princess.html",
+      "title": "The Princess — Crypto Moonboys Wiki",
+      "category": "characters",
+      "current_rank_score": 290,
+      "rank_history": [
+        {
+          "date": "2026-04-07",
+          "rank_score": 254
+        },
+        {
+          "date": "2026-04-08",
+          "rank_score": 258
+        },
+        {
+          "date": "2026-04-09",
+          "rank_score": 290
+        }
+      ],
+      "rank_delta": 36,
+      "rank_trend": "up",
+      "is_new": false
+    },
+    {
+      "url": "/wiki/the-whitewasher.html",
+      "title": "The Whitewasher — Crypto Moonboys Wiki",
+      "category": "characters",
+      "current_rank_score": 288,
+      "rank_history": [
+        {
+          "date": "2026-04-07",
+          "rank_score": 252
+        }
+      ],
+      "rank_delta": 36,
+      "rank_trend": "up",
+      "is_new": false
+    },
+    {
+      "url": "/wiki/trevor-fung.html",
+      "title": "Trevor Fung — Crypto Moonboys Wiki",
+      "category": "factions",
+      "current_rank_score": 396,
+      "rank_history": [
+        {
+          "date": "2026-04-07",
+          "rank_score": 360
+        },
+        {
+          "date": "2026-04-08",
+          "rank_score": 356
+        },
+        {
+          "date": "2026-04-09",
+          "rank_score": 396
+        }
+      ],
+      "rank_delta": 36,
+      "rank_trend": "up",
+      "is_new": false
+    },
+    {
+      "url": "/wiki/xrp-kids.html",
+      "title": "XRP Kids — Crypto Moonboys Wiki",
+      "category": "characters",
+      "current_rank_score": 418,
+      "rank_history": [
+        {
+          "date": "2026-04-07",
+          "rank_score": 382
+        },
+        {
+          "date": "2026-04-08",
+          "rank_score": 378
+        },
+        {
+          "date": "2026-04-09",
+          "rank_score": 418
+        }
+      ],
+      "rank_delta": 36,
+      "rank_trend": "up",
+      "is_new": false
+    },
+    {
+      "url": "/wiki/crypto-moonboys.html",
+      "title": "Crypto Moonboys — Crypto Moonboys Wiki",
+      "category": "characters",
+      "current_rank_score": 307,
+      "rank_history": [
+        {
+          "date": "2026-04-07",
+          "rank_score": 274
+        },
+        {
+          "date": "2026-04-08",
+          "rank_score": 274
+        },
+        {
+          "date": "2026-04-09",
+          "rank_score": 307
+        }
+      ],
+      "rank_delta": 33,
+      "rank_trend": "up",
+      "is_new": false
+    },
+    {
+      "url": "/wiki/graffpunks-24-7-radio.html",
+      "title": "GraffPUNKS 24/7 Radio — Crypto Moonboys Wiki",
+      "category": "factions",
+      "current_rank_score": 306,
+      "rank_history": [
+        {
+          "date": "2026-04-07",
+          "rank_score": 273
+        },
+        {
+          "date": "2026-04-08",
+          "rank_score": 269
+        },
+        {
+          "date": "2026-04-09",
+          "rank_score": 306
+        }
+      ],
+      "rank_delta": 33,
+      "rank_trend": "up",
+      "is_new": false
+    },
+    {
+      "url": "/wiki/hodl-x-warriors.html",
+      "title": "HODL X Warriors — Crypto Moonboys Wiki",
+      "category": "characters",
+      "current_rank_score": 345,
+      "rank_history": [
+        {
+          "date": "2026-04-07",
+          "rank_score": 312
+        },
+        {
+          "date": "2026-04-08",
+          "rank_score": 308
+        },
+        {
+          "date": "2026-04-09",
+          "rank_score": 345
+        }
+      ],
+      "rank_delta": 33,
+      "rank_trend": "up",
+      "is_new": false
+    },
+    {
+      "url": "/wiki/sneakar.html",
+      "title": "SNEAKAR — Crypto Moonboys Wiki",
+      "category": "factions",
+      "current_rank_score": 302,
+      "rank_history": [
+        {
+          "date": "2026-04-07",
+          "rank_score": 270
+        },
+        {
+          "date": "2026-04-08",
+          "rank_score": 266
+        },
+        {
+          "date": "2026-04-09",
+          "rank_score": 302
+        }
+      ],
+      "rank_delta": 32,
+      "rank_trend": "up",
+      "is_new": false
+    },
+    {
+      "url": "/wiki/bitcoin-x-kids.html",
+      "title": "Bitcoin X Kids — Crypto Moonboys Wiki",
+      "category": "characters",
+      "current_rank_score": 311,
+      "rank_history": [
+        {
+          "date": "2026-04-07",
+          "rank_score": 283
+        },
+        {
+          "date": "2026-04-08",
+          "rank_score": 279
+        },
+        {
+          "date": "2026-04-09",
+          "rank_score": 311
+        }
+      ],
+      "rank_delta": 28,
+      "rank_trend": "up",
+      "is_new": false
+    },
+    {
+      "url": "/wiki/diamond-hands.html",
+      "title": "Diamond Hands — Crypto Moonboys Wiki",
+      "category": "characters",
+      "current_rank_score": 517,
+      "rank_history": [
+        {
+          "date": "2026-04-08",
+          "rank_score": 509
+        },
+        {
+          "date": "2026-04-09",
+          "rank_score": 517
+        }
+      ],
+      "rank_delta": 8,
+      "rank_trend": "up",
+      "is_new": false
+    },
+    {
+      "url": "/wiki/moon-mission.html",
+      "title": "Moon Mission — Crypto Moonboys Wiki",
+      "category": "tokens",
+      "current_rank_score": 505,
+      "rank_history": [
+        {
+          "date": "2026-04-08",
+          "rank_score": 497
+        },
+        {
+          "date": "2026-04-09",
+          "rank_score": 505
+        }
+      ],
+      "rank_delta": 8,
+      "rank_trend": "up",
+      "is_new": false
+    },
+    {
+      "url": "/wiki/1m-free-nfts-drop.html",
+      "title": "1M Free NFTs Drop — Crypto Moonboys Wiki",
+      "category": "factions",
+      "current_rank_score": 253,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/1m-free-nfts-program.html",
+      "title": "1M Free NFTs Program — Crypto Moonboys Wiki",
+      "category": "factions",
+      "current_rank_score": 212,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/1m-free-nfts-programme.html",
+      "title": "1M Free NFTs Programme — Crypto Moonboys Wiki",
+      "category": "characters",
+      "current_rank_score": 260,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/1m-free-nfts.html",
+      "title": "1M Free NFTs — Crypto Moonboys Wiki",
+      "category": "factions",
+      "current_rank_score": 108,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/2025-metaverse-launch-party.html",
+      "title": "2025 Metaverse Launch Party — Crypto Moonboys Wiki",
+      "category": "factions",
+      "current_rank_score": 210,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/aleema-child-of-the-shard.html",
+      "title": "Aleema (Child of the Shard) — Crypto Moonboys Wiki",
+      "category": "characters",
+      "current_rank_score": 244,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/alfie-bitcoin-kid-blaze.html",
+      "title": "Alfie 'Bitcoin Kid' Blaze — Crypto Moonboys Wiki",
+      "category": "factions",
+      "current_rank_score": 177,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/alfie-the-bitcoin-kid-blaze.html",
+      "title": "Alfie 'The Bitcoin Kid' Blaze — Crypto Moonboys Wiki",
+      "category": "factions",
+      "current_rank_score": 251,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/altcoins.html",
+      "title": "Altcoins — Crypto Moonboys Wiki",
+      "category": "tokens",
+      "current_rank_score": 231,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/atomichub-graffpunks-collection.html",
+      "title": "AtomicHub Graffpunks Collection — Crypto Moonboys Wiki",
+      "category": "factions",
+      "current_rank_score": 145,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/ava-chen.html",
+      "title": "Ava Chen — Crypto Moonboys Wiki",
+      "category": "characters",
+      "current_rank_score": 242,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/battlemech-blast.html",
+      "title": "Battlemech Blast — Crypto Moonboys Wiki",
+      "category": "factions",
+      "current_rank_score": 229,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/bear-market-siege.html",
+      "title": "The Bear Market Siege — Crypto Moonboys Wiki",
+      "category": "characters",
+      "current_rank_score": 229,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/billy-the-goat-kid.html",
+      "title": "Billy the Goat Kid — Crypto Moonboys Wiki",
+      "category": "characters",
+      "current_rank_score": 240,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/bit-cap-5000.html",
+      "title": "Bit-Cap 5000 — Crypto Moonboys Wiki",
+      "category": "characters",
+      "current_rank_score": 243,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/bitcoin-btc.html",
+      "title": "Bitcoin (BTC) — Crypto Moonboys Wiki",
+      "category": "tokens",
+      "current_rank_score": 108,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/bitcoin-graffpunks.html",
+      "title": "Bitcoin &amp; GraffPUNKS — Crypto Moonboys Wiki",
+      "category": "factions",
+      "current_rank_score": 246,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/bitcoin-kid-army.html",
+      "title": "Bitcoin Kid Army — Crypto Moonboys Wiki",
+      "category": "factions",
+      "current_rank_score": 187,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/block-node-defenders.html",
+      "title": "Block Node Defenders — Crypto Moonboys Wiki",
+      "category": "factions",
+      "current_rank_score": 268,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/blockchain-technology.html",
+      "title": "Blockchain Technology — Crypto Moonboys Wiki",
+      "category": "tokens",
+      "current_rank_score": 108,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/blockchain.html",
+      "title": "Blockchain Technology — Crypto Moonboys Wiki",
+      "category": "tokens",
+      "current_rank_score": 259,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/bone-idol-ink.html",
+      "title": "Bone Idol Ink — Crypto Moonboys Wiki",
+      "category": "factions",
+      "current_rank_score": 231,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/canvas-clash.html",
+      "title": "The Canvas Clash — Crypto Moonboys Wiki",
+      "category": "factions",
+      "current_rank_score": 237,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/croydon-tower-blocks.html",
+      "title": "Croydon Tower Blocks — Crypto Moonboys Wiki",
+      "category": "factions",
+      "current_rank_score": 188,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/crypto-exchanges.html",
+      "title": "Crypto Exchanges — Crypto Moonboys Wiki",
+      "category": "tokens",
+      "current_rank_score": 106,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/crypto-wallets.html",
+      "title": "Crypto Wallets — Crypto Moonboys Wiki",
+      "category": "characters",
+      "current_rank_score": 116,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/darren-cullen-ser-real.html",
+      "title": "Darren Cullen (SER) - Real — Crypto Moonboys Wiki",
+      "category": "characters",
+      "current_rank_score": 165,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/darren-cullen-ser.html",
+      "title": "Darren Cullen (SER) — Crypto Moonboys Wiki",
+      "category": "factions",
+      "current_rank_score": 221,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/decentraland-events.html",
+      "title": "Decentraland Events — Crypto Moonboys Wiki",
+      "category": "factions",
+      "current_rank_score": 149,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/defi-decentralised-finance.html",
+      "title": "DeFi (Decentralised Finance) — Crypto Moonboys Wiki",
+      "category": "tokens",
+      "current_rank_score": 107,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/defi.html",
+      "title": "DeFi (Decentralised Finance) — Crypto Moonboys Wiki",
+      "category": "tokens",
+      "current_rank_score": 245,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/delicious-again-pete.html",
+      "title": "Delicious Again Pete — Crypto Moonboys Wiki",
+      "category": "factions",
+      "current_rank_score": 267,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/dragan-volkov.html",
+      "title": "Dragan Volkov — Crypto Moonboys Wiki",
+      "category": "characters",
+      "current_rank_score": 241,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/dream-sovereign.html",
+      "title": "Dream Sovereign — Crypto Moonboys Wiki",
+      "category": "factions",
+      "current_rank_score": 109,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/elder-codex-7.html",
+      "title": "Elder Codex-7 — Crypto Moonboys Wiki",
+      "category": "characters",
+      "current_rank_score": 250,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/ethereum-ecosystem.html",
+      "title": "Ethereum (ETH) Ecosystem — Crypto Moonboys Wiki",
+      "category": "tokens",
+      "current_rank_score": 232,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/ethereum-eth.html",
+      "title": "Ethereum (ETH) — Crypto Moonboys Wiki",
+      "category": "tokens",
+      "current_rank_score": 108,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/exchanges.html",
+      "title": "Crypto Exchanges — Crypto Moonboys Wiki",
+      "category": "tokens",
+      "current_rank_score": 264,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/fomo-plague.html",
+      "title": "The FOMO Plague — Crypto Moonboys Wiki",
+      "category": "tokens",
+      "current_rank_score": 218,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/forkborn-collective.html",
+      "title": "Forkborn Collective — Crypto Moonboys Wiki",
+      "category": "factions",
+      "current_rank_score": 272,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/forklord-you.html",
+      "title": "Forklord You — Crypto Moonboys Wiki",
+      "category": "characters",
+      "current_rank_score": 240,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/forksplit.html",
+      "title": "Forksplit — Crypto Moonboys Wiki",
+      "category": "characters",
+      "current_rank_score": 243,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/games-graffpunks.html",
+      "title": "Games &amp; GraffPUNKS — Crypto Moonboys Wiki",
+      "category": "factions",
+      "current_rank_score": 239,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/games4punks-telegram-games.html",
+      "title": "GAMES4PUNKS Telegram Games — Crypto Moonboys Wiki",
+      "category": "factions",
+      "current_rank_score": 143,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/gang-signs-card-game.html",
+      "title": "Gang Signs (Card Game) — Crypto Moonboys Wiki",
+      "category": "factions",
+      "current_rank_score": 219,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/genesis-kernel.html",
+      "title": "Genesis Kernel — Crypto Moonboys Wiki",
+      "category": "characters",
+      "current_rank_score": 210,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/genesis-spray-drop.html",
+      "title": "Genesis Spray Drop — Crypto Moonboys Wiki",
+      "category": "characters",
+      "current_rank_score": 113,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/gk-token.html",
+      "title": "$GK Token — Crypto Moonboys Wiki",
+      "category": "factions",
+      "current_rank_score": 147,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/gk-tokens.html",
+      "title": "$GK Tokens — Crypto Moonboys Wiki",
+      "category": "factions",
+      "current_rank_score": 152,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/gk.html",
+      "title": "$GK — Crypto Moonboys Wiki",
+      "category": "factions",
+      "current_rank_score": 253,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/gkniftyheads-phase-one-two-three.html",
+      "title": "GKniftyHEADS Phase One Two Three — Crypto Moonboys Wiki",
+      "category": "factions",
+      "current_rank_score": 220,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/graffiti-kings.html",
+      "title": "Graffiti Kings — Crypto Moonboys Wiki",
+      "category": "factions",
+      "current_rank_score": 217,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/graffiti-nexus.html",
+      "title": "Graffiti Nexus — Crypto Moonboys Wiki",
+      "category": "characters",
+      "current_rank_score": 114,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/graffiti-queens-exhibition.html",
+      "title": "Graffiti Queens Exhibition — Crypto Moonboys Wiki",
+      "category": "factions",
+      "current_rank_score": 146,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/graffiti-queens-in-decentraland.html",
+      "title": "Graffiti Queens in Decentraland — Crypto Moonboys Wiki",
+      "category": "factions",
+      "current_rank_score": 237,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/graffpunks-24-7-blockchain-radio-station.html",
+      "title": "GraffPUNKS 24/7 Blockchain Radio Station — Crypto Moonboys Wiki",
+      "category": "factions",
+      "current_rank_score": 122,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/graffpunks-247-blockchain-radio-station.html",
+      "title": "GraffPUNKS 24/7 Blockchain Radio Station — Crypto Moonboys Wiki",
+      "category": "factions",
+      "current_rank_score": 162,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/graffpunks-247.html",
+      "title": "GraffPUNKS 247 — Crypto Moonboys Wiki",
+      "category": "factions",
+      "current_rank_score": 109,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/graffpunks-collection.html",
+      "title": "GraffPUNKS Collection — Crypto Moonboys Wiki",
+      "category": "factions",
+      "current_rank_score": 224,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/graffpunks-ecosystem.html",
+      "title": "GraffPUNKS Ecosystem — Crypto Moonboys Wiki",
+      "category": "characters",
+      "current_rank_score": 249,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/graffpunks-network.html",
+      "title": "GraffPUNKS Network — Crypto Moonboys Wiki",
+      "category": "factions",
+      "current_rank_score": 109,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/graffpunks-nfts.html",
+      "title": "GraffPUNKS NFTs — Crypto Moonboys Wiki",
+      "category": "characters",
+      "current_rank_score": 114,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/graffpunks-token.html",
+      "title": "GraffPUNKS &amp; Crypto Tokens — Crypto Moonboys Wiki",
+      "category": "factions",
+      "current_rank_score": 244,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/great-datapocalypse-of-2789.html",
+      "title": "Great Datapocalypse of 2789 — Crypto Moonboys Wiki",
+      "category": "factions",
+      "current_rank_score": 166,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/grit.html",
+      "title": "GRIT — Crypto Moonboys Wiki",
+      "category": "characters",
+      "current_rank_score": 233,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/grit42.html",
+      "title": "Grit42 — Crypto Moonboys Wiki",
+      "category": "characters",
+      "current_rank_score": 241,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/hard-fork-games-event.html",
+      "title": "Hard Fork Games Event — Crypto Moonboys Wiki",
+      "category": "factions",
+      "current_rank_score": 141,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/hard-fork-games-game.html",
+      "title": "Hard Fork Games — Crypto Moonboys Wiki",
+      "category": "factions",
+      "current_rank_score": 113,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/harrison-rift.html",
+      "title": "The Harrison Rift — Crypto Moonboys Wiki",
+      "category": "factions",
+      "current_rank_score": 230,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/head-tags.html",
+      "title": "Head Tags — Crypto Moonboys Wiki",
+      "category": "factions",
+      "current_rank_score": 109,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/hex-tagger-prime.html",
+      "title": "HEX-TAGGER PRIME — Crypto Moonboys Wiki",
+      "category": "characters",
+      "current_rank_score": 245,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/hodl-warriors-army.html",
+      "title": "HODL Warriors Army — Crypto Moonboys Wiki",
+      "category": "factions",
+      "current_rank_score": 186,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/hodl-wars-ecosystem.html",
+      "title": "HODL Wars Ecosystem — Crypto Moonboys Wiki",
+      "category": "characters",
+      "current_rank_score": 252,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/hodl-wars-game.html",
+      "title": "HODL Wars (Game) — Crypto Moonboys Wiki",
+      "category": "characters",
+      "current_rank_score": 240,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/iris-7.html",
+      "title": "Iris-7 — Crypto Moonboys Wiki",
+      "category": "characters",
+      "current_rank_score": 253,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/jodie-zoom-2000.html",
+      "title": "Jodie ZOOM 2000 — Crypto Moonboys Wiki",
+      "category": "characters",
+      "current_rank_score": 254,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/jonny-laurence-nelson-tag-records.html",
+      "title": "Jonny &amp; Laurence Nelson (TAG Records) — Crypto Moonboys Wiki",
+      "category": "factions",
+      "current_rank_score": 282,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/lady-ink.html",
+      "title": "Lady-INK — Crypto Moonboys Wiki",
+      "category": "characters",
+      "current_rank_score": 257,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/leake-street-tunnel.html",
+      "title": "Leake Street Tunnel — Crypto Moonboys Wiki",
+      "category": "factions",
+      "current_rank_score": 147,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/lfgk-rewards.html",
+      "title": "$LFGK Rewards — Crypto Moonboys Wiki",
+      "category": "factions",
+      "current_rank_score": 145,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/lfgk-token.html",
+      "title": "$LFGK Token — Crypto Moonboys Wiki",
+      "category": "factions",
+      "current_rank_score": 154,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/lfgk.html",
+      "title": "$LFGK — Crypto Moonboys Wiki",
+      "category": "factions",
+      "current_rank_score": 215,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/loopfiend.html",
+      "title": "Loopfiend — Crypto Moonboys Wiki",
+      "category": "characters",
+      "current_rank_score": 247,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/m1ntr-k1ll.html",
+      "title": "M1nTr K1ll — Crypto Moonboys Wiki",
+      "category": "characters",
+      "current_rank_score": 245,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/maidstone-base.html",
+      "title": "Maidstone Base — Crypto Moonboys Wiki",
+      "category": "factions",
+      "current_rank_score": 183,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/medium-articles-by-gkniftyheads.html",
+      "title": "Medium Articles by @GKniftyHEADS — Crypto Moonboys Wiki",
+      "category": "factions",
+      "current_rank_score": 152,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/medium-articles-by-graffpunks.html",
+      "title": "Medium Articles by @GRAFFPUNKS — Crypto Moonboys Wiki",
+      "category": "factions",
+      "current_rank_score": 152,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/medium-articles-by-hodlwarriors.html",
+      "title": "Medium Articles by @HODLWARRIORS — Crypto Moonboys Wiki",
+      "category": "factions",
+      "current_rank_score": 152,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/medium-articles-by-sercullen.html",
+      "title": "Medium Articles by @sercullen — Crypto Moonboys Wiki",
+      "category": "factions",
+      "current_rank_score": 152,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/meme-coins.html",
+      "title": "Meme Coins — Crypto Moonboys Wiki",
+      "category": "tokens",
+      "current_rank_score": 109,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/memecoins.html",
+      "title": "Meme Coins — Crypto Moonboys Wiki",
+      "category": "tokens",
+      "current_rank_score": 258,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/metaverse-battles.html",
+      "title": "Metaverse Battles — Crypto Moonboys Wiki",
+      "category": "factions",
+      "current_rank_score": 233,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/midevil-hero-arena-game.html",
+      "title": "MiDEViL Hero Arena (Game) — Crypto Moonboys Wiki",
+      "category": "characters",
+      "current_rank_score": 115,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/nbgx-token.html",
+      "title": "NBGX Token — Crypto Moonboys Wiki",
+      "category": "factions",
+      "current_rank_score": 218,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/neftyblocks-midevilpunks-collection.html",
+      "title": "NeftyBlocks Midevilpunks Collection — Crypto Moonboys Wiki",
+      "category": "factions",
+      "current_rank_score": 153,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/nfts-non-fungible-tokens.html",
+      "title": "NFTs (Non-Fungible Tokens) — Crypto Moonboys Wiki",
+      "category": "characters",
+      "current_rank_score": 119,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/nfts.html",
+      "title": "NFTs (Non-Fungible Tokens) — Crypto Moonboys Wiki",
+      "category": "characters",
+      "current_rank_score": 262,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/ngmi-chronicles.html",
+      "title": "NGMI Chronicles — Crypto Moonboys Wiki",
+      "category": "tokens",
+      "current_rank_score": 209,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/nifty-crowns.html",
+      "title": "Nifty Crowns — Crypto Moonboys Wiki",
+      "category": "factions",
+      "current_rank_score": 279,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/nine-armies.html",
+      "title": "Nine Armies — Crypto Moonboys Wiki",
+      "category": "factions",
+      "current_rank_score": 109,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/no-ball-games-nbg-collection.html",
+      "title": "No Ball Games (NBG) Collection — Crypto Moonboys Wiki",
+      "category": "factions",
+      "current_rank_score": 158,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/no-ball-games-nbg.html",
+      "title": "No Ball Games (NBG) — Crypto Moonboys Wiki",
+      "category": "factions",
+      "current_rank_score": 189,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/one-million-free-nfts.html",
+      "title": "One Million Free NFTs — Crypto Moonboys Wiki",
+      "category": "factions",
+      "current_rank_score": 110,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/paper-hands.html",
+      "title": "Paper Hands — Crypto Moonboys Wiki",
+      "category": "tokens",
+      "current_rank_score": 211,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/phygital-prints.html",
+      "title": "Phygital Prints — Crypto Moonboys Wiki",
+      "category": "factions",
+      "current_rank_score": 242,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/playable-nft-murals.html",
+      "title": "Playable NFT Murals — Crypto Moonboys Wiki",
+      "category": "factions",
+      "current_rank_score": 241,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/pmsl-token.html",
+      "title": "PMSL Token — Crypto Moonboys Wiki",
+      "category": "factions",
+      "current_rank_score": 209,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/punk-coin.html",
+      "title": "PUNK Coin — Crypto Moonboys Wiki",
+      "category": "tokens",
+      "current_rank_score": 117,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/punk.html",
+      "title": "$PUNK — Crypto Moonboys Wiki",
+      "category": "factions",
+      "current_rank_score": 234,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/pyralith.html",
+      "title": "PYRALITH — Crypto Moonboys Wiki",
+      "category": "characters",
+      "current_rank_score": 287,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/queen-sarah-p-fly.html",
+      "title": "Queen Sarah P-fly — Crypto Moonboys Wiki",
+      "category": "factions",
+      "current_rank_score": 218,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/rug-pull-wars.html",
+      "title": "Rug Pull Wars — Crypto Moonboys Wiki",
+      "category": "tokens",
+      "current_rank_score": 214,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/samael-exe.html",
+      "title": "Samael.exe — Crypto Moonboys Wiki",
+      "category": "characters",
+      "current_rank_score": 119,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/sarah-pu51fly.html",
+      "title": "Sarah PU51FLY — Crypto Moonboys Wiki",
+      "category": "characters",
+      "current_rank_score": 225,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/satoshi-scroll.html",
+      "title": "The Satoshi Scroll — Crypto Moonboys Wiki",
+      "category": "tokens",
+      "current_rank_score": 211,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/seeding-rights.html",
+      "title": "Seeding Rights — Crypto Moonboys Wiki",
+      "category": "factions",
+      "current_rank_score": 242,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/smart-nft-mechanics.html",
+      "title": "SMArT NFT Mechanics — Crypto Moonboys Wiki",
+      "category": "factions",
+      "current_rank_score": 153,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/snipey-d-man-sirus.html",
+      "title": "Snipey 'D-Man' Sirus — Crypto Moonboys Wiki",
+      "category": "characters",
+      "current_rank_score": 205,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/solana-sol.html",
+      "title": "Solana (SOL) — Crypto Moonboys Wiki",
+      "category": "tokens",
+      "current_rank_score": 108,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/spirit-borns.html",
+      "title": "Spirit Borns — Crypto Moonboys Wiki",
+      "category": "factions",
+      "current_rank_score": 255,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/spraycode-writcode-mechanics.html",
+      "title": "Spraycode &amp; Writcode Mechanics — Crypto Moonboys Wiki",
+      "category": "factions",
+      "current_rank_score": 252,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/spraycode-writcode.html",
+      "title": "Spraycode &amp; Writcode — Crypto Moonboys Wiki",
+      "category": "factions",
+      "current_rank_score": 155,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/squeaky-pinks-enforcers.html",
+      "title": "Squeaky Pinks Enforcers — Crypto Moonboys Wiki",
+      "category": "factions",
+      "current_rank_score": 273,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/stake-for-gk-tokens.html",
+      "title": "Stake for $GK Tokens — Crypto Moonboys Wiki",
+      "category": "factions",
+      "current_rank_score": 147,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/staking-for-gk-tokens.html",
+      "title": "Staking for $GK Tokens — Crypto Moonboys Wiki",
+      "category": "factions",
+      "current_rank_score": 145,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/stikfamwars.html",
+      "title": "StikFamWars — Crypto Moonboys Wiki",
+      "category": "factions",
+      "current_rank_score": 106,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/street-kingdoms.html",
+      "title": "Street Kingdoms — Crypto Moonboys Wiki",
+      "category": "factions",
+      "current_rank_score": 283,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/substack-posts-on-graffpunks-substack-com.html",
+      "title": "Substack Posts on graffpunks.substack.com — Crypto Moonboys Wiki",
+      "category": "factions",
+      "current_rank_score": 120,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/substack-posts-on-graffpunkssubstackcom.html",
+      "title": "Substack Posts on graffpunks.substack.com — Crypto Moonboys Wiki",
+      "category": "factions",
+      "current_rank_score": 176,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/the-allcity-bulls.html",
+      "title": "The AllCity Bulls — Crypto Moonboys Wiki",
+      "category": "factions",
+      "current_rank_score": 255,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/the-aztec-raiders.html",
+      "title": "The AZTEC RAIDERS — Crypto Moonboys Wiki",
+      "category": "factions",
+      "current_rank_score": 251,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/the-bally-boys.html",
+      "title": "The BALLY BOYS — Crypto Moonboys Wiki",
+      "category": "factions",
+      "current_rank_score": 254,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/the-bear-market-siege.html",
+      "title": "The Bear Market Siege — Crypto Moonboys Wiki",
+      "category": "characters",
+      "current_rank_score": 121,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/the-bitcoin-kid-army.html",
+      "title": "The Bitcoin Kid Army — Crypto Moonboys Wiki",
+      "category": "factions",
+      "current_rank_score": 273,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/the-blockchain-furies.html",
+      "title": "The BLOCKCHAIN FURIES — Crypto Moonboys Wiki",
+      "category": "factions",
+      "current_rank_score": 263,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/the-blockstars.html",
+      "title": "The BLOCKSTARS — Crypto Moonboys Wiki",
+      "category": "factions",
+      "current_rank_score": 267,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/the-chain-scribes.html",
+      "title": "The CHAIN SCRIBES — Crypto Moonboys Wiki",
+      "category": "factions",
+      "current_rank_score": 279,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/the-code-alchemists.html",
+      "title": "The CODE ALCHEMISTS — Crypto Moonboys Wiki",
+      "category": "factions",
+      "current_rank_score": 261,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/the-crypto-moongirls.html",
+      "title": "The CRYPTO MOONGIRLS — Crypto Moonboys Wiki",
+      "category": "factions",
+      "current_rank_score": 285,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/the-crypto-stoned-boys.html",
+      "title": "The CRYPTO STONED BOYS — Crypto Moonboys Wiki",
+      "category": "factions",
+      "current_rank_score": 264,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/the-ducky-boys.html",
+      "title": "The DUCKY BOYS — Crypto Moonboys Wiki",
+      "category": "factions",
+      "current_rank_score": 273,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/the-evm-punks.html",
+      "title": "The EVM PUNKS — Crypto Moonboys Wiki",
+      "category": "factions",
+      "current_rank_score": 271,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/the-finance-guild.html",
+      "title": "The FINANCE GUILD — Crypto Moonboys Wiki",
+      "category": "factions",
+      "current_rank_score": 275,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/the-fomo-plague.html",
+      "title": "The FOMO Plague — Crypto Moonboys Wiki",
+      "category": "tokens",
+      "current_rank_score": 109,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/the-gasless-ghosts.html",
+      "title": "The GASLESS GHOSTS — Crypto Moonboys Wiki",
+      "category": "factions",
+      "current_rank_score": 274,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/the-gkniftyheads.html",
+      "title": "The GKniftyHEADS — Crypto Moonboys Wiki",
+      "category": "factions",
+      "current_rank_score": 184,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/the-graffpunks.html",
+      "title": "The GRAFFPUNKS — Crypto Moonboys Wiki",
+      "category": "factions",
+      "current_rank_score": 221,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/the-great-dip.html",
+      "title": "The Great Dip — Crypto Moonboys Wiki",
+      "category": "tokens",
+      "current_rank_score": 215,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/the-grids.html",
+      "title": "THE GRIDS — Crypto Moonboys Wiki",
+      "category": "factions",
+      "current_rank_score": 134,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/the-hard-fork-rockers.html",
+      "title": "The HARD FORK ROCKERS — Crypto Moonboys Wiki",
+      "category": "factions",
+      "current_rank_score": 274,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/the-high-hats.html",
+      "title": "The High Hats — Crypto Moonboys Wiki",
+      "category": "factions",
+      "current_rank_score": 272,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/the-hodl-warriors.html",
+      "title": "The HODL Warriors — Crypto Moonboys Wiki",
+      "category": "factions",
+      "current_rank_score": 156,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/the-information-mercenaries.html",
+      "title": "The INFORMATION MERCENARIES — Crypto Moonboys Wiki",
+      "category": "factions",
+      "current_rank_score": 245,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/the-moonlords.html",
+      "title": "The MOONLORDS — Crypto Moonboys Wiki",
+      "category": "factions",
+      "current_rank_score": 273,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/the-nice-easy-bois.html",
+      "title": "The NICE &amp; EASY BOIS — Crypto Moonboys Wiki",
+      "category": "factions",
+      "current_rank_score": 285,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/the-nomad-bears.html",
+      "title": "The Nomad Bears — Crypto Moonboys Wiki",
+      "category": "factions",
+      "current_rank_score": 270,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/the-og-pixel-saints.html",
+      "title": "The OG PIXEL SAINTS — Crypto Moonboys Wiki",
+      "category": "factions",
+      "current_rank_score": 273,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/the-rugpull-miners.html",
+      "title": "The RUGPULL MINERS — Crypto Moonboys Wiki",
+      "category": "factions",
+      "current_rank_score": 270,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/the-sacred-chain.html",
+      "title": "The Sacred Chain — Crypto Moonboys Wiki",
+      "category": "factions",
+      "current_rank_score": 142,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/the-salvagers.html",
+      "title": "The SALVAGERS — Crypto Moonboys Wiki",
+      "category": "factions",
+      "current_rank_score": 269,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/the-satoshi-scroll.html",
+      "title": "The Satoshi Scroll — Crypto Moonboys Wiki",
+      "category": "tokens",
+      "current_rank_score": 109,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/the-shard-mothers-of-manhattan.html",
+      "title": "The SHARD MOTHERS of MANHATTAN — Crypto Moonboys Wiki",
+      "category": "factions",
+      "current_rank_score": 272,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/the-squeaky-pinks.html",
+      "title": "The Squeaky Pinks — Crypto Moonboys Wiki",
+      "category": "factions",
+      "current_rank_score": 250,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/the-tuskon-ogs.html",
+      "title": "The TUSKON OGS — Crypto Moonboys Wiki",
+      "category": "factions",
+      "current_rank_score": 257,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/the-wagmi-prophecy.html",
+      "title": "The WAGMI Prophecy — Crypto Moonboys Wiki",
+      "category": "characters",
+      "current_rank_score": 119,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/the-whale-lords.html",
+      "title": "The Whale Lords — Crypto Moonboys Wiki",
+      "category": "factions",
+      "current_rank_score": 114,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/thera-9.html",
+      "title": "Thera-9 — Crypto Moonboys Wiki",
+      "category": "characters",
+      "current_rank_score": 243,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/thorne-the-architect.html",
+      "title": "Thorne The Architect — Crypto Moonboys Wiki",
+      "category": "characters",
+      "current_rank_score": 283,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/tokenomics.html",
+      "title": "Tokenomics — Crypto Moonboys Wiki",
+      "category": "tokens",
+      "current_rank_score": 266,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/tokens.html",
+      "title": "Tokens — Crypto Moonboys Wiki",
+      "category": "tokens",
+      "current_rank_score": 124,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/triple-fork-event.html",
+      "title": "Triple Fork Event — Crypto Moonboys Wiki",
+      "category": "factions",
+      "current_rank_score": 258,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/wagmi-prophecy.html",
+      "title": "The WAGMI Prophecy — Crypto Moonboys Wiki",
+      "category": "characters",
+      "current_rank_score": 213,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/wallets.html",
+      "title": "Crypto Wallets — Crypto Moonboys Wiki",
+      "category": "characters",
+      "current_rank_score": 263,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/waxp.html",
+      "title": "$WAXP — Crypto Moonboys Wiki",
+      "category": "factions",
+      "current_rank_score": 145,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/web3.html",
+      "title": "Web3 — Crypto Moonboys Wiki",
+      "category": "tokens",
+      "current_rank_score": 263,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/whale-lords.html",
+      "title": "The Whale Lords — Crypto Moonboys Wiki",
+      "category": "factions",
+      "current_rank_score": 223,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/xrp-kids-genesis-nfts.html",
+      "title": "XRP KIDs Genesis NFTs — Crypto Moonboys Wiki",
+      "category": "factions",
+      "current_rank_score": 153,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/xrp-kids-nbg-updates.html",
+      "title": "XRP Kids NBG Updates — Crypto Moonboys Wiki",
+      "category": "factions",
+      "current_rank_score": 162,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    }
+  ]
+}

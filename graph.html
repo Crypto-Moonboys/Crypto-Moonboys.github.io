@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Interactive entity relationship graph for the Crypto Moonboys Wiki — explore connections between characters, factions, and tokens.">
+  <meta name="robots" content="index, follow">
+  <meta property="og:title" content="🌐 Entity Graph — Crypto Moonboys Wiki">
+  <meta property="og:description" content="Visual knowledge graph of Crypto Moonboys entities and their relationships.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://crypto-moonboys.github.io/graph.html">
+  <link rel="canonical" href="https://crypto-moonboys.github.io/graph.html">
+  <title>🌐 Entity Graph — Crypto Moonboys Wiki</title>
+  <link rel="stylesheet" href="/css/wiki.css">
+  <link rel="icon" href="/img/favicon.svg" type="image/svg+xml">
+  <style>
+    /* ── Graph page layout ──────────────────────────────────────────────── */
+    .graph-page-header {
+      padding: 18px 24px 10px;
+      border-bottom: 1px solid var(--color-border);
+    }
+    .graph-page-header h1 {
+      font-size: 1.35rem;
+      color: var(--color-accent);
+      margin-bottom: 4px;
+    }
+    .graph-page-header p {
+      color: var(--color-text-muted);
+      font-size: .875rem;
+    }
+
+    .graph-toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 24px;
+      background: var(--color-surface);
+      border-bottom: 1px solid var(--color-border);
+    }
+    .graph-toolbar label {
+      font-size: .8rem;
+      color: var(--color-text-muted);
+    }
+    .graph-toolbar select,
+    .graph-toolbar input[type="search"] {
+      background: var(--color-surface-2);
+      border: 1px solid var(--color-border);
+      color: var(--color-text);
+      border-radius: var(--radius);
+      padding: 5px 10px;
+      font-size: .85rem;
+    }
+    .graph-toolbar select:focus,
+    .graph-toolbar input[type="search"]:focus {
+      outline: 2px solid var(--color-accent);
+    }
+    .graph-toolbar button {
+      background: var(--color-surface-2);
+      border: 1px solid var(--color-border);
+      color: var(--color-text);
+      border-radius: var(--radius);
+      padding: 5px 14px;
+      cursor: pointer;
+      font-size: .85rem;
+      transition: background .15s;
+    }
+    .graph-toolbar button:hover {
+      background: var(--color-border);
+    }
+    .graph-status {
+      font-size: .8rem;
+      color: var(--color-text-muted);
+      margin-left: auto;
+    }
+
+    /* ── Main graph area ─────────────────────────────────────────────────── */
+    .graph-main {
+      display: flex;
+      gap: 0;
+      height: calc(100vh - var(--color-header-h) - 130px);
+      min-height: 420px;
+      overflow: hidden;
+    }
+    .graph-canvas-wrap {
+      flex: 1 1 0;
+      min-width: 0;
+      position: relative;
+      background: #0d1117;
+    }
+    #graph-canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+      cursor: grab;
+      touch-action: none;
+    }
+
+    /* ── Info sidebar ───────────────────────────────────────────────────── */
+    .graph-info-panel {
+      width: 240px;
+      flex-shrink: 0;
+      background: var(--color-surface);
+      border-left: 1px solid var(--color-border);
+      padding: 16px;
+      overflow-y: auto;
+      font-size: .85rem;
+    }
+    .graph-info-panel h3 {
+      font-size: .9rem;
+      color: var(--color-text-muted);
+      margin-bottom: 10px;
+    }
+    #graph-info .ginfo-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+    #graph-info .ginfo-title a {
+      font-weight: 600;
+      color: var(--color-text-link);
+      font-size: .95rem;
+      word-break: break-word;
+    }
+    .ginfo-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      display: inline-block;
+    }
+    .ginfo-meta {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      margin-bottom: 8px;
+    }
+    .ginfo-cat  { text-transform: capitalize; color: var(--color-text-muted); }
+    .ginfo-rank { color: var(--color-accent); }
+    .ginfo-auth { color: var(--color-text-muted); }
+    .ginfo-connections {
+      font-size: .8rem;
+      color: var(--color-text-muted);
+      margin-bottom: 10px;
+    }
+    .ginfo-link {
+      display: inline-block;
+      background: var(--color-accent);
+      color: #000;
+      padding: 4px 12px;
+      border-radius: var(--radius);
+      font-size: .8rem;
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .ginfo-link:hover { background: var(--color-accent-dark); color: #000; text-decoration: none; }
+
+    /* ── Legend ─────────────────────────────────────────────────────────── */
+    .graph-legend {
+      margin-top: 20px;
+      border-top: 1px solid var(--color-border);
+      padding-top: 14px;
+    }
+    .graph-legend h4 {
+      font-size: .8rem;
+      color: var(--color-text-muted);
+      margin-bottom: 8px;
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      font-size: .8rem;
+      margin-bottom: 5px;
+      color: var(--color-text);
+    }
+    .legend-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    /* ── Help text ──────────────────────────────────────────────────────── */
+    .graph-help {
+      padding: 10px 24px;
+      font-size: .75rem;
+      color: var(--color-text-muted);
+      border-top: 1px solid var(--color-border);
+      background: var(--color-surface);
+    }
+    .graph-help span { margin-right: 14px; }
+
+    @media (max-width: 640px) {
+      .graph-info-panel { display: none; }
+      .graph-main { height: calc(100vh - var(--color-header-h) - 110px); }
+    }
+  </style>
+</head>
+<body>
+
+<a class="skip-link" href="#content">Skip to content</a>
+
+<header id="site-header" role="banner">
+  <button class="hamburger" id="hamburger" aria-label="Toggle navigation" aria-expanded="false" aria-controls="sidebar">☰</button>
+  <a href="/index.html" class="site-logo" aria-label="The Crypto Moonboys GK Wiki home">
+    <img src="/img/CRYPTO-MOONBOYS-BITCOIN-LOGO.png" alt="" aria-hidden="true">
+    <span>
+      <span class="logo-text">🌙 The Crypto Moonboys GK Wiki</span>
+      <span class="logo-sub">Blockchain Cryptoism Encyclopedia ⚡️⚡️⚡️</span>
+    </span>
+  </a>
+  <div id="header-search" role="search">
+    <input type="search" id="search-input" placeholder="Search the wiki…" aria-label="Search" autocomplete="off">
+    <button id="search-btn" aria-label="Search">🔍</button>
+    <div id="search-results" role="listbox"></div>
+  </div>
+  <nav class="header-nav" aria-label="Main navigation">
+    <a href="/index.html">Home</a>
+    <a href="/categories/index.html">Categories</a>
+    <a href="/search.html">All Articles</a>
+    <a href="/graph.html" class="active" aria-current="page">🌐 Graph</a>
+    <a href="/dashboard.html">📊 Dashboard</a>
+  </nav>
+</header>
+
+<div id="sidebar-overlay" aria-hidden="true"></div>
+
+<div id="layout">
+  <nav id="sidebar" aria-label="Wiki navigation">
+    <div class="sidebar-section">
+      <div class="sidebar-heading">Navigation</div>
+      <div class="sidebar-nav">
+        <a href="/index.html"><span class="nav-icon">🏠</span> Main Page</a>
+        <a href="/categories/index.html"><span class="nav-icon">📂</span> Categories</a>
+        <a href="/search.html"><span class="nav-icon">🔍</span> All Articles</a>
+        <a href="/graph.html" class="active" aria-current="page"><span class="nav-icon">🌐</span> Entity Graph</a>
+        <a href="/dashboard.html"><span class="nav-icon">📊</span> Dashboard</a>
+        <a href="/about.html"><span class="nav-icon">ℹ️</span> About</a>
+      </div>
+    </div>
+  </nav>
+
+  <main id="content" role="main">
+    <div class="graph-page-header">
+      <h1>🌐 Entity Relationship Graph</h1>
+      <p>Interactive visualisation of knowledge connections across all wiki entities. Click a node to explore its relationships.</p>
+    </div>
+
+    <div class="graph-toolbar">
+      <label for="graph-filter-select">Filter:</label>
+      <select id="graph-filter-select" aria-label="Filter by category">
+        <option value="all">All categories</option>
+      </select>
+
+      <label for="graph-search">Search:</label>
+      <input type="search" id="graph-search" placeholder="Find entity…" aria-label="Search entity" autocomplete="off" style="width:160px">
+
+      <button id="graph-reset-btn" type="button">Reset view</button>
+
+      <span class="graph-status" id="graph-status" aria-live="polite"></span>
+    </div>
+
+    <div class="graph-main">
+      <div class="graph-canvas-wrap">
+        <canvas id="graph-canvas" role="img" aria-label="Entity relationship graph"></canvas>
+      </div>
+
+      <aside class="graph-info-panel" aria-label="Node details">
+        <h3>Node Details</h3>
+        <div id="graph-info">
+          <p style="color:var(--color-text-muted);font-size:.8rem">Click or hover a node to see details.</p>
+        </div>
+
+        <div class="graph-legend">
+          <h4>Category colours</h4>
+          <div class="legend-item"><span class="legend-dot" style="background:#58a6ff"></span>Characters</div>
+          <div class="legend-item"><span class="legend-dot" style="background:#f7c948"></span>Factions</div>
+          <div class="legend-item"><span class="legend-dot" style="background:#3fb950"></span>Tokens</div>
+          <div class="legend-item"><span class="legend-dot" style="background:#bc8cff"></span>Concepts</div>
+          <div class="legend-item"><span class="legend-dot" style="background:#ff7b72"></span>Lore</div>
+          <div class="legend-item"><span class="legend-dot" style="background:#8b949e"></span>Other</div>
+        </div>
+      </aside>
+    </div>
+
+    <div class="graph-help" role="note">
+      <span>🖱️ Drag to pan</span>
+      <span>🔍 Scroll to zoom</span>
+      <span>👆 Click node to focus</span>
+      <span>↔️ Drag node to reposition</span>
+    </div>
+  </main>
+</div>
+
+<button id="back-to-top" aria-label="Back to top">↑</button>
+
+<script src="/js/api-config.js"></script>
+<script src="/js/wiki.js"></script>
+<script src="/js/graph-visualization.js"></script>
+
+</body>
+</html>
