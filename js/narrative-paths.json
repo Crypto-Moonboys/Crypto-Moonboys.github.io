@@ -1,0 +1,803 @@
+{
+  "generated_at": "2026-04-10T00:42:59.330Z",
+  "phase": "phase_25",
+  "schema_version": "1.0",
+  "summary": {
+    "total_paths": 10,
+    "total_templates": 10,
+    "avg_path_length": 8,
+    "min_path_length": 3,
+    "max_path_length": 8
+  },
+  "paths": [
+    {
+      "id": "nft-ecosystem",
+      "name": "NFT Ecosystem Deep Dive",
+      "description": "A guided tour through the NFT collections and drops",
+      "seed_tags": [
+        "nfts",
+        "nft"
+      ],
+      "category": null,
+      "step_count": 8,
+      "avg_rank_score": 526,
+      "gateway_url": "/wiki/nfts.html",
+      "gateway_title": "NFTs (Non-Fungible Tokens)",
+      "steps": [
+        {
+          "step": 1,
+          "url": "/wiki/nfts.html",
+          "title": "NFTs (Non-Fungible Tokens)",
+          "category": "characters",
+          "rank_score": 262,
+          "is_gateway": true
+        },
+        {
+          "step": 2,
+          "url": "/wiki/diamond-hands.html",
+          "title": "Diamond Hands",
+          "category": "characters",
+          "rank_score": 517,
+          "is_gateway": false
+        },
+        {
+          "step": 3,
+          "url": "/wiki/hodl-warriors.html",
+          "title": "HODL Warriors",
+          "category": "characters",
+          "rank_score": 640,
+          "is_gateway": false
+        },
+        {
+          "step": 4,
+          "url": "/wiki/hodl-x-warriors.html",
+          "title": "HODL X Warriors",
+          "category": "characters",
+          "rank_score": 345,
+          "is_gateway": false
+        },
+        {
+          "step": 5,
+          "url": "/wiki/graffpunks.html",
+          "title": "GraffPUNKS",
+          "category": "characters",
+          "rank_score": 789,
+          "is_gateway": false
+        },
+        {
+          "step": 6,
+          "url": "/wiki/graffpunks-24-7.html",
+          "title": "GraffPUNKS 24/7",
+          "category": "characters",
+          "rank_score": 498,
+          "is_gateway": false
+        },
+        {
+          "step": 7,
+          "url": "/wiki/graffpunks-247-radio.html",
+          "title": "GraffPUNKS 247 Radio",
+          "category": "characters",
+          "rank_score": 440,
+          "is_gateway": false
+        },
+        {
+          "step": 8,
+          "url": "/wiki/null-the-prophet.html",
+          "title": "NULL THE PROPHET",
+          "category": "characters",
+          "rank_score": 719,
+          "is_gateway": false
+        }
+      ]
+    },
+    {
+      "id": "crypto-characters",
+      "name": "Meet the Characters",
+      "description": "Introduction to the key characters of the Crypto Moonboys world",
+      "seed_tags": [],
+      "category": "characters",
+      "step_count": 8,
+      "avg_rank_score": 441,
+      "gateway_url": "/wiki/graffpunks.html",
+      "gateway_title": "GraffPUNKS",
+      "steps": [
+        {
+          "step": 1,
+          "url": "/wiki/graffpunks.html",
+          "title": "GraffPUNKS",
+          "category": "characters",
+          "rank_score": 789,
+          "is_gateway": true
+        },
+        {
+          "step": 2,
+          "url": "/wiki/hodl-warriors.html",
+          "title": "HODL Warriors",
+          "category": "characters",
+          "rank_score": 640,
+          "is_gateway": false
+        },
+        {
+          "step": 3,
+          "url": "/wiki/diamond-hands.html",
+          "title": "Diamond Hands",
+          "category": "characters",
+          "rank_score": 517,
+          "is_gateway": false
+        },
+        {
+          "step": 4,
+          "url": "/wiki/crypto-moonboys.html",
+          "title": "Crypto Moonboys",
+          "category": "characters",
+          "rank_score": 307,
+          "is_gateway": false
+        },
+        {
+          "step": 5,
+          "url": "/wiki/graffitikings.html",
+          "title": "Graffiti Kings",
+          "category": "characters",
+          "rank_score": 409,
+          "is_gateway": false
+        },
+        {
+          "step": 6,
+          "url": "/wiki/patchwork.html",
+          "title": "Patchwork",
+          "category": "characters",
+          "rank_score": 291,
+          "is_gateway": false
+        },
+        {
+          "step": 7,
+          "url": "/wiki/pyralith.html",
+          "title": "PYRALITH",
+          "category": "characters",
+          "rank_score": 287,
+          "is_gateway": false
+        },
+        {
+          "step": 8,
+          "url": "/wiki/quell.html",
+          "title": "Quell",
+          "category": "characters",
+          "rank_score": 288,
+          "is_gateway": false
+        }
+      ]
+    },
+    {
+      "id": "graffpunks-lore",
+      "name": "GraffPUNKS Universe",
+      "description": "Explore the GraffPUNKS faction and their connected world",
+      "seed_tags": [
+        "graffpunks"
+      ],
+      "category": null,
+      "step_count": 8,
+      "avg_rank_score": 441,
+      "gateway_url": "/wiki/graffpunks.html",
+      "gateway_title": "GraffPUNKS",
+      "steps": [
+        {
+          "step": 1,
+          "url": "/wiki/graffpunks.html",
+          "title": "GraffPUNKS",
+          "category": "characters",
+          "rank_score": 789,
+          "is_gateway": true
+        },
+        {
+          "step": 2,
+          "url": "/wiki/hodl-warriors.html",
+          "title": "HODL Warriors",
+          "category": "characters",
+          "rank_score": 640,
+          "is_gateway": false
+        },
+        {
+          "step": 3,
+          "url": "/wiki/diamond-hands.html",
+          "title": "Diamond Hands",
+          "category": "characters",
+          "rank_score": 517,
+          "is_gateway": false
+        },
+        {
+          "step": 4,
+          "url": "/wiki/crypto-moonboys.html",
+          "title": "Crypto Moonboys",
+          "category": "characters",
+          "rank_score": 307,
+          "is_gateway": false
+        },
+        {
+          "step": 5,
+          "url": "/wiki/graffitikings.html",
+          "title": "Graffiti Kings",
+          "category": "characters",
+          "rank_score": 409,
+          "is_gateway": false
+        },
+        {
+          "step": 6,
+          "url": "/wiki/patchwork.html",
+          "title": "Patchwork",
+          "category": "characters",
+          "rank_score": 291,
+          "is_gateway": false
+        },
+        {
+          "step": 7,
+          "url": "/wiki/pyralith.html",
+          "title": "PYRALITH",
+          "category": "characters",
+          "rank_score": 287,
+          "is_gateway": false
+        },
+        {
+          "step": 8,
+          "url": "/wiki/quell.html",
+          "title": "Quell",
+          "category": "characters",
+          "rank_score": 288,
+          "is_gateway": false
+        }
+      ]
+    },
+    {
+      "id": "bitcoin-origins",
+      "name": "The Bitcoin Origins Journey",
+      "description": "Follow the story of Bitcoin through the Crypto Moonboys universe",
+      "seed_tags": [
+        "bitcoin",
+        "btc"
+      ],
+      "category": null,
+      "step_count": 8,
+      "avg_rank_score": 433,
+      "gateway_url": "/wiki/bitcoin-kids.html",
+      "gateway_title": "Bitcoin Kids",
+      "steps": [
+        {
+          "step": 1,
+          "url": "/wiki/bitcoin-kids.html",
+          "title": "Bitcoin Kids",
+          "category": "characters",
+          "rank_score": 724,
+          "is_gateway": true
+        },
+        {
+          "step": 2,
+          "url": "/wiki/hodl-warriors.html",
+          "title": "HODL Warriors",
+          "category": "characters",
+          "rank_score": 640,
+          "is_gateway": false
+        },
+        {
+          "step": 3,
+          "url": "/wiki/diamond-hands.html",
+          "title": "Diamond Hands",
+          "category": "characters",
+          "rank_score": 517,
+          "is_gateway": false
+        },
+        {
+          "step": 4,
+          "url": "/wiki/crypto-moonboys.html",
+          "title": "Crypto Moonboys",
+          "category": "characters",
+          "rank_score": 307,
+          "is_gateway": false
+        },
+        {
+          "step": 5,
+          "url": "/wiki/graffitikings.html",
+          "title": "Graffiti Kings",
+          "category": "characters",
+          "rank_score": 409,
+          "is_gateway": false
+        },
+        {
+          "step": 6,
+          "url": "/wiki/patchwork.html",
+          "title": "Patchwork",
+          "category": "characters",
+          "rank_score": 291,
+          "is_gateway": false
+        },
+        {
+          "step": 7,
+          "url": "/wiki/pyralith.html",
+          "title": "PYRALITH",
+          "category": "characters",
+          "rank_score": 287,
+          "is_gateway": false
+        },
+        {
+          "step": 8,
+          "url": "/wiki/quell.html",
+          "title": "Quell",
+          "category": "characters",
+          "rank_score": 288,
+          "is_gateway": false
+        }
+      ]
+    },
+    {
+      "id": "kids-army",
+      "name": "The Bitcoin Kids Army",
+      "description": "The next generation of crypto moonboys",
+      "seed_tags": [
+        "kids"
+      ],
+      "category": null,
+      "step_count": 8,
+      "avg_rank_score": 433,
+      "gateway_url": "/wiki/bitcoin-kids.html",
+      "gateway_title": "Bitcoin Kids",
+      "steps": [
+        {
+          "step": 1,
+          "url": "/wiki/bitcoin-kids.html",
+          "title": "Bitcoin Kids",
+          "category": "characters",
+          "rank_score": 724,
+          "is_gateway": true
+        },
+        {
+          "step": 2,
+          "url": "/wiki/hodl-warriors.html",
+          "title": "HODL Warriors",
+          "category": "characters",
+          "rank_score": 640,
+          "is_gateway": false
+        },
+        {
+          "step": 3,
+          "url": "/wiki/diamond-hands.html",
+          "title": "Diamond Hands",
+          "category": "characters",
+          "rank_score": 517,
+          "is_gateway": false
+        },
+        {
+          "step": 4,
+          "url": "/wiki/crypto-moonboys.html",
+          "title": "Crypto Moonboys",
+          "category": "characters",
+          "rank_score": 307,
+          "is_gateway": false
+        },
+        {
+          "step": 5,
+          "url": "/wiki/graffitikings.html",
+          "title": "Graffiti Kings",
+          "category": "characters",
+          "rank_score": 409,
+          "is_gateway": false
+        },
+        {
+          "step": 6,
+          "url": "/wiki/patchwork.html",
+          "title": "Patchwork",
+          "category": "characters",
+          "rank_score": 291,
+          "is_gateway": false
+        },
+        {
+          "step": 7,
+          "url": "/wiki/pyralith.html",
+          "title": "PYRALITH",
+          "category": "characters",
+          "rank_score": 287,
+          "is_gateway": false
+        },
+        {
+          "step": 8,
+          "url": "/wiki/quell.html",
+          "title": "Quell",
+          "category": "characters",
+          "rank_score": 288,
+          "is_gateway": false
+        }
+      ]
+    },
+    {
+      "id": "ethereum-trail",
+      "name": "The Ethereum Trail",
+      "description": "Ethereum-connected pages and ecosystem members",
+      "seed_tags": [
+        "eth",
+        "ethereum"
+      ],
+      "category": null,
+      "step_count": 8,
+      "avg_rank_score": 394,
+      "gateway_url": "/wiki/ethereum.html",
+      "gateway_title": "Ethereum (ETH)",
+      "steps": [
+        {
+          "step": 1,
+          "url": "/wiki/ethereum.html",
+          "title": "Ethereum (ETH)",
+          "category": "tokens",
+          "rank_score": 628,
+          "is_gateway": true
+        },
+        {
+          "step": 2,
+          "url": "/wiki/bitcoin.html",
+          "title": "Bitcoin (BTC)",
+          "category": "tokens",
+          "rank_score": 621,
+          "is_gateway": false
+        },
+        {
+          "step": 3,
+          "url": "/wiki/moon-mission.html",
+          "title": "Moon Mission",
+          "category": "tokens",
+          "rank_score": 505,
+          "is_gateway": false
+        },
+        {
+          "step": 4,
+          "url": "/wiki/solana.html",
+          "title": "Solana (SOL)",
+          "category": "tokens",
+          "rank_score": 602,
+          "is_gateway": false
+        },
+        {
+          "step": 5,
+          "url": "/wiki/solana-sol.html",
+          "title": "Solana (SOL)",
+          "category": "tokens",
+          "rank_score": 108,
+          "is_gateway": false
+        },
+        {
+          "step": 6,
+          "url": "/wiki/web3.html",
+          "title": "Web3",
+          "category": "tokens",
+          "rank_score": 263,
+          "is_gateway": false
+        },
+        {
+          "step": 7,
+          "url": "/wiki/fomo-plague.html",
+          "title": "The FOMO Plague",
+          "category": "tokens",
+          "rank_score": 218,
+          "is_gateway": false
+        },
+        {
+          "step": 8,
+          "url": "/wiki/ngmi-chronicles.html",
+          "title": "NGMI Chronicles",
+          "category": "tokens",
+          "rank_score": 209,
+          "is_gateway": false
+        }
+      ]
+    },
+    {
+      "id": "token-landscape",
+      "name": "Token Landscape",
+      "description": "The tokens and cryptocurrencies central to the ecosystem",
+      "seed_tags": [],
+      "category": "tokens",
+      "step_count": 8,
+      "avg_rank_score": 394,
+      "gateway_url": "/wiki/ethereum.html",
+      "gateway_title": "Ethereum (ETH)",
+      "steps": [
+        {
+          "step": 1,
+          "url": "/wiki/ethereum.html",
+          "title": "Ethereum (ETH)",
+          "category": "tokens",
+          "rank_score": 628,
+          "is_gateway": true
+        },
+        {
+          "step": 2,
+          "url": "/wiki/bitcoin.html",
+          "title": "Bitcoin (BTC)",
+          "category": "tokens",
+          "rank_score": 621,
+          "is_gateway": false
+        },
+        {
+          "step": 3,
+          "url": "/wiki/moon-mission.html",
+          "title": "Moon Mission",
+          "category": "tokens",
+          "rank_score": 505,
+          "is_gateway": false
+        },
+        {
+          "step": 4,
+          "url": "/wiki/solana.html",
+          "title": "Solana (SOL)",
+          "category": "tokens",
+          "rank_score": 602,
+          "is_gateway": false
+        },
+        {
+          "step": 5,
+          "url": "/wiki/solana-sol.html",
+          "title": "Solana (SOL)",
+          "category": "tokens",
+          "rank_score": 108,
+          "is_gateway": false
+        },
+        {
+          "step": 6,
+          "url": "/wiki/web3.html",
+          "title": "Web3",
+          "category": "tokens",
+          "rank_score": 263,
+          "is_gateway": false
+        },
+        {
+          "step": 7,
+          "url": "/wiki/fomo-plague.html",
+          "title": "The FOMO Plague",
+          "category": "tokens",
+          "rank_score": 218,
+          "is_gateway": false
+        },
+        {
+          "step": 8,
+          "url": "/wiki/ngmi-chronicles.html",
+          "title": "NGMI Chronicles",
+          "category": "tokens",
+          "rank_score": 209,
+          "is_gateway": false
+        }
+      ]
+    },
+    {
+      "id": "games-and-battles",
+      "name": "Games and Battles",
+      "description": "The gaming and battle pages of the Moonboys universe",
+      "seed_tags": [
+        "games",
+        "battle"
+      ],
+      "category": null,
+      "step_count": 8,
+      "avg_rank_score": 352,
+      "gateway_url": "/wiki/hard-fork-games.html",
+      "gateway_title": "Hard Fork Games",
+      "steps": [
+        {
+          "step": 1,
+          "url": "/wiki/hard-fork-games.html",
+          "title": "Hard Fork Games",
+          "category": "factions",
+          "rank_score": 415,
+          "is_gateway": true
+        },
+        {
+          "step": 2,
+          "url": "/wiki/hard-fork-games-event.html",
+          "title": "Hard Fork Games Event",
+          "category": "factions",
+          "rank_score": 141,
+          "is_gateway": false
+        },
+        {
+          "step": 3,
+          "url": "/wiki/triple-fork-event.html",
+          "title": "Triple Fork Event",
+          "category": "factions",
+          "rank_score": 258,
+          "is_gateway": false
+        },
+        {
+          "step": 4,
+          "url": "/wiki/the-hard-fork-rockers.html",
+          "title": "The HARD FORK ROCKERS",
+          "category": "factions",
+          "rank_score": 274,
+          "is_gateway": false
+        },
+        {
+          "step": 5,
+          "url": "/wiki/hodl-wars.html",
+          "title": "HODL Wars",
+          "category": "factions",
+          "rank_score": 706,
+          "is_gateway": false
+        },
+        {
+          "step": 6,
+          "url": "/wiki/pmsl.html",
+          "title": "PMSL",
+          "category": "factions",
+          "rank_score": 595,
+          "is_gateway": false
+        },
+        {
+          "step": 7,
+          "url": "/wiki/pmsl-token.html",
+          "title": "PMSL Token",
+          "category": "factions",
+          "rank_score": 209,
+          "is_gateway": false
+        },
+        {
+          "step": 8,
+          "url": "/wiki/nbgx-token.html",
+          "title": "NBGX Token",
+          "category": "factions",
+          "rank_score": 218,
+          "is_gateway": false
+        }
+      ]
+    },
+    {
+      "id": "metaverse-journey",
+      "name": "Into the Metaverse",
+      "description": "Pages connecting the physical and digital worlds",
+      "seed_tags": [
+        "metaverse",
+        "battles"
+      ],
+      "category": null,
+      "step_count": 8,
+      "avg_rank_score": 321,
+      "gateway_url": "/wiki/metaverse-battles.html",
+      "gateway_title": "Metaverse Battles",
+      "steps": [
+        {
+          "step": 1,
+          "url": "/wiki/metaverse-battles.html",
+          "title": "Metaverse Battles",
+          "category": "factions",
+          "rank_score": 233,
+          "is_gateway": true
+        },
+        {
+          "step": 2,
+          "url": "/wiki/2025-metaverse-launch-party.html",
+          "title": "2025 Metaverse Launch Party",
+          "category": "factions",
+          "rank_score": 210,
+          "is_gateway": false
+        },
+        {
+          "step": 3,
+          "url": "/wiki/hodl-wars.html",
+          "title": "HODL Wars",
+          "category": "factions",
+          "rank_score": 706,
+          "is_gateway": false
+        },
+        {
+          "step": 4,
+          "url": "/wiki/pmsl.html",
+          "title": "PMSL",
+          "category": "factions",
+          "rank_score": 595,
+          "is_gateway": false
+        },
+        {
+          "step": 5,
+          "url": "/wiki/pmsl-token.html",
+          "title": "PMSL Token",
+          "category": "factions",
+          "rank_score": 209,
+          "is_gateway": false
+        },
+        {
+          "step": 6,
+          "url": "/wiki/nbgx-token.html",
+          "title": "NBGX Token",
+          "category": "factions",
+          "rank_score": 218,
+          "is_gateway": false
+        },
+        {
+          "step": 7,
+          "url": "/wiki/gk-token.html",
+          "title": "$GK Token",
+          "category": "factions",
+          "rank_score": 147,
+          "is_gateway": false
+        },
+        {
+          "step": 8,
+          "url": "/wiki/gk.html",
+          "title": "$GK",
+          "category": "factions",
+          "rank_score": 253,
+          "is_gateway": false
+        }
+      ]
+    },
+    {
+      "id": "factions-overview",
+      "name": "Factions of the Moonboys",
+      "description": "The major factions shaping the Crypto Moonboys narrative",
+      "seed_tags": [],
+      "category": "factions",
+      "step_count": 8,
+      "avg_rank_score": 303,
+      "gateway_url": "/wiki/hodl-wars.html",
+      "gateway_title": "HODL Wars",
+      "steps": [
+        {
+          "step": 1,
+          "url": "/wiki/hodl-wars.html",
+          "title": "HODL Wars",
+          "category": "factions",
+          "rank_score": 706,
+          "is_gateway": true
+        },
+        {
+          "step": 2,
+          "url": "/wiki/pmsl.html",
+          "title": "PMSL",
+          "category": "factions",
+          "rank_score": 595,
+          "is_gateway": false
+        },
+        {
+          "step": 3,
+          "url": "/wiki/pmsl-token.html",
+          "title": "PMSL Token",
+          "category": "factions",
+          "rank_score": 209,
+          "is_gateway": false
+        },
+        {
+          "step": 4,
+          "url": "/wiki/nbgx-token.html",
+          "title": "NBGX Token",
+          "category": "factions",
+          "rank_score": 218,
+          "is_gateway": false
+        },
+        {
+          "step": 5,
+          "url": "/wiki/gk-token.html",
+          "title": "$GK Token",
+          "category": "factions",
+          "rank_score": 147,
+          "is_gateway": false
+        },
+        {
+          "step": 6,
+          "url": "/wiki/gk.html",
+          "title": "$GK",
+          "category": "factions",
+          "rank_score": 253,
+          "is_gateway": false
+        },
+        {
+          "step": 7,
+          "url": "/wiki/gk-tokens.html",
+          "title": "$GK Tokens",
+          "category": "factions",
+          "rank_score": 152,
+          "is_gateway": false
+        },
+        {
+          "step": 8,
+          "url": "/wiki/stake-for-gk-tokens.html",
+          "title": "Stake for $GK Tokens",
+          "category": "factions",
+          "rank_score": 147,
+          "is_gateway": false
+        }
+      ]
+    }
+  ]
+}
