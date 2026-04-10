@@ -23,7 +23,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -31,7 +31,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
 
       # ── Phase 4: Autonomous Editorial Scripts ──────────────────────────────
 
@@ -61,6 +61,9 @@ jobs:
       - name: Generate site stats
         run: node scripts/generate-site-stats.js
 
+      - name: Deduplicate SAM lore output
+        run: node scripts/deduplicate-lore.js
+
       - name: Generate graph data
         continue-on-error: true
         env:
@@ -74,6 +77,10 @@ jobs:
             echo "::warning file=js/entity-graph.json::entity-graph.json is ${GRAPH_SIZE} bytes, which exceeds the ${THRESHOLD}-byte threshold"
           fi
           node scripts/generate-graph-data.js
+
+      - name: Generate entity graph lite
+        continue-on-error: true
+        run: node scripts/generate-entity-graph-lite.js
 
       - name: Generate cluster health
         continue-on-error: true
@@ -180,6 +187,7 @@ jobs:
             js/entity-map.json \
             js/site-stats.json \
             js/graph-data.json \
+            js/entity-graph-lite.json \
             js/cluster-health.json \
             js/authority-drift.json \
             js/entity-changelog.json \

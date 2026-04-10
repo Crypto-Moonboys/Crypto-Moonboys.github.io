@@ -8,7 +8,10 @@
   'use strict';
 
   // ── Configuration ────────────────────────────────────────────────────────
-  const GRAPH_DATA_URL = '/js/graph-data.json';
+  // Load a lighter dataset on narrow/mobile viewports to improve performance.
+  const GRAPH_DATA_URL = window.innerWidth < 768
+    ? '/js/entity-graph-lite.json'
+    : '/js/graph-data.json';
 
   const CATEGORY_COLORS = {
     characters:    '#58a6ff',
