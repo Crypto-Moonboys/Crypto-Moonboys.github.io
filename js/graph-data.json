@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-04-10T03:56:35.296Z",
+  "generated_at": "2026-04-10T05:02:28.910Z",
   "nodes": [
     {
       "id": "/wiki/1m-free-nfts-drop.html",
@@ -130,75 +130,11 @@
       "authority_score": 20
     },
     {
-      "id": "/wiki/bitcoin-blockchain-via-kid.html",
-      "title": "Bitcoin Blockchain Via Kid — Crypto Moonboys Wiki",
-      "url": "/wiki/bitcoin-blockchain-via-kid.html",
-      "category": "core",
-      "rank_score": 121,
-      "authority_score": 0
-    },
-    {
       "id": "/wiki/bitcoin-btc.html",
       "title": "Bitcoin (BTC) — Crypto Moonboys Wiki",
       "url": "/wiki/bitcoin-btc.html",
       "category": "tokens",
       "rank_score": 108,
-      "authority_score": 0
-    },
-    {
-      "id": "/wiki/bitcoin-fork-via-hard.html",
-      "title": "Bitcoin Fork Via Hard — Crypto Moonboys Wiki",
-      "url": "/wiki/bitcoin-fork-via-hard.html",
-      "category": "core",
-      "rank_score": 121,
-      "authority_score": 0
-    },
-    {
-      "id": "/wiki/bitcoin-free-via-nfts.html",
-      "title": "Bitcoin Free Via NFTs — Crypto Moonboys Wiki",
-      "url": "/wiki/bitcoin-free-via-nfts.html",
-      "category": "core",
-      "rank_score": 121,
-      "authority_score": 0
-    },
-    {
-      "id": "/wiki/bitcoin-games-via-kid.html",
-      "title": "Bitcoin Games Via Kid — Crypto Moonboys Wiki",
-      "url": "/wiki/bitcoin-games-via-kid.html",
-      "category": "core",
-      "rank_score": 121,
-      "authority_score": 0
-    },
-    {
-      "id": "/wiki/bitcoin-gk-via-kid.html",
-      "title": "Bitcoin GK Via Kid — Crypto Moonboys Wiki",
-      "url": "/wiki/bitcoin-gk-via-kid.html",
-      "category": "core",
-      "rank_score": 121,
-      "authority_score": 0
-    },
-    {
-      "id": "/wiki/bitcoin-graffpunks-via-kid.html",
-      "title": "Bitcoin GraffPUNKS Via Kid — Crypto Moonboys Wiki",
-      "url": "/wiki/bitcoin-graffpunks-via-kid.html",
-      "category": "core",
-      "rank_score": 121,
-      "authority_score": 0
-    },
-    {
-      "id": "/wiki/bitcoin-graffpunks.html",
-      "title": "Bitcoin &amp; GraffPUNKS — Crypto Moonboys Wiki",
-      "url": "/wiki/bitcoin-graffpunks.html",
-      "category": "factions",
-      "rank_score": 246,
-      "authority_score": 27
-    },
-    {
-      "id": "/wiki/bitcoin-hodl-via-kid.html",
-      "title": "Bitcoin Hodl Via Kid — Crypto Moonboys Wiki",
-      "url": "/wiki/bitcoin-hodl-via-kid.html",
-      "category": "core",
-      "rank_score": 121,
       "authority_score": 0
     },
     {
@@ -210,68 +146,12 @@
       "authority_score": 18
     },
     {
-      "id": "/wiki/bitcoin-kid-via-alfie.html",
-      "title": "Bitcoin Kid Via Alfie — Crypto Moonboys Wiki",
-      "url": "/wiki/bitcoin-kid-via-alfie.html",
-      "category": "core",
-      "rank_score": 121,
-      "authority_score": 0
-    },
-    {
       "id": "/wiki/bitcoin-kids.html",
       "title": "Bitcoin Kids — Crypto Moonboys Wiki",
       "url": "/wiki/bitcoin-kids.html",
       "category": "characters",
       "rank_score": 724,
       "authority_score": 26
-    },
-    {
-      "id": "/wiki/bitcoin-nbg-via-kid.html",
-      "title": "Bitcoin NBG Via Kid — Crypto Moonboys Wiki",
-      "url": "/wiki/bitcoin-nbg-via-kid.html",
-      "category": "core",
-      "rank_score": 121,
-      "authority_score": 0
-    },
-    {
-      "id": "/wiki/bitcoin-nfts-via-free.html",
-      "title": "Bitcoin NFTs Via Free — Crypto Moonboys Wiki",
-      "url": "/wiki/bitcoin-nfts-via-free.html",
-      "category": "core",
-      "rank_score": 121,
-      "authority_score": 0
-    },
-    {
-      "id": "/wiki/bitcoin-nfts.html",
-      "title": "Bitcoin NFTs — Crypto Moonboys Wiki",
-      "url": "/wiki/bitcoin-nfts.html",
-      "category": "core",
-      "rank_score": 130,
-      "authority_score": 6
-    },
-    {
-      "id": "/wiki/bitcoin-token-via-kid.html",
-      "title": "Bitcoin Token Via Kid — Crypto Moonboys Wiki",
-      "url": "/wiki/bitcoin-token-via-kid.html",
-      "category": "tokens",
-      "rank_score": 101,
-      "authority_score": 0
-    },
-    {
-      "id": "/wiki/bitcoin-tokens-via-kid.html",
-      "title": "Bitcoin Tokens Via Kid — Crypto Moonboys Wiki",
-      "url": "/wiki/bitcoin-tokens-via-kid.html",
-      "category": "tokens",
-      "rank_score": 101,
-      "authority_score": 0
-    },
-    {
-      "id": "/wiki/bitcoin-tokens.html",
-      "title": "Bitcoin Tokens — Crypto Moonboys Wiki",
-      "url": "/wiki/bitcoin-tokens.html",
-      "category": "tokens",
-      "rank_score": 110,
-      "authority_score": 6
     },
     {
       "id": "/wiki/bitcoin-x-kids.html",
@@ -306,107 +186,11 @@
       "authority_score": 26
     },
     {
-      "id": "/wiki/blockchain-fork-via-hard.html",
-      "title": "Blockchain Fork Via Hard — Crypto Moonboys Wiki",
-      "url": "/wiki/blockchain-fork-via-hard.html",
-      "category": "core",
-      "rank_score": 121,
-      "authority_score": 0
-    },
-    {
-      "id": "/wiki/blockchain-free-via-nfts.html",
-      "title": "Blockchain Free Via NFTs — Crypto Moonboys Wiki",
-      "url": "/wiki/blockchain-free-via-nfts.html",
-      "category": "core",
-      "rank_score": 121,
-      "authority_score": 0
-    },
-    {
-      "id": "/wiki/blockchain-games-via-fork.html",
-      "title": "Blockchain Games Via Fork — Crypto Moonboys Wiki",
-      "url": "/wiki/blockchain-games-via-fork.html",
-      "category": "core",
-      "rank_score": 121,
-      "authority_score": 0
-    },
-    {
-      "id": "/wiki/blockchain-gk-via-tokens.html",
-      "title": "Blockchain GK Via Tokens — Crypto Moonboys Wiki",
-      "url": "/wiki/blockchain-gk-via-tokens.html",
-      "category": "tokens",
-      "rank_score": 101,
-      "authority_score": 0
-    },
-    {
-      "id": "/wiki/blockchain-graffpunks-via-radio.html",
-      "title": "Blockchain GraffPUNKS Via Radio — Crypto Moonboys Wiki",
-      "url": "/wiki/blockchain-graffpunks-via-radio.html",
-      "category": "core",
-      "rank_score": 121,
-      "authority_score": 0
-    },
-    {
-      "id": "/wiki/blockchain-graffpunks.html",
-      "title": "Blockchain GraffPUNKS — Crypto Moonboys Wiki",
-      "url": "/wiki/blockchain-graffpunks.html",
-      "category": "core",
-      "rank_score": 130,
-      "authority_score": 6
-    },
-    {
-      "id": "/wiki/blockchain-hodl-via-graffpunks.html",
-      "title": "Blockchain Hodl Via GraffPUNKS — Crypto Moonboys Wiki",
-      "url": "/wiki/blockchain-hodl-via-graffpunks.html",
-      "category": "core",
-      "rank_score": 121,
-      "authority_score": 0
-    },
-    {
-      "id": "/wiki/blockchain-kid-via-bitcoin.html",
-      "title": "Blockchain Kid Via Bitcoin — Crypto Moonboys Wiki",
-      "url": "/wiki/blockchain-kid-via-bitcoin.html",
-      "category": "core",
-      "rank_score": 121,
-      "authority_score": 0
-    },
-    {
-      "id": "/wiki/blockchain-nbg-via-ball.html",
-      "title": "Blockchain NBG Via Ball — Crypto Moonboys Wiki",
-      "url": "/wiki/blockchain-nbg-via-ball.html",
-      "category": "core",
-      "rank_score": 121,
-      "authority_score": 0
-    },
-    {
-      "id": "/wiki/blockchain-nfts-via-free.html",
-      "title": "Blockchain NFTs Via Free — Crypto Moonboys Wiki",
-      "url": "/wiki/blockchain-nfts-via-free.html",
-      "category": "core",
-      "rank_score": 121,
-      "authority_score": 0
-    },
-    {
       "id": "/wiki/blockchain-technology.html",
       "title": "Blockchain Technology — Crypto Moonboys Wiki",
       "url": "/wiki/blockchain-technology.html",
       "category": "tokens",
       "rank_score": 108,
-      "authority_score": 0
-    },
-    {
-      "id": "/wiki/blockchain-token-via-graffpunks.html",
-      "title": "Blockchain Token Via GraffPUNKS — Crypto Moonboys Wiki",
-      "url": "/wiki/blockchain-token-via-graffpunks.html",
-      "category": "tokens",
-      "rank_score": 101,
-      "authority_score": 0
-    },
-    {
-      "id": "/wiki/blockchain-tokens-via-gk.html",
-      "title": "Blockchain Tokens Via GK — Crypto Moonboys Wiki",
-      "url": "/wiki/blockchain-tokens-via-gk.html",
-      "category": "tokens",
-      "rank_score": 101,
       "authority_score": 0
     },
     {
@@ -610,110 +394,6 @@
       "authority_score": 24
     },
     {
-      "id": "/wiki/fork-free-via-hard.html",
-      "title": "Fork Free Via Hard — Crypto Moonboys Wiki",
-      "url": "/wiki/fork-free-via-hard.html",
-      "category": "core",
-      "rank_score": 121,
-      "authority_score": 0
-    },
-    {
-      "id": "/wiki/fork-games-via-hard.html",
-      "title": "Fork Games Via Hard — Crypto Moonboys Wiki",
-      "url": "/wiki/fork-games-via-hard.html",
-      "category": "core",
-      "rank_score": 121,
-      "authority_score": 0
-    },
-    {
-      "id": "/wiki/fork-gk-via-hard.html",
-      "title": "Fork GK Via Hard — Crypto Moonboys Wiki",
-      "url": "/wiki/fork-gk-via-hard.html",
-      "category": "core",
-      "rank_score": 121,
-      "authority_score": 0
-    },
-    {
-      "id": "/wiki/fork-graffpunks-via-hard.html",
-      "title": "Fork GraffPUNKS Via Hard — Crypto Moonboys Wiki",
-      "url": "/wiki/fork-graffpunks-via-hard.html",
-      "category": "core",
-      "rank_score": 121,
-      "authority_score": 0
-    },
-    {
-      "id": "/wiki/fork-graffpunks.html",
-      "title": "Fork GraffPUNKS — Crypto Moonboys Wiki",
-      "url": "/wiki/fork-graffpunks.html",
-      "category": "core",
-      "rank_score": 131,
-      "authority_score": 6
-    },
-    {
-      "id": "/wiki/fork-hodl-via-hard.html",
-      "title": "Fork Hodl Via Hard — Crypto Moonboys Wiki",
-      "url": "/wiki/fork-hodl-via-hard.html",
-      "category": "core",
-      "rank_score": 121,
-      "authority_score": 0
-    },
-    {
-      "id": "/wiki/fork-kid-via-bitcoin.html",
-      "title": "Fork Kid Via Bitcoin — Crypto Moonboys Wiki",
-      "url": "/wiki/fork-kid-via-bitcoin.html",
-      "category": "core",
-      "rank_score": 121,
-      "authority_score": 0
-    },
-    {
-      "id": "/wiki/fork-kids-via-hard.html",
-      "title": "Fork Kids Via Hard — Crypto Moonboys Wiki",
-      "url": "/wiki/fork-kids-via-hard.html",
-      "category": "core",
-      "rank_score": 121,
-      "authority_score": 0
-    },
-    {
-      "id": "/wiki/fork-nbg-via-games.html",
-      "title": "Fork NBG Via Games — Crypto Moonboys Wiki",
-      "url": "/wiki/fork-nbg-via-games.html",
-      "category": "core",
-      "rank_score": 121,
-      "authority_score": 0
-    },
-    {
-      "id": "/wiki/fork-nfts-via-free.html",
-      "title": "Fork NFTs Via Free — Crypto Moonboys Wiki",
-      "url": "/wiki/fork-nfts-via-free.html",
-      "category": "core",
-      "rank_score": 121,
-      "authority_score": 0
-    },
-    {
-      "id": "/wiki/fork-token-via-hard.html",
-      "title": "Fork Token Via Hard — Crypto Moonboys Wiki",
-      "url": "/wiki/fork-token-via-hard.html",
-      "category": "tokens",
-      "rank_score": 101,
-      "authority_score": 0
-    },
-    {
-      "id": "/wiki/fork-tokens-via-hard.html",
-      "title": "Fork Tokens Via Hard — Crypto Moonboys Wiki",
-      "url": "/wiki/fork-tokens-via-hard.html",
-      "category": "tokens",
-      "rank_score": 101,
-      "authority_score": 0
-    },
-    {
-      "id": "/wiki/fork.html",
-      "title": "Fork — Crypto Moonboys Wiki",
-      "url": "/wiki/fork.html",
-      "category": "core",
-      "rank_score": 129,
-      "authority_score": 6
-    },
-    {
       "id": "/wiki/forkborn-collective.html",
       "title": "Forkborn Collective — Crypto Moonboys Wiki",
       "url": "/wiki/forkborn-collective.html",
@@ -736,190 +416,6 @@
       "category": "characters",
       "rank_score": 243,
       "authority_score": 20
-    },
-    {
-      "id": "/wiki/free-games-via-nfts.html",
-      "title": "Free Games Via NFTs — Crypto Moonboys Wiki",
-      "url": "/wiki/free-games-via-nfts.html",
-      "category": "core",
-      "rank_score": 121,
-      "authority_score": 0
-    },
-    {
-      "id": "/wiki/free-gk-via-nfts.html",
-      "title": "Free GK Via NFTs — Crypto Moonboys Wiki",
-      "url": "/wiki/free-gk-via-nfts.html",
-      "category": "core",
-      "rank_score": 121,
-      "authority_score": 0
-    },
-    {
-      "id": "/wiki/free-graffpunks-via-nfts.html",
-      "title": "Free GraffPUNKS Via NFTs — Crypto Moonboys Wiki",
-      "url": "/wiki/free-graffpunks-via-nfts.html",
-      "category": "core",
-      "rank_score": 121,
-      "authority_score": 0
-    },
-    {
-      "id": "/wiki/free-hodl-via-nfts.html",
-      "title": "Free Hodl Via NFTs — Crypto Moonboys Wiki",
-      "url": "/wiki/free-hodl-via-nfts.html",
-      "category": "core",
-      "rank_score": 121,
-      "authority_score": 0
-    },
-    {
-      "id": "/wiki/free-kid-via-nfts.html",
-      "title": "Free Kid Via NFTs — Crypto Moonboys Wiki",
-      "url": "/wiki/free-kid-via-nfts.html",
-      "category": "core",
-      "rank_score": 121,
-      "authority_score": 0
-    },
-    {
-      "id": "/wiki/free-kids-via-nfts.html",
-      "title": "Free Kids Via NFTs — Crypto Moonboys Wiki",
-      "url": "/wiki/free-kids-via-nfts.html",
-      "category": "core",
-      "rank_score": 121,
-      "authority_score": 0
-    },
-    {
-      "id": "/wiki/free-nbg-via-nfts.html",
-      "title": "Free NBG Via NFTs — Crypto Moonboys Wiki",
-      "url": "/wiki/free-nbg-via-nfts.html",
-      "category": "core",
-      "rank_score": 121,
-      "authority_score": 0
-    },
-    {
-      "id": "/wiki/free-nfts-via-1m.html",
-      "title": "Free NFTs Via 1m — Crypto Moonboys Wiki",
-      "url": "/wiki/free-nfts-via-1m.html",
-      "category": "core",
-      "rank_score": 121,
-      "authority_score": 0
-    },
-    {
-      "id": "/wiki/free-token-via-nfts.html",
-      "title": "Free Token Via NFTs — Crypto Moonboys Wiki",
-      "url": "/wiki/free-token-via-nfts.html",
-      "category": "tokens",
-      "rank_score": 101,
-      "authority_score": 0
-    },
-    {
-      "id": "/wiki/free-tokens-via-nfts.html",
-      "title": "Free Tokens Via NFTs — Crypto Moonboys Wiki",
-      "url": "/wiki/free-tokens-via-nfts.html",
-      "category": "tokens",
-      "rank_score": 101,
-      "authority_score": 0
-    },
-    {
-      "id": "/wiki/free.html",
-      "title": "Free — Crypto Moonboys Wiki",
-      "url": "/wiki/free.html",
-      "category": "core",
-      "rank_score": 129,
-      "authority_score": 6
-    },
-    {
-      "id": "/wiki/games-gk-via-fork.html",
-      "title": "Games GK Via Fork — Crypto Moonboys Wiki",
-      "url": "/wiki/games-gk-via-fork.html",
-      "category": "core",
-      "rank_score": 121,
-      "authority_score": 0
-    },
-    {
-      "id": "/wiki/games-graffpunks-via-collection.html",
-      "title": "Games GraffPUNKS Via Collection — Crypto Moonboys Wiki",
-      "url": "/wiki/games-graffpunks-via-collection.html",
-      "category": "core",
-      "rank_score": 121,
-      "authority_score": 0
-    },
-    {
-      "id": "/wiki/games-graffpunks.html",
-      "title": "Games &amp; GraffPUNKS — Crypto Moonboys Wiki",
-      "url": "/wiki/games-graffpunks.html",
-      "category": "factions",
-      "rank_score": 239,
-      "authority_score": 24
-    },
-    {
-      "id": "/wiki/games-hodl-via-fork.html",
-      "title": "Games Hodl Via Fork — Crypto Moonboys Wiki",
-      "url": "/wiki/games-hodl-via-fork.html",
-      "category": "core",
-      "rank_score": 121,
-      "authority_score": 0
-    },
-    {
-      "id": "/wiki/games-kid-via-bitcoin.html",
-      "title": "Games Kid Via Bitcoin — Crypto Moonboys Wiki",
-      "url": "/wiki/games-kid-via-bitcoin.html",
-      "category": "core",
-      "rank_score": 121,
-      "authority_score": 0
-    },
-    {
-      "id": "/wiki/games-kids-via-fork.html",
-      "title": "Games Kids Via Fork — Crypto Moonboys Wiki",
-      "url": "/wiki/games-kids-via-fork.html",
-      "category": "core",
-      "rank_score": 121,
-      "authority_score": 0
-    },
-    {
-      "id": "/wiki/games-nbg-via-fork.html",
-      "title": "Games NBG Via Fork — Crypto Moonboys Wiki",
-      "url": "/wiki/games-nbg-via-fork.html",
-      "category": "core",
-      "rank_score": 121,
-      "authority_score": 0
-    },
-    {
-      "id": "/wiki/games-nfts-via-free.html",
-      "title": "Games NFTs Via Free — Crypto Moonboys Wiki",
-      "url": "/wiki/games-nfts-via-free.html",
-      "category": "core",
-      "rank_score": 121,
-      "authority_score": 0
-    },
-    {
-      "id": "/wiki/games-nfts.html",
-      "title": "Games NFTs — Crypto Moonboys Wiki",
-      "url": "/wiki/games-nfts.html",
-      "category": "core",
-      "rank_score": 131,
-      "authority_score": 6
-    },
-    {
-      "id": "/wiki/games-token-via-fork.html",
-      "title": "Games Token Via Fork — Crypto Moonboys Wiki",
-      "url": "/wiki/games-token-via-fork.html",
-      "category": "tokens",
-      "rank_score": 101,
-      "authority_score": 0
-    },
-    {
-      "id": "/wiki/games-tokens-via-fork.html",
-      "title": "Games Tokens Via Fork — Crypto Moonboys Wiki",
-      "url": "/wiki/games-tokens-via-fork.html",
-      "category": "tokens",
-      "rank_score": 101,
-      "authority_score": 0
-    },
-    {
-      "id": "/wiki/games.html",
-      "title": "Games — Crypto Moonboys Wiki",
-      "url": "/wiki/games.html",
-      "category": "core",
-      "rank_score": 129,
-      "authority_score": 6
     },
     {
       "id": "/wiki/games4punks-telegram-games.html",
@@ -978,84 +474,12 @@
       "authority_score": 26
     },
     {
-      "id": "/wiki/gk-graffpunks-via-radio.html",
-      "title": "GK GraffPUNKS Via Radio — Crypto Moonboys Wiki",
-      "url": "/wiki/gk-graffpunks-via-radio.html",
-      "category": "core",
-      "rank_score": 121,
-      "authority_score": 0
-    },
-    {
-      "id": "/wiki/gk-graffpunks.html",
-      "title": "GK GraffPUNKS — Crypto Moonboys Wiki",
-      "url": "/wiki/gk-graffpunks.html",
-      "category": "core",
-      "rank_score": 130,
-      "authority_score": 6
-    },
-    {
-      "id": "/wiki/gk-hodl-via-tokens.html",
-      "title": "GK Hodl Via Tokens — Crypto Moonboys Wiki",
-      "url": "/wiki/gk-hodl-via-tokens.html",
-      "category": "tokens",
-      "rank_score": 101,
-      "authority_score": 0
-    },
-    {
-      "id": "/wiki/gk-kid-via-bitcoin.html",
-      "title": "GK Kid Via Bitcoin — Crypto Moonboys Wiki",
-      "url": "/wiki/gk-kid-via-bitcoin.html",
-      "category": "core",
-      "rank_score": 121,
-      "authority_score": 0
-    },
-    {
-      "id": "/wiki/gk-kids-via-tokens.html",
-      "title": "GK Kids Via Tokens — Crypto Moonboys Wiki",
-      "url": "/wiki/gk-kids-via-tokens.html",
-      "category": "tokens",
-      "rank_score": 101,
-      "authority_score": 0
-    },
-    {
-      "id": "/wiki/gk-nbg-via-tokens.html",
-      "title": "GK NBG Via Tokens — Crypto Moonboys Wiki",
-      "url": "/wiki/gk-nbg-via-tokens.html",
-      "category": "tokens",
-      "rank_score": 101,
-      "authority_score": 0
-    },
-    {
-      "id": "/wiki/gk-nfts-via-tokens.html",
-      "title": "GK NFTs Via Tokens — Crypto Moonboys Wiki",
-      "url": "/wiki/gk-nfts-via-tokens.html",
-      "category": "tokens",
-      "rank_score": 101,
-      "authority_score": 0
-    },
-    {
-      "id": "/wiki/gk-token-via-tokens.html",
-      "title": "GK Token Via Tokens — Crypto Moonboys Wiki",
-      "url": "/wiki/gk-token-via-tokens.html",
-      "category": "tokens",
-      "rank_score": 101,
-      "authority_score": 0
-    },
-    {
       "id": "/wiki/gk-token.html",
       "title": "$GK Token — Crypto Moonboys Wiki",
       "url": "/wiki/gk-token.html",
       "category": "factions",
       "rank_score": 147,
       "authority_score": 14
-    },
-    {
-      "id": "/wiki/gk-tokens-via-fungible.html",
-      "title": "GK Tokens Via Fungible — Crypto Moonboys Wiki",
-      "url": "/wiki/gk-tokens-via-fungible.html",
-      "category": "tokens",
-      "rank_score": 101,
-      "authority_score": 0
     },
     {
       "id": "/wiki/gk-tokens.html",
@@ -1202,62 +626,6 @@
       "authority_score": 24
     },
     {
-      "id": "/wiki/graffpunks-hodl-via-radio.html",
-      "title": "GraffPUNKS Hodl Via Radio — Crypto Moonboys Wiki",
-      "url": "/wiki/graffpunks-hodl-via-radio.html",
-      "category": "core",
-      "rank_score": 121,
-      "authority_score": 0
-    },
-    {
-      "id": "/wiki/graffpunks-hodl.html",
-      "title": "GraffPUNKS Hodl — Crypto Moonboys Wiki",
-      "url": "/wiki/graffpunks-hodl.html",
-      "category": "core",
-      "rank_score": 130,
-      "authority_score": 6
-    },
-    {
-      "id": "/wiki/graffpunks-kid-via-bitcoin.html",
-      "title": "GraffPUNKS Kid Via Bitcoin — Crypto Moonboys Wiki",
-      "url": "/wiki/graffpunks-kid-via-bitcoin.html",
-      "category": "core",
-      "rank_score": 121,
-      "authority_score": 0
-    },
-    {
-      "id": "/wiki/graffpunks-kid.html",
-      "title": "GraffPUNKS Kid — Crypto Moonboys Wiki",
-      "url": "/wiki/graffpunks-kid.html",
-      "category": "core",
-      "rank_score": 131,
-      "authority_score": 6
-    },
-    {
-      "id": "/wiki/graffpunks-kids-via-radio.html",
-      "title": "GraffPUNKS Kids Via Radio — Crypto Moonboys Wiki",
-      "url": "/wiki/graffpunks-kids-via-radio.html",
-      "category": "core",
-      "rank_score": 121,
-      "authority_score": 0
-    },
-    {
-      "id": "/wiki/graffpunks-nbg-via-radio.html",
-      "title": "GraffPUNKS NBG Via Radio — Crypto Moonboys Wiki",
-      "url": "/wiki/graffpunks-nbg-via-radio.html",
-      "category": "core",
-      "rank_score": 121,
-      "authority_score": 0
-    },
-    {
-      "id": "/wiki/graffpunks-nbg.html",
-      "title": "GraffPUNKS NBG — Crypto Moonboys Wiki",
-      "url": "/wiki/graffpunks-nbg.html",
-      "category": "tokens",
-      "rank_score": 110,
-      "authority_score": 6
-    },
-    {
       "id": "/wiki/graffpunks-network.html",
       "title": "GraffPUNKS Network — Crypto Moonboys Wiki",
       "url": "/wiki/graffpunks-network.html",
@@ -1266,43 +634,11 @@
       "authority_score": 0
     },
     {
-      "id": "/wiki/graffpunks-nfts-via-free.html",
-      "title": "GraffPUNKS NFTs Via Free — Crypto Moonboys Wiki",
-      "url": "/wiki/graffpunks-nfts-via-free.html",
-      "category": "core",
-      "rank_score": 121,
-      "authority_score": 0
-    },
-    {
       "id": "/wiki/graffpunks-nfts.html",
       "title": "GraffPUNKS NFTs — Crypto Moonboys Wiki",
       "url": "/wiki/graffpunks-nfts.html",
       "category": "characters",
       "rank_score": 114,
-      "authority_score": 0
-    },
-    {
-      "id": "/wiki/graffpunks-token-via-radio.html",
-      "title": "GraffPUNKS Token Via Radio — Crypto Moonboys Wiki",
-      "url": "/wiki/graffpunks-token-via-radio.html",
-      "category": "tokens",
-      "rank_score": 101,
-      "authority_score": 0
-    },
-    {
-      "id": "/wiki/graffpunks-token.html",
-      "title": "GraffPUNKS &amp; Crypto Tokens — Crypto Moonboys Wiki",
-      "url": "/wiki/graffpunks-token.html",
-      "category": "factions",
-      "rank_score": 244,
-      "authority_score": 24
-    },
-    {
-      "id": "/wiki/graffpunks-tokens-via-radio.html",
-      "title": "GraffPUNKS Tokens Via Radio — Crypto Moonboys Wiki",
-      "url": "/wiki/graffpunks-tokens-via-radio.html",
-      "category": "tokens",
-      "rank_score": 101,
       "authority_score": 0
     },
     {
@@ -1386,75 +722,19 @@
       "authority_score": 20
     },
     {
-      "id": "/wiki/hodl-kid-via-bitcoin.html",
-      "title": "Hodl Kid Via Bitcoin — Crypto Moonboys Wiki",
-      "url": "/wiki/hodl-kid-via-bitcoin.html",
-      "category": "core",
-      "rank_score": 121,
-      "authority_score": 0
-    },
-    {
-      "id": "/wiki/hodl-kids-via-warriors.html",
-      "title": "Hodl Kids Via Warriors — Crypto Moonboys Wiki",
-      "url": "/wiki/hodl-kids-via-warriors.html",
-      "category": "core",
-      "rank_score": 121,
-      "authority_score": 0
-    },
-    {
-      "id": "/wiki/hodl-nbg-via-warriors.html",
-      "title": "Hodl NBG Via Warriors — Crypto Moonboys Wiki",
-      "url": "/wiki/hodl-nbg-via-warriors.html",
-      "category": "core",
-      "rank_score": 121,
-      "authority_score": 0
-    },
-    {
-      "id": "/wiki/hodl-nfts-via-free.html",
-      "title": "Hodl NFTs Via Free — Crypto Moonboys Wiki",
-      "url": "/wiki/hodl-nfts-via-free.html",
-      "category": "core",
-      "rank_score": 121,
-      "authority_score": 0
-    },
-    {
-      "id": "/wiki/hodl-token-via-warriors.html",
-      "title": "Hodl Token Via Warriors — Crypto Moonboys Wiki",
-      "url": "/wiki/hodl-token-via-warriors.html",
-      "category": "tokens",
-      "rank_score": 101,
-      "authority_score": 0
-    },
-    {
-      "id": "/wiki/hodl-tokens-via-warriors.html",
-      "title": "Hodl Tokens Via Warriors — Crypto Moonboys Wiki",
-      "url": "/wiki/hodl-tokens-via-warriors.html",
-      "category": "tokens",
-      "rank_score": 101,
-      "authority_score": 0
-    },
-    {
-      "id": "/wiki/hodl-warriors-army.html",
-      "title": "HODL Warriors Army — Crypto Moonboys Wiki",
-      "url": "/wiki/hodl-warriors-army.html",
-      "category": "factions",
-      "rank_score": 186,
-      "authority_score": 18
-    },
-    {
       "id": "/wiki/hodl-warriors.html",
       "title": "HODL Warriors — Crypto Moonboys Wiki",
       "url": "/wiki/hodl-warriors.html",
       "category": "characters",
-      "rank_score": 640,
-      "authority_score": 23
+      "rank_score": 649,
+      "authority_score": 26
     },
     {
       "id": "/wiki/hodl-wars-ecosystem.html",
       "title": "HODL Wars Ecosystem — Crypto Moonboys Wiki",
       "url": "/wiki/hodl-wars-ecosystem.html",
       "category": "characters",
-      "rank_score": 252,
+      "rank_score": 251,
       "authority_score": 24
     },
     {
@@ -1520,86 +800,6 @@
       "category": "factions",
       "rank_score": 282,
       "authority_score": 20
-    },
-    {
-      "id": "/wiki/kid-kids-via-bitcoin.html",
-      "title": "Kid Kids Via Bitcoin — Crypto Moonboys Wiki",
-      "url": "/wiki/kid-kids-via-bitcoin.html",
-      "category": "core",
-      "rank_score": 121,
-      "authority_score": 0
-    },
-    {
-      "id": "/wiki/kid-nbg-via-bitcoin.html",
-      "title": "Kid NBG Via Bitcoin — Crypto Moonboys Wiki",
-      "url": "/wiki/kid-nbg-via-bitcoin.html",
-      "category": "core",
-      "rank_score": 121,
-      "authority_score": 0
-    },
-    {
-      "id": "/wiki/kid-nfts-via-free.html",
-      "title": "Kid NFTs Via Free — Crypto Moonboys Wiki",
-      "url": "/wiki/kid-nfts-via-free.html",
-      "category": "core",
-      "rank_score": 121,
-      "authority_score": 0
-    },
-    {
-      "id": "/wiki/kid-token-via-bitcoin.html",
-      "title": "Kid Token Via Bitcoin — Crypto Moonboys Wiki",
-      "url": "/wiki/kid-token-via-bitcoin.html",
-      "category": "tokens",
-      "rank_score": 101,
-      "authority_score": 0
-    },
-    {
-      "id": "/wiki/kid-tokens-via-bitcoin.html",
-      "title": "Kid Tokens Via Bitcoin — Crypto Moonboys Wiki",
-      "url": "/wiki/kid-tokens-via-bitcoin.html",
-      "category": "tokens",
-      "rank_score": 101,
-      "authority_score": 0
-    },
-    {
-      "id": "/wiki/kid.html",
-      "title": "Kid — Crypto Moonboys Wiki",
-      "url": "/wiki/kid.html",
-      "category": "core",
-      "rank_score": 129,
-      "authority_score": 6
-    },
-    {
-      "id": "/wiki/kids-nbg-via-xrp.html",
-      "title": "Kids NBG Via XRP — Crypto Moonboys Wiki",
-      "url": "/wiki/kids-nbg-via-xrp.html",
-      "category": "core",
-      "rank_score": 121,
-      "authority_score": 0
-    },
-    {
-      "id": "/wiki/kids-nfts-via-free.html",
-      "title": "Kids NFTs Via Free — Crypto Moonboys Wiki",
-      "url": "/wiki/kids-nfts-via-free.html",
-      "category": "core",
-      "rank_score": 121,
-      "authority_score": 0
-    },
-    {
-      "id": "/wiki/kids-token-via-xrp.html",
-      "title": "Kids Token Via XRP — Crypto Moonboys Wiki",
-      "url": "/wiki/kids-token-via-xrp.html",
-      "category": "tokens",
-      "rank_score": 101,
-      "authority_score": 0
-    },
-    {
-      "id": "/wiki/kids-tokens-via-gk.html",
-      "title": "Kids Tokens Via GK — Crypto Moonboys Wiki",
-      "url": "/wiki/kids-tokens-via-gk.html",
-      "category": "tokens",
-      "rank_score": 101,
-      "authority_score": 0
     },
     {
       "id": "/wiki/lady-ink.html",
@@ -1762,36 +962,12 @@
       "authority_score": 24
     },
     {
-      "id": "/wiki/nbg-nfts-via-free.html",
-      "title": "NBG NFTs Via Free — Crypto Moonboys Wiki",
-      "url": "/wiki/nbg-nfts-via-free.html",
-      "category": "core",
-      "rank_score": 121,
-      "authority_score": 0
-    },
-    {
-      "id": "/wiki/nbg-token-via-ball.html",
-      "title": "NBG Token Via Ball — Crypto Moonboys Wiki",
-      "url": "/wiki/nbg-token-via-ball.html",
-      "category": "tokens",
-      "rank_score": 101,
-      "authority_score": 0
-    },
-    {
       "id": "/wiki/nbg-token.html",
       "title": "NBG Token — Crypto Moonboys Wiki",
       "url": "/wiki/nbg-token.html",
       "category": "factions",
       "rank_score": 454,
       "authority_score": 26
-    },
-    {
-      "id": "/wiki/nbg-tokens-via-gk.html",
-      "title": "NBG Tokens Via GK — Crypto Moonboys Wiki",
-      "url": "/wiki/nbg-tokens-via-gk.html",
-      "category": "tokens",
-      "rank_score": 101,
-      "authority_score": 0
     },
     {
       "id": "/wiki/nbg.html",
@@ -1831,22 +1007,6 @@
       "url": "/wiki/nfts-non-fungible-tokens.html",
       "category": "characters",
       "rank_score": 119,
-      "authority_score": 0
-    },
-    {
-      "id": "/wiki/nfts-token-via-free.html",
-      "title": "NFTs Token Via Free — Crypto Moonboys Wiki",
-      "url": "/wiki/nfts-token-via-free.html",
-      "category": "tokens",
-      "rank_score": 101,
-      "authority_score": 0
-    },
-    {
-      "id": "/wiki/nfts-tokens-via-free.html",
-      "title": "NFTs Tokens Via Free — Crypto Moonboys Wiki",
-      "url": "/wiki/nfts-tokens-via-free.html",
-      "category": "tokens",
-      "rank_score": 101,
       "authority_score": 0
     },
     {
@@ -2410,14 +1570,6 @@
       "authority_score": 20
     },
     {
-      "id": "/wiki/the-hodl-warriors.html",
-      "title": "The HODL Warriors — Crypto Moonboys Wiki",
-      "url": "/wiki/the-hodl-warriors.html",
-      "category": "factions",
-      "rank_score": 156,
-      "authority_score": 18
-    },
-    {
       "id": "/wiki/the-information-mercenaries.html",
       "title": "The INFORMATION MERCENARIES — Crypto Moonboys Wiki",
       "url": "/wiki/the-information-mercenaries.html",
@@ -2560,14 +1712,6 @@
       "category": "characters",
       "rank_score": 283,
       "authority_score": 23
-    },
-    {
-      "id": "/wiki/token-tokens-via-gk.html",
-      "title": "Token Tokens Via GK — Crypto Moonboys Wiki",
-      "url": "/wiki/token-tokens-via-gk.html",
-      "category": "tokens",
-      "rank_score": 101,
-      "authority_score": 0
     },
     {
       "id": "/wiki/tokenomics.html",
@@ -3178,36 +2322,6 @@
       "weight": 0.52
     },
     {
-      "source": "/wiki/bitcoin-graffpunks.html",
-      "target": "/wiki/hodl-wars.html",
-      "score": 75,
-      "weight": 0.75
-    },
-    {
-      "source": "/wiki/bitcoin-graffpunks.html",
-      "target": "/wiki/games-graffpunks.html",
-      "score": 61,
-      "weight": 0.61
-    },
-    {
-      "source": "/wiki/bitcoin-graffpunks.html",
-      "target": "/wiki/graffpunks-token.html",
-      "score": 61,
-      "weight": 0.61
-    },
-    {
-      "source": "/wiki/bitcoin-graffpunks.html",
-      "target": "/wiki/graffpunks-24-7-radio.html",
-      "score": 56,
-      "weight": 0.56
-    },
-    {
-      "source": "/wiki/bitcoin-graffpunks.html",
-      "target": "/wiki/jonny-laurence-nelson-tag-records.html",
-      "score": 55,
-      "weight": 0.55
-    },
-    {
       "source": "/wiki/bitcoin-kid-army.html",
       "target": "/wiki/the-bitcoin-kid-army.html",
       "score": 98,
@@ -3227,15 +2341,15 @@
     },
     {
       "source": "/wiki/bitcoin-kid-army.html",
-      "target": "/wiki/hodl-warriors-army.html",
-      "score": 79,
-      "weight": 0.79
-    },
-    {
-      "source": "/wiki/bitcoin-kid-army.html",
       "target": "/wiki/hodl-wars.html",
       "score": 78,
       "weight": 0.78
+    },
+    {
+      "source": "/wiki/bitcoin-kid-army.html",
+      "target": "/wiki/rave-relics.html",
+      "score": 76,
+      "weight": 0.76
     },
     {
       "source": "/wiki/bitcoin-kids.html",
@@ -4228,36 +3342,6 @@
       "weight": 0.72
     },
     {
-      "source": "/wiki/games-graffpunks.html",
-      "target": "/wiki/hodl-wars.html",
-      "score": 75,
-      "weight": 0.75
-    },
-    {
-      "source": "/wiki/games-graffpunks.html",
-      "target": "/wiki/hard-fork-games.html",
-      "score": 71,
-      "weight": 0.71
-    },
-    {
-      "source": "/wiki/games-graffpunks.html",
-      "target": "/wiki/no-ball-games-nbg.html",
-      "score": 66,
-      "weight": 0.66
-    },
-    {
-      "source": "/wiki/games-graffpunks.html",
-      "target": "/wiki/hard-fork-games-event.html",
-      "score": 65,
-      "weight": 0.65
-    },
-    {
-      "source": "/wiki/games-graffpunks.html",
-      "target": "/wiki/hard-fork-games-game.html",
-      "score": 64,
-      "weight": 0.64
-    },
-    {
       "source": "/wiki/games4punks-telegram-games.html",
       "target": "/wiki/no-ball-games-nbg.html",
       "score": 93,
@@ -5038,36 +4122,6 @@
       "weight": 0.62
     },
     {
-      "source": "/wiki/graffpunks-token.html",
-      "target": "/wiki/hodl-wars.html",
-      "score": 75,
-      "weight": 0.75
-    },
-    {
-      "source": "/wiki/graffpunks-token.html",
-      "target": "/wiki/bitcoin-graffpunks.html",
-      "score": 61,
-      "weight": 0.61
-    },
-    {
-      "source": "/wiki/graffpunks-token.html",
-      "target": "/wiki/games-graffpunks.html",
-      "score": 61,
-      "weight": 0.61
-    },
-    {
-      "source": "/wiki/graffpunks-token.html",
-      "target": "/wiki/nbg-token.html",
-      "score": 59,
-      "weight": 0.59
-    },
-    {
-      "source": "/wiki/graffpunks-token.html",
-      "target": "/wiki/graffpunks-24-7-radio.html",
-      "score": 56,
-      "weight": 0.56
-    },
-    {
       "source": "/wiki/graffpunks.html",
       "target": "/wiki/hodl-warriors.html",
       "score": 76,
@@ -5368,36 +4422,6 @@
       "weight": 0.72
     },
     {
-      "source": "/wiki/hodl-warriors-army.html",
-      "target": "/wiki/hodl-wars.html",
-      "score": 86,
-      "weight": 0.86
-    },
-    {
-      "source": "/wiki/hodl-warriors-army.html",
-      "target": "/wiki/the-hodl-warriors.html",
-      "score": 85,
-      "weight": 0.85
-    },
-    {
-      "source": "/wiki/hodl-warriors-army.html",
-      "target": "/wiki/the-bitcoin-kid-army.html",
-      "score": 80,
-      "weight": 0.8
-    },
-    {
-      "source": "/wiki/hodl-warriors-army.html",
-      "target": "/wiki/bitcoin-kid-army.html",
-      "score": 77,
-      "weight": 0.77
-    },
-    {
-      "source": "/wiki/hodl-warriors-army.html",
-      "target": "/wiki/rave-relics.html",
-      "score": 76,
-      "weight": 0.76
-    },
-    {
       "source": "/wiki/hodl-warriors.html",
       "target": "/wiki/diamond-hands.html",
       "score": 67,
@@ -5465,18 +4489,6 @@
     },
     {
       "source": "/wiki/hodl-wars.html",
-      "target": "/wiki/hodl-warriors-army.html",
-      "score": 56,
-      "weight": 0.56
-    },
-    {
-      "source": "/wiki/hodl-wars.html",
-      "target": "/wiki/the-hodl-warriors.html",
-      "score": 55,
-      "weight": 0.55
-    },
-    {
-      "source": "/wiki/hodl-wars.html",
       "target": "/wiki/rave-relics.html",
       "score": 54,
       "weight": 0.54
@@ -5484,6 +4496,18 @@
     {
       "source": "/wiki/hodl-wars.html",
       "target": "/wiki/games4punks-telegram.html",
+      "score": 53,
+      "weight": 0.53
+    },
+    {
+      "source": "/wiki/hodl-wars.html",
+      "target": "/wiki/genesis-spray.html",
+      "score": 53,
+      "weight": 0.53
+    },
+    {
+      "source": "/wiki/hodl-wars.html",
+      "target": "/wiki/midevilpunks.html",
       "score": 53,
       "weight": 0.53
     },
@@ -8027,15 +7051,15 @@
     },
     {
       "source": "/wiki/the-bitcoin-kid-army.html",
-      "target": "/wiki/hodl-warriors-army.html",
+      "target": "/wiki/hodl-wars.html",
       "score": 78,
       "weight": 0.78
     },
     {
       "source": "/wiki/the-bitcoin-kid-army.html",
-      "target": "/wiki/hodl-wars.html",
-      "score": 78,
-      "weight": 0.78
+      "target": "/wiki/rave-relics.html",
+      "score": 76,
+      "weight": 0.76
     },
     {
       "source": "/wiki/the-blockchain-furies.html",
@@ -8546,36 +7570,6 @@
       "target": "/wiki/gk.html",
       "score": 72,
       "weight": 0.72
-    },
-    {
-      "source": "/wiki/the-hodl-warriors.html",
-      "target": "/wiki/hodl-warriors-army.html",
-      "score": 86,
-      "weight": 0.86
-    },
-    {
-      "source": "/wiki/the-hodl-warriors.html",
-      "target": "/wiki/hodl-wars.html",
-      "score": 86,
-      "weight": 0.86
-    },
-    {
-      "source": "/wiki/the-hodl-warriors.html",
-      "target": "/wiki/rave-relics.html",
-      "score": 76,
-      "weight": 0.76
-    },
-    {
-      "source": "/wiki/the-hodl-warriors.html",
-      "target": "/wiki/genesis-spray.html",
-      "score": 75,
-      "weight": 0.75
-    },
-    {
-      "source": "/wiki/the-hodl-warriors.html",
-      "target": "/wiki/midevilpunks.html",
-      "score": 75,
-      "weight": 0.75
     },
     {
       "source": "/wiki/the-information-mercenaries.html",
