@@ -1,0 +1,73 @@
+{
+  "generated_at": "2026-04-10T00:42:59.156Z",
+  "phase": "phase_25",
+  "schema_version": "1.0",
+  "summary": {
+    "total_candidates": 1,
+    "top_recommendations": 1,
+    "existing_hubs": 3,
+    "min_cluster_size": 4,
+    "min_hub_score": 50
+  },
+  "existing_hub_slugs": [
+    "ethereum",
+    "graffpunks",
+    "hodl-wars"
+  ],
+  "recommendations": [
+    {
+      "cluster_id": "decentraland-events",
+      "anchor_tag": "graffiti",
+      "anchor_slug": "graffiti-queens-in-decentraland",
+      "anchor_title": "Graffiti Queens in Decentraland",
+      "anchor_url": "/wiki/graffiti-queens-in-decentraland.html",
+      "suggested_hub_slug": "graffiti-queens-in-decentraland-ecosystem",
+      "suggested_hub_url": "/wiki/graffiti-queens-in-decentraland-ecosystem.html",
+      "hub_already_exists": false,
+      "hub_score": 129,
+      "cluster_size": 5,
+      "rank_sum": 863,
+      "avg_rank_score": 173,
+      "link_density": 0,
+      "entity_density": 0.9,
+      "members": [
+        {
+          "url": "/wiki/graffiti-queens-in-decentraland.html",
+          "title": "Graffiti Queens in Decentraland",
+          "rank_score": 237,
+          "category": "factions"
+        },
+        {
+          "url": "/wiki/graffiti-kings.html",
+          "title": "Graffiti Kings",
+          "rank_score": 217,
+          "category": "factions"
+        },
+        {
+          "url": "/wiki/decentraland-events.html",
+          "title": "Decentraland Events",
+          "rank_score": 149,
+          "category": "factions"
+        },
+        {
+          "url": "/wiki/graffiti-queens-exhibition.html",
+          "title": "Graffiti Queens Exhibition",
+          "rank_score": 146,
+          "category": "factions"
+        },
+        {
+          "url": "/wiki/graffiti-nexus.html",
+          "title": "Graffiti Nexus",
+          "rank_score": 114,
+          "category": "characters"
+        }
+      ],
+      "reasons": [
+        "cluster_size:5",
+        "avg_rank:173",
+        "link_density:0%",
+        "entity_density:90%"
+      ]
+    }
+  ]
+}

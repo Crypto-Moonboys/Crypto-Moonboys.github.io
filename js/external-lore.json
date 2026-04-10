@@ -1,0 +1,2113 @@
+{
+  "generated_at": "2026-04-10T00:42:58.929Z",
+  "phase": "phase_25",
+  "schema_version": "1.0",
+  "summary": {
+    "total_entries": 0,
+    "valid_entries": 0,
+    "invalid_entries": 0,
+    "approved_sources": 0,
+    "active_sources": 0
+  },
+  "entry_schema": {
+    "required": [
+      "id",
+      "title",
+      "source_id",
+      "ingested_at"
+    ],
+    "optional": [
+      "date",
+      "summary",
+      "tags",
+      "url",
+      "category",
+      "related_wiki_urls"
+    ],
+    "types": {
+      "id": "string",
+      "title": "string",
+      "source_id": "string",
+      "ingested_at": "string",
+      "date": "string",
+      "summary": "string",
+      "tags": "array",
+      "url": "string",
+      "category": "string",
+      "related_wiki_urls": "array"
+    }
+  },
+  "approved_sources": [],
+  "wiki_cross_reference": {
+    "category_index": {
+      "characters": [
+        "/wiki/1m-free-nfts-programme.html",
+        "/wiki/aleema-child-of-the-shard.html",
+        "/wiki/alfie-blaze.html",
+        "/wiki/ava-chen.html",
+        "/wiki/bear-market-siege.html",
+        "/wiki/billy-the-goat-kid.html",
+        "/wiki/bit-cap-5000.html",
+        "/wiki/bitcoin-kids.html",
+        "/wiki/bitcoin-x-kids.html",
+        "/wiki/block-topia.html",
+        "/wiki/burn-to-earn.html",
+        "/wiki/charlie-buster.html",
+        "/wiki/crypto-moonboys.html",
+        "/wiki/crypto-wallets.html",
+        "/wiki/darren-cullen-ser-real.html",
+        "/wiki/darren-cullen.html",
+        "/wiki/diamond-hands.html",
+        "/wiki/dragan-volkov.html",
+        "/wiki/elder-codex-7.html",
+        "/wiki/forklord-you.html",
+        "/wiki/forksplit.html",
+        "/wiki/gang-signs.html",
+        "/wiki/genesis-kernel.html",
+        "/wiki/genesis-spray-drop.html",
+        "/wiki/gkniftyheads.html",
+        "/wiki/graffiti-nexus.html",
+        "/wiki/graffitikings.html",
+        "/wiki/graffpunks-24-7.html",
+        "/wiki/graffpunks-247-radio.html",
+        "/wiki/graffpunks-ecosystem.html",
+        "/wiki/graffpunks-nfts.html",
+        "/wiki/graffpunks.html",
+        "/wiki/grit.html",
+        "/wiki/grit42.html",
+        "/wiki/hex-tagger-prime.html",
+        "/wiki/hodl-warriors.html",
+        "/wiki/hodl-wars-ecosystem.html",
+        "/wiki/hodl-wars-game.html",
+        "/wiki/hodl-x-warriors.html",
+        "/wiki/ian-harrison.html",
+        "/wiki/iris-7.html",
+        "/wiki/jodie-zoom-2000.html",
+        "/wiki/lady-ink.html",
+        "/wiki/loopfiend.html",
+        "/wiki/m1ntr-k1ll.html",
+        "/wiki/midevil-hero-arena-game.html",
+        "/wiki/midevil-hero-arena.html",
+        "/wiki/nbg.html",
+        "/wiki/nbgx.html",
+        "/wiki/nfts-non-fungible-tokens.html",
+        "/wiki/nfts.html",
+        "/wiki/null-the-prophet.html",
+        "/wiki/patchwork.html",
+        "/wiki/punk-token.html",
+        "/wiki/pyralith.html",
+        "/wiki/queen-sarah-pfly.html",
+        "/wiki/quell.html",
+        "/wiki/rune-tag.html",
+        "/wiki/samael-exe.html",
+        "/wiki/samaelexe.html",
+        "/wiki/sarah-pu51fly.html",
+        "/wiki/satorebel.html",
+        "/wiki/sister-halcyon.html",
+        "/wiki/snipey-d-man-sirus.html",
+        "/wiki/staking.html",
+        "/wiki/the-bear-market-siege.html",
+        "/wiki/the-princess.html",
+        "/wiki/the-wagmi-prophecy.html",
+        "/wiki/the-whitewasher.html",
+        "/wiki/thera-9.html",
+        "/wiki/thorne-the-architect.html",
+        "/wiki/wagmi-prophecy.html",
+        "/wiki/wallets.html",
+        "/wiki/xrp-kids.html"
+      ],
+      "factions": [
+        "/wiki/1m-free-nfts-drop.html",
+        "/wiki/1m-free-nfts-program.html",
+        "/wiki/1m-free-nfts.html",
+        "/wiki/2025-metaverse-launch-party.html",
+        "/wiki/alfie-bitcoin-kid-blaze.html",
+        "/wiki/alfie-the-bitcoin-kid-blaze.html",
+        "/wiki/atomichub-graffpunks-collection.html",
+        "/wiki/battlemech-blast.html",
+        "/wiki/bitcoin-graffpunks.html",
+        "/wiki/bitcoin-kid-army.html",
+        "/wiki/block-node-defenders.html",
+        "/wiki/bone-idol-ink.html",
+        "/wiki/canvas-clash.html",
+        "/wiki/croydon-tower-blocks.html",
+        "/wiki/darren-cullen-ser.html",
+        "/wiki/decentraland-events.html",
+        "/wiki/delicious-again-pete.html",
+        "/wiki/dream-sovereign.html",
+        "/wiki/forkborn-collective.html",
+        "/wiki/games-graffpunks.html",
+        "/wiki/games4punks-telegram-games.html",
+        "/wiki/games4punks-telegram.html",
+        "/wiki/gang-signs-card-game.html",
+        "/wiki/genesis-spray.html",
+        "/wiki/gk-token.html",
+        "/wiki/gk-tokens.html",
+        "/wiki/gk.html",
+        "/wiki/gkniftyheads-phase-one-two-three.html",
+        "/wiki/graffiti-kings.html",
+        "/wiki/graffiti-queens-exhibition.html",
+        "/wiki/graffiti-queens-in-decentraland.html",
+        "/wiki/graffpunks-24-7-blockchain-radio-station.html",
+        "/wiki/graffpunks-24-7-radio.html",
+        "/wiki/graffpunks-247-blockchain-radio-station.html",
+        "/wiki/graffpunks-247.html",
+        "/wiki/graffpunks-collection.html",
+        "/wiki/graffpunks-network.html",
+        "/wiki/graffpunks-token.html",
+        "/wiki/great-datapocalypse-of-2789.html",
+        "/wiki/hard-fork-games-event.html",
+        "/wiki/hard-fork-games-game.html",
+        "/wiki/hard-fork-games.html",
+        "/wiki/harrison-rift.html",
+        "/wiki/head-tags.html",
+        "/wiki/hodl-warriors-army.html",
+        "/wiki/hodl-wars.html",
+        "/wiki/jillian-godsil.html",
+        "/wiki/jonny-laurence-nelson-tag-records.html",
+        "/wiki/leake-street-tunnel.html",
+        "/wiki/lfgk-rewards.html",
+        "/wiki/lfgk-token.html",
+        "/wiki/lfgk.html",
+        "/wiki/maidstone-base.html",
+        "/wiki/medium-articles-by-gkniftyheads.html",
+        "/wiki/medium-articles-by-graffpunks.html",
+        "/wiki/medium-articles-by-hodlwarriors.html",
+        "/wiki/medium-articles-by-sercullen.html",
+        "/wiki/metaverse-battles.html",
+        "/wiki/metropolis.html",
+        "/wiki/midevilpunks.html",
+        "/wiki/nbg-token.html",
+        "/wiki/nbgx-token.html",
+        "/wiki/neftyblocks-midevilpunks-collection.html",
+        "/wiki/nifty-crowns.html",
+        "/wiki/nine-armies.html",
+        "/wiki/no-ball-games-nbg-collection.html",
+        "/wiki/no-ball-games-nbg.html",
+        "/wiki/one-million-free-nfts.html",
+        "/wiki/phygital-prints.html",
+        "/wiki/playable-nft-murals.html",
+        "/wiki/pmsl-token.html",
+        "/wiki/pmsl.html",
+        "/wiki/punk.html",
+        "/wiki/queen-sarah-p-fly.html",
+        "/wiki/rave-relics.html",
+        "/wiki/sacred-chain.html",
+        "/wiki/seeding-rights.html",
+        "/wiki/smart-nft-mechanics.html",
+        "/wiki/sneakar.html",
+        "/wiki/spirit-borns.html",
+        "/wiki/spraycode-writcode-mechanics.html",
+        "/wiki/spraycode-writcode.html",
+        "/wiki/squeaky-pinks-enforcers.html",
+        "/wiki/stake-for-gk-tokens.html",
+        "/wiki/staking-for-gk-tokens.html",
+        "/wiki/stikfamwars.html",
+        "/wiki/street-kingdoms.html",
+        "/wiki/substack-posts-on-graffpunks-substack-com.html",
+        "/wiki/substack-posts-on-graffpunkssubstackcom.html",
+        "/wiki/the-allcity-bulls.html",
+        "/wiki/the-aztec-raiders.html",
+        "/wiki/the-bally-boys.html",
+        "/wiki/the-bitcoin-kid-army.html",
+        "/wiki/the-blockchain-furies.html",
+        "/wiki/the-blockstars.html",
+        "/wiki/the-chain-scribes.html",
+        "/wiki/the-code-alchemists.html",
+        "/wiki/the-crypto-moongirls.html",
+        "/wiki/the-crypto-stoned-boys.html",
+        "/wiki/the-ducky-boys.html",
+        "/wiki/the-evm-punks.html",
+        "/wiki/the-finance-guild.html",
+        "/wiki/the-gasless-ghosts.html",
+        "/wiki/the-gkniftyheads.html",
+        "/wiki/the-graffpunks.html",
+        "/wiki/the-grids.html",
+        "/wiki/the-hard-fork-rockers.html",
+        "/wiki/the-high-hats.html",
+        "/wiki/the-hodl-warriors.html",
+        "/wiki/the-information-mercenaries.html",
+        "/wiki/the-moonlords.html",
+        "/wiki/the-nice-easy-bois.html",
+        "/wiki/the-nomad-bears.html",
+        "/wiki/the-og-pixel-saints.html",
+        "/wiki/the-rugpull-miners.html",
+        "/wiki/the-sacred-chain.html",
+        "/wiki/the-salvagers.html",
+        "/wiki/the-shard-mothers-of-manhattan.html",
+        "/wiki/the-squeaky-pinks.html",
+        "/wiki/the-tuskon-ogs.html",
+        "/wiki/the-whale-lords.html",
+        "/wiki/trevor-fung.html",
+        "/wiki/triple-fork-event.html",
+        "/wiki/waxp.html",
+        "/wiki/whale-lords.html",
+        "/wiki/xrp-kids-genesis-nfts.html",
+        "/wiki/xrp-kids-nbg-updates.html"
+      ],
+      "tokens": [
+        "/wiki/altcoins.html",
+        "/wiki/bitcoin-btc.html",
+        "/wiki/bitcoin.html",
+        "/wiki/blockchain-technology.html",
+        "/wiki/blockchain.html",
+        "/wiki/crypto-exchanges.html",
+        "/wiki/defi-decentralised-finance.html",
+        "/wiki/defi.html",
+        "/wiki/ethereum-ecosystem.html",
+        "/wiki/ethereum-eth.html",
+        "/wiki/ethereum.html",
+        "/wiki/exchanges.html",
+        "/wiki/fomo-plague.html",
+        "/wiki/meme-coins.html",
+        "/wiki/memecoins.html",
+        "/wiki/moon-mission.html",
+        "/wiki/ngmi-chronicles.html",
+        "/wiki/paper-hands.html",
+        "/wiki/punk-coin.html",
+        "/wiki/rug-pull-wars.html",
+        "/wiki/satoshi-scroll.html",
+        "/wiki/solana-sol.html",
+        "/wiki/solana.html",
+        "/wiki/the-fomo-plague.html",
+        "/wiki/the-great-dip.html",
+        "/wiki/the-satoshi-scroll.html",
+        "/wiki/tokenomics.html",
+        "/wiki/tokens.html",
+        "/wiki/web3.html"
+      ]
+    },
+    "tag_index": {
+      "24": [
+        "/wiki/graffpunks-24-7-blockchain-radio-station.html",
+        "/wiki/graffpunks-24-7-radio.html",
+        "/wiki/graffpunks-24-7.html",
+        "/wiki/graffpunks-247-blockchain-radio-station.html"
+      ],
+      "247": [
+        "/wiki/graffpunks-247-radio.html",
+        "/wiki/graffpunks-247.html"
+      ],
+      "2000": [
+        "/wiki/jodie-zoom-2000.html"
+      ],
+      "2025": [
+        "/wiki/2025-metaverse-launch-party.html"
+      ],
+      "2789": [
+        "/wiki/great-datapocalypse-of-2789.html"
+      ],
+      "5000": [
+        "/wiki/bit-cap-5000.html"
+      ],
+      "1m": [
+        "/wiki/1m-free-nfts-drop.html",
+        "/wiki/1m-free-nfts-program.html",
+        "/wiki/1m-free-nfts-programme.html",
+        "/wiki/1m-free-nfts.html"
+      ],
+      "again": [
+        "/wiki/delicious-again-pete.html"
+      ],
+      "alchemists": [
+        "/wiki/the-code-alchemists.html"
+      ],
+      "aleema": [
+        "/wiki/aleema-child-of-the-shard.html"
+      ],
+      "alfie": [
+        "/wiki/alfie-bitcoin-kid-blaze.html",
+        "/wiki/alfie-blaze.html",
+        "/wiki/alfie-the-bitcoin-kid-blaze.html"
+      ],
+      "allcity": [
+        "/wiki/the-allcity-bulls.html"
+      ],
+      "altcoins": [
+        "/wiki/altcoins.html"
+      ],
+      "amp": [
+        "/wiki/bitcoin-graffpunks.html",
+        "/wiki/games-graffpunks.html",
+        "/wiki/graffpunks-token.html",
+        "/wiki/jonny-laurence-nelson-tag-records.html",
+        "/wiki/spraycode-writcode-mechanics.html",
+        "/wiki/spraycode-writcode.html",
+        "/wiki/the-nice-easy-bois.html"
+      ],
+      "architect": [
+        "/wiki/thorne-the-architect.html"
+      ],
+      "arena": [
+        "/wiki/midevil-hero-arena-game.html",
+        "/wiki/midevil-hero-arena.html"
+      ],
+      "armies": [
+        "/wiki/nine-armies.html"
+      ],
+      "army": [
+        "/wiki/bitcoin-kid-army.html",
+        "/wiki/hodl-warriors-army.html",
+        "/wiki/the-bitcoin-kid-army.html"
+      ],
+      "articles": [
+        "/wiki/medium-articles-by-gkniftyheads.html",
+        "/wiki/medium-articles-by-graffpunks.html",
+        "/wiki/medium-articles-by-hodlwarriors.html",
+        "/wiki/medium-articles-by-sercullen.html"
+      ],
+      "atomichub": [
+        "/wiki/atomichub-graffpunks-collection.html"
+      ],
+      "ava": [
+        "/wiki/ava-chen.html"
+      ],
+      "aztec": [
+        "/wiki/the-aztec-raiders.html"
+      ],
+      "ball": [
+        "/wiki/no-ball-games-nbg-collection.html",
+        "/wiki/no-ball-games-nbg.html"
+      ],
+      "bally": [
+        "/wiki/the-bally-boys.html"
+      ],
+      "base": [
+        "/wiki/maidstone-base.html"
+      ],
+      "battlemech": [
+        "/wiki/battlemech-blast.html"
+      ],
+      "battles": [
+        "/wiki/metaverse-battles.html"
+      ],
+      "bear": [
+        "/wiki/bear-market-siege.html",
+        "/wiki/the-bear-market-siege.html"
+      ],
+      "bears": [
+        "/wiki/the-nomad-bears.html"
+      ],
+      "billy": [
+        "/wiki/billy-the-goat-kid.html"
+      ],
+      "bit": [
+        "/wiki/bit-cap-5000.html"
+      ],
+      "bitcoin": [
+        "/wiki/alfie-bitcoin-kid-blaze.html",
+        "/wiki/alfie-the-bitcoin-kid-blaze.html",
+        "/wiki/bitcoin-btc.html",
+        "/wiki/bitcoin-graffpunks.html",
+        "/wiki/bitcoin-kid-army.html",
+        "/wiki/bitcoin-kids.html",
+        "/wiki/bitcoin-x-kids.html",
+        "/wiki/bitcoin.html",
+        "/wiki/the-bitcoin-kid-army.html"
+      ],
+      "blast": [
+        "/wiki/battlemech-blast.html"
+      ],
+      "blaze": [
+        "/wiki/alfie-bitcoin-kid-blaze.html",
+        "/wiki/alfie-blaze.html",
+        "/wiki/alfie-the-bitcoin-kid-blaze.html"
+      ],
+      "block": [
+        "/wiki/block-node-defenders.html",
+        "/wiki/block-topia.html"
+      ],
+      "blockchain": [
+        "/wiki/blockchain-technology.html",
+        "/wiki/blockchain.html",
+        "/wiki/graffpunks-24-7-blockchain-radio-station.html",
+        "/wiki/graffpunks-247-blockchain-radio-station.html",
+        "/wiki/the-blockchain-furies.html"
+      ],
+      "blocks": [
+        "/wiki/croydon-tower-blocks.html"
+      ],
+      "blockstars": [
+        "/wiki/the-blockstars.html"
+      ],
+      "bois": [
+        "/wiki/the-nice-easy-bois.html"
+      ],
+      "bone": [
+        "/wiki/bone-idol-ink.html"
+      ],
+      "borns": [
+        "/wiki/spirit-borns.html"
+      ],
+      "boys": [
+        "/wiki/the-bally-boys.html",
+        "/wiki/the-crypto-stoned-boys.html",
+        "/wiki/the-ducky-boys.html"
+      ],
+      "btc": [
+        "/wiki/bitcoin-btc.html",
+        "/wiki/bitcoin.html"
+      ],
+      "bulls": [
+        "/wiki/the-allcity-bulls.html"
+      ],
+      "burn": [
+        "/wiki/burn-to-earn.html"
+      ],
+      "buster": [
+        "/wiki/charlie-buster.html"
+      ],
+      "canvas": [
+        "/wiki/canvas-clash.html"
+      ],
+      "cap": [
+        "/wiki/bit-cap-5000.html"
+      ],
+      "card": [
+        "/wiki/gang-signs-card-game.html"
+      ],
+      "chain": [
+        "/wiki/sacred-chain.html",
+        "/wiki/the-chain-scribes.html",
+        "/wiki/the-sacred-chain.html"
+      ],
+      "charlie": [
+        "/wiki/charlie-buster.html"
+      ],
+      "chen": [
+        "/wiki/ava-chen.html"
+      ],
+      "child": [
+        "/wiki/aleema-child-of-the-shard.html"
+      ],
+      "chronicles": [
+        "/wiki/ngmi-chronicles.html"
+      ],
+      "clash": [
+        "/wiki/canvas-clash.html"
+      ],
+      "code": [
+        "/wiki/the-code-alchemists.html"
+      ],
+      "codex": [
+        "/wiki/elder-codex-7.html"
+      ],
+      "coin": [
+        "/wiki/punk-coin.html"
+      ],
+      "coins": [
+        "/wiki/meme-coins.html",
+        "/wiki/memecoins.html"
+      ],
+      "collection": [
+        "/wiki/atomichub-graffpunks-collection.html",
+        "/wiki/graffpunks-collection.html",
+        "/wiki/neftyblocks-midevilpunks-collection.html",
+        "/wiki/no-ball-games-nbg-collection.html"
+      ],
+      "collective": [
+        "/wiki/forkborn-collective.html"
+      ],
+      "com": [
+        "/wiki/substack-posts-on-graffpunks-substack-com.html",
+        "/wiki/substack-posts-on-graffpunkssubstackcom.html"
+      ],
+      "crowns": [
+        "/wiki/nifty-crowns.html"
+      ],
+      "croydon": [
+        "/wiki/croydon-tower-blocks.html"
+      ],
+      "crypto": [
+        "/wiki/1m-free-nfts-drop.html",
+        "/wiki/1m-free-nfts-program.html",
+        "/wiki/1m-free-nfts-programme.html",
+        "/wiki/1m-free-nfts.html",
+        "/wiki/2025-metaverse-launch-party.html",
+        "/wiki/aleema-child-of-the-shard.html",
+        "/wiki/alfie-bitcoin-kid-blaze.html",
+        "/wiki/alfie-blaze.html",
+        "/wiki/alfie-the-bitcoin-kid-blaze.html",
+        "/wiki/altcoins.html",
+        "/wiki/atomichub-graffpunks-collection.html",
+        "/wiki/ava-chen.html",
+        "/wiki/battlemech-blast.html",
+        "/wiki/bear-market-siege.html",
+        "/wiki/billy-the-goat-kid.html",
+        "/wiki/bit-cap-5000.html",
+        "/wiki/bitcoin-btc.html",
+        "/wiki/bitcoin-graffpunks.html",
+        "/wiki/bitcoin-kid-army.html",
+        "/wiki/bitcoin-kids.html",
+        "/wiki/bitcoin-x-kids.html",
+        "/wiki/bitcoin.html",
+        "/wiki/block-node-defenders.html",
+        "/wiki/block-topia.html",
+        "/wiki/blockchain-technology.html",
+        "/wiki/blockchain.html",
+        "/wiki/bone-idol-ink.html",
+        "/wiki/burn-to-earn.html",
+        "/wiki/canvas-clash.html",
+        "/wiki/charlie-buster.html",
+        "/wiki/croydon-tower-blocks.html",
+        "/wiki/crypto-exchanges.html",
+        "/wiki/crypto-moonboys.html",
+        "/wiki/crypto-wallets.html",
+        "/wiki/darren-cullen-ser-real.html",
+        "/wiki/darren-cullen-ser.html",
+        "/wiki/darren-cullen.html",
+        "/wiki/decentraland-events.html",
+        "/wiki/defi-decentralised-finance.html",
+        "/wiki/defi.html",
+        "/wiki/delicious-again-pete.html",
+        "/wiki/diamond-hands.html",
+        "/wiki/dragan-volkov.html",
+        "/wiki/dream-sovereign.html",
+        "/wiki/elder-codex-7.html",
+        "/wiki/ethereum-ecosystem.html",
+        "/wiki/ethereum-eth.html",
+        "/wiki/ethereum.html",
+        "/wiki/exchanges.html",
+        "/wiki/fomo-plague.html",
+        "/wiki/forkborn-collective.html",
+        "/wiki/forklord-you.html",
+        "/wiki/forksplit.html",
+        "/wiki/games-graffpunks.html",
+        "/wiki/games4punks-telegram-games.html",
+        "/wiki/games4punks-telegram.html",
+        "/wiki/gang-signs-card-game.html",
+        "/wiki/gang-signs.html",
+        "/wiki/genesis-kernel.html",
+        "/wiki/genesis-spray-drop.html",
+        "/wiki/genesis-spray.html",
+        "/wiki/gk-token.html",
+        "/wiki/gk-tokens.html",
+        "/wiki/gk.html",
+        "/wiki/gkniftyheads-phase-one-two-three.html",
+        "/wiki/gkniftyheads.html",
+        "/wiki/graffiti-kings.html",
+        "/wiki/graffiti-nexus.html",
+        "/wiki/graffiti-queens-exhibition.html",
+        "/wiki/graffiti-queens-in-decentraland.html",
+        "/wiki/graffitikings.html",
+        "/wiki/graffpunks-24-7-blockchain-radio-station.html",
+        "/wiki/graffpunks-24-7-radio.html",
+        "/wiki/graffpunks-24-7.html",
+        "/wiki/graffpunks-247-blockchain-radio-station.html",
+        "/wiki/graffpunks-247-radio.html",
+        "/wiki/graffpunks-247.html",
+        "/wiki/graffpunks-collection.html",
+        "/wiki/graffpunks-ecosystem.html",
+        "/wiki/graffpunks-network.html",
+        "/wiki/graffpunks-nfts.html",
+        "/wiki/graffpunks-token.html",
+        "/wiki/graffpunks.html",
+        "/wiki/great-datapocalypse-of-2789.html",
+        "/wiki/grit.html",
+        "/wiki/grit42.html",
+        "/wiki/hard-fork-games-event.html",
+        "/wiki/hard-fork-games-game.html",
+        "/wiki/hard-fork-games.html",
+        "/wiki/harrison-rift.html",
+        "/wiki/head-tags.html",
+        "/wiki/hex-tagger-prime.html",
+        "/wiki/hodl-warriors-army.html",
+        "/wiki/hodl-warriors.html",
+        "/wiki/hodl-wars-ecosystem.html",
+        "/wiki/hodl-wars-game.html",
+        "/wiki/hodl-wars.html",
+        "/wiki/hodl-x-warriors.html",
+        "/wiki/ian-harrison.html",
+        "/wiki/iris-7.html",
+        "/wiki/jillian-godsil.html",
+        "/wiki/jodie-zoom-2000.html",
+        "/wiki/jonny-laurence-nelson-tag-records.html",
+        "/wiki/lady-ink.html",
+        "/wiki/leake-street-tunnel.html",
+        "/wiki/lfgk-rewards.html",
+        "/wiki/lfgk-token.html",
+        "/wiki/lfgk.html",
+        "/wiki/loopfiend.html",
+        "/wiki/m1ntr-k1ll.html",
+        "/wiki/maidstone-base.html",
+        "/wiki/medium-articles-by-gkniftyheads.html",
+        "/wiki/medium-articles-by-graffpunks.html",
+        "/wiki/medium-articles-by-hodlwarriors.html",
+        "/wiki/medium-articles-by-sercullen.html",
+        "/wiki/meme-coins.html",
+        "/wiki/memecoins.html",
+        "/wiki/metaverse-battles.html",
+        "/wiki/metropolis.html",
+        "/wiki/midevil-hero-arena-game.html",
+        "/wiki/midevil-hero-arena.html",
+        "/wiki/midevilpunks.html",
+        "/wiki/moon-mission.html",
+        "/wiki/nbg-token.html",
+        "/wiki/nbg.html",
+        "/wiki/nbgx-token.html",
+        "/wiki/nbgx.html",
+        "/wiki/neftyblocks-midevilpunks-collection.html",
+        "/wiki/nfts-non-fungible-tokens.html",
+        "/wiki/nfts.html",
+        "/wiki/ngmi-chronicles.html",
+        "/wiki/nifty-crowns.html",
+        "/wiki/nine-armies.html",
+        "/wiki/no-ball-games-nbg-collection.html",
+        "/wiki/no-ball-games-nbg.html",
+        "/wiki/null-the-prophet.html",
+        "/wiki/one-million-free-nfts.html",
+        "/wiki/paper-hands.html",
+        "/wiki/patchwork.html",
+        "/wiki/phygital-prints.html",
+        "/wiki/playable-nft-murals.html",
+        "/wiki/pmsl-token.html",
+        "/wiki/pmsl.html",
+        "/wiki/punk-coin.html",
+        "/wiki/punk-token.html",
+        "/wiki/punk.html",
+        "/wiki/pyralith.html",
+        "/wiki/queen-sarah-p-fly.html",
+        "/wiki/queen-sarah-pfly.html",
+        "/wiki/quell.html",
+        "/wiki/rave-relics.html",
+        "/wiki/rug-pull-wars.html",
+        "/wiki/rune-tag.html",
+        "/wiki/sacred-chain.html",
+        "/wiki/samael-exe.html",
+        "/wiki/samaelexe.html",
+        "/wiki/sarah-pu51fly.html",
+        "/wiki/satorebel.html",
+        "/wiki/satoshi-scroll.html",
+        "/wiki/seeding-rights.html",
+        "/wiki/sister-halcyon.html",
+        "/wiki/smart-nft-mechanics.html",
+        "/wiki/sneakar.html",
+        "/wiki/snipey-d-man-sirus.html",
+        "/wiki/solana-sol.html",
+        "/wiki/solana.html",
+        "/wiki/spirit-borns.html",
+        "/wiki/spraycode-writcode-mechanics.html",
+        "/wiki/spraycode-writcode.html",
+        "/wiki/squeaky-pinks-enforcers.html",
+        "/wiki/stake-for-gk-tokens.html",
+        "/wiki/staking-for-gk-tokens.html",
+        "/wiki/staking.html",
+        "/wiki/stikfamwars.html",
+        "/wiki/street-kingdoms.html",
+        "/wiki/substack-posts-on-graffpunks-substack-com.html",
+        "/wiki/substack-posts-on-graffpunkssubstackcom.html",
+        "/wiki/the-allcity-bulls.html",
+        "/wiki/the-aztec-raiders.html",
+        "/wiki/the-bally-boys.html",
+        "/wiki/the-bear-market-siege.html",
+        "/wiki/the-bitcoin-kid-army.html",
+        "/wiki/the-blockchain-furies.html",
+        "/wiki/the-blockstars.html",
+        "/wiki/the-chain-scribes.html",
+        "/wiki/the-code-alchemists.html",
+        "/wiki/the-crypto-moongirls.html",
+        "/wiki/the-crypto-stoned-boys.html",
+        "/wiki/the-ducky-boys.html",
+        "/wiki/the-evm-punks.html",
+        "/wiki/the-finance-guild.html",
+        "/wiki/the-fomo-plague.html",
+        "/wiki/the-gasless-ghosts.html",
+        "/wiki/the-gkniftyheads.html",
+        "/wiki/the-graffpunks.html",
+        "/wiki/the-great-dip.html",
+        "/wiki/the-grids.html",
+        "/wiki/the-hard-fork-rockers.html",
+        "/wiki/the-high-hats.html",
+        "/wiki/the-hodl-warriors.html",
+        "/wiki/the-information-mercenaries.html",
+        "/wiki/the-moonlords.html",
+        "/wiki/the-nice-easy-bois.html",
+        "/wiki/the-nomad-bears.html",
+        "/wiki/the-og-pixel-saints.html",
+        "/wiki/the-princess.html",
+        "/wiki/the-rugpull-miners.html",
+        "/wiki/the-sacred-chain.html",
+        "/wiki/the-salvagers.html",
+        "/wiki/the-satoshi-scroll.html",
+        "/wiki/the-shard-mothers-of-manhattan.html",
+        "/wiki/the-squeaky-pinks.html",
+        "/wiki/the-tuskon-ogs.html",
+        "/wiki/the-wagmi-prophecy.html",
+        "/wiki/the-whale-lords.html",
+        "/wiki/the-whitewasher.html",
+        "/wiki/thera-9.html",
+        "/wiki/thorne-the-architect.html",
+        "/wiki/tokenomics.html",
+        "/wiki/tokens.html",
+        "/wiki/trevor-fung.html",
+        "/wiki/triple-fork-event.html",
+        "/wiki/wagmi-prophecy.html",
+        "/wiki/wallets.html",
+        "/wiki/waxp.html",
+        "/wiki/web3.html",
+        "/wiki/whale-lords.html",
+        "/wiki/xrp-kids-genesis-nfts.html",
+        "/wiki/xrp-kids-nbg-updates.html",
+        "/wiki/xrp-kids.html"
+      ],
+      "cullen": [
+        "/wiki/darren-cullen-ser-real.html",
+        "/wiki/darren-cullen-ser.html",
+        "/wiki/darren-cullen.html"
+      ],
+      "darren": [
+        "/wiki/darren-cullen-ser-real.html",
+        "/wiki/darren-cullen-ser.html",
+        "/wiki/darren-cullen.html"
+      ],
+      "datapocalypse": [
+        "/wiki/great-datapocalypse-of-2789.html"
+      ],
+      "decentraland": [
+        "/wiki/decentraland-events.html",
+        "/wiki/graffiti-queens-in-decentraland.html"
+      ],
+      "decentralised": [
+        "/wiki/defi-decentralised-finance.html",
+        "/wiki/defi.html"
+      ],
+      "defenders": [
+        "/wiki/block-node-defenders.html"
+      ],
+      "defi": [
+        "/wiki/defi-decentralised-finance.html",
+        "/wiki/defi.html"
+      ],
+      "delicious": [
+        "/wiki/delicious-again-pete.html"
+      ],
+      "diamond": [
+        "/wiki/diamond-hands.html"
+      ],
+      "dip": [
+        "/wiki/the-great-dip.html"
+      ],
+      "dragan": [
+        "/wiki/dragan-volkov.html"
+      ],
+      "dream": [
+        "/wiki/dream-sovereign.html"
+      ],
+      "drop": [
+        "/wiki/1m-free-nfts-drop.html",
+        "/wiki/genesis-spray-drop.html"
+      ],
+      "ducky": [
+        "/wiki/the-ducky-boys.html"
+      ],
+      "earn": [
+        "/wiki/burn-to-earn.html"
+      ],
+      "easy": [
+        "/wiki/the-nice-easy-bois.html"
+      ],
+      "ecosystem": [
+        "/wiki/ethereum-ecosystem.html",
+        "/wiki/graffpunks-ecosystem.html",
+        "/wiki/hodl-wars-ecosystem.html"
+      ],
+      "elder": [
+        "/wiki/elder-codex-7.html"
+      ],
+      "enforcers": [
+        "/wiki/squeaky-pinks-enforcers.html"
+      ],
+      "eth": [
+        "/wiki/ethereum-ecosystem.html",
+        "/wiki/ethereum-eth.html",
+        "/wiki/ethereum.html"
+      ],
+      "ethereum": [
+        "/wiki/ethereum-ecosystem.html",
+        "/wiki/ethereum-eth.html",
+        "/wiki/ethereum.html"
+      ],
+      "event": [
+        "/wiki/hard-fork-games-event.html",
+        "/wiki/triple-fork-event.html"
+      ],
+      "events": [
+        "/wiki/decentraland-events.html"
+      ],
+      "evm": [
+        "/wiki/the-evm-punks.html"
+      ],
+      "exchanges": [
+        "/wiki/crypto-exchanges.html",
+        "/wiki/exchanges.html"
+      ],
+      "exe": [
+        "/wiki/samael-exe.html",
+        "/wiki/samaelexe.html"
+      ],
+      "exhibition": [
+        "/wiki/graffiti-queens-exhibition.html"
+      ],
+      "finance": [
+        "/wiki/defi-decentralised-finance.html",
+        "/wiki/defi.html",
+        "/wiki/the-finance-guild.html"
+      ],
+      "fly": [
+        "/wiki/queen-sarah-p-fly.html"
+      ],
+      "fomo": [
+        "/wiki/fomo-plague.html",
+        "/wiki/the-fomo-plague.html"
+      ],
+      "fork": [
+        "/wiki/hard-fork-games-event.html",
+        "/wiki/hard-fork-games-game.html",
+        "/wiki/hard-fork-games.html",
+        "/wiki/the-hard-fork-rockers.html",
+        "/wiki/triple-fork-event.html"
+      ],
+      "forkborn": [
+        "/wiki/forkborn-collective.html"
+      ],
+      "forklord": [
+        "/wiki/forklord-you.html"
+      ],
+      "forksplit": [
+        "/wiki/forksplit.html"
+      ],
+      "free": [
+        "/wiki/1m-free-nfts-drop.html",
+        "/wiki/1m-free-nfts-program.html",
+        "/wiki/1m-free-nfts-programme.html",
+        "/wiki/1m-free-nfts.html",
+        "/wiki/one-million-free-nfts.html"
+      ],
+      "fung": [
+        "/wiki/trevor-fung.html"
+      ],
+      "fungible": [
+        "/wiki/nfts-non-fungible-tokens.html",
+        "/wiki/nfts.html"
+      ],
+      "furies": [
+        "/wiki/the-blockchain-furies.html"
+      ],
+      "game": [
+        "/wiki/gang-signs-card-game.html",
+        "/wiki/hard-fork-games-game.html",
+        "/wiki/hodl-wars-game.html",
+        "/wiki/midevil-hero-arena-game.html"
+      ],
+      "games": [
+        "/wiki/games-graffpunks.html",
+        "/wiki/games4punks-telegram-games.html",
+        "/wiki/hard-fork-games-event.html",
+        "/wiki/hard-fork-games-game.html",
+        "/wiki/hard-fork-games.html",
+        "/wiki/no-ball-games-nbg-collection.html",
+        "/wiki/no-ball-games-nbg.html"
+      ],
+      "games4punks": [
+        "/wiki/games4punks-telegram-games.html",
+        "/wiki/games4punks-telegram.html"
+      ],
+      "gang": [
+        "/wiki/gang-signs-card-game.html",
+        "/wiki/gang-signs.html"
+      ],
+      "gasless": [
+        "/wiki/the-gasless-ghosts.html"
+      ],
+      "genesis": [
+        "/wiki/genesis-kernel.html",
+        "/wiki/genesis-spray-drop.html",
+        "/wiki/genesis-spray.html",
+        "/wiki/xrp-kids-genesis-nfts.html"
+      ],
+      "ghosts": [
+        "/wiki/the-gasless-ghosts.html"
+      ],
+      "gk": [
+        "/wiki/gk-token.html",
+        "/wiki/gk-tokens.html",
+        "/wiki/gk.html",
+        "/wiki/stake-for-gk-tokens.html",
+        "/wiki/staking-for-gk-tokens.html"
+      ],
+      "gkniftyheads": [
+        "/wiki/gkniftyheads-phase-one-two-three.html",
+        "/wiki/gkniftyheads.html",
+        "/wiki/medium-articles-by-gkniftyheads.html",
+        "/wiki/the-gkniftyheads.html"
+      ],
+      "goat": [
+        "/wiki/billy-the-goat-kid.html"
+      ],
+      "godsil": [
+        "/wiki/jillian-godsil.html"
+      ],
+      "graffiti": [
+        "/wiki/graffiti-kings.html",
+        "/wiki/graffiti-nexus.html",
+        "/wiki/graffiti-queens-exhibition.html",
+        "/wiki/graffiti-queens-in-decentraland.html"
+      ],
+      "graffitikings": [
+        "/wiki/graffitikings.html"
+      ],
+      "graffpunks": [
+        "/wiki/atomichub-graffpunks-collection.html",
+        "/wiki/bitcoin-graffpunks.html",
+        "/wiki/games-graffpunks.html",
+        "/wiki/graffpunks-24-7-blockchain-radio-station.html",
+        "/wiki/graffpunks-24-7-radio.html",
+        "/wiki/graffpunks-24-7.html",
+        "/wiki/graffpunks-247-blockchain-radio-station.html",
+        "/wiki/graffpunks-247-radio.html",
+        "/wiki/graffpunks-247.html",
+        "/wiki/graffpunks-collection.html",
+        "/wiki/graffpunks-ecosystem.html",
+        "/wiki/graffpunks-network.html",
+        "/wiki/graffpunks-nfts.html",
+        "/wiki/graffpunks-token.html",
+        "/wiki/graffpunks.html",
+        "/wiki/medium-articles-by-graffpunks.html",
+        "/wiki/substack-posts-on-graffpunks-substack-com.html",
+        "/wiki/substack-posts-on-graffpunkssubstackcom.html",
+        "/wiki/the-graffpunks.html"
+      ],
+      "great": [
+        "/wiki/great-datapocalypse-of-2789.html",
+        "/wiki/the-great-dip.html"
+      ],
+      "grids": [
+        "/wiki/the-grids.html"
+      ],
+      "grit": [
+        "/wiki/grit.html"
+      ],
+      "grit42": [
+        "/wiki/grit42.html"
+      ],
+      "guild": [
+        "/wiki/the-finance-guild.html"
+      ],
+      "halcyon": [
+        "/wiki/sister-halcyon.html"
+      ],
+      "hands": [
+        "/wiki/diamond-hands.html",
+        "/wiki/paper-hands.html"
+      ],
+      "hard": [
+        "/wiki/hard-fork-games-event.html",
+        "/wiki/hard-fork-games-game.html",
+        "/wiki/hard-fork-games.html",
+        "/wiki/the-hard-fork-rockers.html"
+      ],
+      "harrison": [
+        "/wiki/harrison-rift.html",
+        "/wiki/ian-harrison.html"
+      ],
+      "hats": [
+        "/wiki/the-high-hats.html"
+      ],
+      "head": [
+        "/wiki/head-tags.html"
+      ],
+      "hero": [
+        "/wiki/midevil-hero-arena-game.html",
+        "/wiki/midevil-hero-arena.html"
+      ],
+      "hex": [
+        "/wiki/hex-tagger-prime.html"
+      ],
+      "high": [
+        "/wiki/the-high-hats.html"
+      ],
+      "hodl": [
+        "/wiki/hodl-warriors-army.html",
+        "/wiki/hodl-warriors.html",
+        "/wiki/hodl-wars-ecosystem.html",
+        "/wiki/hodl-wars-game.html",
+        "/wiki/hodl-wars.html",
+        "/wiki/hodl-x-warriors.html",
+        "/wiki/the-hodl-warriors.html"
+      ],
+      "hodlwarriors": [
+        "/wiki/medium-articles-by-hodlwarriors.html"
+      ],
+      "ian": [
+        "/wiki/ian-harrison.html"
+      ],
+      "idol": [
+        "/wiki/bone-idol-ink.html"
+      ],
+      "information": [
+        "/wiki/the-information-mercenaries.html"
+      ],
+      "ink": [
+        "/wiki/bone-idol-ink.html",
+        "/wiki/lady-ink.html"
+      ],
+      "iris": [
+        "/wiki/iris-7.html"
+      ],
+      "jillian": [
+        "/wiki/jillian-godsil.html"
+      ],
+      "jodie": [
+        "/wiki/jodie-zoom-2000.html"
+      ],
+      "jonny": [
+        "/wiki/jonny-laurence-nelson-tag-records.html"
+      ],
+      "k1ll": [
+        "/wiki/m1ntr-k1ll.html"
+      ],
+      "kernel": [
+        "/wiki/genesis-kernel.html"
+      ],
+      "kid": [
+        "/wiki/alfie-bitcoin-kid-blaze.html",
+        "/wiki/alfie-the-bitcoin-kid-blaze.html",
+        "/wiki/billy-the-goat-kid.html",
+        "/wiki/bitcoin-kid-army.html",
+        "/wiki/the-bitcoin-kid-army.html"
+      ],
+      "kids": [
+        "/wiki/bitcoin-kids.html",
+        "/wiki/bitcoin-x-kids.html",
+        "/wiki/xrp-kids-genesis-nfts.html",
+        "/wiki/xrp-kids-nbg-updates.html",
+        "/wiki/xrp-kids.html"
+      ],
+      "kingdoms": [
+        "/wiki/street-kingdoms.html"
+      ],
+      "kings": [
+        "/wiki/graffiti-kings.html"
+      ],
+      "lady": [
+        "/wiki/lady-ink.html"
+      ],
+      "launch": [
+        "/wiki/2025-metaverse-launch-party.html"
+      ],
+      "laurence": [
+        "/wiki/jonny-laurence-nelson-tag-records.html"
+      ],
+      "leake": [
+        "/wiki/leake-street-tunnel.html"
+      ],
+      "lfgk": [
+        "/wiki/lfgk-rewards.html",
+        "/wiki/lfgk-token.html",
+        "/wiki/lfgk.html"
+      ],
+      "loopfiend": [
+        "/wiki/loopfiend.html"
+      ],
+      "lords": [
+        "/wiki/the-whale-lords.html",
+        "/wiki/whale-lords.html"
+      ],
+      "m1ntr": [
+        "/wiki/m1ntr-k1ll.html"
+      ],
+      "maidstone": [
+        "/wiki/maidstone-base.html"
+      ],
+      "man": [
+        "/wiki/snipey-d-man-sirus.html"
+      ],
+      "manhattan": [
+        "/wiki/the-shard-mothers-of-manhattan.html"
+      ],
+      "market": [
+        "/wiki/bear-market-siege.html",
+        "/wiki/the-bear-market-siege.html"
+      ],
+      "mechanics": [
+        "/wiki/smart-nft-mechanics.html",
+        "/wiki/spraycode-writcode-mechanics.html"
+      ],
+      "medium": [
+        "/wiki/medium-articles-by-gkniftyheads.html",
+        "/wiki/medium-articles-by-graffpunks.html",
+        "/wiki/medium-articles-by-hodlwarriors.html",
+        "/wiki/medium-articles-by-sercullen.html"
+      ],
+      "meme": [
+        "/wiki/meme-coins.html",
+        "/wiki/memecoins.html"
+      ],
+      "mercenaries": [
+        "/wiki/the-information-mercenaries.html"
+      ],
+      "metaverse": [
+        "/wiki/2025-metaverse-launch-party.html",
+        "/wiki/metaverse-battles.html"
+      ],
+      "metropolis": [
+        "/wiki/metropolis.html"
+      ],
+      "midevil": [
+        "/wiki/midevil-hero-arena-game.html",
+        "/wiki/midevil-hero-arena.html"
+      ],
+      "midevilpunks": [
+        "/wiki/midevilpunks.html",
+        "/wiki/neftyblocks-midevilpunks-collection.html"
+      ],
+      "million": [
+        "/wiki/one-million-free-nfts.html"
+      ],
+      "miners": [
+        "/wiki/the-rugpull-miners.html"
+      ],
+      "mission": [
+        "/wiki/moon-mission.html"
+      ],
+      "moon": [
+        "/wiki/moon-mission.html"
+      ],
+      "moonboys": [
+        "/wiki/1m-free-nfts-drop.html",
+        "/wiki/1m-free-nfts-program.html",
+        "/wiki/1m-free-nfts-programme.html",
+        "/wiki/1m-free-nfts.html",
+        "/wiki/2025-metaverse-launch-party.html",
+        "/wiki/aleema-child-of-the-shard.html",
+        "/wiki/alfie-bitcoin-kid-blaze.html",
+        "/wiki/alfie-blaze.html",
+        "/wiki/alfie-the-bitcoin-kid-blaze.html",
+        "/wiki/altcoins.html",
+        "/wiki/atomichub-graffpunks-collection.html",
+        "/wiki/ava-chen.html",
+        "/wiki/battlemech-blast.html",
+        "/wiki/bear-market-siege.html",
+        "/wiki/billy-the-goat-kid.html",
+        "/wiki/bit-cap-5000.html",
+        "/wiki/bitcoin-btc.html",
+        "/wiki/bitcoin-graffpunks.html",
+        "/wiki/bitcoin-kid-army.html",
+        "/wiki/bitcoin-kids.html",
+        "/wiki/bitcoin-x-kids.html",
+        "/wiki/bitcoin.html",
+        "/wiki/block-node-defenders.html",
+        "/wiki/block-topia.html",
+        "/wiki/blockchain-technology.html",
+        "/wiki/blockchain.html",
+        "/wiki/bone-idol-ink.html",
+        "/wiki/burn-to-earn.html",
+        "/wiki/canvas-clash.html",
+        "/wiki/charlie-buster.html",
+        "/wiki/croydon-tower-blocks.html",
+        "/wiki/crypto-exchanges.html",
+        "/wiki/crypto-moonboys.html",
+        "/wiki/crypto-wallets.html",
+        "/wiki/darren-cullen-ser-real.html",
+        "/wiki/darren-cullen-ser.html",
+        "/wiki/darren-cullen.html",
+        "/wiki/decentraland-events.html",
+        "/wiki/defi-decentralised-finance.html",
+        "/wiki/defi.html",
+        "/wiki/delicious-again-pete.html",
+        "/wiki/diamond-hands.html",
+        "/wiki/dragan-volkov.html",
+        "/wiki/dream-sovereign.html",
+        "/wiki/elder-codex-7.html",
+        "/wiki/ethereum-ecosystem.html",
+        "/wiki/ethereum-eth.html",
+        "/wiki/ethereum.html",
+        "/wiki/exchanges.html",
+        "/wiki/fomo-plague.html",
+        "/wiki/forkborn-collective.html",
+        "/wiki/forklord-you.html",
+        "/wiki/forksplit.html",
+        "/wiki/games-graffpunks.html",
+        "/wiki/games4punks-telegram-games.html",
+        "/wiki/games4punks-telegram.html",
+        "/wiki/gang-signs-card-game.html",
+        "/wiki/gang-signs.html",
+        "/wiki/genesis-kernel.html",
+        "/wiki/genesis-spray-drop.html",
+        "/wiki/genesis-spray.html",
+        "/wiki/gk-token.html",
+        "/wiki/gk-tokens.html",
+        "/wiki/gk.html",
+        "/wiki/gkniftyheads-phase-one-two-three.html",
+        "/wiki/gkniftyheads.html",
+        "/wiki/graffiti-kings.html",
+        "/wiki/graffiti-nexus.html",
+        "/wiki/graffiti-queens-exhibition.html",
+        "/wiki/graffiti-queens-in-decentraland.html",
+        "/wiki/graffitikings.html",
+        "/wiki/graffpunks-24-7-blockchain-radio-station.html",
+        "/wiki/graffpunks-24-7-radio.html",
+        "/wiki/graffpunks-24-7.html",
+        "/wiki/graffpunks-247-blockchain-radio-station.html",
+        "/wiki/graffpunks-247-radio.html",
+        "/wiki/graffpunks-247.html",
+        "/wiki/graffpunks-collection.html",
+        "/wiki/graffpunks-ecosystem.html",
+        "/wiki/graffpunks-network.html",
+        "/wiki/graffpunks-nfts.html",
+        "/wiki/graffpunks-token.html",
+        "/wiki/graffpunks.html",
+        "/wiki/great-datapocalypse-of-2789.html",
+        "/wiki/grit.html",
+        "/wiki/grit42.html",
+        "/wiki/hard-fork-games-event.html",
+        "/wiki/hard-fork-games-game.html",
+        "/wiki/hard-fork-games.html",
+        "/wiki/harrison-rift.html",
+        "/wiki/head-tags.html",
+        "/wiki/hex-tagger-prime.html",
+        "/wiki/hodl-warriors-army.html",
+        "/wiki/hodl-warriors.html",
+        "/wiki/hodl-wars-ecosystem.html",
+        "/wiki/hodl-wars-game.html",
+        "/wiki/hodl-wars.html",
+        "/wiki/hodl-x-warriors.html",
+        "/wiki/ian-harrison.html",
+        "/wiki/iris-7.html",
+        "/wiki/jillian-godsil.html",
+        "/wiki/jodie-zoom-2000.html",
+        "/wiki/jonny-laurence-nelson-tag-records.html",
+        "/wiki/lady-ink.html",
+        "/wiki/leake-street-tunnel.html",
+        "/wiki/lfgk-rewards.html",
+        "/wiki/lfgk-token.html",
+        "/wiki/lfgk.html",
+        "/wiki/loopfiend.html",
+        "/wiki/m1ntr-k1ll.html",
+        "/wiki/maidstone-base.html",
+        "/wiki/medium-articles-by-gkniftyheads.html",
+        "/wiki/medium-articles-by-graffpunks.html",
+        "/wiki/medium-articles-by-hodlwarriors.html",
+        "/wiki/medium-articles-by-sercullen.html",
+        "/wiki/meme-coins.html",
+        "/wiki/memecoins.html",
+        "/wiki/metaverse-battles.html",
+        "/wiki/metropolis.html",
+        "/wiki/midevil-hero-arena-game.html",
+        "/wiki/midevil-hero-arena.html",
+        "/wiki/midevilpunks.html",
+        "/wiki/moon-mission.html",
+        "/wiki/nbg-token.html",
+        "/wiki/nbg.html",
+        "/wiki/nbgx-token.html",
+        "/wiki/nbgx.html",
+        "/wiki/neftyblocks-midevilpunks-collection.html",
+        "/wiki/nfts-non-fungible-tokens.html",
+        "/wiki/nfts.html",
+        "/wiki/ngmi-chronicles.html",
+        "/wiki/nifty-crowns.html",
+        "/wiki/nine-armies.html",
+        "/wiki/no-ball-games-nbg-collection.html",
+        "/wiki/no-ball-games-nbg.html",
+        "/wiki/null-the-prophet.html",
+        "/wiki/one-million-free-nfts.html",
+        "/wiki/paper-hands.html",
+        "/wiki/patchwork.html",
+        "/wiki/phygital-prints.html",
+        "/wiki/playable-nft-murals.html",
+        "/wiki/pmsl-token.html",
+        "/wiki/pmsl.html",
+        "/wiki/punk-coin.html",
+        "/wiki/punk-token.html",
+        "/wiki/punk.html",
+        "/wiki/pyralith.html",
+        "/wiki/queen-sarah-p-fly.html",
+        "/wiki/queen-sarah-pfly.html",
+        "/wiki/quell.html",
+        "/wiki/rave-relics.html",
+        "/wiki/rug-pull-wars.html",
+        "/wiki/rune-tag.html",
+        "/wiki/sacred-chain.html",
+        "/wiki/samael-exe.html",
+        "/wiki/samaelexe.html",
+        "/wiki/sarah-pu51fly.html",
+        "/wiki/satorebel.html",
+        "/wiki/satoshi-scroll.html",
+        "/wiki/seeding-rights.html",
+        "/wiki/sister-halcyon.html",
+        "/wiki/smart-nft-mechanics.html",
+        "/wiki/sneakar.html",
+        "/wiki/snipey-d-man-sirus.html",
+        "/wiki/solana-sol.html",
+        "/wiki/solana.html",
+        "/wiki/spirit-borns.html",
+        "/wiki/spraycode-writcode-mechanics.html",
+        "/wiki/spraycode-writcode.html",
+        "/wiki/squeaky-pinks-enforcers.html",
+        "/wiki/stake-for-gk-tokens.html",
+        "/wiki/staking-for-gk-tokens.html",
+        "/wiki/staking.html",
+        "/wiki/stikfamwars.html",
+        "/wiki/street-kingdoms.html",
+        "/wiki/substack-posts-on-graffpunks-substack-com.html",
+        "/wiki/substack-posts-on-graffpunkssubstackcom.html",
+        "/wiki/the-allcity-bulls.html",
+        "/wiki/the-aztec-raiders.html",
+        "/wiki/the-bally-boys.html",
+        "/wiki/the-bear-market-siege.html",
+        "/wiki/the-bitcoin-kid-army.html",
+        "/wiki/the-blockchain-furies.html",
+        "/wiki/the-blockstars.html",
+        "/wiki/the-chain-scribes.html",
+        "/wiki/the-code-alchemists.html",
+        "/wiki/the-crypto-moongirls.html",
+        "/wiki/the-crypto-stoned-boys.html",
+        "/wiki/the-ducky-boys.html",
+        "/wiki/the-evm-punks.html",
+        "/wiki/the-finance-guild.html",
+        "/wiki/the-fomo-plague.html",
+        "/wiki/the-gasless-ghosts.html",
+        "/wiki/the-gkniftyheads.html",
+        "/wiki/the-graffpunks.html",
+        "/wiki/the-great-dip.html",
+        "/wiki/the-grids.html",
+        "/wiki/the-hard-fork-rockers.html",
+        "/wiki/the-high-hats.html",
+        "/wiki/the-hodl-warriors.html",
+        "/wiki/the-information-mercenaries.html",
+        "/wiki/the-moonlords.html",
+        "/wiki/the-nice-easy-bois.html",
+        "/wiki/the-nomad-bears.html",
+        "/wiki/the-og-pixel-saints.html",
+        "/wiki/the-princess.html",
+        "/wiki/the-rugpull-miners.html",
+        "/wiki/the-sacred-chain.html",
+        "/wiki/the-salvagers.html",
+        "/wiki/the-satoshi-scroll.html",
+        "/wiki/the-shard-mothers-of-manhattan.html",
+        "/wiki/the-squeaky-pinks.html",
+        "/wiki/the-tuskon-ogs.html",
+        "/wiki/the-wagmi-prophecy.html",
+        "/wiki/the-whale-lords.html",
+        "/wiki/the-whitewasher.html",
+        "/wiki/thera-9.html",
+        "/wiki/thorne-the-architect.html",
+        "/wiki/tokenomics.html",
+        "/wiki/tokens.html",
+        "/wiki/trevor-fung.html",
+        "/wiki/triple-fork-event.html",
+        "/wiki/wagmi-prophecy.html",
+        "/wiki/wallets.html",
+        "/wiki/waxp.html",
+        "/wiki/web3.html",
+        "/wiki/whale-lords.html",
+        "/wiki/xrp-kids-genesis-nfts.html",
+        "/wiki/xrp-kids-nbg-updates.html",
+        "/wiki/xrp-kids.html"
+      ],
+      "moongirls": [
+        "/wiki/the-crypto-moongirls.html"
+      ],
+      "moonlords": [
+        "/wiki/the-moonlords.html"
+      ],
+      "mothers": [
+        "/wiki/the-shard-mothers-of-manhattan.html"
+      ],
+      "murals": [
+        "/wiki/playable-nft-murals.html"
+      ],
+      "nbg": [
+        "/wiki/nbg-token.html",
+        "/wiki/nbg.html",
+        "/wiki/no-ball-games-nbg-collection.html",
+        "/wiki/no-ball-games-nbg.html",
+        "/wiki/xrp-kids-nbg-updates.html"
+      ],
+      "nbgx": [
+        "/wiki/nbgx-token.html",
+        "/wiki/nbgx.html"
+      ],
+      "neftyblocks": [
+        "/wiki/neftyblocks-midevilpunks-collection.html"
+      ],
+      "nelson": [
+        "/wiki/jonny-laurence-nelson-tag-records.html"
+      ],
+      "network": [
+        "/wiki/graffpunks-network.html"
+      ],
+      "nexus": [
+        "/wiki/graffiti-nexus.html"
+      ],
+      "nft": [
+        "/wiki/playable-nft-murals.html",
+        "/wiki/smart-nft-mechanics.html"
+      ],
+      "nfts": [
+        "/wiki/1m-free-nfts-drop.html",
+        "/wiki/1m-free-nfts-program.html",
+        "/wiki/1m-free-nfts-programme.html",
+        "/wiki/1m-free-nfts.html",
+        "/wiki/graffpunks-nfts.html",
+        "/wiki/nfts-non-fungible-tokens.html",
+        "/wiki/nfts.html",
+        "/wiki/one-million-free-nfts.html",
+        "/wiki/xrp-kids-genesis-nfts.html"
+      ],
+      "ngmi": [
+        "/wiki/ngmi-chronicles.html"
+      ],
+      "nice": [
+        "/wiki/the-nice-easy-bois.html"
+      ],
+      "nifty": [
+        "/wiki/nifty-crowns.html"
+      ],
+      "nine": [
+        "/wiki/nine-armies.html"
+      ],
+      "no": [
+        "/wiki/no-ball-games-nbg-collection.html",
+        "/wiki/no-ball-games-nbg.html"
+      ],
+      "node": [
+        "/wiki/block-node-defenders.html"
+      ],
+      "nomad": [
+        "/wiki/the-nomad-bears.html"
+      ],
+      "non": [
+        "/wiki/nfts-non-fungible-tokens.html",
+        "/wiki/nfts.html"
+      ],
+      "null": [
+        "/wiki/null-the-prophet.html"
+      ],
+      "og": [
+        "/wiki/the-og-pixel-saints.html"
+      ],
+      "ogs": [
+        "/wiki/the-tuskon-ogs.html"
+      ],
+      "one": [
+        "/wiki/gkniftyheads-phase-one-two-three.html",
+        "/wiki/one-million-free-nfts.html"
+      ],
+      "paper": [
+        "/wiki/paper-hands.html"
+      ],
+      "party": [
+        "/wiki/2025-metaverse-launch-party.html"
+      ],
+      "patchwork": [
+        "/wiki/patchwork.html"
+      ],
+      "pete": [
+        "/wiki/delicious-again-pete.html"
+      ],
+      "pfly": [
+        "/wiki/queen-sarah-pfly.html"
+      ],
+      "phase": [
+        "/wiki/gkniftyheads-phase-one-two-three.html"
+      ],
+      "phygital": [
+        "/wiki/phygital-prints.html"
+      ],
+      "pinks": [
+        "/wiki/squeaky-pinks-enforcers.html",
+        "/wiki/the-squeaky-pinks.html"
+      ],
+      "pixel": [
+        "/wiki/the-og-pixel-saints.html"
+      ],
+      "plague": [
+        "/wiki/fomo-plague.html",
+        "/wiki/the-fomo-plague.html"
+      ],
+      "playable": [
+        "/wiki/playable-nft-murals.html"
+      ],
+      "pmsl": [
+        "/wiki/pmsl-token.html",
+        "/wiki/pmsl.html"
+      ],
+      "posts": [
+        "/wiki/substack-posts-on-graffpunks-substack-com.html",
+        "/wiki/substack-posts-on-graffpunkssubstackcom.html"
+      ],
+      "prime": [
+        "/wiki/hex-tagger-prime.html"
+      ],
+      "princess": [
+        "/wiki/the-princess.html"
+      ],
+      "prints": [
+        "/wiki/phygital-prints.html"
+      ],
+      "program": [
+        "/wiki/1m-free-nfts-program.html"
+      ],
+      "programme": [
+        "/wiki/1m-free-nfts-programme.html"
+      ],
+      "prophecy": [
+        "/wiki/the-wagmi-prophecy.html",
+        "/wiki/wagmi-prophecy.html"
+      ],
+      "prophet": [
+        "/wiki/null-the-prophet.html"
+      ],
+      "pu51fly": [
+        "/wiki/sarah-pu51fly.html"
+      ],
+      "pull": [
+        "/wiki/rug-pull-wars.html"
+      ],
+      "punk": [
+        "/wiki/punk-coin.html",
+        "/wiki/punk-token.html",
+        "/wiki/punk.html"
+      ],
+      "punks": [
+        "/wiki/the-evm-punks.html"
+      ],
+      "pyralith": [
+        "/wiki/pyralith.html"
+      ],
+      "queen": [
+        "/wiki/queen-sarah-p-fly.html",
+        "/wiki/queen-sarah-pfly.html"
+      ],
+      "queens": [
+        "/wiki/graffiti-queens-exhibition.html",
+        "/wiki/graffiti-queens-in-decentraland.html"
+      ],
+      "quell": [
+        "/wiki/quell.html"
+      ],
+      "radio": [
+        "/wiki/graffpunks-24-7-blockchain-radio-station.html",
+        "/wiki/graffpunks-24-7-radio.html",
+        "/wiki/graffpunks-247-blockchain-radio-station.html",
+        "/wiki/graffpunks-247-radio.html"
+      ],
+      "raiders": [
+        "/wiki/the-aztec-raiders.html"
+      ],
+      "rave": [
+        "/wiki/rave-relics.html"
+      ],
+      "real": [
+        "/wiki/darren-cullen-ser-real.html"
+      ],
+      "records": [
+        "/wiki/jonny-laurence-nelson-tag-records.html"
+      ],
+      "relics": [
+        "/wiki/rave-relics.html"
+      ],
+      "rewards": [
+        "/wiki/lfgk-rewards.html"
+      ],
+      "rift": [
+        "/wiki/harrison-rift.html"
+      ],
+      "rights": [
+        "/wiki/seeding-rights.html"
+      ],
+      "rockers": [
+        "/wiki/the-hard-fork-rockers.html"
+      ],
+      "rug": [
+        "/wiki/rug-pull-wars.html"
+      ],
+      "rugpull": [
+        "/wiki/the-rugpull-miners.html"
+      ],
+      "rune": [
+        "/wiki/rune-tag.html"
+      ],
+      "sacred": [
+        "/wiki/sacred-chain.html",
+        "/wiki/the-sacred-chain.html"
+      ],
+      "saints": [
+        "/wiki/the-og-pixel-saints.html"
+      ],
+      "salvagers": [
+        "/wiki/the-salvagers.html"
+      ],
+      "samael": [
+        "/wiki/samael-exe.html",
+        "/wiki/samaelexe.html"
+      ],
+      "sarah": [
+        "/wiki/queen-sarah-p-fly.html",
+        "/wiki/queen-sarah-pfly.html",
+        "/wiki/sarah-pu51fly.html"
+      ],
+      "satorebel": [
+        "/wiki/satorebel.html"
+      ],
+      "satoshi": [
+        "/wiki/satoshi-scroll.html",
+        "/wiki/the-satoshi-scroll.html"
+      ],
+      "scribes": [
+        "/wiki/the-chain-scribes.html"
+      ],
+      "scroll": [
+        "/wiki/satoshi-scroll.html",
+        "/wiki/the-satoshi-scroll.html"
+      ],
+      "seeding": [
+        "/wiki/seeding-rights.html"
+      ],
+      "ser": [
+        "/wiki/darren-cullen-ser-real.html",
+        "/wiki/darren-cullen-ser.html"
+      ],
+      "sercullen": [
+        "/wiki/medium-articles-by-sercullen.html"
+      ],
+      "shard": [
+        "/wiki/aleema-child-of-the-shard.html",
+        "/wiki/the-shard-mothers-of-manhattan.html"
+      ],
+      "siege": [
+        "/wiki/bear-market-siege.html",
+        "/wiki/the-bear-market-siege.html"
+      ],
+      "signs": [
+        "/wiki/gang-signs-card-game.html",
+        "/wiki/gang-signs.html"
+      ],
+      "sirus": [
+        "/wiki/snipey-d-man-sirus.html"
+      ],
+      "sister": [
+        "/wiki/sister-halcyon.html"
+      ],
+      "smart": [
+        "/wiki/smart-nft-mechanics.html"
+      ],
+      "sneakar": [
+        "/wiki/sneakar.html"
+      ],
+      "snipey": [
+        "/wiki/snipey-d-man-sirus.html"
+      ],
+      "sol": [
+        "/wiki/solana-sol.html",
+        "/wiki/solana.html"
+      ],
+      "solana": [
+        "/wiki/solana-sol.html",
+        "/wiki/solana.html"
+      ],
+      "sovereign": [
+        "/wiki/dream-sovereign.html"
+      ],
+      "spirit": [
+        "/wiki/spirit-borns.html"
+      ],
+      "spray": [
+        "/wiki/genesis-spray-drop.html",
+        "/wiki/genesis-spray.html"
+      ],
+      "spraycode": [
+        "/wiki/spraycode-writcode-mechanics.html",
+        "/wiki/spraycode-writcode.html"
+      ],
+      "squeaky": [
+        "/wiki/squeaky-pinks-enforcers.html",
+        "/wiki/the-squeaky-pinks.html"
+      ],
+      "stake": [
+        "/wiki/stake-for-gk-tokens.html"
+      ],
+      "staking": [
+        "/wiki/staking-for-gk-tokens.html",
+        "/wiki/staking.html"
+      ],
+      "station": [
+        "/wiki/graffpunks-24-7-blockchain-radio-station.html",
+        "/wiki/graffpunks-247-blockchain-radio-station.html"
+      ],
+      "stikfamwars": [
+        "/wiki/stikfamwars.html"
+      ],
+      "stoned": [
+        "/wiki/the-crypto-stoned-boys.html"
+      ],
+      "street": [
+        "/wiki/leake-street-tunnel.html",
+        "/wiki/street-kingdoms.html"
+      ],
+      "substack": [
+        "/wiki/substack-posts-on-graffpunks-substack-com.html",
+        "/wiki/substack-posts-on-graffpunkssubstackcom.html"
+      ],
+      "tag": [
+        "/wiki/jonny-laurence-nelson-tag-records.html",
+        "/wiki/rune-tag.html"
+      ],
+      "tagger": [
+        "/wiki/hex-tagger-prime.html"
+      ],
+      "tags": [
+        "/wiki/head-tags.html"
+      ],
+      "technology": [
+        "/wiki/blockchain-technology.html",
+        "/wiki/blockchain.html"
+      ],
+      "telegram": [
+        "/wiki/games4punks-telegram-games.html",
+        "/wiki/games4punks-telegram.html"
+      ],
+      "thera": [
+        "/wiki/thera-9.html"
+      ],
+      "thorne": [
+        "/wiki/thorne-the-architect.html"
+      ],
+      "three": [
+        "/wiki/gkniftyheads-phase-one-two-three.html"
+      ],
+      "token": [
+        "/wiki/gk-token.html",
+        "/wiki/graffpunks-token.html",
+        "/wiki/lfgk-token.html",
+        "/wiki/nbg-token.html",
+        "/wiki/nbgx-token.html",
+        "/wiki/pmsl-token.html",
+        "/wiki/punk-token.html"
+      ],
+      "tokenomics": [
+        "/wiki/tokenomics.html"
+      ],
+      "tokens": [
+        "/wiki/gk-tokens.html",
+        "/wiki/nfts-non-fungible-tokens.html",
+        "/wiki/nfts.html",
+        "/wiki/stake-for-gk-tokens.html",
+        "/wiki/staking-for-gk-tokens.html",
+        "/wiki/tokens.html"
+      ],
+      "topia": [
+        "/wiki/block-topia.html"
+      ],
+      "tower": [
+        "/wiki/croydon-tower-blocks.html"
+      ],
+      "trevor": [
+        "/wiki/trevor-fung.html"
+      ],
+      "triple": [
+        "/wiki/triple-fork-event.html"
+      ],
+      "tunnel": [
+        "/wiki/leake-street-tunnel.html"
+      ],
+      "tuskon": [
+        "/wiki/the-tuskon-ogs.html"
+      ],
+      "two": [
+        "/wiki/gkniftyheads-phase-one-two-three.html"
+      ],
+      "updates": [
+        "/wiki/xrp-kids-nbg-updates.html"
+      ],
+      "volkov": [
+        "/wiki/dragan-volkov.html"
+      ],
+      "wagmi": [
+        "/wiki/the-wagmi-prophecy.html",
+        "/wiki/wagmi-prophecy.html"
+      ],
+      "wallets": [
+        "/wiki/crypto-wallets.html",
+        "/wiki/wallets.html"
+      ],
+      "warriors": [
+        "/wiki/hodl-warriors-army.html",
+        "/wiki/hodl-warriors.html",
+        "/wiki/hodl-x-warriors.html",
+        "/wiki/the-hodl-warriors.html"
+      ],
+      "wars": [
+        "/wiki/hodl-wars-ecosystem.html",
+        "/wiki/hodl-wars-game.html",
+        "/wiki/hodl-wars.html",
+        "/wiki/rug-pull-wars.html"
+      ],
+      "waxp": [
+        "/wiki/waxp.html"
+      ],
+      "web3": [
+        "/wiki/web3.html"
+      ],
+      "whale": [
+        "/wiki/the-whale-lords.html",
+        "/wiki/whale-lords.html"
+      ],
+      "whitewasher": [
+        "/wiki/the-whitewasher.html"
+      ],
+      "wiki": [
+        "/wiki/1m-free-nfts-drop.html",
+        "/wiki/1m-free-nfts-program.html",
+        "/wiki/1m-free-nfts-programme.html",
+        "/wiki/1m-free-nfts.html",
+        "/wiki/2025-metaverse-launch-party.html",
+        "/wiki/aleema-child-of-the-shard.html",
+        "/wiki/alfie-bitcoin-kid-blaze.html",
+        "/wiki/alfie-blaze.html",
+        "/wiki/alfie-the-bitcoin-kid-blaze.html",
+        "/wiki/altcoins.html",
+        "/wiki/atomichub-graffpunks-collection.html",
+        "/wiki/ava-chen.html",
+        "/wiki/battlemech-blast.html",
+        "/wiki/bear-market-siege.html",
+        "/wiki/billy-the-goat-kid.html",
+        "/wiki/bit-cap-5000.html",
+        "/wiki/bitcoin-btc.html",
+        "/wiki/bitcoin-graffpunks.html",
+        "/wiki/bitcoin-kid-army.html",
+        "/wiki/bitcoin-kids.html",
+        "/wiki/bitcoin-x-kids.html",
+        "/wiki/bitcoin.html",
+        "/wiki/block-node-defenders.html",
+        "/wiki/block-topia.html",
+        "/wiki/blockchain-technology.html",
+        "/wiki/blockchain.html",
+        "/wiki/bone-idol-ink.html",
+        "/wiki/burn-to-earn.html",
+        "/wiki/canvas-clash.html",
+        "/wiki/charlie-buster.html",
+        "/wiki/croydon-tower-blocks.html",
+        "/wiki/crypto-exchanges.html",
+        "/wiki/crypto-moonboys.html",
+        "/wiki/crypto-wallets.html",
+        "/wiki/darren-cullen-ser-real.html",
+        "/wiki/darren-cullen-ser.html",
+        "/wiki/darren-cullen.html",
+        "/wiki/decentraland-events.html",
+        "/wiki/defi-decentralised-finance.html",
+        "/wiki/defi.html",
+        "/wiki/delicious-again-pete.html",
+        "/wiki/diamond-hands.html",
+        "/wiki/dragan-volkov.html",
+        "/wiki/dream-sovereign.html",
+        "/wiki/elder-codex-7.html",
+        "/wiki/ethereum-ecosystem.html",
+        "/wiki/ethereum-eth.html",
+        "/wiki/ethereum.html",
+        "/wiki/exchanges.html",
+        "/wiki/fomo-plague.html",
+        "/wiki/forkborn-collective.html",
+        "/wiki/forklord-you.html",
+        "/wiki/forksplit.html",
+        "/wiki/games-graffpunks.html",
+        "/wiki/games4punks-telegram-games.html",
+        "/wiki/games4punks-telegram.html",
+        "/wiki/gang-signs-card-game.html",
+        "/wiki/gang-signs.html",
+        "/wiki/genesis-kernel.html",
+        "/wiki/genesis-spray-drop.html",
+        "/wiki/genesis-spray.html",
+        "/wiki/gk-token.html",
+        "/wiki/gk-tokens.html",
+        "/wiki/gk.html",
+        "/wiki/gkniftyheads-phase-one-two-three.html",
+        "/wiki/gkniftyheads.html",
+        "/wiki/graffiti-kings.html",
+        "/wiki/graffiti-nexus.html",
+        "/wiki/graffiti-queens-exhibition.html",
+        "/wiki/graffiti-queens-in-decentraland.html",
+        "/wiki/graffitikings.html",
+        "/wiki/graffpunks-24-7-blockchain-radio-station.html",
+        "/wiki/graffpunks-24-7-radio.html",
+        "/wiki/graffpunks-24-7.html",
+        "/wiki/graffpunks-247-blockchain-radio-station.html",
+        "/wiki/graffpunks-247-radio.html",
+        "/wiki/graffpunks-247.html",
+        "/wiki/graffpunks-collection.html",
+        "/wiki/graffpunks-ecosystem.html",
+        "/wiki/graffpunks-network.html",
+        "/wiki/graffpunks-nfts.html",
+        "/wiki/graffpunks-token.html",
+        "/wiki/graffpunks.html",
+        "/wiki/great-datapocalypse-of-2789.html",
+        "/wiki/grit.html",
+        "/wiki/grit42.html",
+        "/wiki/hard-fork-games-event.html",
+        "/wiki/hard-fork-games-game.html",
+        "/wiki/hard-fork-games.html",
+        "/wiki/harrison-rift.html",
+        "/wiki/head-tags.html",
+        "/wiki/hex-tagger-prime.html",
+        "/wiki/hodl-warriors-army.html",
+        "/wiki/hodl-warriors.html",
+        "/wiki/hodl-wars-ecosystem.html",
+        "/wiki/hodl-wars-game.html",
+        "/wiki/hodl-wars.html",
+        "/wiki/hodl-x-warriors.html",
+        "/wiki/ian-harrison.html",
+        "/wiki/iris-7.html",
+        "/wiki/jillian-godsil.html",
+        "/wiki/jodie-zoom-2000.html",
+        "/wiki/jonny-laurence-nelson-tag-records.html",
+        "/wiki/lady-ink.html",
+        "/wiki/leake-street-tunnel.html",
+        "/wiki/lfgk-rewards.html",
+        "/wiki/lfgk-token.html",
+        "/wiki/lfgk.html",
+        "/wiki/loopfiend.html",
+        "/wiki/m1ntr-k1ll.html",
+        "/wiki/maidstone-base.html",
+        "/wiki/medium-articles-by-gkniftyheads.html",
+        "/wiki/medium-articles-by-graffpunks.html",
+        "/wiki/medium-articles-by-hodlwarriors.html",
+        "/wiki/medium-articles-by-sercullen.html",
+        "/wiki/meme-coins.html",
+        "/wiki/memecoins.html",
+        "/wiki/metaverse-battles.html",
+        "/wiki/metropolis.html",
+        "/wiki/midevil-hero-arena-game.html",
+        "/wiki/midevil-hero-arena.html",
+        "/wiki/midevilpunks.html",
+        "/wiki/moon-mission.html",
+        "/wiki/nbg-token.html",
+        "/wiki/nbg.html",
+        "/wiki/nbgx-token.html",
+        "/wiki/nbgx.html",
+        "/wiki/neftyblocks-midevilpunks-collection.html",
+        "/wiki/nfts-non-fungible-tokens.html",
+        "/wiki/nfts.html",
+        "/wiki/ngmi-chronicles.html",
+        "/wiki/nifty-crowns.html",
+        "/wiki/nine-armies.html",
+        "/wiki/no-ball-games-nbg-collection.html",
+        "/wiki/no-ball-games-nbg.html",
+        "/wiki/null-the-prophet.html",
+        "/wiki/one-million-free-nfts.html",
+        "/wiki/paper-hands.html",
+        "/wiki/patchwork.html",
+        "/wiki/phygital-prints.html",
+        "/wiki/playable-nft-murals.html",
+        "/wiki/pmsl-token.html",
+        "/wiki/pmsl.html",
+        "/wiki/punk-coin.html",
+        "/wiki/punk-token.html",
+        "/wiki/punk.html",
+        "/wiki/pyralith.html",
+        "/wiki/queen-sarah-p-fly.html",
+        "/wiki/queen-sarah-pfly.html",
+        "/wiki/quell.html",
+        "/wiki/rave-relics.html",
+        "/wiki/rug-pull-wars.html",
+        "/wiki/rune-tag.html",
+        "/wiki/sacred-chain.html",
+        "/wiki/samael-exe.html",
+        "/wiki/samaelexe.html",
+        "/wiki/sarah-pu51fly.html",
+        "/wiki/satorebel.html",
+        "/wiki/satoshi-scroll.html",
+        "/wiki/seeding-rights.html",
+        "/wiki/sister-halcyon.html",
+        "/wiki/smart-nft-mechanics.html",
+        "/wiki/sneakar.html",
+        "/wiki/snipey-d-man-sirus.html",
+        "/wiki/solana-sol.html",
+        "/wiki/solana.html",
+        "/wiki/spirit-borns.html",
+        "/wiki/spraycode-writcode-mechanics.html",
+        "/wiki/spraycode-writcode.html",
+        "/wiki/squeaky-pinks-enforcers.html",
+        "/wiki/stake-for-gk-tokens.html",
+        "/wiki/staking-for-gk-tokens.html",
+        "/wiki/staking.html",
+        "/wiki/stikfamwars.html",
+        "/wiki/street-kingdoms.html",
+        "/wiki/substack-posts-on-graffpunks-substack-com.html",
+        "/wiki/substack-posts-on-graffpunkssubstackcom.html",
+        "/wiki/the-allcity-bulls.html",
+        "/wiki/the-aztec-raiders.html",
+        "/wiki/the-bally-boys.html",
+        "/wiki/the-bear-market-siege.html",
+        "/wiki/the-bitcoin-kid-army.html",
+        "/wiki/the-blockchain-furies.html",
+        "/wiki/the-blockstars.html",
+        "/wiki/the-chain-scribes.html",
+        "/wiki/the-code-alchemists.html",
+        "/wiki/the-crypto-moongirls.html",
+        "/wiki/the-crypto-stoned-boys.html",
+        "/wiki/the-ducky-boys.html",
+        "/wiki/the-evm-punks.html",
+        "/wiki/the-finance-guild.html",
+        "/wiki/the-fomo-plague.html",
+        "/wiki/the-gasless-ghosts.html",
+        "/wiki/the-gkniftyheads.html",
+        "/wiki/the-graffpunks.html",
+        "/wiki/the-great-dip.html",
+        "/wiki/the-grids.html",
+        "/wiki/the-hard-fork-rockers.html",
+        "/wiki/the-high-hats.html",
+        "/wiki/the-hodl-warriors.html",
+        "/wiki/the-information-mercenaries.html",
+        "/wiki/the-moonlords.html",
+        "/wiki/the-nice-easy-bois.html",
+        "/wiki/the-nomad-bears.html",
+        "/wiki/the-og-pixel-saints.html",
+        "/wiki/the-princess.html",
+        "/wiki/the-rugpull-miners.html",
+        "/wiki/the-sacred-chain.html",
+        "/wiki/the-salvagers.html",
+        "/wiki/the-satoshi-scroll.html",
+        "/wiki/the-shard-mothers-of-manhattan.html",
+        "/wiki/the-squeaky-pinks.html",
+        "/wiki/the-tuskon-ogs.html",
+        "/wiki/the-wagmi-prophecy.html",
+        "/wiki/the-whale-lords.html",
+        "/wiki/the-whitewasher.html",
+        "/wiki/thera-9.html",
+        "/wiki/thorne-the-architect.html",
+        "/wiki/tokenomics.html",
+        "/wiki/tokens.html",
+        "/wiki/trevor-fung.html",
+        "/wiki/triple-fork-event.html",
+        "/wiki/wagmi-prophecy.html",
+        "/wiki/wallets.html",
+        "/wiki/waxp.html",
+        "/wiki/web3.html",
+        "/wiki/whale-lords.html",
+        "/wiki/xrp-kids-genesis-nfts.html",
+        "/wiki/xrp-kids-nbg-updates.html",
+        "/wiki/xrp-kids.html"
+      ],
+      "writcode": [
+        "/wiki/spraycode-writcode-mechanics.html",
+        "/wiki/spraycode-writcode.html"
+      ],
+      "xrp": [
+        "/wiki/xrp-kids-genesis-nfts.html",
+        "/wiki/xrp-kids-nbg-updates.html",
+        "/wiki/xrp-kids.html"
+      ],
+      "you": [
+        "/wiki/forklord-you.html"
+      ],
+      "zoom": [
+        "/wiki/jodie-zoom-2000.html"
+      ]
+    },
+    "total_wiki_pages": 230,
+    "total_entity_ids": 230
+  },
+  "validation_results": [],
+  "entries": []
+}

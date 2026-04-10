@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Timeline — Crypto Moonboys Wiki: Chronological events across the Crypto Moonboys universe">
+  <meta name="robots" content="index, follow">
+  <meta property="og:title" content="Timeline — Crypto Moonboys Wiki">
+  <meta property="og:description" content="Chronological events across the Crypto Moonboys universe">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://crypto-moonboys.github.io/timeline.html">
+  <meta property="og:image" content="https://crypto-moonboys.github.io/img/logo.svg">
+  <meta name="twitter:card" content="summary_large_image">
+  <title>Timeline — Crypto Moonboys Wiki</title>
+  <link rel="canonical" href="https://crypto-moonboys.github.io/timeline.html">
+  <link rel="stylesheet" href="/css/wiki.css">
+  <link rel="icon" href="/img/favicon.svg" type="image/svg+xml">
+  <style>
+    .timeline-page { max-width: 900px; margin: 0 auto; padding: 1.5rem 1rem; }
+    .timeline-hero { margin-bottom: 2rem; }
+    .timeline-hero h1 { font-size: 2rem; margin-bottom: 0.4rem; }
+    .timeline-hero p { color: var(--text-muted, #888); margin: 0; }
+
+    .timeline-filter { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1.5rem; }
+    .filter-btn {
+      padding: 0.35em 0.9em;
+      border-radius: 20px;
+      border: 1px solid var(--border, #333);
+      background: transparent;
+      color: inherit;
+      cursor: pointer;
+      font-size: 0.88rem;
+      transition: background 0.15s, color 0.15s;
+    }
+    .filter-btn:hover,
+    .filter-btn.active {
+      background: var(--accent, #5b8cff);
+      color: #fff;
+      border-color: var(--accent, #5b8cff);
+    }
+
+    .era-section { margin-bottom: 2.5rem; }
+    .era-heading {
+      font-size: 1.25rem;
+      font-weight: 700;
+      margin-bottom: 0.8rem;
+      padding-bottom: 0.4rem;
+      border-bottom: 2px solid var(--accent, #5b8cff);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .era-badge {
+      display: inline-block;
+      padding: 0.1em 0.6em;
+      border-radius: 4px;
+      background: rgba(91,140,255,0.15);
+      color: var(--accent, #5b8cff);
+      font-size: 0.78rem;
+      font-weight: 600;
+    }
+
+    .timeline-list { list-style: none; margin: 0; padding: 0; }
+    .timeline-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.75rem;
+      padding: 0.6rem 0;
+      border-bottom: 1px solid var(--border-subtle, rgba(255,255,255,0.06));
+    }
+    .timeline-item:last-child { border-bottom: none; }
+
+    .tl-dot {
+      flex-shrink: 0;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--accent, #5b8cff);
+      margin-top: 0.45em;
+    }
+    .tl-dot.event { background: #f0a500; }
+
+    .tl-body { flex: 1; min-width: 0; }
+    .tl-title {
+      font-size: 0.97rem;
+      font-weight: 600;
+      margin: 0 0 0.15rem 0;
+    }
+    .tl-title a { color: inherit; text-decoration: none; }
+    .tl-title a:hover { text-decoration: underline; color: var(--accent, #5b8cff); }
+
+    .tl-meta {
+      font-size: 0.8rem;
+      color: var(--text-muted, #888);
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+    }
+    .tl-tag {
+      padding: 0.1em 0.4em;
+      border-radius: 3px;
+      background: rgba(255,255,255,0.07);
+      font-size: 0.75rem;
+    }
+    .tl-event-badge {
+      color: #f0a500;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    .category-tabs { display: flex; gap: 0.5rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
+    .view-toggle { display: flex; gap: 0.5rem; margin-bottom: 1rem; }
+    .view-btn {
+      padding: 0.35em 0.9em;
+      border-radius: 6px;
+      border: 1px solid var(--border, #333);
+      background: transparent;
+      color: inherit;
+      cursor: pointer;
+      font-size: 0.88rem;
+    }
+    .view-btn.active { background: var(--accent, #5b8cff); color: #fff; border-color: transparent; }
+
+    #timeline-loading { text-align: center; padding: 2rem; color: var(--text-muted, #888); }
+    #timeline-error  { color: #e05555; padding: 1rem; display: none; }
+  </style>
+</head>
+<body>
+<a class="skip-link" href="#timeline-content">Skip to content</a>
+
+<header id="site-header" role="banner">
+  <button class="hamburger" id="hamburger" aria-label="Toggle navigation" aria-expanded="false" aria-controls="sidebar">&#9776;</button>
+  <a href="/index.html" class="site-logo" aria-label="Crypto Moonboys Wiki home">
+    <img src="/img/logo.svg" alt="" aria-hidden="true">
+    <span>
+      <span class="logo-text">🌙 Moonboys Wiki</span>
+      <span class="logo-sub">Crypto Encyclopedia</span>
+    </span>
+  </a>
+  <div id="header-search" role="search">
+    <input type="search" id="search-input" placeholder="Search articles…" aria-label="Search" autocomplete="off">
+    <button id="search-btn" aria-label="Search">🔍</button>
+    <div id="search-results" role="listbox"></div>
+  </div>
+  <nav class="header-nav" aria-label="Main navigation">
+    <a href="/index.html">Home</a>
+    <a href="/categories/index.html">Categories</a>
+    <a href="/search.html">All Articles</a>
+  </nav>
+</header>
+
+<div id="sidebar-overlay" aria-hidden="true"></div>
+
+<div id="layout">
+  <nav id="sidebar" aria-label="Wiki navigation">
+    <div class="sidebar-section">
+      <div class="sidebar-heading">Navigation</div>
+      <div class="sidebar-nav">
+        <a href="/index.html"><span class="nav-icon">🏠</span> Main Page</a>
+        <a href="/categories/index.html"><span class="nav-icon">📂</span> All Categories</a>
+        <a href="/search.html"><span class="nav-icon">🔎</span> All Articles</a>
+        <a href="/about.html"><span class="nav-icon">ℹ️</span> About</a>
+        <a href="/timeline.html" aria-current="page"><span class="nav-icon">📅</span> Timeline</a>
+      </div>
+    </div>
+  </nav>
+
+  <div id="main-wrapper">
+    <main id="timeline-content" role="main">
+      <div class="timeline-page">
+
+        <nav class="breadcrumb" aria-label="Breadcrumb">
+          <a href="/index.html">Home</a>
+          <span class="sep" aria-hidden="true">›</span>
+          <span aria-current="page">Timeline</span>
+        </nav>
+
+        <div class="timeline-hero">
+          <h1>📅 Timeline</h1>
+          <p>Chronological events and eras across the Crypto Moonboys universe.</p>
+        </div>
+
+        <div id="timeline-error" role="alert">Failed to load timeline data. Please try refreshing.</div>
+
+        <div id="timeline-loading" aria-live="polite">Loading timeline…</div>
+
+        <div id="timeline-app" style="display:none" aria-busy="false">
+
+          <div class="view-toggle" role="group" aria-label="View mode">
+            <button class="view-btn active" id="view-eras"   data-view="eras">By Era</button>
+            <button class="view-btn"        id="view-cats"   data-view="categories">By Category</button>
+            <button class="view-btn"        id="view-events" data-view="events">Events Only</button>
+          </div>
+
+          <div id="timeline-filter-row" class="timeline-filter" role="group" aria-label="Filter by era"></div>
+
+          <div id="timeline-body"></div>
+
+        </div>
+
+      </div>
+    </main>
+
+    <footer id="site-footer" role="contentinfo">
+      <div class="footer-inner">
+        <div class="footer-col">
+          <h4>🌙 Moonboys Wiki</h4>
+          <p>Fan-driven encyclopedia for the crypto community.</p>
+        </div>
+        <div class="footer-col">
+          <h4>Explore</h4>
+          <ul>
+            <li><a href="/index.html">Main Page</a></li>
+            <li><a href="/categories/index.html">Categories</a></li>
+            <li><a href="/search.html">All Articles</a></li>
+            <li><a href="/about.html">About</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>© 2026 Crypto Moonboys Wiki · Not financial advice.</p>
+      </div>
+    </footer>
+  </div>
+</div>
+
+<button id="back-to-top" aria-label="Back to top">↑</button>
+<script src="/js/wiki.js"></script>
+<script>
+(function () {
+  'use strict';
+
+  const TIMELINE_DATA_URL = '/js/timeline-data.json';
+
+  // ── DOM refs ──────────────────────────────────────────────────────────────
+  const loadingEl   = document.getElementById('timeline-loading');
+  const appEl       = document.getElementById('timeline-app');
+  const errorEl     = document.getElementById('timeline-error');
+  const filterRow   = document.getElementById('timeline-filter-row');
+  const bodyEl      = document.getElementById('timeline-body');
+
+  let timelineData  = null;
+  let currentView   = 'eras';
+  let activeFilter  = null;  // null = all
+
+  // ── Utilities ─────────────────────────────────────────────────────────────
+
+  function escHtml(str) {
+    return String(str || '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  function buildTagPill(tag) {
+    return `<span class="tl-tag">${escHtml(tag)}</span>`;
+  }
+
+  function buildItemHtml(page) {
+    const isEvent = page.is_event_page;
+    const dotClass = isEvent ? 'tl-dot event' : 'tl-dot';
+    const eventBadge = isEvent ? '<span class="tl-event-badge">⚡ event</span>' : '';
+    const tags = (page.tags || []).slice(0, 4).map(buildTagPill).join(' ');
+
+    return `
+<li class="timeline-item">
+  <div class="${escHtml(dotClass)}" aria-hidden="true"></div>
+  <div class="tl-body">
+    <p class="tl-title"><a href="${escHtml(page.url)}">${escHtml(page.title)}</a></p>
+    <div class="tl-meta">
+      ${eventBadge}
+      <span>${escHtml(page.category)}</span>
+      ${tags}
+    </div>
+  </div>
+</li>`.trim();
+  }
+
+  // ── Render: by era ────────────────────────────────────────────────────────
+
+  function renderEras(data) {
+    const eras = data.eras || [];
+    const filteredEras = activeFilter
+      ? eras.filter(e => e.era === activeFilter)
+      : eras;
+
+    if (filteredEras.length === 0) {
+      bodyEl.innerHTML = '<p>No eras match the current filter.</p>';
+      return;
+    }
+
+    bodyEl.innerHTML = filteredEras.map(era => {
+      const badge = era.is_dated
+        ? `<span class="era-badge">Dated</span>`
+        : `<span class="era-badge">Era</span>`;
+
+      const items = (era.pages || [])
+        .map(page => buildItemHtml(page))
+        .join('\n');
+
+      return `
+<section class="era-section" data-era="${escHtml(era.era)}">
+  <h2 class="era-heading">${escHtml(era.era)} ${badge} <small style="font-weight:400;font-size:0.8rem;color:var(--text-muted,#888)">${era.page_count} pages</small></h2>
+  <ul class="timeline-list">${items}</ul>
+</section>`.trim();
+    }).join('\n');
+  }
+
+  // ── Render: by category ───────────────────────────────────────────────────
+
+  function renderCategories(data) {
+    const catTimeline = data.category_timeline || {};
+    const entries = Object.entries(catTimeline).sort(([a], [b]) => a.localeCompare(b));
+
+    bodyEl.innerHTML = entries.map(([cat, info]) => {
+      const items = (info.pages || [])
+        .map(page => buildItemHtml(page))
+        .join('\n');
+
+      return `
+<section class="era-section" data-category="${escHtml(cat)}">
+  <h2 class="era-heading">${escHtml(info.label)} <small style="font-weight:400;font-size:0.8rem;color:var(--text-muted,#888)">${info.page_count} pages</small></h2>
+  <ul class="timeline-list">${items}</ul>
+</section>`.trim();
+    }).join('\n');
+  }
+
+  // ── Render: events only ───────────────────────────────────────────────────
+
+  function renderEvents(data) {
+    const events = (data.events || []).filter(e => e.is_event_page);
+
+    if (events.length === 0) {
+      bodyEl.innerHTML = '<p>No event pages found.</p>';
+      return;
+    }
+
+    const items = events.map(e => buildItemHtml(e)).join('\n');
+    bodyEl.innerHTML = `
+<section class="era-section">
+  <h2 class="era-heading">⚡ Event Pages <small style="font-weight:400;font-size:0.8rem;color:var(--text-muted,#888)">${events.length} pages</small></h2>
+  <ul class="timeline-list">${items}</ul>
+</section>`.trim();
+  }
+
+  // ── Filter buttons ────────────────────────────────────────────────────────
+
+  function buildFilters(data) {
+    if (currentView !== 'eras') {
+      filterRow.innerHTML = '';
+      filterRow.style.display = 'none';
+      return;
+    }
+
+    filterRow.style.display = '';
+    const eras = (data.eras || []).map(e => e.era);
+
+    const allBtn = document.createElement('button');
+    allBtn.className = 'filter-btn' + (activeFilter === null ? ' active' : '');
+    allBtn.textContent = 'All eras';
+    allBtn.setAttribute('aria-pressed', activeFilter === null ? 'true' : 'false');
+    allBtn.addEventListener('click', () => {
+      activeFilter = null;
+      buildFilters(data);
+      renderTimeline(data);
+    });
+    filterRow.innerHTML = '';
+    filterRow.appendChild(allBtn);
+
+    for (const era of eras) {
+      const btn = document.createElement('button');
+      btn.className = 'filter-btn' + (activeFilter === era ? ' active' : '');
+      btn.textContent = era;
+      btn.setAttribute('aria-pressed', activeFilter === era ? 'true' : 'false');
+      btn.addEventListener('click', () => {
+        activeFilter = era;
+        buildFilters(data);
+        renderTimeline(data);
+      });
+      filterRow.appendChild(btn);
+    }
+  }
+
+  // ── Main render dispatcher ────────────────────────────────────────────────
+
+  function renderTimeline(data) {
+    if (currentView === 'eras')       renderEras(data);
+    else if (currentView === 'categories') renderCategories(data);
+    else if (currentView === 'events')     renderEvents(data);
+  }
+
+  // ── View toggle buttons ───────────────────────────────────────────────────
+
+  document.getElementById('view-eras').addEventListener('click', function () {
+    currentView = 'eras';
+    document.querySelectorAll('.view-btn').forEach(b => b.classList.remove('active'));
+    this.classList.add('active');
+    activeFilter = null;
+    buildFilters(timelineData);
+    renderTimeline(timelineData);
+  });
+
+  document.getElementById('view-cats').addEventListener('click', function () {
+    currentView = 'categories';
+    document.querySelectorAll('.view-btn').forEach(b => b.classList.remove('active'));
+    this.classList.add('active');
+    buildFilters(timelineData);
+    renderTimeline(timelineData);
+  });
+
+  document.getElementById('view-events').addEventListener('click', function () {
+    currentView = 'events';
+    document.querySelectorAll('.view-btn').forEach(b => b.classList.remove('active'));
+    this.classList.add('active');
+    buildFilters(timelineData);
+    renderTimeline(timelineData);
+  });
+
+  // ── Bootstrap ─────────────────────────────────────────────────────────────
+
+  fetch(TIMELINE_DATA_URL)
+    .then(r => {
+      if (!r.ok) throw new Error(`HTTP ${r.status}`);
+      return r.json();
+    })
+    .then(data => {
+      timelineData = data;
+      loadingEl.style.display = 'none';
+      appEl.style.display     = '';
+      appEl.setAttribute('aria-busy', 'false');
+      buildFilters(data);
+      renderTimeline(data);
+    })
+    .catch(err => {
+      loadingEl.style.display = 'none';
+      errorEl.style.display   = '';
+      console.error('Timeline load error:', err);
+    });
+}());
+</script>
+</body>
+</html>
