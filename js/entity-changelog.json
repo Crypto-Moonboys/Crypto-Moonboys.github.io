@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-04-10T01:47:24.034Z",
+  "generated_at": "2026-04-10T02:07:09.786Z",
   "snapshot_dates": [
     "2026-04-07",
     "2026-04-08",
@@ -7,12 +7,12 @@
     "2026-04-10"
   ],
   "summary": {
-    "total_entities": 332,
+    "total_entities": 333,
     "changed_rank": 52,
-    "new_entities": 280,
+    "new_entities": 281,
     "trending_up": 52,
     "trending_down": 0,
-    "stable": 280
+    "stable": 281
   },
   "entries": [
     {
@@ -2622,6 +2622,16 @@
       "title": "Graffiti Queens Exhibition — Crypto Moonboys Wiki",
       "category": "factions",
       "current_rank_score": 146,
+      "rank_history": [],
+      "rank_delta": 0,
+      "rank_trend": "stable",
+      "is_new": true
+    },
+    {
+      "url": "/wiki/graffiti-queens-in-decentraland-ecosystem.html",
+      "title": "Graffiti Queens In Decentraland Ecosystem — Crypto Moonboys Wiki",
+      "category": "core",
+      "current_rank_score": 136,
       "rank_history": [],
       "rank_delta": 0,
       "rank_trend": "stable",

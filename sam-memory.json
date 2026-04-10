@@ -3052,6 +3052,28 @@
         "wiki"
       ]
     },
+    "graffiti_queens_in_decentraland_ecosystem": {
+      "alias_candidates": [
+        "graffiti queens in decentraland ecosystem"
+      ],
+      "aliases": [],
+      "canonical_title": "Graffiti Queens In Decentraland Ecosystem — Crypto Moonboys Wiki",
+      "canonical_url": "/wiki/graffiti-queens-in-decentraland-ecosystem.html",
+      "category": "core",
+      "source_urls": [
+        "/wiki/graffiti-queens-in-decentraland-ecosystem.html"
+      ],
+      "status": "canonical",
+      "tags": [
+        "graffiti",
+        "queens",
+        "decentraland",
+        "ecosystem",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ]
+    },
     "graffitikings": {
       "alias_candidates": [],
       "aliases": [
@@ -7259,5 +7281,5 @@
       ]
     }
   },
-  "updated_at": "2026-04-10T01:47:23Z"
+  "updated_at": "2026-04-10T02:07:09Z"
 }

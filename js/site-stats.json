@@ -1,16 +1,16 @@
 {
-  "article_count": 332,
-  "entity_count": 332,
+  "article_count": 333,
+  "entity_count": 333,
   "category_count": 15,
-  "totalArticles": 332,
-  "totalEntities": 332,
+  "totalArticles": 333,
+  "totalEntities": 333,
   "totalCategories": 15,
-  "total_articles": 332,
-  "total_entities": 332,
+  "total_articles": 333,
+  "total_entities": 333,
   "total_categories": 15,
   "canonical_hub": "/search.html",
   "excluded_legacy_paths": [
     "/wiki/index.html"
   ],
-  "last_updated": "2026-04-10T01:22:24.946Z"
+  "last_updated": "2026-04-10T02:07:09.141Z"
 }

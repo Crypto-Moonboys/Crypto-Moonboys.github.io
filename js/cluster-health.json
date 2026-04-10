@@ -1,8 +1,8 @@
 {
-  "generated_at": "2026-04-10T01:47:23.758Z",
+  "generated_at": "2026-04-10T02:07:09.536Z",
   "summary": {
     "total_clusters": 4,
-    "total_pages": 332
+    "total_pages": 333
   },
   "clusters": [
     {
@@ -46,16 +46,16 @@
     },
     {
       "cluster_id": "core",
-      "page_count": 70,
-      "avg_internal_links": 0.79,
-      "total_internal_links": 55,
-      "avg_rank_score": 122.39,
-      "avg_authority_score": 0.94,
-      "avg_content_quality": 20.63,
-      "avg_word_count": 140.59,
+      "page_count": 71,
+      "avg_internal_links": 0.86,
+      "total_internal_links": 61,
+      "avg_rank_score": 122.58,
+      "avg_authority_score": 1.07,
+      "avg_content_quality": 20.76,
+      "avg_word_count": 140.96,
       "centrality_score": 0,
-      "content_depth_score": 9.25,
-      "health_score": 6.97
+      "content_depth_score": 9.3,
+      "health_score": 7.11
     }
   ]
 }
