@@ -77,22 +77,12 @@ jobs:
         continue-on-error: true
         run: node scripts/generate-entity-changelog.js
 
-      # ── Validation ────────────────────────────────────────────────────────
-
-      - name: Validate generated assets
-        run: node scripts/validate-generated-assets.js
-
-      - name: Run smoke tests
-        run: node scripts/smoke-test.js
-
       # ── Phase 5: Authority, Trust & Timeline Intelligence ─────────────────
 
       - name: Generate Authority & Trust
-        continue-on-error: true
         run: node scripts/generate-authority-trust.js
 
       - name: Generate Timeline Intelligence
-        continue-on-error: true
         run: node scripts/generate-timeline-intelligence.js
 
       - name: Copy API Outputs
@@ -105,15 +95,12 @@ jobs:
       # ── Phase 6: Predictive Intelligence & Governance ─────────────────────
 
       - name: Generate Predictive Growth
-        continue-on-error: true
         run: node scripts/generate-predictive-growth.js
 
       - name: Generate Governance Signals
-        continue-on-error: true
         run: node scripts/generate-governance-signals.js
 
       - name: Generate Publishing Readiness
-        continue-on-error: true
         run: node scripts/generate-publishing-readiness.js
 
       - name: Copy Phase 6 API Outputs
@@ -122,6 +109,42 @@ jobs:
           cp js/predictive-growth.json api/predictive-growth.json
           cp js/governance-signals.json api/governance.json
           cp js/publishing-readiness.json api/publishing.json
+
+      # ── Validation ────────────────────────────────────────────────────────
+
+      - name: Verify Phase 5 & 6 Outputs
+        run: |
+          node -e "
+          const fs = require('fs');
+          const files = [
+            'js/authority-trust.json',
+            'js/timeline-intelligence.json',
+            'js/predictive-growth.json',
+            'js/governance-signals.json',
+            'js/publishing-readiness.json'
+          ];
+          let failed = false;
+          files.forEach(file => {
+            if (!fs.existsSync(file)) {
+              console.error('Missing file:', file);
+              failed = true;
+            } else {
+              const data = JSON.parse(fs.readFileSync(file, 'utf8'));
+              if (!data || (Array.isArray(data) && data.length === 0)) {
+                console.error('Empty or invalid JSON:', file);
+                failed = true;
+              }
+            }
+          });
+          if (failed) process.exit(1);
+          console.log('All Phase 5 & 6 outputs verified.');
+          "
+
+      - name: Validate generated assets
+        run: node scripts/validate-generated-assets.js
+
+      - name: Run smoke tests
+        run: node scripts/smoke-test.js
 
       # ── Commit deterministic changes ──────────────────────────────────────
 
