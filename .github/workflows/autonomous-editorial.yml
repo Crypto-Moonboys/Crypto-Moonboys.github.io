@@ -78,6 +78,10 @@ jobs:
           fi
           node scripts/generate-graph-data.js
 
+      - name: Generate entity graph lite
+        continue-on-error: true
+        run: node scripts/generate-entity-graph-lite.js
+
       - name: Generate cluster health
         continue-on-error: true
         run: node scripts/generate-cluster-health.js
@@ -183,6 +187,7 @@ jobs:
             js/entity-map.json \
             js/site-stats.json \
             js/graph-data.json \
+            js/entity-graph-lite.json \
             js/cluster-health.json \
             js/authority-drift.json \
             js/entity-changelog.json \

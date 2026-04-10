@@ -34,7 +34,7 @@ on:
       - '.github/workflows/wiki-index-sync.yml'
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
   group: wiki-generated-assets-${{ github.ref }}
@@ -152,31 +152,3 @@ jobs:
           fi
 
           echo "Canonical article hub checks passed."
-
-      - name: Commit generated files
-        if: github.event_name == 'push'
-        shell: bash
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-
-          git add \
-            js/wiki-index.json \
-            js/entity-map.json \
-            js/site-stats.json \
-            js/graph-data.json \
-            js/cluster-health.json \
-            js/authority-drift.json \
-            js/entity-changelog.json \
-            sitemap.xml \
-            sam-memory.json \
-            index_stats.json \
-            snapshots || true
-
-          if git diff --cached --quiet; then
-            echo "No generated file changes."
-            exit 0
-          fi
-
-          git commit -m "chore: auto-update wiki generated assets" || echo "Nothing to commit"
-          git push origin HEAD:main || echo "Push skipped"
