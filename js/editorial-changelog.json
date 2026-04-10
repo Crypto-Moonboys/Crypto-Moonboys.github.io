@@ -3,7 +3,8 @@
   "phase": "phase_4",
   "description": "Autonomous editorial operations log. Each run appends a new entry to the runs array.",
   "action_types": [
-    "stub_promotion_recorded",
+    "stub_promotion_applied",
+    "stub_promotion_skipped",
     "content_expansion_created",
     "content_expansion_skipped",
     "intelligence_ingested",
@@ -20,17 +21,18 @@
     {
       "run_id": "apply-stub-promotions:2026-04-10",
       "script": "apply-stub-promotions",
-      "timestamp": "2026-04-10T01:55:19.408Z",
+      "timestamp": "2026-04-10T02:15:24.176Z",
       "summary": {
         "total_candidates": 332,
-        "promote_count": 31,
+        "applied_count": 0,
+        "skipped_count": 31,
         "monitor_count": 136,
         "hold_count": 165
       },
       "actions": [
         {
-          "action_type": "stub_promotion_recorded",
-          "status": "applied",
+          "action_type": "stub_promotion_skipped",
+          "status": "no_op",
           "target_url": "/wiki/alfie-blaze.html",
           "target_title": "Alfie Blaze — Crypto Moonboys Wiki",
           "promotion_score": 85,
@@ -43,11 +45,11 @@
             "growth_priority_action:expand_existing_page"
           ],
           "category": "characters",
-          "note": "Stub page identified as promotion-ready. HTML noindex preserved per canonical rules."
+          "note": "No stub attributes found; page already promoted or not a stub."
         },
         {
-          "action_type": "stub_promotion_recorded",
-          "status": "applied",
+          "action_type": "stub_promotion_skipped",
+          "status": "no_op",
           "target_url": "/wiki/bitcoin-kids.html",
           "target_title": "Bitcoin Kids — Crypto Moonboys Wiki",
           "promotion_score": 110,
@@ -61,11 +63,11 @@
             "growth_priority_action:expand_existing_page"
           ],
           "category": "characters",
-          "note": "Stub page identified as promotion-ready. HTML noindex preserved per canonical rules."
+          "note": "No stub attributes found; page already promoted or not a stub."
         },
         {
-          "action_type": "stub_promotion_recorded",
-          "status": "applied",
+          "action_type": "stub_promotion_skipped",
+          "status": "no_op",
           "target_url": "/wiki/bitcoin.html",
           "target_title": "Bitcoin (BTC) — Crypto Moonboys Wiki",
           "promotion_score": 578,
@@ -80,11 +82,11 @@
             "growth_priority_action:expand_existing_page"
           ],
           "category": "tokens",
-          "note": "Stub page identified as promotion-ready. HTML noindex preserved per canonical rules."
+          "note": "No stub attributes found; page already promoted or not a stub."
         },
         {
-          "action_type": "stub_promotion_recorded",
-          "status": "applied",
+          "action_type": "stub_promotion_skipped",
+          "status": "no_op",
           "target_url": "/wiki/block-topia.html",
           "target_title": "Block Topia — Crypto Moonboys Wiki",
           "promotion_score": 85,
@@ -97,11 +99,11 @@
             "growth_priority_action:expand_existing_page"
           ],
           "category": "characters",
-          "note": "Stub page identified as promotion-ready. HTML noindex preserved per canonical rules."
+          "note": "No stub attributes found; page already promoted or not a stub."
         },
         {
-          "action_type": "stub_promotion_recorded",
-          "status": "applied",
+          "action_type": "stub_promotion_skipped",
+          "status": "no_op",
           "target_url": "/wiki/burn-to-earn.html",
           "target_title": "Burn-to-Earn — Crypto Moonboys Wiki",
           "promotion_score": 85,
@@ -114,11 +116,11 @@
             "growth_priority_action:expand_existing_page"
           ],
           "category": "characters",
-          "note": "Stub page identified as promotion-ready. HTML noindex preserved per canonical rules."
+          "note": "No stub attributes found; page already promoted or not a stub."
         },
         {
-          "action_type": "stub_promotion_recorded",
-          "status": "applied",
+          "action_type": "stub_promotion_skipped",
+          "status": "no_op",
           "target_url": "/wiki/charlie-buster.html",
           "target_title": "Charlie Buster — Crypto Moonboys Wiki",
           "promotion_score": 85,
@@ -131,11 +133,11 @@
             "growth_priority_action:expand_existing_page"
           ],
           "category": "characters",
-          "note": "Stub page identified as promotion-ready. HTML noindex preserved per canonical rules."
+          "note": "No stub attributes found; page already promoted or not a stub."
         },
         {
-          "action_type": "stub_promotion_recorded",
-          "status": "applied",
+          "action_type": "stub_promotion_skipped",
+          "status": "no_op",
           "target_url": "/wiki/crypto-moonboys.html",
           "target_title": "Crypto Moonboys — Crypto Moonboys Wiki",
           "promotion_score": 106,
@@ -149,11 +151,11 @@
             "growth_priority_action:reinforce_hub"
           ],
           "category": "characters",
-          "note": "Stub page identified as promotion-ready. HTML noindex preserved per canonical rules."
+          "note": "No stub attributes found; page already promoted or not a stub."
         },
         {
-          "action_type": "stub_promotion_recorded",
-          "status": "applied",
+          "action_type": "stub_promotion_skipped",
+          "status": "no_op",
           "target_url": "/wiki/diamond-hands.html",
           "target_title": "Diamond Hands — Crypto Moonboys Wiki",
           "promotion_score": 551,
@@ -168,11 +170,11 @@
             "growth_priority_action:expand_existing_page"
           ],
           "category": "characters",
-          "note": "Stub page identified as promotion-ready. HTML noindex preserved per canonical rules."
+          "note": "No stub attributes found; page already promoted or not a stub."
         },
         {
-          "action_type": "stub_promotion_recorded",
-          "status": "applied",
+          "action_type": "stub_promotion_skipped",
+          "status": "no_op",
           "target_url": "/wiki/ethereum.html",
           "target_title": "Ethereum (ETH) — Crypto Moonboys Wiki",
           "promotion_score": 578,
@@ -187,11 +189,11 @@
             "growth_priority_action:expand_existing_page"
           ],
           "category": "tokens",
-          "note": "Stub page identified as promotion-ready. HTML noindex preserved per canonical rules."
+          "note": "No stub attributes found; page already promoted or not a stub."
         },
         {
-          "action_type": "stub_promotion_recorded",
-          "status": "applied",
+          "action_type": "stub_promotion_skipped",
+          "status": "no_op",
           "target_url": "/wiki/genesis-spray.html",
           "target_title": "Genesis Spray — Crypto Moonboys Wiki",
           "promotion_score": 81,
@@ -204,11 +206,11 @@
             "growth_priority_action:expand_existing_page"
           ],
           "category": "factions",
-          "note": "Stub page identified as promotion-ready. HTML noindex preserved per canonical rules."
+          "note": "No stub attributes found; page already promoted or not a stub."
         },
         {
-          "action_type": "stub_promotion_recorded",
-          "status": "applied",
+          "action_type": "stub_promotion_skipped",
+          "status": "no_op",
           "target_url": "/wiki/gkniftyheads.html",
           "target_title": "GKniftyHEADS — Crypto Moonboys Wiki",
           "promotion_score": 80,
@@ -221,11 +223,11 @@
             "growth_priority_action:expand_existing_page"
           ],
           "category": "characters",
-          "note": "Stub page identified as promotion-ready. HTML noindex preserved per canonical rules."
+          "note": "No stub attributes found; page already promoted or not a stub."
         },
         {
-          "action_type": "stub_promotion_recorded",
-          "status": "applied",
+          "action_type": "stub_promotion_skipped",
+          "status": "no_op",
           "target_url": "/wiki/graffitikings.html",
           "target_title": "Graffiti Kings — Crypto Moonboys Wiki",
           "promotion_score": 101,
@@ -239,11 +241,11 @@
             "growth_priority_action:expand_existing_page"
           ],
           "category": "characters",
-          "note": "Stub page identified as promotion-ready. HTML noindex preserved per canonical rules."
+          "note": "No stub attributes found; page already promoted or not a stub."
         },
         {
-          "action_type": "stub_promotion_recorded",
-          "status": "applied",
+          "action_type": "stub_promotion_skipped",
+          "status": "no_op",
           "target_url": "/wiki/graffpunks-24-7.html",
           "target_title": "GraffPUNKS 24/7 — Crypto Moonboys Wiki",
           "promotion_score": 110,
@@ -257,11 +259,11 @@
             "growth_priority_action:expand_existing_page"
           ],
           "category": "characters",
-          "note": "Stub page identified as promotion-ready. HTML noindex preserved per canonical rules."
+          "note": "No stub attributes found; page already promoted or not a stub."
         },
         {
-          "action_type": "stub_promotion_recorded",
-          "status": "applied",
+          "action_type": "stub_promotion_skipped",
+          "status": "no_op",
           "target_url": "/wiki/graffpunks-247-radio.html",
           "target_title": "GraffPUNKS 247 Radio — Crypto Moonboys Wiki",
           "promotion_score": 104,
@@ -275,11 +277,11 @@
             "growth_priority_action:expand_existing_page"
           ],
           "category": "characters",
-          "note": "Stub page identified as promotion-ready. HTML noindex preserved per canonical rules."
+          "note": "No stub attributes found; page already promoted or not a stub."
         },
         {
-          "action_type": "stub_promotion_recorded",
-          "status": "applied",
+          "action_type": "stub_promotion_skipped",
+          "status": "no_op",
           "target_url": "/wiki/graffpunks.html",
           "target_title": "GraffPUNKS — Crypto Moonboys Wiki",
           "promotion_score": 110,
@@ -293,11 +295,11 @@
             "growth_priority_action:expand_existing_page"
           ],
           "category": "characters",
-          "note": "Stub page identified as promotion-ready. HTML noindex preserved per canonical rules."
+          "note": "No stub attributes found; page already promoted or not a stub."
         },
         {
-          "action_type": "stub_promotion_recorded",
-          "status": "applied",
+          "action_type": "stub_promotion_skipped",
+          "status": "no_op",
           "target_url": "/wiki/hard-fork-games.html",
           "target_title": "Hard Fork Games — Crypto Moonboys Wiki",
           "promotion_score": 117,
@@ -311,11 +313,11 @@
             "growth_priority_action:reinforce_hub"
           ],
           "category": "factions",
-          "note": "Stub page identified as promotion-ready. HTML noindex preserved per canonical rules."
+          "note": "No stub attributes found; page already promoted or not a stub."
         },
         {
-          "action_type": "stub_promotion_recorded",
-          "status": "applied",
+          "action_type": "stub_promotion_skipped",
+          "status": "no_op",
           "target_url": "/wiki/hodl-warriors.html",
           "target_title": "HODL Warriors — Crypto Moonboys Wiki",
           "promotion_score": 548,
@@ -330,11 +332,11 @@
             "growth_priority_action:expand_existing_page"
           ],
           "category": "characters",
-          "note": "Stub page identified as promotion-ready. HTML noindex preserved per canonical rules."
+          "note": "No stub attributes found; page already promoted or not a stub."
         },
         {
-          "action_type": "stub_promotion_recorded",
-          "status": "applied",
+          "action_type": "stub_promotion_skipped",
+          "status": "no_op",
           "target_url": "/wiki/hodl-wars.html",
           "target_title": "HODL Wars — Crypto Moonboys Wiki",
           "promotion_score": 536,
@@ -348,11 +350,11 @@
             "narrative_path_inclusion:true"
           ],
           "category": "factions",
-          "note": "Stub page identified as promotion-ready. HTML noindex preserved per canonical rules."
+          "note": "No stub attributes found; page already promoted or not a stub."
         },
         {
-          "action_type": "stub_promotion_recorded",
-          "status": "applied",
+          "action_type": "stub_promotion_skipped",
+          "status": "no_op",
           "target_url": "/wiki/hodl-x-warriors.html",
           "target_title": "HODL X Warriors — Crypto Moonboys Wiki",
           "promotion_score": 95,
@@ -366,11 +368,11 @@
             "growth_priority_action:expand_existing_page"
           ],
           "category": "characters",
-          "note": "Stub page identified as promotion-ready. HTML noindex preserved per canonical rules."
+          "note": "No stub attributes found; page already promoted or not a stub."
         },
         {
-          "action_type": "stub_promotion_recorded",
-          "status": "applied",
+          "action_type": "stub_promotion_skipped",
+          "status": "no_op",
           "target_url": "/wiki/metaverse-battles.html",
           "target_title": "Metaverse Battles — Crypto Moonboys Wiki",
           "promotion_score": 98,
@@ -384,11 +386,11 @@
             "growth_priority_action:reinforce_hub"
           ],
           "category": "factions",
-          "note": "Stub page identified as promotion-ready. HTML noindex preserved per canonical rules."
+          "note": "No stub attributes found; page already promoted or not a stub."
         },
         {
-          "action_type": "stub_promotion_recorded",
-          "status": "applied",
+          "action_type": "stub_promotion_skipped",
+          "status": "no_op",
           "target_url": "/wiki/moon-mission.html",
           "target_title": "Moon Mission — Crypto Moonboys Wiki",
           "promotion_score": 548,
@@ -403,11 +405,11 @@
             "growth_priority_action:expand_existing_page"
           ],
           "category": "tokens",
-          "note": "Stub page identified as promotion-ready. HTML noindex preserved per canonical rules."
+          "note": "No stub attributes found; page already promoted or not a stub."
         },
         {
-          "action_type": "stub_promotion_recorded",
-          "status": "applied",
+          "action_type": "stub_promotion_skipped",
+          "status": "no_op",
           "target_url": "/wiki/nbg-token.html",
           "target_title": "NBG Token — Crypto Moonboys Wiki",
           "promotion_score": 80,
@@ -420,11 +422,11 @@
             "growth_priority_action:expand_existing_page"
           ],
           "category": "factions",
-          "note": "Stub page identified as promotion-ready. HTML noindex preserved per canonical rules."
+          "note": "No stub attributes found; page already promoted or not a stub."
         },
         {
-          "action_type": "stub_promotion_recorded",
-          "status": "applied",
+          "action_type": "stub_promotion_skipped",
+          "status": "no_op",
           "target_url": "/wiki/nbg.html",
           "target_title": "NBG — Crypto Moonboys Wiki",
           "promotion_score": 85,
@@ -437,11 +439,11 @@
             "growth_priority_action:expand_existing_page"
           ],
           "category": "characters",
-          "note": "Stub page identified as promotion-ready. HTML noindex preserved per canonical rules."
+          "note": "No stub attributes found; page already promoted or not a stub."
         },
         {
-          "action_type": "stub_promotion_recorded",
-          "status": "applied",
+          "action_type": "stub_promotion_skipped",
+          "status": "no_op",
           "target_url": "/wiki/nbgx.html",
           "target_title": "NBGX — Crypto Moonboys Wiki",
           "promotion_score": 85,
@@ -454,11 +456,11 @@
             "growth_priority_action:expand_existing_page"
           ],
           "category": "characters",
-          "note": "Stub page identified as promotion-ready. HTML noindex preserved per canonical rules."
+          "note": "No stub attributes found; page already promoted or not a stub."
         },
         {
-          "action_type": "stub_promotion_recorded",
-          "status": "applied",
+          "action_type": "stub_promotion_skipped",
+          "status": "no_op",
           "target_url": "/wiki/null-the-prophet.html",
           "target_title": "NULL THE PROPHET — Crypto Moonboys Wiki",
           "promotion_score": 110,
@@ -472,11 +474,11 @@
             "growth_priority_action:expand_existing_page"
           ],
           "category": "characters",
-          "note": "Stub page identified as promotion-ready. HTML noindex preserved per canonical rules."
+          "note": "No stub attributes found; page already promoted or not a stub."
         },
         {
-          "action_type": "stub_promotion_recorded",
-          "status": "applied",
+          "action_type": "stub_promotion_skipped",
+          "status": "no_op",
           "target_url": "/wiki/pmsl.html",
           "target_title": "PMSL — Crypto Moonboys Wiki",
           "promotion_score": 110,
@@ -490,11 +492,11 @@
             "growth_priority_action:expand_existing_page"
           ],
           "category": "factions",
-          "note": "Stub page identified as promotion-ready. HTML noindex preserved per canonical rules."
+          "note": "No stub attributes found; page already promoted or not a stub."
         },
         {
-          "action_type": "stub_promotion_recorded",
-          "status": "applied",
+          "action_type": "stub_promotion_skipped",
+          "status": "no_op",
           "target_url": "/wiki/punk-token.html",
           "target_title": "$PUNK Token — Crypto Moonboys Wiki",
           "promotion_score": 85,
@@ -507,11 +509,11 @@
             "growth_priority_action:expand_existing_page"
           ],
           "category": "characters",
-          "note": "Stub page identified as promotion-ready. HTML noindex preserved per canonical rules."
+          "note": "No stub attributes found; page already promoted or not a stub."
         },
         {
-          "action_type": "stub_promotion_recorded",
-          "status": "applied",
+          "action_type": "stub_promotion_skipped",
+          "status": "no_op",
           "target_url": "/wiki/queen-sarah-pfly.html",
           "target_title": "Queen Sarah P-Fly — Crypto Moonboys Wiki",
           "promotion_score": 85,
@@ -524,11 +526,11 @@
             "growth_priority_action:expand_existing_page"
           ],
           "category": "characters",
-          "note": "Stub page identified as promotion-ready. HTML noindex preserved per canonical rules."
+          "note": "No stub attributes found; page already promoted or not a stub."
         },
         {
-          "action_type": "stub_promotion_recorded",
-          "status": "applied",
+          "action_type": "stub_promotion_skipped",
+          "status": "no_op",
           "target_url": "/wiki/rave-relics.html",
           "target_title": "Rave Relics — Crypto Moonboys Wiki",
           "promotion_score": 84,
@@ -541,11 +543,11 @@
             "growth_priority_action:expand_existing_page"
           ],
           "category": "factions",
-          "note": "Stub page identified as promotion-ready. HTML noindex preserved per canonical rules."
+          "note": "No stub attributes found; page already promoted or not a stub."
         },
         {
-          "action_type": "stub_promotion_recorded",
-          "status": "applied",
+          "action_type": "stub_promotion_skipped",
+          "status": "no_op",
           "target_url": "/wiki/solana.html",
           "target_title": "Solana (SOL) — Crypto Moonboys Wiki",
           "promotion_score": 578,
@@ -560,11 +562,11 @@
             "growth_priority_action:expand_existing_page"
           ],
           "category": "tokens",
-          "note": "Stub page identified as promotion-ready. HTML noindex preserved per canonical rules."
+          "note": "No stub attributes found; page already promoted or not a stub."
         },
         {
-          "action_type": "stub_promotion_recorded",
-          "status": "applied",
+          "action_type": "stub_promotion_skipped",
+          "status": "no_op",
           "target_url": "/wiki/staking.html",
           "target_title": "Staking — Crypto Moonboys Wiki",
           "promotion_score": 85,
@@ -577,7 +579,7 @@
             "growth_priority_action:expand_existing_page"
           ],
           "category": "characters",
-          "note": "Stub page identified as promotion-ready. HTML noindex preserved per canonical rules."
+          "note": "No stub attributes found; page already promoted or not a stub."
         }
       ]
     },
