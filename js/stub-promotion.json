@@ -1,0 +1,5274 @@
+{
+  "generated_at": "2026-04-10T01:30:07.867Z",
+  "phase": "phase_3",
+  "schema_version": "1.0",
+  "summary": {
+    "total_assessed": 332,
+    "promote": 31,
+    "monitor": 136,
+    "hold": 165
+  },
+  "candidates": [
+    {
+      "url": "/wiki/bitcoin.html",
+      "title": "Bitcoin (BTC) — Crypto Moonboys Wiki",
+      "promotion_score": 578,
+      "rank_score": 621,
+      "inbound_links": 156,
+      "entity_relevance": true,
+      "narrative_path_inclusion": true,
+      "growth_priority_action": "expand_existing_page",
+      "recommendation": "promote",
+      "reasons": [
+        "inbound_links:156",
+        "entity_relevance:true",
+        "rank_score:621",
+        "narrative_path_inclusion:true",
+        "growth_priority_action:expand_existing_page"
+      ]
+    },
+    {
+      "url": "/wiki/ethereum.html",
+      "title": "Ethereum (ETH) — Crypto Moonboys Wiki",
+      "promotion_score": 578,
+      "rank_score": 628,
+      "inbound_links": 156,
+      "entity_relevance": true,
+      "narrative_path_inclusion": true,
+      "growth_priority_action": "expand_existing_page",
+      "recommendation": "promote",
+      "reasons": [
+        "inbound_links:156",
+        "entity_relevance:true",
+        "rank_score:628",
+        "narrative_path_inclusion:true",
+        "growth_priority_action:expand_existing_page"
+      ]
+    },
+    {
+      "url": "/wiki/solana.html",
+      "title": "Solana (SOL) — Crypto Moonboys Wiki",
+      "promotion_score": 578,
+      "rank_score": 602,
+      "inbound_links": 156,
+      "entity_relevance": true,
+      "narrative_path_inclusion": true,
+      "growth_priority_action": "expand_existing_page",
+      "recommendation": "promote",
+      "reasons": [
+        "inbound_links:156",
+        "entity_relevance:true",
+        "rank_score:602",
+        "narrative_path_inclusion:true",
+        "growth_priority_action:expand_existing_page"
+      ]
+    },
+    {
+      "url": "/wiki/diamond-hands.html",
+      "title": "Diamond Hands — Crypto Moonboys Wiki",
+      "promotion_score": 551,
+      "rank_score": 517,
+      "inbound_links": 147,
+      "entity_relevance": true,
+      "narrative_path_inclusion": true,
+      "growth_priority_action": "expand_existing_page",
+      "recommendation": "promote",
+      "reasons": [
+        "inbound_links:147",
+        "entity_relevance:true",
+        "rank_score:517",
+        "narrative_path_inclusion:true",
+        "growth_priority_action:expand_existing_page"
+      ]
+    },
+    {
+      "url": "/wiki/hodl-warriors.html",
+      "title": "HODL Warriors — Crypto Moonboys Wiki",
+      "promotion_score": 548,
+      "rank_score": 640,
+      "inbound_links": 146,
+      "entity_relevance": true,
+      "narrative_path_inclusion": true,
+      "growth_priority_action": "expand_existing_page",
+      "recommendation": "promote",
+      "reasons": [
+        "inbound_links:146",
+        "entity_relevance:true",
+        "rank_score:640",
+        "narrative_path_inclusion:true",
+        "growth_priority_action:expand_existing_page"
+      ]
+    },
+    {
+      "url": "/wiki/moon-mission.html",
+      "title": "Moon Mission — Crypto Moonboys Wiki",
+      "promotion_score": 548,
+      "rank_score": 505,
+      "inbound_links": 146,
+      "entity_relevance": true,
+      "narrative_path_inclusion": true,
+      "growth_priority_action": "expand_existing_page",
+      "recommendation": "promote",
+      "reasons": [
+        "inbound_links:146",
+        "entity_relevance:true",
+        "rank_score:505",
+        "narrative_path_inclusion:true",
+        "growth_priority_action:expand_existing_page"
+      ]
+    },
+    {
+      "url": "/wiki/hodl-wars.html",
+      "title": "HODL Wars — Crypto Moonboys Wiki",
+      "promotion_score": 536,
+      "rank_score": 706,
+      "inbound_links": 147,
+      "entity_relevance": true,
+      "narrative_path_inclusion": true,
+      "growth_priority_action": null,
+      "recommendation": "promote",
+      "reasons": [
+        "inbound_links:147",
+        "entity_relevance:true",
+        "rank_score:706",
+        "narrative_path_inclusion:true"
+      ]
+    },
+    {
+      "url": "/wiki/hard-fork-games.html",
+      "title": "Hard Fork Games — Crypto Moonboys Wiki",
+      "promotion_score": 117,
+      "rank_score": 415,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": true,
+      "growth_priority_action": "reinforce_hub",
+      "recommendation": "promote",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:415",
+        "narrative_path_inclusion:true",
+        "growth_priority_action:reinforce_hub"
+      ]
+    },
+    {
+      "url": "/wiki/bitcoin-kids.html",
+      "title": "Bitcoin Kids — Crypto Moonboys Wiki",
+      "promotion_score": 110,
+      "rank_score": 724,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": true,
+      "growth_priority_action": "expand_existing_page",
+      "recommendation": "promote",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:724",
+        "narrative_path_inclusion:true",
+        "growth_priority_action:expand_existing_page"
+      ]
+    },
+    {
+      "url": "/wiki/graffpunks-24-7.html",
+      "title": "GraffPUNKS 24/7 — Crypto Moonboys Wiki",
+      "promotion_score": 110,
+      "rank_score": 498,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": true,
+      "growth_priority_action": "expand_existing_page",
+      "recommendation": "promote",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:498",
+        "narrative_path_inclusion:true",
+        "growth_priority_action:expand_existing_page"
+      ]
+    },
+    {
+      "url": "/wiki/graffpunks.html",
+      "title": "GraffPUNKS — Crypto Moonboys Wiki",
+      "promotion_score": 110,
+      "rank_score": 789,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": true,
+      "growth_priority_action": "expand_existing_page",
+      "recommendation": "promote",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:789",
+        "narrative_path_inclusion:true",
+        "growth_priority_action:expand_existing_page"
+      ]
+    },
+    {
+      "url": "/wiki/null-the-prophet.html",
+      "title": "NULL THE PROPHET — Crypto Moonboys Wiki",
+      "promotion_score": 110,
+      "rank_score": 719,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": true,
+      "growth_priority_action": "expand_existing_page",
+      "recommendation": "promote",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:719",
+        "narrative_path_inclusion:true",
+        "growth_priority_action:expand_existing_page"
+      ]
+    },
+    {
+      "url": "/wiki/pmsl.html",
+      "title": "PMSL — Crypto Moonboys Wiki",
+      "promotion_score": 110,
+      "rank_score": 595,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": true,
+      "growth_priority_action": "expand_existing_page",
+      "recommendation": "promote",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:595",
+        "narrative_path_inclusion:true",
+        "growth_priority_action:expand_existing_page"
+      ]
+    },
+    {
+      "url": "/wiki/crypto-moonboys.html",
+      "title": "Crypto Moonboys — Crypto Moonboys Wiki",
+      "promotion_score": 106,
+      "rank_score": 307,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": true,
+      "growth_priority_action": "reinforce_hub",
+      "recommendation": "promote",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:307",
+        "narrative_path_inclusion:true",
+        "growth_priority_action:reinforce_hub"
+      ]
+    },
+    {
+      "url": "/wiki/graffpunks-247-radio.html",
+      "title": "GraffPUNKS 247 Radio — Crypto Moonboys Wiki",
+      "promotion_score": 104,
+      "rank_score": 440,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": true,
+      "growth_priority_action": "expand_existing_page",
+      "recommendation": "promote",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:440",
+        "narrative_path_inclusion:true",
+        "growth_priority_action:expand_existing_page"
+      ]
+    },
+    {
+      "url": "/wiki/graffitikings.html",
+      "title": "Graffiti Kings — Crypto Moonboys Wiki",
+      "promotion_score": 101,
+      "rank_score": 409,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": true,
+      "growth_priority_action": "expand_existing_page",
+      "recommendation": "promote",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:409",
+        "narrative_path_inclusion:true",
+        "growth_priority_action:expand_existing_page"
+      ]
+    },
+    {
+      "url": "/wiki/metaverse-battles.html",
+      "title": "Metaverse Battles — Crypto Moonboys Wiki",
+      "promotion_score": 98,
+      "rank_score": 233,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": true,
+      "growth_priority_action": "reinforce_hub",
+      "recommendation": "promote",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:233",
+        "narrative_path_inclusion:true",
+        "growth_priority_action:reinforce_hub"
+      ]
+    },
+    {
+      "url": "/wiki/hodl-x-warriors.html",
+      "title": "HODL X Warriors — Crypto Moonboys Wiki",
+      "promotion_score": 95,
+      "rank_score": 345,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": true,
+      "growth_priority_action": "expand_existing_page",
+      "recommendation": "promote",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:345",
+        "narrative_path_inclusion:true",
+        "growth_priority_action:expand_existing_page"
+      ]
+    },
+    {
+      "url": "/wiki/alfie-blaze.html",
+      "title": "Alfie Blaze — Crypto Moonboys Wiki",
+      "promotion_score": 85,
+      "rank_score": 629,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "expand_existing_page",
+      "recommendation": "promote",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:629",
+        "growth_priority_action:expand_existing_page"
+      ]
+    },
+    {
+      "url": "/wiki/block-topia.html",
+      "title": "Block Topia — Crypto Moonboys Wiki",
+      "promotion_score": 85,
+      "rank_score": 755,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "expand_existing_page",
+      "recommendation": "promote",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:755",
+        "growth_priority_action:expand_existing_page"
+      ]
+    },
+    {
+      "url": "/wiki/burn-to-earn.html",
+      "title": "Burn-to-Earn — Crypto Moonboys Wiki",
+      "promotion_score": 85,
+      "rank_score": 612,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "expand_existing_page",
+      "recommendation": "promote",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:612",
+        "growth_priority_action:expand_existing_page"
+      ]
+    },
+    {
+      "url": "/wiki/charlie-buster.html",
+      "title": "Charlie Buster — Crypto Moonboys Wiki",
+      "promotion_score": 85,
+      "rank_score": 671,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "expand_existing_page",
+      "recommendation": "promote",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:671",
+        "growth_priority_action:expand_existing_page"
+      ]
+    },
+    {
+      "url": "/wiki/nbg.html",
+      "title": "NBG — Crypto Moonboys Wiki",
+      "promotion_score": 85,
+      "rank_score": 583,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "expand_existing_page",
+      "recommendation": "promote",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:583",
+        "growth_priority_action:expand_existing_page"
+      ]
+    },
+    {
+      "url": "/wiki/nbgx.html",
+      "title": "NBGX — Crypto Moonboys Wiki",
+      "promotion_score": 85,
+      "rank_score": 601,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "expand_existing_page",
+      "recommendation": "promote",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:601",
+        "growth_priority_action:expand_existing_page"
+      ]
+    },
+    {
+      "url": "/wiki/punk-token.html",
+      "title": "$PUNK Token — Crypto Moonboys Wiki",
+      "promotion_score": 85,
+      "rank_score": 699,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "expand_existing_page",
+      "recommendation": "promote",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:699",
+        "growth_priority_action:expand_existing_page"
+      ]
+    },
+    {
+      "url": "/wiki/queen-sarah-pfly.html",
+      "title": "Queen Sarah P-Fly — Crypto Moonboys Wiki",
+      "promotion_score": 85,
+      "rank_score": 700,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "expand_existing_page",
+      "recommendation": "promote",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:700",
+        "growth_priority_action:expand_existing_page"
+      ]
+    },
+    {
+      "url": "/wiki/staking.html",
+      "title": "Staking — Crypto Moonboys Wiki",
+      "promotion_score": 85,
+      "rank_score": 600,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "expand_existing_page",
+      "recommendation": "promote",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:600",
+        "growth_priority_action:expand_existing_page"
+      ]
+    },
+    {
+      "url": "/wiki/rave-relics.html",
+      "title": "Rave Relics — Crypto Moonboys Wiki",
+      "promotion_score": 84,
+      "rank_score": 489,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "expand_existing_page",
+      "recommendation": "promote",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:489",
+        "growth_priority_action:expand_existing_page"
+      ]
+    },
+    {
+      "url": "/wiki/genesis-spray.html",
+      "title": "Genesis Spray — Crypto Moonboys Wiki",
+      "promotion_score": 81,
+      "rank_score": 456,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "expand_existing_page",
+      "recommendation": "promote",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:456",
+        "growth_priority_action:expand_existing_page"
+      ]
+    },
+    {
+      "url": "/wiki/gkniftyheads.html",
+      "title": "GKniftyHEADS — Crypto Moonboys Wiki",
+      "promotion_score": 80,
+      "rank_score": 454,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "expand_existing_page",
+      "recommendation": "promote",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:454",
+        "growth_priority_action:expand_existing_page"
+      ]
+    },
+    {
+      "url": "/wiki/nbg-token.html",
+      "title": "NBG Token — Crypto Moonboys Wiki",
+      "promotion_score": 80,
+      "rank_score": 453,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "expand_existing_page",
+      "recommendation": "promote",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:453",
+        "growth_priority_action:expand_existing_page"
+      ]
+    },
+    {
+      "url": "/wiki/midevilpunks.html",
+      "title": "MiDEViL PUNKS — Crypto Moonboys Wiki",
+      "promotion_score": 79,
+      "rank_score": 442,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "expand_existing_page",
+      "recommendation": "monitor",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:442",
+        "growth_priority_action:expand_existing_page"
+      ]
+    },
+    {
+      "url": "/wiki/xrp-kids.html",
+      "title": "XRP Kids — Crypto Moonboys Wiki",
+      "promotion_score": 77,
+      "rank_score": 418,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "expand_existing_page",
+      "recommendation": "monitor",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:418",
+        "growth_priority_action:expand_existing_page"
+      ]
+    },
+    {
+      "url": "/wiki/darren-cullen.html",
+      "title": "Darren Cullen — Crypto Moonboys Wiki",
+      "promotion_score": 76,
+      "rank_score": 405,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "expand_existing_page",
+      "recommendation": "monitor",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:405",
+        "growth_priority_action:expand_existing_page"
+      ]
+    },
+    {
+      "url": "/wiki/games4punks-telegram.html",
+      "title": "Games4Punks Telegram — Crypto Moonboys Wiki",
+      "promotion_score": 76,
+      "rank_score": 412,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "expand_existing_page",
+      "recommendation": "monitor",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:412",
+        "growth_priority_action:expand_existing_page"
+      ]
+    },
+    {
+      "url": "/wiki/gang-signs.html",
+      "title": "Gang Signs — Crypto Moonboys Wiki",
+      "promotion_score": 76,
+      "rank_score": 414,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "expand_existing_page",
+      "recommendation": "monitor",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:414",
+        "growth_priority_action:expand_existing_page"
+      ]
+    },
+    {
+      "url": "/wiki/graffpunks-ecosystem.html",
+      "title": "GraffPUNKS Ecosystem — Crypto Moonboys Wiki",
+      "promotion_score": 75,
+      "rank_score": 249,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "reinforce_hub",
+      "recommendation": "monitor",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:249",
+        "growth_priority_action:reinforce_hub"
+      ]
+    },
+    {
+      "url": "/wiki/hodl-wars-ecosystem.html",
+      "title": "HODL Wars Ecosystem — Crypto Moonboys Wiki",
+      "promotion_score": 75,
+      "rank_score": 252,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "reinforce_hub",
+      "recommendation": "monitor",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:252",
+        "growth_priority_action:reinforce_hub"
+      ]
+    },
+    {
+      "url": "/wiki/ian-harrison.html",
+      "title": "Ian Harrison — Crypto Moonboys Wiki",
+      "promotion_score": 75,
+      "rank_score": 401,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "expand_existing_page",
+      "recommendation": "monitor",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:401",
+        "growth_priority_action:expand_existing_page"
+      ]
+    },
+    {
+      "url": "/wiki/sacred-chain.html",
+      "title": "The Sacred Chain — Crypto Moonboys Wiki",
+      "promotion_score": 75,
+      "rank_score": 401,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "expand_existing_page",
+      "recommendation": "monitor",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:401",
+        "growth_priority_action:expand_existing_page"
+      ]
+    },
+    {
+      "url": "/wiki/trevor-fung.html",
+      "title": "Trevor Fung — Crypto Moonboys Wiki",
+      "promotion_score": 75,
+      "rank_score": 396,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "expand_existing_page",
+      "recommendation": "monitor",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:396",
+        "growth_priority_action:expand_existing_page"
+      ]
+    },
+    {
+      "url": "/wiki/jillian-godsil.html",
+      "title": "Jillian Godsil — Crypto Moonboys Wiki",
+      "promotion_score": 74,
+      "rank_score": 392,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "expand_existing_page",
+      "recommendation": "monitor",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:392",
+        "growth_priority_action:expand_existing_page"
+      ]
+    },
+    {
+      "url": "/wiki/midevil-hero-arena.html",
+      "title": "MiDEViL Hero Arena — Crypto Moonboys Wiki",
+      "promotion_score": 74,
+      "rank_score": 389,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "expand_existing_page",
+      "recommendation": "monitor",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:389",
+        "growth_priority_action:expand_existing_page"
+      ]
+    },
+    {
+      "url": "/wiki/nfts.html",
+      "title": "NFTs (Non-Fungible Tokens) — Crypto Moonboys Wiki",
+      "promotion_score": 74,
+      "rank_score": 262,
+      "inbound_links": 1,
+      "entity_relevance": true,
+      "narrative_path_inclusion": true,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "monitor",
+      "reasons": [
+        "inbound_links:1",
+        "entity_relevance:true",
+        "rank_score:262",
+        "narrative_path_inclusion:true",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/patchwork.html",
+      "title": "Patchwork — Crypto Moonboys Wiki",
+      "promotion_score": 74,
+      "rank_score": 291,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": true,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "monitor",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:291",
+        "narrative_path_inclusion:true",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/pyralith.html",
+      "title": "PYRALITH — Crypto Moonboys Wiki",
+      "promotion_score": 74,
+      "rank_score": 287,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": true,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "monitor",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:287",
+        "narrative_path_inclusion:true",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/quell.html",
+      "title": "Quell — Crypto Moonboys Wiki",
+      "promotion_score": 74,
+      "rank_score": 288,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": true,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "monitor",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:288",
+        "narrative_path_inclusion:true",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/ethereum-ecosystem.html",
+      "title": "Ethereum (ETH) Ecosystem — Crypto Moonboys Wiki",
+      "promotion_score": 73,
+      "rank_score": 232,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "reinforce_hub",
+      "recommendation": "monitor",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:232",
+        "growth_priority_action:reinforce_hub"
+      ]
+    },
+    {
+      "url": "/wiki/graffiti-kings.html",
+      "title": "Graffiti Kings — Crypto Moonboys Wiki",
+      "promotion_score": 72,
+      "rank_score": 217,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "reinforce_hub",
+      "recommendation": "monitor",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:217",
+        "growth_priority_action:reinforce_hub"
+      ]
+    },
+    {
+      "url": "/wiki/metropolis.html",
+      "title": "Metropolis — Crypto Moonboys Wiki",
+      "promotion_score": 72,
+      "rank_score": 370,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "expand_existing_page",
+      "recommendation": "monitor",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:370",
+        "growth_priority_action:expand_existing_page"
+      ]
+    },
+    {
+      "url": "/wiki/the-hard-fork-rockers.html",
+      "title": "The HARD FORK ROCKERS — Crypto Moonboys Wiki",
+      "promotion_score": 72,
+      "rank_score": 274,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": true,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "monitor",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:274",
+        "narrative_path_inclusion:true",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/triple-fork-event.html",
+      "title": "Triple Fork Event — Crypto Moonboys Wiki",
+      "promotion_score": 71,
+      "rank_score": 258,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": true,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "monitor",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:258",
+        "narrative_path_inclusion:true",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/web3.html",
+      "title": "Web3 — Crypto Moonboys Wiki",
+      "promotion_score": 71,
+      "rank_score": 263,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": true,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "monitor",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:263",
+        "narrative_path_inclusion:true",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/fomo-plague.html",
+      "title": "The FOMO Plague — Crypto Moonboys Wiki",
+      "promotion_score": 70,
+      "rank_score": 218,
+      "inbound_links": 1,
+      "entity_relevance": true,
+      "narrative_path_inclusion": true,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "monitor",
+      "reasons": [
+        "inbound_links:1",
+        "entity_relevance:true",
+        "rank_score:218",
+        "narrative_path_inclusion:true",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/gk.html",
+      "title": "$GK — Crypto Moonboys Wiki",
+      "promotion_score": 70,
+      "rank_score": 253,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": true,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "monitor",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:253",
+        "narrative_path_inclusion:true",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/nbgx-token.html",
+      "title": "NBGX Token — Crypto Moonboys Wiki",
+      "promotion_score": 67,
+      "rank_score": 218,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": true,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "monitor",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:218",
+        "narrative_path_inclusion:true",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/2025-metaverse-launch-party.html",
+      "title": "2025 Metaverse Launch Party — Crypto Moonboys Wiki",
+      "promotion_score": 66,
+      "rank_score": 210,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": true,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "monitor",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:210",
+        "narrative_path_inclusion:true",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/bitcoin-x-kids.html",
+      "title": "Bitcoin X Kids — Crypto Moonboys Wiki",
+      "promotion_score": 66,
+      "rank_score": 311,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "expand_existing_page",
+      "recommendation": "monitor",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:311",
+        "growth_priority_action:expand_existing_page"
+      ]
+    },
+    {
+      "url": "/wiki/graffpunks-24-7-radio.html",
+      "title": "GraffPUNKS 24/7 Radio — Crypto Moonboys Wiki",
+      "promotion_score": 66,
+      "rank_score": 306,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "expand_existing_page",
+      "recommendation": "monitor",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:306",
+        "growth_priority_action:expand_existing_page"
+      ]
+    },
+    {
+      "url": "/wiki/ngmi-chronicles.html",
+      "title": "NGMI Chronicles — Crypto Moonboys Wiki",
+      "promotion_score": 66,
+      "rank_score": 209,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": true,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "monitor",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:209",
+        "narrative_path_inclusion:true",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/pmsl-token.html",
+      "title": "PMSL Token — Crypto Moonboys Wiki",
+      "promotion_score": 66,
+      "rank_score": 209,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": true,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "monitor",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:209",
+        "narrative_path_inclusion:true",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/sneakar.html",
+      "title": "SNEAKAR — Crypto Moonboys Wiki",
+      "promotion_score": 65,
+      "rank_score": 302,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "expand_existing_page",
+      "recommendation": "monitor",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:302",
+        "growth_priority_action:expand_existing_page"
+      ]
+    },
+    {
+      "url": "/wiki/gk-token.html",
+      "title": "$GK Token — Crypto Moonboys Wiki",
+      "promotion_score": 60,
+      "rank_score": 147,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": true,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "monitor",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:147",
+        "narrative_path_inclusion:true",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/gk-tokens.html",
+      "title": "$GK Tokens — Crypto Moonboys Wiki",
+      "promotion_score": 60,
+      "rank_score": 152,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": true,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "monitor",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:152",
+        "narrative_path_inclusion:true",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/stake-for-gk-tokens.html",
+      "title": "Stake for $GK Tokens — Crypto Moonboys Wiki",
+      "promotion_score": 60,
+      "rank_score": 147,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": true,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "monitor",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:147",
+        "narrative_path_inclusion:true",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/hard-fork-games-event.html",
+      "title": "Hard Fork Games Event — Crypto Moonboys Wiki",
+      "promotion_score": 59,
+      "rank_score": 141,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": true,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "monitor",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:141",
+        "narrative_path_inclusion:true",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/solana-sol.html",
+      "title": "Solana (SOL) — Crypto Moonboys Wiki",
+      "promotion_score": 56,
+      "rank_score": 108,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": true,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "monitor",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:108",
+        "narrative_path_inclusion:true",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/samaelexe.html",
+      "title": "Samael.exe — Crypto Moonboys Wiki",
+      "promotion_score": 53,
+      "rank_score": 296,
+      "inbound_links": 1,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "monitor",
+      "reasons": [
+        "inbound_links:1",
+        "entity_relevance:true",
+        "rank_score:296",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/rune-tag.html",
+      "title": "Rune Tag — Crypto Moonboys Wiki",
+      "promotion_score": 50,
+      "rank_score": 295,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "monitor",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:295",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/blockchain.html",
+      "title": "Blockchain Technology — Crypto Moonboys Wiki",
+      "promotion_score": 49,
+      "rank_score": 259,
+      "inbound_links": 1,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "monitor",
+      "reasons": [
+        "inbound_links:1",
+        "entity_relevance:true",
+        "rank_score:259",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/exchanges.html",
+      "title": "Crypto Exchanges — Crypto Moonboys Wiki",
+      "promotion_score": 49,
+      "rank_score": 264,
+      "inbound_links": 1,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "monitor",
+      "reasons": [
+        "inbound_links:1",
+        "entity_relevance:true",
+        "rank_score:264",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/memecoins.html",
+      "title": "Meme Coins — Crypto Moonboys Wiki",
+      "promotion_score": 49,
+      "rank_score": 258,
+      "inbound_links": 1,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "monitor",
+      "reasons": [
+        "inbound_links:1",
+        "entity_relevance:true",
+        "rank_score:258",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/satorebel.html",
+      "title": "SatoRebel — Crypto Moonboys Wiki",
+      "promotion_score": 49,
+      "rank_score": 291,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "monitor",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:291",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/sister-halcyon.html",
+      "title": "Sister Halcyon — Crypto Moonboys Wiki",
+      "promotion_score": 49,
+      "rank_score": 292,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "monitor",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:292",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/the-crypto-moongirls.html",
+      "title": "The CRYPTO MOONGIRLS — Crypto Moonboys Wiki",
+      "promotion_score": 49,
+      "rank_score": 285,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "monitor",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:285",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/the-nice-easy-bois.html",
+      "title": "The NICE &amp; EASY BOIS — Crypto Moonboys Wiki",
+      "promotion_score": 49,
+      "rank_score": 285,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "monitor",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:285",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/the-princess.html",
+      "title": "The Princess — Crypto Moonboys Wiki",
+      "promotion_score": 49,
+      "rank_score": 290,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "monitor",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:290",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/the-whitewasher.html",
+      "title": "The Whitewasher — Crypto Moonboys Wiki",
+      "promotion_score": 49,
+      "rank_score": 288,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "monitor",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:288",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/wallets.html",
+      "title": "Crypto Wallets — Crypto Moonboys Wiki",
+      "promotion_score": 49,
+      "rank_score": 263,
+      "inbound_links": 1,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "monitor",
+      "reasons": [
+        "inbound_links:1",
+        "entity_relevance:true",
+        "rank_score:263",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/defi.html",
+      "title": "DeFi (Decentralised Finance) — Crypto Moonboys Wiki",
+      "promotion_score": 48,
+      "rank_score": 245,
+      "inbound_links": 1,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "monitor",
+      "reasons": [
+        "inbound_links:1",
+        "entity_relevance:true",
+        "rank_score:245",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/jonny-laurence-nelson-tag-records.html",
+      "title": "Jonny &amp; Laurence Nelson (TAG Records) — Crypto Moonboys Wiki",
+      "promotion_score": 48,
+      "rank_score": 282,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "monitor",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:282",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/nifty-crowns.html",
+      "title": "Nifty Crowns — Crypto Moonboys Wiki",
+      "promotion_score": 48,
+      "rank_score": 279,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "monitor",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:279",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/street-kingdoms.html",
+      "title": "Street Kingdoms — Crypto Moonboys Wiki",
+      "promotion_score": 48,
+      "rank_score": 283,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "monitor",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:283",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/the-chain-scribes.html",
+      "title": "The CHAIN SCRIBES — Crypto Moonboys Wiki",
+      "promotion_score": 48,
+      "rank_score": 279,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "monitor",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:279",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/the-finance-guild.html",
+      "title": "The FINANCE GUILD — Crypto Moonboys Wiki",
+      "promotion_score": 48,
+      "rank_score": 275,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "monitor",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:275",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/thorne-the-architect.html",
+      "title": "Thorne The Architect — Crypto Moonboys Wiki",
+      "promotion_score": 48,
+      "rank_score": 283,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "monitor",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:283",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/block-node-defenders.html",
+      "title": "Block Node Defenders — Crypto Moonboys Wiki",
+      "promotion_score": 47,
+      "rank_score": 268,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "monitor",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:268",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/delicious-again-pete.html",
+      "title": "Delicious Again Pete — Crypto Moonboys Wiki",
+      "promotion_score": 47,
+      "rank_score": 267,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "monitor",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:267",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/forkborn-collective.html",
+      "title": "Forkborn Collective — Crypto Moonboys Wiki",
+      "promotion_score": 47,
+      "rank_score": 272,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "monitor",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:272",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/squeaky-pinks-enforcers.html",
+      "title": "Squeaky Pinks Enforcers — Crypto Moonboys Wiki",
+      "promotion_score": 47,
+      "rank_score": 273,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "monitor",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:273",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/the-bitcoin-kid-army.html",
+      "title": "The Bitcoin Kid Army — Crypto Moonboys Wiki",
+      "promotion_score": 47,
+      "rank_score": 273,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "monitor",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:273",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/the-blockstars.html",
+      "title": "The BLOCKSTARS — Crypto Moonboys Wiki",
+      "promotion_score": 47,
+      "rank_score": 267,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "monitor",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:267",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/the-ducky-boys.html",
+      "title": "The DUCKY BOYS — Crypto Moonboys Wiki",
+      "promotion_score": 47,
+      "rank_score": 273,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "monitor",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:273",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/the-evm-punks.html",
+      "title": "The EVM PUNKS — Crypto Moonboys Wiki",
+      "promotion_score": 47,
+      "rank_score": 271,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "monitor",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:271",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/the-gasless-ghosts.html",
+      "title": "The GASLESS GHOSTS — Crypto Moonboys Wiki",
+      "promotion_score": 47,
+      "rank_score": 274,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "monitor",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:274",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/the-high-hats.html",
+      "title": "The High Hats — Crypto Moonboys Wiki",
+      "promotion_score": 47,
+      "rank_score": 272,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "monitor",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:272",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/the-moonlords.html",
+      "title": "The MOONLORDS — Crypto Moonboys Wiki",
+      "promotion_score": 47,
+      "rank_score": 273,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "monitor",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:273",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/the-nomad-bears.html",
+      "title": "The Nomad Bears — Crypto Moonboys Wiki",
+      "promotion_score": 47,
+      "rank_score": 270,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "monitor",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:270",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/the-og-pixel-saints.html",
+      "title": "The OG PIXEL SAINTS — Crypto Moonboys Wiki",
+      "promotion_score": 47,
+      "rank_score": 273,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "monitor",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:273",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/the-rugpull-miners.html",
+      "title": "The RUGPULL MINERS — Crypto Moonboys Wiki",
+      "promotion_score": 47,
+      "rank_score": 270,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "monitor",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:270",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/the-salvagers.html",
+      "title": "The SALVAGERS — Crypto Moonboys Wiki",
+      "promotion_score": 47,
+      "rank_score": 269,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "monitor",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:269",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/the-shard-mothers-of-manhattan.html",
+      "title": "The SHARD MOTHERS of MANHATTAN — Crypto Moonboys Wiki",
+      "promotion_score": 47,
+      "rank_score": 272,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "monitor",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:272",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/tokenomics.html",
+      "title": "Tokenomics — Crypto Moonboys Wiki",
+      "promotion_score": 47,
+      "rank_score": 266,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "monitor",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:266",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/1m-free-nfts-programme.html",
+      "title": "1M Free NFTs Programme — Crypto Moonboys Wiki",
+      "promotion_score": 46,
+      "rank_score": 260,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "monitor",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:260",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/bear-market-siege.html",
+      "title": "The Bear Market Siege — Crypto Moonboys Wiki",
+      "promotion_score": 46,
+      "rank_score": 229,
+      "inbound_links": 1,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "monitor",
+      "reasons": [
+        "inbound_links:1",
+        "entity_relevance:true",
+        "rank_score:229",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/lady-ink.html",
+      "title": "Lady-INK — Crypto Moonboys Wiki",
+      "promotion_score": 46,
+      "rank_score": 257,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "monitor",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:257",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/spirit-borns.html",
+      "title": "Spirit Borns — Crypto Moonboys Wiki",
+      "promotion_score": 46,
+      "rank_score": 255,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "monitor",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:255",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/the-allcity-bulls.html",
+      "title": "The AllCity Bulls — Crypto Moonboys Wiki",
+      "promotion_score": 46,
+      "rank_score": 255,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "monitor",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:255",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/the-blockchain-furies.html",
+      "title": "The BLOCKCHAIN FURIES — Crypto Moonboys Wiki",
+      "promotion_score": 46,
+      "rank_score": 263,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "monitor",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:263",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/the-code-alchemists.html",
+      "title": "The CODE ALCHEMISTS — Crypto Moonboys Wiki",
+      "promotion_score": 46,
+      "rank_score": 261,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "monitor",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:261",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/the-crypto-stoned-boys.html",
+      "title": "The CRYPTO STONED BOYS — Crypto Moonboys Wiki",
+      "promotion_score": 46,
+      "rank_score": 264,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "monitor",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:264",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/the-tuskon-ogs.html",
+      "title": "The TUSKON OGS — Crypto Moonboys Wiki",
+      "promotion_score": 46,
+      "rank_score": 257,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "monitor",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:257",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/1m-free-nfts-drop.html",
+      "title": "1M Free NFTs Drop — Crypto Moonboys Wiki",
+      "promotion_score": 45,
+      "rank_score": 253,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "monitor",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:253",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/alfie-the-bitcoin-kid-blaze.html",
+      "title": "Alfie 'The Bitcoin Kid' Blaze — Crypto Moonboys Wiki",
+      "promotion_score": 45,
+      "rank_score": 251,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "monitor",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:251",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/bitcoin-graffpunks.html",
+      "title": "Bitcoin &amp; GraffPUNKS — Crypto Moonboys Wiki",
+      "promotion_score": 45,
+      "rank_score": 246,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "monitor",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:246",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/elder-codex-7.html",
+      "title": "Elder Codex-7 — Crypto Moonboys Wiki",
+      "promotion_score": 45,
+      "rank_score": 250,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "monitor",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:250",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/hex-tagger-prime.html",
+      "title": "HEX-TAGGER PRIME — Crypto Moonboys Wiki",
+      "promotion_score": 45,
+      "rank_score": 245,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "monitor",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:245",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/iris-7.html",
+      "title": "Iris-7 — Crypto Moonboys Wiki",
+      "promotion_score": 45,
+      "rank_score": 253,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "monitor",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:253",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/jodie-zoom-2000.html",
+      "title": "Jodie ZOOM 2000 — Crypto Moonboys Wiki",
+      "promotion_score": 45,
+      "rank_score": 254,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "monitor",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:254",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/loopfiend.html",
+      "title": "Loopfiend — Crypto Moonboys Wiki",
+      "promotion_score": 45,
+      "rank_score": 247,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "monitor",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:247",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/m1ntr-k1ll.html",
+      "title": "M1nTr K1ll — Crypto Moonboys Wiki",
+      "promotion_score": 45,
+      "rank_score": 245,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "monitor",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:245",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/spraycode-writcode-mechanics.html",
+      "title": "Spraycode &amp; Writcode Mechanics — Crypto Moonboys Wiki",
+      "promotion_score": 45,
+      "rank_score": 252,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "monitor",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:252",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/the-aztec-raiders.html",
+      "title": "The AZTEC RAIDERS — Crypto Moonboys Wiki",
+      "promotion_score": 45,
+      "rank_score": 251,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "monitor",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:251",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/the-bally-boys.html",
+      "title": "The BALLY BOYS — Crypto Moonboys Wiki",
+      "promotion_score": 45,
+      "rank_score": 254,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "monitor",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:254",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/the-information-mercenaries.html",
+      "title": "The INFORMATION MERCENARIES — Crypto Moonboys Wiki",
+      "promotion_score": 45,
+      "rank_score": 245,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "monitor",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:245",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/the-squeaky-pinks.html",
+      "title": "The Squeaky Pinks — Crypto Moonboys Wiki",
+      "promotion_score": 45,
+      "rank_score": 250,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "monitor",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:250",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/whale-lords.html",
+      "title": "The Whale Lords — Crypto Moonboys Wiki",
+      "promotion_score": 45,
+      "rank_score": 223,
+      "inbound_links": 1,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "monitor",
+      "reasons": [
+        "inbound_links:1",
+        "entity_relevance:true",
+        "rank_score:223",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/aleema-child-of-the-shard.html",
+      "title": "Aleema (Child of the Shard) — Crypto Moonboys Wiki",
+      "promotion_score": 44,
+      "rank_score": 244,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "monitor",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:244",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/ava-chen.html",
+      "title": "Ava Chen — Crypto Moonboys Wiki",
+      "promotion_score": 44,
+      "rank_score": 242,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "monitor",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:242",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/billy-the-goat-kid.html",
+      "title": "Billy the Goat Kid — Crypto Moonboys Wiki",
+      "promotion_score": 44,
+      "rank_score": 240,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "monitor",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:240",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/bit-cap-5000.html",
+      "title": "Bit-Cap 5000 — Crypto Moonboys Wiki",
+      "promotion_score": 44,
+      "rank_score": 243,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "monitor",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:243",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/canvas-clash.html",
+      "title": "The Canvas Clash — Crypto Moonboys Wiki",
+      "promotion_score": 44,
+      "rank_score": 237,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "monitor",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:237",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/dragan-volkov.html",
+      "title": "Dragan Volkov — Crypto Moonboys Wiki",
+      "promotion_score": 44,
+      "rank_score": 241,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "monitor",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:241",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/forklord-you.html",
+      "title": "Forklord You — Crypto Moonboys Wiki",
+      "promotion_score": 44,
+      "rank_score": 240,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "monitor",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:240",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/forksplit.html",
+      "title": "Forksplit — Crypto Moonboys Wiki",
+      "promotion_score": 44,
+      "rank_score": 243,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "monitor",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:243",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/games-graffpunks.html",
+      "title": "Games &amp; GraffPUNKS — Crypto Moonboys Wiki",
+      "promotion_score": 44,
+      "rank_score": 239,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "monitor",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:239",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/graffiti-queens-in-decentraland.html",
+      "title": "Graffiti Queens in Decentraland — Crypto Moonboys Wiki",
+      "promotion_score": 44,
+      "rank_score": 237,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "monitor",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:237",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/graffpunks-token.html",
+      "title": "GraffPUNKS &amp; Crypto Tokens — Crypto Moonboys Wiki",
+      "promotion_score": 44,
+      "rank_score": 244,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "monitor",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:244",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/grit42.html",
+      "title": "Grit42 — Crypto Moonboys Wiki",
+      "promotion_score": 44,
+      "rank_score": 241,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "monitor",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:241",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/hodl-wars-game.html",
+      "title": "HODL Wars (Game) — Crypto Moonboys Wiki",
+      "promotion_score": 44,
+      "rank_score": 240,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "monitor",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:240",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/phygital-prints.html",
+      "title": "Phygital Prints — Crypto Moonboys Wiki",
+      "promotion_score": 44,
+      "rank_score": 242,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "monitor",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:242",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/playable-nft-murals.html",
+      "title": "Playable NFT Murals — Crypto Moonboys Wiki",
+      "promotion_score": 44,
+      "rank_score": 241,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "monitor",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:241",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/satoshi-scroll.html",
+      "title": "The Satoshi Scroll — Crypto Moonboys Wiki",
+      "promotion_score": 44,
+      "rank_score": 211,
+      "inbound_links": 1,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "monitor",
+      "reasons": [
+        "inbound_links:1",
+        "entity_relevance:true",
+        "rank_score:211",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/seeding-rights.html",
+      "title": "Seeding Rights — Crypto Moonboys Wiki",
+      "promotion_score": 44,
+      "rank_score": 242,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "monitor",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:242",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/thera-9.html",
+      "title": "Thera-9 — Crypto Moonboys Wiki",
+      "promotion_score": 44,
+      "rank_score": 243,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "monitor",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:243",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/wagmi-prophecy.html",
+      "title": "The WAGMI Prophecy — Crypto Moonboys Wiki",
+      "promotion_score": 44,
+      "rank_score": 213,
+      "inbound_links": 1,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "monitor",
+      "reasons": [
+        "inbound_links:1",
+        "entity_relevance:true",
+        "rank_score:213",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/altcoins.html",
+      "title": "Altcoins — Crypto Moonboys Wiki",
+      "promotion_score": 43,
+      "rank_score": 231,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "monitor",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:231",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/battlemech-blast.html",
+      "title": "Battlemech Blast — Crypto Moonboys Wiki",
+      "promotion_score": 43,
+      "rank_score": 229,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "monitor",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:229",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/bone-idol-ink.html",
+      "title": "Bone Idol Ink — Crypto Moonboys Wiki",
+      "promotion_score": 43,
+      "rank_score": 231,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "monitor",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:231",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/grit.html",
+      "title": "GRIT — Crypto Moonboys Wiki",
+      "promotion_score": 43,
+      "rank_score": 233,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "monitor",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:233",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/harrison-rift.html",
+      "title": "The Harrison Rift — Crypto Moonboys Wiki",
+      "promotion_score": 43,
+      "rank_score": 230,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "monitor",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:230",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/punk.html",
+      "title": "$PUNK — Crypto Moonboys Wiki",
+      "promotion_score": 43,
+      "rank_score": 234,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "monitor",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:234",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/sarah-pu51fly.html",
+      "title": "Sarah PU51FLY — Crypto Moonboys Wiki",
+      "promotion_score": 43,
+      "rank_score": 225,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "monitor",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:225",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/darren-cullen-ser.html",
+      "title": "Darren Cullen (SER) — Crypto Moonboys Wiki",
+      "promotion_score": 42,
+      "rank_score": 221,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "monitor",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:221",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/gang-signs-card-game.html",
+      "title": "Gang Signs (Card Game) — Crypto Moonboys Wiki",
+      "promotion_score": 42,
+      "rank_score": 219,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "monitor",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:219",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/gkniftyheads-phase-one-two-three.html",
+      "title": "GKniftyHEADS Phase One Two Three — Crypto Moonboys Wiki",
+      "promotion_score": 42,
+      "rank_score": 220,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "monitor",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:220",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/graffpunks-collection.html",
+      "title": "GraffPUNKS Collection — Crypto Moonboys Wiki",
+      "promotion_score": 42,
+      "rank_score": 224,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "monitor",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:224",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/lfgk.html",
+      "title": "$LFGK — Crypto Moonboys Wiki",
+      "promotion_score": 42,
+      "rank_score": 215,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "monitor",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:215",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/queen-sarah-p-fly.html",
+      "title": "Queen Sarah P-fly — Crypto Moonboys Wiki",
+      "promotion_score": 42,
+      "rank_score": 218,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "monitor",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:218",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/the-graffpunks.html",
+      "title": "The GRAFFPUNKS — Crypto Moonboys Wiki",
+      "promotion_score": 42,
+      "rank_score": 221,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "monitor",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:221",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/the-great-dip.html",
+      "title": "The Great Dip — Crypto Moonboys Wiki",
+      "promotion_score": 42,
+      "rank_score": 215,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "monitor",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:215",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/1m-free-nfts-program.html",
+      "title": "1M Free NFTs Program — Crypto Moonboys Wiki",
+      "promotion_score": 41,
+      "rank_score": 212,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "monitor",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:212",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/genesis-kernel.html",
+      "title": "Genesis Kernel — Crypto Moonboys Wiki",
+      "promotion_score": 41,
+      "rank_score": 210,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "monitor",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:210",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/paper-hands.html",
+      "title": "Paper Hands — Crypto Moonboys Wiki",
+      "promotion_score": 41,
+      "rank_score": 211,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "monitor",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:211",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/rug-pull-wars.html",
+      "title": "Rug Pull Wars — Crypto Moonboys Wiki",
+      "promotion_score": 41,
+      "rank_score": 214,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "monitor",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:214",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/snipey-d-man-sirus.html",
+      "title": "Snipey 'D-Man' Sirus — Crypto Moonboys Wiki",
+      "promotion_score": 41,
+      "rank_score": 205,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "monitor",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:205",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/substack-posts-on-graffpunkssubstackcom.html",
+      "title": "Substack Posts on graffpunks.substack.com — Crypto Moonboys Wiki",
+      "promotion_score": 41,
+      "rank_score": 176,
+      "inbound_links": 1,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "monitor",
+      "reasons": [
+        "inbound_links:1",
+        "entity_relevance:true",
+        "rank_score:176",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/bitcoin-kid-army.html",
+      "title": "Bitcoin Kid Army — Crypto Moonboys Wiki",
+      "promotion_score": 39,
+      "rank_score": 187,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "hold",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:187",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/croydon-tower-blocks.html",
+      "title": "Croydon Tower Blocks — Crypto Moonboys Wiki",
+      "promotion_score": 39,
+      "rank_score": 188,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "hold",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:188",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/graffpunks-247-blockchain-radio-station.html",
+      "title": "GraffPUNKS 24/7 Blockchain Radio Station — Crypto Moonboys Wiki",
+      "promotion_score": 39,
+      "rank_score": 162,
+      "inbound_links": 1,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "hold",
+      "reasons": [
+        "inbound_links:1",
+        "entity_relevance:true",
+        "rank_score:162",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/hodl-warriors-army.html",
+      "title": "HODL Warriors Army — Crypto Moonboys Wiki",
+      "promotion_score": 39,
+      "rank_score": 186,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "hold",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:186",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/no-ball-games-nbg.html",
+      "title": "No Ball Games (NBG) — Crypto Moonboys Wiki",
+      "promotion_score": 39,
+      "rank_score": 189,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "hold",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:189",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/alfie-bitcoin-kid-blaze.html",
+      "title": "Alfie 'Bitcoin Kid' Blaze — Crypto Moonboys Wiki",
+      "promotion_score": 38,
+      "rank_score": 177,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "hold",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:177",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/maidstone-base.html",
+      "title": "Maidstone Base — Crypto Moonboys Wiki",
+      "promotion_score": 38,
+      "rank_score": 183,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "hold",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:183",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/the-gkniftyheads.html",
+      "title": "The GKniftyHEADS — Crypto Moonboys Wiki",
+      "promotion_score": 38,
+      "rank_score": 184,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "hold",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:184",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/darren-cullen-ser-real.html",
+      "title": "Darren Cullen (SER) - Real — Crypto Moonboys Wiki",
+      "promotion_score": 37,
+      "rank_score": 165,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "hold",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:165",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/great-datapocalypse-of-2789.html",
+      "title": "Great Datapocalypse of 2789 — Crypto Moonboys Wiki",
+      "promotion_score": 37,
+      "rank_score": 166,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "hold",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:166",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/no-ball-games-nbg-collection.html",
+      "title": "No Ball Games (NBG) Collection — Crypto Moonboys Wiki",
+      "promotion_score": 36,
+      "rank_score": 158,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "hold",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:158",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/spraycode-writcode.html",
+      "title": "Spraycode &amp; Writcode — Crypto Moonboys Wiki",
+      "promotion_score": 36,
+      "rank_score": 155,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "hold",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:155",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/the-hodl-warriors.html",
+      "title": "The HODL Warriors — Crypto Moonboys Wiki",
+      "promotion_score": 36,
+      "rank_score": 156,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "hold",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:156",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/xrp-kids-nbg-updates.html",
+      "title": "XRP Kids NBG Updates — Crypto Moonboys Wiki",
+      "promotion_score": 36,
+      "rank_score": 162,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "hold",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:162",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/atomichub-graffpunks-collection.html",
+      "title": "AtomicHub Graffpunks Collection — Crypto Moonboys Wiki",
+      "promotion_score": 35,
+      "rank_score": 145,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "hold",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:145",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/decentraland-events.html",
+      "title": "Decentraland Events — Crypto Moonboys Wiki",
+      "promotion_score": 35,
+      "rank_score": 149,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "hold",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:149",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/graffiti-queens-exhibition.html",
+      "title": "Graffiti Queens Exhibition — Crypto Moonboys Wiki",
+      "promotion_score": 35,
+      "rank_score": 146,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "hold",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:146",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/leake-street-tunnel.html",
+      "title": "Leake Street Tunnel — Crypto Moonboys Wiki",
+      "promotion_score": 35,
+      "rank_score": 147,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "hold",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:147",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/lfgk-rewards.html",
+      "title": "$LFGK Rewards — Crypto Moonboys Wiki",
+      "promotion_score": 35,
+      "rank_score": 145,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "hold",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:145",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/lfgk-token.html",
+      "title": "$LFGK Token — Crypto Moonboys Wiki",
+      "promotion_score": 35,
+      "rank_score": 154,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "hold",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:154",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/medium-articles-by-gkniftyheads.html",
+      "title": "Medium Articles by @GKniftyHEADS — Crypto Moonboys Wiki",
+      "promotion_score": 35,
+      "rank_score": 152,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "hold",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:152",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/medium-articles-by-graffpunks.html",
+      "title": "Medium Articles by @GRAFFPUNKS — Crypto Moonboys Wiki",
+      "promotion_score": 35,
+      "rank_score": 152,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "hold",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:152",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/medium-articles-by-hodlwarriors.html",
+      "title": "Medium Articles by @HODLWARRIORS — Crypto Moonboys Wiki",
+      "promotion_score": 35,
+      "rank_score": 152,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "hold",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:152",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/medium-articles-by-sercullen.html",
+      "title": "Medium Articles by @sercullen — Crypto Moonboys Wiki",
+      "promotion_score": 35,
+      "rank_score": 152,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "hold",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:152",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/neftyblocks-midevilpunks-collection.html",
+      "title": "NeftyBlocks Midevilpunks Collection — Crypto Moonboys Wiki",
+      "promotion_score": 35,
+      "rank_score": 153,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "hold",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:153",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/smart-nft-mechanics.html",
+      "title": "SMArT NFT Mechanics — Crypto Moonboys Wiki",
+      "promotion_score": 35,
+      "rank_score": 153,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "hold",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:153",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/staking-for-gk-tokens.html",
+      "title": "Staking for $GK Tokens — Crypto Moonboys Wiki",
+      "promotion_score": 35,
+      "rank_score": 145,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "hold",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:145",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/waxp.html",
+      "title": "$WAXP — Crypto Moonboys Wiki",
+      "promotion_score": 35,
+      "rank_score": 145,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "hold",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:145",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/xrp-kids-genesis-nfts.html",
+      "title": "XRP KIDs Genesis NFTs — Crypto Moonboys Wiki",
+      "promotion_score": 35,
+      "rank_score": 153,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "hold",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:153",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/games4punks-telegram-games.html",
+      "title": "GAMES4PUNKS Telegram Games — Crypto Moonboys Wiki",
+      "promotion_score": 34,
+      "rank_score": 143,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "hold",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:143",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/the-sacred-chain.html",
+      "title": "The Sacred Chain — Crypto Moonboys Wiki",
+      "promotion_score": 34,
+      "rank_score": 142,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "hold",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:142",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/the-grids.html",
+      "title": "THE GRIDS — Crypto Moonboys Wiki",
+      "promotion_score": 33,
+      "rank_score": 134,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "hold",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:134",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/bitcoin-nfts.html",
+      "title": "Bitcoin NFTs — Crypto Moonboys Wiki",
+      "promotion_score": 32,
+      "rank_score": 122,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": null,
+      "recommendation": "hold",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:122"
+      ]
+    },
+    {
+      "url": "/wiki/blockchain-graffpunks.html",
+      "title": "Blockchain GraffPUNKS — Crypto Moonboys Wiki",
+      "promotion_score": 32,
+      "rank_score": 122,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": null,
+      "recommendation": "hold",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:122"
+      ]
+    },
+    {
+      "url": "/wiki/crypto-wallets.html",
+      "title": "Crypto Wallets — Crypto Moonboys Wiki",
+      "promotion_score": 32,
+      "rank_score": 116,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "hold",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:116",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/fork-graffpunks.html",
+      "title": "Fork GraffPUNKS — Crypto Moonboys Wiki",
+      "promotion_score": 32,
+      "rank_score": 122,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": null,
+      "recommendation": "hold",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:122"
+      ]
+    },
+    {
+      "url": "/wiki/fork.html",
+      "title": "Fork — Crypto Moonboys Wiki",
+      "promotion_score": 32,
+      "rank_score": 122,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": null,
+      "recommendation": "hold",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:122"
+      ]
+    },
+    {
+      "url": "/wiki/free.html",
+      "title": "Free — Crypto Moonboys Wiki",
+      "promotion_score": 32,
+      "rank_score": 122,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": null,
+      "recommendation": "hold",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:122"
+      ]
+    },
+    {
+      "url": "/wiki/games-nfts.html",
+      "title": "Games NFTs — Crypto Moonboys Wiki",
+      "promotion_score": 32,
+      "rank_score": 123,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": null,
+      "recommendation": "hold",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:123"
+      ]
+    },
+    {
+      "url": "/wiki/games.html",
+      "title": "Games — Crypto Moonboys Wiki",
+      "promotion_score": 32,
+      "rank_score": 122,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": null,
+      "recommendation": "hold",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:122"
+      ]
+    },
+    {
+      "url": "/wiki/gk-graffpunks.html",
+      "title": "GK GraffPUNKS — Crypto Moonboys Wiki",
+      "promotion_score": 32,
+      "rank_score": 122,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": null,
+      "recommendation": "hold",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:122"
+      ]
+    },
+    {
+      "url": "/wiki/graffpunks-24-7-blockchain-radio-station.html",
+      "title": "GraffPUNKS 24/7 Blockchain Radio Station — Crypto Moonboys Wiki",
+      "promotion_score": 32,
+      "rank_score": 122,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "hold",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:122",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/graffpunks-hodl.html",
+      "title": "GraffPUNKS Hodl — Crypto Moonboys Wiki",
+      "promotion_score": 32,
+      "rank_score": 122,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": null,
+      "recommendation": "hold",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:122"
+      ]
+    },
+    {
+      "url": "/wiki/graffpunks-kid.html",
+      "title": "GraffPUNKS Kid — Crypto Moonboys Wiki",
+      "promotion_score": 32,
+      "rank_score": 123,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": null,
+      "recommendation": "hold",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:123"
+      ]
+    },
+    {
+      "url": "/wiki/kid.html",
+      "title": "Kid — Crypto Moonboys Wiki",
+      "promotion_score": 32,
+      "rank_score": 122,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": null,
+      "recommendation": "hold",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:122"
+      ]
+    },
+    {
+      "url": "/wiki/midevil-hero-arena-game.html",
+      "title": "MiDEViL Hero Arena (Game) — Crypto Moonboys Wiki",
+      "promotion_score": 32,
+      "rank_score": 115,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "hold",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:115",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/nfts-non-fungible-tokens.html",
+      "title": "NFTs (Non-Fungible Tokens) — Crypto Moonboys Wiki",
+      "promotion_score": 32,
+      "rank_score": 119,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "hold",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:119",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/punk-coin.html",
+      "title": "PUNK Coin — Crypto Moonboys Wiki",
+      "promotion_score": 32,
+      "rank_score": 117,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "hold",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:117",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/samael-exe.html",
+      "title": "Samael.exe — Crypto Moonboys Wiki",
+      "promotion_score": 32,
+      "rank_score": 119,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "hold",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:119",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/substack-posts-on-graffpunks-substack-com.html",
+      "title": "Substack Posts on graffpunks.substack.com — Crypto Moonboys Wiki",
+      "promotion_score": 32,
+      "rank_score": 120,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "hold",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:120",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/the-bear-market-siege.html",
+      "title": "The Bear Market Siege — Crypto Moonboys Wiki",
+      "promotion_score": 32,
+      "rank_score": 121,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "hold",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:121",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/the-wagmi-prophecy.html",
+      "title": "The WAGMI Prophecy — Crypto Moonboys Wiki",
+      "promotion_score": 32,
+      "rank_score": 119,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "hold",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:119",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/tokens.html",
+      "title": "Tokens — Crypto Moonboys Wiki",
+      "promotion_score": 32,
+      "rank_score": 124,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "hold",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:124",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/1m-free-nfts.html",
+      "title": "1M Free NFTs — Crypto Moonboys Wiki",
+      "promotion_score": 31,
+      "rank_score": 108,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "hold",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:108",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/bitcoin-blockchain-via-kid.html",
+      "title": "Bitcoin Blockchain Via Kid — Crypto Moonboys Wiki",
+      "promotion_score": 31,
+      "rank_score": 114,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": null,
+      "recommendation": "hold",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:114"
+      ]
+    },
+    {
+      "url": "/wiki/bitcoin-btc.html",
+      "title": "Bitcoin (BTC) — Crypto Moonboys Wiki",
+      "promotion_score": 31,
+      "rank_score": 108,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "hold",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:108",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/bitcoin-fork-via-hard.html",
+      "title": "Bitcoin Fork Via Hard — Crypto Moonboys Wiki",
+      "promotion_score": 31,
+      "rank_score": 114,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": null,
+      "recommendation": "hold",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:114"
+      ]
+    },
+    {
+      "url": "/wiki/bitcoin-free-via-nfts.html",
+      "title": "Bitcoin Free Via NFTs — Crypto Moonboys Wiki",
+      "promotion_score": 31,
+      "rank_score": 114,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": null,
+      "recommendation": "hold",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:114"
+      ]
+    },
+    {
+      "url": "/wiki/bitcoin-games-via-kid.html",
+      "title": "Bitcoin Games Via Kid — Crypto Moonboys Wiki",
+      "promotion_score": 31,
+      "rank_score": 114,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": null,
+      "recommendation": "hold",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:114"
+      ]
+    },
+    {
+      "url": "/wiki/bitcoin-gk-via-kid.html",
+      "title": "Bitcoin GK Via Kid — Crypto Moonboys Wiki",
+      "promotion_score": 31,
+      "rank_score": 114,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": null,
+      "recommendation": "hold",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:114"
+      ]
+    },
+    {
+      "url": "/wiki/bitcoin-graffpunks-via-kid.html",
+      "title": "Bitcoin GraffPUNKS Via Kid — Crypto Moonboys Wiki",
+      "promotion_score": 31,
+      "rank_score": 114,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": null,
+      "recommendation": "hold",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:114"
+      ]
+    },
+    {
+      "url": "/wiki/bitcoin-hodl-via-kid.html",
+      "title": "Bitcoin Hodl Via Kid — Crypto Moonboys Wiki",
+      "promotion_score": 31,
+      "rank_score": 114,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": null,
+      "recommendation": "hold",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:114"
+      ]
+    },
+    {
+      "url": "/wiki/bitcoin-kid-via-alfie.html",
+      "title": "Bitcoin Kid Via Alfie — Crypto Moonboys Wiki",
+      "promotion_score": 31,
+      "rank_score": 114,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": null,
+      "recommendation": "hold",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:114"
+      ]
+    },
+    {
+      "url": "/wiki/bitcoin-nbg-via-kid.html",
+      "title": "Bitcoin NBG Via Kid — Crypto Moonboys Wiki",
+      "promotion_score": 31,
+      "rank_score": 114,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": null,
+      "recommendation": "hold",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:114"
+      ]
+    },
+    {
+      "url": "/wiki/bitcoin-nfts-via-free.html",
+      "title": "Bitcoin NFTs Via Free — Crypto Moonboys Wiki",
+      "promotion_score": 31,
+      "rank_score": 114,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": null,
+      "recommendation": "hold",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:114"
+      ]
+    },
+    {
+      "url": "/wiki/blockchain-fork-via-hard.html",
+      "title": "Blockchain Fork Via Hard — Crypto Moonboys Wiki",
+      "promotion_score": 31,
+      "rank_score": 114,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": null,
+      "recommendation": "hold",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:114"
+      ]
+    },
+    {
+      "url": "/wiki/blockchain-free-via-nfts.html",
+      "title": "Blockchain Free Via NFTs — Crypto Moonboys Wiki",
+      "promotion_score": 31,
+      "rank_score": 114,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": null,
+      "recommendation": "hold",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:114"
+      ]
+    },
+    {
+      "url": "/wiki/blockchain-games-via-fork.html",
+      "title": "Blockchain Games Via Fork — Crypto Moonboys Wiki",
+      "promotion_score": 31,
+      "rank_score": 114,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": null,
+      "recommendation": "hold",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:114"
+      ]
+    },
+    {
+      "url": "/wiki/blockchain-graffpunks-via-radio.html",
+      "title": "Blockchain GraffPUNKS Via Radio — Crypto Moonboys Wiki",
+      "promotion_score": 31,
+      "rank_score": 114,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": null,
+      "recommendation": "hold",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:114"
+      ]
+    },
+    {
+      "url": "/wiki/blockchain-hodl-via-graffpunks.html",
+      "title": "Blockchain Hodl Via GraffPUNKS — Crypto Moonboys Wiki",
+      "promotion_score": 31,
+      "rank_score": 114,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": null,
+      "recommendation": "hold",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:114"
+      ]
+    },
+    {
+      "url": "/wiki/blockchain-kid-via-bitcoin.html",
+      "title": "Blockchain Kid Via Bitcoin — Crypto Moonboys Wiki",
+      "promotion_score": 31,
+      "rank_score": 114,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": null,
+      "recommendation": "hold",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:114"
+      ]
+    },
+    {
+      "url": "/wiki/blockchain-nbg-via-ball.html",
+      "title": "Blockchain NBG Via Ball — Crypto Moonboys Wiki",
+      "promotion_score": 31,
+      "rank_score": 114,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": null,
+      "recommendation": "hold",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:114"
+      ]
+    },
+    {
+      "url": "/wiki/blockchain-nfts-via-free.html",
+      "title": "Blockchain NFTs Via Free — Crypto Moonboys Wiki",
+      "promotion_score": 31,
+      "rank_score": 114,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": null,
+      "recommendation": "hold",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:114"
+      ]
+    },
+    {
+      "url": "/wiki/blockchain-technology.html",
+      "title": "Blockchain Technology — Crypto Moonboys Wiki",
+      "promotion_score": 31,
+      "rank_score": 108,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "hold",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:108",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/crypto-exchanges.html",
+      "title": "Crypto Exchanges — Crypto Moonboys Wiki",
+      "promotion_score": 31,
+      "rank_score": 106,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": null,
+      "recommendation": "hold",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:106"
+      ]
+    },
+    {
+      "url": "/wiki/defi-decentralised-finance.html",
+      "title": "DeFi (Decentralised Finance) — Crypto Moonboys Wiki",
+      "promotion_score": 31,
+      "rank_score": 107,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": null,
+      "recommendation": "hold",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:107"
+      ]
+    },
+    {
+      "url": "/wiki/dream-sovereign.html",
+      "title": "Dream Sovereign — Crypto Moonboys Wiki",
+      "promotion_score": 31,
+      "rank_score": 109,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "hold",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:109",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/ethereum-eth.html",
+      "title": "Ethereum (ETH) — Crypto Moonboys Wiki",
+      "promotion_score": 31,
+      "rank_score": 108,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "hold",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:108",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/fork-free-via-hard.html",
+      "title": "Fork Free Via Hard — Crypto Moonboys Wiki",
+      "promotion_score": 31,
+      "rank_score": 114,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": null,
+      "recommendation": "hold",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:114"
+      ]
+    },
+    {
+      "url": "/wiki/fork-games-via-hard.html",
+      "title": "Fork Games Via Hard — Crypto Moonboys Wiki",
+      "promotion_score": 31,
+      "rank_score": 114,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": null,
+      "recommendation": "hold",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:114"
+      ]
+    },
+    {
+      "url": "/wiki/fork-gk-via-hard.html",
+      "title": "Fork GK Via Hard — Crypto Moonboys Wiki",
+      "promotion_score": 31,
+      "rank_score": 114,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": null,
+      "recommendation": "hold",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:114"
+      ]
+    },
+    {
+      "url": "/wiki/fork-graffpunks-via-hard.html",
+      "title": "Fork GraffPUNKS Via Hard — Crypto Moonboys Wiki",
+      "promotion_score": 31,
+      "rank_score": 114,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": null,
+      "recommendation": "hold",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:114"
+      ]
+    },
+    {
+      "url": "/wiki/fork-hodl-via-hard.html",
+      "title": "Fork Hodl Via Hard — Crypto Moonboys Wiki",
+      "promotion_score": 31,
+      "rank_score": 114,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": null,
+      "recommendation": "hold",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:114"
+      ]
+    },
+    {
+      "url": "/wiki/fork-kid-via-bitcoin.html",
+      "title": "Fork Kid Via Bitcoin — Crypto Moonboys Wiki",
+      "promotion_score": 31,
+      "rank_score": 114,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": null,
+      "recommendation": "hold",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:114"
+      ]
+    },
+    {
+      "url": "/wiki/fork-kids-via-hard.html",
+      "title": "Fork Kids Via Hard — Crypto Moonboys Wiki",
+      "promotion_score": 31,
+      "rank_score": 114,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": null,
+      "recommendation": "hold",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:114"
+      ]
+    },
+    {
+      "url": "/wiki/fork-nbg-via-games.html",
+      "title": "Fork NBG Via Games — Crypto Moonboys Wiki",
+      "promotion_score": 31,
+      "rank_score": 114,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": null,
+      "recommendation": "hold",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:114"
+      ]
+    },
+    {
+      "url": "/wiki/fork-nfts-via-free.html",
+      "title": "Fork NFTs Via Free — Crypto Moonboys Wiki",
+      "promotion_score": 31,
+      "rank_score": 114,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": null,
+      "recommendation": "hold",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:114"
+      ]
+    },
+    {
+      "url": "/wiki/free-games-via-nfts.html",
+      "title": "Free Games Via NFTs — Crypto Moonboys Wiki",
+      "promotion_score": 31,
+      "rank_score": 114,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": null,
+      "recommendation": "hold",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:114"
+      ]
+    },
+    {
+      "url": "/wiki/free-gk-via-nfts.html",
+      "title": "Free GK Via NFTs — Crypto Moonboys Wiki",
+      "promotion_score": 31,
+      "rank_score": 114,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": null,
+      "recommendation": "hold",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:114"
+      ]
+    },
+    {
+      "url": "/wiki/free-graffpunks-via-nfts.html",
+      "title": "Free GraffPUNKS Via NFTs — Crypto Moonboys Wiki",
+      "promotion_score": 31,
+      "rank_score": 114,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": null,
+      "recommendation": "hold",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:114"
+      ]
+    },
+    {
+      "url": "/wiki/free-hodl-via-nfts.html",
+      "title": "Free Hodl Via NFTs — Crypto Moonboys Wiki",
+      "promotion_score": 31,
+      "rank_score": 114,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": null,
+      "recommendation": "hold",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:114"
+      ]
+    },
+    {
+      "url": "/wiki/free-kid-via-nfts.html",
+      "title": "Free Kid Via NFTs — Crypto Moonboys Wiki",
+      "promotion_score": 31,
+      "rank_score": 114,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": null,
+      "recommendation": "hold",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:114"
+      ]
+    },
+    {
+      "url": "/wiki/free-kids-via-nfts.html",
+      "title": "Free Kids Via NFTs — Crypto Moonboys Wiki",
+      "promotion_score": 31,
+      "rank_score": 114,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": null,
+      "recommendation": "hold",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:114"
+      ]
+    },
+    {
+      "url": "/wiki/free-nbg-via-nfts.html",
+      "title": "Free NBG Via NFTs — Crypto Moonboys Wiki",
+      "promotion_score": 31,
+      "rank_score": 114,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": null,
+      "recommendation": "hold",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:114"
+      ]
+    },
+    {
+      "url": "/wiki/free-nfts-via-1m.html",
+      "title": "Free NFTs Via 1m — Crypto Moonboys Wiki",
+      "promotion_score": 31,
+      "rank_score": 114,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": null,
+      "recommendation": "hold",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:114"
+      ]
+    },
+    {
+      "url": "/wiki/games-gk-via-fork.html",
+      "title": "Games GK Via Fork — Crypto Moonboys Wiki",
+      "promotion_score": 31,
+      "rank_score": 114,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": null,
+      "recommendation": "hold",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:114"
+      ]
+    },
+    {
+      "url": "/wiki/games-graffpunks-via-collection.html",
+      "title": "Games GraffPUNKS Via Collection — Crypto Moonboys Wiki",
+      "promotion_score": 31,
+      "rank_score": 114,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": null,
+      "recommendation": "hold",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:114"
+      ]
+    },
+    {
+      "url": "/wiki/games-hodl-via-fork.html",
+      "title": "Games Hodl Via Fork — Crypto Moonboys Wiki",
+      "promotion_score": 31,
+      "rank_score": 114,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": null,
+      "recommendation": "hold",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:114"
+      ]
+    },
+    {
+      "url": "/wiki/games-kid-via-bitcoin.html",
+      "title": "Games Kid Via Bitcoin — Crypto Moonboys Wiki",
+      "promotion_score": 31,
+      "rank_score": 114,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": null,
+      "recommendation": "hold",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:114"
+      ]
+    },
+    {
+      "url": "/wiki/games-kids-via-fork.html",
+      "title": "Games Kids Via Fork — Crypto Moonboys Wiki",
+      "promotion_score": 31,
+      "rank_score": 114,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": null,
+      "recommendation": "hold",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:114"
+      ]
+    },
+    {
+      "url": "/wiki/games-nbg-via-fork.html",
+      "title": "Games NBG Via Fork — Crypto Moonboys Wiki",
+      "promotion_score": 31,
+      "rank_score": 114,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": null,
+      "recommendation": "hold",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:114"
+      ]
+    },
+    {
+      "url": "/wiki/games-nfts-via-free.html",
+      "title": "Games NFTs Via Free — Crypto Moonboys Wiki",
+      "promotion_score": 31,
+      "rank_score": 114,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": null,
+      "recommendation": "hold",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:114"
+      ]
+    },
+    {
+      "url": "/wiki/genesis-spray-drop.html",
+      "title": "Genesis Spray Drop — Crypto Moonboys Wiki",
+      "promotion_score": 31,
+      "rank_score": 113,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "hold",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:113",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/gk-graffpunks-via-radio.html",
+      "title": "GK GraffPUNKS Via Radio — Crypto Moonboys Wiki",
+      "promotion_score": 31,
+      "rank_score": 114,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": null,
+      "recommendation": "hold",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:114"
+      ]
+    },
+    {
+      "url": "/wiki/gk-kid-via-bitcoin.html",
+      "title": "GK Kid Via Bitcoin — Crypto Moonboys Wiki",
+      "promotion_score": 31,
+      "rank_score": 114,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": null,
+      "recommendation": "hold",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:114"
+      ]
+    },
+    {
+      "url": "/wiki/graffiti-nexus.html",
+      "title": "Graffiti Nexus — Crypto Moonboys Wiki",
+      "promotion_score": 31,
+      "rank_score": 114,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "hold",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:114",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/graffpunks-247.html",
+      "title": "GraffPUNKS 247 — Crypto Moonboys Wiki",
+      "promotion_score": 31,
+      "rank_score": 109,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "hold",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:109",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/graffpunks-hodl-via-radio.html",
+      "title": "GraffPUNKS Hodl Via Radio — Crypto Moonboys Wiki",
+      "promotion_score": 31,
+      "rank_score": 114,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": null,
+      "recommendation": "hold",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:114"
+      ]
+    },
+    {
+      "url": "/wiki/graffpunks-kid-via-bitcoin.html",
+      "title": "GraffPUNKS Kid Via Bitcoin — Crypto Moonboys Wiki",
+      "promotion_score": 31,
+      "rank_score": 114,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": null,
+      "recommendation": "hold",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:114"
+      ]
+    },
+    {
+      "url": "/wiki/graffpunks-kids-via-radio.html",
+      "title": "GraffPUNKS Kids Via Radio — Crypto Moonboys Wiki",
+      "promotion_score": 31,
+      "rank_score": 114,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": null,
+      "recommendation": "hold",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:114"
+      ]
+    },
+    {
+      "url": "/wiki/graffpunks-nbg-via-radio.html",
+      "title": "GraffPUNKS NBG Via Radio — Crypto Moonboys Wiki",
+      "promotion_score": 31,
+      "rank_score": 114,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": null,
+      "recommendation": "hold",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:114"
+      ]
+    },
+    {
+      "url": "/wiki/graffpunks-network.html",
+      "title": "GraffPUNKS Network — Crypto Moonboys Wiki",
+      "promotion_score": 31,
+      "rank_score": 109,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "hold",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:109",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/graffpunks-nfts-via-free.html",
+      "title": "GraffPUNKS NFTs Via Free — Crypto Moonboys Wiki",
+      "promotion_score": 31,
+      "rank_score": 114,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": null,
+      "recommendation": "hold",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:114"
+      ]
+    },
+    {
+      "url": "/wiki/graffpunks-nfts.html",
+      "title": "GraffPUNKS NFTs — Crypto Moonboys Wiki",
+      "promotion_score": 31,
+      "rank_score": 114,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "hold",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:114",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/hard-fork-games-game.html",
+      "title": "Hard Fork Games — Crypto Moonboys Wiki",
+      "promotion_score": 31,
+      "rank_score": 113,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "hold",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:113",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/head-tags.html",
+      "title": "Head Tags — Crypto Moonboys Wiki",
+      "promotion_score": 31,
+      "rank_score": 109,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "hold",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:109",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/hodl-kid-via-bitcoin.html",
+      "title": "Hodl Kid Via Bitcoin — Crypto Moonboys Wiki",
+      "promotion_score": 31,
+      "rank_score": 114,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": null,
+      "recommendation": "hold",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:114"
+      ]
+    },
+    {
+      "url": "/wiki/hodl-kids-via-warriors.html",
+      "title": "Hodl Kids Via Warriors — Crypto Moonboys Wiki",
+      "promotion_score": 31,
+      "rank_score": 114,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": null,
+      "recommendation": "hold",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:114"
+      ]
+    },
+    {
+      "url": "/wiki/hodl-nbg-via-warriors.html",
+      "title": "Hodl NBG Via Warriors — Crypto Moonboys Wiki",
+      "promotion_score": 31,
+      "rank_score": 114,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": null,
+      "recommendation": "hold",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:114"
+      ]
+    },
+    {
+      "url": "/wiki/hodl-nfts-via-free.html",
+      "title": "Hodl NFTs Via Free — Crypto Moonboys Wiki",
+      "promotion_score": 31,
+      "rank_score": 114,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": null,
+      "recommendation": "hold",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:114"
+      ]
+    },
+    {
+      "url": "/wiki/kid-kids-via-bitcoin.html",
+      "title": "Kid Kids Via Bitcoin — Crypto Moonboys Wiki",
+      "promotion_score": 31,
+      "rank_score": 114,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": null,
+      "recommendation": "hold",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:114"
+      ]
+    },
+    {
+      "url": "/wiki/kid-nbg-via-bitcoin.html",
+      "title": "Kid NBG Via Bitcoin — Crypto Moonboys Wiki",
+      "promotion_score": 31,
+      "rank_score": 114,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": null,
+      "recommendation": "hold",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:114"
+      ]
+    },
+    {
+      "url": "/wiki/kid-nfts-via-free.html",
+      "title": "Kid NFTs Via Free — Crypto Moonboys Wiki",
+      "promotion_score": 31,
+      "rank_score": 114,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": null,
+      "recommendation": "hold",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:114"
+      ]
+    },
+    {
+      "url": "/wiki/kids-nbg-via-xrp.html",
+      "title": "Kids NBG Via XRP — Crypto Moonboys Wiki",
+      "promotion_score": 31,
+      "rank_score": 114,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": null,
+      "recommendation": "hold",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:114"
+      ]
+    },
+    {
+      "url": "/wiki/kids-nfts-via-free.html",
+      "title": "Kids NFTs Via Free — Crypto Moonboys Wiki",
+      "promotion_score": 31,
+      "rank_score": 114,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": null,
+      "recommendation": "hold",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:114"
+      ]
+    },
+    {
+      "url": "/wiki/meme-coins.html",
+      "title": "Meme Coins — Crypto Moonboys Wiki",
+      "promotion_score": 31,
+      "rank_score": 109,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": null,
+      "recommendation": "hold",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:109"
+      ]
+    },
+    {
+      "url": "/wiki/nbg-nfts-via-free.html",
+      "title": "NBG NFTs Via Free — Crypto Moonboys Wiki",
+      "promotion_score": 31,
+      "rank_score": 114,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": null,
+      "recommendation": "hold",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:114"
+      ]
+    },
+    {
+      "url": "/wiki/nine-armies.html",
+      "title": "Nine Armies — Crypto Moonboys Wiki",
+      "promotion_score": 31,
+      "rank_score": 109,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "hold",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:109",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/one-million-free-nfts.html",
+      "title": "One Million Free NFTs — Crypto Moonboys Wiki",
+      "promotion_score": 31,
+      "rank_score": 110,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "hold",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:110",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/stikfamwars.html",
+      "title": "StikFamWars — Crypto Moonboys Wiki",
+      "promotion_score": 31,
+      "rank_score": 106,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "hold",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:106",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/the-fomo-plague.html",
+      "title": "The FOMO Plague — Crypto Moonboys Wiki",
+      "promotion_score": 31,
+      "rank_score": 109,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": null,
+      "recommendation": "hold",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:109"
+      ]
+    },
+    {
+      "url": "/wiki/the-satoshi-scroll.html",
+      "title": "The Satoshi Scroll — Crypto Moonboys Wiki",
+      "promotion_score": 31,
+      "rank_score": 109,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": null,
+      "recommendation": "hold",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:109"
+      ]
+    },
+    {
+      "url": "/wiki/the-whale-lords.html",
+      "title": "The Whale Lords — Crypto Moonboys Wiki",
+      "promotion_score": 31,
+      "rank_score": 114,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": "strengthen_cluster_member",
+      "recommendation": "hold",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:114",
+        "growth_priority_action:strengthen_cluster_member"
+      ]
+    },
+    {
+      "url": "/wiki/bitcoin-tokens.html",
+      "title": "Bitcoin Tokens — Crypto Moonboys Wiki",
+      "promotion_score": 30,
+      "rank_score": 102,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": null,
+      "recommendation": "hold",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:102"
+      ]
+    },
+    {
+      "url": "/wiki/graffpunks-nbg.html",
+      "title": "GraffPUNKS NBG — Crypto Moonboys Wiki",
+      "promotion_score": 30,
+      "rank_score": 102,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": null,
+      "recommendation": "hold",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:102"
+      ]
+    },
+    {
+      "url": "/wiki/bitcoin-token-via-kid.html",
+      "title": "Bitcoin Token Via Kid — Crypto Moonboys Wiki",
+      "promotion_score": 29,
+      "rank_score": 94,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": null,
+      "recommendation": "hold",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:94"
+      ]
+    },
+    {
+      "url": "/wiki/bitcoin-tokens-via-kid.html",
+      "title": "Bitcoin Tokens Via Kid — Crypto Moonboys Wiki",
+      "promotion_score": 29,
+      "rank_score": 94,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": null,
+      "recommendation": "hold",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:94"
+      ]
+    },
+    {
+      "url": "/wiki/blockchain-gk-via-tokens.html",
+      "title": "Blockchain GK Via Tokens — Crypto Moonboys Wiki",
+      "promotion_score": 29,
+      "rank_score": 94,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": null,
+      "recommendation": "hold",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:94"
+      ]
+    },
+    {
+      "url": "/wiki/blockchain-token-via-graffpunks.html",
+      "title": "Blockchain Token Via GraffPUNKS — Crypto Moonboys Wiki",
+      "promotion_score": 29,
+      "rank_score": 94,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": null,
+      "recommendation": "hold",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:94"
+      ]
+    },
+    {
+      "url": "/wiki/blockchain-tokens-via-gk.html",
+      "title": "Blockchain Tokens Via GK — Crypto Moonboys Wiki",
+      "promotion_score": 29,
+      "rank_score": 94,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": null,
+      "recommendation": "hold",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:94"
+      ]
+    },
+    {
+      "url": "/wiki/fork-token-via-hard.html",
+      "title": "Fork Token Via Hard — Crypto Moonboys Wiki",
+      "promotion_score": 29,
+      "rank_score": 94,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": null,
+      "recommendation": "hold",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:94"
+      ]
+    },
+    {
+      "url": "/wiki/fork-tokens-via-hard.html",
+      "title": "Fork Tokens Via Hard — Crypto Moonboys Wiki",
+      "promotion_score": 29,
+      "rank_score": 94,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": null,
+      "recommendation": "hold",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:94"
+      ]
+    },
+    {
+      "url": "/wiki/free-token-via-nfts.html",
+      "title": "Free Token Via NFTs — Crypto Moonboys Wiki",
+      "promotion_score": 29,
+      "rank_score": 94,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": null,
+      "recommendation": "hold",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:94"
+      ]
+    },
+    {
+      "url": "/wiki/free-tokens-via-nfts.html",
+      "title": "Free Tokens Via NFTs — Crypto Moonboys Wiki",
+      "promotion_score": 29,
+      "rank_score": 94,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": null,
+      "recommendation": "hold",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:94"
+      ]
+    },
+    {
+      "url": "/wiki/games-token-via-fork.html",
+      "title": "Games Token Via Fork — Crypto Moonboys Wiki",
+      "promotion_score": 29,
+      "rank_score": 94,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": null,
+      "recommendation": "hold",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:94"
+      ]
+    },
+    {
+      "url": "/wiki/games-tokens-via-fork.html",
+      "title": "Games Tokens Via Fork — Crypto Moonboys Wiki",
+      "promotion_score": 29,
+      "rank_score": 94,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": null,
+      "recommendation": "hold",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:94"
+      ]
+    },
+    {
+      "url": "/wiki/gk-hodl-via-tokens.html",
+      "title": "GK Hodl Via Tokens — Crypto Moonboys Wiki",
+      "promotion_score": 29,
+      "rank_score": 94,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": null,
+      "recommendation": "hold",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:94"
+      ]
+    },
+    {
+      "url": "/wiki/gk-kids-via-tokens.html",
+      "title": "GK Kids Via Tokens — Crypto Moonboys Wiki",
+      "promotion_score": 29,
+      "rank_score": 94,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": null,
+      "recommendation": "hold",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:94"
+      ]
+    },
+    {
+      "url": "/wiki/gk-nbg-via-tokens.html",
+      "title": "GK NBG Via Tokens — Crypto Moonboys Wiki",
+      "promotion_score": 29,
+      "rank_score": 94,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": null,
+      "recommendation": "hold",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:94"
+      ]
+    },
+    {
+      "url": "/wiki/gk-nfts-via-tokens.html",
+      "title": "GK NFTs Via Tokens — Crypto Moonboys Wiki",
+      "promotion_score": 29,
+      "rank_score": 94,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": null,
+      "recommendation": "hold",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:94"
+      ]
+    },
+    {
+      "url": "/wiki/gk-token-via-tokens.html",
+      "title": "GK Token Via Tokens — Crypto Moonboys Wiki",
+      "promotion_score": 29,
+      "rank_score": 94,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": null,
+      "recommendation": "hold",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:94"
+      ]
+    },
+    {
+      "url": "/wiki/gk-tokens-via-fungible.html",
+      "title": "GK Tokens Via Fungible — Crypto Moonboys Wiki",
+      "promotion_score": 29,
+      "rank_score": 94,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": null,
+      "recommendation": "hold",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:94"
+      ]
+    },
+    {
+      "url": "/wiki/graffpunks-token-via-radio.html",
+      "title": "GraffPUNKS Token Via Radio — Crypto Moonboys Wiki",
+      "promotion_score": 29,
+      "rank_score": 94,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": null,
+      "recommendation": "hold",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:94"
+      ]
+    },
+    {
+      "url": "/wiki/graffpunks-tokens-via-radio.html",
+      "title": "GraffPUNKS Tokens Via Radio — Crypto Moonboys Wiki",
+      "promotion_score": 29,
+      "rank_score": 94,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": null,
+      "recommendation": "hold",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:94"
+      ]
+    },
+    {
+      "url": "/wiki/hodl-token-via-warriors.html",
+      "title": "Hodl Token Via Warriors — Crypto Moonboys Wiki",
+      "promotion_score": 29,
+      "rank_score": 94,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": null,
+      "recommendation": "hold",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:94"
+      ]
+    },
+    {
+      "url": "/wiki/hodl-tokens-via-warriors.html",
+      "title": "Hodl Tokens Via Warriors — Crypto Moonboys Wiki",
+      "promotion_score": 29,
+      "rank_score": 94,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": null,
+      "recommendation": "hold",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:94"
+      ]
+    },
+    {
+      "url": "/wiki/kid-token-via-bitcoin.html",
+      "title": "Kid Token Via Bitcoin — Crypto Moonboys Wiki",
+      "promotion_score": 29,
+      "rank_score": 94,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": null,
+      "recommendation": "hold",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:94"
+      ]
+    },
+    {
+      "url": "/wiki/kid-tokens-via-bitcoin.html",
+      "title": "Kid Tokens Via Bitcoin — Crypto Moonboys Wiki",
+      "promotion_score": 29,
+      "rank_score": 94,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": null,
+      "recommendation": "hold",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:94"
+      ]
+    },
+    {
+      "url": "/wiki/kids-token-via-xrp.html",
+      "title": "Kids Token Via XRP — Crypto Moonboys Wiki",
+      "promotion_score": 29,
+      "rank_score": 94,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": null,
+      "recommendation": "hold",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:94"
+      ]
+    },
+    {
+      "url": "/wiki/kids-tokens-via-gk.html",
+      "title": "Kids Tokens Via GK — Crypto Moonboys Wiki",
+      "promotion_score": 29,
+      "rank_score": 94,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": null,
+      "recommendation": "hold",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:94"
+      ]
+    },
+    {
+      "url": "/wiki/nbg-token-via-ball.html",
+      "title": "NBG Token Via Ball — Crypto Moonboys Wiki",
+      "promotion_score": 29,
+      "rank_score": 94,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": null,
+      "recommendation": "hold",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:94"
+      ]
+    },
+    {
+      "url": "/wiki/nbg-tokens-via-gk.html",
+      "title": "NBG Tokens Via GK — Crypto Moonboys Wiki",
+      "promotion_score": 29,
+      "rank_score": 94,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": null,
+      "recommendation": "hold",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:94"
+      ]
+    },
+    {
+      "url": "/wiki/nfts-token-via-free.html",
+      "title": "NFTs Token Via Free — Crypto Moonboys Wiki",
+      "promotion_score": 29,
+      "rank_score": 94,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": null,
+      "recommendation": "hold",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:94"
+      ]
+    },
+    {
+      "url": "/wiki/nfts-tokens-via-free.html",
+      "title": "NFTs Tokens Via Free — Crypto Moonboys Wiki",
+      "promotion_score": 29,
+      "rank_score": 94,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": null,
+      "recommendation": "hold",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:94"
+      ]
+    },
+    {
+      "url": "/wiki/token-tokens-via-gk.html",
+      "title": "Token Tokens Via GK — Crypto Moonboys Wiki",
+      "promotion_score": 29,
+      "rank_score": 94,
+      "inbound_links": 0,
+      "entity_relevance": true,
+      "narrative_path_inclusion": false,
+      "growth_priority_action": null,
+      "recommendation": "hold",
+      "reasons": [
+        "entity_relevance:true",
+        "rank_score:94"
+      ]
+    }
+  ]
+}

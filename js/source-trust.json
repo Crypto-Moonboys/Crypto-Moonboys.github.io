@@ -1,0 +1,70 @@
+{
+  "generated_at": "2026-04-10T00:00:00.000Z",
+  "phase": "phase_3",
+  "schema_version": "1.0",
+  "tiers": [
+    {
+      "id": "official",
+      "label": "Official",
+      "description": "Content originating from official Crypto Moonboys or GraffPUNKS channels",
+      "score_weight": 1.0,
+      "examples": ["graffpunks.com", "crypto-moonboys.github.io", "official social accounts"],
+      "rules": [
+        "Must be traceable to an official account or domain",
+        "No editorial override required for inclusion",
+        "Confidence floor: 0.85"
+      ]
+    },
+    {
+      "id": "community",
+      "label": "Community",
+      "description": "Content produced by verified community members or trusted fan contributors",
+      "score_weight": 0.65,
+      "examples": ["medium articles by known contributors", "substack posts", "community wikis"],
+      "rules": [
+        "Must be attributed to an identifiable contributor",
+        "Requires editorial review before inclusion",
+        "Confidence floor: 0.55"
+      ]
+    },
+    {
+      "id": "speculative",
+      "label": "Speculative",
+      "description": "Unverified, inferred, or third-party sources with uncertain provenance",
+      "score_weight": 0.25,
+      "examples": ["anon posts", "secondary aggregators", "scraped or inferred data"],
+      "rules": [
+        "Must be clearly labelled as speculative",
+        "Cannot override canonical content",
+        "Confidence ceiling: 0.50",
+        "Editorial approval required before any wiki usage"
+      ]
+    }
+  ],
+  "scoring_rules": [
+    {
+      "rule_id": "sr-001",
+      "description": "Official sources multiply base confidence by tier score_weight (1.0)",
+      "applies_to": "official",
+      "formula": "confidence = base_confidence * 1.0"
+    },
+    {
+      "rule_id": "sr-002",
+      "description": "Community sources multiply base confidence by 0.65",
+      "applies_to": "community",
+      "formula": "confidence = base_confidence * 0.65"
+    },
+    {
+      "rule_id": "sr-003",
+      "description": "Speculative sources are capped at 0.50 regardless of base",
+      "applies_to": "speculative",
+      "formula": "confidence = Math.min(base_confidence * 0.25, 0.50)"
+    },
+    {
+      "rule_id": "sr-004",
+      "description": "Items with no identifiable source default to speculative tier",
+      "applies_to": "all",
+      "formula": "if source_id is null → assign speculative tier"
+    }
+  ]
+}
