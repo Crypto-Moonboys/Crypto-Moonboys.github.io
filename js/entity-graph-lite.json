@@ -1,0 +1,908 @@
+{
+  "generated_at": "2026-04-10T13:42:14.234Z",
+  "lite": true,
+  "nodes": [
+    {
+      "id": "/wiki/graffpunks.html",
+      "title": "GraffPUNKS — Crypto Moonboys Wiki",
+      "url": "/wiki/graffpunks.html",
+      "category": "characters",
+      "rank_score": 790,
+      "authority_score": 26
+    },
+    {
+      "id": "/wiki/block-topia.html",
+      "title": "Block Topia — Crypto Moonboys Wiki",
+      "url": "/wiki/block-topia.html",
+      "category": "characters",
+      "rank_score": 755,
+      "authority_score": 26
+    },
+    {
+      "id": "/wiki/bitcoin-kids.html",
+      "title": "Bitcoin Kids — Crypto Moonboys Wiki",
+      "url": "/wiki/bitcoin-kids.html",
+      "category": "characters",
+      "rank_score": 724,
+      "authority_score": 26
+    },
+    {
+      "id": "/wiki/null-the-prophet.html",
+      "title": "NULL THE PROPHET — Crypto Moonboys Wiki",
+      "url": "/wiki/null-the-prophet.html",
+      "category": "characters",
+      "rank_score": 719,
+      "authority_score": 26
+    },
+    {
+      "id": "/wiki/hodl-wars.html",
+      "title": "HODL Wars — Crypto Moonboys Wiki",
+      "url": "/wiki/hodl-wars.html",
+      "category": "factions",
+      "rank_score": 706,
+      "authority_score": 26
+    },
+    {
+      "id": "/wiki/queen-sarah-pfly.html",
+      "title": "Queen Sarah P-Fly — Crypto Moonboys Wiki",
+      "url": "/wiki/queen-sarah-pfly.html",
+      "category": "characters",
+      "rank_score": 700,
+      "authority_score": 26
+    },
+    {
+      "id": "/wiki/punk-token.html",
+      "title": "$PUNK Token — Crypto Moonboys Wiki",
+      "url": "/wiki/punk-token.html",
+      "category": "characters",
+      "rank_score": 699,
+      "authority_score": 26
+    },
+    {
+      "id": "/wiki/charlie-buster.html",
+      "title": "Charlie Buster — Crypto Moonboys Wiki",
+      "url": "/wiki/charlie-buster.html",
+      "category": "characters",
+      "rank_score": 671,
+      "authority_score": 26
+    },
+    {
+      "id": "/wiki/hodl-warriors.html",
+      "title": "HODL Warriors — Crypto Moonboys Wiki",
+      "url": "/wiki/hodl-warriors.html",
+      "category": "characters",
+      "rank_score": 649,
+      "authority_score": 26
+    },
+    {
+      "id": "/wiki/alfie-blaze.html",
+      "title": "Alfie Blaze — Crypto Moonboys Wiki",
+      "url": "/wiki/alfie-blaze.html",
+      "category": "characters",
+      "rank_score": 630,
+      "authority_score": 22
+    },
+    {
+      "id": "/wiki/ethereum.html",
+      "title": "Ethereum (ETH) — Crypto Moonboys Wiki",
+      "url": "/wiki/ethereum.html",
+      "category": "tokens",
+      "rank_score": 628,
+      "authority_score": 27
+    },
+    {
+      "id": "/wiki/bitcoin.html",
+      "title": "Bitcoin (BTC) — Crypto Moonboys Wiki",
+      "url": "/wiki/bitcoin.html",
+      "category": "tokens",
+      "rank_score": 621,
+      "authority_score": 26
+    },
+    {
+      "id": "/wiki/burn-to-earn.html",
+      "title": "Burn-to-Earn — Crypto Moonboys Wiki",
+      "url": "/wiki/burn-to-earn.html",
+      "category": "characters",
+      "rank_score": 612,
+      "authority_score": 26
+    },
+    {
+      "id": "/wiki/solana.html",
+      "title": "Solana (SOL) — Crypto Moonboys Wiki",
+      "url": "/wiki/solana.html",
+      "category": "tokens",
+      "rank_score": 602,
+      "authority_score": 27
+    },
+    {
+      "id": "/wiki/nbgx.html",
+      "title": "NBGX — Crypto Moonboys Wiki",
+      "url": "/wiki/nbgx.html",
+      "category": "characters",
+      "rank_score": 601,
+      "authority_score": 26
+    },
+    {
+      "id": "/wiki/staking.html",
+      "title": "Staking — Crypto Moonboys Wiki",
+      "url": "/wiki/staking.html",
+      "category": "characters",
+      "rank_score": 600,
+      "authority_score": 26
+    },
+    {
+      "id": "/wiki/pmsl.html",
+      "title": "PMSL — Crypto Moonboys Wiki",
+      "url": "/wiki/pmsl.html",
+      "category": "factions",
+      "rank_score": 595,
+      "authority_score": 26
+    },
+    {
+      "id": "/wiki/nbg.html",
+      "title": "NBG — Crypto Moonboys Wiki",
+      "url": "/wiki/nbg.html",
+      "category": "characters",
+      "rank_score": 583,
+      "authority_score": 26
+    },
+    {
+      "id": "/wiki/diamond-hands.html",
+      "title": "Diamond Hands — Crypto Moonboys Wiki",
+      "url": "/wiki/diamond-hands.html",
+      "category": "characters",
+      "rank_score": 517,
+      "authority_score": 24
+    },
+    {
+      "id": "/wiki/moon-mission.html",
+      "title": "Moon Mission — Crypto Moonboys Wiki",
+      "url": "/wiki/moon-mission.html",
+      "category": "tokens",
+      "rank_score": 505,
+      "authority_score": 24
+    },
+    {
+      "id": "/wiki/graffpunks-24-7.html",
+      "title": "GraffPUNKS 24/7 — Crypto Moonboys Wiki",
+      "url": "/wiki/graffpunks-24-7.html",
+      "category": "characters",
+      "rank_score": 499,
+      "authority_score": 26
+    },
+    {
+      "id": "/wiki/rave-relics.html",
+      "title": "Rave Relics — Crypto Moonboys Wiki",
+      "url": "/wiki/rave-relics.html",
+      "category": "factions",
+      "rank_score": 489,
+      "authority_score": 26
+    },
+    {
+      "id": "/wiki/genesis-spray.html",
+      "title": "Genesis Spray — Crypto Moonboys Wiki",
+      "url": "/wiki/genesis-spray.html",
+      "category": "factions",
+      "rank_score": 456,
+      "authority_score": 26
+    },
+    {
+      "id": "/wiki/gkniftyheads.html",
+      "title": "GKniftyHEADS — Crypto Moonboys Wiki",
+      "url": "/wiki/gkniftyheads.html",
+      "category": "characters",
+      "rank_score": 454,
+      "authority_score": 26
+    },
+    {
+      "id": "/wiki/nbg-token.html",
+      "title": "NBG Token — Crypto Moonboys Wiki",
+      "url": "/wiki/nbg-token.html",
+      "category": "factions",
+      "rank_score": 454,
+      "authority_score": 26
+    },
+    {
+      "id": "/wiki/midevilpunks.html",
+      "title": "MiDEViL PUNKS — Crypto Moonboys Wiki",
+      "url": "/wiki/midevilpunks.html",
+      "category": "factions",
+      "rank_score": 442,
+      "authority_score": 26
+    },
+    {
+      "id": "/wiki/graffpunks-247-radio.html",
+      "title": "GraffPUNKS 247 Radio — Crypto Moonboys Wiki",
+      "url": "/wiki/graffpunks-247-radio.html",
+      "category": "characters",
+      "rank_score": 440,
+      "authority_score": 30
+    },
+    {
+      "id": "/wiki/xrp-kids.html",
+      "title": "XRP Kids — Crypto Moonboys Wiki",
+      "url": "/wiki/xrp-kids.html",
+      "category": "characters",
+      "rank_score": 418,
+      "authority_score": 26
+    },
+    {
+      "id": "/wiki/gang-signs.html",
+      "title": "Gang Signs — Crypto Moonboys Wiki",
+      "url": "/wiki/gang-signs.html",
+      "category": "characters",
+      "rank_score": 415,
+      "authority_score": 26
+    },
+    {
+      "id": "/wiki/hard-fork-games.html",
+      "title": "Hard Fork Games — Crypto Moonboys Wiki",
+      "url": "/wiki/hard-fork-games.html",
+      "category": "factions",
+      "rank_score": 415,
+      "authority_score": 26
+    },
+    {
+      "id": "/wiki/games4punks-telegram.html",
+      "title": "Games4Punks Telegram — Crypto Moonboys Wiki",
+      "url": "/wiki/games4punks-telegram.html",
+      "category": "factions",
+      "rank_score": 413,
+      "authority_score": 26
+    },
+    {
+      "id": "/wiki/graffitikings.html",
+      "title": "Graffiti Kings — Crypto Moonboys Wiki",
+      "url": "/wiki/graffitikings.html",
+      "category": "characters",
+      "rank_score": 410,
+      "authority_score": 26
+    },
+    {
+      "id": "/wiki/darren-cullen.html",
+      "title": "Darren Cullen — Crypto Moonboys Wiki",
+      "url": "/wiki/darren-cullen.html",
+      "category": "characters",
+      "rank_score": 405,
+      "authority_score": 26
+    },
+    {
+      "id": "/wiki/ian-harrison.html",
+      "title": "Ian Harrison — Crypto Moonboys Wiki",
+      "url": "/wiki/ian-harrison.html",
+      "category": "characters",
+      "rank_score": 401,
+      "authority_score": 26
+    },
+    {
+      "id": "/wiki/sacred-chain.html",
+      "title": "The Sacred Chain — Crypto Moonboys Wiki",
+      "url": "/wiki/sacred-chain.html",
+      "category": "factions",
+      "rank_score": 401,
+      "authority_score": 26
+    },
+    {
+      "id": "/wiki/trevor-fung.html",
+      "title": "Trevor Fung — Crypto Moonboys Wiki",
+      "url": "/wiki/trevor-fung.html",
+      "category": "factions",
+      "rank_score": 396,
+      "authority_score": 26
+    },
+    {
+      "id": "/wiki/jillian-godsil.html",
+      "title": "Jillian Godsil — Crypto Moonboys Wiki",
+      "url": "/wiki/jillian-godsil.html",
+      "category": "factions",
+      "rank_score": 393,
+      "authority_score": 26
+    },
+    {
+      "id": "/wiki/midevil-hero-arena.html",
+      "title": "MiDEViL Hero Arena — Crypto Moonboys Wiki",
+      "url": "/wiki/midevil-hero-arena.html",
+      "category": "characters",
+      "rank_score": 389,
+      "authority_score": 30
+    },
+    {
+      "id": "/wiki/metropolis.html",
+      "title": "Metropolis — Crypto Moonboys Wiki",
+      "url": "/wiki/metropolis.html",
+      "category": "factions",
+      "rank_score": 370,
+      "authority_score": 26
+    },
+    {
+      "id": "/wiki/hodl-x-warriors.html",
+      "title": "HODL X Warriors — Crypto Moonboys Wiki",
+      "url": "/wiki/hodl-x-warriors.html",
+      "category": "characters",
+      "rank_score": 345,
+      "authority_score": 23
+    },
+    {
+      "id": "/wiki/bitcoin-x-kids.html",
+      "title": "Bitcoin X Kids — Crypto Moonboys Wiki",
+      "url": "/wiki/bitcoin-x-kids.html",
+      "category": "characters",
+      "rank_score": 312,
+      "authority_score": 23
+    },
+    {
+      "id": "/wiki/crypto-moonboys.html",
+      "title": "Crypto Moonboys — Crypto Moonboys Wiki",
+      "url": "/wiki/crypto-moonboys.html",
+      "category": "characters",
+      "rank_score": 307,
+      "authority_score": 23
+    },
+    {
+      "id": "/wiki/graffpunks-24-7-radio.html",
+      "title": "GraffPUNKS 24/7 Radio — Crypto Moonboys Wiki",
+      "url": "/wiki/graffpunks-24-7-radio.html",
+      "category": "factions",
+      "rank_score": 306,
+      "authority_score": 23
+    },
+    {
+      "id": "/wiki/sneakar.html",
+      "title": "SNEAKAR — Crypto Moonboys Wiki",
+      "url": "/wiki/sneakar.html",
+      "category": "factions",
+      "rank_score": 302,
+      "authority_score": 23
+    },
+    {
+      "id": "/wiki/samaelexe.html",
+      "title": "Samael.exe — Crypto Moonboys Wiki",
+      "url": "/wiki/samaelexe.html",
+      "category": "characters",
+      "rank_score": 296,
+      "authority_score": 23
+    },
+    {
+      "id": "/wiki/rune-tag.html",
+      "title": "Rune Tag — Crypto Moonboys Wiki",
+      "url": "/wiki/rune-tag.html",
+      "category": "characters",
+      "rank_score": 295,
+      "authority_score": 23
+    },
+    {
+      "id": "/wiki/sister-halcyon.html",
+      "title": "Sister Halcyon — Crypto Moonboys Wiki",
+      "url": "/wiki/sister-halcyon.html",
+      "category": "characters",
+      "rank_score": 292,
+      "authority_score": 23
+    },
+    {
+      "id": "/wiki/patchwork.html",
+      "title": "Patchwork — Crypto Moonboys Wiki",
+      "url": "/wiki/patchwork.html",
+      "category": "characters",
+      "rank_score": 291,
+      "authority_score": 23
+    },
+    {
+      "id": "/wiki/satorebel.html",
+      "title": "SatoRebel — Crypto Moonboys Wiki",
+      "url": "/wiki/satorebel.html",
+      "category": "characters",
+      "rank_score": 291,
+      "authority_score": 23
+    },
+    {
+      "id": "/wiki/the-princess.html",
+      "title": "The Princess — Crypto Moonboys Wiki",
+      "url": "/wiki/the-princess.html",
+      "category": "characters",
+      "rank_score": 290,
+      "authority_score": 23
+    },
+    {
+      "id": "/wiki/quell.html",
+      "title": "Quell — Crypto Moonboys Wiki",
+      "url": "/wiki/quell.html",
+      "category": "characters",
+      "rank_score": 288,
+      "authority_score": 23
+    },
+    {
+      "id": "/wiki/the-whitewasher.html",
+      "title": "The Whitewasher — Crypto Moonboys Wiki",
+      "url": "/wiki/the-whitewasher.html",
+      "category": "characters",
+      "rank_score": 288,
+      "authority_score": 23
+    },
+    {
+      "id": "/wiki/pyralith.html",
+      "title": "PYRALITH — Crypto Moonboys Wiki",
+      "url": "/wiki/pyralith.html",
+      "category": "characters",
+      "rank_score": 287,
+      "authority_score": 23
+    },
+    {
+      "id": "/wiki/the-crypto-moongirls.html",
+      "title": "The CRYPTO MOONGIRLS — Crypto Moonboys Wiki",
+      "url": "/wiki/the-crypto-moongirls.html",
+      "category": "factions",
+      "rank_score": 285,
+      "authority_score": 23
+    },
+    {
+      "id": "/wiki/the-nice-easy-bois.html",
+      "title": "The NICE &amp; EASY BOIS — Crypto Moonboys Wiki",
+      "url": "/wiki/the-nice-easy-bois.html",
+      "category": "factions",
+      "rank_score": 285,
+      "authority_score": 20
+    },
+    {
+      "id": "/wiki/street-kingdoms.html",
+      "title": "Street Kingdoms — Crypto Moonboys Wiki",
+      "url": "/wiki/street-kingdoms.html",
+      "category": "factions",
+      "rank_score": 284,
+      "authority_score": 23
+    },
+    {
+      "id": "/wiki/thorne-the-architect.html",
+      "title": "Thorne The Architect — Crypto Moonboys Wiki",
+      "url": "/wiki/thorne-the-architect.html",
+      "category": "characters",
+      "rank_score": 283,
+      "authority_score": 23
+    },
+    {
+      "id": "/wiki/jonny-laurence-nelson-tag-records.html",
+      "title": "Jonny &amp; Laurence Nelson (TAG Records) — Crypto Moonboys Wiki",
+      "url": "/wiki/jonny-laurence-nelson-tag-records.html",
+      "category": "factions",
+      "rank_score": 282,
+      "authority_score": 20
+    },
+    {
+      "id": "/wiki/the-chain-scribes.html",
+      "title": "The CHAIN SCRIBES — Crypto Moonboys Wiki",
+      "url": "/wiki/the-chain-scribes.html",
+      "category": "factions",
+      "rank_score": 280,
+      "authority_score": 23
+    },
+    {
+      "id": "/wiki/nifty-crowns.html",
+      "title": "Nifty Crowns — Crypto Moonboys Wiki",
+      "url": "/wiki/nifty-crowns.html",
+      "category": "factions",
+      "rank_score": 279,
+      "authority_score": 23
+    },
+    {
+      "id": "/wiki/the-finance-guild.html",
+      "title": "The FINANCE GUILD — Crypto Moonboys Wiki",
+      "url": "/wiki/the-finance-guild.html",
+      "category": "factions",
+      "rank_score": 275,
+      "authority_score": 20
+    },
+    {
+      "id": "/wiki/squeaky-pinks-enforcers.html",
+      "title": "Squeaky Pinks Enforcers — Crypto Moonboys Wiki",
+      "url": "/wiki/squeaky-pinks-enforcers.html",
+      "category": "factions",
+      "rank_score": 274,
+      "authority_score": 23
+    },
+    {
+      "id": "/wiki/the-gasless-ghosts.html",
+      "title": "The GASLESS GHOSTS — Crypto Moonboys Wiki",
+      "url": "/wiki/the-gasless-ghosts.html",
+      "category": "factions",
+      "rank_score": 274,
+      "authority_score": 23
+    },
+    {
+      "id": "/wiki/the-hard-fork-rockers.html",
+      "title": "The HARD FORK ROCKERS — Crypto Moonboys Wiki",
+      "url": "/wiki/the-hard-fork-rockers.html",
+      "category": "factions",
+      "rank_score": 274,
+      "authority_score": 20
+    },
+    {
+      "id": "/wiki/the-bitcoin-kid-army.html",
+      "title": "The Bitcoin Kid Army — Crypto Moonboys Wiki",
+      "url": "/wiki/the-bitcoin-kid-army.html",
+      "category": "factions",
+      "rank_score": 273,
+      "authority_score": 23
+    },
+    {
+      "id": "/wiki/the-ducky-boys.html",
+      "title": "The DUCKY BOYS — Crypto Moonboys Wiki",
+      "url": "/wiki/the-ducky-boys.html",
+      "category": "factions",
+      "rank_score": 273,
+      "authority_score": 20
+    },
+    {
+      "id": "/wiki/the-moonlords.html",
+      "title": "The MOONLORDS — Crypto Moonboys Wiki",
+      "url": "/wiki/the-moonlords.html",
+      "category": "factions",
+      "rank_score": 273,
+      "authority_score": 20
+    },
+    {
+      "id": "/wiki/the-og-pixel-saints.html",
+      "title": "The OG PIXEL SAINTS — Crypto Moonboys Wiki",
+      "url": "/wiki/the-og-pixel-saints.html",
+      "category": "factions",
+      "rank_score": 273,
+      "authority_score": 20
+    },
+    {
+      "id": "/wiki/forkborn-collective.html",
+      "title": "Forkborn Collective — Crypto Moonboys Wiki",
+      "url": "/wiki/forkborn-collective.html",
+      "category": "factions",
+      "rank_score": 272,
+      "authority_score": 20
+    },
+    {
+      "id": "/wiki/the-high-hats.html",
+      "title": "The High Hats — Crypto Moonboys Wiki",
+      "url": "/wiki/the-high-hats.html",
+      "category": "factions",
+      "rank_score": 272,
+      "authority_score": 20
+    },
+    {
+      "id": "/wiki/the-shard-mothers-of-manhattan.html",
+      "title": "The SHARD MOTHERS of MANHATTAN — Crypto Moonboys Wiki",
+      "url": "/wiki/the-shard-mothers-of-manhattan.html",
+      "category": "factions",
+      "rank_score": 272,
+      "authority_score": 20
+    },
+    {
+      "id": "/wiki/the-evm-punks.html",
+      "title": "The EVM PUNKS — Crypto Moonboys Wiki",
+      "url": "/wiki/the-evm-punks.html",
+      "category": "factions",
+      "rank_score": 271,
+      "authority_score": 20
+    },
+    {
+      "id": "/wiki/the-nomad-bears.html",
+      "title": "The Nomad Bears — Crypto Moonboys Wiki",
+      "url": "/wiki/the-nomad-bears.html",
+      "category": "factions",
+      "rank_score": 270,
+      "authority_score": 20
+    },
+    {
+      "id": "/wiki/the-rugpull-miners.html",
+      "title": "The RUGPULL MINERS — Crypto Moonboys Wiki",
+      "url": "/wiki/the-rugpull-miners.html",
+      "category": "factions",
+      "rank_score": 270,
+      "authority_score": 20
+    },
+    {
+      "id": "/wiki/the-salvagers.html",
+      "title": "The SALVAGERS — Crypto Moonboys Wiki",
+      "url": "/wiki/the-salvagers.html",
+      "category": "factions",
+      "rank_score": 269,
+      "authority_score": 20
+    }
+  ],
+  "edges": [
+    {
+      "source": "/wiki/crypto-moonboys.html",
+      "target": "/wiki/diamond-hands.html",
+      "score": 92,
+      "weight": 0.92
+    },
+    {
+      "source": "/wiki/graffitikings.html",
+      "target": "/wiki/diamond-hands.html",
+      "score": 92,
+      "weight": 0.92
+    },
+    {
+      "source": "/wiki/hodl-x-warriors.html",
+      "target": "/wiki/hodl-warriors.html",
+      "score": 92,
+      "weight": 0.92
+    },
+    {
+      "source": "/wiki/moon-mission.html",
+      "target": "/wiki/bitcoin.html",
+      "score": 91,
+      "weight": 0.91
+    },
+    {
+      "source": "/wiki/bitcoin.html",
+      "target": "/wiki/moon-mission.html",
+      "score": 89,
+      "weight": 0.89
+    },
+    {
+      "source": "/wiki/patchwork.html",
+      "target": "/wiki/diamond-hands.html",
+      "score": 89,
+      "weight": 0.89
+    },
+    {
+      "source": "/wiki/bitcoin.html",
+      "target": "/wiki/ethereum.html",
+      "score": 86,
+      "weight": 0.86
+    },
+    {
+      "source": "/wiki/moon-mission.html",
+      "target": "/wiki/ethereum.html",
+      "score": 86,
+      "weight": 0.86
+    },
+    {
+      "source": "/wiki/solana.html",
+      "target": "/wiki/ethereum.html",
+      "score": 83,
+      "weight": 0.83
+    },
+    {
+      "source": "/wiki/the-hard-fork-rockers.html",
+      "target": "/wiki/hard-fork-games.html",
+      "score": 82,
+      "weight": 0.82
+    },
+    {
+      "source": "/wiki/jonny-laurence-nelson-tag-records.html",
+      "target": "/wiki/the-nice-easy-bois.html",
+      "score": 81,
+      "weight": 0.81
+    },
+    {
+      "source": "/wiki/the-nice-easy-bois.html",
+      "target": "/wiki/jonny-laurence-nelson-tag-records.html",
+      "score": 81,
+      "weight": 0.81
+    },
+    {
+      "source": "/wiki/hard-fork-games.html",
+      "target": "/wiki/the-hard-fork-rockers.html",
+      "score": 79,
+      "weight": 0.79
+    },
+    {
+      "source": "/wiki/forkborn-collective.html",
+      "target": "/wiki/hodl-wars.html",
+      "score": 78,
+      "weight": 0.78
+    },
+    {
+      "source": "/wiki/games4punks-telegram.html",
+      "target": "/wiki/hodl-wars.html",
+      "score": 78,
+      "weight": 0.78
+    },
+    {
+      "source": "/wiki/genesis-spray.html",
+      "target": "/wiki/hodl-wars.html",
+      "score": 78,
+      "weight": 0.78
+    },
+    {
+      "source": "/wiki/alfie-blaze.html",
+      "target": "/wiki/hodl-warriors.html",
+      "score": 76,
+      "weight": 0.76
+    },
+    {
+      "source": "/wiki/bitcoin-kids.html",
+      "target": "/wiki/hodl-warriors.html",
+      "score": 76,
+      "weight": 0.76
+    },
+    {
+      "source": "/wiki/forkborn-collective.html",
+      "target": "/wiki/rave-relics.html",
+      "score": 76,
+      "weight": 0.76
+    },
+    {
+      "source": "/wiki/genesis-spray.html",
+      "target": "/wiki/rave-relics.html",
+      "score": 76,
+      "weight": 0.76
+    },
+    {
+      "source": "/wiki/jonny-laurence-nelson-tag-records.html",
+      "target": "/wiki/rave-relics.html",
+      "score": 76,
+      "weight": 0.76
+    },
+    {
+      "source": "/wiki/forkborn-collective.html",
+      "target": "/wiki/genesis-spray.html",
+      "score": 75,
+      "weight": 0.75
+    },
+    {
+      "source": "/wiki/nifty-crowns.html",
+      "target": "/wiki/midevilpunks.html",
+      "score": 75,
+      "weight": 0.75
+    },
+    {
+      "source": "/wiki/squeaky-pinks-enforcers.html",
+      "target": "/wiki/midevilpunks.html",
+      "score": 75,
+      "weight": 0.75
+    },
+    {
+      "source": "/wiki/street-kingdoms.html",
+      "target": "/wiki/midevilpunks.html",
+      "score": 75,
+      "weight": 0.75
+    },
+    {
+      "source": "/wiki/bitcoin-x-kids.html",
+      "target": "/wiki/bitcoin-kids.html",
+      "score": 74,
+      "weight": 0.74
+    },
+    {
+      "source": "/wiki/crypto-moonboys.html",
+      "target": "/wiki/graffitikings.html",
+      "score": 72,
+      "weight": 0.72
+    },
+    {
+      "source": "/wiki/crypto-moonboys.html",
+      "target": "/wiki/patchwork.html",
+      "score": 72,
+      "weight": 0.72
+    },
+    {
+      "source": "/wiki/graffitikings.html",
+      "target": "/wiki/patchwork.html",
+      "score": 72,
+      "weight": 0.72
+    },
+    {
+      "source": "/wiki/pyralith.html",
+      "target": "/wiki/quell.html",
+      "score": 72,
+      "weight": 0.72
+    },
+    {
+      "source": "/wiki/pyralith.html",
+      "target": "/wiki/rune-tag.html",
+      "score": 72,
+      "weight": 0.72
+    },
+    {
+      "source": "/wiki/quell.html",
+      "target": "/wiki/pyralith.html",
+      "score": 72,
+      "weight": 0.72
+    },
+    {
+      "source": "/wiki/quell.html",
+      "target": "/wiki/rune-tag.html",
+      "score": 72,
+      "weight": 0.72
+    },
+    {
+      "source": "/wiki/graffpunks-24-7.html",
+      "target": "/wiki/graffpunks.html",
+      "score": 69,
+      "weight": 0.69
+    },
+    {
+      "source": "/wiki/graffpunks-247-radio.html",
+      "target": "/wiki/graffpunks.html",
+      "score": 69,
+      "weight": 0.69
+    },
+    {
+      "source": "/wiki/bitcoin-kids.html",
+      "target": "/wiki/bitcoin-x-kids.html",
+      "score": 64,
+      "weight": 0.64
+    },
+    {
+      "source": "/wiki/graffpunks-247-radio.html",
+      "target": "/wiki/graffpunks-24-7.html",
+      "score": 63,
+      "weight": 0.63
+    },
+    {
+      "source": "/wiki/graffpunks.html",
+      "target": "/wiki/graffpunks-24-7.html",
+      "score": 63,
+      "weight": 0.63
+    },
+    {
+      "source": "/wiki/bitcoin-x-kids.html",
+      "target": "/wiki/xrp-kids.html",
+      "score": 61,
+      "weight": 0.61
+    },
+    {
+      "source": "/wiki/alfie-blaze.html",
+      "target": "/wiki/null-the-prophet.html",
+      "score": 60,
+      "weight": 0.6
+    },
+    {
+      "source": "/wiki/block-topia.html",
+      "target": "/wiki/null-the-prophet.html",
+      "score": 60,
+      "weight": 0.6
+    },
+    {
+      "source": "/wiki/burn-to-earn.html",
+      "target": "/wiki/null-the-prophet.html",
+      "score": 60,
+      "weight": 0.6
+    },
+    {
+      "source": "/wiki/alfie-blaze.html",
+      "target": "/wiki/punk-token.html",
+      "score": 59,
+      "weight": 0.59
+    },
+    {
+      "source": "/wiki/block-topia.html",
+      "target": "/wiki/punk-token.html",
+      "score": 59,
+      "weight": 0.59
+    },
+    {
+      "source": "/wiki/burn-to-earn.html",
+      "target": "/wiki/punk-token.html",
+      "score": 59,
+      "weight": 0.59
+    },
+    {
+      "source": "/wiki/sacred-chain.html",
+      "target": "/wiki/the-chain-scribes.html",
+      "score": 58,
+      "weight": 0.58
+    },
+    {
+      "source": "/wiki/games4punks-telegram.html",
+      "target": "/wiki/pmsl.html",
+      "score": 57,
+      "weight": 0.57
+    },
+    {
+      "source": "/wiki/jillian-godsil.html",
+      "target": "/wiki/pmsl.html",
+      "score": 57,
+      "weight": 0.57
+    },
+    {
+      "source": "/wiki/metropolis.html",
+      "target": "/wiki/pmsl.html",
+      "score": 57,
+      "weight": 0.57
+    },
+    {
+      "source": "/wiki/jillian-godsil.html",
+      "target": "/wiki/games4punks-telegram.html",
+      "score": 53,
+      "weight": 0.53
+    }
+  ]
+}

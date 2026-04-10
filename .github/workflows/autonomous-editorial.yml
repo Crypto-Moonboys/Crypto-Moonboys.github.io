@@ -23,7 +23,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -31,7 +31,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
 
       # ── Phase 4: Autonomous Editorial Scripts ──────────────────────────────
 
@@ -60,6 +60,9 @@ jobs:
 
       - name: Generate site stats
         run: node scripts/generate-site-stats.js
+
+      - name: Deduplicate SAM lore output
+        run: node scripts/deduplicate-lore.js
 
       - name: Generate graph data
         continue-on-error: true
