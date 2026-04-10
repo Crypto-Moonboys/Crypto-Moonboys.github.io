@@ -365,6 +365,28 @@
     ]
   },
   {
+    "entity_id": "bitcoin_blockchain_via_kid",
+    "canonical_title": "Bitcoin Blockchain Via Kid — Crypto Moonboys Wiki",
+    "canonical_url": "/wiki/bitcoin-blockchain-via-kid.html",
+    "category": "core",
+    "aliases": [],
+    "tags": [
+      "bitcoin",
+      "blockchain",
+      "via",
+      "kid",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "source_urls": [
+      "/wiki/bitcoin-blockchain-via-kid.html"
+    ],
+    "alias_candidates": [
+      "bitcoin blockchain via kid"
+    ]
+  },
+  {
     "entity_id": "bitcoin_btc",
     "canonical_title": "Bitcoin (BTC) — Crypto Moonboys Wiki",
     "canonical_url": "/wiki/bitcoin-btc.html",
@@ -388,6 +410,94 @@
     ]
   },
   {
+    "entity_id": "bitcoin_fork_via_hard",
+    "canonical_title": "Bitcoin Fork Via Hard — Crypto Moonboys Wiki",
+    "canonical_url": "/wiki/bitcoin-fork-via-hard.html",
+    "category": "core",
+    "aliases": [],
+    "tags": [
+      "bitcoin",
+      "fork",
+      "via",
+      "hard",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "source_urls": [
+      "/wiki/bitcoin-fork-via-hard.html"
+    ],
+    "alias_candidates": [
+      "bitcoin fork via hard"
+    ]
+  },
+  {
+    "entity_id": "bitcoin_free_via_nfts",
+    "canonical_title": "Bitcoin Free Via NFTs — Crypto Moonboys Wiki",
+    "canonical_url": "/wiki/bitcoin-free-via-nfts.html",
+    "category": "core",
+    "aliases": [],
+    "tags": [
+      "bitcoin",
+      "free",
+      "via",
+      "nfts",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "source_urls": [
+      "/wiki/bitcoin-free-via-nfts.html"
+    ],
+    "alias_candidates": [
+      "bitcoin free via nfts"
+    ]
+  },
+  {
+    "entity_id": "bitcoin_games_via_kid",
+    "canonical_title": "Bitcoin Games Via Kid — Crypto Moonboys Wiki",
+    "canonical_url": "/wiki/bitcoin-games-via-kid.html",
+    "category": "core",
+    "aliases": [],
+    "tags": [
+      "bitcoin",
+      "games",
+      "via",
+      "kid",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "source_urls": [
+      "/wiki/bitcoin-games-via-kid.html"
+    ],
+    "alias_candidates": [
+      "bitcoin games via kid"
+    ]
+  },
+  {
+    "entity_id": "bitcoin_gk_via_kid",
+    "canonical_title": "Bitcoin GK Via Kid — Crypto Moonboys Wiki",
+    "canonical_url": "/wiki/bitcoin-gk-via-kid.html",
+    "category": "core",
+    "aliases": [],
+    "tags": [
+      "bitcoin",
+      "gk",
+      "via",
+      "kid",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "source_urls": [
+      "/wiki/bitcoin-gk-via-kid.html"
+    ],
+    "alias_candidates": [
+      "bitcoin gk via kid"
+    ]
+  },
+  {
     "entity_id": "bitcoin_graffpunks",
     "canonical_title": "Bitcoin &amp; GraffPUNKS — Crypto Moonboys Wiki",
     "canonical_url": "/wiki/bitcoin-graffpunks.html",
@@ -405,6 +515,50 @@
     ],
     "source_urls": [
       "/wiki/bitcoin-graffpunks.html"
+    ]
+  },
+  {
+    "entity_id": "bitcoin_graffpunks_via_kid",
+    "canonical_title": "Bitcoin GraffPUNKS Via Kid — Crypto Moonboys Wiki",
+    "canonical_url": "/wiki/bitcoin-graffpunks-via-kid.html",
+    "category": "core",
+    "aliases": [],
+    "tags": [
+      "bitcoin",
+      "graffpunks",
+      "via",
+      "kid",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "source_urls": [
+      "/wiki/bitcoin-graffpunks-via-kid.html"
+    ],
+    "alias_candidates": [
+      "bitcoin graffpunks via kid"
+    ]
+  },
+  {
+    "entity_id": "bitcoin_hodl_via_kid",
+    "canonical_title": "Bitcoin Hodl Via Kid — Crypto Moonboys Wiki",
+    "canonical_url": "/wiki/bitcoin-hodl-via-kid.html",
+    "category": "core",
+    "aliases": [],
+    "tags": [
+      "bitcoin",
+      "hodl",
+      "via",
+      "kid",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "source_urls": [
+      "/wiki/bitcoin-hodl-via-kid.html"
+    ],
+    "alias_candidates": [
+      "bitcoin hodl via kid"
     ]
   },
   {
@@ -429,6 +583,28 @@
     ]
   },
   {
+    "entity_id": "bitcoin_kid_via_alfie",
+    "canonical_title": "Bitcoin Kid Via Alfie — Crypto Moonboys Wiki",
+    "canonical_url": "/wiki/bitcoin-kid-via-alfie.html",
+    "category": "core",
+    "aliases": [],
+    "tags": [
+      "bitcoin",
+      "kid",
+      "via",
+      "alfie",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "source_urls": [
+      "/wiki/bitcoin-kid-via-alfie.html"
+    ],
+    "alias_candidates": [
+      "bitcoin kid via alfie"
+    ]
+  },
+  {
     "entity_id": "bitcoin_kids",
     "canonical_title": "Bitcoin Kids — Crypto Moonboys Wiki",
     "canonical_url": "/wiki/bitcoin-kids.html",
@@ -448,6 +624,136 @@
     ],
     "alias_candidates": [
       "bitcoin kids"
+    ]
+  },
+  {
+    "entity_id": "bitcoin_nbg_via_kid",
+    "canonical_title": "Bitcoin NBG Via Kid — Crypto Moonboys Wiki",
+    "canonical_url": "/wiki/bitcoin-nbg-via-kid.html",
+    "category": "core",
+    "aliases": [],
+    "tags": [
+      "bitcoin",
+      "nbg",
+      "via",
+      "kid",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "source_urls": [
+      "/wiki/bitcoin-nbg-via-kid.html"
+    ],
+    "alias_candidates": [
+      "bitcoin nbg via kid"
+    ]
+  },
+  {
+    "entity_id": "bitcoin_nfts",
+    "canonical_title": "Bitcoin NFTs — Crypto Moonboys Wiki",
+    "canonical_url": "/wiki/bitcoin-nfts.html",
+    "category": "core",
+    "aliases": [],
+    "tags": [
+      "bitcoin",
+      "nfts",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "source_urls": [
+      "/wiki/bitcoin-nfts.html"
+    ],
+    "alias_candidates": [
+      "bitcoin nfts",
+      "bitcoin nfts crypto moonboys wiki"
+    ]
+  },
+  {
+    "entity_id": "bitcoin_nfts_via_free",
+    "canonical_title": "Bitcoin NFTs Via Free — Crypto Moonboys Wiki",
+    "canonical_url": "/wiki/bitcoin-nfts-via-free.html",
+    "category": "core",
+    "aliases": [],
+    "tags": [
+      "bitcoin",
+      "nfts",
+      "via",
+      "free",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "source_urls": [
+      "/wiki/bitcoin-nfts-via-free.html"
+    ],
+    "alias_candidates": [
+      "bitcoin nfts via free"
+    ]
+  },
+  {
+    "entity_id": "bitcoin_token_via_kid",
+    "canonical_title": "Bitcoin Token Via Kid — Crypto Moonboys Wiki",
+    "canonical_url": "/wiki/bitcoin-token-via-kid.html",
+    "category": "tokens",
+    "aliases": [],
+    "tags": [
+      "bitcoin",
+      "token",
+      "via",
+      "kid",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "source_urls": [
+      "/wiki/bitcoin-token-via-kid.html"
+    ],
+    "alias_candidates": [
+      "bitcoin token via kid"
+    ]
+  },
+  {
+    "entity_id": "bitcoin_tokens",
+    "canonical_title": "Bitcoin Tokens — Crypto Moonboys Wiki",
+    "canonical_url": "/wiki/bitcoin-tokens.html",
+    "category": "tokens",
+    "aliases": [],
+    "tags": [
+      "bitcoin",
+      "tokens",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "source_urls": [
+      "/wiki/bitcoin-tokens.html"
+    ],
+    "alias_candidates": [
+      "bitcoin tokens",
+      "bitcoin tokens crypto moonboys wiki"
+    ]
+  },
+  {
+    "entity_id": "bitcoin_tokens_via_kid",
+    "canonical_title": "Bitcoin Tokens Via Kid — Crypto Moonboys Wiki",
+    "canonical_url": "/wiki/bitcoin-tokens-via-kid.html",
+    "category": "tokens",
+    "aliases": [],
+    "tags": [
+      "bitcoin",
+      "tokens",
+      "via",
+      "kid",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "source_urls": [
+      "/wiki/bitcoin-tokens-via-kid.html"
+    ],
+    "alias_candidates": [
+      "bitcoin tokens via kid"
     ]
   },
   {
@@ -536,6 +842,225 @@
     ]
   },
   {
+    "entity_id": "blockchain_fork_via_hard",
+    "canonical_title": "Blockchain Fork Via Hard — Crypto Moonboys Wiki",
+    "canonical_url": "/wiki/blockchain-fork-via-hard.html",
+    "category": "core",
+    "aliases": [],
+    "tags": [
+      "blockchain",
+      "fork",
+      "via",
+      "hard",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "source_urls": [
+      "/wiki/blockchain-fork-via-hard.html"
+    ],
+    "alias_candidates": [
+      "blockchain fork via hard"
+    ]
+  },
+  {
+    "entity_id": "blockchain_free_via_nfts",
+    "canonical_title": "Blockchain Free Via NFTs — Crypto Moonboys Wiki",
+    "canonical_url": "/wiki/blockchain-free-via-nfts.html",
+    "category": "core",
+    "aliases": [],
+    "tags": [
+      "blockchain",
+      "free",
+      "via",
+      "nfts",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "source_urls": [
+      "/wiki/blockchain-free-via-nfts.html"
+    ],
+    "alias_candidates": [
+      "blockchain free via nfts"
+    ]
+  },
+  {
+    "entity_id": "blockchain_games_via_fork",
+    "canonical_title": "Blockchain Games Via Fork — Crypto Moonboys Wiki",
+    "canonical_url": "/wiki/blockchain-games-via-fork.html",
+    "category": "core",
+    "aliases": [],
+    "tags": [
+      "blockchain",
+      "games",
+      "via",
+      "fork",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "source_urls": [
+      "/wiki/blockchain-games-via-fork.html"
+    ],
+    "alias_candidates": [
+      "blockchain games via fork"
+    ]
+  },
+  {
+    "entity_id": "blockchain_gk_via_tokens",
+    "canonical_title": "Blockchain GK Via Tokens — Crypto Moonboys Wiki",
+    "canonical_url": "/wiki/blockchain-gk-via-tokens.html",
+    "category": "tokens",
+    "aliases": [],
+    "tags": [
+      "blockchain",
+      "gk",
+      "via",
+      "tokens",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "source_urls": [
+      "/wiki/blockchain-gk-via-tokens.html"
+    ],
+    "alias_candidates": [
+      "blockchain gk via tokens"
+    ]
+  },
+  {
+    "entity_id": "blockchain_graffpunks",
+    "canonical_title": "Blockchain GraffPUNKS — Crypto Moonboys Wiki",
+    "canonical_url": "/wiki/blockchain-graffpunks.html",
+    "category": "core",
+    "aliases": [],
+    "tags": [
+      "blockchain",
+      "graffpunks",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "source_urls": [
+      "/wiki/blockchain-graffpunks.html"
+    ],
+    "alias_candidates": [
+      "blockchain graffpunks",
+      "blockchain graffpunks crypto moonboys wiki"
+    ]
+  },
+  {
+    "entity_id": "blockchain_graffpunks_via_radio",
+    "canonical_title": "Blockchain GraffPUNKS Via Radio — Crypto Moonboys Wiki",
+    "canonical_url": "/wiki/blockchain-graffpunks-via-radio.html",
+    "category": "core",
+    "aliases": [],
+    "tags": [
+      "blockchain",
+      "graffpunks",
+      "via",
+      "radio",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "source_urls": [
+      "/wiki/blockchain-graffpunks-via-radio.html"
+    ],
+    "alias_candidates": [
+      "blockchain graffpunks via radio"
+    ]
+  },
+  {
+    "entity_id": "blockchain_hodl_via_graffpunks",
+    "canonical_title": "Blockchain Hodl Via GraffPUNKS — Crypto Moonboys Wiki",
+    "canonical_url": "/wiki/blockchain-hodl-via-graffpunks.html",
+    "category": "core",
+    "aliases": [],
+    "tags": [
+      "blockchain",
+      "hodl",
+      "via",
+      "graffpunks",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "source_urls": [
+      "/wiki/blockchain-hodl-via-graffpunks.html"
+    ],
+    "alias_candidates": [
+      "blockchain hodl via graffpunks"
+    ]
+  },
+  {
+    "entity_id": "blockchain_kid_via_bitcoin",
+    "canonical_title": "Blockchain Kid Via Bitcoin — Crypto Moonboys Wiki",
+    "canonical_url": "/wiki/blockchain-kid-via-bitcoin.html",
+    "category": "core",
+    "aliases": [],
+    "tags": [
+      "blockchain",
+      "kid",
+      "via",
+      "bitcoin",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "source_urls": [
+      "/wiki/blockchain-kid-via-bitcoin.html"
+    ],
+    "alias_candidates": [
+      "blockchain kid via bitcoin"
+    ]
+  },
+  {
+    "entity_id": "blockchain_nbg_via_ball",
+    "canonical_title": "Blockchain NBG Via Ball — Crypto Moonboys Wiki",
+    "canonical_url": "/wiki/blockchain-nbg-via-ball.html",
+    "category": "core",
+    "aliases": [],
+    "tags": [
+      "blockchain",
+      "nbg",
+      "via",
+      "ball",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "source_urls": [
+      "/wiki/blockchain-nbg-via-ball.html"
+    ],
+    "alias_candidates": [
+      "blockchain nbg via ball"
+    ]
+  },
+  {
+    "entity_id": "blockchain_nfts_via_free",
+    "canonical_title": "Blockchain NFTs Via Free — Crypto Moonboys Wiki",
+    "canonical_url": "/wiki/blockchain-nfts-via-free.html",
+    "category": "core",
+    "aliases": [],
+    "tags": [
+      "blockchain",
+      "nfts",
+      "via",
+      "free",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "source_urls": [
+      "/wiki/blockchain-nfts-via-free.html"
+    ],
+    "alias_candidates": [
+      "blockchain nfts via free"
+    ]
+  },
+  {
     "entity_id": "blockchain_technology",
     "canonical_title": "Blockchain Technology — Crypto Moonboys Wiki",
     "canonical_url": "/wiki/blockchain-technology.html",
@@ -556,6 +1081,50 @@
     ],
     "alias_candidates": [
       "blockchain technology"
+    ]
+  },
+  {
+    "entity_id": "blockchain_token_via_graffpunks",
+    "canonical_title": "Blockchain Token Via GraffPUNKS — Crypto Moonboys Wiki",
+    "canonical_url": "/wiki/blockchain-token-via-graffpunks.html",
+    "category": "tokens",
+    "aliases": [],
+    "tags": [
+      "blockchain",
+      "token",
+      "via",
+      "graffpunks",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "source_urls": [
+      "/wiki/blockchain-token-via-graffpunks.html"
+    ],
+    "alias_candidates": [
+      "blockchain token via graffpunks"
+    ]
+  },
+  {
+    "entity_id": "blockchain_tokens_via_gk",
+    "canonical_title": "Blockchain Tokens Via GK — Crypto Moonboys Wiki",
+    "canonical_url": "/wiki/blockchain-tokens-via-gk.html",
+    "category": "tokens",
+    "aliases": [],
+    "tags": [
+      "blockchain",
+      "tokens",
+      "via",
+      "gk",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "source_urls": [
+      "/wiki/blockchain-tokens-via-gk.html"
+    ],
+    "alias_candidates": [
+      "blockchain tokens via gk"
     ]
   },
   {
@@ -1076,6 +1645,289 @@
     ]
   },
   {
+    "entity_id": "fork",
+    "canonical_title": "Fork — Crypto Moonboys Wiki",
+    "canonical_url": "/wiki/fork.html",
+    "category": "core",
+    "aliases": [],
+    "tags": [
+      "fork",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "source_urls": [
+      "/wiki/fork.html"
+    ],
+    "alias_candidates": [
+      "fork",
+      "fork crypto moonboys wiki"
+    ]
+  },
+  {
+    "entity_id": "fork_free_via_hard",
+    "canonical_title": "Fork Free Via Hard — Crypto Moonboys Wiki",
+    "canonical_url": "/wiki/fork-free-via-hard.html",
+    "category": "core",
+    "aliases": [],
+    "tags": [
+      "fork",
+      "free",
+      "via",
+      "hard",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "source_urls": [
+      "/wiki/fork-free-via-hard.html"
+    ],
+    "alias_candidates": [
+      "fork free via hard"
+    ]
+  },
+  {
+    "entity_id": "fork_games_via_hard",
+    "canonical_title": "Fork Games Via Hard — Crypto Moonboys Wiki",
+    "canonical_url": "/wiki/fork-games-via-hard.html",
+    "category": "core",
+    "aliases": [],
+    "tags": [
+      "fork",
+      "games",
+      "via",
+      "hard",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "source_urls": [
+      "/wiki/fork-games-via-hard.html"
+    ],
+    "alias_candidates": [
+      "fork games via hard"
+    ]
+  },
+  {
+    "entity_id": "fork_gk_via_hard",
+    "canonical_title": "Fork GK Via Hard — Crypto Moonboys Wiki",
+    "canonical_url": "/wiki/fork-gk-via-hard.html",
+    "category": "core",
+    "aliases": [],
+    "tags": [
+      "fork",
+      "gk",
+      "via",
+      "hard",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "source_urls": [
+      "/wiki/fork-gk-via-hard.html"
+    ],
+    "alias_candidates": [
+      "fork gk via hard"
+    ]
+  },
+  {
+    "entity_id": "fork_graffpunks",
+    "canonical_title": "Fork GraffPUNKS — Crypto Moonboys Wiki",
+    "canonical_url": "/wiki/fork-graffpunks.html",
+    "category": "core",
+    "aliases": [],
+    "tags": [
+      "fork",
+      "graffpunks",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "source_urls": [
+      "/wiki/fork-graffpunks.html"
+    ],
+    "alias_candidates": [
+      "fork graffpunks",
+      "fork graffpunks crypto moonboys wiki"
+    ]
+  },
+  {
+    "entity_id": "fork_graffpunks_via_hard",
+    "canonical_title": "Fork GraffPUNKS Via Hard — Crypto Moonboys Wiki",
+    "canonical_url": "/wiki/fork-graffpunks-via-hard.html",
+    "category": "core",
+    "aliases": [],
+    "tags": [
+      "fork",
+      "graffpunks",
+      "via",
+      "hard",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "source_urls": [
+      "/wiki/fork-graffpunks-via-hard.html"
+    ],
+    "alias_candidates": [
+      "fork graffpunks via hard"
+    ]
+  },
+  {
+    "entity_id": "fork_hodl_via_hard",
+    "canonical_title": "Fork Hodl Via Hard — Crypto Moonboys Wiki",
+    "canonical_url": "/wiki/fork-hodl-via-hard.html",
+    "category": "core",
+    "aliases": [],
+    "tags": [
+      "fork",
+      "hodl",
+      "via",
+      "hard",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "source_urls": [
+      "/wiki/fork-hodl-via-hard.html"
+    ],
+    "alias_candidates": [
+      "fork hodl via hard"
+    ]
+  },
+  {
+    "entity_id": "fork_kid_via_bitcoin",
+    "canonical_title": "Fork Kid Via Bitcoin — Crypto Moonboys Wiki",
+    "canonical_url": "/wiki/fork-kid-via-bitcoin.html",
+    "category": "core",
+    "aliases": [],
+    "tags": [
+      "fork",
+      "kid",
+      "via",
+      "bitcoin",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "source_urls": [
+      "/wiki/fork-kid-via-bitcoin.html"
+    ],
+    "alias_candidates": [
+      "fork kid via bitcoin"
+    ]
+  },
+  {
+    "entity_id": "fork_kids_via_hard",
+    "canonical_title": "Fork Kids Via Hard — Crypto Moonboys Wiki",
+    "canonical_url": "/wiki/fork-kids-via-hard.html",
+    "category": "core",
+    "aliases": [],
+    "tags": [
+      "fork",
+      "kids",
+      "via",
+      "hard",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "source_urls": [
+      "/wiki/fork-kids-via-hard.html"
+    ],
+    "alias_candidates": [
+      "fork kids via hard"
+    ]
+  },
+  {
+    "entity_id": "fork_nbg_via_games",
+    "canonical_title": "Fork NBG Via Games — Crypto Moonboys Wiki",
+    "canonical_url": "/wiki/fork-nbg-via-games.html",
+    "category": "core",
+    "aliases": [],
+    "tags": [
+      "fork",
+      "nbg",
+      "via",
+      "games",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "source_urls": [
+      "/wiki/fork-nbg-via-games.html"
+    ],
+    "alias_candidates": [
+      "fork nbg via games"
+    ]
+  },
+  {
+    "entity_id": "fork_nfts_via_free",
+    "canonical_title": "Fork NFTs Via Free — Crypto Moonboys Wiki",
+    "canonical_url": "/wiki/fork-nfts-via-free.html",
+    "category": "core",
+    "aliases": [],
+    "tags": [
+      "fork",
+      "nfts",
+      "via",
+      "free",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "source_urls": [
+      "/wiki/fork-nfts-via-free.html"
+    ],
+    "alias_candidates": [
+      "fork nfts via free"
+    ]
+  },
+  {
+    "entity_id": "fork_token_via_hard",
+    "canonical_title": "Fork Token Via Hard — Crypto Moonboys Wiki",
+    "canonical_url": "/wiki/fork-token-via-hard.html",
+    "category": "tokens",
+    "aliases": [],
+    "tags": [
+      "fork",
+      "token",
+      "via",
+      "hard",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "source_urls": [
+      "/wiki/fork-token-via-hard.html"
+    ],
+    "alias_candidates": [
+      "fork token via hard"
+    ]
+  },
+  {
+    "entity_id": "fork_tokens_via_hard",
+    "canonical_title": "Fork Tokens Via Hard — Crypto Moonboys Wiki",
+    "canonical_url": "/wiki/fork-tokens-via-hard.html",
+    "category": "tokens",
+    "aliases": [],
+    "tags": [
+      "fork",
+      "tokens",
+      "via",
+      "hard",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "source_urls": [
+      "/wiki/fork-tokens-via-hard.html"
+    ],
+    "alias_candidates": [
+      "fork tokens via hard"
+    ]
+  },
+  {
     "entity_id": "forkborn_collective",
     "canonical_title": "Forkborn Collective — Crypto Moonboys Wiki",
     "canonical_url": "/wiki/forkborn-collective.html",
@@ -1141,6 +1993,288 @@
     ]
   },
   {
+    "entity_id": "free",
+    "canonical_title": "Free — Crypto Moonboys Wiki",
+    "canonical_url": "/wiki/free.html",
+    "category": "core",
+    "aliases": [],
+    "tags": [
+      "free",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "source_urls": [
+      "/wiki/free.html"
+    ],
+    "alias_candidates": [
+      "free",
+      "free crypto moonboys wiki"
+    ]
+  },
+  {
+    "entity_id": "free_games_via_nfts",
+    "canonical_title": "Free Games Via NFTs — Crypto Moonboys Wiki",
+    "canonical_url": "/wiki/free-games-via-nfts.html",
+    "category": "core",
+    "aliases": [],
+    "tags": [
+      "free",
+      "games",
+      "via",
+      "nfts",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "source_urls": [
+      "/wiki/free-games-via-nfts.html"
+    ],
+    "alias_candidates": [
+      "free games via nfts"
+    ]
+  },
+  {
+    "entity_id": "free_gk_via_nfts",
+    "canonical_title": "Free GK Via NFTs — Crypto Moonboys Wiki",
+    "canonical_url": "/wiki/free-gk-via-nfts.html",
+    "category": "core",
+    "aliases": [],
+    "tags": [
+      "free",
+      "gk",
+      "via",
+      "nfts",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "source_urls": [
+      "/wiki/free-gk-via-nfts.html"
+    ],
+    "alias_candidates": [
+      "free gk via nfts"
+    ]
+  },
+  {
+    "entity_id": "free_graffpunks_via_nfts",
+    "canonical_title": "Free GraffPUNKS Via NFTs — Crypto Moonboys Wiki",
+    "canonical_url": "/wiki/free-graffpunks-via-nfts.html",
+    "category": "core",
+    "aliases": [],
+    "tags": [
+      "free",
+      "graffpunks",
+      "via",
+      "nfts",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "source_urls": [
+      "/wiki/free-graffpunks-via-nfts.html"
+    ],
+    "alias_candidates": [
+      "free graffpunks via nfts"
+    ]
+  },
+  {
+    "entity_id": "free_hodl_via_nfts",
+    "canonical_title": "Free Hodl Via NFTs — Crypto Moonboys Wiki",
+    "canonical_url": "/wiki/free-hodl-via-nfts.html",
+    "category": "core",
+    "aliases": [],
+    "tags": [
+      "free",
+      "hodl",
+      "via",
+      "nfts",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "source_urls": [
+      "/wiki/free-hodl-via-nfts.html"
+    ],
+    "alias_candidates": [
+      "free hodl via nfts"
+    ]
+  },
+  {
+    "entity_id": "free_kid_via_nfts",
+    "canonical_title": "Free Kid Via NFTs — Crypto Moonboys Wiki",
+    "canonical_url": "/wiki/free-kid-via-nfts.html",
+    "category": "core",
+    "aliases": [],
+    "tags": [
+      "free",
+      "kid",
+      "via",
+      "nfts",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "source_urls": [
+      "/wiki/free-kid-via-nfts.html"
+    ],
+    "alias_candidates": [
+      "free kid via nfts"
+    ]
+  },
+  {
+    "entity_id": "free_kids_via_nfts",
+    "canonical_title": "Free Kids Via NFTs — Crypto Moonboys Wiki",
+    "canonical_url": "/wiki/free-kids-via-nfts.html",
+    "category": "core",
+    "aliases": [],
+    "tags": [
+      "free",
+      "kids",
+      "via",
+      "nfts",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "source_urls": [
+      "/wiki/free-kids-via-nfts.html"
+    ],
+    "alias_candidates": [
+      "free kids via nfts"
+    ]
+  },
+  {
+    "entity_id": "free_nbg_via_nfts",
+    "canonical_title": "Free NBG Via NFTs — Crypto Moonboys Wiki",
+    "canonical_url": "/wiki/free-nbg-via-nfts.html",
+    "category": "core",
+    "aliases": [],
+    "tags": [
+      "free",
+      "nbg",
+      "via",
+      "nfts",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "source_urls": [
+      "/wiki/free-nbg-via-nfts.html"
+    ],
+    "alias_candidates": [
+      "free nbg via nfts"
+    ]
+  },
+  {
+    "entity_id": "free_nfts_via_1m",
+    "canonical_title": "Free NFTs Via 1m — Crypto Moonboys Wiki",
+    "canonical_url": "/wiki/free-nfts-via-1m.html",
+    "category": "core",
+    "aliases": [],
+    "tags": [
+      "free",
+      "nfts",
+      "via",
+      "1m",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "source_urls": [
+      "/wiki/free-nfts-via-1m.html"
+    ],
+    "alias_candidates": [
+      "free nfts via 1m"
+    ]
+  },
+  {
+    "entity_id": "free_token_via_nfts",
+    "canonical_title": "Free Token Via NFTs — Crypto Moonboys Wiki",
+    "canonical_url": "/wiki/free-token-via-nfts.html",
+    "category": "tokens",
+    "aliases": [],
+    "tags": [
+      "free",
+      "token",
+      "via",
+      "nfts",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "source_urls": [
+      "/wiki/free-token-via-nfts.html"
+    ],
+    "alias_candidates": [
+      "free token via nfts"
+    ]
+  },
+  {
+    "entity_id": "free_tokens_via_nfts",
+    "canonical_title": "Free Tokens Via NFTs — Crypto Moonboys Wiki",
+    "canonical_url": "/wiki/free-tokens-via-nfts.html",
+    "category": "tokens",
+    "aliases": [],
+    "tags": [
+      "free",
+      "tokens",
+      "via",
+      "nfts",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "source_urls": [
+      "/wiki/free-tokens-via-nfts.html"
+    ],
+    "alias_candidates": [
+      "free tokens via nfts"
+    ]
+  },
+  {
+    "entity_id": "games",
+    "canonical_title": "Games — Crypto Moonboys Wiki",
+    "canonical_url": "/wiki/games.html",
+    "category": "core",
+    "aliases": [],
+    "tags": [
+      "games",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "source_urls": [
+      "/wiki/games.html"
+    ],
+    "alias_candidates": [
+      "games",
+      "games crypto moonboys wiki"
+    ]
+  },
+  {
+    "entity_id": "games_gk_via_fork",
+    "canonical_title": "Games GK Via Fork — Crypto Moonboys Wiki",
+    "canonical_url": "/wiki/games-gk-via-fork.html",
+    "category": "core",
+    "aliases": [],
+    "tags": [
+      "games",
+      "gk",
+      "via",
+      "fork",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "source_urls": [
+      "/wiki/games-gk-via-fork.html"
+    ],
+    "alias_candidates": [
+      "games gk via fork"
+    ]
+  },
+  {
     "entity_id": "games_graffpunks",
     "canonical_title": "Games &amp; GraffPUNKS — Crypto Moonboys Wiki",
     "canonical_url": "/wiki/games-graffpunks.html",
@@ -1158,6 +2292,203 @@
     ],
     "source_urls": [
       "/wiki/games-graffpunks.html"
+    ]
+  },
+  {
+    "entity_id": "games_graffpunks_via_collection",
+    "canonical_title": "Games GraffPUNKS Via Collection — Crypto Moonboys Wiki",
+    "canonical_url": "/wiki/games-graffpunks-via-collection.html",
+    "category": "core",
+    "aliases": [],
+    "tags": [
+      "games",
+      "graffpunks",
+      "via",
+      "collection",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "source_urls": [
+      "/wiki/games-graffpunks-via-collection.html"
+    ],
+    "alias_candidates": [
+      "games graffpunks via collection"
+    ]
+  },
+  {
+    "entity_id": "games_hodl_via_fork",
+    "canonical_title": "Games Hodl Via Fork — Crypto Moonboys Wiki",
+    "canonical_url": "/wiki/games-hodl-via-fork.html",
+    "category": "core",
+    "aliases": [],
+    "tags": [
+      "games",
+      "hodl",
+      "via",
+      "fork",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "source_urls": [
+      "/wiki/games-hodl-via-fork.html"
+    ],
+    "alias_candidates": [
+      "games hodl via fork"
+    ]
+  },
+  {
+    "entity_id": "games_kid_via_bitcoin",
+    "canonical_title": "Games Kid Via Bitcoin — Crypto Moonboys Wiki",
+    "canonical_url": "/wiki/games-kid-via-bitcoin.html",
+    "category": "core",
+    "aliases": [],
+    "tags": [
+      "games",
+      "kid",
+      "via",
+      "bitcoin",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "source_urls": [
+      "/wiki/games-kid-via-bitcoin.html"
+    ],
+    "alias_candidates": [
+      "games kid via bitcoin"
+    ]
+  },
+  {
+    "entity_id": "games_kids_via_fork",
+    "canonical_title": "Games Kids Via Fork — Crypto Moonboys Wiki",
+    "canonical_url": "/wiki/games-kids-via-fork.html",
+    "category": "core",
+    "aliases": [],
+    "tags": [
+      "games",
+      "kids",
+      "via",
+      "fork",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "source_urls": [
+      "/wiki/games-kids-via-fork.html"
+    ],
+    "alias_candidates": [
+      "games kids via fork"
+    ]
+  },
+  {
+    "entity_id": "games_nbg_via_fork",
+    "canonical_title": "Games NBG Via Fork — Crypto Moonboys Wiki",
+    "canonical_url": "/wiki/games-nbg-via-fork.html",
+    "category": "core",
+    "aliases": [],
+    "tags": [
+      "games",
+      "nbg",
+      "via",
+      "fork",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "source_urls": [
+      "/wiki/games-nbg-via-fork.html"
+    ],
+    "alias_candidates": [
+      "games nbg via fork"
+    ]
+  },
+  {
+    "entity_id": "games_nfts",
+    "canonical_title": "Games NFTs — Crypto Moonboys Wiki",
+    "canonical_url": "/wiki/games-nfts.html",
+    "category": "core",
+    "aliases": [],
+    "tags": [
+      "games",
+      "nfts",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "source_urls": [
+      "/wiki/games-nfts.html"
+    ],
+    "alias_candidates": [
+      "games nfts",
+      "games nfts crypto moonboys wiki"
+    ]
+  },
+  {
+    "entity_id": "games_nfts_via_free",
+    "canonical_title": "Games NFTs Via Free — Crypto Moonboys Wiki",
+    "canonical_url": "/wiki/games-nfts-via-free.html",
+    "category": "core",
+    "aliases": [],
+    "tags": [
+      "games",
+      "nfts",
+      "via",
+      "free",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "source_urls": [
+      "/wiki/games-nfts-via-free.html"
+    ],
+    "alias_candidates": [
+      "games nfts via free"
+    ]
+  },
+  {
+    "entity_id": "games_token_via_fork",
+    "canonical_title": "Games Token Via Fork — Crypto Moonboys Wiki",
+    "canonical_url": "/wiki/games-token-via-fork.html",
+    "category": "tokens",
+    "aliases": [],
+    "tags": [
+      "games",
+      "token",
+      "via",
+      "fork",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "source_urls": [
+      "/wiki/games-token-via-fork.html"
+    ],
+    "alias_candidates": [
+      "games token via fork"
+    ]
+  },
+  {
+    "entity_id": "games_tokens_via_fork",
+    "canonical_title": "Games Tokens Via Fork — Crypto Moonboys Wiki",
+    "canonical_url": "/wiki/games-tokens-via-fork.html",
+    "category": "tokens",
+    "aliases": [],
+    "tags": [
+      "games",
+      "tokens",
+      "via",
+      "fork",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "source_urls": [
+      "/wiki/games-tokens-via-fork.html"
+    ],
+    "alias_candidates": [
+      "games tokens via fork"
     ]
   },
   {
@@ -1331,6 +2662,159 @@
     ]
   },
   {
+    "entity_id": "gk_graffpunks",
+    "canonical_title": "GK GraffPUNKS — Crypto Moonboys Wiki",
+    "canonical_url": "/wiki/gk-graffpunks.html",
+    "category": "core",
+    "aliases": [],
+    "tags": [
+      "gk",
+      "graffpunks",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "source_urls": [
+      "/wiki/gk-graffpunks.html"
+    ],
+    "alias_candidates": [
+      "gk graffpunks",
+      "gk graffpunks crypto moonboys wiki"
+    ]
+  },
+  {
+    "entity_id": "gk_graffpunks_via_radio",
+    "canonical_title": "GK GraffPUNKS Via Radio — Crypto Moonboys Wiki",
+    "canonical_url": "/wiki/gk-graffpunks-via-radio.html",
+    "category": "core",
+    "aliases": [],
+    "tags": [
+      "gk",
+      "graffpunks",
+      "via",
+      "radio",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "source_urls": [
+      "/wiki/gk-graffpunks-via-radio.html"
+    ],
+    "alias_candidates": [
+      "gk graffpunks via radio"
+    ]
+  },
+  {
+    "entity_id": "gk_hodl_via_tokens",
+    "canonical_title": "GK Hodl Via Tokens — Crypto Moonboys Wiki",
+    "canonical_url": "/wiki/gk-hodl-via-tokens.html",
+    "category": "tokens",
+    "aliases": [],
+    "tags": [
+      "gk",
+      "hodl",
+      "via",
+      "tokens",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "source_urls": [
+      "/wiki/gk-hodl-via-tokens.html"
+    ],
+    "alias_candidates": [
+      "gk hodl via tokens"
+    ]
+  },
+  {
+    "entity_id": "gk_kid_via_bitcoin",
+    "canonical_title": "GK Kid Via Bitcoin — Crypto Moonboys Wiki",
+    "canonical_url": "/wiki/gk-kid-via-bitcoin.html",
+    "category": "core",
+    "aliases": [],
+    "tags": [
+      "gk",
+      "kid",
+      "via",
+      "bitcoin",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "source_urls": [
+      "/wiki/gk-kid-via-bitcoin.html"
+    ],
+    "alias_candidates": [
+      "gk kid via bitcoin"
+    ]
+  },
+  {
+    "entity_id": "gk_kids_via_tokens",
+    "canonical_title": "GK Kids Via Tokens — Crypto Moonboys Wiki",
+    "canonical_url": "/wiki/gk-kids-via-tokens.html",
+    "category": "tokens",
+    "aliases": [],
+    "tags": [
+      "gk",
+      "kids",
+      "via",
+      "tokens",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "source_urls": [
+      "/wiki/gk-kids-via-tokens.html"
+    ],
+    "alias_candidates": [
+      "gk kids via tokens"
+    ]
+  },
+  {
+    "entity_id": "gk_nbg_via_tokens",
+    "canonical_title": "GK NBG Via Tokens — Crypto Moonboys Wiki",
+    "canonical_url": "/wiki/gk-nbg-via-tokens.html",
+    "category": "tokens",
+    "aliases": [],
+    "tags": [
+      "gk",
+      "nbg",
+      "via",
+      "tokens",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "source_urls": [
+      "/wiki/gk-nbg-via-tokens.html"
+    ],
+    "alias_candidates": [
+      "gk nbg via tokens"
+    ]
+  },
+  {
+    "entity_id": "gk_nfts_via_tokens",
+    "canonical_title": "GK NFTs Via Tokens — Crypto Moonboys Wiki",
+    "canonical_url": "/wiki/gk-nfts-via-tokens.html",
+    "category": "tokens",
+    "aliases": [],
+    "tags": [
+      "gk",
+      "nfts",
+      "via",
+      "tokens",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "source_urls": [
+      "/wiki/gk-nfts-via-tokens.html"
+    ],
+    "alias_candidates": [
+      "gk nfts via tokens"
+    ]
+  },
+  {
     "entity_id": "gk_token",
     "canonical_title": "$GK Token — Crypto Moonboys Wiki",
     "canonical_url": "/wiki/gk-token.html",
@@ -1353,6 +2837,28 @@
     ]
   },
   {
+    "entity_id": "gk_token_via_tokens",
+    "canonical_title": "GK Token Via Tokens — Crypto Moonboys Wiki",
+    "canonical_url": "/wiki/gk-token-via-tokens.html",
+    "category": "tokens",
+    "aliases": [],
+    "tags": [
+      "gk",
+      "token",
+      "via",
+      "tokens",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "source_urls": [
+      "/wiki/gk-token-via-tokens.html"
+    ],
+    "alias_candidates": [
+      "gk token via tokens"
+    ]
+  },
+  {
     "entity_id": "gk_tokens",
     "canonical_title": "$GK Tokens — Crypto Moonboys Wiki",
     "canonical_url": "/wiki/gk-tokens.html",
@@ -1372,6 +2878,28 @@
     ],
     "alias_candidates": [
       "gk tokens"
+    ]
+  },
+  {
+    "entity_id": "gk_tokens_via_fungible",
+    "canonical_title": "GK Tokens Via Fungible — Crypto Moonboys Wiki",
+    "canonical_url": "/wiki/gk-tokens-via-fungible.html",
+    "category": "tokens",
+    "aliases": [],
+    "tags": [
+      "gk",
+      "tokens",
+      "via",
+      "fungible",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "source_urls": [
+      "/wiki/gk-tokens-via-fungible.html"
+    ],
+    "alias_candidates": [
+      "gk tokens via fungible"
     ]
   },
   {
@@ -1722,6 +3250,157 @@
     ]
   },
   {
+    "entity_id": "graffpunks_hodl",
+    "canonical_title": "GraffPUNKS Hodl — Crypto Moonboys Wiki",
+    "canonical_url": "/wiki/graffpunks-hodl.html",
+    "category": "core",
+    "aliases": [],
+    "tags": [
+      "graffpunks",
+      "hodl",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "source_urls": [
+      "/wiki/graffpunks-hodl.html"
+    ],
+    "alias_candidates": [
+      "graffpunks hodl",
+      "graffpunks hodl crypto moonboys wiki"
+    ]
+  },
+  {
+    "entity_id": "graffpunks_hodl_via_radio",
+    "canonical_title": "GraffPUNKS Hodl Via Radio — Crypto Moonboys Wiki",
+    "canonical_url": "/wiki/graffpunks-hodl-via-radio.html",
+    "category": "core",
+    "aliases": [],
+    "tags": [
+      "graffpunks",
+      "hodl",
+      "via",
+      "radio",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "source_urls": [
+      "/wiki/graffpunks-hodl-via-radio.html"
+    ],
+    "alias_candidates": [
+      "graffpunks hodl via radio"
+    ]
+  },
+  {
+    "entity_id": "graffpunks_kid",
+    "canonical_title": "GraffPUNKS Kid — Crypto Moonboys Wiki",
+    "canonical_url": "/wiki/graffpunks-kid.html",
+    "category": "core",
+    "aliases": [],
+    "tags": [
+      "graffpunks",
+      "kid",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "source_urls": [
+      "/wiki/graffpunks-kid.html"
+    ],
+    "alias_candidates": [
+      "graffpunks kid",
+      "graffpunks kid crypto moonboys wiki"
+    ]
+  },
+  {
+    "entity_id": "graffpunks_kid_via_bitcoin",
+    "canonical_title": "GraffPUNKS Kid Via Bitcoin — Crypto Moonboys Wiki",
+    "canonical_url": "/wiki/graffpunks-kid-via-bitcoin.html",
+    "category": "core",
+    "aliases": [],
+    "tags": [
+      "graffpunks",
+      "kid",
+      "via",
+      "bitcoin",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "source_urls": [
+      "/wiki/graffpunks-kid-via-bitcoin.html"
+    ],
+    "alias_candidates": [
+      "graffpunks kid via bitcoin"
+    ]
+  },
+  {
+    "entity_id": "graffpunks_kids_via_radio",
+    "canonical_title": "GraffPUNKS Kids Via Radio — Crypto Moonboys Wiki",
+    "canonical_url": "/wiki/graffpunks-kids-via-radio.html",
+    "category": "core",
+    "aliases": [],
+    "tags": [
+      "graffpunks",
+      "kids",
+      "via",
+      "radio",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "source_urls": [
+      "/wiki/graffpunks-kids-via-radio.html"
+    ],
+    "alias_candidates": [
+      "graffpunks kids via radio"
+    ]
+  },
+  {
+    "entity_id": "graffpunks_nbg",
+    "canonical_title": "GraffPUNKS NBG — Crypto Moonboys Wiki",
+    "canonical_url": "/wiki/graffpunks-nbg.html",
+    "category": "tokens",
+    "aliases": [],
+    "tags": [
+      "graffpunks",
+      "nbg",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "source_urls": [
+      "/wiki/graffpunks-nbg.html"
+    ],
+    "alias_candidates": [
+      "graffpunks nbg",
+      "graffpunks nbg crypto moonboys wiki"
+    ]
+  },
+  {
+    "entity_id": "graffpunks_nbg_via_radio",
+    "canonical_title": "GraffPUNKS NBG Via Radio — Crypto Moonboys Wiki",
+    "canonical_url": "/wiki/graffpunks-nbg-via-radio.html",
+    "category": "core",
+    "aliases": [],
+    "tags": [
+      "graffpunks",
+      "nbg",
+      "via",
+      "radio",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "source_urls": [
+      "/wiki/graffpunks-nbg-via-radio.html"
+    ],
+    "alias_candidates": [
+      "graffpunks nbg via radio"
+    ]
+  },
+  {
     "entity_id": "graffpunks_network",
     "canonical_title": "GraffPUNKS Network — Crypto Moonboys Wiki",
     "canonical_url": "/wiki/graffpunks-network.html",
@@ -1766,6 +3445,28 @@
     ]
   },
   {
+    "entity_id": "graffpunks_nfts_via_free",
+    "canonical_title": "GraffPUNKS NFTs Via Free — Crypto Moonboys Wiki",
+    "canonical_url": "/wiki/graffpunks-nfts-via-free.html",
+    "category": "core",
+    "aliases": [],
+    "tags": [
+      "graffpunks",
+      "nfts",
+      "via",
+      "free",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "source_urls": [
+      "/wiki/graffpunks-nfts-via-free.html"
+    ],
+    "alias_candidates": [
+      "graffpunks nfts via free"
+    ]
+  },
+  {
     "entity_id": "graffpunks_token",
     "canonical_title": "GraffPUNKS &amp; Crypto Tokens — Crypto Moonboys Wiki",
     "canonical_url": "/wiki/graffpunks-token.html",
@@ -1783,6 +3484,50 @@
     ],
     "source_urls": [
       "/wiki/graffpunks-token.html"
+    ]
+  },
+  {
+    "entity_id": "graffpunks_token_via_radio",
+    "canonical_title": "GraffPUNKS Token Via Radio — Crypto Moonboys Wiki",
+    "canonical_url": "/wiki/graffpunks-token-via-radio.html",
+    "category": "tokens",
+    "aliases": [],
+    "tags": [
+      "graffpunks",
+      "token",
+      "via",
+      "radio",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "source_urls": [
+      "/wiki/graffpunks-token-via-radio.html"
+    ],
+    "alias_candidates": [
+      "graffpunks token via radio"
+    ]
+  },
+  {
+    "entity_id": "graffpunks_tokens_via_radio",
+    "canonical_title": "GraffPUNKS Tokens Via Radio — Crypto Moonboys Wiki",
+    "canonical_url": "/wiki/graffpunks-tokens-via-radio.html",
+    "category": "tokens",
+    "aliases": [],
+    "tags": [
+      "graffpunks",
+      "tokens",
+      "via",
+      "radio",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "source_urls": [
+      "/wiki/graffpunks-tokens-via-radio.html"
+    ],
+    "alias_candidates": [
+      "graffpunks tokens via radio"
     ]
   },
   {
@@ -1976,6 +3721,138 @@
     ],
     "alias_candidates": [
       "hex tagger prime"
+    ]
+  },
+  {
+    "entity_id": "hodl_kid_via_bitcoin",
+    "canonical_title": "Hodl Kid Via Bitcoin — Crypto Moonboys Wiki",
+    "canonical_url": "/wiki/hodl-kid-via-bitcoin.html",
+    "category": "core",
+    "aliases": [],
+    "tags": [
+      "hodl",
+      "kid",
+      "via",
+      "bitcoin",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "source_urls": [
+      "/wiki/hodl-kid-via-bitcoin.html"
+    ],
+    "alias_candidates": [
+      "hodl kid via bitcoin"
+    ]
+  },
+  {
+    "entity_id": "hodl_kids_via_warriors",
+    "canonical_title": "Hodl Kids Via Warriors — Crypto Moonboys Wiki",
+    "canonical_url": "/wiki/hodl-kids-via-warriors.html",
+    "category": "core",
+    "aliases": [],
+    "tags": [
+      "hodl",
+      "kids",
+      "via",
+      "warriors",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "source_urls": [
+      "/wiki/hodl-kids-via-warriors.html"
+    ],
+    "alias_candidates": [
+      "hodl kids via warriors"
+    ]
+  },
+  {
+    "entity_id": "hodl_nbg_via_warriors",
+    "canonical_title": "Hodl NBG Via Warriors — Crypto Moonboys Wiki",
+    "canonical_url": "/wiki/hodl-nbg-via-warriors.html",
+    "category": "core",
+    "aliases": [],
+    "tags": [
+      "hodl",
+      "nbg",
+      "via",
+      "warriors",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "source_urls": [
+      "/wiki/hodl-nbg-via-warriors.html"
+    ],
+    "alias_candidates": [
+      "hodl nbg via warriors"
+    ]
+  },
+  {
+    "entity_id": "hodl_nfts_via_free",
+    "canonical_title": "Hodl NFTs Via Free — Crypto Moonboys Wiki",
+    "canonical_url": "/wiki/hodl-nfts-via-free.html",
+    "category": "core",
+    "aliases": [],
+    "tags": [
+      "hodl",
+      "nfts",
+      "via",
+      "free",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "source_urls": [
+      "/wiki/hodl-nfts-via-free.html"
+    ],
+    "alias_candidates": [
+      "hodl nfts via free"
+    ]
+  },
+  {
+    "entity_id": "hodl_token_via_warriors",
+    "canonical_title": "Hodl Token Via Warriors — Crypto Moonboys Wiki",
+    "canonical_url": "/wiki/hodl-token-via-warriors.html",
+    "category": "tokens",
+    "aliases": [],
+    "tags": [
+      "hodl",
+      "token",
+      "via",
+      "warriors",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "source_urls": [
+      "/wiki/hodl-token-via-warriors.html"
+    ],
+    "alias_candidates": [
+      "hodl token via warriors"
+    ]
+  },
+  {
+    "entity_id": "hodl_tokens_via_warriors",
+    "canonical_title": "Hodl Tokens Via Warriors — Crypto Moonboys Wiki",
+    "canonical_url": "/wiki/hodl-tokens-via-warriors.html",
+    "category": "tokens",
+    "aliases": [],
+    "tags": [
+      "hodl",
+      "tokens",
+      "via",
+      "warriors",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "source_urls": [
+      "/wiki/hodl-tokens-via-warriors.html"
+    ],
+    "alias_candidates": [
+      "hodl tokens via warriors"
     ]
   },
   {
@@ -2214,6 +4091,223 @@
     ],
     "source_urls": [
       "/wiki/jonny-laurence-nelson-tag-records.html"
+    ]
+  },
+  {
+    "entity_id": "kid",
+    "canonical_title": "Kid — Crypto Moonboys Wiki",
+    "canonical_url": "/wiki/kid.html",
+    "category": "core",
+    "aliases": [],
+    "tags": [
+      "kid",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "source_urls": [
+      "/wiki/kid.html"
+    ],
+    "alias_candidates": [
+      "kid crypto moonboys wiki"
+    ]
+  },
+  {
+    "entity_id": "kid_kids_via_bitcoin",
+    "canonical_title": "Kid Kids Via Bitcoin — Crypto Moonboys Wiki",
+    "canonical_url": "/wiki/kid-kids-via-bitcoin.html",
+    "category": "core",
+    "aliases": [],
+    "tags": [
+      "kid",
+      "kids",
+      "via",
+      "bitcoin",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "source_urls": [
+      "/wiki/kid-kids-via-bitcoin.html"
+    ],
+    "alias_candidates": [
+      "kid kids via bitcoin"
+    ]
+  },
+  {
+    "entity_id": "kid_nbg_via_bitcoin",
+    "canonical_title": "Kid NBG Via Bitcoin — Crypto Moonboys Wiki",
+    "canonical_url": "/wiki/kid-nbg-via-bitcoin.html",
+    "category": "core",
+    "aliases": [],
+    "tags": [
+      "kid",
+      "nbg",
+      "via",
+      "bitcoin",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "source_urls": [
+      "/wiki/kid-nbg-via-bitcoin.html"
+    ],
+    "alias_candidates": [
+      "kid nbg via bitcoin"
+    ]
+  },
+  {
+    "entity_id": "kid_nfts_via_free",
+    "canonical_title": "Kid NFTs Via Free — Crypto Moonboys Wiki",
+    "canonical_url": "/wiki/kid-nfts-via-free.html",
+    "category": "core",
+    "aliases": [],
+    "tags": [
+      "kid",
+      "nfts",
+      "via",
+      "free",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "source_urls": [
+      "/wiki/kid-nfts-via-free.html"
+    ],
+    "alias_candidates": [
+      "kid nfts via free"
+    ]
+  },
+  {
+    "entity_id": "kid_token_via_bitcoin",
+    "canonical_title": "Kid Token Via Bitcoin — Crypto Moonboys Wiki",
+    "canonical_url": "/wiki/kid-token-via-bitcoin.html",
+    "category": "tokens",
+    "aliases": [],
+    "tags": [
+      "kid",
+      "token",
+      "via",
+      "bitcoin",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "source_urls": [
+      "/wiki/kid-token-via-bitcoin.html"
+    ],
+    "alias_candidates": [
+      "kid token via bitcoin"
+    ]
+  },
+  {
+    "entity_id": "kid_tokens_via_bitcoin",
+    "canonical_title": "Kid Tokens Via Bitcoin — Crypto Moonboys Wiki",
+    "canonical_url": "/wiki/kid-tokens-via-bitcoin.html",
+    "category": "tokens",
+    "aliases": [],
+    "tags": [
+      "kid",
+      "tokens",
+      "via",
+      "bitcoin",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "source_urls": [
+      "/wiki/kid-tokens-via-bitcoin.html"
+    ],
+    "alias_candidates": [
+      "kid tokens via bitcoin"
+    ]
+  },
+  {
+    "entity_id": "kids_nbg_via_xrp",
+    "canonical_title": "Kids NBG Via XRP — Crypto Moonboys Wiki",
+    "canonical_url": "/wiki/kids-nbg-via-xrp.html",
+    "category": "core",
+    "aliases": [],
+    "tags": [
+      "kids",
+      "nbg",
+      "via",
+      "xrp",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "source_urls": [
+      "/wiki/kids-nbg-via-xrp.html"
+    ],
+    "alias_candidates": [
+      "kids nbg via xrp"
+    ]
+  },
+  {
+    "entity_id": "kids_nfts_via_free",
+    "canonical_title": "Kids NFTs Via Free — Crypto Moonboys Wiki",
+    "canonical_url": "/wiki/kids-nfts-via-free.html",
+    "category": "core",
+    "aliases": [],
+    "tags": [
+      "kids",
+      "nfts",
+      "via",
+      "free",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "source_urls": [
+      "/wiki/kids-nfts-via-free.html"
+    ],
+    "alias_candidates": [
+      "kids nfts via free"
+    ]
+  },
+  {
+    "entity_id": "kids_token_via_xrp",
+    "canonical_title": "Kids Token Via XRP — Crypto Moonboys Wiki",
+    "canonical_url": "/wiki/kids-token-via-xrp.html",
+    "category": "tokens",
+    "aliases": [],
+    "tags": [
+      "kids",
+      "token",
+      "via",
+      "xrp",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "source_urls": [
+      "/wiki/kids-token-via-xrp.html"
+    ],
+    "alias_candidates": [
+      "kids token via xrp"
+    ]
+  },
+  {
+    "entity_id": "kids_tokens_via_gk",
+    "canonical_title": "Kids Tokens Via GK — Crypto Moonboys Wiki",
+    "canonical_url": "/wiki/kids-tokens-via-gk.html",
+    "category": "tokens",
+    "aliases": [],
+    "tags": [
+      "kids",
+      "tokens",
+      "via",
+      "gk",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "source_urls": [
+      "/wiki/kids-tokens-via-gk.html"
+    ],
+    "alias_candidates": [
+      "kids tokens via gk"
     ]
   },
   {
@@ -2662,6 +4756,28 @@
     ]
   },
   {
+    "entity_id": "nbg_nfts_via_free",
+    "canonical_title": "NBG NFTs Via Free — Crypto Moonboys Wiki",
+    "canonical_url": "/wiki/nbg-nfts-via-free.html",
+    "category": "core",
+    "aliases": [],
+    "tags": [
+      "nbg",
+      "nfts",
+      "via",
+      "free",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "source_urls": [
+      "/wiki/nbg-nfts-via-free.html"
+    ],
+    "alias_candidates": [
+      "nbg nfts via free"
+    ]
+  },
+  {
     "entity_id": "nbg_token",
     "canonical_title": "NBG Token — Crypto Moonboys Wiki",
     "canonical_url": "/wiki/nbg-token.html",
@@ -2681,6 +4797,50 @@
     ],
     "alias_candidates": [
       "nbg token"
+    ]
+  },
+  {
+    "entity_id": "nbg_token_via_ball",
+    "canonical_title": "NBG Token Via Ball — Crypto Moonboys Wiki",
+    "canonical_url": "/wiki/nbg-token-via-ball.html",
+    "category": "tokens",
+    "aliases": [],
+    "tags": [
+      "nbg",
+      "token",
+      "via",
+      "ball",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "source_urls": [
+      "/wiki/nbg-token-via-ball.html"
+    ],
+    "alias_candidates": [
+      "nbg token via ball"
+    ]
+  },
+  {
+    "entity_id": "nbg_tokens_via_gk",
+    "canonical_title": "NBG Tokens Via GK — Crypto Moonboys Wiki",
+    "canonical_url": "/wiki/nbg-tokens-via-gk.html",
+    "category": "tokens",
+    "aliases": [],
+    "tags": [
+      "nbg",
+      "tokens",
+      "via",
+      "gk",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "source_urls": [
+      "/wiki/nbg-tokens-via-gk.html"
+    ],
+    "alias_candidates": [
+      "nbg tokens via gk"
     ]
   },
   {
@@ -2790,6 +4950,50 @@
     ],
     "alias_candidates": [
       "nfts non fungible tokens"
+    ]
+  },
+  {
+    "entity_id": "nfts_token_via_free",
+    "canonical_title": "NFTs Token Via Free — Crypto Moonboys Wiki",
+    "canonical_url": "/wiki/nfts-token-via-free.html",
+    "category": "tokens",
+    "aliases": [],
+    "tags": [
+      "nfts",
+      "token",
+      "via",
+      "free",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "source_urls": [
+      "/wiki/nfts-token-via-free.html"
+    ],
+    "alias_candidates": [
+      "nfts token via free"
+    ]
+  },
+  {
+    "entity_id": "nfts_tokens_via_free",
+    "canonical_title": "NFTs Tokens Via Free — Crypto Moonboys Wiki",
+    "canonical_url": "/wiki/nfts-tokens-via-free.html",
+    "category": "tokens",
+    "aliases": [],
+    "tags": [
+      "nfts",
+      "tokens",
+      "via",
+      "free",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "source_urls": [
+      "/wiki/nfts-tokens-via-free.html"
+    ],
+    "alias_candidates": [
+      "nfts tokens via free"
     ]
   },
   {
@@ -4731,6 +6935,28 @@
     ],
     "alias_candidates": [
       "thorne the architect"
+    ]
+  },
+  {
+    "entity_id": "token_tokens_via_gk",
+    "canonical_title": "Token Tokens Via GK — Crypto Moonboys Wiki",
+    "canonical_url": "/wiki/token-tokens-via-gk.html",
+    "category": "tokens",
+    "aliases": [],
+    "tags": [
+      "token",
+      "tokens",
+      "via",
+      "gk",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "source_urls": [
+      "/wiki/token-tokens-via-gk.html"
+    ],
+    "alias_candidates": [
+      "token tokens via gk"
     ]
   },
   {
