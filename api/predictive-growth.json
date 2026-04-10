@@ -1,13 +1,13 @@
 {
-  "generated_at": "2026-04-10T02:49:34.921Z",
+  "generated_at": "2026-04-10T05:30:27.109Z",
   "phase": "phase_6",
   "schema_version": "1.0",
   "summary": {
-    "total_entries": 333,
+    "total_entries": 226,
     "expand": 0,
     "reinforce": 5,
-    "monitor": 220,
-    "hold": 108
+    "monitor": 215,
+    "hold": 6
   },
   "entries": [
     {
@@ -974,15 +974,6 @@
       "recommendation": "monitor"
     },
     {
-      "url": "/wiki/bitcoin-graffpunks.html",
-      "title": "Bitcoin &amp; GraffPUNKS — Crypto Moonboys Wiki",
-      "momentum_score": 42,
-      "authority_trend": "stable",
-      "editorial_activity_score": 5,
-      "predicted_priority": 82,
-      "recommendation": "monitor"
-    },
-    {
       "url": "/wiki/block-node-defenders.html",
       "title": "Block Node Defenders — Crypto Moonboys Wiki",
       "momentum_score": 42,
@@ -1037,30 +1028,12 @@
       "recommendation": "monitor"
     },
     {
-      "url": "/wiki/games-graffpunks.html",
-      "title": "Games &amp; GraffPUNKS — Crypto Moonboys Wiki",
-      "momentum_score": 42,
-      "authority_trend": "stable",
-      "editorial_activity_score": 5,
-      "predicted_priority": 80,
-      "recommendation": "monitor"
-    },
-    {
       "url": "/wiki/graffpunks-ecosystem.html",
       "title": "GraffPUNKS Ecosystem — Crypto Moonboys Wiki",
       "momentum_score": 42,
       "authority_trend": "stable",
       "editorial_activity_score": 0,
       "predicted_priority": 60,
-      "recommendation": "monitor"
-    },
-    {
-      "url": "/wiki/graffpunks-token.html",
-      "title": "GraffPUNKS &amp; Crypto Tokens — Crypto Moonboys Wiki",
-      "momentum_score": 42,
-      "authority_trend": "stable",
-      "editorial_activity_score": 5,
-      "predicted_priority": 80,
       "recommendation": "monitor"
     },
     {
@@ -1523,15 +1496,6 @@
       "recommendation": "monitor"
     },
     {
-      "url": "/wiki/hodl-warriors-army.html",
-      "title": "HODL Warriors Army — Crypto Moonboys Wiki",
-      "momentum_score": 39,
-      "authority_trend": "stable",
-      "editorial_activity_score": 0,
-      "predicted_priority": 112,
-      "recommendation": "monitor"
-    },
-    {
       "url": "/wiki/maidstone-base.html",
       "title": "Maidstone Base — Crypto Moonboys Wiki",
       "momentum_score": 39,
@@ -1583,15 +1547,6 @@
       "authority_trend": "stable",
       "editorial_activity_score": 0,
       "predicted_priority": 110,
-      "recommendation": "monitor"
-    },
-    {
-      "url": "/wiki/the-hodl-warriors.html",
-      "title": "The HODL Warriors — Crypto Moonboys Wiki",
-      "momentum_score": 39,
-      "authority_trend": "stable",
-      "editorial_activity_score": 0,
-      "predicted_priority": 123,
       "recommendation": "monitor"
     },
     {
@@ -1784,33 +1739,6 @@
       "recommendation": "monitor"
     },
     {
-      "url": "/wiki/bitcoin-nfts.html",
-      "title": "Bitcoin NFTs — Crypto Moonboys Wiki",
-      "momentum_score": 37,
-      "authority_trend": "stable",
-      "editorial_activity_score": 5,
-      "predicted_priority": 0,
-      "recommendation": "hold"
-    },
-    {
-      "url": "/wiki/bitcoin-tokens.html",
-      "title": "Bitcoin Tokens — Crypto Moonboys Wiki",
-      "momentum_score": 37,
-      "authority_trend": "stable",
-      "editorial_activity_score": 5,
-      "predicted_priority": 0,
-      "recommendation": "hold"
-    },
-    {
-      "url": "/wiki/blockchain-graffpunks.html",
-      "title": "Blockchain GraffPUNKS — Crypto Moonboys Wiki",
-      "momentum_score": 37,
-      "authority_trend": "stable",
-      "editorial_activity_score": 5,
-      "predicted_priority": 0,
-      "recommendation": "hold"
-    },
-    {
       "url": "/wiki/defi-decentralised-finance.html",
       "title": "DeFi (Decentralised Finance) — Crypto Moonboys Wiki",
       "momentum_score": 37,
@@ -1829,51 +1757,6 @@
       "recommendation": "monitor"
     },
     {
-      "url": "/wiki/fork-graffpunks.html",
-      "title": "Fork GraffPUNKS — Crypto Moonboys Wiki",
-      "momentum_score": 37,
-      "authority_trend": "stable",
-      "editorial_activity_score": 5,
-      "predicted_priority": 0,
-      "recommendation": "hold"
-    },
-    {
-      "url": "/wiki/fork.html",
-      "title": "Fork — Crypto Moonboys Wiki",
-      "momentum_score": 37,
-      "authority_trend": "stable",
-      "editorial_activity_score": 0,
-      "predicted_priority": 0,
-      "recommendation": "hold"
-    },
-    {
-      "url": "/wiki/free.html",
-      "title": "Free — Crypto Moonboys Wiki",
-      "momentum_score": 37,
-      "authority_trend": "stable",
-      "editorial_activity_score": 0,
-      "predicted_priority": 0,
-      "recommendation": "hold"
-    },
-    {
-      "url": "/wiki/games-nfts.html",
-      "title": "Games NFTs — Crypto Moonboys Wiki",
-      "momentum_score": 37,
-      "authority_trend": "stable",
-      "editorial_activity_score": 5,
-      "predicted_priority": 0,
-      "recommendation": "hold"
-    },
-    {
-      "url": "/wiki/games.html",
-      "title": "Games — Crypto Moonboys Wiki",
-      "momentum_score": 37,
-      "authority_trend": "stable",
-      "editorial_activity_score": 0,
-      "predicted_priority": 0,
-      "recommendation": "hold"
-    },
-    {
       "url": "/wiki/games4punks-telegram-games.html",
       "title": "GAMES4PUNKS Telegram Games — Crypto Moonboys Wiki",
       "momentum_score": 37,
@@ -1881,15 +1764,6 @@
       "editorial_activity_score": 0,
       "predicted_priority": 127,
       "recommendation": "monitor"
-    },
-    {
-      "url": "/wiki/gk-graffpunks.html",
-      "title": "GK GraffPUNKS — Crypto Moonboys Wiki",
-      "momentum_score": 37,
-      "authority_trend": "stable",
-      "editorial_activity_score": 5,
-      "predicted_priority": 0,
-      "recommendation": "hold"
     },
     {
       "url": "/wiki/graffiti-nexus.html",
@@ -1937,33 +1811,6 @@
       "recommendation": "monitor"
     },
     {
-      "url": "/wiki/graffpunks-hodl.html",
-      "title": "GraffPUNKS Hodl — Crypto Moonboys Wiki",
-      "momentum_score": 37,
-      "authority_trend": "stable",
-      "editorial_activity_score": 5,
-      "predicted_priority": 0,
-      "recommendation": "hold"
-    },
-    {
-      "url": "/wiki/graffpunks-kid.html",
-      "title": "GraffPUNKS Kid — Crypto Moonboys Wiki",
-      "momentum_score": 37,
-      "authority_trend": "stable",
-      "editorial_activity_score": 5,
-      "predicted_priority": 0,
-      "recommendation": "hold"
-    },
-    {
-      "url": "/wiki/graffpunks-nbg.html",
-      "title": "GraffPUNKS NBG — Crypto Moonboys Wiki",
-      "momentum_score": 37,
-      "authority_trend": "stable",
-      "editorial_activity_score": 5,
-      "predicted_priority": 0,
-      "recommendation": "hold"
-    },
-    {
       "url": "/wiki/graffpunks-network.html",
       "title": "GraffPUNKS Network — Crypto Moonboys Wiki",
       "momentum_score": 37,
@@ -1998,15 +1845,6 @@
       "editorial_activity_score": 0,
       "predicted_priority": 83,
       "recommendation": "monitor"
-    },
-    {
-      "url": "/wiki/kid.html",
-      "title": "Kid — Crypto Moonboys Wiki",
-      "momentum_score": 37,
-      "authority_trend": "stable",
-      "editorial_activity_score": 5,
-      "predicted_priority": 0,
-      "recommendation": "hold"
     },
     {
       "url": "/wiki/leake-street-tunnel.html",
@@ -2171,528 +2009,6 @@
       "recommendation": "monitor"
     },
     {
-      "url": "/wiki/bitcoin-blockchain-via-kid.html",
-      "title": "Bitcoin Blockchain Via Kid — Crypto Moonboys Wiki",
-      "momentum_score": 36,
-      "authority_trend": "stable",
-      "editorial_activity_score": 0,
-      "predicted_priority": 0,
-      "recommendation": "hold"
-    },
-    {
-      "url": "/wiki/bitcoin-fork-via-hard.html",
-      "title": "Bitcoin Fork Via Hard — Crypto Moonboys Wiki",
-      "momentum_score": 36,
-      "authority_trend": "stable",
-      "editorial_activity_score": 0,
-      "predicted_priority": 0,
-      "recommendation": "hold"
-    },
-    {
-      "url": "/wiki/bitcoin-free-via-nfts.html",
-      "title": "Bitcoin Free Via NFTs — Crypto Moonboys Wiki",
-      "momentum_score": 36,
-      "authority_trend": "stable",
-      "editorial_activity_score": 0,
-      "predicted_priority": 0,
-      "recommendation": "hold"
-    },
-    {
-      "url": "/wiki/bitcoin-games-via-kid.html",
-      "title": "Bitcoin Games Via Kid — Crypto Moonboys Wiki",
-      "momentum_score": 36,
-      "authority_trend": "stable",
-      "editorial_activity_score": 0,
-      "predicted_priority": 0,
-      "recommendation": "hold"
-    },
-    {
-      "url": "/wiki/bitcoin-gk-via-kid.html",
-      "title": "Bitcoin GK Via Kid — Crypto Moonboys Wiki",
-      "momentum_score": 36,
-      "authority_trend": "stable",
-      "editorial_activity_score": 0,
-      "predicted_priority": 0,
-      "recommendation": "hold"
-    },
-    {
-      "url": "/wiki/bitcoin-graffpunks-via-kid.html",
-      "title": "Bitcoin GraffPUNKS Via Kid — Crypto Moonboys Wiki",
-      "momentum_score": 36,
-      "authority_trend": "stable",
-      "editorial_activity_score": 0,
-      "predicted_priority": 0,
-      "recommendation": "hold"
-    },
-    {
-      "url": "/wiki/bitcoin-hodl-via-kid.html",
-      "title": "Bitcoin Hodl Via Kid — Crypto Moonboys Wiki",
-      "momentum_score": 36,
-      "authority_trend": "stable",
-      "editorial_activity_score": 0,
-      "predicted_priority": 0,
-      "recommendation": "hold"
-    },
-    {
-      "url": "/wiki/bitcoin-kid-via-alfie.html",
-      "title": "Bitcoin Kid Via Alfie — Crypto Moonboys Wiki",
-      "momentum_score": 36,
-      "authority_trend": "stable",
-      "editorial_activity_score": 0,
-      "predicted_priority": 0,
-      "recommendation": "hold"
-    },
-    {
-      "url": "/wiki/bitcoin-nbg-via-kid.html",
-      "title": "Bitcoin NBG Via Kid — Crypto Moonboys Wiki",
-      "momentum_score": 36,
-      "authority_trend": "stable",
-      "editorial_activity_score": 0,
-      "predicted_priority": 0,
-      "recommendation": "hold"
-    },
-    {
-      "url": "/wiki/bitcoin-nfts-via-free.html",
-      "title": "Bitcoin NFTs Via Free — Crypto Moonboys Wiki",
-      "momentum_score": 36,
-      "authority_trend": "stable",
-      "editorial_activity_score": 0,
-      "predicted_priority": 0,
-      "recommendation": "hold"
-    },
-    {
-      "url": "/wiki/blockchain-fork-via-hard.html",
-      "title": "Blockchain Fork Via Hard — Crypto Moonboys Wiki",
-      "momentum_score": 36,
-      "authority_trend": "stable",
-      "editorial_activity_score": 0,
-      "predicted_priority": 0,
-      "recommendation": "hold"
-    },
-    {
-      "url": "/wiki/blockchain-free-via-nfts.html",
-      "title": "Blockchain Free Via NFTs — Crypto Moonboys Wiki",
-      "momentum_score": 36,
-      "authority_trend": "stable",
-      "editorial_activity_score": 0,
-      "predicted_priority": 0,
-      "recommendation": "hold"
-    },
-    {
-      "url": "/wiki/blockchain-games-via-fork.html",
-      "title": "Blockchain Games Via Fork — Crypto Moonboys Wiki",
-      "momentum_score": 36,
-      "authority_trend": "stable",
-      "editorial_activity_score": 0,
-      "predicted_priority": 0,
-      "recommendation": "hold"
-    },
-    {
-      "url": "/wiki/blockchain-graffpunks-via-radio.html",
-      "title": "Blockchain GraffPUNKS Via Radio — Crypto Moonboys Wiki",
-      "momentum_score": 36,
-      "authority_trend": "stable",
-      "editorial_activity_score": 0,
-      "predicted_priority": 0,
-      "recommendation": "hold"
-    },
-    {
-      "url": "/wiki/blockchain-hodl-via-graffpunks.html",
-      "title": "Blockchain Hodl Via GraffPUNKS — Crypto Moonboys Wiki",
-      "momentum_score": 36,
-      "authority_trend": "stable",
-      "editorial_activity_score": 0,
-      "predicted_priority": 0,
-      "recommendation": "hold"
-    },
-    {
-      "url": "/wiki/blockchain-kid-via-bitcoin.html",
-      "title": "Blockchain Kid Via Bitcoin — Crypto Moonboys Wiki",
-      "momentum_score": 36,
-      "authority_trend": "stable",
-      "editorial_activity_score": 0,
-      "predicted_priority": 0,
-      "recommendation": "hold"
-    },
-    {
-      "url": "/wiki/blockchain-nbg-via-ball.html",
-      "title": "Blockchain NBG Via Ball — Crypto Moonboys Wiki",
-      "momentum_score": 36,
-      "authority_trend": "stable",
-      "editorial_activity_score": 0,
-      "predicted_priority": 0,
-      "recommendation": "hold"
-    },
-    {
-      "url": "/wiki/blockchain-nfts-via-free.html",
-      "title": "Blockchain NFTs Via Free — Crypto Moonboys Wiki",
-      "momentum_score": 36,
-      "authority_trend": "stable",
-      "editorial_activity_score": 0,
-      "predicted_priority": 0,
-      "recommendation": "hold"
-    },
-    {
-      "url": "/wiki/fork-free-via-hard.html",
-      "title": "Fork Free Via Hard — Crypto Moonboys Wiki",
-      "momentum_score": 36,
-      "authority_trend": "stable",
-      "editorial_activity_score": 0,
-      "predicted_priority": 0,
-      "recommendation": "hold"
-    },
-    {
-      "url": "/wiki/fork-games-via-hard.html",
-      "title": "Fork Games Via Hard — Crypto Moonboys Wiki",
-      "momentum_score": 36,
-      "authority_trend": "stable",
-      "editorial_activity_score": 0,
-      "predicted_priority": 0,
-      "recommendation": "hold"
-    },
-    {
-      "url": "/wiki/fork-gk-via-hard.html",
-      "title": "Fork GK Via Hard — Crypto Moonboys Wiki",
-      "momentum_score": 36,
-      "authority_trend": "stable",
-      "editorial_activity_score": 0,
-      "predicted_priority": 0,
-      "recommendation": "hold"
-    },
-    {
-      "url": "/wiki/fork-graffpunks-via-hard.html",
-      "title": "Fork GraffPUNKS Via Hard — Crypto Moonboys Wiki",
-      "momentum_score": 36,
-      "authority_trend": "stable",
-      "editorial_activity_score": 0,
-      "predicted_priority": 0,
-      "recommendation": "hold"
-    },
-    {
-      "url": "/wiki/fork-hodl-via-hard.html",
-      "title": "Fork Hodl Via Hard — Crypto Moonboys Wiki",
-      "momentum_score": 36,
-      "authority_trend": "stable",
-      "editorial_activity_score": 0,
-      "predicted_priority": 0,
-      "recommendation": "hold"
-    },
-    {
-      "url": "/wiki/fork-kid-via-bitcoin.html",
-      "title": "Fork Kid Via Bitcoin — Crypto Moonboys Wiki",
-      "momentum_score": 36,
-      "authority_trend": "stable",
-      "editorial_activity_score": 0,
-      "predicted_priority": 0,
-      "recommendation": "hold"
-    },
-    {
-      "url": "/wiki/fork-kids-via-hard.html",
-      "title": "Fork Kids Via Hard — Crypto Moonboys Wiki",
-      "momentum_score": 36,
-      "authority_trend": "stable",
-      "editorial_activity_score": 0,
-      "predicted_priority": 0,
-      "recommendation": "hold"
-    },
-    {
-      "url": "/wiki/fork-nbg-via-games.html",
-      "title": "Fork NBG Via Games — Crypto Moonboys Wiki",
-      "momentum_score": 36,
-      "authority_trend": "stable",
-      "editorial_activity_score": 0,
-      "predicted_priority": 0,
-      "recommendation": "hold"
-    },
-    {
-      "url": "/wiki/fork-nfts-via-free.html",
-      "title": "Fork NFTs Via Free — Crypto Moonboys Wiki",
-      "momentum_score": 36,
-      "authority_trend": "stable",
-      "editorial_activity_score": 0,
-      "predicted_priority": 0,
-      "recommendation": "hold"
-    },
-    {
-      "url": "/wiki/free-games-via-nfts.html",
-      "title": "Free Games Via NFTs — Crypto Moonboys Wiki",
-      "momentum_score": 36,
-      "authority_trend": "stable",
-      "editorial_activity_score": 0,
-      "predicted_priority": 0,
-      "recommendation": "hold"
-    },
-    {
-      "url": "/wiki/free-gk-via-nfts.html",
-      "title": "Free GK Via NFTs — Crypto Moonboys Wiki",
-      "momentum_score": 36,
-      "authority_trend": "stable",
-      "editorial_activity_score": 0,
-      "predicted_priority": 0,
-      "recommendation": "hold"
-    },
-    {
-      "url": "/wiki/free-graffpunks-via-nfts.html",
-      "title": "Free GraffPUNKS Via NFTs — Crypto Moonboys Wiki",
-      "momentum_score": 36,
-      "authority_trend": "stable",
-      "editorial_activity_score": 0,
-      "predicted_priority": 0,
-      "recommendation": "hold"
-    },
-    {
-      "url": "/wiki/free-hodl-via-nfts.html",
-      "title": "Free Hodl Via NFTs — Crypto Moonboys Wiki",
-      "momentum_score": 36,
-      "authority_trend": "stable",
-      "editorial_activity_score": 0,
-      "predicted_priority": 0,
-      "recommendation": "hold"
-    },
-    {
-      "url": "/wiki/free-kid-via-nfts.html",
-      "title": "Free Kid Via NFTs — Crypto Moonboys Wiki",
-      "momentum_score": 36,
-      "authority_trend": "stable",
-      "editorial_activity_score": 0,
-      "predicted_priority": 0,
-      "recommendation": "hold"
-    },
-    {
-      "url": "/wiki/free-kids-via-nfts.html",
-      "title": "Free Kids Via NFTs — Crypto Moonboys Wiki",
-      "momentum_score": 36,
-      "authority_trend": "stable",
-      "editorial_activity_score": 0,
-      "predicted_priority": 0,
-      "recommendation": "hold"
-    },
-    {
-      "url": "/wiki/free-nbg-via-nfts.html",
-      "title": "Free NBG Via NFTs — Crypto Moonboys Wiki",
-      "momentum_score": 36,
-      "authority_trend": "stable",
-      "editorial_activity_score": 0,
-      "predicted_priority": 0,
-      "recommendation": "hold"
-    },
-    {
-      "url": "/wiki/free-nfts-via-1m.html",
-      "title": "Free NFTs Via 1m — Crypto Moonboys Wiki",
-      "momentum_score": 36,
-      "authority_trend": "stable",
-      "editorial_activity_score": 0,
-      "predicted_priority": 0,
-      "recommendation": "hold"
-    },
-    {
-      "url": "/wiki/games-gk-via-fork.html",
-      "title": "Games GK Via Fork — Crypto Moonboys Wiki",
-      "momentum_score": 36,
-      "authority_trend": "stable",
-      "editorial_activity_score": 0,
-      "predicted_priority": 0,
-      "recommendation": "hold"
-    },
-    {
-      "url": "/wiki/games-graffpunks-via-collection.html",
-      "title": "Games GraffPUNKS Via Collection — Crypto Moonboys Wiki",
-      "momentum_score": 36,
-      "authority_trend": "stable",
-      "editorial_activity_score": 0,
-      "predicted_priority": 0,
-      "recommendation": "hold"
-    },
-    {
-      "url": "/wiki/games-hodl-via-fork.html",
-      "title": "Games Hodl Via Fork — Crypto Moonboys Wiki",
-      "momentum_score": 36,
-      "authority_trend": "stable",
-      "editorial_activity_score": 0,
-      "predicted_priority": 0,
-      "recommendation": "hold"
-    },
-    {
-      "url": "/wiki/games-kid-via-bitcoin.html",
-      "title": "Games Kid Via Bitcoin — Crypto Moonboys Wiki",
-      "momentum_score": 36,
-      "authority_trend": "stable",
-      "editorial_activity_score": 0,
-      "predicted_priority": 0,
-      "recommendation": "hold"
-    },
-    {
-      "url": "/wiki/games-kids-via-fork.html",
-      "title": "Games Kids Via Fork — Crypto Moonboys Wiki",
-      "momentum_score": 36,
-      "authority_trend": "stable",
-      "editorial_activity_score": 0,
-      "predicted_priority": 0,
-      "recommendation": "hold"
-    },
-    {
-      "url": "/wiki/games-nbg-via-fork.html",
-      "title": "Games NBG Via Fork — Crypto Moonboys Wiki",
-      "momentum_score": 36,
-      "authority_trend": "stable",
-      "editorial_activity_score": 0,
-      "predicted_priority": 0,
-      "recommendation": "hold"
-    },
-    {
-      "url": "/wiki/games-nfts-via-free.html",
-      "title": "Games NFTs Via Free — Crypto Moonboys Wiki",
-      "momentum_score": 36,
-      "authority_trend": "stable",
-      "editorial_activity_score": 0,
-      "predicted_priority": 0,
-      "recommendation": "hold"
-    },
-    {
-      "url": "/wiki/gk-graffpunks-via-radio.html",
-      "title": "GK GraffPUNKS Via Radio — Crypto Moonboys Wiki",
-      "momentum_score": 36,
-      "authority_trend": "stable",
-      "editorial_activity_score": 0,
-      "predicted_priority": 0,
-      "recommendation": "hold"
-    },
-    {
-      "url": "/wiki/gk-kid-via-bitcoin.html",
-      "title": "GK Kid Via Bitcoin — Crypto Moonboys Wiki",
-      "momentum_score": 36,
-      "authority_trend": "stable",
-      "editorial_activity_score": 0,
-      "predicted_priority": 0,
-      "recommendation": "hold"
-    },
-    {
-      "url": "/wiki/graffpunks-hodl-via-radio.html",
-      "title": "GraffPUNKS Hodl Via Radio — Crypto Moonboys Wiki",
-      "momentum_score": 36,
-      "authority_trend": "stable",
-      "editorial_activity_score": 0,
-      "predicted_priority": 0,
-      "recommendation": "hold"
-    },
-    {
-      "url": "/wiki/graffpunks-kid-via-bitcoin.html",
-      "title": "GraffPUNKS Kid Via Bitcoin — Crypto Moonboys Wiki",
-      "momentum_score": 36,
-      "authority_trend": "stable",
-      "editorial_activity_score": 0,
-      "predicted_priority": 0,
-      "recommendation": "hold"
-    },
-    {
-      "url": "/wiki/graffpunks-kids-via-radio.html",
-      "title": "GraffPUNKS Kids Via Radio — Crypto Moonboys Wiki",
-      "momentum_score": 36,
-      "authority_trend": "stable",
-      "editorial_activity_score": 0,
-      "predicted_priority": 0,
-      "recommendation": "hold"
-    },
-    {
-      "url": "/wiki/graffpunks-nbg-via-radio.html",
-      "title": "GraffPUNKS NBG Via Radio — Crypto Moonboys Wiki",
-      "momentum_score": 36,
-      "authority_trend": "stable",
-      "editorial_activity_score": 0,
-      "predicted_priority": 0,
-      "recommendation": "hold"
-    },
-    {
-      "url": "/wiki/graffpunks-nfts-via-free.html",
-      "title": "GraffPUNKS NFTs Via Free — Crypto Moonboys Wiki",
-      "momentum_score": 36,
-      "authority_trend": "stable",
-      "editorial_activity_score": 0,
-      "predicted_priority": 0,
-      "recommendation": "hold"
-    },
-    {
-      "url": "/wiki/hodl-kid-via-bitcoin.html",
-      "title": "Hodl Kid Via Bitcoin — Crypto Moonboys Wiki",
-      "momentum_score": 36,
-      "authority_trend": "stable",
-      "editorial_activity_score": 0,
-      "predicted_priority": 0,
-      "recommendation": "hold"
-    },
-    {
-      "url": "/wiki/hodl-kids-via-warriors.html",
-      "title": "Hodl Kids Via Warriors — Crypto Moonboys Wiki",
-      "momentum_score": 36,
-      "authority_trend": "stable",
-      "editorial_activity_score": 0,
-      "predicted_priority": 0,
-      "recommendation": "hold"
-    },
-    {
-      "url": "/wiki/hodl-nbg-via-warriors.html",
-      "title": "Hodl NBG Via Warriors — Crypto Moonboys Wiki",
-      "momentum_score": 36,
-      "authority_trend": "stable",
-      "editorial_activity_score": 0,
-      "predicted_priority": 0,
-      "recommendation": "hold"
-    },
-    {
-      "url": "/wiki/hodl-nfts-via-free.html",
-      "title": "Hodl NFTs Via Free — Crypto Moonboys Wiki",
-      "momentum_score": 36,
-      "authority_trend": "stable",
-      "editorial_activity_score": 0,
-      "predicted_priority": 0,
-      "recommendation": "hold"
-    },
-    {
-      "url": "/wiki/kid-kids-via-bitcoin.html",
-      "title": "Kid Kids Via Bitcoin — Crypto Moonboys Wiki",
-      "momentum_score": 36,
-      "authority_trend": "stable",
-      "editorial_activity_score": 0,
-      "predicted_priority": 0,
-      "recommendation": "hold"
-    },
-    {
-      "url": "/wiki/kid-nbg-via-bitcoin.html",
-      "title": "Kid NBG Via Bitcoin — Crypto Moonboys Wiki",
-      "momentum_score": 36,
-      "authority_trend": "stable",
-      "editorial_activity_score": 0,
-      "predicted_priority": 0,
-      "recommendation": "hold"
-    },
-    {
-      "url": "/wiki/kid-nfts-via-free.html",
-      "title": "Kid NFTs Via Free — Crypto Moonboys Wiki",
-      "momentum_score": 36,
-      "authority_trend": "stable",
-      "editorial_activity_score": 0,
-      "predicted_priority": 0,
-      "recommendation": "hold"
-    },
-    {
-      "url": "/wiki/kids-nbg-via-xrp.html",
-      "title": "Kids NBG Via XRP — Crypto Moonboys Wiki",
-      "momentum_score": 36,
-      "authority_trend": "stable",
-      "editorial_activity_score": 0,
-      "predicted_priority": 0,
-      "recommendation": "hold"
-    },
-    {
-      "url": "/wiki/kids-nfts-via-free.html",
-      "title": "Kids NFTs Via Free — Crypto Moonboys Wiki",
-      "momentum_score": 36,
-      "authority_trend": "stable",
-      "editorial_activity_score": 0,
-      "predicted_priority": 0,
-      "recommendation": "hold"
-    },
-    {
       "url": "/wiki/midevil-hero-arena-game.html",
       "title": "MiDEViL Hero Arena (Game) — Crypto Moonboys Wiki",
       "momentum_score": 36,
@@ -2700,15 +2016,6 @@
       "editorial_activity_score": 0,
       "predicted_priority": 94,
       "recommendation": "monitor"
-    },
-    {
-      "url": "/wiki/nbg-nfts-via-free.html",
-      "title": "NBG NFTs Via Free — Crypto Moonboys Wiki",
-      "momentum_score": 36,
-      "authority_trend": "stable",
-      "editorial_activity_score": 0,
-      "predicted_priority": 0,
-      "recommendation": "hold"
     },
     {
       "url": "/wiki/1m-free-nfts.html",
@@ -2720,105 +2027,6 @@
       "recommendation": "monitor"
     },
     {
-      "url": "/wiki/bitcoin-token-via-kid.html",
-      "title": "Bitcoin Token Via Kid — Crypto Moonboys Wiki",
-      "momentum_score": 35,
-      "authority_trend": "stable",
-      "editorial_activity_score": 0,
-      "predicted_priority": 0,
-      "recommendation": "hold"
-    },
-    {
-      "url": "/wiki/bitcoin-tokens-via-kid.html",
-      "title": "Bitcoin Tokens Via Kid — Crypto Moonboys Wiki",
-      "momentum_score": 35,
-      "authority_trend": "stable",
-      "editorial_activity_score": 0,
-      "predicted_priority": 0,
-      "recommendation": "hold"
-    },
-    {
-      "url": "/wiki/blockchain-gk-via-tokens.html",
-      "title": "Blockchain GK Via Tokens — Crypto Moonboys Wiki",
-      "momentum_score": 35,
-      "authority_trend": "stable",
-      "editorial_activity_score": 0,
-      "predicted_priority": 0,
-      "recommendation": "hold"
-    },
-    {
-      "url": "/wiki/blockchain-token-via-graffpunks.html",
-      "title": "Blockchain Token Via GraffPUNKS — Crypto Moonboys Wiki",
-      "momentum_score": 35,
-      "authority_trend": "stable",
-      "editorial_activity_score": 0,
-      "predicted_priority": 0,
-      "recommendation": "hold"
-    },
-    {
-      "url": "/wiki/blockchain-tokens-via-gk.html",
-      "title": "Blockchain Tokens Via GK — Crypto Moonboys Wiki",
-      "momentum_score": 35,
-      "authority_trend": "stable",
-      "editorial_activity_score": 0,
-      "predicted_priority": 0,
-      "recommendation": "hold"
-    },
-    {
-      "url": "/wiki/fork-token-via-hard.html",
-      "title": "Fork Token Via Hard — Crypto Moonboys Wiki",
-      "momentum_score": 35,
-      "authority_trend": "stable",
-      "editorial_activity_score": 0,
-      "predicted_priority": 0,
-      "recommendation": "hold"
-    },
-    {
-      "url": "/wiki/fork-tokens-via-hard.html",
-      "title": "Fork Tokens Via Hard — Crypto Moonboys Wiki",
-      "momentum_score": 35,
-      "authority_trend": "stable",
-      "editorial_activity_score": 0,
-      "predicted_priority": 0,
-      "recommendation": "hold"
-    },
-    {
-      "url": "/wiki/free-token-via-nfts.html",
-      "title": "Free Token Via NFTs — Crypto Moonboys Wiki",
-      "momentum_score": 35,
-      "authority_trend": "stable",
-      "editorial_activity_score": 0,
-      "predicted_priority": 0,
-      "recommendation": "hold"
-    },
-    {
-      "url": "/wiki/free-tokens-via-nfts.html",
-      "title": "Free Tokens Via NFTs — Crypto Moonboys Wiki",
-      "momentum_score": 35,
-      "authority_trend": "stable",
-      "editorial_activity_score": 0,
-      "predicted_priority": 0,
-      "recommendation": "hold"
-    },
-    {
-      "url": "/wiki/games-token-via-fork.html",
-      "title": "Games Token Via Fork — Crypto Moonboys Wiki",
-      "momentum_score": 35,
-      "authority_trend": "stable",
-      "editorial_activity_score": 0,
-      "predicted_priority": 0,
-      "recommendation": "hold"
-    },
-    {
-      "url": "/wiki/games-tokens-via-fork.html",
-      "title": "Games Tokens Via Fork — Crypto Moonboys Wiki",
-      "momentum_score": 35,
-      "authority_trend": "stable",
-      "editorial_activity_score": 0,
-      "predicted_priority": 0,
-      "recommendation": "hold"
-    },
-    {
       "url": "/wiki/genesis-spray-drop.html",
       "title": "Genesis Spray Drop — Crypto Moonboys Wiki",
       "momentum_score": 35,
@@ -2828,168 +2036,6 @@
       "recommendation": "monitor"
     },
     {
-      "url": "/wiki/gk-hodl-via-tokens.html",
-      "title": "GK Hodl Via Tokens — Crypto Moonboys Wiki",
-      "momentum_score": 35,
-      "authority_trend": "stable",
-      "editorial_activity_score": 0,
-      "predicted_priority": 0,
-      "recommendation": "hold"
-    },
-    {
-      "url": "/wiki/gk-kids-via-tokens.html",
-      "title": "GK Kids Via Tokens — Crypto Moonboys Wiki",
-      "momentum_score": 35,
-      "authority_trend": "stable",
-      "editorial_activity_score": 0,
-      "predicted_priority": 0,
-      "recommendation": "hold"
-    },
-    {
-      "url": "/wiki/gk-nbg-via-tokens.html",
-      "title": "GK NBG Via Tokens — Crypto Moonboys Wiki",
-      "momentum_score": 35,
-      "authority_trend": "stable",
-      "editorial_activity_score": 0,
-      "predicted_priority": 0,
-      "recommendation": "hold"
-    },
-    {
-      "url": "/wiki/gk-nfts-via-tokens.html",
-      "title": "GK NFTs Via Tokens — Crypto Moonboys Wiki",
-      "momentum_score": 35,
-      "authority_trend": "stable",
-      "editorial_activity_score": 0,
-      "predicted_priority": 0,
-      "recommendation": "hold"
-    },
-    {
-      "url": "/wiki/gk-token-via-tokens.html",
-      "title": "GK Token Via Tokens — Crypto Moonboys Wiki",
-      "momentum_score": 35,
-      "authority_trend": "stable",
-      "editorial_activity_score": 0,
-      "predicted_priority": 0,
-      "recommendation": "hold"
-    },
-    {
-      "url": "/wiki/gk-tokens-via-fungible.html",
-      "title": "GK Tokens Via Fungible — Crypto Moonboys Wiki",
-      "momentum_score": 35,
-      "authority_trend": "stable",
-      "editorial_activity_score": 0,
-      "predicted_priority": 0,
-      "recommendation": "hold"
-    },
-    {
-      "url": "/wiki/graffpunks-token-via-radio.html",
-      "title": "GraffPUNKS Token Via Radio — Crypto Moonboys Wiki",
-      "momentum_score": 35,
-      "authority_trend": "stable",
-      "editorial_activity_score": 0,
-      "predicted_priority": 0,
-      "recommendation": "hold"
-    },
-    {
-      "url": "/wiki/graffpunks-tokens-via-radio.html",
-      "title": "GraffPUNKS Tokens Via Radio — Crypto Moonboys Wiki",
-      "momentum_score": 35,
-      "authority_trend": "stable",
-      "editorial_activity_score": 0,
-      "predicted_priority": 0,
-      "recommendation": "hold"
-    },
-    {
-      "url": "/wiki/hodl-token-via-warriors.html",
-      "title": "Hodl Token Via Warriors — Crypto Moonboys Wiki",
-      "momentum_score": 35,
-      "authority_trend": "stable",
-      "editorial_activity_score": 0,
-      "predicted_priority": 0,
-      "recommendation": "hold"
-    },
-    {
-      "url": "/wiki/hodl-tokens-via-warriors.html",
-      "title": "Hodl Tokens Via Warriors — Crypto Moonboys Wiki",
-      "momentum_score": 35,
-      "authority_trend": "stable",
-      "editorial_activity_score": 0,
-      "predicted_priority": 0,
-      "recommendation": "hold"
-    },
-    {
-      "url": "/wiki/kid-token-via-bitcoin.html",
-      "title": "Kid Token Via Bitcoin — Crypto Moonboys Wiki",
-      "momentum_score": 35,
-      "authority_trend": "stable",
-      "editorial_activity_score": 0,
-      "predicted_priority": 0,
-      "recommendation": "hold"
-    },
-    {
-      "url": "/wiki/kid-tokens-via-bitcoin.html",
-      "title": "Kid Tokens Via Bitcoin — Crypto Moonboys Wiki",
-      "momentum_score": 35,
-      "authority_trend": "stable",
-      "editorial_activity_score": 0,
-      "predicted_priority": 0,
-      "recommendation": "hold"
-    },
-    {
-      "url": "/wiki/kids-token-via-xrp.html",
-      "title": "Kids Token Via XRP — Crypto Moonboys Wiki",
-      "momentum_score": 35,
-      "authority_trend": "stable",
-      "editorial_activity_score": 0,
-      "predicted_priority": 0,
-      "recommendation": "hold"
-    },
-    {
-      "url": "/wiki/kids-tokens-via-gk.html",
-      "title": "Kids Tokens Via GK — Crypto Moonboys Wiki",
-      "momentum_score": 35,
-      "authority_trend": "stable",
-      "editorial_activity_score": 0,
-      "predicted_priority": 0,
-      "recommendation": "hold"
-    },
-    {
-      "url": "/wiki/nbg-token-via-ball.html",
-      "title": "NBG Token Via Ball — Crypto Moonboys Wiki",
-      "momentum_score": 35,
-      "authority_trend": "stable",
-      "editorial_activity_score": 0,
-      "predicted_priority": 0,
-      "recommendation": "hold"
-    },
-    {
-      "url": "/wiki/nbg-tokens-via-gk.html",
-      "title": "NBG Tokens Via GK — Crypto Moonboys Wiki",
-      "momentum_score": 35,
-      "authority_trend": "stable",
-      "editorial_activity_score": 0,
-      "predicted_priority": 0,
-      "recommendation": "hold"
-    },
-    {
-      "url": "/wiki/nfts-token-via-free.html",
-      "title": "NFTs Token Via Free — Crypto Moonboys Wiki",
-      "momentum_score": 35,
-      "authority_trend": "stable",
-      "editorial_activity_score": 0,
-      "predicted_priority": 0,
-      "recommendation": "hold"
-    },
-    {
-      "url": "/wiki/nfts-tokens-via-free.html",
-      "title": "NFTs Tokens Via Free — Crypto Moonboys Wiki",
-      "momentum_score": 35,
-      "authority_trend": "stable",
-      "editorial_activity_score": 0,
-      "predicted_priority": 0,
-      "recommendation": "hold"
-    },
-    {
       "url": "/wiki/one-million-free-nfts.html",
       "title": "One Million Free NFTs — Crypto Moonboys Wiki",
       "momentum_score": 35,
@@ -2997,15 +2043,6 @@
       "editorial_activity_score": 0,
       "predicted_priority": 117,
       "recommendation": "monitor"
-    },
-    {
-      "url": "/wiki/token-tokens-via-gk.html",
-      "title": "Token Tokens Via GK — Crypto Moonboys Wiki",
-      "momentum_score": 35,
-      "authority_trend": "stable",
-      "editorial_activity_score": 0,
-      "predicted_priority": 0,
-      "recommendation": "hold"
     }
   ]
 }

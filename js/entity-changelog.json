@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-04-10T05:02:29.376Z",
+  "generated_at": "2026-04-10T05:30:26.938Z",
   "snapshot_dates": [
     "2026-04-07",
     "2026-04-08",
@@ -143,10 +143,10 @@
         },
         {
           "date": "2026-04-10",
-          "rank_score": 640
+          "rank_score": 649
         }
       ],
-      "rank_delta": 262,
+      "rank_delta": 271,
       "rank_trend": "up",
       "is_new": false
     },

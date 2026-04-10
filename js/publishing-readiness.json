@@ -1,12 +1,12 @@
 {
-  "generated_at": "2026-04-10T02:49:35.010Z",
+  "generated_at": "2026-04-10T05:30:27.218Z",
   "phase": "phase_6",
   "schema_version": "1.0",
   "summary": {
-    "total_entries": 333,
+    "total_entries": 226,
     "ready_by_platform": {
       "fandom": 46,
-      "telegram": 165,
+      "telegram": 162,
       "substack": 11,
       "paragraph": 25
     }
@@ -223,6 +223,21 @@
       }
     },
     {
+      "url": "/wiki/crypto-moonboys.html",
+      "readable_title": "Crypto Moonboys",
+      "readiness_score": 62,
+      "summary_quality": 92,
+      "authority_score": 34,
+      "trust_score": 82,
+      "narrative_strength": 40,
+      "platform_readiness": {
+        "fandom": true,
+        "telegram": true,
+        "substack": false,
+        "paragraph": false
+      }
+    },
+    {
       "url": "/wiki/hard-fork-games.html",
       "readable_title": "Hard Fork Games",
       "readiness_score": 62,
@@ -235,21 +250,6 @@
         "telegram": true,
         "substack": false,
         "paragraph": true
-      }
-    },
-    {
-      "url": "/wiki/crypto-moonboys.html",
-      "readable_title": "Crypto Moonboys",
-      "readiness_score": 61,
-      "summary_quality": 91,
-      "authority_score": 34,
-      "trust_score": 82,
-      "narrative_strength": 40,
-      "platform_readiness": {
-        "fandom": true,
-        "telegram": true,
-        "substack": false,
-        "paragraph": false
       }
     },
     {
@@ -523,6 +523,21 @@
       }
     },
     {
+      "url": "/wiki/gang-signs.html",
+      "readable_title": "Gang Signs",
+      "readiness_score": 53,
+      "summary_quality": 100,
+      "authority_score": 45,
+      "trust_score": 57,
+      "narrative_strength": 0,
+      "platform_readiness": {
+        "fandom": true,
+        "telegram": true,
+        "substack": false,
+        "paragraph": false
+      }
+    },
+    {
       "url": "/wiki/nfts.html",
       "readable_title": "NFTs (Non-Fungible Tokens)",
       "readiness_score": 53,
@@ -600,21 +615,6 @@
     {
       "url": "/wiki/games4punks-telegram.html",
       "readable_title": "Games4Punks Telegram",
-      "readiness_score": 52,
-      "summary_quality": 100,
-      "authority_score": 44,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": true,
-        "telegram": true,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/gang-signs.html",
-      "readable_title": "Gang Signs",
       "readiness_score": 52,
       "summary_quality": 100,
       "authority_score": 44,
@@ -733,10 +733,25 @@
       }
     },
     {
+      "url": "/wiki/metaverse-battles.html",
+      "readable_title": "Metaverse Battles",
+      "readiness_score": 49,
+      "summary_quality": 65,
+      "authority_score": 26,
+      "trust_score": 82,
+      "narrative_strength": 20,
+      "platform_readiness": {
+        "fandom": false,
+        "telegram": true,
+        "substack": false,
+        "paragraph": false
+      }
+    },
+    {
       "url": "/wiki/nbgx-token.html",
       "readable_title": "NBGX Token",
       "readiness_score": 49,
-      "summary_quality": 58,
+      "summary_quality": 59,
       "authority_score": 25,
       "trust_score": 82,
       "narrative_strength": 30,
@@ -768,21 +783,6 @@
       "readiness_score": 48,
       "summary_quality": 57,
       "authority_score": 30,
-      "trust_score": 82,
-      "narrative_strength": 20,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": true,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/metaverse-battles.html",
-      "readable_title": "Metaverse Battles",
-      "readiness_score": 48,
-      "summary_quality": 64,
-      "authority_score": 26,
       "trust_score": 82,
       "narrative_strength": 20,
       "platform_readiness": {
@@ -1381,7 +1381,7 @@
       "url": "/wiki/delicious-again-pete.html",
       "readable_title": "Delicious Again Pete",
       "readiness_score": 42,
-      "summary_quality": 77,
+      "summary_quality": 78,
       "authority_score": 27,
       "trust_score": 57,
       "narrative_strength": 0,
@@ -1558,21 +1558,6 @@
       }
     },
     {
-      "url": "/wiki/bitcoin-graffpunks.html",
-      "readable_title": "Bitcoin &amp; GraffPUNKS",
-      "readiness_score": 40,
-      "summary_quality": 69,
-      "authority_score": 28,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": true,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
       "url": "/wiki/gk-token.html",
       "readable_title": "$GK Token",
       "readiness_score": 40,
@@ -1583,21 +1568,6 @@
       "platform_readiness": {
         "fandom": false,
         "telegram": false,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/graffpunks-token.html",
-      "readable_title": "GraffPUNKS &amp; Crypto Tokens",
-      "readiness_score": 40,
-      "summary_quality": 69,
-      "authority_score": 27,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": true,
         "substack": false,
         "paragraph": false
       }
@@ -1772,21 +1742,6 @@
       "readable_title": "Forksplit",
       "readiness_score": 39,
       "summary_quality": 65,
-      "authority_score": 27,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": true,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/games-graffpunks.html",
-      "readable_title": "Games &amp; GraffPUNKS",
-      "readiness_score": 39,
-      "summary_quality": 67,
       "authority_score": 27,
       "trust_score": 57,
       "narrative_strength": 0,
@@ -2431,7 +2386,7 @@
       "url": "/wiki/snipey-d-man-sirus.html",
       "readable_title": "Snipey 'D-Man' Sirus",
       "readiness_score": 36,
-      "summary_quality": 60,
+      "summary_quality": 61,
       "authority_score": 21,
       "trust_score": 57,
       "narrative_strength": 0,
@@ -2535,21 +2490,6 @@
     {
       "url": "/wiki/croydon-tower-blocks.html",
       "readable_title": "Croydon Tower Blocks",
-      "readiness_score": 33,
-      "summary_quality": 52,
-      "authority_score": 19,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": false,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/hodl-warriors-army.html",
-      "readable_title": "HODL Warriors Army",
       "readiness_score": 33,
       "summary_quality": 52,
       "authority_score": 19,
@@ -2668,21 +2608,6 @@
       }
     },
     {
-      "url": "/wiki/the-hodl-warriors.html",
-      "readable_title": "The HODL Warriors",
-      "readiness_score": 30,
-      "summary_quality": 39,
-      "authority_score": 19,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": false,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
       "url": "/wiki/atomichub-graffpunks-collection.html",
       "readable_title": "AtomicHub Graffpunks Collection",
       "readiness_score": 29,
@@ -2730,6 +2655,21 @@
     {
       "url": "/wiki/graffiti-queens-exhibition.html",
       "readable_title": "Graffiti Queens Exhibition",
+      "readiness_score": 29,
+      "summary_quality": 39,
+      "authority_score": 15,
+      "trust_score": 57,
+      "narrative_strength": 0,
+      "platform_readiness": {
+        "fandom": false,
+        "telegram": false,
+        "substack": false,
+        "paragraph": false
+      }
+    },
+    {
+      "url": "/wiki/leake-street-tunnel.html",
+      "readable_title": "Leake Street Tunnel",
       "readiness_score": 29,
       "summary_quality": 39,
       "authority_score": 15,
@@ -2953,21 +2893,6 @@
       }
     },
     {
-      "url": "/wiki/leake-street-tunnel.html",
-      "readable_title": "Leake Street Tunnel",
-      "readiness_score": 28,
-      "summary_quality": 38,
-      "authority_score": 15,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": false,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
       "url": "/wiki/samael-exe.html",
       "readable_title": "Samael.exe",
       "readiness_score": 28,
@@ -3073,36 +2998,6 @@
       }
     },
     {
-      "url": "/wiki/bitcoin-nfts.html",
-      "readable_title": "Bitcoin NFTs",
-      "readiness_score": 27,
-      "summary_quality": 32,
-      "authority_score": 16,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": false,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/blockchain-graffpunks.html",
-      "readable_title": "Blockchain GraffPUNKS",
-      "readiness_score": 27,
-      "summary_quality": 32,
-      "authority_score": 16,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": false,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
       "url": "/wiki/blockchain-technology.html",
       "readable_title": "Blockchain Technology",
       "readiness_score": 27,
@@ -3148,96 +3043,6 @@
       }
     },
     {
-      "url": "/wiki/fork-graffpunks.html",
-      "readable_title": "Fork GraffPUNKS",
-      "readiness_score": 27,
-      "summary_quality": 32,
-      "authority_score": 16,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": false,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/fork.html",
-      "readable_title": "Fork",
-      "readiness_score": 27,
-      "summary_quality": 32,
-      "authority_score": 16,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": false,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/free.html",
-      "readable_title": "Free",
-      "readiness_score": 27,
-      "summary_quality": 32,
-      "authority_score": 16,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": false,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/games-nfts.html",
-      "readable_title": "Games NFTs",
-      "readiness_score": 27,
-      "summary_quality": 32,
-      "authority_score": 16,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": false,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/games.html",
-      "readable_title": "Games",
-      "readiness_score": 27,
-      "summary_quality": 32,
-      "authority_score": 16,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": false,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/gk-graffpunks.html",
-      "readable_title": "GK GraffPUNKS",
-      "readiness_score": 27,
-      "summary_quality": 32,
-      "authority_score": 16,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": false,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
       "url": "/wiki/graffiti-queens-in-decentraland-ecosystem.html",
       "readable_title": "Graffiti Queens In Decentraland Ecosystem",
       "readiness_score": 27,
@@ -3258,51 +3063,6 @@
       "readiness_score": 27,
       "summary_quality": 34,
       "authority_score": 15,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": false,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/graffpunks-hodl.html",
-      "readable_title": "GraffPUNKS Hodl",
-      "readiness_score": 27,
-      "summary_quality": 32,
-      "authority_score": 16,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": false,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/graffpunks-kid.html",
-      "readable_title": "GraffPUNKS Kid",
-      "readiness_score": 27,
-      "summary_quality": 32,
-      "authority_score": 16,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": false,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/kid.html",
-      "readable_title": "Kid",
-      "readiness_score": 27,
-      "summary_quality": 32,
-      "authority_score": 16,
       "trust_score": 57,
       "narrative_strength": 0,
       "platform_readiness": {
@@ -3448,291 +3208,6 @@
       }
     },
     {
-      "url": "/wiki/bitcoin-blockchain-via-kid.html",
-      "readable_title": "Bitcoin Blockchain Via Kid",
-      "readiness_score": 26,
-      "summary_quality": 31,
-      "authority_score": 12,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": false,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/bitcoin-fork-via-hard.html",
-      "readable_title": "Bitcoin Fork Via Hard",
-      "readiness_score": 26,
-      "summary_quality": 31,
-      "authority_score": 12,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": false,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/bitcoin-free-via-nfts.html",
-      "readable_title": "Bitcoin Free Via NFTs",
-      "readiness_score": 26,
-      "summary_quality": 31,
-      "authority_score": 12,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": false,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/bitcoin-games-via-kid.html",
-      "readable_title": "Bitcoin Games Via Kid",
-      "readiness_score": 26,
-      "summary_quality": 31,
-      "authority_score": 12,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": false,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/bitcoin-gk-via-kid.html",
-      "readable_title": "Bitcoin GK Via Kid",
-      "readiness_score": 26,
-      "summary_quality": 31,
-      "authority_score": 12,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": false,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/bitcoin-graffpunks-via-kid.html",
-      "readable_title": "Bitcoin GraffPUNKS Via Kid",
-      "readiness_score": 26,
-      "summary_quality": 31,
-      "authority_score": 12,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": false,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/bitcoin-hodl-via-kid.html",
-      "readable_title": "Bitcoin Hodl Via Kid",
-      "readiness_score": 26,
-      "summary_quality": 31,
-      "authority_score": 12,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": false,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/bitcoin-kid-via-alfie.html",
-      "readable_title": "Bitcoin Kid Via Alfie",
-      "readiness_score": 26,
-      "summary_quality": 31,
-      "authority_score": 12,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": false,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/bitcoin-nbg-via-kid.html",
-      "readable_title": "Bitcoin NBG Via Kid",
-      "readiness_score": 26,
-      "summary_quality": 31,
-      "authority_score": 12,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": false,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/bitcoin-nfts-via-free.html",
-      "readable_title": "Bitcoin NFTs Via Free",
-      "readiness_score": 26,
-      "summary_quality": 31,
-      "authority_score": 12,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": false,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/bitcoin-tokens.html",
-      "readable_title": "Bitcoin Tokens",
-      "readiness_score": 26,
-      "summary_quality": 32,
-      "authority_score": 14,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": false,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/blockchain-fork-via-hard.html",
-      "readable_title": "Blockchain Fork Via Hard",
-      "readiness_score": 26,
-      "summary_quality": 31,
-      "authority_score": 12,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": false,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/blockchain-free-via-nfts.html",
-      "readable_title": "Blockchain Free Via NFTs",
-      "readiness_score": 26,
-      "summary_quality": 31,
-      "authority_score": 12,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": false,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/blockchain-games-via-fork.html",
-      "readable_title": "Blockchain Games Via Fork",
-      "readiness_score": 26,
-      "summary_quality": 31,
-      "authority_score": 12,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": false,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/blockchain-graffpunks-via-radio.html",
-      "readable_title": "Blockchain GraffPUNKS Via Radio",
-      "readiness_score": 26,
-      "summary_quality": 31,
-      "authority_score": 12,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": false,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/blockchain-hodl-via-graffpunks.html",
-      "readable_title": "Blockchain Hodl Via GraffPUNKS",
-      "readiness_score": 26,
-      "summary_quality": 31,
-      "authority_score": 12,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": false,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/blockchain-kid-via-bitcoin.html",
-      "readable_title": "Blockchain Kid Via Bitcoin",
-      "readiness_score": 26,
-      "summary_quality": 31,
-      "authority_score": 12,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": false,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/blockchain-nbg-via-ball.html",
-      "readable_title": "Blockchain NBG Via Ball",
-      "readiness_score": 26,
-      "summary_quality": 31,
-      "authority_score": 12,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": false,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/blockchain-nfts-via-free.html",
-      "readable_title": "Blockchain NFTs Via Free",
-      "readiness_score": 26,
-      "summary_quality": 31,
-      "authority_score": 12,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": false,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
       "url": "/wiki/defi-decentralised-finance.html",
       "readable_title": "DeFi (Decentralised Finance)",
       "readiness_score": 26,
@@ -3763,401 +3238,11 @@
       }
     },
     {
-      "url": "/wiki/fork-free-via-hard.html",
-      "readable_title": "Fork Free Via Hard",
-      "readiness_score": 26,
-      "summary_quality": 31,
-      "authority_score": 12,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": false,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/fork-games-via-hard.html",
-      "readable_title": "Fork Games Via Hard",
-      "readiness_score": 26,
-      "summary_quality": 31,
-      "authority_score": 12,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": false,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/fork-gk-via-hard.html",
-      "readable_title": "Fork GK Via Hard",
-      "readiness_score": 26,
-      "summary_quality": 31,
-      "authority_score": 12,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": false,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/fork-graffpunks-via-hard.html",
-      "readable_title": "Fork GraffPUNKS Via Hard",
-      "readiness_score": 26,
-      "summary_quality": 31,
-      "authority_score": 12,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": false,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/fork-hodl-via-hard.html",
-      "readable_title": "Fork Hodl Via Hard",
-      "readiness_score": 26,
-      "summary_quality": 31,
-      "authority_score": 12,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": false,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/fork-kid-via-bitcoin.html",
-      "readable_title": "Fork Kid Via Bitcoin",
-      "readiness_score": 26,
-      "summary_quality": 31,
-      "authority_score": 12,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": false,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/fork-kids-via-hard.html",
-      "readable_title": "Fork Kids Via Hard",
-      "readiness_score": 26,
-      "summary_quality": 31,
-      "authority_score": 12,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": false,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/fork-nbg-via-games.html",
-      "readable_title": "Fork NBG Via Games",
-      "readiness_score": 26,
-      "summary_quality": 31,
-      "authority_score": 12,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": false,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/fork-nfts-via-free.html",
-      "readable_title": "Fork NFTs Via Free",
-      "readiness_score": 26,
-      "summary_quality": 31,
-      "authority_score": 12,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": false,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/free-games-via-nfts.html",
-      "readable_title": "Free Games Via NFTs",
-      "readiness_score": 26,
-      "summary_quality": 31,
-      "authority_score": 12,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": false,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/free-gk-via-nfts.html",
-      "readable_title": "Free GK Via NFTs",
-      "readiness_score": 26,
-      "summary_quality": 31,
-      "authority_score": 12,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": false,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/free-graffpunks-via-nfts.html",
-      "readable_title": "Free GraffPUNKS Via NFTs",
-      "readiness_score": 26,
-      "summary_quality": 31,
-      "authority_score": 12,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": false,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/free-hodl-via-nfts.html",
-      "readable_title": "Free Hodl Via NFTs",
-      "readiness_score": 26,
-      "summary_quality": 31,
-      "authority_score": 12,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": false,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/free-kid-via-nfts.html",
-      "readable_title": "Free Kid Via NFTs",
-      "readiness_score": 26,
-      "summary_quality": 31,
-      "authority_score": 12,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": false,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/free-kids-via-nfts.html",
-      "readable_title": "Free Kids Via NFTs",
-      "readiness_score": 26,
-      "summary_quality": 31,
-      "authority_score": 12,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": false,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/free-nbg-via-nfts.html",
-      "readable_title": "Free NBG Via NFTs",
-      "readiness_score": 26,
-      "summary_quality": 31,
-      "authority_score": 12,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": false,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/free-nfts-via-1m.html",
-      "readable_title": "Free NFTs Via 1m",
-      "readiness_score": 26,
-      "summary_quality": 31,
-      "authority_score": 12,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": false,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/games-gk-via-fork.html",
-      "readable_title": "Games GK Via Fork",
-      "readiness_score": 26,
-      "summary_quality": 31,
-      "authority_score": 12,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": false,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/games-graffpunks-via-collection.html",
-      "readable_title": "Games GraffPUNKS Via Collection",
-      "readiness_score": 26,
-      "summary_quality": 31,
-      "authority_score": 12,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": false,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/games-hodl-via-fork.html",
-      "readable_title": "Games Hodl Via Fork",
-      "readiness_score": 26,
-      "summary_quality": 31,
-      "authority_score": 12,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": false,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/games-kid-via-bitcoin.html",
-      "readable_title": "Games Kid Via Bitcoin",
-      "readiness_score": 26,
-      "summary_quality": 31,
-      "authority_score": 12,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": false,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/games-kids-via-fork.html",
-      "readable_title": "Games Kids Via Fork",
-      "readiness_score": 26,
-      "summary_quality": 31,
-      "authority_score": 12,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": false,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/games-nbg-via-fork.html",
-      "readable_title": "Games NBG Via Fork",
-      "readiness_score": 26,
-      "summary_quality": 31,
-      "authority_score": 12,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": false,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/games-nfts-via-free.html",
-      "readable_title": "Games NFTs Via Free",
-      "readiness_score": 26,
-      "summary_quality": 31,
-      "authority_score": 12,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": false,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
       "url": "/wiki/genesis-spray-drop.html",
       "readable_title": "Genesis Spray Drop",
       "readiness_score": 26,
       "summary_quality": 32,
       "authority_score": 11,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": false,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/gk-graffpunks-via-radio.html",
-      "readable_title": "GK GraffPUNKS Via Radio",
-      "readiness_score": 26,
-      "summary_quality": 31,
-      "authority_score": 12,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": false,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/gk-kid-via-bitcoin.html",
-      "readable_title": "GK Kid Via Bitcoin",
-      "readiness_score": 26,
-      "summary_quality": 31,
-      "authority_score": 12,
       "trust_score": 57,
       "narrative_strength": 0,
       "platform_readiness": {
@@ -4198,101 +3283,11 @@
       }
     },
     {
-      "url": "/wiki/graffpunks-hodl-via-radio.html",
-      "readable_title": "GraffPUNKS Hodl Via Radio",
-      "readiness_score": 26,
-      "summary_quality": 31,
-      "authority_score": 12,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": false,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/graffpunks-kid-via-bitcoin.html",
-      "readable_title": "GraffPUNKS Kid Via Bitcoin",
-      "readiness_score": 26,
-      "summary_quality": 31,
-      "authority_score": 12,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": false,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/graffpunks-kids-via-radio.html",
-      "readable_title": "GraffPUNKS Kids Via Radio",
-      "readiness_score": 26,
-      "summary_quality": 31,
-      "authority_score": 12,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": false,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/graffpunks-nbg-via-radio.html",
-      "readable_title": "GraffPUNKS NBG Via Radio",
-      "readiness_score": 26,
-      "summary_quality": 31,
-      "authority_score": 12,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": false,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/graffpunks-nbg.html",
-      "readable_title": "GraffPUNKS NBG",
-      "readiness_score": 26,
-      "summary_quality": 32,
-      "authority_score": 14,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": false,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
       "url": "/wiki/graffpunks-network.html",
       "readable_title": "GraffPUNKS Network",
       "readiness_score": 26,
       "summary_quality": 32,
       "authority_score": 14,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": false,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/graffpunks-nfts-via-free.html",
-      "readable_title": "GraffPUNKS NFTs Via Free",
-      "readiness_score": 26,
-      "summary_quality": 31,
-      "authority_score": 12,
       "trust_score": 57,
       "narrative_strength": 0,
       "platform_readiness": {
@@ -4348,160 +3343,10 @@
       }
     },
     {
-      "url": "/wiki/hodl-kid-via-bitcoin.html",
-      "readable_title": "Hodl Kid Via Bitcoin",
-      "readiness_score": 26,
-      "summary_quality": 31,
-      "authority_score": 12,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": false,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/hodl-kids-via-warriors.html",
-      "readable_title": "Hodl Kids Via Warriors",
-      "readiness_score": 26,
-      "summary_quality": 31,
-      "authority_score": 12,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": false,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/hodl-nbg-via-warriors.html",
-      "readable_title": "Hodl NBG Via Warriors",
-      "readiness_score": 26,
-      "summary_quality": 31,
-      "authority_score": 12,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": false,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/hodl-nfts-via-free.html",
-      "readable_title": "Hodl NFTs Via Free",
-      "readiness_score": 26,
-      "summary_quality": 31,
-      "authority_score": 12,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": false,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/kid-kids-via-bitcoin.html",
-      "readable_title": "Kid Kids Via Bitcoin",
-      "readiness_score": 26,
-      "summary_quality": 31,
-      "authority_score": 12,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": false,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/kid-nbg-via-bitcoin.html",
-      "readable_title": "Kid NBG Via Bitcoin",
-      "readiness_score": 26,
-      "summary_quality": 31,
-      "authority_score": 12,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": false,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/kid-nfts-via-free.html",
-      "readable_title": "Kid NFTs Via Free",
-      "readiness_score": 26,
-      "summary_quality": 31,
-      "authority_score": 12,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": false,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/kids-nbg-via-xrp.html",
-      "readable_title": "Kids NBG Via XRP",
-      "readiness_score": 26,
-      "summary_quality": 31,
-      "authority_score": 12,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": false,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/kids-nfts-via-free.html",
-      "readable_title": "Kids NFTs Via Free",
-      "readiness_score": 26,
-      "summary_quality": 31,
-      "authority_score": 12,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": false,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
       "url": "/wiki/midevil-hero-arena-game.html",
       "readable_title": "MiDEViL Hero Arena (Game)",
       "readiness_score": 26,
       "summary_quality": 32,
-      "authority_score": 12,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": false,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/nbg-nfts-via-free.html",
-      "readable_title": "NBG NFTs Via Free",
-      "readiness_score": 26,
-      "summary_quality": 31,
       "authority_score": 12,
       "trust_score": 57,
       "narrative_strength": 0,
@@ -4548,456 +3393,6 @@
       "readiness_score": 26,
       "summary_quality": 32,
       "authority_score": 14,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": false,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/bitcoin-token-via-kid.html",
-      "readable_title": "Bitcoin Token Via Kid",
-      "readiness_score": 25,
-      "summary_quality": 31,
-      "authority_score": 10,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": false,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/bitcoin-tokens-via-kid.html",
-      "readable_title": "Bitcoin Tokens Via Kid",
-      "readiness_score": 25,
-      "summary_quality": 31,
-      "authority_score": 10,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": false,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/blockchain-gk-via-tokens.html",
-      "readable_title": "Blockchain GK Via Tokens",
-      "readiness_score": 25,
-      "summary_quality": 31,
-      "authority_score": 10,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": false,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/blockchain-token-via-graffpunks.html",
-      "readable_title": "Blockchain Token Via GraffPUNKS",
-      "readiness_score": 25,
-      "summary_quality": 31,
-      "authority_score": 10,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": false,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/blockchain-tokens-via-gk.html",
-      "readable_title": "Blockchain Tokens Via GK",
-      "readiness_score": 25,
-      "summary_quality": 31,
-      "authority_score": 10,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": false,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/fork-token-via-hard.html",
-      "readable_title": "Fork Token Via Hard",
-      "readiness_score": 25,
-      "summary_quality": 31,
-      "authority_score": 10,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": false,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/fork-tokens-via-hard.html",
-      "readable_title": "Fork Tokens Via Hard",
-      "readiness_score": 25,
-      "summary_quality": 31,
-      "authority_score": 10,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": false,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/free-token-via-nfts.html",
-      "readable_title": "Free Token Via NFTs",
-      "readiness_score": 25,
-      "summary_quality": 31,
-      "authority_score": 10,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": false,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/free-tokens-via-nfts.html",
-      "readable_title": "Free Tokens Via NFTs",
-      "readiness_score": 25,
-      "summary_quality": 31,
-      "authority_score": 10,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": false,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/games-token-via-fork.html",
-      "readable_title": "Games Token Via Fork",
-      "readiness_score": 25,
-      "summary_quality": 31,
-      "authority_score": 10,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": false,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/games-tokens-via-fork.html",
-      "readable_title": "Games Tokens Via Fork",
-      "readiness_score": 25,
-      "summary_quality": 31,
-      "authority_score": 10,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": false,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/gk-hodl-via-tokens.html",
-      "readable_title": "GK Hodl Via Tokens",
-      "readiness_score": 25,
-      "summary_quality": 31,
-      "authority_score": 10,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": false,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/gk-kids-via-tokens.html",
-      "readable_title": "GK Kids Via Tokens",
-      "readiness_score": 25,
-      "summary_quality": 31,
-      "authority_score": 10,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": false,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/gk-nbg-via-tokens.html",
-      "readable_title": "GK NBG Via Tokens",
-      "readiness_score": 25,
-      "summary_quality": 31,
-      "authority_score": 10,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": false,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/gk-nfts-via-tokens.html",
-      "readable_title": "GK NFTs Via Tokens",
-      "readiness_score": 25,
-      "summary_quality": 31,
-      "authority_score": 10,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": false,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/gk-token-via-tokens.html",
-      "readable_title": "GK Token Via Tokens",
-      "readiness_score": 25,
-      "summary_quality": 31,
-      "authority_score": 10,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": false,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/gk-tokens-via-fungible.html",
-      "readable_title": "GK Tokens Via Fungible",
-      "readiness_score": 25,
-      "summary_quality": 31,
-      "authority_score": 10,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": false,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/graffpunks-token-via-radio.html",
-      "readable_title": "GraffPUNKS Token Via Radio",
-      "readiness_score": 25,
-      "summary_quality": 31,
-      "authority_score": 10,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": false,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/graffpunks-tokens-via-radio.html",
-      "readable_title": "GraffPUNKS Tokens Via Radio",
-      "readiness_score": 25,
-      "summary_quality": 31,
-      "authority_score": 10,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": false,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/hodl-token-via-warriors.html",
-      "readable_title": "Hodl Token Via Warriors",
-      "readiness_score": 25,
-      "summary_quality": 31,
-      "authority_score": 10,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": false,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/hodl-tokens-via-warriors.html",
-      "readable_title": "Hodl Tokens Via Warriors",
-      "readiness_score": 25,
-      "summary_quality": 31,
-      "authority_score": 10,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": false,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/kid-token-via-bitcoin.html",
-      "readable_title": "Kid Token Via Bitcoin",
-      "readiness_score": 25,
-      "summary_quality": 31,
-      "authority_score": 10,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": false,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/kid-tokens-via-bitcoin.html",
-      "readable_title": "Kid Tokens Via Bitcoin",
-      "readiness_score": 25,
-      "summary_quality": 31,
-      "authority_score": 10,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": false,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/kids-token-via-xrp.html",
-      "readable_title": "Kids Token Via XRP",
-      "readiness_score": 25,
-      "summary_quality": 31,
-      "authority_score": 10,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": false,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/kids-tokens-via-gk.html",
-      "readable_title": "Kids Tokens Via GK",
-      "readiness_score": 25,
-      "summary_quality": 31,
-      "authority_score": 10,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": false,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/nbg-token-via-ball.html",
-      "readable_title": "NBG Token Via Ball",
-      "readiness_score": 25,
-      "summary_quality": 31,
-      "authority_score": 10,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": false,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/nbg-tokens-via-gk.html",
-      "readable_title": "NBG Tokens Via GK",
-      "readiness_score": 25,
-      "summary_quality": 31,
-      "authority_score": 10,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": false,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/nfts-token-via-free.html",
-      "readable_title": "NFTs Token Via Free",
-      "readiness_score": 25,
-      "summary_quality": 31,
-      "authority_score": 10,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": false,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/nfts-tokens-via-free.html",
-      "readable_title": "NFTs Tokens Via Free",
-      "readiness_score": 25,
-      "summary_quality": 31,
-      "authority_score": 10,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": false,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/token-tokens-via-gk.html",
-      "readable_title": "Token Tokens Via GK",
-      "readiness_score": 25,
-      "summary_quality": 31,
-      "authority_score": 10,
       "trust_score": 57,
       "narrative_strength": 0,
       "platform_readiness": {
