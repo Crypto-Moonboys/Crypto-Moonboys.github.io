@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Block Topia Quest Maze | Crypto Moonboys</title>
+  <meta name="description" content="Crystal Maze-style lore quest game for the Crypto Moonboys wiki. Read linked wiki pages, solve cryptic clues, and progress through a living 90-day quest cycle." />
+  <link rel="stylesheet" href="/css/wiki.css" />
+  <style>
+    :root {
+      --maze-bg: #060913;
+      --maze-panel: rgba(12, 18, 33, 0.96);
+      --maze-panel-2: rgba(17, 26, 47, 0.96);
+      --maze-line: rgba(101, 220, 255, 0.22);
+      --maze-cyan: #72ecff;
+      --maze-pink: #ff78db;
+      --maze-yellow: #ffd84d;
+      --maze-green: #57e38c;
+      --maze-red: #ff6a73;
+      --maze-text: #eef5ff;
+      --maze-muted: #9db1cb;
+      --maze-shadow: 0 18px 55px rgba(0, 0, 0, 0.35);
+    }
+    body.quest-maze-page {
+      background:
+        radial-gradient(circle at top left, rgba(114,236,255,.08), transparent 26%),
+        radial-gradient(circle at top right, rgba(255,120,219,.08), transparent 24%),
+        linear-gradient(180deg, #050916, #02050b);
+      color: var(--maze-text);
+    }
+    .quest-hero, .maze-panel {
+      border: 1px solid var(--maze-line);
+      border-radius: 24px;
+      box-shadow: var(--maze-shadow);
+      background: linear-gradient(180deg, rgba(10,16,30,.98), rgba(7,11,20,.98));
+    }
+    .quest-hero {
+      position: relative;
+      overflow: hidden;
+      margin-bottom: 1rem;
+      padding: 1.25rem;
+    }
+    .quest-hero::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(90deg, rgba(114,236,255,.07), transparent 18%, transparent 82%, rgba(255,120,219,.06)),
+        repeating-linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.03) 1px, transparent 1px, transparent 4px);
+      opacity: .6;
+      pointer-events: none;
+    }
+    .quest-title {
+      margin: 0 0 .65rem;
+      font-size: clamp(1.35rem, 2.8vw, 2.4rem);
+      line-height: 1.1;
+      text-transform: uppercase;
+      letter-spacing: .03em;
+    }
+    .quest-sub {
+      margin: 0;
+      max-width: 72ch;
+      line-height: 1.7;
+      color: var(--maze-muted);
+      position: relative;
+      z-index: 1;
+    }
+    .maze-shell {
+      display: grid;
+      grid-template-columns: minmax(0, 1.55fr) minmax(320px, .95fr);
+      gap: 1rem;
+    }
+    .maze-panel { padding: 1rem; }
+    .mini-grid, .settings-grid, .season-grid, .quest-links, .quick-actions {
+      display: grid;
+      gap: .75rem;
+    }
+    .mini-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); margin-top: 1rem; }
+    .mini-card, .sub-card, .answer-box, .activity-feed, .quest-card, .season-card, .hint-card {
+      border-radius: 18px;
+      border: 1px solid rgba(255,255,255,.07);
+      background: rgba(255,255,255,.025);
+    }
+    .mini-card, .season-card, .sub-card, .hint-card { padding: .85rem; }
+    .mini-card .label, .season-card .label, .sub-card .label, .answer-label {
+      display: block;
+      font-size: .68rem;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      color: var(--maze-muted);
+      margin-bottom: .42rem;
+    }
+    .mini-card .value, .season-card .value, .companion-name { font-weight: 700; color: #fff; }
+    .companion-name { font-size: 1.05rem; }
+    .companion-voice { color: var(--maze-cyan); font-size: .76rem; text-transform: uppercase; letter-spacing: .08em; }
+    .companion-dialogue, .quest-copy, .activity-feed, .sub-card, .season-card, .hint-card, .quest-meta, .answer-help {
+      line-height: 1.65;
+      color: var(--maze-muted);
+      font-size: .8rem;
+    }
+    .companion-card {
+      display: flex;
+      gap: .9rem;
+      align-items: flex-start;
+      margin-bottom: 1rem;
+    }
+    .companion-avatar {
+      width: 64px;
+      height: 64px;
+      flex: 0 0 64px;
+      border-radius: 18px;
+      display: grid;
+      place-items: center;
+      font-weight: 800;
+      color: #06111d;
+      background: linear-gradient(135deg, var(--maze-cyan), var(--maze-pink));
+      border: 1px solid rgba(255,255,255,.08);
+    }
+    .quest-card { padding: 1rem; }
+    .quest-header {
+      display: flex;
+      justify-content: space-between;
+      gap: .8rem;
+      align-items: flex-start;
+      margin-bottom: .8rem;
+      flex-wrap: wrap;
+    }
+    .quest-heading { margin: 0; font-size: 1.1rem; }
+    .badge-row { display: flex; gap: .45rem; flex-wrap: wrap; }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: .3rem;
+      border-radius: 999px;
+      padding: .25rem .58rem;
+      border: 1px solid rgba(255,255,255,.08);
+      background: #0b1120;
+      color: var(--maze-muted);
+      font-size: .66rem;
+      text-transform: uppercase;
+      letter-spacing: .05em;
+    }
+    .badge.live { color: var(--maze-yellow); border-color: rgba(255,216,77,.34); }
+    .badge.zone { color: var(--maze-cyan); border-color: rgba(114,236,255,.34); }
+    .badge.diff { color: var(--maze-pink); border-color: rgba(255,120,219,.34); }
+    .quest-copy strong { color: #fff; }
+    .quest-links { grid-template-columns: repeat(2, minmax(0,1fr)); margin: 1rem 0; }
+    .maze-btn, .quest-links a {
+      display: inline-flex;
+      justify-content: center;
+      align-items: center;
+      gap: .45rem;
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,.1);
+      background: #121a2d;
+      color: #fff;
+      padding: .9rem .85rem;
+      text-decoration: none;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform .08s ease, filter .18s ease, opacity .18s ease;
+    }
+    .maze-btn:hover, .quest-links a:hover { filter: brightness(1.08); }
+    .maze-btn:active, .quest-links a:active { transform: scale(.985); }
+    .maze-btn.primary { background: linear-gradient(90deg, rgba(114,236,255,.2), rgba(255,120,219,.2)); border-color: rgba(114,236,255,.36); color: #06111d; background-blend-mode: screen; }
+    .maze-btn.cyan { color: var(--maze-cyan); border-color: rgba(114,236,255,.34); }
+    .maze-btn.yellow { color: var(--maze-yellow); border-color: rgba(255,216,77,.34); }
+    .maze-btn.green { color: var(--maze-green); border-color: rgba(87,227,140,.34); }
+    .maze-btn.red { color: var(--maze-red); border-color: rgba(255,106,115,.34); }
+    .answer-box { padding: 1rem; }
+    .answer-stack { display: grid; gap: .75rem; }
+    .answer-input, .pref-select, .name-input {
+      width: 100%;
+      border-radius: 14px;
+      border: 1px solid rgba(114,236,255,.26);
+      background: #07101c;
+      color: #fff;
+      padding: .88rem .82rem;
+    }
+    .quick-actions { grid-template-columns: repeat(4, minmax(0,1fr)); margin-top: 1rem; }
+    .hint-stack, .settings-grid, .season-grid { grid-template-columns: repeat(2, minmax(0,1fr)); }
+    .activity-feed { max-height: 260px; overflow: auto; padding: .8rem 1rem; }
+    .activity-feed div { padding: .35rem 0; border-bottom: 1px dashed rgba(255,255,255,.06); }
+    .section-title { margin: 0 0 .8rem; }
+    .tabs { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: .55rem; margin-bottom: .9rem; }
+    .tab-btn {
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,.08);
+      background: #10182a;
+      color: var(--maze-muted);
+      padding: .8rem .55rem;
+      cursor: pointer;
+      font-weight: 700;
+      text-align: center;
+    }
+    .tab-btn.active { border-color: rgba(114,236,255,.34); color: #fff; background: linear-gradient(90deg, rgba(114,236,255,.1), rgba(255,120,219,.12)); }
+    .tab-pane.hidden { display: none; }
+    .muted { color: var(--maze-muted); }
+    .small { font-size: .75rem; }
+    body.high-contrast {
+      --maze-bg: #000;
+      --maze-panel: #000;
+      --maze-panel-2: #111;
+      --maze-line: rgba(255,255,255,.4);
+      --maze-text: #fff;
+      --maze-muted: #f0f0f0;
+    }
+    body.large-text { font-size: 118%; }
+    body.dyslexia-friendly, body.dyslexia-friendly * { font-family: Arial, Helvetica, sans-serif !important; letter-spacing: .01em; }
+    body.low-motion *, body.low-motion *::before, body.low-motion *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+    @media (max-width: 1180px) { .maze-shell { grid-template-columns: 1fr; } }
+    @media (max-width: 880px) {
+      .mini-grid, .quick-actions, .quest-links, .tabs, .hint-stack, .settings-grid, .season-grid { grid-template-columns: repeat(2, minmax(0,1fr)); }
+    }
+    @media (max-width: 560px) {
+      .mini-grid, .quick-actions, .quest-links, .tabs, .hint-stack, .settings-grid, .season-grid { grid-template-columns: 1fr; }
+      .companion-card, .quest-header { flex-direction: column; }
+    }
+  </style>
+</head>
+<body class="quest-maze-page">
+<a class="skip-link" href="#content">Skip to content</a>
+<header id="site-header" role="banner">
+  <button class="hamburger" id="hamburger" aria-label="Toggle navigation" aria-expanded="false" aria-controls="sidebar">☰</button>
+  <a href="/index.html" class="site-logo" aria-label="The Crypto Moonboys GK Wiki home">
+    <img src="/img/CRYPTO-MOONBOYS-BITCOIN-LOGO.png" alt="" aria-hidden="true">
+    <span>
+      <span class="logo-text">🌙 The Crypto Moonboys GK Wiki</span>
+      <span class="logo-sub">Blockchain Cryptoism Encyclopedia ⚡️⚡️⚡️</span>
+    </span>
+  </a>
+  <nav class="header-nav" aria-label="Main navigation">
+    <a href="/index.html">Home</a>
+    <a href="/categories/index.html">Categories</a>
+    <a href="/search.html">All Articles</a>
+    <a href="/timeline.html">📅 Timeline</a>
+    <a href="/graph.html">🌐 Graph</a>
+    <a href="/dashboard.html">📊 Dashboard</a>
+    <a href="/games/index.html">🕹️ Arcade</a>
+  </nav>
+</header>
+<div id="sidebar-overlay" aria-hidden="true"></div>
+<div id="layout">
+  <nav id="sidebar" aria-label="Wiki navigation">
+    <div class="sidebar-section">
+      <div class="sidebar-heading">Navigation</div>
+      <div class="sidebar-nav">
+        <a href="/index.html"><span class="nav-icon">🏠</span> Main Page</a>
+        <a href="/categories/index.html"><span class="nav-icon">📂</span> All Categories</a>
+        <a href="/search.html"><span class="nav-icon">🔍</span> All Articles</a>
+        <a href="/timeline.html"><span class="nav-icon">📅</span> Timeline</a>
+        <a href="/graph.html"><span class="nav-icon">🌐</span> Entity Graph</a>
+        <a href="/dashboard.html"><span class="nav-icon">📊</span> Dashboard</a>
+        <a href="/games/index.html"><span class="nav-icon">🕹️</span> Moonboys Arcade</a>
+      </div>
+    </div>
+  </nav>
+  <div id="main-wrapper">
+    <main id="content" role="main">
+      <nav class="breadcrumb" aria-label="Breadcrumb"><a href="/index.html">Home</a><span class="sep">›</span><a href="/games/index.html">Arcade</a><span class="sep">›</span><span aria-current="page">Block Topia Quest Maze</span></nav>
+      <section class="quest-hero">
+        <h1 class="quest-title">Block Topia Quest Maze</h1>
+        <p class="quest-sub">A Crystal Maze-style companion RPG built on top of the wiki itself. Your guide sends you into live lore zones, points you at the right page, and expects you to come back with the answer. The game keeps two anti-repeat 90-day memory files per player, prepares for R2-backed progression, and is designed to ingest fresh wiki updates into future quest banks automatically.</p>
+        <div class="mini-grid" aria-label="Game status stats">
+          <div class="mini-card"><span class="label">Season Day</span><span class="value" id="seasonDay">1 / 90</span></div>
+          <div class="mini-card"><span class="label">Zone</span><span class="value" id="zoneName">GraffPUNKS</span></div>
+          <div class="mini-card"><span class="label">XP</span><span class="value" id="playerXp">0</span></div>
+          <div class="mini-card"><span class="label">Current Streak</span><span class="value" id="playerStreak">0</span></div>
+        </div>
+      </section>
+      <div class="maze-shell">
+        <section class="maze-panel">
+          <div class="companion-card">
+            <div class="companion-avatar" aria-hidden="true">Σ</div>
+            <div>
+              <div class="companion-voice">Own companion // Archivist Handler</div>
+              <div class="companion-name" id="companionName">SIGMA REY</div>
+              <p class="companion-dialogue" id="companionDialogue">You are not here to button-mash. You are here to prove you can read the world, trace the lie, and drag the truth back through the maze.</p>
+            </div>
+          </div>
+          <article class="quest-card">
+            <div class="quest-header">
+              <div>
+                <h2 class="quest-heading" id="questTitle">Day 1 // The Awakening</h2>
+                <div class="badge-row">
+                  <span class="badge zone" id="questZoneBadge">GraffPUNKS Rebellion</span>
+                  <span class="badge diff" id="questDifficultyBadge">direct retrieval</span>
+                  <span class="badge live">live wiki quest</span>
+                </div>
+              </div>
+              <div class="quest-meta small" id="questMeta">Reward: 100 XP · Hints cost score efficiency · Narration optional</div>
+            </div>
+            <div class="quest-copy" id="questPrompt"></div>
+            <div class="quest-links">
+              <a id="questWikiLink" href="/wiki/block-buster-og.html" target="_blank" rel="noopener">Open target wiki page</a>
+              <a id="questAltLink" href="/graph.html" target="_blank" rel="noopener">Cross-check the graph</a>
+            </div>
+          </article>
+          <div class="answer-box">
+            <label class="answer-label" for="answerInput">Return answer</label>
+            <div class="answer-stack">
+              <input id="answerInput" class="answer-input" type="text" autocomplete="off" placeholder="Type the answer you found in the wiki" />
+              <div class="quick-actions">
+                <button class="maze-btn primary" id="submitAnswerBtn">Submit Answer</button>
+                <button class="maze-btn cyan" id="hintOneBtn">Hint One</button>
+                <button class="maze-btn yellow" id="hintTwoBtn">Hint Two</button>
+                <button class="maze-btn green" id="speakBtn">Narrate Briefing</button>
+              </div>
+              <div class="answer-help" id="answerFeedback">The clue brief tells you what to solve. The linked wiki page contains the answer, but it may be hidden inside lore text rather than shouted in a heading.</div>
+            </div>
+          </div>
+          <div class="hint-stack" style="margin-top:1rem;">
+            <div class="hint-card">
+              <span class="label">Hint Progress</span>
+              <div id="hintState" class="small">No hints used yet.</div>
+            </div>
+            <div class="hint-card">
+              <span class="label">Quest Intake Watcher</span>
+              <div id="watcherState" class="small">New wiki update intake is staged. In production, changed pages are harvested into the quest bank and deduped against your last two 90-day save files.</div>
+            </div>
+          </div>
+          <div style="margin-top:1rem;">
+            <h3 class="section-title">Run Feed</h3>
+            <div class="activity-feed" id="activityFeed" aria-live="polite"></div>
+          </div>
+        </section>
+        <aside class="maze-panel">
+          <div class="tabs" role="tablist" aria-label="Quest utility tabs">
+            <button class="tab-btn active" data-tab="profile" role="tab" aria-selected="true">Profile</button>
+            <button class="tab-btn" data-tab="season" role="tab" aria-selected="false">Season</button>
+            <button class="tab-btn" data-tab="settings" role="tab" aria-selected="false">Access</button>
+            <button class="tab-btn" data-tab="systems" role="tab" aria-selected="false">Systems</button>
+          </div>
+          <section class="tab-pane" data-pane="profile">
+            <div class="sub-card">
+              <span class="label">Player Codename</span>
+              <input id="playerNameInput" class="name-input" type="text" maxlength="24" placeholder="Set your codename" />
+            </div>
+            <div class="season-grid" style="margin-top:1rem;">
+              <div class="season-card"><span class="label">Solved Today</span><span class="value" id="solvedToday">0</span></div>
+              <div class="season-card"><span class="label">Accuracy</span><span class="value" id="accuracyStat">100%</span></div>
+              <div class="season-card"><span class="label">Active Slot</span><span class="value" id="activeSlotStat">File A</span></div>
+              <div class="season-card"><span class="label">Shadow Slot</span><span class="value" id="shadowSlotStat">File B</span></div>
+            </div>
+            <div class="quick-actions" style="margin-top:1rem;">
+              <button class="maze-btn cyan" id="saveProfileBtn">Save Profile</button>
+              <button class="maze-btn yellow" id="resetLocalBtn">Reset Local Demo</button>
+              <button class="maze-btn green" id="nextQuestBtn">Preview Next Quest</button>
+              <button class="maze-btn red" id="exportStateBtn">Export State</button>
+            </div>
+          </section>
+          <section class="tab-pane hidden" data-pane="season">
+            <div class="sub-card">
+              <span class="label">90-Day Infinity Model</span>
+              <div class="small">Each user carries two remembered 90-day files. The active file stores the current season. The shadow file stores the previous season. A future scheduler excludes exact quest ids, normalized answers, clue families, and source-page repeats from both files before assigning a new daily quest. Seasonal public scores wipe every 90 days. The masters board keeps the all-time top ten only.</div>
+            </div>
+            <div class="season-grid" style="margin-top:1rem;" id="seasonGrid"></div>
+          </section>
+          <section class="tab-pane hidden" data-pane="settings">
+            <div class="settings-grid">
+              <label class="sub-card"><span class="label">Text Size</span><select class="pref-select" id="textSizeSelect"><option value="normal">Normal</option><option value="large">Large</option></select></label>
+              <label class="sub-card"><span class="label">Color Mode</span><select class="pref-select" id="colorModeSelect"><option value="default">Default Neon</option><option value="high-contrast">High Contrast</option></select></label>
+              <label class="sub-card"><span class="label">Reading Mode</span><select class="pref-select" id="readingModeSelect"><option value="standard">Standard</option><option value="dyslexia-friendly">Dyslexia Friendly</option></select></label>
+              <label class="sub-card"><span class="label">Motion</span><select class="pref-select" id="motionSelect"><option value="standard">Standard</option><option value="low-motion">Low Motion</option></select></label>
+              <label class="sub-card"><span class="label">Narration</span><select class="pref-select" id="narrationSelect"><option value="off">Off</option><option value="on">On</option></select></label>
+              <label class="sub-card"><span class="label">Locale Shell</span><select class="pref-select" id="localeSelect"><option value="en-GB">English</option><option value="es-ES">Español</option><option value="fr-FR">Français</option><option value="de-DE">Deutsch</option><option value="ja-JP">日本語</option></select></label>
+            </div>
+          </section>
+          <section class="tab-pane hidden" data-pane="systems">
+            <div class="sub-card">
+              <span class="label">Automated Systems Included</span>
+              <div class="small">Companion guidance, daily quest scheduling, two-slot anti-repeat memory, narration hooks, locale-ready shell, accessibility preferences, wiki-update quest harvesting notes, and R2/API storage contracts. This page runs as a front-end demo now, but it is shaped so a Worker can move state into Cloudflare R2 without ripping out the game logic.</div>
+            </div>
+            <div class="sub-card" style="margin-top:1rem;">
+              <span class="label">R2 Memory Contract</span>
+              <div class="small"><code>players/&lt;userId&gt;/active-season.json</code><br><code>players/&lt;userId&gt;/shadow-season.json</code><br><code>players/&lt;userId&gt;/profile.json</code><br><code>quest-bank/current-season/*.json</code><br><code>wiki-change-index/latest.json</code><br><code>leaderboards/current-season.json</code><br><code>leaderboards/masters-all-time.json</code></div>
+            </div>
+            <div class="sub-card" style="margin-top:1rem;">
+              <span class="label">API Hooks</span>
+              <div class="small"><code>GET /api/maze/manifest</code><br><code>GET /api/maze/next-quest?player=</code><br><code>POST /api/maze/submit-answer</code><br><code>POST /api/maze/request-hint</code><br><code>POST /api/maze/save-profile</code><br><code>POST /api/maze/ingest-wiki-updates</code><br><code>GET /api/maze/leaderboard</code></div>
+            </div>
+          </section>
+        </aside>
+      </div>
+    </main>
+  </div>
+</div>
+<script src="/js/wiki.js"></script>
+<script>
+(() => {
+  const STORAGE_KEY = 'block_topia_quest_maze_demo_v1';
+  const QUEST_BANK_URL = '/games/data/block-topia-maze-seed.json';
+  const now = new Date();
+  const I18N = {
+    'en-GB': { saveProfile: 'Profile saved locally. In production this persists to R2.', correct: 'Correct. The maze opens.', wrong: 'Wrong answer. Read closer or spend a hint.', nextQueued: 'Next quest staged. In production this would be chosen by the anti-repeat scheduler.', localReset: 'Local demo state reset.', exported: 'State exported as JSON.', watcherFresh: 'Fresh wiki content detected. New quest candidates can be harvested into the bank.', narrationOn: 'Narration enabled.', narrationOff: 'Narration disabled.' },
+    'es-ES': { saveProfile: 'Perfil guardado localmente. En producción se guarda en R2.', correct: 'Correcto. El laberinto se abre.', wrong: 'Respuesta incorrecta. Lee mejor o usa una pista.', nextQueued: 'Siguiente misión preparada.', localReset: 'Estado local reiniciado.', exported: 'Estado exportado como JSON.', watcherFresh: 'Contenido nuevo detectado.', narrationOn: 'Narración activada.', narrationOff: 'Narración desactivada.' },
+    'fr-FR': { saveProfile: 'Profil enregistré localement. En production, il ira vers R2.', correct: 'Correct. Le labyrinthe s’ouvre.', wrong: 'Réponse incorrecte. Relis ou prends un indice.', nextQueued: 'Quête suivante préparée.', localReset: 'État local réinitialisé.', exported: 'État exporté en JSON.', watcherFresh: 'Nouveau contenu détecté.', narrationOn: 'Narration activée.', narrationOff: 'Narration désactivée.' },
+    'de-DE': { saveProfile: 'Profil lokal gespeichert. In Produktion geht es nach R2.', correct: 'Richtig. Das Labyrinth öffnet sich.', wrong: 'Falsche Antwort. Lies genauer oder nutze einen Hinweis.', nextQueued: 'Nächste Quest vorbereitet.', localReset: 'Lokaler Zustand zurückgesetzt.', exported: 'Status als JSON exportiert.', watcherFresh: 'Neue Inhalte erkannt.', narrationOn: 'Sprachausgabe aktiviert.', narrationOff: 'Sprachausgabe deaktiviert.' },
+    'ja-JP': { saveProfile: 'プロフィールをローカル保存しました。本番ではR2へ保存します。', correct: '正解。迷路が開く。', wrong: '不正解。もう一度読んでください。', nextQueued: '次のクエストを準備しました。', localReset: 'ローカル状態をリセットしました。', exported: '状態をJSONで書き出しました。', watcherFresh: '新しいコンテンツを検出しました。', narrationOn: '読み上げを有効化しました。', narrationOff: '読み上げを無効化しました。' }
+  };
+  const seedFallback = { version: 'demo-v1', generated_at: now.toISOString(), quests: [ { id: 'maze-day-001', day: 1, title: 'The Awakening', zone: 'GraffPUNKS Rebellion', category: 'direct retrieval', reward_xp: 100, page_url: '/wiki/block-buster-og.html', alt_url: '/wiki/xrp-kids.html', clue: 'The founder vanished into the chain and came back as a legend. Read the linked page and return with the exact name of his uploaded form.', answer: 'BLOCK BUSTER OG', answer_family: 'charlie-uploaded-form', hints: ['The answer is a title, not a date.', 'It is the new identity tied to Charlie Buster after upload.'] }, { id: 'maze-day-002', day: 2, title: 'Signal Origins', zone: 'HODL Warriors', category: 'timeline/date', reward_xp: 120, page_url: '/wiki/xrp-kids.html', alt_url: '/timeline.html', clue: 'The first Alpha broadcast changed everything. Use the linked material and return with the date of that broadcast in words or numbers.', answer: 'MAY 4 2029', answer_family: 'alpha-first-broadcast-date', hints: ['It is not in 2028.', 'The month is May.'] } ] };
+  const state = { preferences: { textSize: 'normal', colorMode: 'default', readingMode: 'standard', motion: 'standard', narration: 'off', locale: 'en-GB' }, profile: { playerName: 'REBEL', xp: 0, streak: 0, solvedToday: 0, attempts: 0, correct: 0 }, season: { currentDay: 1, activeSlot: 'File A', shadowSlot: 'File B', usedQuestIds: [], usedAnswers: [], usedFamilies: [], usedPages: [] }, hintsUsed: 0, questIndex: 0, quests: [] };
+  const el = { seasonDay: document.getElementById('seasonDay'), zoneName: document.getElementById('zoneName'), playerXp: document.getElementById('playerXp'), playerStreak: document.getElementById('playerStreak'), companionDialogue: document.getElementById('companionDialogue'), questTitle: document.getElementById('questTitle'), questZoneBadge: document.getElementById('questZoneBadge'), questDifficultyBadge: document.getElementById('questDifficultyBadge'), questMeta: document.getElementById('questMeta'), questPrompt: document.getElementById('questPrompt'), questWikiLink: document.getElementById('questWikiLink'), questAltLink: document.getElementById('questAltLink'), answerInput: document.getElementById('answerInput'), answerFeedback: document.getElementById('answerFeedback'), hintState: document.getElementById('hintState'), watcherState: document.getElementById('watcherState'), activityFeed: document.getElementById('activityFeed'), playerNameInput: document.getElementById('playerNameInput'), solvedToday: document.getElementById('solvedToday'), accuracyStat: document.getElementById('accuracyStat'), activeSlotStat: document.getElementById('activeSlotStat'), shadowSlotStat: document.getElementById('shadowSlotStat'), seasonGrid: document.getElementById('seasonGrid'), submitAnswerBtn: document.getElementById('submitAnswerBtn'), hintOneBtn: document.getElementById('hintOneBtn'), hintTwoBtn: document.getElementById('hintTwoBtn'), speakBtn: document.getElementById('speakBtn'), saveProfileBtn: document.getElementById('saveProfileBtn'), resetLocalBtn: document.getElementById('resetLocalBtn'), nextQuestBtn: document.getElementById('nextQuestBtn'), exportStateBtn: document.getElementById('exportStateBtn'), textSizeSelect: document.getElementById('textSizeSelect'), colorModeSelect: document.getElementById('colorModeSelect'), readingModeSelect: document.getElementById('readingModeSelect'), motionSelect: document.getElementById('motionSelect'), narrationSelect: document.getElementById('narrationSelect'), localeSelect: document.getElementById('localeSelect') };
+  function localeText(key) { const set = I18N[state.preferences.locale] || I18N['en-GB']; return set[key] || I18N['en-GB'][key] || key; }
+  function normalizeAnswer(value) { return String(value || '').toUpperCase().replace(/[^A-Z0-9]/g, ' ').replace(/\s+/g, ' ').trim(); }
+  function saveState() { localStorage.setItem(STORAGE_KEY, JSON.stringify({ preferences: state.preferences, profile: state.profile, season: state.season, questIndex: state.questIndex, hintsUsed: state.hintsUsed })); }
+  function loadState() { try { const raw = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); if (raw.preferences) Object.assign(state.preferences, raw.preferences); if (raw.profile) Object.assign(state.profile, raw.profile); if (raw.season) Object.assign(state.season, raw.season); if (typeof raw.questIndex === 'number') state.questIndex = raw.questIndex; if (typeof raw.hintsUsed === 'number') state.hintsUsed = raw.hintsUsed; } catch {} }
+  async function loadQuestBank() { try { const resp = await fetch(QUEST_BANK_URL, { cache: 'no-store' }); if (!resp.ok) throw new Error('seed fetch failed'); const data = await resp.json(); state.quests = Array.isArray(data.quests) && data.quests.length ? data.quests : seedFallback.quests; logActivity('Quest bank loaded. ' + state.quests.length + ' seeded quests available in demo mode.'); } catch { state.quests = seedFallback.quests; logActivity('Seed file not found. Using built-in fallback quest bank.'); } }
+  function getCurrentQuest() { return state.quests[state.questIndex % state.quests.length]; }
+  function speak(text) { if (state.preferences.narration !== 'on' || !('speechSynthesis' in window)) return; window.speechSynthesis.cancel(); const utter = new SpeechSynthesisUtterance(text); utter.lang = state.preferences.locale || 'en-GB'; utter.rate = 0.96; window.speechSynthesis.speak(utter); }
+  function applyPrefs() { document.body.classList.toggle('large-text', state.preferences.textSize === 'large'); document.body.classList.toggle('high-contrast', state.preferences.colorMode === 'high-contrast'); document.body.classList.toggle('dyslexia-friendly', state.preferences.readingMode === 'dyslexia-friendly'); document.body.classList.toggle('low-motion', state.preferences.motion === 'low-motion'); el.textSizeSelect.value = state.preferences.textSize; el.colorModeSelect.value = state.preferences.colorMode; el.readingModeSelect.value = state.preferences.readingMode; el.motionSelect.value = state.preferences.motion; el.narrationSelect.value = state.preferences.narration; el.localeSelect.value = state.preferences.locale; }
+  function logActivity(text) { const line = document.createElement('div'); line.textContent = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) + ' — ' + text; el.activityFeed.prepend(line); }
+  function updateSeasonGrid() { const metrics = [['Quest Bank', state.quests.length + ' seeded now'], ['Used Quest IDs', state.season.usedQuestIds.length], ['Used Answer Families', state.season.usedFamilies.length], ['Used Source Pages', state.season.usedPages.length], ['Reset Rule', '90-day score wipe'], ['Masters Rule', 'Top 10 retained'], ['Year Rule', 'Reset 12:00 UTC NYE'], ['Watcher', 'Wiki changes become future quests']]; el.seasonGrid.innerHTML = metrics.map(([label, value]) => `<div class="season-card"><span class="label">${label}</span><span class="value">${value}</span></div>`).join(''); }
+  function updateUi() { const quest = getCurrentQuest(); if (!quest) return; el.seasonDay.textContent = state.season.currentDay + ' / 90'; el.zoneName.textContent = quest.zone; el.playerXp.textContent = state.profile.xp; el.playerStreak.textContent = state.profile.streak; el.questTitle.textContent = 'Day ' + quest.day + ' // ' + quest.title; el.questZoneBadge.textContent = quest.zone; el.questDifficultyBadge.textContent = quest.category; el.questMeta.textContent = 'Reward: ' + quest.reward_xp + ' XP · Source page: ' + quest.page_url + ' · Anti-repeat family: ' + quest.answer_family; el.questPrompt.innerHTML = '<strong>Mission brief:</strong> ' + quest.clue; el.questWikiLink.href = quest.page_url; el.questAltLink.href = quest.alt_url || '/graph.html'; el.companionDialogue.textContent = state.hintsUsed === 0 ? 'Read the clue carefully. The page knows the answer. Your job is to drag it back through the maze without me spoon-feeding you.' : state.hintsUsed === 1 ? 'You asked for one push. Good. I still expect you to read properly, not skim like a tourist.' : 'You are deep into hint debt now. Solve the page and move.'; el.playerNameInput.value = state.profile.playerName; el.solvedToday.textContent = state.profile.solvedToday; el.accuracyStat.textContent = state.profile.attempts ? Math.round((state.profile.correct / state.profile.attempts) * 100) + '%' : '100%'; el.activeSlotStat.textContent = state.season.activeSlot; el.shadowSlotStat.textContent = state.season.shadowSlot; el.hintState.textContent = state.hintsUsed === 0 ? 'No hints used yet.' : state.hintsUsed === 1 ? 'Hint one consumed.' : 'Hint one and hint two consumed.'; updateSeasonGrid(); saveState(); }
+  function markQuestSolved(quest) { const answerKey = normalizeAnswer(quest.answer); if (!state.season.usedQuestIds.includes(quest.id)) state.season.usedQuestIds.push(quest.id); if (!state.season.usedAnswers.includes(answerKey)) state.season.usedAnswers.push(answerKey); if (!state.season.usedFamilies.includes(quest.answer_family)) state.season.usedFamilies.push(quest.answer_family); if (!state.season.usedPages.includes(quest.page_url)) state.season.usedPages.push(quest.page_url); state.profile.xp += quest.reward_xp; state.profile.streak += 1; state.profile.solvedToday += 1; state.profile.correct += 1; state.season.currentDay = Math.min(90, state.season.currentDay + 1); state.questIndex = (state.questIndex + 1) % state.quests.length; state.hintsUsed = 0; logActivity(localeText('correct') + ' Quest ' + quest.id + ' cleared.'); }
+  function submitAnswer() { const quest = getCurrentQuest(); const user = normalizeAnswer(el.answerInput.value); const correct = normalizeAnswer(quest.answer); state.profile.attempts += 1; if (!user) { el.answerFeedback.textContent = 'You still need to type an answer.'; return; } if (user === correct) { el.answerFeedback.textContent = localeText('correct'); markQuestSolved(quest); el.answerInput.value = ''; updateUi(); speak('Correct. New zone assignment incoming.'); return; } el.answerFeedback.textContent = localeText('wrong'); state.profile.streak = 0; logActivity('Wrong answer submitted for ' + quest.id + '.'); updateUi(); }
+  function useHint(index) { const quest = getCurrentQuest(); const hint = quest.hints[index]; if (!hint) return; state.hintsUsed = Math.max(state.hintsUsed, index + 1); el.answerFeedback.textContent = 'Hint ' + (index + 1) + ': ' + hint; logActivity('Hint ' + (index + 1) + ' used for ' + quest.id + '.'); updateUi(); speak(hint); }
+  function previewNextQuest() { state.questIndex = (state.questIndex + 1) % state.quests.length; state.hintsUsed = 0; el.answerInput.value = ''; el.answerFeedback.textContent = localeText('nextQueued'); logActivity(localeText('nextQueued')); updateUi(); }
+  function resetLocal() { localStorage.removeItem(STORAGE_KEY); state.preferences = { textSize: 'normal', colorMode: 'default', readingMode: 'standard', motion: 'standard', narration: 'off', locale: 'en-GB' }; state.profile = { playerName: 'REBEL', xp: 0, streak: 0, solvedToday: 0, attempts: 0, correct: 0 }; state.season = { currentDay: 1, activeSlot: 'File A', shadowSlot: 'File B', usedQuestIds: [], usedAnswers: [], usedFamilies: [], usedPages: [] }; state.questIndex = 0; state.hintsUsed = 0; el.answerInput.value = ''; applyPrefs(); el.answerFeedback.textContent = localeText('localReset'); logActivity(localeText('localReset')); updateUi(); }
+  function exportState() { const blob = new Blob([JSON.stringify({ preferences: state.preferences, profile: state.profile, season: state.season }, null, 2)], { type: 'application/json' }); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = 'block-topia-quest-maze-state.json'; a.click(); URL.revokeObjectURL(url); el.answerFeedback.textContent = localeText('exported'); logActivity(localeText('exported')); }
+  function saveProfile() { state.profile.playerName = (el.playerNameInput.value || 'REBEL').trim().slice(0, 24) || 'REBEL'; saveState(); el.answerFeedback.textContent = localeText('saveProfile'); logActivity(localeText('saveProfile')); }
+  function wireTabs() { document.querySelectorAll('.tab-btn').forEach(btn => { btn.addEventListener('click', () => { document.querySelectorAll('.tab-btn').forEach(b => { b.classList.remove('active'); b.setAttribute('aria-selected', 'false'); }); document.querySelectorAll('.tab-pane').forEach(p => p.classList.add('hidden')); btn.classList.add('active'); btn.setAttribute('aria-selected', 'true'); document.querySelector(`.tab-pane[data-pane="${btn.dataset.tab}"]`).classList.remove('hidden'); }); }); }
+  function wireSettings() { [['textSizeSelect', 'textSize'], ['colorModeSelect', 'colorMode'], ['readingModeSelect', 'readingMode'], ['motionSelect', 'motion'], ['narrationSelect', 'narration'], ['localeSelect', 'locale']].forEach(([id, key]) => { el[id].addEventListener('change', e => { state.preferences[key] = e.target.value; applyPrefs(); saveState(); if (key === 'narration') logActivity(state.preferences.narration === 'on' ? localeText('narrationOn') : localeText('narrationOff')); }); }); }
+  function setupWatcherNote() { setTimeout(() => { el.watcherState.textContent = localeText('watcherFresh') + ' In production this comes from /api/maze/ingest-wiki-updates and stores generated quest candidates in R2.'; logActivity(localeText('watcherFresh')); }, 1400); }
+  async function init() { loadState(); applyPrefs(); await loadQuestBank(); wireTabs(); wireSettings(); el.submitAnswerBtn.addEventListener('click', submitAnswer); el.hintOneBtn.addEventListener('click', () => useHint(0)); el.hintTwoBtn.addEventListener('click', () => useHint(1)); el.speakBtn.addEventListener('click', () => speak(getCurrentQuest().clue)); el.saveProfileBtn.addEventListener('click', saveProfile); el.resetLocalBtn.addEventListener('click', resetLocal); el.nextQuestBtn.addEventListener('click', previewNextQuest); el.exportStateBtn.addEventListener('click', exportState); el.answerInput.addEventListener('keydown', e => { if (e.key === 'Enter') submitAnswer(); }); updateUi(); setupWatcherNote(); logActivity('Quest maze booted. This front-end demo is ready to be backed by R2 and API routes.'); }
+  init();
+})();
+</script>
+</body>
+</html>
