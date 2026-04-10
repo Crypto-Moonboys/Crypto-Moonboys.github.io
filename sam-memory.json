@@ -654,10 +654,11 @@
     },
     "bitcoin_nfts": {
       "alias_candidates": [
-        "bitcoin nfts",
+        "bitcoin nfts"
+      ],
+      "aliases": [
         "bitcoin nfts crypto moonboys wiki"
       ],
-      "aliases": [],
       "canonical_title": "Bitcoin NFTs — Crypto Moonboys Wiki",
       "canonical_url": "/wiki/bitcoin-nfts.html",
       "category": "core",
@@ -719,10 +720,11 @@
     },
     "bitcoin_tokens": {
       "alias_candidates": [
-        "bitcoin tokens",
+        "bitcoin tokens"
+      ],
+      "aliases": [
         "bitcoin tokens crypto moonboys wiki"
       ],
-      "aliases": [],
       "canonical_title": "Bitcoin Tokens — Crypto Moonboys Wiki",
       "canonical_url": "/wiki/bitcoin-tokens.html",
       "category": "tokens",
@@ -936,10 +938,11 @@
     },
     "blockchain_graffpunks": {
       "alias_candidates": [
-        "blockchain graffpunks",
+        "blockchain graffpunks"
+      ],
+      "aliases": [
         "blockchain graffpunks crypto moonboys wiki"
       ],
-      "aliases": [],
       "canonical_title": "Blockchain GraffPUNKS — Crypto Moonboys Wiki",
       "canonical_url": "/wiki/blockchain-graffpunks.html",
       "category": "core",
@@ -1655,10 +1658,11 @@
     },
     "fork": {
       "alias_candidates": [
-        "fork",
+        "fork"
+      ],
+      "aliases": [
         "fork crypto moonboys wiki"
       ],
-      "aliases": [],
       "canonical_title": "Fork — Crypto Moonboys Wiki",
       "canonical_url": "/wiki/fork.html",
       "category": "core",
@@ -1741,10 +1745,11 @@
     },
     "fork_graffpunks": {
       "alias_candidates": [
-        "fork graffpunks",
+        "fork graffpunks"
+      ],
+      "aliases": [
         "fork graffpunks crypto moonboys wiki"
       ],
-      "aliases": [],
       "canonical_title": "Fork GraffPUNKS — Crypto Moonboys Wiki",
       "canonical_url": "/wiki/fork-graffpunks.html",
       "category": "core",
@@ -2003,10 +2008,11 @@
     },
     "free": {
       "alias_candidates": [
-        "free",
+        "free"
+      ],
+      "aliases": [
         "free crypto moonboys wiki"
       ],
-      "aliases": [],
       "canonical_title": "Free — Crypto Moonboys Wiki",
       "canonical_url": "/wiki/free.html",
       "category": "core",
@@ -2243,10 +2249,11 @@
     },
     "games": {
       "alias_candidates": [
-        "games",
+        "games"
+      ],
+      "aliases": [
         "games crypto moonboys wiki"
       ],
-      "aliases": [],
       "canonical_title": "Games — Crypto Moonboys Wiki",
       "canonical_url": "/wiki/games.html",
       "category": "core",
@@ -2416,10 +2423,11 @@
     },
     "games_nfts": {
       "alias_candidates": [
-        "games nfts",
+        "games nfts"
+      ],
+      "aliases": [
         "games nfts crypto moonboys wiki"
       ],
-      "aliases": [],
       "canonical_title": "Games NFTs — Crypto Moonboys Wiki",
       "canonical_url": "/wiki/games-nfts.html",
       "category": "core",
@@ -2674,10 +2682,11 @@
     },
     "gk_graffpunks": {
       "alias_candidates": [
-        "gk graffpunks",
+        "gk graffpunks"
+      ],
+      "aliases": [
         "gk graffpunks crypto moonboys wiki"
       ],
-      "aliases": [],
       "canonical_title": "GK GraffPUNKS — Crypto Moonboys Wiki",
       "canonical_url": "/wiki/gk-graffpunks.html",
       "category": "core",
@@ -3264,10 +3273,11 @@
     },
     "graffpunks_hodl": {
       "alias_candidates": [
-        "graffpunks hodl",
+        "graffpunks hodl"
+      ],
+      "aliases": [
         "graffpunks hodl crypto moonboys wiki"
       ],
-      "aliases": [],
       "canonical_title": "GraffPUNKS Hodl — Crypto Moonboys Wiki",
       "canonical_url": "/wiki/graffpunks-hodl.html",
       "category": "core",
@@ -3307,10 +3317,11 @@
     },
     "graffpunks_kid": {
       "alias_candidates": [
-        "graffpunks kid",
+        "graffpunks kid"
+      ],
+      "aliases": [
         "graffpunks kid crypto moonboys wiki"
       ],
-      "aliases": [],
       "canonical_title": "GraffPUNKS Kid — Crypto Moonboys Wiki",
       "canonical_url": "/wiki/graffpunks-kid.html",
       "category": "core",
@@ -3372,10 +3383,11 @@
     },
     "graffpunks_nbg": {
       "alias_candidates": [
-        "graffpunks nbg",
+        "graffpunks nbg"
+      ],
+      "aliases": [
         "graffpunks nbg crypto moonboys wiki"
       ],
-      "aliases": [],
       "canonical_title": "GraffPUNKS NBG — Crypto Moonboys Wiki",
       "canonical_url": "/wiki/graffpunks-nbg.html",
       "category": "tokens",
@@ -4110,10 +4122,10 @@
       ]
     },
     "kid": {
-      "alias_candidates": [
+      "alias_candidates": [],
+      "aliases": [
         "kid crypto moonboys wiki"
       ],
-      "aliases": [],
       "canonical_title": "Kid — Crypto Moonboys Wiki",
       "canonical_url": "/wiki/kid.html",
       "category": "core",
@@ -7247,5 +7259,5 @@
       ]
     }
   },
-  "updated_at": "2026-04-10T01:22:24Z"
+  "updated_at": "2026-04-10T01:47:23Z"
 }
