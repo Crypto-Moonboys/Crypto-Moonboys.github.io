@@ -1,16 +1,16 @@
+// Deployed Cloudflare Worker URL for the shared arcade leaderboard.
+// Update this constant when the worker is published.
+const PRODUCTION_LEADERBOARD_URL = "https://moonboys-leaderboard.sercullen.workers.dev";
+
 function getApiUrl() {
   if (typeof window !== "undefined" && window.LEADERBOARD_API_URL) {
     return String(window.LEADERBOARD_API_URL).replace(/\/$/, "");
   }
-  return "";
+  return PRODUCTION_LEADERBOARD_URL;
 }
 
 export async function submitScore(player, score, game = "global") {
   const api = getApiUrl();
-  if (!api) {
-    console.warn("[leaderboard-client] LEADERBOARD_API_URL not configured — score not submitted.");
-    return;
-  }
   try {
     await fetch(api, {
       method: "POST",
@@ -24,10 +24,6 @@ export async function submitScore(player, score, game = "global") {
 
 export async function fetchLeaderboard(game = "global") {
   const api = getApiUrl();
-  if (!api) {
-    console.warn("[leaderboard-client] LEADERBOARD_API_URL not configured — returning empty leaderboard.");
-    return [];
-  }
   try {
     const res = await fetch(`${api}?game=${encodeURIComponent(game)}`);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);

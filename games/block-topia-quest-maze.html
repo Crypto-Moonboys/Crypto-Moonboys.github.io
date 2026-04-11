@@ -412,6 +412,7 @@
 
 <button id="back-to-top" aria-label="Back to top">↑</button>
 
+<script>window.R2_PUBLIC_BASE_URL = window.R2_PUBLIC_BASE_URL || "";</script>
 <script src="/js/wiki.js"></script>
 <script type="module">
 import { loadGameData } from '/js/data-loader.js';
@@ -677,7 +678,7 @@ import { submitScore, fetchLeaderboard } from '/js/leaderboard-client.js';
      Data loading (via data-loader.js)
   ═══════════════════════════════════ */
   function loadGameData_quests() {
-    loadGameData('/games/data/crystal-maze-seed.json')
+    loadGameData('/quest-bank/current-season.json')
       .then(function (data) {
         var raw = Array.isArray(data) ? data : (data.quests || data.quest_bank || data.items || []);
         state.quests = raw.length ? raw.map(normaliseQuest) : FALLBACK_QUESTS;
