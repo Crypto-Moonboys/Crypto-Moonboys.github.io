@@ -12,12 +12,22 @@ const TABS = [
   { key: 'snake',      label: '🐍 Snake',       icon: '🐍' },
   { key: 'crystal',    label: '🧩 Crystal',     icon: '🧩' },
   { key: 'blocktopia', label: '🧱 BlockTopia',  icon: '🧱' },
+  { key: 'invaders',   label: '👾 Invaders',    icon: '👾' },
+  { key: 'pacchain',   label: '🟡 Pac-Chain',   icon: '🟡' },
+  { key: 'asteroids',  label: '🌑 Asteroids',   icon: '🌑' },
+  { key: 'breakout',   label: '🧱 Bullrun',    icon: '🧱' },
+  { key: 'tetris',     label: '🟦 Tetris',      icon: '🟦' },
 ];
 
 const GAME_LABELS = {
   snake:      '🐍 Snake',
   crystal:    '🧩 Crystal',
   blocktopia: '🧱 BlockTopia',
+  invaders:   '👾 Invaders',
+  pacchain:   '🟡 Pac-Chain',
+  asteroids:  '🌑 Asteroids',
+  breakout:   '🧱 Bullrun',
+  tetris:     '🟦 Tetris',
   bonus:      '⭐ Bonus',
 };
 
@@ -102,6 +112,10 @@ function renderTable(data) {
     row.breakdown && Object.keys(row.breakdown).length > 0
   );
 
+  // For global tab show all game columns; for per-game tabs show only relevant breakdown
+  const isGlobal = currentTab === 'global';
+  const BREAKDOWN_GAMES = ['snake', 'crystal', 'blocktopia', 'invaders', 'pacchain', 'asteroids', 'breakout', 'tetris'];
+
   let html = `
     <table class="lb-table" aria-label="Leaderboard">
       <thead>
@@ -109,12 +123,9 @@ function renderTable(data) {
           <th scope="col">#</th>
           <th scope="col">Player</th>
           <th scope="col">Score</th>
-          ${showBreakdown ? `
-            <th scope="col">${GAME_LABELS.snake}</th>
-            <th scope="col">${GAME_LABELS.crystal}</th>
-            <th scope="col">${GAME_LABELS.blocktopia}</th>
-            <th scope="col">${GAME_LABELS.bonus}</th>
-          ` : ''}
+          ${showBreakdown && isGlobal ? BREAKDOWN_GAMES.map(g =>
+            `<th scope="col" class="lb-hide-mobile">${GAME_LABELS[g]}</th>`
+          ).join('') + `<th scope="col" class="lb-hide-mobile">${GAME_LABELS.bonus}</th>` : ''}
         </tr>
       </thead>
       <tbody>
@@ -128,12 +139,9 @@ function renderTable(data) {
         <td class="lb-rank">${medalFor(rank)}</td>
         <td class="lb-player">${escHtml(row.player || '—')}</td>
         <td class="lb-score">${Number(row.score ?? 0).toLocaleString()}</td>
-        ${showBreakdown ? `
-          <td class="lb-sub">${bd.snake      != null ? Number(bd.snake).toLocaleString()      : '—'}</td>
-          <td class="lb-sub">${bd.crystal    != null ? Number(bd.crystal).toLocaleString()    : '—'}</td>
-          <td class="lb-sub">${bd.blocktopia != null ? Number(bd.blocktopia).toLocaleString() : '—'}</td>
-          <td class="lb-sub lb-bonus">${bd.variety_bonus != null ? Number(bd.variety_bonus).toLocaleString() : '—'}</td>
-        ` : ''}
+        ${showBreakdown && isGlobal ? BREAKDOWN_GAMES.map(g =>
+          `<td class="lb-sub lb-hide-mobile">${bd[g] != null ? Number(bd[g]).toLocaleString() : '—'}</td>`
+        ).join('') + `<td class="lb-sub lb-bonus lb-hide-mobile">${bd.variety_bonus != null ? Number(bd.variety_bonus).toLocaleString() : '—'}</td>` : ''}
       </tr>
     `;
   });

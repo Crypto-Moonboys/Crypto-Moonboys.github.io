@@ -1,5 +1,5 @@
-const GAMES = ["snake", "crystal", "blocktopia"];
-const VARIETY_BONUS = 100;          // bonus points when a player has scored in all 3 games
+const GAMES = ["snake", "crystal", "blocktopia", "invaders", "pacchain", "asteroids", "breakout", "tetris"];
+const VARIETY_BONUS = 500;          // bonus points when a player has scored in all 8 games
 const MAX_SCORE = 1_000_000_000;    // upper bound for submitted scores
 const PER_GAME_LEADERBOARD_SIZE = 100;
 const GLOBAL_LEADERBOARD_SIZE = 100;
@@ -23,16 +23,12 @@ export default {
       const game = url.searchParams.get("game") || "global";
 
       if (game === "all") {
-        const [snake, crystal, blocktopia, global] = await Promise.all([
-          getBoard(env, "snake"),
-          getBoard(env, "crystal"),
-          getBoard(env, "blocktopia"),
-          getBoard(env, "global")
-        ]);
-        return new Response(
-          JSON.stringify({ snake, crystal, blocktopia, global }),
-          { headers: corsHeaders }
+        const boards = await Promise.all(
+          [...GAMES, "global"].map(g => getBoard(env, g))
         );
+        const result = {};
+        [...GAMES, "global"].forEach((g, i) => { result[g] = boards[i]; });
+        return new Response(JSON.stringify(result), { headers: corsHeaders });
       }
 
       const board = await getBoard(env, game);
@@ -113,7 +109,7 @@ async function getBoard(env, game) {
 async function recomputeGlobal(env) {
   const boards = await Promise.all(GAMES.map((g) => getBoard(env, g)));
 
-  // Build a map: player → { snake: N, crystal: N, blocktopia: N }
+  // Build a map: player → { snake: N, crystal: N, blocktopia: N, … }
   const playerMap = {};
   GAMES.forEach((g, i) => {
     boards[i].forEach((entry) => {
@@ -128,16 +124,10 @@ async function recomputeGlobal(env) {
   const globalEntries = Object.entries(playerMap).map(([name, scores]) => {
     const total = GAMES.reduce((sum, g) => sum + (scores[g] || 0), 0);
     const variety = GAMES.every((g) => (scores[g] || 0) > 0) ? VARIETY_BONUS : 0;
-    return {
-      player: name,
-      score: total + variety,
-      breakdown: {
-        snake: scores.snake || 0,
-        crystal: scores.crystal || 0,
-        blocktopia: scores.blocktopia || 0,
-        variety_bonus: variety
-      }
-    };
+    const breakdown = {};
+    GAMES.forEach((g) => { breakdown[g] = scores[g] || 0; });
+    breakdown.variety_bonus = variety;
+    return { player: name, score: total + variety, breakdown };
   });
 
   globalEntries.sort((a, b) => {

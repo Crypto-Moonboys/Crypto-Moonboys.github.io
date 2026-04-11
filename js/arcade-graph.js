@@ -19,21 +19,40 @@ const C = {
 
 // ── Node definitions (default / overview state) ───────────────────────────
 function makeOverviewNodes(cx, cy, r) {
-  return [
-    { id: 'global',     label: '🏆 Arcade',     color: C.gold,   radius: 26, x: cx,                    y: cy,                    fixed: true },
-    { id: 'snake',      label: '🐍 Snake',       color: C.cyan,   radius: 18, x: cx + r * Math.cos(-Math.PI/2 + 0),               y: cy + r * Math.sin(-Math.PI/2 + 0),               fixed: false },
-    { id: 'crystal',    label: '🧩 Crystal',     color: C.pink,   radius: 18, x: cx + r * Math.cos(-Math.PI/2 + (2*Math.PI/3)),   y: cy + r * Math.sin(-Math.PI/2 + (2*Math.PI/3)),   fixed: false },
-    { id: 'blocktopia', label: '🧱 BlockTopia',  color: C.purple, radius: 18, x: cx + r * Math.cos(-Math.PI/2 + (4*Math.PI/3)),   y: cy + r * Math.sin(-Math.PI/2 + (4*Math.PI/3)),   fixed: false },
-    { id: 'bonus',      label: '⭐ Bonus',        color: C.green,  radius: 14, x: cx + r * 0.5 * Math.cos(-Math.PI/2 + Math.PI/3), y: cy + r * 0.5 * Math.sin(-Math.PI/2 + Math.PI/3), fixed: false },
+  const games = [
+    { id: 'snake',      label: '🐍 Snake',      color: C.cyan   },
+    { id: 'crystal',    label: '🧩 Crystal',    color: C.pink   },
+    { id: 'blocktopia', label: '🧱 BlockTopia', color: C.purple },
+    { id: 'invaders',   label: '👾 Invaders',   color: C.green  },
+    { id: 'pacchain',   label: '🟡 Pac-Chain',  color: C.gold   },
+    { id: 'asteroids',  label: '🌑 Asteroids',  color: C.muted  },
+    { id: 'breakout',   label: '🧱 Bullrun',    color: '#ff6b35' },
+    { id: 'tetris',     label: '🟦 Tetris',     color: '#a78bfa' },
   ];
+  const out = [
+    { id: 'global', label: '🏆 Arcade', color: C.gold, radius: 26, x: cx, y: cy, fixed: true },
+  ];
+  games.forEach((g, i) => {
+    const angle = -Math.PI / 2 + (2 * Math.PI * i) / games.length;
+    out.push({
+      id: g.id, label: g.label, color: g.color, radius: 16,
+      x: cx + r * Math.cos(angle),
+      y: cy + r * Math.sin(angle),
+      fixed: false,
+    });
+  });
+  return out;
 }
 
 const OVERVIEW_EDGES = [
   { source: 'global', target: 'snake'      },
   { source: 'global', target: 'crystal'    },
   { source: 'global', target: 'blocktopia' },
-  { source: 'global', target: 'bonus'      },
-  { source: 'snake',  target: 'bonus'      },
+  { source: 'global', target: 'invaders'   },
+  { source: 'global', target: 'pacchain'   },
+  { source: 'global', target: 'asteroids'  },
+  { source: 'global', target: 'breakout'   },
+  { source: 'global', target: 'tetris'     },
 ];
 
 // ── State ─────────────────────────────────────────────────────────────────
@@ -102,9 +121,14 @@ export function setPlayerState(entry) {
   const bd = entry.breakdown || {};
   const games = [
     { id: 'snake',      label: '🐍 Snake',      color: C.cyan,   score: bd.snake      ?? null },
-    { id: 'crystal',    label: '🧩 Crystal',     color: C.pink,   score: bd.crystal    ?? null },
-    { id: 'blocktopia', label: '🧱 BlockTopia',  color: C.purple, score: bd.blocktopia ?? null },
-    { id: 'bonus',      label: '⭐ Bonus',        color: C.green,  score: bd.variety_bonus ?? null },
+    { id: 'crystal',    label: '🧩 Crystal',    color: C.pink,   score: bd.crystal    ?? null },
+    { id: 'blocktopia', label: '🧱 BlockTopia', color: C.purple, score: bd.blocktopia ?? null },
+    { id: 'invaders',   label: '👾 Invaders',   color: C.green,  score: bd.invaders   ?? null },
+    { id: 'pacchain',   label: '🟡 Pac-Chain',  color: C.gold,   score: bd.pacchain   ?? null },
+    { id: 'asteroids',  label: '🌑 Asteroids',  color: C.muted,  score: bd.asteroids  ?? null },
+    { id: 'breakout',   label: '🧱 Bullrun',   color: '#ff6b35',  score: bd.breakout   ?? null },
+    { id: 'tetris',     label: '🟦 Tetris',     color: '#a78bfa',  score: bd.tetris     ?? null },
+    { id: 'bonus',      label: '⭐ Bonus',       color: C.green,  score: bd.variety_bonus ?? null },
   ];
 
   const maxScore = Math.max(1, ...games.map(g => g.score ?? 0));
