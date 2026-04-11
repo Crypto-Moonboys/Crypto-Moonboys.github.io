@@ -132,7 +132,7 @@ function renderTable(data) {
           <td class="lb-sub">${bd.snake      != null ? Number(bd.snake).toLocaleString()      : '—'}</td>
           <td class="lb-sub">${bd.crystal    != null ? Number(bd.crystal).toLocaleString()    : '—'}</td>
           <td class="lb-sub">${bd.blocktopia != null ? Number(bd.blocktopia).toLocaleString() : '—'}</td>
-          <td class="lb-sub lb-bonus">${bd.bonus != null ? Number(bd.bonus).toLocaleString() : '—'}</td>
+          <td class="lb-sub lb-bonus">${bd.variety_bonus != null ? Number(bd.variety_bonus).toLocaleString() : '—'}</td>
         ` : ''}
       </tr>
     `;
