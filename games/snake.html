@@ -160,7 +160,7 @@ import { rollHiddenBonus, showBonusPopup } from '/js/bonus-engine.js';
       ArcadeSync.setHighScore('snake', score); // persists only if score exceeds stored best
       best = ArcadeSync.getHighScore('snake');
       food = spawnFood();
-      onFoodEaten(); // async bonus roll — fire and continue
+      onFoodEaten().catch(err => console.warn('[snake] Bonus roll failed:', err));
     } else {
       snake.pop(); streak = 0;
     }

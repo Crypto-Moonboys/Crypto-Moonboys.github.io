@@ -735,7 +735,7 @@ import { rollHiddenBonus, showBonusPopup } from '/js/bonus-engine.js';
         }
         showBonusPopup(bonus);
       })
-      .catch(function () {});
+      .catch(function (err) { console.warn('[blocktopia] Bonus roll failed:', err); });
   }
 
   function postScore() {
