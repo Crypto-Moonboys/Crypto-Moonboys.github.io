@@ -1,1 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🧩 Crystal Quest — Crypto Moonboys Arcade</title>
+  <link rel="stylesheet" href="/css/wiki.css"><link rel="icon" href="/img/favicon.svg" type="image/svg+xml">
+  <style>
+    .game-card{background:rgba(255,255,255,.03);border:1px solid var(--color-border,#333);border-radius:16px;padding:18px}
+    .quest-box{background:rgba(255,255,255,.04);border:1px solid var(--color-border,#333);border-radius:14px;padding:16px;margin-top:14px}
+    .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+    .input{width:100%;padding:.9rem 1rem;border-radius:12px;border:1px solid var(--color-border,#333);background:#0b1020;color:#fff}
+    .btn{padding:.85rem 1.1rem;border:none;border-radius:12px;background:#f7ab1a;color:#111;font-weight:700;cursor:pointer}
+    .btn.alt{background:rgba(255,255,255,.08);color:#fff}
+    .meta{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-bottom:12px}
+    .meta .stat{background:rgba(255,255,255,.04);border:1px solid var(--color-border,#333);border-radius:12px;padding:12px;text-align:center}
+    .small{color:var(--color-text-muted);font-size:.82rem}
+    @media(max-width:720px){.meta{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+<a class="skip-link" href="#content">Skip to content</a>
+<header id="site-header" role="banner">
+  <button class="hamburger" id="hamburger" aria-label="Toggle navigation" aria-expanded="false" aria-controls="sidebar">☰</button>
+  <a href="/index.html" class="site-logo" aria-label="The Crypto Moonboys GK Wiki home">
+    <img src="/img/CRYPTO-MOONBOYS-BITCOIN-LOGO.png" alt="" aria-hidden="true">
+    <span><span class="logo-text">🌙 The Crypto Moonboys GK Wiki</span><span class="logo-sub">Blockchain Cryptoism Encyclopedia ⚡️⚡️⚡️</span></span>
+  </a>
+  <div id="header-search" role="search">
+    <input type="search" id="search-input" placeholder="Search the wiki…" aria-label="Search" autocomplete="off">
+    <button id="search-btn" aria-label="Search">🔍</button><div id="search-results" role="listbox"></div>
+  </div>
+  <nav class="header-nav" aria-label="Main navigation">
+    <a href="/index.html">Home</a><a href="/categories/index.html">Categories</a><a href="/search.html">All Articles</a>
+    <a href="/timeline.html">📅 Timeline</a><a href="/graph.html">🌐 Graph</a><a href="/dashboard.html">📊 Dashboard</a>
+    <a href="/sam.html">🧠 SAM</a><a href="/games/" class="active" aria-current="page">🕹️ Arcade</a>
+  </nav>
+</header>
+<div id="sidebar-overlay" aria-hidden="true"></div>
+<div id="layout">
+  <nav id="sidebar" aria-label="Wiki navigation">
+    <div class="sidebar-section"><div class="sidebar-heading">Navigation</div><div class="sidebar-nav">
+      <a href="/index.html"><span class="nav-icon">🏠</span> Main Page</a>
+      <a href="/games/" class="active"><span class="nav-icon">🕹️</span> Arcade</a>
+    </div></div>
+  </nav>
+  <div id="main-wrapper">
+    <main id="content" role="main">
+      <nav class="breadcrumb" aria-label="Breadcrumb"><a href="/index.html">Home</a><span class="sep">›</span><a href="/games/">Arcade</a><span class="sep">›</span><span aria-current="page">Crystal Quest</span></nav>
+      <div class="category-header">
+        <span class="cat-big-icon" aria-hidden="true">🧩</span>
+        <div><h1 class="page-title">🧩 Crystal Quest</h1><p style="color:var(--color-text-muted)">Wiki clue hunt inside the same site shell as your current Block Topia page.</p></div>
+      </div>
+      <div class="page-title-line" aria-hidden="true"></div>
 
+      <div class="game-card">
+        <div class="meta">
+          <div class="stat"><div class="small">Solved</div><div id="solvedCount" style="font-weight:700;font-size:1.15rem">0</div></div>
+          <div class="stat"><div class="small">Score</div><div id="scoreCount" style="font-weight:700;font-size:1.15rem">0</div></div>
+          <div class="stat"><div class="small">Streak</div><div id="streakCount" style="font-weight:700;font-size:1.15rem">0</div></div>
+        </div>
+
+        <div class="quest-box">
+          <h3 id="questTitle">The First Signal</h3>
+          <p id="questClue">Find the page that explains the prophecy of making it. What is the final keyword?</p>
+          <p class="small">Suggested page: <a id="questLink" href="/wiki/wagmi-prophecy.html">/wiki/wagmi-prophecy.html</a></p>
+        </div>
+
+        <div class="quest-box">
+          <div class="row">
+            <input id="answerInput" class="input" type="text" placeholder="Type your answer here">
+            <button class="btn" id="submitBtn">Submit Answer</button>
+            <button class="btn alt" id="nextBtn">Skip</button>
+          </div>
+          <p id="feedback" class="small" style="margin-top:12px">Read the linked page, return, and enter the hidden answer.</p>
+        </div>
+      </div>
+    </main>
+    <footer id="site-footer"><div class="footer-bottom"><p>Crypto Moonboys GK Wiki ⚡️⚡️⚡️</p></div></footer>
+  </div>
+</div>
+<button id="back-to-top" aria-label="Back to top">↑</button>
+<script src="/js/wiki.js"></script>
+<script>
+(() => {
+  const quests = [
+    {title:'The First Signal', clue:'Find the page that explains the prophecy of making it. What is the final keyword?', link:'/wiki/wagmi-prophecy.html', answer:'WAGMI'},
+    {title:'Diamond Doctrine', clue:'Read the page about holding strong. What is the two-word identity of strong holders?', link:'/wiki/diamond-hands.html', answer:'DIAMOND HANDS'},
+    {title:'Fear Creature', clue:'Which plague page is built around panic and fear?', link:'/wiki/fomo-plague.html', answer:'FOMO'},
+  ];
+  let idx = 0, solved = 0, score = 0, streak = 0;
+  const title = document.getElementById('questTitle');
+  const clue = document.getElementById('questClue');
+  const link = document.getElementById('questLink');
+  const feedback = document.getElementById('feedback');
+  const answerInput = document.getElementById('answerInput');
+  const solvedCount = document.getElementById('solvedCount');
+  const scoreCount = document.getElementById('scoreCount');
+  const streakCount = document.getElementById('streakCount');
+
+  function loadQuest() {
+    const q = quests[idx % quests.length];
+    title.textContent = q.title; clue.textContent = q.clue; link.href = q.link; link.textContent = q.link;
+    answerInput.value = ''; feedback.textContent = 'Read the linked page, return, and enter the hidden answer.';
+  }
+  function updateHud() {
+    solvedCount.textContent = solved; scoreCount.textContent = score; streakCount.textContent = streak;
+  }
+  document.getElementById('submitBtn').onclick = () => {
+    const q = quests[idx % quests.length];
+    const guess = answerInput.value.trim().toUpperCase();
+    if (!guess) return;
+    if (guess === q.answer) {
+      solved += 1; streak += 1; score += 100 + (streak * 10);
+      feedback.textContent = 'Correct. Crystal secured.';
+      idx += 1; updateHud(); setTimeout(loadQuest, 700);
+    } else {
+      streak = 0; feedback.textContent = 'Wrong answer. Read again and try properly.'; updateHud();
+    }
+  };
+  document.getElementById('nextBtn').onclick = () => { streak = 0; idx += 1; updateHud(); loadQuest(); };
+  loadQuest(); updateHud();
+})();
+</script>
+</body>
+</html>

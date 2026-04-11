@@ -1,1 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🐍 SnakeRun 3008 — Crypto Moonboys Arcade</title>
+  <link rel="stylesheet" href="/css/wiki.css">
+  <link rel="icon" href="/img/favicon.svg" type="image/svg+xml">
+  <style>
+    .game-card{background:rgba(255,255,255,.03);border:1px solid var(--color-border,#333);border-radius:16px;padding:18px}
+    .hud{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:14px}
+    .hud .stat{background:rgba(255,255,255,.04);border:1px solid var(--color-border,#333);border-radius:12px;padding:12px;text-align:center}
+    .hud .label{font-size:.7rem;color:var(--color-text-muted)}
+    .hud .value{font-weight:700;font-size:1.15rem}
+    #snakeCanvas{width:100%;max-width:720px;aspect-ratio:1/1;display:block;margin:0 auto;background:#090c16;border:2px solid #2ec5ff;border-radius:14px;box-shadow:0 0 30px rgba(46,197,255,.18) inset}
+    .row{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:14px}
+    .game-btn{padding:.8rem 1.1rem;border:none;border-radius:12px;background:#f7ab1a;color:#111;font-weight:700;cursor:pointer}
+    .game-btn.alt{background:rgba(255,255,255,.08);color:#fff}
+    .note{margin-top:14px;color:var(--color-text-muted)}
+    @media(max-width:720px){.hud{grid-template-columns:repeat(2,minmax(0,1fr));}}
+  </style>
+</head>
+<body>
+<a class="skip-link" href="#content">Skip to content</a>
+<header id="site-header" role="banner">
+  <button class="hamburger" id="hamburger" aria-label="Toggle navigation" aria-expanded="false" aria-controls="sidebar">☰</button>
+  <a href="/index.html" class="site-logo" aria-label="The Crypto Moonboys GK Wiki home">
+    <img src="/img/CRYPTO-MOONBOYS-BITCOIN-LOGO.png" alt="" aria-hidden="true">
+    <span><span class="logo-text">🌙 The Crypto Moonboys GK Wiki</span><span class="logo-sub">Blockchain Cryptoism Encyclopedia ⚡️⚡️⚡️</span></span>
+  </a>
+  <div id="header-search" role="search">
+    <input type="search" id="search-input" placeholder="Search the wiki…" aria-label="Search" autocomplete="off">
+    <button id="search-btn" aria-label="Search">🔍</button>
+    <div id="search-results" role="listbox"></div>
+  </div>
+  <nav class="header-nav" aria-label="Main navigation">
+    <a href="/index.html">Home</a><a href="/categories/index.html">Categories</a><a href="/search.html">All Articles</a>
+    <a href="/timeline.html">📅 Timeline</a><a href="/graph.html">🌐 Graph</a><a href="/dashboard.html">📊 Dashboard</a>
+    <a href="/sam.html">🧠 SAM</a><a href="/games/" class="active" aria-current="page">🕹️ Arcade</a>
+  </nav>
+</header>
+<div id="sidebar-overlay" aria-hidden="true"></div>
+<div id="layout">
+  <nav id="sidebar" aria-label="Wiki navigation">
+    <div class="sidebar-section"><div class="sidebar-heading">Navigation</div><div class="sidebar-nav">
+      <a href="/index.html"><span class="nav-icon">🏠</span> Main Page</a>
+      <a href="/games/" class="active"><span class="nav-icon">🕹️</span> Arcade</a>
+    </div></div>
+  </nav>
+  <div id="main-wrapper">
+    <main id="content" role="main">
+      <nav class="breadcrumb" aria-label="Breadcrumb"><a href="/index.html">Home</a><span class="sep">›</span><a href="/games/">Arcade</a><span class="sep">›</span><span aria-current="page">SnakeRun 3008</span></nav>
+      <div class="category-header">
+        <span class="cat-big-icon" aria-hidden="true">🐍</span>
+        <div><h1 class="page-title">🐍 SnakeRun 3008</h1><p style="color:var(--color-text-muted)">Quick reflex game rebuilt inside the main website shell.</p></div>
+      </div>
+      <div class="page-title-line" aria-hidden="true"></div>
 
+      <div class="game-card">
+        <div class="hud">
+          <div class="stat"><div class="label">Score</div><div class="value" id="score">0</div></div>
+          <div class="stat"><div class="label">Best</div><div class="value" id="best">0</div></div>
+          <div class="stat"><div class="label">Streak</div><div class="value" id="streak">0</div></div>
+          <div class="stat"><div class="label">Speed</div><div class="value" id="speedLabel">Normal</div></div>
+        </div>
+        <canvas id="snakeCanvas" width="720" height="720" aria-label="Snake game"></canvas>
+        <div class="row">
+          <button class="game-btn" id="startBtn">Start</button>
+          <button class="game-btn alt" id="pauseBtn">Pause</button>
+          <button class="game-btn alt" id="resetBtn">Reset</button>
+        </div>
+        <div class="note">Arrow keys or WASD. Best score is saved locally. This page is the game page, not a detached standalone layout.</div>
+      </div>
+    </main>
+    <footer id="site-footer"><div class="footer-bottom"><p>Crypto Moonboys GK Wiki ⚡️⚡️⚡️</p></div></footer>
+  </div>
+</div>
+<button id="back-to-top" aria-label="Back to top">↑</button>
+<script src="/js/wiki.js"></script>
+<script>
+(() => {
+  const canvas = document.getElementById('snakeCanvas');
+  const ctx = canvas.getContext('2d');
+  const scoreEl = document.getElementById('score');
+  const bestEl = document.getElementById('best');
+  const streakEl = document.getElementById('streak');
+  const speedLabel = document.getElementById('speedLabel');
+  const grid = 24, size = canvas.width / grid;
+  let snake, dir, nextDir, food, timer, running=false, paused=false, score=0, streak=0;
+  let best = Number(localStorage.getItem('moonboys_snake_best') || 0);
+  bestEl.textContent = best;
+
+  function resetState() {
+    snake = [{x:12,y:12},{x:11,y:12},{x:10,y:12}];
+    dir = {x:1,y:0}; nextDir={x:1,y:0}; score=0; streak=0;
+    food = spawnFood(); updateHud(); draw();
+  }
+  function spawnFood() {
+    while (true) {
+      const f = {x:Math.floor(Math.random()*grid), y:Math.floor(Math.random()*grid)};
+      if (!snake.some(s => s.x===f.x && s.y===f.y)) return f;
+    }
+  }
+  function updateHud() {
+    scoreEl.textContent = score; bestEl.textContent = best; streakEl.textContent = streak; speedLabel.textContent = 'Normal';
+  }
+  function drawCell(x,y,color,glow) {
+    ctx.fillStyle = color;
+    ctx.fillRect(x*size+2, y*size+2, size-4, size-4);
+    if (glow) { ctx.strokeStyle = glow; ctx.lineWidth=2; ctx.strokeRect(x*size+3, y*size+3, size-6, size-6); }
+  }
+  function draw() {
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    ctx.fillStyle = '#090c16'; ctx.fillRect(0,0,canvas.width,canvas.height);
+    for (let i=0;i<grid;i++) {
+      ctx.strokeStyle = i%2 ? 'rgba(255,0,255,.08)' : 'rgba(0,255,255,.08)';
+      ctx.beginPath(); ctx.moveTo(i*size,0); ctx.lineTo(i*size,canvas.height); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(0,i*size); ctx.lineTo(canvas.width,i*size); ctx.stroke();
+    }
+    drawCell(food.x, food.y, '#f7ab1a', '#fff2b5');
+    snake.forEach((s, i) => drawCell(s.x, s.y, i===0 ? '#2ec5ff' : '#ff4fd1', i===0 ? '#dff8ff' : '#ffb3ef'));
+  }
+  function step() {
+    if (!running || paused) return;
+    dir = nextDir;
+    const head = {x: snake[0].x + dir.x, y: snake[0].y + dir.y};
+    if (head.x<0 || head.x>=grid || head.y<0 || head.y>=grid || snake.some(s => s.x===head.x && s.y===head.y)) {
+      running = false; clearInterval(timer); alert('Game Over — Score: ' + score); return;
+    }
+    snake.unshift(head);
+    if (head.x===food.x && head.y===food.y) {
+      score += 10; streak += 1;
+      if (score > best) { best = score; localStorage.setItem('moonboys_snake_best', String(best)); }
+      food = spawnFood();
+    } else {
+      snake.pop(); streak = 0;
+    }
+    updateHud(); draw();
+  }
+  function setDirection(x,y) {
+    if (x === -dir.x && y === -dir.y) return;
+    nextDir = {x,y};
+  }
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowUp' || e.key === 'w') setDirection(0,-1);
+    if (e.key === 'ArrowDown' || e.key === 's') setDirection(0,1);
+    if (e.key === 'ArrowLeft' || e.key === 'a') setDirection(-1,0);
+    if (e.key === 'ArrowRight' || e.key === 'd') setDirection(1,0);
+  });
+  document.getElementById('startBtn').onclick = () => {
+    resetState(); running = true; paused = false; clearInterval(timer); timer = setInterval(step, 120);
+  };
+  document.getElementById('pauseBtn').onclick = () => { if (running) paused = !paused; };
+  document.getElementById('resetBtn').onclick = () => { clearInterval(timer); running=false; paused=false; resetState(); };
+  resetState();
+})();
+</script>
+</body>
+</html>
