@@ -3,10 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Block Topia Quest Maze — A blockchain-themed RPG maze adventure. Navigate the crypto labyrinth, collect on-chain artefacts, and battle your way through Block Topia.">
+  <meta name="description" content="Block Topia Quest Maze — A playable blockchain-themed RPG. Accept quests, battle crypto monsters, and climb the leaderboard in Block Topia.">
   <meta name="robots" content="index, follow">
   <meta property="og:title" content="🧱 Block Topia Quest Maze — Crypto Moonboys Arcade">
-  <meta property="og:description" content="A blockchain-themed RPG maze adventure. Navigate the crypto labyrinth, collect on-chain artefacts, and battle your way through Block Topia.">
+  <meta property="og:description" content="A playable blockchain-themed RPG. Accept quests, battle crypto monsters, and climb the leaderboard in Block Topia.">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://crypto-moonboys.github.io/games/block-topia-quest-maze.html">
   <meta property="og:image" content="https://crypto-moonboys.github.io/img/CRYPTO-MOONBOYS-BITCOIN-LOGO.png">
@@ -14,6 +14,154 @@
   <title>🧱 Block Topia Quest Maze — Crypto Moonboys Arcade</title>
   <link rel="stylesheet" href="/css/wiki.css">
   <link rel="icon" href="/img/favicon.svg" type="image/svg+xml">
+  <style>
+    /* ── Game wrapper ── */
+    #btqm { max-width: 800px; margin: 0 auto; }
+    .btqm-screen { display: none; }
+    .btqm-screen.active { display: block; }
+
+    /* ── Buttons ── */
+    .btqm-btn {
+      display: inline-block; padding: 0.55em 1.3em; border: none; border-radius: 6px;
+      cursor: pointer; font-size: 1em; font-weight: bold;
+      transition: opacity 0.15s, transform 0.1s; line-height: 1.3;
+    }
+    .btqm-btn:hover:not(:disabled) { opacity: 0.88; transform: translateY(-1px); }
+    .btqm-btn:active:not(:disabled) { transform: translateY(0); }
+    .btqm-btn:disabled { opacity: 0.38; cursor: default; }
+    .btqm-btn-primary { background: #f39c12; color: #000; }
+    .btqm-btn-danger  { background: #e74c3c; color: #fff; }
+    .btqm-btn-info    { background: #3498db; color: #fff; }
+    .btqm-btn-success { background: #27ae60; color: #fff; }
+    .btqm-btn-muted   { background: rgba(255,255,255,0.12); color: var(--color-text, #eee); }
+    .btqm-btn-sm      { padding: 0.3em 0.85em; font-size: 0.85em; }
+
+    /* ── Welcome ── */
+    .btqm-hero { text-align: center; padding: 2.5em 0 2em; }
+    .btqm-hero-emoji { font-size: 4.5em; line-height: 1.1; display: block; }
+    .btqm-hero h2 { margin: 0.25em 0 0.15em; font-size: 1.75em; }
+    .btqm-hero p  { color: var(--color-text-muted); margin: 0 auto 1.8em; max-width: 480px; font-size: 1em; }
+    .btqm-start-row { display: flex; gap: 0.6em; justify-content: center; flex-wrap: wrap; }
+    .btqm-name-input {
+      padding: 0.6em 1em; border: 2px solid var(--color-border, #444);
+      border-radius: 6px; background: rgba(255,255,255,0.05);
+      color: var(--color-text, #eee); font-size: 1em; min-width: 210px;
+    }
+    .btqm-name-input:focus { outline: none; border-color: #f39c12; }
+    .btqm-howto {
+      margin-top: 2em; padding: 1.1em 1.4em;
+      border: 1px solid var(--color-border, #333); border-radius: 8px;
+      background: rgba(255,255,255,0.03); text-align: left;
+    }
+    .btqm-howto h4 { margin: 0 0 0.6em; font-size: 1em; }
+    .btqm-howto ul { margin: 0; padding-left: 1.3em; color: var(--color-text-muted); font-size: 0.9em; line-height: 1.8; }
+
+    /* ── Stats bar ── */
+    .btqm-statsbar {
+      display: flex; gap: 1em; flex-wrap: wrap; align-items: center;
+      padding: 0.85em 1.1em; background: rgba(255,255,255,0.04);
+      border: 1px solid var(--color-border, #333); border-radius: 8px;
+      margin-bottom: 1.4em;
+    }
+    .btqm-stat { text-align: center; min-width: 55px; }
+    .btqm-stat-label { font-size: 0.68em; color: var(--color-text-muted); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 2px; }
+    .btqm-stat-val   { font-size: 1.1em; font-weight: bold; }
+    .btqm-bar-wrap   { flex: 1 1 120px; min-width: 110px; }
+    .btqm-bar-label  { font-size: 0.72em; color: var(--color-text-muted); display: flex; justify-content: space-between; margin-bottom: 3px; }
+    .btqm-bar-track  { height: 9px; background: rgba(255,255,255,0.1); border-radius: 5px; overflow: hidden; }
+    .btqm-bar-fill   { height: 100%; border-radius: 5px; transition: width 0.35s ease; }
+    .btqm-bar-hp     { background: linear-gradient(90deg, #c0392b, #e74c3c); }
+    .btqm-bar-xp     { background: linear-gradient(90deg, #e67e22, #f39c12); }
+    .btqm-stats-reset { margin-left: auto; font-size: 0.78em; color: var(--color-text-muted); cursor: pointer; background: none; border: none; text-decoration: underline; }
+    .btqm-stats-reset:hover { color: #e74c3c; }
+
+    /* ── Tabs ── */
+    .btqm-tabs { display: flex; margin-bottom: 1.3em; border-bottom: 2px solid var(--color-border, #333); }
+    .btqm-tab {
+      padding: 0.5em 1.1em; cursor: pointer; border: none; background: none;
+      color: var(--color-text-muted); font-size: 0.92em;
+      border-bottom: 2px solid transparent; margin-bottom: -2px;
+      transition: color 0.15s, border-color 0.15s;
+    }
+    .btqm-tab.active { color: var(--color-text, #eee); border-bottom-color: #f39c12; font-weight: bold; }
+    .btqm-tab:hover  { color: var(--color-text, #eee); }
+    .btqm-tab-pane   { display: none; }
+    .btqm-tab-pane.active { display: block; }
+
+    /* ── Quest grid ── */
+    .btqm-quest-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 1em; }
+    .btqm-quest-card {
+      padding: 1em; border: 1px solid var(--color-border, #333); border-radius: 8px;
+      background: rgba(255,255,255,0.03); display: flex; flex-direction: column; gap: 0.45em;
+      transition: border-color 0.2s, background 0.2s;
+    }
+    .btqm-quest-card:not(.done):hover { border-color: #f39c12; background: rgba(243,156,18,0.07); }
+    .btqm-quest-card.done { opacity: 0.45; }
+    .btqm-quest-emoji { font-size: 1.9em; }
+    .btqm-quest-title { font-weight: bold; font-size: 0.97em; }
+    .btqm-quest-desc  { font-size: 0.83em; color: var(--color-text-muted); flex: 1; line-height: 1.45; }
+    .btqm-quest-meta  { display: flex; gap: 0.4em; flex-wrap: wrap; margin-top: 0.2em; }
+    .btqm-badge { padding: 1px 8px; border-radius: 10px; font-size: 0.76em; font-weight: bold; white-space: nowrap; }
+    .btqm-badge-easy   { background: rgba(39,174,96,0.18);   color: #2ecc71; border: 1px solid rgba(39,174,96,0.35); }
+    .btqm-badge-medium { background: rgba(243,156,18,0.18);  color: #f39c12; border: 1px solid rgba(243,156,18,0.35); }
+    .btqm-badge-hard   { background: rgba(231,76,60,0.18);   color: #e74c3c; border: 1px solid rgba(231,76,60,0.35); }
+    .btqm-badge-xp     { background: rgba(52,152,219,0.14);  color: #74b9ff; border: 1px solid rgba(52,152,219,0.3); }
+    .btqm-badge-gold   { background: rgba(253,203,110,0.14); color: #fdcb6e; border: 1px solid rgba(253,203,110,0.3); }
+    .btqm-badge-done   { background: rgba(255,255,255,0.07); color: var(--color-text-muted); border: 1px solid rgba(255,255,255,0.12); }
+    .btqm-empty-note   { color: var(--color-text-muted); font-size: 0.9em; padding: 0.5em 0; }
+
+    /* ── Battle ── */
+    .btqm-battle-hdr { text-align: center; margin-bottom: 1.2em; }
+    .btqm-battle-hdr h3 { margin: 0 0 0.15em; }
+    .btqm-battle-hdr p  { margin: 0; color: var(--color-text-muted); font-size: 0.88em; }
+    .btqm-arena {
+      display: grid; grid-template-columns: 1fr 2.5em 1fr; gap: 0.8em; align-items: center;
+      margin-bottom: 1.2em;
+    }
+    .btqm-fighter {
+      padding: 0.9em; border: 1px solid var(--color-border, #333); border-radius: 8px;
+      background: rgba(255,255,255,0.03); text-align: center;
+    }
+    .btqm-fighter-emoji { font-size: 2.8em; line-height: 1.2; margin-bottom: 0.2em; }
+    .btqm-fighter-name  { font-weight: bold; font-size: 0.95em; margin-bottom: 0.5em; }
+    .btqm-vs { font-size: 1.3em; font-weight: bold; color: #e74c3c; text-align: center; }
+    .btqm-battle-log {
+      height: 120px; overflow-y: auto; padding: 0.65em 0.8em;
+      background: rgba(0,0,0,0.25); border: 1px solid var(--color-border, #333);
+      border-radius: 6px; margin-bottom: 1em; font-size: 0.84em; line-height: 1.6;
+    }
+    .btqm-log-player { color: #74b9ff; }
+    .btqm-log-enemy  { color: #fd79a8; }
+    .btqm-log-system { color: var(--color-text-muted); font-style: italic; }
+    .btqm-log-crit   { color: #fdcb6e; font-weight: bold; }
+    .btqm-log-heal   { color: #55efc4; }
+    .btqm-actions { display: flex; gap: 0.7em; flex-wrap: wrap; justify-content: center; margin-bottom: 1em; }
+
+    /* ── Result ── */
+    .btqm-result-wrap { text-align: center; padding: 2em 0.5em; }
+    .btqm-result-emoji { font-size: 4em; display: block; margin-bottom: 0.2em; }
+    .btqm-result-wrap h2 { margin: 0 0 0.4em; font-size: 1.5em; }
+    .btqm-result-wrap p  { color: var(--color-text-muted); margin: 0 0 1em; }
+    .btqm-rewards {
+      display: inline-flex; gap: 0.8em; margin: 0.5em 0 1.4em; flex-wrap: wrap; justify-content: center;
+    }
+    .btqm-reward-chip {
+      padding: 0.45em 1.1em; border-radius: 20px; font-weight: bold; font-size: 1em;
+      background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15);
+    }
+    .btqm-result-btns { display: flex; gap: 0.7em; justify-content: center; flex-wrap: wrap; }
+
+    /* ── Leaderboard ── */
+    .btqm-lb-note    { font-size: 0.84em; color: var(--color-text-muted); margin-bottom: 0.8em; }
+    .btqm-lb-loading { color: var(--color-text-muted); font-size: 0.9em; padding: 0.5em 0; }
+
+    /* ── Responsive ── */
+    @media (max-width: 520px) {
+      .btqm-arena { grid-template-columns: 1fr; }
+      .btqm-vs { display: none; }
+      .btqm-quest-grid { grid-template-columns: 1fr; }
+    }
+  </style>
 </head>
 <body>
 <a class="skip-link" href="#content">Skip to content</a>
@@ -93,58 +241,149 @@
         <span aria-current="page">Block Topia Quest Maze</span>
       </nav>
 
-      <div class="category-header">
-        <span class="cat-big-icon" aria-hidden="true">🧱</span>
-        <div>
-          <h1 class="page-title">🧱 Block Topia Quest Maze</h1>
-          <p style="color:var(--color-text-muted)">Navigate the crypto labyrinth, collect on-chain artefacts, and battle your way through Block Topia.</p>
-        </div>
-      </div>
+      <h1 class="page-title">🧱 Block Topia Quest Maze</h1>
       <div class="page-title-line" aria-hidden="true"></div>
 
-      <div class="notice info" role="note">
-        <span class="notice-icon" aria-hidden="true">🎮</span>
-        <div><strong>Live Season Data</strong> — Quests and leaderboards are loaded live from the Block Topia R2 data store each season.</div>
-      </div>
+      <div id="btqm">
 
-      <!-- ── Quests ── -->
-      <section id="quests-section">
-        <h2>⚔️ Current Season Quests</h2>
-        <div id="quests-loading" style="text-align:center; padding:1.5em 0; color:var(--color-text-muted);">⏳ Loading quests…</div>
-        <div id="quests-offline" class="notice" style="display:none;" role="alert">
-          <span class="notice-icon" aria-hidden="true">⚠️</span>
-          <div><strong>Quest data unavailable.</strong> Check back after the next season refresh.<br>
-            <small style="color:var(--color-text-muted);" id="quests-error-detail"></small>
+        <!-- ══ WELCOME SCREEN ══ -->
+        <div id="btqm-welcome" class="btqm-screen active">
+          <div class="btqm-hero">
+            <span class="btqm-hero-emoji">🧱⚔️🌙</span>
+            <h2>Enter Block Topia</h2>
+            <p>A blockchain RPG where you accept on-chain quests, battle crypto monsters, and climb the leaderboard. Your progress is saved in your browser.</p>
+            <div class="btqm-start-row">
+              <input id="btqm-name-input" class="btqm-name-input" type="text" maxlength="20"
+                     placeholder="Enter your hero name…" autocomplete="off" spellcheck="false">
+              <button id="btqm-start-btn" class="btqm-btn btqm-btn-primary">⚔️ Enter the Maze</button>
+            </div>
+            <div id="btqm-name-error" style="color:#e74c3c;font-size:0.85em;margin-top:0.5em;display:none;">
+              Please enter a name (2–20 characters).
+            </div>
+          </div>
+          <div class="btqm-howto">
+            <h4>📖 How to Play</h4>
+            <ul>
+              <li><strong>⚔️ Attack</strong> — A standard strike. Reliable damage.</li>
+              <li><strong>🌙 Moon Strike</strong> — High-risk, high-reward. 60% chance to hit for big damage.</li>
+              <li><strong>💎 Diamond Hands</strong> — Defend! Halve the next enemy hit and regenerate a little HP.</li>
+              <li>Win quests to earn XP &amp; Gold. Level up to grow stronger.</li>
+              <li>Quest data loads live from the Block Topia R2 store each season.</li>
+            </ul>
           </div>
         </div>
-        <div id="quests-content" style="display:none;"></div>
-      </section>
 
-      <!-- ── Current Season Leaderboard ── -->
-      <section id="leaderboard-section">
-        <h2>🏆 Current Season Leaderboard</h2>
-        <div id="leaderboard-loading" style="text-align:center; padding:1.5em 0; color:var(--color-text-muted);">⏳ Loading leaderboard…</div>
-        <div id="leaderboard-offline" class="notice" style="display:none;" role="alert">
-          <span class="notice-icon" aria-hidden="true">⚠️</span>
-          <div><strong>Leaderboard data unavailable.</strong> Check back after the next season refresh.<br>
-            <small style="color:var(--color-text-muted);" id="leaderboard-error-detail"></small>
+        <!-- ══ HUB SCREEN ══ -->
+        <div id="btqm-hub" class="btqm-screen">
+
+          <!-- Stats bar -->
+          <div class="btqm-statsbar">
+            <div class="btqm-stat">
+              <div class="btqm-stat-label">Level</div>
+              <div class="btqm-stat-val" id="stat-level">1</div>
+            </div>
+            <div class="btqm-stat">
+              <div class="btqm-stat-label">Gold</div>
+              <div class="btqm-stat-val" id="stat-gold">🪙 0</div>
+            </div>
+            <div class="btqm-bar-wrap">
+              <div class="btqm-bar-label">
+                <span>❤️ HP</span>
+                <span id="stat-hp-text">100 / 100</span>
+              </div>
+              <div class="btqm-bar-track">
+                <div class="btqm-bar-fill btqm-bar-hp" id="stat-hp-bar" style="width:100%"></div>
+              </div>
+            </div>
+            <div class="btqm-bar-wrap">
+              <div class="btqm-bar-label">
+                <span>⭐ XP</span>
+                <span id="stat-xp-text">0 / 100</span>
+              </div>
+              <div class="btqm-bar-track">
+                <div class="btqm-bar-fill btqm-bar-xp" id="stat-xp-bar" style="width:0%"></div>
+              </div>
+            </div>
+            <button class="btqm-stats-reset" id="btqm-reset-btn" title="Reset all progress">↺ Reset</button>
+          </div>
+
+          <!-- Tabs -->
+          <div class="btqm-tabs" role="tablist">
+            <button class="btqm-tab active" role="tab" aria-selected="true"  data-tab="quests">⚔️ Quests</button>
+            <button class="btqm-tab"        role="tab" aria-selected="false" data-tab="leaderboard">🏆 Leaderboard</button>
+            <button class="btqm-tab"        role="tab" aria-selected="false" data-tab="masters">🥇 Masters</button>
+          </div>
+
+          <!-- Quests pane -->
+          <div id="btqm-pane-quests" class="btqm-tab-pane active" role="tabpanel">
+            <div id="btqm-quest-list"></div>
+          </div>
+
+          <!-- Leaderboard pane -->
+          <div id="btqm-pane-leaderboard" class="btqm-tab-pane" role="tabpanel">
+            <p class="btqm-lb-note">Current season standings loaded live from the Block Topia R2 data store.</p>
+            <div id="btqm-lb-content"><span class="btqm-lb-loading">⏳ Loading…</span></div>
+          </div>
+
+          <!-- Masters pane -->
+          <div id="btqm-pane-masters" class="btqm-tab-pane" role="tabpanel">
+            <p class="btqm-lb-note">All-time masters — the greatest adventurers in Block Topia history.</p>
+            <div id="btqm-masters-content"><span class="btqm-lb-loading">⏳ Loading…</span></div>
+          </div>
+
+        </div><!-- /#btqm-hub -->
+
+        <!-- ══ BATTLE SCREEN ══ -->
+        <div id="btqm-battle" class="btqm-screen">
+          <div class="btqm-battle-hdr">
+            <h3 id="battle-quest-title">Quest</h3>
+            <p id="battle-quest-desc"></p>
+          </div>
+          <div class="btqm-arena">
+            <div class="btqm-fighter">
+              <div class="btqm-fighter-emoji">🧙</div>
+              <div class="btqm-fighter-name" id="fighter-player-name">Hero</div>
+              <div class="btqm-bar-label"><span>HP</span><span id="player-hp-text">100/100</span></div>
+              <div class="btqm-bar-track">
+                <div class="btqm-bar-fill btqm-bar-hp" id="player-hp-bar" style="width:100%"></div>
+              </div>
+            </div>
+            <div class="btqm-vs" aria-hidden="true">VS</div>
+            <div class="btqm-fighter">
+              <div class="btqm-fighter-emoji" id="enemy-emoji">👾</div>
+              <div class="btqm-fighter-name" id="enemy-name">Enemy</div>
+              <div class="btqm-bar-label"><span>HP</span><span id="enemy-hp-text">50/50</span></div>
+              <div class="btqm-bar-track">
+                <div class="btqm-bar-fill btqm-bar-hp" id="enemy-hp-bar" style="width:100%"></div>
+              </div>
+            </div>
+          </div>
+          <div class="btqm-battle-log" id="battle-log" aria-live="polite"></div>
+          <div class="btqm-actions">
+            <button class="btqm-btn btqm-btn-danger"  id="btn-attack"  title="Normal attack">⚔️ Attack</button>
+            <button class="btqm-btn btqm-btn-primary" id="btn-moon"    title="High-risk, high-reward strike">🌙 Moon Strike</button>
+            <button class="btqm-btn btqm-btn-info"    id="btn-diamond" title="Defend and heal a little">💎 Diamond Hands</button>
+            <button class="btqm-btn btqm-btn-muted btqm-btn-sm" id="btn-flee" title="Flee this quest">🏃 Flee</button>
           </div>
         </div>
-        <div id="leaderboard-content" style="display:none;"></div>
-      </section>
 
-      <!-- ── Masters All-Time Leaderboard ── -->
-      <section id="masters-section">
-        <h2>🥇 Masters — All-Time Leaderboard</h2>
-        <div id="masters-loading" style="text-align:center; padding:1.5em 0; color:var(--color-text-muted);">⏳ Loading masters…</div>
-        <div id="masters-offline" class="notice" style="display:none;" role="alert">
-          <span class="notice-icon" aria-hidden="true">⚠️</span>
-          <div><strong>Masters leaderboard unavailable.</strong> Check back later.<br>
-            <small style="color:var(--color-text-muted);" id="masters-error-detail"></small>
+        <!-- ══ RESULT SCREEN ══ -->
+        <div id="btqm-result" class="btqm-screen">
+          <div class="btqm-result-wrap">
+            <span class="btqm-result-emoji" id="result-emoji">🏆</span>
+            <h2 id="result-heading">Victory!</h2>
+            <p id="result-subtext">You defeated the enemy.</p>
+            <div class="btqm-rewards" id="result-rewards"></div>
+            <div id="result-levelup" style="display:none; margin-bottom:1em; color:#f39c12; font-weight:bold; font-size:1.1em;">
+              ⭐ LEVEL UP! You are now Level <span id="result-new-level"></span>!
+            </div>
+            <div class="btqm-result-btns">
+              <button class="btqm-btn btqm-btn-success" id="btn-continue">⚔️ Back to Quest Board</button>
+            </div>
           </div>
         </div>
-        <div id="masters-content" style="display:none;"></div>
-      </section>
+
+      </div><!-- /#btqm -->
 
     </main>
     <footer id="site-footer" role="contentinfo">
@@ -178,10 +417,102 @@
 (function () {
   'use strict';
 
+  /* ═══════════════════════════════════
+     R2 Data URLs
+  ═══════════════════════════════════ */
   var QUEST_BANK_URL  = "https://pub-46d62f7d93b247529e98efe62b71a998.r2.dev/R2-Upload/quest-bank/current-season.json";
   var LEADERBOARD_URL = "https://pub-46d62f7d93b247529e98efe62b71a998.r2.dev/R2-Upload/leaderboards/current-season.json";
   var MASTERS_URL     = "https://pub-46d62f7d93b247529e98efe62b71a998.r2.dev/R2-Upload/leaderboards/masters-all-time.json";
 
+  var STORAGE_KEY = 'btqm_player_v1';
+
+  /* ═══════════════════════════════════
+     Game balance constants
+  ═══════════════════════════════════ */
+  var MOON_STRIKE_HIT_CHANCE      = 0.6;   // 60% chance to land Moon Strike
+  var DIAMOND_HANDS_DAMAGE_DIVISOR = 2;    // defending halves the next enemy hit
+  var DEFEAT_HP_RECOVERY_PERCENT  = 0.4;   // restore 40% HP after a loss
+  var FLEE_HP_RETENTION           = 0.85;  // keep 85% HP when fleeing
+
+  /* ═══════════════════════════════════
+     Fallback quest data (shown when R2 is empty or unreachable).
+     easy  → HP 28-44, ATK 5-9
+     medium → HP 55-80, ATK 10-16
+     hard  → HP 90-130, ATK 17-26
+  ═══════════════════════════════════ */
+  var FALLBACK_QUESTS = [
+    {
+      id: 'fq1', title: 'HODL or FOLD',
+      description: 'A Paper Hand Goblin blocks the path. Resist the urge to sell!',
+      difficulty: 'easy', xp: 50, gold: 10,
+      enemy: { name: 'Paper Hand Goblin', maxHp: 32, atk: 7, emoji: '\u{1F9FB}' }
+    },
+    {
+      id: 'fq2', title: 'Bear Market Siege',
+      description: 'Navigate the savage bear market and emerge victorious.',
+      difficulty: 'medium', xp: 120, gold: 25,
+      enemy: { name: 'Bear Market Beast', maxHp: 60, atk: 12, emoji: '\u{1F43B}' }
+    },
+    {
+      id: 'fq3', title: 'FOMO Plague Escape',
+      description: 'Escape the FOMO Phantom before panic consumes you.',
+      difficulty: 'easy', xp: 60, gold: 12,
+      enemy: { name: 'FOMO Phantom', maxHp: 38, atk: 8, emoji: '\u{1F631}' }
+    },
+    {
+      id: 'fq4', title: 'Rug Pull Recovery',
+      description: 'Recover your assets from the devious Rug Puller.',
+      difficulty: 'medium', xp: 140, gold: 30,
+      enemy: { name: 'Rug Puller', maxHp: 68, atk: 13, emoji: '\u{1FA9E}' }
+    },
+    {
+      id: 'fq5', title: 'Whale Lord\'s Challenge',
+      description: 'A mighty Whale Lord tests your diamond hands.',
+      difficulty: 'hard', xp: 280, gold: 65,
+      enemy: { name: 'Whale Lord', maxHp: 110, atk: 20, emoji: '\u{1F433}' }
+    },
+    {
+      id: 'fq6', title: 'Moon Mission',
+      description: 'Ride the rocket to the moon — but the NGMI Wraith stands in your way.',
+      difficulty: 'hard', xp: 260, gold: 60,
+      enemy: { name: 'NGMI Wraith', maxHp: 100, atk: 18, emoji: '\u{1F480}' }
+    }
+  ];
+
+  /* ═══════════════════════════════════
+     State
+  ═══════════════════════════════════ */
+  var state = {
+    player: null,
+    quests: [],
+    activeQuest: null,
+    battle: null
+  };
+
+  /* ═══════════════════════════════════
+     Player helpers
+  ═══════════════════════════════════ */
+  function newPlayer(name) {
+    return { name: name, hp: 100, maxHp: 100, xp: 0, level: 1, gold: 0, completedQuests: [] };
+  }
+
+  function xpNeeded(level) { return level * 100; }
+
+  function savePlayer() {
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state.player)); } catch (e) { /* storage unavailable */ }
+  }
+
+  function loadPlayer() {
+    try {
+      var raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) { return JSON.parse(raw); }
+    } catch (e) { /* ignore */ }
+    return null;
+  }
+
+  /* ═══════════════════════════════════
+     Utility
+  ═══════════════════════════════════ */
   function escHtml(s) {
     return String(s)
       .replace(/&/g, '&amp;')
@@ -190,111 +521,451 @@
       .replace(/"/g, '&quot;');
   }
 
-  function showError(prefix, reason) {
-    document.getElementById(prefix + '-loading').style.display = 'none';
-    document.getElementById(prefix + '-offline').style.display = '';
-    if (reason) {
-      document.getElementById(prefix + '-error-detail').textContent = reason;
-    }
+  function randInt(min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
   }
 
-  function showContent(prefix, html) {
-    document.getElementById(prefix + '-loading').style.display = 'none';
-    var el = document.getElementById(prefix + '-content');
+  function clamp(val, min, max) {
+    return Math.max(min, Math.min(max, val));
+  }
+
+  /* ═══════════════════════════════════
+     Screen management
+  ═══════════════════════════════════ */
+  var SCREENS = ['btqm-welcome', 'btqm-hub', 'btqm-battle', 'btqm-result'];
+
+  function showScreen(id) {
+    SCREENS.forEach(function (s) {
+      var el = document.getElementById(s);
+      if (el) { el.classList.toggle('active', s === id); }
+    });
+  }
+
+  /* ═══════════════════════════════════
+     Stats bar
+  ═══════════════════════════════════ */
+  function updateStatsBar() {
+    var p = state.player;
+    if (!p) { return; }
+    var hpPct = clamp(Math.round(p.hp / p.maxHp * 100), 0, 100);
+    var xpPct = clamp(Math.round(p.xp / xpNeeded(p.level) * 100), 0, 100);
+    document.getElementById('stat-level').textContent = p.level;
+    document.getElementById('stat-gold').textContent  = '\u{1FA99} ' + p.gold;
+    document.getElementById('stat-hp-text').textContent = p.hp + ' / ' + p.maxHp;
+    document.getElementById('stat-hp-bar').style.width  = hpPct + '%';
+    document.getElementById('stat-xp-text').textContent = p.xp + ' / ' + xpNeeded(p.level);
+    document.getElementById('stat-xp-bar').style.width  = xpPct + '%';
+  }
+
+  /* ═══════════════════════════════════
+     Quest normalisation
+  ═══════════════════════════════════ */
+  var DIFF_DEFAULTS = {
+    easy:   { maxHp: [28, 44],  atk: [5,  9],  emoji: '\u{1F47E}' },
+    medium: { maxHp: [55, 80],  atk: [10, 16], emoji: '\u{1F43B}' },
+    hard:   { maxHp: [90, 130], atk: [17, 26], emoji: '\u{1F433}' }
+  };
+
+  function normaliseQuest(raw, idx) {
+    var diff = String(raw.difficulty || raw.level || 'easy').toLowerCase();
+    if (!DIFF_DEFAULTS[diff]) { diff = 'easy'; }
+    var dd = DIFF_DEFAULTS[diff];
+    var re = raw.enemy || {};
+    return {
+      id:          raw.id || raw.quest_id || ('q' + idx),
+      title:       raw.title || raw.name  || ('Quest #' + (idx + 1)),
+      description: raw.description || raw.desc || '',
+      difficulty:  diff,
+      xp:   Number(raw.xp   || raw.xp_reward   || raw.experience || (diff === 'hard' ? 200 : diff === 'medium' ? 110 : 55)),
+      gold: Number(raw.gold || raw.gold_reward  || raw.coins      || (diff === 'hard' ? 50  : diff === 'medium' ? 22  : 10)),
+      enemy: {
+        name:  re.name  || raw.enemy_name  || 'Crypto Monster',
+        maxHp: Number(re.maxHp || re.hp || re.max_hp || randInt(dd.maxHp[0], dd.maxHp[1])),
+        atk:   Number(re.atk   || re.attack || re.damage  || randInt(dd.atk[0],   dd.atk[1])),
+        emoji: re.emoji || dd.emoji
+      }
+    };
+  }
+
+  /* ═══════════════════════════════════
+     Quest grid
+  ═══════════════════════════════════ */
+  function renderQuestGrid() {
+    var el = document.getElementById('btqm-quest-list');
+    if (!state.quests.length) {
+      el.innerHTML = '<p class="btqm-empty-note">\u23F3 Loading quests from the Block Topia R2 store\u2026</p>';
+      return;
+    }
+    var completed = (state.player && state.player.completedQuests) || [];
+    var allDone = state.quests.every(function (q) { return completed.indexOf(q.id) !== -1; });
+
+    var html = '<div class="btqm-quest-grid">';
+    state.quests.forEach(function (q) {
+      var done = completed.indexOf(q.id) !== -1;
+      var diffBadge = '<span class="btqm-badge btqm-badge-' + q.difficulty + '">' + q.difficulty.toUpperCase() + '</span>';
+      var xpBadge   = '<span class="btqm-badge btqm-badge-xp">+' + q.xp + ' XP</span>';
+      var goldBadge = '<span class="btqm-badge btqm-badge-gold">+' + q.gold + ' \u{1FA99}</span>';
+      var doneBadge = done ? '<span class="btqm-badge btqm-badge-done">\u2714 Done</span>' : '';
+      var btn = done ? '' : '<button class="btqm-btn btqm-btn-primary btqm-btn-sm btqm-accept-btn" '
+                              + 'data-qid="' + escHtml(String(q.id)) + '" style="margin-top:0.4em;">\u2694\uFE0F Accept</button>';
+      html += '<div class="btqm-quest-card' + (done ? ' done' : '') + '">'
+            + '<div class="btqm-quest-emoji">' + escHtml(q.enemy.emoji) + '</div>'
+            + '<div class="btqm-quest-title">' + escHtml(q.title) + '</div>'
+            + '<div class="btqm-quest-desc">'  + escHtml(q.description) + '</div>'
+            + '<div class="btqm-quest-meta">'  + diffBadge + xpBadge + goldBadge + doneBadge + '</div>'
+            + btn
+            + '</div>';
+    });
+    html += '</div>';
+
+    if (allDone) {
+      html += '<div class="notice info" style="margin-top:1.2em;" role="status">'
+            + '<span class="notice-icon" aria-hidden="true">\u{1F3C6}</span>'
+            + '<div><strong>All quests complete this season!</strong> Check back when new quests are published.</div>'
+            + '</div>';
+    }
+
     el.innerHTML = html;
-    el.style.display = '';
+    el.querySelectorAll('.btqm-accept-btn').forEach(function (btn) {
+      btn.addEventListener('click', function () { startQuest(btn.getAttribute('data-qid')); });
+    });
   }
 
-  /* ── Quests ── */
-  function renderQuests(data) {
-    var quests = Array.isArray(data) ? data : (data.quests || data.quest_bank || data.items || null);
-    if (!quests || !quests.length) {
-      showContent('quests', '<p style="color:var(--color-text-muted)">No quests published for this season yet.</p>');
-      return;
-    }
-    var rows = quests.map(function (q) {
-      var title      = escHtml(q.title      || q.name       || q.id    || '—');
-      var desc       = escHtml(q.description || q.desc      || '');
-      var difficulty = escHtml(q.difficulty  || q.level     || '—');
-      var reward     = escHtml(q.reward      || q.rewards   || q.xp || '—');
-      return '<tr><td>' + title + '</td><td>' + desc + '</td><td>' + difficulty + '</td><td>' + reward + '</td></tr>';
-    }).join('');
-    showContent('quests',
-      '<table class="wiki-table">' +
-        '<thead><tr><th>Quest</th><th>Description</th><th>Difficulty</th><th>Reward</th></tr></thead>' +
-        '<tbody>' + rows + '</tbody>' +
-      '</table>'
-    );
-  }
-
-  /* ── Leaderboard (shared renderer) ── */
-  function renderLeaderboard(prefix, data, emptyMsg) {
-    var entries = Array.isArray(data) ? data : (data.leaderboard || data.entries || data.players || data.rankings || null);
+  /* ═══════════════════════════════════
+     Leaderboard rendering (shared)
+  ═══════════════════════════════════ */
+  function renderLeaderboard(containerId, data, emptyMsg) {
+    var el = document.getElementById(containerId);
+    if (!el) { return; }
+    var entries = Array.isArray(data)
+      ? data
+      : (data.leaderboard || data.entries || data.players || data.rankings || null);
     if (!entries || !entries.length) {
-      showContent(prefix, '<p style="color:var(--color-text-muted)">' + escHtml(emptyMsg) + '</p>');
+      el.innerHTML = '<p class="btqm-empty-note">' + escHtml(emptyMsg) + '</p>';
       return;
     }
-    var rows = entries.slice(0, 100).map(function (item, i) {
-      var rank  = item.rank  !== undefined ? escHtml(String(item.rank))  : String(i + 1);
-      var name  = escHtml(item.name  || item.player || item.username || item.entity || '—');
-      var score = item.score !== undefined ? escHtml(String(item.score)) : (item.points !== undefined ? escHtml(String(item.points)) : '—');
-      var extra = item.season ? ' <small style="color:var(--color-text-muted)">(' + escHtml(String(item.season)) + ')</small>' : '';
-      return '<tr><td>' + rank + '</td><td>' + name + extra + '</td><td>' + score + '</td></tr>';
+    var rows = entries.slice(0, 50).map(function (item, i) {
+      var rank  = item.rank  !== undefined ? escHtml(String(item.rank))   : String(i + 1);
+      var name  = escHtml(item.name || item.player || item.username || item.entity || '\u2014');
+      var score = item.score  !== undefined ? escHtml(String(item.score))
+                : item.points !== undefined ? escHtml(String(item.points)) : '\u2014';
+      return '<tr><td>' + rank + '</td><td>' + name + '</td><td>' + score + '</td></tr>';
     }).join('');
-    showContent(prefix,
-      '<table class="wiki-table">' +
-        '<thead><tr><th>#</th><th>Player</th><th>Score</th></tr></thead>' +
-        '<tbody>' + rows + '</tbody>' +
-      '</table>'
-    );
+    el.innerHTML = '<table class="wiki-table"><thead><tr><th>#</th><th>Player</th><th>Score</th></tr></thead>'
+                 + '<tbody>' + rows + '</tbody></table>';
   }
 
-  /* ── Fetch helpers ── */
-  function loadQuests() {
+  /* ═══════════════════════════════════
+     Tab switching
+  ═══════════════════════════════════ */
+  function initTabs() {
+    document.querySelectorAll('.btqm-tab').forEach(function (tab) {
+      tab.addEventListener('click', function () {
+        document.querySelectorAll('.btqm-tab').forEach(function (t) {
+          t.classList.remove('active');
+          t.setAttribute('aria-selected', 'false');
+        });
+        document.querySelectorAll('.btqm-tab-pane').forEach(function (p) { p.classList.remove('active'); });
+        tab.classList.add('active');
+        tab.setAttribute('aria-selected', 'true');
+        var pane = document.getElementById('btqm-pane-' + tab.getAttribute('data-tab'));
+        if (pane) { pane.classList.add('active'); }
+      });
+    });
+  }
+
+  /* ═══════════════════════════════════
+     R2 data loading
+  ═══════════════════════════════════ */
+  function loadR2Data() {
+    // Quests
     fetch(QUEST_BANK_URL)
-      .then(function (res) {
-        if (!res.ok) { throw new Error('HTTP ' + res.status); }
-        return res.json();
-      })
+      .then(function (res) { if (!res.ok) { throw new Error('HTTP ' + res.status); } return res.json(); })
       .then(function (data) {
-        renderQuests(data);
+        var raw = Array.isArray(data) ? data : (data.quests || data.quest_bank || data.items || []);
+        state.quests = raw.length ? raw.map(normaliseQuest) : FALLBACK_QUESTS;
+        renderQuestGrid();
       })
-      .catch(function (err) {
-        showError('quests', err && err.message ? err.message : String(err));
+      .catch(function () {
+        state.quests = FALLBACK_QUESTS;
+        renderQuestGrid();
       });
-  }
 
-  function loadLeaderboard() {
+    // Current season leaderboard
     fetch(LEADERBOARD_URL)
-      .then(function (res) {
-        if (!res.ok) { throw new Error('HTTP ' + res.status); }
-        return res.json();
-      })
-      .then(function (data) {
-        renderLeaderboard('leaderboard', data, 'No leaderboard entries for this season yet.');
-      })
-      .catch(function (err) {
-        showError('leaderboard', err && err.message ? err.message : String(err));
-      });
-  }
+      .then(function (res) { if (!res.ok) { throw new Error('HTTP ' + res.status); } return res.json(); })
+      .then(function (data) { renderLeaderboard('btqm-lb-content', data, 'No season entries yet.'); })
+      .catch(function ()   { renderLeaderboard('btqm-lb-content', [], 'Leaderboard data unavailable right now.'); });
 
-  function loadMasters() {
+    // Masters all-time leaderboard
     fetch(MASTERS_URL)
-      .then(function (res) {
-        if (!res.ok) { throw new Error('HTTP ' + res.status); }
-        return res.json();
-      })
-      .then(function (data) {
-        renderLeaderboard('masters', data, 'No masters entries yet.');
-      })
-      .catch(function (err) {
-        showError('masters', err && err.message ? err.message : String(err));
-      });
+      .then(function (res) { if (!res.ok) { throw new Error('HTTP ' + res.status); } return res.json(); })
+      .then(function (data) { renderLeaderboard('btqm-masters-content', data, 'No masters entries yet.'); })
+      .catch(function ()   { renderLeaderboard('btqm-masters-content', [], 'Masters data unavailable right now.'); });
   }
 
-  loadQuests();
-  loadLeaderboard();
-  loadMasters();
+  /* ═══════════════════════════════════
+     Battle — setup
+  ═══════════════════════════════════ */
+  function startQuest(questId) {
+    var quest = null;
+    for (var i = 0; i < state.quests.length; i++) {
+      if (String(state.quests[i].id) === String(questId)) { quest = state.quests[i]; break; }
+    }
+    if (!quest || !state.player) { return; }
+
+    state.player.hp = state.player.maxHp; // full heal before each quest
+    savePlayer();
+
+    state.activeQuest = quest;
+    state.battle = {
+      enemyHp:    quest.enemy.maxHp,
+      enemyMaxHp: quest.enemy.maxHp,
+      defending:  false,
+      over:       false
+    };
+
+    document.getElementById('battle-quest-title').textContent    = quest.title;
+    document.getElementById('battle-quest-desc').textContent     = quest.description;
+    document.getElementById('fighter-player-name').textContent   = state.player.name;
+    document.getElementById('enemy-emoji').textContent           = quest.enemy.emoji;
+    document.getElementById('enemy-name').textContent            = quest.enemy.name;
+    updateBattleBars();
+
+    var logEl = document.getElementById('battle-log');
+    logEl.innerHTML = '<div class="btqm-log-system">\u2694\uFE0F The battle begins! Defeat '
+                    + escHtml(quest.enemy.name) + '.</div>';
+
+    setBattleButtons(true);
+    showScreen('btqm-battle');
+  }
+
+  function updateBattleBars() {
+    var p  = state.player;
+    var b  = state.battle;
+    var pPct = clamp(Math.round(p.hp / p.maxHp * 100), 0, 100);
+    var ePct = clamp(Math.round(b.enemyHp / b.enemyMaxHp * 100), 0, 100);
+    document.getElementById('player-hp-text').textContent = p.hp + ' / ' + p.maxHp;
+    document.getElementById('player-hp-bar').style.width  = pPct + '%';
+    document.getElementById('enemy-hp-text').textContent  = b.enemyHp + ' / ' + b.enemyMaxHp;
+    document.getElementById('enemy-hp-bar').style.width   = ePct + '%';
+  }
+
+  function setBattleButtons(enabled) {
+    ['btn-attack', 'btn-moon', 'btn-diamond', 'btn-flee'].forEach(function (id) {
+      var el = document.getElementById(id);
+      if (el) { el.disabled = !enabled; }
+    });
+  }
+
+  function appendLog(text, cls) {
+    var logEl = document.getElementById('battle-log');
+    var div   = document.createElement('div');
+    div.className   = 'btqm-log-line ' + (cls || '');
+    div.textContent = text;
+    logEl.appendChild(div);
+    logEl.scrollTop = logEl.scrollHeight;
+  }
+
+  /* ═══════════════════════════════════
+     Battle — damage formulas
+  ═══════════════════════════════════ */
+  function calcPlayerAtk() {
+    return randInt(8 + state.player.level * 2, 14 + state.player.level * 3);
+  }
+
+  function calcEnemyAtk() {
+    var base = state.activeQuest.enemy.atk;
+    var dmg  = randInt(Math.floor(base * 0.7), Math.ceil(base * 1.3));
+    if (state.battle.defending) {
+      dmg = Math.floor(dmg / DIAMOND_HANDS_DAMAGE_DIVISOR);
+      state.battle.defending = false;
+    }
+    return dmg;
+  }
+
+  function doEnemyTurn() {
+    var dmg = calcEnemyAtk();
+    state.player.hp = Math.max(0, state.player.hp - dmg);
+    appendLog(escHtml(state.activeQuest.enemy.name) + ' attacks for ' + dmg + ' damage!', 'btqm-log-enemy');
+    updateBattleBars();
+    savePlayer();
+    if (state.player.hp <= 0) { endBattle(false); }
+  }
+
+  /* ═══════════════════════════════════
+     Battle — end
+  ═══════════════════════════════════ */
+  function endBattle(won) {
+    state.battle.over = true;
+    setBattleButtons(false);
+    var p = state.player;
+    var q = state.activeQuest;
+
+    if (won) {
+      appendLog('\u{1F3C6} Victory! You defeated ' + escHtml(q.enemy.name) + '!', 'btqm-log-system');
+      var prevLevel = p.level;
+      p.gold += q.gold;
+      p.xp   += q.xp;
+      while (p.xp >= xpNeeded(p.level)) {
+        p.xp  -= xpNeeded(p.level);
+        p.level++;
+        p.maxHp = 100 + (p.level - 1) * 20;
+        p.hp    = p.maxHp; // full heal on level-up
+      }
+      if (p.completedQuests.indexOf(q.id) === -1) { p.completedQuests.push(q.id); }
+      savePlayer();
+
+      document.getElementById('result-emoji').textContent   = '\u{1F3C6}';
+      document.getElementById('result-heading').textContent = 'Victory!';
+      document.getElementById('result-subtext').textContent = 'You defeated the ' + q.enemy.name + '!';
+      document.getElementById('result-rewards').innerHTML   =
+        '<div class="btqm-reward-chip">+' + q.xp + ' XP \u2B50</div>'
+      + '<div class="btqm-reward-chip">+' + q.gold + ' Gold \u{1FA99}</div>';
+
+      var luEl = document.getElementById('result-levelup');
+      if (p.level > prevLevel) {
+        luEl.style.display = '';
+        document.getElementById('result-new-level').textContent = p.level;
+      } else {
+        luEl.style.display = 'none';
+      }
+    } else {
+      appendLog('\u{1F480} Defeated! ' + escHtml(q.enemy.name) + ' was too strong this time.', 'btqm-log-system');
+      p.hp = Math.floor(p.maxHp * DEFEAT_HP_RECOVERY_PERCENT);
+      savePlayer();
+      document.getElementById('result-emoji').textContent   = '\u{1F480}';
+      document.getElementById('result-heading').textContent = 'Defeated!';
+      document.getElementById('result-subtext').textContent =
+        'The ' + q.enemy.name + ' bested you this time. Recover and try again!';
+      document.getElementById('result-rewards').innerHTML =
+        '<div class="btqm-reward-chip" style="color:#e74c3c">HP restored to ' + Math.round(DEFEAT_HP_RECOVERY_PERCENT * 100) + '%</div>';
+      document.getElementById('result-levelup').style.display = 'none';
+    }
+
+    setTimeout(function () { showScreen('btqm-result'); }, 600);
+  }
+
+  /* ═══════════════════════════════════
+     Battle — action handlers
+  ═══════════════════════════════════ */
+  function handleAttack() {
+    if (!state.battle || state.battle.over) { return; }
+    var dmg = calcPlayerAtk();
+    state.battle.enemyHp = Math.max(0, state.battle.enemyHp - dmg);
+    appendLog('You strike for ' + dmg + ' damage!', 'btqm-log-player');
+    updateBattleBars();
+    if (state.battle.enemyHp <= 0) { endBattle(true); return; }
+    doEnemyTurn();
+  }
+
+  function handleMoonStrike() {
+    if (!state.battle || state.battle.over) { return; }
+    if (Math.random() < MOON_STRIKE_HIT_CHANCE) {
+      var dmg = randInt(20 + state.player.level * 3, 32 + state.player.level * 4);
+      state.battle.enemyHp = Math.max(0, state.battle.enemyHp - dmg);
+      appendLog('\u{1F319} MOON STRIKE hits for ' + dmg + ' damage!', 'btqm-log-crit');
+      updateBattleBars();
+      if (state.battle.enemyHp <= 0) { endBattle(true); return; }
+    } else {
+      appendLog('\u{1F319} Moon Strike missed \u2014 too volatile!', 'btqm-log-system');
+    }
+    doEnemyTurn();
+  }
+
+  function handleDiamondHands() {
+    if (!state.battle || state.battle.over) { return; }
+    state.battle.defending = true;
+    var regen = randInt(3, 8);
+    state.player.hp = Math.min(state.player.maxHp, state.player.hp + regen);
+    appendLog('\u{1F48E} Diamond Hands! Defending and recovering ' + regen + ' HP.', 'btqm-log-heal');
+    updateBattleBars();
+    doEnemyTurn();
+  }
+
+  function handleFlee() {
+    if (!state.battle || state.battle.over) { return; }
+    state.battle.over = true;
+    setBattleButtons(false);
+    appendLog('\u{1F3C3} You fled the battle!', 'btqm-log-system');
+    state.player.hp = Math.max(1, Math.floor(state.player.hp * FLEE_HP_RETENTION));
+    savePlayer();
+    setTimeout(showHub, 500);
+  }
+
+  /* ═══════════════════════════════════
+     Hub
+  ═══════════════════════════════════ */
+  function showHub() {
+    updateStatsBar();
+    renderQuestGrid();
+    showScreen('btqm-hub');
+  }
+
+  /* ═══════════════════════════════════
+     Init
+  ═══════════════════════════════════ */
+  function init() {
+    initTabs();
+
+    // Wire up battle buttons early
+    document.getElementById('btn-attack').addEventListener('click',  handleAttack);
+    document.getElementById('btn-moon').addEventListener('click',    handleMoonStrike);
+    document.getElementById('btn-diamond').addEventListener('click', handleDiamondHands);
+    document.getElementById('btn-flee').addEventListener('click',    handleFlee);
+    document.getElementById('btn-continue').addEventListener('click', showHub);
+
+    document.getElementById('btqm-reset-btn').addEventListener('click', function () {
+      var name = state.player ? state.player.name : 'your hero';
+      if (window.confirm('Reset all progress for ' + name + '?')) {
+        try { localStorage.removeItem(STORAGE_KEY); } catch (e) { /* ignore */ }
+        state.player = null;
+        state.quests = FALLBACK_QUESTS;
+        document.getElementById('btqm-quest-list').innerHTML = '';
+        document.getElementById('btqm-name-input').value = '';
+        showScreen('btqm-welcome');
+      }
+    });
+
+    // Check for saved player
+    var saved = loadPlayer();
+    if (saved && saved.name) {
+      state.player = saved;
+      state.player.maxHp = 100 + (state.player.level - 1) * 20;
+      state.player.hp    = clamp(state.player.hp, 1, state.player.maxHp);
+      loadR2Data();
+      showHub();
+      return;
+    }
+
+    // Welcome screen
+    showScreen('btqm-welcome');
+    var nameInput = document.getElementById('btqm-name-input');
+    var startBtn  = document.getElementById('btqm-start-btn');
+    var errEl     = document.getElementById('btqm-name-error');
+
+    function doStart() {
+      var name = nameInput.value.trim();
+      if (name.length < 2 || name.length > 20) {
+        errEl.style.display = '';
+        nameInput.focus();
+        return;
+      }
+      errEl.style.display = 'none';
+      state.player = newPlayer(name);
+      savePlayer();
+      loadR2Data();
+      showHub();
+    }
+
+    startBtn.addEventListener('click', doStart);
+    nameInput.addEventListener('keydown', function (e) { if (e.key === 'Enter') { doStart(); } });
+
+    // Pre-load R2 data (quests & leaderboards) in the background
+    loadR2Data();
+  }
+
+  init();
 })();
 </script>
 </body>
