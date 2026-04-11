@@ -1,18 +1,21 @@
-name: Deploy Block Topia Score Worker
+name: Deploy Leaderboard Worker
 
 on:
   push:
     branches:
       - main
     paths:
-      - 'workers/block-topia/**'
-      - '.github/workflows/deploy-block-topia-worker.yml'
+      - 'workers/leaderboard-worker.js'
+      - 'workers/leaderboard/**'
+      - '.github/workflows/deploy-leaderboard-worker.yml'
   workflow_dispatch:
 
 jobs:
   deploy:
     name: Deploy to Cloudflare Workers
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout
@@ -23,5 +26,5 @@ jobs:
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          workingDirectory: workers/block-topia
+          workingDirectory: workers/leaderboard
           command: deploy
