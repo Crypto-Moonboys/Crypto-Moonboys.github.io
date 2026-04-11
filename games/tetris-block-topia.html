@@ -255,7 +255,7 @@ import { rollHiddenBonus, showBonusPopup } from '/js/bonus-engine.js';
 
   // Ghost piece row
   function ghostRow(){
-    if(!current) return current.row;
+    if(!current) return -1;
     let gr=current.row;
     while(true){
       const nxt={...current,row:gr+1};

@@ -15,7 +15,7 @@ const TABS = [
   { key: 'invaders',   label: '👾 Invaders',    icon: '👾' },
   { key: 'pacchain',   label: '🟡 Pac-Chain',   icon: '🟡' },
   { key: 'asteroids',  label: '🌑 Asteroids',   icon: '🌑' },
-  { key: 'breakout',   label: '🧱 Breakout',    icon: '🧱' },
+  { key: 'breakout',   label: '🧱 Bullrun',    icon: '🧱' },
   { key: 'tetris',     label: '🟦 Tetris',      icon: '🟦' },
 ];
 
@@ -26,7 +26,7 @@ const GAME_LABELS = {
   invaders:   '👾 Invaders',
   pacchain:   '🟡 Pac-Chain',
   asteroids:  '🌑 Asteroids',
-  breakout:   '🧱 Breakout',
+  breakout:   '🧱 Bullrun',
   tetris:     '🟦 Tetris',
   bonus:      '⭐ Bonus',
 };
