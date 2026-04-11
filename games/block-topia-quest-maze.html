@@ -412,23 +412,15 @@
 
 <button id="back-to-top" aria-label="Back to top">↑</button>
 
+<script>window.R2_PUBLIC_BASE_URL = window.R2_PUBLIC_BASE_URL || "";</script>
 <script src="/js/wiki.js"></script>
-<script>
+<script type="module">
+import { loadGameData } from '/js/data-loader.js';
+import { ArcadeSync } from '/js/arcade-sync.js';
+import { submitScore, fetchLeaderboard } from '/js/leaderboard-client.js';
+
 (function () {
   'use strict';
-
-  /* ═══════════════════════════════════
-     R2 Data URLs
-  ═══════════════════════════════════ */
-  var BASE_R2_URL     = "https://pub-46d62f7d93b247529e98efe62b71a998.r2.dev/R2-Upload/";
-  var QUEST_BANK_URL  = BASE_R2_URL + "quest-bank/current-season.json";
-  var LEADERBOARD_URL = BASE_R2_URL + "leaderboards/current-season.json";
-  var MASTERS_URL     = BASE_R2_URL + "leaderboards/masters-all-time.json";
-
-  // Worker endpoint for leaderboard write-back.
-  // Set this to your deployed Cloudflare Worker URL once the worker is live.
-  // e.g. "https://block-topia-score.YOUR-SUBDOMAIN.workers.dev/api/block-topia/score"
-  var WORKER_SCORE_URL = "https://block-topia-score.sercullen.workers.dev/api/block-topia/score";
 
   var STORAGE_KEY = 'btqm_player_v1';
 
@@ -492,7 +484,9 @@
     player: null,
     quests: [],
     activeQuest: null,
-    battle: null
+    battle: null,
+    bonusPool: [],
+    season: null
   };
 
   /* ═══════════════════════════════════
@@ -681,12 +675,10 @@
   }
 
   /* ═══════════════════════════════════
-     R2 data loading
+     Data loading (via data-loader.js)
   ═══════════════════════════════════ */
-  function loadR2Data() {
-    // Quests
-    fetch(QUEST_BANK_URL)
-      .then(function (res) { if (!res.ok) { throw new Error('HTTP ' + res.status); } return res.json(); })
+  function loadGameData_quests() {
+    loadGameData('/quest-bank/current-season.json')
       .then(function (data) {
         var raw = Array.isArray(data) ? data : (data.quests || data.quest_bank || data.items || []);
         state.quests = raw.length ? raw.map(normaliseQuest) : FALLBACK_QUESTS;
@@ -696,48 +688,65 @@
         state.quests = FALLBACK_QUESTS;
         renderQuestGrid();
       });
+  }
 
-    // Current season leaderboard
-    fetch(LEADERBOARD_URL)
-      .then(function (res) { if (!res.ok) { throw new Error('HTTP ' + res.status); } return res.json(); })
+  function loadGameData_bonus() {
+    loadGameData('/games/data/hidden_bonus_pool.json')
+      .then(function (data) { state.bonusPool = (data && Array.isArray(data.bonuses)) ? data.bonuses : []; })
+      .catch(function () { state.bonusPool = []; });
+  }
+
+  function loadGameData_season() {
+    loadGameData('/games/data/seasons/season-moonrise.json')
+      .then(function (data) { state.season = data || null; })
+      .catch(function () { state.season = null; });
+  }
+
+  function loadLeaderboards() {
+    fetchLeaderboard('blocktopia')
       .then(function (data) { renderLeaderboard('btqm-lb-content', data, 'No season entries yet.'); })
       .catch(function ()   { renderLeaderboard('btqm-lb-content', [], 'Leaderboard data unavailable right now.'); });
 
-    // Masters all-time leaderboard
-    fetch(MASTERS_URL)
-      .then(function (res) { if (!res.ok) { throw new Error('HTTP ' + res.status); } return res.json(); })
+    fetchLeaderboard('global')
       .then(function (data) { renderLeaderboard('btqm-masters-content', data, 'No masters entries yet.'); })
       .catch(function ()   { renderLeaderboard('btqm-masters-content', [], 'Masters data unavailable right now.'); });
+  }
+
+  function loadR2Data() {
+    loadGameData_quests();
+    loadGameData_bonus();
+    loadGameData_season();
+    loadLeaderboards();
   }
 
   /* ═══════════════════════════════════
      Leaderboard write-back
   ═══════════════════════════════════ */
   function postScore() {
-    if (!WORKER_SCORE_URL || !state.player) { return; }
+    if (!state.player) { return; }
     var p = state.player;
-    var payload = {
-      name:  p.name,
-      score: p.level * 1000 + p.gold,
-      level: p.level,
-      gold:  p.gold
-    };
-    fetch(WORKER_SCORE_URL, {
-      method:  'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify(payload)
-    })
-    .then(function (res) { return res.ok ? res.json() : null; })
-    .then(function (data) {
-      if (!data) { return; }
-      if (data.currentSeason) {
-        renderLeaderboard('btqm-lb-content', data.currentSeason, 'No season entries yet.');
-      }
-      if (data.mastersAllTime) {
-        renderLeaderboard('btqm-masters-content', data.mastersAllTime, 'No masters entries yet.');
-      }
-    })
-    .catch(function () { /* fire-and-forget — network errors are silent */ });
+    var multiplier = (state.season && typeof state.season.score_multiplier === 'number')
+      ? state.season.score_multiplier : 1;
+    var rawScore = p.level * 1000 + p.gold;
+    var finalScore = Math.floor(rawScore * multiplier);
+    var playerName = p.name;
+
+    // Sync identity with shared arcade profile
+    ArcadeSync.setPlayer(playerName);
+    ArcadeSync.setHighScore('blocktopia', finalScore);
+
+    submitScore(playerName, finalScore, 'blocktopia')
+      .then(function () {
+        return Promise.all([
+          fetchLeaderboard('blocktopia'),
+          fetchLeaderboard('global')
+        ]);
+      })
+      .then(function (boards) {
+        renderLeaderboard('btqm-lb-content',      boards[0], 'No season entries yet.');
+        renderLeaderboard('btqm-masters-content', boards[1], 'No masters entries yet.');
+      })
+      .catch(function () { /* fire-and-forget — network errors are silent */ });
   }
 
   /* ═══════════════════════════════════
@@ -840,6 +849,7 @@
 
     if (won) {
       appendLog('\u{1F3C6} Victory! You defeated ' + escHtml(q.enemy.name) + '!', 'btqm-log-system');
+      // AUDIO_HOOK: play('victory')
       var prevLevel = p.level;
       p.gold += q.gold;
       p.xp   += q.xp;
@@ -869,6 +879,7 @@
       }
     } else {
       appendLog('\u{1F480} Defeated! ' + escHtml(q.enemy.name) + ' was too strong this time.', 'btqm-log-system');
+      // AUDIO_HOOK: play('defeat')
       p.hp = Math.floor(p.maxHp * DEFEAT_HP_RECOVERY_PERCENT);
       savePlayer();
       document.getElementById('result-emoji').textContent   = '\u{1F480}';
@@ -970,6 +981,7 @@
       state.player = saved;
       state.player.maxHp = 100 + (state.player.level - 1) * 20;
       state.player.hp    = clamp(state.player.hp, 1, state.player.maxHp);
+      ArcadeSync.setPlayer(state.player.name); // sync shared arcade identity
       loadR2Data();
       showHub();
       return;
@@ -981,6 +993,12 @@
     var startBtn  = document.getElementById('btqm-start-btn');
     var errEl     = document.getElementById('btqm-name-error');
 
+    // Pre-fill name from shared arcade identity if available
+    var arcadeName = ArcadeSync.getPlayer();
+    if (arcadeName && !arcadeName.startsWith('Player_') && nameInput) {
+      nameInput.value = arcadeName;
+    }
+
     function doStart() {
       var name = nameInput.value.trim();
       if (name.length < 2 || name.length > 20) {
@@ -990,6 +1008,7 @@
       }
       errEl.style.display = 'none';
       state.player = newPlayer(name);
+      ArcadeSync.setPlayer(name); // sync shared arcade identity
       savePlayer();
       loadR2Data();
       showHub();

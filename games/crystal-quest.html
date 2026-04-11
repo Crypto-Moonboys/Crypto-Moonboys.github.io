@@ -87,6 +87,8 @@
 <script src="/js/wiki.js"></script>
 <script type="module">
 import { loadGameData } from '/js/data-loader.js';
+import { ArcadeSync } from '/js/arcade-sync.js';
+import { submitScore } from '/js/leaderboard-client.js';
 
 const title = document.getElementById('questTitle');
 const clue = document.getElementById('questClue');
@@ -123,6 +125,20 @@ function loadQuest() {
   feedback.textContent = 'Read the linked page, return, and enter the hidden answer.';
 }
 
+function onCorrectAnswer(q) {
+  solved += 1;
+  streak += 1;
+  score += (q.rewards?.arcade_points || 100);
+  feedback.textContent = 'Correct. Crystal secured.';
+  // AUDIO_HOOK: play('correct')
+  idx += 1;
+  updateHud();
+  // Persist and submit best Crystal Quest score
+  ArcadeSync.setHighScore('crystal', score);
+  submitScore(ArcadeSync.getPlayer(), score, 'crystal');
+  setTimeout(loadQuest, 500);
+}
+
 document.getElementById('submitBtn').onclick = () => {
   const q = quests[idx % quests.length];
   if (!q) return;
@@ -130,15 +146,10 @@ document.getElementById('submitBtn').onclick = () => {
   if (!guess) return;
   const answers = normalizeAnswers(q.accepted_answers);
   if (answers.includes(guess)) {
-    solved += 1;
-    streak += 1;
-    score += (q.rewards?.arcade_points || 100);
-    feedback.textContent = 'Correct. Crystal secured.';
-    idx += 1;
-    updateHud();
-    setTimeout(loadQuest, 500);
+    onCorrectAnswer(q);
   } else {
     streak = 0;
+    // AUDIO_HOOK: play('wrong')
     feedback.textContent = 'Wrong answer. Read again and try properly.';
     updateHud();
   }
