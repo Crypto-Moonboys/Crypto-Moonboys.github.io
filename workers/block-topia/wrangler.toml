@@ -6,7 +6,7 @@ compatibility_date = "2024-11-01"
 # before deploying (e.g. `wrangler deploy --var bucket_name:my-bucket` or edit below).
 [[r2_buckets]]
 binding     = "R2_BUCKET"
-bucket_name = "YOUR_BUCKET_NAME_HERE"
+bucket_name = "crypto-moonboys-rpg-memory"
 
 # Non-secret variables per docs/r2-worker-env.md
 [vars]
