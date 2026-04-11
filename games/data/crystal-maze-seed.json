@@ -1,5 +1,5 @@
 {
-  "version": "1.0",
+  "version": "1.1",
   "season": "Genesis",
   "description": "Lore-driven puzzle quests using the Crypto Moonboys Wiki as the knowledge source.",
   "quests": [
@@ -36,7 +36,7 @@
     },
     {
       "id": "satoshi_scroll",
-      "title": "The Founder\u2019s Secret",
+      "title": "The Founder's Secret",
       "difficulty": "hard",
       "clue": "Seek the ancient document revealing the origins of the blockchain movement. Who is the mysterious creator?",
       "wiki_url": "/wiki/satoshi-scroll.html",
@@ -48,6 +48,119 @@
         "xp": 300,
         "arcade_points": 320,
         "punk": 15
+      }
+    },
+    {
+      "id": "hodl_wars",
+      "title": "The Great War",
+      "difficulty": "medium",
+      "clue": "Read the page about the defining crypto conflict. What is the name of this war?",
+      "wiki_url": "/wiki/hodl-wars.html",
+      "accepted_answers": [
+        "HODL WARS",
+        "HODL WAR",
+        "HODL WAR$"
+      ],
+      "rewards": {
+        "xp": 180,
+        "arcade_points": 200,
+        "punk": 9
+      }
+    },
+    {
+      "id": "paper_hands",
+      "title": "Know Your Enemy",
+      "difficulty": "easy",
+      "clue": "The opposite of diamond holders. What do we call those who sell in a panic?",
+      "wiki_url": "/wiki/paper-hands.html",
+      "accepted_answers": [
+        "PAPER HANDS",
+        "PAPERHANDS"
+      ],
+      "rewards": {
+        "xp": 90,
+        "arcade_points": 100,
+        "punk": 4
+      }
+    },
+    {
+      "id": "whale_lords",
+      "title": "Leviathan Rising",
+      "difficulty": "medium",
+      "clue": "Find the page about the largest players in the market. What title do they hold?",
+      "wiki_url": "/wiki/whale-lords.html",
+      "accepted_answers": [
+        "WHALE LORDS",
+        "THE WHALE LORDS"
+      ],
+      "rewards": {
+        "xp": 200,
+        "arcade_points": 220,
+        "punk": 10
+      }
+    },
+    {
+      "id": "moon_mission",
+      "title": "To the Moon",
+      "difficulty": "easy",
+      "clue": "What is the legendary journey that every crypto holder dreams of?",
+      "wiki_url": "/wiki/moon-mission.html",
+      "accepted_answers": [
+        "MOON MISSION"
+      ],
+      "rewards": {
+        "xp": 110,
+        "arcade_points": 130,
+        "punk": 5
+      }
+    },
+    {
+      "id": "the_great_dip",
+      "title": "Buy the Dip",
+      "difficulty": "medium",
+      "clue": "The market crashes. True believers call this event what?",
+      "wiki_url": "/wiki/the-great-dip.html",
+      "accepted_answers": [
+        "THE GREAT DIP",
+        "GREAT DIP"
+      ],
+      "rewards": {
+        "xp": 170,
+        "arcade_points": 190,
+        "punk": 8
+      }
+    },
+    {
+      "id": "fomo_plague",
+      "title": "Fear Is the Mind-Killer",
+      "difficulty": "easy",
+      "clue": "What is the name of the irrational panic that drives bad trades?",
+      "wiki_url": "/wiki/fomo-plague.html",
+      "accepted_answers": [
+        "FOMO",
+        "FOMO PLAGUE",
+        "THE FOMO PLAGUE"
+      ],
+      "rewards": {
+        "xp": 95,
+        "arcade_points": 110,
+        "punk": 4
+      }
+    },
+    {
+      "id": "ngmi_chronicles",
+      "title": "The Cursed Path",
+      "difficulty": "hard",
+      "clue": "Those who will never make it are recorded in which chronicle?",
+      "wiki_url": "/wiki/ngmi-chronicles.html",
+      "accepted_answers": [
+        "NGMI",
+        "NGMI CHRONICLES"
+      ],
+      "rewards": {
+        "xp": 280,
+        "arcade_points": 300,
+        "punk": 14
       }
     }
   ]

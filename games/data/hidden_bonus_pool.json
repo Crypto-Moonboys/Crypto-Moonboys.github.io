@@ -1,5 +1,5 @@
 {
-  "version": "1.0",
+  "version": "1.1",
   "description": "Shared hidden bonus pool for all Moonboys Arcade games.",
   "rarity_weights": {
     "common": 50,
@@ -67,6 +67,94 @@
         "xp": 1200,
         "punk": 50,
         "title": "Moonshot Legend"
+      }
+    },
+    {
+      "id": "sigma_protocol",
+      "name": "SIGMA Protocol",
+      "rarity": "legendary",
+      "description": "Activate the SIGMA REY override for massive bonus.",
+      "trigger": {
+        "type": "score_threshold",
+        "score": 500
+      },
+      "rewards": {
+        "arcade_points": 800,
+        "xp": 650,
+        "punk": 35,
+        "title": "SIGMA REY"
+      }
+    },
+    {
+      "id": "hodl_streak",
+      "name": "HODL Streak",
+      "rarity": "uncommon",
+      "description": "Keep a streak alive for 10 consecutive actions without breaking.",
+      "trigger": {
+        "type": "streak",
+        "count": 10
+      },
+      "rewards": {
+        "arcade_points": 80,
+        "xp": 60
+      }
+    },
+    {
+      "id": "bear_slayer",
+      "name": "Bear Slayer",
+      "rarity": "rare",
+      "description": "Defeat the bear market by achieving a score above 300.",
+      "trigger": {
+        "type": "score_threshold",
+        "score": 300
+      },
+      "rewards": {
+        "arcade_points": 200,
+        "xp": 160,
+        "punk": 10
+      }
+    },
+    {
+      "id": "paper_shredder",
+      "name": "Paper Shredder",
+      "rarity": "uncommon",
+      "description": "Overcome 5 consecutive near-miss events.",
+      "trigger": {
+        "type": "near_miss",
+        "count": 5
+      },
+      "rewards": {
+        "arcade_points": 90,
+        "xp": 70
+      }
+    },
+    {
+      "id": "whale_hunter",
+      "name": "Whale Hunter",
+      "rarity": "epic",
+      "description": "Outperform a whale-tier score in a single session.",
+      "trigger": {
+        "type": "score_threshold",
+        "score": 1000
+      },
+      "rewards": {
+        "arcade_points": 400,
+        "xp": 320,
+        "punk": 25,
+        "title": "Whale Hunter"
+      }
+    },
+    {
+      "id": "first_blood",
+      "name": "First Blood",
+      "rarity": "common",
+      "description": "Score your first point in any arcade game.",
+      "trigger": {
+        "type": "first_score"
+      },
+      "rewards": {
+        "arcade_points": 25,
+        "xp": 20
       }
     }
   ]
