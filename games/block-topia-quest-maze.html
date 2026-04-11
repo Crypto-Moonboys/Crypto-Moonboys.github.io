@@ -425,6 +425,11 @@
   var LEADERBOARD_URL = BASE_R2_URL + "leaderboards/current-season.json";
   var MASTERS_URL     = BASE_R2_URL + "leaderboards/masters-all-time.json";
 
+  // Worker endpoint for leaderboard write-back.
+  // Set this to your deployed Cloudflare Worker URL once the worker is live.
+  // e.g. "https://block-topia-score.YOUR-SUBDOMAIN.workers.dev/api/block-topia/score"
+  var WORKER_SCORE_URL = "";
+
   var STORAGE_KEY = 'btqm_player_v1';
 
   /* ═══════════════════════════════════
@@ -706,6 +711,36 @@
   }
 
   /* ═══════════════════════════════════
+     Leaderboard write-back
+  ═══════════════════════════════════ */
+  function postScore() {
+    if (!WORKER_SCORE_URL || !state.player) { return; }
+    var p = state.player;
+    var payload = {
+      name:  p.name,
+      score: p.level * 1000 + p.gold,
+      level: p.level,
+      gold:  p.gold
+    };
+    fetch(WORKER_SCORE_URL, {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify(payload)
+    })
+    .then(function (res) { return res.ok ? res.json() : null; })
+    .then(function (data) {
+      if (!data) { return; }
+      if (data.currentSeason) {
+        renderLeaderboard('btqm-lb-content', data.currentSeason, 'No season entries yet.');
+      }
+      if (data.mastersAllTime) {
+        renderLeaderboard('btqm-masters-content', data.mastersAllTime, 'No masters entries yet.');
+      }
+    })
+    .catch(function () { /* fire-and-forget — network errors are silent */ });
+  }
+
+  /* ═══════════════════════════════════
      Battle — setup
   ═══════════════════════════════════ */
   function startQuest(questId) {
@@ -816,6 +851,7 @@
       }
       if (p.completedQuests.indexOf(q.id) === -1) { p.completedQuests.push(q.id); }
       savePlayer();
+      postScore();
 
       document.getElementById('result-emoji').textContent   = '\u{1F3C6}';
       document.getElementById('result-heading').textContent = 'Victory!';
