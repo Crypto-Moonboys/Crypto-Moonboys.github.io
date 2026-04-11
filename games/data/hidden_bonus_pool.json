@@ -1,0 +1,73 @@
+{
+  "version": "1.0",
+  "description": "Shared hidden bonus pool for all Moonboys Arcade games.",
+  "rarity_weights": {
+    "common": 50,
+    "uncommon": 25,
+    "rare": 12,
+    "epic": 8,
+    "legendary": 4,
+    "wtf": 1
+  },
+  "bonuses": [
+    {
+      "id": "quick_hands",
+      "name": "Quick Hands",
+      "rarity": "common",
+      "description": "Earn 100 points within 2 minutes.",
+      "trigger": {
+        "type": "score_within_time",
+        "score": 100,
+        "time_seconds": 120
+      },
+      "rewards": {
+        "arcade_points": 50,
+        "xp": 40
+      }
+    },
+    {
+      "id": "diamond_reflex",
+      "name": "Diamond Reflex",
+      "rarity": "rare",
+      "description": "Achieve a streak of 20 successful actions.",
+      "trigger": {
+        "type": "streak",
+        "count": 20
+      },
+      "rewards": {
+        "arcade_points": 150,
+        "xp": 120,
+        "multiplier": 1.5
+      }
+    },
+    {
+      "id": "hidden_vault",
+      "name": "Hidden Vault",
+      "rarity": "epic",
+      "description": "Discover a secret achievement during gameplay.",
+      "trigger": {
+        "type": "secret_event"
+      },
+      "rewards": {
+        "arcade_points": 300,
+        "xp": 250,
+        "punk": 20
+      }
+    },
+    {
+      "id": "moonshot",
+      "name": "MOONSHOT",
+      "rarity": "wtf",
+      "description": "An ultra-rare jackpot event.",
+      "trigger": {
+        "type": "random_event"
+      },
+      "rewards": {
+        "arcade_points": 1500,
+        "xp": 1200,
+        "punk": 50,
+        "title": "Moonshot Legend"
+      }
+    }
+  ]
+}

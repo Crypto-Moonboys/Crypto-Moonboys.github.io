@@ -1,0 +1,54 @@
+{
+  "version": "1.0",
+  "season": "Genesis",
+  "description": "Lore-driven puzzle quests using the Crypto Moonboys Wiki as the knowledge source.",
+  "quests": [
+    {
+      "id": "wagmi_prophecy",
+      "title": "The First Signal",
+      "difficulty": "easy",
+      "clue": "Find the page that explains the prophecy of making it. What is the final keyword?",
+      "wiki_url": "/wiki/wagmi-prophecy.html",
+      "accepted_answers": [
+        "WAGMI"
+      ],
+      "rewards": {
+        "xp": 100,
+        "arcade_points": 120,
+        "punk": 5
+      }
+    },
+    {
+      "id": "diamond_hands",
+      "title": "Diamond Doctrine",
+      "difficulty": "easy",
+      "clue": "Read the page about holding strong. What is the two-word identity of strong holders?",
+      "wiki_url": "/wiki/diamond-hands.html",
+      "accepted_answers": [
+        "DIAMOND HANDS",
+        "DIAMONDHANDS"
+      ],
+      "rewards": {
+        "xp": 120,
+        "arcade_points": 140,
+        "punk": 6
+      }
+    },
+    {
+      "id": "satoshi_scroll",
+      "title": "The Founder\u2019s Secret",
+      "difficulty": "hard",
+      "clue": "Seek the ancient document revealing the origins of the blockchain movement. Who is the mysterious creator?",
+      "wiki_url": "/wiki/satoshi-scroll.html",
+      "accepted_answers": [
+        "SATOSHI",
+        "SATOSHI NAKAMOTO"
+      ],
+      "rewards": {
+        "xp": 300,
+        "arcade_points": 320,
+        "punk": 15
+      }
+    }
+  ]
+}

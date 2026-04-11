@@ -1,0 +1,15 @@
+{
+  "season_id": "moonrise",
+  "name": "Moonrise",
+  "start_date": "2026-07-01T00:00:00Z",
+  "end_date": "2026-09-30T23:59:59Z",
+  "score_multiplier": 1.2,
+  "exclusive_rewards": [
+    {
+      "id": "moonrise_champion",
+      "type": "nft",
+      "name": "Moonrise Champion",
+      "description": "Awarded to the top 10 players of the Moonrise season."
+    }
+  ]
+}

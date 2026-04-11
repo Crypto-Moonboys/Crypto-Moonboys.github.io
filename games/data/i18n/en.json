@@ -1,0 +1,22 @@
+{
+  "quest": {
+    "wagmi": {
+      "title": "The First Signal",
+      "clue": "Find the page that explains the prophecy of making it. What is the final keyword?"
+    },
+    "diamond": {
+      "title": "Diamond Doctrine",
+      "clue": "Read the page about holding strong. What is the two-word identity of strong holders?"
+    }
+  },
+  "bonus": {
+    "quick_hands": {
+      "name": "Quick Hands",
+      "desc": "Earn 100 points within 2 minutes."
+    },
+    "moonshot": {
+      "name": "MOONSHOT",
+      "desc": "An ultra-rare jackpot event."
+    }
+  }
+}
