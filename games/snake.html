@@ -80,6 +80,7 @@
 <script type="module">
 import { ArcadeSync } from '/js/arcade-sync.js';
 import { submitScore } from '/js/leaderboard-client.js';
+import { rollHiddenBonus, showBonusPopup } from '/js/bonus-engine.js';
 
 (() => {
   const canvas = document.getElementById('snakeCanvas');
@@ -123,6 +124,16 @@ import { submitScore } from '/js/leaderboard-client.js';
     drawCell(food.x, food.y, '#f7ab1a', '#fff2b5');
     snake.forEach((s, i) => drawCell(s.x, s.y, i===0 ? '#2ec5ff' : '#ff4fd1', i===0 ? '#dff8ff' : '#ffb3ef'));
   }
+  async function onFoodEaten() {
+    const bonus = await rollHiddenBonus({ score, streak, game: 'snake' });
+    if (bonus) {
+      score += bonus.rewards?.arcade_points || 0;
+      ArcadeSync.setHighScore('snake', score);
+      best = ArcadeSync.getHighScore('snake');
+      showBonusPopup(bonus);
+      updateHud();
+    }
+  }
   function onGameOver() {
     running = false;
     clearInterval(timer);
@@ -149,6 +160,7 @@ import { submitScore } from '/js/leaderboard-client.js';
       ArcadeSync.setHighScore('snake', score); // persists only if score exceeds stored best
       best = ArcadeSync.getHighScore('snake');
       food = spawnFood();
+      onFoodEaten(); // async bonus roll — fire and continue
     } else {
       snake.pop(); streak = 0;
     }

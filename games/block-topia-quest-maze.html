@@ -418,6 +418,7 @@
 import { loadGameData } from '/js/data-loader.js';
 import { ArcadeSync } from '/js/arcade-sync.js';
 import { submitScore, fetchLeaderboard } from '/js/leaderboard-client.js';
+import { rollHiddenBonus, showBonusPopup } from '/js/bonus-engine.js';
 
 (function () {
   'use strict';
@@ -722,6 +723,21 @@ import { submitScore, fetchLeaderboard } from '/js/leaderboard-client.js';
   /* ═══════════════════════════════════
      Leaderboard write-back
   ═══════════════════════════════════ */
+  function rollBattleBonus(score, streak) {
+    rollHiddenBonus({ score: score, streak: streak, game: 'blocktopia' })
+      .then(function (bonus) {
+        if (!bonus) { return; }
+        var pts = (bonus.rewards && bonus.rewards.arcade_points) ? bonus.rewards.arcade_points : 0;
+        if (pts > 0 && state.player) {
+          state.player.gold += pts;
+          savePlayer();
+          postScore();
+        }
+        showBonusPopup(bonus);
+      })
+      .catch(function () {});
+  }
+
   function postScore() {
     if (!state.player) { return; }
     var p = state.player;
@@ -862,6 +878,7 @@ import { submitScore, fetchLeaderboard } from '/js/leaderboard-client.js';
       if (p.completedQuests.indexOf(q.id) === -1) { p.completedQuests.push(q.id); }
       savePlayer();
       postScore();
+      rollBattleBonus(p.level * 1000 + p.gold, p.completedQuests.length);
 
       document.getElementById('result-emoji').textContent   = '\u{1F3C6}';
       document.getElementById('result-heading').textContent = 'Victory!';

@@ -104,7 +104,7 @@ export function setPlayerState(entry) {
     { id: 'snake',      label: '🐍 Snake',      color: C.cyan,   score: bd.snake      ?? null },
     { id: 'crystal',    label: '🧩 Crystal',     color: C.pink,   score: bd.crystal    ?? null },
     { id: 'blocktopia', label: '🧱 BlockTopia',  color: C.purple, score: bd.blocktopia ?? null },
-    { id: 'bonus',      label: '⭐ Bonus',        color: C.green,  score: bd.bonus      ?? null },
+    { id: 'bonus',      label: '⭐ Bonus',        color: C.green,  score: bd.variety_bonus ?? null },
   ];
 
   const maxScore = Math.max(1, ...games.map(g => g.score ?? 0));

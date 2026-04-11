@@ -190,7 +190,7 @@ function advanceQueue() {
   }
 }
 
-function onCorrectAnswer(q) {
+async function onCorrectAnswer(q) {
   solved += 1;
   streak += 1;
   score += (q.rewards?.arcade_points || 100);
@@ -202,7 +202,7 @@ function onCorrectAnswer(q) {
   submitScore(ArcadeSync.getPlayer(), score, 'crystal');
 
   // Bonus roll — check streak milestones and random WTF events
-  const bonus = rollHiddenBonus({ score, streak, game: 'crystal' });
+  const bonus = await rollHiddenBonus({ score, streak, game: 'crystal' });
   if (bonus) {
     score += bonus.rewards?.arcade_points || 0;
     updateHud();
