@@ -148,14 +148,19 @@ function renderTable(data) {
       wrap.querySelectorAll('.lb-row').forEach(r => r.classList.remove('selected'));
       tr.classList.add('selected');
       if (onRowSelectCallback) {
-        const idx   = Number(tr.dataset.rank) - 1;
-        const entry = data[idx] || data.find((d, i) => (d.rank ?? i + 1) === Number(tr.dataset.rank));
+        const idx   = rowIndexForRank(data, Number(tr.dataset.rank));
+        const entry = data[idx];
         if (entry) onRowSelectCallback(entry);
       }
     };
     tr.addEventListener('click', activate);
     tr.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') activate(); });
   });
+}
+
+function rowIndexForRank(data, rank) {
+  const byRank = data.findIndex((d, i) => (d.rank ?? i + 1) === rank);
+  return byRank >= 0 ? byRank : rank - 1;
 }
 
 // ── Core actions ──────────────────────────────────────────────────────────

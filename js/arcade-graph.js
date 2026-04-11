@@ -44,7 +44,7 @@ let hoveredNode = null;
 let selectedNode = null;
 let animationId = null;
 let pulseT = 0;
-let activeEdges = new Set();   // ids of edges to animate
+let activeEdges = new Set();   // edge keys in 'source->target' format for animated flow
 let playerData = null;         // current player breakdown
 
 // ── Init ──────────────────────────────────────────────────────────────────
@@ -74,6 +74,9 @@ function resize() {
   canvas.height = h;
   setOverviewState();
 }
+
+// ── Helpers ────────────────────────────────────────────────────────────────
+function edgeKey(source, target) { return `${source}->${target}`; }
 
 // ── State builders ────────────────────────────────────────────────────────
 function setOverviewState() {
@@ -149,7 +152,7 @@ export function setPlayerState(entry) {
     ...games.map(g => ({ source: 'player', target: g.id })),
     ...games.map(g => ({ source: g.id,     target: 'global' })),
   ];
-  activeEdges = new Set(games.map(g => `${g.id}->global`));
+  activeEdges = new Set(games.map(g => edgeKey(g.id, 'global')));
 }
 
 // ── Render loop ───────────────────────────────────────────────────────────
@@ -190,8 +193,8 @@ function draw() {
     const a = nodeMap.get(edge.source);
     const b = nodeMap.get(edge.target);
     if (!a || !b) continue;
-    const edgeKey = `${edge.source}->${edge.target}`;
-    const isActive = activeEdges.has(edgeKey);
+    const key = edgeKey(edge.source, edge.target);
+    const isActive = activeEdges.has(key);
     drawEdge(a, b, isActive);
   }
 
