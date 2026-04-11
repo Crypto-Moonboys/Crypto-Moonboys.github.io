@@ -11,10 +11,11 @@
     .input{width:100%;padding:.9rem 1rem;border-radius:12px;border:1px solid var(--color-border,#333);background:#0b1020;color:#fff}
     .btn{padding:.85rem 1.1rem;border:none;border-radius:12px;background:#f7ab1a;color:#111;font-weight:700;cursor:pointer}
     .btn.alt{background:rgba(255,255,255,.08);color:#fff}
-    .meta{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-bottom:12px}
+    .meta{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:12px}
     .meta .stat{background:rgba(255,255,255,.04);border:1px solid var(--color-border,#333);border-radius:12px;padding:12px;text-align:center}
     .small{color:var(--color-text-muted);font-size:.82rem}
-    @media(max-width:720px){.meta{grid-template-columns:1fr}}
+    .status{margin-top:10px;font-size:.85rem;color:var(--color-text-muted)}
+    @media(max-width:720px){.meta{grid-template-columns:repeat(2,minmax(0,1fr))}}
   </style>
 </head>
 <body>
@@ -48,7 +49,7 @@
       <nav class="breadcrumb" aria-label="Breadcrumb"><a href="/index.html">Home</a><span class="sep">›</span><a href="/games/">Arcade</a><span class="sep">›</span><span aria-current="page">Crystal Quest</span></nav>
       <div class="category-header">
         <span class="cat-big-icon" aria-hidden="true">🧩</span>
-        <div><h1 class="page-title">🧩 Crystal Quest</h1><p style="color:var(--color-text-muted)">Wiki clue hunt inside the same site shell as your current Block Topia page.</p></div>
+        <div><h1 class="page-title">🧩 Crystal Quest</h1><p style="color:var(--color-text-muted)">Wiki clue hunt with R2-first loading and local fallback.</p></div>
       </div>
       <div class="page-title-line" aria-hidden="true"></div>
 
@@ -57,12 +58,13 @@
           <div class="stat"><div class="small">Solved</div><div id="solvedCount" style="font-weight:700;font-size:1.15rem">0</div></div>
           <div class="stat"><div class="small">Score</div><div id="scoreCount" style="font-weight:700;font-size:1.15rem">0</div></div>
           <div class="stat"><div class="small">Streak</div><div id="streakCount" style="font-weight:700;font-size:1.15rem">0</div></div>
+          <div class="stat"><div class="small">Source</div><div id="sourceLabel" style="font-weight:700;font-size:1rem">Loading…</div></div>
         </div>
 
         <div class="quest-box">
-          <h3 id="questTitle">The First Signal</h3>
-          <p id="questClue">Find the page that explains the prophecy of making it. What is the final keyword?</p>
-          <p class="small">Suggested page: <a id="questLink" href="/wiki/wagmi-prophecy.html">/wiki/wagmi-prophecy.html</a></p>
+          <h3 id="questTitle">Loading quest…</h3>
+          <p id="questClue">Please wait.</p>
+          <p class="small">Suggested page: <a id="questLink" href="#">—</a></p>
         </div>
 
         <div class="quest-box">
@@ -71,7 +73,8 @@
             <button class="btn" id="submitBtn">Submit Answer</button>
             <button class="btn alt" id="nextBtn">Skip</button>
           </div>
-          <p id="feedback" class="small" style="margin-top:12px">Read the linked page, return, and enter the hidden answer.</p>
+          <p id="feedback" class="small" style="margin-top:12px">Loading quest data…</p>
+          <p class="status" id="statusLine"></p>
         </div>
       </div>
     </main>
@@ -79,47 +82,97 @@
   </div>
 </div>
 <button id="back-to-top" aria-label="Back to top">↑</button>
-<script src="/js/wiki.js"></script>
-<script>
-(() => {
-  const quests = [
-    {title:'The First Signal', clue:'Find the page that explains the prophecy of making it. What is the final keyword?', link:'/wiki/wagmi-prophecy.html', answer:'WAGMI'},
-    {title:'Diamond Doctrine', clue:'Read the page about holding strong. What is the two-word identity of strong holders?', link:'/wiki/diamond-hands.html', answer:'DIAMOND HANDS'},
-    {title:'Fear Creature', clue:'Which plague page is built around panic and fear?', link:'/wiki/fomo-plague.html', answer:'FOMO'},
-  ];
-  let idx = 0, solved = 0, score = 0, streak = 0;
-  const title = document.getElementById('questTitle');
-  const clue = document.getElementById('questClue');
-  const link = document.getElementById('questLink');
-  const feedback = document.getElementById('feedback');
-  const answerInput = document.getElementById('answerInput');
-  const solvedCount = document.getElementById('solvedCount');
-  const scoreCount = document.getElementById('scoreCount');
-  const streakCount = document.getElementById('streakCount');
 
-  function loadQuest() {
-    const q = quests[idx % quests.length];
-    title.textContent = q.title; clue.textContent = q.clue; link.href = q.link; link.textContent = q.link;
-    answerInput.value = ''; feedback.textContent = 'Read the linked page, return, and enter the hidden answer.';
+<script>window.R2_PUBLIC_BASE_URL = window.R2_PUBLIC_BASE_URL || "";</script>
+<script src="/js/wiki.js"></script>
+<script type="module">
+import { loadGameData } from '/js/data-loader.js';
+
+const title = document.getElementById('questTitle');
+const clue = document.getElementById('questClue');
+const link = document.getElementById('questLink');
+const feedback = document.getElementById('feedback');
+const answerInput = document.getElementById('answerInput');
+const solvedCount = document.getElementById('solvedCount');
+const scoreCount = document.getElementById('scoreCount');
+const streakCount = document.getElementById('streakCount');
+const sourceLabel = document.getElementById('sourceLabel');
+const statusLine = document.getElementById('statusLine');
+
+let quests = [];
+let idx = 0, solved = 0, score = 0, streak = 0;
+
+function updateHud() {
+  solvedCount.textContent = solved;
+  scoreCount.textContent = score;
+  streakCount.textContent = streak;
+}
+
+function normalizeAnswers(arr) {
+  return (arr || []).map(v => String(v).trim().toUpperCase());
+}
+
+function loadQuest() {
+  const q = quests[idx % quests.length];
+  if (!q) return;
+  title.textContent = q.title || q.title_key || 'Untitled Quest';
+  clue.textContent = q.clue || q.clue_key || 'No clue available.';
+  link.href = q.wiki_url || '#';
+  link.textContent = q.wiki_url || '#';
+  answerInput.value = '';
+  feedback.textContent = 'Read the linked page, return, and enter the hidden answer.';
+}
+
+document.getElementById('submitBtn').onclick = () => {
+  const q = quests[idx % quests.length];
+  if (!q) return;
+  const guess = answerInput.value.trim().toUpperCase();
+  if (!guess) return;
+  const answers = normalizeAnswers(q.accepted_answers);
+  if (answers.includes(guess)) {
+    solved += 1;
+    streak += 1;
+    score += (q.rewards?.arcade_points || 100);
+    feedback.textContent = 'Correct. Crystal secured.';
+    idx += 1;
+    updateHud();
+    setTimeout(loadQuest, 500);
+  } else {
+    streak = 0;
+    feedback.textContent = 'Wrong answer. Read again and try properly.';
+    updateHud();
   }
-  function updateHud() {
-    solvedCount.textContent = solved; scoreCount.textContent = score; streakCount.textContent = streak;
+};
+
+document.getElementById('nextBtn').onclick = () => {
+  streak = 0;
+  idx += 1;
+  updateHud();
+  loadQuest();
+};
+
+async function init() {
+  try {
+    const base = (window.R2_PUBLIC_BASE_URL || '').replace(/\/$/, '');
+    sourceLabel.textContent = base ? 'R2 / Local' : 'Local';
+    statusLine.textContent = base
+      ? `R2 enabled: ${base}/games/data/crystal-maze-seed.json`
+      : 'R2 base URL not set, using local files only.';
+    const data = await loadGameData('/games/data/crystal-maze-seed.json');
+    quests = data.quests || [];
+    if (!quests.length) throw new Error('No quests found in crystal-maze-seed.json');
+    updateHud();
+    loadQuest();
+  } catch (err) {
+    console.error(err);
+    title.textContent = 'Quest load failed';
+    clue.textContent = 'Could not load crystal-maze-seed.json from R2 or local fallback.';
+    feedback.textContent = 'Check file path, bucket path, and R2 public URL.';
+    statusLine.textContent = err.message;
+    sourceLabel.textContent = 'Error';
   }
-  document.getElementById('submitBtn').onclick = () => {
-    const q = quests[idx % quests.length];
-    const guess = answerInput.value.trim().toUpperCase();
-    if (!guess) return;
-    if (guess === q.answer) {
-      solved += 1; streak += 1; score += 100 + (streak * 10);
-      feedback.textContent = 'Correct. Crystal secured.';
-      idx += 1; updateHud(); setTimeout(loadQuest, 700);
-    } else {
-      streak = 0; feedback.textContent = 'Wrong answer. Read again and try properly.'; updateHud();
-    }
-  };
-  document.getElementById('nextBtn').onclick = () => { streak = 0; idx += 1; updateHud(); loadQuest(); };
-  loadQuest(); updateHud();
-})();
+}
+init();
 </script>
 </body>
 </html>
