@@ -1,32 +1,39 @@
-
-// Moonboys Arcade - Audio Manager
 export class AudioManager {
   constructor() {
-    this.tracks = {};
-    this.muted = localStorage.getItem("audioMuted") === "true";
+    this.sounds = {};
+    this.music = null;
+    this.volume = 0.5;
   }
 
-  load(name, src, loop = true) {
-    const audio = new Audio(src);
-    audio.loop = loop;
-    this.tracks[name] = audio;
+  loadSound(name, path) {
+    const audio = new Audio(path);
+    audio.volume = this.volume;
+    this.sounds[name] = audio;
   }
 
-  play(name) {
-    if (!this.muted && this.tracks[name]) {
-      this.tracks[name].play();
+  playSound(name) {
+    const sound = this.sounds[name];
+    if (sound) {
+      sound.currentTime = 0;
+      sound.play();
     }
   }
 
-  stop(name) {
-    if (this.tracks[name]) {
-      this.tracks[name].pause();
-      this.tracks[name].currentTime = 0;
-    }
+  playMusic(path, loop = true) {
+    if (this.music) this.music.pause();
+    this.music = new Audio(path);
+    this.music.loop = loop;
+    this.music.volume = this.volume;
+    this.music.play();
   }
 
-  toggleMute() {
-    this.muted = !this.muted;
-    localStorage.setItem("audioMuted", this.muted);
+  stopMusic() {
+    if (this.music) this.music.pause();
+  }
+
+  setVolume(level) {
+    this.volume = level;
+    Object.values(this.sounds).forEach(s => (s.volume = level));
+    if (this.music) this.music.volume = level;
   }
 }

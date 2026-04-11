@@ -1,43 +1,24 @@
-
-// Moonboys Arcade - AI Agent Hack Mode
-let hackActive = false;
-
-async function checkAgentStatus() {
-  try {
-    const res = await fetch('/js/agent-status.json?cache=' + Date.now());
-    const data = await res.json();
-
-    if (data.status === 'updating' && !hackActive) {
-      activateHackMode();
-    } else if (data.status === 'idle' && hackActive) {
-      deactivateHackMode();
-    }
-  } catch (err) {
-    console.warn("Agent status check failed:", err);
-  }
-}
-
-function activateHackMode() {
-  hackActive = true;
+export function triggerAgentHack() {
   const overlay = document.createElement("div");
-  overlay.id = "hack-overlay";
-  overlay.innerHTML = `
-    <div class="hack-content">
-      <h1>SYSTEM BREACH DETECTED</h1>
-      <p>AI Agents are updating the universe...</p>
-    </div>
-  `;
+  overlay.style.position = "fixed";
+  overlay.style.top = 0;
+  overlay.style.left = 0;
+  overlay.style.width = "100%";
+  overlay.style.height = "100%";
+  overlay.style.background = "rgba(0, 255, 255, 0.1)";
+  overlay.style.pointerEvents = "none";
+  overlay.style.zIndex = 9999;
+  overlay.style.animation = "flicker 0.3s infinite";
+
   document.body.appendChild(overlay);
-
-  if (window.pauseGame) window.pauseGame();
+  setTimeout(() => overlay.remove(), 2000);
 }
 
-function deactivateHackMode() {
-  hackActive = false;
-  const overlay = document.getElementById("hack-overlay");
-  if (overlay) overlay.remove();
-
-  if (window.resumeGame) window.resumeGame();
-}
-
-setInterval(checkAgentStatus, 10000);
+const style = document.createElement("style");
+style.textContent = `
+@keyframes flicker {
+  0% { opacity: 0.2; }
+  50% { opacity: 0.05; }
+  100% { opacity: 0.2; }
+}`;
+document.head.appendChild(style);
