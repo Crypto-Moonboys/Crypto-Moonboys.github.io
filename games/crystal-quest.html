@@ -89,6 +89,9 @@
 import { loadGameData } from '/js/data-loader.js';
 import { ArcadeSync } from '/js/arcade-sync.js';
 import { submitScore } from '/js/leaderboard-client.js';
+import { rollHiddenBonus, showBonusPopup } from '/js/bonus-engine.js';
+
+const STORAGE_KEY_SEEN = 'crystal_seen_ids';
 
 const title = document.getElementById('questTitle');
 const clue = document.getElementById('questClue');
@@ -101,8 +104,47 @@ const streakCount = document.getElementById('streakCount');
 const sourceLabel = document.getElementById('sourceLabel');
 const statusLine = document.getElementById('statusLine');
 
-let quests = [];
-let idx = 0, solved = 0, score = 0, streak = 0;
+let allQuests = [];    // full dataset
+let queue = [];        // current shuffled play queue (no-repeat)
+let queueIdx = 0;
+let solved = 0, score = 0, streak = 0;
+
+// ── No-repeat helpers ──────────────────────────────────────────────────────
+function loadSeenIds() {
+  try { return new Set(JSON.parse(localStorage.getItem(STORAGE_KEY_SEEN) || '[]')); }
+  catch { return new Set(); }
+}
+function saveSeenIds(set) {
+  try { localStorage.setItem(STORAGE_KEY_SEEN, JSON.stringify([...set])); } catch {}
+}
+function shuffle(arr) {
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+/**
+ * Build a new queue from the full dataset, excluding already-seen quests.
+ * When all quests have been seen, reset seen state and reshuffle the full set
+ * (completing a full cycle triggers a bonus).
+ */
+function buildQueue(seenIds) {
+  const unseen = allQuests.filter(q => !seenIds.has(q.id));
+  if (unseen.length === 0) {
+    // Full cycle complete — clear seen and reshuffle everything
+    saveSeenIds(new Set());
+    statusLine.textContent = '🎉 Full cycle complete! All quests reset. Bonus round unlocked.';
+    return shuffle(allQuests);
+  }
+  return shuffle(unseen);
+}
+
+function currentQuest() {
+  return queue[queueIdx] || null;
+}
 
 function updateHud() {
   solvedCount.textContent = solved;
@@ -115,32 +157,65 @@ function normalizeAnswers(arr) {
 }
 
 function loadQuest() {
-  const q = quests[idx % quests.length];
-  if (!q) return;
-  title.textContent = q.title || q.title_key || 'Untitled Quest';
-  clue.textContent = q.clue || q.clue_key || 'No clue available.';
-  link.href = q.wiki_url || '#';
-  link.textContent = q.wiki_url || '#';
+  const q = currentQuest();
+  if (!q) {
+    // Queue exhausted mid-session — rebuild
+    const seenIds = loadSeenIds();
+    queue = buildQueue(seenIds);
+    queueIdx = 0;
+  }
+  const current = currentQuest();
+  if (!current) return;
+  title.textContent = current.title || 'Untitled Quest';
+  clue.textContent = current.clue || 'No clue available.';
+  link.href = current.wiki_url || '#';
+  link.textContent = current.wiki_url || '#';
   answerInput.value = '';
   feedback.textContent = 'Read the linked page, return, and enter the hidden answer.';
+}
+
+function advanceQueue() {
+  const q = currentQuest();
+  if (q) {
+    const seen = loadSeenIds();
+    seen.add(q.id);
+    saveSeenIds(seen);
+  }
+  queueIdx += 1;
+  if (queueIdx >= queue.length) {
+    // Exhaust queue — rebuild from remaining unseen
+    const seen = loadSeenIds();
+    queue = buildQueue(seen);
+    queueIdx = 0;
+  }
 }
 
 function onCorrectAnswer(q) {
   solved += 1;
   streak += 1;
   score += (q.rewards?.arcade_points || 100);
-  feedback.textContent = 'Correct. Crystal secured.';
+  feedback.textContent = '✅ Correct. Crystal secured.';
   // AUDIO_HOOK: play('correct')
-  idx += 1;
+  advanceQueue();
   updateHud();
-  // Persist and submit best Crystal Quest score
   ArcadeSync.setHighScore('crystal', score);
   submitScore(ArcadeSync.getPlayer(), score, 'crystal');
+
+  // Bonus roll — check streak milestones and random WTF events
+  const bonus = rollHiddenBonus({ score, streak, game: 'crystal' });
+  if (bonus) {
+    score += bonus.rewards?.arcade_points || 0;
+    updateHud();
+    showBonusPopup(bonus);
+    ArcadeSync.setHighScore('crystal', score);
+    submitScore(ArcadeSync.getPlayer(), score, 'crystal');
+  }
+
   setTimeout(loadQuest, 500);
 }
 
 document.getElementById('submitBtn').onclick = () => {
-  const q = quests[idx % quests.length];
+  const q = currentQuest();
   if (!q) return;
   const guess = answerInput.value.trim().toUpperCase();
   if (!guess) return;
@@ -150,14 +225,14 @@ document.getElementById('submitBtn').onclick = () => {
   } else {
     streak = 0;
     // AUDIO_HOOK: play('wrong')
-    feedback.textContent = 'Wrong answer. Read again and try properly.';
+    feedback.textContent = '❌ Wrong answer. Read again and try properly.';
     updateHud();
   }
 };
 
 document.getElementById('nextBtn').onclick = () => {
   streak = 0;
-  idx += 1;
+  advanceQueue();
   updateHud();
   loadQuest();
 };
@@ -170,8 +245,14 @@ async function init() {
       ? `R2 enabled: ${base}/games/data/crystal-maze-seed.json`
       : 'R2 base URL not set, using local files only.';
     const data = await loadGameData('/games/data/crystal-maze-seed.json');
-    quests = data.quests || [];
-    if (!quests.length) throw new Error('No quests found in crystal-maze-seed.json');
+    allQuests = data.quests || [];
+    if (!allQuests.length) throw new Error('No quests found in crystal-maze-seed.json');
+    // Build initial play queue (no-repeat shuffle)
+    const seenIds = loadSeenIds();
+    queue = buildQueue(seenIds);
+    queueIdx = 0;
+    const remaining = queue.length;
+    statusLine.textContent += ` | ${remaining} of ${allQuests.length} quests remaining in cycle.`;
     updateHud();
     loadQuest();
   } catch (err) {

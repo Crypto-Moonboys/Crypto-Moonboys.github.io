@@ -148,6 +148,32 @@ Capabilities:
 
 ---
 
+## 🕹️ Moonboys Arcade
+
+A browser-native, zero-install gaming layer served directly from GitHub Pages.
+
+### Games
+| Game | Path | Description |
+|------|------|-------------|
+| 🐍 SnakeRun 3008 | `/games/snake.html` | Real-time reflex game on a 24×24 canvas grid |
+| 🧩 Crystal Quest | `/games/crystal-quest.html` | 1000-question wiki trivia with no-repeat shuffle |
+| 🧱 Block Topia Quest Maze | `/games/block-topia-quest-maze.html` | Turn-based RPG with combat and quests |
+
+### Architecture
+- **Shared leaderboard:** Cloudflare Worker + KV namespace (`workers/leaderboard-worker.js`)
+- **Global scoring:** Sum of per-game bests + 100-point variety bonus for all-game players
+- **OG graph node map:** Canvas 2D visualisation on `/games/leaderboard.html`
+- **WTF bonus engine:** `js/bonus-engine.js` loads `games/data/hidden_bonus_pool.json`
+- **R2 integration:** `js/data-loader.js` — R2-first with local static fallback
+- **Audio:** Placeholder structure in `audio/` with `AUDIO_HOOK` comments throughout game code
+
+### Documentation
+- `WTF_README.md` — WTF bonus system specification
+- `WHITEPAPER.md` — Full technical whitepaper and acceptance criteria
+- `audio/README.md` — Audio asset integration guide
+
+---
+
 ## 🛠️ Pre–Phase 7 Stabilization Fixes
 
 ### ✅ Navigation Parity
