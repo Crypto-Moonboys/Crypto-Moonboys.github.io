@@ -146,8 +146,8 @@ import { submitScore } from '/js/leaderboard-client.js';
     if (head.x===food.x && head.y===food.y) {
       score += 10; streak += 1;
       // AUDIO_HOOK: play('eat')
-      if (score > best) { best = score; }
-      ArcadeSync.setHighScore('snake', best);
+      ArcadeSync.setHighScore('snake', score); // persists only if score exceeds stored best
+      best = ArcadeSync.getHighScore('snake');
       food = spawnFood();
     } else {
       snake.pop(); streak = 0;

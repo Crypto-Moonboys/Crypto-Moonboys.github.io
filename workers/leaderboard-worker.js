@@ -1,5 +1,8 @@
 const GAMES = ["snake", "crystal", "blocktopia"];
-const VARIETY_BONUS = 100; // bonus points when a player has scored in all 3 games
+const VARIETY_BONUS = 100;          // bonus points when a player has scored in all 3 games
+const MAX_SCORE = 1_000_000_000;    // upper bound for submitted scores
+const PER_GAME_LEADERBOARD_SIZE = 100;
+const GLOBAL_LEADERBOARD_SIZE = 100;
 
 export default {
   async fetch(request, env) {
@@ -57,9 +60,9 @@ export default {
       }
 
       const parsedScore = Number(score);
-      if (!Number.isFinite(parsedScore) || parsedScore < 0 || parsedScore > 1e9) {
+      if (!Number.isFinite(parsedScore) || parsedScore < 0 || parsedScore > MAX_SCORE) {
         return new Response(
-          JSON.stringify({ error: "score must be a non-negative finite number (max 1,000,000,000)" }),
+          JSON.stringify({ error: `score must be a non-negative finite number (max ${MAX_SCORE})` }),
           { status: 400, headers: corsHeaders }
         );
       }
@@ -74,7 +77,7 @@ export default {
       if (gameKey !== "global") {
         // Upsert per-game best (keep highest score per player only)
         const board = await getBoard(env, gameKey);
-        const updated = upsertEntry(board, { player: playerName, score: Math.floor(parsedScore) }, 100);
+        const updated = upsertEntry(board, { player: playerName, score: Math.floor(parsedScore) }, PER_GAME_LEADERBOARD_SIZE);
         await env.LEADERBOARD.put(`leaderboard:${gameKey}`, JSON.stringify(updated));
 
         // Recompute global leaderboard from all per-game boards
@@ -142,7 +145,7 @@ async function recomputeGlobal(env) {
     return diff !== 0 ? diff : String(a.player).localeCompare(String(b.player));
   });
 
-  const ranked = globalEntries.slice(0, 100).map((e, i) => ({ ...e, rank: i + 1 }));
+  const ranked = globalEntries.slice(0, GLOBAL_LEADERBOARD_SIZE).map((e, i) => ({ ...e, rank: i + 1 }));
   await env.LEADERBOARD.put("leaderboard:global", JSON.stringify(ranked));
 }
 
