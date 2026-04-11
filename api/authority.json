@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-04-10T05:30:26.991Z",
+  "generated_at": "2026-04-11T05:00:25.071Z",
   "phase": "phase_5",
   "schema_version": "1.0",
   "summary": {
@@ -20,7 +20,7 @@
       "entity_mentions": 2,
       "narrative_presence": true,
       "category": "tokens",
-      "last_updated": "2026-04-10"
+      "last_updated": "2026-04-11"
     },
     {
       "url": "/wiki/diamond-hands.html",
@@ -31,7 +31,7 @@
       "entity_mentions": 1,
       "narrative_presence": true,
       "category": "characters",
-      "last_updated": "2026-04-10"
+      "last_updated": "2026-04-11"
     },
     {
       "url": "/wiki/ethereum.html",
@@ -42,7 +42,7 @@
       "entity_mentions": 2,
       "narrative_presence": true,
       "category": "tokens",
-      "last_updated": "2026-04-10"
+      "last_updated": "2026-04-11"
     },
     {
       "url": "/wiki/hodl-warriors.html",
@@ -53,7 +53,7 @@
       "entity_mentions": 1,
       "narrative_presence": true,
       "category": "characters",
-      "last_updated": "2026-04-10"
+      "last_updated": "2026-04-11"
     },
     {
       "url": "/wiki/hodl-wars.html",
@@ -64,7 +64,7 @@
       "entity_mentions": 1,
       "narrative_presence": true,
       "category": "factions",
-      "last_updated": "2026-04-10"
+      "last_updated": "2026-04-11"
     },
     {
       "url": "/wiki/moon-mission.html",
@@ -75,7 +75,7 @@
       "entity_mentions": 1,
       "narrative_presence": true,
       "category": "tokens",
-      "last_updated": "2026-04-10"
+      "last_updated": "2026-04-11"
     },
     {
       "url": "/wiki/solana.html",
@@ -86,18 +86,18 @@
       "entity_mentions": 2,
       "narrative_presence": true,
       "category": "tokens",
-      "last_updated": "2026-04-10"
+      "last_updated": "2026-04-11"
     },
     {
       "url": "/wiki/graffpunks.html",
       "title": "GraffPUNKS — Crypto Moonboys Wiki",
-      "authority_score": 82,
+      "authority_score": 83,
       "trust_score": 82,
       "inbound_links": 0,
       "entity_mentions": 1,
       "narrative_presence": true,
       "category": "characters",
-      "last_updated": "2026-04-10"
+      "last_updated": "2026-04-11"
     },
     {
       "url": "/wiki/block-topia.html",
@@ -108,95 +108,106 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "characters",
-      "last_updated": "2026-04-10"
+      "last_updated": "2026-04-11"
     },
     {
       "url": "/wiki/bitcoin-kids.html",
       "title": "Bitcoin Kids — Crypto Moonboys Wiki",
-      "authority_score": 75,
+      "authority_score": 76,
       "trust_score": 82,
       "inbound_links": 0,
       "entity_mentions": 1,
       "narrative_presence": true,
       "category": "characters",
-      "last_updated": "2026-04-10"
+      "last_updated": "2026-04-11"
     },
     {
       "url": "/wiki/null-the-prophet.html",
       "title": "NULL THE PROPHET — Crypto Moonboys Wiki",
-      "authority_score": 75,
+      "authority_score": 76,
       "trust_score": 82,
       "inbound_links": 0,
       "entity_mentions": 1,
       "narrative_presence": true,
       "category": "characters",
-      "last_updated": "2026-04-10"
+      "last_updated": "2026-04-11"
     },
     {
       "url": "/wiki/punk-token.html",
       "title": "$PUNK Token — Crypto Moonboys Wiki",
-      "authority_score": 73,
+      "authority_score": 74,
       "trust_score": 57,
       "inbound_links": 0,
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "characters",
-      "last_updated": "2026-04-10"
+      "last_updated": "2026-04-11"
     },
     {
       "url": "/wiki/queen-sarah-pfly.html",
       "title": "Queen Sarah P-Fly — Crypto Moonboys Wiki",
-      "authority_score": 73,
+      "authority_score": 74,
       "trust_score": 57,
       "inbound_links": 0,
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "characters",
-      "last_updated": "2026-04-10"
+      "last_updated": "2026-04-11"
     },
     {
       "url": "/wiki/charlie-buster.html",
       "title": "Charlie Buster — Crypto Moonboys Wiki",
-      "authority_score": 70,
+      "authority_score": 71,
       "trust_score": 57,
       "inbound_links": 0,
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "characters",
-      "last_updated": "2026-04-10"
+      "last_updated": "2026-04-11"
     },
     {
       "url": "/wiki/alfie-blaze.html",
       "title": "Alfie Blaze — Crypto Moonboys Wiki",
-      "authority_score": 66,
+      "authority_score": 67,
       "trust_score": 57,
       "inbound_links": 0,
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "characters",
-      "last_updated": "2026-04-10"
+      "last_updated": "2026-04-11"
     },
     {
       "url": "/wiki/burn-to-earn.html",
       "title": "Burn-to-Earn — Crypto Moonboys Wiki",
+      "authority_score": 65,
+      "trust_score": 57,
+      "inbound_links": 0,
+      "entity_mentions": 1,
+      "narrative_presence": false,
+      "category": "characters",
+      "last_updated": "2026-04-11"
+    },
+    {
+      "url": "/wiki/nbgx.html",
+      "title": "NBGX — Crypto Moonboys Wiki",
       "authority_score": 64,
       "trust_score": 57,
       "inbound_links": 0,
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "characters",
-      "last_updated": "2026-04-10"
+      "last_updated": "2026-04-11"
     },
     {
-      "url": "/wiki/nbgx.html",
-      "title": "NBGX — Crypto Moonboys Wiki",
-      "authority_score": 63,
+      "url": "/wiki/staking.html",
+      "title": "Staking — Crypto Moonboys Wiki",
+      "authority_score": 64,
       "trust_score": 57,
       "inbound_links": 0,
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "characters",
-      "last_updated": "2026-04-10"
+      "last_updated": "2026-04-11"
     },
     {
       "url": "/wiki/pmsl.html",
@@ -207,62 +218,51 @@
       "entity_mentions": 1,
       "narrative_presence": true,
       "category": "factions",
-      "last_updated": "2026-04-10"
-    },
-    {
-      "url": "/wiki/staking.html",
-      "title": "Staking — Crypto Moonboys Wiki",
-      "authority_score": 63,
-      "trust_score": 57,
-      "inbound_links": 0,
-      "entity_mentions": 1,
-      "narrative_presence": false,
-      "category": "characters",
-      "last_updated": "2026-04-10"
+      "last_updated": "2026-04-11"
     },
     {
       "url": "/wiki/nbg.html",
       "title": "NBG — Crypto Moonboys Wiki",
-      "authority_score": 61,
+      "authority_score": 62,
       "trust_score": 57,
       "inbound_links": 0,
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "characters",
-      "last_updated": "2026-04-10"
+      "last_updated": "2026-04-11"
     },
     {
       "url": "/wiki/graffpunks-24-7.html",
       "title": "GraffPUNKS 24/7 — Crypto Moonboys Wiki",
-      "authority_score": 53,
+      "authority_score": 54,
       "trust_score": 82,
       "inbound_links": 0,
       "entity_mentions": 1,
       "narrative_presence": true,
       "category": "characters",
-      "last_updated": "2026-04-10"
+      "last_updated": "2026-04-11"
     },
     {
       "url": "/wiki/rave-relics.html",
       "title": "Rave Relics — Crypto Moonboys Wiki",
-      "authority_score": 52,
+      "authority_score": 53,
       "trust_score": 57,
       "inbound_links": 0,
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-04-10"
+      "last_updated": "2026-04-11"
     },
     {
       "url": "/wiki/midevilpunks.html",
       "title": "MiDEViL PUNKS — Crypto Moonboys Wiki",
-      "authority_score": 50,
+      "authority_score": 51,
       "trust_score": 57,
       "inbound_links": 0,
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-04-10"
+      "last_updated": "2026-04-11"
     },
     {
       "url": "/wiki/genesis-spray.html",
@@ -273,51 +273,73 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-04-10"
+      "last_updated": "2026-04-11"
     },
     {
       "url": "/wiki/gkniftyheads.html",
       "title": "GKniftyHEADS — Crypto Moonboys Wiki",
-      "authority_score": 48,
+      "authority_score": 49,
       "trust_score": 57,
       "inbound_links": 0,
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "characters",
-      "last_updated": "2026-04-10"
+      "last_updated": "2026-04-11"
     },
     {
       "url": "/wiki/nbg-token.html",
       "title": "NBG Token — Crypto Moonboys Wiki",
-      "authority_score": 48,
+      "authority_score": 49,
       "trust_score": 57,
       "inbound_links": 0,
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-04-10"
+      "last_updated": "2026-04-11"
     },
     {
       "url": "/wiki/graffitikings.html",
       "title": "Graffiti Kings — Crypto Moonboys Wiki",
-      "authority_score": 47,
+      "authority_score": 48,
       "trust_score": 82,
       "inbound_links": 0,
       "entity_mentions": 2,
       "narrative_presence": true,
       "category": "characters",
-      "last_updated": "2026-04-10"
+      "last_updated": "2026-04-11"
     },
     {
       "url": "/wiki/sacred-chain.html",
       "title": "The Sacred Chain — Crypto Moonboys Wiki",
-      "authority_score": 46,
+      "authority_score": 47,
       "trust_score": 57,
       "inbound_links": 0,
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-04-10"
+      "last_updated": "2026-04-11"
+    },
+    {
+      "url": "/wiki/xrp-kids.html",
+      "title": "XRP Kids — Crypto Moonboys Wiki",
+      "authority_score": 46,
+      "trust_score": 57,
+      "inbound_links": 0,
+      "entity_mentions": 1,
+      "narrative_presence": false,
+      "category": "characters",
+      "last_updated": "2026-04-11"
+    },
+    {
+      "url": "/wiki/games4punks-telegram.html",
+      "title": "Games4Punks Telegram — Crypto Moonboys Wiki",
+      "authority_score": 45,
+      "trust_score": 57,
+      "inbound_links": 0,
+      "entity_mentions": 1,
+      "narrative_presence": false,
+      "category": "factions",
+      "last_updated": "2026-04-11"
     },
     {
       "url": "/wiki/gang-signs.html",
@@ -328,18 +350,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "characters",
-      "last_updated": "2026-04-10"
-    },
-    {
-      "url": "/wiki/xrp-kids.html",
-      "title": "XRP Kids — Crypto Moonboys Wiki",
-      "authority_score": 45,
-      "trust_score": 57,
-      "inbound_links": 0,
-      "entity_mentions": 1,
-      "narrative_presence": false,
-      "category": "characters",
-      "last_updated": "2026-04-10"
+      "last_updated": "2026-04-11"
     },
     {
       "url": "/wiki/darren-cullen.html",
@@ -350,18 +361,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "characters",
-      "last_updated": "2026-04-10"
-    },
-    {
-      "url": "/wiki/games4punks-telegram.html",
-      "title": "Games4Punks Telegram — Crypto Moonboys Wiki",
-      "authority_score": 44,
-      "trust_score": 57,
-      "inbound_links": 0,
-      "entity_mentions": 1,
-      "narrative_presence": false,
-      "category": "factions",
-      "last_updated": "2026-04-10"
+      "last_updated": "2026-04-11"
     },
     {
       "url": "/wiki/graffpunks-247-radio.html",
@@ -372,18 +372,29 @@
       "entity_mentions": 0,
       "narrative_presence": true,
       "category": "characters",
-      "last_updated": "2026-04-10"
+      "last_updated": "2026-04-11"
     },
     {
       "url": "/wiki/ian-harrison.html",
       "title": "Ian Harrison — Crypto Moonboys Wiki",
-      "authority_score": 43,
+      "authority_score": 44,
       "trust_score": 57,
       "inbound_links": 0,
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "characters",
-      "last_updated": "2026-04-10"
+      "last_updated": "2026-04-11"
+    },
+    {
+      "url": "/wiki/jillian-godsil.html",
+      "title": "Jillian Godsil — Crypto Moonboys Wiki",
+      "authority_score": 43,
+      "trust_score": 57,
+      "inbound_links": 0,
+      "entity_mentions": 1,
+      "narrative_presence": false,
+      "category": "factions",
+      "last_updated": "2026-04-11"
     },
     {
       "url": "/wiki/trevor-fung.html",
@@ -394,7 +405,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-04-10"
+      "last_updated": "2026-04-11"
     },
     {
       "url": "/wiki/hard-fork-games.html",
@@ -405,29 +416,18 @@
       "entity_mentions": 0,
       "narrative_presence": true,
       "category": "factions",
-      "last_updated": "2026-04-10"
-    },
-    {
-      "url": "/wiki/jillian-godsil.html",
-      "title": "Jillian Godsil — Crypto Moonboys Wiki",
-      "authority_score": 42,
-      "trust_score": 57,
-      "inbound_links": 0,
-      "entity_mentions": 1,
-      "narrative_presence": false,
-      "category": "factions",
-      "last_updated": "2026-04-10"
+      "last_updated": "2026-04-11"
     },
     {
       "url": "/wiki/metropolis.html",
       "title": "Metropolis — Crypto Moonboys Wiki",
-      "authority_score": 40,
+      "authority_score": 41,
       "trust_score": 57,
       "inbound_links": 0,
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-04-10"
+      "last_updated": "2026-04-11"
     },
     {
       "url": "/wiki/midevil-hero-arena.html",
@@ -438,7 +438,7 @@
       "entity_mentions": 0,
       "narrative_presence": false,
       "category": "characters",
-      "last_updated": "2026-04-10"
+      "last_updated": "2026-04-11"
     },
     {
       "url": "/wiki/hodl-x-warriors.html",
@@ -449,7 +449,7 @@
       "entity_mentions": 1,
       "narrative_presence": true,
       "category": "characters",
-      "last_updated": "2026-04-10"
+      "last_updated": "2026-04-11"
     },
     {
       "url": "/wiki/samaelexe.html",
@@ -460,7 +460,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "characters",
-      "last_updated": "2026-04-10"
+      "last_updated": "2026-04-11"
     },
     {
       "url": "/wiki/the-nice-easy-bois.html",
@@ -471,7 +471,29 @@
       "entity_mentions": 3,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-04-10"
+      "last_updated": "2026-04-11"
+    },
+    {
+      "url": "/wiki/bitcoin-x-kids.html",
+      "title": "Bitcoin X Kids — Crypto Moonboys Wiki",
+      "authority_score": 35,
+      "trust_score": 57,
+      "inbound_links": 0,
+      "entity_mentions": 1,
+      "narrative_presence": false,
+      "category": "characters",
+      "last_updated": "2026-04-11"
+    },
+    {
+      "url": "/wiki/exchanges.html",
+      "title": "Crypto Exchanges — Crypto Moonboys Wiki",
+      "authority_score": 35,
+      "trust_score": 57,
+      "inbound_links": 1,
+      "entity_mentions": 2,
+      "narrative_presence": false,
+      "category": "tokens",
+      "last_updated": "2026-04-11"
     },
     {
       "url": "/wiki/the-crypto-moongirls.html",
@@ -482,18 +504,18 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-04-10"
+      "last_updated": "2026-04-11"
     },
     {
-      "url": "/wiki/bitcoin-x-kids.html",
-      "title": "Bitcoin X Kids — Crypto Moonboys Wiki",
-      "authority_score": 34,
+      "url": "/wiki/wallets.html",
+      "title": "Crypto Wallets — Crypto Moonboys Wiki",
+      "authority_score": 35,
       "trust_score": 57,
-      "inbound_links": 0,
-      "entity_mentions": 1,
+      "inbound_links": 1,
+      "entity_mentions": 2,
       "narrative_presence": false,
       "category": "characters",
-      "last_updated": "2026-04-10"
+      "last_updated": "2026-04-11"
     },
     {
       "url": "/wiki/blockchain.html",
@@ -504,7 +526,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "tokens",
-      "last_updated": "2026-04-10"
+      "last_updated": "2026-04-11"
     },
     {
       "url": "/wiki/crypto-moonboys.html",
@@ -515,18 +537,7 @@
       "entity_mentions": 1,
       "narrative_presence": true,
       "category": "characters",
-      "last_updated": "2026-04-10"
-    },
-    {
-      "url": "/wiki/exchanges.html",
-      "title": "Crypto Exchanges — Crypto Moonboys Wiki",
-      "authority_score": 34,
-      "trust_score": 57,
-      "inbound_links": 1,
-      "entity_mentions": 2,
-      "narrative_presence": false,
-      "category": "tokens",
-      "last_updated": "2026-04-10"
+      "last_updated": "2026-04-11"
     },
     {
       "url": "/wiki/memecoins.html",
@@ -537,18 +548,51 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "tokens",
-      "last_updated": "2026-04-10"
+      "last_updated": "2026-04-11"
     },
     {
-      "url": "/wiki/wallets.html",
-      "title": "Crypto Wallets — Crypto Moonboys Wiki",
+      "url": "/wiki/sneakar.html",
+      "title": "SNEAKAR — Crypto Moonboys Wiki",
       "authority_score": 34,
       "trust_score": 57,
-      "inbound_links": 1,
+      "inbound_links": 0,
+      "entity_mentions": 1,
+      "narrative_presence": false,
+      "category": "factions",
+      "last_updated": "2026-04-11"
+    },
+    {
+      "url": "/wiki/the-crypto-stoned-boys.html",
+      "title": "The CRYPTO STONED BOYS — Crypto Moonboys Wiki",
+      "authority_score": 34,
+      "trust_score": 57,
+      "inbound_links": 0,
       "entity_mentions": 2,
       "narrative_presence": false,
+      "category": "factions",
+      "last_updated": "2026-04-11"
+    },
+    {
+      "url": "/wiki/patchwork.html",
+      "title": "Patchwork — Crypto Moonboys Wiki",
+      "authority_score": 33,
+      "trust_score": 82,
+      "inbound_links": 0,
+      "entity_mentions": 1,
+      "narrative_presence": true,
       "category": "characters",
-      "last_updated": "2026-04-10"
+      "last_updated": "2026-04-11"
+    },
+    {
+      "url": "/wiki/quell.html",
+      "title": "Quell — Crypto Moonboys Wiki",
+      "authority_score": 33,
+      "trust_score": 82,
+      "inbound_links": 0,
+      "entity_mentions": 1,
+      "narrative_presence": true,
+      "category": "characters",
+      "last_updated": "2026-04-11"
     },
     {
       "url": "/wiki/rune-tag.html",
@@ -559,29 +603,84 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "characters",
-      "last_updated": "2026-04-10"
+      "last_updated": "2026-04-11"
     },
     {
-      "url": "/wiki/sneakar.html",
-      "title": "SNEAKAR — Crypto Moonboys Wiki",
+      "url": "/wiki/satorebel.html",
+      "title": "SatoRebel — Crypto Moonboys Wiki",
       "authority_score": 33,
       "trust_score": 57,
       "inbound_links": 0,
       "entity_mentions": 1,
       "narrative_presence": false,
-      "category": "factions",
-      "last_updated": "2026-04-10"
+      "category": "characters",
+      "last_updated": "2026-04-11"
     },
     {
-      "url": "/wiki/patchwork.html",
-      "title": "Patchwork — Crypto Moonboys Wiki",
+      "url": "/wiki/sister-halcyon.html",
+      "title": "Sister Halcyon — Crypto Moonboys Wiki",
+      "authority_score": 33,
+      "trust_score": 57,
+      "inbound_links": 0,
+      "entity_mentions": 1,
+      "narrative_presence": false,
+      "category": "characters",
+      "last_updated": "2026-04-11"
+    },
+    {
+      "url": "/wiki/the-princess.html",
+      "title": "The Princess — Crypto Moonboys Wiki",
+      "authority_score": 33,
+      "trust_score": 57,
+      "inbound_links": 0,
+      "entity_mentions": 1,
+      "narrative_presence": false,
+      "category": "characters",
+      "last_updated": "2026-04-11"
+    },
+    {
+      "url": "/wiki/the-whitewasher.html",
+      "title": "The Whitewasher — Crypto Moonboys Wiki",
+      "authority_score": 33,
+      "trust_score": 57,
+      "inbound_links": 0,
+      "entity_mentions": 1,
+      "narrative_presence": false,
+      "category": "characters",
+      "last_updated": "2026-04-11"
+    },
+    {
+      "url": "/wiki/jonny-laurence-nelson-tag-records.html",
+      "title": "Jonny &amp; Laurence Nelson (TAG Records) — Crypto Moonboys Wiki",
+      "authority_score": 32,
+      "trust_score": 57,
+      "inbound_links": 0,
+      "entity_mentions": 1,
+      "narrative_presence": false,
+      "category": "factions",
+      "last_updated": "2026-04-11"
+    },
+    {
+      "url": "/wiki/nfts.html",
+      "title": "NFTs (Non-Fungible Tokens) — Crypto Moonboys Wiki",
       "authority_score": 32,
       "trust_score": 82,
-      "inbound_links": 0,
+      "inbound_links": 1,
       "entity_mentions": 1,
       "narrative_presence": true,
       "category": "characters",
-      "last_updated": "2026-04-10"
+      "last_updated": "2026-04-11"
+    },
+    {
+      "url": "/wiki/nifty-crowns.html",
+      "title": "Nifty Crowns — Crypto Moonboys Wiki",
+      "authority_score": 32,
+      "trust_score": 57,
+      "inbound_links": 0,
+      "entity_mentions": 1,
+      "narrative_presence": false,
+      "category": "factions",
+      "last_updated": "2026-04-11"
     },
     {
       "url": "/wiki/pyralith.html",
@@ -592,73 +691,40 @@
       "entity_mentions": 1,
       "narrative_presence": true,
       "category": "characters",
-      "last_updated": "2026-04-10"
+      "last_updated": "2026-04-11"
     },
     {
-      "url": "/wiki/quell.html",
-      "title": "Quell — Crypto Moonboys Wiki",
-      "authority_score": 32,
-      "trust_score": 82,
-      "inbound_links": 0,
-      "entity_mentions": 1,
-      "narrative_presence": true,
-      "category": "characters",
-      "last_updated": "2026-04-10"
-    },
-    {
-      "url": "/wiki/satorebel.html",
-      "title": "SatoRebel — Crypto Moonboys Wiki",
+      "url": "/wiki/street-kingdoms.html",
+      "title": "Street Kingdoms — Crypto Moonboys Wiki",
       "authority_score": 32,
       "trust_score": 57,
       "inbound_links": 0,
       "entity_mentions": 1,
-      "narrative_presence": false,
-      "category": "characters",
-      "last_updated": "2026-04-10"
-    },
-    {
-      "url": "/wiki/sister-halcyon.html",
-      "title": "Sister Halcyon — Crypto Moonboys Wiki",
-      "authority_score": 32,
-      "trust_score": 57,
-      "inbound_links": 0,
-      "entity_mentions": 1,
-      "narrative_presence": false,
-      "category": "characters",
-      "last_updated": "2026-04-10"
-    },
-    {
-      "url": "/wiki/the-crypto-stoned-boys.html",
-      "title": "The CRYPTO STONED BOYS — Crypto Moonboys Wiki",
-      "authority_score": 32,
-      "trust_score": 57,
-      "inbound_links": 0,
-      "entity_mentions": 2,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-04-10"
+      "last_updated": "2026-04-11"
     },
     {
-      "url": "/wiki/the-princess.html",
-      "title": "The Princess — Crypto Moonboys Wiki",
+      "url": "/wiki/the-chain-scribes.html",
+      "title": "The CHAIN SCRIBES — Crypto Moonboys Wiki",
+      "authority_score": 32,
+      "trust_score": 57,
+      "inbound_links": 0,
+      "entity_mentions": 1,
+      "narrative_presence": false,
+      "category": "factions",
+      "last_updated": "2026-04-11"
+    },
+    {
+      "url": "/wiki/thorne-the-architect.html",
+      "title": "Thorne The Architect — Crypto Moonboys Wiki",
       "authority_score": 32,
       "trust_score": 57,
       "inbound_links": 0,
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "characters",
-      "last_updated": "2026-04-10"
-    },
-    {
-      "url": "/wiki/the-whitewasher.html",
-      "title": "The Whitewasher — Crypto Moonboys Wiki",
-      "authority_score": 32,
-      "trust_score": 57,
-      "inbound_links": 0,
-      "entity_mentions": 1,
-      "narrative_presence": false,
-      "category": "characters",
-      "last_updated": "2026-04-10"
+      "last_updated": "2026-04-11"
     },
     {
       "url": "/wiki/bear-market-siege.html",
@@ -669,7 +735,18 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "characters",
-      "last_updated": "2026-04-10"
+      "last_updated": "2026-04-11"
+    },
+    {
+      "url": "/wiki/forkborn-collective.html",
+      "title": "Forkborn Collective — Crypto Moonboys Wiki",
+      "authority_score": 31,
+      "trust_score": 57,
+      "inbound_links": 0,
+      "entity_mentions": 1,
+      "narrative_presence": false,
+      "category": "factions",
+      "last_updated": "2026-04-11"
     },
     {
       "url": "/wiki/graffpunks-24-7-radio.html",
@@ -680,62 +757,40 @@
       "entity_mentions": 0,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-04-10"
+      "last_updated": "2026-04-11"
     },
     {
-      "url": "/wiki/jonny-laurence-nelson-tag-records.html",
-      "title": "Jonny &amp; Laurence Nelson (TAG Records) — Crypto Moonboys Wiki",
+      "url": "/wiki/the-code-alchemists.html",
+      "title": "The CODE ALCHEMISTS — Crypto Moonboys Wiki",
       "authority_score": 31,
       "trust_score": 57,
       "inbound_links": 0,
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-04-10"
+      "last_updated": "2026-04-11"
     },
     {
-      "url": "/wiki/nfts.html",
-      "title": "NFTs (Non-Fungible Tokens) — Crypto Moonboys Wiki",
-      "authority_score": 31,
-      "trust_score": 82,
-      "inbound_links": 1,
-      "entity_mentions": 1,
-      "narrative_presence": true,
-      "category": "characters",
-      "last_updated": "2026-04-10"
-    },
-    {
-      "url": "/wiki/nifty-crowns.html",
-      "title": "Nifty Crowns — Crypto Moonboys Wiki",
+      "url": "/wiki/the-ducky-boys.html",
+      "title": "The DUCKY BOYS — Crypto Moonboys Wiki",
       "authority_score": 31,
       "trust_score": 57,
       "inbound_links": 0,
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-04-10"
+      "last_updated": "2026-04-11"
     },
     {
-      "url": "/wiki/street-kingdoms.html",
-      "title": "Street Kingdoms — Crypto Moonboys Wiki",
+      "url": "/wiki/the-evm-punks.html",
+      "title": "The EVM PUNKS — Crypto Moonboys Wiki",
       "authority_score": 31,
       "trust_score": 57,
       "inbound_links": 0,
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-04-10"
-    },
-    {
-      "url": "/wiki/the-chain-scribes.html",
-      "title": "The CHAIN SCRIBES — Crypto Moonboys Wiki",
-      "authority_score": 31,
-      "trust_score": 57,
-      "inbound_links": 0,
-      "entity_mentions": 1,
-      "narrative_presence": false,
-      "category": "factions",
-      "last_updated": "2026-04-10"
+      "last_updated": "2026-04-11"
     },
     {
       "url": "/wiki/the-finance-guild.html",
@@ -746,18 +801,106 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-04-10"
+      "last_updated": "2026-04-11"
     },
     {
-      "url": "/wiki/thorne-the-architect.html",
-      "title": "Thorne The Architect — Crypto Moonboys Wiki",
+      "url": "/wiki/the-gasless-ghosts.html",
+      "title": "The GASLESS GHOSTS — Crypto Moonboys Wiki",
       "authority_score": 31,
       "trust_score": 57,
       "inbound_links": 0,
       "entity_mentions": 1,
       "narrative_presence": false,
-      "category": "characters",
-      "last_updated": "2026-04-10"
+      "category": "factions",
+      "last_updated": "2026-04-11"
+    },
+    {
+      "url": "/wiki/the-hard-fork-rockers.html",
+      "title": "The HARD FORK ROCKERS — Crypto Moonboys Wiki",
+      "authority_score": 31,
+      "trust_score": 82,
+      "inbound_links": 0,
+      "entity_mentions": 1,
+      "narrative_presence": true,
+      "category": "factions",
+      "last_updated": "2026-04-11"
+    },
+    {
+      "url": "/wiki/the-high-hats.html",
+      "title": "The High Hats — Crypto Moonboys Wiki",
+      "authority_score": 31,
+      "trust_score": 57,
+      "inbound_links": 0,
+      "entity_mentions": 1,
+      "narrative_presence": false,
+      "category": "factions",
+      "last_updated": "2026-04-11"
+    },
+    {
+      "url": "/wiki/the-moonlords.html",
+      "title": "The MOONLORDS — Crypto Moonboys Wiki",
+      "authority_score": 31,
+      "trust_score": 57,
+      "inbound_links": 0,
+      "entity_mentions": 1,
+      "narrative_presence": false,
+      "category": "factions",
+      "last_updated": "2026-04-11"
+    },
+    {
+      "url": "/wiki/the-nomad-bears.html",
+      "title": "The Nomad Bears — Crypto Moonboys Wiki",
+      "authority_score": 31,
+      "trust_score": 57,
+      "inbound_links": 0,
+      "entity_mentions": 1,
+      "narrative_presence": false,
+      "category": "factions",
+      "last_updated": "2026-04-11"
+    },
+    {
+      "url": "/wiki/the-og-pixel-saints.html",
+      "title": "The OG PIXEL SAINTS — Crypto Moonboys Wiki",
+      "authority_score": 31,
+      "trust_score": 57,
+      "inbound_links": 0,
+      "entity_mentions": 1,
+      "narrative_presence": false,
+      "category": "factions",
+      "last_updated": "2026-04-11"
+    },
+    {
+      "url": "/wiki/the-rugpull-miners.html",
+      "title": "The RUGPULL MINERS — Crypto Moonboys Wiki",
+      "authority_score": 31,
+      "trust_score": 57,
+      "inbound_links": 0,
+      "entity_mentions": 1,
+      "narrative_presence": false,
+      "category": "factions",
+      "last_updated": "2026-04-11"
+    },
+    {
+      "url": "/wiki/the-salvagers.html",
+      "title": "The SALVAGERS — Crypto Moonboys Wiki",
+      "authority_score": 31,
+      "trust_score": 57,
+      "inbound_links": 0,
+      "entity_mentions": 1,
+      "narrative_presence": false,
+      "category": "factions",
+      "last_updated": "2026-04-11"
+    },
+    {
+      "url": "/wiki/the-shard-mothers-of-manhattan.html",
+      "title": "The SHARD MOTHERS of MANHATTAN — Crypto Moonboys Wiki",
+      "authority_score": 31,
+      "trust_score": 57,
+      "inbound_links": 0,
+      "entity_mentions": 1,
+      "narrative_presence": false,
+      "category": "factions",
+      "last_updated": "2026-04-11"
     },
     {
       "url": "/wiki/canvas-clash.html",
@@ -768,7 +911,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-04-10"
+      "last_updated": "2026-04-11"
     },
     {
       "url": "/wiki/defi.html",
@@ -779,7 +922,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "tokens",
-      "last_updated": "2026-04-10"
+      "last_updated": "2026-04-11"
     },
     {
       "url": "/wiki/fomo-plague.html",
@@ -790,18 +933,73 @@
       "entity_mentions": 2,
       "narrative_presence": true,
       "category": "tokens",
-      "last_updated": "2026-04-10"
+      "last_updated": "2026-04-11"
     },
     {
-      "url": "/wiki/forkborn-collective.html",
-      "title": "Forkborn Collective — Crypto Moonboys Wiki",
+      "url": "/wiki/harrison-rift.html",
+      "title": "The Harrison Rift — Crypto Moonboys Wiki",
+      "authority_score": 30,
+      "trust_score": 57,
+      "inbound_links": 0,
+      "entity_mentions": 2,
+      "narrative_presence": false,
+      "category": "factions",
+      "last_updated": "2026-04-11"
+    },
+    {
+      "url": "/wiki/spirit-borns.html",
+      "title": "Spirit Borns — Crypto Moonboys Wiki",
       "authority_score": 30,
       "trust_score": 57,
       "inbound_links": 0,
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-04-10"
+      "last_updated": "2026-04-11"
+    },
+    {
+      "url": "/wiki/the-allcity-bulls.html",
+      "title": "The AllCity Bulls — Crypto Moonboys Wiki",
+      "authority_score": 30,
+      "trust_score": 57,
+      "inbound_links": 0,
+      "entity_mentions": 1,
+      "narrative_presence": false,
+      "category": "factions",
+      "last_updated": "2026-04-11"
+    },
+    {
+      "url": "/wiki/the-aztec-raiders.html",
+      "title": "The AZTEC RAIDERS — Crypto Moonboys Wiki",
+      "authority_score": 30,
+      "trust_score": 57,
+      "inbound_links": 0,
+      "entity_mentions": 1,
+      "narrative_presence": false,
+      "category": "factions",
+      "last_updated": "2026-04-11"
+    },
+    {
+      "url": "/wiki/the-bally-boys.html",
+      "title": "The BALLY BOYS — Crypto Moonboys Wiki",
+      "authority_score": 30,
+      "trust_score": 57,
+      "inbound_links": 0,
+      "entity_mentions": 1,
+      "narrative_presence": false,
+      "category": "factions",
+      "last_updated": "2026-04-11"
+    },
+    {
+      "url": "/wiki/the-blockchain-furies.html",
+      "title": "The BLOCKCHAIN FURIES — Crypto Moonboys Wiki",
+      "authority_score": 30,
+      "trust_score": 57,
+      "inbound_links": 0,
+      "entity_mentions": 1,
+      "narrative_presence": false,
+      "category": "factions",
+      "last_updated": "2026-04-11"
     },
     {
       "url": "/wiki/the-blockstars.html",
@@ -812,128 +1010,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-04-10"
-    },
-    {
-      "url": "/wiki/the-ducky-boys.html",
-      "title": "The DUCKY BOYS — Crypto Moonboys Wiki",
-      "authority_score": 30,
-      "trust_score": 57,
-      "inbound_links": 0,
-      "entity_mentions": 1,
-      "narrative_presence": false,
-      "category": "factions",
-      "last_updated": "2026-04-10"
-    },
-    {
-      "url": "/wiki/the-evm-punks.html",
-      "title": "The EVM PUNKS — Crypto Moonboys Wiki",
-      "authority_score": 30,
-      "trust_score": 57,
-      "inbound_links": 0,
-      "entity_mentions": 1,
-      "narrative_presence": false,
-      "category": "factions",
-      "last_updated": "2026-04-10"
-    },
-    {
-      "url": "/wiki/the-gasless-ghosts.html",
-      "title": "The GASLESS GHOSTS — Crypto Moonboys Wiki",
-      "authority_score": 30,
-      "trust_score": 57,
-      "inbound_links": 0,
-      "entity_mentions": 1,
-      "narrative_presence": false,
-      "category": "factions",
-      "last_updated": "2026-04-10"
-    },
-    {
-      "url": "/wiki/the-hard-fork-rockers.html",
-      "title": "The HARD FORK ROCKERS — Crypto Moonboys Wiki",
-      "authority_score": 30,
-      "trust_score": 82,
-      "inbound_links": 0,
-      "entity_mentions": 1,
-      "narrative_presence": true,
-      "category": "factions",
-      "last_updated": "2026-04-10"
-    },
-    {
-      "url": "/wiki/the-high-hats.html",
-      "title": "The High Hats — Crypto Moonboys Wiki",
-      "authority_score": 30,
-      "trust_score": 57,
-      "inbound_links": 0,
-      "entity_mentions": 1,
-      "narrative_presence": false,
-      "category": "factions",
-      "last_updated": "2026-04-10"
-    },
-    {
-      "url": "/wiki/the-moonlords.html",
-      "title": "The MOONLORDS — Crypto Moonboys Wiki",
-      "authority_score": 30,
-      "trust_score": 57,
-      "inbound_links": 0,
-      "entity_mentions": 1,
-      "narrative_presence": false,
-      "category": "factions",
-      "last_updated": "2026-04-10"
-    },
-    {
-      "url": "/wiki/the-nomad-bears.html",
-      "title": "The Nomad Bears — Crypto Moonboys Wiki",
-      "authority_score": 30,
-      "trust_score": 57,
-      "inbound_links": 0,
-      "entity_mentions": 1,
-      "narrative_presence": false,
-      "category": "factions",
-      "last_updated": "2026-04-10"
-    },
-    {
-      "url": "/wiki/the-og-pixel-saints.html",
-      "title": "The OG PIXEL SAINTS — Crypto Moonboys Wiki",
-      "authority_score": 30,
-      "trust_score": 57,
-      "inbound_links": 0,
-      "entity_mentions": 1,
-      "narrative_presence": false,
-      "category": "factions",
-      "last_updated": "2026-04-10"
-    },
-    {
-      "url": "/wiki/the-rugpull-miners.html",
-      "title": "The RUGPULL MINERS — Crypto Moonboys Wiki",
-      "authority_score": 30,
-      "trust_score": 57,
-      "inbound_links": 0,
-      "entity_mentions": 1,
-      "narrative_presence": false,
-      "category": "factions",
-      "last_updated": "2026-04-10"
-    },
-    {
-      "url": "/wiki/the-salvagers.html",
-      "title": "The SALVAGERS — Crypto Moonboys Wiki",
-      "authority_score": 30,
-      "trust_score": 57,
-      "inbound_links": 0,
-      "entity_mentions": 1,
-      "narrative_presence": false,
-      "category": "factions",
-      "last_updated": "2026-04-10"
-    },
-    {
-      "url": "/wiki/the-shard-mothers-of-manhattan.html",
-      "title": "The SHARD MOTHERS of MANHATTAN — Crypto Moonboys Wiki",
-      "authority_score": 30,
-      "trust_score": 57,
-      "inbound_links": 0,
-      "entity_mentions": 1,
-      "narrative_presence": false,
-      "category": "factions",
-      "last_updated": "2026-04-10"
+      "last_updated": "2026-04-11"
     },
     {
       "url": "/wiki/tokenomics.html",
@@ -944,7 +1021,18 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "tokens",
-      "last_updated": "2026-04-10"
+      "last_updated": "2026-04-11"
+    },
+    {
+      "url": "/wiki/web3.html",
+      "title": "Web3 — Crypto Moonboys Wiki",
+      "authority_score": 30,
+      "trust_score": 82,
+      "inbound_links": 0,
+      "entity_mentions": 1,
+      "narrative_presence": true,
+      "category": "tokens",
+      "last_updated": "2026-04-11"
     },
     {
       "url": "/wiki/whale-lords.html",
@@ -955,18 +1043,40 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-04-10"
+      "last_updated": "2026-04-11"
     },
     {
-      "url": "/wiki/harrison-rift.html",
-      "title": "The Harrison Rift — Crypto Moonboys Wiki",
+      "url": "/wiki/elder-codex-7.html",
+      "title": "Elder Codex-7 — Crypto Moonboys Wiki",
       "authority_score": 29,
       "trust_score": 57,
       "inbound_links": 0,
-      "entity_mentions": 2,
+      "entity_mentions": 1,
       "narrative_presence": false,
+      "category": "characters",
+      "last_updated": "2026-04-11"
+    },
+    {
+      "url": "/wiki/gk.html",
+      "title": "$GK — Crypto Moonboys Wiki",
+      "authority_score": 29,
+      "trust_score": 82,
+      "inbound_links": 0,
+      "entity_mentions": 1,
+      "narrative_presence": true,
       "category": "factions",
-      "last_updated": "2026-04-10"
+      "last_updated": "2026-04-11"
+    },
+    {
+      "url": "/wiki/iris-7.html",
+      "title": "Iris-7 — Crypto Moonboys Wiki",
+      "authority_score": 29,
+      "trust_score": 57,
+      "inbound_links": 0,
+      "entity_mentions": 1,
+      "narrative_presence": false,
+      "category": "characters",
+      "last_updated": "2026-04-11"
     },
     {
       "url": "/wiki/lady-ink.html",
@@ -977,7 +1087,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "characters",
-      "last_updated": "2026-04-10"
+      "last_updated": "2026-04-11"
     },
     {
       "url": "/wiki/satoshi-scroll.html",
@@ -988,51 +1098,29 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "tokens",
-      "last_updated": "2026-04-10"
+      "last_updated": "2026-04-11"
     },
     {
-      "url": "/wiki/spirit-borns.html",
-      "title": "Spirit Borns — Crypto Moonboys Wiki",
+      "url": "/wiki/spraycode-writcode-mechanics.html",
+      "title": "Spraycode &amp; Writcode Mechanics — Crypto Moonboys Wiki",
       "authority_score": 29,
       "trust_score": 57,
       "inbound_links": 0,
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-04-10"
+      "last_updated": "2026-04-11"
     },
     {
-      "url": "/wiki/the-allcity-bulls.html",
-      "title": "The AllCity Bulls — Crypto Moonboys Wiki",
+      "url": "/wiki/the-squeaky-pinks.html",
+      "title": "The Squeaky Pinks — Crypto Moonboys Wiki",
       "authority_score": 29,
       "trust_score": 57,
       "inbound_links": 0,
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-04-10"
-    },
-    {
-      "url": "/wiki/the-blockchain-furies.html",
-      "title": "The BLOCKCHAIN FURIES — Crypto Moonboys Wiki",
-      "authority_score": 29,
-      "trust_score": 57,
-      "inbound_links": 0,
-      "entity_mentions": 1,
-      "narrative_presence": false,
-      "category": "factions",
-      "last_updated": "2026-04-10"
-    },
-    {
-      "url": "/wiki/the-code-alchemists.html",
-      "title": "The CODE ALCHEMISTS — Crypto Moonboys Wiki",
-      "authority_score": 29,
-      "trust_score": 57,
-      "inbound_links": 0,
-      "entity_mentions": 1,
-      "narrative_presence": false,
-      "category": "factions",
-      "last_updated": "2026-04-10"
+      "last_updated": "2026-04-11"
     },
     {
       "url": "/wiki/the-tuskon-ogs.html",
@@ -1043,7 +1131,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-04-10"
+      "last_updated": "2026-04-11"
     },
     {
       "url": "/wiki/wagmi-prophecy.html",
@@ -1054,40 +1142,62 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "characters",
-      "last_updated": "2026-04-10"
+      "last_updated": "2026-04-11"
     },
     {
-      "url": "/wiki/web3.html",
-      "title": "Web3 — Crypto Moonboys Wiki",
-      "authority_score": 29,
-      "trust_score": 82,
-      "inbound_links": 0,
-      "entity_mentions": 1,
-      "narrative_presence": true,
-      "category": "tokens",
-      "last_updated": "2026-04-10"
-    },
-    {
-      "url": "/wiki/elder-codex-7.html",
-      "title": "Elder Codex-7 — Crypto Moonboys Wiki",
+      "url": "/wiki/ava-chen.html",
+      "title": "Ava Chen — Crypto Moonboys Wiki",
       "authority_score": 28,
       "trust_score": 57,
       "inbound_links": 0,
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "characters",
-      "last_updated": "2026-04-10"
+      "last_updated": "2026-04-11"
     },
     {
-      "url": "/wiki/gk.html",
-      "title": "$GK — Crypto Moonboys Wiki",
+      "url": "/wiki/block-node-defenders.html",
+      "title": "Block Node Defenders — Crypto Moonboys Wiki",
       "authority_score": 28,
-      "trust_score": 82,
+      "trust_score": 57,
+      "inbound_links": 0,
+      "entity_mentions": 0,
+      "narrative_presence": false,
+      "category": "factions",
+      "last_updated": "2026-04-11"
+    },
+    {
+      "url": "/wiki/dragan-volkov.html",
+      "title": "Dragan Volkov — Crypto Moonboys Wiki",
+      "authority_score": 28,
+      "trust_score": 57,
       "inbound_links": 0,
       "entity_mentions": 1,
-      "narrative_presence": true,
-      "category": "factions",
-      "last_updated": "2026-04-10"
+      "narrative_presence": false,
+      "category": "characters",
+      "last_updated": "2026-04-11"
+    },
+    {
+      "url": "/wiki/forklord-you.html",
+      "title": "Forklord You — Crypto Moonboys Wiki",
+      "authority_score": 28,
+      "trust_score": 57,
+      "inbound_links": 0,
+      "entity_mentions": 1,
+      "narrative_presence": false,
+      "category": "characters",
+      "last_updated": "2026-04-11"
+    },
+    {
+      "url": "/wiki/forksplit.html",
+      "title": "Forksplit — Crypto Moonboys Wiki",
+      "authority_score": 28,
+      "trust_score": 57,
+      "inbound_links": 0,
+      "entity_mentions": 1,
+      "narrative_presence": false,
+      "category": "characters",
+      "last_updated": "2026-04-11"
     },
     {
       "url": "/wiki/graffpunks-ecosystem.html",
@@ -1098,18 +1208,18 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "characters",
-      "last_updated": "2026-04-10"
+      "last_updated": "2026-04-11"
     },
     {
-      "url": "/wiki/iris-7.html",
-      "title": "Iris-7 — Crypto Moonboys Wiki",
+      "url": "/wiki/grit42.html",
+      "title": "Grit42 — Crypto Moonboys Wiki",
       "authority_score": 28,
       "trust_score": 57,
       "inbound_links": 0,
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "characters",
-      "last_updated": "2026-04-10"
+      "last_updated": "2026-04-11"
     },
     {
       "url": "/wiki/loopfiend.html",
@@ -1120,7 +1230,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "characters",
-      "last_updated": "2026-04-10"
+      "last_updated": "2026-04-11"
     },
     {
       "url": "/wiki/m1ntr-k1ll.html",
@@ -1131,40 +1241,51 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "characters",
-      "last_updated": "2026-04-10"
+      "last_updated": "2026-04-11"
     },
     {
-      "url": "/wiki/spraycode-writcode-mechanics.html",
-      "title": "Spraycode &amp; Writcode Mechanics — Crypto Moonboys Wiki",
+      "url": "/wiki/phygital-prints.html",
+      "title": "Phygital Prints — Crypto Moonboys Wiki",
       "authority_score": 28,
       "trust_score": 57,
       "inbound_links": 0,
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-04-10"
+      "last_updated": "2026-04-11"
     },
     {
-      "url": "/wiki/the-aztec-raiders.html",
-      "title": "The AZTEC RAIDERS — Crypto Moonboys Wiki",
+      "url": "/wiki/seeding-rights.html",
+      "title": "Seeding Rights — Crypto Moonboys Wiki",
       "authority_score": 28,
       "trust_score": 57,
       "inbound_links": 0,
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-04-10"
+      "last_updated": "2026-04-11"
     },
     {
-      "url": "/wiki/the-bally-boys.html",
-      "title": "The BALLY BOYS — Crypto Moonboys Wiki",
+      "url": "/wiki/squeaky-pinks-enforcers.html",
+      "title": "Squeaky Pinks Enforcers — Crypto Moonboys Wiki",
       "authority_score": 28,
       "trust_score": 57,
       "inbound_links": 0,
-      "entity_mentions": 1,
+      "entity_mentions": 0,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-04-10"
+      "last_updated": "2026-04-11"
+    },
+    {
+      "url": "/wiki/the-bitcoin-kid-army.html",
+      "title": "The Bitcoin Kid Army — Crypto Moonboys Wiki",
+      "authority_score": 28,
+      "trust_score": 57,
+      "inbound_links": 0,
+      "entity_mentions": 0,
+      "narrative_presence": false,
+      "category": "factions",
+      "last_updated": "2026-04-11"
     },
     {
       "url": "/wiki/the-information-mercenaries.html",
@@ -1175,40 +1296,51 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-04-10"
+      "last_updated": "2026-04-11"
     },
     {
-      "url": "/wiki/the-squeaky-pinks.html",
-      "title": "The Squeaky Pinks — Crypto Moonboys Wiki",
+      "url": "/wiki/thera-9.html",
+      "title": "Thera-9 — Crypto Moonboys Wiki",
       "authority_score": 28,
       "trust_score": 57,
       "inbound_links": 0,
       "entity_mentions": 1,
       "narrative_presence": false,
-      "category": "factions",
-      "last_updated": "2026-04-10"
-    },
-    {
-      "url": "/wiki/ava-chen.html",
-      "title": "Ava Chen — Crypto Moonboys Wiki",
-      "authority_score": 27,
-      "trust_score": 57,
-      "inbound_links": 0,
-      "entity_mentions": 1,
-      "narrative_presence": false,
       "category": "characters",
-      "last_updated": "2026-04-10"
+      "last_updated": "2026-04-11"
     },
     {
-      "url": "/wiki/block-node-defenders.html",
-      "title": "Block Node Defenders — Crypto Moonboys Wiki",
+      "url": "/wiki/1m-free-nfts-programme.html",
+      "title": "1M Free NFTs Programme — Crypto Moonboys Wiki",
       "authority_score": 27,
       "trust_score": 57,
       "inbound_links": 0,
       "entity_mentions": 0,
       "narrative_presence": false,
+      "category": "characters",
+      "last_updated": "2026-04-11"
+    },
+    {
+      "url": "/wiki/altcoins.html",
+      "title": "Altcoins — Crypto Moonboys Wiki",
+      "authority_score": 27,
+      "trust_score": 57,
+      "inbound_links": 0,
+      "entity_mentions": 1,
+      "narrative_presence": false,
+      "category": "tokens",
+      "last_updated": "2026-04-11"
+    },
+    {
+      "url": "/wiki/battlemech-blast.html",
+      "title": "Battlemech Blast — Crypto Moonboys Wiki",
+      "authority_score": 27,
+      "trust_score": 57,
+      "inbound_links": 0,
+      "entity_mentions": 1,
+      "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-04-10"
+      "last_updated": "2026-04-11"
     },
     {
       "url": "/wiki/delicious-again-pete.html",
@@ -1219,227 +1351,194 @@
       "entity_mentions": 0,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-04-10"
-    },
-    {
-      "url": "/wiki/dragan-volkov.html",
-      "title": "Dragan Volkov — Crypto Moonboys Wiki",
-      "authority_score": 27,
-      "trust_score": 57,
-      "inbound_links": 0,
-      "entity_mentions": 1,
-      "narrative_presence": false,
-      "category": "characters",
-      "last_updated": "2026-04-10"
-    },
-    {
-      "url": "/wiki/forklord-you.html",
-      "title": "Forklord You — Crypto Moonboys Wiki",
-      "authority_score": 27,
-      "trust_score": 57,
-      "inbound_links": 0,
-      "entity_mentions": 1,
-      "narrative_presence": false,
-      "category": "characters",
-      "last_updated": "2026-04-10"
-    },
-    {
-      "url": "/wiki/forksplit.html",
-      "title": "Forksplit — Crypto Moonboys Wiki",
-      "authority_score": 27,
-      "trust_score": 57,
-      "inbound_links": 0,
-      "entity_mentions": 1,
-      "narrative_presence": false,
-      "category": "characters",
-      "last_updated": "2026-04-10"
-    },
-    {
-      "url": "/wiki/grit42.html",
-      "title": "Grit42 — Crypto Moonboys Wiki",
-      "authority_score": 27,
-      "trust_score": 57,
-      "inbound_links": 0,
-      "entity_mentions": 1,
-      "narrative_presence": false,
-      "category": "characters",
-      "last_updated": "2026-04-10"
-    },
-    {
-      "url": "/wiki/phygital-prints.html",
-      "title": "Phygital Prints — Crypto Moonboys Wiki",
-      "authority_score": 27,
-      "trust_score": 57,
-      "inbound_links": 0,
-      "entity_mentions": 1,
-      "narrative_presence": false,
-      "category": "factions",
-      "last_updated": "2026-04-10"
-    },
-    {
-      "url": "/wiki/seeding-rights.html",
-      "title": "Seeding Rights — Crypto Moonboys Wiki",
-      "authority_score": 27,
-      "trust_score": 57,
-      "inbound_links": 0,
-      "entity_mentions": 1,
-      "narrative_presence": false,
-      "category": "factions",
-      "last_updated": "2026-04-10"
-    },
-    {
-      "url": "/wiki/squeaky-pinks-enforcers.html",
-      "title": "Squeaky Pinks Enforcers — Crypto Moonboys Wiki",
-      "authority_score": 27,
-      "trust_score": 57,
-      "inbound_links": 0,
-      "entity_mentions": 0,
-      "narrative_presence": false,
-      "category": "factions",
-      "last_updated": "2026-04-10"
-    },
-    {
-      "url": "/wiki/the-bitcoin-kid-army.html",
-      "title": "The Bitcoin Kid Army — Crypto Moonboys Wiki",
-      "authority_score": 27,
-      "trust_score": 57,
-      "inbound_links": 0,
-      "entity_mentions": 0,
-      "narrative_presence": false,
-      "category": "factions",
-      "last_updated": "2026-04-10"
-    },
-    {
-      "url": "/wiki/thera-9.html",
-      "title": "Thera-9 — Crypto Moonboys Wiki",
-      "authority_score": 27,
-      "trust_score": 57,
-      "inbound_links": 0,
-      "entity_mentions": 1,
-      "narrative_presence": false,
-      "category": "characters",
-      "last_updated": "2026-04-10"
-    },
-    {
-      "url": "/wiki/1m-free-nfts-programme.html",
-      "title": "1M Free NFTs Programme — Crypto Moonboys Wiki",
-      "authority_score": 26,
-      "trust_score": 57,
-      "inbound_links": 0,
-      "entity_mentions": 0,
-      "narrative_presence": false,
-      "category": "characters",
-      "last_updated": "2026-04-10"
-    },
-    {
-      "url": "/wiki/altcoins.html",
-      "title": "Altcoins — Crypto Moonboys Wiki",
-      "authority_score": 26,
-      "trust_score": 57,
-      "inbound_links": 0,
-      "entity_mentions": 1,
-      "narrative_presence": false,
-      "category": "tokens",
-      "last_updated": "2026-04-10"
-    },
-    {
-      "url": "/wiki/battlemech-blast.html",
-      "title": "Battlemech Blast — Crypto Moonboys Wiki",
-      "authority_score": 26,
-      "trust_score": 57,
-      "inbound_links": 0,
-      "entity_mentions": 1,
-      "narrative_presence": false,
-      "category": "factions",
-      "last_updated": "2026-04-10"
+      "last_updated": "2026-04-11"
     },
     {
       "url": "/wiki/ethereum-ecosystem.html",
       "title": "Ethereum (ETH) Ecosystem — Crypto Moonboys Wiki",
-      "authority_score": 26,
+      "authority_score": 27,
       "trust_score": 57,
       "inbound_links": 0,
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "tokens",
-      "last_updated": "2026-04-10"
+      "last_updated": "2026-04-11"
     },
     {
       "url": "/wiki/grit.html",
       "title": "GRIT — Crypto Moonboys Wiki",
-      "authority_score": 26,
+      "authority_score": 27,
       "trust_score": 57,
       "inbound_links": 0,
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "characters",
-      "last_updated": "2026-04-10"
+      "last_updated": "2026-04-11"
     },
     {
       "url": "/wiki/metaverse-battles.html",
       "title": "Metaverse Battles — Crypto Moonboys Wiki",
-      "authority_score": 26,
+      "authority_score": 27,
       "trust_score": 82,
       "inbound_links": 0,
       "entity_mentions": 1,
       "narrative_presence": true,
       "category": "factions",
-      "last_updated": "2026-04-10"
+      "last_updated": "2026-04-11"
     },
     {
       "url": "/wiki/punk.html",
       "title": "$PUNK — Crypto Moonboys Wiki",
-      "authority_score": 26,
+      "authority_score": 27,
       "trust_score": 57,
       "inbound_links": 0,
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-04-10"
+      "last_updated": "2026-04-11"
     },
     {
       "url": "/wiki/sarah-pu51fly.html",
       "title": "Sarah PU51FLY — Crypto Moonboys Wiki",
+      "authority_score": 27,
+      "trust_score": 57,
+      "inbound_links": 0,
+      "entity_mentions": 1,
+      "narrative_presence": false,
+      "category": "characters",
+      "last_updated": "2026-04-11"
+    },
+    {
+      "url": "/wiki/triple-fork-event.html",
+      "title": "Triple Fork Event — Crypto Moonboys Wiki",
+      "authority_score": 27,
+      "trust_score": 82,
+      "inbound_links": 0,
+      "entity_mentions": 0,
+      "narrative_presence": true,
+      "category": "factions",
+      "last_updated": "2026-04-11"
+    },
+    {
+      "url": "/wiki/1m-free-nfts-drop.html",
+      "title": "1M Free NFTs Drop — Crypto Moonboys Wiki",
+      "authority_score": 26,
+      "trust_score": 57,
+      "inbound_links": 0,
+      "entity_mentions": 0,
+      "narrative_presence": false,
+      "category": "factions",
+      "last_updated": "2026-04-11"
+    },
+    {
+      "url": "/wiki/alfie-the-bitcoin-kid-blaze.html",
+      "title": "Alfie 'The Bitcoin Kid' Blaze — Crypto Moonboys Wiki",
+      "authority_score": 26,
+      "trust_score": 57,
+      "inbound_links": 0,
+      "entity_mentions": 0,
+      "narrative_presence": false,
+      "category": "factions",
+      "last_updated": "2026-04-11"
+    },
+    {
+      "url": "/wiki/genesis-kernel.html",
+      "title": "Genesis Kernel — Crypto Moonboys Wiki",
       "authority_score": 26,
       "trust_score": 57,
       "inbound_links": 0,
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "characters",
-      "last_updated": "2026-04-10"
+      "last_updated": "2026-04-11"
     },
     {
-      "url": "/wiki/triple-fork-event.html",
-      "title": "Triple Fork Event — Crypto Moonboys Wiki",
+      "url": "/wiki/graffpunks-collection.html",
+      "title": "GraffPUNKS Collection — Crypto Moonboys Wiki",
+      "authority_score": 26,
+      "trust_score": 57,
+      "inbound_links": 0,
+      "entity_mentions": 1,
+      "narrative_presence": false,
+      "category": "factions",
+      "last_updated": "2026-04-11"
+    },
+    {
+      "url": "/wiki/hodl-wars-ecosystem.html",
+      "title": "HODL Wars Ecosystem — Crypto Moonboys Wiki",
+      "authority_score": 26,
+      "trust_score": 57,
+      "inbound_links": 0,
+      "entity_mentions": 0,
+      "narrative_presence": false,
+      "category": "characters",
+      "last_updated": "2026-04-11"
+    },
+    {
+      "url": "/wiki/jodie-zoom-2000.html",
+      "title": "Jodie ZOOM 2000 — Crypto Moonboys Wiki",
+      "authority_score": 26,
+      "trust_score": 57,
+      "inbound_links": 0,
+      "entity_mentions": 0,
+      "narrative_presence": false,
+      "category": "characters",
+      "last_updated": "2026-04-11"
+    },
+    {
+      "url": "/wiki/nbgx-token.html",
+      "title": "NBGX Token — Crypto Moonboys Wiki",
       "authority_score": 26,
       "trust_score": 82,
       "inbound_links": 0,
-      "entity_mentions": 0,
+      "entity_mentions": 1,
       "narrative_presence": true,
       "category": "factions",
-      "last_updated": "2026-04-10"
+      "last_updated": "2026-04-11"
     },
     {
-      "url": "/wiki/1m-free-nfts-drop.html",
-      "title": "1M Free NFTs Drop — Crypto Moonboys Wiki",
+      "url": "/wiki/the-graffpunks.html",
+      "title": "The GRAFFPUNKS — Crypto Moonboys Wiki",
+      "authority_score": 26,
+      "trust_score": 57,
+      "inbound_links": 0,
+      "entity_mentions": 1,
+      "narrative_presence": false,
+      "category": "factions",
+      "last_updated": "2026-04-11"
+    },
+    {
+      "url": "/wiki/aleema-child-of-the-shard.html",
+      "title": "Aleema (Child of the Shard) — Crypto Moonboys Wiki",
       "authority_score": 25,
       "trust_score": 57,
       "inbound_links": 0,
       "entity_mentions": 0,
       "narrative_presence": false,
-      "category": "factions",
-      "last_updated": "2026-04-10"
+      "category": "characters",
+      "last_updated": "2026-04-11"
     },
     {
-      "url": "/wiki/alfie-the-bitcoin-kid-blaze.html",
-      "title": "Alfie 'The Bitcoin Kid' Blaze — Crypto Moonboys Wiki",
+      "url": "/wiki/billy-the-goat-kid.html",
+      "title": "Billy the Goat Kid — Crypto Moonboys Wiki",
       "authority_score": 25,
       "trust_score": 57,
       "inbound_links": 0,
       "entity_mentions": 0,
       "narrative_presence": false,
-      "category": "factions",
-      "last_updated": "2026-04-10"
+      "category": "characters",
+      "last_updated": "2026-04-11"
+    },
+    {
+      "url": "/wiki/bit-cap-5000.html",
+      "title": "Bit-Cap 5000 — Crypto Moonboys Wiki",
+      "authority_score": 25,
+      "trust_score": 57,
+      "inbound_links": 0,
+      "entity_mentions": 0,
+      "narrative_presence": false,
+      "category": "characters",
+      "last_updated": "2026-04-11"
     },
     {
       "url": "/wiki/graffiti-kings.html",
@@ -1450,18 +1549,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-04-10"
-    },
-    {
-      "url": "/wiki/graffpunks-collection.html",
-      "title": "GraffPUNKS Collection — Crypto Moonboys Wiki",
-      "authority_score": 25,
-      "trust_score": 57,
-      "inbound_links": 0,
-      "entity_mentions": 1,
-      "narrative_presence": false,
-      "category": "factions",
-      "last_updated": "2026-04-10"
+      "last_updated": "2026-04-11"
     },
     {
       "url": "/wiki/hex-tagger-prime.html",
@@ -1472,29 +1560,18 @@
       "entity_mentions": 0,
       "narrative_presence": false,
       "category": "characters",
-      "last_updated": "2026-04-10"
+      "last_updated": "2026-04-11"
     },
     {
-      "url": "/wiki/hodl-wars-ecosystem.html",
-      "title": "HODL Wars Ecosystem — Crypto Moonboys Wiki",
+      "url": "/wiki/hodl-wars-game.html",
+      "title": "HODL Wars (Game) — Crypto Moonboys Wiki",
       "authority_score": 25,
       "trust_score": 57,
       "inbound_links": 0,
       "entity_mentions": 0,
       "narrative_presence": false,
       "category": "characters",
-      "last_updated": "2026-04-10"
-    },
-    {
-      "url": "/wiki/jodie-zoom-2000.html",
-      "title": "Jodie ZOOM 2000 — Crypto Moonboys Wiki",
-      "authority_score": 25,
-      "trust_score": 57,
-      "inbound_links": 0,
-      "entity_mentions": 0,
-      "narrative_presence": false,
-      "category": "characters",
-      "last_updated": "2026-04-10"
+      "last_updated": "2026-04-11"
     },
     {
       "url": "/wiki/lfgk.html",
@@ -1505,29 +1582,29 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-04-10"
+      "last_updated": "2026-04-11"
     },
     {
-      "url": "/wiki/nbgx-token.html",
-      "title": "NBGX Token — Crypto Moonboys Wiki",
+      "url": "/wiki/playable-nft-murals.html",
+      "title": "Playable NFT Murals — Crypto Moonboys Wiki",
+      "authority_score": 25,
+      "trust_score": 57,
+      "inbound_links": 0,
+      "entity_mentions": 0,
+      "narrative_presence": false,
+      "category": "factions",
+      "last_updated": "2026-04-11"
+    },
+    {
+      "url": "/wiki/pmsl-token.html",
+      "title": "PMSL Token — Crypto Moonboys Wiki",
       "authority_score": 25,
       "trust_score": 82,
       "inbound_links": 0,
       "entity_mentions": 1,
       "narrative_presence": true,
       "category": "factions",
-      "last_updated": "2026-04-10"
-    },
-    {
-      "url": "/wiki/the-graffpunks.html",
-      "title": "The GRAFFPUNKS — Crypto Moonboys Wiki",
-      "authority_score": 25,
-      "trust_score": 57,
-      "inbound_links": 0,
-      "entity_mentions": 1,
-      "narrative_presence": false,
-      "category": "factions",
-      "last_updated": "2026-04-10"
+      "last_updated": "2026-04-11"
     },
     {
       "url": "/wiki/the-great-dip.html",
@@ -1538,51 +1615,40 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "tokens",
-      "last_updated": "2026-04-10"
+      "last_updated": "2026-04-11"
     },
     {
-      "url": "/wiki/aleema-child-of-the-shard.html",
-      "title": "Aleema (Child of the Shard) — Crypto Moonboys Wiki",
+      "url": "/wiki/bone-idol-ink.html",
+      "title": "Bone Idol Ink — Crypto Moonboys Wiki",
       "authority_score": 24,
       "trust_score": 57,
       "inbound_links": 0,
       "entity_mentions": 0,
       "narrative_presence": false,
-      "category": "characters",
-      "last_updated": "2026-04-10"
+      "category": "factions",
+      "last_updated": "2026-04-11"
     },
     {
-      "url": "/wiki/billy-the-goat-kid.html",
-      "title": "Billy the Goat Kid — Crypto Moonboys Wiki",
+      "url": "/wiki/gang-signs-card-game.html",
+      "title": "Gang Signs (Card Game) — Crypto Moonboys Wiki",
       "authority_score": 24,
       "trust_score": 57,
       "inbound_links": 0,
       "entity_mentions": 0,
       "narrative_presence": false,
-      "category": "characters",
-      "last_updated": "2026-04-10"
+      "category": "factions",
+      "last_updated": "2026-04-11"
     },
     {
-      "url": "/wiki/bit-cap-5000.html",
-      "title": "Bit-Cap 5000 — Crypto Moonboys Wiki",
+      "url": "/wiki/gkniftyheads-phase-one-two-three.html",
+      "title": "GKniftyHEADS Phase One Two Three — Crypto Moonboys Wiki",
       "authority_score": 24,
       "trust_score": 57,
       "inbound_links": 0,
       "entity_mentions": 0,
       "narrative_presence": false,
-      "category": "characters",
-      "last_updated": "2026-04-10"
-    },
-    {
-      "url": "/wiki/genesis-kernel.html",
-      "title": "Genesis Kernel — Crypto Moonboys Wiki",
-      "authority_score": 24,
-      "trust_score": 57,
-      "inbound_links": 0,
-      "entity_mentions": 1,
-      "narrative_presence": false,
-      "category": "characters",
-      "last_updated": "2026-04-10"
+      "category": "factions",
+      "last_updated": "2026-04-11"
     },
     {
       "url": "/wiki/graffiti-queens-in-decentraland.html",
@@ -1593,18 +1659,7 @@
       "entity_mentions": 0,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-04-10"
-    },
-    {
-      "url": "/wiki/hodl-wars-game.html",
-      "title": "HODL Wars (Game) — Crypto Moonboys Wiki",
-      "authority_score": 24,
-      "trust_score": 57,
-      "inbound_links": 0,
-      "entity_mentions": 0,
-      "narrative_presence": false,
-      "category": "characters",
-      "last_updated": "2026-04-10"
+      "last_updated": "2026-04-11"
     },
     {
       "url": "/wiki/ngmi-chronicles.html",
@@ -1615,7 +1670,7 @@
       "entity_mentions": 1,
       "narrative_presence": true,
       "category": "tokens",
-      "last_updated": "2026-04-10"
+      "last_updated": "2026-04-11"
     },
     {
       "url": "/wiki/paper-hands.html",
@@ -1626,40 +1681,29 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "tokens",
-      "last_updated": "2026-04-10"
+      "last_updated": "2026-04-11"
     },
     {
-      "url": "/wiki/playable-nft-murals.html",
-      "title": "Playable NFT Murals — Crypto Moonboys Wiki",
-      "authority_score": 24,
-      "trust_score": 57,
-      "inbound_links": 0,
-      "entity_mentions": 0,
-      "narrative_presence": false,
-      "category": "factions",
-      "last_updated": "2026-04-10"
-    },
-    {
-      "url": "/wiki/pmsl-token.html",
-      "title": "PMSL Token — Crypto Moonboys Wiki",
-      "authority_score": 24,
-      "trust_score": 82,
-      "inbound_links": 0,
-      "entity_mentions": 1,
-      "narrative_presence": true,
-      "category": "factions",
-      "last_updated": "2026-04-10"
-    },
-    {
-      "url": "/wiki/bone-idol-ink.html",
-      "title": "Bone Idol Ink — Crypto Moonboys Wiki",
+      "url": "/wiki/darren-cullen-ser.html",
+      "title": "Darren Cullen (SER) — Crypto Moonboys Wiki",
       "authority_score": 23,
       "trust_score": 57,
       "inbound_links": 0,
       "entity_mentions": 0,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-04-10"
+      "last_updated": "2026-04-11"
+    },
+    {
+      "url": "/wiki/queen-sarah-p-fly.html",
+      "title": "Queen Sarah P-fly — Crypto Moonboys Wiki",
+      "authority_score": 23,
+      "trust_score": 57,
+      "inbound_links": 0,
+      "entity_mentions": 0,
+      "narrative_presence": false,
+      "category": "factions",
+      "last_updated": "2026-04-11"
     },
     {
       "url": "/wiki/substack-posts-on-graffpunkssubstackcom.html",
@@ -1670,95 +1714,62 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-04-10"
-    },
-    {
-      "url": "/wiki/darren-cullen-ser.html",
-      "title": "Darren Cullen (SER) — Crypto Moonboys Wiki",
-      "authority_score": 22,
-      "trust_score": 57,
-      "inbound_links": 0,
-      "entity_mentions": 0,
-      "narrative_presence": false,
-      "category": "factions",
-      "last_updated": "2026-04-10"
-    },
-    {
-      "url": "/wiki/gang-signs-card-game.html",
-      "title": "Gang Signs (Card Game) — Crypto Moonboys Wiki",
-      "authority_score": 22,
-      "trust_score": 57,
-      "inbound_links": 0,
-      "entity_mentions": 0,
-      "narrative_presence": false,
-      "category": "factions",
-      "last_updated": "2026-04-10"
-    },
-    {
-      "url": "/wiki/gkniftyheads-phase-one-two-three.html",
-      "title": "GKniftyHEADS Phase One Two Three — Crypto Moonboys Wiki",
-      "authority_score": 22,
-      "trust_score": 57,
-      "inbound_links": 0,
-      "entity_mentions": 0,
-      "narrative_presence": false,
-      "category": "factions",
-      "last_updated": "2026-04-10"
-    },
-    {
-      "url": "/wiki/queen-sarah-p-fly.html",
-      "title": "Queen Sarah P-fly — Crypto Moonboys Wiki",
-      "authority_score": 22,
-      "trust_score": 57,
-      "inbound_links": 0,
-      "entity_mentions": 0,
-      "narrative_presence": false,
-      "category": "factions",
-      "last_updated": "2026-04-10"
+      "last_updated": "2026-04-11"
     },
     {
       "url": "/wiki/1m-free-nfts-program.html",
       "title": "1M Free NFTs Program — Crypto Moonboys Wiki",
-      "authority_score": 21,
+      "authority_score": 22,
       "trust_score": 57,
       "inbound_links": 0,
       "entity_mentions": 0,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-04-10"
+      "last_updated": "2026-04-11"
     },
     {
       "url": "/wiki/2025-metaverse-launch-party.html",
       "title": "2025 Metaverse Launch Party — Crypto Moonboys Wiki",
-      "authority_score": 21,
+      "authority_score": 22,
       "trust_score": 82,
       "inbound_links": 0,
       "entity_mentions": 0,
       "narrative_presence": true,
       "category": "factions",
-      "last_updated": "2026-04-10"
+      "last_updated": "2026-04-11"
     },
     {
       "url": "/wiki/graffpunks-247-blockchain-radio-station.html",
       "title": "GraffPUNKS 24/7 Blockchain Radio Station — Crypto Moonboys Wiki",
-      "authority_score": 21,
+      "authority_score": 22,
       "trust_score": 57,
       "inbound_links": 1,
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-04-10"
+      "last_updated": "2026-04-11"
     },
     {
       "url": "/wiki/maidstone-base.html",
       "title": "Maidstone Base — Crypto Moonboys Wiki",
-      "authority_score": 21,
+      "authority_score": 22,
       "trust_score": 57,
       "inbound_links": 0,
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-04-10"
+      "last_updated": "2026-04-11"
+    },
+    {
+      "url": "/wiki/the-gkniftyheads.html",
+      "title": "The GKniftyHEADS — Crypto Moonboys Wiki",
+      "authority_score": 22,
+      "trust_score": 57,
+      "inbound_links": 0,
+      "entity_mentions": 1,
+      "narrative_presence": false,
+      "category": "factions",
+      "last_updated": "2026-04-11"
     },
     {
       "url": "/wiki/rug-pull-wars.html",
@@ -1769,7 +1780,7 @@
       "entity_mentions": 0,
       "narrative_presence": false,
       "category": "tokens",
-      "last_updated": "2026-04-10"
+      "last_updated": "2026-04-11"
     },
     {
       "url": "/wiki/snipey-d-man-sirus.html",
@@ -1780,18 +1791,29 @@
       "entity_mentions": 0,
       "narrative_presence": false,
       "category": "characters",
-      "last_updated": "2026-04-10"
+      "last_updated": "2026-04-11"
     },
     {
-      "url": "/wiki/the-gkniftyheads.html",
-      "title": "The GKniftyHEADS — Crypto Moonboys Wiki",
-      "authority_score": 21,
+      "url": "/wiki/croydon-tower-blocks.html",
+      "title": "Croydon Tower Blocks — Crypto Moonboys Wiki",
+      "authority_score": 20,
       "trust_score": 57,
       "inbound_links": 0,
-      "entity_mentions": 1,
+      "entity_mentions": 0,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-04-10"
+      "last_updated": "2026-04-11"
+    },
+    {
+      "url": "/wiki/no-ball-games-nbg.html",
+      "title": "No Ball Games (NBG) — Crypto Moonboys Wiki",
+      "authority_score": 20,
+      "trust_score": 57,
+      "inbound_links": 0,
+      "entity_mentions": 0,
+      "narrative_presence": false,
+      "category": "factions",
+      "last_updated": "2026-04-11"
     },
     {
       "url": "/wiki/bitcoin-kid-army.html",
@@ -1802,29 +1824,62 @@
       "entity_mentions": 0,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-04-10"
+      "last_updated": "2026-04-11"
     },
     {
-      "url": "/wiki/croydon-tower-blocks.html",
-      "title": "Croydon Tower Blocks — Crypto Moonboys Wiki",
+      "url": "/wiki/crypto-wallets.html",
+      "title": "Crypto Wallets — Crypto Moonboys Wiki",
       "authority_score": 19,
       "trust_score": 57,
       "inbound_links": 0,
-      "entity_mentions": 0,
+      "entity_mentions": 2,
       "narrative_presence": false,
-      "category": "factions",
-      "last_updated": "2026-04-10"
+      "category": "characters",
+      "last_updated": "2026-04-11"
     },
     {
-      "url": "/wiki/no-ball-games-nbg.html",
-      "title": "No Ball Games (NBG) — Crypto Moonboys Wiki",
+      "url": "/wiki/decentraland-events.html",
+      "title": "Decentraland Events — Crypto Moonboys Wiki",
       "authority_score": 19,
       "trust_score": 57,
       "inbound_links": 0,
-      "entity_mentions": 0,
+      "entity_mentions": 1,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-04-10"
+      "last_updated": "2026-04-11"
+    },
+    {
+      "url": "/wiki/gk-tokens.html",
+      "title": "$GK Tokens — Crypto Moonboys Wiki",
+      "authority_score": 19,
+      "trust_score": 82,
+      "inbound_links": 0,
+      "entity_mentions": 1,
+      "narrative_presence": true,
+      "category": "factions",
+      "last_updated": "2026-04-11"
+    },
+    {
+      "url": "/wiki/lfgk-token.html",
+      "title": "$LFGK Token — Crypto Moonboys Wiki",
+      "authority_score": 19,
+      "trust_score": 57,
+      "inbound_links": 0,
+      "entity_mentions": 1,
+      "narrative_presence": false,
+      "category": "factions",
+      "last_updated": "2026-04-11"
+    },
+    {
+      "url": "/wiki/samael-exe.html",
+      "title": "Samael.exe — Crypto Moonboys Wiki",
+      "authority_score": 19,
+      "trust_score": 57,
+      "inbound_links": 0,
+      "entity_mentions": 2,
+      "narrative_presence": false,
+      "category": "characters",
+      "last_updated": "2026-04-11"
     },
     {
       "url": "/wiki/spraycode-writcode.html",
@@ -1835,7 +1890,40 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-04-10"
+      "last_updated": "2026-04-11"
+    },
+    {
+      "url": "/wiki/the-bear-market-siege.html",
+      "title": "The Bear Market Siege — Crypto Moonboys Wiki",
+      "authority_score": 19,
+      "trust_score": 57,
+      "inbound_links": 0,
+      "entity_mentions": 2,
+      "narrative_presence": false,
+      "category": "characters",
+      "last_updated": "2026-04-11"
+    },
+    {
+      "url": "/wiki/the-wagmi-prophecy.html",
+      "title": "The WAGMI Prophecy — Crypto Moonboys Wiki",
+      "authority_score": 19,
+      "trust_score": 57,
+      "inbound_links": 0,
+      "entity_mentions": 2,
+      "narrative_presence": false,
+      "category": "characters",
+      "last_updated": "2026-04-11"
+    },
+    {
+      "url": "/wiki/the-whale-lords.html",
+      "title": "The Whale Lords — Crypto Moonboys Wiki",
+      "authority_score": 19,
+      "trust_score": 57,
+      "inbound_links": 0,
+      "entity_mentions": 2,
+      "narrative_presence": false,
+      "category": "factions",
+      "last_updated": "2026-04-11"
     },
     {
       "url": "/wiki/alfie-bitcoin-kid-blaze.html",
@@ -1846,29 +1934,62 @@
       "entity_mentions": 0,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-04-10"
+      "last_updated": "2026-04-11"
     },
     {
-      "url": "/wiki/crypto-wallets.html",
-      "title": "Crypto Wallets — Crypto Moonboys Wiki",
+      "url": "/wiki/bitcoin-btc.html",
+      "title": "Bitcoin (BTC) — Crypto Moonboys Wiki",
       "authority_score": 18,
       "trust_score": 57,
       "inbound_links": 0,
       "entity_mentions": 2,
       "narrative_presence": false,
-      "category": "characters",
-      "last_updated": "2026-04-10"
+      "category": "tokens",
+      "last_updated": "2026-04-11"
     },
     {
-      "url": "/wiki/decentraland-events.html",
-      "title": "Decentraland Events — Crypto Moonboys Wiki",
+      "url": "/wiki/blockchain-technology.html",
+      "title": "Blockchain Technology — Crypto Moonboys Wiki",
       "authority_score": 18,
       "trust_score": 57,
       "inbound_links": 0,
-      "entity_mentions": 1,
+      "entity_mentions": 2,
       "narrative_presence": false,
-      "category": "factions",
-      "last_updated": "2026-04-10"
+      "category": "tokens",
+      "last_updated": "2026-04-11"
+    },
+    {
+      "url": "/wiki/crypto-exchanges.html",
+      "title": "Crypto Exchanges — Crypto Moonboys Wiki",
+      "authority_score": 18,
+      "trust_score": 57,
+      "inbound_links": 0,
+      "entity_mentions": 2,
+      "narrative_presence": false,
+      "category": "tokens",
+      "last_updated": "2026-04-11"
+    },
+    {
+      "url": "/wiki/darren-cullen-ser-real.html",
+      "title": "Darren Cullen (SER) - Real — Crypto Moonboys Wiki",
+      "authority_score": 18,
+      "trust_score": 57,
+      "inbound_links": 0,
+      "entity_mentions": 0,
+      "narrative_presence": false,
+      "category": "characters",
+      "last_updated": "2026-04-11"
+    },
+    {
+      "url": "/wiki/ethereum-eth.html",
+      "title": "Ethereum (ETH) — Crypto Moonboys Wiki",
+      "authority_score": 18,
+      "trust_score": 57,
+      "inbound_links": 0,
+      "entity_mentions": 2,
+      "narrative_presence": false,
+      "category": "tokens",
+      "last_updated": "2026-04-11"
     },
     {
       "url": "/wiki/gk-token.html",
@@ -1879,18 +2000,7 @@
       "entity_mentions": 1,
       "narrative_presence": true,
       "category": "factions",
-      "last_updated": "2026-04-10"
-    },
-    {
-      "url": "/wiki/gk-tokens.html",
-      "title": "$GK Tokens — Crypto Moonboys Wiki",
-      "authority_score": 18,
-      "trust_score": 82,
-      "inbound_links": 0,
-      "entity_mentions": 1,
-      "narrative_presence": true,
-      "category": "factions",
-      "last_updated": "2026-04-10"
+      "last_updated": "2026-04-11"
     },
     {
       "url": "/wiki/lfgk-rewards.html",
@@ -1901,51 +2011,62 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-04-10"
+      "last_updated": "2026-04-11"
     },
     {
-      "url": "/wiki/lfgk-token.html",
-      "title": "$LFGK Token — Crypto Moonboys Wiki",
+      "url": "/wiki/meme-coins.html",
+      "title": "Meme Coins — Crypto Moonboys Wiki",
+      "authority_score": 18,
+      "trust_score": 57,
+      "inbound_links": 0,
+      "entity_mentions": 2,
+      "narrative_presence": false,
+      "category": "tokens",
+      "last_updated": "2026-04-11"
+    },
+    {
+      "url": "/wiki/solana-sol.html",
+      "title": "Solana (SOL) — Crypto Moonboys Wiki",
+      "authority_score": 18,
+      "trust_score": 82,
+      "inbound_links": 0,
+      "entity_mentions": 2,
+      "narrative_presence": true,
+      "category": "tokens",
+      "last_updated": "2026-04-11"
+    },
+    {
+      "url": "/wiki/the-fomo-plague.html",
+      "title": "The FOMO Plague — Crypto Moonboys Wiki",
+      "authority_score": 18,
+      "trust_score": 57,
+      "inbound_links": 0,
+      "entity_mentions": 2,
+      "narrative_presence": false,
+      "category": "tokens",
+      "last_updated": "2026-04-11"
+    },
+    {
+      "url": "/wiki/the-sacred-chain.html",
+      "title": "The Sacred Chain — Crypto Moonboys Wiki",
       "authority_score": 18,
       "trust_score": 57,
       "inbound_links": 0,
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-04-10"
+      "last_updated": "2026-04-11"
     },
     {
-      "url": "/wiki/samael-exe.html",
-      "title": "Samael.exe — Crypto Moonboys Wiki",
+      "url": "/wiki/the-satoshi-scroll.html",
+      "title": "The Satoshi Scroll — Crypto Moonboys Wiki",
       "authority_score": 18,
       "trust_score": 57,
       "inbound_links": 0,
       "entity_mentions": 2,
       "narrative_presence": false,
-      "category": "characters",
-      "last_updated": "2026-04-10"
-    },
-    {
-      "url": "/wiki/the-bear-market-siege.html",
-      "title": "The Bear Market Siege — Crypto Moonboys Wiki",
-      "authority_score": 18,
-      "trust_score": 57,
-      "inbound_links": 0,
-      "entity_mentions": 2,
-      "narrative_presence": false,
-      "category": "characters",
-      "last_updated": "2026-04-10"
-    },
-    {
-      "url": "/wiki/the-wagmi-prophecy.html",
-      "title": "The WAGMI Prophecy — Crypto Moonboys Wiki",
-      "authority_score": 18,
-      "trust_score": 57,
-      "inbound_links": 0,
-      "entity_mentions": 2,
-      "narrative_presence": false,
-      "category": "characters",
-      "last_updated": "2026-04-10"
+      "category": "tokens",
+      "last_updated": "2026-04-11"
     },
     {
       "url": "/wiki/waxp.html",
@@ -1956,62 +2077,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-04-10"
-    },
-    {
-      "url": "/wiki/bitcoin-btc.html",
-      "title": "Bitcoin (BTC) — Crypto Moonboys Wiki",
-      "authority_score": 17,
-      "trust_score": 57,
-      "inbound_links": 0,
-      "entity_mentions": 2,
-      "narrative_presence": false,
-      "category": "tokens",
-      "last_updated": "2026-04-10"
-    },
-    {
-      "url": "/wiki/blockchain-technology.html",
-      "title": "Blockchain Technology — Crypto Moonboys Wiki",
-      "authority_score": 17,
-      "trust_score": 57,
-      "inbound_links": 0,
-      "entity_mentions": 2,
-      "narrative_presence": false,
-      "category": "tokens",
-      "last_updated": "2026-04-10"
-    },
-    {
-      "url": "/wiki/crypto-exchanges.html",
-      "title": "Crypto Exchanges — Crypto Moonboys Wiki",
-      "authority_score": 17,
-      "trust_score": 57,
-      "inbound_links": 0,
-      "entity_mentions": 2,
-      "narrative_presence": false,
-      "category": "tokens",
-      "last_updated": "2026-04-10"
-    },
-    {
-      "url": "/wiki/darren-cullen-ser-real.html",
-      "title": "Darren Cullen (SER) - Real — Crypto Moonboys Wiki",
-      "authority_score": 17,
-      "trust_score": 57,
-      "inbound_links": 0,
-      "entity_mentions": 0,
-      "narrative_presence": false,
-      "category": "characters",
-      "last_updated": "2026-04-10"
-    },
-    {
-      "url": "/wiki/ethereum-eth.html",
-      "title": "Ethereum (ETH) — Crypto Moonboys Wiki",
-      "authority_score": 17,
-      "trust_score": 57,
-      "inbound_links": 0,
-      "entity_mentions": 2,
-      "narrative_presence": false,
-      "category": "tokens",
-      "last_updated": "2026-04-10"
+      "last_updated": "2026-04-11"
     },
     {
       "url": "/wiki/great-datapocalypse-of-2789.html",
@@ -2022,106 +2088,205 @@
       "entity_mentions": 0,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-04-10"
-    },
-    {
-      "url": "/wiki/meme-coins.html",
-      "title": "Meme Coins — Crypto Moonboys Wiki",
-      "authority_score": 17,
-      "trust_score": 57,
-      "inbound_links": 0,
-      "entity_mentions": 2,
-      "narrative_presence": false,
-      "category": "tokens",
-      "last_updated": "2026-04-10"
-    },
-    {
-      "url": "/wiki/solana-sol.html",
-      "title": "Solana (SOL) — Crypto Moonboys Wiki",
-      "authority_score": 17,
-      "trust_score": 82,
-      "inbound_links": 0,
-      "entity_mentions": 2,
-      "narrative_presence": true,
-      "category": "tokens",
-      "last_updated": "2026-04-10"
-    },
-    {
-      "url": "/wiki/the-fomo-plague.html",
-      "title": "The FOMO Plague — Crypto Moonboys Wiki",
-      "authority_score": 17,
-      "trust_score": 57,
-      "inbound_links": 0,
-      "entity_mentions": 2,
-      "narrative_presence": false,
-      "category": "tokens",
-      "last_updated": "2026-04-10"
-    },
-    {
-      "url": "/wiki/the-sacred-chain.html",
-      "title": "The Sacred Chain — Crypto Moonboys Wiki",
-      "authority_score": 17,
-      "trust_score": 57,
-      "inbound_links": 0,
-      "entity_mentions": 1,
-      "narrative_presence": false,
-      "category": "factions",
-      "last_updated": "2026-04-10"
-    },
-    {
-      "url": "/wiki/the-satoshi-scroll.html",
-      "title": "The Satoshi Scroll — Crypto Moonboys Wiki",
-      "authority_score": 17,
-      "trust_score": 57,
-      "inbound_links": 0,
-      "entity_mentions": 2,
-      "narrative_presence": false,
-      "category": "tokens",
-      "last_updated": "2026-04-10"
-    },
-    {
-      "url": "/wiki/the-whale-lords.html",
-      "title": "The Whale Lords — Crypto Moonboys Wiki",
-      "authority_score": 17,
-      "trust_score": 57,
-      "inbound_links": 0,
-      "entity_mentions": 2,
-      "narrative_presence": false,
-      "category": "factions",
-      "last_updated": "2026-04-10"
+      "last_updated": "2026-04-11"
     },
     {
       "url": "/wiki/no-ball-games-nbg-collection.html",
       "title": "No Ball Games (NBG) Collection — Crypto Moonboys Wiki",
-      "authority_score": 16,
+      "authority_score": 17,
       "trust_score": 57,
       "inbound_links": 0,
       "entity_mentions": 0,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-04-10"
+      "last_updated": "2026-04-11"
     },
     {
       "url": "/wiki/the-grids.html",
       "title": "THE GRIDS — Crypto Moonboys Wiki",
+      "authority_score": 17,
+      "trust_score": 57,
+      "inbound_links": 0,
+      "entity_mentions": 1,
+      "narrative_presence": false,
+      "category": "factions",
+      "last_updated": "2026-04-11"
+    },
+    {
+      "url": "/wiki/xrp-kids-nbg-updates.html",
+      "title": "XRP Kids NBG Updates — Crypto Moonboys Wiki",
+      "authority_score": 17,
+      "trust_score": 57,
+      "inbound_links": 0,
+      "entity_mentions": 0,
+      "narrative_presence": false,
+      "category": "factions",
+      "last_updated": "2026-04-11"
+    },
+    {
+      "url": "/wiki/graffiti-nexus.html",
+      "title": "Graffiti Nexus — Crypto Moonboys Wiki",
+      "authority_score": 16,
+      "trust_score": 57,
+      "inbound_links": 0,
+      "entity_mentions": 1,
+      "narrative_presence": false,
+      "category": "characters",
+      "last_updated": "2026-04-11"
+    },
+    {
+      "url": "/wiki/graffiti-queens-in-decentraland-ecosystem.html",
+      "title": "Graffiti Queens In Decentraland Ecosystem — Crypto Moonboys Wiki",
+      "authority_score": 16,
+      "trust_score": 57,
+      "inbound_links": 0,
+      "entity_mentions": 0,
+      "narrative_presence": false,
+      "category": "core",
+      "last_updated": "2026-04-11"
+    },
+    {
+      "url": "/wiki/graffpunks-24-7-blockchain-radio-station.html",
+      "title": "GraffPUNKS 24/7 Blockchain Radio Station — Crypto Moonboys Wiki",
       "authority_score": 16,
       "trust_score": 57,
       "inbound_links": 0,
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-04-10"
+      "last_updated": "2026-04-11"
     },
     {
-      "url": "/wiki/xrp-kids-nbg-updates.html",
-      "title": "XRP Kids NBG Updates — Crypto Moonboys Wiki",
+      "url": "/wiki/graffpunks-nfts.html",
+      "title": "GraffPUNKS NFTs — Crypto Moonboys Wiki",
+      "authority_score": 16,
+      "trust_score": 57,
+      "inbound_links": 0,
+      "entity_mentions": 1,
+      "narrative_presence": false,
+      "category": "characters",
+      "last_updated": "2026-04-11"
+    },
+    {
+      "url": "/wiki/hard-fork-games-game.html",
+      "title": "Hard Fork Games — Crypto Moonboys Wiki",
+      "authority_score": 16,
+      "trust_score": 57,
+      "inbound_links": 0,
+      "entity_mentions": 1,
+      "narrative_presence": false,
+      "category": "factions",
+      "last_updated": "2026-04-11"
+    },
+    {
+      "url": "/wiki/medium-articles-by-gkniftyheads.html",
+      "title": "Medium Articles by @GKniftyHEADS — Crypto Moonboys Wiki",
       "authority_score": 16,
       "trust_score": 57,
       "inbound_links": 0,
       "entity_mentions": 0,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-04-10"
+      "last_updated": "2026-04-11"
+    },
+    {
+      "url": "/wiki/medium-articles-by-graffpunks.html",
+      "title": "Medium Articles by @GRAFFPUNKS — Crypto Moonboys Wiki",
+      "authority_score": 16,
+      "trust_score": 57,
+      "inbound_links": 0,
+      "entity_mentions": 0,
+      "narrative_presence": false,
+      "category": "factions",
+      "last_updated": "2026-04-11"
+    },
+    {
+      "url": "/wiki/medium-articles-by-hodlwarriors.html",
+      "title": "Medium Articles by @HODLWARRIORS — Crypto Moonboys Wiki",
+      "authority_score": 16,
+      "trust_score": 57,
+      "inbound_links": 0,
+      "entity_mentions": 0,
+      "narrative_presence": false,
+      "category": "factions",
+      "last_updated": "2026-04-11"
+    },
+    {
+      "url": "/wiki/medium-articles-by-sercullen.html",
+      "title": "Medium Articles by @sercullen — Crypto Moonboys Wiki",
+      "authority_score": 16,
+      "trust_score": 57,
+      "inbound_links": 0,
+      "entity_mentions": 0,
+      "narrative_presence": false,
+      "category": "factions",
+      "last_updated": "2026-04-11"
+    },
+    {
+      "url": "/wiki/neftyblocks-midevilpunks-collection.html",
+      "title": "NeftyBlocks Midevilpunks Collection — Crypto Moonboys Wiki",
+      "authority_score": 16,
+      "trust_score": 57,
+      "inbound_links": 0,
+      "entity_mentions": 0,
+      "narrative_presence": false,
+      "category": "factions",
+      "last_updated": "2026-04-11"
+    },
+    {
+      "url": "/wiki/nfts-non-fungible-tokens.html",
+      "title": "NFTs (Non-Fungible Tokens) — Crypto Moonboys Wiki",
+      "authority_score": 16,
+      "trust_score": 57,
+      "inbound_links": 0,
+      "entity_mentions": 1,
+      "narrative_presence": false,
+      "category": "characters",
+      "last_updated": "2026-04-11"
+    },
+    {
+      "url": "/wiki/smart-nft-mechanics.html",
+      "title": "SMArT NFT Mechanics — Crypto Moonboys Wiki",
+      "authority_score": 16,
+      "trust_score": 57,
+      "inbound_links": 0,
+      "entity_mentions": 0,
+      "narrative_presence": false,
+      "category": "factions",
+      "last_updated": "2026-04-11"
+    },
+    {
+      "url": "/wiki/substack-posts-on-graffpunks-substack-com.html",
+      "title": "Substack Posts on graffpunks.substack.com — Crypto Moonboys Wiki",
+      "authority_score": 16,
+      "trust_score": 57,
+      "inbound_links": 0,
+      "entity_mentions": 1,
+      "narrative_presence": false,
+      "category": "factions",
+      "last_updated": "2026-04-11"
+    },
+    {
+      "url": "/wiki/tokens.html",
+      "title": "Tokens — Crypto Moonboys Wiki",
+      "authority_score": 16,
+      "trust_score": 57,
+      "inbound_links": 0,
+      "entity_mentions": 1,
+      "narrative_presence": false,
+      "category": "tokens",
+      "last_updated": "2026-04-11"
+    },
+    {
+      "url": "/wiki/xrp-kids-genesis-nfts.html",
+      "title": "XRP KIDs Genesis NFTs — Crypto Moonboys Wiki",
+      "authority_score": 16,
+      "trust_score": 57,
+      "inbound_links": 0,
+      "entity_mentions": 0,
+      "narrative_presence": false,
+      "category": "factions",
+      "last_updated": "2026-04-11"
     },
     {
       "url": "/wiki/atomichub-graffpunks-collection.html",
@@ -2132,7 +2297,40 @@
       "entity_mentions": 0,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-04-10"
+      "last_updated": "2026-04-11"
+    },
+    {
+      "url": "/wiki/defi-decentralised-finance.html",
+      "title": "DeFi (Decentralised Finance) — Crypto Moonboys Wiki",
+      "authority_score": 15,
+      "trust_score": 57,
+      "inbound_links": 0,
+      "entity_mentions": 1,
+      "narrative_presence": false,
+      "category": "tokens",
+      "last_updated": "2026-04-11"
+    },
+    {
+      "url": "/wiki/dream-sovereign.html",
+      "title": "Dream Sovereign — Crypto Moonboys Wiki",
+      "authority_score": 15,
+      "trust_score": 57,
+      "inbound_links": 0,
+      "entity_mentions": 1,
+      "narrative_presence": false,
+      "category": "factions",
+      "last_updated": "2026-04-11"
+    },
+    {
+      "url": "/wiki/games4punks-telegram-games.html",
+      "title": "GAMES4PUNKS Telegram Games — Crypto Moonboys Wiki",
+      "authority_score": 15,
+      "trust_score": 57,
+      "inbound_links": 0,
+      "entity_mentions": 0,
+      "narrative_presence": false,
+      "category": "factions",
+      "last_updated": "2026-04-11"
     },
     {
       "url": "/wiki/graffiti-queens-exhibition.html",
@@ -2143,18 +2341,51 @@
       "entity_mentions": 0,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-04-10"
+      "last_updated": "2026-04-11"
     },
     {
-      "url": "/wiki/graffpunks-24-7-blockchain-radio-station.html",
-      "title": "GraffPUNKS 24/7 Blockchain Radio Station — Crypto Moonboys Wiki",
+      "url": "/wiki/graffpunks-247.html",
+      "title": "GraffPUNKS 247 — Crypto Moonboys Wiki",
       "authority_score": 15,
       "trust_score": 57,
       "inbound_links": 0,
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-04-10"
+      "last_updated": "2026-04-11"
+    },
+    {
+      "url": "/wiki/graffpunks-network.html",
+      "title": "GraffPUNKS Network — Crypto Moonboys Wiki",
+      "authority_score": 15,
+      "trust_score": 57,
+      "inbound_links": 0,
+      "entity_mentions": 1,
+      "narrative_presence": false,
+      "category": "factions",
+      "last_updated": "2026-04-11"
+    },
+    {
+      "url": "/wiki/hard-fork-games-event.html",
+      "title": "Hard Fork Games Event — Crypto Moonboys Wiki",
+      "authority_score": 15,
+      "trust_score": 82,
+      "inbound_links": 0,
+      "entity_mentions": 0,
+      "narrative_presence": true,
+      "category": "factions",
+      "last_updated": "2026-04-11"
+    },
+    {
+      "url": "/wiki/head-tags.html",
+      "title": "Head Tags — Crypto Moonboys Wiki",
+      "authority_score": 15,
+      "trust_score": 57,
+      "inbound_links": 0,
+      "entity_mentions": 1,
+      "narrative_presence": false,
+      "category": "factions",
+      "last_updated": "2026-04-11"
     },
     {
       "url": "/wiki/leake-street-tunnel.html",
@@ -2165,73 +2396,18 @@
       "entity_mentions": 0,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-04-10"
+      "last_updated": "2026-04-11"
     },
     {
-      "url": "/wiki/medium-articles-by-gkniftyheads.html",
-      "title": "Medium Articles by @GKniftyHEADS — Crypto Moonboys Wiki",
-      "authority_score": 15,
-      "trust_score": 57,
-      "inbound_links": 0,
-      "entity_mentions": 0,
-      "narrative_presence": false,
-      "category": "factions",
-      "last_updated": "2026-04-10"
-    },
-    {
-      "url": "/wiki/medium-articles-by-graffpunks.html",
-      "title": "Medium Articles by @GRAFFPUNKS — Crypto Moonboys Wiki",
-      "authority_score": 15,
-      "trust_score": 57,
-      "inbound_links": 0,
-      "entity_mentions": 0,
-      "narrative_presence": false,
-      "category": "factions",
-      "last_updated": "2026-04-10"
-    },
-    {
-      "url": "/wiki/medium-articles-by-hodlwarriors.html",
-      "title": "Medium Articles by @HODLWARRIORS — Crypto Moonboys Wiki",
-      "authority_score": 15,
-      "trust_score": 57,
-      "inbound_links": 0,
-      "entity_mentions": 0,
-      "narrative_presence": false,
-      "category": "factions",
-      "last_updated": "2026-04-10"
-    },
-    {
-      "url": "/wiki/medium-articles-by-sercullen.html",
-      "title": "Medium Articles by @sercullen — Crypto Moonboys Wiki",
-      "authority_score": 15,
-      "trust_score": 57,
-      "inbound_links": 0,
-      "entity_mentions": 0,
-      "narrative_presence": false,
-      "category": "factions",
-      "last_updated": "2026-04-10"
-    },
-    {
-      "url": "/wiki/neftyblocks-midevilpunks-collection.html",
-      "title": "NeftyBlocks Midevilpunks Collection — Crypto Moonboys Wiki",
-      "authority_score": 15,
-      "trust_score": 57,
-      "inbound_links": 0,
-      "entity_mentions": 0,
-      "narrative_presence": false,
-      "category": "factions",
-      "last_updated": "2026-04-10"
-    },
-    {
-      "url": "/wiki/nfts-non-fungible-tokens.html",
-      "title": "NFTs (Non-Fungible Tokens) — Crypto Moonboys Wiki",
+      "url": "/wiki/nine-armies.html",
+      "title": "Nine Armies — Crypto Moonboys Wiki",
       "authority_score": 15,
       "trust_score": 57,
       "inbound_links": 0,
       "entity_mentions": 1,
       "narrative_presence": false,
-      "category": "characters",
-      "last_updated": "2026-04-10"
+      "category": "factions",
+      "last_updated": "2026-04-11"
     },
     {
       "url": "/wiki/punk-coin.html",
@@ -2242,18 +2418,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "tokens",
-      "last_updated": "2026-04-10"
-    },
-    {
-      "url": "/wiki/smart-nft-mechanics.html",
-      "title": "SMArT NFT Mechanics — Crypto Moonboys Wiki",
-      "authority_score": 15,
-      "trust_score": 57,
-      "inbound_links": 0,
-      "entity_mentions": 0,
-      "narrative_presence": false,
-      "category": "factions",
-      "last_updated": "2026-04-10"
+      "last_updated": "2026-04-11"
     },
     {
       "url": "/wiki/stake-for-gk-tokens.html",
@@ -2264,7 +2429,7 @@
       "entity_mentions": 0,
       "narrative_presence": true,
       "category": "factions",
-      "last_updated": "2026-04-10"
+      "last_updated": "2026-04-11"
     },
     {
       "url": "/wiki/staking-for-gk-tokens.html",
@@ -2275,227 +2440,62 @@
       "entity_mentions": 0,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-04-10"
-    },
-    {
-      "url": "/wiki/substack-posts-on-graffpunks-substack-com.html",
-      "title": "Substack Posts on graffpunks.substack.com — Crypto Moonboys Wiki",
-      "authority_score": 15,
-      "trust_score": 57,
-      "inbound_links": 0,
-      "entity_mentions": 1,
-      "narrative_presence": false,
-      "category": "factions",
-      "last_updated": "2026-04-10"
-    },
-    {
-      "url": "/wiki/tokens.html",
-      "title": "Tokens — Crypto Moonboys Wiki",
-      "authority_score": 15,
-      "trust_score": 57,
-      "inbound_links": 0,
-      "entity_mentions": 1,
-      "narrative_presence": false,
-      "category": "tokens",
-      "last_updated": "2026-04-10"
-    },
-    {
-      "url": "/wiki/xrp-kids-genesis-nfts.html",
-      "title": "XRP KIDs Genesis NFTs — Crypto Moonboys Wiki",
-      "authority_score": 15,
-      "trust_score": 57,
-      "inbound_links": 0,
-      "entity_mentions": 0,
-      "narrative_presence": false,
-      "category": "factions",
-      "last_updated": "2026-04-10"
-    },
-    {
-      "url": "/wiki/defi-decentralised-finance.html",
-      "title": "DeFi (Decentralised Finance) — Crypto Moonboys Wiki",
-      "authority_score": 14,
-      "trust_score": 57,
-      "inbound_links": 0,
-      "entity_mentions": 1,
-      "narrative_presence": false,
-      "category": "tokens",
-      "last_updated": "2026-04-10"
-    },
-    {
-      "url": "/wiki/dream-sovereign.html",
-      "title": "Dream Sovereign — Crypto Moonboys Wiki",
-      "authority_score": 14,
-      "trust_score": 57,
-      "inbound_links": 0,
-      "entity_mentions": 1,
-      "narrative_presence": false,
-      "category": "factions",
-      "last_updated": "2026-04-10"
-    },
-    {
-      "url": "/wiki/games4punks-telegram-games.html",
-      "title": "GAMES4PUNKS Telegram Games — Crypto Moonboys Wiki",
-      "authority_score": 14,
-      "trust_score": 57,
-      "inbound_links": 0,
-      "entity_mentions": 0,
-      "narrative_presence": false,
-      "category": "factions",
-      "last_updated": "2026-04-10"
-    },
-    {
-      "url": "/wiki/graffiti-nexus.html",
-      "title": "Graffiti Nexus — Crypto Moonboys Wiki",
-      "authority_score": 14,
-      "trust_score": 57,
-      "inbound_links": 0,
-      "entity_mentions": 1,
-      "narrative_presence": false,
-      "category": "characters",
-      "last_updated": "2026-04-10"
-    },
-    {
-      "url": "/wiki/graffiti-queens-in-decentraland-ecosystem.html",
-      "title": "Graffiti Queens In Decentraland Ecosystem — Crypto Moonboys Wiki",
-      "authority_score": 14,
-      "trust_score": 57,
-      "inbound_links": 0,
-      "entity_mentions": 0,
-      "narrative_presence": false,
-      "category": "core",
-      "last_updated": "2026-04-10"
-    },
-    {
-      "url": "/wiki/graffpunks-247.html",
-      "title": "GraffPUNKS 247 — Crypto Moonboys Wiki",
-      "authority_score": 14,
-      "trust_score": 57,
-      "inbound_links": 0,
-      "entity_mentions": 1,
-      "narrative_presence": false,
-      "category": "factions",
-      "last_updated": "2026-04-10"
-    },
-    {
-      "url": "/wiki/graffpunks-network.html",
-      "title": "GraffPUNKS Network — Crypto Moonboys Wiki",
-      "authority_score": 14,
-      "trust_score": 57,
-      "inbound_links": 0,
-      "entity_mentions": 1,
-      "narrative_presence": false,
-      "category": "factions",
-      "last_updated": "2026-04-10"
-    },
-    {
-      "url": "/wiki/graffpunks-nfts.html",
-      "title": "GraffPUNKS NFTs — Crypto Moonboys Wiki",
-      "authority_score": 14,
-      "trust_score": 57,
-      "inbound_links": 0,
-      "entity_mentions": 1,
-      "narrative_presence": false,
-      "category": "characters",
-      "last_updated": "2026-04-10"
-    },
-    {
-      "url": "/wiki/hard-fork-games-event.html",
-      "title": "Hard Fork Games Event — Crypto Moonboys Wiki",
-      "authority_score": 14,
-      "trust_score": 82,
-      "inbound_links": 0,
-      "entity_mentions": 0,
-      "narrative_presence": true,
-      "category": "factions",
-      "last_updated": "2026-04-10"
-    },
-    {
-      "url": "/wiki/hard-fork-games-game.html",
-      "title": "Hard Fork Games — Crypto Moonboys Wiki",
-      "authority_score": 14,
-      "trust_score": 57,
-      "inbound_links": 0,
-      "entity_mentions": 1,
-      "narrative_presence": false,
-      "category": "factions",
-      "last_updated": "2026-04-10"
-    },
-    {
-      "url": "/wiki/head-tags.html",
-      "title": "Head Tags — Crypto Moonboys Wiki",
-      "authority_score": 14,
-      "trust_score": 57,
-      "inbound_links": 0,
-      "entity_mentions": 1,
-      "narrative_presence": false,
-      "category": "factions",
-      "last_updated": "2026-04-10"
-    },
-    {
-      "url": "/wiki/nine-armies.html",
-      "title": "Nine Armies — Crypto Moonboys Wiki",
-      "authority_score": 14,
-      "trust_score": 57,
-      "inbound_links": 0,
-      "entity_mentions": 1,
-      "narrative_presence": false,
-      "category": "factions",
-      "last_updated": "2026-04-10"
+      "last_updated": "2026-04-11"
     },
     {
       "url": "/wiki/stikfamwars.html",
       "title": "StikFamWars — Crypto Moonboys Wiki",
-      "authority_score": 14,
+      "authority_score": 15,
       "trust_score": 57,
       "inbound_links": 0,
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-04-10"
+      "last_updated": "2026-04-11"
+    },
+    {
+      "url": "/wiki/genesis-spray-drop.html",
+      "title": "Genesis Spray Drop — Crypto Moonboys Wiki",
+      "authority_score": 13,
+      "trust_score": 57,
+      "inbound_links": 0,
+      "entity_mentions": 0,
+      "narrative_presence": false,
+      "category": "characters",
+      "last_updated": "2026-04-11"
     },
     {
       "url": "/wiki/midevil-hero-arena-game.html",
       "title": "MiDEViL Hero Arena (Game) — Crypto Moonboys Wiki",
+      "authority_score": 13,
+      "trust_score": 57,
+      "inbound_links": 0,
+      "entity_mentions": 0,
+      "narrative_presence": false,
+      "category": "characters",
+      "last_updated": "2026-04-11"
+    },
+    {
+      "url": "/wiki/1m-free-nfts.html",
+      "title": "1M Free NFTs — Crypto Moonboys Wiki",
       "authority_score": 12,
       "trust_score": 57,
       "inbound_links": 0,
       "entity_mentions": 0,
       "narrative_presence": false,
-      "category": "characters",
-      "last_updated": "2026-04-10"
-    },
-    {
-      "url": "/wiki/1m-free-nfts.html",
-      "title": "1M Free NFTs — Crypto Moonboys Wiki",
-      "authority_score": 11,
-      "trust_score": 57,
-      "inbound_links": 0,
-      "entity_mentions": 0,
-      "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-04-10"
-    },
-    {
-      "url": "/wiki/genesis-spray-drop.html",
-      "title": "Genesis Spray Drop — Crypto Moonboys Wiki",
-      "authority_score": 11,
-      "trust_score": 57,
-      "inbound_links": 0,
-      "entity_mentions": 0,
-      "narrative_presence": false,
-      "category": "characters",
-      "last_updated": "2026-04-10"
+      "last_updated": "2026-04-11"
     },
     {
       "url": "/wiki/one-million-free-nfts.html",
       "title": "One Million Free NFTs — Crypto Moonboys Wiki",
-      "authority_score": 11,
+      "authority_score": 12,
       "trust_score": 57,
       "inbound_links": 0,
       "entity_mentions": 0,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-04-10"
+      "last_updated": "2026-04-11"
     }
   ]
 }

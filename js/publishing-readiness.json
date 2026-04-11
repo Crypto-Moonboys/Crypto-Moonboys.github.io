@@ -1,14 +1,14 @@
 {
-  "generated_at": "2026-04-10T05:30:27.218Z",
+  "generated_at": "2026-04-11T05:00:25.319Z",
   "phase": "phase_6",
   "schema_version": "1.0",
   "summary": {
     "total_entries": 226,
     "ready_by_platform": {
-      "fandom": 46,
-      "telegram": 162,
+      "fandom": 47,
+      "telegram": 164,
       "substack": 11,
-      "paragraph": 25
+      "paragraph": 26
     }
   },
   "entries": [
@@ -62,7 +62,7 @@
       "readable_title": "GraffPUNKS",
       "readiness_score": 80,
       "summary_quality": 100,
-      "authority_score": 82,
+      "authority_score": 83,
       "trust_score": 82,
       "narrative_strength": 50,
       "platform_readiness": {
@@ -77,7 +77,7 @@
       "readable_title": "Bitcoin Kids",
       "readiness_score": 76,
       "summary_quality": 100,
-      "authority_score": 75,
+      "authority_score": 76,
       "trust_score": 82,
       "narrative_strength": 40,
       "platform_readiness": {
@@ -137,7 +137,7 @@
       "readable_title": "NULL THE PROPHET",
       "readiness_score": 70,
       "summary_quality": 100,
-      "authority_score": 75,
+      "authority_score": 76,
       "trust_score": 82,
       "narrative_strength": 10,
       "platform_readiness": {
@@ -182,9 +182,24 @@
       "readable_title": "Graffiti Kings",
       "readiness_score": 68,
       "summary_quality": 100,
-      "authority_score": 47,
+      "authority_score": 48,
       "trust_score": 82,
       "narrative_strength": 40,
+      "platform_readiness": {
+        "fandom": true,
+        "telegram": true,
+        "substack": false,
+        "paragraph": true
+      }
+    },
+    {
+      "url": "/wiki/graffpunks-24-7.html",
+      "readable_title": "GraffPUNKS 24/7",
+      "readiness_score": 64,
+      "summary_quality": 100,
+      "authority_score": 54,
+      "trust_score": 82,
+      "narrative_strength": 10,
       "platform_readiness": {
         "fandom": true,
         "telegram": true,
@@ -200,21 +215,6 @@
       "authority_score": 79,
       "trust_score": 57,
       "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": true,
-        "telegram": true,
-        "substack": false,
-        "paragraph": true
-      }
-    },
-    {
-      "url": "/wiki/graffpunks-24-7.html",
-      "readable_title": "GraffPUNKS 24/7",
-      "readiness_score": 63,
-      "summary_quality": 100,
-      "authority_score": 53,
-      "trust_score": 82,
-      "narrative_strength": 10,
       "platform_readiness": {
         "fandom": true,
         "telegram": true,
@@ -253,6 +253,21 @@
       }
     },
     {
+      "url": "/wiki/charlie-buster.html",
+      "readable_title": "Charlie Buster",
+      "readiness_score": 61,
+      "summary_quality": 100,
+      "authority_score": 71,
+      "trust_score": 57,
+      "narrative_strength": 0,
+      "platform_readiness": {
+        "fandom": true,
+        "telegram": true,
+        "substack": false,
+        "paragraph": true
+      }
+    },
+    {
       "url": "/wiki/graffpunks-247-radio.html",
       "readable_title": "GraffPUNKS 247 Radio",
       "readiness_score": 61,
@@ -272,7 +287,7 @@
       "readable_title": "$PUNK Token",
       "readiness_score": 61,
       "summary_quality": 100,
-      "authority_score": 73,
+      "authority_score": 74,
       "trust_score": 57,
       "narrative_strength": 0,
       "platform_readiness": {
@@ -287,7 +302,7 @@
       "readable_title": "Queen Sarah P-Fly",
       "readiness_score": 61,
       "summary_quality": 100,
-      "authority_score": 73,
+      "authority_score": 74,
       "trust_score": 57,
       "narrative_strength": 0,
       "platform_readiness": {
@@ -298,11 +313,11 @@
       }
     },
     {
-      "url": "/wiki/charlie-buster.html",
-      "readable_title": "Charlie Buster",
-      "readiness_score": 60,
+      "url": "/wiki/burn-to-earn.html",
+      "readable_title": "Burn-to-Earn",
+      "readiness_score": 59,
       "summary_quality": 100,
-      "authority_score": 70,
+      "authority_score": 65,
       "trust_score": 57,
       "narrative_strength": 0,
       "platform_readiness": {
@@ -331,8 +346,8 @@
       "url": "/wiki/patchwork.html",
       "readable_title": "Patchwork",
       "readiness_score": 59,
-      "summary_quality": 83,
-      "authority_score": 32,
+      "summary_quality": 84,
+      "authority_score": 33,
       "trust_score": 82,
       "narrative_strength": 40,
       "platform_readiness": {
@@ -346,7 +361,7 @@
       "url": "/wiki/pyralith.html",
       "readable_title": "PYRALITH",
       "readiness_score": 59,
-      "summary_quality": 82,
+      "summary_quality": 84,
       "authority_score": 32,
       "trust_score": 82,
       "narrative_strength": 40,
@@ -361,8 +376,8 @@
       "url": "/wiki/quell.html",
       "readable_title": "Quell",
       "readiness_score": 59,
-      "summary_quality": 83,
-      "authority_score": 32,
+      "summary_quality": 84,
+      "authority_score": 33,
       "trust_score": 82,
       "narrative_strength": 40,
       "platform_readiness": {
@@ -377,22 +392,7 @@
       "readable_title": "Alfie Blaze",
       "readiness_score": 58,
       "summary_quality": 95,
-      "authority_score": 66,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": true,
-        "telegram": true,
-        "substack": false,
-        "paragraph": true
-      }
-    },
-    {
-      "url": "/wiki/burn-to-earn.html",
-      "readable_title": "Burn-to-Earn",
-      "readiness_score": 58,
-      "summary_quality": 100,
-      "authority_score": 64,
+      "authority_score": 67,
       "trust_score": 57,
       "narrative_strength": 0,
       "platform_readiness": {
@@ -407,7 +407,7 @@
       "readable_title": "NBG",
       "readiness_score": 58,
       "summary_quality": 100,
-      "authority_score": 61,
+      "authority_score": 62,
       "trust_score": 57,
       "narrative_strength": 0,
       "platform_readiness": {
@@ -422,7 +422,7 @@
       "readable_title": "NBGX",
       "readiness_score": 58,
       "summary_quality": 100,
-      "authority_score": 63,
+      "authority_score": 64,
       "trust_score": 57,
       "narrative_strength": 0,
       "platform_readiness": {
@@ -437,7 +437,22 @@
       "readable_title": "Staking",
       "readiness_score": 58,
       "summary_quality": 100,
-      "authority_score": 63,
+      "authority_score": 64,
+      "trust_score": 57,
+      "narrative_strength": 0,
+      "platform_readiness": {
+        "fandom": true,
+        "telegram": true,
+        "substack": false,
+        "paragraph": true
+      }
+    },
+    {
+      "url": "/wiki/midevilpunks.html",
+      "readable_title": "MiDEViL PUNKS",
+      "readiness_score": 55,
+      "summary_quality": 100,
+      "authority_score": 51,
       "trust_score": 57,
       "narrative_strength": 0,
       "platform_readiness": {
@@ -452,7 +467,7 @@
       "readable_title": "Rave Relics",
       "readiness_score": 55,
       "summary_quality": 100,
-      "authority_score": 52,
+      "authority_score": 53,
       "trust_score": 57,
       "narrative_strength": 0,
       "platform_readiness": {
@@ -482,22 +497,7 @@
       "readable_title": "GKniftyHEADS",
       "readiness_score": 54,
       "summary_quality": 100,
-      "authority_score": 48,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": true,
-        "telegram": true,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/midevilpunks.html",
-      "readable_title": "MiDEViL PUNKS",
-      "readiness_score": 54,
-      "summary_quality": 100,
-      "authority_score": 50,
+      "authority_score": 49,
       "trust_score": 57,
       "narrative_strength": 0,
       "platform_readiness": {
@@ -512,7 +512,37 @@
       "readable_title": "NBG Token",
       "readiness_score": 54,
       "summary_quality": 100,
-      "authority_score": 48,
+      "authority_score": 49,
+      "trust_score": 57,
+      "narrative_strength": 0,
+      "platform_readiness": {
+        "fandom": true,
+        "telegram": true,
+        "substack": false,
+        "paragraph": false
+      }
+    },
+    {
+      "url": "/wiki/web3.html",
+      "readable_title": "Web3",
+      "readiness_score": 54,
+      "summary_quality": 81,
+      "authority_score": 30,
+      "trust_score": 82,
+      "narrative_strength": 20,
+      "platform_readiness": {
+        "fandom": true,
+        "telegram": true,
+        "substack": false,
+        "paragraph": false
+      }
+    },
+    {
+      "url": "/wiki/games4punks-telegram.html",
+      "readable_title": "Games4Punks Telegram",
+      "readiness_score": 53,
+      "summary_quality": 100,
+      "authority_score": 45,
       "trust_score": 57,
       "narrative_strength": 0,
       "platform_readiness": {
@@ -541,8 +571,8 @@
       "url": "/wiki/nfts.html",
       "readable_title": "NFTs (Non-Fungible Tokens)",
       "readiness_score": 53,
-      "summary_quality": 75,
-      "authority_score": 31,
+      "summary_quality": 76,
+      "authority_score": 32,
       "trust_score": 82,
       "narrative_strength": 20,
       "platform_readiness": {
@@ -557,7 +587,7 @@
       "readable_title": "The Sacred Chain",
       "readiness_score": 53,
       "summary_quality": 100,
-      "authority_score": 46,
+      "authority_score": 47,
       "trust_score": 57,
       "narrative_strength": 0,
       "platform_readiness": {
@@ -568,26 +598,11 @@
       }
     },
     {
-      "url": "/wiki/web3.html",
-      "readable_title": "Web3",
-      "readiness_score": 53,
-      "summary_quality": 80,
-      "authority_score": 29,
-      "trust_score": 82,
-      "narrative_strength": 20,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": true,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
       "url": "/wiki/xrp-kids.html",
       "readable_title": "XRP Kids",
       "readiness_score": 53,
       "summary_quality": 100,
-      "authority_score": 45,
+      "authority_score": 46,
       "trust_score": 57,
       "narrative_strength": 0,
       "platform_readiness": {
@@ -613,26 +628,11 @@
       }
     },
     {
-      "url": "/wiki/games4punks-telegram.html",
-      "readable_title": "Games4Punks Telegram",
-      "readiness_score": 52,
-      "summary_quality": 100,
-      "authority_score": 44,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": true,
-        "telegram": true,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
       "url": "/wiki/ian-harrison.html",
       "readable_title": "Ian Harrison",
       "readiness_score": 52,
       "summary_quality": 100,
-      "authority_score": 43,
+      "authority_score": 44,
       "trust_score": 57,
       "narrative_strength": 0,
       "platform_readiness": {
@@ -647,9 +647,39 @@
       "readable_title": "Jillian Godsil",
       "readiness_score": 52,
       "summary_quality": 100,
-      "authority_score": 42,
+      "authority_score": 43,
       "trust_score": 57,
       "narrative_strength": 0,
+      "platform_readiness": {
+        "fandom": true,
+        "telegram": true,
+        "substack": false,
+        "paragraph": false
+      }
+    },
+    {
+      "url": "/wiki/metropolis.html",
+      "readable_title": "Metropolis",
+      "readiness_score": 52,
+      "summary_quality": 100,
+      "authority_score": 41,
+      "trust_score": 57,
+      "narrative_strength": 0,
+      "platform_readiness": {
+        "fandom": true,
+        "telegram": true,
+        "substack": false,
+        "paragraph": false
+      }
+    },
+    {
+      "url": "/wiki/the-hard-fork-rockers.html",
+      "readable_title": "The HARD FORK ROCKERS",
+      "readiness_score": 52,
+      "summary_quality": 80,
+      "authority_score": 31,
+      "trust_score": 82,
+      "narrative_strength": 10,
       "platform_readiness": {
         "fandom": true,
         "telegram": true,
@@ -676,27 +706,12 @@
       "url": "/wiki/gk.html",
       "readable_title": "$GK",
       "readiness_score": 51,
-      "summary_quality": 72,
-      "authority_score": 28,
+      "summary_quality": 73,
+      "authority_score": 29,
       "trust_score": 82,
       "narrative_strength": 20,
       "platform_readiness": {
         "fandom": false,
-        "telegram": true,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/metropolis.html",
-      "readable_title": "Metropolis",
-      "readiness_score": 51,
-      "summary_quality": 100,
-      "authority_score": 40,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": true,
         "telegram": true,
         "substack": false,
         "paragraph": false
@@ -718,15 +733,15 @@
       }
     },
     {
-      "url": "/wiki/the-hard-fork-rockers.html",
-      "readable_title": "The HARD FORK ROCKERS",
-      "readiness_score": 51,
-      "summary_quality": 79,
-      "authority_score": 30,
+      "url": "/wiki/triple-fork-event.html",
+      "readable_title": "Triple Fork Event",
+      "readiness_score": 50,
+      "summary_quality": 76,
+      "authority_score": 27,
       "trust_score": 82,
       "narrative_strength": 10,
       "platform_readiness": {
-        "fandom": true,
+        "fandom": false,
         "telegram": true,
         "substack": false,
         "paragraph": false
@@ -736,8 +751,8 @@
       "url": "/wiki/metaverse-battles.html",
       "readable_title": "Metaverse Battles",
       "readiness_score": 49,
-      "summary_quality": 65,
-      "authority_score": 26,
+      "summary_quality": 66,
+      "authority_score": 27,
       "trust_score": 82,
       "narrative_strength": 20,
       "platform_readiness": {
@@ -752,6 +767,21 @@
       "readable_title": "NBGX Token",
       "readiness_score": 49,
       "summary_quality": 59,
+      "authority_score": 26,
+      "trust_score": 82,
+      "narrative_strength": 30,
+      "platform_readiness": {
+        "fandom": false,
+        "telegram": true,
+        "substack": false,
+        "paragraph": false
+      }
+    },
+    {
+      "url": "/wiki/pmsl-token.html",
+      "readable_title": "PMSL Token",
+      "readiness_score": 49,
+      "summary_quality": 58,
       "authority_score": 25,
       "trust_score": 82,
       "narrative_strength": 30,
@@ -763,13 +793,13 @@
       }
     },
     {
-      "url": "/wiki/triple-fork-event.html",
-      "readable_title": "Triple Fork Event",
-      "readiness_score": 49,
-      "summary_quality": 75,
-      "authority_score": 26,
-      "trust_score": 82,
-      "narrative_strength": 10,
+      "url": "/wiki/bitcoin-x-kids.html",
+      "readable_title": "Bitcoin X Kids",
+      "readiness_score": 48,
+      "summary_quality": 92,
+      "authority_score": 35,
+      "trust_score": 57,
+      "narrative_strength": 0,
       "platform_readiness": {
         "fandom": false,
         "telegram": true,
@@ -793,25 +823,10 @@
       }
     },
     {
-      "url": "/wiki/pmsl-token.html",
-      "readable_title": "PMSL Token",
+      "url": "/wiki/sneakar.html",
+      "readable_title": "SNEAKAR",
       "readiness_score": 48,
-      "summary_quality": 57,
-      "authority_score": 24,
-      "trust_score": 82,
-      "narrative_strength": 30,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": true,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/bitcoin-x-kids.html",
-      "readable_title": "Bitcoin X Kids",
-      "readiness_score": 47,
-      "summary_quality": 91,
+      "summary_quality": 93,
       "authority_score": 34,
       "trust_score": 57,
       "narrative_strength": 0,
@@ -826,23 +841,8 @@
       "url": "/wiki/graffpunks-24-7-radio.html",
       "readable_title": "GraffPUNKS 24/7 Radio",
       "readiness_score": 47,
-      "summary_quality": 94,
+      "summary_quality": 95,
       "authority_score": 31,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": true,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/sneakar.html",
-      "readable_title": "SNEAKAR",
-      "readiness_score": 47,
-      "summary_quality": 92,
-      "authority_score": 33,
       "trust_score": 57,
       "narrative_strength": 0,
       "platform_readiness": {
@@ -871,8 +871,23 @@
       "url": "/wiki/samaelexe.html",
       "readable_title": "Samael.exe",
       "readiness_score": 46,
-      "summary_quality": 82,
+      "summary_quality": 83,
       "authority_score": 38,
+      "trust_score": 57,
+      "narrative_strength": 0,
+      "platform_readiness": {
+        "fandom": false,
+        "telegram": true,
+        "substack": false,
+        "paragraph": false
+      }
+    },
+    {
+      "url": "/wiki/the-crypto-moongirls.html",
+      "readable_title": "The CRYPTO MOONGIRLS",
+      "readiness_score": 46,
+      "summary_quality": 83,
+      "authority_score": 35,
       "trust_score": 57,
       "narrative_strength": 0,
       "platform_readiness": {
@@ -886,8 +901,23 @@
       "url": "/wiki/the-nice-easy-bois.html",
       "readable_title": "The NICE &amp; EASY BOIS",
       "readiness_score": 46,
-      "summary_quality": 80,
+      "summary_quality": 81,
       "authority_score": 38,
+      "trust_score": 57,
+      "narrative_strength": 0,
+      "platform_readiness": {
+        "fandom": false,
+        "telegram": true,
+        "substack": false,
+        "paragraph": false
+      }
+    },
+    {
+      "url": "/wiki/exchanges.html",
+      "readable_title": "Crypto Exchanges",
+      "readiness_score": 45,
+      "summary_quality": 79,
+      "authority_score": 35,
       "trust_score": 57,
       "narrative_strength": 0,
       "platform_readiness": {
@@ -901,7 +931,7 @@
       "url": "/wiki/rune-tag.html",
       "readable_title": "Rune Tag",
       "readiness_score": 45,
-      "summary_quality": 83,
+      "summary_quality": 85,
       "authority_score": 33,
       "trust_score": 57,
       "narrative_strength": 0,
@@ -916,8 +946,8 @@
       "url": "/wiki/satorebel.html",
       "readable_title": "SatoRebel",
       "readiness_score": 45,
-      "summary_quality": 84,
-      "authority_score": 32,
+      "summary_quality": 85,
+      "authority_score": 33,
       "trust_score": 57,
       "narrative_strength": 0,
       "platform_readiness": {
@@ -931,8 +961,8 @@
       "url": "/wiki/sister-halcyon.html",
       "readable_title": "Sister Halcyon",
       "readiness_score": 45,
-      "summary_quality": 84,
-      "authority_score": 32,
+      "summary_quality": 85,
+      "authority_score": 33,
       "trust_score": 57,
       "narrative_strength": 0,
       "platform_readiness": {
@@ -943,11 +973,11 @@
       }
     },
     {
-      "url": "/wiki/the-crypto-moongirls.html",
-      "readable_title": "The CRYPTO MOONGIRLS",
+      "url": "/wiki/street-kingdoms.html",
+      "readable_title": "Street Kingdoms",
       "readiness_score": 45,
-      "summary_quality": 82,
-      "authority_score": 35,
+      "summary_quality": 84,
+      "authority_score": 32,
       "trust_score": 57,
       "narrative_strength": 0,
       "platform_readiness": {
@@ -961,8 +991,8 @@
       "url": "/wiki/the-princess.html",
       "readable_title": "The Princess",
       "readiness_score": 45,
-      "summary_quality": 84,
-      "authority_score": 32,
+      "summary_quality": 85,
+      "authority_score": 33,
       "trust_score": 57,
       "narrative_strength": 0,
       "platform_readiness": {
@@ -973,10 +1003,25 @@
       }
     },
     {
-      "url": "/wiki/exchanges.html",
-      "readable_title": "Crypto Exchanges",
+      "url": "/wiki/the-whitewasher.html",
+      "readable_title": "The Whitewasher",
+      "readiness_score": 45,
+      "summary_quality": 84,
+      "authority_score": 33,
+      "trust_score": 57,
+      "narrative_strength": 0,
+      "platform_readiness": {
+        "fandom": false,
+        "telegram": true,
+        "substack": false,
+        "paragraph": false
+      }
+    },
+    {
+      "url": "/wiki/blockchain.html",
+      "readable_title": "Blockchain Technology",
       "readiness_score": 44,
-      "summary_quality": 78,
+      "summary_quality": 77,
       "authority_score": 34,
       "trust_score": 57,
       "narrative_strength": 0,
@@ -991,8 +1036,8 @@
       "url": "/wiki/jonny-laurence-nelson-tag-records.html",
       "readable_title": "Jonny &amp; Laurence Nelson (TAG Records)",
       "readiness_score": 44,
-      "summary_quality": 81,
-      "authority_score": 31,
+      "summary_quality": 82,
+      "authority_score": 32,
       "trust_score": 57,
       "narrative_strength": 0,
       "platform_readiness": {
@@ -1006,23 +1051,8 @@
       "url": "/wiki/nifty-crowns.html",
       "readable_title": "Nifty Crowns",
       "readiness_score": 44,
-      "summary_quality": 80,
-      "authority_score": 31,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": true,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/street-kingdoms.html",
-      "readable_title": "Street Kingdoms",
-      "readiness_score": 44,
-      "summary_quality": 83,
-      "authority_score": 31,
+      "summary_quality": 81,
+      "authority_score": 32,
       "trust_score": 57,
       "narrative_strength": 0,
       "platform_readiness": {
@@ -1036,7 +1066,37 @@
       "url": "/wiki/the-chain-scribes.html",
       "readable_title": "The CHAIN SCRIBES",
       "readiness_score": 44,
-      "summary_quality": 81,
+      "summary_quality": 82,
+      "authority_score": 32,
+      "trust_score": 57,
+      "narrative_strength": 0,
+      "platform_readiness": {
+        "fandom": false,
+        "telegram": true,
+        "substack": false,
+        "paragraph": false
+      }
+    },
+    {
+      "url": "/wiki/the-crypto-stoned-boys.html",
+      "readable_title": "The CRYPTO STONED BOYS",
+      "readiness_score": 44,
+      "summary_quality": 78,
+      "authority_score": 34,
+      "trust_score": 57,
+      "narrative_strength": 0,
+      "platform_readiness": {
+        "fandom": false,
+        "telegram": true,
+        "substack": false,
+        "paragraph": false
+      }
+    },
+    {
+      "url": "/wiki/the-ducky-boys.html",
+      "readable_title": "The DUCKY BOYS",
+      "readiness_score": 44,
+      "summary_quality": 80,
       "authority_score": 31,
       "trust_score": 57,
       "narrative_strength": 0,
@@ -1051,6 +1111,21 @@
       "url": "/wiki/the-finance-guild.html",
       "readable_title": "The FINANCE GUILD",
       "readiness_score": 44,
+      "summary_quality": 81,
+      "authority_score": 31,
+      "trust_score": 57,
+      "narrative_strength": 0,
+      "platform_readiness": {
+        "fandom": false,
+        "telegram": true,
+        "substack": false,
+        "paragraph": false
+      }
+    },
+    {
+      "url": "/wiki/the-gasless-ghosts.html",
+      "readable_title": "The GASLESS GHOSTS",
+      "readiness_score": 44,
       "summary_quality": 80,
       "authority_score": 31,
       "trust_score": 57,
@@ -1063,11 +1138,41 @@
       }
     },
     {
-      "url": "/wiki/the-whitewasher.html",
-      "readable_title": "The Whitewasher",
+      "url": "/wiki/the-moonlords.html",
+      "readable_title": "The MOONLORDS",
       "readiness_score": 44,
-      "summary_quality": 82,
-      "authority_score": 32,
+      "summary_quality": 80,
+      "authority_score": 31,
+      "trust_score": 57,
+      "narrative_strength": 0,
+      "platform_readiness": {
+        "fandom": false,
+        "telegram": true,
+        "substack": false,
+        "paragraph": false
+      }
+    },
+    {
+      "url": "/wiki/the-og-pixel-saints.html",
+      "readable_title": "The OG PIXEL SAINTS",
+      "readiness_score": 44,
+      "summary_quality": 80,
+      "authority_score": 31,
+      "trust_score": 57,
+      "narrative_strength": 0,
+      "platform_readiness": {
+        "fandom": false,
+        "telegram": true,
+        "substack": false,
+        "paragraph": false
+      }
+    },
+    {
+      "url": "/wiki/the-salvagers.html",
+      "readable_title": "The SALVAGERS",
+      "readiness_score": 44,
+      "summary_quality": 80,
+      "authority_score": 31,
       "trust_score": 57,
       "narrative_strength": 0,
       "platform_readiness": {
@@ -1081,233 +1186,8 @@
       "url": "/wiki/thorne-the-architect.html",
       "readable_title": "Thorne The Architect",
       "readiness_score": 44,
-      "summary_quality": 80,
-      "authority_score": 31,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": true,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/2025-metaverse-launch-party.html",
-      "readable_title": "2025 Metaverse Launch Party",
-      "readiness_score": 43,
-      "summary_quality": 56,
-      "authority_score": 21,
-      "trust_score": 82,
-      "narrative_strength": 10,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": true,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/blockchain.html",
-      "readable_title": "Blockchain Technology",
-      "readiness_score": 43,
-      "summary_quality": 76,
-      "authority_score": 34,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": true,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/forkborn-collective.html",
-      "readable_title": "Forkborn Collective",
-      "readiness_score": 43,
-      "summary_quality": 78,
-      "authority_score": 30,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": true,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/memecoins.html",
-      "readable_title": "Meme Coins",
-      "readiness_score": 43,
-      "summary_quality": 74,
-      "authority_score": 34,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": true,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/the-blockstars.html",
-      "readable_title": "The BLOCKSTARS",
-      "readiness_score": 43,
-      "summary_quality": 78,
-      "authority_score": 30,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": true,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/the-ducky-boys.html",
-      "readable_title": "The DUCKY BOYS",
-      "readiness_score": 43,
-      "summary_quality": 79,
-      "authority_score": 30,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": true,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/the-evm-punks.html",
-      "readable_title": "The EVM PUNKS",
-      "readiness_score": 43,
-      "summary_quality": 78,
-      "authority_score": 30,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": true,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/the-gasless-ghosts.html",
-      "readable_title": "The GASLESS GHOSTS",
-      "readiness_score": 43,
-      "summary_quality": 79,
-      "authority_score": 30,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": true,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/the-high-hats.html",
-      "readable_title": "The High Hats",
-      "readiness_score": 43,
-      "summary_quality": 78,
-      "authority_score": 30,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": true,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/the-moonlords.html",
-      "readable_title": "The MOONLORDS",
-      "readiness_score": 43,
-      "summary_quality": 79,
-      "authority_score": 30,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": true,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/the-nomad-bears.html",
-      "readable_title": "The Nomad Bears",
-      "readiness_score": 43,
-      "summary_quality": 78,
-      "authority_score": 30,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": true,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/the-og-pixel-saints.html",
-      "readable_title": "The OG PIXEL SAINTS",
-      "readiness_score": 43,
-      "summary_quality": 79,
-      "authority_score": 30,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": true,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/the-rugpull-miners.html",
-      "readable_title": "The RUGPULL MINERS",
-      "readiness_score": 43,
-      "summary_quality": 78,
-      "authority_score": 30,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": true,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/the-salvagers.html",
-      "readable_title": "The SALVAGERS",
-      "readiness_score": 43,
-      "summary_quality": 78,
-      "authority_score": 30,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": true,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/the-shard-mothers-of-manhattan.html",
-      "readable_title": "The SHARD MOTHERS of MANHATTAN",
-      "readiness_score": 43,
-      "summary_quality": 78,
-      "authority_score": 30,
+      "summary_quality": 82,
+      "authority_score": 32,
       "trust_score": 57,
       "narrative_strength": 0,
       "platform_readiness": {
@@ -1320,8 +1200,8 @@
     {
       "url": "/wiki/tokenomics.html",
       "readable_title": "Tokenomics",
-      "readiness_score": 43,
-      "summary_quality": 80,
+      "readiness_score": 44,
+      "summary_quality": 81,
       "authority_score": 30,
       "trust_score": 57,
       "narrative_strength": 0,
@@ -1335,9 +1215,204 @@
     {
       "url": "/wiki/wallets.html",
       "readable_title": "Crypto Wallets",
+      "readiness_score": 44,
+      "summary_quality": 75,
+      "authority_score": 35,
+      "trust_score": 57,
+      "narrative_strength": 0,
+      "platform_readiness": {
+        "fandom": false,
+        "telegram": true,
+        "substack": false,
+        "paragraph": false
+      }
+    },
+    {
+      "url": "/wiki/2025-metaverse-launch-party.html",
+      "readable_title": "2025 Metaverse Launch Party",
       "readiness_score": 43,
-      "summary_quality": 74,
+      "summary_quality": 57,
+      "authority_score": 22,
+      "trust_score": 82,
+      "narrative_strength": 10,
+      "platform_readiness": {
+        "fandom": false,
+        "telegram": true,
+        "substack": false,
+        "paragraph": false
+      }
+    },
+    {
+      "url": "/wiki/forkborn-collective.html",
+      "readable_title": "Forkborn Collective",
+      "readiness_score": 43,
+      "summary_quality": 79,
+      "authority_score": 31,
+      "trust_score": 57,
+      "narrative_strength": 0,
+      "platform_readiness": {
+        "fandom": false,
+        "telegram": true,
+        "substack": false,
+        "paragraph": false
+      }
+    },
+    {
+      "url": "/wiki/memecoins.html",
+      "readable_title": "Meme Coins",
+      "readiness_score": 43,
+      "summary_quality": 75,
       "authority_score": 34,
+      "trust_score": 57,
+      "narrative_strength": 0,
+      "platform_readiness": {
+        "fandom": false,
+        "telegram": true,
+        "substack": false,
+        "paragraph": false
+      }
+    },
+    {
+      "url": "/wiki/squeaky-pinks-enforcers.html",
+      "readable_title": "Squeaky Pinks Enforcers",
+      "readiness_score": 43,
+      "summary_quality": 81,
+      "authority_score": 28,
+      "trust_score": 57,
+      "narrative_strength": 0,
+      "platform_readiness": {
+        "fandom": false,
+        "telegram": true,
+        "substack": false,
+        "paragraph": false
+      }
+    },
+    {
+      "url": "/wiki/the-bitcoin-kid-army.html",
+      "readable_title": "The Bitcoin Kid Army",
+      "readiness_score": 43,
+      "summary_quality": 81,
+      "authority_score": 28,
+      "trust_score": 57,
+      "narrative_strength": 0,
+      "platform_readiness": {
+        "fandom": false,
+        "telegram": true,
+        "substack": false,
+        "paragraph": false
+      }
+    },
+    {
+      "url": "/wiki/the-blockstars.html",
+      "readable_title": "The BLOCKSTARS",
+      "readiness_score": 43,
+      "summary_quality": 79,
+      "authority_score": 30,
+      "trust_score": 57,
+      "narrative_strength": 0,
+      "platform_readiness": {
+        "fandom": false,
+        "telegram": true,
+        "substack": false,
+        "paragraph": false
+      }
+    },
+    {
+      "url": "/wiki/the-code-alchemists.html",
+      "readable_title": "The CODE ALCHEMISTS",
+      "readiness_score": 43,
+      "summary_quality": 78,
+      "authority_score": 31,
+      "trust_score": 57,
+      "narrative_strength": 0,
+      "platform_readiness": {
+        "fandom": false,
+        "telegram": true,
+        "substack": false,
+        "paragraph": false
+      }
+    },
+    {
+      "url": "/wiki/the-evm-punks.html",
+      "readable_title": "The EVM PUNKS",
+      "readiness_score": 43,
+      "summary_quality": 79,
+      "authority_score": 31,
+      "trust_score": 57,
+      "narrative_strength": 0,
+      "platform_readiness": {
+        "fandom": false,
+        "telegram": true,
+        "substack": false,
+        "paragraph": false
+      }
+    },
+    {
+      "url": "/wiki/the-high-hats.html",
+      "readable_title": "The High Hats",
+      "readiness_score": 43,
+      "summary_quality": 79,
+      "authority_score": 31,
+      "trust_score": 57,
+      "narrative_strength": 0,
+      "platform_readiness": {
+        "fandom": false,
+        "telegram": true,
+        "substack": false,
+        "paragraph": false
+      }
+    },
+    {
+      "url": "/wiki/the-nomad-bears.html",
+      "readable_title": "The Nomad Bears",
+      "readiness_score": 43,
+      "summary_quality": 79,
+      "authority_score": 31,
+      "trust_score": 57,
+      "narrative_strength": 0,
+      "platform_readiness": {
+        "fandom": false,
+        "telegram": true,
+        "substack": false,
+        "paragraph": false
+      }
+    },
+    {
+      "url": "/wiki/the-rugpull-miners.html",
+      "readable_title": "The RUGPULL MINERS",
+      "readiness_score": 43,
+      "summary_quality": 79,
+      "authority_score": 31,
+      "trust_score": 57,
+      "narrative_strength": 0,
+      "platform_readiness": {
+        "fandom": false,
+        "telegram": true,
+        "substack": false,
+        "paragraph": false
+      }
+    },
+    {
+      "url": "/wiki/the-shard-mothers-of-manhattan.html",
+      "readable_title": "The SHARD MOTHERS of MANHATTAN",
+      "readiness_score": 43,
+      "summary_quality": 79,
+      "authority_score": 31,
+      "trust_score": 57,
+      "narrative_strength": 0,
+      "platform_readiness": {
+        "fandom": false,
+        "telegram": true,
+        "substack": false,
+        "paragraph": false
+      }
+    },
+    {
+      "url": "/wiki/1m-free-nfts-programme.html",
+      "readable_title": "1M Free NFTs Programme",
+      "readiness_score": 42,
+      "summary_quality": 77,
+      "authority_score": 27,
       "trust_score": 57,
       "narrative_strength": 0,
       "platform_readiness": {
@@ -1351,8 +1426,8 @@
       "url": "/wiki/block-node-defenders.html",
       "readable_title": "Block Node Defenders",
       "readiness_score": 42,
-      "summary_quality": 78,
-      "authority_score": 27,
+      "summary_quality": 79,
+      "authority_score": 28,
       "trust_score": 57,
       "narrative_strength": 0,
       "platform_readiness": {
@@ -1366,7 +1441,7 @@
       "url": "/wiki/defi.html",
       "readable_title": "DeFi (Decentralised Finance)",
       "readiness_score": 42,
-      "summary_quality": 74,
+      "summary_quality": 75,
       "authority_score": 30,
       "trust_score": 57,
       "narrative_strength": 0,
@@ -1381,7 +1456,7 @@
       "url": "/wiki/delicious-again-pete.html",
       "readable_title": "Delicious Again Pete",
       "readiness_score": 42,
-      "summary_quality": 78,
+      "summary_quality": 79,
       "authority_score": 27,
       "trust_score": 57,
       "narrative_strength": 0,
@@ -1393,11 +1468,11 @@
       }
     },
     {
-      "url": "/wiki/squeaky-pinks-enforcers.html",
-      "readable_title": "Squeaky Pinks Enforcers",
+      "url": "/wiki/spirit-borns.html",
+      "readable_title": "Spirit Borns",
       "readiness_score": 42,
-      "summary_quality": 80,
-      "authority_score": 27,
+      "summary_quality": 76,
+      "authority_score": 30,
       "trust_score": 57,
       "narrative_strength": 0,
       "platform_readiness": {
@@ -1408,11 +1483,41 @@
       }
     },
     {
-      "url": "/wiki/the-bitcoin-kid-army.html",
-      "readable_title": "The Bitcoin Kid Army",
+      "url": "/wiki/the-allcity-bulls.html",
+      "readable_title": "The AllCity Bulls",
       "readiness_score": 42,
-      "summary_quality": 80,
-      "authority_score": 27,
+      "summary_quality": 75,
+      "authority_score": 30,
+      "trust_score": 57,
+      "narrative_strength": 0,
+      "platform_readiness": {
+        "fandom": false,
+        "telegram": true,
+        "substack": false,
+        "paragraph": false
+      }
+    },
+    {
+      "url": "/wiki/the-aztec-raiders.html",
+      "readable_title": "The AZTEC RAIDERS",
+      "readiness_score": 42,
+      "summary_quality": 75,
+      "authority_score": 30,
+      "trust_score": 57,
+      "narrative_strength": 0,
+      "platform_readiness": {
+        "fandom": false,
+        "telegram": true,
+        "substack": false,
+        "paragraph": false
+      }
+    },
+    {
+      "url": "/wiki/the-bally-boys.html",
+      "readable_title": "The BALLY BOYS",
+      "readiness_score": 42,
+      "summary_quality": 75,
+      "authority_score": 30,
       "trust_score": 57,
       "narrative_strength": 0,
       "platform_readiness": {
@@ -1426,37 +1531,22 @@
       "url": "/wiki/the-blockchain-furies.html",
       "readable_title": "The BLOCKCHAIN FURIES",
       "readiness_score": 42,
-      "summary_quality": 75,
-      "authority_score": 29,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": true,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/the-crypto-stoned-boys.html",
-      "readable_title": "The CRYPTO STONED BOYS",
-      "readiness_score": 42,
-      "summary_quality": 74,
-      "authority_score": 32,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": true,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/1m-free-nfts-programme.html",
-      "readable_title": "1M Free NFTs Programme",
-      "readiness_score": 41,
       "summary_quality": 76,
+      "authority_score": 30,
+      "trust_score": 57,
+      "narrative_strength": 0,
+      "platform_readiness": {
+        "fandom": false,
+        "telegram": true,
+        "substack": false,
+        "paragraph": false
+      }
+    },
+    {
+      "url": "/wiki/1m-free-nfts-drop.html",
+      "readable_title": "1M Free NFTs Drop",
+      "readiness_score": 41,
+      "summary_quality": 74,
       "authority_score": 26,
       "trust_score": 57,
       "narrative_strength": 0,
@@ -1468,23 +1558,8 @@
       }
     },
     {
-      "url": "/wiki/spirit-borns.html",
-      "readable_title": "Spirit Borns",
-      "readiness_score": 41,
-      "summary_quality": 72,
-      "authority_score": 29,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": true,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/the-allcity-bulls.html",
-      "readable_title": "The AllCity Bulls",
+      "url": "/wiki/iris-7.html",
+      "readable_title": "Iris-7",
       "readiness_score": 41,
       "summary_quality": 71,
       "authority_score": 29,
@@ -1498,10 +1573,40 @@
       }
     },
     {
-      "url": "/wiki/the-code-alchemists.html",
-      "readable_title": "The CODE ALCHEMISTS",
+      "url": "/wiki/lady-ink.html",
+      "readable_title": "Lady-INK",
       "readiness_score": 41,
-      "summary_quality": 74,
+      "summary_quality": 71,
+      "authority_score": 29,
+      "trust_score": 57,
+      "narrative_strength": 0,
+      "platform_readiness": {
+        "fandom": false,
+        "telegram": true,
+        "substack": false,
+        "paragraph": false
+      }
+    },
+    {
+      "url": "/wiki/spraycode-writcode-mechanics.html",
+      "readable_title": "Spraycode &amp; Writcode Mechanics",
+      "readiness_score": 41,
+      "summary_quality": 72,
+      "authority_score": 29,
+      "trust_score": 57,
+      "narrative_strength": 0,
+      "platform_readiness": {
+        "fandom": false,
+        "telegram": true,
+        "substack": false,
+        "paragraph": false
+      }
+    },
+    {
+      "url": "/wiki/the-squeaky-pinks.html",
+      "readable_title": "The Squeaky Pinks",
+      "readiness_score": 41,
+      "summary_quality": 72,
       "authority_score": 29,
       "trust_score": 57,
       "narrative_strength": 0,
@@ -1516,23 +1621,8 @@
       "url": "/wiki/the-tuskon-ogs.html",
       "readable_title": "The TUSKON OGS",
       "readiness_score": 41,
-      "summary_quality": 72,
-      "authority_score": 29,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": true,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/1m-free-nfts-drop.html",
-      "readable_title": "1M Free NFTs Drop",
-      "readiness_score": 40,
       "summary_quality": 73,
-      "authority_score": 25,
+      "authority_score": 29,
       "trust_score": 57,
       "narrative_strength": 0,
       "platform_readiness": {
@@ -1546,8 +1636,53 @@
       "url": "/wiki/alfie-the-bitcoin-kid-blaze.html",
       "readable_title": "Alfie 'The Bitcoin Kid' Blaze",
       "readiness_score": 40,
-      "summary_quality": 72,
-      "authority_score": 25,
+      "summary_quality": 73,
+      "authority_score": 26,
+      "trust_score": 57,
+      "narrative_strength": 0,
+      "platform_readiness": {
+        "fandom": false,
+        "telegram": true,
+        "substack": false,
+        "paragraph": false
+      }
+    },
+    {
+      "url": "/wiki/altcoins.html",
+      "readable_title": "Altcoins",
+      "readiness_score": 40,
+      "summary_quality": 69,
+      "authority_score": 27,
+      "trust_score": 57,
+      "narrative_strength": 0,
+      "platform_readiness": {
+        "fandom": false,
+        "telegram": true,
+        "substack": false,
+        "paragraph": false
+      }
+    },
+    {
+      "url": "/wiki/canvas-clash.html",
+      "readable_title": "The Canvas Clash",
+      "readiness_score": 40,
+      "summary_quality": 65,
+      "authority_score": 30,
+      "trust_score": 57,
+      "narrative_strength": 0,
+      "platform_readiness": {
+        "fandom": false,
+        "telegram": true,
+        "substack": false,
+        "paragraph": false
+      }
+    },
+    {
+      "url": "/wiki/elder-codex-7.html",
+      "readable_title": "Elder Codex-7",
+      "readiness_score": 40,
+      "summary_quality": 67,
+      "authority_score": 29,
       "trust_score": 57,
       "narrative_strength": 0,
       "platform_readiness": {
@@ -1561,7 +1696,7 @@
       "url": "/wiki/gk-token.html",
       "readable_title": "$GK Token",
       "readiness_score": 40,
-      "summary_quality": 39,
+      "summary_quality": 40,
       "authority_score": 18,
       "trust_score": 82,
       "narrative_strength": 20,
@@ -1573,8 +1708,38 @@
       }
     },
     {
-      "url": "/wiki/iris-7.html",
-      "readable_title": "Iris-7",
+      "url": "/wiki/jodie-zoom-2000.html",
+      "readable_title": "Jodie ZOOM 2000",
+      "readiness_score": 40,
+      "summary_quality": 71,
+      "authority_score": 26,
+      "trust_score": 57,
+      "narrative_strength": 0,
+      "platform_readiness": {
+        "fandom": false,
+        "telegram": true,
+        "substack": false,
+        "paragraph": false
+      }
+    },
+    {
+      "url": "/wiki/loopfiend.html",
+      "readable_title": "Loopfiend",
+      "readiness_score": 40,
+      "summary_quality": 68,
+      "authority_score": 28,
+      "trust_score": 57,
+      "narrative_strength": 0,
+      "platform_readiness": {
+        "fandom": false,
+        "telegram": true,
+        "substack": false,
+        "paragraph": false
+      }
+    },
+    {
+      "url": "/wiki/phygital-prints.html",
+      "readable_title": "Phygital Prints",
       "readiness_score": 40,
       "summary_quality": 69,
       "authority_score": 28,
@@ -1588,55 +1753,10 @@
       }
     },
     {
-      "url": "/wiki/lady-ink.html",
-      "readable_title": "Lady-INK",
+      "url": "/wiki/seeding-rights.html",
+      "readable_title": "Seeding Rights",
       "readiness_score": 40,
-      "summary_quality": 70,
-      "authority_score": 29,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": true,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/spraycode-writcode-mechanics.html",
-      "readable_title": "Spraycode &amp; Writcode Mechanics",
-      "readiness_score": 40,
-      "summary_quality": 71,
-      "authority_score": 28,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": true,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/the-aztec-raiders.html",
-      "readable_title": "The AZTEC RAIDERS",
-      "readiness_score": 40,
-      "summary_quality": 71,
-      "authority_score": 28,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": true,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/the-bally-boys.html",
-      "readable_title": "The BALLY BOYS",
-      "readiness_score": 40,
-      "summary_quality": 71,
+      "summary_quality": 69,
       "authority_score": 28,
       "trust_score": 57,
       "narrative_strength": 0,
@@ -1651,21 +1771,6 @@
       "url": "/wiki/the-information-mercenaries.html",
       "readable_title": "The INFORMATION MERCENARIES",
       "readiness_score": 40,
-      "summary_quality": 69,
-      "authority_score": 28,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": true,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/the-squeaky-pinks.html",
-      "readable_title": "The Squeaky Pinks",
-      "readiness_score": 40,
       "summary_quality": 70,
       "authority_score": 28,
       "trust_score": 57,
@@ -1678,11 +1783,11 @@
       }
     },
     {
-      "url": "/wiki/altcoins.html",
-      "readable_title": "Altcoins",
+      "url": "/wiki/aleema-child-of-the-shard.html",
+      "readable_title": "Aleema (Child of the Shard)",
       "readiness_score": 39,
       "summary_quality": 68,
-      "authority_score": 26,
+      "authority_score": 25,
       "trust_score": 57,
       "narrative_strength": 0,
       "platform_readiness": {
@@ -1696,6 +1801,21 @@
       "url": "/wiki/ava-chen.html",
       "readable_title": "Ava Chen",
       "readiness_score": 39,
+      "summary_quality": 66,
+      "authority_score": 28,
+      "trust_score": 57,
+      "narrative_strength": 0,
+      "platform_readiness": {
+        "fandom": false,
+        "telegram": true,
+        "substack": false,
+        "paragraph": false
+      }
+    },
+    {
+      "url": "/wiki/battlemech-blast.html",
+      "readable_title": "Battlemech Blast",
+      "readiness_score": 39,
       "summary_quality": 65,
       "authority_score": 27,
       "trust_score": 57,
@@ -1708,11 +1828,11 @@
       }
     },
     {
-      "url": "/wiki/canvas-clash.html",
-      "readable_title": "The Canvas Clash",
+      "url": "/wiki/bit-cap-5000.html",
+      "readable_title": "Bit-Cap 5000",
       "readiness_score": 39,
-      "summary_quality": 64,
-      "authority_score": 30,
+      "summary_quality": 67,
+      "authority_score": 25,
       "trust_score": 57,
       "narrative_strength": 0,
       "platform_readiness": {
@@ -1723,8 +1843,38 @@
       }
     },
     {
-      "url": "/wiki/elder-codex-7.html",
-      "readable_title": "Elder Codex-7",
+      "url": "/wiki/dragan-volkov.html",
+      "readable_title": "Dragan Volkov",
+      "readiness_score": 39,
+      "summary_quality": 66,
+      "authority_score": 28,
+      "trust_score": 57,
+      "narrative_strength": 0,
+      "platform_readiness": {
+        "fandom": false,
+        "telegram": true,
+        "substack": false,
+        "paragraph": false
+      }
+    },
+    {
+      "url": "/wiki/ethereum-ecosystem.html",
+      "readable_title": "Ethereum (ETH) Ecosystem",
+      "readiness_score": 39,
+      "summary_quality": 66,
+      "authority_score": 27,
+      "trust_score": 57,
+      "narrative_strength": 0,
+      "platform_readiness": {
+        "fandom": false,
+        "telegram": true,
+        "substack": false,
+        "paragraph": false
+      }
+    },
+    {
+      "url": "/wiki/forklord-you.html",
+      "readable_title": "Forklord You",
       "readiness_score": 39,
       "summary_quality": 66,
       "authority_score": 28,
@@ -1741,8 +1891,8 @@
       "url": "/wiki/forksplit.html",
       "readable_title": "Forksplit",
       "readiness_score": 39,
-      "summary_quality": 65,
-      "authority_score": 27,
+      "summary_quality": 66,
+      "authority_score": 28,
       "trust_score": 57,
       "narrative_strength": 0,
       "platform_readiness": {
@@ -1756,7 +1906,7 @@
       "url": "/wiki/graffpunks-ecosystem.html",
       "readable_title": "GraffPUNKS Ecosystem",
       "readiness_score": 39,
-      "summary_quality": 66,
+      "summary_quality": 67,
       "authority_score": 28,
       "trust_score": 57,
       "narrative_strength": 0,
@@ -1771,8 +1921,38 @@
       "url": "/wiki/grit42.html",
       "readable_title": "Grit42",
       "readiness_score": 39,
-      "summary_quality": 65,
-      "authority_score": 27,
+      "summary_quality": 66,
+      "authority_score": 28,
+      "trust_score": 57,
+      "narrative_strength": 0,
+      "platform_readiness": {
+        "fandom": false,
+        "telegram": true,
+        "substack": false,
+        "paragraph": false
+      }
+    },
+    {
+      "url": "/wiki/harrison-rift.html",
+      "readable_title": "The Harrison Rift",
+      "readiness_score": 39,
+      "summary_quality": 63,
+      "authority_score": 30,
+      "trust_score": 57,
+      "narrative_strength": 0,
+      "platform_readiness": {
+        "fandom": false,
+        "telegram": true,
+        "substack": false,
+        "paragraph": false
+      }
+    },
+    {
+      "url": "/wiki/hex-tagger-prime.html",
+      "readable_title": "HEX-TAGGER PRIME",
+      "readiness_score": 39,
+      "summary_quality": 68,
+      "authority_score": 25,
       "trust_score": 57,
       "narrative_strength": 0,
       "platform_readiness": {
@@ -1786,38 +1966,8 @@
       "url": "/wiki/hodl-wars-ecosystem.html",
       "readable_title": "HODL Wars Ecosystem",
       "readiness_score": 39,
-      "summary_quality": 67,
-      "authority_score": 25,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": true,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/jodie-zoom-2000.html",
-      "readable_title": "Jodie ZOOM 2000",
-      "readiness_score": 39,
-      "summary_quality": 70,
-      "authority_score": 25,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": true,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/loopfiend.html",
-      "readable_title": "Loopfiend",
-      "readiness_score": 39,
-      "summary_quality": 66,
-      "authority_score": 28,
+      "summary_quality": 68,
+      "authority_score": 26,
       "trust_score": 57,
       "narrative_strength": 0,
       "platform_readiness": {
@@ -1831,7 +1981,7 @@
       "url": "/wiki/m1ntr-k1ll.html",
       "readable_title": "M1nTr K1ll",
       "readiness_score": 39,
-      "summary_quality": 66,
+      "summary_quality": 67,
       "authority_score": 28,
       "trust_score": 57,
       "narrative_strength": 0,
@@ -1843,10 +1993,25 @@
       }
     },
     {
-      "url": "/wiki/phygital-prints.html",
-      "readable_title": "Phygital Prints",
+      "url": "/wiki/playable-nft-murals.html",
+      "readable_title": "Playable NFT Murals",
       "readiness_score": 39,
-      "summary_quality": 67,
+      "summary_quality": 69,
+      "authority_score": 25,
+      "trust_score": 57,
+      "narrative_strength": 0,
+      "platform_readiness": {
+        "fandom": false,
+        "telegram": true,
+        "substack": false,
+        "paragraph": false
+      }
+    },
+    {
+      "url": "/wiki/punk.html",
+      "readable_title": "$PUNK",
+      "readiness_score": 39,
+      "summary_quality": 66,
       "authority_score": 27,
       "trust_score": 57,
       "narrative_strength": 0,
@@ -1858,11 +2023,11 @@
       }
     },
     {
-      "url": "/wiki/seeding-rights.html",
-      "readable_title": "Seeding Rights",
+      "url": "/wiki/the-graffpunks.html",
+      "readable_title": "The GRAFFPUNKS",
       "readiness_score": 39,
-      "summary_quality": 68,
-      "authority_score": 27,
+      "summary_quality": 66,
+      "authority_score": 26,
       "trust_score": 57,
       "narrative_strength": 0,
       "platform_readiness": {
@@ -1876,38 +2041,8 @@
       "url": "/wiki/thera-9.html",
       "readable_title": "Thera-9",
       "readiness_score": 39,
-      "summary_quality": 65,
-      "authority_score": 27,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": true,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/aleema-child-of-the-shard.html",
-      "readable_title": "Aleema (Child of the Shard)",
-      "readiness_score": 38,
       "summary_quality": 66,
-      "authority_score": 24,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": true,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/battlemech-blast.html",
-      "readable_title": "Battlemech Blast",
-      "readiness_score": 38,
-      "summary_quality": 64,
-      "authority_score": 26,
+      "authority_score": 28,
       "trust_score": 57,
       "narrative_strength": 0,
       "platform_readiness": {
@@ -1936,126 +2071,6 @@
       "url": "/wiki/billy-the-goat-kid.html",
       "readable_title": "Billy the Goat Kid",
       "readiness_score": 38,
-      "summary_quality": 65,
-      "authority_score": 24,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": true,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/bit-cap-5000.html",
-      "readable_title": "Bit-Cap 5000",
-      "readiness_score": 38,
-      "summary_quality": 65,
-      "authority_score": 24,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": true,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/dragan-volkov.html",
-      "readable_title": "Dragan Volkov",
-      "readiness_score": 38,
-      "summary_quality": 64,
-      "authority_score": 27,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": true,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/ethereum-ecosystem.html",
-      "readable_title": "Ethereum (ETH) Ecosystem",
-      "readiness_score": 38,
-      "summary_quality": 65,
-      "authority_score": 26,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": true,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/forklord-you.html",
-      "readable_title": "Forklord You",
-      "readiness_score": 38,
-      "summary_quality": 64,
-      "authority_score": 27,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": true,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/graffiti-queens-in-decentraland.html",
-      "readable_title": "Graffiti Queens in Decentraland",
-      "readiness_score": 38,
-      "summary_quality": 67,
-      "authority_score": 24,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": true,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/grit.html",
-      "readable_title": "GRIT",
-      "readiness_score": 38,
-      "summary_quality": 63,
-      "authority_score": 26,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": true,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/harrison-rift.html",
-      "readable_title": "The Harrison Rift",
-      "readiness_score": 38,
-      "summary_quality": 62,
-      "authority_score": 29,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": true,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/hex-tagger-prime.html",
-      "readable_title": "HEX-TAGGER PRIME",
-      "readiness_score": 38,
       "summary_quality": 66,
       "authority_score": 25,
       "trust_score": 57,
@@ -2068,8 +2083,38 @@
       }
     },
     {
-      "url": "/wiki/playable-nft-murals.html",
-      "readable_title": "Playable NFT Murals",
+      "url": "/wiki/bone-idol-ink.html",
+      "readable_title": "Bone Idol Ink",
+      "readiness_score": 38,
+      "summary_quality": 66,
+      "authority_score": 24,
+      "trust_score": 57,
+      "narrative_strength": 0,
+      "platform_readiness": {
+        "fandom": false,
+        "telegram": true,
+        "substack": false,
+        "paragraph": false
+      }
+    },
+    {
+      "url": "/wiki/gk-tokens.html",
+      "readable_title": "$GK Tokens",
+      "readiness_score": 38,
+      "summary_quality": 38,
+      "authority_score": 19,
+      "trust_score": 82,
+      "narrative_strength": 10,
+      "platform_readiness": {
+        "fandom": false,
+        "telegram": false,
+        "substack": false,
+        "paragraph": false
+      }
+    },
+    {
+      "url": "/wiki/graffiti-queens-in-decentraland.html",
+      "readable_title": "Graffiti Queens in Decentraland",
       "readiness_score": 38,
       "summary_quality": 68,
       "authority_score": 24,
@@ -2083,11 +2128,56 @@
       }
     },
     {
-      "url": "/wiki/punk.html",
-      "readable_title": "$PUNK",
+      "url": "/wiki/graffpunks-collection.html",
+      "readable_title": "GraffPUNKS Collection",
+      "readiness_score": 38,
+      "summary_quality": 62,
+      "authority_score": 26,
+      "trust_score": 57,
+      "narrative_strength": 0,
+      "platform_readiness": {
+        "fandom": false,
+        "telegram": true,
+        "substack": false,
+        "paragraph": false
+      }
+    },
+    {
+      "url": "/wiki/grit.html",
+      "readable_title": "GRIT",
+      "readiness_score": 38,
+      "summary_quality": 64,
+      "authority_score": 27,
+      "trust_score": 57,
+      "narrative_strength": 0,
+      "platform_readiness": {
+        "fandom": false,
+        "telegram": true,
+        "substack": false,
+        "paragraph": false
+      }
+    },
+    {
+      "url": "/wiki/hodl-wars-game.html",
+      "readable_title": "HODL Wars (Game)",
       "readiness_score": 38,
       "summary_quality": 65,
-      "authority_score": 26,
+      "authority_score": 25,
+      "trust_score": 57,
+      "narrative_strength": 0,
+      "platform_readiness": {
+        "fandom": false,
+        "telegram": true,
+        "substack": false,
+        "paragraph": false
+      }
+    },
+    {
+      "url": "/wiki/sarah-pu51fly.html",
+      "readable_title": "Sarah PU51FLY",
+      "readiness_score": 38,
+      "summary_quality": 64,
+      "authority_score": 27,
       "trust_score": 57,
       "narrative_strength": 0,
       "platform_readiness": {
@@ -2101,28 +2191,13 @@
       "url": "/wiki/solana-sol.html",
       "readable_title": "Solana (SOL)",
       "readiness_score": 38,
-      "summary_quality": 32,
-      "authority_score": 17,
+      "summary_quality": 33,
+      "authority_score": 18,
       "trust_score": 82,
       "narrative_strength": 20,
       "platform_readiness": {
         "fandom": false,
         "telegram": false,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/the-graffpunks.html",
-      "readable_title": "The GRAFFPUNKS",
-      "readiness_score": 38,
-      "summary_quality": 65,
-      "authority_score": 25,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": true,
         "substack": false,
         "paragraph": false
       }
@@ -2143,11 +2218,11 @@
       }
     },
     {
-      "url": "/wiki/bone-idol-ink.html",
-      "readable_title": "Bone Idol Ink",
+      "url": "/wiki/gang-signs-card-game.html",
+      "readable_title": "Gang Signs (Card Game)",
       "readiness_score": 37,
-      "summary_quality": 64,
-      "authority_score": 23,
+      "summary_quality": 63,
+      "authority_score": 24,
       "trust_score": 57,
       "narrative_strength": 0,
       "platform_readiness": {
@@ -2158,26 +2233,11 @@
       }
     },
     {
-      "url": "/wiki/gk-tokens.html",
-      "readable_title": "$GK Tokens",
+      "url": "/wiki/genesis-kernel.html",
+      "readable_title": "Genesis Kernel",
       "readiness_score": 37,
-      "summary_quality": 37,
-      "authority_score": 18,
-      "trust_score": 82,
-      "narrative_strength": 10,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": false,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/graffiti-kings.html",
-      "readable_title": "Graffiti Kings",
-      "readiness_score": 37,
-      "summary_quality": 59,
-      "authority_score": 25,
+      "summary_quality": 60,
+      "authority_score": 26,
       "trust_score": 57,
       "narrative_strength": 0,
       "platform_readiness": {
@@ -2188,23 +2248,8 @@
       }
     },
     {
-      "url": "/wiki/graffpunks-collection.html",
-      "readable_title": "GraffPUNKS Collection",
-      "readiness_score": 37,
-      "summary_quality": 61,
-      "authority_score": 25,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": true,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/hodl-wars-game.html",
-      "readable_title": "HODL Wars (Game)",
+      "url": "/wiki/gkniftyheads-phase-one-two-three.html",
+      "readable_title": "GKniftyHEADS Phase One Two Three",
       "readiness_score": 37,
       "summary_quality": 64,
       "authority_score": 24,
@@ -2218,11 +2263,41 @@
       }
     },
     {
-      "url": "/wiki/sarah-pu51fly.html",
-      "readable_title": "Sarah PU51FLY",
+      "url": "/wiki/graffiti-kings.html",
+      "readable_title": "Graffiti Kings",
       "readiness_score": 37,
       "summary_quality": 60,
-      "authority_score": 26,
+      "authority_score": 25,
+      "trust_score": 57,
+      "narrative_strength": 0,
+      "platform_readiness": {
+        "fandom": false,
+        "telegram": true,
+        "substack": false,
+        "paragraph": false
+      }
+    },
+    {
+      "url": "/wiki/lfgk.html",
+      "readable_title": "$LFGK",
+      "readiness_score": 37,
+      "summary_quality": 60,
+      "authority_score": 25,
+      "trust_score": 57,
+      "narrative_strength": 0,
+      "platform_readiness": {
+        "fandom": false,
+        "telegram": true,
+        "substack": false,
+        "paragraph": false
+      }
+    },
+    {
+      "url": "/wiki/queen-sarah-p-fly.html",
+      "readable_title": "Queen Sarah P-fly",
+      "readiness_score": 37,
+      "summary_quality": 63,
+      "authority_score": 23,
       "trust_score": 57,
       "narrative_strength": 0,
       "platform_readiness": {
@@ -2251,7 +2326,7 @@
       "url": "/wiki/stake-for-gk-tokens.html",
       "readable_title": "Stake for $GK Tokens",
       "readiness_score": 37,
-      "summary_quality": 39,
+      "summary_quality": 40,
       "authority_score": 15,
       "trust_score": 82,
       "narrative_strength": 10,
@@ -2278,38 +2353,8 @@
       }
     },
     {
-      "url": "/wiki/darren-cullen-ser.html",
-      "readable_title": "Darren Cullen (SER)",
-      "readiness_score": 36,
-      "summary_quality": 59,
-      "authority_score": 22,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": true,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/gang-signs-card-game.html",
-      "readable_title": "Gang Signs (Card Game)",
-      "readiness_score": 36,
-      "summary_quality": 59,
-      "authority_score": 22,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": true,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/gkniftyheads-phase-one-two-three.html",
-      "readable_title": "GKniftyHEADS Phase One Two Three",
+      "url": "/wiki/1m-free-nfts-program.html",
+      "readable_title": "1M Free NFTs Program",
       "readiness_score": 36,
       "summary_quality": 60,
       "authority_score": 22,
@@ -2323,31 +2368,31 @@
       }
     },
     {
-      "url": "/wiki/hard-fork-games-event.html",
-      "readable_title": "Hard Fork Games Event",
+      "url": "/wiki/darren-cullen-ser.html",
+      "readable_title": "Darren Cullen (SER)",
       "readiness_score": 36,
-      "summary_quality": 36,
-      "authority_score": 14,
-      "trust_score": 82,
-      "narrative_strength": 10,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": false,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/lfgk.html",
-      "readable_title": "$LFGK",
-      "readiness_score": 36,
-      "summary_quality": 58,
-      "authority_score": 25,
+      "summary_quality": 60,
+      "authority_score": 23,
       "trust_score": 57,
       "narrative_strength": 0,
       "platform_readiness": {
         "fandom": false,
         "telegram": true,
+        "substack": false,
+        "paragraph": false
+      }
+    },
+    {
+      "url": "/wiki/hard-fork-games-event.html",
+      "readable_title": "Hard Fork Games Event",
+      "readiness_score": 36,
+      "summary_quality": 37,
+      "authority_score": 15,
+      "trust_score": 82,
+      "narrative_strength": 10,
+      "platform_readiness": {
+        "fandom": false,
+        "telegram": false,
         "substack": false,
         "paragraph": false
       }
@@ -2368,25 +2413,10 @@
       }
     },
     {
-      "url": "/wiki/queen-sarah-p-fly.html",
-      "readable_title": "Queen Sarah P-fly",
-      "readiness_score": 36,
-      "summary_quality": 59,
-      "authority_score": 22,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": true,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
       "url": "/wiki/snipey-d-man-sirus.html",
       "readable_title": "Snipey 'D-Man' Sirus",
       "readiness_score": 36,
-      "summary_quality": 61,
+      "summary_quality": 62,
       "authority_score": 21,
       "trust_score": 57,
       "narrative_strength": 0,
@@ -2413,36 +2443,6 @@
       }
     },
     {
-      "url": "/wiki/1m-free-nfts-program.html",
-      "readable_title": "1M Free NFTs Program",
-      "readiness_score": 35,
-      "summary_quality": 59,
-      "authority_score": 21,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": true,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/genesis-kernel.html",
-      "readable_title": "Genesis Kernel",
-      "readiness_score": 35,
-      "summary_quality": 55,
-      "authority_score": 24,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": true,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
       "url": "/wiki/rug-pull-wars.html",
       "readable_title": "Rug Pull Wars",
       "readiness_score": 35,
@@ -2458,11 +2458,11 @@
       }
     },
     {
-      "url": "/wiki/maidstone-base.html",
-      "readable_title": "Maidstone Base",
+      "url": "/wiki/croydon-tower-blocks.html",
+      "readable_title": "Croydon Tower Blocks",
       "readiness_score": 34,
-      "summary_quality": 52,
-      "authority_score": 21,
+      "summary_quality": 53,
+      "authority_score": 20,
       "trust_score": 57,
       "narrative_strength": 0,
       "platform_readiness": {
@@ -2473,31 +2473,16 @@
       }
     },
     {
-      "url": "/wiki/bitcoin-kid-army.html",
-      "readable_title": "Bitcoin Kid Army",
-      "readiness_score": 33,
-      "summary_quality": 52,
-      "authority_score": 19,
+      "url": "/wiki/maidstone-base.html",
+      "readable_title": "Maidstone Base",
+      "readiness_score": 34,
+      "summary_quality": 53,
+      "authority_score": 22,
       "trust_score": 57,
       "narrative_strength": 0,
       "platform_readiness": {
         "fandom": false,
-        "telegram": false,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/croydon-tower-blocks.html",
-      "readable_title": "Croydon Tower Blocks",
-      "readiness_score": 33,
-      "summary_quality": 52,
-      "authority_score": 19,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": false,
+        "telegram": true,
         "substack": false,
         "paragraph": false
       }
@@ -2505,8 +2490,38 @@
     {
       "url": "/wiki/no-ball-games-nbg.html",
       "readable_title": "No Ball Games (NBG)",
+      "readiness_score": 34,
+      "summary_quality": 53,
+      "authority_score": 20,
+      "trust_score": 57,
+      "narrative_strength": 0,
+      "platform_readiness": {
+        "fandom": false,
+        "telegram": true,
+        "substack": false,
+        "paragraph": false
+      }
+    },
+    {
+      "url": "/wiki/alfie-bitcoin-kid-blaze.html",
+      "readable_title": "Alfie 'Bitcoin Kid' Blaze",
       "readiness_score": 33,
       "summary_quality": 52,
+      "authority_score": 18,
+      "trust_score": 57,
+      "narrative_strength": 0,
+      "platform_readiness": {
+        "fandom": false,
+        "telegram": false,
+        "substack": false,
+        "paragraph": false
+      }
+    },
+    {
+      "url": "/wiki/bitcoin-kid-army.html",
+      "readable_title": "Bitcoin Kid Army",
+      "readiness_score": 33,
+      "summary_quality": 53,
       "authority_score": 19,
       "trust_score": 57,
       "narrative_strength": 0,
@@ -2521,8 +2536,8 @@
       "url": "/wiki/the-gkniftyheads.html",
       "readable_title": "The GKniftyHEADS",
       "readiness_score": 33,
-      "summary_quality": 49,
-      "authority_score": 21,
+      "summary_quality": 50,
+      "authority_score": 22,
       "trust_score": 57,
       "narrative_strength": 0,
       "platform_readiness": {
@@ -2533,25 +2548,10 @@
       }
     },
     {
-      "url": "/wiki/alfie-bitcoin-kid-blaze.html",
-      "readable_title": "Alfie 'Bitcoin Kid' Blaze",
-      "readiness_score": 32,
-      "summary_quality": 51,
-      "authority_score": 18,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": false,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
       "url": "/wiki/substack-posts-on-graffpunkssubstackcom.html",
       "readable_title": "Substack Posts on graffpunks.substack.com",
       "readiness_score": 32,
-      "summary_quality": 42,
+      "summary_quality": 43,
       "authority_score": 23,
       "trust_score": 57,
       "narrative_strength": 0,
@@ -2563,11 +2563,26 @@
       }
     },
     {
+      "url": "/wiki/darren-cullen-ser-real.html",
+      "readable_title": "Darren Cullen (SER) - Real",
+      "readiness_score": 31,
+      "summary_quality": 44,
+      "authority_score": 18,
+      "trust_score": 57,
+      "narrative_strength": 0,
+      "platform_readiness": {
+        "fandom": false,
+        "telegram": false,
+        "substack": false,
+        "paragraph": false
+      }
+    },
+    {
       "url": "/wiki/graffpunks-247-blockchain-radio-station.html",
       "readable_title": "GraffPUNKS 24/7 Blockchain Radio Station",
-      "readiness_score": 30,
-      "summary_quality": 39,
-      "authority_score": 21,
+      "readiness_score": 31,
+      "summary_quality": 41,
+      "authority_score": 22,
       "trust_score": 57,
       "narrative_strength": 0,
       "platform_readiness": {
@@ -2578,11 +2593,41 @@
       }
     },
     {
+      "url": "/wiki/decentraland-events.html",
+      "readable_title": "Decentraland Events",
+      "readiness_score": 30,
+      "summary_quality": 40,
+      "authority_score": 19,
+      "trust_score": 57,
+      "narrative_strength": 0,
+      "platform_readiness": {
+        "fandom": false,
+        "telegram": false,
+        "substack": false,
+        "paragraph": false
+      }
+    },
+    {
       "url": "/wiki/great-datapocalypse-of-2789.html",
       "readable_title": "Great Datapocalypse of 2789",
       "readiness_score": 30,
-      "summary_quality": 41,
+      "summary_quality": 43,
       "authority_score": 17,
+      "trust_score": 57,
+      "narrative_strength": 0,
+      "platform_readiness": {
+        "fandom": false,
+        "telegram": false,
+        "substack": false,
+        "paragraph": false
+      }
+    },
+    {
+      "url": "/wiki/lfgk-token.html",
+      "readable_title": "$LFGK Token",
+      "readiness_score": 30,
+      "summary_quality": 40,
+      "authority_score": 19,
       "trust_score": 57,
       "narrative_strength": 0,
       "platform_readiness": {
@@ -2596,8 +2641,23 @@
       "url": "/wiki/spraycode-writcode.html",
       "readable_title": "Spraycode &amp; Writcode",
       "readiness_score": 30,
-      "summary_quality": 39,
+      "summary_quality": 40,
       "authority_score": 19,
+      "trust_score": 57,
+      "narrative_strength": 0,
+      "platform_readiness": {
+        "fandom": false,
+        "telegram": false,
+        "substack": false,
+        "paragraph": false
+      }
+    },
+    {
+      "url": "/wiki/xrp-kids-nbg-updates.html",
+      "readable_title": "XRP Kids NBG Updates",
+      "readiness_score": 30,
+      "summary_quality": 41,
+      "authority_score": 17,
       "trust_score": 57,
       "narrative_strength": 0,
       "platform_readiness": {
@@ -2611,7 +2671,7 @@
       "url": "/wiki/atomichub-graffpunks-collection.html",
       "readable_title": "AtomicHub Graffpunks Collection",
       "readiness_score": 29,
-      "summary_quality": 39,
+      "summary_quality": 40,
       "authority_score": 15,
       "trust_score": 57,
       "narrative_strength": 0,
@@ -2623,26 +2683,11 @@
       }
     },
     {
-      "url": "/wiki/darren-cullen-ser-real.html",
-      "readable_title": "Darren Cullen (SER) - Real",
+      "url": "/wiki/games4punks-telegram-games.html",
+      "readable_title": "GAMES4PUNKS Telegram Games",
       "readiness_score": 29,
-      "summary_quality": 40,
-      "authority_score": 17,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": false,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/decentraland-events.html",
-      "readable_title": "Decentraland Events",
-      "readiness_score": 29,
-      "summary_quality": 38,
-      "authority_score": 18,
+      "summary_quality": 39,
+      "authority_score": 15,
       "trust_score": 57,
       "narrative_strength": 0,
       "platform_readiness": {
@@ -2656,7 +2701,7 @@
       "url": "/wiki/graffiti-queens-exhibition.html",
       "readable_title": "Graffiti Queens Exhibition",
       "readiness_score": 29,
-      "summary_quality": 39,
+      "summary_quality": 40,
       "authority_score": 15,
       "trust_score": 57,
       "narrative_strength": 0,
@@ -2671,7 +2716,7 @@
       "url": "/wiki/leake-street-tunnel.html",
       "readable_title": "Leake Street Tunnel",
       "readiness_score": 29,
-      "summary_quality": 39,
+      "summary_quality": 40,
       "authority_score": 15,
       "trust_score": 57,
       "narrative_strength": 0,
@@ -2686,22 +2731,7 @@
       "url": "/wiki/lfgk-rewards.html",
       "readable_title": "$LFGK Rewards",
       "readiness_score": 29,
-      "summary_quality": 38,
-      "authority_score": 18,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": false,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/lfgk-token.html",
-      "readable_title": "$LFGK Token",
-      "readiness_score": 29,
-      "summary_quality": 38,
+      "summary_quality": 39,
       "authority_score": 18,
       "trust_score": 57,
       "narrative_strength": 0,
@@ -2716,8 +2746,8 @@
       "url": "/wiki/medium-articles-by-gkniftyheads.html",
       "readable_title": "Medium Articles by @GKniftyHEADS",
       "readiness_score": 29,
-      "summary_quality": 39,
-      "authority_score": 15,
+      "summary_quality": 40,
+      "authority_score": 16,
       "trust_score": 57,
       "narrative_strength": 0,
       "platform_readiness": {
@@ -2731,8 +2761,8 @@
       "url": "/wiki/medium-articles-by-graffpunks.html",
       "readable_title": "Medium Articles by @GRAFFPUNKS",
       "readiness_score": 29,
-      "summary_quality": 39,
-      "authority_score": 15,
+      "summary_quality": 40,
+      "authority_score": 16,
       "trust_score": 57,
       "narrative_strength": 0,
       "platform_readiness": {
@@ -2746,8 +2776,8 @@
       "url": "/wiki/medium-articles-by-hodlwarriors.html",
       "readable_title": "Medium Articles by @HODLWARRIORS",
       "readiness_score": 29,
-      "summary_quality": 39,
-      "authority_score": 15,
+      "summary_quality": 40,
+      "authority_score": 16,
       "trust_score": 57,
       "narrative_strength": 0,
       "platform_readiness": {
@@ -2761,8 +2791,8 @@
       "url": "/wiki/medium-articles-by-sercullen.html",
       "readable_title": "Medium Articles by @sercullen",
       "readiness_score": 29,
-      "summary_quality": 39,
-      "authority_score": 15,
+      "summary_quality": 40,
+      "authority_score": 16,
       "trust_score": 57,
       "narrative_strength": 0,
       "platform_readiness": {
@@ -2776,8 +2806,8 @@
       "url": "/wiki/neftyblocks-midevilpunks-collection.html",
       "readable_title": "NeftyBlocks Midevilpunks Collection",
       "readiness_score": 29,
-      "summary_quality": 39,
-      "authority_score": 15,
+      "summary_quality": 40,
+      "authority_score": 16,
       "trust_score": 57,
       "narrative_strength": 0,
       "platform_readiness": {
@@ -2791,8 +2821,8 @@
       "url": "/wiki/no-ball-games-nbg-collection.html",
       "readable_title": "No Ball Games (NBG) Collection",
       "readiness_score": 29,
-      "summary_quality": 39,
-      "authority_score": 16,
+      "summary_quality": 40,
+      "authority_score": 17,
       "trust_score": 57,
       "narrative_strength": 0,
       "platform_readiness": {
@@ -2806,8 +2836,38 @@
       "url": "/wiki/smart-nft-mechanics.html",
       "readable_title": "SMArT NFT Mechanics",
       "readiness_score": 29,
+      "summary_quality": 40,
+      "authority_score": 16,
+      "trust_score": 57,
+      "narrative_strength": 0,
+      "platform_readiness": {
+        "fandom": false,
+        "telegram": false,
+        "substack": false,
+        "paragraph": false
+      }
+    },
+    {
+      "url": "/wiki/staking-for-gk-tokens.html",
+      "readable_title": "Staking for $GK Tokens",
+      "readiness_score": 29,
       "summary_quality": 39,
       "authority_score": 15,
+      "trust_score": 57,
+      "narrative_strength": 0,
+      "platform_readiness": {
+        "fandom": false,
+        "telegram": false,
+        "substack": false,
+        "paragraph": false
+      }
+    },
+    {
+      "url": "/wiki/the-sacred-chain.html",
+      "readable_title": "The Sacred Chain",
+      "readiness_score": 29,
+      "summary_quality": 37,
+      "authority_score": 18,
       "trust_score": 57,
       "narrative_strength": 0,
       "platform_readiness": {
@@ -2821,7 +2881,7 @@
       "url": "/wiki/waxp.html",
       "readable_title": "$WAXP",
       "readiness_score": 29,
-      "summary_quality": 38,
+      "summary_quality": 39,
       "authority_score": 18,
       "trust_score": 57,
       "narrative_strength": 0,
@@ -2836,8 +2896,8 @@
       "url": "/wiki/xrp-kids-genesis-nfts.html",
       "readable_title": "XRP KIDs Genesis NFTs",
       "readiness_score": 29,
-      "summary_quality": 39,
-      "authority_score": 15,
+      "summary_quality": 40,
+      "authority_score": 16,
       "trust_score": 57,
       "narrative_strength": 0,
       "platform_readiness": {
@@ -2848,11 +2908,41 @@
       }
     },
     {
-      "url": "/wiki/xrp-kids-nbg-updates.html",
-      "readable_title": "XRP Kids NBG Updates",
-      "readiness_score": 29,
-      "summary_quality": 40,
-      "authority_score": 16,
+      "url": "/wiki/bitcoin-btc.html",
+      "readable_title": "Bitcoin (BTC)",
+      "readiness_score": 28,
+      "summary_quality": 33,
+      "authority_score": 18,
+      "trust_score": 57,
+      "narrative_strength": 0,
+      "platform_readiness": {
+        "fandom": false,
+        "telegram": false,
+        "substack": false,
+        "paragraph": false
+      }
+    },
+    {
+      "url": "/wiki/blockchain-technology.html",
+      "readable_title": "Blockchain Technology",
+      "readiness_score": 28,
+      "summary_quality": 33,
+      "authority_score": 18,
+      "trust_score": 57,
+      "narrative_strength": 0,
+      "platform_readiness": {
+        "fandom": false,
+        "telegram": false,
+        "substack": false,
+        "paragraph": false
+      }
+    },
+    {
+      "url": "/wiki/crypto-exchanges.html",
+      "readable_title": "Crypto Exchanges",
+      "readiness_score": 28,
+      "summary_quality": 33,
+      "authority_score": 18,
       "trust_score": 57,
       "narrative_strength": 0,
       "platform_readiness": {
@@ -2866,7 +2956,22 @@
       "url": "/wiki/crypto-wallets.html",
       "readable_title": "Crypto Wallets",
       "readiness_score": 28,
-      "summary_quality": 32,
+      "summary_quality": 33,
+      "authority_score": 19,
+      "trust_score": 57,
+      "narrative_strength": 0,
+      "platform_readiness": {
+        "fandom": false,
+        "telegram": false,
+        "substack": false,
+        "paragraph": false
+      }
+    },
+    {
+      "url": "/wiki/ethereum-eth.html",
+      "readable_title": "Ethereum (ETH)",
+      "readiness_score": 28,
+      "summary_quality": 33,
       "authority_score": 18,
       "trust_score": 57,
       "narrative_strength": 0,
@@ -2878,11 +2983,41 @@
       }
     },
     {
-      "url": "/wiki/games4punks-telegram-games.html",
-      "readable_title": "GAMES4PUNKS Telegram Games",
+      "url": "/wiki/graffiti-queens-in-decentraland-ecosystem.html",
+      "readable_title": "Graffiti Queens In Decentraland Ecosystem",
       "readiness_score": 28,
-      "summary_quality": 38,
-      "authority_score": 14,
+      "summary_quality": 37,
+      "authority_score": 16,
+      "trust_score": 57,
+      "narrative_strength": 0,
+      "platform_readiness": {
+        "fandom": false,
+        "telegram": false,
+        "substack": false,
+        "paragraph": false
+      }
+    },
+    {
+      "url": "/wiki/graffpunks-24-7-blockchain-radio-station.html",
+      "readable_title": "GraffPUNKS 24/7 Blockchain Radio Station",
+      "readiness_score": 28,
+      "summary_quality": 36,
+      "authority_score": 16,
+      "trust_score": 57,
+      "narrative_strength": 0,
+      "platform_readiness": {
+        "fandom": false,
+        "telegram": false,
+        "substack": false,
+        "paragraph": false
+      }
+    },
+    {
+      "url": "/wiki/meme-coins.html",
+      "readable_title": "Meme Coins",
+      "readiness_score": 28,
+      "summary_quality": 33,
+      "authority_score": 18,
       "trust_score": 57,
       "narrative_strength": 0,
       "platform_readiness": {
@@ -2896,8 +3031,8 @@
       "url": "/wiki/samael-exe.html",
       "readable_title": "Samael.exe",
       "readiness_score": 28,
-      "summary_quality": 32,
-      "authority_score": 18,
+      "summary_quality": 33,
+      "authority_score": 19,
       "trust_score": 57,
       "narrative_strength": 0,
       "platform_readiness": {
@@ -2908,11 +3043,11 @@
       }
     },
     {
-      "url": "/wiki/staking-for-gk-tokens.html",
-      "readable_title": "Staking for $GK Tokens",
+      "url": "/wiki/substack-posts-on-graffpunks-substack-com.html",
+      "readable_title": "Substack Posts on graffpunks.substack.com",
       "readiness_score": 28,
-      "summary_quality": 38,
-      "authority_score": 15,
+      "summary_quality": 35,
+      "authority_score": 16,
       "trust_score": 57,
       "narrative_strength": 0,
       "platform_readiness": {
@@ -2926,7 +3061,22 @@
       "url": "/wiki/the-bear-market-siege.html",
       "readable_title": "The Bear Market Siege",
       "readiness_score": 28,
-      "summary_quality": 32,
+      "summary_quality": 34,
+      "authority_score": 19,
+      "trust_score": 57,
+      "narrative_strength": 0,
+      "platform_readiness": {
+        "fandom": false,
+        "telegram": false,
+        "substack": false,
+        "paragraph": false
+      }
+    },
+    {
+      "url": "/wiki/the-fomo-plague.html",
+      "readable_title": "The FOMO Plague",
+      "readiness_score": 28,
+      "summary_quality": 34,
       "authority_score": 18,
       "trust_score": 57,
       "narrative_strength": 0,
@@ -2941,8 +3091,8 @@
       "url": "/wiki/the-grids.html",
       "readable_title": "THE GRIDS",
       "readiness_score": 28,
-      "summary_quality": 35,
-      "authority_score": 16,
+      "summary_quality": 36,
+      "authority_score": 17,
       "trust_score": 57,
       "narrative_strength": 0,
       "platform_readiness": {
@@ -2953,11 +3103,11 @@
       }
     },
     {
-      "url": "/wiki/the-sacred-chain.html",
-      "readable_title": "The Sacred Chain",
+      "url": "/wiki/the-satoshi-scroll.html",
+      "readable_title": "The Satoshi Scroll",
       "readiness_score": 28,
-      "summary_quality": 36,
-      "authority_score": 17,
+      "summary_quality": 34,
+      "authority_score": 18,
       "trust_score": 57,
       "narrative_strength": 0,
       "platform_readiness": {
@@ -2971,97 +3121,52 @@
       "url": "/wiki/the-wagmi-prophecy.html",
       "readable_title": "The WAGMI Prophecy",
       "readiness_score": 28,
-      "summary_quality": 32,
-      "authority_score": 18,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": false,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/bitcoin-btc.html",
-      "readable_title": "Bitcoin (BTC)",
-      "readiness_score": 27,
-      "summary_quality": 32,
-      "authority_score": 17,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": false,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/blockchain-technology.html",
-      "readable_title": "Blockchain Technology",
-      "readiness_score": 27,
-      "summary_quality": 32,
-      "authority_score": 17,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": false,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/crypto-exchanges.html",
-      "readable_title": "Crypto Exchanges",
-      "readiness_score": 27,
-      "summary_quality": 32,
-      "authority_score": 17,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": false,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/ethereum-eth.html",
-      "readable_title": "Ethereum (ETH)",
-      "readiness_score": 27,
-      "summary_quality": 32,
-      "authority_score": 17,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": false,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/graffiti-queens-in-decentraland-ecosystem.html",
-      "readable_title": "Graffiti Queens In Decentraland Ecosystem",
-      "readiness_score": 27,
-      "summary_quality": 35,
-      "authority_score": 14,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": false,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/graffpunks-24-7-blockchain-radio-station.html",
-      "readable_title": "GraffPUNKS 24/7 Blockchain Radio Station",
-      "readiness_score": 27,
       "summary_quality": 34,
+      "authority_score": 19,
+      "trust_score": 57,
+      "narrative_strength": 0,
+      "platform_readiness": {
+        "fandom": false,
+        "telegram": false,
+        "substack": false,
+        "paragraph": false
+      }
+    },
+    {
+      "url": "/wiki/the-whale-lords.html",
+      "readable_title": "The Whale Lords",
+      "readiness_score": 28,
+      "summary_quality": 34,
+      "authority_score": 19,
+      "trust_score": 57,
+      "narrative_strength": 0,
+      "platform_readiness": {
+        "fandom": false,
+        "telegram": false,
+        "substack": false,
+        "paragraph": false
+      }
+    },
+    {
+      "url": "/wiki/tokens.html",
+      "readable_title": "Tokens",
+      "readiness_score": 28,
+      "summary_quality": 34,
+      "authority_score": 16,
+      "trust_score": 57,
+      "narrative_strength": 0,
+      "platform_readiness": {
+        "fandom": false,
+        "telegram": false,
+        "substack": false,
+        "paragraph": false
+      }
+    },
+    {
+      "url": "/wiki/defi-decentralised-finance.html",
+      "readable_title": "DeFi (Decentralised Finance)",
+      "readiness_score": 27,
+      "summary_quality": 33,
       "authority_score": 15,
       "trust_score": 57,
       "narrative_strength": 0,
@@ -3073,11 +3178,101 @@
       }
     },
     {
-      "url": "/wiki/meme-coins.html",
-      "readable_title": "Meme Coins",
+      "url": "/wiki/dream-sovereign.html",
+      "readable_title": "Dream Sovereign",
       "readiness_score": 27,
-      "summary_quality": 32,
-      "authority_score": 17,
+      "summary_quality": 33,
+      "authority_score": 15,
+      "trust_score": 57,
+      "narrative_strength": 0,
+      "platform_readiness": {
+        "fandom": false,
+        "telegram": false,
+        "substack": false,
+        "paragraph": false
+      }
+    },
+    {
+      "url": "/wiki/graffiti-nexus.html",
+      "readable_title": "Graffiti Nexus",
+      "readiness_score": 27,
+      "summary_quality": 33,
+      "authority_score": 16,
+      "trust_score": 57,
+      "narrative_strength": 0,
+      "platform_readiness": {
+        "fandom": false,
+        "telegram": false,
+        "substack": false,
+        "paragraph": false
+      }
+    },
+    {
+      "url": "/wiki/graffpunks-247.html",
+      "readable_title": "GraffPUNKS 247",
+      "readiness_score": 27,
+      "summary_quality": 33,
+      "authority_score": 15,
+      "trust_score": 57,
+      "narrative_strength": 0,
+      "platform_readiness": {
+        "fandom": false,
+        "telegram": false,
+        "substack": false,
+        "paragraph": false
+      }
+    },
+    {
+      "url": "/wiki/graffpunks-network.html",
+      "readable_title": "GraffPUNKS Network",
+      "readiness_score": 27,
+      "summary_quality": 33,
+      "authority_score": 15,
+      "trust_score": 57,
+      "narrative_strength": 0,
+      "platform_readiness": {
+        "fandom": false,
+        "telegram": false,
+        "substack": false,
+        "paragraph": false
+      }
+    },
+    {
+      "url": "/wiki/graffpunks-nfts.html",
+      "readable_title": "GraffPUNKS NFTs",
+      "readiness_score": 27,
+      "summary_quality": 33,
+      "authority_score": 16,
+      "trust_score": 57,
+      "narrative_strength": 0,
+      "platform_readiness": {
+        "fandom": false,
+        "telegram": false,
+        "substack": false,
+        "paragraph": false
+      }
+    },
+    {
+      "url": "/wiki/hard-fork-games-game.html",
+      "readable_title": "Hard Fork Games",
+      "readiness_score": 27,
+      "summary_quality": 33,
+      "authority_score": 16,
+      "trust_score": 57,
+      "narrative_strength": 0,
+      "platform_readiness": {
+        "fandom": false,
+        "telegram": false,
+        "substack": false,
+        "paragraph": false
+      }
+    },
+    {
+      "url": "/wiki/head-tags.html",
+      "readable_title": "Head Tags",
+      "readiness_score": 27,
+      "summary_quality": 33,
+      "authority_score": 15,
       "trust_score": 57,
       "narrative_strength": 0,
       "platform_readiness": {
@@ -3091,7 +3286,22 @@
       "url": "/wiki/nfts-non-fungible-tokens.html",
       "readable_title": "NFTs (Non-Fungible Tokens)",
       "readiness_score": 27,
-      "summary_quality": 32,
+      "summary_quality": 33,
+      "authority_score": 16,
+      "trust_score": 57,
+      "narrative_strength": 0,
+      "platform_readiness": {
+        "fandom": false,
+        "telegram": false,
+        "substack": false,
+        "paragraph": false
+      }
+    },
+    {
+      "url": "/wiki/nine-armies.html",
+      "readable_title": "Nine Armies",
+      "readiness_score": 27,
+      "summary_quality": 33,
       "authority_score": 15,
       "trust_score": 57,
       "narrative_strength": 0,
@@ -3106,7 +3316,7 @@
       "url": "/wiki/punk-coin.html",
       "readable_title": "PUNK Coin",
       "readiness_score": 27,
-      "summary_quality": 32,
+      "summary_quality": 33,
       "authority_score": 15,
       "trust_score": 57,
       "narrative_strength": 0,
@@ -3118,68 +3328,8 @@
       }
     },
     {
-      "url": "/wiki/substack-posts-on-graffpunks-substack-com.html",
-      "readable_title": "Substack Posts on graffpunks.substack.com",
-      "readiness_score": 27,
-      "summary_quality": 34,
-      "authority_score": 15,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": false,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/the-fomo-plague.html",
-      "readable_title": "The FOMO Plague",
-      "readiness_score": 27,
-      "summary_quality": 32,
-      "authority_score": 17,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": false,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/the-satoshi-scroll.html",
-      "readable_title": "The Satoshi Scroll",
-      "readiness_score": 27,
-      "summary_quality": 32,
-      "authority_score": 17,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": false,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/the-whale-lords.html",
-      "readable_title": "The Whale Lords",
-      "readiness_score": 27,
-      "summary_quality": 32,
-      "authority_score": 17,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": false,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/tokens.html",
-      "readable_title": "Tokens",
+      "url": "/wiki/stikfamwars.html",
+      "readable_title": "StikFamWars",
       "readiness_score": 27,
       "summary_quality": 33,
       "authority_score": 15,
@@ -3196,38 +3346,8 @@
       "url": "/wiki/1m-free-nfts.html",
       "readable_title": "1M Free NFTs",
       "readiness_score": 26,
-      "summary_quality": 32,
-      "authority_score": 11,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": false,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/defi-decentralised-finance.html",
-      "readable_title": "DeFi (Decentralised Finance)",
-      "readiness_score": 26,
-      "summary_quality": 32,
-      "authority_score": 14,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": false,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/dream-sovereign.html",
-      "readable_title": "Dream Sovereign",
-      "readiness_score": 26,
-      "summary_quality": 32,
-      "authority_score": 14,
+      "summary_quality": 33,
+      "authority_score": 12,
       "trust_score": 57,
       "narrative_strength": 0,
       "platform_readiness": {
@@ -3241,98 +3361,8 @@
       "url": "/wiki/genesis-spray-drop.html",
       "readable_title": "Genesis Spray Drop",
       "readiness_score": 26,
-      "summary_quality": 32,
-      "authority_score": 11,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": false,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/graffiti-nexus.html",
-      "readable_title": "Graffiti Nexus",
-      "readiness_score": 26,
-      "summary_quality": 32,
-      "authority_score": 14,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": false,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/graffpunks-247.html",
-      "readable_title": "GraffPUNKS 247",
-      "readiness_score": 26,
-      "summary_quality": 32,
-      "authority_score": 14,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": false,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/graffpunks-network.html",
-      "readable_title": "GraffPUNKS Network",
-      "readiness_score": 26,
-      "summary_quality": 32,
-      "authority_score": 14,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": false,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/graffpunks-nfts.html",
-      "readable_title": "GraffPUNKS NFTs",
-      "readiness_score": 26,
-      "summary_quality": 32,
-      "authority_score": 14,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": false,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/hard-fork-games-game.html",
-      "readable_title": "Hard Fork Games",
-      "readiness_score": 26,
-      "summary_quality": 32,
-      "authority_score": 14,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": false,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/head-tags.html",
-      "readable_title": "Head Tags",
-      "readiness_score": 26,
-      "summary_quality": 32,
-      "authority_score": 14,
+      "summary_quality": 33,
+      "authority_score": 13,
       "trust_score": 57,
       "narrative_strength": 0,
       "platform_readiness": {
@@ -3346,23 +3376,8 @@
       "url": "/wiki/midevil-hero-arena-game.html",
       "readable_title": "MiDEViL Hero Arena (Game)",
       "readiness_score": 26,
-      "summary_quality": 32,
-      "authority_score": 12,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": false,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/nine-armies.html",
-      "readable_title": "Nine Armies",
-      "readiness_score": 26,
-      "summary_quality": 32,
-      "authority_score": 14,
+      "summary_quality": 33,
+      "authority_score": 13,
       "trust_score": 57,
       "narrative_strength": 0,
       "platform_readiness": {
@@ -3376,23 +3391,8 @@
       "url": "/wiki/one-million-free-nfts.html",
       "readable_title": "One Million Free NFTs",
       "readiness_score": 26,
-      "summary_quality": 32,
-      "authority_score": 11,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": false,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/stikfamwars.html",
-      "readable_title": "StikFamWars",
-      "readiness_score": 26,
-      "summary_quality": 32,
-      "authority_score": 14,
+      "summary_quality": 33,
+      "authority_score": 12,
       "trust_score": 57,
       "narrative_strength": 0,
       "platform_readiness": {
