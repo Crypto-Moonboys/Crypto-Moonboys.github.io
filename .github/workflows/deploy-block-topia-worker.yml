@@ -1,0 +1,48 @@
+name: Deploy Block Topia Score Worker
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'workers/block-topia/**'
+      - '.github/workflows/deploy-block-topia-worker.yml'
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    name: Deploy to Cloudflare Workers
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Deploy worker
+        id: deploy
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: workers/block-topia
+          command: deploy
+
+      - name: Update WORKER_SCORE_URL in block-topia-quest-maze.html
+        if: steps.deploy.outputs.deployment-url != ''
+        run: |
+          LIVE_URL="${{ steps.deploy.outputs.deployment-url }}"
+          SCORE_URL="${LIVE_URL%/}/api/block-topia/score"
+          sed -i "s|var WORKER_SCORE_URL = \"[^\"]*\"|var WORKER_SCORE_URL = \"${SCORE_URL}\"|" \
+            games/block-topia-quest-maze.html
+          echo "Set WORKER_SCORE_URL to: ${SCORE_URL}"
+
+      - name: Commit updated WORKER_SCORE_URL
+        if: steps.deploy.outputs.deployment-url != ''
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add games/block-topia-quest-maze.html
+          git diff --cached --quiet || git commit -m "chore: set WORKER_SCORE_URL to live deployed worker"
+          git push
