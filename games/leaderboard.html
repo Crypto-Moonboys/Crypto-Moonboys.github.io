@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Moonboys Arcade Leaderboard — ranked scores across SnakeRun 3008, Crystal Quest, and Block Topia Quest Maze.">
+  <meta name="robots" content="index, follow">
+  <meta property="og:title" content="🏆 Arcade Leaderboard — Crypto Moonboys Wiki">
+  <meta property="og:description" content="See who's leading the Moonboys Arcade across all games.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://crypto-moonboys.github.io/games/leaderboard.html">
+  <meta property="og:image" content="https://crypto-moonboys.github.io/img/CRYPTO-MOONBOYS-BITCOIN-LOGO.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <title>🏆 Arcade Leaderboard — Crypto Moonboys Wiki</title>
+  <link rel="stylesheet" href="/css/wiki.css">
+  <link rel="icon" href="/img/favicon.svg" type="image/svg+xml">
+  <style>
+    /* ── Leaderboard page scoped styles ──────────────────────────── */
+    .lb-intro {
+      color: var(--color-text-muted);
+      font-size: .9rem;
+      margin-bottom: 20px;
+      line-height: 1.6;
+    }
+
+    /* Tab bar */
+    #lb-tab-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 18px;
+    }
+    .lb-tab {
+      padding: 7px 18px;
+      border-radius: 20px;
+      border: 1px solid var(--color-border);
+      background: var(--color-surface-2);
+      color: var(--color-text-muted);
+      font-size: .85rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background .15s, color .15s, border-color .15s;
+    }
+    .lb-tab:hover {
+      background: var(--color-border);
+      color: var(--color-text);
+    }
+    .lb-tab.active {
+      background: rgba(247,201,72,.12);
+      border-color: var(--color-accent);
+      color: var(--color-accent);
+    }
+
+    /* Status line (loading / empty / error) */
+    #lb-status {
+      padding: 32px 0;
+      text-align: center;
+      font-size: .9rem;
+    }
+    .lb-spinner { color: var(--color-text-muted); }
+    .lb-error   { color: var(--color-red); }
+    .lb-empty   { color: var(--color-text-muted); }
+
+    /* Table */
+    .lb-table-outer {
+      overflow-x: auto;
+      border-radius: var(--radius);
+      border: 1px solid var(--color-border);
+      margin-bottom: 18px;
+    }
+    .lb-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: .88rem;
+    }
+    .lb-table thead th {
+      background: var(--color-surface-2);
+      color: var(--color-text-muted);
+      font-size: .75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      padding: 10px 14px;
+      text-align: left;
+      border-bottom: 1px solid var(--color-border);
+      white-space: nowrap;
+    }
+    .lb-table tbody tr {
+      border-bottom: 1px solid rgba(48,54,61,.5);
+      transition: background .12s;
+      cursor: pointer;
+    }
+    .lb-table tbody tr:last-child { border-bottom: none; }
+    .lb-table tbody tr:hover { background: rgba(247,201,72,.05); }
+    .lb-table tbody tr.selected { background: rgba(247,201,72,.1); outline: 1px solid var(--color-accent); }
+    .lb-table tbody tr:focus { outline: 2px solid var(--color-accent); outline-offset: -2px; }
+    .lb-table td {
+      padding: 10px 14px;
+      color: var(--color-text);
+      vertical-align: middle;
+    }
+    .lb-rank  { width: 38px; text-align: center; font-weight: 700; font-size: 1rem; }
+    .lb-player { font-weight: 600; }
+    .lb-score  { font-weight: 700; color: var(--color-accent); font-variant-numeric: tabular-nums; }
+    .lb-sub    { color: var(--color-text-muted); font-variant-numeric: tabular-nums; font-size: .82rem; }
+    .lb-bonus  { color: var(--color-green); }
+
+    /* Controls row */
+    .lb-controls {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 14px;
+      flex-wrap: wrap;
+    }
+    #lb-refresh-btn {
+      padding: 7px 16px;
+      border-radius: var(--radius);
+      border: 1px solid var(--color-border);
+      background: var(--color-surface-2);
+      color: var(--color-text);
+      font-size: .85rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background .15s, border-color .15s;
+    }
+    #lb-refresh-btn:hover   { background: var(--color-border); }
+    #lb-refresh-btn:disabled { opacity: .5; cursor: default; }
+    .lb-hint {
+      font-size: .78rem;
+      color: var(--color-text-muted);
+    }
+
+    /* Graph section */
+    .lb-graph-section {
+      margin: 28px 0;
+    }
+    .lb-graph-heading {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--color-text-muted);
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .lb-graph-heading::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--color-border);
+    }
+    .lb-graph-wrap {
+      border: 1px solid var(--color-border);
+      border-radius: 14px;
+      overflow: hidden;
+      background: #090c16;
+      position: relative;
+    }
+    #arcade-graph-canvas {
+      display: block;
+      width: 100%;
+    }
+    .lb-graph-legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px 18px;
+      padding: 10px 16px;
+      border-top: 1px solid var(--color-border);
+      background: rgba(9,12,22,.6);
+    }
+    .lb-legend-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: .75rem;
+      color: var(--color-text-muted);
+    }
+    .lb-legend-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    #lb-graph-reset {
+      position: absolute;
+      top: 8px;
+      right: 10px;
+      padding: 4px 10px;
+      border-radius: var(--radius);
+      border: 1px solid var(--color-border);
+      background: rgba(22,27,34,.85);
+      color: var(--color-text-muted);
+      font-size: .75rem;
+      cursor: pointer;
+      transition: background .15s;
+      backdrop-filter: blur(2px);
+    }
+    #lb-graph-reset:hover { background: var(--color-border); color: var(--color-text); }
+
+    @media (max-width: 640px) {
+      .lb-table thead th.lb-hide-mobile,
+      .lb-table tbody td.lb-hide-mobile { display: none; }
+    }
+  </style>
+</head>
+<body>
+<a class="skip-link" href="#content">Skip to content</a>
+<header id="site-header" role="banner">
+  <button class="hamburger" id="hamburger" aria-label="Toggle navigation" aria-expanded="false" aria-controls="sidebar">☰</button>
+  <a href="/index.html" class="site-logo" aria-label="The Crypto Moonboys GK Wiki home">
+    <img src="/img/CRYPTO-MOONBOYS-BITCOIN-LOGO.png" alt="" aria-hidden="true">
+    <span>
+      <span class="logo-text">🌙 The Crypto Moonboys GK Wiki</span>
+      <span class="logo-sub">Blockchain Cryptoism Encyclopedia ⚡️⚡️⚡️</span>
+    </span>
+  </a>
+  <div id="header-search" role="search">
+    <input type="search" id="search-input" placeholder="Search the wiki…" aria-label="Search" autocomplete="off">
+    <button id="search-btn" aria-label="Search">🔍</button>
+    <div id="search-results" role="listbox"></div>
+  </div>
+  <nav class="header-nav" aria-label="Main navigation">
+    <a href="/index.html">Home</a>
+    <a href="/categories/index.html">Categories</a>
+    <a href="/search.html">All Articles</a>
+    <a href="/timeline.html">📅 Timeline</a>
+    <a href="/graph.html">🌐 Graph</a>
+    <a href="/dashboard.html">📊 Dashboard</a>
+    <a href="/sam.html">🧠 SAM</a>
+    <a href="/games/" class="active" aria-current="page">🕹️ Arcade</a>
+  </nav>
+</header>
+<div id="sidebar-overlay" aria-hidden="true"></div>
+<div id="layout">
+  <nav id="sidebar" aria-label="Wiki navigation">
+    <div class="sidebar-section">
+      <div class="sidebar-heading">Navigation</div>
+      <div class="sidebar-nav">
+        <a href="/index.html"><span class="nav-icon">🏠</span> Main Page</a>
+        <a href="/categories/index.html"><span class="nav-icon">📂</span> All Categories</a>
+        <a href="/search.html"><span class="nav-icon">🔍</span> All Articles</a>
+        <a href="/timeline.html"><span class="nav-icon">📅</span> Timeline</a>
+        <a href="/graph.html"><span class="nav-icon">🌐</span> Entity Graph</a>
+        <a href="/dashboard.html"><span class="nav-icon">📊</span> Dashboard</a>
+        <a href="/games/" class="active"><span class="nav-icon">🕹️</span> Arcade</a>
+      </div>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-heading">Arcade</div>
+      <div class="sidebar-nav">
+        <a href="/games/leaderboard.html" class="active"><span class="nav-icon">🏆</span> Leaderboard</a>
+        <a href="/games/snake.html"><span class="nav-icon">🐍</span> SnakeRun 3008</a>
+        <a href="/games/crystal-quest.html"><span class="nav-icon">🧩</span> Crystal Quest</a>
+        <a href="/games/block-topia-quest-maze.html"><span class="nav-icon">🧱</span> Block Topia Quest Maze</a>
+      </div>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-heading">GK Wiki Info</div>
+      <div class="sidebar-nav">
+        <a href="/about.html"><span class="nav-icon">ℹ️</span> About</a>
+        <a href="/about.html#citation"><span class="nav-icon">📋</span> Citation Policy</a>
+        <a href="/about.html#sources"><span class="nav-icon">🔗</span> Source Types</a>
+      </div>
+    </div>
+  </nav>
+
+  <div id="main-wrapper">
+    <main id="content" role="main">
+      <nav class="breadcrumb" aria-label="Breadcrumb">
+        <a href="/index.html">Home</a><span class="sep">›</span>
+        <a href="/games/">Arcade</a><span class="sep">›</span>
+        <span aria-current="page">Leaderboard</span>
+      </nav>
+
+      <div class="category-header">
+        <span class="cat-big-icon" aria-hidden="true">🏆</span>
+        <div>
+          <h1 class="page-title">🏆 Arcade Leaderboard</h1>
+          <p style="color:var(--color-text-muted)">Shared rankings across all Moonboys Arcade games.</p>
+        </div>
+      </div>
+      <div class="page-title-line" aria-hidden="true"></div>
+
+      <p class="lb-intro">
+        Track your rank across <strong>SnakeRun 3008</strong>, <strong>Crystal Quest</strong>, and
+        <strong>Block Topia Quest Maze</strong>. Scores are submitted automatically when you play.
+        Click any row to visualise that player's breakdown on the graph below.
+      </p>
+
+      <!-- ── Tab bar ─────────────────────────────────────────────── -->
+      <div id="lb-tab-bar" role="tablist" aria-label="Leaderboard filters"></div>
+
+      <!-- ── Controls ──────────────────────────────────────────────── -->
+      <div class="lb-controls">
+        <button id="lb-refresh-btn" aria-label="Refresh leaderboard">🔄 Refresh</button>
+        <span class="lb-hint">Scores update in real time from the shared arcade worker.</span>
+      </div>
+
+      <!-- ── Status / table ─────────────────────────────────────────── -->
+      <div id="lb-status" style="display:none"></div>
+      <div id="lb-table-wrap" class="lb-table-outer" style="display:none"></div>
+
+      <!-- ── OG Graph node map ──────────────────────────────────────── -->
+      <section class="lb-graph-section" aria-label="Arcade graph">
+        <div class="lb-graph-heading">🌐 Arcade Node Map</div>
+        <div class="lb-graph-wrap">
+          <canvas id="arcade-graph-canvas" aria-label="Interactive arcade score graph. Click a leaderboard row to see a player's breakdown."></canvas>
+          <button id="lb-graph-reset" aria-label="Reset graph to overview">Reset</button>
+        </div>
+        <div class="lb-graph-legend" aria-label="Graph legend">
+          <span class="lb-legend-item"><span class="lb-legend-dot" style="background:#f7c948"></span>Global / Player</span>
+          <span class="lb-legend-item"><span class="lb-legend-dot" style="background:#2ec5ff"></span>🐍 Snake</span>
+          <span class="lb-legend-item"><span class="lb-legend-dot" style="background:#ff4fd1"></span>🧩 Crystal</span>
+          <span class="lb-legend-item"><span class="lb-legend-dot" style="background:#bc8cff"></span>🧱 BlockTopia</span>
+          <span class="lb-legend-item"><span class="lb-legend-dot" style="background:#3fb950"></span>⭐ Bonus</span>
+        </div>
+      </section>
+
+    </main>
+    <footer id="site-footer" role="contentinfo">
+      <div class="footer-inner">
+        <div class="footer-col">
+          <h4>🌙 The Crypto Moonboys GK Wiki</h4>
+          <p>Fan-driven crypto encyclopedia 💥💥💥🚀.</p>
+        </div>
+        <div class="footer-col">
+          <h4>Explore</h4>
+          <ul>
+            <li><a href="/index.html">Main Page</a></li>
+            <li><a href="/search.html">All Articles</a></li>
+            <li><a href="/games/">Arcade</a></li>
+            <li><a href="/games/leaderboard.html">Leaderboard</a></li>
+            <li><a href="/about.html">About</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>Crypto Moonboys GK Wiki ⚡️⚡️⚡️ a GKiftyHEADS $LAP PRODUCTION$ · Not financial advice.</p>
+      </div>
+    </footer>
+  </div>
+</div>
+
+<button id="back-to-top" aria-label="Back to top">↑</button>
+<script src="/js/wiki.js"></script>
+<script type="module">
+import { initLeaderboard } from '/js/arcade-leaderboard.js';
+import { initGraph, setPlayerState, resetGraph } from '/js/arcade-graph.js';
+
+initGraph('arcade-graph-canvas');
+
+initLeaderboard({
+  onRowSelect(entry) {
+    setPlayerState(entry);
+  },
+});
+
+document.getElementById('lb-graph-reset').addEventListener('click', () => {
+  resetGraph();
+  const selected = document.querySelector('.lb-row.selected');
+  if (selected) selected.classList.remove('selected');
+});
+</script>
+</body>
+</html>
