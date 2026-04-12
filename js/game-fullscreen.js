@@ -129,12 +129,22 @@
   overlay.appendChild(touchPad);
   document.body.appendChild(overlay);
 
-  /* ── State ───────────────────────────────────────────────────────── */
+  /* ── Constants ───────────────────────────────────────────────────── */
+
+  // Brief delay for simulated key-up after a tap, matching typical game loop tick.
+  var KEY_PULSE_MS = 80;
+  // Delay after proxying a game button click before syncing overlay button state,
+  // giving the game's event handler time to update its own button text.
+  var BTN_SYNC_MS = 50;
 
   var origParent      = null;
   var origNextSibling = null;
   var isOpen          = false;
   var scoreInterval   = null;
+  // Cached overlay score display elements; set in buildLeftPanel / buildRightPanel.
+  var cachedLiveScore = null;
+  var cachedLiveBest  = null;
+  var cachedRightBest = null;
 
   /* ── DOM helpers ─────────────────────────────────────────────────── */
 
@@ -181,11 +191,11 @@
     btn.addEventListener('touchstart', function (e) {
       e.preventDefault();
       dispatchKey('keydown', key);
-      setTimeout(function () { dispatchKey('keyup', key); }, 80);
+      setTimeout(function () { dispatchKey('keyup', key); }, KEY_PULSE_MS);
     }, { passive: false });
     btn.addEventListener('click', function () {
       dispatchKey('keydown', key);
-      setTimeout(function () { dispatchKey('keyup', key); }, 80);
+      setTimeout(function () { dispatchKey('keyup', key); }, KEY_PULSE_MS);
     });
   }
 
@@ -306,13 +316,13 @@
     meta.controls.forEach(function (c) { ul.appendChild(el('li', null, c)); });
     sideLeft.appendChild(ul);
     sideLeft.appendChild(el('div', 'panel-title', 'Live Score'));
-    var scoreEl = el('div', 'score-val', '0');
-    scoreEl.id = 'overlay-live-score';
-    sideLeft.appendChild(scoreEl);
+    cachedLiveScore = el('div', 'score-val', '0');
+    cachedLiveScore.id = 'overlay-live-score';
+    sideLeft.appendChild(cachedLiveScore);
     sideLeft.appendChild(el('div', 'panel-title', 'Best'));
-    var bestEl = el('div', 'score-val', '0');
-    bestEl.id = 'overlay-live-best';
-    sideLeft.appendChild(bestEl);
+    cachedLiveBest = el('div', 'score-val', '0');
+    cachedLiveBest.id = 'overlay-live-best';
+    sideLeft.appendChild(cachedLiveBest);
   }
 
   function buildRightPanel(meta) {
@@ -322,22 +332,19 @@
     meta.tips.forEach(function (t) { ul.appendChild(el('li', null, t)); });
     sideRight.appendChild(ul);
     sideRight.appendChild(el('div', 'panel-title', 'Your Best'));
-    var bestEl = el('div', 'score-val', '0');
-    bestEl.id = 'overlay-best-right';
-    sideRight.appendChild(bestEl);
+    cachedRightBest = el('div', 'score-val', '0');
+    cachedRightBest.id = 'overlay-best-right';
+    sideRight.appendChild(cachedRightBest);
   }
 
   function updateScores() {
     var scoreNode = document.getElementById('score');
     var bestNode  = document.getElementById('best');
-    var liveScore = document.getElementById('overlay-live-score');
-    var liveBest  = document.getElementById('overlay-live-best');
-    var rightBest = document.getElementById('overlay-best-right');
-    if (scoreNode && liveScore) liveScore.textContent = scoreNode.textContent || '0';
+    if (scoreNode && cachedLiveScore) cachedLiveScore.textContent = scoreNode.textContent || '0';
     if (bestNode) {
       var b = bestNode.textContent || '0';
-      if (liveBest)  liveBest.textContent  = b;
-      if (rightBest) rightBest.textContent = b;
+      if (cachedLiveBest)  cachedLiveBest.textContent  = b;
+      if (cachedRightBest) cachedRightBest.textContent = b;
     }
   }
 
@@ -491,7 +498,7 @@
     var gamePauseBtn = document.getElementById('pauseBtn');
     if (gamePauseBtn) {
       gamePauseBtn.click();
-      setTimeout(syncPauseBtn, 50);
+      setTimeout(syncPauseBtn, BTN_SYNC_MS);
     }
   });
 
@@ -499,11 +506,13 @@
     var gameResetBtn = document.getElementById('resetBtn');
     if (gameResetBtn) {
       gameResetBtn.click();
-      setTimeout(syncPauseBtn, 50);
+      setTimeout(syncPauseBtn, BTN_SYNC_MS);
     }
   });
 
   btnMute.addEventListener('click', function () {
+    // Stub: toggles a global flag that game modules can check. No audio system
+    // is wired yet; games that support audio should check window._arcadeMuted.
     window._arcadeMuted = !window._arcadeMuted;
     var icon = btnMute.querySelector('.btn-icon');
     var lbl  = btnMute.querySelector('.btn-label');

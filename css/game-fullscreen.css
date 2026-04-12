@@ -309,7 +309,7 @@ body.overlay-open {
   transition: background 0.08s;
   box-sizing: border-box;
   padding: 0 8px;
-  touch-action: none;
+  touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
 }
 
