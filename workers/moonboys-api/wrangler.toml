@@ -16,4 +16,4 @@ compatibility_date = "2025-01-01"
 [[d1_databases]]
 binding = "DB"
 database_name = "moonboys"
-database_id = "00000000-0000-0000-0000-000000000000"
+database_id = "8a36e17a-18fa-4b98-90e1-3f269164b166"
