@@ -55,9 +55,11 @@ const XP_GROUP_JOIN   = 10;
 
 // ── Season / year reset constants (mirrors leaderboard-worker.js) ─────────────
 /** 90 days in milliseconds — same window as the arcade seasonal leaderboard. */
-const TG_SEASON_LENGTH_MS = 90 * 24 * 60 * 60 * 1000;
+const TG_SEASON_LENGTH_MS = 90 * 24 * 60 * 60 * 1000;  // 7_776_000_000 ms
 /** Top N entries snapshotted into each season/year archive. */
 const TG_ARCHIVE_TOP_N    = 50;
+/** Milliseconds in one day — used when computing days remaining in a season. */
+const MS_PER_DAY          = 86400000;
 
 // Approved faction slugs (must match client-side list in battle-layer.js)
 const APPROVED_FACTIONS = new Set([
@@ -359,7 +361,7 @@ async function runTgYearlyReset(db, meta, now) {
 /** Helper: compute days remaining in the current 90-day season. */
 function tgSeasonDaysRemaining(seasonStartIso) {
   const elapsed = Date.now() - new Date(seasonStartIso).getTime();
-  return Math.max(0, Math.ceil((TG_SEASON_LENGTH_MS - elapsed) / 86400000));
+  return Math.max(0, Math.ceil((TG_SEASON_LENGTH_MS - elapsed) / MS_PER_DAY));
 }
 
 /**
