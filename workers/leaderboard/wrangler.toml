@@ -7,6 +7,9 @@ binding    = "LEADERBOARD"
 id         = "a621c334d9ac439ebaf5f35dd31dddd5"
 preview_id = "a621c334d9ac439ebaf5f35dd31dddd5"
 
+[triggers]
+crons = ["0 0 * * *"]
+
 [[d1_databases]]
 binding       = "DB"
 database_name = "wikicoms"
