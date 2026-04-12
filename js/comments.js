@@ -25,6 +25,7 @@
   var cfg      = window.MOONBOYS_API || {};
   var BASE     = cfg.BASE_URL || null;
   var FEATURES = cfg.FEATURES || {};
+  var TG_BOT   = cfg.TELEGRAM_BOT_USERNAME || null;
 
   // ── HTML escape (prevents XSS when API data is rendered via innerHTML) ──
 
@@ -81,6 +82,13 @@
   // ── Submit form builder ──────────────────────────────────────
 
   function buildForm(pageId) {
+    var tgBlock = (TG_BOT && FEATURES.TELEGRAM_LOGIN)
+      ? '<div class="comment-form-field cm-tg-block">' +
+          '<label>Telegram <span class="cm-note">(optional — quick-fill identity)</span></label>' +
+          '<div class="cm-tg-login" id="cm-tg-login-' + pageId + '"></div>' +
+          '<span class="cm-tg-status" id="cm-tg-status-' + pageId + '"></span>' +
+        '</div>'
+      : '';
     return '<form class="comment-form" data-page-id="' + pageId + '" novalidate>' +
       '<div class="comment-form-identity">' +
         '<div class="comment-form-field">' +
@@ -99,7 +107,9 @@
           '<label for="cm-discord-' + pageId + '">Discord <span class="cm-note">(optional)</span></label>' +
           '<input type="text" id="cm-discord-' + pageId + '" name="discord_username" placeholder="@username" maxlength="60">' +
         '</div>' +
+        tgBlock +
       '</div>' +
+      '<input type="hidden" name="avatar_url" value="">' +
       '<div class="comment-form-field">' +
         '<label for="cm-text-' + pageId + '">Your take <span class="cm-required">*</span></label>' +
         '<textarea id="cm-text-' + pageId + '" name="text" rows="3" maxlength="1000" placeholder="HODL or NGMI? Drop your knowledge…" required></textarea>' +
@@ -125,6 +135,8 @@
       var email   = form.querySelector('[name=email]').value.trim();
       var tg      = form.querySelector('[name=telegram_username]').value.trim();
       var discord = form.querySelector('[name=discord_username]').value.trim();
+      var avatar  = (form.querySelector('[name=avatar_url]') || {}).value || '';
+      avatar      = avatar.trim();
       var text    = form.querySelector('[name=text]').value.trim();
 
       if (!name || !text) {
@@ -150,6 +162,7 @@
       var payload = { page_id: pageId, name: name, email: email, text: text };
       if (tg)      payload.telegram_username = tg;
       if (discord) payload.discord_username  = discord;
+      if (avatar)  payload.avatar_url        = avatar;
 
       fetch(BASE + '/comments', {
         method:  'POST',
@@ -168,6 +181,70 @@
           status.className   = 'comment-form-status cm-error';
         });
     });
+  }
+
+  // ── Telegram Login Widget ────────────────────────────────────
+  // Injects the Telegram Login Widget into the form's .cm-tg-login slot.
+  // When the user authenticates, calls /telegram/auth to get a normalised
+  // identity and prefills telegram_username, avatar_url, and (if empty) name.
+  // Email remains required and is never removed.
+
+  function injectTelegramWidget(container) {
+    if (!TG_BOT || !FEATURES.TELEGRAM_LOGIN || !BASE) return;
+    var widgetSlot = container.querySelector('.cm-tg-login');
+    if (!widgetSlot) return;
+
+    var CALLBACK = '_moonboysTgAuth';
+
+    if (!window[CALLBACK]) {
+      window[CALLBACK] = function (user) {
+        fetch(BASE + '/telegram/auth', {
+          method:  'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body:    JSON.stringify(user),
+        })
+          .then(function (r) { return r.ok ? r.json() : null; })
+          .then(function (data) {
+            if (!data || !data.ok || !data.identity) return;
+            var id = data.identity;
+            // Prefill every comment form visible on the page
+            Array.prototype.forEach.call(
+              document.querySelectorAll('.comment-form'),
+              function (form) {
+                var nameEl   = form.querySelector('[name=name]');
+                var tgEl     = form.querySelector('[name=telegram_username]');
+                var avatarEl = form.querySelector('[name=avatar_url]');
+                if (nameEl   && !nameEl.value   && id.display_name)      nameEl.value   = id.display_name;
+                if (tgEl     && !tgEl.value     && id.telegram_username) tgEl.value     = id.telegram_username;
+                if (avatarEl && !avatarEl.value && id.avatar_url)        avatarEl.value = id.avatar_url;
+                var statusEl = form.querySelector('.cm-tg-status');
+                if (statusEl) {
+                  statusEl.textContent = '✅ Connected as ' + esc(id.display_name);
+                  statusEl.className   = 'cm-tg-status cm-success';
+                }
+              }
+            );
+          })
+          .catch(function () {
+            Array.prototype.forEach.call(
+              document.querySelectorAll('.cm-tg-status'),
+              function (el) {
+                el.textContent = '⚠️ Telegram auth failed — please fill fields manually.';
+                el.className   = 'cm-tg-status cm-error';
+              }
+            );
+          });
+      };
+    }
+
+    var script = document.createElement('script');
+    script.async = true;
+    script.src   = 'https://telegram.org/js/telegram-widget.js?22'; // ?22 = widget API version
+    script.setAttribute('data-telegram-login',  TG_BOT);
+    script.setAttribute('data-size',            'medium');
+    script.setAttribute('data-onauth',          CALLBACK + '(user)');
+    script.setAttribute('data-request-access',  'write');
+    widgetSlot.appendChild(script);
   }
 
   // ── Vote button delegation ───────────────────────────────────
@@ -205,6 +282,7 @@
 
     wireForm(el, pageId);
     wireVotes(el);
+    injectTelegramWidget(el);
 
     if (!BASE || !FEATURES.COMMENTS) return;
 

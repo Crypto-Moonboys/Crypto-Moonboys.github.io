@@ -36,7 +36,15 @@ window.MOONBOYS_API = {
     LIVE_FEED:      true,  // Real-time activity feed
     SAM_STATUS:     true,  // SAM agent status widget
     ACTIVITY_PANEL: true,  // Trending / hot pages
+    TELEGRAM_LOGIN: true,  // Telegram Login Widget prefill (requires TELEGRAM_BOT_USERNAME)
   },
+
+  /* ── Telegram Login Widget ───────────────────────────────── */
+  // Set to your bot's @username (without the @) to enable the Telegram Login
+  // Widget in the comment identity form.  The widget prefills telegram_username
+  // and avatar_url; email and display name remain required.
+  // Leave as null to hide the widget.
+  TELEGRAM_BOT_USERNAME: null,
 
   /* ── Gravatar Configuration ──────────────────────────────── */
   // Avatars are generated using an MD5 hash of the user's email.
