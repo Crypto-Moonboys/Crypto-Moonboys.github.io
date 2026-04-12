@@ -1,5 +1,5 @@
 /* ============================================================
-   game-fullscreen.css — Full-viewport arcade overlay
+   game-fullscreen.css — Full-viewport arcade overlay (V2)
    Injected by /js/game-fullscreen.js on all arcade game pages.
    ============================================================ */
 
@@ -13,7 +13,8 @@
   z-index: 9000;
   display: none;
   flex-direction: column;
-  align-items: center;
+  /* stretch (not center) so the three-column body (side + stage + side) fills full width */
+  align-items: stretch;
   justify-content: flex-start;
   overflow: hidden;
 }
@@ -34,46 +35,163 @@ body.overlay-open {
   overflow: hidden;
 }
 
-/* 3. Close / Exit button */
-#game-overlay-close {
-  position: absolute;
-  top: 10px;
-  right: 14px;
+/* 3. Control bar */
+#overlay-ctrl-bar {
+  height: 36px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 4px;
+  padding: 0 10px;
+  background: rgba(9, 12, 22, 0.95);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   z-index: 9010;
-  padding: 7px 16px;
-  background: rgba(255, 255, 255, .1);
-  color: #fff;
-  border: 1px solid rgba(255, 255, 255, .25);
-  border-radius: 10px;
-  font-size: .82rem;
+  box-sizing: border-box;
+}
+
+#overlay-game-label {
+  font-size: 0.75rem;
   font-weight: 700;
-  cursor: pointer;
-  transition: background .15s;
+  color: #fff;
   white-space: nowrap;
+  margin-right: auto;
+  letter-spacing: 0.03em;
 }
 
-#game-overlay-close:hover {
-  background: rgba(255, 255, 255, .2);
+#overlay-ctrl-bar button {
+  height: 26px;
+  padding: 0 8px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 6px;
+  color: #fff;
+  font-size: 0.72rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.12s, border-color 0.12s;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  flex-shrink: 0;
+  line-height: 1;
 }
 
-#game-overlay-close:focus-visible {
+#overlay-ctrl-bar button:hover {
+  background: rgba(255, 255, 255, 0.18);
+}
+
+#overlay-ctrl-bar button:focus-visible {
   outline: 2px solid #f7ab1a;
   outline-offset: 2px;
 }
 
-/* 4. Game stage — centres the game-card */
+#overlay-btn-pause.paused {
+  background: rgba(247, 171, 26, 0.25);
+  border-color: #f7ab1a;
+}
+
+#overlay-btn-exit:hover {
+  background: rgba(255, 60, 60, 0.22);
+  border-color: rgba(255, 80, 80, 0.55);
+}
+
+/* 5. Overlay body */
+.overlay-body {
+  flex: 1;
+  display: flex;
+  flex-direction: row;
+  overflow: hidden;
+  min-height: 0;
+}
+
+/* 6. Side panels */
+.overlay-side {
+  width: 200px;
+  flex-shrink: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  background: rgba(255, 255, 255, 0.02);
+  padding: 14px 12px;
+  max-height: 100%;
+  font-size: 0.78rem;
+  color: var(--color-text-muted, #8b949e);
+  box-sizing: border-box;
+  display: none;
+}
+
+.overlay-side--left {
+  border-right: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.overlay-side--right {
+  border-left: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.overlay-side .panel-title {
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.38);
+  margin: 0 0 5px 0;
+}
+
+.overlay-side .game-name {
+  font-size: 0.88rem;
+  font-weight: 700;
+  margin-bottom: 12px;
+  line-height: 1.2;
+}
+
+.overlay-side .ctrl-list,
+.overlay-side .tips-list {
+  list-style: none;
+  margin: 0 0 14px 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.overlay-side .ctrl-list li {
+  font-size: 0.73rem;
+  color: rgba(255, 255, 255, 0.62);
+  padding: 3px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.overlay-side .score-val {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #fff;
+  margin: 2px 0 12px 0;
+}
+
+.overlay-side .tips-list li {
+  font-size: 0.73rem;
+  color: rgba(255, 255, 255, 0.58);
+  padding: 4px 6px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 4px;
+  border-left: 2px solid rgba(255, 255, 255, 0.14);
+  line-height: 1.35;
+}
+
+/* 7. Game stage — centres the game-card */
 .game-stage {
   flex: 1;
-  width: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 46px 10px 10px;
+  padding: 10px;
   box-sizing: border-box;
   overflow: hidden;
+  min-width: 0;
 }
 
-/* 5. game-card inside overlay — strip the card chrome */
+/* 8. game-card inside overlay — strip the card chrome */
 #game-overlay .game-card {
   background: transparent !important;
   border: none !important;
@@ -89,56 +207,274 @@ body.overlay-open {
   gap: 8px;
 }
 
-/* 6. HUD strip inside overlay */
+/* 9. HUD strip inside overlay */
 #game-overlay .hud {
   width: 100%;
   max-width: 600px;
   margin-bottom: 0;
 }
 
-/* 7. Canvas scaling — fill available viewport space
-      Override the per-game ID rules via higher specificity + !important.
-      JS sets aspect-ratio on canvases that don't have it via CSS. */
+/* 10. Canvas scaling — fill available viewport space
+       Override per-game ID rules via higher specificity + !important.
+       JS sets aspect-ratio on canvases that don't have it via CSS. */
 #game-overlay canvas:not(#nextCanvas) {
   width: auto !important;
   max-width: 100% !important;
   height: auto !important;
-  max-height: calc(100dvh - 180px) !important;
+  max-height: calc(100dvh - 36px - 60px) !important;
   flex-shrink: 1;
 }
 
 @supports not (height: 1dvh) {
   #game-overlay canvas:not(#nextCanvas) {
-    max-height: calc(100vh - 180px) !important;
+    max-height: calc(100vh - 36px - 60px) !important;
   }
 }
 
-/* 8. Button row inside overlay */
+/* 11. Button row inside overlay */
 #game-overlay .row {
   margin-top: 0;
   flex-shrink: 0;
 }
 
-/* 9. Tetris-specific: keep tet-wrap centred in overlay */
+/* 12. Tetris-specific: keep tet-wrap centred in overlay */
 #game-overlay .tet-wrap {
   justify-content: center;
   flex-shrink: 1;
   overflow: hidden;
 }
 
-/* 10. Mobile / portrait tweaks */
+/* 13. Touch pad */
+.overlay-touch-pad {
+  flex-shrink: 0;
+  background: rgba(9, 12, 22, 0.9);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 8px 10px;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  box-sizing: border-box;
+}
+
+/* D-pad grid */
+.touch-dpad {
+  display: grid;
+  grid-template-columns: repeat(3, 48px);
+  grid-template-rows: repeat(3, 48px);
+  gap: 4px;
+}
+
+/* Shared touch button */
+.touch-btn {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 10px;
+  color: #fff;
+  font-size: 0.9rem;
+  min-width: 48px;
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+  transition: background 0.08s;
+  box-sizing: border-box;
+  padding: 0 8px;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.touch-btn:active {
+  background: rgba(247, 171, 26, 0.3);
+  border-color: #f7ab1a;
+}
+
+.touch-btn--empty {
+  background: transparent !important;
+  border-color: transparent !important;
+  pointer-events: none;
+}
+
+.touch-btn--wide {
+  min-width: 80px;
+}
+
+.touch-btn--fire {
+  background: rgba(255, 79, 209, 0.14);
+  border-color: rgba(255, 79, 209, 0.38);
+}
+
+.touch-btn--fire:active {
+  background: rgba(255, 79, 209, 0.34);
+  border-color: #ff4fd1;
+}
+
+/* Touch layout wrappers */
+.touch-lr,
+.touch-asteroid,
+.touch-tetris {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.touch-lr-row,
+.touch-asteroid-row,
+.touch-tetris-row {
+  display: flex;
+  flex-direction: row;
+  gap: 6px;
+}
+
+/* ===== RESPONSIVE TIERS ===== */
+
+/* A. Mobile portrait */
 @media (max-width: 480px) {
+  #overlay-ctrl-bar {
+    height: 40px;
+  }
+
+  #overlay-ctrl-bar button {
+    height: 32px;
+  }
+
+  #overlay-ctrl-bar button .btn-label {
+    display: none;
+  }
+
+  .overlay-side {
+    display: none !important;
+  }
+
   .game-stage {
-    padding: 42px 6px 6px;
+    padding: 8px 6px 6px;
+  }
+
+  .overlay-touch-pad {
+    display: flex;
+    min-height: 80px;
   }
 
   #game-overlay canvas:not(#nextCanvas) {
-    max-height: calc(100dvh - 148px) !important;
+    max-height: calc(100dvh - 40px - 170px) !important;
   }
 
   @supports not (height: 1dvh) {
     #game-overlay canvas:not(#nextCanvas) {
-      max-height: calc(100vh - 148px) !important;
+      max-height: calc(100vh - 40px - 170px) !important;
+    }
+  }
+}
+
+/* B. Mobile landscape */
+@media (max-height: 500px) and (max-width: 900px) {
+  .overlay-side {
+    display: none !important;
+  }
+
+  .overlay-touch-pad {
+    display: flex;
+    max-height: 72px;
+    padding: 4px 8px;
+  }
+
+  .touch-btn {
+    min-width: 38px;
+    min-height: 38px;
+    font-size: 0.8rem;
+  }
+
+  .touch-dpad {
+    grid-template-columns: repeat(3, 38px);
+    grid-template-rows: repeat(3, 38px);
+  }
+
+  #game-overlay canvas:not(#nextCanvas) {
+    max-height: calc(100dvh - 36px - 72px) !important;
+  }
+
+  @supports not (height: 1dvh) {
+    #game-overlay canvas:not(#nextCanvas) {
+      max-height: calc(100vh - 36px - 72px) !important;
+    }
+  }
+}
+
+/* C. Tablet */
+@media (min-width: 481px) and (max-width: 1099px) {
+  #overlay-ctrl-bar {
+    height: 40px;
+  }
+
+  #overlay-ctrl-bar button {
+    height: 32px;
+  }
+
+  .overlay-side {
+    display: none !important;
+  }
+
+  #game-overlay canvas:not(#nextCanvas) {
+    max-height: calc(100dvh - 40px - 80px) !important;
+  }
+
+  @supports not (height: 1dvh) {
+    #game-overlay canvas:not(#nextCanvas) {
+      max-height: calc(100vh - 40px - 80px) !important;
+    }
+  }
+}
+
+/* Show touch pad on coarse-pointer devices up to tablet width */
+@media (pointer: coarse) and (max-width: 1099px) {
+  .overlay-touch-pad {
+    display: flex;
+  }
+}
+
+/* D. Desktop standard */
+@media (min-width: 1100px) and (max-width: 1399px) {
+  .overlay-side--left {
+    display: flex;
+    flex-direction: column;
+    width: 180px;
+  }
+
+  .overlay-side--right {
+    display: none;
+  }
+
+  #game-overlay canvas:not(#nextCanvas) {
+    max-height: calc(100dvh - 36px - 20px) !important;
+  }
+
+  @supports not (height: 1dvh) {
+    #game-overlay canvas:not(#nextCanvas) {
+      max-height: calc(100vh - 36px - 20px) !important;
+    }
+  }
+}
+
+/* E. Desktop ultra-wide */
+@media (min-width: 1400px) {
+  .overlay-side--left,
+  .overlay-side--right {
+    display: flex;
+    flex-direction: column;
+    width: 220px;
+  }
+
+  #game-overlay canvas:not(#nextCanvas) {
+    max-height: calc(100dvh - 36px - 20px) !important;
+  }
+
+  @supports not (height: 1dvh) {
+    #game-overlay canvas:not(#nextCanvas) {
+      max-height: calc(100vh - 36px - 20px) !important;
     }
   }
 }
