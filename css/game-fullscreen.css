@@ -1,0 +1,144 @@
+/* ============================================================
+   game-fullscreen.css — Full-viewport arcade overlay
+   Injected by /js/game-fullscreen.js on all arcade game pages.
+   ============================================================ */
+
+/* 1. Overlay backdrop */
+#game-overlay {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100dvh;
+  background: #090c16;
+  z-index: 9000;
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  overflow: hidden;
+}
+
+#game-overlay.active {
+  display: flex;
+}
+
+/* Fallback for browsers without dvh */
+@supports not (height: 1dvh) {
+  #game-overlay {
+    height: 100vh;
+  }
+}
+
+/* 2. Prevent body scroll while overlay is open */
+body.overlay-open {
+  overflow: hidden;
+}
+
+/* 3. Close / Exit button */
+#game-overlay-close {
+  position: absolute;
+  top: 10px;
+  right: 14px;
+  z-index: 9010;
+  padding: 7px 16px;
+  background: rgba(255, 255, 255, .1);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, .25);
+  border-radius: 10px;
+  font-size: .82rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background .15s;
+  white-space: nowrap;
+}
+
+#game-overlay-close:hover {
+  background: rgba(255, 255, 255, .2);
+}
+
+#game-overlay-close:focus-visible {
+  outline: 2px solid #f7ab1a;
+  outline-offset: 2px;
+}
+
+/* 4. Game stage — centres the game-card */
+.game-stage {
+  flex: 1;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 46px 10px 10px;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+/* 5. game-card inside overlay — strip the card chrome */
+#game-overlay .game-card {
+  background: transparent !important;
+  border: none !important;
+  border-radius: 0 !important;
+  padding: 0 !important;
+  max-width: 100% !important;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 100%;
+  box-sizing: border-box;
+  gap: 8px;
+}
+
+/* 6. HUD strip inside overlay */
+#game-overlay .hud {
+  width: 100%;
+  max-width: 600px;
+  margin-bottom: 0;
+}
+
+/* 7. Canvas scaling — fill available viewport space
+      Override the per-game ID rules via higher specificity + !important.
+      JS sets aspect-ratio on canvases that don't have it via CSS. */
+#game-overlay canvas:not(#nextCanvas) {
+  width: auto !important;
+  max-width: 100% !important;
+  height: auto !important;
+  max-height: calc(100dvh - 180px) !important;
+  flex-shrink: 1;
+}
+
+@supports not (height: 1dvh) {
+  #game-overlay canvas:not(#nextCanvas) {
+    max-height: calc(100vh - 180px) !important;
+  }
+}
+
+/* 8. Button row inside overlay */
+#game-overlay .row {
+  margin-top: 0;
+  flex-shrink: 0;
+}
+
+/* 9. Tetris-specific: keep tet-wrap centred in overlay */
+#game-overlay .tet-wrap {
+  justify-content: center;
+  flex-shrink: 1;
+  overflow: hidden;
+}
+
+/* 10. Mobile / portrait tweaks */
+@media (max-width: 480px) {
+  .game-stage {
+    padding: 42px 6px 6px;
+  }
+
+  #game-overlay canvas:not(#nextCanvas) {
+    max-height: calc(100dvh - 148px) !important;
+  }
+
+  @supports not (height: 1dvh) {
+    #game-overlay canvas:not(#nextCanvas) {
+      max-height: calc(100vh - 148px) !important;
+    }
+  }
+}
