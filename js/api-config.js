@@ -28,15 +28,16 @@ window.MOONBOYS_API = {
   /* ── Feature Flags ───────────────────────────────────────── */
   // All engagement features are enabled. These rely on BASE_URL.
   FEATURES: {
-    PRICE_TICKER:   true,  // Live crypto price data
-    COMMENTS:       true,  // Article and community comments
-    LIKES:          true,  // Page likes and engagement
-    CITATION_VOTES: true,  // Up/down voting for citations
-    LEADERBOARD:    true,  // Top contributors leaderboard
-    LIVE_FEED:      true,  // Real-time activity feed
-    SAM_STATUS:     true,  // SAM agent status widget
-    ACTIVITY_PANEL: true,  // Trending / hot pages
-    TELEGRAM_LOGIN: true,  // Telegram Login Widget prefill (requires TELEGRAM_BOT_USERNAME)
+    PRICE_TICKER:       true,  // Live crypto price data
+    COMMENTS:           true,  // Article and community comments
+    LIKES:              true,  // Page likes and engagement
+    CITATION_VOTES:     true,  // Up/down voting for citations
+    LEADERBOARD:        true,  // Top contributors leaderboard
+    LIVE_FEED:          true,  // Real-time activity feed
+    SAM_STATUS:         true,  // SAM agent status widget
+    ACTIVITY_PANEL:     true,  // Trending / hot pages
+    TELEGRAM_LOGIN:     true,  // Telegram Login Widget prefill (requires TELEGRAM_BOT_USERNAME)
+    TELEGRAM_COMMUNITY: true,  // Telegram XP / quest / community leaderboard panels
   },
 
   /* ── Telegram Login Widget ───────────────────────────────── */

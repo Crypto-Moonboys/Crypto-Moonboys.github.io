@@ -4,33 +4,37 @@
  * Handles community engagement endpoints backed by a D1 database (binding: DB).
  * Configure the D1 database ID in wrangler.toml before deploying.
  *
- * Routes implemented (all match the frontend fetch calls in js/):
+ * Routes (original — unchanged):
+ *   GET  /health
+ *   GET  /comments?page_id=&limit=
+ *   POST /comments
+ *   POST /comments/:id/vote
+ *   GET  /comments/recent?limit=
+ *   GET  /likes?page_id=
+ *   POST /likes
+ *   GET  /citation-votes?page_id=&cite_id=
+ *   POST /citation-votes
+ *   GET  /feed?limit=
+ *   GET  /leaderboard?limit=
+ *   GET  /activity/hot?limit=
+ *   GET  /sam/status
+ *   POST /telegram/auth
+ *   POST /telegram/webhook
  *
- *   GET  /health                          — liveness check
+ * New Telegram / community routes:
+ *   GET  /telegram/profile?telegram_id=
+ *   GET  /telegram/leaderboard?limit=
+ *   GET  /telegram/quests
+ *   POST /telegram/link
+ *   GET  /telegram/activity?limit=
+ *   GET  /telegram/daily-status?telegram_id=
  *
- *   GET  /comments?page_id=&limit=        — list approved comments for a page
- *   POST /comments                        — submit a new comment (queued for moderation)
- *                                           Required: page_id, name, email, text
- *                                           Optional: telegram_username, discord_username, avatar_url
- *   POST /comments/:id/vote               — cast up/down vote on a comment
- *   GET  /comments/recent?limit=          — latest approved comments across all pages
+ * Telegram bot commands (handled inside POST /telegram/webhook):
+ *   /start  /help  /xp  /leaderboard  /profile  /daily  /quest  /solve <ans>  /link  /faction <name>
  *
- *   GET  /likes?page_id=                  — get like count for a page
- *   POST /likes                           — record a page like
- *
- *   GET  /citation-votes?page_id=&cite_id= — get net score for a citation
- *   POST /citation-votes                  — cast up/down vote on a citation
- *
- *   GET  /feed?limit=                     — recent site activity feed
- *   GET  /leaderboard?limit=              — top commenters by activity score
- *   GET  /activity/hot?limit=             — hottest pages by recent engagement
- *   GET  /sam/status                      — SAM agent status stub
- *
- *   POST /telegram/auth                   — validate Telegram Login Widget payload
- *                                           and return a normalised identity object
- *                                           Secrets required: TELEGRAM_BOT_TOKEN
- *   POST /telegram/webhook                — Telegram Bot API webhook endpoint
- *                                           (accepts updates, returns 200 OK)
+ * Secrets required (set via `wrangler secret put`):
+ *   TELEGRAM_BOT_TOKEN      — BotFather token for HMAC verification and sendMessage
+ *   TELEGRAM_BOT_USERNAME   — @username (used in widget docs only)
  */
 
 const MAX_NAME_LENGTH    = 60;
@@ -42,11 +46,27 @@ const MAX_AVATAR_URL_LEN = 500;
 /** Maximum age (in seconds) of a Telegram Login Widget auth payload before it is rejected. */
 const TELEGRAM_AUTH_MAX_AGE = 86400; // 24 hours
 
+// ── XP rules ──────────────────────────────────────────────────────────────────
+const XP_FIRST_START  = 50;
+const XP_DAILY_CLAIM  = 20;
+const XP_QUEST_SOLVE  = 0;  // per-quest value overrides this; default fallback
+const XP_GROUP_JOIN   = 10;
+
+// Approved faction slugs (must match client-side list in battle-layer.js)
+const APPROVED_FACTIONS = new Set([
+  'diamond-hands',
+  'hodl-warriors',
+  'moon-mission',
+  'graffpunks',
+]);
+
 const CORS_HEADERS = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
   'Access-Control-Allow-Headers': 'Content-Type',
 };
+
+// ── Shared utilities ──────────────────────────────────────────────────────────
 
 function json(data, status = 200) {
   return new Response(JSON.stringify(data), {
@@ -64,6 +84,103 @@ async function sha256Hex(str) {
   const data   = new TextEncoder().encode(String(str || '').trim().toLowerCase());
   const digest = await crypto.subtle.digest('SHA-256', data);
   return Array.from(new Uint8Array(digest)).map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+// ── Telegram helpers ──────────────────────────────────────────────────────────
+
+/** Return today's UTC date as a YYYY-MM-DD string. */
+function getTodayUtcDate() {
+  return new Date().toISOString().slice(0, 10);
+}
+
+/** Return a display name for a Telegram user object from an update. */
+function getTelegramDisplayName(user) {
+  if (!user) return 'Unknown';
+  return [user.first_name, user.last_name].filter(Boolean).join(' ') || user.username || String(user.id);
+}
+
+/**
+ * Send a text message via the Telegram Bot API.
+ * Never throws — failures are silently swallowed so the webhook always returns 200.
+ */
+async function sendTelegramMessage(botToken, chatId, text, extra = {}) {
+  if (!botToken || !chatId) return;
+  try {
+    await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ chat_id: chatId, text, parse_mode: 'HTML', ...extra }),
+    });
+  } catch {
+    // intentionally silent
+  }
+}
+
+/**
+ * Upsert a telegram_profiles row.
+ * Sets last_seen_at on every call; only touches name/avatar on first insert or when provided.
+ */
+async function upsertTelegramProfile(db, user) {
+  const telegramId  = String(user.id);
+  const username    = user.username    || null;
+  const displayName = getTelegramDisplayName(user);
+  const avatarUrl   = user.photo_url   || null;
+
+  await db.prepare(`
+    INSERT INTO telegram_profiles (telegram_id, username, display_name, avatar_url, last_seen_at)
+    VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)
+    ON CONFLICT(telegram_id) DO UPDATE SET
+      username     = excluded.username,
+      display_name = excluded.display_name,
+      avatar_url   = COALESCE(excluded.avatar_url, telegram_profiles.avatar_url),
+      last_seen_at = CURRENT_TIMESTAMP
+  `).bind(telegramId, username, displayName, avatarUrl).run();
+
+  return telegramId;
+}
+
+/**
+ * Award XP to a Telegram user.
+ * Updates all three XP counters atomically and logs an immutable event row.
+ * Anti-spam: enforced by callers (daily claim table, one-time event checks).
+ */
+async function awardXp(db, telegramId, xpDelta, eventType, source, sourceRef = '') {
+  if (!xpDelta || xpDelta <= 0) return;
+  const eventId = crypto.randomUUID();
+  await db.prepare(`
+    INSERT INTO telegram_xp_events (id, telegram_id, event_type, xp_delta, source, source_ref)
+    VALUES (?, ?, ?, ?, ?, ?)
+  `).bind(eventId, telegramId, eventType, xpDelta, source, sourceRef).run();
+
+  await db.prepare(`
+    UPDATE telegram_profiles
+    SET xp_total    = xp_total    + ?,
+        xp_seasonal = xp_seasonal + ?,
+        xp_yearly   = xp_yearly   + ?
+    WHERE telegram_id = ?
+  `).bind(xpDelta, xpDelta, xpDelta, telegramId).run();
+}
+
+/**
+ * Record an arbitrary group event for audit / future XP decisions.
+ */
+async function recordTelegramEvent(db, telegramId, chatId, eventType, payloadObj) {
+  const id = crypto.randomUUID();
+  await db.prepare(`
+    INSERT INTO telegram_group_events (id, telegram_id, chat_id, event_type, payload_json)
+    VALUES (?, ?, ?, ?, ?)
+  `).bind(id, telegramId || null, chatId || null, eventType, JSON.stringify(payloadObj || {})).run().catch(() => {});
+}
+
+/**
+ * Verify a quest answer.
+ * Compares the SHA-256 hex of lowercased trimmed input against the stored hash.
+ * Returns true if correct.
+ */
+async function verifyQuestAnswer(storedHash, rawAnswer) {
+  if (!storedHash || !rawAnswer) return false;
+  const h = await sha256Hex(String(rawAnswer).trim().toLowerCase());
+  return h === storedHash;
 }
 
 /**
@@ -449,26 +566,505 @@ export default {
 
     // ── POST /telegram/webhook ─────────────────────────────────────────────
     // Endpoint for Telegram Bot API webhook delivery.
-    // Consumes the update body and returns 200 OK so Telegram stops retrying.
+    // Always returns 200 OK so Telegram stops retrying regardless of errors.
     if (path === '/telegram/webhook' && request.method === 'POST') {
       const update = await request.json().catch(() => null);
-
-      if (update?.message?.text === '/start') {
-        const chatId = update.message.chat.id;
-
-        await fetch(`https://api.telegram.org/bot${env.TELEGRAM_BOT_TOKEN}/sendMessage`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            chat_id: chatId,
-            text: 'Welcome to WIKICOMS 🚀',
-          }),
-        });
+      if (update) {
+        await handleTelegramUpdate(update, env).catch(() => {});
       }
-
       return json({ ok: true });
+    }
+
+    // ── GET /telegram/profile?telegram_id= ────────────────────────────────
+    if (path === '/telegram/profile' && request.method === 'GET') {
+      const telegramId = url.searchParams.get('telegram_id');
+      if (!telegramId) return err('telegram_id required');
+      try {
+        const row = await env.DB.prepare(
+          `SELECT telegram_id, username, display_name, avatar_url, faction,
+                  xp_total, xp_seasonal, xp_yearly, last_seen_at, created_at
+           FROM telegram_profiles WHERE telegram_id = ?`
+        ).bind(telegramId).first();
+        if (!row) return err('Profile not found', 404);
+        return json({ profile: row });
+      } catch {
+        return err('Failed to load profile', 500);
+      }
+    }
+
+    // ── GET /telegram/leaderboard?limit= ──────────────────────────────────
+    // Community XP leaderboard — separate from arcade score leaderboard.
+    if (path === '/telegram/leaderboard' && request.method === 'GET') {
+      const limit = Math.min(parseInt(url.searchParams.get('limit') || '10', 10), 50);
+      try {
+        const rows = await env.DB.prepare(
+          `SELECT telegram_id, username, display_name, avatar_url, faction, xp_total
+           FROM telegram_profiles
+           ORDER BY xp_total DESC
+           LIMIT ?`
+        ).bind(limit).all();
+        return json({
+          type:    'community_xp',
+          entries: rows.results || [],
+        });
+      } catch {
+        return err('Failed to load leaderboard', 500);
+      }
+    }
+
+    // ── GET /telegram/quests ──────────────────────────────────────────────
+    // Returns active quests (never exposes answer_hash).
+    if (path === '/telegram/quests' && request.method === 'GET') {
+      try {
+        const now = new Date().toISOString();
+        const rows = await env.DB.prepare(
+          `SELECT id, slug, title, description, quest_type, xp_reward, starts_at, ends_at
+           FROM telegram_quests
+           WHERE is_active = 1
+             AND (starts_at IS NULL OR starts_at <= ?)
+             AND (ends_at IS NULL OR ends_at >= ?)
+           ORDER BY created_at DESC`
+        ).bind(now, now).all();
+        return json({ quests: rows.results || [] });
+      } catch {
+        return err('Failed to load quests', 500);
+      }
+    }
+
+    // ── POST /telegram/link ────────────────────────────────────────────────
+    // Link a Telegram identity to a website identity via email_hash.
+    // Body: { telegram_id, email }
+    if (path === '/telegram/link' && request.method === 'POST') {
+      let body;
+      try { body = await request.json(); } catch { return err('Invalid JSON'); }
+      const { telegram_id, email } = body || {};
+      if (!telegram_id || !email) return err('telegram_id and email required');
+      const emailHash = await sha256Hex(email);
+      try {
+        await env.DB.prepare(
+          `UPDATE telegram_profiles SET linked_email_hash = ? WHERE telegram_id = ?`
+        ).bind(emailHash, String(telegram_id)).run();
+        return json({ ok: true, linked_email_hash: emailHash });
+      } catch {
+        return err('Failed to link identity', 500);
+      }
+    }
+
+    // ── GET /telegram/activity?limit= ─────────────────────────────────────
+    // Recent XP events for community activity feed.
+    if (path === '/telegram/activity' && request.method === 'GET') {
+      const limit = Math.min(parseInt(url.searchParams.get('limit') || '10', 10), 50);
+      try {
+        const rows = await env.DB.prepare(
+          `SELECT e.event_type, e.xp_delta, e.source, e.created_at,
+                  p.display_name, p.username
+           FROM telegram_xp_events e
+           LEFT JOIN telegram_profiles p ON p.telegram_id = e.telegram_id
+           ORDER BY e.created_at DESC
+           LIMIT ?`
+        ).bind(limit).all();
+        const items = (rows.results || []).map(r => ({
+          icon:     '⚡',
+          text:     `${r.display_name || r.username || 'A moonboy'} earned ${r.xp_delta} XP (${r.event_type})`,
+          time_ago: timeAgo(r.created_at),
+        }));
+        return json({ items });
+      } catch {
+        return err('Failed to load activity', 500);
+      }
+    }
+
+    // ── GET /telegram/daily-status?telegram_id= ───────────────────────────
+    // Returns whether the user has claimed their daily XP today.
+    if (path === '/telegram/daily-status' && request.method === 'GET') {
+      const telegramId = url.searchParams.get('telegram_id');
+      if (!telegramId) return err('telegram_id required');
+      const today = getTodayUtcDate();
+      try {
+        const row = await env.DB.prepare(
+          `SELECT telegram_id FROM telegram_daily_claims WHERE telegram_id = ? AND claim_date = ?`
+        ).bind(telegramId, today).first();
+        return json({ claimed: !!row, date: today });
+      } catch {
+        return err('Failed to check daily status', 500);
+      }
     }
 
     return err('Not found', 404);
   },
 };
+
+// ── Telegram bot command handler ──────────────────────────────────────────────
+
+async function handleTelegramUpdate(update, env) {
+  const db  = env.DB;
+  const tok = env.TELEGRAM_BOT_TOKEN;
+
+  // ── Group-level events ───────────────────────────────────────────────────
+  const msg = update.message || update.edited_message;
+
+  // New chat members
+  if (msg?.new_chat_members) {
+    for (const member of msg.new_chat_members) {
+      const telegramId = String(member.id);
+      await upsertTelegramProfile(db, member);
+      await recordTelegramEvent(db, telegramId, String(msg.chat?.id || ''), 'chat_join', { member });
+      // Award XP once for joining (checked via group_events count to avoid dupes)
+      const prior = await db.prepare(
+        `SELECT id FROM telegram_xp_events WHERE telegram_id = ? AND event_type = 'group_join' LIMIT 1`
+      ).bind(telegramId).first().catch(() => null);
+      if (!prior) {
+        await awardXp(db, telegramId, XP_GROUP_JOIN, 'group_join', 'telegram_group');
+      }
+    }
+    return;
+  }
+
+  // Chat join requests
+  if (update.chat_join_request) {
+    const user = update.chat_join_request.from;
+    if (user) {
+      await recordTelegramEvent(db, String(user.id), String(update.chat_join_request.chat?.id || ''), 'chat_join_request', {});
+    }
+    return;
+  }
+
+  // Poll answers
+  if (update.poll_answer) {
+    const pa = update.poll_answer;
+    await recordTelegramEvent(db, String(pa.user?.id || ''), null, 'poll_answer', { poll_id: pa.poll_id });
+    return;
+  }
+
+  // ── Private / group message commands ─────────────────────────────────────
+  if (!msg?.text) return;
+
+  const chatId     = String(msg.chat?.id || '');
+  const fromUser   = msg.from || {};
+  const telegramId = String(fromUser.id || '');
+  const text       = (msg.text || '').trim();
+
+  // Upsert profile so every interaction keeps profile fresh
+  if (telegramId) await upsertTelegramProfile(db, fromUser);
+
+  // Only handle commands (messages starting with /)
+  if (!text.startsWith('/')) return;
+
+  const spaceIdx   = text.indexOf(' ');
+  const rawCmd     = spaceIdx === -1 ? text.slice(1) : text.slice(1, spaceIdx);
+  const cmdBase    = rawCmd.split('@')[0].toLowerCase(); // strip @botname suffix
+  const argStr     = spaceIdx === -1 ? '' : text.slice(spaceIdx + 1).trim();
+
+  switch (cmdBase) {
+    case 'start':    await cmdStart(db, tok, chatId, telegramId, fromUser);              break;
+    case 'help':     await cmdHelp(tok, chatId);                                         break;
+    case 'xp':       await cmdXp(db, tok, chatId, telegramId);                           break;
+    case 'leaderboard': await cmdLeaderboard(db, tok, chatId);                           break;
+    case 'profile':  await cmdProfile(db, tok, chatId, telegramId);                      break;
+    case 'daily':    await cmdDaily(db, tok, chatId, telegramId);                        break;
+    case 'quest':    await cmdQuest(db, tok, chatId);                                    break;
+    case 'solve':    await cmdSolve(db, tok, chatId, telegramId, argStr);                break;
+    case 'link':     await cmdLink(tok, chatId);                                         break;
+    case 'faction':  await cmdFaction(db, tok, chatId, telegramId, argStr);              break;
+    default: break;
+  }
+}
+
+// ── Command implementations ───────────────────────────────────────────────────
+
+async function cmdStart(db, tok, chatId, telegramId, fromUser) {
+  // Award first-start XP exactly once
+  const prior = await db.prepare(
+    `SELECT id FROM telegram_xp_events WHERE telegram_id = ? AND event_type = 'first_start' LIMIT 1`
+  ).bind(telegramId).first().catch(() => null);
+
+  let xpMsg = '';
+  if (!prior) {
+    await awardXp(db, telegramId, XP_FIRST_START, 'first_start', 'bot_command');
+    xpMsg = `\n\n⚡ You earned <b>${XP_FIRST_START} XP</b> for your first launch!`;
+  }
+
+  const name = getTelegramDisplayName(fromUser);
+  await sendTelegramMessage(tok, chatId,
+    `🚀 Welcome to <b>Crypto Moonboys</b>, ${escapeHtml(name)}!\n\n` +
+    `You've entered the Battle Chamber. Track your XP, solve lore puzzles, and dominate the leaderboard.\n\n` +
+    `Use <b>/help</b> to see available commands.${xpMsg}`
+  );
+}
+
+async function cmdHelp(tok, chatId) {
+  await sendTelegramMessage(tok, chatId,
+    `📖 <b>Moonboys Bot Commands</b>\n\n` +
+    `/start — Join the ecosystem &amp; claim first-start XP\n` +
+    `/xp — Check your XP totals\n` +
+    `/leaderboard — Community XP leaderboard\n` +
+    `/profile — Your full profile\n` +
+    `/daily — Claim your daily XP (once per UTC day)\n` +
+    `/quest — View active lore quests\n` +
+    `/solve &lt;answer&gt; — Submit a quest answer\n` +
+    `/faction &lt;name&gt; — Choose your faction\n` +
+    `/link — Link your Telegram to the website\n\n` +
+    `<i>Community XP is separate from arcade scores.</i>`
+  );
+}
+
+async function cmdXp(db, tok, chatId, telegramId) {
+  const row = await db.prepare(
+    `SELECT xp_total, xp_seasonal, xp_yearly FROM telegram_profiles WHERE telegram_id = ?`
+  ).bind(telegramId).first().catch(() => null);
+
+  if (!row) {
+    await sendTelegramMessage(tok, chatId, '❓ No profile found. Use /start to create one.');
+    return;
+  }
+  await sendTelegramMessage(tok, chatId,
+    `⚡ <b>Your XP</b>\n\n` +
+    `Total:    ${row.xp_total}\n` +
+    `Seasonal: ${row.xp_seasonal}\n` +
+    `Yearly:   ${row.xp_yearly}`
+  );
+}
+
+async function cmdLeaderboard(db, tok, chatId) {
+  const rows = await db.prepare(
+    `SELECT display_name, username, xp_total FROM telegram_profiles ORDER BY xp_total DESC LIMIT 10`
+  ).all().catch(() => ({ results: [] }));
+
+  const entries = (rows.results || []);
+  if (!entries.length) {
+    await sendTelegramMessage(tok, chatId, '📊 No community XP recorded yet.');
+    return;
+  }
+  const lines = entries.map((r, i) => {
+    const name = escapeHtml(r.display_name || r.username || 'Unknown');
+    return `${i + 1}. ${name} — ${r.xp_total} XP`;
+  }).join('\n');
+
+  await sendTelegramMessage(tok, chatId,
+    `🏆 <b>Community XP Leaderboard</b>\n<i>(separate from arcade scores)</i>\n\n${lines}`
+  );
+}
+
+async function cmdProfile(db, tok, chatId, telegramId) {
+  const row = await db.prepare(
+    `SELECT display_name, username, faction, xp_total, xp_seasonal, xp_yearly,
+            linked_email_hash, created_at
+     FROM telegram_profiles WHERE telegram_id = ?`
+  ).bind(telegramId).first().catch(() => null);
+
+  if (!row) {
+    await sendTelegramMessage(tok, chatId, '❓ No profile found. Use /start to create one.');
+    return;
+  }
+
+  const solves = await db.prepare(
+    `SELECT COUNT(*) AS n FROM telegram_quest_submissions WHERE telegram_id = ? AND is_correct = 1`
+  ).bind(telegramId).first().catch(() => ({ n: 0 }));
+
+  const linked = row.linked_email_hash ? '✅ Linked' : '❌ Not linked';
+  const faction = row.faction || 'None';
+  await sendTelegramMessage(tok, chatId,
+    `👤 <b>Profile</b>\n\n` +
+    `Name:     ${escapeHtml(row.display_name || row.username || 'Unknown')}\n` +
+    `Faction:  ${escapeHtml(faction)}\n` +
+    `XP Total: ${row.xp_total}\n` +
+    `Seasonal: ${row.xp_seasonal}\n` +
+    `Yearly:   ${row.xp_yearly}\n` +
+    `Quests solved: ${solves?.n || 0}\n` +
+    `Website link: ${linked}\n` +
+    `Member since: ${(row.created_at || '').slice(0, 10)}`
+  );
+}
+
+async function cmdDaily(db, tok, chatId, telegramId) {
+  const today = getTodayUtcDate();
+
+  // Check if already claimed today
+  const existing = await db.prepare(
+    `SELECT telegram_id FROM telegram_daily_claims WHERE telegram_id = ? AND claim_date = ?`
+  ).bind(telegramId, today).first().catch(() => null);
+
+  if (existing) {
+    await sendTelegramMessage(tok, chatId,
+      `⏳ You already claimed your daily XP today (UTC: ${today}).\nCome back tomorrow!`
+    );
+    return;
+  }
+
+  // Record claim and award XP
+  await db.prepare(
+    `INSERT OR IGNORE INTO telegram_daily_claims (telegram_id, claim_date) VALUES (?, ?)`
+  ).bind(telegramId, today).run();
+
+  await awardXp(db, telegramId, XP_DAILY_CLAIM, 'daily_claim', 'bot_command', today);
+
+  await sendTelegramMessage(tok, chatId,
+    `✅ Daily XP claimed! +${XP_DAILY_CLAIM} XP\n\nSee you tomorrow, moonboy. 🚀`
+  );
+}
+
+async function cmdQuest(db, tok, chatId) {
+  const now = new Date().toISOString();
+  const rows = await db.prepare(
+    `SELECT id, slug, title, description, quest_type, xp_reward
+     FROM telegram_quests
+     WHERE is_active = 1
+       AND (starts_at IS NULL OR starts_at <= ?)
+       AND (ends_at IS NULL OR ends_at >= ?)
+     ORDER BY created_at DESC
+     LIMIT 5`
+  ).bind(now, now).all().catch(() => ({ results: [] }));
+
+  const quests = rows.results || [];
+  if (!quests.length) {
+    await sendTelegramMessage(tok, chatId, '🔍 No active quests right now. Check back soon!');
+    return;
+  }
+
+  const lines = quests.map(q =>
+    `📜 <b>${escapeHtml(q.title)}</b> [${escapeHtml(q.quest_type)}] — ${q.xp_reward} XP\n` +
+    `   ${escapeHtml(q.description)}\n` +
+    `   Solve with: <code>/solve ${escapeHtml(q.slug)} your_answer</code>`
+  ).join('\n\n');
+
+  await sendTelegramMessage(tok, chatId, `🗺️ <b>Active Quests</b>\n\n${lines}`);
+}
+
+async function cmdSolve(db, tok, chatId, telegramId, argStr) {
+  if (!argStr) {
+    await sendTelegramMessage(tok, chatId, '❓ Usage: /solve &lt;quest_slug&gt; &lt;your answer&gt;');
+    return;
+  }
+
+  // argStr format: "<slug> <answer>" or just "<answer>" (tries first active quest)
+  const parts  = argStr.split(' ');
+  let slug, answer;
+
+  if (parts.length >= 2) {
+    // Check if first token is a known quest slug
+    const maybeSlug = parts[0].toLowerCase();
+    const now = new Date().toISOString();
+    const questBySlug = await db.prepare(
+      `SELECT id, title, answer_hash, xp_reward FROM telegram_quests
+       WHERE slug = ? AND is_active = 1
+         AND (starts_at IS NULL OR starts_at <= ?)
+         AND (ends_at IS NULL OR ends_at >= ?)
+       LIMIT 1`
+    ).bind(maybeSlug, now, now).first().catch(() => null);
+
+    if (questBySlug) {
+      slug   = maybeSlug;
+      answer = parts.slice(1).join(' ');
+    } else {
+      // Treat entire argStr as the answer against first active quest
+      answer = argStr;
+      slug   = null;
+    }
+  } else {
+    answer = argStr;
+    slug   = null;
+  }
+
+  // Resolve the quest
+  const now = new Date().toISOString();
+  const quest = slug
+    ? await db.prepare(
+        `SELECT id, title, answer_hash, xp_reward FROM telegram_quests
+         WHERE slug = ? AND is_active = 1
+           AND (starts_at IS NULL OR starts_at <= ?)
+           AND (ends_at IS NULL OR ends_at >= ?)
+         LIMIT 1`
+      ).bind(slug, now, now).first().catch(() => null)
+    : await db.prepare(
+        `SELECT id, title, answer_hash, xp_reward FROM telegram_quests
+         WHERE is_active = 1
+           AND (starts_at IS NULL OR starts_at <= ?)
+           AND (ends_at IS NULL OR ends_at >= ?)
+         ORDER BY created_at DESC LIMIT 1`
+      ).bind(now, now).first().catch(() => null);
+
+  if (!quest) {
+    await sendTelegramMessage(tok, chatId, '❓ No matching active quest found. Use /quest to list active quests.');
+    return;
+  }
+
+  // Anti-spam: one reward per correct quest per user
+  const alreadyCorrect = await db.prepare(
+    `SELECT id FROM telegram_quest_submissions
+     WHERE quest_id = ? AND telegram_id = ? AND is_correct = 1 LIMIT 1`
+  ).bind(quest.id, telegramId).first().catch(() => null);
+
+  const isCorrect = await verifyQuestAnswer(quest.answer_hash, answer);
+  const submissionId = crypto.randomUUID();
+
+  await db.prepare(
+    `INSERT INTO telegram_quest_submissions (id, quest_id, telegram_id, submission_text, is_correct)
+     VALUES (?, ?, ?, ?, ?)`
+  ).bind(submissionId, quest.id, telegramId, String(answer).slice(0, 500), isCorrect ? 1 : 0).run().catch(() => {});
+
+  if (!isCorrect) {
+    await sendTelegramMessage(tok, chatId,
+      `❌ Incorrect answer for "<b>${escapeHtml(quest.title)}</b>". Keep searching for clues!`
+    );
+    return;
+  }
+
+  let xpMsg = '';
+  if (!alreadyCorrect) {
+    const xpReward = quest.xp_reward || XP_QUEST_SOLVE;
+    if (xpReward > 0) {
+      await awardXp(db, telegramId, xpReward, 'quest_solve', 'telegram_quest', quest.id);
+      xpMsg = `\n\n⚡ +${xpReward} XP awarded!`;
+    }
+  } else {
+    xpMsg = '\n\n<i>(XP already claimed for this quest.)</i>';
+  }
+
+  await sendTelegramMessage(tok, chatId,
+    `✅ Correct! You solved "<b>${escapeHtml(quest.title)}</b>"! 🎉${xpMsg}`
+  );
+}
+
+async function cmdLink(tok, chatId) {
+  await sendTelegramMessage(tok, chatId,
+    `🔗 <b>Link your Telegram to the Moonboys website</b>\n\n` +
+    `To link your identity:\n` +
+    `1. Visit <a href="https://crypto-moonboys.github.io/community.html">community.html</a>\n` +
+    `2. Connect your Telegram account via the Login Widget in the comment form\n` +
+    `3. Your Telegram and website identities will be linked via your email hash\n\n` +
+    `<i>Your email is never stored publicly. Only a one-way hash is used.</i>`
+  );
+}
+
+async function cmdFaction(db, tok, chatId, telegramId, argStr) {
+  const requested = argStr.trim().toLowerCase();
+  if (!requested) {
+    const list = [...APPROVED_FACTIONS].join(', ');
+    await sendTelegramMessage(tok, chatId,
+      `⚔️ Choose a faction:\n<code>${list}</code>\n\nUsage: /faction &lt;name&gt;`
+    );
+    return;
+  }
+  if (!APPROVED_FACTIONS.has(requested)) {
+    const list = [...APPROVED_FACTIONS].join(', ');
+    await sendTelegramMessage(tok, chatId,
+      `❌ Unknown faction. Available factions:\n<code>${list}</code>`
+    );
+    return;
+  }
+  await db.prepare(
+    `UPDATE telegram_profiles SET faction = ? WHERE telegram_id = ?`
+  ).bind(requested, telegramId).run().catch(() => {});
+
+  await sendTelegramMessage(tok, chatId,
+    `⚔️ Faction set to <b>${escapeHtml(requested)}</b>. Loyalty noted, moonboy.`
+  );
+}
+
+// ── Minimal HTML escaping for Telegram HTML parse_mode ───────────────────────
+function escapeHtml(str) {
+  return String(str == null ? '' : str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+}
