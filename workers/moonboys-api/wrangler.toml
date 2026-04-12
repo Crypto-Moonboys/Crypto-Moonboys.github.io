@@ -17,3 +17,18 @@ compatibility_date = "2025-01-01"
 binding = "DB"
 database_name = "wikicoms"
 database_id = "8a36e17a-18fa-4b98-90e1-3f269164b166"
+
+# ── Telegram secrets ──────────────────────────────────────────────────────────
+# Required for POST /telegram/auth and POST /telegram/webhook.
+# Set via Wrangler CLI — never commit values to source control:
+#
+#   wrangler secret put TELEGRAM_BOT_TOKEN
+#   wrangler secret put TELEGRAM_BOT_USERNAME
+#
+# TELEGRAM_BOT_TOKEN    — The bot token from BotFather (used for HMAC verification).
+# TELEGRAM_BOT_USERNAME — The bot @username (used for widget configuration docs).
+#
+# BotFather setup:
+#   /setdomain   → set to:  moonboys-api.sercullen.workers.dev
+#   Webhook URL  → POST https://moonboys-api.sercullen.workers.dev/telegram/webhook
+#   Auth URL     → https://moonboys-api.sercullen.workers.dev/telegram/auth

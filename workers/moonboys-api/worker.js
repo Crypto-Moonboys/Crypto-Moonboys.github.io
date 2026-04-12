@@ -25,6 +25,12 @@
  *   GET  /leaderboard?limit=              — top commenters by activity score
  *   GET  /activity/hot?limit=             — hottest pages by recent engagement
  *   GET  /sam/status                      — SAM agent status stub
+ *
+ *   POST /telegram/auth                   — validate Telegram Login Widget payload
+ *                                           and return a normalised identity object
+ *                                           Secrets required: TELEGRAM_BOT_TOKEN
+ *   POST /telegram/webhook                — Telegram Bot API webhook endpoint
+ *                                           (accepts updates, returns 200 OK)
  */
 
 const MAX_NAME_LENGTH    = 60;
@@ -55,6 +61,41 @@ async function sha256Hex(str) {
   const data   = new TextEncoder().encode(String(str || '').trim().toLowerCase());
   const digest = await crypto.subtle.digest('SHA-256', data);
   return Array.from(new Uint8Array(digest)).map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+/**
+ * Verify a Telegram Login Widget auth payload against the bot token.
+ * Algorithm: https://core.telegram.org/widgets/login#checking-authorization
+ *   secret_key  = SHA256(bot_token)
+ *   check_string = sorted "key=value" pairs (excl. hash) joined by "\n"
+ *   expected_hash = HMAC-SHA256(check_string, secret_key)
+ */
+async function verifyTelegramAuth(data, botToken) {
+  if (!botToken || !data || !data.hash) return false;
+  const { hash, ...fields } = data;
+  // Build sorted data-check-string, omitting null/undefined fields
+  const checkString = Object.keys(fields)
+    .filter(k => fields[k] != null)
+    .sort()
+    .map(k => `${k}=${fields[k]}`)
+    .join('\n');
+  // secret_key = SHA256(bot_token)
+  const secretKeyBytes = await crypto.subtle.digest(
+    'SHA-256',
+    new TextEncoder().encode(botToken),
+  );
+  // Import as HMAC-SHA256 signing key
+  const hmacKey = await crypto.subtle.importKey(
+    'raw',
+    secretKeyBytes,
+    { name: 'HMAC', hash: 'SHA-256' },
+    false,
+    ['sign'],
+  );
+  // Sign the data-check-string
+  const sigBytes = await crypto.subtle.sign('HMAC', hmacKey, new TextEncoder().encode(checkString));
+  const sig = Array.from(new Uint8Array(sigBytes)).map(b => b.toString(16).padStart(2, '0')).join('');
+  return sig === hash;
 }
 
 /** Format a SQLite datetime string to a human-readable "N time ago" label. */
@@ -357,6 +398,54 @@ export default {
       } catch {
         return err('Failed to load activity', 500);
       }
+    }
+
+    // ── POST /telegram/auth ────────────────────────────────────────────────
+    // Accepts the Telegram Login Widget payload, verifies the HMAC signature,
+    // and returns a normalised identity object (never exposes the bot token).
+    if (path === '/telegram/auth' && request.method === 'POST') {
+      let body;
+      try { body = await request.json(); } catch { return err('Invalid JSON'); }
+      const { id, first_name, last_name, username, photo_url, auth_date, hash } = body || {};
+
+      if (!id || !auth_date || !hash) {
+        return err('Missing required Telegram auth fields');
+      }
+
+      // Reject stale payloads (older than 24 hours)
+      const now = Math.floor(Date.now() / 1000);
+      if (now - parseInt(auth_date, 10) > 86400) {
+        return err('Telegram auth data has expired', 401);
+      }
+
+      // Verify HMAC signature using the secret bot token
+      const valid = await verifyTelegramAuth(
+        { id, first_name, last_name, username, photo_url, auth_date, hash },
+        env.TELEGRAM_BOT_TOKEN,
+      );
+      if (!valid) {
+        return err('Telegram auth verification failed', 401);
+      }
+
+      // Build normalised identity — safe to return to the frontend
+      const displayName = [first_name, last_name].filter(Boolean).join(' ') || username || String(id);
+      return json({
+        ok: true,
+        identity: {
+          telegram_id:       String(id),
+          telegram_username: username   || null,
+          display_name:      displayName,
+          avatar_url:        photo_url  || null,
+        },
+      });
+    }
+
+    // ── POST /telegram/webhook ─────────────────────────────────────────────
+    // Endpoint for Telegram Bot API webhook delivery.
+    // Consumes the update body and returns 200 OK so Telegram stops retrying.
+    if (path === '/telegram/webhook' && request.method === 'POST') {
+      await request.json().catch(() => {});
+      return json({ ok: true });
     }
 
     return err('Not found', 404);
