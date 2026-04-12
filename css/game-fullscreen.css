@@ -98,7 +98,7 @@ body.overlay-open {
 }
 
 /* 5. Overlay body */
-.overlay-body {
+#game-overlay .overlay-body {
   flex: 1;
   display: flex;
   flex-direction: row;
@@ -107,7 +107,7 @@ body.overlay-open {
 }
 
 /* 6. Side panels */
-.overlay-side {
+#game-overlay .overlay-side {
   width: 200px;
   flex-shrink: 0;
   overflow-y: auto;
@@ -121,15 +121,15 @@ body.overlay-open {
   display: none;
 }
 
-.overlay-side--left {
+#game-overlay .overlay-side--left {
   border-right: 1px solid rgba(255, 255, 255, 0.07);
 }
 
-.overlay-side--right {
+#game-overlay .overlay-side--right {
   border-left: 1px solid rgba(255, 255, 255, 0.07);
 }
 
-.overlay-side .panel-title {
+#game-overlay .overlay-side .panel-title {
   font-size: 0.62rem;
   font-weight: 700;
   letter-spacing: 0.1em;
@@ -138,15 +138,15 @@ body.overlay-open {
   margin: 0 0 5px 0;
 }
 
-.overlay-side .game-name {
+#game-overlay .overlay-side .game-name {
   font-size: 0.88rem;
   font-weight: 700;
   margin-bottom: 12px;
   line-height: 1.2;
 }
 
-.overlay-side .ctrl-list,
-.overlay-side .tips-list {
+#game-overlay .overlay-side .ctrl-list,
+#game-overlay .overlay-side .tips-list {
   list-style: none;
   margin: 0 0 14px 0;
   padding: 0;
@@ -155,21 +155,21 @@ body.overlay-open {
   gap: 3px;
 }
 
-.overlay-side .ctrl-list li {
+#game-overlay .overlay-side .ctrl-list li {
   font-size: 0.73rem;
   color: rgba(255, 255, 255, 0.62);
   padding: 3px 0;
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
 
-.overlay-side .score-val {
+#game-overlay .overlay-side .score-val {
   font-size: 1.1rem;
   font-weight: 700;
   color: #fff;
   margin: 2px 0 12px 0;
 }
 
-.overlay-side .tips-list li {
+#game-overlay .overlay-side .tips-list li {
   font-size: 0.73rem;
   color: rgba(255, 255, 255, 0.58);
   padding: 4px 6px;
@@ -180,7 +180,7 @@ body.overlay-open {
 }
 
 /* 7. Game stage — centres the game-card */
-.game-stage {
+#game-overlay .game-stage {
   flex: 1;
   display: flex;
   align-items: center;
@@ -245,7 +245,7 @@ body.overlay-open {
 }
 
 /* 13. Touch pad */
-.overlay-touch-pad {
+#game-overlay .overlay-touch-pad {
   flex-shrink: 0;
   background: rgba(9, 12, 22, 0.9);
   border-top: 1px solid rgba(255, 255, 255, 0.1);
@@ -258,7 +258,7 @@ body.overlay-open {
 }
 
 /* D-pad grid */
-.touch-dpad {
+#game-overlay .touch-dpad {
   display: grid;
   grid-template-columns: repeat(3, 48px);
   grid-template-rows: repeat(3, 48px);
@@ -266,7 +266,7 @@ body.overlay-open {
 }
 
 /* Shared touch button */
-.touch-btn {
+#game-overlay .touch-btn {
   background: rgba(255, 255, 255, 0.08);
   border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 10px;
@@ -287,47 +287,122 @@ body.overlay-open {
   -webkit-tap-highlight-color: transparent;
 }
 
-.touch-btn:active {
+#game-overlay .touch-btn:active {
   background: rgba(247, 171, 26, 0.3);
   border-color: #f7ab1a;
 }
 
-.touch-btn--empty {
+#game-overlay .touch-btn--empty {
   background: transparent !important;
   border-color: transparent !important;
   pointer-events: none;
 }
 
-.touch-btn--wide {
+#game-overlay .touch-btn--wide {
   min-width: 80px;
 }
 
-.touch-btn--fire {
+#game-overlay .touch-btn--fire {
   background: rgba(255, 79, 209, 0.14);
   border-color: rgba(255, 79, 209, 0.38);
 }
 
-.touch-btn--fire:active {
+#game-overlay .touch-btn--fire:active {
   background: rgba(255, 79, 209, 0.34);
   border-color: #ff4fd1;
 }
 
 /* Touch layout wrappers */
-.touch-lr,
-.touch-asteroid,
-.touch-tetris {
+#game-overlay .touch-lr,
+#game-overlay .touch-asteroid,
+#game-overlay .touch-tetris {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 6px;
 }
 
-.touch-lr-row,
-.touch-asteroid-row,
-.touch-tetris-row {
+#game-overlay .touch-lr-row,
+#game-overlay .touch-asteroid-row,
+#game-overlay .touch-tetris-row {
   display: flex;
   flex-direction: row;
   gap: 6px;
+}
+
+/* ===== GAME-OVER MODAL ===== */
+
+#game-over-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 9020;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: rgba(9, 12, 22, 0.85);
+}
+
+#game-over-modal.active {
+  display: flex;
+}
+
+.game-over-box {
+  background: #0f1322;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 16px;
+  padding: 28px 32px;
+  text-align: center;
+  max-width: 320px;
+  width: 90%;
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.6);
+}
+
+.game-over-title {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #ff4fd1;
+  letter-spacing: 0.08em;
+  margin-bottom: 10px;
+}
+
+.game-over-score-line {
+  font-size: 1rem;
+  color: rgba(255, 255, 255, 0.65);
+  margin-bottom: 22px;
+}
+
+.game-over-score-line span {
+  color: #f7c948;
+  font-weight: 700;
+  font-size: 1.3rem;
+}
+
+.game-over-btns {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.game-over-btns .game-btn {
+  padding: 0.65rem 1.2rem;
+  border: none;
+  border-radius: 10px;
+  background: #f7ab1a;
+  color: #111;
+  font-weight: 700;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.game-over-btns .game-btn.alt {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #fff;
+}
+
+.game-over-btns .game-btn:hover {
+  filter: brightness(1.1);
 }
 
 /* ===== RESPONSIVE TIERS ===== */
@@ -346,60 +421,63 @@ body.overlay-open {
     display: none;
   }
 
-  .overlay-side {
+  #game-overlay .overlay-side {
     display: none !important;
   }
 
-  .game-stage {
-    padding: 8px 6px 6px;
+  #game-overlay .game-stage {
+    padding: 6px 4px 4px;
   }
 
-  .overlay-touch-pad {
+  #game-overlay .overlay-touch-pad {
     display: flex;
     min-height: 80px;
+    padding: 6px 8px;
   }
 
   #game-overlay canvas:not(#nextCanvas) {
-    max-height: calc(100dvh - 40px - 170px) !important;
+    /* 40px ctrl-bar + 80px HUD + 44px game-btns = 164px overhead */
+    max-height: calc(100dvh - 40px - 164px) !important;
   }
 
   @supports not (height: 1dvh) {
     #game-overlay canvas:not(#nextCanvas) {
-      max-height: calc(100vh - 40px - 170px) !important;
+      max-height: calc(100vh - 40px - 164px) !important;
     }
   }
 }
 
 /* B. Mobile landscape */
 @media (max-height: 500px) and (max-width: 900px) {
-  .overlay-side {
+  #game-overlay .overlay-side {
     display: none !important;
   }
 
-  .overlay-touch-pad {
+  #game-overlay .overlay-touch-pad {
     display: flex;
-    max-height: 72px;
+    max-height: 68px;
     padding: 4px 8px;
   }
 
-  .touch-btn {
+  #game-overlay .touch-btn {
     min-width: 38px;
     min-height: 38px;
     font-size: 0.8rem;
   }
 
-  .touch-dpad {
+  #game-overlay .touch-dpad {
     grid-template-columns: repeat(3, 38px);
     grid-template-rows: repeat(3, 38px);
   }
 
   #game-overlay canvas:not(#nextCanvas) {
-    max-height: calc(100dvh - 36px - 72px) !important;
+    /* 36px ctrl-bar + 68px compact touch-pad = 104px overhead */
+    max-height: calc(100dvh - 36px - 68px) !important;
   }
 
   @supports not (height: 1dvh) {
     #game-overlay canvas:not(#nextCanvas) {
-      max-height: calc(100vh - 36px - 72px) !important;
+      max-height: calc(100vh - 36px - 68px) !important;
     }
   }
 }
@@ -414,8 +492,12 @@ body.overlay-open {
     height: 32px;
   }
 
-  .overlay-side {
+  #game-overlay .overlay-side {
     display: none !important;
+  }
+
+  #game-overlay .overlay-touch-pad {
+    padding: 8px 12px;
   }
 
   #game-overlay canvas:not(#nextCanvas) {
@@ -431,20 +513,20 @@ body.overlay-open {
 
 /* Show touch pad on coarse-pointer devices up to tablet width */
 @media (pointer: coarse) and (max-width: 1099px) {
-  .overlay-touch-pad {
+  #game-overlay .overlay-touch-pad {
     display: flex;
   }
 }
 
 /* D. Desktop standard */
 @media (min-width: 1100px) and (max-width: 1399px) {
-  .overlay-side--left {
+  #game-overlay .overlay-side--left {
     display: flex;
     flex-direction: column;
     width: 180px;
   }
 
-  .overlay-side--right {
+  #game-overlay .overlay-side--right {
     display: none;
   }
 
@@ -461,8 +543,8 @@ body.overlay-open {
 
 /* E. Desktop ultra-wide */
 @media (min-width: 1400px) {
-  .overlay-side--left,
-  .overlay-side--right {
+  #game-overlay .overlay-side--left,
+  #game-overlay .overlay-side--right {
     display: flex;
     flex-direction: column;
     width: 220px;

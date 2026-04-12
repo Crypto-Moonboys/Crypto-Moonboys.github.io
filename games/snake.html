@@ -155,7 +155,11 @@ import { rollHiddenBonus, showBonusPopup } from '/js/bonus-engine.js';
     // Submit to shared leaderboard (fire-and-forget)
     submitScore(ArcadeSync.getPlayer(), score, 'snake');
     // AUDIO_HOOK: play('game_over')
-    alert('Game Over — Score: ' + score);
+    if (window.showGameOverModal) {
+      window.showGameOverModal(score);
+    } else {
+      alert('Game Over — Score: ' + score);
+    }
   }
   function step() {
     if (!running || paused) return;

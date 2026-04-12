@@ -129,6 +129,91 @@
   overlay.appendChild(touchPad);
   document.body.appendChild(overlay);
 
+  /* ── Game-Over Modal ─────────────────────────────────────────────── */
+
+  var gameOverModal = document.createElement('div');
+  gameOverModal.id = 'game-over-modal';
+  gameOverModal.setAttribute('role', 'dialog');
+  gameOverModal.setAttribute('aria-modal', 'true');
+  gameOverModal.setAttribute('aria-label', 'Game Over');
+
+  var gameOverBox = document.createElement('div');
+  gameOverBox.className = 'game-over-box';
+
+  var goTitle = document.createElement('div');
+  goTitle.className = 'game-over-title';
+  goTitle.textContent = 'GAME OVER';
+
+  var goScoreLine = document.createElement('div');
+  goScoreLine.className = 'game-over-score-line';
+  goScoreLine.innerHTML = 'Score: <span id="game-over-score-val">0</span>';
+
+  var goBtns = document.createElement('div');
+  goBtns.className = 'game-over-btns';
+
+  var goPlayAgain = document.createElement('button');
+  goPlayAgain.id = 'game-over-play-again';
+  goPlayAgain.setAttribute('type', 'button');
+  goPlayAgain.className = 'game-btn';
+  goPlayAgain.textContent = '▶ Play Again';
+
+  var goExitBtn = document.createElement('button');
+  goExitBtn.id = 'game-over-exit-btn';
+  goExitBtn.setAttribute('type', 'button');
+  goExitBtn.className = 'game-btn alt';
+  goExitBtn.textContent = '✕ Exit';
+
+  goBtns.appendChild(goPlayAgain);
+  goBtns.appendChild(goExitBtn);
+  gameOverBox.appendChild(goTitle);
+  gameOverBox.appendChild(goScoreLine);
+  gameOverBox.appendChild(goBtns);
+  gameOverModal.appendChild(gameOverBox);
+  document.body.appendChild(gameOverModal);
+
+  var _goRestart = null;
+  var _goExit    = null;
+
+  function showGameOverModal(score, opts) {
+    opts = opts || {};
+    var valEl = document.getElementById('game-over-score-val');
+    if (valEl) valEl.textContent = (typeof score !== 'undefined' ? score : 0);
+    _goRestart = opts.onRestart || null;
+    _goExit    = opts.onExit    || null;
+    gameOverModal.classList.add('active');
+    goPlayAgain.focus();
+  }
+
+  function hideGameOverModal() {
+    gameOverModal.classList.remove('active');
+    _goRestart = null;
+    _goExit    = null;
+  }
+
+  goPlayAgain.addEventListener('click', function () {
+    var cb = _goRestart;
+    hideGameOverModal();
+    if (cb) {
+      cb();
+    } else {
+      startBtn.click();
+    }
+  });
+
+  goExitBtn.addEventListener('click', function () {
+    var cb = _goExit;
+    hideGameOverModal();
+    if (cb) {
+      cb();
+    } else if (isOpen) {
+      closeOverlay();
+    }
+  });
+
+  // Expose globally so individual game scripts can call it.
+  window.showGameOverModal = showGameOverModal;
+  window.hideGameOverModal = hideGameOverModal;
+
   /* ── Constants ───────────────────────────────────────────────────── */
 
   // Brief delay (ms) for simulated key-up after a tap, matching typical game loop tick.
