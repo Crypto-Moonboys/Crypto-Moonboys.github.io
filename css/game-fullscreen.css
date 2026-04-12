@@ -13,6 +13,7 @@
   z-index: 9000;
   display: none;
   flex-direction: column;
+  /* stretch (not center) so the three-column body (side + stage + side) fills full width */
   align-items: stretch;
   justify-content: flex-start;
   overflow: hidden;
@@ -34,34 +35,7 @@ body.overlay-open {
   overflow: hidden;
 }
 
-/* 3. Legacy close button — kept for backward compat, no longer rendered */
-#game-overlay-close {
-  position: absolute;
-  top: 10px;
-  right: 14px;
-  z-index: 9010;
-  padding: 7px 16px;
-  background: rgba(255, 255, 255, .1);
-  color: #fff;
-  border: 1px solid rgba(255, 255, 255, .25);
-  border-radius: 10px;
-  font-size: .82rem;
-  font-weight: 700;
-  cursor: pointer;
-  transition: background .15s;
-  white-space: nowrap;
-}
-
-#game-overlay-close:hover {
-  background: rgba(255, 255, 255, .2);
-}
-
-#game-overlay-close:focus-visible {
-  outline: 2px solid #f7ab1a;
-  outline-offset: 2px;
-}
-
-/* 4. Control bar */
+/* 3. Control bar */
 #overlay-ctrl-bar {
   height: 36px;
   flex-shrink: 0;

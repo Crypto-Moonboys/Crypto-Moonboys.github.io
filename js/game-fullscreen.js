@@ -131,8 +131,11 @@
 
   /* ── Constants ───────────────────────────────────────────────────── */
 
-  // Brief delay for simulated key-up after a tap, matching typical game loop tick.
+  // Brief delay (ms) for simulated key-up after a tap, matching typical game loop tick.
   var KEY_PULSE_MS = 80;
+
+  // Safe initialization of global mute flag.
+  if (typeof window._arcadeMuted === 'undefined') window._arcadeMuted = false;
 
   var origParent      = null;
   var origNextSibling = null;
