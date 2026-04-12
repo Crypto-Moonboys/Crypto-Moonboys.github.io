@@ -19,15 +19,17 @@ window.MOONBOYS_API = {
   COINGECKO_BASE: 'https://api.coingecko.com/api/v3',
 
   /* ── Feature flags ───────────────────────────────────────── */
+  // All backend features enabled — set BASE_URL above to activate live data.
+  // When BASE_URL is null these flags have no effect (all widgets fall back gracefully).
   FEATURES: {
-    PRICE_TICKER:    true,   // live price data from CoinGecko (no backend needed)
-    COMMENTS:        false,  // requires BASE_URL backend
-    LIKES:           false,  // requires BASE_URL backend
-    CITATION_VOTES:  false,  // requires BASE_URL backend
-    LEADERBOARD:     false,  // requires BASE_URL backend
-    LIVE_FEED:       false,  // requires BASE_URL backend
-    SAM_STATUS:      false,  // requires BASE_URL backend
-    ACTIVITY_PANEL:  false,  // requires BASE_URL backend
+    PRICE_TICKER:    true,  // live price data from CoinGecko (no backend needed)
+    COMMENTS:        true,  // requires BASE_URL backend
+    LIKES:           true,  // requires BASE_URL backend
+    CITATION_VOTES:  true,  // requires BASE_URL backend
+    LEADERBOARD:     true,  // requires BASE_URL backend
+    LIVE_FEED:       true,  // requires BASE_URL backend
+    SAM_STATUS:      true,  // requires BASE_URL backend
+    ACTIVITY_PANEL:  true,  // requires BASE_URL backend
   },
 
   /* ── Tracked price assets ────────────────────────────────── */

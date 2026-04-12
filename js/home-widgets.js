@@ -51,9 +51,7 @@
   function placeholder(icon, text) {
     return '<div class="widget-placeholder">' +
       '<div class="widget-ph-icon">' + icon + '</div>' +
-      '<div class="widget-ph-text">' + text +
-        '<span class="widget-ph-config">Set <code>MOONBOYS_API.BASE_URL</code> in <code>js/api-config.js</code> to activate.</span>' +
-      '</div>' +
+      '<div class="widget-ph-text">' + text + '</div>' +
     '</div>';
   }
 
@@ -105,7 +103,7 @@
 
     if (!BASE || !FEATURES.LIVE_FEED) {
       el.innerHTML = placeholder('📡',
-        'Live activity feed will appear here once the API is connected. '
+        'Live activity feed — community interactions will appear here once the engagement layer is live.'
       );
       return;
     }
@@ -140,7 +138,7 @@
 
     if (!BASE || !FEATURES.LEADERBOARD) {
       el.innerHTML = placeholder('🏆',
-        'Top contributors will appear here once the engagement API is connected. '
+        'Top contributors leaderboard — rankings will appear here once community engagement is live.'
       );
       return;
     }
@@ -174,7 +172,7 @@
 
     if (!BASE || !FEATURES.ACTIVITY_PANEL) {
       el.innerHTML = placeholder('🔥',
-        'Trending pages will appear here once the engagement API is connected. '
+        'Trending pages — most-viewed and most-discussed articles will surface here once engagement tracking is live.'
       );
       return;
     }
@@ -211,9 +209,9 @@
           '<div class="bt-icon" aria-hidden="true">⚔️</div>' +
           '<div class="bt-body">' +
             '<div class="bt-title">Battle Layer — HODL vs NGMI</div>' +
-            '<div class="bt-sub">Comments and article battles will be live once the engagement API is set up. ' +
-              'Drop your takes directly on wiki articles.</div>' +
-            '<div class="bt-cta"><span class="bt-badge">Coming Soon</span></div>' +
+            '<div class="bt-sub">Drop your takes directly on any wiki article. ' +
+              'Community comments and article battles are launching soon.</div>' +
+            '<div class="bt-cta"><a href="/search.html" class="btn btn-primary">Explore Articles →</a></div>' +
           '</div>' +
         '</div>';
       return;
