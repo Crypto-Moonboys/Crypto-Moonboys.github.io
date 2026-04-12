@@ -67,11 +67,15 @@
   /**
    * Determine the current user's identity tier:
    *   'telegram' — has a stored Telegram ID (verified via /telegram/auth)
-   *   'gravatar'  — has posted a comment before (email stored in form memory)
-   *   'guest'     — anonymous
+   *   'guest'     — anonymous; browsing and local gameplay only
    *
-   * Note: Gravatar tier only allows commenting.  All competitive actions
-   * (likes, votes, faction, seasonal scores) require 'telegram'.
+   * Note: Gravatar accounts (email-only commenters) are treated as 'guest' here
+   * because there is no localStorage token for Gravatar identity — the email is
+   * never stored for privacy reasons. Frontend code checks getTelegramId()
+   * directly for competitive gating; this function is a convenience helper.
+   *
+   * Competitive actions (likes, votes, faction, seasonal scores) require
+   * 'telegram'.  Gravatar accounts can still post comments.
    */
   function getIdentityTier() {
     if (getTelegramId()) return 'telegram';
@@ -95,6 +99,8 @@
 
   function getSyncGateUrl() {
     var cfg = window.MOONBOYS_API || {};
+    // SYNC_GATE_URL is set in api-config.js; defaults to the Telegram Sync / Incubator page.
+    // This is the production onboarding page for linking a Telegram identity.
     return cfg.SYNC_GATE_URL || 'https://crypto-moonboys.github.io/gkniftyheads-incubator.html';
   }
 
@@ -187,7 +193,7 @@
   // ── Expose public API ────────────────────────────────────────
 
   window.MOONBOYS_IDENTITY = {
-    /** 'guest' | 'gravatar' | 'telegram' */
+    /** 'guest' | 'telegram' — gravatar users are classified as 'guest' (no localStorage token for email) */
     getIdentityTier:      getIdentityTier,
     /** Verified Telegram ID (string) or null */
     getTelegramId:        getTelegramId,

@@ -249,6 +249,9 @@
           '</div>';
       })
       .catch(function () {
+        // Comments widget uses an empty-state message on error (rather than a
+        // generic "unavailable" banner) because seeing no comments yet is an
+        // expected state and this phrasing encourages first engagement.
         el.innerHTML = '<div class="comments-empty">No comments yet — start the battle! ⚔️</div>';
       });
   }

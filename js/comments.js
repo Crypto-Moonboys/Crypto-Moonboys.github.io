@@ -267,7 +267,10 @@
         var vote = btn.dataset.vote;
         btn.disabled = true;
         var payload = { vote: vote };
-        if (gate) { var tid = gate.getTelegramId(); if (tid) payload.telegram_id = tid; }
+        if (gate) {
+          var tid = gate.getTelegramId();
+          if (tid) payload.telegram_id = tid;
+        }
         fetch(BASE + '/comments/' + cid + '/vote', {
           method:  'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -283,9 +286,11 @@
                 throw d;
               });
             }
+            // Successful vote — button stays disabled to prevent double-voting
           })
           .catch(function (err) {
-            if (err && err.error !== 'telegram_sync_required') btn.disabled = false;
+            // Re-enable for network/server errors only; keep disabled for sync gate
+            if (!err || err.error !== 'telegram_sync_required') btn.disabled = false;
           });
       };
 

@@ -18,6 +18,8 @@ const SEASON_EPOCH_MS = 1704067200000;
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
+    // path is used for the structured /season/current route.
+    // Legacy GET/POST handlers use url.searchParams instead (no path routing).
     const path = url.pathname.replace(/\/$/, '') || '/';
 
     const corsHeaders = {

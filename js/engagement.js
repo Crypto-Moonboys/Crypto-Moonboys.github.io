@@ -137,6 +137,8 @@
             statusEl.textContent = '❤️ Liked!';
           })
           .catch(function (err) {
+            // telegram_sync_required: already handled by handle403 above (modal shown,
+            // status text set, button re-enabled) — no further action needed here.
             if (err && err.error === 'telegram_sync_required') return;
             var msg = (err && err.message) ? err.message : 'Already liked or error.';
             statusEl.textContent = '⚠️ ' + msg;

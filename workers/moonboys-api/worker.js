@@ -233,7 +233,6 @@ async function getTgMeta(db) {
       (meta_key, season_start, season_number, year_start)
     VALUES ('current', ?, ?, ?)
   `).bind(seasonStart, seasonIdx + 1, yearStart).run().catch(() => {});
-
   return { meta_key: 'current', season_start: seasonStart, season_number: seasonIdx + 1, year_start: yearStart };
 }
 
