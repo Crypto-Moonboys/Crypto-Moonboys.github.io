@@ -239,7 +239,7 @@
 
     var script = document.createElement('script');
     script.async = true;
-    script.src   = 'https://telegram.org/js/telegram-widget.js?22';
+    script.src   = 'https://telegram.org/js/telegram-widget.js?22'; // ?22 = widget API version
     script.setAttribute('data-telegram-login',  TG_BOT);
     script.setAttribute('data-size',            'medium');
     script.setAttribute('data-onauth',          CALLBACK + '(user)');

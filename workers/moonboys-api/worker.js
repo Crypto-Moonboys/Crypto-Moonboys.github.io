@@ -39,6 +39,9 @@ const MAX_TG_LENGTH      = 60;
 const MAX_DISCORD_LENGTH = 60;
 const MAX_AVATAR_URL_LEN = 500;
 
+/** Maximum age (in seconds) of a Telegram Login Widget auth payload before it is rejected. */
+const TELEGRAM_AUTH_MAX_AGE = 86400; // 24 hours
+
 const CORS_HEADERS = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
@@ -412,9 +415,9 @@ export default {
         return err('Missing required Telegram auth fields');
       }
 
-      // Reject stale payloads (older than 24 hours)
+      // Reject stale payloads (older than TELEGRAM_AUTH_MAX_AGE)
       const now = Math.floor(Date.now() / 1000);
-      if (now - parseInt(auth_date, 10) > 86400) {
+      if (now - parseInt(auth_date, 10) > TELEGRAM_AUTH_MAX_AGE) {
         return err('Telegram auth data has expired', 401);
       }
 
