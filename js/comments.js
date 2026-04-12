@@ -97,7 +97,7 @@
         '</div>' +
         '<div class="comment-form-field">' +
           '<label for="cm-discord-' + pageId + '">Discord <span class="cm-note">(optional)</span></label>' +
-          '<input type="text" id="cm-discord-' + pageId + '" name="discord_username" placeholder="username#0000" maxlength="60">' +
+          '<input type="text" id="cm-discord-' + pageId + '" name="discord_username" placeholder="@username" maxlength="60">' +
         '</div>' +
       '</div>' +
       '<div class="comment-form-field">' +
