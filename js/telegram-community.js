@@ -68,7 +68,7 @@
       var rows = data.entries.map(function (e, i) {
         var avatar = e.avatar_url
           ? '<img class="tg-avatar" src="' + escapeHtml(e.avatar_url) + '" alt="" loading="lazy">'
-          : '<img class="tg-avatar" src="' + gravatar('', 32) + '" alt="" loading="lazy">';
+          : '<img class="tg-avatar" src="' + gravatar(e.linked_email_hash || '', 32) + '" alt="" loading="lazy">';
         var faction = e.faction ? ' <span class="tg-faction">' + escapeHtml(e.faction) + '</span>' : '';
         var name = escapeHtml(e.display_name || e.username || 'Unknown Moonboy');
         return '<div class="tg-lb-row">' +
@@ -133,7 +133,7 @@
       var p = data.profile;
       var avatar = p.avatar_url
         ? '<img class="tg-profile-avatar" src="' + escapeHtml(p.avatar_url) + '" alt="' + escapeHtml(p.display_name) + '" loading="lazy">'
-        : '<img class="tg-profile-avatar" src="' + gravatar('', 64) + '" alt="" loading="lazy">';
+        : '<img class="tg-profile-avatar" src="' + gravatar(p.linked_email_hash || '', 64) + '" alt="" loading="lazy">';
       var linked = p.linked_email_hash
         ? '<span class="tg-badge tg-badge-linked">✅ Website Linked</span>'
         : '<span class="tg-badge tg-badge-unlinked">❌ Not Linked</span>';

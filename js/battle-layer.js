@@ -208,6 +208,100 @@
     hero.insertAdjacentElement('afterend', strip);
   }
 
+  // ── Community page API hydration ────────────────────────────────────────
+
+  // Minimum hex-string length that constitutes a real stored hash (MD5=32, SHA-256=64).
+  var MIN_HASH_LENGTH = 32;
+
+  function avatarUrl(emailHash, size) {
+    var gCfg = (window.MOONBOYS_API && window.MOONBOYS_API.GRAVATAR) || {};
+    var base  = gCfg.BASE || 'https://www.gravatar.com/avatar/';
+    var s     = size || gCfg.SIZE || 40;
+    var d     = gCfg.DEFAULT || 'identicon';
+    var r     = gCfg.RATING || 'g';
+    var hash  = emailHash && emailHash.length >= MIN_HASH_LENGTH ? emailHash : '0';
+    return base + esc(hash) + '?s=' + s + '&d=' + d + '&r=' + r;
+  }
+
+  function loadCommunityLeaderboard() {
+    var el = document.getElementById('community-leaderboard');
+    if (!el) return;
+    if (!BASE || !FEATURES.LEADERBOARD) {
+      el.innerHTML = '<div class="community-empty">Engagement API not connected.</div>';
+      return;
+    }
+    el.innerHTML = '<div class="community-loading">Loading contributors…</div>';
+    fetch(BASE + '/leaderboard?limit=10')
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (data) {
+        if (!data || !data.entries || !data.entries.length) {
+          el.innerHTML = '<div class="community-empty">No contributors yet — be the first! 🚀</div>';
+          return;
+        }
+        el.innerHTML = data.entries.map(function (e, i) {
+          return '<div class="community-row">' +
+            '<span class="community-rank">' + (i + 1) + '</span>' +
+            '<img class="community-avatar" src="' + avatarUrl(e.email_hash, 32) + '" alt="" loading="lazy">' +
+            '<span class="community-name">' + esc(e.name || 'Unknown') + '</span>' +
+            '<span class="community-score">💬 ' + (e.score || 0) + '</span>' +
+          '</div>';
+        }).join('');
+      })
+      .catch(function () {
+        el.innerHTML = '<div class="community-empty">Could not load leaderboard.</div>';
+      });
+  }
+
+  function loadCommunityFeed() {
+    var el = document.getElementById('community-feed');
+    if (!el) return;
+    if (!BASE || !FEATURES.LIVE_FEED) {
+      el.innerHTML = '<div class="community-empty">Live feed not connected.</div>';
+      return;
+    }
+    el.innerHTML = '<div class="community-loading">Loading activity…</div>';
+    fetch(BASE + '/feed?limit=5')
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (data) {
+        if (!data || !data.items || !data.items.length) {
+          el.innerHTML = '<div class="community-empty">No activity yet — the battle is just beginning.</div>';
+          return;
+        }
+        el.innerHTML = data.items.map(function (item) {
+          return '<div class="community-row">' +
+            '<span class="community-icon">' + esc(item.icon || '📌') + '</span>' +
+            '<span class="community-text">' + esc(item.text || '') + '</span>' +
+            '<span class="community-time">' + esc(item.time_ago || '') + '</span>' +
+          '</div>';
+        }).join('');
+      })
+      .catch(function () {
+        el.innerHTML = '<div class="community-empty">Could not load feed.</div>';
+      });
+  }
+
+  function loadCommunityStats() {
+    var el = document.getElementById('community-stats-grid');
+    if (!el) return;
+    if (!BASE || !FEATURES.ACTIVITY_PANEL) {
+      el.innerHTML = '<div class="community-empty">Activity panel not connected.</div>';
+      return;
+    }
+    fetch(BASE + '/activity/hot?limit=5')
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (data) {
+        if (!data || !data.pages || !data.pages.length) return;
+        el.innerHTML = data.pages.map(function (p) {
+          return '<a href="' + esc(p.url || '#') + '" class="community-stat-card">' +
+            '<span class="community-stat-icon">' + esc(p.icon || '🔥') + '</span>' +
+            '<span class="community-stat-title">' + esc(p.title || p.url || '') + '</span>' +
+            '<span class="community-stat-value">' + (p.views || 0) + ' interactions</span>' +
+          '</a>';
+        }).join('');
+      })
+      .catch(function () { /* keep existing placeholder on error */ });
+  }
+
   function populateCommunityPage() {
     var isCommunity = window.location.pathname === '/community.html' ||
       window.location.pathname.endsWith('/community.html');
@@ -234,6 +328,10 @@
         '</div>';
       }).join('');
     }
+
+    loadCommunityLeaderboard();
+    loadCommunityFeed();
+    loadCommunityStats();
   }
 
   function init() {

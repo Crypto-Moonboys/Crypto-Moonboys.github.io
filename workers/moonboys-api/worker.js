@@ -764,7 +764,8 @@ export default {
       try {
         const row = await env.DB.prepare(
           `SELECT telegram_id, username, display_name, avatar_url, faction,
-                  xp_total, xp_seasonal, xp_yearly, last_seen_at, created_at
+                  xp_total, xp_seasonal, xp_yearly, last_seen_at, created_at,
+                  linked_email_hash
            FROM telegram_profiles WHERE telegram_id = ?`
         ).bind(telegramId).first();
         if (!row) return err('Profile not found', 404);
@@ -784,7 +785,7 @@ export default {
         const [rows, meta] = await Promise.all([
           env.DB.prepare(
             `SELECT telegram_id, username, display_name, avatar_url, faction,
-                    xp_total, xp_seasonal, xp_yearly
+                    xp_total, xp_seasonal, xp_yearly, linked_email_hash
              FROM telegram_profiles
              ORDER BY xp_total DESC
              LIMIT ?`
