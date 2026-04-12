@@ -133,9 +133,6 @@
 
   // Brief delay for simulated key-up after a tap, matching typical game loop tick.
   var KEY_PULSE_MS = 80;
-  // Delay after proxying a game button click before syncing overlay button state,
-  // giving the game's event handler time to update its own button text.
-  var BTN_SYNC_MS = 50;
 
   var origParent      = null;
   var origNextSibling = null;
@@ -350,14 +347,14 @@
 
   /* ── Button state sync ───────────────────────────────────────────── */
 
+  // The games toggle a `paused` variable internally but don't change #pauseBtn text.
+  // We track pause state locally in the overlay.
+  var _isPaused = false;
+
   function syncPauseBtn() {
-    var gamePauseBtn = document.getElementById('pauseBtn');
-    if (!gamePauseBtn) return;
-    // pauseBtn says "Resume" when game is paused, "Pause" when running.
-    var isPaused = /resume/i.test(gamePauseBtn.textContent || '');
     var icon = btnPause.querySelector('.btn-icon');
     var lbl  = btnPause.querySelector('.btn-label');
-    if (isPaused) {
+    if (_isPaused) {
       btnPause.classList.add('paused');
       if (icon) icon.textContent = '▶';
       if (lbl)  lbl.textContent  = ' Resume';
@@ -427,6 +424,8 @@
     scoreInterval = setInterval(updateScores, 500);
     updateScores();
 
+    // Reset pause tracking when opening.
+    _isPaused = false;
     syncPauseBtn();
     syncFSBtn();
 
@@ -449,13 +448,12 @@
     if (scoreInterval) { clearInterval(scoreInterval); scoreInterval = null; }
 
     // Pause the game if it's actively running before closing.
+    // Only pause if we haven't already paused via the overlay btn.
     var gamePauseBtn = document.getElementById('pauseBtn');
-    if (gamePauseBtn) {
-      var txt = gamePauseBtn.textContent || '';
-      // Click pause only when the game is running (button says "Pause", not "Resume").
-      if (/pause/i.test(txt) && !/resume/i.test(txt)) {
-        gamePauseBtn.click();
-      }
+    if (gamePauseBtn && !_isPaused) {
+      // Clicking pauseBtn when game is running pauses it; if game isn't running
+      // the handler is a no-op (all games check `if (running)`), so safe to call.
+      gamePauseBtn.click();
     }
 
     // Leave browser fullscreen if active.
@@ -484,6 +482,12 @@
   // runs, so it fires in bubble phase after our capture listener).
   startBtn.addEventListener('click', openOverlay, true);
 
+  // Also reset pause tracking if Start is clicked while already in overlay
+  // (the game handler resets paused=false internally on start).
+  startBtn.addEventListener('click', function () {
+    if (isOpen) { _isPaused = false; syncPauseBtn(); }
+  });
+
   btnExit.addEventListener('click', closeOverlay);
 
   btnFS.addEventListener('click', function () {
@@ -498,7 +502,8 @@
     var gamePauseBtn = document.getElementById('pauseBtn');
     if (gamePauseBtn) {
       gamePauseBtn.click();
-      setTimeout(syncPauseBtn, BTN_SYNC_MS);
+      _isPaused = !_isPaused;
+      syncPauseBtn();
     }
   });
 
@@ -506,7 +511,9 @@
     var gameResetBtn = document.getElementById('resetBtn');
     if (gameResetBtn) {
       gameResetBtn.click();
-      setTimeout(syncPauseBtn, BTN_SYNC_MS);
+      // After reset, game is no longer paused.
+      _isPaused = false;
+      syncPauseBtn();
     }
   });
 

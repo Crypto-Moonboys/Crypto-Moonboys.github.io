@@ -372,10 +372,6 @@ body.overlay-open {
     display: none;
   }
 
-  .overlay-body {
-    flex-direction: column;
-  }
-
   .overlay-side {
     display: none !important;
   }
@@ -386,16 +382,16 @@ body.overlay-open {
 
   .overlay-touch-pad {
     display: flex;
-    min-height: 100px;
+    min-height: 80px;
   }
 
   #game-overlay canvas:not(#nextCanvas) {
-    max-height: calc(100dvh - 40px - 100px) !important;
+    max-height: calc(100dvh - 40px - 170px) !important;
   }
 
   @supports not (height: 1dvh) {
     #game-overlay canvas:not(#nextCanvas) {
-      max-height: calc(100vh - 40px - 100px) !important;
+      max-height: calc(100vh - 40px - 170px) !important;
     }
   }
 }
