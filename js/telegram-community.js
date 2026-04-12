@@ -30,7 +30,7 @@
 
   // ── HTML escape (XSS prevention) ─────────────────────────────
 
-  function esc(str) {
+  function escapeHtml(str) {
     return String(str == null ? '' : str)
       .replace(/&/g, '&amp;')
       .replace(/</g, '&lt;')
@@ -40,7 +40,7 @@
   }
 
   function gravatar(emailHash, size) {
-    return 'https://www.gravatar.com/avatar/' + esc(emailHash || '0') + '?d=identicon&s=' + (size || 40);
+    return 'https://www.gravatar.com/avatar/' + escapeHtml(emailHash || '0') + '?d=identicon&s=' + (size || 40);
   }
 
   // ── Fetch helpers ─────────────────────────────────────────────
@@ -67,10 +67,10 @@
       }
       var rows = data.entries.map(function (e, i) {
         var avatar = e.avatar_url
-          ? '<img class="tg-avatar" src="' + esc(e.avatar_url) + '" alt="" loading="lazy">'
+          ? '<img class="tg-avatar" src="' + escapeHtml(e.avatar_url) + '" alt="" loading="lazy">'
           : '<img class="tg-avatar" src="' + gravatar('', 32) + '" alt="" loading="lazy">';
-        var faction = e.faction ? ' <span class="tg-faction">' + esc(e.faction) + '</span>' : '';
-        var name = esc(e.display_name || e.username || 'Unknown Moonboy');
+        var faction = e.faction ? ' <span class="tg-faction">' + escapeHtml(e.faction) + '</span>' : '';
+        var name = escapeHtml(e.display_name || e.username || 'Unknown Moonboy');
         return '<div class="tg-lb-row">' +
           '<span class="tg-lb-rank">' + (i + 1) + '</span>' +
           avatar +
@@ -102,12 +102,12 @@
         return;
       }
       var cards = data.quests.map(function (q) {
-        var ends = q.ends_at ? ' <span class="tg-quest-ends">Ends: ' + esc(q.ends_at.slice(0, 10)) + '</span>' : '';
+        var ends = q.ends_at ? ' <span class="tg-quest-ends">Ends: ' + escapeHtml(q.ends_at.slice(0, 10)) + '</span>' : '';
         return '<div class="tg-quest-card">' +
-          '<div class="tg-quest-title">' + esc(q.title) + ends + '</div>' +
-          '<div class="tg-quest-type">Type: ' + esc(q.quest_type) + ' &nbsp;|&nbsp; Reward: ⚡' + (q.xp_reward || 0) + ' XP</div>' +
-          '<div class="tg-quest-desc">' + esc(q.description) + '</div>' +
-          '<div class="tg-quest-solve">Solve via Telegram: <code>/solve ' + esc(q.slug) + ' &lt;answer&gt;</code></div>' +
+          '<div class="tg-quest-title">' + escapeHtml(q.title) + ends + '</div>' +
+          '<div class="tg-quest-type">Type: ' + escapeHtml(q.quest_type) + ' &nbsp;|&nbsp; Reward: ⚡' + (q.xp_reward || 0) + ' XP</div>' +
+          '<div class="tg-quest-desc">' + escapeHtml(q.description) + '</div>' +
+          '<div class="tg-quest-solve">Solve via Telegram: <code>/solve ' + escapeHtml(q.slug) + ' &lt;answer&gt;</code></div>' +
         '</div>';
       }).join('');
 
@@ -132,20 +132,20 @@
       }
       var p = data.profile;
       var avatar = p.avatar_url
-        ? '<img class="tg-profile-avatar" src="' + esc(p.avatar_url) + '" alt="' + esc(p.display_name) + '" loading="lazy">'
+        ? '<img class="tg-profile-avatar" src="' + escapeHtml(p.avatar_url) + '" alt="' + escapeHtml(p.display_name) + '" loading="lazy">'
         : '<img class="tg-profile-avatar" src="' + gravatar('', 64) + '" alt="" loading="lazy">';
       var linked = p.linked_email_hash
         ? '<span class="tg-badge tg-badge-linked">✅ Website Linked</span>'
         : '<span class="tg-badge tg-badge-unlinked">❌ Not Linked</span>';
       var faction = p.faction
-        ? '<span class="tg-badge tg-badge-faction">⚔️ ' + esc(p.faction) + '</span>'
+        ? '<span class="tg-badge tg-badge-faction">⚔️ ' + escapeHtml(p.faction) + '</span>'
         : '';
 
       el.innerHTML =
         '<div class="tg-profile-card">' +
           avatar +
           '<div class="tg-profile-info">' +
-            '<div class="tg-profile-name">' + esc(p.display_name || p.username || 'Unknown') + '</div>' +
+            '<div class="tg-profile-name">' + escapeHtml(p.display_name || p.username || 'Unknown') + '</div>' +
             '<div class="tg-profile-badges">' + linked + faction + '</div>' +
             '<div class="tg-profile-xp">⚡ ' + (p.xp_total || 0) + ' XP total &nbsp;|&nbsp; ' +
               (p.xp_seasonal || 0) + ' seasonal &nbsp;|&nbsp; ' +
@@ -167,7 +167,7 @@
     apiFetch('/telegram/daily-status?telegram_id=' + encodeURIComponent(telegramId)).then(function (data) {
       if (!data) { el.innerHTML = ''; return; }
       if (data.claimed) {
-        el.innerHTML = '<span class="tg-daily-claimed">✅ Daily XP claimed (' + esc(data.date) + ')</span>';
+        el.innerHTML = '<span class="tg-daily-claimed">✅ Daily XP claimed (' + escapeHtml(data.date) + ')</span>';
       } else {
         el.innerHTML =
           '<span class="tg-daily-unclaimed">🎁 Daily XP available! Use <code>/daily</code> in the Telegram bot.</span>';
@@ -191,9 +191,9 @@
       }
       var rows = data.items.map(function (item) {
         return '<div class="feed-item">' +
-          '<span class="feed-icon">' + esc(item.icon || '⚡') + '</span>' +
-          '<span class="feed-text">' + esc(item.text) + '</span>' +
-          '<span class="feed-time">' + esc(item.time_ago || '') + '</span>' +
+          '<span class="feed-icon">' + escapeHtml(item.icon || '⚡') + '</span>' +
+          '<span class="feed-text">' + escapeHtml(item.text) + '</span>' +
+          '<span class="feed-time">' + escapeHtml(item.time_ago || '') + '</span>' +
         '</div>';
       }).join('');
       el.innerHTML = rows;

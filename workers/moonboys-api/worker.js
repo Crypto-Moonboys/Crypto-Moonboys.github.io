@@ -145,7 +145,7 @@ async function upsertTelegramProfile(db, user) {
  * Anti-spam: enforced by callers (daily claim table, one-time event checks).
  */
 async function awardXp(db, telegramId, xpDelta, eventType, source, sourceRef = '') {
-  if (!xpDelta || xpDelta <= 0) return;
+  if (!xpDelta || xpDelta < 0) return;
   const eventId = crypto.randomUUID();
   await db.prepare(`
     INSERT INTO telegram_xp_events (id, telegram_id, event_type, xp_delta, source, source_ref)

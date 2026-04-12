@@ -71,7 +71,7 @@ CREATE TABLE IF NOT EXISTS telegram_profiles (
   display_name     TEXT,
   avatar_url       TEXT,
   linked_email_hash TEXT,
-  linked_player_id TEXT,
+  linked_player_id TEXT,   -- reserved: future arcade/website player identity bridge
   faction          TEXT DEFAULT '',
   xp_total         INTEGER DEFAULT 0,
   xp_seasonal      INTEGER DEFAULT 0,
