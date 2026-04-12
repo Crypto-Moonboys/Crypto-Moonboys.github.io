@@ -314,3 +314,179 @@
     grid-template-columns: 1fr;
   }
 }
+/* ── Telegram Community Widgets ──────────────────────────────────────────── */
+
+/* Leaderboard */
+.tg-lb-header {
+  font-size: .75rem;
+  font-weight: 600;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--color-text-muted, #aab3c5);
+  margin-bottom: 10px;
+}
+
+.tg-lb-note {
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: 0;
+  opacity: .7;
+}
+
+.tg-lb-list { display: grid; gap: 8px; }
+
+.tg-lb-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.07);
+}
+
+.tg-lb-rank {
+  font-size: .85rem;
+  font-weight: 700;
+  color: var(--color-accent, #fbbf24);
+  min-width: 22px;
+  text-align: right;
+}
+
+.tg-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.tg-lb-name {
+  flex: 1;
+  font-size: .88rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tg-faction {
+  margin-left: 6px;
+  font-size: .72rem;
+  padding: 1px 6px;
+  border-radius: 8px;
+  background: rgba(255,200,0,0.15);
+  color: #fbbf24;
+  border: 1px solid rgba(255,200,0,0.25);
+  vertical-align: middle;
+}
+
+.tg-lb-xp {
+  font-size: .82rem;
+  font-weight: 600;
+  color: #60e3ff;
+  white-space: nowrap;
+}
+
+/* Quest panel */
+.tg-quest-list { display: grid; gap: 12px; }
+
+.tg-quest-card {
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.08);
+}
+
+.tg-quest-title {
+  font-weight: 700;
+  font-size: .9rem;
+  margin-bottom: 4px;
+}
+
+.tg-quest-ends {
+  font-size: .72rem;
+  font-weight: 400;
+  opacity: .65;
+  margin-left: 8px;
+}
+
+.tg-quest-type {
+  font-size: .78rem;
+  color: var(--color-text-muted, #aab3c5);
+  margin-bottom: 6px;
+}
+
+.tg-quest-desc {
+  font-size: .85rem;
+  line-height: 1.5;
+  margin-bottom: 8px;
+}
+
+.tg-quest-solve {
+  font-size: .78rem;
+  color: #60e3ff;
+}
+
+.tg-quest-solve code {
+  background: rgba(0,195,255,0.1);
+  border-radius: 5px;
+  padding: 1px 5px;
+}
+
+.tg-quest-hint {
+  font-size: .8rem;
+  opacity: .7;
+}
+
+/* Profile card */
+.tg-profile-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+}
+
+.tg-profile-avatar {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+  border: 2px solid rgba(255,200,0,0.3);
+}
+
+.tg-profile-name {
+  font-weight: 700;
+  font-size: 1rem;
+  margin-bottom: 6px;
+}
+
+.tg-profile-badges { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+
+.tg-badge {
+  font-size: .74rem;
+  padding: 2px 8px;
+  border-radius: 10px;
+  border: 1px solid transparent;
+}
+
+.tg-badge-linked  { background: rgba(80,220,130,0.12); border-color: rgba(80,220,130,0.3); color: #5ce0a8; }
+.tg-badge-unlinked { background: rgba(255,100,100,0.10); border-color: rgba(255,100,100,0.2); color: #f87171; }
+.tg-badge-faction { background: rgba(255,200,0,0.12); border-color: rgba(255,200,0,0.25); color: #fbbf24; }
+
+.tg-profile-xp { font-size: .82rem; color: #60e3ff; }
+
+/* Daily claim */
+.tg-daily-claimed   { font-size: .85rem; color: #5ce0a8; }
+.tg-daily-unclaimed { font-size: .85rem; color: #fbbf24; }
+.tg-daily-unclaimed code {
+  background: rgba(255,200,0,0.1);
+  border-radius: 5px;
+  padding: 1px 5px;
+}
+
+/* Community loading state */
+.community-loading {
+  padding: 14px;
+  color: var(--color-text-muted, #aab3c5);
+  font-size: .85rem;
+}

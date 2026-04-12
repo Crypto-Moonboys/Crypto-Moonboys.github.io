@@ -86,6 +86,22 @@
               </div>
             </div>
           </div>
+
+          <!-- Telegram Community XP Leaderboard -->
+          <div class="community-card">
+            <div class="community-card-inner">
+              <h3>🤖 Telegram Community XP</h3>
+              <div id="tg-community-leaderboard" class="community-list"></div>
+            </div>
+          </div>
+
+          <!-- Telegram XP Activity Feed -->
+          <div class="community-card">
+            <div class="community-card-inner">
+              <h3>⚡ Community XP Activity</h3>
+              <div id="tg-activity-feed" class="community-list"></div>
+            </div>
+          </div>
         </div>
 
         <div class="community-side">
@@ -93,6 +109,30 @@
             <div class="community-card-inner">
               <h3>Mission Board</h3>
               <div id="community-missions" class="community-list"></div>
+            </div>
+          </div>
+
+          <!-- Active Lore Quests -->
+          <div class="community-card">
+            <div class="community-card-inner">
+              <h3>🗺️ Lore Quests</h3>
+              <div id="tg-quest-panel"></div>
+            </div>
+          </div>
+
+          <!-- Daily Claim Status (populated after Telegram auth) -->
+          <div class="community-card" id="tg-daily-card" style="display:none">
+            <div class="community-card-inner">
+              <h3>🎁 Daily XP</h3>
+              <div id="tg-daily-status"></div>
+            </div>
+          </div>
+
+          <!-- Telegram Profile Card (populated after Telegram auth) -->
+          <div class="community-card" id="tg-profile-card-wrap" style="display:none">
+            <div class="community-card-inner">
+              <h3>👤 Your Telegram Profile</h3>
+              <div id="tg-profile-card"></div>
             </div>
           </div>
 
@@ -146,6 +186,52 @@
 <script src="/js/engagement.js"></script>
 <script src="/js/comments.js"></script>
 <script src="/js/battle-layer.js"></script>
+<script src="/js/telegram-community.js"></script>
+<script>
+// After Telegram auth via the comment widget, show the profile card and daily status.
+(function () {
+  var origCb = window._moonboysTgAuth;
+  window._moonboysTgAuth = function (user) {
+    if (origCb) origCb(user);
+    var cfg = window.MOONBOYS_API || {};
+    var BASE = cfg.BASE_URL || null;
+    if (!BASE) return;
+    fetch(BASE + '/telegram/auth', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(user),
+    })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (data) {
+        if (!data || !data.ok || !data.identity) return;
+        var tid = data.identity.telegram_id;
+
+        // Show and hydrate profile card
+        var cardWrap = document.getElementById('tg-profile-card-wrap');
+        var card     = document.getElementById('tg-profile-card');
+        if (cardWrap && card) {
+          card.dataset.telegramId = tid;
+          cardWrap.style.display  = '';
+          if (window.MOONBOYS_TG_COMMUNITY) {
+            window.MOONBOYS_TG_COMMUNITY.initProfileCard(card);
+          }
+        }
+
+        // Show and hydrate daily status
+        var dailyCard   = document.getElementById('tg-daily-card');
+        var dailyStatus = document.getElementById('tg-daily-status');
+        if (dailyCard && dailyStatus) {
+          dailyStatus.dataset.telegramId = tid;
+          dailyCard.style.display        = '';
+          if (window.MOONBOYS_TG_COMMUNITY) {
+            window.MOONBOYS_TG_COMMUNITY.initDailyStatus(dailyStatus);
+          }
+        }
+      })
+      .catch(function () {});
+  };
+}());
+</script>
 
 </body>
 </html>
