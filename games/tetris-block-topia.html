@@ -15,17 +15,18 @@
     .hud .stat{background:rgba(255,255,255,.04);border:1px solid var(--color-border,#333);border-radius:12px;padding:12px;text-align:center}
     .hud .label{font-size:.7rem;color:var(--color-text-muted)}
     .hud .value{font-weight:700;font-size:1.15rem}
-    .tet-wrap{display:flex;gap:16px;justify-content:center;align-items:flex-start}
-    #tetCanvas{background:#090c16;border:2px solid #bc8cff;border-radius:14px;box-shadow:0 0 30px rgba(188,140,255,.18) inset;display:block}
-    .tet-side{display:flex;flex-direction:column;gap:14px;min-width:90px}
+    .tet-wrap{display:flex;gap:16px;justify-content:center;align-items:flex-start;flex-wrap:nowrap}
+    #tetCanvas{width:100%;max-width:300px;aspect-ratio:1/2;height:auto;background:#090c16;border:2px solid #bc8cff;border-radius:14px;box-shadow:0 0 30px rgba(188,140,255,.18) inset;display:block;flex-shrink:1}
+    .tet-side{display:flex;flex-direction:column;gap:14px;min-width:90px;flex-shrink:0}
     .tet-panel{background:rgba(255,255,255,.04);border:1px solid var(--color-border,#333);border-radius:12px;padding:10px;text-align:center}
     .tet-panel-label{font-size:.7rem;color:var(--color-text-muted);margin-bottom:6px}
-    #nextCanvas{background:#090c16;border:1px solid #30363d;border-radius:8px;display:block;margin:0 auto}
+    #nextCanvas{background:#090c16;border:1px solid #30363d;border-radius:8px;display:block;margin:0 auto;max-width:100%}
     .row{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:14px}
     .game-btn{padding:.8rem 1.1rem;border:none;border-radius:12px;background:#f7ab1a;color:#111;font-weight:700;cursor:pointer}
     .game-btn.alt{background:rgba(255,255,255,.08);color:#fff}
     .note{margin-top:14px;color:var(--color-text-muted);font-size:.85rem}
-    @media(max-width:600px){.tet-side{min-width:70px}.hud{grid-template-columns:repeat(2,minmax(0,1fr));}}
+    @media(max-width:600px){.hud{grid-template-columns:repeat(2,minmax(0,1fr));}.tet-side{min-width:70px}}
+    @media(max-width:420px){.tet-side{display:none}#tetCanvas{max-width:100%}}
   </style>
 </head>
 <body>
