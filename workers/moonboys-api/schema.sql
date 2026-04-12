@@ -1,24 +1,19 @@
--- Users
-CREATE TABLE IF NOT EXISTS users (
-  id TEXT PRIMARY KEY,
-  display_name TEXT NOT NULL,
-  email_hash TEXT,
-  telegram_username TEXT,
-  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-);
-
--- Comments
+-- Comments (self-contained: name/email_hash stored directly; no user FK required)
 CREATE TABLE IF NOT EXISTS comments (
   id TEXT PRIMARY KEY,
   page_id TEXT NOT NULL,
-  user_id TEXT NOT NULL,
+  name TEXT NOT NULL,
+  email_hash TEXT DEFAULT '',
+  telegram_username TEXT DEFAULT '',
   text TEXT NOT NULL,
   approved INTEGER DEFAULT 0,
-  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (user_id) REFERENCES users(id)
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
--- Votes on comments
+CREATE INDEX IF NOT EXISTS idx_comments_page_approved
+  ON comments(page_id, approved, created_at DESC);
+
+-- Per-comment up/down votes
 CREATE TABLE IF NOT EXISTS votes (
   id TEXT PRIMARY KEY,
   comment_id TEXT NOT NULL,
@@ -27,6 +22,8 @@ CREATE TABLE IF NOT EXISTS votes (
   FOREIGN KEY (comment_id) REFERENCES comments(id)
 );
 
+CREATE INDEX IF NOT EXISTS idx_votes_comment ON votes(comment_id);
+
 -- Page likes
 CREATE TABLE IF NOT EXISTS page_likes (
   id TEXT PRIMARY KEY,
@@ -34,15 +31,7 @@ CREATE TABLE IF NOT EXISTS page_likes (
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
--- XP events
-CREATE TABLE IF NOT EXISTS xp_events (
-  id TEXT PRIMARY KEY,
-  user_id TEXT NOT NULL,
-  event_type TEXT,
-  xp INTEGER,
-  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (user_id) REFERENCES users(id)
-);
+CREATE INDEX IF NOT EXISTS idx_page_likes_page ON page_likes(page_id);
 
 -- Citation votes
 CREATE TABLE IF NOT EXISTS citation_votes (
@@ -53,21 +42,14 @@ CREATE TABLE IF NOT EXISTS citation_votes (
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
+CREATE INDEX IF NOT EXISTS idx_citation_votes_page_cite
+  ON citation_votes(page_id, cite_id);
+
 -- Daily keywords
 CREATE TABLE IF NOT EXISTS daily_keywords (
   id TEXT PRIMARY KEY,
   keyword TEXT NOT NULL,
   rarity TEXT,
   active INTEGER DEFAULT 1,
-  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-);
-
--- Keyword hits
-CREATE TABLE IF NOT EXISTS keyword_hits (
-  id TEXT PRIMARY KEY,
-  user_id TEXT NOT NULL,
-  comment_id TEXT NOT NULL,
-  keyword TEXT,
-  xp_awarded INTEGER,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
