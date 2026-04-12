@@ -10,6 +10,8 @@
  *
  *   GET  /comments?page_id=&limit=        — list approved comments for a page
  *   POST /comments                        — submit a new comment (queued for moderation)
+ *                                           Required: page_id, name, email, text
+ *                                           Optional: telegram_username, discord_username, avatar_url
  *   POST /comments/:id/vote               — cast up/down vote on a comment
  *   GET  /comments/recent?limit=          — latest approved comments across all pages
  *
@@ -28,6 +30,8 @@
 const MAX_NAME_LENGTH    = 60;
 const MAX_COMMENT_LENGTH = 2000;
 const MAX_TG_LENGTH      = 60;
+const MAX_DISCORD_LENGTH = 60;
+const MAX_AVATAR_URL_LEN = 500;
 
 const CORS_HEADERS = {
   'Access-Control-Allow-Origin': '*',
@@ -91,6 +95,7 @@ export default {
       try {
         const rows = await env.DB.prepare(
           `SELECT c.id, c.page_id, c.name, c.email_hash, c.telegram_username,
+                  c.discord_username, c.avatar_url,
                   c.text, c.created_at,
                   COALESCE(SUM(CASE WHEN v.vote='up'   THEN 1 ELSE 0 END),0) AS votes_up,
                   COALESCE(SUM(CASE WHEN v.vote='down' THEN 1 ELSE 0 END),0) AS votes_down
@@ -115,18 +120,21 @@ export default {
     if (path === '/comments' && request.method === 'POST') {
       let body;
       try { body = await request.json(); } catch { return err('Invalid JSON'); }
-      const { page_id, name, text, email, telegram_username } = body || {};
+      const { page_id, name, text, email, telegram_username, discord_username, avatar_url } = body || {};
       if (!page_id || !name || !text) return err('page_id, name, and text required');
+      if (!email) return err('email is required');
       const id         = crypto.randomUUID();
       const safeName   = String(name).trim().slice(0, MAX_NAME_LENGTH);
       const safeText   = String(text).trim().slice(0, MAX_COMMENT_LENGTH);
       const safeTg     = String(telegram_username || '').trim().slice(0, MAX_TG_LENGTH);
-      const emailHash  = email ? await sha256Hex(email) : '';
+      const safeDiscord = String(discord_username || '').trim().slice(0, MAX_DISCORD_LENGTH);
+      const safeAvatar  = String(avatar_url || '').trim().slice(0, MAX_AVATAR_URL_LEN);
+      const emailHash  = await sha256Hex(email);
       try {
         await env.DB.prepare(
-          `INSERT INTO comments (id, page_id, name, email_hash, telegram_username, text, approved)
-           VALUES (?, ?, ?, ?, ?, ?, 0)`
-        ).bind(id, page_id, safeName, emailHash, safeTg, safeText).run();
+          `INSERT INTO comments (id, page_id, name, email_hash, telegram_username, discord_username, avatar_url, text, approved)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0)`
+        ).bind(id, page_id, safeName, emailHash, safeTg, safeDiscord, safeAvatar, safeText).run();
       } catch {
         return err('Failed to save comment', 500);
       }
@@ -157,7 +165,7 @@ export default {
       const limit = Math.min(parseInt(url.searchParams.get('limit') || '5', 10), 20);
       try {
         const rows = await env.DB.prepare(
-          `SELECT id, page_id, name, email_hash, telegram_username, text, created_at
+          `SELECT id, page_id, name, email_hash, telegram_username, discord_username, avatar_url, text, created_at
            FROM comments
            WHERE approved = 1
            ORDER BY created_at DESC
