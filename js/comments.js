@@ -207,6 +207,11 @@
           .then(function (data) {
             if (!data || !data.ok || !data.identity) return;
             var id = data.identity;
+            // Persist telegram_id so competitive actions (likes, votes, faction,
+            // arcade scores) are unblocked for the rest of the session.
+            if (window.MOONBOYS_IDENTITY && window.MOONBOYS_IDENTITY.saveTelegramIdentity && id.telegram_id) {
+              window.MOONBOYS_IDENTITY.saveTelegramIdentity(id.telegram_id, id.display_name);
+            }
             // Prefill every comment form visible on the page
             Array.prototype.forEach.call(
               document.querySelectorAll('.comment-form'),
@@ -248,19 +253,47 @@
   }
 
   // ── Vote button delegation ───────────────────────────────────
+  // Comment voting is a competitive action — requires Telegram sync.
+  // Comment *posting* (Gravatar email flow) remains open to all.
 
   function wireVotes(container) {
     container.addEventListener('click', function (e) {
       var btn = e.target.closest('.comment-vote-btn');
       if (!btn || !BASE || btn.disabled) return;
-      var cid  = btn.dataset.commentId;
-      var vote = btn.dataset.vote;
-      btn.disabled = true;
-      fetch(BASE + '/comments/' + cid + '/vote', {
-        method:  'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify({ vote: vote }),
-      }).catch(function () { btn.disabled = false; });
+
+      var gate = window.MOONBOYS_IDENTITY;
+      var doVote = function () {
+        var cid  = btn.dataset.commentId;
+        var vote = btn.dataset.vote;
+        btn.disabled = true;
+        var payload = { vote: vote };
+        if (gate) { var tid = gate.getTelegramId(); if (tid) payload.telegram_id = tid; }
+        fetch(BASE + '/comments/' + cid + '/vote', {
+          method:  'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body:    JSON.stringify(payload),
+        })
+          .then(function (r) {
+            if (r.status === 403) {
+              return r.json().then(function (d) {
+                if (d.error === 'telegram_sync_required' && gate && gate.showSyncGateModal) {
+                  gate.showSyncGateModal();
+                }
+                btn.disabled = false;
+                throw d;
+              });
+            }
+          })
+          .catch(function (err) {
+            if (err && err.error !== 'telegram_sync_required') btn.disabled = false;
+          });
+      };
+
+      if (gate && gate.requireTelegramSync) {
+        gate.requireTelegramSync(doVote);
+      } else {
+        doVote();
+      }
     });
   }
 

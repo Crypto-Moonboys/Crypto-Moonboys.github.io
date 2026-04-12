@@ -2,6 +2,9 @@
 // Update this constant when the worker is published.
 const PRODUCTION_LEADERBOARD_URL = "https://moonboys-leaderboard.sercullen.workers.dev";
 
+// localStorage key shared with identity-gate.js
+const TG_ID_KEY = "moonboys_tg_id";
+
 function getApiUrl() {
   if (typeof window !== "undefined" && window.LEADERBOARD_API_URL) {
     return String(window.LEADERBOARD_API_URL).replace(/\/$/, "");
@@ -9,14 +12,48 @@ function getApiUrl() {
   return PRODUCTION_LEADERBOARD_URL;
 }
 
+/** Read the stored Telegram ID, preferring window.MOONBOYS_IDENTITY if loaded. */
+function getTelegramId() {
+  if (typeof window === "undefined") return null;
+  if (window.MOONBOYS_IDENTITY && typeof window.MOONBOYS_IDENTITY.getTelegramId === "function") {
+    return window.MOONBOYS_IDENTITY.getTelegramId();
+  }
+  try { return localStorage.getItem(TG_ID_KEY) || null; } catch { return null; }
+}
+
+/**
+ * Submit a score to the arcade leaderboard.
+ *
+ * Requires a Telegram-synced identity (identity-gate.js or localStorage key
+ * `moonboys_tg_id`).  If no Telegram ID is found the submission is skipped
+ * and the sync gate modal is shown if available — the game itself is unaffected.
+ */
 export async function submitScore(player, score, game = "global") {
+  const telegramId = getTelegramId();
+  if (!telegramId) {
+    // Guest mode: score stays local only.  Show gate modal if the page has it.
+    if (typeof window !== "undefined" && window.MOONBOYS_IDENTITY &&
+        typeof window.MOONBOYS_IDENTITY.showSyncGateModal === "function") {
+      window.MOONBOYS_IDENTITY.showSyncGateModal();
+    }
+    return;
+  }
+
   const api = getApiUrl();
   try {
-    await fetch(api, {
+    const res = await fetch(api, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ player, score, game })
+      body: JSON.stringify({ player, score, game, telegram_id: telegramId })
     });
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      if (data.error === "telegram_sync_required" &&
+          typeof window !== "undefined" && window.MOONBOYS_IDENTITY &&
+          typeof window.MOONBOYS_IDENTITY.showSyncGateModal === "function") {
+        window.MOONBOYS_IDENTITY.showSyncGateModal();
+      }
+    }
   } catch (err) {
     console.error("[leaderboard-client] Score submission failed:", err);
   }

@@ -8,13 +8,18 @@
  * When BASE_URL is null or feature flags are false, controls render
  * with a clear "API not connected" notice — nothing breaks.
  *
+ * Identity tiers (enforced by backend + this file):
+ *   guest       — button renders but action blocked (sync gate modal shown)
+ *   gravatar    — same as guest for competitive actions
+ *   telegram    — full access; telegram_id included in every POST body
+ *
  * Usage — Page like button:
  *   <div class="page-like-widget" data-page-id="article-slug"></div>
  *
  * Usage — Citation vote (inline, inside .citations-list):
  *   <span class="cite-vote" data-cite-id="1" data-page-id="article-slug"></span>
  *
- * Include this script after wiki.js on pages that need it.
+ * Include this script after identity-gate.js and wiki.js on pages that need it.
  */
 (function () {
   'use strict';
@@ -27,6 +32,40 @@
 
   function defaultPageId() {
     return document.location.pathname.split('/').pop().replace(/\.html$/, '') || 'home';
+  }
+
+  // ── Identity helpers ─────────────────────────────────────────
+
+  function getGate() { return window.MOONBOYS_IDENTITY || null; }
+
+  function getTelegramId() {
+    var gate = getGate();
+    return gate ? gate.getTelegramId() : null;
+  }
+
+  /**
+   * Gate a competitive action.  Calls fn() if Telegram-synced, otherwise
+   * shows the sync gate modal.  Falls through if identity-gate.js is absent.
+   */
+  function withTelegramSync(fn) {
+    var gate = getGate();
+    if (gate && gate.requireTelegramSync) {
+      gate.requireTelegramSync(fn);
+    } else {
+      fn();
+    }
+  }
+
+  /**
+   * Handle a 403 telegram_sync_required response from the worker.
+   * Shows the sync gate modal and re-enables the button.
+   */
+  function handle403(data, btn) {
+    if (data && data.error === 'telegram_sync_required') {
+      var gate = getGate();
+      if (gate && gate.showSyncGateModal) gate.showSyncGateModal();
+    }
+    if (btn) btn.disabled = false;
   }
 
   // ── Page Like Widget ─────────────────────────────────────────
@@ -48,7 +87,7 @@
     var countEl  = el.querySelector('.like-count');
     var statusEl = el.querySelector('.like-status');
 
-    // Load current count
+    // Load current count (public read — no auth needed)
     if (BASE && FEATURES.LIKES) {
       fetch(BASE + '/likes?page_id=' + encodeURIComponent(pageId))
         .then(function (r) { return r.ok ? r.json() : null; })
@@ -66,27 +105,45 @@
         return;
       }
 
-      btn.disabled = true;
-      btn.classList.add('like-btn--pending');
+      // Gate: competitive action requires Telegram sync
+      withTelegramSync(function () {
+        btn.disabled = true;
+        btn.classList.add('like-btn--pending');
 
-      fetch(BASE + '/likes', {
-        method:  'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify({ page_id: pageId }),
-      })
-        .then(function (r) { return r.ok ? r.json() : r.json().then(function (d) { throw d; }); })
-        .then(function (data) {
-          countEl.textContent  = data.count;
-          btn.classList.remove('like-btn--pending');
-          btn.classList.add('like-btn--active');
-          statusEl.textContent = '❤️ Liked!';
+        var payload = { page_id: pageId };
+        var tid = getTelegramId();
+        if (tid) payload.telegram_id = tid;
+
+        fetch(BASE + '/likes', {
+          method:  'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body:    JSON.stringify(payload),
         })
-        .catch(function (err) {
-          var msg = (err && err.message) ? err.message : 'Already liked or error.';
-          statusEl.textContent = '⚠️ ' + msg;
-          btn.disabled = false;
-          btn.classList.remove('like-btn--pending');
-        });
+          .then(function (r) {
+            if (r.status === 403) {
+              return r.json().then(function (d) {
+                handle403(d, btn);
+                btn.classList.remove('like-btn--pending');
+                statusEl.textContent = '🔐 Telegram sync required to like pages.';
+                throw d;
+              });
+            }
+            return r.ok ? r.json() : r.json().then(function (d) { throw d; });
+          })
+          .then(function (data) {
+            countEl.textContent  = data.count;
+            btn.classList.remove('like-btn--pending');
+            btn.classList.add('like-btn--active');
+            statusEl.textContent = '❤️ Liked!';
+          })
+          .catch(function (err) {
+            if (err && err.error === 'telegram_sync_required') return;
+            var msg = (err && err.message) ? err.message : 'Already liked or error.';
+            statusEl.textContent = '⚠️ ' + msg;
+            btn.disabled = false;
+            btn.classList.remove('like-btn--pending');
+          });
+      });
     });
   }
 
@@ -105,7 +162,7 @@
 
     var scoreEl = el.querySelector('.cite-vote-score');
 
-    // Load current score
+    // Load current score (public read — no auth needed)
     if (BASE && FEATURES.CITATION_VOTES) {
       fetch(BASE + '/citation-votes?page_id=' + encodeURIComponent(pageId) +
             '&cite_id=' + encodeURIComponent(citeId))
@@ -119,22 +176,40 @@
     Array.prototype.forEach.call(el.querySelectorAll('.cite-vote-btn'), function (btn) {
       btn.addEventListener('click', function () {
         if (!BASE || !FEATURES.CITATION_VOTES || btn.disabled) return;
-        btn.disabled = true;
 
-        fetch(BASE + '/citation-votes', {
-          method:  'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body:    JSON.stringify({
+        // Gate: competitive action requires Telegram sync
+        withTelegramSync(function () {
+          btn.disabled = true;
+
+          var payload = {
             page_id: pageId,
             cite_id: citeId,
             vote:    btn.dataset.action,
-          }),
-        })
-          .then(function (r) { return r.ok ? r.json() : null; })
-          .then(function (data) {
-            if (data && data.score !== undefined) scoreEl.textContent = data.score;
+          };
+          var tid = getTelegramId();
+          if (tid) payload.telegram_id = tid;
+
+          fetch(BASE + '/citation-votes', {
+            method:  'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body:    JSON.stringify(payload),
           })
-          .catch(function () { btn.disabled = false; });
+            .then(function (r) {
+              if (r.status === 403) {
+                return r.json().then(function (d) {
+                  handle403(d, btn);
+                  throw d;
+                });
+              }
+              return r.ok ? r.json() : null;
+            })
+            .then(function (data) {
+              if (data && data.score !== undefined) scoreEl.textContent = data.score;
+            })
+            .catch(function (err) {
+              if (err && err.error !== 'telegram_sync_required') btn.disabled = false;
+            });
+        });
       });
     });
   }

@@ -60,6 +60,13 @@ const TG_SEASON_LENGTH_MS = 90 * 24 * 60 * 60 * 1000;  // 7_776_000_000 ms
 const TG_ARCHIVE_TOP_N    = 50;
 /** Milliseconds in one day — used when computing days remaining in a season. */
 const MS_PER_DAY          = 86400000;
+/**
+ * Master season epoch: 2024-01-01T00:00:00.000Z (Unix ms 1704067200000).
+ * Both moonboys-api and leaderboard-worker derive the current season number
+ * from this fixed anchor so their seasons are always in lockstep, even if the
+ * workers were deployed at different times.
+ */
+const SEASON_EPOCH_MS = 1704067200000;
 
 // Approved faction slugs (must match client-side list in battle-layer.js)
 const APPROVED_FACTIONS = new Set([
@@ -213,17 +220,21 @@ async function getTgMeta(db) {
 
   if (row) return row;
 
-  // Bootstrap — first request ever
+  // Bootstrap from fixed epoch anchor — aligns with leaderboard-worker.js so
+  // both workers always report the same current season number.
   const now         = new Date();
-  const seasonStart = now.toISOString();
+  const nowMs       = now.getTime();
+  const seasonIdx   = Math.floor((nowMs - SEASON_EPOCH_MS) / TG_SEASON_LENGTH_MS);
+  const seasonStart = new Date(SEASON_EPOCH_MS + seasonIdx * TG_SEASON_LENGTH_MS).toISOString();
   const yearStart   = new Date(Date.UTC(now.getUTCFullYear(), 0, 1)).toISOString();
+
   await db.prepare(`
     INSERT OR IGNORE INTO telegram_community_meta
       (meta_key, season_start, season_number, year_start)
-    VALUES ('current', ?, 1, ?)
-  `).bind(seasonStart, yearStart).run().catch(() => {});
+    VALUES ('current', ?, ?, ?)
+  `).bind(seasonStart, seasonIdx + 1, yearStart).run().catch(() => {});
 
-  return { meta_key: 'current', season_start: seasonStart, season_number: 1, year_start: yearStart };
+  return { meta_key: 'current', season_start: seasonStart, season_number: seasonIdx + 1, year_start: yearStart };
 }
 
 /**
@@ -489,8 +500,12 @@ export default {
       const commentId = commentVoteMatch[1];
       let body;
       try { body = await request.json(); } catch { return err('Invalid JSON'); }
-      const { vote } = body || {};
+      const { vote, telegram_id } = body || {};
       if (!['up', 'down'].includes(vote)) return err('vote must be "up" or "down"');
+      // Competitive action — requires a Telegram-synced identity
+      if (!telegram_id || !String(telegram_id).trim()) {
+        return err('telegram_sync_required', 403);
+      }
       const id = crypto.randomUUID();
       try {
         await env.DB.prepare(
@@ -541,8 +556,12 @@ export default {
     if (path === '/likes' && request.method === 'POST') {
       let body;
       try { body = await request.json(); } catch { return err('Invalid JSON'); }
-      const { page_id } = body || {};
+      const { page_id, telegram_id } = body || {};
       if (!page_id) return err('page_id required');
+      // Competitive action — requires a Telegram-synced identity
+      if (!telegram_id || !String(telegram_id).trim()) {
+        return err('telegram_sync_required', 403);
+      }
       const id = crypto.randomUUID();
       try {
         await env.DB.prepare(
@@ -580,9 +599,13 @@ export default {
     if (path === '/citation-votes' && request.method === 'POST') {
       let body;
       try { body = await request.json(); } catch { return err('Invalid JSON'); }
-      const { page_id, cite_id, vote } = body || {};
+      const { page_id, cite_id, vote, telegram_id } = body || {};
       if (!page_id || !cite_id || !['up', 'down'].includes(vote)) {
         return err('page_id, cite_id, and vote (up|down) required');
+      }
+      // Competitive action — requires a Telegram-synced identity
+      if (!telegram_id || !String(telegram_id).trim()) {
+        return err('telegram_sync_required', 403);
       }
       const id = crypto.randomUUID();
       try {
