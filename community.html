@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Battle Chamber — Community intelligence hub for the Crypto Moonboys ecosystem.">
+  <meta name="robots" content="index, follow">
+  <title>Battle Chamber — Crypto Moonboys</title>
+  <link rel="stylesheet" href="/css/wiki.css">
+  <link rel="stylesheet" href="/css/battle-layer.css">
+  <link rel="icon" href="/img/favicon.svg" type="image/svg+xml">
+</head>
+<body>
+
+<a class="skip-link" href="#content">Skip to content</a>
+
+<header id="site-header" role="banner">
+  <button class="hamburger" id="hamburger" aria-label="Toggle navigation" aria-expanded="false" aria-controls="sidebar">☰</button>
+  <a href="/index.html" class="site-logo" aria-label="The Crypto Moonboys GK Wiki home">
+    <img src="/img/CRYPTO-MOONBOYS-BITCOIN-LOGO.png" alt="" aria-hidden="true">
+    <span>
+      <span class="logo-text">The Crypto Moonboys GK Wiki</span>
+      <span class="logo-sub">Blockchain Cryptoism Encyclopedia</span>
+    </span>
+  </a>
+  <nav class="header-nav" aria-label="Main navigation">
+    <a href="/index.html">Home</a>
+    <a href="/categories/index.html">Categories</a>
+    <a href="/search.html">All Articles</a>
+    <a href="/community.html" class="active" aria-current="page">Battle</a>
+  </nav>
+</header>
+<div id="sidebar-overlay" aria-hidden="true"></div>
+
+<div id="layout">
+  <nav id="sidebar" aria-label="Wiki navigation">
+    <div class="sidebar-section">
+      <div class="sidebar-heading">Navigation</div>
+      <div class="sidebar-nav">
+        <a href="/index.html"><span class="nav-icon">🏠</span> Main Page</a>
+        <a href="/community.html" class="active"><span class="nav-icon">⚔️</span> Battle Chamber</a>
+      </div>
+    </div>
+  </nav>
+
+  <div id="main-wrapper">
+    <main id="content" role="main">
+      <section class="community-hero">
+        <h1>Battle Chamber</h1>
+        <p>The Battle Chamber is the strategic nerve centre of the Crypto Moonboys ecosystem. Track community engagement, align with a faction, and prepare for the next phase of decentralised cultural warfare.</p>
+      </section>
+
+      <section class="community-hero-grid">
+        <div class="community-card">
+          <div class="community-card-inner">
+            <h3>Engagement Snapshot</h3>
+            <div class="community-stat-grid" id="community-stats-grid">
+              <div class="community-empty">Awaiting live engagement data.</div>
+            </div>
+          </div>
+        </div>
+        <div class="community-card">
+          <div class="community-card-inner">
+            <h3>Faction Alignment</h3>
+            <div id="community-faction-selector"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="community-grid">
+        <div class="community-main">
+          <div class="community-card">
+            <div class="community-card-inner">
+              <h3>Top Contributors</h3>
+              <div id="community-leaderboard" class="community-list">
+                <div class="community-empty">Leaderboard will populate once the engagement API is connected.</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="community-card">
+            <div class="community-card-inner">
+              <h3>Live Activity Feed</h3>
+              <div id="community-feed" class="community-list">
+                <div class="community-empty">No activity yet — the battle is just beginning.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="community-side">
+          <div class="community-card">
+            <div class="community-card-inner">
+              <h3>Mission Board</h3>
+              <div id="community-missions" class="community-list"></div>
+            </div>
+          </div>
+
+          <div class="community-card">
+            <div class="community-card-inner">
+              <h3>Community Forge</h3>
+              <p>Every interaction — comments, likes, and citation votes — contributes to the collective intelligence of the Moonboys universe. As the engagement API evolves, contributors will unlock ranks, achievements, and deeper lore integration.</p>
+              <div class="community-link-grid">
+                <a href="/search.html" class="battle-link-card">
+                  <strong>Explore Articles</strong>
+                  <div class="battle-copy">Discover and influence key intelligence files.</div>
+                </a>
+                <a href="/games/" class="battle-link-card">
+                  <strong>Enter the Arcade</strong>
+                  <div class="battle-copy">Experience interactive lore through gameplay.</div>
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer id="site-footer" role="contentinfo">
+      <div class="footer-inner">
+        <div class="footer-col">
+          <h4>Crypto Moonboys</h4>
+          <p>Fan-driven crypto encyclopedia and cultural movement.</p>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>© 2026 Crypto Moonboys · Not financial advice.</p>
+      </div>
+    </footer>
+  </div>
+</div>
+
+<button id="back-to-top" aria-label="Back to top">↑</button>
+
+<script src="/js/api-config.js"></script>
+<script src="/js/wiki.js"></script>
+<script src="/js/engagement.js"></script>
+<script src="/js/comments.js"></script>
+<script src="/js/battle-layer.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,19 @@
+name = "moonboys-api"
+main = "worker.js"
+compatibility_date = "2025-01-01"
+
+# D1 database binding — configure before deploying.
+# Copy this block into a [env.production] section and set the real ID:
+#
+#   [env.production]
+#   [[env.production.d1_databases]]
+#   binding = "DB"
+#   database_name = "moonboys"
+#   database_id = "<YOUR_D1_DATABASE_ID>"
+#
+# To obtain a database ID: run `wrangler d1 create moonboys`
+# and paste the printed ID above.  Never commit a real ID to source control.
+[[d1_databases]]
+binding = "DB"
+database_name = "moonboys"
+database_id = "00000000-0000-0000-0000-000000000000"
