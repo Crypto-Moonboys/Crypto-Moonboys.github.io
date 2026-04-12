@@ -210,13 +210,16 @@
 
   // ── Community page API hydration ────────────────────────────────────────
 
+  // Minimum hex-string length that constitutes a real stored hash (MD5=32, SHA-256=64).
+  var MIN_HASH_LENGTH = 32;
+
   function avatarUrl(emailHash, size) {
     var gCfg = (window.MOONBOYS_API && window.MOONBOYS_API.GRAVATAR) || {};
     var base  = gCfg.BASE || 'https://www.gravatar.com/avatar/';
     var s     = size || gCfg.SIZE || 40;
     var d     = gCfg.DEFAULT || 'identicon';
     var r     = gCfg.RATING || 'g';
-    var hash  = emailHash && emailHash.length > 8 ? emailHash : '0';
+    var hash  = emailHash && emailHash.length >= MIN_HASH_LENGTH ? emailHash : '0';
     return base + esc(hash) + '?s=' + s + '&d=' + d + '&r=' + r;
   }
 

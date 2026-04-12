@@ -167,17 +167,17 @@ The Battle Chamber is the community hub. It is wired to `moonboys-api` via `js/b
 
 ## 👤 Gravatar / Avatar Flow
 
-Avatars are SHA-256 hashes of the user's lowercase-trimmed email address (Gravatar supports SHA-256 alongside MD5 since Nov 2023).
+Avatars are derived from an SHA-256 hash of the user's lowercase-trimmed email address, stored as `email_hash` in D1. Cloudflare Workers' Web Crypto API supports SHA-256 natively but not MD5 (which Gravatar has historically required). SHA-256 hashes produce valid identicons via Gravatar's `d=identicon` fallback; users with a Gravatar account linked under their MD5 hash will see identicons rather than their profile photo. If Gravatar officially extends SHA-256 support to profile resolution, this will work transparently without any code changes.
 
 **Flow:**
 1. User submits a comment with their email address
-2. Worker computes `sha256(email.trim().toLowerCase())` and stores it as `email_hash`
-3. Email address is never stored or returned by the API
+2. Worker computes `sha256(email.trim().toLowerCase())` — email is never stored or returned by the API
+3. `email_hash` is stored in D1 and returned with comment data
 4. Frontend builds Gravatar URL: `https://www.gravatar.com/avatar/{email_hash}?s={size}&d=identicon`
-5. If user has no Gravatar, an identicon is shown (deterministic per hash — always consistent)
-6. Telegram `avatar_url` (from Telegram Login Widget) takes priority when present
+5. Gravatar returns an identicon (deterministic per hash — always consistent for that user)
+6. Telegram `avatar_url` (from Telegram Login Widget) takes priority when present, bypassing Gravatar entirely
 
-**Avatar priority order:** `avatar_url` (Telegram/explicit) → Gravatar (email hash) → identicon fallback
+**Avatar priority order:** `avatar_url` (Telegram/explicit) → Gravatar URL (email hash → identicon or real photo) → identicon fallback
 
 **Used in:** article comments (`js/comments.js`), community contributor leaderboard (`js/battle-layer.js`), Telegram community panels (`js/telegram-community.js`)
 
