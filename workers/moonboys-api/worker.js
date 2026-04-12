@@ -320,14 +320,12 @@ export default {
 
         const combined = [
           ...(commentRows.results || []),
-          ...(likeRows.results || [])
-        ]
-          .sort(
-            (a, b) =>
-              new Date(b.created_at).getTime() -
-              new Date(a.created_at).getTime()
-          )
-          .slice(0, limit);
+          ...(likeRows.results || []),
+        ].sort(
+          (a, b) =>
+            new Date(b.created_at).getTime() -
+            new Date(a.created_at).getTime()
+        ).slice(0, limit);
 
         const items = combined.map(r => ({
           icon:     r.type === 'comment' ? '💬' : '❤️',
@@ -453,7 +451,21 @@ export default {
     // Endpoint for Telegram Bot API webhook delivery.
     // Consumes the update body and returns 200 OK so Telegram stops retrying.
     if (path === '/telegram/webhook' && request.method === 'POST') {
-      await request.json().catch(() => {});
+      const update = await request.json().catch(() => null);
+
+      if (update?.message?.text === '/start') {
+        const chatId = update.message.chat.id;
+
+        await fetch(`https://api.telegram.org/bot${env.TELEGRAM_BOT_TOKEN}/sendMessage`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            chat_id: chatId,
+            text: 'Welcome to WIKICOMS 🚀',
+          }),
+        });
+      }
+
       return json({ ok: true });
     }
 
