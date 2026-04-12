@@ -287,10 +287,14 @@
       el.innerHTML = '<div class="community-empty">Activity panel not connected.</div>';
       return;
     }
+    el.innerHTML = '<div class="community-loading">Loading trending pages…</div>';
     fetch(BASE + '/activity/hot?limit=5')
       .then(function (r) { return r.ok ? r.json() : null; })
       .then(function (data) {
-        if (!data || !data.pages || !data.pages.length) return;
+        if (!data || !data.pages || !data.pages.length) {
+          el.innerHTML = '<div class="community-empty">No trending pages yet — start engaging! 🔥</div>';
+          return;
+        }
         el.innerHTML = data.pages.map(function (p) {
           return '<a href="' + esc(p.url || '#') + '" class="community-stat-card">' +
             '<span class="community-stat-icon">' + esc(p.icon || '🔥') + '</span>' +
@@ -299,7 +303,9 @@
           '</a>';
         }).join('');
       })
-      .catch(function () { /* keep existing placeholder on error */ });
+      .catch(function () {
+        el.innerHTML = '<div class="community-empty">Could not load trending pages.</div>';
+      });
   }
 
   function populateCommunityPage() {
