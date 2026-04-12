@@ -320,8 +320,14 @@ export default {
 
         const combined = [
           ...(commentRows.results || []),
-          ...(likeRows.results || []),
-        ].sort((a, b) => new Date(b.created_at) - new Date(a.created_at)).slice(0, limit);
+          ...(likeRows.results || [])
+        ]
+          .sort(
+            (a, b) =>
+              new Date(b.created_at).getTime() -
+              new Date(a.created_at).getTime()
+          )
+          .slice(0, limit);
 
         const items = combined.map(r => ({
           icon:     r.type === 'comment' ? '💬' : '❤️',
