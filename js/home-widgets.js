@@ -76,6 +76,8 @@
       return;
     }
 
+    el.innerHTML = placeholder('🤖', 'Checking SAM status…');
+
     fetch(BASE + '/sam/status')
       .then(function (r) { return r.ok ? r.json() : null; })
       .then(function (data) {
@@ -107,6 +109,8 @@
       );
       return;
     }
+
+    el.innerHTML = placeholder('📡', 'Loading activity feed…');
 
     fetch(BASE + '/feed?limit=5')
       .then(function (r) { return r.ok ? r.json() : null; })
@@ -143,6 +147,8 @@
       return;
     }
 
+    el.innerHTML = placeholder('🏆', 'Loading leaderboard…');
+
     fetch(BASE + '/leaderboard?limit=5')
       .then(function (r) { return r.ok ? r.json() : null; })
       .then(function (data) {
@@ -176,6 +182,8 @@
       );
       return;
     }
+
+    el.innerHTML = placeholder('🔥', 'Loading trending pages…');
 
     fetch(BASE + '/activity/hot?limit=5')
       .then(function (r) { return r.ok ? r.json() : null; })
@@ -217,6 +225,8 @@
       return;
     }
 
+    el.innerHTML = placeholder('⚔️', 'Loading recent battles…');
+
     fetch(BASE + '/comments/recent?limit=3')
       .then(function (r) { return r.ok ? r.json() : null; })
       .then(function (data) {
@@ -238,7 +248,12 @@
           '<a href="articles.html" class="btn btn-secondary teaser-see-all">See all battles →</a>' +
           '</div>';
       })
-      .catch(function () {});
+      .catch(function () {
+        // Comments widget uses an empty-state message on error (rather than a
+        // generic "unavailable" banner) because seeing no comments yet is an
+        // expected state and this phrasing encourages first engagement.
+        el.innerHTML = '<div class="comments-empty">No comments yet — start the battle! ⚔️</div>';
+      });
   }
 
   // ── Boot ─────────────────────────────────────────────────────

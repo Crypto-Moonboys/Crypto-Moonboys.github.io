@@ -8,9 +8,19 @@ const SEASON_LENGTH_MS = 90 * 24 * 60 * 60 * 1000;  // 90 days in milliseconds
 const ALL_TIME_BOARD_SIZE = 420;
 const ALL_TIME_TOP_SEASONAL = 50;    // top N seasonal players evaluated for all-time each reset
 
+/**
+ * Master season epoch: 2024-01-01T00:00:00.000Z (Unix ms 1704067200000).
+ * Must match SEASON_EPOCH_MS in workers/moonboys-api/worker.js so both workers
+ * always report the same current season number regardless of deployment order.
+ */
+const SEASON_EPOCH_MS = 1704067200000;
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
+    // path is used for the structured /season/current route.
+    // Legacy GET/POST handlers use url.searchParams instead (no path routing).
+    const path = url.pathname.replace(/\/$/, '') || '/';
 
     const corsHeaders = {
       "Access-Control-Allow-Origin": "*",
@@ -25,6 +35,25 @@ export default {
 
     // Lazy reset check on every request
     await checkAndRunResets(env);
+
+    // ── GET /season/current ──────────────────────────────────────────────────
+    // Exposes the current arcade season state so the frontend can display
+    // season info consistent with the community XP season in moonboys-api.
+    if (path === "/season/current" && request.method === "GET") {
+      const meta = await getOrInitMeta(env);
+      const now  = Date.now();
+      const seasonElapsed  = now - new Date(meta.season_start).getTime();
+      const seasonDaysLeft = Math.max(0, Math.ceil((SEASON_LENGTH_MS - seasonElapsed) / 86400000));
+      return new Response(JSON.stringify({
+        season_number:    meta.season_number,
+        season_start:     meta.season_start,
+        season_days_left: seasonDaysLeft,
+        year:             new Date(now).getUTCFullYear(),
+        year_start:       meta.year_start,
+        reset_model:      '90-day seasonal + New Year yearly (matches moonboys-api)',
+        epoch_anchor:     new Date(SEASON_EPOCH_MS).toISOString(),
+      }), { headers: corsHeaders });
+    }
 
     if (request.method === "GET") {
       const game = url.searchParams.get("game") || "global";
@@ -52,7 +81,17 @@ export default {
         );
       }
 
-      const { player, score, game } = body;
+      const { player, score, game, telegram_id } = body;
+
+      // Competitive action — seasonal and all-time score submission requires
+      // a Telegram-synced identity.  Guests can play locally but scores are
+      // not persisted to any leaderboard without a linked Telegram account.
+      if (!telegram_id || !String(telegram_id).trim()) {
+        return new Response(
+          JSON.stringify({ error: "telegram_sync_required" }),
+          { status: 403, headers: corsHeaders }
+        );
+      }
 
       if (typeof player !== "string" || player.trim().length < 1 || player.trim().length > 40) {
         return new Response(
@@ -379,6 +418,10 @@ async function getBoard(env, game) {
 /**
  * Read or initialise the season/year metadata stored in KV.
  * Meta shape: { season_start: ISO, season_number: N, year_start: ISO }
+ *
+ * When no meta exists (first deploy), the season is bootstrapped from the
+ * fixed SEASON_EPOCH_MS anchor rather than "now".  This ensures new
+ * deployments always join the same current season as moonboys-api.
  */
 async function getOrInitMeta(env) {
   const raw = await env.LEADERBOARD.get("leaderboard:meta");
@@ -388,11 +431,12 @@ async function getOrInitMeta(env) {
       if (parsed && typeof parsed === "object") return parsed;
     } catch { /* fall through to init */ }
   }
-  const now  = new Date();
+  const now        = Date.now();
+  const seasonIdx  = Math.floor((now - SEASON_EPOCH_MS) / SEASON_LENGTH_MS);
   const meta = {
-    season_start:  now.toISOString(),
-    season_number: 1,
-    year_start:    new Date(Date.UTC(now.getUTCFullYear(), 0, 1)).toISOString()
+    season_start:  new Date(SEASON_EPOCH_MS + seasonIdx * SEASON_LENGTH_MS).toISOString(),
+    season_number: seasonIdx + 1,
+    year_start:    new Date(Date.UTC(new Date(now).getUTCFullYear(), 0, 1)).toISOString()
   };
   await env.LEADERBOARD.put("leaderboard:meta", JSON.stringify(meta));
   return meta;

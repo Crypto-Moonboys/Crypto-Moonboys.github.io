@@ -21,6 +21,10 @@ window.MOONBOYS_API = {
   // Live Cloudflare Worker endpoint powering all engagement features.
   BASE_URL: 'https://moonboys-api.sercullen.workers.dev',
 
+  /* ── Identity Sync Gate ──────────────────────────────────── */
+  // URL shown to users who attempt a competitive action without Telegram sync.
+  SYNC_GATE_URL: 'https://crypto-moonboys.github.io/gkniftyheads-incubator.html',
+
   /* ── CoinGecko Public API ────────────────────────────────── */
   // Used for live cryptocurrency price data (no API key required).
   COINGECKO_BASE: 'https://api.coingecko.com/api/v3',

@@ -77,17 +77,26 @@
         '</button>';
       }).join('') +
       '</div>' +
-      '<p class="battle-copy">Choose your allegiance. Your faction is saved locally and will sync with your profile once community features go live.</p>' +
+      '<p class="battle-copy">Telegram sync required to align with a faction. Your allegiance is stored locally and syncs with your seasonal Battle Chamber profile.</p>' +
       '</div></div>';
   }
 
   function attachFactionHandlers(container) {
     container.querySelectorAll('.faction-btn').forEach(function (btn) {
       btn.addEventListener('click', function () {
-        var faction = btn.dataset.faction;
-        setFaction(faction);
-        container.querySelectorAll('.faction-btn').forEach(function (b) { b.classList.remove('is-active'); });
-        btn.classList.add('is-active');
+        // Faction alignment is a competitive Battle Chamber action — Telegram sync required.
+        var gate = window.MOONBOYS_IDENTITY;
+        var doAlign = function () {
+          var faction = btn.dataset.faction;
+          setFaction(faction);
+          container.querySelectorAll('.faction-btn').forEach(function (b) { b.classList.remove('is-active'); });
+          btn.classList.add('is-active');
+        };
+        if (gate && gate.requireTelegramSync) {
+          gate.requireTelegramSync(doAlign);
+        } else {
+          doAlign();
+        }
       });
     });
   }
@@ -287,10 +296,14 @@
       el.innerHTML = '<div class="community-empty">Activity panel not connected.</div>';
       return;
     }
+    el.innerHTML = '<div class="community-loading">Loading trending pages…</div>';
     fetch(BASE + '/activity/hot?limit=5')
       .then(function (r) { return r.ok ? r.json() : null; })
       .then(function (data) {
-        if (!data || !data.pages || !data.pages.length) return;
+        if (!data || !data.pages || !data.pages.length) {
+          el.innerHTML = '<div class="community-empty">No trending pages yet — start engaging! 🔥</div>';
+          return;
+        }
         el.innerHTML = data.pages.map(function (p) {
           return '<a href="' + esc(p.url || '#') + '" class="community-stat-card">' +
             '<span class="community-stat-icon">' + esc(p.icon || '🔥') + '</span>' +
@@ -299,7 +312,9 @@
           '</a>';
         }).join('');
       })
-      .catch(function () { /* keep existing placeholder on error */ });
+      .catch(function () {
+        el.innerHTML = '<div class="community-empty">Could not load trending pages.</div>';
+      });
   }
 
   function populateCommunityPage() {
