@@ -203,10 +203,41 @@
     hero.insertAdjacentElement('afterend', strip);
   }
 
+  function populateCommunityPage() {
+    var isCommunity = window.location.pathname === '/community.html' ||
+      window.location.pathname.endsWith('/community.html');
+    if (!isCommunity) return;
+
+    var factionContainer = document.getElementById('community-faction-selector');
+    if (factionContainer && !factionContainer.hasChildNodes()) {
+      factionContainer.innerHTML = factionSelectorHTML();
+      attachFactionHandlers(factionContainer);
+    }
+
+    var missionsContainer = document.getElementById('community-missions');
+    if (missionsContainer && !missionsContainer.hasChildNodes()) {
+      var communityMissions = [
+        { tag: 'Engage', text: 'Post a comment on any wiki article to add to the community intelligence.' },
+        { tag: 'Signal', text: 'Like an article to boost its standing in the Moonboys ecosystem.' },
+        { tag: 'Cite', text: 'Vote on a citation to strengthen the credibility of the knowledge base.' },
+        { tag: 'Align', text: 'Choose your faction above to register your allegiance.' }
+      ];
+      missionsContainer.innerHTML = communityMissions.map(function (m) {
+        return '<div class="mission-row">' +
+          '<div>' +
+            '<span class="mission-tag">' + esc(m.tag) + '</span>' +
+            '<div class="mission-text">' + esc(m.text) + '</div>' +
+          '</div>' +
+        '</div>';
+      }).join('');
+    }
+  }
+
   function init() {
     injectCommunityNav();
     injectHomeStrip();
     injectArticleBattleLayer();
+    populateCommunityPage();
   }
 
   if (document.readyState === 'loading') {

@@ -13,7 +13,7 @@ CREATE TABLE IF NOT EXISTS comments (
   page_id TEXT NOT NULL,
   user_id TEXT NOT NULL,
   text TEXT NOT NULL,
-  approved INTEGER DEFAULT 1,
+  approved INTEGER DEFAULT 0,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (user_id) REFERENCES users(id)
 );
@@ -22,9 +22,7 @@ CREATE TABLE IF NOT EXISTS comments (
 CREATE TABLE IF NOT EXISTS votes (
   id TEXT PRIMARY KEY,
   comment_id TEXT NOT NULL,
-  vote TEXT CHECK(vote IN ('up','down')),
-  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (comment_id) REFERENCES comments(id)
+  vote TEXT NOT NULL CHECK(vote IN ('up','down')),
 );
 
 -- Page likes
@@ -49,7 +47,7 @@ CREATE TABLE IF NOT EXISTS citation_votes (
   id TEXT PRIMARY KEY,
   page_id TEXT NOT NULL,
   cite_id TEXT NOT NULL,
-  vote TEXT CHECK(vote IN ('up','down')),
+  vote TEXT NOT NULL CHECK(vote IN ('up','down')),
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
