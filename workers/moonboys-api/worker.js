@@ -53,10 +53,14 @@ export default {
       const pageId = url.searchParams.get('page_id');
       if (!pageId) return err('page_id required');
       const limit = Math.min(parseInt(url.searchParams.get('limit') || '20', 10), 100);
-      const rows = await env.DB.prepare(
-        'SELECT id, page_id, text, created_at FROM comments WHERE page_id = ? AND approved = 1 ORDER BY created_at DESC LIMIT ?'
-      ).bind(pageId, limit).all();
-      return json({ comments: rows.results });
+      try {
+        const rows = await env.DB.prepare(
+          'SELECT id, page_id, text, created_at FROM comments WHERE page_id = ? AND approved = 1 ORDER BY created_at DESC LIMIT ?'
+        ).bind(pageId, limit).all();
+        return json({ comments: rows.results });
+      } catch {
+        return err('Failed to load comments', 500);
+      }
     }
 
     // POST /comments
@@ -67,9 +71,13 @@ export default {
       if (!page_id || !text) return err('page_id and text required');
       const id = randomId();
       const uid = user_id || 'anonymous';
-      await env.DB.prepare(
-        'INSERT INTO comments (id, page_id, user_id, text, approved) VALUES (?, ?, ?, ?, 0)'
-      ).bind(id, page_id, uid, String(text).slice(0, 2000)).run();
+      try {
+        await env.DB.prepare(
+          'INSERT INTO comments (id, page_id, user_id, text, approved) VALUES (?, ?, ?, ?, 0)'
+        ).bind(id, page_id, uid, String(text).slice(0, 2000)).run();
+      } catch {
+        return err('Failed to save comment', 500);
+      }
       return json({ id, status: 'pending_moderation' }, 201);
     }
 
@@ -80,9 +88,13 @@ export default {
       const { comment_id, vote } = body || {};
       if (!comment_id || !['up', 'down'].includes(vote)) return err('comment_id and vote (up|down) required');
       const id = randomId();
-      await env.DB.prepare(
-        'INSERT INTO votes (id, comment_id, vote) VALUES (?, ?, ?)'
-      ).bind(id, comment_id, vote).run();
+      try {
+        await env.DB.prepare(
+          'INSERT INTO votes (id, comment_id, vote) VALUES (?, ?, ?)'
+        ).bind(id, comment_id, vote).run();
+      } catch {
+        return err('Failed to record vote', 500);
+      }
       return json({ id }, 201);
     }
 
@@ -93,9 +105,13 @@ export default {
       const { page_id } = body || {};
       if (!page_id) return err('page_id required');
       const id = randomId();
-      await env.DB.prepare(
-        'INSERT INTO page_likes (id, page_id) VALUES (?, ?)'
-      ).bind(id, page_id).run();
+      try {
+        await env.DB.prepare(
+          'INSERT INTO page_likes (id, page_id) VALUES (?, ?)'
+        ).bind(id, page_id).run();
+      } catch {
+        return err('Failed to record like', 500);
+      }
       return json({ id }, 201);
     }
 
@@ -108,9 +124,13 @@ export default {
         return err('page_id, cite_id, and vote (up|down) required');
       }
       const id = randomId();
-      await env.DB.prepare(
-        'INSERT INTO citation_votes (id, page_id, cite_id, vote) VALUES (?, ?, ?, ?)'
-      ).bind(id, page_id, cite_id, vote).run();
+      try {
+        await env.DB.prepare(
+          'INSERT INTO citation_votes (id, page_id, cite_id, vote) VALUES (?, ?, ?, ?)'
+        ).bind(id, page_id, cite_id, vote).run();
+      } catch {
+        return err('Failed to record citation vote', 500);
+      }
       return json({ id }, 201);
     }
 

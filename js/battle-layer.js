@@ -224,10 +224,8 @@
       ];
       missionsContainer.innerHTML = communityMissions.map(function (m) {
         return '<div class="mission-row">' +
-          '<div>' +
-            '<span class="mission-tag">' + esc(m.tag) + '</span>' +
-            '<div class="mission-text">' + esc(m.text) + '</div>' +
-          '</div>' +
+          '<span class="mission-tag">' + esc(m.tag) + '</span>' +
+          '<div class="mission-text">' + esc(m.text) + '</div>' +
         '</div>';
       }).join('');
     }

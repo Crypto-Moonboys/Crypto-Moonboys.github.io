@@ -23,6 +23,8 @@ CREATE TABLE IF NOT EXISTS votes (
   id TEXT PRIMARY KEY,
   comment_id TEXT NOT NULL,
   vote TEXT NOT NULL CHECK(vote IN ('up','down')),
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (comment_id) REFERENCES comments(id)
 );
 
 -- Page likes
