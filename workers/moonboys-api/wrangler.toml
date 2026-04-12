@@ -15,5 +15,5 @@ compatibility_date = "2025-01-01"
 # and paste the printed ID above.  Never commit a real ID to source control.
 [[d1_databases]]
 binding = "DB"
-database_name = "moonboys"
+database_name = "wikicoms"
 database_id = "8a36e17a-18fa-4b98-90e1-3f269164b166"

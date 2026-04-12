@@ -19,7 +19,7 @@ window.MOONBOYS_API = {
 
   /* ── Backend API ─────────────────────────────────────────── */
   // Live Cloudflare Worker endpoint powering all engagement features.
-  BASE_URL: 'https://moonboys-leaderboard.sercullen.workers.dev',
+  BASE_URL: 'https://moonboys-api.sercullen.workers.dev',
 
   /* ── CoinGecko Public API ────────────────────────────────── */
   // Used for live cryptocurrency price data (no API key required).
