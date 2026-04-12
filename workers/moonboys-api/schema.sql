@@ -5,10 +5,18 @@ CREATE TABLE IF NOT EXISTS comments (
   name TEXT NOT NULL,
   email_hash TEXT DEFAULT '',
   telegram_username TEXT DEFAULT '',
+  discord_username TEXT DEFAULT '',
+  avatar_url TEXT DEFAULT '',
   text TEXT NOT NULL,
   approved INTEGER DEFAULT 0,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
+
+-- Migration: add discord_username and avatar_url to existing comments tables
+-- Safe to run multiple times; D1 will ignore if column already exists.
+-- Run manually if applying to a deployed database:
+--   ALTER TABLE comments ADD COLUMN discord_username TEXT DEFAULT '';
+--   ALTER TABLE comments ADD COLUMN avatar_url TEXT DEFAULT '';
 
 CREATE INDEX IF NOT EXISTS idx_comments_page_approved
   ON comments(page_id, approved, created_at DESC);

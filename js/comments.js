@@ -37,11 +37,12 @@
       .replace(/'/g, '&#39;');
   }
 
-  // ── Gravatar ─────────────────────────────────────────────────
+  // ── Avatar URL resolution (priority: avatar_url → Gravatar → identicon) ──
 
-  function avatarUrl(hash, size) {
-    return 'https://www.gravatar.com/avatar/' + esc(hash || '0') +
-           '?d=identicon&s=' + (size || 40);
+  function resolveAvatar(comment, size) {
+    if (comment.avatar_url) return esc(comment.avatar_url);
+    var hash = comment.email_hash || '0';
+    return 'https://www.gravatar.com/avatar/' + esc(hash) + '?d=identicon&s=' + (size || 40);
   }
 
   // ── Comment list renderer ────────────────────────────────────
@@ -55,12 +56,16 @@
       var tgBadge = c.telegram_username
         ? '<span class="comment-tg">@' + esc(c.telegram_username) + '</span>'
         : '';
+      var discordBadge = c.discord_username
+        ? '<span class="comment-discord">' + esc(c.discord_username) + '</span>'
+        : '';
       return '<div class="comment-item">' +
-        '<img class="comment-avatar" src="' + avatarUrl(c.email_hash, 40) + '" alt="' + esc(c.name) + '" loading="lazy">' +
+        '<img class="comment-avatar" src="' + resolveAvatar(c, 40) + '" alt="' + esc(c.name) + '" loading="lazy">' +
         '<div class="comment-body">' +
           '<div class="comment-header">' +
             '<span class="comment-name">' + esc(c.name) + '</span>' +
             tgBadge +
+            discordBadge +
             '<span class="comment-time">' + esc(c.time_ago || '') + '</span>' +
           '</div>' +
           '<div class="comment-text">' + esc(c.text) + '</div>' +
@@ -83,12 +88,16 @@
           '<input type="text" id="cm-name-' + pageId + '" name="name" placeholder="CryptoMoonboy" maxlength="60" required autocomplete="nickname">' +
         '</div>' +
         '<div class="comment-form-field">' +
-          '<label for="cm-email-' + pageId + '">Email <span class="cm-note">(Gravatar only, never displayed)</span></label>' +
-          '<input type="email" id="cm-email-' + pageId + '" name="email" placeholder="you@example.com" maxlength="120" autocomplete="email">' +
+          '<label for="cm-email-' + pageId + '">Email <span class="cm-required">*</span> <span class="cm-note">(Gravatar avatar, never displayed)</span></label>' +
+          '<input type="email" id="cm-email-' + pageId + '" name="email" placeholder="you@example.com" maxlength="120" required autocomplete="email">' +
         '</div>' +
         '<div class="comment-form-field">' +
           '<label for="cm-tg-' + pageId + '">Telegram <span class="cm-note">(optional)</span></label>' +
           '<input type="text" id="cm-tg-' + pageId + '" name="telegram_username" placeholder="@yourhandle" maxlength="60">' +
+        '</div>' +
+        '<div class="comment-form-field">' +
+          '<label for="cm-discord-' + pageId + '">Discord <span class="cm-note">(optional)</span></label>' +
+          '<input type="text" id="cm-discord-' + pageId + '" name="discord_username" placeholder="username#0000" maxlength="60">' +
         '</div>' +
       '</div>' +
       '<div class="comment-form-field">' +
@@ -111,14 +120,20 @@
 
     form.addEventListener('submit', function (e) {
       e.preventDefault();
-      var status = form.querySelector('.comment-form-status');
-      var name   = form.querySelector('[name=name]').value.trim();
-      var email  = form.querySelector('[name=email]').value.trim();
-      var tg     = form.querySelector('[name=telegram_username]').value.trim();
-      var text   = form.querySelector('[name=text]').value.trim();
+      var status  = form.querySelector('.comment-form-status');
+      var name    = form.querySelector('[name=name]').value.trim();
+      var email   = form.querySelector('[name=email]').value.trim();
+      var tg      = form.querySelector('[name=telegram_username]').value.trim();
+      var discord = form.querySelector('[name=discord_username]').value.trim();
+      var text    = form.querySelector('[name=text]').value.trim();
 
       if (!name || !text) {
         status.textContent = '⚠️ Name and comment are required.';
+        status.className   = 'comment-form-status cm-error';
+        return;
+      }
+      if (!email) {
+        status.textContent = '⚠️ Email is required (used for Gravatar avatar only).';
         status.className   = 'comment-form-status cm-error';
         return;
       }
@@ -132,9 +147,9 @@
       status.textContent = 'Posting…';
       status.className   = 'comment-form-status cm-loading';
 
-      var payload = { page_id: pageId, name: name, text: text };
-      if (email)  payload.email             = email;
-      if (tg)     payload.telegram_username = tg;
+      var payload = { page_id: pageId, name: name, email: email, text: text };
+      if (tg)      payload.telegram_username = tg;
+      if (discord) payload.discord_username  = discord;
 
       fetch(BASE + '/comments', {
         method:  'POST',
