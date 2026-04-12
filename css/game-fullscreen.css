@@ -436,6 +436,7 @@ body.overlay-open {
   }
 
   #game-overlay canvas:not(#nextCanvas) {
+    /* 40px ctrl-bar + 80px HUD + 44px game-btns = 164px overhead */
     max-height: calc(100dvh - 40px - 164px) !important;
   }
 
@@ -470,6 +471,7 @@ body.overlay-open {
   }
 
   #game-overlay canvas:not(#nextCanvas) {
+    /* 36px ctrl-bar + 68px compact touch-pad = 104px overhead */
     max-height: calc(100dvh - 36px - 68px) !important;
   }
 
