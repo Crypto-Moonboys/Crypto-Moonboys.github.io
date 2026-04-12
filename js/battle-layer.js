@@ -26,6 +26,10 @@
     div.className = 'wiki-comments';
     div.dataset.pageId = pageId;
     main.appendChild(div);
+    // Initialise the section now that it exists in the DOM
+    if (window.MOONBOYS_COMMENTS && window.MOONBOYS_COMMENTS.initSection) {
+      window.MOONBOYS_COMMENTS.initSection(div);
+    }
   }
 
   function enhanceCitations(pageId) {
@@ -73,7 +77,7 @@
         '</button>';
       }).join('') +
       '</div>' +
-      '<p class="battle-copy">Your faction selection is stored locally and will sync with your profile once the live engagement API is fully connected.</p>' +
+      '<p class="battle-copy">Choose your allegiance. Your faction is saved locally and will sync with your profile once community features go live.</p>' +
       '</div></div>';
   }
 
@@ -107,7 +111,7 @@
         '</div>';
       }).join('') +
       '</div>' +
-      '<p class="battle-copy">Missions rotate as the community evolves. Complete them to build your reputation once full XP tracking is live.</p>' +
+      '<p class="battle-copy">Complete missions to build your reputation. XP and rank tracking activate once the engagement layer goes live.</p>' +
       '</div></div>';
   }
 
@@ -120,7 +124,7 @@
       '<h3>Battle Heat</h3>' +
       '<div class="battle-meter-shell"><div class="battle-bar-fill" style="width:' + engagement + '%"></div></div>' +
       '<div class="battle-meter-meta"><span>' + esc(level) + ' engagement</span><span>' + engagement + '%</span></div>' +
-      '<p class="battle-copy">Derived from recent comments, likes, and overall activity. Connect the engagement API to unlock real-time battle intelligence.</p>' +
+      '<p class="battle-copy">Derived from recent comments, likes, and overall activity. Live battle intelligence activates once the engagement layer is connected.</p>' +
       '</div></div>';
   }
 
@@ -193,11 +197,12 @@
       '</div></div>' +
       '<div class="battle-card"><div class="battle-card-inner">' +
         '<h3>Faction Alignment</h3>' +
-        '<p class="battle-copy">Choose your allegiance and prepare for upcoming live faction wars across the Moonboys ecosystem.</p>' +
+        '<p class="battle-copy">Choose your allegiance: Diamond Hands, HODL Warriors, Moon Mission, or GraffPUNKS.</p>' +
+        '<a href="/community.html" class="btn btn-secondary">Choose Faction →</a>' +
       '</div></div>' +
       '<div class="battle-card"><div class="battle-card-inner">' +
         '<h3>Daily Missions</h3>' +
-        '<p class="battle-copy">Complete engagement missions to rise through the ranks once XP tracking is fully activated.</p>' +
+        '<p class="battle-copy">Comment, like, and vote on citations across the wiki to influence the Moonboys narrative.</p>' +
       '</div></div>';
 
     hero.insertAdjacentElement('afterend', strip);

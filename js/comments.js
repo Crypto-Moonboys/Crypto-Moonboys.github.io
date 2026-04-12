@@ -124,8 +124,8 @@
       }
 
       if (!BASE || !FEATURES.COMMENTS) {
-        status.textContent = '⚠️ Comments API not configured. Set MOONBOYS_API.BASE_URL in js/api-config.js.';
-        status.className   = 'comment-form-status cm-error';
+        status.textContent = '⏳ Community comments are coming soon — backend not yet live.';
+        status.className   = 'comment-form-status cm-loading';
         return;
       }
 
@@ -178,15 +178,13 @@
     var pageId = el.dataset.pageId ||
       document.location.pathname.split('/').pop().replace(/\.html$/, '');
 
-    var apiNotice = BASE
-      ? '<div class="comments-loading">Loading comments…</div>'
-      : '<div class="comments-api-notice">💡 Comments require an external API. ' +
-          'Configure <code>MOONBOYS_API.BASE_URL</code> in <code>js/api-config.js</code>.</div>';
+    // Always render empty state initially; real data loaded below if API is live
+    var listPlaceholder = '<div class="comments-empty">No comments yet — drop your knowledge! 🧠</div>';
 
     el.innerHTML =
       '<section class="comments-section" aria-label="Comments">' +
         '<h2 class="comments-heading">💬 Comments &amp; Battle Layer</h2>' +
-        '<div class="comments-list" id="comments-list-' + pageId + '">' + apiNotice + '</div>' +
+        '<div class="comments-list" id="comments-list-' + pageId + '">' + listPlaceholder + '</div>' +
         buildForm(pageId) +
       '</section>';
 
@@ -196,6 +194,7 @@
     if (!BASE || !FEATURES.COMMENTS) return;
 
     var listEl = el.querySelector('#comments-list-' + pageId);
+    listEl.innerHTML = '<div class="comments-loading">Loading comments…</div>';
 
     fetch(BASE + '/comments?page_id=' + encodeURIComponent(pageId) + '&limit=20')
       .then(function (r) { return r.ok ? r.json() : null; })
@@ -216,6 +215,9 @@
   function init() {
     Array.prototype.forEach.call(document.querySelectorAll('.wiki-comments'), initSection);
   }
+
+  // Expose for battle-layer.js to call after dynamically injecting a container
+  window.MOONBOYS_COMMENTS = { initSection: initSection };
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);
