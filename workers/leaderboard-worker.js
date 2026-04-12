@@ -10,8 +10,6 @@ const ALL_TIME_TOP_SEASONAL = 50;    // top N seasonal players evaluated for all
 
 export default {
   async fetch(request, env) {
-    const url = new URL(request.url);
-
     const corsHeaders = {
       "Access-Control-Allow-Origin": "*",
       "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
@@ -106,8 +104,22 @@ export default {
       JSON.stringify({ error: "Method not allowed" }),
       { status: 405, headers: corsHeaders }
     );
+  },
+
+  async scheduled(_event, env) {
+    await checkAndRunResets(env);
   }
 };
+
+/* ── Season ID ────────────────────────────────────────────────────────────── */
+
+function getSeasonId(date = new Date()) {
+  const year = date.getUTCFullYear();
+  const startOfYear = Date.UTC(year, 0, 1);
+  const diffDays = Math.floor((date.getTime() - startOfYear) / (1000 * 60 * 60 * 24));
+  const season = Math.floor(diffDays / 90) + 1;
+  return `${year}-S${season}`;
+}
 
 /* ── Reset logic ──────────────────────────────────────────────────────────── */
 
@@ -152,9 +164,11 @@ async function runSeasonalReset(env, meta, now) {
   }
 
   // 2. Archive the finished season
+  const seasonId = getSeasonId(new Date(meta.season_start));
   await env.LEADERBOARD.put(
-    `leaderboard:archive:season-${meta.season_number}`,
+    `leaderboard:archive:${seasonId}`,
     JSON.stringify({
+      season_id:     seasonId,
       season_number: meta.season_number,
       season_start:  meta.season_start,
       season_end:    new Date(now).toISOString(),
@@ -192,8 +206,9 @@ async function runYearlyReset(env, meta, now) {
     await updateAllTimeBoard(env, seasonalBoard);
   }
   await env.LEADERBOARD.put(
-    `leaderboard:archive:season-${meta.season_number}`,
+    `leaderboard:archive:${getSeasonId(new Date(meta.season_start))}`,
     JSON.stringify({
+      season_id:     getSeasonId(new Date(meta.season_start)),
       season_number: meta.season_number,
       season_start:  meta.season_start,
       season_end:    new Date(now).toISOString(),

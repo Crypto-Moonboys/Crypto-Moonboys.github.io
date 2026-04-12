@@ -351,6 +351,24 @@ export default {
       }
     }
 
+    // ── GET /season/current ────────────────────────────────────────────────
+    if (path === '/season/current' && request.method === 'GET') {
+      const now          = new Date();
+      const year         = now.getUTCFullYear();
+      const startOfYear  = Date.UTC(year, 0, 1);
+      const diffDays     = Math.floor((now.getTime() - startOfYear) / (1000 * 60 * 60 * 24));
+      const seasonNum    = Math.floor(diffDays / 90) + 1;
+      const seasonId     = `${year}-S${seasonNum}`;
+      const seasonStart  = new Date(startOfYear + (seasonNum - 1) * 90 * 24 * 60 * 60 * 1000);
+      const seasonEnd    = new Date(seasonStart.getTime() + 90 * 24 * 60 * 60 * 1000);
+      return json({
+        season_id:    seasonId,
+        season_start: seasonStart.toISOString(),
+        season_end:   seasonEnd.toISOString(),
+        year,
+      });
+    }
+
     return err('Not found', 404);
   },
 };
