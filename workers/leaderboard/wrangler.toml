@@ -6,3 +6,8 @@ compatibility_date = "2024-11-01"
 binding    = "LEADERBOARD"
 id         = "a621c334d9ac439ebaf5f35dd31dddd5"
 preview_id = "a621c334d9ac439ebaf5f35dd31dddd5"
+
+[[d1_databases]]
+binding       = "DB"
+database_name = "wikicoms"
+database_id   = "8a36e17a-18fa-4b98-90e1-3f269164b166"
