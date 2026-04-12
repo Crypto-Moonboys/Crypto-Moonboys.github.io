@@ -435,14 +435,50 @@ body.overlay-open {
     padding: 6px 8px;
   }
 
+  /* Slim HUD: replace boxed stat cards with compact inline arcade strip */
+  #game-overlay .hud {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: wrap !important;
+    gap: 0 10px !important;
+    justify-content: center !important;
+    max-width: 100% !important;
+    margin-bottom: 2px !important;
+  }
+
+  #game-overlay .hud .stat {
+    background: none !important;
+    border: none !important;
+    border-radius: 0 !important;
+    padding: 1px 0 !important;
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: baseline !important;
+    gap: 3px !important;
+    text-align: left !important;
+  }
+
+  #game-overlay .hud .label {
+    font-size: 0.6rem !important;
+    color: rgba(255, 255, 255, 0.5) !important;
+    white-space: nowrap !important;
+  }
+
+  #game-overlay .hud .value {
+    font-size: 0.78rem !important;
+    font-weight: 700 !important;
+    color: #fff !important;
+    white-space: nowrap !important;
+  }
+
   #game-overlay canvas:not(#nextCanvas) {
-    /* 40px ctrl-bar + 80px HUD + 44px game-btns = 164px overhead */
-    max-height: calc(100dvh - 40px - 164px) !important;
+    /* 40px ctrl-bar + 80px touch-pad + ~24px slim HUD = 144px overhead */
+    max-height: calc(100dvh - 40px - 144px) !important;
   }
 
   @supports not (height: 1dvh) {
     #game-overlay canvas:not(#nextCanvas) {
-      max-height: calc(100vh - 40px - 164px) !important;
+      max-height: calc(100vh - 40px - 144px) !important;
     }
   }
 }
@@ -498,6 +534,15 @@ body.overlay-open {
 
   #game-overlay .overlay-touch-pad {
     padding: 8px 12px;
+  }
+
+  /* Tablet HUD: slightly compact but still structured */
+  #game-overlay .hud .stat {
+    padding: 6px 8px !important;
+  }
+
+  #game-overlay .hud .value {
+    font-size: 0.95rem !important;
   }
 
   #game-overlay canvas:not(#nextCanvas) {

@@ -1048,6 +1048,34 @@ a.hero-stat-link:hover {
   #header-search { display: none; }
 }
 
+/* ── MOBILE HEADER OVERFLOW FIX ────────────────────────── */
+/* Prevent site header from pushing page wider than viewport */
+@media (max-width: 600px) {
+  #site-header {
+    overflow: hidden;
+    padding: 0 10px;
+    gap: 8px;
+  }
+
+  .site-logo {
+    flex-shrink: 1;
+    min-width: 0;
+    overflow: hidden;
+  }
+
+  .site-logo .logo-text {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+    font-size: 0.95rem;
+  }
+
+  /* Hide the subtitle on small screens to free up space */
+  .site-logo .logo-sub {
+    display: none;
+  }
+}
+
 /* ── BITCOIN LOGO ICON ─────────────────────────────────── */
 .btc-logo-icon {
   height: 1em;
