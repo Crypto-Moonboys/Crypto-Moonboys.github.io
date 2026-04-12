@@ -9,13 +9,16 @@ import { fetchLeaderboard } from '/js/leaderboard-client.js';
 // ── Constants ─────────────────────────────────────────────────────────────
 const TABS = [
   { key: 'global',     label: '🌐 Global',     icon: '🌐' },
+  { key: 'seasonal',   label: '🗓️ Seasonal',   icon: '🗓️' },
+  { key: 'yearly',     label: '📅 Yearly',      icon: '📅' },
+  { key: 'all-time',   label: '🏛️ All-Time',   icon: '🏛️' },
   { key: 'snake',      label: '🐍 Snake',       icon: '🐍' },
   { key: 'crystal',    label: '🧩 Crystal',     icon: '🧩' },
   { key: 'blocktopia', label: '🧱 BlockTopia',  icon: '🧱' },
   { key: 'invaders',   label: '👾 Invaders',    icon: '👾' },
   { key: 'pacchain',   label: '🟡 Pac-Chain',   icon: '🟡' },
   { key: 'asteroids',  label: '🌑 Asteroids',   icon: '🌑' },
-  { key: 'breakout',   label: '🧱 Bullrun',    icon: '🧱' },
+  { key: 'breakout',   label: '🧱 Bullrun',     icon: '🧱' },
   { key: 'tetris',     label: '🟦 Tetris',      icon: '🟦' },
 ];
 
@@ -112,8 +115,9 @@ function renderTable(data) {
     row.breakdown && Object.keys(row.breakdown).length > 0
   );
 
-  // For global tab show all game columns; for per-game tabs show only relevant breakdown
-  const isGlobal = currentTab === 'global';
+  // Show per-game breakdown columns on all aggregate tabs
+  const AGGREGATE_TABS = new Set(['global', 'seasonal', 'yearly', 'all-time']);
+  const isGlobal = AGGREGATE_TABS.has(currentTab);
   const BREAKDOWN_GAMES = ['snake', 'crystal', 'blocktopia', 'invaders', 'pacchain', 'asteroids', 'breakout', 'tetris'];
 
   let html = `
