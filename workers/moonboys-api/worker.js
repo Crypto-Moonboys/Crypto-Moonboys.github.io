@@ -28,6 +28,7 @@
  *   POST /telegram/link
  *   GET  /telegram/activity?limit=
  *   GET  /telegram/daily-status?telegram_id=
+ *   GET  /telegram/season/current
  *
  * Telegram bot commands (handled inside POST /telegram/webhook):
  *   /start  /help  /xp  /leaderboard  /profile  /daily  /quest  /solve <ans>  /link  /faction <name>
@@ -51,6 +52,12 @@ const XP_FIRST_START  = 50;
 const XP_DAILY_CLAIM  = 20;
 const XP_QUEST_SOLVE  = 0;  // per-quest value overrides this; default fallback
 const XP_GROUP_JOIN   = 10;
+
+// ── Season / year reset constants (mirrors leaderboard-worker.js) ─────────────
+/** 90 days in milliseconds — same window as the arcade seasonal leaderboard. */
+const TG_SEASON_LENGTH_MS = 90 * 24 * 60 * 60 * 1000;
+/** Top N entries snapshotted into each season/year archive. */
+const TG_ARCHIVE_TOP_N    = 50;
 
 // Approved faction slugs (must match client-side list in battle-layer.js)
 const APPROVED_FACTIONS = new Set([
@@ -181,6 +188,178 @@ async function verifyQuestAnswer(storedHash, rawAnswer) {
   if (!storedHash || !rawAnswer) return false;
   const h = await sha256Hex(String(rawAnswer).trim().toLowerCase());
   return h === storedHash;
+}
+
+// ── Telegram/community season & year reset engine ─────────────────────────────
+// Mirrors the reset model used by leaderboard-worker.js:
+//   • Seasonal reset every 90 days   → resets xp_seasonal, preserves xp_yearly + xp_total
+//   • Yearly reset on New Year UTC   → closes current season, resets xp_yearly, preserves xp_total
+//   • Lazy-checked — called at start of webhook handler and on season/leaderboard endpoints
+//   • All resets archive top-N entries before wiping counters
+
+/**
+ * Read or initialise the single-row community season meta from D1.
+ * Shape: { meta_key, season_start, season_number, year_start }
+ *
+ * Mirrors getOrInitMeta() from leaderboard-worker.js (but stored in D1, not KV).
+ */
+async function getTgMeta(db) {
+  const row = await db.prepare(
+    `SELECT meta_key, season_start, season_number, year_start
+     FROM telegram_community_meta WHERE meta_key = 'current'`
+  ).first().catch(() => null);
+
+  if (row) return row;
+
+  // Bootstrap — first request ever
+  const now         = new Date();
+  const seasonStart = now.toISOString();
+  const yearStart   = new Date(Date.UTC(now.getUTCFullYear(), 0, 1)).toISOString();
+  await db.prepare(`
+    INSERT OR IGNORE INTO telegram_community_meta
+      (meta_key, season_start, season_number, year_start)
+    VALUES ('current', ?, 1, ?)
+  `).bind(seasonStart, yearStart).run().catch(() => {});
+
+  return { meta_key: 'current', season_start: seasonStart, season_number: 1, year_start: yearStart };
+}
+
+/**
+ * Lazy-checked reset entry-point — call at the top of any Telegram-facing handler.
+ *
+ * Mirrors checkAndRunResets() from leaderboard-worker.js:
+ *   • Yearly reset takes priority (it also closes out the current season).
+ *   • Otherwise check for a 90-day seasonal reset.
+ */
+async function checkAndRunTgResets(db) {
+  let meta;
+  try { meta = await getTgMeta(db); } catch { return; }
+
+  const now         = Date.now();
+  const currentYear = new Date(now).getUTCFullYear();
+  const metaYear    = new Date(meta.year_start).getUTCFullYear();
+
+  if (currentYear > metaYear) {
+    await runTgYearlyReset(db, meta, now).catch(() => {});
+    return;
+  }
+
+  const seasonStart = new Date(meta.season_start).getTime();
+  if (now - seasonStart >= TG_SEASON_LENGTH_MS) {
+    await runTgSeasonalReset(db, meta, now).catch(() => {});
+  }
+}
+
+/**
+ * Seasonal reset (every 90 days).
+ * Mirrors runSeasonalReset() from leaderboard-worker.js.
+ *
+ *  1. Snapshot top TG_ARCHIVE_TOP_N seasonal XP holders → telegram_season_archives
+ *  2. Reset xp_seasonal = 0 for all profiles
+ *  3. Advance season_start and season_number in telegram_community_meta
+ *
+ * xp_total and xp_yearly are never touched.
+ */
+async function runTgSeasonalReset(db, meta, now) {
+  const nowIso = new Date(now).toISOString();
+
+  // 1. Snapshot top seasonal earners before zeroing them
+  const topRows = await db.prepare(
+    `SELECT telegram_id, username, display_name, faction, xp_seasonal
+     FROM telegram_profiles
+     ORDER BY xp_seasonal DESC
+     LIMIT ?`
+  ).bind(TG_ARCHIVE_TOP_N).all().catch(() => ({ results: [] }));
+
+  const topEntries = (topRows.results || []).map((r, i) => ({
+    rank:         i + 1,
+    telegram_id:  r.telegram_id,
+    username:     r.username     || null,
+    display_name: r.display_name || null,
+    faction:      r.faction      || '',
+    xp_seasonal:  r.xp_seasonal  || 0,
+  }));
+
+  // 2. Write season archive
+  await db.prepare(`
+    INSERT OR REPLACE INTO telegram_season_archives
+      (season_number, season_start, season_end, top_entries_json)
+    VALUES (?, ?, ?, ?)
+  `).bind(meta.season_number, meta.season_start, nowIso, JSON.stringify(topEntries)).run().catch(() => {});
+
+  // 3. Reset xp_seasonal (xp_total + xp_yearly untouched)
+  await db.prepare(`UPDATE telegram_profiles SET xp_seasonal = 0`).run().catch(() => {});
+
+  // 4. Advance season meta
+  await db.prepare(`
+    UPDATE telegram_community_meta
+    SET season_start  = ?,
+        season_number = ?,
+        updated_at    = CURRENT_TIMESTAMP
+    WHERE meta_key = 'current'
+  `).bind(nowIso, meta.season_number + 1).run().catch(() => {});
+}
+
+/**
+ * Yearly reset (on New Year UTC).
+ * Mirrors runYearlyReset() from leaderboard-worker.js.
+ *
+ *  1. Close the current season (archive xp_seasonal + reset xp_seasonal)
+ *  2. Snapshot top TG_ARCHIVE_TOP_N yearly XP holders → telegram_year_archives
+ *  3. Reset xp_yearly = 0 for all profiles
+ *  4. Advance year_start in telegram_community_meta
+ *     (season_number was already advanced by step 1)
+ *
+ * xp_total is never reset.
+ */
+async function runTgYearlyReset(db, meta, now) {
+  const nowIso      = new Date(now).toISOString();
+  const currentYear = new Date(now).getUTCFullYear();
+  const prevYear    = new Date(meta.year_start).getUTCFullYear();
+
+  // 1. Close current season (seasonal archive + reset xp_seasonal + advance season_number)
+  await runTgSeasonalReset(db, meta, now);
+
+  // 2. Snapshot top yearly earners (xp_yearly unaffected by seasonal reset)
+  const topRows = await db.prepare(
+    `SELECT telegram_id, username, display_name, faction, xp_yearly
+     FROM telegram_profiles
+     ORDER BY xp_yearly DESC
+     LIMIT ?`
+  ).bind(TG_ARCHIVE_TOP_N).all().catch(() => ({ results: [] }));
+
+  const topEntries = (topRows.results || []).map((r, i) => ({
+    rank:         i + 1,
+    telegram_id:  r.telegram_id,
+    username:     r.username     || null,
+    display_name: r.display_name || null,
+    faction:      r.faction      || '',
+    xp_yearly:    r.xp_yearly    || 0,
+  }));
+
+  // 3. Archive yearly winners
+  await db.prepare(`
+    INSERT OR REPLACE INTO telegram_year_archives
+      (year, year_start, year_end, top_entries_json)
+    VALUES (?, ?, ?, ?)
+  `).bind(prevYear, meta.year_start, nowIso, JSON.stringify(topEntries)).run().catch(() => {});
+
+  // 4. Reset xp_yearly (xp_total untouched)
+  await db.prepare(`UPDATE telegram_profiles SET xp_yearly = 0`).run().catch(() => {});
+
+  // 5. Advance year_start in meta (season was already advanced in step 1)
+  await db.prepare(`
+    UPDATE telegram_community_meta
+    SET year_start  = ?,
+        updated_at  = CURRENT_TIMESTAMP
+    WHERE meta_key = 'current'
+  `).bind(new Date(Date.UTC(currentYear, 0, 1)).toISOString()).run().catch(() => {});
+}
+
+/** Helper: compute days remaining in the current 90-day season. */
+function tgSeasonDaysRemaining(seasonStartIso) {
+  const elapsed = Date.now() - new Date(seasonStartIso).getTime();
+  return Math.max(0, Math.ceil((TG_SEASON_LENGTH_MS - elapsed) / 86400000));
 }
 
 /**
@@ -577,6 +756,7 @@ export default {
 
     // ── GET /telegram/profile?telegram_id= ────────────────────────────────
     if (path === '/telegram/profile' && request.method === 'GET') {
+      await checkAndRunTgResets(env.DB).catch(() => {});
       const telegramId = url.searchParams.get('telegram_id');
       if (!telegramId) return err('telegram_id required');
       try {
@@ -594,18 +774,28 @@ export default {
 
     // ── GET /telegram/leaderboard?limit= ──────────────────────────────────
     // Community XP leaderboard — separate from arcade score leaderboard.
+    // Also triggers a lazy reset check.
     if (path === '/telegram/leaderboard' && request.method === 'GET') {
+      await checkAndRunTgResets(env.DB).catch(() => {});
       const limit = Math.min(parseInt(url.searchParams.get('limit') || '10', 10), 50);
       try {
-        const rows = await env.DB.prepare(
-          `SELECT telegram_id, username, display_name, avatar_url, faction, xp_total
-           FROM telegram_profiles
-           ORDER BY xp_total DESC
-           LIMIT ?`
-        ).bind(limit).all();
+        const [rows, meta] = await Promise.all([
+          env.DB.prepare(
+            `SELECT telegram_id, username, display_name, avatar_url, faction,
+                    xp_total, xp_seasonal, xp_yearly
+             FROM telegram_profiles
+             ORDER BY xp_total DESC
+             LIMIT ?`
+          ).bind(limit).all(),
+          getTgMeta(env.DB),
+        ]);
+        const entries = (rows.results || []).map((r, i) => ({ ...r, rank: i + 1 }));
         return json({
-          type:    'community_xp',
-          entries: rows.results || [],
+          type:             'community_xp',
+          season_number:    meta.season_number,
+          season_days_left: tgSeasonDaysRemaining(meta.season_start),
+          year:             new Date().getUTCFullYear(),
+          entries,
         });
       } catch {
         return err('Failed to load leaderboard', 500);
@@ -690,6 +880,28 @@ export default {
       }
     }
 
+    // ── GET /telegram/season/current ──────────────────────────────────────
+    // Returns current season and year info for the Telegram/community XP system.
+    // Also triggers a lazy reset check — mirrors the arcade leaderboard model.
+    if (path === '/telegram/season/current' && request.method === 'GET') {
+      await checkAndRunTgResets(env.DB).catch(() => {});
+      try {
+        const meta = await getTgMeta(env.DB);
+        const daysRemaining = tgSeasonDaysRemaining(meta.season_start);
+        const currentYear   = new Date().getUTCFullYear();
+        return json({
+          season_number:    meta.season_number,
+          season_start:     meta.season_start,
+          season_days_left: daysRemaining,
+          year:             currentYear,
+          year_start:       meta.year_start,
+          reset_model:      '90-day seasonal + New Year yearly (matches arcade leaderboard)',
+        });
+      } catch {
+        return err('Failed to load season info', 500);
+      }
+    }
+
     return err('Not found', 404);
   },
 };
@@ -699,6 +911,9 @@ export default {
 async function handleTelegramUpdate(update, env) {
   const db  = env.DB;
   const tok = env.TELEGRAM_BOT_TOKEN;
+
+  // Lazy reset check — runs at start of every webhook update (mirrors arcade model)
+  await checkAndRunTgResets(db).catch(() => {});
 
   // ── Group-level events ───────────────────────────────────────────────────
   const msg = update.message || update.edited_message;
@@ -809,70 +1024,95 @@ async function cmdHelp(tok, chatId) {
 }
 
 async function cmdXp(db, tok, chatId, telegramId) {
-  const row = await db.prepare(
-    `SELECT xp_total, xp_seasonal, xp_yearly FROM telegram_profiles WHERE telegram_id = ?`
-  ).bind(telegramId).first().catch(() => null);
+  const [row, meta] = await Promise.all([
+    db.prepare(
+      `SELECT xp_total, xp_seasonal, xp_yearly FROM telegram_profiles WHERE telegram_id = ?`
+    ).bind(telegramId).first().catch(() => null),
+    getTgMeta(db).catch(() => null),
+  ]);
 
   if (!row) {
     await sendTelegramMessage(tok, chatId, '❓ No profile found. Use /start to create one.');
     return;
   }
+
+  const seasonNum  = meta ? meta.season_number : '?';
+  const daysLeft   = meta ? tgSeasonDaysRemaining(meta.season_start) : '?';
+  const currentYear = new Date().getUTCFullYear();
+
   await sendTelegramMessage(tok, chatId,
     `⚡ <b>Your XP</b>\n\n` +
-    `Total:    ${row.xp_total}\n` +
-    `Seasonal: ${row.xp_seasonal}\n` +
-    `Yearly:   ${row.xp_yearly}`
+    `Total (lifetime):  ${row.xp_total}\n` +
+    `Seasonal (S${seasonNum}): ${row.xp_seasonal}  <i>(${daysLeft}d left)</i>\n` +
+    `Yearly (${currentYear}):   ${row.xp_yearly}\n\n` +
+    `<i>Community XP is separate from arcade scores.</i>`
   );
 }
 
 async function cmdLeaderboard(db, tok, chatId) {
-  const rows = await db.prepare(
-    `SELECT display_name, username, xp_total FROM telegram_profiles ORDER BY xp_total DESC LIMIT 10`
-  ).all().catch(() => ({ results: [] }));
+  const [rows, meta] = await Promise.all([
+    db.prepare(
+      `SELECT display_name, username, xp_total, xp_seasonal FROM telegram_profiles ORDER BY xp_total DESC LIMIT 10`
+    ).all().catch(() => ({ results: [] })),
+    getTgMeta(db).catch(() => null),
+  ]);
 
   const entries = (rows.results || []);
   if (!entries.length) {
     await sendTelegramMessage(tok, chatId, '📊 No community XP recorded yet.');
     return;
   }
+
+  const seasonNum  = meta ? meta.season_number : '?';
+  const daysLeft   = meta ? tgSeasonDaysRemaining(meta.season_start) : '?';
+  const currentYear = new Date().getUTCFullYear();
+
   const lines = entries.map((r, i) => {
     const name = escapeHtml(r.display_name || r.username || 'Unknown');
-    return `${i + 1}. ${name} — ${r.xp_total} XP`;
+    return `${i + 1}. ${name} — ${r.xp_total} XP total  (${r.xp_seasonal} this season)`;
   }).join('\n');
 
   await sendTelegramMessage(tok, chatId,
-    `🏆 <b>Community XP Leaderboard</b>\n<i>(separate from arcade scores)</i>\n\n${lines}`
+    `🏆 <b>Community XP Leaderboard</b>\n` +
+    `<i>Season ${seasonNum} · ${daysLeft}d left · ${currentYear}</i>\n` +
+    `<i>(separate from arcade scores)</i>\n\n${lines}`
   );
 }
 
 async function cmdProfile(db, tok, chatId, telegramId) {
-  const row = await db.prepare(
-    `SELECT display_name, username, faction, xp_total, xp_seasonal, xp_yearly,
-            linked_email_hash, created_at
-     FROM telegram_profiles WHERE telegram_id = ?`
-  ).bind(telegramId).first().catch(() => null);
+  const [row, meta, solves] = await Promise.all([
+    db.prepare(
+      `SELECT display_name, username, faction, xp_total, xp_seasonal, xp_yearly,
+              linked_email_hash, created_at
+       FROM telegram_profiles WHERE telegram_id = ?`
+    ).bind(telegramId).first().catch(() => null),
+    getTgMeta(db).catch(() => null),
+    db.prepare(
+      `SELECT COUNT(*) AS n FROM telegram_quest_submissions WHERE telegram_id = ? AND is_correct = 1`
+    ).bind(telegramId).first().catch(() => ({ n: 0 })),
+  ]);
 
   if (!row) {
     await sendTelegramMessage(tok, chatId, '❓ No profile found. Use /start to create one.');
     return;
   }
 
-  const solves = await db.prepare(
-    `SELECT COUNT(*) AS n FROM telegram_quest_submissions WHERE telegram_id = ? AND is_correct = 1`
-  ).bind(telegramId).first().catch(() => ({ n: 0 }));
+  const seasonNum   = meta ? meta.season_number : '?';
+  const daysLeft    = meta ? tgSeasonDaysRemaining(meta.season_start) : '?';
+  const currentYear = new Date().getUTCFullYear();
+  const linked      = row.linked_email_hash ? '✅ Linked' : '❌ Not linked';
+  const faction     = row.faction || 'None';
 
-  const linked = row.linked_email_hash ? '✅ Linked' : '❌ Not linked';
-  const faction = row.faction || 'None';
   await sendTelegramMessage(tok, chatId,
     `👤 <b>Profile</b>\n\n` +
-    `Name:     ${escapeHtml(row.display_name || row.username || 'Unknown')}\n` +
-    `Faction:  ${escapeHtml(faction)}\n` +
-    `XP Total: ${row.xp_total}\n` +
-    `Seasonal: ${row.xp_seasonal}\n` +
-    `Yearly:   ${row.xp_yearly}\n` +
+    `Name:          ${escapeHtml(row.display_name || row.username || 'Unknown')}\n` +
+    `Faction:       ${escapeHtml(faction)}\n` +
+    `XP (lifetime): ${row.xp_total}\n` +
+    `XP S${seasonNum}:       ${row.xp_seasonal}  <i>(${daysLeft}d left in season)</i>\n` +
+    `XP ${currentYear}:      ${row.xp_yearly}\n` +
     `Quests solved: ${solves?.n || 0}\n` +
-    `Website link: ${linked}\n` +
-    `Member since: ${(row.created_at || '').slice(0, 10)}`
+    `Website link:  ${linked}\n` +
+    `Member since:  ${(row.created_at || '').slice(0, 10)}`
   );
 }
 

@@ -150,3 +150,32 @@ CREATE TABLE IF NOT EXISTS telegram_group_events (
 
 CREATE INDEX IF NOT EXISTS idx_group_events_type
   ON telegram_group_events(event_type, created_at DESC);
+
+-- ── Telegram/community season & year reset tracking ───────────────────────────
+
+-- Single-row meta (meta_key always = 'current').
+-- Mirrors leaderboard:meta KV key used by the arcade leaderboard-worker.
+-- season_start advances every 90 days; year_start advances on New Year UTC.
+CREATE TABLE IF NOT EXISTS telegram_community_meta (
+  meta_key      TEXT PRIMARY KEY DEFAULT 'current',
+  season_start  DATETIME NOT NULL,
+  season_number INTEGER  NOT NULL DEFAULT 1,
+  year_start    DATETIME NOT NULL,
+  updated_at    DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+-- One row per finished 90-day season (top TG_ARCHIVE_TOP_N entries preserved).
+CREATE TABLE IF NOT EXISTS telegram_season_archives (
+  season_number    INTEGER  PRIMARY KEY,
+  season_start     DATETIME NOT NULL,
+  season_end       DATETIME NOT NULL,
+  top_entries_json TEXT     NOT NULL DEFAULT '[]'
+);
+
+-- One row per finished calendar year (top TG_ARCHIVE_TOP_N yearly entries preserved).
+CREATE TABLE IF NOT EXISTS telegram_year_archives (
+  year             INTEGER  PRIMARY KEY,
+  year_start       DATETIME NOT NULL,
+  year_end         DATETIME NOT NULL,
+  top_entries_json TEXT     NOT NULL DEFAULT '[]'
+);
