@@ -75,7 +75,7 @@
           '<span class="tg-lb-rank">' + (i + 1) + '</span>' +
           avatar +
           '<span class="tg-lb-name">' + name + faction + '</span>' +
-          '<span class="tg-lb-xp">⚡ ' + (e.xp_total || 0) + ' XP</span>' +
+          '<span class="tg-lb-xp">⚡ ' + (e.xp || 0) + ' XP</span>' +
         '</div>';
       }).join('');
 
@@ -102,12 +102,12 @@
         return;
       }
       var cards = data.quests.map(function (q) {
-        var ends = q.ends_at ? ' <span class="tg-quest-ends">Ends: ' + escapeHtml(q.ends_at.slice(0, 10)) + '</span>' : '';
+        var ends = q.end_date ? ' <span class="tg-quest-ends">Ends: ' + escapeHtml(String(q.end_date).slice(0, 10)) + '</span>' : '';
         return '<div class="tg-quest-card">' +
           '<div class="tg-quest-title">' + escapeHtml(q.title) + ends + '</div>' +
-          '<div class="tg-quest-type">Type: ' + escapeHtml(q.quest_type) + ' &nbsp;|&nbsp; Reward: ⚡' + (q.xp_reward || 0) + ' XP</div>' +
-          '<div class="tg-quest-desc">' + escapeHtml(q.description) + '</div>' +
-          '<div class="tg-quest-solve">Solve via Telegram: <code>/solve ' + escapeHtml(q.slug) + ' &lt;answer&gt;</code></div>' +
+          '<div class="tg-quest-type">Reward: ⚡' + (q.xp_reward || 0) + ' XP</div>' +
+          '<div class="tg-quest-desc">' + escapeHtml(q.description || '') + '</div>' +
+          '<div class="tg-quest-solve">Complete via Telegram bot: use <code>/gkquests</code> for details.</div>' +
         '</div>';
       }).join('');
 
@@ -131,25 +131,25 @@
         return;
       }
       var p = data.profile;
+      var displayName = [p.first_name, p.last_name].filter(Boolean).join(' ') || p.username || p.telegram_id || 'Unknown';
       var avatar = p.avatar_url
-        ? '<img class="tg-profile-avatar" src="' + escapeHtml(p.avatar_url) + '" alt="' + escapeHtml(p.display_name) + '" loading="lazy">'
-        : '<img class="tg-profile-avatar" src="' + gravatar(p.linked_email_hash || '', 64) + '" alt="" loading="lazy">';
-      var linked = p.linked_email_hash
-        ? '<span class="tg-badge tg-badge-linked">✅ Website Linked</span>'
-        : '<span class="tg-badge tg-badge-unlinked">❌ Not Linked</span>';
-      var faction = p.faction
-        ? '<span class="tg-badge tg-badge-faction">⚔️ ' + escapeHtml(p.faction) + '</span>'
+        ? '<img class="tg-profile-avatar" src="' + escapeHtml(p.avatar_url) + '" alt="' + escapeHtml(displayName) + '" loading="lazy">'
+        : '<img class="tg-profile-avatar" src="' + gravatar('', 64) + '" alt="" loading="lazy">';
+      var factionName = p.faction && p.faction.name ? p.faction.name : null;
+      var linked = factionName || p.wallet_address
+        ? '<span class="tg-badge tg-badge-linked">✅ Active</span>'
+        : '<span class="tg-badge tg-badge-unlinked">Run /gklink to activate</span>';
+      var factionBadge = factionName
+        ? '<span class="tg-badge tg-badge-faction">⚔️ ' + escapeHtml(factionName) + '</span>'
         : '';
 
       el.innerHTML =
         '<div class="tg-profile-card">' +
           avatar +
           '<div class="tg-profile-info">' +
-            '<div class="tg-profile-name">' + escapeHtml(p.display_name || p.username || 'Unknown') + '</div>' +
-            '<div class="tg-profile-badges">' + linked + faction + '</div>' +
-            '<div class="tg-profile-xp">⚡ ' + (p.xp_total || 0) + ' XP total &nbsp;|&nbsp; ' +
-              (p.xp_seasonal || 0) + ' seasonal &nbsp;|&nbsp; ' +
-              (p.xp_yearly || 0) + ' yearly</div>' +
+            '<div class="tg-profile-name">' + escapeHtml(displayName) + '</div>' +
+            '<div class="tg-profile-badges">' + linked + factionBadge + '</div>' +
+            '<div class="tg-profile-xp">⚡ ' + (p.xp || 0) + ' XP &nbsp;|&nbsp; Level ' + (p.level || 1) + '</div>' +
           '</div>' +
         '</div>';
     });

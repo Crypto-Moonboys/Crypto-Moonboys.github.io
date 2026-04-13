@@ -9,9 +9,9 @@
  * with a clear "API not connected" notice — nothing breaks.
  *
  * Identity tiers (enforced by backend + this file):
- *   guest       — button renders but action blocked (sync gate modal shown)
- *   gravatar    — same as guest for competitive actions
- *   telegram    — full access; telegram_id included in every POST body
+ *   guest           — button renders but action blocked (sync gate modal shown)
+ *   gravatar        — same as guest for competitive actions
+ *   telegram_linked — Telegram auth + /gklink completed; full access
  *
  * Usage — Page like button:
  *   <div class="page-like-widget" data-page-id="article-slug"></div>
@@ -44,13 +44,14 @@
   }
 
   /**
-   * Gate a competitive action.  Calls fn() if Telegram-synced, otherwise
-   * shows the sync gate modal.  Falls through if identity-gate.js is absent.
+   * Gate a competitive action (likes, citation votes).
+   * Requires BOTH Step 1 (Telegram auth) AND Step 2 (/gklink completed).
+   * Falls through if identity-gate.js is absent.
    */
-  function withTelegramSync(fn) {
+  function withLinkedAccount(fn) {
     var gate = getGate();
-    if (gate && gate.requireTelegramSync) {
-      gate.requireTelegramSync(fn);
+    if (gate && gate.requireLinkedAccount) {
+      gate.requireLinkedAccount(fn);
     } else {
       fn();
     }
@@ -105,8 +106,8 @@
         return;
       }
 
-      // Gate: competitive action requires Telegram sync
-      withTelegramSync(function () {
+      // Gate: competitive action requires /gklink (telegram_linked tier)
+      withLinkedAccount(function () {
         btn.disabled = true;
         btn.classList.add('like-btn--pending');
 
@@ -179,8 +180,8 @@
       btn.addEventListener('click', function () {
         if (!BASE || !FEATURES.CITATION_VOTES || btn.disabled) return;
 
-        // Gate: competitive action requires Telegram sync
-        withTelegramSync(function () {
+        // Gate: competitive action requires /gklink (telegram_linked tier)
+        withLinkedAccount(function () {
           btn.disabled = true;
 
           var payload = {
