@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>🎮 Block Topia: Street Signal 3008 — Moonboys Arcade</title>
+  <meta name="description" content="GraffPUNKS reclaim the streets in a cyberpunk crypto metropolis. Capture districts, complete AI-driven quests, and dominate seasonal leaderboards." />
+  <meta name="robots" content="index, follow" />
+  <meta property="og:title" content="Block Topia: Street Signal 3008 — Moonboys Arcade" />
+  <meta property="og:description" content="GraffPUNKS reclaim the streets in a cyberpunk crypto metropolis. AI NPCs, multiplayer, procedural city, and seasonal lore." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://crypto-moonboys.github.io/games/block-topia-street-signal-3008-monster.html" />
+  <meta property="og:image" content="https://crypto-moonboys.github.io/img/games/blocktopia-cover.svg" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <link rel="stylesheet" href="/css/wiki.css" />
+  <link rel="icon" href="/img/favicon.svg" type="image/svg+xml" />
+  <style>
+    .pill { padding: 6px 12px; border-radius: 999px; background: rgba(94,242,255,.12); border: 1px solid rgba(94,242,255,.25); font-size: .85em; }
+    #phaser-root { display: flex; justify-content: center; padding: 16px 0; }
+    .game-controls { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+  </style>
+</head>
+<body>
+<a class="skip-link" href="#content">Skip to content</a>
+<header id="site-header" role="banner">
+  <button class="hamburger" id="hamburger" aria-label="Toggle navigation" aria-expanded="false" aria-controls="sidebar">☰</button>
+  <a href="/index.html" class="site-logo" aria-label="The Crypto Moonboys GK Wiki home">
+    <img src="/img/CRYPTO-MOONBOYS-BITCOIN-LOGO.png" alt="" aria-hidden="true" />
+    <span>
+      <span class="logo-text">🌙 The Crypto Moonboys GK Wiki</span>
+      <span class="logo-sub">Blockchain Cryptoism Encyclopedia ⚡️⚡️⚡️</span>
+    </span>
+  </a>
+  <div id="header-search" role="search">
+    <input type="search" id="search-input" placeholder="Search the wiki…" aria-label="Search" autocomplete="off" />
+    <button id="search-btn" aria-label="Search">🔍</button>
+    <div id="search-results" role="listbox"></div>
+  </div>
+  <nav class="header-nav" aria-label="Main navigation">
+    <a href="/index.html">Home</a>
+    <a href="/categories/index.html">Categories</a>
+    <a href="/search.html">All Articles</a>
+    <a href="/timeline.html">📅 Timeline</a>
+    <a href="/graph.html">🌐 Graph</a>
+    <a href="/dashboard.html">📊 Dashboard</a>
+    <a href="/sam.html">🧠 SAM</a>
+    <a href="/games/">🕹️ Arcade</a>
+    <a href="/games/block-topia-street-signal-3008-monster.html" class="active" aria-current="page">🎮 Block Topia</a>
+  </nav>
+</header>
+<div id="sidebar-overlay" aria-hidden="true"></div>
+<div id="layout">
+  <nav id="sidebar" aria-label="Wiki navigation">
+    <div class="sidebar-section">
+      <div class="sidebar-heading">Navigation</div>
+      <div class="sidebar-nav">
+        <a href="/index.html"><span class="nav-icon">🏠</span> Main Page</a>
+        <a href="/games/"><span class="nav-icon">🕹️</span> Arcade</a>
+        <a href="/games/block-topia-street-signal-3008-monster.html" class="active"><span class="nav-icon">🎮</span> Block Topia</a>
+        <a href="/games/leaderboard.html"><span class="nav-icon">🏆</span> Leaderboard</a>
+      </div>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-heading">GK Wiki Info</div>
+      <div class="sidebar-nav">
+        <a href="/about.html"><span class="nav-icon">ℹ️</span> About</a>
+        <a href="/about.html#citation"><span class="nav-icon">📋</span> Citation Policy</a>
+      </div>
+    </div>
+  </nav>
+
+  <div id="main-wrapper">
+    <main id="content" role="main">
+      <nav class="breadcrumb" aria-label="Breadcrumb">
+        <a href="/index.html">Home</a><span class="sep">›</span><a href="/games/">Arcade</a><span class="sep">›</span><span aria-current="page">Block Topia: Street Signal 3008</span>
+      </nav>
+
+      <h1>🌆 Block Topia: Street Signal 3008</h1>
+      <p>GraffPUNKS reclaim the streets in a cyberpunk crypto metropolis. Capture districts, complete AI-driven quests, and dominate seasonal leaderboards.</p>
+
+      <div class="notice info" role="note">
+        <span class="notice-icon" aria-hidden="true">🎮</span>
+        <div><strong>AI NPCs • Multiplayer • Procedural City • GraffPUNKS</strong> — The city evolves with each season. Rumors and prophecy shape the next arc.</div>
+      </div>
+
+      <div id="phaser-root" aria-label="Block Topia game canvas"></div>
+
+      <div class="game-controls" role="region" aria-label="Game controls">
+        <span class="pill">WASD / Arrow Keys to Move</span>
+        <span class="pill">SPACE to Toggle Day/Night</span>
+        <span class="pill">NPCs React to Player Actions</span>
+        <span class="pill">Rumors &amp; Prophecy Influence Seasons</span>
+      </div>
+    </main>
+  </div>
+</div>
+
+<script src="/js/wiki.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/phaser@3.70.0/dist/phaser.min.js"></script>
+<script type="module">
+    import { bootBlockTopia } from './js/blocktopia-phaser-game.js';
+    import { loadNPCProfiles, createNPC, updateNPCBehavior } from './js/blocktopia-npc-ai.js';
+
+    const game = bootBlockTopia('phaser-root');
+
+    async function integrateNPCs() {
+      const profiles = await loadNPCProfiles();
+      const scene = Phaser.GAMES[0].scene.keys['BlockTopiaScene'];
+
+      if (!scene) return;
+
+      scene.npcs = profiles.map((profile, i) =>
+        createNPC(scene, profile, 200 + i * 120, 300 + (i % 2) * 100)
+      );
+
+      scene.events.on('update', () => {
+        const player = scene.playerSprite;
+        const phase = scene.phase;
+        scene.npcs.forEach(npc => updateNPCBehavior(scene, npc, player, phase));
+      });
+    }
+
+    setTimeout(integrateNPCs, 1500);
+</script>
+</body>
+</html>

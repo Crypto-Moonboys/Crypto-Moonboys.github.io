@@ -1,0 +1,37 @@
+{
+  "pack_name": "Block Topia Monster Pack v1",
+  "theme": "graffiti-cyberpunk-crypto",
+  "tileset": {
+    "path": "/games/assets/blocktopia-tiles.svg",
+    "tile_width": 64,
+    "tile_height": 32,
+    "entries": [
+      "road-dark",
+      "road-neon",
+      "pavement-tagged",
+      "market-floor",
+      "alley-shadow",
+      "plaza-grid",
+      "roof-metal",
+      "wall-clean",
+      "wall-tagged",
+      "wall-burner"
+    ]
+  },
+  "sprites": {
+    "path": "/games/assets/blocktopia-sprites.svg",
+    "entries": [
+      "player-graffpunk",
+      "npc-runner",
+      "npc-trader",
+      "drone-scanner",
+      "spray-can",
+      "signal-shard",
+      "terminal-prophecy",
+      "market-board",
+      "graffiti-burst"
+    ]
+  },
+  "palette": ["#0b0912", "#161325", "#5ef2ff", "#ff4fd8", "#ffd84d", "#8dff6a", "#ff9b42", "#eaf6ff"],
+  "notes": "Vector-backed pixel assets for fast branch prototyping, easy replacement with final PNG sprite sheets later."
+}

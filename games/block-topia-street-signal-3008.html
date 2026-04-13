@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>🎮 Block Topia: Street Signal 3008 — Moonboys Arcade</title>
+  <meta name="description" content="GraffPUNKS reclaim the streets in a cyberpunk crypto metropolis. Capture districts and submit scores to the seasonal leaderboard." />
+  <link rel="stylesheet" href="/css/wiki.css" />
+  <link rel="icon" href="/img/favicon.svg" type="image/svg+xml" />
+  <style>
+    body{background:#0b0912;color:#eaf6ff;font-family:Inter,system-ui,Arial}
+    .wrap{max-width:1200px;margin:0 auto;padding:16px}
+    .hud{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+    .card{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:12px}
+    canvas{width:100%;max-width:1080px;border-radius:16px;border:1px solid rgba(94,242,255,.25);display:block}
+    .row{display:flex;gap:12px;flex-wrap:wrap;margin-top:12px}
+    button{padding:10px 14px;border-radius:10px;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.08);color:#fff;cursor:pointer}
+    .pill{padding:6px 10px;border-radius:999px;background:rgba(94,242,255,.12);border:1px solid rgba(94,242,255,.25)}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>🌙 Block Topia — Street Signal 3008</h1>
+    <p>GraffPUNKS reclaim the streets by night while running crypto hustles by day. Seasonal lore rotates every 90 days, with a yearly prophecy lottery shaping the next arc.</p>
+
+    <div class="hud">
+      <div class="card">Season: <span id="seasonName">Loading…</span></div>
+      <div class="card">Phase: <span id="phase">Day</span></div>
+      <div class="card">District: <span id="district">Plaza</span></div>
+      <div class="card">Player: <span id="playerName">—</span></div>
+      <div class="card">Linked: <span id="linked">—</span></div>
+      <div class="card">Score: <span id="score">0</span></div>
+    </div>
+
+    <canvas id="game" width="1080" height="720"></canvas>
+
+    <div class="row">
+      <button id="togglePhase">Toggle Day/Night</button>
+      <button id="submitScore">Submit Score</button>
+      <span class="pill">WASD / Arrows to move</span>
+      <span class="pill">Enter neon zones for objectives</span>
+    </div>
+
+    <h2>Seasonal Lore</h2>
+    <pre id="lore" class="card" style="white-space:pre-wrap"></pre>
+  </div>
+
+  <script type="module">
+    import { ArcadeSync } from '/js/arcade-sync.js';
+    import { submitScore, fetchLeaderboard } from '/js/leaderboard-client.js';
+
+    const canvas = document.getElementById('game');
+    const ctx = canvas.getContext('2d');
+
+    const playerName = ArcadeSync.getPlayer();
+    document.getElementById('playerName').textContent = playerName;
+
+    const isLinked = (typeof window !== 'undefined' && window.MOONBOYS_IDENTITY && window.MOONBOYS_IDENTITY.isTelegramLinked)
+      ? window.MOONBOYS_IDENTITY.isTelegramLinked()
+      : !!(localStorage.getItem('moonboys_tg_id') && localStorage.getItem('moonboys_tg_linked'));
+    document.getElementById('linked').textContent = isLinked ? 'Yes' : 'No';
+
+    let state = { x: 540, y: 520, score: 0, phase: 'Day' };
+
+    const zones = [
+      { id:'quest', label:'Quest Wall', x:150, y:260, w:160, h:120, color:'#ff4fd8' },
+      { id:'arcade', label:'Arcade Portal', x:820, y:260, w:160, h:120, color:'#ffd84d' },
+      { id:'leaderboard', label:'Leaderboard Gate', x:720, y:460, w:160, h:120, color:'#5ef2ff' },
+      { id:'telegram', label:'Telegram Node', x:300, y:460, w:160, h:120, color:'#8dff6a' },
+      { id:'market', label:'Token Plaza', x:480, y:100, w:120, h:90, color:'#ff9b42' }
+    ];
+
+    async function loadSeason(){
+      const res = await fetch('/games/data/blocktopia-season.json');
+      const season = await res.json();
+      document.getElementById('seasonName').textContent = season.season_name;
+      document.getElementById('lore').textContent = JSON.stringify(season, null, 2);
+    }
+
+    function draw(){
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+      const g = ctx.createLinearGradient(0,0,0,canvas.height);
+      g.addColorStop(0, state.phase==='Night' ? '#2b1950' : '#4a6fa5');
+      g.addColorStop(1, '#0c0e14');
+      ctx.fillStyle = g; ctx.fillRect(0,0,canvas.width,canvas.height);
+
+      zones.forEach(z=>{
+        ctx.fillStyle = z.color+'33';
+        ctx.fillRect(z.x,z.y,z.w,z.h);
+        ctx.strokeStyle = z.color; ctx.strokeRect(z.x,z.y,z.w,z.h);
+        ctx.fillStyle = z.color; ctx.font='bold 14px Inter'; ctx.textAlign='center';
+        ctx.fillText(z.label, z.x+z.w/2, z.y+z.h/2);
+      });
+
+      ctx.fillStyle='#eaf6ff';
+      ctx.fillRect(state.x-10,state.y-20,20,30);
+
+      document.getElementById('score').textContent = state.score;
+      requestAnimationFrame(draw);
+    }
+
+    function inZone(){
+      return zones.find(z => state.x>z.x && state.x<z.x+z.w && state.y>z.y && state.y<z.y+z.h);
+    }
+
+    window.addEventListener('keydown', e=>{
+      const s=4;
+      if(['ArrowUp','w'].includes(e.key)) state.y-=s;
+      if(['ArrowDown','s'].includes(e.key)) state.y+=s;
+      if(['ArrowLeft','a'].includes(e.key)) state.x-=s;
+      if(['ArrowRight','d'].includes(e.key)) state.x+=s;
+
+      const z=inZone();
+      if(z){
+        document.getElementById('district').textContent=z.label;
+        if(state.phase==='Night') state.score+=10; else state.score+=5;
+      }
+    });
+
+    document.getElementById('togglePhase').onclick=()=>{
+      state.phase = state.phase==='Day' ? 'Night' : 'Day';
+      document.getElementById('phase').textContent=state.phase;
+    };
+
+    document.getElementById('submitScore').onclick=()=>{
+      submitScore(playerName, state.score, 'blocktopia-social-hub');
+      alert('Score submitted (if Telegram linked).');
+    };
+
+    loadSeason();
+    draw();
+  </script>
+</body>
+</html>

@@ -1,0 +1,47 @@
+{
+  "season_id": 1,
+  "season_name": "Forked Neon Uprising",
+  "season_start": "2026-01-01T00:00:00Z",
+  "season_end": "2026-03-31T23:59:59Z",
+  "visual_theme": "neon_cyberpunk",
+  "palette": ["#5ef2ff", "#ff4fd8", "#ffd84d", "#8dff6a"],
+  "active_factions": ["GraffPUNKS", "HODL Warriors"],
+  "district_reskins": {
+    "Neon Exchange": "High-volatility crypto district with glowing market boards",
+    "Mural Sector": "Primary graffiti takeover zone",
+    "Dead Rail": "Stealth courier tunnels",
+    "Black Fork Alley": "Surveillance-heavy sabotage zone",
+    "Chain Plaza": "Leaderboard and faction monument hub",
+    "Moon Gate": "Prophecy and annual reveal district"
+  },
+  "mission_text_pool": [
+    "Tag the central mural before scanners lock the district.",
+    "Run a midnight courier job through Dead Rail.",
+    "Exploit a market spike in Neon Exchange to fund your next run."
+  ],
+  "npc_dialogue_pool": [
+    "Signals are shifting. The city feels different tonight.",
+    "GraffPUNKS are pushing hard in the Mural Sector.",
+    "Rumours say the next prophecy is already forming."
+  ],
+  "propaganda_pool": [
+    "PAINT THE FUTURE",
+    "HODL THE STREETS",
+    "SIGNAL OVER NOISE"
+  ],
+  "market_conditions": "volatile",
+  "rare_events": ["Scanner Blackout", "Meme Surge", "Token Flash Crash"],
+  "boss_variants": ["Null Warden", "Whale Overseer"],
+  "soundtrack_mode": "neon_synth",
+  "lore_fragments": [
+    "Fragment_Alpha",
+    "Fragment_Beta",
+    "Fragment_Gamma"
+  ],
+  "prophecy_weights": {
+    "Satellite Fall": 0.3,
+    "Meme Plague": 0.2,
+    "Fork War": 0.25,
+    "New Dawn": 0.25
+  }
+}

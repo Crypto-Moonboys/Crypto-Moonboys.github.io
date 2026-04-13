@@ -1,0 +1,88 @@
+{
+  "world_title": "CITY BLOCK TOPIA",
+  "year": 3008,
+  "primary_faction": "GraffPUNKS",
+  "secondary_factions": ["HODL Warriors", "Moon Mission", "Diamond Hands"],
+  "baseline_premise": "By day the crews survive through crypto hustles, market reads, courier jobs and signal trades. By night the GraffPUNKS push deeper into CITY BLOCK TOPIA with tags, murals, sabotage and district takeovers.",
+  "districts": [
+    {
+      "id": "neon-exchange",
+      "name": "Neon Exchange",
+      "theme": "Crypto market district",
+      "flavor": [
+        "Candles flicker across half-broken glass towers while token runners shout impossible entries.",
+        "The rich dump narratives; the streets buy timing."
+      ]
+    },
+    {
+      "id": "mural-sector",
+      "name": "Mural Sector",
+      "theme": "High-value graffiti territory",
+      "flavor": [
+        "Every clean wall is an insult waiting to be corrected.",
+        "Each tag is both territory and coded memory."
+      ]
+    },
+    {
+      "id": "dead-rail",
+      "name": "Dead Rail",
+      "theme": "Courier tunnels and hidden routes",
+      "flavor": [
+        "Signals die in the tunnels but stories travel faster.",
+        "The rails are dead only to those without keys."
+      ]
+    },
+    {
+      "id": "black-fork-alley",
+      "name": "Black Fork Alley",
+      "theme": "Surveillance and sabotage zone",
+      "flavor": [
+        "Drones drift above a district already tagged by ghosts.",
+        "This is where the city notices you back."
+      ]
+    },
+    {
+      "id": "chain-plaza",
+      "name": "Chain Plaza",
+      "theme": "Faction scoreboard and public flex zone",
+      "flavor": [
+        "Winners get monuments. Losers get rewritten.",
+        "Every season leaves a scar in the plaza data walls."
+      ]
+    },
+    {
+      "id": "moon-gate",
+      "name": "Moon Gate",
+      "theme": "Prophecy terminal and annual reveal zone",
+      "flavor": [
+        "The Gate does not predict the future. It weighs the loudest truths.",
+        "Each year ends here in static, smoke and prophecy."
+      ]
+    }
+  ],
+  "mission_templates": {
+    "day": [
+      "Flip a volatile token inside Neon Exchange and bank enough credits for a night run.",
+      "Move a signal package through Dead Rail before the market closes.",
+      "Read the board, avoid a scam wave and secure gear funds."
+    ],
+    "night": [
+      "Tag a clean wall in Mural Sector before scanners lock the block.",
+      "Jam surveillance in Black Fork Alley and escape with the shard.",
+      "Spray over hostile propaganda and plant a GraffPUNKS mark chain."
+    ],
+    "prophecy": [
+      "Upload a prophecy fragment at Moon Gate to bias next season's arc.",
+      "Recover a hidden glyph from Chain Plaza and feed it to the annual lottery.",
+      "Win a district sweep during Prophecy Season to strengthen your future claim."
+    ]
+  },
+  "market_terms": ["pump", "flush", "fork signal", "dead candle", "whale fakeout", "diamond push"],
+  "graffiti_terms": ["throwie", "burner", "wildstyle", "ghost tag", "signal mural", "coded wall"],
+  "npc_rumors": [
+    "They say the scanners only wake when the market goes green.",
+    "A mural appeared overnight with tomorrow written underneath it.",
+    "The plaza boards know which faction lies the best."
+  ],
+  "yearly_prophecy_window_days": 90
+}

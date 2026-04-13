@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>🎮 Block Topia: Street Signal 3008 (Phaser) — Moonboys Arcade</title>
+  <meta name="description" content="Block Topia Street Signal 3008 — Phaser build. GraffPUNKS reclaim the streets in a cyberpunk crypto metropolis with procedural city generation." />
+  <link rel="stylesheet" href="/css/wiki.css" />
+  <link rel="icon" href="/img/favicon.svg" type="image/svg+xml" />
+  <style>
+    .pill{padding:6px 10px;border-radius:999px;background:rgba(94,242,255,.12);border:1px solid rgba(94,242,255,.25);font-size:.85em}
+    #phaser-root{display:flex;justify-content:center;padding:16px 0}
+    .game-controls{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+  </style>
+</head>
+<body>
+<a class="skip-link" href="#content">Skip to content</a>
+<header id="site-header" role="banner">
+  <button class="hamburger" id="hamburger" aria-label="Toggle navigation" aria-expanded="false" aria-controls="sidebar">☰</button>
+  <a href="/index.html" class="site-logo" aria-label="The Crypto Moonboys GK Wiki home">
+    <img src="/img/CRYPTO-MOONBOYS-BITCOIN-LOGO.png" alt="" aria-hidden="true" />
+    <span>
+      <span class="logo-text">🌙 The Crypto Moonboys GK Wiki</span>
+      <span class="logo-sub">Blockchain Cryptoism Encyclopedia ⚡️⚡️⚡️</span>
+    </span>
+  </a>
+  <nav class="header-nav" aria-label="Main navigation">
+    <a href="/index.html">Home</a>
+    <a href="/games/">🕹️ Arcade</a>
+    <a href="/games/block-topia-street-signal-3008-monster.html">🎮 Block Topia</a>
+  </nav>
+</header>
+<div id="sidebar-overlay" aria-hidden="true"></div>
+<div id="layout">
+  <div id="main-wrapper">
+    <main id="content" role="main">
+      <nav class="breadcrumb" aria-label="Breadcrumb">
+        <a href="/index.html">Home</a><span class="sep">›</span><a href="/games/">Arcade</a><span class="sep">›</span><a href="/games/block-topia-street-signal-3008-monster.html">Block Topia</a><span class="sep">›</span><span aria-current="page">Phaser Build</span>
+      </nav>
+      <h1>🌙 Block Topia — Street Signal 3008 (Phaser)</h1>
+      <p>GraffPUNKS · Year 3008 · Seasonal Lore Active</p>
+
+      <div id="phaser-root" aria-label="Block Topia Phaser game canvas"></div>
+
+      <div class="game-controls" role="region" aria-label="Game controls">
+        <span class="pill">WASD / Arrow Keys to Move</span>
+        <span class="pill">SPACE to Toggle Day/Night</span>
+        <span class="pill">Night: Graffiti &amp; District Control</span>
+        <span class="pill">Day: Crypto Trading &amp; Preparation</span>
+      </div>
+    </main>
+  </div>
+</div>
+
+<script src="/js/wiki.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/phaser@3.70.0/dist/phaser.min.js"></script>
+<script type="module">
+    import { bootBlockTopia } from './js/blocktopia-phaser-game.js';
+    bootBlockTopia('phaser-root');
+</script>
+</body>
+</html>

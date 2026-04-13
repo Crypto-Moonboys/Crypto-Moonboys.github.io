@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="360" viewBox="0 0 640 360" role="img" aria-label="Block Topia: Street Signal 3008 game cover">
+  <title>Block Topia: Street Signal 3008</title>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#2b1950"/>
+      <stop offset="100%" stop-color="#0b0912"/>
+    </linearGradient>
+    <linearGradient id="glow" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#5ef2ff" stop-opacity="0"/>
+      <stop offset="50%" stop-color="#5ef2ff" stop-opacity="0.4"/>
+      <stop offset="100%" stop-color="#5ef2ff" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+  <!-- Background -->
+  <rect width="640" height="360" fill="url(#bg)"/>
+  <!-- Grid lines -->
+  <g stroke="#5ef2ff" stroke-opacity="0.08" stroke-width="1">
+    <line x1="0" y1="60" x2="640" y2="60"/>
+    <line x1="0" y1="120" x2="640" y2="120"/>
+    <line x1="0" y1="180" x2="640" y2="180"/>
+    <line x1="0" y1="240" x2="640" y2="240"/>
+    <line x1="0" y1="300" x2="640" y2="300"/>
+    <line x1="80" y1="0" x2="80" y2="360"/>
+    <line x1="160" y1="0" x2="160" y2="360"/>
+    <line x1="240" y1="0" x2="240" y2="360"/>
+    <line x1="320" y1="0" x2="320" y2="360"/>
+    <line x1="400" y1="0" x2="400" y2="360"/>
+    <line x1="480" y1="0" x2="480" y2="360"/>
+    <line x1="560" y1="0" x2="560" y2="360"/>
+  </g>
+  <!-- City silhouette -->
+  <g fill="#1a0e33">
+    <rect x="0" y="200" width="60" height="160"/>
+    <rect x="20" y="160" width="30" height="200"/>
+    <rect x="80" y="220" width="50" height="140"/>
+    <rect x="90" y="180" width="25" height="180"/>
+    <rect x="160" y="190" width="70" height="170"/>
+    <rect x="175" y="150" width="40" height="210"/>
+    <rect x="260" y="210" width="55" height="150"/>
+    <rect x="275" y="170" width="30" height="190"/>
+    <rect x="340" y="200" width="65" height="160"/>
+    <rect x="355" y="155" width="35" height="205"/>
+    <rect x="430" y="215" width="55" height="145"/>
+    <rect x="445" y="175" width="28" height="185"/>
+    <rect x="510" y="195" width="70" height="165"/>
+    <rect x="525" y="160" width="40" height="200"/>
+    <rect x="600" y="205" width="40" height="155"/>
+  </g>
+  <!-- Neon accent bar -->
+  <rect x="0" y="199" width="640" height="2" fill="url(#glow)"/>
+  <!-- Signal light decorations -->
+  <circle cx="200" cy="130" r="4" fill="#ff4fd8" opacity="0.8"/>
+  <circle cx="320" cy="100" r="6" fill="#5ef2ff" opacity="0.9"/>
+  <circle cx="440" cy="130" r="4" fill="#ffd84d" opacity="0.8"/>
+  <circle cx="120" cy="150" r="3" fill="#8dff6a" opacity="0.7"/>
+  <circle cx="520" cy="140" r="5" fill="#ff9b42" opacity="0.8"/>
+  <!-- Title text -->
+  <text x="320" y="88" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="13" fill="#5ef2ff" opacity="0.7" letter-spacing="4" aria-hidden="true">CRYPTO MOONBOYS</text>
+  <text x="320" y="122" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-weight="bold" font-size="28" fill="#eaf6ff" aria-hidden="true">Block Topia</text>
+  <text x="320" y="150" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="14" fill="#5ef2ff" letter-spacing="2" aria-hidden="true">STREET SIGNAL 3008</text>
+  <!-- Subtitle -->
+  <text x="320" y="330" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="12" fill="#aaa" aria-hidden="true">GraffPUNKS · AI NPCs · Procedural City · Seasonal Lore</text>
+</svg>
