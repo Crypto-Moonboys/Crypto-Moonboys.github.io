@@ -50,7 +50,7 @@ export async function submitScore(player, score, game = "global") {
     // Not competition-active: score stays local only.  Show gate modal if available.
     if (typeof window !== "undefined" && window.MOONBOYS_IDENTITY &&
         typeof window.MOONBOYS_IDENTITY.showSyncGateModal === "function") {
-      window.MOONBOYS_IDENTITY.showSyncGateModal(true);
+      window.MOONBOYS_IDENTITY.showSyncGateModal(true); // true = show /link instructions (Step 2 required)
     }
     return;
   }

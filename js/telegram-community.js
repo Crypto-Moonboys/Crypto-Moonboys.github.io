@@ -102,7 +102,7 @@
         return;
       }
       var cards = data.quests.map(function (q) {
-        var ends = q.end_date ? ' <span class="tg-quest-ends">Ends: ' + escapeHtml(q.end_date.slice(0, 10)) + '</span>' : '';
+        var ends = q.end_date ? ' <span class="tg-quest-ends">Ends: ' + escapeHtml(String(q.end_date).slice(0, 10)) + '</span>' : '';
         return '<div class="tg-quest-card">' +
           '<div class="tg-quest-title">' + escapeHtml(q.title) + ends + '</div>' +
           '<div class="tg-quest-type">Reward: ⚡' + (q.xp_reward || 0) + ' XP</div>' +
