@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🏁 HexGL Monster Mode — Crypto Moonboys Arcade</title>
+  <meta name="description" content="Race the Null Drift circuit in HexGL Monster Mode — Moonboys competitive speed-run with XP, token rewards, and global ranking.">
+  <meta name="robots" content="index, follow">
+  <meta property="og:title" content="🏁 HexGL Monster Mode — Crypto Moonboys Arcade">
+  <meta property="og:description" content="Competitive WebGL racing inside the Moonboys Arcade. Time attack. Global leaderboard. Seasonal championships.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://crypto-moonboys.github.io/games/hexgl-monster-max.html">
+  <meta property="og:image" content="https://crypto-moonboys.github.io/img/CRYPTO-MOONBOYS-BITCOIN-LOGO.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="stylesheet" href="/css/wiki.css">
+  <link rel="stylesheet" href="/css/game-fullscreen.css">
+  <link rel="icon" href="/img/favicon.svg" type="image/svg+xml">
+  <style>
+    .game-card {
+      background: rgba(255,255,255,.03);
+      border: 1px solid var(--color-border, #333);
+      border-radius: 16px;
+      padding: 18px;
+    }
+    .hud {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+    .hud .stat {
+      background: rgba(255,255,255,.04);
+      border: 1px solid var(--color-border, #333);
+      border-radius: 12px;
+      padding: 12px;
+      text-align: center;
+    }
+    .hud .label { font-size: .7rem; color: var(--color-text-muted); }
+    .hud .value { font-weight: 700; font-size: 1.1rem; }
+    #hexgl-frame-wrap {
+      position: relative;
+      width: 100%;
+      border: 2px solid #f7c948;
+      border-radius: 14px;
+      overflow: hidden;
+      background: #090c16;
+      box-shadow: 0 0 30px rgba(247,201,72,.15) inset;
+    }
+    #hexgl-frame {
+      display: block;
+      width: 100%;
+      aspect-ratio: 16/9;
+      border: none;
+    }
+    .row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-top: 14px;
+    }
+    .game-btn {
+      padding: .8rem 1.1rem;
+      border: none;
+      border-radius: 12px;
+      background: #f7ab1a;
+      color: #111;
+      font-weight: 700;
+      cursor: pointer;
+      transition: opacity .15s;
+    }
+    .game-btn:hover { opacity: .85; }
+    .game-btn.alt {
+      background: rgba(255,255,255,.08);
+      color: #fff;
+    }
+    .notice.season {
+      border-color: #f7c948;
+      background: rgba(247,201,72,.06);
+    }
+    .notice.season .notice-icon { font-size: 1.3rem; }
+    .lore-block {
+      margin-top: 18px;
+      padding: 14px 16px;
+      border-left: 3px solid #f7c948;
+      background: rgba(247,201,72,.04);
+      border-radius: 0 10px 10px 0;
+      font-size: .88rem;
+      color: var(--color-text-muted);
+      line-height: 1.65;
+    }
+    .rival-block {
+      margin-top: 14px;
+      padding: 12px 16px;
+      background: rgba(188,140,255,.07);
+      border: 1px solid rgba(188,140,255,.25);
+      border-radius: 12px;
+      font-size: .85rem;
+    }
+    .rival-block strong { color: #bc8cff; }
+    #run-timer { font-variant-numeric: tabular-nums; }
+    .attribution {
+      margin-top: 22px;
+      font-size: .78rem;
+      color: var(--color-text-muted);
+      text-align: center;
+    }
+    .attribution a { color: var(--color-accent); }
+    @media (max-width: 720px) {
+      .hud { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+  </style>
+</head>
+<body>
+<a class="skip-link" href="#content">Skip to content</a>
+<header id="site-header" role="banner">
+  <button class="hamburger" id="hamburger" aria-label="Toggle navigation" aria-expanded="false" aria-controls="sidebar">☰</button>
+  <a href="/index.html" class="site-logo" aria-label="The Crypto Moonboys GK Wiki home">
+    <img src="/img/CRYPTO-MOONBOYS-BITCOIN-LOGO.png" alt="" aria-hidden="true">
+    <span>
+      <span class="logo-text">🌙 The Crypto Moonboys GK Wiki</span>
+      <span class="logo-sub">Blockchain Cryptoism Encyclopedia ⚡️⚡️⚡️</span>
+    </span>
+  </a>
+  <div id="header-search" role="search">
+    <input type="search" id="search-input" placeholder="Search the wiki…" aria-label="Search" autocomplete="off">
+    <button id="search-btn" aria-label="Search">🔍</button>
+    <div id="search-results" role="listbox"></div>
+  </div>
+  <nav class="header-nav" aria-label="Main navigation">
+    <a href="/index.html">Home</a>
+    <a href="/categories/index.html">Categories</a>
+    <a href="/search.html">All Articles</a>
+    <a href="/timeline.html">📅 Timeline</a>
+    <a href="/graph.html">🌐 Graph</a>
+    <a href="/dashboard.html">📊 Dashboard</a>
+    <a href="/sam.html">🧠 SAM</a>
+    <a href="/games/" class="active" aria-current="page">🕹️ Arcade</a>
+  </nav>
+</header>
+<div id="sidebar-overlay" aria-hidden="true"></div>
+<div id="layout">
+  <nav id="sidebar" aria-label="Wiki navigation">
+    <div class="sidebar-section">
+      <div class="sidebar-heading">Navigation</div>
+      <div class="sidebar-nav">
+        <a href="/index.html"><span class="nav-icon">🏠</span> Main Page</a>
+        <a href="/games/" class="active"><span class="nav-icon">🕹️</span> Arcade</a>
+      </div>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-heading">Arcade</div>
+      <div class="sidebar-nav">
+        <a href="/games/leaderboard.html"><span class="nav-icon">🏆</span> Leaderboard</a>
+        <a href="/games/hexgl-monster-max.html" class="active"><span class="nav-icon">🏁</span> HexGL Monster Mode</a>
+        <a href="/games/invaders-3008.html"><span class="nav-icon">👾</span> Invaders 3008</a>
+        <a href="/games/snake.html"><span class="nav-icon">🐍</span> SnakeRun 3008</a>
+        <a href="/games/pac-chain.html"><span class="nav-icon">🟡</span> Pac-Chain</a>
+        <a href="/games/asteroid-fork.html"><span class="nav-icon">🌑</span> Asteroid Fork</a>
+        <a href="/games/breakout-bullrun.html"><span class="nav-icon">🧱</span> Breakout Bullrun</a>
+        <a href="/games/tetris-block-topia.html"><span class="nav-icon">🟦</span> Tetris Block Topia</a>
+        <a href="/games/crystal-quest.html"><span class="nav-icon">🧩</span> Crystal Quest</a>
+        <a href="/games/block-topia-quest-maze.html"><span class="nav-icon">🗺️</span> Block Topia Quest Maze</a>
+      </div>
+    </div>
+  </nav>
+
+  <div id="main-wrapper">
+    <main id="content" role="main">
+      <nav class="breadcrumb" aria-label="Breadcrumb">
+        <a href="/index.html">Home</a><span class="sep">›</span>
+        <a href="/games/">Arcade</a><span class="sep">›</span>
+        <span aria-current="page">HexGL Monster Mode</span>
+      </nav>
+
+      <div class="category-header">
+        <span class="cat-big-icon" aria-hidden="true">🏁</span>
+        <div>
+          <h1 class="page-title">🏁 HexGL Monster Mode</h1>
+          <p style="color:var(--color-text-muted)">Competitive WebGL time-attack racing — Null Drift Championship circuit.</p>
+        </div>
+      </div>
+      <div class="page-title-line" aria-hidden="true"></div>
+
+      <div class="notice season" role="note">
+        <span class="notice-icon" aria-hidden="true">🏆</span>
+        <div>
+          <strong>Null Drift Championship</strong> — Seasonal speed-run leaderboard active.
+          Top 3 pilots each 90-day cycle earn permanent wiki recognition. Sync your Telegram to compete.
+        </div>
+      </div>
+
+      <div class="game-card" id="hexgl-game-card">
+        <div class="hud" aria-label="Race statistics">
+          <div class="stat"><div class="label">Pilot</div><div class="value" id="pilot-name">—</div></div>
+          <div class="stat"><div class="label">Run Time</div><div class="value" id="run-timer">—</div></div>
+          <div class="stat"><div class="label">Est. Score</div><div class="value" id="est-score">—</div></div>
+          <div class="stat"><div class="label">XP Reward</div><div class="value" id="xp-reward">—</div></div>
+        </div>
+
+        <div id="hexgl-frame-wrap">
+          <iframe
+            id="hexgl-frame"
+            src="https://hexgl.bkcore.com/"
+            title="HexGL — WebGL Racing by BKcore (Thibaut Despoulain)"
+            allowfullscreen
+            loading="lazy"
+          ></iframe>
+        </div>
+
+        <div class="row">
+          <button id="startBtn" class="game-btn" type="button">▶ Start Race</button>
+          <button id="submit-btn" class="game-btn alt" type="button" aria-label="Submit run score to leaderboard">📤 Submit Run</button>
+          <button id="lb-btn" class="game-btn alt" type="button" onclick="window.location.href='/games/leaderboard.html'">🏆 Leaderboard</button>
+        </div>
+
+        <div class="rival-block" id="rival-block" style="display:none" aria-live="polite">
+          <strong>👻 Rival Ghost</strong> — <span id="rival-name">—</span>
+          · Best: <span id="rival-time">—</span>
+        </div>
+
+        <p class="note" style="color:var(--color-text-muted);font-size:.82rem;margin-top:12px">
+          Score formula: <code>500 000 − (finish_time_seconds × 1000)</code>.
+          Submit your fastest run to the seasonal leaderboard. Requires Telegram sync.
+        </p>
+
+        <div class="attribution">
+          Original game: <a href="https://github.com/BKcore/HexGL" target="_blank" rel="noopener noreferrer">HexGL by Thibaut Despoulain (BKcore)</a>
+          · Loaded via <a href="https://hexgl.bkcore.com/" target="_blank" rel="noopener noreferrer">hexgl.bkcore.com</a>
+          · MIT License
+        </div>
+      </div>
+
+      <div class="lore-block">
+        <strong>📖 Lore Fragment</strong> — The Null Drift circuit was carved through the debris field of the 2031 block-chain collapse.
+        Only the fastest pilot AI survived the original run. Moonboys racers now compete for the ghost record — and for primacy over the void.
+        The ship doesn't forgive hesitation. Neither does the leaderboard.
+      </div>
+
+      <section style="margin-top:28px">
+        <h2 style="font-size:1rem;font-weight:700;color:var(--color-text-muted);margin-bottom:10px">⚙️ How Monster Mode Works</h2>
+        <ul style="font-size:.88rem;line-height:1.8;color:var(--color-text-muted);padding-left:18px">
+          <li>Race the full HexGL circuit loaded directly from the official CDN.</li>
+          <li>Your run timer starts when you click <strong>Start Race</strong>.</li>
+          <li>When your run ends, click <strong>Submit Run</strong> to log your time.</li>
+          <li>Score = <code>500 000 − (time_seconds × 1000)</code>. Faster = higher score.</li>
+          <li>Scores above 0 qualify for the seasonal leaderboard and XP pool.</li>
+          <li>Telegram sync required for competitive ranking — guest runs are local only.</li>
+        </ul>
+      </section>
+
+    </main>
+    <footer id="site-footer" role="contentinfo">
+      <div class="footer-inner">
+        <div class="footer-col">
+          <h4>🌙 The Crypto Moonboys GK Wiki</h4>
+          <p>Fan-driven crypto encyclopedia 💥💥💥🚀.</p>
+        </div>
+        <div class="footer-col">
+          <h4>Explore</h4>
+          <ul>
+            <li><a href="/index.html">Main Page</a></li>
+            <li><a href="/search.html">All Articles</a></li>
+            <li><a href="/games/">Arcade</a></li>
+            <li><a href="/games/leaderboard.html">Leaderboard</a></li>
+            <li><a href="/about.html">About</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>Crypto Moonboys GK Wiki ⚡️⚡️⚡️ a GKiftyHEADS $LAP PRODUCTION$ · Not financial advice.</p>
+      </div>
+    </footer>
+  </div>
+</div>
+
+<button id="back-to-top" aria-label="Back to top">↑</button>
+<script src="/js/wiki.js"></script>
+<script src="/js/identity-gate.js"></script>
+<script type="module">
+import { submitScore } from '/js/leaderboard-client.js';
+
+(function () {
+  'use strict';
+
+  // ── Identity ───────────────────────────────────────────────────────────
+  var pilotEl     = document.getElementById('pilot-name');
+  var timerEl     = document.getElementById('run-timer');
+  var scoreEl     = document.getElementById('est-score');
+  var xpEl        = document.getElementById('xp-reward');
+  var rivalBlock  = document.getElementById('rival-block');
+  var rivalName   = document.getElementById('rival-name');
+  var rivalTime   = document.getElementById('rival-time');
+  var submitBtn   = document.getElementById('submit-btn');
+
+  var playerName  = 'Guest';
+  var telegramId  = null;
+
+  function refreshIdentity() {
+    try {
+      if (window.MOONBOYS_IDENTITY) {
+        var id   = window.MOONBOYS_IDENTITY.getTelegramId();
+        var name = localStorage.getItem('moonboys_tg_name') || 'Guest';
+        if (id) { telegramId = id; playerName = name; }
+      }
+    } catch (_) { /* fail-open */ }
+    pilotEl.textContent = playerName;
+  }
+
+  // ── Run timer ──────────────────────────────────────────────────────────
+  var runStart    = null;   // Date.now() when run started
+  var runActive   = false;
+  var intervalId  = null;
+  var lastRunMs   = null;   // finished run duration in ms
+
+  function fmtTime(ms) {
+    var s = Math.floor(ms / 1000);
+    var m = Math.floor(s / 60);
+    var ss = String(s % 60).padStart(2, '0');
+    var ds = String(Math.floor((ms % 1000) / 10)).padStart(2, '0');
+    return m + ':' + ss + '.' + ds;
+  }
+
+  function calcScore(ms) {
+    var seconds = ms / 1000;
+    return Math.max(0, Math.round(500000 - seconds * 1000));
+  }
+
+  function calcXp(score) {
+    return Math.floor(score / 1000) * 10;
+  }
+
+  function startRun() {
+    runStart   = Date.now();
+    runActive  = true;
+    lastRunMs  = null;
+    clearInterval(intervalId);
+    intervalId = setInterval(function () {
+      var elapsed = Date.now() - runStart;
+      timerEl.textContent = fmtTime(elapsed);
+      var s = calcScore(elapsed);
+      scoreEl.textContent = s > 0 ? s.toLocaleString() : '—';
+      xpEl.textContent    = s > 0 ? '+' + calcXp(s).toLocaleString() + ' XP' : '—';
+    }, 100);
+  }
+
+  function stopRun() {
+    if (!runActive) return;
+    clearInterval(intervalId);
+    runActive = false;
+    lastRunMs = Date.now() - runStart;
+    timerEl.textContent = fmtTime(lastRunMs);
+    var s = calcScore(lastRunMs);
+    scoreEl.textContent = s > 0 ? s.toLocaleString() : '0';
+    xpEl.textContent    = s > 0 ? '+' + calcXp(s).toLocaleString() + ' XP' : '—';
+  }
+
+  // ── Anti-cheat: validate minimum run duration (30 s) ──────────────────
+  var MIN_RUN_MS = 30 * 1000;
+
+  function isValidRun(ms) {
+    return typeof ms === 'number' && ms >= MIN_RUN_MS;
+  }
+
+  // ── Rival ghost (best from localStorage) ──────────────────────────────
+  function loadRival() {
+    try {
+      var stored = localStorage.getItem('hexgl_best_run');
+      if (!stored) return;
+      var data = JSON.parse(stored);
+      if (!data || !data.ms) return;
+      rivalBlock.style.display = '';
+      rivalName.textContent    = data.name  || 'You';
+      rivalTime.textContent    = fmtTime(data.ms);
+    } catch (_) { /* ignore */ }
+  }
+
+  function savePersonalBest(ms) {
+    try {
+      var current = JSON.parse(localStorage.getItem('hexgl_best_run') || 'null');
+      if (!current || ms < current.ms) {
+        localStorage.setItem('hexgl_best_run', JSON.stringify({ ms: ms, name: playerName }));
+      }
+    } catch (_) { /* ignore */ }
+  }
+
+  // ── Start button ───────────────────────────────────────────────────────
+  var startBtn = document.getElementById('startBtn');
+  if (startBtn) {
+    startBtn.addEventListener('click', function () {
+      refreshIdentity();
+      startRun();
+      startBtn.textContent = '⏱ Racing…';
+      startBtn.disabled    = true;
+    });
+  }
+
+  // ── Submit button ──────────────────────────────────────────────────────
+  if (submitBtn) {
+    submitBtn.addEventListener('click', async function () {
+      if (runActive) stopRun();
+      if (!isValidRun(lastRunMs)) {
+        alert('No valid completed run to submit. Please finish a race first (minimum 30 s).');
+        return;
+      }
+      var score = calcScore(lastRunMs);
+      if (score <= 0) {
+        alert('Run time too slow to qualify for the leaderboard (score = 0).');
+        return;
+      }
+      savePersonalBest(lastRunMs);
+      await submitScore(playerName, score, 'hexgl');
+      submitBtn.textContent = '✅ Submitted!';
+      submitBtn.disabled    = true;
+      if (startBtn) { startBtn.textContent = '▶ Start Race'; startBtn.disabled = false; }
+    });
+  }
+
+  // ── Init ───────────────────────────────────────────────────────────────
+  refreshIdentity();
+  loadRival();
+}());
+</script>
+<script src="/js/game-fullscreen.js"></script>
+<script src="/js/site-season-banner.js"></script>
+</body>
+</html>
