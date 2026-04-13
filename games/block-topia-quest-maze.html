@@ -1675,7 +1675,7 @@ class BattleScene extends Phaser.Scene {
       bg.setStrokeStyle(1, disabled ? 0x333333 : this.zone.accentColor, disabled ? 0.3 : 0.7);
 
       const txt = this.add.text(cfg.x, btnY,
-        '[' + cfg.key + '] ' + cfg.label.replace('\n', ' '),
+        '[' + cfg.key + '] ' + cfg.label.replace(/\n/g, ' '),
         {
           fontFamily: 'Courier New', fontSize: '11px',
           color: disabled ? '#444444' : '#f39c12',
