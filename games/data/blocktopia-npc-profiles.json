@@ -1,0 +1,60 @@
+{
+  "profiles": [
+    {
+      "id": "runner-01",
+      "name": "Signal Runner",
+      "role": "courier",
+      "faction": "GraffPUNKS",
+      "temperament": "agile",
+      "day_behavior": "deliver",
+      "night_behavior": "guide",
+      "rumors": [
+        "Dead Rail is hot tonight. Move fast and don't glow.",
+        "Some walls aren't walls. Some walls are keys.",
+        "The scanners are tracking movement patterns, not names."
+      ]
+    },
+    {
+      "id": "trader-01",
+      "name": "Candle Broker",
+      "role": "market_maker",
+      "faction": "neutral",
+      "temperament": "calculating",
+      "day_behavior": "trade",
+      "night_behavior": "hide",
+      "rumors": [
+        "Every green candle buys one more hour of rebellion.",
+        "Whales fake strength. Streets fake weakness.",
+        "The next prophecy arc is already leaking into the tape."
+      ]
+    },
+    {
+      "id": "warden-01",
+      "name": "Fork Warden",
+      "role": "enforcer",
+      "faction": "hostile",
+      "temperament": "aggressive",
+      "day_behavior": "patrol",
+      "night_behavior": "hunt",
+      "rumors": [
+        "Chain Plaza belongs to whoever can hold it under noise.",
+        "Too many tags in one block wakes the drones faster.",
+        "Moon Gate only opens for those willing to lose something."
+      ]
+    },
+    {
+      "id": "oracle-01",
+      "name": "Prophecy Oracle",
+      "role": "seer",
+      "faction": "moon-mission",
+      "temperament": "mystic",
+      "day_behavior": "observe",
+      "night_behavior": "prophesy",
+      "rumors": [
+        "Satellite Fall still echoes in circuits that were never repaired.",
+        "Meme Plague begins as a joke and ends as infrastructure.",
+        "New Dawn is not peace. It is a different kind of war."
+      ]
+    }
+  ]
+}

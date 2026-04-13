@@ -1,0 +1,44 @@
+{
+  "templates": [
+    {
+      "id": "graffiti-capture",
+      "type": "district_control",
+      "title": "Take Back the Wall",
+      "prompt": "Push GraffPUNKS control deeper into {district} before the scanners stabilize.",
+      "objectives": ["tag_chain", "avoid_warden", "extract_signal"],
+      "base_reward": 400,
+      "emotion_tags": ["rebellious", "bold"],
+      "reputation_effects": { "graffpunks": 8, "hostile": -4 }
+    },
+    {
+      "id": "market-flip",
+      "type": "economy",
+      "title": "Play the Candle",
+      "prompt": "Flip a position in {district} and fund tonight's vandal run without getting rinsed.",
+      "objectives": ["buy_exposure", "sell_profit", "buy_gear"],
+      "base_reward": 300,
+      "emotion_tags": ["calculating", "greedy"],
+      "reputation_effects": { "neutral": 4, "graffpunks": 2 }
+    },
+    {
+      "id": "prophecy-fragment",
+      "type": "prophecy",
+      "title": "Signal the Future",
+      "prompt": "Recover a prophecy fragment from {district} and upload it at Moon Gate.",
+      "objectives": ["recover_fragment", "reach_moon_gate", "upload_prophecy"],
+      "base_reward": 550,
+      "emotion_tags": ["mystic", "focused"],
+      "reputation_effects": { "moon-mission": 10, "graffpunks": 3 }
+    },
+    {
+      "id": "courier-run",
+      "type": "movement",
+      "title": "Dead Rail Rush",
+      "prompt": "Move contraband through {district} before the route gets burned.",
+      "objectives": ["pickup", "evade", "deliver"],
+      "base_reward": 350,
+      "emotion_tags": ["anxious", "agile"],
+      "reputation_effects": { "graffpunks": 5, "hostile": -2 }
+    }
+  ]
+}
