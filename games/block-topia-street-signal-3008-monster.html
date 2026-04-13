@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Block Topia — Monster Build</title>
+  <link rel="stylesheet" href="/css/style.css" />
+  <style>
+    body { margin: 0; background: #0b0912; color: #eaf6ff; font-family: Inter, system-ui, Arial; }
+    header { padding: 16px 20px; border-bottom: 1px solid rgba(94,242,255,.25); display: flex; justify-content: space-between; align-items: center; }
+    .pill { padding: 6px 12px; border-radius: 999px; background: rgba(94,242,255,.12); border: 1px solid rgba(94,242,255,.25); }
+    #phaser-root { display: flex; justify-content: center; padding: 16px; }
+    footer { padding: 12px 20px; border-top: 1px solid rgba(94,242,255,.25); display: flex; gap: 10px; flex-wrap: wrap; }
+  </style>
+</head>
+<body>
+  <header>
+    <div>🌆 <strong>Block Topia — Street Signal 3008</strong></div>
+    <div class="pill">AI NPCs • Multiplayer • Procedural City • GraffPUNKS</div>
+  </header>
+
+  <div id="phaser-root"></div>
+
+  <footer>
+    <span class="pill">WASD / Arrow Keys to Move</span>
+    <span class="pill">SPACE to Toggle Day/Night</span>
+    <span class="pill">NPCs React to Player Actions</span>
+    <span class="pill">Rumors & Prophecy Influence Seasons</span>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/phaser@3.70.0/dist/phaser.min.js"></script>
+  <script type="module">
+    import { bootBlockTopia } from './js/blocktopia-phaser-game.js';
+    import { loadNPCProfiles, createNPC, updateNPCBehavior } from './js/blocktopia-npc-ai.js';
+
+    const game = bootBlockTopia('phaser-root');
+
+    async function integrateNPCs() {
+      const profiles = await loadNPCProfiles();
+      const scene = Phaser.GAMES[0].scene.keys['BlockTopiaScene'];
+
+      if (!scene) return;
+
+      scene.npcs = profiles.map((profile, i) =>
+        createNPC(scene, profile, 200 + i * 120, 300 + (i % 2) * 100)
+      );
+
+      scene.events.on('update', () => {
+        const player = scene.playerSprite;
+        const phase = scene.phase;
+        scene.npcs.forEach(npc => updateNPCBehavior(scene, npc, player, phase));
+      });
+    }
+
+    setTimeout(integrateNPCs, 1500);
+  </script>
+</body>
+</html>
