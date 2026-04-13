@@ -355,11 +355,10 @@
     var wrap     = el('div', 'touch-tetris');
     var row1     = el('div', 'touch-tetris-row');
     var left     = makeTouchBtn('←');
-    var rotate   = makeTouchBtn('↑ Rotate');
+    var rotate   = makeTouchBtn('↻');
     var right    = makeTouchBtn('→');
-    var row2     = el('div', 'touch-tetris-row');
-    var softDrop = makeTouchBtn('↓ Drop');
-    var hardDrop = makeTouchBtn('⏬ Hard Drop');
+    var softDrop = makeTouchBtn('↓');
+    var hardDrop = makeTouchBtn('⏬');
     bindHold(left,     'ArrowLeft');
     bindTap(rotate,    'ArrowUp');
     bindHold(right,    'ArrowRight');
@@ -368,10 +367,9 @@
     row1.appendChild(left);
     row1.appendChild(rotate);
     row1.appendChild(right);
-    row2.appendChild(softDrop);
-    row2.appendChild(hardDrop);
+    row1.appendChild(softDrop);
+    row1.appendChild(hardDrop);
     wrap.appendChild(row1);
-    wrap.appendChild(row2);
     return wrap;
   }
 

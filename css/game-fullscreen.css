@@ -605,3 +605,112 @@ body.overlay-open {
     }
   }
 }
+
+/* ===== GLOBAL SLIM HUD =====
+   Replaces the 4-column boxed stat cards with a compact inline text strip.
+   Uses body .hud (specificity 0,1,1) to override inline .hud (0,1,0) styles
+   defined in each game page's <style> block, without needing !important.
+   Applies on both the regular page and inside the fullscreen overlay.
+   ================================================================== */
+
+body .hud {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 0 14px;
+  justify-content: center;
+  align-items: baseline;
+  margin-bottom: 6px;
+  padding: 2px 0;
+}
+
+body .hud .stat {
+  background: none;
+  border: none;
+  border-radius: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: row;
+  align-items: baseline;
+  gap: 4px;
+  text-align: left;
+}
+
+body .hud .label {
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.42);
+  white-space: nowrap;
+}
+
+body .hud .value {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #fff;
+  white-space: nowrap;
+}
+
+/* Overlay always uses slim HUD too — keep it tight regardless of viewport width.
+   Using #game-overlay #game-overlay .hud (specificity 0,2,1) to avoid !important. */
+#game-overlay .game-card .hud {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 0 14px;
+  justify-content: center;
+  align-items: baseline;
+  margin-bottom: 4px;
+  padding: 2px 0;
+  width: 100%;
+  max-width: none;
+}
+
+#game-overlay .game-card .hud .stat {
+  background: none;
+  border: none;
+  border-radius: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: row;
+  align-items: baseline;
+  gap: 4px;
+  text-align: left;
+}
+
+#game-overlay .game-card .hud .label {
+  font-size: 0.6rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.42);
+  white-space: nowrap;
+}
+
+#game-overlay .game-card .hud .value {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #fff;
+  white-space: nowrap;
+}
+
+/* Tetris single-row touch controls — compact, fits narrow screens */
+#game-overlay .touch-tetris {
+  flex-direction: row;
+  align-items: center;
+  gap: 4px;
+}
+
+#game-overlay .touch-tetris .touch-tetris-row {
+  gap: 4px;
+}
+
+@media (max-width: 380px) {
+  #game-overlay .touch-tetris .touch-btn {
+    min-width: 40px;
+    min-height: 40px;
+    font-size: 0.78rem;
+    padding: 0 4px;
+  }
+}
