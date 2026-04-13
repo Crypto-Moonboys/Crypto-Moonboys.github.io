@@ -123,13 +123,13 @@ import { rollHiddenBonus, showBonusPopup } from '/js/bonus-engine.js';
   }
 
   // Speed tiers: interval decreases (faster) as score rises
-  const SPEED_TIERS = [
+  const SPEED_TIERS = Object.freeze([
     { minScore: 350, ms: 75,  label: 'Ludicrous' },
     { minScore: 200, ms: 90,  label: 'Turbo'     },
     { minScore: 100, ms: 100, label: 'Faster'    },
     { minScore: 50,  ms: 110, label: 'Fast'      },
     { minScore: 0,   ms: 120, label: 'Normal'    },
-  ];
+  ]);
 
   function getSpeedTier() {
     for (const t of SPEED_TIERS) { if (score >= t.minScore) return t; }
