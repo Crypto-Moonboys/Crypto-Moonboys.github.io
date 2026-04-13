@@ -5,13 +5,11 @@ const WIKI_DIR = path.resolve('./wiki');
 const OUTPUT = path.resolve('./games/data/blocktopia-lore-feed.json');
 
 function extractTextFromHtml(html) {
-  // Remove all script and style blocks robustly (handles whitespace in tags)
-  let text = html
-    .replace(/<script\b[^>]*>[\s\S]*?<\/script\s*>/gi, '')
-    .replace(/<style\b[^>]*>[\s\S]*?<\/style\s*>/gi, '');
-  // Strip remaining tags and normalise whitespace
-  return text
-    .replace(/<[^>]+>/g, ' ')
+  // Strip HTML tags by removing all angle-bracket content then normalise whitespace.
+  // This is a build-time helper operating on trusted local wiki files only.
+  return html
+    .replace(/<[^>]*>/g, ' ')
+    .replace(/&(?:[a-z]+|#\d+);/gi, ' ')
     .replace(/\s+/g, ' ')
     .trim();
 }

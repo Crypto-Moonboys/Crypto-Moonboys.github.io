@@ -55,9 +55,9 @@
   <circle cx="120" cy="150" r="3" fill="#8dff6a" opacity="0.7"/>
   <circle cx="520" cy="140" r="5" fill="#ff9b42" opacity="0.8"/>
   <!-- Title text -->
-  <text x="320" y="88" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="13" fill="#5ef2ff" opacity="0.7" letter-spacing="4">CRYPTO MOONBOYS</text>
-  <text x="320" y="122" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-weight="bold" font-size="28" fill="#eaf6ff">Block Topia</text>
-  <text x="320" y="150" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="14" fill="#5ef2ff" letter-spacing="2">STREET SIGNAL 3008</text>
+  <text x="320" y="88" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="13" fill="#5ef2ff" opacity="0.7" letter-spacing="4" aria-hidden="true">CRYPTO MOONBOYS</text>
+  <text x="320" y="122" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-weight="bold" font-size="28" fill="#eaf6ff" aria-hidden="true">Block Topia</text>
+  <text x="320" y="150" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="14" fill="#5ef2ff" letter-spacing="2" aria-hidden="true">STREET SIGNAL 3008</text>
   <!-- Subtitle -->
-  <text x="320" y="330" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="12" fill="#aaa">GraffPUNKS · AI NPCs · Procedural City · Seasonal Lore</text>
+  <text x="320" y="330" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="12" fill="#aaa" aria-hidden="true">GraffPUNKS · AI NPCs · Procedural City · Seasonal Lore</text>
 </svg>
