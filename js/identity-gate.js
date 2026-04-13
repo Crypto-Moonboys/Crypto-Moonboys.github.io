@@ -78,8 +78,12 @@
   /**
    * Mark the current Telegram identity as bot-link-completed (competition-active).
    * Call this after the /gklink flow succeeds (e.g. redirect from community.html?gklink=…).
+   *
+   * @param {string|number} [telegramId] — if supplied, persists the ID first so the
+   *   linked flag is always set even when the browser has no prior Telegram widget auth.
    */
-  function setTelegramLinked() {
+  function setTelegramLinked(telegramId) {
+    if (telegramId) lsSet(LS_TG_ID, String(telegramId));
     if (getTelegramId()) lsSet(LS_TG_LINKED, '1');
   }
 
@@ -304,7 +308,8 @@
     getTelegramName:      getTelegramName,
     /** Whether the bot link flow has been completed (competition-active) */
     isTelegramLinked:     isTelegramLinked,
-    /** Mark bot link as completed (call after successful /gklink one-time link flow) */
+    /** Mark bot link as completed (call after successful /gklink one-time link flow).
+     *  Accepts an optional telegramId; if provided, persists the ID first. */
     setTelegramLinked:    setTelegramLinked,
     /** Persist after a successful /telegram/auth round-trip (Step 1) */
     saveTelegramIdentity: saveTelegramIdentity,
