@@ -56,7 +56,7 @@ Validation order: Phase 1–4 generators → Phase 5 → Phase 6 → `validate-g
 
 ## ⚙️ Backend: Cloudflare Workers
 
-Three separate Cloudflare Workers power the live backend.
+Seven separate Cloudflare Workers power the live backend.  Three are community-wide; four are dedicated to Block Topia: Street Signal 3008.
 
 ### `moonboys-api` — Engagement & Community Worker
 **Deploy path:** `workers/moonboys-api/`
@@ -123,6 +123,102 @@ Used by `moonboys-api` to block/unblock users and read risk state for admin bot 
 **D1 binding:** `DB` → `wikicoms` (identity linking, future use)
 
 Boards: `global` (all-time aggregate), `seasonal` (90-day), `yearly`, `all-time` (top 420), plus per-game boards for all 8 games (`snake`, `crystal`, `blocktopia`, `invaders`, `pacchain`, `asteroids`, `breakout`, `tetris`). Variety bonus: +500 XP when all 8 games have scores.
+
+---
+
+## 🏙️ Block Topia: Street Signal 3008 — Dedicated Workers
+
+Four new workers provide the backend infrastructure for Block Topia: Street Signal 3008.
+All require placeholder KV namespace IDs to be replaced before first deploy (see each `wrangler.toml`).
+
+### `blocktopia-district` — District Control Worker
+**Deploy path:** `workers/blocktopia-district/`
+**KV bindings:** `DISTRICTS`, `NPC_MEMORY`, `SEASONS`, `CACHE`
+**Secrets:** `ADMIN_SECRET`
+
+| Route | Description |
+|---|---|
+| `GET /health` | Health check |
+| `GET /districts` | List all 12 districts and their controllers |
+| `GET /district/:id` | Single district state |
+| `POST /district/:id/claim` | Claim a district (requires `player_id`, `player_name`, `signal_strength`) |
+| `GET /district/:id/npc-memory` | Cross-season NPC memory for a district |
+| `PUT /district/:id/npc-memory` | Update NPC memory (admin) |
+| `GET /season/current` | Current season + prophecy state |
+| `PUT /season/current` | Update season state (admin) |
+
+### `blocktopia-realtime` — Real-Time Event Feed Worker
+**Deploy path:** `workers/blocktopia-realtime/`
+**KV bindings:** `COMMUNITY_FEED`, `CACHE`
+**Secrets:** `ADMIN_SECRET`
+
+| Route | Description |
+|---|---|
+| `GET /health` | Health check |
+| `GET /realtime/feed` | Poll for recent events (`?since=<iso>&limit=<n>`) |
+| `POST /realtime/event` | Emit a new event (admin) |
+| `DELETE /realtime/event/:id` | Remove an event (admin) |
+
+### `blocktopia-engagement` — Engagement Worker
+**Deploy path:** `workers/blocktopia-engagement/`
+**KV bindings:** `COMMUNITY_FEED`, `CACHE`
+**Secrets:** `ADMIN_SECRET`
+
+| Route | Description |
+|---|---|
+| `GET /health` | Health check |
+| `GET /engagement/feed` | Paginated Battle Chambers event feed |
+| `POST /engagement/reaction` | Record a player reaction (`fire`/`rocket`/`moon`/`diamond`/`skull`) |
+| `GET /engagement/top` | Top engaged players by event count |
+| `GET /engagement/stats` | Aggregate stats (total events, by type, last event timestamp) |
+| `POST /engagement/event` | Publish a new engagement event (admin) |
+
+### `blocktopia-leaderboard` — Block Topia Leaderboard Worker
+**Deploy path:** `workers/blocktopia-leaderboard/`
+**KV bindings:** `DISTRICTS`, `SEASONS`, `CACHE`
+**Secrets:** `ADMIN_SECRET`
+**Cron trigger:** `"0 0 * * *"` — daily season-rollover check
+
+District bonus: players who control the submitted district receive a +5 % score multiplier.
+
+| Route | Description |
+|---|---|
+| `GET /health` | Health check |
+| `GET /leaderboard` | Current-season top scores (`?limit=`) |
+| `GET /leaderboard/all-time` | All-time top scores (`?limit=`) |
+| `POST /leaderboard/score` | Submit a score (`player_id`, `player_name`, `score`, `level?`, `district_id?`) |
+| `GET /leaderboard/player/:player_id` | Player stats on seasonal and all-time boards |
+| `POST /leaderboard/reset` | Force season reset (admin) |
+
+#### Deployment
+
+```bash
+# blocktopia-district
+cd workers/blocktopia-district
+# edit wrangler.toml: replace YOUR_*_KV_ID placeholders
+wrangler secret put ADMIN_SECRET
+wrangler deploy
+
+# blocktopia-realtime
+cd workers/blocktopia-realtime
+wrangler secret put ADMIN_SECRET
+wrangler deploy
+
+# blocktopia-engagement
+cd workers/blocktopia-engagement
+wrangler secret put ADMIN_SECRET
+wrangler deploy
+
+# blocktopia-leaderboard
+cd workers/blocktopia-leaderboard
+wrangler secret put ADMIN_SECRET
+wrangler deploy
+```
+
+#### KV Namespace Sharing
+
+`COMMUNITY_FEED`, `CACHE`, `DISTRICTS`, and `SEASONS` are shared across workers.
+After creating each namespace (`wrangler kv:namespace create <NAME>`), use the **same ID** in every `wrangler.toml` that declares the binding so all workers share the same storage.
 
 ---
 

@@ -1,0 +1,39 @@
+name               = "blocktopia-district"
+main               = "worker.js"
+compatibility_date = "2025-01-01"
+
+# ── KV namespace bindings ─────────────────────────────────────────────────────
+# Create each namespace with `wrangler kv:namespace create <NAME>` and paste
+# the returned IDs below.  Never commit live IDs to source control — replace
+# the placeholders after first deploy.
+
+[[kv_namespaces]]
+binding    = "DISTRICTS"
+id         = "YOUR_DISTRICTS_KV_ID"
+preview_id = "YOUR_DISTRICTS_KV_ID"
+
+[[kv_namespaces]]
+binding    = "NPC_MEMORY"
+id         = "YOUR_NPC_MEMORY_KV_ID"
+preview_id = "YOUR_NPC_MEMORY_KV_ID"
+
+[[kv_namespaces]]
+binding    = "SEASONS"
+id         = "YOUR_SEASONS_KV_ID"
+preview_id = "YOUR_SEASONS_KV_ID"
+
+[[kv_namespaces]]
+binding    = "CACHE"
+id         = "YOUR_CACHE_KV_ID"
+preview_id = "YOUR_CACHE_KV_ID"
+
+# ── Non-secret variables ───────────────────────────────────────────────────────
+[vars]
+ALLOWED_ORIGIN     = "https://crypto-moonboys.github.io"
+DISTRICT_COUNT     = "12"
+SEASON_LENGTH_DAYS = "90"
+CACHE_TTL_SECONDS  = "60"
+
+# ── Secrets (set via Wrangler CLI — never commit values) ──────────────────────
+# wrangler secret put ADMIN_SECRET
+# ADMIN_SECRET — required X-Admin-Secret header for admin routes.
