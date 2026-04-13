@@ -59,7 +59,19 @@ function newEventId() {
   return `${ts}-${rand}`;
 }
 
-/** Read the entire feed log from KV, always returning an array. */
+/** Read the current feed-cache generation (incremented on every write). */
+async function getFeedGeneration(env) {
+  return (await env.CACHE.get('cache:feed:gen')) || '0';
+}
+
+/** Bump the feed-cache generation, invalidating all cached feed responses. */
+async function bumpFeedGeneration(env) {
+  const next = String((Number(await getFeedGeneration(env)) || 0) + 1);
+  // TTL > max CACHE_TTL_SECONDS so the gen key outlives any cached feed page
+  await env.CACHE.put('cache:feed:gen', next, { expirationTtl: 3600 });
+}
+
+
 async function readFeed(env) {
   const raw = await env.COMMUNITY_FEED.get('feed:log', { type: 'json' });
   return Array.isArray(raw) ? raw : [];
@@ -78,7 +90,8 @@ async function handleGetFeed(request, env, origin) {
   const limit = Math.min(Math.max(Number(url.searchParams.get('limit')) || 20, 1), Number(env.FEED_MAX_EVENTS) || 100);
   const ttl   = Number(env.CACHE_TTL_SECONDS) || 10;
 
-  const cacheKey = `cache:feed:${since || ''}:${limit}`;
+  const gen      = await getFeedGeneration(env);
+  const cacheKey = `cache:feed:${gen}:${since || ''}:${limit}`;
   const cached   = await env.CACHE.get(cacheKey, { type: 'json' });
   if (cached !== null) {
     return jsonOk(cached, origin);
@@ -142,8 +155,8 @@ async function handlePostEvent(request, env, origin) {
   }
 
   await writeFeed(env, events);
-  // Invalidate cached feed pages
-  await env.CACHE.delete('cache:feed::20');
+  // Bump generation so all cached feed pages are invalidated on next read
+  await bumpFeedGeneration(env);
 
   return new Response(JSON.stringify({ event }), {
     status: 201,

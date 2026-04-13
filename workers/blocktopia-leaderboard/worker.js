@@ -26,8 +26,8 @@
 const ALLOWED_METHODS = 'GET, POST, OPTIONS';
 
 // ── Season constants ─────────────────────────────────────────────────────────
-/** 2024-01-01T00:00:00.000Z — must stay in sync with other workers */
-const SEASON_EPOCH_MS   = 1704067200000;
+/** Master epoch: 2024-01-01T00:00:00.000Z — must stay in sync with anti-cheat and leaderboard workers */
+const SEASON_EPOCH_MS = 1704067200000; // new Date(SEASON_EPOCH_MS).toISOString() === "2024-01-01T00:00:00.000Z"
 
 // ── CORS ─────────────────────────────────────────────────────────────────────
 

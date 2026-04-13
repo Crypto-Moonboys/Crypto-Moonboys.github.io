@@ -73,6 +73,17 @@ async function writeFeed(env, events) {
   await env.COMMUNITY_FEED.put('feed:log', JSON.stringify(events));
 }
 
+/** Read the current feed-cache generation (bumped on every feed write). */
+async function getFeedGeneration(env) {
+  return (await env.CACHE.get('cache:engagement:feed:gen')) || '0';
+}
+
+/** Bump the engagement feed-cache generation, invalidating all cached pages. */
+async function bumpFeedGeneration(env) {
+  const next = String((Number(await getFeedGeneration(env)) || 0) + 1);
+  await env.CACHE.put('cache:engagement:feed:gen', next, { expirationTtl: 3600 });
+}
+
 function newEventId() {
   const ts   = Date.now().toString(36).padStart(11, '0');
   const rand = Math.random().toString(36).slice(2, 8);
@@ -88,7 +99,8 @@ async function handleGetFeed(request, env, origin) {
   const ttl    = Number(env.CACHE_TTL_SECONDS) || 30;
   const offset = (page - 1) * limit;
 
-  const payload = await cachedGet(env, `cache:engagement:feed:${page}:${limit}`, ttl, async () => {
+  const gen      = await getFeedGeneration(env);
+  const payload  = await cachedGet(env, `cache:engagement:feed:${gen}:${page}:${limit}`, ttl, async () => {
     const events = await readFeed(env);
     events.sort((a, b) => Date.parse(b.timestamp) - Date.parse(a.timestamp));
     return {
@@ -238,11 +250,9 @@ async function handlePostEvent(request, env, origin) {
   if (events.length > maxEvents) events.splice(maxEvents);
 
   await writeFeed(env, events);
-  // Invalidate cached pages
-  await Promise.all([
-    env.CACHE.delete('cache:engagement:feed:1:20'),
-    env.CACHE.delete('cache:engagement:stats'),
-  ]);
+  // Bump generation so all cached feed pages and stats are invalidated on next read
+  await bumpFeedGeneration(env);
+  await env.CACHE.delete('cache:engagement:stats');
 
   return new Response(JSON.stringify({ event }), {
     status: 201,
