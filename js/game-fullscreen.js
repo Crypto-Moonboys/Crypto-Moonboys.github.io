@@ -91,6 +91,7 @@
   }
 
   var btnFS    = makeCtrlBtn('overlay-btn-fs',    'Toggle fullscreen', '⛶', 'FS');
+  var btnStart = makeCtrlBtn('overlay-btn-start', 'Start game',        '▶', 'Start');
   var btnPause = makeCtrlBtn('overlay-btn-pause', 'Pause/Resume',      '⏸', 'Pause');
   var btnReset = makeCtrlBtn('overlay-btn-reset', 'Reset game',        '↺', 'Reset');
   var btnMute  = makeCtrlBtn('overlay-btn-mute',  'Mute/Unmute',       '🔊', 'Mute');
@@ -98,6 +99,7 @@
 
   ctrlBar.appendChild(gameLabel);
   ctrlBar.appendChild(btnFS);
+  ctrlBar.appendChild(btnStart);
   ctrlBar.appendChild(btnPause);
   ctrlBar.appendChild(btnReset);
   ctrlBar.appendChild(btnMute);
@@ -566,7 +568,21 @@
   // Use capture phase so the overlay opens *before* the game's own onclick
   // handler fires (the game's onclick is a property set after this script
   // runs, so it fires in bubble phase after our capture listener).
-  startBtn.addEventListener('click', openOverlay, true);
+  // When opening the overlay (isOpen is false), stop event propagation so the
+  // game does NOT auto-start — the player must press START inside the overlay.
+  // stopImmediatePropagation() is used (rather than stopPropagation()) because
+  // the game's startBtn.onclick is registered on the same element; stopPropagation
+  // only prevents bubbling to parent elements and would not prevent the game's
+  // own onclick from firing.  stopImmediatePropagation() prevents all remaining
+  // listeners on this element (both capture and bubble) from running.
+  // When already open (isOpen is true), allow propagation so the game's own
+  // startBtn handler fires normally (called by the overlay ▶ Start button).
+  startBtn.addEventListener('click', function (e) {
+    if (!isOpen) {
+      openOverlay();
+      e.stopImmediatePropagation();
+    }
+  }, true);
 
   // Also reset pause tracking if Start is clicked while already in overlay
   // (the game handler resets paused=false internally on start).
@@ -575,6 +591,19 @@
   });
 
   btnExit.addEventListener('click', closeOverlay);
+
+  // START button in the overlay ctrl bar: triggers the game's own startBtn
+  // which is now inside the overlay stage.  Keyboard/touch input is ignored by
+  // all games until they are running, so this is the required first deliberate
+  // action before gameplay begins.
+  btnStart.addEventListener('click', function () {
+    var gameStartBtn = document.getElementById('startBtn');
+    if (gameStartBtn && isOpen) {
+      gameStartBtn.click();
+      _isPaused = false;
+      syncPauseBtn();
+    }
+  });
 
   btnFS.addEventListener('click', function () {
     if (document.fullscreenElement) {
@@ -619,8 +648,32 @@
   });
 
   // Esc key closes the overlay.
+  // Enter / Space trigger the overlay ▶ Start button when the overlay is open
+  // but the game has not yet started (running is false on all games at that point).
+  // We check the game's own running flag via a DOM attribute rather than a shared
+  // variable because each game owns its state internally.
   document.addEventListener('keydown', function (e) {
-    if (e.key === 'Escape' && isOpen) closeOverlay();
+    if (e.key === 'Escape' && isOpen) {
+      closeOverlay();
+      return;
+    }
+    if ((e.key === 'Enter' || e.key === ' ') && isOpen) {
+      // Only fire if the currently focused element is NOT a game control input
+      // (e.g. text input in Crystal Quest) to avoid double-firing.
+      var focused = document.activeElement;
+      var tag = focused ? focused.tagName : '';
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+      // Trigger the overlay START button if the game is not yet running.
+      // All canvas-based games expose a global `running` flag; if it is falsy
+      // (undefined counts as falsy for games not yet started) we fire start.
+      var gameStartBtn = document.getElementById('startBtn');
+      if (gameStartBtn && !window.running) {
+        e.preventDefault();
+        gameStartBtn.click();
+        _isPaused = false;
+        syncPauseBtn();
+      }
+    }
   });
 
   // Tap / click on the dark backdrop (outside .overlay-body) closes overlay.
