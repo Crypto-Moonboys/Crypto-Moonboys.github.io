@@ -804,7 +804,10 @@ export default {
     if (path === '/telegram/webhook' && request.method === 'POST') {
       const update = await request.json().catch(() => null);
       if (update) {
-        await handleTelegramUpdate(update, env).catch(() => {});
+        await handleTelegramUpdate(update, env).catch((e) => {
+          console.log('handleTelegramUpdate error:', e?.message || String(e));
+          if (e?.stack) console.log(e.stack);
+        });
       }
       return json({ ok: true });
     }
