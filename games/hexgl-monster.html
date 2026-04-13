@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🏁 HexGL — MONSTER MODE</title>
+<link rel="stylesheet" href="/css/wiki.css">
+<link rel="stylesheet" href="/css/game-fullscreen.css">
+<style>
+.game-card{background:rgba(255,255,255,.03);border:1px solid #333;border-radius:16px;padding:18px}
+.hud{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:12px}
+.stat{background:rgba(255,255,255,.05);padding:10px;border-radius:10px;text-align:center}
+#hexglFrame{width:100%;height:70vh;border:none;border-radius:12px;background:#000}
+</style>
+</head>
+<body>
+<header id="site-header"></header>
+<div id="layout"><div id="main-wrapper"><main id="content">
+<h1>🏁 HexGL — MONSTER MODE</h1>
+
+<div class="game-card">
+<div class="hud">
+<div class="stat"><div>Player</div><div id="player"></div></div>
+<div class="stat"><div>Best</div><div id="best">0</div></div>
+<div class="stat"><div>Timer</div><div id="timer">0.000</div></div>
+<div class="stat"><div>XP</div><div id="xp">0</div></div>
+</div>
+
+<iframe id="hexglFrame"></iframe>
+
+<button id="startBtn">Start</button>
+<button id="finishBtn">Finish</button>
+<button id="resetBtn">Reset</button>
+
+</div>
+
+</main></div></div>
+
+<script src="/js/wiki.js"></script>
+<script src="/js/identity-gate.js"></script>
+<script src="/js/game-fullscreen.js"></script>
+<script type="module">
+import { ArcadeSync } from '/js/arcade-sync.js';
+import { submitScore } from '/js/leaderboard-client.js';
+
+const name = window.MOONBOYS_IDENTITY?.getTelegramName?.() || ArcadeSync.getPlayer();
+document.getElementById('player').textContent=name;
+
+let start=null;
+let int=null;
+let best=ArcadeSync.getHighScore('hexgl');
+const bestEl=document.getElementById('best');
+bestEl.textContent=best;
+
+startBtn.onclick=()=>{
+ document.getElementById('hexglFrame').src='https://cdn.jsdelivr.net/gh/BKcore/HexGL@master/index.html';
+ start=performance.now();
+ int=setInterval(()=>{
+  timer.textContent=((performance.now()-start)/1000).toFixed(3);
+ },50);
+};
+
+finishBtn.onclick=()=>{
+ if(!start)return;
+ clearInterval(int);
+ const t=(performance.now()-start)/1000;
+ const score=Math.floor(500000-t*1000);
+ ArcadeSync.setHighScore('hexgl',score);
+ submitScore(name,score,'hexgl');
+ xp.textContent=Math.floor(score/1000);
+ if(score>best){best=score;bestEl.textContent=best;}
+};
+
+resetBtn.onclick=()=>{clearInterval(int);start=null;timer.textContent='0.000';};
+</script>
+</body>
+</html>
