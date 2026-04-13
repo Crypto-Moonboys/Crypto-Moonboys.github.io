@@ -888,15 +888,10 @@ class TitleScene extends Phaser.Scene {
       fontFamily: 'Courier New', fontSize: '13px', color: '#74b9ff'
     }).setOrigin(0.5);
 
-    // Zone descriptions
-    const zoneDescs = this.add.text(320, 230, [
-      'Zone 1: HODL or FOLD — The Market Floor',
-      'Zone 2: Bear Market Siege — The Frozen Cavern',
-      'Zone 3: FOMO Plague Escape — The Panic Wastes',
-      'Zone 4: Rug Pull Recovery — The Ruined Vaults',
-      "Zone 5: Whale Lord's Challenge — The Deep Sea Vault",
-      'Zone 6: Moon Mission — The Final Ascent',
-    ].join('\n'), {
+    // Zone descriptions derived from ZONES constant (single source of truth)
+    const zoneDescs = this.add.text(320, 230,
+      ZONES.map((z, i) => 'Zone ' + (i + 1) + ': ' + z.name + ' — ' + z.subtitle).join('\n'),
+    {
       fontFamily: 'Courier New', fontSize: '10px', color: '#666666', align: 'center',
       lineSpacing: 4
     }).setOrigin(0.5, 0);
@@ -1786,7 +1781,6 @@ class BattleScene extends Phaser.Scene {
 
   flashSprite(sprite, flashColor, duration) {
     if (!sprite || !sprite.scene) return;
-    const orig = sprite.tintTopLeft;
     sprite.setTint(flashColor);
     this.time.delayedCall(duration || 150, () => {
       if (sprite && sprite.scene) sprite.clearTint();
@@ -1997,13 +1991,17 @@ const game = new Phaser.Game({
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
-// MOBILE D-PAD
+// MOBILE D-PAD — maps data-key codes to modern KeyboardEvent key strings
 // ─────────────────────────────────────────────────────────────────────────────
+const DPAD_KEY_MAP = { 37: 'ArrowLeft', 38: 'ArrowUp', 39: 'ArrowRight', 40: 'ArrowDown', 13: 'Enter' };
+
 document.querySelectorAll('.dpad-btn').forEach(btn => {
   const keyCode = parseInt(btn.dataset.key, 10);
+  const keyStr  = DPAD_KEY_MAP[keyCode] || String(keyCode);
   const fireKey = () => {
     const evt = new KeyboardEvent('keydown', {
-      keyCode, which: keyCode, bubbles: true, cancelable: true
+      key: keyStr, code: keyStr, keyCode, which: keyCode,
+      bubbles: true, cancelable: true
     });
     document.dispatchEvent(evt);
   };
