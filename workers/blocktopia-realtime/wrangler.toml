@@ -1,0 +1,24 @@
+name               = "blocktopia-realtime"
+main               = "worker.js"
+compatibility_date = "2025-01-01"
+
+# ── KV namespace bindings ─────────────────────────────────────────────────────
+# Create each namespace with `wrangler kv:namespace create <NAME>` and paste
+# the returned IDs below.  Never commit live IDs to source control — replace
+# the placeholders after first deploy.
+
+[[kv_namespaces]]
+binding    = "COMMUNITY_FEED"
+id         = "YOUR_COMMUNITY_FEED_KV_ID"
+preview_id = "YOUR_COMMUNITY_FEED_KV_ID"
+
+[[kv_namespaces]]
+binding    = "CACHE"
+id         = "YOUR_CACHE_KV_ID"
+preview_id = "YOUR_CACHE_KV_ID"
+
+# ── Non-secret variables ───────────────────────────────────────────────────────
+[vars]
+ALLOWED_ORIGIN      = "https://crypto-moonboys.github.io"
+FEED_MAX_EVENTS     = "100"
+CACHE_TTL_SECONDS   = "10"
