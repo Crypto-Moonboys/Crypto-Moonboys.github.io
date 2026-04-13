@@ -93,6 +93,16 @@ export default {
         );
       }
 
+      // Anti-cheat gate — the anti-cheat worker writes anticheat:blocked:{id}
+      // into this same KV namespace when a user's risk ceiling is breached.
+      const blockStatus = await env.LEADERBOARD.get(`anticheat:blocked:${String(telegram_id).trim()}`);
+      if (blockStatus) {
+        return new Response(
+          JSON.stringify({ error: "account_blocked", block_type: blockStatus }),
+          { status: 403, headers: corsHeaders }
+        );
+      }
+
       if (typeof player !== "string" || player.trim().length < 1 || player.trim().length > 40) {
         return new Response(
           JSON.stringify({ error: "player must be a non-empty string (max 40 chars)" }),
