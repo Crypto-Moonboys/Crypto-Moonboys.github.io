@@ -782,7 +782,6 @@ async function cmdGkStart(db, tok, chatId, telegramId, fromUser) {
       ],
     ],
   };
-  await sendTelegramMessage(tok, chatId,
     `🚀 <b>Welcome to Crypto Moonboys GK, ${name}!</b>\n\n` +
     `You've entered the Battle Chamber.\n\n` +
     `<b>What to do next:</b>\n` +
@@ -800,10 +799,10 @@ async function cmdGkHelp(tok, chatId) {
   const replyMarkup = {
     inline_keyboard: [
       [
-        { text: '🌐 Open Incubator Guide', web_app: { url: `${SITE_URL}/gkniftyheads-incubator.html` } },
+        { text: '🚀 Open Incubator Guide', web_app: { url: `${SITE_URL}/gkniftyheads-incubator.html` } },
       ],
       [
-        { text: '🔗 Open in Browser', url: `${SITE_URL}/gkniftyheads-incubator.html` },
+        { text: '🌐 Open in Browser', url: `${SITE_URL}/gkniftyheads-incubator.html` },
       ],
     ],
   };
