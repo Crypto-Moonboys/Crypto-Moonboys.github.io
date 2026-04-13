@@ -232,7 +232,7 @@
       </div>
 
       <div class="lore-block">
-        <strong>📖 Lore Fragment</strong> — The Null Drift circuit was carved through the debris field of the 2031 block-chain collapse.
+        <strong>📖 Lore Fragment</strong> — The Null Drift circuit was carved through the debris field of the 2031 blockchain collapse.
         Only the fastest pilot AI survived the original run. Moonboys racers now compete for the ghost record — and for primacy over the void.
         The ship doesn't forgive hesitation. Neither does the leaderboard.
       </div>
@@ -299,9 +299,11 @@ import { submitScore } from '/js/leaderboard-client.js';
   function refreshIdentity() {
     try {
       if (window.MOONBOYS_IDENTITY) {
-        var id   = window.MOONBOYS_IDENTITY.getTelegramId();
-        var name = localStorage.getItem('moonboys_tg_name') || 'Guest';
-        if (id) { telegramId = id; playerName = name; }
+        var id = window.MOONBOYS_IDENTITY.getTelegramId();
+        if (id) {
+          telegramId = id;
+          playerName = localStorage.getItem('moonboys_tg_name') || 'Guest';
+        }
       }
     } catch (_) { /* fail-open */ }
     pilotEl.textContent = playerName;
