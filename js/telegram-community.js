@@ -232,9 +232,17 @@
       .then(function (r) { return r.json().then(function (d) { return { ok: r.ok, data: d }; }); })
       .then(function (result) {
         if (result.ok && result.data && result.data.ok) {
-          // Mark the identity as linked in localStorage
-          if (window.MOONBOYS_IDENTITY && window.MOONBOYS_IDENTITY.setTelegramLinked) {
-            window.MOONBOYS_IDENTITY.setTelegramLinked();
+          // Persist the telegram_id returned by the server, then mark linked.
+          // This ensures isTelegramLinked() returns true even from a clean browser
+          // state where no prior Telegram widget auth was performed.
+          if (window.MOONBOYS_IDENTITY) {
+            var tid = result.data.telegram_id;
+            if (tid && window.MOONBOYS_IDENTITY.saveTelegramIdentity) {
+              window.MOONBOYS_IDENTITY.saveTelegramIdentity(tid, result.data.telegram_name || null);
+            }
+            if (window.MOONBOYS_IDENTITY.setTelegramLinked) {
+              window.MOONBOYS_IDENTITY.setTelegramLinked(tid || null);
+            }
           }
           if (banner) {
             banner.textContent = '✅ Account linked! Competitive features are now active.';
