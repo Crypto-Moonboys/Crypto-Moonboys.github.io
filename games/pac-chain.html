@@ -262,7 +262,8 @@ import { rollHiddenBonus, showBonusPopup } from '/js/bonus-engine.js';
 
   function spawnPlayer() {
     player={x:PLAYER_START_X,y:PLAYER_START_Y,dx:0,dy:0,ndx:1,ndy:0,
-            px:tileCenter(PLAYER_START_X),py:tileCenter(PLAYER_START_Y),moving:false};
+            px:tileCenter(PLAYER_START_X),py:tileCenter(PLAYER_START_Y),
+            speed:5.5,moving:false};
   }
 
   function updateHud() {

@@ -91,6 +91,7 @@
   }
 
   var btnFS    = makeCtrlBtn('overlay-btn-fs',    'Toggle fullscreen', '⛶', 'FS');
+  var btnStart = makeCtrlBtn('overlay-btn-start', 'Start game',        '▶', 'Start');
   var btnPause = makeCtrlBtn('overlay-btn-pause', 'Pause/Resume',      '⏸', 'Pause');
   var btnReset = makeCtrlBtn('overlay-btn-reset', 'Reset game',        '↺', 'Reset');
   var btnMute  = makeCtrlBtn('overlay-btn-mute',  'Mute/Unmute',       '🔊', 'Mute');
@@ -98,6 +99,7 @@
 
   ctrlBar.appendChild(gameLabel);
   ctrlBar.appendChild(btnFS);
+  ctrlBar.appendChild(btnStart);
   ctrlBar.appendChild(btnPause);
   ctrlBar.appendChild(btnReset);
   ctrlBar.appendChild(btnMute);
@@ -566,7 +568,16 @@
   // Use capture phase so the overlay opens *before* the game's own onclick
   // handler fires (the game's onclick is a property set after this script
   // runs, so it fires in bubble phase after our capture listener).
-  startBtn.addEventListener('click', openOverlay, true);
+  // When opening the overlay (isOpen is false), stop event propagation so the
+  // game does NOT auto-start — the player must press START inside the overlay.
+  // When already open (isOpen is true), allow propagation so the game's own
+  // startBtn handler fires normally.
+  startBtn.addEventListener('click', function (e) {
+    if (!isOpen) {
+      openOverlay();
+      e.stopImmediatePropagation();
+    }
+  }, true);
 
   // Also reset pause tracking if Start is clicked while already in overlay
   // (the game handler resets paused=false internally on start).
@@ -575,6 +586,19 @@
   });
 
   btnExit.addEventListener('click', closeOverlay);
+
+  // START button in the overlay ctrl bar: triggers the game's own startBtn
+  // which is now inside the overlay stage.  Keyboard/touch input is ignored by
+  // all games until they are running, so this is the required first deliberate
+  // action before gameplay begins.
+  btnStart.addEventListener('click', function () {
+    var gameStartBtn = document.getElementById('startBtn');
+    if (gameStartBtn && isOpen) {
+      gameStartBtn.click();
+      _isPaused = false;
+      syncPauseBtn();
+    }
+  });
 
   btnFS.addEventListener('click', function () {
     if (document.fullscreenElement) {

@@ -476,11 +476,22 @@ export default {
     // Body: { telegram_id }
     // Invalidates outstanding tokens and generates a new one-time token
     // stored in telegram_link_tokens (15-minute TTL).
+    // Rejects if the user's anti-cheat state is blocked.
     if (path === '/telegram/link' && request.method === 'POST') {
       let body;
       try { body = await request.json(); } catch { return err('Invalid JSON'); }
       const { telegram_id } = body || {};
       if (!telegram_id) return err('telegram_id required');
+
+      // Anti-cheat gate: reject competitive link action if account is blocked.
+      try {
+        const acState = await env.DB.prepare(
+          `SELECT is_blocked FROM telegram_anticheat_state WHERE telegram_id = ?`
+        ).bind(String(telegram_id)).first();
+        if (acState && acState.is_blocked === 1) {
+          return err('Account is blocked from competitive actions', 403);
+        }
+      } catch { /* table absent or query failed — proceed */ }
 
       // Invalidate any existing unused tokens for this user
       await env.DB.prepare(
@@ -757,6 +768,14 @@ async function cmdGkStart(db, tok, chatId, telegramId, fromUser) {
   await logTelegramActivity(db, telegramId, 'gkstart').catch(() => {});
 
   const name = escapeHtml(getTelegramDisplayName(fromUser));
+  // Inline keyboard with clearly labelled URL buttons (url type, not web_app).
+  // These open in the device's browser, not cramped inside a Telegram mini-app.
+  const replyMarkup = {
+    inline_keyboard: [[
+      { text: '🚀 Open Incubator Guide', url: `${SITE_URL}/gkniftyheads-incubator.html` },
+      { text: '⚔️ Open Battle Chamber',  url: `${SITE_URL}/community.html` },
+    ]],
+  };
   await sendTelegramMessage(tok, chatId,
     `🚀 <b>Welcome to Crypto Moonboys GK, ${name}!</b>\n\n` +
     `You've entered the Battle Chamber.\n\n` +
@@ -766,11 +785,17 @@ async function cmdGkStart(db, tok, chatId, telegramId, fromUser) {
     `🏆 /gkleaderboard — Community leaderboard\n` +
     `🗺️ /gkquests — Active missions\n` +
     `⚔️ /gkfaction — Join or view your faction\n` +
-    `❓ /gkhelp — Full command list${xpMsg}`
+    `❓ /gkhelp — Full command list${xpMsg}`,
+    { reply_markup: replyMarkup },
   );
 }
 
 async function cmdGkHelp(tok, chatId) {
+  const replyMarkup = {
+    inline_keyboard: [[
+      { text: '🌐 Open Incubator Guide', url: `${SITE_URL}/gkniftyheads-incubator.html` },
+    ]],
+  };
   await sendTelegramMessage(tok, chatId,
     `📖 <b>Moonboys GK Commands</b>\n\n` +
     `/gkstart — Start and register\n` +
@@ -784,7 +809,8 @@ async function cmdGkHelp(tok, chatId) {
     `/daily — Claim daily XP\n` +
     `/solve — Submit quest answers\n` +
     `/gkhelp — Help\n\n` +
-    `<i>Legacy aliases: /start /help /link are still supported.</i>`
+    `<i>Legacy aliases: /start /help /link are still supported.</i>`,
+    { reply_markup: replyMarkup },
   );
 }
 

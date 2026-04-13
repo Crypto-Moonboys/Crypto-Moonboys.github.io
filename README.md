@@ -112,10 +112,17 @@ Two separate Cloudflare Workers power the live backend.
 | `GET /telegram/daily-status` | Daily XP claim status |
 | `GET /telegram/season/current` | Current community season info |
 
-> **Note:** Engagement routes (`/comments`, `/likes`, `/citation-votes`, `/feed`, `/leaderboard`, `/activity/hot`) are referenced by the frontend JS files for future use but are **not yet implemented** in the current worker. The D1 schema (`wikicoms`) does not yet provision the required tables. Frontend components gracefully degrade to placeholder states when these routes are absent.
+> **Note:** Engagement routes (`/comments`, `/likes`, `/citation-votes`, `/feed`, `/leaderboard`, `/activity/hot`) are referenced by the frontend JS files for future use but are **not yet implemented** in the current worker. The D1 schema (`wikicoms`) does not yet provision the required tables. Frontend feature flags for these endpoints are set to `false` in `js/api-config.js` so the UI shows honest "coming soon" placeholders.
 
 **Storage:** D1 database `wikicoms` (binding: `DB`)
-**Secrets required:** `TELEGRAM_BOT_TOKEN`, `TELEGRAM_BOT_USERNAME`
+**Secrets required:**
+| Secret | Description |
+|--------|-------------|
+| `TELEGRAM_BOT_TOKEN` | BotFather token for HMAC verification and `sendMessage` |
+| `TELEGRAM_BOT_USERNAME` | Bot @username for Telegram Login Widget docs |
+| `ADMIN_TELEGRAM_IDS` | Comma-separated numeric Telegram user IDs authorised for admin bot commands (`/gkban`, `/gkunban`, `/gkrisk`, `/gkclearstrikes`) |
+| `ADMIN_SECRET` | Shared secret forwarded as `X-Admin-Secret` to the anti-cheat worker |
+| `ANTI_CHEAT_WORKER_URL` | Base URL of the deployed anti-cheat Cloudflare Worker (e.g. `https://moonboys-anti-cheat.sercullen.workers.dev`) |
 
 #### Telegram Bot Commands (`POST /telegram/webhook`)
 
@@ -325,13 +332,25 @@ node scripts/smoke-test.js
 
 ### Worker Deployment
 ```bash
-# Engagement API
+# Engagement API (moonboys-api)
 cd workers/moonboys-api
 wrangler secret put TELEGRAM_BOT_TOKEN
 wrangler secret put TELEGRAM_BOT_USERNAME
+wrangler secret put ADMIN_TELEGRAM_IDS   # comma-separated numeric Telegram user IDs
+wrangler secret put ADMIN_SECRET         # must match anti-cheat worker's ADMIN_SECRET
+wrangler secret put ANTI_CHEAT_WORKER_URL  # e.g. https://moonboys-anti-cheat.sercullen.workers.dev
 wrangler deploy
 
-# Arcade leaderboard
+# Anti-cheat worker (moonboys-anti-cheat)
+# Deploy path: workers/anti-cheat/
+# Live URL:    https://moonboys-anti-cheat.sercullen.workers.dev
+cd workers/anti-cheat
+wrangler secret put ADMIN_SECRET   # shared secret, must match ADMIN_SECRET in moonboys-api
+wrangler deploy
+
+# Arcade leaderboard (moonboys-leaderboard)
+# Deploy path: workers/leaderboard/  (entry: workers/leaderboard-worker.js)
+# Live URL:    https://moonboys-leaderboard.sercullen.workers.dev
 cd workers/leaderboard
 wrangler deploy
 ```
@@ -348,6 +367,7 @@ wrangler deploy
 | `/scripts/` | Deterministic build and editorial logic |
 | `/workers/moonboys-api/` | Engagement + community + Telegram Cloudflare Worker |
 | `/workers/leaderboard/` | Arcade score Cloudflare Worker (entry: `workers/leaderboard-worker.js`) |
+| `/workers/anti-cheat/` | Anti-cheat Cloudflare Worker (`workers/anti-cheat/worker.js`) |
 | `/games/` | Moonboys Arcade games |
 | `/.github/workflows/` | CI/CD automation |
 | `/snapshots/` | Historical ranking and intelligence data |
@@ -366,11 +386,12 @@ wrangler deploy
 | Stub integrity | ✅ Enforced |
 | Phase 5/6 intelligence | ✅ Validated |
 | Telegram/community API (`moonboys-api`) | ✅ Deployed (Telegram routes live) |
+| Anti-cheat worker (`moonboys-anti-cheat`) | ✅ Deployed (D1 `telegram_anticheat_state`) |
 | Arcade leaderboard (`moonboys-leaderboard`) | ✅ Deployed |
 | Battle Chamber / community page | ✅ Live (Telegram widgets active; engagement routes pending) |
 | Gravatar / avatar flow | ✅ SHA-256 hash, identicon fallback |
 | Telegram community XP layer | ✅ Worker routes + frontend widgets live |
-| Comment/like/citation engagement routes | 🔲 Planned (D1 tables not yet provisioned) |
+| Comment/like/citation engagement routes | 🔲 Planned (D1 tables not yet provisioned; feature flags set to false) |
 
 ---
 

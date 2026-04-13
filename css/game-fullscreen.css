@@ -92,6 +92,17 @@ body.overlay-open {
   border-color: #f7ab1a;
 }
 
+#overlay-btn-start {
+  background: rgba(63, 185, 80, 0.22);
+  border-color: rgba(63, 185, 80, 0.55);
+  color: #3fb950;
+  font-weight: 700;
+}
+
+#overlay-btn-start:hover {
+  background: rgba(63, 185, 80, 0.38);
+}
+
 #overlay-btn-exit:hover {
   background: rgba(255, 60, 60, 0.22);
   border-color: rgba(255, 80, 80, 0.55);

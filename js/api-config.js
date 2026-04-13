@@ -30,18 +30,20 @@ window.MOONBOYS_API = {
   COINGECKO_BASE: 'https://api.coingecko.com/api/v3',
 
   /* ── Feature Flags ───────────────────────────────────────── */
-  // All engagement features are enabled. These rely on BASE_URL.
+  // Engagement features that require backend routes not yet provisioned
+  // in the moonboys-api worker are set to false so the UI shows honest
+  // "coming soon" placeholders instead of network errors.
   FEATURES: {
-    PRICE_TICKER:       true,  // Live crypto price data
-    COMMENTS:           true,  // Article and community comments
-    LIKES:              true,  // Page likes and engagement
-    CITATION_VOTES:     true,  // Up/down voting for citations
-    LEADERBOARD:        true,  // Top contributors leaderboard
-    LIVE_FEED:          true,  // Real-time activity feed
-    SAM_STATUS:         true,  // SAM agent status widget
-    ACTIVITY_PANEL:     true,  // Trending / hot pages
-    TELEGRAM_LOGIN:     true,  // Telegram Login Widget prefill (requires TELEGRAM_BOT_USERNAME)
-    TELEGRAM_COMMUNITY: true,  // Telegram XP / quest / community leaderboard panels
+    PRICE_TICKER:       true,   // Live crypto price data (CoinGecko — no worker needed)
+    COMMENTS:           false,  // Article comments — /comments endpoint not yet live
+    LIKES:              false,  // Page likes — /likes endpoint not yet live
+    CITATION_VOTES:     false,  // Citation votes — /citation-votes endpoint not yet live
+    LEADERBOARD:        false,  // Engagement leaderboard — /leaderboard endpoint not yet live
+    LIVE_FEED:          false,  // Activity feed — /feed endpoint not yet live
+    SAM_STATUS:         true,   // SAM agent status widget (/sam/status — live)
+    ACTIVITY_PANEL:     false,  // Trending pages — /activity/hot endpoint not yet live
+    TELEGRAM_LOGIN:     true,   // Telegram Login Widget prefill (requires TELEGRAM_BOT_USERNAME)
+    TELEGRAM_COMMUNITY: true,   // Telegram XP / quest / community leaderboard panels (live)
   },
 
   /* ── Telegram Login Widget ───────────────────────────────── */
@@ -49,10 +51,10 @@ window.MOONBOYS_API = {
   // Widget in the comment identity form.  The widget prefills telegram_username
   // and avatar_url; email and display name remain required.
   // Leave as null to hide the widget.
-  TELEGRAM_BOT_USERNAME: null,
+  TELEGRAM_BOT_USERNAME: 'WIKICOMSBOT',
 
   /* ── Gravatar Configuration ──────────────────────────────── */
-  // Avatars are generated using an MD5 hash of the user's email.
+  // Avatars are generated using a SHA-256 hash of the user's email.
   // If no Gravatar exists, an identicon is displayed.
   GRAVATAR: {
     BASE: 'https://www.gravatar.com/avatar/',
