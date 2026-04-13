@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="HexGL Monster Mode — Moonboys competitive wrapper for BKcore's WebGL racing game with identity, rewards, rivals, and seasonal scoring.">
+  <meta name="robots" content="index, follow">
+  <meta property="og:title" content="🏁 HexGL Monster Mode — Crypto Moonboys Arcade">
+  <meta property="og:description" content="Race BKcore's HexGL inside the Moonboys arcade shell with rewards, rival targets, and leaderboard scoring.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://crypto-moonboys.github.io/games/hexgl-monster-max.html">
+  <meta property="og:image" content="https://crypto-moonboys.github.io/img/CRYPTO-MOONBOYS-BITCOIN-LOGO.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <title>🏁 HexGL Monster Mode — Crypto Moonboys Arcade</title>
+  <link rel="stylesheet" href="/css/wiki.css">
+  <link rel="stylesheet" href="/css/game-fullscreen.css">
+  <link rel="icon" href="/img/favicon.svg" type="image/svg+xml">
+  <style>
+    .game-card{background:rgba(255,255,255,.03);border:1px solid var(--color-border,#333);border-radius:16px;padding:18px}
+    .hexgl-hero{display:grid;grid-template-columns:1.3fr .9fr;gap:14px;margin-bottom:14px}
+    .hexgl-panel{background:rgba(255,255,255,.04);border:1px solid var(--color-border,#333);border-radius:14px;padding:14px}
+    .hexgl-panel h2,.hexgl-panel h3{margin:0 0 8px}
+    .hexgl-copy{color:var(--color-text-muted);line-height:1.6}
+    .hexgl-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:12px}
+    .hexgl-stat{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.06);padding:12px;border-radius:12px;text-align:center}
+    .hexgl-stat .label{font-size:.72rem;color:var(--color-text-muted);margin-bottom:4px}
+    .hexgl-stat .value{font-weight:800;font-size:1.02rem}
+    .hexgl-stage{position:relative}
+    #hexglFrame{width:100%;height:70vh;border:none;border-radius:14px;background:#000;display:block}
+    .hexgl-overlay-note{position:absolute;left:10px;bottom:10px;background:rgba(0,0,0,.68);color:#fff;padding:8px 10px;border-radius:10px;font-size:.76rem;border:1px solid rgba(255,255,255,.12)}
+    .hexgl-row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:12px}
+    .game-btn{padding:.8rem 1rem;border:none;border-radius:12px;background:#f7ab1a;color:#111;font-weight:700;cursor:pointer}
+    .game-btn.alt{background:rgba(255,255,255,.08);color:#fff}
+    .hexgl-pill{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border:1px solid var(--color-border,#333);background:rgba(255,255,255,.04);border-radius:999px;font-size:.78rem;color:var(--color-text-muted)}
+    .hexgl-mini-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+    .hexgl-list{margin:0;padding-left:18px;color:var(--color-text-muted);line-height:1.6}
+    .hexgl-banner{margin:14px 0;padding:12px 14px;border-radius:14px;border:1px solid rgba(247,171,26,.32);background:linear-gradient(90deg, rgba(247,171,26,.14), rgba(46,197,255,.08));}
+    .hexgl-banner strong{color:#fff}
+    .hexgl-subtle{font-size:.82rem;color:var(--color-text-muted)}
+    .hexgl-reward-good{color:#3fb950}.hexgl-reward-mid{color:#f7c948}.hexgl-reward-low{color:#8b949e}
+    .hexgl-split{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}
+    .hexgl-box{background:rgba(255,255,255,.03);border:1px solid var(--color-border,#333);border-radius:12px;padding:12px}
+    .hexgl-box h3{margin:0 0 8px}
+    .hexgl-credit{margin-top:14px;font-size:.8rem;color:var(--color-text-muted)}
+    .hexgl-credit a{color:var(--color-accent)}
+    @media(max-width:980px){.hexgl-hero,.hexgl-split{grid-template-columns:1fr}.hexgl-grid{grid-template-columns:repeat(2,minmax(0,1fr))}#hexglFrame{height:58vh}}
+    @media(max-width:640px){.hexgl-mini-grid{grid-template-columns:1fr}.hexgl-grid{grid-template-columns:1fr 1fr}#hexglFrame{height:50vh}}
+  </style>
+</head>
+<body>
+<a class="skip-link" href="#content">Skip to content</a>
+<header id="site-header" role="banner">
+  <button class="hamburger" id="hamburger" aria-label="Toggle navigation" aria-expanded="false" aria-controls="sidebar">☰</button>
+  <a href="/index.html" class="site-logo" aria-label="The Crypto Moonboys GK Wiki home">
+    <img src="/img/CRYPTO-MOONBOYS-BITCOIN-LOGO.png" alt="" aria-hidden="true">
+    <span><span class="logo-text">🌙 The Crypto Moonboys GK Wiki</span><span class="logo-sub">Blockchain Cryptoism Encyclopedia ⚡️⚡️⚡️</span></span>
+  </a>
+  <div id="header-search" role="search">
+    <input type="search" id="search-input" placeholder="Search the wiki…" aria-label="Search" autocomplete="off">
+    <button id="search-btn" aria-label="Search">🔍</button>
+    <div id="search-results" role="listbox"></div>
+  </div>
+  <nav class="header-nav" aria-label="Main navigation">
+    <a href="/index.html">Home</a><a href="/categories/index.html">Categories</a><a href="/search.html">All Articles</a><a href="/timeline.html">📅 Timeline</a><a href="/graph.html">🌐 Graph</a><a href="/dashboard.html">📊 Dashboard</a><a href="/sam.html">🧠 SAM</a><a href="/games/" class="active" aria-current="page">🕹️ Arcade</a>
+  </nav>
+</header>
+<div id="sidebar-overlay" aria-hidden="true"></div>
+<div id="layout">
+  <nav id="sidebar" aria-label="Wiki navigation">
+    <div class="sidebar-section"><div class="sidebar-heading">Navigation</div><div class="sidebar-nav"><a href="/index.html"><span class="nav-icon">🏠</span> Main Page</a><a href="/games/" class="active"><span class="nav-icon">🕹️</span> Arcade</a><a href="/games/leaderboard.html"><span class="nav-icon">🏆</span> Leaderboard</a></div></div>
+  </nav>
+  <div id="main-wrapper">
+    <main id="content" role="main">
+      <nav class="breadcrumb" aria-label="Breadcrumb"><a href="/index.html">Home</a><span class="sep">›</span><a href="/games/">Arcade</a><span class="sep">›</span><span aria-current="page">HexGL Monster Mode Max</span></nav>
+      <div class="category-header"><span class="cat-big-icon" aria-hidden="true">🏁</span><div><h1 class="page-title">🏁 HexGL Monster Mode // Max Wrapper</h1><p style="color:var(--color-text-muted)">BKcore’s WebGL racer dropped into a Moonboys competitive wrapper with identity, rewards, rival targets, and seasonal scoring.</p></div></div>
+      <div class="page-title-line" aria-hidden="true"></div>
+      <div class="hexgl-banner"><strong>Null Drift Championship // Season Layer Active</strong><br>This version does not rewrite the HexGL engine. It weaponises everything around it: Moonboys identity, score submission, seasonal challenge targets, token estimates, lore framing, and fullscreen arcade shell.</div>
+      <div class="hexgl-hero">
+        <section class="hexgl-panel"><h2>Monster Layer</h2><p class="hexgl-copy">You are piloting through a fractured race channel believed to sit between Block Topia signal lanes and Ghost Grid drift sectors. Beat the rival target, keep your run clean, and convert speed into Moonboys arcade score.</p><div class="hexgl-row"><span class="hexgl-pill">🪪 <span id="identityTier">guest</span></span><span class="hexgl-pill">🏛️ Season: <span id="seasonName">Null Drift Championship</span></span><span class="hexgl-pill">👻 Rival: <span id="rivalName">Loading…</span></span></div></section>
+        <aside class="hexgl-panel"><h3>What this wrapper adds</h3><ul class="hexgl-list"><li>Telegram-linked identity scoring</li><li>Moonboys HUD and reward layer</li><li>Seasonal challenge framing</li><li>Ghost-style rival target score</li><li>Fullscreen arcade shell</li><li>Leaderboard submission + best tracking</li></ul></aside>
+      </div>
+      <div class="game-card">
+        <div class="hexgl-grid hud">
+          <div class="hexgl-stat stat"><div class="label">Player</div><div class="value" id="player">—</div></div>
+          <div class="hexgl-stat stat"><div class="label">Best Score</div><div class="value" id="best">0</div></div>
+          <div class="hexgl-stat stat"><div class="label">Run Timer</div><div class="value" id="timer">0.000</div></div>
+          <div class="hexgl-stat stat"><div class="label">Global Rank</div><div class="value" id="rankValue">—</div></div>
+          <div class="hexgl-stat stat"><div class="label">Seasonal Rank</div><div class="value" id="seasonRank">—</div></div>
+          <div class="hexgl-stat stat"><div class="label">Target Score</div><div class="value" id="targetScore">—</div></div>
+          <div class="hexgl-stat stat"><div class="label">XP Reward</div><div class="value" id="xp">0</div></div>
+          <div class="hexgl-stat stat"><div class="label">Token Reward</div><div class="value" id="tokenReward">0</div></div>
+        </div>
+        <div class="hexgl-stage"><iframe id="hexglFrame" title="HexGL by BKcore" allow="fullscreen; autoplay"></iframe><div class="hexgl-overlay-note">Use <strong>Start Run</strong> to enter the shell and begin timing. Submit only when the race is genuinely complete.</div></div>
+        <div class="hexgl-row"><button class="game-btn" id="startBtn">▶ Start Run</button><button class="game-btn alt" id="finishBtn">🏁 Finish Run</button><button class="game-btn alt" id="resetBtn">↺ Reset</button><button class="game-btn alt" id="loadBtn">📦 Reload HexGL</button><span class="hexgl-subtle" id="runState">Idle — no run active.</span></div>
+        <div class="hexgl-split"><section class="hexgl-box"><h3>Rival Echo</h3><div class="hexgl-copy" id="rivalCopy">Fetching a target from the leaderboard…</div></section><section class="hexgl-box"><h3>Reward Intel</h3><div class="hexgl-copy" id="rewardCopy">Complete a clean run to calculate XP, token estimate, and championship status.</div></section></div>
+      </div>
+      <div class="hexgl-split"><section class="hexgl-panel"><h3>Seasonal Championship</h3><div class="hexgl-mini-grid"><div class="hexgl-box"><strong>Current Event</strong><br><span class="hexgl-subtle">Null Drift Championship — a 90-day arcade cycle synced to the wider Moonboys season board.</span></div><div class="hexgl-box"><strong>Challenge Rules</strong><br><span class="hexgl-subtle">Fast clean runs win. Extremely short times are ignored as suspicious. Higher score means lower lap time.</span></div></div></section><section class="hexgl-panel"><h3>Moonboys Lore Hook</h3><p class="hexgl-copy">This race channel is treated as a smuggler lane where pilots slip between whale surveillance, null-fork turbulence, and city-glow drift walls. The wrapper turns a legacy HTML5 racer into a Moonboys championship trial without pretending it rewrites BKcore’s original craft.</p></section></div>
+      <p class="hexgl-credit">Original HexGL concept and development by <a href="https://github.com/BKcore/HexGL" target="_blank" rel="noopener noreferrer">Thibaut Despoulain (BKcore)</a>. This page adds a Moonboys wrapper layer around the original open-source game.</p>
+    </main>
+    <footer id="site-footer" role="contentinfo"><div class="footer-bottom"><p>Crypto Moonboys GK Wiki ⚡️⚡️⚡️ a GKiftyHEADS $LAP PRODUCTION$ · Not financial advice.</p></div></footer>
+  </div>
+</div>
+<button id="back-to-top" aria-label="Back to top">↑</button>
+<script src="/js/wiki.js"></script>
+<script src="/js/identity-gate.js"></script>
+<script src="/js/game-fullscreen.js"></script>
+<script type="module">
+  import { ArcadeSync } from '/js/arcade-sync.js';
+  import { submitScore, fetchLeaderboard } from '/js/leaderboard-client.js';
+  const HEXGL_SRC='https://cdn.jsdelivr.net/gh/BKcore/HexGL@master/index.html';
+  const MIN_VALID_SECONDS=20; const SCORE_CAP=500000; const XP_DIVISOR=1000; const TOKENS_DIVISOR=5000;
+  const els={frame:document.getElementById('hexglFrame'),player:document.getElementById('player'),best:document.getElementById('best'),timer:document.getElementById('timer'),xp:document.getElementById('xp'),tokenReward:document.getElementById('tokenReward'),targetScore:document.getElementById('targetScore'),rankValue:document.getElementById('rankValue'),seasonRank:document.getElementById('seasonRank'),rivalName:document.getElementById('rivalName'),rivalCopy:document.getElementById('rivalCopy'),rewardCopy:document.getElementById('rewardCopy'),runState:document.getElementById('runState'),identityTier:document.getElementById('identityTier'),seasonName:document.getElementById('seasonName'),startBtn:document.getElementById('startBtn'),finishBtn:document.getElementById('finishBtn'),resetBtn:document.getElementById('resetBtn'),loadBtn:document.getElementById('loadBtn')};
+  const identity=window.MOONBOYS_IDENTITY||null; const playerName=identity?.getTelegramName?.()||ArcadeSync.getPlayer(); const identityTier=identity?.getIdentityTier?.()||'guest';
+  let bestScore=Number(ArcadeSync.getHighScore('hexgl')||0),runStart=null,timerInt=null,rivalTarget=null,currentGlobal=[],currentSeasonal=[];
+  function setFrame(){ if(els.frame.src!==HEXGL_SRC) els.frame.src=HEXGL_SRC; }
+  function scoreFromTime(seconds){ return Math.max(0,Math.floor(SCORE_CAP-seconds*1000)); }
+  function secondsFromScore(score){ return Math.max(0,(SCORE_CAP-Number(score||0))/1000); }
+  function formatNumber(v){ return Number(v||0).toLocaleString(); }
+  function setIdleState(msg='Idle — no run active.'){ els.runState.textContent=msg; }
+  function updateBest(){ els.best.textContent=formatNumber(bestScore); }
+  function updateIdentity(){ els.player.textContent=playerName; els.identityTier.textContent=identityTier; }
+  async function loadTargets(){ try{ const [globalRows,seasonalRows]=await Promise.all([fetchLeaderboard('hexgl'),fetchLeaderboard('seasonal')]); currentGlobal=Array.isArray(globalRows)?globalRows:[]; currentSeasonal=Array.isArray(seasonalRows)?seasonalRows:[]; rivalTarget=currentGlobal[0]||currentSeasonal.find(r=>r.game==='hexgl')||null; if(rivalTarget){ const score=Number(rivalTarget.score||0); els.rivalName.textContent=rivalTarget.player||'Unknown'; els.targetScore.textContent=formatNumber(score); els.rivalCopy.innerHTML='<strong>'+(rivalTarget.player||'Unknown Pilot')+'</strong> is the current echo target. Beat <strong>'+formatNumber(score)+'</strong> points to crack the visible pace line. That translates to roughly <strong>'+secondsFromScore(score).toFixed(3)+'s</strong>.'; } else { els.rivalName.textContent='No target yet'; els.targetScore.textContent='Open'; els.rivalCopy.textContent='No HexGL target exists yet. First clean finisher becomes the ghost target for everyone else.'; } }catch(err){ els.rivalName.textContent='Offline'; els.targetScore.textContent='—'; els.rivalCopy.textContent='Could not load rival data right now.'; } }
+  function findRank(rows,name){ if(!Array.isArray(rows)||!rows.length) return null; const idx=rows.findIndex(r=>String(r.player||'').toLowerCase()===String(name||'').toLowerCase()); return idx>=0?idx+1:null; }
+  async function refreshRanks(){ await loadTargets(); const globalRank=findRank(currentGlobal,playerName); const seasonalRank=findRank(currentSeasonal,playerName); els.rankValue.textContent=globalRank?'#'+globalRank:'—'; els.seasonRank.textContent=seasonalRank?'#'+seasonalRank:'—'; }
+  function startRun(){ setFrame(); clearInterval(timerInt); runStart=performance.now(); timerInt=setInterval(()=>{ const seconds=(performance.now()-runStart)/1000; els.timer.textContent=seconds.toFixed(3); },50); els.xp.textContent='0'; els.tokenReward.textContent='0'; els.rewardCopy.innerHTML='Run active. Finish only when the race is genuinely done. The wrapper will convert your time into score, XP, and token estimate.'; els.runState.textContent='Run active — clock is live.'; }
+  async function finishRun(){ if(!runStart){ setIdleState('No active run to finish.'); return; } clearInterval(timerInt); const seconds=(performance.now()-runStart)/1000; runStart=null; els.timer.textContent=seconds.toFixed(3); if(seconds<MIN_VALID_SECONDS){ els.rewardCopy.innerHTML='<span class="hexgl-reward-low">Run rejected.</span> Anything under '+MIN_VALID_SECONDS+' seconds is treated as a fake or accidental submit in wrapper mode.'; setIdleState('Rejected — run too short.'); return; } const score=scoreFromTime(seconds); const xp=Math.max(1,Math.floor(score/XP_DIVISOR)); const tokens=Math.max(0,(score/TOKENS_DIVISOR).toFixed(2)); els.xp.textContent=formatNumber(xp); els.tokenReward.textContent=tokens; ArcadeSync.setHighScore('hexgl',score); bestScore=Number(ArcadeSync.getHighScore('hexgl')||0); updateBest(); try{ await submitScore(playerName,score,'hexgl'); }catch{} await refreshRanks(); const beatRival=rivalTarget&&score>Number(rivalTarget.score||0); const rewardClass=beatRival?'hexgl-reward-good':(score>350000?'hexgl-reward-mid':'hexgl-reward-low'); els.rewardCopy.innerHTML='<span class="'+rewardClass+'">Score submitted: <strong>'+formatNumber(score)+'</strong></span><br>Approx lap time: <strong>'+seconds.toFixed(3)+'s</strong><br>XP reward: <strong>'+formatNumber(xp)+'</strong> · Token estimate: <strong>'+tokens+'</strong><br>'+(beatRival?'You beat the visible rival target. The Ghost Grid now has your pace on record.':'You did not clear the current rival target. Reload, tighten the line, and hit it again.'); setIdleState('Run complete — score submitted.'); }
+  function resetRun(){ clearInterval(timerInt); runStart=null; els.timer.textContent='0.000'; els.xp.textContent='0'; els.tokenReward.textContent='0'; els.rankValue.textContent='—'; els.seasonRank.textContent='—'; setIdleState('Reset — ready for a fresh run.'); els.rewardCopy.textContent='Run state cleared. Start a fresh attempt when ready.'; }
+  function reloadGame(){ els.frame.src='about:blank'; setTimeout(setFrame,120); setIdleState('HexGL reloaded.'); }
+  updateIdentity(); updateBest(); setFrame(); loadTargets(); refreshRanks(); els.startBtn.addEventListener('click',startRun); els.finishBtn.addEventListener('click',finishRun); els.resetBtn.addEventListener('click',resetRun); els.loadBtn.addEventListener('click',reloadGame);
+</script>
+</body>
+</html>
