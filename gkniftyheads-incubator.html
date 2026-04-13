@@ -3,10 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Join the GKniftyHEADS Incubator HUB — the creator gateway into the Crypto Moonboys universe, built from the legacy of Graffiti Kings, GKniftyHEADS, GraffPUNKS and the wider street-to-blockchain movement.">
+  <meta name="description" content="GKniftyHEADS Incubator HUB — the Telegram sync onboarding page for Crypto Moonboys. Run /gkstart then /gklink in the bot to activate your account and unlock competitive features.">
   <meta name="robots" content="index, follow">
-  <meta property="og:title" content="🚀 GKniftyHEADS Incubator HUB — The Crypto Moonboys GK Wiki">
-  <meta property="og:description" content="A first-contact page for the Telegram community explaining the vision, system, commands, creator opportunities, and why the incubator matters.">
+  <meta property="og:title" content="🚀 GKniftyHEADS Incubator HUB — Telegram Sync Onboarding">
+  <meta property="og:description" content="Activate your Crypto Moonboys account: join the Telegram group, run /gkstart, then /gklink to link your identity and unlock leaderboards, XP, voting, and faction alignment.">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://crypto-moonboys.github.io/gkniftyheads-incubator.html">
   <meta property="og:image" content="https://crypto-moonboys.github.io/img/CRYPTO-MOONBOYS-BITCOIN-LOGO.png">
@@ -60,6 +60,48 @@
       border-left:3px solid var(--color-accent); padding: 10px 0 10px 14px; margin:16px 0;
       color: var(--color-text-muted);
     }
+    /* Activation flow steps */
+    .activation-flow { display:flex; flex-wrap:wrap; gap:14px; margin:18px 0; }
+    .activation-step {
+      flex:1 1 200px; min-width:180px;
+      background:var(--color-surface); border:1px solid var(--color-border);
+      border-radius:var(--radius); padding:16px 16px 14px;
+      position:relative;
+    }
+    .activation-step-num {
+      display:inline-flex; align-items:center; justify-content:center;
+      width:28px; height:28px; border-radius:50%;
+      background:var(--color-accent); color:#000; font-weight:700;
+      font-size:.85rem; margin-bottom:10px;
+    }
+    .activation-step h4 { margin:0 0 6px 0; font-size:.95rem; }
+    .activation-step p  { margin:0; font-size:.88rem; color:var(--color-text-muted); line-height:1.6; }
+    .activation-step code {
+      background:rgba(255,255,255,.07); border-radius:4px;
+      padding:.1em .35em; font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+      color:#f4d35e; font-size:.9em;
+    }
+    /* Command table */
+    .command-table { width:100%; border-collapse:collapse; margin:12px 0; font-size:.9rem; }
+    .command-table th {
+      text-align:left; padding:7px 10px;
+      border-bottom:1px solid var(--color-border);
+      color:var(--color-text-muted); font-weight:600;
+    }
+    .command-table td { padding:8px 10px; border-bottom:1px solid rgba(255,255,255,.04); vertical-align:top; }
+    .command-table tr:last-child td { border-bottom:none; }
+    .command-table td:first-child code {
+      color:#f4d35e; font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+      background:rgba(255,255,255,.05); border-radius:4px; padding:.15em .4em; white-space:nowrap;
+    }
+    .command-table td:last-child { color:var(--color-text-muted); }
+    /* Sync note callout */
+    .sync-note {
+      background:rgba(61,90,254,.1); border:1px solid rgba(61,90,254,.35);
+      border-radius:var(--radius); padding:14px 16px; margin:16px 0;
+      font-size:.92rem; color:var(--color-text-muted); line-height:1.65;
+    }
+    .sync-note strong { color:#c8d0ff; }
   </style>
 </head>
 <body>
@@ -101,11 +143,13 @@
         <a href="/hubs.html"><span class="nav-icon">🏛️</span> Hub Recommendations</a>
         <a href="/gkniftyheads-incubator.html" class="active"><span class="nav-icon">🚀</span> Incubator HUB</a>
         <a href="https://t.me/gkniftyheads" target="_blank" rel="noopener noreferrer"><span class="nav-icon">📲</span> Telegram Group</a>
+        <a href="https://t.me/CryptoMoonboysBot" target="_blank" rel="noopener noreferrer"><span class="nav-icon">🤖</span> Telegram Bot</a>
       </div>
     </div>
     <div class="sidebar-section">
       <div class="sidebar-heading">Builder Flow</div>
       <div class="sidebar-nav">
+        <a href="#commands"><span class="nav-icon">🔗</span> Activation &amp; Commands</a>
         <a href="#what-is-it"><span class="nav-icon">🧠</span> What It Is</a>
         <a href="#why-join"><span class="nav-icon">🔥</span> Why Join</a>
         <a href="#how-it-works"><span class="nav-icon">⚙️</span> How It Works</a>
@@ -126,22 +170,22 @@
       <section class="incubator-hero">
         <h1>🚀 GKniftyHEADS Incubator HUB</h1>
         <p class="incubator-lead">
-          This is the first-contact launch page for the <strong>GKniftyHEADS Incubator HUB</strong> — the Telegram base camp where creators, builders, artists, collectors, street culture heads, and Web3 operators enter the wider <strong>Crypto Moonboys universe</strong>. The mission is simple: bring real culture, real people, and real ideas onto blockchain rails, then turn that into new brands, new ventures, new IP, new products, and new economies.
+          This is the <strong>Telegram sync onboarding page</strong> for the <strong>Crypto Moonboys</strong> ecosystem. To unlock competitive features — leaderboards, XP, voting, and faction alignment — you need to link your Telegram identity to the site. The process takes under a minute: join the group, run <code style="background:rgba(255,255,255,.08);border-radius:4px;padding:.1em .4em;color:#f4d35e;font-family:monospace">/gkstart</code>, then <code style="background:rgba(255,255,255,.08);border-radius:4px;padding:.1em .4em;color:#f4d35e;font-family:monospace">/gklink</code>.
         </p>
-        <p class="incubator-lead">
-          At its core, this system is about taking the disruptive legacy of <strong>Graffiti Kings</strong>, <strong>GKniftyHEADS</strong>, <strong>GraffPUNKS</strong>, and the wider no-rules creator movement, then wiring it into AI, blockchain, phygital tokenization, community utility, games, media, merchandise, and cross-chain identity. It is part incubator, part culture lab, part onboarding engine, part creator economy war room.
-        </p>
+        <div class="sync-note">
+          <strong>⚠️ Account sync does not happen on this page.</strong> You must run <strong>/gklink</strong> inside the Telegram bot. The bot sends you a one-time link that, when clicked, confirms your identity on <strong>community.html</strong> and activates full competition access.
+        </div>
         <div class="incubator-cta-row">
-          <a href="https://t.me/gkniftyheads" target="_blank" rel="noopener noreferrer" class="btn btn-primary">📲 Join Telegram Now</a>
+          <a href="https://t.me/gkniftyheads" target="_blank" rel="noopener noreferrer" class="btn btn-primary">📲 Open Telegram Group</a>
+          <a href="https://t.me/CryptoMoonboysBot" target="_blank" rel="noopener noreferrer" class="btn btn-primary">🤖 Open Telegram Bot</a>
           <a href="/community.html" class="btn btn-secondary">⚔️ Enter the Battle Chamber</a>
-          <a href="/games/" class="btn btn-secondary">🕹️ Explore the Arcade</a>
         </div>
         <div class="incubator-pill-row">
-          <span class="incubator-pill">🎨 Street culture roots</span>
-          <span class="incubator-pill">🤖 AI-assisted creation</span>
-          <span class="incubator-pill">🔗 Blockchain-native rails</span>
-          <span class="incubator-pill">🧸 Phygital tokenization</span>
-          <span class="incubator-pill">🌍 Open builder ecosystem</span>
+          <span class="incubator-pill">🔗 Two-step identity link</span>
+          <span class="incubator-pill">🏆 Leaderboard activation</span>
+          <span class="incubator-pill">⚔️ Faction alignment</span>
+          <span class="incubator-pill">⚡ Community XP</span>
+          <span class="incubator-pill">🗺️ Lore quests</span>
         </div>
       </section>
 
@@ -223,23 +267,69 @@
       </section>
 
       <section class="incubator-section" id="commands">
-        <h2>Telegram commands & what to do when you join</h2>
+        <h2>Activation flow &amp; live commands</h2>
         <p>
-          The Telegram layer is where onboarding becomes participation. Some commands are already part of the wider community stack, and the rest can evolve as the builder layer expands.
+          Your account link happens entirely through the <strong>Telegram bot</strong>. This page explains the flow and lists every live <code style="color:#f4d35e;font-family:monospace">/gk*</code> command. When you click the one-time link from <code style="color:#f4d35e;font-family:monospace">/gklink</code>, you are redirected to <strong>community.html?gklink=…</strong> which confirms your identity server-side and marks you as competition-active in your browser.
         </p>
-        <div class="incubator-command-box"><code>/start      — enter the system and begin your onboarding
-/help       — see the current available command list
-/profile    — view your identity and participation layer
-/xp         — check your community XP status
-/leaderboard — see who is leading the community layer
-/daily      — claim daily participation rewards
-/quest      — view active lore or community quests
-/solve      — submit an answer to an active quest
-/faction    — align with a faction when that layer is active
-/link       — link identity between Telegram and the wider site layer</code></div>
-        <p>
-          For a first-time member, the practical flow is simple: join the Telegram group, introduce yourself, understand the mission, explore the website, study the universe, then decide whether you want to contribute as a creator, a builder, a collaborator, or a community operator.
+
+        <div class="activation-flow">
+          <div class="activation-step">
+            <div class="activation-step-num">1</div>
+            <h4>Join &amp; register</h4>
+            <p>Join the Telegram group, then run <code>/gkstart</code> in the bot. This registers your profile, awards first-launch XP, and shows you what to do next.</p>
+          </div>
+          <div class="activation-step">
+            <div class="activation-step-num">2</div>
+            <h4>Generate your link</h4>
+            <p>Run <code>/gklink</code> in the bot. The bot sends you a private, one-time link that expires in 15 minutes. Each call invalidates any previous unused tokens.</p>
+          </div>
+          <div class="activation-step">
+            <div class="activation-step-num">3</div>
+            <h4>Click the link</h4>
+            <p>Tap the link in Telegram. It opens <strong>community.html?gklink=…</strong> in your browser, which calls the API to validate the token and confirm your identity.</p>
+          </div>
+          <div class="activation-step">
+            <div class="activation-step-num">4</div>
+            <h4>Competition active</h4>
+            <p>The page confirms success and marks your browser as <em>telegram_linked</em>. Leaderboard rankings, XP, votes, faction alignment, and seasonal scoring are now unlocked.</p>
+          </div>
+        </div>
+
+        <div class="sync-note">
+          <strong>Account sync does not happen on this page.</strong> As explained above, the actual identity confirmation happens at <strong>community.html?gklink=&lt;token&gt;</strong> after you run <strong>/gklink</strong> in the bot.
+        </div>
+
+        <h3 style="margin:24px 0 10px">Live <code style="font-size:.85em">/gk*</code> commands</h3>
+        <table class="command-table">
+          <thead>
+            <tr>
+              <th>Command</th>
+              <th>What it does</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td><code>/gkstart</code></td><td>Register your profile and earn first-launch XP. Run this first.</td></tr>
+            <tr><td><code>/gklink</code></td><td>Generate a one-time 15-minute link to connect your Telegram identity to the website. <strong>This is the account sync command.</strong></td></tr>
+            <tr><td><code>/gkstatus</code></td><td>View your current XP total, level, and faction alignment.</td></tr>
+            <tr><td><code>/gkseason</code></td><td>See the current season window, end date, and scoring rules.</td></tr>
+            <tr><td><code>/gkleaderboard</code></td><td>Show the community XP leaderboard.</td></tr>
+            <tr><td><code>/gkquests</code></td><td>List active lore quests and missions.</td></tr>
+            <tr><td><code>/gkfaction [name]</code></td><td>View your faction or join one by passing its name as an argument.</td></tr>
+            <tr><td><code>/gkunlink</code></td><td>Invalidate all your current link tokens (use if a token is compromised).</td></tr>
+            <tr><td><code>/gkhelp</code></td><td>Print the full command list in the bot.</td></tr>
+            <tr><td><code>/daily</code></td><td>Claim your daily XP reward (once per 24 hours).</td></tr>
+            <tr><td><code>/solve</code></td><td>Submit an answer to an active lore quest.</td></tr>
+          </tbody>
+        </table>
+        <p style="font-size:.85rem;color:var(--color-text-muted);margin-top:8px">
+          Legacy aliases <code>/start</code>, <code>/help</code>, <code>/link</code>, <code>/leaderboard</code>, <code>/quest</code>, and <code>/faction</code> are still supported but the <code>/gk*</code> prefix versions are preferred.
         </p>
+
+        <div class="incubator-cta-row" style="margin-top:20px">
+          <a href="https://t.me/CryptoMoonboysBot" target="_blank" rel="noopener noreferrer" class="btn btn-primary">🤖 Open Bot &amp; Run /gkstart</a>
+          <a href="https://t.me/gkniftyheads" target="_blank" rel="noopener noreferrer" class="btn btn-secondary">📲 Join the Telegram Group</a>
+          <a href="/community.html" class="btn btn-secondary">⚔️ Battle Chamber</a>
+        </div>
       </section>
 
       <section class="incubator-section" id="vision">
@@ -257,20 +347,20 @@
 
       <section class="community-card">
         <div class="community-card-inner">
-          <h3>Next move</h3>
-          <p>Join the Telegram. Learn the universe. Pick your lane. Then build something that matters.</p>
+          <h3>Sync your account now</h3>
+          <p>Open the bot, run <strong>/gkstart</strong> then <strong>/gklink</strong>, and click the link it sends you. That is all it takes to go from guest to fully competition-active.</p>
           <div class="community-link-grid">
+            <a href="https://t.me/CryptoMoonboysBot" target="_blank" rel="noopener noreferrer" class="battle-link-card">
+              <strong>🤖 Open the Telegram Bot</strong>
+              <div class="battle-copy">Run /gkstart then /gklink to generate your one-time identity link.</div>
+            </a>
             <a href="https://t.me/gkniftyheads" target="_blank" rel="noopener noreferrer" class="battle-link-card">
               <strong>📲 Join GKniftyHEADS Telegram</strong>
               <div class="battle-copy">Step into the Incubator HUB and meet the community.</div>
             </a>
             <a href="/community.html" class="battle-link-card">
               <strong>⚔️ Open the Battle Chamber</strong>
-              <div class="battle-copy">See the community layer, comments, XP systems, and live engagement flow.</div>
-            </a>
-            <a href="/hubs.html" class="battle-link-card">
-              <strong>🏛️ Explore Hubs</strong>
-              <div class="battle-copy">Move deeper into the wider ecosystem and content architecture.</div>
+              <div class="battle-copy">Where your linked identity confirms and competitive features activate.</div>
             </a>
           </div>
         </div>
