@@ -5,9 +5,12 @@ const WIKI_DIR = path.resolve('./wiki');
 const OUTPUT = path.resolve('./games/data/blocktopia-lore-feed.json');
 
 function extractTextFromHtml(html) {
-  return html
-    .replace(/<script[\s\S]*?<\/script>/gi, '')
-    .replace(/<style[\s\S]*?<\/style>/gi, '')
+  // Remove all script and style blocks robustly (handles whitespace in tags)
+  let text = html
+    .replace(/<script\b[^>]*>[\s\S]*?<\/script\s*>/gi, '')
+    .replace(/<style\b[^>]*>[\s\S]*?<\/style\s*>/gi, '');
+  // Strip remaining tags and normalise whitespace
+  return text
     .replace(/<[^>]+>/g, ' ')
     .replace(/\s+/g, ' ')
     .trim();
