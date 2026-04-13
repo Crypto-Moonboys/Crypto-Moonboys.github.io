@@ -768,13 +768,19 @@ async function cmdGkStart(db, tok, chatId, telegramId, fromUser) {
   await logTelegramActivity(db, telegramId, 'gkstart').catch(() => {});
 
   const name = escapeHtml(getTelegramDisplayName(fromUser));
-  // Inline keyboard with clearly labelled URL buttons (url type, not web_app).
-  // These open in the device's browser, not cramped inside a Telegram mini-app.
+  // Inline keyboard: web_app buttons open the site as a fullscreen Telegram
+  // WebApp on mobile/iPad.  A plain url fallback row is also included for
+  // desktop clients that do not support web_app (graceful degradation).
   const replyMarkup = {
-    inline_keyboard: [[
-      { text: '🚀 Open Incubator Guide', url: `${SITE_URL}/gkniftyheads-incubator.html` },
-      { text: '⚔️ Open Battle Chamber',  url: `${SITE_URL}/community.html` },
-    ]],
+    inline_keyboard: [
+      [
+        { text: '🚀 Open Incubator Guide', web_app: { url: `${SITE_URL}/gkniftyheads-incubator.html` } },
+        { text: '⚔️ Open Battle Chamber',  web_app: { url: `${SITE_URL}/community.html` } },
+      ],
+      [
+        { text: '🌐 Open in Browser',      url: `${SITE_URL}/gkniftyheads-incubator.html` },
+      ],
+    ],
   };
   await sendTelegramMessage(tok, chatId,
     `🚀 <b>Welcome to Crypto Moonboys GK, ${name}!</b>\n\n` +
@@ -792,9 +798,14 @@ async function cmdGkStart(db, tok, chatId, telegramId, fromUser) {
 
 async function cmdGkHelp(tok, chatId) {
   const replyMarkup = {
-    inline_keyboard: [[
-      { text: '🌐 Open Incubator Guide', url: `${SITE_URL}/gkniftyheads-incubator.html` },
-    ]],
+    inline_keyboard: [
+      [
+        { text: '🌐 Open Incubator Guide', web_app: { url: `${SITE_URL}/gkniftyheads-incubator.html` } },
+      ],
+      [
+        { text: '🔗 Open in Browser', url: `${SITE_URL}/gkniftyheads-incubator.html` },
+      ],
+    ],
   };
   await sendTelegramMessage(tok, chatId,
     `📖 <b>Moonboys GK Commands</b>\n\n` +
@@ -973,6 +984,19 @@ async function cmdGkQuests(db, tok, chatId) {
 async function cmdGkFaction(db, tok, chatId, telegramId, argStr) {
   const requested = (argStr || '').trim().toLowerCase();
 
+  // Anti-cheat gate: blocked accounts cannot change faction (competitive action).
+  try {
+    const acState = await db.prepare(
+      `SELECT is_blocked FROM telegram_anticheat_state WHERE telegram_id = ?`
+    ).bind(telegramId).first();
+    if (acState && acState.is_blocked === 1) {
+      await sendTelegramMessage(tok, chatId,
+        `🚫 Your account is blocked from competitive actions. Contact the Moonboys community on Telegram to appeal.`
+      );
+      return;
+    }
+  } catch { /* table absent — proceed */ }
+
   // Fetch available factions from the DB
   const factionsResult = await db.prepare(
     `SELECT id, name, description, icon FROM telegram_factions ORDER BY name`
@@ -1037,6 +1061,19 @@ async function cmdGkUnlink(db, tok, chatId, telegramId) {
 
 async function cmdDaily(db, tok, chatId, telegramId) {
   const today = getTodayUtcDate();
+
+  // Anti-cheat gate: blocked accounts cannot claim XP.
+  try {
+    const acState = await db.prepare(
+      `SELECT is_blocked FROM telegram_anticheat_state WHERE telegram_id = ?`
+    ).bind(telegramId).first();
+    if (acState && acState.is_blocked === 1) {
+      await sendTelegramMessage(tok, chatId,
+        `🚫 Your account is blocked from competitive actions. Contact the Moonboys community on Telegram to appeal.`
+      );
+      return;
+    }
+  } catch { /* table absent — proceed */ }
 
   // Check if already claimed today using telegram_xp_log
   if (await hasDailyClaimToday(db, telegramId).catch(() => false)) {

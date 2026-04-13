@@ -209,8 +209,9 @@ import { rollHiddenBonus, showBonusPopup } from '/js/bonus-engine.js';
   const PLAYER_START_X = 10, PLAYER_START_Y = 16;
 
   // Player
-  let player = { x:PLAYER_START_X, y:PLAYER_START_Y, dx:0, dy:0, ndx:0, ndy:0,
-                 px:0, py:0, speed:5.5, moving:false };
+  const BASE_PLAYER_SPEED = 5.5;
+  let player = { x:PLAYER_START_X, y:PLAYER_START_Y, dx:0, dy:0, ndx:1, ndy:0,
+                 px:0, py:0, speed:BASE_PLAYER_SPEED, moving:false };
   const PSIZE=13;
   const POWER_FLASH_FREQ      = 4;   // flashes per second when power timer is low
   const POWER_FLASH_THRESHOLD = 2;   // seconds remaining when flashing starts
@@ -263,7 +264,7 @@ import { rollHiddenBonus, showBonusPopup } from '/js/bonus-engine.js';
   function spawnPlayer() {
     player={x:PLAYER_START_X,y:PLAYER_START_Y,dx:0,dy:0,ndx:1,ndy:0,
             px:tileCenter(PLAYER_START_X),py:tileCenter(PLAYER_START_Y),
-            speed:5.5,moving:false};
+            speed:BASE_PLAYER_SPEED,moving:false};
   }
 
   function updateHud() {
@@ -497,7 +498,14 @@ import { rollHiddenBonus, showBonusPopup } from '/js/bonus-engine.js';
     ctx.shadowBlur  = powerTimer > 0 ? 18 : 10;
     ctx.shadowColor = glowColor;
     const ma=mouthAngle*Math.PI;
-    const facing = player.dx===1?0:player.dx===-1?Math.PI:player.dy===1?Math.PI/2:3*Math.PI/2;
+    // Determine facing angle from movement vector; fall back to right (0) when
+    // both dx and dy are zero (idle state at spawn or after death freeze).
+    let facing;
+    if      (player.dx === 1)  facing = 0;
+    else if (player.dx === -1) facing = Math.PI;
+    else if (player.dy === 1)  facing = Math.PI / 2;
+    else if (player.dy === -1) facing = 3 * Math.PI / 2;
+    else                       facing = 0; // explicit fallback: face right
     ctx.beginPath();
     ctx.moveTo(player.px, player.py);
     ctx.arc(player.px, player.py, PSIZE, facing+ma, facing+2*Math.PI-ma);

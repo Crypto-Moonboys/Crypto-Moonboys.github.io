@@ -648,8 +648,32 @@
   });
 
   // Esc key closes the overlay.
+  // Enter / Space trigger the overlay ▶ Start button when the overlay is open
+  // but the game has not yet started (running is false on all games at that point).
+  // We check the game's own running flag via a DOM attribute rather than a shared
+  // variable because each game owns its state internally.
   document.addEventListener('keydown', function (e) {
-    if (e.key === 'Escape' && isOpen) closeOverlay();
+    if (e.key === 'Escape' && isOpen) {
+      closeOverlay();
+      return;
+    }
+    if ((e.key === 'Enter' || e.key === ' ') && isOpen) {
+      // Only fire if the currently focused element is NOT a game control input
+      // (e.g. text input in Crystal Quest) to avoid double-firing.
+      var focused = document.activeElement;
+      var tag = focused ? focused.tagName : '';
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+      // Trigger the overlay START button if the game is not yet running.
+      // All canvas-based games expose a global `running` flag; if it is falsy
+      // (undefined counts as falsy for games not yet started) we fire start.
+      var gameStartBtn = document.getElementById('startBtn');
+      if (gameStartBtn && !window.running) {
+        e.preventDefault();
+        gameStartBtn.click();
+        _isPaused = false;
+        syncPauseBtn();
+      }
+    }
   });
 
   // Tap / click on the dark backdrop (outside .overlay-body) closes overlay.
