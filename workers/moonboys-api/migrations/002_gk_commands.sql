@@ -21,6 +21,8 @@ CREATE INDEX IF NOT EXISTS idx_link_tokens_telegram
   ON telegram_link_tokens(telegram_id, expires_at);
 
 -- Flag set to 1 once a user clicks the /gklink URL and the token is validated.
--- ALTER TABLE with IF NOT EXISTS semantics is not supported in SQLite/D1;
--- this line is idempotent on first run and will error (and be ignored) on subsequent runs.
+-- Note: SQLite/D1 does not support "IF NOT EXISTS" for ALTER TABLE.
+-- If the column already exists this statement will fail with "duplicate column name".
+-- That error is expected and safe to ignore on repeat runs.
+-- To check before running: SELECT link_confirmed FROM telegram_profiles LIMIT 1;
 ALTER TABLE telegram_profiles ADD COLUMN link_confirmed INTEGER NOT NULL DEFAULT 0;

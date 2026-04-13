@@ -215,11 +215,10 @@
 
     // Remove the token from the URL bar without reloading
     try {
-      var clean = window.location.href
-        .replace(/[?&]gklink=[^&]+/, '')
-        .replace(/\?$/, '')
-        .replace(/&$/, '');
-      window.history.replaceState({}, '', clean || window.location.pathname);
+      var u = new URL(window.location.href);
+      u.searchParams.delete('gklink');
+      var clean = u.toString();
+      window.history.replaceState({}, '', clean);
     } catch (e) { /* ignore */ }
 
     // Show banner if available

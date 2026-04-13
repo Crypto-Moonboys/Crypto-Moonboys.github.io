@@ -872,7 +872,7 @@ export default {
     // Called by the website when the user arrives via the /gklink deep-link URL.
     if (path === '/telegram/link/confirm' && request.method === 'GET') {
       const token = url.searchParams.get('token');
-      if (!token || token.length < 10) return err('token required');
+      if (!token || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(token)) return err('token required');
       const now = new Date().toISOString();
       try {
         const row = await env.DB.prepare(
@@ -1113,7 +1113,7 @@ async function cmdGkLink(db, tok, chatId, telegramId) {
   ).bind(telegramId).run().catch(() => {});
 
   // Generate a new one-time token (15-minute TTL)
-  const token     = crypto.randomUUID();
+  const token = crypto.randomUUID();
   const expiresAt = new Date(Date.now() + 15 * 60 * 1000).toISOString();
 
   try {
@@ -1154,9 +1154,9 @@ async function cmdGkStatus(db, tok, chatId, telegramId) {
     return;
   }
 
-  const seasonNum  = meta ? meta.season_number : '?';
-  const daysLeft   = meta ? tgSeasonDaysRemaining(meta.season_start) : '?';
-  const linked     = (row.link_confirmed || row.linked_email_hash) ? '✅ Linked (competition-active)' : '❌ Not linked — use /gklink';
+  const seasonNum = meta ? meta.season_number : '?';
+  const daysLeft = meta ? tgSeasonDaysRemaining(meta.season_start) : '?';
+  const linked = (row.link_confirmed || row.linked_email_hash) ? '✅ Linked (competition-active)' : '❌ Not linked — use /gklink';
 
   await sendTelegramMessage(tok, chatId,
     `📊 <b>Season Stats</b>\n\n` +
