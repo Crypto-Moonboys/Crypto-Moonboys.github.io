@@ -769,25 +769,36 @@ body .hud .value {
   position: relative;
 }
 
-/* Strip the in-page border frame from the Phaser mount container */
+/* Phaser mount container — sized by its canvas content so the parent flex
+   container (.btqm-game-area) can centre it correctly.
+   Width is capped to the max width allowed by the height budget × aspect ratio
+   so the canvas never overflows vertically on short/wide viewports.
+   640 / 448 = BTQM base aspect ratio. */
 #game-overlay #btqm-canvas {
-  width: 100%;
-  height: 100%;
+  width: min(100%, calc((100dvh - 36px - 20px) * 640 / 448));
+  height: auto;
   border: none !important;
   background: transparent !important;
   border-radius: 0 !important;
   overflow: visible !important;
 }
 
-/* BTQM has no HUD strip visible in the overlay — reclaim the reserved height.
-   36px = overlay control bar; 20px = minimal stage padding (no HUD reserved).
-   Specificity (2,0,1) matches #game-overlay canvas:not(#nextCanvas); later
-   declaration wins so this max-height takes precedence for the BTQM canvas. */
+/* KEY FIX: the general canvas rule uses `width: auto !important` which, for a
+   replaced element (<canvas>), resolves to the *intrinsic* attribute width
+   (640 px) — not the container width.  Override with `width: 100%` so the
+   canvas fills #btqm-canvas and Phaser's Scale.FIT can upscale it to the
+   full stage width.
+   36px = overlay ctrl bar; 20px = minimal stage padding (no HUD reserved). */
 #game-overlay #btqm-canvas canvas {
+  width: 100% !important;
+  height: auto !important;
   max-height: calc(100dvh - 36px - 20px) !important;
 }
 
 @supports not (height: 1dvh) {
+  #game-overlay #btqm-canvas {
+    width: min(100%, calc((100vh - 36px - 20px) * 640 / 448));
+  }
   #game-overlay #btqm-canvas canvas {
     max-height: calc(100vh - 36px - 20px) !important;
   }
