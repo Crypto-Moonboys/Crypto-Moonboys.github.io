@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🏁 HexGL — Crypto Moonboys Arcade</title>
+<link rel="stylesheet" href="/css/wiki.css">
+<link rel="stylesheet" href="/css/game-fullscreen.css">
+<style>
+.hexgl-wrap{background:rgba(255,255,255,.03);border:1px solid var(--color-border,#333);border-radius:16px;padding:16px}
+#hexglFrame{width:100%;height:80vh;border:none;border-radius:12px;background:#000}
+.center{display:flex;justify-content:center;gap:12px;margin-top:12px}
+.btn{padding:.8rem 1.2rem;border-radius:10px;border:none;background:#f7ab1a;color:#111;font-weight:700;cursor:pointer}
+.btn.alt{background:#222;color:#fff}
+</style>
+</head>
+<body>
+<header id="site-header"></header>
+<div id="layout"><div id="main-wrapper"><main id="content">
+<h1>🏁 HexGL</h1>
+<p>Original WebGL racing game by BKcore — running live from source.</p>
+<div class="hexgl-wrap">
+<iframe id="hexglFrame" allow="fullscreen; autoplay"></iframe>
+<div class="center">
+<button class="btn" onclick="loadGame()">Load Game</button>
+<button class="btn alt" onclick="openDirect()">Open Fullscreen</button>
+</div>
+</div>
+</main></div></div>
+<script>
+function loadGame(){
+ document.getElementById('hexglFrame').src='https://cdn.jsdelivr.net/gh/BKcore/HexGL@master/index.html';
+}
+function openDirect(){
+ window.open('https://cdn.jsdelivr.net/gh/BKcore/HexGL@master/index.html','_blank');
+}
+</script>
+</body>
+</html>
