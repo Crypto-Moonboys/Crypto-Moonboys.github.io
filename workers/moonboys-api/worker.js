@@ -60,10 +60,34 @@ function getTodayUtcDate() {
   return new Date().toISOString().slice(0, 10);
 }
 
-/** Return a display name for a Telegram user object. */
+/** Return a display name for a Telegram user object (from webhook/auth payloads). */
 function getTelegramDisplayName(user) {
   if (!user) return 'Unknown';
   return [user.first_name, user.last_name].filter(Boolean).join(' ') || user.username || String(user.id);
+}
+
+/**
+ * Return a display name from a D1 query row that has first_name, last_name,
+ * username, and telegram_id columns (but no id column).
+ */
+function displayNameFromRow(r) {
+  return [r.first_name, r.last_name].filter(Boolean).join(' ')
+    || r.username
+    || r.telegram_id
+    || 'Unknown';
+}
+
+/**
+ * Return true if the given user has already claimed daily XP today (UTC).
+ * Uses SQLite's DATE('now') for reliable UTC-day comparison.
+ */
+async function hasDailyClaimToday(db, telegramId) {
+  const row = await db.prepare(
+    `SELECT id FROM telegram_xp_log
+     WHERE telegram_id = ? AND action = 'daily_claim'
+       AND DATE(created_at) = DATE('now')`
+  ).bind(telegramId).first().catch(() => null);
+  return !!row;
 }
 
 /** Format a SQLite datetime string to a human-readable "N time ago" label. */
@@ -168,7 +192,10 @@ async function upsertTelegramUser(db, user) {
  * SET expressions is computed from the pre-update column value — correct.
  */
 async function awardXp(db, telegramId, xpChange, action, referenceId = '') {
-  if (!xpChange || xpChange <= 0) return;
+  if (!xpChange || xpChange < 0) {
+    if (xpChange < 0) console.log('awardXp: negative xpChange ignored', JSON.stringify({ telegramId, xpChange, action }));
+    return;
+  }
   const logId = crypto.randomUUID();
   await db.prepare(`
     INSERT INTO telegram_xp_log (id, telegram_id, action, xp_change, reference_id)
@@ -340,7 +367,7 @@ export default {
             rank:         r.rank || i + 1,
             telegram_id:  r.telegram_id,
             username:     r.username || null,
-            display_name: [r.first_name, r.last_name].filter(Boolean).join(' ') || r.username || r.telegram_id,
+            display_name: displayNameFromRow(r),
             xp:           r.xp || 0,
           }));
         }
@@ -355,7 +382,7 @@ export default {
             rank:         i + 1,
             telegram_id:  r.telegram_id,
             username:     r.username || null,
-            display_name: [r.first_name, r.last_name].filter(Boolean).join(' ') || r.username || r.telegram_id,
+            display_name: displayNameFromRow(r),
             xp:           r.xp || 0,
           }));
         }
@@ -452,15 +479,11 @@ export default {
            LIMIT ?`
         ).bind(limit).all();
 
-        const items = (rows.results || []).map(r => {
-          const displayName = [r.first_name, r.last_name].filter(Boolean).join(' ')
-            || r.username || 'A moonboy';
-          return {
-            icon:     '⚡',
-            text:     `${displayName}: ${r.action}`,
-            time_ago: timeAgo(r.created_at),
-          };
-        });
+        const items = (rows.results || []).map(r => ({
+          icon:     '⚡',
+          text:     `${displayNameFromRow(r)}: ${r.action}`,
+          time_ago: timeAgo(r.created_at),
+        }));
         return json({ items });
       } catch {
         return err('Failed to load activity', 500);
@@ -475,12 +498,8 @@ export default {
       if (!telegramId) return err('telegram_id required');
       const today = getTodayUtcDate();
       try {
-        const row = await env.DB.prepare(
-          `SELECT id FROM telegram_xp_log
-           WHERE telegram_id = ? AND action = 'daily_claim'
-             AND DATE(created_at) = DATE('now')`
-        ).bind(telegramId).first();
-        return json({ claimed: !!row, date: today });
+        const claimed = await hasDailyClaimToday(env.DB, telegramId);
+        return json({ claimed, date: today });
       } catch {
         return err('Failed to check daily status', 500);
       }
@@ -772,9 +791,7 @@ async function cmdGkLeaderboard(db, tok, chatId) {
 
   const seasonLabel = season ? `Season ${season.id}` : 'All Time';
   const lines = entries.map((r, i) => {
-    const name = escapeHtml(
-      [r.first_name, r.last_name].filter(Boolean).join(' ') || r.username || r.telegram_id || 'Unknown'
-    );
+    const name = escapeHtml(displayNameFromRow(r));
     return `${i + 1}. ${name} — ${r.xp || 0} XP`;
   }).join('\n');
 
@@ -878,13 +895,7 @@ async function cmdDaily(db, tok, chatId, telegramId) {
   const today = getTodayUtcDate();
 
   // Check if already claimed today using telegram_xp_log
-  const existing = await db.prepare(
-    `SELECT id FROM telegram_xp_log
-     WHERE telegram_id = ? AND action = 'daily_claim'
-       AND DATE(created_at) = DATE('now')`
-  ).bind(telegramId).first().catch(() => null);
-
-  if (existing) {
+  if (await hasDailyClaimToday(db, telegramId).catch(() => false)) {
     await sendTelegramMessage(tok, chatId,
       `⏳ You already claimed your daily XP today (UTC: ${today}).\nCome back tomorrow!`
     );
