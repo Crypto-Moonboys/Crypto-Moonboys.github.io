@@ -151,6 +151,8 @@ import { rollHiddenBonus, showBonusPopup } from '/js/bonus-engine.js';
   let player = { x:PLAYER_START_X, y:PLAYER_START_Y, dx:0, dy:0, ndx:0, ndy:0,
                  px:0, py:0, speed:5.5, moving:false };
   const PSIZE=10;
+  const POWER_FLASH_FREQ = 4;   // flashes per second when power timer is low
+  const DEATH_FREEZE_S   = 1.2; // seconds of freeze after losing a life
   let mouthAngle=0, mouthDir=1;
 
   // Enemies
@@ -364,7 +366,7 @@ import { rollHiddenBonus, showBonusPopup } from '/js/bonus-engine.js';
       // Respawn after brief freeze
       powerTimer=0; enemies.forEach(e=>e.scared=false);
       spawnPlayer(); player.ndx=1; player.ndy=0;
-      deathTimer=1.2; // 1.2s freeze so player can orient
+      deathTimer=DEATH_FREEZE_S; // brief freeze so player can orient
     }
   }
 
@@ -423,7 +425,7 @@ import { rollHiddenBonus, showBonusPopup } from '/js/bonus-engine.js';
     });
 
     // Player — bright white/cyan during power mode, yellow normally
-    const powerFlash = powerTimer > 0 && powerTimer < 2 && Math.floor(powerTimer * 4) % 2;
+    const powerFlash = powerTimer > 0 && powerTimer < 2 && Math.floor(powerTimer * POWER_FLASH_FREQ) % 2;
     ctx.fillStyle = powerTimer > 0 ? (powerFlash ? '#fff' : '#b3ffff') : '#f7c948';
     if (powerTimer > 0) ctx.shadowBlur = 14, ctx.shadowColor = '#2ec5ff';
     const ma=mouthAngle*Math.PI;

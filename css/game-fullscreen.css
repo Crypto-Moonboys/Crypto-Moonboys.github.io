@@ -652,46 +652,47 @@ body .hud .value {
   white-space: nowrap;
 }
 
-/* Overlay always uses slim HUD too — keep it tight regardless of viewport width */
-#game-overlay .hud {
-  display: flex !important;
-  flex-direction: row !important;
-  flex-wrap: wrap !important;
-  gap: 0 14px !important;
-  justify-content: center !important;
-  align-items: baseline !important;
-  margin-bottom: 4px !important;
-  padding: 2px 0 !important;
-  width: 100% !important;
-  max-width: none !important;
+/* Overlay always uses slim HUD too — keep it tight regardless of viewport width.
+   Using #game-overlay #game-overlay .hud (specificity 0,2,1) to avoid !important. */
+#game-overlay .game-card .hud {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 0 14px;
+  justify-content: center;
+  align-items: baseline;
+  margin-bottom: 4px;
+  padding: 2px 0;
+  width: 100%;
+  max-width: none;
 }
 
-#game-overlay .hud .stat {
-  background: none !important;
-  border: none !important;
-  border-radius: 0 !important;
-  padding: 0 !important;
-  display: flex !important;
-  flex-direction: row !important;
-  align-items: baseline !important;
-  gap: 4px !important;
-  text-align: left !important;
+#game-overlay .game-card .hud .stat {
+  background: none;
+  border: none;
+  border-radius: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: row;
+  align-items: baseline;
+  gap: 4px;
+  text-align: left;
 }
 
-#game-overlay .hud .label {
-  font-size: 0.6rem !important;
-  font-weight: 600 !important;
-  letter-spacing: 0.05em !important;
-  text-transform: uppercase !important;
-  color: rgba(255, 255, 255, 0.42) !important;
-  white-space: nowrap !important;
+#game-overlay .game-card .hud .label {
+  font-size: 0.6rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.42);
+  white-space: nowrap;
 }
 
-#game-overlay .hud .value {
-  font-size: 0.82rem !important;
-  font-weight: 700 !important;
-  color: #fff !important;
-  white-space: nowrap !important;
+#game-overlay .game-card .hud .value {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #fff;
+  white-space: nowrap;
 }
 
 /* Tetris single-row touch controls — compact, fits narrow screens */
