@@ -53,6 +53,11 @@
       label: '🟦 Tetris', color: '#bc8cff', touchScheme: 'tetris',
       controls: ['← → Move', '↑ Rotate', '↓ Soft drop', 'Space Hard drop'],
       tips: ['Plan 2 pieces ahead', 'I-piece for Tetris', 'Hard drop = bonus pts']
+    },
+    btqmCanvas: {
+      label: '🧱 Block Topia', color: '#f39c12', touchScheme: 'dpad',
+      controls: ['↑↓←→ / WASD — Move', 'ENTER / SPACE — Enter zone', 'ESC — World map', '1 Attack  2 Skill  3 Moon  4 Potion  5 Flee'],
+      tips: ['Defeat boss to unlock exit', 'Daily quests reset at UTC midnight', 'Clear all 6 zones = 2× score bonus']
     }
   };
 
