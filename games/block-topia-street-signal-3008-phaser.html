@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Block Topia — Street Signal 3008 (Phaser)</title>
+  <link rel="stylesheet" href="/css/style.css" />
+  <style>
+    body{margin:0;background:#0b0912;color:#eaf6ff;font-family:Inter,system-ui,Arial}
+    header{padding:14px 20px;border-bottom:1px solid rgba(94,242,255,.25);display:flex;justify-content:space-between;align-items:center}
+    .pill{padding:6px 10px;border-radius:999px;background:rgba(94,242,255,.12);border:1px solid rgba(94,242,255,.25)}
+    #phaser-root{display:flex;justify-content:center;padding:16px}
+    footer{padding:12px 20px;border-top:1px solid rgba(94,242,255,.25);display:flex;gap:10px;flex-wrap:wrap}
+  </style>
+</head>
+<body>
+  <header>
+    <div>🌙 <strong>Block Topia — Street Signal 3008</strong></div>
+    <div class="pill">GraffPUNKS • Year 3008 • Seasonal Lore Active</div>
+  </header>
+
+  <div id="phaser-root"></div>
+
+  <footer>
+    <span class="pill">WASD / Arrow Keys to Move</span>
+    <span class="pill">SPACE to Toggle Day/Night</span>
+    <span class="pill">Night: Graffiti & District Control</span>
+    <span class="pill">Day: Crypto Trading & Preparation</span>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/phaser@3.70.0/dist/phaser.min.js"></script>
+  <script type="module">
+    import { bootBlockTopia } from './js/blocktopia-phaser-game.js';
+    bootBlockTopia('phaser-root');
+  </script>
+</body>
+</html>
