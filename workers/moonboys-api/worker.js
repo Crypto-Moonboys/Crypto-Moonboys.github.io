@@ -17,19 +17,31 @@
  *   GET  /telegram/activity?limit=
  *   GET  /telegram/daily-status?telegram_id=
  *   GET  /telegram/season/current
+ *   GET  /telegram/user/status?telegram_id=
  *
  * Telegram bot commands (POST /telegram/webhook):
  *   /gkstart /gkhelp /gklink /gkstatus /gkseason /gkleaderboard /gkquests /gkfaction /gkunlink
  *   /start /help /link  (aliases)
  *   /daily /quest /solve /profile
+ *   /gkban /gkunban /gkrisk /gkclearstrikes  (admin only)
  *
  * Secrets required (set via `wrangler secret put`):
  *   TELEGRAM_BOT_TOKEN    — BotFather token for HMAC verification and sendMessage
  *   TELEGRAM_BOT_USERNAME — @username (used in widget docs only)
+ *   ADMIN_TELEGRAM_IDS    — comma-separated Telegram user IDs allowed to run admin commands
+ *   ADMIN_SECRET          — shared secret forwarded to the anti-cheat worker (X-Admin-Secret)
+ *   ANTI_CHEAT_WORKER_URL — base URL of the deployed anti-cheat Cloudflare Worker
  */
 
 /** Maximum age (in seconds) of a Telegram Login Widget auth payload before it is rejected. */
 const TELEGRAM_AUTH_MAX_AGE = 86400; // 24 hours
+
+// ── Anti-cheat integration ─────────────────────────────────────────────────────
+/**
+ * Base URL of the deployed anti-cheat Cloudflare Worker.
+ * Override via ANTI_CHEAT_WORKER_URL secret; this default is the expected prod URL.
+ */
+const ANTI_CHEAT_WORKER_URL_DEFAULT = 'https://moonboys-anti-cheat.sercullen.workers.dev';
 
 // ── XP rules ──────────────────────────────────────────────────────────────────
 const XP_FIRST_START = 50;
@@ -107,6 +119,54 @@ function escapeHtml(str) {
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;');
+}
+
+// ── Anti-cheat admin helpers ──────────────────────────────────────────────────
+
+/**
+ * Return true if `telegramId` is in the ADMIN_TELEGRAM_IDS secret
+ * (comma-separated list of numeric Telegram user IDs).
+ * Returns false when the secret is absent or empty.
+ */
+function isAdminTelegramUser(telegramId, env) {
+  const raw = env.ADMIN_TELEGRAM_IDS;
+  if (!raw || !telegramId) return false;
+  return raw.split(',').map(s => s.trim()).includes(String(telegramId));
+}
+
+/**
+ * Call the anti-cheat worker.
+ * `method` is the HTTP verb, `acPath` is the route (e.g. '/anticheat/block'),
+ * `body` is the JSON body for POST requests (omit for GET/DELETE).
+ *
+ * Returns the parsed JSON response, or `{ error: '...' }` on failure.
+ * Never throws.
+ */
+async function callAntiCheatWorker(env, method, acPath, body) {
+  const baseUrl = (env.ANTI_CHEAT_WORKER_URL || ANTI_CHEAT_WORKER_URL_DEFAULT).replace(/\/$/, '');
+  const adminSecret = env.ADMIN_SECRET;
+  if (!adminSecret) {
+    console.log('callAntiCheatWorker: ADMIN_SECRET not configured');
+    return { error: 'Anti-cheat admin secret not configured' };
+  }
+  try {
+    const init = {
+      method,
+      headers: {
+        'Content-Type':  'application/json',
+        'X-Admin-Secret': adminSecret,
+      },
+    };
+    if (body !== undefined && method === 'POST') {
+      init.body = JSON.stringify(body);
+    }
+    const res  = await fetch(`${baseUrl}${acPath}`, init);
+    const text = await res.text();
+    try { return JSON.parse(text); } catch { return { error: text }; }
+  } catch (e) {
+    console.log('callAntiCheatWorker error:', e?.message || e);
+    return { error: e?.message || String(e) };
+  }
 }
 
 /**
@@ -527,6 +587,59 @@ export default {
       }
     }
 
+    // ── GET /telegram/user/status?telegram_id= ────────────────────────────
+    // Returns the user's profile and anti-cheat block status for website feedback.
+    // Used by front-end pages to display a "your account is blocked" notice.
+    if (path === '/telegram/user/status' && request.method === 'GET') {
+      const telegramId = url.searchParams.get('telegram_id');
+      if (!telegramId) return err('telegram_id required');
+
+      try {
+        // Fetch user profile and anti-cheat state in parallel
+        const [user, acState] = await Promise.all([
+          env.DB.prepare(
+            `SELECT telegram_id, username, first_name, last_name, xp, level, created_at
+             FROM telegram_users WHERE telegram_id = ?`
+          ).bind(telegramId).first().catch(() => null),
+          env.DB.prepare(
+            `SELECT is_blocked, block_type, blocked_reason, lifetime_strikes,
+                    season_risk_score, year_risk_score, last_scan_at
+             FROM telegram_anticheat_state WHERE telegram_id = ?`
+          ).bind(telegramId).first().catch(() => null),
+        ]);
+
+        if (!user) return err('User not found', 404);
+
+        return json({
+          telegram_id:      user.telegram_id,
+          username:         user.username    || null,
+          display_name:     displayNameFromRow(user),
+          xp:               user.xp          || 0,
+          level:            user.level        || 1,
+          member_since:     (user.created_at || '').slice(0, 10),
+          anticheat: acState ? {
+            is_blocked:       acState.is_blocked       === 1,
+            block_type:       acState.block_type        || null,
+            blocked_reason:   acState.blocked_reason    || null,
+            lifetime_strikes: acState.lifetime_strikes  || 0,
+            season_risk_score: acState.season_risk_score || 0,
+            year_risk_score:   acState.year_risk_score   || 0,
+            last_scan_at:      acState.last_scan_at      || null,
+          } : {
+            is_blocked: false,
+            block_type: null,
+            blocked_reason: null,
+            lifetime_strikes: 0,
+            season_risk_score: 0,
+            year_risk_score: 0,
+            last_scan_at: null,
+          },
+        });
+      } catch {
+        return err('Failed to load user status', 500);
+      }
+    }
+
     return err('Not found', 404);
   },
 };
@@ -618,6 +731,11 @@ async function handleTelegramUpdate(update, env) {
     case 'daily':        await cmdDaily(db, tok, chatId, telegramId);                break;
     case 'solve':        await cmdSolve(tok, chatId);                                break;
     case 'profile':      await cmdProfile(db, tok, chatId, telegramId);              break;
+    // ── Admin-only moderation commands ───────────────────────────────────────
+    case 'gkban':          await cmdGkBan(db, tok, chatId, telegramId, argStr, env);         break;
+    case 'gkunban':        await cmdGkUnban(db, tok, chatId, telegramId, argStr, env);       break;
+    case 'gkrisk':         await cmdGkRisk(db, tok, chatId, telegramId, argStr, env);        break;
+    case 'gkclearstrikes': await cmdGkClearStrikes(db, tok, chatId, telegramId, argStr, env); break;
     default: break;
   }
 }
@@ -953,4 +1071,180 @@ async function cmdProfile(db, tok, chatId, telegramId) {
     `Quests done:  ${completions?.n || 0}\n` +
     `Member since: ${(user.created_at || '').slice(0, 10)}`
   );
+}
+
+// ── Admin moderation command implementations ──────────────────────────────────
+
+/**
+ * Parse the first argument of an admin command into a target identifier.
+ * Accepts "@username" or a raw numeric Telegram ID.
+ * Returns { username } for @-prefixed values or { telegram_id } for numeric ones.
+ */
+function parseAdminTarget(argStr) {
+  const first = (argStr || '').trim().split(/\s+/)[0] || '';
+  if (!first) return null;
+  if (first.startsWith('@')) return { username: first.slice(1) };
+  if (/^\d+$/.test(first))   return { telegram_id: first };
+  // Bare word treated as username
+  return { username: first };
+}
+
+/**
+ * Resolve a display label for the target (used in bot reply messages).
+ * Prefers @username when available, falls back to the telegram_id.
+ */
+async function resolveTargetLabel(db, target) {
+  if (!target) return '(unknown)';
+  if (target.telegram_id) {
+    const row = await db.prepare(
+      `SELECT username FROM telegram_users WHERE telegram_id = ? LIMIT 1`
+    ).bind(target.telegram_id).first().catch(() => null);
+    return row?.username ? `@${row.username}` : target.telegram_id;
+  }
+  if (target.username) return `@${target.username}`;
+  return '(unknown)';
+}
+
+/**
+ * /gkban <@username|telegram_id> [reason]
+ * Admin-only. Blocks the target user via the anti-cheat worker.
+ */
+async function cmdGkBan(db, tok, chatId, callerTelegramId, argStr, env) {
+  if (!isAdminTelegramUser(callerTelegramId, env)) {
+    await sendTelegramMessage(tok, chatId, '🚫 You do not have permission to use this command.');
+    return;
+  }
+
+  const target = parseAdminTarget(argStr);
+  if (!target) {
+    await sendTelegramMessage(tok, chatId,
+      '⚠️ Usage: /gkban <@username|telegram_id> [reason]');
+    return;
+  }
+
+  // Extract optional reason: everything after the first word
+  const parts  = (argStr || '').trim().split(/\s+/);
+  const reason = parts.slice(1).join(' ').trim() || 'Admin ban';
+
+  const label = await resolveTargetLabel(db, target);
+  const result = await callAntiCheatWorker(env, 'POST', '/anticheat/block', {
+    ...target,
+    block_type: 'season',
+    reason,
+  });
+
+  if (result?.ok) {
+    await sendTelegramMessage(tok, chatId,
+      `🚫 User ${escapeHtml(label)} has been blocked.\nReason: ${escapeHtml(reason)}`);
+  } else {
+    await sendTelegramMessage(tok, chatId,
+      `⚠️ Failed to block ${escapeHtml(label)}: ${escapeHtml(result?.error || 'unknown error')}`);
+  }
+}
+
+/**
+ * /gkunban <@username|telegram_id>
+ * Admin-only. Unblocks the target user via the anti-cheat worker.
+ */
+async function cmdGkUnban(db, tok, chatId, callerTelegramId, argStr, env) {
+  if (!isAdminTelegramUser(callerTelegramId, env)) {
+    await sendTelegramMessage(tok, chatId, '🚫 You do not have permission to use this command.');
+    return;
+  }
+
+  const target = parseAdminTarget(argStr);
+  if (!target) {
+    await sendTelegramMessage(tok, chatId,
+      '⚠️ Usage: /gkunban <@username|telegram_id>');
+    return;
+  }
+
+  const label  = await resolveTargetLabel(db, target);
+  const result = await callAntiCheatWorker(env, 'POST', '/anticheat/unblock', target);
+
+  if (result?.ok) {
+    await sendTelegramMessage(tok, chatId,
+      `✅ User ${escapeHtml(label)} has been unblocked.`);
+  } else {
+    await sendTelegramMessage(tok, chatId,
+      `⚠️ Failed to unblock ${escapeHtml(label)}: ${escapeHtml(result?.error || 'unknown error')}`);
+  }
+}
+
+/**
+ * /gkrisk <@username|telegram_id>
+ * Admin-only. Fetches and displays the target user's anti-cheat risk state.
+ */
+async function cmdGkRisk(db, tok, chatId, callerTelegramId, argStr, env) {
+  if (!isAdminTelegramUser(callerTelegramId, env)) {
+    await sendTelegramMessage(tok, chatId, '🚫 You do not have permission to use this command.');
+    return;
+  }
+
+  const target = parseAdminTarget(argStr);
+  if (!target) {
+    await sendTelegramMessage(tok, chatId,
+      '⚠️ Usage: /gkrisk <@username|telegram_id>');
+    return;
+  }
+
+  // Build the query-string for the GET /anticheat/status route
+  const qp    = target.telegram_id
+    ? `telegram_id=${encodeURIComponent(target.telegram_id)}`
+    : `username=${encodeURIComponent(target.username)}`;
+  const label  = await resolveTargetLabel(db, target);
+  const result = await callAntiCheatWorker(env, 'GET', `/anticheat/status?${qp}`);
+
+  if (result?.error) {
+    await sendTelegramMessage(tok, chatId,
+      `⚠️ Could not fetch risk data for ${escapeHtml(label)}: ${escapeHtml(result.error)}`);
+    return;
+  }
+
+  const s = result?.state;
+  if (!s) {
+    await sendTelegramMessage(tok, chatId,
+      `ℹ️ No anti-cheat record found for ${escapeHtml(label)}.`);
+    return;
+  }
+
+  const blockStatus = s.is_blocked ? `🔴 BLOCKED (${s.block_type})` : '🟢 Clean';
+  await sendTelegramMessage(tok, chatId,
+    `🔍 <b>Risk Report — ${escapeHtml(label)}</b>\n\n` +
+    `Status:         ${blockStatus}\n` +
+    `Season risk:    ${s.season_risk_score ?? 0}\n` +
+    `Year risk:      ${s.year_risk_score ?? 0}\n` +
+    `Lifetime strikes: ${s.lifetime_strikes ?? 0}\n` +
+    `Block reason:   ${escapeHtml(s.blocked_reason || 'N/A')}\n` +
+    `Last scan:      ${(s.last_scan_at || 'never').slice(0, 16)}`
+  );
+}
+
+/**
+ * /gkclearstrikes <@username|telegram_id>
+ * Admin-only. Clears lifetime strikes for the target user.
+ */
+async function cmdGkClearStrikes(db, tok, chatId, callerTelegramId, argStr, env) {
+  if (!isAdminTelegramUser(callerTelegramId, env)) {
+    await sendTelegramMessage(tok, chatId, '🚫 You do not have permission to use this command.');
+    return;
+  }
+
+  const target = parseAdminTarget(argStr);
+  if (!target) {
+    await sendTelegramMessage(tok, chatId,
+      '⚠️ Usage: /gkclearstrikes <@username|telegram_id>');
+    return;
+  }
+
+  const label  = await resolveTargetLabel(db, target);
+  const result = await callAntiCheatWorker(env, 'POST', '/anticheat/clear-strikes', target);
+
+  if (result?.ok) {
+    await sendTelegramMessage(tok, chatId,
+      `✅ Lifetime strikes cleared for ${escapeHtml(label)}.`);
+  } else {
+    await sendTelegramMessage(tok, chatId,
+      `⚠️ Failed to clear strikes for ${escapeHtml(label)}: ${escapeHtml(result?.error || 'unknown error')}`);
+  }
 }

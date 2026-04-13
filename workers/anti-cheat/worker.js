@@ -291,7 +291,8 @@ async function assessUser(env, telegramId, now) {
   const yearChanged   = state.current_year          !== sYear;
 
   if (yearChanged) {
-    // New UTC year: reset both season and year buckets (requirement 5)
+    // New UTC year: reset both season and year risk buckets; season/year blocks are lifted.
+    // Lifetime blocks are permanent and never auto-lifted on rollover.
     state.season_risk_score = 0;
     state.year_risk_score   = 0;
     // Lift season/year blocks on rollover; lifetime bans are never auto-lifted
@@ -302,7 +303,7 @@ async function assessUser(env, telegramId, now) {
       await clearKvBlock(env, telegramId);
     }
   } else if (seasonChanged) {
-    // New 90-day season: reset only the season bucket (requirement 5)
+    // New 90-day season: reset only the season risk bucket; season blocks are lifted.
     state.season_risk_score = 0;
     if (state.block_type === 'season') {
       state.is_blocked     = 0;
@@ -363,7 +364,7 @@ async function assessUser(env, telegramId, now) {
     await logAntiCheatEvent(db, telegramId, 'ceiling_breach', sNum, sYear, 0,
       JSON.stringify({ block_type: newBlockType, strikes_after: state.lifetime_strikes }));
 
-    // Auto-escalate to lifetime ban once MAX_STRIKES is reached (requirement 4f)
+    // Auto-escalate to a lifetime ban once MAX_STRIKES is reached.
     if (state.lifetime_strikes >= MAX_STRIKES) {
       newBlockType   = 'lifetime';
       newBlockReason = `Lifetime ban: ${state.lifetime_strikes} strikes reached`;
