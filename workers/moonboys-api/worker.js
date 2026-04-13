@@ -489,7 +489,7 @@ export default {
           `SELECT is_blocked FROM telegram_anticheat_state WHERE telegram_id = ?`
         ).bind(String(telegram_id)).first();
         if (acState && acState.is_blocked === 1) {
-          return err('Account is blocked from competitive actions', 403);
+          return err('Account is blocked from competitive actions. Contact the Moonboys community on Telegram to appeal.', 403);
         }
       } catch { /* table absent or query failed — proceed */ }
 

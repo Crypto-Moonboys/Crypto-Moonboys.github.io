@@ -570,8 +570,13 @@
   // runs, so it fires in bubble phase after our capture listener).
   // When opening the overlay (isOpen is false), stop event propagation so the
   // game does NOT auto-start — the player must press START inside the overlay.
+  // stopImmediatePropagation() is used (rather than stopPropagation()) because
+  // the game's startBtn.onclick is registered on the same element; stopPropagation
+  // only prevents bubbling to parent elements and would not prevent the game's
+  // own onclick from firing.  stopImmediatePropagation() prevents all remaining
+  // listeners on this element (both capture and bubble) from running.
   // When already open (isOpen is true), allow propagation so the game's own
-  // startBtn handler fires normally.
+  // startBtn handler fires normally (called by the overlay ▶ Start button).
   startBtn.addEventListener('click', function (e) {
     if (!isOpen) {
       openOverlay();
