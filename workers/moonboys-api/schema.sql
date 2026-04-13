@@ -66,18 +66,19 @@ CREATE TABLE IF NOT EXISTS daily_keywords (
 
 -- Telegram user profiles; also stores optional website identity link
 CREATE TABLE IF NOT EXISTS telegram_profiles (
-  telegram_id      TEXT PRIMARY KEY,
-  username         TEXT,
-  display_name     TEXT,
-  avatar_url       TEXT,
+  telegram_id       TEXT PRIMARY KEY,
+  username          TEXT,
+  display_name      TEXT,
+  avatar_url        TEXT,
   linked_email_hash TEXT,
-  linked_player_id TEXT,   -- reserved: future arcade/website player identity bridge
-  faction          TEXT DEFAULT '',
-  xp_total         INTEGER DEFAULT 0,
-  xp_seasonal      INTEGER DEFAULT 0,
-  xp_yearly        INTEGER DEFAULT 0,
-  last_seen_at     DATETIME,
-  created_at       DATETIME DEFAULT CURRENT_TIMESTAMP
+  linked_player_id  TEXT,    -- reserved: future arcade/website player identity bridge
+  link_confirmed    INTEGER  NOT NULL DEFAULT 0,  -- set to 1 after /gklink token confirmation
+  faction           TEXT DEFAULT '',
+  xp_total          INTEGER DEFAULT 0,
+  xp_seasonal       INTEGER DEFAULT 0,
+  xp_yearly         INTEGER DEFAULT 0,
+  last_seen_at      DATETIME,
+  created_at        DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE INDEX IF NOT EXISTS idx_telegram_profiles_xp

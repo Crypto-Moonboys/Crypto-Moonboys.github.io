@@ -115,12 +115,38 @@ Two separate Cloudflare Workers power the live backend.
 | `GET /telegram/leaderboard` | Community XP leaderboard |
 | `GET /telegram/quests` | Active lore quests |
 | `POST /telegram/link` | Link Telegram identity to wiki email |
+| `GET /telegram/link/confirm?token=` | Validate a one-time `/gklink` token and mark account as linked |
 | `GET /telegram/activity` | Telegram XP activity feed |
 | `GET /telegram/daily-status` | Daily XP claim status |
 | `GET /telegram/season/current` | Current community season info |
 
 **Storage:** D1 database `wikicoms` (binding: `DB`)
 **Secrets required:** `TELEGRAM_BOT_TOKEN`, `TELEGRAM_BOT_USERNAME`
+
+#### Telegram Bot Commands (`POST /telegram/webhook`)
+
+All GK commands are case-insensitive (normalised via `.toLowerCase()`).
+
+| Command | Alias | Description |
+|---------|-------|-------------|
+| `/gkstart` | `/start` | Register user and award first-launch XP (50 XP, once only) |
+| `/gkhelp` | `/help` | Display the full command list |
+| `/gklink` | `/link` | Generate a one-time token; sends a deep-link to `community.html?gklink=<token>` |
+| `/gkstatus` | — | Show lifetime, seasonal, and yearly XP plus link status |
+| `/gkseason` | — | Display current season number and days remaining |
+| `/gkleaderboard` | — | Top 10 community XP holders for the current season |
+| `/gkquests` | — | List active lore missions (title, type, XP reward, solve command) |
+| `/gkfaction [name]` | — | View or set faction (`diamond-hands`, `hodl-warriors`, `moon-mission`, `graffpunks`) |
+| `/gkunlink` | — | Remove the website link from the Telegram identity |
+
+#### `/gklink` — Telegram ↔ Website Link Flow
+
+1. User sends `/gklink` in the bot.
+2. Worker generates a secure UUID token (15-minute TTL) stored in `telegram_link_tokens`.
+3. Bot replies with a deep-link: `https://crypto-moonboys.github.io/community.html?gklink=<token>`.
+4. Browser opens `community.html`; `telegram-community.js` detects `?gklink=` and calls `GET /telegram/link/confirm?token=`.
+5. Worker validates the token (single-use, expiry checked), sets `link_confirmed = 1` on the profile, and marks the token as used.
+6. Frontend stores the linked state in `localStorage` and unlocks competitive features (leaderboard submissions, XP display).
 
 ---
 
