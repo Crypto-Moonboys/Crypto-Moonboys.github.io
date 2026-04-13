@@ -49,7 +49,8 @@ document.getElementById('player').textContent=name;
 let start=null;
 let int=null;
 let best=ArcadeSync.getHighScore('hexgl');
-document.getElementById('best').textContent=best;
+const bestEl=document.getElementById('best');
+bestEl.textContent=best;
 
 startBtn.onclick=()=>{
  document.getElementById('hexglFrame').src='https://cdn.jsdelivr.net/gh/BKcore/HexGL@master/index.html';
