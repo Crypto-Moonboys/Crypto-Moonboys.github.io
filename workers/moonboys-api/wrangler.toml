@@ -32,3 +32,16 @@ database_id = "8a36e17a-18fa-4b98-90e1-3f269164b166"
 #   /setdomain   → set to:  moonboys-api.sercullen.workers.dev
 #   Webhook URL  → POST https://moonboys-api.sercullen.workers.dev/telegram/webhook
 #   Auth URL     → https://moonboys-api.sercullen.workers.dev/telegram/auth
+
+# ── Anti-cheat admin secrets ──────────────────────────────────────────────────
+# Required for /gkban, /gkunban, /gkrisk, /gkclearstrikes bot commands and for
+# the GET /telegram/user/status route to read telegram_anticheat_state from D1.
+# Set via Wrangler CLI — never commit values to source control:
+#
+#   wrangler secret put ADMIN_TELEGRAM_IDS   (comma-separated numeric Telegram user IDs)
+#   wrangler secret put ADMIN_SECRET         (must match the anti-cheat worker's ADMIN_SECRET)
+#   wrangler secret put ANTI_CHEAT_WORKER_URL (e.g. https://moonboys-anti-cheat.sercullen.workers.dev)
+#
+# ADMIN_TELEGRAM_IDS   — CSV of Telegram user IDs authorised to run admin bot commands.
+# ADMIN_SECRET         — Shared secret forwarded as X-Admin-Secret to the anti-cheat worker.
+# ANTI_CHEAT_WORKER_URL — Base URL of the deployed anti-cheat Cloudflare Worker.
