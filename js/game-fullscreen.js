@@ -231,6 +231,7 @@
 
   var origParent      = null;
   var origNextSibling = null;
+  var stageTarget     = null; // element actually moved into the overlay (btqm-game-area or game-card)
   var isOpen          = false;
   var scoreInterval   = null;
   // Cached overlay score display elements; set in buildLeftPanel / buildRightPanel.
@@ -490,14 +491,19 @@
     buildRightPanel(meta);
     buildTouchPad(meta);
 
-    // Remember where game-card lives so we can restore it on close.
-    origParent      = gameCard.parentNode;
-    origNextSibling = gameCard.nextSibling;
+    // For BTQM, move only the inner game area — not the whole game-card — to avoid
+    // a nested "box inside a box" layout.  All other games use game-card as before.
+    var btqmArea = document.querySelector('.btqm-game-area');
+    stageTarget = btqmArea || gameCard;
+
+    // Remember where the target element lives so we can restore it on close.
+    origParent      = stageTarget.parentNode;
+    origNextSibling = stageTarget.nextSibling;
 
     // Ensure every game canvas has an aspect-ratio so CSS max-height scaling
     // works correctly (canvas elements without CSS aspect-ratio don't shrink
     // automatically — e.g. Tetris sets canvas.width/height via JS).
-    var canvases = gameCard.querySelectorAll('canvas');
+    var canvases = stageTarget.querySelectorAll('canvas');
     [].forEach.call(canvases, function (cv) {
       var computedRatio = getComputedStyle(cv).aspectRatio;
       var hasRatio = computedRatio && computedRatio !== 'auto';
@@ -506,12 +512,16 @@
       }
     });
 
-    // Move the whole game-card (HUD + canvas + buttons) into the overlay stage.
-    stage.appendChild(gameCard);
+    // Move the target element into the overlay stage.
+    stage.appendChild(stageTarget);
 
     // Show overlay.
     overlay.classList.add('active');
     document.body.classList.add('overlay-open');
+
+    // Fire a resize event so Phaser (and any other canvas-scaling logic) can
+    // recalculate dimensions against the new fullscreen container.
+    setTimeout(function () { window.dispatchEvent(new Event('resize')); }, 150);
 
     // Start live score updater.
     scoreInterval = setInterval(updateScores, 500);
@@ -554,15 +564,19 @@
       document.exitFullscreen().catch(function () {});
     }
 
-    // Restore game-card to its original location in the page.
-    if (origParent) {
-      origParent.insertBefore(gameCard, origNextSibling);
+    // Restore the moved element to its original location in the page.
+    if (origParent && stageTarget) {
+      origParent.insertBefore(stageTarget, origNextSibling);
       origParent      = null;
       origNextSibling = null;
+      stageTarget     = null;
     }
 
     overlay.classList.remove('active');
     document.body.classList.remove('overlay-open');
+
+    // Fire a resize event so Phaser restores its in-page sizing.
+    setTimeout(function () { window.dispatchEvent(new Event('resize')); }, 150);
 
     // Return focus to the start button.
     startBtn.focus();

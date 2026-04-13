@@ -749,18 +749,21 @@ body .hud .value {
 }
 
 /* ===== BTQM FULLSCREEN OVERRIDES ===== */
-/* BTQM wraps its Phaser canvas in an extra .btqm-game-area > #btqm-canvas div
-   hierarchy that has in-page border/background styling.  These rules collapse
-   that inner frame when the game-card is inside the fullscreen overlay so the
-   play area fills the stage cleanly instead of rendering as a box-in-a-box. */
+/* When BTQM is in fullscreen, only .btqm-game-area is moved into the overlay
+   stage (not the whole .game-card), eliminating the nested box layout.
+   These rules ensure it fills the stage and its inner Phaser mount has no
+   in-page border/background chrome. */
 
-/* Let the BTQM game area fill all available overlay height */
+/* Fill the overlay stage — align-self: stretch overrides the stage's
+   align-items: center so the area expands to the full stage height. */
 #game-overlay .btqm-game-area {
-  flex: 1;
-  min-height: 0;
   width: 100%;
+  height: 100%;
+  align-self: stretch;
+  max-width: none;
+  margin: 0;
+  padding: 0;
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
   position: relative;
@@ -768,11 +771,12 @@ body .hud .value {
 
 /* Strip the in-page border frame from the Phaser mount container */
 #game-overlay #btqm-canvas {
+  width: 100%;
+  height: 100%;
   border: none !important;
   background: transparent !important;
   border-radius: 0 !important;
   overflow: visible !important;
-  width: 100%;
 }
 
 /* BTQM has no HUD strip visible in the overlay — reclaim the reserved height.
