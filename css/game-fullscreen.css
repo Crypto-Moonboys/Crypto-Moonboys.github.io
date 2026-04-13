@@ -747,3 +747,48 @@ body .hud .value {
     padding: 0 4px;
   }
 }
+
+/* ===== BTQM FULLSCREEN OVERRIDES ===== */
+/* When BTQM is in fullscreen, only .btqm-game-area is moved into the overlay
+   stage (not the whole .game-card), eliminating the nested box layout.
+   These rules ensure it fills the stage and its inner Phaser mount has no
+   in-page border/background chrome. */
+
+/* Fill the overlay stage — align-self: stretch overrides the stage's
+   align-items: center so the area expands to the full stage height. */
+#game-overlay .btqm-game-area {
+  width: 100%;
+  height: 100%;
+  align-self: stretch;
+  max-width: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+/* Strip the in-page border frame from the Phaser mount container */
+#game-overlay #btqm-canvas {
+  width: 100%;
+  height: 100%;
+  border: none !important;
+  background: transparent !important;
+  border-radius: 0 !important;
+  overflow: visible !important;
+}
+
+/* BTQM has no HUD strip visible in the overlay — reclaim the reserved height.
+   36px = overlay control bar; 20px = minimal stage padding (no HUD reserved).
+   Specificity (2,0,1) matches #game-overlay canvas:not(#nextCanvas); later
+   declaration wins so this max-height takes precedence for the BTQM canvas. */
+#game-overlay #btqm-canvas canvas {
+  max-height: calc(100dvh - 36px - 20px) !important;
+}
+
+@supports not (height: 1dvh) {
+  #game-overlay #btqm-canvas canvas {
+    max-height: calc(100vh - 36px - 20px) !important;
+  }
+}
