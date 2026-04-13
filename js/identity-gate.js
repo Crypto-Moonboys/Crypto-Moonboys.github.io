@@ -1,27 +1,37 @@
 /**
  * Crypto Moonboys Wiki — Identity Gate
  * ======================================
- * Manages the three-tier identity model for competitive participation:
+ * Manages the four-tier identity model for competitive participation:
  *
- *   guest        — browse + play games locally; no leaderboard submission
- *   gravatar     — can post comments (email/Gravatar only); cannot vote or earn XP
- *   telegram     — full access: Battle Chamber, community XP, voting, seasonal scores
+ *   guest           — browse + casual local game play only; no leaderboard submission
+ *   gravatar        — can post comments (email/Gravatar only); no votes, no XP
+ *   telegram        — identified via Telegram auth; not yet competition-active
+ *   telegram_linked — Telegram auth + /link completed; fully competition-active
+ *                     (Battle Chamber, community XP, voting, seasonal leaderboard)
  *
- * Provides a reusable Telegram sync gate modal that surfaces whenever an
- * unauthenticated user attempts a competitive action.  The modal links to
- * the Telegram Sync / Incubator page so users can connect their identity.
+ * IMPORTANT: /link is the required final activation step for full competitive
+ * participation.  Raw Telegram presence alone is NOT enough to be competition-active.
+ *
+ * Sync model
+ * ----------
+ *   Step 1 — Telegram auth  → tier becomes 'telegram'
+ *   Step 2 — /link command  → tier becomes 'telegram_linked'  (competition-active)
  *
  * Usage
  * -----
- *   window.MOONBOYS_IDENTITY.requireTelegramSync(function () { doCompetitiveAction(); });
- *   window.MOONBOYS_IDENTITY.saveTelegramIdentity(telegramId, displayName);
- *   window.MOONBOYS_IDENTITY.getTelegramId();   // → string | null
- *   window.MOONBOYS_IDENTITY.getIdentityTier(); // → 'guest' | 'gravatar' | 'telegram'
+ *   window.MOONBOYS_IDENTITY.requireTelegramSync(fn);   // gate on Telegram auth (Step 1)
+ *   window.MOONBOYS_IDENTITY.requireLinkedAccount(fn);  // gate on /link (Step 2, competition)
+ *   window.MOONBOYS_IDENTITY.saveTelegramIdentity(id, name);
+ *   window.MOONBOYS_IDENTITY.setTelegramLinked();       // call after /link completes
+ *   window.MOONBOYS_IDENTITY.isTelegramLinked();        // → boolean
+ *   window.MOONBOYS_IDENTITY.getTelegramId();           // → string | null
+ *   window.MOONBOYS_IDENTITY.getIdentityTier();         // → 'guest'|'telegram'|'telegram_linked'
  *
  * localStorage keys
  * -----------------
- *   moonboys_tg_id    — verified Telegram numeric ID (string)
- *   moonboys_tg_name  — Telegram display name
+ *   moonboys_tg_id     — verified Telegram numeric ID (string)
+ *   moonboys_tg_name   — Telegram display name
+ *   moonboys_tg_linked — '1' when /link has been completed (competition-active)
  *
  * Include this script before any engagement JS (engagement.js, comments.js,
  * battle-layer.js, leaderboard-client.js) on every page that has competitive
@@ -30,10 +40,11 @@
 (function () {
   'use strict';
 
-  var LS_TG_ID   = 'moonboys_tg_id';
-  var LS_TG_NAME = 'moonboys_tg_name';
-  var MODAL_ID   = 'tg-sync-gate-modal';
-  var STYLE_ID   = 'tg-sync-gate-styles';
+  var LS_TG_ID     = 'moonboys_tg_id';
+  var LS_TG_NAME   = 'moonboys_tg_name';
+  var LS_TG_LINKED = 'moonboys_tg_linked';
+  var MODAL_ID     = 'tg-sync-gate-modal';
+  var STYLE_ID     = 'tg-sync-gate-styles';
 
   // ── localStorage helpers ────────────────────────────────────
 
@@ -56,6 +67,22 @@
   }
 
   /**
+   * Returns true when both Telegram auth (Step 1) AND /link (Step 2) are complete.
+   * Only a linked account is fully competition-active.
+   */
+  function isTelegramLinked() {
+    return !!(lsGet(LS_TG_ID) && lsGet(LS_TG_LINKED));
+  }
+
+  /**
+   * Mark the current Telegram identity as /link-completed (competition-active).
+   * Call this after the /link flow succeeds (e.g. redirect from the Telegram bot).
+   */
+  function setTelegramLinked() {
+    if (getTelegramId()) lsSet(LS_TG_LINKED, '1');
+  }
+
+  /**
    * Persist a verified Telegram identity after a successful /telegram/auth flow.
    * Called by comments.js after the Telegram Login Widget callback succeeds.
    */
@@ -66,32 +93,49 @@
 
   /**
    * Determine the current user's identity tier:
-   *   'telegram' — has a stored Telegram ID (verified via /telegram/auth)
-   *   'guest'     — anonymous; browsing and local gameplay only
+   *   'telegram_linked' — Telegram auth completed AND /link completed (competition-active)
+   *   'telegram'        — Telegram auth only; identified but NOT yet competition-active
+   *   'guest'           — anonymous; browsing and local gameplay only
    *
    * Note: Gravatar accounts (email-only commenters) are treated as 'guest' here
-   * because there is no localStorage token for Gravatar identity — the email is
-   * never stored for privacy reasons. Frontend code checks getTelegramId()
-   * directly for competitive gating; this function is a convenience helper.
+   * because there is no localStorage token for Gravatar identity. Gravatar users
+   * can still post comments via the comment form.
    *
-   * Competitive actions (likes, votes, faction, seasonal scores) require
-   * 'telegram'.  Gravatar accounts can still post comments.
+   * Full competitive actions (leaderboard scores, likes, votes, faction, XP) require
+   * 'telegram_linked'. Basic Telegram auth ('telegram') grants identity but NOT
+   * competition-active status until /link is completed.
    */
   function getIdentityTier() {
-    if (getTelegramId()) return 'telegram';
+    if (isTelegramLinked()) return 'telegram_linked';
+    if (getTelegramId())    return 'telegram';
     return 'guest';
   }
 
   /**
-   * Gate a competitive action behind Telegram sync.
-   * If the user is synced, calls onAllowed() immediately.
+   * Gate a basic Telegram-identified action (e.g. comments, reading private content).
+   * Requires Step 1 (Telegram auth) only.
+   * If the user has a Telegram ID, calls onAllowed() immediately.
    * Otherwise opens the sync gate modal.
    */
   function requireTelegramSync(onAllowed) {
     if (getTelegramId()) {
       onAllowed();
     } else {
-      showSyncGateModal();
+      showSyncGateModal(false);
+    }
+  }
+
+  /**
+   * Gate a fully competitive action (leaderboard scores, votes, likes, faction, XP).
+   * Requires BOTH Step 1 (Telegram auth) AND Step 2 (/link completed).
+   * If the user is linked, calls onAllowed() immediately.
+   * Otherwise opens the sync gate modal with /link instructions prominent.
+   */
+  function requireLinkedAccount(onAllowed) {
+    if (isTelegramLinked()) {
+      onAllowed();
+    } else {
+      showSyncGateModal(true);
     }
   }
 
@@ -144,18 +188,11 @@
       '<div class="tg-sync-gate-box">' +
         '<button class="tg-sync-gate-close" aria-label="Close">✕</button>' +
         '<div class="tg-sync-gate-icon" aria-hidden="true">🔐</div>' +
-        '<h2 class="tg-sync-gate-title">Telegram Sync Required</h2>' +
-        '<p class="tg-sync-gate-body">' +
-          'This action is part of the competitive Battle Chamber system. ' +
-          'Sync your Telegram identity to unlock voting, page likes, faction alignment, ' +
-          'and seasonal leaderboard rankings.' +
-        '</p>' +
+        '<h2 class="tg-sync-gate-title" id="tg-gate-title">Telegram Sync Required</h2>' +
+        '<p class="tg-sync-gate-body" id="tg-gate-body"></p>' +
         '<a href="' + getSyncGateUrl() + '" class="tg-sync-gate-btn" ' +
-           'target="_blank" rel="noopener noreferrer">Sync Your Telegram Identity →</a>' +
-        '<p class="tg-sync-gate-note">' +
-          'Gravatar accounts can still post comments. ' +
-          'Telegram sync unlocks all competitive features.' +
-        '</p>' +
+           'target="_blank" rel="noopener noreferrer" id="tg-gate-btn">Sync Your Telegram Identity →</a>' +
+        '<p class="tg-sync-gate-note" id="tg-gate-note"></p>' +
       '</div>';
     document.body.appendChild(div);
     div.querySelector('.tg-sync-gate-close').addEventListener('click', dismissSyncGateModal);
@@ -167,19 +204,70 @@
     });
   }
 
-  function showSyncGateModal() {
+  function showSyncGateModal(needsLink) {
     if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', showSyncGateModal);
+      document.addEventListener('DOMContentLoaded', function () { showSyncGateModal(needsLink); });
       return;
     }
     injectModal();
     var modal = document.getElementById(MODAL_ID);
-    if (modal) {
-      modal.style.display = 'flex';
-      modal.setAttribute('aria-hidden', 'false');
-      var closeBtn = modal.querySelector('.tg-sync-gate-close');
-      if (closeBtn) closeBtn.focus();
+    if (!modal) return;
+
+    var hasTg = !!getTelegramId();
+
+    // Determine which message to show based on state + what is needed
+    var title, body, btnText, note;
+
+    if (needsLink && hasTg) {
+      // Has Telegram auth but hasn't run /link — needs Step 2
+      title   = '/link Required for Competition';
+      body    =
+        'You are identified via Telegram, but full competitive activation requires ' +
+        'one more step: run <strong>/link</strong> in the Moonboys Telegram bot. ' +
+        'This links your on-chain identity and unlocks leaderboard rankings, voting, ' +
+        'faction alignment, and seasonal XP.';
+      btnText = 'Open Moonboys Telegram →';
+      note    =
+        'Step 1 (Telegram auth) ✓ — Step 2 (/link) required to compete. ' +
+        'Gravatar accounts can still post comments.';
+    } else if (!hasTg) {
+      // No Telegram at all — needs both steps
+      title   = 'Telegram Sync Required';
+      body    =
+        'This action is part of the competitive Battle Chamber system. ' +
+        '<br><br>' +
+        '<strong>Step 1:</strong> Sync your Telegram identity via the Incubator page. ' +
+        '<br>' +
+        '<strong>Step 2:</strong> Run <strong>/link</strong> in the Moonboys bot to activate full competition access ' +
+        '(leaderboard, voting, faction, seasonal XP).';
+      btnText = 'Sync Your Telegram Identity →';
+      note    =
+        'Gravatar accounts can still post comments. ' +
+        '/link is required for all competitive features.';
+    } else {
+      // Fallback: has Telegram, needs link, generic message
+      title   = 'Activate Competition Access';
+      body    =
+        'Run <strong>/link</strong> in the Moonboys Telegram bot to complete ' +
+        'your competitive activation and unlock Battle Chamber, leaderboard, ' +
+        'and seasonal scoring.';
+      btnText = 'Open Moonboys Telegram →';
+      note    = 'Gravatar accounts can still post comments.';
     }
+
+    var titleEl = document.getElementById('tg-gate-title');
+    var bodyEl  = document.getElementById('tg-gate-body');
+    var btnEl   = document.getElementById('tg-gate-btn');
+    var noteEl  = document.getElementById('tg-gate-note');
+    if (titleEl) titleEl.textContent = title;
+    if (bodyEl)  bodyEl.innerHTML    = body;
+    if (btnEl)   btnEl.textContent   = btnText;
+    if (noteEl)  noteEl.innerHTML    = note;
+
+    modal.style.display = 'flex';
+    modal.setAttribute('aria-hidden', 'false');
+    var closeBtn = modal.querySelector('.tg-sync-gate-close');
+    if (closeBtn) closeBtn.focus();
   }
 
   function dismissSyncGateModal() {
@@ -193,19 +281,34 @@
   // ── Expose public API ────────────────────────────────────────
 
   window.MOONBOYS_IDENTITY = {
-    /** 'guest' | 'telegram' — gravatar users are classified as 'guest' (no localStorage token for email) */
+    /**
+     * Identity tier: 'guest' | 'telegram' | 'telegram_linked'
+     *   guest           — no Telegram auth
+     *   telegram        — Telegram auth only (Step 1 complete); NOT competition-active
+     *   telegram_linked — Telegram auth + /link complete (Step 2 done); fully competition-active
+     */
     getIdentityTier:      getIdentityTier,
     /** Verified Telegram ID (string) or null */
     getTelegramId:        getTelegramId,
     /** Telegram display name or null */
     getTelegramName:      getTelegramName,
-    /** Persist after a successful /telegram/auth round-trip */
+    /** Whether /link has been completed (competition-active) */
+    isTelegramLinked:     isTelegramLinked,
+    /** Mark /link as completed (call after successful /link flow) */
+    setTelegramLinked:    setTelegramLinked,
+    /** Persist after a successful /telegram/auth round-trip (Step 1) */
     saveTelegramIdentity: saveTelegramIdentity,
     /**
-     * Gate competitive actions: calls onAllowed() if synced,
-     * otherwise shows the sync gate modal.
+     * Gate on Telegram auth (Step 1 only): calls onAllowed() if user has Telegram ID,
+     * otherwise shows the sync gate modal explaining both steps.
      */
     requireTelegramSync:  requireTelegramSync,
+    /**
+     * Gate on full competition activation (Step 1 + Step 2):
+     * requires BOTH Telegram auth AND /link completion.
+     * Use this for leaderboard scores, votes, likes, faction, XP.
+     */
+    requireLinkedAccount: requireLinkedAccount,
     showSyncGateModal:    showSyncGateModal,
     dismissSyncGateModal: dismissSyncGateModal,
   };

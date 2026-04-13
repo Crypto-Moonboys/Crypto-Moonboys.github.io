@@ -74,8 +74,8 @@
         <div class="hud">
           <div class="stat"><div class="label">Score</div><div class="value" id="score">0</div></div>
           <div class="stat"><div class="label">Best</div><div class="value" id="best">0</div></div>
+          <div class="stat"><div class="label">Lives</div><div class="value" id="lives">3</div></div>
           <div class="stat"><div class="label">Level</div><div class="value" id="level">—</div></div>
-          <div class="stat"><div class="label">Power</div><div class="value" id="power">—</div></div>
         </div>
         <canvas id="pacCanvas" width="560" height="560" aria-label="Pac-Chain game"></canvas>
         <div class="row">
@@ -110,7 +110,7 @@ import { rollHiddenBonus, showBonusPopup } from '/js/bonus-engine.js';
   const scoreEl = document.getElementById('score');
   const bestEl  = document.getElementById('best');
   const levelEl = document.getElementById('level');
-  const powerEl = document.getElementById('power');
+  const livesEl = document.getElementById('lives');
 
   // ── Maze definition (0=wall, 1=pellet, 2=power, 3=open) ──────────────────
   // 20×20 tile maze — hand crafted, symmetric
@@ -138,13 +138,18 @@ import { rollHiddenBonus, showBonusPopup } from '/js/bonus-engine.js';
   ];
 
   // ── State ─────────────────────────────────────────────────────────────────
-  let maze=[], score=0, level=1, powerTimer=0, running=false, paused=false, gameOver=false;
+  let maze=[], score=0, level=1, lives=3, powerTimer=0, running=false, paused=false, gameOver=false;
   let best = ArcadeSync.getHighScore(GAME_ID);
   let raf=null, lastTime=0;
   let pelletsLeft=0;
+  let deathTimer=0; // brief freeze on death before respawn
+
+  // Player start position (centre-bottom open area, not on power pellet)
+  const PLAYER_START_X = 10, PLAYER_START_Y = 16;
 
   // Player
-  let player = { x:1, y:1, dx:0, dy:0, ndx:0, ndy:0, px:0, py:0, speed:5.5, moving:false };
+  let player = { x:PLAYER_START_X, y:PLAYER_START_Y, dx:0, dy:0, ndx:0, ndy:0,
+                 px:0, py:0, speed:5.5, moving:false };
   const PSIZE=10;
   let mouthAngle=0, mouthDir=1;
 
@@ -182,15 +187,21 @@ import { rollHiddenBonus, showBonusPopup } from '/js/bonus-engine.js';
   }
 
   function resetGame() {
-    score=0; level=1; powerTimer=0; running=false; paused=false; gameOver=false;
-    player={x:1,y:16,dx:0,dy:0,ndx:1,ndy:0,px:CELL+CELL/2,py:16*CELL+CELL/2,moving:false};
+    score=0; level=1; lives=3; powerTimer=0; running=false; paused=false; gameOver=false;
+    deathTimer=0;
+    spawnPlayer();
     buildMaze(); spawnEnemies(); updateHud(); draw();
+  }
+
+  function spawnPlayer() {
+    player={x:PLAYER_START_X,y:PLAYER_START_Y,dx:0,dy:0,ndx:1,ndy:0,
+            px:tileCenter(PLAYER_START_X),py:tileCenter(PLAYER_START_Y),moving:false};
   }
 
   function updateHud() {
     scoreEl.textContent=score; bestEl.textContent=best;
     levelEl.textContent=level||'—';
-    powerEl.textContent=powerTimer>0?Math.ceil(powerTimer)+'s':'—';
+    livesEl.textContent=lives;
   }
 
   // ── Movement helpers ──────────────────────────────────────────────────────
@@ -279,6 +290,12 @@ import { rollHiddenBonus, showBonusPopup } from '/js/bonus-engine.js';
   function update(dt) {
     if (!running||paused||gameOver) return;
 
+    // Death freeze — brief pause before respawn
+    if (deathTimer > 0) {
+      deathTimer -= dt;
+      return;
+    }
+
     mouthAngle += mouthDir * 4 * dt;
     if (mouthAngle>0.4) mouthDir=-1;
     if (mouthAngle<0.02) mouthDir=1;
@@ -289,7 +306,7 @@ import { rollHiddenBonus, showBonusPopup } from '/js/bonus-engine.js';
       if(powerTimer<=0) { powerTimer=0; enemies.forEach(e=>e.scared=false); }
     }
 
-    moveEntity(player, player.speed*(1+level*0.05), dt);
+    moveEntity(player, player.speed*(1+level*0.04), dt);
 
     // Eat pellets
     const tx=Math.round((player.px-CELL/2)/CELL);
@@ -315,6 +332,7 @@ import { rollHiddenBonus, showBonusPopup } from '/js/bonus-engine.js';
     if (pelletsLeft<=0) {
       level++; levelEl.textContent=level;
       buildMaze(); spawnEnemies(); powerTimer=0;
+      spawnPlayer(); player.ndx=1; player.ndy=0;
       return;
     }
 
@@ -331,10 +349,23 @@ import { rollHiddenBonus, showBonusPopup } from '/js/bonus-engine.js';
           const pts=200*level;
           score+=pts; ArcadeSync.setHighScore(GAME_ID,score); best=ArcadeSync.getHighScore(GAME_ID); updateHud();
         } else {
-          onGameOver();
+          onPlayerDeath();
         }
       }
     });
+  }
+
+  function onPlayerDeath() {
+    lives--;
+    updateHud();
+    if (lives <= 0) {
+      onGameOver();
+    } else {
+      // Respawn after brief freeze
+      powerTimer=0; enemies.forEach(e=>e.scared=false);
+      spawnPlayer(); player.ndx=1; player.ndy=0;
+      deathTimer=1.2; // 1.2s freeze so player can orient
+    }
   }
 
   // ── Draw ──────────────────────────────────────────────────────────────────
@@ -391,14 +422,17 @@ import { rollHiddenBonus, showBonusPopup } from '/js/bonus-engine.js';
       ctx.beginPath(); ctx.arc(e.px+3,e.py-2,2.5,0,Math.PI*2); ctx.fill();
     });
 
-    // Player
-    ctx.fillStyle='#f7c948';
+    // Player — bright white/cyan during power mode, yellow normally
+    const powerFlash = powerTimer > 0 && powerTimer < 2 && Math.floor(powerTimer * 4) % 2;
+    ctx.fillStyle = powerTimer > 0 ? (powerFlash ? '#fff' : '#b3ffff') : '#f7c948';
+    if (powerTimer > 0) ctx.shadowBlur = 14, ctx.shadowColor = '#2ec5ff';
     const ma=mouthAngle*Math.PI;
     const facing = player.dx===1?0:player.dx===-1?Math.PI:player.dy===1?Math.PI/2:3*Math.PI/2;
     ctx.beginPath();
     ctx.moveTo(player.px, player.py);
     ctx.arc(player.px, player.py, PSIZE, facing+ma, facing+2*Math.PI-ma);
     ctx.closePath(); ctx.fill();
+    ctx.shadowBlur = 0;
   }
 
   // ── Loop ──────────────────────────────────────────────────────────────────
