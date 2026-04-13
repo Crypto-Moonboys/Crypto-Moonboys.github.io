@@ -3,164 +3,112 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Block Topia Quest Maze — A playable blockchain-themed RPG. Accept quests, battle crypto monsters, and climb the leaderboard in Block Topia.">
+  <meta name="description" content="Block Topia Quest Maze — A playable blockchain-themed retro RPG. Explore dungeons, battle crypto monsters, and climb the leaderboard!">
   <meta name="robots" content="index, follow">
   <meta property="og:title" content="🧱 Block Topia Quest Maze — Crypto Moonboys Arcade">
-  <meta property="og:description" content="A playable blockchain-themed RPG. Accept quests, battle crypto monsters, and climb the leaderboard in Block Topia.">
+  <meta property="og:description" content="A playable blockchain-themed retro RPG. Explore dungeons, battle crypto monsters, and climb the leaderboard!">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://crypto-moonboys.github.io/games/block-topia-quest-maze.html">
   <meta property="og:image" content="https://crypto-moonboys.github.io/img/CRYPTO-MOONBOYS-BITCOIN-LOGO.png">
-  <meta name="twitter:card" content="summary_large_image">
   <title>🧱 Block Topia Quest Maze — Crypto Moonboys Arcade</title>
   <link rel="stylesheet" href="/css/wiki.css">
   <link rel="icon" href="/img/favicon.svg" type="image/svg+xml">
   <style>
-    /* ── Game wrapper ── */
-    #btqm { max-width: 800px; margin: 0 auto; }
-    .btqm-screen { display: none; }
-    .btqm-screen.active { display: block; }
-
-    /* ── Buttons ── */
-    .btqm-btn {
-      display: inline-block; padding: 0.55em 1.3em; border: none; border-radius: 6px;
-      cursor: pointer; font-size: 1em; font-weight: bold;
-      transition: opacity 0.15s, transform 0.1s; line-height: 1.3;
+    #btqm-wrap { max-width: 720px; margin: 0 auto; }
+    #btqm-canvas {
+      background: #0a0a1a;
+      border: 2px solid #f39c12;
+      border-radius: 4px;
+      overflow: hidden;
+      cursor: none;
+      image-rendering: pixelated;
+      image-rendering: crisp-edges;
     }
-    .btqm-btn:hover:not(:disabled) { opacity: 0.88; transform: translateY(-1px); }
-    .btqm-btn:active:not(:disabled) { transform: translateY(0); }
-    .btqm-btn:disabled { opacity: 0.38; cursor: default; }
-    .btqm-btn-primary { background: #f39c12; color: #000; }
-    .btqm-btn-danger  { background: #e74c3c; color: #fff; }
-    .btqm-btn-info    { background: #3498db; color: #fff; }
-    .btqm-btn-success { background: #27ae60; color: #fff; }
-    .btqm-btn-muted   { background: rgba(255,255,255,0.12); color: var(--color-text, #eee); }
-    .btqm-btn-sm      { padding: 0.3em 0.85em; font-size: 0.85em; }
-
-    /* ── Welcome ── */
-    .btqm-hero { text-align: center; padding: 2.5em 0 2em; }
-    .btqm-hero-emoji { font-size: 4.5em; line-height: 1.1; display: block; }
-    .btqm-hero h2 { margin: 0.25em 0 0.15em; font-size: 1.75em; }
-    .btqm-hero p  { color: var(--color-text-muted); margin: 0 auto 1.8em; max-width: 480px; font-size: 1em; }
-    .btqm-start-row { display: flex; gap: 0.6em; justify-content: center; flex-wrap: wrap; }
-    .btqm-name-input {
-      padding: 0.6em 1em; border: 2px solid var(--color-border, #444);
-      border-radius: 6px; background: rgba(255,255,255,0.05);
-      color: var(--color-text, #eee); font-size: 1em; min-width: 210px;
+    #btqm-canvas canvas { display: block; width: 100% !important; height: auto !important; }
+    #btqm-daily-bar {
+      display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+      padding: 8px 12px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-top: none;
+      font-size: 0.85em;
+      font-family: monospace;
     }
-    .btqm-name-input:focus { outline: none; border-color: #f39c12; }
-    .btqm-howto {
-      margin-top: 2em; padding: 1.1em 1.4em;
-      border: 1px solid var(--color-border, #333); border-radius: 8px;
-      background: rgba(255,255,255,0.03); text-align: left;
+    .btqm-zone-icon {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 24px; height: 24px; border-radius: 4px;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.15);
+      font-size: 0.75em; font-weight: bold; color: #888;
+      transition: all 0.3s;
     }
-    .btqm-howto h4 { margin: 0 0 0.6em; font-size: 1em; }
-    .btqm-howto ul { margin: 0; padding-left: 1.3em; color: var(--color-text-muted); font-size: 0.9em; line-height: 1.8; }
-
-    /* ── Stats bar ── */
-    .btqm-statsbar {
-      display: flex; gap: 1em; flex-wrap: wrap; align-items: center;
-      padding: 0.85em 1.1em; background: rgba(255,255,255,0.04);
-      border: 1px solid var(--color-border, #333); border-radius: 8px;
-      margin-bottom: 1.4em;
+    .btqm-zone-icon.cleared {
+      background: rgba(39,174,96,0.3);
+      border-color: #27ae60;
+      color: #2ecc71;
     }
-    .btqm-stat { text-align: center; min-width: 55px; }
-    .btqm-stat-label { font-size: 0.68em; color: var(--color-text-muted); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 2px; }
-    .btqm-stat-val   { font-size: 1.1em; font-weight: bold; }
-    .btqm-bar-wrap   { flex: 1 1 120px; min-width: 110px; }
-    .btqm-bar-label  { font-size: 0.72em; color: var(--color-text-muted); display: flex; justify-content: space-between; margin-bottom: 3px; }
-    .btqm-bar-track  { height: 9px; background: rgba(255,255,255,0.1); border-radius: 5px; overflow: hidden; }
-    .btqm-bar-fill   { height: 100%; border-radius: 5px; transition: width 0.35s ease; }
-    .btqm-bar-hp     { background: linear-gradient(90deg, #c0392b, #e74c3c); }
-    .btqm-bar-xp     { background: linear-gradient(90deg, #e67e22, #f39c12); }
-    .btqm-stats-reset { margin-left: auto; font-size: 0.78em; color: var(--color-text-muted); cursor: pointer; background: none; border: none; text-decoration: underline; }
-    .btqm-stats-reset:hover { color: #e74c3c; }
-
-    /* ── Tabs ── */
-    .btqm-tabs { display: flex; margin-bottom: 1.3em; border-bottom: 2px solid var(--color-border, #333); }
-    .btqm-tab {
-      padding: 0.5em 1.1em; cursor: pointer; border: none; background: none;
-      color: var(--color-text-muted); font-size: 0.92em;
-      border-bottom: 2px solid transparent; margin-bottom: -2px;
-      transition: color 0.15s, border-color 0.15s;
+    .btqm-bonus-tag { color: #f39c12; font-weight: bold; }
+    .btqm-score-tag { color: #74b9ff; margin-left: auto; }
+    .btqm-bar-label { color: #888; }
+    #btqm-name-overlay {
+      position: absolute; top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(10,10,26,0.96);
+      border: 2px solid #f39c12;
+      border-radius: 8px;
+      padding: 2em 2.5em;
+      text-align: center;
+      z-index: 100;
+      min-width: 320px;
+      pointer-events: auto;
     }
-    .btqm-tab.active { color: var(--color-text, #eee); border-bottom-color: #f39c12; font-weight: bold; }
-    .btqm-tab:hover  { color: var(--color-text, #eee); }
-    .btqm-tab-pane   { display: none; }
-    .btqm-tab-pane.active { display: block; }
-
-    /* ── Quest grid ── */
-    .btqm-quest-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 1em; }
-    .btqm-quest-card {
-      padding: 1em; border: 1px solid var(--color-border, #333); border-radius: 8px;
-      background: rgba(255,255,255,0.03); display: flex; flex-direction: column; gap: 0.45em;
-      transition: border-color 0.2s, background 0.2s;
+    #btqm-name-overlay h2 { color: #f39c12; font-family: monospace; margin: 0 0 0.5em; }
+    #btqm-name-overlay p  { color: #aaa; font-size: 0.85em; margin: 0 0 1.2em; }
+    #btqm-name-input {
+      width: 100%; box-sizing: border-box;
+      padding: 0.6em 1em;
+      background: rgba(255,255,255,0.05);
+      border: 2px solid #444; border-radius: 6px;
+      color: #eee; font-size: 1em; font-family: monospace;
+      margin-bottom: 1em;
     }
-    .btqm-quest-card:not(.done):hover { border-color: #f39c12; background: rgba(243,156,18,0.07); }
-    .btqm-quest-card.done { opacity: 0.45; }
-    .btqm-quest-emoji { font-size: 1.9em; }
-    .btqm-quest-title { font-weight: bold; font-size: 0.97em; }
-    .btqm-quest-desc  { font-size: 0.83em; color: var(--color-text-muted); flex: 1; line-height: 1.45; }
-    .btqm-quest-meta  { display: flex; gap: 0.4em; flex-wrap: wrap; margin-top: 0.2em; }
-    .btqm-badge { padding: 1px 8px; border-radius: 10px; font-size: 0.76em; font-weight: bold; white-space: nowrap; }
-    .btqm-badge-easy   { background: rgba(39,174,96,0.18);   color: #2ecc71; border: 1px solid rgba(39,174,96,0.35); }
-    .btqm-badge-medium { background: rgba(243,156,18,0.18);  color: #f39c12; border: 1px solid rgba(243,156,18,0.35); }
-    .btqm-badge-hard   { background: rgba(231,76,60,0.18);   color: #e74c3c; border: 1px solid rgba(231,76,60,0.35); }
-    .btqm-badge-xp     { background: rgba(52,152,219,0.14);  color: #74b9ff; border: 1px solid rgba(52,152,219,0.3); }
-    .btqm-badge-gold   { background: rgba(253,203,110,0.14); color: #fdcb6e; border: 1px solid rgba(253,203,110,0.3); }
-    .btqm-badge-done   { background: rgba(255,255,255,0.07); color: var(--color-text-muted); border: 1px solid rgba(255,255,255,0.12); }
-    .btqm-empty-note   { color: var(--color-text-muted); font-size: 0.9em; padding: 0.5em 0; }
-
-    /* ── Battle ── */
-    .btqm-battle-hdr { text-align: center; margin-bottom: 1.2em; }
-    .btqm-battle-hdr h3 { margin: 0 0 0.15em; }
-    .btqm-battle-hdr p  { margin: 0; color: var(--color-text-muted); font-size: 0.88em; }
-    .btqm-arena {
-      display: grid; grid-template-columns: 1fr 2.5em 1fr; gap: 0.8em; align-items: center;
-      margin-bottom: 1.2em;
+    #btqm-name-input:focus { outline: none; border-color: #f39c12; }
+    #btqm-start-btn {
+      padding: 0.7em 2em; background: #f39c12; color: #000;
+      border: none; border-radius: 6px; font-size: 1em; font-weight: bold;
+      cursor: pointer; font-family: monospace;
     }
-    .btqm-fighter {
-      padding: 0.9em; border: 1px solid var(--color-border, #333); border-radius: 8px;
-      background: rgba(255,255,255,0.03); text-align: center;
+    #btqm-start-btn:hover { opacity: 0.88; }
+    #btqm-continue-btn {
+      padding: 0.7em 2em; background: rgba(255,255,255,0.1); color: #eee;
+      border: 1px solid rgba(255,255,255,0.2); border-radius: 6px; font-size: 1em;
+      cursor: pointer; font-family: monospace; margin-left: 0.5em;
+      display: none;
     }
-    .btqm-fighter-emoji { font-size: 2.8em; line-height: 1.2; margin-bottom: 0.2em; }
-    .btqm-fighter-name  { font-weight: bold; font-size: 0.95em; margin-bottom: 0.5em; }
-    .btqm-vs { font-size: 1.3em; font-weight: bold; color: #e74c3c; text-align: center; }
-    .btqm-battle-log {
-      height: 120px; overflow-y: auto; padding: 0.65em 0.8em;
-      background: rgba(0,0,0,0.25); border: 1px solid var(--color-border, #333);
-      border-radius: 6px; margin-bottom: 1em; font-size: 0.84em; line-height: 1.6;
+    #btqm-daily-preview { font-size: 0.8em; color: #888; margin-top: 1em; }
+    #btqm-dpad { display: none; }
+    @media (max-width: 720px) {
+      #btqm-dpad {
+        display: grid;
+        grid-template-areas: ". up ." "left confirm right" ". down .";
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 4px; margin-top: 8px; max-width: 200px; margin-left: auto; margin-right: auto;
+      }
+      .dpad-btn {
+        padding: 14px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);
+        border-radius: 6px; color: #eee; font-size: 1.2em; cursor: pointer;
+        user-select: none; -webkit-user-select: none;
+        display: flex; align-items: center; justify-content: center;
+        touch-action: manipulation;
+      }
+      .dpad-btn:active { background: rgba(243,156,18,0.3); border-color: #f39c12; }
+      .dpad-up      { grid-area: up; }
+      .dpad-left    { grid-area: left; }
+      .dpad-confirm { grid-area: confirm; }
+      .dpad-right   { grid-area: right; }
+      .dpad-down    { grid-area: down; }
     }
-    .btqm-log-player { color: #74b9ff; }
-    .btqm-log-enemy  { color: #fd79a8; }
-    .btqm-log-system { color: var(--color-text-muted); font-style: italic; }
-    .btqm-log-crit   { color: #fdcb6e; font-weight: bold; }
-    .btqm-log-heal   { color: #55efc4; }
-    .btqm-actions { display: flex; gap: 0.7em; flex-wrap: wrap; justify-content: center; margin-bottom: 1em; }
-
-    /* ── Result ── */
-    .btqm-result-wrap { text-align: center; padding: 2em 0.5em; }
-    .btqm-result-emoji { font-size: 4em; display: block; margin-bottom: 0.2em; }
-    .btqm-result-wrap h2 { margin: 0 0 0.4em; font-size: 1.5em; }
-    .btqm-result-wrap p  { color: var(--color-text-muted); margin: 0 0 1em; }
-    .btqm-rewards {
-      display: inline-flex; gap: 0.8em; margin: 0.5em 0 1.4em; flex-wrap: wrap; justify-content: center;
-    }
-    .btqm-reward-chip {
-      padding: 0.45em 1.1em; border-radius: 20px; font-weight: bold; font-size: 1em;
-      background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15);
-    }
-    .btqm-result-btns { display: flex; gap: 0.7em; justify-content: center; flex-wrap: wrap; }
-
-    /* ── Leaderboard ── */
-    .btqm-lb-note    { font-size: 0.84em; color: var(--color-text-muted); margin-bottom: 0.8em; }
-    .btqm-lb-loading { color: var(--color-text-muted); font-size: 0.9em; padding: 0.5em 0; }
-
-    /* ── Responsive ── */
-    @media (max-width: 520px) {
-      .btqm-arena { grid-template-columns: 1fr; }
-      .btqm-vs { display: none; }
-      .btqm-quest-grid { grid-template-columns: 1fr; }
-    }
+    .btqm-game-area { position: relative; }
   </style>
 </head>
 <body>
@@ -169,10 +117,7 @@
   <button class="hamburger" id="hamburger" aria-label="Toggle navigation" aria-expanded="false" aria-controls="sidebar">☰</button>
   <a href="/index.html" class="site-logo" aria-label="The Crypto Moonboys GK Wiki home">
     <img src="/img/CRYPTO-MOONBOYS-BITCOIN-LOGO.png" alt="" aria-hidden="true">
-    <span>
-      <span class="logo-text">🌙 The Crypto Moonboys GK Wiki</span>
-      <span class="logo-sub">Blockchain Cryptoism Encyclopedia ⚡️⚡️⚡️</span>
-    </span>
+    <span><span class="logo-text">🌙 The Crypto Moonboys GK Wiki</span><span class="logo-sub">Blockchain Cryptoism Encyclopedia ⚡️⚡️⚡️</span></span>
   </a>
   <div id="header-search" role="search">
     <input type="search" id="search-input" placeholder="Search the wiki…" aria-label="Search" autocomplete="off">
@@ -197,42 +142,22 @@
       <div class="sidebar-heading">Navigation</div>
       <div class="sidebar-nav">
         <a href="/index.html"><span class="nav-icon">🏠</span> Main Page</a>
-        <a href="/categories/index.html"><span class="nav-icon">📂</span> All Categories</a>
-        <a href="/search.html"><span class="nav-icon">🔍</span> All Articles</a>
-        <a href="/timeline.html"><span class="nav-icon">📅</span> Timeline</a>
-        <a href="/graph.html"><span class="nav-icon">🌐</span> Entity Graph</a>
-        <a href="/dashboard.html"><span class="nav-icon">📊</span> Dashboard</a>
-        <a href="/games/"><span class="nav-icon">🕹️</span> Arcade</a>
+        <a href="/games/" class="active"><span class="nav-icon">🕹️</span> Arcade</a>
       </div>
     </div>
     <div class="sidebar-section">
-      <div class="sidebar-heading">⚔️ HODL WARS LORE$ ⚡️⚡️⚡️</div>
+      <div class="sidebar-heading">Arcade</div>
       <div class="sidebar-nav">
-        <a href="/wiki/hodl-wars.html"><span class="nav-icon">⚔️</span> HODL WAR$</a>
-        <a href="/wiki/hodl-warriors.html"><span class="nav-icon">💎</span> HODL WARRIORS</a>
-        <a href="/wiki/diamond-hands.html"><span class="nav-icon">💎</span> Diamond Hands</a>
-        <a href="/wiki/paper-hands.html"><span class="nav-icon">🧻</span> Paper Hands</a>
-        <a href="/wiki/whale-lords.html"><span class="nav-icon">🐳</span> The Whale Lords</a>
-        <a href="/wiki/moon-mission.html"><span class="nav-icon">🚀</span> Moon Mission</a>
-        <a href="/wiki/the-great-dip.html"><span class="nav-icon">📉</span> The Great Dip</a>
-        <a href="/wiki/bear-market-siege.html"><span class="nav-icon">🐻</span> Bear Market Siege</a>
-        <a href="/wiki/rug-pull-wars.html"><span class="nav-icon">🪤</span> Rug Pull Wars</a>
-        <a href="/wiki/satoshi-scroll.html"><span class="nav-icon">📜</span> The Satoshi Scroll</a>
-        <a href="/wiki/fomo-plague.html"><span class="nav-icon">😱</span> The FOMO Plague</a>
-        <a href="/wiki/ngmi-chronicles.html"><span class="nav-icon">💀</span> NGMI Chronicles</a>
-        <a href="/wiki/wagmi-prophecy.html"><span class="nav-icon">🌙</span> The WAGMI Prophecy</a>
-      </div>
-    </div>
-    <div class="sidebar-section">
-      <div class="sidebar-heading">GK Wiki Info</div>
-      <div class="sidebar-nav">
-        <a href="/about.html"><span class="nav-icon">ℹ️</span> About</a>
-        <a href="/about.html#citation"><span class="nav-icon">📋</span> Citation Policy</a>
-        <a href="/about.html#sources"><span class="nav-icon">🔗</span> Source Types</a>
+        <a href="/games/block-topia-quest-maze.html" class="active"><span class="nav-icon">🧱</span> Block Topia Quest Maze</a>
+        <a href="/games/leaderboard.html"><span class="nav-icon">🏆</span> Leaderboard</a>
+        <a href="/games/snake.html"><span class="nav-icon">🐍</span> SnakeRun 3008</a>
+        <a href="/games/pac-chain.html"><span class="nav-icon">🟡</span> Pac-Chain</a>
+        <a href="/games/asteroid-fork.html"><span class="nav-icon">🌑</span> Asteroid Fork</a>
+        <a href="/games/breakout-bullrun.html"><span class="nav-icon">🧱</span> Breakout Bullrun</a>
+        <a href="/games/tetris-block-topia.html"><span class="nav-icon">🟦</span> Tetris Block Topia</a>
       </div>
     </div>
   </nav>
-
   <div id="main-wrapper">
     <main id="content" role="main">
       <nav class="breadcrumb" aria-label="Breadcrumb">
@@ -240,807 +165,1849 @@
         <a href="/games/">Arcade</a><span class="sep">›</span>
         <span aria-current="page">Block Topia Quest Maze</span>
       </nav>
-
-      <h1 class="page-title">🧱 Block Topia Quest Maze</h1>
+      <div class="category-header">
+        <span class="cat-big-icon" aria-hidden="true">🧱</span>
+        <div>
+          <h1 class="page-title">🧱 Block Topia Quest Maze</h1>
+          <p style="color:var(--color-text-muted)">A retro dungeon RPG. Battle crypto monsters across 6 zones. Daily quests reset at UTC midnight.</p>
+        </div>
+      </div>
       <div class="page-title-line" aria-hidden="true"></div>
 
-      <div id="btqm">
-
-        <!-- ══ WELCOME SCREEN ══ -->
-        <div id="btqm-welcome" class="btqm-screen active">
-          <div class="btqm-hero">
-            <span class="btqm-hero-emoji">🧱⚔️🌙</span>
-            <h2>Enter Block Topia</h2>
-            <p>A blockchain RPG where you accept on-chain quests, battle crypto monsters, and climb the leaderboard. Your progress is saved in your browser.</p>
-            <div class="btqm-start-row">
-              <input id="btqm-name-input" class="btqm-name-input" type="text" maxlength="20"
-                     placeholder="Enter your hero name…" autocomplete="off" spellcheck="false">
-              <button id="btqm-start-btn" class="btqm-btn btqm-btn-primary">⚔️ Enter the Maze</button>
+      <div id="btqm-wrap">
+        <div class="btqm-game-area">
+          <div id="btqm-canvas"></div>
+          <div id="btqm-name-overlay" style="display:none;">
+            <h2>⚔️ Block Topia Quest Maze</h2>
+            <p id="btqm-daily-preview">Daily Quest — 0/6 zones cleared today</p>
+            <input id="btqm-name-input" type="text" maxlength="20" placeholder="Enter hero name…" autocomplete="off" spellcheck="false">
+            <div style="display:flex;gap:0.5em;justify-content:center;margin-top:0.5em;">
+              <button id="btqm-start-btn">▶ Enter the Maze</button>
+              <button id="btqm-continue-btn">Continue</button>
             </div>
-            <div id="btqm-name-error" style="color:#e74c3c;font-size:0.85em;margin-top:0.5em;display:none;">
-              Please enter a name (2–20 characters).
-            </div>
-          </div>
-          <div class="btqm-howto">
-            <h4>📖 How to Play</h4>
-            <ul>
-              <li><strong>⚔️ Attack</strong> — A standard strike. Reliable damage.</li>
-              <li><strong>🌙 Moon Strike</strong> — High-risk, high-reward. 60% chance to hit for big damage.</li>
-              <li><strong>💎 Diamond Hands</strong> — Defend! Halve the next enemy hit and regenerate a little HP.</li>
-              <li>Win quests to earn XP &amp; Gold. Level up to grow stronger.</li>
-              <li>Quest data loads live from the Block Topia R2 store each season.</li>
-            </ul>
+            <div id="btqm-name-err" style="color:#e74c3c;font-size:0.82em;margin-top:0.5em;display:none;">Name must be 2-20 characters.</div>
           </div>
         </div>
-
-        <!-- ══ HUB SCREEN ══ -->
-        <div id="btqm-hub" class="btqm-screen">
-
-          <!-- Stats bar -->
-          <div class="btqm-statsbar">
-            <div class="btqm-stat">
-              <div class="btqm-stat-label">Level</div>
-              <div class="btqm-stat-val" id="stat-level">1</div>
-            </div>
-            <div class="btqm-stat">
-              <div class="btqm-stat-label">Gold</div>
-              <div class="btqm-stat-val" id="stat-gold">🪙 0</div>
-            </div>
-            <div class="btqm-bar-wrap">
-              <div class="btqm-bar-label">
-                <span>❤️ HP</span>
-                <span id="stat-hp-text">100 / 100</span>
-              </div>
-              <div class="btqm-bar-track">
-                <div class="btqm-bar-fill btqm-bar-hp" id="stat-hp-bar" style="width:100%"></div>
-              </div>
-            </div>
-            <div class="btqm-bar-wrap">
-              <div class="btqm-bar-label">
-                <span>⭐ XP</span>
-                <span id="stat-xp-text">0 / 100</span>
-              </div>
-              <div class="btqm-bar-track">
-                <div class="btqm-bar-fill btqm-bar-xp" id="stat-xp-bar" style="width:0%"></div>
-              </div>
-            </div>
-            <button class="btqm-stats-reset" id="btqm-reset-btn" title="Reset all progress">↺ Reset</button>
-          </div>
-
-          <!-- Tabs -->
-          <div class="btqm-tabs" role="tablist">
-            <button class="btqm-tab active" role="tab" aria-selected="true"  data-tab="quests">⚔️ Quests</button>
-            <button class="btqm-tab"        role="tab" aria-selected="false" data-tab="leaderboard">🏆 Leaderboard</button>
-            <button class="btqm-tab"        role="tab" aria-selected="false" data-tab="masters">🥇 Masters</button>
-          </div>
-
-          <!-- Quests pane -->
-          <div id="btqm-pane-quests" class="btqm-tab-pane active" role="tabpanel">
-            <div id="btqm-quest-list"></div>
-          </div>
-
-          <!-- Leaderboard pane -->
-          <div id="btqm-pane-leaderboard" class="btqm-tab-pane" role="tabpanel">
-            <p class="btqm-lb-note">Current season standings loaded live from the Block Topia R2 data store.</p>
-            <div id="btqm-lb-content"><span class="btqm-lb-loading">⏳ Loading…</span></div>
-          </div>
-
-          <!-- Masters pane -->
-          <div id="btqm-pane-masters" class="btqm-tab-pane" role="tabpanel">
-            <p class="btqm-lb-note">All-time masters — the greatest adventurers in Block Topia history.</p>
-            <div id="btqm-masters-content"><span class="btqm-lb-loading">⏳ Loading…</span></div>
-          </div>
-
-        </div><!-- /#btqm-hub -->
-
-        <!-- ══ BATTLE SCREEN ══ -->
-        <div id="btqm-battle" class="btqm-screen">
-          <div class="btqm-battle-hdr">
-            <h3 id="battle-quest-title">Quest</h3>
-            <p id="battle-quest-desc"></p>
-          </div>
-          <div class="btqm-arena">
-            <div class="btqm-fighter">
-              <div class="btqm-fighter-emoji">🧙</div>
-              <div class="btqm-fighter-name" id="fighter-player-name">Hero</div>
-              <div class="btqm-bar-label"><span>HP</span><span id="player-hp-text">100/100</span></div>
-              <div class="btqm-bar-track">
-                <div class="btqm-bar-fill btqm-bar-hp" id="player-hp-bar" style="width:100%"></div>
-              </div>
-            </div>
-            <div class="btqm-vs" aria-hidden="true">VS</div>
-            <div class="btqm-fighter">
-              <div class="btqm-fighter-emoji" id="enemy-emoji">👾</div>
-              <div class="btqm-fighter-name" id="enemy-name">Enemy</div>
-              <div class="btqm-bar-label"><span>HP</span><span id="enemy-hp-text">50/50</span></div>
-              <div class="btqm-bar-track">
-                <div class="btqm-bar-fill btqm-bar-hp" id="enemy-hp-bar" style="width:100%"></div>
-              </div>
-            </div>
-          </div>
-          <div class="btqm-battle-log" id="battle-log" aria-live="polite"></div>
-          <div class="btqm-actions">
-            <button class="btqm-btn btqm-btn-danger"  id="btn-attack"  title="Normal attack">⚔️ Attack</button>
-            <button class="btqm-btn btqm-btn-primary" id="btn-moon"    title="High-risk, high-reward strike">🌙 Moon Strike</button>
-            <button class="btqm-btn btqm-btn-info"    id="btn-diamond" title="Defend and heal a little">💎 Diamond Hands</button>
-            <button class="btqm-btn btqm-btn-muted btqm-btn-sm" id="btn-flee" title="Flee this quest">🏃 Flee</button>
-          </div>
+        <div id="btqm-daily-bar">
+          <span class="btqm-bar-label">Today:</span>
+          <span class="btqm-zone-icon" title="HODL or FOLD">1</span>
+          <span class="btqm-zone-icon" title="Bear Market Siege">2</span>
+          <span class="btqm-zone-icon" title="FOMO Plague Escape">3</span>
+          <span class="btqm-zone-icon" title="Rug Pull Recovery">4</span>
+          <span class="btqm-zone-icon" title="Whale Lord's Challenge">5</span>
+          <span class="btqm-zone-icon" title="Moon Mission">6</span>
+          <span class="btqm-score-tag">Score: 0</span>
         </div>
-
-        <!-- ══ RESULT SCREEN ══ -->
-        <div id="btqm-result" class="btqm-screen">
-          <div class="btqm-result-wrap">
-            <span class="btqm-result-emoji" id="result-emoji">🏆</span>
-            <h2 id="result-heading">Victory!</h2>
-            <p id="result-subtext">You defeated the enemy.</p>
-            <div class="btqm-rewards" id="result-rewards"></div>
-            <div id="result-levelup" style="display:none; margin-bottom:1em; color:#f39c12; font-weight:bold; font-size:1.1em;">
-              ⭐ LEVEL UP! You are now Level <span id="result-new-level"></span>!
-            </div>
-            <div class="btqm-result-btns">
-              <button class="btqm-btn btqm-btn-success" id="btn-continue">⚔️ Back to Quest Board</button>
-            </div>
-          </div>
+        <div id="btqm-dpad">
+          <button class="dpad-btn dpad-up" data-key="38">▲</button>
+          <button class="dpad-btn dpad-left" data-key="37">◀</button>
+          <button class="dpad-btn dpad-confirm" data-key="13">✓</button>
+          <button class="dpad-btn dpad-right" data-key="39">▶</button>
+          <button class="dpad-btn dpad-down" data-key="40">▼</button>
         </div>
-
-      </div><!-- /#btqm -->
+      </div>
 
     </main>
-    <footer id="site-footer" role="contentinfo">
-      <div class="footer-inner">
-        <div class="footer-col">
-          <h4>🌙 The Crypto Moonboys GK Wiki</h4>
-          <p>Fan-driven crypto encyclopedia 💥💥💥🚀.</p>
-        </div>
-        <div class="footer-col">
-          <h4>Explore</h4>
-          <ul>
-            <li><a href="/index.html">Main Page</a></li>
-            <li><a href="/search.html">All Articles</a></li>
-            <li><a href="/games/">Arcade</a></li>
-            <li><a href="/about.html">About</a></li>
-          </ul>
-        </div>
-      </div>
-      <div class="footer-bottom">
-        <p>Crypto Moonboys GK Wiki ⚡️⚡️⚡️ a GKiftyHEADS $LAP PRODUCTION$ · Not financial advice.</p>
-        <p><span class="no-login-note">🔒 No sign-up · No login · NO F#K$ G1V£N 🖕👀 Bot-maintained 🤖</span></p>
-      </div>
+    <footer id="site-footer">
+      <div class="footer-bottom"><p>Crypto Moonboys GK Wiki ⚡️⚡️⚡️</p></div>
     </footer>
   </div>
 </div>
-
 <button id="back-to-top" aria-label="Back to top">↑</button>
-
-<script>window.R2_PUBLIC_BASE_URL = window.R2_PUBLIC_BASE_URL || "";</script>
 <script src="/js/wiki.js"></script>
 <script src="/js/identity-gate.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/phaser@3.70.0/dist/phaser.min.js"></script>
 <script type="module">
-import { loadGameData } from '/js/data-loader.js';
+
+// ─── MODULE-LEVEL IMPORTS (with graceful fallback) ───────────────────────────
 import { ArcadeSync } from '/js/arcade-sync.js';
 import { submitScore, fetchLeaderboard } from '/js/leaderboard-client.js';
 import { rollHiddenBonus, showBonusPopup } from '/js/bonus-engine.js';
 
-(function () {
-  'use strict';
+// ─── ZONE DEFINITIONS ────────────────────────────────────────────────────────
+const ZONES = [
+  {
+    id: 0, name: 'HODL or FOLD', subtitle: 'The Market Floor',
+    floorColor: 0x2d4a1e, wallColor: 0x1a2e11, bgColor: 0x0d1a07, accentColor: 0x4caf50,
+    enemies: [
+      { name: 'Paper Hand Goblin', maxHp: 35, atk: 7,  def: 2, xp: 30,  gold: 8  },
+      { name: 'FUD Spreader',      maxHp: 45, atk: 9,  def: 3, xp: 40,  gold: 10 },
+    ],
+    boss: { name: 'Paper Hand King', maxHp: 120, atk: 14, def: 5, xp: 150, gold: 40 },
+    clearScore: 100,
+  },
+  {
+    id: 1, name: 'Bear Market Siege', subtitle: 'The Frozen Cavern',
+    floorColor: 0x1a2a4a, wallColor: 0x0d1929, bgColor: 0x060e1a, accentColor: 0x3498db,
+    enemies: [
+      { name: 'Bear Soldier',    maxHp: 65, atk: 12, def: 6, xp: 60, gold: 18 },
+      { name: 'Market Crasher',  maxHp: 55, atk: 16, def: 3, xp: 70, gold: 20 },
+    ],
+    boss: { name: 'The Bear Lord', maxHp: 200, atk: 22, def: 8, xp: 280, gold: 80 },
+    clearScore: 200,
+  },
+  {
+    id: 2, name: 'FOMO Plague Escape', subtitle: 'The Panic Wastes',
+    floorColor: 0x3d1454, wallColor: 0x230a30, bgColor: 0x0f0518, accentColor: 0x9b59b6,
+    enemies: [
+      { name: 'FOMO Ghost',    maxHp: 70, atk: 13, def: 4, xp: 75, gold: 22 },
+      { name: 'Panic Seller',  maxHp: 80, atk: 15, def: 5, xp: 85, gold: 25 },
+    ],
+    boss: { name: 'FOMO Phantom Prime', maxHp: 260, atk: 28, def: 9, xp: 350, gold: 100 },
+    clearScore: 350,
+  },
+  {
+    id: 3, name: 'Rug Pull Recovery', subtitle: 'The Ruined Vaults',
+    floorColor: 0x4a2a0a, wallColor: 0x2e1a06, bgColor: 0x120a03, accentColor: 0xe67e22,
+    enemies: [
+      { name: 'Rug Puller',    maxHp: 90, atk: 17, def: 6, xp: 100, gold: 28 },
+      { name: 'Exit Scammer',  maxHp: 80, atk: 20, def: 4, xp: 95,  gold: 26 },
+    ],
+    boss: { name: 'The Rug Lord', maxHp: 320, atk: 30, def: 11, xp: 430, gold: 120 },
+    clearScore: 500,
+  },
+  {
+    id: 4, name: "Whale Lord's Challenge", subtitle: 'The Deep Sea Vault',
+    floorColor: 0x0a2a4a, wallColor: 0x061929, bgColor: 0x030c15, accentColor: 0x1abc9c,
+    enemies: [
+      { name: 'Whale Minion',         maxHp: 120, atk: 20, def: 11, xp: 130, gold: 38 },
+      { name: 'Market Manipulator',   maxHp: 100, atk: 24, def: 8,  xp: 140, gold: 42 },
+    ],
+    boss: { name: 'The Whale Lord', maxHp: 420, atk: 38, def: 16, xp: 580, gold: 160 },
+    clearScore: 750,
+  },
+  {
+    id: 5, name: 'Moon Mission', subtitle: 'The Final Ascent',
+    floorColor: 0x1a1a3a, wallColor: 0x0a0a1e, bgColor: 0x030309, accentColor: 0xf39c12,
+    enemies: [
+      { name: 'NGMI Wraith',      maxHp: 140, atk: 26, def: 9,  xp: 150, gold: 48 },
+      { name: 'Anti-Moon Troll',  maxHp: 160, atk: 24, def: 13, xp: 145, gold: 45 },
+    ],
+    boss: { name: 'NGMI Overlord', maxHp: 550, atk: 45, def: 20, xp: 800, gold: 220 },
+    clearScore: 1000,
+  },
+];
 
-  var STORAGE_KEY = 'btqm_player_v1';
+// ─── ZONE MAPS (15 columns × 10 rows) ────────────────────────────────────────
+// Tile codes: 0=wall, 1=floor, 2=encounter, 3=boss, 4=exit, 9=start
+const ZONE_MAPS = [
+  // Zone 0: HODL or FOLD
+  [
+    [0,0,0,0,0,0,0,4,0,0,0,0,0,0,0],
+    [0,1,1,1,1,0,0,1,0,0,1,1,1,1,0],
+    [0,1,2,1,1,0,0,1,0,0,1,3,1,1,0],
+    [0,1,1,1,1,1,1,1,1,1,1,1,1,1,0],
+    [0,0,0,1,0,0,0,1,0,0,0,1,0,0,0],
+    [0,1,1,1,1,0,0,1,0,0,1,1,1,1,0],
+    [0,1,2,1,1,0,0,1,0,0,1,2,1,1,0],
+    [0,1,1,1,1,1,1,1,1,1,1,1,1,1,0],
+    [0,0,0,1,0,0,0,1,0,0,0,1,0,0,0],
+    [0,0,0,9,0,0,0,0,0,0,0,0,0,0,0],
+  ],
+  // Zone 1: Bear Market Siege — redesigned for full reachability
+  [
+    [0,0,0,0,0,0,0,0,4,0,0,0,0,0,0],
+    [0,1,1,1,1,1,1,1,1,1,1,1,1,1,0],
+    [0,1,2,1,1,1,0,0,0,1,1,1,2,1,0],
+    [0,1,1,1,0,1,3,1,0,1,0,1,1,1,0],
+    [0,1,0,1,0,1,1,1,0,1,0,1,0,1,0],
+    [0,1,0,1,1,1,0,0,0,1,1,1,0,1,0],
+    [0,1,0,0,0,1,0,0,0,1,0,0,0,1,0],
+    [0,1,1,1,1,1,1,1,1,1,1,1,1,1,0],
+    [0,1,0,2,0,0,0,0,0,0,0,2,0,1,0],
+    [0,1,9,1,1,1,1,1,1,1,1,1,1,1,0],
+  ],
+  // Zone 2: FOMO Plague Escape — enc at (8,3) connected via col 7
+  [
+    [0,0,4,0,0,0,0,0,0,0,0,0,0,0,0],
+    [0,1,1,1,0,0,1,1,1,1,1,0,0,1,0],
+    [0,1,0,1,1,1,1,0,0,0,1,1,1,1,0],
+    [0,1,2,0,0,0,1,1,2,0,0,0,0,1,0],
+    [0,1,1,1,0,0,1,0,0,0,1,1,1,1,0],
+    [0,0,0,1,1,1,1,1,1,1,1,0,0,0,0],
+    [0,1,1,1,0,0,1,3,0,0,1,1,1,1,0],
+    [0,1,0,0,0,1,1,0,0,1,0,0,2,1,0],
+    [0,1,1,1,1,1,0,0,0,1,1,1,1,1,0],
+    [0,0,0,0,0,9,0,0,0,0,0,0,0,0,0],
+  ],
+  // Zone 3: Rug Pull Recovery — boss col connected to corridor
+  [
+    [0,0,0,0,0,0,4,0,0,0,0,0,0,0,0],
+    [0,1,1,1,0,0,1,0,0,1,1,1,1,1,0],
+    [0,1,0,1,0,0,1,0,0,1,0,0,0,1,0],
+    [0,1,2,1,1,1,1,1,1,1,1,3,0,1,0],
+    [0,1,0,0,0,0,1,0,0,0,0,0,0,1,0],
+    [0,1,1,1,1,0,1,0,1,1,1,1,1,1,0],
+    [0,0,0,0,1,0,1,0,1,0,0,2,0,0,0],
+    [0,1,1,1,1,1,1,1,1,0,1,1,1,1,0],
+    [0,1,2,0,0,0,0,0,1,0,1,0,2,1,0],
+    [0,1,9,0,0,0,0,0,0,0,1,1,1,1,0],
+  ],
+  // Zone 4: Whale Lord's Challenge
+  [
+    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+    [0,1,1,1,1,1,0,1,0,1,1,1,1,1,0],
+    [0,1,2,0,0,1,0,1,0,1,0,0,2,1,0],
+    [0,1,0,0,0,1,1,1,1,1,0,0,0,1,0],
+    [0,1,1,1,0,0,0,1,0,0,0,1,1,1,0],
+    [0,0,0,1,1,1,0,1,0,1,1,1,0,0,0],
+    [0,1,1,1,0,1,1,1,1,1,0,1,1,1,0],
+    [0,1,2,0,0,0,0,3,0,0,0,0,2,1,0],
+    [0,1,1,1,1,1,1,1,1,1,1,1,1,1,0],
+    [0,0,4,0,0,0,0,9,0,0,0,0,0,0,0],
+  ],
+  // Zone 5: Moon Mission
+  [
+    [0,0,0,0,0,0,0,0,0,0,0,0,0,4,0],
+    [0,1,1,1,1,0,1,1,1,1,0,1,1,1,0],
+    [0,1,2,0,1,0,1,0,0,1,0,1,2,0,0],
+    [0,1,0,0,1,1,1,0,0,1,1,1,0,0,0],
+    [0,1,1,1,0,0,1,2,0,0,0,1,1,1,0],
+    [0,0,0,1,1,0,1,0,0,0,0,0,0,1,0],
+    [0,1,1,1,1,1,1,0,1,1,1,1,1,1,0],
+    [0,1,3,0,0,0,1,0,1,0,0,0,2,1,0],
+    [0,1,1,1,1,1,1,1,1,1,1,1,1,1,0],
+    [0,0,0,0,0,9,0,0,0,0,0,0,0,0,0],
+  ],
+];
 
-  /* ═══════════════════════════════════
-     Game balance constants
-  ═══════════════════════════════════ */
-  var MOON_STRIKE_HIT_CHANCE      = 0.6;   // 60% chance to land Moon Strike
-  var DIAMOND_HANDS_DAMAGE_DIVISOR = 2;    // defending halves the next enemy hit
-  var DEFEAT_HP_RECOVERY_PERCENT  = 0.4;   // restore 40% HP after a loss
-  var FLEE_HP_RETENTION           = 0.85;  // keep 85% HP when fleeing
+// ─── WORLD MAP POSITIONS & CONNECTIONS ───────────────────────────────────────
+const ZONE_POSITIONS = [
+  { x: 120, y: 360 },
+  { x: 280, y: 300 },
+  { x: 440, y: 360 },
+  { x: 160, y: 200 },
+  { x: 320, y: 150 },
+  { x: 480, y: 100 },
+];
+const ZONE_CONNECTIONS = [[0,1],[1,2],[1,3],[3,4],[4,5],[2,5]];
 
-  /* ═══════════════════════════════════
-     Fallback quest data (shown when R2 is empty or unreachable).
-     easy  → HP 28-44, ATK 5-9
-     medium → HP 55-80, ATK 10-16
-     hard  → HP 90-130, ATK 17-26
-  ═══════════════════════════════════ */
-  var FALLBACK_QUESTS = [
-    {
-      id: 'fq1', title: 'HODL or FOLD',
-      description: 'A Paper Hand Goblin blocks the path. Resist the urge to sell!',
-      difficulty: 'easy', xp: 50, gold: 10,
-      enemy: { name: 'Paper Hand Goblin', maxHp: 32, atk: 7, emoji: '\u{1F9FB}' }
-    },
-    {
-      id: 'fq2', title: 'Bear Market Siege',
-      description: 'Navigate the savage bear market and emerge victorious.',
-      difficulty: 'medium', xp: 120, gold: 25,
-      enemy: { name: 'Bear Market Beast', maxHp: 60, atk: 12, emoji: '\u{1F43B}' }
-    },
-    {
-      id: 'fq3', title: 'FOMO Plague Escape',
-      description: 'Escape the FOMO Phantom before panic consumes you.',
-      difficulty: 'easy', xp: 60, gold: 12,
-      enemy: { name: 'FOMO Phantom', maxHp: 38, atk: 8, emoji: '\u{1F631}' }
-    },
-    {
-      id: 'fq4', title: 'Rug Pull Recovery',
-      description: 'Recover your assets from the devious Rug Puller.',
-      difficulty: 'medium', xp: 140, gold: 30,
-      enemy: { name: 'Rug Puller', maxHp: 68, atk: 13, emoji: '\u{1FA9E}' }
-    },
-    {
-      id: 'fq5', title: 'Whale Lord\'s Challenge',
-      description: 'A mighty Whale Lord tests your diamond hands.',
-      difficulty: 'hard', xp: 280, gold: 65,
-      enemy: { name: 'Whale Lord', maxHp: 110, atk: 20, emoji: '\u{1F433}' }
-    },
-    {
-      id: 'fq6', title: 'Moon Mission',
-      description: 'Ride the rocket to the moon — but the NGMI Wraith stands in your way.',
-      difficulty: 'hard', xp: 260, gold: 60,
-      enemy: { name: 'NGMI Wraith', maxHp: 100, atk: 18, emoji: '\u{1F480}' }
+const TILE_SIZE = 40;
+
+// ─── UTILITY FUNCTIONS ────────────────────────────────────────────────────────
+function randInt(min, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+function getUTCDate() {
+  return new Date().toISOString().slice(0, 10);
+}
+
+function loadPlayer() {
+  try {
+    const raw = localStorage.getItem('btqm_player_v2');
+    if (raw) return JSON.parse(raw);
+  } catch(e) {}
+  return null;
+}
+
+function savePlayer(p) {
+  try { localStorage.setItem('btqm_player_v2', JSON.stringify(p)); } catch(e) {}
+}
+
+function createPlayer(name) {
+  return {
+    name,
+    level: 1,
+    xp: 0,
+    maxHp: 100,
+    hp: 100,
+    totalScore: 0,
+    gold: 0,
+    potions: 3,
+    skillCharges: 2,
+    lifetimeClears: 0,
+    faction: 'diamond_hands',
+  };
+}
+
+function xpToNextLevel(level) {
+  return level * 100;
+}
+
+function grantXP(player, amount) {
+  player.xp += amount;
+  while (player.xp >= xpToNextLevel(player.level)) {
+    player.xp -= xpToNextLevel(player.level);
+    player.level = Math.min(99, player.level + 1);
+    player.maxHp = 100 + (player.level - 1) * 15;
+    player.hp = player.maxHp;
+  }
+}
+
+function loadDailyState() {
+  const today = getUTCDate();
+  try {
+    const raw = localStorage.getItem('btqm_daily_v2_' + today);
+    if (raw) {
+      const s = JSON.parse(raw);
+      if (s.date === today) return s;
     }
+  } catch(e) {}
+  return {
+    date: today,
+    zoneClears: [false, false, false, false, false, false],
+    runScore: 0,
+    enemiesDefeated: 0,
+    fullClearBonus: false,
+    startedAt: Date.now(),
+  };
+}
+
+function saveDailyState(s) {
+  try { localStorage.setItem('btqm_daily_v2_' + s.date, JSON.stringify(s)); } catch(e) {}
+}
+
+function checkFullClear(daily) {
+  if (daily.zoneClears.every(Boolean) && !daily.fullClearBonus) {
+    daily.fullClearBonus = true;
+    daily.runScore = Math.floor(daily.runScore * 2);
+    saveDailyState(daily);
+    return true;
+  }
+  return false;
+}
+
+function exportWidgetData(player, daily) {
+  const data = {
+    playerName: player.name,
+    level: player.level,
+    dailyClears: daily.zoneClears.filter(Boolean).length,
+    dailyScore: daily.runScore,
+    zoneClears: daily.zoneClears,
+    fullClear: daily.fullClearBonus,
+    lastUpdated: Date.now(),
+  };
+  try { localStorage.setItem('btqm_widget_v1', JSON.stringify(data)); } catch(e) {}
+}
+
+function updateDailyBar(daily) {
+  const bar = document.getElementById('btqm-daily-bar');
+  if (!bar) return;
+  const icons = daily.zoneClears.map((c, i) =>
+    '<span class="btqm-zone-icon ' + (c ? 'cleared' : '') + '" title="' + ZONES[i].name + '">' + (c ? '✓' : String(i + 1)) + '</span>'
+  ).join('');
+  const bonus = daily.fullClearBonus ? '<span class="btqm-bonus-tag">2× FULL CLEAR!</span>' : '';
+  bar.innerHTML = '<span class="btqm-bar-label">Today:</span> ' + icons + ' ' + bonus + ' <span class="btqm-score-tag">Score: ' + daily.runScore + '</span>';
+}
+
+async function postBtqmScore(player, daily) {
+  try {
+    ArcadeSync.setPlayer(player.name);
+    ArcadeSync.setHighScore('blocktopia', daily.runScore);
+    await submitScore(player.name, daily.runScore, 'blocktopia');
+  } catch(e) {
+    console.warn('[BTQM] Score submit failed:', e);
+  }
+}
+
+// ─── TEXTURE GENERATION HELPERS ──────────────────────────────────────────────
+
+// Renders pixel-art rows into a Phaser texture.
+// Every row string in `rows` must be the same length.
+// Each character maps to a color in `palette`; '0' = transparent (skip).
+function makeTexFromRows(scene, key, rows, palette, ps) {
+  ps = ps || 4;
+  const w = rows[0].length * ps;
+  const h = rows.length * ps;
+  const g = scene.add.graphics();
+  rows.forEach((row, ry) => {
+    for (let cx = 0; cx < row.length; cx++) {
+      const ch = row[cx];
+      if (ch === '0') continue;
+      const col = palette[ch];
+      if (col == null) continue;
+      g.fillStyle(col, 1);
+      g.fillRect(cx * ps, ry * ps, ps, ps);
+    }
+  });
+  g.generateTexture(key, w, h);
+  g.destroy();
+}
+
+// 8-wide × 8-tall enemy sprite
+function genEnemyTex(scene, key, bodyColor, eyeColor, ps) {
+  ps = ps || 4;
+  makeTexFromRows(scene, key, [
+    '0BBBBBB0',
+    'BBBBBBBB',
+    'BBEEBBBB',
+    'BBEEBBBB',
+    '0BBBBBB0',
+    '0BBBBBB0',
+    '0BB00BB0',
+    '00B00B00',
+  ], { B: bodyColor, E: eyeColor }, ps);
+}
+
+// 12-wide × 12-tall boss sprite (larger, crown on top)
+function genBossTex(scene, key, bodyColor, eyeColor, crownColor, ps) {
+  ps = ps || 4;
+  makeTexFromRows(scene, key, [
+    '000CCCC00000',
+    '00CCCCCC0000',
+    '0CCCCCCCC000',
+    '0CBBBBBBCC00',
+    '0CBEEBEBCC00',
+    'CCBBBBBBBBCC',
+    'CCBBBBBBBBCC',
+    'CCBBBBBBBBCC',
+    '0CCBBBBBBCC0',
+    '00CCB00BCC00',
+    '000B0000B000',
+    '000B0000B000',
+  ], { C: crownColor, B: bodyColor, E: eyeColor }, ps);
+}
+
+// Generates floor, wall, encounter, boss tiles for every zone + exit + entry
+function genTiles(scene) {
+  ZONES.forEach((zone, i) => {
+    // Floor tile
+    (function() {
+      const g = scene.add.graphics();
+      g.fillStyle(zone.floorColor, 1);
+      g.fillRect(0, 0, 32, 32);
+      g.fillStyle(0xffffff, 0.05);
+      g.fillRect(0, 0, 32, 1);
+      g.fillRect(0, 0, 1, 32);
+      g.generateTexture('tile_floor_' + i, 32, 32);
+      g.destroy();
+    })();
+
+    // Wall tile
+    (function() {
+      const g = scene.add.graphics();
+      g.fillStyle(zone.wallColor, 1);
+      g.fillRect(0, 0, 32, 32);
+      g.fillStyle(0xffffff, 0.12);
+      g.fillRect(0, 0, 32, 2);
+      g.fillRect(0, 0, 2, 32);
+      g.fillStyle(0x000000, 0.2);
+      g.fillRect(30, 0, 2, 32);
+      g.fillRect(0, 30, 32, 2);
+      g.generateTexture('tile_wall_' + i, 32, 32);
+      g.destroy();
+    })();
+
+    // Encounter tile (floor + red danger markers)
+    (function() {
+      const g = scene.add.graphics();
+      g.fillStyle(zone.floorColor, 1);
+      g.fillRect(0, 0, 32, 32);
+      g.fillStyle(0xff0000, 0.18);
+      g.fillRect(0, 0, 32, 32);
+      g.fillStyle(0xff4444, 0.5);
+      g.fillRect(4, 4, 24, 24);
+      g.fillStyle(0xff0000, 0.3);
+      g.fillRect(10, 10, 12, 12);
+      g.generateTexture('tile_enc_' + i, 32, 32);
+      g.destroy();
+    })();
+
+    // Boss tile (floor + gold border)
+    (function() {
+      const g = scene.add.graphics();
+      g.fillStyle(zone.floorColor, 1);
+      g.fillRect(0, 0, 32, 32);
+      g.lineStyle(2, 0xf39c12, 0.9);
+      g.strokeRect(2, 2, 28, 28);
+      g.lineStyle(1, 0xf39c12, 0.4);
+      g.strokeRect(5, 5, 22, 22);
+      g.generateTexture('tile_boss_' + i, 32, 32);
+      g.destroy();
+    })();
+  });
+
+  // Exit tile (portal glow effect)
+  (function() {
+    const g = scene.add.graphics();
+    g.fillStyle(0x030309, 1);
+    g.fillRect(0, 0, 32, 32);
+    g.fillStyle(0x00ffff, 0.3);
+    g.fillCircle(16, 16, 12);
+    g.fillStyle(0x00ffff, 0.5);
+    g.fillCircle(16, 16, 7);
+    g.fillStyle(0x00ffff, 0.8);
+    g.fillCircle(16, 16, 3);
+    g.lineStyle(1, 0x00ffff, 0.6);
+    g.strokeRect(1, 1, 30, 30);
+    g.generateTexture('tile_exit', 32, 32);
+    g.destroy();
+  })();
+
+  // Entry tile (player start — green glow)
+  (function() {
+    const g = scene.add.graphics();
+    g.fillStyle(0x1a3a1a, 1);
+    g.fillRect(0, 0, 32, 32);
+    g.fillStyle(0x00ff00, 0.2);
+    g.fillCircle(16, 16, 10);
+    g.lineStyle(1, 0x00ff00, 0.5);
+    g.strokeRect(1, 1, 30, 30);
+    g.generateTexture('tile_entry', 32, 32);
+    g.destroy();
+  })();
+}
+
+// Generates zone-node textures for world map (locked, open, done variants)
+function genZoneNodeTextures(scene) {
+  // Locked node
+  (function() {
+    const g = scene.add.graphics();
+    g.fillStyle(0x333333, 1);
+    g.fillCircle(16, 16, 14);
+    g.fillStyle(0x222222, 0.8);
+    g.fillRect(8, 14, 16, 11);
+    g.lineStyle(3, 0x666666, 1);
+    g.strokeCircle(16, 11, 5);
+    g.fillStyle(0x555555, 1);
+    g.fillRect(13, 16, 6, 8);
+    g.generateTexture('zone_node_locked', 32, 32);
+    g.destroy();
+  })();
+
+  ZONES.forEach((zone, i) => {
+    // Open node
+    (function() {
+      const g = scene.add.graphics();
+      g.fillStyle(zone.accentColor, 0.8);
+      g.fillCircle(16, 16, 14);
+      g.fillStyle(0xffffff, 0.25);
+      g.fillCircle(11, 11, 5);
+      g.lineStyle(2, 0xffffff, 0.4);
+      g.strokeCircle(16, 16, 14);
+      g.generateTexture('zone_node_open_' + i, 32, 32);
+      g.destroy();
+    })();
+
+    // Done node (cleared)
+    (function() {
+      const g = scene.add.graphics();
+      g.fillStyle(zone.accentColor, 1);
+      g.fillCircle(16, 16, 14);
+      g.fillStyle(0xf39c12, 1);
+      g.fillCircle(16, 16, 9);
+      g.fillStyle(0xffd700, 1);
+      g.fillCircle(16, 16, 5);
+      g.lineStyle(2, 0xf39c12, 0.8);
+      g.strokeCircle(16, 16, 14);
+      g.generateTexture('zone_node_done_' + i, 32, 32);
+      g.destroy();
+    })();
+  });
+}
+
+// Generates a starfield world-map background texture
+function genWorldBg(scene) {
+  const g = scene.add.graphics();
+  g.fillStyle(0x030309, 1);
+  g.fillRect(0, 0, 640, 448);
+  for (let i = 0; i < 200; i++) {
+    const x = Phaser.Math.Between(0, 639);
+    const y = Phaser.Math.Between(0, 447);
+    g.fillStyle(0xffffff, Math.random() * 0.6 + 0.1);
+    g.fillRect(x, y, 1, 1);
+  }
+  // Nebula blobs
+  g.fillStyle(0x1a0a2e, 0.35);
+  g.fillCircle(150, 200, 60);
+  g.fillStyle(0x0a1a2e, 0.3);
+  g.fillCircle(450, 120, 80);
+  g.fillStyle(0x1a2e0a, 0.25);
+  g.fillCircle(300, 350, 50);
+  g.generateTexture('world_bg', 640, 448);
+  g.destroy();
+}
+
+// Generates all sprite textures: player, zone enemies, bosses
+function genSprites(scene) {
+  // ── Player sprite (8×8 at ps=4 → 32×32) ──────────────────────────────────
+  makeTexFromRows(scene, 'player', [
+    '00AAAA00',
+    '0AAAAAA0',
+    '0BBBBBB0',
+    '0BCBBCB0',
+    '0BBBBBB0',
+    '0DDDDDD0',
+    '00DEDE00',
+    '0E0000E0',
+  ], { A: 0xf39c12, B: 0xf5cba7, C: 0x1a1a2e, D: 0x3498db, E: 0x1a1a2e }, 4);
+
+  // ── Zone 0 — Hand-crafted pixel art ────────────────────────────────────────
+  // enemy_0_0: Paper Hand Goblin
+  makeTexFromRows(scene, 'enemy_0_0', [
+    '0GGGGGG0',
+    'GGGGGGGG',
+    'GGWWWWGG',
+    'GGWWWWGG',
+    '0GGGGGG0',
+    'G0GGGG0G',
+    '0G0000G0',
+    '00000000',
+  ], { G: 0x27ae60, W: 0xffffff }, 4);
+
+  // enemy_0_1: FUD Spreader
+  makeTexFromRows(scene, 'enemy_0_1', [
+    '0GGGGG00',
+    '0GGGGG00',
+    'GGGGGGG0',
+    'GGWWWGG0',
+    'GGGGGGG0',
+    '0GGGGG00',
+    'GG000GG0',
+    '00000000',
+  ], { G: 0x1e8449, W: 0xf39c12 }, 4);
+
+  // boss_0: Paper Hand King (12×12 at ps=4 → 48×48)
+  makeTexFromRows(scene, 'boss_0', [
+    '000CCCCCC000',
+    '00CCCCCCCC00',
+    '0CCCCCCCCCC0',
+    '0CCWWWWWWCC0',
+    '0CCWCCCCWCC0',
+    'CCCCCCCCCCCC',
+    'CCGGGGGGGGCC',
+    'CCGGGGGGGGCC',
+    '0CCGGGGGGCC0',
+    '00CCG00GCC00',
+    '00G000000G00',
+    '00G000000G00',
+  ], { C: 0x27ae60, W: 0xffffff, G: 0x1e8449 }, 4);
+
+  // ── Zones 1-5 — Generated sprites ─────────────────────────────────────────
+  const zoneColors = [
+    null,                                                        // zone 0 done above
+    { body: 0x2980b9, eye: 0xeaf4fc, crown: 0x1a5276 },        // zone 1 blue
+    { body: 0x8e44ad, eye: 0x00ffcc, crown: 0x6c3483 },        // zone 2 purple
+    { body: 0xd35400, eye: 0xffd700, crown: 0xa04000 },        // zone 3 orange
+    { body: 0x16a085, eye: 0x00ffff, crown: 0x0e6655 },        // zone 4 teal
+    { body: 0xc0392b, eye: 0xf39c12, crown: 0x922b21 },        // zone 5 red/gold
   ];
 
-  /* ═══════════════════════════════════
-     State
-  ═══════════════════════════════════ */
-  var state = {
-    player: null,
-    quests: [],
-    activeQuest: null,
-    battle: null,
-    bonusPool: [],
-    season: null
-  };
+  for (let i = 1; i <= 5; i++) {
+    const c = zoneColors[i];
+    genEnemyTex(scene, 'enemy_' + i + '_0', c.body, c.eye);
+    // Second enemy variant: slightly darker body
+    const darkerBody = blendColors(c.body, 0x000000, 0.25);
+    genEnemyTex(scene, 'enemy_' + i + '_1', darkerBody, c.eye);
+    genBossTex(scene, 'boss_' + i, c.body, c.eye, c.crown);
+  }
+}
 
-  /* ═══════════════════════════════════
-     Player helpers
-  ═══════════════════════════════════ */
-  function newPlayer(name) {
-    return { name: name, hp: 100, maxHp: 100, xp: 0, level: 1, gold: 0, completedQuests: [] };
+// Blend two hex colors by ratio (0=a, 1=b)
+function blendColors(a, b, t) {
+  const ar = (a >> 16) & 0xff, ag = (a >> 8) & 0xff, ab = a & 0xff;
+  const br = (b >> 16) & 0xff, bg = (b >> 8) & 0xff, bb = b & 0xff;
+  const rr = Math.round(ar + (br - ar) * t);
+  const rg = Math.round(ag + (bg - ag) * t);
+  const rb = Math.round(ab + (bb - ab) * t);
+  return (rr << 16) | (rg << 8) | rb;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SCENE: BootScene — generates all textures, loads persistent state
+// ─────────────────────────────────────────────────────────────────────────────
+class BootScene extends Phaser.Scene {
+  constructor() { super('BootScene'); }
+
+  preload() {
+    // Texture generation happens here (Phaser graphics are available in preload)
+    genWorldBg(this);
+    genZoneNodeTextures(this);
+    genTiles(this);
+    genSprites(this);
   }
 
-  function xpNeeded(level) { return level * 100; }
+  create() {
+    const player = loadPlayer();
+    const daily  = loadDailyState();
 
-  function savePlayer() {
-    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state.player)); } catch (e) { /* storage unavailable */ }
+    this.registry.set('player', player);
+    this.registry.set('daily', daily);
+    this.registry.set('currentZone', 0);
+
+    updateDailyBar(daily);
+
+    this.scene.start('TitleScene');
   }
+}
 
-  function loadPlayer() {
-    try {
-      var raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) { return JSON.parse(raw); }
-    } catch (e) { /* ignore */ }
-    return null;
-  }
+// ─────────────────────────────────────────────────────────────────────────────
+// SCENE: TitleScene — title screen with HTML name-input overlay
+// ─────────────────────────────────────────────────────────────────────────────
+class TitleScene extends Phaser.Scene {
+  constructor() { super('TitleScene'); }
 
-  /* ═══════════════════════════════════
-     Utility
-  ═══════════════════════════════════ */
-  function escHtml(s) {
-    return String(s)
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;');
-  }
+  create() {
+    const daily  = this.registry.get('daily');
+    const player = this.registry.get('player');
 
-  function randInt(min, max) {
-    return Math.floor(Math.random() * (max - min + 1)) + min;
-  }
+    // Background
+    this.add.rectangle(320, 224, 640, 448, 0x030309);
 
-  function clamp(val, min, max) {
-    return Math.max(min, Math.min(max, val));
-  }
-
-  /* ═══════════════════════════════════
-     Screen management
-  ═══════════════════════════════════ */
-  var SCREENS = ['btqm-welcome', 'btqm-hub', 'btqm-battle', 'btqm-result'];
-
-  function showScreen(id) {
-    SCREENS.forEach(function (s) {
-      var el = document.getElementById(s);
-      if (el) { el.classList.toggle('active', s === id); }
-    });
-  }
-
-  /* ═══════════════════════════════════
-     Stats bar
-  ═══════════════════════════════════ */
-  function updateStatsBar() {
-    var p = state.player;
-    if (!p) { return; }
-    var hpPct = clamp(Math.round(p.hp / p.maxHp * 100), 0, 100);
-    var xpPct = clamp(Math.round(p.xp / xpNeeded(p.level) * 100), 0, 100);
-    document.getElementById('stat-level').textContent = p.level;
-    document.getElementById('stat-gold').textContent  = '\u{1FA99} ' + p.gold;
-    document.getElementById('stat-hp-text').textContent = p.hp + ' / ' + p.maxHp;
-    document.getElementById('stat-hp-bar').style.width  = hpPct + '%';
-    document.getElementById('stat-xp-text').textContent = p.xp + ' / ' + xpNeeded(p.level);
-    document.getElementById('stat-xp-bar').style.width  = xpPct + '%';
-  }
-
-  /* ═══════════════════════════════════
-     Quest normalisation
-  ═══════════════════════════════════ */
-  var DIFF_DEFAULTS = {
-    easy:   { maxHp: [28, 44],  atk: [5,  9],  emoji: '\u{1F47E}' },
-    medium: { maxHp: [55, 80],  atk: [10, 16], emoji: '\u{1F43B}' },
-    hard:   { maxHp: [90, 130], atk: [17, 26], emoji: '\u{1F433}' }
-  };
-
-  function normaliseQuest(raw, idx) {
-    var diff = String(raw.difficulty || raw.level || 'easy').toLowerCase();
-    if (!DIFF_DEFAULTS[diff]) { diff = 'easy'; }
-    var dd = DIFF_DEFAULTS[diff];
-    var re = raw.enemy || {};
-    return {
-      id:          raw.id || raw.quest_id || ('q' + idx),
-      title:       raw.title || raw.name  || ('Quest #' + (idx + 1)),
-      description: raw.description || raw.desc || '',
-      difficulty:  diff,
-      xp:   Number(raw.xp   || raw.xp_reward   || raw.experience || (diff === 'hard' ? 200 : diff === 'medium' ? 110 : 55)),
-      gold: Number(raw.gold || raw.gold_reward  || raw.coins      || (diff === 'hard' ? 50  : diff === 'medium' ? 22  : 10)),
-      enemy: {
-        name:  re.name  || raw.enemy_name  || 'Crypto Monster',
-        maxHp: Number(re.maxHp || re.hp || re.max_hp || randInt(dd.maxHp[0], dd.maxHp[1])),
-        atk:   Number(re.atk   || re.attack || re.damage  || randInt(dd.atk[0],   dd.atk[1])),
-        emoji: re.emoji || dd.emoji
-      }
-    };
-  }
-
-  /* ═══════════════════════════════════
-     Quest grid
-  ═══════════════════════════════════ */
-  function renderQuestGrid() {
-    var el = document.getElementById('btqm-quest-list');
-    if (!state.quests.length) {
-      el.innerHTML = '<p class="btqm-empty-note">\u23F3 Loading quests from the Block Topia R2 store\u2026</p>';
-      return;
-    }
-    var completed = (state.player && state.player.completedQuests) || [];
-    var allDone = state.quests.every(function (q) { return completed.indexOf(q.id) !== -1; });
-
-    var html = '<div class="btqm-quest-grid">';
-    state.quests.forEach(function (q) {
-      var done = completed.indexOf(q.id) !== -1;
-      var diffBadge = '<span class="btqm-badge btqm-badge-' + q.difficulty + '">' + q.difficulty.toUpperCase() + '</span>';
-      var xpBadge   = '<span class="btqm-badge btqm-badge-xp">+' + q.xp + ' XP</span>';
-      var goldBadge = '<span class="btqm-badge btqm-badge-gold">+' + q.gold + ' \u{1FA99}</span>';
-      var doneBadge = done ? '<span class="btqm-badge btqm-badge-done">\u2714 Done</span>' : '';
-      var btn = done ? '' : '<button class="btqm-btn btqm-btn-primary btqm-btn-sm btqm-accept-btn" '
-                              + 'data-qid="' + escHtml(String(q.id)) + '" style="margin-top:0.4em;">\u2694\uFE0F Accept</button>';
-      html += '<div class="btqm-quest-card' + (done ? ' done' : '') + '">'
-            + '<div class="btqm-quest-emoji">' + escHtml(q.enemy.emoji) + '</div>'
-            + '<div class="btqm-quest-title">' + escHtml(q.title) + '</div>'
-            + '<div class="btqm-quest-desc">'  + escHtml(q.description) + '</div>'
-            + '<div class="btqm-quest-meta">'  + diffBadge + xpBadge + goldBadge + doneBadge + '</div>'
-            + btn
-            + '</div>';
-    });
-    html += '</div>';
-
-    if (allDone) {
-      html += '<div class="notice info" style="margin-top:1.2em;" role="status">'
-            + '<span class="notice-icon" aria-hidden="true">\u{1F3C6}</span>'
-            + '<div><strong>All quests complete this season!</strong> Check back when new quests are published.</div>'
-            + '</div>';
+    // Starfield
+    const stars = this.add.graphics();
+    for (let i = 0; i < 180; i++) {
+      stars.fillStyle(0xffffff, Math.random() * 0.7 + 0.1);
+      stars.fillRect(Phaser.Math.Between(0, 639), Phaser.Math.Between(0, 447), 1, 1);
     }
 
-    el.innerHTML = html;
-    el.querySelectorAll('.btqm-accept-btn').forEach(function (btn) {
-      btn.addEventListener('click', function () { startQuest(btn.getAttribute('data-qid')); });
-    });
-  }
-
-  /* ═══════════════════════════════════
-     Leaderboard rendering (shared)
-  ═══════════════════════════════════ */
-  function renderLeaderboard(containerId, data, emptyMsg) {
-    var el = document.getElementById(containerId);
-    if (!el) { return; }
-    var entries = Array.isArray(data)
-      ? data
-      : (data.leaderboard || data.entries || data.players || data.rankings || null);
-    if (!entries || !entries.length) {
-      el.innerHTML = '<p class="btqm-empty-note">' + escHtml(emptyMsg) + '</p>';
-      return;
+    // Glowing accent lines
+    const gfx = this.add.graphics();
+    gfx.lineStyle(1, 0xf39c12, 0.15);
+    for (let y = 0; y < 448; y += 32) {
+      gfx.lineBetween(0, y, 640, y);
     }
-    var rows = entries.slice(0, 50).map(function (item, i) {
-      var rank  = item.rank  !== undefined ? escHtml(String(item.rank))   : String(i + 1);
-      var name  = escHtml(item.name || item.player || item.username || item.entity || '\u2014');
-      var score = item.score  !== undefined ? escHtml(String(item.score))
-                : item.points !== undefined ? escHtml(String(item.points)) : '\u2014';
-      return '<tr><td>' + rank + '</td><td>' + name + '</td><td>' + score + '</td></tr>';
-    }).join('');
-    el.innerHTML = '<table class="wiki-table"><thead><tr><th>#</th><th>Player</th><th>Score</th></tr></thead>'
-                 + '<tbody>' + rows + '</tbody></table>';
-  }
-
-  /* ═══════════════════════════════════
-     Tab switching
-  ═══════════════════════════════════ */
-  function initTabs() {
-    document.querySelectorAll('.btqm-tab').forEach(function (tab) {
-      tab.addEventListener('click', function () {
-        document.querySelectorAll('.btqm-tab').forEach(function (t) {
-          t.classList.remove('active');
-          t.setAttribute('aria-selected', 'false');
-        });
-        document.querySelectorAll('.btqm-tab-pane').forEach(function (p) { p.classList.remove('active'); });
-        tab.classList.add('active');
-        tab.setAttribute('aria-selected', 'true');
-        var pane = document.getElementById('btqm-pane-' + tab.getAttribute('data-tab'));
-        if (pane) { pane.classList.add('active'); }
-      });
-    });
-  }
-
-  /* ═══════════════════════════════════
-     Data loading (via data-loader.js)
-  ═══════════════════════════════════ */
-  function loadGameData_quests() {
-    loadGameData('/quest-bank/current-season.json')
-      .then(function (data) {
-        var raw = Array.isArray(data) ? data : (data.quests || data.quest_bank || data.items || []);
-        state.quests = raw.length ? raw.map(normaliseQuest) : FALLBACK_QUESTS;
-        renderQuestGrid();
-      })
-      .catch(function () {
-        state.quests = FALLBACK_QUESTS;
-        renderQuestGrid();
-      });
-  }
-
-  function loadGameData_bonus() {
-    loadGameData('/games/data/hidden_bonus_pool.json')
-      .then(function (data) { state.bonusPool = (data && Array.isArray(data.bonuses)) ? data.bonuses : []; })
-      .catch(function () { state.bonusPool = []; });
-  }
-
-  function loadGameData_season() {
-    loadGameData('/games/data/seasons/season-moonrise.json')
-      .then(function (data) { state.season = data || null; })
-      .catch(function () { state.season = null; });
-  }
-
-  function loadLeaderboards() {
-    fetchLeaderboard('blocktopia')
-      .then(function (data) { renderLeaderboard('btqm-lb-content', data, 'No season entries yet.'); })
-      .catch(function ()   { renderLeaderboard('btqm-lb-content', [], 'Leaderboard data unavailable right now.'); });
-
-    fetchLeaderboard('global')
-      .then(function (data) { renderLeaderboard('btqm-masters-content', data, 'No masters entries yet.'); })
-      .catch(function ()   { renderLeaderboard('btqm-masters-content', [], 'Masters data unavailable right now.'); });
-  }
-
-  function loadR2Data() {
-    loadGameData_quests();
-    loadGameData_bonus();
-    loadGameData_season();
-    loadLeaderboards();
-  }
-
-  /* ═══════════════════════════════════
-     Leaderboard write-back
-  ═══════════════════════════════════ */
-  function rollBattleBonus(score, streak) {
-    rollHiddenBonus({ score: score, streak: streak, game: 'blocktopia' })
-      .then(function (bonus) {
-        if (!bonus) { return; }
-        var pts = (bonus.rewards && bonus.rewards.arcade_points) ? bonus.rewards.arcade_points : 0;
-        if (pts > 0 && state.player) {
-          state.player.gold += pts;
-          savePlayer();
-          postScore();
-        }
-        showBonusPopup(bonus);
-      })
-      .catch(function (err) { console.warn('[blocktopia] Bonus roll failed:', err); });
-  }
-
-  function postScore() {
-    if (!state.player) { return; }
-    var p = state.player;
-    var multiplier = (state.season && typeof state.season.score_multiplier === 'number')
-      ? state.season.score_multiplier : 1;
-    var rawScore = p.level * 1000 + p.gold;
-    var finalScore = Math.floor(rawScore * multiplier);
-    var playerName = p.name;
-
-    // Sync identity with shared arcade profile
-    ArcadeSync.setPlayer(playerName);
-    ArcadeSync.setHighScore('blocktopia', finalScore);
-
-    submitScore(playerName, finalScore, 'blocktopia')
-      .then(function () {
-        return Promise.all([
-          fetchLeaderboard('blocktopia'),
-          fetchLeaderboard('global')
-        ]);
-      })
-      .then(function (boards) {
-        renderLeaderboard('btqm-lb-content',      boards[0], 'No season entries yet.');
-        renderLeaderboard('btqm-masters-content', boards[1], 'No masters entries yet.');
-      })
-      .catch(function () { /* fire-and-forget — network errors are silent */ });
-  }
-
-  /* ═══════════════════════════════════
-     Battle — setup
-  ═══════════════════════════════════ */
-  function startQuest(questId) {
-    var quest = null;
-    for (var i = 0; i < state.quests.length; i++) {
-      if (String(state.quests[i].id) === String(questId)) { quest = state.quests[i]; break; }
+    for (let x = 0; x < 640; x += 32) {
+      gfx.lineBetween(x, 0, x, 448);
     }
-    if (!quest || !state.player) { return; }
 
-    state.player.hp = state.player.maxHp; // full heal before each quest
-    savePlayer();
+    // Title shadow
+    this.add.text(322, 82, 'BLOCK TOPIA', {
+      fontFamily: 'Courier New', fontSize: '38px', color: '#7d3800', fontStyle: 'bold'
+    }).setOrigin(0.5);
+    this.add.text(322, 124, 'QUEST MAZE', {
+      fontFamily: 'Courier New', fontSize: '38px', color: '#7d3800', fontStyle: 'bold'
+    }).setOrigin(0.5);
 
-    state.activeQuest = quest;
-    state.battle = {
-      enemyHp:    quest.enemy.maxHp,
-      enemyMaxHp: quest.enemy.maxHp,
-      defending:  false,
-      over:       false
-    };
+    // Title text
+    this.add.text(320, 80, 'BLOCK TOPIA', {
+      fontFamily: 'Courier New', fontSize: '38px', color: '#f39c12', fontStyle: 'bold'
+    }).setOrigin(0.5);
+    this.add.text(320, 122, 'QUEST MAZE', {
+      fontFamily: 'Courier New', fontSize: '38px', color: '#f39c12', fontStyle: 'bold'
+    }).setOrigin(0.5);
 
-    document.getElementById('battle-quest-title').textContent    = quest.title;
-    document.getElementById('battle-quest-desc').textContent     = quest.description;
-    document.getElementById('fighter-player-name').textContent   = state.player.name;
-    document.getElementById('enemy-emoji').textContent           = quest.enemy.emoji;
-    document.getElementById('enemy-name').textContent            = quest.enemy.name;
-    updateBattleBars();
+    this.add.text(320, 160, 'A Crypto Moonboys RPG', {
+      fontFamily: 'Courier New', fontSize: '14px', color: '#888888'
+    }).setOrigin(0.5);
 
-    var logEl = document.getElementById('battle-log');
-    logEl.innerHTML = '<div class="btqm-log-system">\u2694\uFE0F The battle begins! Defeat '
-                    + escHtml(quest.enemy.name) + '.</div>';
+    // Daily status
+    const cleared = daily.zoneClears.filter(Boolean).length;
+    this.add.text(320, 190, 'Today: ' + cleared + '/6 zones cleared', {
+      fontFamily: 'Courier New', fontSize: '13px', color: '#74b9ff'
+    }).setOrigin(0.5);
 
-    setBattleButtons(true);
-    showScreen('btqm-battle');
+    // Zone descriptions derived from ZONES constant (single source of truth)
+    const zoneDescs = this.add.text(320, 230,
+      ZONES.map((z, i) => 'Zone ' + (i + 1) + ': ' + z.name + ' — ' + z.subtitle).join('\n'),
+    {
+      fontFamily: 'Courier New', fontSize: '10px', color: '#666666', align: 'center',
+      lineSpacing: 4
+    }).setOrigin(0.5, 0);
+
+    // Controls help
+    this.add.text(320, 400, 'ARROWS/WASD — Move   ENTER/SPACE — Enter Zone   ESC — World Map', {
+      fontFamily: 'Courier New', fontSize: '10px', color: '#555555', align: 'center'
+    }).setOrigin(0.5);
+
+    this.add.text(320, 420, 'In battle: [1]Attack  [2]Skill  [3]Moon Strike  [4]Potion  [5]Flee', {
+      fontFamily: 'Courier New', fontSize: '9px', color: '#444444', align: 'center'
+    }).setOrigin(0.5);
+
+    // Blinking prompt
+    const prompt = this.add.text(320, 380, '▶ Press ENTER or click to begin', {
+      fontFamily: 'Courier New', fontSize: '13px', color: '#f39c12'
+    }).setOrigin(0.5);
+    this.tweens.add({ targets: prompt, alpha: 0, duration: 700, yoyo: true, repeat: -1 });
+
+    // Show the HTML overlay
+    this.showNameOverlay(player, daily);
   }
 
-  function updateBattleBars() {
-    var p  = state.player;
-    var b  = state.battle;
-    var pPct = clamp(Math.round(p.hp / p.maxHp * 100), 0, 100);
-    var ePct = clamp(Math.round(b.enemyHp / b.enemyMaxHp * 100), 0, 100);
-    document.getElementById('player-hp-text').textContent = p.hp + ' / ' + p.maxHp;
-    document.getElementById('player-hp-bar').style.width  = pPct + '%';
-    document.getElementById('enemy-hp-text').textContent  = b.enemyHp + ' / ' + b.enemyMaxHp;
-    document.getElementById('enemy-hp-bar').style.width   = ePct + '%';
-  }
+  showNameOverlay(player, daily) {
+    const overlay    = document.getElementById('btqm-name-overlay');
+    const nameInput  = document.getElementById('btqm-name-input');
+    const startBtn   = document.getElementById('btqm-start-btn');
+    const continueBtn= document.getElementById('btqm-continue-btn');
+    const preview    = document.getElementById('btqm-daily-preview');
+    const errEl      = document.getElementById('btqm-name-err');
 
-  function setBattleButtons(enabled) {
-    ['btn-attack', 'btn-moon', 'btn-diamond', 'btn-flee'].forEach(function (id) {
-      var el = document.getElementById(id);
-      if (el) { el.disabled = !enabled; }
-    });
-  }
+    const cleared = daily.zoneClears.filter(Boolean).length;
+    preview.textContent = 'Daily Quest — ' + cleared + '/6 zones cleared today';
 
-  function appendLog(text, cls) {
-    var logEl = document.getElementById('battle-log');
-    var div   = document.createElement('div');
-    div.className   = 'btqm-log-line ' + (cls || '');
-    div.textContent = text;
-    logEl.appendChild(div);
-    logEl.scrollTop = logEl.scrollHeight;
-  }
-
-  /* ═══════════════════════════════════
-     Battle — damage formulas
-  ═══════════════════════════════════ */
-  function calcPlayerAtk() {
-    return randInt(8 + state.player.level * 2, 14 + state.player.level * 3);
-  }
-
-  function calcEnemyAtk() {
-    var base = state.activeQuest.enemy.atk;
-    var dmg  = randInt(Math.floor(base * 0.7), Math.ceil(base * 1.3));
-    if (state.battle.defending) {
-      dmg = Math.floor(dmg / DIAMOND_HANDS_DAMAGE_DIVISOR);
-      state.battle.defending = false;
-    }
-    return dmg;
-  }
-
-  function doEnemyTurn() {
-    var dmg = calcEnemyAtk();
-    state.player.hp = Math.max(0, state.player.hp - dmg);
-    appendLog(escHtml(state.activeQuest.enemy.name) + ' attacks for ' + dmg + ' damage!', 'btqm-log-enemy');
-    updateBattleBars();
-    savePlayer();
-    if (state.player.hp <= 0) { endBattle(false); }
-  }
-
-  /* ═══════════════════════════════════
-     Battle — end
-  ═══════════════════════════════════ */
-  function endBattle(won) {
-    state.battle.over = true;
-    setBattleButtons(false);
-    var p = state.player;
-    var q = state.activeQuest;
-
-    if (won) {
-      appendLog('\u{1F3C6} Victory! You defeated ' + escHtml(q.enemy.name) + '!', 'btqm-log-system');
-      // AUDIO_HOOK: play('victory')
-      var prevLevel = p.level;
-      p.gold += q.gold;
-      p.xp   += q.xp;
-      while (p.xp >= xpNeeded(p.level)) {
-        p.xp  -= xpNeeded(p.level);
-        p.level++;
-        p.maxHp = 100 + (p.level - 1) * 20;
-        p.hp    = p.maxHp; // full heal on level-up
-      }
-      if (p.completedQuests.indexOf(q.id) === -1) { p.completedQuests.push(q.id); }
-      savePlayer();
-      postScore();
-      rollBattleBonus(p.level * 1000 + p.gold, p.completedQuests.length);
-
-      document.getElementById('result-emoji').textContent   = '\u{1F3C6}';
-      document.getElementById('result-heading').textContent = 'Victory!';
-      document.getElementById('result-subtext').textContent = 'You defeated the ' + q.enemy.name + '!';
-      document.getElementById('result-rewards').innerHTML   =
-        '<div class="btqm-reward-chip">+' + q.xp + ' XP \u2B50</div>'
-      + '<div class="btqm-reward-chip">+' + q.gold + ' Gold \u{1FA99}</div>';
-
-      var luEl = document.getElementById('result-levelup');
-      if (p.level > prevLevel) {
-        luEl.style.display = '';
-        document.getElementById('result-new-level').textContent = p.level;
-      } else {
-        luEl.style.display = 'none';
-      }
+    if (player && player.name) {
+      nameInput.value = player.name;
+      continueBtn.style.display = 'inline-block';
+      continueBtn.textContent = 'Continue as ' + player.name;
     } else {
-      appendLog('\u{1F480} Defeated! ' + escHtml(q.enemy.name) + ' was too strong this time.', 'btqm-log-system');
-      // AUDIO_HOOK: play('defeat')
-      p.hp = Math.floor(p.maxHp * DEFEAT_HP_RECOVERY_PERCENT);
-      savePlayer();
-      document.getElementById('result-emoji').textContent   = '\u{1F480}';
-      document.getElementById('result-heading').textContent = 'Defeated!';
-      document.getElementById('result-subtext').textContent =
-        'The ' + q.enemy.name + ' bested you this time. Recover and try again!';
-      document.getElementById('result-rewards').innerHTML =
-        '<div class="btqm-reward-chip" style="color:#e74c3c">HP restored to ' + Math.round(DEFEAT_HP_RECOVERY_PERCENT * 100) + '%</div>';
-      document.getElementById('result-levelup').style.display = 'none';
+      continueBtn.style.display = 'none';
     }
 
-    setTimeout(function () { showScreen('btqm-result'); }, 600);
-  }
+    overlay.style.display = 'block';
 
-  /* ═══════════════════════════════════
-     Battle — action handlers
-  ═══════════════════════════════════ */
-  function handleAttack() {
-    if (!state.battle || state.battle.over) { return; }
-    var dmg = calcPlayerAtk();
-    state.battle.enemyHp = Math.max(0, state.battle.enemyHp - dmg);
-    appendLog('You strike for ' + dmg + ' damage!', 'btqm-log-player');
-    updateBattleBars();
-    if (state.battle.enemyHp <= 0) { endBattle(true); return; }
-    doEnemyTurn();
-  }
-
-  function handleMoonStrike() {
-    if (!state.battle || state.battle.over) { return; }
-    if (Math.random() < MOON_STRIKE_HIT_CHANCE) {
-      var dmg = randInt(20 + state.player.level * 3, 32 + state.player.level * 4);
-      state.battle.enemyHp = Math.max(0, state.battle.enemyHp - dmg);
-      appendLog('\u{1F319} MOON STRIKE hits for ' + dmg + ' damage!', 'btqm-log-crit');
-      updateBattleBars();
-      if (state.battle.enemyHp <= 0) { endBattle(true); return; }
-    } else {
-      appendLog('\u{1F319} Moon Strike missed \u2014 too volatile!', 'btqm-log-system');
-    }
-    doEnemyTurn();
-  }
-
-  function handleDiamondHands() {
-    if (!state.battle || state.battle.over) { return; }
-    state.battle.defending = true;
-    var regen = randInt(3, 8);
-    state.player.hp = Math.min(state.player.maxHp, state.player.hp + regen);
-    appendLog('\u{1F48E} Diamond Hands! Defending and recovering ' + regen + ' HP.', 'btqm-log-heal');
-    updateBattleBars();
-    doEnemyTurn();
-  }
-
-  function handleFlee() {
-    if (!state.battle || state.battle.over) { return; }
-    state.battle.over = true;
-    setBattleButtons(false);
-    appendLog('\u{1F3C3} You fled the battle!', 'btqm-log-system');
-    state.player.hp = Math.max(1, Math.floor(state.player.hp * FLEE_HP_RETENTION));
-    savePlayer();
-    setTimeout(showHub, 500);
-  }
-
-  /* ═══════════════════════════════════
-     Hub
-  ═══════════════════════════════════ */
-  function showHub() {
-    updateStatsBar();
-    renderQuestGrid();
-    showScreen('btqm-hub');
-  }
-
-  /* ═══════════════════════════════════
-     Init
-  ═══════════════════════════════════ */
-  function init() {
-    initTabs();
-
-    // Wire up battle buttons early
-    document.getElementById('btn-attack').addEventListener('click',  handleAttack);
-    document.getElementById('btn-moon').addEventListener('click',    handleMoonStrike);
-    document.getElementById('btn-diamond').addEventListener('click', handleDiamondHands);
-    document.getElementById('btn-flee').addEventListener('click',    handleFlee);
-    document.getElementById('btn-continue').addEventListener('click', showHub);
-
-    document.getElementById('btqm-reset-btn').addEventListener('click', function () {
-      var name = state.player ? state.player.name : 'your hero';
-      if (window.confirm('Reset all progress for ' + name + '?')) {
-        try { localStorage.removeItem(STORAGE_KEY); } catch (e) { /* ignore */ }
-        state.player = null;
-        state.quests = FALLBACK_QUESTS;
-        document.getElementById('btqm-quest-list').innerHTML = '';
-        document.getElementById('btqm-name-input').value = '';
-        showScreen('btqm-welcome');
-      }
-    });
-
-    // Check for saved player
-    var saved = loadPlayer();
-    if (saved && saved.name) {
-      state.player = saved;
-      state.player.maxHp = 100 + (state.player.level - 1) * 20;
-      state.player.hp    = clamp(state.player.hp, 1, state.player.maxHp);
-      ArcadeSync.setPlayer(state.player.name); // sync shared arcade identity
-      loadR2Data();
-      showHub();
-      return;
-    }
-
-    // Welcome screen
-    showScreen('btqm-welcome');
-    var nameInput = document.getElementById('btqm-name-input');
-    var startBtn  = document.getElementById('btqm-start-btn');
-    var errEl     = document.getElementById('btqm-name-error');
-
-    // Pre-fill name from shared arcade identity if available
-    var arcadeName = ArcadeSync.getPlayer();
-    if (arcadeName && !arcadeName.startsWith('Player_') && nameInput) {
-      nameInput.value = arcadeName;
-    }
-
-    function doStart() {
-      var name = nameInput.value.trim();
+    const doStart = () => {
+      const name = nameInput.value.trim();
       if (name.length < 2 || name.length > 20) {
-        errEl.style.display = '';
-        nameInput.focus();
+        errEl.style.display = 'block';
         return;
       }
       errEl.style.display = 'none';
-      state.player = newPlayer(name);
-      ArcadeSync.setPlayer(name); // sync shared arcade identity
-      savePlayer();
-      loadR2Data();
-      showHub();
-    }
+      overlay.style.display = 'none';
 
-    startBtn.addEventListener('click', doStart);
-    nameInput.addEventListener('keydown', function (e) { if (e.key === 'Enter') { doStart(); } });
+      let p;
+      if (!player || player.name !== name) {
+        p = createPlayer(name);
+      } else {
+        p = { ...player };
+        p.name = name;
+        p.hp = p.maxHp;
+      }
+      savePlayer(p);
+      this.registry.set('player', p);
+      try { ArcadeSync.setPlayer(p.name); } catch(e) {}
 
-    // Pre-load R2 data (quests & leaderboards) in the background
-    loadR2Data();
+      this.scene.start('WorldScene');
+    };
+
+    // Remove old listeners to avoid duplicates if scene restarts
+    const newStartBtn = startBtn.cloneNode(true);
+    startBtn.parentNode.replaceChild(newStartBtn, startBtn);
+    const newContBtn = continueBtn.cloneNode(true);
+    continueBtn.parentNode.replaceChild(newContBtn, continueBtn);
+
+    document.getElementById('btqm-start-btn').addEventListener('click', doStart);
+    document.getElementById('btqm-continue-btn').addEventListener('click', doStart);
+
+    document.getElementById('btqm-name-input').onkeydown = (e) => {
+      if (e.key === 'Enter') doStart();
+    };
   }
 
-  init();
-})();
+  shutdown() {
+    // Hide overlay when scene shuts down
+    const overlay = document.getElementById('btqm-name-overlay');
+    if (overlay) overlay.style.display = 'none';
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SCENE: WorldScene — world map with 6 zone nodes
+// ─────────────────────────────────────────────────────────────────────────────
+class WorldScene extends Phaser.Scene {
+  constructor() { super('WorldScene'); }
+
+  create() {
+    this.player = this.registry.get('player');
+    this.daily  = this.registry.get('daily');
+    this.currentZone = this.registry.get('currentZone') || 0;
+
+    // Background
+    this.add.image(320, 224, 'world_bg');
+
+    // Title bar
+    this.add.rectangle(320, 14, 500, 22, 0x000000, 0.7);
+    this.add.text(320, 14, '⚔  BLOCK TOPIA QUEST MAZE  ⚔', {
+      fontFamily: 'Courier New', fontSize: '13px', color: '#f39c12', fontStyle: 'bold'
+    }).setOrigin(0.5);
+
+    this.add.text(320, 33, 'Select a zone — ARROWS to navigate — ENTER to enter', {
+      fontFamily: 'Courier New', fontSize: '9px', color: '#888888'
+    }).setOrigin(0.5);
+
+    // Draw connection lines
+    const gfx = this.add.graphics();
+    ZONE_CONNECTIONS.forEach(([a, b]) => {
+      const pa = ZONE_POSITIONS[a];
+      const pb = ZONE_POSITIONS[b];
+      gfx.lineStyle(2, 0x444466, 0.5);
+      gfx.lineBetween(pa.x, pa.y, pb.x, pb.y);
+    });
+
+    // Zone nodes
+    this.zoneSprites = [];
+    ZONES.forEach((zone, i) => {
+      const pos = ZONE_POSITIONS[i];
+      const cleared    = this.daily.zoneClears[i];
+      const accessible = this.isZoneAccessible(i);
+
+      let texKey;
+      if (!accessible)    texKey = 'zone_node_locked';
+      else if (cleared)   texKey = 'zone_node_done_' + i;
+      else                texKey = 'zone_node_open_' + i;
+
+      const sprite = this.add.image(pos.x, pos.y, texKey).setDisplaySize(40, 40);
+
+      if (accessible) {
+        sprite.setInteractive({ useHandCursor: true });
+        sprite.on('pointerdown', () => {
+          this.currentZone = i;
+          this.registry.set('currentZone', i);
+          this.playerIcon.setPosition(pos.x, pos.y - 22);
+          this.drawSelIndicator();
+          this.updateZoneInfo();
+        });
+        sprite.on('pointerup', () => {
+          if (this.currentZone === i) this.enterZone(i);
+        });
+      }
+
+      this.zoneSprites.push(sprite);
+
+      // Zone label
+      const labelColor = accessible ? '#dddddd' : '#444444';
+      this.add.text(pos.x, pos.y + 24, zone.name, {
+        fontFamily: 'Courier New', fontSize: '9px', color: labelColor
+      }).setOrigin(0.5, 0);
+
+      if (cleared) {
+        this.add.text(pos.x, pos.y + 34, '✓ CLEARED', {
+          fontFamily: 'Courier New', fontSize: '8px', color: '#2ecc71'
+        }).setOrigin(0.5, 0);
+      }
+    });
+
+    // Player icon on current zone
+    this.playerIcon = this.add.image(
+      ZONE_POSITIONS[this.currentZone].x,
+      ZONE_POSITIONS[this.currentZone].y - 22,
+      'player'
+    ).setDisplaySize(20, 20).setDepth(5);
+
+    // Selection ring
+    this.selIndicator = this.add.graphics().setDepth(4);
+    this.drawSelIndicator();
+
+    // HUD (bottom)
+    this.hudBg = this.add.rectangle(320, 437, 640, 22, 0x000000, 0.8);
+    this.hudText = this.add.text(320, 437, '', {
+      fontFamily: 'Courier New', fontSize: '11px', color: '#ffffff', align: 'center'
+    }).setOrigin(0.5).setDepth(10);
+    this.updateHud();
+
+    // Zone info text
+    this.zoneInfoBg = this.add.rectangle(320, 415, 600, 16, 0x000000, 0.7);
+    this.zoneInfoText = this.add.text(320, 415, '', {
+      fontFamily: 'Courier New', fontSize: '10px', color: '#74b9ff', align: 'center'
+    }).setOrigin(0.5).setDepth(10);
+    this.updateZoneInfo();
+
+    // Keyboard controls
+    this.cursors  = this.input.keyboard.createCursorKeys();
+    this.wasd     = this.input.keyboard.addKeys({ up:'W', down:'S', left:'A', right:'D' });
+    this.enterKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ENTER);
+    this.spaceKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
+
+    this.navCooldown = 0;
+  }
+
+  isZoneAccessible(i) {
+    const player = this.registry.get('player');
+    if (i === 0) return true;
+    if (player && player.lifetimeClears > 0) return true;
+    // Chain: each zone requires the previous to be cleared today
+    return this.daily.zoneClears[i - 1] === true;
+  }
+
+  drawSelIndicator() {
+    this.selIndicator.clear();
+    const pos = ZONE_POSITIONS[this.currentZone];
+    this.selIndicator.lineStyle(2, 0xf39c12, 1);
+    this.selIndicator.strokeCircle(pos.x, pos.y, 24);
+    // Pulse tick marks
+    this.selIndicator.lineStyle(2, 0xf39c12, 0.6);
+    this.selIndicator.lineBetween(pos.x - 28, pos.y, pos.x - 24, pos.y);
+    this.selIndicator.lineBetween(pos.x + 24, pos.y, pos.x + 28, pos.y);
+    this.selIndicator.lineBetween(pos.x, pos.y - 28, pos.x, pos.y - 24);
+    this.selIndicator.lineBetween(pos.x, pos.y + 24, pos.x, pos.y + 28);
+  }
+
+  updateHud() {
+    const p = this.player;
+    const d = this.daily;
+    const cleared = d.zoneClears.filter(Boolean).length;
+    this.hudText.setText(
+      'LVL ' + p.level + '  HP ' + p.hp + '/' + p.maxHp +
+      '  GOLD ' + (p.gold || 0) + '  Potions ' + p.potions +
+      '  Skill ' + p.skillCharges + '  Daily ' + cleared + '/6'
+    );
+  }
+
+  updateZoneInfo() {
+    const z          = ZONES[this.currentZone];
+    const accessible = this.isZoneAccessible(this.currentZone);
+    const cleared    = this.daily.zoneClears[this.currentZone];
+    let info = z.name + ' — ' + z.subtitle;
+    if (!accessible)    info += '   [LOCKED — clear prev zone first]';
+    else if (cleared)   info += '   ✓ CLEARED today';
+    else                info += '   [ENTER to play]';
+    this.zoneInfoText.setText(info);
+  }
+
+  navigateToZone(targetZone) {
+    const connected = ZONE_CONNECTIONS.some(
+      ([a, b]) => (a === this.currentZone && b === targetZone) ||
+                  (b === this.currentZone && a === targetZone)
+    );
+    if (!connected) return;
+
+    this.currentZone = targetZone;
+    this.registry.set('currentZone', targetZone);
+
+    const pos = ZONE_POSITIONS[targetZone];
+    this.playerIcon.setPosition(pos.x, pos.y - 22);
+    this.drawSelIndicator();
+    this.updateZoneInfo();
+  }
+
+  enterZone(zoneId) {
+    if (!this.isZoneAccessible(zoneId)) {
+      this.zoneInfoText.setStyle({ color: '#e74c3c' });
+      this.time.delayedCall(800, () => {
+        this.zoneInfoText.setStyle({ color: '#74b9ff' });
+        this.updateZoneInfo();
+      });
+      return;
+    }
+    this.registry.set('currentZone', zoneId);
+    this.scene.start('ZoneScene', { zoneId });
+  }
+
+  update(time, delta) {
+    // Refresh player/daily in case we returned from a zone
+    this.player = this.registry.get('player');
+    this.daily  = this.registry.get('daily');
+
+    this.navCooldown -= delta;
+    if (this.navCooldown > 0) return;
+
+    const up    = this.cursors.up.isDown    || this.wasd.up.isDown;
+    const down  = this.cursors.down.isDown  || this.wasd.down.isDown;
+    const left  = this.cursors.left.isDown  || this.wasd.left.isDown;
+    const right = this.cursors.right.isDown || this.wasd.right.isDown;
+    const enter = Phaser.Input.Keyboard.JustDown(this.enterKey) ||
+                  Phaser.Input.Keyboard.JustDown(this.spaceKey);
+
+    if (enter) {
+      this.enterZone(this.currentZone);
+      this.navCooldown = 400;
+      return;
+    }
+
+    if (up || down || left || right) {
+      const connected = ZONE_CONNECTIONS
+        .filter(([a, b]) => a === this.currentZone || b === this.currentZone)
+        .map(([a, b]) => a === this.currentZone ? b : a);
+
+      const currPos = ZONE_POSITIONS[this.currentZone];
+      let best = null, bestScore = -Infinity;
+
+      connected.forEach(zi => {
+        const p = ZONE_POSITIONS[zi];
+        const dx = p.x - currPos.x;
+        const dy = p.y - currPos.y;
+        let score = 0;
+        if (up)    score = -dy - Math.abs(dx) * 0.3;
+        if (down)  score =  dy - Math.abs(dx) * 0.3;
+        if (left)  score = -dx - Math.abs(dy) * 0.3;
+        if (right) score =  dx - Math.abs(dy) * 0.3;
+        if (score > bestScore) { bestScore = score; best = zi; }
+      });
+
+      if (best !== null) {
+        this.navigateToZone(best);
+        this.navCooldown = 200;
+      }
+    }
+
+    this.updateHud();
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SCENE: ZoneScene — tile-based dungeon explorer
+// ─────────────────────────────────────────────────────────────────────────────
+class ZoneScene extends Phaser.Scene {
+  constructor() { super('ZoneScene'); }
+
+  init(data) {
+    this.zoneId = (data && data.zoneId != null) ? data.zoneId : 0;
+  }
+
+  create() {
+    this.zone    = ZONES[this.zoneId];
+    this.mapData = ZONE_MAPS[this.zoneId];
+    this.player  = this.registry.get('player');
+    this.daily   = this.registry.get('daily');
+
+    this.clearedEncounters = new Set();
+    this.bossDefeated = false;
+    this.exitEnabled  = !!this.daily.zoneClears[this.zoneId];
+    this.inBattle     = false;
+    this.msgTimer     = null;
+
+    const ROWS = this.mapData.length;       // 10
+    const COLS = this.mapData[0].length;    // 15
+    const TS   = TILE_SIZE;                 // 40
+
+    // Find player start
+    let startX = 0, startY = 0;
+    outer: for (let r = 0; r < ROWS; r++) {
+      for (let c = 0; c < COLS; c++) {
+        if (this.mapData[r][c] === 9) { startX = c; startY = r; break outer; }
+      }
+    }
+
+    // ── Render tile map ──────────────────────────────────────────────────────
+    this.tileSprites = [];
+    for (let r = 0; r < ROWS; r++) {
+      this.tileSprites[r] = [];
+      for (let c = 0; c < COLS; c++) {
+        const tile = this.mapData[r][c];
+        let texKey;
+        if      (tile === 0) texKey = 'tile_wall_' + this.zoneId;
+        else if (tile === 2) texKey = 'tile_enc_'  + this.zoneId;
+        else if (tile === 3) texKey = 'tile_boss_' + this.zoneId;
+        else if (tile === 4) texKey = 'tile_exit';
+        else if (tile === 9) texKey = 'tile_entry';
+        else                 texKey = 'tile_floor_' + this.zoneId;
+
+        const sprite = this.add.image(
+          c * TS + TS / 2,
+          r * TS + TS / 2,
+          texKey
+        ).setDisplaySize(TS, TS);
+        this.tileSprites[r][c] = sprite;
+      }
+    }
+
+    // ── Player sprite ────────────────────────────────────────────────────────
+    this.playerX = startX;
+    this.playerY = startY;
+    this.playerSprite = this.add.image(
+      startX * TS + TS / 2,
+      startY * TS + TS / 2,
+      'player'
+    ).setDisplaySize(TS - 8, TS - 8).setDepth(10);
+
+    // Player shadow
+    this.playerShadow = this.add.ellipse(
+      startX * TS + TS / 2, startY * TS + TS - 4,
+      24, 8, 0x000000, 0.4
+    ).setDepth(9);
+
+    // ── Camera ───────────────────────────────────────────────────────────────
+    this.cameras.main.setBounds(0, 0, COLS * TS, ROWS * TS);
+    this.cameras.main.startFollow(this.playerSprite, true, 0.12, 0.12);
+
+    // ── HUD (fixed to screen) ────────────────────────────────────────────────
+    this.hudZone = this.add.text(8, 8,
+      this.zone.name + ' — ' + this.zone.subtitle,
+      {
+        fontFamily: 'Courier New', fontSize: '10px', color: '#f39c12',
+        backgroundColor: 'rgba(0,0,0,0.8)', padding: { x: 5, y: 3 }
+      }
+    ).setScrollFactor(0).setDepth(20);
+
+    this.hudHp = this.add.text(632, 8, '',
+      {
+        fontFamily: 'Courier New', fontSize: '11px', color: '#2ecc71',
+        backgroundColor: 'rgba(0,0,0,0.8)', padding: { x: 5, y: 3 }
+      }
+    ).setOrigin(1, 0).setScrollFactor(0).setDepth(20);
+
+    this.hudGold = this.add.text(8, 430, '',
+      {
+        fontFamily: 'Courier New', fontSize: '10px', color: '#f39c12',
+        backgroundColor: 'rgba(0,0,0,0.8)', padding: { x: 5, y: 3 }
+      }
+    ).setScrollFactor(0).setDepth(20);
+
+    this.hudXp = this.add.text(632, 430, '',
+      {
+        fontFamily: 'Courier New', fontSize: '10px', color: '#74b9ff',
+        backgroundColor: 'rgba(0,0,0,0.8)', padding: { x: 5, y: 3 }
+      }
+    ).setOrigin(1, 1).setScrollFactor(0).setDepth(20);
+
+    this.updateHud();
+
+    // Mini-map indicator
+    this.hudEscHint = this.add.text(320, 8, 'ESC → World Map', {
+      fontFamily: 'Courier New', fontSize: '9px', color: '#555555',
+      backgroundColor: 'rgba(0,0,0,0.6)', padding: { x: 4, y: 2 }
+    }).setOrigin(0.5, 0).setScrollFactor(0).setDepth(20);
+
+    // ── Message overlay ──────────────────────────────────────────────────────
+    this.msgText = this.add.text(320, 224, '', {
+      fontFamily: 'Courier New', fontSize: '13px', color: '#f39c12',
+      backgroundColor: 'rgba(0,0,0,0.88)', padding: { x: 12, y: 8 },
+      align: 'center', wordWrap: { width: 400 }
+    }).setOrigin(0.5).setScrollFactor(0).setDepth(30).setVisible(false);
+
+    // ── Keyboard controls ────────────────────────────────────────────────────
+    this.cursors  = this.input.keyboard.createCursorKeys();
+    this.wasd     = this.input.keyboard.addKeys({ up:'W', down:'S', left:'A', right:'D' });
+    this.escKey   = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ESC);
+    this.escKey.on('down', () => {
+      if (!this.inBattle) {
+        this.scene.stop('ZoneScene');
+        this.scene.start('WorldScene');
+      }
+    });
+
+    this.moveCooldown = 0;
+
+    // Entrance message
+    this.showMessage('Zone ' + (this.zoneId + 1) + ': ' + this.zone.name + '\n' + this.zone.subtitle, 2000);
+  }
+
+  showMessage(msg, duration) {
+    duration = duration || 2000;
+    this.msgText.setText(msg).setVisible(true);
+    if (this.msgTimer) this.msgTimer.remove(false);
+    this.msgTimer = this.time.delayedCall(duration, () => {
+      if (this.msgText) this.msgText.setVisible(false);
+    });
+  }
+
+  updateHud() {
+    const p = this.player;
+    const d = this.daily;
+    const cleared = d.zoneClears.filter(Boolean).length;
+    if (this.hudHp)   this.hudHp.setText('LVL ' + p.level + '   HP ' + p.hp + '/' + p.maxHp + ' ♥');
+    if (this.hudGold) this.hudGold.setText('GOLD: ' + (p.gold || 0) + '   Potions: ' + p.potions + '   Skill: ' + p.skillCharges);
+    if (this.hudXp)   this.hudXp.setText('XP ' + p.xp + '/' + xpToNextLevel(p.level) + '   [' + cleared + '/6]');
+  }
+
+  getTile(x, y) {
+    if (y < 0 || y >= this.mapData.length)    return 0;
+    if (x < 0 || x >= this.mapData[0].length) return 0;
+    return this.mapData[y][x];
+  }
+
+  tryMove(dx, dy) {
+    if (this.inBattle) return;
+    const nx   = this.playerX + dx;
+    const ny   = this.playerY + dy;
+    const tile = this.getTile(nx, ny);
+    if (tile === 0) {
+      // Wall bump — brief shake
+      this.cameras.main.shake(80, 0.005);
+      return;
+    }
+    this.playerX = nx;
+    this.playerY = ny;
+    const TS = TILE_SIZE;
+    const px = nx * TS + TS / 2;
+    const py = ny * TS + TS / 2;
+    this.playerSprite.setPosition(px, py);
+    this.playerShadow.setPosition(px, py + TS / 2 - 4);
+    this.onStepOnTile(nx, ny, tile);
+  }
+
+  onStepOnTile(x, y, tile) {
+    const posKey = x + ',' + y;
+
+    if (tile === 2 && !this.clearedEncounters.has(posKey)) {
+      const zone     = this.zone;
+      const enemyIdx = Math.floor(Math.random() * zone.enemies.length);
+      const enemyDef = zone.enemies[enemyIdx];
+      const enemy    = { ...enemyDef, hp: enemyDef.maxHp, isBoss: false, texIdx: enemyIdx };
+      this.startBattle(enemy, posKey, false);
+
+    } else if (tile === 3 && !this.bossDefeated) {
+      const boss = { ...this.zone.boss, hp: this.zone.boss.maxHp, isBoss: true, texIdx: 0 };
+      this.startBattle(boss, posKey, true);
+
+    } else if (tile === 4) {
+      if (this.exitEnabled || this.bossDefeated) {
+        this.exitZone();
+      } else {
+        this.showMessage('⚠  Defeat the boss first!\nLook for the golden-bordered tile.', 2500);
+      }
+    }
+  }
+
+  startBattle(enemy, posKey, isBoss) {
+    this.inBattle = true;
+    this.scene.pause('ZoneScene');
+
+    const self = this;
+
+    this.scene.launch('BattleScene', {
+      enemy,
+      zoneId: this.zoneId,
+      onVictory() {
+        self.inBattle = false;
+        self.player   = self.registry.get('player');
+        self.daily    = self.registry.get('daily');
+
+        if (isBoss) {
+          self.bossDefeated = true;
+          self.exitEnabled  = true;
+          // Update tiles: clear boss tile, pulse exit tile
+          for (let r = 0; r < self.mapData.length; r++) {
+            for (let c = 0; c < self.mapData[0].length; c++) {
+              const t = self.mapData[r][c];
+              if (t === 3 && self.tileSprites[r] && self.tileSprites[r][c]) {
+                self.tileSprites[r][c].setTexture('tile_floor_' + self.zoneId);
+              }
+              if (t === 4 && self.tileSprites[r] && self.tileSprites[r][c]) {
+                self.tileSprites[r][c].setTexture('tile_exit');
+                self.tweens.add({
+                  targets: self.tileSprites[r][c],
+                  alpha: 0.4, duration: 400, yoyo: true, repeat: -1
+                });
+              }
+            }
+          }
+          self.showMessage('🏆 BOSS DEFEATED!\nExit portal unlocked — find the cyan tile!', 3500);
+        } else {
+          self.clearedEncounters.add(posKey);
+          const parts = posKey.split(',');
+          const cx = parseInt(parts[0], 10);
+          const cy = parseInt(parts[1], 10);
+          if (self.tileSprites[cy] && self.tileSprites[cy][cx]) {
+            self.tileSprites[cy][cx].setTexture('tile_floor_' + self.zoneId);
+          }
+          self.showMessage('Victory! Enemy defeated.', 1500);
+        }
+
+        self.updateHud();
+        updateDailyBar(self.daily);
+        exportWidgetData(self.player, self.daily);
+        self.scene.resume('ZoneScene');
+      },
+      onDefeat() {
+        self.inBattle = false;
+        self.player   = self.registry.get('player');
+        self.updateHud();
+        self.showMessage('💀 Defeated...\nYou survive with low HP. Retreat or fight on!', 2500);
+        self.scene.resume('ZoneScene');
+      },
+      onFlee() {
+        self.inBattle = false;
+        self.showMessage('🏃 Fled the battle!', 1200);
+        self.scene.resume('ZoneScene');
+      },
+    });
+  }
+
+  exitZone() {
+    this.showMessage('✨ Zone cleared!\nReturning to World Map...', 1400);
+    this.time.delayedCall(1500, () => {
+      this.scene.stop('ZoneScene');
+      this.scene.start('WorldScene');
+    });
+  }
+
+  update(time, delta) {
+    if (this.inBattle) return;
+    this.moveCooldown -= delta;
+    if (this.moveCooldown > 0) return;
+
+    const up    = this.cursors.up.isDown    || this.wasd.up.isDown;
+    const down  = this.cursors.down.isDown  || this.wasd.down.isDown;
+    const left  = this.cursors.left.isDown  || this.wasd.left.isDown;
+    const right = this.cursors.right.isDown || this.wasd.right.isDown;
+
+    if (up)         { this.tryMove(0, -1);  this.moveCooldown = 155; }
+    else if (down)  { this.tryMove(0, 1);   this.moveCooldown = 155; }
+    else if (left)  { this.tryMove(-1, 0);  this.moveCooldown = 155; }
+    else if (right) { this.tryMove(1, 0);   this.moveCooldown = 155; }
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SCENE: BattleScene — turn-based battle overlay
+// ─────────────────────────────────────────────────────────────────────────────
+class BattleScene extends Phaser.Scene {
+  constructor() { super('BattleScene'); }
+
+  init(data) {
+    this.enemyData    = data.enemy;
+    this.zoneId       = data.zoneId != null ? data.zoneId : 0;
+    this.onVictoryCb  = data.onVictory  || null;
+    this.onDefeatCb   = data.onDefeat   || null;
+    this.onFleeCb     = data.onFlee     || null;
+  }
+
+  create() {
+    this.player      = this.registry.get('player');
+    this.daily       = this.registry.get('daily');
+    this.zone        = ZONES[this.zoneId];
+
+    this.enemy       = { ...this.enemyData };
+    this.enemyMaxHp  = this.enemyData.maxHp;
+    this.playerMaxHp = this.player.maxHp;
+
+    this.battleLog   = [];
+    this.playerTurn  = true;
+    this.battleOver  = false;
+
+    // ── Full-screen overlay ──────────────────────────────────────────────────
+    this.add.rectangle(320, 224, 640, 448, 0x000000, 0.93);
+
+    // Zone-colored border
+    const border = this.add.graphics();
+    border.lineStyle(3, this.zone.accentColor, 0.9);
+    border.strokeRect(6, 6, 628, 436);
+    border.lineStyle(1, this.zone.accentColor, 0.3);
+    border.strokeRect(10, 10, 620, 428);
+
+    // Corner decorations
+    const cDec = this.add.graphics();
+    cDec.fillStyle(this.zone.accentColor, 0.8);
+    [[6,6],[628,6],[6,436],[628,436]].forEach(([cx,cy]) => {
+      cDec.fillRect(cx - 2, cy - 2, 6, 6);
+    });
+
+    // ── Header ───────────────────────────────────────────────────────────────
+    if (this.enemy.isBoss) {
+      this.add.text(320, 18, '⚠  BOSS BATTLE  ⚠', {
+        fontFamily: 'Courier New', fontSize: '15px', color: '#e74c3c', fontStyle: 'bold'
+      }).setOrigin(0.5);
+    } else {
+      this.add.text(320, 18, '⚔  ENCOUNTER', {
+        fontFamily: 'Courier New', fontSize: '13px', color: '#f39c12', fontStyle: 'bold'
+      }).setOrigin(0.5);
+    }
+
+    // ── Enemy panel (right side) ─────────────────────────────────────────────
+    const enemyPanelX = 430;
+    const enemyTexKey = this.enemy.isBoss
+      ? 'boss_' + this.zoneId
+      : 'enemy_' + this.zoneId + '_' + (this.enemy.texIdx || 0);
+    const enemySize = this.enemy.isBoss ? 120 : 88;
+
+    this.enemySprite = this.add.image(enemyPanelX, 110, enemyTexKey)
+      .setDisplaySize(enemySize, enemySize);
+
+    // Sprite idle bobbing
+    this.tweens.add({
+      targets: this.enemySprite,
+      y: 110 - 5, duration: 900 + Math.random() * 400, yoyo: true, repeat: -1,
+      ease: 'Sine.easeInOut'
+    });
+
+    // Enemy name
+    this.add.text(enemyPanelX, 162, this.enemy.name, {
+      fontFamily: 'Courier New', fontSize: '12px', color: '#e74c3c', fontStyle: 'bold'
+    }).setOrigin(0.5);
+
+    // Enemy stats
+    this.add.text(enemyPanelX, 176, 'ATK ' + this.enemy.atk + '   DEF ' + this.enemy.def, {
+      fontFamily: 'Courier New', fontSize: '9px', color: '#888888'
+    }).setOrigin(0.5);
+
+    // Enemy HP bar background
+    this.add.rectangle(enemyPanelX, 193, 200, 12, 0x111111);
+    this.add.rectangle(enemyPanelX, 193, 200, 12, 0x000000, 0).setStrokeStyle(1, 0x444444);
+    // HP bar fill — origin (0, 0.5), x = enemyPanelX - 100
+    this.enemyHpBar = this.add.rectangle(
+      enemyPanelX - 100, 193, 200, 10, 0xe74c3c
+    ).setOrigin(0, 0.5);
+
+    this.enemyHpText = this.add.text(enemyPanelX, 207, '', {
+      fontFamily: 'Courier New', fontSize: '10px', color: '#e74c3c'
+    }).setOrigin(0.5);
+
+    // ── Player panel (left side) ─────────────────────────────────────────────
+    const playerPanelX = 110;
+    this.playerSprite  = this.add.image(playerPanelX, 110, 'player')
+      .setDisplaySize(72, 72);
+
+    this.tweens.add({
+      targets: this.playerSprite,
+      y: 110 - 3, duration: 1100, yoyo: true, repeat: -1,
+      ease: 'Sine.easeInOut'
+    });
+
+    this.add.text(playerPanelX, 154, this.player.name, {
+      fontFamily: 'Courier New', fontSize: '11px', color: '#2ecc71', fontStyle: 'bold'
+    }).setOrigin(0.5);
+
+    this.add.text(playerPanelX, 168, 'LVL ' + this.player.level + '   Skill ' + this.player.skillCharges, {
+      fontFamily: 'Courier New', fontSize: '9px', color: '#888888'
+    }).setOrigin(0.5);
+
+    // Player HP bar bg
+    this.add.rectangle(playerPanelX, 183, 150, 12, 0x111111);
+    // Player HP bar fill — origin (0, 0.5), x = playerPanelX - 75
+    this.playerHpBar = this.add.rectangle(
+      playerPanelX - 75, 183, 150, 10, 0x2ecc71
+    ).setOrigin(0, 0.5);
+
+    this.playerHpText = this.add.text(playerPanelX, 197, '', {
+      fontFamily: 'Courier New', fontSize: '10px', color: '#2ecc71'
+    }).setOrigin(0.5);
+
+    // ── VS divider ───────────────────────────────────────────────────────────
+    this.add.text(272, 110, 'VS', {
+      fontFamily: 'Courier New', fontSize: '20px', color: '#f39c12', fontStyle: 'bold'
+    }).setOrigin(0.5);
+    const vsDivGfx = this.add.graphics();
+    vsDivGfx.lineStyle(1, 0x333333, 0.8);
+    vsDivGfx.lineBetween(272, 50, 272, 220);
+
+    // ── Battle log area ──────────────────────────────────────────────────────
+    this.add.rectangle(320, 308, 600, 110, 0x0a0a18, 0.95);
+    this.add.graphics().lineStyle(1, 0x333366, 0.6).strokeRect(20, 252, 600, 110);
+
+    this.logTexts = [];
+    for (let i = 0; i < 5; i++) {
+      this.logTexts.push(this.add.text(28, 258 + i * 20, '', {
+        fontFamily: 'Courier New', fontSize: '10px', color: '#cccccc'
+      }));
+    }
+
+    // ── Action buttons ───────────────────────────────────────────────────────
+    const btnY = 388;
+    const btnConfigs = [
+      { label: '⚔\nATTACK',     key: '1', x: 66,  action: 'attack'  },
+      { label: '✨\nSKILL',      key: '2', x: 194, action: 'skill'   },
+      { label: '🌙\nMOON',       key: '3', x: 320, action: 'faction' },
+      { label: '🧪\nPOTION',     key: '4', x: 446, action: 'item'    },
+      { label: '🏃\nFLEE',       key: '5', x: 574, action: 'flee'    },
+    ];
+
+    this.actionBtns = [];
+    btnConfigs.forEach(cfg => {
+      const isSkill  = cfg.action === 'skill';
+      const isItem   = cfg.action === 'item';
+      const disabled = (isSkill && this.player.skillCharges <= 0) ||
+                       (isItem  && this.player.potions <= 0);
+
+      const bg = this.add.rectangle(cfg.x, btnY, 108, 46,
+        disabled ? 0x111111 : 0x1a1500, 0.9
+      );
+      bg.setStrokeStyle(1, disabled ? 0x333333 : this.zone.accentColor, disabled ? 0.3 : 0.7);
+
+      const txt = this.add.text(cfg.x, btnY,
+        '[' + cfg.key + '] ' + cfg.label.replace(/\n/g, ' '),
+        {
+          fontFamily: 'Courier New', fontSize: '11px',
+          color: disabled ? '#444444' : '#f39c12',
+          align: 'center', lineSpacing: 2,
+        }
+      ).setOrigin(0.5);
+
+      if (!disabled) {
+        bg.setInteractive({ useHandCursor: true });
+        bg.on('pointerover',  () => { bg.setFillStyle(0x3d2e00, 0.9); });
+        bg.on('pointerout',   () => { bg.setFillStyle(0x1a1500, 0.9); });
+        bg.on('pointerdown',  () => this.doPlayerAction(cfg.action));
+      }
+      this.actionBtns.push({ bg, txt, action: cfg.action, disabled });
+    });
+
+    // ── Status bar ───────────────────────────────────────────────────────────
+    this.statusText = this.add.text(320, 425, '', {
+      fontFamily: 'Courier New', fontSize: '9px', color: '#555555', align: 'center'
+    }).setOrigin(0.5);
+
+    // ── Keyboard input ───────────────────────────────────────────────────────
+    this._keyHandler = (e) => {
+      if (this.battleOver || !this.playerTurn) return;
+      if (e.key === '1') this.doPlayerAction('attack');
+      else if (e.key === '2') this.doPlayerAction('skill');
+      else if (e.key === '3') this.doPlayerAction('faction');
+      else if (e.key === '4') this.doPlayerAction('item');
+      else if (e.key === '5') this.doPlayerAction('flee');
+    };
+    this.input.keyboard.on('keydown', this._keyHandler);
+
+    // ── Turn indicator ────────────────────────────────────────────────────────
+    this.turnText = this.add.text(320, 238, '', {
+      fontFamily: 'Courier New', fontSize: '10px', color: '#888888', align: 'center'
+    }).setOrigin(0.5);
+
+    // ── Initial update ────────────────────────────────────────────────────────
+    this.updateBars();
+    this.refreshButtons();
+    this.addLog('Battle start! ' + this.enemy.name + ' appears!');
+    this.setTurnIndicator(true);
+  }
+
+  addLog(msg) {
+    this.battleLog.push(msg);
+    if (this.battleLog.length > 5) this.battleLog.shift();
+    this.battleLog.forEach((line, i) => {
+      if (this.logTexts[i]) this.logTexts[i].setText(line);
+    });
+  }
+
+  setTurnIndicator(isPlayer) {
+    if (this.turnText) {
+      this.turnText.setText(isPlayer ? '— YOUR TURN —' : '— ENEMY TURN —');
+      this.turnText.setColor(isPlayer ? '#2ecc71' : '#e74c3c');
+    }
+  }
+
+  updateBars() {
+    const ePct = Math.max(0, this.enemy.hp) / this.enemyMaxHp;
+    const pPct = Math.max(0, this.player.hp) / this.playerMaxHp;
+
+    if (this.enemyHpBar)   this.enemyHpBar.setScale(Math.max(0, ePct), 1);
+    if (this.playerHpBar)  this.playerHpBar.setScale(Math.max(0, pPct), 1);
+
+    if (this.enemyHpText)  this.enemyHpText.setText('HP ' + Math.max(0, this.enemy.hp) + ' / ' + this.enemyMaxHp);
+    if (this.playerHpText) this.playerHpText.setText('HP ' + Math.max(0, this.player.hp) + ' / ' + this.playerMaxHp);
+
+    // Color changes for low HP
+    if (pPct < 0.3 && this.playerHpBar) this.playerHpBar.setFillStyle(0xe74c3c);
+    else if (pPct < 0.6 && this.playerHpBar) this.playerHpBar.setFillStyle(0xf39c12);
+    else if (this.playerHpBar) this.playerHpBar.setFillStyle(0x2ecc71);
+  }
+
+  refreshButtons() {
+    const skillDis = this.player.skillCharges <= 0;
+    const itemDis  = this.player.potions <= 0;
+
+    this.statusText.setText(
+      '[1]ATK  [2]SKILL(' + this.player.skillCharges + ')  [3]MOON  [4]POTION(' + this.player.potions + 'x)  [5]FLEE'
+    );
+
+    this.actionBtns.forEach(({ bg, txt, action }) => {
+      if (action === 'skill') {
+        txt.setColor(skillDis ? '#444444' : '#f39c12');
+        if (skillDis) bg.removeInteractive();
+        else {
+          bg.setInteractive({ useHandCursor: true });
+          bg.on('pointerdown', () => this.doPlayerAction('skill'));
+        }
+      }
+      if (action === 'item') {
+        txt.setColor(itemDis ? '#444444' : '#f39c12');
+        if (itemDis) bg.removeInteractive();
+        else {
+          bg.setInteractive({ useHandCursor: true });
+          bg.on('pointerdown', () => this.doPlayerAction('item'));
+        }
+      }
+    });
+  }
+
+  flashSprite(sprite, flashColor, duration) {
+    if (!sprite || !sprite.scene) return;
+    sprite.setTint(flashColor);
+    this.time.delayedCall(duration || 150, () => {
+      if (sprite && sprite.scene) sprite.clearTint();
+    });
+  }
+
+  doPlayerAction(action) {
+    if (this.battleOver || !this.playerTurn) return;
+    this.playerTurn = false;
+    this.setTurnIndicator(false);
+
+    const p = this.player;
+    const e = this.enemy;
+
+    if (action === 'attack') {
+      const dmg = randInt(8 + p.level * 2, 14 + p.level * 3);
+      e.hp -= dmg;
+      this.flashSprite(this.enemySprite, 0xff6666, 180);
+      this.addLog('You strike for ' + dmg + ' damage!');
+
+    } else if (action === 'skill') {
+      if (p.skillCharges <= 0) { this.playerTurn = true; this.setTurnIndicator(true); return; }
+      p.skillCharges--;
+      const dmg = randInt(20 + p.level * 4, 30 + p.level * 5);
+      e.hp -= dmg;
+      this.flashSprite(this.enemySprite, 0x00ffff, 250);
+      this.addLog('✨ Skill strike! ' + dmg + ' critical damage!');
+      this.refreshButtons();
+
+    } else if (action === 'faction') {
+      if (Math.random() < 0.6) {
+        const dmg = randInt(25 + p.level * 3, 38 + p.level * 4);
+        e.hp -= dmg;
+        this.flashSprite(this.enemySprite, 0xffd700, 220);
+        this.addLog('🌙 Moon Strike! ' + dmg + ' bonus damage!');
+      } else {
+        this.addLog('🌙 Moon Strike missed! (40% miss chance)');
+      }
+
+    } else if (action === 'item') {
+      if (p.potions <= 0) { this.playerTurn = true; this.setTurnIndicator(true); return; }
+      p.potions--;
+      const heal = 40 + p.level * 3;
+      p.hp = Math.min(p.maxHp, p.hp + heal);
+      this.addLog('🧪 Potion! Restored ' + heal + ' HP.');
+      this.updateBars();
+      this.refreshButtons();
+      savePlayer(p);
+      this.time.delayedCall(700, () => this.doEnemyTurn());
+      return;
+
+    } else if (action === 'flee') {
+      if (e.isBoss) {
+        this.addLog('You cannot flee from a boss battle!');
+        this.playerTurn = true;
+        this.setTurnIndicator(true);
+        return;
+      }
+      if (Math.random() < 0.7) {
+        this.addLog('You successfully fled!');
+        this.battleOver = true;
+        this.time.delayedCall(900, () => this.endBattle('flee'));
+        return;
+      } else {
+        this.addLog('Failed to flee! The enemy blocks your path.');
+      }
+    }
+
+    this.updateBars();
+
+    if (e.hp <= 0) {
+      this.addLog(e.name + ' has been defeated!');
+      this.battleOver = true;
+      this.cameras.main.shake(200, 0.015);
+      this.time.delayedCall(1300, () => this.handleVictory());
+      return;
+    }
+
+    this.time.delayedCall(700, () => this.doEnemyTurn());
+  }
+
+  doEnemyTurn() {
+    if (this.battleOver) return;
+    this.setTurnIndicator(false);
+
+    const p = this.player;
+    const e = this.enemy;
+
+    // Boss has a chance to use special attack
+    let eDmg;
+    let logMsg;
+
+    if (e.isBoss && Math.random() < 0.2) {
+      eDmg = Math.round(e.atk * 1.5 + randInt(0, 5));
+      logMsg = e.name + ' uses POWER SLAM for ' + eDmg + '!';
+      this.flashSprite(this.playerSprite, 0xff0000, 300);
+      this.cameras.main.shake(300, 0.02);
+    } else {
+      eDmg = Math.max(1, randInt(Math.floor(e.atk * 0.8), Math.ceil(e.atk * 1.2)));
+      logMsg = e.name + ' attacks for ' + eDmg + '!';
+      this.flashSprite(this.playerSprite, 0xff4444, 180);
+    }
+
+    p.hp -= eDmg;
+    this.addLog(logMsg);
+    this.updateBars();
+
+    if (p.hp <= 0) {
+      p.hp = 0;
+      this.addLog('You have been defeated...');
+      this.battleOver = true;
+      this.time.delayedCall(1300, () => this.handleDefeat());
+      return;
+    }
+
+    this.playerTurn = true;
+    this.setTurnIndicator(true);
+  }
+
+  async handleVictory() {
+    const p = this.player;
+    const e = this.enemy;
+    const d = this.daily;
+
+    grantXP(p, e.xp);
+    p.gold = (p.gold || 0) + e.gold;
+    d.enemiesDefeated = (d.enemiesDefeated || 0) + 1;
+    d.runScore = (d.runScore || 0) + e.xp;
+
+    if (e.isBoss) {
+      d.zoneClears[this.zoneId] = true;
+      d.runScore += ZONES[this.zoneId].clearScore;
+      p.lifetimeClears = (p.lifetimeClears || 0) + 1;
+      p.skillCharges   = Math.min(p.skillCharges + 1, 3);
+      if (p.potions < 3) p.potions++;
+
+      saveDailyState(d);
+      savePlayer(p);
+      exportWidgetData(p, d);
+
+      try { await postBtqmScore(p, d); } catch(err) {}
+
+      if (checkFullClear(d)) {
+        this.addLog('🎉 ALL 6 ZONES CLEARED! Score doubled!');
+        try { await postBtqmScore(p, d); } catch(err) {}
+      }
+
+      this.addLog('BOSS SLAIN! +' + e.xp + ' XP  +' + e.gold + ' Gold');
+      this.addLog('Zone ' + (this.zoneId + 1) + ' CLEARED! Total score: ' + d.runScore);
+    } else {
+      saveDailyState(d);
+      savePlayer(p);
+      exportWidgetData(p, d);
+      this.addLog('Victory! +' + e.xp + ' XP  +' + e.gold + ' Gold');
+    }
+
+    // Level-up display
+    if (p.level > 1) {
+      this.addLog('LVL ' + p.level + '  XP ' + p.xp + '/' + xpToNextLevel(p.level));
+    }
+
+    this.registry.set('player', p);
+    this.registry.set('daily', d);
+
+    // Attempt bonus roll
+    try {
+      const bonus = await rollHiddenBonus({ game: 'blocktopia', score: d.runScore });
+      if (bonus) showBonusPopup(bonus);
+    } catch(err) {}
+
+    this.time.delayedCall(1600, () => this.endBattle('victory'));
+  }
+
+  handleDefeat() {
+    const p = this.player;
+    p.hp = Math.max(1, Math.floor(p.maxHp * 0.35));
+    savePlayer(p);
+    this.registry.set('player', p);
+    this.addLog('You survived with ' + p.hp + ' HP. Regroup!');
+    this.time.delayedCall(1200, () => this.endBattle('defeat'));
+  }
+
+  endBattle(result) {
+    this.input.keyboard.off('keydown', this._keyHandler);
+    if (result === 'victory' && this.onVictoryCb) this.onVictoryCb();
+    else if (result === 'defeat' && this.onDefeatCb) this.onDefeatCb();
+    else if (result === 'flee'  && this.onFleeCb) this.onFleeCb();
+    this.scene.stop('BattleScene');
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// PHASER GAME CONFIGURATION
+// ─────────────────────────────────────────────────────────────────────────────
+const game = new Phaser.Game({
+  type: Phaser.AUTO,
+  width: 640,
+  height: 448,
+  parent: 'btqm-canvas',
+  pixelArt: true,
+  antialias: false,
+  backgroundColor: '#0a0a1a',
+  scale: {
+    mode: Phaser.Scale.FIT,
+    autoCenter: Phaser.Scale.CENTER_BOTH,
+  },
+  scene: [BootScene, TitleScene, WorldScene, ZoneScene, BattleScene],
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// MOBILE D-PAD — maps data-key codes to modern KeyboardEvent key strings
+// ─────────────────────────────────────────────────────────────────────────────
+const DPAD_KEY_MAP = { 37: 'ArrowLeft', 38: 'ArrowUp', 39: 'ArrowRight', 40: 'ArrowDown', 13: 'Enter' };
+
+document.querySelectorAll('.dpad-btn').forEach(btn => {
+  const keyCode = parseInt(btn.dataset.key, 10);
+  const keyStr  = DPAD_KEY_MAP[keyCode] || String(keyCode);
+  const fireKey = () => {
+    const evt = new KeyboardEvent('keydown', {
+      key: keyStr, code: keyStr, keyCode, which: keyCode,
+      bubbles: true, cancelable: true
+    });
+    document.dispatchEvent(evt);
+  };
+  btn.addEventListener('touchstart', e => { e.preventDefault(); fireKey(); }, { passive: false });
+  btn.addEventListener('mousedown',  e => { e.preventDefault(); fireKey(); });
+});
 </script>
 </body>
 </html>
