@@ -32,13 +32,6 @@
       margin-bottom: 18px;
     }
     .incubator-cta-row { display:flex; flex-wrap:wrap; gap:12px; margin-top:18px; }
-    .incubator-pill-row { display:flex; flex-wrap:wrap; gap:8px; margin-top:14px; }
-    .incubator-pill {
-      display:inline-flex; align-items:center; gap:6px;
-      padding:.35rem .75rem; border-radius:999px;
-      background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.08);
-      color:var(--color-text-muted); font-size:.82rem;
-    }
     .incubator-grid { display:grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap:18px; margin: 20px 0 28px; }
     .incubator-card {
       background: var(--color-surface);
@@ -168,24 +161,20 @@
       </nav>
 
       <section class="incubator-hero">
-        <h1>🚀 GKniftyHEADS Incubator HUB</h1>
+        <h1>Link Your Telegram Account</h1>
         <p class="incubator-lead">
-          This is the <strong>Telegram sync onboarding page</strong> for the <strong>Crypto Moonboys</strong> ecosystem. To unlock competitive features — leaderboards, XP, voting, and faction alignment — you need to link your Telegram identity to the site. The process takes under a minute: join the group, run <code style="background:rgba(255,255,255,.08);border-radius:4px;padding:.1em .4em;color:#f4d35e;font-family:monospace">/gkstart</code>, then <code style="background:rgba(255,255,255,.08);border-radius:4px;padding:.1em .4em;color:#f4d35e;font-family:monospace">/gklink</code>.
+          To unlock XP, leaderboard access, faction actions, and other competitive features, do this:
         </p>
-        <div class="sync-note">
-          <strong>⚠️ Account sync does not happen on this page.</strong> You must run <strong>/gklink</strong> inside the Telegram bot. The bot sends you a one-time link that, when clicked, confirms your identity on <strong>community.html</strong> and activates full competition access.
-        </div>
+        <ol style="padding-left:20px;margin:0 0 16px;color:var(--color-text-muted);line-height:2">
+          <li>Open the bot</li>
+          <li>Run <code style="background:rgba(255,255,255,.08);border-radius:4px;padding:.1em .4em;color:#f4d35e;font-family:monospace">/gkstart</code></li>
+          <li>Run <code style="background:rgba(255,255,255,.08);border-radius:4px;padding:.1em .4em;color:#f4d35e;font-family:monospace">/gklink</code> and click the link it sends</li>
+        </ol>
+        <p style="font-size:.9rem;color:var(--color-text-muted);margin:0 0 18px">The link opens community.html and finishes activation there.</p>
         <div class="incubator-cta-row">
-          <a href="https://t.me/gkniftyheads" target="_blank" rel="noopener noreferrer" class="btn btn-primary">📲 Open Telegram Group</a>
-          <a href="https://t.me/WIKICOMSBOT" target="_blank" rel="noopener noreferrer" class="btn btn-primary">🤖 Open Telegram Bot</a>
-          <a href="/community.html" class="btn btn-secondary">⚔️ Enter the Battle Chamber</a>
-        </div>
-        <div class="incubator-pill-row">
-          <span class="incubator-pill">🔗 Two-step identity link</span>
-          <span class="incubator-pill">🏆 Leaderboard activation</span>
-          <span class="incubator-pill">⚔️ Faction alignment</span>
-          <span class="incubator-pill">⚡ Community XP</span>
-          <span class="incubator-pill">🗺️ Lore quests</span>
+          <a href="https://t.me/WIKICOMSBOT" target="_blank" rel="noopener noreferrer" class="btn btn-primary">🤖 Open Bot</a>
+          <a href="https://t.me/gkniftyheads" target="_blank" rel="noopener noreferrer" class="btn btn-primary">📲 Open Group</a>
+          <a href="/community.html" class="btn btn-secondary">⚔️ Open Battle Chamber</a>
         </div>
       </section>
 
