@@ -2041,13 +2041,19 @@ const game = new Phaser.Game({
   if (game.canvas) game.canvas.id = 'btqmCanvas';
 
   // When the fullscreen overlay opens/closes, ask Phaser to refresh its scale
-  // so the canvas re-fits the new container dimensions without blurring.
+  // so the canvas re-fits the new container dimensions without blurring and
+  // so Phaser's internal canvasBounds are correct for input event mapping.
+  // Two passes: first at 150 ms (after layout settles) and again at 300 ms
+  // (after any browser repaint / browser-fullscreen transition completes).
   const overlayEl = document.getElementById('game-overlay');
   if (overlayEl) {
     new MutationObserver(function () {
       setTimeout(function () {
         if (game && game.scale) game.scale.refresh();
-      }, 60);
+      }, 150);
+      setTimeout(function () {
+        if (game && game.scale) game.scale.refresh();
+      }, 300);
     }).observe(overlayEl, { attributes: true, attributeFilter: ['class'] });
   }
 
