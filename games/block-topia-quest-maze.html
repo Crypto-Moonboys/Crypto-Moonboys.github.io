@@ -126,6 +126,15 @@
     /* Hide the page-level dpad and daily bar inside the fullscreen overlay */
     #game-overlay #btqm-dpad,
     #game-overlay #btqm-daily-bar { display: none !important; }
+
+    /* ── Fullscreen launch row (mirrors all other arcade pages) ─────── */
+    .row { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+    .game-btn {
+      padding: .8rem 1.1rem; border: none; border-radius: 12px;
+      background: #f7ab1a; color: #111; font-weight: 700; cursor: pointer;
+    }
+    /* Hide the in-page launch row once the overlay is open */
+    #game-overlay .row { display: none !important; }
   </style>
 </head>
 <body>
@@ -223,10 +232,12 @@
             <button class="dpad-btn dpad-right" data-key="39">▶</button>
             <button class="dpad-btn dpad-down" data-key="40">▼</button>
           </div>
-          <!-- Fullscreen shell control hooks (hidden — managed by game-fullscreen.js) -->
-          <button id="startBtn" type="button" style="display:none">Start</button>
-          <button id="pauseBtn" type="button" style="display:none">Pause</button>
-          <button id="resetBtn" type="button" style="display:none">Reset</button>
+          <!-- Fullscreen shell launch row — mirrors the pattern used by every other arcade game -->
+          <div class="row" style="margin-top:14px">
+            <button id="startBtn" type="button" class="game-btn">▶ Play Fullscreen</button>
+            <button id="pauseBtn" type="button" style="display:none">Pause</button>
+            <button id="resetBtn" type="button" style="display:none">Reset</button>
+          </div>
         </div>
       </div>
 
