@@ -231,13 +231,20 @@ body.overlay-open {
   }
 }
 
-/* 11. Button row inside overlay */
-#game-overlay .row {
-  margin-top: 0;
-  flex-shrink: 0;
+/* 11. Button row inside overlay — hide the in-page Start/Pause/Reset row;
+        top control bar is the only control bar in fullscreen mode.
+        Any game-specific action buttons NOT duplicated in the top bar
+        (e.g. Tetris hard-drop) are kept by targeting them directly if needed. */
+#game-overlay .game-card .row {
+  display: none;
 }
 
-/* 12. Tetris-specific: keep tet-wrap centred in overlay */
+/* 12. Instruction/hint text under canvas — hidden in fullscreen overlay */
+#game-overlay .note {
+  display: none;
+}
+
+/* 13. Tetris-specific: keep tet-wrap centred in overlay */
 #game-overlay .tet-wrap {
   justify-content: center;
   flex-shrink: 1;
@@ -556,10 +563,25 @@ body.overlay-open {
   }
 }
 
-/* Show touch pad on coarse-pointer devices up to tablet width */
-@media (pointer: coarse) and (max-width: 1099px) {
+/* Show touch pad on coarse-pointer devices (phones, tablets, iPads)
+   regardless of screen width — applies to all touch-primary screens */
+@media (pointer: coarse) {
   #game-overlay .overlay-touch-pad {
     display: flex;
+  }
+}
+
+/* Reduce canvas height on large coarse-pointer devices (iPad Pro landscape etc.)
+   to leave room for the touch pad that now shows beyond the 1099px tablet breakpoint */
+@media (pointer: coarse) and (min-width: 1100px) {
+  #game-overlay canvas:not(#nextCanvas) {
+    max-height: calc(100dvh - 36px - 100px) !important;
+  }
+
+  @supports not (height: 1dvh) {
+    #game-overlay canvas:not(#nextCanvas) {
+      max-height: calc(100vh - 36px - 100px) !important;
+    }
   }
 }
 
@@ -576,12 +598,12 @@ body.overlay-open {
   }
 
   #game-overlay canvas:not(#nextCanvas) {
-    max-height: calc(100dvh - 36px - 20px) !important;
+    max-height: calc(100dvh - 36px - 50px) !important;
   }
 
   @supports not (height: 1dvh) {
     #game-overlay canvas:not(#nextCanvas) {
-      max-height: calc(100vh - 36px - 20px) !important;
+      max-height: calc(100vh - 36px - 50px) !important;
     }
   }
 }
@@ -596,12 +618,12 @@ body.overlay-open {
   }
 
   #game-overlay canvas:not(#nextCanvas) {
-    max-height: calc(100dvh - 36px - 20px) !important;
+    max-height: calc(100dvh - 36px - 50px) !important;
   }
 
   @supports not (height: 1dvh) {
     #game-overlay canvas:not(#nextCanvas) {
-      max-height: calc(100vh - 36px - 20px) !important;
+      max-height: calc(100vh - 36px - 50px) !important;
     }
   }
 }

@@ -159,6 +159,19 @@
       .dash-page { padding: 14px; }
       .dash-table th:nth-child(n+4),
       .dash-table td:nth-child(n+4) { display: none; }
+      .dash-metric { flex: 1 1 100px; min-width: 0; }
+    }
+
+    /* ── Overflow guard ──────────────────────────────────────────────────── */
+    .dash-page {
+      overflow-x: hidden;
+    }
+    .dash-section {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+    .dash-table {
+      min-width: 0;
     }
   </style>
 </head>

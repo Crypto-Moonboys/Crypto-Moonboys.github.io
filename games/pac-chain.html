@@ -83,7 +83,6 @@
           <button class="game-btn alt" id="pauseBtn">Pause</button>
           <button class="game-btn alt" id="resetBtn">Reset</button>
         </div>
-        <div class="note">Arrow keys or WASD · Eat pellets · Power pellets let you eat enemies</div>
       </div>
     </main>
     <footer id="site-footer"><div class="footer-bottom"><p>Crypto Moonboys GK Wiki ⚡️⚡️⚡️</p></div></footer>
@@ -212,7 +211,7 @@ import { rollHiddenBonus, showBonusPopup } from '/js/bonus-engine.js';
   // Player
   let player = { x:PLAYER_START_X, y:PLAYER_START_Y, dx:0, dy:0, ndx:0, ndy:0,
                  px:0, py:0, speed:5.5, moving:false };
-  const PSIZE=10;
+  const PSIZE=13;
   const POWER_FLASH_FREQ      = 4;   // flashes per second when power timer is low
   const POWER_FLASH_THRESHOLD = 2;   // seconds remaining when flashing starts
   const DEATH_FREEZE_S        = 1.2; // seconds of freeze after losing a life
@@ -490,17 +489,25 @@ import { rollHiddenBonus, showBonusPopup } from '/js/bonus-engine.js';
       ctx.beginPath(); ctx.arc(e.px+3,e.py-2,2.5,0,Math.PI*2); ctx.fill();
     });
 
-    // Player — bright white/cyan during power mode, yellow normally
+    // Player — always draw with a glow outline so it stands out from pellets/ghosts
     const powerFlash = powerTimer > 0 && powerTimer < POWER_FLASH_THRESHOLD && Math.floor(powerTimer * POWER_FLASH_FREQ) % 2;
-    ctx.fillStyle = powerTimer > 0 ? (powerFlash ? '#fff' : '#b3ffff') : '#f7c948';
-    if (powerTimer > 0) ctx.shadowBlur = 14, ctx.shadowColor = '#2ec5ff';
+    const playerColor = powerTimer > 0 ? (powerFlash ? '#fff' : '#b3ffff') : '#ffe144';
+    const glowColor   = powerTimer > 0 ? '#2ec5ff' : '#ffe144';
+    ctx.shadowBlur  = powerTimer > 0 ? 18 : 10;
+    ctx.shadowColor = glowColor;
     const ma=mouthAngle*Math.PI;
     const facing = player.dx===1?0:player.dx===-1?Math.PI:player.dy===1?Math.PI/2:3*Math.PI/2;
     ctx.beginPath();
     ctx.moveTo(player.px, player.py);
     ctx.arc(player.px, player.py, PSIZE, facing+ma, facing+2*Math.PI-ma);
-    ctx.closePath(); ctx.fill();
-    ctx.shadowBlur = 0;
+    ctx.closePath();
+    ctx.fillStyle = playerColor;
+    ctx.fill();
+    // Dark outline so player is distinct against same-colour pellets
+    ctx.strokeStyle = '#090c16';
+    ctx.lineWidth   = 2;
+    ctx.stroke();
+    ctx.shadowBlur  = 0;
   }
 
   // ── Loop ──────────────────────────────────────────────────────────────────
