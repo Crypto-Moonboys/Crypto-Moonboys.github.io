@@ -26,12 +26,14 @@
  *   GET  /telegram/leaderboard?limit=
  *   GET  /telegram/quests
  *   POST /telegram/link
+ *   GET  /telegram/link/confirm?token=
  *   GET  /telegram/activity?limit=
  *   GET  /telegram/daily-status?telegram_id=
  *   GET  /telegram/season/current
  *
  * Telegram bot commands (handled inside POST /telegram/webhook):
- *   /start  /help  /xp  /leaderboard  /profile  /daily  /quest  /solve <ans>  /link  /faction <name>
+ *   GK commands: /gkstart /gkhelp /gklink /gkstatus /gkseason /gkleaderboard /gkquests /gkfaction /gkunlink
+ *   Legacy aliases: /start → /gkstart   /help → /gkhelp   /link → /gklink
  *
  * Secrets required (set via `wrangler secret put`):
  *   TELEGRAM_BOT_TOKEN      — BotFather token for HMAC verification and sendMessage
@@ -865,6 +867,36 @@ export default {
       }
     }
 
+    // ── GET /telegram/link/confirm?token= ─────────────────────────────────
+    // Validates a one-time /gklink token and marks the Telegram user as linked.
+    // Called by the website when the user arrives via the /gklink deep-link URL.
+    if (path === '/telegram/link/confirm' && request.method === 'GET') {
+      const token = url.searchParams.get('token');
+      if (!token || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(token)) return err('token required');
+      const now = new Date().toISOString();
+      try {
+        const row = await env.DB.prepare(
+          `SELECT telegram_id FROM telegram_link_tokens
+           WHERE token = ? AND used = 0 AND expires_at > ?`
+        ).bind(token, now).first();
+        if (!row) return err('Invalid or expired link token', 410);
+
+        // Mark token as used and confirm the link in one batch
+        await env.DB.batch([
+          env.DB.prepare(
+            `UPDATE telegram_link_tokens SET used = 1 WHERE token = ?`
+          ).bind(token),
+          env.DB.prepare(
+            `UPDATE telegram_profiles SET link_confirmed = 1 WHERE telegram_id = ?`
+          ).bind(row.telegram_id),
+        ]);
+
+        return json({ ok: true, telegram_id: row.telegram_id });
+      } catch {
+        return err('Failed to confirm link token', 500);
+      }
+    }
+
     // ── GET /telegram/activity?limit= ─────────────────────────────────────
     // Recent XP events for community activity feed.
     if (path === '/telegram/activity' && request.method === 'GET') {
@@ -996,23 +1028,37 @@ async function handleTelegramUpdate(update, env) {
   const argStr     = spaceIdx === -1 ? '' : text.slice(spaceIdx + 1).trim();
 
   switch (cmdBase) {
-    case 'start':    await cmdStart(db, tok, chatId, telegramId, fromUser);              break;
-    case 'help':     await cmdHelp(tok, chatId);                                         break;
-    case 'xp':       await cmdXp(db, tok, chatId, telegramId);                           break;
-    case 'leaderboard': await cmdLeaderboard(db, tok, chatId);                           break;
-    case 'profile':  await cmdProfile(db, tok, chatId, telegramId);                      break;
-    case 'daily':    await cmdDaily(db, tok, chatId, telegramId);                        break;
-    case 'quest':    await cmdQuest(db, tok, chatId);                                    break;
-    case 'solve':    await cmdSolve(db, tok, chatId, telegramId, argStr);                break;
-    case 'link':     await cmdLink(tok, chatId);                                         break;
-    case 'faction':  await cmdFaction(db, tok, chatId, telegramId, argStr);              break;
+    // ── GK command set ────────────────────────────────────────────────────
+    case 'gkstart':      await cmdGkStart(db, tok, chatId, telegramId, fromUser);       break;
+    case 'gkhelp':       await cmdGkHelp(tok, chatId);                                  break;
+    case 'gklink':       await cmdGkLink(db, tok, chatId, telegramId);                  break;
+    case 'gkstatus':     await cmdGkStatus(db, tok, chatId, telegramId);                break;
+    case 'gkseason':     await cmdGkSeason(db, tok, chatId);                            break;
+    case 'gkleaderboard': await cmdGkLeaderboard(db, tok, chatId);                      break;
+    case 'gkquests':     await cmdGkQuests(db, tok, chatId);                            break;
+    case 'gkfaction':    await cmdGkFaction(db, tok, chatId, telegramId, argStr);       break;
+    case 'gkunlink':     await cmdGkUnlink(db, tok, chatId, telegramId);                break;
+    // ── Legacy aliases ────────────────────────────────────────────────────
+    case 'start':        await cmdGkStart(db, tok, chatId, telegramId, fromUser);       break;
+    case 'help':         await cmdGkHelp(tok, chatId);                                  break;
+    case 'link':         await cmdGkLink(db, tok, chatId, telegramId);                  break;
+    // ── Legacy standalone commands (kept for backward compat) ─────────────
+    case 'xp':           await cmdXp(db, tok, chatId, telegramId);                      break;
+    case 'leaderboard':  await cmdLeaderboard(db, tok, chatId);                         break;
+    case 'profile':      await cmdProfile(db, tok, chatId, telegramId);                 break;
+    case 'daily':        await cmdDaily(db, tok, chatId, telegramId);                   break;
+    case 'quest':        await cmdQuest(db, tok, chatId);                               break;
+    case 'solve':        await cmdSolve(db, tok, chatId, telegramId, argStr);           break;
+    case 'faction':      await cmdFaction(db, tok, chatId, telegramId, argStr);         break;
     default: break;
   }
 }
 
-// ── Command implementations ───────────────────────────────────────────────────
+// ── GK command implementations ────────────────────────────────────────────────
 
-async function cmdStart(db, tok, chatId, telegramId, fromUser) {
+const SITE_URL = 'https://crypto-moonboys.github.io';
+
+async function cmdGkStart(db, tok, chatId, telegramId, fromUser) {
   // Award first-start XP exactly once
   const prior = await db.prepare(
     `SELECT id FROM telegram_xp_events WHERE telegram_id = ? AND event_type = 'first_start' LIMIT 1`
@@ -1026,26 +1072,240 @@ async function cmdStart(db, tok, chatId, telegramId, fromUser) {
 
   const name = getTelegramDisplayName(fromUser);
   await sendTelegramMessage(tok, chatId,
-    `🚀 Welcome to <b>Crypto Moonboys</b>, ${escapeHtml(name)}!\n\n` +
-    `You've entered the Battle Chamber. Track your XP, solve lore puzzles, and dominate the leaderboard.\n\n` +
-    `Use <b>/help</b> to see available commands.${xpMsg}`
+    `🚀 <b>Welcome to Crypto Moonboys GK, ${escapeHtml(name)}!</b>\n\n` +
+    `You've entered the Battle Chamber.\n\n` +
+    `<b>What to do next:</b>\n` +
+    `⚔️ /gklink — Link your account to the website\n` +
+    `📊 /gkstatus — View your season stats\n` +
+    `🏆 /gkleaderboard — Community leaderboard\n` +
+    `🗺️ /gkquests — Active missions\n` +
+    `⚔️ /gkfaction — Join or view your faction\n` +
+    `❓ /gkhelp — Full command list${xpMsg}`
   );
 }
 
-async function cmdHelp(tok, chatId) {
+async function cmdGkHelp(tok, chatId) {
   await sendTelegramMessage(tok, chatId,
-    `📖 <b>Moonboys Bot Commands</b>\n\n` +
-    `/start — Join the ecosystem &amp; claim first-start XP\n` +
-    `/xp — Check your XP totals\n` +
-    `/leaderboard — Community XP leaderboard\n` +
-    `/profile — Your full profile\n` +
-    `/daily — Claim your daily XP (once per UTC day)\n` +
-    `/quest — View active lore quests\n` +
-    `/solve &lt;answer&gt; — Submit a quest answer\n` +
-    `/faction &lt;name&gt; — Choose your faction\n` +
-    `/link — Link your Telegram to the website\n\n` +
-    `<i>Community XP is separate from arcade scores.</i>`
+    `📖 <b>Moonboys GK Commands</b>\n\n` +
+    `/gkstart — Start and register\n` +
+    `/gklink — Link account to website\n` +
+    `/gkstatus — Season stats\n` +
+    `/gkseason — Season info\n` +
+    `/gkleaderboard — Leaderboard\n` +
+    `/gkquests — Missions\n` +
+    `/gkfaction — Faction\n` +
+    `/gkunlink — Unlink account\n` +
+    `/gkhelp — Help\n\n` +
+    `<i>Legacy: /start /help /link are still supported.</i>`
   );
+}
+
+async function cmdGkLink(db, tok, chatId, telegramId) {
+  if (!telegramId) {
+    await sendTelegramMessage(tok, chatId, '❓ Unable to identify your Telegram account. Please try again.');
+    return;
+  }
+
+  // Expire any existing unused tokens for this user
+  await db.prepare(
+    `UPDATE telegram_link_tokens SET used = 1
+     WHERE telegram_id = ? AND used = 0`
+  ).bind(telegramId).run().catch(() => {});
+
+  // Generate a new one-time token (15-minute TTL)
+  const token = crypto.randomUUID();
+  const expiresAt = new Date(Date.now() + 15 * 60 * 1000).toISOString();
+
+  try {
+    await db.prepare(
+      `INSERT INTO telegram_link_tokens (token, telegram_id, expires_at) VALUES (?, ?, ?)`
+    ).bind(token, telegramId, expiresAt).run();
+  } catch {
+    await sendTelegramMessage(tok, chatId, '⚠️ Could not generate a link token. Please try again shortly.');
+    return;
+  }
+
+  const linkUrl = `${SITE_URL}/community.html?gklink=${token}`;
+  await sendTelegramMessage(tok, chatId,
+    `🔗 <b>Link Your Account</b>\n\n` +
+    `Click the link below to connect your Telegram identity to the Moonboys website:\n\n` +
+    `<a href="${linkUrl}">🔑 Activate Competition Access</a>\n\n` +
+    `<i>This link expires in 15 minutes and can only be used once.</i>\n\n` +
+    `After linking:\n` +
+    `✅ Your identity is verified\n` +
+    `✅ Competitive features unlock\n` +
+    `✅ Leaderboard rankings activate\n\n` +
+    `To unlink later, use /gkunlink`
+  );
+}
+
+async function cmdGkStatus(db, tok, chatId, telegramId) {
+  const [row, meta] = await Promise.all([
+    db.prepare(
+      `SELECT display_name, username, faction, xp_total, xp_seasonal, xp_yearly,
+              linked_email_hash, link_confirmed, created_at
+       FROM telegram_profiles WHERE telegram_id = ?`
+    ).bind(telegramId).first().catch(() => null),
+    getTgMeta(db).catch(() => null),
+  ]);
+
+  if (!row) {
+    await sendTelegramMessage(tok, chatId, '❓ No profile found. Use /gkstart to register.');
+    return;
+  }
+
+  const seasonNum = meta ? meta.season_number : '?';
+  const daysLeft = meta ? tgSeasonDaysRemaining(meta.season_start) : '?';
+  const linked = (row.link_confirmed || row.linked_email_hash) ? '✅ Linked (competition-active)' : '❌ Not linked — use /gklink';
+
+  await sendTelegramMessage(tok, chatId,
+    `📊 <b>Season Stats</b>\n\n` +
+    `Name:        ${escapeHtml(row.display_name || row.username || 'Unknown')}\n` +
+    `Faction:     ${escapeHtml(row.faction || 'None')}\n` +
+    `XP Lifetime: ${row.xp_total}\n` +
+    `XP Season ${seasonNum}: ${row.xp_seasonal}  <i>(${daysLeft}d left)</i>\n` +
+    `XP ${new Date().getUTCFullYear()}: ${row.xp_yearly}\n` +
+    `Account:     ${linked}`
+  );
+}
+
+async function cmdGkSeason(db, tok, chatId) {
+  await checkAndRunTgResets(db).catch(() => {});
+  const meta = await getTgMeta(db).catch(() => null);
+  if (!meta) {
+    await sendTelegramMessage(tok, chatId, '⚠️ Season info unavailable right now.');
+    return;
+  }
+  const daysLeft   = tgSeasonDaysRemaining(meta.season_start);
+  const currentYear = new Date().getUTCFullYear();
+  await sendTelegramMessage(tok, chatId,
+    `🗓 <b>Season Info</b>\n\n` +
+    `Current Season: <b>S${meta.season_number}</b>\n` +
+    `Season Start:   ${String(meta.season_start).slice(0, 10)}\n` +
+    `Days Remaining: ${daysLeft}\n` +
+    `Year:           ${currentYear}\n\n` +
+    `<i>Season XP resets every 90 days. Yearly XP resets on New Year UTC.</i>`
+  );
+}
+
+async function cmdGkLeaderboard(db, tok, chatId) {
+  const [rows, meta] = await Promise.all([
+    db.prepare(
+      `SELECT display_name, username, xp_total, xp_seasonal, faction
+       FROM telegram_profiles ORDER BY xp_seasonal DESC LIMIT 10`
+    ).all().catch(() => ({ results: [] })),
+    getTgMeta(db).catch(() => null),
+  ]);
+
+  const entries = rows.results || [];
+  if (!entries.length) {
+    await sendTelegramMessage(tok, chatId, '📊 No community XP recorded yet. Use /gkstart to get on the board!');
+    return;
+  }
+
+  const seasonNum = meta ? meta.season_number : '?';
+  const daysLeft  = meta ? tgSeasonDaysRemaining(meta.season_start) : '?';
+
+  const lines = entries.map((r, i) => {
+    const name    = escapeHtml(r.display_name || r.username || 'Unknown');
+    const faction = r.faction ? ` [${escapeHtml(r.faction)}]` : '';
+    return `${i + 1}. ${name}${faction} — ${r.xp_seasonal} XP`;
+  }).join('\n');
+
+  await sendTelegramMessage(tok, chatId,
+    `🏆 <b>Leaderboard — Season ${seasonNum}</b>\n` +
+    `<i>${daysLeft}d remaining</i>\n\n${lines}`
+  );
+}
+
+async function cmdGkQuests(db, tok, chatId) {
+  const now  = new Date().toISOString();
+  const rows = await db.prepare(
+    `SELECT id, slug, title, description, quest_type, xp_reward
+     FROM telegram_quests
+     WHERE is_active = 1
+       AND (starts_at IS NULL OR starts_at <= ?)
+       AND (ends_at IS NULL OR ends_at >= ?)
+     ORDER BY created_at DESC
+     LIMIT 5`
+  ).bind(now, now).all().catch(() => ({ results: [] }));
+
+  const quests = rows.results || [];
+  if (!quests.length) {
+    await sendTelegramMessage(tok, chatId, '🔍 No active missions right now. Check back soon!');
+    return;
+  }
+
+  const lines = quests.map(q =>
+    `📜 <b>${escapeHtml(q.title)}</b> [${escapeHtml(q.quest_type)}] — ${q.xp_reward} XP\n` +
+    `   ${escapeHtml(q.description)}\n` +
+    `   Answer: <code>/solve ${escapeHtml(q.slug)} your_answer</code>`
+  ).join('\n\n');
+
+  await sendTelegramMessage(tok, chatId, `🗺️ <b>Active Missions</b>\n\n${lines}`);
+}
+
+async function cmdGkFaction(db, tok, chatId, telegramId, argStr) {
+  const requested = (argStr || '').trim().toLowerCase();
+
+  if (!requested) {
+    // Show current faction
+    const row = await db.prepare(
+      `SELECT faction FROM telegram_profiles WHERE telegram_id = ?`
+    ).bind(telegramId).first().catch(() => null);
+    const current = row?.faction || 'None';
+    const list    = [...APPROVED_FACTIONS].join(', ');
+    await sendTelegramMessage(tok, chatId,
+      `⚔️ <b>Faction</b>\n\nCurrent: <b>${escapeHtml(current)}</b>\n\n` +
+      `To change faction:\n<code>/gkfaction &lt;name&gt;</code>\n\nAvailable: <code>${list}</code>`
+    );
+    return;
+  }
+
+  if (!APPROVED_FACTIONS.has(requested)) {
+    const list = [...APPROVED_FACTIONS].join(', ');
+    await sendTelegramMessage(tok, chatId,
+      `❌ Unknown faction. Available:\n<code>${list}</code>`
+    );
+    return;
+  }
+
+  await db.prepare(
+    `UPDATE telegram_profiles SET faction = ? WHERE telegram_id = ?`
+  ).bind(requested, telegramId).run().catch(() => {});
+
+  await sendTelegramMessage(tok, chatId,
+    `⚔️ Faction set to <b>${escapeHtml(requested)}</b>. Loyalty noted, moonboy.`
+  );
+}
+
+async function cmdGkUnlink(db, tok, chatId, telegramId) {
+  try {
+    await db.prepare(
+      `UPDATE telegram_profiles
+       SET linked_email_hash = NULL, link_confirmed = 0
+       WHERE telegram_id = ?`
+    ).bind(telegramId).run();
+
+    await sendTelegramMessage(tok, chatId,
+      `🔓 <b>Account Unlinked</b>\n\n` +
+      `Your Telegram identity has been unlinked from the website.\n` +
+      `Competitive features will be paused until you relink.\n\n` +
+      `To relink: /gklink`
+    );
+  } catch {
+    await sendTelegramMessage(tok, chatId, '⚠️ Failed to unlink. Please try again.');
+  }
+}
+
+// ── Legacy command implementations (kept for backward compat) ─────────────────
+
+async function cmdStart(db, tok, chatId, telegramId, fromUser) {
+  return cmdGkStart(db, tok, chatId, telegramId, fromUser);
+}
+
+async function cmdHelp(tok, chatId) {
+  return cmdGkHelp(tok, chatId);
 }
 
 async function cmdXp(db, tok, chatId, telegramId) {
@@ -1108,7 +1368,7 @@ async function cmdProfile(db, tok, chatId, telegramId) {
   const [row, meta, solves] = await Promise.all([
     db.prepare(
       `SELECT display_name, username, faction, xp_total, xp_seasonal, xp_yearly,
-              linked_email_hash, created_at
+              linked_email_hash, link_confirmed, created_at
        FROM telegram_profiles WHERE telegram_id = ?`
     ).bind(telegramId).first().catch(() => null),
     getTgMeta(db).catch(() => null),
@@ -1125,7 +1385,7 @@ async function cmdProfile(db, tok, chatId, telegramId) {
   const seasonNum   = meta ? meta.season_number : '?';
   const daysLeft    = meta ? tgSeasonDaysRemaining(meta.season_start) : '?';
   const currentYear = new Date().getUTCFullYear();
-  const linked      = row.linked_email_hash ? '✅ Linked' : '❌ Not linked';
+  const linked      = (row.link_confirmed || row.linked_email_hash) ? '✅ Linked' : '❌ Not linked — use /gklink';
   const faction     = row.faction || 'None';
 
   await sendTelegramMessage(tok, chatId,
@@ -1290,15 +1550,8 @@ async function cmdSolve(db, tok, chatId, telegramId, argStr) {
   );
 }
 
-async function cmdLink(tok, chatId) {
-  await sendTelegramMessage(tok, chatId,
-    `🔗 <b>Link your Telegram to the Moonboys website</b>\n\n` +
-    `To link your identity:\n` +
-    `1. Visit <a href="https://crypto-moonboys.github.io/community.html">community.html</a>\n` +
-    `2. Connect your Telegram account via the Login Widget in the comment form\n` +
-    `3. Your Telegram and website identities will be linked via your email hash\n\n` +
-    `<i>Your email is never stored publicly. Only a one-way hash is used.</i>`
-  );
+async function cmdLink(db, tok, chatId, telegramId) {
+  return cmdGkLink(db, tok, chatId, telegramId);
 }
 
 async function cmdFaction(db, tok, chatId, telegramId, argStr) {

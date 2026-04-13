@@ -179,3 +179,22 @@ CREATE TABLE IF NOT EXISTS telegram_year_archives (
   year_end         DATETIME NOT NULL,
   top_entries_json TEXT     NOT NULL DEFAULT '[]'
 );
+
+-- ── GK command system (migration 002) ─────────────────────────────────────────
+
+-- Short-lived tokens issued by the /gklink bot command; single-use, 15-minute TTL.
+-- Applied via: wrangler d1 execute wikicoms --file=workers/moonboys-api/migrations/002_gk_commands.sql --remote
+CREATE TABLE IF NOT EXISTS telegram_link_tokens (
+  token        TEXT PRIMARY KEY,
+  telegram_id  TEXT NOT NULL,
+  expires_at   DATETIME NOT NULL,
+  used         INTEGER NOT NULL DEFAULT 0,
+  created_at   DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_link_tokens_telegram
+  ON telegram_link_tokens(telegram_id, expires_at);
+
+-- Migration: add link_confirmed to telegram_profiles.
+-- Run once manually against live D1 if adding to an existing database:
+--   ALTER TABLE telegram_profiles ADD COLUMN link_confirmed INTEGER NOT NULL DEFAULT 0;

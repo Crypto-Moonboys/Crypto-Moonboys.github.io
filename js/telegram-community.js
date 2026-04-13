@@ -200,9 +200,66 @@
     });
   }
 
+  // ── GK Link token confirmation ────────────────────────────────
+
+  /**
+   * Detect ?gklink=<token> in the URL.
+   * Calls /telegram/link/confirm, then marks the local identity as linked.
+   * Shows a brief inline status message on the page if a banner element exists.
+   */
+  function handleGkLinkToken() {
+    if (!BASE) return;
+    var params = new URLSearchParams(window.location.search);
+    var token  = params.get('gklink');
+    if (!token) return;
+
+    // Remove the token from the URL bar without reloading
+    try {
+      var u = new URL(window.location.href);
+      u.searchParams.delete('gklink');
+      var clean = u.toString();
+      window.history.replaceState({}, '', clean);
+    } catch (e) { /* ignore */ }
+
+    // Show banner if available
+    var banner = document.getElementById('gklink-status');
+    if (banner) {
+      banner.textContent = '🔗 Confirming your link…';
+      banner.style.display = '';
+    }
+
+    fetch(BASE + '/telegram/link/confirm?token=' + encodeURIComponent(token))
+      .then(function (r) { return r.json().then(function (d) { return { ok: r.ok, data: d }; }); })
+      .then(function (result) {
+        if (result.ok && result.data && result.data.ok) {
+          // Mark the identity as linked in localStorage
+          if (window.MOONBOYS_IDENTITY && window.MOONBOYS_IDENTITY.setTelegramLinked) {
+            window.MOONBOYS_IDENTITY.setTelegramLinked();
+          }
+          if (banner) {
+            banner.textContent = '✅ Account linked! Competitive features are now active.';
+            banner.className = (banner.className || '') + ' gklink-success';
+          }
+        } else {
+          if (banner) {
+            banner.textContent = '❌ Link failed: ' + (result.data && result.data.error ? result.data.error : 'invalid or expired token');
+            banner.className = (banner.className || '') + ' gklink-error';
+          }
+        }
+      })
+      .catch(function () {
+        if (banner) {
+          banner.textContent = '⚠️ Could not reach the server. Please try again.';
+          banner.className = (banner.className || '') + ' gklink-error';
+        }
+      });
+  }
+
   // ── Boot ──────────────────────────────────────────────────────
 
   function init() {
+    handleGkLinkToken();
+
     var lb  = document.getElementById('tg-community-leaderboard');
     var qp  = document.getElementById('tg-quest-panel');
     var pc  = document.getElementById('tg-profile-card');
@@ -218,12 +275,13 @@
 
   // Expose for external callers (e.g. after Telegram auth)
   window.MOONBOYS_TG_COMMUNITY = {
-    initLeaderboard:  initTgLeaderboard,
-    initQuestPanel:   initTgQuestPanel,
-    initProfileCard:  initTgProfileCard,
-    initDailyStatus:  initTgDailyStatus,
-    initActivityFeed: initTgActivityFeed,
-    init:             init,
+    initLeaderboard:   initTgLeaderboard,
+    initQuestPanel:    initTgQuestPanel,
+    initProfileCard:   initTgProfileCard,
+    initDailyStatus:   initTgDailyStatus,
+    initActivityFeed:  initTgActivityFeed,
+    handleGkLinkToken: handleGkLinkToken,
+    init:              init,
   };
 
   if (document.readyState === 'loading') {
