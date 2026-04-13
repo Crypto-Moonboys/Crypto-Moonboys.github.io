@@ -211,6 +211,11 @@
             // arcade scores) are unblocked for the rest of the session.
             if (window.MOONBOYS_IDENTITY && window.MOONBOYS_IDENTITY.saveTelegramIdentity && id.telegram_id) {
               window.MOONBOYS_IDENTITY.saveTelegramIdentity(id.telegram_id, id.display_name);
+              // Completing the Login Widget IS the /link step — mark as fully linked
+              // so leaderboard, voting, and seasonal XP features unlock immediately.
+              if (window.MOONBOYS_IDENTITY.setTelegramLinked) {
+                window.MOONBOYS_IDENTITY.setTelegramLinked();
+              }
             }
             // Prefill every comment form visible on the page
             Array.prototype.forEach.call(
