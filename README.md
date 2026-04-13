@@ -99,26 +99,20 @@ Two separate Cloudflare Workers power the live backend.
 **Handles:**
 | Endpoint | Purpose |
 |----------|---------|
-| `GET/POST /comments` | Article comments (D1-backed, SHA-256 email hash for Gravatar) |
-| `POST /comments/:id/vote` | Comment up/down votes |
-| `GET /comments/recent` | Recent comments feed |
-| `GET/POST /likes` | Page likes |
-| `GET/POST /citation-votes` | Citation source up/down votes |
-| `GET /feed` | Blended activity feed (comments + likes) |
-| `GET /leaderboard` | Top contributors by comment count (with `email_hash` for avatars) |
-| `GET /activity/hot` | Pages with most recent engagement |
 | `GET /health` | Health check |
 | `GET /sam/status` | SAM agent status widget |
 | `POST /telegram/auth` | Telegram Login Widget HMAC verification |
 | `POST /telegram/webhook` | Telegram bot command handler |
-| `GET /telegram/profile` | User Telegram profile + linked identity |
+| `GET /telegram/profile` | User Telegram profile + faction |
 | `GET /telegram/leaderboard` | Community XP leaderboard |
 | `GET /telegram/quests` | Active lore quests |
-| `POST /telegram/link` | Link Telegram identity to wiki email |
-| `GET /telegram/link/confirm?token=` | Validate a one-time `/gklink` token and mark account as linked |
+| `POST /telegram/link` | Generate a one-time `/gklink` token (15-minute TTL) |
+| `GET /telegram/link/confirm?token=` | Validate a one-time `/gklink` token and confirm link |
 | `GET /telegram/activity` | Telegram XP activity feed |
 | `GET /telegram/daily-status` | Daily XP claim status |
 | `GET /telegram/season/current` | Current community season info |
+
+> **Note:** Engagement routes (`/comments`, `/likes`, `/citation-votes`, `/feed`, `/leaderboard`, `/activity/hot`) are referenced by the frontend JS files for future use but are **not yet implemented** in the current worker. The D1 schema (`wikicoms`) does not yet provision the required tables. Frontend components gracefully degrade to placeholder states when these routes are absent.
 
 **Storage:** D1 database `wikicoms` (binding: `DB`)
 **Secrets required:** `TELEGRAM_BOT_TOKEN`, `TELEGRAM_BOT_USERNAME`
@@ -145,8 +139,8 @@ All GK commands are case-insensitive (normalised via `.toLowerCase()`).
 2. Worker generates a secure UUID token (15-minute TTL) stored in `telegram_link_tokens`.
 3. Bot replies with a deep-link: `https://crypto-moonboys.github.io/community.html?gklink=<token>`.
 4. Browser opens `community.html`; `telegram-community.js` detects `?gklink=` and calls `GET /telegram/link/confirm?token=`.
-5. Worker validates the token (single-use, expiry checked), sets `link_confirmed = 1` on the profile, and marks the token as used.
-6. Frontend stores the linked state in `localStorage` and unlocks competitive features (leaderboard submissions, XP display).
+5. Worker validates the token (single-use, expiry checked), marks the token as used, and returns `telegram_id`.
+6. Frontend stores the linked state (`moonboys_tg_linked = 1`) in `localStorage` and unlocks competitive features (leaderboard submissions, XP display).
 
 ---
 
@@ -181,13 +175,14 @@ The Battle Chamber is the community hub. It is wired to `moonboys-api` via `js/b
 
 | Section | Source |
 |---------|--------|
-| Top Contributors (leaderboard) | `GET /leaderboard` — ranked by comment count, Gravatar avatars from `email_hash` |
-| Live Activity Feed | `GET /feed` — blended comments + likes |
-| Engagement Snapshot | `GET /activity/hot` — most-engaged wiki pages |
 | Telegram XP Leaderboard | `GET /telegram/leaderboard` (via `telegram-community.js`) |
 | Lore Quests | `GET /telegram/quests` (via `telegram-community.js`) |
-| Faction Selector | Local (`localStorage`) — syncs to Telegram profile when linked |
+| Telegram Activity Feed | `GET /telegram/activity` (via `telegram-community.js`) |
+| Faction Selector | Local (`localStorage`) — syncs to Telegram profile via `/gkfaction` when linked |
 | Daily Missions | Static, local |
+| Top Contributors (leaderboard) | `GET /leaderboard` — **not yet live** (engagement tables pending) |
+| Live Activity Feed | `GET /feed` — **not yet live** |
+| Engagement Snapshot | `GET /activity/hot` — **not yet live** |
 
 ---
 
@@ -370,11 +365,12 @@ wrangler deploy
 | Autonomous editorial engine | ✅ Active |
 | Stub integrity | ✅ Enforced |
 | Phase 5/6 intelligence | ✅ Validated |
-| Engagement API (`moonboys-api`) | ✅ Deployed |
+| Telegram/community API (`moonboys-api`) | ✅ Deployed (Telegram routes live) |
 | Arcade leaderboard (`moonboys-leaderboard`) | ✅ Deployed |
-| Battle Chamber / community page | ✅ Live with API hydration |
+| Battle Chamber / community page | ✅ Live (Telegram widgets active; engagement routes pending) |
 | Gravatar / avatar flow | ✅ SHA-256 hash, identicon fallback |
-| Telegram community XP layer | ✅ Worker routes + frontend widgets present |
+| Telegram community XP layer | ✅ Worker routes + frontend widgets live |
+| Comment/like/citation engagement routes | 🔲 Planned (D1 tables not yet provisioned) |
 
 ---
 
