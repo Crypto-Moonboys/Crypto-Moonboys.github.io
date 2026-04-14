@@ -40,38 +40,9 @@
 <script src="/js/identity-gate.js"></script>
 <script src="/js/game-fullscreen.js"></script>
 <script type="module">
-import { ArcadeSync } from '/js/arcade-sync.js';
-import { submitScore } from '/js/leaderboard-client.js';
-
-const name = window.MOONBOYS_IDENTITY?.getTelegramName?.() || ArcadeSync.getPlayer();
-document.getElementById('player').textContent=name;
-
-let start=null;
-let int=null;
-let best=ArcadeSync.getHighScore('hexgl');
-const bestEl=document.getElementById('best');
-bestEl.textContent=best;
-
-startBtn.onclick=()=>{
- document.getElementById('hexglFrame').src='https://cdn.jsdelivr.net/gh/BKcore/HexGL@master/index.html';
- start=performance.now();
- int=setInterval(()=>{
-  timer.textContent=((performance.now()-start)/1000).toFixed(3);
- },50);
-};
-
-finishBtn.onclick=()=>{
- if(!start)return;
- clearInterval(int);
- const t=(performance.now()-start)/1000;
- const score=Math.floor(500000-t*1000);
- ArcadeSync.setHighScore('hexgl',score);
- submitScore(name,score,'hexgl');
- xp.textContent=Math.floor(score/1000);
- if(score>best){best=score;bestEl.textContent=best;}
-};
-
-resetBtn.onclick=()=>{clearInterval(int);start=null;timer.textContent='0.000';};
+import { mountGame }              from '/js/arcade/core/game-shell.js';
+import { bootstrapHexGLMonster } from '/js/arcade/games/hexgl-monster/bootstrap.js';
+mountGame({ root: document.querySelector('.game-card'), bootstrap: bootstrapHexGLMonster });
 </script>
 </body>
 </html>

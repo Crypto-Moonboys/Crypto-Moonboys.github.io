@@ -288,14 +288,9 @@
 <script src="/js/wiki.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/phaser@3.70.0/dist/phaser.min.js"></script>
 <script type="module">
-  import { bootBlockTopia } from './js/blocktopia-phaser-game.js';
-  const loading = document.getElementById('bt-loading');
-  bootBlockTopia('phaser-root').then(() => {
-    setTimeout(() => loading?.classList.add('hidden'), 1800);
-  }).catch(err => {
-    console.error('BlockTopia boot failed:', err);
-    if (loading) loading.innerHTML = '<div class="bt-loader-title" style="color:#ff3355">BOOT FAILED</div><div class="bt-loader-sub">' + err.message + '</div>';
-  });
+  import { mountGame }                  from '/js/arcade/core/game-shell.js';
+  import { bootstrapBlocktopiaPhaser } from '/js/arcade/games/blocktopia-phaser/bootstrap.js';
+  mountGame({ root: document.getElementById('phaser-root'), bootstrap: bootstrapBlocktopiaPhaser });
 </script>
 </body>
 </html>
