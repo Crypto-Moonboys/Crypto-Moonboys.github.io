@@ -40,6 +40,21 @@ const TILE = Object.freeze({
 /** Tile types that block movement */
 const BLOCKED_TILES = new Set([TILE.BUILDING_S, TILE.BUILDING_M, TILE.BUILDING_L, TILE.TREE]);
 
+/** Deadzone threshold for the virtual joystick axis (0–1) */
+const JOYSTICK_DEADZONE = 0.35;
+
+/** Minimum frames before an NPC may show a new rumour bubble */
+const RUMOR_MIN_FRAMES = 540;
+/** Maximum additional random frames added to the rumour interval */
+const RUMOR_VARIANCE_FRAMES = 360;
+
+/** Direction deltas indexed [down, up, right, left] used for wander/patrol NPCs */
+const WANDER_DC = [0,  0, 1, -1];
+const WANDER_DR = [1, -1, 0,  0];
+
+/** Controls hint displayed in the HUD footer */
+const CONTROLS_HINT = 'WASD/Arrows: Move  ·  SPACE: Day/Night  ·  Q/E or scroll: Zoom';
+
 // ── Coordinate helpers ────────────────────────────────────────────────────────
 
 /**
@@ -250,6 +265,13 @@ function generateTextures(scene) {
 }
 
 // ── Faction → texture helper ─────────────────────────────────────────────────
+
+/**
+ * Map an NPC faction name to its procedurally-generated character texture key.
+ * Falls back to the neutral trader sprite for unknown factions.
+ * @param {string} faction - NPC faction identifier (e.g. 'GraffPUNKS', 'hostile')
+ * @returns {string} Phaser texture key
+ */
 function npcTextureKey(faction) {
   const map = { GraffPUNKS: 'char_runner', hostile: 'char_warden', 'moon-mission': 'char_oracle' };
   return map[faction] || 'char_trader';
@@ -416,7 +438,8 @@ class BlockTopiaScene extends Phaser.Scene {
           }
         }
       }
-      return ['bld_s', 'bld_m', 'bld_l'][type - 2] ?? 'bld_s';
+      // type - TILE.BUILDING_S maps BUILDING_S→0, BUILDING_M→1, BUILDING_L→2
+      return ['bld_s', 'bld_m', 'bld_l'][type - TILE.BUILDING_S] ?? 'bld_s';
     }
     const flat = {
       [TILE.ROAD]:     'tile_road',
@@ -545,11 +568,11 @@ class BlockTopiaScene extends Phaser.Scene {
             dc = Math.abs(rawDc) >= Math.abs(rawDr) ? Math.sign(rawDc) : 0;
             dr = Math.abs(rawDr) >  Math.abs(rawDc) ? Math.sign(rawDr) : 0;
           }
-        } else if (behavior !== 'idle' && behavior !== 'trade' && behavior !== 'observe' && behavior !== 'hide') {
-          // Wander / patrol
+        } else if (!STATIONARY_BEHAVIORS.has(behavior)) {
+          // Wander / patrol — pick a random cardinal direction
           const dir = Phaser.Math.Between(0, 3);
-          dc = [0, 0, 1, -1][dir];
-          dr = [1, -1, 0, 0][dir];
+          dc = WANDER_DC[dir];
+          dr = WANDER_DR[dir];
         }
 
         const nc = npc.col + dc, nr = npc.row + dr;
@@ -567,8 +590,8 @@ class BlockTopiaScene extends Phaser.Scene {
         }
       }
 
-      // Rumour bubble at random intervals
-      if (npc.rumorTimer > 540 + Phaser.Math.Between(0, 360)) {
+      // Rumour bubble at randomised intervals using named constants
+      if (npc.rumorTimer > RUMOR_MIN_FRAMES + Phaser.Math.Between(0, RUMOR_VARIANCE_FRAMES)) {
         npc.rumorTimer = 0;
         const rumors = npc.profile.rumors ?? [];
         if (rumors.length > 0) {
@@ -644,7 +667,7 @@ class BlockTopiaScene extends Phaser.Scene {
     this._createChatPanel(W, H);
 
     // ─ Controls hint (bottom-left) ─
-    this.add.text(10, H - 22, 'WASD/Arrows: Move  ·  SPACE: Day/Night  ·  Q/E or scroll: Zoom', {
+    this.add.text(10, H - 22, CONTROLS_HINT, {
       fontSize: '10px', color: '#444466', fontFamily: 'monospace'
     }).setScrollFactor(0).setDepth(10001);
   }
@@ -890,7 +913,7 @@ class BlockTopiaScene extends Phaser.Scene {
     else if (this.cursors.down.isDown  || this.keys.S.isDown)  dr =  1;
 
     // Virtual joystick override
-    if (this._joyActive && (Math.abs(this._joyDir.dx) > 0.35 || Math.abs(this._joyDir.dy) > 0.35)) {
+    if (this._joyActive && (Math.abs(this._joyDir.dx) > JOYSTICK_DEADZONE || Math.abs(this._joyDir.dy) > JOYSTICK_DEADZONE)) {
       dc = Math.round(this._joyDir.dx);
       dr = Math.round(this._joyDir.dy);
     }
