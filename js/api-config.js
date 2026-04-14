@@ -73,6 +73,23 @@ window.MOONBOYS_API = {
     { id: 'ripple',       symbol: 'XRP',  label: 'XRP',          icon: '✕'  },
   ],
 
+  /* ── WAX DEX Tokens ──────────────────────────────────────── */
+  // WAX-chain DEX tokens fetched from Alcor Exchange (wax.alcor.exchange).
+  // Not available on CoinGecko — shown with graceful fallback if API unavailable.
+  WAX_DEX_ASSETS: [
+    { symbol: 'WAXCASH', label: 'WAXCASH', icon: '💵', contract: 'waxcash.gm' },
+    { symbol: 'NBG',     label: 'NBG',     icon: '🟢', contract: 'nebulablockgames' },
+    { symbol: 'WUFFI',   label: 'WUFFI',   icon: '🐾', contract: 'wuffi' },
+    { symbol: 'PXJ',     label: 'PXJ',     icon: '🎮', contract: 'pxjtoken' },
+    { symbol: 'WAXUSDC', label: 'WAXUSDC', icon: '💲', contract: 'waxusdc' },
+    { symbol: 'WAXUSDT', label: 'WAXUSDT', icon: '💱', contract: 'waxusdt' },
+    { symbol: 'LSWAX',   label: 'LSWAX',   icon: '🔒', contract: 'lswaxtoken' },
+    { symbol: 'CHEESE',  label: 'CHEESE',  icon: '🧀', contract: 'cheesetoken' },
+    { symbol: 'KING',    label: 'KING',    icon: '👑', contract: 'kingtoken' },
+    { symbol: 'DMT',     label: 'DMT',     icon: '🌀', contract: 'dmttoken' },
+    { symbol: 'KEK',     label: 'KEK',     icon: '🐸', contract: 'kektoken' },
+  ],
+
   /* ── Environment Metadata ───────────────────────────────── */
   // Useful for debugging, analytics, and future multi-environment setups.
   ENV: {

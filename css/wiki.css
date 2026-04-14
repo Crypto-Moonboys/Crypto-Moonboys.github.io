@@ -1186,6 +1186,23 @@ a.hero-stat-link:hover {
   vector-effect: non-scaling-stroke;
 }
 
+/* WAX DEX token badge */
+.price-card--wax-dex {
+  border-color: rgba(247, 201, 72, 0.25);
+}
+.price-card-dex-badge {
+  display: inline-block;
+  font-size: .65rem;
+  font-weight: 700;
+  letter-spacing: .04em;
+  padding: 1px 5px;
+  border-radius: 4px;
+  background: rgba(247, 201, 72, .18);
+  color: var(--color-accent);
+  vertical-align: middle;
+  margin-left: 4px;
+}
+
 /* ============================================================
    HOMEPAGE BATTLE / ACTIVITY WIDGETS
    ============================================================ */

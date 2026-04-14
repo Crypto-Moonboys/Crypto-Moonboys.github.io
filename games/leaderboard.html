@@ -73,6 +73,12 @@
       border-collapse: collapse;
       font-size: .88rem;
     }
+    .lb-table thead th,
+    .lb-table tbody td {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
     .lb-table thead th {
       background: var(--color-surface-2);
       color: var(--color-text-muted);
@@ -222,13 +228,6 @@
   </div>
   <nav class="header-nav" aria-label="Main navigation">
     <a href="/index.html">Home</a>
-    <a href="/categories/index.html">Categories</a>
-    <a href="/search.html">All Articles</a>
-    <a href="/timeline.html">📅 Timeline</a>
-    <a href="/graph.html">🌐 Graph</a>
-    <a href="/dashboard.html">📊 Dashboard</a>
-    <a href="/sam.html">🧠 SAM</a>
-    <a href="/games/" class="active" aria-current="page">🕹️ Arcade</a>
   </nav>
 </header>
 <div id="sidebar-overlay" aria-hidden="true"></div>
@@ -258,6 +257,12 @@
         <a href="/games/tetris-block-topia.html"><span class="nav-icon">🟦</span> Tetris Block Topia</a>
         <a href="/games/crystal-quest.html"><span class="nav-icon">🧩</span> Crystal Quest</a>
         <a href="/games/block-topia-quest-maze.html"><span class="nav-icon">🗺️</span> Block Topia Quest Maze</a>
+        <a href="/games/hexgl.html"><span class="nav-icon">🏁</span> HexGL</a>
+        <a href="/games/hexgl-monster.html"><span class="nav-icon">🏎️</span> HexGL Monster</a>
+        <a href="/games/hexgl-monster-max.html"><span class="nav-icon">🚀</span> HexGL Monster MAX</a>
+        <a href="/games/block-topia-street-signal-3008.html"><span class="nav-icon">🏙️</span> Block Topia 3008</a>
+        <a href="/games/block-topia-street-signal-3008-monster.html"><span class="nav-icon">👹</span> BT3008 Monster</a>
+        <a href="/games/block-topia-street-signal-3008-phaser.html"><span class="nav-icon">⚡</span> BT3008 Phaser</a>
       </div>
     </div>
     <div class="sidebar-section">
