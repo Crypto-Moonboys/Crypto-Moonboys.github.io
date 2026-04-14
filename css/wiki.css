@@ -100,6 +100,7 @@ img { max-width: 100%; height: auto; }
 #header-search {
   display: flex;
   flex: 1;
+  min-width: 160px;
   max-width: 520px;
   margin: 0 auto;
   position: relative;
@@ -1008,6 +1009,16 @@ a.hero-stat-link:hover {
 #back-to-top:hover   { background: var(--color-accent-dark); transform: translateY(-2px); }
 
 /* ── MOBILE ────────────────────────────────────────────── */
+/* At mid-range widths, hide lower-priority nav links to prevent
+   the header-nav from crowding the search bar. */
+@media (max-width: 1400px) {
+  .header-nav a[href="/timeline.html"],
+  .header-nav a[href="/graph.html"],
+  .header-nav a[href="/dashboard.html"],
+  .header-nav a[href="/sam.html"] {
+    display: none;
+  }
+}
 @media (max-width: 900px) {
   #sidebar {
     position: fixed;
