@@ -20,6 +20,7 @@ const TABS = [
   { key: 'asteroids',  label: '🌑 Asteroids',   icon: '🌑' },
   { key: 'breakout',   label: '🧱 Bullrun',     icon: '🧱' },
   { key: 'tetris',     label: '🟦 Tetris',      icon: '🟦' },
+  { key: 'hexgl',      label: '🏁 HexGL',       icon: '🏁' },
 ];
 
 const GAME_LABELS = {
@@ -31,6 +32,7 @@ const GAME_LABELS = {
   asteroids:  '🌑 Asteroids',
   breakout:   '🧱 Bullrun',
   tetris:     '🟦 Tetris',
+  hexgl:      '🏁 HexGL',
   bonus:      '⭐ Bonus',
 };
 
@@ -118,7 +120,7 @@ function renderTable(data) {
   // Show per-game breakdown columns on all aggregate tabs
   const AGGREGATE_TABS = new Set(['global', 'seasonal', 'yearly', 'all-time']);
   const isGlobal = AGGREGATE_TABS.has(currentTab);
-  const BREAKDOWN_GAMES = ['snake', 'crystal', 'blocktopia', 'invaders', 'pacchain', 'asteroids', 'breakout', 'tetris'];
+  const BREAKDOWN_GAMES = ['snake', 'crystal', 'blocktopia', 'invaders', 'pacchain', 'asteroids', 'breakout', 'tetris', 'hexgl'];
 
   let html = `
     <table class="lb-table" aria-label="Leaderboard">

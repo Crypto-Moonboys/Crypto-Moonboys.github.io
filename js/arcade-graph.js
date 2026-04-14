@@ -28,6 +28,7 @@ function makeOverviewNodes(cx, cy, r) {
     { id: 'asteroids',  label: '🌑 Asteroids',  color: C.muted  },
     { id: 'breakout',   label: '🧱 Bullrun',    color: '#ff6b35' },
     { id: 'tetris',     label: '🟦 Tetris',     color: '#a78bfa' },
+    { id: 'hexgl',      label: '🏁 HexGL',      color: C.cyan   },
   ];
   const out = [
     { id: 'global', label: '🏆 Arcade', color: C.gold, radius: 26, x: cx, y: cy, fixed: true },
@@ -53,6 +54,7 @@ const OVERVIEW_EDGES = [
   { source: 'global', target: 'asteroids'  },
   { source: 'global', target: 'breakout'   },
   { source: 'global', target: 'tetris'     },
+  { source: 'global', target: 'hexgl'      },
 ];
 
 // ── State ─────────────────────────────────────────────────────────────────
@@ -128,6 +130,7 @@ export function setPlayerState(entry) {
     { id: 'asteroids',  label: '🌑 Asteroids',  color: C.muted,  score: bd.asteroids  ?? null },
     { id: 'breakout',   label: '🧱 Bullrun',   color: '#ff6b35',  score: bd.breakout   ?? null },
     { id: 'tetris',     label: '🟦 Tetris',     color: '#a78bfa',  score: bd.tetris     ?? null },
+    { id: 'hexgl',      label: '🏁 HexGL',      color: C.cyan,     score: bd.hexgl      ?? null },
     { id: 'bonus',      label: '⭐ Bonus',       color: C.green,  score: bd.variety_bonus ?? null },
   ];
 
