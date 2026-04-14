@@ -233,6 +233,7 @@
   var origNextSibling = null;
   var stageTarget     = null; // element actually moved into the overlay (btqm-game-area or game-card)
   var isOpen          = false;
+  var _gameStarted    = false; // true once the in-overlay Start button has been clicked at least once
   var scoreInterval   = null;
   // Cached overlay score display elements; set in buildLeftPanel / buildRightPanel.
   var cachedLiveScore = null;
@@ -546,6 +547,7 @@
   function closeOverlay() {
     if (!isOpen) return;
     isOpen = false;
+    _gameStarted = false; // reset so Space can start the game again next time the overlay opens
 
     // Stop live score updater.
     if (scoreInterval) { clearInterval(scoreInterval); scoreInterval = null; }
@@ -619,6 +621,7 @@
     var gameStartBtn = document.getElementById('startBtn');
     if (gameStartBtn && isOpen) {
       gameStartBtn.click();
+      _gameStarted = true;
       _isPaused = false;
       syncPauseBtn();
     }
@@ -682,13 +685,17 @@
       var focused = document.activeElement;
       var tag = focused ? focused.tagName : '';
       if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
-      // Trigger the overlay START button if the game is not yet running.
-      // All canvas-based games expose a global `running` flag; if it is falsy
-      // (undefined counts as falsy for games not yet started) we fire start.
+      // Trigger the overlay START button if the game has not yet been started
+      // in this overlay session.  Using _gameStarted (set when btnStart is clicked)
+      // instead of window.running because game modules use function-scoped `running`
+      // variables (not window.running), so window.running is always undefined/falsy.
+      // Without this guard, every Space keypress would re-trigger startBtn and
+      // rebuild the invader formation (or reset any other game mid-play).
       var gameStartBtn = document.getElementById('startBtn');
-      if (gameStartBtn && !window.running) {
+      if (gameStartBtn && !_gameStarted) {
         e.preventDefault();
         gameStartBtn.click();
+        _gameStarted = true;
         _isPaused = false;
         syncPauseBtn();
       }

@@ -123,7 +123,15 @@ function renderTable(data) {
   const BREAKDOWN_GAMES = ['snake', 'crystal', 'blocktopia', 'invaders', 'pacchain', 'asteroids', 'breakout', 'tetris', 'hexgl'];
 
   let html = `
-    <table class="lb-table" aria-label="Leaderboard">
+    <table class="lb-table" style="table-layout:fixed" aria-label="Leaderboard">
+      <colgroup>
+        <col style="width:42px">
+        <col style="width:160px">
+        <col style="width:110px">
+        ${showBreakdown && isGlobal ? BREAKDOWN_GAMES.map(() =>
+          `<col class="lb-hide-mobile" style="width:90px">`
+        ).join('') + `<col class="lb-hide-mobile" style="width:90px">` : ''}
+      </colgroup>
       <thead>
         <tr>
           <th scope="col">#</th>
