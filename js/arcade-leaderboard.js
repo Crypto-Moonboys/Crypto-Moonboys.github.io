@@ -188,7 +188,7 @@ function renderTable(data) {
       <tr class="lb-row" data-rank="${rank}" tabindex="0" role="button" aria-label="View breakdown for ${escHtml(row.player || 'Player')}">
         <td class="lb-rank">${medalFor(rank)}</td>
         <td class="lb-player">${escHtml(row.player || '—')}</td>
-        <td class="lb-score">${formatScore(row.score)}</td>
+        <td class="lb-score">${formatScore(row.score ?? 0)}</td>
       </tr>
     `;
   });
