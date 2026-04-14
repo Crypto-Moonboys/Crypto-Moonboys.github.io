@@ -1086,7 +1086,7 @@ function makeRemoteTexture(scene) {
 function makeFountainTexture(scene) {
   const key = 'prop_fountain';
   if (scene.textures.exists(key)) return;
-  // Tall iconic prop: ~80 wide, ~100 tall
+  // Tall iconic prop: ~80px wide, ~100px tall
   const W = 80, H = 100;
   const rt = scene.add.renderTexture(0, 0, W, H);
   const g  = scene.add.graphics();
