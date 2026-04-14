@@ -21,6 +21,12 @@
  */
 
 /**
+ * Required methods that every game lifecycle object must implement.
+ * @type {string[]}
+ */
+var LIFECYCLE_METHODS = ['init', 'start', 'pause', 'resume', 'reset', 'destroy', 'getScore'];
+
+/**
  * Mount a game onto the page.
  *
  * @param {object}   options
@@ -32,22 +38,50 @@ export async function mountGame(options) {
   var root      = options.root;
   var bootstrap = options.bootstrap;
 
+  if (!(root instanceof Element)) {
+    console.error('[game-shell] root must be a DOM Element');
+    return null;
+  }
+
   if (typeof bootstrap !== 'function') {
     console.error('[game-shell] bootstrap must be a function');
     return null;
   }
 
-  var game = bootstrap(root);
+  var game;
+  try {
+    game = bootstrap(root);
+  } catch (err) {
+    console.error('[game-shell] bootstrap threw an error:', err);
+    return null;
+  }
 
   if (!game) {
     console.error('[game-shell] bootstrap returned nothing');
     return null;
   }
 
+  // Warn if the returned object is missing any required lifecycle methods.
+  var missing = LIFECYCLE_METHODS.filter(function (m) { return typeof game[m] !== 'function'; });
+  if (missing.length) {
+    console.warn('[game-shell] game object is missing lifecycle methods: ' + missing.join(', '));
+  }
+
   // Draw the initial board so the canvas is not blank before the first click.
   if (typeof game.init === 'function') {
-    await game.init();
+    try {
+      await game.init();
+    } catch (err) {
+      console.error('[game-shell] game.init() threw an error:', err);
+    }
   }
+
+  // Call destroy() when the player navigates away so event listeners are cleaned up.
+  window.addEventListener('pagehide', function () {
+    if (typeof game.destroy === 'function') {
+      try { game.destroy(); } catch (e) { console.warn('[game-shell] game.destroy() threw during teardown:', e); }
+    }
+  }, { once: true });
 
   return game;
 }

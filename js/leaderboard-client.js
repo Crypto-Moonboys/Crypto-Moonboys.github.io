@@ -44,6 +44,15 @@ function isTelegramLinked() {
  * and the sync gate modal is shown if available — the game itself is unaffected.
  */
 export async function submitScore(player, score, game = "global") {
+  // Reject scores that are not finite non-negative numbers to prevent garbage data
+  // (e.g. NaN, Infinity, negative values) from reaching the leaderboard.
+  if (typeof score !== "number" || !isFinite(score) || score < 0) {
+    console.warn("[leaderboard-client] Invalid score; submission skipped:", score);
+    return;
+  }
+  // Normalise to a safe integer (floor to drop any floating-point noise).
+  score = Math.floor(score);
+
   // Competitive leaderboard submission requires /gklink (telegram_linked tier).
   // Telegram auth alone (Step 1) is not sufficient — /gklink must be completed first.
   if (!isTelegramLinked()) {
