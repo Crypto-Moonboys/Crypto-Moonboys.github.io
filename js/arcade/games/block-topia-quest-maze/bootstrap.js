@@ -1,16 +1,24 @@
 /**
- * btqm-game.js — Block Topia Quest Maze game logic
+ * bootstrap.js — Block Topia Quest Maze game module
  *
- * Full Phaser 3 RPG dungeon-crawler implementation.
- * Requires Phaser to be available as a global (loaded via CDN before this module).
+ * Self-contained Phaser 3 RPG dungeon-crawler. Contains all game scenes,
+ * constants, utilities, and the arcade bootstrap lifecycle.
  *
- * Exports:
- *   bootBTQM(canvasId) — creates the Phaser.Game instance, wires the fullscreen
- *                        shell buttons, and sets up the mobile d-pad.
- *                        Returns the Phaser.Game instance.
+ * Exported entry point: bootstrapBlockTopiaQuestMaze({ root })
+ * Called by game-shell.js via mountGame().
+ *
+ * Integrations:
+ *  - /js/arcade-sync.js        (local high-score persistence)
+ *  - /js/leaderboard-client.js (remote score submission)
+ *  - /js/bonus-engine.js       (hidden bonus rolls)
+ *  - /js/game-fullscreen.js    (fullscreen shell lifecycle hooks)
+ *
+ * Note: Phaser 3 is loaded as a classic CDN script before this module runs.
  */
 
-// ─── MODULE-LEVEL IMPORTS (with graceful fallback) ───────────────────────────
+import { CONFIG }     from './config.js';
+import { GameRegistry } from '/js/arcade/core/game-registry.js';
+
 import { ArcadeSync } from '/js/arcade-sync.js';
 import { submitScore, fetchLeaderboard } from '/js/leaderboard-client.js';
 import { rollHiddenBonus, showBonusPopup } from '/js/bonus-engine.js';
@@ -1768,113 +1776,154 @@ class BattleScene extends Phaser.Scene {
   }
 }
 
+
+// Register in the central arcade registry when this module is imported.
+GameRegistry.register(CONFIG.id, {
+  label:     CONFIG.label,
+  bootstrap: bootstrapBlockTopiaQuestMaze,
+});
+
 // ─────────────────────────────────────────────────────────────────────────────
-// BOOT ENTRY POINT
+// BOOTSTRAP ENTRY POINT
 // ─────────────────────────────────────────────────────────────────────────────
 
 /**
- * Initialise the Block Topia Quest Maze Phaser game, wire the fullscreen-shell
- * control buttons, and set up the mobile d-pad.
+ * Bootstrap the Block Topia Quest Maze game.
  *
- * @param {string} canvasId - ID of the container element for the Phaser canvas.
- * @returns {Phaser.Game}
+ * @param {{ root: Element }} options
+ * @returns {{ init, start, pause, resume, reset, destroy, getScore }}
  */
-export function bootBTQM(canvasId) {
-  // ── Phaser game ────────────────────────────────────────────────────────────
-  const game = new Phaser.Game({
-    type: Phaser.AUTO,
-    width: 640,
-    height: 448,
-    parent: canvasId,
-    pixelArt: true,
-    antialias: false,
-    backgroundColor: '#0a0a1a',
-    scale: {
-      mode: Phaser.Scale.FIT,
-      autoCenter: Phaser.Scale.CENTER_BOTH,
-    },
-    scene: [BootScene, TitleScene, WorldScene, ZoneScene, BattleScene],
-  });
+export function bootstrapBlockTopiaQuestMaze({ root }) {
+  let phaserGame = null;
+  let _pausedByOverlay = [];
 
-  // ── Fullscreen shell integration ───────────────────────────────────────────
-  // Tag Phaser canvas so game-fullscreen.js detectMeta() finds btqmCanvas.
-  if (game.canvas) game.canvas.id = 'btqmCanvas';
+  // ── Lifecycle ──────────────────────────────────────────────────────────────
 
-  // When the fullscreen overlay opens/closes, ask Phaser to refresh its scale
-  // so Phaser's internal canvasBounds are correct for input event mapping.
-  const overlayEl = document.getElementById('game-overlay');
-  if (overlayEl) {
-    new MutationObserver(function () {
-      [150, 300, 600].forEach(function (delay) {
-        setTimeout(function () {
-          if (game && game.scale) game.scale.refresh();
-        }, delay);
-      });
-    }).observe(overlayEl, { attributes: true, attributeFilter: ['class'] });
+  async function init() {
+    if (phaserGame) return;
+
+    // ── Phaser game ──────────────────────────────────────────────────────────
+    // The host page provides <div id="btqm-canvas"> inside .btqm-game-area
+    // as the Phaser canvas parent. We resolve it relative to root for safety.
+    const canvasContainer = root.querySelector('#btqm-canvas') ||
+                            document.getElementById('btqm-canvas');
+
+    phaserGame = new Phaser.Game({
+      type: Phaser.AUTO,
+      width: 640,
+      height: 448,
+      parent: canvasContainer || root,
+      pixelArt: true,
+      antialias: false,
+      backgroundColor: '#0a0a1a',
+      scale: {
+        mode: Phaser.Scale.FIT,
+        autoCenter: Phaser.Scale.CENTER_BOTH,
+      },
+      scene: [BootScene, TitleScene, WorldScene, ZoneScene, BattleScene],
+    });
+
+    // Tag the Phaser-generated canvas so game-fullscreen.js detectMeta()
+    // finds the btqmCanvas entry in GAME_META.
+    if (phaserGame.canvas) phaserGame.canvas.id = 'btqmCanvas';
+
+    // When the fullscreen overlay opens/closes, ask Phaser to refresh its scale
+    // so input event coordinates remain accurate after the DOM moves.
+    const overlayEl = document.getElementById('game-overlay');
+    if (overlayEl) {
+      new MutationObserver(function () {
+        [150, 300, 600].forEach(function (delay) {
+          setTimeout(function () {
+            if (phaserGame && phaserGame.scale) phaserGame.scale.refresh();
+          }, delay);
+        });
+      }).observe(overlayEl, { attributes: true, attributeFilter: ['class'] });
+    }
+
+    // ── Fullscreen shell button hooks ────────────────────────────────────────
+    // START — show name-entry overlay; restart TitleScene if already playing
+    var startBtn = document.getElementById('startBtn');
+    if (startBtn) {
+      startBtn.onclick = function () {
+        _pausedByOverlay = [];
+        if (!phaserGame.scene.isActive('TitleScene')) {
+          ['BattleScene', 'ZoneScene', 'WorldScene'].forEach(function (k) {
+            if (phaserGame.scene.isActive(k) || phaserGame.scene.isPaused(k)) {
+              phaserGame.scene.stop(k);
+            }
+          });
+          phaserGame.scene.start('TitleScene');
+          window.running = false;
+        }
+      };
+    }
+
+    // PAUSE / RESUME — track only scenes paused by this button (not by game logic)
+    var pauseBtn = document.getElementById('pauseBtn');
+    if (pauseBtn) {
+      pauseBtn.onclick = function () {
+        if (!window.running) return;
+        if (_pausedByOverlay.length) {
+          _pausedByOverlay.forEach(function (k) {
+            if (phaserGame.scene.isPaused(k)) phaserGame.scene.resume(k);
+          });
+          _pausedByOverlay = [];
+        } else {
+          ['BattleScene', 'ZoneScene', 'WorldScene'].forEach(function (k) {
+            if (phaserGame.scene.isActive(k)) {
+              phaserGame.scene.pause(k);
+              _pausedByOverlay.push(k);
+            }
+          });
+        }
+      };
+    }
+
+    // RESET — return to TitleScene / name-entry
+    var resetBtn = document.getElementById('resetBtn');
+    if (resetBtn) {
+      resetBtn.onclick = function () {
+        _pausedByOverlay = [];
+        window.running = false;
+        ['BattleScene', 'ZoneScene', 'WorldScene'].forEach(function (k) {
+          phaserGame.scene.stop(k);
+        });
+        phaserGame.scene.start('TitleScene');
+      };
+    }
+
+    // ── Mobile d-pad ──────────────────────────────────────────────────────────
+    const DPAD_KEY_MAP = {
+      37: 'ArrowLeft', 38: 'ArrowUp', 39: 'ArrowRight', 40: 'ArrowDown', 13: 'Enter',
+    };
+    document.querySelectorAll('.dpad-btn').forEach(btn => {
+      const keyCode = parseInt(btn.dataset.key, 10);
+      const keyStr  = DPAD_KEY_MAP[keyCode] || String(keyCode);
+      const fireKey = () => {
+        const evt = new KeyboardEvent('keydown', {
+          key: keyStr, code: keyStr, keyCode, which: keyCode,
+          bubbles: true, cancelable: true,
+        });
+        document.dispatchEvent(evt);
+      };
+      btn.addEventListener('touchstart', e => { e.preventDefault(); fireKey(); }, { passive: false });
+      btn.addEventListener('mousedown',  e => { e.preventDefault(); fireKey(); });
+    });
   }
 
-  // Strategy: record only the scenes WE pause (those that were isActive at
-  // pause time) and resume exactly those on unpause.  BattleScene/ZoneScene
-  // managed by game logic are left untouched.
-  let _btqmPausedByOverlay = [];
-
-  // START — show name-entry overlay (restart to TitleScene if already playing)
-  document.getElementById('startBtn').onclick = function () {
-    _btqmPausedByOverlay = [];
-    if (!game.scene.isActive('TitleScene')) {
-      ['BattleScene', 'ZoneScene', 'WorldScene'].forEach(function (k) {
-        if (game.scene.isActive(k) || game.scene.isPaused(k)) game.scene.stop(k);
-      });
-      game.scene.start('TitleScene');
-      window.running = false;
+  function start()   { /* Phaser manages its own game loop */ }
+  function pause()   { /* Phaser manages its own game loop */ }
+  function resume()  { /* Phaser manages its own game loop */ }
+  function reset()   { /* Phaser manages its own game loop */ }
+  function destroy() {
+    if (phaserGame) {
+      phaserGame.destroy(true);
+      phaserGame = null;
     }
-  };
+  }
+  function getScore() { return 0; }
 
-  // PAUSE / RESUME — toggle the active gameplay scene
-  document.getElementById('pauseBtn').onclick = function () {
-    if (!window.running) return;
-    if (_btqmPausedByOverlay.length) {
-      _btqmPausedByOverlay.forEach(function (k) {
-        if (game.scene.isPaused(k)) game.scene.resume(k);
-      });
-      _btqmPausedByOverlay = [];
-    } else {
-      var targets = ['BattleScene', 'ZoneScene', 'WorldScene'];
-      targets.forEach(function (k) {
-        if (game.scene.isActive(k)) {
-          game.scene.pause(k);
-          _btqmPausedByOverlay.push(k);
-        }
-      });
-    }
-  };
+  // ── Public lifecycle object ────────────────────────────────────────────────
 
-  // RESET — return to TitleScene / name-entry
-  document.getElementById('resetBtn').onclick = function () {
-    _btqmPausedByOverlay = [];
-    window.running = false;
-    ['BattleScene', 'ZoneScene', 'WorldScene'].forEach(function (k) {
-      game.scene.stop(k);
-    });
-    game.scene.start('TitleScene');
-  };
-
-  // ── Mobile d-pad ───────────────────────────────────────────────────────────
-  const DPAD_KEY_MAP = { 37: 'ArrowLeft', 38: 'ArrowUp', 39: 'ArrowRight', 40: 'ArrowDown', 13: 'Enter' };
-
-  document.querySelectorAll('.dpad-btn').forEach(btn => {
-    const keyCode = parseInt(btn.dataset.key, 10);
-    const keyStr  = DPAD_KEY_MAP[keyCode] || String(keyCode);
-    const fireKey = () => {
-      const evt = new KeyboardEvent('keydown', {
-        key: keyStr, code: keyStr, keyCode, which: keyCode,
-        bubbles: true, cancelable: true
-      });
-      document.dispatchEvent(evt);
-    };
-    btn.addEventListener('touchstart', e => { e.preventDefault(); fireKey(); }, { passive: false });
-    btn.addEventListener('mousedown',  e => { e.preventDefault(); fireKey(); });
-  });
-
-  return game;
+  return { init, start, pause, resume, reset, destroy, getScore };
 }
