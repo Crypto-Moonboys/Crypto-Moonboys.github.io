@@ -201,18 +201,16 @@
         <div class="notice" role="note" style="border-color:#f7c948;background:rgba(247,201,72,.07);border-radius:10px;padding:10px 14px;margin-bottom:12px;font-size:.85rem;display:flex;gap:10px;align-items:flex-start">
           <span aria-hidden="true" style="font-size:1.2rem;flex-shrink:0">ℹ️</span>
           <div>
-            <strong>How to race:</strong> The HexGL game loads inside the frame below.
-            Click <strong>Start</strong> inside the game to begin your race, then
-            immediately click <strong>⏱ Begin Tracked Run</strong> below to start the
-            wrapper timer for score tracking. Both actions must be done together for an
-            accurate result.
+            <strong>How to race:</strong> The direct HexGL play screen loads below.
+            Click <strong>Start</strong> inside the game, then click
+            <strong>⏱ Begin Tracked Run</strong> to track your run for the leaderboard.
           </div>
         </div>
 
         <div id="hexgl-frame-wrap">
           <iframe
             id="hexgl-frame"
-            src="https://hexgl.bkcore.com/"
+            src="https://hexgl.bkcore.com/play/"
             title="HexGL — WebGL Racing by BKcore (Thibaut Despoulain)"
             allowfullscreen
             loading="lazy"
@@ -252,7 +250,7 @@
         <h2 style="font-size:1rem;font-weight:700;color:var(--color-text-muted);margin-bottom:10px">⚙️ How Monster Mode Works</h2>
         <ul style="font-size:.88rem;line-height:1.8;color:var(--color-text-muted);padding-left:18px">
           <li>Race the full HexGL circuit loaded directly from the official CDN.</li>
-          <li>Click <strong>Start</strong> inside the HexGL game frame to begin racing, then immediately click <strong>⏱ Begin Tracked Run</strong> to start the wrapper timer.</li>
+          <li>Click <strong>Start</strong> inside the HexGL game frame to begin racing, then click <strong>⏱ Begin Tracked Run</strong> to start the wrapper timer.</li>
           <li>When your run ends, click <strong>Submit Run</strong> to log your time.</li>
           <li>Score = <code>500 000 − (time_seconds × 1000)</code>. Faster = higher score.</li>
           <li>Scores above 0 qualify for the seasonal leaderboard and XP pool.</li>
