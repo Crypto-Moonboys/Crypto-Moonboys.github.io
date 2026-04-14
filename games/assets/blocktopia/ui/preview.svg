@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="300" height="200" viewBox="0 0 300 200">
+  <rect width="300" height="200" fill="#04020c"/>
+  <!-- Stats panel -->
+  <rect x="8" y="8" width="130" height="110" fill="#04020c" opacity="0.92"/>
+  <rect x="8" y="8" width="130" height="110" fill="none" stroke="#5ef2ff" stroke-width="1" opacity="0.6"/>
+  <rect x="8" y="8" width="130" height="3" fill="#ff4fd8" opacity="0.6"/>
+  <text x="16" y="22" fill="#5ef2ff" font-size="8" font-family="monospace">◈ BLOCK TOPIA</text>
+  <line x1="12" y1="28" x2="134" y2="28" stroke="#5ef2ff" stroke-width="1" opacity="0.3"/>
+  <text x="14" y="40" fill="#ff4fd8" font-size="9" font-family="monospace">▶ Player</text>
+  <text x="14" y="54" fill="#5ef2ff44" font-size="8" font-family="monospace">› CREDITS</text>
+  <text x="80" y="54" fill="#eaf6ff" font-size="8" font-family="monospace">4200</text>
+  <text x="14" y="67" fill="#5ef2ff44" font-size="8" font-family="monospace">› MARKET </text>
+  <text x="80" y="67" fill="#ffd84d" font-size="8" font-family="monospace">103.42</text>
+  <text x="14" y="80" fill="#5ef2ff44" font-size="8" font-family="monospace">› SCORE  </text>
+  <text x="80" y="80" fill="#8dff6a" font-size="8" font-family="monospace">420</text>
+  <text x="14" y="93" fill="#5ef2ff44" font-size="8" font-family="monospace">› DISTRICT</text>
+  <text x="80" y="93" fill="#eaf6ff" font-size="8" font-family="monospace">Neon Exch</text>
+  <text x="14" y="106" fill="#5ef2ff44" font-size="8" font-family="monospace">› PHASE  </text>
+  <text x="80" y="106" fill="#8dff6a" font-size="8" font-family="monospace">Day</text>
+  <!-- Chat panel -->
+  <rect x="150" y="100" width="140" height="90" fill="#04020c" opacity="0.9"/>
+  <rect x="150" y="100" width="140" height="90" fill="none" stroke="#ff4fd8" stroke-width="1" opacity="0.45"/>
+  <rect x="150" y="100" width="140" height="14" fill="#ff4fd8" opacity="0.15"/>
+  <line x1="150" y1="114" x2="290" y2="114" stroke="#ff4fd8" stroke-width="1" opacity="0.4"/>
+  <text x="158" y="110" fill="#ff4fd8" font-size="7" font-family="monospace">💬 STREET SIGNAL</text>
+  <text x="278" y="110" fill="#8dff6a" font-size="6" font-family="monospace">● LIVE</text>
+  <text x="155" y="124" fill="#8dff6a" font-size="7" font-family="monospace">&gt; Runner: Moon Gate open…</text>
+  <text x="155" y="136" fill="#5ef2ff" font-size="7" font-family="monospace">&gt; Broker: BTC candles green.</text>
+  <text x="155" y="148" fill="#ff4fd8" font-size="7" font-family="monospace">&gt; System: Exchange raid open.</text>
+  <text x="155" y="160" fill="#ff3355" font-size="7" font-family="monospace">&gt; Warden: Plaza is mine.</text>
+  <rect x="153" y="178" width="134" height="9" fill="none" stroke="#ff4fd8" stroke-width="1" opacity="0.3"/>
+  <text x="157" y="185" fill="#333355" font-size="6" font-family="monospace">&gt; type to broadcast…</text>
+  <!-- Ticker -->
+  <rect x="8" y="128" width="130" height="14" fill="#000" opacity="0.8"/>
+  <rect x="8" y="128" width="130" height="14" fill="none" stroke="#ffd84d" stroke-width="1" opacity="0.5"/>
+  <rect x="8" y="128" width="130" height="2" fill="#ffd84d" opacity="0.6"/>
+  <text x="12" y="138" fill="#8dff6a" font-size="7" font-family="monospace">BTC 98k▲  ETH 3.6k▲</text>
+  <text x="100" y="138" fill="#ff3355" font-size="7" font-family="monospace">BTOP▼</text>
+</svg>
