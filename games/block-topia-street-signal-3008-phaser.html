@@ -55,8 +55,9 @@
 <script src="/js/wiki.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/phaser@3.70.0/dist/phaser.min.js"></script>
 <script type="module">
-    import { bootBlockTopia } from './js/blocktopia-phaser-game.js';
-    bootBlockTopia('phaser-root');
+    import { mountGame }                  from '/js/arcade/core/game-shell.js';
+    import { bootstrapBlocktopiaPhaser } from '/js/arcade/games/blocktopia-phaser/bootstrap.js';
+    mountGame({ root: document.getElementById('phaser-root'), bootstrap: bootstrapBlocktopiaPhaser });
 </script>
 </body>
 </html>
