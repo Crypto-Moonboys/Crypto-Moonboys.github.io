@@ -23,6 +23,8 @@ const TABS = [
   { key: 'hexgl',      label: '🏁 HexGL',       icon: '🏁' },
 ];
 
+const AGGREGATE_TABS = new Set(['global', 'seasonal', 'yearly', 'all-time']);
+
 const GAME_LABELS = {
   snake:      '🐍 Snake',
   crystal:    '🧩 Crystal',
@@ -36,6 +38,8 @@ const GAME_LABELS = {
   bonus:      '⭐ Bonus',
 };
 
+const BREAKDOWN_GAMES = ['snake', 'crystal', 'blocktopia', 'invaders', 'pacchain', 'asteroids', 'breakout', 'tetris', 'hexgl'];
+
 // ── State ─────────────────────────────────────────────────────────────────
 let currentTab = 'global';
 let currentData = [];
@@ -44,6 +48,21 @@ let isFetching = false;
 
 // ── DOM helpers ───────────────────────────────────────────────────────────
 function el(id) { return document.getElementById(id); }
+
+function escHtml(str) {
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+function medalFor(rank) {
+  if (rank === 1) return '🥇';
+  if (rank === 2) return '🥈';
+  if (rank === 3) return '🥉';
+  return String(rank);
+}
 
 function renderTabs() {
   const bar = el('lb-tab-bar');
@@ -62,87 +81,96 @@ function renderTabs() {
 }
 
 function setLoadingState(loading) {
-  const table  = el('lb-table-wrap');
+  const wrap   = el('lb-table-wrap');
   const status = el('lb-status');
-  if (!table || !status) return;
+  const panel  = el('lb-breakdown-panel');
+  if (!wrap || !status) return;
   if (loading) {
-    table.style.display = 'none';
+    wrap.style.display = 'none';
+    if (panel) panel.style.display = 'none';
     status.style.display = 'block';
     status.innerHTML = '<span class="lb-spinner" aria-live="polite">⏳ Loading leaderboard…</span>';
   } else {
     status.style.display = 'none';
-    table.style.display = '';
+    wrap.style.display = '';
   }
 }
 
 function setErrorState(message) {
-  const table  = el('lb-table-wrap');
+  const wrap   = el('lb-table-wrap');
   const status = el('lb-status');
-  if (!table || !status) return;
-  table.style.display = 'none';
+  const panel  = el('lb-breakdown-panel');
+  if (!wrap || !status) return;
+  wrap.style.display = 'none';
+  if (panel) panel.style.display = 'none';
   status.style.display = 'block';
   status.innerHTML = `<span class="lb-error" role="alert">⚠️ ${escHtml(message)}</span>`;
 }
 
 function setEmptyState() {
-  const table  = el('lb-table-wrap');
+  const wrap   = el('lb-table-wrap');
   const status = el('lb-status');
-  if (!table || !status) return;
-  table.style.display = 'none';
+  const panel  = el('lb-breakdown-panel');
+  if (!wrap || !status) return;
+  wrap.style.display = 'none';
+  if (panel) panel.style.display = 'none';
   status.style.display = 'block';
   status.innerHTML = '<span class="lb-empty">No scores recorded yet. Be the first!</span>';
 }
 
-function escHtml(str) {
-  return String(str)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
+// ── Breakdown panel ───────────────────────────────────────────────────────
+function renderBreakdown(entry) {
+  const panel = el('lb-breakdown-panel');
+  if (!panel) return;
+  if (!entry || !AGGREGATE_TABS.has(currentTab)) {
+    panel.style.display = 'none';
+    return;
+  }
+
+  const bd = entry.breakdown || {};
+
+  const rows = BREAKDOWN_GAMES.map(g => {
+    const val = bd[g] != null ? Number(bd[g]).toLocaleString() : '—';
+    return `<div class="lb-bd-row">
+      <span class="lb-bd-label">${GAME_LABELS[g]}</span>
+      <span class="lb-bd-val">${val}</span>
+    </div>`;
+  });
+
+  const bonus = bd.variety_bonus != null ? Number(bd.variety_bonus).toLocaleString() : '—';
+  rows.push(`<div class="lb-bd-row lb-bd-bonus">
+    <span class="lb-bd-label">${GAME_LABELS.bonus}</span>
+    <span class="lb-bd-val">${bonus}</span>
+  </div>`);
+
+  panel.innerHTML = `
+    <div class="lb-bd-header">
+      <span class="lb-bd-player">${escHtml(entry.player || '—')}</span>
+      <span class="lb-bd-total">${Number(entry.score ?? 0).toLocaleString()} pts</span>
+    </div>
+    <div class="lb-bd-grid">${rows.join('')}</div>
+  `;
+  panel.style.display = '';
 }
 
-function medalFor(rank) {
-  if (rank === 1) return '🥇';
-  if (rank === 2) return '🥈';
-  if (rank === 3) return '🥉';
-  return String(rank);
+function clearBreakdown() {
+  const panel = el('lb-breakdown-panel');
+  if (panel) panel.style.display = 'none';
 }
 
+// ── Table renderer ────────────────────────────────────────────────────────
 function renderTable(data) {
   const wrap = el('lb-table-wrap');
   if (!wrap) return;
   if (!data || data.length === 0) { setEmptyState(); return; }
 
-  const showBreakdown = data.some(row =>
-    row.breakdown && Object.keys(row.breakdown).length > 0
-  );
-
-  // Show per-game breakdown columns on all aggregate tabs
-  const AGGREGATE_TABS = new Set(['global', 'seasonal', 'yearly', 'all-time']);
-  const isGlobal = AGGREGATE_TABS.has(currentTab);
-  const BREAKDOWN_GAMES = ['snake', 'crystal', 'blocktopia', 'invaders', 'pacchain', 'asteroids', 'breakout', 'tetris', 'hexgl'];
-
-  // With breakdown: 60 + 180 + 110 + 9*90 + 90 = 1250px; without: fill container
-  const tableMinWidth = (showBreakdown && isGlobal) ? '1250px' : '100%';
-
   let html = `
-    <table class="lb-table" style="table-layout:fixed;min-width:${tableMinWidth}" aria-label="Leaderboard">
-      <colgroup>
-        <col style="width:60px">
-        <col style="width:180px">
-        <col style="width:110px">
-        ${showBreakdown && isGlobal ? BREAKDOWN_GAMES.map(() =>
-          `<col style="width:90px">`
-        ).join('') + `<col style="width:90px">` : ''}
-      </colgroup>
+    <table class="lb-table" aria-label="Leaderboard">
       <thead>
         <tr>
-          <th scope="col" style="text-align:center">#</th>
-          <th scope="col">Player</th>
-          <th scope="col">Score</th>
-          ${showBreakdown && isGlobal ? BREAKDOWN_GAMES.map(g =>
-            `<th scope="col" class="lb-hide-mobile">${GAME_LABELS[g]}</th>`
-          ).join('') + `<th scope="col" class="lb-hide-mobile">${GAME_LABELS.bonus}</th>` : ''}
+          <th scope="col" class="lb-col-rank">#</th>
+          <th scope="col" class="lb-col-player">Player</th>
+          <th scope="col" class="lb-col-score">Score</th>
         </tr>
       </thead>
       <tbody>
@@ -150,15 +178,11 @@ function renderTable(data) {
 
   data.forEach((row, i) => {
     const rank = row.rank ?? (i + 1);
-    const bd   = row.breakdown || {};
     html += `
-      <tr class="lb-row" data-rank="${rank}" data-player="${escHtml(row.player || '')}" tabindex="0" role="button" aria-label="View breakdown for ${escHtml(row.player || 'Player')}">
+      <tr class="lb-row" data-rank="${rank}" tabindex="0" role="button" aria-label="View breakdown for ${escHtml(row.player || 'Player')}">
         <td class="lb-rank">${medalFor(rank)}</td>
         <td class="lb-player">${escHtml(row.player || '—')}</td>
         <td class="lb-score">${Number(row.score ?? 0).toLocaleString()}</td>
-        ${showBreakdown && isGlobal ? BREAKDOWN_GAMES.map(g =>
-          `<td class="lb-sub lb-hide-mobile">${bd[g] != null ? Number(bd[g]).toLocaleString() : '—'}</td>`
-        ).join('') + `<td class="lb-sub lb-bonus lb-hide-mobile">${bd.variety_bonus != null ? Number(bd.variety_bonus).toLocaleString() : '—'}</td>` : ''}
       </tr>
     `;
   });
@@ -167,15 +191,17 @@ function renderTable(data) {
   wrap.innerHTML = html;
   wrap.style.display = '';
   el('lb-status').style.display = 'none';
+  clearBreakdown();
 
   wrap.querySelectorAll('.lb-row').forEach(tr => {
     const activate = () => {
       wrap.querySelectorAll('.lb-row').forEach(r => r.classList.remove('selected'));
       tr.classList.add('selected');
-      if (onRowSelectCallback) {
-        const idx   = rowIndexForRank(data, Number(tr.dataset.rank));
-        const entry = data[idx];
-        if (entry) onRowSelectCallback(entry);
+      const idx   = rowIndexForRank(data, Number(tr.dataset.rank));
+      const entry = data[idx];
+      if (entry) {
+        if (onRowSelectCallback) onRowSelectCallback(entry);
+        renderBreakdown(entry);
       }
     };
     tr.addEventListener('click', activate);
