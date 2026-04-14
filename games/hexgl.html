@@ -22,18 +22,15 @@
 <div class="hexgl-wrap">
 <iframe id="hexglFrame" allow="fullscreen; autoplay"></iframe>
 <div class="center">
-<button class="btn" onclick="loadGame()">Load Game</button>
-<button class="btn alt" onclick="openDirect()">Open Fullscreen</button>
+<button class="btn">Load Game</button>
+<button class="btn alt">Open Fullscreen</button>
 </div>
 </div>
 </main></div></div>
-<script>
-function loadGame(){
- document.getElementById('hexglFrame').src='https://cdn.jsdelivr.net/gh/BKcore/HexGL@master/index.html';
-}
-function openDirect(){
- window.open('https://cdn.jsdelivr.net/gh/BKcore/HexGL@master/index.html','_blank');
-}
+<script type="module">
+import { mountGame }      from '/js/arcade/core/game-shell.js';
+import { bootstrapHexGL } from '/js/arcade/games/hexgl/bootstrap.js';
+mountGame({ root: document.querySelector('.hexgl-wrap'), bootstrap: bootstrapHexGL });
 </script>
 </body>
 </html>
