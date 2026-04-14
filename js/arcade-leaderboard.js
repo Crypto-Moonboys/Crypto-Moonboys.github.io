@@ -122,14 +122,14 @@ function renderTable(data) {
   const isGlobal = AGGREGATE_TABS.has(currentTab);
   const BREAKDOWN_GAMES = ['snake', 'crystal', 'blocktopia', 'invaders', 'pacchain', 'asteroids', 'breakout', 'tetris', 'hexgl'];
 
-  // With breakdown: 42 + 160 + 110 + 9*90 + 90 = 1212px; without: fill container
-  const tableMinWidth = (showBreakdown && isGlobal) ? '1212px' : '100%';
+  // With breakdown: 60 + 180 + 110 + 9*90 + 90 = 1250px; without: fill container
+  const tableMinWidth = (showBreakdown && isGlobal) ? '1250px' : '100%';
 
   let html = `
     <table class="lb-table" style="table-layout:fixed;min-width:${tableMinWidth}" aria-label="Leaderboard">
       <colgroup>
-        <col style="width:42px">
-        <col style="width:160px">
+        <col style="width:60px">
+        <col style="width:180px">
         <col style="width:110px">
         ${showBreakdown && isGlobal ? BREAKDOWN_GAMES.map(() =>
           `<col style="width:90px">`

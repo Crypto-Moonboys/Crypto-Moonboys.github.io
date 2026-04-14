@@ -87,11 +87,14 @@
       font-weight: 700;
       text-transform: uppercase;
       letter-spacing: .06em;
-      padding: 10px 14px;
-      text-align: left;
+      padding: 8px 14px;
+      text-align: center;
       border-bottom: 1px solid var(--color-border);
       white-space: nowrap;
     }
+    /* Player column stays left-aligned */
+    .lb-table thead th:nth-child(2) { text-align: left; }
+    .lb-table tbody td:nth-child(2) { text-align: left; }
     .lb-table tbody tr {
       border-bottom: 1px solid rgba(48,54,61,.5);
       transition: background .12s;
@@ -106,7 +109,7 @@
       color: var(--color-text);
       vertical-align: middle;
     }
-    .lb-rank  { width: 38px; text-align: center; font-weight: 700; font-size: 1rem; }
+    .lb-rank  { text-align: center; font-weight: 700; font-size: 1rem; }
     .lb-player { font-weight: 600; }
     .lb-score  { font-weight: 700; color: var(--color-accent); font-variant-numeric: tabular-nums; }
     .lb-sub    { color: var(--color-text-muted); font-variant-numeric: tabular-nums; font-size: .82rem; }
