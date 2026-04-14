@@ -21,6 +21,13 @@ export var GameRegistry = {
    * @param {object} meta - Metadata object; must include at least a `label` string.
    */
   register: function (id, meta) {
+    if (typeof id !== 'string' || !id) {
+      console.warn('[game-registry] register() called with invalid id:', id);
+      return;
+    }
+    if (_registry.has(id)) {
+      console.warn('[game-registry] duplicate registration for id "' + id + '" — overwriting previous entry');
+    }
     _registry.set(id, Object.assign({ id: id }, meta));
   },
 
