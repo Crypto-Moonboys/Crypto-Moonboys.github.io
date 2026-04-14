@@ -13,16 +13,18 @@ export const ArcadeSync = {
   },
 
   getHighScore(game) {
-    return parseInt(
-      localStorage.getItem(`highscore_${game}`) || "0",
-      10
-    );
+    const n = parseInt(localStorage.getItem(`highscore_${game}`) || "0", 10);
+    return isNaN(n) ? 0 : n;
   },
 
   setHighScore(game, score) {
+    if (typeof score !== "number" || !isFinite(score) || score < 0) {
+      console.warn("[arcade-sync] Invalid score; not persisted:", score);
+      return;
+    }
     const current = this.getHighScore(game);
-    if (score > current) {
-      localStorage.setItem(`highscore_${game}`, score);
+    if (Math.floor(score) > current) {
+      localStorage.setItem(`highscore_${game}`, Math.floor(score));
     }
   }
 };

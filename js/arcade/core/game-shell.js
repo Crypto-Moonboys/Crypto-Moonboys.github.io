@@ -24,7 +24,7 @@
  * Required methods that every game lifecycle object must implement.
  * @type {string[]}
  */
-var LIFECYCLE_METHODS = ['init', 'start', 'pause', 'resume', 'reset', 'destroy', 'getScore'];
+const LIFECYCLE_METHODS = ['init', 'start', 'pause', 'resume', 'reset', 'destroy', 'getScore'];
 
 /**
  * Mount a game onto the page.
@@ -79,7 +79,11 @@ export async function mountGame(options) {
   // Call destroy() when the player navigates away so event listeners are cleaned up.
   window.addEventListener('pagehide', function () {
     if (typeof game.destroy === 'function') {
-      try { game.destroy(); } catch (e) { console.warn('[game-shell] game.destroy() threw during teardown:', e); }
+      try {
+        game.destroy();
+      } catch (e) {
+        console.warn('[game-shell] game.destroy() threw during teardown:', e);
+      }
     }
   }, { once: true });
 
