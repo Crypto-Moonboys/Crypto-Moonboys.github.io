@@ -61,24 +61,22 @@
     .lb-error   { color: var(--color-red); }
     .lb-empty   { color: var(--color-text-muted); }
 
-    /* Table */
+    /* ── Main leaderboard table (3 columns only) ──────────────────── */
     .lb-table-outer {
-      overflow-x: auto;
       border-radius: var(--radius);
       border: 1px solid var(--color-border);
       margin-bottom: 18px;
+      overflow: hidden;
     }
     .lb-table {
       width: 100%;
       border-collapse: collapse;
       font-size: .88rem;
+      table-layout: fixed;
     }
-    .lb-table thead th,
-    .lb-table tbody td {
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
+    .lb-col-rank   { width: 60px; }
+    .lb-col-player { width: auto; }
+    .lb-col-score  { width: 120px; }
     .lb-table thead th {
       background: var(--color-surface-2);
       color: var(--color-text-muted);
@@ -91,9 +89,7 @@
       border-bottom: 1px solid var(--color-border);
       white-space: nowrap;
     }
-    /* Player column stays left-aligned */
-    .lb-table thead th:nth-child(2) { text-align: left; }
-    .lb-table tbody td:nth-child(2) { text-align: left; }
+    .lb-col-player { text-align: left; }
     .lb-table tbody tr {
       border-bottom: 1px solid rgba(48,54,61,.5);
       transition: background .12s;
@@ -107,12 +103,13 @@
       padding: 10px 14px;
       color: var(--color-text);
       vertical-align: middle;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
-    .lb-rank  { text-align: center; font-weight: 700; font-size: 1rem; }
+    .lb-rank   { text-align: center; font-weight: 700; font-size: 1rem; }
     .lb-player { font-weight: 600; }
-    .lb-score  { font-weight: 700; color: var(--color-accent); font-variant-numeric: tabular-nums; }
-    .lb-sub    { color: var(--color-text-muted); font-variant-numeric: tabular-nums; font-size: .82rem; }
-    .lb-bonus  { color: var(--color-green); }
+    .lb-score  { text-align: center; font-weight: 700; color: var(--color-accent); font-variant-numeric: tabular-nums; }
 
     /* Controls row */
     .lb-controls {
@@ -133,11 +130,71 @@
       cursor: pointer;
       transition: background .15s, border-color .15s;
     }
-    #lb-refresh-btn:hover   { background: var(--color-border); }
+    #lb-refresh-btn:hover    { background: var(--color-border); }
     #lb-refresh-btn:disabled { opacity: .5; cursor: default; }
     .lb-hint {
       font-size: .78rem;
       color: var(--color-text-muted);
+    }
+
+    /* ── Selected-player breakdown panel ─────────────────────────── */
+    #lb-breakdown-panel {
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius);
+      background: var(--color-surface-2);
+      padding: 16px 20px;
+      margin-bottom: 24px;
+    }
+    .lb-bd-header {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 14px;
+      flex-wrap: wrap;
+    }
+    .lb-bd-player {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--color-text);
+    }
+    .lb-bd-total {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--color-accent);
+      font-variant-numeric: tabular-nums;
+    }
+    .lb-bd-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      gap: 8px;
+    }
+    .lb-bd-row {
+      display: flex;
+      flex-direction: column;
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: 8px;
+      padding: 8px 12px;
+      gap: 2px;
+    }
+    .lb-bd-label {
+      font-size: .72rem;
+      color: var(--color-text-muted);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .05em;
+    }
+    .lb-bd-val {
+      font-size: .95rem;
+      font-weight: 700;
+      color: var(--color-text);
+      font-variant-numeric: tabular-nums;
+    }
+    .lb-bd-bonus .lb-bd-val { color: var(--color-green, #3fb950); }
+
+    @media (max-width: 480px) {
+      .lb-bd-grid { grid-template-columns: repeat(2, 1fr); }
     }
 
     /* Graph section */
@@ -206,11 +263,6 @@
       backdrop-filter: blur(2px);
     }
     #lb-graph-reset:hover { background: var(--color-border); color: var(--color-text); }
-
-    @media (max-width: 640px) {
-      .lb-table thead th.lb-hide-mobile,
-      .lb-table tbody td.lb-hide-mobile { display: none; }
-    }
   </style>
 </head>
 <body>
@@ -312,6 +364,9 @@
       <div id="lb-status" style="display:none"></div>
       <div id="lb-table-wrap" class="lb-table-outer" style="display:none"></div>
 
+      <!-- ── Selected-player breakdown panel ───────────────────────── -->
+      <div id="lb-breakdown-panel" style="display:none" aria-label="Selected player score breakdown" aria-live="polite"></div>
+
       <!-- ── OG Graph node map ──────────────────────────────────────── -->
       <section class="lb-graph-section" aria-label="Arcade graph">
         <div class="lb-graph-heading">🌐 Arcade Node Map</div>
@@ -375,6 +430,8 @@ document.getElementById('lb-graph-reset').addEventListener('click', () => {
   resetGraph();
   const selected = document.querySelector('.lb-row.selected');
   if (selected) selected.classList.remove('selected');
+  const panel = document.getElementById('lb-breakdown-panel');
+  if (panel) panel.style.display = 'none';
 });
 </script>
 </body>
