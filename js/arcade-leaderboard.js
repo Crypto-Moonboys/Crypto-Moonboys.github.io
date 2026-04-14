@@ -57,6 +57,12 @@ function escHtml(str) {
     .replace(/"/g, '&quot;');
 }
 
+function formatScore(value) {
+  const num = Number(value);
+  if (!Number.isFinite(num)) return '0';
+  return Math.floor(num).toLocaleString('en-GB');
+}
+
 function medalFor(rank) {
   if (rank === 1) return '🥇';
   if (rank === 2) return '🥈';
@@ -130,14 +136,14 @@ function renderBreakdown(entry) {
   const bd = entry.breakdown || {};
 
   const rows = BREAKDOWN_GAMES.map(g => {
-    const val = bd[g] != null ? Number(bd[g]).toLocaleString() : '—';
+    const val = bd[g] != null ? formatScore(bd[g]) : '—';
     return `<div class="lb-bd-row">
       <span class="lb-bd-label">${GAME_LABELS[g]}</span>
       <span class="lb-bd-val">${val}</span>
     </div>`;
   });
 
-  const bonus = bd.variety_bonus != null ? Number(bd.variety_bonus).toLocaleString() : '—';
+  const bonus = bd.variety_bonus != null ? formatScore(bd.variety_bonus) : '—';
   rows.push(`<div class="lb-bd-row lb-bd-bonus">
     <span class="lb-bd-label">${GAME_LABELS.bonus}</span>
     <span class="lb-bd-val">${bonus}</span>
@@ -146,7 +152,7 @@ function renderBreakdown(entry) {
   panel.innerHTML = `
     <div class="lb-bd-header">
       <span class="lb-bd-player">${escHtml(entry.player || '—')}</span>
-      <span class="lb-bd-total">${Number(entry.score ?? 0).toLocaleString()} pts</span>
+      <span class="lb-bd-total">${formatScore(entry.score ?? 0)} pts</span>
     </div>
     <div class="lb-bd-grid">${rows.join('')}</div>
   `;
@@ -182,7 +188,7 @@ function renderTable(data) {
       <tr class="lb-row" data-rank="${rank}" tabindex="0" role="button" aria-label="View breakdown for ${escHtml(row.player || 'Player')}">
         <td class="lb-rank">${medalFor(rank)}</td>
         <td class="lb-player">${escHtml(row.player || '—')}</td>
-        <td class="lb-score">${Number(row.score ?? 0).toLocaleString()}</td>
+        <td class="lb-score">${formatScore(row.score ?? 0)}</td>
       </tr>
     `;
   });
