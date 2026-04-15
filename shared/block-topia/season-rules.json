@@ -1,0 +1,8 @@
+{
+  "seasons": [
+    {"name": "Awakening", "condition": "liberatorInfluence > 60"},
+    {"name": "Containment", "condition": "wardenInfluence > 60"},
+    {"name": "Chaos", "condition": "samState == 'Unleashed'"},
+    {"name": "Reconstruction", "condition": "samState == 'Contained'"}
+  ]
+}
