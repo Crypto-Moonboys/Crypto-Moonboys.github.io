@@ -1,0 +1,5 @@
+body { margin: 0; background: #0b0f1a; color: #fff; font-family: Arial, sans-serif; }
+#gameCanvas { width: 100vw; height: 100vh; display: block; }
+#ui { position: absolute; top: 10px; left: 10px; background: rgba(0,0,0,0.6); padding: 10px; border-radius: 8px; }
+#sam-popup { position: absolute; top: 60px; left: 10px; background: #ff0055; padding: 10px; border-radius: 6px; }
+.hidden { display: none; }
