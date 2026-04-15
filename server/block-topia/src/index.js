@@ -33,7 +33,9 @@ gameServer.define('city', CityRoom).enableRealtimeListing();
 
 // Colyseus monitor (protected in production)
 app.use('/colyseus', monitor());
-
+app.get("/", (req, res) => {
+  res.send("Block Topia Game Server is running 🚀");
+});
 server.listen(PORT, () => {
   console.log(`🚀 Block Topia Colyseus server running on port ${PORT}`);
 });
