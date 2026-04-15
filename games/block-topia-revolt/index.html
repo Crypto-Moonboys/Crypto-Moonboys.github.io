@@ -4,16 +4,25 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Block Topia — Living Rebellion</title>
+
+  <!-- Styles -->
   <link rel="stylesheet" href="style.css" />
-  <script>
+
+  <!-- Prevent Cloudflare Rocket Loader from interfering -->
+  <script data-cfasync="false">
+    // WebSocket endpoint for the multiplayer server
     window.BLOCK_TOPIA_SERVER = "wss://cryptomoonboys.com/colyseus";
   </script>
+
+  <!-- Optional favicon to remove 404 error -->
+  <link rel="icon" href="/favicon.ico" />
 </head>
 <body>
+  <!-- ================= UI ================= -->
   <div id="ui">
     <div class="panel hero-panel">
       <h1>Block Topia — Living Rebellion</h1>
-      <div id="status">Connecting to city...</div>
+      <div id="status">Connecting to world...</div>
       <div id="controls">Move: WASD / Arrows · Interact: E</div>
     </div>
 
@@ -23,16 +32,32 @@
     </div>
   </div>
 
+  <!-- ================= STREET FEED ================= -->
   <div class="panel feed-panel">
     <div class="panel-title">STREET FEED</div>
     <div id="event-log"></div>
   </div>
 
+  <!-- ================= POPUPS ================= -->
   <div id="sam-popup" class="hidden"></div>
   <div id="interact-prompt" class="hidden">Press E to interact</div>
+
+  <!-- ================= GAME CANVAS ================= -->
   <canvas id="gameCanvas"></canvas>
 
-  <script src="https://unpkg.com/colyseus.js/dist/colyseus.js"></script>
-  <script type="module" src="main.js"></script>
+  <!-- ================= SCRIPTS ================= -->
+
+  <!-- Colyseus Client (Rocket Loader disabled) -->
+  <script
+    src="https://unpkg.com/colyseus.js/dist/colyseus.js"
+    data-cfasync="false">
+  </script>
+
+  <!-- Main Game Script (Rocket Loader disabled) -->
+  <script
+    type="module"
+    src="main.js"
+    data-cfasync="false">
+  </script>
 </body>
 </html>
