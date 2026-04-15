@@ -1,12 +1,12 @@
 {
-  "generated_at": "2026-04-14T05:29:28.606Z",
+  "generated_at": "2026-04-15T05:29:32.244Z",
   "phase": "phase_6",
   "schema_version": "1.0",
   "summary": {
     "total_entries": 226,
     "ready_by_platform": {
       "fandom": 47,
-      "telegram": 164,
+      "telegram": 163,
       "substack": 11,
       "paragraph": 26
     }
@@ -361,7 +361,7 @@
       "url": "/wiki/pyralith.html",
       "readable_title": "PYRALITH",
       "readiness_score": 59,
-      "summary_quality": 84,
+      "summary_quality": 83,
       "authority_score": 32,
       "trust_score": 82,
       "narrative_strength": 40,
@@ -377,7 +377,7 @@
       "readable_title": "Quell",
       "readiness_score": 59,
       "summary_quality": 84,
-      "authority_score": 33,
+      "authority_score": 32,
       "trust_score": 82,
       "narrative_strength": 40,
       "platform_readiness": {
@@ -602,7 +602,7 @@
       "readable_title": "XRP Kids",
       "readiness_score": 53,
       "summary_quality": 100,
-      "authority_score": 46,
+      "authority_score": 45,
       "trust_score": 57,
       "narrative_strength": 0,
       "platform_readiness": {
@@ -778,21 +778,6 @@
       }
     },
     {
-      "url": "/wiki/pmsl-token.html",
-      "readable_title": "PMSL Token",
-      "readiness_score": 49,
-      "summary_quality": 58,
-      "authority_score": 25,
-      "trust_score": 82,
-      "narrative_strength": 30,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": true,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
       "url": "/wiki/bitcoin-x-kids.html",
       "readable_title": "Bitcoin X Kids",
       "readiness_score": 48,
@@ -815,6 +800,21 @@
       "authority_score": 30,
       "trust_score": 82,
       "narrative_strength": 20,
+      "platform_readiness": {
+        "fandom": false,
+        "telegram": true,
+        "substack": false,
+        "paragraph": false
+      }
+    },
+    {
+      "url": "/wiki/pmsl-token.html",
+      "readable_title": "PMSL Token",
+      "readiness_score": 48,
+      "summary_quality": 57,
+      "authority_score": 25,
+      "trust_score": 82,
+      "narrative_strength": 30,
       "platform_readiness": {
         "fandom": false,
         "telegram": true,
@@ -931,7 +931,7 @@
       "url": "/wiki/rune-tag.html",
       "readable_title": "Rune Tag",
       "readiness_score": 45,
-      "summary_quality": 85,
+      "summary_quality": 84,
       "authority_score": 33,
       "trust_score": 57,
       "narrative_strength": 0,
@@ -1006,7 +1006,7 @@
       "url": "/wiki/the-whitewasher.html",
       "readable_title": "The Whitewasher",
       "readiness_score": 45,
-      "summary_quality": 84,
+      "summary_quality": 83,
       "authority_score": 33,
       "trust_score": 57,
       "narrative_strength": 0,
@@ -1408,21 +1408,6 @@
       }
     },
     {
-      "url": "/wiki/1m-free-nfts-programme.html",
-      "readable_title": "1M Free NFTs Programme",
-      "readiness_score": 42,
-      "summary_quality": 77,
-      "authority_score": 27,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": true,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
       "url": "/wiki/block-node-defenders.html",
       "readable_title": "Block Node Defenders",
       "readiness_score": 42,
@@ -1498,21 +1483,6 @@
       }
     },
     {
-      "url": "/wiki/the-aztec-raiders.html",
-      "readable_title": "The AZTEC RAIDERS",
-      "readiness_score": 42,
-      "summary_quality": 75,
-      "authority_score": 30,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": true,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
       "url": "/wiki/the-bally-boys.html",
       "readable_title": "The BALLY BOYS",
       "readiness_score": 42,
@@ -1548,6 +1518,21 @@
       "readiness_score": 41,
       "summary_quality": 74,
       "authority_score": 26,
+      "trust_score": 57,
+      "narrative_strength": 0,
+      "platform_readiness": {
+        "fandom": false,
+        "telegram": true,
+        "substack": false,
+        "paragraph": false
+      }
+    },
+    {
+      "url": "/wiki/1m-free-nfts-programme.html",
+      "readable_title": "1M Free NFTs Programme",
+      "readiness_score": 41,
+      "summary_quality": 76,
+      "authority_score": 27,
       "trust_score": 57,
       "narrative_strength": 0,
       "platform_readiness": {
@@ -1603,10 +1588,25 @@
       }
     },
     {
+      "url": "/wiki/the-aztec-raiders.html",
+      "readable_title": "The AZTEC RAIDERS",
+      "readiness_score": 41,
+      "summary_quality": 72,
+      "authority_score": 29,
+      "trust_score": 57,
+      "narrative_strength": 0,
+      "platform_readiness": {
+        "fandom": false,
+        "telegram": true,
+        "substack": false,
+        "paragraph": false
+      }
+    },
+    {
       "url": "/wiki/the-squeaky-pinks.html",
       "readable_title": "The Squeaky Pinks",
       "readiness_score": 41,
-      "summary_quality": 72,
+      "summary_quality": 71,
       "authority_score": 29,
       "trust_score": 57,
       "narrative_strength": 0,
@@ -1723,21 +1723,6 @@
       }
     },
     {
-      "url": "/wiki/loopfiend.html",
-      "readable_title": "Loopfiend",
-      "readiness_score": 40,
-      "summary_quality": 68,
-      "authority_score": 28,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": true,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
       "url": "/wiki/phygital-prints.html",
       "readable_title": "Phygital Prints",
       "readiness_score": 40,
@@ -1786,7 +1771,7 @@
       "url": "/wiki/aleema-child-of-the-shard.html",
       "readable_title": "Aleema (Child of the Shard)",
       "readiness_score": 39,
-      "summary_quality": 68,
+      "summary_quality": 67,
       "authority_score": 25,
       "trust_score": 57,
       "narrative_strength": 0,
@@ -1813,40 +1798,10 @@
       }
     },
     {
-      "url": "/wiki/battlemech-blast.html",
-      "readable_title": "Battlemech Blast",
-      "readiness_score": 39,
-      "summary_quality": 65,
-      "authority_score": 27,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": true,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/bit-cap-5000.html",
-      "readable_title": "Bit-Cap 5000",
-      "readiness_score": 39,
-      "summary_quality": 67,
-      "authority_score": 25,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": true,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
       "url": "/wiki/dragan-volkov.html",
       "readable_title": "Dragan Volkov",
       "readiness_score": 39,
-      "summary_quality": 66,
+      "summary_quality": 65,
       "authority_score": 28,
       "trust_score": 57,
       "narrative_strength": 0,
@@ -1876,7 +1831,7 @@
       "url": "/wiki/forklord-you.html",
       "readable_title": "Forklord You",
       "readiness_score": 39,
-      "summary_quality": 66,
+      "summary_quality": 65,
       "authority_score": 28,
       "trust_score": 57,
       "narrative_strength": 0,
@@ -1967,7 +1922,22 @@
       "readable_title": "HODL Wars Ecosystem",
       "readiness_score": 39,
       "summary_quality": 68,
-      "authority_score": 26,
+      "authority_score": 25,
+      "trust_score": 57,
+      "narrative_strength": 0,
+      "platform_readiness": {
+        "fandom": false,
+        "telegram": true,
+        "substack": false,
+        "paragraph": false
+      }
+    },
+    {
+      "url": "/wiki/loopfiend.html",
+      "readable_title": "Loopfiend",
+      "readiness_score": 39,
+      "summary_quality": 67,
+      "authority_score": 28,
       "trust_score": 57,
       "narrative_strength": 0,
       "platform_readiness": {
@@ -2053,6 +2023,21 @@
       }
     },
     {
+      "url": "/wiki/battlemech-blast.html",
+      "readable_title": "Battlemech Blast",
+      "readiness_score": 38,
+      "summary_quality": 64,
+      "authority_score": 27,
+      "trust_score": 57,
+      "narrative_strength": 0,
+      "platform_readiness": {
+        "fandom": false,
+        "telegram": true,
+        "substack": false,
+        "paragraph": false
+      }
+    },
+    {
       "url": "/wiki/bear-market-siege.html",
       "readable_title": "The Bear Market Siege",
       "readiness_score": 38,
@@ -2070,6 +2055,21 @@
     {
       "url": "/wiki/billy-the-goat-kid.html",
       "readable_title": "Billy the Goat Kid",
+      "readiness_score": 38,
+      "summary_quality": 66,
+      "authority_score": 25,
+      "trust_score": 57,
+      "narrative_strength": 0,
+      "platform_readiness": {
+        "fandom": false,
+        "telegram": true,
+        "substack": false,
+        "paragraph": false
+      }
+    },
+    {
+      "url": "/wiki/bit-cap-5000.html",
+      "readable_title": "Bit-Cap 5000",
       "readiness_score": 38,
       "summary_quality": 66,
       "authority_score": 25,
@@ -2173,21 +2173,6 @@
       }
     },
     {
-      "url": "/wiki/sarah-pu51fly.html",
-      "readable_title": "Sarah PU51FLY",
-      "readiness_score": 38,
-      "summary_quality": 64,
-      "authority_score": 27,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": true,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
       "url": "/wiki/solana-sol.html",
       "readable_title": "Solana (SOL)",
       "readiness_score": 38,
@@ -2281,7 +2266,7 @@
       "url": "/wiki/lfgk.html",
       "readable_title": "$LFGK",
       "readiness_score": 37,
-      "summary_quality": 60,
+      "summary_quality": 59,
       "authority_score": 25,
       "trust_score": 57,
       "narrative_strength": 0,
@@ -2298,6 +2283,21 @@
       "readiness_score": 37,
       "summary_quality": 63,
       "authority_score": 23,
+      "trust_score": 57,
+      "narrative_strength": 0,
+      "platform_readiness": {
+        "fandom": false,
+        "telegram": true,
+        "substack": false,
+        "paragraph": false
+      }
+    },
+    {
+      "url": "/wiki/sarah-pu51fly.html",
+      "readable_title": "Sarah PU51FLY",
+      "readiness_score": 37,
+      "summary_quality": 61,
+      "authority_score": 26,
       "trust_score": 57,
       "narrative_strength": 0,
       "platform_readiness": {
@@ -2458,21 +2458,6 @@
       }
     },
     {
-      "url": "/wiki/croydon-tower-blocks.html",
-      "readable_title": "Croydon Tower Blocks",
-      "readiness_score": 34,
-      "summary_quality": 53,
-      "authority_score": 20,
-      "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": true,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
       "url": "/wiki/maidstone-base.html",
       "readable_title": "Maidstone Base",
       "readiness_score": 34,
@@ -2520,6 +2505,21 @@
     {
       "url": "/wiki/bitcoin-kid-army.html",
       "readable_title": "Bitcoin Kid Army",
+      "readiness_score": 33,
+      "summary_quality": 53,
+      "authority_score": 19,
+      "trust_score": 57,
+      "narrative_strength": 0,
+      "platform_readiness": {
+        "fandom": false,
+        "telegram": false,
+        "substack": false,
+        "paragraph": false
+      }
+    },
+    {
+      "url": "/wiki/croydon-tower-blocks.html",
+      "readable_title": "Croydon Tower Blocks",
       "readiness_score": 33,
       "summary_quality": 53,
       "authority_score": 19,
@@ -2581,7 +2581,7 @@
       "url": "/wiki/graffpunks-247-blockchain-radio-station.html",
       "readable_title": "GraffPUNKS 24/7 Blockchain Radio Station",
       "readiness_score": 31,
-      "summary_quality": 41,
+      "summary_quality": 40,
       "authority_score": 22,
       "trust_score": 57,
       "narrative_strength": 0,
@@ -2611,7 +2611,7 @@
       "url": "/wiki/great-datapocalypse-of-2789.html",
       "readable_title": "Great Datapocalypse of 2789",
       "readiness_score": 30,
-      "summary_quality": 43,
+      "summary_quality": 42,
       "authority_score": 17,
       "trust_score": 57,
       "narrative_strength": 0,
@@ -3001,7 +3001,7 @@
       "url": "/wiki/graffpunks-24-7-blockchain-radio-station.html",
       "readable_title": "GraffPUNKS 24/7 Blockchain Radio Station",
       "readiness_score": 28,
-      "summary_quality": 36,
+      "summary_quality": 35,
       "authority_score": 16,
       "trust_score": 57,
       "narrative_strength": 0,
@@ -3061,7 +3061,7 @@
       "url": "/wiki/the-bear-market-siege.html",
       "readable_title": "The Bear Market Siege",
       "readiness_score": 28,
-      "summary_quality": 34,
+      "summary_quality": 33,
       "authority_score": 19,
       "trust_score": 57,
       "narrative_strength": 0,
@@ -3076,7 +3076,7 @@
       "url": "/wiki/the-fomo-plague.html",
       "readable_title": "The FOMO Plague",
       "readiness_score": 28,
-      "summary_quality": 34,
+      "summary_quality": 33,
       "authority_score": 18,
       "trust_score": 57,
       "narrative_strength": 0,
@@ -3106,7 +3106,7 @@
       "url": "/wiki/the-satoshi-scroll.html",
       "readable_title": "The Satoshi Scroll",
       "readiness_score": 28,
-      "summary_quality": 34,
+      "summary_quality": 33,
       "authority_score": 18,
       "trust_score": 57,
       "narrative_strength": 0,
@@ -3121,7 +3121,7 @@
       "url": "/wiki/the-wagmi-prophecy.html",
       "readable_title": "The WAGMI Prophecy",
       "readiness_score": 28,
-      "summary_quality": 34,
+      "summary_quality": 33,
       "authority_score": 19,
       "trust_score": 57,
       "narrative_strength": 0,
@@ -3136,7 +3136,7 @@
       "url": "/wiki/the-whale-lords.html",
       "readable_title": "The Whale Lords",
       "readiness_score": 28,
-      "summary_quality": 34,
+      "summary_quality": 33,
       "authority_score": 19,
       "trust_score": 57,
       "narrative_strength": 0,
