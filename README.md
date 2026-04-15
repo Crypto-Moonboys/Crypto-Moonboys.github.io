@@ -267,10 +267,42 @@ A browser-native, zero-install gaming layer served directly from GitHub Pages.
 | 🟦 Tetris Block Topia | `/games/tetris-block-topia.html` | `tetris` |
 
 ### Arcade Architecture
+
+#### Load flow (every game page)
+```
+/games/<game>.html
+  │  classic scripts (in order):
+  ├─ /js/wiki.js              — site header, sidebar, search wiring
+  ├─ /js/identity-gate.js     — Telegram-linked identity check (optional)
+  ├─ /js/game-fullscreen.js   — fullscreen overlay, Start/Pause/Reset button wiring
+  │
+  └─ <script type="module">
+       import { mountGame }        from '/js/arcade/core/game-shell.js';
+       import { bootstrapXxx }     from '/js/arcade/games/<slug>/bootstrap.js';
+       mountGame({ root: document.querySelector('.game-card'), bootstrap: bootstrapXxx });
+     </script>
+```
+
+#### Module map
+```
+js/arcade/
+  core/
+    game-shell.js      — mountGame({root, bootstrap}): calls bootstrap(root), awaits game.init()
+    game-registry.js   — GameRegistry.register(id, {label, bootstrap}); self-called at import time
+    game-state.js      — createGameState(defaults): optional shared state container
+  games/
+    <slug>/
+      config.js        — Object.freeze({ id, label, … })  ← leaderboard key lives here
+      bootstrap.js     — exports bootstrap<Name>(root) → { init, start, pause, resume, reset, destroy, getScore }
+                         also calls GameRegistry.register() at module load time
+```
+
+#### Runtime wiring
 - **Identity:** `js/arcade-sync.js` — localStorage player name (random fallback, no login required)
 - **Score submission:** `js/leaderboard-client.js` → `POST https://moonboys-leaderboard.sercullen.workers.dev`
 - **Leaderboard display:** `/games/leaderboard.html` — tabbed UI with seasonal/yearly/all-time + graph
 - **Bonus engine:** `js/bonus-engine.js` loads `games/data/hidden_bonus_pool.json`
+- **Fullscreen overlay:** `js/game-fullscreen.js` + `css/game-fullscreen.css` — wraps `.game-card` at runtime; `.btqm-game-area` (BTQM only) is moved into `.game-stage` instead
 - **Future identity:** Telegram-linked identity can override local player name without breaking the game flow (arcade-sync will accept a name set by the Telegram auth callback)
 
 ### Deployment
