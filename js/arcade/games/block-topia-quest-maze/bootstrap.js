@@ -16,7 +16,7 @@
  * Note: Phaser 3 is loaded as a classic CDN script before this module runs.
  */
 
-import { CONFIG }     from './config.js';
+import { BTQM_CONFIG }     from './config.js';
 import { GameRegistry } from '/js/arcade/core/game-registry.js';
 
 import { ArcadeSync } from '/js/arcade-sync.js';
@@ -1778,8 +1778,8 @@ class BattleScene extends Phaser.Scene {
 
 
 // Register in the central arcade registry when this module is imported.
-GameRegistry.register(CONFIG.id, {
-  label:     CONFIG.label,
+GameRegistry.register(BTQM_CONFIG.id, {
+  label:     BTQM_CONFIG.label,
   bootstrap: bootstrapBlockTopiaQuestMaze,
 });
 

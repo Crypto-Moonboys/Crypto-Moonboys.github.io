@@ -191,7 +191,7 @@ export function bootstrapCrystalQuest(root) {
       updateHud();
       loadQuest();
     } catch (err) {
-      console.error(err);
+      console.error('[crystal-quest] init failed:', err);
       titleEl.textContent = 'Quest load failed';
       clueEl.textContent = 'Could not load crystal-maze-seed.json from R2 or local fallback.';
       feedbackEl.textContent = 'Check file path, bucket path, and R2 public URL.';
