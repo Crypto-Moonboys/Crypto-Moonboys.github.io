@@ -8,11 +8,28 @@
 </head>
 <body>
   <div id="ui">
-    <h1>Block Topia — Living Rebellion</h1>
-    <div id="status">Connecting to world...</div>
+    <div class="panel hero-panel">
+      <h1>Block Topia — Living Rebellion</h1>
+      <div id="status">Connecting to city...</div>
+      <div id="controls">Move: WASD / Arrows · Interact: E</div>
+    </div>
+
+    <div class="panel quest-panel">
+      <div class="panel-title">LIVE OPS</div>
+      <div id="quest-list"></div>
+    </div>
   </div>
+
+  <div class="panel feed-panel">
+    <div class="panel-title">STREET FEED</div>
+    <div id="event-log"></div>
+  </div>
+
   <div id="sam-popup" class="hidden"></div>
+  <div id="interact-prompt" class="hidden">Press E to interact</div>
   <canvas id="gameCanvas"></canvas>
+
+  <script src="https://unpkg.com/colyseus.js/dist/colyseus.js"></script>
   <script type="module" src="main.js"></script>
 </body>
 </html>

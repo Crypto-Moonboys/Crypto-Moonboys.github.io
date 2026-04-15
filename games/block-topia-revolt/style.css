@@ -1,5 +1,10 @@
-body { margin: 0; background: #0b0f1a; color: #fff; font-family: Arial, sans-serif; }
-#gameCanvas { width: 100vw; height: 100vh; display: block; }
-#ui { position: absolute; top: 10px; left: 10px; background: rgba(0,0,0,0.6); padding: 10px; border-radius: 8px; }
-#sam-popup { position: absolute; top: 60px; left: 10px; background: #ff0055; padding: 10px; border-radius: 6px; }
+/* Block Topia UI Styles */
+.panel { background: rgba(0,0,0,0.7); color: #ffffff; padding: 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.15); backdrop-filter: blur(6px);} 
+.hero-panel { position: absolute; top: 10px; left: 10px; max-width: 320px;} 
+.quest-panel { position: absolute; top: 140px; left: 10px; max-width: 320px;} 
+.feed-panel { position: absolute; top: 10px; right: 10px; max-width: 320px;} 
+.panel-title { font-size: 12px; letter-spacing: 1px; color: #8ae7ff; margin-bottom: 6px;} 
+#quest-list .quest-item { font-size: 13px; margin-bottom: 6px;} 
+#event-log .feed-line { font-size: 13px; margin-bottom: 6px;} 
+#sam-popup { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.85); color: #fff; padding: 20px 30px; border-radius: 12px; border: 2px solid #ff3355; font-size: 18px; z-index: 10;} 
 .hidden { display: none; }
