@@ -4,7 +4,7 @@
  * Self-contained Phaser 3 RPG dungeon-crawler. Contains all game scenes,
  * constants, utilities, and the arcade bootstrap lifecycle.
  *
- * Exported entry point: bootstrapBlockTopiaQuestMaze({ root })
+ * Exported entry point: bootstrapBlockTopiaQuestMaze(root)
  * Called by game-shell.js via mountGame().
  *
  * Integrations:
@@ -1790,10 +1790,10 @@ GameRegistry.register(BTQM_CONFIG.id, {
 /**
  * Bootstrap the Block Topia Quest Maze game.
  *
- * @param {{ root: Element }} options
+ * @param {Element} root - Anchor element for the game (e.g. .game-card).
  * @returns {{ init, start, pause, resume, reset, destroy, getScore }}
  */
-export function bootstrapBlockTopiaQuestMaze({ root }) {
+export function bootstrapBlockTopiaQuestMaze(root) {
   let phaserGame = null;
   let _pausedByOverlay = [];
 
