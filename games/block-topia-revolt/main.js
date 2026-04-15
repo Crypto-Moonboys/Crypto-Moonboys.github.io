@@ -54,7 +54,7 @@ function showSamSignal(message) {
 }
 
 // Demo SAM Signal Rush event every 30 seconds
-setInterval(() => {
+const samSignalInterval = setInterval(() => {
   showSamSignal('SAM SIGNAL RUSH: First 5 players to reach the Central Plaza earn XP!');
 }, 30000);
 
@@ -64,3 +64,5 @@ function gameLoop() {
 }
 
 gameLoop();
+
+window.addEventListener('unload', () => clearInterval(samSignalInterval));
