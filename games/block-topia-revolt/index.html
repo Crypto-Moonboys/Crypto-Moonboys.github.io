@@ -5,124 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Block Topia — Living Rebellion</title>
   <link rel="stylesheet" href="style.css" />
-
-  <!-- Multiplayer WebSocket Endpoint -->
   <script>
     window.BLOCK_TOPIA_SERVER = "wss://cryptomoonboys.com/colyseus";
   </script>
-
-  <style>
-    html, body {
-      margin: 0;
-      padding: 0;
-      overflow: hidden;
-      background: #050b1a;
-      font-family: Arial, Helvetica, sans-serif;
-      color: #ffffff;
-    }
-
-    #gameCanvas {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      display: block;
-      z-index: 1;
-    }
-
-    #ui {
-      position: absolute;
-      top: 20px;
-      left: 20px;
-      z-index: 10;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-
-    .panel {
-      background: rgba(0, 0, 0, 0.65);
-      border: 1px solid rgba(0, 255, 170, 0.3);
-      border-radius: 8px;
-      padding: 12px 16px;
-      backdrop-filter: blur(6px);
-      box-shadow: 0 0 10px rgba(0, 255, 170, 0.15);
-    }
-
-    .panel-title {
-      font-weight: bold;
-      margin-bottom: 6px;
-      color: #00ffaa;
-      font-size: 14px;
-      letter-spacing: 1px;
-    }
-
-    .hero-panel h1 {
-      margin: 0 0 5px 0;
-      font-size: 20px;
-      color: #00ffaa;
-    }
-
-    #status {
-      font-size: 14px;
-      margin-bottom: 4px;
-    }
-
-    #controls {
-      font-size: 12px;
-      opacity: 0.8;
-    }
-
-    .feed-panel {
-      position: absolute;
-      bottom: 20px;
-      left: 20px;
-      max-width: 320px;
-      z-index: 10;
-    }
-
-    #event-log {
-      max-height: 150px;
-      overflow-y: auto;
-      font-size: 12px;
-    }
-
-    #sam-popup {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background: rgba(0, 0, 0, 0.85);
-      border: 1px solid #00ffaa;
-      padding: 20px;
-      border-radius: 10px;
-      z-index: 20;
-      max-width: 400px;
-      text-align: center;
-    }
-
-    #interact-prompt {
-      position: absolute;
-      bottom: 80px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: rgba(0, 0, 0, 0.7);
-      padding: 8px 16px;
-      border-radius: 6px;
-      border: 1px solid rgba(0, 255, 170, 0.4);
-      z-index: 15;
-      font-size: 14px;
-    }
-
-    .hidden {
-      display: none;
-    }
-  </style>
 </head>
 <body>
-
-  <!-- UI PANELS -->
   <div id="ui">
     <div class="panel hero-panel">
       <h1>Block Topia — Living Rebellion</h1>
@@ -136,24 +23,16 @@
     </div>
   </div>
 
-  <!-- STREET FEED -->
   <div class="panel feed-panel">
     <div class="panel-title">STREET FEED</div>
     <div id="event-log"></div>
   </div>
 
-  <!-- POPUPS -->
   <div id="sam-popup" class="hidden"></div>
   <div id="interact-prompt" class="hidden">Press E to interact</div>
-
-  <!-- GAME CANVAS -->
   <canvas id="gameCanvas"></canvas>
 
-  <!-- COLYSEUS CLIENT -->
   <script src="https://unpkg.com/colyseus.js/dist/colyseus.js"></script>
-
-  <!-- MAIN GAME SCRIPT -->
   <script type="module" src="main.js"></script>
-
 </body>
 </html>
