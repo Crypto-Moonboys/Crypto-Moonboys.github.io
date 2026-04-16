@@ -82,3 +82,27 @@ Current state contracts are defined by `world/game-state.js` and consumed by `ma
 ## Legacy References
 
 Legacy source references are tracked in `world/data-loader.js` (`legacy.sourceFiles`) so future updates can verify parity against Street Signal, Revolt, and ISO inputs.
+
+## Replaced Entry Points + Link Routing
+
+- Unified game entry point: `/games/block-topia/index.html`
+- Legacy Street Signal monster page is treated as retired and should only redirect to the unified module:
+  - `/games/block-topia-street-signal-3008-monster.html` → `/games/block-topia/`
+- Arcade/home/game navigation links should resolve to `/games/block-topia/` instead of legacy Block Topia variants.
+
+## Extension Rules (For Future Agents)
+
+- Build new Block Topia features only inside `/games/block-topia/`.
+- Keep legacy inputs (`/games/block-topia-revolt/`, `/games/block-topia-iso/`, `/games/block-topia-street-signal-3008*.html`) as reference sources; do not extend gameplay there.
+- Keep Colyseus endpoint and room identity stable:
+  - endpoint: `https://game.cryptomoonboys.com`
+  - room id: `city`
+- Add gameplay/world expansion through `data/*.json` and existing world systems (`sam-system`, `quest-system`, `npc-system`, `memory-system`) instead of hardcoding new one-off logic in `main.js`.
+- Preserve ISO-first rendering in `render/iso-renderer.js` so all local players, remote players, and NPCs remain visible in the same isometric scene.
+
+## Arcade + VPS Integration Checklist
+
+- Arcade index card links point to `/games/block-topia/`.
+- Legacy Block Topia navigation links across game pages point to `/games/block-topia/`.
+- Unified module keeps `window.BLOCK_TOPIA_SERVER` defaulting to `https://game.cryptomoonboys.com`.
+- Multiplayer joins the existing Colyseus `city` room and reflects room population in HUD.
