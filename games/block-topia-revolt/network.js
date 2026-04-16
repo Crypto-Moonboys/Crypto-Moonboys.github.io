@@ -7,7 +7,7 @@ function delay(ms) {
 }
 
 export async function connectMultiplayer(showSignal, onPlayersUpdate, onConnectionUpdate = () => {}) {
-  const endpoint = "wss://game.cryptomoonboys.com";
+  const endpoint = window.BLOCK_TOPIA_SERVER || "wss://game.cryptomoonboys.com";
   const maxAttempts = 2;
   let lastError = null;
 
@@ -18,7 +18,7 @@ export async function connectMultiplayer(showSignal, onPlayersUpdate, onConnecti
       wsStatus: "failed",
       roomJoined: false,
       sessionId: "",
-      lastError: String(lastError.message || lastError)
+      lastError: String(lastError?.message || lastError)
     });
     return false;
   }
@@ -29,12 +29,12 @@ export async function connectMultiplayer(showSignal, onPlayersUpdate, onConnecti
         wsStatus: "connecting",
         roomJoined: false,
         sessionId: "",
-        lastError: lastError ? String(lastError.message || lastError) : ""
+        lastError: lastError ? String(lastError?.message || lastError) : ""
       });
 
       console.log("CONNECTING TO:", endpoint);
       client = new window.Colyseus.Client(endpoint);
-      room = await client.joinOrCreate("blocktopia");
+      room = await client.joinOrCreate("city");
 
       onConnectionUpdate({
         wsStatus: "connected",
@@ -69,7 +69,7 @@ export async function connectMultiplayer(showSignal, onPlayersUpdate, onConnecti
         wsStatus: "failed",
         roomJoined: false,
         sessionId: "",
-        lastError: String(err && (err.message || err))
+        lastError: String(err?.message || err)
       });
 
       if (attempt < maxAttempts) {
