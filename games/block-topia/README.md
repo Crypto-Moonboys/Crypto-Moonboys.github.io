@@ -38,7 +38,7 @@ Block Topia is the shared cyberpunk city multiplayer experience where players mo
 - `network.js` keeps Colyseus client behavior centralized.
 - Endpoint remains the existing VPS route via:
   - `window.BLOCK_TOPIA_SERVER`, defaulting to `https://game.cryptomoonboys.com`
-  - Colyseus connects over secure WebSocket transport to that same host, with retry handling implemented in `network.js` (2 attempts, 2.5s backoff)
+  - Colyseus connects over secure WebSocket transport to that same host, with retry handling implemented in `network.js` (2 attempts with a fixed 2.5s delay between tries)
 - Room identity stays on `city` with room metadata hooks for shard/season context.
 
 ### Data-Driven World Layer
