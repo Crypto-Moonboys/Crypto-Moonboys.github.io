@@ -1,0 +1,41 @@
+{
+  "mapWidth": 20,
+  "mapHeight": 20,
+  "districts": [
+    {
+      "id": "neon-slums",
+      "name": "Neon Slums",
+      "color": "#4f6dff",
+      "grid": { "col": 0, "row": 0, "w": 10, "h": 8 },
+      "legacySource": "neon-exchange + mural-sector"
+    },
+    {
+      "id": "signal-spire",
+      "name": "Signal Spire",
+      "color": "#ff4fd8",
+      "grid": { "col": 10, "row": 0, "w": 10, "h": 8 },
+      "legacySource": "moon-gate"
+    },
+    {
+      "id": "crypto-core",
+      "name": "Crypto Core",
+      "color": "#ffd84d",
+      "grid": { "col": 0, "row": 8, "w": 8, "h": 12 },
+      "legacySource": "chain-plaza"
+    },
+    {
+      "id": "moonlit-underbelly",
+      "name": "Moonlit Underbelly",
+      "color": "#8dff6a",
+      "grid": { "col": 8, "row": 8, "w": 6, "h": 12 },
+      "legacySource": "dead-rail + black-fork-alley"
+    },
+    {
+      "id": "revolt-plaza",
+      "name": "Revolt Plaza",
+      "color": "#5ef2ff",
+      "grid": { "col": 14, "row": 8, "w": 6, "h": 12 },
+      "legacySource": "living-rebellion city hub"
+    }
+  ]
+}

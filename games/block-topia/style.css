@@ -1,0 +1,181 @@
+:root {
+  color-scheme: dark;
+  --bg: #050814;
+  --panel: rgba(11, 16, 36, 0.86);
+  --line: rgba(94, 242, 255, 0.28);
+  --accent: #5ef2ff;
+  --warn: #ff4fd8;
+  --ok: #8dff6a;
+  --gold: #ffd84d;
+  --night-bg: #0d0520;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  background: var(--bg);
+  color: #eaf6ff;
+  font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+  overflow: hidden;
+}
+
+/* World canvas — fills viewport behind HUD */
+#world-canvas {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  display: block;
+  background: radial-gradient(circle at top, #111a36 0%, #050814 60%);
+  transition: background 1.8s ease;
+}
+
+#world-canvas.phase-night {
+  background: radial-gradient(circle at top, #1b0a30 0%, #0d0520 60%);
+}
+
+/* HUD overlay grid */
+#hud {
+  position: fixed;
+  inset: 0;
+  padding: 12px;
+  pointer-events: none;
+  display: grid;
+  grid-template-columns: minmax(220px, 300px) minmax(220px, 300px);
+  grid-template-rows: auto auto;
+  gap: 10px;
+  align-content: start;
+}
+
+/* Panels */
+.panel {
+  pointer-events: auto;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 10px 12px;
+  backdrop-filter: blur(4px);
+}
+
+.panel h1, .panel h2 {
+  margin: 0 0 6px;
+  font-size: 0.95rem;
+  letter-spacing: 0.03em;
+}
+
+#world-panel h1 { color: var(--warn); }
+#multiplayer-panel h2 { color: var(--accent); }
+#quest-panel h2 { color: var(--ok); }
+#feed-panel h2 { color: var(--gold); }
+
+/* Info rows in world panel */
+#world-panel p {
+  margin: 2px 0;
+  font-size: 0.82rem;
+  line-height: 1.4;
+}
+
+#score-status { color: var(--gold); font-weight: 600; }
+#xp-status    { color: var(--ok);   font-weight: 600; }
+#phase-status { color: var(--accent); }
+#sam-status   { color: var(--warn); }
+
+.hint {
+  color: rgba(234, 246, 255, 0.4);
+  font-size: 0.74rem !important;
+  margin-top: 6px !important;
+}
+
+/* Quest list */
+#quest-list {
+  margin: 0;
+  padding-left: 14px;
+  max-height: 160px;
+  overflow: auto;
+}
+
+#quest-list li {
+  margin-bottom: 4px;
+  font-size: 0.82rem;
+  line-height: 1.4;
+}
+
+/* Street feed */
+#street-feed {
+  margin: 0;
+  padding-left: 14px;
+  max-height: 160px;
+  overflow: auto;
+}
+
+#street-feed li {
+  margin-bottom: 3px;
+  font-size: 0.82rem;
+  line-height: 1.4;
+}
+
+#feed-panel {
+  grid-column: 1 / span 2;
+}
+
+/* SAM popup overlay */
+#sam-popup {
+  position: fixed;
+  left: 50%;
+  top: 25%;
+  transform: translateX(-50%);
+  z-index: 500;
+  padding: 18px 28px;
+  background: rgba(18, 4, 36, 0.95);
+  border: 2px solid var(--warn);
+  border-radius: 12px;
+  color: var(--warn);
+  font-size: 1.1rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-align: center;
+  pointer-events: none;
+  backdrop-filter: blur(6px);
+  box-shadow: 0 0 30px rgba(255, 79, 216, 0.45);
+  transition: opacity 0.6s ease;
+}
+
+#sam-popup.hidden {
+  display: none;
+}
+
+/* Interact prompt */
+#interact-prompt {
+  position: fixed;
+  bottom: 80px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 400;
+  padding: 8px 20px;
+  background: rgba(11, 16, 36, 0.92);
+  border: 1px solid var(--accent);
+  border-radius: 8px;
+  color: var(--accent);
+  font-size: 0.88rem;
+  pointer-events: none;
+  backdrop-filter: blur(4px);
+}
+
+#interact-prompt.hidden {
+  display: none;
+}
+
+/* Mobile single-column */
+@media (max-width: 840px) {
+  #hud {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto;
+  }
+
+  #feed-panel {
+    grid-column: auto;
+  }
+}

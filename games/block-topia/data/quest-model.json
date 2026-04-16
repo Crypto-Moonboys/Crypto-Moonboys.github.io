@@ -1,0 +1,46 @@
+{
+  "daily": [
+    { "id": "daily-signal-tag",      "title": "Tag Relay",         "type": "daily",   "xp": 120 },
+    { "id": "daily-recruiter-run",   "title": "Recruiter Circuit", "type": "daily",   "xp": 140 },
+    { "id": "daily-vendor-sweep",    "title": "Vendor Sweep",      "type": "daily",   "xp": 100 },
+    { "id": "daily-night-patrol",    "title": "Night Patrol",      "type": "daily",   "xp": 160 }
+  ],
+  "weekly": [
+    { "id": "weekly-district-sweep", "title": "District Sweep",    "type": "weekly",  "xp": 640 },
+    { "id": "weekly-faction-clash",  "title": "Faction Clash",     "type": "weekly",  "xp": 720 }
+  ],
+  "seasonal": [
+    { "id": "season-sam-protocol",   "title": "SAM Protocol",      "type": "seasonal","xp": 3200 },
+    { "id": "season-liberator-rise", "title": "Liberator Rise",    "type": "seasonal","xp": 2800 }
+  ],
+  "prophecy": [
+    {
+      "id": "prophecy-signal-chosen",
+      "title": "The Signal Chosen",
+      "type": "prophecy",
+      "xp": 6400,
+      "description": "Complete all 5 district captures in a single season to unlock the prophecy arc"
+    },
+    {
+      "id": "prophecy-sam-awakening",
+      "title": "SAM Awakening",
+      "type": "prophecy",
+      "xp": 9600,
+      "description": "Survive the giant encounter across 3 consecutive SAM events"
+    }
+  ],
+  "dynamicHooks": [
+    {
+      "id": "dynamic-faction-flux",
+      "description": "Generate dynamic quests from faction pressure, district memory, and SAM phase"
+    },
+    {
+      "id": "dynamic-sam-signal-hunt",
+      "description": "SAM emits signal fragments; hunt them across districts during Phase 1"
+    }
+  ],
+  "progression": {
+    "mode": "xp-only",
+    "walletRewards": false
+  }
+}
