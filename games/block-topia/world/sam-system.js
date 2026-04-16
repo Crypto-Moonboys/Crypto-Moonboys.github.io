@@ -17,11 +17,9 @@ export function createSamSystem(state) {
     hooks.onPhaseChanged?.(phase);
 
     if (phase.id === 'sam-event') {
-      state.memory.samEvents.push({
-        at: Date.now(),
-        type: 'giant_encounter',
-        phase,
-      });
+      // Do NOT push to state.memory.samEvents here — main.js's onPhaseChanged hook calls
+      // memory.record() which is the single authoritative writer for samEvents.
+      // Pushing here in addition would create a double entry with mixed types.
       hooks.onSignalRush?.();
     }
   }

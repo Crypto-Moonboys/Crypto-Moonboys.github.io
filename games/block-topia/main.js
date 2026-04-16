@@ -76,9 +76,10 @@ async function boot() {
       hud.pushFeed(line);
       memory.record('network', line);
     },
-    onQuestCompleted: ({ title, rewardXp }) => {
-      // Server-authoritative quest completion: award XP and refresh HUD
-      const awarded = quests.completeQuest(title, rewardXp) || rewardXp;
+    onQuestCompleted: ({ questId, title, rewardXp }) => {
+      // Server-authoritative quest completion: match quest by questId (not title),
+      // then apply XP via awardXp so score/XP are incremented exactly once.
+      const awarded = quests.completeQuest(questId, rewardXp) || rewardXp;
       if (awarded) {
         awardXp(state, awarded);
         hud.setXp(state.player.xp);
@@ -120,14 +121,20 @@ async function boot() {
       hud.setScore(state.player.score);
       hud.setXp(state.player.xp);
       hud.pushFeed(`🏴 ${captureEvent.district.name} captured! +${XP_DISTRICT_CAPTURE} XP +${SCORE_DISTRICT_CAPTURE} score`);
-      memory.record('district', `Captured ${captureEvent.district.name}`);
+      // Pass a structured object so all entries in state.memory.districtChanges share a
+      // consistent shape (matches the format previously written directly by game-state).
+      memory.record('district', { at: Date.now(), district: captureEvent.district.id, event: 'captured' });
     }
 
     sam.tick(dt, {
       onPhaseChanged: (phase) => {
         hud.setSamPhase(phase.name);
         hud.pushFeed(`🧠 SAM phase advanced: ${phase.name}`);
-        memory.record('sam', `Phase: ${phase.id}`);
+        // Pass a structured object so all entries in state.memory.samEvents share a
+        // consistent shape (matches the format previously written directly by sam-system).
+        const samEvent = { at: Date.now(), phase: phase.id };
+        if (phase.id === 'sam-event') samEvent.type = 'giant_encounter';
+        memory.record('sam', samEvent);
       },
       onSignalRush: () => {
         hud.showSamPopup('⚡ SAM SIGNAL RUSH — Giant encounter incoming!', 5000);
