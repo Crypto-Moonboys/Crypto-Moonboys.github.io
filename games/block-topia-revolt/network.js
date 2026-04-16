@@ -20,6 +20,7 @@ export async function connectMultiplayer(showSignal, onPlayersUpdate, onConnecti
       sessionId: "",
       lastError: String(lastError.message || lastError)
     });
+    return false;
   }
 
   for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {

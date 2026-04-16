@@ -20,7 +20,7 @@ Object.assign(debugPanel.style, {
   position: 'fixed',
   bottom: '10px',
   left: '10px',
-  zIndex: '1000',
+  zIndex: 1000,
   background: 'rgba(0,0,0,0.8)',
   color: '#9effc7',
   font: '12px/1.4 monospace',
