@@ -6,6 +6,8 @@ This module is the merged Block Topia build that consolidates:
 - **Block Topia Revolt** (`/games/block-topia-revolt/`)
 - **Block Topia ISO** (`/games/block-topia-iso/`)
 
+Block Topia is the shared cyberpunk city multiplayer experience where players move through isometric districts, complete live quests, and react to rotating SAM world events.
+
 ## What Was Merged
 
 ### Street Signal 3008
@@ -35,7 +37,7 @@ This module is the merged Block Topia build that consolidates:
 ### Multiplayer Layer
 - `network.js` keeps Colyseus client behavior centralized.
 - Endpoint remains the existing VPS route via:
-  - `window.BLOCK_TOPIA_SERVER`, defaulting to `https://game.cryptomoonboys.com` (used by the Colyseus client transport as secure WebSocket/WSS)
+  - `window.BLOCK_TOPIA_SERVER`, defaulting to `https://game.cryptomoonboys.com` (the Colyseus client then opens its secure WebSocket session against that host)
 - Room identity stays on `city` with room metadata hooks for shard/season context.
 
 ### Data-Driven World Layer
