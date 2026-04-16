@@ -35,7 +35,7 @@ This module is the merged Block Topia build that consolidates:
 ### Multiplayer Layer
 - `network.js` keeps Colyseus client behavior centralized.
 - Endpoint remains the existing VPS route via:
-  - `window.BLOCK_TOPIA_SERVER`, defaulting to `https://game.cryptomoonboys.com`
+  - `window.BLOCK_TOPIA_SERVER`, defaulting to `https://game.cryptomoonboys.com` (used by the Colyseus client transport as secure WebSocket/WSS)
 - Room identity stays on `city` with room metadata hooks for shard/season context.
 
 ### Data-Driven World Layer
