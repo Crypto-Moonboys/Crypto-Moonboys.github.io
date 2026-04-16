@@ -27,6 +27,7 @@ export async function connectMultiplayer({
   onStatus,
   onPlayers,
   onFeed,
+  onQuestCompleted,
 }) {
   const endpoint = window.BLOCK_TOPIA_SERVER || 'https://game.cryptomoonboys.com';
   const retries = 2;
@@ -61,6 +62,14 @@ export async function connectMultiplayer({
 
       room.onMessage('districtChanged', (message) => {
         onFeed?.(`🏙️ ${message?.playerId || 'Player'} entered ${message?.districtName || 'district'}`);
+      });
+
+      // Carried forward from Block Topia Revolt: award XP and report quest completion
+      room.onMessage('questCompleted', (message) => {
+        const title = message?.title || 'Quest';
+        const rewardXp = message?.rewardXp || 0;
+        onFeed?.(`✅ ${title} (+${rewardXp} XP)`);
+        onQuestCompleted?.({ title, rewardXp });
       });
 
       return room;

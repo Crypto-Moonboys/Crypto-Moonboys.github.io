@@ -1,6 +1,12 @@
 import { connectMultiplayer, sendMovement } from './network.js';
 import { loadUnifiedData } from './world/data-loader.js';
-import { createGameState, applyRemotePlayers, updatePlayerMotion } from './world/game-state.js';
+import {
+  createGameState,
+  applyRemotePlayers,
+  updatePlayerMotion,
+  awardXp,
+  tickDistrictCapture,
+} from './world/game-state.js';
 import { createSamSystem } from './world/sam-system.js';
 import { createNpcSystem } from './world/npc-system.js';
 import { createQuestSystem } from './world/quest-system.js';
@@ -30,10 +36,16 @@ async function boot() {
   const quests = createQuestSystem(state);
   const memory = createMemorySystem(state);
 
-  hud.setWorldStatus(`Unified foundation online · ${state.room.id} room model`);
+  // Populate HUD with initial values
+  hud.setPlayerName(state.player.name);
+  hud.setWorldStatus(`Unified city online · ${state.room.id} room`);
   hud.setDistrict(state.player.districtName);
+  hud.setDistrictControl(50);
   hud.setFactionStatus(`${state.factions.primary.name} vs ${state.factions.secondary.name}`);
   hud.setSamPhase(sam.getCurrentPhase().name);
+  hud.setPhase(state.phase);
+  hud.setScore(state.player.score);
+  hud.setXp(state.player.xp);
   hud.setRoom(state.room.id);
   hud.setPopulation(0, state.room.maxPlayers);
   hud.setQuests(quests.getActiveQuestCards());
@@ -48,11 +60,11 @@ async function boot() {
       memoryShard: state.memory.id,
     },
     onStatus: (status) => {
-      const statusText = status.joined ? `Connected (${status.ws})` : `${status.ws}${status.error ? ` · ${status.error}` : ''}`;
+      const statusText = status.joined
+        ? `Connected (${status.ws})`
+        : `${status.ws}${status.error ? ` · ${status.error}` : ''}`;
       hud.setMultiplayerStatus(statusText);
-      if (status.roomId) {
-        hud.setRoom(status.roomId);
-      }
+      if (status.roomId) hud.setRoom(status.roomId);
     },
     onPlayers: (players) => {
       applyRemotePlayers(state, players);
@@ -62,6 +74,25 @@ async function boot() {
       hud.pushFeed(line);
       memory.record('network', line);
     },
+    onQuestCompleted: ({ title, rewardXp }) => {
+      // Server-authoritative quest completion: award XP and refresh HUD
+      const awarded = quests.completeQuest(title, rewardXp) || rewardXp;
+      if (awarded) {
+        awardXp(state, awarded);
+        hud.setXp(state.player.xp);
+        hud.setScore(state.player.score);
+        hud.setQuests(quests.getActiveQuestCards());
+      }
+    },
+  });
+
+  // Space bar toggles Day/Night phase (mirrors Street Signal Monster)
+  window.addEventListener('keydown', (event) => {
+    if (event.code !== 'Space') return;
+    state.phase = state.phase === 'Day' ? 'Night' : 'Day';
+    hud.setPhase(state.phase);
+    hud.pushFeed(`🌙 Phase shifted to ${state.phase}`);
+    canvas.classList.toggle('phase-night', state.phase === 'Night');
   });
 
   let lastTs = performance.now();
@@ -73,9 +104,21 @@ async function boot() {
     updatePlayerMotion(state, input, dt, sendMovement);
     npc.tick(dt);
 
+    // Update district HUD when player moves into a new district
     const district = state.districts.byId.get(state.player.districtId);
     if (district) {
       hud.setDistrict(district.name);
+      const ds = state.districtState.find((d) => d.id === district.id);
+      if (ds) hud.setDistrictControl(ds.control);
+    }
+
+    // Tick district capture (Night phase only)
+    const captureEvent = tickDistrictCapture(state, dt);
+    if (captureEvent) {
+      hud.setScore(state.player.score);
+      hud.setXp(state.player.xp);
+      hud.pushFeed(`🏴 ${captureEvent.district.name} captured! +${80} XP +250 score`);
+      memory.record('district', `Captured ${captureEvent.district.name}`);
     }
 
     sam.tick(dt, {
@@ -85,6 +128,7 @@ async function boot() {
         memory.record('sam', `Phase: ${phase.id}`);
       },
       onSignalRush: () => {
+        hud.showSamPopup('⚡ SAM SIGNAL RUSH — Giant encounter incoming!', 5000);
         hud.pushFeed('⚡ SAM Signal Rush hook fired (site/wiki sync ready)');
       },
     });

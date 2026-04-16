@@ -1,145 +1,183 @@
 # Block Topia Unified Foundation (`games/block-topia/`)
 
-This folder is the **single source of truth** foundation for Block Topia going forward.
+This folder is the **single source of truth** for Block Topia going forward.
+All net-new Block Topia development must land here.
+Legacy variants (`block-topia-revolt/`, `block-topia-iso/`, `block-topia-street-signal-3008*.html`) are **reference sources only** — do not edit them.
 
-## Canonical Direction
+---
 
-This module unifies three legacy lines into one build path:
+## Legacy Sources Merged
 
-1. **Street Signal 3008 / Monster**
-   - Reused as identity/data/asset source:
-     - lore DNA
-     - district and event tone
-     - seasonal data and quest flavor
-     - existing asset-pack references
-2. **Block Topia Revolt**
-   - Reused as multiplayer source:
-     - Colyseus client flow
-     - endpoint fallback behavior
-     - room join behavior aligned to room id `city`
-     - remote player sync baseline
-3. **Block Topia ISO**
-   - Reused as visual/source direction:
-     - isometric scene presentation
-     - social-world framing
-     - cleaner world readability
+| Source | What Was Taken |
+|---|---|
+| **Street Signal 3008 / Monster** | World identity, district DNA, NPC archetypes, quests/lore, day/night phase mechanic, district capture scoring, asset packs |
+| **Block Topia Revolt** | Colyseus client flow, `joinOrCreate('city',…)` room join, remote player sync, `questCompleted` server message handler, endpoint override via `window.BLOCK_TOPIA_SERVER` |
+| **Block Topia ISO** | Isometric renderer (`drawTile`, `toIso`), canvas layout, social-world framing |
 
-## Legacy Source Inputs (Reference-Only)
+---
 
-These files are now legacy references and **not** the forward architecture:
+## Architecture Overview
 
+```
+games/block-topia/
+├─ index.html              entry — HUD shell, SAM popup, interact prompt
+├─ style.css               HUD, world panels, night phase, SAM popup, responsive
+├─ main.js                 boot orchestration, game loop, phase toggle, capture wiring
+├─ network.js              Colyseus transport (room=city, questCompleted handler)
+├─ README.md               ← this file
+├─ render/
+│  └─ iso-renderer.js      tile draw, NPC dots, day/night tinting, player+name render
+├─ world/
+│  ├─ data-loader.js       parallel JSON loader (unified + legacy packs)
+│  ├─ game-state.js        world/room/player/phase/capture/NPC/SAM/quest/memory state
+│  ├─ sam-system.js        3-phase SAM cycle, popup trigger, signal-rush hook
+│  ├─ npc-system.js        active NPC grid positions, movement, faction switching
+│  ├─ quest-system.js      daily/weekly/seasonal/prophecy quests, completeQuest()+XP
+│  └─ memory-system.js     event log with type routing (district/sam/player/network)
+├─ ui/
+│  └─ hud.js               all HUD setters, SAM popup timer, interact prompt toggle
+├─ data/
+│  ├─ districts.json       5 canonical districts (grid-mapped)
+│  ├─ factions.json        Liberators vs Wardens + switch-rules
+│  ├─ sam-phases.json      3-phase SAM + post-mutation + signal-rush hooks
+│  ├─ npc-archetypes.json  active/crowd split + 6 archetypes
+│  ├─ quest-model.json     daily/weekly/seasonal/prophecy/dynamic hooks
+│  ├─ season-model.json    90-day cycle, wiki hooks
+│  └─ room-model.json      city room, 100 max, auto-scale, identity hooks
+└─ assets/
+   ├─ manifest.json        asset references (legacy SVGs + sub-packs)
+   └─ README.md            asset strategy notes
+```
+
+---
+
+## Systems Implemented (Working Now)
+
+All systems below are wired end-to-end in the runtime loop.
+
+### 🗺️ Isometric World Render
+- Tile map drawn via `iso-renderer.js` using canonical district color grid
+- Day/Night tinting applied per-tile (night darkens + blue-shifts colors)
+- Local player rendered as colored dot with name label above
+- Remote players rendered as cyan dots with name labels
+
+### 🤖 NPC Rendering
+- Active NPCs (default 60, cap 80): colored dots by role — vendor (gold), fighter (pink), lore-keeper (purple), recruiter (green), drifter (grey), agent (orange)
+- Crowd NPCs (default 300): semi-transparent cyan dots
+- All NPCs spawn in district-aware grid positions from `DISTRICT_SPAWN_REGIONS`
+- NPCs walk randomly each 3–6 seconds; active NPCs can faction-switch
+
+### 🌙 Day/Night Phase Toggle
+- Press **Space** to toggle Day/Night
+- Night tints canvas and tiles to a darker blue-purple palette
+- District capture only accumulates during Night (mirrors Street Signal mechanic)
+
+### 🏴 District Capture
+- Standing in a district at Night ticks capture progress every 2 seconds
+- Tipping past 90% control awards 80 XP + 250 score + memory event
+- Control % displayed live in HUD
+
+### 🧠 SAM Phase Cycle
+- 3 phases run on a timer: **Signals → Conflict → SAM Event / Giant Encounter**
+- Phase 3 fires the SAM popup overlay + `onSignalRush` hook for site/wiki sync
+- Events logged in `state.memory.samEvents`
+
+### 🎯 Quest System
+- Daily, weekly, seasonal, **prophecy** quest types seeded from `data/quest-model.json`
+- `completeQuest(id, xpOverride)` awards XP + score and removes from active list
+- Server `questCompleted` messages wired through `network.js` → `onQuestCompleted` → `completeQuest`
+- XP and score update HUD immediately after each award
+
+### 🌐 Multiplayer
+- Colyseus `joinOrCreate('city', {...})` room join
+- Endpoint: `window.BLOCK_TOPIA_SERVER || 'https://game.cryptomoonboys.com'`
+- 2-attempt retry with 2.5s delay
+- Remote player sync from `room.onStateChange`
+- Messages handled: `system`, `districtChanged`, **`questCompleted`** (new)
+
+### 🎛️ HUD (Single Unified Shell)
+- World panel: player name, status, district, control %, factions, SAM phase, day/night phase, score, XP
+- Quest panel: active quest list with type and XP value
+- Multiplayer panel: WS status, room name, player count
+- Street feed: rolling 16-line feed (network events, SAM, captures, quests, phase shifts)
+- SAM popup overlay: auto-dismissing modal for giant encounter events
+- Interact prompt: contextual overlay (hidden by default, extensible)
+
+### 💾 Memory System
+- Rolling log (max 200 entries) with typed entries: `district`, `sam`, `player`, `network`
+- Routed to sub-lists: `districtChanges`, `samEvents`, `playerActions`
+
+---
+
+## Systems Scaffolded (Architecture Ready, Not Yet Full Logic)
+
+| System | Status | Extension Path |
+|---|---|---|
+| XP progression tiers / cosmetics | State tracked, no tier thresholds yet | Add tier table to `data/season-model.json`; read in `game-state.js` |
+| Dynamic quest generation from faction/SAM pressure | Hook present in `quest-model.json` | Wire `dynamicHooks[0]` into a real generator in `quest-system.js` |
+| Prophecy quest unlock conditions | Quests seeded, no unlock gate logic | Add unlock predicate function in `quest-system.js` |
+| NPC dialogue + interaction (E key) | Interact prompt element present | Wire `keydown E` → nearest NPC lookup in `npc-system.js` |
+| District event spawning during SAM events | `activeEvents` array on each district | Populate from `sam-system.js` phase-change hook |
+| Season rollover + faction win tally | Season index computed | Hook `season.rollover` in `season-model.json` to trigger at end of 90-day cycle |
+| Wiki/lore publish hooks | `signalRushHook` in SAM data | Call external endpoint or dispatch event on Signal Rush |
+| Room auto-scale sibling room | Schema in `room-model.json` | Implement via server; client reads overflow policy |
+
+---
+
+## Multiplayer Compatibility Guarantees
+
+These assumptions are locked and must not be changed without updating the server contract:
+
+- Room id: **`city`**
+- Join strategy: **`joinOrCreate`**
+- Endpoint: **`window.BLOCK_TOPIA_SERVER || 'https://game.cryptomoonboys.com'`**
+- Player metadata sent on join: `{ name, faction, district, roomIdentity }`
+- Messages handled: `system`, `districtChanged`, `questCompleted`
+- Movement send: `room.send('move', { x, y })`
+
+---
+
+## Canonical 5 Districts
+
+| ID | Name | Color | Legacy Source |
+|---|---|---|---|
+| `neon-slums` | Neon Slums | `#4f6dff` | neon-exchange + mural-sector |
+| `signal-spire` | Signal Spire | `#ff4fd8` | moon-gate |
+| `crypto-core` | Crypto Core | `#ffd84d` | chain-plaza |
+| `moonlit-underbelly` | Moonlit Underbelly | `#8dff6a` | dead-rail + black-fork-alley |
+| `revolt-plaza` | Revolt Plaza | `#5ef2ff` | living-rebellion city hub |
+
+---
+
+## Extension Rules for Future Agents
+
+### ✅ Must Extend In
+- All new Block Topia features go inside `games/block-topia/`
+- Add new data to `data/` JSON files
+- Add new modules to `world/`, `render/`, or `ui/`
+- Keep room id `city`, keep `joinOrCreate` pattern, keep endpoint override
+
+### ❌ Must Not Do
+- Do not fork a new Block Topia folder outside `games/block-topia/`
+- Do not edit legacy folders (`block-topia-revolt/`, `block-topia-iso/`, street signal HTML files)
+- Do not reintroduce wallet/blockchain gating in core progression
+- Do not collapse the modular structure back into a monolithic file
+- Do not invent new room IDs or server endpoints without coordinating with the server team
+
+### 📁 Legacy Files (Reference Only — Do Not Edit)
 - `/games/block-topia-revolt/`
 - `/games/block-topia-iso/`
 - `/games/block-topia-street-signal-3008.html`
 - `/games/block-topia-street-signal-3008-phaser.html`
 - `/games/block-topia-street-signal-3008-monster.html`
 - `/games/js/blocktopia-phaser-game.js`
-- `/games/data/blocktopia-*.json` (source packs reused where needed)
+- `/games/data/blocktopia-*.json` (data packs kept for legacy loader compatibility)
 
-## New Unified Architecture
-
-Top-level:
-- `index.html` — unified entry with one HUD shell
-- `style.css` — single HUD + world styling
-- `main.js` — orchestration root
-- `network.js` — multiplayer transport layer
-
-Modules:
-- `render/iso-renderer.js` — isometric renderer foundation
-- `world/data-loader.js` — unified + legacy data ingestion layer
-- `world/game-state.js` — world state, room identity, districts, player, remote sync state
-- `world/sam-system.js` — SAM phased event cycle
-- `world/npc-system.js` — active/crowd NPC split scaffolding
-- `world/quest-system.js` — daily/weekly/seasonal/dynamic hooks
-- `world/memory-system.js` — memory tracking hooks
-- `ui/hud.js` — world/quest/multiplayer/feed HUD controller
-
-Data layer:
-- `data/districts.json`
-- `data/factions.json`
-- `data/sam-phases.json`
-- `data/npc-archetypes.json`
-- `data/quest-model.json`
-- `data/season-model.json`
-- `data/room-model.json`
-
-Assets layer:
-- `assets/manifest.json`
-- `assets/README.md`
-
-## What Is Implemented Now
-
-Implemented in code and wired end-to-end:
-
-- Unified module entry under `games/block-topia/`
-- Single clean HUD with:
-  - world/district status
-  - quest/live ops area
-  - multiplayer status
-  - event/street feed
-- Isometric rendering baseline
-- Colyseus multiplayer compatibility path:
-  - endpoint from `window.BLOCK_TOPIA_SERVER` with default `https://game.cryptomoonboys.com`
-  - `joinOrCreate('city', ...)`
-  - remote player sync from room state
-- Canonical five-district data model seeded in the new data layer
-- Faction model seeded as **Liberators vs Wardens**
-- SAM 3-phase cycle scaffolding running in runtime loop
-- Quest model runtime hooks (daily/weekly/seasonal + dynamic hook pulse)
-- Memory event recording hooks in runtime flow
-
-## What Is Scaffolded and Ready for Next Phase
-
-Structured and ready for extension without re-architecture:
-
-- 100-player room cap and auto-scaled room model schema
-- Room identity + room-specific state hooks
-- NPC split model:
-  - active NPC target 60 (cap 80)
-  - crowd NPC target 300+
-  - role scaffolds: vendors, fighters, lore keepers, recruiters, drifters, agents
-  - behavior hook surfaces: faction alignment, side switching, player reaction, routines, memory, dialogue
-- SAM event scaffolding:
-  - Phase 1 Signals
-  - Phase 2 Conflict
-  - Phase 3 SAM event / giant encounter
-  - post-event world mutation hooks
-  - SAM Signal Rush hook for live site/wiki update flow
-- 90-day season hooks
-- XP-only progression model hooks
-- Wiki/lore integration hooks for future live publishing
-- Social MMO expansion direction via modular state + systems split
-
-## Multiplayer Compatibility Guarantees Preserved
-
-The unified base preserves core live assumptions from Revolt fixes:
-
-- Room id remains `city`
-- Colyseus client flow remains `joinOrCreate`
-- Endpoint logic remains override-capable via `window.BLOCK_TOPIA_SERVER`
-- Remote player sync remains event/state driven
-
-## Arcade Transition Wiring
-
-Arcade should point to this module as the future main Block Topia path while legacy pages remain accessible during transition.
-
-## Extension Rules for Future Agents
-
-### Must Extend
-
-- Extend within `games/block-topia/` modules and data files.
-- Add features via the existing `world/`, `render/`, `ui/`, `data/`, `assets/` boundaries.
-- Keep multiplayer compatibility with room `city` unless server contract changes explicitly.
-
-### Must Not Replace
-
-- Do not fork new Block Topia variants outside `games/block-topia/`.
-- Do not reintroduce blockchain/crypto wallet progression loops into core progression.
-- Do not rewrite legacy pages as the primary extension path.
-- Do not collapse this modular structure back into a monolithic single-file prototype.
+---
 
 ## Anti-Drift Summary
 
-`games/block-topia/` is the unified base to evolve.
-Legacy variants are source references only.
-All net-new Block Topia development should land in this module.
+`games/block-topia/` is the unified base.
+Legacy files are source references.
+All new Block Topia development lands here, in the existing modular structure.
+

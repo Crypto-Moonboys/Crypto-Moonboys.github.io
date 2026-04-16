@@ -3,23 +3,29 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Block Topia — Unified Foundation</title>
-  <meta name="description" content="Block Topia unified game foundation: Street Signal identity + Revolt multiplayer + ISO social presentation." />
+  <title>Block Topia — Unified City</title>
+  <meta name="description" content="Block Topia unified game: Street Signal identity + Revolt multiplayer + ISO social world. 5 districts, SAM AI, faction war, live quests." />
   <link rel="stylesheet" href="./style.css" />
   <script data-cfasync="false">
     window.BLOCK_TOPIA_SERVER = window.BLOCK_TOPIA_SERVER || 'https://game.cryptomoonboys.com';
   </script>
 </head>
 <body>
-  <canvas id="world-canvas" aria-label="Block Topia world"></canvas>
+  <canvas id="world-canvas" aria-label="Block Topia isometric world"></canvas>
 
   <main id="hud" aria-live="polite">
     <section class="panel" id="world-panel">
       <h1>Block Topia</h1>
-      <p id="world-status">Initializing unified city state…</p>
+      <p id="player-name">Player: —</p>
+      <p id="world-status">Initializing unified city…</p>
       <p id="district-status">District: —</p>
+      <p id="district-control">Control: —</p>
       <p id="faction-status">Factions: Liberators vs Wardens</p>
       <p id="sam-status">SAM Phase: Signals</p>
+      <p id="phase-status">Phase: Day</p>
+      <p id="score-status">Score: 0</p>
+      <p id="xp-status">XP: 0</p>
+      <p id="controls-hint" class="hint">WASD/Arrows · Space=Phase · E=Interact</p>
     </section>
 
     <section class="panel" id="quest-panel">
@@ -39,6 +45,12 @@
       <ul id="street-feed"></ul>
     </section>
   </main>
+
+  <!-- SAM popup overlay — shown when SAM event fires -->
+  <div id="sam-popup" class="hidden" aria-live="assertive" role="alert"></div>
+
+  <!-- Contextual interact prompt -->
+  <div id="interact-prompt" class="hidden">⚡ Press E to interact</div>
 
   <script src="https://unpkg.com/colyseus.js/dist/colyseus.js" data-cfasync="false"></script>
   <script type="module" src="./main.js"></script>

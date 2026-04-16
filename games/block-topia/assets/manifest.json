@@ -1,12 +1,25 @@
 {
-  "strategy": "reuse-legacy-asset-packs-until-native-pack-expands",
-  "legacyAssetSources": [
-    "/games/data/blocktopia-asset-pack.json",
-    "/games/assets/blocktopia-tiles.svg",
-    "/games/assets/blocktopia-sprites.svg"
-  ],
+  "strategy": "reference-legacy-packs-during-transition",
+  "assetBase": "/games/assets",
+  "tilesheet": {
+    "path": "/games/assets/blocktopia-tiles.svg",
+    "note": "Isometric tile SVG from Street Signal 3008 pack"
+  },
+  "spritesheet": {
+    "path": "/games/assets/blocktopia-sprites.svg",
+    "note": "Character and prop sprites from Street Signal 3008 pack"
+  },
+  "subpacks": {
+    "tiles":      "/games/assets/blocktopia/tiles/preview.svg",
+    "buildings":  "/games/assets/blocktopia/buildings/preview.svg",
+    "characters": "/games/assets/blocktopia/characters/preview.svg",
+    "ui":         "/games/assets/blocktopia/ui/preview.svg",
+    "props":      "/games/assets/blocktopia/props/preview.svg"
+  },
+  "legacyAssetPackJson": "/games/data/blocktopia-asset-pack.json",
   "notes": [
-    "Street Signal 3008 assets are canonical source inputs",
-    "Unified module keeps references stable while migrating to local pack growth"
+    "All assets above are Street Signal 3008 sources kept as-is during transition.",
+    "Future agents should expand this manifest to reference assets placed inside games/block-topia/assets/ directly.",
+    "Do not replace the legacy SVGs; add new native assets alongside them."
   ]
 }
