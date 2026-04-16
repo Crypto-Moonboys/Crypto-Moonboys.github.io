@@ -2,21 +2,21 @@ export function createNpcSystem(state) {
   const factionPool = ['Liberators', 'Wardens', 'Neutral'];
 
   if (state.npc.entities.length === 0) {
-    for (let i = 0; i < state.npc.activeTarget; i += 1) {
+    for (let activeIndex = 0; activeIndex < state.npc.activeTarget; activeIndex += 1) {
       state.npc.entities.push({
-        id: `active-${i}`,
-        role: state.npc.archetypes[i % state.npc.archetypes.length]?.id || 'drifter',
+        id: `active-${activeIndex}`,
+        role: state.npc.archetypes[activeIndex % state.npc.archetypes.length]?.id || 'drifter',
         mode: 'active',
-        faction: factionPool[i % factionPool.length],
+        faction: factionPool[activeIndex % factionPool.length],
         memoryHooks: [],
         dialogueHooks: [],
         routine: 'district_patrol',
       });
     }
 
-    for (let i = 0; i < state.npc.crowdTarget; i += 1) {
+    for (let crowdIndex = 0; crowdIndex < state.npc.crowdTarget; crowdIndex += 1) {
       state.npc.entities.push({
-        id: `crowd-${i}`,
+        id: `crowd-${crowdIndex}`,
         role: 'crowd',
         mode: 'crowd',
         faction: 'Neutral',
