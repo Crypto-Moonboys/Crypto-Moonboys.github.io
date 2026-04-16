@@ -2,6 +2,8 @@ function nowUtcDaySeed() {
   return new Date().toISOString().slice(0, 10);
 }
 
+const PLAYER_MOVEMENT_SPEED = 3.2;
+
 function computeSeasonIndex(epochMs, cycleDays) {
   const cycleMs = cycleDays * 24 * 60 * 60 * 1000;
   return Math.floor((Date.now() - epochMs) / cycleMs);
@@ -116,23 +118,22 @@ export function applyRemotePlayers(state, players) {
 }
 
 export function updatePlayerMotion(state, input, dt, moveSender) {
-  const speed = 3.2;
   let moved = false;
 
   if (input.w || input.arrowup) {
-    state.player.y -= speed * dt;
+    state.player.y -= PLAYER_MOVEMENT_SPEED * dt;
     moved = true;
   }
   if (input.s || input.arrowdown) {
-    state.player.y += speed * dt;
+    state.player.y += PLAYER_MOVEMENT_SPEED * dt;
     moved = true;
   }
   if (input.a || input.arrowleft) {
-    state.player.x -= speed * dt;
+    state.player.x -= PLAYER_MOVEMENT_SPEED * dt;
     moved = true;
   }
   if (input.d || input.arrowright) {
-    state.player.x += speed * dt;
+    state.player.x += PLAYER_MOVEMENT_SPEED * dt;
     moved = true;
   }
 

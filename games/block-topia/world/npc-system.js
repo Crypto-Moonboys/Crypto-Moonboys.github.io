@@ -1,4 +1,5 @@
 export function createNpcSystem(state) {
+  const FACTION_SWITCH_PROBABILITY = 0.005;
   const factionPool = ['Liberators', 'Wardens', 'Neutral'];
 
   if (state.npc.entities.length === 0) {
@@ -36,7 +37,7 @@ export function createNpcSystem(state) {
     sample.dialogueHooks = ['react_to_player_presence', 'district_rumor_ping'];
     sample.memoryHooks = ['track_faction_shift', 'track_daily_routine'];
 
-    if (sample.mode === 'active' && Math.random() < 0.005) {
+    if (sample.mode === 'active' && Math.random() < FACTION_SWITCH_PROBABILITY) {
       sample.faction = sample.faction === 'Liberators' ? 'Wardens' : 'Liberators';
     }
   }

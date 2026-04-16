@@ -8,6 +8,8 @@ import { createMemorySystem } from './world/memory-system.js';
 import { createHud } from './ui/hud.js';
 import { createIsoRenderer } from './render/iso-renderer.js';
 
+const MAX_FRAME_DELTA_SECONDS = 1 / 30;
+
 const canvas = document.getElementById('world-canvas');
 const hud = createHud(document);
 const renderer = createIsoRenderer(canvas);
@@ -65,7 +67,7 @@ async function boot() {
   let lastTs = performance.now();
 
   function frame(ts) {
-    const dt = Math.min(0.033, (ts - lastTs) / 1000);
+    const dt = Math.min(MAX_FRAME_DELTA_SECONDS, (ts - lastTs) / 1000);
     lastTs = ts;
 
     updatePlayerMotion(state, input, dt, sendMovement);

@@ -1,4 +1,5 @@
 export function createQuestSystem(state) {
+  const QUEST_PULSE_INTERVAL_SECONDS = 20;
   state.quests.active = [
     ...state.quests.model.daily.slice(0, 2),
     ...state.quests.model.weekly.slice(0, 1),
@@ -13,7 +14,7 @@ export function createQuestSystem(state) {
 
   function tick(dt, hooks = {}) {
     pulse += dt;
-    if (pulse < 20) return;
+    if (pulse < QUEST_PULSE_INTERVAL_SECONDS) return;
     pulse = 0;
 
     const dynamic = state.quests.model.dynamicHooks?.[0];

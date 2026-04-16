@@ -1,5 +1,5 @@
 export function createSamSystem(state) {
-  const phaseDuration = 30;
+  const PHASE_DURATION_SECONDS = 30;
 
   function getCurrentPhase() {
     return state.sam.phases[state.sam.currentIndex] || { id: 'signals', name: 'Signals' };
@@ -7,7 +7,7 @@ export function createSamSystem(state) {
 
   function tick(dt, hooks = {}) {
     state.sam.timer += dt;
-    if (state.sam.timer < phaseDuration) return;
+    if (state.sam.timer < PHASE_DURATION_SECONDS) return;
 
     state.sam.timer = 0;
     state.sam.currentIndex = (state.sam.currentIndex + 1) % Math.max(state.sam.phases.length, 1);
