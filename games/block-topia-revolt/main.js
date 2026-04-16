@@ -7,6 +7,58 @@ const statusEl = document.getElementById('status');
 const questList = document.getElementById('quest-list');
 const eventLog = document.getElementById('event-log');
 
+const debugState = {
+  wsStatus: 'connecting',
+  roomJoined: false,
+  sessionId: '',
+  lastError: ''
+};
+
+const debugPanel = document.createElement('div');
+debugPanel.id = 'debug-overlay';
+Object.assign(debugPanel.style, {
+  position: 'fixed',
+  bottom: '10px',
+  left: '10px',
+  zIndex: 1000,
+  background: 'rgba(0,0,0,0.8)',
+  color: '#9effc7',
+  font: '12px/1.4 monospace',
+  padding: '10px',
+  border: '1px solid rgba(158,255,199,0.45)',
+  borderRadius: '8px',
+  minWidth: '260px',
+  pointerEvents: 'none',
+  whiteSpace: 'pre-line'
+});
+document.body.appendChild(debugPanel);
+
+function renderDebugOverlay() {
+  debugPanel.textContent = [
+    `WebSocket: ${debugState.wsStatus}`,
+    `Room joined: ${debugState.roomJoined ? 'yes' : 'no'}`,
+    `Session ID: ${debugState.sessionId || '-'}`,
+    `Last error: ${debugState.lastError || '-'}`
+  ].join('\n');
+}
+
+function updateConnectionDebug(next) {
+  Object.assign(debugState, next);
+  renderDebugOverlay();
+
+  if (statusEl) {
+    if (debugState.wsStatus === 'connected') {
+      statusEl.textContent = 'Connected to Block Topia multiplayer';
+    } else if (debugState.wsStatus === 'failed' && debugState.lastError) {
+      statusEl.textContent = 'Retrying multiplayer connection...';
+    } else {
+      statusEl.textContent = 'Connecting to city...';
+    }
+  }
+}
+
+renderDebugOverlay();
+
 function resize() {
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
@@ -195,5 +247,9 @@ if (questList) {
   questList.innerHTML = '<div class="quest-item">Booting live ops...</div>';
 }
 
-connectMultiplayer(showSignal, updateRemotePlayers);
+connectMultiplayer(showSignal, updateRemotePlayers, updateConnectionDebug).then((connected) => {
+  if (!connected && statusEl) {
+    statusEl.textContent = 'Multiplayer server unavailable';
+  }
+});
 gameLoop();
