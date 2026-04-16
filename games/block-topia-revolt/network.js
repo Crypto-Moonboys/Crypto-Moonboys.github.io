@@ -34,7 +34,9 @@ export async function connectMultiplayer(showSignal, onPlayersUpdate, onConnecti
 
       console.log("CONNECTING TO:", endpoint);
       client = new window.Colyseus.Client(endpoint);
-      room = await client.joinOrCreate("city");
+      room = await client.joinOrCreate("city", {
+        name: `Rebel_${Math.floor(Math.random() * 9999)}`
+      });
 
       onConnectionUpdate({
         wsStatus: "connected",
