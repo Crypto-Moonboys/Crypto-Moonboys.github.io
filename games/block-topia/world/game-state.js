@@ -200,9 +200,10 @@ export function tickDistrictCapture(state, dt) {
     // District captured — award XP and score directly using their canonical constants.
     // Avoid awardXp() here to prevent the implicit 1.5× score multiplier from stacking
     // on top of the explicit SCORE_DISTRICT_CAPTURE value (which is already final).
+    // Do NOT push to state.memory.districtChanges here — main.js calls memory.record()
+    // which is the single authoritative writer for all secondary memory indexes.
     state.player.xp    += XP_DISTRICT_CAPTURE;
     state.player.score += SCORE_DISTRICT_CAPTURE;
-    state.memory.districtChanges.unshift({ at: Date.now(), district: ds.id, event: 'captured' });
     return { type: 'captured', district: ds };
   }
 

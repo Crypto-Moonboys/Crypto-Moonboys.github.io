@@ -106,3 +106,57 @@ Legacy source references are tracked in `world/data-loader.js` (`legacy.sourceFi
 - Legacy Block Topia navigation links across game pages point to `/games/block-topia/`.
 - Unified module keeps `window.BLOCK_TOPIA_SERVER` defaulting to `https://game.cryptomoonboys.com`.
 - Multiplayer joins the existing Colyseus `city` room and reflects room population in HUD.
+
+---
+
+## Bug Fix Log (Merge Verification Passes)
+
+All fixes below were discovered through agent verification passes and addressed in-place.
+Legacy source files were not modified in any case.
+
+### Pass 1 — Logic Audit
+
+**Bug 1 · `network.js` — `questId` dropped from `questCompleted` message**
+The server broadcasts `{ playerId, questId, title, rewardXp, totalXp }`.
+The handler extracted only `title`/`rewardXp`, discarding `questId`.
+Fix: extract and forward `questId` through the `onQuestCompleted` callback.
+
+**Bug 2 · `main.js` — quest matched by title instead of id**
+`completeQuest(title, rewardXp)` was passing the display title as the lookup key;
+since `completeQuest` matches by `q.id`, no server-pushed quest was ever removed.
+Fix: pass `questId` to `completeQuest`.
+
+**Bug 3 · `quest-system.js` — double XP/score on quest completion**
+`completeQuest` mutated `state.player.xp`/`score` internally, then `main.js` also
+called `awardXp(state, awarded)` on the returned value — every completion doubled both.
+Fix: `completeQuest` is now a pure remove-and-return function; `main.js` owns the single `awardXp` call.
+
+**Bug 4 · `game-state.js` — district capture awarded 370 score instead of 250**
+`tickDistrictCapture` called `awardXp(XP_DISTRICT_CAPTURE)` (adds 80 XP + 120 score
+via the 1.5× multiplier) then also added `SCORE_DISTRICT_CAPTURE = 250` — total was 370.
+Fix: increment `state.player.xp` and `state.player.score` directly with their canonical constants.
+
+### Pass 2 — Memory System Audit
+
+**Bug 5 · `game-state.js` + `main.js` — double write to `districtChanges`**
+`tickDistrictCapture` pushed a structured object directly into `state.memory.districtChanges`,
+then `main.js` called `memory.record('district', stringMessage)` which also unshifts into
+`districtChanges` via `memory-system.js` — every capture created two entries of mixed type.
+Fix: removed the direct push from `tickDistrictCapture`; `main.js` now passes a structured
+object `{ at, district, event }` to `memory.record('district', ...)` so all `districtChanges`
+entries have a consistent shape.
+
+**Bug 6 · `sam-system.js` + `main.js` — double write to `samEvents` for `sam-event` phase**
+`sam-system.js` pushed a structured object directly into `state.memory.samEvents` for the
+`sam-event` phase, while `main.js`'s `onPhaseChanged` hook called `memory.record('sam', stringMessage)`
+which also unshifted into `samEvents` — the giant encounter phase created two entries of mixed type.
+Fix: removed the direct push from `sam-system.js`; `main.js`'s `onPhaseChanged` hook now passes a
+structured object `{ at, phase, [type] }` to `memory.record('sam', ...)` (including `type: 'giant_encounter'`
+when the `sam-event` phase fires) so all `samEvents` entries have a consistent shape.
+
+### Memory System Rule (for future agents)
+
+`state.memory.districtChanges`, `state.memory.samEvents`, and `state.memory.playerActions` are
+**secondary indexes** maintained exclusively by `world/memory-system.js` via `memory.record()`.
+No other module should push, unshift, or splice these arrays directly.
+Always call `memory.record(type, structuredObject)` — pass a structured object, not a plain string.
