@@ -79,10 +79,43 @@ room.onStateChange((state) => {
 room.send('move', { x: 10, y: 20 });
 ```
 
-## Deployment Notes
+## Deployment Notes (Nginx + Let's Encrypt + Colyseus)
 - Host this server on your Contabo VPS.
-- Use Cloudflare to proxy WebSocket traffic and provide SSL.
-- Ensure the VPS firewall allows inbound traffic on the configured port.
+- Ensure the VPS firewall allows inbound traffic on ports 80/443.
+- Keep the Colyseus process running locally on `127.0.0.1:2567`.
+
+### Nginx Two-Phase Rollout
+
+Use the templates in:
+
+```
+server/block-topia/deploy/nginx/cryptomoonboys.com.phase1.conf
+server/block-topia/deploy/nginx/cryptomoonboys.com.phase2.conf
+```
+
+#### Phase 1 (HTTP-only, before SSL issuance)
+
+```bash
+sudo cp server/block-topia/deploy/nginx/cryptomoonboys.com.phase1.conf /etc/nginx/sites-available/cryptomoonboys.com
+sudo ln -s /etc/nginx/sites-available/cryptomoonboys.com /etc/nginx/sites-enabled/cryptomoonboys.com
+sudo nginx -t
+sudo systemctl reload nginx
+```
+
+Issue certificates with webroot:
+
+```bash
+sudo certbot certonly --webroot -w /var/www/cryptomoonboys.com \
+  -d cryptomoonboys.com -d www.cryptomoonboys.com
+```
+
+#### Phase 2 (HTTPS enabled + HTTP redirect)
+
+```bash
+sudo cp server/block-topia/deploy/nginx/cryptomoonboys.com.phase2.conf /etc/nginx/sites-available/cryptomoonboys.com
+sudo nginx -t
+sudo systemctl reload nginx
+```
 
 ## Next Steps
 - Add Redis for presence and scaling.
