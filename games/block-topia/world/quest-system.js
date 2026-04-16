@@ -18,16 +18,16 @@ export function createQuestSystem(state) {
 
   /**
    * Complete a quest by id (or by server push).
-   * Awards XP and removes from active list.
-   * Returns awarded XP or 0 if quest not found.
+   * Removes quest from active list, records memory, and returns awarded XP.
+   * Does NOT apply XP/score to state directly — caller must use awardXp() so
+   * XP is incremented exactly once (avoids double-counting when main.js calls
+   * awardXp after this function returns).
    */
   function completeQuest(questId, xpOverride) {
     const questIndex = state.quests.active.findIndex((q) => q.id === questId);
     if (questIndex === -1) return 0;
     const quest = state.quests.active[questIndex];
     const awarded = xpOverride ?? quest.xp ?? 0;
-    state.player.xp = (state.player.xp || 0) + awarded;
-    state.player.score = (state.player.score || 0) + Math.round(awarded * 1.5);
     state.quests.active.splice(questIndex, 1);
     state.memory.playerActions.unshift({ at: Date.now(), action: `quest_complete:${quest.id}` });
     return awarded;

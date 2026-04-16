@@ -76,9 +76,10 @@ async function boot() {
       hud.pushFeed(line);
       memory.record('network', line);
     },
-    onQuestCompleted: ({ title, rewardXp }) => {
-      // Server-authoritative quest completion: award XP and refresh HUD
-      const awarded = quests.completeQuest(title, rewardXp) || rewardXp;
+    onQuestCompleted: ({ questId, title, rewardXp }) => {
+      // Server-authoritative quest completion: match quest by questId (not title),
+      // then apply XP via awardXp so score/XP are incremented exactly once.
+      const awarded = quests.completeQuest(questId, rewardXp) || rewardXp;
       if (awarded) {
         awardXp(state, awarded);
         hud.setXp(state.player.xp);

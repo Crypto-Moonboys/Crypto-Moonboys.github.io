@@ -65,11 +65,14 @@ export async function connectMultiplayer({
       });
 
       // Carried forward from Block Topia Revolt: award XP and report quest completion
+      // Server broadcasts { playerId, questId, title, rewardXp, totalXp } — forward questId so
+      // the client quest system can match and remove the correct active quest by id.
       room.onMessage('questCompleted', (message) => {
-        const title = message?.title || 'Quest';
+        const questId  = message?.questId  || '';
+        const title    = message?.title    || 'Quest';
         const rewardXp = message?.rewardXp || 0;
         onFeed?.(`✅ ${title} (+${rewardXp} XP)`);
-        onQuestCompleted?.({ title, rewardXp });
+        onQuestCompleted?.({ questId, title, rewardXp });
       });
 
       return room;

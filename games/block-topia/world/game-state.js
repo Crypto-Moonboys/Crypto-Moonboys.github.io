@@ -197,8 +197,10 @@ export function tickDistrictCapture(state, dt) {
   ds.control = Math.min(100, ds.control + CAPTURE_PROGRESS_DELTA);
 
   if (prevControl < 90 && ds.control >= 90) {
-    // District captured — award score and XP
-    awardXp(state, XP_DISTRICT_CAPTURE);
+    // District captured — award XP and score directly using their canonical constants.
+    // Avoid awardXp() here to prevent the implicit 1.5× score multiplier from stacking
+    // on top of the explicit SCORE_DISTRICT_CAPTURE value (which is already final).
+    state.player.xp    += XP_DISTRICT_CAPTURE;
     state.player.score += SCORE_DISTRICT_CAPTURE;
     state.memory.districtChanges.unshift({ at: Date.now(), district: ds.id, event: 'captured' });
     return { type: 'captured', district: ds };
