@@ -37,7 +37,7 @@ Block Topia is the shared cyberpunk city multiplayer experience where players mo
 ### Multiplayer Layer
 - `network.js` keeps Colyseus client behavior centralized.
 - Endpoint remains the existing VPS route via:
-  - `window.BLOCK_TOPIA_SERVER`, defaulting to `https://game.cryptomoonboys.com` (the Colyseus client then opens its secure WebSocket session against that host)
+  - `window.BLOCK_TOPIA_SERVER`, defaulting to `https://game.cryptomoonboys.com` (Colyseus connects over secure WebSocket transport to that same host, with retry handling implemented in `network.js`)
 - Room identity stays on `city` with room metadata hooks for shard/season context.
 
 ### Data-Driven World Layer
@@ -69,6 +69,14 @@ The unified module is intentionally split into composable systems so new feature
 - **Live ops hooks:** SAM, season, and quest dynamic hooks are already exposed for future automation.
 - **World memory hooks:** event logging and memory channels are in place for persistence and future replay/story features.
 - **Render extensibility:** `render/iso-renderer.js` can be upgraded to sprites/effects while preserving current state contracts.
+
+Current state contracts are defined by `world/game-state.js` and consumed by `main.js`, `ui/hud.js`, and `render/iso-renderer.js`:
+
+- `state.player`: position, district identity, xp, score, faction.
+- `state.remotePlayers`: normalized replicated player snapshots.
+- `state.districtState`: district control and event markers.
+- `state.phase` + `state.sam`: world phase state and SAM progression.
+- `state.quests` + `state.memory`: quest lifecycle and in-session event memory.
 
 ## Legacy References
 
