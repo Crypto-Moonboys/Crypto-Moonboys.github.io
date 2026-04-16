@@ -1,0 +1,22 @@
+{
+  "daily": [
+    { "id": "daily-signal-tag", "title": "Tag Relay", "type": "daily", "xp": 120 },
+    { "id": "daily-recruiter-run", "title": "Recruiter Circuit", "type": "daily", "xp": 140 }
+  ],
+  "weekly": [
+    { "id": "weekly-district-sweep", "title": "District Sweep", "type": "weekly", "xp": 640 }
+  ],
+  "seasonal": [
+    { "id": "season-sam-protocol", "title": "SAM Protocol", "type": "seasonal", "xp": 3200 }
+  ],
+  "dynamicHooks": [
+    {
+      "id": "dynamic-faction-flux",
+      "description": "Generate dynamic quests from faction pressure, district memory, and SAM phase"
+    }
+  ],
+  "progression": {
+    "mode": "xp-only",
+    "walletRewards": false
+  }
+}

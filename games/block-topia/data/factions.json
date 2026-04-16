@@ -1,0 +1,14 @@
+{
+  "primary": {
+    "name": "Liberators",
+    "identity": "Street reclaimers aligned with district memory and citizen autonomy"
+  },
+  "secondary": {
+    "name": "Wardens",
+    "identity": "Enforcement bloc focused on controlled order and signal dominance"
+  },
+  "switchRules": {
+    "enabled": true,
+    "factors": ["quest_outcomes", "sam_events", "district_control", "player_reputation"]
+  }
+}

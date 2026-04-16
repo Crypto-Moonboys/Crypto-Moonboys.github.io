@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Block Topia — Unified Foundation</title>
+  <meta name="description" content="Block Topia unified game foundation: Street Signal identity + Revolt multiplayer + ISO social presentation." />
+  <link rel="stylesheet" href="./style.css" />
+  <script data-cfasync="false">
+    window.BLOCK_TOPIA_SERVER = window.BLOCK_TOPIA_SERVER || 'https://game.cryptomoonboys.com';
+  </script>
+</head>
+<body>
+  <canvas id="world-canvas" aria-label="Block Topia world"></canvas>
+
+  <main id="hud" aria-live="polite">
+    <section class="panel" id="world-panel">
+      <h1>Block Topia</h1>
+      <p id="world-status">Initializing unified city state…</p>
+      <p id="district-status">District: —</p>
+      <p id="faction-status">Factions: Liberators vs Wardens</p>
+      <p id="sam-status">SAM Phase: Signals</p>
+    </section>
+
+    <section class="panel" id="quest-panel">
+      <h2>Quest / Live Ops</h2>
+      <ul id="quest-list"></ul>
+    </section>
+
+    <section class="panel" id="multiplayer-panel">
+      <h2>Multiplayer</h2>
+      <p id="mp-status">Connecting…</p>
+      <p id="room-status">Room: city</p>
+      <p id="population-status">Players: 0 / 100</p>
+    </section>
+
+    <section class="panel" id="feed-panel">
+      <h2>Street Feed</h2>
+      <ul id="street-feed"></ul>
+    </section>
+  </main>
+
+  <script src="https://unpkg.com/colyseus.js/dist/colyseus.js" data-cfasync="false"></script>
+  <script type="module" src="./main.js"></script>
+</body>
+</html>

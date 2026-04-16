@@ -1,0 +1,12 @@
+{
+  "strategy": "reuse-legacy-asset-packs-until-native-pack-expands",
+  "legacyAssetSources": [
+    "/games/data/blocktopia-asset-pack.json",
+    "/games/assets/blocktopia-tiles.svg",
+    "/games/assets/blocktopia-sprites.svg"
+  ],
+  "notes": [
+    "Street Signal 3008 assets are canonical source inputs",
+    "Unified module keeps references stable while migrating to local pack growth"
+  ]
+}

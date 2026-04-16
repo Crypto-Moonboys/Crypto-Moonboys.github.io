@@ -1,0 +1,40 @@
+{
+  "split": {
+    "active": 60,
+    "activeCap": 80,
+    "crowd": 300,
+    "crowdCap": 500
+  },
+  "archetypes": [
+    {
+      "id": "vendor",
+      "role": "vendors",
+      "hooks": ["faction_alignment", "switching_sides", "reaction_to_players", "daily_routines", "memory_hooks", "dialogue_hooks"]
+    },
+    {
+      "id": "fighter",
+      "role": "fighters",
+      "hooks": ["faction_alignment", "switching_sides", "reaction_to_players", "daily_routines", "memory_hooks", "dialogue_hooks"]
+    },
+    {
+      "id": "lore-keeper",
+      "role": "lore keepers",
+      "hooks": ["faction_alignment", "switching_sides", "reaction_to_players", "daily_routines", "memory_hooks", "dialogue_hooks"]
+    },
+    {
+      "id": "recruiter",
+      "role": "recruiters",
+      "hooks": ["faction_alignment", "switching_sides", "reaction_to_players", "daily_routines", "memory_hooks", "dialogue_hooks"]
+    },
+    {
+      "id": "drifter",
+      "role": "drifters",
+      "hooks": ["faction_alignment", "switching_sides", "reaction_to_players", "daily_routines", "memory_hooks", "dialogue_hooks"]
+    },
+    {
+      "id": "agent",
+      "role": "agents",
+      "hooks": ["faction_alignment", "switching_sides", "reaction_to_players", "daily_routines", "memory_hooks", "dialogue_hooks"]
+    }
+  ]
+}

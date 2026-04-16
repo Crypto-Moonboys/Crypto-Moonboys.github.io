@@ -1,0 +1,15 @@
+{
+  "cycleDays": 90,
+  "epoch": "2026-01-01T00:00:00Z",
+  "hooks": [
+    "season_rollover",
+    "district_reskin_refresh",
+    "quest_rotation",
+    "sam_weight_adjustment"
+  ],
+  "wikiHooks": [
+    "publish_season_summary",
+    "publish_faction_win_tally",
+    "publish_sam_event_digest"
+  ]
+}

@@ -1,0 +1,29 @@
+{
+  "phases": [
+    {
+      "id": "signals",
+      "name": "Phase 1: Signals",
+      "description": "Rumors, probes, and faction signal spikes across districts"
+    },
+    {
+      "id": "conflict",
+      "name": "Phase 2: Conflict",
+      "description": "District skirmishes and contested objective windows"
+    },
+    {
+      "id": "sam-event",
+      "name": "Phase 3: SAM Event / Giant Encounter",
+      "description": "Large encounter phase with district-wide pressure"
+    }
+  ],
+  "postMutationHooks": [
+    "mutate_district_control",
+    "persist_world_memory",
+    "refresh_seasonal_objectives"
+  ],
+  "signalRushHook": {
+    "id": "sam-signal-rush",
+    "description": "Hook for live site/wiki update flow after SAM surge",
+    "targets": ["/sam.html", "/wiki/"]
+  }
+}

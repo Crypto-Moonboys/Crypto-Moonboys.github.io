@@ -1,0 +1,15 @@
+{
+  "id": "city",
+  "maxPlayers": 100,
+  "autoScale": {
+    "enabled": true,
+    "targetDensity": 70,
+    "overflowPolicy": "spawn_sibling_room",
+    "identityPolicy": "room-specific-state"
+  },
+  "stateHooks": [
+    "room_memory_snapshot",
+    "district_state_replication",
+    "sam_phase_replication"
+  ]
+}

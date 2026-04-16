@@ -1,0 +1,91 @@
+:root {
+  color-scheme: dark;
+  --bg: #050814;
+  --panel: rgba(11, 16, 36, 0.86);
+  --line: rgba(94, 242, 255, 0.28);
+  --accent: #5ef2ff;
+  --warn: #ff4fd8;
+  --ok: #8dff6a;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  background: var(--bg);
+  color: #eaf6ff;
+  font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+  overflow: hidden;
+}
+
+#world-canvas {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  display: block;
+  background: radial-gradient(circle at top, #111a36 0%, #050814 60%);
+}
+
+#hud {
+  position: fixed;
+  inset: 0;
+  padding: 12px;
+  pointer-events: none;
+  display: grid;
+  grid-template-columns: minmax(220px, 320px) minmax(220px, 320px);
+  grid-template-rows: auto auto;
+  gap: 10px;
+  align-content: start;
+}
+
+.panel {
+  pointer-events: auto;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 10px 12px;
+  backdrop-filter: blur(4px);
+}
+
+.panel h1, .panel h2 {
+  margin: 0 0 8px;
+  font-size: 0.95rem;
+  letter-spacing: 0.03em;
+}
+
+#world-panel h1 { color: var(--warn); }
+#multiplayer-panel h2 { color: var(--accent); }
+#quest-panel h2 { color: var(--ok); }
+
+#quest-list,
+#street-feed {
+  margin: 0;
+  padding-left: 16px;
+  max-height: 180px;
+  overflow: auto;
+}
+
+#quest-list li,
+#street-feed li {
+  margin-bottom: 4px;
+  font-size: 0.84rem;
+  line-height: 1.4;
+}
+
+#feed-panel {
+  grid-column: 1 / span 2;
+}
+
+@media (max-width: 840px) {
+  #hud {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto;
+  }
+
+  #feed-panel {
+    grid-column: auto;
+  }
+}
