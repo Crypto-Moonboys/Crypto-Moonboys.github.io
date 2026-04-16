@@ -8,9 +8,9 @@ const CAPTURE_TICK_INTERVAL  = 2;
 // Progress per tick (0–100 scale)
 const CAPTURE_PROGRESS_DELTA = 3;
 // Score awarded on district capture
-const SCORE_DISTRICT_CAPTURE = 250;
+export const SCORE_DISTRICT_CAPTURE = 250;
 // XP awarded on district capture
-const XP_DISTRICT_CAPTURE    = 80;
+export const XP_DISTRICT_CAPTURE    = 80;
 
 function computeSeasonIndex(epochMs, cycleDays) {
   const cycleMs = cycleDays * 24 * 60 * 60 * 1000;
@@ -87,7 +87,7 @@ export function createGameState(bundle) {
       activeTarget: bundle.npcArchetypes.split?.active || 60,
       activeCap: bundle.npcArchetypes.split?.activeCap || 80,
       crowdTarget: bundle.npcArchetypes.split?.crowd || 300,
-      crowdCap: bundle.npcArchetypes.split?.crowdCap || 400,
+      crowdCap: bundle.npcArchetypes.split?.crowdCap || 600,
       archetypes: bundle.npcArchetypes.archetypes || [],
       entities: [],
     },

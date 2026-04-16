@@ -6,6 +6,8 @@ import {
   updatePlayerMotion,
   awardXp,
   tickDistrictCapture,
+  XP_DISTRICT_CAPTURE,
+  SCORE_DISTRICT_CAPTURE,
 } from './world/game-state.js';
 import { createSamSystem } from './world/sam-system.js';
 import { createNpcSystem } from './world/npc-system.js';
@@ -117,7 +119,7 @@ async function boot() {
     if (captureEvent) {
       hud.setScore(state.player.score);
       hud.setXp(state.player.xp);
-      hud.pushFeed(`🏴 ${captureEvent.district.name} captured! +${80} XP +250 score`);
+      hud.pushFeed(`🏴 ${captureEvent.district.name} captured! +${XP_DISTRICT_CAPTURE} XP +${SCORE_DISTRICT_CAPTURE} score`);
       memory.record('district', `Captured ${captureEvent.district.name}`);
     }
 

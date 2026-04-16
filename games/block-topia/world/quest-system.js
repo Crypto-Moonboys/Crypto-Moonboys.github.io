@@ -5,7 +5,7 @@ export function createQuestSystem(state) {
     ...state.quests.model.daily.slice(0, 2),
     ...state.quests.model.weekly.slice(0, 1),
     ...state.quests.model.seasonal.slice(0, 1),
-    ...( state.quests.model.prophecy || [] ).slice(0, 1),
+    ...(state.quests.model.prophecy || []).slice(0, 1),
   ];
 
   let pulse = 0;
