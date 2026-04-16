@@ -2,7 +2,7 @@ export function createMemorySystem(state) {
   const MAX_MEMORY_LOG_SIZE = 200;
 
   function record(type, message) {
-    state.memory.log.unshift({ at: new Date().toISOString(), type, message });
+    state.memory.log.unshift({ at: Date.now(), type, message });
     if (state.memory.log.length > MAX_MEMORY_LOG_SIZE) {
       state.memory.log.length = MAX_MEMORY_LOG_SIZE;
     }

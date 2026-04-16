@@ -28,7 +28,7 @@ export function createNpcSystem(state) {
     }
   }
 
-  function tick() {
+  function tick(_dt) {
     if (state.npc.entities.length === 0) return;
 
     const sample = state.npc.entities[Math.floor(Math.random() * state.npc.entities.length)];
@@ -38,7 +38,11 @@ export function createNpcSystem(state) {
     sample.memoryHooks = ['track_faction_shift', 'track_daily_routine'];
 
     if (sample.mode === 'active' && Math.random() < FACTION_SWITCH_PROBABILITY) {
-      sample.faction = sample.faction === 'Liberators' ? 'Wardens' : 'Liberators';
+      if (sample.faction === 'Neutral') {
+        sample.faction = Math.random() < 0.5 ? 'Liberators' : 'Wardens';
+      } else {
+        sample.faction = sample.faction === 'Liberators' ? 'Wardens' : 'Liberators';
+      }
     }
   }
 

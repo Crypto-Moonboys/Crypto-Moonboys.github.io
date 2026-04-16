@@ -6,11 +6,12 @@ export function createSamSystem(state) {
   }
 
   function tick(dt, hooks = {}) {
+    if (!state.sam.phases.length) return;
     state.sam.timer += dt;
     if (state.sam.timer < PHASE_DURATION_SECONDS) return;
 
     state.sam.timer = 0;
-    state.sam.currentIndex = (state.sam.currentIndex + 1) % Math.max(state.sam.phases.length, 1);
+    state.sam.currentIndex = (state.sam.currentIndex + 1) % state.sam.phases.length;
     const phase = getCurrentPhase();
 
     hooks.onPhaseChanged?.(phase);

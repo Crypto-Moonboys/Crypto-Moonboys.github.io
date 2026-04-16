@@ -26,6 +26,8 @@ export function createGameState(bundle) {
   const districts = bundle.districts.districts || [];
   const districtLookup = buildDistrictLookup(districts);
   const initialDistrict = districts[0] || { id: 'neon-slums', name: 'Neon Slums', grid: { col: 0, row: 0, w: 6, h: 6 } };
+  const seasonEpochMs = Date.parse(bundle.seasonModel.epoch || '2026-01-01T00:00:00Z');
+  const seasonCycleDays = bundle.seasonModel.cycleDays || 90;
 
   return {
     map: {
@@ -42,9 +44,9 @@ export function createGameState(bundle) {
       },
     },
     season: {
-      cycleDays: bundle.seasonModel.cycleDays || 90,
-      epochMs: Date.parse(bundle.seasonModel.epoch || '2026-01-01T00:00:00Z'),
-      index: computeSeasonIndex(Date.parse(bundle.seasonModel.epoch || '2026-01-01T00:00:00Z'), bundle.seasonModel.cycleDays || 90),
+      cycleDays: seasonCycleDays,
+      epochMs: seasonEpochMs,
+      index: computeSeasonIndex(seasonEpochMs, seasonCycleDays),
     },
     factions: {
       primary: bundle.factions.primary,
