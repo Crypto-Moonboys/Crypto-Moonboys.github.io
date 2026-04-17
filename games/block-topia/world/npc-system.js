@@ -55,6 +55,16 @@ const ROLE_DIALOGUE = {
   ],
 };
 
+// Character name pools per role — give each NPC a proper identity.
+const NPC_NAMES = {
+  vendor: ['Maxis', 'Creo', 'Dice', 'Sal', 'Brix', 'Parch'],
+  fighter: ['Kira', 'Blox', 'Neon', 'Rust', 'Shard', 'Hex'],
+  agent: ['Zero-K', 'Circuit', 'Codec', 'Wire', 'Phase', 'Node'],
+  'lore-keeper': ['The Watcher', 'Old Seq', 'Archon', 'Mem', 'Sable'],
+  recruiter: ['Kai', 'Proxy', 'Sway', 'Signal', 'Align'],
+  drifter: ['Ghost', 'Null', 'Transit', 'Flux', 'Walker'],
+};
+
 function randInt(min, max) {
   return min + Math.floor(Math.random() * (max - min));
 }
@@ -107,11 +117,13 @@ export function createNpcSystem(state) {
     for (let activeIndex = 0; activeIndex < state.npc.activeTarget; activeIndex += 1) {
       const pos = spawnPos(activeIndex, state.npc.activeTarget);
       const role = state.npc.archetypes[activeIndex % Math.max(state.npc.archetypes.length, 1)]?.id || 'drifter';
+      const namePool = NPC_NAMES[role] || NPC_NAMES.drifter;
+      const npcName = namePool[activeIndex % namePool.length];
       state.npc.entities.push({
         id: `active-${activeIndex}`,
         role,
         roleLabel: roleLabel(role),
-        name: `${roleLabel(role)} ${activeIndex + 1}`,
+        name: npcName,
         mode: 'active',
         faction: factionPool[activeIndex % factionPool.length],
         col: pos.col,

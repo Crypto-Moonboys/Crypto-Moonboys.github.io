@@ -30,7 +30,8 @@ const NEARBY_PULSE_PERIOD_MS = 280;
 const NEARBY_PULSE_BASE_ALPHA = 0.55;
 const NEARBY_PULSE_AMPLITUDE = 0.35;
 
-
+const DISTRICT_BASE_ELEVATION = {
+  'neon-slums': 3,
   'signal-spire': 7,
   'crypto-core': 5,
   'moonlit-underbelly': 2,
@@ -356,10 +357,10 @@ export function createIsoRenderer(canvas) {
 
         if (variant > 0.82) {
           const theme = DISTRICT_THEME[district?.id] || DISTRICT_THEME.default;
-          ctx.globalAlpha = 0.28;
+          ctx.globalAlpha = isNight ? 0.52 : 0.28;
           ctx.fillStyle = theme.glow;
           ctx.beginPath();
-          ctx.arc(originX + iso.x, originY + iso.y - elevation + 12, 7, 0, Math.PI * 2);
+          ctx.arc(originX + iso.x, originY + iso.y - elevation + 12, isNight ? 11 : 7, 0, Math.PI * 2);
           ctx.fill();
           ctx.globalAlpha = 1;
         }
@@ -416,8 +417,9 @@ export function createIsoRenderer(canvas) {
         const sy = originY + iso.y - elevation - 6 - bobOffset;
         drawNpc(sx, sy, npc, state.player?.nearbyNpcId === npc.id);
         if (npc.mode === 'active') {
-          ctx.fillStyle = 'rgba(234,246,255,0.84)';
-          ctx.font = '600 9px Inter, sans-serif';
+          const labelStyle = ROLE_STYLE[npc.role] || ROLE_STYLE.crowd;
+          ctx.fillStyle = labelStyle.color;
+          ctx.font = '700 9px Inter, sans-serif';
           ctx.textAlign = 'center';
           ctx.fillText(npc.roleLabel || npc.role || 'NPC', sx, sy - 10);
         }
@@ -427,14 +429,27 @@ export function createIsoRenderer(canvas) {
         const elevation = getElevation(state.districts.fromGrid(remote.x, remote.y)?.id, remote.x, remote.y);
         const sx = originX + iso.x;
         const sy = originY + iso.y - elevation - 14;
+        // Remote player ambient glow
+        ctx.globalAlpha = 0.22;
+        ctx.fillStyle = 'rgba(94,242,255,0.8)';
         ctx.beginPath();
-        ctx.arc(sx, sy, 8, 0, Math.PI * 2);
+        ctx.arc(sx, sy, 16, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.globalAlpha = 1;
+        // Body
+        ctx.beginPath();
+        ctx.arc(sx, sy, 7, 0, Math.PI * 2);
         ctx.fillStyle = '#5ef2ff';
         ctx.fill();
-        ctx.fillStyle = '#eaf6ff';
-        ctx.font = '11px Inter, sans-serif';
+        ctx.strokeStyle = 'rgba(255,255,255,0.65)';
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+        ctx.lineWidth = 1;
+        // Name tag
+        ctx.fillStyle = 'rgba(255,255,255,0.88)';
+        ctx.font = '600 10px Inter, sans-serif';
         ctx.textAlign = 'center';
-        ctx.fillText(remote.name || 'Player', sx, sy - 12);
+        ctx.fillText(remote.name || 'Player', sx, sy - 13);
       } else {
         const playerIso = toIso(state.player.x, state.player.y);
         const elevation = getElevation(state.districts.fromGrid(state.player.x, state.player.y)?.id, state.player.x, state.player.y);
@@ -478,7 +493,7 @@ export function createIsoRenderer(canvas) {
     }
 
     if (isNight) {
-      ctx.fillStyle = 'rgba(10, 4, 24, 0.26)';
+      ctx.fillStyle = 'rgba(8, 3, 20, 0.40)';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
     }
     if (samImpact) {

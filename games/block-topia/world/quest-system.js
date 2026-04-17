@@ -11,19 +11,44 @@ export function createQuestSystem(state) {
 
   let pulse = 0;
 
-  const TYPE_OBJECTIVE = {
-    daily: 'Complete today\'s mission',
-    weekly: 'Complete this week\'s operation',
-    seasonal: 'Progress the season arc',
-    prophecy: 'Fulfill the prophecy arc',
+  const QUEST_OBJECTIVES = {
+    daily: [
+      (d) => `Patrol ${d} — report faction movement at signal nodes`,
+      (d) => `Scan the grid in ${d} · collect 3 relay fragments`,
+      (d) => `Secure control points in ${d} before the next phase shift`,
+      (d) => `Mark contested blocks in ${d} · avoid SAM sweeps`,
+      (d) => `Intercept faction couriers operating through ${d}`,
+    ],
+    weekly: [
+      (d) => `Track SAM activity across ${d} for 5 consecutive cycles`,
+      (d) => `Shift the faction balance in ${d} — hold 4 districts this rotation`,
+      (d) => `Complete the relay sweep through all contested zones`,
+      (d) => `Hold ground in ${d} — prevent loss of key signal nodes`,
+    ],
+    seasonal: [
+      (d) => `Advance the season arc — faction war reaches critical stage in ${d}`,
+      (d) => `Shape the power balance in ${d} before the season resets`,
+      (d) => `Push ${d} to capture threshold before the season closes`,
+    ],
+    prophecy: [
+      () => `The city remembers — find what was buried before signals fell silent`,
+      () => `Follow the old relay path before the next SAM cycle wipes it`,
+      () => `The Watcher spoke of this — decode the signal pattern before dawn`,
+    ],
   };
 
   function buildObjective(quest) {
-    // Prefer explicit description (prophecy quests carry one), then type hint,
-    // then a district-scoped fallback so every card always has visible text.
     if (quest.description) return quest.description;
-    const hint = TYPE_OBJECTIVE[quest.type] || `Complete ${capitalize(quest.type || 'daily')} operation`;
-    return `${hint} in ${state.player.districtName} · +${quest.xp} XP`;
+    const pool = QUEST_OBJECTIVES[quest.type];
+    if (pool && pool.length > 0) {
+      // Deterministic pick based on quest id so the same quest always shows the same objective.
+      const seed = quest.id
+        ? quest.id.split('').reduce((acc, ch) => acc + ch.charCodeAt(0), 0)
+        : 0;
+      return pool[seed % pool.length](state.player.districtName);
+    }
+    const typeHint = (quest.type || 'daily');
+    return `Complete ${capitalize(typeHint)} operation in ${state.player.districtName}`;
   }
 
   function getActiveQuestCards() {

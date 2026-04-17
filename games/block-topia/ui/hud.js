@@ -1,3 +1,14 @@
+// Role colour lookup — mirrors ROLE_STYLE in iso-renderer so NPC dialogue matches world identity.
+const ROLE_COLOR_MAP = {
+  vendor: '#ffd84d',
+  fighter: '#ff4fd8',
+  agent: '#ff9b42',
+  'lore-keeper': '#c77dff',
+  'lore keeper': '#c77dff',
+  recruiter: '#8dff6a',
+  drifter: '#a0b0c8',
+};
+
 export function createHud(doc) {
   // Core Street Signal progression: every 200 XP advances one level.
   const XP_PER_LEVEL = 200;
@@ -193,14 +204,14 @@ export function createHud(doc) {
 
   function showQuestComplete(title, rewardXp) {
     clearTimeout(questToastTimer);
-    showBanner(questToast, `✅ QUEST COMPLETE: ${title} (+${rewardXp} XP)`, 3000, (timer) => {
+    showBanner(questToast, `✅ QUEST COMPLETE: ${title} (+${rewardXp} XP)`, 3800, (timer) => {
       questToastTimer = timer;
     });
   }
 
   function showDistrictCapture(text) {
     clearTimeout(districtBannerTimer);
-    showBanner(districtCaptureBanner, text, 2800, (timer) => {
+    showBanner(districtCaptureBanner, text, 3600, (timer) => {
       districtBannerTimer = timer;
     });
     captureFlash?.classList.remove('hidden');
@@ -219,13 +230,15 @@ export function createHud(doc) {
     const roleSpan = doc.createElement('span');
     roleSpan.className = 'npc-dialogue-role';
     roleSpan.textContent = ` [${role}]`;
+    const roleKey = (role || '').toLowerCase().replace(/\s+/g, '-');
+    roleSpan.style.color = ROLE_COLOR_MAP[roleKey] || 'var(--accent)';
     header.append(nameSpan, roleSpan);
     const lineEl = doc.createElement('p');
     lineEl.className = 'npc-dialogue-line';
     lineEl.textContent = line;
     npcDialogue.append(header, lineEl);
     npcDialogue.classList.remove('hidden');
-    const timer = setTimeout(() => npcDialogue.classList.add('hidden'), 3500);
+    const timer = setTimeout(() => npcDialogue.classList.add('hidden'), 3800);
     npcDialogueTimer = timer;
   }
 

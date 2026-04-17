@@ -14,6 +14,7 @@ import { createMemorySystem } from './world/memory-system.js';
 import { createHud } from './ui/hud.js';
 import { createIsoRenderer } from './render/iso-renderer.js';
 
+const ENTRY_OVERLAY_TIMEOUT_MS = 7000;
 const MAX_FRAME_DELTA_SECONDS = 1 / 30;
 const SAM_IMPACT_DURATION_MS = 2000;
 const DISTRICT_PULSE_DURATION_MS = 1300;
@@ -97,7 +98,7 @@ async function boot() {
   bootstrapLoreFeed();
 
   // Fallback: dismiss the entry overlay after 7s in case multiplayer never connects.
-  setTimeout(() => hud.dismissEntryIdentity(0), 7000);
+  setTimeout(() => hud.dismissEntryIdentity(0), ENTRY_OVERLAY_TIMEOUT_MS);
 
   await connectMultiplayer({
     playerName: state.player.name,
