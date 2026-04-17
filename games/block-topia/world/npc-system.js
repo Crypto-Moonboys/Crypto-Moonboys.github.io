@@ -9,6 +9,8 @@ const PATROL_MOVE_INTERVAL_MIN = 1.1;
 const PATROL_MOVE_INTERVAL_RANGE = 0.9;
 const CROWD_MOVE_INTERVAL_MIN = 2.0;
 const CROWD_MOVE_INTERVAL_RANGE = 1.5;
+const UPDATE_BATCH = 40;
+const MAX_ACTIVE_NPCS = 120;
 
 // District-aware NPC spawn bands (col, row, w, h) matching districts.json grid regions
 const DISTRICT_SPAWN_REGIONS = [
@@ -151,6 +153,7 @@ function getInitialMoveTimer(mode, role) {
 }
 
 export function createNpcSystem(state) {
+  let batchIndex = 0;
   const factionPool = ['Liberators', 'Wardens', 'Neutral'];
   const profileByRole = new Map(
     (state.lore?.legacy?.npcProfiles?.profiles || []).map((profile) => [profile.role, profile]),
@@ -164,7 +167,12 @@ export function createNpcSystem(state) {
 
   // Initialise NPC entities with grid positions on first call
   if (state.npc.entities.length === 0) {
-    for (let activeIndex = 0; activeIndex < state.npc.activeTarget; activeIndex += 1) {
+    const activeCount = Math.min(
+      state.npc.activeTarget,
+      state.npc.activeCap || state.npc.activeTarget,
+      MAX_ACTIVE_NPCS,
+    );
+    for (let activeIndex = 0; activeIndex < activeCount; activeIndex += 1) {
       const pos = spawnPos(activeIndex, state.npc.activeTarget);
       const role = state.npc.archetypes[activeIndex % Math.max(state.npc.archetypes.length, 1)]?.id || 'drifter';
       const namePool = NPC_NAMES[role] || NPC_NAMES.drifter;
@@ -180,6 +188,7 @@ export function createNpcSystem(state) {
         row: pos.row,
         districtId: pos.districtId,
         moveTimer: getInitialMoveTimer('active', role),
+        seed: Math.random() * Math.PI * 2,
         bobPhase: Math.random() * Math.PI * 2,
         bobSpeed: 0.7 + Math.random() * 0.9,
         interactionRadius: 1.2 + Math.random() * 0.5,
@@ -203,6 +212,7 @@ export function createNpcSystem(state) {
         row: pos.row,
         districtId: pos.districtId,
         moveTimer: getInitialMoveTimer('crowd', ''),
+        seed: Math.random() * Math.PI * 2,
         bobPhase: Math.random() * Math.PI * 2,
         bobSpeed: 0.3 + Math.random() * 0.4,
         interactionRadius: 0.9 + Math.random() * 0.3,
@@ -254,11 +264,16 @@ export function createNpcSystem(state) {
   }
 
   function tick(dt) {
-    for (const npc of state.npc.entities) {
-      if (!npc) continue;
-      npc.bobPhase += dt * npc.bobSpeed;
+    const npcs = state.npc.entities || [];
+    const total = npcs.length;
+    if (!total) return;
 
-      // Move active NPCs frequently, crowd NPCs less often but never frozen
+    const batchSize = Math.min(UPDATE_BATCH, total);
+    for (let i = 0; i < batchSize; i += 1) {
+      const npc = npcs[(batchIndex + i) % total];
+      if (!npc || npc.mode !== 'active') continue;
+
+      npc.bobPhase += dt * npc.bobSpeed;
       npc.moveTimer -= dt;
       if (npc.moveTimer > 0) continue;
       npc.moveTimer = getMoveInterval(npc.mode, npc.role);
@@ -289,8 +304,7 @@ export function createNpcSystem(state) {
       npc.memoryHooks   = ['track_faction_shift', 'track_daily_routine'];
       npc.dialogue = [getDialogueLine(npc)];
 
-      // Faction switching only applies to active NPCs
-      if (npc.mode === 'active' && Math.random() < FACTION_SWITCH_PROBABILITY) {
+      if (Math.random() < FACTION_SWITCH_PROBABILITY) {
         if (npc.faction === 'Neutral') {
           npc.faction = Math.random() < 0.5 ? 'Liberators' : 'Wardens';
         } else {
@@ -298,6 +312,7 @@ export function createNpcSystem(state) {
         }
       }
     }
+    batchIndex = (batchIndex + batchSize) % total;
   }
 
   return {

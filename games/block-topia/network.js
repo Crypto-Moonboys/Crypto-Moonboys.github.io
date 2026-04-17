@@ -26,6 +26,7 @@ export async function connectMultiplayer({
   roomIdentity,
   onStatus,
   onPlayers,
+  onWorldSnapshot,
   onFeed,
   onQuestCompleted,
   onSamPhaseChanged,
@@ -54,7 +55,11 @@ export async function connectMultiplayer({
       onStatus?.({ ws: 'connected', joined: true, error: '', roomId: room.name || roomId, sessionId: room.sessionId || '' });
       onFeed?.(`Connected to ${room.name || roomId} (${room.sessionId || 'session pending'})`);
 
+      let lastUpdate = 0;
       room.onStateChange((state) => {
+        const now = performance.now();
+        if (now - lastUpdate < 100) return;
+        lastUpdate = now;
         onPlayers?.(toPlayerList(state.players));
       });
 
@@ -91,6 +96,10 @@ export async function connectMultiplayer({
         if (districtId) {
           onDistrictCaptureChanged?.({ districtId, control, owner });
         }
+      });
+
+      room.onMessage('worldSnapshot', (data) => {
+        onWorldSnapshot?.(data);
       });
 
       return room;

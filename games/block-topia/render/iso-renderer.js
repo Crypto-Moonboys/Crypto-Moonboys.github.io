@@ -642,9 +642,15 @@ export function createIsoRenderer(canvas) {
         const iso = toIso(npc.col, npc.row);
         const elevation = getElevation(state.districts.fromGrid(npc.col, npc.row)?.id, npc.col, npc.row);
         const sx = originX + iso.x;
-        const bobOffset = Math.sin(npc.bobPhase || 0) * (npc.mode === 'active' ? 1.7 : 0.8);
+        const crowdSway = npc.mode === 'crowd'
+          ? Math.sin(now / 700 + (npc.seed || 0)) * 0.2
+          : 0;
+        const bobPhase = npc.mode === 'crowd'
+          ? (now / 1000) * 0.8 + (npc.seed || 0)
+          : (npc.bobPhase || 0);
+        const bobOffset = Math.sin(bobPhase) * (npc.mode === 'active' ? 1.7 : 0.8);
         const sy = originY + iso.y - elevation - 6 - bobOffset;
-        drawNpc(sx, sy, npc, state.player?.nearbyNpcId === npc.id);
+        drawNpc(sx + crowdSway, sy, npc, state.player?.nearbyNpcId === npc.id);
         if (npc.mode === 'active') {
           const labelStyle = ROLE_STYLE[npc.role] || ROLE_STYLE.crowd;
           // Role label with shadow for legibility

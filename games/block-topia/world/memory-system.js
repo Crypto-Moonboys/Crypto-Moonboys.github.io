@@ -1,15 +1,17 @@
 export function createMemorySystem(state) {
-  const MAX_MEMORY_LOG_SIZE = 200;
+  const MAX_MEMORY = 100;
+
+  function pushWithLimit(arr, item) {
+    arr.unshift(item);
+    if (arr.length > MAX_MEMORY) arr.pop();
+  }
 
   function record(type, message) {
-    state.memory.log.unshift({ at: Date.now(), type, message });
-    if (state.memory.log.length > MAX_MEMORY_LOG_SIZE) {
-      state.memory.log.length = MAX_MEMORY_LOG_SIZE;
-    }
+    pushWithLimit(state.memory.log, { at: Date.now(), type, message });
 
-    if (type === 'district') state.memory.districtChanges.unshift(message);
-    if (type === 'sam') state.memory.samEvents.unshift(message);
-    if (type === 'player') state.memory.playerActions.unshift(message);
+    if (type === 'district') pushWithLimit(state.memory.districtChanges, message);
+    if (type === 'sam') pushWithLimit(state.memory.samEvents, message);
+    if (type === 'player') pushWithLimit(state.memory.playerActions, message);
   }
 
   return { record };
