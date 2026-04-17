@@ -10,9 +10,10 @@ GameRegistry.register(HEXGL_MONSTER_MAX_CONFIG.id, {
 
 export function bootstrapHexGLMonsterMax(root) {
   // ── DESIGN INVARIANTS — do not remove or drift from these ─────────────────
-  // 1. NO AUTO-START: the overlay open must never auto-click #startBtn.
-  //    data-overlay-autostart must NOT be set on the startBtn element in the HTML.
-  //    The only way a run starts is: user clicks ▶ Start inside the overlay.
+  // 1. DIRECT START VIA HOOK: the overlay must never re-click #startBtn to start
+  //    a run.  Instead, init() exposes window.__hexglStartHook = onStart so the
+  //    overlay can call onStart() directly, bypassing the DOM event chain.
+  //    data-overlay-autostart must NOT be set on startBtn in the HTML.
   // 2. TIMER STARTS ONLY AFTER GO: runActive=true is set inside the GO callback
   //    in activateRun(), never before.  Do not hoist the timer activation.
   // 3. RESET CANCELS ALL DELAYED PATHS: onReset() increments runToken and clears
@@ -579,6 +580,9 @@ export function bootstrapHexGLMonsterMax(root) {
     if (startBtn) startBtn.addEventListener('click', onStart);
     if (submitBtn) submitBtn.addEventListener('click', onSubmit);
     if (resetBtn) resetBtn.addEventListener('click', onReset);
+    // Expose a direct-call hook so the overlay can invoke onStart() without
+    // going through the DOM click path (avoids event-listener races).
+    window.__hexglStartHook = onStart;
     setStatus(statusText);
   }
 
@@ -603,6 +607,8 @@ export function bootstrapHexGLMonsterMax(root) {
     if (startBtn) startBtn.removeEventListener('click', onStart);
     if (submitBtn) submitBtn.removeEventListener('click', onSubmit);
     if (resetBtn) resetBtn.removeEventListener('click', onReset);
+    // Clear the global hook so a future page-load doesn't call a stale closure.
+    window.__hexglStartHook = null;
   }
 
   function getScore() {

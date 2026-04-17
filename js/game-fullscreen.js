@@ -487,9 +487,18 @@
   document.addEventListener('fullscreenchange', syncFSBtn);
 
   function triggerGameStart() {
-    var gameStartBtn = document.getElementById('startBtn');
-    if (!gameStartBtn || !isOpen || gameStartBtn.disabled) return;
-    gameStartBtn.click();
+    if (!isOpen) return;
+    // HexGL (and any game that exposes __hexglStartHook) wires its onStart()
+    // function directly so we bypass the DOM click path entirely — no event
+    // listener chain, no stopImmediatePropagation dependency, no timing race.
+    // All other games fall back to the original .click() approach.
+    if (typeof window.__hexglStartHook === 'function') {
+      window.__hexglStartHook();
+    } else {
+      var gameStartBtn = document.getElementById('startBtn');
+      if (!gameStartBtn || gameStartBtn.disabled) return;
+      gameStartBtn.click();
+    }
     _gameStarted = true;
     _isPaused = false;
     syncPauseBtn();
