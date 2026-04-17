@@ -16,6 +16,7 @@ import { submitScore }                     from '/js/leaderboard-client.js';
 import { rollHiddenBonus, showBonusPopup } from '/js/bonus-engine.js';
 import { BREAKOUT_CONFIG }                 from './config.js';
 import { GameRegistry }                    from '/js/arcade/core/game-registry.js';
+import { playSound, stopAllSounds, isMuted } from '/js/arcade/core/audio.js';
 
 // Register in the central registry when this module is first imported.
 GameRegistry.register(BREAKOUT_CONFIG.id, {
@@ -69,6 +70,11 @@ export function bootstrapBreakout(root) {
 
   const keys={};
 
+  function playGameSound(id, options) {
+    if (isMuted()) return null;
+    return playSound(id, options);
+  }
+
   function onKeyDown(e) {
     keys[e.key]=true;
     if(e.key===' '&&running&&!paused){e.preventDefault();if(!launched)launchBall();}
@@ -102,6 +108,7 @@ export function bootstrapBreakout(root) {
     ball.vx=(Math.random()*0.6+0.7)*spd*(Math.random()<0.5?1:-1);
     ball.vy=-Math.sqrt(spd*spd-ball.vx*ball.vx);
     launched=true;
+    playGameSound('breakout-launch');
   }
 
   function resetGame() {
@@ -166,6 +173,7 @@ export function bootstrapBreakout(root) {
         else ball.vy=-ball.vy;
 
         if(b.alive===false){
+          playGameSound('breakout-brick-break');
           combo++;comboTimer=3;comboEl.textContent='×'+combo;
           const pts=b.value*combo;
           score+=pts; ArcadeSync.setHighScore(GAME_ID,score); best=ArcadeSync.getHighScore(GAME_ID); updateHud();
@@ -259,6 +267,7 @@ export function bootstrapBreakout(root) {
 
   async function onGameOver(){
     running=false;gameOver=true;
+    stopAllSounds();
     ArcadeSync.setHighScore(GAME_ID,score); best=ArcadeSync.getHighScore(GAME_ID); updateHud();
     try{await submitScore(ArcadeSync.getPlayer(),score,GAME_ID);}catch(e){}
     draw();
@@ -280,9 +289,15 @@ export function bootstrapBreakout(root) {
       if(raf) cancelAnimationFrame(raf);
       raf=requestAnimationFrame(loop);
     };
-    document.getElementById('pauseBtn').onclick=()=>{if(running) paused=!paused;};
+    document.getElementById('pauseBtn').onclick=()=>{
+      if(running) {
+        paused=!paused;
+        if (paused) stopAllSounds();
+      }
+    };
     document.getElementById('resetBtn').onclick=()=>{
       if(raf) cancelAnimationFrame(raf);
+      stopAllSounds();
       resetGame(); raf=requestAnimationFrame(()=>draw());
     };
   }
@@ -295,7 +310,10 @@ export function bootstrapBreakout(root) {
   }
 
   function pause() {
-    if(running) paused=true;
+    if(running) {
+      paused=true;
+      stopAllSounds();
+    }
   }
 
   function resume() {
@@ -304,11 +322,13 @@ export function bootstrapBreakout(root) {
 
   function reset() {
     if(raf) cancelAnimationFrame(raf);
+    stopAllSounds();
     resetGame(); raf=requestAnimationFrame(()=>draw());
   }
 
   function destroy() {
     if(raf) cancelAnimationFrame(raf);
+    stopAllSounds();
     document.removeEventListener('keydown', onKeyDown);
     document.removeEventListener('keyup',   onKeyUp);
     const startBtn = document.getElementById('startBtn');

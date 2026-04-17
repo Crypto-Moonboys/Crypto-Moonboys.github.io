@@ -14,6 +14,7 @@ import { ArcadeSync } from '/js/arcade-sync.js';
 import { submitScore } from '/js/leaderboard-client.js';
 import { INVADERS_CONFIG } from './config.js';
 import { GameRegistry } from '/js/arcade/core/game-registry.js';
+import { playSound, stopAllSounds, isMuted } from '/js/arcade/core/audio.js';
 
 GameRegistry.register(INVADERS_CONFIG.id, {
   label: INVADERS_CONFIG.label,
@@ -83,7 +84,6 @@ export function bootstrapInvaders(root) {
   const BOSS_BULLET_SPEED_BASE = 320;
   const BOSS_BULLET_SPEED_PER_WAVE = 14;
   const SHOOT_RECOIL = 8;
-  const MIN_SFX_FREQUENCY = 40;
   const STREAK_BONUS_RATE = 0.05;
   const MAX_STREAK_BONUS = 0.5;
   const BOSS_SPREAD_NORMAL = [-8, 8];
@@ -124,7 +124,6 @@ export function bootstrapInvaders(root) {
     });
   }
 
-  let audioCtx = null;
   const keys = {};
 
   function onKeyDown(e) {
@@ -190,38 +189,15 @@ export function bootstrapInvaders(root) {
     shakeTime = Math.max(shakeTime, duration);
   }
 
-  function getAudio() {
-    if (!audioCtx) {
-      const Ctx = window.AudioContext || window.webkitAudioContext;
-      if (Ctx) audioCtx = new Ctx();
-    }
-    return audioCtx;
-  }
-
   function playSfx(type) {
-    const ac = getAudio();
-    if (!ac) return;
-    if (ac.state === 'suspended') ac.resume().catch(() => {});
-
-    const params = {
-      shoot: { freq: 620, dur: 0.05, gain: 0.03, wave: 'square' },
-      hit: { freq: 180, dur: 0.07, gain: 0.04, wave: 'triangle' },
-      explosion: { freq: 90, dur: 0.18, gain: 0.05, wave: 'sawtooth' },
+    if (isMuted()) return;
+    const soundId = {
+      shoot: 'invaders-shoot',
+      hit: 'invaders-hit',
+      explosion: 'invaders-explosion',
     }[type];
-
-    if (!params) return;
-
-    const osc = ac.createOscillator();
-    const gain = ac.createGain();
-    osc.type = params.wave;
-    osc.frequency.setValueAtTime(params.freq, ac.currentTime);
-    osc.frequency.exponentialRampToValueAtTime(Math.max(MIN_SFX_FREQUENCY, params.freq * 0.55), ac.currentTime + params.dur);
-    gain.gain.setValueAtTime(params.gain, ac.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + params.dur);
-    osc.connect(gain);
-    gain.connect(ac.destination);
-    osc.start();
-    osc.stop(ac.currentTime + params.dur);
+    if (!soundId) return;
+    playSound(soundId);
   }
 
   function spawnExplosion(x, y, intensity = 1, color = '#ff4fd1') {
@@ -801,6 +777,7 @@ export function bootstrapInvaders(root) {
   async function onGameOver() {
     running = false;
     gameOver = true;
+    stopAllSounds();
     setBestMaybe();
     updateHud();
     try {
@@ -839,7 +816,10 @@ export function bootstrapInvaders(root) {
   }
 
   function pause() {
-    if (running && !gameOver) paused = true;
+    if (running && !gameOver) {
+      paused = true;
+      stopAllSounds();
+    }
   }
 
   function resume() {
@@ -848,6 +828,7 @@ export function bootstrapInvaders(root) {
 
   function reset() {
     if (raf) cancelAnimationFrame(raf);
+    stopAllSounds();
     resetGame();
     lastTime = performance.now();
     raf = requestAnimationFrame(loop);
@@ -855,6 +836,7 @@ export function bootstrapInvaders(root) {
 
   function destroy() {
     if (raf) cancelAnimationFrame(raf);
+    stopAllSounds();
     document.removeEventListener('keydown', onKeyDown);
     document.removeEventListener('keyup', onKeyUp);
 

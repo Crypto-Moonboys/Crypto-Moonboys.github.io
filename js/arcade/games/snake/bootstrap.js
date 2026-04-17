@@ -20,6 +20,7 @@ import { submitScore }                       from '/js/leaderboard-client.js';
 import { rollHiddenBonus, showBonusPopup }   from '/js/bonus-engine.js';
 import { SNAKE_CONFIG }                      from './config.js';
 import { GameRegistry }                      from '/js/arcade/core/game-registry.js';
+import { playSound, stopAllSounds, isMuted } from '/js/arcade/core/audio.js';
 
 // Register Snake in the central registry when this module is first imported.
 GameRegistry.register(SNAKE_CONFIG.id, {
@@ -61,6 +62,11 @@ export function bootstrapSnake(root) {
   var score   = 0;
   var streak  = 0;
   var best    = ArcadeSync.getHighScore(SNAKE_CONFIG.id);
+
+  function playGameSound(id, options) {
+    if (isMuted()) return null;
+    return playSound(id, options);
+  }
 
   // ── HUD helpers ──────────────────────────────────────────────────────────
 
@@ -156,12 +162,13 @@ export function bootstrapSnake(root) {
   function onGameOver() {
     running = false;
     clearInterval(timer);
+    stopAllSounds();
     ArcadeSync.setHighScore(SNAKE_CONFIG.id, score);
     best = ArcadeSync.getHighScore(SNAKE_CONFIG.id);
     updateHud();
     // Submit to shared leaderboard (fire-and-forget)
     submitScore(ArcadeSync.getPlayer(), score, SNAKE_CONFIG.id);
-    // AUDIO_HOOK: play('game_over')
+    playGameSound('snake-game-over');
     if (window.showGameOverModal) {
       window.showGameOverModal(score);
     } else {
@@ -184,7 +191,7 @@ export function bootstrapSnake(root) {
     if (head.x === food.x && head.y === food.y) {
       score  += 10;
       streak += 1;
-      // AUDIO_HOOK: play('eat')
+      playGameSound('snake-eat');
       ArcadeSync.setHighScore(SNAKE_CONFIG.id, score);
       best = ArcadeSync.getHighScore(SNAKE_CONFIG.id);
       food = spawnFood();
@@ -230,7 +237,10 @@ export function bootstrapSnake(root) {
     };
 
     pauseBtnEl.onclick = function () {
-      if (running) paused = !paused;
+      if (running) {
+        paused = !paused;
+        if (paused) stopAllSounds();
+      }
     };
 
     resetBtnEl.onclick = function () {
@@ -250,7 +260,10 @@ export function bootstrapSnake(root) {
   }
 
   function pause() {
-    if (running) paused = true;
+    if (running) {
+      paused = true;
+      stopAllSounds();
+    }
   }
 
   function resume() {
@@ -259,6 +272,7 @@ export function bootstrapSnake(root) {
 
   function reset() {
     clearInterval(timer);
+    stopAllSounds();
     running = false;
     paused  = false;
     resetState();
@@ -266,6 +280,7 @@ export function bootstrapSnake(root) {
 
   function destroy() {
     clearInterval(timer);
+    stopAllSounds();
     document.removeEventListener('keydown', onKeyDown);
     startBtnEl.onclick = null;
     pauseBtnEl.onclick = null;

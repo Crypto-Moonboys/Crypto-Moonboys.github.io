@@ -16,6 +16,7 @@ import { submitScore }                     from '/js/leaderboard-client.js';
 import { rollHiddenBonus, showBonusPopup } from '/js/bonus-engine.js';
 import { PAC_CHAIN_CONFIG }                from './config.js';
 import { GameRegistry }                    from '/js/arcade/core/game-registry.js';
+import { playSound, stopAllSounds, isMuted } from '/js/arcade/core/audio.js';
 
 // Register in the central registry when this module is first imported.
 GameRegistry.register(PAC_CHAIN_CONFIG.id, {
@@ -137,6 +138,11 @@ export function bootstrapPacChain(root) {
   const ENEMY_COLORS = ['#ff4fd1','#3fb950','#bc8cff','#2ec5ff'];
   let enemies = [];
   const ESPEED = 4.0;
+
+  function playGameSound(id, options) {
+    if (isMuted()) return null;
+    return playSound(id, options);
+  }
 
   function buildMaze() {
     const src = MAZE_POOL[(level - 1) % MAZE_POOL.length];
@@ -272,6 +278,7 @@ export function bootstrapPacChain(root) {
     if (tx>=0&&tx<COLS&&ty>=0&&ty<ROWS) {
       const t=maze[ty][tx];
       if (t===1) {
+        playGameSound('pac-chain-pellet');
         maze[ty][tx]=3; score+=10; pelletsLeft--;
         ArcadeSync.setHighScore(GAME_ID,score); best=ArcadeSync.getHighScore(GAME_ID);
         updateHud();
@@ -279,6 +286,7 @@ export function bootstrapPacChain(root) {
           .then(b=>{if(b){score+=b.rewards?.arcade_points||0;ArcadeSync.setHighScore(GAME_ID,score);best=ArcadeSync.getHighScore(GAME_ID);updateHud();showBonusPopup(b);}})
           .catch(()=>{});
       } else if (t===2) {
+        playGameSound('pac-chain-power');
         maze[ty][tx]=3; score+=50; pelletsLeft--;
         powerTimer=8; enemies.forEach(e=>{if(!e.dead){e.scared=true;e.scaredTimer=8;}});
         ArcadeSync.setHighScore(GAME_ID,score); best=ArcadeSync.getHighScore(GAME_ID);
@@ -300,6 +308,7 @@ export function bootstrapPacChain(root) {
       const dx=e.px-(player.px), dy=e.py-(player.py);
       if (Math.sqrt(dx*dx+dy*dy)<PSIZE+8) {
         if (e.scared) {
+          playGameSound('pac-chain-ghost-eaten');
           e.dead=true; e.respawnTimer=4;
           const pts=200*level;
           score+=pts; ArcadeSync.setHighScore(GAME_ID,score); best=ArcadeSync.getHighScore(GAME_ID); updateHud();
@@ -311,6 +320,7 @@ export function bootstrapPacChain(root) {
   }
 
   function onPlayerDeath() {
+    playGameSound('pac-chain-hit');
     lives--;
     updateHud();
     if (lives <= 0) {
@@ -405,6 +415,7 @@ export function bootstrapPacChain(root) {
 
   async function onGameOver() {
     running=false; gameOver=true;
+    stopAllSounds();
     ArcadeSync.setHighScore(GAME_ID,score); best=ArcadeSync.getHighScore(GAME_ID); updateHud();
     try { await submitScore(ArcadeSync.getPlayer(),score,GAME_ID); } catch(e){}
     draw();
@@ -443,9 +454,15 @@ export function bootstrapPacChain(root) {
       if(raf) cancelAnimationFrame(raf);
       raf=requestAnimationFrame(loop);
     };
-    document.getElementById('pauseBtn').onclick = () => { if(running) paused=!paused; };
+    document.getElementById('pauseBtn').onclick = () => {
+      if(running) {
+        paused=!paused;
+        if (paused) stopAllSounds();
+      }
+    };
     document.getElementById('resetBtn').onclick = () => {
       if(raf) cancelAnimationFrame(raf);
+      stopAllSounds();
       resetGame(); raf=requestAnimationFrame(draw);
     };
   }
@@ -459,7 +476,10 @@ export function bootstrapPacChain(root) {
   }
 
   function pause() {
-    if(running) paused=true;
+    if(running) {
+      paused=true;
+      stopAllSounds();
+    }
   }
 
   function resume() {
@@ -468,11 +488,13 @@ export function bootstrapPacChain(root) {
 
   function reset() {
     if(raf) cancelAnimationFrame(raf);
+    stopAllSounds();
     resetGame(); raf=requestAnimationFrame(draw);
   }
 
   function destroy() {
     if(raf) cancelAnimationFrame(raf);
+    stopAllSounds();
     document.removeEventListener('keydown', onKeyDown);
     const startBtn = document.getElementById('startBtn');
     const pauseBtn = document.getElementById('pauseBtn');

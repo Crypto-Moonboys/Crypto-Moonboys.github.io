@@ -17,6 +17,7 @@ import { submitScore }                     from '/js/leaderboard-client.js';
 import { rollHiddenBonus, showBonusPopup } from '/js/bonus-engine.js';
 import { CRYSTAL_QUEST_CONFIG }            from './config.js';
 import { GameRegistry }                    from '/js/arcade/core/game-registry.js';
+import { playSound, stopAllSounds, isMuted } from '/js/arcade/core/audio.js';
 
 // Register in the central registry when this module is first imported.
 GameRegistry.register(CRYSTAL_QUEST_CONFIG.id, {
@@ -51,6 +52,11 @@ export function bootstrapCrystalQuest(root) {
   let queue = [];
   let queueIdx = 0;
   let solved = 0, score = 0, streak = 0;
+
+  function playGameSound(id, options) {
+    if (isMuted()) return null;
+    return playSound(id, options);
+  }
 
   // ── No-repeat helpers ──────────────────────────────────────────────────────
   function loadSeenIds() {
@@ -130,7 +136,7 @@ export function bootstrapCrystalQuest(root) {
     streak += 1;
     score += (q.rewards?.arcade_points || 100);
     feedbackEl.textContent = '✅ Correct. Crystal secured.';
-    // AUDIO_HOOK: play('correct')
+    playGameSound('crystal-quest-correct');
     advanceQueue();
     updateHud();
     ArcadeSync.setHighScore(GAME_ID, score);
@@ -158,7 +164,7 @@ export function bootstrapCrystalQuest(root) {
       onCorrectAnswer(q);
     } else {
       streak = 0;
-      // AUDIO_HOOK: play('wrong')
+      playGameSound('crystal-quest-wrong');
       feedbackEl.textContent = '❌ Wrong answer. Read again and try properly.';
       updateHud();
     }
@@ -210,10 +216,11 @@ export function bootstrapCrystalQuest(root) {
     init();
   }
 
-  function pause()  { /* Crystal Quest is turn-based; no pause needed */ }
+  function pause()  { stopAllSounds(); }
   function resume() { /* Crystal Quest is turn-based; no resume needed */ }
 
   function reset() {
+    stopAllSounds();
     solved = 0; score = 0; streak = 0;
     updateHud();
     if (allQuests.length) {
@@ -225,6 +232,7 @@ export function bootstrapCrystalQuest(root) {
   }
 
   function destroy() {
+    stopAllSounds();
     if (submitBtnEl) submitBtnEl.onclick = null;
     if (nextBtnEl)   nextBtnEl.onclick   = null;
   }
