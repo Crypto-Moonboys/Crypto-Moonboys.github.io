@@ -112,10 +112,11 @@ export function createHud(doc) {
     const rounded = Math.round(pct);
     districtControl.textContent = `Control: ${rounded}%`;
     if (districtIntensity) {
-      if (rounded >= DISTRICT_CAPTURE_THRESHOLD) districtIntensity.textContent = 'Pressure: Captured';
-      else if (rounded >= DISTRICT_CRITICAL_THRESHOLD) districtIntensity.textContent = 'Pressure: Critical';
-      else if (rounded >= DISTRICT_CONTESTED_THRESHOLD) districtIntensity.textContent = 'Pressure: Contested';
-      else districtIntensity.textContent = 'Pressure: Stable';
+      let pressure = 'Stable';
+      if (rounded >= DISTRICT_CAPTURE_THRESHOLD) pressure = 'Captured';
+      else if (rounded >= DISTRICT_CRITICAL_THRESHOLD) pressure = 'Critical';
+      else if (rounded >= DISTRICT_CONTESTED_THRESHOLD) pressure = 'Contested';
+      districtIntensity.textContent = `Pressure: ${pressure}`;
     }
     if (districtControlBar) {
       districtControlBar.style.width = `${Math.max(0, Math.min(100, rounded))}%`;

@@ -1,5 +1,6 @@
 export function createQuestSystem(state) {
   const QUEST_PULSE_INTERVAL_SECONDS = 20;
+  const capitalize = (text) => String(text || '').replace(/^./, (ch) => ch.toUpperCase());
 
   state.quests.active = [
     ...state.quests.model.daily.slice(0, 2),
@@ -16,7 +17,7 @@ export function createQuestSystem(state) {
       title: quest.title,
       type: quest.type,
       xp: quest.xp,
-      objective: `Objective: complete ${(quest.type || 'daily').replace(/^./, (ch) => ch.toUpperCase())} operation in ${state.player.districtName} · Reward: +${quest.xp} XP`,
+      objective: `Objective: complete ${capitalize(quest.type || 'daily')} operation in ${state.player.districtName} · Reward: +${quest.xp} XP`,
     }));
   }
 

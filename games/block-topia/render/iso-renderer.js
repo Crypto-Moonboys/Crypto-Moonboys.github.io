@@ -189,6 +189,10 @@ export function createIsoRenderer(canvas) {
     }
     const items = [];
     const baseTypes = ['crate', 'terminal', 'graffiti', 'light'];
+    const propPools = new Map();
+    Object.keys(DISTRICT_THEME).forEach((key) => {
+      propPools.set(key, [...(DISTRICT_THEME[key].propBias || []), ...baseTypes]);
+    });
     for (let row = 0; row < state.map.height; row += 1) {
       for (let col = 0; col < state.map.width; col += 1) {
         const district = state.districts.fromGrid(col, row);
@@ -196,7 +200,7 @@ export function createIsoRenderer(canvas) {
         const roll = deterministicNoise2D(col * 11, row * 7);
         const threshold = PROP_SPAWN_THRESHOLD + (deterministicNoise2D(col * 13, row * 9) - 0.5) * 0.05;
         if (roll > threshold) continue;
-        const pool = [...theme.propBias, ...baseTypes];
+        const pool = propPools.get(district?.id) || propPools.get('default') || [...theme.propBias, ...baseTypes];
         items.push({
           col,
           row,
