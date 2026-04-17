@@ -149,7 +149,8 @@ export function createHud(doc) {
       xpGain.textContent = `+${delta} XP`;
       xpGain.classList.remove('hidden');
       xpStatus.classList.remove('xp-pop');
-      // Force reflow so the XP pop animation reliably restarts on repeated gain ticks.
+      // Force browser reflow to reset animation state before re-applying class,
+      // so the XP pop animation reliably replays on every XP gain tick.
       void xpStatus.offsetWidth;
       xpStatus.classList.add('xp-pop');
       xpGainTimer = setTimeout(() => xpGain.classList.add('hidden'), 1300);

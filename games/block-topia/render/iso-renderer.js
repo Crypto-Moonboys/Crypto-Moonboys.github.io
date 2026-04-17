@@ -26,7 +26,11 @@ const DISTRICT_THEME = {
   default: { glow: 'rgba(94,242,255,0.2)', line: 'rgba(150,220,255,0.3)', propBias: ['crate', 'terminal'] },
 };
 
-const DISTRICT_BASE_ELEVATION = {
+const NEARBY_PULSE_PERIOD_MS = 280;
+const NEARBY_PULSE_BASE_ALPHA = 0.55;
+const NEARBY_PULSE_AMPLITUDE = 0.35;
+
+
   'signal-spire': 7,
   'crypto-core': 5,
   'moonlit-underbelly': 2,
@@ -305,7 +309,7 @@ export function createIsoRenderer(canvas) {
 
     // Proximity interaction ring — pulses to draw attention
     if (isNearby) {
-      const pulseAlpha = 0.55 + Math.sin(Date.now() / 280) * 0.35;
+      const pulseAlpha = NEARBY_PULSE_BASE_ALPHA + Math.sin(Date.now() / NEARBY_PULSE_PERIOD_MS) * NEARBY_PULSE_AMPLITUDE;
       ctx.strokeStyle = '#ffffff';
       ctx.lineWidth = 1.8;
       ctx.globalAlpha = Math.max(0, Math.min(1, pulseAlpha));
