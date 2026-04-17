@@ -320,7 +320,7 @@
         </div>
 
         <div id="hexgl-help-bar" role="note">
-          <strong>Start</strong> loads race · Countdown begins run · <strong>Submit</strong> sends score · Guest runs stay local
+          <strong>Start</strong> opens fullscreen and loads HexGL · <strong>Begin Run</strong> starts tracked countdown · <strong>Submit</strong> sends score
         </div>
 
         <div id="hexgl-frame-wrap">
@@ -335,7 +335,7 @@
         </div>
 
         <div class="row">
-          <button id="startBtn" class="game-btn" type="button" data-overlay-hide-pause="true" data-overlay-hide-start="true" data-overlay-single-start="true">⏱ Start</button>
+          <button id="startBtn" class="game-btn" type="button" data-overlay-hide-pause="true" data-overlay-manual-start="true">⛶ Start</button>
           <button id="submit-btn" class="game-btn alt" type="button" aria-label="Submit run score to leaderboard">📤 Submit Run</button>
           <button id="resetBtn" class="game-btn alt" type="button">↺ Reset</button>
         </div>
@@ -376,7 +376,8 @@
         <h2 style="font-size:1rem;font-weight:700;color:var(--color-text-muted);margin-bottom:10px">⚙️ How Monster Mode Works</h2>
         <ul style="font-size:.88rem;line-height:1.8;color:var(--color-text-muted);padding-left:18px">
           <li>Race the full HexGL circuit loaded directly from the official source.</li>
-          <li>Click <strong>Start</strong> to begin a tracked run and load the race frame.</li>
+          <li>Click <strong>Start</strong> to open fullscreen and load HexGL.</li>
+          <li>When HexGL is ready, click <strong>Begin Run</strong> in the overlay to start tracked timing.</li>
           <li>Click <strong>Submit Run</strong> to send your score.</li>
           <li>Score = <code>500 000 − (time_seconds × 1000)</code>. Faster = higher score.</li>
           <li>Scores above 0 qualify for the global leaderboard.</li>
