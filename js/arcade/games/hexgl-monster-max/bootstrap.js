@@ -366,7 +366,7 @@ export function bootstrapHexGLMonsterMax(root) {
 
   function notifyReadyToLaunch() {
     setStatus('READY TO LAUNCH');
-    notify('Launch the race inside HexGL, then press Begin Run.');
+    notify('Enter the race inside HexGL, then press Begin Run.');
     setOverlayStartEnabled(true);
   }
 
@@ -602,8 +602,8 @@ export function bootstrapHexGLMonsterMax(root) {
       // so there is no ghost timer running silently in the background.
       // If no run is active, just play the exit tone.
       if (runActive || runPending || countdownActive) {
-        playUiTone('exit');
         cancelTrackedRun();
+        playUiTone('exit');
         if (submitBtn) {
           submitBtn.textContent = '📤 Submit Run';
           submitBtn.disabled = true;
