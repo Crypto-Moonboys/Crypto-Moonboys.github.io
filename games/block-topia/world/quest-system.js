@@ -11,9 +11,13 @@ export function createQuestSystem(state) {
   let pulse = 0;
 
   function getActiveQuestCards() {
-    return state.quests.active.map(
-      (quest) => `${quest.title} (${quest.type}) · ${quest.xp} XP`,
-    );
+    return state.quests.active.map((quest) => ({
+      id: quest.id,
+      title: quest.title,
+      type: quest.type,
+      xp: quest.xp,
+      objective: `Complete ${quest.type} objective in ${state.player.districtName}`,
+    }));
   }
 
   /**
@@ -25,12 +29,12 @@ export function createQuestSystem(state) {
    */
   function completeQuest(questId, xpOverride) {
     const questIndex = state.quests.active.findIndex((q) => q.id === questId);
-    if (questIndex === -1) return 0;
+    if (questIndex === -1) return null;
     const quest = state.quests.active[questIndex];
     const awarded = xpOverride ?? quest.xp ?? 0;
     state.quests.active.splice(questIndex, 1);
     state.memory.playerActions.unshift({ at: Date.now(), action: `quest_complete:${quest.id}` });
-    return awarded;
+    return { awarded, quest };
   }
 
   function tick(dt, hooks = {}) {
