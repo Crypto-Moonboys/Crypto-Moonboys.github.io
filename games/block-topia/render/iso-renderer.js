@@ -32,8 +32,8 @@ const DISTRICT_THEME = {
   default:              { glow: 'rgba(94,242,255,0.2)',   line: 'rgba(150,220,255,0.3)',  propBias: ['crate', 'terminal', 'barrel', 'sign']                           },
 };
 
+const ANTENNA_BLINK_PERIOD_MS = 600;
 const NEARBY_PULSE_PERIOD_MS = 280;
-const NEARBY_PULSE_BASE_ALPHA = 0.55;
 const NEARBY_PULSE_AMPLITUDE = 0.35;
 
 const DISTRICT_BASE_ELEVATION = {
@@ -237,7 +237,7 @@ export function createIsoRenderer(canvas) {
       ctx.lineTo(screenX + 4, anchorY - 10);
       ctx.stroke();
       // Blinking tip
-      const blink = Math.sin(Date.now() / 600) > 0 ? 0.9 : 0.3;
+      const blink = Math.sin(Date.now() / ANTENNA_BLINK_PERIOD_MS) > 0 ? 0.9 : 0.3;
       ctx.fillStyle = `rgba(255,79,216,${blink})`;
       ctx.beginPath();
       ctx.arc(screenX, anchorY - 14, 1.5, 0, Math.PI * 2);

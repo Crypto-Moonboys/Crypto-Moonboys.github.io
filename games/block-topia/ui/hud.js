@@ -9,6 +9,11 @@ const ROLE_COLOR_MAP = {
   drifter:        '#a0b0c8',
 };
 
+const SAM_POPUP_DURATION_MS      = 5200;
+const QUEST_TOAST_DURATION_MS    = 4200;
+const CAPTURE_BANNER_DURATION_MS = 4200;
+const NPC_DIALOGUE_DURATION_MS   = 4200;
+
 const ROLE_ICON_MAP = {
   vendor:         '🏪',
   fighter:        '⚔️',
@@ -226,13 +231,13 @@ export function createHud(doc) {
   function triggerSamImpact(text) {
     samImpact?.classList.remove('hidden');
     setTimeout(() => samImpact?.classList.add('hidden'), 1800);
-    showSamPopup(`⚡ SAM EVENT\n${text}`, 5200);
+    showSamPopup(`⚡ SAM EVENT\n${text}`, SAM_POPUP_DURATION_MS);
     pushFeed(`SAM EVENT: ${text}`, 'sam');
   }
 
   function showQuestComplete(title, rewardXp) {
     clearTimeout(questToastTimer);
-    showBanner(questToast, `✅ OPERATION COMPLETE\n${title}  ·  +${rewardXp} XP`, 4200, (timer) => {
+    showBanner(questToast, `✅ OPERATION COMPLETE\n${title}  ·  +${rewardXp} XP`, QUEST_TOAST_DURATION_MS, (timer) => {
       questToastTimer = timer;
     });
     pushFeed(`Quest complete: ${title} (+${rewardXp} XP)`, 'quest');
@@ -240,7 +245,7 @@ export function createHud(doc) {
 
   function showDistrictCapture(text) {
     clearTimeout(districtBannerTimer);
-    showBanner(districtCaptureBanner, `🏴 ${text}`, 4200, (timer) => {
+    showBanner(districtCaptureBanner, `🏴 ${text}`, CAPTURE_BANNER_DURATION_MS, (timer) => {
       districtBannerTimer = timer;
     });
     captureFlash?.classList.remove('hidden');
@@ -289,7 +294,7 @@ export function createHud(doc) {
 
     npcDialogue.append(header, lineEl);
     npcDialogue.classList.remove('hidden');
-    const timer = setTimeout(() => npcDialogue.classList.add('hidden'), 4200);
+    const timer = setTimeout(() => npcDialogue.classList.add('hidden'), NPC_DIALOGUE_DURATION_MS);
     npcDialogueTimer = timer;
   }
 
