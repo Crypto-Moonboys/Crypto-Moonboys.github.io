@@ -51,6 +51,35 @@
       width: 100%;
       aspect-ratio: 16/9;
       border: none;
+      opacity: 0;
+      transition: opacity 0.6s ease;
+    }
+    #hexgl-frame.loaded { opacity: 1; }
+    #hexgl-countdown {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      pointer-events: none;
+      z-index: 5;
+      font-size: clamp(3rem, 10vw, 6rem);
+      font-weight: 900;
+      letter-spacing: 0.05em;
+      text-shadow: 0 0 30px currentColor, 0 2px 14px rgba(0,0,0,.9);
+      color: #f7c948;
+      opacity: 0;
+      transition: opacity 0.13s ease, transform 0.13s ease;
+      transform: scale(0.82);
+      text-align: center;
+    }
+    #hexgl-countdown.visible {
+      opacity: 1;
+      transform: scale(1);
+    }
+    #hexgl-countdown.go {
+      color: #3fb950;
+      text-shadow: 0 0 40px #3fb950, 0 2px 14px rgba(0,0,0,.9);
     }
     .row {
       display: flex;
@@ -140,14 +169,64 @@
       color: var(--color-text-muted);
       text-align: center;
     }
+    .hexgl-page { --hexgl-help-accent: #f7c948; }
     .attribution a { color: var(--color-accent); }
+    #hexgl-help-bar {
+      border-color:var(--hexgl-help-accent);
+      background:rgba(247,201,72,.07);
+      border-radius:10px;
+      padding:6px 10px;
+      margin-bottom:8px;
+      font-size:.78rem;
+      line-height:1.35;
+      text-align:center;
+      color:var(--color-text-muted);
+    }
+    #hexgl-help-bar strong { color:var(--hexgl-help-accent); }
+    .hexgl-page #game-overlay .overlay-side { display:none !important; }
+    .hexgl-page #game-overlay .game-stage { padding:4px 6px 2px; }
+    .hexgl-page #game-overlay #hexgl-game-card { gap:4px; }
+    .hexgl-page #game-overlay #hexgl-help-bar {
+      margin-bottom:4px;
+      padding:4px 8px;
+      font-size:.7rem;
+      line-height:1.2;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+    .hexgl-page #game-overlay #hexgl-frame-wrap {
+      border-width:1px;
+      border-radius:8px;
+      box-shadow:none;
+    }
+    .hexgl-page #game-overlay .mini-grid,
+    .hexgl-page #game-overlay .attribution { display:none; }
+    .hexgl-page #game-overlay .rival-block {
+      margin-top:3px;
+      padding:5px 8px;
+      font-size:.74rem;
+    }
+    .hexgl-page #game-overlay .run-badges {
+      margin-top:0;
+      font-size:.7rem;
+      gap:6px;
+    }
+    .hexgl-page #game-overlay #overlay-btn-pause { display:none !important; }
+    #hexgl-inline-message {
+      min-height: 1.1em;
+      margin-top: 6px;
+      text-align: center;
+      font-size: .8rem;
+      color: var(--color-text-muted);
+    }
     @media (max-width: 720px) {
       .hud { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       .mini-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     }
   </style>
 </head>
-<body>
+<body class="hexgl-page">
 <a class="skip-link" href="#content">Skip to content</a>
 <header id="site-header" role="banner">
   <button class="hamburger" id="hamburger" aria-label="Toggle navigation" aria-expanded="false" aria-controls="sidebar">☰</button>
@@ -228,13 +307,9 @@
           <div class="stat"><div class="label">Status</div><div class="value" id="run-status">RUN READY</div></div>
         </div>
 
-        <div class="notice" role="note" style="border-color:#f7c948;background:rgba(247,201,72,.07);border-radius:10px;padding:10px 14px;margin-bottom:12px;font-size:.85rem;display:flex;gap:10px;align-items:flex-start">
-          <span aria-hidden="true" style="font-size:1.2rem;flex-shrink:0">ℹ️</span>
-          <div>
-            <strong>How to race:</strong> Click <strong>Start</strong> to load HexGL and begin a tracked run.
-            Click <strong>Submit Run</strong> to send your real score to the global leaderboard.
-            Guest runs are local only.
-          </div>
+        <div id="hexgl-help-bar" role="note" aria-label="Start loads the race then shows a 3-2-1 countdown. GO begins tracked timing. Submit sends your score. Guest runs stay local.">
+          <strong>Start</strong> loads race · 3–2–1 countdown · <strong>GO</strong> begins tracked run ·
+          <strong>Submit</strong> sends score · Guest runs stay local
         </div>
 
         <div id="hexgl-frame-wrap">
@@ -245,13 +320,15 @@
             allowfullscreen
             loading="lazy"
           ></iframe>
+          <div id="hexgl-countdown" aria-hidden="true" aria-live="assertive"></div>
         </div>
 
         <div class="row">
-          <button id="startBtn" class="game-btn" type="button">⏱ Start</button>
+          <button id="startBtn" class="game-btn" type="button" data-overlay-hide-pause="true">⏱ Start</button>
           <button id="submit-btn" class="game-btn alt" type="button" aria-label="Submit run score to leaderboard">📤 Submit Run</button>
           <button id="resetBtn" class="game-btn alt" type="button">↺ Reset</button>
         </div>
+        <p id="hexgl-inline-message" aria-live="polite"></p>
 
         <div class="rival-block" id="rival-block" style="display:none" aria-live="polite">
           <strong>👻 Rival Ghost</strong> — <span id="rival-name">—</span>

@@ -17,6 +17,12 @@
 
   var startBtn = document.getElementById('startBtn');
   var gameCard = document.querySelector('.game-card');
+  var autoStartOnOpen = startBtn && startBtn.dataset && startBtn.dataset.overlayAutostart === 'true';
+  // NOTE: HexGL (hexgl-monster-max.html) must NOT set data-overlay-autostart="true" on its
+  // startBtn.  That flag causes the overlay to auto-click the game's own start handler on
+  // open, creating a hidden second start path.  HexGL uses a single deliberate start flow:
+  // user clicks ▶ Start inside the overlay → onStart() → LOADING → COUNTDOWN → RUN ACTIVE.
+  var hidePauseControl = startBtn && startBtn.dataset && startBtn.dataset.overlayHidePause === 'true';
 
   // Only activate on pages that have both a Start button and a .game-card.
   if (!startBtn || !gameCard) return;
@@ -486,6 +492,7 @@
     // Update ctrl bar label
     gameLabel.textContent = meta.label;
     gameLabel.style.color = meta.color;
+    btnPause.style.display = hidePauseControl ? 'none' : '';
 
     // Build side panels and touch controls
     buildLeftPanel(meta);
@@ -549,6 +556,9 @@
     isOpen = false;
     _gameStarted = false; // reset so Space can start the game again next time the overlay opens
 
+    // Notify game modules that the overlay is closing (e.g. to play an exit sound).
+    document.dispatchEvent(new CustomEvent('arcade-overlay-exit'));
+
     // Stop live score updater.
     if (scoreInterval) { clearInterval(scoreInterval); scoreInterval = null; }
 
@@ -602,6 +612,17 @@
     if (!isOpen) {
       openOverlay();
       e.stopImmediatePropagation();
+      if (autoStartOnOpen) {
+        setTimeout(function () {
+          if (!isOpen) return;
+          var gameStartBtn = document.getElementById('startBtn');
+          if (!gameStartBtn) return;
+          gameStartBtn.click();
+          _gameStarted = true;
+          _isPaused = false;
+          syncPauseBtn();
+        }, 0);
+      }
     }
   }, true);
 
@@ -667,6 +688,9 @@
       if (icon) icon.textContent = '🔊';
       if (lbl)  lbl.textContent  = ' Mute';
     }
+    document.dispatchEvent(new CustomEvent('arcade-mute-change', {
+      detail: { muted: !!window._arcadeMuted }
+    }));
   });
 
   // Esc key closes the overlay.
