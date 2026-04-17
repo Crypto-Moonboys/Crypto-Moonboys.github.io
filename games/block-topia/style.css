@@ -187,13 +187,6 @@ html, body {
   box-shadow: 0 0 20px rgba(94, 242, 255, 0.25);
 }
 
-#multiplayer-live-banner:hover,
-#multiplayer-live-banner:focus-visible {
-  color: #ffffff;
-  border-color: var(--accent);
-  background: rgba(14, 22, 45, 0.94);
-}
-
 /* Mobile single-column */
 @media (max-width: 840px) {
   #hud {
