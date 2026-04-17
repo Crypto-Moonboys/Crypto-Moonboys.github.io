@@ -249,6 +249,7 @@ export function createNpcSystem(state) {
         } else if (npc.role === 'agent' || npc.role === 'recruiter') {
           npc.moveTimer = PATROL_MOVE_INTERVAL_MIN + Math.random() * PATROL_MOVE_INTERVAL_RANGE;
         } else {
+          // Default active cadence for remaining active roles (e.g. lore-keeper, drifter).
           npc.moveTimer = ACTIVE_MOVE_INTERVAL_MIN + Math.random() * ACTIVE_MOVE_INTERVAL_RANGE;
         }
       } else {
