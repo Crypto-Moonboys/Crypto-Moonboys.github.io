@@ -13,6 +13,7 @@
  */
 
 import { bootBlockTopia }           from '/games/js/blocktopia-phaser-game.js';
+import { ArcadeSync }               from '/js/arcade-sync.js';
 import { BLOCKTOPIA_PHASER_CONFIG } from './config.js';
 import { GameRegistry }             from '/js/arcade/core/game-registry.js';
 
@@ -68,7 +69,9 @@ export function bootstrapBlocktopiaPhaser(root) {
   function resume()  { /* Phaser manages its own loop */ }
   function reset()   { /* Phaser manages its own loop */ }
   function destroy() { /* Phaser manages its own loop */ }
-  function getScore() { return 0; }
+  function getScore() {
+    return ArcadeSync.getHighScore(BLOCKTOPIA_PHASER_CONFIG.id);
+  }
 
   // ── Public lifecycle object ────────────────────────────────────────────────
 

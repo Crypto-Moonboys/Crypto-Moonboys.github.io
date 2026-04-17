@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>🏁 HexGL Monster Mode — Crypto Moonboys Arcade</title>
-  <meta name="description" content="Race the Null Drift circuit in HexGL Monster Mode — Moonboys competitive speed-run with XP, token rewards, and global ranking.">
+  <meta name="description" content="Race the Null Drift circuit in HexGL Monster Mode with real score submission to the global leaderboard.">
   <meta name="robots" content="index, follow">
   <meta property="og:title" content="🏁 HexGL Monster Mode — Crypto Moonboys Arcade">
   <meta property="og:description" content="Competitive WebGL racing inside the Moonboys Arcade. Time attack. Global leaderboard. Seasonal championships.">
@@ -98,6 +98,41 @@
       font-size: .85rem;
     }
     .rival-block strong { color: #bc8cff; }
+    .mini-grid {
+      display:grid;
+      grid-template-columns:repeat(5,minmax(0,1fr));
+      gap:10px;
+      margin-top:12px;
+    }
+    .mini-grid .stat {
+      background: rgba(255,255,255,.03);
+      border: 1px solid var(--color-border, #333);
+      border-radius: 10px;
+      padding: 10px;
+      text-align: center;
+    }
+    .run-badges {
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      margin-top:10px;
+      font-size:.78rem;
+    }
+    .run-badge {
+      padding:4px 8px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.2);
+      background:rgba(255,255,255,.04);
+    }
+    .run-badge.active {
+      border-color:#3fb950;
+      box-shadow:0 0 12px rgba(63,185,80,.45);
+    }
+    .run-badge.perfect {
+      border-color:#f7c948;
+      color:#f7c948;
+      display:none;
+    }
     #run-timer { font-variant-numeric: tabular-nums; }
     .attribution {
       margin-top: 22px;
@@ -108,6 +143,7 @@
     .attribution a { color: var(--color-accent); }
     @media (max-width: 720px) {
       .hud { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .mini-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     }
   </style>
 </head>
@@ -179,8 +215,8 @@
       <div class="notice season" role="note">
         <span class="notice-icon" aria-hidden="true">🏆</span>
         <div>
-          <strong>Null Drift Championship</strong> — Seasonal speed-run leaderboard active.
-          Top 3 pilots each 90-day cycle earn permanent wiki recognition. Sync your Telegram to compete.
+          <strong>Season Active</strong> — 90-day cycle in progress.
+          Scores are submitted to the global leaderboard. Telegram link required for ranked play.
         </div>
       </div>
 
@@ -188,23 +224,23 @@
         <div class="hud" aria-label="Race statistics">
           <div class="stat"><div class="label">Pilot</div><div class="value" id="pilot-name">—</div></div>
           <div class="stat"><div class="label">Run Time</div><div class="value" id="run-timer">—</div></div>
-          <div class="stat"><div class="label">Est. Score</div><div class="value" id="est-score">—</div></div>
-          <div class="stat"><div class="label">XP Reward</div><div class="value" id="xp-reward">—</div></div>
+          <div class="stat"><div class="label">Score</div><div class="value" id="est-score">—</div></div>
+          <div class="stat"><div class="label">Status</div><div class="value" id="run-status">RUN READY</div></div>
         </div>
 
         <div class="notice" role="note" style="border-color:#f7c948;background:rgba(247,201,72,.07);border-radius:10px;padding:10px 14px;margin-bottom:12px;font-size:.85rem;display:flex;gap:10px;align-items:flex-start">
           <span aria-hidden="true" style="font-size:1.2rem;flex-shrink:0">ℹ️</span>
           <div>
-            <strong>How to race:</strong> The direct HexGL play screen loads below.
-            Click <strong>Start</strong> inside the game, then click
-            <strong>⏱ Begin Tracked Run</strong> to track your run for the leaderboard.
+            <strong>How to race:</strong> Click <strong>Start</strong> to load HexGL and begin a tracked run.
+            Click <strong>Submit Run</strong> to send your real score to the global leaderboard.
+            Guest runs are local only.
           </div>
         </div>
 
         <div id="hexgl-frame-wrap">
           <iframe
             id="hexgl-frame"
-            src="https://hexgl.bkcore.com/play/"
+            src="about:blank"
             title="HexGL — WebGL Racing by BKcore (Thibaut Despoulain)"
             allowfullscreen
             loading="lazy"
@@ -212,19 +248,33 @@
         </div>
 
         <div class="row">
-          <button id="startBtn" class="game-btn" type="button">⏱ Begin Tracked Run</button>
+          <button id="startBtn" class="game-btn" type="button">⏱ Start</button>
           <button id="submit-btn" class="game-btn alt" type="button" aria-label="Submit run score to leaderboard">📤 Submit Run</button>
-          <button id="lb-btn" class="game-btn alt" type="button" onclick="window.location.href='/games/leaderboard.html'">🏆 Leaderboard</button>
+          <button id="resetBtn" class="game-btn alt" type="button">↺ Reset</button>
         </div>
 
         <div class="rival-block" id="rival-block" style="display:none" aria-live="polite">
           <strong>👻 Rival Ghost</strong> — <span id="rival-name">—</span>
           · Best: <span id="rival-time">—</span>
         </div>
+        <div class="run-badges" aria-live="polite">
+          <span class="run-badge active" id="run-active-indicator" style="display:none">RUN ACTIVE</span>
+          <span class="run-badge">Δ vs Best: <span id="delta-best">—</span></span>
+          <span class="run-badge perfect" id="perfect-run">PERFECT RUN</span>
+        </div>
+
+        <div class="mini-grid" aria-label="Cross-game profile">
+          <div class="stat"><div class="label">Top Player</div><div class="value" id="top-player">—</div></div>
+          <div class="stat"><div class="label">Your Rank</div><div class="value" id="your-rank">—</div></div>
+          <div class="stat"><div class="label">Total Arcade Score</div><div class="value" id="total-arcade-score">—</div></div>
+          <div class="stat"><div class="label">Games Played</div><div class="value" id="games-played">—</div></div>
+          <div class="stat"><div class="label">Last Run</div><div class="value" id="last-run">—</div></div>
+        </div>
 
         <p class="note" style="color:var(--color-text-muted);font-size:.82rem;margin-top:12px">
           Score formula: <code>500 000 − (finish_time_seconds × 1000)</code>.
-          Submit your fastest run to the seasonal leaderboard. Requires Telegram sync.
+          Scores are submitted to the global leaderboard. Telegram link required for ranked play.
+          Guest runs are local only.
         </p>
 
         <div class="attribution">
@@ -234,20 +284,14 @@
         </div>
       </div>
 
-      <div class="lore-block">
-        <strong>📖 Lore Fragment</strong> — The Null Drift circuit was carved through the debris field of the 2031 blockchain collapse.
-        Only the fastest pilot AI survived the original run. Moonboys racers now compete for the ghost record — and for primacy over the void.
-        The ship doesn't forgive hesitation. Neither does the leaderboard.
-      </div>
-
       <section style="margin-top:28px">
         <h2 style="font-size:1rem;font-weight:700;color:var(--color-text-muted);margin-bottom:10px">⚙️ How Monster Mode Works</h2>
         <ul style="font-size:.88rem;line-height:1.8;color:var(--color-text-muted);padding-left:18px">
-          <li>Race the full HexGL circuit loaded directly from the official CDN.</li>
-          <li>Click <strong>Start</strong> inside the HexGL game frame to begin racing, then click <strong>⏱ Begin Tracked Run</strong> to start the wrapper timer.</li>
-          <li>When your run ends, click <strong>Submit Run</strong> to log your time.</li>
+          <li>Race the full HexGL circuit loaded directly from the official source.</li>
+          <li>Click <strong>Start</strong> to begin a tracked run and load the race frame.</li>
+          <li>Click <strong>Submit Run</strong> to send your score.</li>
           <li>Score = <code>500 000 − (time_seconds × 1000)</code>. Faster = higher score.</li>
-          <li>Scores above 0 qualify for the seasonal leaderboard and XP pool.</li>
+          <li>Scores above 0 qualify for the global leaderboard.</li>
           <li>Telegram sync required for competitive ranking — guest runs are local only.</li>
         </ul>
       </section>

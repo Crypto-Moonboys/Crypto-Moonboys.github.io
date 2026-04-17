@@ -21,6 +21,14 @@ function getTelegramId() {
   try { return localStorage.getItem(TG_ID_KEY) || null; } catch { return null; }
 }
 
+function getTelegramName() {
+  if (typeof window === "undefined") return null;
+  if (window.MOONBOYS_IDENTITY && typeof window.MOONBOYS_IDENTITY.getTelegramName === "function") {
+    return window.MOONBOYS_IDENTITY.getTelegramName();
+  }
+  try { return localStorage.getItem("moonboys_tg_name") || null; } catch { return null; }
+}
+
 /**
  * Returns true only when both Telegram auth (Step 1) AND /gklink (Step 2) are complete.
  * Competitive leaderboard submission requires the fully linked state.
@@ -65,13 +73,15 @@ export async function submitScore(player, score, game = "global") {
   }
 
   const telegramId = getTelegramId();
+  const linkedName = getTelegramName();
+  const resolvedPlayer = (linkedName && linkedName.trim()) ? linkedName.trim() : String(player || "Guest");
 
   const api = getApiUrl();
   try {
     const res = await fetch(api, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ player, score, game, telegram_id: telegramId })
+      body: JSON.stringify({ player: resolvedPlayer, score, game, telegram_id: telegramId })
     });
     if (!res.ok) {
       const data = await res.json().catch(() => ({}));

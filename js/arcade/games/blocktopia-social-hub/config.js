@@ -4,7 +4,7 @@
 
 export var BLOCKTOPIA_SOCIAL_HUB_CONFIG = Object.freeze({
   /** Leaderboard / ArcadeSync key. */
-  id: 'blocktopia-social-hub',
+  id: 'blocktopia',
 
   /** Display label used by GameRegistry. */
   label: '🌆 Block Topia: Street Signal 3008',

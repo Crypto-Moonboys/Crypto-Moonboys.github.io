@@ -21,8 +21,7 @@
         "time_seconds": 120
       },
       "rewards": {
-        "arcade_points": 50,
-        "xp": 40
+        "arcade_points": 50
       }
     },
     {
@@ -36,7 +35,6 @@
       },
       "rewards": {
         "arcade_points": 150,
-        "xp": 120,
         "multiplier": 1.5
       }
     },
@@ -49,9 +47,7 @@
         "type": "secret_event"
       },
       "rewards": {
-        "arcade_points": 300,
-        "xp": 250,
-        "punk": 20
+        "arcade_points": 300
       }
     },
     {
@@ -63,10 +59,7 @@
         "type": "random_event"
       },
       "rewards": {
-        "arcade_points": 1500,
-        "xp": 1200,
-        "punk": 50,
-        "title": "Moonshot Legend"
+        "arcade_points": 1500
       }
     },
     {
@@ -79,10 +72,7 @@
         "score": 500
       },
       "rewards": {
-        "arcade_points": 800,
-        "xp": 650,
-        "punk": 35,
-        "title": "SIGMA REY"
+        "arcade_points": 800
       }
     },
     {
@@ -95,8 +85,7 @@
         "count": 10
       },
       "rewards": {
-        "arcade_points": 80,
-        "xp": 60
+        "arcade_points": 80
       }
     },
     {
@@ -109,9 +98,7 @@
         "score": 300
       },
       "rewards": {
-        "arcade_points": 200,
-        "xp": 160,
-        "punk": 10
+        "arcade_points": 200
       }
     },
     {
@@ -124,8 +111,7 @@
         "count": 5
       },
       "rewards": {
-        "arcade_points": 90,
-        "xp": 70
+        "arcade_points": 90
       }
     },
     {
@@ -138,10 +124,7 @@
         "score": 1000
       },
       "rewards": {
-        "arcade_points": 400,
-        "xp": 320,
-        "punk": 25,
-        "title": "Whale Hunter"
+        "arcade_points": 400
       }
     },
     {
@@ -153,8 +136,7 @@
         "type": "first_score"
       },
       "rewards": {
-        "arcade_points": 25,
-        "xp": 20
+        "arcade_points": 25
       }
     }
   ]
