@@ -5,9 +5,6 @@ import {
   applyRemotePlayers,
   updatePlayerMotion,
   awardXp,
-  tickDistrictCapture,
-  XP_DISTRICT_CAPTURE,
-  SCORE_DISTRICT_CAPTURE,
 } from './world/game-state.js';
 import { createSamSystem } from './world/sam-system.js';
 import { createNpcSystem } from './world/npc-system.js';
@@ -87,6 +84,50 @@ async function boot() {
         hud.setQuests(quests.getActiveQuestCards());
       }
     },
+    onSamPhaseChanged: ({ phaseIndex }) => {
+      if (!state.sam.phases.length) return;
+      const maxIndex = state.sam.phases.length - 1;
+      const nextIndex = Math.max(0, Math.min(maxIndex, Math.floor(phaseIndex)));
+      if (state.sam.currentIndex === nextIndex) return;
+
+      state.sam.currentIndex = nextIndex;
+      state.sam.timer = 0;
+      const phase = sam.getCurrentPhase();
+      hud.setSamPhase(phase.name);
+      hud.pushFeed(`🧠 SAM phase synced: ${phase.name}`);
+      const samEvent = { at: Date.now(), phase: phase.id, source: 'server' };
+      if (phase.id === 'sam-event') {
+        samEvent.type = 'giant_encounter';
+        hud.showSamPopup('⚡ SAM SIGNAL RUSH — Giant encounter incoming!', 5000);
+      }
+      memory.record('sam', samEvent);
+    },
+    onDistrictCaptureChanged: ({ districtId, control, owner }) => {
+      const district = state.districtState.find((item) => item.id === districtId);
+      if (!district) return;
+
+      if (Number.isFinite(control)) {
+        district.control = Math.max(0, Math.min(100, control));
+      }
+      if (owner) {
+        district.owner = owner;
+      }
+
+      if (state.player.districtId === district.id) {
+        hud.setDistrictControl(district.control);
+      }
+      if (owner) {
+        hud.setFactionStatus(`${state.factions.primary.name} vs ${state.factions.secondary.name} · ${district.name}: ${owner}`);
+      }
+      hud.pushFeed(`🏴 District sync: ${district.name} ${Math.round(district.control)}% · ${district.owner}`);
+      memory.record('district', {
+        at: Date.now(),
+        district: district.id,
+        control: district.control,
+        owner: district.owner,
+        source: 'server',
+      });
+    },
   });
 
   // Space bar toggles Day/Night phase (mirrors Street Signal Monster)
@@ -114,33 +155,6 @@ async function boot() {
       const ds = state.districtState.find((d) => d.id === district.id);
       if (ds) hud.setDistrictControl(ds.control);
     }
-
-    // Tick district capture (Night phase only)
-    const captureEvent = tickDistrictCapture(state, dt);
-    if (captureEvent) {
-      hud.setScore(state.player.score);
-      hud.setXp(state.player.xp);
-      hud.pushFeed(`🏴 ${captureEvent.district.name} captured! +${XP_DISTRICT_CAPTURE} XP +${SCORE_DISTRICT_CAPTURE} score`);
-      // Pass a structured object so all entries in state.memory.districtChanges share a
-      // consistent shape (matches the format previously written directly by game-state).
-      memory.record('district', { at: Date.now(), district: captureEvent.district.id, event: 'captured' });
-    }
-
-    sam.tick(dt, {
-      onPhaseChanged: (phase) => {
-        hud.setSamPhase(phase.name);
-        hud.pushFeed(`🧠 SAM phase advanced: ${phase.name}`);
-        // Pass a structured object so all entries in state.memory.samEvents share a
-        // consistent shape (matches the format previously written directly by sam-system).
-        const samEvent = { at: Date.now(), phase: phase.id };
-        if (phase.id === 'sam-event') samEvent.type = 'giant_encounter';
-        memory.record('sam', samEvent);
-      },
-      onSignalRush: () => {
-        hud.showSamPopup('⚡ SAM SIGNAL RUSH — Giant encounter incoming!', 5000);
-        hud.pushFeed('⚡ SAM Signal Rush hook fired (site/wiki sync ready)');
-      },
-    });
 
     quests.tick(dt, {
       onQuestPulse: (text) => hud.pushFeed(`🎯 ${text}`),

@@ -168,6 +168,32 @@ html, body {
   display: none;
 }
 
+#multiplayer-live-banner {
+  position: fixed;
+  left: 50%;
+  bottom: 12px;
+  transform: translateX(-50%);
+  z-index: 600;
+  display: inline-block;
+  padding: 9px 16px;
+  border-radius: 999px;
+  border: 1px solid rgba(94, 242, 255, 0.65);
+  background: rgba(5, 8, 20, 0.92);
+  color: var(--accent);
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-decoration: none;
+  backdrop-filter: blur(6px);
+  box-shadow: 0 0 20px rgba(94, 242, 255, 0.25);
+}
+
+#multiplayer-live-banner:hover,
+#multiplayer-live-banner:focus-visible {
+  color: #ffffff;
+  border-color: var(--accent);
+  background: rgba(14, 22, 45, 0.94);
+}
+
 /* Mobile single-column */
 @media (max-width: 840px) {
   #hud {
@@ -177,5 +203,13 @@ html, body {
 
   #feed-panel {
     grid-column: auto;
+  }
+
+  #multiplayer-live-banner {
+    width: calc(100vw - 24px);
+    text-align: center;
+    font-size: 0.82rem;
+    bottom: 10px;
+    padding: 9px 12px;
   }
 }

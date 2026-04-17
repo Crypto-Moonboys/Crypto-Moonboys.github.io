@@ -154,6 +154,21 @@ Fix: removed the direct push from `sam-system.js`; `main.js`'s `onPhaseChanged` 
 structured object `{ at, phase, [type] }` to `memory.record('sam', ...)` (including `type: 'giant_encounter'`
 when the `sam-event` phase fires) so all `samEvents` entries have a consistent shape.
 
+### Pass 3 — Final Authority & Redirect Fixes
+
+- Legacy pages were converted to redirect-only stubs:
+  - `/games/block-topia-street-signal-3008.html` → `/games/block-topia/`
+  - `/games/block-topia-street-signal-3008-phaser.html` → `/games/block-topia/`
+- A fixed in-game multiplayer banner was added in `index.html` + `style.css`:
+  - Text: `LIVE MULTIPLAYER — CONNECTED`
+  - Link: `https://game.cryptomoonboys.com` (opens in a new tab)
+- SAM phase is now server-authoritative:
+  - Client listens for `samPhaseChanged` and overrides local `state.sam.currentIndex`.
+  - Local phase auto-advance is no longer used as authority.
+- District capture is now server-authoritative:
+  - Client listens for `districtCaptureChanged` and overrides district `control` and `owner`.
+  - Local district capture progression is no longer used as authority.
+
 ### Memory System Rule (for future agents)
 
 `state.memory.districtChanges`, `state.memory.samEvents`, and `state.memory.playerActions` are
