@@ -7,13 +7,11 @@
  * Integrations preserved:
  *  - ArcadeSync   (local high-score persistence)
  *  - submitScore  (leaderboard-client.js remote submission)
- *  - rollHiddenBonus / showBonusPopup  (bonus-engine.js)
  *  - window.showGameOverModal          (game-fullscreen.js)
  */
 
 import { ArcadeSync }                      from '/js/arcade-sync.js';
 import { submitScore }                     from '/js/leaderboard-client.js';
-import { rollHiddenBonus, showBonusPopup } from '/js/bonus-engine.js';
 import { ASTEROID_FORK_CONFIG }            from './config.js';
 import { GameRegistry }                    from '/js/arcade/core/game-registry.js';
 import { playSound, stopAllSounds, isMuted } from '/js/arcade/core/audio.js';
@@ -62,6 +60,10 @@ export function bootstrapAsteroidFork(root) {
   let bullets=[];
   let asteroids=[];
   let particles=[];
+  const scoreTexts=[];
+  const hitFlashes=[];
+  let shakeTime=0;
+  let shakeIntensity=0;
 
   function playGameSound(id, options) {
     if (isMuted()) return null;
@@ -112,9 +114,36 @@ export function bootstrapAsteroidFork(root) {
     waveEl.textContent=wave||'—'; livesEl.textContent=lives;
   }
 
+  function triggerHudFx(el, cls, ms){
+    if(!el) return;
+    el.classList.remove(cls);
+    void el.offsetWidth;
+    el.classList.add(cls);
+    setTimeout(()=>el.classList.remove(cls),ms);
+  }
+
+  function setBestMaybe(){
+    if(score>best){
+      best=score;
+      ArcadeSync.setHighScore(GAME_ID,best);
+    }
+  }
+
+  function addScore(points,x,y,color='#f7c948'){
+    if(!points) return;
+    score+=points;
+    setBestMaybe();
+    updateHud();
+    triggerHudFx(scoreEl,'pulse',180);
+    if(typeof x==='number'&&typeof y==='number'){
+      scoreTexts.push({x,y,text:`+${points}`,life:0.8,maxLife:0.8,color});
+    }
+  }
+
   function resetGame(){
     score=0;lives=3;wave=0;running=false;paused=false;gameOver=false;
     ship=makeShip();bullets=[];asteroids=[];particles=[];invincible=0;shootCooldown=0;
+    scoreTexts.length=0; hitFlashes.length=0; shakeTime=0; shakeIntensity=0;
     updateHud();draw();
   }
 
@@ -125,8 +154,41 @@ export function bootstrapAsteroidFork(root) {
     }
   }
 
+  function spawnHitFlash(x,y,r=16,life=0.12){
+    hitFlashes.push({x,y,r,life,maxLife:life});
+  }
+
+  function triggerShake(intensity,duration){
+    shakeIntensity=Math.max(shakeIntensity,intensity);
+    shakeTime=Math.max(shakeTime,duration);
+  }
+
+  function updateEffects(dt){
+    particles.forEach(p=>{p.x+=p.vx*dt;p.y+=p.vy*dt;p.life-=dt;p.vx*=0.97;p.vy*=0.97;});
+    particles=particles.filter(p=>p.life>0);
+
+    for(let i=scoreTexts.length-1;i>=0;i--){
+      const t=scoreTexts[i];
+      t.life-=dt;
+      t.y-=32*dt;
+      if(t.life<=0) scoreTexts.splice(i,1);
+    }
+
+    for(let i=hitFlashes.length-1;i>=0;i--){
+      const f=hitFlashes[i];
+      f.life-=dt;
+      if(f.life<=0) hitFlashes.splice(i,1);
+    }
+
+    if(shakeTime>0){
+      shakeTime-=dt;
+      shakeIntensity*=0.9;
+      if(shakeTime<=0){shakeTime=0;shakeIntensity=0;}
+    }
+  }
+
   function update(dt) {
-    if(!running||paused||gameOver) return;
+    if(!running||paused||gameOver){updateEffects(dt);return;}
 
     if(keys['ArrowLeft']||keys['a'])  ship.angle-=3.2*dt;
     if(keys['ArrowRight']||keys['d']) ship.angle+=3.2*dt;
@@ -162,13 +224,11 @@ export function bootstrapAsteroidFork(root) {
         if(Math.hypot(b.x-a.x,b.y-a.y)<a.r){
           playGameSound('asteroid-fork-hit');
           spawnParticles(a.x,a.y,'#bc8cff',8);
+          spawnHitFlash(a.x,a.y,a.r*0.7,0.1);
           bullets.splice(bi,1);
           const pts=a.tier===3?20:a.tier===2?50:100;
-          score+=pts*wave;
-          ArcadeSync.setHighScore(GAME_ID,score); best=ArcadeSync.getHighScore(GAME_ID); updateHud();
-          rollHiddenBonus({score,streak:0,game:GAME_ID})
-            .then(bon=>{if(bon){score+=bon.rewards?.arcade_points||0;ArcadeSync.setHighScore(GAME_ID,score);best=ArcadeSync.getHighScore(GAME_ID);updateHud();showBonusPopup(bon);}})
-            .catch(()=>{});
+          addScore(pts*wave,a.x,a.y,'#f7c948');
+          triggerShake(a.tier===3?4:a.tier===2?2.8:1.8,0.08);
           if(a.tier>1){
             const nt=a.tier-1;
             asteroids.push(makeAsteroid(a.x,a.y,nt));
@@ -185,7 +245,10 @@ export function bootstrapAsteroidFork(root) {
         if(Math.hypot(ship.x-a.x,ship.y-a.y)<a.r+10){
           playGameSound('asteroid-fork-ship-hit');
           spawnParticles(ship.x,ship.y,'#ff4fd1',14);
+          spawnHitFlash(ship.x,ship.y,24,0.14);
+          triggerShake(7,0.22);
           lives--;
+          triggerHudFx(livesEl,'flash',220);
           livesEl.textContent=lives;
           if(lives<=0){onGameOver();return;}
           ship=makeShip();
@@ -194,9 +257,7 @@ export function bootstrapAsteroidFork(root) {
         }
       }
     }
-
-    particles.forEach(p=>{p.x+=p.vx*dt;p.y+=p.vy*dt;p.life-=dt;p.vx*=0.97;p.vy*=0.97;});
-    particles=particles.filter(p=>p.life>0);
+    updateEffects(dt);
   }
 
   function transformedVerts(verts,x,y,angle){
@@ -214,16 +275,23 @@ export function bootstrapAsteroidFork(root) {
   }
 
   function draw() {
+    const sx=shakeTime>0?(Math.random()-0.5)*shakeIntensity:0;
+    const sy=shakeTime>0?(Math.random()-0.5)*shakeIntensity:0;
+    ctx.save();
+    ctx.translate(sx,sy);
+
     ctx.fillStyle='#090c16'; ctx.fillRect(0,0,W,H);
     ctx.fillStyle='rgba(255,255,255,.18)';
     for(let i=0;i<80;i++){
-      const sx=(i*137+wave*7)%W, sy=(i*97+wave*13)%H;
-      ctx.fillRect(sx,sy,1,1);
+      const starX=(i*137+wave*7)%W, starY=(i*97+wave*13)%H;
+      ctx.fillRect(starX,starY,1,1);
     }
 
     if(!running&&!gameOver){
       ctx.fillStyle='#bc8cff'; ctx.font='bold 28px system-ui'; ctx.textAlign='center';
-      ctx.fillText('Press Start',W/2,H/2); return;
+      ctx.fillText('Press Start',W/2,H/2);
+      ctx.restore();
+      return;
     }
     if(paused){
       ctx.fillStyle='#f7c948'; ctx.font='bold 32px system-ui'; ctx.textAlign='center';
@@ -235,7 +303,9 @@ export function bootstrapAsteroidFork(root) {
       ctx.fillStyle='#f7c948'; ctx.font='bold 20px system-ui';
       ctx.fillText('Score: '+score,W/2,H/2+16);
       ctx.fillStyle='#8b949e'; ctx.font='16px system-ui';
-      ctx.fillText('Press Start to play again',W/2,H/2+50); return;
+      ctx.fillText('Press Start to play again',W/2,H/2+50);
+      ctx.restore();
+      return;
     }
 
     asteroids.forEach(a=>{
@@ -252,6 +322,25 @@ export function bootstrapAsteroidFork(root) {
       ctx.globalAlpha=Math.max(0,p.life);
       ctx.fillStyle=p.color;
       ctx.beginPath(); ctx.arc(p.x,p.y,2,0,Math.PI*2); ctx.fill();
+    });
+    ctx.globalAlpha=1;
+
+    hitFlashes.forEach(f=>{
+      const alpha=Math.max(0,f.life/f.maxLife);
+      ctx.globalAlpha=alpha*0.5;
+      ctx.fillStyle='#ffffff';
+      ctx.beginPath();
+      ctx.arc(f.x,f.y,f.r*(1+(1-alpha)*0.7),0,Math.PI*2);
+      ctx.fill();
+    });
+    ctx.globalAlpha=1;
+
+    scoreTexts.forEach(t=>{
+      ctx.globalAlpha=Math.max(0,t.life/t.maxLife);
+      ctx.fillStyle=t.color;
+      ctx.font='bold 18px system-ui';
+      ctx.textAlign='center';
+      ctx.fillText(t.text,t.x,t.y);
     });
     ctx.globalAlpha=1;
 
@@ -272,6 +361,7 @@ export function bootstrapAsteroidFork(root) {
       const lv=transformedVerts(SHIP_VERTS,lx,ly,0);
       drawPoly(lv,'#2ec5ff',1.5);
     }
+    ctx.restore();
   }
 
   function loop(ts){
@@ -283,7 +373,8 @@ export function bootstrapAsteroidFork(root) {
   async function onGameOver(){
     running=false;gameOver=true;
     stopAllSounds();
-    ArcadeSync.setHighScore(GAME_ID,score); best=ArcadeSync.getHighScore(GAME_ID); updateHud();
+    setBestMaybe();
+    updateHud();
     try{await submitScore(ArcadeSync.getPlayer(),score,GAME_ID);}catch(e){}
     draw();
     if(window.showGameOverModal) window.showGameOverModal(score);
