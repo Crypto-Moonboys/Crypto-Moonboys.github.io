@@ -29,6 +29,8 @@ export function createHud(doc) {
   const xpGain          = doc.getElementById('xp-gain');
   const npcDialogue     = doc.getElementById('npc-dialogue');
   const interactPrompt  = doc.getElementById('interact-prompt');
+  const xpBarFill       = doc.getElementById('xp-bar-fill');
+  const xpBarLabel      = doc.getElementById('xp-bar-label');
 
   let samPopupTimer = null;
   let districtBannerTimer = null;
@@ -64,8 +66,25 @@ export function createHud(doc) {
       if (typeof entry === 'string') {
         li.textContent = entry;
       } else {
-        const objective = entry.objective ? ` · ${entry.objective}` : '';
-        li.textContent = `${entry.title} [${entry.type}]${objective} · ${entry.xp} XP`;
+        li.setAttribute('data-type', entry.type || 'daily');
+
+        const badge = doc.createElement('span');
+        badge.className = 'quest-badge';
+        badge.textContent = (entry.type || 'DLY').toUpperCase().slice(0, 3);
+
+        const titleSpan = doc.createElement('span');
+        titleSpan.className = 'quest-title';
+        titleSpan.textContent = entry.title;
+
+        const xpSpan = doc.createElement('span');
+        xpSpan.className = 'quest-xp';
+        xpSpan.textContent = `+${entry.xp}`;
+
+        const objSpan = doc.createElement('span');
+        objSpan.className = 'quest-obj';
+        objSpan.textContent = entry.objective || '';
+
+        li.append(badge, titleSpan, xpSpan, objSpan);
       }
       questList.appendChild(li);
     });
@@ -99,6 +118,10 @@ export function createHud(doc) {
     xpStatus.textContent = String(value);
     const level = Math.max(1, Math.floor(value / XP_PER_LEVEL) + 1);
     levelStatus.textContent = `L${level} · ${titleFromLevel(level)}`;
+    const xpInLevel = value % XP_PER_LEVEL;
+    const pct = Math.round((xpInLevel / XP_PER_LEVEL) * 100);
+    if (xpBarFill) xpBarFill.style.width = `${pct}%`;
+    if (xpBarLabel) xpBarLabel.textContent = `${xpInLevel} / ${XP_PER_LEVEL} XP`;
     if (delta > 0) {
       clearTimeout(xpGainTimer);
       xpGain.textContent = `+${delta} XP`;

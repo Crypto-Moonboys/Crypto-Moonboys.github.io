@@ -175,6 +175,88 @@ export function createIsoRenderer(canvas) {
     ctx.restore();
   }
 
+  function drawNpc(sx, sy, npc, isNearby) {
+    const style = ROLE_STYLE[npc.role] || ROLE_STYLE.crowd;
+    const r = npc.mode === 'active' ? style.radius : ROLE_STYLE.crowd.radius;
+
+    // Soft glow halo for active NPCs
+    if (npc.mode === 'active') {
+      ctx.globalAlpha = 0.2;
+      ctx.fillStyle = style.glow;
+      ctx.beginPath();
+      ctx.arc(sx, sy, r + 4.5, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.globalAlpha = 1;
+    }
+
+    ctx.fillStyle = style.color;
+    ctx.strokeStyle = style.color;
+    ctx.lineWidth = 1;
+
+    switch (npc.role) {
+      case 'fighter': {
+        // Upward-pointing triangle — aggressive stance
+        ctx.beginPath();
+        ctx.moveTo(sx,         sy - r - 1);
+        ctx.lineTo(sx + r + 1, sy + r);
+        ctx.lineTo(sx - r - 1, sy + r);
+        ctx.closePath();
+        ctx.fill();
+        break;
+      }
+      case 'vendor': {
+        // Rotated diamond — market stall
+        ctx.beginPath();
+        ctx.moveTo(sx,     sy - r);
+        ctx.lineTo(sx + r, sy);
+        ctx.lineTo(sx,     sy + r);
+        ctx.lineTo(sx - r, sy);
+        ctx.closePath();
+        ctx.fill();
+        break;
+      }
+      case 'agent': {
+        // Circle with orbit ring — wired courier
+        ctx.beginPath();
+        ctx.arc(sx, sy, r - 1, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.globalAlpha = 0.55;
+        ctx.beginPath();
+        ctx.arc(sx, sy, r + 2.5, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.globalAlpha = 1;
+        break;
+      }
+      case 'recruiter': {
+        // Cross/plus — outreach role
+        const t = 1.3;
+        ctx.fillRect(sx - t,     sy - r,  t * 2,    r * 2);
+        ctx.fillRect(sx - r,     sy - t,  r * 2,    t * 2);
+        break;
+      }
+      default: {
+        ctx.beginPath();
+        ctx.arc(sx, sy, r, 0, Math.PI * 2);
+        ctx.fill();
+        break;
+      }
+    }
+
+    ctx.lineWidth = 1;
+
+    // Proximity interaction ring
+    if (isNearby) {
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 1.5;
+      ctx.globalAlpha = 0.9;
+      ctx.beginPath();
+      ctx.arc(sx, sy, r + 5.5, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.globalAlpha = 1;
+      ctx.lineWidth = 1;
+    }
+  }
+
   function render(state) {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -236,29 +318,7 @@ export function createIsoRenderer(canvas) {
       const sx = originX + iso.x;
       const bobOffset = Math.sin(npc.bobPhase || 0) * (npc.mode === 'active' ? 1.7 : 0.8);
       const sy = originY + iso.y - 6 - bobOffset;
-      const style = ROLE_STYLE[npc.role] || ROLE_STYLE.crowd;
-      const radius = npc.mode === 'active' ? style.radius : ROLE_STYLE.crowd.radius;
-      const color = style.color;
-      if (npc.mode === 'active') {
-        ctx.globalAlpha = 0.22;
-        ctx.fillStyle = style.glow;
-        ctx.beginPath();
-        ctx.arc(sx, sy, radius + 3, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.globalAlpha = 1;
-      }
-      ctx.beginPath();
-      ctx.arc(sx, sy, radius, 0, Math.PI * 2);
-      ctx.fillStyle = color;
-      ctx.fill();
-      if (state.player?.nearbyNpcId && state.player.nearbyNpcId === npc.id) {
-        ctx.strokeStyle = '#ffffff';
-        ctx.lineWidth = 1.4;
-        ctx.beginPath();
-        ctx.arc(sx, sy, radius + 4.5, 0, Math.PI * 2);
-        ctx.stroke();
-        ctx.lineWidth = 1;
-      }
+      drawNpc(sx, sy, npc, state.player?.nearbyNpcId === npc.id);
     }
 
     ctx.font = '12px Inter, sans-serif';
@@ -276,12 +336,21 @@ export function createIsoRenderer(canvas) {
     const playerIso = toIso(state.player.x, state.player.y);
     const px = originX + playerIso.x;
     const py = originY + playerIso.y - 14;
+
+    // Player glow aura
+    ctx.globalAlpha = 0.28;
+    ctx.fillStyle = isNight ? 'rgba(255, 155, 66, 0.7)' : 'rgba(255, 79, 216, 0.6)';
     ctx.beginPath();
-    ctx.arc(px, py, 10, 0, Math.PI * 2);
+    ctx.arc(px, py, 18, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.globalAlpha = 1;
+
+    ctx.beginPath();
+    ctx.arc(px, py, 9, 0, Math.PI * 2);
     ctx.fillStyle = isNight ? '#ff9b42' : '#ff4fd8';
     ctx.fill();
     ctx.strokeStyle = '#ffffff';
-    ctx.lineWidth = 1.5;
+    ctx.lineWidth = 2;
     ctx.stroke();
     ctx.lineWidth = 1;
 
