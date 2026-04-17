@@ -25,6 +25,7 @@
   var hidePauseControl = startBtn && startBtn.dataset && startBtn.dataset.overlayHidePause === 'true';
   var hideStartControl = startBtn && startBtn.dataset && startBtn.dataset.overlayHideStart === 'true';
   var singleStartFlow = startBtn && startBtn.dataset && startBtn.dataset.overlaySingleStart === 'true';
+  var manualOverlayStart = startBtn && startBtn.dataset && startBtn.dataset.overlayManualStart === 'true';
 
   // Only activate on pages that have both a Start button and a .game-card.
   if (!startBtn || !gameCard) return;
@@ -485,6 +486,7 @@
 
   function triggerGameStart() {
     if (!isOpen) return;
+    if (btnStart.disabled) return;
     // HexGL (and any game that exposes __hexglStartHook) wires its onStart()
     // function directly so we bypass the DOM click path entirely — no event
     // listener chain, no stopImmediatePropagation dependency, no timing race.
@@ -514,6 +516,13 @@
     gameLabel.style.color = meta.color;
     btnStart.style.display = hideStartControl ? 'none' : '';
     btnPause.style.display = hidePauseControl ? 'none' : '';
+    if (manualOverlayStart) {
+      btnStart.setAttribute('aria-label', 'Begin tracked run');
+      var startIcon = btnStart.querySelector('.btn-icon');
+      var startLabel = btnStart.querySelector('.btn-label');
+      if (startIcon) startIcon.textContent = '🏁';
+      if (startLabel) startLabel.textContent = ' Begin Run';
+    }
 
     // Build side panels and touch controls
     buildLeftPanel(meta);
@@ -633,13 +642,17 @@
     if (!isOpen) {
       openOverlay();
       e.stopImmediatePropagation();
-      if (autoStartOnOpen || singleStartFlow) {
+      if (manualOverlayStart && typeof window.__hexglOverlayOpenHook === 'function') {
+        window.__hexglOverlayOpenHook();
+      } else if (autoStartOnOpen || singleStartFlow) {
         // Use a short delay so the overlay DOM is fully visible and the
         // game's click handler is ready before we programmatically click.
         setTimeout(function () {
           triggerGameStart();
         }, 50);
       }
+    } else if (manualOverlayStart) {
+      e.stopImmediatePropagation();
     }
   }, true);
 
@@ -684,6 +697,7 @@
     if (gameResetBtn) {
       gameResetBtn.click();
       // After reset, game is no longer paused.
+      _gameStarted = false;
       _isPaused = false;
       syncPauseBtn();
     }
