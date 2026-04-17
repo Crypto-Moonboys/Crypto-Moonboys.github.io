@@ -15,6 +15,82 @@ const DISTRICT_SPAWN_REGIONS = [
   { id: 'revolt-plaza',       col: 14, row: 8,  w: 6,  h: 12 },
 ];
 
+// Per-role inline fallback dialogue — used when no server NPC profiles are available.
+const ROLE_DIALOGUE = {
+  vendor: [
+    'Signal parts fresh off the relay. Cheap today.',
+    'Buying or selling? Make it quick — phase is shifting.',
+    'District prices follow SAM. Buy before the next cycle.',
+    'I move faction surplus. No ledgers, no questions.',
+    'The Crypto Core runs dry after SAM sweeps. Stock up now.',
+    'Best crates in the underbelly. Ask anyone.',
+  ],
+  fighter: [
+    'This block is contested. Keep moving, or pick a side.',
+    'Wardens pushed through last cycle. We hold here.',
+    'I run patrols when SAM goes quiet. Risky business.',
+    'You looking for a contract or trouble? Same answer either way.',
+    'Signal Spire is heating up. Liberators are making a push.',
+    'Every district has a price. Mine is non-negotiable.',
+  ],
+  agent: [
+    'Signal relay is down two nodes east. Rerouting through the Slums.',
+    'I carry messages the network cannot route cleanly.',
+    'District memory is fragmented here. Trust nothing written.',
+    'The factions pay me. The city keeps me breathing.',
+    'Three drops, two dead drops, one live relay. Average Tuesday.',
+    'I know which nodes SAM watches. For a price.',
+  ],
+  'lore-keeper': [
+    'This district remembers everything — even what you want forgotten.',
+    'The SAM cycle started in this very block. I watched it happen.',
+    'When the signal first came, it rewrote the walls.',
+    'Ask the city. It always answers — but not always clearly.',
+    'The old relay maps are buried under Revolt Plaza. I know the depth.',
+    'Faction wars leave marks in the grid. I catalog them all.',
+  ],
+  recruiter: [
+    'Liberators are expanding east. The timing is right to join.',
+    'Wardens are offering protection contracts in the Core. Good pay.',
+    'Undecided? Stay neutral and stay mobile. For now.',
+    'Faction allegiance is a tool, not a chain. Wield it smart.',
+    'The balance shifts every phase. Tonight you can tip it.',
+    'I recruit for results, not ideals. What can you bring?',
+  ],
+  drifter: [
+    'Just passing through. As always.',
+    'I never stay in one district long enough to care.',
+    'Watch the SAM lines. They tell you where the pressure is.',
+    'The city shifts. I shift with it.',
+    'Revolt Plaza used to be quiet. Not anymore.',
+    'You hear the hum? That is the signal layer. Always listening.',
+  ],
+};
+
+// Faction-specific overlay lines that append to standard dialogue
+const FACTION_DIALOGUE_OVERLAY = {
+  Liberators: [
+    'The Liberators will reclaim this district before dawn.',
+    'We move where the signal is weakest and plant our flags.',
+    'Warden control is slipping. This is our moment.',
+  ],
+  Wardens: [
+    'The Wardens hold what the Liberators cannot keep.',
+    'Order is maintained through pressure and presence.',
+    'We do not capture — we consolidate.',
+  ],
+};
+
+// Character name pools per role — give each NPC a proper identity.
+const NPC_NAMES = {
+  vendor: ['Maxis', 'Creo', 'Dice', 'Sal', 'Brix', 'Parch'],
+  fighter: ['Kira', 'Blox', 'Neon', 'Rust', 'Shard', 'Hex'],
+  agent: ['Zero-K', 'Circuit', 'Codec', 'Wire', 'Phase', 'Node'],
+  'lore-keeper': ['The Watcher', 'Old Seq', 'Archon', 'Mem', 'Sable'],
+  recruiter: ['Kai', 'Proxy', 'Sway', 'Signal', 'Align'],
+  drifter: ['Ghost', 'Null', 'Transit', 'Flux', 'Walker'],
+};
+
 function randInt(min, max) {
   return min + Math.floor(Math.random() * (max - min));
 }
@@ -67,11 +143,13 @@ export function createNpcSystem(state) {
     for (let activeIndex = 0; activeIndex < state.npc.activeTarget; activeIndex += 1) {
       const pos = spawnPos(activeIndex, state.npc.activeTarget);
       const role = state.npc.archetypes[activeIndex % Math.max(state.npc.archetypes.length, 1)]?.id || 'drifter';
+      const namePool = NPC_NAMES[role] || NPC_NAMES.drifter;
+      const npcName = namePool[activeIndex % namePool.length];
       state.npc.entities.push({
         id: `active-${activeIndex}`,
         role,
         roleLabel: roleLabel(role),
-        name: `${roleLabel(role)} ${activeIndex + 1}`,
+        name: npcName,
         mode: 'active',
         faction: factionPool[activeIndex % factionPool.length],
         col: pos.col,
@@ -122,7 +200,17 @@ export function createNpcSystem(state) {
       return sample(profile.rumors, 'Keep moving. Signals are watching.');
     }
     const loreRumors = state.lore?.legacy?.lore?.npc_rumors;
-    return sample(loreRumors, 'Move smart. The district remembers.');
+    if (Array.isArray(loreRumors) && loreRumors.length) {
+      return sample(loreRumors, 'Move smart. The district remembers.');
+    }
+    const inlineFallback = ROLE_DIALOGUE[npc.role] || [];
+    const baseLine = sample(inlineFallback, 'Move smart. The district remembers.');
+    // Occasionally blend in a faction-specific line for immersion
+    const overlay = FACTION_DIALOGUE_OVERLAY[npc.faction];
+    if (overlay && Math.random() < 0.28) {
+      return sample(overlay, baseLine);
+    }
+    return baseLine;
   }
 
   function nearestInteractive(playerX, playerY) {
@@ -163,6 +251,15 @@ export function createNpcSystem(state) {
       if (npc.role === 'vendor' && Math.random() < 0.55) {
         dc = 0;
         dr = 0;
+      } else if (npc.role === 'fighter') {
+        dc = randInt(-1, 2);
+        dr = Math.random() < 0.65 ? randInt(-1, 2) : randInt(-2, 3);
+      } else if (npc.role === 'agent') {
+        dc = Math.random() < 0.5 ? randInt(-2, 3) : 0;
+        dr = Math.random() < 0.5 ? randInt(-2, 3) : 0;
+      } else if (npc.role === 'recruiter') {
+        dc = Math.random() < 0.6 ? randInt(-1, 2) : 0;
+        dr = Math.random() < 0.6 ? randInt(-1, 2) : 0;
       }
       const nc = Math.max(0, Math.min(MAP_W - 1, npc.col + dc));
       const nr = Math.max(0, Math.min(MAP_H - 1, npc.row + dr));
