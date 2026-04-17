@@ -119,10 +119,6 @@ export function showBonusPopup(bonus) {
   if (!bonus) return;
   const colour = RARITY_COLOURS[bonus.rarity] || '#fff';
   const pts = bonus.rewards?.arcade_points ?? 0;
-  const xp  = bonus.rewards?.xp ?? 0;
-  const titleAward = bonus.rewards?.title
-    ? `<p class="bpe-title-award">🏅 Title Unlocked: <strong>${escHtml(bonus.rewards.title)}</strong></p>`
-    : '';
 
   const popup = document.createElement('div');
   popup.className = 'bpe-overlay';
@@ -135,9 +131,7 @@ export function showBonusPopup(bonus) {
       ${bonus.description ? `<p class="bpe-desc">${escHtml(bonus.description)}</p>` : ''}
       <div class="bpe-rewards">
         ${pts ? `<span>+${pts} pts</span>` : ''}
-        ${xp  ? `<span>+${xp} XP</span>`  : ''}
       </div>
-      ${titleAward}
       <p class="bpe-dismiss">tap to dismiss</p>
     </div>
   `;
@@ -185,7 +179,6 @@ function injectPopupStyles() {
     .bpe-desc{font-size:.85rem;color:#8b949e;margin-bottom:10px}
     .bpe-rewards{display:flex;gap:12px;justify-content:center;
       font-size:1rem;font-weight:700;color:var(--bc,#f7c948);margin-top:8px}
-    .bpe-title-award{font-size:.82rem;color:#3fb950;margin-top:8px}
     .bpe-dismiss{font-size:.7rem;color:#8b949e;margin-top:14px}
   `;
   document.head.appendChild(s);
