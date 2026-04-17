@@ -200,7 +200,7 @@ export function createIsoRenderer(canvas) {
         const roll = deterministicNoise2D(col * 11, row * 7);
         const threshold = PROP_SPAWN_THRESHOLD + (deterministicNoise2D(col * 13, row * 9) - 0.5) * 0.05;
         if (roll > threshold) continue;
-        const pool = propPools.get(district?.id) || propPools.get('default') || [...theme.propBias, ...baseTypes];
+        const pool = propPools.get(district?.id) || propPools.get('default');
         items.push({
           col,
           row,

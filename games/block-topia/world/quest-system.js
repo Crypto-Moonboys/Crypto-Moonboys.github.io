@@ -1,6 +1,6 @@
 export function createQuestSystem(state) {
   const QUEST_PULSE_INTERVAL_SECONDS = 20;
-  const capitalize = (text) => String(text || '').replace(/^./, (ch) => ch.toUpperCase());
+  const capitalize = (text) => (text || '').replace(/^./, (ch) => ch.toUpperCase());
 
   state.quests.active = [
     ...state.quests.model.daily.slice(0, 2),
