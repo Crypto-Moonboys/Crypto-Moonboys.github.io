@@ -30,6 +30,7 @@ function tintColor(hex, nightFactor, variant = 0) {
 }
 
 function hash2(x, y) {
+  // GLSL-style hash constants for deterministic pseudo-random tile/prop variation.
   const value = Math.sin((x + 1) * 12.9898 + (y + 1) * 78.233) * 43758.5453;
   return value - Math.floor(value);
 }
@@ -123,7 +124,15 @@ export function createIsoRenderer(canvas) {
   }
 
   function getProps(state) {
-    if (propCache && propCache.w === state.map.width && propCache.h === state.map.height) {
+    const districtSignature = state.districtState
+      .map((d) => `${d.id}:${Math.round(d.control)}:${d.owner}`)
+      .join('|');
+    if (
+      propCache
+      && propCache.w === state.map.width
+      && propCache.h === state.map.height
+      && propCache.districtSignature === districtSignature
+    ) {
       return propCache.items;
     }
     const items = [];
@@ -139,7 +148,7 @@ export function createIsoRenderer(canvas) {
         });
       }
     }
-    propCache = { w: state.map.width, h: state.map.height, items };
+    propCache = { w: state.map.width, h: state.map.height, districtSignature, items };
     return items;
   }
 

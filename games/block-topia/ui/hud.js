@@ -1,4 +1,5 @@
 export function createHud(doc) {
+  const XP_PER_LEVEL = 200;
   const playerNameEl    = doc.getElementById('player-name');
   const levelStatus     = doc.getElementById('level-status');
   const worldStatus     = doc.getElementById('world-status');
@@ -95,7 +96,7 @@ export function createHud(doc) {
   function setXp(value) {
     const delta = value - lastXp;
     xpStatus.textContent = String(value);
-    const level = Math.max(1, Math.floor(value / 200) + 1);
+    const level = Math.max(1, Math.floor(value / XP_PER_LEVEL) + 1);
     levelStatus.textContent = `L${level} · ${titleFromLevel(level)}`;
     if (delta > 0) {
       clearTimeout(xpGainTimer);

@@ -37,6 +37,13 @@ function sample(list, fallback = '') {
   return list[Math.floor(Math.random() * list.length)] || fallback;
 }
 
+function getRoutineForRole(role) {
+  if (role === 'vendor') return 'stall_anchor';
+  if (role === 'fighter') return 'aggressive_patrol';
+  if (role === 'agent') return 'signal_route';
+  return 'district_patrol';
+}
+
 export function createNpcSystem(state) {
   const factionPool = ['Liberators', 'Wardens', 'Neutral'];
   const profileByRole = new Map(
@@ -71,13 +78,7 @@ export function createNpcSystem(state) {
         dialogue: [],
         memoryHooks: [],
         dialogueHooks: [],
-        routine: role === 'vendor'
-          ? 'stall_anchor'
-          : role === 'fighter'
-            ? 'aggressive_patrol'
-            : role === 'agent'
-              ? 'signal_route'
-              : 'district_patrol',
+        routine: getRoutineForRole(role),
       });
     }
 
@@ -147,9 +148,12 @@ export function createNpcSystem(state) {
         : 4.5 + Math.random() * 3;
 
       // Street Signal feature reintroduced: role-weighted movement routines.
-      const vendorDrift = npc.role === 'vendor' ? 0.5 : 1;
-      const dc = randInt(-1, 2) * vendorDrift;
-      const dr = randInt(-1, 2) * vendorDrift;
+      let dc = randInt(-1, 2);
+      let dr = randInt(-1, 2);
+      if (npc.role === 'vendor' && Math.random() < 0.55) {
+        dc = 0;
+        dr = 0;
+      }
       const nc = Math.max(0, Math.min(MAP_W - 1, npc.col + dc));
       const nr = Math.max(0, Math.min(MAP_H - 1, npc.row + dr));
       npc.col = nc;

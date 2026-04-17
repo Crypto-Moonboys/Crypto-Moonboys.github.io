@@ -62,7 +62,8 @@ async function boot() {
   function bootstrapLoreFeed() {
     const districtFlavor = lore?.districts?.[0]?.flavor?.[0];
     if (districtFlavor) hud.pushFeed(`📰 ${districtFlavor}`, 'system');
-    const rumor = lore?.npc_rumors?.[Math.floor(Math.random() * (lore?.npc_rumors?.length || 1))];
+    if (!Array.isArray(lore?.npc_rumors) || lore.npc_rumors.length === 0) return;
+    const rumor = lore.npc_rumors[Math.floor(Math.random() * lore.npc_rumors.length)];
     if (rumor) hud.pushFeed(`🗞️ ${rumor}`, 'system');
   }
 
