@@ -226,8 +226,12 @@ export function bootstrapPacChain(root) {
   function syncMusicButton() {
     const btn = document.getElementById('musicMuteBtn');
     if (!btn) return;
-    btn.textContent = musicMuted ? 'Music Off' : 'Music On';
+    btn.textContent = musicMuted ? 'Unmute Music' : 'Mute Music';
     btn.setAttribute('aria-pressed', String(musicMuted));
+  }
+
+  function distToPlayerSq(tileX, tileY) {
+    return (tileX - player.x) ** 2 + (tileY - player.y) ** 2;
   }
 
   function triggerShake(intensity, duration) {
@@ -447,16 +451,16 @@ export function bootstrapPacChain(root) {
           chosen = valid.reduce((bestDir, d) => {
             const nx = e.x + d.dx;
             const ny = e.y + d.dy;
-            const bestDist = (e.x + bestDir.dx - player.x) ** 2 + (e.y + bestDir.dy - player.y) ** 2;
-            const dist = (nx - player.x) ** 2 + (ny - player.y) ** 2;
+            const bestDist = distToPlayerSq(e.x + bestDir.dx, e.y + bestDir.dy);
+            const dist = distToPlayerSq(nx, ny);
             return dist > bestDist ? d : bestDir;
           }, valid[0]);
         } else if (Math.random() < 0.6) {
           chosen = valid.reduce((bestDir, d) => {
             const nx = e.x + d.dx;
             const ny = e.y + d.dy;
-            const bestDist = (e.x + bestDir.dx - player.x) ** 2 + (e.y + bestDir.dy - player.y) ** 2;
-            const dist = (nx - player.x) ** 2 + (ny - player.y) ** 2;
+            const bestDist = distToPlayerSq(e.x + bestDir.dx, e.y + bestDir.dy);
+            const dist = distToPlayerSq(nx, ny);
             return dist < bestDist ? d : bestDir;
           }, valid[0]);
         } else {
@@ -976,7 +980,7 @@ export function bootstrapPacChain(root) {
     if (!submittedRunScore && canSubmitCompetitive()) {
       submittedRunScore = true;
       try {
-        await submitScore(resolveCompetitivePlayer(), score, 'pacchain');
+        await submitScore(resolveCompetitivePlayer(), score, GAME_ID);
       } catch (_) {}
     }
 
