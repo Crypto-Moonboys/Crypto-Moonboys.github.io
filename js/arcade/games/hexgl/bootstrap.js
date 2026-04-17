@@ -26,23 +26,19 @@ GameRegistry.register(HEXGL_CONFIG.id, {
  * @returns {{ init, start, pause, resume, reset, destroy, getScore }}
  */
 export function bootstrapHexGL(root) {
-  const frameEl    = document.getElementById('hexglFrame');
-  const loadBtnEl  = document.querySelector('.hexgl-wrap .btn:not(.alt)');
-  const directBtnEl = document.querySelector('.hexgl-wrap .btn.alt');
+  const frameEl   = document.getElementById('hexglFrame');
+  const startBtn  = document.getElementById('startBtn');
+  const resetBtn  = document.getElementById('resetBtn');
 
   function loadGame() {
     if (frameEl) frameEl.src = HEXGL_CONFIG.src;
   }
 
-  function openDirect() {
-    window.open(HEXGL_CONFIG.src, '_blank');
-  }
-
   // ── Lifecycle implementation ──────────────────────────────────────────────
 
   function init() {
-    if (loadBtnEl)   loadBtnEl.onclick   = loadGame;
-    if (directBtnEl) directBtnEl.onclick = openDirect;
+    if (startBtn) startBtn.onclick = start;
+    if (resetBtn) resetBtn.onclick = reset;
   }
 
   function start() {
@@ -53,14 +49,13 @@ export function bootstrapHexGL(root) {
   function resume() { /* External iframe — cannot resume */ }
 
   function reset() {
-    // Unload the iframe so the player can reload
     if (frameEl) frameEl.src = '';
   }
 
   function destroy() {
-    if (frameEl)     frameEl.src = '';
-    if (loadBtnEl)   loadBtnEl.onclick   = null;
-    if (directBtnEl) directBtnEl.onclick = null;
+    if (frameEl) frameEl.src = '';
+    if (startBtn) startBtn.onclick = null;
+    if (resetBtn) resetBtn.onclick = null;
   }
 
   function getScore() { return 0; }

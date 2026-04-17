@@ -4,7 +4,7 @@
 
 export var BTQM_CONFIG = Object.freeze({
   /** Leaderboard / ArcadeSync key (game-registry and score submission). */
-  id: 'blocktopia-quest-maze',
+  id: 'blocktopia',
 
   /** Display label used by GameRegistry. */
   label: '🗺️ Block Topia Quest Maze',

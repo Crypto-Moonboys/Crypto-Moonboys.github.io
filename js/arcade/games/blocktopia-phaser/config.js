@@ -4,7 +4,7 @@
 
 export var BLOCKTOPIA_PHASER_CONFIG = Object.freeze({
   /** Leaderboard / ArcadeSync key. */
-  id: 'blocktopia-phaser',
+  id: 'blocktopia',
 
   /** Display label used by GameRegistry. */
   label: '🎮 Block Topia: Street Signal 3008 (Phaser)',

@@ -37,7 +37,6 @@ export function bootstrapHexGLMonster(root) {
   const playerEl = document.getElementById('player');
   const bestEl   = document.getElementById('best');
   const timerEl  = document.getElementById('timer');
-  const xpEl     = document.getElementById('xp');
 
   // ── State ─────────────────────────────────────────────────────────────────
   let startTs = null;
@@ -84,13 +83,13 @@ export function bootstrapHexGLMonster(root) {
     const name = getPlayerName();
     ArcadeSync.setHighScore(GAME_ID, score);
     submitScore(name, score, GAME_ID);
-    if (xpEl)   xpEl.textContent  = Math.floor(score / 1000);
     if (bestEl && score > best) { best = score; bestEl.textContent = best; }
   }
 
   function onReset() {
     stopTimer();
     startTs = null;
+    if (frameEl) frameEl.src = '';
     if (timerEl) timerEl.textContent = '0.000';
   }
 

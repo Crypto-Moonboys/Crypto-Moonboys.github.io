@@ -1,72 +1,48 @@
-/**
- * bootstrap.js — HexGL Monster Mode (Max) game module
- *
- * Wraps the polished HexGL Monster Mode Max page as an arcade game module.
- * Exports bootstrapHexGLMonsterMax(), which is the entry point called by
- * game-shell.js via mountGame().
- *
- * Features:
- *  - Pilot identity resolution (Telegram or localStorage fallback)
- *  - Live run timer with estimated score and XP display
- *  - Anti-cheat: minimum run duration enforced before submission
- *  - Rival ghost: personal best stored and displayed from localStorage
- *  - Score submission via leaderboard-client.js
- */
+import { ArcadeSync }                from '/js/arcade-sync.js';
+import { submitScore, fetchLeaderboard } from '/js/leaderboard-client.js';
+import { HEXGL_MONSTER_MAX_CONFIG }  from './config.js';
+import { GameRegistry }              from '/js/arcade/core/game-registry.js';
 
-import { submitScore }              from '/js/leaderboard-client.js';
-import { HEXGL_MONSTER_MAX_CONFIG } from './config.js';
-import { GameRegistry }             from '/js/arcade/core/game-registry.js';
-
-// Register in the central registry when this module is first imported.
 GameRegistry.register(HEXGL_MONSTER_MAX_CONFIG.id, {
-  label:     HEXGL_MONSTER_MAX_CONFIG.label,
+  label: HEXGL_MONSTER_MAX_CONFIG.label,
   bootstrap: bootstrapHexGLMonsterMax,
 });
 
-/**
- * Bootstrap the HexGL Monster Mode Max game.
- *
- * @param {Element} root - Container element (unused directly; DOM IDs are unique).
- * @returns {{ init, start, pause, resume, reset, destroy, getScore }}
- */
 export function bootstrapHexGLMonsterMax(root) {
-  const MIN_RUN_MS = HEXGL_MONSTER_MAX_CONFIG.minRunMs;
+  var MIN_RUN_MS = HEXGL_MONSTER_MAX_CONFIG.minRunMs;
+  var PERFECT_RUN_SCORE = 470000;
+  var FRAME_SRC = 'https://hexgl.bkcore.com/play/';
 
-  // ── DOM references ─────────────────────────────────────────────────────────
-  var pilotEl    = document.getElementById('pilot-name');
-  var timerEl    = document.getElementById('run-timer');
-  var scoreEl    = document.getElementById('est-score');
-  var xpEl       = document.getElementById('xp-reward');
-  var rivalBlock = document.getElementById('rival-block');
-  var rivalName  = document.getElementById('rival-name');
-  var rivalTime  = document.getElementById('rival-time');
-  var startBtn   = document.getElementById('startBtn');
-  var submitBtn  = document.getElementById('submit-btn');
+  var frameEl       = document.getElementById('hexgl-frame');
+  var pilotEl       = document.getElementById('pilot-name');
+  var timerEl       = document.getElementById('run-timer');
+  var scoreEl       = document.getElementById('est-score');
+  var statusEl      = document.getElementById('run-status');
+  var runActiveEl   = document.getElementById('run-active-indicator');
+  var deltaEl       = document.getElementById('delta-best');
+  var perfectEl     = document.getElementById('perfect-run');
+  var rivalBlock    = document.getElementById('rival-block');
+  var rivalNameEl   = document.getElementById('rival-name');
+  var rivalTimeEl   = document.getElementById('rival-time');
+  var topPlayerEl   = document.getElementById('top-player');
+  var rankEl        = document.getElementById('your-rank');
+  var totalScoreEl  = document.getElementById('total-arcade-score');
+  var gamesPlayedEl = document.getElementById('games-played');
+  var lastRunEl     = document.getElementById('last-run');
+  var startBtn      = document.getElementById('startBtn');
+  var submitBtn     = document.getElementById('submit-btn');
+  var resetBtn      = document.getElementById('resetBtn');
 
-  // ── State ──────────────────────────────────────────────────────────────────
   var playerName = 'Guest';
-  var telegramId = null;
   var runStart   = null;
   var runActive  = false;
   var intervalId = null;
   var lastRunMs  = null;
+  var bestRunMs  = null;
 
-  // ── Identity ───────────────────────────────────────────────────────────────
-
-  function refreshIdentity() {
-    try {
-      if (window.MOONBOYS_IDENTITY) {
-        var id = window.MOONBOYS_IDENTITY.getTelegramId();
-        if (id) {
-          telegramId = id;
-          playerName = localStorage.getItem('moonboys_tg_name') || 'Guest';
-        }
-      }
-    } catch (_) { /* fail-open */ }
-    if (pilotEl) pilotEl.textContent = playerName;
+  function calcScore(ms) {
+    return Math.max(0, Math.floor(500000 - ms));
   }
-
-  // ── Formatting helpers ─────────────────────────────────────────────────────
 
   function fmtTime(ms) {
     var s  = Math.floor(ms / 1000);
@@ -76,59 +52,49 @@ export function bootstrapHexGLMonsterMax(root) {
     return m + ':' + ss + '.' + ds;
   }
 
-  function calcScore(ms) {
-    return Math.max(0, Math.round(500000 - (ms / 1000) * 1000));
+  function getPlayerName() {
+    var identityName = window.MOONBOYS_IDENTITY?.getTelegramName?.();
+    return identityName || ArcadeSync.getPlayer();
   }
 
-  function calcXp(score) {
-    return Math.floor(score / 1000) * 10;
-  }
-
-  // ── Run timer ──────────────────────────────────────────────────────────────
-
-  function startRun() {
-    runStart  = Date.now();
-    runActive = true;
-    lastRunMs = null;
+  function stopTimer() {
     clearInterval(intervalId);
-    intervalId = setInterval(function () {
-      var elapsed = Date.now() - runStart;
-      if (timerEl) timerEl.textContent = fmtTime(elapsed);
-      var s = calcScore(elapsed);
-      if (scoreEl) scoreEl.textContent = s > 0 ? s.toLocaleString() : '—';
-      if (xpEl)    xpEl.textContent    = s > 0 ? '+' + calcXp(s).toLocaleString() + ' XP' : '—';
-    }, 100);
+    intervalId = null;
   }
 
-  function stopRun() {
-    if (!runActive) return;
-    clearInterval(intervalId);
-    runActive = false;
-    lastRunMs = Date.now() - runStart;
-    if (timerEl) timerEl.textContent = fmtTime(lastRunMs);
-    var s = calcScore(lastRunMs);
-    if (scoreEl) scoreEl.textContent = s > 0 ? s.toLocaleString() : '0';
-    if (xpEl)    xpEl.textContent    = s > 0 ? '+' + calcXp(s).toLocaleString() + ' XP' : '—';
+  function refreshIdentity() {
+    playerName = getPlayerName();
+    if (pilotEl) pilotEl.textContent = playerName;
   }
 
-  // ── Anti-cheat ─────────────────────────────────────────────────────────────
-
-  function isValidRun(ms) {
-    return typeof ms === 'number' && ms >= MIN_RUN_MS;
+  function updateRunUI(ms) {
+    var score = calcScore(ms);
+    if (timerEl) timerEl.textContent = fmtTime(ms);
+    if (scoreEl) scoreEl.textContent = score.toLocaleString();
+    if (statusEl) statusEl.textContent = runActive ? 'RUN ACTIVE' : 'RUN READY';
+    if (runActiveEl) runActiveEl.style.display = runActive ? '' : 'none';
+    if (perfectEl) perfectEl.style.display = score >= PERFECT_RUN_SCORE ? '' : 'none';
+    if (deltaEl) {
+      if (typeof bestRunMs !== 'number') {
+        deltaEl.textContent = '—';
+      } else {
+        var delta = (ms - bestRunMs) / 1000;
+        deltaEl.textContent = (delta <= 0 ? '-' : '+') + Math.abs(delta).toFixed(2) + 's';
+      }
+    }
   }
-
-  // ── Rival ghost ────────────────────────────────────────────────────────────
 
   function loadRival() {
     try {
       var stored = localStorage.getItem('hexgl_best_run');
       if (!stored) return;
       var data = JSON.parse(stored);
-      if (!data || !data.ms) return;
+      if (!data || typeof data.ms !== 'number') return;
+      bestRunMs = data.ms;
       if (rivalBlock) rivalBlock.style.display = '';
-      if (rivalName)  rivalName.textContent    = data.name || 'You';
-      if (rivalTime)  rivalTime.textContent    = fmtTime(data.ms);
-    } catch (_) { /* ignore */ }
+      if (rivalNameEl) rivalNameEl.textContent = data.name || 'You';
+      if (rivalTimeEl) rivalTimeEl.textContent = fmtTime(data.ms);
+    } catch (_) {}
   }
 
   function savePersonalBest(ms) {
@@ -137,81 +103,131 @@ export function bootstrapHexGLMonsterMax(root) {
       if (!current || ms < current.ms) {
         localStorage.setItem('hexgl_best_run', JSON.stringify({ ms: ms, name: playerName }));
       }
-    } catch (_) { /* ignore */ }
+    } catch (_) {}
+    loadRival();
   }
 
-  // ── Button handlers ────────────────────────────────────────────────────────
+  function updateCrossGameStats() {
+    try {
+      if (lastRunEl) {
+        lastRunEl.textContent = (typeof lastRunMs === 'number') ? fmtTime(lastRunMs) : '—';
+      }
+      fetchLeaderboard('global').then(function (rows) {
+        if (!Array.isArray(rows) || !rows.length) return;
+        if (topPlayerEl) topPlayerEl.textContent = rows[0].player || '—';
+        var me = rows.find(function (row) {
+          return String(row.player || '').toLowerCase() === String(playerName).toLowerCase();
+        });
+        if (!me) return;
+        if (rankEl) rankEl.textContent = '#' + String(me.rank || '—');
+        if (totalScoreEl) totalScoreEl.textContent = Number(me.score || 0).toLocaleString();
+        if (gamesPlayedEl) {
+          var b = me.breakdown || {};
+          var games = ['snake', 'crystal', 'blocktopia', 'invaders', 'pacchain', 'asteroids', 'breakout', 'tetris', 'hexgl'];
+          var played = games.filter(function (k) { return Number(b[k] || 0) > 0; }).length;
+          gamesPlayedEl.textContent = String(played);
+        }
+      }).catch(function () {});
+    } catch (_) {}
+  }
 
   function onStart() {
     refreshIdentity();
-    startRun();
-    if (startBtn) {
-      startBtn.textContent = '⏱ Racing…';
-      startBtn.disabled    = true;
-    }
+    if (frameEl) frameEl.src = FRAME_SRC + '?run=' + Date.now();
+    runStart = Date.now();
+    runActive = true;
+    lastRunMs = null;
+    if (startBtn) startBtn.disabled = true;
+    if (submitBtn) submitBtn.disabled = false;
+    if (submitBtn) submitBtn.textContent = '📤 Submit Run';
+    stopTimer();
+    intervalId = setInterval(function () {
+      updateRunUI(Date.now() - runStart);
+    }, 100);
+    updateRunUI(0);
   }
 
   async function onSubmit() {
-    if (runActive) stopRun();
-    if (!isValidRun(lastRunMs)) {
-      alert('No valid completed run to submit. Please finish a race first (minimum 30 s).');
+    if (runActive) {
+      runActive = false;
+      lastRunMs = Date.now() - runStart;
+      stopTimer();
+    }
+    if (typeof lastRunMs !== 'number' || lastRunMs < MIN_RUN_MS) {
+      alert('Complete a valid run first (minimum 30 seconds).');
       return;
     }
     var score = calcScore(lastRunMs);
     if (score <= 0) {
-      alert('Run time too slow to qualify for the leaderboard (score = 0).');
+      alert('Run is too slow to qualify for leaderboard submission.');
       return;
     }
+    updateRunUI(lastRunMs);
     savePersonalBest(lastRunMs);
+    localStorage.setItem('hexgl_last_run_ms', String(lastRunMs));
+
+    if (!window.MOONBOYS_IDENTITY?.isTelegramLinked?.()) {
+      window.MOONBOYS_IDENTITY?.showSyncGateModal?.(true);
+      updateCrossGameStats();
+      return;
+    }
+
     await submitScore(playerName, score, HEXGL_MONSTER_MAX_CONFIG.id);
     if (submitBtn) {
-      submitBtn.textContent = '✅ Submitted!';
-      submitBtn.disabled    = true;
+      submitBtn.textContent = '✅ Submitted';
+      submitBtn.disabled = true;
     }
-    if (startBtn) {
-      startBtn.textContent = '⏱ Begin Tracked Run';
-      startBtn.disabled    = false;
-    }
+    if (startBtn) startBtn.disabled = false;
+    updateCrossGameStats();
   }
 
-  // ── Lifecycle ──────────────────────────────────────────────────────────────
+  function onReset() {
+    stopTimer();
+    runStart = null;
+    runActive = false;
+    lastRunMs = null;
+    if (frameEl) frameEl.src = '';
+    if (timerEl) timerEl.textContent = '—';
+    if (scoreEl) scoreEl.textContent = '—';
+    if (deltaEl) deltaEl.textContent = '—';
+    if (statusEl) statusEl.textContent = 'RUN READY';
+    if (runActiveEl) runActiveEl.style.display = 'none';
+    if (perfectEl) perfectEl.style.display = 'none';
+    if (startBtn) startBtn.disabled = false;
+    if (submitBtn) {
+      submitBtn.textContent = '📤 Submit Run';
+      submitBtn.disabled = false;
+    }
+    updateCrossGameStats();
+  }
 
   function init() {
     refreshIdentity();
     loadRival();
-    if (startBtn)  startBtn.addEventListener('click', onStart);
+    updateCrossGameStats();
+    if (startBtn) startBtn.addEventListener('click', onStart);
     if (submitBtn) submitBtn.addEventListener('click', onSubmit);
+    if (resetBtn) resetBtn.addEventListener('click', onReset);
   }
 
   function start()  { onStart(); }
-  function pause()  { /* external iframe — cannot pause */ }
-  function resume() { /* external iframe — cannot resume */ }
-
-  function reset() {
-    clearInterval(intervalId);
-    runStart  = null;
-    runActive = false;
-    lastRunMs = null;
-    if (timerEl) timerEl.textContent = '—';
-    if (scoreEl) scoreEl.textContent = '—';
-    if (xpEl)    xpEl.textContent    = '—';
-    if (startBtn) { startBtn.textContent = '⏱ Begin Tracked Run'; startBtn.disabled = false; }
-    if (submitBtn) { submitBtn.textContent = '📤 Submit Run'; submitBtn.disabled = false; }
-  }
+  function pause()  {}
+  function resume() {}
+  function reset()  { onReset(); }
 
   function destroy() {
-    clearInterval(intervalId);
-    if (startBtn)  startBtn.removeEventListener('click', onStart);
+    stopTimer();
+    if (frameEl) frameEl.src = '';
+    if (startBtn) startBtn.removeEventListener('click', onStart);
     if (submitBtn) submitBtn.removeEventListener('click', onSubmit);
+    if (resetBtn) resetBtn.removeEventListener('click', onReset);
   }
 
   function getScore() {
-    if (lastRunMs !== null) return calcScore(lastRunMs);
+    if (typeof lastRunMs === 'number') return calcScore(lastRunMs);
     if (runActive && runStart !== null) return calcScore(Date.now() - runStart);
     return 0;
   }
-
-  // ── Public lifecycle object ────────────────────────────────────────────────
 
   return { init, start, pause, resume, reset, destroy, getScore };
 }

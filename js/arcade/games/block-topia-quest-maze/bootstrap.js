@@ -1921,7 +1921,10 @@ export function bootstrapBlockTopiaQuestMaze(root) {
       phaserGame = null;
     }
   }
-  function getScore() { return 0; }
+  function getScore() {
+    const daily = loadDailyState();
+    return Number(daily.runScore || 0);
+  }
 
   // ── Public lifecycle object ────────────────────────────────────────────────
 
