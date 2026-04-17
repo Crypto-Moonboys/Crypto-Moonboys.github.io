@@ -13,43 +13,87 @@
 <body>
   <canvas id="world-canvas" aria-label="Block Topia isometric world"></canvas>
 
+  <section id="entry-identity" aria-live="polite">
+    <p class="chip">STREET SIGNAL 3008 · UNIFIED CITY</p>
+    <h1>Block Topia</h1>
+    <p id="entry-tagline">Syncing district memory, factions, and live signals…</p>
+  </section>
+
   <main id="hud" aria-live="polite">
-    <section class="panel" id="world-panel">
-      <h1>Block Topia</h1>
-      <p id="player-name">Player: —</p>
+    <section class="panel panel-player" id="player-panel">
+      <h2>Operator</h2>
+      <div class="stats-grid">
+        <div class="stat-card">
+          <span class="label">Name</span>
+          <span class="value" id="player-name">—</span>
+        </div>
+        <div class="stat-card">
+          <span class="label">XP</span>
+          <span class="value" id="xp-status">0</span>
+        </div>
+        <div class="stat-card">
+          <span class="label">Level / Title</span>
+          <span class="value" id="level-status">L1 · Signal Runner</span>
+        </div>
+        <div class="stat-card">
+          <span class="label">Score</span>
+          <span class="value" id="score-status">0</span>
+        </div>
+      </div>
+      <div class="xp-bar-shell">
+        <div id="xp-bar-fill"></div>
+      </div>
+      <p id="xp-bar-label" class="hint">0 / 200 XP</p>
       <p id="world-status">Initializing unified city…</p>
+      <p id="controls-hint" class="hint">WASD/Arrows · Space Day/Night · E Interact</p>
+    </section>
+
+    <section class="panel panel-district" id="district-panel">
+      <h2>District Control</h2>
       <p id="district-status">District: —</p>
+      <div class="progress-shell">
+        <div id="district-control-bar"></div>
+      </div>
       <p id="district-control">Control: —</p>
+      <p id="district-owner">Owner: —</p>
       <p id="faction-status">Factions: Liberators vs Wardens</p>
-      <p id="sam-status">SAM Phase: Signals</p>
-      <p id="phase-status">Phase: Day</p>
-      <p id="score-status">Score: 0</p>
-      <p id="xp-status">XP: 0</p>
-      <p id="controls-hint" class="hint">WASD/Arrows · Space=Phase · E=Interact</p>
     </section>
 
-    <section class="panel" id="quest-panel">
-      <h2>Quest / Live Ops</h2>
-      <ul id="quest-list"></ul>
+    <section class="panel panel-phase" id="phase-panel">
+      <h2>World Phase</h2>
+      <p id="phase-status">Day / Night: Day</p>
+      <p id="sam-status">SAM: Phase 1: Signals</p>
+      <p id="phase-flavor">City pressure low. Signals accumulating.</p>
     </section>
 
-    <section class="panel" id="multiplayer-panel">
-      <h2>Multiplayer</h2>
+    <section class="panel panel-session" id="session-panel">
+      <h2>Session</h2>
       <p id="mp-status">Connecting…</p>
       <p id="room-status">Room: city</p>
       <p id="population-status">Players: 0 / 100</p>
     </section>
 
-    <section class="panel" id="feed-panel">
-      <h2>Street Feed</h2>
+    <section class="panel panel-quests" id="quest-panel">
+      <h2>Active Operations</h2>
+      <ul id="quest-list"></ul>
+    </section>
+
+    <section class="panel panel-feed" id="feed-panel">
+      <h2>Street Feed Live</h2>
       <ul id="street-feed"></ul>
     </section>
   </main>
 
-  <!-- SAM popup overlay — shown when SAM event fires -->
+  <!-- Street Signal feature reintroduced: dramatic SAM encounter broadcast overlay -->
   <div id="sam-popup" class="hidden" aria-live="assertive" role="alert"></div>
+  <div id="sam-impact" class="hidden" aria-hidden="true"></div>
+  <div id="phase-flash" class="hidden" aria-hidden="true"></div>
+  <div id="district-capture-banner" class="hidden" aria-live="assertive"></div>
+  <div id="quest-toast" class="hidden" aria-live="assertive"></div>
+  <div id="xp-gain" class="hidden" aria-live="polite"></div>
+  <div id="npc-dialogue" class="hidden" aria-live="polite"></div>
 
-  <!-- Contextual interact prompt -->
+  <!-- Street Signal feature reintroduced: contextual NPC interaction prompt -->
   <div id="interact-prompt" class="hidden">⚡ Press E to interact</div>
 
   <div

@@ -26,6 +26,7 @@ export async function loadUnifiedData() {
     legacySeason,
     legacyLore,
     legacyAssets,
+    assetManifest,
   ] = await Promise.all([
     loadJson(`${BASE}/data/districts.json`, { districts: [] }),
     loadJson(`${BASE}/data/factions.json`, { primary: {}, secondary: {} }),
@@ -39,6 +40,7 @@ export async function loadUnifiedData() {
     loadJson('/games/data/blocktopia-season.json', {}),
     loadJson('/games/data/blocktopia-lore-feed.json', {}),
     loadJson('/games/data/blocktopia-asset-pack.json', {}),
+    loadJson(`${BASE}/assets/manifest.json`, {}),
   ]);
 
   return {
@@ -55,6 +57,7 @@ export async function loadUnifiedData() {
       season: legacySeason,
       lore: legacyLore,
       assets: legacyAssets,
+      manifest: assetManifest,
       sourceFiles: [
         '/games/block-topia-street-signal-3008-monster.html',
         '/games/block-topia-street-signal-3008.html',

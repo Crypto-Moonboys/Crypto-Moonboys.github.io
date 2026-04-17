@@ -99,6 +99,12 @@ export function createGameState(bundle) {
       postMutationHooks: bundle.samPhases.postMutationHooks || [],
       signalRushHook: bundle.samPhases.signalRushHook || {},
     },
+    effects: {
+      phaseFlashUntil: 0,
+      samImpactUntil: 0,
+      districtPulseUntil: 0,
+      districtPulseId: '',
+    },
     quests: {
       model: bundle.questModel,
       active: [],
