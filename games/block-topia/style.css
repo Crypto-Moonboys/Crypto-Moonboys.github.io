@@ -100,7 +100,7 @@ body.phase-night .panel {
   padding: 8px 8px 52px;
   pointer-events: none;
   display: grid;
-  grid-template-columns: 214px 1fr 214px;
+  grid-template-columns: 188px 1fr 188px;
   grid-template-rows: auto auto 1fr auto;
   gap: 8px;
   align-items: start;
@@ -141,7 +141,7 @@ body.phase-night .panel {
 .panel-player  { grid-column: 1; grid-row: 1; border-top-color: rgba(255, 79, 216, 0.7); }
 .panel-district{ grid-column: 1; grid-row: 2; border-top-color: rgba(255, 216, 77, 0.7); }
 .panel-phase   { grid-column: 3; grid-row: 1; border-top-color: rgba(94, 242, 255, 0.7); }
-.panel-quests  { grid-column: 3; grid-row: 2; border-top-color: rgba(202, 163, 255, 0.7); max-height: min(44vh, 280px); overflow: hidden; }
+.panel-quests  { grid-column: 3; grid-row: 2; border-top-color: rgba(202, 163, 255, 0.7); max-height: min(44vh, 280px); overflow: auto; }
 .panel-session { grid-column: 3; grid-row: 3; align-self: end; border-top-color: rgba(141, 255, 106, 0.7); }
 .panel-feed {
   grid-column: 1 / span 3;
@@ -412,7 +412,7 @@ body.phase-night .panel {
 }
 
 #npc-dialogue {
-  bottom: 118px;
+  bottom: 130px;
   min-width: min(620px, calc(100vw - 24px));
   max-width: min(780px, calc(100vw - 24px));
   padding: 12px 16px;
@@ -420,6 +420,40 @@ body.phase-night .panel {
   background: rgba(8, 12, 28, 0.95);
   color: #eaf6ff;
   font-size: 0.86rem;
+}
+
+.npc-dialogue-header {
+  display: flex;
+  align-items: baseline;
+  gap: 0;
+  margin-bottom: 5px;
+}
+
+.npc-dialogue-name {
+  font-weight: 700;
+  font-size: 0.82rem;
+  color: #eaf6ff;
+}
+
+.npc-dialogue-role {
+  font-size: 0.72rem;
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.npc-dialogue-line {
+  margin: 0;
+  font-size: 0.88rem;
+  color: rgba(234, 246, 255, 0.92);
+  line-height: 1.5;
+}
+
+.quest-empty {
+  color: rgba(234, 246, 255, 0.4);
+  font-size: 0.76rem;
+  text-align: center;
+  padding: 10px 0;
+  font-style: italic;
 }
 
 #sam-impact {
@@ -539,5 +573,11 @@ body.phase-night .panel {
   }
 
   .stats-grid { grid-template-columns: 1fr; }
-  #npc-dialogue { bottom: 96px; }
+  #npc-dialogue { bottom: 100px; }
+  #interact-prompt { bottom: 80px; }
+
+  #district-capture-banner { top: 12%; font-size: 0.92rem; }
+  #sam-popup { top: 20%; font-size: 1rem; }
+  #quest-toast { top: 55%; }
+  #xp-gain { top: 65%; }
 }

@@ -69,6 +69,13 @@ export function createHud(doc) {
 
   function setQuests(items) {
     questList.replaceChildren();
+    if (!items || items.length === 0) {
+      const empty = doc.createElement('li');
+      empty.className = 'quest-empty';
+      empty.textContent = 'No active operations';
+      questList.appendChild(empty);
+      return;
+    }
     items.forEach((entry) => {
       const li = doc.createElement('li');
       if (typeof entry === 'string') {
@@ -201,9 +208,24 @@ export function createHud(doc) {
 
   function showNpcDialogue(name, role, line) {
     clearTimeout(npcDialogueTimer);
-    showBanner(npcDialogue, `💬 ${name} [${role}]: ${line}`, 3200, (timer) => {
-      npcDialogueTimer = timer;
-    });
+    if (!npcDialogue) return;
+    npcDialogue.replaceChildren();
+    const header = doc.createElement('div');
+    header.className = 'npc-dialogue-header';
+    const nameSpan = doc.createElement('span');
+    nameSpan.className = 'npc-dialogue-name';
+    nameSpan.textContent = name;
+    const roleSpan = doc.createElement('span');
+    roleSpan.className = 'npc-dialogue-role';
+    roleSpan.textContent = ` [${role}]`;
+    header.append(nameSpan, roleSpan);
+    const lineEl = doc.createElement('p');
+    lineEl.className = 'npc-dialogue-line';
+    lineEl.textContent = line;
+    npcDialogue.append(header, lineEl);
+    npcDialogue.classList.remove('hidden');
+    const timer = setTimeout(() => npcDialogue.classList.add('hidden'), 3500);
+    npcDialogueTimer = timer;
   }
 
   function setEntryTagline(text) {

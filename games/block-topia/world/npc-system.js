@@ -15,6 +15,46 @@ const DISTRICT_SPAWN_REGIONS = [
   { id: 'revolt-plaza',       col: 14, row: 8,  w: 6,  h: 12 },
 ];
 
+// Per-role inline fallback dialogue — used when no server NPC profiles are available.
+const ROLE_DIALOGUE = {
+  vendor: [
+    'Signal parts fresh off the relay. Cheap today.',
+    'Buying or selling? Make it quick.',
+    'District prices shift with the phase. Buy now.',
+    'I move faction surplus. No questions asked.',
+  ],
+  fighter: [
+    'This block is contested. Keep moving.',
+    'Wardens pushed through last cycle. Stay sharp.',
+    'I run patrols when SAM goes quiet.',
+    'You looking for a contract or a problem?',
+  ],
+  agent: [
+    'Signal relay is down two nodes east. Rerouting.',
+    'I carry messages the network cannot.',
+    'District memory is fragmented here. Be careful.',
+    'The factions pay me. The city keeps me.',
+  ],
+  'lore-keeper': [
+    'This district remembers everything.',
+    'The SAM cycle started in this block.',
+    'When the signal first came, it changed the walls.',
+    'Ask the city. It always answers.',
+  ],
+  recruiter: [
+    'Liberators are expanding. The timing is right.',
+    'Wardens are offering protection contracts now.',
+    'Undecided? Stay neutral, stay mobile.',
+    'Faction allegiance is a tool, not a chain.',
+  ],
+  drifter: [
+    'Just passing through.',
+    'I never stay in one district long.',
+    'Watch the SAM lines. They tell you everything.',
+    'The city shifts. So do I.',
+  ],
+};
+
 function randInt(min, max) {
   return min + Math.floor(Math.random() * (max - min));
 }
@@ -122,7 +162,11 @@ export function createNpcSystem(state) {
       return sample(profile.rumors, 'Keep moving. Signals are watching.');
     }
     const loreRumors = state.lore?.legacy?.lore?.npc_rumors;
-    return sample(loreRumors, 'Move smart. The district remembers.');
+    if (Array.isArray(loreRumors) && loreRumors.length) {
+      return sample(loreRumors, 'Move smart. The district remembers.');
+    }
+    const inlineFallback = ROLE_DIALOGUE[npc.role];
+    return sample(inlineFallback, 'Move smart. The district remembers.');
   }
 
   function nearestInteractive(playerX, playerY) {

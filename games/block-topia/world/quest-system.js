@@ -11,13 +11,28 @@ export function createQuestSystem(state) {
 
   let pulse = 0;
 
+  const TYPE_OBJECTIVE = {
+    daily: 'Complete today\'s mission',
+    weekly: 'Complete this week\'s operation',
+    seasonal: 'Progress the season arc',
+    prophecy: 'Fulfill the prophecy arc',
+  };
+
+  function buildObjective(quest) {
+    // Prefer explicit description (prophecy quests carry one), then type hint,
+    // then a district-scoped fallback so every card always has visible text.
+    if (quest.description) return quest.description;
+    const hint = TYPE_OBJECTIVE[quest.type] || `Complete ${capitalize(quest.type || 'daily')} operation`;
+    return `${hint} in ${state.player.districtName} · +${quest.xp} XP`;
+  }
+
   function getActiveQuestCards() {
     return state.quests.active.map((quest) => ({
       id: quest.id,
       title: quest.title,
       type: quest.type,
       xp: quest.xp,
-      objective: `Objective: complete ${capitalize(quest.type || 'daily')} operation in ${state.player.districtName} · Reward: +${quest.xp} XP`,
+      objective: buildObjective(quest),
     }));
   }
 

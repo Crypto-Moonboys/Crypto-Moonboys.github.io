@@ -219,11 +219,17 @@ export function createIsoRenderer(canvas) {
     const iso = toIso(cx, cy);
     const pulse = districtLabelPulse.get(district.id) || 0;
     if (pulse > 0.01) districtLabelPulse.set(district.id, pulse * 0.94);
+    const baseAlpha = 0.38;
     ctx.save();
-    ctx.globalAlpha = 0.17 + pulse * 0.5;
-    ctx.fillStyle = '#eaf6ff';
+    // Shadow pass for legibility over bright tiles
+    ctx.globalAlpha = (baseAlpha + pulse * 0.45) * 0.55;
+    ctx.fillStyle = 'rgba(0,0,0,0.9)';
     ctx.font = '700 14px Inter, sans-serif';
     ctx.textAlign = 'center';
+    ctx.fillText(district.name.toUpperCase(), originX + iso.x + 1, originY + iso.y + 8);
+    // Main label
+    ctx.globalAlpha = baseAlpha + pulse * 0.45;
+    ctx.fillStyle = '#eaf6ff';
     ctx.fillText(district.name.toUpperCase(), originX + iso.x, originY + iso.y + 7);
     ctx.restore();
   }
@@ -297,11 +303,12 @@ export function createIsoRenderer(canvas) {
 
     ctx.lineWidth = 1;
 
-    // Proximity interaction ring
+    // Proximity interaction ring — pulses to draw attention
     if (isNearby) {
+      const pulseAlpha = 0.55 + Math.sin(Date.now() / 280) * 0.35;
       ctx.strokeStyle = '#ffffff';
-      ctx.lineWidth = 1.5;
-      ctx.globalAlpha = 0.9;
+      ctx.lineWidth = 1.8;
+      ctx.globalAlpha = Math.max(0, Math.min(1, pulseAlpha));
       ctx.beginPath();
       ctx.arc(sx, sy, r + 5.5, 0, Math.PI * 2);
       ctx.stroke();
@@ -429,6 +436,13 @@ export function createIsoRenderer(canvas) {
         const elevation = getElevation(state.districts.fromGrid(state.player.x, state.player.y)?.id, state.player.x, state.player.y);
         const px = originX + playerIso.x;
         const py = originY + playerIso.y - elevation - 14;
+
+        // Player spotlight — soft radial brightening of the immediate area
+        const spotGrad = ctx.createRadialGradient(px, py + 10, 0, px, py + 10, 64);
+        spotGrad.addColorStop(0, isNight ? 'rgba(255,155,66,0.13)' : 'rgba(255,79,216,0.11)');
+        spotGrad.addColorStop(1, 'rgba(0,0,0,0)');
+        ctx.fillStyle = spotGrad;
+        ctx.fillRect(px - 64, py - 54, 128, 88);
 
         ctx.globalAlpha = 0.36;
         ctx.fillStyle = isNight ? 'rgba(255, 155, 66, 0.8)' : 'rgba(255, 79, 216, 0.78)';

@@ -96,6 +96,9 @@ async function boot() {
   hud.setEntryTagline(`Deploying into ${state.player.districtName}…`);
   bootstrapLoreFeed();
 
+  // Fallback: dismiss the entry overlay after 7s in case multiplayer never connects.
+  setTimeout(() => hud.dismissEntryIdentity(0), 7000);
+
   await connectMultiplayer({
     playerName: state.player.name,
     roomId: state.room.id,
