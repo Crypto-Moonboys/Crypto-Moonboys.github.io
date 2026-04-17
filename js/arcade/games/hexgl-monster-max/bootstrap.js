@@ -9,11 +9,24 @@ GameRegistry.register(HEXGL_MONSTER_MAX_CONFIG.id, {
 });
 
 export function bootstrapHexGLMonsterMax(root) {
+  // ── DESIGN INVARIANTS — do not remove or drift from these ─────────────────
+  // 1. NO AUTO-START: the overlay open must never auto-click #startBtn.
+  //    data-overlay-autostart must NOT be set on the startBtn element in the HTML.
+  //    The only way a run starts is: user clicks ▶ Start inside the overlay.
+  // 2. TIMER STARTS ONLY AFTER GO: runActive=true is set inside the GO callback
+  //    in activateRun(), never before.  Do not hoist the timer activation.
+  // 3. RESET CANCELS ALL DELAYED PATHS: onReset() increments runToken and clears
+  //    all timeouts.  Every async callback checks the token before acting — if the
+  //    token has changed, the callback is a no-op.  countdownActive also blocks
+  //    a duplicate activateRun() call if the iframe load event fires late.
+  // 4. NO PAUSE: HexGL has no #pauseBtn.  Pause is intentionally unsupported for
+  //    this iframe-based game.  Do not reintroduce it.
+  // ──────────────────────────────────────────────────────────────────────────
   var MIN_RUN_MS = HEXGL_MONSTER_MAX_CONFIG.minRunMs;
   // 470000 corresponds to a 30-second run under score = 500000 - (seconds * 1000).
   var PERFECT_RUN_SCORE = 470000;
   var FRAME_SRC = 'https://hexgl.bkcore.com/play/';
-  var LOAD_FALLBACK_MS = 4000;
+  var LOAD_FALLBACK_MS = 4000; // iframe load can be slow on first visit; 4 s is enough to show a loading state before starting countdown
   var COUNTDOWN_TICK_MS  = 700;  // duration each countdown number is shown
   var COUNTDOWN_GO_MS    = 600;  // how long GO is shown before timer starts
 
@@ -331,6 +344,7 @@ export function bootstrapHexGLMonsterMax(root) {
             hideCountdown();
             return;
           }
+          // Timer starts ONLY here — after GO completes — never before.
           countdownActive = false;
           hideCountdown();
           runPending = false;
@@ -404,6 +418,8 @@ export function bootstrapHexGLMonsterMax(root) {
   }
 
   function onStart() {
+    // Single start path: called only from the ▶ Start button click handler.
+    // Do NOT call this from overlay-open or any auto-trigger.
     refreshIdentity();
     unlockAudio();
     playUiTone('start');
@@ -497,6 +513,9 @@ export function bootstrapHexGLMonsterMax(root) {
   }
 
   function onReset() {
+    // Hard cancel: incrementing runToken invalidates every in-flight async
+    // callback (load fallback, countdown steps, GO timer) — they all check
+    // the token and bail if it has changed.  This is the single cancel path.
     unlockAudio();
     playUiTone('reset');
     runToken += 1;
@@ -548,7 +567,14 @@ export function bootstrapHexGLMonsterMax(root) {
       syncAmbient();
     });
     document.addEventListener('arcade-overlay-exit', function () {
-      playUiTone('exit');
+      // When the overlay is closed while a run is in flight, reset everything
+      // so there is no ghost timer running silently in the background.
+      // If no run is active, just play the exit tone.
+      if (runActive || runPending || countdownActive) {
+        onReset(); // plays reset tone; the run is cleanly cancelled
+      } else {
+        playUiTone('exit');
+      }
     });
     if (startBtn) startBtn.addEventListener('click', onStart);
     if (submitBtn) submitBtn.addEventListener('click', onSubmit);

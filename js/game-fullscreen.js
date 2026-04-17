@@ -18,6 +18,10 @@
   var startBtn = document.getElementById('startBtn');
   var gameCard = document.querySelector('.game-card');
   var autoStartOnOpen = startBtn && startBtn.dataset && startBtn.dataset.overlayAutostart === 'true';
+  // NOTE: HexGL (hexgl-monster-max.html) must NOT set data-overlay-autostart="true" on its
+  // startBtn.  That flag causes the overlay to auto-click the game's own start handler on
+  // open, creating a hidden second start path.  HexGL uses a single deliberate start flow:
+  // user clicks ▶ Start inside the overlay → onStart() → LOADING → COUNTDOWN → RUN ACTIVE.
   var hidePauseControl = startBtn && startBtn.dataset && startBtn.dataset.overlayHidePause === 'true';
 
   // Only activate on pages that have both a Start button and a .game-card.
