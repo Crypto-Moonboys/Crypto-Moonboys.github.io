@@ -366,7 +366,7 @@ export function bootstrapHexGLMonsterMax(root) {
 
   function notifyReadyToLaunch() {
     setStatus('READY TO LAUNCH');
-    notify('Enter the race inside HexGL, then press Begin Run.');
+    notify('When HexGL menus/help are done and race is playable, press Begin Run.');
     setOverlayStartEnabled(true);
   }
 
@@ -461,7 +461,7 @@ export function bootstrapHexGLMonsterMax(root) {
     unlockAudio();
     if (!frameLoaded || isFrameBlank()) {
       loadFrameForLaunch(false);
-      notify('Race not ready yet. Wait for the READY TO LAUNCH status.');
+      notify('Begin Run is locked until status shows READY TO LAUNCH.');
       return;
     }
     if (runActive || runPending || countdownActive) return;
