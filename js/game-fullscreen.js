@@ -483,7 +483,7 @@
 
   document.addEventListener('fullscreenchange', syncFSBtn);
 
-  function triggerOverlayStart() {
+  function triggerGameStart() {
     var gameStartBtn = document.getElementById('startBtn');
     if (!gameStartBtn || !isOpen) return;
     gameStartBtn.click();
@@ -626,7 +626,7 @@
       e.stopImmediatePropagation();
       if (autoStartOnOpen || singleStartFlow) {
         setTimeout(function () {
-          triggerOverlayStart();
+          triggerGameStart();
         }, 0);
       }
     }
@@ -645,7 +645,7 @@
   // all games until they are running, so this is the required first deliberate
   // action before gameplay begins.
   btnStart.addEventListener('click', function () {
-    triggerOverlayStart();
+    triggerGameStart();
   });
 
   btnFS.addEventListener('click', function () {
@@ -718,7 +718,7 @@
       var gameStartBtn = document.getElementById('startBtn');
       if (gameStartBtn && !_gameStarted) {
         e.preventDefault();
-        triggerOverlayStart();
+        triggerGameStart();
       }
     }
   });
