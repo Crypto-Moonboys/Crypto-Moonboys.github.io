@@ -194,7 +194,7 @@
       padding:0 6px;
       font-size:.66rem;
     }
-    .hexgl-page #game-overlay .game-stage { padding:2px; }
+    .hexgl-page #game-overlay .game-stage { padding:0; }
     .hexgl-page #game-overlay #hexgl-game-card { gap:2px; }
     .hexgl-page #game-overlay #hexgl-help-bar {
       margin-bottom:2px;
@@ -205,10 +205,19 @@
       overflow:hidden;
       text-overflow:ellipsis;
     }
+    /* frame-wrap fills remaining vertical space in the overlay */
     .hexgl-page #game-overlay #hexgl-frame-wrap {
+      flex:1;
+      min-height:0;
       border-width:1px;
       border-radius:8px;
       box-shadow:none;
+    }
+    /* let the iframe fill the wrapper rather than being constrained by aspect-ratio */
+    .hexgl-page #game-overlay #hexgl-frame {
+      width:100% !important;
+      height:100% !important;
+      aspect-ratio:unset !important;
     }
     .hexgl-page #game-overlay .mini-grid,
     .hexgl-page #game-overlay .attribution,

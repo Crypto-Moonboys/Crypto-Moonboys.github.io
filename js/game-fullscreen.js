@@ -628,9 +628,11 @@
       openOverlay();
       e.stopImmediatePropagation();
       if (autoStartOnOpen || singleStartFlow) {
+        // Use a short delay so the overlay DOM is fully visible and the
+        // game's click handler is ready before we programmatically click.
         setTimeout(function () {
           triggerGameStart();
-        }, 0);
+        }, 50);
       }
     }
   }, true);
@@ -660,6 +662,9 @@
   });
 
   btnPause.addEventListener('click', function () {
+    // Skip pause logic entirely when the pause control is hidden (e.g. HexGL has
+    // no #pauseBtn and the overlay button is not shown — do nothing).
+    if (hidePauseControl) return;
     var gamePauseBtn = document.getElementById('pauseBtn');
     if (gamePauseBtn) {
       gamePauseBtn.click();
