@@ -400,7 +400,7 @@ export function bootstrapHexGLMonsterMax(root) {
     setOverlayStartEnabled(false);
     setStatus('LOADING');
     notify('Loading HexGL…');
-    frameEl.src = FRAME_SRC + '?run=' + Date.now();
+    frameEl.src = FRAME_SRC + '?t=' + Date.now();
   }
 
   function cancelTrackedRun() {
@@ -601,7 +601,7 @@ export function bootstrapHexGLMonsterMax(root) {
     setOverlayStartEnabled(false);
     if (frameEl) {
       frameEl.classList.remove('loaded');
-      frameEl.src = FRAME_SRC + '?reload=' + Date.now();
+      frameEl.src = FRAME_SRC + '?t=' + Date.now();
     }
     if (timerEl) timerEl.textContent = '—';
     if (scoreEl) scoreEl.textContent = '—';
