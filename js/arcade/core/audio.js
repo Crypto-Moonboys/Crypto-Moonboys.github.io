@@ -19,6 +19,10 @@ const SOUND_LIBRARY = {
     ],
   },
   'hexgl-ambient':      { kind: 'tone',  type: 'sine',     freqStart: 82,  freqEnd: 82,  duration: null, volume: 0.006, loop: true },
+  'pac-chain-pellet':      { kind: 'tone', type: 'square',   freqStart: 700, freqEnd: 560, duration: 0.035, volume: 0.025 },
+  'pac-chain-power':       { kind: 'tone', type: 'sawtooth', freqStart: 320, freqEnd: 880, duration: 0.12,  volume: 0.05  },
+  'pac-chain-ghost-eaten': { kind: 'tone', type: 'triangle', freqStart: 960, freqEnd: 520, duration: 0.10,  volume: 0.04  },
+  'pac-chain-hit':         { kind: 'tone', type: 'sawtooth', freqStart: 180, freqEnd: 70,  duration: 0.16,  volume: 0.05  },
 };
 
 // Keep a defensive default here so module-driven game pages remain safe even if

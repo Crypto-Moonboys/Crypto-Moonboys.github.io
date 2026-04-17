@@ -15,6 +15,8 @@
     .hud .stat{background:rgba(255,255,255,.04);border:1px solid var(--color-border,#333);border-radius:12px;padding:12px;text-align:center}
     .hud .label{font-size:.7rem;color:var(--color-text-muted)}
     .hud .value{font-weight:700;font-size:1.15rem}
+    .hud .stat.chain-pulse{animation:chainPulse .22s ease}
+    @keyframes chainPulse{0%{transform:scale(1)}50%{transform:scale(1.08)}100%{transform:scale(1)}}
     #pacCanvas{width:100%;max-width:560px;aspect-ratio:1/1;display:block;margin:0 auto;background:#090c16;border:2px solid #f7c948;border-radius:14px;box-shadow:0 0 30px rgba(247,201,72,.18) inset}
     .row{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:14px}
     .game-btn{padding:.8rem 1.1rem;border:none;border-radius:12px;background:#f7ab1a;color:#111;font-weight:700;cursor:pointer}
@@ -77,7 +79,7 @@
         <div class="hud">
           <div class="stat"><div class="label">Score</div><div class="value" id="score">0</div></div>
           <div class="stat"><div class="label">Best</div><div class="value" id="best">0</div></div>
-          <div class="stat"><div class="label">Lives</div><div class="value" id="lives">3</div></div>
+          <div class="stat"><div class="label">Chain</div><div class="value" id="chain">x1</div></div>
           <div class="stat"><div class="label">Level</div><div class="value" id="level">—</div></div>
         </div>
         <canvas id="pacCanvas" width="560" height="560" aria-label="Pac-Chain game"></canvas>
@@ -85,6 +87,7 @@
           <button class="game-btn" id="startBtn">Start</button>
           <button class="game-btn alt" id="pauseBtn">Pause</button>
           <button class="game-btn alt" id="resetBtn">Reset</button>
+          <button class="game-btn alt" id="musicMuteBtn" aria-pressed="false">Mute Music</button>
         </div>
       </div>
     </main>
