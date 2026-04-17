@@ -14,6 +14,10 @@ import { createHud } from './ui/hud.js';
 import { createIsoRenderer } from './render/iso-renderer.js';
 
 const MAX_FRAME_DELTA_SECONDS = 1 / 30;
+const SAM_IMPACT_DURATION_MS = 2000;
+const DISTRICT_PULSE_DURATION_MS = 1300;
+const DISTRICT_PULSE_CONFLICT_MS = 1400;
+const ENTRY_DISMISS_DELAY_MS = 2400;
 
 const canvas = document.getElementById('world-canvas');
 const hud = createHud(document);
@@ -102,7 +106,7 @@ async function boot() {
       multiplayerConnected = Boolean(status.joined);
       if (multiplayerConnected) {
         hud.setEntryTagline('LIVE CITY LINK ESTABLISHED — Entering Street Signal layers');
-        hud.dismissEntryIdentity(2400);
+        hud.dismissEntryIdentity(ENTRY_DISMISS_DELAY_MS);
       }
     },
     onPlayers: (players) => {
@@ -142,10 +146,10 @@ async function boot() {
       const samEvent = { at: Date.now(), phase: phase.id, source: 'server' };
       if (phase.id === 'sam-event') {
         samEvent.type = 'giant_encounter';
-        state.effects.samImpactUntil = Date.now() + 2000;
+        state.effects.samImpactUntil = Date.now() + SAM_IMPACT_DURATION_MS;
         hud.triggerSamImpact('⚡ SAM SIGNAL RUSH — Giant encounter incoming!');
       } else if (phase.id === 'conflict') {
-        state.effects.districtPulseUntil = Date.now() + 1400;
+        state.effects.districtPulseUntil = Date.now() + DISTRICT_PULSE_CONFLICT_MS;
       }
       memory.record('sam', samEvent);
     },
@@ -168,7 +172,7 @@ async function boot() {
       if (owner) {
         hud.setFactionStatus(`${primaryFactionName} vs ${secondaryFactionName} · ${district.name}: ${owner}`);
       }
-      state.effects.districtPulseUntil = Date.now() + 1300;
+      state.effects.districtPulseUntil = Date.now() + DISTRICT_PULSE_DURATION_MS;
       state.effects.districtPulseId = district.id;
       if (previousControl < 90 && district.control >= 90) {
         // Street Signal feature reintroduced: district capture impact broadcast.
@@ -223,7 +227,7 @@ async function boot() {
           hud.pushFeed(`🧠 SAM cycle advanced: ${phase.name}`, 'sam');
         },
         onSignalRush: () => {
-          state.effects.samImpactUntil = Date.now() + 2000;
+          state.effects.samImpactUntil = Date.now() + SAM_IMPACT_DURATION_MS;
           hud.triggerSamImpact('⚡ SAM SIGNAL RUSH — Giant encounter incoming!');
           memory.record('sam', { at: Date.now(), phase: 'sam-event', type: 'giant_encounter', source: 'local' });
         },

@@ -1,4 +1,10 @@
 const FACTION_SWITCH_PROBABILITY = 0.005;
+const FIGHTER_MOVE_INTERVAL_MIN = 1.8;
+const FIGHTER_MOVE_INTERVAL_JITTER = 1.8;
+const ACTIVE_MOVE_INTERVAL_MIN = 2.6;
+const ACTIVE_MOVE_INTERVAL_JITTER = 2.4;
+const CROWD_MOVE_INTERVAL_MIN = 4.5;
+const CROWD_MOVE_INTERVAL_JITTER = 3;
 
 // District-aware NPC spawn bands (col, row, w, h) matching districts.json grid regions
 const DISTRICT_SPAWN_REGIONS = [
@@ -144,8 +150,12 @@ export function createNpcSystem(state) {
       npc.moveTimer -= dt;
       if (npc.moveTimer > 0) continue;
       npc.moveTimer = npc.mode === 'active'
-        ? (npc.role === 'fighter' ? 1.8 + Math.random() * 1.8 : 2.6 + Math.random() * 2.4)
-        : 4.5 + Math.random() * 3;
+        ? (
+          npc.role === 'fighter'
+            ? FIGHTER_MOVE_INTERVAL_MIN + Math.random() * FIGHTER_MOVE_INTERVAL_JITTER
+            : ACTIVE_MOVE_INTERVAL_MIN + Math.random() * ACTIVE_MOVE_INTERVAL_JITTER
+        )
+        : CROWD_MOVE_INTERVAL_MIN + Math.random() * CROWD_MOVE_INTERVAL_JITTER;
 
       // Street Signal feature reintroduced: role-weighted movement routines.
       let dc = randInt(-1, 2);

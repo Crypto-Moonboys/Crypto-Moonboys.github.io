@@ -1,5 +1,6 @@
 const TILE_W = 72;
 const TILE_H = 36;
+const PROP_SPAWN_THRESHOLD = 0.2;
 
 const ROLE_STYLE = {
   vendor: { color: '#ffd84d', radius: 5, glow: 'rgba(255,216,77,0.45)' },
@@ -30,7 +31,7 @@ function tintColor(hex, nightFactor, variant = 0) {
 }
 
 function hash2(x, y) {
-  // GLSL-style hash constants for deterministic pseudo-random tile/prop variation.
+  // Standard GLSL-inspired pseudo-random hash coefficients for deterministic variation.
   const value = Math.sin((x + 1) * 12.9898 + (y + 1) * 78.233) * 43758.5453;
   return value - Math.floor(value);
 }
@@ -140,7 +141,7 @@ export function createIsoRenderer(canvas) {
     for (let row = 0; row < state.map.height; row += 1) {
       for (let col = 0; col < state.map.width; col += 1) {
         const roll = hash2(col * 11, row * 7);
-        if (roll > 0.2) continue;
+        if (roll > PROP_SPAWN_THRESHOLD) continue;
         items.push({
           col,
           row,
