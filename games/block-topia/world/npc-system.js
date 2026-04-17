@@ -149,6 +149,13 @@ export function createNpcSystem(state) {
       const role = state.npc.archetypes[activeIndex % Math.max(state.npc.archetypes.length, 1)]?.id || 'drifter';
       const namePool = NPC_NAMES[role] || NPC_NAMES.drifter;
       const npcName = namePool[activeIndex % namePool.length];
+      const initialMoveTimer = role === 'fighter'
+        ? FIGHTER_MOVE_INTERVAL_MIN + Math.random() * FIGHTER_MOVE_INTERVAL_RANGE
+        : role === 'vendor'
+          ? VENDOR_MOVE_INTERVAL_MIN + Math.random() * VENDOR_MOVE_INTERVAL_RANGE
+          : (role === 'agent' || role === 'recruiter')
+            ? PATROL_MOVE_INTERVAL_MIN + Math.random() * PATROL_MOVE_INTERVAL_RANGE
+            : ACTIVE_MOVE_INTERVAL_MIN + Math.random() * ACTIVE_MOVE_INTERVAL_RANGE;
       state.npc.entities.push({
         id: `active-${activeIndex}`,
         role,
@@ -159,7 +166,7 @@ export function createNpcSystem(state) {
         col: pos.col,
         row: pos.row,
         districtId: pos.districtId,
-        moveTimer: Math.random() * 2.2,
+        moveTimer: initialMoveTimer,
         bobPhase: Math.random() * Math.PI * 2,
         bobSpeed: 0.7 + Math.random() * 0.9,
         interactionRadius: 1.2 + Math.random() * 0.5,
@@ -182,7 +189,7 @@ export function createNpcSystem(state) {
         col: pos.col,
         row: pos.row,
         districtId: pos.districtId,
-        moveTimer: Math.random() * 3.5,
+        moveTimer: CROWD_MOVE_INTERVAL_MIN + Math.random() * CROWD_MOVE_INTERVAL_RANGE,
         bobPhase: Math.random() * Math.PI * 2,
         bobSpeed: 0.3 + Math.random() * 0.4,
         interactionRadius: 0.9 + Math.random() * 0.3,
