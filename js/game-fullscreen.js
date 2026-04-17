@@ -487,9 +487,9 @@
   document.addEventListener('fullscreenchange', syncFSBtn);
 
   function triggerGameStart() {
-    var pageStartBtn = document.getElementById('startBtn');
-    if (!pageStartBtn || !isOpen || pageStartBtn.disabled) return;
-    pageStartBtn.click();
+    var gameStartBtn = document.getElementById('startBtn');
+    if (!gameStartBtn || !isOpen || gameStartBtn.disabled) return;
+    gameStartBtn.click();
     _gameStarted = true;
     _isPaused = false;
     syncPauseBtn();
