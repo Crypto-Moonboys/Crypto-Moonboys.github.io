@@ -51,6 +51,35 @@
       width: 100%;
       aspect-ratio: 16/9;
       border: none;
+      opacity: 0;
+      transition: opacity 0.6s ease;
+    }
+    #hexgl-frame.loaded { opacity: 1; }
+    #hexgl-countdown {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      pointer-events: none;
+      z-index: 5;
+      font-size: clamp(3rem, 10vw, 6rem);
+      font-weight: 900;
+      letter-spacing: 0.05em;
+      text-shadow: 0 0 30px currentColor, 0 2px 14px rgba(0,0,0,.9);
+      color: #f7c948;
+      opacity: 0;
+      transition: opacity 0.13s ease, transform 0.13s ease;
+      transform: scale(0.82);
+      text-align: center;
+    }
+    #hexgl-countdown.visible {
+      opacity: 1;
+      transform: scale(1);
+    }
+    #hexgl-countdown.go {
+      color: #3fb950;
+      text-shadow: 0 0 40px #3fb950, 0 2px 14px rgba(0,0,0,.9);
     }
     .row {
       display: flex;
@@ -278,10 +307,9 @@
           <div class="stat"><div class="label">Status</div><div class="value" id="run-status">RUN READY</div></div>
         </div>
 
-        <div id="hexgl-help-bar" role="note" aria-label="Start loads HexGL then begins tracked timing after ready state. Submit sends score to leaderboard. Guest runs stay local.">
-          <strong>Start</strong> loads HexGL and begins a tracked run after ready state ·
-          <strong>Submit</strong> sends score to leaderboard ·
-          Guest runs stay local
+        <div id="hexgl-help-bar" role="note" aria-label="Start loads the race then shows a 3-2-1 countdown. GO begins tracked timing. Submit sends your score. Guest runs stay local.">
+          <strong>Start</strong> loads race · 3–2–1 countdown · <strong>GO</strong> begins tracked run ·
+          <strong>Submit</strong> sends score · Guest runs stay local
         </div>
 
         <div id="hexgl-frame-wrap">
@@ -292,6 +320,7 @@
             allowfullscreen
             loading="lazy"
           ></iframe>
+          <div id="hexgl-countdown" aria-hidden="true" aria-live="assertive"></div>
         </div>
 
         <div class="row">

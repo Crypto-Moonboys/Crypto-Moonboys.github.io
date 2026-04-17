@@ -13,8 +13,9 @@ export function bootstrapHexGLMonsterMax(root) {
   // 470000 corresponds to a 30-second run under score = 500000 - (seconds * 1000).
   var PERFECT_RUN_SCORE = 470000;
   var FRAME_SRC = 'https://hexgl.bkcore.com/play/';
-  var READY_DELAY_MS = 900;
   var LOAD_FALLBACK_MS = 4000;
+  var COUNTDOWN_TICK_MS  = 700;  // duration each countdown number is shown
+  var COUNTDOWN_GO_MS    = 600;  // how long GO is shown before timer starts
 
   var frameEl       = document.getElementById('hexgl-frame');
   var pilotEl       = document.getElementById('pilot-name');
@@ -36,6 +37,7 @@ export function bootstrapHexGLMonsterMax(root) {
   var submitBtn     = document.getElementById('submit-btn');
   var resetBtn      = document.getElementById('resetBtn');
   var inlineMessageEl = document.getElementById('hexgl-inline-message');
+  var countdownEl   = document.getElementById('hexgl-countdown');
 
   var playerName = 'Guest';
   var runStart   = null;
@@ -96,6 +98,21 @@ export function bootstrapHexGLMonsterMax(root) {
     messageTimeoutId = setTimeout(function () {
       if (inlineMessageEl) inlineMessageEl.textContent = '';
     }, 2600);
+  }
+
+  function showCountdown(text, isGo) {
+    if (!countdownEl) return;
+    countdownEl.classList.remove('visible', 'go');
+    // Force reflow so the transition re-fires for each step.
+    void countdownEl.offsetWidth;
+    countdownEl.textContent = text;
+    if (isGo) countdownEl.classList.add('go');
+    countdownEl.classList.add('visible');
+  }
+
+  function hideCountdown() {
+    if (!countdownEl) return;
+    countdownEl.classList.remove('visible', 'go');
   }
 
   function isFrameBlank() {
@@ -203,6 +220,48 @@ export function bootstrapHexGLMonsterMax(root) {
     ambientOsc.start();
   }
 
+  // noteIdx 0 = for "3", 1 = for "2", 2 = for "1" — rising pitch sequence.
+  function playCountdownTick(noteIdx) {
+    if (!canUseAudio()) return;
+    unlockAudio();
+    if (!audioCtx || audioCtx.state !== 'running') return;
+    var freqs = [380, 480, 600];
+    var freq = freqs[noteIdx] !== undefined ? freqs[noteIdx] : 380;
+    var now = audioCtx.currentTime;
+    var osc = audioCtx.createOscillator();
+    var gain = audioCtx.createGain();
+    osc.type = 'square';
+    osc.frequency.value = freq;
+    gain.gain.setValueAtTime(0.0001, now);
+    gain.gain.exponentialRampToValueAtTime(0.032, now + 0.006);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.08);
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    osc.start(now);
+    osc.stop(now + 0.09);
+  }
+
+  function playGoChord() {
+    if (!canUseAudio()) return;
+    unlockAudio();
+    if (!audioCtx || audioCtx.state !== 'running') return;
+    var now = audioCtx.currentTime;
+    [880, 1108, 1320].forEach(function (freq, i) {
+      var osc  = audioCtx.createOscillator();
+      var gain = audioCtx.createGain();
+      osc.type = 'sine';
+      osc.frequency.value = freq;
+      var t0 = now + i * 0.022;
+      gain.gain.setValueAtTime(0.0001, t0);
+      gain.gain.exponentialRampToValueAtTime(0.05, t0 + 0.01);
+      gain.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.22);
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start(now);
+      osc.stop(t0 + 0.24);
+    });
+  }
+
   function refreshIdentity() {
     playerName = getPlayerName();
     if (pilotEl) pilotEl.textContent = playerName;
@@ -228,23 +287,50 @@ export function bootstrapHexGLMonsterMax(root) {
     if (token !== runToken || !runPending) return;
     clearTimeout(loadFallbackTimeoutId);
     loadFallbackTimeoutId = null;
-    setStatus('RUN READY');
+    setStatus('COUNTDOWN');
+    // Start ambient drone during countdown (only if audio context is now running).
     syncAmbient();
-    clearTimeout(readyTimeoutId);
-    readyTimeoutId = setTimeout(function () {
-      if (token !== runToken || !runPending) return;
-      runPending = false;
-      runActive = true;
-      runStart = Date.now();
-      setStatus('RUN ACTIVE');
-      syncAmbient();
-      stopTimer();
-      intervalId = setInterval(function () {
-        updateRunUI(Date.now() - runStart);
-      }, 100);
-      updateRunUI(0);
-      if (submitBtn) submitBtn.disabled = false;
-    }, READY_DELAY_MS);
+
+    // READY → 3 → 2 → 1 → GO sequence.
+    var steps  = ['READY', '3', '2', '1'];
+    var idx    = 0;
+
+    function tick() {
+      if (token !== runToken || !runPending) {
+        hideCountdown();
+        return;
+      }
+      if (idx < steps.length) {
+        showCountdown(steps[idx], false);
+        if (idx > 0) playCountdownTick(idx - 1); // tick note index: 3→0, 2→1, 1→2
+        idx++;
+        readyTimeoutId = setTimeout(tick, COUNTDOWN_TICK_MS);
+      } else {
+        // Show GO.
+        showCountdown('GO', true);
+        stopAmbient();
+        playGoChord();
+        readyTimeoutId = setTimeout(function () {
+          if (token !== runToken || !runPending) {
+            hideCountdown();
+            return;
+          }
+          hideCountdown();
+          runPending = false;
+          runActive  = true;
+          runStart   = Date.now();
+          setStatus('RUN ACTIVE');
+          stopTimer();
+          intervalId = setInterval(function () {
+            updateRunUI(Date.now() - runStart);
+          }, 100);
+          updateRunUI(0);
+          if (submitBtn) submitBtn.disabled = false;
+        }, COUNTDOWN_GO_MS);
+      }
+    }
+
+    tick();
   }
 
   function loadRival() {
@@ -310,6 +396,7 @@ export function bootstrapHexGLMonsterMax(root) {
     runStart = null;
     lastRunMs = null;
     clearRunDelays();
+    hideCountdown();
     if (startBtn) startBtn.disabled = true;
     if (submitBtn) submitBtn.disabled = true;
     if (submitBtn) submitBtn.textContent = '📤 Submit Run';
@@ -325,6 +412,7 @@ export function bootstrapHexGLMonsterMax(root) {
     var shouldLoadFrame = !frameLoaded || isFrameBlank();
     if (shouldLoadFrame && frameEl) {
       frameLoaded = false;
+      frameEl.classList.remove('loaded');
       frameEl.src = FRAME_SRC + '?run=' + Date.now();
       loadFallbackTimeoutId = setTimeout(function () {
         activateRun(runToken);
@@ -401,7 +489,11 @@ export function bootstrapHexGLMonsterMax(root) {
     frameLoaded = false;
     lastRunMs = null;
     stopAmbient();
-    if (frameEl) frameEl.src = '';
+    hideCountdown();
+    if (frameEl) {
+      frameEl.classList.remove('loaded');
+      frameEl.src = '';
+    }
     if (timerEl) timerEl.textContent = '—';
     if (scoreEl) scoreEl.textContent = '—';
     if (deltaEl) deltaEl.textContent = '—';
@@ -426,6 +518,7 @@ export function bootstrapHexGLMonsterMax(root) {
       frameEl.addEventListener('load', function () {
         if (isFrameBlank()) return;
         frameLoaded = true;
+        frameEl.classList.add('loaded');
         if (runPending) activateRun(runToken);
       });
     }
@@ -448,9 +541,13 @@ export function bootstrapHexGLMonsterMax(root) {
     clearRunDelays();
     stopTimer();
     stopAmbient();
+    hideCountdown();
     clearTimeout(messageTimeoutId);
     notify('');
-    if (frameEl) frameEl.src = '';
+    if (frameEl) {
+      frameEl.classList.remove('loaded');
+      frameEl.src = '';
+    }
     if (startBtn) startBtn.removeEventListener('click', onStart);
     if (submitBtn) submitBtn.removeEventListener('click', onSubmit);
     if (resetBtn) resetBtn.removeEventListener('click', onReset);
