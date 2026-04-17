@@ -21,6 +21,9 @@ const DISTRICT_PULSE_DURATION_MS = 1300;
 const DISTRICT_PULSE_CONFLICT_MS = 1400;
 const ENTRY_DISMISS_DELAY_MS = 2400;
 const DISTRICT_CAPTURE_THRESHOLD = 90;
+const LOGIC_TICK_MS = 50;
+const NPC_SCAN_INTERVAL_MS = 150;
+const REMOTE_PLAYER_LERP_ALPHA = 0.18;
 
 const canvas = document.getElementById('world-canvas');
 const hud = createHud(document);
@@ -43,6 +46,7 @@ async function boot() {
   const memory = createMemorySystem(state);
   let multiplayerConnected = false;
   let nearbyNpc = null;
+  let lastNpcScan = performance.now();
   let lastQuestDistrictId = state.player.districtId;
   const primaryFactionName = state.factions.primary?.name || 'Liberators';
   const secondaryFactionName = state.factions.secondary?.name || 'Wardens';
@@ -125,6 +129,32 @@ async function boot() {
       applyRemotePlayers(state, players);
       hud.setPopulation(players.length, state.room.maxPlayers);
     },
+    onWorldSnapshot: (data) => {
+      if (Array.isArray(data?.npcs)) {
+        // Server NPC positions become the lerp targets for npc-system.tick().
+        state.npcTargets = data.npcs;
+      }
+      if (Array.isArray(data?.districts)) {
+        for (const incoming of data.districts) {
+          const district = state.districtState.find((item) => item.id === incoming.id);
+          if (!district) continue;
+          if (Number.isFinite(incoming.control)) {
+            district.control = Math.max(0, Math.min(100, incoming.control));
+          }
+          if (incoming.owner) {
+            district.owner = incoming.owner;
+          }
+        }
+      }
+      if (Number.isFinite(data?.samPhase) && state.sam.phases.length) {
+        const maxIndex = state.sam.phases.length - 1;
+        const nextIndex = Math.max(0, Math.min(maxIndex, Math.floor(data.samPhase)));
+        state.sam.currentIndex = nextIndex;
+        state.sam.timer = 0;
+        const phase = sam.getCurrentPhase();
+        hud.setSamPhase(phase.name);
+      }
+    },
     onFeed: (line) => {
       hud.pushFeed(line, classifyFeedType(line));
       memory.record('network', { at: Date.now(), line });
@@ -204,12 +234,6 @@ async function boot() {
     },
   });
 
-  // Street Signal feature reintroduced: fast day/night phase shift input.
-  window.addEventListener('keydown', (event) => {
-    if (event.code !== 'Space') return;
-    applyPhase(state.phase === 'Day' ? 'Night' : 'Day');
-  });
-
   window.addEventListener('keydown', (event) => {
     if (event.key.toLowerCase() !== 'e' || event.repeat || !nearbyNpc) return;
     const line = npc.getDialogueLine(nearbyNpc);
@@ -225,69 +249,23 @@ async function boot() {
   });
 
   let lastTs = performance.now();
-
-  function frame(ts) {
+  function logicTick() {
+    const ts = performance.now();
     const dt = Math.min(MAX_FRAME_DELTA_SECONDS, (ts - lastTs) / 1000);
     lastTs = ts;
 
     updatePlayerMotion(state, input, dt, sendMovement);
+    // npc.tick() follows server NPC targets (state.npcTargets) when available;
+    // falls back to local simulation when the server is unreachable.
     npc.tick(dt);
-    // SAM always ticks locally as client fallback; server overrides via onSamPhaseChanged.
-    sam.tick(dt, {
-      onPhaseChanged: (phase) => {
-        hud.setSamPhase(phase.name);
-        hud.pushFeed(`🧠 SAM phase: ${phase.name}`, 'sam');
-        memory.record('sam', {
-          at: Date.now(),
-          phase: phase.id,
-          source: 'client',
-        });
-        if (phase.id === 'sam-event') {
-          state.effects.samImpactUntil = Date.now() + SAM_IMPACT_DURATION_MS;
-          hud.triggerSamImpact('⚡ SAM SIGNAL RUSH — Giant encounter incoming!');
-        }
-      },
-      onSignalRush: () => {
-        hud.pushFeed('⚡ Signal Rush triggered', 'sam');
-      },
-    });
+    // Visual-only capture preview — server decides actual control values.
+    tickDistrictCapture(state, dt);
 
-    // Update district HUD when player moves into a new district
-    const district = state.districts.byId.get(state.player.districtId);
-    if (district) {
-      hud.setDistrict(district.name);
-      const ds = state.districtState.find((d) => d.id === district.id);
-      if (ds) {
-        hud.setDistrictControl(ds.control);
-        hud.setDistrictOwner(ds.owner);
-      }
-      if (district.id !== lastQuestDistrictId) {
-        lastQuestDistrictId = district.id;
-        hud.setQuests(quests.getActiveQuestCards());
-      }
+    if (ts - lastNpcScan > NPC_SCAN_INTERVAL_MS) {
+      nearbyNpc = npc.nearestInteractive(state.player.x, state.player.y);
+      lastNpcScan = ts;
     }
 
-    // District capture ticks during Night phase; records client-side capture events.
-    const captureEvent = tickDistrictCapture(state, dt);
-    if (captureEvent?.type === 'captured') {
-      const d = captureEvent.district;
-      hud.showDistrictCapture(`🏴 ${d.name} CAPTURED · ${d.owner}`);
-      hud.pushFeed(`🏴 ${d.name} captured!`, 'combat');
-      hud.setDistrictControl(d.control);
-      hud.setXp(state.player.xp);
-      hud.setScore(state.player.score);
-      state.effects.districtPulseId = d.id;
-      state.effects.districtPulseUntil = Date.now() + DISTRICT_PULSE_DURATION_MS;
-      memory.record('district', {
-        at: Date.now(),
-        district: d.id,
-        control: d.control,
-        owner: d.owner,
-        source: 'client',
-      });
-    }
-
-    nearbyNpc = npc.nearestInteractive(state.player.x, state.player.y);
     state.player.nearbyNpcId = nearbyNpc?.id || '';
     hud.setInteractPrompt(
       nearbyNpc
@@ -300,11 +278,41 @@ async function boot() {
       onQuestPulse: (text) => hud.pushFeed(`🎯 ${text}`, 'quest'),
     });
 
-    renderer.render(state);
-    requestAnimationFrame(frame);
+    // Interpolate remote player positions toward server-provided targets.
+    for (const remote of state.remotePlayers) {
+      if (Number.isFinite(remote._targetX)) {
+        remote.x += (remote._targetX - remote.x) * REMOTE_PLAYER_LERP_ALPHA;
+      }
+      if (Number.isFinite(remote._targetY)) {
+        remote.y += (remote._targetY - remote.y) * REMOTE_PLAYER_LERP_ALPHA;
+      }
+    }
+
+    // Update district HUD when player moves into a new district
+    const district = state.districts.byId.get(state.player.districtId);
+    if (district) {
+      hud.setDistrict(district.name);
+      const ds = state.districtState.find((d) => d.id === district.id);
+      if (ds) {
+        hud.setDistrictControl(ds.control);
+        hud.setDistrictOwner(ds.owner);
+      }
+      if (district.id !== lastQuestDistrictId) {
+        lastQuestDistrictId = district.id;
+        // Clear capture preview when entering a new district.
+        state.capturePreview = null;
+        hud.setQuests(quests.getActiveQuestCards());
+      }
+    }
   }
 
-  requestAnimationFrame(frame);
+  function renderLoop() {
+    renderer.render(state);
+    requestAnimationFrame(renderLoop);
+  }
+
+  setInterval(logicTick, LOGIC_TICK_MS);
+  requestAnimationFrame(renderLoop);
 }
 
 boot().catch((error) => {

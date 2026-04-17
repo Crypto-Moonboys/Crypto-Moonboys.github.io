@@ -1,5 +1,6 @@
 let room = null;
 let client = null;
+const STATE_CHANGE_THROTTLE_MS = 100;
 
 function wait(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -26,6 +27,7 @@ export async function connectMultiplayer({
   roomIdentity,
   onStatus,
   onPlayers,
+  onWorldSnapshot,
   onFeed,
   onQuestCompleted,
   onSamPhaseChanged,
@@ -54,7 +56,12 @@ export async function connectMultiplayer({
       onStatus?.({ ws: 'connected', joined: true, error: '', roomId: room.name || roomId, sessionId: room.sessionId || '' });
       onFeed?.(`Connected to ${room.name || roomId} (${room.sessionId || 'session pending'})`);
 
+      let lastUpdate = 0;
       room.onStateChange((state) => {
+        const now = performance.now();
+        // Throttle state fan-out to avoid per-frame UI churn on large player maps.
+        if (now - lastUpdate < STATE_CHANGE_THROTTLE_MS) return;
+        lastUpdate = now;
         onPlayers?.(toPlayerList(state.players));
       });
 
@@ -91,6 +98,10 @@ export async function connectMultiplayer({
         if (districtId) {
           onDistrictCaptureChanged?.({ districtId, control, owner });
         }
+      });
+
+      room.onMessage('worldSnapshot', (data) => {
+        onWorldSnapshot?.(data);
       });
 
       return room;

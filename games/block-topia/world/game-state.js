@@ -3,14 +3,10 @@ function nowUtcDaySeed() {
 }
 
 const PLAYER_MOVEMENT_SPEED = 3.2;
-// Seconds spent in a district (at Night) to earn capture progress
-const CAPTURE_TICK_INTERVAL  = 2;
-// Progress per tick (0–100 scale)
+// Seconds a player must stand in a district (Night) before a capture preview tick fires
+const CAPTURE_TICK_INTERVAL = 2;
+// Visual progress increment per tick (0–100 scale); server owns the real control value
 const CAPTURE_PROGRESS_DELTA = 3;
-// Score awarded on district capture
-export const SCORE_DISTRICT_CAPTURE = 250;
-// XP awarded on district capture
-export const XP_DISTRICT_CAPTURE    = 80;
 
 function computeSeasonIndex(epochMs, cycleDays) {
   const cycleMs = cycleDays * 24 * 60 * 60 * 1000;
@@ -84,6 +80,12 @@ export function createGameState(bundle) {
     camera: { x: 0, y: 0 },
     phase: 'Day',
     captureTimer: 0,
+    // Visual-only capture progress shown to the player while they hold a district at Night.
+    // Server owns the real district control value; this is purely for client-side feedback.
+    capturePreview: null,
+    // Latest NPC position array from the server (lean snapshot format).
+    // npc-system reads this to lerp local entities toward server-authoritative positions.
+    npcTargets: null,
     npc: {
       activeTarget: bundle.npcArchetypes.split?.active || 60,
       activeCap: bundle.npcArchetypes.split?.activeCap || 80,
@@ -126,15 +128,30 @@ export function createGameState(bundle) {
 }
 
 export function applyRemotePlayers(state, players) {
-  state.remotePlayers = players
-    .filter((player) => typeof player.x === 'number' && typeof player.y === 'number')
-    .map((player) => ({
+  const filtered = players
+    .filter((player) => typeof player.x === 'number' && typeof player.y === 'number');
+  const existingById = new Map(state.remotePlayers.map((p) => [p.id, p]));
+  state.remotePlayers = filtered.map((player) => {
+    const existing = existingById.get(player.id);
+    if (existing) {
+      // Keep the current interpolated position; only update the interpolation target.
+      existing._targetX = player.x;
+      existing._targetY = player.y;
+      existing.name = player.name || 'Player';
+      existing.faction = player.faction || 'unknown';
+      return existing;
+    }
+    // New player — snap directly to received position and initialise target.
+    return {
       id: player.id,
       name: player.name || 'Player',
       x: player.x,
       y: player.y,
+      _targetX: player.x,
+      _targetY: player.y,
       faction: player.faction || 'unknown',
-    }));
+    };
+  });
 }
 
 /**
@@ -187,32 +204,28 @@ export function updatePlayerMotion(state, input, dt, moveSender) {
 }
 
 /**
- * Tick district capture: during Night phase, the player slowly captures the district they stand in.
- * Returns a capture event if a district just tipped past the threshold.
+ * Visual-only district capture preview tick.
+ *
+ * Accumulates client-side capture progress in `state.capturePreview` while the
+ * player stands in a district during Night phase.  The REAL district control
+ * value is owned by the server (`updateDistricts`) and reflected via
+ * `worldSnapshot` / `districtCaptureChanged`.  This function MUST NOT mutate
+ * `districtState[].control` or award XP — that would re-introduce local
+ * authority that belongs to the server.
+ *
+ * Callers can read `state.capturePreview` to show a capture progress overlay.
+ * Reset `state.capturePreview` when the player changes district.
  */
 export function tickDistrictCapture(state, dt) {
-  if (state.phase !== 'Night') return null;
+  if (state.phase !== 'Night') return;
 
   state.captureTimer += dt;
-  if (state.captureTimer < CAPTURE_TICK_INTERVAL) return null;
+  if (state.captureTimer < CAPTURE_TICK_INTERVAL) return;
   state.captureTimer = 0;
 
-  const ds = state.districtState.find((d) => d.id === state.player.districtId);
-  if (!ds) return null;
-
-  const prevControl = ds.control;
-  ds.control = Math.min(100, ds.control + CAPTURE_PROGRESS_DELTA);
-
-  if (prevControl < 90 && ds.control >= 90) {
-    // District captured — award XP and score directly using their canonical constants.
-    // Avoid awardXp() here to prevent the implicit 1.5× score multiplier from stacking
-    // on top of the explicit SCORE_DISTRICT_CAPTURE value (which is already final).
-    // Do NOT push to state.memory.districtChanges here — main.js calls memory.record()
-    // which is the single authoritative writer for all secondary memory indexes.
-    state.player.xp    += XP_DISTRICT_CAPTURE;
-    state.player.score += SCORE_DISTRICT_CAPTURE;
-    return { type: 'captured', district: ds };
-  }
-
-  return null;
+  const prev = state.capturePreview;
+  state.capturePreview = {
+    districtId: state.player.districtId,
+    progress: Math.min(100, (prev?.districtId === state.player.districtId ? prev.progress : 0) + CAPTURE_PROGRESS_DELTA),
+  };
 }

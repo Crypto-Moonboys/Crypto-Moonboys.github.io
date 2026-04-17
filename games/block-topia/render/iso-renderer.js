@@ -34,7 +34,10 @@ const DISTRICT_THEME = {
 
 const ANTENNA_BLINK_PERIOD_MS = 600;
 const NEARBY_PULSE_PERIOD_MS = 280;
+const NEARBY_PULSE_BASE_ALPHA = 0.62;
 const NEARBY_PULSE_AMPLITUDE = 0.35;
+const CROWD_SWAY_PERIOD_MS = 700;
+const CROWD_BOB_SPEED = 0.8;
 
 const DISTRICT_BASE_ELEVATION = {
   'neon-slums': 3,
@@ -642,9 +645,15 @@ export function createIsoRenderer(canvas) {
         const iso = toIso(npc.col, npc.row);
         const elevation = getElevation(state.districts.fromGrid(npc.col, npc.row)?.id, npc.col, npc.row);
         const sx = originX + iso.x;
-        const bobOffset = Math.sin(npc.bobPhase || 0) * (npc.mode === 'active' ? 1.7 : 0.8);
+        let crowdSway = 0;
+        let bobPhase = npc.bobPhase || 0;
+        if (npc.mode === 'crowd') {
+          crowdSway = Math.sin(now / CROWD_SWAY_PERIOD_MS + (npc.seed || 0)) * 0.2;
+          bobPhase = (now / 1000) * CROWD_BOB_SPEED + (npc.seed || 0);
+        }
+        const bobOffset = Math.sin(bobPhase) * (npc.mode === 'active' ? 1.7 : 0.8);
         const sy = originY + iso.y - elevation - 6 - bobOffset;
-        drawNpc(sx, sy, npc, state.player?.nearbyNpcId === npc.id);
+        drawNpc(sx + crowdSway, sy, npc, state.player?.nearbyNpcId === npc.id);
         if (npc.mode === 'active') {
           const labelStyle = ROLE_STYLE[npc.role] || ROLE_STYLE.crowd;
           // Role label with shadow for legibility
