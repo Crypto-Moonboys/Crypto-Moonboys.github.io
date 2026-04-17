@@ -46,9 +46,14 @@ async function boot() {
   let multiplayerConnected = false;
   let nearbyNpc = null;
   let lastNpcScan = performance.now();
-  let serverWorldSnapshotAt = 0;
-  let hasWorldSnapshot = false;
+  // -Infinity sentinel: Number.isFinite returns false until the first real snapshot arrives.
+  let serverWorldSnapshotAt = -Infinity;
   let lastQuestDistrictId = state.player.districtId;
+
+  function hasFreshWorldSnapshot(ts) {
+    return Number.isFinite(serverWorldSnapshotAt)
+      && (ts - serverWorldSnapshotAt) <= WORLD_SNAPSHOT_FRESH_THRESHOLD_MS;
+  }
   const primaryFactionName = state.factions.primary?.name || 'Liberators';
   const secondaryFactionName = state.factions.secondary?.name || 'Wardens';
   const lore = state.lore?.legacy?.lore || {};
@@ -155,7 +160,6 @@ async function boot() {
         hud.setSamPhase(phase.name);
       }
       serverWorldSnapshotAt = performance.now();
-      hasWorldSnapshot = true;
     },
     onFeed: (line) => {
       hud.pushFeed(line, classifyFeedType(line));
@@ -257,8 +261,7 @@ async function boot() {
     lastTs = ts;
 
     // When server snapshots are fresh, skip local NPC simulation to keep authority server-side.
-    const worldSnapshotFresh = hasWorldSnapshot
-      && (ts - serverWorldSnapshotAt <= WORLD_SNAPSHOT_FRESH_THRESHOLD_MS);
+    const worldSnapshotFresh = hasFreshWorldSnapshot(ts);
     updatePlayerMotion(state, input, dt, sendMovement);
     if (!worldSnapshotFresh) {
       npc.tick(dt);

@@ -274,7 +274,8 @@ export function createNpcSystem(state) {
     const batchSize = Math.min(UPDATE_BATCH, total);
     for (let i = 0; i < batchSize; i += 1) {
       const npc = npcs[(batchIndex + i) % total];
-      // Crowd NPCs are visual-only by design and skipped from client-side simulation updates.
+      // Only active NPCs are updated in the simulation batch; crowd and other non-active modes
+      // are visual-only and skipped here (they still incur a minimal skip-check per batch slot).
       if (!npc || npc.mode !== 'active') continue;
 
       npc.bobPhase += dt * npc.bobSpeed;
