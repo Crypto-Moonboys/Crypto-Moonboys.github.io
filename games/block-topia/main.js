@@ -5,6 +5,7 @@ import {
   applyRemotePlayers,
   updatePlayerMotion,
   awardXp,
+  tickDistrictCapture,
 } from './world/game-state.js';
 import { createSamSystem } from './world/sam-system.js';
 import { createNpcSystem } from './world/npc-system.js';
@@ -62,6 +63,10 @@ async function boot() {
       'system',
     );
     canvas.classList.toggle('phase-night', state.phase === 'Night');
+    // Street Signal feature: canvas filter for immediate phase visual feedback.
+    canvas.style.filter = state.phase === 'Night'
+      ? 'brightness(0.6) hue-rotate(20deg)'
+      : 'none';
   }
 
   function bootstrapLoreFeed() {
@@ -221,19 +226,25 @@ async function boot() {
 
     updatePlayerMotion(state, input, dt, sendMovement);
     npc.tick(dt);
-    if (!multiplayerConnected) {
-      sam.tick(dt, {
-        onPhaseChanged: (phase) => {
-          hud.setSamPhase(phase.name);
-          hud.pushFeed(`🧠 SAM cycle advanced: ${phase.name}`, 'sam');
-        },
-        onSignalRush: () => {
+    // SAM always ticks locally as client fallback; server overrides via onSamPhaseChanged.
+    sam.tick(dt, {
+      onPhaseChanged: (phase) => {
+        hud.setSamPhase(phase.name);
+        hud.pushFeed(`🧠 SAM phase: ${phase.name}`, 'sam');
+        memory.record('sam', {
+          at: Date.now(),
+          phase: phase.id,
+          source: 'client',
+        });
+        if (phase.id === 'sam-event') {
           state.effects.samImpactUntil = Date.now() + SAM_IMPACT_DURATION_MS;
           hud.triggerSamImpact('⚡ SAM SIGNAL RUSH — Giant encounter incoming!');
-          memory.record('sam', { at: Date.now(), phase: 'sam-event', type: 'giant_encounter', source: 'local' });
-        },
-      });
-    }
+        }
+      },
+      onSignalRush: () => {
+        hud.pushFeed('⚡ Signal Rush triggered', 'sam');
+      },
+    });
 
     // Update district HUD when player moves into a new district
     const district = state.districts.byId.get(state.player.districtId);
@@ -244,6 +255,24 @@ async function boot() {
         hud.setDistrictControl(ds.control);
         hud.setDistrictOwner(ds.owner);
       }
+    }
+
+    // District capture ticks during Night phase; records client-side capture events.
+    const captureEvent = tickDistrictCapture(state, dt);
+    if (captureEvent?.type === 'captured') {
+      const d = captureEvent.district;
+      hud.showDistrictCapture(`🏴 ${d.name} CAPTURED · ${d.owner}`);
+      hud.pushFeed(`🏴 ${d.name} captured!`, 'combat');
+      hud.setDistrictControl(d.control);
+      hud.setXp(state.player.xp);
+      hud.setScore(state.player.score);
+      memory.record('district', {
+        at: Date.now(),
+        district: d.id,
+        control: d.control,
+        owner: d.owner,
+        source: 'client',
+      });
     }
 
     nearbyNpc = npc.nearestInteractive(state.player.x, state.player.y);
