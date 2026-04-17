@@ -24,6 +24,7 @@ html, body {
   color: #eaf6ff;
   font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
   overflow: hidden;
+  transition: background 0.5s ease;
 }
 
 #world-canvas {
@@ -33,11 +34,16 @@ html, body {
   height: 100vh;
   display: block;
   background: radial-gradient(circle at top, #111a36 0%, #050814 60%);
-  transition: background 1.8s ease;
+  transition: background 1.2s ease, filter 0.45s ease;
 }
 
 #world-canvas.phase-night {
   background: radial-gradient(circle at top, #1b0a30 0%, #0d0520 60%);
+}
+
+body.phase-night .panel {
+  background: linear-gradient(165deg, rgba(20, 10, 34, 0.94), rgba(12, 7, 26, 0.9));
+  border-color: rgba(191, 140, 255, 0.4);
 }
 
 #entry-identity {
@@ -195,6 +201,16 @@ html, body {
 #xp-status { color: var(--ok); }
 #level-status { color: #caa3ff; }
 
+#xp-status.xp-pop {
+  animation: xp-status-pop 0.42s ease;
+}
+
+@keyframes xp-status-pop {
+  0% { transform: scale(1); text-shadow: 0 0 0 rgba(141,255,106,0); }
+  45% { transform: scale(1.16); text-shadow: 0 0 12px rgba(141,255,106,0.85); }
+  100% { transform: scale(1); text-shadow: 0 0 0 rgba(141,255,106,0); }
+}
+
 .progress-shell {
   width: 100%;
   height: 13px;
@@ -225,6 +241,7 @@ html, body {
 #phase-status { color: var(--accent); font-weight: 600; }
 #sam-status { color: var(--warn); font-weight: 600; }
 #phase-flavor { color: rgba(234, 246, 255, 0.75); }
+#sam-warning { color: rgba(255, 216, 77, 0.82); }
 
 .hint {
   color: rgba(234, 246, 255, 0.45);
@@ -254,7 +271,7 @@ html, body {
   display: grid;
   grid-template-columns: auto 1fr auto;
   grid-template-rows: auto auto;
-  gap: 1px 6px;
+  gap: 3px 6px;
   align-items: center;
 }
 
@@ -275,6 +292,7 @@ html, body {
   grid-column: 2;
   grid-row: 1;
   font-weight: 600;
+  color: #f2e8ff;
 }
 
 .quest-xp {
@@ -289,8 +307,9 @@ html, body {
 .quest-obj {
   grid-column: 1 / span 3;
   grid-row: 2;
-  color: rgba(234, 246, 255, 0.58);
-  font-size: 0.69rem;
+  color: rgba(234, 246, 255, 0.78);
+  font-size: 0.71rem;
+  line-height: 1.35;
 }
 
 #quest-list li[data-type='daily'] .quest-badge    { color: var(--accent); }
@@ -314,6 +333,7 @@ html, body {
   border-radius: 0 7px 7px 0;
   font-size: 0.78rem;
   line-height: 1.4;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.03);
 }
 
 #street-feed li.system { border-left-color: var(--accent); }
@@ -407,8 +427,10 @@ html, body {
   inset: 0;
   z-index: 510;
   pointer-events: none;
-  background: radial-gradient(circle at center, rgba(255, 79, 216, 0.28) 0%, rgba(255, 79, 216, 0) 60%);
-  animation: sam-impact-pulse 0.8s ease 2;
+  background:
+    repeating-linear-gradient(0deg, rgba(255,255,255,0.05) 0 1px, transparent 1px 4px),
+    radial-gradient(circle at center, rgba(255, 79, 216, 0.35) 0%, rgba(255, 79, 216, 0) 65%);
+  animation: sam-impact-pulse 0.6s ease 3;
 }
 
 @keyframes sam-impact-pulse {
@@ -424,6 +446,21 @@ html, body {
   pointer-events: none;
   background: linear-gradient(180deg, rgba(94, 242, 255, 0.2), rgba(14, 8, 40, 0.2));
   animation: phase-flash 0.55s ease;
+}
+
+#capture-flash {
+  position: fixed;
+  inset: 0;
+  z-index: 506;
+  pointer-events: none;
+  background: radial-gradient(circle at center, rgba(255,216,77,0.35) 0%, rgba(255,216,77,0) 62%);
+  animation: capture-flash 0.7s ease;
+}
+
+@keyframes capture-flash {
+  0% { opacity: 0; transform: scale(0.9); }
+  35% { opacity: 1; transform: scale(1.05); }
+  100% { opacity: 0; transform: scale(1); }
 }
 
 @keyframes phase-flash {
@@ -443,13 +480,16 @@ html, body {
   transform: translateX(-50%);
   z-index: 400;
   padding: 8px 20px;
-  background: rgba(11, 16, 36, 0.92);
-  border: 1px solid var(--accent);
+  background: linear-gradient(180deg, rgba(11, 16, 36, 0.95), rgba(8, 12, 28, 0.9));
+  border: 1px solid rgba(94, 242, 255, 0.9);
   border-radius: 8px;
-  color: var(--accent);
-  font-size: 0.88rem;
+  color: #d5fbff;
+  font-size: 0.92rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
   pointer-events: none;
   backdrop-filter: blur(4px);
+  box-shadow: 0 0 14px rgba(94, 242, 255, 0.35);
 }
 
 #interact-prompt.hidden {

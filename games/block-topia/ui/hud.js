@@ -12,6 +12,7 @@ export function createHud(doc) {
   const samStatus       = doc.getElementById('sam-status');
   const phaseStatus     = doc.getElementById('phase-status');
   const phaseFlavor     = doc.getElementById('phase-flavor');
+  const samWarning      = doc.getElementById('sam-warning');
   const scoreStatus     = doc.getElementById('score-status');
   const xpStatus        = doc.getElementById('xp-status');
   const multiplayerStatus = doc.getElementById('mp-status');
@@ -24,7 +25,9 @@ export function createHud(doc) {
   const samPopup        = doc.getElementById('sam-popup');
   const samImpact       = doc.getElementById('sam-impact');
   const phaseFlash      = doc.getElementById('phase-flash');
+  const captureFlash    = doc.getElementById('capture-flash');
   const districtCaptureBanner = doc.getElementById('district-capture-banner');
+  const districtIntensity = doc.getElementById('district-intensity');
   const questToast      = doc.getElementById('quest-toast');
   const xpGain          = doc.getElementById('xp-gain');
   const npcDialogue     = doc.getElementById('npc-dialogue');
@@ -51,7 +54,9 @@ export function createHud(doc) {
 
   function pushFeed(text, type = 'system') {
     const item = doc.createElement('li');
-    item.textContent = text;
+    const now = new Date();
+    const time = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+    item.textContent = `[${time}] ${text}`;
     item.className = type;
     feed.prepend(item);
     while (feed.children.length > 16) {
@@ -103,6 +108,12 @@ export function createHud(doc) {
   function setDistrictControl(pct) {
     const rounded = Math.round(pct);
     districtControl.textContent = `Control: ${rounded}%`;
+    if (districtIntensity) {
+      if (rounded >= 90) districtIntensity.textContent = 'Pressure: Captured';
+      else if (rounded >= 70) districtIntensity.textContent = 'Pressure: Critical';
+      else if (rounded >= 45) districtIntensity.textContent = 'Pressure: Contested';
+      else districtIntensity.textContent = 'Pressure: Stable';
+    }
     if (districtControlBar) {
       districtControlBar.style.width = `${Math.max(0, Math.min(100, rounded))}%`;
       districtControlBar.classList.remove('surge');
@@ -126,6 +137,9 @@ export function createHud(doc) {
       clearTimeout(xpGainTimer);
       xpGain.textContent = `+${delta} XP`;
       xpGain.classList.remove('hidden');
+      xpStatus.classList.remove('xp-pop');
+      void xpStatus.offsetWidth;
+      xpStatus.classList.add('xp-pop');
       xpGainTimer = setTimeout(() => xpGain.classList.add('hidden'), 1300);
     }
     lastXp = value;
@@ -151,6 +165,11 @@ export function createHud(doc) {
     phaseFlavor.textContent = name === 'Night'
       ? 'Night pressure rising. District control windows opening.'
       : 'Day cycle active. Recon, quests, and prep routes online.';
+    if (samWarning) {
+      samWarning.textContent = name === 'Night'
+        ? 'SAM Alert: Elevated'
+        : 'SAM Alert: Nominal';
+    }
   }
 
   function triggerSamImpact(text) {
@@ -171,6 +190,8 @@ export function createHud(doc) {
     showBanner(districtCaptureBanner, text, 2800, (timer) => {
       districtBannerTimer = timer;
     });
+    captureFlash?.classList.remove('hidden');
+    setTimeout(() => captureFlash?.classList.add('hidden'), 700);
   }
 
   function showNpcDialogue(name, role, line) {

@@ -42,6 +42,7 @@ async function boot() {
   const memory = createMemorySystem(state);
   let multiplayerConnected = false;
   let nearbyNpc = null;
+  let lastQuestDistrictId = state.player.districtId;
   const primaryFactionName = state.factions.primary?.name || 'Liberators';
   const secondaryFactionName = state.factions.secondary?.name || 'Wardens';
   const lore = state.lore?.legacy?.lore || {};
@@ -63,9 +64,10 @@ async function boot() {
       'system',
     );
     canvas.classList.toggle('phase-night', state.phase === 'Night');
+    document.body.classList.toggle('phase-night', state.phase === 'Night');
     // Street Signal feature: canvas filter for immediate phase visual feedback.
     canvas.style.filter = state.phase === 'Night'
-      ? 'brightness(0.6) hue-rotate(20deg)'
+      ? 'brightness(0.54) saturate(1.2) hue-rotate(24deg)'
       : 'none';
   }
 
@@ -85,7 +87,7 @@ async function boot() {
   hud.setDistrictOwner(state.districtState[0]?.owner || primaryFactionName);
   hud.setFactionStatus(`${primaryFactionName} vs ${secondaryFactionName}`);
   hud.setSamPhase(sam.getCurrentPhase().name);
-  hud.setPhase(state.phase);
+  applyPhase(state.phase, 'system');
   hud.setScore(state.player.score);
   hud.setXp(state.player.xp);
   hud.setRoom(state.room.id);
@@ -255,6 +257,10 @@ async function boot() {
         hud.setDistrictControl(ds.control);
         hud.setDistrictOwner(ds.owner);
       }
+      if (district.id !== lastQuestDistrictId) {
+        lastQuestDistrictId = district.id;
+        hud.setQuests(quests.getActiveQuestCards());
+      }
     }
 
     // District capture ticks during Night phase; records client-side capture events.
@@ -266,6 +272,8 @@ async function boot() {
       hud.setDistrictControl(d.control);
       hud.setXp(state.player.xp);
       hud.setScore(state.player.score);
+      state.effects.districtPulseId = d.id;
+      state.effects.districtPulseUntil = Date.now() + DISTRICT_PULSE_DURATION_MS;
       memory.record('district', {
         at: Date.now(),
         district: d.id,

@@ -17,6 +17,15 @@ const ROLE_STYLE = {
   crowd: { color: 'rgba(94,242,255,0.45)', radius: 3, glow: 'rgba(94,242,255,0.2)' },
 };
 
+const DISTRICT_THEME = {
+  'neon-slums': { glow: 'rgba(79,109,255,0.2)', line: 'rgba(143,164,255,0.3)', propBias: ['graffiti', 'crate'] },
+  'signal-spire': { glow: 'rgba(255,79,216,0.2)', line: 'rgba(255,143,230,0.35)', propBias: ['terminal', 'light'] },
+  'crypto-core': { glow: 'rgba(255,216,77,0.2)', line: 'rgba(255,230,150,0.35)', propBias: ['crate', 'terminal'] },
+  'moonlit-underbelly': { glow: 'rgba(141,255,106,0.2)', line: 'rgba(190,255,165,0.32)', propBias: ['graffiti', 'light'] },
+  'revolt-plaza': { glow: 'rgba(94,242,255,0.22)', line: 'rgba(153,255,255,0.35)', propBias: ['terminal', 'graffiti'] },
+  default: { glow: 'rgba(94,242,255,0.2)', line: 'rgba(150,220,255,0.3)', propBias: ['crate', 'terminal'] },
+};
+
 function toIso(col, row) {
   return {
     x: (col - row) * (TILE_W / 2),
@@ -67,35 +76,63 @@ export function createIsoRenderer(canvas) {
   loadImage('/games/assets/blocktopia-tiles.svg');
   loadImage('/games/assets/blocktopia-sprites.svg');
 
-  function drawTile(screenX, screenY, fill, variant) {
+  function drawTile(screenX, screenY, fill, variant, elevation = 0, districtId = '') {
+    const topY = screenY - elevation;
+    const theme = DISTRICT_THEME[districtId] || DISTRICT_THEME.default;
+    if (elevation > 0) {
+      ctx.beginPath();
+      ctx.moveTo(screenX, topY + TILE_H);
+      ctx.lineTo(screenX + TILE_W / 2, topY + TILE_H / 2);
+      ctx.lineTo(screenX + TILE_W / 2, screenY + TILE_H / 2);
+      ctx.lineTo(screenX, screenY + TILE_H);
+      ctx.closePath();
+      ctx.fillStyle = 'rgba(0,0,0,0.16)';
+      ctx.fill();
+
+      ctx.beginPath();
+      ctx.moveTo(screenX, topY + TILE_H);
+      ctx.lineTo(screenX - TILE_W / 2, topY + TILE_H / 2);
+      ctx.lineTo(screenX - TILE_W / 2, screenY + TILE_H / 2);
+      ctx.lineTo(screenX, screenY + TILE_H);
+      ctx.closePath();
+      ctx.fillStyle = 'rgba(0,0,0,0.22)';
+      ctx.fill();
+    }
     // variant is expected in [0,1], used for deterministic surface micro-variation.
     ctx.beginPath();
-    ctx.moveTo(screenX, screenY);
-    ctx.lineTo(screenX + TILE_W / 2, screenY + TILE_H / 2);
-    ctx.lineTo(screenX, screenY + TILE_H);
-    ctx.lineTo(screenX - TILE_W / 2, screenY + TILE_H / 2);
+    ctx.moveTo(screenX, topY);
+    ctx.lineTo(screenX + TILE_W / 2, topY + TILE_H / 2);
+    ctx.lineTo(screenX, topY + TILE_H);
+    ctx.lineTo(screenX - TILE_W / 2, topY + TILE_H / 2);
     ctx.closePath();
     ctx.fillStyle = fill;
     ctx.fill();
     if (variant > 0.72) {
       ctx.strokeStyle = 'rgba(255,255,255,0.08)';
       ctx.beginPath();
-      ctx.moveTo(screenX - TILE_W * 0.22, screenY + TILE_H * 0.57);
-      ctx.lineTo(screenX + TILE_W * 0.2, screenY + TILE_H * 0.35);
+      ctx.moveTo(screenX - TILE_W * 0.22, topY + TILE_H * 0.57);
+      ctx.lineTo(screenX + TILE_W * 0.2, topY + TILE_H * 0.35);
       ctx.stroke();
     } else if (variant < 0.18) {
       ctx.strokeStyle = 'rgba(0,0,0,0.22)';
       ctx.beginPath();
-      ctx.moveTo(screenX, screenY + TILE_H * 0.25);
-      ctx.lineTo(screenX, screenY + TILE_H * 0.8);
+      ctx.moveTo(screenX, topY + TILE_H * 0.25);
+      ctx.lineTo(screenX, topY + TILE_H * 0.8);
+      ctx.stroke();
+    }
+    if (variant > 0.52 && variant < 0.58) {
+      ctx.strokeStyle = theme.line;
+      ctx.beginPath();
+      ctx.moveTo(screenX - TILE_W * 0.12, topY + TILE_H * 0.68);
+      ctx.lineTo(screenX + TILE_W * 0.12, topY + TILE_H * 0.52);
       ctx.stroke();
     }
     ctx.strokeStyle = 'rgba(8,12,28,0.85)';
     ctx.stroke();
   }
 
-  function drawProp(screenX, screenY, type, districtColor, nightFactor) {
-    const anchorY = screenY + TILE_H * 0.3;
+  function drawProp(screenX, screenY, type, districtColor, nightFactor, elevation = 0) {
+    const anchorY = screenY + TILE_H * 0.3 - elevation;
     if (type === 'crate') {
       ctx.fillStyle = `rgba(255, 155, 66, ${0.4 + (1 - nightFactor) * 0.2})`;
       ctx.fillRect(screenX - 6, anchorY - 8, 12, 10);
@@ -143,15 +180,19 @@ export function createIsoRenderer(canvas) {
       return propCache.items;
     }
     const items = [];
-    const types = ['crate', 'terminal', 'graffiti', 'light'];
+    const baseTypes = ['crate', 'terminal', 'graffiti', 'light'];
     for (let row = 0; row < state.map.height; row += 1) {
       for (let col = 0; col < state.map.width; col += 1) {
+        const district = state.districts.fromGrid(col, row);
+        const theme = DISTRICT_THEME[district?.id] || DISTRICT_THEME.default;
         const roll = deterministicNoise2D(col * 11, row * 7);
-        if (roll > PROP_SPAWN_THRESHOLD) continue;
+        const threshold = PROP_SPAWN_THRESHOLD + (deterministicNoise2D(col * 13, row * 9) - 0.5) * 0.05;
+        if (roll > threshold) continue;
+        const pool = [...theme.propBias, ...baseTypes];
         items.push({
           col,
           row,
-          type: types[Math.floor(deterministicNoise2D(col * 3, row * 5) * types.length)],
+          type: pool[Math.floor(deterministicNoise2D(col * 3, row * 5) * pool.length)],
         });
       }
     }
@@ -269,6 +310,19 @@ export function createIsoRenderer(canvas) {
     const originX   = canvas.width / 2 - state.camera.x + shakeX;
     const originY   = 120 - state.camera.y + shakeY;
 
+    const getElevation = (districtId, col, row) => {
+      const base = districtId === 'signal-spire'
+        ? 7
+        : districtId === 'crypto-core'
+          ? 5
+          : districtId === 'moonlit-underbelly'
+            ? 2
+            : districtId === 'revolt-plaza'
+              ? 3
+              : 4;
+      return base + Math.floor(deterministicNoise2D(col * 5, row * 7) * 3);
+    };
+
     // Street Signal feature reintroduced: denser district visuals + tile variation.
     for (let row = 0; row < state.map.height; row += 1) {
       for (let col = 0; col < state.map.width; col += 1) {
@@ -277,14 +331,26 @@ export function createIsoRenderer(canvas) {
         const variant = deterministicNoise2D(col, row);
         const fill = tintColor(baseColor, nightFactor, variant - 0.5);
         const iso = toIso(col, row);
-        drawTile(originX + iso.x, originY + iso.y, fill, variant);
+        const elevation = getElevation(district?.id, col, row);
+        drawTile(originX + iso.x, originY + iso.y, fill, variant, elevation, district?.id);
+
+        if (variant > 0.82) {
+          const theme = DISTRICT_THEME[district?.id] || DISTRICT_THEME.default;
+          ctx.globalAlpha = 0.28;
+          ctx.fillStyle = theme.glow;
+          ctx.beginPath();
+          ctx.arc(originX + iso.x, originY + iso.y - elevation + 12, 7, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.globalAlpha = 1;
+        }
       }
     }
 
     for (const prop of getProps(state)) {
       const district = state.districts.fromGrid(prop.col, prop.row);
       const iso = toIso(prop.col, prop.row);
-      drawProp(originX + iso.x, originY + iso.y, prop.type, district?.color || '#5ef2ff', nightFactor);
+      const elevation = getElevation(district?.id, prop.col, prop.row);
+      drawProp(originX + iso.x, originY + iso.y, prop.type, district?.color || '#5ef2ff', nightFactor, elevation);
     }
 
     const spritePreview = imageRegistry['/games/assets/blocktopia/props/preview.svg'];
@@ -309,57 +375,83 @@ export function createIsoRenderer(canvas) {
       }
     }
 
-    ctx.font = '9px Inter, sans-serif';
-    ctx.textAlign = 'center';
-    const npcList = state.npc?.entities || [];
-    for (const npc of npcList) {
+    const layers = [];
+    for (const npc of state.npc?.entities || []) {
       if (!npc || typeof npc.col !== 'number') continue;
-      const iso = toIso(npc.col, npc.row);
-      const sx = originX + iso.x;
-      const bobOffset = Math.sin(npc.bobPhase || 0) * (npc.mode === 'active' ? 1.7 : 0.8);
-      const sy = originY + iso.y - 6 - bobOffset;
-      drawNpc(sx, sy, npc, state.player?.nearbyNpcId === npc.id);
+      layers.push({ type: 'npc', y: npc.row, entity: npc });
+    }
+    for (const remote of state.remotePlayers || []) {
+      layers.push({ type: 'remote', y: remote.y, entity: remote });
+    }
+    layers.push({ type: 'player', y: state.player.y, entity: state.player });
+    layers.sort((a, b) => a.y - b.y);
+
+    for (const layer of layers) {
+      if (layer.type === 'npc') {
+        const npc = layer.entity;
+        const iso = toIso(npc.col, npc.row);
+        const elevation = getElevation(state.districts.fromGrid(npc.col, npc.row)?.id, npc.col, npc.row);
+        const sx = originX + iso.x;
+        const bobOffset = Math.sin(npc.bobPhase || 0) * (npc.mode === 'active' ? 1.7 : 0.8);
+        const sy = originY + iso.y - elevation - 6 - bobOffset;
+        drawNpc(sx, sy, npc, state.player?.nearbyNpcId === npc.id);
+        if (npc.mode === 'active') {
+          ctx.fillStyle = 'rgba(234,246,255,0.84)';
+          ctx.font = '600 9px Inter, sans-serif';
+          ctx.textAlign = 'center';
+          ctx.fillText(npc.roleLabel || npc.role || 'NPC', sx, sy - 10);
+        }
+      } else if (layer.type === 'remote') {
+        const remote = layer.entity;
+        const iso = toIso(remote.x, remote.y);
+        const elevation = getElevation(state.districts.fromGrid(remote.x, remote.y)?.id, remote.x, remote.y);
+        const sx = originX + iso.x;
+        const sy = originY + iso.y - elevation - 14;
+        ctx.beginPath();
+        ctx.arc(sx, sy, 8, 0, Math.PI * 2);
+        ctx.fillStyle = '#5ef2ff';
+        ctx.fill();
+        ctx.fillStyle = '#eaf6ff';
+        ctx.font = '11px Inter, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(remote.name || 'Player', sx, sy - 12);
+      } else {
+        const playerIso = toIso(state.player.x, state.player.y);
+        const elevation = getElevation(state.districts.fromGrid(state.player.x, state.player.y)?.id, state.player.x, state.player.y);
+        const px = originX + playerIso.x;
+        const py = originY + playerIso.y - elevation - 14;
+
+        ctx.globalAlpha = 0.36;
+        ctx.fillStyle = isNight ? 'rgba(255, 155, 66, 0.8)' : 'rgba(255, 79, 216, 0.78)';
+        ctx.beginPath();
+        ctx.arc(px, py, 22, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.globalAlpha = 1;
+
+        ctx.beginPath();
+        ctx.arc(px, py, 10.5, 0, Math.PI * 2);
+        ctx.fillStyle = isNight ? '#ff9b42' : '#ff4fd8';
+        ctx.fill();
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 2.4;
+        ctx.stroke();
+
+        ctx.strokeStyle = 'rgba(255,255,255,0.65)';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.arc(px, py, 16, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.lineWidth = 1;
+
+        ctx.fillStyle = '#ffffff';
+        ctx.font = '700 11px Inter, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(state.player.name, px, py - 16);
+      }
     }
 
-    ctx.font = '12px Inter, sans-serif';
-    ctx.textAlign = 'center';
-    state.remotePlayers.forEach((remote) => {
-      const iso = toIso(remote.x, remote.y);
-      ctx.beginPath();
-      ctx.arc(originX + iso.x, originY + iso.y - 14, 8, 0, Math.PI * 2);
-      ctx.fillStyle = '#5ef2ff';
-      ctx.fill();
-      ctx.fillStyle = '#eaf6ff';
-      ctx.fillText(remote.name || 'Player', originX + iso.x, originY + iso.y - 26);
-    });
-
-    const playerIso = toIso(state.player.x, state.player.y);
-    const px = originX + playerIso.x;
-    const py = originY + playerIso.y - 14;
-
-    // Player glow aura
-    ctx.globalAlpha = 0.28;
-    ctx.fillStyle = isNight ? 'rgba(255, 155, 66, 0.7)' : 'rgba(255, 79, 216, 0.6)';
-    ctx.beginPath();
-    ctx.arc(px, py, 18, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.globalAlpha = 1;
-
-    ctx.beginPath();
-    ctx.arc(px, py, 9, 0, Math.PI * 2);
-    ctx.fillStyle = isNight ? '#ff9b42' : '#ff4fd8';
-    ctx.fill();
-    ctx.strokeStyle = '#ffffff';
-    ctx.lineWidth = 2;
-    ctx.stroke();
-    ctx.lineWidth = 1;
-
-    ctx.fillStyle = '#eaf6ff';
-    ctx.font = '11px Inter, sans-serif';
-    ctx.fillText(state.player.name, px, py - 14);
-
     if (isNight) {
-      ctx.fillStyle = 'rgba(10, 4, 24, 0.2)';
+      ctx.fillStyle = 'rgba(10, 4, 24, 0.26)';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
     }
     if (samImpact) {

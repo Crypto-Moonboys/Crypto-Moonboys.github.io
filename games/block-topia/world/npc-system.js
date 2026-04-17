@@ -163,6 +163,15 @@ export function createNpcSystem(state) {
       if (npc.role === 'vendor' && Math.random() < 0.55) {
         dc = 0;
         dr = 0;
+      } else if (npc.role === 'fighter') {
+        dc = randInt(-1, 2);
+        dr = Math.random() < 0.65 ? randInt(-1, 2) : randInt(-2, 3);
+      } else if (npc.role === 'agent') {
+        dc = Math.random() < 0.5 ? randInt(-2, 3) : 0;
+        dr = Math.random() < 0.5 ? randInt(-2, 3) : 0;
+      } else if (npc.role === 'recruiter') {
+        dc = Math.random() < 0.6 ? randInt(-1, 2) : 0;
+        dr = Math.random() < 0.6 ? randInt(-1, 2) : 0;
       }
       const nc = Math.max(0, Math.min(MAP_W - 1, npc.col + dc));
       const nr = Math.max(0, Math.min(MAP_H - 1, npc.row + dr));

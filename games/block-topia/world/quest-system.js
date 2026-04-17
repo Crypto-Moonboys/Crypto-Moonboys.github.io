@@ -16,7 +16,7 @@ export function createQuestSystem(state) {
       title: quest.title,
       type: quest.type,
       xp: quest.xp,
-      objective: `Complete ${quest.type} objective in ${state.player.districtName}`,
+      objective: `Objective: complete ${quest.type} operation in ${state.player.districtName} · Reward: +${quest.xp} XP`,
     }));
   }
 
