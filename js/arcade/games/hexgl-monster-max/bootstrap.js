@@ -226,7 +226,7 @@ export function bootstrapHexGLMonsterMax(root) {
     unlockAudio();
     if (!audioCtx || audioCtx.state !== 'running') return;
     var freqs = [380, 480, 600];
-    var freq = freqs[noteIdx] !== undefined ? freqs[noteIdx] : 380;
+    var freq = noteIdx >= 0 && noteIdx < freqs.length ? freqs[noteIdx] : freqs[0];
     var now = audioCtx.currentTime;
     var osc = audioCtx.createOscillator();
     var gain = audioCtx.createGain();
@@ -302,7 +302,7 @@ export function bootstrapHexGLMonsterMax(root) {
       }
       if (idx < steps.length) {
         showCountdown(steps[idx], false);
-        if (idx > 0) playCountdownTick(idx - 1); // tick note index: 3→0, 2→1, 1→2
+        if (idx > 0) playCountdownTick(idx - 1); // step '3'→noteIdx 0, '2'→1, '1'→2
         idx++;
         readyTimeoutId = setTimeout(tick, COUNTDOWN_TICK_MS);
       } else {
@@ -409,8 +409,8 @@ export function bootstrapHexGLMonsterMax(root) {
     setStatus('LOADING');
     notify('');
     syncAmbient();
-    var shouldLoadFrame = !frameLoaded || isFrameBlank();
-    if (shouldLoadFrame && frameEl) {
+    var needsFrameReload = !frameLoaded || isFrameBlank();
+    if (needsFrameReload && frameEl) {
       frameLoaded = false;
       frameEl.classList.remove('loaded');
       frameEl.src = FRAME_SRC + '?run=' + Date.now();
