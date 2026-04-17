@@ -167,9 +167,12 @@ export function createNpcSystem(state) {
 
   // Initialise NPC entities with grid positions on first call
   if (state.npc.entities.length === 0) {
+    const activeCap = Number.isFinite(state.npc.activeCap)
+      ? state.npc.activeCap
+      : state.npc.activeTarget;
     const activeCount = Math.min(
       state.npc.activeTarget,
-      state.npc.activeCap || state.npc.activeTarget,
+      activeCap,
       MAX_ACTIVE_NPCS,
     );
     for (let activeIndex = 0; activeIndex < activeCount; activeIndex += 1) {
@@ -271,6 +274,7 @@ export function createNpcSystem(state) {
     const batchSize = Math.min(UPDATE_BATCH, total);
     for (let i = 0; i < batchSize; i += 1) {
       const npc = npcs[(batchIndex + i) % total];
+      // Crowd NPCs are visual-only by design and skipped from client-side simulation updates.
       if (!npc || npc.mode !== 'active') continue;
 
       npc.bobPhase += dt * npc.bobSpeed;

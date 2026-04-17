@@ -1,5 +1,6 @@
 let room = null;
 let client = null;
+const STATE_CHANGE_THROTTLE_MS = 100;
 
 function wait(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -58,7 +59,8 @@ export async function connectMultiplayer({
       let lastUpdate = 0;
       room.onStateChange((state) => {
         const now = performance.now();
-        if (now - lastUpdate < 100) return;
+        // Throttle state fan-out to avoid per-frame UI churn on large player maps.
+        if (now - lastUpdate < STATE_CHANGE_THROTTLE_MS) return;
         lastUpdate = now;
         onPlayers?.(toPlayerList(state.players));
       });

@@ -22,6 +22,7 @@ const ENTRY_DISMISS_DELAY_MS = 2400;
 const DISTRICT_CAPTURE_THRESHOLD = 90;
 const LOGIC_TICK_MS = 50;
 const NPC_SCAN_INTERVAL_MS = 150;
+const WORLD_SNAPSHOT_FRESH_THRESHOLD_MS = 1200;
 
 const canvas = document.getElementById('world-canvas');
 const hud = createHud(document);
@@ -44,8 +45,9 @@ async function boot() {
   const memory = createMemorySystem(state);
   let multiplayerConnected = false;
   let nearbyNpc = null;
-  let lastNpcScan = 0;
+  let lastNpcScan = performance.now();
   let serverWorldSnapshotAt = 0;
+  let hasWorldSnapshot = false;
   let lastQuestDistrictId = state.player.districtId;
   const primaryFactionName = state.factions.primary?.name || 'Liberators';
   const secondaryFactionName = state.factions.secondary?.name || 'Wardens';
@@ -153,6 +155,7 @@ async function boot() {
         hud.setSamPhase(phase.name);
       }
       serverWorldSnapshotAt = performance.now();
+      hasWorldSnapshot = true;
     },
     onFeed: (line) => {
       hud.pushFeed(line, classifyFeedType(line));
@@ -248,15 +251,14 @@ async function boot() {
   });
 
   let lastTs = performance.now();
-  let logicDt = LOGIC_TICK_MS / 1000;
-
   function logicTick() {
     const ts = performance.now();
-    const dt = Math.min(MAX_FRAME_DELTA_SECONDS, (ts - lastTs) / 1000) || logicDt;
-    logicDt = dt;
+    const dt = Math.min(MAX_FRAME_DELTA_SECONDS, (ts - lastTs) / 1000);
     lastTs = ts;
 
-    const worldSnapshotFresh = ts - serverWorldSnapshotAt <= 1200;
+    // When server snapshots are fresh, skip local NPC simulation to keep authority server-side.
+    const worldSnapshotFresh = hasWorldSnapshot
+      && (ts - serverWorldSnapshotAt <= WORLD_SNAPSHOT_FRESH_THRESHOLD_MS);
     updatePlayerMotion(state, input, dt, sendMovement);
     if (!worldSnapshotFresh) {
       npc.tick(dt);

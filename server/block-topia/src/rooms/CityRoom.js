@@ -10,6 +10,7 @@ const ACTIVE_NPC_COUNT = 80;
 const CROWD_NPC_COUNT = 220;
 const SAM_PHASE_INTERVAL_MS = 30000;
 const DISTRICT_DRIFT_INTERVAL_MS = 1200;
+const WORLD_SNAPSHOT_INTERVAL_MS = 200;
 const DISTRICT_CAPTURE_THRESHOLD = 90;
 
 const WORLD_DISTRICTS = [
@@ -61,6 +62,7 @@ export class CityRoom extends Room {
     this.worldTickCount = 0;
     this.samTimerMs = 0;
     this.districtTimerMs = 0;
+    this.snapshotTimerMs = 0;
 
     this.completedQuests = new Map(); // sessionId -> Set
     this.world = this.createInitialWorld();
@@ -148,34 +150,40 @@ export class CityRoom extends Room {
     this.worldTickCount += 1;
     this.samTimerMs += dt;
     this.districtTimerMs += dt;
+    this.snapshotTimerMs += dt;
 
     this.updateNPCs(dt);
     this.updateDistricts();
     this.updateSAM();
 
-    if (this.worldTickCount % 2 === 0) {
+    if (this.snapshotTimerMs >= WORLD_SNAPSHOT_INTERVAL_MS) {
+      this.snapshotTimerMs = 0;
       this.broadcast('worldSnapshot', this.world);
     }
   }
 
   updateNPCs(dt) {
     const dtSeconds = dt / 1000;
+    const time = Date.now() * 0.001;
     for (const npc of this.world.npcs) {
       if (!npc || npc.mode !== 'active') continue;
+      const phase = time + npc.seed;
+      const sinOffset = Math.sin(phase);
+      const cosOffset = Math.cos(phase);
 
       npc.bobPhase += dtSeconds * npc.bobSpeed;
       npc.col = Math.max(
         0,
         Math.min(
           WORLD_MAP_WIDTH - 1,
-          npc.col + Math.sin((Date.now() * 0.001) + npc.seed) * 0.05,
+          npc.col + sinOffset * 0.05,
         ),
       );
       npc.row = Math.max(
         0,
         Math.min(
           WORLD_MAP_HEIGHT - 1,
-          npc.row + Math.cos((Date.now() * 0.001) + npc.seed) * 0.05,
+          npc.row + cosOffset * 0.05,
         ),
       );
     }
