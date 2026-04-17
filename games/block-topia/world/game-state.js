@@ -66,6 +66,7 @@ export function createGameState(bundle) {
       id: district.id,
       name: district.name,
       control: 50,
+      owner: bundle.factions.primary?.name || 'Liberators',
       activeEvents: [],
       memoryFlags: [],
     })),

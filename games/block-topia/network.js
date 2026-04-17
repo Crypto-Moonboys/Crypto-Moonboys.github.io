@@ -28,6 +28,8 @@ export async function connectMultiplayer({
   onPlayers,
   onFeed,
   onQuestCompleted,
+  onSamPhaseChanged,
+  onDistrictCaptureChanged,
 }) {
   const endpoint = window.BLOCK_TOPIA_SERVER || 'https://game.cryptomoonboys.com';
   const retries = 2;
@@ -73,6 +75,22 @@ export async function connectMultiplayer({
         const rewardXp = message?.rewardXp || 0;
         onFeed?.(`✅ ${title} (+${rewardXp} XP)`);
         onQuestCompleted?.({ questId, title, rewardXp });
+      });
+
+      room.onMessage('samPhaseChanged', (message) => {
+        const phaseIndex = Number(message?.phaseIndex);
+        if (Number.isFinite(phaseIndex)) {
+          onSamPhaseChanged?.({ phaseIndex });
+        }
+      });
+
+      room.onMessage('districtCaptureChanged', (message) => {
+        const districtId = message?.districtId || '';
+        const control = Number(message?.control);
+        const owner = message?.owner || message?.factionOwner || message?.faction || '';
+        if (districtId) {
+          onDistrictCaptureChanged?.({ districtId, control, owner });
+        }
       });
 
       return room;
