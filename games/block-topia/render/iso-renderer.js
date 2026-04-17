@@ -26,6 +26,14 @@ const DISTRICT_THEME = {
   default: { glow: 'rgba(94,242,255,0.2)', line: 'rgba(150,220,255,0.3)', propBias: ['crate', 'terminal'] },
 };
 
+const DISTRICT_BASE_ELEVATION = {
+  'signal-spire': 7,
+  'crypto-core': 5,
+  'moonlit-underbelly': 2,
+  'revolt-plaza': 3,
+  default: 4,
+};
+
 function toIso(col, row) {
   return {
     x: (col - row) * (TILE_W / 2),
@@ -310,17 +318,14 @@ export function createIsoRenderer(canvas) {
     const originX   = canvas.width / 2 - state.camera.x + shakeX;
     const originY   = 120 - state.camera.y + shakeY;
 
+    const elevationCache = new Map();
     const getElevation = (districtId, col, row) => {
-      const base = districtId === 'signal-spire'
-        ? 7
-        : districtId === 'crypto-core'
-          ? 5
-          : districtId === 'moonlit-underbelly'
-            ? 2
-            : districtId === 'revolt-plaza'
-              ? 3
-              : 4;
-      return base + Math.floor(deterministicNoise2D(col * 5, row * 7) * 3);
+      const key = `${col}:${row}`;
+      if (elevationCache.has(key)) return elevationCache.get(key);
+      const base = DISTRICT_BASE_ELEVATION[districtId] ?? DISTRICT_BASE_ELEVATION.default;
+      const elevation = base + Math.floor(deterministicNoise2D(col * 5, row * 7) * 3);
+      elevationCache.set(key, elevation);
+      return elevation;
     };
 
     // Street Signal feature reintroduced: denser district visuals + tile variation.

@@ -1,6 +1,9 @@
 export function createHud(doc) {
   // Core Street Signal progression: every 200 XP advances one level.
   const XP_PER_LEVEL = 200;
+  const DISTRICT_CAPTURE_THRESHOLD = 90;
+  const DISTRICT_CRITICAL_THRESHOLD = 70;
+  const DISTRICT_CONTESTED_THRESHOLD = 45;
   const playerNameEl    = doc.getElementById('player-name');
   const levelStatus     = doc.getElementById('level-status');
   const worldStatus     = doc.getElementById('world-status');
@@ -109,9 +112,9 @@ export function createHud(doc) {
     const rounded = Math.round(pct);
     districtControl.textContent = `Control: ${rounded}%`;
     if (districtIntensity) {
-      if (rounded >= 90) districtIntensity.textContent = 'Pressure: Captured';
-      else if (rounded >= 70) districtIntensity.textContent = 'Pressure: Critical';
-      else if (rounded >= 45) districtIntensity.textContent = 'Pressure: Contested';
+      if (rounded >= DISTRICT_CAPTURE_THRESHOLD) districtIntensity.textContent = 'Pressure: Captured';
+      else if (rounded >= DISTRICT_CRITICAL_THRESHOLD) districtIntensity.textContent = 'Pressure: Critical';
+      else if (rounded >= DISTRICT_CONTESTED_THRESHOLD) districtIntensity.textContent = 'Pressure: Contested';
       else districtIntensity.textContent = 'Pressure: Stable';
     }
     if (districtControlBar) {
@@ -138,6 +141,7 @@ export function createHud(doc) {
       xpGain.textContent = `+${delta} XP`;
       xpGain.classList.remove('hidden');
       xpStatus.classList.remove('xp-pop');
+      // Force reflow so the XP pop animation reliably restarts on repeated gain ticks.
       void xpStatus.offsetWidth;
       xpStatus.classList.add('xp-pop');
       xpGainTimer = setTimeout(() => xpGain.classList.add('hidden'), 1300);
