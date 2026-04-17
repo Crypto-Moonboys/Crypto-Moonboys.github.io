@@ -184,6 +184,13 @@
       gap:6px;
     }
     .hexgl-page #game-overlay #overlay-btn-pause { display:none !important; }
+    #hexgl-inline-message {
+      min-height: 1.1em;
+      margin-top: 6px;
+      text-align: center;
+      font-size: .8rem;
+      color: var(--color-text-muted);
+    }
     @media (max-width: 720px) {
       .hud { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       .mini-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -292,6 +299,7 @@
           <button id="submit-btn" class="game-btn alt" type="button" aria-label="Submit run score to leaderboard">📤 Submit Run</button>
           <button id="resetBtn" class="game-btn alt" type="button">↺ Reset</button>
         </div>
+        <p id="hexgl-inline-message" aria-live="polite"></p>
 
         <div class="rival-block" id="rival-block" style="display:none" aria-live="polite">
           <strong>👻 Rival Ghost</strong> — <span id="rival-name">—</span>

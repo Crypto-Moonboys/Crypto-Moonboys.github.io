@@ -35,6 +35,7 @@ export function bootstrapHexGLMonsterMax(root) {
   var startBtn      = document.getElementById('startBtn');
   var submitBtn     = document.getElementById('submit-btn');
   var resetBtn      = document.getElementById('resetBtn');
+  var inlineMessageEl = document.getElementById('hexgl-inline-message');
 
   var playerName = 'Guest';
   var runStart   = null;
@@ -51,6 +52,7 @@ export function bootstrapHexGLMonsterMax(root) {
   var audioCtx = null;
   var ambientOsc = null;
   var ambientGain = null;
+  var messageTimeoutId = null;
 
   function calcScore(ms) {
     return Math.max(0, Math.floor(500000 - (ms / 1000) * 1000));
@@ -84,6 +86,16 @@ export function bootstrapHexGLMonsterMax(root) {
     clearTimeout(loadFallbackTimeoutId);
     readyTimeoutId = null;
     loadFallbackTimeoutId = null;
+  }
+
+  function notify(message) {
+    if (!inlineMessageEl) return;
+    inlineMessageEl.textContent = message || '';
+    clearTimeout(messageTimeoutId);
+    if (!message) return;
+    messageTimeoutId = setTimeout(function () {
+      if (inlineMessageEl) inlineMessageEl.textContent = '';
+    }, 2600);
   }
 
   function isFrameBlank() {
@@ -308,6 +320,7 @@ export function bootstrapHexGLMonsterMax(root) {
     if (runActiveEl) runActiveEl.style.display = 'none';
     if (perfectEl) perfectEl.style.display = 'none';
     setStatus('LOADING');
+    notify('');
     syncAmbient();
     var shouldLoadFrame = !frameLoaded || isFrameBlank();
     if (shouldLoadFrame && frameEl) {
@@ -327,7 +340,7 @@ export function bootstrapHexGLMonsterMax(root) {
     if (runPending) {
       if (submitBtn) submitBtn.disabled = true;
       setStatus('LOADING');
-      alert('Run is still loading. Wait for RUN ACTIVE.');
+      notify('Run is still loading. Wait for RUN ACTIVE.');
       return;
     }
     if (runActive) {
@@ -340,14 +353,14 @@ export function bootstrapHexGLMonsterMax(root) {
     if (typeof lastRunMs !== 'number' || lastRunMs < MIN_RUN_MS) {
       if (startBtn) startBtn.disabled = false;
       setStatus('RUN READY');
-      alert('Complete a valid run first (minimum 30 seconds).');
+      notify('Complete a valid run first (minimum 30 seconds).');
       return;
     }
     var score = calcScore(lastRunMs);
     if (score <= 0) {
       if (startBtn) startBtn.disabled = false;
       setStatus('RUN READY');
-      alert('Run is too slow to qualify for leaderboard submission.');
+      notify('Run is too slow to qualify for leaderboard submission.');
       return;
     }
     updateRunUI(lastRunMs);
@@ -358,7 +371,7 @@ export function bootstrapHexGLMonsterMax(root) {
       if (window.MOONBOYS_IDENTITY?.showSyncGateModal) {
         window.MOONBOYS_IDENTITY.showSyncGateModal(true);
       } else {
-        alert('Telegram link required for ranked leaderboard submission. Guest runs stay local.');
+        notify('Telegram link required for ranked leaderboard submission. Guest runs stay local.');
       }
       if (startBtn) startBtn.disabled = false;
       setStatus('RUN READY');
@@ -400,6 +413,7 @@ export function bootstrapHexGLMonsterMax(root) {
       submitBtn.textContent = '📤 Submit Run';
       submitBtn.disabled = false;
     }
+    notify('');
     updateCrossGameStats();
   }
 
@@ -434,6 +448,8 @@ export function bootstrapHexGLMonsterMax(root) {
     clearRunDelays();
     stopTimer();
     stopAmbient();
+    clearTimeout(messageTimeoutId);
+    notify('');
     if (frameEl) frameEl.src = '';
     if (startBtn) startBtn.removeEventListener('click', onStart);
     if (submitBtn) submitBtn.removeEventListener('click', onSubmit);
