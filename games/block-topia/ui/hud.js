@@ -1,12 +1,35 @@
 // Role colour lookup — mirrors ROLE_STYLE in iso-renderer so NPC dialogue matches world identity.
 const ROLE_COLOR_MAP = {
-  vendor: '#ffd84d',
-  fighter: '#ff4fd8',
-  agent: '#ff9b42',
-  'lore-keeper': '#c77dff',
-  'lore keeper': '#c77dff',
-  recruiter: '#8dff6a',
-  drifter: '#a0b0c8',
+  vendor:         '#ffd84d',
+  fighter:        '#ff4fd8',
+  agent:          '#ff9b42',
+  'lore-keeper':  '#c77dff',
+  'lore keeper':  '#c77dff',
+  recruiter:      '#8dff6a',
+  drifter:        '#a0b0c8',
+};
+
+const ROLE_ICON_MAP = {
+  vendor:         '🏪',
+  fighter:        '⚔️',
+  agent:          '📡',
+  'lore-keeper':  '📜',
+  'lore keeper':  '📜',
+  recruiter:      '🤝',
+  drifter:        '🌫️',
+};
+
+const FACTION_COLOR_MAP = {
+  Liberators: '#5ef2ff',
+  Wardens:    '#ff9b42',
+  Neutral:    '#a0b0c8',
+};
+
+const QUEST_TYPE_ICON = {
+  daily:    '◆',
+  weekly:   '◈',
+  seasonal: '★',
+  prophecy: '⬡',
 };
 
 export function createHud(doc) {
@@ -92,11 +115,13 @@ export function createHud(doc) {
       if (typeof entry === 'string') {
         li.textContent = entry;
       } else {
-        li.setAttribute('data-type', entry.type || 'daily');
+        const type = entry.type || 'daily';
+        li.setAttribute('data-type', type);
 
         const badge = doc.createElement('span');
         badge.className = 'quest-badge';
-        badge.textContent = (entry.type || 'DLY').toUpperCase().slice(0, 3);
+        const typeIcon = QUEST_TYPE_ICON[type] || '◆';
+        badge.textContent = `${typeIcon} ${(type).toUpperCase().slice(0, 3)}`;
 
         const titleSpan = doc.createElement('span');
         titleSpan.className = 'quest-title';
@@ -104,7 +129,7 @@ export function createHud(doc) {
 
         const xpSpan = doc.createElement('span');
         xpSpan.className = 'quest-xp';
-        xpSpan.textContent = `+${entry.xp}`;
+        xpSpan.textContent = `+${entry.xp} XP`;
 
         const objSpan = doc.createElement('span');
         objSpan.className = 'quest-obj';
@@ -131,16 +156,14 @@ export function createHud(doc) {
     districtControl.textContent = `Control: ${rounded}%`;
     if (districtIntensity) {
       let pressure = 'Stable';
-      if (rounded >= DISTRICT_CAPTURE_THRESHOLD) pressure = 'Captured';
-      else if (rounded >= DISTRICT_CRITICAL_THRESHOLD) pressure = 'Critical';
-      else if (rounded >= DISTRICT_CONTESTED_THRESHOLD) pressure = 'Contested';
+      if (rounded >= DISTRICT_CAPTURE_THRESHOLD) pressure = '🏴 Captured';
+      else if (rounded >= DISTRICT_CRITICAL_THRESHOLD) pressure = '🔴 Critical';
+      else if (rounded >= DISTRICT_CONTESTED_THRESHOLD) pressure = '🟡 Contested';
       districtIntensity.textContent = `Pressure: ${pressure}`;
     }
     if (districtControlBar) {
       districtControlBar.style.width = `${Math.max(0, Math.min(100, rounded))}%`;
       districtControlBar.classList.remove('surge');
-      // Trigger CSS animation each update
-      // Street Signal feature reintroduced: tactile district capture progression.
       void districtControlBar.offsetWidth;
       districtControlBar.classList.add('surge');
     }
@@ -154,17 +177,15 @@ export function createHud(doc) {
     const xpInLevel = value % XP_PER_LEVEL;
     const pct = Math.round((xpInLevel / XP_PER_LEVEL) * 100);
     if (xpBarFill) xpBarFill.style.width = `${pct}%`;
-    if (xpBarLabel) xpBarLabel.textContent = `${xpInLevel} / ${XP_PER_LEVEL} XP`;
+    if (xpBarLabel) xpBarLabel.textContent = `${xpInLevel} / ${XP_PER_LEVEL} XP to L${level + 1}`;
     if (delta > 0) {
       clearTimeout(xpGainTimer);
-      xpGain.textContent = `+${delta} XP`;
+      xpGain.innerHTML = `<span class="xp-gain-delta">+${delta} XP</span>`;
       xpGain.classList.remove('hidden');
       xpStatus.classList.remove('xp-pop');
-      // Force browser reflow to reset animation state before re-applying class,
-      // so the XP pop animation reliably replays on every XP gain tick.
       void xpStatus.offsetWidth;
       xpStatus.classList.add('xp-pop');
-      xpGainTimer = setTimeout(() => xpGain.classList.add('hidden'), 1300);
+      xpGainTimer = setTimeout(() => xpGain.classList.add('hidden'), 1400);
     }
     lastXp = value;
   }
@@ -185,60 +206,90 @@ export function createHud(doc) {
 
   function triggerPhaseTransition(name) {
     phaseFlash?.classList.remove('hidden');
-    setTimeout(() => phaseFlash?.classList.add('hidden'), 550);
+    setTimeout(() => phaseFlash?.classList.add('hidden'), 700);
     phaseFlavor.textContent = name === 'Night'
-      ? 'Night pressure rising. District control windows opening.'
-      : 'Day cycle active. Recon, quests, and prep routes online.';
+      ? '🌑 Night pressure rising. District capture windows now open.'
+      : '☀️ Day cycle active. Recon, quests, and prep routes online.';
     if (samWarning) {
       samWarning.textContent = name === 'Night'
-        ? 'SAM Alert: Elevated'
-        : 'SAM Alert: Nominal';
+        ? '⚠ SAM Alert: ELEVATED — capture window open'
+        : '✓ SAM Alert: Nominal';
     }
+    pushFeed(
+      name === 'Night'
+        ? 'PHASE SHIFT → NIGHT — District control windows open. Stay in territory to capture.'
+        : 'PHASE SHIFT → DAY — Territory locked. Focus on quests and faction moves.',
+      'system',
+    );
   }
 
   function triggerSamImpact(text) {
     samImpact?.classList.remove('hidden');
-    setTimeout(() => samImpact?.classList.add('hidden'), 1500);
-    showSamPopup(text, 4800);
+    setTimeout(() => samImpact?.classList.add('hidden'), 1800);
+    showSamPopup(`⚡ SAM EVENT\n${text}`, 5200);
+    pushFeed(`SAM EVENT: ${text}`, 'sam');
   }
 
   function showQuestComplete(title, rewardXp) {
     clearTimeout(questToastTimer);
-    showBanner(questToast, `✅ QUEST COMPLETE: ${title} (+${rewardXp} XP)`, 3800, (timer) => {
+    showBanner(questToast, `✅ OPERATION COMPLETE\n${title}  ·  +${rewardXp} XP`, 4200, (timer) => {
       questToastTimer = timer;
     });
+    pushFeed(`Quest complete: ${title} (+${rewardXp} XP)`, 'quest');
   }
 
   function showDistrictCapture(text) {
     clearTimeout(districtBannerTimer);
-    showBanner(districtCaptureBanner, text, 3600, (timer) => {
+    showBanner(districtCaptureBanner, `🏴 ${text}`, 4200, (timer) => {
       districtBannerTimer = timer;
     });
     captureFlash?.classList.remove('hidden');
-    setTimeout(() => captureFlash?.classList.add('hidden'), 700);
+    setTimeout(() => captureFlash?.classList.add('hidden'), 800);
+    pushFeed(text, 'system');
   }
 
-  function showNpcDialogue(name, role, line) {
+  function showNpcDialogue(name, role, line, faction) {
     clearTimeout(npcDialogueTimer);
     if (!npcDialogue) return;
     npcDialogue.replaceChildren();
+
+    const roleKey = (role || '').toLowerCase().replace(/\s+/g, '-');
+    const roleColor = ROLE_COLOR_MAP[roleKey] || 'var(--accent)';
+    const roleIcon  = ROLE_ICON_MAP[roleKey]  || '👤';
+
     const header = doc.createElement('div');
     header.className = 'npc-dialogue-header';
+
+    const iconSpan = doc.createElement('span');
+    iconSpan.className = 'npc-dialogue-icon';
+    iconSpan.textContent = roleIcon;
+
     const nameSpan = doc.createElement('span');
     nameSpan.className = 'npc-dialogue-name';
     nameSpan.textContent = name;
+
     const roleSpan = doc.createElement('span');
     roleSpan.className = 'npc-dialogue-role';
     roleSpan.textContent = ` [${role}]`;
-    const roleKey = (role || '').toLowerCase().replace(/\s+/g, '-');
-    roleSpan.style.color = ROLE_COLOR_MAP[roleKey] || 'var(--accent)';
-    header.append(nameSpan, roleSpan);
+    roleSpan.style.color = roleColor;
+
+    header.append(iconSpan, nameSpan, roleSpan);
+
+    if (faction && faction !== 'Neutral') {
+      const factionBadge = doc.createElement('span');
+      factionBadge.className = 'npc-dialogue-faction';
+      factionBadge.textContent = faction;
+      factionBadge.style.color = FACTION_COLOR_MAP[faction] || '#a0b0c8';
+      header.append(factionBadge);
+    }
+
     const lineEl = doc.createElement('p');
     lineEl.className = 'npc-dialogue-line';
     lineEl.textContent = line;
+
     npcDialogue.append(header, lineEl);
     npcDialogue.classList.remove('hidden');
-    const timer = setTimeout(() => npcDialogue.classList.add('hidden'), 3800);
+    const timer = setTimeout(() => npcDialogue.classList.add('hidden'), 4200);
     npcDialogueTimer = timer;
   }
 

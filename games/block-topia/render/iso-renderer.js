@@ -1,6 +1,6 @@
 const TILE_W = 72;
 const TILE_H = 36;
-const PROP_SPAWN_THRESHOLD = 0.2;
+const PROP_SPAWN_THRESHOLD = 0.18;
 const PROP_PREVIEW_OVERLAY_ALPHA = 0.08;
 const PROP_PREVIEW_OVERLAY_W = 240;
 const PROP_PREVIEW_OVERLAY_H = 120;
@@ -8,22 +8,28 @@ const PROP_PREVIEW_OVERLAY_OFFSET_X = -300;
 const PROP_PREVIEW_OVERLAY_OFFSET_Y = 20;
 
 const ROLE_STYLE = {
-  vendor: { color: '#ffd84d', radius: 5, glow: 'rgba(255,216,77,0.45)' },
-  fighter: { color: '#ff4fd8', radius: 6, glow: 'rgba(255,79,216,0.5)' },
-  'lore-keeper': { color: '#c77dff', radius: 5.5, glow: 'rgba(199,125,255,0.46)' },
-  recruiter: { color: '#8dff6a', radius: 5, glow: 'rgba(141,255,106,0.45)' },
-  drifter: { color: '#a0b0c8', radius: 4.5, glow: 'rgba(160,176,200,0.35)' },
-  agent: { color: '#ff9b42', radius: 5.5, glow: 'rgba(255,155,66,0.48)' },
-  crowd: { color: 'rgba(94,242,255,0.45)', radius: 3, glow: 'rgba(94,242,255,0.2)' },
+  vendor:       { color: '#ffd84d', radius: 5.5, glow: 'rgba(255,216,77,0.55)',  factionRing: true  },
+  fighter:      { color: '#ff4fd8', radius: 6.5, glow: 'rgba(255,79,216,0.6)',   factionRing: true  },
+  'lore-keeper':{ color: '#c77dff', radius: 5.5, glow: 'rgba(199,125,255,0.52)', factionRing: false },
+  recruiter:    { color: '#8dff6a', radius: 5.5, glow: 'rgba(141,255,106,0.52)', factionRing: true  },
+  drifter:      { color: '#a0b0c8', radius: 4.5, glow: 'rgba(160,176,200,0.38)', factionRing: false },
+  agent:        { color: '#ff9b42', radius: 5.5, glow: 'rgba(255,155,66,0.52)',  factionRing: true  },
+  crowd:        { color: 'rgba(94,242,255,0.5)', radius: 3, glow: 'rgba(94,242,255,0.22)', factionRing: false },
+};
+
+const FACTION_COLOR = {
+  Liberators: '#5ef2ff',
+  Wardens:    '#ff9b42',
+  Neutral:    '#a0b0c8',
 };
 
 const DISTRICT_THEME = {
-  'neon-slums': { glow: 'rgba(79,109,255,0.2)', line: 'rgba(143,164,255,0.3)', propBias: ['graffiti', 'crate'] },
-  'signal-spire': { glow: 'rgba(255,79,216,0.2)', line: 'rgba(255,143,230,0.35)', propBias: ['terminal', 'light'] },
-  'crypto-core': { glow: 'rgba(255,216,77,0.2)', line: 'rgba(255,230,150,0.35)', propBias: ['crate', 'terminal'] },
-  'moonlit-underbelly': { glow: 'rgba(141,255,106,0.2)', line: 'rgba(190,255,165,0.32)', propBias: ['graffiti', 'light'] },
-  'revolt-plaza': { glow: 'rgba(94,242,255,0.22)', line: 'rgba(153,255,255,0.35)', propBias: ['terminal', 'graffiti'] },
-  default: { glow: 'rgba(94,242,255,0.2)', line: 'rgba(150,220,255,0.3)', propBias: ['crate', 'terminal'] },
+  'neon-slums':         { glow: 'rgba(79,109,255,0.22)',  line: 'rgba(143,164,255,0.32)', propBias: ['graffiti', 'graffiti', 'crate', 'barrel', 'rubble', 'sign']    },
+  'signal-spire':       { glow: 'rgba(255,79,216,0.22)',  line: 'rgba(255,143,230,0.38)', propBias: ['terminal', 'terminal', 'light', 'antenna', 'antenna', 'vent']   },
+  'crypto-core':        { glow: 'rgba(255,216,77,0.22)',  line: 'rgba(255,230,150,0.38)', propBias: ['crate', 'crate', 'terminal', 'market_stall', 'barrel', 'sign']  },
+  'moonlit-underbelly': { glow: 'rgba(141,255,106,0.22)', line: 'rgba(190,255,165,0.34)', propBias: ['graffiti', 'light', 'light', 'rubble', 'barrel', 'vent']       },
+  'revolt-plaza':       { glow: 'rgba(94,242,255,0.24)',  line: 'rgba(153,255,255,0.38)', propBias: ['terminal', 'graffiti', 'graffiti', 'sign', 'market_stall', 'light'] },
+  default:              { glow: 'rgba(94,242,255,0.2)',   line: 'rgba(150,220,255,0.3)',  propBias: ['crate', 'terminal', 'barrel', 'sign']                           },
 };
 
 const NEARBY_PULSE_PERIOD_MS = 280;
@@ -93,25 +99,33 @@ export function createIsoRenderer(canvas) {
     const topY = screenY - elevation;
     const theme = DISTRICT_THEME[districtId] || DISTRICT_THEME.default;
     if (elevation > 0) {
+      // Right face — slightly lighter for depth
       ctx.beginPath();
       ctx.moveTo(screenX, topY + TILE_H);
       ctx.lineTo(screenX + TILE_W / 2, topY + TILE_H / 2);
       ctx.lineTo(screenX + TILE_W / 2, screenY + TILE_H / 2);
       ctx.lineTo(screenX, screenY + TILE_H);
       ctx.closePath();
-      ctx.fillStyle = 'rgba(0,0,0,0.16)';
+      ctx.fillStyle = 'rgba(0,0,0,0.14)';
       ctx.fill();
-
+      // Left face — darker for contrast
       ctx.beginPath();
       ctx.moveTo(screenX, topY + TILE_H);
       ctx.lineTo(screenX - TILE_W / 2, topY + TILE_H / 2);
       ctx.lineTo(screenX - TILE_W / 2, screenY + TILE_H / 2);
       ctx.lineTo(screenX, screenY + TILE_H);
       ctx.closePath();
-      ctx.fillStyle = 'rgba(0,0,0,0.22)';
+      ctx.fillStyle = 'rgba(0,0,0,0.26)';
       ctx.fill();
+      // Edge highlight at top of right face
+      ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(screenX, topY + TILE_H);
+      ctx.lineTo(screenX + TILE_W / 2, topY + TILE_H / 2);
+      ctx.stroke();
     }
-    // variant is expected in [0,1], used for deterministic surface micro-variation.
+    // Top face — main tile surface
     ctx.beginPath();
     ctx.moveTo(screenX, topY);
     ctx.lineTo(screenX + TILE_W / 2, topY + TILE_H / 2);
@@ -120,63 +134,212 @@ export function createIsoRenderer(canvas) {
     ctx.closePath();
     ctx.fillStyle = fill;
     ctx.fill();
+
+    // Surface micro-detail — light scratch lines
     if (variant > 0.72) {
-      ctx.strokeStyle = 'rgba(255,255,255,0.08)';
+      ctx.strokeStyle = 'rgba(255,255,255,0.09)';
+      ctx.lineWidth = 0.8;
       ctx.beginPath();
       ctx.moveTo(screenX - TILE_W * 0.22, topY + TILE_H * 0.57);
       ctx.lineTo(screenX + TILE_W * 0.2, topY + TILE_H * 0.35);
       ctx.stroke();
     } else if (variant < 0.18) {
-      ctx.strokeStyle = 'rgba(0,0,0,0.22)';
+      ctx.strokeStyle = 'rgba(0,0,0,0.24)';
+      ctx.lineWidth = 0.8;
       ctx.beginPath();
       ctx.moveTo(screenX, topY + TILE_H * 0.25);
       ctx.lineTo(screenX, topY + TILE_H * 0.8);
       ctx.stroke();
     }
+
+    // District-identity line marking
     if (variant > 0.52 && variant < 0.58) {
       ctx.strokeStyle = theme.line;
+      ctx.lineWidth = 1.2;
       ctx.beginPath();
-      ctx.moveTo(screenX - TILE_W * 0.12, topY + TILE_H * 0.68);
-      ctx.lineTo(screenX + TILE_W * 0.12, topY + TILE_H * 0.52);
+      ctx.moveTo(screenX - TILE_W * 0.14, topY + TILE_H * 0.68);
+      ctx.lineTo(screenX + TILE_W * 0.14, topY + TILE_H * 0.50);
       ctx.stroke();
     }
-    ctx.strokeStyle = 'rgba(8,12,28,0.85)';
+
+    // Subtle crack detail on worn tiles
+    if (variant > 0.84 && variant < 0.9) {
+      ctx.strokeStyle = 'rgba(0,0,0,0.28)';
+      ctx.lineWidth = 0.7;
+      ctx.beginPath();
+      ctx.moveTo(screenX - TILE_W * 0.08, topY + TILE_H * 0.4);
+      ctx.lineTo(screenX + TILE_W * 0.06, topY + TILE_H * 0.6);
+      ctx.stroke();
+    }
+
+    ctx.strokeStyle = 'rgba(8,12,28,0.82)';
+    ctx.lineWidth = 1;
     ctx.stroke();
   }
 
   function drawProp(screenX, screenY, type, districtColor, nightFactor, elevation = 0) {
     const anchorY = screenY + TILE_H * 0.3 - elevation;
+    const nightA = 1 - nightFactor * 0.25;
+
     if (type === 'crate') {
-      ctx.fillStyle = `rgba(255, 155, 66, ${0.4 + (1 - nightFactor) * 0.2})`;
-      ctx.fillRect(screenX - 6, anchorY - 8, 12, 10);
-      ctx.strokeStyle = 'rgba(0,0,0,0.4)';
-      ctx.strokeRect(screenX - 6, anchorY - 8, 12, 10);
+      ctx.fillStyle = `rgba(255, 155, 66, ${(0.42 + (1 - nightFactor) * 0.2) * nightA})`;
+      ctx.fillRect(screenX - 7, anchorY - 9, 14, 11);
+      ctx.strokeStyle = 'rgba(0,0,0,0.45)';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(screenX - 7, anchorY - 9, 14, 11);
+      // Plank lines
+      ctx.strokeStyle = 'rgba(0,0,0,0.18)';
+      ctx.beginPath();
+      ctx.moveTo(screenX, anchorY - 9);
+      ctx.lineTo(screenX, anchorY + 2);
+      ctx.stroke();
       return;
     }
+
+    if (type === 'barrel') {
+      ctx.fillStyle = `rgba(180, 120, 60, ${0.72 * nightA})`;
+      ctx.beginPath();
+      ctx.ellipse(screenX, anchorY - 5, 4, 7, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(90,50,10,0.6)';
+      ctx.lineWidth = 1.2;
+      ctx.stroke();
+      ctx.strokeStyle = 'rgba(255,180,80,0.35)';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.ellipse(screenX, anchorY - 8, 4, 1.5, 0, 0, Math.PI * 2);
+      ctx.stroke();
+      return;
+    }
+
     if (type === 'terminal') {
-      ctx.fillStyle = 'rgba(16,24,45,0.95)';
-      ctx.fillRect(screenX - 5, anchorY - 12, 10, 14);
-      ctx.fillStyle = 'rgba(94,242,255,0.8)';
-      ctx.fillRect(screenX - 3, anchorY - 10, 6, 6);
+      ctx.fillStyle = 'rgba(16,24,45,0.97)';
+      ctx.fillRect(screenX - 5, anchorY - 13, 10, 15);
+      ctx.fillStyle = `rgba(94,242,255,${0.82 * nightA + nightFactor * 0.1})`;
+      ctx.fillRect(screenX - 3, anchorY - 11, 6, 7);
+      ctx.fillStyle = 'rgba(255,255,255,0.14)';
+      ctx.fillRect(screenX - 2, anchorY - 10, 2, 1);
+      ctx.fillRect(screenX + 1, anchorY - 8, 1, 1);
       return;
     }
+
+    if (type === 'antenna') {
+      ctx.strokeStyle = `rgba(200,220,255,${0.7 * nightA})`;
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(screenX, anchorY + 2);
+      ctx.lineTo(screenX, anchorY - 14);
+      ctx.stroke();
+      ctx.strokeStyle = `rgba(94,242,255,${(0.5 + nightFactor * 0.4) * nightA})`;
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(screenX - 4, anchorY - 10);
+      ctx.lineTo(screenX + 4, anchorY - 10);
+      ctx.stroke();
+      // Blinking tip
+      const blink = Math.sin(Date.now() / 600) > 0 ? 0.9 : 0.3;
+      ctx.fillStyle = `rgba(255,79,216,${blink})`;
+      ctx.beginPath();
+      ctx.arc(screenX, anchorY - 14, 1.5, 0, Math.PI * 2);
+      ctx.fill();
+      return;
+    }
+
+    if (type === 'market_stall') {
+      ctx.fillStyle = `rgba(255, 220, 120, ${0.28 * nightA})`;
+      ctx.fillRect(screenX - 9, anchorY - 10, 18, 4);
+      ctx.strokeStyle = `rgba(200,140,40,${0.55 * nightA})`;
+      ctx.lineWidth = 1;
+      ctx.strokeRect(screenX - 9, anchorY - 10, 18, 4);
+      ctx.fillStyle = `rgba(60,30,10,${0.7 * nightA})`;
+      ctx.fillRect(screenX - 7, anchorY - 6, 4, 6);
+      ctx.fillRect(screenX + 3, anchorY - 6, 4, 6);
+      return;
+    }
+
+    if (type === 'sign') {
+      ctx.fillStyle = `rgba(30,20,50,0.9)`;
+      ctx.fillRect(screenX - 7, anchorY - 11, 14, 8);
+      ctx.strokeStyle = districtColor;
+      ctx.lineWidth = 1.2;
+      ctx.strokeRect(screenX - 7, anchorY - 11, 14, 8);
+      ctx.fillStyle = districtColor;
+      ctx.globalAlpha = 0.6 + nightFactor * 0.3;
+      ctx.fillRect(screenX - 4, anchorY - 9, 8, 4);
+      ctx.globalAlpha = 1;
+      return;
+    }
+
+    if (type === 'rubble') {
+      ctx.fillStyle = `rgba(90, 80, 70, ${0.55 * nightA})`;
+      ctx.beginPath();
+      ctx.moveTo(screenX - 6, anchorY);
+      ctx.lineTo(screenX - 2, anchorY - 5);
+      ctx.lineTo(screenX + 3, anchorY - 3);
+      ctx.lineTo(screenX + 6, anchorY);
+      ctx.closePath();
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(0,0,0,0.3)';
+      ctx.lineWidth = 0.8;
+      ctx.stroke();
+      return;
+    }
+
+    if (type === 'vent') {
+      ctx.fillStyle = 'rgba(60,70,90,0.88)';
+      ctx.fillRect(screenX - 5, anchorY - 6, 10, 6);
+      ctx.strokeStyle = 'rgba(150,180,220,0.4)';
+      ctx.lineWidth = 0.8;
+      for (let i = 0; i < 3; i += 1) {
+        ctx.beginPath();
+        ctx.moveTo(screenX - 4, anchorY - 5 + i * 2);
+        ctx.lineTo(screenX + 4, anchorY - 5 + i * 2);
+        ctx.stroke();
+      }
+      // Steam puff at night
+      if (nightFactor > 0.4) {
+        ctx.fillStyle = `rgba(200,220,255,${nightFactor * 0.18})`;
+        ctx.beginPath();
+        ctx.arc(screenX, anchorY - 9, 4, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      return;
+    }
+
     if (type === 'graffiti') {
       ctx.fillStyle = districtColor;
-      ctx.globalAlpha = 0.55;
+      ctx.globalAlpha = 0.58;
       ctx.beginPath();
-      ctx.arc(screenX - 6, anchorY + 4, 4, 0, Math.PI * 2);
-      ctx.arc(screenX + 2, anchorY + 2, 3, 0, Math.PI * 2);
+      ctx.arc(screenX - 5, anchorY + 4, 4.5, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(screenX + 3, anchorY + 2, 3, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.globalAlpha = 0.3;
+      ctx.beginPath();
+      ctx.arc(screenX - 1, anchorY + 6, 2, 0, Math.PI * 2);
       ctx.fill();
       ctx.globalAlpha = 1;
       return;
     }
+
     if (type === 'light') {
-      ctx.fillStyle = '#eaf6ff';
-      ctx.fillRect(screenX - 1, anchorY - 11, 2, 11);
-      ctx.fillStyle = 'rgba(94,242,255,0.7)';
+      ctx.fillStyle = 'rgba(200,215,235,0.9)';
+      ctx.fillRect(screenX - 1.5, anchorY - 13, 3, 13);
+      const glowAlpha = 0.55 + nightFactor * 0.35;
+      const glowR = 3 + nightFactor * 2.5;
+      ctx.fillStyle = `rgba(94,242,255,${glowAlpha})`;
       ctx.beginPath();
-      ctx.arc(screenX, anchorY - 11, 3, 0, Math.PI * 2);
+      ctx.arc(screenX, anchorY - 13, glowR, 0, Math.PI * 2);
       ctx.fill();
+      if (nightFactor > 0.3) {
+        ctx.globalAlpha = nightFactor * 0.22;
+        ctx.fillStyle = 'rgba(94,242,255,0.6)';
+        ctx.beginPath();
+        ctx.arc(screenX, anchorY - 10, 12 + nightFactor * 8, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.globalAlpha = 1;
+      }
     }
   }
 
@@ -193,7 +356,7 @@ export function createIsoRenderer(canvas) {
       return propCache.items;
     }
     const items = [];
-    const baseTypes = ['crate', 'terminal', 'graffiti', 'light'];
+    const baseTypes = ['crate', 'terminal', 'graffiti', 'light', 'barrel', 'sign'];
     const propPools = new Map();
     Object.keys(DISTRICT_THEME).forEach((key) => {
       propPools.set(key, [...(DISTRICT_THEME[key].propBias || []), ...baseTypes]);
@@ -245,10 +408,10 @@ export function createIsoRenderer(canvas) {
 
     // Soft glow halo for active NPCs
     if (npc.mode === 'active') {
-      ctx.globalAlpha = 0.2;
+      ctx.globalAlpha = 0.22;
       ctx.fillStyle = style.glow;
       ctx.beginPath();
-      ctx.arc(sx, sy, r + 4.5, 0, Math.PI * 2);
+      ctx.arc(sx, sy, r + 5.5, 0, Math.PI * 2);
       ctx.fill();
       ctx.globalAlpha = 1;
     }
@@ -259,43 +422,82 @@ export function createIsoRenderer(canvas) {
 
     switch (npc.role) {
       case 'fighter': {
-        // Upward-pointing triangle — aggressive stance
+        // Upward-pointing triangle — aggressive stance, bold outline
         ctx.beginPath();
-        ctx.moveTo(sx,         sy - r - 1);
-        ctx.lineTo(sx + r + 1, sy + r);
-        ctx.lineTo(sx - r - 1, sy + r);
+        ctx.moveTo(sx,         sy - r - 2);
+        ctx.lineTo(sx + r + 2, sy + r);
+        ctx.lineTo(sx - r - 2, sy + r);
         ctx.closePath();
         ctx.fill();
+        ctx.strokeStyle = 'rgba(255,255,255,0.35)';
+        ctx.lineWidth = 1.2;
+        ctx.stroke();
         break;
       }
       case 'vendor': {
-        // Rotated diamond — market stall
+        // Diamond with inner highlight — market stall
         ctx.beginPath();
-        ctx.moveTo(sx,     sy - r);
-        ctx.lineTo(sx + r, sy);
-        ctx.lineTo(sx,     sy + r);
-        ctx.lineTo(sx - r, sy);
+        ctx.moveTo(sx,       sy - r - 1);
+        ctx.lineTo(sx + r + 1, sy);
+        ctx.lineTo(sx,       sy + r + 1);
+        ctx.lineTo(sx - r - 1, sy);
         ctx.closePath();
         ctx.fill();
+        ctx.globalAlpha = 0.45;
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath();
+        ctx.moveTo(sx,       sy - r * 0.4);
+        ctx.lineTo(sx + r * 0.4, sy);
+        ctx.lineTo(sx,       sy + r * 0.4);
+        ctx.lineTo(sx - r * 0.4, sy);
+        ctx.closePath();
+        ctx.fill();
+        ctx.globalAlpha = 1;
         break;
       }
       case 'agent': {
-        // Circle with orbit ring — wired courier
+        // Circle with double orbit ring — wired courier
         ctx.beginPath();
         ctx.arc(sx, sy, r - 1, 0, Math.PI * 2);
         ctx.fill();
-        ctx.globalAlpha = 0.55;
+        ctx.globalAlpha = 0.65;
+        ctx.strokeStyle = style.color;
+        ctx.lineWidth = 1.2;
         ctx.beginPath();
         ctx.arc(sx, sy, r + 2.5, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.globalAlpha = 0.28;
+        ctx.beginPath();
+        ctx.arc(sx, sy, r + 5, 0, Math.PI * 2);
         ctx.stroke();
         ctx.globalAlpha = 1;
         break;
       }
       case 'recruiter': {
-        // Cross/plus — outreach role
-        const t = 1.3;
-        ctx.fillRect(sx - t,     sy - r,  t * 2,    r * 2);
-        ctx.fillRect(sx - r,     sy - t,  r * 2,    t * 2);
+        // Cross/plus — outreach role with rounded ends
+        const t = 1.5;
+        ctx.beginPath();
+        ctx.roundRect(sx - t,  sy - r,  t * 2, r * 2, 1);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.roundRect(sx - r,  sy - t,  r * 2, t * 2, 1);
+        ctx.fill();
+        break;
+      }
+      case 'lore-keeper': {
+        // Hexagon — ancient knowledge keeper
+        ctx.beginPath();
+        for (let i = 0; i < 6; i += 1) {
+          const angle = (Math.PI / 3) * i - Math.PI / 6;
+          const hx = sx + r * Math.cos(angle);
+          const hy = sy + r * Math.sin(angle);
+          if (i === 0) ctx.moveTo(hx, hy); else ctx.lineTo(hx, hy);
+        }
+        ctx.closePath();
+        ctx.fill();
+        ctx.strokeStyle = 'rgba(255,255,255,0.22)';
+        ctx.lineWidth = 1;
+        ctx.stroke();
         break;
       }
       default: {
@@ -308,14 +510,31 @@ export function createIsoRenderer(canvas) {
 
     ctx.lineWidth = 1;
 
+    // Faction indicator dot below NPC shape
+    if (npc.mode === 'active' && style.factionRing && npc.faction) {
+      const fColor = FACTION_COLOR[npc.faction] || FACTION_COLOR.Neutral;
+      ctx.fillStyle = fColor;
+      ctx.globalAlpha = 0.85;
+      ctx.beginPath();
+      ctx.arc(sx, sy + r + 3.5, 2, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.globalAlpha = 1;
+    }
+
     // Proximity interaction ring — pulses to draw attention
     if (isNearby) {
       const pulseAlpha = NEARBY_PULSE_BASE_ALPHA + Math.sin(Date.now() / NEARBY_PULSE_PERIOD_MS) * NEARBY_PULSE_AMPLITUDE;
-      ctx.strokeStyle = '#ffffff';
-      ctx.lineWidth = 1.8;
+      ctx.strokeStyle = style.color;
+      ctx.lineWidth = 2;
       ctx.globalAlpha = Math.max(0, Math.min(1, pulseAlpha));
       ctx.beginPath();
-      ctx.arc(sx, sy, r + 5.5, 0, Math.PI * 2);
+      ctx.arc(sx, sy, r + 6, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 1;
+      ctx.globalAlpha = Math.max(0, Math.min(1, pulseAlpha * 0.5));
+      ctx.beginPath();
+      ctx.arc(sx, sy, r + 9, 0, Math.PI * 2);
       ctx.stroke();
       ctx.globalAlpha = 1;
       ctx.lineWidth = 1;
@@ -355,12 +574,22 @@ export function createIsoRenderer(canvas) {
         const elevation = getElevation(district?.id, col, row);
         drawTile(originX + iso.x, originY + iso.y, fill, variant, elevation, district?.id);
 
-        if (variant > 0.82) {
+        if (variant > 0.80) {
           const theme = DISTRICT_THEME[district?.id] || DISTRICT_THEME.default;
-          ctx.globalAlpha = isNight ? 0.52 : 0.28;
+          ctx.globalAlpha = isNight ? 0.55 : 0.30;
           ctx.fillStyle = theme.glow;
           ctx.beginPath();
-          ctx.arc(originX + iso.x, originY + iso.y - elevation + 12, isNight ? 11 : 7, 0, Math.PI * 2);
+          ctx.arc(originX + iso.x, originY + iso.y - elevation + 12, isNight ? 13 : 8, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.globalAlpha = 1;
+        }
+        // Additional sub-threshold ambient fill for denser district identity
+        if (variant > 0.60 && variant < 0.66) {
+          const theme = DISTRICT_THEME[district?.id] || DISTRICT_THEME.default;
+          ctx.globalAlpha = isNight ? 0.18 : 0.08;
+          ctx.fillStyle = theme.glow;
+          ctx.beginPath();
+          ctx.arc(originX + iso.x, originY + iso.y - elevation + 10, 5, 0, Math.PI * 2);
           ctx.fill();
           ctx.globalAlpha = 1;
         }
@@ -418,10 +647,21 @@ export function createIsoRenderer(canvas) {
         drawNpc(sx, sy, npc, state.player?.nearbyNpcId === npc.id);
         if (npc.mode === 'active') {
           const labelStyle = ROLE_STYLE[npc.role] || ROLE_STYLE.crowd;
-          ctx.fillStyle = labelStyle.color;
+          // Role label with shadow for legibility
+          ctx.fillStyle = 'rgba(0,0,0,0.7)';
           ctx.font = '700 9px Inter, sans-serif';
           ctx.textAlign = 'center';
+          ctx.fillText(npc.roleLabel || npc.role || 'NPC', sx + 1, sy - 10 + 1);
+          ctx.fillStyle = labelStyle.color;
           ctx.fillText(npc.roleLabel || npc.role || 'NPC', sx, sy - 10);
+          // Name tag when nearby
+          if (state.player?.nearbyNpcId === npc.id) {
+            ctx.fillStyle = 'rgba(0,0,0,0.75)';
+            ctx.font = '600 8px Inter, sans-serif';
+            ctx.fillText(npc.name || '', sx + 1, sy - 20 + 1);
+            ctx.fillStyle = '#ffffff';
+            ctx.fillText(npc.name || '', sx, sy - 20);
+          }
         }
       } else if (layer.type === 'remote') {
         const remote = layer.entity;

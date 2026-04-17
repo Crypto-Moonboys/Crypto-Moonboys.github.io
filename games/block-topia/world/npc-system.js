@@ -19,39 +19,65 @@ const DISTRICT_SPAWN_REGIONS = [
 const ROLE_DIALOGUE = {
   vendor: [
     'Signal parts fresh off the relay. Cheap today.',
-    'Buying or selling? Make it quick.',
-    'District prices shift with the phase. Buy now.',
-    'I move faction surplus. No questions asked.',
+    'Buying or selling? Make it quick — phase is shifting.',
+    'District prices follow SAM. Buy before the next cycle.',
+    'I move faction surplus. No ledgers, no questions.',
+    'The Crypto Core runs dry after SAM sweeps. Stock up now.',
+    'Best crates in the underbelly. Ask anyone.',
   ],
   fighter: [
-    'This block is contested. Keep moving.',
-    'Wardens pushed through last cycle. Stay sharp.',
-    'I run patrols when SAM goes quiet.',
-    'You looking for a contract or a problem?',
+    'This block is contested. Keep moving, or pick a side.',
+    'Wardens pushed through last cycle. We hold here.',
+    'I run patrols when SAM goes quiet. Risky business.',
+    'You looking for a contract or trouble? Same answer either way.',
+    'Signal Spire is heating up. Liberators are making a push.',
+    'Every district has a price. Mine is non-negotiable.',
   ],
   agent: [
-    'Signal relay is down two nodes east. Rerouting.',
-    'I carry messages the network cannot.',
-    'District memory is fragmented here. Be careful.',
-    'The factions pay me. The city keeps me.',
+    'Signal relay is down two nodes east. Rerouting through the Slums.',
+    'I carry messages the network cannot route cleanly.',
+    'District memory is fragmented here. Trust nothing written.',
+    'The factions pay me. The city keeps me breathing.',
+    'Three drops, two dead drops, one live relay. Average Tuesday.',
+    'I know which nodes SAM watches. For a price.',
   ],
   'lore-keeper': [
-    'This district remembers everything.',
-    'The SAM cycle started in this block.',
-    'When the signal first came, it changed the walls.',
-    'Ask the city. It always answers.',
+    'This district remembers everything — even what you want forgotten.',
+    'The SAM cycle started in this very block. I watched it happen.',
+    'When the signal first came, it rewrote the walls.',
+    'Ask the city. It always answers — but not always clearly.',
+    'The old relay maps are buried under Revolt Plaza. I know the depth.',
+    'Faction wars leave marks in the grid. I catalog them all.',
   ],
   recruiter: [
-    'Liberators are expanding. The timing is right.',
-    'Wardens are offering protection contracts now.',
-    'Undecided? Stay neutral, stay mobile.',
-    'Faction allegiance is a tool, not a chain.',
+    'Liberators are expanding east. The timing is right to join.',
+    'Wardens are offering protection contracts in the Core. Good pay.',
+    'Undecided? Stay neutral and stay mobile. For now.',
+    'Faction allegiance is a tool, not a chain. Wield it smart.',
+    'The balance shifts every phase. Tonight you can tip it.',
+    'I recruit for results, not ideals. What can you bring?',
   ],
   drifter: [
-    'Just passing through.',
-    'I never stay in one district long.',
-    'Watch the SAM lines. They tell you everything.',
-    'The city shifts. So do I.',
+    'Just passing through. As always.',
+    'I never stay in one district long enough to care.',
+    'Watch the SAM lines. They tell you where the pressure is.',
+    'The city shifts. I shift with it.',
+    'Revolt Plaza used to be quiet. Not anymore.',
+    'You hear the hum? That is the signal layer. Always listening.',
+  ],
+};
+
+// Faction-specific overlay lines that append to standard dialogue
+const FACTION_DIALOGUE_OVERLAY = {
+  Liberators: [
+    'The Liberators will reclaim this district before dawn.',
+    'We move where the signal is weakest and plant our flags.',
+    'Warden control is slipping. This is our moment.',
+  ],
+  Wardens: [
+    'The Wardens hold what the Liberators cannot keep.',
+    'Order is maintained through pressure and presence.',
+    'We do not capture — we consolidate.',
   ],
 };
 
@@ -177,8 +203,14 @@ export function createNpcSystem(state) {
     if (Array.isArray(loreRumors) && loreRumors.length) {
       return sample(loreRumors, 'Move smart. The district remembers.');
     }
-    const inlineFallback = ROLE_DIALOGUE[npc.role];
-    return sample(inlineFallback, 'Move smart. The district remembers.');
+    const inlineFallback = ROLE_DIALOGUE[npc.role] || [];
+    const baseLine = sample(inlineFallback, 'Move smart. The district remembers.');
+    // Occasionally blend in a faction-specific line for immersion
+    const overlay = FACTION_DIALOGUE_OVERLAY[npc.faction];
+    if (overlay && Math.random() < 0.28) {
+      return sample(overlay, baseLine);
+    }
+    return baseLine;
   }
 
   function nearestInteractive(playerX, playerY) {

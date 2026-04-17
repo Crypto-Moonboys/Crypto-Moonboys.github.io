@@ -13,27 +13,31 @@ export function createQuestSystem(state) {
 
   const QUEST_OBJECTIVES = {
     daily: [
-      (d) => `Patrol ${d} — report faction movement at signal nodes`,
-      (d) => `Scan the grid in ${d} · collect 3 relay fragments`,
-      (d) => `Secure control points in ${d} before the next phase shift`,
-      (d) => `Mark contested blocks in ${d} · avoid SAM sweeps`,
-      (d) => `Intercept faction couriers operating through ${d}`,
+      (d) => `Patrol the grid in ${d} — intercept 3 faction couriers before phase end`,
+      (d) => `Scan signal nodes in ${d} · collect relay fragments and report anomalies`,
+      (d) => `Secure 2 control points in ${d} before the next SAM cycle sweep`,
+      (d) => `Mark all contested blocks in ${d} · avoid SAM detection zones`,
+      (d) => `Disrupt faction supply lines running through ${d} — 4 routes to close`,
+      (d) => `Shadow an Agent in ${d} and track their drop points to the Warden cache`,
     ],
     weekly: [
-      (d) => `Track SAM activity across ${d} for 5 consecutive cycles`,
-      (d) => `Shift the faction balance in ${d} — hold 4 districts this rotation`,
-      (d) => `Complete the relay sweep through all contested zones`,
-      (d) => `Hold ground in ${d} — prevent loss of key signal nodes`,
+      (d) => `Monitor SAM broadcast patterns across ${d} for 5 consecutive cycles`,
+      (d) => `Shift the faction balance in ${d} — hold 4 districts through this rotation`,
+      (d) => `Execute the relay sweep through all contested zones in ${d} this week`,
+      (d) => `Hold ground in ${d} — prevent signal node loss for 3 full night phases`,
+      (d) => `Coordinate with 2 faction recruits in ${d} to push control above 75%`,
     ],
     seasonal: [
-      (d) => `Advance the season arc — faction war reaches critical stage in ${d}`,
-      (d) => `Shape the power balance in ${d} before the season resets`,
-      (d) => `Push ${d} to capture threshold before the season closes`,
+      (d) => `Drive the season arc — bring faction war to critical stage in ${d}`,
+      (d) => `Shape the power balance in ${d} before the season resets next cycle`,
+      (d) => `Push ${d} to full capture threshold before the season archive closes`,
+      (d) => `Seal 3 memory fragments in ${d} before the seasonal wipe clears them`,
     ],
     prophecy: [
-      () => `The city remembers — find what was buried before signals fell silent`,
-      () => `Follow the old relay path before the next SAM cycle wipes it`,
-      () => `The Watcher spoke of this — decode the signal pattern before dawn`,
+      () => `The city remembers — find what was buried before the signals fell silent`,
+      () => `Follow the old relay path before the next SAM cycle wipes the trail`,
+      () => `The Watcher spoke of this — decode the signal pattern before the next dawn`,
+      () => `Beneath Revolt Plaza a cache waits — reach it before the Wardens do`,
     ],
   };
 
@@ -41,14 +45,13 @@ export function createQuestSystem(state) {
     if (quest.description) return quest.description;
     const pool = QUEST_OBJECTIVES[quest.type];
     if (pool && pool.length > 0) {
-      // Deterministic pick based on quest id so the same quest always shows the same objective.
       const seed = quest.id
         ? quest.id.split('').reduce((acc, ch) => acc + ch.charCodeAt(0), 0)
         : 0;
-      return pool[seed % pool.length](state.player.districtName);
+      return pool[seed % pool.length](state.player.districtName || 'the district');
     }
     const typeHint = (quest.type || 'daily');
-    return `Complete ${capitalize(typeHint)} operation in ${state.player.districtName}`;
+    return `Complete ${capitalize(typeHint)} operation in ${state.player.districtName || 'the district'}`;
   }
 
   function getActiveQuestCards() {
