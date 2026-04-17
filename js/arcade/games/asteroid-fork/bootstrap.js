@@ -16,6 +16,7 @@ import { submitScore }                     from '/js/leaderboard-client.js';
 import { rollHiddenBonus, showBonusPopup } from '/js/bonus-engine.js';
 import { ASTEROID_FORK_CONFIG }            from './config.js';
 import { GameRegistry }                    from '/js/arcade/core/game-registry.js';
+import { playSound, stopAllSounds, isMuted } from '/js/arcade/core/audio.js';
 
 // Register in the central registry when this module is first imported.
 GameRegistry.register(ASTEROID_FORK_CONFIG.id, {
@@ -62,6 +63,11 @@ export function bootstrapAsteroidFork(root) {
   let asteroids=[];
   let particles=[];
 
+  function playGameSound(id, options) {
+    if (isMuted()) return null;
+    return playSound(id, options);
+  }
+
   function makeShip() {
     return {x:W/2,y:H/2,vx:0,vy:0,angle:0,thrusting:false};
   }
@@ -96,6 +102,7 @@ export function bootstrapAsteroidFork(root) {
     const a=ship.angle;
     bullets.push({x:ship.x+Math.sin(a)*20,y:ship.y-Math.cos(a)*20,vx:Math.sin(a)*600,vy:-Math.cos(a)*600,life:1.1});
     shootCooldown=0.22;
+    playGameSound('asteroid-fork-shoot');
   }
 
   function wrap(v,max){return((v%max)+max)%max;}
@@ -153,6 +160,7 @@ export function bootstrapAsteroidFork(root) {
       for(let ai=asteroids.length-1;ai>=0;ai--){
         const a=asteroids[ai];
         if(Math.hypot(b.x-a.x,b.y-a.y)<a.r){
+          playGameSound('asteroid-fork-hit');
           spawnParticles(a.x,a.y,'#bc8cff',8);
           bullets.splice(bi,1);
           const pts=a.tier===3?20:a.tier===2?50:100;
@@ -175,6 +183,7 @@ export function bootstrapAsteroidFork(root) {
     if(invincible<=0){
       for(const a of asteroids){
         if(Math.hypot(ship.x-a.x,ship.y-a.y)<a.r+10){
+          playGameSound('asteroid-fork-ship-hit');
           spawnParticles(ship.x,ship.y,'#ff4fd1',14);
           lives--;
           livesEl.textContent=lives;
@@ -273,6 +282,7 @@ export function bootstrapAsteroidFork(root) {
 
   async function onGameOver(){
     running=false;gameOver=true;
+    stopAllSounds();
     ArcadeSync.setHighScore(GAME_ID,score); best=ArcadeSync.getHighScore(GAME_ID); updateHud();
     try{await submitScore(ArcadeSync.getPlayer(),score,GAME_ID);}catch(e){}
     draw();
@@ -295,9 +305,15 @@ export function bootstrapAsteroidFork(root) {
       if(raf) cancelAnimationFrame(raf);
       raf=requestAnimationFrame(loop);
     };
-    document.getElementById('pauseBtn').onclick=()=>{if(running) paused=!paused;};
+    document.getElementById('pauseBtn').onclick=()=>{
+      if(running) {
+        paused=!paused;
+        if (paused) stopAllSounds();
+      }
+    };
     document.getElementById('resetBtn').onclick=()=>{
       if(raf) cancelAnimationFrame(raf);
+      stopAllSounds();
       resetGame(); raf=requestAnimationFrame(()=>draw());
     };
   }
@@ -310,7 +326,10 @@ export function bootstrapAsteroidFork(root) {
   }
 
   function pause() {
-    if(running) paused=true;
+    if(running) {
+      paused=true;
+      stopAllSounds();
+    }
   }
 
   function resume() {
@@ -319,11 +338,13 @@ export function bootstrapAsteroidFork(root) {
 
   function reset() {
     if(raf) cancelAnimationFrame(raf);
+    stopAllSounds();
     resetGame(); raf=requestAnimationFrame(()=>draw());
   }
 
   function destroy() {
     if(raf) cancelAnimationFrame(raf);
+    stopAllSounds();
     document.removeEventListener('keydown', onKeyDown);
     document.removeEventListener('keyup',   onKeyUp);
     const startBtn = document.getElementById('startBtn');

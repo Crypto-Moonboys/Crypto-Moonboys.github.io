@@ -238,6 +238,29 @@
   // Safe initialization of global mute flag.
   if (typeof window._arcadeMuted === 'undefined') window._arcadeMuted = false;
 
+  function getArcadeAudio() {
+    return window.ArcadeAudio || null;
+  }
+
+  function getMutedState() {
+    var audio = getArcadeAudio();
+    if (audio && typeof audio.isMuted === 'function') return !!audio.isMuted();
+    return !!window._arcadeMuted;
+  }
+
+  function syncMuteBtn() {
+    var muted = getMutedState();
+    var icon = btnMute.querySelector('.btn-icon');
+    var lbl  = btnMute.querySelector('.btn-label');
+    if (muted) {
+      if (icon) icon.textContent = '🔇';
+      if (lbl)  lbl.textContent  = ' Unmute';
+    } else {
+      if (icon) icon.textContent = '🔊';
+      if (lbl)  lbl.textContent  = ' Mute';
+    }
+  }
+
   var origParent      = null;
   var origNextSibling = null;
   var stageTarget     = null; // element actually moved into the overlay (btqm-game-area or game-card)
@@ -569,6 +592,7 @@
     _isPaused = false;
     syncPauseBtn();
     syncFSBtn();
+    syncMuteBtn();
 
     // Move focus to exit button for keyboard users.
     btnExit.focus();
@@ -599,6 +623,9 @@
       // Clicking pauseBtn when game is running pauses it; if game isn't running
       // the handler is a no-op (all games check `if (running)`), so safe to call.
       gamePauseBtn.click();
+      document.dispatchEvent(new CustomEvent('arcade-pause-change', {
+        detail: { paused: true }
+      }));
     }
 
     // Leave browser fullscreen if active.
@@ -689,6 +716,9 @@
       gamePauseBtn.click();
       _isPaused = !_isPaused;
       syncPauseBtn();
+      document.dispatchEvent(new CustomEvent('arcade-pause-change', {
+        detail: { paused: _isPaused }
+      }));
     }
   });
 
@@ -704,22 +734,21 @@
   });
 
   btnMute.addEventListener('click', function () {
-    // Stub: toggles a global flag that game modules can check. No audio system
-    // is wired yet; games that support audio should check window._arcadeMuted.
-    window._arcadeMuted = !window._arcadeMuted;
-    var icon = btnMute.querySelector('.btn-icon');
-    var lbl  = btnMute.querySelector('.btn-label');
-    if (window._arcadeMuted) {
-      if (icon) icon.textContent = '🔇';
-      if (lbl)  lbl.textContent  = ' Unmute';
+    var audio = getArcadeAudio();
+    var nextMuted = !getMutedState();
+    if (audio && typeof audio.setMuted === 'function') {
+      audio.setMuted(nextMuted);
     } else {
-      if (icon) icon.textContent = '🔊';
-      if (lbl)  lbl.textContent  = ' Mute';
+      window._arcadeMuted = nextMuted;
+      document.dispatchEvent(new CustomEvent('arcade-mute-change', {
+        detail: { muted: nextMuted }
+      }));
     }
-    document.dispatchEvent(new CustomEvent('arcade-mute-change', {
-      detail: { muted: !!window._arcadeMuted }
-    }));
+    syncMuteBtn();
   });
+
+  document.addEventListener('arcade-mute-change', syncMuteBtn);
+  syncMuteBtn();
 
   // Esc key closes the overlay.
   // Enter / Space trigger the overlay ▶ Start button when the overlay is open

@@ -2,6 +2,7 @@ import { ArcadeSync }                from '/js/arcade-sync.js';
 import { submitScore, fetchLeaderboard } from '/js/leaderboard-client.js';
 import { HEXGL_MONSTER_MAX_CONFIG }  from './config.js';
 import { GameRegistry }              from '/js/arcade/core/game-registry.js';
+import { playSound, isMuted, stopAllSounds } from '/js/arcade/core/audio.js';
 
 GameRegistry.register(HEXGL_MONSTER_MAX_CONFIG.id, {
   label: HEXGL_MONSTER_MAX_CONFIG.label,
@@ -68,9 +69,7 @@ export function bootstrapHexGLMonsterMax(root) {
   var lastRunMs  = null;
   var bestRunMs  = null;
   var statusText = 'RUN READY';
-  var audioCtx = null;
-  var ambientOsc = null;
-  var ambientGain = null;
+  var ambientHandle = null;
   var messageTimeoutId = null;
 
   function calcScore(ms) {
@@ -137,97 +136,29 @@ export function bootstrapHexGLMonsterMax(root) {
   }
 
   function canUseAudio() {
-    return typeof window !== 'undefined' && !window._arcadeMuted;
-  }
-
-  function ensureAudioContext() {
-    if (!canUseAudio()) return null;
-    if (audioCtx) return audioCtx;
-    try {
-      var Ctx = window.AudioContext || window.webkitAudioContext;
-      if (!Ctx) return null;
-      audioCtx = new Ctx();
-    } catch (_) {
-      audioCtx = null;
-    }
-    return audioCtx;
-  }
-
-  function unlockAudio() {
-    var ctx = ensureAudioContext();
-    if (!ctx) return;
-    if (ctx.state === 'suspended') {
-      ctx.resume().catch(function () {});
-    }
+    // NOTE: Only wrapper-generated tones are controllable here.
+    // BKcore's iframe audio is cross-origin and cannot be muted/paused by this wrapper.
+    return !isMuted();
   }
 
   function playUiTone(kind) {
     if (!canUseAudio()) return;
-    unlockAudio();
-    if (!audioCtx || audioCtx.state !== 'running') return;
-    var now = audioCtx.currentTime;
-    var osc = audioCtx.createOscillator();
-    var gain = audioCtx.createGain();
-    var conf = {
-      start: 440,
-      end: 660,
-      duration: 0.09,
-      type: 'triangle',
-      volume: 0.05,
-    };
-    if (kind === 'reset') {
-      conf.start = 300;
-      conf.end = 170;
-      conf.duration = 0.12;
-      conf.type = 'sawtooth';
-      conf.volume = 0.04;
-    } else if (kind === 'submit') {
-      conf.start = 620;
-      conf.end = 880;
-      conf.duration = 0.12;
-      conf.type = 'sine';
-      conf.volume = 0.06;
-    } else if (kind === 'error') {
-      conf.start = 320;
-      conf.end = 180;
-      conf.duration = 0.14;
-      conf.type = 'sawtooth';
-      conf.volume = 0.04;
-    } else if (kind === 'exit') {
-      conf.start = 520;
-      conf.end = 300;
-      conf.duration = 0.10;
-      conf.type = 'triangle';
-      conf.volume = 0.04;
-    }
-    osc.type = conf.type;
-    osc.frequency.setValueAtTime(conf.start, now);
-    osc.frequency.exponentialRampToValueAtTime(Math.max(50, conf.end), now + conf.duration);
-    gain.gain.setValueAtTime(0.0001, now);
-    gain.gain.exponentialRampToValueAtTime(conf.volume, now + 0.01);
-    gain.gain.exponentialRampToValueAtTime(0.0001, now + conf.duration);
-    osc.connect(gain);
-    gain.connect(audioCtx.destination);
-    osc.start(now);
-    osc.stop(now + conf.duration + 0.02);
+    var soundId = {
+      start: 'hexgl-start',
+      reset: 'hexgl-reset',
+      submit: 'hexgl-submit',
+      error: 'hexgl-error',
+      exit: 'hexgl-exit',
+    }[kind] || 'hexgl-start';
+    playSound(soundId);
   }
 
   function stopAmbient() {
-    if (ambientOsc) {
-      try {
-        ambientOsc.stop();
-      } catch (_) {}
-      try {
-        ambientOsc.disconnect();
-      } catch (_) {}
-      ambientOsc = null;
-    }
-    if (ambientGain) {
-      try {
-        ambientGain.disconnect();
-      } catch (_) {}
-      ambientGain = null;
-    }
+    if (!ambientHandle) return;
+    try {
+      ambientHandle.stop();
+    } catch (_) {}
+    ambientHandle = null;
   }
 
   function syncAmbient() {
@@ -235,58 +166,20 @@ export function bootstrapHexGLMonsterMax(root) {
       stopAmbient();
       return;
     }
-    unlockAudio();
-    if (!audioCtx || audioCtx.state !== 'running' || ambientOsc) return;
-    ambientOsc = audioCtx.createOscillator();
-    ambientGain = audioCtx.createGain();
-    ambientOsc.type = 'sine';
-    ambientOsc.frequency.value = 82;
-    ambientGain.gain.value = 0.006;
-    ambientOsc.connect(ambientGain);
-    ambientGain.connect(audioCtx.destination);
-    ambientOsc.start();
+    if (ambientHandle) return;
+    ambientHandle = playSound('hexgl-ambient');
   }
 
   // noteIdx 0 = for "3", 1 = for "2", 2 = for "1" — rising pitch sequence.
   function playCountdownTick(noteIdx) {
     if (!canUseAudio()) return;
-    unlockAudio();
-    if (!audioCtx || audioCtx.state !== 'running') return;
-    var freqs = [380, 480, 600];
-    var freq = noteIdx >= 0 && noteIdx < freqs.length ? freqs[noteIdx] : freqs[0];
-    var now = audioCtx.currentTime;
-    var osc = audioCtx.createOscillator();
-    var gain = audioCtx.createGain();
-    osc.type = 'square';
-    osc.frequency.value = freq;
-    gain.gain.setValueAtTime(0.0001, now);
-    gain.gain.exponentialRampToValueAtTime(0.032, now + 0.006);
-    gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.08);
-    osc.connect(gain);
-    gain.connect(audioCtx.destination);
-    osc.start(now);
-    osc.stop(now + 0.09);
+    var idx = noteIdx >= 0 && noteIdx < 3 ? noteIdx + 1 : 1;
+    playSound('hexgl-countdown-' + idx);
   }
 
   function playGoChord() {
     if (!canUseAudio()) return;
-    unlockAudio();
-    if (!audioCtx || audioCtx.state !== 'running') return;
-    var now = audioCtx.currentTime;
-    [880, 1108, 1320].forEach(function (freq, i) {
-      var osc  = audioCtx.createOscillator();
-      var gain = audioCtx.createGain();
-      osc.type = 'sine';
-      osc.frequency.value = freq;
-      var t0 = now + i * 0.022;
-      gain.gain.setValueAtTime(0.0001, t0);
-      gain.gain.exponentialRampToValueAtTime(0.05, t0 + 0.01);
-      gain.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.22);
-      osc.connect(gain);
-      gain.connect(audioCtx.destination);
-      osc.start(now);
-      osc.stop(t0 + 0.24);
-    });
+    playSound('hexgl-go');
   }
 
   function refreshIdentity() {
@@ -483,7 +376,6 @@ export function bootstrapHexGLMonsterMax(root) {
     // Phase 2 (second explicit click): user confirms they are racing.
     //          activateRun() is called HERE and ONLY HERE.
     refreshIdentity();
-    unlockAudio();
 
     if (!frameLoaded || isFrameBlank()) {
       loadFrameForLaunch(false);
@@ -530,7 +422,6 @@ export function bootstrapHexGLMonsterMax(root) {
   }
 
   async function onSubmit() {
-    unlockAudio();
     if (runPending || countdownActive) {
       playUiTone('error');
       notify('Run countdown is active. Wait for RUN ACTIVE.');
@@ -593,7 +484,6 @@ export function bootstrapHexGLMonsterMax(root) {
   }
 
   function onReset() {
-    unlockAudio();
     playUiTone('reset');
     cancelTrackedRun();   // clears runArmed, resets ctrl button label, cancels token
     lastRunMs = null;
@@ -687,6 +577,7 @@ export function bootstrapHexGLMonsterMax(root) {
     clearRunDelays();
     stopTimer();
     stopAmbient();
+    stopAllSounds();
     countdownActive = false;
     hideCountdown();
     clearTimeout(messageTimeoutId);

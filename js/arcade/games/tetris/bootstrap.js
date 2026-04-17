@@ -16,6 +16,7 @@ import { submitScore }                     from '/js/leaderboard-client.js';
 import { rollHiddenBonus, showBonusPopup } from '/js/bonus-engine.js';
 import { TETRIS_CONFIG }                   from './config.js';
 import { GameRegistry }                    from '/js/arcade/core/game-registry.js';
+import { playSound, stopAllSounds, isMuted } from '/js/arcade/core/audio.js';
 
 // Register in the central registry when this module is first imported.
 GameRegistry.register(TETRIS_CONFIG.id, {
@@ -67,6 +68,11 @@ export function bootstrapTetris(root) {
 
   const keys={};
 
+  function playGameSound(id, options) {
+    if (isMuted()) return null;
+    return playSound(id, options);
+  }
+
   function onKeyDown(e) {
     if(!keys[e.key]){
       keys[e.key]=true;
@@ -110,7 +116,7 @@ export function bootstrapTetris(root) {
   function tryRotate() {
     if(!current) return;
     for(const dc of [0,1,-1,2,-2]){
-      if(valid(current,0,dc,1)){current.col+=dc;current.rot=(current.rot+1)%4;return;}
+      if(valid(current,0,dc,1)){current.col+=dc;current.rot=(current.rot+1)%4;playGameSound('tetris-rotate');return;}
     }
   }
 
@@ -119,6 +125,7 @@ export function bootstrapTetris(root) {
     let dist=0;
     while(valid(current,1,0,0)){current.row++;dist++;}
     score+=dist*2; ArcadeSync.setHighScore(GAME_ID,score); best=ArcadeSync.getHighScore(GAME_ID); updateHud();
+    playGameSound('tetris-hard-drop');
     lockPiece();
   }
 
@@ -145,6 +152,7 @@ export function bootstrapTetris(root) {
       }
     }
     if(cleared){
+      playGameSound('tetris-line-clear');
       const pts=[0,100,300,500,800][cleared]*level;
       score+=pts; lines+=cleared;
       level=Math.floor(lines/10)+1;
@@ -274,6 +282,7 @@ export function bootstrapTetris(root) {
 
   async function onGameOver(){
     running=false;gameOver=true;
+    stopAllSounds();
     ArcadeSync.setHighScore(GAME_ID,score); best=ArcadeSync.getHighScore(GAME_ID); updateHud();
     try{await submitScore(ArcadeSync.getPlayer(),score,GAME_ID);}catch(e){}
     draw();
@@ -299,9 +308,15 @@ export function bootstrapTetris(root) {
       if(raf) cancelAnimationFrame(raf);
       raf=requestAnimationFrame(loop);
     };
-    document.getElementById('pauseBtn').onclick=()=>{if(running) paused=!paused;};
+    document.getElementById('pauseBtn').onclick=()=>{
+      if(running) {
+        paused=!paused;
+        if (paused) stopAllSounds();
+      }
+    };
     document.getElementById('resetBtn').onclick=()=>{
       if(raf) cancelAnimationFrame(raf);
+      stopAllSounds();
       resetGame(); raf=requestAnimationFrame(()=>draw());
     };
   }
@@ -314,7 +329,10 @@ export function bootstrapTetris(root) {
   }
 
   function pause() {
-    if(running) paused=true;
+    if(running) {
+      paused=true;
+      stopAllSounds();
+    }
   }
 
   function resume() {
@@ -323,11 +341,13 @@ export function bootstrapTetris(root) {
 
   function reset() {
     if(raf) cancelAnimationFrame(raf);
+    stopAllSounds();
     resetGame(); raf=requestAnimationFrame(()=>draw());
   }
 
   function destroy() {
     if(raf) cancelAnimationFrame(raf);
+    stopAllSounds();
     document.removeEventListener('keydown', onKeyDown);
     document.removeEventListener('keyup',   onKeyUp);
     const startBtn = document.getElementById('startBtn');
