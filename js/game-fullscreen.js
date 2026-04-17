@@ -747,7 +747,10 @@
     syncMuteBtn();
   });
 
-  document.addEventListener('arcade-mute-change', syncMuteBtn);
+  if (!window.__arcadeMuteSyncBound) {
+    document.addEventListener('arcade-mute-change', syncMuteBtn);
+    window.__arcadeMuteSyncBound = true;
+  }
   syncMuteBtn();
 
   // Esc key closes the overlay.

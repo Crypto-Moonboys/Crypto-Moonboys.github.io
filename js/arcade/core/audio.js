@@ -21,6 +21,8 @@ const SOUND_LIBRARY = {
   'hexgl-ambient':      { kind: 'tone',  type: 'sine',     freqStart: 82,  freqEnd: 82,  duration: null, volume: 0.006, loop: true },
 };
 
+// Keep a defensive default here so module-driven game pages remain safe even if
+// game-fullscreen.js has not been evaluated yet.
 if (typeof window !== 'undefined' && typeof window._arcadeMuted === 'undefined') {
   window._arcadeMuted = false;
 }
@@ -153,8 +155,7 @@ export function playSound(id, options) {
 
 document.addEventListener('arcade-mute-change', function (event) {
   const muted = !!event?.detail?.muted;
-  window._arcadeMuted = muted;
-  if (muted) stopAllSounds();
+  setMuted(muted, { emitEvent: false });
 });
 
 document.addEventListener('arcade-pause-change', function (event) {
