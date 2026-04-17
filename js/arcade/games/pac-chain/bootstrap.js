@@ -4,7 +4,6 @@
 
 import { ArcadeSync } from '/js/arcade-sync.js';
 import { submitScore } from '/js/leaderboard-client.js';
-import { rollHiddenBonus } from '/js/bonus-engine.js';
 import { PAC_CHAIN_CONFIG } from './config.js';
 import { GameRegistry } from '/js/arcade/core/game-registry.js';
 import { playSound, stopAllSounds, isMuted } from '/js/arcade/core/audio.js';
@@ -28,6 +27,8 @@ export function bootstrapPacChain(root) {
 
   const scoreEl = document.getElementById('score');
   const bestEl = document.getElementById('best');
+  const levelEl = document.getElementById('level');
+  const livesEl = document.getElementById('lives');
   const chainEl = document.getElementById('chain');
   const chainStatEl = chainEl ? chainEl.closest('.stat') : null;
 
@@ -118,10 +119,6 @@ export function bootstrapPacChain(root) {
   const MAX_FLOATING_TEXTS = 50;
   const MAX_TRAIL_POINTS = 12;
   const TRAIL_LIFE_DURATION = 0.45;
-  const BONUS_DURATION_COMMON = 3.8;
-  const BONUS_DURATION_RARE = 4.5;
-  const BONUS_DURATION_LEGENDARY = 5.5;
-  const BONUS_DURATION_SLOW_HIGH = 4.8;
   const GLITCH_SCORE_THRESHOLD = 1800;
   const GLITCH_HIGH_SCORE_PROBABILITY = 0.003;
   const GLITCH_RANDOM_PROBABILITY = 0.0008;
@@ -300,8 +297,10 @@ export function bootstrapPacChain(root) {
   }
 
   function updateHud() {
-    if (scoreEl) scoreEl.textContent = String(score);
-    if (bestEl) bestEl.textContent = String(best);
+    if (scoreEl) scoreEl.textContent = score;
+    if (bestEl) bestEl.textContent = best;
+    if (levelEl) levelEl.textContent = level || '—';
+    if (livesEl) livesEl.textContent = lives;
     if (chainEl) chainEl.textContent = `x${chain}`;
   }
 
@@ -494,25 +493,7 @@ export function bootstrapPacChain(root) {
   }
 
   async function maybeTriggerLegacyBonus() {
-    try {
-      const bonus = await rollHiddenBonus({ score, streak: chain, game: GAME_ID });
-      if (!bonus) return;
-      playGameSound('bonus');
-      const rarity = String(bonus.rarity || '').toLowerCase();
-      if (rarity === 'common') {
-        speedBoostTimer = Math.max(speedBoostTimer, BONUS_DURATION_COMMON);
-      } else if (rarity === 'uncommon') {
-        slowEnemiesTimer = Math.max(slowEnemiesTimer, BONUS_DURATION_COMMON);
-      } else if (rarity === 'rare') {
-        doubleScoreTimer = Math.max(doubleScoreTimer, BONUS_DURATION_RARE);
-      } else if (rarity === 'epic') {
-        speedBoostTimer = Math.max(speedBoostTimer, BONUS_DURATION_RARE);
-        slowEnemiesTimer = Math.max(slowEnemiesTimer, BONUS_DURATION_RARE);
-      } else {
-        doubleScoreTimer = Math.max(doubleScoreTimer, BONUS_DURATION_LEGENDARY);
-        slowEnemiesTimer = Math.max(slowEnemiesTimer, BONUS_DURATION_SLOW_HIGH);
-      }
-    } catch (_) {}
+    // bonus-engine removed: no fake scoring, no arcade_points
   }
 
   function handlePelletEat(tx, ty, isPower) {
@@ -686,6 +667,7 @@ export function bootstrapPacChain(root) {
       spawnPlayer();
       player.ndx = 1;
       player.ndy = 0;
+      updateHud();
       return;
     }
 

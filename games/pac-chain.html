@@ -11,7 +11,7 @@
   <link rel="icon" href="/img/favicon.svg" type="image/svg+xml">
   <style>
     .game-card{background:rgba(255,255,255,.03);border:1px solid var(--color-border,#333);border-radius:16px;padding:18px}
-    .hud{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-bottom:14px}
+    .hud{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:14px}
     .hud .stat{background:rgba(255,255,255,.04);border:1px solid var(--color-border,#333);border-radius:12px;padding:12px;text-align:center}
     .hud .label{font-size:.7rem;color:var(--color-text-muted)}
     .hud .value{font-weight:700;font-size:1.15rem}
@@ -80,6 +80,7 @@
           <div class="stat"><div class="label">Score</div><div class="value" id="score">0</div></div>
           <div class="stat"><div class="label">Best</div><div class="value" id="best">0</div></div>
           <div class="stat"><div class="label">Chain</div><div class="value" id="chain">x1</div></div>
+          <div class="stat"><div class="label">Level</div><div class="value" id="level">—</div></div>
         </div>
         <canvas id="pacCanvas" width="560" height="560" aria-label="Pac-Chain game"></canvas>
         <div class="row">
