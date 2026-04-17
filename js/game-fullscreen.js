@@ -455,6 +455,16 @@
   // We track pause state locally in the overlay.
   var _isPaused = false;
 
+  function getInvadersOverlayState() {
+    if (typeof window.__invadersOverlayStateHook !== 'function') return null;
+    try {
+      var state = window.__invadersOverlayStateHook();
+      return state && typeof state === 'object' ? state : null;
+    } catch (_) {
+      return null;
+    }
+  }
+
   function syncPauseBtn() {
     var icon = btnPause.querySelector('.btn-icon');
     var lbl  = btnPause.querySelector('.btn-label');
@@ -585,6 +595,7 @@
     if (!isOpen) return;
     isOpen = false;
     _gameStarted = false; // reset so Space can start the game again next time the overlay opens
+    hideGameOverModal();
 
     // Notify game modules that the overlay is closing (e.g. to play an exit sound).
     document.dispatchEvent(new CustomEvent('arcade-overlay-exit'));
@@ -595,10 +606,21 @@
     // Pause the game if it's actively running before closing.
     // Only pause if we haven't already paused via the overlay btn.
     var gamePauseBtn = document.getElementById('pauseBtn');
-    if (gamePauseBtn && !_isPaused) {
-      // Clicking pauseBtn when game is running pauses it; if game isn't running
-      // the handler is a no-op (all games check `if (running)`), so safe to call.
-      gamePauseBtn.click();
+    if (gamePauseBtn) {
+      var invadersState = getInvadersOverlayState();
+      if (invadersState) {
+        if (invadersState.running && !invadersState.paused && !invadersState.gameOver) {
+          gamePauseBtn.click();
+          _isPaused = true;
+        } else {
+          _isPaused = !!invadersState.paused;
+        }
+      } else if (!_isPaused) {
+        // Clicking pauseBtn when game is running pauses it; if game isn't running
+        // the handler is a no-op (all games check `if (running)`), so safe to call.
+        gamePauseBtn.click();
+      }
+      syncPauseBtn();
     }
 
     // Leave browser fullscreen if active.
@@ -687,7 +709,8 @@
     var gamePauseBtn = document.getElementById('pauseBtn');
     if (gamePauseBtn) {
       gamePauseBtn.click();
-      _isPaused = !_isPaused;
+      var invadersState = getInvadersOverlayState();
+      _isPaused = invadersState ? !!invadersState.paused : !_isPaused;
       syncPauseBtn();
     }
   });
@@ -744,7 +767,9 @@
       // Without this guard, every Space keypress would re-trigger startBtn and
       // rebuild the invader formation (or reset any other game mid-play).
       var gameStartBtn = document.getElementById('startBtn');
-      if (gameStartBtn && !_gameStarted) {
+      var invadersState = getInvadersOverlayState();
+      var canStart = invadersState ? !invadersState.running : !_gameStarted;
+      if (gameStartBtn && canStart) {
         e.preventDefault();
         triggerGameStart();
       }

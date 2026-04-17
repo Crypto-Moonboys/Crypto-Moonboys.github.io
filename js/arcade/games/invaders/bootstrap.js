@@ -127,6 +127,10 @@ export function bootstrapInvaders(root) {
   let audioCtx = null;
   const keys = {};
 
+  function getOverlayState() {
+    return { running, paused, gameOver };
+  }
+
   function onKeyDown(e) {
     keys[e.key] = true;
     if (e.key === ' ' && running && !paused) {
@@ -814,6 +818,7 @@ export function bootstrapInvaders(root) {
     best = ArcadeSync.getHighScore(GAME_ID);
     updateHud();
     draw();
+    window.__invadersOverlayStateHook = getOverlayState;
 
     document.addEventListener('keydown', onKeyDown);
     document.addEventListener('keyup', onKeyUp);
@@ -855,6 +860,9 @@ export function bootstrapInvaders(root) {
 
   function destroy() {
     if (raf) cancelAnimationFrame(raf);
+    if (window.__invadersOverlayStateHook === getOverlayState) {
+      delete window.__invadersOverlayStateHook;
+    }
     document.removeEventListener('keydown', onKeyDown);
     document.removeEventListener('keyup', onKeyUp);
 
