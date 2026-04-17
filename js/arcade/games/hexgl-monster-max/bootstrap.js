@@ -297,7 +297,7 @@ export function bootstrapHexGLMonsterMax(root) {
   }
 
   function activateRun(token) {
-    if (token !== runToken || !runPending || countdownActive) return;
+    if (token !== runToken || !runPending || countdownActive || runActive) return;
     countdownActive = true;
     clearTimeout(loadFallbackTimeoutId);
     loadFallbackTimeoutId = null;
@@ -539,7 +539,9 @@ export function bootstrapHexGLMonsterMax(root) {
         if (isFrameBlank()) return;
         frameLoaded = true;
         frameEl.classList.add('loaded');
-        if (runPending) activateRun(runToken);
+        // Only activate if a run is pending and the countdown has not already started
+        // (the load event can fire after the 4 s fallback has already kicked off the countdown).
+        if (runPending && !countdownActive) activateRun(runToken);
       });
     }
     document.addEventListener('arcade-mute-change', function () {
