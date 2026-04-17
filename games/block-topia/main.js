@@ -34,13 +34,15 @@ async function boot() {
   const npc = createNpcSystem(state);
   const quests = createQuestSystem(state);
   const memory = createMemorySystem(state);
+  const primaryFactionName = state.factions.primary?.name || 'Liberators';
+  const secondaryFactionName = state.factions.secondary?.name || 'Wardens';
 
   // Populate HUD with initial values
   hud.setPlayerName(state.player.name);
   hud.setWorldStatus(`Unified city online · ${state.room.id} room`);
   hud.setDistrict(state.player.districtName);
   hud.setDistrictControl(50);
-  hud.setFactionStatus(`${state.factions.primary.name} vs ${state.factions.secondary.name}`);
+  hud.setFactionStatus(`${primaryFactionName} vs ${secondaryFactionName}`);
   hud.setSamPhase(sam.getCurrentPhase().name);
   hud.setPhase(state.phase);
   hud.setScore(state.player.score);
@@ -117,7 +119,7 @@ async function boot() {
         hud.setDistrictControl(district.control);
       }
       if (owner) {
-        hud.setFactionStatus(`${state.factions.primary.name} vs ${state.factions.secondary.name} · ${district.name}: ${owner}`);
+        hud.setFactionStatus(`${primaryFactionName} vs ${secondaryFactionName} · ${district.name}: ${owner}`);
       }
       hud.pushFeed(`🏴 District sync: ${district.name} ${Math.round(district.control)}% · ${district.owner}`);
       memory.record('district', {
