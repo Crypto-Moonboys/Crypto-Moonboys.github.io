@@ -275,10 +275,10 @@ export function bootstrapAsteroidFork(root) {
   }
 
   function draw() {
-    const sx=shakeTime>0?(Math.random()-0.5)*shakeIntensity:0;
-    const sy=shakeTime>0?(Math.random()-0.5)*shakeIntensity:0;
+    const shakeX=shakeTime>0?(Math.random()-0.5)*shakeIntensity:0;
+    const shakeY=shakeTime>0?(Math.random()-0.5)*shakeIntensity:0;
     ctx.save();
-    ctx.translate(sx,sy);
+    ctx.translate(shakeX,shakeY);
 
     ctx.fillStyle='#090c16'; ctx.fillRect(0,0,W,H);
     ctx.fillStyle='rgba(255,255,255,.18)';
