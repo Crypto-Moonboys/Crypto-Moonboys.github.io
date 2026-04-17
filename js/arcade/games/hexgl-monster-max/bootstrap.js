@@ -86,6 +86,12 @@ export function bootstrapHexGLMonsterMax(root) {
     loadFallbackTimeoutId = null;
   }
 
+  function isFrameBlank() {
+    if (!frameEl) return true;
+    var src = String(frameEl.getAttribute('src') || '').trim();
+    return !src || src === 'about:blank';
+  }
+
   function canUseAudio() {
     return typeof window !== 'undefined' && !window._arcadeMuted;
   }
@@ -303,7 +309,7 @@ export function bootstrapHexGLMonsterMax(root) {
     if (perfectEl) perfectEl.style.display = 'none';
     setStatus('LOADING');
     syncAmbient();
-    var shouldLoadFrame = !frameLoaded || !frameEl || frameEl.src === 'about:blank' || frameEl.src === '';
+    var shouldLoadFrame = !frameLoaded || isFrameBlank();
     if (shouldLoadFrame && frameEl) {
       frameLoaded = false;
       frameEl.src = FRAME_SRC + '?run=' + Date.now();
@@ -399,10 +405,10 @@ export function bootstrapHexGLMonsterMax(root) {
     refreshIdentity();
     loadRival();
     updateCrossGameStats();
-    frameLoaded = !!(frameEl && frameEl.src && frameEl.src !== 'about:blank');
+    frameLoaded = !isFrameBlank();
     if (frameEl) {
       frameEl.addEventListener('load', function () {
-        if (!frameEl || !frameEl.src || frameEl.src === 'about:blank' || frameEl.src === '') return;
+        if (isFrameBlank()) return;
         frameLoaded = true;
         if (runPending) activateRun(runToken);
       });
