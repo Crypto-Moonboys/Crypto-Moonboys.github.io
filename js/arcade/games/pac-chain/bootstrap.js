@@ -117,6 +117,17 @@ export function bootstrapPacChain(root) {
   const MAX_PARTICLES = 300;
   const MAX_FLOATING_TEXTS = 50;
   const MAX_TRAIL_POINTS = 12;
+  const TRAIL_LIFE_DURATION = 0.45;
+  const BONUS_DURATION_COMMON = 3.8;
+  const BONUS_DURATION_RARE = 4.5;
+  const BONUS_DURATION_LEGENDARY = 5.5;
+  const BONUS_DURATION_SLOW_HIGH = 4.8;
+  const GLITCH_SCORE_THRESHOLD = 1800;
+  const GLITCH_HIGH_SCORE_PROBABILITY = 0.003;
+  const GLITCH_RANDOM_PROBABILITY = 0.0008;
+  const GLITCH_DURATION = 0.08;
+  const GLITCH_COOLDOWN_MIN = 5;
+  const GLITCH_COOLDOWN_RANGE = 4;
 
   const SFX = {
     pellet: { kind: 'tone', type: 'square', freqStart: 720, freqEnd: 650, duration: 0.045, volume: 0.02 },
@@ -240,7 +251,7 @@ export function bootstrapPacChain(root) {
   }
 
   function pushTrailPoint() {
-    playerTrail.push({ x: player.px, y: player.py, life: 0.45, maxLife: 0.45 });
+    playerTrail.push({ x: player.px, y: player.py, life: TRAIL_LIFE_DURATION, maxLife: TRAIL_LIFE_DURATION });
     if (playerTrail.length > MAX_TRAIL_POINTS) playerTrail.shift();
   }
 
@@ -478,8 +489,8 @@ export function bootstrapPacChain(root) {
 
   function shouldTriggerGlitch() {
     if (glitchCooldown > 0) return false;
-    if (score >= 1800 && Math.random() < 0.003) return true;
-    return Math.random() < 0.0008;
+    if (score >= GLITCH_SCORE_THRESHOLD && Math.random() < GLITCH_HIGH_SCORE_PROBABILITY) return true;
+    return Math.random() < GLITCH_RANDOM_PROBABILITY;
   }
 
   async function maybeTriggerLegacyBonus() {
@@ -489,17 +500,17 @@ export function bootstrapPacChain(root) {
       playGameSound('bonus');
       const rarity = String(bonus.rarity || '').toLowerCase();
       if (rarity === 'common') {
-        speedBoostTimer = Math.max(speedBoostTimer, 3.8);
+        speedBoostTimer = Math.max(speedBoostTimer, BONUS_DURATION_COMMON);
       } else if (rarity === 'uncommon') {
-        slowEnemiesTimer = Math.max(slowEnemiesTimer, 3.8);
+        slowEnemiesTimer = Math.max(slowEnemiesTimer, BONUS_DURATION_COMMON);
       } else if (rarity === 'rare') {
-        doubleScoreTimer = Math.max(doubleScoreTimer, 4.5);
+        doubleScoreTimer = Math.max(doubleScoreTimer, BONUS_DURATION_RARE);
       } else if (rarity === 'epic') {
-        speedBoostTimer = Math.max(speedBoostTimer, 4.5);
-        slowEnemiesTimer = Math.max(slowEnemiesTimer, 4.5);
+        speedBoostTimer = Math.max(speedBoostTimer, BONUS_DURATION_RARE);
+        slowEnemiesTimer = Math.max(slowEnemiesTimer, BONUS_DURATION_RARE);
       } else {
-        doubleScoreTimer = Math.max(doubleScoreTimer, 5.5);
-        slowEnemiesTimer = Math.max(slowEnemiesTimer, 4.8);
+        doubleScoreTimer = Math.max(doubleScoreTimer, BONUS_DURATION_LEGENDARY);
+        slowEnemiesTimer = Math.max(slowEnemiesTimer, BONUS_DURATION_SLOW_HIGH);
       }
     } catch (_) {}
   }
@@ -629,8 +640,8 @@ export function bootstrapPacChain(root) {
     }
 
     if (shouldTriggerGlitch()) {
-      glitchTimer = 0.08;
-      glitchCooldown = 5 + Math.random() * 4;
+      glitchTimer = GLITCH_DURATION;
+      glitchCooldown = GLITCH_COOLDOWN_MIN + Math.random() * GLITCH_COOLDOWN_RANGE;
     }
   }
 
