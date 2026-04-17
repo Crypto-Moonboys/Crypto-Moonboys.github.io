@@ -9,9 +9,9 @@
   --gold: #ffd84d;
   --danger: #ff6767;
   --night-bg: #0d0520;
-  --control-start: #ff9b42;
-  --control-mid: #ffd84d;
-  --control-end: #8dff6a;
+  --district-control-start: #ff9b42;
+  --district-control-mid: #ffd84d;
+  --district-control-end: #8dff6a;
 }
 
 * { box-sizing: border-box; }
@@ -189,7 +189,7 @@ html, body {
 #district-control-bar {
   height: 100%;
   width: 50%;
-  background: linear-gradient(90deg, var(--control-start) 0%, var(--control-mid) 45%, var(--control-end) 100%);
+  background: linear-gradient(90deg, var(--district-control-start) 0%, var(--district-control-mid) 45%, var(--district-control-end) 100%);
   transition: width 0.35s ease, filter 0.35s ease;
 }
 

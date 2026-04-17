@@ -18,6 +18,7 @@ const SAM_IMPACT_DURATION_MS = 2000;
 const DISTRICT_PULSE_DURATION_MS = 1300;
 const DISTRICT_PULSE_CONFLICT_MS = 1400;
 const ENTRY_DISMISS_DELAY_MS = 2400;
+const DISTRICT_CAPTURE_THRESHOLD = 90;
 
 const canvas = document.getElementById('world-canvas');
 const hud = createHud(document);
@@ -174,7 +175,7 @@ async function boot() {
       }
       state.effects.districtPulseUntil = Date.now() + DISTRICT_PULSE_DURATION_MS;
       state.effects.districtPulseId = district.id;
-      if (previousControl < 90 && district.control >= 90) {
+      if (previousControl < DISTRICT_CAPTURE_THRESHOLD && district.control >= DISTRICT_CAPTURE_THRESHOLD) {
         // Street Signal feature reintroduced: district capture impact broadcast.
         hud.showDistrictCapture(`🏴 ${district.name} CAPTURED · ${district.owner}`);
         hud.pushFeed(`🏴 ${district.name} captured by ${district.owner}!`, 'combat');

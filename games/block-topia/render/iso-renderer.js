@@ -1,6 +1,11 @@
 const TILE_W = 72;
 const TILE_H = 36;
 const PROP_SPAWN_THRESHOLD = 0.2;
+const PROP_PREVIEW_OVERLAY_ALPHA = 0.08;
+const PROP_PREVIEW_OVERLAY_W = 240;
+const PROP_PREVIEW_OVERLAY_H = 120;
+const PROP_PREVIEW_OVERLAY_OFFSET_X = -300;
+const PROP_PREVIEW_OVERLAY_OFFSET_Y = 20;
 
 const ROLE_STYLE = {
   vendor: { color: '#ffd84d', radius: 5, glow: 'rgba(255,216,77,0.45)' },
@@ -30,7 +35,7 @@ function tintColor(hex, nightFactor, variant = 0) {
   return `rgb(${nr},${ng},${nb})`;
 }
 
-function hash2(x, y) {
+function deterministicNoise2D(x, y) {
   // Standard GLSL-inspired pseudo-random hash coefficients for deterministic variation.
   const value = Math.sin((x + 1) * 12.9898 + (y + 1) * 78.233) * 43758.5453;
   return value - Math.floor(value);
@@ -63,6 +68,7 @@ export function createIsoRenderer(canvas) {
   loadImage('/games/assets/blocktopia-sprites.svg');
 
   function drawTile(screenX, screenY, fill, variant) {
+    // variant is expected in [0,1], used for deterministic surface micro-variation.
     ctx.beginPath();
     ctx.moveTo(screenX, screenY);
     ctx.lineTo(screenX + TILE_W / 2, screenY + TILE_H / 2);
@@ -140,12 +146,12 @@ export function createIsoRenderer(canvas) {
     const types = ['crate', 'terminal', 'graffiti', 'light'];
     for (let row = 0; row < state.map.height; row += 1) {
       for (let col = 0; col < state.map.width; col += 1) {
-        const roll = hash2(col * 11, row * 7);
+        const roll = deterministicNoise2D(col * 11, row * 7);
         if (roll > PROP_SPAWN_THRESHOLD) continue;
         items.push({
           col,
           row,
-          type: types[Math.floor(hash2(col * 3, row * 5) * types.length)],
+          type: types[Math.floor(deterministicNoise2D(col * 3, row * 5) * types.length)],
         });
       }
     }
@@ -186,7 +192,7 @@ export function createIsoRenderer(canvas) {
       for (let col = 0; col < state.map.width; col += 1) {
         const district = state.districts.fromGrid(col, row);
         const baseColor = district?.color || '#1f2c4b';
-        const variant = hash2(col, row);
+        const variant = deterministicNoise2D(col, row);
         const fill = tintColor(baseColor, nightFactor, variant - 0.5);
         const iso = toIso(col, row);
         drawTile(originX + iso.x, originY + iso.y, fill, variant);
@@ -201,8 +207,15 @@ export function createIsoRenderer(canvas) {
 
     const spritePreview = imageRegistry['/games/assets/blocktopia/props/preview.svg'];
     if (spritePreview?.complete) {
-      ctx.globalAlpha = 0.08;
-      ctx.drawImage(spritePreview, originX - 300, originY + 20, 240, 120);
+      // Street Signal prop-pack stamp for district ambience using existing legacy assets.
+      ctx.globalAlpha = PROP_PREVIEW_OVERLAY_ALPHA;
+      ctx.drawImage(
+        spritePreview,
+        originX + PROP_PREVIEW_OVERLAY_OFFSET_X,
+        originY + PROP_PREVIEW_OVERLAY_OFFSET_Y,
+        PROP_PREVIEW_OVERLAY_W,
+        PROP_PREVIEW_OVERLAY_H,
+      );
       ctx.globalAlpha = 1;
     }
 

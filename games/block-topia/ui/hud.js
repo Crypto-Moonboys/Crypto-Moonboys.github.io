@@ -1,4 +1,5 @@
 export function createHud(doc) {
+  // Core Street Signal progression: every 200 XP advances one level.
   const XP_PER_LEVEL = 200;
   const playerNameEl    = doc.getElementById('player-name');
   const levelStatus     = doc.getElementById('level-status');
