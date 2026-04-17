@@ -23,6 +23,8 @@ const DISTRICT_CAPTURE_THRESHOLD = 90;
 const LOGIC_TICK_MS = 50;
 const NPC_SCAN_INTERVAL_MS = 150;
 const WORLD_SNAPSHOT_FRESH_THRESHOLD_MS = 1200;
+const NPC_LERP_ALPHA = 0.13;
+const REMOTE_PLAYER_LERP_ALPHA = 0.18;
 
 const canvas = document.getElementById('world-canvas');
 const hud = createHud(document);
@@ -137,7 +139,21 @@ async function boot() {
     },
     onWorldSnapshot: (data) => {
       if (Array.isArray(data?.npcs)) {
-        state.npc.entities = data.npcs;
+        // Merge by id: update interpolation targets on existing entities.
+        // If the snapshot carries full data (initial join), also add any unknown entities.
+        const entityById = new Map(state.npc.entities.map((e) => [e.id, e]));
+        for (const snap of data.npcs) {
+          const entity = entityById.get(snap.id);
+          if (entity) {
+            entity._targetCol = snap.col;
+            entity._targetRow = snap.row;
+            if (Number.isFinite(snap.bobPhase)) entity._targetBobPhase = snap.bobPhase;
+            if (snap.faction) entity.faction = snap.faction;
+          } else if (snap.mode) {
+            // Full snapshot — new entity not yet known on client; snap immediately.
+            state.npc.entities.push({ ...snap, _targetCol: snap.col, _targetRow: snap.row });
+          }
+        }
       }
       if (Array.isArray(data?.districts)) {
         for (const incoming of data.districts) {
@@ -283,6 +299,29 @@ async function boot() {
     quests.tick(dt, {
       onQuestPulse: (text) => hud.pushFeed(`🎯 ${text}`, 'quest'),
     });
+
+    // Interpolate server-driven NPC positions toward snapshot targets.
+    for (const npc of state.npc.entities) {
+      if (Number.isFinite(npc._targetCol)) {
+        npc.col += (npc._targetCol - npc.col) * NPC_LERP_ALPHA;
+      }
+      if (Number.isFinite(npc._targetRow)) {
+        npc.row += (npc._targetRow - npc.row) * NPC_LERP_ALPHA;
+      }
+      if (Number.isFinite(npc._targetBobPhase)) {
+        npc.bobPhase += (npc._targetBobPhase - npc.bobPhase) * NPC_LERP_ALPHA;
+      }
+    }
+
+    // Interpolate remote player positions toward server-provided targets.
+    for (const remote of state.remotePlayers) {
+      if (Number.isFinite(remote._targetX)) {
+        remote.x += (remote._targetX - remote.x) * REMOTE_PLAYER_LERP_ALPHA;
+      }
+      if (Number.isFinite(remote._targetY)) {
+        remote.y += (remote._targetY - remote.y) * REMOTE_PLAYER_LERP_ALPHA;
+      }
+    }
 
     // Update district HUD when player moves into a new district
     const district = state.districts.byId.get(state.player.districtId);

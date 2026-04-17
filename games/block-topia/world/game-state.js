@@ -3,14 +3,6 @@ function nowUtcDaySeed() {
 }
 
 const PLAYER_MOVEMENT_SPEED = 3.2;
-// Seconds spent in a district (at Night) to earn capture progress
-const CAPTURE_TICK_INTERVAL  = 2;
-// Progress per tick (0–100 scale)
-const CAPTURE_PROGRESS_DELTA = 3;
-// Score awarded on district capture
-export const SCORE_DISTRICT_CAPTURE = 250;
-// XP awarded on district capture
-export const XP_DISTRICT_CAPTURE    = 80;
 
 function computeSeasonIndex(epochMs, cycleDays) {
   const cycleMs = cycleDays * 24 * 60 * 60 * 1000;
@@ -126,15 +118,30 @@ export function createGameState(bundle) {
 }
 
 export function applyRemotePlayers(state, players) {
-  state.remotePlayers = players
-    .filter((player) => typeof player.x === 'number' && typeof player.y === 'number')
-    .map((player) => ({
+  const filtered = players
+    .filter((player) => typeof player.x === 'number' && typeof player.y === 'number');
+  const existingById = new Map(state.remotePlayers.map((p) => [p.id, p]));
+  state.remotePlayers = filtered.map((player) => {
+    const existing = existingById.get(player.id);
+    if (existing) {
+      // Keep the current interpolated position; only update the interpolation target.
+      existing._targetX = player.x;
+      existing._targetY = player.y;
+      existing.name = player.name || 'Player';
+      existing.faction = player.faction || 'unknown';
+      return existing;
+    }
+    // New player — snap directly to received position and initialise target.
+    return {
       id: player.id,
       name: player.name || 'Player',
       x: player.x,
       y: player.y,
+      _targetX: player.x,
+      _targetY: player.y,
       faction: player.faction || 'unknown',
-    }));
+    };
+  });
 }
 
 /**
@@ -184,35 +191,4 @@ export function updatePlayerMotion(state, input, dt, moveSender) {
   if (moved) {
     moveSender(state.player.x, state.player.y);
   }
-}
-
-/**
- * Tick district capture: during Night phase, the player slowly captures the district they stand in.
- * Returns a capture event if a district just tipped past the threshold.
- */
-export function tickDistrictCapture(state, dt) {
-  if (state.phase !== 'Night') return null;
-
-  state.captureTimer += dt;
-  if (state.captureTimer < CAPTURE_TICK_INTERVAL) return null;
-  state.captureTimer = 0;
-
-  const ds = state.districtState.find((d) => d.id === state.player.districtId);
-  if (!ds) return null;
-
-  const prevControl = ds.control;
-  ds.control = Math.min(100, ds.control + CAPTURE_PROGRESS_DELTA);
-
-  if (prevControl < 90 && ds.control >= 90) {
-    // District captured — award XP and score directly using their canonical constants.
-    // Avoid awardXp() here to prevent the implicit 1.5× score multiplier from stacking
-    // on top of the explicit SCORE_DISTRICT_CAPTURE value (which is already final).
-    // Do NOT push to state.memory.districtChanges here — main.js calls memory.record()
-    // which is the single authoritative writer for all secondary memory indexes.
-    state.player.xp    += XP_DISTRICT_CAPTURE;
-    state.player.score += SCORE_DISTRICT_CAPTURE;
-    return { type: 'captured', district: ds };
-  }
-
-  return null;
 }

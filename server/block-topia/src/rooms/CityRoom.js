@@ -158,8 +158,27 @@ export class CityRoom extends Room {
 
     if (this.snapshotTimerMs >= WORLD_SNAPSHOT_INTERVAL_MS) {
       this.snapshotTimerMs = 0;
-      this.broadcast('worldSnapshot', this.world);
+      this.broadcast('worldSnapshot', this.buildLeanSnapshot());
     }
+  }
+
+  buildLeanSnapshot() {
+    return {
+      npcs: this.world.npcs.map((npc) => ({
+        id: npc.id,
+        mode: npc.mode,
+        col: npc.col,
+        row: npc.row,
+        bobPhase: npc.bobPhase,
+        faction: npc.faction,
+      })),
+      districts: this.world.districts.map((d) => ({
+        id: d.id,
+        control: d.control,
+        owner: d.owner,
+      })),
+      samPhase: this.world.samPhase,
+    };
   }
 
   updateNPCs(dt) {
