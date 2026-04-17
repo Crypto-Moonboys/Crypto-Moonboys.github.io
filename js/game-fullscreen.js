@@ -23,6 +23,8 @@
   // open, creating a hidden second start path.  HexGL uses a single deliberate start flow:
   // user clicks ▶ Start inside the overlay → onStart() → LOADING → COUNTDOWN → RUN ACTIVE.
   var hidePauseControl = startBtn && startBtn.dataset && startBtn.dataset.overlayHidePause === 'true';
+  var hideStartControl = startBtn && startBtn.dataset && startBtn.dataset.overlayHideStart === 'true';
+  var singleStartFlow = startBtn && startBtn.dataset && startBtn.dataset.overlaySingleStart === 'true';
 
   // Only activate on pages that have both a Start button and a .game-card.
   if (!startBtn || !gameCard) return;
@@ -481,6 +483,24 @@
 
   document.addEventListener('fullscreenchange', syncFSBtn);
 
+  function triggerGameStart() {
+    if (!isOpen) return;
+    // HexGL (and any game that exposes __hexglStartHook) wires its onStart()
+    // function directly so we bypass the DOM click path entirely — no event
+    // listener chain, no stopImmediatePropagation dependency, no timing race.
+    // All other games fall back to the original .click() approach.
+    if (typeof window.__hexglStartHook === 'function') {
+      window.__hexglStartHook();
+    } else {
+      var gameStartBtn = document.getElementById('startBtn');
+      if (!gameStartBtn || gameStartBtn.disabled) return;
+      gameStartBtn.click();
+    }
+    _gameStarted = true;
+    _isPaused = false;
+    syncPauseBtn();
+  }
+
   /* ── Open ────────────────────────────────────────────────────────── */
 
   function openOverlay() {
@@ -492,6 +512,7 @@
     // Update ctrl bar label
     gameLabel.textContent = meta.label;
     gameLabel.style.color = meta.color;
+    btnStart.style.display = hideStartControl ? 'none' : '';
     btnPause.style.display = hidePauseControl ? 'none' : '';
 
     // Build side panels and touch controls
@@ -612,16 +633,12 @@
     if (!isOpen) {
       openOverlay();
       e.stopImmediatePropagation();
-      if (autoStartOnOpen) {
+      if (autoStartOnOpen || singleStartFlow) {
+        // Use a short delay so the overlay DOM is fully visible and the
+        // game's click handler is ready before we programmatically click.
         setTimeout(function () {
-          if (!isOpen) return;
-          var gameStartBtn = document.getElementById('startBtn');
-          if (!gameStartBtn) return;
-          gameStartBtn.click();
-          _gameStarted = true;
-          _isPaused = false;
-          syncPauseBtn();
-        }, 0);
+          triggerGameStart();
+        }, 50);
       }
     }
   }, true);
@@ -639,13 +656,7 @@
   // all games until they are running, so this is the required first deliberate
   // action before gameplay begins.
   btnStart.addEventListener('click', function () {
-    var gameStartBtn = document.getElementById('startBtn');
-    if (gameStartBtn && isOpen) {
-      gameStartBtn.click();
-      _gameStarted = true;
-      _isPaused = false;
-      syncPauseBtn();
-    }
+    triggerGameStart();
   });
 
   btnFS.addEventListener('click', function () {
@@ -657,6 +668,9 @@
   });
 
   btnPause.addEventListener('click', function () {
+    // Skip pause logic entirely when the pause control is hidden (e.g. HexGL has
+    // no #pauseBtn and the overlay button is not shown — do nothing).
+    if (hidePauseControl) return;
     var gamePauseBtn = document.getElementById('pauseBtn');
     if (gamePauseBtn) {
       gamePauseBtn.click();
@@ -718,10 +732,7 @@
       var gameStartBtn = document.getElementById('startBtn');
       if (gameStartBtn && !_gameStarted) {
         e.preventDefault();
-        gameStartBtn.click();
-        _gameStarted = true;
-        _isPaused = false;
-        syncPauseBtn();
+        triggerGameStart();
       }
     }
   });
