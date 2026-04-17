@@ -10,6 +10,7 @@ GameRegistry.register(HEXGL_MONSTER_MAX_CONFIG.id, {
 
 export function bootstrapHexGLMonsterMax(root) {
   var MIN_RUN_MS = HEXGL_MONSTER_MAX_CONFIG.minRunMs;
+  // 470000 corresponds to a 30-second run under score = 500000 - (seconds * 1000).
   var PERFECT_RUN_SCORE = 470000;
   var FRAME_SRC = 'https://hexgl.bkcore.com/play/';
 
@@ -41,7 +42,7 @@ export function bootstrapHexGLMonsterMax(root) {
   var bestRunMs  = null;
 
   function calcScore(ms) {
-    return Math.max(0, Math.floor(500000 - ms));
+    return Math.max(0, Math.floor(500000 - (ms / 1000) * 1000));
   }
 
   function fmtTime(ms) {
@@ -115,16 +116,18 @@ export function bootstrapHexGLMonsterMax(root) {
       fetchLeaderboard('global').then(function (rows) {
         if (!Array.isArray(rows) || !rows.length) return;
         if (topPlayerEl) topPlayerEl.textContent = rows[0].player || '—';
+        var playerKey = String(playerName || '').toLowerCase();
         var me = rows.find(function (row) {
-          return String(row.player || '').toLowerCase() === String(playerName).toLowerCase();
+          return String(row.player || '').toLowerCase() === playerKey;
         });
         if (!me) return;
         if (rankEl) rankEl.textContent = '#' + String(me.rank || '—');
         if (totalScoreEl) totalScoreEl.textContent = Number(me.score || 0).toLocaleString();
         if (gamesPlayedEl) {
           var b = me.breakdown || {};
-          var games = ['snake', 'crystal', 'blocktopia', 'invaders', 'pacchain', 'asteroids', 'breakout', 'tetris', 'hexgl'];
-          var played = games.filter(function (k) { return Number(b[k] || 0) > 0; }).length;
+          var played = Object.keys(b).filter(function (k) {
+            return k !== 'variety_bonus' && Number(b[k] || 0) > 0;
+          }).length;
           gamesPlayedEl.textContent = String(played);
         }
       }).catch(function () {});
@@ -133,6 +136,7 @@ export function bootstrapHexGLMonsterMax(root) {
 
   function onStart() {
     refreshIdentity();
+    // Force a clean iframe reload each run.
     if (frameEl) frameEl.src = FRAME_SRC + '?run=' + Date.now();
     runStart = Date.now();
     runActive = true;
@@ -167,7 +171,11 @@ export function bootstrapHexGLMonsterMax(root) {
     localStorage.setItem('hexgl_last_run_ms', String(lastRunMs));
 
     if (!window.MOONBOYS_IDENTITY?.isTelegramLinked?.()) {
-      window.MOONBOYS_IDENTITY?.showSyncGateModal?.(true);
+      if (window.MOONBOYS_IDENTITY?.showSyncGateModal) {
+        window.MOONBOYS_IDENTITY.showSyncGateModal(true);
+      } else {
+        alert('Telegram link required for ranked leaderboard submission. Guest runs stay local.');
+      }
       updateCrossGameStats();
       return;
     }
