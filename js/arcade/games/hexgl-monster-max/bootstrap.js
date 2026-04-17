@@ -130,8 +130,12 @@ export function bootstrapHexGLMonsterMax(root) {
           }).length;
           gamesPlayedEl.textContent = String(played);
         }
-      }).catch(function () {});
-    } catch (_) {}
+      }).catch(function (err) {
+        console.warn('[hexgl-monster-max] fetchLeaderboard failed:', err);
+      });
+    } catch (err) {
+      console.warn('[hexgl-monster-max] updateCrossGameStats error:', err);
+    }
   }
 
   function onStart() {
