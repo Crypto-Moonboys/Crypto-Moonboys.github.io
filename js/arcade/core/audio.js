@@ -87,7 +87,7 @@ function createToneHandle(ctx, tone, baseTime) {
   });
   osc.onended = function () { unregister(handle); };
   osc.start(startAt);
-  if (!tone.loop && duration) osc.stop(startAt + duration + 0.02);
+  if (!tone.loop && duration) osc.stop(startAt + duration + 0.01);
   return handle;
 }
 
@@ -96,7 +96,7 @@ function resolveSound(id, options) {
   if (base.kind === 'chord') {
     return {
       kind: 'chord',
-      tones: (base.tones || []).map(function (tone) { return { ...tone }; }),
+      tones: (base.tones || []).map((tone) => ({ ...tone })),
     };
   }
   return { ...base, ...options };
@@ -169,4 +169,3 @@ if (typeof window !== 'undefined') {
     isMuted,
   };
 }
-
