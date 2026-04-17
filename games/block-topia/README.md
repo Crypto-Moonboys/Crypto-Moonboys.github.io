@@ -37,7 +37,7 @@ Block Topia is the shared cyberpunk city multiplayer experience where players mo
 ### Multiplayer Layer
 - `network.js` keeps Colyseus client behavior centralized.
 - Endpoint remains the existing VPS route via:
-  - `window.BLOCK_TOPIA_SERVER`, defaulting to `https://game.cryptomoonboys.com`
+  - `window.BLOCK_TOPIA_SERVER`, defaulting to `https://game.cryptomoonboys.com` (**backend-internal only — not a public user-facing URL**)
   - Colyseus connects over secure WebSocket transport to that same host, with retry handling implemented in `network.js` (2 attempts with a fixed 2.5s delay between tries)
 - Room identity stays on `city` with room metadata hooks for shard/season context.
 
@@ -85,7 +85,7 @@ Legacy source references are tracked in `world/data-loader.js` (`legacy.sourceFi
 
 ## Replaced Entry Points + Link Routing
 
-- Unified game entry point: `/games/block-topia/index.html`
+- Unified game entry point (public URL): `/games/block-topia/`
 - Legacy Street Signal monster page is treated as retired and should only redirect to the unified module:
   - `/games/block-topia-street-signal-3008-monster.html` → `/games/block-topia/`
 - Arcade/home/game navigation links should resolve to `/games/block-topia/` instead of legacy Block Topia variants.
@@ -102,10 +102,20 @@ Legacy source references are tracked in `world/data-loader.js` (`legacy.sourceFi
 
 ## Arcade + VPS Integration Checklist
 
-- Arcade index card links point to `/games/block-topia/`.
+- Arcade index card links point to `/games/block-topia/` (**always use this clean public route, never the backend URL**).
 - Legacy Block Topia navigation links across game pages point to `/games/block-topia/`.
-- Unified module keeps `window.BLOCK_TOPIA_SERVER` defaulting to `https://game.cryptomoonboys.com`.
+- Unified module keeps `window.BLOCK_TOPIA_SERVER` defaulting to `https://game.cryptomoonboys.com` — this is **backend-internal only** and must not appear in any user-facing HTML as a clickable link.
 - Multiplayer joins the existing Colyseus `city` room and reflects room population in HUD.
+
+## Public URL Reference
+
+| Destination | URL |
+|---|---|
+| Public game (user-facing) | `/games/block-topia/` |
+| Backend VPS (internal only) | `https://game.cryptomoonboys.com` — **never expose to users** |
+
+- All arcade + navigation links must use the public route `/games/block-topia/`.
+- The multiplayer banner inside the game is a non-clickable status badge only — it has no `href` and does not link to the backend.
 
 ---
 
@@ -161,7 +171,7 @@ when the `sam-event` phase fires) so all `samEvents` entries have a consistent s
   - `/games/block-topia-street-signal-3008-phaser.html` → `/games/block-topia/`
 - A fixed in-game multiplayer banner was added in `index.html` + `style.css`:
   - Text: `LIVE MULTIPLAYER — CONNECTED`
-  - Link: `https://game.cryptomoonboys.com` (opens in a new tab)
+  - Non-clickable status badge only (`<div role="status">`) — no href, no link to backend
 - SAM phase is now server-authoritative:
   - Client listens for `samPhaseChanged` and overrides local `state.sam.currentIndex`.
   - Local phase auto-advance is no longer used as authority.
