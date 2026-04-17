@@ -552,6 +552,9 @@
     isOpen = false;
     _gameStarted = false; // reset so Space can start the game again next time the overlay opens
 
+    // Notify game modules that the overlay is closing (e.g. to play an exit sound).
+    document.dispatchEvent(new CustomEvent('arcade-overlay-exit'));
+
     // Stop live score updater.
     if (scoreInterval) { clearInterval(scoreInterval); scoreInterval = null; }
 

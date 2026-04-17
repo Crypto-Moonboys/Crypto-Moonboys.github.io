@@ -43,6 +43,7 @@ export function bootstrapHexGLMonsterMax(root) {
   var runStart   = null;
   var runActive  = false;
   var runPending = false;
+  var countdownActive = false;  // true while READY/3/2/1/GO sequence is running
   var intervalId = null;
   var readyTimeoutId = null;
   var loadFallbackTimeoutId = null;
@@ -172,6 +173,18 @@ export function bootstrapHexGLMonsterMax(root) {
       conf.duration = 0.12;
       conf.type = 'sine';
       conf.volume = 0.06;
+    } else if (kind === 'error') {
+      conf.start = 320;
+      conf.end = 180;
+      conf.duration = 0.14;
+      conf.type = 'sawtooth';
+      conf.volume = 0.04;
+    } else if (kind === 'exit') {
+      conf.start = 520;
+      conf.end = 300;
+      conf.duration = 0.10;
+      conf.type = 'triangle';
+      conf.volume = 0.04;
     }
     osc.type = conf.type;
     osc.frequency.setValueAtTime(conf.start, now);
@@ -284,7 +297,8 @@ export function bootstrapHexGLMonsterMax(root) {
   }
 
   function activateRun(token) {
-    if (token !== runToken || !runPending) return;
+    if (token !== runToken || !runPending || countdownActive) return;
+    countdownActive = true;
     clearTimeout(loadFallbackTimeoutId);
     loadFallbackTimeoutId = null;
     setStatus('COUNTDOWN');
@@ -297,6 +311,7 @@ export function bootstrapHexGLMonsterMax(root) {
 
     function tick() {
       if (token !== runToken || !runPending) {
+        countdownActive = false;
         hideCountdown();
         return;
       }
@@ -312,9 +327,11 @@ export function bootstrapHexGLMonsterMax(root) {
         playGoChord();
         readyTimeoutId = setTimeout(function () {
           if (token !== runToken || !runPending) {
+            countdownActive = false;
             hideCountdown();
             return;
           }
+          countdownActive = false;
           hideCountdown();
           runPending = false;
           runActive  = true;
@@ -393,6 +410,7 @@ export function bootstrapHexGLMonsterMax(root) {
     runToken += 1;
     runActive = false;
     runPending = true;
+    countdownActive = false;
     runStart = null;
     lastRunMs = null;
     clearRunDelays();
@@ -424,10 +442,8 @@ export function bootstrapHexGLMonsterMax(root) {
 
   async function onSubmit() {
     unlockAudio();
-    playUiTone('submit');
-    if (runPending) {
-      if (submitBtn) submitBtn.disabled = true;
-      setStatus('LOADING');
+    if (runPending || countdownActive) {
+      playUiTone('error');
       notify('Run is still loading. Wait for RUN ACTIVE.');
       return;
     }
@@ -439,6 +455,7 @@ export function bootstrapHexGLMonsterMax(root) {
       syncAmbient();
     }
     if (typeof lastRunMs !== 'number' || lastRunMs < MIN_RUN_MS) {
+      playUiTone('error');
       if (startBtn) startBtn.disabled = false;
       setStatus('RUN READY');
       notify('Complete a valid run first (minimum 30 seconds).');
@@ -446,11 +463,13 @@ export function bootstrapHexGLMonsterMax(root) {
     }
     var score = calcScore(lastRunMs);
     if (score <= 0) {
+      playUiTone('error');
       if (startBtn) startBtn.disabled = false;
       setStatus('RUN READY');
       notify('Run is too slow to qualify for leaderboard submission.');
       return;
     }
+    playUiTone('submit');
     updateRunUI(lastRunMs);
     savePersonalBest(lastRunMs);
     localStorage.setItem('hexgl_last_run_ms', String(lastRunMs));
@@ -486,6 +505,7 @@ export function bootstrapHexGLMonsterMax(root) {
     runStart = null;
     runActive = false;
     runPending = false;
+    countdownActive = false;
     frameLoaded = false;
     lastRunMs = null;
     stopAmbient();
@@ -525,6 +545,9 @@ export function bootstrapHexGLMonsterMax(root) {
     document.addEventListener('arcade-mute-change', function () {
       syncAmbient();
     });
+    document.addEventListener('arcade-overlay-exit', function () {
+      playUiTone('exit');
+    });
     if (startBtn) startBtn.addEventListener('click', onStart);
     if (submitBtn) submitBtn.addEventListener('click', onSubmit);
     if (resetBtn) resetBtn.addEventListener('click', onReset);
@@ -541,6 +564,7 @@ export function bootstrapHexGLMonsterMax(root) {
     clearRunDelays();
     stopTimer();
     stopAmbient();
+    countdownActive = false;
     hideCountdown();
     clearTimeout(messageTimeoutId);
     notify('');
