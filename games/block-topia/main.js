@@ -5,6 +5,7 @@ import {
   applyRemotePlayers,
   updatePlayerMotion,
   awardXp,
+  tickDistrictCapture,
 } from './world/game-state.js';
 import { createSamSystem } from './world/sam-system.js';
 import { createNpcSystem } from './world/npc-system.js';
@@ -22,8 +23,6 @@ const ENTRY_DISMISS_DELAY_MS = 2400;
 const DISTRICT_CAPTURE_THRESHOLD = 90;
 const LOGIC_TICK_MS = 50;
 const NPC_SCAN_INTERVAL_MS = 150;
-const WORLD_SNAPSHOT_FRESH_THRESHOLD_MS = 1200;
-const NPC_LERP_ALPHA = 0.13;
 const REMOTE_PLAYER_LERP_ALPHA = 0.18;
 
 const canvas = document.getElementById('world-canvas');
@@ -48,14 +47,7 @@ async function boot() {
   let multiplayerConnected = false;
   let nearbyNpc = null;
   let lastNpcScan = performance.now();
-  // -Infinity sentinel: Number.isFinite returns false until the first real snapshot arrives.
-  let serverWorldSnapshotAt = -Infinity;
   let lastQuestDistrictId = state.player.districtId;
-
-  function hasFreshWorldSnapshot(ts) {
-    return Number.isFinite(serverWorldSnapshotAt)
-      && (ts - serverWorldSnapshotAt) <= WORLD_SNAPSHOT_FRESH_THRESHOLD_MS;
-  }
   const primaryFactionName = state.factions.primary?.name || 'Liberators';
   const secondaryFactionName = state.factions.secondary?.name || 'Wardens';
   const lore = state.lore?.legacy?.lore || {};
@@ -139,21 +131,8 @@ async function boot() {
     },
     onWorldSnapshot: (data) => {
       if (Array.isArray(data?.npcs)) {
-        // Merge by id: update interpolation targets on existing entities.
-        // If the snapshot carries full data (initial join), also add any unknown entities.
-        const entityById = new Map(state.npc.entities.map((e) => [e.id, e]));
-        for (const snap of data.npcs) {
-          const entity = entityById.get(snap.id);
-          if (entity) {
-            entity._targetCol = snap.col;
-            entity._targetRow = snap.row;
-            if (Number.isFinite(snap.bobPhase)) entity._targetBobPhase = snap.bobPhase;
-            if (snap.faction) entity.faction = snap.faction;
-          } else if (snap.mode) {
-            // Full snapshot — new entity not yet known on client; snap immediately.
-            state.npc.entities.push({ ...snap, _targetCol: snap.col, _targetRow: snap.row });
-          }
-        }
+        // Server NPC positions become the lerp targets for npc-system.tick().
+        state.npcTargets = data.npcs;
       }
       if (Array.isArray(data?.districts)) {
         for (const incoming of data.districts) {
@@ -175,7 +154,6 @@ async function boot() {
         const phase = sam.getCurrentPhase();
         hud.setSamPhase(phase.name);
       }
-      serverWorldSnapshotAt = performance.now();
     },
     onFeed: (line) => {
       hud.pushFeed(line, classifyFeedType(line));
@@ -276,12 +254,12 @@ async function boot() {
     const dt = Math.min(MAX_FRAME_DELTA_SECONDS, (ts - lastTs) / 1000);
     lastTs = ts;
 
-    // When server snapshots are fresh, skip local NPC simulation to keep authority server-side.
-    const worldSnapshotFresh = hasFreshWorldSnapshot(ts);
     updatePlayerMotion(state, input, dt, sendMovement);
-    if (!worldSnapshotFresh) {
-      npc.tick(dt);
-    }
+    // npc.tick() follows server NPC targets (state.npcTargets) when available;
+    // falls back to local simulation when the server is unreachable.
+    npc.tick(dt);
+    // Visual-only capture preview — server decides actual control values.
+    tickDistrictCapture(state, dt);
 
     if (ts - lastNpcScan > NPC_SCAN_INTERVAL_MS) {
       nearbyNpc = npc.nearestInteractive(state.player.x, state.player.y);
@@ -299,19 +277,6 @@ async function boot() {
     quests.tick(dt, {
       onQuestPulse: (text) => hud.pushFeed(`🎯 ${text}`, 'quest'),
     });
-
-    // Interpolate server-driven NPC positions toward snapshot targets.
-    for (const npc of state.npc.entities) {
-      if (Number.isFinite(npc._targetCol)) {
-        npc.col += (npc._targetCol - npc.col) * NPC_LERP_ALPHA;
-      }
-      if (Number.isFinite(npc._targetRow)) {
-        npc.row += (npc._targetRow - npc.row) * NPC_LERP_ALPHA;
-      }
-      if (Number.isFinite(npc._targetBobPhase)) {
-        npc.bobPhase += (npc._targetBobPhase - npc.bobPhase) * NPC_LERP_ALPHA;
-      }
-    }
 
     // Interpolate remote player positions toward server-provided targets.
     for (const remote of state.remotePlayers) {
@@ -334,6 +299,8 @@ async function boot() {
       }
       if (district.id !== lastQuestDistrictId) {
         lastQuestDistrictId = district.id;
+        // Clear capture preview when entering a new district.
+        state.capturePreview = null;
         hud.setQuests(quests.getActiveQuestCards());
       }
     }

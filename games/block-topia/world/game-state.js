@@ -3,6 +3,10 @@ function nowUtcDaySeed() {
 }
 
 const PLAYER_MOVEMENT_SPEED = 3.2;
+// Seconds a player must stand in a district (Night) before a capture preview tick fires
+const CAPTURE_TICK_INTERVAL = 2;
+// Visual progress increment per tick (0–100 scale); server owns the real control value
+const CAPTURE_PROGRESS_DELTA = 3;
 
 function computeSeasonIndex(epochMs, cycleDays) {
   const cycleMs = cycleDays * 24 * 60 * 60 * 1000;
@@ -76,6 +80,12 @@ export function createGameState(bundle) {
     camera: { x: 0, y: 0 },
     phase: 'Day',
     captureTimer: 0,
+    // Visual-only capture progress shown to the player while they hold a district at Night.
+    // Server owns the real district control value; this is purely for client-side feedback.
+    capturePreview: null,
+    // Latest NPC position array from the server (lean snapshot format).
+    // npc-system reads this to lerp local entities toward server-authoritative positions.
+    npcTargets: null,
     npc: {
       activeTarget: bundle.npcArchetypes.split?.active || 60,
       activeCap: bundle.npcArchetypes.split?.activeCap || 80,
@@ -191,4 +201,31 @@ export function updatePlayerMotion(state, input, dt, moveSender) {
   if (moved) {
     moveSender(state.player.x, state.player.y);
   }
+}
+
+/**
+ * Visual-only district capture preview tick.
+ *
+ * Accumulates client-side capture progress in `state.capturePreview` while the
+ * player stands in a district during Night phase.  The REAL district control
+ * value is owned by the server (`updateDistricts`) and reflected via
+ * `worldSnapshot` / `districtCaptureChanged`.  This function MUST NOT mutate
+ * `districtState[].control` or award XP — that would re-introduce local
+ * authority that belongs to the server.
+ *
+ * Callers can read `state.capturePreview` to show a capture progress overlay.
+ * Reset `state.capturePreview` when the player changes district.
+ */
+export function tickDistrictCapture(state, dt) {
+  if (state.phase !== 'Night') return;
+
+  state.captureTimer += dt;
+  if (state.captureTimer < CAPTURE_TICK_INTERVAL) return;
+  state.captureTimer = 0;
+
+  const prev = state.capturePreview;
+  state.capturePreview = {
+    districtId: state.player.districtId,
+    progress: Math.min(100, (prev?.districtId === state.player.districtId ? prev.progress : 0) + CAPTURE_PROGRESS_DELTA),
+  };
 }

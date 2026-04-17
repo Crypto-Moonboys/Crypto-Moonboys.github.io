@@ -271,6 +271,26 @@ export function createNpcSystem(state) {
     const total = npcs.length;
     if (!total) return;
 
+    // When the server has sent NPC targets, follow server positions via lerp.
+    // Local simulation acts as a fallback when no server targets are available.
+    if (state.npcTargets?.length) {
+      const targets = state.npcTargets;
+      const len = Math.min(total, targets.length);
+      for (let i = 0; i < len; i += 1) {
+        const entity = npcs[i];
+        const target = targets[i];
+        if (!entity || !target) continue;
+        entity.col += (target.col - entity.col) * 0.2;
+        entity.row += (target.row - entity.row) * 0.2;
+        if (Number.isFinite(target.bobPhase)) {
+          entity.bobPhase += (target.bobPhase - entity.bobPhase) * 0.2;
+        }
+        if (target.faction) entity.faction = target.faction;
+      }
+      return;
+    }
+
+    // Fallback: local simulation when no server targets are available.
     const batchSize = Math.min(UPDATE_BATCH, total);
     for (let i = 0; i < batchSize; i += 1) {
       const npc = npcs[(batchIndex + i) % total];
