@@ -17,6 +17,8 @@
 
   var startBtn = document.getElementById('startBtn');
   var gameCard = document.querySelector('.game-card');
+  var autoStartOnOpen = startBtn && startBtn.dataset && startBtn.dataset.overlayAutostart === 'true';
+  var hidePauseControl = startBtn && startBtn.dataset && startBtn.dataset.overlayHidePause === 'true';
 
   // Only activate on pages that have both a Start button and a .game-card.
   if (!startBtn || !gameCard) return;
@@ -486,6 +488,7 @@
     // Update ctrl bar label
     gameLabel.textContent = meta.label;
     gameLabel.style.color = meta.color;
+    btnPause.style.display = hidePauseControl ? 'none' : '';
 
     // Build side panels and touch controls
     buildLeftPanel(meta);
@@ -602,6 +605,17 @@
     if (!isOpen) {
       openOverlay();
       e.stopImmediatePropagation();
+      if (autoStartOnOpen) {
+        setTimeout(function () {
+          if (!isOpen) return;
+          var gameStartBtn = document.getElementById('startBtn');
+          if (!gameStartBtn) return;
+          gameStartBtn.click();
+          _gameStarted = true;
+          _isPaused = false;
+          syncPauseBtn();
+        }, 0);
+      }
     }
   }, true);
 
@@ -667,6 +681,9 @@
       if (icon) icon.textContent = '🔊';
       if (lbl)  lbl.textContent  = ' Mute';
     }
+    document.dispatchEvent(new CustomEvent('arcade-mute-change', {
+      detail: { muted: !!window._arcadeMuted }
+    }));
   });
 
   // Esc key closes the overlay.

@@ -141,13 +141,55 @@
       text-align: center;
     }
     .attribution a { color: var(--color-accent); }
+    #hexgl-help-bar {
+      border-color:#f7c948;
+      background:rgba(247,201,72,.07);
+      border-radius:10px;
+      padding:6px 10px;
+      margin-bottom:8px;
+      font-size:.78rem;
+      line-height:1.35;
+      text-align:center;
+      color:var(--color-text-muted);
+    }
+    #hexgl-help-bar strong { color:#f7c948; }
+    .hexgl-page #game-overlay .overlay-side { display:none !important; }
+    .hexgl-page #game-overlay .game-stage { padding:4px 6px 2px; }
+    .hexgl-page #game-overlay #hexgl-game-card { gap:4px; }
+    .hexgl-page #game-overlay #hexgl-help-bar {
+      margin-bottom:4px;
+      padding:4px 8px;
+      font-size:.7rem;
+      line-height:1.2;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+    .hexgl-page #game-overlay #hexgl-frame-wrap {
+      border-width:1px;
+      border-radius:8px;
+      box-shadow:none;
+    }
+    .hexgl-page #game-overlay .mini-grid,
+    .hexgl-page #game-overlay .attribution { display:none; }
+    .hexgl-page #game-overlay .rival-block {
+      margin-top:3px;
+      padding:5px 8px;
+      font-size:.74rem;
+    }
+    .hexgl-page #game-overlay .run-badges {
+      margin-top:0;
+      font-size:.7rem;
+      gap:6px;
+    }
+    .hexgl-page #game-overlay #overlay-btn-pause { display:none !important; }
     @media (max-width: 720px) {
       .hud { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       .mini-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     }
   </style>
 </head>
-<body>
+<body class="hexgl-page">
 <a class="skip-link" href="#content">Skip to content</a>
 <header id="site-header" role="banner">
   <button class="hamburger" id="hamburger" aria-label="Toggle navigation" aria-expanded="false" aria-controls="sidebar">☰</button>
@@ -228,13 +270,10 @@
           <div class="stat"><div class="label">Status</div><div class="value" id="run-status">RUN READY</div></div>
         </div>
 
-        <div class="notice" role="note" style="border-color:#f7c948;background:rgba(247,201,72,.07);border-radius:10px;padding:10px 14px;margin-bottom:12px;font-size:.85rem;display:flex;gap:10px;align-items:flex-start">
-          <span aria-hidden="true" style="font-size:1.2rem;flex-shrink:0">ℹ️</span>
-          <div>
-            <strong>How to race:</strong> Click <strong>Start</strong> to load HexGL and begin a tracked run.
-            Click <strong>Submit Run</strong> to send your real score to the global leaderboard.
-            Guest runs are local only.
-          </div>
+        <div id="hexgl-help-bar" role="note">
+          <strong>Start</strong> loads HexGL and begins a tracked run after ready state ·
+          <strong>Submit</strong> sends score to leaderboard ·
+          Guest runs stay local
         </div>
 
         <div id="hexgl-frame-wrap">
@@ -248,7 +287,7 @@
         </div>
 
         <div class="row">
-          <button id="startBtn" class="game-btn" type="button">⏱ Start</button>
+          <button id="startBtn" class="game-btn" type="button" data-overlay-autostart="true" data-overlay-hide-pause="true">⏱ Start</button>
           <button id="submit-btn" class="game-btn alt" type="button" aria-label="Submit run score to leaderboard">📤 Submit Run</button>
           <button id="resetBtn" class="game-btn alt" type="button">↺ Reset</button>
         </div>

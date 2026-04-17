@@ -13,6 +13,8 @@ export function bootstrapHexGLMonsterMax(root) {
   // 470000 corresponds to a 30-second run under score = 500000 - (seconds * 1000).
   var PERFECT_RUN_SCORE = 470000;
   var FRAME_SRC = 'https://hexgl.bkcore.com/play/';
+  var READY_DELAY_MS = 900;
+  var LOAD_FALLBACK_MS = 4000;
 
   var frameEl       = document.getElementById('hexgl-frame');
   var pilotEl       = document.getElementById('pilot-name');
@@ -37,9 +39,18 @@ export function bootstrapHexGLMonsterMax(root) {
   var playerName = 'Guest';
   var runStart   = null;
   var runActive  = false;
+  var runPending = false;
   var intervalId = null;
+  var readyTimeoutId = null;
+  var loadFallbackTimeoutId = null;
+  var runToken = 0;
+  var frameLoaded = false;
   var lastRunMs  = null;
   var bestRunMs  = null;
+  var statusText = 'RUN READY';
+  var audioCtx = null;
+  var ambientOsc = null;
+  var ambientGain = null;
 
   function calcScore(ms) {
     return Math.max(0, Math.floor(500000 - (ms / 1000) * 1000));
@@ -63,6 +74,117 @@ export function bootstrapHexGLMonsterMax(root) {
     intervalId = null;
   }
 
+  function setStatus(text) {
+    statusText = text;
+    if (statusEl) statusEl.textContent = text;
+  }
+
+  function clearRunDelays() {
+    clearTimeout(readyTimeoutId);
+    clearTimeout(loadFallbackTimeoutId);
+    readyTimeoutId = null;
+    loadFallbackTimeoutId = null;
+  }
+
+  function canUseAudio() {
+    return typeof window !== 'undefined' && !window._arcadeMuted;
+  }
+
+  function ensureAudioContext() {
+    if (!canUseAudio()) return null;
+    if (audioCtx) return audioCtx;
+    try {
+      var Ctx = window.AudioContext || window.webkitAudioContext;
+      if (!Ctx) return null;
+      audioCtx = new Ctx();
+    } catch (_) {
+      audioCtx = null;
+    }
+    return audioCtx;
+  }
+
+  function unlockAudio() {
+    var ctx = ensureAudioContext();
+    if (!ctx) return;
+    if (ctx.state === 'suspended') {
+      ctx.resume().catch(function () {});
+    }
+  }
+
+  function playUiTone(kind) {
+    if (!canUseAudio()) return;
+    unlockAudio();
+    if (!audioCtx || audioCtx.state !== 'running') return;
+    var now = audioCtx.currentTime;
+    var osc = audioCtx.createOscillator();
+    var gain = audioCtx.createGain();
+    var conf = {
+      start: 440,
+      end: 660,
+      duration: 0.09,
+      type: 'triangle',
+      volume: 0.05,
+    };
+    if (kind === 'reset') {
+      conf.start = 300;
+      conf.end = 170;
+      conf.duration = 0.12;
+      conf.type = 'sawtooth';
+      conf.volume = 0.04;
+    } else if (kind === 'submit') {
+      conf.start = 620;
+      conf.end = 880;
+      conf.duration = 0.12;
+      conf.type = 'sine';
+      conf.volume = 0.06;
+    }
+    osc.type = conf.type;
+    osc.frequency.setValueAtTime(conf.start, now);
+    osc.frequency.exponentialRampToValueAtTime(Math.max(50, conf.end), now + conf.duration);
+    gain.gain.setValueAtTime(0.0001, now);
+    gain.gain.exponentialRampToValueAtTime(conf.volume, now + 0.01);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + conf.duration);
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    osc.start(now);
+    osc.stop(now + conf.duration + 0.02);
+  }
+
+  function stopAmbient() {
+    if (ambientOsc) {
+      try {
+        ambientOsc.stop();
+      } catch (_) {}
+      try {
+        ambientOsc.disconnect();
+      } catch (_) {}
+      ambientOsc = null;
+    }
+    if (ambientGain) {
+      try {
+        ambientGain.disconnect();
+      } catch (_) {}
+      ambientGain = null;
+    }
+  }
+
+  function syncAmbient() {
+    if (!canUseAudio() || runActive || !runPending) {
+      stopAmbient();
+      return;
+    }
+    unlockAudio();
+    if (!audioCtx || audioCtx.state !== 'running' || ambientOsc) return;
+    ambientOsc = audioCtx.createOscillator();
+    ambientGain = audioCtx.createGain();
+    ambientOsc.type = 'sine';
+    ambientOsc.frequency.value = 82;
+    ambientGain.gain.value = 0.006;
+    ambientOsc.connect(ambientGain);
+    ambientGain.connect(audioCtx.destination);
+    ambientOsc.start();
+  }
+
   function refreshIdentity() {
     playerName = getPlayerName();
     if (pilotEl) pilotEl.textContent = playerName;
@@ -72,7 +194,6 @@ export function bootstrapHexGLMonsterMax(root) {
     var score = calcScore(ms);
     if (timerEl) timerEl.textContent = fmtTime(ms);
     if (scoreEl) scoreEl.textContent = score.toLocaleString();
-    if (statusEl) statusEl.textContent = runActive ? 'RUN ACTIVE' : 'RUN READY';
     if (runActiveEl) runActiveEl.style.display = runActive ? '' : 'none';
     if (perfectEl) perfectEl.style.display = score >= PERFECT_RUN_SCORE ? '' : 'none';
     if (deltaEl) {
@@ -83,6 +204,29 @@ export function bootstrapHexGLMonsterMax(root) {
         deltaEl.textContent = (delta <= 0 ? '-' : '+') + Math.abs(delta).toFixed(2) + 's';
       }
     }
+  }
+
+  function activateRun(token) {
+    if (token !== runToken || !runPending) return;
+    clearTimeout(loadFallbackTimeoutId);
+    loadFallbackTimeoutId = null;
+    setStatus('RUN READY');
+    syncAmbient();
+    clearTimeout(readyTimeoutId);
+    readyTimeoutId = setTimeout(function () {
+      if (token !== runToken || !runPending) return;
+      runPending = false;
+      runActive = true;
+      runStart = Date.now();
+      setStatus('RUN ACTIVE');
+      syncAmbient();
+      stopTimer();
+      intervalId = setInterval(function () {
+        updateRunUI(Date.now() - runStart);
+      }, 100);
+      updateRunUI(0);
+      if (submitBtn) submitBtn.disabled = false;
+    }, READY_DELAY_MS);
   }
 
   function loadRival() {
@@ -140,33 +284,61 @@ export function bootstrapHexGLMonsterMax(root) {
 
   function onStart() {
     refreshIdentity();
-    // Force a clean iframe reload each run.
-    if (frameEl) frameEl.src = FRAME_SRC + '?run=' + Date.now();
-    runStart = Date.now();
-    runActive = true;
+    unlockAudio();
+    playUiTone('start');
+    runToken += 1;
+    runActive = false;
+    runPending = true;
+    runStart = null;
     lastRunMs = null;
+    clearRunDelays();
     if (startBtn) startBtn.disabled = true;
-    if (submitBtn) submitBtn.disabled = false;
+    if (submitBtn) submitBtn.disabled = true;
     if (submitBtn) submitBtn.textContent = '📤 Submit Run';
     stopTimer();
-    intervalId = setInterval(function () {
-      updateRunUI(Date.now() - runStart);
-    }, 100);
-    updateRunUI(0);
+    if (timerEl) timerEl.textContent = '—';
+    if (scoreEl) scoreEl.textContent = '—';
+    if (deltaEl) deltaEl.textContent = '—';
+    if (runActiveEl) runActiveEl.style.display = 'none';
+    if (perfectEl) perfectEl.style.display = 'none';
+    setStatus('LOADING');
+    syncAmbient();
+    var shouldLoadFrame = !frameLoaded || !frameEl || frameEl.src === 'about:blank' || frameEl.src === '';
+    if (shouldLoadFrame && frameEl) {
+      frameLoaded = false;
+      frameEl.src = FRAME_SRC + '?run=' + Date.now();
+      loadFallbackTimeoutId = setTimeout(function () {
+        activateRun(runToken);
+      }, LOAD_FALLBACK_MS);
+      return;
+    }
+    activateRun(runToken);
   }
 
   async function onSubmit() {
+    unlockAudio();
+    playUiTone('submit');
+    if (runPending) {
+      alert('Run is still loading. Wait for RUN ACTIVE.');
+      return;
+    }
     if (runActive) {
       runActive = false;
       lastRunMs = Date.now() - runStart;
       stopTimer();
+      setStatus('RUN COMPLETE');
+      syncAmbient();
     }
     if (typeof lastRunMs !== 'number' || lastRunMs < MIN_RUN_MS) {
+      if (startBtn) startBtn.disabled = false;
+      setStatus('RUN READY');
       alert('Complete a valid run first (minimum 30 seconds).');
       return;
     }
     var score = calcScore(lastRunMs);
     if (score <= 0) {
+      if (startBtn) startBtn.disabled = false;
+      setStatus('RUN READY');
       alert('Run is too slow to qualify for leaderboard submission.');
       return;
     }
@@ -180,6 +352,8 @@ export function bootstrapHexGLMonsterMax(root) {
       } else {
         alert('Telegram link required for ranked leaderboard submission. Guest runs stay local.');
       }
+      if (startBtn) startBtn.disabled = false;
+      setStatus('RUN READY');
       updateCrossGameStats();
       return;
     }
@@ -190,19 +364,27 @@ export function bootstrapHexGLMonsterMax(root) {
       submitBtn.disabled = true;
     }
     if (startBtn) startBtn.disabled = false;
+    setStatus('SUBMITTED');
     updateCrossGameStats();
   }
 
   function onReset() {
+    unlockAudio();
+    playUiTone('reset');
+    runToken += 1;
+    clearRunDelays();
     stopTimer();
     runStart = null;
     runActive = false;
+    runPending = false;
+    frameLoaded = false;
     lastRunMs = null;
+    stopAmbient();
     if (frameEl) frameEl.src = '';
     if (timerEl) timerEl.textContent = '—';
     if (scoreEl) scoreEl.textContent = '—';
     if (deltaEl) deltaEl.textContent = '—';
-    if (statusEl) statusEl.textContent = 'RUN READY';
+    setStatus('RUN READY');
     if (runActiveEl) runActiveEl.style.display = 'none';
     if (perfectEl) perfectEl.style.display = 'none';
     if (startBtn) startBtn.disabled = false;
@@ -217,9 +399,21 @@ export function bootstrapHexGLMonsterMax(root) {
     refreshIdentity();
     loadRival();
     updateCrossGameStats();
+    frameLoaded = !!(frameEl && frameEl.src && frameEl.src !== 'about:blank');
+    if (frameEl) {
+      frameEl.addEventListener('load', function () {
+        if (!frameEl || !frameEl.src || frameEl.src === 'about:blank' || frameEl.src === '') return;
+        frameLoaded = true;
+        if (runPending) activateRun(runToken);
+      });
+    }
+    document.addEventListener('arcade-mute-change', function () {
+      syncAmbient();
+    });
     if (startBtn) startBtn.addEventListener('click', onStart);
     if (submitBtn) submitBtn.addEventListener('click', onSubmit);
     if (resetBtn) resetBtn.addEventListener('click', onReset);
+    setStatus(statusText);
   }
 
   function start()  { onStart(); }
@@ -228,7 +422,10 @@ export function bootstrapHexGLMonsterMax(root) {
   function reset()  { onReset(); }
 
   function destroy() {
+    runToken += 1;
+    clearRunDelays();
     stopTimer();
+    stopAmbient();
     if (frameEl) frameEl.src = '';
     if (startBtn) startBtn.removeEventListener('click', onStart);
     if (submitBtn) submitBtn.removeEventListener('click', onSubmit);
