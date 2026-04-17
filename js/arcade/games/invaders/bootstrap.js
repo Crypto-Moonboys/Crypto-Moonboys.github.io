@@ -56,7 +56,41 @@ export function bootstrapInvaders(root) {
   const INV_W = 36;
   const INV_H = 28;
   const INV_PAD = 10;
+  const WAVE_FAST_ENEMIES = 3;
+  const WAVE_BOSS = 5;
+  const WAVE_ZIGZAG = 7;
+  const WAVE_AGGRESSIVE = 10;
+  const INVADER_SPEED_BASE = 54;
+  const INVADER_SPEED_PER_WAVE = 8;
+  const INVADER_SPEED_FAST_BONUS = 18;
+  const INVADER_SPEED_ZIGZAG_BONUS = 14;
+  const INVADER_SPEED_AGGRESSIVE_BONUS = 16;
+  const INVADER_SHOOT_INTERVAL_BASE = 1.7;
+  const INVADER_SHOOT_INTERVAL_PER_WAVE = 0.1;
+  const INVADER_SHOOT_INTERVAL_MIN = 0.35;
+  const INVADER_SHOOT_INTERVAL_AGGRESSIVE_BONUS = 0.22;
+  const ERRATIC_MOVEMENT_BASE = 12;
+  const ERRATIC_MOVEMENT_ZIGZAG = 22;
+  const MAX_BURST_SIZE = 5;
+  const BURST_WAVE_DIVISOR = 3;
+  const ENEMY_BULLET_SPEED_BASE = 280;
+  const ENEMY_BULLET_SPEED_PER_WAVE = 14;
+  const ENEMY_BULLET_SPEED_AGGRESSIVE_BONUS = 60;
+  const BOSS_SHOOT_INTERVAL_MIN = 0.42;
+  const BOSS_SHOOT_INTERVAL_MAX = 0.64;
+  const BOSS_SHOOT_INTERVAL_SCALE_MIN = 0.55;
+  const BOSS_SHOOT_INTERVAL_PER_WAVE = 0.025;
+  const BOSS_BULLET_SPEED_BASE = 320;
+  const BOSS_BULLET_SPEED_PER_WAVE = 14;
+  const SHOOT_RECOIL = 8;
+  const MIN_SFX_FREQUENCY = 40;
+  const STREAK_BONUS_RATE = 0.05;
+  const MAX_STREAK_BONUS = 0.5;
+  const BOSS_SPREAD_NORMAL = [-8, 8];
+  const BOSS_SPREAD_AGGRESSIVE = [-16, 0, 16];
+  // Row behavior map is fixed to ROWS (rows 0..3): slow → wave drift → jitter → fast.
   const ROW_SPEED = [0.65, 0.9, 1.05, 1.35];
+  const ROW_SPEED_FALLBACK = 1;
   let invaders = [];
   let invDir = 1;
   let invSpeed = 60;
@@ -181,7 +215,7 @@ export function bootstrapInvaders(root) {
     const gain = ac.createGain();
     osc.type = params.wave;
     osc.frequency.setValueAtTime(params.freq, ac.currentTime);
-    osc.frequency.exponentialRampToValueAtTime(Math.max(40, params.freq * 0.55), ac.currentTime + params.dur);
+    osc.frequency.exponentialRampToValueAtTime(Math.max(MIN_SFX_FREQUENCY, params.freq * 0.55), ac.currentTime + params.dur);
     gain.gain.setValueAtTime(params.gain, ac.currentTime);
     gain.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + params.dur);
     osc.connect(gain);
@@ -209,14 +243,14 @@ export function bootstrapInvaders(root) {
     hitFlashes.push({ x, y, r: 10 + intensity * 15, life: 0.12, maxLife: 0.12 });
   }
 
-  function getInvaderBasePoints(inv) {
+  function calculateInvaderBasePoints(inv) {
     return (ROWS - inv.row) * 12;
   }
 
   function calcInvaderPoints(inv) {
-    const base = getInvaderBasePoints(inv);
-    const streakMul = 1 + Math.min(0.5, streak * 0.05);
-    return Math.round(base * wave * streakMul);
+    const base = calculateInvaderBasePoints(inv);
+    const streakMultiplier = 1 + Math.min(MAX_STREAK_BONUS, streak * STREAK_BONUS_RATE);
+    return Math.round(base * wave * streakMultiplier);
   }
 
   function buildGrid() {
@@ -237,8 +271,18 @@ export function bootstrapInvaders(root) {
       }
     }
     invDir = 1;
-    invSpeed = 54 + wave * 8 + (wave >= 3 ? 18 : 0) + (wave >= 7 ? 14 : 0) + (wave >= 10 ? 16 : 0);
-    invShootInterval = Math.max(0.35, 1.7 - wave * 0.1 - (wave >= 10 ? 0.22 : 0));
+    invSpeed =
+      INVADER_SPEED_BASE +
+      wave * INVADER_SPEED_PER_WAVE +
+      (wave >= WAVE_FAST_ENEMIES ? INVADER_SPEED_FAST_BONUS : 0) +
+      (wave >= WAVE_ZIGZAG ? INVADER_SPEED_ZIGZAG_BONUS : 0) +
+      (wave >= WAVE_AGGRESSIVE ? INVADER_SPEED_AGGRESSIVE_BONUS : 0);
+    invShootInterval = Math.max(
+      INVADER_SHOOT_INTERVAL_MIN,
+      INVADER_SHOOT_INTERVAL_BASE -
+        wave * INVADER_SHOOT_INTERVAL_PER_WAVE -
+        (wave >= WAVE_AGGRESSIVE ? INVADER_SHOOT_INTERVAL_AGGRESSIVE_BONUS : 0)
+    );
     invShootTimer = rand(invShootInterval * 0.6, invShootInterval * 1.3);
     invDropping = false;
   }
@@ -268,7 +312,7 @@ export function bootstrapInvaders(root) {
     streak = 0;
     streakTimer = 0;
 
-    if (wave % 5 === 0) {
+    if (wave % WAVE_BOSS === 0) {
       spawnBoss();
     } else {
       buildGrid();
@@ -322,15 +366,18 @@ export function bootstrapInvaders(root) {
       vy: BULLET_SPD,
     });
 
-    const dir = player.moveDir || 1;
-    player.x = clamp(player.x - 8 * dir, 0, W - player.w);
+    const recoilDirection = player.moveDir || 1;
+    player.x = clamp(player.x - SHOOT_RECOIL * recoilDirection, 0, W - player.w);
 
     shootCooldown = SHOOT_RATE;
     playSfx('shoot');
   }
 
   function emitEnemyBulletsFromShooter(shooter) {
-    const speed = 280 + wave * 14 + (wave >= 10 ? 60 : 0);
+    const speed =
+      ENEMY_BULLET_SPEED_BASE +
+      wave * ENEMY_BULLET_SPEED_PER_WAVE +
+      (wave >= WAVE_AGGRESSIVE ? ENEMY_BULLET_SPEED_AGGRESSIVE_BONUS : 0);
     invBullets.push({
       x: shooter.x + shooter.w / 2 - 2,
       y: shooter.y + shooter.h,
@@ -426,12 +473,12 @@ export function bootstrapInvaders(root) {
         let maxX = Number.NEGATIVE_INFINITY;
 
         for (const i of alive) {
-          let drift = invSpeed * invDir * dt * ROW_SPEED[i.row];
+          let drift = invSpeed * invDir * dt * (ROW_SPEED[i.row] ?? ROW_SPEED_FALLBACK);
           if (i.row === 1) {
             drift += Math.sin(elapsed * 3 + i.seed) * 5 * dt;
           } else if (i.row === 2) {
-            drift += (Math.random() - 0.5) * (wave >= 7 ? 22 : 12) * dt;
-          } else if (i.row === 3 && wave >= 7) {
+            drift += (Math.random() - 0.5) * (wave >= WAVE_ZIGZAG ? ERRATIC_MOVEMENT_ZIGZAG : ERRATIC_MOVEMENT_BASE) * dt;
+          } else if (i.row === 3 && wave >= WAVE_ZIGZAG) {
             drift += Math.sin(elapsed * 7 + i.seed) * 8 * dt;
           }
 
@@ -453,7 +500,7 @@ export function bootstrapInvaders(root) {
       if (invShootTimer <= 0) {
         invShootTimer = rand(invShootInterval * 0.65, invShootInterval * 1.35);
 
-        const burst = Math.min(5, 1 + Math.floor(wave / 3) + (wave >= 10 ? 1 : 0));
+        const burst = Math.min(MAX_BURST_SIZE, 1 + Math.floor(wave / BURST_WAVE_DIVISOR) + (wave >= WAVE_AGGRESSIVE ? 1 : 0));
         for (let n = 0; n < burst; n++) {
           const shooter = alive[Math.floor(Math.random() * alive.length)];
           if (!shooter) break;
@@ -480,10 +527,12 @@ export function bootstrapInvaders(root) {
       boss.hpDisplay += (boss.hp - boss.hpDisplay) * Math.min(1, dt * 14);
 
       if (invShootTimer <= 0) {
-        invShootTimer = rand(0.42, 0.64) * Math.max(0.55, 1 - wave * 0.025);
+        invShootTimer =
+          rand(BOSS_SHOOT_INTERVAL_MIN, BOSS_SHOOT_INTERVAL_MAX) *
+          Math.max(BOSS_SHOOT_INTERVAL_SCALE_MIN, 1 - wave * BOSS_SHOOT_INTERVAL_PER_WAVE);
 
-        const spread = wave >= 10 ? [-16, 0, 16] : [-8, 8];
-        const speed = 320 + wave * 14;
+        const spread = wave >= WAVE_AGGRESSIVE ? BOSS_SPREAD_AGGRESSIVE : BOSS_SPREAD_NORMAL;
+        const speed = BOSS_BULLET_SPEED_BASE + wave * BOSS_BULLET_SPEED_PER_WAVE;
         for (const sx of spread) {
           invBullets.push({
             x: boss.x + boss.w / 2 + sx,
