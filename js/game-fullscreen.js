@@ -23,10 +23,7 @@
   // open, creating a hidden second start path.  HexGL uses a single deliberate start flow:
   // user clicks ▶ Start inside the overlay → onStart() → LOADING → COUNTDOWN → RUN ACTIVE.
   var hidePauseControl = startBtn && startBtn.dataset && startBtn.dataset.overlayHidePause === 'true';
-  var hideStartControl = startBtn && startBtn.dataset && (
-    startBtn.dataset.overlayHideStartInOverlay === 'true' ||
-    startBtn.dataset.overlayHideStart === 'true'
-  );
+  var hideStartControl = startBtn && startBtn.dataset && startBtn.dataset.overlayHideStart === 'true';
   var singleStartFlow = startBtn && startBtn.dataset && startBtn.dataset.overlaySingleStart === 'true';
 
   // Only activate on pages that have both a Start button and a .game-card.

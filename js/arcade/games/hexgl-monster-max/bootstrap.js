@@ -608,7 +608,7 @@ export function bootstrapHexGLMonsterMax(root) {
     if (submitBtn) submitBtn.removeEventListener('click', onSubmit);
     if (resetBtn) resetBtn.removeEventListener('click', onReset);
     // Clear the global hook so a future page-load doesn't call a stale closure.
-    window.__hexglStartHook = null;
+    delete window.__hexglStartHook;
   }
 
   function getScore() {
