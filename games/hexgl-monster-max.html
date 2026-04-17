@@ -184,13 +184,23 @@
     }
     #hexgl-help-bar strong { color:var(--hexgl-help-accent); }
     .hexgl-page #game-overlay .overlay-side { display:none !important; }
-    .hexgl-page #game-overlay .game-stage { padding:4px 6px 2px; }
-    .hexgl-page #game-overlay #hexgl-game-card { gap:4px; }
+    .hexgl-page #game-overlay #overlay-ctrl-bar {
+      height:30px;
+      padding:0 6px;
+      gap:3px;
+    }
+    .hexgl-page #game-overlay #overlay-ctrl-bar button {
+      height:22px;
+      padding:0 6px;
+      font-size:.66rem;
+    }
+    .hexgl-page #game-overlay .game-stage { padding:2px; }
+    .hexgl-page #game-overlay #hexgl-game-card { gap:2px; }
     .hexgl-page #game-overlay #hexgl-help-bar {
-      margin-bottom:4px;
-      padding:4px 8px;
+      margin-bottom:2px;
+      padding:2px 6px;
       font-size:.7rem;
-      line-height:1.2;
+      line-height:1.15;
       white-space:nowrap;
       overflow:hidden;
       text-overflow:ellipsis;
@@ -201,7 +211,10 @@
       box-shadow:none;
     }
     .hexgl-page #game-overlay .mini-grid,
-    .hexgl-page #game-overlay .attribution { display:none; }
+    .hexgl-page #game-overlay .attribution,
+    .hexgl-page #game-overlay .rival-block,
+    .hexgl-page #game-overlay .run-badges,
+    .hexgl-page #game-overlay #hexgl-inline-message { display:none; }
     .hexgl-page #game-overlay .rival-block {
       margin-top:3px;
       padding:5px 8px;
@@ -307,9 +320,8 @@
           <div class="stat"><div class="label">Status</div><div class="value" id="run-status">RUN READY</div></div>
         </div>
 
-        <div id="hexgl-help-bar" role="note" aria-label="Start loads the race then shows a 3-2-1 countdown. GO begins tracked timing. Submit sends your score. Guest runs stay local.">
-          <strong>Start</strong> loads race · 3–2–1 countdown · <strong>GO</strong> begins tracked run ·
-          <strong>Submit</strong> sends score · Guest runs stay local
+        <div id="hexgl-help-bar" role="note" aria-label="Start loads race. Countdown begins run. Submit sends score. Guest runs stay local.">
+          <strong>Start</strong> loads race · Countdown begins run · <strong>Submit</strong> sends score · Guest runs stay local
         </div>
 
         <div id="hexgl-frame-wrap">
@@ -324,7 +336,7 @@
         </div>
 
         <div class="row">
-          <button id="startBtn" class="game-btn" type="button" data-overlay-hide-pause="true">⏱ Start</button>
+          <button id="startBtn" class="game-btn" type="button" data-overlay-hide-pause="true" data-overlay-hide-start="true" data-overlay-single-start="true">⏱ Start</button>
           <button id="submit-btn" class="game-btn alt" type="button" aria-label="Submit run score to leaderboard">📤 Submit Run</button>
           <button id="resetBtn" class="game-btn alt" type="button">↺ Reset</button>
         </div>

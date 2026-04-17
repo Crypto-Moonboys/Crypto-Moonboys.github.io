@@ -23,6 +23,8 @@
   // open, creating a hidden second start path.  HexGL uses a single deliberate start flow:
   // user clicks ▶ Start inside the overlay → onStart() → LOADING → COUNTDOWN → RUN ACTIVE.
   var hidePauseControl = startBtn && startBtn.dataset && startBtn.dataset.overlayHidePause === 'true';
+  var hideStartControl = startBtn && startBtn.dataset && startBtn.dataset.overlayHideStart === 'true';
+  var singleStartFlow = startBtn && startBtn.dataset && startBtn.dataset.overlaySingleStart === 'true';
 
   // Only activate on pages that have both a Start button and a .game-card.
   if (!startBtn || !gameCard) return;
@@ -481,6 +483,15 @@
 
   document.addEventListener('fullscreenchange', syncFSBtn);
 
+  function triggerOverlayStart() {
+    var gameStartBtn = document.getElementById('startBtn');
+    if (!gameStartBtn || !isOpen) return;
+    gameStartBtn.click();
+    _gameStarted = true;
+    _isPaused = false;
+    syncPauseBtn();
+  }
+
   /* ── Open ────────────────────────────────────────────────────────── */
 
   function openOverlay() {
@@ -492,6 +503,7 @@
     // Update ctrl bar label
     gameLabel.textContent = meta.label;
     gameLabel.style.color = meta.color;
+    btnStart.style.display = hideStartControl ? 'none' : '';
     btnPause.style.display = hidePauseControl ? 'none' : '';
 
     // Build side panels and touch controls
@@ -612,15 +624,9 @@
     if (!isOpen) {
       openOverlay();
       e.stopImmediatePropagation();
-      if (autoStartOnOpen) {
+      if (autoStartOnOpen || singleStartFlow) {
         setTimeout(function () {
-          if (!isOpen) return;
-          var gameStartBtn = document.getElementById('startBtn');
-          if (!gameStartBtn) return;
-          gameStartBtn.click();
-          _gameStarted = true;
-          _isPaused = false;
-          syncPauseBtn();
+          triggerOverlayStart();
         }, 0);
       }
     }
@@ -639,13 +645,7 @@
   // all games until they are running, so this is the required first deliberate
   // action before gameplay begins.
   btnStart.addEventListener('click', function () {
-    var gameStartBtn = document.getElementById('startBtn');
-    if (gameStartBtn && isOpen) {
-      gameStartBtn.click();
-      _gameStarted = true;
-      _isPaused = false;
-      syncPauseBtn();
-    }
+    triggerOverlayStart();
   });
 
   btnFS.addEventListener('click', function () {
@@ -718,10 +718,7 @@
       var gameStartBtn = document.getElementById('startBtn');
       if (gameStartBtn && !_gameStarted) {
         e.preventDefault();
-        gameStartBtn.click();
-        _gameStarted = true;
-        _isPaused = false;
-        syncPauseBtn();
+        triggerOverlayStart();
       }
     }
   });
