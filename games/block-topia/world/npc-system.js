@@ -146,6 +146,10 @@ function getMoveInterval(mode, role) {
   return CROWD_MOVE_INTERVAL_MIN + Math.random() * CROWD_MOVE_INTERVAL_RANGE;
 }
 
+function getInitialMoveTimer(mode, role) {
+  return Math.random() * getMoveInterval(mode, role);
+}
+
 export function createNpcSystem(state) {
   const factionPool = ['Liberators', 'Wardens', 'Neutral'];
   const profileByRole = new Map(
@@ -175,7 +179,7 @@ export function createNpcSystem(state) {
         col: pos.col,
         row: pos.row,
         districtId: pos.districtId,
-        moveTimer: getMoveInterval('active', role),
+        moveTimer: getInitialMoveTimer('active', role),
         bobPhase: Math.random() * Math.PI * 2,
         bobSpeed: 0.7 + Math.random() * 0.9,
         interactionRadius: 1.2 + Math.random() * 0.5,
@@ -198,7 +202,7 @@ export function createNpcSystem(state) {
         col: pos.col,
         row: pos.row,
         districtId: pos.districtId,
-        moveTimer: getMoveInterval('crowd', 'crowd'),
+        moveTimer: getInitialMoveTimer('crowd', ''),
         bobPhase: Math.random() * Math.PI * 2,
         bobSpeed: 0.3 + Math.random() * 0.4,
         interactionRadius: 0.9 + Math.random() * 0.3,
