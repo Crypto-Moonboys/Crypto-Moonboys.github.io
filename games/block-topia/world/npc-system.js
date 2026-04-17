@@ -1,10 +1,14 @@
 const FACTION_SWITCH_PROBABILITY = 0.005;
-const FIGHTER_MOVE_INTERVAL_MIN = 1.8;
-const FIGHTER_MOVE_INTERVAL_RANGE = 1.8;
-const ACTIVE_MOVE_INTERVAL_MIN = 2.6;
-const ACTIVE_MOVE_INTERVAL_RANGE = 2.4;
-const CROWD_MOVE_INTERVAL_MIN = 4.5;
-const CROWD_MOVE_INTERVAL_RANGE = 3;
+const FIGHTER_MOVE_INTERVAL_MIN = 0.8;
+const FIGHTER_MOVE_INTERVAL_RANGE = 0.8;
+const ACTIVE_MOVE_INTERVAL_MIN = 1.2;
+const ACTIVE_MOVE_INTERVAL_RANGE = 1.0;
+const VENDOR_MOVE_INTERVAL_MIN = 1.7;
+const VENDOR_MOVE_INTERVAL_RANGE = 0.9;
+const PATROL_MOVE_INTERVAL_MIN = 1.1;
+const PATROL_MOVE_INTERVAL_RANGE = 0.9;
+const CROWD_MOVE_INTERVAL_MIN = 2.0;
+const CROWD_MOVE_INTERVAL_RANGE = 1.5;
 
 // District-aware NPC spawn bands (col, row, w, h) matching districts.json grid regions
 const DISTRICT_SPAWN_REGIONS = [
@@ -126,6 +130,26 @@ function getRoutineForRole(role) {
   return 'district_patrol';
 }
 
+function getMoveInterval(mode, role) {
+  if (mode === 'active') {
+    if (role === 'fighter') {
+      return FIGHTER_MOVE_INTERVAL_MIN + Math.random() * FIGHTER_MOVE_INTERVAL_RANGE;
+    }
+    if (role === 'vendor') {
+      return VENDOR_MOVE_INTERVAL_MIN + Math.random() * VENDOR_MOVE_INTERVAL_RANGE;
+    }
+    if (role === 'agent' || role === 'recruiter') {
+      return PATROL_MOVE_INTERVAL_MIN + Math.random() * PATROL_MOVE_INTERVAL_RANGE;
+    }
+    return ACTIVE_MOVE_INTERVAL_MIN + Math.random() * ACTIVE_MOVE_INTERVAL_RANGE;
+  }
+  return CROWD_MOVE_INTERVAL_MIN + Math.random() * CROWD_MOVE_INTERVAL_RANGE;
+}
+
+function getInitialMoveTimer(mode, role) {
+  return Math.random() * getMoveInterval(mode, role);
+}
+
 export function createNpcSystem(state) {
   const factionPool = ['Liberators', 'Wardens', 'Neutral'];
   const profileByRole = new Map(
@@ -155,7 +179,7 @@ export function createNpcSystem(state) {
         col: pos.col,
         row: pos.row,
         districtId: pos.districtId,
-        moveTimer: Math.random() * 4,
+        moveTimer: getInitialMoveTimer('active', role),
         bobPhase: Math.random() * Math.PI * 2,
         bobSpeed: 0.7 + Math.random() * 0.9,
         interactionRadius: 1.2 + Math.random() * 0.5,
@@ -178,7 +202,7 @@ export function createNpcSystem(state) {
         col: pos.col,
         row: pos.row,
         districtId: pos.districtId,
-        moveTimer: Math.random() * 6,
+        moveTimer: getInitialMoveTimer('crowd', ''),
         bobPhase: Math.random() * Math.PI * 2,
         bobSpeed: 0.3 + Math.random() * 0.4,
         interactionRadius: 0.9 + Math.random() * 0.3,
@@ -234,16 +258,10 @@ export function createNpcSystem(state) {
       if (!npc) continue;
       npc.bobPhase += dt * npc.bobSpeed;
 
-      // Move active NPCs every ~4s, crowd NPCs every ~6s
+      // Move active NPCs frequently, crowd NPCs less often but never frozen
       npc.moveTimer -= dt;
       if (npc.moveTimer > 0) continue;
-      npc.moveTimer = npc.mode === 'active'
-        ? (
-          npc.role === 'fighter'
-            ? FIGHTER_MOVE_INTERVAL_MIN + Math.random() * FIGHTER_MOVE_INTERVAL_RANGE
-            : ACTIVE_MOVE_INTERVAL_MIN + Math.random() * ACTIVE_MOVE_INTERVAL_RANGE
-        )
-        : CROWD_MOVE_INTERVAL_MIN + Math.random() * CROWD_MOVE_INTERVAL_RANGE;
+      npc.moveTimer = getMoveInterval(npc.mode, npc.role);
 
       // Street Signal feature reintroduced: role-weighted movement routines.
       let dc = randInt(-1, 2);
