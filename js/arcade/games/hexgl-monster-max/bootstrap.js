@@ -325,6 +325,8 @@ export function bootstrapHexGLMonsterMax(root) {
     unlockAudio();
     playUiTone('submit');
     if (runPending) {
+      if (submitBtn) submitBtn.disabled = true;
+      setStatus('LOADING');
       alert('Run is still loading. Wait for RUN ACTIVE.');
       return;
     }
