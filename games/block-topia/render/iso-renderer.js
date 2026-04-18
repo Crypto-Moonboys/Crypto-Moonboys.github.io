@@ -727,7 +727,7 @@ export function createIsoRenderer(canvas) {
       ctx.font = '700 8px Inter, sans-serif';
       ctx.textAlign = 'center';
       ctx.fillStyle = 'rgba(0,0,0,0.7)';
-      ctx.fillText(npc.roleLabel || npc.role || 'NPC', sx + 1, sy - 43);
+      ctx.fillText(npc.roleLabel || npc.role || 'NPC', sx + 1, sy - 44);
       ctx.fillStyle = style.color;
       ctx.fillText(npc.roleLabel || npc.role || 'NPC', sx, sy - 44);
       if (isNearby) {

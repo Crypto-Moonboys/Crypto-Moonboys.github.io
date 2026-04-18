@@ -244,7 +244,7 @@ export function createNpcSystem(state, liveIntelligence = null) {
       Math.max(0, MAX_TOTAL_NPCS - activeCount),
     );
     for (let crowdIndex = 0; crowdIndex < crowdCount; crowdIndex += 1) {
-      const pos = spawnPos(crowdIndex, crowdCount);
+      const pos = spawnPos(crowdIndex, state.npc.crowdTarget);
       state.npc.entities.push({
         id: `crowd-${crowdIndex}`,
         role: 'crowd',
