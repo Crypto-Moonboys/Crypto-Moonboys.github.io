@@ -56,13 +56,13 @@ export async function loadUnifiedData() {
     questModel,
     seasonModel,
     roomModel,
+    canonBible,
     canonLore,
     legacy: {
       map: legacyMap,
       npcProfiles: legacyNpcProfiles,
       season: legacySeason,
       lore: legacyLore,
-      canonBible,
       assets: legacyAssets,
       manifest: assetManifest,
       sourceFiles: [
