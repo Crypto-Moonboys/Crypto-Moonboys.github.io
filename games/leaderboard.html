@@ -427,6 +427,16 @@ import { ArcadeMeta } from '/js/arcade-meta-system.js';
 initGraph('arcade-graph-canvas');
 document.body.dataset.lbMode = 'raw';
 
+function updateMetaGraph() {
+  let context = null;
+  try {
+    if (typeof ArcadeMeta.getLiveContext === 'function') context = ArcadeMeta.getLiveContext();
+  } catch (_) {}
+  setMetaGraphState(context);
+  setGraphMode('meta', context);
+  resetGraph();
+}
+
 initLeaderboard({
   onRowSelect(entry) {
     const selectedMode = document.body.dataset.lbMode || 'raw';
@@ -439,13 +449,7 @@ initLeaderboard({
   onModeChange({ mode }) {
     document.body.dataset.lbMode = mode;
     if (mode !== 'raw') {
-      let context = null;
-      try {
-        if (typeof ArcadeMeta.getLiveContext === 'function') context = ArcadeMeta.getLiveContext();
-      } catch (_) {}
-      setMetaGraphState(context);
-      setGraphMode('meta', context);
-      resetGraph();
+      updateMetaGraph();
       const selected = document.querySelector('.lb-row.selected');
       if (selected) selected.classList.remove('selected');
       const panel = document.getElementById('lb-breakdown-panel');
@@ -458,11 +462,7 @@ initLeaderboard({
 
 document.addEventListener('arcade-meta-tracked', () => {
   if ((document.body.dataset.lbMode || 'raw') !== 'meta') return;
-  try {
-    const context = typeof ArcadeMeta.getLiveContext === 'function' ? ArcadeMeta.getLiveContext() : null;
-    setMetaGraphState(context);
-    resetGraph();
-  } catch (_) {}
+  updateMetaGraph();
 });
 
 document.getElementById('lb-graph-reset').addEventListener('click', () => {

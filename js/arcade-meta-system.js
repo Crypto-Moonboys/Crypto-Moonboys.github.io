@@ -8,6 +8,7 @@ const SEASON_EPOCH_MS = Date.UTC(2024, 0, 1);
 let questCounter = 0;
 let liveEventTimer = null;
 let lastLiveEventAt = 0;
+const LIVE_EVENT_COOLDOWN_MS = 25 * 1000;
 
 const DEFAULT_CONFIG = {
   difficultyWeights: {
@@ -439,11 +440,6 @@ function clearExpiredRareEvent(state, now) {
       source: 'rare-global',
       ended_by: 'expired',
     });
-    dispatchMetaEvent('arcade-meta-live-event-end', {
-      event: ended,
-      source: 'rare-global',
-      ended_by: 'expired',
-    });
   }
   return null;
 }
@@ -614,6 +610,7 @@ function applyQuestBonuses(state, now, run) {
     if (expired) continue;
     if (evaluateQuest(quest, historyWithCurrent, run)) {
       const baseBonus = Number(quest.bonus_multiplier) || 0;
+      // Rare "switch-chain surge" only buffs switch_chain quests to preserve other quest balance.
       const adjustedBonus = quest.type === 'switch_chain'
         ? (baseBonus * Math.max(1, switchBonusMultiplier))
         : baseBonus;
@@ -731,8 +728,8 @@ function resolveMetaLiveModifiers(state, run, now) {
 
   if (activeRare?.modifiers) {
     if (activeRare.modifiers.game_boost_multiplier) {
-      const onlyGame = normalizeStorageGame(activeRare.modifiers.game);
-      if (!onlyGame || onlyGame === game) eventBonus += Number(activeRare.modifiers.game_boost_multiplier) || 0;
+      const rareEventGame = normalizeStorageGame(activeRare.modifiers.game || '');
+      if (!rareEventGame || rareEventGame === game) eventBonus += Number(activeRare.modifiers.game_boost_multiplier) || 0;
     }
     questTargetDiscount += Number(activeRare.modifiers.quest_target_discount) || 0;
   }
@@ -790,7 +787,7 @@ function trackGameResult(payload = {}) {
   updateWindow(state.seasonal, seasonKey);
 
   maintainQuests(state, timestamp);
-  const activeRare = maybeTriggerRareEvent(state, timestamp, { game, timestamp, raw_score: rawScore });
+  const triggeredRareEvent = maybeTriggerRareEvent(state, timestamp, { game, timestamp, raw_score: rawScore });
   const run = {
     timestamp,
     day: dayKey,
@@ -869,7 +866,6 @@ function trackGameResult(payload = {}) {
   for (const quest of state.quests.completed) {
     if (!beforeCompletedIds.has(quest.id)) {
       dispatchMetaEvent('arcade-meta-quest-completed', { quest, game, player: resolvedPlayer });
-      dispatchMetaEvent('arcade-meta-quest-complete', { quest, game, player: resolvedPlayer });
     }
   }
   for (const quest of state.quests.active) {
@@ -907,7 +903,8 @@ function trackGameResult(payload = {}) {
     streak: state.streak.session_chain,
     daily: state.daily.points,
     featured_chaos: metaLive.featured,
-    rare_event: metaLive.activeRare || activeRare || null,
+    // Prefer currently-active rare event context; fall back to newly-triggered event this run.
+    rare_event: metaLive.activeRare || triggeredRareEvent || null,
   });
 
   const comeback = getComebackPressure(timestamp);
@@ -949,7 +946,7 @@ function trackGameResult(payload = {}) {
     streak: state.streak.session_chain,
     retention: {
       featured_chaos: metaLive.featured,
-      rare_event: metaLive.activeRare || activeRare || null,
+      rare_event: metaLive.activeRare || triggeredRareEvent || null,
       comeback,
     },
   };
@@ -1059,11 +1056,6 @@ function endLiveEvent(reason = 'timeout') {
     source: 'meta-system',
     ended_by: reason,
   });
-  dispatchMetaEvent('arcade-meta-live-event-end', {
-    event: active,
-    source: 'meta-system',
-    ended_by: reason,
-  });
   return { ended: true, event: active };
 }
 
@@ -1092,7 +1084,7 @@ function triggerLiveEvent(context = {}) {
   chance += Number(featured.chaos_chance_boost) || 0;
   chance += Number(activeRare?.modifiers?.chaos_chance_boost) || 0;
 
-  if (!context.force && (now - lastLiveEventAt) < 25000) {
+  if (!context.force && (now - lastLiveEventAt) < LIVE_EVENT_COOLDOWN_MS) {
     return { triggered: false, reason: 'cooldown' };
   }
   if (!context.force && Math.random() > chance) {

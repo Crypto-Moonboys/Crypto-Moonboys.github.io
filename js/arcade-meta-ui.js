@@ -452,7 +452,7 @@ function wireMetaEventListeners() {
     });
   });
 
-  const onQuestCompleted = (ev) => {
+  const onQuestComplete = (ev) => {
     const quest = ev.detail?.quest;
     if (!quest) return;
     showPopup({
@@ -464,8 +464,7 @@ function wireMetaEventListeners() {
     safePlay('meta-quest-complete');
     pulseScreen('arcade-meta-flash', 220);
   };
-  document.addEventListener('arcade-meta-quest-completed', onQuestCompleted);
-  document.addEventListener('arcade-meta-quest-complete', onQuestCompleted);
+  document.addEventListener('arcade-meta-quest-completed', onQuestComplete);
 
   document.addEventListener('arcade-meta-near-miss', (ev) => {
     const progress = Number(ev.detail?.progress) || 0;
@@ -497,7 +496,6 @@ function wireMetaEventListeners() {
     endLiveEventLocal();
   };
   document.addEventListener('arcade-meta-live-event-ended', onLiveEnded);
-  document.addEventListener('arcade-meta-live-event-end', onLiveEnded);
 }
 
 function startSurvivalTicks() {
