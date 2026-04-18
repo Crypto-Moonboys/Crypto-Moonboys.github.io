@@ -186,7 +186,7 @@ function getInitialMoveTimer(mode, role) {
 
 export function createNpcSystem(state, liveIntelligence = null) {
   let batchIndex = 0;
-  let crowdLerpToggle = false;
+  let crowdLerpSkipToggle = false;
   const factionPool = ['Liberators', 'Wardens', 'Neutral'];
   const profileByRole = new Map(
     (state.lore?.legacy?.npcProfiles?.profiles || []).map((profile) => [profile.role, profile]),
@@ -268,7 +268,7 @@ export function createNpcSystem(state, liveIntelligence = null) {
       });
     }
 
-    state.npc.activeEntities = state.npc.entities.filter((npc) => npc.mode === 'active');
+    state.npc.activeEntities = state.npc.entities.filter((npc) => npc?.mode === 'active');
     state.npc.activeEntitiesSourceLen = state.npc.entities.length;
   }
 
@@ -363,12 +363,12 @@ export function createNpcSystem(state, liveIntelligence = null) {
     if (state.npcTargets?.length) {
       const targets = state.npcTargets;
       const len = Math.min(total, targets.length);
-      crowdLerpToggle = !crowdLerpToggle;
+      crowdLerpSkipToggle = !crowdLerpSkipToggle;
       for (let i = 0; i < len; i += 1) {
         const entity = npcs[i];
         const target = targets[i];
         if (!entity || !target) continue;
-        if (entity.mode === 'crowd' && !crowdLerpToggle) continue;
+        if (entity.mode === 'crowd' && !crowdLerpSkipToggle) continue;
 
         entity.col += (target.col - entity.col) * 0.2;
         entity.row += (target.row - entity.row) * 0.2;

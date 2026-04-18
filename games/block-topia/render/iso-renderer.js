@@ -757,6 +757,15 @@ export function createIsoRenderer(canvas) {
     ctx.fillText(remote.name || 'Player', sx, sy - 44);
   }
 
+  function isOffscreen(screenX, screenY) {
+    return (
+      screenX < -CULL_MARGIN
+      || screenX > canvas.width + CULL_MARGIN
+      || screenY < -CULL_MARGIN
+      || screenY > canvas.height + CULL_MARGIN
+    );
+  }
+
   function drawSignalOperation(originX, originY, operation, now) {
     const iso = toIso(operation.x, operation.y);
     const centerX = originX + iso.x;
@@ -1020,14 +1029,7 @@ export function createIsoRenderer(canvas) {
         const elevation = getTileElevation(npcEntity.col, npcEntity.row, metrics);
         const screenX = frame.translateX + shakeX + ((originX + iso.x) * zoom);
         const screenY = frame.translateY + shakeY + ((originY + iso.y - elevation - 4) * zoom);
-        if (
-          screenX < -CULL_MARGIN
-          || screenX > canvas.width + CULL_MARGIN
-          || screenY < -CULL_MARGIN
-          || screenY > canvas.height + CULL_MARGIN
-        ) {
-          continue;
-        }
+        if (isOffscreen(screenX, screenY)) continue;
         drawNpc(originX, originY, layer.entity, now, state.player?.nearbyNpcId === layer.entity.id, metrics, visible);
       } else if (layer.type === 'remote') {
         const remote = layer.entity;
@@ -1035,14 +1037,7 @@ export function createIsoRenderer(canvas) {
         const elevation = getTileElevation(remote.x, remote.y, metrics);
         const screenX = frame.translateX + shakeX + ((originX + iso.x) * zoom);
         const screenY = frame.translateY + shakeY + ((originY + iso.y - elevation - 4) * zoom);
-        if (
-          screenX < -CULL_MARGIN
-          || screenX > canvas.width + CULL_MARGIN
-          || screenY < -CULL_MARGIN
-          || screenY > canvas.height + CULL_MARGIN
-        ) {
-          continue;
-        }
+        if (isOffscreen(screenX, screenY)) continue;
         drawRemotePlayer(originX, originY, layer.entity, now, metrics, visible);
       } else {
         drawPlayer(originX, originY, state, now, metrics);
