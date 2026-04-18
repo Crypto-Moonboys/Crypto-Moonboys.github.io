@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-04-18T13:20:14.071Z",
+  "generatedAt": "2026-04-18T14:10:15.078Z",
   "mode": "live-ai",
   "sourceHealth": {
     "coingecko-global": "ok",
@@ -11,84 +11,84 @@
   "signalCount": 5,
   "signals": [
     {
-      "id": "signal-1776518414070-1",
+      "id": "signal-1776521415077-1",
       "lane": "world",
       "priority": 4,
-      "ttlMinutes": 120,
-      "npcLine": "Markets flicker under shadow; assets bleed in digital night.",
-      "questPulse": "Scan cryptic exchanges; uncover rogue coin movements.",
-      "worldFeed": "Global credits slip; fear grips cyber bazaars.",
-      "clueEvent": "Unusual volume spike detected on unstable tokens.",
+      "ttlMinutes": 45,
+      "npcLine": "Market flickers, tech ghosts whisper 'RAVE' fading fast.",
+      "questPulse": "Scavenge lost RAVE nodes in shadowed districts.",
+      "worldFeed": "Crypto tides tumble; shadows swell amid cold Fear.",
+      "clueEvent": "Broken RAVE chip sparks near neon bazaar.",
       "tags": [
-        "market-down",
-        "crypto-fear",
-        "volatility"
+        "crypto",
+        "decline",
+        "rave"
       ],
-      "expiresAt": "2026-04-18T15:20:14.070Z"
+      "expiresAt": "2026-04-18T14:55:15.077Z"
     },
     {
-      "id": "signal-1776518414071-2",
+      "id": "signal-1776521415078-2",
       "lane": "ops",
+      "priority": 5,
+      "ttlMinutes": 30,
+      "npcLine": "SIREN alarm blaring, someone leaks data under Fear’s veil.",
+      "questPulse": "Intercept encrypted SIREN signal before ops go dark.",
+      "worldFeed": "SIREN spikes amid net chaos; hackers set traps.",
+      "clueEvent": "Encrypted SIREN burst detected in grid ##-B.",
+      "tags": [
+        "alert",
+        "siren",
+        "data-leak"
+      ],
+      "expiresAt": "2026-04-18T14:40:15.078Z"
+    },
+    {
+      "id": "signal-1776521415078-3",
+      "lane": "clue",
       "priority": 3,
-      "ttlMinutes": 90,
-      "npcLine": "Whispers say BTC holdouts plan underground trade runs.",
-      "questPulse": "Intercept encrypted BTC channels; prey on weak chains.",
-      "worldFeed": "Silent operations crowd the blockchain undercurrent.",
-      "clueEvent": "Encrypted BTC nodes flash abnormal bursts.",
+      "ttlMinutes": 60,
+      "npcLine": "BTC shadows deepen, the core market feels the chill.",
+      "questPulse": "Trace BTC ghost transactions before they vanish.",
+      "worldFeed": "BTC circuits flicker as Panic fuels market Fear.",
+      "clueEvent": "Corrupted BTC ledger fragments found in darknet hub.",
       "tags": [
         "btc",
-        "underground",
-        "crypto-ops"
+        "shadow",
+        "market-fear"
       ],
-      "expiresAt": "2026-04-18T14:50:14.071Z"
+      "expiresAt": "2026-04-18T15:10:15.078Z"
     },
     {
-      "id": "signal-1776518414071-3",
-      "lane": "clue",
-      "priority": 2,
-      "ttlMinutes": 60,
-      "npcLine": "RAVE token pulses faintly—rumors of a crash brewing.",
-      "questPulse": "Trace RAVE’s origin; locate source of instability.",
-      "worldFeed": "Minor coin's tremors ripple across shadow markets.",
-      "clueEvent": "RAVE token volume drops suspiciously fast.",
-      "tags": [
-        "rave",
-        "token",
-        "market-instability"
-      ],
-      "expiresAt": "2026-04-18T14:20:14.071Z"
-    },
-    {
-      "id": "signal-1776518414071-4",
+      "id": "signal-1776521415078-4",
       "lane": "quest",
-      "priority": 5,
-      "ttlMinutes": 180,
-      "npcLine": "Dangerous run on OVPP vaults; hackers scramble for control.",
-      "questPulse": "Infiltrate vaults; secure OVPP assets before collapse.",
-      "worldFeed": "OVPP nodes under siege, digital defenses weakening.",
-      "clueEvent": "Multiple failed login attempts on OVPP storages.",
-      "tags": [
-        "ovpp",
-        "hacking",
-        "high-priority"
-      ],
-      "expiresAt": "2026-04-18T16:20:14.071Z"
-    },
-    {
-      "id": "signal-1776518414071-5",
-      "lane": "npc",
-      "priority": 1,
-      "ttlMinutes": 45,
-      "npcLine": "HYPE buzz fizzles; street traders eye next big surge.",
-      "questPulse": "Eavesdrop on dealers; predict HYPE’s next jump.",
-      "worldFeed": "HYPE chatter fills neon-lit alleys, tense and thin.",
-      "clueEvent": "Sudden social media silence around HYPE token.",
+      "priority": 2,
+      "ttlMinutes": 90,
+      "npcLine": "HYPE pulses weak; underground groups whisper faded roars.",
+      "questPulse": "Hunt down missing HYPE injectors in abandoned sectors.",
+      "worldFeed": "HYPE’s glow dims; speculators vanish into the mist.",
+      "clueEvent": "Discarded HYPE data drive located near scrap yards.",
       "tags": [
         "hype",
-        "street-trade",
-        "intel"
+        "fading",
+        "underground"
       ],
-      "expiresAt": "2026-04-18T14:05:14.071Z"
+      "expiresAt": "2026-04-18T15:40:15.078Z"
+    },
+    {
+      "id": "signal-1776521415078-5",
+      "lane": "npc",
+      "priority": 3,
+      "ttlMinutes": 50,
+      "npcLine": "OVPP earnings cut short, cyber-mercs tighten their grip.",
+      "questPulse": "Extract OVPP intel before corp mercs corrupt it.",
+      "worldFeed": "OVPP shares sink; corridors buzz with silent Fear.",
+      "clueEvent": "OVPP encrypted message intercepted at neon docks.",
+      "tags": [
+        "ovpp",
+        "intel",
+        "merc-threat"
+      ],
+      "expiresAt": "2026-04-18T15:00:15.078Z"
     }
   ]
 }
