@@ -493,7 +493,7 @@ export function bootstrapPacChain(root) {
   }
 
   async function maybeTriggerLegacyBonus() {
-    // bonus-engine removed: no fake scoring, no arcade_points
+    // bonus-engine removed: no fake scoring paths.
   }
 
   function handlePelletEat(tx, ty, isPower) {

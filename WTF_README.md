@@ -89,7 +89,7 @@ The WTF-tier `MOONSHOT` bonus resets between sessions, so it can fire on every n
      "rarity": "rare",
      "description": "What it does.",
      "trigger": { "type": "streak", "count": 15 },
-     "rewards": { "arcade_points": 200, "xp": 160 }
+     "effects": { "multiplier": 1.2, "duration_seconds": 10 }
    }
    ```
 2. The engine picks it up automatically — no code changes required.

@@ -20,8 +20,9 @@
         "score": 100,
         "time_seconds": 120
       },
-      "rewards": {
-        "arcade_points": 50
+      "effects": {
+        "multiplier": 1.1,
+        "duration_seconds": 12
       }
     },
     {
@@ -33,9 +34,9 @@
         "type": "streak",
         "count": 20
       },
-      "rewards": {
-        "arcade_points": 150,
-        "multiplier": 1.5
+      "effects": {
+        "multiplier": 1.5,
+        "duration_seconds": 10
       }
     },
     {
@@ -46,8 +47,8 @@
       "trigger": {
         "type": "secret_event"
       },
-      "rewards": {
-        "arcade_points": 300
+      "effects": {
+        "shield_seconds": 6
       }
     },
     {
@@ -58,8 +59,9 @@
       "trigger": {
         "type": "random_event"
       },
-      "rewards": {
-        "arcade_points": 1500
+      "effects": {
+        "multiplier": 2,
+        "duration_seconds": 8
       }
     },
     {
@@ -71,8 +73,9 @@
         "type": "score_threshold",
         "score": 500
       },
-      "rewards": {
-        "arcade_points": 800
+      "effects": {
+        "multiplier": 1.75,
+        "duration_seconds": 12
       }
     },
     {
@@ -84,8 +87,8 @@
         "type": "streak",
         "count": 10
       },
-      "rewards": {
-        "arcade_points": 80
+      "effects": {
+        "combo_grace_seconds": 5
       }
     },
     {
@@ -97,8 +100,8 @@
         "type": "score_threshold",
         "score": 300
       },
-      "rewards": {
-        "arcade_points": 200
+      "effects": {
+        "shield_seconds": 8
       }
     },
     {
@@ -110,8 +113,9 @@
         "type": "near_miss",
         "count": 5
       },
-      "rewards": {
-        "arcade_points": 90
+      "effects": {
+        "speed_boost": 0.15,
+        "duration_seconds": 8
       }
     },
     {
@@ -123,8 +127,9 @@
         "type": "score_threshold",
         "score": 1000
       },
-      "rewards": {
-        "arcade_points": 400
+      "effects": {
+        "multiplier": 1.4,
+        "duration_seconds": 14
       }
     },
     {
@@ -135,8 +140,9 @@
       "trigger": {
         "type": "first_score"
       },
-      "rewards": {
-        "arcade_points": 25
+      "effects": {
+        "multiplier": 1.05,
+        "duration_seconds": 6
       }
     }
   ]

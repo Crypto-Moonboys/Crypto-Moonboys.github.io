@@ -13,7 +13,6 @@ GameRegistry.register(CRYSTAL_QUEST_CONFIG.id, {
 
 export function bootstrapCrystalQuest(root) {
   var GAME_ID = CRYSTAL_QUEST_CONFIG.id;
-  var LEADERBOARD_GAME_ID = 'CRYSTAL_QUEST';
   var PACKS = [
     '/games/data/question_pack_001.json',
     '/games/data/question_pack_002.json',
@@ -110,6 +109,13 @@ export function bootstrapCrystalQuest(root) {
     return accepted.concat(aliases).map(normalizeAnswer);
   }
 
+  function scoreForQuestion(question, currentStreak) {
+    var baseScore = Number(question && question.rewards && question.rewards.score);
+    if (!Number.isFinite(baseScore) || baseScore <= 0) baseScore = 100;
+    var streakBonus = Math.max(0, Math.floor(currentStreak) * 12);
+    return Math.floor(baseScore) + streakBonus;
+  }
+
   // ── Seeded shuffle ──────────────────────────────────────────────────────────
   function shuffle(arr, seed) {
     var out = arr.slice();
@@ -202,7 +208,26 @@ export function bootstrapCrystalQuest(root) {
     if (startBtn)       startBtn.disabled       = active;
     if (submitBtn)      submitBtn.disabled      = !active;
     if (skipBtn)        skipBtn.disabled        = !active;
-    if (submitScoreBtn) submitScoreBtn.disabled = !(run && run.completed && !run.submitted);
+    if (submitScoreBtn) submitScoreBtn.disabled = true;
+  }
+
+  function canSubmitIdentity() {
+    if (!(window.MOONBOYS_IDENTITY && typeof window.MOONBOYS_IDENTITY.isTelegramLinked === 'function')) return false;
+    return !!window.MOONBOYS_IDENTITY.isTelegramLinked();
+  }
+
+  function finalizeCompletedRun() {
+    if (!run || !run.completed || run.submitted) return;
+    ArcadeSync.setHighScore(GAME_ID, score);
+    if (canSubmitIdentity() && score > 0) {
+      submitScore(ArcadeSync.getPlayer(), score, GAME_ID);
+    }
+    run.submitted = true;
+    updateHud();
+    if (feedback)   feedback.textContent   = canSubmitIdentity()
+      ? '🏆 Run complete. Score submitted to leaderboard.'
+      : '🏁 Run complete. Link identity to sync this score next run.';
+    if (statusLine) statusLine.textContent = 'Run sealed at score ' + score + '.';
   }
 
   // ── HUD ─────────────────────────────────────────────────────────────────────
@@ -406,7 +431,7 @@ export function bootstrapCrystalQuest(root) {
         answers:   run.answers.slice(),
         skips:     run.skips,
       });
-      if (feedback) feedback.textContent = '⚡ All crystals secured. Submit your score to the leaderboard.';
+      finalizeCompletedRun();
       return;
     }
 
@@ -432,7 +457,7 @@ export function bootstrapCrystalQuest(root) {
 
     if (isCorrect) {
       streak += 1;
-      var scoreGain = 100 + (streak * 20);
+      var scoreGain = scoreForQuestion(q, streak);
       score += scoreGain;
       run.answers.push({ questionId: q.id, answer: guess, correct: true, skipped: false, scoreGain: scoreGain });
       addLoreEntry(q, scoreGain);
@@ -489,18 +514,6 @@ export function bootstrapCrystalQuest(root) {
     advanceQuestion();
   }
 
-  // ── Submit final score ────────────────────────────────────────────────────────
-  function submitFinalScore() {
-    if (!run || !run.completed || run.submitted) return;
-    ArcadeSync.setHighScore(GAME_ID, score);
-    submitScore(ArcadeSync.getPlayer(), score, LEADERBOARD_GAME_ID);
-    run.submitted = true;
-    updateHud();
-    if (feedback)   feedback.textContent   = '🏆 Score submitted. Lore trail sealed in the leaderboard.';
-    if (statusLine) statusLine.textContent = 'Score ' + score + ' locked. Linked identity posts to leaderboard.';
-    if (submitScoreBtn) submitScoreBtn.disabled = true;
-  }
-
   // ── Lifecycle ─────────────────────────────────────────────────────────────────
   async function init() {
     ensureParticles();
@@ -542,7 +555,7 @@ export function bootstrapCrystalQuest(root) {
     if (submitBtn)      submitBtn.onclick      = submitAnswer;
     if (skipBtn)        skipBtn.onclick        = skipQuestion;
     if (resetBtn)       resetBtn.onclick       = reset;
-    if (submitScoreBtn) submitScoreBtn.onclick = submitFinalScore;
+    if (submitScoreBtn) submitScoreBtn.onclick = null;
     if (pauseBtn)       pauseBtn.onclick       = pause;
 
     if (answerInput) {
