@@ -1,8 +1,8 @@
 {
   "split": {
-    "active": 60,
+    "active": 24,
     "activeCap": 80,
-    "crowd": 300,
+    "crowd": 60,
     "crowdCap": 600,
     "capacityPolicy": "Crowd cap keeps larger burst headroom for social surges and festival density while active NPC cap stays tighter for server AI cost control."
   },
