@@ -107,6 +107,9 @@ export function bootstrapBreakout(root) {
 
   const keys = {};
 
+  let musicMuted = false;
+  const musicHandles = [];
+
   const glyphs = Array.from({ length: 32 }).map((_, i) => ({
     x: ((i + 0.5) / 32) * W,
     y: Math.random() * H,
@@ -135,6 +138,39 @@ export function bootstrapBreakout(root) {
       launch: { kind: 'tone', type: 'triangle', freqStart: 280, freqEnd: 620, duration: 0.08, volume: 0.024 },
     };
     playSound(name, specs[name] || specs.hit);
+  }
+
+  function stopMusic() {
+    while (musicHandles.length) {
+      const h = musicHandles.pop();
+      try { if (h && typeof h.stop === 'function') h.stop(); } catch (_) {}
+    }
+  }
+
+  function startMusic() {
+    if (musicMuted || isMuted() || !running || paused || gameOver || musicHandles.length) return;
+    const bass = playSound('breakout-music-bass', {
+      kind: 'tone', type: 'square', freqStart: 110, freqEnd: 110,
+      duration: null, loop: true, volume: 0.007,
+    });
+    const lead = playSound('breakout-music-lead', {
+      kind: 'tone', type: 'triangle', freqStart: 220, freqEnd: 222,
+      duration: null, loop: true, volume: 0.005,
+    });
+    const arp = playSound('breakout-music-arp', {
+      kind: 'tone', type: 'sawtooth', freqStart: 330, freqEnd: 330,
+      duration: null, loop: true, volume: 0.004,
+    });
+    if (bass) musicHandles.push(bass);
+    if (lead) musicHandles.push(lead);
+    if (arp) musicHandles.push(arp);
+  }
+
+  function syncMusicButton() {
+    const btn = document.getElementById('musicMuteBtn');
+    if (!btn) return;
+    btn.textContent = musicMuted ? 'Music On' : 'Music Off';
+    btn.setAttribute('aria-pressed', String(musicMuted));
   }
 
   function makeBall(x, y, vx = 0, vy = 0) {
@@ -933,6 +969,7 @@ export function bootstrapBreakout(root) {
     lastTime = ts;
     update(dt);
     draw();
+    if (running && !paused && !gameOver) startMusic();
     raf = requestAnimationFrame(loop);
   }
 
@@ -940,6 +977,7 @@ export function bootstrapBreakout(root) {
     if (gameOver) return;
     running = false;
     gameOver = true;
+    stopMusic();
     stopAllSounds();
     setBestMaybe();
     updateHud();
@@ -963,6 +1001,7 @@ export function bootstrapBreakout(root) {
     resetBallStack();
     updateHud();
     draw();
+    syncMusicButton();
 
     document.addEventListener('keydown', onKeyDown);
     document.addEventListener('keyup', onKeyUp);
@@ -970,6 +1009,7 @@ export function bootstrapBreakout(root) {
     const startBtn = document.getElementById('startBtn');
     const pauseBtn = document.getElementById('pauseBtn');
     const resetBtn = document.getElementById('resetBtn');
+    const musicMuteBtn = document.getElementById('musicMuteBtn');
 
     if (startBtn) {
       startBtn.onclick = () => {
@@ -978,6 +1018,7 @@ export function bootstrapBreakout(root) {
         launched = false;
         lastTime = performance.now();
         if (raf) cancelAnimationFrame(raf);
+        startMusic();
         raf = requestAnimationFrame(loop);
       };
     }
@@ -986,7 +1027,12 @@ export function bootstrapBreakout(root) {
       pauseBtn.onclick = () => {
         if (running) {
           paused = !paused;
-          if (paused) stopAllSounds();
+          if (paused) {
+            stopMusic();
+            stopAllSounds();
+          } else {
+            startMusic();
+          }
         }
       };
     }
@@ -994,9 +1040,19 @@ export function bootstrapBreakout(root) {
     if (resetBtn) {
       resetBtn.onclick = () => {
         if (raf) cancelAnimationFrame(raf);
+        stopMusic();
         stopAllSounds();
         resetGame();
         raf = requestAnimationFrame(() => draw());
+      };
+    }
+
+    if (musicMuteBtn) {
+      musicMuteBtn.onclick = () => {
+        musicMuted = !musicMuted;
+        if (musicMuted) stopMusic();
+        else startMusic();
+        syncMusicButton();
       };
     }
   }
@@ -1007,22 +1063,28 @@ export function bootstrapBreakout(root) {
     launched = false;
     lastTime = performance.now();
     if (raf) cancelAnimationFrame(raf);
+    startMusic();
     raf = requestAnimationFrame(loop);
   }
 
   function pause() {
     if (running) {
       paused = true;
+      stopMusic();
       stopAllSounds();
     }
   }
 
   function resume() {
-    if (running && paused) paused = false;
+    if (running && paused) {
+      paused = false;
+      startMusic();
+    }
   }
 
   function reset() {
     if (raf) cancelAnimationFrame(raf);
+    stopMusic();
     stopAllSounds();
     resetGame();
     raf = requestAnimationFrame(() => draw());
@@ -1030,6 +1092,7 @@ export function bootstrapBreakout(root) {
 
   function destroy() {
     if (raf) cancelAnimationFrame(raf);
+    stopMusic();
     stopAllSounds();
 
     document.removeEventListener('keydown', onKeyDown);
@@ -1038,9 +1101,11 @@ export function bootstrapBreakout(root) {
     const startBtn = document.getElementById('startBtn');
     const pauseBtn = document.getElementById('pauseBtn');
     const resetBtn = document.getElementById('resetBtn');
+    const musicMuteBtn = document.getElementById('musicMuteBtn');
     if (startBtn) startBtn.onclick = null;
     if (pauseBtn) pauseBtn.onclick = null;
     if (resetBtn) resetBtn.onclick = null;
+    if (musicMuteBtn) musicMuteBtn.onclick = null;
   }
 
   function getScore() {
