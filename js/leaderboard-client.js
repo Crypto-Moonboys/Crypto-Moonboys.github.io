@@ -1,3 +1,5 @@
+import { ArcadeMeta } from '/js/arcade-meta-system.js';
+
 // Deployed Cloudflare Worker URL for the shared arcade leaderboard.
 // Update this constant when the worker is published.
 const PRODUCTION_LEADERBOARD_URL = "https://moonboys-leaderboard.sercullen.workers.dev";
@@ -61,45 +63,95 @@ export async function submitScore(player, score, game = "global") {
   // Normalise to a safe integer (floor to drop any floating-point noise).
   score = Math.floor(score);
 
-  // Competitive leaderboard submission requires /gklink (telegram_linked tier).
-  // Telegram auth alone (Step 1) is not sufficient — /gklink must be completed first.
-  if (!isTelegramLinked()) {
+  const linked = isTelegramLinked();
+  if (!linked) {
     // Not competition-active: score stays local only.  Show gate modal if available.
     if (typeof window !== "undefined" && window.MOONBOYS_IDENTITY &&
         typeof window.MOONBOYS_IDENTITY.showSyncGateModal === "function") {
       window.MOONBOYS_IDENTITY.showSyncGateModal(true); // true = show /link instructions (Step 2 required)
     }
-    return;
   }
 
   const telegramId = getTelegramId();
   const linkedName = getTelegramName();
   const resolvedPlayer = (linkedName && linkedName.trim()) ? linkedName.trim() : String(player || "Guest");
+  let shouldSyncMeta = false;
 
-  const api = getApiUrl();
-  try {
-    const res = await fetch(api, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ player: resolvedPlayer, score, game, telegram_id: telegramId })
-    });
-    if (!res.ok) {
-      const data = await res.json().catch(() => ({}));
-      if (data.error === "telegram_sync_required" &&
-          typeof window !== "undefined" && window.MOONBOYS_IDENTITY &&
-          typeof window.MOONBOYS_IDENTITY.showSyncGateModal === "function") {
-        window.MOONBOYS_IDENTITY.showSyncGateModal();
+  if (linked) {
+    const api = getApiUrl();
+    try {
+      const res = await fetch(api, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ player: resolvedPlayer, score, game, telegram_id: telegramId })
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        if (data.error === "telegram_sync_required" &&
+            typeof window !== "undefined" && window.MOONBOYS_IDENTITY &&
+            typeof window.MOONBOYS_IDENTITY.showSyncGateModal === "function") {
+          window.MOONBOYS_IDENTITY.showSyncGateModal();
+        }
+      } else {
+        shouldSyncMeta = true;
       }
+    } catch (err) {
+      console.error("[leaderboard-client] Score submission failed:", err);
     }
+  }
+
+  let metaResult = null;
+  try {
+    // Meta is engagement-only and local-first: always track locally even when
+    // Telegram linking is missing; sync to worker remains linked-only below.
+    metaResult = ArcadeMeta.trackGameResult({
+      player: resolvedPlayer,
+      game,
+      raw_score: score,
+      timestamp: Date.now()
+    });
   } catch (err) {
-    console.error("[leaderboard-client] Score submission failed:", err);
+    console.error("[leaderboard-client] Meta tracking failed:", err);
+  }
+
+  if (shouldSyncMeta && metaResult && metaResult.tracked) {
+    try {
+      await submitMetaScore({
+        player: resolvedPlayer,
+        telegram_id: telegramId,
+        game: metaResult.game,
+        score: metaResult.meta_points,
+        timestamp: metaResult.timestamp
+      });
+    } catch (err) {
+      console.error("[leaderboard-client] Meta sync failed:", err);
+    }
   }
 }
 
-export async function fetchLeaderboard(game = "global") {
+async function submitMetaScore({ player, telegram_id, game, score, timestamp }) {
+  if (!telegram_id || !isTelegramLinked()) return;
+  if (!Number.isFinite(Number(score)) || Number(score) < 0) return;
+  const api = getApiUrl();
+  await fetch(api, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      player: String(player || "Guest"),
+      score: Math.floor(Number(score)),
+      game: String(game || "global"),
+      telegram_id: String(telegram_id),
+      score_type: "meta",
+      timestamp: Number(timestamp) || Date.now()
+    })
+  });
+}
+
+export async function fetchLeaderboard(game = "global", options = {}) {
+  const mode = options && options.mode ? String(options.mode).toLowerCase() : "raw";
   const api = getApiUrl();
   try {
-    const res = await fetch(`${api}?game=${encodeURIComponent(game)}`);
+    const res = await fetch(`${api}?game=${encodeURIComponent(game)}&mode=${encodeURIComponent(mode)}`);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     return await res.json();
   } catch (err) {
