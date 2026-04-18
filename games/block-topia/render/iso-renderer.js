@@ -13,6 +13,8 @@ const HOVER_PULSE_PERIOD_MS = 260;
 const TILE_PICK_TOLERANCE = 1.001;
 const NPC_HITBOX_HALF_WIDTH = 15;
 const NPC_HITBOX_HALF_HEIGHT = 25;
+const CROWD_VISIBILITY_ZOOM_THRESHOLD = 1;
+const MAGENTA_OVERLAY_COLOR = 'rgba(255,79,216,0.16)';
 
 const ROLE_STYLE = {
   vendor: { color: '#ffd84d', factionRing: true },
@@ -456,7 +458,7 @@ export function createIsoRenderer(canvas) {
 
         const district = state.districts.fromGrid(col, row);
         if (district?.id === 'signal-spire' && deterministicNoise2D(col, row) > 0.78) {
-          roadCtx.fillStyle = 'rgba(255,79,216,0.16)';
+          roadCtx.fillStyle = MAGENTA_OVERLAY_COLOR;
           roadCtx.beginPath();
           roadCtx.moveTo(tilePos.x, tilePos.y + 2);
           roadCtx.lineTo(tilePos.x + HALF_TILE_W, tilePos.y + HALF_TILE_H + 2);
@@ -727,7 +729,7 @@ export function createIsoRenderer(canvas) {
       ctx.font = '700 8px Inter, sans-serif';
       ctx.textAlign = 'center';
       ctx.fillStyle = 'rgba(0,0,0,0.7)';
-      ctx.fillText(npc.roleLabel || npc.role || 'NPC', sx + 1, sy - 44);
+      ctx.fillText(npc.roleLabel || npc.role || 'NPC', sx + 1, sy - 43);
       ctx.fillStyle = style.color;
       ctx.fillText(npc.roleLabel || npc.role || 'NPC', sx, sy - 44);
       if (isNearby) {
@@ -983,7 +985,7 @@ export function createIsoRenderer(canvas) {
     }
 
     const visible = getVisibleWorldRect(frame);
-    const hideCrowd = zoom < 1;
+    const hideCrowd = zoom < CROWD_VISIBILITY_ZOOM_THRESHOLD;
 
     const layers = [];
     for (const npc of state.npc?.entities || []) {
