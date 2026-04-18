@@ -9,6 +9,11 @@ function toTitle(text) {
   return compact.length > 38 ? `${compact.slice(0, 35)}...` : compact;
 }
 
+const BASE_SIGNAL_XP = 95;
+const XP_PER_PRIORITY = 28;
+const MIN_SIGNAL_XP = 95;
+const MAX_SIGNAL_XP = 260;
+
 function hashSeed(text) {
   const raw = String(text || '');
   let hash = 0;
@@ -56,7 +61,11 @@ export function createSignalQuestGenerator(state, liveIntelligence) {
     return signals.slice(0, limit).map((signal, index) => {
       const lane = String(signal?.lane || 'world');
       const districtHint = pickDistrictHint(signal);
-      const xp = clamp(95 + (Number(signal.priority || 3) * 28), 95, 260);
+      const xp = clamp(
+        BASE_SIGNAL_XP + (Number(signal.priority || 3) * XP_PER_PRIORITY),
+        MIN_SIGNAL_XP,
+        MAX_SIGNAL_XP,
+      );
       const laneLabel = laneToOperationLabel(lane);
       const pulseTitle = toTitle(signal.questPulse || signal.worldFeed || signal.clueEvent || laneLabel);
       return {

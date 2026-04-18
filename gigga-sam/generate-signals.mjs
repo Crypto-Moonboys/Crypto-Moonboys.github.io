@@ -43,7 +43,7 @@ function buildSignalId(index) {
   return `signal-${Date.now()}-${index + 1}`;
 }
 
-function getOpenAiApiKey() {
+function getOpenAIApiKey() {
   const raw = process.env.OPENAI_API_KEY
     || process.env.GIGGA_SAM_OPENAI_API_KEY
     || process.env.OPENAI_KEY
@@ -204,7 +204,7 @@ function normalizeSignal(candidate, index) {
 }
 
 async function transformWithOpenAI(compactInput) {
-  const apiKey = getOpenAiApiKey();
+  const apiKey = getOpenAIApiKey();
   if (!apiKey) {
     return {
       mode: 'fallback-no-key',
@@ -246,7 +246,7 @@ async function transformWithOpenAI(compactInput) {
     if (!aiSignals.length) throw new Error('OpenAI returned no signals');
 
     return {
-      mode: 'live-transformed',
+      mode: 'live-ai',
       signals: aiSignals,
       openaiStatus: 'ok',
     };

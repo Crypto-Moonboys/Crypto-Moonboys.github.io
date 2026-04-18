@@ -11,6 +11,9 @@ const CROWD_MOVE_INTERVAL_MIN = 2.0;
 const CROWD_MOVE_INTERVAL_RANGE = 1.5;
 const UPDATE_BATCH = 40;
 const MAX_ACTIVE_NPCS = 120;
+const LIVE_DIALOGUE_CHANCE_WITH_OPERATION = 0.7;
+const LIVE_DIALOGUE_CHANCE_BASE = 0.3;
+const ROLE_OPERATION_LINE_CHANCE = 0.6;
 
 // District-aware NPC spawn bands (col, row, w, h) matching districts.json grid regions
 const DISTRICT_SPAWN_REGIONS = [
@@ -276,8 +279,8 @@ export function createNpcSystem(state, liveIntelligence = null) {
   function getDialogueLine(npc) {
     const districtOp = getDistrictOperation(npc?.districtId);
     const liveLine = liveIntelligence?.pickNpcLine?.(npc);
-    const liveChance = districtOp ? 0.7 : 0.3;
-    if (districtOp && Math.random() < 0.6) {
+    const liveChance = districtOp ? LIVE_DIALOGUE_CHANCE_WITH_OPERATION : LIVE_DIALOGUE_CHANCE_BASE;
+    if (districtOp && Math.random() < ROLE_OPERATION_LINE_CHANCE) {
       const roleOpLine = sampleOperationRoleLine(npc, districtOp);
       if (roleOpLine) return roleOpLine;
     }

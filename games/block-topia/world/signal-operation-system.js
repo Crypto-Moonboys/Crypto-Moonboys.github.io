@@ -1,4 +1,13 @@
 const MAX_ACTIVE_OPERATIONS = 3;
+const OPERATION_RADIUS_BASE = 0.95;
+const OPERATION_RADIUS_PER_PRIORITY = 0.3;
+const OPERATION_RADIUS_MIN = 1.2;
+const OPERATION_RADIUS_MAX = 2.9;
+const OPERATION_INTENSITY_BASE = 0.35;
+const OPERATION_INTENSITY_PER_PRIORITY = 0.14;
+const OPERATION_INTENSITY_MIN = 0.5;
+const OPERATION_INTENSITY_MAX = 1.15;
+const RESOLVED_SIGNAL_TTL_MS = 15 * 60 * 1000;
 
 function hashSeed(text) {
   const raw = String(text || '');
@@ -100,8 +109,16 @@ export function createSignalOperationSystem(state, liveIntelligence) {
       const seed = hashSeed(`${signal.id}:${districtId}`);
       const { x, y } = findOperationPosition(state, district, seed);
       const priority = clamp(Number(signal.priority || 3), 1, 5);
-      const radius = clamp(1.25 + priority * 0.28, 1.2, 2.9);
-      const intensity = clamp(0.45 + priority * 0.12, 0.55, 1.15);
+      const radius = clamp(
+        OPERATION_RADIUS_BASE + priority * OPERATION_RADIUS_PER_PRIORITY,
+        OPERATION_RADIUS_MIN,
+        OPERATION_RADIUS_MAX,
+      );
+      const intensity = clamp(
+        OPERATION_INTENSITY_BASE + priority * OPERATION_INTENSITY_PER_PRIORITY,
+        OPERATION_INTENSITY_MIN,
+        OPERATION_INTENSITY_MAX,
+      );
       const expiresAtMs = Date.parse(signal.expiresAt || '');
       const expiry = Number.isFinite(expiresAtMs)
         ? new Date(expiresAtMs).toISOString()
@@ -149,7 +166,7 @@ export function createSignalOperationSystem(state, liveIntelligence) {
       const dist = Math.hypot(playerX - operation.x, playerY - operation.y);
       if (dist <= operation.radius) {
         operation.resolved = true;
-        resolvedSignals.set(operation.signalId, Date.parse(operation.expiresAt || '') || (now + 15 * 60 * 1000));
+        resolvedSignals.set(operation.signalId, Date.parse(operation.expiresAt || '') || (now + RESOLVED_SIGNAL_TTL_MS));
         state.effects.signalOperationPulseUntil = now + 1300;
         state.effects.signalOperationPulse = {
           x: operation.x,

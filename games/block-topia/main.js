@@ -27,8 +27,9 @@ const DISTRICT_CAPTURE_THRESHOLD = 90;
 const LOGIC_TICK_MS = 50;
 const NPC_SCAN_INTERVAL_MS = 150;
 const REMOTE_PLAYER_LERP_ALPHA = 0.18;
-const LIVE_REFRESH_INTERVAL_MS = 120000;
+const LIVE_REFRESH_INTERVAL_MS = 120000; // 2 minutes
 const FEED_DEDUPE_TTL_MS = 5 * 60 * 1000;
+const MAX_FEED_CACHE_SIZE = 80;
 
 const canvas = document.getElementById('world-canvas');
 const hud = createHud(document);
@@ -100,7 +101,7 @@ async function boot() {
     const lastSeen = seenFeed.get(cacheKey) || 0;
     if (now - lastSeen < FEED_DEDUPE_TTL_MS) return false;
     seenFeed.set(cacheKey, now);
-    if (seenFeed.size > 80) {
+    if (seenFeed.size > MAX_FEED_CACHE_SIZE) {
       for (const [entryKey, ts] of seenFeed) {
         if (now - ts > FEED_DEDUPE_TTL_MS) {
           seenFeed.delete(entryKey);
