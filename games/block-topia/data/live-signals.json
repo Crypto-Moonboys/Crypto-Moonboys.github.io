@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-04-18T19:22:49.748Z",
+  "generatedAt": "2026-04-18T20:00:05.970Z",
   "mode": "live-ai",
   "sourceHealth": {
     "coingecko-global": "ok",
@@ -11,84 +11,84 @@
   "signalCount": 5,
   "signals": [
     {
-      "id": "signal-1776540169748-1",
+      "id": "signal-1776542405969-1",
       "lane": "world",
       "priority": 4,
-      "ttlMinutes": 45,
-      "npcLine": "Crypto shadows lengthen; market cap slipping under heavy fog.",
-      "questPulse": "Scan for crypto wormholes before the plunge deepens.",
-      "worldFeed": "Global digital assets bleed value amidst rising dread.",
-      "clueEvent": "Whispers of mass selloffs echo in the neon alleys.",
+      "ttlMinutes": 120,
+      "npcLine": "Markets are bleeding; fear grips the street scanners.",
+      "questPulse": "Decrypt the crash: shadow trades falling fast.",
+      "worldFeed": "Global crypto tides sinking beneath distrust waves.",
+      "clueEvent": "Whispers of sudden market cap erosion detected.",
       "tags": [
-        "market",
-        "decline",
-        "fear"
+        "market-fall",
+        "fear",
+        "crypto"
       ],
-      "expiresAt": "2026-04-18T20:07:49.748Z"
+      "expiresAt": "2026-04-18T22:00:05.969Z"
     },
     {
-      "id": "signal-1776540169748-2",
+      "id": "signal-1776542405970-2",
       "lane": "ops",
       "priority": 3,
-      "ttlMinutes": 30,
-      "npcLine": "Risk scanners spike on new cryptos, but RAVE stays dim.",
-      "questPulse": "Investigate silent nodes hiding under shadow protocols.",
-      "worldFeed": "New coins flood circuits; some pulse, others just noise.",
-      "clueEvent": "Spectral assets spike briefly then vanish from chain logs.",
+      "ttlMinutes": 90,
+      "npcLine": "RAVE and AAVE nodes flicker, unstable flow.",
+      "questPulse": "Infiltrate the broken chains; fix the glitch.",
+      "worldFeed": "Trending tokens struggle to stabilize in chaos.",
+      "clueEvent": "Network anomalies spotted near RAVE and AAVE blocks.",
       "tags": [
-        "cryptocurrency",
-        "risk",
-        "newcomers"
+        "node-flicker",
+        "crypto-glitch",
+        "operation"
       ],
-      "expiresAt": "2026-04-18T19:52:49.748Z"
+      "expiresAt": "2026-04-18T21:30:05.970Z"
     },
     {
-      "id": "signal-1776540169748-3",
+      "id": "signal-1776542405970-3",
       "lane": "clue",
-      "priority": 5,
+      "priority": 2,
       "ttlMinutes": 60,
-      "npcLine": "AAVE signals rising frequency; something brews in the data streams.",
-      "questPulse": "Trace high-frequency trades before regulators swarm.",
-      "worldFeed": "Unseen forces push AAVE wallets into overdrive.",
-      "clueEvent": "Hidden triggers detected in decentralized vault operations.",
+      "npcLine": "Siren signals pierce the fog, warning imminent shifts.",
+      "questPulse": "Trace the signal source. Could mean big moves.",
+      "worldFeed": "Sentiment turns fearful; siren tokens lead the way.",
+      "clueEvent": "SIREN token spikes amid market turmoil.",
       "tags": [
-        "aave",
-        "trading",
+        "siren",
+        "signal",
         "alert"
       ],
-      "expiresAt": "2026-04-18T20:22:49.748Z"
+      "expiresAt": "2026-04-18T21:00:05.970Z"
     },
     {
-      "id": "signal-1776540169748-4",
+      "id": "signal-1776542405970-4",
       "lane": "quest",
-      "priority": 2,
-      "ttlMinutes": 40,
-      "npcLine": "REQ and SIREN cryptos buzz; unstable currents ahead.",
-      "questPulse": "Match circuit pulses to predict next coin flares.",
-      "worldFeed": "Smaller tokens dance on brink, tempting desperate netrunners.",
-      "clueEvent": "Volatile microcaps show erratic chain patterns overnight.",
+      "priority": 5,
+      "ttlMinutes": 180,
+      "npcLine": "Kernel core compromised; urgent patch scramble initiated.",
+      "questPulse": "Patch the kernel or watch the system fall apart.",
+      "worldFeed": "KERNEL token stability critical in plunging markets.",
+      "clueEvent": "Kernel network shows vulnerability under stress.",
       "tags": [
-        "req",
-        "siren",
-        "volatility"
+        "kernel",
+        "urgent-patch",
+        "system-fall"
       ],
-      "expiresAt": "2026-04-18T20:02:49.748Z"
+      "expiresAt": "2026-04-18T23:00:05.970Z"
     },
     {
-      "id": "signal-1776540169748-5",
+      "id": "signal-1776542405970-5",
       "lane": "npc",
       "priority": 1,
-      "ttlMinutes": 20,
-      "npcLine": "Fear index cranks high; net spills uneven data streams.",
-      "questPulse": "Decode panic spikes in cryptonet chatter.",
-      "worldFeed": "Sentiment sinks; traders clutch fading hopes tightly.",
-      "clueEvent": "Digital whispers hint at a looming market crash.",
+      "ttlMinutes": 45,
+      "npcLine": "Asteroid miners report stalled transfers; delays critical.",
+      "questPulse": "Smooth transfer logs before miners hit red alert.",
+      "worldFeed": "ASTEROID token transfer delays disrupt black market flows.",
+      "clueEvent": "Transfer delays detected in ASTEROID token routes.",
       "tags": [
-        "sentiment",
-        "fear",
-        "panic"
+        "asteroid",
+        "transfer-delay",
+        "npc-tip"
       ],
-      "expiresAt": "2026-04-18T19:42:49.748Z"
+      "expiresAt": "2026-04-18T20:45:05.970Z"
     }
   ]
 }
