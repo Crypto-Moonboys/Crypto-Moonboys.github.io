@@ -4,50 +4,95 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>🧩 Crystal Quest — Crypto Moonboys Arcade</title>
-  <meta name="description" content="Run-based wiki clue hunt. Complete mission sets, build streaks, and submit validated scores.">
+  <meta name="description" content="Wiki lore hunt. Follow signal trails, discover hidden answers, and build your crystal score.">
   <meta name="robots" content="index, follow">
   <link rel="stylesheet" href="/css/wiki.css">
   <link rel="icon" href="/img/favicon.svg" type="image/svg+xml">
   <style>
+    /* ── Core layout ── */
     .game-card{position:relative;overflow:hidden;background:rgba(255,255,255,.03);border:1px solid var(--color-border,#333);border-radius:16px;padding:18px}
-    .quest-box{position:relative;background:rgba(255,255,255,.04);border:1px solid var(--color-border,#333);border-radius:14px;padding:16px;margin-top:14px;transition:box-shadow .25s ease,border-color .25s ease}
-    .quest-box.glow{box-shadow:0 0 0 1px rgba(122,220,255,.28),0 0 24px rgba(122,220,255,.12)}
+    .quest-box{position:relative;background:rgba(255,255,255,.04);border:1px solid var(--color-border,#333);border-radius:14px;padding:16px;margin-top:14px;transition:box-shadow .3s ease,border-color .3s ease}
+    .quest-box.glow{box-shadow:0 0 0 1px rgba(122,220,255,.28),0 0 28px rgba(122,220,255,.13)}
     .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
-    .input{flex:1 1 260px;padding:.9rem 1rem;border-radius:12px;border:1px solid var(--color-border,#333);background:#0b1020;color:#fff}
+    .input{flex:1 1 240px;padding:.9rem 1rem;border-radius:12px;border:1px solid var(--color-border,#333);background:#0b1020;color:#fff;font-size:1rem;transition:border-color .2s ease}
+    .input:focus{outline:none;border-color:#4c9cff}
     .btn{padding:.85rem 1.1rem;border:none;border-radius:12px;background:#f7ab1a;color:#111;font-weight:700;cursor:pointer;transition:transform .15s ease,opacity .2s ease,box-shadow .2s ease}
-    .btn:hover{transform:translateY(-1px);box-shadow:0 6px 16px rgba(0,0,0,.25)}
+    .btn:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 6px 18px rgba(0,0,0,.3)}
     .btn:disabled{opacity:.45;cursor:not-allowed;transform:none;box-shadow:none}
     .btn.alt{background:rgba(255,255,255,.1);color:#fff}
-    .btn.warn{background:#8a2d2d;color:#fff}
-    .meta{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:12px}
-    .meta .stat{background:rgba(255,255,255,.04);border:1px solid var(--color-border,#333);border-radius:12px;padding:12px;text-align:center}
+    .btn.warn{background:rgba(255,50,50,.18);color:#ffaaaa;border:1px solid rgba(255,80,80,.3)}
+    .btn.warn:not(:disabled){background:#9b2222;color:#fff}
     .small{color:var(--color-text-muted);font-size:.82rem}
-    .status{margin-top:10px;font-size:.85rem;color:var(--color-text-muted)}
+    .status{margin-top:10px;font-size:.82rem;color:var(--color-text-muted)}
 
+    /* ── Stat HUD ── */
+    .meta{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:12px}
+    .meta .stat{background:rgba(255,255,255,.04);border:1px solid var(--color-border,#333);border-radius:12px;padding:12px;text-align:center;transition:box-shadow .25s ease}
+    .meta .stat.hot{box-shadow:0 0 14px rgba(255,225,102,.22);border-color:#ffe166}
+
+    /* ── Crystal pulse layer ── */
     #crystalPulseLayer{position:absolute;inset:0;pointer-events:none;z-index:0}
-    #crystalPulseLayer::before{content:"";position:absolute;inset:-40%;background:radial-gradient(circle,rgba(122,220,255,.12),transparent 58%);opacity:0;transform:scale(.8);transition:opacity .25s ease,transform .25s ease}
-    #crystalPulseLayer.pulse-start::before{opacity:.35;transform:scale(1)}
-    #crystalPulseLayer.pulse-correct::before{opacity:.55;transform:scale(1.12)}
-    #crystalPulseLayer.pulse-error::before{background:radial-gradient(circle,rgba(255,66,66,.16),transparent 58%);opacity:.55;transform:scale(1.08)}
-    #crystalPulseLayer.pulse-warning::before{background:radial-gradient(circle,rgba(255,177,68,.16),transparent 58%);opacity:.55;transform:scale(1.08)}
+    #crystalPulseLayer::before{content:"";position:absolute;inset:-40%;background:radial-gradient(circle,rgba(122,220,255,.12),transparent 58%);opacity:0;transform:scale(.8);transition:opacity .3s ease,transform .3s ease,background .3s ease}
+    #crystalPulseLayer.pulse-start::before{opacity:.32;transform:scale(1)}
+    #crystalPulseLayer.pulse-correct::before{opacity:.52;transform:scale(1.1)}
+    #crystalPulseLayer.pulse-error::before{background:radial-gradient(circle,rgba(255,66,66,.16),transparent 58%);opacity:.52;transform:scale(1.06)}
+    #crystalPulseLayer.pulse-warning::before{background:radial-gradient(circle,rgba(255,177,68,.16),transparent 58%);opacity:.5;transform:scale(1.06)}
+    #crystalPulseLayer.pulse-hype::before{background:radial-gradient(circle,rgba(255,225,102,.22),transparent 55%);opacity:.65;transform:scale(1.18)}
+    #crystalPulseLayer.pulse-complete::before{background:radial-gradient(circle,rgba(75,227,143,.2),transparent 55%);opacity:.7;transform:scale(1.22)}
 
+    /* ── Particles ── */
     #crystalParticles{position:absolute;inset:0;pointer-events:none;z-index:0}
-    .crystal-particle{position:absolute;bottom:-10%;width:3px;height:3px;border-radius:50%;background:rgba(132,222,255,.9);filter:blur(.2px);animation:crystalFloat linear infinite}
-    @keyframes crystalFloat{0%{transform:translateY(0) scale(.9)}100%{transform:translateY(-130%) scale(1.2)}}
+    .crystal-particle{position:absolute;bottom:-10%;width:3px;height:3px;border-radius:50%;background:rgba(132,222,255,.9);filter:blur(.3px);animation:crystalFloat linear infinite}
+    @keyframes crystalFloat{0%{transform:translateY(0) scale(.9);opacity:.6}80%{opacity:.9}100%{transform:translateY(-130%) scale(1.3);opacity:0}}
 
     .layer-top{position:relative;z-index:1}
 
-    .sam-panel{display:flex;gap:10px;align-items:flex-start;background:rgba(255,255,255,.05);border:1px solid var(--color-border,#333);border-radius:12px;padding:12px;margin-top:14px;transition:border-color .2s ease,box-shadow .2s ease}
-    .sam-avatar{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;background:rgba(122,220,255,.14);font-weight:700}
+    /* ── Quest box header meta (difficulty + progress) ── */
+    .quest-meta{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:10px}
+    .diff-badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:.75rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase}
+    .diff-easy   {background:rgba(75,227,143,.18);color:#4be38f;border:1px solid rgba(75,227,143,.3)}
+    .diff-medium {background:rgba(255,177,68,.18);color:#ffb144;border:1px solid rgba(255,177,68,.3)}
+    .diff-hard   {background:rgba(200,80,200,.18);color:#dd88ff;border:1px solid rgba(200,80,200,.3)}
+    .diff-unknown{background:rgba(180,180,180,.12);color:#aaa;border:1px solid rgba(180,180,180,.2)}
+    .quest-progress{font-size:.82rem;color:var(--color-text-muted);margin-left:auto}
+
+    /* ── SAM panel ── */
+    .sam-panel{display:flex;gap:10px;align-items:flex-start;background:rgba(255,255,255,.05);border:1px solid var(--color-border,#333);border-radius:12px;padding:12px;margin-top:14px;transition:border-color .25s ease,box-shadow .25s ease}
+    .sam-avatar{flex-shrink:0;width:42px;height:42px;border-radius:50%;display:grid;place-items:center;background:rgba(122,220,255,.14);font-weight:700;font-size:.85rem;letter-spacing:.05em}
     .sam-body{min-width:0}
-    .sam-title{font-weight:700;font-size:.95rem}
-    .sam-message{font-size:.86rem;color:var(--color-text-muted);margin-top:4px}
+    .sam-title{font-weight:700;font-size:.93rem}
+    .sam-message{font-size:.86rem;color:var(--color-text-muted);margin-top:5px;min-height:1.3em;transition:color .2s ease}
     #samAgent.sam-scanning{border-color:#4c9cff;box-shadow:0 0 0 1px rgba(76,156,255,.28)}
-    #samAgent.sam-correct{border-color:#4be38f;box-shadow:0 0 14px rgba(75,227,143,.24)}
-    #samAgent.sam-error{border-color:#ff6b6b;box-shadow:0 0 14px rgba(255,107,107,.25);animation:samGlitch .22s linear 2}
-    #samAgent.sam-hype{border-color:#ffe166;box-shadow:0 0 14px rgba(255,225,102,.3)}
-    #samAgent.sam-warning{border-color:#ffb144;box-shadow:0 0 14px rgba(255,177,68,.27)}
-    @keyframes samGlitch{0%{transform:translateX(0)}25%{transform:translateX(-2px)}50%{transform:translateX(2px)}100%{transform:translateX(0)}}
+    #samAgent.sam-scanning .sam-message{color:#7dbfff}
+    #samAgent.sam-correct {border-color:#4be38f;box-shadow:0 0 14px rgba(75,227,143,.2)}
+    #samAgent.sam-correct  .sam-message{color:#8bf5c3}
+    #samAgent.sam-error   {border-color:#ff6b6b;box-shadow:0 0 14px rgba(255,107,107,.22);animation:samGlitch .2s linear 2}
+    #samAgent.sam-error    .sam-message{color:#ff9999}
+    #samAgent.sam-hype    {border-color:#ffe166;box-shadow:0 0 18px rgba(255,225,102,.32)}
+    #samAgent.sam-hype     .sam-message{color:#ffe87a}
+    #samAgent.sam-warning {border-color:#ffb144;box-shadow:0 0 14px rgba(255,177,68,.25)}
+    #samAgent.sam-warning  .sam-message{color:#ffca84}
+    @keyframes samGlitch{0%{transform:translateX(0)}25%{transform:translateX(-2px)}75%{transform:translateX(2px)}100%{transform:translateX(0)}}
+
+    /* ── Lore discovery log ── */
+    .lore-log{background:rgba(122,220,255,.04);border:1px solid rgba(122,220,255,.15);border-radius:12px;padding:12px 14px;margin-top:14px}
+    .lore-log-title{font-size:.8rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:rgba(122,220,255,.7);margin-bottom:8px}
+    .lore-log-entries{max-height:130px;overflow-y:auto;display:flex;flex-direction:column;gap:5px}
+    .lore-log-entries:empty::before{content:"No crystals yet.";color:var(--color-text-muted);font-size:.82rem}
+    .lore-entry{display:flex;gap:8px;align-items:center;font-size:.86rem;animation:loreEntryIn .25s ease}
+    @keyframes loreEntryIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+    .lore-icon{flex-shrink:0}
+    .lore-title{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#c6e9ff}
+    .lore-pts{flex-shrink:0;color:#4be38f;font-weight:700;font-size:.82rem}
+
+    /* ── Run-complete banner ── */
+    .run-complete-banner{border:1px solid #4be38f;border-radius:14px;padding:16px 18px;margin-top:14px;background:rgba(75,227,143,.07);animation:rcbIn .4s ease}
+    @keyframes rcbIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+    .rcb-header{font-size:1.05rem;font-weight:700;color:#4be38f;margin-bottom:8px}
+    .rcb-score{font-size:2rem;font-weight:900;color:#fff;letter-spacing:.02em;margin-bottom:4px}
+    .rcb-stats{font-size:.86rem;color:var(--color-text-muted);margin-bottom:10px}
+    .rcb-lore{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+    .rcb-lore-tag{font-size:.78rem;background:rgba(122,220,255,.1);border:1px solid rgba(122,220,255,.2);border-radius:20px;padding:3px 9px;color:#aed9ff;white-space:nowrap}
 
     @media(max-width:720px){.meta{grid-template-columns:repeat(2,minmax(0,1fr))}}
   </style>
@@ -95,36 +140,63 @@
       <nav class="breadcrumb" aria-label="Breadcrumb"><a href="/index.html">Home</a><span class="sep">›</span><a href="/games/">Arcade</a><span class="sep">›</span><span aria-current="page">Crystal Quest</span></nav>
       <div class="category-header">
         <span class="cat-big-icon" aria-hidden="true">🧩</span>
-        <div><h1 class="page-title">🧩 Crystal Quest</h1><p style="color:var(--color-text-muted)">Run-based lore mission hunt. Finish full runs to submit leaderboard scores.</p></div>
+        <div>
+          <h1 class="page-title">🧩 Crystal Quest</h1>
+          <p style="color:var(--color-text-muted)">Follow the wiki signal trail, decode hidden lore, secure crystals. Finish a full run — submit your score.</p>
+        </div>
       </div>
       <div class="page-title-line" aria-hidden="true"></div>
 
       <div class="game-card">
+        <!-- Visual atmosphere layers -->
         <div id="crystalPulseLayer" class="pulse-start" aria-hidden="true"></div>
         <div id="crystalParticles" aria-hidden="true"></div>
 
         <div class="layer-top">
+
+          <!-- Live HUD -->
           <div class="meta">
             <div class="stat"><div class="small">Score</div><div id="scoreCount" style="font-weight:700;font-size:1.15rem">0</div></div>
             <div class="stat"><div class="small">Streak</div><div id="streakCount" style="font-weight:700;font-size:1.15rem">0</div></div>
-            <div class="stat"><div class="small">Remaining Questions</div><div id="remainingCount" style="font-weight:700;font-size:1.15rem">0</div></div>
+            <div class="stat"><div class="small">Remaining</div><div id="remainingCount" style="font-weight:700;font-size:1.15rem">0</div></div>
             <div class="stat"><div class="small">Skips Left</div><div id="skipsLeftCount" style="font-weight:700;font-size:1.15rem">2</div></div>
           </div>
 
+          <!-- Current mission clue box -->
           <div class="quest-box glow">
+            <div class="quest-meta">
+              <span id="questDifficulty" class="diff-badge" style="display:none" aria-label="Difficulty"></span>
+              <span id="questProgress" class="quest-progress" aria-label="Mission progress">—</span>
+            </div>
             <h3 id="questTitle">No active mission</h3>
-            <p id="questClue">Press Start Quest to begin a run.</p>
-            <p class="small">Suggested page: <a id="questLink" href="#">—</a></p>
+            <p id="questClue">Press Start Quest to begin a lore hunt run.</p>
+            <p class="small">Signal trail: <a id="questLink" href="#" target="_blank" rel="noopener noreferrer">—</a></p>
           </div>
 
+          <!-- SAM guide -->
           <div id="samAgent" class="sam-panel sam-idle" data-sam-state="idle" aria-live="polite">
             <div class="sam-avatar">SAM</div>
             <div class="sam-body">
-              <div class="sam-title">Signal Analysis Module</div>
-              <div class="sam-message" id="samMessage">Awaiting mission command.</div>
+              <div class="sam-title">🔮 Signal Analysis Module</div>
+              <div class="sam-message" id="samMessage">Crystal array online. Ready to hunt.</div>
             </div>
           </div>
 
+          <!-- Lore discovery log (shown during / after run) -->
+          <div id="loreLog" class="lore-log" style="display:none" aria-label="Lore discoveries this run">
+            <div class="lore-log-title">💎 Crystals Secured This Run</div>
+            <div id="loreLogEntries" class="lore-log-entries" aria-live="polite"></div>
+          </div>
+
+          <!-- Run-complete banner (shown on run completion) -->
+          <div id="runCompleteBanner" class="run-complete-banner" style="display:none" role="status" aria-live="assertive">
+            <div class="rcb-header">⚡ Run Complete — Lore Trail Sealed</div>
+            <div id="rcbScore" class="rcb-score"></div>
+            <div id="rcbStats" class="rcb-stats"></div>
+            <div id="rcbLore" class="rcb-lore" style="display:none"></div>
+          </div>
+
+          <!-- Controls -->
           <div class="quest-box">
             <div class="row" style="margin-bottom:10px">
               <button class="btn" id="startBtn" type="button">Start Quest</button>
@@ -132,16 +204,17 @@
               <button id="pauseBtn" type="button" style="display:none">Pause</button>
             </div>
             <div class="row">
-              <input id="answerInput" class="input" type="text" placeholder="Type your answer here">
+              <input id="answerInput" class="input" type="text" placeholder="Enter the hidden answer…" autocomplete="off" autocorrect="off" spellcheck="false">
               <button class="btn" id="submitBtn" type="button">Submit Answer</button>
               <button class="btn alt" id="skipBtn" type="button">Skip</button>
               <button class="btn warn" id="submitScoreBtn" type="button">Submit Score</button>
             </div>
-            <p id="feedback" class="small" style="margin-top:12px">Start a run to begin mission validation.</p>
+            <p id="feedback" class="small" style="margin-top:12px">Start a run to begin the lore hunt.</p>
             <p class="status"><span id="sourceLabel">Loading…</span> · <span id="statusLine">Initializing…</span></p>
           </div>
-        </div>
-      </div>
+
+        </div><!-- /.layer-top -->
+      </div><!-- /.game-card -->
     </main>
     <footer id="site-footer"><div class="footer-bottom"><p>Crypto Moonboys GK Wiki ⚡️⚡️⚡️</p></div></footer>
   </div>
