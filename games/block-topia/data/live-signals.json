@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-04-18T11:57:54.393Z",
+  "generatedAt": "2026-04-18T13:20:14.071Z",
   "mode": "live-ai",
   "sourceHealth": {
     "coingecko-global": "ok",
@@ -11,84 +11,84 @@
   "signalCount": 5,
   "signals": [
     {
-      "id": "signal-1776513474392-1",
+      "id": "signal-1776518414070-1",
       "lane": "world",
       "priority": 4,
-      "ttlMinutes": 45,
-      "npcLine": "Whispers say the crypto mesh dims, fears growing dark.",
-      "questPulse": "Trace the pulse drop—something’s dipping under the neon haze.",
-      "worldFeed": "Market fractals shift; shadows of uncertainty swell fast.",
-      "clueEvent": "Glitch in trading nodes sparks silent dread across districts.",
+      "ttlMinutes": 120,
+      "npcLine": "Markets flicker under shadow; assets bleed in digital night.",
+      "questPulse": "Scan cryptic exchanges; uncover rogue coin movements.",
+      "worldFeed": "Global credits slip; fear grips cyber bazaars.",
+      "clueEvent": "Unusual volume spike detected on unstable tokens.",
       "tags": [
-        "fear",
-        "crypto",
-        "market-uncertainty"
+        "market-down",
+        "crypto-fear",
+        "volatility"
       ],
-      "expiresAt": "2026-04-18T12:42:54.392Z"
+      "expiresAt": "2026-04-18T15:20:14.070Z"
     },
     {
-      "id": "signal-1776513474392-2",
+      "id": "signal-1776518414071-2",
       "lane": "ops",
       "priority": 3,
-      "ttlMinutes": 30,
-      "npcLine": "OVPP spike heating up, could disrupt the data lanes.",
-      "questPulse": "Hack the OVPP node—surge might unravel undercurrents.",
-      "worldFeed": "OVPP token flickers; miners on alert for anomaly.",
-      "clueEvent": "Surge in OVPP transactions jams darknet bandwidth.",
+      "ttlMinutes": 90,
+      "npcLine": "Whispers say BTC holdouts plan underground trade runs.",
+      "questPulse": "Intercept encrypted BTC channels; prey on weak chains.",
+      "worldFeed": "Silent operations crowd the blockchain undercurrent.",
+      "clueEvent": "Encrypted BTC nodes flash abnormal bursts.",
       "tags": [
-        "token-activity",
-        "surge",
-        "data-lanes"
+        "btc",
+        "underground",
+        "crypto-ops"
       ],
-      "expiresAt": "2026-04-18T12:27:54.392Z"
+      "expiresAt": "2026-04-18T14:50:14.071Z"
     },
     {
-      "id": "signal-1776513474393-3",
+      "id": "signal-1776518414071-3",
       "lane": "clue",
       "priority": 2,
-      "ttlMinutes": 50,
-      "npcLine": "Siren protocols triggered; cryptic patterns breach firewall.",
-      "questPulse": "an operator’s static; it may hide a darknet trap.",
-      "worldFeed": "Silent screeches from Siren crypto nodes confound analysts.",
-      "clueEvent": "Encrypted bursts detected near Siren’s core clusters.",
+      "ttlMinutes": 60,
+      "npcLine": "RAVE token pulses faintly—rumors of a crash brewing.",
+      "questPulse": "Trace RAVE’s origin; locate source of instability.",
+      "worldFeed": "Minor coin's tremors ripple across shadow markets.",
+      "clueEvent": "RAVE token volume drops suspiciously fast.",
       "tags": [
-        "intrigue",
-        "encryption",
-        "breach"
+        "rave",
+        "token",
+        "market-instability"
       ],
-      "expiresAt": "2026-04-18T12:47:54.393Z"
+      "expiresAt": "2026-04-18T14:20:14.071Z"
     },
     {
-      "id": "signal-1776513474393-4",
+      "id": "signal-1776518414071-4",
       "lane": "quest",
-      "priority": 3,
-      "ttlMinutes": 40,
-      "npcLine": "PENGU whispers hint at cold fronts in token flow.",
-      "questPulse": "Investigate PENGU channel slowdown—underlying freeze suspected.",
-      "worldFeed": "Silent disruptions ripple through PENGU’s icy ledger.",
-      "clueEvent": "Frozen transactions clogging critical crypto conduits.",
+      "priority": 5,
+      "ttlMinutes": 180,
+      "npcLine": "Dangerous run on OVPP vaults; hackers scramble for control.",
+      "questPulse": "Infiltrate vaults; secure OVPP assets before collapse.",
+      "worldFeed": "OVPP nodes under siege, digital defenses weakening.",
+      "clueEvent": "Multiple failed login attempts on OVPP storages.",
       "tags": [
-        "freeze",
-        "token-flow",
-        "disruption"
+        "ovpp",
+        "hacking",
+        "high-priority"
       ],
-      "expiresAt": "2026-04-18T12:37:54.393Z"
+      "expiresAt": "2026-04-18T16:20:14.071Z"
     },
     {
-      "id": "signal-1776513474393-5",
+      "id": "signal-1776518414071-5",
       "lane": "npc",
       "priority": 1,
-      "ttlMinutes": 60,
-      "npcLine": "RAVE’s glow dims; old neon ghosts flicker out.",
-      "questPulse": "Follow RAVE’s fading light—veteran traders grow jittery.",
-      "worldFeed": "RAVE token loses shimmer; markets eye cautious backs.",
-      "clueEvent": "Dimming neon indicates shifting alliances in crypto streets.",
+      "ttlMinutes": 45,
+      "npcLine": "HYPE buzz fizzles; street traders eye next big surge.",
+      "questPulse": "Eavesdrop on dealers; predict HYPE’s next jump.",
+      "worldFeed": "HYPE chatter fills neon-lit alleys, tense and thin.",
+      "clueEvent": "Sudden social media silence around HYPE token.",
       "tags": [
-        "decline",
-        "market-sentiment",
-        "neon"
+        "hype",
+        "street-trade",
+        "intel"
       ],
-      "expiresAt": "2026-04-18T12:57:54.393Z"
+      "expiresAt": "2026-04-18T14:05:14.071Z"
     }
   ]
 }
