@@ -9,9 +9,6 @@ import { fetchLeaderboard } from '/js/leaderboard-client.js';
 // ── Constants ─────────────────────────────────────────────────────────────
 const RAW_TABS = [
   { key: 'global',     label: '🌐 Global',     icon: '🌐' },
-  { key: 'seasonal',   label: '🗓️ Seasonal',   icon: '🗓️' },
-  { key: 'yearly',     label: '📅 Yearly',      icon: '📅' },
-  { key: 'all-time',   label: '🏛️ All-Time',   icon: '🏛️' },
   { key: 'snake',      label: '🐍 Snake',       icon: '🐍' },
   { key: 'crystal',    label: '🧩 Crystal',     icon: '🧩' },
   { key: 'blocktopia', label: '🧱 BlockTopia',  icon: '🧱' },
@@ -26,12 +23,11 @@ const RAW_TABS = [
 const META_TABS = [
   { key: 'daily',    label: '📆 Daily',    icon: '📆' },
   { key: 'weekly',   label: '🗓️ Weekly',   icon: '🗓️' },
-  { key: 'monthly',  label: '🧮 Monthly',  icon: '🧮' },
   { key: 'seasonal', label: '🏆 Seasonal', icon: '🏆' },
 ];
 const DEFAULT_MODE = 'raw';
 
-const AGGREGATE_TABS = new Set(['global', 'seasonal', 'yearly', 'all-time']);
+const AGGREGATE_TABS = new Set(['global']);
 
 const GAME_LABELS = {
   snake:      '🐍 Snake',

@@ -23,8 +23,9 @@ const DEFAULT_CONFIG = {
   quest: {
     minActive: 3,
     maxActive: 5,
-    ttlMs: 6 * 60 * 60 * 1000,
-    maxQuestBonusPerRun: 2000,
+    ttlMinMs: 5 * 60 * 1000,
+    ttlMaxMs: 18 * 60 * 1000,
+    maxQuestMultiplierBonus: 1.2,
     scoreTarget: 800,
   },
   antiFarm: {
@@ -53,8 +54,13 @@ const DEFAULT_CONFIG = {
     maxWeight: 1.4,
   },
   streak: {
-    step: 0.05,
-    maxMultiplier: 0.25,
+    sessionGapMs: 45 * 60 * 1000,
+    quickReturnMs: 10 * 60 * 1000,
+    switchWindowMs: 20 * 60 * 1000,
+    sessionStep: 0.05,
+    quickStep: 0.03,
+    switchStep: 0.04,
+    maxMultiplierBonus: 0.45,
   },
   event: {
     weekendMultiplier: 0.1,
@@ -139,7 +145,15 @@ function createInitialState() {
     monthly: { key: toUtcMonthKey(now), points: 0 },
     seasonal: { key: toSeasonKey(now), points: 0 },
     quests: { active: [], completed: [] },
-    streak: { count: 0, last_day: null },
+    streak: {
+      count: 0,
+      session_chain: 0,
+      quick_chain: 0,
+      switch_chain: 0,
+      last_day: null,
+      last_played_at: null,
+      last_game: null,
+    },
     history: [],
   };
 }
@@ -156,10 +170,7 @@ function sanitizeState(input) {
       active: Array.isArray(input?.quests?.active) ? input.quests.active.filter(Boolean) : [],
       completed: Array.isArray(input?.quests?.completed) ? input.quests.completed.filter(Boolean).slice(-200) : [],
     },
-    streak: {
-      count: Number.isFinite(Number(input?.streak?.count)) ? Math.max(0, Math.floor(Number(input.streak.count))) : 0,
-      last_day: typeof input?.streak?.last_day === 'string' ? input.streak.last_day : null,
-    },
+    streak: sanitizeStreak(input?.streak, base.streak),
     history: Array.isArray(input.history) ? input.history.slice(-MAX_HISTORY) : [],
   };
 }
@@ -168,6 +179,22 @@ function sanitizeWindow(current, fallback) {
   const key = typeof current?.key === 'string' ? current.key : fallback.key;
   const points = Number.isFinite(Number(current?.points)) ? Math.max(0, Number(current.points)) : 0;
   return { key, points };
+}
+
+function sanitizeStreak(current, fallback) {
+  const count = Number.isFinite(Number(current?.count)) ? Math.max(0, Math.floor(Number(current.count))) : 0;
+  const sessionChain = Number.isFinite(Number(current?.session_chain))
+    ? Math.max(0, Math.floor(Number(current.session_chain)))
+    : 0;
+  return {
+    count,
+    session_chain: sessionChain,
+    quick_chain: Number.isFinite(Number(current?.quick_chain)) ? Math.max(0, Math.floor(Number(current.quick_chain))) : 0,
+    switch_chain: Number.isFinite(Number(current?.switch_chain)) ? Math.max(0, Math.floor(Number(current.switch_chain))) : 0,
+    last_day: typeof current?.last_day === 'string' ? current.last_day : fallback.last_day,
+    last_played_at: Number.isFinite(Number(current?.last_played_at)) ? Number(current.last_played_at) : fallback.last_played_at,
+    last_game: typeof current?.last_game === 'string' ? current.last_game : fallback.last_game,
+  };
 }
 
 function normalizeGame(game) {
@@ -194,22 +221,38 @@ function updateWindow(windowState, key) {
   }
 }
 
-function updateStreak(state, dayKey) {
-  const last = state.streak.last_day;
-  if (!last) {
-    state.streak.count = 1;
-  } else if (last === dayKey) {
-    return state.streak.count;
-  } else {
-    const diffDays = daysBetween(last, dayKey);
-    state.streak.count = diffDays === 1 ? state.streak.count + 1 : 1;
-  }
-  state.streak.last_day = dayKey;
-  return state.streak.count;
-}
+function updateStreakState(state, run) {
+  const lastPlayedAt = Number(state.streak.last_played_at);
+  const lastGame = state.streak.last_game;
+  const hasPrev = Number.isFinite(lastPlayedAt) && lastPlayedAt > 0;
+  const gap = hasPrev ? run.timestamp - lastPlayedAt : null;
 
-function daysBetween(fromDayKey, toDayKey) {
-  return Math.round((Date.parse(`${toDayKey}T00:00:00Z`) - Date.parse(`${fromDayKey}T00:00:00Z`)) / MS_PER_DAY);
+  const sessionGapMs = Number(config.streak.sessionGapMs);
+  if (!hasPrev || !Number.isFinite(gap) || gap > sessionGapMs || gap < 0) {
+    state.streak.session_chain = 1;
+    state.streak.quick_chain = 0;
+    state.streak.switch_chain = 0;
+  } else {
+    state.streak.session_chain = Math.max(1, Number(state.streak.session_chain || 0) + 1);
+
+    if (gap <= Number(config.streak.quickReturnMs)) {
+      state.streak.quick_chain = Math.max(1, Number(state.streak.quick_chain || 0) + 1);
+    } else {
+      state.streak.quick_chain = 0;
+    }
+
+    if (lastGame && run.game !== lastGame && gap <= Number(config.streak.switchWindowMs)) {
+      state.streak.switch_chain = Math.max(1, Number(state.streak.switch_chain || 0) + 1);
+    } else {
+      state.streak.switch_chain = 0;
+    }
+  }
+
+  state.streak.last_played_at = run.timestamp;
+  state.streak.last_game = run.game;
+  state.streak.last_day = run.day;
+  state.streak.count = state.streak.session_chain;
+  return state.streak;
 }
 
 function countDailyRuns(history, dayKey, game) {
@@ -240,43 +283,70 @@ function makeQuestId(prefix) {
   return `${prefix}-${Date.now().toString(36)}-${questCounter.toString(36)}`;
 }
 
-function createQuest(now) {
+function randomInRange(min, max) {
+  const lo = Math.floor(Math.min(min, max));
+  const hi = Math.floor(Math.max(min, max));
+  return Math.floor(Math.random() * (hi - lo + 1)) + lo;
+}
+
+function createQuest(now, existingActive = []) {
   const games = Object.keys(config.difficultyWeights);
   const game = games[Math.floor(Math.random() * games.length)] || 'snake';
-  const typeRoll = Math.random();
-  const expiresAt = now + config.quest.ttlMs;
-  if (typeRoll < 0.33) {
-    return {
-      id: makeQuestId('score'),
+  const templates = [
+    {
+      type: 'multi_game_burst',
+      prefix: 'burst',
+      title: 'Play 2 different games in 5 minutes',
+      bonus_multiplier: 0.2,
+      window_ms: 5 * 60 * 1000,
+      required_runs: 2,
+      required_unique_games: 2,
+    },
+    {
+      type: 'snake_survivor',
+      prefix: 'snake',
+      title: 'Survive 60s in Snake',
+      bonus_multiplier: 0.18,
+      game: 'snake',
+      min_duration_ms: 60 * 1000,
+    },
+    {
+      type: 'btqm_zone_clear',
+      prefix: 'btqm',
+      title: 'Clear 1 BTQM zone',
+      bonus_multiplier: 0.14,
+      game: 'btqm',
+      target: 1,
+    },
+    {
       type: 'score_target',
+      prefix: 'score',
+      title: `Push ${game.toUpperCase()} score to ${Number(config.quest.scoreTarget) || 800}+`,
+      bonus_multiplier: 0.22,
       game,
       target: Number(config.quest.scoreTarget) || 800,
-      title: `Push ${game.toUpperCase()} score to 800+`,
-      bonus: 300,
-      created_at: now,
-      expires_at: expiresAt,
-    };
-  }
-  if (typeRoll < 0.66) {
-    return {
-      id: makeQuestId('variety'),
-      type: 'variety',
-      unique_games: 3,
-      title: 'Play 3 different games in this quest window',
-      bonus: 500,
-      created_at: now,
-      expires_at: expiresAt,
-    };
-  }
-  return {
-    id: makeQuestId('runs'),
-    type: 'runs',
-    runs: 4,
-    title: 'Complete 4 runs before quest expiry',
-    bonus: 400,
+    },
+    {
+      type: 'switch_chain',
+      prefix: 'switch',
+      title: 'Switch games on back-to-back runs',
+      bonus_multiplier: 0.15,
+      switches: 2,
+    },
+  ];
+
+  const activeTypes = new Set(existingActive.map((q) => q?.type).filter(Boolean));
+  const available = templates.filter((template) => !activeTypes.has(template.type));
+  const pool = available.length ? available : templates;
+  const selected = pool[Math.floor(Math.random() * pool.length)] || templates[0];
+  const ttlMin = Number(config.quest.ttlMinMs) || (5 * 60 * 1000);
+  const ttlMax = Number(config.quest.ttlMaxMs) || (18 * 60 * 1000);
+  const expiresAt = now + randomInRange(ttlMin, ttlMax);
+  return Object.assign({}, selected, {
+    id: makeQuestId(selected.prefix || selected.type || 'quest'),
     created_at: now,
     expires_at: expiresAt,
-  };
+  });
 }
 
 function maintainQuests(state, now) {
@@ -285,7 +355,7 @@ function maintainQuests(state, now) {
   state.quests.active = state.quests.active.filter((q) => q && Number(q.expires_at) > now);
   const target = Math.floor(Math.random() * (max - min + 1)) + min;
   while (state.quests.active.length < target) {
-    state.quests.active.push(createQuest(now));
+    state.quests.active.push(createQuest(now, state.quests.active));
   }
   if (state.quests.active.length > max) {
     state.quests.active = state.quests.active.slice(-max);
@@ -293,16 +363,36 @@ function maintainQuests(state, now) {
 }
 
 function evaluateQuest(quest, history, run) {
-  const inWindow = history.filter((h) => Number(h.timestamp) >= Number(quest.created_at));
+  const inQuestWindow = history.filter((h) => {
+    const ts = Number(h?.timestamp);
+    return Number.isFinite(ts) && ts >= Number(quest.created_at) && ts <= Number(quest.expires_at);
+  });
   if (quest.type === 'score_target') {
     return run.game === quest.game && run.raw_score >= Number(quest.target || 0);
   }
-  if (quest.type === 'variety') {
-    const set = new Set(inWindow.map((h) => h.game));
-    return set.size >= Number(quest.unique_games || 0);
+  if (quest.type === 'multi_game_burst') {
+    const windowMs = Number(quest.window_ms) || (5 * 60 * 1000);
+    const minTs = Number(run.timestamp) - windowMs;
+    const burstRuns = inQuestWindow.filter((h) => Number(h.timestamp) >= minTs);
+    const uniqueGames = new Set(burstRuns.map((h) => h.game)).size;
+    return burstRuns.length >= Number(quest.required_runs || 2)
+      && uniqueGames >= Number(quest.required_unique_games || 2);
   }
-  if (quest.type === 'runs') {
-    return inWindow.length >= Number(quest.runs || 0);
+  if (quest.type === 'snake_survivor') {
+    return run.game === 'snake' && Number(run.duration || 0) >= Number(quest.min_duration_ms || 60000);
+  }
+  if (quest.type === 'btqm_zone_clear') {
+    return run.game === 'btqm' && run.raw_score >= Number(quest.target || 1);
+  }
+  if (quest.type === 'switch_chain') {
+    const ordered = inQuestWindow.slice().sort((a, b) => Number(a.timestamp) - Number(b.timestamp));
+    if (ordered.length < 2) return false;
+    const switchCount = ordered.filter((item, index) => {
+      if (index === 0) return false;
+      return item.game && ordered[index - 1].game && item.game !== ordered[index - 1].game;
+    }).length;
+    const switchedThisRun = ordered[ordered.length - 1].game !== ordered[ordered.length - 2].game;
+    return switchedThisRun && switchCount >= Number(quest.switches || 2);
   }
   return false;
 }
@@ -310,15 +400,16 @@ function evaluateQuest(quest, history, run) {
 function applyQuestBonuses(state, now, run) {
   let questBonus = 0;
   const stillActive = [];
+  const historyWithCurrent = state.history.concat(run);
   for (const quest of state.quests.active) {
     const expired = Number(quest.expires_at) <= now;
     if (expired) continue;
-    if (evaluateQuest(quest, state.history, run)) {
-      questBonus += Number(quest.bonus) || 0;
+    if (evaluateQuest(quest, historyWithCurrent, run)) {
+      questBonus += Number(quest.bonus_multiplier) || 0;
       state.quests.completed.push({
         id: quest.id,
         title: quest.title,
-        bonus: Number(quest.bonus) || 0,
+        bonus_multiplier: Number(quest.bonus_multiplier) || 0,
         completed_at: now,
       });
       continue;
@@ -329,7 +420,7 @@ function applyQuestBonuses(state, now, run) {
   if (state.quests.completed.length > 200) {
     state.quests.completed = state.quests.completed.slice(-200);
   }
-  return Math.min(questBonus, Number(config.quest.maxQuestBonusPerRun) || questBonus);
+  return Math.min(questBonus, Number(config.quest.maxQuestMultiplierBonus) || questBonus);
 }
 
 function isWeekend(timestamp) {
@@ -361,7 +452,15 @@ function trackGameResult(payload = {}) {
   updateWindow(state.seasonal, seasonKey);
 
   maintainQuests(state, timestamp);
-  updateStreak(state, dayKey);
+  const run = {
+    timestamp,
+    day: dayKey,
+    game,
+    raw_score: rawScore,
+    duration: Number.isFinite(duration) && duration > 0 ? Math.floor(duration) : null,
+    previous_game: state.streak.last_game || null,
+  };
+  updateStreakState(state, run);
 
   const difficultyWeight = getDifficultyWeight(game);
   const timeWeight = computeTimeWeight(game, duration);
@@ -373,11 +472,21 @@ function trackGameResult(payload = {}) {
   const repeatPenalty = repeatPenaltyMultiplier(recentSameGameRuns);
   const antiFarmBase = basePoints * diminishing * repeatPenalty;
 
-  const streakBonus = antiFarmBase * clamp(state.streak.count * config.streak.step, 0, config.streak.maxMultiplier);
-  const eventBonus = isWeekend(timestamp) ? antiFarmBase * config.event.weekendMultiplier : 0;
-  const questBonus = applyQuestBonuses(state, timestamp, { game, raw_score: rawScore });
+  const streakBonusMultiplier = clamp(
+    (state.streak.session_chain * Number(config.streak.sessionStep || 0))
+      + (state.streak.quick_chain * Number(config.streak.quickStep || 0))
+      + (state.streak.switch_chain * Number(config.streak.switchStep || 0)),
+    0,
+    Number(config.streak.maxMultiplierBonus || 0)
+  );
+  const streakMultiplier = 1 + streakBonusMultiplier;
+  const eventMultiplier = 1 + (isWeekend(timestamp) ? Number(config.event.weekendMultiplier || 0) : 0);
+  const questBonusMultiplier = applyQuestBonuses(state, timestamp, run);
+  const questMultiplier = 1 + Math.max(0, Number(questBonusMultiplier || 0));
 
-  let metaPoints = antiFarmBase + streakBonus + eventBonus + questBonus;
+  const streakAdjusted = antiFarmBase * streakMultiplier;
+  const eventAdjusted = streakAdjusted * eventMultiplier;
+  let metaPoints = eventAdjusted * questMultiplier;
   metaPoints = Math.min(metaPoints, Number(config.antiFarm.maxPerRunPoints));
 
   const dailyRemaining = Math.max(0, Number(config.antiFarm.dailyCap) - state.daily.points);
@@ -394,13 +503,13 @@ function trackGameResult(payload = {}) {
     day: dayKey,
     game,
     raw_score: rawScore,
-    duration: Number.isFinite(duration) && duration > 0 ? Math.floor(duration) : null,
+    duration: run.duration,
     meta_points: metaPoints,
     difficulty_weight: Number(difficultyWeight.toFixed(4)),
     time_weight: Number(timeWeight.toFixed(4)),
-    quest_bonus: Math.floor(questBonus),
-    streak_bonus: Math.floor(streakBonus),
-    event_bonus: Math.floor(eventBonus),
+    quest_bonus: Math.floor(eventAdjusted * Math.max(0, questMultiplier - 1)),
+    streak_bonus: Math.floor(antiFarmBase * Math.max(0, streakMultiplier - 1)),
+    event_bonus: Math.floor(streakAdjusted * Math.max(0, eventMultiplier - 1)),
     diminishing_multiplier: Number(diminishing.toFixed(4)),
     repeat_penalty_multiplier: Number(repeatPenalty.toFixed(4)),
   });
@@ -420,9 +529,9 @@ function trackGameResult(payload = {}) {
     timestamp,
     difficulty_weight: difficultyWeight,
     time_weight: timeWeight,
-    quest_bonus: Math.floor(questBonus),
-    streak_bonus: Math.floor(streakBonus),
-    event_bonus: Math.floor(eventBonus),
+    quest_bonus: Math.floor(eventAdjusted * Math.max(0, questMultiplier - 1)),
+    streak_bonus: Math.floor(antiFarmBase * Math.max(0, streakMultiplier - 1)),
+    event_bonus: Math.floor(streakAdjusted * Math.max(0, eventMultiplier - 1)),
     anti_farm: {
       diminishing_multiplier: diminishing,
       repeat_penalty_multiplier: repeatPenalty,
@@ -439,7 +548,7 @@ function trackGameResult(payload = {}) {
       active: state.quests.active,
       completed_recent: state.quests.completed.slice(-10),
     },
-    streak: state.streak.count,
+    streak: state.streak.session_chain,
   };
 }
 
