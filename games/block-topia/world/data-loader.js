@@ -1,3 +1,4 @@
+import { buildCanonLore } from './canon-lore.js';
 const BASE = '/games/block-topia';
 
 async function loadJson(path, fallback) {
@@ -25,6 +26,7 @@ export async function loadUnifiedData() {
     legacyNpcProfiles,
     legacySeason,
     legacyLore,
+    canonBible,
     legacyAssets,
     assetManifest,
   ] = await Promise.all([
@@ -39,9 +41,12 @@ export async function loadUnifiedData() {
     loadJson('/games/data/blocktopia-npc-profiles.json', { profiles: [] }),
     loadJson('/games/data/blocktopia-season.json', {}),
     loadJson('/games/data/blocktopia-lore-feed.json', {}),
+    loadJson('/wiki/bibles/block-topia.json', {}),
     loadJson('/games/data/blocktopia-asset-pack.json', {}),
     loadJson(`${BASE}/assets/manifest.json`, {}),
   ]);
+
+  const canonLore = buildCanonLore({ canonBible, legacyLoreFeed: legacyLore });
 
   return {
     districts,
@@ -51,6 +56,8 @@ export async function loadUnifiedData() {
     questModel,
     seasonModel,
     roomModel,
+    canonBible,
+    canonLore,
     legacy: {
       map: legacyMap,
       npcProfiles: legacyNpcProfiles,

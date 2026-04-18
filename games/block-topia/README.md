@@ -51,6 +51,10 @@ Block Topia is the shared cyberpunk city multiplayer experience where players mo
   - NPC archetypes + active/crowd split
   - Room model and scaling rules
   - Season model and wiki publish hooks
+- Canon lore bridge:
+  - Canon source priority is `/wiki/bibles/block-topia.json` (wiki/lore pipeline output).
+  - Runtime lore lines and NPC rumor flavour should consume canon-fed data first.
+  - Local lore feed (`/games/data/blocktopia-lore-feed.json`) is fallback-only and must be treated as non-canon.
 
 ### Runtime Systems
 - `world/game-state.js`: canonical game state, movement, district capture, XP/score.
@@ -168,6 +172,9 @@ Legacy source references are tracked in `world/data-loader.js` (`legacy.sourceFi
 
 - Build new Block Topia features only inside `/games/block-topia/`.
 - Keep legacy inputs (`/games/block-topia-revolt/`, `/games/block-topia-iso/`, `/games/block-topia-street-signal-3008*.html`) as reference sources; do not extend gameplay there.
+- Keep the flat map architecture as the main world surface (no globe/surface swap work in this module).
+- Treat lore/SAM wiki pipeline output as canon truth authority; do not invent conflicting district/faction/SAM canon in this repo.
+- Any local lore fallback text must be clearly marked fallback in runtime/UI messaging.
 - Keep Colyseus endpoint and room identity stable:
   - endpoint: `https://game.cryptomoonboys.com`
   - room id: `city`
