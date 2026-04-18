@@ -24,6 +24,13 @@
     .row{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:14px}
     .game-btn{padding:.8rem 1.1rem;border:none;border-radius:12px;background:#f7ab1a;color:#111;font-weight:700;cursor:pointer}
     .game-btn.alt{background:rgba(255,255,255,.08);color:#fff}
+    .game-btn:disabled{opacity:.55;cursor:not-allowed}
+    .combo-meter{margin-top:10px;text-align:center;font-weight:800;letter-spacing:.04em;color:#f7c948;opacity:.72;transition:transform .18s ease,opacity .18s ease,color .18s ease;text-shadow:0 0 12px rgba(247,201,72,.45)}
+    .combo-meter.active{opacity:1;color:#ff4fd1;text-shadow:0 0 14px rgba(255,79,209,.6)}
+    .stat.hud-pulse .value{animation:hudPulse .22s ease}
+    .stat.hud-flash{animation:hudFlash .32s ease}
+    @keyframes hudPulse{0%{transform:scale(1)}40%{transform:scale(1.12)}100%{transform:scale(1)}}
+    @keyframes hudFlash{0%{box-shadow:0 0 0 rgba(255,255,255,0)}30%{box-shadow:0 0 20px rgba(255,255,255,.45)}100%{box-shadow:0 0 0 rgba(255,255,255,0)}}
     .note{margin-top:14px;color:var(--color-text-muted);font-size:.85rem}
     @media(max-width:600px){.hud{grid-template-columns:repeat(2,minmax(0,1fr));}.tet-side{min-width:70px}}
     @media(max-width:420px){.tet-side{display:none}#tetCanvas{max-width:100%}}
@@ -99,7 +106,9 @@
           <button class="game-btn" id="startBtn">Start</button>
           <button class="game-btn alt" id="pauseBtn">Pause</button>
           <button class="game-btn alt" id="resetBtn">Reset</button>
+          <button class="game-btn alt" id="submitBtn">Submit</button>
         </div>
+        <div class="combo-meter" id="comboMeter">COMBO x1</div>
       </div>
     </main>
     <footer id="site-footer"><div class="footer-bottom"><p>Crypto Moonboys GK Wiki ⚡️⚡️⚡️</p></div></footer>
