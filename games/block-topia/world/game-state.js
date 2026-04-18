@@ -106,9 +106,9 @@ export function createGameState(bundle) {
     npcTargets: null,
     npc: {
       activeTarget: bundle.npcArchetypes.split?.active || 24,
-      activeCap: bundle.npcArchetypes.split?.activeCap || 80,
+      activeCap: bundle.npcArchetypes.split?.activeCap || 120,
       crowdTarget: bundle.npcArchetypes.split?.crowd || 60,
-      crowdCap: bundle.npcArchetypes.split?.crowdCap || 600,
+      crowdCap: bundle.npcArchetypes.split?.crowdCap || 120,
       archetypes: bundle.npcArchetypes.archetypes || [],
       entities: [],
     },

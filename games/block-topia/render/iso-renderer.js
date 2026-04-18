@@ -6,23 +6,24 @@ const NPC_FRAME_W = 32;
 const NPC_FRAME_H = 48;
 const NPC_FRAME_COUNT = 20;
 
-const ZOOM_MIN = 0.82;
-const ZOOM_MAX = 1.2;
+const ZOOM_MIN = 0.7;
+const ZOOM_MAX = 1.4;
 const CAMERA_BASELINE_Y = 140;
 const HOVER_PULSE_PERIOD_MS = 260;
-// Slight epsilon improves edge/corner hit reliability when pointer coordinates land on fractional boundaries.
 const TILE_PICK_TOLERANCE = 1.001;
 const NPC_HITBOX_HALF_WIDTH = 15;
 const NPC_HITBOX_HALF_HEIGHT = 25;
+const CROWD_VISIBILITY_ZOOM_THRESHOLD = 1;
+const MAGENTA_OVERLAY_COLOR = 'rgba(255,79,216,0.16)';
 
 const ROLE_STYLE = {
-  vendor:       { color: '#ffd84d', factionRing: true },
-  fighter:      { color: '#ff4fd8', factionRing: true },
-  'lore-keeper':{ color: '#c77dff', factionRing: false },
-  recruiter:    { color: '#8dff6a', factionRing: true },
-  drifter:      { color: '#a0b0c8', factionRing: false },
-  agent:        { color: '#ff9b42', factionRing: true },
-  crowd:        { color: '#89a0ba', factionRing: false },
+  vendor: { color: '#ffd84d', factionRing: true },
+  fighter: { color: '#ff4fd8', factionRing: true },
+  'lore-keeper': { color: '#c77dff', factionRing: false },
+  recruiter: { color: '#8dff6a', factionRing: true },
+  drifter: { color: '#a0b0c8', factionRing: false },
+  agent: { color: '#ff9b42', factionRing: true },
+  crowd: { color: '#89a0ba', factionRing: false },
 };
 
 const FACTION_COLOR = {
@@ -48,8 +49,6 @@ const TILE_ASSETS = {
   roadCorner: '/games/block-topia/assets/tiles/road-corner.svg',
   roadT: '/games/block-topia/assets/tiles/road-t.svg',
   roadCross: '/games/block-topia/assets/tiles/road-cross.svg',
-  overlayNeon: '/games/block-topia/assets/tiles/district-overlay-neon.svg',
-  overlayRevolt: '/games/block-topia/assets/tiles/district-overlay-revolt.svg',
 };
 
 const BUILDING_ASSETS = {
@@ -69,8 +68,6 @@ const PROP_ASSETS = {
   crate: '/games/block-topia/assets/props/crate.svg',
   graffiti: '/games/block-topia/assets/props/graffiti.svg',
   palm: '/games/block-topia/assets/props/palm.svg',
-  smoke: '/games/block-topia/assets/props/smoke-puff.svg',
-  bird: '/games/block-topia/assets/props/bird.svg',
 };
 
 const NPC_ASSETS = {
@@ -85,7 +82,7 @@ const NPC_ASSETS = {
 };
 
 const SCENE_BUILDING_TEMPLATE = [
-  { key: 'tower', dCol: 0, dRow: -1, w: 2, h: 2, yOffset: 296, drawW: 220, drawH: 360, smoke: true },
+  { key: 'tower', dCol: 0, dRow: -1, w: 2, h: 2, yOffset: 296, drawW: 220, drawH: 360 },
   { key: 'annex', dCol: -2, dRow: 2, w: 2, h: 2, yOffset: 146, drawW: 130, drawH: 176 },
   { key: 'annex', dCol: 2, dRow: 1, w: 2, h: 2, yOffset: 146, drawW: 130, drawH: 176 },
   { key: 'medium', dCol: -5, dRow: -1, w: 2, h: 2, yOffset: 130, drawW: 140, drawH: 150 },
@@ -189,8 +186,7 @@ function isRoadCell(col, row, metrics) {
   const horizontalLane = row === Math.floor(metrics.centerY + metrics.districtLaneOffset)
     && col >= metrics.districtLaneMinCol
     && col <= metrics.districtLaneMaxCol;
-  const districtLane = verticalLane || horizontalLane;
-  return centralCross || innerRing || districtLane;
+  return centralCross || innerRing || verticalLane || horizontalLane;
 }
 
 function getRoadType(col, row, metrics) {
@@ -240,14 +236,32 @@ function getNpcFrame(entity, now, emphasis = false) {
   return t;
 }
 
+function createLayerCanvas(width, height) {
+  const layer = document.createElement('canvas');
+  layer.width = Math.max(1, Math.ceil(width));
+  layer.height = Math.max(1, Math.ceil(height));
+  return layer;
+}
+
 export function createIsoRenderer(canvas) {
   const ctx = canvas.getContext('2d');
   const imageRegistry = Object.create(null);
-  let scenePropCache = null;
+
+  const layerState = {
+    baseGrid: { canvas: null, width: 0, height: 0, dirty: true },
+    roadBlocks: { canvas: null, dirty: true },
+    worldObjects: { canvas: null, dirty: true },
+    worldOffsetX: 0,
+    worldOffsetY: 0,
+    worldWidth: 0,
+    worldHeight: 0,
+    mapKey: '',
+  };
 
   function resize() {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
+    layerState.baseGrid.dirty = true;
   }
 
   window.addEventListener('resize', resize);
@@ -286,157 +300,179 @@ export function createIsoRenderer(canvas) {
     return terrain === 'water' || terrain === 'coast';
   }
 
-  function drawIsoTile(path, x, y, elevation = 0, rotate = 0) {
+  function drawIsoTile(targetCtx, path, x, y, elevation = 0, rotate = 0) {
     const img = imageRegistry[path];
     if (!img?.complete) return;
-    ctx.save();
-    ctx.translate(x, y - elevation);
-    if (rotate) ctx.rotate(rotate);
-    ctx.drawImage(img, -HALF_TILE_W, 0, TILE_W, TILE_H);
-    ctx.restore();
+    targetCtx.save();
+    targetCtx.translate(x, y - elevation);
+    if (rotate) targetCtx.rotate(rotate);
+    targetCtx.drawImage(img, -HALF_TILE_W, 0, TILE_W, TILE_H);
+    targetCtx.restore();
   }
 
-  function drawTileDepth(x, y, elevation) {
+  function drawTileDepth(targetCtx, x, y, elevation) {
     if (elevation <= 0) return;
     const topY = y - elevation;
 
-    ctx.beginPath();
-    ctx.moveTo(x, topY + TILE_H);
-    ctx.lineTo(x + HALF_TILE_W, topY + HALF_TILE_H);
-    ctx.lineTo(x + HALF_TILE_W, y + HALF_TILE_H);
-    ctx.lineTo(x, y + TILE_H);
-    ctx.closePath();
-    ctx.fillStyle = 'rgba(0,0,0,0.18)';
-    ctx.fill();
+    targetCtx.beginPath();
+    targetCtx.moveTo(x, topY + TILE_H);
+    targetCtx.lineTo(x + HALF_TILE_W, topY + HALF_TILE_H);
+    targetCtx.lineTo(x + HALF_TILE_W, y + HALF_TILE_H);
+    targetCtx.lineTo(x, y + TILE_H);
+    targetCtx.closePath();
+    targetCtx.fillStyle = 'rgba(0,0,0,0.16)';
+    targetCtx.fill();
 
-    ctx.beginPath();
-    ctx.moveTo(x, topY + TILE_H);
-    ctx.lineTo(x - HALF_TILE_W, topY + HALF_TILE_H);
-    ctx.lineTo(x - HALF_TILE_W, y + HALF_TILE_H);
-    ctx.lineTo(x, y + TILE_H);
-    ctx.closePath();
-    ctx.fillStyle = 'rgba(0,0,0,0.30)';
-    ctx.fill();
+    targetCtx.beginPath();
+    targetCtx.moveTo(x, topY + TILE_H);
+    targetCtx.lineTo(x - HALF_TILE_W, topY + HALF_TILE_H);
+    targetCtx.lineTo(x - HALF_TILE_W, y + HALF_TILE_H);
+    targetCtx.lineTo(x, y + TILE_H);
+    targetCtx.closePath();
+    targetCtx.fillStyle = 'rgba(0,0,0,0.28)';
+    targetCtx.fill();
   }
 
-  function drawBackdrop(now, isNight) {
-    const sky = ctx.createLinearGradient(0, 0, 0, canvas.height * 0.6);
-    if (isNight) {
-      sky.addColorStop(0, '#11081f');
-      sky.addColorStop(0.6, '#28112e');
-      sky.addColorStop(1, '#10203a');
-    } else {
-      sky.addColorStop(0, '#f57a2b');
-      sky.addColorStop(0.55, '#f0a03f');
-      sky.addColorStop(1, '#21639f');
-    }
-    ctx.fillStyle = sky;
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-    const horizonY = Math.round(canvas.height * 0.23);
-    ctx.fillStyle = 'rgba(34,22,39,0.72)';
-    for (let i = 0; i < 14; i += 1) {
-      const px = i * (canvas.width / 13);
-      const peak = 26 + ((i % 3) * 16);
-      ctx.beginPath();
-      ctx.moveTo(px - 80, horizonY + 42);
-      ctx.lineTo(px, horizonY - peak);
-      ctx.lineTo(px + 80, horizonY + 42);
-      ctx.closePath();
-      ctx.fill();
-    }
-
-    ctx.fillStyle = '#3a2a33';
-    ctx.fillRect(0, horizonY + 34, canvas.width, 68);
-    ctx.fillStyle = '#f1852f';
-    ctx.globalAlpha = isNight ? 0.35 : 0.55;
-    ctx.fillRect(0, horizonY + 92, canvas.width, 5);
-    ctx.globalAlpha = 1;
-
-    const waveGrad = ctx.createLinearGradient(0, horizonY + 95, 0, canvas.height);
-    waveGrad.addColorStop(0, '#205b90');
-    waveGrad.addColorStop(1, '#07264b');
-    ctx.fillStyle = waveGrad;
-    ctx.fillRect(0, horizonY + 96, canvas.width, canvas.height - horizonY);
-
-    const birdImage = imageRegistry[PROP_ASSETS.bird];
-    if (birdImage?.complete) {
-      for (let i = 0; i < 5; i += 1) {
-        const phase = (now / 9000 + i * 0.17) % 1;
-        const x = phase * (canvas.width + 120) - 60;
-        const y = horizonY - 25 - Math.sin((now / 1000) + i) * 8 - i * 6;
-        ctx.globalAlpha = 0.9;
-        ctx.drawImage(birdImage, x, y, 36, 18);
-      }
-      ctx.globalAlpha = 1;
-    }
+  function getWorldBounds(state) {
+    const corners = [
+      toIso(0, 0),
+      toIso(state.map.width - 1, 0),
+      toIso(0, state.map.height - 1),
+      toIso(state.map.width - 1, state.map.height - 1),
+    ];
+    const minX = Math.min(...corners.map((p) => p.x)) - TILE_W * 3;
+    const maxX = Math.max(...corners.map((p) => p.x)) + TILE_W * 3;
+    const minY = Math.min(...corners.map((p) => p.y)) - TILE_H * 10;
+    const maxY = Math.max(...corners.map((p) => p.y)) + TILE_H * 10;
+    return {
+      minX,
+      minY,
+      width: Math.ceil(maxX - minX),
+      height: Math.ceil(maxY - minY),
+      offsetX: -minX,
+      offsetY: -minY,
+    };
   }
 
-  function drawDistrictLabel(originX, originY, district) {
-    if (!district?.grid) return;
-    const cx = district.grid.col + district.grid.w / 2;
-    const cy = district.grid.row + district.grid.h / 2;
-    const iso = toIso(cx, cy);
-    const accent = DISTRICT_THEME[district.id] || '#eaf6ff';
-
-    ctx.fillStyle = 'rgba(0,0,0,0.75)';
-    ctx.font = '700 12px Inter, sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText(district.name.toUpperCase(), originX + iso.x + 1, originY + iso.y - 20 + 1);
-    ctx.fillStyle = accent;
-    ctx.fillText(district.name.toUpperCase(), originX + iso.x, originY + iso.y - 20);
+  function mapToLayerXY(col, row, elevation = 0) {
+    const iso = toIso(col, row);
+    return {
+      x: layerState.worldOffsetX + iso.x,
+      y: layerState.worldOffsetY + iso.y - elevation,
+    };
   }
 
-  function buildSceneProps(state, metrics) {
-    if (scenePropCache && scenePropCache.w === state.map.width && scenePropCache.h === state.map.height) {
-      return scenePropCache.items;
+  function rebuildBaseGridLayer() {
+    if (!layerState.baseGrid.dirty && layerState.baseGrid.width === canvas.width && layerState.baseGrid.height === canvas.height) return;
+    const layerCanvas = createLayerCanvas(canvas.width, canvas.height);
+    const layerCtx = layerCanvas.getContext('2d');
+
+    const grad = layerCtx.createLinearGradient(0, 0, 0, canvas.height);
+    grad.addColorStop(0, '#040916');
+    grad.addColorStop(0.55, '#050a1b');
+    grad.addColorStop(1, '#03060f');
+    layerCtx.fillStyle = grad;
+    layerCtx.fillRect(0, 0, canvas.width, canvas.height);
+
+    const horizon = Math.round(canvas.height * 0.22);
+    layerCtx.fillStyle = 'rgba(16, 34, 54, 0.75)';
+    layerCtx.fillRect(0, horizon, canvas.width, Math.round(canvas.height * 0.06));
+
+    layerCtx.fillStyle = 'rgba(9, 17, 36, 0.9)';
+    layerCtx.fillRect(0, Math.round(canvas.height * 0.63), canvas.width, Math.round(canvas.height * 0.37));
+
+    layerCtx.strokeStyle = 'rgba(94,242,255,0.1)';
+    layerCtx.lineWidth = 1;
+    for (let x = -canvas.height; x < canvas.width + canvas.height; x += 30) {
+      layerCtx.beginPath();
+      layerCtx.moveTo(x, horizon);
+      layerCtx.lineTo(x + canvas.height * 0.72, canvas.height);
+      layerCtx.stroke();
     }
 
-    const centerCol = Math.round(metrics.centerX);
-    const centerRow = Math.round(metrics.centerY);
-    const items = STATIC_PROP_TEMPLATE
-      .map((spec) => ({
-        ...spec,
-        col: centerCol + spec.dCol,
-        row: centerRow + spec.dRow,
-      }))
-      .filter((spec) => (
-        spec.col >= 0
-        && spec.col < state.map.width
-        && spec.row >= 0
-        && spec.row < state.map.height
-      ));
+    layerCtx.strokeStyle = 'rgba(94,242,255,0.08)';
+    for (let y = horizon; y < canvas.height; y += 26) {
+      layerCtx.beginPath();
+      layerCtx.moveTo(0, y);
+      layerCtx.lineTo(canvas.width, y);
+      layerCtx.stroke();
+    }
+
+    layerCtx.strokeStyle = 'rgba(255,79,216,0.22)';
+    layerCtx.lineWidth = 2;
+    layerCtx.beginPath();
+    layerCtx.moveTo(0, horizon + 2);
+    layerCtx.lineTo(canvas.width, horizon + 2);
+    layerCtx.stroke();
+
+    layerState.baseGrid.canvas = layerCanvas;
+    layerState.baseGrid.width = canvas.width;
+    layerState.baseGrid.height = canvas.height;
+    layerState.baseGrid.dirty = false;
+  }
+
+  function ensureWorldLayers(state, metrics) {
+    const mapKey = `${state.map.width}x${state.map.height}`;
+    if (layerState.mapKey === mapKey && !layerState.roadBlocks.dirty && !layerState.worldObjects.dirty) return;
+
+    const bounds = getWorldBounds(state);
+    layerState.worldOffsetX = bounds.offsetX;
+    layerState.worldOffsetY = bounds.offsetY;
+    layerState.worldWidth = bounds.width;
+    layerState.worldHeight = bounds.height;
+
+    layerState.roadBlocks.canvas = createLayerCanvas(bounds.width, bounds.height);
+    layerState.worldObjects.canvas = createLayerCanvas(bounds.width, bounds.height);
+
+    const roadCtx = layerState.roadBlocks.canvas.getContext('2d');
+    const worldCtx = layerState.worldObjects.canvas.getContext('2d');
+
     for (let row = 0; row < state.map.height; row += 1) {
       for (let col = 0; col < state.map.width; col += 1) {
         const terrain = classifyTerrain(col, row, metrics);
-        if (terrain === 'sand' && deterministicNoise2D(col * 7, row * 13) > 0.7) {
-          items.push({ type: 'palm', col, row, scale: 0.5 });
+        const elevation = getTileElevation(col, row, metrics);
+        const tilePos = mapToLayerXY(col, row, 0);
+
+        drawTileDepth(roadCtx, tilePos.x, tilePos.y, elevation);
+
+        if (terrain === 'water') {
+          drawIsoTile(roadCtx, TILE_ASSETS.water, tilePos.x, tilePos.y, 0);
+          continue;
+        }
+
+        if (isRoadCell(col, row, metrics)) {
+          const road = getRoadType(col, row, metrics);
+          drawIsoTile(roadCtx, TILE_ASSETS[road.key], tilePos.x, tilePos.y, elevation, road.rotate);
+        } else if (terrain === 'sand' || terrain === 'coast') {
+          drawIsoTile(roadCtx, TILE_ASSETS.sand, tilePos.x, tilePos.y, elevation);
+        } else {
+          drawIsoTile(roadCtx, TILE_ASSETS.pavement, tilePos.x, tilePos.y, elevation);
+        }
+
+        if (terrain === 'sand' || terrain === 'coast') {
+          if (classifyTerrain(col, row - 1, metrics) === 'water') drawIsoTile(roadCtx, TILE_ASSETS.coastline, tilePos.x, tilePos.y, elevation, 0);
+          if (classifyTerrain(col + 1, row, metrics) === 'water') drawIsoTile(roadCtx, TILE_ASSETS.coastline, tilePos.x, tilePos.y, elevation, Math.PI / 2);
+          if (classifyTerrain(col, row + 1, metrics) === 'water') drawIsoTile(roadCtx, TILE_ASSETS.coastline, tilePos.x, tilePos.y, elevation, Math.PI);
+          if (classifyTerrain(col - 1, row, metrics) === 'water') drawIsoTile(roadCtx, TILE_ASSETS.coastline, tilePos.x, tilePos.y, elevation, -Math.PI / 2);
+        }
+
+        const district = state.districts.fromGrid(col, row);
+        if (district?.id === 'signal-spire' && deterministicNoise2D(col, row) > 0.78) {
+          roadCtx.fillStyle = MAGENTA_OVERLAY_COLOR;
+          roadCtx.beginPath();
+          roadCtx.moveTo(tilePos.x, tilePos.y + 2);
+          roadCtx.lineTo(tilePos.x + HALF_TILE_W, tilePos.y + HALF_TILE_H + 2);
+          roadCtx.lineTo(tilePos.x, tilePos.y + TILE_H + 2);
+          roadCtx.lineTo(tilePos.x - HALF_TILE_W, tilePos.y + HALF_TILE_H + 2);
+          roadCtx.closePath();
+          roadCtx.fill();
         }
       }
     }
 
-    scenePropCache = { w: state.map.width, h: state.map.height, items };
-    return items;
-  }
-
-  function drawSceneProp(originX, originY, prop, metrics) {
-    const path = PROP_ASSETS[prop.type];
-    const img = imageRegistry[path];
-    if (!img?.complete) return;
-
-    const iso = toIso(prop.col, prop.row);
-    const elevation = getTileElevation(prop.col, prop.row, metrics);
-    const sx = originX + iso.x;
-    const sy = originY + iso.y - elevation;
-    const scale = prop.scale || 0.56;
-    const drawW = img.width * scale;
-    const drawH = img.height * scale;
-    ctx.drawImage(img, sx - drawW / 2, sy - drawH + 18, drawW, drawH);
-  }
-
-  function drawBuildings(originX, originY, now, metrics) {
     const centerCol = Math.round(metrics.centerX);
     const centerRow = Math.round(metrics.centerY);
+
     const buildings = SCENE_BUILDING_TEMPLATE
       .map((building) => ({
         ...building,
@@ -448,37 +484,73 @@ export function createIsoRenderer(canvas) {
         && building.col < metrics.width
         && building.row >= 0
         && building.row < metrics.height
-      ));
-    const sorted = buildings.sort((a, b) => (a.row + a.h) - (b.row + b.h));
+      ))
+      .sort((a, b) => (a.row + a.h) - (b.row + b.h));
 
-    for (const building of sorted) {
+    for (const building of buildings) {
       const path = BUILDING_ASSETS[building.key];
       const img = imageRegistry[path];
       if (!img?.complete) continue;
-
       const anchorCol = building.col + (building.w / 2) - 0.5;
       const anchorRow = building.row + (building.h / 2) - 0.5;
-      const iso = toIso(anchorCol, anchorRow);
       const elevation = getTileElevation(anchorCol, anchorRow, metrics);
-      const baseX = originX + iso.x - building.drawW / 2;
-      const baseY = originY + iso.y - building.yOffset - elevation;
-      ctx.drawImage(img, baseX, baseY, building.drawW, building.drawH);
+      const anchor = mapToLayerXY(anchorCol, anchorRow, elevation);
+      const baseX = anchor.x - building.drawW / 2;
+      const baseY = anchor.y - building.yOffset;
+      worldCtx.drawImage(img, baseX, baseY, building.drawW, building.drawH);
+    }
 
-      if (building.smoke) {
-        const puff = imageRegistry[PROP_ASSETS.smoke];
-        if (puff?.complete) {
-          for (let i = 0; i < 4; i += 1) {
-            const offset = (now / 1800 + i * 0.22) % 1;
-            const px = originX + iso.x + (i - 1.5) * 10;
-            const py = baseY - offset * 68;
-            const size = 20 + offset * 14;
-            ctx.globalAlpha = 0.42 * (1 - offset);
-            ctx.drawImage(puff, px - size / 2, py - size / 2, size, size);
-          }
-          ctx.globalAlpha = 1;
+    const props = STATIC_PROP_TEMPLATE
+      .map((spec) => ({
+        ...spec,
+        col: centerCol + spec.dCol,
+        row: centerRow + spec.dRow,
+      }))
+      .filter((spec) => (
+        spec.col >= 0
+        && spec.col < state.map.width
+        && spec.row >= 0
+        && spec.row < state.map.height
+      ));
+
+    for (let row = 0; row < state.map.height; row += 1) {
+      for (let col = 0; col < state.map.width; col += 1) {
+        if (classifyTerrain(col, row, metrics) === 'sand' && deterministicNoise2D(col * 7, row * 13) > 0.7) {
+          props.push({ type: 'palm', col, row, scale: 0.5 });
         }
       }
     }
+
+    for (const prop of props) {
+      const path = PROP_ASSETS[prop.type];
+      const img = imageRegistry[path];
+      if (!img?.complete) continue;
+      const elevation = getTileElevation(prop.col, prop.row, metrics);
+      const pos = mapToLayerXY(prop.col, prop.row, elevation);
+      const scale = prop.scale || 0.56;
+      const drawW = img.width * scale;
+      const drawH = img.height * scale;
+      worldCtx.drawImage(img, pos.x - drawW / 2, pos.y - drawH + 18, drawW, drawH);
+    }
+
+    for (const districtState of state.districtState || []) {
+      const district = state.districts.byId.get(districtState.id);
+      if (!district?.grid) continue;
+      const cx = district.grid.col + district.grid.w / 2;
+      const cy = district.grid.row + district.grid.h / 2;
+      const pos = mapToLayerXY(cx, cy, 0);
+      const accent = DISTRICT_THEME[district.id] || '#eaf6ff';
+      worldCtx.fillStyle = 'rgba(0,0,0,0.65)';
+      worldCtx.font = '700 12px Inter, sans-serif';
+      worldCtx.textAlign = 'center';
+      worldCtx.fillText(district.name.toUpperCase(), pos.x + 1, pos.y - 19);
+      worldCtx.fillStyle = accent;
+      worldCtx.fillText(district.name.toUpperCase(), pos.x, pos.y - 20);
+    }
+
+    layerState.mapKey = mapKey;
+    layerState.roadBlocks.dirty = false;
+    layerState.worldObjects.dirty = false;
   }
 
   function drawNpcSprite(sx, sy, role, frame, scale = 1) {
@@ -502,11 +574,128 @@ export function createIsoRenderer(canvas) {
     );
   }
 
-  function drawNpc(originX, originY, npc, now, isNearby, metrics) {
+  function getVisibleWorldRect(frame) {
+    return {
+      left: (-frame.translateX / frame.zoom),
+      right: ((canvas.width - frame.translateX) / frame.zoom),
+      top: (-frame.translateY / frame.zoom),
+      bottom: ((canvas.height - frame.translateY) / frame.zoom),
+    };
+  }
+
+  function isWorldPointVisible(x, y, visible, margin = 40) {
+    return x >= visible.left - margin && x <= visible.right + margin && y >= visible.top - margin && y <= visible.bottom + margin;
+  }
+
+  function drawHoveredTile(originX, originY, hoverTile, now) {
+    if (!hoverTile?.valid) return;
+    const iso = toIso(hoverTile.col, hoverTile.row);
+    const x = originX + iso.x;
+    const y = originY + iso.y;
+    const centerY = y + HALF_TILE_H;
+    const pulse = 0.5 + (Math.sin(now / HOVER_PULSE_PERIOD_MS) + 1) * 0.15;
+
+    ctx.save();
+    ctx.globalAlpha = 0.18 + pulse * 0.08;
+    ctx.fillStyle = '#2dff9b';
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+    ctx.lineTo(x + HALF_TILE_W, y + HALF_TILE_H);
+    ctx.lineTo(x, y + TILE_H);
+    ctx.lineTo(x - HALF_TILE_W, y + HALF_TILE_H);
+    ctx.closePath();
+    ctx.fill();
+
+    ctx.globalAlpha = 0.62 + pulse * 0.2;
+    ctx.strokeStyle = '#7dffb0';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+    ctx.lineTo(x + HALF_TILE_W, y + HALF_TILE_H);
+    ctx.lineTo(x, y + TILE_H);
+    ctx.lineTo(x - HALF_TILE_W, y + HALF_TILE_H);
+    ctx.closePath();
+    ctx.stroke();
+
+    ctx.globalAlpha = 0.18;
+    ctx.fillStyle = '#8dffca';
+    ctx.beginPath();
+    ctx.ellipse(x, centerY, HALF_TILE_W * 0.58, HALF_TILE_H * 0.52, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  }
+
+  function drawTileOutline(originX, originY, tile, color, alpha = 0.95, width = 2) {
+    if (!tile?.valid) return;
+    const iso = toIso(tile.col, tile.row);
+    const x = originX + iso.x;
+    const y = originY + iso.y;
+    ctx.save();
+    ctx.globalAlpha = alpha;
+    ctx.strokeStyle = color;
+    ctx.lineWidth = width;
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+    ctx.lineTo(x + HALF_TILE_W, y + HALF_TILE_H);
+    ctx.lineTo(x, y + TILE_H);
+    ctx.lineTo(x - HALF_TILE_W, y + HALF_TILE_H);
+    ctx.closePath();
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  function drawMoveTarget(originX, originY, target, now) {
+    if (!target || !Number.isFinite(target.x) || !Number.isFinite(target.y)) return;
+    const iso = toIso(target.x, target.y);
+    const x = originX + iso.x;
+    const y = originY + iso.y + HALF_TILE_H;
+    const pulse = 0.6 + (Math.sin(now / 260) + 1) * 0.2;
+
+    ctx.save();
+    ctx.globalAlpha = 0.35;
+    ctx.fillStyle = '#5ef2ff';
+    ctx.beginPath();
+    ctx.ellipse(x, y, 16 * pulse, 9 * pulse, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.globalAlpha = 0.95;
+    ctx.strokeStyle = '#5ef2ff';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.ellipse(x, y, 19 * pulse, 11 * pulse, 0, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  function drawPlayer(originX, originY, state, now, metrics) {
+    const iso = toIso(state.player.x, state.player.y);
+    const elevation = getTileElevation(state.player.x, state.player.y, metrics);
+    const sx = originX + iso.x;
+    const sy = originY + iso.y - elevation - 4;
+
+    ctx.globalAlpha = 0.35;
+    ctx.fillStyle = '#ff5adf';
+    ctx.beginPath();
+    ctx.ellipse(sx, sy - 2, 13, 7, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.globalAlpha = 1;
+
+    const movingFrame = Math.floor(now / 130) % 5;
+    const frame = (state.player.nearbyNpcId ? 10 : 5) + movingFrame;
+    drawNpcSprite(sx, sy + 2, 'player', frame, 1.38);
+
+    ctx.fillStyle = '#ffffff';
+    ctx.font = '700 10px Inter, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(state.player.name, sx, sy - 47);
+  }
+
+  function drawNpc(originX, originY, npc, now, isNearby, metrics, visible) {
     const iso = toIso(npc.col, npc.row);
     const elevation = getTileElevation(npc.col, npc.row, metrics);
     const sx = originX + iso.x;
     const sy = originY + iso.y - elevation - 4;
+    if (!isWorldPointVisible(sx, sy, visible, 48)) return;
+
     const style = ROLE_STYLE[npc.role] || ROLE_STYLE.crowd;
 
     ctx.globalAlpha = npc.mode === 'active' ? 0.35 : 0.16;
@@ -540,7 +729,7 @@ export function createIsoRenderer(canvas) {
       ctx.font = '700 8px Inter, sans-serif';
       ctx.textAlign = 'center';
       ctx.fillStyle = 'rgba(0,0,0,0.7)';
-      ctx.fillText(npc.roleLabel || npc.role || 'NPC', sx + 1, sy - 44 + 1);
+      ctx.fillText(npc.roleLabel || npc.role || 'NPC', sx + 1, sy - 43);
       ctx.fillStyle = style.color;
       ctx.fillText(npc.roleLabel || npc.role || 'NPC', sx, sy - 44);
       if (isNearby) {
@@ -550,39 +739,18 @@ export function createIsoRenderer(canvas) {
     }
   }
 
-  function drawRemotePlayer(originX, originY, remote, now, metrics) {
+  function drawRemotePlayer(originX, originY, remote, now, metrics, visible) {
     const iso = toIso(remote.x, remote.y);
     const elevation = getTileElevation(remote.x, remote.y, metrics);
     const sx = originX + iso.x;
     const sy = originY + iso.y - elevation - 4;
+    if (!isWorldPointVisible(sx, sy, visible, 48)) return;
+
     drawNpcSprite(sx, sy + 2, 'agent', getNpcFrame({ mode: 'active' }, now, false), 1.3);
     ctx.fillStyle = '#d7fbff';
     ctx.font = '600 9px Inter, sans-serif';
     ctx.textAlign = 'center';
     ctx.fillText(remote.name || 'Player', sx, sy - 44);
-  }
-
-  function drawPlayer(originX, originY, state, now, metrics) {
-    const iso = toIso(state.player.x, state.player.y);
-    const elevation = getTileElevation(state.player.x, state.player.y, metrics);
-    const sx = originX + iso.x;
-    const sy = originY + iso.y - elevation - 4;
-
-    ctx.globalAlpha = 0.34;
-    ctx.fillStyle = '#ff9b42';
-    ctx.beginPath();
-    ctx.ellipse(sx, sy - 2, 13, 7, 0, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.globalAlpha = 1;
-
-    const movingFrame = Math.floor(now / 130) % 5;
-    const frame = (state.player.nearbyNpcId ? 10 : 5) + movingFrame;
-    drawNpcSprite(sx, sy + 2, 'player', frame, 1.38);
-
-    ctx.fillStyle = '#ffffff';
-    ctx.font = '700 10px Inter, sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText(state.player.name, sx, sy - 47);
   }
 
   function drawSignalOperation(originX, originY, operation, now) {
@@ -634,41 +802,72 @@ export function createIsoRenderer(canvas) {
     ctx.restore();
   }
 
-  function drawHoveredTile(originX, originY, hoverTile, now) {
-    if (!hoverTile?.valid) return;
-    const iso = toIso(hoverTile.col, hoverTile.row);
-    const x = originX + iso.x;
-    const y = originY + iso.y;
-    const centerY = y + HALF_TILE_H;
-    const pulse = 0.5 + (Math.sin(now / HOVER_PULSE_PERIOD_MS) + 1) * 0.15;
+  function drawAnimatedNeonOverlay(now) {
+    const flow = (now * 0.02) % 80;
+    ctx.save();
+    ctx.globalAlpha = 0.14;
+    ctx.strokeStyle = 'rgba(94,242,255,0.5)';
+    ctx.lineWidth = 2;
+    for (let y = -40; y < canvas.height + 40; y += 80) {
+      ctx.beginPath();
+      ctx.moveTo(0, y + flow);
+      ctx.lineTo(canvas.width, y + flow - 24);
+      ctx.stroke();
+    }
+
+    const flicker = deterministicNoise2D(Math.floor(now / 140), 3);
+    if (flicker > 0.92) {
+      ctx.globalAlpha = 0.07;
+      ctx.fillStyle = 'rgba(255,79,216,0.8)';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+    }
+    ctx.restore();
+  }
+
+  function drawRoadLightStrips(originX, originY, now, metrics) {
+    const centerIso = toIso(metrics.centerX, metrics.centerY);
+    const speed = ((now * 0.0016) % 1);
+    const span = 170;
+    const x = originX + centerIso.x;
+    const y = originY + centerIso.y;
 
     ctx.save();
-    ctx.globalAlpha = 0.16 + pulse * 0.07;
-    ctx.fillStyle = '#47ff87';
+    ctx.globalAlpha = 0.28;
+    ctx.strokeStyle = '#5ef2ff';
+    ctx.lineWidth = 3;
     ctx.beginPath();
-    ctx.moveTo(x, y);
-    ctx.lineTo(x + HALF_TILE_W, y + HALF_TILE_H);
-    ctx.lineTo(x, y + TILE_H);
-    ctx.lineTo(x - HALF_TILE_W, y + HALF_TILE_H);
-    ctx.closePath();
-    ctx.fill();
-
-    ctx.globalAlpha = 0.5 + pulse * 0.18;
-    ctx.strokeStyle = '#7dffb0';
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.moveTo(x, y);
-    ctx.lineTo(x + HALF_TILE_W, y + HALF_TILE_H);
-    ctx.lineTo(x, y + TILE_H);
-    ctx.lineTo(x - HALF_TILE_W, y + HALF_TILE_H);
-    ctx.closePath();
+    ctx.moveTo(x - span + (speed * span * 2), y - 12);
+    ctx.lineTo(x - span + (speed * span * 2) + 54, y + 16);
     ctx.stroke();
 
-    ctx.globalAlpha = 0.18;
-    ctx.fillStyle = '#89ffc6';
+    ctx.globalAlpha = 0.22;
+    ctx.strokeStyle = '#ff4fd8';
     ctx.beginPath();
-    ctx.ellipse(x, centerY, HALF_TILE_W * 0.55, HALF_TILE_H * 0.5, 0, 0, Math.PI * 2);
-    ctx.fill();
+    ctx.moveTo(x + span - (speed * span * 2), y + 18);
+    ctx.lineTo(x + span - (speed * span * 2) - 48, y - 8);
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  function drawKeyTilePulse(originX, originY, metrics, now) {
+    const pulse = 0.7 + (Math.sin(now / 500) + 1) * 0.15;
+    const keyTiles = [
+      { col: Math.round(metrics.centerX), row: Math.round(metrics.centerY), color: '#5ef2ff' },
+      { col: Math.round(metrics.centerX - metrics.districtLaneOffset), row: Math.round(metrics.centerY), color: '#ff4fd8' },
+      { col: Math.round(metrics.centerX), row: Math.round(metrics.centerY + metrics.districtLaneOffset), color: '#8dff6a' },
+    ];
+
+    ctx.save();
+    for (const tile of keyTiles) {
+      const iso = toIso(tile.col, tile.row);
+      const x = originX + iso.x;
+      const y = originY + iso.y + HALF_TILE_H;
+      ctx.globalAlpha = 0.12;
+      ctx.fillStyle = tile.color;
+      ctx.beginPath();
+      ctx.ellipse(x, y, 18 * pulse, 10 * pulse, 0, 0, Math.PI * 2);
+      ctx.fill();
+    }
     ctx.restore();
   }
 
@@ -747,12 +946,15 @@ export function createIsoRenderer(canvas) {
   }
 
   function render(state) {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
     const now = Date.now();
-    const isNight = state.phase === 'Night';
     const metrics = getSceneMetrics(state);
 
-    drawBackdrop(now, isNight);
+    rebuildBaseGridLayer();
+    ensureWorldLayers(state, metrics);
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(layerState.baseGrid.canvas, 0, 0);
+    drawAnimatedNeonOverlay(now);
 
     const samImpact = state.effects?.samImpactUntil > now;
     const shakeX = samImpact ? (Math.random() * 8 - 4) : 0;
@@ -764,68 +966,26 @@ export function createIsoRenderer(canvas) {
     ctx.translate(frame.translateX + shakeX, frame.translateY + shakeY);
     ctx.scale(zoom, zoom);
 
-    for (let row = 0; row < state.map.height; row += 1) {
-      for (let col = 0; col < state.map.width; col += 1) {
-        const iso = toIso(col, row);
-        const x = originX + iso.x;
-        const y = originY + iso.y;
-        const terrain = classifyTerrain(col, row, metrics);
-        const elevation = getTileElevation(col, row, metrics);
+    const worldDrawX = originX - layerState.worldOffsetX;
+    const worldDrawY = originY - layerState.worldOffsetY;
 
-        drawTileDepth(x, y, elevation);
+    ctx.drawImage(layerState.roadBlocks.canvas, worldDrawX, worldDrawY);
+    ctx.drawImage(layerState.worldObjects.canvas, worldDrawX, worldDrawY);
 
-        if (terrain === 'water') {
-          drawIsoTile(TILE_ASSETS.water, x, y, 0);
-          continue;
-        }
-
-        if (isRoadCell(col, row, metrics)) {
-          const road = getRoadType(col, row, metrics);
-          drawIsoTile(TILE_ASSETS[road.key], x, y, elevation, road.rotate);
-        } else if (terrain === 'sand' || terrain === 'coast') {
-          drawIsoTile(TILE_ASSETS.sand, x, y, elevation);
-        } else {
-          drawIsoTile(TILE_ASSETS.pavement, x, y, elevation);
-        }
-
-        const district = state.districts.fromGrid(col, row);
-        if (district?.id === 'signal-spire' && deterministicNoise2D(col, row) > 0.76) {
-          drawIsoTile(TILE_ASSETS.overlayRevolt, x, y, elevation);
-        }
-        if (district?.id === 'revolt-plaza' && deterministicNoise2D(col * 3, row * 5) > 0.78) {
-          drawIsoTile(TILE_ASSETS.overlayNeon, x, y, elevation);
-        }
-      }
-    }
+    drawRoadLightStrips(originX, originY, now, metrics);
+    drawKeyTilePulse(originX, originY, metrics, now);
 
     drawHoveredTile(originX, originY, state.mouse?.hoverTile, now);
-
-    for (let row = 0; row < state.map.height; row += 1) {
-      for (let col = 0; col < state.map.width; col += 1) {
-        const terrain = classifyTerrain(col, row, metrics);
-        if (terrain !== 'sand' && terrain !== 'coast') continue;
-        const iso = toIso(col, row);
-        const x = originX + iso.x;
-        const y = originY + iso.y;
-        const elevation = getTileElevation(col, row, metrics);
-
-        if (classifyTerrain(col, row - 1, metrics) === 'water') drawIsoTile(TILE_ASSETS.coastline, x, y, elevation, 0);
-        if (classifyTerrain(col + 1, row, metrics) === 'water') drawIsoTile(TILE_ASSETS.coastline, x, y, elevation, Math.PI / 2);
-        if (classifyTerrain(col, row + 1, metrics) === 'water') drawIsoTile(TILE_ASSETS.coastline, x, y, elevation, Math.PI);
-        if (classifyTerrain(col - 1, row, metrics) === 'water') drawIsoTile(TILE_ASSETS.coastline, x, y, elevation, -Math.PI / 2);
-      }
-    }
-
-    for (const prop of buildSceneProps(state, metrics)) {
-      drawSceneProp(originX, originY, prop, metrics);
-    }
-
-    drawBuildings(originX, originY, now, metrics);
+    drawTileOutline(originX, originY, state.mouse?.selectedTile, '#5ef2ff', 0.96, 2);
+    drawMoveTarget(originX, originY, state.player?.moveTarget, now);
 
     for (const operation of state.signalOperations?.active || []) {
       if (!operation || operation.resolved) continue;
       drawSignalOperation(originX, originY, operation, now);
     }
+
+    const visible = getVisibleWorldRect(frame);
+    const hideCrowd = zoom < CROWD_VISIBILITY_ZOOM_THRESHOLD;
 
     const layers = [];
     for (const npc of state.npc?.entities || []) {
@@ -841,17 +1001,13 @@ export function createIsoRenderer(canvas) {
 
     for (const layer of layers) {
       if (layer.type === 'npc') {
-        drawNpc(originX, originY, layer.entity, now, state.player?.nearbyNpcId === layer.entity.id, metrics);
+        if (hideCrowd && layer.entity.mode === 'crowd') continue;
+        drawNpc(originX, originY, layer.entity, now, state.player?.nearbyNpcId === layer.entity.id, metrics, visible);
       } else if (layer.type === 'remote') {
-        drawRemotePlayer(originX, originY, layer.entity, now, metrics);
+        drawRemotePlayer(originX, originY, layer.entity, now, metrics, visible);
       } else {
         drawPlayer(originX, originY, state, now, metrics);
       }
-    }
-
-    for (const districtState of state.districtState) {
-      const district = state.districts.byId.get(districtState.id);
-      drawDistrictLabel(originX, originY, district);
     }
 
     if (state.effects?.signalOperationPulseUntil > now) {
@@ -860,13 +1016,13 @@ export function createIsoRenderer(canvas) {
 
     ctx.restore();
 
-    if (isNight) {
-      ctx.fillStyle = 'rgba(8,3,20,0.38)';
+    if (state.phase === 'Night') {
+      ctx.fillStyle = 'rgba(8,3,22,0.22)';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
     }
 
     if (samImpact) {
-      ctx.fillStyle = 'rgba(255,79,216,0.08)';
+      ctx.fillStyle = 'rgba(255,79,216,0.09)';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
     }
   }
