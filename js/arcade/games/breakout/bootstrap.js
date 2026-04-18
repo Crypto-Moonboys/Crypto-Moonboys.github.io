@@ -52,7 +52,13 @@ export function bootstrapBreakout(root) {
   const MAX_PARTICLES = 420;
   const MAX_FLOATING = 90;
   const MAX_TRAIL = 12;
-  const GLYPH_POOL = ['0', '1', '#', '$', 'Ξ', '⛓', 'B', 'M'];
+  const GLYPH_POOL = ['0', '1', '#', '$', 'B', 'M', 'X', 'C'];
+  const PADDLE_MAX_WIDTH_MULTIPLIER = 1.95;
+  const PADDLE_BUFF_INCREMENT = 30;
+  const SLOW_MOTION_SPEED_FACTOR = 0.72;
+  const STREAK_BONUS_MULTIPLIER = 16;
+  const LEVEL_CLEAR_BASE_BONUS = 420;
+  const LEVEL_CLEAR_COMBO_BONUS = 28;
 
   let score = 0;
   let level = 1;
@@ -319,6 +325,14 @@ export function bootstrapBreakout(root) {
     launched = balls.some((b) => Math.abs(b.vx) + Math.abs(b.vy) > 0);
   }
 
+  function isIdentityLinked() {
+    return !!(
+      window.MOONBOYS_IDENTITY &&
+      typeof window.MOONBOYS_IDENTITY.isTelegramLinked === 'function' &&
+      window.MOONBOYS_IDENTITY.isTelegramLinked()
+    );
+  }
+
   function handleDropPickup(drop) {
     const pickupScore = 80 + level * 20;
     addScore(pickupScore, drop.x, drop.y, '#dff8ff');
@@ -327,7 +341,7 @@ export function bootstrapBreakout(root) {
 
     if (drop.type === 'wide') {
       effects.paddleBuffTimer = Math.max(effects.paddleBuffTimer, 10);
-      paddle.w = Math.min(PAD_BASE_W * 1.95, paddle.w + 30);
+      paddle.w = Math.min(PAD_BASE_W * PADDLE_MAX_WIDTH_MULTIPLIER, paddle.w + PADDLE_BUFF_INCREMENT);
       addFloatingText('WIDE', drop.x, drop.y - 10, '#3fb950', 1.05);
     } else if (drop.type === 'slow') {
       effects.slowMotionTimer = Math.max(effects.slowMotionTimer, 6);
@@ -420,7 +434,7 @@ export function bootstrapBreakout(root) {
           addScore(points, b.x + b.w / 2, b.y + b.h / 2, '#f7c948');
 
           if (combo >= 3 && combo % 4 === 0) {
-            const streakBonus = combo * level * 16;
+            const streakBonus = combo * level * STREAK_BONUS_MULTIPLIER;
             addScore(streakBonus, b.x + b.w / 2, b.y - 6, '#ff4fd1');
             addFloatingText('STREAK!', b.x + b.w / 2, b.y - 20, '#ff4fd1', 1.08);
             playHook('combo');
@@ -459,7 +473,7 @@ export function bootstrapBreakout(root) {
   }
 
   function levelComplete() {
-    const levelBonus = level * 420 + combo * 28;
+    const levelBonus = level * LEVEL_CLEAR_BASE_BONUS + combo * LEVEL_CLEAR_COMBO_BONUS;
     addScore(levelBonus, W / 2, H * 0.32, '#bc8cff');
     addFloatingText(`LEVEL CLEAR +${Math.floor(levelBonus)}`, W / 2, H * 0.28, '#bc8cff', 1.12);
 
@@ -542,7 +556,7 @@ export function bootstrapBreakout(root) {
     updateEffects(dt);
     if (!running || paused || gameOver) return;
 
-    const simDt = effects.slowMotionTimer > 0 ? dt * 0.72 : dt;
+    const simDt = effects.slowMotionTimer > 0 ? dt * SLOW_MOTION_SPEED_FACTOR : dt;
     elapsed += dt;
 
     if (comboTimer > 0) {
@@ -900,8 +914,7 @@ export function bootstrapBreakout(root) {
 
     if (!submittedRunScore) {
       submittedRunScore = true;
-      const linked = !!(window.MOONBOYS_IDENTITY && typeof window.MOONBOYS_IDENTITY.isTelegramLinked === 'function' && window.MOONBOYS_IDENTITY.isTelegramLinked());
-      if (linked) {
+      if (isIdentityLinked()) {
         try {
           await submitScore(ArcadeSync.getPlayer(), Math.floor(score), GAME_ID);
         } catch (_) {}
