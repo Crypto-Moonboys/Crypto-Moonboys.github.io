@@ -23,13 +23,14 @@
     .btqm-game-area { position: relative; width: 100%; }
     #btqm-canvas {
       width: 100%;
-      background: #0a0a1a;
-      border: 2px solid #f39c12;
+      background: linear-gradient(180deg, #05070d 0%, #0f2a1f 100%);
+      border: 2px solid rgba(243,156,18,0.85);
       border-radius: 4px;
       overflow: hidden;
       cursor: none;
       image-rendering: pixelated;
       image-rendering: crisp-edges;
+      box-shadow: 0 0 18px rgba(0,255,156,0.25), inset 0 0 16px rgba(0,207,255,0.14);
     }
     /* In-page: scale canvas to container width */
     #btqm-canvas canvas { display: block; width: 100% !important; height: auto !important; }
@@ -89,15 +90,19 @@
     #btqm-start-btn {
       padding: 0.7em 2em; background: #f39c12; color: #000;
       border: none; border-radius: 6px; font-size: 1em; font-weight: bold;
-      cursor: pointer; font-family: monospace;
+      cursor: pointer; font-family: monospace; transition: transform .12s ease, box-shadow .12s ease;
+      box-shadow: 0 0 12px rgba(243,156,18,0.35);
     }
-    #btqm-start-btn:hover { opacity: 0.88; }
+    #btqm-start-btn:hover { opacity: 0.9; box-shadow: 0 0 16px rgba(243,156,18,0.6); }
+    #btqm-start-btn:active { transform: scale(0.95); }
     #btqm-continue-btn {
       padding: 0.7em 2em; background: rgba(255,255,255,0.1); color: #eee;
       border: 1px solid rgba(255,255,255,0.2); border-radius: 6px; font-size: 1em;
-      cursor: pointer; font-family: monospace; margin-left: 0.5em;
+      cursor: pointer; font-family: monospace; margin-left: 0.5em; transition: transform .12s ease, box-shadow .12s ease;
       display: none;
     }
+    #btqm-continue-btn:hover { box-shadow: 0 0 12px rgba(0,255,156,0.35); }
+    #btqm-continue-btn:active { transform: scale(0.95); }
     #btqm-daily-preview { font-size: 0.8em; color: #888; margin-top: 1em; }
 
     /* ── Mobile d-pad (in-page only; hidden inside overlay) ──────────── */
@@ -132,7 +137,11 @@
     .game-btn {
       padding: .8rem 1.1rem; border: none; border-radius: 12px;
       background: #f7ab1a; color: #111; font-weight: 700; cursor: pointer;
+      transition: transform .12s ease, box-shadow .12s ease;
+      box-shadow: 0 0 10px rgba(243,156,18,.34);
     }
+    .game-btn:hover { box-shadow: 0 0 14px rgba(0,255,156,.4); }
+    .game-btn:active { transform: scale(0.95); }
     /* Hide the in-page launch row once the overlay is open */
     #game-overlay .row { display: none !important; }
   </style>
