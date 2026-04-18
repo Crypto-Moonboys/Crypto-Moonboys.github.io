@@ -183,6 +183,10 @@ const ZONE_CONNECTIONS = [[0,1],[1,2],[1,3],[3,4],[4,5],[2,5]];
 
 const TILE_SIZE = 40;
 const GAME_ID = BTQM_CONFIG.id;
+const FULL_CLEAR_BONUS = 900;
+const MISS_HIT_VOLUME = 0.02;
+const ENEMY_CRIT_VOLUME = 0.03;
+const ENEMY_HIT_VOLUME = 0.02;
 
 const btqmRuntime = {
   audio: null,
@@ -232,6 +236,12 @@ function addRunScore(points) {
   if (!value) return btqmRuntime.score;
   btqmRuntime.score += value;
   return btqmRuntime.score;
+}
+
+function syncDailyRunScore(daily) {
+  if (!daily) return 0;
+  daily.runScore = Math.max(0, Math.floor(btqmRuntime.score || 0));
+  return daily.runScore;
 }
 
 function scoreForEncounter(enemy) {
@@ -380,7 +390,9 @@ function updateDailyBar(daily) {
     '<span class="btqm-zone-icon ' + (c ? 'cleared' : '') + '" title="' + ZONES[i].name + '">' + (c ? '✓' : String(i + 1)) + '</span>'
   ).join('');
   const bonus = daily.fullClearBonus ? '<span class="btqm-bonus-tag">2× FULL CLEAR!</span>' : '';
-  const score = btqmRuntime.runActive ? btqmRuntime.score : Number(daily.runScore || 0);
+  const score = btqmRuntime.runActive
+    ? Math.max(0, Math.floor(btqmRuntime.score || 0))
+    : Math.max(0, Math.floor(daily.runScore || 0));
   bar.innerHTML = '<span class="btqm-bar-label">Today:</span> ' + icons + ' ' + bonus + ' <span class="btqm-score-tag">Score: ' + score + '</span>';
 }
 
@@ -1080,7 +1092,7 @@ class WorldScene extends Phaser.Scene {
   update(time, delta) {
     if (this.fx) {
       this.fx.update(delta);
-      this.fx.maybeWtfEvent();
+      this.fx.maybeTriggerChaosEvent();
     }
     // Refresh player/daily in case we returned from a zone
     this.player = this.registry.get('player');
@@ -1492,7 +1504,7 @@ class ZoneScene extends Phaser.Scene {
         hpLow: this.player.hp / Math.max(1, this.player.maxHp) < 0.3,
         fullClear: !!this.daily.fullClearBonus,
       });
-      this.fx.maybeWtfEvent();
+      this.fx.maybeTriggerChaosEvent();
     }
     this.moveCooldown -= delta;
     if (this.moveCooldown > 0) return;
@@ -1790,22 +1802,16 @@ class BattleScene extends Phaser.Scene {
     );
 
     this.actionBtns.forEach(({ bg, txt, action }) => {
+      let disabled = false;
+      if (action === 'skill') disabled = skillDis;
+      if (action === 'item') disabled = itemDis;
       bg.removeAllListeners('pointerdown');
-      if (action === 'skill') {
-        txt.setColor(skillDis ? '#444444' : '#f39c12');
-        if (skillDis) bg.removeInteractive();
-        else {
-          bg.setInteractive({ useHandCursor: true });
-          bg.on('pointerdown', () => this.doPlayerAction('skill'));
-        }
-      }
-      if (action === 'item') {
-        txt.setColor(itemDis ? '#444444' : '#f39c12');
-        if (itemDis) bg.removeInteractive();
-        else {
-          bg.setInteractive({ useHandCursor: true });
-          bg.on('pointerdown', () => this.doPlayerAction('item'));
-        }
+      txt.setColor(disabled ? '#444444' : '#f39c12');
+      if (disabled) {
+        bg.removeInteractive();
+      } else {
+        bg.setInteractive({ useHandCursor: true });
+        bg.on('pointerdown', () => this.doPlayerAction(action));
       }
     });
   }
@@ -1854,7 +1860,7 @@ class BattleScene extends Phaser.Scene {
         this.audio.playSfx('crit');
         this.addLog('🌙 Moon Strike! ' + dmg + ' bonus damage!');
       } else {
-        this.audio.playSfx('hit', { volume: 0.02 });
+        this.audio.playSfx('hit', { volume: MISS_HIT_VOLUME });
         this.addLog('🌙 Moon Strike missed! (40% miss chance)');
       }
 
@@ -1919,13 +1925,13 @@ class BattleScene extends Phaser.Scene {
       this.flashSprite(this.playerSprite, 0xff0000, 300);
       this.cameras.main.shake(300, 0.02);
       this.fx.criticalHit(this.playerSprite, eDmg, { x: this.playerSprite.x, y: this.playerSprite.y - 40 });
-      this.audio.playSfx('crit', { volume: 0.03 });
+      this.audio.playSfx('crit', { volume: ENEMY_CRIT_VOLUME });
     } else {
       eDmg = Math.max(1, randInt(Math.floor(e.atk * 0.8), Math.ceil(e.atk * 1.2)));
       logMsg = e.name + ' attacks for ' + eDmg + '!';
       this.flashSprite(this.playerSprite, 0xff4444, 180);
       this.fx.hitImpact(this.playerSprite, eDmg, { x: this.playerSprite.x, y: this.playerSprite.y - 40 });
-      this.audio.playSfx('hit', { volume: 0.02 });
+      this.audio.playSfx('hit', { volume: ENEMY_HIT_VOLUME });
     }
 
     p.hp -= eDmg;
@@ -1953,15 +1959,17 @@ class BattleScene extends Phaser.Scene {
     grantXP(p, e.xp);
     p.gold = (p.gold || 0) + e.gold;
     d.enemiesDefeated = (d.enemiesDefeated || 0) + 1;
-    d.runScore = addRunScore(scoreForEncounter(e));
+    addRunScore(scoreForEncounter(e));
+    syncDailyRunScore(d);
     btqmRuntime.battlesWon += 1;
     btqmRuntime.streak += 1;
     this.fx.setChainEnergy(btqmRuntime.streak);
 
     if (e.isBoss) {
       d.zoneClears[this.zoneId] = true;
-      d.runScore = addRunScore(scoreForBoss(this.zoneId));
-      d.runScore = addRunScore(scoreForZoneClear(this.zoneId));
+      addRunScore(scoreForBoss(this.zoneId));
+      addRunScore(scoreForZoneClear(this.zoneId));
+      syncDailyRunScore(d);
       btqmRuntime.bossKills += 1;
       btqmRuntime.zoneClears += 1;
       p.lifetimeClears = (p.lifetimeClears || 0) + 1;
@@ -1973,8 +1981,9 @@ class BattleScene extends Phaser.Scene {
       exportWidgetData(p, d);
 
       if (checkFullClear(d)) {
-        d.runScore = addRunScore(900);
-        this.addLog('🎉 ALL 6 ZONES CLEARED! +900 full-clear bonus!');
+        addRunScore(FULL_CLEAR_BONUS);
+        syncDailyRunScore(d);
+        this.addLog('🎉 ALL 6 ZONES CLEARED! +' + FULL_CLEAR_BONUS + ' full-clear bonus!');
       }
 
       this.addLog('BOSS SLAIN! +' + e.xp + ' XP  +' + e.gold + ' Gold');
@@ -2008,7 +2017,7 @@ class BattleScene extends Phaser.Scene {
     savePlayer(p);
     this.registry.set('player', p);
     this.addLog('You survived with ' + p.hp + ' HP. Regroup!');
-    try { await finalizeRunSubmission(); } catch (_) {}
+    try { await finalizeRunSubmission(); } catch (err) { console.warn('[BTQM] run-end submit failed', err); }
     beginRun(p.name);
     this.time.delayedCall(1200, () => this.endBattle('defeat'));
   }
@@ -2148,7 +2157,7 @@ export function bootstrapBlockTopiaQuestMaze(root) {
   async function start() {
     if (!phaserGame) return;
     if (btqmRuntime.runActive && !btqmRuntime.runSubmitted) {
-      try { await finalizeRunSubmission(true); } catch (_) {}
+      try { await finalizeRunSubmission(true); } catch (err) { console.warn('[BTQM] start submit failed', err); }
     }
     await switchToTitleScene();
   }
@@ -2175,14 +2184,14 @@ export function bootstrapBlockTopiaQuestMaze(root) {
 
   async function reset() {
     if (btqmRuntime.runActive && !btqmRuntime.runSubmitted) {
-      try { await finalizeRunSubmission(true); } catch (_) {}
+      try { await finalizeRunSubmission(true); } catch (err) { console.warn('[BTQM] reset submit failed', err); }
     }
     await switchToTitleScene();
   }
 
   async function destroy() {
     if (btqmRuntime.runActive && !btqmRuntime.runSubmitted) {
-      try { await finalizeRunSubmission(true); } catch (_) {}
+      try { await finalizeRunSubmission(true); } catch (err) { console.warn('[BTQM] destroy submit failed', err); }
     }
     const audio = ensureAudio();
     audio.destroy();

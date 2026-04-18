@@ -7,6 +7,8 @@ const COLORS = {
   white: 0xffffff,
   void: 0x05070d,
 };
+const CHAOS_EVENT_PROBABILITY = 0.01;
+const CHAOS_EVENT_COOLDOWN_MS = 6000;
 
 export function createFxSystem(scene) {
   const camera = scene.cameras.main;
@@ -38,12 +40,12 @@ export function createFxSystem(scene) {
     });
   }
 
-  function floatingNumber(x, y, value, color, scale) {
+  function floatingNumber(x, y, value, cssColor, scale) {
     const text = scene.add.text(x, y, String(value), {
       fontFamily: 'Courier New',
       fontSize: Math.round(16 * (scale || 1)) + 'px',
       fontStyle: 'bold',
-      color,
+      color: cssColor,
       stroke: '#05070d',
       strokeThickness: 3,
     }).setOrigin(0.5).setDepth(210);
@@ -178,10 +180,10 @@ export function createFxSystem(scene) {
     overlays.pulse.setVisible(intensity > 0);
   }
 
-  function maybeWtfEvent() {
+  function maybeTriggerChaosEvent() {
     if (wtfCooldown > 0) return;
-    if (Math.random() > 0.01) return;
-    wtfCooldown = 6000;
+    if (Math.random() > CHAOS_EVENT_PROBABILITY) return;
+    wtfCooldown = CHAOS_EVENT_COOLDOWN_MS;
     const chaos = scene.add.rectangle(320, 224, 640, 448, COLORS.red, 0).setScrollFactor(0).setDepth(223);
     scene.tweens.add({ targets: chaos, alpha: 0.17, duration: 90, yoyo: true, repeat: 2, onComplete: () => chaos.destroy() });
     camera.shake(180, 0.006);
@@ -205,7 +207,7 @@ export function createFxSystem(scene) {
     transitionGlitch,
     updateStateFx,
     setChainEnergy,
-    maybeWtfEvent,
+    maybeTriggerChaosEvent,
     update,
     destroy,
   };
