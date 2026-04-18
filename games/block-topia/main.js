@@ -428,6 +428,7 @@ async function boot() {
       const samEvent = { at: Date.now(), phase: phase.id, source: 'server' };
       if (phase.id === 'sam-event') {
         samEvent.type = 'giant_encounter';
+        npc.spawnSamWave?.();
         state.effects.samImpactUntil = Date.now() + SAM_IMPACT_DURATION_MS;
         hud.triggerSamImpact('⚡ SAM SIGNAL RUSH — Giant encounter incoming!');
       } else if (phase.id === 'conflict') {
@@ -549,6 +550,13 @@ async function boot() {
         hud.setQuests(quests.getActiveQuestCards());
       },
     });
+    if (Math.random() < 0.002) {
+      const entities = state.npc.entities || [];
+      const npcEntity = entities[Math.floor(Math.random() * entities.length)];
+      if (npcEntity) {
+        hud.pushFeed(`⚡ ${(npcEntity.type || 'helper').toUpperCase()}-${npcEntity.id}: Signal active`, 'system');
+      }
+    }
 
     // Interpolate remote player positions toward server-provided targets.
     for (const remote of state.remotePlayers) {
