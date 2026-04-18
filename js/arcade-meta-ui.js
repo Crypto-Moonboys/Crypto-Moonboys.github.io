@@ -3,13 +3,6 @@ import { playSound } from '/js/arcade/core/audio.js';
 
 // Keep in sync with the default ArcadeMeta streak session gap (45 minutes).
 const STREAK_GAP_MS = 45 * 60 * 1000;
-// Low-frequency guard so live events feel impactful and not spammy.
-const LIVE_EVENT_COOLDOWN_MS = 25000;
-const LIVE_EVENTS = [
-  { id: 'invert_controls', label: 'INVERT CONTROLS', rarity: 'epic', durationMs: 6000, uiMultiplier: 1.2 },
-  { id: 'slow_time', label: 'SLOW TIME', rarity: 'rare', durationMs: 5000, uiMultiplier: 1.1 },
-  { id: 'chaos_mode', label: 'CHAOS MODE', rarity: 'wtf', durationMs: 4500, uiMultiplier: 1.25 },
-];
 const GAME_ID_MAP = {
   snakeCanvas: 'snake',
   invCanvas: 'invaders',
@@ -27,6 +20,8 @@ let hudDaily = null;
 let hudQuests = null;
 let hudStreak = null;
 let hudMultiplier = null;
+let hudChaos = null;
+let hudComeback = null;
 let streakBarInner = null;
 let streakCountdown = null;
 let runActive = false;
@@ -39,7 +34,6 @@ let lastComboValue = 1;
 let hintTimeout = null;
 let liveEventTimer = null;
 let chaosPulseTimer = null;
-let lastLiveEventAt = 0;
 let activeLiveEvent = null;
 let lastHintAt = 0;
 let lastHintKey = '';
@@ -93,6 +87,8 @@ function injectStyles() {
     #arcade-meta-streak-bar-inner{height:100%;width:100%;background:linear-gradient(90deg,#31d2ff,#f7ab1a);transition:width .22s ease}
     #arcade-meta-streak-pressure.warning #arcade-meta-streak-bar-inner{background:linear-gradient(90deg,#ff4fd1,#ff5454)}
     #arcade-meta-streak-pressure.warning{animation:metaWarn .45s ease-in-out infinite alternate}
+    #arcade-meta-chaos,#arcade-meta-comeback{font-size:.66rem;color:#d4dcff}
+    #arcade-meta-chaos .meta-val,#arcade-meta-comeback .meta-val{max-width:108px;text-align:right;line-height:1.2}
     #arcade-meta-popup-root{position:fixed;inset:0;display:grid;place-items:center}
     .arcade-meta-popup{padding:14px 16px;border-radius:14px;color:#fff;font-weight:800;letter-spacing:.03em;background:rgba(20,24,36,.92);border:1px solid rgba(255,255,255,.18);box-shadow:0 12px 42px rgba(0,0,0,.45);opacity:0;transform:translateY(18px) scale(.96);animation:metaPopIn .2s ease-out forwards,metaPopOut .26s ease-in forwards}
     .arcade-meta-popup .sub{display:block;font-size:.75rem;font-weight:600;opacity:.92;margin-top:4px}
@@ -126,6 +122,8 @@ function ensureUi() {
       <div class="meta-row"><span>Quests</span><span class="meta-val" id="arcade-meta-quests">0</span></div>
       <div class="meta-row"><span>Streak</span><span class="meta-val" id="arcade-meta-streak">0</span></div>
       <div class="meta-row"><span>Multiplier</span><span class="meta-val" id="arcade-meta-multiplier">x1.00</span></div>
+      <div class="meta-row" id="arcade-meta-chaos"><span>Chaos</span><span class="meta-val" id="arcade-meta-chaos-val">--:--</span></div>
+      <div class="meta-row" id="arcade-meta-comeback"><span>Pressure</span><span class="meta-val" id="arcade-meta-comeback-val">stable</span></div>
       <div id="arcade-meta-streak-pressure">
         <div class="meta-row"><span>Decay</span><span class="meta-val" id="arcade-meta-streak-countdown">--:--</span></div>
         <div id="arcade-meta-streak-bar"><div id="arcade-meta-streak-bar-inner"></div></div>
@@ -141,6 +139,8 @@ function ensureUi() {
   hudQuests = uiRoot.querySelector('#arcade-meta-quests');
   hudStreak = uiRoot.querySelector('#arcade-meta-streak');
   hudMultiplier = uiRoot.querySelector('#arcade-meta-multiplier');
+  hudChaos = uiRoot.querySelector('#arcade-meta-chaos-val');
+  hudComeback = uiRoot.querySelector('#arcade-meta-comeback-val');
   streakBarInner = uiRoot.querySelector('#arcade-meta-streak-bar-inner');
   streakCountdown = uiRoot.querySelector('#arcade-meta-streak-countdown');
 }
@@ -192,7 +192,11 @@ function currentUiMultiplier(state) {
 function updateHud() {
   ensureUi();
   let state = null;
+  let liveContext = null;
   try { state = ArcadeMeta.getState(); } catch (_) {}
+  try {
+    if (typeof ArcadeMeta.getLiveContext === 'function') liveContext = ArcadeMeta.getLiveContext();
+  } catch (_) {}
   if (!state) return;
 
   const activeCount = Array.isArray(state?.quests?.active) ? state.quests.active.length : 0;
@@ -201,6 +205,15 @@ function updateHud() {
   hudQuests.textContent = String(activeCount);
   hudStreak.textContent = String(streak);
   hudMultiplier.textContent = `x${currentUiMultiplier(state)}`;
+  if (hudChaos) {
+    const endsAt = Number(liveContext?.featured_chaos?.ends_at) || 0;
+    const remaining = endsAt ? Math.max(0, endsAt - Date.now()) : 0;
+    hudChaos.textContent = remaining ? formatCountdown(remaining) : '--:--';
+  }
+  if (hudComeback) {
+    const comeback = liveContext?.comeback || null;
+    hudComeback.textContent = comeback?.label ? String(comeback.label) : 'stable';
+  }
 
   const pressureRoot = uiRoot.querySelector('#arcade-meta-streak-pressure');
   const lastPlayed = Number(state?.streak?.last_played_at) || 0;
@@ -298,19 +311,6 @@ function clearLiveEventVisuals() {
   }
 }
 
-function endLiveEvent() {
-  if (!activeLiveEvent) return;
-  const ended = activeLiveEvent;
-  activeLiveEvent = null;
-  clearLiveEventVisuals();
-  if (liveEventTimer) {
-    clearTimeout(liveEventTimer);
-    liveEventTimer = null;
-  }
-  document.dispatchEvent(new CustomEvent('arcade-meta-live-event-end', { detail: ended }));
-  updateHud();
-}
-
 function applyLiveEvent(event) {
   clearLiveEventVisuals();
   if (event.id === 'invert_controls') {
@@ -323,54 +323,35 @@ function applyLiveEvent(event) {
   }
 }
 
-function chooseLiveEvent() {
-  const pool = LIVE_EVENTS;
-  return pool[Math.floor(Math.random() * pool.length)] || null;
+function endLiveEventLocal() {
+  activeLiveEvent = null;
+  clearLiveEventVisuals();
+  if (liveEventTimer) {
+    clearTimeout(liveEventTimer);
+    liveEventTimer = null;
+  }
+  updateHud();
 }
 
-function triggerLiveEvent(context = {}) {
-  const now = Date.now();
-  if (!runActive && !context.force) {
-    return { triggered: false, reason: 'run_not_active' };
-  }
-  if (activeLiveEvent) {
-    return { triggered: false, reason: 'already_active', active: activeLiveEvent };
-  }
-  if (!context.force && now - lastLiveEventAt < LIVE_EVENT_COOLDOWN_MS) {
-    return { triggered: false, reason: 'cooldown' };
-  }
-
-  const source = String(context.source || 'manual');
-  let chance = 0.02;
-  if (source === 'survival') chance = 0.012;
-  if (source === 'combo') chance = 0.03;
-  if (!context.force && Math.random() > chance) {
-    return { triggered: false, reason: 'rng_miss' };
-  }
-
-  const picked = chooseLiveEvent();
-  if (!picked) return { triggered: false, reason: 'no_event' };
-  const durationMs = Math.max(2000, Number(picked.durationMs) || 4000);
-  activeLiveEvent = {
-    ...picked,
-    context,
-    startedAt: now,
-    endsAt: now + durationMs,
-  };
-  lastLiveEventAt = now;
-  applyLiveEvent(activeLiveEvent);
+function handleLiveEventStarted(payload) {
+  const event = payload?.event || payload;
+  if (!event) return;
+  activeLiveEvent = event;
+  applyLiveEvent(event);
+  const endsAt = Number(event.ends_at || event.endsAt) || 0;
+  const durationMs = endsAt ? Math.max(0, endsAt - Date.now()) : Math.max(2000, Number(event.durationMs) || 4000);
   showPopup({
-    title: `⚡ ${activeLiveEvent.label}`,
-    reward: `${Math.round(durationMs / 1000)}s LIVE`,
-    rarity: activeLiveEvent.rarity || 'rare',
+    title: `⚡ ${event.label || 'LIVE EVENT'}`,
+    reward: `${Math.max(1, Math.round(durationMs / 1000))}s LIVE`,
+    rarity: event.rarity || 'rare',
     durationMs: 1800,
   });
   safePlay('meta-event-trigger');
   pulseScreen('arcade-meta-flash', 200);
-  document.dispatchEvent(new CustomEvent('arcade-meta-live-event', { detail: activeLiveEvent }));
-  liveEventTimer = setTimeout(endLiveEvent, durationMs);
-  updateHud();
-  return { triggered: true, event: activeLiveEvent };
+  if (liveEventTimer) clearTimeout(liveEventTimer);
+  if (durationMs > 0) {
+    liveEventTimer = setTimeout(() => endLiveEventLocal(), durationMs + 100);
+  }
 }
 
 function wireInputModifiers() {
@@ -471,7 +452,7 @@ function wireMetaEventListeners() {
     });
   });
 
-  document.addEventListener('arcade-meta-quest-complete', (ev) => {
+  const onQuestComplete = (ev) => {
     const quest = ev.detail?.quest;
     if (!quest) return;
     showPopup({
@@ -482,7 +463,8 @@ function wireMetaEventListeners() {
     });
     safePlay('meta-quest-complete');
     pulseScreen('arcade-meta-flash', 220);
-  });
+  };
+  document.addEventListener('arcade-meta-quest-completed', onQuestComplete);
 
   document.addEventListener('arcade-meta-near-miss', (ev) => {
     const progress = Number(ev.detail?.progress) || 0;
@@ -505,6 +487,15 @@ function wireMetaEventListeners() {
   document.addEventListener('arcade-meta-tracked', () => {
     updateHud();
   });
+
+  document.addEventListener('arcade-meta-live-event', (ev) => {
+    handleLiveEventStarted(ev.detail || {});
+  });
+
+  const onLiveEnded = () => {
+    endLiveEventLocal();
+  };
+  document.addEventListener('arcade-meta-live-event-ended', onLiveEnded);
 }
 
 function startSurvivalTicks() {
@@ -532,7 +523,10 @@ function wireRunLifecycle() {
   const stopRun = () => {
     runActive = false;
     runPaused = false;
-    endLiveEvent();
+    endLiveEventLocal();
+    if (typeof ArcadeMeta.endLiveEvent === 'function') {
+      try { ArcadeMeta.endLiveEvent('run_end'); } catch (_) {}
+    }
     updateHud();
   };
   document.addEventListener('arcade-run-reset', stopRun);
@@ -558,8 +552,6 @@ function init() {
   wireInputModifiers();
   wireMetaEventListeners();
   wireRunLifecycle();
-  ArcadeMeta.triggerLiveEvent = triggerLiveEvent;
-  window.__arcadeMetaTriggerLiveEvent = triggerLiveEvent;
   setupScoreHooks();
   updateHud();
   setInterval(updateHud, 500);

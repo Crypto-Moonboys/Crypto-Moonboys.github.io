@@ -421,10 +421,21 @@
 <script src="/js/wiki.js"></script>
 <script type="module">
 import { initLeaderboard } from '/js/arcade-leaderboard.js';
-import { initGraph, setPlayerState, resetGraph } from '/js/arcade-graph.js';
+import { initGraph, setPlayerState, resetGraph, setGraphMode, setMetaGraphState } from '/js/arcade-graph.js';
+import { ArcadeMeta } from '/js/arcade-meta-system.js';
 
 initGraph('arcade-graph-canvas');
 document.body.dataset.lbMode = 'raw';
+
+function updateMetaGraph() {
+  let context = null;
+  try {
+    if (typeof ArcadeMeta.getLiveContext === 'function') context = ArcadeMeta.getLiveContext();
+  } catch (_) {}
+  setMetaGraphState(context);
+  setGraphMode('meta', context);
+  resetGraph();
+}
 
 initLeaderboard({
   onRowSelect(entry) {
@@ -438,13 +449,20 @@ initLeaderboard({
   onModeChange({ mode }) {
     document.body.dataset.lbMode = mode;
     if (mode !== 'raw') {
-      resetGraph();
+      updateMetaGraph();
       const selected = document.querySelector('.lb-row.selected');
       if (selected) selected.classList.remove('selected');
       const panel = document.getElementById('lb-breakdown-panel');
       if (panel) panel.style.display = 'none';
+    } else {
+      setGraphMode('raw');
     }
   },
+});
+
+document.addEventListener('arcade-meta-tracked', () => {
+  if ((document.body.dataset.lbMode || 'raw') !== 'meta') return;
+  updateMetaGraph();
 });
 
 document.getElementById('lb-graph-reset').addEventListener('click', () => {

@@ -67,6 +67,8 @@ let animationId = null;
 let pulseT = 0;
 let activeEdges = new Set();   // edge keys in 'source->target' format for animated flow
 let playerData = null;         // current player breakdown
+let graphMode = 'raw';
+let metaState = null;
 
 // ── Init ──────────────────────────────────────────────────────────────────
 export function initGraph(canvasId) {
@@ -109,6 +111,68 @@ function setOverviewState() {
   nodes = makeOverviewNodes(cx, cy, r);
   edges = OVERVIEW_EDGES;
   activeEdges.clear();
+}
+
+function setMetaOverviewState() {
+  const cx = canvas.width / 2;
+  const cy = canvas.height / 2;
+  const r = Math.min(cx, cy) * 0.62;
+  const featured = metaState?.featured_chaos || null;
+  const rare = metaState?.rare_event || null;
+  const comeback = metaState?.comeback || null;
+
+  nodes = [
+    { id: 'meta', label: '⚡ Meta Core', color: C.gold, radius: 24, x: cx, y: cy, fixed: true },
+    { id: 'daily', label: '📆 Daily', color: C.cyan, radius: 16, x: cx - r * 0.78, y: cy - r * 0.3, fixed: false },
+    { id: 'weekly', label: '🗓️ Weekly', color: C.green, radius: 16, x: cx - r * 0.48, y: cy + r * 0.52, fixed: false },
+    { id: 'seasonal', label: '🏆 Seasonal', color: C.purple, radius: 16, x: cx + r * 0.62, y: cy + r * 0.42, fixed: false },
+    { id: 'quests', label: '🎯 Quest Path', color: C.pink, radius: 15, x: cx + r * 0.78, y: cy - r * 0.18, fixed: false },
+    {
+      id: 'featured',
+      label: featured?.game ? `🔥 ${String(featured.game).toUpperCase()}` : '🔥 Featured',
+      color: C.gold,
+      radius: 14,
+      x: cx + r * 0.1,
+      y: cy - r * 0.72,
+      fixed: false,
+    },
+  ];
+  if (rare) {
+    nodes.push({
+      id: 'rare',
+      label: `💥 ${rare.label || 'WTF'}`,
+      color: C.pink,
+      radius: 15,
+      x: cx - r * 0.12,
+      y: cy + r * 0.78,
+      fixed: false,
+    });
+  }
+  if (comeback) {
+    nodes.push({
+      id: 'comeback',
+      label: `⏳ ${comeback.urgency === 'critical' ? 'Save streak' : 'Come back'}`,
+      color: comeback.urgency === 'critical' ? '#ff6b6b' : C.cyan,
+      radius: 14,
+      x: cx - r * 0.82,
+      y: cy + r * 0.05,
+      fixed: false,
+    });
+  }
+
+  edges = [
+    { source: 'meta', target: 'daily' },
+    { source: 'meta', target: 'weekly' },
+    { source: 'meta', target: 'seasonal' },
+    { source: 'meta', target: 'quests' },
+    { source: 'meta', target: 'featured' },
+  ];
+  if (rare) edges.push({ source: 'quests', target: 'rare' });
+  if (comeback) edges.push({ source: 'daily', target: 'comeback' });
+
+  activeEdges = new Set(['meta->quests', 'meta->featured']);
+  if (rare) activeEdges.add('quests->rare');
+  if (comeback) activeEdges.add('daily->comeback');
 }
 
 export function setPlayerState(entry) {
@@ -199,11 +263,11 @@ function draw() {
   const h = canvas.height;
 
   // Background
-  ctx.fillStyle = C.bg;
+  ctx.fillStyle = graphMode === 'meta' ? '#0b0a18' : C.bg;
   ctx.fillRect(0, 0, w, h);
 
   // Subtle grid
-  ctx.strokeStyle = 'rgba(46,197,255,0.04)';
+  ctx.strokeStyle = graphMode === 'meta' ? 'rgba(255,79,209,0.06)' : 'rgba(46,197,255,0.04)';
   ctx.lineWidth = 1;
   const step = 32;
   for (let x = 0; x < w; x += step) {
@@ -363,5 +427,20 @@ function onTouch(e) {
 
 // ── Reset to overview ─────────────────────────────────────────────────────
 export function resetGraph() {
-  setOverviewState();
+  if (graphMode === 'meta') {
+    setMetaOverviewState();
+  } else {
+    setOverviewState();
+  }
+}
+
+export function setGraphMode(mode, nextMetaState = null) {
+  graphMode = mode === 'meta' ? 'meta' : 'raw';
+  if (nextMetaState) metaState = nextMetaState;
+  resetGraph();
+}
+
+export function setMetaGraphState(nextMetaState) {
+  metaState = nextMetaState || null;
+  if (graphMode === 'meta') setMetaOverviewState();
 }
