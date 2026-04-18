@@ -61,6 +61,7 @@ export function bootstrapBreakout(root) {
   const LEVEL_CLEAR_COMBO_BONUS = 28;
   const DROP_COLLISION_RADIUS = 11;
   const IDENTITY_GLOBAL_KEY = 'MOONBOYS_IDENTITY';
+  const MAX_BALLS = 4;
 
   let score = 0;
   let level = 1;
@@ -321,9 +322,9 @@ export function bootstrapBreakout(root) {
       const spread = 0.42;
       additions.push(makeBall(b.x, b.y, Math.cos(angle + spread) * speed, Math.sin(angle + spread) * speed));
       additions.push(makeBall(b.x, b.y, Math.cos(angle - spread) * speed, Math.sin(angle - spread) * speed));
-      if (additions.length + balls.length >= 4) break;
+      if (additions.length + balls.length >= MAX_BALLS) break;
     }
-    balls = balls.concat(additions).slice(0, 4);
+    balls = balls.concat(additions).slice(0, MAX_BALLS);
     launched = balls.some((b) => Math.abs(b.vx) + Math.abs(b.vy) > 0);
   }
 
@@ -352,6 +353,15 @@ export function bootstrapBreakout(root) {
       ball.x - ball.r < brick.x + brick.w &&
       ball.y + ball.r > brick.y &&
       ball.y - ball.r < brick.y + brick.h
+    );
+  }
+
+  function isDropPaddleCollision(drop, py) {
+    return (
+      drop.y + DROP_COLLISION_RADIUS >= py &&
+      drop.y - DROP_COLLISION_RADIUS <= py + PAD_H &&
+      drop.x >= paddle.x - paddle.w / 2 &&
+      drop.x <= paddle.x + paddle.w / 2
     );
   }
 
@@ -487,7 +497,7 @@ export function bootstrapBreakout(root) {
         drops.splice(i, 1);
         continue;
       }
-      if (d.y + DROP_COLLISION_RADIUS >= py && d.y - DROP_COLLISION_RADIUS <= py + PAD_H && d.x >= paddle.x - paddle.w / 2 && d.x <= paddle.x + paddle.w / 2) {
+      if (isDropPaddleCollision(d, py)) {
         handleDropPickup(d);
         drops.splice(i, 1);
       }
