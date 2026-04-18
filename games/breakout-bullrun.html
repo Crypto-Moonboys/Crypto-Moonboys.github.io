@@ -14,7 +14,15 @@
     .hud{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:14px}
     .hud .stat{background:rgba(255,255,255,.04);border:1px solid var(--color-border,#333);border-radius:12px;padding:12px;text-align:center}
     .hud .label{font-size:.7rem;color:var(--color-text-muted)}
-    .hud .value{font-weight:700;font-size:1.15rem}
+    .hud .value{font-weight:700;font-size:1.15rem;transform-origin:center center}
+    .hud .stat.pulse .value{animation:statPulse .22s ease-out}
+    #combo{transition:transform .12s ease,color .12s ease}
+    #level{transition:transform .16s ease,color .16s ease}
+    @keyframes statPulse{
+      0%{transform:scale(1)}
+      40%{transform:scale(1.16)}
+      100%{transform:scale(1)}
+    }
     #brkCanvas{width:100%;max-width:560px;aspect-ratio:7/9;display:block;margin:0 auto;background:#090c16;border:2px solid #f7ab1a;border-radius:14px;box-shadow:0 0 30px rgba(247,171,26,.18) inset}
     .row{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:14px}
     .game-btn{padding:.8rem 1.1rem;border:none;border-radius:12px;background:#f7ab1a;color:#111;font-weight:700;cursor:pointer}
@@ -76,7 +84,7 @@
       <div class="game-card">
         <div class="hud">
           <div class="stat"><div class="label">Score</div><div class="value" id="score">0</div></div>
-          <div class="stat"><div class="label">Best</div><div class="value" id="best">0</div></div>
+          <div class="stat"><div class="label">Best (Local)</div><div class="value" id="best">0</div></div>
           <div class="stat"><div class="label">Level</div><div class="value" id="level">—</div></div>
           <div class="stat"><div class="label">Combo</div><div class="value" id="combo">×1</div></div>
         </div>
@@ -85,6 +93,7 @@
           <button class="game-btn" id="startBtn">Start</button>
           <button class="game-btn alt" id="pauseBtn">Pause</button>
           <button class="game-btn alt" id="resetBtn">Reset</button>
+          <button class="game-btn alt" id="musicMuteBtn" aria-pressed="false">Music Off</button>
         </div>
       </div>
     </main>
