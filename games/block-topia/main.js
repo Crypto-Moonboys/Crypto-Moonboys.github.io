@@ -271,7 +271,7 @@ async function boot() {
         state.mouse.dragMoved = true;
       }
       if (state.mouse.dragging) {
-        const zoom = state.camera.zoom || 1;
+        const zoom = state.camera.zoom ?? 1;
         state.camera.panX = state.mouse.cameraStartX + (deltaX / zoom);
         state.camera.panY = state.mouse.cameraStartY + (deltaY / zoom);
         state.mouse.hoverTile = null;
