@@ -90,7 +90,7 @@
         if (!data) { el.innerHTML = '<div class="widget-error">SAM status unavailable</div>'; return; }
         emitTron('sam', {
           source: 'home-widgets',
-          message: data.message || 'SAM status updated'
+          message: data.message
         });
         el.innerHTML =
           '<div class="sam-status-inner">' +

@@ -218,12 +218,12 @@
 
   function resolveHealthCandidates() {
     const candidates = [];
-    candidates.push('https://api.cryptomoonboys.com/health');
     const cfgBase = window.MOONBOYS_API && window.MOONBOYS_API.BASE_URL
       ? String(window.MOONBOYS_API.BASE_URL).replace(/\/$/, '')
       : '';
     if (cfgBase) candidates.push(`${cfgBase}/health`);
-    return [...new Set(candidates)];
+    if (!candidates.length) candidates.push('https://api.cryptomoonboys.com/health');
+    return candidates;
   }
 
   async function checkApiHealth() {
