@@ -48,6 +48,25 @@ export function createDuelSystem({ sendChallenge, sendAccept, sendAction } = {})
     return true;
   }
 
+  /** submitDuelAction — spec-required API. Verifies duelId matches active duel then submits. */
+  function submitDuelAction(duelId, action) {
+    if (duelId && state.duelId && duelId !== state.duelId) return false;
+    return submitAction(action);
+  }
+
+  /**
+   * handleDuelUpdate — spec-required API.
+   * Generic dispatcher: routes incoming server payload to the correct apply* method.
+   */
+  function handleDuelUpdate(payload = {}) {
+    const type = String(payload?.type || payload?.status || '').toLowerCase();
+    if (type === 'requested') { applyRequested(payload); return; }
+    if (type === 'active' || type === 'started') { applyStarted(payload); return; }
+    if (type === 'actionsubmitted' || type === 'action_submitted') { applyActionSubmitted(payload); return; }
+    if (type === 'resolved') { applyResolved(payload); return; }
+    if (type === 'ended') { applyEnded(payload); return; }
+  }
+
   function applyRequested(payload = {}) {
     state.duelId = payload.duelId || state.duelId;
     state.status = 'requested';
@@ -121,6 +140,8 @@ export function createDuelSystem({ sendChallenge, sendAccept, sendAction } = {})
     challengePlayer,
     acceptDuel,
     submitAction,
+    submitDuelAction,
+    handleDuelUpdate,
     applyRequested,
     applyStarted,
     applyActionSubmitted,

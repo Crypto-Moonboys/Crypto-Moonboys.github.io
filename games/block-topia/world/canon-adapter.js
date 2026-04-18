@@ -65,6 +65,22 @@ function buildDistrictLoreById(districts, legacyLoreFeed, worldFlavorPool) {
   return byId;
 }
 
+/**
+ * buildCanonState — spec-required entry point.
+ * Accepts a single raw data object and delegates to buildCanonAdapter.
+ * Returns { districtLoreById, factionTruth, samTruth, worldFlavorPool, npcRumorPool }.
+ */
+export function buildCanonState(rawCanonData = {}) {
+  return buildCanonAdapter({
+    canonBible: rawCanonData.canonBible || {},
+    seasonModel: rawCanonData.seasonModel || {},
+    legacyLoreFeed: rawCanonData.legacyLoreFeed || rawCanonData.legacyLore || {},
+    districts: rawCanonData.districts || [],
+    factions: rawCanonData.factions || {},
+    samPhases: rawCanonData.samPhases || {},
+  });
+}
+
 export function buildCanonAdapter({
   canonBible,
   seasonModel,

@@ -176,3 +176,18 @@ export function submitDuelAction(duelId, action) {
   if (!room || !duelId || !action) return;
   room.send('duelAction', { duelId, action });
 }
+
+/** sendDuelChallenge — spec-required alias of challengePlayer */
+export function sendDuelChallenge(targetId) {
+  return challengePlayer(targetId);
+}
+
+/** sendDuelAccept — spec-required alias of acceptDuel */
+export function sendDuelAccept(duelId) {
+  return acceptDuel(duelId);
+}
+
+/** sendDuelAction — spec-required alias of submitDuelAction */
+export function sendDuelAction(duelId, action) {
+  return submitDuelAction(duelId, action);
+}

@@ -50,6 +50,24 @@ function inferEventTags(signal, context = {}) {
   return [...tags];
 }
 
+/**
+ * buildCanonSignalState — spec-required pure function entry point.
+ * Takes canonState (from buildCanonState/buildCanonAdapter) and liveSignals (array)
+ * and returns { districtSignalState, factionSignalState, samNarrativeState, worldBulletins }.
+ */
+export function buildCanonSignalState(canonState = {}, liveSignals = []) {
+  const districts = Object.values(canonState.districtLoreById || {}).map((district) => ({
+    id: district.districtId,
+    name: district.districtName,
+  }));
+  const bridge = createCanonSignalBridge({
+    canon: canonState,
+    districts,
+    factions: canonState.factionTruth || {},
+  });
+  return bridge.interpret({ signals: Array.isArray(liveSignals) ? liveSignals : [] });
+}
+
 export function createCanonSignalBridge({ canon, districts, factions } = {}) {
   const districtList = Array.isArray(districts) ? districts : [];
   const districtByKey = new Map();
