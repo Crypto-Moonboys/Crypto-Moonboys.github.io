@@ -69,7 +69,7 @@ async function boot() {
   let multiplayerConnected = false;
   let nearbyNpc = null;
   let lastNpcScan = performance.now();
-  let lastQuestTick = 0;
+  let lastQuestTick = performance.now();
   let lastQuestDistrictId = state.player.districtId;
   let lastHudDistrictId = '';
   let lastHudDistrictControl = null;
@@ -517,8 +517,9 @@ async function boot() {
       lastInteractPromptVisible = interactVisible;
     }
 
-    if (ts - lastQuestTick >= QUEST_TICK_INTERVAL_MS) {
-      quests.tick(dt, {
+    const questElapsedMs = ts - lastQuestTick;
+    if (questElapsedMs >= QUEST_TICK_INTERVAL_MS) {
+      quests.tick(Math.min(1, questElapsedMs / 1000), {
         onQuestPulse: (text) => hud.pushFeed(`🎯 ${text}`, 'quest'),
       });
       lastQuestTick = ts;
