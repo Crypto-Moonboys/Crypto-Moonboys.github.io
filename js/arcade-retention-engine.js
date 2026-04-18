@@ -79,12 +79,15 @@ function createInitialState() {
 
 function sanitizeMission(input) {
   if (!input || typeof input !== 'object') return null;
+  const now = nowMs();
+  const createdAt = Number(input.created_at) || now;
+  const expiresAt = Number(input.expires_at) || (createdAt + 10 * 60 * 1000);
   return {
     id: String(input.id || `mission-${nowMs().toString(36)}`),
     type: String(input.type || 'return-runs'),
     label: String(input.label || 'Return mission active'),
-    created_at: Number(input.created_at) || nowMs(),
-    expires_at: Number(input.expires_at) || (nowMs() + 10 * 60 * 1000),
+    created_at: createdAt,
+    expires_at: Math.max(createdAt, expiresAt),
     target_runs: Math.max(1, Math.floor(Number(input.target_runs) || 1)),
     target_unique_games: Math.max(0, Math.floor(Number(input.target_unique_games) || 0)),
     progress_runs: Math.max(0, Math.floor(Number(input.progress_runs) || 0)),

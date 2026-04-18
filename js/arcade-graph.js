@@ -204,14 +204,18 @@ function setMetaOverviewState() {
   if (comeback) edges.push({ source: 'daily', target: 'comeback' });
   if (chain) edges.push({ source: 'quests', target: 'chain' });
   if (mission && !mission.completed) edges.push({ source: 'daily', target: 'mission' });
-  if (chain && featuredGame) edges.push({ source: 'featured', target: 'chain' });
+  if (chain && typeof featuredGame === 'string' && featuredGame.trim().length > 0) {
+    edges.push({ source: 'featured', target: 'chain' });
+  }
 
   activeEdges = new Set(['meta->quests', 'meta->featured']);
   if (rare) activeEdges.add('quests->rare');
   if (comeback) activeEdges.add('daily->comeback');
   if (chain) activeEdges.add('quests->chain');
   if (mission && !mission.completed) activeEdges.add('daily->mission');
-  if (chain && featuredGame) activeEdges.add('featured->chain');
+  if (chain && typeof featuredGame === 'string' && featuredGame.trim().length > 0) {
+    activeEdges.add('featured->chain');
+  }
 }
 
 export function setPlayerState(entry) {
