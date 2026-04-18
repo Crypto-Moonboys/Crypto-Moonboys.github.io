@@ -4,6 +4,7 @@ import {
   createGameState,
   applyRemotePlayers,
   updatePlayerMotion,
+  movePlayerTowardTarget,
   awardXp,
   tickDistrictCapture,
 } from './world/game-state.js';
@@ -31,6 +32,10 @@ const LIVE_REFRESH_INTERVAL_MS = 120000; // 2 minutes
 const FEED_DEDUPE_TTL_MS = 5 * 60 * 1000;
 const MAX_FEED_CACHE_SIZE = 80;
 const CAMERA_ZOOM_PRESETS = [0.88, 1, 1.16];
+const CAMERA_ZOOM_MIN = 0.82;
+const CAMERA_ZOOM_MAX = 1.2;
+// ~6% step gives smooth wheel zoom while traversing the clamp range in practical increments.
+const CAMERA_ZOOM_WHEEL_STEP = 0.06;
 
 const canvas = document.getElementById('world-canvas');
 const hud = createHud(document);
@@ -65,6 +70,50 @@ async function boot() {
   const primaryFactionName = state.factions.primary?.name || 'Liberators';
   const secondaryFactionName = state.factions.secondary?.name || 'Wardens';
   const lore = state.lore?.legacy?.lore || {};
+
+  function clampZoom(value) {
+    return Math.max(CAMERA_ZOOM_MIN, Math.min(CAMERA_ZOOM_MAX, value));
+  }
+
+  function syncZoomIndexToCurrentZoom() {
+    let nearest = 0;
+    let bestDelta = Infinity;
+    for (let i = 0; i < CAMERA_ZOOM_PRESETS.length; i += 1) {
+      const delta = Math.abs(CAMERA_ZOOM_PRESETS[i] - state.camera.zoom);
+      if (delta < bestDelta) {
+        bestDelta = delta;
+        nearest = i;
+      }
+    }
+    state.camera.zoomIndex = nearest;
+  }
+
+  function isMovementInputActive() {
+    return Boolean(
+      input.w
+      || input.a
+      || input.s
+      || input.d
+      || input.arrowup
+      || input.arrowdown
+      || input.arrowleft
+      || input.arrowright,
+    );
+  }
+
+  function isNpcInInteractionRange(targetNpc) {
+    if (!targetNpc) return false;
+    const dx = targetNpc.col - state.player.x;
+    const dy = targetNpc.row - state.player.y;
+    return Math.hypot(dx, dy) <= targetNpc.interactionRadius;
+  }
+
+  function tryInteractWithClickedNpc(event) {
+    const clickedNpc = renderer.pickNpcFromClientPoint(event.clientX, event.clientY, state);
+    if (!clickedNpc || !isNpcInInteractionRange(clickedNpc)) return false;
+    interactWithNpc(clickedNpc);
+    return true;
+  }
 
   function classifyFeedType(text) {
     const lower = String(text || '').toLowerCase();
@@ -113,6 +162,24 @@ async function boot() {
     }
     hud.pushFeed(text, type);
     return true;
+  }
+
+  function interactWithNpc(targetNpc) {
+    if (!targetNpc) return;
+    const line = npc.getDialogueLine(targetNpc);
+    hud.showNpcDialogue(
+      targetNpc.name || 'Citizen',
+      targetNpc.roleLabel || targetNpc.role,
+      line,
+    );
+    pushFeedDeduped(`🗣️ ${targetNpc.name}: ${line}`, 'system', `npc:${targetNpc.id}:${line}`);
+    memory.record('player', {
+      at: Date.now(),
+      action: 'npc_interact',
+      npcId: targetNpc.id,
+      role: targetNpc.role,
+      district: state.player.districtId,
+    });
   }
 
   function applyLiveSignalRefresh(refreshResult) {
@@ -181,6 +248,39 @@ async function boot() {
     state.camera.zoom = CAMERA_ZOOM_PRESETS[nextIndex];
     const zoomLabel = nextIndex === 0 ? 'far' : nextIndex === 1 ? 'default' : 'close';
     hud.pushFeed(`🔎 Camera zoom: ${zoomLabel} (${state.camera.zoom.toFixed(2)}x)`, 'system');
+  });
+
+  canvas.addEventListener('wheel', (event) => {
+    event.preventDefault();
+    const direction = event.deltaY < 0 ? 1 : -1;
+    const nextZoom = clampZoom(state.camera.zoom + (direction * CAMERA_ZOOM_WHEEL_STEP));
+    if (nextZoom === state.camera.zoom) return;
+    state.camera.zoom = nextZoom;
+    syncZoomIndexToCurrentZoom();
+  }, { passive: false });
+
+  canvas.addEventListener('mousemove', (event) => {
+    state.mouse.hoverTile = renderer.pickTileFromClientPoint(event.clientX, event.clientY, state);
+    state.mouse.hoverNpcId = renderer.pickNpcFromClientPoint(event.clientX, event.clientY, state)?.id || '';
+  });
+
+  canvas.addEventListener('mouseleave', () => {
+    state.mouse.hoverTile = null;
+    state.mouse.hoverNpcId = '';
+  });
+
+  canvas.addEventListener('click', (event) => {
+    if (tryInteractWithClickedNpc(event)) return;
+    state.mouse.selectedTile = renderer.pickTileFromClientPoint(event.clientX, event.clientY, state);
+  });
+
+  canvas.addEventListener('dblclick', (event) => {
+    if (tryInteractWithClickedNpc(event)) return;
+
+    const tile = renderer.pickTileFromClientPoint(event.clientX, event.clientY, state);
+    state.mouse.selectedTile = tile;
+    if (!tile?.valid) return;
+    state.player.moveTarget = { x: tile.col, y: tile.row };
   });
 
   await connectMultiplayer({
@@ -315,16 +415,7 @@ async function boot() {
 
   window.addEventListener('keydown', (event) => {
     if (event.key.toLowerCase() !== 'e' || event.repeat || !nearbyNpc) return;
-      const line = npc.getDialogueLine(nearbyNpc);
-      hud.showNpcDialogue(nearbyNpc.name || 'Citizen', nearbyNpc.roleLabel || nearbyNpc.role, line);
-      pushFeedDeduped(`🗣️ ${nearbyNpc.name}: ${line}`, 'system', `npc:${nearbyNpc.id}:${line}`);
-      memory.record('player', {
-      at: Date.now(),
-      action: 'npc_interact',
-      npcId: nearbyNpc.id,
-      role: nearbyNpc.role,
-      district: state.player.districtId,
-    });
+    interactWithNpc(nearbyNpc);
   });
 
   let lastTs = performance.now();
@@ -333,7 +424,13 @@ async function boot() {
     const dt = Math.min(MAX_FRAME_DELTA_SECONDS, (ts - lastTs) / 1000);
     lastTs = ts;
 
-    updatePlayerMotion(state, input, dt, sendMovement);
+    const keyboardMovementApplied = updatePlayerMotion(state, input, dt, sendMovement);
+    // Keyboard input takes priority and cancels click-move targets to avoid conflicting movement commands.
+    if (keyboardMovementApplied && isMovementInputActive()) {
+      state.player.moveTarget = null;
+    } else {
+      movePlayerTowardTarget(state, dt, sendMovement);
+    }
     // npc.tick() follows server NPC targets (state.npcTargets) when available;
     // falls back to local simulation when the server is unreachable.
     npc.tick(dt);

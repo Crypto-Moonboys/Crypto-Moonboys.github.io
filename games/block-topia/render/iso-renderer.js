@@ -8,6 +8,12 @@ const NPC_FRAME_COUNT = 20;
 
 const ZOOM_MIN = 0.82;
 const ZOOM_MAX = 1.2;
+const CAMERA_BASELINE_Y = 140;
+const HOVER_PULSE_PERIOD_MS = 260;
+// Slight epsilon improves edge/corner hit reliability when pointer coordinates land on fractional boundaries.
+const TILE_PICK_TOLERANCE = 1.001;
+const NPC_HITBOX_HALF_WIDTH = 15;
+const NPC_HITBOX_HALF_HEIGHT = 25;
 
 const ROLE_STYLE = {
   vendor:       { color: '#ffd84d', factionRing: true },
@@ -111,6 +117,13 @@ function toIso(col, row) {
   return {
     x: (col - row) * HALF_TILE_W,
     y: (col + row) * HALF_TILE_H,
+  };
+}
+
+function fromIso(isoX, isoY) {
+  return {
+    col: (isoY / HALF_TILE_H + isoX / HALF_TILE_W) / 2,
+    row: (isoY / HALF_TILE_H - isoX / HALF_TILE_W) / 2,
   };
 }
 
@@ -244,6 +257,34 @@ export function createIsoRenderer(canvas) {
   Object.values(BUILDING_ASSETS).forEach((path) => loadImage(path, imageRegistry));
   Object.values(PROP_ASSETS).forEach((path) => loadImage(path, imageRegistry));
   Object.values(NPC_ASSETS).forEach((path) => loadImage(path, imageRegistry));
+
+  function getCameraFrame(state) {
+    const zoom = clamp(state.camera?.zoom ?? 1, ZOOM_MIN, ZOOM_MAX);
+    return {
+      zoom,
+      originX: -state.camera.x,
+      originY: -state.camera.y,
+      translateX: canvas.width / 2,
+      translateY: CAMERA_BASELINE_Y,
+    };
+  }
+
+  function clientToWorldPoint(clientX, clientY, state) {
+    const rect = canvas.getBoundingClientRect();
+    const localX = clientX - rect.left;
+    const localY = clientY - rect.top;
+    const frame = getCameraFrame(state);
+    return {
+      x: (localX - frame.translateX) / frame.zoom,
+      y: (localY - frame.translateY) / frame.zoom,
+      frame,
+    };
+  }
+
+  function isTileBlocked(col, row, metrics) {
+    const terrain = classifyTerrain(col, row, metrics);
+    return terrain === 'water' || terrain === 'coast';
+  }
 
   function drawIsoTile(path, x, y, elevation = 0, rotate = 0) {
     const img = imageRegistry[path];
@@ -593,6 +634,118 @@ export function createIsoRenderer(canvas) {
     ctx.restore();
   }
 
+  function drawHoveredTile(originX, originY, hoverTile, now) {
+    if (!hoverTile?.valid) return;
+    const iso = toIso(hoverTile.col, hoverTile.row);
+    const x = originX + iso.x;
+    const y = originY + iso.y;
+    const centerY = y + HALF_TILE_H;
+    const pulse = 0.5 + (Math.sin(now / HOVER_PULSE_PERIOD_MS) + 1) * 0.15;
+
+    ctx.save();
+    ctx.globalAlpha = 0.16 + pulse * 0.07;
+    ctx.fillStyle = '#47ff87';
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+    ctx.lineTo(x + HALF_TILE_W, y + HALF_TILE_H);
+    ctx.lineTo(x, y + TILE_H);
+    ctx.lineTo(x - HALF_TILE_W, y + HALF_TILE_H);
+    ctx.closePath();
+    ctx.fill();
+
+    ctx.globalAlpha = 0.5 + pulse * 0.18;
+    ctx.strokeStyle = '#7dffb0';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+    ctx.lineTo(x + HALF_TILE_W, y + HALF_TILE_H);
+    ctx.lineTo(x, y + TILE_H);
+    ctx.lineTo(x - HALF_TILE_W, y + HALF_TILE_H);
+    ctx.closePath();
+    ctx.stroke();
+
+    ctx.globalAlpha = 0.18;
+    ctx.fillStyle = '#89ffc6';
+    ctx.beginPath();
+    ctx.ellipse(x, centerY, HALF_TILE_W * 0.55, HALF_TILE_H * 0.5, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  }
+
+  function pickTileFromClientPoint(clientX, clientY, state) {
+    if (!state?.map) return null;
+    const metrics = getSceneMetrics(state);
+    const point = clientToWorldPoint(clientX, clientY, state);
+    const { originX, originY } = point.frame;
+    const isoX = point.x - originX;
+    const isoY = point.y - originY;
+    const raw = fromIso(isoX, isoY);
+    const baseCol = Math.floor(raw.col);
+    const baseRow = Math.floor(raw.row);
+
+    let best = null;
+    for (let dr = -1; dr <= 1; dr += 1) {
+      for (let dc = -1; dc <= 1; dc += 1) {
+        const col = baseCol + dc;
+        const row = baseRow + dr;
+        if (col < 0 || row < 0 || col >= state.map.width || row >= state.map.height) continue;
+        const tileIso = toIso(col, row);
+        const tileX = originX + tileIso.x;
+        const tileY = originY + tileIso.y;
+        const cx = tileX;
+        const cy = tileY + HALF_TILE_H;
+        const norm = Math.abs(point.x - cx) / HALF_TILE_W + Math.abs(point.y - cy) / HALF_TILE_H;
+        if (norm > TILE_PICK_TOLERANCE) continue;
+        if (!best || norm < best.norm) {
+          best = { col, row, norm };
+        }
+      }
+    }
+
+    const tileCol = best ? best.col : baseCol;
+    const tileRow = best ? best.row : baseRow;
+    const inBounds = tileCol >= 0
+      && tileRow >= 0
+      && tileCol < state.map.width
+      && tileRow < state.map.height;
+    const blocked = inBounds ? isTileBlocked(tileCol, tileRow, metrics) : true;
+    return {
+      col: tileCol,
+      row: tileRow,
+      inBounds,
+      blocked,
+      valid: inBounds && !blocked,
+    };
+  }
+
+  function pickNpcFromClientPoint(clientX, clientY, state) {
+    if (!state?.npc?.entities?.length) return null;
+    const metrics = getSceneMetrics(state);
+    const point = clientToWorldPoint(clientX, clientY, state);
+    const { originX, originY } = point.frame;
+    let nearest = null;
+    let nearestScore = Infinity;
+
+    for (const npc of state.npc.entities) {
+      if (!npc || npc.mode !== 'active') continue;
+      const iso = toIso(npc.col, npc.row);
+      const elevation = getTileElevation(npc.col, npc.row, metrics);
+      const sx = originX + iso.x;
+      const sy = originY + iso.y - elevation - 4;
+      const dx = point.x - sx;
+      const dy = point.y - (sy - 16);
+      const withinBody = Math.abs(dx) <= NPC_HITBOX_HALF_WIDTH && Math.abs(dy) <= NPC_HITBOX_HALF_HEIGHT;
+      if (!withinBody) continue;
+      const score = (dx * dx) + (dy * dy);
+      if (score < nearestScore) {
+        nearest = npc;
+        nearestScore = score;
+      }
+    }
+
+    return nearest;
+  }
+
   function render(state) {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     const now = Date.now();
@@ -604,12 +757,11 @@ export function createIsoRenderer(canvas) {
     const samImpact = state.effects?.samImpactUntil > now;
     const shakeX = samImpact ? (Math.random() * 8 - 4) : 0;
     const shakeY = samImpact ? (Math.random() * 6 - 3) : 0;
-    const zoom = clamp(state.camera?.zoom ?? 1, ZOOM_MIN, ZOOM_MAX);
-    const originX = -state.camera.x;
-    const originY = -state.camera.y;
+    const frame = getCameraFrame(state);
+    const { zoom, originX, originY } = frame;
 
     ctx.save();
-    ctx.translate(canvas.width / 2 + shakeX, 140 + shakeY);
+    ctx.translate(frame.translateX + shakeX, frame.translateY + shakeY);
     ctx.scale(zoom, zoom);
 
     for (let row = 0; row < state.map.height; row += 1) {
@@ -645,6 +797,8 @@ export function createIsoRenderer(canvas) {
         }
       }
     }
+
+    drawHoveredTile(originX, originY, state.mouse?.hoverTile, now);
 
     for (let row = 0; row < state.map.height; row += 1) {
       for (let col = 0; col < state.map.width; col += 1) {
@@ -717,5 +871,9 @@ export function createIsoRenderer(canvas) {
     }
   }
 
-  return { render };
+  return {
+    render,
+    pickTileFromClientPoint,
+    pickNpcFromClientPoint,
+  };
 }

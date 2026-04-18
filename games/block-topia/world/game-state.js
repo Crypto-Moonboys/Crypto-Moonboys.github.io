@@ -3,6 +3,7 @@ function nowUtcDaySeed() {
 }
 
 const PLAYER_MOVEMENT_SPEED = 3.2;
+const MOVE_TARGET_ARRIVAL_DISTANCE = 0.06;
 // Seconds a player must stand in a district (Night) before a capture preview tick fires
 const CAPTURE_TICK_INTERVAL = 2;
 // Visual progress increment per tick (0–100 scale); server owns the real control value
@@ -11,6 +12,22 @@ const CAPTURE_PROGRESS_DELTA = 3;
 function computeSeasonIndex(epochMs, cycleDays) {
   const cycleMs = cycleDays * 24 * 60 * 60 * 1000;
   return Math.floor((Date.now() - epochMs) / cycleMs);
+}
+
+function syncPlayerSpatialState(state) {
+  state.player.x = Math.max(0, Math.min(state.map.width - 1, state.player.x));
+  state.player.y = Math.max(0, Math.min(state.map.height - 1, state.player.y));
+
+  const current = state.districts.fromGrid(state.player.x, state.player.y);
+  if (current) {
+    state.player.districtId = current.id;
+    state.player.districtName = current.name;
+  }
+
+  const isoX = (state.player.x - state.player.y) * 32;
+  const isoY = (state.player.x + state.player.y) * 16;
+  state.camera.x = isoX;
+  state.camera.y = isoY;
 }
 
 function buildDistrictLookup(districts) {
@@ -75,6 +92,7 @@ export function createGameState(bundle) {
       xp: 0,
       score: 0,
       faction: bundle.factions.primary?.name || 'Liberators',
+      moveTarget: null,
     },
     remotePlayers: [],
     camera: { x: 0, y: 0, zoom: 1, zoomIndex: 1 },
@@ -87,12 +105,17 @@ export function createGameState(bundle) {
     // npc-system reads this to lerp local entities toward server-authoritative positions.
     npcTargets: null,
     npc: {
-      activeTarget: bundle.npcArchetypes.split?.active || 60,
+      activeTarget: bundle.npcArchetypes.split?.active || 24,
       activeCap: bundle.npcArchetypes.split?.activeCap || 80,
-      crowdTarget: bundle.npcArchetypes.split?.crowd || 300,
+      crowdTarget: bundle.npcArchetypes.split?.crowd || 60,
       crowdCap: bundle.npcArchetypes.split?.crowdCap || 600,
       archetypes: bundle.npcArchetypes.archetypes || [],
       entities: [],
+    },
+    mouse: {
+      hoverTile: null,
+      selectedTile: null,
+      hoverNpcId: '',
     },
     sam: {
       phases: bundle.samPhases.phases || [],
@@ -190,23 +213,41 @@ export function updatePlayerMotion(state, input, dt, moveSender) {
     moved = true;
   }
 
-  state.player.x = Math.max(0, Math.min(state.map.width - 1, state.player.x));
-  state.player.y = Math.max(0, Math.min(state.map.height - 1, state.player.y));
-
-  const current = state.districts.fromGrid(state.player.x, state.player.y);
-  if (current) {
-    state.player.districtId = current.id;
-    state.player.districtName = current.name;
-  }
-
-  const isoX = (state.player.x - state.player.y) * 32;
-  const isoY = (state.player.x + state.player.y) * 16;
-  state.camera.x = isoX;
-  state.camera.y = isoY;
+  syncPlayerSpatialState(state);
 
   if (moved) {
     moveSender(state.player.x, state.player.y);
   }
+
+  return moved;
+}
+
+export function movePlayerTowardTarget(state, dt, moveSender) {
+  const target = state.player.moveTarget;
+  if (!target || !Number.isFinite(target.x) || !Number.isFinite(target.y)) {
+    state.player.moveTarget = null;
+    return false;
+  }
+
+  const dx = target.x - state.player.x;
+  const dy = target.y - state.player.y;
+  const distance = Math.hypot(dx, dy);
+  if (distance <= MOVE_TARGET_ARRIVAL_DISTANCE) {
+    state.player.x = target.x;
+    state.player.y = target.y;
+    state.player.moveTarget = null;
+    syncPlayerSpatialState(state);
+    moveSender(state.player.x, state.player.y);
+    return true;
+  }
+
+  const step = PLAYER_MOVEMENT_SPEED * dt;
+  const ratio = Math.min(1, step / distance);
+  state.player.x += dx * ratio;
+  state.player.y += dy * ratio;
+  syncPlayerSpatialState(state);
+  moveSender(state.player.x, state.player.y);
+  return true;
 }
 
 /**
