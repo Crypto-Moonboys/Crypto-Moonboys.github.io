@@ -43,7 +43,10 @@ function ensureTronAssets() {
   }
 
   function appendScript(src, marker, done) {
-    if (document.querySelector(`script[data-tron-react-engine="${marker}"]`) || (marker === 'engine' && window.TRON) || (marker === 'audio' && window.TRON_AUDIO)) {
+    const alreadyInjected = !!document.querySelector(`script[data-tron-react-engine="${marker}"]`);
+    const engineReady = marker === 'engine' && !!window.TRON;
+    const audioReady = marker === 'audio' && !!window.TRON_AUDIO;
+    if (alreadyInjected || engineReady || audioReady) {
       if (typeof done === 'function') done();
       return;
     }

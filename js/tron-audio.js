@@ -59,6 +59,10 @@
     return ready;
   }
 
+  /**
+   * Create a short attack/decay gain envelope for a tone burst.
+   * attack/decay are seconds (small positive floats), peak is the max gain.
+   */
   function envelopeGain(ctx, startAt, attack = 0.008, decay = 0.1, peak = 0.05) {
     const gain = ctx.createGain();
     gain.gain.setValueAtTime(0.0001, startAt);

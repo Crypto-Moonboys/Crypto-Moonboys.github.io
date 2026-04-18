@@ -13,6 +13,8 @@
   const DEFAULT_POLL_MS = 90000;
   const HEALTH_TIMEOUT_MS = 4500;
   const DEMO_WAKEUP_IDLE_MS = 95000;
+  const HOVER_AUDIO_COOLDOWN_MS = 120;
+  const CLICKABLE_SELECTOR = 'a,button,.btn,[role="button"],.article-card,.category-card,.article-list-item,.home-widget,[data-clickable="true"]';
 
   const root = document.body;
   if (!root) return;
@@ -285,20 +287,20 @@
   }
 
   function isClickable(el) {
-    return !!(el && el.closest('a,button,.btn,[role="button"],.article-card,.category-card,.article-list-item,.home-widget,[data-clickable="true"]'));
+    return !!(el && el.closest(CLICKABLE_SELECTOR));
   }
 
   function initHoverReactions() {
     document.addEventListener('mouseover', (event) => {
       const target = event.target && event.target.nodeType === 1 ? event.target : null;
       if (!isClickable(target)) return;
-      const clickable = target.closest('a,button,.btn,[role="button"],.article-card,.category-card,.article-list-item,.home-widget,[data-clickable="true"]');
+      const clickable = target.closest(CLICKABLE_SELECTOR);
       if (!clickable) return;
       clickable.classList.add('tron-hover-pulse');
       setTimeout(() => clickable.classList.remove('tron-hover-pulse'), 280);
 
       const stamp = now();
-      if (stamp - hoverCooldownAt < 120) return;
+      if (stamp - hoverCooldownAt < HOVER_AUDIO_COOLDOWN_MS) return;
       hoverCooldownAt = stamp;
       if (window.TRON_AUDIO && typeof window.TRON_AUDIO.play === 'function') {
         window.TRON_AUDIO.play('hover');
