@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-04-18T15:07:18.286Z",
+  "generatedAt": "2026-04-18T16:02:19.390Z",
   "mode": "live-ai",
   "sourceHealth": {
     "coingecko-global": "ok",
@@ -11,89 +11,84 @@
   "signalCount": 5,
   "signals": [
     {
-      "id": "signal-1776524838286-1",
+      "id": "signal-1776528139390-1",
       "lane": "world",
       "priority": 4,
       "ttlMinutes": 45,
-      "npcLine": "Market pulse flickers with dread, shadows deepen over cryptos.",
-      "questPulse": "Tracker warns: value erosion signals incoming unrest.",
-      "worldFeed": "Digital exchanged flicker, mass caution grips netrunners.",
-      "clueEvent": "Cryptocurrency indexes show sustained stress, vigil up.",
+      "npcLine": "Market pulse's bleeding shadow dims the neon skyline.",
+      "questPulse": "Crypto tides sink; brace for data droughts.",
+      "worldFeed": "Global cap shrinks under fear's heavy hand.",
+      "clueEvent": "Active tokens fracturing; many lost in digital haze.",
       "tags": [
-        "market",
+        "market-collapse",
         "fear",
-        "crypto",
-        "dystopia"
+        "crypto-dusk"
       ],
-      "expiresAt": "2026-04-18T15:52:18.286Z"
+      "expiresAt": "2026-04-18T16:47:19.390Z"
     },
     {
-      "id": "signal-1776524838286-2",
+      "id": "signal-1776528139390-2",
       "lane": "ops",
-      "priority": 5,
-      "ttlMinutes": 30,
-      "npcLine": "Surveillance flags: RAVE tokens stagnant, suspicious silence.",
-      "questPulse": "Investigate dead zones on RAVE blockchain node.",
-      "worldFeed": "Whispers of blackouts haunt token RAVE’s ledger.",
-      "clueEvent": "Data spikes indicate blockage at RAVE chain segment.",
-      "tags": [
-        "rave",
-        "blockchain",
-        "investigation",
-        "crypto"
-      ],
-      "expiresAt": "2026-04-18T15:37:18.286Z"
-    },
-    {
-      "id": "signal-1776524838286-3",
-      "lane": "clue",
       "priority": 3,
-      "ttlMinutes": 60,
-      "npcLine": "SIREN alerts rising, unusual activity brews beneath the grid.",
-      "questPulse": "Decrypt SIREN signal burst in dark web corners.",
-      "worldFeed": "SIREN token activity surges, investor nerves crack.",
-      "clueEvent": "Unseen forces manipulate SIREN market trajectories.",
+      "ttlMinutes": 30,
+      "npcLine": "RAVE signals flat, SIREN rises in the underground.",
+      "questPulse": "Signal spikes hint at shifting allegiances.",
+      "worldFeed": "Networks pulse erratically, SIREN beacon flickers up.",
+      "clueEvent": "Zero-score RAVE fades; a silent cold war begins.",
       "tags": [
-        "siren",
-        "crypto",
-        "signal",
-        "manipulation"
+        "signal-shift",
+        "trending",
+        "crypto-warfare"
       ],
-      "expiresAt": "2026-04-18T16:07:18.286Z"
+      "expiresAt": "2026-04-18T16:32:19.390Z"
     },
     {
-      "id": "signal-1776524838286-4",
+      "id": "signal-1776528139390-3",
+      "lane": "clue",
+      "priority": 5,
+      "ttlMinutes": 60,
+      "npcLine": "Fear's grip tightens; cryptic whispers on blockchain winds.",
+      "questPulse": "Sentiment plummets, hive minds jittery and fractured.",
+      "worldFeed": "Global sentiment cracks; anxious nodes dip low.",
+      "clueEvent": "Market fears ripple through darknet exchanges.",
+      "tags": [
+        "sentiment-crash",
+        "fear-spread",
+        "blockchain"
+      ],
+      "expiresAt": "2026-04-18T17:02:19.390Z"
+    },
+    {
+      "id": "signal-1776528139390-4",
       "lane": "quest",
       "priority": 2,
-      "ttlMinutes": 90,
-      "npcLine": "OVPP chains tremble; find the source before collapse.",
-      "questPulse": "Trace cold wallets draining OVPP reserves.",
-      "worldFeed": "OVPP network stress tests fail; protocols freeze.",
-      "clueEvent": "Immediate analysis required on OVPP ledger anomalies.",
+      "ttlMinutes": 50,
+      "npcLine": "AVNT seeks revival amidst digital decay.",
+      "questPulse": "Quest to revive fading tokens begins.",
+      "worldFeed": "New assets stir beneath the data graveyard.",
+      "clueEvent": "AVNT flickers as hope in dark markets.",
       "tags": [
-        "ovpp",
-        "quest",
-        "crypto",
-        "threat"
+        "revival",
+        "digital-hope",
+        "cryptotoken"
       ],
-      "expiresAt": "2026-04-18T16:37:18.286Z"
+      "expiresAt": "2026-04-18T16:52:19.390Z"
     },
     {
-      "id": "signal-1776524838286-5",
+      "id": "signal-1776528139390-5",
       "lane": "npc",
       "priority": 3,
-      "ttlMinutes": 50,
-      "npcLine": "Pengu runners whisper of dives into deep vaults.",
-      "questPulse": "an operator operatives tracking hidden vault exploits.",
-      "worldFeed": "Vault raids spike; Pengu tokens sway on rumors.",
-      "clueEvent": "Strange signatures in Pengu transaction logs detected.",
+      "ttlMinutes": 40,
+      "npcLine": "MON and BTC jockey for shadow dominance.",
+      "questPulse": "Old cryptos flex muscles amid chaos.",
+      "worldFeed": "Legacy chains shuffle as fear spreads.",
+      "clueEvent": "BTC and MON stand as pillars in storm.",
       "tags": [
-        "pengu",
-        "vault",
-        "crypto",
-        "heist"
+        "legacy-tokens",
+        "market-tension",
+        "crypto-giants"
       ],
-      "expiresAt": "2026-04-18T15:57:18.286Z"
+      "expiresAt": "2026-04-18T16:42:19.390Z"
     }
   ]
 }
