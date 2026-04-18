@@ -20,6 +20,11 @@ const ROLE_OPERATION_LINE_CHANCE = 0.6;
 const CONTROL_NODE_NUDGE_PROBABILITY = 0.005;
 const CONTROL_NODE_VILLAIN_DRAIN = 5;
 const CONTROL_NODE_HELPER_GAIN = 5;
+const INTERFERENCE_REACTION_DURATION_MS = 9000;
+const INTERFERENCE_DISTRICT_DIALOGUE_CHANCE = 0.65;
+const INTERFERENCE_NODE_RADIUS_SQ = 36;
+const INTERFERENCE_WANDER_CHANCE = 0.28;
+const UNSTABLE_VILLAIN_SPAWN_CHANCE = 0.3;
 
 // District-aware NPC spawn bands (col, row, w, h) matching districts.json grid regions
 const DISTRICT_SPAWN_REGIONS = [
@@ -121,6 +126,33 @@ const OPERATION_ROLE_DIALOGUE = {
     (district) => `${district} needs support now. Momentum swings to whoever answers this operation first.`,
     (district) => `Alignment pressure in ${district} is peaking. Bring allies before the lane collapses.`,
     (district) => `Support routes in ${district} are open for a moment. We should move now.`,
+  ],
+};
+
+const INTERFERENCE_ROLE_DIALOGUE = {
+  vendor: [
+    'Node surge is trashing local prices. Buy now or bleed credits.',
+    'Signal instability just burned my relay stock. Move fast.',
+  ],
+  fighter: [
+    'That node pulse lit the block. Hold the lane.',
+    'Interference hit this district hard. Stay ready.',
+  ],
+  agent: [
+    'Node noise rerouted our courier lanes. Stay off open channels.',
+    'Interference pressure is climbing. Use backup relays only.',
+  ],
+  'lore-keeper': [
+    'The control node is screaming. District memory is destabilising.',
+    'Signal static from that node is rewriting old routes.',
+  ],
+  recruiter: [
+    'Node disruption opened a pressure window. Pull allies in now.',
+    'District morale swings when node interference spikes.',
+  ],
+  drifter: [
+    'I heard that node crackle two blocks away.',
+    'Interference always drags SAM eyes closer.',
   ],
 };
 
@@ -264,6 +296,7 @@ function getInitialMoveTimer(mode, role) {
 export function createNpcSystem(state, liveIntelligence = null) {
   let batchIndex = 0;
   let crowdLerpSkipToggle = false;
+  let interferenceContext = null;
   const factionPool = ['Liberators', 'Wardens', 'Neutral'];
   const profileByRole = new Map(
     (state.lore?.legacy?.npcProfiles?.profiles || []).map((profile) => [profile.role, profile]),
@@ -395,6 +428,22 @@ export function createNpcSystem(state, liveIntelligence = null) {
   }
 
   function getDialogueLine(npc) {
+    const now = Date.now();
+    if (interferenceContext && now >= interferenceContext.expiresAt) {
+      interferenceContext = null;
+    }
+    if (
+      interferenceContext
+      && interferenceContext.districtId
+      && npc?.districtId === interferenceContext.districtId
+      && Math.random() < INTERFERENCE_DISTRICT_DIALOGUE_CHANCE
+    ) {
+      const hotLines = INTERFERENCE_ROLE_DIALOGUE[npc.role];
+      if (Array.isArray(hotLines) && hotLines.length) {
+        return sample(hotLines, 'Signal instability is rising across the district.');
+      }
+    }
+
     const districtOp = getDistrictOperation(npc?.districtId);
     const liveLine = liveIntelligence?.pickNpcLine?.(npc);
     const liveChance = districtOp ? LIVE_DIALOGUE_CHANCE_WITH_OPERATION : LIVE_DIALOGUE_CHANCE_BASE;
@@ -457,6 +506,9 @@ export function createNpcSystem(state, liveIntelligence = null) {
   }
 
   function tick(dt) {
+    if (interferenceContext && Date.now() >= interferenceContext.expiresAt) {
+      interferenceContext = null;
+    }
     const npcs = state.npc.entities || [];
     const total = npcs.length;
     if (!total) return;
@@ -581,10 +633,50 @@ export function createNpcSystem(state, liveIntelligence = null) {
     }
   }
 
+  function reactToNodeInterference(payload = {}) {
+    const districtId = payload.districtId || '';
+    const nodeX = Number(payload.nodeX);
+    const nodeY = Number(payload.nodeY);
+    const now = Date.now();
+    interferenceContext = {
+      districtId,
+      nodeId: payload.nodeId || '',
+      status: payload.status || 'contested',
+      expiresAt: now + INTERFERENCE_REACTION_DURATION_MS,
+      samPressureDelta: Number(payload.samPressureDelta) || 0,
+      sourcePlayerId: payload.sourcePlayerId || '',
+    };
+
+    const activePool = state.npc.activeEntities || state.npc.entities?.filter((npc) => npc?.mode === 'active') || [];
+    if (!activePool.length) return;
+    for (const npc of activePool) {
+      if (!npc) continue;
+      const sameDistrict = districtId && npc.districtId === districtId;
+      let nearNode = false;
+      if (Number.isFinite(nodeX) && Number.isFinite(nodeY)) {
+        const dx = npc.col - nodeX;
+        const dy = npc.row - nodeY;
+        nearNode = (dx * dx + dy * dy) <= INTERFERENCE_NODE_RADIUS_SQ;
+      }
+      if (!sameDistrict && !nearNode) continue;
+      npc.dialogueHooks = ['react_to_player_presence', 'district_rumor_ping', 'node_interference_alert'];
+      npc.dialogue = [getDialogueLine(npc)];
+      if (Math.random() < INTERFERENCE_WANDER_CHANCE) {
+        npc.lineId = pickRandomLineId();
+        npc.lineDirection = randomLineDirectionSign();
+        npc.t = 0;
+      }
+      if (payload.status === 'unstable' && Math.random() < UNSTABLE_VILLAIN_SPAWN_CHANCE) {
+        npc.type = 'villain';
+      }
+    }
+  }
+
   return {
     tick,
     nearestInteractive,
     getDialogueLine,
     spawnSamWave,
+    reactToNodeInterference,
   };
 }

@@ -17,6 +17,14 @@ const CROWD_VISIBILITY_ZOOM_THRESHOLD = 1;
 const CULL_MARGIN = 120;
 const MAGENTA_OVERLAY_COLOR = 'rgba(255,79,216,0.16)';
 const CONTROL_NODE_PICK_RADIUS_SQ = 22 * 22;
+const UNSTABLE_FLICKER_BASE = 0.7;
+const UNSTABLE_FLICKER_RATE = 60;
+const UNSTABLE_FLICKER_AMPLITUDE = 0.45;
+const UNSTABLE_PULSE_BASE = 0.95;
+const UNSTABLE_PULSE_RATE = 240;
+const UNSTABLE_PULSE_AMPLITUDE = 0.15;
+const HALO_PULSE_RATE = 180;
+const HALO_PULSE_AMPLITUDE = 0.22;
 
 const ROLE_STYLE = {
   vendor: { color: '#ffd84d', factionRing: true },
@@ -843,35 +851,67 @@ export function createIsoRenderer(canvas) {
     const cx = originX + iso.x;
     const cy = originY + iso.y + HALF_TILE_H;
     const baseRadius = 14;
-    const pulseScale = 0.85 + (Math.sin(now / 600) + 1) * 0.08;
-    const captured = node.owner !== null;
-    const baseColor = captured ? '#5ef2ff' : '#ff4a4a';
+    const status = node.status || 'stable';
+    const pulseActive = (Number(node.pulseUntil) || 0) > now;
+    const unstableFlicker = status === 'unstable'
+      ? (UNSTABLE_FLICKER_BASE + deterministicNoise2D(Math.floor(now / UNSTABLE_FLICKER_RATE), node.x + node.y) * UNSTABLE_FLICKER_AMPLITUDE)
+      : 1;
+    const pulseScale = status === 'unstable'
+      ? UNSTABLE_PULSE_BASE + (Math.sin(now / UNSTABLE_PULSE_RATE) + 1) * UNSTABLE_PULSE_AMPLITUDE
+      : 0.85 + (Math.sin(now / 600) + 1) * 0.08;
+    const baseColor = status === 'cooldown'
+      ? '#7f8aa3'
+      : status === 'unstable'
+        ? '#ff4fd8'
+        : status === 'contested'
+          ? '#ff9b42'
+          : '#5ef2ff';
 
     ctx.save();
 
     // Ground fill
-    ctx.globalAlpha = 0.25;
+    ctx.globalAlpha = (status === 'unstable' ? 0.34 : 0.25) * unstableFlicker;
     ctx.fillStyle = baseColor;
     ctx.beginPath();
     ctx.ellipse(cx, cy, baseRadius * pulseScale, baseRadius * 0.52 * pulseScale, 0, 0, Math.PI * 2);
     ctx.fill();
 
     // Outer ring
-    ctx.globalAlpha = 0.85;
+    ctx.globalAlpha = pulseActive ? 1 : 0.85;
     ctx.strokeStyle = baseColor;
-    ctx.lineWidth = 2;
+    ctx.lineWidth = status === 'unstable' ? 2.8 : status === 'cooldown' ? 1.8 : 2;
+    if (status === 'cooldown') {
+      ctx.setLineDash([4, 4]);
+    }
     ctx.beginPath();
     ctx.ellipse(cx, cy, baseRadius * pulseScale, baseRadius * 0.52 * pulseScale, 0, 0, Math.PI * 2);
     ctx.stroke();
+    ctx.setLineDash([]);
 
-    // Control progress arc (green sweep)
-    if (node.control > 0) {
-      const angle = (node.control / 100) * Math.PI * 2;
+    // Interference progress arc
+    const meter = Math.max(
+      0,
+      Math.min(
+        100,
+        Number.isFinite(node.interference) ? node.interference : node.control,
+      ),
+    );
+    if (meter > 0) {
       ctx.globalAlpha = 0.7;
-      ctx.strokeStyle = '#8dff6a';
+      ctx.strokeStyle = status === 'unstable' ? '#ff4fd8' : status === 'contested' ? '#ffd84d' : '#8dff6a';
       ctx.lineWidth = 3;
       ctx.beginPath();
-      ctx.ellipse(cx, cy - 2, baseRadius + 5, (baseRadius + 5) * 0.52, 0, -Math.PI / 2, -Math.PI / 2 + angle);
+      ctx.ellipse(cx, cy - 2, baseRadius + 5, (baseRadius + 5) * 0.52, 0, -Math.PI / 2, -Math.PI / 2 + ((meter / 100) * Math.PI * 2));
+      ctx.stroke();
+    }
+
+    if (pulseActive) {
+      const haloPulse = 1 + ((Math.sin(now / HALO_PULSE_RATE) + 1) * HALO_PULSE_AMPLITUDE);
+      ctx.globalAlpha = status === 'unstable' ? 0.45 : 0.3;
+      ctx.strokeStyle = baseColor;
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.ellipse(cx, cy, (baseRadius + 9) * haloPulse, (baseRadius + 9) * 0.52 * haloPulse, 0, 0, Math.PI * 2);
       ctx.stroke();
     }
 
@@ -881,8 +921,12 @@ export function createIsoRenderer(canvas) {
     ctx.textAlign = 'center';
     ctx.fillStyle = 'rgba(0,0,0,0.7)';
     ctx.fillText(node.id.toUpperCase(), cx + 1, cy - baseRadius - 3);
-    ctx.fillStyle = captured ? '#5ef2ff' : '#ff6e6e';
+    ctx.fillStyle = baseColor;
     ctx.fillText(node.id.toUpperCase(), cx, cy - baseRadius - 4);
+    if (status === 'unstable' || status === 'cooldown') {
+      ctx.fillStyle = status === 'unstable' ? '#ff4fd8' : '#a0b0c8';
+      ctx.fillText(status === 'unstable' ? '⚠' : '⌛', cx, cy + 2);
+    }
 
     ctx.restore();
   }

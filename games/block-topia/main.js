@@ -1,4 +1,4 @@
-import { connectMultiplayer, sendMovement } from './network.js';
+import { connectMultiplayer, sendMovement, sendNodeInterference } from './network.js';
 import { loadUnifiedData } from './world/data-loader.js';
 import {
   createGameState,
@@ -15,6 +15,7 @@ import { createMemorySystem } from './world/memory-system.js';
 import { createLiveIntelligence } from './world/live-intelligence.js';
 import { createClueSignalSystem } from './world/clue-signal-system.js';
 import { createSignalOperationSystem } from './world/signal-operation-system.js';
+import { createNodeInterferenceSystem } from './world/node-interference-system.js';
 import { createHud } from './ui/hud.js';
 import { createIsoRenderer } from './render/iso-renderer.js';
 
@@ -41,10 +42,6 @@ const CAMERA_ZOOM_MAX = 1.4;
 const CAMERA_ZOOM_WHEEL_STEP = 0.06;
 const MOUSE_DRAG_THRESHOLD_PX = 8;
 const MOUSE_DRAG_DOUBLE_CLICK_SUPPRESS_MS = 400;
-const MAX_CONTROL = 100;
-const PLAYER_CLICK_CONTROL_GAIN = 10;
-const SAM_CONTROL_DRAIN = 20;
-
 const canvas = document.getElementById('world-canvas');
 const hud = createHud(document);
 const renderer = createIsoRenderer(canvas);
@@ -69,6 +66,7 @@ async function boot() {
   const quests = createQuestSystem(state, liveIntelligence);
   const clues = createClueSignalSystem(liveIntelligence);
   const operations = createSignalOperationSystem(state, liveIntelligence);
+  const nodeInterference = createNodeInterferenceSystem(state);
   const memory = createMemorySystem(state);
   let multiplayerConnected = false;
   let nearbyNpc = null;
@@ -133,12 +131,14 @@ async function boot() {
   function tryInteractWithClickedNode(event) {
     const node = renderer.pickControlNodeFromClientPoint(event.clientX, event.clientY, state);
     if (!node) return false;
-    node.control = Math.min(MAX_CONTROL, node.control + PLAYER_CLICK_CONTROL_GAIN);
-    if (node.control >= MAX_CONTROL && !node.owner) {
-      node.owner = state.player.name;
-      pushFeedDeduped(`⚡ NODE ${node.id.toUpperCase()} CAPTURED by ${state.player.name}`, 'combat', `node-capture:${node.id}`);
-      hud.showDistrictCapture(`⚡ NODE ${node.id.toUpperCase()} CAPTURED`);
+    if (!nodeInterference.canInterfere(node.id)) {
+      hud.showNodeInterference(`Node ${node.id.toUpperCase()} is cooling down`, 'warning');
+      return true;
     }
+    // Visual-only optimistic pulse — node state is server-authoritative.
+    // All real effects (status, feed, HUD, NPC, SAM) come from onNodeInterferenceChanged.
+    nodeInterference.beginLocalPulse(node.id);
+    sendNodeInterference(node.id);
     return true;
   }
 
@@ -206,6 +206,88 @@ async function boot() {
       npcId: targetNpc.id,
       role: targetNpc.role,
       district: state.player.districtId,
+    });
+  }
+
+  function applyDistrictControlUpdate({ districtId, control, owner }, source = 'server', options = {}) {
+    const district = districtStateById.get(districtId);
+    if (!district) return;
+    const previousControl = district.control;
+    if (Number.isFinite(control)) {
+      district.control = Math.max(0, Math.min(100, control));
+    }
+    if (owner) district.owner = owner;
+
+    if (state.player.districtId === district.id) {
+      hud.setDistrictControl(district.control);
+      hud.setDistrictOwner(district.owner);
+    }
+    if (options.silent) return;
+
+    if (owner) {
+      hud.setFactionStatus(`${primaryFactionName} vs ${secondaryFactionName} · ${district.name}: ${owner}`);
+    }
+    state.effects.districtPulseUntil = Date.now() + DISTRICT_PULSE_DURATION_MS;
+    state.effects.districtPulseId = district.id;
+    if (previousControl < DISTRICT_CAPTURE_THRESHOLD && district.control >= DISTRICT_CAPTURE_THRESHOLD) {
+      hud.showDistrictCapture(`🏴 ${district.name} CAPTURED · ${district.owner}`);
+      pushFeedDeduped(`🏴 ${district.name} captured by ${district.owner}!`, 'combat', `district-captured:${district.id}:${district.owner}`);
+    } else if (source === 'node') {
+      const controlPct = Math.round(district.control);
+      pushFeedDeduped(`🏙️ DISTRICT PRESSURE SHIFTING · ${district.name} ${controlPct}%`, 'combat', `district-node-ripple:${district.id}:${controlPct}`);
+    } else {
+      const controlPct = Math.round(district.control);
+      pushFeedDeduped(`🏙️ District sync: ${district.name} ${controlPct}% · ${district.owner}`, 'combat', `district-sync:${district.id}:${controlPct}:${district.owner}`);
+    }
+    memory.record('district', {
+      at: Date.now(),
+      district: district.id,
+      previousControl,
+      control: district.control,
+      owner: district.owner,
+      source,
+    });
+  }
+
+  function handleNodeInterferenceRipple(payload, source = 'server') {
+    if (!payload) return;
+    const eventPayload = Array.isArray(payload.feedLines) ? payload : nodeInterference.applyServerNodeUpdate(payload);
+    if (!eventPayload) return;
+
+    if (Number.isFinite(eventPayload.samPressure)) {
+      state.sam.pressure = Math.max(0, Math.min(100, eventPayload.samPressure));
+    } else if (Number.isFinite(eventPayload.samPressureDelta) && eventPayload.samPressureDelta !== 0) {
+      state.sam.pressure = Math.max(0, Math.min(100, state.sam.pressure + eventPayload.samPressureDelta));
+    }
+
+    if (eventPayload.districtId && Number.isFinite(eventPayload?.districtControl)) {
+      applyDistrictControlUpdate({
+        districtId: eventPayload.districtId,
+        control: Number(eventPayload.districtControl),
+        owner: eventPayload?.districtOwner || '',
+      }, 'node');
+    }
+
+    npc.reactToNodeInterference?.(eventPayload);
+
+    const statusLabel = String(eventPayload.status || 'stable').toUpperCase();
+    hud.showNodeInterference(`NODE ${String(eventPayload.nodeId || '').toUpperCase()} · ${statusLabel}`);
+
+    for (const line of eventPayload.feedLines || []) {
+      pushFeedDeduped(line, line.includes('SAM') ? 'sam' : 'combat', `node-ripple:${eventPayload.nodeId}:${line}:${source}`);
+    }
+    if (eventPayload.samPressureDelta > 0) {
+      hud.showNodeInterference(`SAM pressure +${eventPayload.samPressureDelta}`, 'sam');
+    }
+
+    memory.record('player', {
+      at: Date.now(),
+      action: 'node_interference_ripple',
+      nodeId: eventPayload.nodeId,
+      districtId: eventPayload.districtId || '',
+      status: eventPayload.status || 'stable',
+      samPressureDelta: eventPayload.samPressureDelta || 0,
+      source,
     });
   }
 
@@ -393,15 +475,20 @@ async function boot() {
       }
       if (Array.isArray(data?.districts)) {
         for (const incoming of data.districts) {
-          const district = districtStateById.get(incoming.id);
-          if (!district) continue;
-          if (Number.isFinite(incoming.control)) {
-            district.control = Math.max(0, Math.min(100, incoming.control));
-          }
-          if (incoming.owner) {
-            district.owner = incoming.owner;
-          }
+          applyDistrictControlUpdate({
+            districtId: incoming.id,
+            control: Number(incoming.control),
+            owner: incoming.owner || '',
+          }, 'snapshot', { silent: true });
         }
+      }
+      if (Array.isArray(data?.controlNodes)) {
+        for (const nodePayload of data.controlNodes) {
+          nodeInterference.applyServerNodeUpdate(nodePayload, { silent: true });
+        }
+      }
+      if (Number.isFinite(data?.samPressure)) {
+        state.sam.pressure = Math.max(0, Math.min(100, Number(data.samPressure)));
       }
       if (Number.isFinite(data?.samPhase) && state.sam.phases.length) {
         const maxIndex = state.sam.phases.length - 1;
@@ -448,53 +535,17 @@ async function boot() {
         npc.spawnSamWave?.();
         state.effects.samImpactUntil = Date.now() + SAM_IMPACT_DURATION_MS;
         hud.triggerSamImpact('⚡ SAM SIGNAL RUSH — Giant encounter incoming!');
-        // SAM events destabilise all control nodes
-        if (Array.isArray(state.controlNodes)) {
-          for (const n of state.controlNodes) {
-            n.control = Math.max(0, n.control - SAM_CONTROL_DRAIN);
-          }
-        }
       } else if (phase.id === 'conflict') {
         state.effects.districtPulseUntil = Date.now() + DISTRICT_PULSE_CONFLICT_MS;
       }
       memory.record('sam', samEvent);
     },
     onDistrictCaptureChanged: ({ districtId, control, owner }) => {
-      const district = districtStateById.get(districtId);
-      if (!district) return;
-
-      const previousControl = district.control;
-      if (Number.isFinite(control)) {
-        district.control = Math.max(0, Math.min(100, control));
-      }
-      if (owner) {
-        district.owner = owner;
-      }
-
-      if (state.player.districtId === district.id) {
-        hud.setDistrictControl(district.control);
-        hud.setDistrictOwner(district.owner);
-      }
-      if (owner) {
-        hud.setFactionStatus(`${primaryFactionName} vs ${secondaryFactionName} · ${district.name}: ${owner}`);
-      }
-      state.effects.districtPulseUntil = Date.now() + DISTRICT_PULSE_DURATION_MS;
-      state.effects.districtPulseId = district.id;
-      if (previousControl < DISTRICT_CAPTURE_THRESHOLD && district.control >= DISTRICT_CAPTURE_THRESHOLD) {
-        // Street Signal feature reintroduced: district capture impact broadcast.
-        hud.showDistrictCapture(`🏴 ${district.name} CAPTURED · ${district.owner}`);
-        hud.pushFeed(`🏴 ${district.name} captured by ${district.owner}!`, 'combat');
-      } else {
-        hud.pushFeed(`🏙️ District sync: ${district.name} ${Math.round(district.control)}% · ${district.owner}`, 'combat');
-      }
-      memory.record('district', {
-        at: Date.now(),
-        district: district.id,
-        previousControl,
-        control: district.control,
-        owner: district.owner,
-        source: 'server',
-      });
+      applyDistrictControlUpdate({ districtId, control, owner }, 'server');
+    },
+    onNodeInterferenceChanged: (payload) => {
+      const eventPayload = nodeInterference.applyServerNodeUpdate(payload);
+      handleNodeInterferenceRipple(eventPayload || payload, 'server');
     },
   });
 
@@ -519,6 +570,7 @@ async function boot() {
     // npc.tick() follows server NPC targets (state.npcTargets) when available;
     // falls back to local simulation when the server is unreachable.
     npc.tick(dt);
+    nodeInterference.tick(dt);
     // Visual-only capture preview — server decides actual control values.
     tickDistrictCapture(state, dt);
 
