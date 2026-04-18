@@ -6,8 +6,8 @@ import { checkAndCompleteQuests } from '../systems/quest-system.js';
 
 const WORLD_MAP_WIDTH = 20;
 const WORLD_MAP_HEIGHT = 20;
-const ACTIVE_NPC_COUNT = 80;
-const CROWD_NPC_COUNT = 220;
+const ACTIVE_NPC_COUNT = 40;
+const CROWD_NPC_COUNT = 20;
 const SAM_PHASE_INTERVAL_MS = 30000;
 const DISTRICT_DRIFT_INTERVAL_MS = 1200;
 const WORLD_SNAPSHOT_INTERVAL_MS = 300;
