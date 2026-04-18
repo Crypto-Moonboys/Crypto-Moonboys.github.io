@@ -131,6 +131,19 @@ const NPC_NAMES = {
   drifter: ['Ghost', 'Null', 'Transit', 'Flux', 'Walker'],
 };
 
+function lineCoordKey(point) {
+  return `${point.x},${point.y}`;
+}
+
+const LINE_BY_ID = new Map(NETWORK_LINES.map((line) => [line.id, line]));
+const LINES_BY_FROM_COORD = new Map();
+for (const line of NETWORK_LINES) {
+  const key = lineCoordKey(line.from);
+  const existing = LINES_BY_FROM_COORD.get(key) || [];
+  existing.push(line);
+  LINES_BY_FROM_COORD.set(key, existing);
+}
+
 function randInt(min, max) {
   return min + Math.floor(Math.random() * (max - min));
 }
@@ -165,18 +178,16 @@ function pickRandomLineId() {
 }
 
 function getLine(lineId) {
-  return NETWORK_LINES.find((line) => line.id === lineId);
+  return LINE_BY_ID.get(lineId);
 }
 
 function pickNextLine(npc) {
   const current = getLine(npc.lineId);
   if (!current) return NETWORK_LINES[0]?.id || '';
 
-  const options = NETWORK_LINES.filter(
-    (line) => line.from.x === current.to.x && line.from.y === current.to.y,
-  );
+  const options = LINES_BY_FROM_COORD.get(lineCoordKey(current.to)) || [];
 
-  if (!options.length) return NETWORK_LINES[0]?.id || '';
+  if (!options.length) return current.id;
   return options[Math.floor(Math.random() * options.length)].id;
 }
 
@@ -234,6 +245,7 @@ export function createNpcSystem(state, liveIntelligence = null) {
     bobSpeed,
     interactionRadius,
     routine,
+    type,
   }) {
     return {
       id,
@@ -257,7 +269,7 @@ export function createNpcSystem(state, liveIntelligence = null) {
       lineId: pickRandomLineId(),
       t: Math.random(),
       speed: 0.2 + Math.random() * 0.3,
-      type: 'helper',
+      type: type || 'helper',
     };
   }
 
@@ -404,6 +416,7 @@ export function createNpcSystem(state, liveIntelligence = null) {
     const npcs = state.npc.entities || [];
     const total = npcs.length;
     if (!total) return;
+    if (!NETWORK_LINES.length) return;
     rebuildActiveEntitiesIfNeeded();
 
     // When the server has sent NPC targets, follow server positions via lerp.
@@ -429,8 +442,10 @@ export function createNpcSystem(state, liveIntelligence = null) {
     }
 
     // Fallback: local simulation when no server targets are available.
-    for (let i = 0; i < npcs.length; i += 1) {
-      const npc = npcs[i];
+    const batchSize = Math.min(UPDATE_BATCH, total);
+    const movementDt = Math.min(0.1, Math.max(0, dt));
+    for (let i = 0; i < batchSize; i += 1) {
+      const npc = npcs[(batchIndex + i) % total];
       if (!npc) continue;
       npc.type = npc.type || 'helper';
       if (!npc.lineId) npc.lineId = pickRandomLineId();
@@ -440,7 +455,7 @@ export function createNpcSystem(state, liveIntelligence = null) {
       const line = getLine(npc.lineId);
       if (!line) continue;
 
-      npc.t += npc.speed * dt;
+      npc.t += npc.speed * movementDt;
       if (npc.t > 1) {
         npc.lineId = pickNextLine(npc);
         npc.t = 0;
@@ -450,17 +465,13 @@ export function createNpcSystem(state, liveIntelligence = null) {
       const to = line.to;
       npc.col = from.x + (to.x - from.x) * npc.t;
       npc.row = from.y + (to.y - from.y) * npc.t;
-    }
 
-    const batchSize = Math.min(UPDATE_BATCH, total);
-    for (let i = 0; i < batchSize; i += 1) {
-      const npc = npcs[(batchIndex + i) % total];
-      // Only active NPCs are updated in the simulation batch; crowd and other non-active modes
-      // are visual-only and skipped here (they still incur a minimal skip-check per batch slot).
-      if (!npc || npc.mode !== 'active') continue;
+      // Only active NPCs receive behaviour/dialogue updates in the simulation batch.
+      // Crowd and other non-active modes still move along network lines in fallback mode.
+      if (npc.mode !== 'active') continue;
 
-      npc.bobPhase += dt * npc.bobSpeed;
-      npc.moveTimer -= dt;
+      npc.bobPhase += movementDt * npc.bobSpeed;
+      npc.moveTimer -= movementDt;
       if (npc.moveTimer > 0) continue;
       npc.moveTimer = getMoveInterval(npc.mode, npc.role);
 
@@ -483,9 +494,14 @@ export function createNpcSystem(state, liveIntelligence = null) {
   function spawnSamWave() {
     if (!state.npc.entities?.length) return;
     const activePool = state.npc.entities.filter((entity) => entity?.mode === 'active');
-    const picks = Math.min(5, activePool.length);
+    const shuffled = [...activePool];
+    for (let i = shuffled.length - 1; i > 0; i -= 1) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    const picks = Math.min(5, shuffled.length);
     for (let i = 0; i < picks; i += 1) {
-      const npc = activePool[Math.floor(Math.random() * activePool.length)];
+      const npc = shuffled[i];
       if (!npc) continue;
       npc.type = 'villain';
       npc.lineId = pickRandomLineId();

@@ -33,6 +33,7 @@ const LIVE_REFRESH_INTERVAL_MS = 120000; // 2 minutes
 const QUEST_TICK_INTERVAL_MS = 250;
 const FEED_DEDUPE_TTL_MS = 5 * 60 * 1000;
 const MAX_FEED_CACHE_SIZE = 80;
+const NPC_FEED_PULSE_PROBABILITY = 0.002;
 const CAMERA_ZOOM_PRESETS = [0.7, 1, 1.4];
 const CAMERA_ZOOM_MIN = 0.7;
 const CAMERA_ZOOM_MAX = 1.4;
@@ -550,7 +551,7 @@ async function boot() {
         hud.setQuests(quests.getActiveQuestCards());
       },
     });
-    if (Math.random() < 0.002) {
+    if (Math.random() < NPC_FEED_PULSE_PROBABILITY) {
       const entities = state.npc.entities || [];
       const npcEntity = entities[Math.floor(Math.random() * entities.length)];
       if (npcEntity) {
