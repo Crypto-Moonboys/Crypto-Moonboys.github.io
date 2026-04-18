@@ -13,6 +13,7 @@ const SAM_POPUP_DURATION_MS      = 5200;
 const QUEST_TOAST_DURATION_MS    = 4200;
 const CAPTURE_BANNER_DURATION_MS = 4200;
 const NPC_DIALOGUE_DURATION_MS   = 4200;
+const NODE_ALERT_DURATION_MS     = 2600;
 
 const ROLE_ICON_MAP = {
   vendor:         '🏪',
@@ -299,6 +300,12 @@ export function createHud(doc) {
     npcDialogueTimer = timer;
   }
 
+  function showNodeInterference(text, level = 'signal') {
+    if (!text) return;
+    const prefix = level === 'sam' ? '🧠' : level === 'warning' ? '⚠️' : '⚡';
+    showSamPopup(`${prefix} ${text}`, NODE_ALERT_DURATION_MS);
+  }
+
   function setEntryTagline(text) {
     if (entryTagline) entryTagline.textContent = text;
   }
@@ -332,6 +339,7 @@ export function createHud(doc) {
     showQuestComplete,
     showDistrictCapture,
     showNpcDialogue,
+    showNodeInterference,
     setEntryTagline,
     dismissEntryIdentity,
     setInteractPrompt,

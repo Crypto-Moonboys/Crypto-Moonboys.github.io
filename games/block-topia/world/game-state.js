@@ -134,6 +134,7 @@ export function createGameState(bundle) {
       phases: bundle.samPhases.phases || [],
       currentIndex: 0,
       timer: 0,
+      pressure: 0,
       postMutationHooks: bundle.samPhases.postMutationHooks || [],
       signalRushHook: bundle.samPhases.signalRushHook || {},
     },
@@ -149,10 +150,17 @@ export function createGameState(bundle) {
       active: [],
       lastSyncAt: 0,
     },
-    // Live Control Grid — runtime node states derived from static CONTROL_NODES definitions.
-    // Players click nodes to accumulate control; NPCs and SAM events also affect values.
-    // Server does NOT own these values; they are client-local gameplay feedback.
-    controlNodes: CONTROL_NODES.map((n) => ({ ...n, control: 0 })),
+    // Live Control Grid — server-authoritative interference state with lightweight local visuals.
+    controlNodes: CONTROL_NODES.map((n) => ({
+      ...n,
+      districtId: n.districtId || '',
+      control: 0,
+      interference: 0,
+      status: 'stable',
+      cooldownUntil: 0,
+      lastInterferedBy: null,
+      pulseUntil: 0,
+    })),
     quests: {
       model: bundle.questModel,
       active: [],

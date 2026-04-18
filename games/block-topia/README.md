@@ -61,6 +61,7 @@ Block Topia is the shared cyberpunk city multiplayer experience where players mo
 - `world/live-intelligence.js`: loads site-side transformed SAM signals from `data/live-signals.json`.
 - `world/signal-quest-generator.js`: converts live signal pulses into temporary operation cards.
 - `world/clue-signal-system.js`: rotates clue-event feed pulses for hidden-link hunts.
+- `world/node-interference-system.js`: node interference orchestration for local pulse + server-applied ripple state.
 - `ui/hud.js`: DOM HUD bindings for status, quests, multiplayer, feed, overlays.
 - `render/iso-renderer.js`: district-aware isometric renderer for local/remote entities.
 
@@ -139,6 +140,7 @@ The unified module is intentionally split into composable systems so new feature
 
 - **Data-first expansion:** add districts/events/factions/quest arcs by extending `data/*.json`.
 - **Server feature growth:** add new Colyseus messages in `network.js` and map them to HUD/system hooks.
+  - Node interference contract: outbound `nodeInterfere` (`{ nodeId }`), inbound `nodeInterferenceChanged` (node state + district ripple + SAM pressure delta).
 - **Live ops hooks:** SAM, season, and quest dynamic hooks are already exposed for future automation.
 - **World memory hooks:** event logging and memory channels are in place for persistence and future replay/story features.
 - **Render extensibility:** `render/iso-renderer.js` can be upgraded to sprites/effects while preserving current state contracts.

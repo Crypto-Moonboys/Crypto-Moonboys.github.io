@@ -32,6 +32,7 @@ export async function connectMultiplayer({
   onQuestCompleted,
   onSamPhaseChanged,
   onDistrictCaptureChanged,
+  onNodeInterferenceChanged,
 }) {
   const endpoint = window.BLOCK_TOPIA_SERVER || 'https://game.cryptomoonboys.com';
   const retries = 2;
@@ -104,6 +105,10 @@ export async function connectMultiplayer({
         onWorldSnapshot?.(data);
       });
 
+      room.onMessage('nodeInterferenceChanged', (message) => {
+        onNodeInterferenceChanged?.(message);
+      });
+
       return room;
     } catch (error) {
       lastError = error;
@@ -121,6 +126,11 @@ export async function connectMultiplayer({
 export function sendMovement(x, y) {
   if (!room) return;
   room.send('move', { x, y });
+}
+
+export function sendNodeInterference(nodeId) {
+  if (!room || !nodeId) return;
+  room.send('nodeInterfere', { nodeId });
 }
 
 export function getRoom() {

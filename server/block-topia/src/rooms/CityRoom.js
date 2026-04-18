@@ -12,6 +12,20 @@ const SAM_PHASE_INTERVAL_MS = 30000;
 const DISTRICT_DRIFT_INTERVAL_MS = 1200;
 const WORLD_SNAPSHOT_INTERVAL_MS = 300;
 const DISTRICT_CAPTURE_THRESHOLD = 90;
+const NODE_INTERFERENCE_GAIN = 18;
+const NODE_UNSTABLE_THRESHOLD = 65;
+const NODE_COOLDOWN_MS = 6500;
+const NODE_DISTRICT_SHIFT = 3;
+const SAM_PRESSURE_FROM_INTERFERENCE = 4;
+const SAM_PRESSURE_PHASE_THRESHOLD = 100;
+
+const CONTROL_NODES = [
+  { id: 'core', x: 24, y: 24, districtId: 'crypto-core' },
+  { id: 'north', x: 24, y: 10, districtId: 'signal-spire' },
+  { id: 'east', x: 38, y: 24, districtId: 'revolt-plaza' },
+  { id: 'south', x: 24, y: 38, districtId: 'moonlit-underbelly' },
+  { id: 'west', x: 10, y: 24, districtId: 'neon-slums' },
+];
 
 const WORLD_DISTRICTS = [
   { id: 'neon-slums', name: 'Neon Slums' },
@@ -95,6 +109,10 @@ export class CityRoom extends Room {
         target: data?.target || null,
       });
     });
+
+    this.onMessage('nodeInterfere', (client, data) => {
+      this.handleNodeInterference(client, data);
+    });
   }
 
   createInitialWorld() {
@@ -142,7 +160,18 @@ export class CityRoom extends Room {
         control: 45 + index * 4,
         owner: index % 2 === 0 ? 'Liberators' : 'Wardens',
       })),
+      controlNodes: CONTROL_NODES.map((node) => ({
+        ...node,
+        owner: null,
+        control: 0,
+        interference: 0,
+        status: 'stable',
+        cooldownUntil: 0,
+        lastInterferedBy: null,
+        pulseUntil: 0,
+      })),
       samPhase: 0,
+      samPressure: 0,
     };
   }
 
@@ -154,6 +183,7 @@ export class CityRoom extends Room {
 
     this.updateNPCs(dt);
     this.updateDistricts();
+    this.updateNodeInterference();
     this.updateSAM();
 
     if (this.snapshotTimerMs >= WORLD_SNAPSHOT_INTERVAL_MS) {
@@ -177,7 +207,21 @@ export class CityRoom extends Room {
         control: d.control,
         owner: d.owner,
       })),
+      controlNodes: this.world.controlNodes.map((node) => ({
+        nodeId: node.id,
+        districtId: node.districtId,
+        nodeX: node.x,
+        nodeY: node.y,
+        interference: node.interference,
+        status: node.status,
+        control: node.control,
+        owner: node.owner,
+        cooldownUntil: node.cooldownUntil,
+        pulseUntil: node.pulseUntil,
+        sourcePlayerId: node.lastInterferedBy,
+      })),
       samPhase: this.world.samPhase,
+      samPressure: this.world.samPressure,
     };
   }
 
@@ -228,6 +272,89 @@ export class CityRoom extends Room {
     this.samTimerMs = 0;
     this.world.samPhase = (this.world.samPhase + 1) % 4;
     this.broadcast('samPhaseChanged', { phaseIndex: this.world.samPhase });
+  }
+
+  updateNodeInterference() {
+    const now = Date.now();
+    for (const node of this.world.controlNodes) {
+      if (!node) continue;
+      if (node.cooldownUntil > now) {
+        if (node.pulseUntil <= now && node.status !== 'cooldown') {
+          node.status = 'cooldown';
+        }
+        continue;
+      }
+      if (node.status !== 'stable') {
+        node.status = 'stable';
+      }
+      node.pulseUntil = 0;
+      node.interference = Math.max(0, node.interference - 2);
+      node.control = node.interference;
+      if (node.interference === 0) {
+        node.owner = null;
+        node.lastInterferedBy = null;
+      }
+    }
+  }
+
+  handleNodeInterference(client, data) {
+    const nodeId = String(data?.nodeId || '').toLowerCase();
+    if (!nodeId) return;
+    const now = Date.now();
+    const node = this.world.controlNodes.find((entry) => entry.id === nodeId);
+    if (!node) return;
+    if (node.cooldownUntil > now) return;
+
+    node.interference = Math.max(0, Math.min(100, node.interference + NODE_INTERFERENCE_GAIN));
+    node.control = node.interference;
+    node.lastInterferedBy = client.sessionId;
+    node.pulseUntil = now + 1200;
+    node.cooldownUntil = now + NODE_COOLDOWN_MS;
+    node.status = node.interference >= NODE_UNSTABLE_THRESHOLD ? 'unstable' : 'contested';
+    node.owner = node.interference >= NODE_UNSTABLE_THRESHOLD ? 'UNSTABLE' : node.owner;
+
+    const district = this.world.districts.find((entry) => entry.id === node.districtId);
+    if (!district) return;
+
+    const towardContest = district.control >= 50 ? -1 : 1;
+    district.control = Math.max(0, Math.min(100, district.control + (NODE_DISTRICT_SHIFT * towardContest)));
+    if (district.control >= DISTRICT_CAPTURE_THRESHOLD) {
+      district.owner = 'Liberators';
+    } else if (district.control <= (100 - DISTRICT_CAPTURE_THRESHOLD)) {
+      district.owner = 'Wardens';
+    }
+
+    const samPressureDelta = Math.random() < 0.45 ? SAM_PRESSURE_FROM_INTERFERENCE : 0;
+    if (samPressureDelta > 0) {
+      this.world.samPressure = Math.max(0, Math.min(100, this.world.samPressure + samPressureDelta));
+      if (this.world.samPressure >= SAM_PRESSURE_PHASE_THRESHOLD) {
+        this.world.samPressure = 20;
+        this.world.samPhase = (this.world.samPhase + 1) % 4;
+        this.broadcast('samPhaseChanged', { phaseIndex: this.world.samPhase });
+      }
+    }
+
+    this.broadcast('nodeInterferenceChanged', {
+      nodeId: node.id,
+      districtId: node.districtId,
+      nodeX: node.x,
+      nodeY: node.y,
+      interference: node.interference,
+      status: node.status,
+      control: node.control,
+      owner: node.owner,
+      cooldownUntil: node.cooldownUntil,
+      pulseUntil: node.pulseUntil,
+      sourcePlayerId: client.sessionId,
+      districtControl: district.control,
+      districtOwner: district.owner,
+      samPressureDelta,
+      samPressure: this.world.samPressure,
+    });
+
+    this.broadcast('system', {
+      message: `⚡ NODE ${node.id.toUpperCase()} INTERFERED · ${district.name} pressure shifting`,
+    });
   }
 
   onJoin(client, options) {
