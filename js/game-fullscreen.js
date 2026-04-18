@@ -35,7 +35,7 @@
   var GAME_META = {
     snakeCanvas: {
       label: '🐍 SnakeRun', color: '#2ec5ff', touchScheme: 'dpad',
-      controls: ['↑↓←→ / WASD move', '+10 pts per food'],
+      controls: ['↑↓←→ / WASD move', '+10 score per food'],
       tips: ['Wall = death', 'Longer = harder', 'Chase streaks']
     },
     brkCanvas: {
@@ -61,7 +61,7 @@
     tetCanvas: {
       label: '🟦 Tetris', color: '#bc8cff', touchScheme: 'tetris',
       controls: ['← → Move', '↑ Rotate', '↓ Soft drop', 'Space Hard drop'],
-      tips: ['Plan 2 pieces ahead', 'I-piece for Tetris', 'Hard drop = bonus pts']
+      tips: ['Plan 2 pieces ahead', 'I-piece for Tetris', 'Hard drop = bonus score']
     },
     btqmCanvas: {
       label: '🧱 Block Topia', color: '#f39c12', touchScheme: 'dpad',

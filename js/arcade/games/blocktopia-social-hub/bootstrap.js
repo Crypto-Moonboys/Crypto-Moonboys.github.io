@@ -49,6 +49,10 @@ export function bootstrapBlocktopiaHub(root) {
   // ── State ──────────────────────────────────────────────────────────────────
   let state    = { x: 540, y: 520, score: 0, phase: 'Day' };
   let rafId    = null;
+  let running  = false;
+  let paused   = false;
+  let runEnded = false;
+  let runSubmitted = false;
 
   // ── Neon zones ─────────────────────────────────────────────────────────────
   const zones = [
@@ -119,6 +123,7 @@ export function bootstrapBlocktopiaHub(root) {
   // ── Key handler (state updates on each keydown — matches original UX) ──────
 
   function onKeyDown(e) {
+    if (!running || paused || runEnded) return;
     const s = 4;
     if (e.key === 'ArrowUp'    || e.key === 'w') state.y -= s;
     if (e.key === 'ArrowDown'  || e.key === 's') state.y += s;
@@ -148,14 +153,36 @@ export function bootstrapBlocktopiaHub(root) {
   // ── Button handlers ────────────────────────────────────────────────────────
 
   function onTogglePhase() {
+    if (!running || runEnded) return;
     state.phase = state.phase === 'Day' ? 'Night' : 'Day';
     if (phaseEl) phaseEl.textContent = state.phase;
   }
 
-  function onSubmitScore() {
+  function canSubmitIdentity() {
+    return isLinked();
+  }
+
+  function syncSubmitButton() {
+    if (!submitBtn) return;
+    submitBtn.disabled = !running || runEnded;
+    submitBtn.textContent = runEnded
+      ? (runSubmitted ? '✅ Submitted' : 'Run Ended')
+      : 'End Run';
+  }
+
+  async function onSubmitScore() {
+    if (!running || runEnded) return;
+    running = false;
+    runEnded = true;
+    paused = false;
     const name = getPlayerName();
-    submitScore(name, state.score, GAME_ID);
-    alert('Score submitted (if Telegram linked).');
+    const finalScore = Math.max(0, Math.floor(state.score || 0));
+    ArcadeSync.setHighScore(GAME_ID, finalScore);
+    if (!runSubmitted && finalScore > 0 && canSubmitIdentity()) {
+      runSubmitted = true;
+      try { await submitScore(name, finalScore, GAME_ID); } catch (_) {}
+    }
+    syncSubmitButton();
   }
 
   // ── Lifecycle ──────────────────────────────────────────────────────────────
@@ -176,29 +203,45 @@ export function bootstrapBlocktopiaHub(root) {
 
   function start() {
     if (rafId) return;
+    running = true;
+    paused = false;
+    runEnded = false;
+    runSubmitted = false;
+    state = { x: 540, y: 520, score: 0, phase: 'Day' };
+    if (phaseEl)    phaseEl.textContent    = 'Day';
+    if (districtEl) districtEl.textContent = 'Plaza';
+    syncSubmitButton();
     rafId = requestAnimationFrame(renderLoop);
   }
 
   function pause() {
+    if (!running || runEnded) return;
     cancelAnimationFrame(rafId);
     rafId = null;
+    paused = true;
   }
 
   function resume() {
-    if (rafId) return;
+    if (rafId || !running || runEnded) return;
+    paused = false;
     rafId = requestAnimationFrame(renderLoop);
   }
 
   function reset() {
     pause();
-    state = { x: 540, y: 520, score: 0, phase: 'Day' };
-    if (phaseEl)    phaseEl.textContent    = 'Day';
-    if (districtEl) districtEl.textContent = 'Plaza';
+    running = false;
+    paused = false;
+    runEnded = false;
+    runSubmitted = false;
     start();
   }
 
   function destroy() {
     pause();
+    running = false;
+    paused = false;
+    runEnded = false;
+    runSubmitted = false;
     window.removeEventListener('keydown', onKeyDown);
     if (toggleBtn) toggleBtn.removeEventListener('click', onTogglePhase);
     if (submitBtn) submitBtn.removeEventListener('click', onSubmitScore);

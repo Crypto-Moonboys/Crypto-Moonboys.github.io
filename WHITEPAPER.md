@@ -33,7 +33,7 @@ A 1000-question lore-driven trivia game using the wiki as the answer source.
   When all 1000 questions have been answered, the cycle resets automatically.  
 - R2-first loading: `data-loader.js` tries `R2_PUBLIC_BASE_URL + path` first,  
   then falls back to the local static file  
-- Scoring: Per-question `arcade_points` from the dataset rewards object  
+- Scoring: Per-question `score` from the dataset rewards object  
 - Bonus engine: `rollHiddenBonus()` called after every correct answer
 
 ### 1.3 Block Topia Quest Maze (`/games/block-topia-quest-maze.html`)

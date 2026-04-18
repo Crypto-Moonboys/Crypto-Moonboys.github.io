@@ -1,5 +1,5 @@
 /* ============================================================
-   bonus-engine.js — Moonboys Arcade WTF Bonus Engine
+   bonus-engine.js — Moonboys Arcade Gameplay Modifier Engine
    Loads the shared bonus pool from hidden_bonus_pool.json
    and exposes rollHiddenBonus() + showBonusPopup() to all games.
    ============================================================ */
@@ -20,12 +20,12 @@ async function loadPool() {
     _poolCache = {
       rarity_weights: { common: 50, uncommon: 25, rare: 12, epic: 8, legendary: 4, wtf: 1 },
       bonuses: [
-        { id: 'quick_hands',    name: 'Quick Hands',    rarity: 'common',    rewards: { arcade_points: 50 } },
-        { id: 'hodl_streak',    name: 'HODL Streak',    rarity: 'uncommon',  rewards: { arcade_points: 80 } },
-        { id: 'diamond_reflex', name: 'Diamond Reflex', rarity: 'rare',      rewards: { arcade_points: 150, multiplier: 1.5 } },
-        { id: 'hidden_vault',   name: 'Hidden Vault',   rarity: 'epic',      rewards: { arcade_points: 300 } },
-        { id: 'sigma_protocol', name: 'SIGMA Protocol', rarity: 'legendary', rewards: { arcade_points: 800 } },
-        { id: 'moonshot',       name: 'MOONSHOT',       rarity: 'wtf',       rewards: { arcade_points: 1500 } },
+        { id: 'quick_hands',    name: 'Quick Hands',    rarity: 'common',    effects: { multiplier: 1.1, duration_seconds: 12 } },
+        { id: 'hodl_streak',    name: 'HODL Streak',    rarity: 'uncommon',  effects: { combo_grace_seconds: 5 } },
+        { id: 'diamond_reflex', name: 'Diamond Reflex', rarity: 'rare',      effects: { multiplier: 1.5, duration_seconds: 10 } },
+        { id: 'hidden_vault',   name: 'Hidden Vault',   rarity: 'epic',      effects: { shield_seconds: 6 } },
+        { id: 'sigma_protocol', name: 'SIGMA Protocol', rarity: 'legendary', effects: { multiplier: 1.75, duration_seconds: 12 } },
+        { id: 'moonshot',       name: 'MOONSHOT',       rarity: 'wtf',       effects: { multiplier: 2, duration_seconds: 8 } },
       ]
     };
   }
@@ -118,7 +118,7 @@ const RARITY_COLOURS = {
 export function showBonusPopup(bonus) {
   if (!bonus) return;
   const colour = RARITY_COLOURS[bonus.rarity] || '#fff';
-  const pts = bonus.rewards?.arcade_points ?? 0;
+  const effectSummary = summarizeBonusEffects(bonus);
 
   const popup = document.createElement('div');
   popup.className = 'bpe-overlay';
@@ -130,7 +130,7 @@ export function showBonusPopup(bonus) {
       <div class="bpe-name">${escHtml(bonus.name || 'Bonus')}</div>
       ${bonus.description ? `<p class="bpe-desc">${escHtml(bonus.description)}</p>` : ''}
       <div class="bpe-rewards">
-        ${pts ? `<span>+${pts} pts</span>` : ''}
+        ${effectSummary ? `<span>${escHtml(effectSummary)}</span>` : '<span>Gameplay modifier active</span>'}
       </div>
       <p class="bpe-dismiss">tap to dismiss</p>
     </div>
@@ -155,6 +155,17 @@ function escHtml(str) {
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;');
+}
+
+function summarizeBonusEffects(bonus) {
+  const e = bonus?.effects || bonus?.rewards || {};
+  const tags = [];
+  if (Number(e.multiplier) > 0) tags.push(`${Number(e.multiplier).toFixed(2)}× score`);
+  if (Number(e.duration_seconds) > 0) tags.push(`${Math.floor(Number(e.duration_seconds))}s`);
+  if (Number(e.shield_seconds) > 0) tags.push(`Shield ${Math.floor(Number(e.shield_seconds))}s`);
+  if (Number(e.combo_grace_seconds) > 0) tags.push(`Combo grace ${Math.floor(Number(e.combo_grace_seconds))}s`);
+  if (Number(e.speed_boost) > 0) tags.push(`Speed +${Math.round(Number(e.speed_boost) * 100)}%`);
+  return tags.join(' · ');
 }
 
 let _stylesInjected = false;
