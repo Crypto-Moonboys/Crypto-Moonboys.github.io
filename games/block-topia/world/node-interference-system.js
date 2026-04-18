@@ -62,8 +62,9 @@ export function createNodeInterferenceSystem(state) {
     const now = Date.now();
 
     if (payload.owner !== undefined) node.owner = payload.owner;
-    if (payload.lastInterferedBy !== undefined) node.lastInterferedBy = payload.lastInterferedBy;
-    if (payload.sourcePlayerId !== undefined) node.lastInterferedBy = payload.sourcePlayerId;
+    if (payload.lastInterferedBy !== undefined || payload.sourcePlayerId !== undefined) {
+      node.lastInterferedBy = payload.sourcePlayerId ?? payload.lastInterferedBy ?? node.lastInterferedBy;
+    }
     if (payload.interference !== undefined) node.interference = clampPercent(payload.interference);
     if (payload.control !== undefined) node.control = clampPercent(payload.control);
     if (payload.status !== undefined) node.status = sanitizeStatus(payload.status);

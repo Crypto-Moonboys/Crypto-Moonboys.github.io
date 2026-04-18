@@ -20,7 +20,7 @@ const NODE_INTERFERENCE_DECAY = 2;
 const NODE_DISTRICT_SHIFT = 3;
 const SAM_PRESSURE_FROM_INTERFERENCE = 4;
 const SAM_PRESSURE_PHASE_THRESHOLD = 100;
-const SAM_PRESSURE_CHANCE = 0.45;
+const SAM_PRESSURE_TRIGGER_CHANCE = 0.45;
 const SAM_PRESSURE_RESET_FLOOR = 20;
 
 const CONTROL_NODES = [
@@ -328,7 +328,7 @@ export class CityRoom extends Room {
       district.owner = 'Wardens';
     }
 
-    const samPressureDelta = Math.random() < SAM_PRESSURE_CHANCE ? SAM_PRESSURE_FROM_INTERFERENCE : 0;
+    const samPressureDelta = Math.random() < SAM_PRESSURE_TRIGGER_CHANCE ? SAM_PRESSURE_FROM_INTERFERENCE : 0;
     if (samPressureDelta > 0) {
       this.world.samPressure = Math.max(0, Math.min(100, this.world.samPressure + samPressureDelta));
       if (this.world.samPressure >= SAM_PRESSURE_PHASE_THRESHOLD) {

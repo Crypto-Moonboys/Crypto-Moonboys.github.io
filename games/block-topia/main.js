@@ -233,9 +233,11 @@ async function boot() {
       hud.showDistrictCapture(`🏴 ${district.name} CAPTURED · ${district.owner}`);
       pushFeedDeduped(`🏴 ${district.name} captured by ${district.owner}!`, 'combat', `district-captured:${district.id}:${district.owner}`);
     } else if (source === 'node') {
-      pushFeedDeduped(`🏙️ DISTRICT PRESSURE SHIFTING · ${district.name} ${Math.round(district.control)}%`, 'combat', `district-node-ripple:${district.id}:${Math.round(district.control)}`);
+      const controlPct = Math.round(district.control);
+      pushFeedDeduped(`🏙️ DISTRICT PRESSURE SHIFTING · ${district.name} ${controlPct}%`, 'combat', `district-node-ripple:${district.id}:${controlPct}`);
     } else {
-      pushFeedDeduped(`🏙️ District sync: ${district.name} ${Math.round(district.control)}% · ${district.owner}`, 'combat', `district-sync:${district.id}:${Math.round(district.control)}:${district.owner}`);
+      const controlPct = Math.round(district.control);
+      pushFeedDeduped(`🏙️ District sync: ${district.name} ${controlPct}% · ${district.owner}`, 'combat', `district-sync:${district.id}:${controlPct}:${district.owner}`);
     }
     memory.record('district', {
       at: Date.now(),
