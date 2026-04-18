@@ -14,6 +14,7 @@ const TILE_PICK_TOLERANCE = 1.001;
 const NPC_HITBOX_HALF_WIDTH = 15;
 const NPC_HITBOX_HALF_HEIGHT = 25;
 const CROWD_VISIBILITY_ZOOM_THRESHOLD = 1;
+const CULL_MARGIN = 120;
 const MAGENTA_OVERLAY_COLOR = 'rgba(255,79,216,0.16)';
 
 const ROLE_STYLE = {
@@ -246,6 +247,7 @@ function createLayerCanvas(width, height) {
 export function createIsoRenderer(canvas) {
   const ctx = canvas.getContext('2d');
   const imageRegistry = Object.create(null);
+  const renderLayers = [];
 
   const layerState = {
     baseGrid: { canvas: null, width: 0, height: 0, dirty: true },
@@ -755,6 +757,15 @@ export function createIsoRenderer(canvas) {
     ctx.fillText(remote.name || 'Player', sx, sy - 44);
   }
 
+  function isOffscreen(screenX, screenY) {
+    return (
+      screenX < -CULL_MARGIN
+      || screenX > canvas.width + CULL_MARGIN
+      || screenY < -CULL_MARGIN
+      || screenY > canvas.height + CULL_MARGIN
+    );
+  }
+
   function drawSignalOperation(originX, originY, operation, now) {
     const iso = toIso(operation.x, operation.y);
     const centerX = originX + iso.x;
@@ -981,31 +992,52 @@ export function createIsoRenderer(canvas) {
     drawTileOutline(originX, originY, state.mouse?.selectedTile, '#5ef2ff', 0.96, 2);
     drawMoveTarget(originX, originY, state.player?.moveTarget, now);
 
-    for (const operation of state.signalOperations?.active || []) {
-      if (!operation || operation.resolved) continue;
-      drawSignalOperation(originX, originY, operation, now);
+    const activeOperations = state.signalOperations?.active;
+    if (activeOperations?.length) {
+      for (const operation of activeOperations) {
+        if (!operation || operation.resolved) continue;
+        drawSignalOperation(originX, originY, operation, now);
+      }
     }
 
     const visible = getVisibleWorldRect(frame);
     const hideCrowd = zoom < CROWD_VISIBILITY_ZOOM_THRESHOLD;
 
-    const layers = [];
-    for (const npc of state.npc?.entities || []) {
-      if (!npc || typeof npc.col !== 'number') continue;
-      layers.push({ type: 'npc', y: npc.row, entity: npc });
+    renderLayers.length = 0;
+    const npcEntities = state.npc?.entities;
+    if (npcEntities?.length) {
+      for (const npc of npcEntities) {
+        if (!npc || typeof npc.col !== 'number') continue;
+        renderLayers.push({ type: 'npc', y: npc.row, entity: npc });
+      }
     }
-    for (const remote of state.remotePlayers || []) {
-      if (typeof remote.x !== 'number' || typeof remote.y !== 'number') continue;
-      layers.push({ type: 'remote', y: remote.y, entity: remote });
+    const remotePlayers = state.remotePlayers;
+    if (remotePlayers?.length) {
+      for (const remote of remotePlayers) {
+        if (typeof remote.x !== 'number' || typeof remote.y !== 'number') continue;
+        renderLayers.push({ type: 'remote', y: remote.y, entity: remote });
+      }
     }
-    layers.push({ type: 'player', y: state.player.y, entity: state.player });
-    layers.sort((a, b) => a.y - b.y);
+    renderLayers.push({ type: 'player', y: state.player.y, entity: state.player });
+    renderLayers.sort((a, b) => a.y - b.y);
 
-    for (const layer of layers) {
+    for (const layer of renderLayers) {
       if (layer.type === 'npc') {
         if (hideCrowd && layer.entity.mode === 'crowd') continue;
+        const npcEntity = layer.entity;
+        const iso = toIso(npcEntity.col, npcEntity.row);
+        const elevation = getTileElevation(npcEntity.col, npcEntity.row, metrics);
+        const screenX = frame.translateX + shakeX + ((originX + iso.x) * zoom);
+        const screenY = frame.translateY + shakeY + ((originY + iso.y - elevation - 4) * zoom);
+        if (isOffscreen(screenX, screenY)) continue;
         drawNpc(originX, originY, layer.entity, now, state.player?.nearbyNpcId === layer.entity.id, metrics, visible);
       } else if (layer.type === 'remote') {
+        const remote = layer.entity;
+        const iso = toIso(remote.x, remote.y);
+        const elevation = getTileElevation(remote.x, remote.y, metrics);
+        const screenX = frame.translateX + shakeX + ((originX + iso.x) * zoom);
+        const screenY = frame.translateY + shakeY + ((originY + iso.y - elevation - 4) * zoom);
+        if (isOffscreen(screenX, screenY)) continue;
         drawRemotePlayer(originX, originY, layer.entity, now, metrics, visible);
       } else {
         drawPlayer(originX, originY, state, now, metrics);

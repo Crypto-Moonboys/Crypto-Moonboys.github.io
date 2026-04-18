@@ -10,8 +10,8 @@ const PATROL_MOVE_INTERVAL_RANGE = 0.9;
 const CROWD_MOVE_INTERVAL_MIN = 2.0;
 const CROWD_MOVE_INTERVAL_RANGE = 1.5;
 const UPDATE_BATCH = 40;
-const MAX_ACTIVE_NPCS = 120;
-const MAX_TOTAL_NPCS = 120;
+const MAX_ACTIVE_NPCS = 60;
+const MAX_TOTAL_NPCS = 60;
 const LIVE_DIALOGUE_CHANCE_WITH_OPERATION = 0.7;
 const LIVE_DIALOGUE_CHANCE_BASE = 0.3;
 const ROLE_OPERATION_LINE_CHANCE = 0.6;
@@ -186,6 +186,7 @@ function getInitialMoveTimer(mode, role) {
 
 export function createNpcSystem(state, liveIntelligence = null) {
   let batchIndex = 0;
+  let crowdLerpSkipToggle = false;
   const factionPool = ['Liberators', 'Wardens', 'Neutral'];
   const profileByRole = new Map(
     (state.lore?.legacy?.npcProfiles?.profiles || []).map((profile) => [profile.role, profile]),
@@ -266,6 +267,9 @@ export function createNpcSystem(state, liveIntelligence = null) {
         routine: 'ambient_flow',
       });
     }
+
+    state.npc.activeEntities = state.npc.entities.filter((npc) => npc?.mode === 'active');
+    state.npc.activeEntitiesSourceLen = state.npc.entities.length;
   }
 
   const MAP_W = state.map.width;
@@ -315,19 +319,36 @@ export function createNpcSystem(state, liveIntelligence = null) {
     return baseLine;
   }
 
+  function rebuildActiveEntitiesIfNeeded() {
+    const entities = state.npc.entities || [];
+    if (
+      !Array.isArray(state.npc.activeEntities)
+      || state.npc.activeEntitiesSourceLen !== entities.length
+    ) {
+      state.npc.activeEntities = entities.filter((npc) => npc?.mode === 'active');
+      state.npc.activeEntitiesSourceLen = entities.length;
+    }
+  }
+
   function nearestInteractive(playerX, playerY) {
+    rebuildActiveEntitiesIfNeeded();
+    const pool = state.npc.activeEntities || [];
     let nearest = null;
-    let nearestDist = Infinity;
-    for (const npc of state.npc.entities) {
-      if (!npc || npc.mode !== 'active') continue;
+    let nearestDistSq = Infinity;
+    for (const npc of pool) {
+      if (!npc) continue;
       const dx = npc.col - playerX;
       const dy = npc.row - playerY;
-      const dist = Math.hypot(dx, dy);
-      if (dist < npc.interactionRadius && dist < nearestDist) {
+      const distSq = dx * dx + dy * dy;
+      const radius = npc.interactionRadius || 1.5;
+      const radiusSq = radius * radius;
+
+      if (distSq < radiusSq && distSq < nearestDistSq) {
         nearest = npc;
-        nearestDist = dist;
+        nearestDistSq = distSq;
       }
     }
+
     return nearest;
   }
 
@@ -335,16 +356,20 @@ export function createNpcSystem(state, liveIntelligence = null) {
     const npcs = state.npc.entities || [];
     const total = npcs.length;
     if (!total) return;
+    rebuildActiveEntitiesIfNeeded();
 
     // When the server has sent NPC targets, follow server positions via lerp.
     // Local simulation acts as a fallback when no server targets are available.
     if (state.npcTargets?.length) {
       const targets = state.npcTargets;
       const len = Math.min(total, targets.length);
+      crowdLerpSkipToggle = !crowdLerpSkipToggle;
       for (let i = 0; i < len; i += 1) {
         const entity = npcs[i];
         const target = targets[i];
         if (!entity || !target) continue;
+        if (entity.mode === 'crowd' && !crowdLerpSkipToggle) continue;
+
         entity.col += (target.col - entity.col) * 0.2;
         entity.row += (target.row - entity.row) * 0.2;
         if (Number.isFinite(target.bobPhase)) {
