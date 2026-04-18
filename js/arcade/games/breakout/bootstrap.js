@@ -59,6 +59,8 @@ export function bootstrapBreakout(root) {
   const STREAK_BONUS_MULTIPLIER = 16;
   const LEVEL_CLEAR_BASE_BONUS = 420;
   const LEVEL_CLEAR_COMBO_BONUS = 28;
+  const DROP_COLLISION_RADIUS = 11;
+  const IDENTITY_GLOBAL_KEY = 'MOONBOYS_IDENTITY';
 
   let score = 0;
   let level = 1;
@@ -326,10 +328,30 @@ export function bootstrapBreakout(root) {
   }
 
   function isIdentityLinked() {
+    const identity = window[IDENTITY_GLOBAL_KEY];
     return !!(
-      window.MOONBOYS_IDENTITY &&
-      typeof window.MOONBOYS_IDENTITY.isTelegramLinked === 'function' &&
-      window.MOONBOYS_IDENTITY.isTelegramLinked()
+      identity &&
+      typeof identity.isTelegramLinked === 'function' &&
+      identity.isTelegramLinked()
+    );
+  }
+
+  function isBallPaddleCollision(ball, py) {
+    return (
+      ball.vy > 0 &&
+      ball.y + ball.r >= py &&
+      ball.y - ball.r <= py + PAD_H &&
+      ball.x >= paddle.x - paddle.w / 2 - ball.r &&
+      ball.x <= paddle.x + paddle.w / 2 + ball.r
+    );
+  }
+
+  function isBallBrickCollision(ball, brick) {
+    return (
+      ball.x + ball.r > brick.x &&
+      ball.x - ball.r < brick.x + brick.w &&
+      ball.y + ball.r > brick.y &&
+      ball.y - ball.r < brick.y + brick.h
     );
   }
 
@@ -383,7 +405,7 @@ export function bootstrapBreakout(root) {
 
   function resolveBallPaddle(ball) {
     const py = H - 40 - paddle.recoil;
-    if (ball.vy > 0 && ball.y + ball.r >= py && ball.y - ball.r <= py + PAD_H && ball.x >= paddle.x - paddle.w / 2 - ball.r && ball.x <= paddle.x + paddle.w / 2 + ball.r) {
+    if (isBallPaddleCollision(ball, py)) {
       ball.vy = -Math.abs(ball.vy);
       ball.y = py - ball.r;
       const off = (ball.x - paddle.x) / (paddle.w / 2);
@@ -407,7 +429,7 @@ export function bootstrapBreakout(root) {
   function brickCollision(ball) {
     for (const b of bricks) {
       if (!b.alive) continue;
-      if (ball.x + ball.r > b.x && ball.x - ball.r < b.x + b.w && ball.y + ball.r > b.y && ball.y - ball.r < b.y + b.h) {
+      if (isBallBrickCollision(ball, b)) {
         const overlapL = ball.x + ball.r - b.x;
         const overlapR = b.x + b.w - (ball.x - ball.r);
         const overlapT = ball.y + ball.r - b.y;
@@ -465,7 +487,7 @@ export function bootstrapBreakout(root) {
         drops.splice(i, 1);
         continue;
       }
-      if (d.y + 11 >= py && d.y - 11 <= py + PAD_H && d.x >= paddle.x - paddle.w / 2 && d.x <= paddle.x + paddle.w / 2) {
+      if (d.y + DROP_COLLISION_RADIUS >= py && d.y - DROP_COLLISION_RADIUS <= py + PAD_H && d.x >= paddle.x - paddle.w / 2 && d.x <= paddle.x + paddle.w / 2) {
         handleDropPickup(d);
         drops.splice(i, 1);
       }
