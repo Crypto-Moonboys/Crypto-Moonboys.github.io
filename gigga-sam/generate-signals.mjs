@@ -201,12 +201,17 @@ async function transformWithOpenAI(compactInput) {
       `Input JSON: ${JSON.stringify(compactInput)}`,
     ].join('\n');
 
-    const response = await client.responses.create({
+    const response = await client.chat.completions.create({
       model: DEFAULT_MODEL,
-      input: prompt,
+      messages: [
+        {
+          role: 'user',
+          content: prompt,
+        },
+      ],
     });
 
-    const raw = String(response.output_text || '').trim();
+    const raw = String(response.choices?.[0]?.message?.content || '').trim();
     const parsed = JSON.parse(raw);
     const aiSignals = Array.isArray(parsed?.signals) ? parsed.signals : [];
     if (!aiSignals.length) throw new Error('OpenAI returned no signals');
