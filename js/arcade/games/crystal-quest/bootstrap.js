@@ -483,7 +483,8 @@ export function bootstrapCrystalQuest(root) {
     sam.onSkip(skipsLeft());
     setGlow('pulse-warning');
     playQuestSound('error');
-    if (feedback) feedback.textContent = '⚠️ Signal bypassed. -' + penalty + ' score. ' + skipsLeft() + ' skip' + (skipsLeft() === 1 ? '' : 's') + ' left.';
+    var remaining = skipsLeft();
+    if (feedback) feedback.textContent = '⚠️ Signal bypassed. -' + penalty + ' score. ' + remaining + ' skip' + (remaining === 1 ? '' : 's') + ' left.';
 
     advanceQuestion();
   }

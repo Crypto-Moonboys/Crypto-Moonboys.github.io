@@ -89,13 +89,23 @@ export function createSamAgent(options) {
     ],
   };
 
-  var _msgCounters = {};
+  // ── Message rotation ───────────────────────────────────────────────────────
+  // Pool references are stored in an ordered array so each pool gets a stable
+  // numeric index — avoids key collisions when pools share a first element value.
+  var _poolRegistry = [];
+  var _poolCounters  = [];
+
   function nextMsg(pool) {
     if (!pool || !pool.length) return '';
-    var key = pool[0];
-    var idx = _msgCounters[key] || 0;
-    _msgCounters[key] = (idx + 1) % pool.length;
-    return pool[idx];
+    var idx = _poolRegistry.indexOf(pool);
+    if (idx === -1) {
+      idx = _poolRegistry.length;
+      _poolRegistry.push(pool);
+      _poolCounters.push(0);
+    }
+    var pos = _poolCounters[idx];
+    _poolCounters[idx] = (pos + 1) % pool.length;
+    return pool[pos];
   }
 
   // ── Core state setter ──────────────────────────────────────────────────────
