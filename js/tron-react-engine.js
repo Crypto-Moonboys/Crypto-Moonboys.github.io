@@ -93,9 +93,9 @@
   }
 
   // AI wake-up hook: no network call made from the browser.
-  // When a server-side /api/ai-wakeup-proxy route is fully implemented with proper
-  // authentication and abuse protection, the call can be restored by replacing
-  // pickWakeLine with a fetch to that route and falling back to WAKE_FALLBACK on error.
+  // TODO: When a server-side /api/ai-wakeup-proxy route is fully implemented with proper
+  // authentication, rate-limiting, and abuse protection, restore the call here by
+  // replacing pickWakeLine with a fetch to that route and falling back to WAKE_FALLBACK on error.
   function pickWakeLine(type) {
     const bucket = WAKE_FALLBACK[type] || WAKE_FALLBACK.generic;
     return randomFrom(bucket);
