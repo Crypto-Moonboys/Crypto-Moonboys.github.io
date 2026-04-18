@@ -50,6 +50,13 @@ const SOUND_LIBRARY = {
     { type: 'square',   freqStart: 720, freqEnd: 980, duration: 0.11, volume: 0.03, delay: 0.02 },
   ]},
   'meta-near-miss':      { kind: 'tone',  type: 'square',   freqStart: 360, freqEnd: 330, duration: 0.08, volume: 0.03  },
+  'meta-comeback-prompt': { kind: 'chord', tones: [
+    { type: 'sine',     freqStart: 560, freqEnd: 740, duration: 0.11, volume: 0.04, delay: 0.00 },
+    { type: 'triangle', freqStart: 760, freqEnd: 980, duration: 0.10, volume: 0.03, delay: 0.03 },
+  ]},
+  'meta-chain-unlock':    { kind: 'tone',  type: 'triangle', freqStart: 680, freqEnd: 1210, duration: 0.12, volume: 0.04 },
+  'meta-featured-window': { kind: 'tone',  type: 'sine',     freqStart: 420, freqEnd: 860, duration: 0.10, volume: 0.032 },
+  'meta-streak-save-warning': { kind: 'tone', type: 'square', freqStart: 340, freqEnd: 280, duration: 0.09, volume: 0.032 },
 };
 
 // Keep a defensive default here so module-driven game pages remain safe even if

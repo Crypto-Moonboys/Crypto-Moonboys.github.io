@@ -100,6 +100,11 @@ function resize() {
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 function edgeKey(source, target) { return `${source}->${target}`; }
+function formatFeaturedLabel(game) {
+  return (typeof game === 'string' && game.trim().length > 0)
+    ? `🔥 ${String(game).toUpperCase()}`
+    : '🔥 Featured';
+}
 
 // ── State builders ────────────────────────────────────────────────────────
 function setOverviewState() {
@@ -120,21 +125,28 @@ function setMetaOverviewState() {
   const featured = metaState?.featured_chaos || null;
   const rare = metaState?.rare_event || null;
   const comeback = metaState?.comeback || null;
+  const retention = metaState?.retention || null;
+  const chain = metaState?.quest_chain || retention?.quest_chain || null;
+  const mission = retention?.comeback_mission || null;
+  const featuredGame = retention?.featured_window?.game || featured?.game || null;
+  const featuredLabel = formatFeaturedLabel(featuredGame);
+  const missionExpiresIn = Math.max(0, Number(mission?.expires_at || 0) - Date.now());
 
   nodes = [
-    { id: 'meta', label: '⚡ Meta Core', color: C.gold, radius: 24, x: cx, y: cy, fixed: true },
+    { id: 'meta', label: '⚡ Meta Core', color: C.gold, radius: 24, x: cx, y: cy, fixed: true, emphasis: true },
     { id: 'daily', label: '📆 Daily', color: C.cyan, radius: 16, x: cx - r * 0.78, y: cy - r * 0.3, fixed: false },
     { id: 'weekly', label: '🗓️ Weekly', color: C.green, radius: 16, x: cx - r * 0.48, y: cy + r * 0.52, fixed: false },
     { id: 'seasonal', label: '🏆 Seasonal', color: C.purple, radius: 16, x: cx + r * 0.62, y: cy + r * 0.42, fixed: false },
-    { id: 'quests', label: '🎯 Quest Path', color: C.pink, radius: 15, x: cx + r * 0.78, y: cy - r * 0.18, fixed: false },
+    { id: 'quests', label: '🎯 Quest Path', color: C.pink, radius: 15, x: cx + r * 0.78, y: cy - r * 0.18, fixed: false, emphasis: !!chain },
     {
       id: 'featured',
-      label: featured?.game ? `🔥 ${String(featured.game).toUpperCase()}` : '🔥 Featured',
+      label: featuredLabel,
       color: C.gold,
       radius: 14,
       x: cx + r * 0.1,
       y: cy - r * 0.72,
       fixed: false,
+      emphasis: true,
     },
   ];
   if (rare) {
@@ -146,6 +158,7 @@ function setMetaOverviewState() {
       x: cx - r * 0.12,
       y: cy + r * 0.78,
       fixed: false,
+      emphasis: true,
     });
   }
   if (comeback) {
@@ -157,6 +170,31 @@ function setMetaOverviewState() {
       x: cx - r * 0.82,
       y: cy + r * 0.05,
       fixed: false,
+      critical: comeback.urgency === 'critical',
+    });
+  }
+  if (chain) {
+    nodes.push({
+      id: 'chain',
+      label: `🔗 Chain ${Math.max(1, Number(chain.chain_step || chain.step) || 1)}`,
+      color: C.pink,
+      radius: 13,
+      x: cx + r * 0.85,
+      y: cy - r * 0.58,
+      fixed: false,
+      emphasis: true,
+    });
+  }
+  if (mission && !mission.completed) {
+    nodes.push({
+      id: 'mission',
+      label: missionExpiresIn <= 2 * 60 * 1000 ? '⏳ Mission • NOW' : '⏳ Mission Live',
+      color: missionExpiresIn <= 2 * 60 * 1000 ? '#ff6b6b' : C.cyan,
+      radius: 13,
+      x: cx - r * 0.72,
+      y: cy - r * 0.58,
+      fixed: false,
+      critical: missionExpiresIn <= 2 * 60 * 1000,
     });
   }
 
@@ -169,10 +207,20 @@ function setMetaOverviewState() {
   ];
   if (rare) edges.push({ source: 'quests', target: 'rare' });
   if (comeback) edges.push({ source: 'daily', target: 'comeback' });
+  if (chain) edges.push({ source: 'quests', target: 'chain' });
+  if (mission && !mission.completed) edges.push({ source: 'daily', target: 'mission' });
+  if (chain && typeof featuredGame === 'string' && featuredGame.trim().length > 0) {
+    edges.push({ source: 'featured', target: 'chain' });
+  }
 
   activeEdges = new Set(['meta->quests', 'meta->featured']);
   if (rare) activeEdges.add('quests->rare');
   if (comeback) activeEdges.add('daily->comeback');
+  if (chain) activeEdges.add('quests->chain');
+  if (mission && !mission.completed) activeEdges.add('daily->mission');
+  if (chain && typeof featuredGame === 'string' && featuredGame.trim().length > 0) {
+    activeEdges.add('featured->chain');
+  }
 }
 
 export function setPlayerState(entry) {
@@ -340,10 +388,10 @@ function drawNode(n, hovered, selected) {
   }
 
   // Pulse ring on active/centre nodes
-  if (n.id === 'global' || n.id === 'player') {
+  if (n.id === 'global' || n.id === 'player' || n.emphasis || n.critical) {
     const ringR = n.radius + 4 + 3 * Math.sin(pulseT);
-    ctx.strokeStyle = n.color;
-    ctx.globalAlpha = 0.3 + 0.2 * Math.sin(pulseT);
+    ctx.strokeStyle = n.critical ? '#ff6b6b' : n.color;
+    ctx.globalAlpha = n.critical ? (0.45 + 0.25 * Math.sin(pulseT * 2.2)) : (0.3 + 0.2 * Math.sin(pulseT));
     ctx.lineWidth = 1.5;
     ctx.beginPath();
     ctx.arc(n.x, n.y, ringR, 0, Math.PI * 2);

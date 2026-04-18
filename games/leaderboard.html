@@ -423,14 +423,21 @@
 import { initLeaderboard } from '/js/arcade-leaderboard.js';
 import { initGraph, setPlayerState, resetGraph, setGraphMode, setMetaGraphState } from '/js/arcade-graph.js';
 import { ArcadeMeta } from '/js/arcade-meta-system.js';
+import { ArcadeRetentionEngine } from '/js/arcade-retention-engine.js';
 
 initGraph('arcade-graph-canvas');
 document.body.dataset.lbMode = 'raw';
 
 function updateMetaGraph() {
-  let context = null;
+  let context = {};
   try {
-    if (typeof ArcadeMeta.getLiveContext === 'function') context = ArcadeMeta.getLiveContext();
+    if (typeof ArcadeMeta.getLiveContext === 'function') context = { ...context, ...ArcadeMeta.getLiveContext() };
+  } catch (_) {}
+  try {
+    if (ArcadeRetentionEngine && typeof ArcadeRetentionEngine.getLiveContext === 'function') {
+      context.retention = ArcadeRetentionEngine.getLiveContext();
+      if (!context.quest_chain && context.retention?.quest_chain) context.quest_chain = context.retention.quest_chain;
+    }
   } catch (_) {}
   setMetaGraphState(context);
   setGraphMode('meta', context);
@@ -461,6 +468,10 @@ initLeaderboard({
 });
 
 document.addEventListener('arcade-meta-tracked', () => {
+  if ((document.body.dataset.lbMode || 'raw') !== 'meta') return;
+  updateMetaGraph();
+});
+document.addEventListener('arcade-retention-update', () => {
   if ((document.body.dataset.lbMode || 'raw') !== 'meta') return;
   updateMetaGraph();
 });

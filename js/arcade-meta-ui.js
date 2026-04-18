@@ -22,6 +22,8 @@ let hudStreak = null;
 let hudMultiplier = null;
 let hudChaos = null;
 let hudComeback = null;
+let hudLoop = null;
+let hudMission = null;
 let streakBarInner = null;
 let streakCountdown = null;
 let runActive = false;
@@ -87,8 +89,9 @@ function injectStyles() {
     #arcade-meta-streak-bar-inner{height:100%;width:100%;background:linear-gradient(90deg,#31d2ff,#f7ab1a);transition:width .22s ease}
     #arcade-meta-streak-pressure.warning #arcade-meta-streak-bar-inner{background:linear-gradient(90deg,#ff4fd1,#ff5454)}
     #arcade-meta-streak-pressure.warning{animation:metaWarn .45s ease-in-out infinite alternate}
-    #arcade-meta-chaos,#arcade-meta-comeback{font-size:.66rem;color:#d4dcff}
-    #arcade-meta-chaos .meta-val,#arcade-meta-comeback .meta-val{max-width:108px;text-align:right;line-height:1.2}
+    #arcade-meta-chaos,#arcade-meta-comeback,#arcade-meta-loop,#arcade-meta-mission{font-size:.66rem;color:#d4dcff}
+    #arcade-meta-chaos .meta-val,#arcade-meta-comeback .meta-val,#arcade-meta-loop .meta-val,#arcade-meta-mission .meta-val{max-width:128px;text-align:right;line-height:1.2}
+    #arcade-meta-mission.pulse .meta-val{animation:metaWarn .45s ease-in-out infinite alternate}
     #arcade-meta-popup-root{position:fixed;inset:0;display:grid;place-items:center}
     .arcade-meta-popup{padding:14px 16px;border-radius:14px;color:#fff;font-weight:800;letter-spacing:.03em;background:rgba(20,24,36,.92);border:1px solid rgba(255,255,255,.18);box-shadow:0 12px 42px rgba(0,0,0,.45);opacity:0;transform:translateY(18px) scale(.96);animation:metaPopIn .2s ease-out forwards,metaPopOut .26s ease-in forwards}
     .arcade-meta-popup .sub{display:block;font-size:.75rem;font-weight:600;opacity:.92;margin-top:4px}
@@ -124,6 +127,8 @@ function ensureUi() {
       <div class="meta-row"><span>Multiplier</span><span class="meta-val" id="arcade-meta-multiplier">x1.00</span></div>
       <div class="meta-row" id="arcade-meta-chaos"><span>Chaos</span><span class="meta-val" id="arcade-meta-chaos-val">--:--</span></div>
       <div class="meta-row" id="arcade-meta-comeback"><span>Pressure</span><span class="meta-val" id="arcade-meta-comeback-val">stable</span></div>
+      <div class="meta-row" id="arcade-meta-loop"><span>Loop</span><span class="meta-val" id="arcade-meta-loop-val">idle</span></div>
+      <div class="meta-row" id="arcade-meta-mission"><span>Mission</span><span class="meta-val" id="arcade-meta-mission-val">none</span></div>
       <div id="arcade-meta-streak-pressure">
         <div class="meta-row"><span>Decay</span><span class="meta-val" id="arcade-meta-streak-countdown">--:--</span></div>
         <div id="arcade-meta-streak-bar"><div id="arcade-meta-streak-bar-inner"></div></div>
@@ -141,6 +146,8 @@ function ensureUi() {
   hudMultiplier = uiRoot.querySelector('#arcade-meta-multiplier');
   hudChaos = uiRoot.querySelector('#arcade-meta-chaos-val');
   hudComeback = uiRoot.querySelector('#arcade-meta-comeback-val');
+  hudLoop = uiRoot.querySelector('#arcade-meta-loop-val');
+  hudMission = uiRoot.querySelector('#arcade-meta-mission-val');
   streakBarInner = uiRoot.querySelector('#arcade-meta-streak-bar-inner');
   streakCountdown = uiRoot.querySelector('#arcade-meta-streak-countdown');
 }
@@ -193,9 +200,15 @@ function updateHud() {
   ensureUi();
   let state = null;
   let liveContext = null;
+  let retentionContext = null;
   try { state = ArcadeMeta.getState(); } catch (_) {}
   try {
     if (typeof ArcadeMeta.getLiveContext === 'function') liveContext = ArcadeMeta.getLiveContext();
+  } catch (_) {}
+  try {
+    if (window.ArcadeRetentionEngine && typeof window.ArcadeRetentionEngine.getLiveContext === 'function') {
+      retentionContext = window.ArcadeRetentionEngine.getLiveContext();
+    }
   } catch (_) {}
   if (!state) return;
 
@@ -213,6 +226,22 @@ function updateHud() {
   if (hudComeback) {
     const comeback = liveContext?.comeback || null;
     hudComeback.textContent = comeback?.label ? String(comeback.label) : 'stable';
+  }
+  if (hudLoop) {
+    const runs = Number(retentionContext?.session_metrics?.runs) || 0;
+    const switches = Number(retentionContext?.session_metrics?.game_switches) || 0;
+    hudLoop.textContent = runs > 0 ? `${runs} runs • ${switches} switches` : 'Warming up';
+  }
+  if (hudMission) {
+    const missionRow = uiRoot.querySelector('#arcade-meta-mission');
+    const mission = retentionContext?.comeback_mission || null;
+    if (mission && Number(mission.expires_at) > Date.now() && !mission.completed) {
+      hudMission.textContent = formatCountdown(Math.max(0, Number(mission.expires_at) - Date.now()));
+      missionRow?.classList.add('pulse');
+    } else {
+      hudMission.textContent = 'none';
+      missionRow?.classList.remove('pulse');
+    }
   }
 
   const pressureRoot = uiRoot.querySelector('#arcade-meta-streak-pressure');
@@ -450,6 +479,7 @@ function wireMetaEventListeners() {
       rarity: 'common',
       durationMs: 1700,
     });
+    if ((Number(quest.chain_step) || 1) > 1) safePlay('meta-chain-unlock');
   });
 
   const onQuestComplete = (ev) => {
@@ -485,6 +515,10 @@ function wireMetaEventListeners() {
   });
 
   document.addEventListener('arcade-meta-tracked', () => {
+    updateHud();
+  });
+
+  document.addEventListener('arcade-retention-update', () => {
     updateHud();
   });
 
