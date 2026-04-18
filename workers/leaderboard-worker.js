@@ -7,6 +7,7 @@ const PER_GAME_LEADERBOARD_SIZE = 100;
 const GLOBAL_LEADERBOARD_SIZE = 100;
 const META_WINDOWS = ["daily", "weekly", "monthly", "seasonal"];
 const SEASON_LENGTH_MS = 90 * 24 * 60 * 60 * 1000;  // 90 days in milliseconds
+const MS_PER_DAY = 24 * 60 * 60 * 1000;
 const ALL_TIME_BOARD_SIZE = 420;
 const ALL_TIME_TOP_SEASONAL = 50;    // top N seasonal players evaluated for all-time each reset
 
@@ -45,7 +46,7 @@ export default {
       const meta = await getOrInitMeta(env);
       const now  = Date.now();
       const seasonElapsed  = now - new Date(meta.season_start).getTime();
-      const seasonDaysLeft = Math.max(0, Math.ceil((SEASON_LENGTH_MS - seasonElapsed) / 86400000));
+      const seasonDaysLeft = Math.max(0, Math.ceil((SEASON_LENGTH_MS - seasonElapsed) / MS_PER_DAY));
       return new Response(JSON.stringify({
         season_number:    meta.season_number,
         season_start:     meta.season_start,
@@ -97,7 +98,7 @@ export default {
       }
 
       const { player, score, game, telegram_id } = body;
-      const scoreType = String(body.score_type || "raw").toLowerCase();
+      const submissionMode = String(body.score_type || "raw").toLowerCase();
 
       // Competitive action — seasonal and all-time score submission requires
       // a Telegram-synced identity.  Guests can play locally but scores are
@@ -127,7 +128,7 @@ export default {
       }
 
       const parsedScore = Number(score);
-      const maxScore = scoreType === "meta" ? MAX_META_SCORE : MAX_SCORE;
+      const maxScore = submissionMode === "meta" ? MAX_META_SCORE : MAX_SCORE;
       if (!Number.isFinite(parsedScore) || parsedScore < 0 || parsedScore > maxScore) {
         return new Response(
           JSON.stringify({ error: `score must be a non-negative finite number (max ${maxScore})` }),
@@ -143,7 +144,7 @@ export default {
       const playerName = player.trim();
       const floorScore = Math.floor(parsedScore);
 
-      if (scoreType === "meta") {
+      if (submissionMode === "meta") {
         const eventTs = Number(body.timestamp);
         const timestamp = Number.isFinite(eventTs) ? eventTs : Date.now();
         await updateMetaBoards(env, {
@@ -449,7 +450,7 @@ async function recomputeAggregate(env, key, boards) {
 /* ── Meta leaderboard computation ──────────────────────────────────────────── */
 
 async function updateMetaBoards(env, submission) {
-  const ts = Number.isFinite(Number(submission.timestamp)) ? Number(submission.timestamp) : Date.now();
+  const ts = Number.isFinite(submission.timestamp) ? submission.timestamp : Date.now();
   const period = await getMetaPeriodContext(env, ts);
   const player = String(submission.player || "").trim();
   const score = Math.max(0, Math.floor(Number(submission.score) || 0));
@@ -498,7 +499,7 @@ function isoWeekKey(date) {
   const dayNum = d.getUTCDay() || 7;
   d.setUTCDate(d.getUTCDate() + 4 - dayNum);
   const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
-  const weekNo = Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+  const weekNo = Math.ceil((((d - yearStart) / MS_PER_DAY) + 1) / 7);
   return `${d.getUTCFullYear()}-W${String(weekNo).padStart(2, "0")}`;
 }
 

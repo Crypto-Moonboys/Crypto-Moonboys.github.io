@@ -91,8 +91,6 @@ export async function submitScore(player, score, game = "global") {
             typeof window !== "undefined" && window.MOONBOYS_IDENTITY &&
             typeof window.MOONBOYS_IDENTITY.showSyncGateModal === "function") {
           window.MOONBOYS_IDENTITY.showSyncGateModal();
-        } else {
-          shouldSyncMeta = true;
         }
       } else {
         shouldSyncMeta = true;
@@ -104,6 +102,8 @@ export async function submitScore(player, score, game = "global") {
 
   let metaResult = null;
   try {
+    // Meta is engagement-only and local-first: always track locally even when
+    // Telegram linking is missing; sync to worker remains linked-only below.
     metaResult = ArcadeMeta.trackGameResult({
       player: resolvedPlayer,
       game,

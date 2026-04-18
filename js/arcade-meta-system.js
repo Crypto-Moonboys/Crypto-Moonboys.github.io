@@ -1,5 +1,10 @@
 const STORAGE_KEY = 'arcade_meta';
 const MAX_HISTORY = 300;
+const MS_PER_DAY = 24 * 60 * 60 * 1000;
+const DAYS_PER_WEEK = 7;
+// Keep aligned with the leaderboard worker season anchor for consistent seasonal windows.
+const SEASON_EPOCH_MS = Date.UTC(2024, 0, 1);
+let questCounter = 0;
 
 const DEFAULT_CONFIG = {
   difficultyWeights: {
@@ -20,6 +25,7 @@ const DEFAULT_CONFIG = {
     maxActive: 5,
     ttlMs: 6 * 60 * 60 * 1000,
     maxQuestBonusPerRun: 2000,
+    scoreTarget: 800,
   },
   antiFarm: {
     diminishingStart: 3,
@@ -77,17 +83,16 @@ function toUtcMonthKey(ms) {
 function toUtcWeekKey(ms) {
   const d = new Date(ms);
   const utc = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()));
-  const day = utc.getUTCDay() || 7;
+  const day = utc.getUTCDay() || DAYS_PER_WEEK;
   utc.setUTCDate(utc.getUTCDate() + 4 - day);
   const yearStart = new Date(Date.UTC(utc.getUTCFullYear(), 0, 1));
-  const week = Math.ceil((((utc - yearStart) / 86400000) + 1) / 7);
+  const week = Math.ceil((((utc - yearStart) / MS_PER_DAY) + 1) / DAYS_PER_WEEK);
   return `${utc.getUTCFullYear()}-W${String(week).padStart(2, '0')}`;
 }
 
 function toSeasonKey(ms) {
-  const seasonLengthMs = 90 * 24 * 60 * 60 * 1000;
-  const seasonEpochMs = 1704067200000; // 2024-01-01 UTC
-  const seasonIndex = Math.floor((ms - seasonEpochMs) / seasonLengthMs);
+  const seasonLengthMs = 90 * MS_PER_DAY;
+  const seasonIndex = Math.floor((ms - SEASON_EPOCH_MS) / seasonLengthMs);
   return `S${seasonIndex + 1}`;
 }
 
@@ -196,11 +201,15 @@ function updateStreak(state, dayKey) {
   } else if (last === dayKey) {
     return state.streak.count;
   } else {
-    const diffDays = Math.round((Date.parse(`${dayKey}T00:00:00Z`) - Date.parse(`${last}T00:00:00Z`)) / 86400000);
+    const diffDays = daysBetween(last, dayKey);
     state.streak.count = diffDays === 1 ? state.streak.count + 1 : 1;
   }
   state.streak.last_day = dayKey;
   return state.streak.count;
+}
+
+function daysBetween(fromDayKey, toDayKey) {
+  return Math.round((Date.parse(`${toDayKey}T00:00:00Z`) - Date.parse(`${fromDayKey}T00:00:00Z`)) / MS_PER_DAY);
 }
 
 function countDailyRuns(history, dayKey, game) {
@@ -227,7 +236,8 @@ function repeatPenaltyMultiplier(recentSameGameRuns) {
 }
 
 function makeQuestId(prefix) {
-  return `${prefix}-${Math.random().toString(36).slice(2, 10)}-${Date.now().toString(36)}`;
+  questCounter += 1;
+  return `${prefix}-${Date.now().toString(36)}-${questCounter.toString(36)}`;
 }
 
 function createQuest(now) {
@@ -240,7 +250,7 @@ function createQuest(now) {
       id: makeQuestId('score'),
       type: 'score_target',
       game,
-      target: 800,
+      target: Number(config.quest.scoreTarget) || 800,
       title: `Push ${game.toUpperCase()} score to 800+`,
       bonus: 300,
       created_at: now,
@@ -493,4 +503,3 @@ if (typeof window !== 'undefined') {
 }
 
 export { ArcadeMeta };
-

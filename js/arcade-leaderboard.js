@@ -29,6 +29,7 @@ const META_TABS = [
   { key: 'monthly',  label: '🧮 Monthly',  icon: '🧮' },
   { key: 'seasonal', label: '🏆 Seasonal', icon: '🏆' },
 ];
+const DEFAULT_MODE = 'raw';
 
 const AGGREGATE_TABS = new Set(['global', 'seasonal', 'yearly', 'all-time']);
 
@@ -48,7 +49,7 @@ const GAME_LABELS = {
 const BREAKDOWN_GAMES = ['snake', 'crystal', 'blocktopia', 'invaders', 'pacchain', 'asteroids', 'breakout', 'tetris', 'hexgl'];
 
 // ── State ─────────────────────────────────────────────────────────────────
-let currentMode = 'raw';
+let currentMode = DEFAULT_MODE;
 let currentTab = 'global';
 let currentData = [];
 let onRowSelectCallback = null;
@@ -100,7 +101,7 @@ function renderModeToggle() {
   const wrap = el('lb-mode-toggle');
   if (!wrap) return;
   wrap.innerHTML = `
-    <button class="lb-tab${currentMode === 'raw' ? ' active' : ''}" data-mode="raw" aria-pressed="${currentMode === 'raw'}">RAW</button>
+    <button class="lb-tab${currentMode === DEFAULT_MODE ? ' active' : ''}" data-mode="${DEFAULT_MODE}" aria-pressed="${currentMode === DEFAULT_MODE}">RAW</button>
     <button class="lb-tab${currentMode === 'meta' ? ' active' : ''}" data-mode="meta" aria-pressed="${currentMode === 'meta'}">META</button>
   `;
   wrap.querySelectorAll('[data-mode]').forEach((btn) => {
@@ -150,7 +151,7 @@ function setEmptyState() {
 function renderBreakdown(entry) {
   const panel = el('lb-breakdown-panel');
   if (!panel) return;
-  if (!entry || currentMode !== 'raw' || !AGGREGATE_TABS.has(currentTab)) {
+  if (!entry || currentMode !== DEFAULT_MODE || !AGGREGATE_TABS.has(currentTab)) {
     panel.style.display = 'none';
     return;
   }
@@ -245,6 +246,7 @@ function rowIndexForRank(data, rank) {
 // ── Core actions ──────────────────────────────────────────────────────────
 async function switchTab(tab) {
   if (isFetching) return;
+  if (tab === currentTab) return;
   currentTab = tab;
   renderTabs();
   if (onModeChangeCallback) onModeChangeCallback({ mode: currentMode, tab: currentTab });
@@ -253,7 +255,7 @@ async function switchTab(tab) {
 
 async function switchMode(mode) {
   if (isFetching) return;
-  const nextMode = mode === 'meta' ? 'meta' : 'raw';
+  const nextMode = mode === 'meta' ? 'meta' : DEFAULT_MODE;
   if (nextMode === currentMode) return;
   currentMode = nextMode;
   currentTab = currentMode === 'meta' ? 'daily' : 'global';
@@ -289,6 +291,7 @@ export function initLeaderboard({ onRowSelect, onModeChange } = {}) {
 
   renderModeToggle();
   renderTabs();
+  if (onModeChangeCallback) onModeChangeCallback({ mode: currentMode, tab: currentTab });
 
   const refreshBtn = el('lb-refresh-btn');
   if (refreshBtn) {
