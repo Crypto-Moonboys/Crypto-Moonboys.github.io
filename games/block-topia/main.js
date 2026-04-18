@@ -37,6 +37,7 @@ const CAMERA_ZOOM_MAX = 1.4;
 // ~6% step gives smooth wheel zoom while traversing the clamp range in practical increments.
 const CAMERA_ZOOM_WHEEL_STEP = 0.06;
 const MOUSE_DRAG_THRESHOLD_PX = 8;
+const MOUSE_DRAG_DOUBLE_CLICK_SUPPRESS_MS = 400;
 
 const canvas = document.getElementById('world-canvas');
 const hud = createHud(document);
@@ -305,7 +306,7 @@ async function boot() {
     state.mouse.dragging = false;
     if (dragged) {
       state.mouse.suppressClick = true;
-      state.mouse.suppressDblClickUntil = performance.now() + 400;
+      state.mouse.suppressDblClickUntil = performance.now() + MOUSE_DRAG_DOUBLE_CLICK_SUPPRESS_MS;
       state.mouse.hoverTile = renderer.pickTileFromClientPoint(event.clientX, event.clientY, state);
       state.mouse.hoverNpcId = renderer.pickNpcFromClientPoint(event.clientX, event.clientY, state)?.id || '';
     }
