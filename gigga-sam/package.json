@@ -1,0 +1,12 @@
+{
+  "name": "gigga-sam",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "generate-signals": "node ./generate-signals.mjs"
+  },
+  "dependencies": {
+    "openai": "^6.3.0"
+  }
+}

@@ -1,0 +1,56 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-04-18T00:00:00.000Z",
+  "mode": "fallback-seed",
+  "sourceHealth": {
+    "seed": "ok"
+  },
+  "signalCount": 3,
+  "signals": [
+    {
+      "id": "signal-seed-1",
+      "lane": "world",
+      "priority": 3,
+      "ttlMinutes": 60,
+      "npcLine": "Night relay pressure is rising. Stay ghosted in contested lanes.",
+      "questPulse": "Sweep one unstable relay pocket before the phase shifts.",
+      "worldFeed": "SAM watch: district channels show unstable echo traffic.",
+      "clueEvent": "Clue pulse: old rail junction marks the next hidden route.",
+      "tags": [
+        "sam",
+        "relay"
+      ],
+      "expiresAt": "2026-04-18T02:00:00.000Z"
+    },
+    {
+      "id": "signal-seed-2",
+      "lane": "ops",
+      "priority": 4,
+      "ttlMinutes": 45,
+      "npcLine": "Courier grid just rerouted. Expect sudden patrol pivots.",
+      "questPulse": "Tag two courier lanes without tripping SAM beacons.",
+      "worldFeed": "Ops bulletin: faction supply corridors are re-keying.",
+      "clueEvent": "Hidden link hunt: look for three amber bars on dead terminals.",
+      "tags": [
+        "ops",
+        "quest"
+      ],
+      "expiresAt": "2026-04-18T01:45:00.000Z"
+    },
+    {
+      "id": "signal-seed-3",
+      "lane": "clue",
+      "priority": 2,
+      "ttlMinutes": 90,
+      "npcLine": "A ghost signal is looping beneath Revolt sectors.",
+      "questPulse": "Trace a memory shard trail through one contested district.",
+      "worldFeed": "World feed: encrypted whispers detected in undergrid relays.",
+      "clueEvent": "Passphrase fragment: moon ... static.",
+      "tags": [
+        "clue",
+        "hunt"
+      ],
+      "expiresAt": "2026-04-18T03:00:00.000Z"
+    }
+  ]
+}
