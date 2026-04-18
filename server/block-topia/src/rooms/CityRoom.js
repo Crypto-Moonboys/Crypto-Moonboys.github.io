@@ -15,9 +15,13 @@ const DISTRICT_CAPTURE_THRESHOLD = 90;
 const NODE_INTERFERENCE_GAIN = 18;
 const NODE_UNSTABLE_THRESHOLD = 65;
 const NODE_COOLDOWN_MS = 6500;
+const NODE_PULSE_DURATION_MS = 1200;
+const NODE_INTERFERENCE_DECAY = 2;
 const NODE_DISTRICT_SHIFT = 3;
 const SAM_PRESSURE_FROM_INTERFERENCE = 4;
 const SAM_PRESSURE_PHASE_THRESHOLD = 100;
+const SAM_PRESSURE_CHANCE = 0.45;
+const SAM_PRESSURE_RESET_FLOOR = 20;
 
 const CONTROL_NODES = [
   { id: 'core', x: 24, y: 24, districtId: 'crypto-core' },
@@ -288,7 +292,7 @@ export class CityRoom extends Room {
         node.status = 'stable';
       }
       node.pulseUntil = 0;
-      node.interference = Math.max(0, node.interference - 2);
+      node.interference = Math.max(0, node.interference - NODE_INTERFERENCE_DECAY);
       node.control = node.interference;
       if (node.interference === 0) {
         node.owner = null;
@@ -308,7 +312,7 @@ export class CityRoom extends Room {
     node.interference = Math.max(0, Math.min(100, node.interference + NODE_INTERFERENCE_GAIN));
     node.control = node.interference;
     node.lastInterferedBy = client.sessionId;
-    node.pulseUntil = now + 1200;
+    node.pulseUntil = now + NODE_PULSE_DURATION_MS;
     node.cooldownUntil = now + NODE_COOLDOWN_MS;
     node.status = node.interference >= NODE_UNSTABLE_THRESHOLD ? 'unstable' : 'contested';
     node.owner = node.interference >= NODE_UNSTABLE_THRESHOLD ? 'UNSTABLE' : node.owner;
@@ -324,11 +328,11 @@ export class CityRoom extends Room {
       district.owner = 'Wardens';
     }
 
-    const samPressureDelta = Math.random() < 0.45 ? SAM_PRESSURE_FROM_INTERFERENCE : 0;
+    const samPressureDelta = Math.random() < SAM_PRESSURE_CHANCE ? SAM_PRESSURE_FROM_INTERFERENCE : 0;
     if (samPressureDelta > 0) {
       this.world.samPressure = Math.max(0, Math.min(100, this.world.samPressure + samPressureDelta));
       if (this.world.samPressure >= SAM_PRESSURE_PHASE_THRESHOLD) {
-        this.world.samPressure = 20;
+        this.world.samPressure = SAM_PRESSURE_RESET_FLOOR;
         this.world.samPhase = (this.world.samPhase + 1) % 4;
         this.broadcast('samPhaseChanged', { phaseIndex: this.world.samPhase });
       }

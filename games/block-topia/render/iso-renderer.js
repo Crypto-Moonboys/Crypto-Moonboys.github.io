@@ -17,6 +17,14 @@ const CROWD_VISIBILITY_ZOOM_THRESHOLD = 1;
 const CULL_MARGIN = 120;
 const MAGENTA_OVERLAY_COLOR = 'rgba(255,79,216,0.16)';
 const CONTROL_NODE_PICK_RADIUS_SQ = 22 * 22;
+const UNSTABLE_FLICKER_BASE = 0.7;
+const UNSTABLE_FLICKER_RATE = 60;
+const UNSTABLE_FLICKER_AMPLITUDE = 0.45;
+const UNSTABLE_PULSE_BASE = 0.95;
+const UNSTABLE_PULSE_RATE = 240;
+const UNSTABLE_PULSE_AMPLITUDE = 0.15;
+const HALO_PULSE_RATE = 180;
+const HALO_PULSE_AMPLITUDE = 0.22;
 
 const ROLE_STYLE = {
   vendor: { color: '#ffd84d', factionRing: true },
@@ -845,9 +853,11 @@ export function createIsoRenderer(canvas) {
     const baseRadius = 14;
     const status = node.status || 'stable';
     const pulseActive = (Number(node.pulseUntil) || 0) > now;
-    const unstableFlicker = status === 'unstable' ? (0.7 + deterministicNoise2D(Math.floor(now / 60), node.x + node.y) * 0.45) : 1;
+    const unstableFlicker = status === 'unstable'
+      ? (UNSTABLE_FLICKER_BASE + deterministicNoise2D(Math.floor(now / UNSTABLE_FLICKER_RATE), node.x + node.y) * UNSTABLE_FLICKER_AMPLITUDE)
+      : 1;
     const pulseScale = status === 'unstable'
-      ? 0.95 + (Math.sin(now / 240) + 1) * 0.15
+      ? UNSTABLE_PULSE_BASE + (Math.sin(now / UNSTABLE_PULSE_RATE) + 1) * UNSTABLE_PULSE_AMPLITUDE
       : 0.85 + (Math.sin(now / 600) + 1) * 0.08;
     const baseColor = status === 'cooldown'
       ? '#7f8aa3'
@@ -896,7 +906,7 @@ export function createIsoRenderer(canvas) {
     }
 
     if (pulseActive) {
-      const haloPulse = 1 + ((Math.sin(now / 180) + 1) * 0.22);
+      const haloPulse = 1 + ((Math.sin(now / HALO_PULSE_RATE) + 1) * HALO_PULSE_AMPLITUDE);
       ctx.globalAlpha = status === 'unstable' ? 0.45 : 0.3;
       ctx.strokeStyle = baseColor;
       ctx.lineWidth = 1.5;

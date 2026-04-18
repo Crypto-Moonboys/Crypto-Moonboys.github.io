@@ -23,6 +23,8 @@ const CONTROL_NODE_HELPER_GAIN = 5;
 const INTERFERENCE_REACTION_DURATION_MS = 9000;
 const INTERFERENCE_DISTRICT_DIALOGUE_CHANCE = 0.65;
 const INTERFERENCE_NODE_RADIUS_SQ = 36;
+const INTERFERENCE_WANDER_CHANCE = 0.28;
+const UNSTABLE_VILLAIN_SPAWN_CHANCE = 0.3;
 
 // District-aware NPC spawn bands (col, row, w, h) matching districts.json grid regions
 const DISTRICT_SPAWN_REGIONS = [
@@ -659,12 +661,12 @@ export function createNpcSystem(state, liveIntelligence = null) {
       if (!sameDistrict && !nearNode) continue;
       npc.dialogueHooks = ['react_to_player_presence', 'district_rumor_ping', 'node_interference_alert'];
       npc.dialogue = [getDialogueLine(npc)];
-      if (Math.random() < 0.28) {
+      if (Math.random() < INTERFERENCE_WANDER_CHANCE) {
         npc.lineId = pickRandomLineId();
         npc.lineDirection = randomLineDirectionSign();
         npc.t = 0;
       }
-      if (payload.status === 'unstable' && Math.random() < 0.3) {
+      if (payload.status === 'unstable' && Math.random() < UNSTABLE_VILLAIN_SPAWN_CHANCE) {
         npc.type = 'villain';
       }
     }

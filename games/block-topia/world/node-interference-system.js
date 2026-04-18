@@ -1,4 +1,5 @@
 const LOCAL_PULSE_MS = 850;
+const SERVER_UPDATE_PULSE_MS = 550;
 const DEFAULT_STATUS = 'stable';
 const ACTIVE_STATUS = new Set(['contested', 'unstable', 'cooldown']);
 
@@ -78,7 +79,7 @@ export function createNodeInterferenceSystem(state) {
     if (payload.pulseUntil !== undefined) {
       node.pulseUntil = Number(payload.pulseUntil) || 0;
     } else if (!options.silent) {
-      node.pulseUntil = Math.max(Number(node.pulseUntil) || 0, now + 550);
+      node.pulseUntil = Math.max(Number(node.pulseUntil) || 0, now + SERVER_UPDATE_PULSE_MS);
     }
 
     trackNodeActivity(node, now);
