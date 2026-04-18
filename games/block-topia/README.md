@@ -77,9 +77,61 @@ This layer is **site-side only** and runs after SAM updates (or on schedule). It
 - world feed bulletins
 - clue signal events for hidden-link hunts
 
+### Completed Runtime Signal Gameplay (Finalise Pass)
+
+This pass completes the in-session signal layer to a clean stop point:
+
+- **Live refresh loop** (`main.js` + `world/live-intelligence.js`)
+  - Keeps polling `/games/block-topia/data/live-signals.json` on a 120s loop.
+  - Detects meaningful snapshot changes (generated timestamp + signal fingerprint).
+  - If changed, refreshes world feed bulletins, quest cards, clue pool state, and map operations.
+  - Refresh failures never crash runtime; the previous snapshot remains active.
+  - Feed dedupe prevents repeated refresh spam lines.
+
+- **Signal quest cards** (`world/signal-quest-generator.js`)
+  - Temporary cards generated from active signal lanes (`world`, `ops`, `clue`, `quest`).
+  - Max **2** live signal cards at a time.
+  - Each card includes id/title/objective/xp plus district hint + expiresAt metadata.
+  - Cards are runtime-only and rotate as live signals rotate.
+
+- **Signal operations on map** (`world/signal-operation-system.js` + `render/iso-renderer.js`)
+  - Runtime operations derived from active live signals only.
+  - Max **3** active operations at once.
+  - Spawned onto valid in-bounds district tile positions.
+  - Rendered with distinct pulse rings + glow areas separate from capture effects.
+  - Entering an operation radius resolves it immediately in runtime.
+  - Resolution triggers feed response (`✔ SIGNAL STABILISED — TRACE COMPLETE`) and short visual success pulse.
+  - Unresolved operations auto-expire and are removed cleanly.
+
+- **NPC signal integration boost** (`world/npc-system.js`)
+  - If a district has active operation pressure, NPCs in that district are more likely to produce live signal dialogue.
+  - Role-aware operation language is applied for vendor/fighter/agent/lore-keeper/recruiter.
+  - Fallback dialogue paths stay intact, so not every line is signal-only.
+
+- **Clue pulse finishing pass** (`world/clue-signal-system.js`)
+  - Clue pool refreshes on signal refresh.
+  - Clue pulses rotate with anti-repeat memory to avoid repeating the same clue too often.
+  - Clue feed lines remain temporary, with no click logging or player tracking.
+
 ### Privacy Rule
 
-The live intelligence layer stores **zero player behavior data**. It does not add clue click logging, player tracking, or persistent user profiling.
+The live intelligence layer stores **zero player behavior data**. It does not add clue click logging, player tracking, analytics, persistent quest history, or permanent operation records.
+
+### Zero-Data / Runtime-Only Rule
+
+- Signal operation resolution is runtime-only in memory.
+- Resolved/expired signal operations are not persisted across reloads.
+- No player heatmaps, no behavior analytics, no clue-discovery history, no identity tracking.
+
+### Finished-For-Now Stop Point
+
+Block Topia’s current signal layer is complete enough to stop cleanly here:
+
+- refresh loop live
+- feed + quest + clue refresh integration complete
+- NPC live signal dialogue integrated with district pressure context
+- map operation gameplay loop fully playable (spawn → chase → resolve/expire)
+- strict runtime-only data handling preserved
 
 ## Scaffolding for Future Expansion
 

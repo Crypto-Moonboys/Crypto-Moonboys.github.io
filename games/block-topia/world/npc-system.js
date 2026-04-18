@@ -87,6 +87,34 @@ const FACTION_DIALOGUE_OVERLAY = {
   ],
 };
 
+const OPERATION_ROLE_DIALOGUE = {
+  vendor: [
+    (district) => `Supply lanes in ${district} are breaking. Prices spike every pulse.`,
+    (district) => `Market pressure is climbing in ${district}. Relay stock moves before sunrise.`,
+    (district) => `Courier caches in ${district} are hot. I can barely keep crates moving.`,
+  ],
+  fighter: [
+    (district) => `${district} is under territory strain. We hold this lane or lose the block.`,
+    (district) => `Conflict pressure in ${district} is rising. Expect hard resistance near the relay.`,
+    (district) => `Signal routes in ${district} are contested. Every corner is a frontline.`,
+  ],
+  agent: [
+    (district) => `Route integrity in ${district} is unstable. Courier traffic is rerouting right now.`,
+    (district) => `A relay trace in ${district} just lit up. Follow the courier corridor.`,
+    (district) => `Courier intel says ${district} has an active operation marker on-grid.`,
+  ],
+  'lore-keeper': [
+    (district) => `An omen hangs over ${district}. The relay remembers who ignored this warning.`,
+    (district) => `Memory static in ${district} is rising. The city is trying to tell us something.`,
+    (district) => `The warning lines around ${district} are old, but tonight they are awake again.`,
+  ],
+  recruiter: [
+    (district) => `${district} needs support now. Momentum swings to whoever answers this operation first.`,
+    (district) => `Alignment pressure in ${district} is peaking. Bring allies before the lane collapses.`,
+    (district) => `Support routes in ${district} are open for a moment. We should move now.`,
+  ],
+};
+
 // Character name pools per role — give each NPC a proper identity.
 const NPC_NAMES = {
   vendor: ['Maxis', 'Creo', 'Dice', 'Sal', 'Brix', 'Parch'],
@@ -230,9 +258,30 @@ export function createNpcSystem(state, liveIntelligence = null) {
   const MAP_W = state.map.width;
   const MAP_H = state.map.height;
 
+  function sampleOperationRoleLine(npc, operation) {
+    if (!operation) return '';
+    const districtName = state.districts.byId.get(operation.districtId)?.name || state.player?.districtName || 'this district';
+    const builders = OPERATION_ROLE_DIALOGUE[npc.role];
+    if (!Array.isArray(builders) || !builders.length) return '';
+    const fn = sample(builders);
+    if (typeof fn !== 'function') return '';
+    return fn(districtName);
+  }
+
+  function getDistrictOperation(districtId) {
+    const ops = state.signalOperations?.active || [];
+    return ops.find((operation) => operation.districtId === districtId && !operation.resolved) || null;
+  }
+
   function getDialogueLine(npc) {
+    const districtOp = getDistrictOperation(npc?.districtId);
     const liveLine = liveIntelligence?.pickNpcLine?.(npc);
-    if (liveLine) return liveLine;
+    const liveChance = districtOp ? 0.7 : 0.3;
+    if (districtOp && Math.random() < 0.6) {
+      const roleOpLine = sampleOperationRoleLine(npc, districtOp);
+      if (roleOpLine) return roleOpLine;
+    }
+    if (liveLine && Math.random() < liveChance) return liveLine;
 
     const mapped = roleToProfile[npc.role];
     const profile = mapped ? profileByRole.get(mapped) : null;

@@ -35,6 +35,7 @@ const QUEST_TYPE_ICON = {
   weekly:   '◈',
   seasonal: '★',
   prophecy: '⬡',
+  signal:   '◉',
 };
 
 export function createHud(doc) {

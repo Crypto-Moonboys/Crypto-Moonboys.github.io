@@ -39,8 +39,19 @@ function normalizeSnapshot(payload) {
   };
 }
 
+function snapshotFingerprint(snapshot) {
+  const generatedAt = String(snapshot?.generatedAt || '');
+  const mode = String(snapshot?.mode || '');
+  const signals = Array.isArray(snapshot?.signals) ? snapshot.signals : [];
+  const ids = signals
+    .map((signal) => `${signal?.id || ''}:${signal?.expiresAt || ''}:${signal?.lane || ''}:${signal?.worldFeed || ''}`)
+    .join('|');
+  return `${generatedAt}::${mode}::${signals.length}::${ids}`;
+}
+
 export function createLiveIntelligence(fetchImpl = fetch) {
   let snapshot = normalizeSnapshot(null);
+  let fingerprint = snapshotFingerprint(snapshot);
 
   async function refresh() {
     try {
@@ -49,10 +60,24 @@ export function createLiveIntelligence(fetchImpl = fetch) {
         throw new Error(`Live signals unavailable: ${response.status}`);
       }
       const payload = await response.json();
-      snapshot = normalizeSnapshot(payload);
-      return snapshot;
-    } catch {
-      return snapshot;
+      const nextSnapshot = normalizeSnapshot(payload);
+      const nextFingerprint = snapshotFingerprint(nextSnapshot);
+      const changed = nextFingerprint !== fingerprint;
+      if (changed) {
+        snapshot = nextSnapshot;
+        fingerprint = nextFingerprint;
+      }
+      return {
+        snapshot,
+        changed,
+        error: null,
+      };
+    } catch (error) {
+      return {
+        snapshot,
+        changed: false,
+        error: String(error?.message || error || 'refresh-failed'),
+      };
     }
   }
 

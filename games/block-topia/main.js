@@ -13,6 +13,7 @@ import { createQuestSystem } from './world/quest-system.js';
 import { createMemorySystem } from './world/memory-system.js';
 import { createLiveIntelligence } from './world/live-intelligence.js';
 import { createClueSignalSystem } from './world/clue-signal-system.js';
+import { createSignalOperationSystem } from './world/signal-operation-system.js';
 import { createHud } from './ui/hud.js';
 import { createIsoRenderer } from './render/iso-renderer.js';
 
@@ -26,6 +27,8 @@ const DISTRICT_CAPTURE_THRESHOLD = 90;
 const LOGIC_TICK_MS = 50;
 const NPC_SCAN_INTERVAL_MS = 150;
 const REMOTE_PLAYER_LERP_ALPHA = 0.18;
+const LIVE_REFRESH_INTERVAL_MS = 120000;
+const FEED_DEDUPE_TTL_MS = 5 * 60 * 1000;
 
 const canvas = document.getElementById('world-canvas');
 const hud = createHud(document);
@@ -48,11 +51,13 @@ async function boot() {
   const npc = createNpcSystem(state, liveIntelligence);
   const quests = createQuestSystem(state, liveIntelligence);
   const clues = createClueSignalSystem(liveIntelligence);
+  const operations = createSignalOperationSystem(state, liveIntelligence);
   const memory = createMemorySystem(state);
   let multiplayerConnected = false;
   let nearbyNpc = null;
   let lastNpcScan = performance.now();
   let lastQuestDistrictId = state.player.districtId;
+  const seenFeed = new Map();
   const primaryFactionName = state.factions.primary?.name || 'Liberators';
   const secondaryFactionName = state.factions.secondary?.name || 'Wardens';
   const lore = state.lore?.legacy?.lore || {};
@@ -89,6 +94,43 @@ async function boot() {
     if (rumor) hud.pushFeed(`🗞️ ${rumor}`, 'system');
   }
 
+  function pushFeedDeduped(text, type = 'system', key = '') {
+    const cacheKey = key || `${type}:${text}`;
+    const now = Date.now();
+    const lastSeen = seenFeed.get(cacheKey) || 0;
+    if (now - lastSeen < FEED_DEDUPE_TTL_MS) return false;
+    seenFeed.set(cacheKey, now);
+    if (seenFeed.size > 80) {
+      for (const [entryKey, ts] of seenFeed) {
+        if (now - ts > FEED_DEDUPE_TTL_MS) {
+          seenFeed.delete(entryKey);
+        }
+      }
+    }
+    hud.pushFeed(text, type);
+    return true;
+  }
+
+  function applyLiveSignalRefresh(refreshResult) {
+    if (!refreshResult?.changed) return;
+
+    const snapshot = refreshResult.snapshot || liveIntelligence.getSnapshot();
+    const worldBulletins = liveIntelligence.getWorldFeedLines(3);
+    worldBulletins.forEach((line) => {
+      if (!line) return;
+      pushFeedDeduped(`📡 ${line}`, 'sam', `world-bulletin:${line}`);
+    });
+    pushFeedDeduped(
+      `🛰️ Live intelligence refreshed (${snapshot.mode || 'fallback'})`,
+      'system',
+      `live-refresh:${snapshot.generatedAt || snapshot.mode || 'fallback'}`,
+    );
+    clues.refreshFromSignals?.();
+    operations.syncFromSignals({ force: true });
+    hud.setQuests(quests.getActiveQuestCards());
+    hud.setWorldStatus(`Unified city online · live signals ${snapshot.mode || 'fallback'} · ${snapshot.signalCount || 0} active lanes`);
+  }
+
   // Populate HUD with initial values
   hud.setPlayerName(state.player.name);
   hud.setWorldStatus(`Unified city online · district memory sync active`);
@@ -102,17 +144,20 @@ async function boot() {
   hud.setXp(state.player.xp);
   hud.setRoom(state.room.id);
   hud.setPopulation(0, state.room.maxPlayers);
+  operations.syncFromSignals({ force: true });
   hud.setQuests(quests.getActiveQuestCards());
   const worldBulletins = liveIntelligence.getWorldFeedLines(2);
-  worldBulletins.forEach((line) => hud.pushFeed(`📡 ${line}`, 'sam'));
+  worldBulletins.forEach((line) => pushFeedDeduped(`📡 ${line}`, 'sam', `world-bulletin:${line}`));
   const liveMode = liveIntelligence.getSnapshot().mode || 'fallback';
-  hud.pushFeed(`🛰️ Live intelligence layer online (${liveMode})`, 'system');
+  pushFeedDeduped(`🛰️ Live intelligence layer online (${liveMode})`, 'system', `live-boot:${liveMode}`);
   hud.setEntryTagline(`Deploying into ${state.player.districtName}…`);
   bootstrapLoreFeed();
 
   setInterval(() => {
-    liveIntelligence.refresh().catch(() => {});
-  }, 120000);
+    liveIntelligence.refresh()
+      .then((result) => applyLiveSignalRefresh(result))
+      .catch(() => {});
+  }, LIVE_REFRESH_INTERVAL_MS);
 
   // Fallback: dismiss the entry overlay after 7s in case multiplayer never connects.
   setTimeout(() => hud.dismissEntryIdentity(0), ENTRY_OVERLAY_TIMEOUT_MS);
@@ -168,8 +213,8 @@ async function boot() {
         hud.setSamPhase(phase.name);
       }
     },
-    onFeed: (line) => {
-      hud.pushFeed(line, classifyFeedType(line));
+      onFeed: (line) => {
+      pushFeedDeduped(line, classifyFeedType(line), `network:${line}`);
       memory.record('network', { at: Date.now(), line });
     },
     onQuestCompleted: ({ questId, title, rewardXp }) => {
@@ -249,10 +294,10 @@ async function boot() {
 
   window.addEventListener('keydown', (event) => {
     if (event.key.toLowerCase() !== 'e' || event.repeat || !nearbyNpc) return;
-    const line = npc.getDialogueLine(nearbyNpc);
-    hud.showNpcDialogue(nearbyNpc.name || 'Citizen', nearbyNpc.roleLabel || nearbyNpc.role, line);
-    hud.pushFeed(`🗣️ ${nearbyNpc.name}: ${line}`, 'system');
-    memory.record('player', {
+      const line = npc.getDialogueLine(nearbyNpc);
+      hud.showNpcDialogue(nearbyNpc.name || 'Citizen', nearbyNpc.roleLabel || nearbyNpc.role, line);
+      pushFeedDeduped(`🗣️ ${nearbyNpc.name}: ${line}`, 'system', `npc:${nearbyNpc.id}:${line}`);
+      memory.record('player', {
       at: Date.now(),
       action: 'npc_interact',
       npcId: nearbyNpc.id,
@@ -292,6 +337,28 @@ async function boot() {
     });
     clues.tick(dt, {
       onCluePulse: (text) => hud.pushFeed(`🧩 ${text}`, 'quest'),
+    });
+    operations.tick(dt, {
+      onOperationResolved: (operation) => {
+        pushFeedDeduped('✔ SIGNAL STABILISED — TRACE COMPLETE', 'quest', `op-resolved:${operation.id}`);
+        pushFeedDeduped(
+          `📍 ${operation.title} resolved in ${state.districts.byId.get(operation.districtId)?.name || operation.districtId}`,
+          'sam',
+          `op-resolved-detail:${operation.id}`,
+        );
+        hud.showSamPopup('✔ SIGNAL STABILISED — TRACE COMPLETE', 2600);
+        operations.syncFromSignals();
+        hud.setQuests(quests.getActiveQuestCards());
+      },
+      onOperationExpired: (operation) => {
+        pushFeedDeduped(
+          `⌛ ${operation.title} signal faded`,
+          'system',
+          `op-expired:${operation.id}`,
+        );
+        operations.syncFromSignals();
+        hud.setQuests(quests.getActiveQuestCards());
+      },
     });
 
     // Interpolate remote player positions toward server-provided targets.
