@@ -81,6 +81,7 @@ async function boot() {
   const seenFeed = new Map();
   const primaryFactionName = state.factions.primary?.name || 'Liberators';
   const secondaryFactionName = state.factions.secondary?.name || 'Wardens';
+  const canonLore = state.lore?.canon || {};
   const lore = state.lore?.legacy?.lore || {};
   const districtStateById = new Map(state.districtState.map((district) => [district.id, district]));
 
@@ -167,11 +168,25 @@ async function boot() {
   }
 
   function bootstrapLoreFeed() {
-    const districtFlavor = lore?.districts?.[0]?.flavor?.[0];
-    if (districtFlavor) hud.pushFeed(`📰 ${districtFlavor}`, 'system');
-    if (!Array.isArray(lore?.npc_rumors) || lore.npc_rumors.length === 0) return;
-    const rumor = lore.npc_rumors[Math.floor(Math.random() * lore.npc_rumors.length)];
-    if (rumor) hud.pushFeed(`🗞️ ${rumor}`, 'system');
+    const canonLine = Array.isArray(canonLore.feedLines) && canonLore.feedLines.length
+      ? canonLore.feedLines[0]
+      : '';
+    if (canonLine) {
+      hud.pushFeed(`📜 ${canonLine}`, 'system');
+    } else {
+      const districtFlavor = lore?.districts?.[0]?.flavor?.[0];
+      if (districtFlavor) hud.pushFeed(`📰 [Fallback] ${districtFlavor}`, 'system');
+    }
+
+    const rumorPool = Array.isArray(canonLore.npcRumors) && canonLore.npcRumors.length
+      ? canonLore.npcRumors
+      : lore?.npc_rumors;
+    if (!Array.isArray(rumorPool) || rumorPool.length === 0) return;
+    const rumor = rumorPool[Math.floor(Math.random() * rumorPool.length)];
+    if (rumor) {
+      const prefix = canonLore.fallbackUsed ? '🗞️ [Fallback]' : '🗞️';
+      hud.pushFeed(`${prefix} ${rumor}`, 'system');
+    }
   }
 
   function pushFeedDeduped(text, type = 'system', key = '') {

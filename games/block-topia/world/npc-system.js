@@ -458,9 +458,13 @@ export function createNpcSystem(state, liveIntelligence = null) {
     if (profile?.rumors?.length) {
       return sample(profile.rumors, 'Keep moving. Signals are watching.');
     }
+    const canonRumors = state.lore?.canon?.npcRumors;
+    if (Array.isArray(canonRumors) && canonRumors.length) {
+      return sample(canonRumors, 'Move smart. The district remembers.');
+    }
     const loreRumors = state.lore?.legacy?.lore?.npc_rumors;
     if (Array.isArray(loreRumors) && loreRumors.length) {
-      return sample(loreRumors, 'Move smart. The district remembers.');
+      return `Fallback intel: ${sample(loreRumors, 'Move smart. The district remembers.')}`;
     }
     const inlineFallback = ROLE_DIALOGUE[npc.role] || [];
     const baseLine = sample(inlineFallback, 'Move smart. The district remembers.');
