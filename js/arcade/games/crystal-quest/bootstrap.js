@@ -137,7 +137,10 @@ export function bootstrapCrystalQuest(root) {
       window.crypto.getRandomValues(bytes);
       return bytes[0].toString(36) + bytes[1].toString(36);
     }
-    return Date.now().toString(36) + nextSeed().toString(36);
+    // Non-crypto fallback: combine two independent timestamps for differentiation.
+    var t1 = Date.now().toString(36);
+    var t2 = (typeof performance !== 'undefined' ? Math.floor(performance.now() * 1000) : (Date.now() & 0xfffff)).toString(36);
+    return t1 + t2;
   }
 
   // ── Pack loading ────────────────────────────────────────────────────────────

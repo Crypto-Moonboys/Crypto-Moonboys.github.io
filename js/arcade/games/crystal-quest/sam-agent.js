@@ -149,9 +149,6 @@ export function createSamAgent(options) {
         setState('warning', nextMsg(MESSAGES.skip));
       }
     },
-    onLowSkips: function () {
-      setState('warning', nextMsg(MESSAGES.lowSkips));
-    },
     onRunComplete: function () {
       setState('idle', nextMsg(MESSAGES.runComplete));
     },
