@@ -13,6 +13,14 @@ const PROMPT_GAP_MS = 28 * 1000;
 const PROMPT_KEY_COOLDOWN_MS = 6 * 60 * 1000;
 const STREAK_WARNING_COOLDOWN_MS = 90 * 1000;
 const MAX_TOAST_KEY_LENGTH = 90;
+const DEFAULT_MISSION_DURATION_MS = 10 * 60 * 1000;
+const STREAK_MISSION_DURATION_MS = 8 * 60 * 1000;
+const LONG_ABSENCE_THRESHOLD_MS = 2 * 60 * 60 * 1000;
+const QUEST_EXPIRY_WARNING_MS = 2 * 60 * 1000;
+const QUEST_EXPIRY_PROMPT_MS = 3 * 60 * 1000;
+const FEATURED_RETURN_WINDOW_MS = 20 * 60 * 1000;
+const FEATURED_PROMPT_WINDOW_MS = 12 * 60 * 1000;
+const MISSION_URGENT_WINDOW_MS = 2 * 60 * 1000;
 
 const GAME_ID_MAP = {
   snakeCanvas: 'snake',
@@ -85,7 +93,7 @@ function sanitizeMission(input) {
   if (!input || typeof input !== 'object') return null;
   const now = nowMs();
   const createdAt = Number(input.created_at) || now;
-  const expiresAt = Number(input.expires_at) || (createdAt + 10 * 60 * 1000);
+  const expiresAt = Number(input.expires_at) || (createdAt + DEFAULT_MISSION_DURATION_MS);
   return {
     id: String(input.id || `mission-${nowMs().toString(36)}`),
     type: String(input.type || 'return-runs'),
@@ -208,7 +216,7 @@ function getQuestChainContext(now = nowMs()) {
       step: Math.max(1, Number(chain.chain_step) || 1),
       total_steps: 3,
       title: String(chain.title || 'Quest chain'),
-      expires_at: Number(chain.expires_at) || (now + 2 * 60 * 1000),
+      expires_at: Number(chain.expires_at) || (now + QUEST_EXPIRY_WARNING_MS),
       expires_in_ms: Math.max(0, (Number(chain.expires_at) || now) - now),
     };
   } catch (_) {
@@ -226,11 +234,11 @@ function getReturnHook(now = nowMs()) {
     return { key: 'chaos-window', label: 'Chaos window live now', urgency: 'high', inactive_ms: gap };
   }
   const chain = getQuestChainContext(now);
-  if (chain && chain.expires_in_ms <= 2 * 60 * 1000) {
+  if (chain && chain.expires_in_ms <= QUEST_EXPIRY_WARNING_MS) {
     return { key: 'quest-expiry', label: 'Quest chain expires soon', urgency: 'high', inactive_ms: gap };
   }
   const featured = getFeaturedWindow(now);
-  if (featured.countdown_ms <= 20 * 60 * 1000) {
+  if (featured.countdown_ms <= FEATURED_RETURN_WINDOW_MS) {
     return { key: 'featured-window', label: 'Featured game bonus active', urgency: 'medium', inactive_ms: gap };
   }
   return null;
@@ -245,7 +253,7 @@ function buildMission(now = nowMs()) {
       type: 'streak-save',
       label: 'Save your streak right now',
       created_at: now,
-      expires_at: now + 8 * 60 * 1000,
+      expires_at: now + STREAK_MISSION_DURATION_MS,
       target_runs: 1,
       target_unique_games: 0,
       progress_runs: 0,
@@ -255,13 +263,13 @@ function buildMission(now = nowMs()) {
       origin_gap_ms: gap,
     };
   }
-  if (gap >= 2 * 60 * 60 * 1000) {
+  if (gap >= LONG_ABSENCE_THRESHOLD_MS) {
     return {
       id: `mission-switch-${now.toString(36)}`,
       type: 'switch-return',
       label: 'Play 2 different games in 10 mins',
       created_at: now,
-      expires_at: now + 10 * 60 * 1000,
+      expires_at: now + DEFAULT_MISSION_DURATION_MS,
       target_runs: 2,
       target_unique_games: 2,
       progress_runs: 0,
@@ -276,7 +284,7 @@ function buildMission(now = nowMs()) {
     type: 'run-return',
     label: 'Return and clear 2 runs in 10 mins',
     created_at: now,
-    expires_at: now + 10 * 60 * 1000,
+    expires_at: now + DEFAULT_MISSION_DURATION_MS,
     target_runs: 2,
     target_unique_games: 0,
     progress_runs: 0,
@@ -404,7 +412,7 @@ function updateMissionChip(context = getLiveContext()) {
   const remain = Math.max(0, Number(mission.expires_at) - nowMs());
   missionChip.style.display = 'block';
   missionChip.textContent = `MISSION • ${mission.label} • ${formatCountdown(remain)}`;
-  missionChip.classList.toggle('pulse', remain <= 2 * 60 * 1000);
+  missionChip.classList.toggle('pulse', remain <= MISSION_URGENT_WINDOW_MS);
 }
 
 function safeGetComebackPressure(now = nowMs()) {
@@ -589,7 +597,7 @@ function maybeEmitHooks(now = nowMs()) {
   }
 
   const chain = context.quest_chain;
-  if (chain && chain.step > 1 && chain.expires_in_ms <= 3 * 60 * 1000) {
+  if (chain && chain.step > 1 && chain.expires_in_ms <= QUEST_EXPIRY_PROMPT_MS) {
     emitPrompt('quest-chain-live', `Quest chain expires in ${formatCountdown(chain.expires_in_ms)}`, {
       urgency: 'high',
       countdown_ms: chain.expires_in_ms,
@@ -597,7 +605,7 @@ function maybeEmitHooks(now = nowMs()) {
     });
   }
 
-  if (context.featured_window && context.featured_window.countdown_ms <= 12 * 60 * 1000) {
+  if (context.featured_window && context.featured_window.countdown_ms <= FEATURED_PROMPT_WINDOW_MS) {
     emitPrompt('featured-window', context.featured_window.label, {
       urgency: 'medium',
       countdown_ms: context.featured_window.countdown_ms,
