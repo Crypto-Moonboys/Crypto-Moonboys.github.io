@@ -1,3 +1,5 @@
+import { NETWORK_LINES } from './network-lines.js';
+
 const FACTION_SWITCH_PROBABILITY = 0.005;
 const FIGHTER_MOVE_INTERVAL_MIN = 0.8;
 const FIGHTER_MOVE_INTERVAL_RANGE = 0.8;
@@ -129,6 +131,19 @@ const NPC_NAMES = {
   drifter: ['Ghost', 'Null', 'Transit', 'Flux', 'Walker'],
 };
 
+function lineCoordKey(point) {
+  return `${point.x},${point.y}`;
+}
+
+const LINE_BY_ID = new Map(NETWORK_LINES.map((line) => [line.id, line]));
+const LINES_BY_FROM_COORD = new Map();
+for (const line of NETWORK_LINES) {
+  const key = lineCoordKey(line.from);
+  const existing = LINES_BY_FROM_COORD.get(key) || [];
+  existing.push(line);
+  LINES_BY_FROM_COORD.set(key, existing);
+}
+
 function randInt(min, max) {
   return min + Math.floor(Math.random() * (max - min));
 }
@@ -155,6 +170,25 @@ function roleLabel(role) {
 function sample(list, fallback = '') {
   if (!Array.isArray(list) || list.length === 0) return fallback;
   return list[Math.floor(Math.random() * list.length)] || fallback;
+}
+
+function pickRandomLineId() {
+  if (!NETWORK_LINES.length) return '';
+  return NETWORK_LINES[Math.floor(Math.random() * NETWORK_LINES.length)].id;
+}
+
+function getLine(lineId) {
+  return LINE_BY_ID.get(lineId);
+}
+
+function pickNextLine(npc) {
+  const current = getLine(npc.lineId);
+  if (!current) return NETWORK_LINES[0]?.id || '';
+
+  const options = LINES_BY_FROM_COORD.get(lineCoordKey(current.to)) || [];
+
+  if (!options.length) return current.id;
+  return options[Math.floor(Math.random() * options.length)].id;
 }
 
 function getRoutineForRole(role) {
@@ -198,6 +232,47 @@ export function createNpcSystem(state, liveIntelligence = null) {
     'lore-keeper': 'seer',
   };
 
+  function createNpc({
+    id,
+    role,
+    roleLabel: label,
+    name,
+    mode,
+    faction,
+    col,
+    row,
+    districtId,
+    bobSpeed,
+    interactionRadius,
+    routine,
+    type,
+  }) {
+    return {
+      id,
+      role,
+      roleLabel: label,
+      name,
+      mode,
+      faction,
+      col,
+      row,
+      districtId,
+      moveTimer: getInitialMoveTimer(mode, role),
+      seed: Math.random() * Math.PI * 2,
+      bobPhase: Math.random() * Math.PI * 2,
+      bobSpeed,
+      interactionRadius,
+      dialogue: [],
+      memoryHooks: [],
+      dialogueHooks: [],
+      routine,
+      lineId: pickRandomLineId(),
+      t: Math.random(),
+      speed: 0.2 + Math.random() * 0.3,
+      type: type || 'helper',
+    };
+  }
+
   // Initialise NPC entities with grid positions on first call
   if (state.npc.entities.length === 0) {
     const activeCap = Number.isFinite(state.npc.activeCap)
@@ -214,7 +289,7 @@ export function createNpcSystem(state, liveIntelligence = null) {
       const role = state.npc.archetypes[activeIndex % Math.max(state.npc.archetypes.length, 1)]?.id || 'drifter';
       const namePool = NPC_NAMES[role] || NPC_NAMES.drifter;
       const npcName = namePool[activeIndex % namePool.length];
-      state.npc.entities.push({
+      state.npc.entities.push(createNpc({
         id: `active-${activeIndex}`,
         role,
         roleLabel: roleLabel(role),
@@ -224,16 +299,10 @@ export function createNpcSystem(state, liveIntelligence = null) {
         col: pos.col,
         row: pos.row,
         districtId: pos.districtId,
-        moveTimer: getInitialMoveTimer('active', role),
-        seed: Math.random() * Math.PI * 2,
-        bobPhase: Math.random() * Math.PI * 2,
         bobSpeed: 0.7 + Math.random() * 0.9,
         interactionRadius: 1.2 + Math.random() * 0.5,
-        dialogue: [],
-        memoryHooks: [],
-        dialogueHooks: [],
         routine: getRoutineForRole(role),
-      });
+      }));
     }
 
     const crowdCap = Number.isFinite(state.npc.crowdCap)
@@ -246,7 +315,7 @@ export function createNpcSystem(state, liveIntelligence = null) {
     );
     for (let crowdIndex = 0; crowdIndex < crowdCount; crowdIndex += 1) {
       const pos = spawnPos(crowdIndex, state.npc.crowdTarget);
-      state.npc.entities.push({
+      state.npc.entities.push(createNpc({
         id: `crowd-${crowdIndex}`,
         role: 'crowd',
         roleLabel: 'Crowd',
@@ -256,24 +325,15 @@ export function createNpcSystem(state, liveIntelligence = null) {
         col: pos.col,
         row: pos.row,
         districtId: pos.districtId,
-        moveTimer: getInitialMoveTimer('crowd', ''),
-        seed: Math.random() * Math.PI * 2,
-        bobPhase: Math.random() * Math.PI * 2,
         bobSpeed: 0.3 + Math.random() * 0.4,
         interactionRadius: 0.9 + Math.random() * 0.3,
-        dialogue: [],
-        memoryHooks: [],
-        dialogueHooks: [],
         routine: 'ambient_flow',
-      });
+      }));
     }
 
     state.npc.activeEntities = state.npc.entities.filter((npc) => npc?.mode === 'active');
     state.npc.activeEntitiesSourceLen = state.npc.entities.length;
   }
-
-  const MAP_W = state.map.width;
-  const MAP_H = state.map.height;
 
   function sampleOperationRoleLine(npc, operation) {
     if (!operation) return '';
@@ -356,6 +416,7 @@ export function createNpcSystem(state, liveIntelligence = null) {
     const npcs = state.npc.entities || [];
     const total = npcs.length;
     if (!total) return;
+    if (!NETWORK_LINES.length) return;
     rebuildActiveEntitiesIfNeeded();
 
     // When the server has sent NPC targets, follow server positions via lerp.
@@ -382,37 +443,37 @@ export function createNpcSystem(state, liveIntelligence = null) {
 
     // Fallback: local simulation when no server targets are available.
     const batchSize = Math.min(UPDATE_BATCH, total);
+    const movementDt = Math.min(0.1, Math.max(0, dt));
     for (let i = 0; i < batchSize; i += 1) {
       const npc = npcs[(batchIndex + i) % total];
-      // Only active NPCs are updated in the simulation batch; crowd and other non-active modes
-      // are visual-only and skipped here (they still incur a minimal skip-check per batch slot).
-      if (!npc || npc.mode !== 'active') continue;
+      if (!npc) continue;
+      npc.type = npc.type || 'helper';
+      if (!npc.lineId) npc.lineId = pickRandomLineId();
+      if (!Number.isFinite(npc.t)) npc.t = Math.random();
+      if (!Number.isFinite(npc.speed)) npc.speed = 0.2 + Math.random() * 0.3;
 
-      npc.bobPhase += dt * npc.bobSpeed;
-      npc.moveTimer -= dt;
+      const line = getLine(npc.lineId);
+      if (!line) continue;
+
+      npc.t += npc.speed * movementDt;
+      if (npc.t > 1) {
+        npc.lineId = pickNextLine(npc);
+        npc.t = 0;
+      }
+
+      const from = line.from;
+      const to = line.to;
+      npc.col = from.x + (to.x - from.x) * npc.t;
+      npc.row = from.y + (to.y - from.y) * npc.t;
+
+      // Only active NPCs receive behaviour/dialogue updates in the simulation batch.
+      // Crowd and other non-active modes still move along network lines in fallback mode.
+      if (npc.mode !== 'active') continue;
+
+      npc.bobPhase += movementDt * npc.bobSpeed;
+      npc.moveTimer -= movementDt;
       if (npc.moveTimer > 0) continue;
       npc.moveTimer = getMoveInterval(npc.mode, npc.role);
-
-      // Street Signal feature reintroduced: role-weighted movement routines.
-      let dc = randInt(-1, 2);
-      let dr = randInt(-1, 2);
-      if (npc.role === 'vendor' && Math.random() < 0.55) {
-        dc = 0;
-        dr = 0;
-      } else if (npc.role === 'fighter') {
-        dc = randInt(-1, 2);
-        dr = Math.random() < 0.65 ? randInt(-1, 2) : randInt(-2, 3);
-      } else if (npc.role === 'agent') {
-        dc = Math.random() < 0.5 ? randInt(-2, 3) : 0;
-        dr = Math.random() < 0.5 ? randInt(-2, 3) : 0;
-      } else if (npc.role === 'recruiter') {
-        dc = Math.random() < 0.6 ? randInt(-1, 2) : 0;
-        dr = Math.random() < 0.6 ? randInt(-1, 2) : 0;
-      }
-      const nc = Math.max(0, Math.min(MAP_W - 1, npc.col + dc));
-      const nr = Math.max(0, Math.min(MAP_H - 1, npc.row + dr));
-      npc.col = nc;
-      npc.row = nr;
 
       // Refresh behaviour hooks each movement tick
       npc.dialogueHooks = ['react_to_player_presence', 'district_rumor_ping'];
@@ -430,9 +491,28 @@ export function createNpcSystem(state, liveIntelligence = null) {
     batchIndex = (batchIndex + batchSize) % total;
   }
 
+  function spawnSamWave() {
+    if (!state.npc.entities?.length) return;
+    const activePool = state.npc.entities.filter((entity) => entity?.mode === 'active');
+    const shuffled = [...activePool];
+    for (let i = shuffled.length - 1; i > 0; i -= 1) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    const picks = Math.min(5, shuffled.length);
+    for (let i = 0; i < picks; i += 1) {
+      const npc = shuffled[i];
+      if (!npc) continue;
+      npc.type = 'villain';
+      npc.lineId = pickRandomLineId();
+      npc.t = 0;
+    }
+  }
+
   return {
     tick,
     nearestInteractive,
     getDialogueLine,
+    spawnSamWave,
   };
 }
