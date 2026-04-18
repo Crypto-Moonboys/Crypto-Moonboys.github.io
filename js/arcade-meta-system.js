@@ -185,7 +185,7 @@ function sanitizeStreak(current, fallback) {
   const count = Number.isFinite(Number(current?.count)) ? Math.max(0, Math.floor(Number(current.count))) : 0;
   const sessionChain = Number.isFinite(Number(current?.session_chain))
     ? Math.max(0, Math.floor(Number(current.session_chain)))
-    : count;
+    : 0;
   return {
     count,
     session_chain: sessionChain,
@@ -385,12 +385,14 @@ function evaluateQuest(quest, history, run) {
     return run.game === 'btqm' && run.raw_score >= Number(quest.target || 1);
   }
   if (quest.type === 'switch_chain') {
-    if (run.game === run.previous_game) return false;
-    const switchCount = inQuestWindow.filter((item, index) => {
+    const ordered = inQuestWindow.slice().sort((a, b) => Number(a.timestamp) - Number(b.timestamp));
+    if (ordered.length < 2) return false;
+    const switchCount = ordered.filter((item, index) => {
       if (index === 0) return false;
-      return item.game && inQuestWindow[index - 1].game && item.game !== inQuestWindow[index - 1].game;
+      return item.game && ordered[index - 1].game && item.game !== ordered[index - 1].game;
     }).length;
-    return switchCount >= Number(quest.switches || 2);
+    const switchedThisRun = ordered[ordered.length - 1].game !== ordered[ordered.length - 2].game;
+    return switchedThisRun && switchCount >= Number(quest.switches || 2);
   }
   return false;
 }
