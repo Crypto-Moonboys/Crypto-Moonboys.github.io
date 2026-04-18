@@ -197,6 +197,9 @@
     _goRestart = opts.onRestart || null;
     _goExit    = opts.onExit    || null;
     gameOverModal.classList.add('active');
+    document.dispatchEvent(new CustomEvent('arcade-run-game-over', {
+      detail: { score: (typeof score !== 'undefined' ? score : 0) }
+    }));
     goPlayAgain.focus();
   }
 
@@ -524,6 +527,9 @@
     _gameStarted = true;
     _isPaused = false;
     syncPauseBtn();
+    document.dispatchEvent(new CustomEvent('arcade-run-start', {
+      detail: { startedAt: Date.now() }
+    }));
   }
 
   /* ── Open ────────────────────────────────────────────────────────── */
@@ -601,6 +607,9 @@
     if (overlay.requestFullscreen) {
       overlay.requestFullscreen().catch(function () {});
     }
+    document.dispatchEvent(new CustomEvent('arcade-overlay-open', {
+      detail: { isOpen: true }
+    }));
   }
 
   /* ── Close ───────────────────────────────────────────────────────── */
@@ -649,6 +658,9 @@
 
     // Return focus to the start button.
     startBtn.focus();
+    document.dispatchEvent(new CustomEvent('arcade-overlay-close', {
+      detail: { isOpen: false }
+    }));
   }
 
   /* ── Event wiring ────────────────────────────────────────────────── */
@@ -730,6 +742,9 @@
       _gameStarted = false;
       _isPaused = false;
       syncPauseBtn();
+      document.dispatchEvent(new CustomEvent('arcade-run-reset', {
+        detail: { resetAt: Date.now() }
+      }));
     }
   });
 

@@ -77,6 +77,14 @@ function clamp(num, min, max) {
   return Math.min(max, Math.max(min, num));
 }
 
+// Dispatch a DOM CustomEvent for UI listeners. Silently skipped in non-browser contexts.
+function dispatchMetaEvent(name, detail) {
+  if (typeof document === 'undefined') return;
+  try {
+    document.dispatchEvent(new CustomEvent(name, { detail: detail || {} }));
+  } catch (_) {}
+}
+
 function toUtcDateKey(ms) {
   return new Date(ms).toISOString().slice(0, 10);
 }
@@ -397,6 +405,51 @@ function evaluateQuest(quest, history, run) {
   return false;
 }
 
+// Compute a 0-1 progress ratio for a quest against accumulated history.
+// Returns 1 only when the quest is fully complete; used for near-miss detection.
+function checkNearMissProgress(quest, history, run) {
+  const inQuestWindow = history.filter((h) => {
+    const ts = Number(h?.timestamp);
+    return Number.isFinite(ts) && ts >= Number(quest.created_at) && ts <= Number(quest.expires_at);
+  });
+  const cap = (v) => clamp(v, 0, 1);
+  if (quest.type === 'score_target') {
+    const target = Math.max(1, Number(quest.target) || 1);
+    const best = inQuestWindow.filter((h) => h.game === quest.game)
+      .reduce((max, h) => Math.max(max, Number(h.raw_score) || 0), 0);
+    return cap(best / target);
+  }
+  if (quest.type === 'multi_game_burst') {
+    const requiredRuns = Math.max(1, Number(quest.required_runs) || 2);
+    const requiredUnique = Math.max(1, Number(quest.required_unique_games) || 2);
+    const windowMs = Number(quest.window_ms) || (5 * 60 * 1000);
+    const burstRuns = inQuestWindow.filter((h) => Number(h.timestamp) >= Number(run.timestamp) - windowMs);
+    return cap(Math.min(burstRuns.length / requiredRuns, new Set(burstRuns.map((h) => h.game)).size / requiredUnique));
+  }
+  if (quest.type === 'snake_survivor') {
+    const target = Math.max(1, Number(quest.min_duration_ms) || 60000);
+    const best = inQuestWindow.filter((h) => h.game === 'snake')
+      .reduce((max, h) => Math.max(max, Number(h.duration) || 0), 0);
+    return cap(best / target);
+  }
+  if (quest.type === 'btqm_zone_clear') {
+    const target = Math.max(1, Number(quest.target) || 1);
+    const best = inQuestWindow.filter((h) => h.game === 'btqm')
+      .reduce((max, h) => Math.max(max, Number(h.raw_score) || 0), 0);
+    return cap(best / target);
+  }
+  if (quest.type === 'switch_chain') {
+    const switches = Math.max(1, Number(quest.switches) || 2);
+    const ordered = inQuestWindow.slice().sort((a, b) => Number(a.timestamp) - Number(b.timestamp));
+    let switchCount = 0;
+    for (let i = 1; i < ordered.length; i += 1) {
+      if (ordered[i].game && ordered[i - 1].game && ordered[i].game !== ordered[i - 1].game) switchCount += 1;
+    }
+    return cap(switchCount / switches);
+  }
+  return 0;
+}
+
 function applyQuestBonuses(state, now, run) {
   let questBonus = 0;
   const stillActive = [];
@@ -441,6 +494,11 @@ function trackGameResult(payload = {}) {
   const state = readState();
 
   if (player) state.player = player;
+
+  // Capture pre-state so we can detect what changed after the full computation.
+  const beforeStreakChain = state.streak.session_chain;
+  const beforeActiveIds = new Set(state.quests.active.map((q) => q.id));
+  const beforeCompletedIds = new Set(state.quests.completed.map((q) => q.id));
 
   const dayKey = toUtcDateKey(timestamp);
   const weekKey = toUtcWeekKey(timestamp);
@@ -520,6 +578,50 @@ function trackGameResult(payload = {}) {
   maintainQuests(state, timestamp);
   writeState(state);
 
+  // Dispatch DOM events so UI listeners (arcade-meta-ui.js) can react without polling.
+  const resolvedPlayer = state.player || player || 'Guest';
+
+  for (const quest of state.quests.completed) {
+    if (!beforeCompletedIds.has(quest.id)) {
+      dispatchMetaEvent('arcade-meta-quest-complete', { quest, game, player: resolvedPlayer });
+    }
+  }
+  for (const quest of state.quests.active) {
+    if (!beforeActiveIds.has(quest.id)) {
+      dispatchMetaEvent('arcade-meta-quest-created', { quest, game });
+    }
+  }
+  let bestNearMiss = null;
+  for (const quest of state.quests.active) {
+    const progress = checkNearMissProgress(quest, state.history, run);
+    if (progress >= 0.8 && progress < 1) {
+      if (!bestNearMiss || progress > bestNearMiss.progress) bestNearMiss = { quest, progress };
+    }
+  }
+  if (bestNearMiss) {
+    dispatchMetaEvent('arcade-meta-near-miss', {
+      quest: bestNearMiss.quest,
+      progress: bestNearMiss.progress,
+      game,
+      player: resolvedPlayer,
+    });
+  }
+  if (state.streak.session_chain > beforeStreakChain) {
+    dispatchMetaEvent('arcade-meta-streak-updated', {
+      streak: state.streak.session_chain,
+      before: beforeStreakChain,
+      game,
+      player: resolvedPlayer,
+    });
+  }
+  dispatchMetaEvent('arcade-meta-tracked', {
+    game,
+    player: resolvedPlayer,
+    meta_points: metaPoints,
+    streak: state.streak.session_chain,
+    daily: state.daily.points,
+  });
+
   return {
     tracked: true,
     player: state.player || player || 'Guest',
@@ -597,8 +699,20 @@ function reset() {
   return state;
 }
 
+function triggerLiveEvent(context = {}) {
+  if (typeof window === 'undefined') return { triggered: false, reason: 'no_window' };
+  const trigger = window.__arcadeMetaTriggerLiveEvent;
+  if (typeof trigger !== 'function') return { triggered: false, reason: 'live_ui_unavailable' };
+  try {
+    return trigger(context || {});
+  } catch (err) {
+    return { triggered: false, reason: 'live_event_error', error: String(err?.message || err) };
+  }
+}
+
 const ArcadeMeta = {
   trackGameResult,
+  triggerLiveEvent,
   configure,
   getState,
   reset,
