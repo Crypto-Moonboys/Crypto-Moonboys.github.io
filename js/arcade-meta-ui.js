@@ -78,78 +78,6 @@ function clamp(value, min, max) {
   return Math.min(max, Math.max(min, value));
 }
 
-function questProgress(quest, state) {
-  const history = Array.isArray(state?.history) ? state.history : [];
-  const windowRuns = history.filter((h) => {
-    const ts = Number(h?.timestamp);
-    return Number.isFinite(ts)
-      && ts >= Number(quest.created_at || 0)
-      && ts <= Number(quest.expires_at || Number.MAX_SAFE_INTEGER);
-  });
-  if (!windowRuns.length) return 0;
-
-  if (quest.type === 'score_target') {
-    const target = Math.max(1, Number(quest.target) || 1);
-    const best = windowRuns
-      .filter((h) => h.game === quest.game)
-      .reduce((max, h) => Math.max(max, Number(h.raw_score) || 0), 0);
-    return clamp(best / target, 0, 1);
-  }
-
-  if (quest.type === 'multi_game_burst') {
-    const requiredRuns = Math.max(1, Number(quest.required_runs) || 2);
-    const requiredUnique = Math.max(1, Number(quest.required_unique_games) || 2);
-    const windowMs = Number(quest.window_ms) || (5 * 60 * 1000);
-    const latestTs = windowRuns[windowRuns.length - 1]?.timestamp || Date.now();
-    const burstRuns = windowRuns.filter((h) => Number(h.timestamp) >= latestTs - windowMs);
-    const runRatio = burstRuns.length / requiredRuns;
-    const uniqueRatio = new Set(burstRuns.map((h) => h.game)).size / requiredUnique;
-    return clamp(Math.min(runRatio, uniqueRatio), 0, 1);
-  }
-
-  if (quest.type === 'snake_survivor') {
-    const target = Math.max(1, Number(quest.min_duration_ms) || 60000);
-    const bestDuration = windowRuns
-      .filter((h) => h.game === 'snake')
-      .reduce((max, h) => Math.max(max, Number(h.duration) || 0), 0);
-    return clamp(bestDuration / target, 0, 1);
-  }
-
-  if (quest.type === 'btqm_zone_clear') {
-    const target = Math.max(1, Number(quest.target) || 1);
-    const best = windowRuns
-      .filter((h) => h.game === 'btqm')
-      .reduce((max, h) => Math.max(max, Number(h.raw_score) || 0), 0);
-    return clamp(best / target, 0, 1);
-  }
-
-  if (quest.type === 'switch_chain') {
-    const switches = Math.max(1, Number(quest.switches) || 2);
-    const ordered = windowRuns.slice().sort((a, b) => Number(a.timestamp) - Number(b.timestamp));
-    let switchCount = 0;
-    for (let i = 1; i < ordered.length; i += 1) {
-      if (ordered[i].game && ordered[i - 1].game && ordered[i].game !== ordered[i - 1].game) {
-        switchCount += 1;
-      }
-    }
-    return clamp(switchCount / switches, 0, 1);
-  }
-
-  return 0;
-}
-
-function evaluateQuestNearMiss(state) {
-  const active = Array.isArray(state?.quests?.active) ? state.quests.active : [];
-  let best = null;
-  for (const quest of active) {
-    const progress = questProgress(quest, state);
-    if (progress >= 0.8 && progress < 1) {
-      if (!best || progress > best.progress) best = { quest, progress };
-    }
-  }
-  return best;
-}
-
 function injectStyles() {
   if (document.getElementById('arcade-meta-ui-style')) return;
   const style = document.createElement('style');
@@ -528,66 +456,55 @@ function wireInputModifiers() {
   }, true);
 }
 
-function wireTrackResultPopups() {
-  if (ArcadeMeta.__metaUiWrappedTrackResult) return;
-  const original = ArcadeMeta.trackGameResult.bind(ArcadeMeta);
-  ArcadeMeta.trackGameResult = function wrappedTrackGameResult(payload = {}) {
-    let beforeState = null;
-    try { beforeState = ArcadeMeta.getState(); } catch (_) {}
-    const result = original(payload);
-    let afterState = null;
-    try { afterState = ArcadeMeta.getState(); } catch (_) {}
+function wireMetaEventListeners() {
+  if (ArcadeMeta.__metaUiEventsWired) return;
+  ArcadeMeta.__metaUiEventsWired = true;
 
-    if (result && result.tracked && afterState) {
-      const beforeActive = new Set((beforeState?.quests?.active || []).map((q) => q.id));
-      const afterActive = (afterState?.quests?.active || []);
-      for (const quest of afterActive) {
-        if (!beforeActive.has(quest.id)) {
-          showPopup({
-            title: `🎯 QUEST ACTIVE`,
-            reward: quest.title || 'New objective',
-            rarity: 'common',
-            durationMs: 1700,
-          });
-        }
-      }
+  document.addEventListener('arcade-meta-quest-created', (ev) => {
+    const quest = ev.detail?.quest;
+    if (!quest) return;
+    showPopup({
+      title: '🎯 QUEST ACTIVE',
+      reward: quest.title || 'New objective',
+      rarity: 'common',
+      durationMs: 1700,
+    });
+  });
 
-      const beforeCompleted = new Set((beforeState?.quests?.completed || []).map((q) => q.id));
-      const afterCompleted = (afterState?.quests?.completed || []);
-      for (const quest of afterCompleted) {
-        if (!beforeCompleted.has(quest.id)) {
-          showPopup({
-            title: `✅ QUEST COMPLETE`,
-            reward: `${quest.title || 'Quest'} • +${Math.round((Number(quest.bonus_multiplier) || 0) * 100)}%`,
-            rarity: (Number(quest.bonus_multiplier) || 0) >= 0.2 ? 'epic' : 'rare',
-            durationMs: 2200,
-          });
-          safePlay('meta-quest-complete');
-          pulseScreen('arcade-meta-flash', 220);
-        }
-      }
+  document.addEventListener('arcade-meta-quest-complete', (ev) => {
+    const quest = ev.detail?.quest;
+    if (!quest) return;
+    showPopup({
+      title: '✅ QUEST COMPLETE',
+      reward: `${quest.title || 'Quest'} • +${Math.round((Number(quest.bonus_multiplier) || 0) * 100)}%`,
+      rarity: (Number(quest.bonus_multiplier) || 0) >= 0.2 ? 'epic' : 'rare',
+      durationMs: 2200,
+    });
+    safePlay('meta-quest-complete');
+    pulseScreen('arcade-meta-flash', 220);
+  });
 
-      const near = evaluateQuestNearMiss(afterState);
-      if (near) {
-        emitHook('onNearMiss', {
-          game: result.game,
-          kind: 'quest',
-          ratio: near.progress,
-          quest: near.quest,
-        });
-        showNearMiss(`SO CLOSE • ${Math.floor(near.progress * 100)}%`, 'quest-progress', 2000);
-      }
+  document.addEventListener('arcade-meta-near-miss', (ev) => {
+    const progress = Number(ev.detail?.progress) || 0;
+    const quest = ev.detail?.quest;
+    if (!quest) return;
+    emitHook('onNearMiss', {
+      game: ev.detail?.game || detectGameId(),
+      kind: 'quest',
+      ratio: progress,
+      quest,
+    });
+    showNearMiss(`SO CLOSE • ${Math.floor(progress * 100)}%`, 'quest-progress', 2000);
+  });
 
-      const beforeStreak = Number(beforeState?.streak?.session_chain) || 0;
-      if (Number(result.streak) > beforeStreak) {
-        safePlay('meta-streak-up');
-      }
-    }
-
+  document.addEventListener('arcade-meta-streak-updated', () => {
+    safePlay('meta-streak-up');
     updateHud();
-    return result;
-  };
-  ArcadeMeta.__metaUiWrappedTrackResult = true;
+  });
+
+  document.addEventListener('arcade-meta-tracked', () => {
+    updateHud();
+  });
 }
 
 function startSurvivalTicks() {
@@ -639,7 +556,7 @@ function init() {
   ensureUi();
   initGlobalHooks();
   wireInputModifiers();
-  wireTrackResultPopups();
+  wireMetaEventListeners();
   wireRunLifecycle();
   ArcadeMeta.triggerLiveEvent = triggerLiveEvent;
   window.__arcadeMetaTriggerLiveEvent = triggerLiveEvent;
