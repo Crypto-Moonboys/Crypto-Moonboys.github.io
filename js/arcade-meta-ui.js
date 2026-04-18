@@ -1,7 +1,9 @@
 import { ArcadeMeta } from '/js/arcade-meta-system.js';
 import { playSound } from '/js/arcade/core/audio.js';
 
+// Keep in sync with the default ArcadeMeta streak session gap (45 minutes).
 const STREAK_GAP_MS = 45 * 60 * 1000;
+// Low-frequency guard so live events feel impactful and not spammy.
 const LIVE_EVENT_COOLDOWN_MS = 25000;
 const LIVE_EVENTS = [
   { id: 'invert_controls', label: 'INVERT CONTROLS', rarity: 'epic', durationMs: 6000, uiMultiplier: 1.2 },
@@ -39,6 +41,8 @@ let liveEventTimer = null;
 let chaosPulseTimer = null;
 let lastLiveEventAt = 0;
 let activeLiveEvent = null;
+let lastHintAt = 0;
+let lastHintKey = '';
 
 function isArcadeGamePage() {
   return !!document.getElementById('startBtn') && !!document.querySelector('.game-card');
@@ -229,9 +233,13 @@ function showPopup({ title, reward, rarity = 'common', durationMs = 1800 }) {
   setTimeout(() => popup.remove(), Math.max(500, durationMs + 50));
 }
 
-function showNearMiss(text) {
+function showNearMiss(text, hintKey = 'default', cooldownMs = 1400) {
   ensureUi();
   if (!nearMissHint) return;
+  const now = Date.now();
+  if (hintKey === lastHintKey && (now - lastHintAt) < cooldownMs) return;
+  lastHintKey = hintKey;
+  lastHintAt = now;
   nearMissHint.textContent = text || 'SO CLOSE';
   nearMissHint.classList.add('active');
   safePlay('meta-near-miss');
@@ -280,7 +288,7 @@ function updateHud() {
   streakBarInner.style.width = `${pct}%`;
   if (pct <= 18) {
     pressureRoot.classList.add('warning');
-    if (pct > 0) showNearMiss('SO CLOSE • Keep streak alive');
+    if (pct > 0) showNearMiss('SO CLOSE • Keep streak alive', 'streak-warning', 10000);
   } else {
     pressureRoot.classList.remove('warning');
   }
@@ -305,14 +313,14 @@ function maybeNearMissByScore(scoreNow) {
   const ratio = scoreNow / target;
   if (ratio >= 0.8 && ratio < 1) {
     emitHook('onNearMiss', { game, kind: 'score_target', ratio, score: scoreNow, target });
-    showNearMiss(`SO CLOSE • ${Math.floor(ratio * 100)}% of target`);
+    showNearMiss(`SO CLOSE • ${Math.floor(ratio * 100)}% of target`, 'score-target', 2000);
   }
 }
 
 function maybeNearMissByCombo(comboNow) {
   if (comboNow >= 1.8 && comboNow < 2) {
     emitHook('onNearMiss', { game: detectGameId(), kind: 'combo', ratio: comboNow / 2, combo: comboNow, target: 2 });
-    showNearMiss('SO CLOSE • Combo x2');
+    showNearMiss('SO CLOSE • Combo x2', 'combo-near', 1800);
   }
 }
 
@@ -453,19 +461,55 @@ function wireInputModifiers() {
     A: 'D',
     D: 'A',
   };
+  const codeMap = {
+    ArrowUp: 'ArrowDown',
+    ArrowDown: 'ArrowUp',
+    ArrowLeft: 'ArrowRight',
+    ArrowRight: 'ArrowLeft',
+    KeyW: 'KeyS',
+    KeyS: 'KeyW',
+    KeyA: 'KeyD',
+    KeyD: 'KeyA',
+  };
+  function mapCode(code) {
+    if (!code) return '';
+    return codeMap[code] || '';
+  }
+  function mapKeyCode(key) {
+    if (key === 'ArrowUp') return 38;
+    if (key === 'ArrowDown') return 40;
+    if (key === 'ArrowLeft') return 37;
+    if (key === 'ArrowRight') return 39;
+    return String(key || ' ').toUpperCase().charCodeAt(0);
+  }
+  function dispatchRemapped(type, mappedKey, mappedCode, mappedKeyCode) {
+    const remappedEvent = new KeyboardEvent(type, {
+      key: mappedKey,
+      code: mappedCode || undefined,
+      bubbles: true,
+      cancelable: true,
+    });
+    try {
+      Object.defineProperty(remappedEvent, 'keyCode', { get() { return mappedKeyCode; } });
+      Object.defineProperty(remappedEvent, 'which', { get() { return mappedKeyCode; } });
+    } catch (_) {}
+    document.dispatchEvent(remappedEvent);
+  }
 
   document.addEventListener('keydown', (event) => {
     if (event.defaultPrevented || remapping || !activeLiveEvent || activeLiveEvent.id !== 'invert_controls') return;
     if (!event.isTrusted) return;
     const target = event.target;
-    const tag = target && target.tagName;
+    const tag = target?.tagName;
     if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || target?.isContentEditable) return;
     const mapped = invertMap[event.key];
     if (!mapped) return;
+    const mappedCode = mapCode(event.code);
+    const mappedKeyCode = mapKeyCode(mapped);
     event.preventDefault();
     event.stopImmediatePropagation();
     remapping = true;
-    document.dispatchEvent(new KeyboardEvent('keydown', { key: mapped, bubbles: true, cancelable: true }));
+    dispatchRemapped('keydown', mapped, mappedCode, mappedKeyCode);
     remapping = false;
   }, true);
 
@@ -474,10 +518,12 @@ function wireInputModifiers() {
     if (!event.isTrusted) return;
     const mapped = invertMap[event.key];
     if (!mapped) return;
+    const mappedCode = mapCode(event.code);
+    const mappedKeyCode = mapKeyCode(mapped);
     event.preventDefault();
     event.stopImmediatePropagation();
     remapping = true;
-    document.dispatchEvent(new KeyboardEvent('keyup', { key: mapped, bubbles: true, cancelable: true }));
+    dispatchRemapped('keyup', mapped, mappedCode, mappedKeyCode);
     remapping = false;
   }, true);
 }
@@ -529,7 +575,7 @@ function wireTrackResultPopups() {
           ratio: near.progress,
           quest: near.quest,
         });
-        showNearMiss(`SO CLOSE • ${Math.floor(near.progress * 100)}%`);
+        showNearMiss(`SO CLOSE • ${Math.floor(near.progress * 100)}%`, 'quest-progress', 2000);
       }
 
       const beforeStreak = Number(beforeState?.streak?.session_chain) || 0;
@@ -599,10 +645,9 @@ function init() {
   window.__arcadeMetaTriggerLiveEvent = triggerLiveEvent;
   setupScoreHooks();
   updateHud();
-  setInterval(updateHud, 250);
+  setInterval(updateHud, 500);
 }
 
 if (typeof window !== 'undefined') {
   init();
 }
-
