@@ -19,93 +19,39 @@
     <p id="entry-tagline">Syncing district memory, factions, and live signals…</p>
   </section>
 
-  <main id="hud" aria-live="polite">
-    <section class="panel panel-player" id="player-panel">
-      <h2>Operator</h2>
-      <div class="stats-grid">
-        <div class="stat-card">
-          <span class="label">Name</span>
-          <span class="value" id="player-name">—</span>
-        </div>
-        <div class="stat-card">
-          <span class="label">XP</span>
-          <span class="value" id="xp-status">0</span>
-        </div>
-        <div class="stat-card">
-          <span class="label">Level / Title</span>
-          <span class="value" id="level-status">L1 · Signal Runner</span>
-        </div>
-        <div class="stat-card">
-          <span class="label">Score</span>
-          <span class="value" id="score-status">0</span>
-        </div>
-      </div>
-      <div class="xp-bar-shell">
-        <div id="xp-bar-fill"></div>
-      </div>
-      <p id="xp-bar-label" class="hint">0 / 200 XP</p>
-      <p id="world-status">Initializing unified city…</p>
-      <p id="controls-hint" class="hint">WASD/Arrows · Drag Pan · Click Select · Double Click Move · Wheel/[ ] Zoom · E Interact</p>
-    </section>
+  <div id="ui-overlay" aria-live="polite">
+    <div id="operator-hud">
+      <span id="player-name">—</span>
+      <span id="xp-status">0 XP</span>
+      <span id="level-status">L1 · Signal Runner</span>
+      <span id="district-status">District: —</span>
+    </div>
 
-    <section class="panel panel-district" id="district-panel">
-      <h2>District Control</h2>
-      <p id="district-status">District: —</p>
-      <div class="progress-shell">
-        <div id="district-control-bar"></div>
-      </div>
-      <p id="district-control">Control: —</p>
-      <p id="district-owner">Owner: —</p>
-      <p id="faction-status">Factions: Liberators vs Wardens</p>
-      <p id="district-intensity" class="hint">Pressure: Stable</p>
-    </section>
+    <div id="world-hud">
+      <span id="world-status">Initializing unified city…</span>
+      <span id="phase-status">Phase: Day</span>
+      <span id="sam-status">SAM: Phase 1</span>
+      <span id="faction-status">Factions: Liberators vs Wardens</span>
+      <span id="mp-status">Connecting…</span>
+      <span id="room-status">Room: city</span>
+      <span id="population-status">Players: 0 / 100</span>
+    </div>
 
-    <section class="panel panel-phase" id="phase-panel">
-      <h2>World Phase</h2>
-      <p id="phase-status">Day / Night: Day</p>
-      <p id="sam-status">SAM: Phase 1: Signals</p>
-      <p id="phase-flavor">City pressure low. Signals accumulating.</p>
-      <p id="sam-warning" class="hint">SAM Alert: Nominal</p>
-    </section>
+    <section class="stream stream-left"><ul id="stream-left"></ul></section>
+    <section class="stream stream-right"><ul id="stream-right"></ul></section>
+    <section class="stream stream-bottom"><ul id="stream-bottom"></ul></section>
+  </div>
 
-    <section class="panel panel-session" id="session-panel">
-      <h2>Session</h2>
-      <p id="mp-status">Connecting…</p>
-      <p id="room-status">Room: city</p>
-      <p id="population-status">Players: 0 / 100</p>
-    </section>
-
-    <section class="panel panel-quests" id="quest-panel">
-      <h2>Active Operations</h2>
-      <ul id="quest-list"></ul>
-    </section>
-
-    <section class="panel panel-feed" id="feed-panel">
-      <h2>Street Feed Live</h2>
-      <ul id="street-feed"></ul>
-    </section>
-  </main>
-
-  <!-- Street Signal feature reintroduced: dramatic SAM encounter broadcast overlay -->
   <div id="sam-popup" class="hidden" aria-live="assertive" role="alert"></div>
   <div id="sam-impact" class="hidden" aria-hidden="true"></div>
   <div id="phase-flash" class="hidden" aria-hidden="true"></div>
   <div id="capture-flash" class="hidden" aria-hidden="true"></div>
   <div id="district-capture-banner" class="hidden" aria-live="assertive"></div>
   <div id="quest-toast" class="hidden" aria-live="assertive"></div>
-  <div id="xp-gain" class="hidden" aria-live="polite"></div>
   <div id="npc-dialogue" class="hidden" aria-live="polite"></div>
-
-  <!-- Street Signal feature reintroduced: contextual NPC interaction prompt -->
   <div id="interact-prompt" class="hidden">⚡ Press E to interact</div>
 
-  <div
-    id="multiplayer-live-banner"
-    role="status"
-    aria-live="polite"
-  >
-    LIVE MULTIPLAYER — CONNECTED
-  </div>
+  <div id="multiplayer-live-banner" role="status" aria-live="polite">LIVE MULTIPLAYER — CONNECTED</div>
 
   <script src="https://unpkg.com/colyseus.js/dist/colyseus.js" data-cfasync="false"></script>
   <script type="module" src="./main.js"></script>

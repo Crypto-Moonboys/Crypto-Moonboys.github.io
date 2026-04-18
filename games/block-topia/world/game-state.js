@@ -174,9 +174,16 @@ export function createGameState(bundle) {
       playerActions: [],
       log: [],
     },
+    canon: bundle.canon || bundle.canonAdapter || {},
+    canonSignals: {
+      districtSignalState: {},
+      factionSignalState: {},
+      samNarrativeState: { pressure: 0, tone: [], warnings: [], eventTags: [] },
+      worldBulletins: [],
+    },
     lore: {
       wikiHooks: bundle.seasonModel.wikiHooks || [],
-      canonAdapter: bundle.canonAdapter || {},
+      canonAdapter: bundle.canonAdapter || bundle.canon || {},
       canon: bundle.canonLore || {},
       legacy: bundle.legacy,
     },

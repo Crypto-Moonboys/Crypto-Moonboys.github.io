@@ -70,11 +70,12 @@ async function boot() {
   state.camera.zoom = CAMERA_ZOOM_PRESETS[state.camera.zoomIndex];
   const liveIntelligence = createLiveIntelligence();
   liveIntelligence.configureCanonBridge({
-    canon: state.lore?.canonAdapter || {},
+    canon: state.canon || state.lore?.canonAdapter || {},
     districts: state.districtState,
     factions: state.factions,
   });
-  await liveIntelligence.refresh();
+  const initialLiveRefresh = await liveIntelligence.refresh();
+  state.canonSignals = initialLiveRefresh.canonSignalState || liveIntelligence.getCanonSignalState?.() || state.canonSignals;
   const sam = createSamSystem(state);
   const npc = createNpcSystem(state, liveIntelligence);
   const quests = createQuestSystem(state, liveIntelligence);
@@ -232,7 +233,7 @@ async function boot() {
   }
 
   function getCanonAtmosphereLine() {
-    const canonSignalState = liveIntelligence.getCanonSignalState?.() || {};
+    const canonSignalState = state.canonSignals || liveIntelligence.getCanonSignalState?.() || {};
     const samTone = canonSignalState.samNarrativeState?.tone || [];
     const districtFlavor = canonAdapter?.districtLoreById?.[state.player.districtId]?.flavor || [];
     const flavorPool = [
@@ -399,6 +400,7 @@ async function boot() {
 
     const snapshot = refreshResult.snapshot || liveIntelligence.getSnapshot();
     const canonSignalState = refreshResult.canonSignalState || liveIntelligence.getCanonSignalState?.() || {};
+    state.canonSignals = canonSignalState;
     const worldBulletins = liveIntelligence.getWorldFeedLines(3);
     worldBulletins.forEach((line) => {
       if (!line) return;
