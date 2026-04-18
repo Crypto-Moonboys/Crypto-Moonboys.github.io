@@ -135,11 +135,9 @@ async function boot() {
       hud.showNodeInterference(`Node ${node.id.toUpperCase()} is cooling down`, 'warning');
       return true;
     }
-    const localStart = nodeInterference.beginLocalInterference(node.id, state.player.name);
-    if (localStart) {
-      hud.showNodeInterference(`Interference injected: ${node.id.toUpperCase()}`);
-      pushFeedDeduped(`⚡ NODE ${node.id.toUpperCase()} INTERFERENCE INITIATED`, 'combat', `node-interfere-local:${node.id}`);
-    }
+    // Visual-only optimistic pulse — node state is server-authoritative.
+    // All real effects (status, feed, HUD, NPC, SAM) come from onNodeInterferenceChanged.
+    nodeInterference.beginLocalPulse(node.id);
     sendNodeInterference(node.id);
     return true;
   }

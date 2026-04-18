@@ -43,23 +43,17 @@ export function createNodeInterferenceSystem(state) {
     return (Number(node.cooldownUntil) || 0) <= now;
   }
 
-  function beginLocalInterference(nodeId, playerId, now = Date.now()) {
+  // beginLocalPulse: purely visual optimistic feedback — sets only the pulse ring timer.
+  // Node status, interference, control, cooldown, and ownership are server-authoritative
+  // and must only be written via applyServerNodeUpdate (from nodeInterferenceChanged or
+  // worldSnapshot). This function must NOT set any shared-state fields.
+  function beginLocalPulse(nodeId, now = Date.now()) {
     if (!canInterfere(nodeId, now)) return null;
     const node = getNode(nodeId);
     if (!node) return null;
     node.pulseUntil = now + LOCAL_PULSE_MS;
-    node.lastInterferedBy = playerId || node.lastInterferedBy || null;
-    if (node.status === DEFAULT_STATUS) node.status = 'contested';
     trackNodeActivity(node, now);
-    return {
-      nodeId: node.id,
-      districtId: node.districtId || '',
-      sourcePlayerId: playerId || '',
-      localOnly: true,
-      status: node.status,
-      pulseUntil: node.pulseUntil,
-      feedLines: [`⚡ NODE ${node.id.toUpperCase()} INTERFERENCE ATTEMPT`],
-    };
+    return { nodeId: node.id, localOnly: true, pulseUntil: node.pulseUntil };
   }
 
   function applyServerNodeUpdate(payload = {}, options = {}) {
@@ -147,7 +141,7 @@ export function createNodeInterferenceSystem(state) {
 
   return {
     canInterfere,
-    beginLocalInterference,
+    beginLocalPulse,
     applyServerNodeUpdate,
     getNodeState,
     tick,
