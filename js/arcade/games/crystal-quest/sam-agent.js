@@ -6,7 +6,10 @@ export function createSamAgent(options) {
 
   function setState(state, message) {
     if (!root) return;
-    if (!STATES.includes(state)) state = 'idle';
+    if (!STATES.includes(state)) {
+      console.warn('[crystal-quest] Invalid SAM state:', state);
+      state = 'idle';
+    }
     STATES.forEach(function (name) {
       root.classList.toggle('sam-' + name, name === state);
     });

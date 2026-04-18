@@ -113,6 +113,15 @@ export function bootstrapCrystalQuest(root) {
     return Math.floor(Math.random() * 0x7fffffff);
   }
 
+  function secureToken() {
+    if (window.crypto && typeof window.crypto.getRandomValues === 'function') {
+      var bytes = new Uint32Array(2);
+      window.crypto.getRandomValues(bytes);
+      return bytes[0].toString(36) + bytes[1].toString(36);
+    }
+    return Date.now().toString(36) + Math.floor(Math.random() * 0x7fffffff).toString(36);
+  }
+
   async function loadNextPack() {
     if (loadedPackIndex + 1 >= PACKS.length) return false;
     loadedPackIndex += 1;
@@ -207,7 +216,7 @@ export function bootstrapCrystalQuest(root) {
       skips: sessionData.skips,
       completed: true,
     };
-    window.__crystalQuestLastSyncPayload = payload;
+    window.crystalQuestLastSyncPayload = payload;
     return payload;
   }
 
@@ -215,7 +224,7 @@ export function bootstrapCrystalQuest(root) {
 
   function createRunSession(questionSet, seed) {
     return {
-      sessionId: 'cq-' + Date.now().toString(36) + '-' + Math.floor(Math.random() * 99999).toString(36),
+      sessionId: 'cq-' + Date.now().toString(36) + '-' + secureToken(),
       seed: seed,
       questionSet: questionSet,
       index: 0,
@@ -384,9 +393,10 @@ export function bootstrapCrystalQuest(root) {
       ? ('Pack ' + String(loadedPackIndex + 1).padStart(3, '0'))
       : 'Unavailable';
 
-    var linked = !!(window.MOONBOYS_IDENTITY && typeof window.MOONBOYS_IDENTITY.isTelegramLinked === 'function'
-      ? window.MOONBOYS_IDENTITY.isTelegramLinked()
-      : false);
+    var linked = false;
+    if (window.MOONBOYS_IDENTITY && typeof window.MOONBOYS_IDENTITY.isTelegramLinked === 'function') {
+      linked = window.MOONBOYS_IDENTITY.isTelegramLinked();
+    }
 
     statusLine.textContent = linked
       ? 'Identity linked: leaderboard submissions enabled after run completion.'
