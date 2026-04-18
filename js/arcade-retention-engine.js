@@ -12,6 +12,7 @@ const MAX_PROMPTS_PER_SESSION = 6;
 const PROMPT_GAP_MS = 28 * 1000;
 const PROMPT_KEY_COOLDOWN_MS = 6 * 60 * 1000;
 const STREAK_WARNING_COOLDOWN_MS = 90 * 1000;
+const MAX_TOAST_KEY_LENGTH = 90;
 
 const GAME_ID_MAP = {
   snakeCanvas: 'snake',
@@ -30,6 +31,8 @@ let root = null;
 let toastRoot = null;
 let banner = null;
 let missionChip = null;
+let featuredCacheSlot = null;
+let featuredCacheGame = 'snake';
 
 function nowMs() {
   return Date.now();
@@ -40,6 +43,7 @@ function clamp(value, min, max) {
 }
 
 function formatCountdown(ms) {
+  if (ms < 0) return 'EXPIRED';
   const totalSec = Math.max(0, Math.floor(ms / 1000));
   const min = Math.floor(totalSec / 60);
   const sec = totalSec % 60;
@@ -175,13 +179,16 @@ function getRotationGames() {
 function getFeaturedWindow(now = nowMs()) {
   const slotStart = Math.floor(now / FEATURED_SLOT_MS) * FEATURED_SLOT_MS;
   const slotEnd = slotStart + FEATURED_SLOT_MS;
-  const games = getRotationGames();
-  const index = Math.floor(slotStart / FEATURED_SLOT_MS) % games.length;
-  const game = games[(index + games.length) % games.length] || 'snake';
+  if (featuredCacheSlot !== slotStart) {
+    const games = getRotationGames();
+    const index = Math.floor(slotStart / FEATURED_SLOT_MS) % games.length;
+    featuredCacheSlot = slotStart;
+    featuredCacheGame = games[(index + games.length) % games.length] || 'snake';
+  }
   return {
     id: `featured-${Math.floor(slotStart / FEATURED_SLOT_MS)}`,
-    game,
-    label: `Featured ${String(game).toUpperCase()} bonus active`,
+    game: featuredCacheGame,
+    label: `Featured ${String(featuredCacheGame).toUpperCase()} bonus active`,
     starts_at: slotStart,
     ends_at: slotEnd,
     countdown_ms: Math.max(0, slotEnd - now),
@@ -365,7 +372,7 @@ function playCue(sound) {
 function showToast(message, opts = {}) {
   ensureUi();
   if (!toastRoot || !message) return;
-  const key = String(opts.key || message).slice(0, 90);
+  const key = String(opts.key || message).slice(0, MAX_TOAST_KEY_LENGTH);
   const duplicate = Array.from(toastRoot.children).some((node) => node?.dataset?.key === key);
   if (duplicate) return;
   const toast = document.createElement('div');

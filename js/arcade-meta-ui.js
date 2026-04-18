@@ -230,7 +230,7 @@ function updateHud() {
   if (hudLoop) {
     const runs = Number(retentionContext?.session_metrics?.runs) || 0;
     const switches = Number(retentionContext?.session_metrics?.game_switches) || 0;
-    hudLoop.textContent = runs > 0 ? `${runs} runs • ${switches} switches` : 'warming up';
+    hudLoop.textContent = runs > 0 ? `${runs} runs • ${switches} switches` : 'Warming up';
   }
   if (hudMission) {
     const missionRow = uiRoot.querySelector('#arcade-meta-mission');

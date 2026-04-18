@@ -100,6 +100,11 @@ function resize() {
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 function edgeKey(source, target) { return `${source}->${target}`; }
+function formatFeaturedLabel(game) {
+  return (typeof game === 'string' && game.trim().length > 0)
+    ? `🔥 ${String(game).toUpperCase()}`
+    : '🔥 Featured';
+}
 
 // ── State builders ────────────────────────────────────────────────────────
 function setOverviewState() {
@@ -124,7 +129,7 @@ function setMetaOverviewState() {
   const chain = metaState?.quest_chain || retention?.quest_chain || null;
   const mission = retention?.comeback_mission || null;
   const featuredGame = retention?.featured_window?.game || featured?.game || null;
-  const featuredLabel = featuredGame ? `🔥 ${String(featuredGame).toUpperCase()}` : '🔥 Featured';
+  const featuredLabel = formatFeaturedLabel(featuredGame);
   const missionExpiresIn = Math.max(0, Number(mission?.expires_at || 0) - Date.now());
 
   nodes = [
