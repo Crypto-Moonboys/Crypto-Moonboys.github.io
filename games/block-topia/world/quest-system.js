@@ -99,9 +99,19 @@ export function createQuestSystem(state, liveIntelligence = null) {
       hooks.onQuestPulse?.(`${dynamic.id}: ${dynamic.description}`);
     }
 
-    const livePulses = liveIntelligence?.getQuestPulses?.(1) || [];
+    const canonSignalState = liveIntelligence?.getCanonSignalState?.() || {};
+    const canonPulses = (canonSignalState.activeCanonSignals || [])
+      .map((signal) => signal.questPulse)
+      .filter(Boolean);
+    const livePulses = canonPulses.length
+      ? canonPulses.slice(0, 1)
+      : (liveIntelligence?.getQuestPulses?.(1) || []);
     if (livePulses.length) {
       hooks.onQuestPulse?.(livePulses[0]);
+    }
+    if (Array.isArray(canonSignalState.eventTags) && canonSignalState.eventTags.length) {
+      const topTag = String(canonSignalState.eventTags[0] || '').replace(/[_-]+/g, ' ');
+      if (topTag) hooks.onQuestPulse?.(`Canon pressure tag active: ${topTag}`);
     }
   }
 

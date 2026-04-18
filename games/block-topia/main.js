@@ -1,4 +1,11 @@
-import { connectMultiplayer, sendMovement, sendNodeInterference } from './network.js';
+import {
+  connectMultiplayer,
+  sendMovement,
+  sendNodeInterference,
+  challengePlayer as sendDuelChallenge,
+  acceptDuel as sendDuelAccept,
+  submitDuelAction as sendDuelAction,
+} from './network.js';
 import { loadUnifiedData } from './world/data-loader.js';
 import {
   createGameState,
@@ -16,7 +23,9 @@ import { createLiveIntelligence } from './world/live-intelligence.js';
 import { createClueSignalSystem } from './world/clue-signal-system.js';
 import { createSignalOperationSystem } from './world/signal-operation-system.js';
 import { createNodeInterferenceSystem } from './world/node-interference-system.js';
+import { createDuelSystem } from './world/duel-system.js';
 import { createHud } from './ui/hud.js';
+import { createDuelOverlay } from './ui/duel-overlay.js';
 import { createIsoRenderer } from './render/iso-renderer.js';
 
 const ENTRY_OVERLAY_TIMEOUT_MS = 7000;
@@ -60,6 +69,11 @@ async function boot() {
   state.camera.zoomIndex = 1;
   state.camera.zoom = CAMERA_ZOOM_PRESETS[state.camera.zoomIndex];
   const liveIntelligence = createLiveIntelligence();
+  liveIntelligence.configureCanonBridge({
+    canon: state.lore?.canonAdapter || {},
+    districts: state.districtState,
+    factions: state.factions,
+  });
   await liveIntelligence.refresh();
   const sam = createSamSystem(state);
   const npc = createNpcSystem(state, liveIntelligence);
@@ -68,8 +82,20 @@ async function boot() {
   const operations = createSignalOperationSystem(state, liveIntelligence);
   const nodeInterference = createNodeInterferenceSystem(state);
   const memory = createMemorySystem(state);
+  const duel = createDuelSystem({
+    sendChallenge: (targetPlayerId) => sendDuelChallenge(targetPlayerId),
+    sendAccept: (duelId) => sendDuelAccept(duelId),
+    sendAction: (duelId, action) => sendDuelAction(duelId, action),
+  });
+  const duelOverlay = createDuelOverlay(document, duel);
+  duelOverlay.bindHandlers({
+    onSubmitAction: (action) => duel.submitAction(action),
+    onAcceptDuel: (duelId) => duel.acceptDuel(duelId),
+  });
   let multiplayerConnected = false;
+  let localSessionId = '';
   let nearbyNpc = null;
+  let selectedRemotePlayer = null;
   let lastNpcScan = performance.now();
   let lastQuestTick = performance.now();
   let lastQuestDistrictId = state.player.districtId;
@@ -81,7 +107,8 @@ async function boot() {
   const seenFeed = new Map();
   const primaryFactionName = state.factions.primary?.name || 'Liberators';
   const secondaryFactionName = state.factions.secondary?.name || 'Wardens';
-  const canonLore = state.lore?.canon || {};
+  const canonAdapter = state.lore?.canonAdapter || {};
+  const canonLore = state.lore?.canon || canonAdapter.canonLore || {};
   const lore = state.lore?.legacy?.lore || {};
   const districtStateById = new Map(state.districtState.map((district) => [district.id, district]));
 
@@ -167,10 +194,18 @@ async function boot() {
       : 'none';
   }
 
+  function pickCanonBootstrapLine() {
+    if (Array.isArray(canonAdapter.blockTopiaFacts) && canonAdapter.blockTopiaFacts.length) {
+      return canonAdapter.blockTopiaFacts[0];
+    }
+    if (Array.isArray(canonLore.feedLines) && canonLore.feedLines.length) {
+      return canonLore.feedLines[0];
+    }
+    return '';
+  }
+
   function bootstrapLoreFeed() {
-    const canonLine = Array.isArray(canonLore.feedLines) && canonLore.feedLines.length
-      ? canonLore.feedLines[0]
-      : '';
+    const canonLine = pickCanonBootstrapLine();
     if (canonLine) {
       hud.pushFeed(`📜 ${canonLine}`, 'system');
     } else {
@@ -178,15 +213,68 @@ async function boot() {
       if (districtFlavor) hud.pushFeed(`📰 [Fallback] ${districtFlavor}`, 'system');
     }
 
-    const rumorPool = Array.isArray(canonLore.npcRumors) && canonLore.npcRumors.length
-      ? canonLore.npcRumors
-      : lore?.npc_rumors;
+    const districtFlavorLine = canonAdapter?.districtLoreById?.[state.player.districtId]?.flavor?.[0];
+    if (districtFlavorLine) {
+      hud.pushFeed(`🏙️ ${state.player.districtName}: ${districtFlavorLine}`, 'system');
+    }
+
+    const rumorPool = Array.isArray(canonAdapter.npcRumorPool) && canonAdapter.npcRumorPool.length
+      ? canonAdapter.npcRumorPool
+      : Array.isArray(canonLore.npcRumors) && canonLore.npcRumors.length
+        ? canonLore.npcRumors
+        : lore?.npc_rumors;
     if (!Array.isArray(rumorPool) || rumorPool.length === 0) return;
     const rumor = rumorPool[Math.floor(Math.random() * rumorPool.length)];
     if (rumor) {
-      const prefix = canonLore.fallbackUsed ? '🗞️ [Fallback]' : '🗞️';
+      const prefix = canonAdapter.fallbackUsed || canonLore.fallbackUsed ? '🗞️ [Fallback]' : '🗞️';
       hud.pushFeed(`${prefix} ${rumor}`, 'system');
     }
+  }
+
+  function getCanonAtmosphereLine() {
+    const canonSignalState = liveIntelligence.getCanonSignalState?.() || {};
+    const samTone = canonSignalState.samNarrativeState?.tone || [];
+    const districtFlavor = canonAdapter?.districtLoreById?.[state.player.districtId]?.flavor || [];
+    const flavorPool = [
+      ...samTone,
+      ...districtFlavor,
+      ...(canonAdapter.worldFlavorPool || []),
+    ].filter(Boolean);
+    return flavorPool[0] || 'Canon relay synced across districts.';
+  }
+
+  function challengeRemotePlayer(remotePlayer) {
+    if (!remotePlayer?.id) return;
+    if (remotePlayer.id === localSessionId) {
+      hud.pushFeed('⚠️ Cannot challenge yourself.', 'system');
+      return;
+    }
+    const ok = duel.challengePlayer(remotePlayer.id);
+    if (!ok) return;
+    selectedRemotePlayer = remotePlayer;
+    hud.pushFeed(`⚔️ Duel challenge sent to ${remotePlayer.name || remotePlayer.id}`, 'combat');
+    duelOverlay.render();
+  }
+
+  function bootstrapEntryIdentity() {
+    hud.setEntryTagline(`Deploying into ${state.player.districtName} · ${getCanonAtmosphereLine()}`);
+  }
+
+  function applyDuelEndedRipple(payload = {}) {
+    if (Number.isFinite(payload?.samPressure)) {
+      state.sam.pressure = Math.max(0, Math.min(100, Number(payload.samPressure)));
+    }
+    if (payload?.rippleDistrictId && Number.isFinite(payload?.rippleDistrictControl)) {
+      applyDistrictControlUpdate({
+        districtId: payload.rippleDistrictId,
+        control: Number(payload.rippleDistrictControl),
+      }, 'duel');
+    }
+  }
+
+  function isLocalDuelParticipant(payload = {}) {
+    if (!localSessionId) return false;
+    return payload.playerA === localSessionId || payload.playerB === localSessionId;
   }
 
   function pushFeedDeduped(text, type = 'system', key = '') {
@@ -310,11 +398,21 @@ async function boot() {
     if (!refreshResult?.changed) return;
 
     const snapshot = refreshResult.snapshot || liveIntelligence.getSnapshot();
+    const canonSignalState = refreshResult.canonSignalState || liveIntelligence.getCanonSignalState?.() || {};
     const worldBulletins = liveIntelligence.getWorldFeedLines(3);
     worldBulletins.forEach((line) => {
       if (!line) return;
       pushFeedDeduped(`📡 ${line}`, 'sam', `world-bulletin:${line}`);
     });
+    const topDistrictPressure = Object.values(canonSignalState.districtSignalState || {})
+      .sort((a, b) => Number(b?.pressure || 0) - Number(a?.pressure || 0))[0];
+    if (topDistrictPressure?.districtName) {
+      pushFeedDeduped(
+        `🏙️ Pressure: ${topDistrictPressure.districtName} ${Math.round(topDistrictPressure.pressure || 0)}%`,
+        'combat',
+        `canon-pressure:${topDistrictPressure.districtId}:${Math.round(topDistrictPressure.pressure || 0)}`,
+      );
+    }
     pushFeedDeduped(
       `🛰️ Live intelligence refreshed (${snapshot.mode || 'fallback'})`,
       'system',
@@ -323,12 +421,15 @@ async function boot() {
     clues.refreshFromSignals?.();
     operations.syncFromSignals({ force: true });
     hud.setQuests(quests.getActiveQuestCards());
-    hud.setWorldStatus(`Unified city online · live signals ${snapshot.mode || 'fallback'} · ${snapshot.signalCount || 0} active lanes`);
+    hud.setWorldStatus(
+      `Unified city online · canon signals ${snapshot.mode || 'fallback'} · ${snapshot.signalCount || 0} active lanes`
+      + `${canonSignalState.samNarrativeState?.pressure ? ` · SAM pressure ${Math.round(canonSignalState.samNarrativeState.pressure)}%` : ''}`,
+    );
   }
 
   // Populate HUD with initial values
   hud.setPlayerName(state.player.name);
-  hud.setWorldStatus(`Unified city online · district memory sync active`);
+  hud.setWorldStatus(`Unified city online · canon runtime layer active`);
   hud.setDistrict(state.player.districtName);
   hud.setDistrictControl(50);
   hud.setDistrictOwner(state.districtState[0]?.owner || primaryFactionName);
@@ -344,9 +445,14 @@ async function boot() {
   const worldBulletins = liveIntelligence.getWorldFeedLines(2);
   worldBulletins.forEach((line) => pushFeedDeduped(`📡 ${line}`, 'sam', `world-bulletin:${line}`));
   const liveMode = liveIntelligence.getSnapshot().mode || 'fallback';
-  pushFeedDeduped(`🛰️ Live intelligence layer online (${liveMode})`, 'system', `live-boot:${liveMode}`);
-  hud.setEntryTagline(`Deploying into ${state.player.districtName}…`);
+  pushFeedDeduped(`🛰️ Canon signal bridge online (${liveMode})`, 'system', `live-boot:${liveMode}`);
+  bootstrapEntryIdentity();
   bootstrapLoreFeed();
+  pushFeedDeduped(
+    `📚 Canon source: ${canonAdapter.truthSource || canonLore.truthSource || '/wiki/bibles/block-topia.json'}${canonAdapter.fallbackUsed ? ' (fallback active)' : ''}`,
+    'system',
+    `canon-source:${canonAdapter.truthSource || canonLore.truthSource || 'wiki-bible'}`,
+  );
   hud.pushFeed('🔍 Zoom scale test active: [ = further, ] = closer', 'system');
 
   setInterval(() => {
@@ -361,6 +467,12 @@ async function boot() {
   window.addEventListener('keydown', (event) => {
     if (event.repeat) return;
     const key = event.key;
+    if (key === 'f' || key === 'F') {
+      if (selectedRemotePlayer) {
+        challengeRemotePlayer(selectedRemotePlayer);
+      }
+      return;
+    }
     if (key !== '[' && key !== ']') return;
 
     const nextIndex = key === '['
@@ -403,11 +515,13 @@ async function boot() {
     }
     state.mouse.hoverTile = renderer.pickTileFromClientPoint(event.clientX, event.clientY, state);
     state.mouse.hoverNpcId = renderer.pickNpcFromClientPoint(event.clientX, event.clientY, state)?.id || '';
+    state.mouse.hoverRemotePlayerId = renderer.pickRemotePlayerFromClientPoint?.(event.clientX, event.clientY, state)?.id || '';
   });
 
   canvas.addEventListener('mouseleave', () => {
     state.mouse.hoverTile = null;
     state.mouse.hoverNpcId = '';
+    state.mouse.hoverRemotePlayerId = '';
   });
 
   canvas.addEventListener('mousedown', (event) => {
@@ -431,6 +545,7 @@ async function boot() {
       state.mouse.suppressDblClickUntil = performance.now() + MOUSE_DRAG_DOUBLE_CLICK_SUPPRESS_MS;
       state.mouse.hoverTile = renderer.pickTileFromClientPoint(event.clientX, event.clientY, state);
       state.mouse.hoverNpcId = renderer.pickNpcFromClientPoint(event.clientX, event.clientY, state)?.id || '';
+      state.mouse.hoverRemotePlayerId = renderer.pickRemotePlayerFromClientPoint?.(event.clientX, event.clientY, state)?.id || '';
     }
   });
 
@@ -441,6 +556,12 @@ async function boot() {
     }
     if (tryInteractWithClickedNpc(event)) return;
     if (tryInteractWithClickedNode(event)) return;
+    const remotePlayer = renderer.pickRemotePlayerFromClientPoint?.(event.clientX, event.clientY, state);
+    if (remotePlayer?.id) {
+      selectedRemotePlayer = remotePlayer;
+      hud.pushFeed(`🎯 Target locked: ${remotePlayer.name || remotePlayer.id} · press F to challenge`, 'combat');
+      return;
+    }
     state.mouse.selectedTile = renderer.pickTileFromClientPoint(event.clientX, event.clientY, state);
   });
 
@@ -469,15 +590,19 @@ async function boot() {
         : `${status.ws}${status.error ? ` · ${status.error}` : ''}`;
       hud.setMultiplayerStatus(statusText);
       if (status.roomId) hud.setRoom(status.roomId);
+      if (status.sessionId) localSessionId = status.sessionId;
       multiplayerConnected = Boolean(status.joined);
       if (multiplayerConnected) {
-        hud.setEntryTagline('LIVE CITY LINK ESTABLISHED — Entering Street Signal layers');
+        hud.setEntryTagline(`LIVE CITY LINK ESTABLISHED · ${getCanonAtmosphereLine()}`);
         hud.dismissEntryIdentity(ENTRY_DISMISS_DELAY_MS);
       }
     },
     onPlayers: (players) => {
       applyRemotePlayers(state, players);
       hud.setPopulation(players.length, state.room.maxPlayers);
+      if (selectedRemotePlayer?.id) {
+        selectedRemotePlayer = state.remotePlayers.find((player) => player.id === selectedRemotePlayer.id) || null;
+      }
     },
     onWorldSnapshot: (data) => {
       if (Array.isArray(data?.npcs)) {
@@ -561,6 +686,50 @@ async function boot() {
     onNodeInterferenceChanged: (payload) => {
       const eventPayload = nodeInterference.applyServerNodeUpdate(payload);
       handleNodeInterferenceRipple(eventPayload || payload, 'server');
+    },
+    onDuelRequested: (payload) => {
+      if (isLocalDuelParticipant(payload)) {
+        duel.applyRequested(payload);
+        duelOverlay.render();
+      }
+      if (payload?.playerB === localSessionId) {
+        hud.pushFeed(`⚔️ Duel request: ${payload.challengerName || payload.playerAName || 'Player'} challenged you`, 'combat');
+      }
+    },
+    onDuelStarted: (payload) => {
+      if (isLocalDuelParticipant(payload)) {
+        duel.applyStarted(payload);
+        duelOverlay.render();
+      }
+      hud.pushFeed(`⚔️ Duel started: ${payload.playerAName || 'A'} vs ${payload.playerBName || 'B'}`, 'combat');
+    },
+    onDuelActionSubmitted: (payload) => {
+      if (duel.getState().duelId && payload?.duelId === duel.getState().duelId) {
+        duel.applyActionSubmitted(payload);
+        duelOverlay.render();
+      }
+    },
+    onDuelResolved: (payload) => {
+      if (duel.getState().duelId && payload?.duelId === duel.getState().duelId) {
+        duel.applyResolved(payload);
+        duelOverlay.render();
+      }
+      if (payload?.message) {
+        hud.pushFeed(`⚔️ ${payload.message}`, 'combat');
+      }
+      if (payload?.samWarning) {
+        hud.showNodeInterference(payload.samWarning, 'sam');
+      }
+    },
+    onDuelEnded: (payload) => {
+      if (duel.getState().duelId && payload?.duelId === duel.getState().duelId) {
+        duel.applyEnded(payload);
+        duelOverlay.render();
+      }
+      applyDuelEndedRipple(payload);
+      if (payload?.message) {
+        hud.pushFeed(`⚔️ ${payload.message}`, 'combat');
+      }
     },
   });
 
@@ -683,6 +852,7 @@ async function boot() {
         hud.setQuests(quests.getActiveQuestCards());
       }
     }
+    duelOverlay.render();
   }
 
   function renderLoop() {

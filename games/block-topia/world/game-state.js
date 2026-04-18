@@ -176,6 +176,7 @@ export function createGameState(bundle) {
     },
     lore: {
       wikiHooks: bundle.seasonModel.wikiHooks || [],
+      canonAdapter: bundle.canonAdapter || {},
       canon: bundle.canonLore || {},
       legacy: bundle.legacy,
     },

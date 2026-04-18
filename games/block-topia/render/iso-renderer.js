@@ -1112,6 +1112,32 @@ export function createIsoRenderer(canvas) {
     return null;
   }
 
+  function pickRemotePlayerFromClientPoint(clientX, clientY, state) {
+    if (!Array.isArray(state?.remotePlayers) || !state.remotePlayers.length) return null;
+    const metrics = getSceneMetrics(state);
+    const point = clientToWorldPoint(clientX, clientY, state);
+    const { originX, originY } = point.frame;
+    let nearest = null;
+    let nearestScore = Infinity;
+    for (const remote of state.remotePlayers) {
+      if (!remote || typeof remote.x !== 'number' || typeof remote.y !== 'number') continue;
+      const iso = toIso(remote.x, remote.y);
+      const elevation = getTileElevation(remote.x, remote.y, metrics);
+      const sx = originX + iso.x;
+      const sy = originY + iso.y - elevation - 4;
+      const dx = point.x - sx;
+      const dy = point.y - (sy - 16);
+      const withinBody = Math.abs(dx) <= NPC_HITBOX_HALF_WIDTH && Math.abs(dy) <= NPC_HITBOX_HALF_HEIGHT;
+      if (!withinBody) continue;
+      const score = (dx * dx) + (dy * dy);
+      if (score < nearestScore) {
+        nearest = remote;
+        nearestScore = score;
+      }
+    }
+    return nearest;
+  }
+
   function render(state) {
     const now = Date.now();
     const metrics = getSceneMetrics(state);
@@ -1228,5 +1254,6 @@ export function createIsoRenderer(canvas) {
     pickTileFromClientPoint,
     pickNpcFromClientPoint,
     pickControlNodeFromClientPoint,
+    pickRemotePlayerFromClientPoint,
   };
 }

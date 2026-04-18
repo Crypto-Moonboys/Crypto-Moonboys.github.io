@@ -309,6 +309,35 @@ export function createNpcSystem(state, liveIntelligence = null) {
     agent: 'courier',
     'lore-keeper': 'seer',
   };
+  const canonAdapter = state.lore?.canonAdapter || {};
+
+  function pickCanonSignalNpcLine(npc) {
+    const canonSignals = liveIntelligence?.getCanonSignalState?.()?.activeCanonSignals || [];
+    if (!canonSignals.length) return '';
+    const roleTag = String(npc?.role || '').toLowerCase().replace(/\s+/g, '_');
+    const districtId = String(npc?.districtId || '').toLowerCase();
+    const matching = canonSignals.filter((signal) => {
+      const tags = Array.isArray(signal?.eventTags) ? signal.eventTags : [];
+      return (
+        String(signal?.districtId || '').toLowerCase() === districtId
+        || tags.includes(roleTag)
+      );
+    });
+    return sample(matching.map((signal) => signal.npcLine).filter(Boolean), '');
+  }
+
+  function pickCanonDistrictPressureLine(npc) {
+    const canonSignalState = liveIntelligence?.getCanonSignalState?.() || {};
+    const districtId = String(npc?.districtId || '');
+    const districtState = canonSignalState?.districtSignalState?.[districtId]
+      || canonSignalState?.districtSignalState?.[districtId.toLowerCase()];
+    const districtWarnings = Array.isArray(districtState?.warnings) ? districtState.warnings : [];
+    const districtNotes = Array.isArray(districtState?.notes) ? districtState.notes : [];
+    const samWarnings = Array.isArray(canonSignalState?.samNarrativeState?.warnings)
+      ? canonSignalState.samNarrativeState.warnings
+      : [];
+    return sample([...districtWarnings, ...districtNotes, ...samWarnings], '');
+  }
 
   function createNpc({
     id,
@@ -446,6 +475,12 @@ export function createNpcSystem(state, liveIntelligence = null) {
       }
     }
 
+    const canonSignalLine = pickCanonSignalNpcLine(npc);
+    if (canonSignalLine) return canonSignalLine;
+
+    const canonPressureLine = pickCanonDistrictPressureLine(npc);
+    if (canonPressureLine) return canonPressureLine;
+
     const districtOp = getDistrictOperation(npc?.districtId);
     const liveLine = liveIntelligence?.pickNpcLine?.(npc);
     const liveChance = districtOp ? LIVE_DIALOGUE_CHANCE_WITH_OPERATION : LIVE_DIALOGUE_CHANCE_BASE;
@@ -460,9 +495,21 @@ export function createNpcSystem(state, liveIntelligence = null) {
     if (profile?.rumors?.length) {
       return sample(profile.rumors, 'Keep moving. Signals are watching.');
     }
+    const canonDistrictFlavor = canonAdapter?.districtLoreById?.[npc?.districtId]?.flavor || [];
+    if (Array.isArray(canonDistrictFlavor) && canonDistrictFlavor.length && npc?.role === 'lore-keeper') {
+      return sample(canonDistrictFlavor, DEFAULT_DIALOGUE_FALLBACK);
+    }
+    const canonFlavorPool = Array.isArray(canonAdapter?.worldFlavorPool) ? canonAdapter.worldFlavorPool : [];
+    if (canonFlavorPool.length && npc?.role === 'lore-keeper') {
+      return sample(canonFlavorPool, DEFAULT_DIALOGUE_FALLBACK);
+    }
     const canonRumors = state.lore?.canon?.npcRumors;
     if (Array.isArray(canonRumors) && canonRumors.length) {
       return sample(canonRumors, DEFAULT_DIALOGUE_FALLBACK);
+    }
+    const canonAdapterRumors = Array.isArray(canonAdapter?.npcRumorPool) ? canonAdapter.npcRumorPool : [];
+    if (canonAdapterRumors.length) {
+      return sample(canonAdapterRumors, DEFAULT_DIALOGUE_FALLBACK);
     }
     const loreRumors = state.lore?.legacy?.lore?.npc_rumors;
     if (Array.isArray(loreRumors) && loreRumors.length) {

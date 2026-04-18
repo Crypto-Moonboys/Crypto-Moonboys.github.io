@@ -3,6 +3,7 @@ import { Schema, MapSchema, defineTypes } from '@colyseus/schema';
 import { clampPosition, validateMovement } from '../systems/player-system.js';
 import { getDistrictForPosition, createDistrictPayload } from '../systems/district-system.js';
 import { checkAndCompleteQuests } from '../systems/quest-system.js';
+import { createDuelSystem } from '../systems/duel-system.js';
 
 const WORLD_MAP_WIDTH = 20;
 const WORLD_MAP_HEIGHT = 20;
@@ -22,6 +23,8 @@ const SAM_PRESSURE_FROM_INTERFERENCE = 4;
 const SAM_PRESSURE_PHASE_THRESHOLD = 100;
 const SAM_PRESSURE_TRIGGER_CHANCE = 0.45;
 const SAM_PRESSURE_RESET_FLOOR = 20;
+const DUEL_DISTRICT_PRESSURE_SHIFT = 4;
+const DUEL_SAM_PRESSURE_SHIFT = 2;
 
 const CONTROL_NODES = [
   { id: 'core', x: 24, y: 24, districtId: 'crypto-core' },
@@ -84,6 +87,10 @@ export class CityRoom extends Room {
 
     this.completedQuests = new Map(); // sessionId -> Set
     this.world = this.createInitialWorld();
+    this.duels = createDuelSystem({
+      getPlayerName: (playerId) => this.state.players.get(playerId)?.name || 'Player',
+      getSamPhase: () => this.world.samPhase,
+    });
 
     console.log('🏙️ CityRoom with District and Quest systems created', options);
     this.setSimulationInterval((dt) => this.updateWorld(dt), 50);
@@ -116,6 +123,18 @@ export class CityRoom extends Room {
 
     this.onMessage('nodeInterfere', (client, data) => {
       this.handleNodeInterference(client, data);
+    });
+
+    this.onMessage('duelChallenge', (client, data) => {
+      this.handleDuelChallenge(client, data);
+    });
+
+    this.onMessage('duelAccept', (client, data) => {
+      this.handleDuelAccept(client, data);
+    });
+
+    this.onMessage('duelAction', (client, data) => {
+      this.handleDuelAction(client, data);
     });
   }
 
@@ -189,6 +208,7 @@ export class CityRoom extends Room {
     this.updateDistricts();
     this.updateNodeInterference();
     this.updateSAM();
+    this.updateDuels();
 
     if (this.snapshotTimerMs >= WORLD_SNAPSHOT_INTERVAL_MS) {
       this.snapshotTimerMs = 0;
@@ -381,6 +401,14 @@ export class CityRoom extends Room {
   }
 
   onLeave(client) {
+    const endedDuel = this.duels?.onPlayerLeave?.(client.sessionId);
+    if (endedDuel) {
+      this.broadcast('duelEnded', {
+        duelId: endedDuel.duelId,
+        status: 'ended',
+        message: 'Duel ended: participant disconnected.',
+      });
+    }
     this.state.players.delete(client.sessionId);
     this.completedQuests.delete(client.sessionId);
 
@@ -419,5 +447,178 @@ export class CityRoom extends Room {
 
   onDispose() {
     console.log('🗑️ CityRoom disposed');
+  }
+
+  handleDuelChallenge(client, data) {
+    const targetPlayerId = String(data?.targetPlayerId || '');
+    const challengerId = client.sessionId;
+    const challenger = this.state.players.get(challengerId);
+    const target = this.state.players.get(targetPlayerId);
+    if (!challenger || !target) return;
+
+    const result = this.duels.createChallenge(challengerId, targetPlayerId);
+    if (result?.error) {
+      client.send('system', { message: `Duel request rejected (${result.error})` });
+      return;
+    }
+    const duel = result.duel;
+    this.broadcast('duelRequested', {
+      duelId: duel.duelId,
+      playerA: duel.playerA,
+      playerB: duel.playerB,
+      playerAName: duel.playerAName,
+      playerBName: duel.playerBName,
+      challengerName: duel.playerAName,
+      defenderName: duel.playerBName,
+      status: duel.status,
+      message: `${duel.playerAName} challenged ${duel.playerBName}.`,
+    });
+  }
+
+  handleDuelAccept(client, data) {
+    const duelId = String(data?.duelId || '');
+    if (!duelId) return;
+    const result = this.duels.acceptChallenge(client.sessionId, duelId);
+    if (result?.error) {
+      client.send('system', { message: `Duel accept failed (${result.error})` });
+      return;
+    }
+    const duel = result.duel;
+    this.broadcast('duelStarted', {
+      duelId: duel.duelId,
+      playerA: duel.playerA,
+      playerB: duel.playerB,
+      playerAName: duel.playerAName,
+      playerBName: duel.playerBName,
+      status: duel.status,
+      round: duel.round,
+      healthA: duel.healthA,
+      healthB: duel.healthB,
+      roundDeadline: duel.roundDeadline,
+      message: `Duel started: ${duel.playerAName} vs ${duel.playerBName}`,
+    });
+  }
+
+  handleDuelAction(client, data) {
+    const duelId = String(data?.duelId || '');
+    const action = String(data?.action || '').toLowerCase();
+    if (!duelId || !action) return;
+    const result = this.duels.submitAction(client.sessionId, duelId, action);
+    if (result?.error) {
+      client.send('system', { message: `Duel action rejected (${result.error})` });
+      return;
+    }
+    const duel = result.duel;
+    if (!duel) return;
+    const side = client.sessionId === duel.playerA ? 'a' : 'b';
+    this.broadcast('duelActionSubmitted', {
+      duelId: duel.duelId,
+      playerId: client.sessionId,
+      side,
+      action,
+    });
+
+    if (!result.resolved) return;
+    const resolution = result.resolution || {};
+    this.broadcast('duelResolved', {
+      duelId: duel.duelId,
+      status: duel.status,
+      round: Number(duel.resolvedRound || duel.round || 1),
+      actionA: duel.lastActionA || '',
+      actionB: duel.lastActionB || '',
+      healthA: duel.healthA,
+      healthB: duel.healthB,
+      roundDeadline: duel.roundDeadline,
+      samWarning: resolution.samWarning || '',
+      message: `${duel.playerAName}(${duel.healthA}) · ${duel.playerBName}(${duel.healthB})`,
+    });
+    if (resolution.ended) {
+      this.finalizeDuel(duel.duelId, resolution.winnerId, resolution.samWarning || '');
+    }
+  }
+
+  updateDuels() {
+    const events = this.duels.tick();
+    if (!Array.isArray(events) || !events.length) return;
+    for (const entry of events) {
+      const duel = entry.duel;
+      if (!duel) continue;
+      if (entry.reason === 'request-timeout') {
+        this.broadcast('duelEnded', {
+          duelId: duel.duelId,
+          status: 'ended',
+          message: 'Duel request expired.',
+        });
+        this.duels.remove(duel.duelId);
+        continue;
+      }
+      if (entry.reason === 'round-resolved') {
+        const result = entry.result || {};
+        this.broadcast('duelResolved', {
+          duelId: duel.duelId,
+          status: duel.status,
+          round: Number(duel.resolvedRound || duel.round || 1),
+          actionA: duel.lastActionA || '',
+          actionB: duel.lastActionB || '',
+          healthA: duel.healthA,
+          healthB: duel.healthB,
+          roundDeadline: duel.roundDeadline,
+          samWarning: result.samWarning || '',
+          message: `${duel.playerAName}(${duel.healthA}) · ${duel.playerBName}(${duel.healthB})`,
+        });
+        if (result.ended) {
+          this.finalizeDuel(duel.duelId, result.winnerId, result.samWarning || '');
+        }
+        continue;
+      }
+      if (entry.reason === 'cleanup') {
+        this.duels.remove(duel.duelId);
+      }
+    }
+  }
+
+  finalizeDuel(duelId, winnerId = '', samWarning = '') {
+    const duel = this.duels.endDuel(duelId, 'resolved');
+    if (!duel) return;
+
+    let rippleDistrict = null;
+    if (this.world.districts.length) {
+      const seed = Math.abs(String(duelId).split('').reduce((acc, ch) => acc + ch.charCodeAt(0), 0));
+      rippleDistrict = this.world.districts[seed % this.world.districts.length];
+    }
+    if (rippleDistrict) {
+      const pressureDirection = winnerId === duel.playerA ? 1 : winnerId === duel.playerB ? -1 : 0;
+      rippleDistrict.control = Math.max(
+        0,
+        Math.min(100, rippleDistrict.control + (pressureDirection * DUEL_DISTRICT_PRESSURE_SHIFT)),
+      );
+      if (rippleDistrict.control >= DISTRICT_CAPTURE_THRESHOLD) {
+        rippleDistrict.owner = 'Liberators';
+      } else if (rippleDistrict.control <= (100 - DISTRICT_CAPTURE_THRESHOLD)) {
+        rippleDistrict.owner = 'Wardens';
+      }
+      this.broadcast('districtCaptureChanged', {
+        districtId: rippleDistrict.id,
+        control: rippleDistrict.control,
+        owner: rippleDistrict.owner,
+      });
+    }
+    this.world.samPressure = Math.max(0, Math.min(100, this.world.samPressure + DUEL_SAM_PRESSURE_SHIFT));
+
+    this.broadcast('duelEnded', {
+      duelId: duel.duelId,
+      status: 'ended',
+      winnerId,
+      samWarning,
+      rippleDistrictId: rippleDistrict?.id || '',
+      rippleDistrictControl: rippleDistrict?.control,
+      samPressure: this.world.samPressure,
+      message: winnerId
+        ? `Duel resolved. Winner: ${this.state.players.get(winnerId)?.name || winnerId}`
+        : 'Duel resolved with no winner.',
+    });
+    this.broadcast('system', {
+      message: `⚔️ Duel ripple registered${rippleDistrict ? ` · ${rippleDistrict.name} pressure shifted` : ''}`,
+    });
   }
 }
