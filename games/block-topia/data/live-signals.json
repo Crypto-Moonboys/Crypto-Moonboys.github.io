@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-04-18T17:06:21.393Z",
+  "generatedAt": "2026-04-18T18:02:25.631Z",
   "mode": "live-ai",
   "sourceHealth": {
     "coingecko-global": "ok",
@@ -11,84 +11,84 @@
   "signalCount": 5,
   "signals": [
     {
-      "id": "signal-1776531981393-1",
-      "lane": "world",
+      "id": "signal-1776535345631-1",
+      "lane": "quest",
       "priority": 5,
-      "ttlMinutes": 45,
-      "npcLine": "The cryptomarket’s bleeding, shadows spreading fast.",
-      "questPulse": "Watch your credits—global crypto tides turned sour.",
-      "worldFeed": "Massive dip shakes all nodes; risk to assets rises.",
-      "clueEvent": "Market cap bleeding triggers black market shifts.",
+      "ttlMinutes": 30,
+      "npcLine": "Datastreams warn: market pulse sinking sharply. Guards on high alert.",
+      "questPulse": "Locate the source of sudden market chill within neon alleys.",
+      "worldFeed": "Crypto tides fall; shadow net whispers of collapse and fear.",
+      "clueEvent": "Trace the signal that plunged the digital economy in chaos.",
       "tags": [
         "market",
-        "danger",
-        "crypto"
+        "fear",
+        "crash"
       ],
-      "expiresAt": "2026-04-18T17:51:21.392Z"
+      "expiresAt": "2026-04-18T18:32:25.631Z"
     },
     {
-      "id": "signal-1776531981393-2",
+      "id": "signal-1776535345631-2",
+      "lane": "clue",
+      "priority": 4,
+      "ttlMinutes": 45,
+      "npcLine": "Whispers: RAVE and SIREN tokens flicker then fade in dark webs.",
+      "questPulse": "Decrypt hidden code behind fading town's favorite cryptos.",
+      "worldFeed": "Patterns emerge where fringe tokens drop into silence.",
+      "clueEvent": "Uncover why once-rising tokens now ghost the trade grids.",
+      "tags": [
+        "cryptotokens",
+        "anomaly",
+        "decay"
+      ],
+      "expiresAt": "2026-04-18T18:47:25.631Z"
+    },
+    {
+      "id": "signal-1776535345631-3",
+      "lane": "npc",
+      "priority": 3,
+      "ttlMinutes": 60,
+      "npcLine": "Old netrats mumble: BTC's pulse weakens, shadows creep deeper.",
+      "questPulse": "Gather intel on BTC's elusive drift from core systems.",
+      "worldFeed": "Echoes of ancient cryptos lost in digital dust storms.",
+      "clueEvent": "Find the cryptic node behind BTC’s wavering signal.",
+      "tags": [
+        "btc",
+        "legacy",
+        "decline"
+      ],
+      "expiresAt": "2026-04-18T19:02:25.631Z"
+    },
+    {
+      "id": "signal-1776535345631-4",
+      "lane": "world",
+      "priority": 2,
+      "ttlMinutes": 90,
+      "npcLine": "Markets glitch; low trust saps the cybernet like poison fog.",
+      "questPulse": "Monitor market feeds for unstable sectors ripe for exploitation.",
+      "worldFeed": "Fear dominates trade zones; shadows exploit the uncertain.",
+      "clueEvent": "Map hotspots of shifting trust amid cyber-economic chaos.",
+      "tags": [
+        "fear",
+        "market-instability",
+        "opportunity"
+      ],
+      "expiresAt": "2026-04-18T19:32:25.631Z"
+    },
+    {
+      "id": "signal-1776535345631-5",
       "lane": "ops",
       "priority": 4,
-      "ttlMinutes": 30,
-      "npcLine": "REQ token flickers—spiking interest, uncertain trust.",
-      "questPulse": "Scan REQ batches, anticipate rogue contracts.",
-      "worldFeed": "REQ usage surges amid unstable network flows.",
-      "clueEvent": "REQ demand rises; smuggler runs set to increase.",
+      "ttlMinutes": 40,
+      "npcLine": "REQ and MON tokens flicker; maybe ripe for quick ops.",
+      "questPulse": "Coordinate discreet runs to capitalize on volatile token shifts.",
+      "worldFeed": "Fragments of upcoming moves detected in minor token flux.",
+      "clueEvent": "Plan insertion points as digital assets tremble in heat.",
       "tags": [
-        "crypto",
-        "operations",
-        "req"
+        "tokens",
+        "operation",
+        "volatility"
       ],
-      "expiresAt": "2026-04-18T17:36:21.393Z"
-    },
-    {
-      "id": "signal-1776531981393-3",
-      "lane": "clue",
-      "priority": 3,
-      "ttlMinutes": 20,
-      "npcLine": "Old rave circuits spark offline; data may resurface.",
-      "questPulse": "Recover lost RAVE fragments; valuable relics hide secrets.",
-      "worldFeed": "Digital echoes of RAVE haunt abandoned sectors.",
-      "clueEvent": "RAVE nodes go dark; scavengers move to exploit.",
-      "tags": [
-        "data",
-        "exploration",
-        "rave"
-      ],
-      "expiresAt": "2026-04-18T17:26:21.393Z"
-    },
-    {
-      "id": "signal-1776531981393-4",
-      "lane": "quest",
-      "priority": 3,
-      "ttlMinutes": 25,
-      "npcLine": "OVPP hotspots emerge—potential for illicit gains.",
-      "questPulse": "Hack OVPP vaults before corporation eyes lock down.",
-      "worldFeed": "OVPP system breaches reported in industrial zones.",
-      "clueEvent": "OVPP data dumps trigger conflict between gangs.",
-      "tags": [
-        "hacking",
-        "heist",
-        "ovpp"
-      ],
-      "expiresAt": "2026-04-18T17:31:21.393Z"
-    },
-    {
-      "id": "signal-1776531981393-5",
-      "lane": "npc",
-      "priority": 2,
-      "ttlMinutes": 15,
-      "npcLine": "Fear grips cryptomarket runners; trust crumbles slow.",
-      "questPulse": "Replace shaken traders; fear clouds cyber alleys.",
-      "worldFeed": "Sentiment dips low; shadows grow between factions.",
-      "clueEvent": "Market fear index spikes, affects black market deals.",
-      "tags": [
-        "sentiment",
-        "npc",
-        "fear"
-      ],
-      "expiresAt": "2026-04-18T17:21:21.393Z"
+      "expiresAt": "2026-04-18T18:42:25.631Z"
     }
   ]
 }
