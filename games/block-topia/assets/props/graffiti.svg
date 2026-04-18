@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="96" height="64" viewBox="0 0 96 64" shape-rendering="crispEdges">
+  <circle cx="24" cy="36" r="14" fill="#ff5dcf" opacity="0.8"/>
+  <circle cx="42" cy="30" r="12" fill="#67f9ff" opacity="0.75"/>
+  <circle cx="58" cy="38" r="13" fill="#ffd069" opacity="0.75"/>
+  <text x="48" y="38" text-anchor="middle" font-size="16" fill="#171524" font-family="monospace" font-weight="700">CMB</text>
+</svg>

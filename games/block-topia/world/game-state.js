@@ -77,7 +77,7 @@ export function createGameState(bundle) {
       faction: bundle.factions.primary?.name || 'Liberators',
     },
     remotePlayers: [],
-    camera: { x: 0, y: 0 },
+    camera: { x: 0, y: 0, zoom: 1, zoomIndex: 1 },
     phase: 'Day',
     captureTimer: 0,
     // Visual-only capture progress shown to the player while they hold a district at Night.
@@ -199,8 +199,8 @@ export function updatePlayerMotion(state, input, dt, moveSender) {
     state.player.districtName = current.name;
   }
 
-  const isoX = (state.player.x - state.player.y) * 36;
-  const isoY = (state.player.x + state.player.y) * 18;
+  const isoX = (state.player.x - state.player.y) * 32;
+  const isoY = (state.player.x + state.player.y) * 16;
   state.camera.x = isoX;
   state.camera.y = isoY;
 

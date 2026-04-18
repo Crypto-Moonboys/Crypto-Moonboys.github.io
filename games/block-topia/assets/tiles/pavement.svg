@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="32" viewBox="0 0 64 32" shape-rendering="crispEdges">
+  <polygon points="32,0 64,16 32,32 0,16" fill="#6f7588"/>
+  <polygon points="32,32 0,16 32,16" fill="#555d71" opacity="0.55"/>
+  <polygon points="32,32 64,16 32,16" fill="#62697c" opacity="0.45"/>
+  <polygon points="32,0 64,16 32,32 0,16" fill="none" stroke="#0b1326" stroke-width="1"/>
+  
+  <path d="M8 16h48" stroke="#a2a9bc" stroke-width="1" opacity="0.35"/>
+  <path d="M32 4v24" stroke="#444b5f" stroke-width="1" opacity="0.4"/>
+
+</svg>

@@ -30,6 +30,7 @@ const REMOTE_PLAYER_LERP_ALPHA = 0.18;
 const LIVE_REFRESH_INTERVAL_MS = 120000; // 2 minutes
 const FEED_DEDUPE_TTL_MS = 5 * 60 * 1000;
 const MAX_FEED_CACHE_SIZE = 80;
+const CAMERA_ZOOM_PRESETS = [0.88, 1, 1.16];
 
 const canvas = document.getElementById('world-canvas');
 const hud = createHud(document);
@@ -46,6 +47,8 @@ window.addEventListener('keyup', (event) => {
 async function boot() {
   const dataBundle = await loadUnifiedData();
   const state = createGameState(dataBundle);
+  state.camera.zoomIndex = 1;
+  state.camera.zoom = CAMERA_ZOOM_PRESETS[state.camera.zoomIndex];
   const liveIntelligence = createLiveIntelligence();
   await liveIntelligence.refresh();
   const sam = createSamSystem(state);
@@ -153,6 +156,7 @@ async function boot() {
   pushFeedDeduped(`🛰️ Live intelligence layer online (${liveMode})`, 'system', `live-boot:${liveMode}`);
   hud.setEntryTagline(`Deploying into ${state.player.districtName}…`);
   bootstrapLoreFeed();
+  hud.pushFeed('🔍 Zoom scale test active: [ = further, ] = closer', 'system');
 
   setInterval(() => {
     liveIntelligence.refresh()
@@ -162,6 +166,22 @@ async function boot() {
 
   // Fallback: dismiss the entry overlay after 7s in case multiplayer never connects.
   setTimeout(() => hud.dismissEntryIdentity(0), ENTRY_OVERLAY_TIMEOUT_MS);
+
+  window.addEventListener('keydown', (event) => {
+    if (event.repeat) return;
+    const key = event.key;
+    if (key !== '[' && key !== ']') return;
+
+    const nextIndex = key === '['
+      ? Math.max(0, (state.camera.zoomIndex || 1) - 1)
+      : Math.min(CAMERA_ZOOM_PRESETS.length - 1, (state.camera.zoomIndex || 1) + 1);
+    if (nextIndex === state.camera.zoomIndex) return;
+
+    state.camera.zoomIndex = nextIndex;
+    state.camera.zoom = CAMERA_ZOOM_PRESETS[nextIndex];
+    const zoomLabel = nextIndex === 0 ? 'far' : nextIndex === 1 ? 'default' : 'close';
+    hud.pushFeed(`🔎 Camera zoom: ${zoomLabel} (${state.camera.zoom.toFixed(2)}x)`, 'system');
+  });
 
   await connectMultiplayer({
     playerName: state.player.name,
