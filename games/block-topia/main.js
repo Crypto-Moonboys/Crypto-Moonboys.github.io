@@ -36,6 +36,8 @@ const CAMERA_ZOOM_MIN = 0.7;
 const CAMERA_ZOOM_MAX = 1.4;
 // ~6% step gives smooth wheel zoom while traversing the clamp range in practical increments.
 const CAMERA_ZOOM_WHEEL_STEP = 0.06;
+const MOUSE_DRAG_THRESHOLD_PX = 8;
+const MOUSE_DRAG_DOUBLE_CLICK_SUPPRESS_MS = 400;
 
 const canvas = document.getElementById('world-canvas');
 const hud = createHud(document);
@@ -260,6 +262,23 @@ async function boot() {
   }, { passive: false });
 
   canvas.addEventListener('mousemove', (event) => {
+    if (state.mouse.pointerDown) {
+      const deltaX = event.clientX - state.mouse.dragStartX;
+      const deltaY = event.clientY - state.mouse.dragStartY;
+      const movedEnough = Math.hypot(deltaX, deltaY) >= MOUSE_DRAG_THRESHOLD_PX;
+      if (movedEnough) {
+        state.mouse.dragging = true;
+        state.mouse.dragMoved = true;
+      }
+      if (state.mouse.dragging) {
+        const zoom = state.camera.zoom ?? 1;
+        state.camera.panX = state.mouse.cameraStartX + (deltaX / zoom);
+        state.camera.panY = state.mouse.cameraStartY + (deltaY / zoom);
+        state.mouse.hoverTile = null;
+        state.mouse.hoverNpcId = '';
+        return;
+      }
+    }
     state.mouse.hoverTile = renderer.pickTileFromClientPoint(event.clientX, event.clientY, state);
     state.mouse.hoverNpcId = renderer.pickNpcFromClientPoint(event.clientX, event.clientY, state)?.id || '';
   });
@@ -269,12 +288,41 @@ async function boot() {
     state.mouse.hoverNpcId = '';
   });
 
+  canvas.addEventListener('mousedown', (event) => {
+    if (event.button !== 0) return;
+    state.mouse.pointerDown = true;
+    state.mouse.dragging = false;
+    state.mouse.dragMoved = false;
+    state.mouse.dragStartX = event.clientX;
+    state.mouse.dragStartY = event.clientY;
+    state.mouse.cameraStartX = state.camera.panX || 0;
+    state.mouse.cameraStartY = state.camera.panY || 0;
+  });
+
+  window.addEventListener('mouseup', (event) => {
+    if (event.button !== 0 || !state.mouse.pointerDown) return;
+    state.mouse.pointerDown = false;
+    const dragged = state.mouse.dragging || state.mouse.dragMoved;
+    state.mouse.dragging = false;
+    if (dragged) {
+      state.mouse.suppressClick = true;
+      state.mouse.suppressDblClickUntil = performance.now() + MOUSE_DRAG_DOUBLE_CLICK_SUPPRESS_MS;
+      state.mouse.hoverTile = renderer.pickTileFromClientPoint(event.clientX, event.clientY, state);
+      state.mouse.hoverNpcId = renderer.pickNpcFromClientPoint(event.clientX, event.clientY, state)?.id || '';
+    }
+  });
+
   canvas.addEventListener('click', (event) => {
+    if (state.mouse.suppressClick) {
+      state.mouse.suppressClick = false;
+      return;
+    }
     if (tryInteractWithClickedNpc(event)) return;
     state.mouse.selectedTile = renderer.pickTileFromClientPoint(event.clientX, event.clientY, state);
   });
 
   canvas.addEventListener('dblclick', (event) => {
+    if (performance.now() < (state.mouse.suppressDblClickUntil || 0)) return;
     if (tryInteractWithClickedNpc(event)) return;
 
     const tile = renderer.pickTileFromClientPoint(event.clientX, event.clientY, state);

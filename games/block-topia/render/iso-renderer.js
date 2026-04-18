@@ -274,10 +274,12 @@ export function createIsoRenderer(canvas) {
 
   function getCameraFrame(state) {
     const zoom = clamp(state.camera?.zoom ?? 1, ZOOM_MIN, ZOOM_MAX);
+    const panX = Number.isFinite(state.camera?.panX) ? state.camera.panX : 0;
+    const panY = Number.isFinite(state.camera?.panY) ? state.camera.panY : 0;
     return {
       zoom,
-      originX: -state.camera.x,
-      originY: -state.camera.y,
+      originX: -state.camera.x + panX,
+      originY: -state.camera.y + panY,
       translateX: canvas.width / 2,
       translateY: CAMERA_BASELINE_Y,
     };
