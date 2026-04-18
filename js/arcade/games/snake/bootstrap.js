@@ -1,6 +1,5 @@
 import { ArcadeSync }                        from '/js/arcade-sync.js';
 import { submitScore }                       from '/js/leaderboard-client.js';
-import { rollHiddenBonus, showBonusPopup }   from '/js/bonus-engine.js';
 import { SNAKE_CONFIG }                      from './config.js';
 import { GameRegistry }                      from '/js/arcade/core/game-registry.js';
 import { playSound, stopAllSounds, isMuted } from '/js/arcade/core/audio.js';
@@ -82,6 +81,9 @@ export function bootstrapSnake(root) {
   var chaosJitter = 0;
   var gridFlickerTimer = 0;
 
+  var doublePickupsLeft = 0;
+  var comboSavePending = false;
+
   var particles = [];
   var floatingTexts = [];
   var shakeTime = 0;
@@ -156,6 +158,8 @@ export function bootstrapSnake(root) {
     if (multiplierTimer > 0) flags.push('x2 ' + multiplierTimer.toFixed(1) + 's');
     if (ghostTimer > 0) flags.push('GHOST ' + ghostTimer.toFixed(1) + 's');
     if (chaosTimer > 0) flags.push('CHAOS ' + chaosTimer.toFixed(1) + 's');
+    if (doublePickupsLeft > 0) flags.push('2xPICK \xd7' + doublePickupsLeft);
+    if (comboSavePending) flags.push('SAVE \u2713');
     return 'HEAT ' + pct + '%' + (flags.length ? ' • ' + flags.join(' • ') : '');
   }
 
@@ -295,6 +299,8 @@ export function bootstrapSnake(root) {
     chaosTimer = 0;
     chaosJitter = 0;
     gridFlickerTimer = 0;
+    doublePickupsLeft = 0;
+    comboSavePending = false;
     particles = [];
     floatingTexts = [];
     shakeTime = 0;
@@ -309,20 +315,40 @@ export function bootstrapSnake(root) {
     updateHud();
   }
 
-  function onFoodEatenAsync() {
-    // Bonus API expects a "streak" field; SnakeRun maps combo chain to that field.
-    return rollHiddenBonus({ score: score, streak: comboCount, game: GAME_ID }).then(function (bonus) {
-      if (!bonus) return;
-      var awarded = (bonus.rewards && bonus.rewards.arcade_points) ? bonus.rewards.arcade_points : 0;
-      if (!awarded) return;
-      score += awarded;
-      setBestMaybe();
-      showBonusPopup(bonus);
-      updateHud();
-      spawnFloatingText('BONUS +' + awarded, W * 0.5, H * 0.18, '#9de7ff', 1.2);
-    }).catch(function (err) {
-      console.warn('[snake] Bonus roll failed:', err);
-    });
+  // Probabilistic gameplay-modifier bonus — no fake score injection.
+  // Every modifier affects actual play: pickup value, speed, ghost phase, or streak survival.
+  var BONUS_CHANCE_BASE = 0.18;
+  var BONUS_CHANCE_COMBO_STEP = 0.04;
+  var BONUS_CHANCE_CAP = 0.45;
+
+  function rollGameplayBonus() {
+    var chance = Math.min(BONUS_CHANCE_CAP, BONUS_CHANCE_BASE + comboCount * BONUS_CHANCE_COMBO_STEP);
+    if (Math.random() > chance) return;
+
+    var roll = Math.random();
+    if (roll < 0.28) {
+      // Double food value for the next 1–3 real pickups.
+      var extra = 1 + Math.floor(Math.random() * 3);
+      doublePickupsLeft = Math.max(doublePickupsLeft, extra);
+      spawnFloatingText('2x NEXT ' + doublePickupsLeft, W * 0.5, H * 0.18, '#9de7ff', 1.1);
+    } else if (roll < 0.50) {
+      // Bonus speed window — pick up more food while it lasts.
+      speedBoostTimer = Math.max(speedBoostTimer, specialFoods.speed.durationSec * 0.7);
+      spawnFloatingText('BONUS BOOST', W * 0.5, H * 0.18, '#76fff0', 1.1);
+    } else if (roll < 0.68) {
+      // Extend the active multiplier window (or seed a short one).
+      multiplierTimer = Math.max(multiplierTimer + specialFoods.multiplier.durationSec * 0.5,
+        specialFoods.multiplier.durationSec * 0.5);
+      spawnFloatingText('x2 EXTENDED', W * 0.5, H * 0.18, '#ff8ce3', 1.1);
+    } else if (roll < 0.84) {
+      // One-time combo save — next expiry resets to 1 instead of 0.
+      comboSavePending = true;
+      spawnFloatingText('SAVE ARMED', W * 0.5, H * 0.18, '#ffe08e', 1.1);
+    } else {
+      // Brief ghost phase — body-collision bypass tied to real survival.
+      ghostTimer = Math.max(ghostTimer, specialFoods.ghost.durationSec * 0.5);
+      spawnFloatingText('PHASE BONUS', W * 0.5, H * 0.18, '#baabff', 1.1);
+    }
   }
 
   function getRandomPerpendicularDirection(direction) {
@@ -373,7 +399,9 @@ export function bootstrapSnake(root) {
     var lengthMul = getLengthMultiplier();
     var effectMul = getEffectMultiplier();
     var heatMul = 1 + recalcHeat() * 0.35;
-    var gain = Math.max(1, Math.round(food.points * comboMul * lengthMul * effectMul * heatMul));
+    var doubleMul = doublePickupsLeft > 0 ? 2 : 1;
+    if (doublePickupsLeft > 0) doublePickupsLeft -= 1;
+    var gain = Math.max(1, Math.round(food.points * comboMul * lengthMul * effectMul * heatMul * doubleMul));
     score += gain;
 
     if (comboCount >= 3) playGameSound('snake-combo');
@@ -389,7 +417,7 @@ export function bootstrapSnake(root) {
     setBestMaybe();
     food = spawnFood();
     updateHud();
-    onFoodEatenAsync();
+    rollGameplayBonus();
   }
 
   function setDirection(x, y) {
@@ -494,7 +522,15 @@ export function bootstrapSnake(root) {
   function updateGameplayTimers(dt) {
     if (comboTimer > 0) {
       comboTimer = Math.max(0, comboTimer - dt);
-      if (comboTimer <= 0 && comboCount > 0) comboCount = 0;
+      if (comboTimer <= 0 && comboCount > 0) {
+        if (comboSavePending) {
+          comboSavePending = false;
+          comboCount = 1;
+          spawnFloatingText('STREAK SAVED', W * 0.5, H * 0.25, '#ffe08e', 1.0);
+        } else {
+          comboCount = 0;
+        }
+      }
     }
     if (speedBoostTimer > 0) speedBoostTimer = Math.max(0, speedBoostTimer - dt);
     if (multiplierTimer > 0) multiplierTimer = Math.max(0, multiplierTimer - dt);
