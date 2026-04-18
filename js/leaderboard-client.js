@@ -1,4 +1,5 @@
 import { ArcadeMeta } from '/js/arcade-meta-system.js';
+import '/js/arcade-meta-ui.js';
 
 // Deployed Cloudflare Worker URL for the shared arcade leaderboard.
 // Update this constant when the worker is published.

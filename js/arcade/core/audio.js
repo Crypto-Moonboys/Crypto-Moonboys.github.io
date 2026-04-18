@@ -39,6 +39,17 @@ const SOUND_LIBRARY = {
     { type: 'sawtooth', freqStart: 300, freqEnd: 160, duration: 0.24, volume: 0.042, delay: 0 },
     { type: 'triangle', freqStart: 240, freqEnd: 120, duration: 0.22, volume: 0.035, delay: 0.03 },
   ]},
+  'meta-quest-complete': { kind: 'chord', tones: [
+    { type: 'sine',     freqStart: 660,  freqEnd: 660,  duration: 0.16, volume: 0.05,  delay: 0.00 },
+    { type: 'triangle', freqStart: 880,  freqEnd: 880,  duration: 0.16, volume: 0.045, delay: 0.03 },
+    { type: 'sine',     freqStart: 1180, freqEnd: 1180, duration: 0.18, volume: 0.04,  delay: 0.06 },
+  ]},
+  'meta-streak-up':      { kind: 'tone',  type: 'triangle', freqStart: 520, freqEnd: 1040, duration: 0.11, volume: 0.046 },
+  'meta-event-trigger':  { kind: 'chord', tones: [
+    { type: 'sawtooth', freqStart: 420, freqEnd: 620, duration: 0.13, volume: 0.04, delay: 0.00 },
+    { type: 'square',   freqStart: 720, freqEnd: 980, duration: 0.11, volume: 0.03, delay: 0.02 },
+  ]},
+  'meta-near-miss':      { kind: 'tone',  type: 'square',   freqStart: 360, freqEnd: 330, duration: 0.08, volume: 0.03  },
 };
 
 // Keep a defensive default here so module-driven game pages remain safe even if

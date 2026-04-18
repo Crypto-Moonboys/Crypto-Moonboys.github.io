@@ -597,8 +597,20 @@ function reset() {
   return state;
 }
 
+function triggerLiveEvent(context = {}) {
+  if (typeof window === 'undefined') return { triggered: false, reason: 'no_window' };
+  const trigger = window.__arcadeMetaTriggerLiveEvent;
+  if (typeof trigger !== 'function') return { triggered: false, reason: 'live_ui_unavailable' };
+  try {
+    return trigger(context || {});
+  } catch (err) {
+    return { triggered: false, reason: 'live_event_error', error: String(err?.message || err) };
+  }
+}
+
 const ArcadeMeta = {
   trackGameResult,
+  triggerLiveEvent,
   configure,
   getState,
   reset,
