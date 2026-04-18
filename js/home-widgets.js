@@ -20,6 +20,12 @@
   var BASE     = cfg.BASE_URL || null;
   var FEATURES = cfg.FEATURES || {};
 
+  function emitTron(type, data) {
+    if (typeof window === 'undefined' || typeof window.dispatchEvent !== 'function') return;
+    window.dispatchEvent(new CustomEvent('tron:' + type, { detail: data || {} }));
+    window.dispatchEvent(new CustomEvent('tron:event', { detail: { type: type, data: data || {} } }));
+  }
+
   // ── HTML escape (prevents XSS when API data is rendered via innerHTML) ──
 
   function esc(str) {
@@ -82,6 +88,10 @@
       .then(function (r) { return r.ok ? r.json() : null; })
       .then(function (data) {
         if (!data) { el.innerHTML = '<div class="widget-error">SAM status unavailable</div>'; return; }
+        emitTron('sam', {
+          source: 'home-widgets',
+          message: data.message || 'SAM status updated'
+        });
         el.innerHTML =
           '<div class="sam-status-inner">' +
             '<div class="sam-status-icon" aria-hidden="true">🤖</div>' +
@@ -119,6 +129,11 @@
           el.innerHTML = '<div class="feed-empty">No activity yet — be the first! ⚡️</div>';
           return;
         }
+        emitTron('wakeup', {
+          source: 'home-widgets',
+          message: 'Live feed pulse detected.',
+          items: data.items.length
+        });
         el.innerHTML = data.items.map(function (item) {
           return '<div class="feed-item">' +
             '<span class="feed-icon" aria-hidden="true">' + esc(item.icon || '⚡️') + '</span>' +
@@ -156,6 +171,10 @@
           el.innerHTML = '<div class="leaderboard-empty">No entries yet</div>';
           return;
         }
+        emitTron('leaderboard', {
+          source: 'home-widgets',
+          count: data.entries.length
+        });
         el.innerHTML = data.entries.map(function (e, i) {
           return '<div class="lb-row">' +
             '<span class="lb-rank">' + (i + 1) + '</span>' +

@@ -9,6 +9,12 @@ const PRODUCTION_LEADERBOARD_URL = "https://moonboys-leaderboard.sercullen.worke
 // localStorage key shared with identity-gate.js
 const TG_ID_KEY = "moonboys_tg_id";
 
+function emitTron(type, data = {}) {
+  if (typeof window === "undefined" || typeof window.dispatchEvent !== "function") return;
+  window.dispatchEvent(new CustomEvent(`tron:${type}`, { detail: data }));
+  window.dispatchEvent(new CustomEvent("tron:event", { detail: { type, data } }));
+}
+
 function getApiUrl() {
   if (typeof window !== "undefined" && window.LEADERBOARD_API_URL) {
     return String(window.LEADERBOARD_API_URL).replace(/\/$/, "");
@@ -96,6 +102,7 @@ export async function submitScore(player, score, game = "global") {
         }
       } else {
         shouldSyncMeta = true;
+        emitTron("score", { game, score, player: resolvedPlayer, source: "leaderboard-client" });
       }
     } catch (err) {
       console.error("[leaderboard-client] Score submission failed:", err);
@@ -155,7 +162,11 @@ export async function fetchLeaderboard(game = "global", options = {}) {
   try {
     const res = await fetch(`${api}?game=${encodeURIComponent(game)}&mode=${encodeURIComponent(mode)}`);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    return await res.json();
+    const data = await res.json();
+    if (Array.isArray(data) && data.length) {
+      emitTron("leaderboard", { game, mode, count: data.length, source: "leaderboard-client" });
+    }
+    return data;
   } catch (err) {
     console.error("[leaderboard-client] Leaderboard fetch failed:", err);
     return [];

@@ -7,6 +7,12 @@
 (function () {
   'use strict';
 
+  function emitTron(type, data) {
+    if (typeof window === 'undefined' || typeof window.dispatchEvent !== 'function') return;
+    window.dispatchEvent(new CustomEvent('tron:' + type, { detail: data || {} }));
+    window.dispatchEvent(new CustomEvent('tron:event', { detail: { type: type, data: data || {} } }));
+  }
+
   /* ── Data fetch helpers ──────────────────────────────── */
 
   async function fetchJSON(url) {
@@ -481,6 +487,11 @@
     renderFocusPanel(entityMap, wikiIndex);
     renderActivityPanel(entityMap, wikiIndex);
     buildGraph(entityMap);
+    emitTron('sam', {
+      source: 'sam-dashboard',
+      entities: Array.isArray(entityMap) ? entityMap.length : 0,
+      pages: Array.isArray(wikiIndex) ? wikiIndex.length : 0
+    });
 
     // Update header timestamp
     const tsEl = document.getElementById('sam-ts');
