@@ -95,7 +95,9 @@ export function createGameState(bundle) {
       moveTarget: null,
     },
     remotePlayers: [],
-    camera: { x: 0, y: 0, zoom: 1, zoomIndex: 1 },
+    camera: {
+      x: 0, y: 0, zoom: 1, zoomIndex: 1, panX: 0, panY: 0,
+    },
     phase: 'Day',
     captureTimer: 0,
     // Visual-only capture progress shown to the player while they hold a district at Night.
@@ -116,6 +118,15 @@ export function createGameState(bundle) {
       hoverTile: null,
       selectedTile: null,
       hoverNpcId: '',
+      dragging: false,
+      pointerDown: false,
+      dragMoved: false,
+      dragStartX: 0,
+      dragStartY: 0,
+      cameraStartX: 0,
+      cameraStartY: 0,
+      suppressClick: false,
+      suppressDblClickUntil: 0,
     },
     sam: {
       phases: bundle.samPhases.phases || [],
