@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-04-18T22:37:04.595Z",
+  "generatedAt": "2026-04-18T23:36:35.401Z",
   "mode": "live-ai",
   "sourceHealth": {
     "coingecko-global": "ok",
@@ -8,71 +8,87 @@
     "fear-greed": "ok",
     "openai": "ok"
   },
-  "signalCount": 4,
+  "signalCount": 5,
   "signals": [
     {
-      "id": "signal-1776551824595-1",
+      "id": "signal-1776555395401-1",
       "lane": "world",
       "priority": 4,
-      "ttlMinutes": 60,
-      "npcLine": "Crypto tides sink deeper—the market's pulse weakens in this dark netwave.",
-      "questPulse": "Stabilize rogue crypto nodes amid falling global caps.",
-      "worldFeed": "Market cap bleeds, shadow traders vanish into fear's grip.",
-      "clueEvent": "Whispers of 'SIREN' surge spike in abandoned blocks.",
+      "ttlMinutes": 120,
+      "npcLine": "Markets bleed; whispers of a shadow crash echo through neon alleys.",
+      "questPulse": "Trace the source of the market's dark pulse before it consumes more.",
+      "worldFeed": "Cryptos tumble as fear poisons the grid; trust erodes fast.",
+      "clueEvent": "Data blackout hits trading hubs; suspicious algorithms go silent.",
       "tags": [
-        "market",
+        "marketcrash",
         "fear",
-        "crypto"
+        "cryptocurrency"
       ],
-      "expiresAt": "2026-04-18T23:37:04.595Z"
+      "expiresAt": "2026-04-19T01:36:35.401Z"
     },
     {
-      "id": "signal-1776551824595-2",
+      "id": "signal-1776555395401-2",
       "lane": "ops",
       "priority": 3,
-      "ttlMinutes": 45,
-      "npcLine": "RAVE and AAVE codes flicker; something's stirring beneath the data streams.",
-      "questPulse": "Extract intel from trending crypto fractures before trace decay.",
-      "worldFeed": "Signals show new clusters rising amid chaotic falls.",
-      "clueEvent": "Glitching reports on 'ZRO' token movements detected in darknet relays.",
-      "tags": [
-        "crypto",
-        "intel",
-        "data"
-      ],
-      "expiresAt": "2026-04-18T23:22:04.595Z"
-    },
-    {
-      "id": "signal-1776551824595-3",
-      "lane": "clue",
-      "priority": 5,
-      "ttlMinutes": 30,
-      "npcLine": "Asteroid nodes blinking—possible entry to forbidden vaults.",
-      "questPulse": "Decode encrypted pulses from 'ASTEROID' to find hidden caches.",
-      "worldFeed": "Crypto fear spikes as undefined threats loom in market shadows.",
-      "clueEvent": "'SIREN' token mentions rise abruptly in black-market chatter.",
-      "tags": [
-        "intel",
-        "clue",
-        "hidden"
-      ],
-      "expiresAt": "2026-04-18T23:07:04.595Z"
-    },
-    {
-      "id": "signal-1776551824595-4",
-      "lane": "quest",
-      "priority": 2,
       "ttlMinutes": 90,
-      "npcLine": "Decrypt signs before the market crash kills all traces.",
-      "questPulse": "Trace market cap decline to salvage lost credits.",
-      "worldFeed": "Fear dominates channels; survivors trade whispers like currency.",
-      "clueEvent": "Fragile links appear in fading 'AAVE' network zones.",
+      "npcLine": "RAVE signals drop to zero—intel warns of a ghost virus in the chain.",
+      "questPulse": "Infiltrate the node holding RAVE’s core to extract corrupted data.",
+      "worldFeed": "Networks detect zero activity on RAVE; anomaly spikes suspicion.",
+      "clueEvent": "Faulty transactions cascade; silent alarms trip in dark net arcs.",
       "tags": [
-        "risk",
-        "decryption",
-        "survival"
+        "rave",
+        "ghostvirus",
+        "networkanomaly"
       ],
-      "expiresAt": "2026-04-19T00:07:04.595Z"
+      "expiresAt": "2026-04-19T01:06:35.401Z"
+    },
+    {
+      "id": "signal-1776555395401-3",
+      "lane": "clue",
+      "priority": 2,
+      "ttlMinutes": 70,
+      "npcLine": "AAVE's shadow stirs—low but growing, a quiet upsurge in whispers.",
+      "questPulse": "Decrypt AAVE code fragments found in rogue data caches.",
+      "worldFeed": "Subtle shifts signal a potential comeback or new exploit in AAVE.",
+      "clueEvent": "Hidden packets circulate in low-visibility loops; trace the source.",
+      "tags": [
+        "aave",
+        "dataleak",
+        "recovery"
+      ],
+      "expiresAt": "2026-04-19T00:46:35.401Z"
+    },
+    {
+      "id": "signal-1776555395401-4",
+      "lane": "quest",
+      "priority": 3,
+      "ttlMinutes": 60,
+      "npcLine": "PENGU nodes hum beneath icy veils; a challenge hides in frostbite.",
+      "questPulse": "Explore PENGU outposts for relics and encrypted boot sectors.",
+      "worldFeed": "Unstable sigils surface in distant PENGU sectors amid rising dread.",
+      "clueEvent": "Cold signals pulse on frozen circuits, hinting at hidden caches.",
+      "tags": [
+        "pengu",
+        "hiddencaches",
+        "pulse"
+      ],
+      "expiresAt": "2026-04-19T00:36:35.401Z"
+    },
+    {
+      "id": "signal-1776555395401-5",
+      "lane": "npc",
+      "priority": 5,
+      "ttlMinutes": 100,
+      "npcLine": "SIREN's call distorts; shadow factions race to claim its fading echo.",
+      "questPulse": "Negotiate with rogue agents vying to control SIREN's last broadcast.",
+      "worldFeed": "Signal decay breeds conflict—SIREN's influence wanes amid chaos.",
+      "clueEvent": "Fragmented broadcasts leak secrets; betrayals ripple through comms.",
+      "tags": [
+        "siren",
+        "signaldecay",
+        "factionwar"
+      ],
+      "expiresAt": "2026-04-19T01:16:35.401Z"
     }
   ]
 }
