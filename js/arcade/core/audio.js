@@ -23,6 +23,22 @@ const SOUND_LIBRARY = {
   'pac-chain-power':       { kind: 'tone', type: 'sawtooth', freqStart: 320, freqEnd: 880, duration: 0.12,  volume: 0.05  },
   'pac-chain-ghost-eaten': { kind: 'tone', type: 'triangle', freqStart: 960, freqEnd: 520, duration: 0.10,  volume: 0.04  },
   'pac-chain-hit':         { kind: 'tone', type: 'sawtooth', freqStart: 180, freqEnd: 70,  duration: 0.16,  volume: 0.05  },
+  'snake-start':        { kind: 'tone',  type: 'triangle', freqStart: 420, freqEnd: 840, duration: 0.10, volume: 0.045 },
+  'snake-turn':         { kind: 'tone',  type: 'square',   freqStart: 580, freqEnd: 520, duration: 0.03, volume: 0.024 },
+  'snake-eat':          { kind: 'tone',  type: 'triangle', freqStart: 820, freqEnd: 1160, duration: 0.06, volume: 0.036 },
+  'snake-combo':        { kind: 'chord', tones: [
+    { type: 'sine', freqStart: 760,  freqEnd: 760,  duration: 0.11, volume: 0.042, delay: 0 },
+    { type: 'sine', freqStart: 980,  freqEnd: 980,  duration: 0.11, volume: 0.036, delay: 0.02 },
+    { type: 'sine', freqStart: 1240, freqEnd: 1240, duration: 0.11, volume: 0.03,  delay: 0.04 },
+  ]},
+  'snake-boost':        { kind: 'tone',  type: 'sawtooth', freqStart: 290, freqEnd: 930, duration: 0.11, volume: 0.042 },
+  'snake-multiplier':   { kind: 'tone',  type: 'triangle', freqStart: 520, freqEnd: 1220, duration: 0.12, volume: 0.044 },
+  'snake-ghost':        { kind: 'tone',  type: 'sine',     freqStart: 460, freqEnd: 290, duration: 0.18, volume: 0.034 },
+  'snake-chaos':        { kind: 'tone',  type: 'sawtooth', freqStart: 840, freqEnd: 120, duration: 0.18, volume: 0.048 },
+  'snake-game-over':    { kind: 'chord', tones: [
+    { type: 'sawtooth', freqStart: 300, freqEnd: 160, duration: 0.24, volume: 0.042, delay: 0 },
+    { type: 'triangle', freqStart: 240, freqEnd: 120, duration: 0.22, volume: 0.035, delay: 0.03 },
+  ]},
 };
 
 // Keep a defensive default here so module-driven game pages remain safe even if

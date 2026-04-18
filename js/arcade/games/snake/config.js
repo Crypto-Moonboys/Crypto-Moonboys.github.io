@@ -14,15 +14,24 @@ export var SNAKE_CONFIG = Object.freeze({
   /** Number of grid cells along each axis. */
   grid: 24,
 
-  /**
-   * Speed tiers: evaluated highest-first; first match whose minScore
-   * is ≤ current score wins.  Sorted descending by minScore.
-   */
-  speedTiers: Object.freeze([
-    { minScore: 350, ms: 75,  label: 'Ludicrous' },
-    { minScore: 200, ms: 90,  label: 'Turbo'     },
-    { minScore: 100, ms: 100, label: 'Faster'    },
-    { minScore: 50,  ms: 110, label: 'Fast'      },
-    { minScore: 0,   ms: 120, label: 'Normal'    },
-  ]),
+  movement: Object.freeze({
+    baseStepMs: 135,
+    minStepMs: 58,
+    comboWindowSec: 2.1,
+  }),
+
+  effects: Object.freeze({
+    maxParticles: 520,
+    maxFloatingTexts: 14,
+    turnShake: 2.2,
+    collisionShake: 7.5,
+  }),
+
+  specialFoods: Object.freeze({
+    speed: Object.freeze({ durationSec: 4.2,  weight: 0.10, points: 16 }),
+    multiplier: Object.freeze({ durationSec: 6.0, weight: 0.09, points: 20 }),
+    ghost: Object.freeze({ durationSec: 4.8, weight: 0.08, points: 18 }),
+    chaos: Object.freeze({ durationSec: 3.6, weight: 0.07, points: 22 }),
+    normal: Object.freeze({ weight: 0.66, points: 10 }),
+  }),
 });
