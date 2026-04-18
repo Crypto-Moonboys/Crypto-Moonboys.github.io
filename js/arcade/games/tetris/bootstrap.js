@@ -16,6 +16,10 @@ export function bootstrapTetris(root) {
   const CELL = 30;
   const MAX_PARTICLES = 340;
   const MAX_FLOATING = 50;
+  const MAX_LEVEL_SHAKE_BOOST = 2.2;
+  const LEVEL_SHAKE_GAIN_PER_LEVEL = 0.08;
+  const BACK_TO_BACK_BONUS_MULTIPLIER = 0.45;
+  const BACK_TO_BACK_CHAIN_STEP_BONUS = 35;
 
   const canvas = document.getElementById('tetCanvas');
   if (!canvas) throw new Error('Missing #tetCanvas for Tetris Block Topia');
@@ -245,6 +249,14 @@ export function bootstrapTetris(root) {
     return g;
   }
 
+  function isRunActive() {
+    return running && !paused && !gameOver;
+  }
+
+  function isRunSessionStarted() {
+    return running && !gameOver;
+  }
+
   function drawCell(col, row, color, alpha = 1, scale = 1, dctx = ctx) {
     const x = col * CELL;
     const y = row * CELL;
@@ -293,7 +305,7 @@ export function bootstrapTetris(root) {
   }
 
   function addShake(baseIntensity, duration) {
-    const levelBoost = Math.min(2.2, 1 + (level - 1) * 0.08);
+    const levelBoost = Math.min(MAX_LEVEL_SHAKE_BOOST, 1 + (level - 1) * LEVEL_SHAKE_GAIN_PER_LEVEL);
     effects.shakeIntensity = Math.max(effects.shakeIntensity, baseIntensity * levelBoost);
     effects.shakeTime = Math.max(effects.shakeTime, duration);
   }
@@ -341,17 +353,20 @@ export function bootstrapTetris(root) {
     comboMultiplier = Math.min(4, Math.max(1, comboChain));
 
     let backToBackBonus = 0;
-    const isB2BType = cleared >= 4;
-    if (isB2BType && lastWasB2BType) {
+    const isBackToBackType = cleared >= 4;
+    if (isBackToBackType && lastWasB2BType) {
       backToBackChain += 1;
-      backToBackBonus = Math.floor(baseLineScore * level * 0.45 + backToBackChain * 35);
+      backToBackBonus = Math.floor(
+        baseLineScore * level * BACK_TO_BACK_BONUS_MULTIPLIER +
+        backToBackChain * BACK_TO_BACK_CHAIN_STEP_BONUS
+      );
       addFloatingText(`B2B +${backToBackBonus}`, canvas.width * 0.5, canvas.height * 0.32, '#ff4fd1', 1.05);
-    } else if (isB2BType) {
+    } else if (isBackToBackType) {
       backToBackChain = 1;
     } else {
       backToBackChain = 0;
     }
-    lastWasB2BType = isB2BType;
+    lastWasB2BType = isBackToBackType;
 
     const clearScore = baseLineScore * level * comboMultiplier;
     const total = clearScore + backToBackBonus;
@@ -431,10 +446,10 @@ export function bootstrapTetris(root) {
 
     for (const [r, c] of pieceCells(current)) {
       const nr = current.row + r;
-      const ncCol = current.col + c;
+      const nc = current.col + c;
       if (nr >= 0) {
-        board[nr][ncCol] = current.color;
-        pendingLockedCells.push({ row: nr, col: ncCol, color: current.color });
+        board[nr][nc] = current.color;
+        pendingLockedCells.push({ row: nr, col: nc, color: current.color });
       }
     }
 
@@ -732,7 +747,7 @@ export function bootstrapTetris(root) {
   }
 
   function updateGameplay(dt) {
-    if (!running || paused || gameOver) return;
+    if (!isRunActive()) return;
 
     if (pendingClearRows) {
       clearFxTimer -= dt;
@@ -858,7 +873,7 @@ export function bootstrapTetris(root) {
   function onKeyDown(e) {
     if (!keys[e.key]) {
       keys[e.key] = true;
-      if (!running || paused || gameOver) return;
+      if (!isRunActive()) return;
 
       if (e.key === 'ArrowLeft' || e.key === 'a') {
         tryMove(0, -1);
@@ -909,7 +924,7 @@ export function bootstrapTetris(root) {
 
     if (startBtn) startBtn.onclick = () => start();
     if (pauseBtn) pauseBtn.onclick = () => {
-      if (!running || gameOver) return;
+      if (!isRunSessionStarted()) return;
       paused = !paused;
       if (paused) stopAllSounds();
       updateHud();
@@ -932,14 +947,14 @@ export function bootstrapTetris(root) {
   }
 
   function pause() {
-    if (!running || gameOver) return;
+    if (!isRunSessionStarted()) return;
     paused = true;
     stopAllSounds();
     updateHud();
   }
 
   function resume() {
-    if (!running || gameOver) return;
+    if (!isRunSessionStarted()) return;
     paused = false;
     updateHud();
   }
