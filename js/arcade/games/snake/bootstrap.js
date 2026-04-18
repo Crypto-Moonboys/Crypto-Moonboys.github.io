@@ -18,6 +18,26 @@ var FOOD_VISUALS = Object.freeze({
   chaos:      { color: '#ff5f5f', halo: '#ffd3d3', label: 'CHAOS',     points: 22, icon: '☢' },
 });
 
+var MAX_FOOD_SPAWN_ATTEMPTS = 600;
+var BACKGROUND_NOISE_POINTS = 85;
+var EYE_DIRECTION_OFFSET = 0.2;
+var EYE_PERPENDICULAR_OFFSET = 0.23;
+var MAX_FRAME_DELTA_SEC = 0.06;
+var COMBO_STEP = 0.24;
+var COMBO_CAP_STEPS = 12;
+var LENGTH_BASE_SEGMENTS = 3;
+var LENGTH_STEP = 0.035;
+var LENGTH_CAP = 1.6;
+var HEAT_SCORE_SCALE = 1800;
+var HEAT_TIME_SCALE = 78;
+var HEAT_LENGTH_SCALE = 60;
+var HEAT_COMBO_STEP = 0.03;
+var HEAT_COMBO_CAP = 0.25;
+var HEAT_STEP_REDUCTION = 42;
+var HEAT_LENGTH_MS_CAP = 24;
+var HEAT_LENGTH_MS_STEP = 0.35;
+var MAX_FRAME_CATCHUP_STEPS = 8;
+
 export function bootstrapSnake(root) {
   var canvas = document.getElementById('snakeCanvas');
   var ctx = canvas.getContext('2d');
@@ -47,7 +67,7 @@ export function bootstrapSnake(root) {
   var timeAlive = 0;
   var comboCount = 0;
   var comboTimer = 0;
-  var lastEatStamp = -999;
+  var lastEatTimeSec = -(SNAKE_CONFIG.movement.comboWindowSec + 1);
 
   var snake = [];
   var prevSnake = [];
@@ -101,11 +121,11 @@ export function bootstrapSnake(root) {
   }
 
   function getComboMultiplier() {
-    return 1 + Math.min(12, Math.max(0, comboCount - 1)) * 0.24;
+    return 1 + Math.min(COMBO_CAP_STEPS, Math.max(0, comboCount - 1)) * COMBO_STEP;
   }
 
   function getLengthMultiplier() {
-    return 1 + Math.min(1.6, Math.max(0, snake.length - 3) * 0.035);
+    return 1 + Math.min(LENGTH_CAP, Math.max(0, snake.length - LENGTH_BASE_SEGMENTS) * LENGTH_STEP);
   }
 
   function getEffectMultiplier() {
@@ -113,17 +133,17 @@ export function bootstrapSnake(root) {
   }
 
   function recalcHeat() {
-    var scoreFactor = clamp(score / 1800, 0, 0.85);
-    var timeFactor = clamp(timeAlive / 78, 0, 0.7);
-    var lengthFactor = clamp((snake.length - 3) / 60, 0, 0.55);
-    var comboFactor = clamp(comboCount * 0.03, 0, 0.25);
+    var scoreFactor = clamp(score / HEAT_SCORE_SCALE, 0, 0.85);
+    var timeFactor = clamp(timeAlive / HEAT_TIME_SCALE, 0, 0.7);
+    var lengthFactor = clamp((snake.length - LENGTH_BASE_SEGMENTS) / HEAT_LENGTH_SCALE, 0, 0.55);
+    var comboFactor = clamp(comboCount * HEAT_COMBO_STEP, 0, HEAT_COMBO_CAP);
     heat = clamp(scoreFactor + timeFactor + lengthFactor + comboFactor, 0, 1.6);
     return heat;
   }
 
   function getStepMs() {
     var h = recalcHeat();
-    var ms = movement.baseStepMs - h * 42 - Math.min(24, Math.max(0, snake.length - 3) * 0.35);
+    var ms = movement.baseStepMs - h * HEAT_STEP_REDUCTION - Math.min(HEAT_LENGTH_MS_CAP, Math.max(0, snake.length - LENGTH_BASE_SEGMENTS) * HEAT_LENGTH_MS_STEP);
     if (speedBoostTimer > 0) ms *= 0.72;
     if (chaosTimer > 0) ms *= 0.9 + chaosJitter;
     return clamp(ms, movement.minStepMs, movement.baseStepMs);
@@ -228,7 +248,7 @@ export function bootstrapSnake(root) {
     var visual = FOOD_VISUALS[type] || FOOD_VISUALS.normal;
     var points = (specialFoods[type] && specialFoods[type].points) || visual.points;
     var attempts = 0;
-    while (attempts < 600) {
+    while (attempts < MAX_FOOD_SPAWN_ATTEMPTS) {
       attempts += 1;
       var candidate = {
         x: Math.floor(Math.random() * grid),
@@ -268,7 +288,7 @@ export function bootstrapSnake(root) {
     heat = 0;
     comboCount = 0;
     comboTimer = 0;
-    lastEatStamp = -999;
+    lastEatTimeSec = -(movement.comboWindowSec + 1);
     speedBoostTimer = 0;
     multiplierTimer = 0;
     ghostTimer = 0;
@@ -290,6 +310,7 @@ export function bootstrapSnake(root) {
   }
 
   function onFoodEatenAsync() {
+    // Bonus API expects a "streak" field; SnakeRun maps combo chain to that field.
     return rollHiddenBonus({ score: score, streak: comboCount, game: GAME_ID }).then(function (bonus) {
       if (!bonus) return;
       var awarded = (bonus.rewards && bonus.rewards.arcade_points) ? bonus.rewards.arcade_points : 0;
@@ -302,6 +323,11 @@ export function bootstrapSnake(root) {
     }).catch(function (err) {
       console.warn('[snake] Bonus roll failed:', err);
     });
+  }
+
+  function getRandomPerpendicularDirection(direction) {
+    if (direction.x !== 0) return { x: 0, y: Math.random() > 0.5 ? 1 : -1 };
+    return { x: Math.random() > 0.5 ? 1 : -1, y: 0 };
   }
 
   function applyFoodEffect(type) {
@@ -330,10 +356,7 @@ export function bootstrapSnake(root) {
       triggerShake(effects.turnShake * 1.8, 0.22);
       playGameSound('snake-chaos');
       spawnFloatingText('CHAOS FIELD', W * 0.5, H * 0.22, '#ff9c9c', 1.05);
-      if (Math.random() > 0.3) {
-        if (dir.x !== 0) nextDir = { x: 0, y: Math.random() > 0.5 ? 1 : -1 };
-        else nextDir = { x: Math.random() > 0.5 ? 1 : -1, y: 0 };
-      }
+      if (Math.random() > 0.3) nextDir = getRandomPerpendicularDirection(dir);
       return;
     }
     playGameSound('snake-eat');
@@ -341,10 +364,10 @@ export function bootstrapSnake(root) {
 
   function eatFood() {
     var now = timeAlive;
-    if (now - lastEatStamp <= movement.comboWindowSec) comboCount += 1;
+    if (now - lastEatTimeSec <= movement.comboWindowSec) comboCount += 1;
     else comboCount = 1;
     comboTimer = movement.comboWindowSec;
-    lastEatStamp = now;
+    lastEatTimeSec = now;
 
     var comboMul = getComboMultiplier();
     var lengthMul = getLengthMultiplier();
@@ -377,6 +400,11 @@ export function bootstrapSnake(root) {
     nextDir = { x: x, y: y };
     triggerShake(effects.turnShake, 0.05);
     playGameSound('snake-turn');
+  }
+
+  function resolveInputDirection(x, y) {
+    if (chaosTimer > 0) return { x: -x, y: -y };
+    return { x: x, y: y };
   }
 
   function isSelfCollision(head, willEat) {
@@ -490,7 +518,7 @@ export function bootstrapSnake(root) {
       ctx.fillStyle = 'rgba(120,245,255,' + scanAlpha.toFixed(3) + ')';
       ctx.fillRect(wobble, y, W, 1);
     }
-    for (var n = 0; n < 85; n++) {
+    for (var n = 0; n < BACKGROUND_NOISE_POINTS; n++) {
       var nx = Math.random() * W;
       var ny = Math.random() * H;
       ctx.fillStyle = Math.random() > 0.5 ? 'rgba(255,255,255,0.03)' : 'rgba(255,89,214,0.025)';
@@ -554,6 +582,13 @@ export function bootstrapSnake(root) {
     ctx.fillText(food.icon || '●', c.x, c.y + 0.5);
   }
 
+  function calculateEyeOffset(direction, radius) {
+    return {
+      x: direction.x * radius * EYE_DIRECTION_OFFSET + (direction.y !== 0 ? radius * EYE_PERPENDICULAR_OFFSET : 0),
+      y: direction.y * radius * EYE_DIRECTION_OFFSET + (direction.x !== 0 ? radius * EYE_PERPENDICULAR_OFFSET : 0),
+    };
+  }
+
   function drawSnake(alpha) {
     if (!snake.length) return;
     var eased = smoothstep(clamp(alpha, 0, 1));
@@ -602,11 +637,10 @@ export function bootstrapSnake(root) {
       ctx.fill();
       if (j === 0) {
         ctx.fillStyle = '#f4fcff';
-        var eyeOffsetX = dir.x * radius * 0.2 + (dir.y !== 0 ? radius * 0.23 : 0);
-        var eyeOffsetY = dir.y * radius * 0.2 + (dir.x !== 0 ? radius * 0.23 : 0);
+        var eyeOffset = calculateEyeOffset(dir, radius);
         ctx.beginPath();
-        ctx.arc(center.x - eyeOffsetX, center.y - eyeOffsetY, Math.max(1.2, radius * 0.14), 0, Math.PI * 2);
-        ctx.arc(center.x + eyeOffsetX, center.y + eyeOffsetY, Math.max(1.2, radius * 0.14), 0, Math.PI * 2);
+        ctx.arc(center.x - eyeOffset.x, center.y - eyeOffset.y, Math.max(1.2, radius * 0.14), 0, Math.PI * 2);
+        ctx.arc(center.x + eyeOffset.x, center.y + eyeOffset.y, Math.max(1.2, radius * 0.14), 0, Math.PI * 2);
         ctx.fill();
       }
       ctx.restore();
@@ -692,7 +726,7 @@ export function bootstrapSnake(root) {
   function frame(ts) {
     if (!lastFrameSec) lastFrameSec = ts / 1000;
     var now = ts / 1000;
-    var dt = clamp(now - lastFrameSec, 0, 0.06);
+    var dt = clamp(now - lastFrameSec, 0, MAX_FRAME_DELTA_SEC);
     lastFrameSec = now;
 
     if (paused) {
@@ -709,11 +743,12 @@ export function bootstrapSnake(root) {
       updateGameplayTimers(dt);
       accumulatorMs += dt * 1000;
       var stepMs = getStepMs();
-      var maxSteps = 8;
-      while (accumulatorMs >= stepMs && maxSteps > 0 && running && !gameOver) {
-        accumulatorMs -= stepMs;
+      var frameStepMs = stepMs;
+      // Prevent spiral-of-death catch-up spikes when a frame stalls.
+      var maxSteps = MAX_FRAME_CATCHUP_STEPS;
+      while (accumulatorMs >= frameStepMs && maxSteps > 0 && running && !gameOver) {
+        accumulatorMs -= frameStepMs;
         stepGame();
-        stepMs = getStepMs();
         maxSteps -= 1;
       }
       updateHud();
@@ -742,23 +777,23 @@ export function bootstrapSnake(root) {
     var key = String(e.key || '').toLowerCase();
     if (key === 'arrowup' || key === 'w') {
       e.preventDefault();
-      if (chaosTimer > 0) setDirection(0, 1);
-      else setDirection(0, -1);
+      var up = resolveInputDirection(0, -1);
+      setDirection(up.x, up.y);
     }
     if (key === 'arrowdown' || key === 's') {
       e.preventDefault();
-      if (chaosTimer > 0) setDirection(0, -1);
-      else setDirection(0, 1);
+      var down = resolveInputDirection(0, 1);
+      setDirection(down.x, down.y);
     }
     if (key === 'arrowleft' || key === 'a') {
       e.preventDefault();
-      if (chaosTimer > 0) setDirection(1, 0);
-      else setDirection(-1, 0);
+      var left = resolveInputDirection(-1, 0);
+      setDirection(left.x, left.y);
     }
     if (key === 'arrowright' || key === 'd') {
       e.preventDefault();
-      if (chaosTimer > 0) setDirection(-1, 0);
-      else setDirection(1, 0);
+      var right = resolveInputDirection(1, 0);
+      setDirection(right.x, right.y);
     }
   }
 
