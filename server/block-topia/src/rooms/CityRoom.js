@@ -10,7 +10,7 @@ const ACTIVE_NPC_COUNT = 80;
 const CROWD_NPC_COUNT = 220;
 const SAM_PHASE_INTERVAL_MS = 30000;
 const DISTRICT_DRIFT_INTERVAL_MS = 1200;
-const WORLD_SNAPSHOT_INTERVAL_MS = 200;
+const WORLD_SNAPSHOT_INTERVAL_MS = 300;
 const DISTRICT_CAPTURE_THRESHOLD = 90;
 
 const WORLD_DISTRICTS = [
@@ -242,7 +242,7 @@ export class CityRoom extends Room {
     this.completedQuests.set(client.sessionId, new Set());
 
     this.handleDistrictChange(client.sessionId, player);
-    client.send('worldSnapshot', this.world);
+    client.send('worldSnapshot', this.buildLeanSnapshot());
 
     this.broadcast('system', {
       message: `${player.name} has entered Block Topia.`,

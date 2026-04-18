@@ -27,8 +27,10 @@ const ENTRY_DISMISS_DELAY_MS = 2400;
 const DISTRICT_CAPTURE_THRESHOLD = 90;
 const LOGIC_TICK_MS = 50;
 const NPC_SCAN_INTERVAL_MS = 150;
+const MAX_CLIENT_CROWD_NPCS = 80;
 const REMOTE_PLAYER_LERP_ALPHA = 0.18;
 const LIVE_REFRESH_INTERVAL_MS = 120000; // 2 minutes
+const QUEST_TICK_INTERVAL_MS = 250;
 const FEED_DEDUPE_TTL_MS = 5 * 60 * 1000;
 const MAX_FEED_CACHE_SIZE = 80;
 const CAMERA_ZOOM_PRESETS = [0.7, 1, 1.4];
@@ -67,11 +69,18 @@ async function boot() {
   let multiplayerConnected = false;
   let nearbyNpc = null;
   let lastNpcScan = performance.now();
+  let lastQuestTick = 0;
   let lastQuestDistrictId = state.player.districtId;
+  let lastHudDistrictId = '';
+  let lastHudDistrictControl = null;
+  let lastHudDistrictOwner = '';
+  let lastInteractPromptText = '';
+  let lastInteractPromptVisible = false;
   const seenFeed = new Map();
   const primaryFactionName = state.factions.primary?.name || 'Liberators';
   const secondaryFactionName = state.factions.secondary?.name || 'Wardens';
   const lore = state.lore?.legacy?.lore || {};
+  const districtStateById = new Map(state.districtState.map((district) => [district.id, district]));
 
   function clampZoom(value) {
     return Math.max(CAMERA_ZOOM_MIN, Math.min(CAMERA_ZOOM_MAX, value));
@@ -358,12 +367,16 @@ async function boot() {
     },
     onWorldSnapshot: (data) => {
       if (Array.isArray(data?.npcs)) {
-        // Server NPC positions become the lerp targets for npc-system.tick().
-        state.npcTargets = data.npcs;
+        let crowdCount = 0;
+        state.npcTargets = data.npcs.filter((npc) => {
+          if (npc.mode !== 'crowd') return true;
+          crowdCount += 1;
+          return crowdCount <= MAX_CLIENT_CROWD_NPCS;
+        });
       }
       if (Array.isArray(data?.districts)) {
         for (const incoming of data.districts) {
-          const district = state.districtState.find((item) => item.id === incoming.id);
+          const district = districtStateById.get(incoming.id);
           if (!district) continue;
           if (Number.isFinite(incoming.control)) {
             district.control = Math.max(0, Math.min(100, incoming.control));
@@ -423,7 +436,7 @@ async function boot() {
       memory.record('sam', samEvent);
     },
     onDistrictCaptureChanged: ({ districtId, control, owner }) => {
-      const district = state.districtState.find((item) => item.id === districtId);
+      const district = districtStateById.get(districtId);
       if (!district) return;
 
       const previousControl = district.control;
@@ -491,16 +504,25 @@ async function boot() {
     }
 
     state.player.nearbyNpcId = nearbyNpc?.id || '';
-    hud.setInteractPrompt(
-      nearbyNpc
-        ? `⚡ Press E · Talk to ${nearbyNpc.name} (${nearbyNpc.roleLabel || nearbyNpc.role})`
-        : '',
-      Boolean(nearbyNpc),
-    );
+    const interactText = nearbyNpc
+      ? `⚡ Press E · Talk to ${nearbyNpc.name} (${nearbyNpc.roleLabel || nearbyNpc.role})`
+      : '';
+    const interactVisible = Boolean(nearbyNpc);
+    if (
+      interactText !== lastInteractPromptText
+      || interactVisible !== lastInteractPromptVisible
+    ) {
+      hud.setInteractPrompt(interactText, interactVisible);
+      lastInteractPromptText = interactText;
+      lastInteractPromptVisible = interactVisible;
+    }
 
-    quests.tick(dt, {
-      onQuestPulse: (text) => hud.pushFeed(`🎯 ${text}`, 'quest'),
-    });
+    if (ts - lastQuestTick >= QUEST_TICK_INTERVAL_MS) {
+      quests.tick(dt, {
+        onQuestPulse: (text) => hud.pushFeed(`🎯 ${text}`, 'quest'),
+      });
+      lastQuestTick = ts;
+    }
     clues.tick(dt, {
       onCluePulse: (text) => hud.pushFeed(`🧩 ${text}`, 'quest'),
     });
@@ -540,11 +562,20 @@ async function boot() {
     // Update district HUD when player moves into a new district
     const district = state.districts.byId.get(state.player.districtId);
     if (district) {
-      hud.setDistrict(district.name);
-      const ds = state.districtState.find((d) => d.id === district.id);
+      const ds = districtStateById.get(district.id);
+      if (district.id !== lastHudDistrictId) {
+        hud.setDistrict(district.name);
+        lastHudDistrictId = district.id;
+      }
       if (ds) {
-        hud.setDistrictControl(ds.control);
-        hud.setDistrictOwner(ds.owner);
+        if (ds.control !== lastHudDistrictControl) {
+          hud.setDistrictControl(ds.control);
+          lastHudDistrictControl = ds.control;
+        }
+        if (ds.owner !== lastHudDistrictOwner) {
+          hud.setDistrictOwner(ds.owner);
+          lastHudDistrictOwner = ds.owner;
+        }
       }
       if (district.id !== lastQuestDistrictId) {
         lastQuestDistrictId = district.id;
