@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="160" height="170" viewBox="0 0 160 170" shape-rendering="crispEdges">
+  <polygon points="80,24 140,56 80,88 20,56" fill="#4b4f6f"/>
+  <polygon points="80,88 20,56 20,136 80,166" fill="#2f3554"/>
+  <polygon points="80,88 140,56 140,136 80,166" fill="#39405f"/>
+  <rect x="56" y="80" width="48" height="74" fill="#182038"/>
+  <g fill="#66f7ff">
+    <rect x="60" y="86" width="8" height="10"/><rect x="72" y="86" width="8" height="10"/><rect x="84" y="86" width="8" height="10"/><rect x="96" y="86" width="8" height="10"/>
+    <rect x="60" y="100" width="8" height="10"/><rect x="72" y="100" width="8" height="10"/><rect x="84" y="100" width="8" height="10"/><rect x="96" y="100" width="8" height="10"/>
+    <rect x="60" y="114" width="8" height="10"/><rect x="72" y="114" width="8" height="10"/><rect x="84" y="114" width="8" height="10"/><rect x="96" y="114" width="8" height="10"/>
+  </g>
+</svg>

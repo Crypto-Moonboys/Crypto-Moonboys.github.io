@@ -1,0 +1,1 @@
+Sprite sheets are 32x48 per frame, 20 frames each (idle 0-4, walk 5-9, interact/turn 10-14, pause 15-19).

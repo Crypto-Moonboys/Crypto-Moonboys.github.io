@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128" shape-rendering="crispEdges">
+  <polygon points="64,28 110,52 64,76 18,52" fill="#3e4a7a"/>
+  <polygon points="64,76 18,52 18,96 64,118" fill="#26335b"/>
+  <polygon points="64,76 110,52 110,96 64,118" fill="#2f3d68"/>
+  <rect x="44" y="70" width="40" height="34" fill="#1a1f33"/>
+  <rect x="48" y="74" width="32" height="12" fill="#3ce0ff"/>
+  <rect x="52" y="90" width="24" height="10" fill="#f4bd5b"/>
+  <text x="64" y="57" text-anchor="middle" font-size="13" fill="#ffd46a" font-family="monospace" font-weight="700">SHOP</text>
+</svg>
