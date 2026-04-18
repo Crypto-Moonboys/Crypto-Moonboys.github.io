@@ -4,21 +4,51 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>🧩 Crystal Quest — Crypto Moonboys Arcade</title>
-  <meta name="description" content="Wiki clue hunt. Read linked pages, find the hidden answer, earn crypto lore points.">
+  <meta name="description" content="Run-based wiki clue hunt. Complete mission sets, build streaks, and submit validated scores.">
   <meta name="robots" content="index, follow">
   <link rel="stylesheet" href="/css/wiki.css">
   <link rel="icon" href="/img/favicon.svg" type="image/svg+xml">
   <style>
-    .game-card{background:rgba(255,255,255,.03);border:1px solid var(--color-border,#333);border-radius:16px;padding:18px}
-    .quest-box{background:rgba(255,255,255,.04);border:1px solid var(--color-border,#333);border-radius:14px;padding:16px;margin-top:14px}
+    .game-card{position:relative;overflow:hidden;background:rgba(255,255,255,.03);border:1px solid var(--color-border,#333);border-radius:16px;padding:18px}
+    .quest-box{position:relative;background:rgba(255,255,255,.04);border:1px solid var(--color-border,#333);border-radius:14px;padding:16px;margin-top:14px;transition:box-shadow .25s ease,border-color .25s ease}
+    .quest-box.glow{box-shadow:0 0 0 1px rgba(122,220,255,.28),0 0 24px rgba(122,220,255,.12)}
     .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
-    .input{width:100%;padding:.9rem 1rem;border-radius:12px;border:1px solid var(--color-border,#333);background:#0b1020;color:#fff}
-    .btn{padding:.85rem 1.1rem;border:none;border-radius:12px;background:#f7ab1a;color:#111;font-weight:700;cursor:pointer}
-    .btn.alt{background:rgba(255,255,255,.08);color:#fff}
+    .input{flex:1 1 260px;padding:.9rem 1rem;border-radius:12px;border:1px solid var(--color-border,#333);background:#0b1020;color:#fff}
+    .btn{padding:.85rem 1.1rem;border:none;border-radius:12px;background:#f7ab1a;color:#111;font-weight:700;cursor:pointer;transition:transform .15s ease,opacity .2s ease,box-shadow .2s ease}
+    .btn:hover{transform:translateY(-1px);box-shadow:0 6px 16px rgba(0,0,0,.25)}
+    .btn:disabled{opacity:.45;cursor:not-allowed;transform:none;box-shadow:none}
+    .btn.alt{background:rgba(255,255,255,.1);color:#fff}
+    .btn.warn{background:#8a2d2d;color:#fff}
     .meta{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:12px}
     .meta .stat{background:rgba(255,255,255,.04);border:1px solid var(--color-border,#333);border-radius:12px;padding:12px;text-align:center}
     .small{color:var(--color-text-muted);font-size:.82rem}
     .status{margin-top:10px;font-size:.85rem;color:var(--color-text-muted)}
+
+    #crystalPulseLayer{position:absolute;inset:0;pointer-events:none;z-index:0}
+    #crystalPulseLayer::before{content:"";position:absolute;inset:-40%;background:radial-gradient(circle,rgba(122,220,255,.12),transparent 58%);opacity:0;transform:scale(.8);transition:opacity .25s ease,transform .25s ease}
+    #crystalPulseLayer.pulse-start::before{opacity:.35;transform:scale(1)}
+    #crystalPulseLayer.pulse-correct::before{opacity:.55;transform:scale(1.12)}
+    #crystalPulseLayer.pulse-error::before{background:radial-gradient(circle,rgba(255,66,66,.16),transparent 58%);opacity:.55;transform:scale(1.08)}
+    #crystalPulseLayer.pulse-warning::before{background:radial-gradient(circle,rgba(255,177,68,.16),transparent 58%);opacity:.55;transform:scale(1.08)}
+
+    #crystalParticles{position:absolute;inset:0;pointer-events:none;z-index:0}
+    .crystal-particle{position:absolute;bottom:-10%;width:3px;height:3px;border-radius:50%;background:rgba(132,222,255,.9);filter:blur(.2px);animation:crystalFloat linear infinite}
+    @keyframes crystalFloat{0%{transform:translateY(0) scale(.9)}100%{transform:translateY(-130%) scale(1.2)}}
+
+    .layer-top{position:relative;z-index:1}
+
+    .sam-panel{display:flex;gap:10px;align-items:flex-start;background:rgba(255,255,255,.05);border:1px solid var(--color-border,#333);border-radius:12px;padding:12px;margin-top:14px;transition:border-color .2s ease,box-shadow .2s ease}
+    .sam-avatar{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;background:rgba(122,220,255,.14);font-weight:700}
+    .sam-body{min-width:0}
+    .sam-title{font-weight:700;font-size:.95rem}
+    .sam-message{font-size:.86rem;color:var(--color-text-muted);margin-top:4px}
+    #samAgent.sam-scanning{border-color:#4c9cff;box-shadow:0 0 0 1px rgba(76,156,255,.28)}
+    #samAgent.sam-correct{border-color:#4be38f;box-shadow:0 0 14px rgba(75,227,143,.24)}
+    #samAgent.sam-error{border-color:#ff6b6b;box-shadow:0 0 14px rgba(255,107,107,.25);animation:samGlitch .22s linear 2}
+    #samAgent.sam-hype{border-color:#ffe166;box-shadow:0 0 14px rgba(255,225,102,.3)}
+    #samAgent.sam-warning{border-color:#ffb144;box-shadow:0 0 14px rgba(255,177,68,.27)}
+    @keyframes samGlitch{0%{transform:translateX(0)}25%{transform:translateX(-2px)}50%{transform:translateX(2px)}100%{transform:translateX(0)}}
+
     @media(max-width:720px){.meta{grid-template-columns:repeat(2,minmax(0,1fr))}}
   </style>
 </head>
@@ -65,32 +95,51 @@
       <nav class="breadcrumb" aria-label="Breadcrumb"><a href="/index.html">Home</a><span class="sep">›</span><a href="/games/">Arcade</a><span class="sep">›</span><span aria-current="page">Crystal Quest</span></nav>
       <div class="category-header">
         <span class="cat-big-icon" aria-hidden="true">🧩</span>
-        <div><h1 class="page-title">🧩 Crystal Quest</h1><p style="color:var(--color-text-muted)">Wiki clue hunt with R2-first loading and local fallback.</p></div>
+        <div><h1 class="page-title">🧩 Crystal Quest</h1><p style="color:var(--color-text-muted)">Run-based lore mission hunt. Finish full runs to submit leaderboard scores.</p></div>
       </div>
       <div class="page-title-line" aria-hidden="true"></div>
 
       <div class="game-card">
-        <div class="meta">
-          <div class="stat"><div class="small">Solved</div><div id="solvedCount" style="font-weight:700;font-size:1.15rem">0</div></div>
-          <div class="stat"><div class="small">Score</div><div id="scoreCount" style="font-weight:700;font-size:1.15rem">0</div></div>
-          <div class="stat"><div class="small">Streak</div><div id="streakCount" style="font-weight:700;font-size:1.15rem">0</div></div>
-          <div class="stat"><div class="small">Source</div><div id="sourceLabel" style="font-weight:700;font-size:1rem">Loading…</div></div>
-        </div>
+        <div id="crystalPulseLayer" class="pulse-start" aria-hidden="true"></div>
+        <div id="crystalParticles" aria-hidden="true"></div>
 
-        <div class="quest-box">
-          <h3 id="questTitle">Loading quest…</h3>
-          <p id="questClue">Please wait.</p>
-          <p class="small">Suggested page: <a id="questLink" href="#">—</a></p>
-        </div>
-
-        <div class="quest-box">
-          <div class="row">
-            <input id="answerInput" class="input" type="text" placeholder="Type your answer here">
-            <button class="btn" id="submitBtn">Submit Answer</button>
-            <button class="btn alt" id="nextBtn">Skip</button>
+        <div class="layer-top">
+          <div class="meta">
+            <div class="stat"><div class="small">Score</div><div id="scoreCount" style="font-weight:700;font-size:1.15rem">0</div></div>
+            <div class="stat"><div class="small">Streak</div><div id="streakCount" style="font-weight:700;font-size:1.15rem">0</div></div>
+            <div class="stat"><div class="small">Remaining Questions</div><div id="remainingCount" style="font-weight:700;font-size:1.15rem">0</div></div>
+            <div class="stat"><div class="small">Skips Left</div><div id="skipsLeftCount" style="font-weight:700;font-size:1.15rem">2</div></div>
           </div>
-          <p id="feedback" class="small" style="margin-top:12px">Loading quest data…</p>
-          <p class="status" id="statusLine"></p>
+
+          <div class="quest-box glow">
+            <h3 id="questTitle">No active mission</h3>
+            <p id="questClue">Press Start Quest to begin a run.</p>
+            <p class="small">Suggested page: <a id="questLink" href="#">—</a></p>
+          </div>
+
+          <div id="samAgent" class="sam-panel sam-idle" data-sam-state="idle" aria-live="polite">
+            <div class="sam-avatar">SAM</div>
+            <div class="sam-body">
+              <div class="sam-title">Signal Analysis Module</div>
+              <div class="sam-message" id="samMessage">Awaiting mission command.</div>
+            </div>
+          </div>
+
+          <div class="quest-box">
+            <div class="row" style="margin-bottom:10px">
+              <button class="btn" id="startBtn" type="button">Start Quest</button>
+              <button class="btn alt" id="resetBtn" type="button">Reset</button>
+              <button id="pauseBtn" type="button" style="display:none">Pause</button>
+            </div>
+            <div class="row">
+              <input id="answerInput" class="input" type="text" placeholder="Type your answer here">
+              <button class="btn" id="submitBtn" type="button">Submit Answer</button>
+              <button class="btn alt" id="skipBtn" type="button">Skip</button>
+              <button class="btn warn" id="submitScoreBtn" type="button">Submit Score</button>
+            </div>
+            <p id="feedback" class="small" style="margin-top:12px">Start a run to begin mission validation.</p>
+            <p class="status"><span id="sourceLabel">Loading…</span> · <span id="statusLine">Initializing…</span></p>
+          </div>
         </div>
       </div>
     </main>
@@ -102,9 +151,10 @@
 <script>window.R2_PUBLIC_BASE_URL = window.R2_PUBLIC_BASE_URL || "";</script>
 <script src="/js/wiki.js"></script>
 <script src="/js/identity-gate.js"></script>
+<script src="/js/game-fullscreen.js"></script>
 <script type="module">
-import { mountGame }              from '/js/arcade/core/game-shell.js';
-import { bootstrapCrystalQuest }  from '/js/arcade/games/crystal-quest/bootstrap.js';
+import { mountGame } from '/js/arcade/core/game-shell.js';
+import { bootstrapCrystalQuest } from '/js/arcade/games/crystal-quest/bootstrap.js';
 mountGame({ root: document.querySelector('.game-card'), bootstrap: bootstrapCrystalQuest });
 </script>
 </body>

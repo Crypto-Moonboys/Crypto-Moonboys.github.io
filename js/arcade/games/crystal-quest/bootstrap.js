@@ -1,245 +1,447 @@
-/**
- * bootstrap.js — Crystal Quest game module
- *
- * Contains all Crystal Quest game logic.  Exports bootstrapCrystalQuest(), which is
- * the entry point called by game-shell.js via mountGame().
- *
- * Integrations preserved:
- *  - ArcadeSync   (local high-score persistence)
- *  - submitScore  (leaderboard-client.js remote submission)
- *  - rollHiddenBonus / showBonusPopup  (bonus-engine.js)
- *  - loadGameData (data-loader.js R2/local fallback)
- */
-
-import { loadGameData }                    from '/js/data-loader.js';
-import { ArcadeSync }                      from '/js/arcade-sync.js';
-import { submitScore }                     from '/js/leaderboard-client.js';
-import { rollHiddenBonus, showBonusPopup } from '/js/bonus-engine.js';
-import { CRYSTAL_QUEST_CONFIG }            from './config.js';
-import { GameRegistry }                    from '/js/arcade/core/game-registry.js';
+import { loadGameData } from '/js/data-loader.js';
+import { ArcadeSync } from '/js/arcade-sync.js';
+import { submitScore } from '/js/leaderboard-client.js';
+import { CRYSTAL_QUEST_CONFIG } from './config.js';
+import { GameRegistry } from '/js/arcade/core/game-registry.js';
 import { playSound, stopAllSounds, isMuted } from '/js/arcade/core/audio.js';
+import { createSamAgent } from './sam-agent.js';
 
-// Register in the central registry when this module is first imported.
 GameRegistry.register(CRYSTAL_QUEST_CONFIG.id, {
-  label:     CRYSTAL_QUEST_CONFIG.label,
+  label: CRYSTAL_QUEST_CONFIG.label,
   bootstrap: bootstrapCrystalQuest,
 });
 
-/**
- * Bootstrap the Crystal Quest game.
- *
- * @param {Element} root - The .game-card element (unused directly; DOM IDs are unique).
- * @returns {{ init, start, pause, resume, reset, destroy, getScore }}
- */
 export function bootstrapCrystalQuest(root) {
-  const GAME_ID = CRYSTAL_QUEST_CONFIG.id;
-  const STORAGE_KEY_SEEN = 'crystal_seen_ids';
+  var GAME_ID = CRYSTAL_QUEST_CONFIG.id;
+  var LEADERBOARD_GAME_ID = 'CRYSTAL_QUEST';
+  var PACKS = ['/games/data/question_pack_001.json', '/games/data/question_pack_002.json'];
+  var MAX_SKIPS = 2;
+  var RUN_MIN = 5;
+  var RUN_MAX = 10;
 
-  const titleEl    = document.getElementById('questTitle');
-  const clueEl     = document.getElementById('questClue');
-  const linkEl     = document.getElementById('questLink');
-  const feedbackEl = document.getElementById('feedback');
-  const answerInput  = document.getElementById('answerInput');
-  const solvedCount  = document.getElementById('solvedCount');
-  const scoreCount   = document.getElementById('scoreCount');
-  const streakCount  = document.getElementById('streakCount');
-  const sourceLabel  = document.getElementById('sourceLabel');
-  const statusLine   = document.getElementById('statusLine');
-  const submitBtnEl  = document.getElementById('submitBtn');
-  const nextBtnEl    = document.getElementById('nextBtn');
+  var scoreCount = document.getElementById('scoreCount');
+  var streakCount = document.getElementById('streakCount');
+  var remainingCount = document.getElementById('remainingCount');
+  var skipsLeftCount = document.getElementById('skipsLeftCount');
+  var questTitle = document.getElementById('questTitle');
+  var questClue = document.getElementById('questClue');
+  var questLink = document.getElementById('questLink');
+  var feedback = document.getElementById('feedback');
+  var statusLine = document.getElementById('statusLine');
+  var answerInput = document.getElementById('answerInput');
+  var sourceLabel = document.getElementById('sourceLabel');
 
-  let allQuests = [];
-  let queue = [];
-  let queueIdx = 0;
-  let solved = 0, score = 0, streak = 0;
+  var startBtn = document.getElementById('startBtn');
+  var pauseBtn = document.getElementById('pauseBtn');
+  var resetBtn = document.getElementById('resetBtn');
+  var submitBtn = document.getElementById('submitBtn');
+  var skipBtn = document.getElementById('skipBtn');
+  var submitScoreBtn = document.getElementById('submitScoreBtn');
 
-  function playGameSound(id, options) {
-    if (isMuted()) return null;
-    return playSound(id, options);
+  var pulseLayer = document.getElementById('crystalPulseLayer');
+  var particleLayer = document.getElementById('crystalParticles');
+
+  var samRoot = document.getElementById('samAgent');
+  var samMessage = document.getElementById('samMessage');
+
+  var sam = createSamAgent({ root: samRoot, messageEl: samMessage });
+
+  var score = 0;
+  var streak = 0;
+  var run = null;
+  var loadedPackIndex = -1;
+  var unusedQuestions = [];
+  var usedQuestions = [];
+  var knownQuestionIds = new Set();
+
+  function setGlow(type) {
+    if (!pulseLayer) return;
+    pulseLayer.classList.remove('pulse-start', 'pulse-correct', 'pulse-error', 'pulse-warning');
+    if (type) pulseLayer.classList.add(type);
   }
 
-  // ── No-repeat helpers ──────────────────────────────────────────────────────
-  function loadSeenIds() {
-    try { return new Set(JSON.parse(localStorage.getItem(STORAGE_KEY_SEEN) || '[]')); }
-    catch { return new Set(); }
-  }
-  function saveSeenIds(set) {
-    try { localStorage.setItem(STORAGE_KEY_SEEN, JSON.stringify([...set])); } catch {}
-  }
-  function shuffle(arr) {
-    const a = arr.slice();
-    for (let i = a.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [a[i], a[j]] = [a[j], a[i]];
+  function ensureParticles() {
+    if (!particleLayer || particleLayer.childElementCount) return;
+    for (var i = 0; i < 24; i++) {
+      var dot = document.createElement('span');
+      dot.className = 'crystal-particle';
+      dot.style.left = Math.floor(Math.random() * 100) + '%';
+      dot.style.animationDelay = (Math.random() * 4).toFixed(2) + 's';
+      dot.style.animationDuration = (2.8 + Math.random() * 3.2).toFixed(2) + 's';
+      dot.style.opacity = (0.2 + Math.random() * 0.6).toFixed(2);
+      particleLayer.appendChild(dot);
     }
-    return a;
   }
 
-  function buildQueue(seenIds) {
-    const unseen = allQuests.filter(q => !seenIds.has(q.id));
-    if (unseen.length === 0) {
-      saveSeenIds(new Set());
-      statusLine.textContent = '🎉 Full cycle complete! All quests reset. Bonus round unlocked.';
-      return shuffle(allQuests);
+  function playQuestSound(soundId) {
+    if (isMuted()) return;
+    try { playSound(soundId); } catch (_) {}
+  }
+
+  function normalizeAnswer(value) {
+    return String(value || '')
+      .trim()
+      .replace(/\s+/g, ' ')
+      .toUpperCase();
+  }
+
+  function getAliases(question) {
+    var accepted = Array.isArray(question && question.accepted_answers) ? question.accepted_answers : [];
+    var aliases = Array.isArray(question && question.aliases) ? question.aliases : [];
+    return accepted.concat(aliases).map(normalizeAnswer);
+  }
+
+  function shuffle(arr, seed) {
+    var out = arr.slice();
+    var s = (seed >>> 0) || 1;
+    function rnd() {
+      s ^= s << 13;
+      s ^= s >>> 17;
+      s ^= s << 5;
+      return ((s >>> 0) % 10000) / 10000;
     }
-    return shuffle(unseen);
+    for (var i = out.length - 1; i > 0; i--) {
+      var j = Math.floor(rnd() * (i + 1));
+      var temp = out[i];
+      out[i] = out[j];
+      out[j] = temp;
+    }
+    return out;
   }
 
-  function currentQuest() {
-    return queue[queueIdx] || null;
+  function nextSeed() {
+    return Math.floor(Math.random() * 0x7fffffff);
+  }
+
+  async function loadNextPack() {
+    if (loadedPackIndex + 1 >= PACKS.length) return false;
+    loadedPackIndex += 1;
+    var path = PACKS[loadedPackIndex];
+    var data = await loadGameData(path);
+    var list = Array.isArray(data && data.quests) ? data.quests : [];
+
+    var fresh = list.filter(function (q) {
+      if (!q || !q.id || knownQuestionIds.has(q.id)) return false;
+      knownQuestionIds.add(q.id);
+      return true;
+    });
+
+    var seeded = shuffle(fresh, nextSeed());
+    unusedQuestions = unusedQuestions.concat(seeded);
+    sourceLabel.textContent = 'Pack ' + String(loadedPackIndex + 1).padStart(3, '0');
+    statusLine.textContent = 'Loaded ' + path + ' (' + fresh.length + ' questions).';
+    return fresh.length > 0;
+  }
+
+  async function ensureQuestionSupply(minCount) {
+    while (unusedQuestions.length < minCount) {
+      var loaded = await loadNextPack();
+      if (!loaded) break;
+    }
+
+    if (unusedQuestions.length < minCount && loadedPackIndex >= PACKS.length - 1 && usedQuestions.length) {
+      unusedQuestions = shuffle(usedQuestions, nextSeed());
+      usedQuestions = [];
+      statusLine.textContent = 'Question pool exhausted. Starting a fresh cycle.';
+    }
+
+    return unusedQuestions.length >= minCount;
+  }
+
+  function getCurrentQuestion() {
+    if (!run) return null;
+    return run.questionSet[run.index] || null;
+  }
+
+  function remainingQuestions() {
+    if (!run) return 0;
+    return Math.max(0, run.questionSet.length - run.index);
+  }
+
+  function skipsLeft() {
+    if (!run) return MAX_SKIPS;
+    return Math.max(0, MAX_SKIPS - run.skips);
+  }
+
+  function syncRunButtons() {
+    var active = !!(run && run.started && !run.completed);
+    if (startBtn) startBtn.disabled = active;
+    if (submitBtn) submitBtn.disabled = !active;
+    if (skipBtn) skipBtn.disabled = !active || skipsLeft() <= 0;
+    if (submitScoreBtn) submitScoreBtn.disabled = !(run && run.completed && !run.submitted);
   }
 
   function updateHud() {
-    solvedCount.textContent = solved;
-    scoreCount.textContent = score;
-    streakCount.textContent = streak;
+    if (scoreCount) scoreCount.textContent = String(score);
+    if (streakCount) streakCount.textContent = String(streak);
+    if (remainingCount) remainingCount.textContent = String(remainingQuestions());
+    if (skipsLeftCount) skipsLeftCount.textContent = String(skipsLeft());
+    syncRunButtons();
   }
 
-  function normalizeAnswers(arr) {
-    return (arr || []).map(v => String(v).trim().toUpperCase());
-  }
-
-  function loadQuest() {
-    const q = currentQuest();
+  function renderCurrentQuestion() {
+    var q = getCurrentQuestion();
     if (!q) {
-      const seenIds = loadSeenIds();
-      queue = buildQueue(seenIds);
-      queueIdx = 0;
+      questTitle.textContent = 'No active mission';
+      questClue.textContent = 'Press Start Quest to begin a run.';
+      questLink.href = '#';
+      questLink.textContent = '—';
+      return;
     }
-    const current = currentQuest();
-    if (!current) return;
-    titleEl.textContent = current.title || 'Untitled Quest';
-    clueEl.textContent = current.clue || 'No clue available.';
-    linkEl.href = current.wiki_url || '#';
-    linkEl.textContent = current.wiki_url || '#';
-    answerInput.value = '';
-    feedbackEl.textContent = 'Read the linked page, return, and enter the hidden answer.';
+
+    questTitle.textContent = q.title || 'Untitled mission';
+    questClue.textContent = q.clue || 'No clue available.';
+    questLink.href = q.wiki_url || '#';
+    questLink.textContent = q.wiki_url || '#';
   }
 
-  function advanceQueue() {
-    const q = currentQuest();
-    if (q) {
-      const seen = loadSeenIds();
-      seen.add(q.id);
-      saveSeenIds(seen);
-    }
-    queueIdx += 1;
-    if (queueIdx >= queue.length) {
-      const seen = loadSeenIds();
-      queue = buildQueue(seen);
-      queueIdx = 0;
-    }
+  function clearAnswerInput() {
+    if (answerInput) answerInput.value = '';
   }
 
-  async function onCorrectAnswer(q) {
-    solved += 1;
-    streak += 1;
-    score += (q.rewards?.arcade_points || 100);
-    feedbackEl.textContent = '✅ Correct. Crystal secured.';
-    playGameSound('crystal-quest-correct');
-    advanceQueue();
+  function syncQuestRun(sessionData) {
+    var payload = {
+      sessionId: sessionData.sessionId,
+      score: sessionData.score,
+      answers: sessionData.answers,
+      skips: sessionData.skips,
+      completed: true,
+    };
+    window.__crystalQuestLastSyncPayload = payload;
+    return payload;
+  }
+
+  window.syncQuestRun = syncQuestRun;
+
+  function createRunSession(questionSet, seed) {
+    return {
+      sessionId: 'cq-' + Date.now().toString(36) + '-' + Math.floor(Math.random() * 99999).toString(36),
+      seed: seed,
+      questionSet: questionSet,
+      index: 0,
+      skips: 0,
+      started: true,
+      completed: false,
+      submitted: false,
+      answers: [],
+      startedAt: Date.now(),
+    };
+  }
+
+  async function startRun() {
+    var seed = nextSeed();
+    var runLength = RUN_MIN + Math.floor((seed % (RUN_MAX - RUN_MIN + 1)));
+    var hasEnough = await ensureQuestionSupply(runLength);
+
+    if (!hasEnough) {
+      feedback.textContent = 'Not enough questions to start a run.';
+      sam.setIdle('Mission data unavailable.');
+      return;
+    }
+
+    var questionSet = unusedQuestions.splice(0, runLength);
+    run = createRunSession(questionSet, seed);
+    score = 0;
+    streak = 0;
+    clearAnswerInput();
+    renderCurrentQuestion();
     updateHud();
-    ArcadeSync.setHighScore(GAME_ID, score);
-    submitScore(ArcadeSync.getPlayer(), score, GAME_ID);
 
-    const bonus = await rollHiddenBonus({ score, streak, game: GAME_ID });
-    if (bonus) {
-      score += bonus.rewards?.arcade_points || 0;
-      updateHud();
-      showBonusPopup(bonus);
-      ArcadeSync.setHighScore(GAME_ID, score);
-      submitScore(ArcadeSync.getPlayer(), score, GAME_ID);
-    }
+    sam.setScanning('Quest armed. Track the signal.');
+    setGlow('pulse-start');
+    playQuestSound('start');
 
-    setTimeout(loadQuest, 500);
+    statusLine.textContent = 'Session ' + run.sessionId + ' seeded at ' + run.seed + '.';
+    feedback.textContent = 'Run started. Solve each mission to lock your final score.';
   }
 
-  function onSubmit() {
-    const q = currentQuest();
+  function completeCurrentQuestion() {
+    var q = getCurrentQuestion();
+    if (!q || !run) return;
+    usedQuestions.push(q);
+    run.index += 1;
+
+    if (run.index >= run.questionSet.length) {
+      run.completed = true;
+      renderCurrentQuestion();
+      updateHud();
+      sam.onRunComplete();
+      setGlow('pulse-start');
+      feedback.textContent = 'Run complete. Submit your score to leaderboard.';
+      syncQuestRun({
+        sessionId: run.sessionId,
+        score: score,
+        answers: run.answers.slice(),
+        skips: run.skips,
+      });
+      return;
+    }
+
+    clearAnswerInput();
+    renderCurrentQuestion();
+    updateHud();
+  }
+
+  function submitAnswer() {
+    if (!run || run.completed) return;
+    var q = getCurrentQuestion();
     if (!q) return;
-    const guess = answerInput.value.trim().toUpperCase();
-    if (!guess) return;
-    const answers = normalizeAnswers(q.accepted_answers);
-    if (answers.includes(guess)) {
-      onCorrectAnswer(q);
+
+    var guess = normalizeAnswer(answerInput && answerInput.value);
+    if (!guess) {
+      feedback.textContent = 'Enter an answer before submitting.';
+      return;
+    }
+
+    var answers = getAliases(q);
+    var isCorrect = answers.includes(guess);
+
+    if (isCorrect) {
+      streak += 1;
+      var scoreGain = 100 + (streak * 20);
+      score += scoreGain;
+      run.answers.push({ questionId: q.id, answer: guess, correct: true, skipped: false, scoreGain: scoreGain });
+      feedback.textContent = '✅ Correct. Mission progress locked.';
+      sam.onCorrect(streak >= 3);
+      setGlow('pulse-correct');
+      playQuestSound('correct');
     } else {
       streak = 0;
-      playGameSound('crystal-quest-wrong');
-      feedbackEl.textContent = '❌ Wrong answer. Read again and try properly.';
-      updateHud();
+      run.answers.push({ questionId: q.id, answer: guess, correct: false, skipped: false, scoreGain: 0 });
+      feedback.textContent = '❌ Data mismatch. Re-check the linked lore and continue.';
+      sam.onWrong();
+      setGlow('pulse-error');
+      playQuestSound('error');
     }
+
+    completeCurrentQuestion();
   }
 
-  function onSkip() {
+  function skipQuestion() {
+    if (!run || run.completed) return;
+    if (skipsLeft() <= 0) {
+      feedback.textContent = 'No skips left in this run.';
+      sam.onLowSkips();
+      setGlow('pulse-warning');
+      return;
+    }
+
+    var q = getCurrentQuestion();
     streak = 0;
-    advanceQueue();
-    updateHud();
-    loadQuest();
+    run.skips += 1;
+    score = Math.max(0, score - 50);
+    run.answers.push({
+      questionId: q && q.id,
+      answer: null,
+      correct: false,
+      skipped: true,
+      scoreGain: -50,
+    });
+
+    feedback.textContent = '⚠️ Skip used. -50 score penalty applied.';
+    sam.onSkip();
+    setGlow('pulse-warning');
+    playQuestSound('error');
+
+    if (skipsLeft() === 0) {
+      sam.onLowSkips();
+    }
+
+    completeCurrentQuestion();
   }
 
-  // ── Lifecycle implementation ──────────────────────────────────────────────
+  function submitFinalScore() {
+    if (!run || !run.completed || run.submitted) return;
+
+    ArcadeSync.setHighScore(GAME_ID, score);
+    submitScore(ArcadeSync.getPlayer(), score, LEADERBOARD_GAME_ID);
+    run.submitted = true;
+    updateHud();
+
+    feedback.textContent = 'Score submitted for this completed run.';
+    statusLine.textContent = 'Submission ready: local high score saved; linked identity submits to leaderboard.';
+  }
 
   async function init() {
-    try {
-      const base = (window.R2_PUBLIC_BASE_URL || '').replace(/\/$/, '');
-      sourceLabel.textContent = base ? 'R2 / Local' : 'Local';
-      statusLine.textContent = base
-        ? `R2 enabled: ${base}/games/data/crystal-maze-seed.json`
-        : 'R2 base URL not set, using local files only.';
-      const data = await loadGameData('/games/data/crystal-maze-seed.json');
-      allQuests = data.quests || [];
-      if (!allQuests.length) throw new Error('No quests found in crystal-maze-seed.json');
-      const seenIds = loadSeenIds();
-      queue = buildQueue(seenIds);
-      queueIdx = 0;
-      const remaining = queue.length;
-      statusLine.textContent += ` | ${remaining} of ${allQuests.length} quests remaining in cycle.`;
-      updateHud();
-      loadQuest();
-    } catch (err) {
-      console.error('[crystal-quest] init failed:', err);
-      titleEl.textContent = 'Quest load failed';
-      clueEl.textContent = 'Could not load crystal-maze-seed.json from R2 or local fallback.';
-      feedbackEl.textContent = 'Check file path, bucket path, and R2 public URL.';
-      statusLine.textContent = err.message;
-      sourceLabel.textContent = 'Error';
-    }
+    ensureParticles();
+    setGlow('pulse-start');
+    sam.setIdle('Awaiting mission command.');
 
-    submitBtnEl.onclick = onSubmit;
-    nextBtnEl.onclick   = onSkip;
+    score = 0;
+    streak = 0;
+    run = null;
+    loadedPackIndex = -1;
+    unusedQuestions = [];
+    usedQuestions = [];
+    knownQuestionIds = new Set();
+
+    sourceLabel.textContent = 'Loading…';
+    statusLine.textContent = 'Initializing Crystal Quest packs…';
+
+    await ensureQuestionSupply(RUN_MIN);
+
+    sourceLabel.textContent = loadedPackIndex >= 0
+      ? ('Pack ' + String(loadedPackIndex + 1).padStart(3, '0'))
+      : 'Unavailable';
+
+    var linked = !!(window.MOONBOYS_IDENTITY && typeof window.MOONBOYS_IDENTITY.isTelegramLinked === 'function'
+      ? window.MOONBOYS_IDENTITY.isTelegramLinked()
+      : false);
+
+    statusLine.textContent = linked
+      ? 'Identity linked: leaderboard submissions enabled after run completion.'
+      : 'Identity not linked: score stays local until account is linked.';
+
+    renderCurrentQuestion();
+    updateHud();
+
+    if (startBtn) startBtn.onclick = function () { startRun().catch(function (err) { console.error(err); }); };
+    if (submitBtn) submitBtn.onclick = submitAnswer;
+    if (skipBtn) skipBtn.onclick = skipQuestion;
+    if (resetBtn) resetBtn.onclick = reset;
+    if (submitScoreBtn) submitScoreBtn.onclick = submitFinalScore;
+    if (pauseBtn) pauseBtn.onclick = pause;
   }
 
   function start() {
-    // Re-run init to reload data and start fresh
-    solved = 0; score = 0; streak = 0;
-    updateHud();
-    init();
+    startRun().catch(function (err) { console.error('[crystal-quest] start failed:', err); });
   }
 
-  function pause()  { stopAllSounds(); }
-  function resume() { /* Crystal Quest is turn-based; no resume needed */ }
+  function pause() {
+    stopAllSounds();
+  }
+
+  function resume() {
+    sam.setScanning('Signal reacquired. Continue the run.');
+  }
 
   function reset() {
     stopAllSounds();
-    solved = 0; score = 0; streak = 0;
+    score = 0;
+    streak = 0;
+    run = null;
+    feedback.textContent = 'Run reset. Press Start Quest for a new seeded session.';
+    statusLine.textContent = 'Ready.';
+    sam.setIdle('Run reset. Awaiting command.');
+    setGlow('pulse-start');
+    clearAnswerInput();
+    renderCurrentQuestion();
     updateHud();
-    if (allQuests.length) {
-      const seenIds = loadSeenIds();
-      queue = buildQueue(seenIds);
-      queueIdx = 0;
-      loadQuest();
-    }
   }
 
   function destroy() {
     stopAllSounds();
-    if (submitBtnEl) submitBtnEl.onclick = null;
-    if (nextBtnEl)   nextBtnEl.onclick   = null;
+    if (startBtn) startBtn.onclick = null;
+    if (pauseBtn) pauseBtn.onclick = null;
+    if (resetBtn) resetBtn.onclick = null;
+    if (submitBtn) submitBtn.onclick = null;
+    if (skipBtn) skipBtn.onclick = null;
+    if (submitScoreBtn) submitScoreBtn.onclick = null;
   }
 
-  function getScore() { return score; }
-
-  // ── Public lifecycle object ───────────────────────────────────────────────
+  function getScore() {
+    return score;
+  }
 
   return { init, start, pause, resume, reset, destroy, getScore };
 }
