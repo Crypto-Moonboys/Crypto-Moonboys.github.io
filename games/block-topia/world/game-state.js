@@ -106,6 +106,12 @@ export function createGameState(bundle) {
       samImpactUntil: 0,
       districtPulseUntil: 0,
       districtPulseId: '',
+      signalOperationPulseUntil: 0,
+      signalOperationPulse: null,
+    },
+    signalOperations: {
+      active: [],
+      lastSyncAt: 0,
     },
     quests: {
       model: bundle.questModel,

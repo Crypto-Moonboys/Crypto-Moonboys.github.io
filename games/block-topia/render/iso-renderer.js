@@ -38,6 +38,11 @@ const NEARBY_PULSE_BASE_ALPHA = 0.62;
 const NEARBY_PULSE_AMPLITUDE = 0.35;
 const CROWD_SWAY_PERIOD_MS = 700;
 const CROWD_BOB_SPEED = 0.8;
+const OPERATION_PULSE_PERIOD_MS = 700;
+const OPERATION_BASE_COLOR = '#00ffd5';
+const OPERATION_RING_COLOR = 'rgba(0, 255, 213, 0.88)';
+const OPERATION_GLOW_COLOR = 'rgba(0, 255, 213, 0.24)';
+const OPERATION_SUCCESS_COLOR = 'rgba(141, 255, 106, 0.62)';
 
 const DISTRICT_BASE_ELEVATION = {
   'neon-slums': 3,
@@ -64,6 +69,10 @@ function tintColor(hex, nightFactor, variant = 0) {
   const ng = Math.round(g * (1 - nightFactor * 0.5) + variant * 4);
   const nb = Math.round(b * (1 - nightFactor * 0.35) + 40 * nightFactor + variant * 9);
   return `rgb(${nr},${ng},${nb})`;
+}
+
+function clamp(value, min, max) {
+  return Math.max(min, Math.min(max, value));
 }
 
 function deterministicNoise2D(x, y) {
@@ -544,6 +553,66 @@ export function createIsoRenderer(canvas) {
     }
   }
 
+  function drawSignalOperation(originX, originY, operation) {
+    const iso = toIso(operation.x, operation.y);
+    const centerX = originX + iso.x;
+    const centerY = originY + iso.y + 9;
+    const radiusPx = clamp((operation.radius || 1.5) * 18, 18, 62);
+    const pulse = 0.72 + Math.sin(Date.now() / OPERATION_PULSE_PERIOD_MS) * 0.28;
+    const intensity = clamp(operation.intensity || 0.8, 0.55, 1.2);
+
+    ctx.save();
+    ctx.globalAlpha = 0.2 * intensity;
+    ctx.fillStyle = OPERATION_GLOW_COLOR;
+    ctx.beginPath();
+    ctx.ellipse(centerX, centerY, radiusPx, radiusPx * 0.52, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.globalAlpha = 0.58 * pulse;
+    ctx.strokeStyle = OPERATION_RING_COLOR;
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.ellipse(centerX, centerY, radiusPx * pulse, radiusPx * 0.5 * pulse, 0, 0, Math.PI * 2);
+    ctx.stroke();
+
+    ctx.globalAlpha = 0.26;
+    ctx.strokeStyle = 'rgba(0,255,213,0.62)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.ellipse(centerX, centerY, radiusPx * 1.25, radiusPx * 0.66, 0, 0, Math.PI * 2);
+    ctx.stroke();
+
+    ctx.globalAlpha = 0.95;
+    ctx.fillStyle = OPERATION_BASE_COLOR;
+    ctx.beginPath();
+    ctx.arc(centerX, centerY - 9, 3.5, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#eaffff';
+    ctx.font = '700 9px Inter, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('OP', centerX, centerY - 14);
+    ctx.restore();
+  }
+
+  function drawSignalOperationSuccessPulse(originX, originY, pulse, now, pulseUntil) {
+    if (!pulse || !Number.isFinite(pulse.x) || !Number.isFinite(pulse.y)) return;
+    const iso = toIso(pulse.x, pulse.y);
+    const centerX = originX + iso.x;
+    const centerY = originY + iso.y + 10;
+    const remaining = Math.max(0, (pulseUntil || now) - now);
+    const t = clamp(1 - (remaining / 1300), 0, 1);
+    const radiusPx = clamp((pulse.radius || 1.6) * 20 + t * 16, 20, 74);
+    const alpha = 0.65 * (1 - t);
+    ctx.save();
+    ctx.globalAlpha = alpha;
+    ctx.strokeStyle = OPERATION_SUCCESS_COLOR;
+    ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    ctx.ellipse(centerX, centerY, radiusPx, radiusPx * 0.52, 0, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.restore();
+  }
+
   function render(state) {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -604,6 +673,11 @@ export function createIsoRenderer(canvas) {
       const iso = toIso(prop.col, prop.row);
       const elevation = getElevation(district?.id, prop.col, prop.row);
       drawProp(originX + iso.x, originY + iso.y, prop.type, district?.color || '#5ef2ff', nightFactor, elevation);
+    }
+
+    for (const operation of state.signalOperations?.active || []) {
+      if (!operation || operation.resolved) continue;
+      drawSignalOperation(originX, originY, operation);
     }
 
     const spritePreview = imageRegistry['/games/assets/blocktopia/props/preview.svg'];
@@ -748,6 +822,16 @@ export function createIsoRenderer(canvas) {
     if (samImpact) {
       ctx.fillStyle = 'rgba(255, 79, 216, 0.08)';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
+    }
+
+    if (state.effects?.signalOperationPulseUntil > now) {
+      drawSignalOperationSuccessPulse(
+        originX,
+        originY,
+        state.effects?.signalOperationPulse,
+        now,
+        state.effects?.signalOperationPulseUntil,
+      );
     }
   }
 

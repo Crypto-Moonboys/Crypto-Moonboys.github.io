@@ -342,15 +342,18 @@ body.phase-night .panel {
 #quest-list li[data-type='daily'],
 #quest-list li[data-type='weekly'],
 #quest-list li[data-type='seasonal'],
-#quest-list li[data-type='prophecy'] { border: 1px solid rgba(202, 163, 255, 0.2); border-left-width: 3px; }
+#quest-list li[data-type='prophecy'],
+#quest-list li[data-type='signal'] { border: 1px solid rgba(202, 163, 255, 0.2); border-left-width: 3px; }
 #quest-list li[data-type='daily']    { border-left-color: var(--accent); }
 #quest-list li[data-type='weekly']   { border-left-color: var(--gold); }
 #quest-list li[data-type='seasonal'] { border-left-color: var(--warn); }
 #quest-list li[data-type='prophecy'] { border-left-color: #caa3ff; }
+#quest-list li[data-type='signal']   { border-left-color: #5ef2ff; background: rgba(94, 242, 255, 0.08); }
 #quest-list li[data-type='daily'] .quest-badge    { color: var(--accent); }
 #quest-list li[data-type='weekly'] .quest-badge   { color: var(--gold); }
 #quest-list li[data-type='seasonal'] .quest-badge { color: var(--warn); }
 #quest-list li[data-type='prophecy'] .quest-badge { color: #caa3ff; }
+#quest-list li[data-type='signal'] .quest-badge   { color: #5ef2ff; }
 
 #street-feed {
   margin: 0;

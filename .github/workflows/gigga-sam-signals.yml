@@ -35,9 +35,19 @@ jobs:
       - name: Install GIGGA SAM dependencies
         run: npm ci --prefix gigga-sam
 
+      - name: Resolve OpenAI key
+        env:
+          OPENAI_API_KEY_PRIMARY: ${{ secrets.OPENAI_API_KEY }}
+          OPENAI_API_KEY_GIGGA: ${{ secrets.GIGGA_SAM_OPENAI_API_KEY }}
+          OPENAI_API_KEY_ALT: ${{ secrets.OPENAI_KEY }}
+        run: |
+          KEY="${OPENAI_API_KEY_PRIMARY}"
+          if [ -z "$KEY" ]; then KEY="${OPENAI_API_KEY_GIGGA}"; fi
+          if [ -z "$KEY" ]; then KEY="${OPENAI_API_KEY_ALT}"; fi
+          echo "OPENAI_API_KEY=${KEY}" >> "$GITHUB_ENV"
+
       - name: Generate live signals
         env:
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           OPENAI_MODEL: ${{ vars.OPENAI_MODEL || 'gpt-4.1-mini' }}
         run: npm run generate-signals --prefix gigga-sam
 

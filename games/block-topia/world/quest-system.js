@@ -2,6 +2,7 @@ import { createSignalQuestGenerator } from './signal-quest-generator.js';
 
 export function createQuestSystem(state, liveIntelligence = null) {
   const QUEST_PULSE_INTERVAL_SECONDS = 20;
+  const MAX_SIGNAL_QUEST_CARDS = 2;
   const capitalize = (text) => (text || '').replace(/^./, (char) => char.toUpperCase());
   const signalQuestGenerator = createSignalQuestGenerator(state, liveIntelligence);
 
@@ -65,7 +66,10 @@ export function createQuestSystem(state, liveIntelligence = null) {
       xp: quest.xp,
       objective: buildObjective(quest),
     }));
-    return baseCards.concat(signalQuestGenerator.buildSignalQuestCards(2));
+    const signalCards = signalQuestGenerator
+      .buildSignalQuestCards(MAX_SIGNAL_QUEST_CARDS)
+      .filter((card) => !card?.expiresAt || Date.parse(card.expiresAt) > Date.now());
+    return baseCards.concat(signalCards);
   }
 
   /**

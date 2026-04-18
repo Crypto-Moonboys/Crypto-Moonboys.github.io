@@ -11,6 +11,9 @@ const CROWD_MOVE_INTERVAL_MIN = 2.0;
 const CROWD_MOVE_INTERVAL_RANGE = 1.5;
 const UPDATE_BATCH = 40;
 const MAX_ACTIVE_NPCS = 120;
+const LIVE_DIALOGUE_CHANCE_WITH_OPERATION = 0.7;
+const LIVE_DIALOGUE_CHANCE_BASE = 0.3;
+const ROLE_OPERATION_LINE_CHANCE = 0.6;
 
 // District-aware NPC spawn bands (col, row, w, h) matching districts.json grid regions
 const DISTRICT_SPAWN_REGIONS = [
@@ -84,6 +87,34 @@ const FACTION_DIALOGUE_OVERLAY = {
     'The Wardens hold what the Liberators cannot keep.',
     'Order is maintained through pressure and presence.',
     'We do not capture — we consolidate.',
+  ],
+};
+
+const OPERATION_ROLE_DIALOGUE = {
+  vendor: [
+    (district) => `Supply lanes in ${district} are breaking. Prices spike every pulse.`,
+    (district) => `Market pressure is climbing in ${district}. Relay stock moves before sunrise.`,
+    (district) => `Courier caches in ${district} are hot. I can barely keep crates moving.`,
+  ],
+  fighter: [
+    (district) => `${district} is under territory strain. We hold this lane or lose the block.`,
+    (district) => `Conflict pressure in ${district} is rising. Expect hard resistance near the relay.`,
+    (district) => `Signal routes in ${district} are contested. Every corner is a frontline.`,
+  ],
+  agent: [
+    (district) => `Route integrity in ${district} is unstable. Courier traffic is rerouting right now.`,
+    (district) => `A relay trace in ${district} just lit up. Follow the courier corridor.`,
+    (district) => `Courier intel says ${district} has an active operation marker on-grid.`,
+  ],
+  'lore-keeper': [
+    (district) => `An omen hangs over ${district}. The relay remembers who ignored this warning.`,
+    (district) => `Memory static in ${district} is rising. The city is trying to tell us something.`,
+    (district) => `The warning lines around ${district} are old, but tonight they are awake again.`,
+  ],
+  recruiter: [
+    (district) => `${district} needs support now. Momentum swings to whoever answers this operation first.`,
+    (district) => `Alignment pressure in ${district} is peaking. Bring allies before the lane collapses.`,
+    (district) => `Support routes in ${district} are open for a moment. We should move now.`,
   ],
 };
 
@@ -230,9 +261,30 @@ export function createNpcSystem(state, liveIntelligence = null) {
   const MAP_W = state.map.width;
   const MAP_H = state.map.height;
 
+  function sampleOperationRoleLine(npc, operation) {
+    if (!operation) return '';
+    const districtName = state.districts.byId.get(operation.districtId)?.name || state.player?.districtName || 'this district';
+    const builders = OPERATION_ROLE_DIALOGUE[npc.role];
+    if (!Array.isArray(builders) || !builders.length) return '';
+    const fn = sample(builders);
+    if (typeof fn !== 'function') return '';
+    return fn(districtName);
+  }
+
+  function getDistrictOperation(districtId) {
+    const ops = state.signalOperations?.active || [];
+    return ops.find((operation) => operation.districtId === districtId && !operation.resolved) || null;
+  }
+
   function getDialogueLine(npc) {
+    const districtOp = getDistrictOperation(npc?.districtId);
     const liveLine = liveIntelligence?.pickNpcLine?.(npc);
-    if (liveLine) return liveLine;
+    const liveChance = districtOp ? LIVE_DIALOGUE_CHANCE_WITH_OPERATION : LIVE_DIALOGUE_CHANCE_BASE;
+    if (districtOp && Math.random() < ROLE_OPERATION_LINE_CHANCE) {
+      const roleOpLine = sampleOperationRoleLine(npc, districtOp);
+      if (roleOpLine) return roleOpLine;
+    }
+    if (liveLine && Math.random() < liveChance) return liveLine;
 
     const mapped = roleToProfile[npc.role];
     const profile = mapped ? profileByRole.get(mapped) : null;

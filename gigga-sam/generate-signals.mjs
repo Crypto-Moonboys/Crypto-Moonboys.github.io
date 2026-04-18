@@ -43,6 +43,33 @@ function buildSignalId(index) {
   return `signal-${Date.now()}-${index + 1}`;
 }
 
+function getOpenAIApiKey() {
+  const raw = process.env.OPENAI_API_KEY
+    || process.env.GIGGA_SAM_OPENAI_API_KEY
+    || process.env.OPENAI_KEY
+    || '';
+  return String(raw).trim();
+}
+
+function parseJsonLenient(rawText) {
+  const raw = String(rawText || '').trim();
+  if (!raw) throw new Error('Empty AI response');
+  try {
+    return JSON.parse(raw);
+  } catch {
+    const blockMatch = raw.match(/```json\s*([\s\S]*?)```/i) || raw.match(/```\s*([\s\S]*?)```/i);
+    if (blockMatch?.[1]) {
+      return JSON.parse(blockMatch[1].trim());
+    }
+    const firstBrace = raw.indexOf('{');
+    const lastBrace = raw.lastIndexOf('}');
+    if (firstBrace !== -1 && lastBrace > firstBrace) {
+      return JSON.parse(raw.slice(firstBrace, lastBrace + 1));
+    }
+    throw new Error('AI response was not valid JSON');
+  }
+}
+
 async function readJsonSafe(url, sourceName) {
   try {
     const response = await withTimeout(url);
@@ -177,11 +204,12 @@ function normalizeSignal(candidate, index) {
 }
 
 async function transformWithOpenAI(compactInput) {
-  const apiKey = process.env.OPENAI_API_KEY;
+  const apiKey = getOpenAIApiKey();
   if (!apiKey) {
     return {
       mode: 'fallback-no-key',
       signals: buildFallbackSignals(compactInput),
+      openaiStatus: 'missing-key',
     };
   }
 
@@ -203,6 +231,7 @@ async function transformWithOpenAI(compactInput) {
 
     const response = await client.chat.completions.create({
       model: DEFAULT_MODEL,
+      response_format: { type: 'json_object' },
       messages: [
         {
           role: 'user',
@@ -212,19 +241,21 @@ async function transformWithOpenAI(compactInput) {
     });
 
     const raw = String(response.choices?.[0]?.message?.content || '').trim();
-    const parsed = JSON.parse(raw);
+    const parsed = parseJsonLenient(raw);
     const aiSignals = Array.isArray(parsed?.signals) ? parsed.signals : [];
     if (!aiSignals.length) throw new Error('OpenAI returned no signals');
 
     return {
       mode: 'live-ai',
       signals: aiSignals,
+      openaiStatus: 'ok',
     };
   } catch (error) {
     return {
       mode: 'fallback-ai-error',
       signals: buildFallbackSignals(compactInput),
       aiError: String(error?.message || error),
+      openaiStatus: 'degraded',
     };
   }
 }
@@ -244,7 +275,10 @@ async function run() {
     schemaVersion: 1,
     generatedAt: new Date().toISOString(),
     mode: transformed.mode,
-    sourceHealth,
+    sourceHealth: {
+      ...sourceHealth,
+      openai: transformed.openaiStatus || 'unknown',
+    },
     signalCount: normalized.length,
     signals: normalized,
   };
