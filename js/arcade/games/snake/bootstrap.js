@@ -158,7 +158,7 @@ export function bootstrapSnake(root) {
     if (multiplierTimer > 0) flags.push('x2 ' + multiplierTimer.toFixed(1) + 's');
     if (ghostTimer > 0) flags.push('GHOST ' + ghostTimer.toFixed(1) + 's');
     if (chaosTimer > 0) flags.push('CHAOS ' + chaosTimer.toFixed(1) + 's');
-    if (doublePickupsLeft > 0) flags.push('2xPICK \xd7' + doublePickupsLeft);
+    if (doublePickupsLeft > 0) flags.push('2xPICK ×' + doublePickupsLeft);
     if (comboSavePending) flags.push('SAVE \u2713');
     return 'HEAT ' + pct + '%' + (flags.length ? ' • ' + flags.join(' • ') : '');
   }
