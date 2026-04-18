@@ -17,11 +17,11 @@ const ROLE_OPERATION_LINE_CHANCE = 0.6;
 
 // District-aware NPC spawn bands (col, row, w, h) matching districts.json grid regions
 const DISTRICT_SPAWN_REGIONS = [
-  { id: 'neon-slums',         col: 0,  row: 0,  w: 10, h: 8  },
-  { id: 'signal-spire',       col: 10, row: 0,  w: 10, h: 8  },
-  { id: 'crypto-core',        col: 0,  row: 8,  w: 8,  h: 12 },
-  { id: 'moonlit-underbelly', col: 8,  row: 8,  w: 6,  h: 12 },
-  { id: 'revolt-plaza',       col: 14, row: 8,  w: 6,  h: 12 },
+  { id: 'neon-slums',         col: 0,  row: 0,  w: 24, h: 18 },
+  { id: 'signal-spire',       col: 24, row: 0,  w: 24, h: 18 },
+  { id: 'crypto-core',        col: 0,  row: 18, w: 16, h: 30 },
+  { id: 'moonlit-underbelly', col: 16, row: 18, w: 16, h: 30 },
+  { id: 'revolt-plaza',       col: 32, row: 18, w: 16, h: 30 },
 ];
 
 // Per-role inline fallback dialogue — used when no server NPC profiles are available.

@@ -78,34 +78,29 @@ const NPC_ASSETS = {
   'lore-keeper': '/games/block-topia/assets/npcs/radio-tech.svg',
 };
 
-const ISLAND_CENTER_X = 9.5;
-const ISLAND_CENTER_Y = 9.8;
-const ISLAND_RADIUS_X = 8.4;
-const ISLAND_RADIUS_Y = 7.5;
-
-const SCENE_BUILDINGS = [
-  { key: 'tower', col: 9, row: 8, w: 2, h: 2, yOffset: 296, drawW: 220, drawH: 360, smoke: true },
-  { key: 'annex', col: 8, row: 10, w: 2, h: 2, yOffset: 146, drawW: 130, drawH: 176 },
-  { key: 'annex', col: 11, row: 9, w: 2, h: 2, yOffset: 146, drawW: 130, drawH: 176 },
-  { key: 'medium', col: 6, row: 8, w: 2, h: 2, yOffset: 130, drawW: 140, drawH: 150 },
-  { key: 'medium', col: 12, row: 12, w: 2, h: 2, yOffset: 130, drawW: 140, drawH: 150 },
-  { key: 'medium', col: 5, row: 12, w: 2, h: 2, yOffset: 130, drawW: 140, drawH: 150 },
-  { key: 'shop', col: 4, row: 9, w: 2, h: 2, yOffset: 96, drawW: 118, drawH: 112 },
-  { key: 'shop', col: 13, row: 8, w: 2, h: 2, yOffset: 96, drawW: 118, drawH: 112 },
-  { key: 'shop', col: 14, row: 11, w: 2, h: 2, yOffset: 96, drawW: 118, drawH: 112 },
-  { key: 'shop', col: 4, row: 13, w: 2, h: 2, yOffset: 96, drawW: 118, drawH: 112 },
-  { key: 'signBtc', col: 6, row: 7, w: 1, h: 1, yOffset: 48, drawW: 68, drawH: 38 },
-  { key: 'signWax', col: 13, row: 10, w: 1, h: 1, yOffset: 48, drawW: 68, drawH: 38 },
+const SCENE_BUILDING_TEMPLATE = [
+  { key: 'tower', dCol: 0, dRow: -1, w: 2, h: 2, yOffset: 296, drawW: 220, drawH: 360, smoke: true },
+  { key: 'annex', dCol: -2, dRow: 2, w: 2, h: 2, yOffset: 146, drawW: 130, drawH: 176 },
+  { key: 'annex', dCol: 2, dRow: 1, w: 2, h: 2, yOffset: 146, drawW: 130, drawH: 176 },
+  { key: 'medium', dCol: -5, dRow: -1, w: 2, h: 2, yOffset: 130, drawW: 140, drawH: 150 },
+  { key: 'medium', dCol: 4, dRow: 4, w: 2, h: 2, yOffset: 130, drawW: 140, drawH: 150 },
+  { key: 'medium', dCol: -6, dRow: 4, w: 2, h: 2, yOffset: 130, drawW: 140, drawH: 150 },
+  { key: 'shop', dCol: -8, dRow: 0, w: 2, h: 2, yOffset: 96, drawW: 118, drawH: 112 },
+  { key: 'shop', dCol: 6, dRow: -1, w: 2, h: 2, yOffset: 96, drawW: 118, drawH: 112 },
+  { key: 'shop', dCol: 8, dRow: 3, w: 2, h: 2, yOffset: 96, drawW: 118, drawH: 112 },
+  { key: 'shop', dCol: -8, dRow: 5, w: 2, h: 2, yOffset: 96, drawW: 118, drawH: 112 },
+  { key: 'signBtc', dCol: -5, dRow: -2, w: 1, h: 1, yOffset: 48, drawW: 68, drawH: 38 },
+  { key: 'signWax', dCol: 6, dRow: 1, w: 1, h: 1, yOffset: 48, drawW: 68, drawH: 38 },
 ];
 
-const STATIC_PROP_SPECS = [
-  { type: 'lamp', col: 7, row: 9 }, { type: 'lamp', col: 8, row: 9 }, { type: 'lamp', col: 11, row: 9 }, { type: 'lamp', col: 12, row: 9 },
-  { type: 'lamp', col: 8, row: 12 }, { type: 'lamp', col: 11, row: 12 }, { type: 'lamp', col: 6, row: 11 }, { type: 'lamp', col: 13, row: 11 },
-  { type: 'sign', col: 5, row: 9 }, { type: 'sign', col: 14, row: 10 },
-  { type: 'barrier', col: 8, row: 8, scale: 0.7 }, { type: 'barrier', col: 11, row: 11, scale: 0.7 },
-  { type: 'bench', col: 7, row: 13, scale: 0.7 }, { type: 'bench', col: 12, row: 7, scale: 0.7 },
-  { type: 'crate', col: 5, row: 10, scale: 0.65 }, { type: 'crate', col: 13, row: 12, scale: 0.65 }, { type: 'crate', col: 10, row: 6, scale: 0.65 },
-  { type: 'graffiti', col: 6, row: 6, scale: 0.62 }, { type: 'graffiti', col: 14, row: 9, scale: 0.62 },
+const STATIC_PROP_TEMPLATE = [
+  { type: 'lamp', dCol: -3, dRow: 0 }, { type: 'lamp', dCol: -2, dRow: 0 }, { type: 'lamp', dCol: 1, dRow: 0 }, { type: 'lamp', dCol: 2, dRow: 0 },
+  { type: 'lamp', dCol: -2, dRow: 3 }, { type: 'lamp', dCol: 1, dRow: 3 }, { type: 'lamp', dCol: -4, dRow: 2 }, { type: 'lamp', dCol: 3, dRow: 2 },
+  { type: 'sign', dCol: -6, dRow: 0 }, { type: 'sign', dCol: 4, dRow: 1 },
+  { type: 'barrier', dCol: -2, dRow: -1, scale: 0.7 }, { type: 'barrier', dCol: 1, dRow: 2, scale: 0.7 },
+  { type: 'bench', dCol: -3, dRow: 4, scale: 0.7 }, { type: 'bench', dCol: 2, dRow: -2, scale: 0.7 },
+  { type: 'crate', dCol: -6, dRow: 1, scale: 0.65 }, { type: 'crate', dCol: 3, dRow: 3, scale: 0.65 }, { type: 'crate', dCol: 0, dRow: -3, scale: 0.65 },
+  { type: 'graffiti', dCol: -5, dRow: -3, scale: 0.62 }, { type: 'graffiti', dCol: 4, dRow: 0, scale: 0.62 },
 ];
 
 function clamp(value, min, max) {
@@ -131,34 +126,65 @@ function deterministicNoise2D(x, y) {
   return value - Math.floor(value);
 }
 
-function terrainDistance(col, row) {
-  const dx = (col - ISLAND_CENTER_X) / ISLAND_RADIUS_X;
-  const dy = (row - ISLAND_CENTER_Y) / ISLAND_RADIUS_Y;
+function getSceneMetrics(state) {
+  const width = Math.max(1, state?.map?.width || 48);
+  const height = Math.max(1, state?.map?.height || 48);
+  const centerX = (width - 1) / 2;
+  const centerY = (height - 1) / 2;
+  const radiusX = Math.max(8, width * 0.36);
+  const radiusY = Math.max(8, height * 0.34);
+  const roadHalfSpan = Math.max(4, Math.round(Math.min(width, height) * 0.16));
+  const districtLaneOffset = Math.max(4, Math.round(width * 0.12));
+  return {
+    width,
+    height,
+    centerX,
+    centerY,
+    radiusX,
+    radiusY,
+    roadHalfSpan,
+    districtLaneOffset,
+    districtLaneMinRow: Math.floor(centerY - roadHalfSpan),
+    districtLaneMaxRow: Math.ceil(centerY + roadHalfSpan),
+    districtLaneMinCol: Math.floor(centerX - roadHalfSpan),
+    districtLaneMaxCol: Math.ceil(centerX + roadHalfSpan),
+  };
+}
+
+function terrainDistance(col, row, metrics) {
+  const dx = (col - metrics.centerX) / metrics.radiusX;
+  const dy = (row - metrics.centerY) / metrics.radiusY;
   return Math.sqrt(dx * dx + dy * dy);
 }
 
-function classifyTerrain(col, row) {
-  const dist = terrainDistance(col, row);
+function classifyTerrain(col, row, metrics) {
+  const dist = terrainDistance(col, row, metrics);
   if (dist > 1.12) return 'water';
   if (dist > 0.98) return 'coast';
   if (dist > 0.86) return 'sand';
   return 'land';
 }
 
-function isRoadCell(col, row) {
-  const terrain = classifyTerrain(col, row);
+function isRoadCell(col, row, metrics) {
+  const terrain = classifyTerrain(col, row, metrics);
   if (terrain === 'water' || terrain === 'coast') return false;
-  const centralCross = Math.abs(col - 9.5) <= 0.5 || Math.abs(row - 9.5) <= 0.5;
-  const innerRing = Math.abs((col - 9.5) + (row - 9.5)) <= 0.6 && Math.abs(col - row) > 2;
-  const districtLane = (col === 6 && row >= 7 && row <= 13) || (row === 13 && col >= 7 && col <= 13);
+  const centralCross = Math.abs(col - metrics.centerX) <= 0.5 || Math.abs(row - metrics.centerY) <= 0.5;
+  const innerRing = Math.abs((col - metrics.centerX) + (row - metrics.centerY)) <= 0.6 && Math.abs(col - row) > 2;
+  const verticalLane = col === Math.floor(metrics.centerX - metrics.districtLaneOffset)
+    && row >= metrics.districtLaneMinRow
+    && row <= metrics.districtLaneMaxRow;
+  const horizontalLane = row === Math.floor(metrics.centerY + metrics.districtLaneOffset)
+    && col >= metrics.districtLaneMinCol
+    && col <= metrics.districtLaneMaxCol;
+  const districtLane = verticalLane || horizontalLane;
   return centralCross || innerRing || districtLane;
 }
 
-function getRoadType(col, row) {
-  const n = isRoadCell(col, row - 1);
-  const s = isRoadCell(col, row + 1);
-  const w = isRoadCell(col - 1, row);
-  const e = isRoadCell(col + 1, row);
+function getRoadType(col, row, metrics) {
+  const n = isRoadCell(col, row - 1, metrics);
+  const s = isRoadCell(col, row + 1, metrics);
+  const w = isRoadCell(col - 1, row, metrics);
+  const e = isRoadCell(col + 1, row, metrics);
   const count = Number(n) + Number(s) + Number(w) + Number(e);
 
   if (count >= 4) return { key: 'roadCross', rotate: 0 };
@@ -179,8 +205,8 @@ function getRoadType(col, row) {
   return { key: 'roadStraight', rotate: 0 };
 }
 
-function getTileElevation(col, row) {
-  const terrain = classifyTerrain(col, row);
+function getTileElevation(col, row, metrics) {
+  const terrain = classifyTerrain(col, row, metrics);
   if (terrain === 'water') return 0;
   if (terrain === 'coast') return 1;
   if (terrain === 'sand') return 2;
@@ -320,15 +346,28 @@ export function createIsoRenderer(canvas) {
     ctx.fillText(district.name.toUpperCase(), originX + iso.x, originY + iso.y - 20);
   }
 
-  function buildSceneProps(state) {
+  function buildSceneProps(state, metrics) {
     if (scenePropCache && scenePropCache.w === state.map.width && scenePropCache.h === state.map.height) {
       return scenePropCache.items;
     }
 
-    const items = [...STATIC_PROP_SPECS];
+    const centerCol = Math.round(metrics.centerX);
+    const centerRow = Math.round(metrics.centerY);
+    const items = STATIC_PROP_TEMPLATE
+      .map((spec) => ({
+        ...spec,
+        col: centerCol + spec.dCol,
+        row: centerRow + spec.dRow,
+      }))
+      .filter((spec) => (
+        spec.col >= 0
+        && spec.col < state.map.width
+        && spec.row >= 0
+        && spec.row < state.map.height
+      ));
     for (let row = 0; row < state.map.height; row += 1) {
       for (let col = 0; col < state.map.width; col += 1) {
-        const terrain = classifyTerrain(col, row);
+        const terrain = classifyTerrain(col, row, metrics);
         if (terrain === 'sand' && deterministicNoise2D(col * 7, row * 13) > 0.7) {
           items.push({ type: 'palm', col, row, scale: 0.5 });
         }
@@ -339,13 +378,13 @@ export function createIsoRenderer(canvas) {
     return items;
   }
 
-  function drawSceneProp(originX, originY, prop) {
+  function drawSceneProp(originX, originY, prop, metrics) {
     const path = PROP_ASSETS[prop.type];
     const img = imageRegistry[path];
     if (!img?.complete) return;
 
     const iso = toIso(prop.col, prop.row);
-    const elevation = getTileElevation(prop.col, prop.row);
+    const elevation = getTileElevation(prop.col, prop.row, metrics);
     const sx = originX + iso.x;
     const sy = originY + iso.y - elevation;
     const scale = prop.scale || 0.56;
@@ -354,8 +393,22 @@ export function createIsoRenderer(canvas) {
     ctx.drawImage(img, sx - drawW / 2, sy - drawH + 18, drawW, drawH);
   }
 
-  function drawBuildings(originX, originY, now) {
-    const sorted = [...SCENE_BUILDINGS].sort((a, b) => (a.row + a.h) - (b.row + b.h));
+  function drawBuildings(originX, originY, now, metrics) {
+    const centerCol = Math.round(metrics.centerX);
+    const centerRow = Math.round(metrics.centerY);
+    const buildings = SCENE_BUILDING_TEMPLATE
+      .map((building) => ({
+        ...building,
+        col: centerCol + building.dCol,
+        row: centerRow + building.dRow,
+      }))
+      .filter((building) => (
+        building.col >= 0
+        && building.col < metrics.width
+        && building.row >= 0
+        && building.row < metrics.height
+      ));
+    const sorted = buildings.sort((a, b) => (a.row + a.h) - (b.row + b.h));
 
     for (const building of sorted) {
       const path = BUILDING_ASSETS[building.key];
@@ -365,7 +418,7 @@ export function createIsoRenderer(canvas) {
       const anchorCol = building.col + (building.w / 2) - 0.5;
       const anchorRow = building.row + (building.h / 2) - 0.5;
       const iso = toIso(anchorCol, anchorRow);
-      const elevation = getTileElevation(anchorCol, anchorRow);
+      const elevation = getTileElevation(anchorCol, anchorRow, metrics);
       const baseX = originX + iso.x - building.drawW / 2;
       const baseY = originY + iso.y - building.yOffset - elevation;
       ctx.drawImage(img, baseX, baseY, building.drawW, building.drawH);
@@ -408,9 +461,9 @@ export function createIsoRenderer(canvas) {
     );
   }
 
-  function drawNpc(originX, originY, npc, now, isNearby) {
+  function drawNpc(originX, originY, npc, now, isNearby, metrics) {
     const iso = toIso(npc.col, npc.row);
-    const elevation = getTileElevation(npc.col, npc.row);
+    const elevation = getTileElevation(npc.col, npc.row, metrics);
     const sx = originX + iso.x;
     const sy = originY + iso.y - elevation - 4;
     const style = ROLE_STYLE[npc.role] || ROLE_STYLE.crowd;
@@ -456,9 +509,9 @@ export function createIsoRenderer(canvas) {
     }
   }
 
-  function drawRemotePlayer(originX, originY, remote, now) {
+  function drawRemotePlayer(originX, originY, remote, now, metrics) {
     const iso = toIso(remote.x, remote.y);
-    const elevation = getTileElevation(remote.x, remote.y);
+    const elevation = getTileElevation(remote.x, remote.y, metrics);
     const sx = originX + iso.x;
     const sy = originY + iso.y - elevation - 4;
     drawNpcSprite(sx, sy + 2, 'agent', getNpcFrame({ mode: 'active' }, now, false), 1.3);
@@ -468,9 +521,9 @@ export function createIsoRenderer(canvas) {
     ctx.fillText(remote.name || 'Player', sx, sy - 44);
   }
 
-  function drawPlayer(originX, originY, state, now) {
+  function drawPlayer(originX, originY, state, now, metrics) {
     const iso = toIso(state.player.x, state.player.y);
-    const elevation = getTileElevation(state.player.x, state.player.y);
+    const elevation = getTileElevation(state.player.x, state.player.y, metrics);
     const sx = originX + iso.x;
     const sy = originY + iso.y - elevation - 4;
 
@@ -544,6 +597,7 @@ export function createIsoRenderer(canvas) {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     const now = Date.now();
     const isNight = state.phase === 'Night';
+    const metrics = getSceneMetrics(state);
 
     drawBackdrop(now, isNight);
 
@@ -563,8 +617,8 @@ export function createIsoRenderer(canvas) {
         const iso = toIso(col, row);
         const x = originX + iso.x;
         const y = originY + iso.y;
-        const terrain = classifyTerrain(col, row);
-        const elevation = getTileElevation(col, row);
+        const terrain = classifyTerrain(col, row, metrics);
+        const elevation = getTileElevation(col, row, metrics);
 
         drawTileDepth(x, y, elevation);
 
@@ -573,8 +627,8 @@ export function createIsoRenderer(canvas) {
           continue;
         }
 
-        if (isRoadCell(col, row)) {
-          const road = getRoadType(col, row);
+        if (isRoadCell(col, row, metrics)) {
+          const road = getRoadType(col, row, metrics);
           drawIsoTile(TILE_ASSETS[road.key], x, y, elevation, road.rotate);
         } else if (terrain === 'sand' || terrain === 'coast') {
           drawIsoTile(TILE_ASSETS.sand, x, y, elevation);
@@ -594,25 +648,25 @@ export function createIsoRenderer(canvas) {
 
     for (let row = 0; row < state.map.height; row += 1) {
       for (let col = 0; col < state.map.width; col += 1) {
-        const terrain = classifyTerrain(col, row);
+        const terrain = classifyTerrain(col, row, metrics);
         if (terrain !== 'sand' && terrain !== 'coast') continue;
         const iso = toIso(col, row);
         const x = originX + iso.x;
         const y = originY + iso.y;
-        const elevation = getTileElevation(col, row);
+        const elevation = getTileElevation(col, row, metrics);
 
-        if (classifyTerrain(col, row - 1) === 'water') drawIsoTile(TILE_ASSETS.coastline, x, y, elevation, 0);
-        if (classifyTerrain(col + 1, row) === 'water') drawIsoTile(TILE_ASSETS.coastline, x, y, elevation, Math.PI / 2);
-        if (classifyTerrain(col, row + 1) === 'water') drawIsoTile(TILE_ASSETS.coastline, x, y, elevation, Math.PI);
-        if (classifyTerrain(col - 1, row) === 'water') drawIsoTile(TILE_ASSETS.coastline, x, y, elevation, -Math.PI / 2);
+        if (classifyTerrain(col, row - 1, metrics) === 'water') drawIsoTile(TILE_ASSETS.coastline, x, y, elevation, 0);
+        if (classifyTerrain(col + 1, row, metrics) === 'water') drawIsoTile(TILE_ASSETS.coastline, x, y, elevation, Math.PI / 2);
+        if (classifyTerrain(col, row + 1, metrics) === 'water') drawIsoTile(TILE_ASSETS.coastline, x, y, elevation, Math.PI);
+        if (classifyTerrain(col - 1, row, metrics) === 'water') drawIsoTile(TILE_ASSETS.coastline, x, y, elevation, -Math.PI / 2);
       }
     }
 
-    for (const prop of buildSceneProps(state)) {
-      drawSceneProp(originX, originY, prop);
+    for (const prop of buildSceneProps(state, metrics)) {
+      drawSceneProp(originX, originY, prop, metrics);
     }
 
-    drawBuildings(originX, originY, now);
+    drawBuildings(originX, originY, now, metrics);
 
     for (const operation of state.signalOperations?.active || []) {
       if (!operation || operation.resolved) continue;
@@ -633,11 +687,11 @@ export function createIsoRenderer(canvas) {
 
     for (const layer of layers) {
       if (layer.type === 'npc') {
-        drawNpc(originX, originY, layer.entity, now, state.player?.nearbyNpcId === layer.entity.id);
+        drawNpc(originX, originY, layer.entity, now, state.player?.nearbyNpcId === layer.entity.id, metrics);
       } else if (layer.type === 'remote') {
-        drawRemotePlayer(originX, originY, layer.entity, now);
+        drawRemotePlayer(originX, originY, layer.entity, now, metrics);
       } else {
-        drawPlayer(originX, originY, state, now);
+        drawPlayer(originX, originY, state, now, metrics);
       }
     }
 

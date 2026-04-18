@@ -1,51 +1,51 @@
 {
   "version": "1.0",
-  "mapWidth": 24,
-  "mapHeight": 24,
+  "mapWidth": 48,
+  "mapHeight": 48,
   "tileWidth": 64,
   "tileHeight": 32,
-  "playerStart": { "col": 12, "row": 12 },
+  "playerStart": { "col": 24, "row": 24 },
   "districts": [
     {
       "id": "neon-exchange",
       "name": "Neon Exchange",
       "color": "#ffd84d",
-      "region": { "col": 0, "row": 0, "w": 10, "h": 10 },
+      "region": { "col": 0, "row": 0, "w": 20, "h": 20 },
       "description": "The buzzing crypto market hub — stalls glow neon, candles burn all night."
     },
     {
       "id": "mural-sector",
       "name": "Mural Sector",
       "color": "#ff4fd8",
-      "region": { "col": 14, "row": 0, "w": 10, "h": 10 },
+      "region": { "col": 28, "row": 0, "w": 20, "h": 20 },
       "description": "GraffPUNKS art and culture district — every wall is a canvas, every tag a statement."
     },
     {
       "id": "chain-plaza",
       "name": "Chain Plaza",
       "color": "#5ef2ff",
-      "region": { "col": 0, "row": 14, "w": 10, "h": 10 },
+      "region": { "col": 0, "row": 28, "w": 20, "h": 20 },
       "description": "The industrial blockchain district — heavy blocks and reinforced nodes dominate the skyline."
     },
     {
       "id": "moon-gate",
       "name": "Moon Gate",
       "color": "#8dff6a",
-      "region": { "col": 14, "row": 14, "w": 10, "h": 10 },
+      "region": { "col": 28, "row": 28, "w": 20, "h": 20 },
       "description": "The sacred threshold — Moon Gate opens only for those willing to lose something."
     }
   ],
   "roads": [
-    { "col": 11, "row": 0, "length": 24, "axis": "row" },
-    { "col": 12, "row": 0, "length": 24, "axis": "row" },
-    { "col": 0, "row": 11, "length": 24, "axis": "col" },
-    { "col": 0, "row": 12, "length": 24, "axis": "col" }
+    { "col": 23, "row": 0, "length": 48, "axis": "row" },
+    { "col": 24, "row": 0, "length": 48, "axis": "row" },
+    { "col": 0, "row": 23, "length": 48, "axis": "col" },
+    { "col": 0, "row": 24, "length": 48, "axis": "col" }
   ],
   "npcSpawns": [
-    { "npcId": "runner-01", "col": 4,  "row": 4  },
-    { "npcId": "trader-01", "col": 2,  "row": 7  },
-    { "npcId": "warden-01", "col": 16, "row": 4  },
-    { "npcId": "oracle-01", "col": 18, "row": 18 }
+    { "npcId": "runner-01", "col": 8,  "row": 8  },
+    { "npcId": "trader-01", "col": 4,  "row": 14  },
+    { "npcId": "warden-01", "col": 32, "row": 8  },
+    { "npcId": "oracle-01", "col": 36, "row": 36 }
   ],
   "collisionTileTypes": [2, 3, 4]
 }
