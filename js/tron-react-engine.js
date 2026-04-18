@@ -92,27 +92,13 @@
     return list[Math.floor(Math.random() * list.length)] || '';
   }
 
-  async function fetchAiWakeLine(type, data) {
-    // TODO(server hook): wire this route to a trusted server/workflow proxy that
-    // reads OPENAI_API_KEY server-side. Do not call OpenAI directly from browser.
-    const ctrl = new AbortController();
-    const timeout = setTimeout(() => ctrl.abort(), 2500);
-    try {
-      const res = await fetch('/api/ai-wakeup-proxy', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ type, data }),
-        signal: ctrl.signal
-      });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const payload = await res.json();
-      const line = payload && typeof payload.line === 'string' ? payload.line.trim() : '';
-      return line || null;
-    } catch (_) {
-      return null;
-    } finally {
-      clearTimeout(timeout);
-    }
+  // AI wake-up hook: no network call made from the browser.
+  // When a server-side /api/ai-wakeup-proxy route is fully implemented with proper
+  // authentication and abuse protection, the call can be restored by replacing
+  // pickWakeLine with a fetch to that route and falling back to WAKE_FALLBACK on error.
+  function pickWakeLine(type) {
+    const bucket = WAKE_FALLBACK[type] || WAKE_FALLBACK.generic;
+    return randomFrom(bucket);
   }
 
   function ensureWakeToast() {
@@ -127,18 +113,14 @@
     return el;
   }
 
-  async function showWakeLine(type, data = {}) {
+  function showWakeLine(type, data = {}) {
     if (isReducedMotion()) return;
     const toast = ensureWakeToast();
     let message = '';
     if (data && typeof data.message === 'string' && data.message.trim()) {
       message = data.message.trim();
     } else {
-      message = await fetchAiWakeLine(type, data);
-      if (!message) {
-        const bucket = WAKE_FALLBACK[type] || WAKE_FALLBACK.generic;
-        message = randomFrom(bucket);
-      }
+      message = pickWakeLine(type);
     }
     if (!message) return;
     toast.textContent = `⚡ ${message}`;
