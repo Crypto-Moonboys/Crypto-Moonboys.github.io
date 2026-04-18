@@ -1,3 +1,6 @@
+const MAX_CANON_FEED_LINES = 12;
+const MAX_CANON_NPC_RUMORS = 8;
+
 function asTrimmedLines(values) {
   if (!Array.isArray(values)) return [];
   const unique = new Set();
@@ -30,16 +33,16 @@ export function buildCanonLore({ canonBible, legacyLoreFeed }) {
       source: 'canon',
       truthSource: '/wiki/bibles/block-topia.json',
       fallbackUsed: false,
-      feedLines: canonFacts.slice(0, 12),
-      npcRumors: canonFacts.slice(0, 8),
+      feedLines: canonFacts.slice(0, MAX_CANON_FEED_LINES),
+      npcRumors: canonFacts.slice(0, MAX_CANON_NPC_RUMORS),
     };
   }
 
-  const fallbackRumors = asTrimmedLines(legacyLoreFeed?.npc_rumors || []).slice(0, 8);
+  const fallbackRumors = asTrimmedLines(legacyLoreFeed?.npc_rumors || []).slice(0, MAX_CANON_NPC_RUMORS);
   const fallbackDistrictFlavor = asTrimmedLines(
     (legacyLoreFeed?.districts || [])
       .flatMap((district) => district?.flavor || []),
-  ).slice(0, 12);
+  ).slice(0, MAX_CANON_FEED_LINES);
 
   return {
     source: 'fallback',
