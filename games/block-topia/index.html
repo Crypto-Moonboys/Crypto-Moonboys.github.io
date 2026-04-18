@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Block Topia — Unified City</title>
-  <meta name="description" content="Block Topia unified game: Street Signal identity + Revolt multiplayer + ISO social world. 5 districts, SAM AI, faction war, live quests." />
+  <title>Block Topia — Signal District</title>
+  <meta name="description" content="Block Topia Signal District: persistent multiplayer surveillance control room with SAM, node interference, live canon, and duel overlays." />
   <link rel="stylesheet" href="./style.css" />
   <script data-cfasync="false">
     window.BLOCK_TOPIA_SERVER = window.BLOCK_TOPIA_SERVER || 'https://game.cryptomoonboys.com';
@@ -14,10 +14,12 @@
   <canvas id="world-canvas" aria-label="Block Topia isometric world"></canvas>
 
   <section id="entry-identity" aria-live="polite">
-    <p class="chip">STREET SIGNAL 3008 · UNIFIED CITY</p>
-    <h1>Block Topia</h1>
-    <p id="entry-tagline">Syncing district memory, factions, and live signals…</p>
+    <p class="chip">SIGNAL DISTRICT · LIVE CANON RUNTIME</p>
+    <h1>BLOCK TOPIA // SURVEILLANCE CONTROL ROOM</h1>
+    <p id="entry-tagline">Syncing district memory, nodes, and SAM pressure…</p>
   </section>
+
+  <div id="sam-top-banner" role="status" aria-live="assertive">⚠ SAM ACTIVITY DETECTED</div>
 
   <div id="ui-overlay" aria-live="polite">
     <div id="operator-hud">
@@ -28,18 +30,24 @@
     </div>
 
     <div id="world-hud">
-      <span id="world-status">Initializing unified city…</span>
+      <span id="world-status">Initializing Signal District runtime…</span>
       <span id="phase-status">Phase: Day</span>
-      <span id="sam-status">SAM: Phase 1</span>
+      <span id="sam-status">SAM: Signal Build</span>
       <span id="faction-status">Factions: Liberators vs Wardens</span>
       <span id="mp-status">Connecting…</span>
       <span id="room-status">Room: city</span>
       <span id="population-status">Players: 0 / 100</span>
     </div>
 
-    <section class="stream stream-left"><ul id="stream-left"></ul></section>
-    <section class="stream stream-right"><ul id="stream-right"></ul></section>
-    <section class="stream stream-bottom"><ul id="stream-bottom"></ul></section>
+    <section id="stream-viewport" aria-label="Infinite live surveillance stream">
+      <div id="live-stream-canvas">
+        <ul id="stream-left" class="stream stream-left"></ul>
+        <ul id="stream-center" class="stream stream-center"></ul>
+        <ul id="stream-right" class="stream stream-right"></ul>
+      </div>
+    </section>
+
+    <div id="status-ticker" aria-live="polite">⚙ Booting ticker…</div>
   </div>
 
   <div id="sam-popup" class="hidden" aria-live="assertive" role="alert"></div>
@@ -50,7 +58,6 @@
   <div id="quest-toast" class="hidden" aria-live="assertive"></div>
   <div id="npc-dialogue" class="hidden" aria-live="polite"></div>
   <div id="interact-prompt" class="hidden">⚡ Press E to interact</div>
-
   <div id="multiplayer-live-banner" role="status" aria-live="polite">LIVE MULTIPLAYER — CONNECTED</div>
 
   <script src="https://unpkg.com/colyseus.js/dist/colyseus.js" data-cfasync="false"></script>
