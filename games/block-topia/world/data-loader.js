@@ -1,4 +1,4 @@
-import { buildCanonLore } from './canon-lore.js';
+import { buildCanonAdapter } from './canon-adapter.js';
 const BASE = '/games/block-topia';
 
 async function loadJson(path, fallback) {
@@ -46,7 +46,14 @@ export async function loadUnifiedData() {
     loadJson(`${BASE}/assets/manifest.json`, {}),
   ]);
 
-  const canonLore = buildCanonLore({ canonBible, legacyLoreFeed: legacyLore });
+  const canonAdapter = buildCanonAdapter({
+    canonBible,
+    seasonModel,
+    legacyLoreFeed: legacyLore,
+    districts: districts?.districts || [],
+    factions,
+    samPhases,
+  });
 
   return {
     districts,
@@ -57,7 +64,8 @@ export async function loadUnifiedData() {
     seasonModel,
     roomModel,
     canonBible,
-    canonLore,
+    canonAdapter,
+    canonLore: canonAdapter.canonLore,
     legacy: {
       map: legacyMap,
       npcProfiles: legacyNpcProfiles,

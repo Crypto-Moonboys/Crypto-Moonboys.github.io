@@ -1,3 +1,5 @@
+import { createCanonSignalBridge } from './canon-signal-bridge.js';
+
 const LIVE_SIGNAL_PATH = '/games/block-topia/data/live-signals.json';
 
 function nowIso() {
@@ -52,6 +54,22 @@ function snapshotFingerprint(snapshot) {
 export function createLiveIntelligence(fetchImpl = fetch) {
   let snapshot = normalizeSnapshot(null);
   let fingerprint = snapshotFingerprint(snapshot);
+  let canonSignalState = {
+    activeCanonSignals: [],
+    districtSignalState: {},
+    factionSignalState: {},
+    samNarrativeState: { pressure: 0, tone: [], warnings: [], eventTags: [] },
+    worldBulletins: [],
+    eventTags: [],
+    wikiHooks: [],
+  };
+  let canonBridge = null;
+
+  function configureCanonBridge(context = {}) {
+    canonBridge = createCanonSignalBridge(context);
+    canonSignalState = canonBridge.interpret(snapshot);
+    return canonSignalState;
+  }
 
   async function refresh() {
     try {
@@ -67,14 +85,19 @@ export function createLiveIntelligence(fetchImpl = fetch) {
         snapshot = nextSnapshot;
         fingerprint = nextFingerprint;
       }
+      if (canonBridge) {
+        canonSignalState = canonBridge.interpret(snapshot);
+      }
       return {
         snapshot,
+        canonSignalState,
         changed,
         error: null,
       };
     } catch (error) {
       return {
         snapshot,
+        canonSignalState,
         changed: false,
         error: String(error?.message || error || 'refresh-failed'),
       };
@@ -90,6 +113,12 @@ export function createLiveIntelligence(fetchImpl = fetch) {
   }
 
   function getWorldFeedLines(limit = 2) {
+    const canonBulletins = Array.isArray(canonSignalState?.worldBulletins)
+      ? canonSignalState.worldBulletins
+      : [];
+    if (canonBulletins.length) {
+      return canonBulletins.slice(0, limit);
+    }
     return getSignalsByLane('world')
       .concat(getSignalsByLane('ops'))
       .slice(0, limit)
@@ -98,6 +127,15 @@ export function createLiveIntelligence(fetchImpl = fetch) {
   }
 
   function getQuestPulses(limit = 3) {
+    const canonSignals = Array.isArray(canonSignalState?.activeCanonSignals)
+      ? canonSignalState.activeCanonSignals
+      : [];
+    const canonPulses = canonSignals
+      .map((signal) => signal.questPulse)
+      .filter(Boolean);
+    if (canonPulses.length) {
+      return canonPulses.slice(0, limit);
+    }
     return getSignalsByLane('quest')
       .concat(getSignalsByLane('ops'))
       .slice(0, limit)
@@ -107,6 +145,22 @@ export function createLiveIntelligence(fetchImpl = fetch) {
 
   function pickNpcLine(npc) {
     const roleTag = String(npc?.role || '').toLowerCase();
+    const districtId = String(npc?.districtId || '').toLowerCase();
+    const canonSignals = Array.isArray(canonSignalState?.activeCanonSignals)
+      ? canonSignalState.activeCanonSignals
+      : [];
+    const canonTagged = canonSignals.filter((signal) => {
+      const tags = Array.isArray(signal?.eventTags) ? signal.eventTags : [];
+      const inDistrict = districtId && String(signal?.districtId || '').toLowerCase() === districtId;
+      return inDistrict || tags.includes(roleTag);
+    });
+    const canonLine = pickRandom(canonTagged)?.npcLine;
+    if (canonLine) return canonLine;
+
+    const districtWarnings = canonSignalState?.districtSignalState?.[districtId]?.warnings || [];
+    const districtWarningLine = pickRandom(districtWarnings);
+    if (districtWarningLine) return districtWarningLine;
+
     const roleSignals = getActiveSignals().filter((signal) => Array.isArray(signal.tags) && signal.tags.includes(roleTag));
     const pool = roleSignals.length ? roleSignals : getSignalsByLane('npc').concat(getSignalsByLane('ops'));
     return pickRandom(pool)?.npcLine || '';
@@ -128,9 +182,15 @@ export function createLiveIntelligence(fetchImpl = fetch) {
     return snapshot;
   }
 
+  function getCanonSignalState() {
+    return canonSignalState;
+  }
+
   return {
     refresh,
     getSnapshot,
+    configureCanonBridge,
+    getCanonSignalState,
     getActiveSignals,
     getSignalsByLane,
     getWorldFeedLines,

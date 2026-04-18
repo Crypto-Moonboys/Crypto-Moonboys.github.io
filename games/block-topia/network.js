@@ -33,6 +33,11 @@ export async function connectMultiplayer({
   onSamPhaseChanged,
   onDistrictCaptureChanged,
   onNodeInterferenceChanged,
+  onDuelRequested,
+  onDuelStarted,
+  onDuelActionSubmitted,
+  onDuelResolved,
+  onDuelEnded,
 }) {
   const endpoint = window.BLOCK_TOPIA_SERVER || 'https://game.cryptomoonboys.com';
   const retries = 2;
@@ -109,6 +114,26 @@ export async function connectMultiplayer({
         onNodeInterferenceChanged?.(message);
       });
 
+      room.onMessage('duelRequested', (message) => {
+        onDuelRequested?.(message);
+      });
+
+      room.onMessage('duelStarted', (message) => {
+        onDuelStarted?.(message);
+      });
+
+      room.onMessage('duelActionSubmitted', (message) => {
+        onDuelActionSubmitted?.(message);
+      });
+
+      room.onMessage('duelResolved', (message) => {
+        onDuelResolved?.(message);
+      });
+
+      room.onMessage('duelEnded', (message) => {
+        onDuelEnded?.(message);
+      });
+
       return room;
     } catch (error) {
       lastError = error;
@@ -135,4 +160,34 @@ export function sendNodeInterference(nodeId) {
 
 export function getRoom() {
   return room;
+}
+
+export function challengePlayer(targetPlayerId) {
+  if (!room || !targetPlayerId) return;
+  room.send('duelChallenge', { targetPlayerId });
+}
+
+export function acceptDuel(duelId) {
+  if (!room || !duelId) return;
+  room.send('duelAccept', { duelId });
+}
+
+export function submitDuelAction(duelId, action) {
+  if (!room || !duelId || !action) return;
+  room.send('duelAction', { duelId, action });
+}
+
+/** sendDuelChallenge — spec-required alias of challengePlayer */
+export function sendDuelChallenge(targetId) {
+  return challengePlayer(targetId);
+}
+
+/** sendDuelAccept — spec-required alias of acceptDuel */
+export function sendDuelAccept(duelId) {
+  return acceptDuel(duelId);
+}
+
+/** sendDuelAction — spec-required alias of submitDuelAction */
+export function sendDuelAction(duelId, action) {
+  return submitDuelAction(duelId, action);
 }
