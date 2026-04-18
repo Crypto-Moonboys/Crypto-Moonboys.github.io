@@ -1,5 +1,6 @@
 /**
  * bootstrap.js — Breakout Bullrun game module
+ * Branch: fix/breakout-system-integration
  */
 
 import { ArcadeSync } from '/js/arcade-sync.js';
