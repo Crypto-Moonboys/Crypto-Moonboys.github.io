@@ -18,7 +18,7 @@ function extractCanonFacts(canonBible) {
   const facts = Array.isArray(canonBible?.all_facts) ? canonBible.all_facts : [];
   return asTrimmedLines(
     facts
-      .filter((entry) => entry?.status === 'VERIFIED' || entry?.status === 'verified')
+      .filter((entry) => String(entry?.status || '').toLowerCase() === 'verified')
       .map((entry) => entry?.fact),
   );
 }

@@ -25,6 +25,7 @@ const INTERFERENCE_DISTRICT_DIALOGUE_CHANCE = 0.65;
 const INTERFERENCE_NODE_RADIUS_SQ = 36;
 const INTERFERENCE_WANDER_CHANCE = 0.28;
 const UNSTABLE_VILLAIN_SPAWN_CHANCE = 0.3;
+const DEFAULT_DIALOGUE_FALLBACK = 'Move smart. The district remembers.';
 
 // District-aware NPC spawn bands (col, row, w, h) matching districts.json grid regions
 const DISTRICT_SPAWN_REGIONS = [
@@ -460,14 +461,14 @@ export function createNpcSystem(state, liveIntelligence = null) {
     }
     const canonRumors = state.lore?.canon?.npcRumors;
     if (Array.isArray(canonRumors) && canonRumors.length) {
-      return sample(canonRumors, 'Move smart. The district remembers.');
+      return sample(canonRumors, DEFAULT_DIALOGUE_FALLBACK);
     }
     const loreRumors = state.lore?.legacy?.lore?.npc_rumors;
     if (Array.isArray(loreRumors) && loreRumors.length) {
-      return `Fallback intel: ${sample(loreRumors, 'Move smart. The district remembers.')}`;
+      return `Fallback intel: ${sample(loreRumors, DEFAULT_DIALOGUE_FALLBACK)}`;
     }
     const inlineFallback = ROLE_DIALOGUE[npc.role] || [];
-    const baseLine = sample(inlineFallback, 'Move smart. The district remembers.');
+    const baseLine = sample(inlineFallback, DEFAULT_DIALOGUE_FALLBACK);
     // Occasionally blend in a faction-specific line for immersion
     const overlay = FACTION_DIALOGUE_OVERLAY[npc.faction];
     if (overlay && Math.random() < 0.28) {
