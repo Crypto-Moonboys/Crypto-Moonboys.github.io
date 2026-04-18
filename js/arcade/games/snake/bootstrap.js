@@ -1,20 +1,3 @@
-/**
- * bootstrap.js — SnakeRun 3008 game module
- *
- * Contains all Snake game logic.  Exports bootstrapSnake(), which is the
- * entry point called by game-shell.js via mountGame().
- *
- * The function wires up the existing DOM elements (canvas, HUD, buttons)
- * that are declared in games/snake.html, and returns a standardised
- * lifecycle object for use by the shell.
- *
- * Integrations preserved:
- *  - ArcadeSync   (local high-score persistence)
- *  - submitScore  (leaderboard-client.js remote submission)
- *  - rollHiddenBonus / showBonusPopup  (bonus-engine.js)
- *  - window.showGameOverModal          (game-fullscreen.js)
- */
-
 import { ArcadeSync }                        from '/js/arcade-sync.js';
 import { submitScore }                       from '/js/leaderboard-client.js';
 import { rollHiddenBonus, showBonusPopup }   from '/js/bonus-engine.js';
@@ -22,276 +5,855 @@ import { SNAKE_CONFIG }                      from './config.js';
 import { GameRegistry }                      from '/js/arcade/core/game-registry.js';
 import { playSound, stopAllSounds, isMuted } from '/js/arcade/core/audio.js';
 
-// Register Snake in the central registry when this module is first imported.
 GameRegistry.register(SNAKE_CONFIG.id, {
-  label:     SNAKE_CONFIG.label,
+  label: SNAKE_CONFIG.label,
   bootstrap: bootstrapSnake,
 });
 
-/**
- * Bootstrap the Snake game.
- *
- * @param {Element} root - The .game-card element (unused directly; DOM IDs
- *                         are unique on the page, so getElementById is safe).
- * @returns {{ init, start, pause, resume, reset, destroy, getScore }}
- */
+var FOOD_VISUALS = Object.freeze({
+  normal:     { color: '#f7ab1a', halo: '#fff0b5', label: 'CORE',      points: 10, icon: '●' },
+  speed:      { color: '#36f7d7', halo: '#bffcff', label: 'BOOST',     points: 16, icon: '⚡' },
+  multiplier: { color: '#ff4fd1', halo: '#ffd3f4', label: 'MULTI',     points: 20, icon: '✶' },
+  ghost:      { color: '#9d7dff', halo: '#d9cfff', label: 'GHOST',     points: 18, icon: '◌' },
+  chaos:      { color: '#ff5f5f', halo: '#ffd3d3', label: 'CHAOS',     points: 22, icon: '☢' },
+});
+
 export function bootstrapSnake(root) {
-  // ── DOM refs ────────────────────────────────────────────────────────────
+  var canvas = document.getElementById('snakeCanvas');
+  var ctx = canvas.getContext('2d');
+  var scoreEl = document.getElementById('score');
+  var bestEl = document.getElementById('best');
+  var comboEl = document.getElementById('combo') || document.getElementById('streak');
+  var speedLabel = document.getElementById('speedLabel');
+  var startBtnEl = document.getElementById('startBtn');
+  var pauseBtnEl = document.getElementById('pauseBtn');
+  var resetBtnEl = document.getElementById('resetBtn');
 
-  var canvas      = document.getElementById('snakeCanvas');
-  var ctx         = canvas.getContext('2d');
-  var scoreEl     = document.getElementById('score');
-  var bestEl      = document.getElementById('best');
-  var streakEl    = document.getElementById('streak');
-  var speedLabel  = document.getElementById('speedLabel');
-  var startBtnEl  = document.getElementById('startBtn');
-  var pauseBtnEl  = document.getElementById('pauseBtn');
-  var resetBtnEl  = document.getElementById('resetBtn');
+  var GAME_ID = SNAKE_CONFIG.id;
+  var grid = SNAKE_CONFIG.grid;
+  var size = canvas.width / grid;
+  var movement = SNAKE_CONFIG.movement;
+  var effects = SNAKE_CONFIG.effects;
+  var specialFoods = SNAKE_CONFIG.specialFoods;
+  var W = canvas.width;
+  var H = canvas.height;
 
-  // ── Config shortcuts ─────────────────────────────────────────────────────
-
-  var grid       = SNAKE_CONFIG.grid;
-  var speedTiers = SNAKE_CONFIG.speedTiers;
-  var size       = canvas.width / grid;
-
-  // ── Mutable game state ───────────────────────────────────────────────────
-
-  var snake, dir, nextDir, food, timer;
   var running = false;
-  var paused  = false;
-  var score   = 0;
-  var streak  = 0;
-  var best    = ArcadeSync.getHighScore(SNAKE_CONFIG.id);
+  var paused = false;
+  var gameOver = false;
+  var score = 0;
+  var best = ArcadeSync.getHighScore(GAME_ID);
+  var heat = 0;
+  var timeAlive = 0;
+  var comboCount = 0;
+  var comboTimer = 0;
+  var lastEatStamp = -999;
+
+  var snake = [];
+  var prevSnake = [];
+  var dir = { x: 1, y: 0 };
+  var nextDir = { x: 1, y: 0 };
+  var food = null;
+
+  var speedBoostTimer = 0;
+  var multiplierTimer = 0;
+  var ghostTimer = 0;
+  var chaosTimer = 0;
+  var chaosJitter = 0;
+  var gridFlickerTimer = 0;
+
+  var particles = [];
+  var floatingTexts = [];
+  var shakeTime = 0;
+  var shakeIntensity = 0;
+
+  var raf = null;
+  var lastFrameSec = 0;
+  var accumulatorMs = 0;
+  var renderTime = 0;
+  var frozenRenderTime = 0;
 
   function playGameSound(id, options) {
     if (isMuted()) return null;
     return playSound(id, options);
   }
 
-  // ── HUD helpers ──────────────────────────────────────────────────────────
+  function clamp(v, min, max) { return Math.max(min, Math.min(max, v)); }
+  function lerp(a, b, t) { return a + (b - a) * t; }
+  function smoothstep(t) { return t * t * (3 - 2 * t); }
+  function rand(min, max) { return min + Math.random() * (max - min); }
+
+  function cloneSnake(source) {
+    return source.map(function (seg) { return { x: seg.x, y: seg.y }; });
+  }
+
+  function centerFromCell(pos) {
+    return { x: (pos.x + 0.5) * size, y: (pos.y + 0.5) * size };
+  }
+
+  function getInterpolatedSegment(index, alpha) {
+    var current = snake[index] || snake[snake.length - 1];
+    var previous = prevSnake[index] || current;
+    return {
+      x: lerp(previous.x, current.x, alpha),
+      y: lerp(previous.y, current.y, alpha),
+    };
+  }
+
+  function getComboMultiplier() {
+    return 1 + Math.min(12, Math.max(0, comboCount - 1)) * 0.24;
+  }
+
+  function getLengthMultiplier() {
+    return 1 + Math.min(1.6, Math.max(0, snake.length - 3) * 0.035);
+  }
+
+  function getEffectMultiplier() {
+    return multiplierTimer > 0 ? 1.85 : 1;
+  }
+
+  function recalcHeat() {
+    var scoreFactor = clamp(score / 1800, 0, 0.85);
+    var timeFactor = clamp(timeAlive / 78, 0, 0.7);
+    var lengthFactor = clamp((snake.length - 3) / 60, 0, 0.55);
+    var comboFactor = clamp(comboCount * 0.03, 0, 0.25);
+    heat = clamp(scoreFactor + timeFactor + lengthFactor + comboFactor, 0, 1.6);
+    return heat;
+  }
+
+  function getStepMs() {
+    var h = recalcHeat();
+    var ms = movement.baseStepMs - h * 42 - Math.min(24, Math.max(0, snake.length - 3) * 0.35);
+    if (speedBoostTimer > 0) ms *= 0.72;
+    if (chaosTimer > 0) ms *= 0.9 + chaosJitter;
+    return clamp(ms, movement.minStepMs, movement.baseStepMs);
+  }
+
+  function getSpeedLabel() {
+    var pct = Math.round(clamp(heat / 1.6, 0, 1) * 100);
+    var flags = [];
+    if (speedBoostTimer > 0) flags.push('BOOST ' + speedBoostTimer.toFixed(1) + 's');
+    if (multiplierTimer > 0) flags.push('x2 ' + multiplierTimer.toFixed(1) + 's');
+    if (ghostTimer > 0) flags.push('GHOST ' + ghostTimer.toFixed(1) + 's');
+    if (chaosTimer > 0) flags.push('CHAOS ' + chaosTimer.toFixed(1) + 's');
+    return 'HEAT ' + pct + '%' + (flags.length ? ' • ' + flags.join(' • ') : '');
+  }
 
   function updateHud() {
-    scoreEl.textContent  = score;
-    bestEl.textContent   = best;
-    streakEl.textContent = streak;
+    scoreEl.textContent = String(score);
+    bestEl.textContent = String(best);
+    if (comboEl) comboEl.textContent = 'x' + getComboMultiplier().toFixed(2);
     speedLabel.textContent = getSpeedLabel();
   }
 
-  // ── Speed tier helpers ───────────────────────────────────────────────────
-
-  function getSpeedTier() {
-    for (var i = 0; i < speedTiers.length; i++) {
-      if (score >= speedTiers[i].minScore) return speedTiers[i];
-    }
-    return speedTiers[speedTiers.length - 1];
+  function setBestMaybe() {
+    ArcadeSync.setHighScore(GAME_ID, score);
+    best = ArcadeSync.getHighScore(GAME_ID);
   }
 
-  function getSpeedLabel() { return getSpeedTier().label; }
-  function getSpeedMs()    { return getSpeedTier().ms;    }
-
-  /** Restart the interval at the speed matching the current score. */
-  function updateTimerSpeed() {
-    clearInterval(timer);
-    timer = setInterval(step, getSpeedMs());
-  }
-
-  // ── Drawing ───────────────────────────────────────────────────────────────
-
-  function drawCell(x, y, color, glow) {
-    ctx.fillStyle = color;
-    ctx.fillRect(x * size + 2, y * size + 2, size - 4, size - 4);
-    if (glow) {
-      ctx.strokeStyle = glow;
-      ctx.lineWidth   = 2;
-      ctx.strokeRect(x * size + 3, y * size + 3, size - 6, size - 6);
+  function pushParticle(px, py, vx, vy, sizePx, life, color) {
+    particles.push({
+      x: px,
+      y: py,
+      vx: vx,
+      vy: vy,
+      size: sizePx,
+      life: life,
+      maxLife: life,
+      color: color,
+    });
+    if (particles.length > effects.maxParticles) {
+      particles.splice(0, particles.length - effects.maxParticles);
     }
   }
 
-  function draw() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.fillStyle = '#090c16';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    for (var i = 0; i < grid; i++) {
-      ctx.strokeStyle = i % 2 ? 'rgba(255,0,255,.08)' : 'rgba(0,255,255,.08)';
-      ctx.beginPath(); ctx.moveTo(i * size, 0);            ctx.lineTo(i * size, canvas.height); ctx.stroke();
-      ctx.beginPath(); ctx.moveTo(0,        i * size);     ctx.lineTo(canvas.width, i * size);  ctx.stroke();
-    }
-    drawCell(food.x, food.y, '#f7ab1a', '#fff2b5');
-    snake.forEach(function (s, idx) {
-      drawCell(
-        s.x, s.y,
-        idx === 0 ? '#2ec5ff' : '#ff4fd1',
-        idx === 0 ? '#dff8ff' : '#ffb3ef'
+  function spawnBurst(px, py, color, count, speedMul) {
+    var mul = speedMul || 1;
+    for (var i = 0; i < count; i++) {
+      var angle = Math.random() * Math.PI * 2;
+      var speed = rand(70, 240) * mul;
+      pushParticle(
+        px,
+        py,
+        Math.cos(angle) * speed,
+        Math.sin(angle) * speed,
+        rand(1.4, 4.2),
+        rand(0.24, 0.68),
+        color
       );
+    }
+  }
+
+  function spawnFloatingText(text, x, y, color, scale) {
+    floatingTexts.push({
+      text: text,
+      x: x,
+      y: y,
+      vy: -24 - (scale || 0) * 16,
+      life: 0.9,
+      maxLife: 0.9,
+      color: color || '#f7c948',
+      scale: scale || 1,
+    });
+    if (floatingTexts.length > effects.maxFloatingTexts) floatingTexts.shift();
+  }
+
+  function triggerShake(intensity, duration) {
+    shakeIntensity = Math.max(shakeIntensity, intensity);
+    shakeTime = Math.max(shakeTime, duration);
+  }
+
+  function pickFoodType() {
+    var unlockFactor = clamp((timeAlive + score / 8) / 120, 0.4, 1);
+    var options = [
+      { type: 'normal', weight: specialFoods.normal.weight + (1 - unlockFactor) * 0.3 },
+      { type: 'speed', weight: specialFoods.speed.weight * unlockFactor },
+      { type: 'multiplier', weight: specialFoods.multiplier.weight * unlockFactor },
+      { type: 'ghost', weight: specialFoods.ghost.weight * unlockFactor },
+      { type: 'chaos', weight: specialFoods.chaos.weight * unlockFactor },
+    ];
+    var total = 0;
+    for (var i = 0; i < options.length; i++) total += options[i].weight;
+    var roll = Math.random() * total;
+    var cursor = 0;
+    for (var j = 0; j < options.length; j++) {
+      cursor += options[j].weight;
+      if (roll <= cursor) return options[j].type;
+    }
+    return 'normal';
+  }
+
+  function spawnFood() {
+    var type = pickFoodType();
+    var visual = FOOD_VISUALS[type] || FOOD_VISUALS.normal;
+    var points = (specialFoods[type] && specialFoods[type].points) || visual.points;
+    var attempts = 0;
+    while (attempts < 600) {
+      attempts += 1;
+      var candidate = {
+        x: Math.floor(Math.random() * grid),
+        y: Math.floor(Math.random() * grid),
+      };
+      var occupied = snake.some(function (seg) { return seg.x === candidate.x && seg.y === candidate.y; });
+      if (!occupied) {
+        return {
+          x: candidate.x,
+          y: candidate.y,
+          type: type,
+          color: visual.color,
+          halo: visual.halo,
+          icon: visual.icon,
+          label: visual.label,
+          points: points,
+          pulseSeed: Math.random() * 999,
+        };
+      }
+    }
+    return {
+      x: Math.floor(grid / 2),
+      y: Math.floor(grid / 2),
+      type: 'normal',
+      color: FOOD_VISUALS.normal.color,
+      halo: FOOD_VISUALS.normal.halo,
+      icon: FOOD_VISUALS.normal.icon,
+      label: FOOD_VISUALS.normal.label,
+      points: FOOD_VISUALS.normal.points,
+      pulseSeed: Math.random() * 999,
+    };
+  }
+
+  function clearRuntimeState() {
+    score = 0;
+    timeAlive = 0;
+    heat = 0;
+    comboCount = 0;
+    comboTimer = 0;
+    lastEatStamp = -999;
+    speedBoostTimer = 0;
+    multiplierTimer = 0;
+    ghostTimer = 0;
+    chaosTimer = 0;
+    chaosJitter = 0;
+    gridFlickerTimer = 0;
+    particles = [];
+    floatingTexts = [];
+    shakeTime = 0;
+    shakeIntensity = 0;
+    accumulatorMs = 0;
+    dir = { x: 1, y: 0 };
+    nextDir = { x: 1, y: 0 };
+    snake = [{ x: 12, y: 12 }, { x: 11, y: 12 }, { x: 10, y: 12 }];
+    prevSnake = cloneSnake(snake);
+    food = spawnFood();
+    setBestMaybe();
+    updateHud();
+  }
+
+  function onFoodEatenAsync() {
+    return rollHiddenBonus({ score: score, streak: comboCount, game: GAME_ID }).then(function (bonus) {
+      if (!bonus) return;
+      var awarded = (bonus.rewards && bonus.rewards.arcade_points) ? bonus.rewards.arcade_points : 0;
+      if (!awarded) return;
+      score += awarded;
+      setBestMaybe();
+      showBonusPopup(bonus);
+      updateHud();
+      spawnFloatingText('BONUS +' + awarded, W * 0.5, H * 0.18, '#9de7ff', 1.2);
+    }).catch(function (err) {
+      console.warn('[snake] Bonus roll failed:', err);
     });
   }
 
-  // ── State helpers ────────────────────────────────────────────────────────
-
-  function spawnFood() {
-    while (true) {
-      var f = { x: Math.floor(Math.random() * grid), y: Math.floor(Math.random() * grid) };
-      if (!snake.some(function (s) { return s.x === f.x && s.y === f.y; })) return f;
+  function applyFoodEffect(type) {
+    if (type === 'speed') {
+      speedBoostTimer = Math.max(speedBoostTimer, specialFoods.speed.durationSec);
+      playGameSound('snake-boost');
+      spawnFloatingText('SPEED BOOST', W * 0.5, H * 0.22, '#76fff0', 1.05);
+      return;
     }
+    if (type === 'multiplier') {
+      multiplierTimer = Math.max(multiplierTimer, specialFoods.multiplier.durationSec);
+      playGameSound('snake-multiplier');
+      spawnFloatingText('x2 MULTIPLIER', W * 0.5, H * 0.22, '#ff8ce3', 1.05);
+      return;
+    }
+    if (type === 'ghost') {
+      ghostTimer = Math.max(ghostTimer, specialFoods.ghost.durationSec);
+      playGameSound('snake-ghost');
+      spawnFloatingText('GHOST MODE', W * 0.5, H * 0.22, '#baabff', 1.05);
+      return;
+    }
+    if (type === 'chaos') {
+      chaosTimer = Math.max(chaosTimer, specialFoods.chaos.durationSec);
+      chaosJitter = rand(0, 0.16);
+      gridFlickerTimer = Math.max(gridFlickerTimer, 0.48);
+      triggerShake(effects.turnShake * 1.8, 0.22);
+      playGameSound('snake-chaos');
+      spawnFloatingText('CHAOS FIELD', W * 0.5, H * 0.22, '#ff9c9c', 1.05);
+      if (Math.random() > 0.3) {
+        if (dir.x !== 0) nextDir = { x: 0, y: Math.random() > 0.5 ? 1 : -1 };
+        else nextDir = { x: Math.random() > 0.5 ? 1 : -1, y: 0 };
+      }
+      return;
+    }
+    playGameSound('snake-eat');
   }
 
-  function resetState() {
-    snake   = [{ x: 12, y: 12 }, { x: 11, y: 12 }, { x: 10, y: 12 }];
-    dir     = { x: 1, y: 0 };
-    nextDir = { x: 1, y: 0 };
-    score   = 0;
-    streak  = 0;
-    food    = spawnFood();
+  function eatFood() {
+    var now = timeAlive;
+    if (now - lastEatStamp <= movement.comboWindowSec) comboCount += 1;
+    else comboCount = 1;
+    comboTimer = movement.comboWindowSec;
+    lastEatStamp = now;
+
+    var comboMul = getComboMultiplier();
+    var lengthMul = getLengthMultiplier();
+    var effectMul = getEffectMultiplier();
+    var heatMul = 1 + recalcHeat() * 0.35;
+    var gain = Math.max(1, Math.round(food.points * comboMul * lengthMul * effectMul * heatMul));
+    score += gain;
+
+    if (comboCount >= 3) playGameSound('snake-combo');
+    applyFoodEffect(food.type);
+
+    var center = centerFromCell(food);
+    var burstCount = 11 + Math.min(26, comboCount * 3) + (food.type !== 'normal' ? 8 : 0);
+    spawnBurst(center.x, center.y, food.color, burstCount, comboCount >= 4 ? 1.18 : 1);
+    spawnFloatingText('+' + gain, center.x, center.y - 8, food.color, 1 + Math.min(0.7, comboCount * 0.06));
+    if (comboCount > 1) spawnFloatingText('COMBO x' + comboMul.toFixed(2), center.x, center.y + 14, '#ffe08e', 0.92);
+    triggerShake(effects.turnShake * (1 + Math.min(1.2, comboCount * 0.08)), 0.06 + Math.min(0.16, comboCount * 0.015));
+
+    setBestMaybe();
+    food = spawnFood();
     updateHud();
-    draw();
+    onFoodEatenAsync();
   }
 
-  // ── Game events ───────────────────────────────────────────────────────────
+  function setDirection(x, y) {
+    if (!running || paused || gameOver) return;
+    var basis = nextDir;
+    if (x === -basis.x && y === -basis.y) return;
+    if (x === basis.x && y === basis.y) return;
+    nextDir = { x: x, y: y };
+    triggerShake(effects.turnShake, 0.05);
+    playGameSound('snake-turn');
+  }
 
-  async function onFoodEaten() {
-    var bonus = await rollHiddenBonus({ score: score, streak: streak, game: SNAKE_CONFIG.id });
-    if (bonus) {
-      score += (bonus.rewards && bonus.rewards.arcade_points) ? bonus.rewards.arcade_points : 0;
-      ArcadeSync.setHighScore(SNAKE_CONFIG.id, score);
-      best = ArcadeSync.getHighScore(SNAKE_CONFIG.id);
-      showBonusPopup(bonus);
-      updateHud();
+  function isSelfCollision(head, willEat) {
+    if (ghostTimer > 0) return false;
+    var limit = willEat ? snake.length : Math.max(0, snake.length - 1);
+    for (var i = 0; i < limit; i++) {
+      var seg = snake[i];
+      if (seg.x === head.x && seg.y === head.y) return true;
+    }
+    return false;
+  }
+
+  function explodeSnake() {
+    for (var i = 0; i < snake.length; i++) {
+      var seg = snake[i];
+      var center = centerFromCell(seg);
+      var ratio = i / Math.max(1, snake.length - 1);
+      var hue = 195 + ratio * 125;
+      var color = 'hsl(' + hue.toFixed(0) + ' 100% 65%)';
+      spawnBurst(center.x, center.y, color, 6 + Math.floor(Math.random() * 6), 1.1 + (1 - ratio) * 0.35);
     }
   }
 
   function onGameOver() {
+    if (gameOver) return;
     running = false;
-    clearInterval(timer);
+    paused = false;
+    gameOver = true;
     stopAllSounds();
-    ArcadeSync.setHighScore(SNAKE_CONFIG.id, score);
-    best = ArcadeSync.getHighScore(SNAKE_CONFIG.id);
-    updateHud();
-    // Submit to shared leaderboard (fire-and-forget)
-    submitScore(ArcadeSync.getPlayer(), score, SNAKE_CONFIG.id);
     playGameSound('snake-game-over');
-    if (window.showGameOverModal) {
-      window.showGameOverModal(score);
-    } else {
-      alert('Game Over — Score: ' + score);
-    }
+    explodeSnake();
+    gridFlickerTimer = Math.max(gridFlickerTimer, 0.65);
+    triggerShake(effects.collisionShake, 0.34);
+    setBestMaybe();
+    updateHud();
+    submitScore(ArcadeSync.getPlayer(), score, GAME_ID);
+    if (window.showGameOverModal) window.showGameOverModal(score);
+    else alert('Game Over — Score: ' + score);
   }
 
-  // ── Game loop ─────────────────────────────────────────────────────────────
-
-  function step() {
-    if (!running || paused) return;
-    dir = nextDir;
+  function stepGame() {
+    if (!running || paused || gameOver) return;
+    prevSnake = cloneSnake(snake);
+    dir = { x: nextDir.x, y: nextDir.y };
     var head = { x: snake[0].x + dir.x, y: snake[0].y + dir.y };
-    if (head.x < 0 || head.x >= grid || head.y < 0 || head.y >= grid ||
-        snake.some(function (s) { return s.x === head.x && s.y === head.y; })) {
+    var willEat = head.x === food.x && head.y === food.y;
+
+    if (head.x < 0 || head.x >= grid || head.y < 0 || head.y >= grid) {
       onGameOver();
       return;
     }
-    snake.unshift(head);
-    if (head.x === food.x && head.y === food.y) {
-      score  += 10;
-      streak += 1;
-      playGameSound('snake-eat');
-      ArcadeSync.setHighScore(SNAKE_CONFIG.id, score);
-      best = ArcadeSync.getHighScore(SNAKE_CONFIG.id);
-      food = spawnFood();
-      updateTimerSpeed();
-      onFoodEaten().catch(function (err) { console.warn('[snake] Bonus roll failed:', err); });
-    } else {
-      snake.pop();
-      streak = 0;
+    if (isSelfCollision(head, willEat)) {
+      onGameOver();
+      return;
     }
+
+    snake.unshift(head);
+    if (willEat) eatFood();
+    else snake.pop();
     updateHud();
-    draw();
   }
 
-  function setDirection(x, y) {
-    if (x === -dir.x && y === -dir.y) return;
-    nextDir = { x: x, y: y };
+  function updateEffects(dt) {
+    for (var i = particles.length - 1; i >= 0; i--) {
+      var p = particles[i];
+      p.x += p.vx * dt;
+      p.y += p.vy * dt;
+      p.vx *= 0.965;
+      p.vy *= 0.965;
+      p.life -= dt;
+      if (p.life <= 0) particles.splice(i, 1);
+    }
+    for (var j = floatingTexts.length - 1; j >= 0; j--) {
+      var t = floatingTexts[j];
+      t.y += t.vy * dt;
+      t.life -= dt;
+      if (t.life <= 0) floatingTexts.splice(j, 1);
+    }
+    if (shakeTime > 0) {
+      shakeTime = Math.max(0, shakeTime - dt);
+      shakeIntensity *= 0.9;
+      if (shakeTime <= 0) shakeIntensity = 0;
+    }
+    if (gridFlickerTimer > 0) gridFlickerTimer = Math.max(0, gridFlickerTimer - dt);
   }
 
-  // ── Input handler (stored so it can be removed on destroy) ───────────────
+  function updateGameplayTimers(dt) {
+    if (comboTimer > 0) {
+      comboTimer = Math.max(0, comboTimer - dt);
+      if (comboTimer <= 0 && comboCount > 0) comboCount = 0;
+    }
+    if (speedBoostTimer > 0) speedBoostTimer = Math.max(0, speedBoostTimer - dt);
+    if (multiplierTimer > 0) multiplierTimer = Math.max(0, multiplierTimer - dt);
+    if (ghostTimer > 0) ghostTimer = Math.max(0, ghostTimer - dt);
+    if (chaosTimer > 0) chaosTimer = Math.max(0, chaosTimer - dt);
+    if (chaosTimer <= 0) chaosJitter = 0;
+  }
+
+  function drawBackground(t) {
+    var intensity = clamp((heat / 1.6) + comboCount * 0.04 + (chaosTimer > 0 ? 0.2 : 0), 0.12, 1.65);
+    ctx.clearRect(0, 0, W, H);
+    var bgGrad = ctx.createLinearGradient(0, 0, 0, H);
+    bgGrad.addColorStop(0, 'rgb(5 10 28)');
+    bgGrad.addColorStop(1, 'rgb(8 3 18)');
+    ctx.fillStyle = bgGrad;
+    ctx.fillRect(0, 0, W, H);
+
+    var scanAlpha = 0.03 + intensity * 0.03 + (chaosTimer > 0 ? 0.04 : 0);
+    for (var y = 0; y < H; y += 4) {
+      var wobble = Math.sin(y * 0.05 + t * 4.2) * 8;
+      ctx.fillStyle = 'rgba(120,245,255,' + scanAlpha.toFixed(3) + ')';
+      ctx.fillRect(wobble, y, W, 1);
+    }
+    for (var n = 0; n < 85; n++) {
+      var nx = Math.random() * W;
+      var ny = Math.random() * H;
+      ctx.fillStyle = Math.random() > 0.5 ? 'rgba(255,255,255,0.03)' : 'rgba(255,89,214,0.025)';
+      ctx.fillRect(nx, ny, 1, 1);
+    }
+
+    var pulse = 0.45 + 0.55 * Math.sin(t * 2.2);
+    var flicker = gridFlickerTimer > 0 ? 0.14 + Math.random() * 0.18 : 0;
+    var gridAlphaA = 0.06 + intensity * 0.06 + pulse * 0.035 + flicker;
+    var gridAlphaB = 0.04 + intensity * 0.05 + (1 - pulse) * 0.03 + flicker * 0.8;
+    ctx.lineWidth = 1;
+    for (var i = 0; i <= grid; i++) {
+      var gx = i * size;
+      var gy = i * size;
+      ctx.strokeStyle = 'rgba(48,226,255,' + gridAlphaA.toFixed(3) + ')';
+      ctx.beginPath();
+      ctx.moveTo(gx, 0);
+      ctx.lineTo(gx, H);
+      ctx.stroke();
+      ctx.strokeStyle = 'rgba(255,79,209,' + gridAlphaB.toFixed(3) + ')';
+      ctx.beginPath();
+      ctx.moveTo(0, gy);
+      ctx.lineTo(W, gy);
+      ctx.stroke();
+    }
+
+    if (chaosTimer > 0) {
+      for (var b = 0; b < 6; b++) {
+        var barY = Math.random() * H;
+        var barH = 5 + Math.random() * 16;
+        ctx.fillStyle = Math.random() > 0.5 ? 'rgba(255,95,95,0.08)' : 'rgba(157,125,255,0.08)';
+        ctx.fillRect(0, barY, W, barH);
+      }
+    }
+  }
+
+  function drawFood(t) {
+    if (!food) return;
+    var c = centerFromCell(food);
+    var pulse = 0.55 + 0.45 * Math.sin(t * 8.5 + food.pulseSeed);
+    var radius = size * (0.23 + pulse * 0.14);
+    var orb = ctx.createRadialGradient(c.x, c.y, radius * 0.2, c.x, c.y, radius * 2.1);
+    orb.addColorStop(0, '#ffffff');
+    orb.addColorStop(0.2, food.halo);
+    orb.addColorStop(0.5, food.color);
+    orb.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = orb;
+    ctx.beginPath();
+    ctx.arc(c.x, c.y, radius * 2.1, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.fillStyle = food.color;
+    ctx.beginPath();
+    ctx.arc(c.x, c.y, radius, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.fillStyle = 'rgba(255,255,255,0.92)';
+    ctx.font = '700 ' + Math.max(10, Math.floor(size * 0.34)) + 'px system-ui';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(food.icon || '●', c.x, c.y + 0.5);
+  }
+
+  function drawSnake(alpha) {
+    if (!snake.length) return;
+    var eased = smoothstep(clamp(alpha, 0, 1));
+    var intensity = clamp(0.85 + heat * 0.6 + comboCount * 0.06, 0.8, 2.2);
+    var headPos = getInterpolatedSegment(0, eased);
+    var tailPos = getInterpolatedSegment(snake.length - 1, eased);
+    var headCenter = centerFromCell(headPos);
+    var tailCenter = centerFromCell(tailPos);
+
+    var trail = ctx.createLinearGradient(headCenter.x, headCenter.y, tailCenter.x, tailCenter.y);
+    trail.addColorStop(0, 'rgba(75,242,255,' + clamp(0.4 + comboCount * 0.03, 0.4, 0.85).toFixed(3) + ')');
+    trail.addColorStop(1, 'rgba(255,82,220,0.18)');
+
+    ctx.save();
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    ctx.strokeStyle = trail;
+    ctx.shadowColor = ghostTimer > 0 ? 'rgba(180,160,255,0.9)' : 'rgba(80,240,255,0.85)';
+    ctx.shadowBlur = 8 + intensity * 8;
+    ctx.lineWidth = size * 0.48;
+    ctx.beginPath();
+    for (var i = 0; i < snake.length; i++) {
+      var segPos = getInterpolatedSegment(i, eased);
+      var segCenter = centerFromCell(segPos);
+      if (i === 0) ctx.moveTo(segCenter.x, segCenter.y);
+      else ctx.lineTo(segCenter.x, segCenter.y);
+    }
+    ctx.stroke();
+    ctx.restore();
+
+    for (var j = snake.length - 1; j >= 0; j--) {
+      var pos = getInterpolatedSegment(j, eased);
+      var center = centerFromCell(pos);
+      var ratio = j / Math.max(1, snake.length - 1);
+      var hue = 192 + ratio * 130;
+      var sat = 96;
+      var light = 62 - ratio * 7;
+      var radius = (size * (j === 0 ? 0.36 : 0.3)) + (comboCount > 0 ? Math.min(2.2, comboCount * 0.14) : 0);
+      ctx.save();
+      ctx.globalAlpha = ghostTimer > 0 ? 0.52 : 0.95;
+      ctx.fillStyle = 'hsl(' + hue.toFixed(0) + ' ' + sat + '% ' + light.toFixed(0) + '%)';
+      ctx.shadowColor = ghostTimer > 0 ? 'rgba(183,162,255,0.85)' : 'hsl(' + hue.toFixed(0) + ' 100% 70%)';
+      ctx.shadowBlur = 8 + intensity * (j === 0 ? 10 : 6);
+      ctx.beginPath();
+      ctx.arc(center.x, center.y, radius, 0, Math.PI * 2);
+      ctx.fill();
+      if (j === 0) {
+        ctx.fillStyle = '#f4fcff';
+        var eyeOffsetX = dir.x * radius * 0.2 + (dir.y !== 0 ? radius * 0.23 : 0);
+        var eyeOffsetY = dir.y * radius * 0.2 + (dir.x !== 0 ? radius * 0.23 : 0);
+        ctx.beginPath();
+        ctx.arc(center.x - eyeOffsetX, center.y - eyeOffsetY, Math.max(1.2, radius * 0.14), 0, Math.PI * 2);
+        ctx.arc(center.x + eyeOffsetX, center.y + eyeOffsetY, Math.max(1.2, radius * 0.14), 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.restore();
+    }
+  }
+
+  function drawParticles() {
+    for (var i = 0; i < particles.length; i++) {
+      var p = particles[i];
+      var alpha = clamp(p.life / p.maxLife, 0, 1);
+      ctx.fillStyle = p.color;
+      ctx.globalAlpha = alpha * 0.85;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  function drawFloatingTexts() {
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    for (var i = 0; i < floatingTexts.length; i++) {
+      var text = floatingTexts[i];
+      var alpha = clamp(text.life / text.maxLife, 0, 1);
+      ctx.globalAlpha = alpha;
+      ctx.fillStyle = text.color;
+      ctx.font = '700 ' + Math.floor(12 * text.scale + 8) + 'px system-ui';
+      ctx.fillText(text.text, text.x, text.y);
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  function drawStatusOverlay() {
+    if (running && !gameOver) return;
+    ctx.save();
+    ctx.fillStyle = 'rgba(6,8,14,0.56)';
+    ctx.fillRect(0, 0, W, H);
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    if (gameOver) {
+      ctx.fillStyle = '#ff8a8a';
+      ctx.font = '700 42px system-ui';
+      ctx.fillText('SIGNAL LOST', W / 2, H / 2 - 12);
+      ctx.fillStyle = '#f8d2d2';
+      ctx.font = '600 16px system-ui';
+      ctx.fillText('Press Start to reboot the run', W / 2, H / 2 + 28);
+    } else {
+      ctx.fillStyle = '#8beeff';
+      ctx.font = '700 36px system-ui';
+      ctx.fillText('READY', W / 2, H / 2 - 12);
+      ctx.fillStyle = '#f0e4ff';
+      ctx.font = '600 16px system-ui';
+      ctx.fillText('Press Start and chain fast pickups', W / 2, H / 2 + 22);
+    }
+    ctx.restore();
+  }
+
+  function render(alpha) {
+    var t = paused ? frozenRenderTime : renderTime;
+    drawBackground(t);
+
+    if (shakeTime > 0 && !paused) {
+      ctx.save();
+      var sx = (Math.random() - 0.5) * shakeIntensity * 2;
+      var sy = (Math.random() - 0.5) * shakeIntensity * 2;
+      ctx.translate(sx, sy);
+      drawFood(t);
+      drawSnake(alpha);
+      drawParticles();
+      drawFloatingTexts();
+      ctx.restore();
+    } else {
+      drawFood(t);
+      drawSnake(alpha);
+      drawParticles();
+      drawFloatingTexts();
+    }
+
+    drawStatusOverlay();
+  }
+
+  function frame(ts) {
+    if (!lastFrameSec) lastFrameSec = ts / 1000;
+    var now = ts / 1000;
+    var dt = clamp(now - lastFrameSec, 0, 0.06);
+    lastFrameSec = now;
+
+    if (paused) {
+      render(0);
+      raf = requestAnimationFrame(frame);
+      return;
+    }
+
+    renderTime += dt;
+    updateEffects(dt);
+
+    if (running && !gameOver) {
+      timeAlive += dt;
+      updateGameplayTimers(dt);
+      accumulatorMs += dt * 1000;
+      var stepMs = getStepMs();
+      var maxSteps = 8;
+      while (accumulatorMs >= stepMs && maxSteps > 0 && running && !gameOver) {
+        accumulatorMs -= stepMs;
+        stepGame();
+        stepMs = getStepMs();
+        maxSteps -= 1;
+      }
+      updateHud();
+      render(clamp(accumulatorMs / Math.max(1, stepMs), 0, 1));
+    } else {
+      render(0);
+    }
+
+    raf = requestAnimationFrame(frame);
+  }
+
+  function ensureLoop() {
+    if (raf) return;
+    lastFrameSec = 0;
+    raf = requestAnimationFrame(frame);
+  }
+
+  function stopLoop() {
+    if (!raf) return;
+    cancelAnimationFrame(raf);
+    raf = null;
+    lastFrameSec = 0;
+  }
 
   function onKeyDown(e) {
-    if (e.key === 'ArrowUp'    || e.key === 'w') setDirection(0,  -1);
-    if (e.key === 'ArrowDown'  || e.key === 's') setDirection(0,   1);
-    if (e.key === 'ArrowLeft'  || e.key === 'a') setDirection(-1,  0);
-    if (e.key === 'ArrowRight' || e.key === 'd') setDirection(1,   0);
+    var key = String(e.key || '').toLowerCase();
+    if (key === 'arrowup' || key === 'w') {
+      e.preventDefault();
+      if (chaosTimer > 0) setDirection(0, 1);
+      else setDirection(0, -1);
+    }
+    if (key === 'arrowdown' || key === 's') {
+      e.preventDefault();
+      if (chaosTimer > 0) setDirection(0, -1);
+      else setDirection(0, 1);
+    }
+    if (key === 'arrowleft' || key === 'a') {
+      e.preventDefault();
+      if (chaosTimer > 0) setDirection(1, 0);
+      else setDirection(-1, 0);
+    }
+    if (key === 'arrowright' || key === 'd') {
+      e.preventDefault();
+      if (chaosTimer > 0) setDirection(-1, 0);
+      else setDirection(1, 0);
+    }
   }
 
-  // ── Lifecycle implementation ──────────────────────────────────────────────
+  function publishOverlayStateHook() {
+    window.__snakeOverlayStateHook = function () {
+      return { running: running, paused: paused, gameOver: gameOver };
+    };
+  }
 
   function init() {
-    best = ArcadeSync.getHighScore(SNAKE_CONFIG.id);
-    bestEl.textContent = best;
-    resetState();
+    best = ArcadeSync.getHighScore(GAME_ID);
+    bestEl.textContent = String(best);
+    running = false;
+    paused = false;
+    gameOver = false;
+    clearRuntimeState();
+    updateHud();
+    ensureLoop();
+    publishOverlayStateHook();
 
     document.addEventListener('keydown', onKeyDown);
 
     startBtnEl.onclick = function () {
-      resetState();
-      running = true;
-      paused  = false;
-      clearInterval(timer);
-      timer = setInterval(step, speedTiers[speedTiers.length - 1].ms);
+      start();
     };
-
     pauseBtnEl.onclick = function () {
-      if (running) {
-        paused = !paused;
-        if (paused) stopAllSounds();
+      if (!running || gameOver) return;
+      paused = !paused;
+      if (paused) {
+        frozenRenderTime = renderTime;
+        stopAllSounds();
+      } else {
+        lastFrameSec = 0;
       }
     };
-
     resetBtnEl.onclick = function () {
-      clearInterval(timer);
-      running = false;
-      paused  = false;
-      resetState();
+      reset();
     };
   }
 
   function start() {
-    resetState();
+    stopAllSounds();
     running = true;
-    paused  = false;
-    clearInterval(timer);
-    timer = setInterval(step, speedTiers[speedTiers.length - 1].ms);
+    paused = false;
+    gameOver = false;
+    renderTime = 0;
+    frozenRenderTime = 0;
+    clearRuntimeState();
+    playGameSound('snake-start');
+    ensureLoop();
   }
 
   function pause() {
-    if (running) {
-      paused = true;
-      stopAllSounds();
-    }
+    if (!running || gameOver) return;
+    paused = true;
+    frozenRenderTime = renderTime;
+    stopAllSounds();
   }
 
   function resume() {
-    if (running) paused = false;
+    if (!running || gameOver) return;
+    paused = false;
+    lastFrameSec = 0;
   }
 
   function reset() {
-    clearInterval(timer);
     stopAllSounds();
     running = false;
-    paused  = false;
-    resetState();
+    paused = false;
+    gameOver = false;
+    renderTime = 0;
+    frozenRenderTime = 0;
+    clearRuntimeState();
+    updateHud();
   }
 
   function destroy() {
-    clearInterval(timer);
+    stopLoop();
     stopAllSounds();
     document.removeEventListener('keydown', onKeyDown);
     startBtnEl.onclick = null;
     pauseBtnEl.onclick = null;
     resetBtnEl.onclick = null;
+    if (window.__snakeOverlayStateHook) delete window.__snakeOverlayStateHook;
   }
 
-  function getScore() {
-    return score;
-  }
+  function getScore() { return score; }
 
-  // ── Public lifecycle object ───────────────────────────────────────────────
-
-  return { init: init, start: start, pause: pause, resume: resume, reset: reset, destroy: destroy, getScore: getScore };
+  return {
+    init: init,
+    start: start,
+    pause: pause,
+    resume: resume,
+    reset: reset,
+    destroy: destroy,
+    getScore: getScore,
+  };
 }
