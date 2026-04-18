@@ -10,7 +10,6 @@
  * Integrations:
  *  - /js/arcade-sync.js        (local high-score persistence)
  *  - /js/leaderboard-client.js (remote score submission)
- *  - /js/bonus-engine.js       (hidden bonus rolls)
  *  - /js/game-fullscreen.js    (fullscreen shell lifecycle hooks)
  *
  * Note: Phaser 3 is loaded as a classic CDN script before this module runs.
@@ -20,8 +19,9 @@ import { BTQM_CONFIG }     from './config.js';
 import { GameRegistry } from '/js/arcade/core/game-registry.js';
 
 import { ArcadeSync } from '/js/arcade-sync.js';
-import { submitScore, fetchLeaderboard } from '/js/leaderboard-client.js';
-import { rollHiddenBonus, showBonusPopup } from '/js/bonus-engine.js';
+import { submitScore } from '/js/leaderboard-client.js';
+import { createBtqmAudio } from './arcade-audio-btqm.js';
+import { createFxSystem } from './fx-system.js';
 
 // ─── ZONE DEFINITIONS ────────────────────────────────────────────────────────
 const ZONES = [
@@ -182,6 +182,110 @@ const ZONE_POSITIONS = [
 const ZONE_CONNECTIONS = [[0,1],[1,2],[1,3],[3,4],[4,5],[2,5]];
 
 const TILE_SIZE = 40;
+const GAME_ID = BTQM_CONFIG.id;
+const FULL_CLEAR_BONUS = 900;
+const MISS_HIT_VOLUME = 0.02;
+const ENEMY_CRIT_VOLUME = 0.03;
+const ENEMY_HIT_VOLUME = 0.02;
+
+const btqmRuntime = {
+  audio: null,
+  runActive: false,
+  runEnded: false,
+  runSubmitted: false,
+  score: 0,
+  streak: 0,
+  bossKills: 0,
+  zoneClears: 0,
+  battlesWon: 0,
+  startedAt: 0,
+  playerName: 'Guest',
+  playerSurvived: true,
+};
+
+function getIdentityNameFallback() {
+  const identity = typeof window !== 'undefined' ? window.MOONBOYS_IDENTITY : null;
+  if (identity && typeof identity.getTelegramName === 'function') {
+    const name = identity.getTelegramName();
+    if (name && String(name).trim()) return String(name).trim();
+  }
+  return null;
+}
+
+function ensureAudio() {
+  if (!btqmRuntime.audio) btqmRuntime.audio = createBtqmAudio();
+  return btqmRuntime.audio;
+}
+
+function beginRun(playerName) {
+  btqmRuntime.runActive = true;
+  btqmRuntime.runEnded = false;
+  btqmRuntime.runSubmitted = false;
+  btqmRuntime.score = 0;
+  btqmRuntime.streak = 0;
+  btqmRuntime.bossKills = 0;
+  btqmRuntime.zoneClears = 0;
+  btqmRuntime.battlesWon = 0;
+  btqmRuntime.startedAt = Date.now();
+  btqmRuntime.playerSurvived = true;
+  btqmRuntime.playerName = String(playerName || getIdentityNameFallback() || ArcadeSync.getPlayer() || 'Guest');
+}
+
+function addRunScore(points) {
+  const value = Math.max(0, Math.floor(Number(points) || 0));
+  if (!value) return btqmRuntime.score;
+  btqmRuntime.score += value;
+  return btqmRuntime.score;
+}
+
+function syncDailyRunScore(daily) {
+  if (!daily) return 0;
+  daily.runScore = Math.max(0, Math.floor(btqmRuntime.score || 0));
+  return daily.runScore;
+}
+
+function scoreForEncounter(enemy) {
+  if (!enemy) return 0;
+  const base = Math.floor((enemy.maxHp || 1) * 0.7 + (enemy.atk || 1) * 6 + (enemy.def || 0) * 4);
+  return Math.max(18, base);
+}
+
+function scoreForBoss(zoneId) {
+  const zone = ZONES[zoneId];
+  const clearScore = zone ? zone.clearScore : 0;
+  return Math.max(100, Math.floor(clearScore * 1.25));
+}
+
+function scoreForZoneClear(zoneId) {
+  const zone = ZONES[zoneId];
+  return zone ? Math.floor(zone.clearScore) : 0;
+}
+
+function scoreForSurvival(startedAt) {
+  if (!startedAt) return 0;
+  const sec = Math.max(0, Math.floor((Date.now() - startedAt) / 1000));
+  return Math.min(900, Math.floor(sec * 1.2));
+}
+
+function canSubmitIdentity() {
+  if (typeof window === 'undefined') return false;
+  const identity = window.MOONBOYS_IDENTITY;
+  return !!(identity && typeof identity.isTelegramLinked === 'function' && identity.isTelegramLinked());
+}
+
+async function finalizeRunSubmission(force) {
+  if (!btqmRuntime.runActive && !force) return;
+  if (btqmRuntime.runSubmitted) return;
+  btqmRuntime.score += scoreForSurvival(btqmRuntime.startedAt);
+  const finalScore = Math.max(0, Math.floor(btqmRuntime.score || 0));
+  btqmRuntime.runEnded = true;
+  btqmRuntime.runSubmitted = true;
+  btqmRuntime.runActive = false;
+  ArcadeSync.setPlayer(btqmRuntime.playerName || 'Guest');
+  ArcadeSync.setHighScore(GAME_ID, finalScore);
+  if (!canSubmitIdentity() || finalScore <= 0) return;
+  await submitScore(btqmRuntime.playerName || 'Guest', finalScore, GAME_ID);
+}
 
 // ─── UTILITY FUNCTIONS ────────────────────────────────────────────────────────
 function randInt(min, max) {
@@ -260,7 +364,6 @@ function saveDailyState(s) {
 function checkFullClear(daily) {
   if (daily.zoneClears.every(Boolean) && !daily.fullClearBonus) {
     daily.fullClearBonus = true;
-    daily.runScore = Math.floor(daily.runScore * 2);
     saveDailyState(daily);
     return true;
   }
@@ -287,17 +390,10 @@ function updateDailyBar(daily) {
     '<span class="btqm-zone-icon ' + (c ? 'cleared' : '') + '" title="' + ZONES[i].name + '">' + (c ? '✓' : String(i + 1)) + '</span>'
   ).join('');
   const bonus = daily.fullClearBonus ? '<span class="btqm-bonus-tag">2× FULL CLEAR!</span>' : '';
-  bar.innerHTML = '<span class="btqm-bar-label">Today:</span> ' + icons + ' ' + bonus + ' <span class="btqm-score-tag">Score: ' + daily.runScore + '</span>';
-}
-
-async function postBtqmScore(player, daily) {
-  try {
-    ArcadeSync.setPlayer(player.name);
-    ArcadeSync.setHighScore('blocktopia', daily.runScore);
-    await submitScore(player.name, daily.runScore, 'blocktopia');
-  } catch(e) {
-    console.warn('[BTQM] Score submit failed:', e);
-  }
+  const score = btqmRuntime.runActive
+    ? Math.max(0, Math.floor(btqmRuntime.score || 0))
+    : Math.max(0, Math.floor(daily.runScore || 0));
+  bar.innerHTML = '<span class="btqm-bar-label">Today:</span> ' + icons + ' ' + bonus + ' <span class="btqm-score-tag">Score: ' + score + '</span>';
 }
 
 // ─── TEXTURE GENERATION HELPERS ──────────────────────────────────────────────
@@ -641,6 +737,7 @@ class TitleScene extends Phaser.Scene {
   create() {
     const daily  = this.registry.get('daily');
     const player = this.registry.get('player');
+    ensureAudio().setMusicLayer('world');
 
     // Signal to the fullscreen shell that the game is on the title screen.
     window.running = false;
@@ -710,7 +807,7 @@ class TitleScene extends Phaser.Scene {
     const prompt = this.add.text(320, 380, '▶ Press ENTER or click to begin', {
       fontFamily: 'Courier New', fontSize: '13px', color: '#f39c12'
     }).setOrigin(0.5);
-    this.tweens.add({ targets: prompt, alpha: 0, duration: 700, yoyo: true, repeat: -1 });
+    this.tweens.add({ targets: prompt, alpha: 0, duration: 700, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
 
     // Show the HTML overlay
     this.showNameOverlay(player, daily);
@@ -757,6 +854,7 @@ class TitleScene extends Phaser.Scene {
       savePlayer(p);
       this.registry.set('player', p);
       try { ArcadeSync.setPlayer(p.name); } catch(e) {}
+      beginRun(p.name);
 
       this.scene.start('WorldScene');
     };
@@ -792,6 +890,9 @@ class WorldScene extends Phaser.Scene {
     this.player = this.registry.get('player');
     this.daily  = this.registry.get('daily');
     this.currentZone = this.registry.get('currentZone') || 0;
+    this.audio = ensureAudio();
+    this.audio.setMusicLayer('world');
+    this.fx = createFxSystem(this);
 
     // Signal to the fullscreen shell that active gameplay has begun.
     window.running = true;
@@ -847,6 +948,17 @@ class WorldScene extends Phaser.Scene {
       }
 
       this.zoneSprites.push(sprite);
+      if (accessible && !cleared) {
+        this.tweens.add({
+          targets: sprite,
+          scaleX: 1.08,
+          scaleY: 1.08,
+          duration: 320,
+          yoyo: true,
+          repeat: -1,
+          ease: 'Sine.easeInOut',
+        });
+      }
 
       // Zone label
       const labelColor = accessible ? '#dddddd' : '#444444';
@@ -867,6 +979,14 @@ class WorldScene extends Phaser.Scene {
       ZONE_POSITIONS[this.currentZone].y - 22,
       'player'
     ).setDisplaySize(20, 20).setDepth(5);
+    this.tweens.add({
+      targets: this.playerIcon,
+      y: this.playerIcon.y - 4,
+      duration: 360,
+      yoyo: true,
+      repeat: -1,
+      ease: 'Sine.easeInOut',
+    });
 
     // Selection ring
     this.selIndicator = this.add.graphics().setDepth(4);
@@ -964,10 +1084,16 @@ class WorldScene extends Phaser.Scene {
       return;
     }
     this.registry.set('currentZone', zoneId);
-    this.scene.start('ZoneScene', { zoneId });
+    this.fx.sceneTransition(() => {
+      this.scene.start('ZoneScene', { zoneId });
+    });
   }
 
   update(time, delta) {
+    if (this.fx) {
+      this.fx.update(delta);
+      this.fx.maybeTriggerChaosEvent();
+    }
     // Refresh player/daily in case we returned from a zone
     this.player = this.registry.get('player');
     this.daily  = this.registry.get('daily');
@@ -1033,6 +1159,9 @@ class ZoneScene extends Phaser.Scene {
     this.mapData = ZONE_MAPS[this.zoneId];
     this.player  = this.registry.get('player');
     this.daily   = this.registry.get('daily');
+    this.audio   = ensureAudio();
+    this.audio.setMusicLayer('dungeon');
+    this.fx      = createFxSystem(this);
 
     this.clearedEncounters = new Set();
     this.bossDefeated = false;
@@ -1145,8 +1274,10 @@ class ZoneScene extends Phaser.Scene {
     this.escKey   = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ESC);
     this.escKey.on('down', () => {
       if (!this.inBattle) {
-        this.scene.stop('ZoneScene');
-        this.scene.start('WorldScene');
+        this.fx.sceneTransition(() => {
+          this.scene.stop('ZoneScene');
+          this.scene.start('WorldScene');
+        });
       }
     });
 
@@ -1154,6 +1285,57 @@ class ZoneScene extends Phaser.Scene {
 
     // Entrance message
     this.showMessage('Zone ' + (this.zoneId + 1) + ': ' + this.zone.name + '\n' + this.zone.subtitle, 2000);
+
+    this.applyTileFeedback();
+    this.tweens.add({
+      targets: this.playerSprite,
+      y: this.playerSprite.y - 3,
+      duration: 360,
+      yoyo: true,
+      repeat: -1,
+      ease: 'Sine.easeInOut',
+    });
+  }
+
+  applyTileFeedback() {
+    for (let r = 0; r < this.mapData.length; r++) {
+      for (let c = 0; c < this.mapData[0].length; c++) {
+        const tile = this.mapData[r][c];
+        const sprite = this.tileSprites[r] && this.tileSprites[r][c];
+        if (!sprite) continue;
+        if (tile === 1) {
+          this.tweens.add({
+            targets: sprite,
+            alpha: 0.88,
+            duration: 380,
+            yoyo: true,
+            repeat: -1,
+            ease: 'Sine.easeInOut',
+            delay: (r + c) * 18,
+          });
+        } else if (tile === 2) {
+          this.tweens.add({
+            targets: sprite,
+            alpha: 0.55,
+            duration: 320,
+            yoyo: true,
+            repeat: -1,
+            ease: 'Sine.easeInOut',
+          });
+        } else if (tile === 3) {
+          this.tweens.add({
+            targets: sprite,
+            alpha: 0.45,
+            scaleX: 1.06,
+            scaleY: 1.06,
+            duration: 300,
+            yoyo: true,
+            repeat: -1,
+            ease: 'Sine.easeInOut',
+          });
+        }
+      }
+    }
   }
 
   showMessage(msg, duration) {
@@ -1197,6 +1379,7 @@ class ZoneScene extends Phaser.Scene {
     const py = ny * TS + TS / 2;
     this.playerSprite.setPosition(px, py);
     this.playerShadow.setPosition(px, py + TS / 2 - 4);
+    this.audio.playSfx('move');
     this.onStepOnTile(nx, ny, tile);
   }
 
@@ -1225,6 +1408,12 @@ class ZoneScene extends Phaser.Scene {
 
   startBattle(enemy, posKey, isBoss) {
     this.inBattle = true;
+    this.audio.setMusicLayer(isBoss ? 'boss' : 'battle');
+    if (isBoss) {
+      this.fx.bossEntry();
+      this.audio.playSfx('bossEntry');
+    }
+    this.fx.transitionGlitch();
     this.scene.pause('ZoneScene');
 
     const self = this;
@@ -1251,7 +1440,7 @@ class ZoneScene extends Phaser.Scene {
                 self.tileSprites[r][c].setTexture('tile_exit');
                 self.tweens.add({
                   targets: self.tileSprites[r][c],
-                  alpha: 0.4, duration: 400, yoyo: true, repeat: -1
+                  alpha: 0.4, duration: 360, yoyo: true, repeat: -1, ease: 'Sine.easeInOut'
                 });
               }
             }
@@ -1269,20 +1458,29 @@ class ZoneScene extends Phaser.Scene {
         }
 
         self.updateHud();
+        if (self.fx) {
+          self.fx.setChainEnergy(btqmRuntime.streak);
+        }
         updateDailyBar(self.daily);
         exportWidgetData(self.player, self.daily);
+        self.audio.setMusicLayer('dungeon');
         self.scene.resume('ZoneScene');
       },
       onDefeat() {
         self.inBattle = false;
         self.player   = self.registry.get('player');
         self.updateHud();
+        if (self.fx) self.fx.setChainEnergy(0);
         self.showMessage('💀 Defeated...\nYou survive with low HP. Retreat or fight on!', 2500);
+        self.audio.setMusicLayer('dungeon');
         self.scene.resume('ZoneScene');
       },
       onFlee() {
         self.inBattle = false;
+        btqmRuntime.streak = 0;
+        if (self.fx) self.fx.setChainEnergy(0);
         self.showMessage('🏃 Fled the battle!', 1200);
+        self.audio.setMusicLayer('dungeon');
         self.scene.resume('ZoneScene');
       },
     });
@@ -1291,13 +1489,23 @@ class ZoneScene extends Phaser.Scene {
   exitZone() {
     this.showMessage('✨ Zone cleared!\nReturning to World Map...', 1400);
     this.time.delayedCall(1500, () => {
-      this.scene.stop('ZoneScene');
-      this.scene.start('WorldScene');
+      this.fx.sceneTransition(() => {
+        this.scene.stop('ZoneScene');
+        this.scene.start('WorldScene');
+      });
     });
   }
 
   update(time, delta) {
     if (this.inBattle) return;
+    if (this.fx) {
+      this.fx.update(delta);
+      this.fx.updateStateFx({
+        hpLow: this.player.hp / Math.max(1, this.player.maxHp) < 0.3,
+        fullClear: !!this.daily.fullClearBonus,
+      });
+      this.fx.maybeTriggerChaosEvent();
+    }
     this.moveCooldown -= delta;
     if (this.moveCooldown > 0) return;
 
@@ -1331,6 +1539,9 @@ class BattleScene extends Phaser.Scene {
     this.player      = this.registry.get('player');
     this.daily       = this.registry.get('daily');
     this.zone        = ZONES[this.zoneId];
+    this.audio       = ensureAudio();
+    this.fx          = createFxSystem(this);
+    this.audio.setMusicLayer(this.enemyData && this.enemyData.isBoss ? 'boss' : 'battle');
 
     this.enemy       = { ...this.enemyData };
     this.enemyMaxHp  = this.enemyData.maxHp;
@@ -1362,6 +1573,8 @@ class BattleScene extends Phaser.Scene {
       this.add.text(320, 18, '⚠  BOSS BATTLE  ⚠', {
         fontFamily: 'Courier New', fontSize: '15px', color: '#e74c3c', fontStyle: 'bold'
       }).setOrigin(0.5);
+      this.fx.bossEntry();
+      this.audio.playSfx('bossEntry');
     } else {
       this.add.text(320, 18, '⚔  ENCOUNTER', {
         fontFamily: 'Courier New', fontSize: '13px', color: '#f39c12', fontStyle: 'bold'
@@ -1489,9 +1702,27 @@ class BattleScene extends Phaser.Scene {
 
       if (!disabled) {
         bg.setInteractive({ useHandCursor: true });
-        bg.on('pointerover',  () => { bg.setFillStyle(0x3d2e00, 0.9); });
-        bg.on('pointerout',   () => { bg.setFillStyle(0x1a1500, 0.9); });
-        bg.on('pointerdown',  () => this.doPlayerAction(cfg.action));
+        bg.on('pointerover',  () => {
+          bg.setFillStyle(0x3d2e00, 0.9);
+          bg.setScale(1.03, 1.03);
+        });
+        bg.on('pointerout',   () => {
+          bg.setFillStyle(0x1a1500, 0.9);
+          bg.setScale(1, 1);
+        });
+        bg.on('pointerdown',  () => {
+          bg.setScale(0.95, 0.95);
+          this.time.delayedCall(100, () => bg.setScale(1, 1));
+          this.doPlayerAction(cfg.action);
+        });
+        this.tweens.add({
+          targets: bg,
+          alpha: 0.82,
+          duration: 320,
+          yoyo: true,
+          repeat: -1,
+          ease: 'Sine.easeInOut',
+        });
       }
       this.actionBtns.push({ bg, txt, action: cfg.action, disabled });
     });
@@ -1553,6 +1784,13 @@ class BattleScene extends Phaser.Scene {
     if (pPct < 0.3 && this.playerHpBar) this.playerHpBar.setFillStyle(0xe74c3c);
     else if (pPct < 0.6 && this.playerHpBar) this.playerHpBar.setFillStyle(0xf39c12);
     else if (this.playerHpBar) this.playerHpBar.setFillStyle(0x2ecc71);
+    if (this.fx) {
+      this.fx.updateStateFx({
+        hpLow: pPct < 0.3,
+        bossFight: !!this.enemy.isBoss,
+        fullClear: !!this.daily.fullClearBonus,
+      });
+    }
   }
 
   refreshButtons() {
@@ -1564,21 +1802,16 @@ class BattleScene extends Phaser.Scene {
     );
 
     this.actionBtns.forEach(({ bg, txt, action }) => {
-      if (action === 'skill') {
-        txt.setColor(skillDis ? '#444444' : '#f39c12');
-        if (skillDis) bg.removeInteractive();
-        else {
-          bg.setInteractive({ useHandCursor: true });
-          bg.on('pointerdown', () => this.doPlayerAction('skill'));
-        }
-      }
-      if (action === 'item') {
-        txt.setColor(itemDis ? '#444444' : '#f39c12');
-        if (itemDis) bg.removeInteractive();
-        else {
-          bg.setInteractive({ useHandCursor: true });
-          bg.on('pointerdown', () => this.doPlayerAction('item'));
-        }
+      let disabled = false;
+      if (action === 'skill') disabled = skillDis;
+      if (action === 'item') disabled = itemDis;
+      bg.removeAllListeners('pointerdown');
+      txt.setColor(disabled ? '#444444' : '#f39c12');
+      if (disabled) {
+        bg.removeInteractive();
+      } else {
+        bg.setInteractive({ useHandCursor: true });
+        bg.on('pointerdown', () => this.doPlayerAction(action));
       }
     });
   }
@@ -1603,6 +1836,8 @@ class BattleScene extends Phaser.Scene {
       const dmg = randInt(8 + p.level * 2, 14 + p.level * 3);
       e.hp -= dmg;
       this.flashSprite(this.enemySprite, 0xff6666, 180);
+      this.fx.hitImpact(this.enemySprite, dmg, { x: this.enemySprite.x, y: this.enemySprite.y - 46 });
+      this.audio.playSfx('hit');
       this.addLog('You strike for ' + dmg + ' damage!');
 
     } else if (action === 'skill') {
@@ -1611,6 +1846,8 @@ class BattleScene extends Phaser.Scene {
       const dmg = randInt(20 + p.level * 4, 30 + p.level * 5);
       e.hp -= dmg;
       this.flashSprite(this.enemySprite, 0x00ffff, 250);
+      this.fx.criticalHit(this.enemySprite, dmg, { x: this.enemySprite.x, y: this.enemySprite.y - 46 });
+      this.audio.playSfx('crit');
       this.addLog('✨ Skill strike! ' + dmg + ' critical damage!');
       this.refreshButtons();
 
@@ -1619,8 +1856,11 @@ class BattleScene extends Phaser.Scene {
         const dmg = randInt(25 + p.level * 3, 38 + p.level * 4);
         e.hp -= dmg;
         this.flashSprite(this.enemySprite, 0xffd700, 220);
+        this.fx.criticalHit(this.enemySprite, dmg, { x: this.enemySprite.x, y: this.enemySprite.y - 46 });
+        this.audio.playSfx('crit');
         this.addLog('🌙 Moon Strike! ' + dmg + ' bonus damage!');
       } else {
+        this.audio.playSfx('hit', { volume: MISS_HIT_VOLUME });
         this.addLog('🌙 Moon Strike missed! (40% miss chance)');
       }
 
@@ -1629,6 +1869,7 @@ class BattleScene extends Phaser.Scene {
       p.potions--;
       const heal = 40 + p.level * 3;
       p.hp = Math.min(p.maxHp, p.hp + heal);
+      this.audio.playSfx('potion');
       this.addLog('🧪 Potion! Restored ' + heal + ' HP.');
       this.updateBars();
       this.refreshButtons();
@@ -1659,6 +1900,7 @@ class BattleScene extends Phaser.Scene {
       this.addLog(e.name + ' has been defeated!');
       this.battleOver = true;
       this.cameras.main.shake(200, 0.015);
+      this.audio.playSfx('victory');
       this.time.delayedCall(1300, () => this.handleVictory());
       return;
     }
@@ -1682,10 +1924,14 @@ class BattleScene extends Phaser.Scene {
       logMsg = e.name + ' uses POWER SLAM for ' + eDmg + '!';
       this.flashSprite(this.playerSprite, 0xff0000, 300);
       this.cameras.main.shake(300, 0.02);
+      this.fx.criticalHit(this.playerSprite, eDmg, { x: this.playerSprite.x, y: this.playerSprite.y - 40 });
+      this.audio.playSfx('crit', { volume: ENEMY_CRIT_VOLUME });
     } else {
       eDmg = Math.max(1, randInt(Math.floor(e.atk * 0.8), Math.ceil(e.atk * 1.2)));
       logMsg = e.name + ' attacks for ' + eDmg + '!';
       this.flashSprite(this.playerSprite, 0xff4444, 180);
+      this.fx.hitImpact(this.playerSprite, eDmg, { x: this.playerSprite.x, y: this.playerSprite.y - 40 });
+      this.audio.playSfx('hit', { volume: ENEMY_HIT_VOLUME });
     }
 
     p.hp -= eDmg;
@@ -1708,15 +1954,24 @@ class BattleScene extends Phaser.Scene {
     const p = this.player;
     const e = this.enemy;
     const d = this.daily;
+    const levelBefore = p.level;
 
     grantXP(p, e.xp);
     p.gold = (p.gold || 0) + e.gold;
     d.enemiesDefeated = (d.enemiesDefeated || 0) + 1;
-    d.runScore = (d.runScore || 0) + e.xp;
+    addRunScore(scoreForEncounter(e));
+    syncDailyRunScore(d);
+    btqmRuntime.battlesWon += 1;
+    btqmRuntime.streak += 1;
+    this.fx.setChainEnergy(btqmRuntime.streak);
 
     if (e.isBoss) {
       d.zoneClears[this.zoneId] = true;
-      d.runScore += ZONES[this.zoneId].clearScore;
+      addRunScore(scoreForBoss(this.zoneId));
+      addRunScore(scoreForZoneClear(this.zoneId));
+      syncDailyRunScore(d);
+      btqmRuntime.bossKills += 1;
+      btqmRuntime.zoneClears += 1;
       p.lifetimeClears = (p.lifetimeClears || 0) + 1;
       p.skillCharges   = Math.min(p.skillCharges + 1, 3);
       if (p.potions < 3) p.potions++;
@@ -1725,11 +1980,10 @@ class BattleScene extends Phaser.Scene {
       savePlayer(p);
       exportWidgetData(p, d);
 
-      try { await postBtqmScore(p, d); } catch(err) {}
-
       if (checkFullClear(d)) {
-        this.addLog('🎉 ALL 6 ZONES CLEARED! Score doubled!');
-        try { await postBtqmScore(p, d); } catch(err) {}
+        addRunScore(FULL_CLEAR_BONUS);
+        syncDailyRunScore(d);
+        this.addLog('🎉 ALL 6 ZONES CLEARED! +' + FULL_CLEAR_BONUS + ' full-clear bonus!');
       }
 
       this.addLog('BOSS SLAIN! +' + e.xp + ' XP  +' + e.gold + ' Gold');
@@ -1742,37 +1996,43 @@ class BattleScene extends Phaser.Scene {
     }
 
     // Level-up display
-    if (p.level > 1) {
+    if (p.level > levelBefore) {
+      this.fx.levelUp(this.playerSprite.x, this.playerSprite.y - 25);
       this.addLog('LVL ' + p.level + '  XP ' + p.xp + '/' + xpToNextLevel(p.level));
     }
 
     this.registry.set('player', p);
     this.registry.set('daily', d);
 
-    // Attempt bonus roll
-    try {
-      const bonus = await rollHiddenBonus({ game: 'blocktopia', score: d.runScore });
-      if (bonus) showBonusPopup(bonus);
-    } catch(err) {}
-
     this.time.delayedCall(1600, () => this.endBattle('victory'));
   }
 
-  handleDefeat() {
+  async handleDefeat() {
     const p = this.player;
     p.hp = Math.max(1, Math.floor(p.maxHp * 0.35));
+    btqmRuntime.playerSurvived = false;
+    btqmRuntime.streak = 0;
+    this.fx.setChainEnergy(0);
+    this.audio.playSfx('death');
     savePlayer(p);
     this.registry.set('player', p);
     this.addLog('You survived with ' + p.hp + ' HP. Regroup!');
+    try { await finalizeRunSubmission(); } catch (err) { console.warn('[BTQM] run-end submit failed', err); }
+    beginRun(p.name);
     this.time.delayedCall(1200, () => this.endBattle('defeat'));
   }
 
   endBattle(result) {
     this.input.keyboard.off('keydown', this._keyHandler);
+    if (this.fx) this.fx.destroy();
     if (result === 'victory' && this.onVictoryCb) this.onVictoryCb();
     else if (result === 'defeat' && this.onDefeatCb) this.onDefeatCb();
     else if (result === 'flee'  && this.onFleeCb) this.onFleeCb();
     this.scene.stop('BattleScene');
+  }
+
+  update(time, delta) {
+    if (this.fx) this.fx.update(delta);
   }
 }
 
@@ -1844,18 +2104,7 @@ export function bootstrapBlockTopiaQuestMaze(root) {
     // START — show name-entry overlay; restart TitleScene if already playing
     var startBtn = document.getElementById('startBtn');
     if (startBtn) {
-      startBtn.onclick = function () {
-        _pausedByOverlay = [];
-        if (!phaserGame.scene.isActive('TitleScene')) {
-          ['BattleScene', 'ZoneScene', 'WorldScene'].forEach(function (k) {
-            if (phaserGame.scene.isActive(k) || phaserGame.scene.isPaused(k)) {
-              phaserGame.scene.stop(k);
-            }
-          });
-          phaserGame.scene.start('TitleScene');
-          window.running = false;
-        }
-      };
+      startBtn.onclick = function () { void start(); };
     }
 
     // PAUSE / RESUME — track only scenes paused by this button (not by game logic)
@@ -1863,33 +2112,15 @@ export function bootstrapBlockTopiaQuestMaze(root) {
     if (pauseBtn) {
       pauseBtn.onclick = function () {
         if (!window.running) return;
-        if (_pausedByOverlay.length) {
-          _pausedByOverlay.forEach(function (k) {
-            if (phaserGame.scene.isPaused(k)) phaserGame.scene.resume(k);
-          });
-          _pausedByOverlay = [];
-        } else {
-          ['BattleScene', 'ZoneScene', 'WorldScene'].forEach(function (k) {
-            if (phaserGame.scene.isActive(k)) {
-              phaserGame.scene.pause(k);
-              _pausedByOverlay.push(k);
-            }
-          });
-        }
+        if (_pausedByOverlay.length) resume();
+        else pause();
       };
     }
 
     // RESET — return to TitleScene / name-entry
     var resetBtn = document.getElementById('resetBtn');
     if (resetBtn) {
-      resetBtn.onclick = function () {
-        _pausedByOverlay = [];
-        window.running = false;
-        ['BattleScene', 'ZoneScene', 'WorldScene'].forEach(function (k) {
-          phaserGame.scene.stop(k);
-        });
-        phaserGame.scene.start('TitleScene');
-      };
+      resetBtn.onclick = function () { void reset(); };
     }
 
     // ── Mobile d-pad ──────────────────────────────────────────────────────────
@@ -1911,19 +2142,67 @@ export function bootstrapBlockTopiaQuestMaze(root) {
     });
   }
 
-  function start()   { /* Phaser manages its own game loop */ }
-  function pause()   { /* Phaser manages its own game loop */ }
-  function resume()  { /* Phaser manages its own game loop */ }
-  function reset()   { /* Phaser manages its own game loop */ }
-  function destroy() {
+  async function switchToTitleScene() {
+    if (!phaserGame) return;
+    _pausedByOverlay = [];
+    ['BattleScene', 'ZoneScene', 'WorldScene'].forEach(function (k) {
+      if (phaserGame.scene.isActive(k) || phaserGame.scene.isPaused(k)) phaserGame.scene.stop(k);
+    });
+    if (!phaserGame.scene.isActive('TitleScene')) phaserGame.scene.start('TitleScene');
+    window.running = false;
+    const audio = ensureAudio();
+    audio.setMusicLayer('world');
+  }
+
+  async function start() {
+    if (!phaserGame) return;
+    if (btqmRuntime.runActive && !btqmRuntime.runSubmitted) {
+      try { await finalizeRunSubmission(true); } catch (err) { console.warn('[BTQM] start submit failed', err); }
+    }
+    await switchToTitleScene();
+  }
+
+  function pause() {
+    if (!phaserGame || _pausedByOverlay.length) return;
+    ['BattleScene', 'ZoneScene', 'WorldScene'].forEach(function (k) {
+      if (phaserGame.scene.isActive(k)) {
+        phaserGame.scene.pause(k);
+        _pausedByOverlay.push(k);
+      }
+    });
+    document.dispatchEvent(new CustomEvent('arcade-pause-change', { detail: { paused: true } }));
+  }
+
+  function resume() {
+    if (!phaserGame || !_pausedByOverlay.length) return;
+    _pausedByOverlay.forEach(function (k) {
+      if (phaserGame.scene.isPaused(k)) phaserGame.scene.resume(k);
+    });
+    _pausedByOverlay = [];
+    document.dispatchEvent(new CustomEvent('arcade-pause-change', { detail: { paused: false } }));
+  }
+
+  async function reset() {
+    if (btqmRuntime.runActive && !btqmRuntime.runSubmitted) {
+      try { await finalizeRunSubmission(true); } catch (err) { console.warn('[BTQM] reset submit failed', err); }
+    }
+    await switchToTitleScene();
+  }
+
+  async function destroy() {
+    if (btqmRuntime.runActive && !btqmRuntime.runSubmitted) {
+      try { await finalizeRunSubmission(true); } catch (err) { console.warn('[BTQM] destroy submit failed', err); }
+    }
+    const audio = ensureAudio();
+    audio.destroy();
+    btqmRuntime.audio = null;
     if (phaserGame) {
       phaserGame.destroy(true);
       phaserGame = null;
     }
   }
   function getScore() {
-    const daily = loadDailyState();
-    return Number(daily.runScore || 0);
+    return Math.max(0, Math.floor(btqmRuntime.score || 0));
   }
 
   // ── Public lifecycle object ────────────────────────────────────────────────
