@@ -17,6 +17,9 @@ const MAX_TOTAL_NPCS = 60;
 const LIVE_DIALOGUE_CHANCE_WITH_OPERATION = 0.7;
 const LIVE_DIALOGUE_CHANCE_BASE = 0.3;
 const ROLE_OPERATION_LINE_CHANCE = 0.6;
+const CONTROL_NODE_NUDGE_PROBABILITY = 0.005;
+const CONTROL_NODE_VILLAIN_DRAIN = 5;
+const CONTROL_NODE_HELPER_GAIN = 5;
 
 // District-aware NPC spawn bands (col, row, w, h) matching districts.json grid regions
 const DISTRICT_SPAWN_REGIONS = [
@@ -136,12 +139,18 @@ function lineCoordKey(point) {
 }
 
 const LINE_BY_ID = new Map(NETWORK_LINES.map((line) => [line.id, line]));
-const LINES_BY_FROM_COORD = new Map();
+const LINES_BY_COORD = new Map();
 for (const line of NETWORK_LINES) {
-  const key = lineCoordKey(line.from);
-  const existing = LINES_BY_FROM_COORD.get(key) || [];
-  existing.push(line);
-  LINES_BY_FROM_COORD.set(key, existing);
+  const fromKey = lineCoordKey(line.from);
+  const toKey = lineCoordKey(line.to);
+
+  const fromExisting = LINES_BY_COORD.get(fromKey) || [];
+  fromExisting.push(line);
+  LINES_BY_COORD.set(fromKey, fromExisting);
+
+  const toExisting = LINES_BY_COORD.get(toKey) || [];
+  toExisting.push(line);
+  LINES_BY_COORD.set(toKey, toExisting);
 }
 
 function randInt(min, max) {
@@ -181,14 +190,48 @@ function getLine(lineId) {
   return LINE_BY_ID.get(lineId);
 }
 
+function pointEquals(a, b) {
+  return a?.x === b?.x && a?.y === b?.y;
+}
+
+function randomLineDirectionSign() {
+  return Math.random() < 0.5 ? 1 : -1;
+}
+
 function pickNextLine(npc) {
   const current = getLine(npc.lineId);
-  if (!current) return NETWORK_LINES[0]?.id || '';
+  if (!current) {
+    return {
+      lineId: pickRandomLineId(),
+      lineDirection: randomLineDirectionSign(),
+    };
+  }
 
-  const options = LINES_BY_FROM_COORD.get(lineCoordKey(current.to)) || [];
+  const currentDirection = npc.lineDirection === -1 ? -1 : 1;
+  const arrivalNode = currentDirection === 1 ? current.to : current.from;
+  const options = LINES_BY_COORD.get(lineCoordKey(arrivalNode)) || [];
 
-  if (!options.length) return current.id;
-  return options[Math.floor(Math.random() * options.length)].id;
+  if (!options.length) {
+    return {
+      lineId: pickRandomLineId(),
+      lineDirection: randomLineDirectionSign(),
+    };
+  }
+
+  let candidateOptions = options;
+  if (options.length > 1) {
+    const withoutImmediateBounce = options.filter((line) => line.id !== current.id);
+    if (withoutImmediateBounce.length) {
+      candidateOptions = withoutImmediateBounce;
+    }
+  }
+
+  const nextLine = candidateOptions[Math.floor(Math.random() * candidateOptions.length)];
+  const lineDirection = pointEquals(nextLine.from, arrivalNode) ? 1 : -1;
+  return {
+    lineId: nextLine.id,
+    lineDirection,
+  };
 }
 
 function getRoutineForRole(role) {
@@ -267,6 +310,7 @@ export function createNpcSystem(state, liveIntelligence = null) {
       dialogueHooks: [],
       routine,
       lineId: pickRandomLineId(),
+      lineDirection: randomLineDirectionSign(),
       t: Math.random(),
       speed: 0.2 + Math.random() * 0.3,
       type: type || 'helper',
@@ -449,20 +493,38 @@ export function createNpcSystem(state, liveIntelligence = null) {
       if (!npc) continue;
       npc.type = npc.type || 'helper';
       if (!npc.lineId) npc.lineId = pickRandomLineId();
+      if (npc.lineDirection !== 1 && npc.lineDirection !== -1) {
+        npc.lineDirection = randomLineDirectionSign();
+      }
       if (!Number.isFinite(npc.t)) npc.t = Math.random();
       if (!Number.isFinite(npc.speed)) npc.speed = 0.2 + Math.random() * 0.3;
 
-      const line = getLine(npc.lineId);
+      let line = getLine(npc.lineId);
       if (!line) continue;
 
       npc.t += npc.speed * movementDt;
       if (npc.t > 1) {
-        npc.lineId = pickNextLine(npc);
+        const next = pickNextLine(npc);
+        npc.lineId = next.lineId;
+        npc.lineDirection = next.lineDirection;
         npc.t = 0;
+        line = getLine(npc.lineId);
+        if (!line) continue;
       }
 
-      const from = line.from;
-      const to = line.to;
+      // Occasional random network jump (1% chance) — keeps NPCs spreading
+      // across the entire network instead of converging on heavily-connected hubs.
+      if (Math.random() < 0.01) {
+        npc.lineId = pickRandomLineId();
+        npc.lineDirection = randomLineDirectionSign();
+        npc.t = Math.random();
+        line = getLine(npc.lineId);
+        if (!line) continue;
+      }
+
+      const direction = npc.lineDirection === -1 ? -1 : 1;
+      const from = direction === 1 ? line.from : line.to;
+      const to = direction === 1 ? line.to : line.from;
       npc.col = from.x + (to.x - from.x) * npc.t;
       npc.row = from.y + (to.y - from.y) * npc.t;
 
@@ -479,6 +541,15 @@ export function createNpcSystem(state, liveIntelligence = null) {
       npc.dialogueHooks = ['react_to_player_presence', 'district_rumor_ping'];
       npc.memoryHooks   = ['track_faction_shift', 'track_daily_routine'];
       npc.dialogue = [getDialogueLine(npc)];
+
+      // Active NPCs occasionally nudge a random control node (villains drain it)
+      if (Array.isArray(state.controlNodes) && state.controlNodes.length && Math.random() < CONTROL_NODE_NUDGE_PROBABILITY) {
+        const node = state.controlNodes[Math.floor(Math.random() * state.controlNodes.length)];
+        if (node) {
+          const delta = npc.type === 'villain' ? -CONTROL_NODE_VILLAIN_DRAIN : CONTROL_NODE_HELPER_GAIN;
+          node.control = Math.max(0, Math.min(100, node.control + delta));
+        }
+      }
 
       if (Math.random() < FACTION_SWITCH_PROBABILITY) {
         if (npc.faction === 'Neutral') {
@@ -505,6 +576,7 @@ export function createNpcSystem(state, liveIntelligence = null) {
       if (!npc) continue;
       npc.type = 'villain';
       npc.lineId = pickRandomLineId();
+      npc.lineDirection = randomLineDirectionSign();
       npc.t = 0;
     }
   }
