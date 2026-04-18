@@ -3,6 +3,7 @@ function nowUtcDaySeed() {
 }
 
 const PLAYER_MOVEMENT_SPEED = 3.2;
+const MOVE_TARGET_ARRIVAL_DISTANCE = 0.06;
 // Seconds a player must stand in a district (Night) before a capture preview tick fires
 const CAPTURE_TICK_INTERVAL = 2;
 // Visual progress increment per tick (0–100 scale); server owns the real control value
@@ -231,7 +232,7 @@ export function movePlayerTowardTarget(state, dt, moveSender) {
   const dx = target.x - state.player.x;
   const dy = target.y - state.player.y;
   const distance = Math.hypot(dx, dy);
-  if (distance <= 0.06) {
+  if (distance <= MOVE_TARGET_ARRIVAL_DISTANCE) {
     state.player.x = target.x;
     state.player.y = target.y;
     state.player.moveTarget = null;

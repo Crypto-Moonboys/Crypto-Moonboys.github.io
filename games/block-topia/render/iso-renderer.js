@@ -9,6 +9,11 @@ const NPC_FRAME_COUNT = 20;
 const ZOOM_MIN = 0.82;
 const ZOOM_MAX = 1.2;
 const CAMERA_BASELINE_Y = 140;
+const HOVER_PULSE_PERIOD_MS = 260;
+// Slight epsilon improves edge/corner hit reliability when pointer coordinates land on fractional boundaries.
+const TILE_PICK_TOLERANCE = 1.001;
+const NPC_HITBOX_HALF_WIDTH = 15;
+const NPC_HITBOX_HALF_HEIGHT = 25;
 
 const ROLE_STYLE = {
   vendor:       { color: '#ffd84d', factionRing: true },
@@ -635,7 +640,7 @@ export function createIsoRenderer(canvas) {
     const x = originX + iso.x;
     const y = originY + iso.y;
     const centerY = y + HALF_TILE_H;
-    const pulse = 0.5 + (Math.sin(now / 260) + 1) * 0.15;
+    const pulse = 0.5 + (Math.sin(now / HOVER_PULSE_PERIOD_MS) + 1) * 0.15;
 
     ctx.save();
     ctx.globalAlpha = 0.16 + pulse * 0.07;
@@ -690,7 +695,7 @@ export function createIsoRenderer(canvas) {
         const cx = tileX;
         const cy = tileY + HALF_TILE_H;
         const norm = Math.abs(point.x - cx) / HALF_TILE_W + Math.abs(point.y - cy) / HALF_TILE_H;
-        if (norm > 1.001) continue;
+        if (norm > TILE_PICK_TOLERANCE) continue;
         if (!best || norm < best.norm) {
           best = { col, row, norm };
         }
@@ -729,7 +734,7 @@ export function createIsoRenderer(canvas) {
       const sy = originY + iso.y - elevation - 4;
       const dx = point.x - sx;
       const dy = point.y - (sy - 16);
-      const withinBody = Math.abs(dx) <= 15 && Math.abs(dy) <= 25;
+      const withinBody = Math.abs(dx) <= NPC_HITBOX_HALF_WIDTH && Math.abs(dy) <= NPC_HITBOX_HALF_HEIGHT;
       if (!withinBody) continue;
       const score = (dx * dx) + (dy * dy);
       if (score < nearestScore) {

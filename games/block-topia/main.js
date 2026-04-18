@@ -34,6 +34,7 @@ const MAX_FEED_CACHE_SIZE = 80;
 const CAMERA_ZOOM_PRESETS = [0.88, 1, 1.16];
 const CAMERA_ZOOM_MIN = 0.82;
 const CAMERA_ZOOM_MAX = 1.2;
+// ~6% step gives smooth wheel zoom while traversing the clamp range in practical increments.
 const CAMERA_ZOOM_WHEEL_STEP = 0.06;
 
 const canvas = document.getElementById('world-canvas');
@@ -74,7 +75,7 @@ async function boot() {
     return Math.max(CAMERA_ZOOM_MIN, Math.min(CAMERA_ZOOM_MAX, value));
   }
 
-  function updateZoomIndexFromValue() {
+  function syncZoomIndexToCurrentZoom() {
     let nearest = 0;
     let bestDelta = Infinity;
     for (let i = 0; i < CAMERA_ZOOM_PRESETS.length; i += 1) {
@@ -98,6 +99,20 @@ async function boot() {
       || input.arrowleft
       || input.arrowright,
     );
+  }
+
+  function isNpcInInteractionRange(targetNpc) {
+    if (!targetNpc) return false;
+    const dx = targetNpc.col - state.player.x;
+    const dy = targetNpc.row - state.player.y;
+    return Math.hypot(dx, dy) <= targetNpc.interactionRadius;
+  }
+
+  function tryInteractWithClickedNpc(event) {
+    const clickedNpc = renderer.pickNpcFromClientPoint(event.clientX, event.clientY, state);
+    if (!clickedNpc || !isNpcInInteractionRange(clickedNpc)) return false;
+    interactWithNpc(clickedNpc);
+    return true;
   }
 
   function classifyFeedType(text) {
@@ -241,7 +256,7 @@ async function boot() {
     const nextZoom = clampZoom(state.camera.zoom + (direction * CAMERA_ZOOM_WHEEL_STEP));
     if (nextZoom === state.camera.zoom) return;
     state.camera.zoom = nextZoom;
-    updateZoomIndexFromValue();
+    syncZoomIndexToCurrentZoom();
   }, { passive: false });
 
   canvas.addEventListener('mousemove', (event) => {
@@ -255,30 +270,12 @@ async function boot() {
   });
 
   canvas.addEventListener('click', (event) => {
-    const clickedNpc = renderer.pickNpcFromClientPoint(event.clientX, event.clientY, state);
-    if (clickedNpc) {
-      const dx = clickedNpc.col - state.player.x;
-      const dy = clickedNpc.row - state.player.y;
-      const dist = Math.hypot(dx, dy);
-      if (dist <= clickedNpc.interactionRadius) {
-        interactWithNpc(clickedNpc);
-        return;
-      }
-    }
+    if (tryInteractWithClickedNpc(event)) return;
     state.mouse.selectedTile = renderer.pickTileFromClientPoint(event.clientX, event.clientY, state);
   });
 
   canvas.addEventListener('dblclick', (event) => {
-    const clickedNpc = renderer.pickNpcFromClientPoint(event.clientX, event.clientY, state);
-    if (clickedNpc) {
-      const dx = clickedNpc.col - state.player.x;
-      const dy = clickedNpc.row - state.player.y;
-      const dist = Math.hypot(dx, dy);
-      if (dist <= clickedNpc.interactionRadius) {
-        interactWithNpc(clickedNpc);
-        return;
-      }
-    }
+    if (tryInteractWithClickedNpc(event)) return;
 
     const tile = renderer.pickTileFromClientPoint(event.clientX, event.clientY, state);
     state.mouse.selectedTile = tile;
@@ -427,8 +424,9 @@ async function boot() {
     const dt = Math.min(MAX_FRAME_DELTA_SECONDS, (ts - lastTs) / 1000);
     lastTs = ts;
 
-    const manualMoveApplied = updatePlayerMotion(state, input, dt, sendMovement);
-    if (manualMoveApplied && isMovementInputActive()) {
+    const keyboardMovementApplied = updatePlayerMotion(state, input, dt, sendMovement);
+    // Keyboard input takes priority and cancels click-move targets to avoid conflicting movement commands.
+    if (keyboardMovementApplied && isMovementInputActive()) {
       state.player.moveTarget = null;
     } else {
       movePlayerTowardTarget(state, dt, sendMovement);
