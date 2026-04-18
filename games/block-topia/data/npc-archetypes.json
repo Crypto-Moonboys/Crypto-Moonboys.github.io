@@ -1,10 +1,10 @@
 {
   "split": {
     "active": 24,
-    "activeCap": 80,
+    "activeCap": 120,
     "crowd": 60,
-    "crowdCap": 600,
-    "capacityPolicy": "Crowd cap keeps larger burst headroom for social surges and festival density while active NPC cap stays tighter for server AI cost control."
+    "crowdCap": 120,
+    "capacityPolicy": "Performance-first split keeps active NPCs responsive while total NPC runtime never exceeds the hard cap for stable frame pacing."
   },
   "archetypes": [
     {

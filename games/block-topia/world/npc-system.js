@@ -11,6 +11,7 @@ const CROWD_MOVE_INTERVAL_MIN = 2.0;
 const CROWD_MOVE_INTERVAL_RANGE = 1.5;
 const UPDATE_BATCH = 40;
 const MAX_ACTIVE_NPCS = 120;
+const MAX_TOTAL_NPCS = 120;
 const LIVE_DIALOGUE_CHANCE_WITH_OPERATION = 0.7;
 const LIVE_DIALOGUE_CHANCE_BASE = 0.3;
 const ROLE_OPERATION_LINE_CHANCE = 0.6;
@@ -205,6 +206,7 @@ export function createNpcSystem(state, liveIntelligence = null) {
       state.npc.activeTarget,
       activeCap,
       MAX_ACTIVE_NPCS,
+      MAX_TOTAL_NPCS,
     );
     for (let activeIndex = 0; activeIndex < activeCount; activeIndex += 1) {
       const pos = spawnPos(activeIndex, state.npc.activeTarget);
@@ -233,8 +235,16 @@ export function createNpcSystem(state, liveIntelligence = null) {
       });
     }
 
-    for (let crowdIndex = 0; crowdIndex < state.npc.crowdTarget; crowdIndex += 1) {
-      const pos = spawnPos(crowdIndex, state.npc.crowdTarget);
+    const crowdCap = Number.isFinite(state.npc.crowdCap)
+      ? state.npc.crowdCap
+      : state.npc.crowdTarget;
+    const crowdCount = Math.min(
+      state.npc.crowdTarget,
+      crowdCap,
+      Math.max(0, MAX_TOTAL_NPCS - activeCount),
+    );
+    for (let crowdIndex = 0; crowdIndex < crowdCount; crowdIndex += 1) {
+      const pos = spawnPos(crowdIndex, crowdCount);
       state.npc.entities.push({
         id: `crowd-${crowdIndex}`,
         role: 'crowd',

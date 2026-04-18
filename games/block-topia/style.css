@@ -1,8 +1,8 @@
 :root {
   color-scheme: dark;
   --bg: #050814;
-  --panel: rgba(8, 12, 28, 0.86);
-  --line: rgba(94, 242, 255, 0.28);
+  --panel: rgba(7, 11, 24, 0.78);
+  --line: rgba(94, 242, 255, 0.34);
   --accent: #5ef2ff;
   --warn: #ff4fd8;
   --ok: #8dff6a;
@@ -108,13 +108,13 @@ body.phase-night .panel {
 
 .panel {
   pointer-events: auto;
-  background: linear-gradient(165deg, rgba(10, 14, 32, 0.95), rgba(6, 9, 22, 0.88));
-  border: 1px solid var(--line);
-  border-top-width: 2px;
-  border-radius: 10px;
-  padding: 9px 11px;
+  background: linear-gradient(165deg, rgba(9, 13, 30, 0.82), rgba(4, 8, 18, 0.78));
+  border: 1px solid rgba(94, 242, 255, 0.34);
+  border-top-width: 1px;
+  border-radius: 12px;
+  padding: 11px 12px;
   backdrop-filter: blur(10px);
-  box-shadow: 0 2px 20px rgba(0, 0, 0, 0.5), 0 0 16px rgba(94, 242, 255, 0.05);
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.45), 0 0 18px rgba(94, 242, 255, 0.08), inset 0 0 12px rgba(255, 79, 216, 0.05);
 }
 
 .panel h2 {
@@ -126,6 +126,7 @@ body.phase-night .panel {
   display: flex;
   align-items: center;
   gap: 5px;
+  color: #91f8ff;
 }
 
 .panel h2::after {
@@ -142,22 +143,16 @@ body.phase-night .panel {
   line-height: 1.45;
 }
 
-.panel-player h2 { color: var(--warn); }
-.panel-district h2 { color: var(--gold); }
-.panel-phase h2 { color: var(--accent); }
-.panel-session h2 { color: var(--ok); }
-.panel-quests h2 { color: #caa3ff; }
-.panel-feed h2 { color: var(--gold); }
 
-.panel-player  { grid-column: 1; grid-row: 1; border-top-color: rgba(255, 79, 216, 0.7); }
-.panel-district{ grid-column: 1; grid-row: 2; border-top-color: rgba(255, 216, 77, 0.7); }
-.panel-phase   { grid-column: 3; grid-row: 1; border-top-color: rgba(94, 242, 255, 0.7); }
-.panel-quests  { grid-column: 3; grid-row: 2; border-top-color: rgba(202, 163, 255, 0.7); max-height: min(44vh, 280px); overflow: auto; }
-.panel-session { grid-column: 3; grid-row: 3; align-self: end; border-top-color: rgba(141, 255, 106, 0.7); }
+.panel-player  { grid-column: 1; grid-row: 1; border-top-color: rgba(94, 242, 255, 0.56); }
+.panel-district{ grid-column: 1; grid-row: 2; border-top-color: rgba(199, 125, 255, 0.52); }
+.panel-phase   { grid-column: 3; grid-row: 1; border-top-color: rgba(94, 242, 255, 0.56); }
+.panel-quests  { grid-column: 3; grid-row: 2; border-top-color: rgba(199, 125, 255, 0.56); max-height: min(44vh, 280px); overflow: auto; }
+.panel-session { grid-column: 3; grid-row: 3; align-self: end; border-top-color: rgba(94, 242, 255, 0.4); }
 .panel-feed {
   grid-column: 1 / span 3;
   grid-row: 4;
-  border-top-color: rgba(255, 216, 77, 0.55);
+  border-top-color: rgba(94, 242, 255, 0.4);
   max-height: min(130px, 22vh);
 }
 

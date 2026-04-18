@@ -31,9 +31,9 @@ const REMOTE_PLAYER_LERP_ALPHA = 0.18;
 const LIVE_REFRESH_INTERVAL_MS = 120000; // 2 minutes
 const FEED_DEDUPE_TTL_MS = 5 * 60 * 1000;
 const MAX_FEED_CACHE_SIZE = 80;
-const CAMERA_ZOOM_PRESETS = [0.88, 1, 1.16];
-const CAMERA_ZOOM_MIN = 0.82;
-const CAMERA_ZOOM_MAX = 1.2;
+const CAMERA_ZOOM_PRESETS = [0.7, 1, 1.4];
+const CAMERA_ZOOM_MIN = 0.7;
+const CAMERA_ZOOM_MAX = 1.4;
 // ~6% step gives smooth wheel zoom while traversing the clamp range in practical increments.
 const CAMERA_ZOOM_WHEEL_STEP = 0.06;
 
