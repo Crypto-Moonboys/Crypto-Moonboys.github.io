@@ -1,4 +1,4 @@
-import { createCanonSignalBridge } from './canon-signal-bridge.js';
+import { buildCanonSignalState } from './canon-signal-bridge.js';
 
 const LIVE_SIGNAL_PATH = '/games/block-topia/data/live-signals.json';
 
@@ -63,11 +63,11 @@ export function createLiveIntelligence(fetchImpl = fetch) {
     eventTags: [],
     wikiHooks: [],
   };
-  let canonBridge = null;
+  let canonState = {};
 
   function configureCanonBridge(context = {}) {
-    canonBridge = createCanonSignalBridge(context);
-    canonSignalState = canonBridge.interpret(snapshot);
+    canonState = context?.canon || {};
+    canonSignalState = buildCanonSignalState(canonState, snapshot.signals || []);
     return canonSignalState;
   }
 
@@ -85,9 +85,7 @@ export function createLiveIntelligence(fetchImpl = fetch) {
         snapshot = nextSnapshot;
         fingerprint = nextFingerprint;
       }
-      if (canonBridge) {
-        canonSignalState = canonBridge.interpret(snapshot);
-      }
+      canonSignalState = buildCanonSignalState(canonState, snapshot.signals || []);
       return {
         snapshot,
         canonSignalState,
