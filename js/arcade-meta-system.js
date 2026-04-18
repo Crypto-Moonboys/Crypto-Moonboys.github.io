@@ -1033,11 +1033,23 @@ function getComebackPressure(now = nowMs()) {
 function getLiveContext(now = nowMs()) {
   const state = readState();
   const rare = clearExpiredRareEvent(state, now) || null;
+  const activeQuests = Array.isArray(state?.quests?.active) ? state.quests.active : [];
+  const activeChain = activeQuests
+    .filter((quest) => Number(quest?.chain_step) > 1)
+    .sort((a, b) => Number(b.chain_step || 0) - Number(a.chain_step || 0))[0] || null;
   writeState(state);
   return {
     featured_chaos: getFeaturedChaosWindow(now),
     rare_event: rare,
     comeback: getComebackPressure(now),
+    quest_chain: activeChain ? {
+      id: activeChain.id,
+      title: activeChain.title || 'Quest chain',
+      chain_step: Number(activeChain.chain_step) || 1,
+      expires_at: Number(activeChain.expires_at) || null,
+      expires_in_ms: Math.max(0, Number(activeChain.expires_at || now) - now),
+    } : null,
+    quests_active: activeQuests.length,
   };
 }
 
