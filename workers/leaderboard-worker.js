@@ -2,8 +2,10 @@ const GAMES = ["snake", "crystal", "blocktopia", "invaders", "pacchain", "astero
 const VARIETY_BONUS = 500;           // bonus points when a player has scored in all 9 games
 const SEASONAL_BONUS = 0;            // flat seasonal bonus (extend per-season via config if needed)
 const MAX_SCORE = 1_000_000_000;     // upper bound for submitted scores
+const MAX_META_SCORE = 1_000_000_000;
 const PER_GAME_LEADERBOARD_SIZE = 100;
 const GLOBAL_LEADERBOARD_SIZE = 100;
+const META_WINDOWS = ["daily", "weekly", "monthly", "seasonal"];
 const SEASON_LENGTH_MS = 90 * 24 * 60 * 60 * 1000;  // 90 days in milliseconds
 const ALL_TIME_BOARD_SIZE = 420;
 const ALL_TIME_TOP_SEASONAL = 50;    // top N seasonal players evaluated for all-time each reset
@@ -57,6 +59,19 @@ export default {
 
     if (request.method === "GET") {
       const game = url.searchParams.get("game") || "global";
+      const mode = (url.searchParams.get("mode") || "raw").toLowerCase();
+
+      if (mode === "meta") {
+        if (game === "all") {
+          const boards = await Promise.all(META_WINDOWS.map((windowKey) => getMetaBoard(env, windowKey)));
+          const result = {};
+          META_WINDOWS.forEach((windowKey, i) => { result[windowKey] = boards[i]; });
+          return new Response(JSON.stringify(result), { headers: corsHeaders });
+        }
+        const windowKey = META_WINDOWS.includes(game) ? game : "daily";
+        const board = await getMetaBoard(env, windowKey);
+        return new Response(JSON.stringify(board), { headers: corsHeaders });
+      }
 
       if (game === "all") {
         const allKeys = [...GAMES, "global", "seasonal", "yearly", "all-time"];
@@ -82,6 +97,7 @@ export default {
       }
 
       const { player, score, game, telegram_id } = body;
+      const scoreType = String(body.score_type || "raw").toLowerCase();
 
       // Competitive action — seasonal and all-time score submission requires
       // a Telegram-synced identity.  Guests can play locally but scores are
@@ -111,9 +127,10 @@ export default {
       }
 
       const parsedScore = Number(score);
-      if (!Number.isFinite(parsedScore) || parsedScore < 0 || parsedScore > MAX_SCORE) {
+      const maxScore = scoreType === "meta" ? MAX_META_SCORE : MAX_SCORE;
+      if (!Number.isFinite(parsedScore) || parsedScore < 0 || parsedScore > maxScore) {
         return new Response(
-          JSON.stringify({ error: `score must be a non-negative finite number (max ${MAX_SCORE})` }),
+          JSON.stringify({ error: `score must be a non-negative finite number (max ${maxScore})` }),
           { status: 400, headers: corsHeaders }
         );
       }
@@ -125,6 +142,21 @@ export default {
 
       const playerName = player.trim();
       const floorScore = Math.floor(parsedScore);
+
+      if (scoreType === "meta") {
+        const eventTs = Number(body.timestamp);
+        const timestamp = Number.isFinite(eventTs) ? eventTs : Date.now();
+        await updateMetaBoards(env, {
+          player: playerName,
+          score: floorScore,
+          game: gameKey,
+          timestamp,
+        });
+        return new Response(
+          JSON.stringify({ status: "ok", mode: "meta" }),
+          { headers: corsHeaders }
+        );
+      }
 
       if (gameKey !== "global") {
         // Update all three per-game boards (all-time, seasonal, yearly) in parallel
@@ -214,7 +246,8 @@ async function runSeasonalReset(env, meta, now) {
   // 3. Reset seasonal per-game boards and seasonal aggregate board
   await Promise.all([
     ...GAMES.map(g => env.LEADERBOARD.put(`leaderboard:seasonal:${g}`, JSON.stringify([]))),
-    env.LEADERBOARD.put("leaderboard:seasonal", JSON.stringify([]))
+    env.LEADERBOARD.put("leaderboard:seasonal", JSON.stringify([])),
+    env.LEADERBOARD.put("leaderboard:meta:seasonal", JSON.stringify([]))
   ]);
 
   // 4. Advance meta
@@ -251,7 +284,8 @@ async function runYearlyReset(env, meta, now) {
   );
   await Promise.all([
     ...GAMES.map(g => env.LEADERBOARD.put(`leaderboard:seasonal:${g}`, JSON.stringify([]))),
-    env.LEADERBOARD.put("leaderboard:seasonal", JSON.stringify([]))
+    env.LEADERBOARD.put("leaderboard:seasonal", JSON.stringify([])),
+    env.LEADERBOARD.put("leaderboard:meta:seasonal", JSON.stringify([]))
   ]);
 
   // 2. Archive yearly winners
@@ -410,6 +444,100 @@ async function recomputeAggregate(env, key, boards) {
   const ranked = entries.slice(0, GLOBAL_LEADERBOARD_SIZE).map((e, i) => ({ ...e, rank: i + 1 }));
   await env.LEADERBOARD.put(`leaderboard:${key}`, JSON.stringify(ranked));
   return ranked;
+}
+
+/* ── Meta leaderboard computation ──────────────────────────────────────────── */
+
+async function updateMetaBoards(env, submission) {
+  const ts = Number.isFinite(Number(submission.timestamp)) ? Number(submission.timestamp) : Date.now();
+  const period = await getMetaPeriodContext(env, ts);
+  const player = String(submission.player || "").trim();
+  const score = Math.max(0, Math.floor(Number(submission.score) || 0));
+  if (!player || !score) return;
+
+  await Promise.all(META_WINDOWS.map(async (windowKey) => {
+    const bucketKey = period[windowKey];
+    const bucket = await getMetaBucket(env, bucketKey);
+    const merged = addToMetaBucket(bucket, player, score, ts, submission.game);
+    const ranked = rankMetaBucket(merged, GLOBAL_LEADERBOARD_SIZE);
+    await Promise.all([
+      env.LEADERBOARD.put(bucketKey, JSON.stringify(merged)),
+      env.LEADERBOARD.put(`leaderboard:meta:${windowKey}`, JSON.stringify(ranked)),
+    ]);
+  }));
+}
+
+async function getMetaBoard(env, windowKey) {
+  const now = Date.now();
+  const period = await getMetaPeriodContext(env, now);
+  const resolved = META_WINDOWS.includes(windowKey) ? windowKey : "daily";
+  const bucket = await getMetaBucket(env, period[resolved]);
+  const ranked = rankMetaBucket(bucket, GLOBAL_LEADERBOARD_SIZE);
+  await env.LEADERBOARD.put(`leaderboard:meta:${resolved}`, JSON.stringify(ranked));
+  return ranked;
+}
+
+async function getMetaPeriodContext(env, timestamp) {
+  const date = new Date(timestamp);
+  const year = date.getUTCFullYear();
+  const month = String(date.getUTCMonth() + 1).padStart(2, "0");
+  const day = String(date.getUTCDate()).padStart(2, "0");
+  const week = isoWeekKey(date);
+  const meta = await getOrInitMeta(env);
+
+  return {
+    daily: `leaderboard:meta:bucket:daily:${year}-${month}-${day}`,
+    weekly: `leaderboard:meta:bucket:weekly:${week}`,
+    monthly: `leaderboard:meta:bucket:monthly:${year}-${month}`,
+    seasonal: `leaderboard:meta:bucket:seasonal:season-${meta.season_number}`,
+  };
+}
+
+function isoWeekKey(date) {
+  const d = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()));
+  const dayNum = d.getUTCDay() || 7;
+  d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+  const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+  const weekNo = Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+  return `${d.getUTCFullYear()}-W${String(weekNo).padStart(2, "0")}`;
+}
+
+async function getMetaBucket(env, kvKey) {
+  const raw = await env.LEADERBOARD.get(kvKey);
+  if (!raw) return {};
+  try {
+    const parsed = JSON.parse(raw);
+    return parsed && typeof parsed === "object" && !Array.isArray(parsed) ? parsed : {};
+  } catch {
+    return {};
+  }
+}
+
+function addToMetaBucket(existingBucket, player, score, timestamp, game) {
+  const bucket = { ...(existingBucket || {}) };
+  const key = player.toLowerCase();
+  const prev = bucket[key] || { player, score: 0 };
+  bucket[key] = {
+    player: prev.player || player,
+    score: Math.floor((Number(prev.score) || 0) + score),
+    updated_at: new Date(timestamp).toISOString(),
+    last_game: String(game || "unknown"),
+  };
+  return bucket;
+}
+
+function rankMetaBucket(bucket, limit) {
+  const rows = Object.values(bucket || {}).map((entry) => ({
+    player: String(entry.player || ""),
+    score: Math.floor(Number(entry.score) || 0),
+  })).filter((entry) => entry.player && entry.score >= 0);
+
+  rows.sort((a, b) => {
+    const diff = b.score - a.score;
+    return diff !== 0 ? diff : String(a.player).localeCompare(String(b.player));
+  });
+
+  return rows.slice(0, limit).map((entry, i) => ({ ...entry, rank: i + 1 }));
 }
 
 /* ── Board helpers ────────────────────────────────────────────────────────── */

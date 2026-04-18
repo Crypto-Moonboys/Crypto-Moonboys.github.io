@@ -24,6 +24,11 @@
     }
 
     /* Tab bar */
+    #lb-mode-toggle {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
     #lb-tab-bar {
       display: flex;
       flex-wrap: wrap;
@@ -351,6 +356,7 @@
       </p>
 
       <!-- ── Tab bar ─────────────────────────────────────────────── -->
+      <div id="lb-mode-toggle" role="group" aria-label="Leaderboard mode"></div>
       <div id="lb-tab-bar" role="tablist" aria-label="Leaderboard filters"></div>
 
       <!-- ── Controls ──────────────────────────────────────────────── -->
@@ -418,10 +424,26 @@ import { initLeaderboard } from '/js/arcade-leaderboard.js';
 import { initGraph, setPlayerState, resetGraph } from '/js/arcade-graph.js';
 
 initGraph('arcade-graph-canvas');
+document.body.dataset.lbMode = 'raw';
 
 initLeaderboard({
   onRowSelect(entry) {
+    const selectedMode = document.body.dataset.lbMode || 'raw';
+    if (selectedMode !== 'raw') {
+      resetGraph();
+      return;
+    }
     setPlayerState(entry);
+  },
+  onModeChange({ mode }) {
+    document.body.dataset.lbMode = mode;
+    if (mode !== 'raw') {
+      resetGraph();
+      const selected = document.querySelector('.lb-row.selected');
+      if (selected) selected.classList.remove('selected');
+      const panel = document.getElementById('lb-breakdown-panel');
+      if (panel) panel.style.display = 'none';
+    }
   },
 });
 

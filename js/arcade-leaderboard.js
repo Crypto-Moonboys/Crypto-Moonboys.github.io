@@ -7,7 +7,7 @@
 import { fetchLeaderboard } from '/js/leaderboard-client.js';
 
 // ── Constants ─────────────────────────────────────────────────────────────
-const TABS = [
+const RAW_TABS = [
   { key: 'global',     label: '🌐 Global',     icon: '🌐' },
   { key: 'seasonal',   label: '🗓️ Seasonal',   icon: '🗓️' },
   { key: 'yearly',     label: '📅 Yearly',      icon: '📅' },
@@ -21,6 +21,13 @@ const TABS = [
   { key: 'breakout',   label: '🧱 Bullrun',     icon: '🧱' },
   { key: 'tetris',     label: '🟦 Tetris',      icon: '🟦' },
   { key: 'hexgl',      label: '🏁 HexGL',       icon: '🏁' },
+];
+
+const META_TABS = [
+  { key: 'daily',    label: '📆 Daily',    icon: '📆' },
+  { key: 'weekly',   label: '🗓️ Weekly',   icon: '🗓️' },
+  { key: 'monthly',  label: '🧮 Monthly',  icon: '🧮' },
+  { key: 'seasonal', label: '🏆 Seasonal', icon: '🏆' },
 ];
 
 const AGGREGATE_TABS = new Set(['global', 'seasonal', 'yearly', 'all-time']);
@@ -41,9 +48,11 @@ const GAME_LABELS = {
 const BREAKDOWN_GAMES = ['snake', 'crystal', 'blocktopia', 'invaders', 'pacchain', 'asteroids', 'breakout', 'tetris', 'hexgl'];
 
 // ── State ─────────────────────────────────────────────────────────────────
+let currentMode = 'raw';
 let currentTab = 'global';
 let currentData = [];
 let onRowSelectCallback = null;
+let onModeChangeCallback = null;
 let isFetching = false;
 
 // ── DOM helpers ───────────────────────────────────────────────────────────
@@ -73,7 +82,8 @@ function medalFor(rank) {
 function renderTabs() {
   const bar = el('lb-tab-bar');
   if (!bar) return;
-  bar.innerHTML = TABS.map(t => `
+  const tabs = currentMode === 'meta' ? META_TABS : RAW_TABS;
+  bar.innerHTML = tabs.map(t => `
     <button
       class="lb-tab${t.key === currentTab ? ' active' : ''}"
       data-tab="${t.key}"
@@ -83,6 +93,18 @@ function renderTabs() {
   `).join('');
   bar.querySelectorAll('.lb-tab').forEach(btn => {
     btn.addEventListener('click', () => switchTab(btn.dataset.tab));
+  });
+}
+
+function renderModeToggle() {
+  const wrap = el('lb-mode-toggle');
+  if (!wrap) return;
+  wrap.innerHTML = `
+    <button class="lb-tab${currentMode === 'raw' ? ' active' : ''}" data-mode="raw" aria-pressed="${currentMode === 'raw'}">RAW</button>
+    <button class="lb-tab${currentMode === 'meta' ? ' active' : ''}" data-mode="meta" aria-pressed="${currentMode === 'meta'}">META</button>
+  `;
+  wrap.querySelectorAll('[data-mode]').forEach((btn) => {
+    btn.addEventListener('click', () => switchMode(btn.dataset.mode));
   });
 }
 
@@ -128,7 +150,7 @@ function setEmptyState() {
 function renderBreakdown(entry) {
   const panel = el('lb-breakdown-panel');
   if (!panel) return;
-  if (!entry || !AGGREGATE_TABS.has(currentTab)) {
+  if (!entry || currentMode !== 'raw' || !AGGREGATE_TABS.has(currentTab)) {
     panel.style.display = 'none';
     return;
   }
@@ -225,6 +247,21 @@ async function switchTab(tab) {
   if (isFetching) return;
   currentTab = tab;
   renderTabs();
+  if (onModeChangeCallback) onModeChangeCallback({ mode: currentMode, tab: currentTab });
+  await loadLeaderboard();
+}
+
+async function switchMode(mode) {
+  if (isFetching) return;
+  const nextMode = mode === 'meta' ? 'meta' : 'raw';
+  if (nextMode === currentMode) return;
+  currentMode = nextMode;
+  currentTab = currentMode === 'meta' ? 'daily' : 'global';
+  currentData = [];
+  renderModeToggle();
+  renderTabs();
+  clearBreakdown();
+  if (onModeChangeCallback) onModeChangeCallback({ mode: currentMode, tab: currentTab });
   await loadLeaderboard();
 }
 
@@ -233,7 +270,7 @@ async function loadLeaderboard() {
   isFetching = true;
   setLoadingState(true);
   try {
-    const data = await fetchLeaderboard(currentTab);
+    const data = await fetchLeaderboard(currentTab, { mode: currentMode });
     if (!Array.isArray(data)) throw new Error('Invalid response from leaderboard worker.');
     currentData = data;
     renderTable(data);
@@ -246,9 +283,11 @@ async function loadLeaderboard() {
 }
 
 // ── Public init ───────────────────────────────────────────────────────────
-export function initLeaderboard({ onRowSelect } = {}) {
+export function initLeaderboard({ onRowSelect, onModeChange } = {}) {
   if (onRowSelect) onRowSelectCallback = onRowSelect;
+  if (typeof onModeChange === 'function') onModeChangeCallback = onModeChange;
 
+  renderModeToggle();
   renderTabs();
 
   const refreshBtn = el('lb-refresh-btn');
