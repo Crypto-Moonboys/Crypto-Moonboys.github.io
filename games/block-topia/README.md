@@ -58,8 +58,28 @@ Block Topia is the shared cyberpunk city multiplayer experience where players mo
 - `world/npc-system.js`: active/crowd NPC simulation and faction drift.
 - `world/quest-system.js`: active quest cards, completion XP, pulse hooks.
 - `world/memory-system.js`: in-session world memory and event logging.
+- `world/live-intelligence.js`: loads site-side transformed SAM signals from `data/live-signals.json`.
+- `world/signal-quest-generator.js`: converts live signal pulses into temporary operation cards.
+- `world/clue-signal-system.js`: rotates clue-event feed pulses for hidden-link hunts.
 - `ui/hud.js`: DOM HUD bindings for status, quests, multiplayer, feed, overlays.
 - `render/iso-renderer.js`: district-aware isometric renderer for local/remote entities.
+
+## Live Intelligence Wake-Up Layer (Site-Side)
+
+- Signal source file: `/games/block-topia/data/live-signals.json`
+- Generator: `/gigga-sam/generate-signals.mjs`
+- Workflow: `/.github/workflows/gigga-sam-signals.yml`
+
+This layer is **site-side only** and runs after SAM updates (or on schedule). It transforms lightweight external inputs into short in-game signals that feed:
+
+- NPC dialogue variants
+- temporary operation/quest pulses
+- world feed bulletins
+- clue signal events for hidden-link hunts
+
+### Privacy Rule
+
+The live intelligence layer stores **zero player behavior data**. It does not add clue click logging, player tracking, or persistent user profiling.
 
 ## Scaffolding for Future Expansion
 

@@ -152,7 +152,7 @@ function getInitialMoveTimer(mode, role) {
   return Math.random() * getMoveInterval(mode, role);
 }
 
-export function createNpcSystem(state) {
+export function createNpcSystem(state, liveIntelligence = null) {
   let batchIndex = 0;
   const factionPool = ['Liberators', 'Wardens', 'Neutral'];
   const profileByRole = new Map(
@@ -231,6 +231,9 @@ export function createNpcSystem(state) {
   const MAP_H = state.map.height;
 
   function getDialogueLine(npc) {
+    const liveLine = liveIntelligence?.pickNpcLine?.(npc);
+    if (liveLine) return liveLine;
+
     const mapped = roleToProfile[npc.role];
     const profile = mapped ? profileByRole.get(mapped) : null;
     if (profile?.rumors?.length) {

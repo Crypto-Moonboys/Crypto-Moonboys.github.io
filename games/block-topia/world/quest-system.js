@@ -1,6 +1,9 @@
-export function createQuestSystem(state) {
+import { createSignalQuestGenerator } from './signal-quest-generator.js';
+
+export function createQuestSystem(state, liveIntelligence = null) {
   const QUEST_PULSE_INTERVAL_SECONDS = 20;
   const capitalize = (text) => (text || '').replace(/^./, (char) => char.toUpperCase());
+  const signalQuestGenerator = createSignalQuestGenerator(state, liveIntelligence);
 
   state.quests.active = [
     ...state.quests.model.daily.slice(0, 2),
@@ -55,13 +58,14 @@ export function createQuestSystem(state) {
   }
 
   function getActiveQuestCards() {
-    return state.quests.active.map((quest) => ({
+    const baseCards = state.quests.active.map((quest) => ({
       id: quest.id,
       title: quest.title,
       type: quest.type,
       xp: quest.xp,
       objective: buildObjective(quest),
     }));
+    return baseCards.concat(signalQuestGenerator.buildSignalQuestCards(2));
   }
 
   /**
@@ -89,6 +93,11 @@ export function createQuestSystem(state) {
     const dynamic = state.quests.model.dynamicHooks?.[0];
     if (dynamic) {
       hooks.onQuestPulse?.(`${dynamic.id}: ${dynamic.description}`);
+    }
+
+    const livePulses = liveIntelligence?.getQuestPulses?.(1) || [];
+    if (livePulses.length) {
+      hooks.onQuestPulse?.(livePulses[0]);
     }
   }
 

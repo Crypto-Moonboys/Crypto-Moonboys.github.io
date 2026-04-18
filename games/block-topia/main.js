@@ -11,6 +11,8 @@ import { createSamSystem } from './world/sam-system.js';
 import { createNpcSystem } from './world/npc-system.js';
 import { createQuestSystem } from './world/quest-system.js';
 import { createMemorySystem } from './world/memory-system.js';
+import { createLiveIntelligence } from './world/live-intelligence.js';
+import { createClueSignalSystem } from './world/clue-signal-system.js';
 import { createHud } from './ui/hud.js';
 import { createIsoRenderer } from './render/iso-renderer.js';
 
@@ -40,9 +42,12 @@ window.addEventListener('keyup', (event) => {
 async function boot() {
   const dataBundle = await loadUnifiedData();
   const state = createGameState(dataBundle);
+  const liveIntelligence = createLiveIntelligence();
+  await liveIntelligence.refresh();
   const sam = createSamSystem(state);
-  const npc = createNpcSystem(state);
-  const quests = createQuestSystem(state);
+  const npc = createNpcSystem(state, liveIntelligence);
+  const quests = createQuestSystem(state, liveIntelligence);
+  const clues = createClueSignalSystem(liveIntelligence);
   const memory = createMemorySystem(state);
   let multiplayerConnected = false;
   let nearbyNpc = null;
@@ -98,8 +103,16 @@ async function boot() {
   hud.setRoom(state.room.id);
   hud.setPopulation(0, state.room.maxPlayers);
   hud.setQuests(quests.getActiveQuestCards());
+  const worldBulletins = liveIntelligence.getWorldFeedLines(2);
+  worldBulletins.forEach((line) => hud.pushFeed(`📡 ${line}`, 'sam'));
+  const liveMode = liveIntelligence.getSnapshot().mode || 'fallback';
+  hud.pushFeed(`🛰️ Live intelligence layer online (${liveMode})`, 'system');
   hud.setEntryTagline(`Deploying into ${state.player.districtName}…`);
   bootstrapLoreFeed();
+
+  setInterval(() => {
+    liveIntelligence.refresh().catch(() => {});
+  }, 120000);
 
   // Fallback: dismiss the entry overlay after 7s in case multiplayer never connects.
   setTimeout(() => hud.dismissEntryIdentity(0), ENTRY_OVERLAY_TIMEOUT_MS);
@@ -276,6 +289,9 @@ async function boot() {
 
     quests.tick(dt, {
       onQuestPulse: (text) => hud.pushFeed(`🎯 ${text}`, 'quest'),
+    });
+    clues.tick(dt, {
+      onCluePulse: (text) => hud.pushFeed(`🧩 ${text}`, 'quest'),
     });
 
     // Interpolate remote player positions toward server-provided targets.

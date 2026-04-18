@@ -1,0 +1,61 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-04-18T08:52:59.978Z",
+  "mode": "fallback-no-key",
+  "sourceHealth": {
+    "coingecko-global": "degraded",
+    "coingecko-trending": "degraded",
+    "fear-greed": "degraded"
+  },
+  "signalCount": 3,
+  "signals": [
+    {
+      "id": "signal-1776502379978-1",
+      "lane": "world",
+      "priority": 3,
+      "ttlMinutes": 45,
+      "npcLine": "Signal board shows Neutral pressure. Keep your routes adaptive.",
+      "questPulse": "Map three unstable relay corners before the next SAM sweep.",
+      "worldFeed": "Network mood: Neutral. Surveillance pressure remains mixed.",
+      "clueEvent": "Hidden relay mark: look for the glyph where east lanes cross old neon rail.",
+      "tags": [
+        "sam",
+        "mood",
+        "relay"
+      ],
+      "expiresAt": "2026-04-18T09:37:59.978Z"
+    },
+    {
+      "id": "signal-1776502379978-2",
+      "lane": "ops",
+      "priority": 4,
+      "ttlMinutes": 40,
+      "npcLine": "Trend signatures rotating: ALT · CORE · HASH. Couriers are rerouting tonight.",
+      "questPulse": "Intercept two phantom couriers carrying unsigned signal chips.",
+      "worldFeed": "Ops pulse: district relays are shifting faster than normal.",
+      "clueEvent": "Clue pulse: seek a dead terminal with three blinking amber bars.",
+      "tags": [
+        "ops",
+        "courier",
+        "quest"
+      ],
+      "expiresAt": "2026-04-18T09:32:59.978Z"
+    },
+    {
+      "id": "signal-1776502379978-3",
+      "lane": "clue",
+      "priority": 2,
+      "ttlMinutes": 60,
+      "npcLine": "A rumor says the old tunnel net is awake again.",
+      "questPulse": "Trace a memory shard path without triggering patrol beacons.",
+      "worldFeed": "World feed: encrypted whispers detected under Revolt blocks.",
+      "clueEvent": "Hidden link hunt: the passphrase starts with moon and ends with static.",
+      "tags": [
+        "clue",
+        "hunt",
+        "world"
+      ],
+      "expiresAt": "2026-04-18T09:52:59.978Z"
+    }
+  ]
+}
