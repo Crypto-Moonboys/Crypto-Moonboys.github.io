@@ -17,6 +17,9 @@ const MAX_TOTAL_NPCS = 60;
 const LIVE_DIALOGUE_CHANCE_WITH_OPERATION = 0.7;
 const LIVE_DIALOGUE_CHANCE_BASE = 0.3;
 const ROLE_OPERATION_LINE_CHANCE = 0.6;
+const CONTROL_NODE_NUDGE_PROBABILITY = 0.005;
+const CONTROL_NODE_VILLAIN_DRAIN = 5;
+const CONTROL_NODE_HELPER_GAIN = 5;
 
 // District-aware NPC spawn bands (col, row, w, h) matching districts.json grid regions
 const DISTRICT_SPAWN_REGIONS = [
@@ -509,6 +512,16 @@ export function createNpcSystem(state, liveIntelligence = null) {
         if (!line) continue;
       }
 
+      // Occasional random network jump (1% chance) — keeps NPCs spreading
+      // across the entire network instead of converging on heavily-connected hubs.
+      if (Math.random() < 0.01) {
+        npc.lineId = pickRandomLineId();
+        npc.lineDirection = randomLineDirectionSign();
+        npc.t = Math.random();
+        line = getLine(npc.lineId);
+        if (!line) continue;
+      }
+
       const direction = npc.lineDirection === -1 ? -1 : 1;
       const from = direction === 1 ? line.from : line.to;
       const to = direction === 1 ? line.to : line.from;
@@ -528,6 +541,15 @@ export function createNpcSystem(state, liveIntelligence = null) {
       npc.dialogueHooks = ['react_to_player_presence', 'district_rumor_ping'];
       npc.memoryHooks   = ['track_faction_shift', 'track_daily_routine'];
       npc.dialogue = [getDialogueLine(npc)];
+
+      // Active NPCs occasionally nudge a random control node (villains drain it)
+      if (Array.isArray(state.controlNodes) && state.controlNodes.length && Math.random() < CONTROL_NODE_NUDGE_PROBABILITY) {
+        const node = state.controlNodes[Math.floor(Math.random() * state.controlNodes.length)];
+        if (node) {
+          const delta = npc.type === 'villain' ? -CONTROL_NODE_VILLAIN_DRAIN : CONTROL_NODE_HELPER_GAIN;
+          node.control = Math.max(0, Math.min(100, node.control + delta));
+        }
+      }
 
       if (Math.random() < FACTION_SWITCH_PROBABILITY) {
         if (npc.faction === 'Neutral') {

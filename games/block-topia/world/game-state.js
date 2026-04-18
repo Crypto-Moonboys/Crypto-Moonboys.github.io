@@ -1,3 +1,5 @@
+import { CONTROL_NODES } from './control-grid.js';
+
 function nowUtcDaySeed() {
   return new Date().toISOString().slice(0, 10);
 }
@@ -147,6 +149,10 @@ export function createGameState(bundle) {
       active: [],
       lastSyncAt: 0,
     },
+    // Live Control Grid — runtime node states derived from static CONTROL_NODES definitions.
+    // Players click nodes to accumulate control; NPCs and SAM events also affect values.
+    // Server does NOT own these values; they are client-local gameplay feedback.
+    controlNodes: CONTROL_NODES.map((n) => ({ ...n, control: 0 })),
     quests: {
       model: bundle.questModel,
       active: [],

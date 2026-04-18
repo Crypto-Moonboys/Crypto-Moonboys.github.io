@@ -16,6 +16,7 @@ const NPC_HITBOX_HALF_HEIGHT = 25;
 const CROWD_VISIBILITY_ZOOM_THRESHOLD = 1;
 const CULL_MARGIN = 120;
 const MAGENTA_OVERLAY_COLOR = 'rgba(255,79,216,0.16)';
+const CONTROL_NODE_PICK_RADIUS_SQ = 22 * 22;
 
 const ROLE_STYLE = {
   vendor: { color: '#ffd84d', factionRing: true },
@@ -290,10 +291,10 @@ export function createIsoRenderer(canvas) {
     const viewportWidth = viewportRight - viewportLeft;
     const viewportHeight = viewportBottom - viewportTop;
 
-    const minWorldDrawX = viewportRight - worldBounds.width;
-    const maxWorldDrawX = viewportLeft;
-    const minWorldDrawY = viewportBottom - worldBounds.height;
-    const maxWorldDrawY = viewportTop;
+    const leftBoundWorldDrawX = viewportRight - worldBounds.width;
+    const rightBoundWorldDrawX = viewportLeft;
+    const topBoundWorldDrawY = viewportBottom - worldBounds.height;
+    const bottomBoundWorldDrawY = viewportTop;
 
     let panX;
     if (worldBounds.width <= viewportWidth) {
@@ -301,7 +302,7 @@ export function createIsoRenderer(canvas) {
       panX = centeredWorldDrawX + camera.x + worldBounds.offsetX;
     } else {
       const rawWorldDrawX = -camera.x + rawPanX - worldBounds.offsetX;
-      const clampedWorldDrawX = clamp(rawWorldDrawX, minWorldDrawX, maxWorldDrawX);
+      const clampedWorldDrawX = clamp(rawWorldDrawX, leftBoundWorldDrawX, rightBoundWorldDrawX);
       panX = clampedWorldDrawX + camera.x + worldBounds.offsetX;
     }
 
@@ -311,7 +312,7 @@ export function createIsoRenderer(canvas) {
       panY = centeredWorldDrawY + camera.y + worldBounds.offsetY;
     } else {
       const rawWorldDrawY = -camera.y + rawPanY - worldBounds.offsetY;
-      const clampedWorldDrawY = clamp(rawWorldDrawY, minWorldDrawY, maxWorldDrawY);
+      const clampedWorldDrawY = clamp(rawWorldDrawY, topBoundWorldDrawY, bottomBoundWorldDrawY);
       panY = clampedWorldDrawY + camera.y + worldBounds.offsetY;
     }
 
@@ -837,6 +838,55 @@ export function createIsoRenderer(canvas) {
     ctx.restore();
   }
 
+  function drawControlNode(originX, originY, node, now) {
+    const iso = toIso(node.x, node.y);
+    const cx = originX + iso.x;
+    const cy = originY + iso.y + HALF_TILE_H;
+    const baseRadius = 14;
+    const pulseScale = 0.85 + (Math.sin(now / 600) + 1) * 0.08;
+    const captured = node.owner !== null;
+    const baseColor = captured ? '#5ef2ff' : '#ff4a4a';
+
+    ctx.save();
+
+    // Ground fill
+    ctx.globalAlpha = 0.25;
+    ctx.fillStyle = baseColor;
+    ctx.beginPath();
+    ctx.ellipse(cx, cy, baseRadius * pulseScale, baseRadius * 0.52 * pulseScale, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Outer ring
+    ctx.globalAlpha = 0.85;
+    ctx.strokeStyle = baseColor;
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.ellipse(cx, cy, baseRadius * pulseScale, baseRadius * 0.52 * pulseScale, 0, 0, Math.PI * 2);
+    ctx.stroke();
+
+    // Control progress arc (green sweep)
+    if (node.control > 0) {
+      const angle = (node.control / 100) * Math.PI * 2;
+      ctx.globalAlpha = 0.7;
+      ctx.strokeStyle = '#8dff6a';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.ellipse(cx, cy - 2, baseRadius + 5, (baseRadius + 5) * 0.52, 0, -Math.PI / 2, -Math.PI / 2 + angle);
+      ctx.stroke();
+    }
+
+    // Node label
+    ctx.globalAlpha = 1;
+    ctx.font = '700 8px Inter, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillStyle = 'rgba(0,0,0,0.7)';
+    ctx.fillText(node.id.toUpperCase(), cx + 1, cy - baseRadius - 3);
+    ctx.fillStyle = captured ? '#5ef2ff' : '#ff6e6e';
+    ctx.fillText(node.id.toUpperCase(), cx, cy - baseRadius - 4);
+
+    ctx.restore();
+  }
+
   function drawOperationSuccess(originX, originY, pulse, now, pulseUntil) {
     if (!pulse || !Number.isFinite(pulse.x) || !Number.isFinite(pulse.y)) return;
     const iso = toIso(pulse.x, pulse.y);
@@ -1000,6 +1050,24 @@ export function createIsoRenderer(canvas) {
     return nearest;
   }
 
+  function pickControlNodeFromClientPoint(clientX, clientY, state) {
+    if (!Array.isArray(state?.controlNodes) || !state.controlNodes.length) return null;
+    const point = clientToWorldPoint(clientX, clientY, state);
+    const { originX, originY } = point.frame;
+
+    for (const node of state.controlNodes) {
+      const iso = toIso(node.x, node.y);
+      const cx = originX + iso.x;
+      const cy = originY + iso.y + HALF_TILE_H;
+      const dx = point.x - cx;
+      const dy = point.y - cy;
+      if (dx * dx + dy * dy <= CONTROL_NODE_PICK_RADIUS_SQ) {
+        return node;
+      }
+    }
+    return null;
+  }
+
   function render(state) {
     const now = Date.now();
     const metrics = getSceneMetrics(state);
@@ -1039,6 +1107,14 @@ export function createIsoRenderer(canvas) {
       for (const operation of activeOperations) {
         if (!operation || operation.resolved) continue;
         drawSignalOperation(originX, originY, operation, now);
+      }
+    }
+
+    // Draw Live Control Grid nodes beneath NPCs
+    const controlNodes = state.controlNodes;
+    if (Array.isArray(controlNodes) && controlNodes.length) {
+      for (const node of controlNodes) {
+        drawControlNode(originX, originY, node, now);
       }
     }
 
@@ -1107,5 +1183,6 @@ export function createIsoRenderer(canvas) {
     render,
     pickTileFromClientPoint,
     pickNpcFromClientPoint,
+    pickControlNodeFromClientPoint,
   };
 }

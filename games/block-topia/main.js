@@ -41,6 +41,9 @@ const CAMERA_ZOOM_MAX = 1.4;
 const CAMERA_ZOOM_WHEEL_STEP = 0.06;
 const MOUSE_DRAG_THRESHOLD_PX = 8;
 const MOUSE_DRAG_DOUBLE_CLICK_SUPPRESS_MS = 400;
+const MAX_CONTROL = 100;
+const PLAYER_CLICK_CONTROL_GAIN = 10;
+const SAM_CONTROL_DRAIN = 20;
 
 const canvas = document.getElementById('world-canvas');
 const hud = createHud(document);
@@ -124,6 +127,18 @@ async function boot() {
     const clickedNpc = renderer.pickNpcFromClientPoint(event.clientX, event.clientY, state);
     if (!clickedNpc || !isNpcInInteractionRange(clickedNpc)) return false;
     interactWithNpc(clickedNpc);
+    return true;
+  }
+
+  function tryInteractWithClickedNode(event) {
+    const node = renderer.pickControlNodeFromClientPoint(event.clientX, event.clientY, state);
+    if (!node) return false;
+    node.control = Math.min(MAX_CONTROL, node.control + PLAYER_CLICK_CONTROL_GAIN);
+    if (node.control >= MAX_CONTROL && !node.owner) {
+      node.owner = state.player.name;
+      pushFeedDeduped(`⚡ NODE ${node.id.toUpperCase()} CAPTURED by ${state.player.name}`, 'combat', `node-capture:${node.id}`);
+      hud.showDistrictCapture(`⚡ NODE ${node.id.toUpperCase()} CAPTURED`);
+    }
     return true;
   }
 
@@ -328,6 +343,7 @@ async function boot() {
       return;
     }
     if (tryInteractWithClickedNpc(event)) return;
+    if (tryInteractWithClickedNode(event)) return;
     state.mouse.selectedTile = renderer.pickTileFromClientPoint(event.clientX, event.clientY, state);
   });
 
@@ -432,6 +448,12 @@ async function boot() {
         npc.spawnSamWave?.();
         state.effects.samImpactUntil = Date.now() + SAM_IMPACT_DURATION_MS;
         hud.triggerSamImpact('⚡ SAM SIGNAL RUSH — Giant encounter incoming!');
+        // SAM events destabilise all control nodes
+        if (Array.isArray(state.controlNodes)) {
+          for (const n of state.controlNodes) {
+            n.control = Math.max(0, n.control - SAM_CONTROL_DRAIN);
+          }
+        }
       } else if (phase.id === 'conflict') {
         state.effects.districtPulseUntil = Date.now() + DISTRICT_PULSE_CONFLICT_MS;
       }
