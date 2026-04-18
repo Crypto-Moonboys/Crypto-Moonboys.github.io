@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-04-18T20:49:19.390Z",
+  "generatedAt": "2026-04-18T21:37:36.300Z",
   "mode": "live-ai",
   "sourceHealth": {
     "coingecko-global": "ok",
@@ -8,71 +8,87 @@
     "fear-greed": "ok",
     "openai": "ok"
   },
-  "signalCount": 4,
+  "signalCount": 5,
   "signals": [
     {
-      "id": "signal-1776545359389-1",
+      "id": "signal-1776548256300-1",
       "lane": "world",
       "priority": 4,
       "ttlMinutes": 90,
-      "npcLine": "Market pulse weak; digital assets bleeding value fast.",
-      "questPulse": "Stabilize volatile crypto hubs before systems collapse.",
-      "worldFeed": "Global crypto markets falter; shadows of fear deepen.",
-      "clueEvent": "Darknet chatter hints at imminent token crashes.",
+      "npcLine": "Market's bleeding, trust scarce—watch your credits.",
+      "questPulse": "Shadow traders scramble as cryptos crumble.",
+      "worldFeed": "Mass selloffs ripple; fear grips the grid.",
+      "clueEvent": "Data leak hints at major vault breach.",
       "tags": [
-        "crypto",
-        "market-fall",
-        "fear"
+        "market",
+        "fear",
+        "crypto-collapse"
       ],
-      "expiresAt": "2026-04-18T22:19:19.389Z"
+      "expiresAt": "2026-04-18T23:07:36.300Z"
     },
     {
-      "id": "signal-1776545359389-2",
+      "id": "signal-1776548256300-2",
       "lane": "ops",
       "priority": 3,
-      "ttlMinutes": 45,
-      "npcLine": "RAVE and SIREN tokens flash low momentum signals.",
-      "questPulse": "Extract insider data on emerging Asteroid networks.",
-      "worldFeed": "Trending tokens under watch, risk spikes detected.",
-      "clueEvent": "Unstable nodes ping unusual activity near Kernel sector.",
+      "ttlMinutes": 60,
+      "npcLine": "RAVE's quiet, but watch those asteroids incoming.",
+      "questPulse": "Suspicious spikes near zero-day cryptos detected.",
+      "worldFeed": "Algorithmic bots hunting weak coins in the void.",
+      "clueEvent": "Encrypted chatter about a falling star token.",
       "tags": [
-        "tokens",
-        "risk",
-        "surveillance"
+        "crypto",
+        "bot-activity",
+        "alert"
       ],
-      "expiresAt": "2026-04-18T21:34:19.389Z"
+      "expiresAt": "2026-04-18T22:37:36.300Z"
     },
     {
-      "id": "signal-1776545359390-3",
+      "id": "signal-1776548256300-3",
       "lane": "clue",
       "priority": 5,
-      "ttlMinutes": 30,
-      "npcLine": "Fear index rising; encrypted alerts buzz frantic.",
-      "questPulse": "Decrypt shadow market warnings; trace silent sellers.",
-      "worldFeed": "Sentiment plummets; insiders vanish into digital fog.",
-      "clueEvent": "Ghost trades spike in suspected terrorist crypto chains.",
+      "ttlMinutes": 45,
+      "npcLine": "Rumors say AAVE code might be backdoored.",
+      "questPulse": "Hackers probing lending protocols underground.",
+      "worldFeed": "Silent whispers: finance facades cracking.",
+      "clueEvent": "Leaked fragments hint at creeping vulnerabilities.",
       "tags": [
-        "fear",
-        "encrypted",
-        "ghost-trades"
+        "hack",
+        "finance",
+        "warning"
       ],
-      "expiresAt": "2026-04-18T21:19:19.390Z"
+      "expiresAt": "2026-04-18T22:22:36.300Z"
     },
     {
-      "id": "signal-1776545359390-4",
+      "id": "signal-1776548256300-4",
       "lane": "quest",
       "priority": 2,
       "ttlMinutes": 120,
-      "npcLine": "Kernel’s core data cluster shows signs of breach.",
-      "questPulse": "Counter-hack and secure fledgling crypto vaults asap.",
-      "worldFeed": "Cyber threats escalate amid market turbulence.",
-      "clueEvent": "Logs reveal breach attempts targeting AAVE protocols.",
+      "npcLine": "Seek out PENGU—icy trails hiding hot secrets.",
+      "questPulse": "Encrypted packages await on frozen grid sectors.",
+      "worldFeed": "Pengu movements disturb the icy blockchain nodes.",
+      "clueEvent": "Cold chain artifacts surface near corporate zones.",
       "tags": [
-        "breach",
-        "cybersecurity",
+        "mission",
+        "crypto-hunt",
+        "frost"
+      ],
+      "expiresAt": "2026-04-18T23:37:36.300Z"
+    },
+    {
+      "id": "signal-1776548256300-5",
+      "lane": "npc",
+      "priority": 3,
+      "ttlMinutes": 70,
+      "npcLine": "ZRO holdings are shaky; whispers of wipeouts loom.",
+      "questPulse": "ZRO token holders brace for black market raids.",
+      "worldFeed": "Undercity traders dump volatile assets under cover.",
+      "clueEvent": "Silent deletion logs found in darknet vaults.",
+      "tags": [
+        "risk",
+        "blackmarket",
         "crypto"
       ],
-      "expiresAt": "2026-04-18T22:49:19.390Z"
+      "expiresAt": "2026-04-18T22:47:36.300Z"
     }
   ]
 }
