@@ -275,13 +275,55 @@ export function createIsoRenderer(canvas) {
   Object.values(NPC_ASSETS).forEach((path) => loadImage(path, imageRegistry));
 
   function getCameraFrame(state) {
-    const zoom = clamp(state.camera?.zoom ?? 1, ZOOM_MIN, ZOOM_MAX);
-    const panX = Number.isFinite(state.camera?.panX) ? state.camera.panX : 0;
-    const panY = Number.isFinite(state.camera?.panY) ? state.camera.panY : 0;
+    if (!state.camera) {
+      state.camera = { x: 0, y: 0, zoom: 1, zoomIndex: 1, panX: 0, panY: 0 };
+    }
+    const camera = state.camera;
+    const zoom = clamp(camera.zoom ?? 1, ZOOM_MIN, ZOOM_MAX);
+    const rawPanX = Number.isFinite(camera.panX) ? camera.panX : 0;
+    const rawPanY = Number.isFinite(camera.panY) ? camera.panY : 0;
+    const worldBounds = getWorldBounds(state);
+    const viewportLeft = -((canvas.width / 2) / zoom);
+    const viewportRight = ((canvas.width / 2) / zoom);
+    const viewportTop = -(CAMERA_BASELINE_Y / zoom);
+    const viewportBottom = ((canvas.height - CAMERA_BASELINE_Y) / zoom);
+    const viewportWidth = viewportRight - viewportLeft;
+    const viewportHeight = viewportBottom - viewportTop;
+
+    const minWorldDrawX = viewportRight - worldBounds.width;
+    const maxWorldDrawX = viewportLeft;
+    const minWorldDrawY = viewportBottom - worldBounds.height;
+    const maxWorldDrawY = viewportTop;
+
+    let panX;
+    if (worldBounds.width <= viewportWidth) {
+      const centeredWorldDrawX = (viewportLeft + viewportRight - worldBounds.width) / 2;
+      panX = centeredWorldDrawX + camera.x + worldBounds.offsetX;
+    } else {
+      const rawWorldDrawX = -camera.x + rawPanX - worldBounds.offsetX;
+      const clampedWorldDrawX = clamp(rawWorldDrawX, minWorldDrawX, maxWorldDrawX);
+      panX = clampedWorldDrawX + camera.x + worldBounds.offsetX;
+    }
+
+    let panY;
+    if (worldBounds.height <= viewportHeight) {
+      const centeredWorldDrawY = (viewportTop + viewportBottom - worldBounds.height) / 2;
+      panY = centeredWorldDrawY + camera.y + worldBounds.offsetY;
+    } else {
+      const rawWorldDrawY = -camera.y + rawPanY - worldBounds.offsetY;
+      const clampedWorldDrawY = clamp(rawWorldDrawY, minWorldDrawY, maxWorldDrawY);
+      panY = clampedWorldDrawY + camera.y + worldBounds.offsetY;
+    }
+
+    if (state.camera) {
+      state.camera.panX = panX;
+      state.camera.panY = panY;
+    }
+
     return {
       zoom,
-      originX: -state.camera.x + panX,
-      originY: -state.camera.y + panY,
+      originX: -camera.x + panX,
+      originY: -camera.y + panY,
       translateX: canvas.width / 2,
       translateY: CAMERA_BASELINE_Y,
     };
