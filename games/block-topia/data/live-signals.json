@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-04-18T11:08:04.572Z",
+  "generatedAt": "2026-04-18T11:57:54.393Z",
   "mode": "live-ai",
   "sourceHealth": {
     "coingecko-global": "ok",
@@ -11,84 +11,84 @@
   "signalCount": 5,
   "signals": [
     {
-      "id": "signal-1776510484572-1",
+      "id": "signal-1776513474392-1",
       "lane": "world",
-      "priority": 3,
-      "ttlMinutes": 45,
-      "npcLine": "Crypto shadows flicker; markets stir with cautious breath.",
-      "questPulse": "Seek unstable coin circuits; fear lingers in the data winds.",
-      "worldFeed": "Market cap hums low, barely above ghost static.",
-      "clueEvent": "Unusual spikes in fringe tokens draw silent eyes.",
-      "tags": [
-        "crypto",
-        "fear",
-        "market"
-      ],
-      "expiresAt": "2026-04-18T11:53:04.572Z"
-    },
-    {
-      "id": "signal-1776510484572-2",
-      "lane": "ops",
       "priority": 4,
-      "ttlMinutes": 30,
-      "npcLine": "RAVE networks silent. SIREN calls rise in the next grid.",
-      "questPulse": "Track signals from muted nodes; danger cloaked in noise.",
-      "worldFeed": "Index ticks jitter; signals of an incoming breach.",
-      "clueEvent": "Twilight hackers exploit weak cryptowaves near data streams.",
+      "ttlMinutes": 45,
+      "npcLine": "Whispers say the crypto mesh dims, fears growing dark.",
+      "questPulse": "Trace the pulse drop—something’s dipping under the neon haze.",
+      "worldFeed": "Market fractals shift; shadows of uncertainty swell fast.",
+      "clueEvent": "Glitch in trading nodes sparks silent dread across districts.",
       "tags": [
-        "signals",
-        "hack",
-        "stealth"
-      ],
-      "expiresAt": "2026-04-18T11:38:04.572Z"
-    },
-    {
-      "id": "signal-1776510484572-3",
-      "lane": "clue",
-      "priority": 5,
-      "ttlMinutes": 20,
-      "npcLine": "Whispers on PENGU channels hint at asteroid code drops.",
-      "questPulse": "Decode cold vaults before unknown factions claim the payload.",
-      "worldFeed": "Sentiment skews fear; trust frays like broken fiber lines.",
-      "clueEvent": "Encrypted chatter spikes; new data relics orbit the network.",
-      "tags": [
-        "intel",
-        "encryption",
-        "fear"
-      ],
-      "expiresAt": "2026-04-18T11:28:04.572Z"
-    },
-    {
-      "id": "signal-1776510484572-4",
-      "lane": "quest",
-      "priority": 2,
-      "ttlMinutes": 60,
-      "npcLine": "Old BTC scripts surface; remnants of legend blur the edge.",
-      "questPulse": "Retrieve lost nodes; old tech holds new secrets.",
-      "worldFeed": "Low volatility zones offer fragile safe zones for data runs.",
-      "clueEvent": "Quiet markets hide potential spark for rebellion in the code.",
-      "tags": [
-        "legacy",
-        "retrieval",
-        "quest"
-      ],
-      "expiresAt": "2026-04-18T12:08:04.572Z"
-    },
-    {
-      "id": "signal-1776510484572-5",
-      "lane": "npc",
-      "priority": 3,
-      "ttlMinutes": 25,
-      "npcLine": "SIREN agent murmurs: Fear dominates the grid’s pulse tonight.",
-      "questPulse": "Align with rogue brokers; shadows reveal high-risk routes.",
-      "worldFeed": "Crypt algo drones scan for weak signals under neon haze.",
-      "clueEvent": "Intel leaks hint at market manipulations behind corporate veils.",
-      "tags": [
-        "npc",
         "fear",
-        "opportunity"
+        "crypto",
+        "market-uncertainty"
       ],
-      "expiresAt": "2026-04-18T11:33:04.572Z"
+      "expiresAt": "2026-04-18T12:42:54.392Z"
+    },
+    {
+      "id": "signal-1776513474392-2",
+      "lane": "ops",
+      "priority": 3,
+      "ttlMinutes": 30,
+      "npcLine": "OVPP spike heating up, could disrupt the data lanes.",
+      "questPulse": "Hack the OVPP node—surge might unravel undercurrents.",
+      "worldFeed": "OVPP token flickers; miners on alert for anomaly.",
+      "clueEvent": "Surge in OVPP transactions jams darknet bandwidth.",
+      "tags": [
+        "token-activity",
+        "surge",
+        "data-lanes"
+      ],
+      "expiresAt": "2026-04-18T12:27:54.392Z"
+    },
+    {
+      "id": "signal-1776513474393-3",
+      "lane": "clue",
+      "priority": 2,
+      "ttlMinutes": 50,
+      "npcLine": "Siren protocols triggered; cryptic patterns breach firewall.",
+      "questPulse": "an operator’s static; it may hide a darknet trap.",
+      "worldFeed": "Silent screeches from Siren crypto nodes confound analysts.",
+      "clueEvent": "Encrypted bursts detected near Siren’s core clusters.",
+      "tags": [
+        "intrigue",
+        "encryption",
+        "breach"
+      ],
+      "expiresAt": "2026-04-18T12:47:54.393Z"
+    },
+    {
+      "id": "signal-1776513474393-4",
+      "lane": "quest",
+      "priority": 3,
+      "ttlMinutes": 40,
+      "npcLine": "PENGU whispers hint at cold fronts in token flow.",
+      "questPulse": "Investigate PENGU channel slowdown—underlying freeze suspected.",
+      "worldFeed": "Silent disruptions ripple through PENGU’s icy ledger.",
+      "clueEvent": "Frozen transactions clogging critical crypto conduits.",
+      "tags": [
+        "freeze",
+        "token-flow",
+        "disruption"
+      ],
+      "expiresAt": "2026-04-18T12:37:54.393Z"
+    },
+    {
+      "id": "signal-1776513474393-5",
+      "lane": "npc",
+      "priority": 1,
+      "ttlMinutes": 60,
+      "npcLine": "RAVE’s glow dims; old neon ghosts flicker out.",
+      "questPulse": "Follow RAVE’s fading light—veteran traders grow jittery.",
+      "worldFeed": "RAVE token loses shimmer; markets eye cautious backs.",
+      "clueEvent": "Dimming neon indicates shifting alliances in crypto streets.",
+      "tags": [
+        "decline",
+        "market-sentiment",
+        "neon"
+      ],
+      "expiresAt": "2026-04-18T12:57:54.393Z"
     }
   ]
 }
