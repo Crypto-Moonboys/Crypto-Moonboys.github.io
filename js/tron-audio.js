@@ -1,8 +1,8 @@
 /**
  * Tron Audio Engine
  * Lightweight synthesized cues with user-gesture init and safe throttling.
- * TODO(asset path): when adding real files, place them under /audio/tron/
- * and map them in soundProfile/play without changing callers.
+ * Future asset plan: if branded SFX files are added, store them in /audio/tron/
+ * and keep this synthesized path as a silent fallback for missing/unloaded files.
  */
 (function () {
   'use strict';
