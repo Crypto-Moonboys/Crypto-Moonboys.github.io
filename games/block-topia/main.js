@@ -23,7 +23,8 @@ import { createLiveIntelligence } from './world/live-intelligence.js';
 import { createClueSignalSystem } from './world/clue-signal-system.js';
 import { createSignalOperationSystem } from './world/signal-operation-system.js';
 import { createNodeInterferenceSystem } from './world/node-interference-system.js';
-import { createDuelSystem } from './world/duel-system.js';
+import { createSignalDuelSystem } from './duel/signal-duel-system.js';
+import { createEconomySystem } from './economy/economy-system.js';
 import { createHud } from './ui/hud.js';
 import { createDuelOverlay } from './ui/duel-overlay.js';
 import { createIsoRenderer } from './render/iso-renderer.js';
@@ -83,7 +84,15 @@ async function boot() {
   const operations = createSignalOperationSystem(state, liveIntelligence);
   const nodeInterference = createNodeInterferenceSystem(state);
   const memory = createMemorySystem(state);
-  const duel = createDuelSystem({
+  const economy = createEconomySystem(state, {
+    onXp: ({ amount }) => {
+      if (amount > 0) hud.pushFeed(`💠 +${amount} XP`, 'quest');
+    },
+    onMineClaimed: ({ xp, bonus }) => {
+      hud.pushFeed(`⛏️ Mine claimed +${xp} XP (x${bonus.toFixed(1)})`, 'quest');
+    },
+  });
+  const duel = createSignalDuelSystem({
     sendChallenge: (targetPlayerId) => sendDuelChallenge(targetPlayerId),
     sendAccept: (duelId) => sendDuelAccept(duelId),
     sendAction: (duelId, action) => sendDuelAction(duelId, action),
@@ -254,6 +263,12 @@ async function boot() {
     if (!ok) return;
     selectedRemotePlayer = remotePlayer;
     hud.pushFeed(`⚔️ Duel challenge sent to ${remotePlayer.name || remotePlayer.id}`, 'combat');
+    const mineClaim = economy.claimMine();
+    if (mineClaim) {
+      hud.showSamPopup(`⛏️ MINE CLAIM READY · +${mineClaim.xp} XP`, 3000);
+      hud.setXp(state.player.xp);
+    }
+    hud.setStatusTicker(economy.getTicker());
     duelOverlay.render();
   }
 
@@ -442,6 +457,7 @@ async function boot() {
   hud.setXp(state.player.xp);
   hud.setRoom(state.room.id);
   hud.setPopulation(0, state.room.maxPlayers);
+  hud.setStatusTicker(economy.getTicker());
   operations.syncFromSignals({ force: true });
   hud.setQuests(quests.getActiveQuestCards());
   const worldBulletins = liveIntelligence.getWorldFeedLines(2);
@@ -652,6 +668,7 @@ async function boot() {
       const awarded = completion?.awarded ?? rewardXp;
       if (awarded) {
         awardXp(state, awarded);
+        economy.grantXp(awarded, 'quest');
         hud.setXp(state.player.xp);
         hud.setScore(state.player.score);
         hud.setQuests(quests.getActiveQuestCards());
@@ -692,7 +709,13 @@ async function boot() {
     onDuelRequested: (payload) => {
       if (isLocalDuelParticipant(payload)) {
         duel.applyRequested(payload);
-        duelOverlay.render();
+        const mineClaim = economy.claimMine();
+    if (mineClaim) {
+      hud.showSamPopup(`⛏️ MINE CLAIM READY · +${mineClaim.xp} XP`, 3000);
+      hud.setXp(state.player.xp);
+    }
+    hud.setStatusTicker(economy.getTicker());
+    duelOverlay.render();
       }
       if (payload?.playerB === localSessionId) {
         hud.pushFeed(`⚔️ Duel request: ${payload.challengerName || payload.playerAName || 'Player'} challenged you`, 'combat');
@@ -701,23 +724,50 @@ async function boot() {
     onDuelStarted: (payload) => {
       if (isLocalDuelParticipant(payload)) {
         duel.applyStarted(payload);
-        duelOverlay.render();
+        const mineClaim = economy.claimMine();
+    if (mineClaim) {
+      hud.showSamPopup(`⛏️ MINE CLAIM READY · +${mineClaim.xp} XP`, 3000);
+      hud.setXp(state.player.xp);
+    }
+    hud.setStatusTicker(economy.getTicker());
+    duelOverlay.render();
       }
       hud.pushFeed(`⚔️ Duel started: ${payload.playerAName || 'A'} vs ${payload.playerBName || 'B'}`, 'combat');
     },
     onDuelActionSubmitted: (payload) => {
       if (duel.getState().duelId && payload?.duelId === duel.getState().duelId) {
         duel.applyActionSubmitted(payload);
-        duelOverlay.render();
+        const mineClaim = economy.claimMine();
+    if (mineClaim) {
+      hud.showSamPopup(`⛏️ MINE CLAIM READY · +${mineClaim.xp} XP`, 3000);
+      hud.setXp(state.player.xp);
+    }
+    hud.setStatusTicker(economy.getTicker());
+    duelOverlay.render();
       }
     },
     onDuelResolved: (payload) => {
       if (duel.getState().duelId && payload?.duelId === duel.getState().duelId) {
         duel.applyResolved(payload);
-        duelOverlay.render();
+        const mineClaim = economy.claimMine();
+    if (mineClaim) {
+      hud.showSamPopup(`⛏️ MINE CLAIM READY · +${mineClaim.xp} XP`, 3000);
+      hud.setXp(state.player.xp);
+    }
+    hud.setStatusTicker(economy.getTicker());
+    duelOverlay.render();
       }
       if (payload?.message) {
         hud.pushFeed(`⚔️ ${payload.message}`, 'combat');
+      }
+      if (isLocalDuelParticipant(payload)) {
+        const localWon = payload?.winnerId && payload.winnerId === localSessionId;
+        const rewards = economy.applyDuelRewards({
+          win: Boolean(localWon),
+          damageDealt: Number(payload?.damageDealt || 0),
+          jackpot: Boolean(payload?.jackpot),
+        });
+        hud.pushFeed(`💰 Duel rewards · +${rewards.xp} XP · +${rewards.gems} Gems`, 'quest');
       }
       if (payload?.samWarning) {
         hud.showNodeInterference(payload.samWarning, 'sam');
@@ -726,7 +776,13 @@ async function boot() {
     onDuelEnded: (payload) => {
       if (duel.getState().duelId && payload?.duelId === duel.getState().duelId) {
         duel.applyEnded(payload);
-        duelOverlay.render();
+        const mineClaim = economy.claimMine();
+    if (mineClaim) {
+      hud.showSamPopup(`⛏️ MINE CLAIM READY · +${mineClaim.xp} XP`, 3000);
+      hud.setXp(state.player.xp);
+    }
+    hud.setStatusTicker(economy.getTicker());
+    duelOverlay.render();
       }
       applyDuelEndedRipple(payload);
       if (payload?.message) {
@@ -854,6 +910,12 @@ async function boot() {
         hud.setQuests(quests.getActiveQuestCards());
       }
     }
+    const mineClaim = economy.claimMine();
+    if (mineClaim) {
+      hud.showSamPopup(`⛏️ MINE CLAIM READY · +${mineClaim.xp} XP`, 3000);
+      hud.setXp(state.player.xp);
+    }
+    hud.setStatusTicker(economy.getTicker());
     duelOverlay.render();
   }
 
