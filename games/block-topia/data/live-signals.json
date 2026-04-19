@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-04-19T07:21:47.483Z",
+  "generatedAt": "2026-04-19T08:32:18.218Z",
   "mode": "fallback-no-key",
   "sourceHealth": {
     "coingecko-global": "ok",
@@ -11,7 +11,7 @@
   "signalCount": 3,
   "signals": [
     {
-      "id": "signal-1776583307483-1",
+      "id": "signal-1776587538218-1",
       "lane": "world",
       "priority": 3,
       "ttlMinutes": 45,
@@ -24,10 +24,10 @@
         "mood",
         "relay"
       ],
-      "expiresAt": "2026-04-19T08:06:47.483Z"
+      "expiresAt": "2026-04-19T09:17:18.218Z"
     },
     {
-      "id": "signal-1776583307483-2",
+      "id": "signal-1776587538218-2",
       "lane": "ops",
       "priority": 4,
       "ttlMinutes": 40,
@@ -40,10 +40,10 @@
         "courier",
         "quest"
       ],
-      "expiresAt": "2026-04-19T08:01:47.483Z"
+      "expiresAt": "2026-04-19T09:12:18.218Z"
     },
     {
-      "id": "signal-1776583307483-3",
+      "id": "signal-1776587538218-3",
       "lane": "clue",
       "priority": 2,
       "ttlMinutes": 60,
@@ -56,7 +56,7 @@
         "hunt",
         "world"
       ],
-      "expiresAt": "2026-04-19T08:21:47.483Z"
+      "expiresAt": "2026-04-19T09:32:18.218Z"
     }
   ]
 }
