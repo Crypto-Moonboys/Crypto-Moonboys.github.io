@@ -27,6 +27,7 @@ import { createDuelSystem } from './world/duel-system.js';
 import { createHud } from './ui/hud.js';
 import { createDuelOverlay } from './ui/duel-overlay.js';
 import { createIsoRenderer } from './render/iso-renderer.js';
+import { DUEL_FIGHTER_CONFIG } from './data/duel-fighter-config.js';
 
 const ENTRY_OVERLAY_TIMEOUT_MS = 7000;
 const MAX_FRAME_DELTA_SECONDS = 1 / 30;
@@ -88,7 +89,10 @@ async function boot() {
     sendAccept: (duelId) => sendDuelAccept(duelId),
     sendAction: (duelId, action) => sendDuelAction(duelId, action),
   });
-  const duelOverlay = createDuelOverlay(document, duel);
+  const duelOverlay = createDuelOverlay(document, duel, {
+    fighterConfig: DUEL_FIGHTER_CONFIG,
+    getLocalPlayerId: () => localSessionId,
+  });
   duelOverlay.bindHandlers({
     onSubmitAction: (action) => duel.submitAction(action),
     onAcceptDuel: (duelId) => duel.acceptDuel(duelId),
