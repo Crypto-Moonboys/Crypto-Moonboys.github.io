@@ -1,94 +1,62 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-04-18T23:36:35.401Z",
-  "mode": "live-ai",
+  "generatedAt": "2026-04-19T02:48:03.579Z",
+  "mode": "fallback-no-key",
   "sourceHealth": {
     "coingecko-global": "ok",
     "coingecko-trending": "ok",
     "fear-greed": "ok",
-    "openai": "ok"
+    "openai": "missing-key"
   },
-  "signalCount": 5,
+  "signalCount": 3,
   "signals": [
     {
-      "id": "signal-1776555395401-1",
+      "id": "signal-1776566883579-1",
       "lane": "world",
-      "priority": 4,
-      "ttlMinutes": 120,
-      "npcLine": "Markets bleed; whispers of a shadow crash echo through neon alleys.",
-      "questPulse": "Trace the source of the market's dark pulse before it consumes more.",
-      "worldFeed": "Cryptos tumble as fear poisons the grid; trust erodes fast.",
-      "clueEvent": "Data blackout hits trading hubs; suspicious algorithms go silent.",
-      "tags": [
-        "marketcrash",
-        "fear",
-        "cryptocurrency"
-      ],
-      "expiresAt": "2026-04-19T01:36:35.401Z"
-    },
-    {
-      "id": "signal-1776555395401-2",
-      "lane": "ops",
       "priority": 3,
-      "ttlMinutes": 90,
-      "npcLine": "RAVE signals drop to zero—intel warns of a ghost virus in the chain.",
-      "questPulse": "Infiltrate the node holding RAVE’s core to extract corrupted data.",
-      "worldFeed": "Networks detect zero activity on RAVE; anomaly spikes suspicion.",
-      "clueEvent": "Faulty transactions cascade; silent alarms trip in dark net arcs.",
+      "ttlMinutes": 45,
+      "npcLine": "Signal board shows Fear pressure. Keep your routes adaptive.",
+      "questPulse": "Map three unstable relay corners before the next SAM sweep.",
+      "worldFeed": "Network mood: Fear. Surveillance pressure remains high.",
+      "clueEvent": "Hidden relay mark: look for the glyph where east lanes cross old neon rail.",
       "tags": [
-        "rave",
-        "ghostvirus",
-        "networkanomaly"
+        "sam",
+        "mood",
+        "relay"
       ],
-      "expiresAt": "2026-04-19T01:06:35.401Z"
+      "expiresAt": "2026-04-19T03:33:03.579Z"
     },
     {
-      "id": "signal-1776555395401-3",
+      "id": "signal-1776566883579-2",
+      "lane": "ops",
+      "priority": 4,
+      "ttlMinutes": 40,
+      "npcLine": "Trend signatures rotating: RAVE · ASTEROID · ZRO. Couriers are rerouting tonight.",
+      "questPulse": "Intercept two phantom couriers carrying unsigned signal chips.",
+      "worldFeed": "Ops pulse: district relays are shifting faster than normal.",
+      "clueEvent": "Clue pulse: seek a dead terminal with three blinking amber bars.",
+      "tags": [
+        "ops",
+        "courier",
+        "quest"
+      ],
+      "expiresAt": "2026-04-19T03:28:03.579Z"
+    },
+    {
+      "id": "signal-1776566883579-3",
       "lane": "clue",
       "priority": 2,
-      "ttlMinutes": 70,
-      "npcLine": "AAVE's shadow stirs—low but growing, a quiet upsurge in whispers.",
-      "questPulse": "Decrypt AAVE code fragments found in rogue data caches.",
-      "worldFeed": "Subtle shifts signal a potential comeback or new exploit in AAVE.",
-      "clueEvent": "Hidden packets circulate in low-visibility loops; trace the source.",
-      "tags": [
-        "aave",
-        "dataleak",
-        "recovery"
-      ],
-      "expiresAt": "2026-04-19T00:46:35.401Z"
-    },
-    {
-      "id": "signal-1776555395401-4",
-      "lane": "quest",
-      "priority": 3,
       "ttlMinutes": 60,
-      "npcLine": "PENGU nodes hum beneath icy veils; a challenge hides in frostbite.",
-      "questPulse": "Explore PENGU outposts for relics and encrypted boot sectors.",
-      "worldFeed": "Unstable sigils surface in distant PENGU sectors amid rising dread.",
-      "clueEvent": "Cold signals pulse on frozen circuits, hinting at hidden caches.",
+      "npcLine": "A rumor says the old tunnel net is awake again.",
+      "questPulse": "Trace a memory shard path without triggering patrol beacons.",
+      "worldFeed": "World feed: encrypted whispers detected under Revolt blocks.",
+      "clueEvent": "Hidden link hunt: the passphrase starts with moon and ends with static.",
       "tags": [
-        "pengu",
-        "hiddencaches",
-        "pulse"
+        "clue",
+        "hunt",
+        "world"
       ],
-      "expiresAt": "2026-04-19T00:36:35.401Z"
-    },
-    {
-      "id": "signal-1776555395401-5",
-      "lane": "npc",
-      "priority": 5,
-      "ttlMinutes": 100,
-      "npcLine": "SIREN's call distorts; shadow factions race to claim its fading echo.",
-      "questPulse": "Negotiate with rogue agents vying to control SIREN's last broadcast.",
-      "worldFeed": "Signal decay breeds conflict—SIREN's influence wanes amid chaos.",
-      "clueEvent": "Fragmented broadcasts leak secrets; betrayals ripple through comms.",
-      "tags": [
-        "siren",
-        "signaldecay",
-        "factionwar"
-      ],
-      "expiresAt": "2026-04-19T01:16:35.401Z"
+      "expiresAt": "2026-04-19T03:48:03.579Z"
     }
   ]
 }
