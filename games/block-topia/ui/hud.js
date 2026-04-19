@@ -1,4 +1,4 @@
-const SAM_POPUP_DURATION_MS = 5200;
+const SAM_POPUP_DURATION_MS = 4200;
 const QUEST_TOAST_DURATION_MS = 4200;
 const CAPTURE_BANNER_DURATION_MS = 4200;
 const NPC_DIALOGUE_DURATION_MS = 4200;
@@ -53,6 +53,7 @@ export function createHud(doc) {
   let npcDialogueTimer = null;
   let identityTimer = null;
   let lastXp = 0;
+  let lastQuestCount = null;
 
   function titleFromLevel(level) {
     if (level >= 16) return 'District Sovereign';
@@ -162,6 +163,8 @@ export function createHud(doc) {
 
   function setQuests(items = []) {
     const count = Array.isArray(items) ? items.length : 0;
+    if (lastQuestCount === count) return;
+    lastQuestCount = count;
     pushLog('right', `Active operations: ${count}`);
   }
 
@@ -169,7 +172,7 @@ export function createHud(doc) {
     if (entryTagline) entryTagline.textContent = text;
   }
 
-  function dismissEntryIdentity(delay = 4200) {
+  function dismissEntryIdentity(delay = 2200) {
     clearTimeout(identityTimer);
     identityTimer = setTimeout(() => entryIdentity?.classList.add('hidden'), delay);
   }
