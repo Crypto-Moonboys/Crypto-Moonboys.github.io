@@ -27,6 +27,11 @@ const INTERFERENCE_WANDER_CHANCE = 0.28;
 const UNSTABLE_VILLAIN_SPAWN_CHANCE = 0.3;
 const DEFAULT_DIALOGUE_FALLBACK = 'Move smart. The district remembers.';
 const FALLBACK_INTEL_PREFIX = '[Fallback]';
+const RECENT_LINE_MEMORY = 4;
+const LINE_REPEAT_PENALTY = 0.22;
+const LAST_LINE_BOUNCE_PENALTY = 0.08;
+const NETWORK_JUMP_CHANCE_ACTIVE = 0.007;
+const NETWORK_JUMP_CHANCE_CROWD = 0.004;
 
 // District-aware NPC spawn bands (col, row, w, h) matching districts.json grid regions
 const DISTRICT_SPAWN_REGIONS = [
@@ -193,9 +198,21 @@ function randInt(min, max) {
 
 function spawnPos(regionIndex, count) {
   const region = DISTRICT_SPAWN_REGIONS[regionIndex % DISTRICT_SPAWN_REGIONS.length];
+  const slots = Math.max(1, Math.floor(count / DISTRICT_SPAWN_REGIONS.length));
+  const slotIndex = Math.floor(regionIndex / DISTRICT_SPAWN_REGIONS.length) % slots;
+  const slotCols = Math.max(1, Math.floor(Math.sqrt(slots)));
+  const slotRows = Math.max(1, Math.ceil(slots / slotCols));
+  const cellW = Math.max(1, Math.floor(region.w / slotCols));
+  const cellH = Math.max(1, Math.floor(region.h / slotRows));
+  const slotCol = slotIndex % slotCols;
+  const slotRow = Math.floor(slotIndex / slotCols);
+  const baseCol = region.col + slotCol * cellW;
+  const baseRow = region.row + slotRow * cellH;
+  const spanW = Math.max(1, Math.min(cellW, region.col + region.w - baseCol));
+  const spanH = Math.max(1, Math.min(cellH, region.row + region.h - baseRow));
   return {
-    col: region.col + randInt(0, region.w),
-    row: region.row + randInt(0, region.h),
+    col: baseCol + randInt(0, spanW),
+    row: baseRow + randInt(0, spanH),
     districtId: region.id,
   };
 }
@@ -260,7 +277,24 @@ function pickNextLine(npc) {
     }
   }
 
-  const nextLine = candidateOptions[Math.floor(Math.random() * candidateOptions.length)];
+  const recentLines = Array.isArray(npc.recentLineIds) ? npc.recentLineIds : [];
+  let bestScore = -Infinity;
+  let bestLine = candidateOptions[0];
+  for (const option of candidateOptions) {
+    let score = Math.random();
+    const seenIdx = recentLines.indexOf(option.id);
+    if (seenIdx !== -1) {
+      score -= LINE_REPEAT_PENALTY * (recentLines.length - seenIdx);
+    }
+    if (option.id === npc.lastLineId) {
+      score -= LAST_LINE_BOUNCE_PENALTY;
+    }
+    if (score > bestScore) {
+      bestScore = score;
+      bestLine = option;
+    }
+  }
+  const nextLine = bestLine;
   const lineDirection = pointEquals(nextLine.from, arrivalNode) ? 1 : -1;
   return {
     lineId: nextLine.id,
@@ -378,6 +412,8 @@ export function createNpcSystem(state, liveIntelligence = null) {
       t: Math.random(),
       speed: 0.2 + Math.random() * 0.3,
       type: type || 'helper',
+      recentLineIds: [],
+      lastLineId: '',
     };
   }
 
@@ -609,19 +645,30 @@ export function createNpcSystem(state, liveIntelligence = null) {
 
       npc.t += npc.speed * movementDt;
       if (npc.t > 1) {
+        npc.lastLineId = npc.lineId;
         const next = pickNextLine(npc);
         npc.lineId = next.lineId;
         npc.lineDirection = next.lineDirection;
+        npc.recentLineIds.push(npc.lineId);
+        if (npc.recentLineIds.length > RECENT_LINE_MEMORY) {
+          npc.recentLineIds.shift();
+        }
         npc.t = 0;
         line = getLine(npc.lineId);
         if (!line) continue;
       }
 
-      // Occasional random network jump (1% chance) — keeps NPCs spreading
+      // Occasional random network jump — keeps NPCs spreading
       // across the entire network instead of converging on heavily-connected hubs.
-      if (Math.random() < 0.01) {
+      const jumpChance = npc.mode === 'active' ? NETWORK_JUMP_CHANCE_ACTIVE : NETWORK_JUMP_CHANCE_CROWD;
+      if (Math.random() < jumpChance) {
+        npc.lastLineId = npc.lineId;
         npc.lineId = pickRandomLineId();
         npc.lineDirection = randomLineDirectionSign();
+        npc.recentLineIds.push(npc.lineId);
+        if (npc.recentLineIds.length > RECENT_LINE_MEMORY) {
+          npc.recentLineIds.shift();
+        }
         npc.t = Math.random();
         line = getLine(npc.lineId);
         if (!line) continue;
@@ -680,8 +727,10 @@ export function createNpcSystem(state, liveIntelligence = null) {
       const npc = shuffled[i];
       if (!npc) continue;
       npc.type = 'villain';
+      npc.lastLineId = npc.lineId;
       npc.lineId = pickRandomLineId();
       npc.lineDirection = randomLineDirectionSign();
+      npc.recentLineIds = [npc.lineId];
       npc.t = 0;
     }
   }
@@ -715,8 +764,10 @@ export function createNpcSystem(state, liveIntelligence = null) {
       npc.dialogueHooks = ['react_to_player_presence', 'district_rumor_ping', 'node_interference_alert'];
       npc.dialogue = [getDialogueLine(npc)];
       if (Math.random() < INTERFERENCE_WANDER_CHANCE) {
+        npc.lastLineId = npc.lineId;
         npc.lineId = pickRandomLineId();
         npc.lineDirection = randomLineDirectionSign();
+        npc.recentLineIds = [npc.lineId];
         npc.t = 0;
       }
       if (payload.status === 'unstable' && Math.random() < UNSTABLE_VILLAIN_SPAWN_CHANCE) {
