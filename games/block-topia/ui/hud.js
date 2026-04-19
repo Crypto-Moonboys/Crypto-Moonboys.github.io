@@ -158,7 +158,10 @@ export function createHud(doc) {
   function showNodeInterference(text, level = 'signal') {
     const prefix = level === 'sam' ? '🧠' : level === 'warning' ? '⚠️' : '⚡';
     showSamPopup(`${prefix} ${text}`, NODE_ALERT_DURATION_MS);
-    pushFeed(`${prefix} ${text}`, level === 'sam' ? 'sam' : 'combat');
+    pushFeed(
+      `${prefix} ${text}`,
+      level === 'sam' ? 'sam' : level === 'warning' ? 'system' : 'combat',
+    );
   }
 
   function setQuests(items = []) {
