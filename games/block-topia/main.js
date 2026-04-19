@@ -52,6 +52,7 @@ const CAMERA_ZOOM_MAX = 1.4;
 const CAMERA_ZOOM_WHEEL_STEP = 0.06;
 const MOUSE_DRAG_THRESHOLD_PX = 8;
 const MOUSE_DRAG_DOUBLE_CLICK_SUPPRESS_MS = 400;
+const DEFAULT_AI_ENDPOINT = 'https://api.openai.com/v1/responses';
 const canvas = document.getElementById('world-canvas');
 const hud = createHud(document);
 const renderer = createIsoRenderer(canvas);
@@ -63,6 +64,35 @@ window.addEventListener('keydown', (event) => {
 window.addEventListener('keyup', (event) => {
   input[event.key.toLowerCase()] = false;
 });
+
+function resolveAiRuntimeConfig() {
+  const runtime = window.BLOCK_TOPIA_AI || {};
+  const enabled = runtime.enabled === true;
+  const endpoint = typeof runtime.endpoint === 'string' && runtime.endpoint.trim()
+    ? runtime.endpoint.trim()
+    : DEFAULT_AI_ENDPOINT;
+  const model = typeof runtime.model === 'string' && runtime.model.trim()
+    ? runtime.model.trim()
+    : '';
+  const apiKeyEnvVar = typeof runtime.apiKeyEnvVar === 'string' && runtime.apiKeyEnvVar.trim()
+    ? runtime.apiKeyEnvVar.trim()
+    : 'OPENAI_API_KEY';
+  const hasConfig = Boolean(runtime && Object.keys(runtime).length);
+
+  let status = 'disabled (no config)';
+  if (hasConfig && !enabled) status = 'configured but disabled';
+  if (enabled && !model) status = 'enabled, missing model';
+  if (enabled && model) status = 'ready for endpoint/config testing';
+
+  return {
+    enabled,
+    endpoint,
+    model,
+    apiKeyEnvVar,
+    hasConfig,
+    status,
+  };
+}
 
 async function boot() {
   const dataBundle = await loadUnifiedData();
@@ -116,6 +146,24 @@ async function boot() {
   const canonLore = state.lore?.canon || canonAdapter.canonLore || {};
   const lore = state.lore?.legacy?.lore || {};
   const districtStateById = new Map(state.districtState.map((district) => [district.id, district]));
+  const aiRuntime = resolveAiRuntimeConfig();
+
+  hud.setAiStatus(aiRuntime.status);
+  if (aiRuntime.hasConfig) {
+    hud.pushFeed(
+      `🤖 AI config detected · ${aiRuntime.enabled ? 'enabled' : 'disabled'} · endpoint ${aiRuntime.endpoint}`,
+      'system',
+    );
+    if (!aiRuntime.model) {
+      hud.pushFeed('⚠️ AI config missing model; set BLOCK_TOPIA_AI.model for testing', 'system');
+    }
+  } else {
+    hud.pushFeed('🤖 AI integration disabled: no BLOCK_TOPIA_AI runtime config', 'system');
+  }
+  window.blockTopiaAiProbe = () => ({
+    ...aiRuntime,
+    note: 'Runtime config probe only. No OpenAI request is performed in this build.',
+  });
 
   function clampZoom(value) {
     return Math.max(CAMERA_ZOOM_MIN, Math.min(CAMERA_ZOOM_MAX, value));

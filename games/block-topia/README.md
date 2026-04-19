@@ -188,6 +188,34 @@ Legacy source references are tracked in `world/data-loader.js` (`legacy.sourceFi
 - Unified module keeps `window.BLOCK_TOPIA_SERVER` defaulting to `https://game.cryptomoonboys.com` — this is **backend-internal only** and must not appear in any user-facing HTML as a clickable link.
 - Multiplayer joins the existing Colyseus `city` room and reflects room population in HUD.
 
+## OpenAI Runtime Config (Testing Prep Only)
+
+Block Topia does **not** ship a hardcoded API key and does not make OpenAI requests by default.
+
+- Runtime config hook: `window.BLOCK_TOPIA_AI`
+- Expected keys:
+  - `enabled` (`boolean`)
+  - `endpoint` (`string`, defaults to `https://api.openai.com/v1/responses`)
+  - `model` (`string`)
+  - `apiKeyEnvVar` (`string`, default `OPENAI_API_KEY`, metadata only)
+- HUD now reports explicit AI status (`disabled`, `configured but disabled`, or `ready for endpoint/config testing`).
+- Optional test probe for manual verification in browser devtools:
+  - `window.blockTopiaAiProbe()`
+  - This only returns runtime config visibility and never sends a network request.
+
+Example local-only setup (do not commit real keys):
+
+```html
+<script>
+  window.BLOCK_TOPIA_AI = {
+    enabled: true,
+    endpoint: 'https://api.openai.com/v1/responses',
+    model: 'gpt-4.1-mini',
+    apiKeyEnvVar: 'OPENAI_API_KEY',
+  };
+</script>
+```
+
 ## Public URL Reference
 
 | Destination | URL |
