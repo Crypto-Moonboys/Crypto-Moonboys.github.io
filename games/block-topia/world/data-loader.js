@@ -29,6 +29,10 @@ export async function loadUnifiedData() {
     canonBible,
     legacyAssets,
     assetManifest,
+    nodeInterferenceModel,
+    liveSignals,
+    pfpTraitPassives,
+    pfpReplacementContract,
   ] = await Promise.all([
     loadJson(`${BASE}/data/districts.json`, { districts: [] }),
     loadJson(`${BASE}/data/factions.json`, { primary: {}, secondary: {} }),
@@ -44,6 +48,10 @@ export async function loadUnifiedData() {
     loadJson('/wiki/bibles/block-topia.json', {}),
     loadJson('/games/data/blocktopia-asset-pack.json', {}),
     loadJson(`${BASE}/assets/manifest.json`, {}),
+    loadJson(`${BASE}/data/node-interference-model.json`, {}),
+    loadJson(`${BASE}/data/live-signals.json`, { signals: [] }),
+    loadJson(`${BASE}/data/pfp-trait-passives.json`, { assets: {}, traitPassives: {} }),
+    loadJson(`${BASE}/data/pfp-replacement-contract.json`, { requiredFiles: [], requiredAssetKeys: [] }),
   ]);
 
   let canonState;
@@ -79,6 +87,10 @@ export async function loadUnifiedData() {
     canon: canonState,
     canonAdapter: canonState,
     canonLore: canonState.canonLore,
+    nodeInterferenceModel,
+    liveSignals,
+    pfpTraitPassives,
+    pfpReplacementContract,
     legacy: {
       map: legacyMap,
       npcProfiles: legacyNpcProfiles,

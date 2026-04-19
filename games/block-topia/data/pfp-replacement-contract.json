@@ -1,0 +1,20 @@
+{
+  "version": "1.0",
+  "requiredSize": {
+    "width": 1024,
+    "height": 1024
+  },
+  "requiredFiles": [
+    "fighter-common.svg",
+    "fighter-rare.svg",
+    "fighter-epic.svg",
+    "fighter-glitch.svg"
+  ],
+  "requiredAssetKeys": [
+    "common",
+    "rare",
+    "epic",
+    "glitch"
+  ],
+  "notes": "Replace in place for plug-and-play compatibility. Keep transparent backgrounds."
+}

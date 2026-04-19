@@ -25,6 +25,7 @@ const INTERFERENCE_DISTRICT_DIALOGUE_CHANCE = 0.65;
 const INTERFERENCE_NODE_RADIUS_SQ = 36;
 const INTERFERENCE_WANDER_CHANCE = 0.28;
 const UNSTABLE_VILLAIN_SPAWN_CHANCE = 0.3;
+const RANDOM_NETWORK_JUMP_CHANCE = 0.002;
 const DEFAULT_DIALOGUE_FALLBACK = 'Move smart. The district remembers.';
 const FALLBACK_INTEL_PREFIX = '[Fallback]';
 
@@ -191,7 +192,19 @@ function randInt(min, max) {
   return min + Math.floor(Math.random() * (max - min));
 }
 
-function spawnPos(regionIndex, count) {
+function spawnPos(state, regionIndex, count) {
+  const mapW = Math.max(8, Number(state?.map?.width) || 48);
+  const mapH = Math.max(8, Number(state?.map?.height) || 48);
+  const col = randInt(0, mapW);
+  const row = randInt(0, mapH);
+  const district = state?.districts?.fromGrid?.(col, row);
+  if (district?.id) {
+    return {
+      col,
+      row,
+      districtId: district.id,
+    };
+  }
   const region = DISTRICT_SPAWN_REGIONS[regionIndex % DISTRICT_SPAWN_REGIONS.length];
   return {
     col: region.col + randInt(0, region.w),
@@ -393,7 +406,7 @@ export function createNpcSystem(state, liveIntelligence = null) {
       MAX_TOTAL_NPCS,
     );
     for (let activeIndex = 0; activeIndex < activeCount; activeIndex += 1) {
-      const pos = spawnPos(activeIndex, state.npc.activeTarget);
+      const pos = spawnPos(state, activeIndex, state.npc.activeTarget);
       const role = state.npc.archetypes[activeIndex % Math.max(state.npc.archetypes.length, 1)]?.id || 'drifter';
       const namePool = NPC_NAMES[role] || NPC_NAMES.drifter;
       const npcName = namePool[activeIndex % namePool.length];
@@ -422,7 +435,7 @@ export function createNpcSystem(state, liveIntelligence = null) {
       Math.max(0, MAX_TOTAL_NPCS - activeCount),
     );
     for (let crowdIndex = 0; crowdIndex < crowdCount; crowdIndex += 1) {
-      const pos = spawnPos(crowdIndex, state.npc.crowdTarget);
+      const pos = spawnPos(state, crowdIndex, state.npc.crowdTarget);
       state.npc.entities.push(createNpc({
         id: `crowd-${crowdIndex}`,
         role: 'crowd',
@@ -609,17 +622,18 @@ export function createNpcSystem(state, liveIntelligence = null) {
 
       npc.t += npc.speed * movementDt;
       if (npc.t > 1) {
+        const overflow = npc.t - 1;
         const next = pickNextLine(npc);
         npc.lineId = next.lineId;
         npc.lineDirection = next.lineDirection;
-        npc.t = 0;
+        npc.t = Math.max(0, Math.min(1, overflow));
         line = getLine(npc.lineId);
         if (!line) continue;
       }
 
-      // Occasional random network jump (1% chance) — keeps NPCs spreading
+      // Occasional random network jump — keeps NPCs spreading
       // across the entire network instead of converging on heavily-connected hubs.
-      if (Math.random() < 0.01) {
+      if (Math.random() < RANDOM_NETWORK_JUMP_CHANCE) {
         npc.lineId = pickRandomLineId();
         npc.lineDirection = randomLineDirectionSign();
         npc.t = Math.random();

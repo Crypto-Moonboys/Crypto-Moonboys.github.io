@@ -17,6 +17,11 @@ export function createDuelOverlay(doc, duelSystem) {
   root.className = 'hidden';
   root.innerHTML = `
     <div class="duel-underlay"></div>
+    <div class="duel-spotlight"></div>
+    <div class="duel-stage" aria-hidden="true">
+      <img class="duel-fighter duel-fighter-a" alt="" />
+      <img class="duel-fighter duel-fighter-b" alt="" />
+    </div>
     <div class="duel-card" role="dialog" aria-live="polite" aria-label="Signal Duel">
       <header class="duel-header">
         <p class="duel-chip">SIGNAL DUEL</p>
@@ -43,6 +48,8 @@ export function createDuelOverlay(doc, duelSystem) {
   const samEl = root.querySelector('#duel-sam');
   const actionsEl = root.querySelector('#duel-actions');
   const requestActionsEl = root.querySelector('#duel-request-actions');
+  const fighterAEl = root.querySelector('.duel-fighter-a');
+  const fighterBEl = root.querySelector('.duel-fighter-b');
   let onAction = null;
   let onAccept = null;
 
@@ -103,5 +110,9 @@ export function createDuelOverlay(doc, duelSystem) {
   return {
     render,
     bindHandlers,
+    setFighterAssets: ({ fighterA, fighterB } = {}) => {
+      if (fighterA) fighterAEl.src = fighterA;
+      if (fighterB) fighterBEl.src = fighterB;
+    },
   };
 }

@@ -97,6 +97,16 @@ export function createGameState(bundle) {
       moveTarget: null,
     },
     remotePlayers: [],
+
+    economy: {
+      xp: 0,
+      gems: 0,
+      spentGems: 0,
+      dailyGemEarned: 0,
+      dailyResetKey: nowUtcDaySeed(),
+      weapon: { level: 1, rarity: 'common' },
+      mine: { active: false, gemsLoaded: 0, tier: 1, startedAt: 0, claimAt: 0 },
+    },
     camera: {
       x: 0, y: 0, zoom: 1, zoomIndex: 1, panX: 0, panY: 0,
     },
@@ -161,6 +171,10 @@ export function createGameState(bundle) {
       lastInterferedBy: null,
       pulseUntil: 0,
     })),
+
+    nodeInterferenceModel: bundle.nodeInterferenceModel || {},
+    pfpTraitPassives: bundle.pfpTraitPassives || { assets: {}, traitPassives: {} },
+    pfpReplacementContract: bundle.pfpReplacementContract || { requiredFiles: [], requiredAssetKeys: [] },
     quests: {
       model: bundle.questModel,
       active: [],

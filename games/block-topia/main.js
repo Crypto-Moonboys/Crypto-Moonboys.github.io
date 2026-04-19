@@ -23,7 +23,14 @@ import { createLiveIntelligence } from './world/live-intelligence.js';
 import { createClueSignalSystem } from './world/clue-signal-system.js';
 import { createSignalOperationSystem } from './world/signal-operation-system.js';
 import { createNodeInterferenceSystem } from './world/node-interference-system.js';
-import { createDuelSystem } from './world/duel-system.js';
+import { createCryptoResonanceSystem } from './world/crypto-resonance-system.js';
+import { createBettingFeedSystem } from './world/betting-feed-system.js';
+import { createGlitchDimensionSystem } from './world/glitch-dimension-system.js';
+import { createRuntimeDirector } from './world/runtime-director.js';
+import { createOperatorTimelineSystem } from './world/operator-timeline-system.js';
+import { createPfpFusionSystem } from './world/pfp-fusion-system.js';
+import { createSignalDuelSystem } from './duel/signal-duel-system.js';
+import { createEconomySystem } from './economy/economy-system.js';
 import { createHud } from './ui/hud.js';
 import { createDuelOverlay } from './ui/duel-overlay.js';
 import { createIsoRenderer } from './render/iso-renderer.js';
@@ -56,11 +63,36 @@ const hud = createHud(document);
 const renderer = createIsoRenderer(canvas);
 
 const input = Object.create(null);
+function normalizeInputKey(event) {
+  const key = String(event?.key || '').toLowerCase();
+  if (key === 'arrowup' || key === 'arrowdown' || key === 'arrowleft' || key === 'arrowright') return key;
+  if (key.length === 1) return key;
+  return key;
+}
+
+function isMovementKey(key) {
+  return key === 'w'
+    || key === 'a'
+    || key === 's'
+    || key === 'd'
+    || key === 'arrowup'
+    || key === 'arrowdown'
+    || key === 'arrowleft'
+    || key === 'arrowright';
+}
+
 window.addEventListener('keydown', (event) => {
-  input[event.key.toLowerCase()] = true;
+  const key = normalizeInputKey(event);
+  input[key] = true;
+  if (isMovementKey(key)) event.preventDefault();
 });
 window.addEventListener('keyup', (event) => {
-  input[event.key.toLowerCase()] = false;
+  const key = normalizeInputKey(event);
+  input[key] = false;
+  if (isMovementKey(key)) event.preventDefault();
+});
+window.addEventListener('blur', () => {
+  for (const key of Object.keys(input)) input[key] = false;
 });
 
 async function boot() {
@@ -82,11 +114,42 @@ async function boot() {
   const clues = createClueSignalSystem(liveIntelligence);
   const operations = createSignalOperationSystem(state, liveIntelligence);
   const nodeInterference = createNodeInterferenceSystem(state);
+  const cryptoResonance = createCryptoResonanceSystem();
+  const bettingFeed = createBettingFeedSystem();
+  const glitchDimension = createGlitchDimensionSystem();
+  const runtimeDirector = createRuntimeDirector(state);
+  const timeline = createOperatorTimelineSystem();
+  const pfpFusion = createPfpFusionSystem(state.pfpTraitPassives || {});
+  const localTraitSeed = (() => {
+    try {
+      const raw = localStorage.getItem('blockTopiaPfpTraits');
+      const parsed = raw ? JSON.parse(raw) : null;
+      return Array.isArray(parsed) && parsed.length ? parsed : ['moon_eyes', 'visor'];
+    } catch {
+      return ['moon_eyes', 'visor'];
+    }
+  })();
+  const fighterProfile = pfpFusion.createProfile({
+    tokenId: 'LOCAL-OP',
+    traits: localTraitSeed,
+    rarity: state.economy?.weapon?.rarity || 'common',
+  });
   const memory = createMemorySystem(state);
-  const duel = createDuelSystem({
+  const economy = createEconomySystem(state, {
+    onXp: ({ amount }) => {
+      if (amount > 0) hud.pushFeed(`💠 +${amount} XP`, 'quest');
+    },
+    onMineClaimed: ({ xp, bonus }) => {
+      hud.pushFeed(`⛏️ Mine claimed +${xp} XP (x${bonus.toFixed(1)})`, 'quest');
+    },
+  });
+  const duel = createSignalDuelSystem({
     sendChallenge: (targetPlayerId) => sendDuelChallenge(targetPlayerId),
     sendAccept: (duelId) => sendDuelAccept(duelId),
     sendAction: (duelId, action) => sendDuelAction(duelId, action),
+  });
+  duel.setLocalModifiers({
+    modifiersA: fighterProfile.modifiers,
   });
   const duelOverlay = createDuelOverlay(document, duel);
   duelOverlay.bindHandlers({
@@ -112,6 +175,25 @@ async function boot() {
   const canonLore = state.lore?.canon || canonAdapter.canonLore || {};
   const lore = state.lore?.legacy?.lore || {};
   const districtStateById = new Map(state.districtState.map((district) => [district.id, district]));
+  let lastCanonSignalHash = '';
+
+  function validatePfpContract() {
+    const contract = state.pfpReplacementContract || {};
+    const passives = state.pfpTraitPassives || {};
+    const requiredFiles = Array.isArray(contract.requiredFiles) ? contract.requiredFiles : [];
+    const requiredKeys = Array.isArray(contract.requiredAssetKeys) ? contract.requiredAssetKeys : [];
+    const assets = passives.assets || {};
+    const missingKeys = requiredKeys.filter((key) => !assets[key]);
+    const missingFiles = requiredFiles.filter((name) => !Object.values(assets).some((path) => String(path).endsWith(name)));
+    if (!missingKeys.length && !missingFiles.length) return true;
+    if (missingKeys.length) {
+      hud.pushFeed(`⚠️ PFP asset keys missing: ${missingKeys.join(', ')}`, 'system');
+    }
+    if (missingFiles.length) {
+      hud.pushFeed(`⚠️ PFP files missing from mapping: ${missingFiles.join(', ')}`, 'system');
+    }
+    return false;
+  }
 
   function clampZoom(value) {
     return Math.max(CAMERA_ZOOM_MIN, Math.min(CAMERA_ZOOM_MAX, value));
@@ -401,6 +483,17 @@ async function boot() {
     const snapshot = refreshResult.snapshot || liveIntelligence.getSnapshot();
     const canonSignalState = refreshResult.canonSignalState || liveIntelligence.getCanonSignalState?.() || {};
     state.canonSignals = canonSignalState;
+    const signalHash = JSON.stringify({
+      world: canonSignalState.worldBulletins || [],
+      pressure: canonSignalState.samNarrativeState?.pressure || 0,
+      tags: canonSignalState.samNarrativeState?.eventTags || [],
+    });
+    if (lastCanonSignalHash && lastCanonSignalHash !== signalHash) {
+      pushFeedDeduped('🚨 CANON BREACH · external lore signal updated', 'sam', `canon-breach:${signalHash}`);
+      hud.showSamPopup('🚨 CANON BREACH DETECTED', 2800);
+      hud.setSamBanner('⚠ CANON BREACH', 'breach');
+    }
+    lastCanonSignalHash = signalHash;
     const worldBulletins = liveIntelligence.getWorldFeedLines(3);
     worldBulletins.forEach((line) => {
       if (!line) return;
@@ -437,17 +530,49 @@ async function boot() {
   hud.setDistrictOwner(state.districtState[0]?.owner || primaryFactionName);
   hud.setFactionStatus(`${primaryFactionName} vs ${secondaryFactionName}`);
   hud.setSamPhase(sam.getCurrentPhase().name);
+  hud.setSamBanner('⚠ SAM ACTIVITY DETECTED', 'danger');
   applyPhase(state.phase, 'system');
   hud.setScore(state.player.score);
   hud.setXp(state.player.xp);
   hud.setRoom(state.room.id);
   hud.setPopulation(0, state.room.maxPlayers);
+  hud.setStatusTicker({ ...economy.getTicker(), energy: duel.getState().energyA || 100 });
+  hud.setDirective(runtimeDirector.getDirective());
+  hud.setTimeline(timeline.getLine());
+  const fighterDisplay = pfpFusion.getDisplay(fighterProfile);
+  hud.setFighterProfile({
+    fighter: fighterDisplay.fighter,
+    level: state.economy?.weapon?.level || 1,
+    passives: fighterDisplay.passives,
+  });
+  duelOverlay.setFighterAssets({
+    fighterA: fighterDisplay.asset,
+    fighterB: state.pfpTraitPassives?.assets?.rare || fighterDisplay.asset,
+  });
   operations.syncFromSignals({ force: true });
   hud.setQuests(quests.getActiveQuestCards());
   const worldBulletins = liveIntelligence.getWorldFeedLines(2);
   worldBulletins.forEach((line) => pushFeedDeduped(`📡 ${line}`, 'sam', `world-bulletin:${line}`));
   const liveMode = liveIntelligence.getSnapshot().mode || 'fallback';
   pushFeedDeduped(`🛰️ Canon signal bridge online (${liveMode})`, 'system', `live-boot:${liveMode}`);
+  if (state.pfpTraitPassives?.assets?.common) {
+    pushFeedDeduped('🧬 PFP trait fusion assets online', 'system', 'pfp-traits-online');
+    pushFeedDeduped(`🧬 Active passives: ${fighterDisplay.passives}`, 'system', 'pfp-passives-active');
+  }
+  validatePfpContract();
+  cryptoResonance.start({
+    onEvent: (event) => {
+      hud.pushFeed(event.text, event.type === 'crash' ? 'sam' : 'quest');
+      timeline.push(event.text);
+      hud.setTimeline(timeline.getLine());
+      if (event.type === 'crash') {
+        hud.showNodeInterference('Market crash resonance detected', 'sam');
+        hud.setSamBanner('⚠ SAM SURGE · MARKET CRASH', 'danger');
+      } else {
+        hud.setSamBanner('📡 SIGNAL BOOM · MARKET PUMP', 'signal');
+      }
+    },
+  });
   bootstrapEntryIdentity();
   bootstrapLoreFeed();
   pushFeedDeduped(
@@ -498,6 +623,7 @@ async function boot() {
   }, { passive: false });
 
   canvas.addEventListener('mousemove', (event) => {
+    if (state.mouse.pointerDown) event.preventDefault();
     if (state.mouse.pointerDown) {
       const deltaX = event.clientX - state.mouse.dragStartX;
       const deltaY = event.clientY - state.mouse.dragStartY;
@@ -528,6 +654,7 @@ async function boot() {
 
   canvas.addEventListener('mousedown', (event) => {
     if (event.button !== 0) return;
+    event.preventDefault();
     state.mouse.pointerDown = true;
     state.mouse.dragging = false;
     state.mouse.dragMoved = false;
@@ -539,6 +666,7 @@ async function boot() {
 
   window.addEventListener('mouseup', (event) => {
     if (event.button !== 0 || !state.mouse.pointerDown) return;
+    event.preventDefault();
     state.mouse.pointerDown = false;
     const dragged = state.mouse.dragging || state.mouse.dragMoved;
     state.mouse.dragging = false;
@@ -550,8 +678,14 @@ async function boot() {
       state.mouse.hoverRemotePlayerId = renderer.pickRemotePlayerFromClientPoint?.(event.clientX, event.clientY, state)?.id || '';
     }
   });
+  window.addEventListener('blur', () => {
+    state.mouse.pointerDown = false;
+    state.mouse.dragging = false;
+    state.mouse.dragMoved = false;
+  });
 
   canvas.addEventListener('click', (event) => {
+    event.preventDefault();
     if (state.mouse.suppressClick) {
       state.mouse.suppressClick = false;
       return;
@@ -568,6 +702,7 @@ async function boot() {
   });
 
   canvas.addEventListener('dblclick', (event) => {
+    event.preventDefault();
     if (performance.now() < (state.mouse.suppressDblClickUntil || 0)) return;
     if (tryInteractWithClickedNpc(event)) return;
 
@@ -576,6 +711,7 @@ async function boot() {
     if (!tile?.valid) return;
     state.player.moveTarget = { x: tile.col, y: tile.row };
   });
+  canvas.addEventListener('contextmenu', (event) => event.preventDefault());
 
   await connectMultiplayer({
     playerName: state.player.name,
@@ -652,6 +788,7 @@ async function boot() {
       const awarded = completion?.awarded ?? rewardXp;
       if (awarded) {
         awardXp(state, awarded);
+        economy.grantXp(awarded, 'quest');
         hud.setXp(state.player.xp);
         hud.setScore(state.player.score);
         hud.setQuests(quests.getActiveQuestCards());
@@ -688,6 +825,8 @@ async function boot() {
     onNodeInterferenceChanged: (payload) => {
       const eventPayload = nodeInterference.applyServerNodeUpdate(payload);
       handleNodeInterferenceRipple(eventPayload || payload, 'server');
+      timeline.push(`Node ${payload?.nodeId || 'unknown'} interfered`);
+      hud.setTimeline(timeline.getLine());
     },
     onDuelRequested: (payload) => {
       if (isLocalDuelParticipant(payload)) {
@@ -703,7 +842,12 @@ async function boot() {
         duel.applyStarted(payload);
         duelOverlay.render();
       }
+      hud.setSamBanner('⚔ SIGNAL DUEL ACTIVE', 'signal');
+      bettingFeed.onDuelStarted(payload, { onFeed: (line) => hud.pushFeed(line, 'system') });
       hud.pushFeed(`⚔️ Duel started: ${payload.playerAName || 'A'} vs ${payload.playerBName || 'B'}`, 'combat');
+      hud.pushFeed(`🧬 Fighter profile: ${fighterDisplay.fighter} · ${fighterDisplay.passives}`, 'system');
+      timeline.push(`Duel started: ${payload.playerAName || 'A'} vs ${payload.playerBName || 'B'}`);
+      hud.setTimeline(timeline.getLine());
     },
     onDuelActionSubmitted: (payload) => {
       if (duel.getState().duelId && payload?.duelId === duel.getState().duelId) {
@@ -718,9 +862,29 @@ async function boot() {
       }
       if (payload?.message) {
         hud.pushFeed(`⚔️ ${payload.message}`, 'combat');
+        timeline.push(payload.message);
+        hud.setTimeline(timeline.getLine());
+      }
+      if (isLocalDuelParticipant(payload)) {
+        const localWon = payload?.winnerId && payload.winnerId === localSessionId;
+        const rewards = economy.applyDuelRewards({
+          win: Boolean(localWon),
+          damageDealt: Number(payload?.damageDealt || 0),
+          jackpot: Boolean(payload?.jackpot),
+        });
+        const boosted = pfpFusion.applyDuelRewardModifier(rewards, fighterProfile);
+        if (boosted.xp > rewards.xp) {
+          economy.grantXp(boosted.xp - rewards.xp, 'pfp-passive');
+        }
+        hud.pushFeed(`💰 Duel rewards · +${boosted.xp} XP · +${boosted.gems} Gems`, 'quest');
       }
       if (payload?.samWarning) {
         hud.showNodeInterference(payload.samWarning, 'sam');
+      }
+      if (payload?.megaGlitch || payload?.glitchDimension) {
+        glitchDimension.start('duel_mega_glitch');
+        hud.setSamBanner('🌀 GLITCH DIMENSION OPEN', 'breach');
+        hud.showSamPopup('🌀 GLITCH DIMENSION · 60s', 2600);
       }
     },
     onDuelEnded: (payload) => {
@@ -728,9 +892,17 @@ async function boot() {
         duel.applyEnded(payload);
         duelOverlay.render();
       }
+      bettingFeed.onDuelEnded(payload, { onFeed: (line) => hud.pushFeed(line, 'system') });
       applyDuelEndedRipple(payload);
       if (payload?.message) {
         hud.pushFeed(`⚔️ ${payload.message}`, 'combat');
+        timeline.push(payload.message);
+        hud.setTimeline(timeline.getLine());
+      }
+      if (glitchDimension.getState().active) {
+        hud.setSamBanner('🌀 GLITCH DIMENSION OPEN', 'breach');
+      } else {
+        hud.setSamBanner('⚠ SAM ACTIVITY DETECTED', 'danger');
       }
     },
   });
@@ -819,6 +991,31 @@ async function boot() {
       }
     }
 
+    runtimeDirector.tick({
+      duelActive: duel.getState().status === 'active',
+      mineReady: Boolean(state.economy?.mine?.active && Date.now() >= (state.economy?.mine?.claimAt || 0)),
+      onDirective: (text) => {
+        hud.setDirective(text);
+        pushFeedDeduped(`🧭 Directive updated: ${text}`, 'system', `directive:${text}`);
+      },
+      onHeartbeat: () => {
+        pushFeedDeduped('💓 SYSTEM HEARTBEAT · Signal District alive', 'sam', `heartbeat:${Math.floor(Date.now() / 30000)}`);
+        timeline.push('System heartbeat');
+        hud.setTimeline(timeline.getLine());
+      },
+    });
+
+    glitchDimension.tick(Date.now(), {
+      onTick: () => {
+        document.body.classList.add('glitch-dimension');
+      },
+      onEnded: () => {
+        document.body.classList.remove('glitch-dimension');
+        hud.setSamBanner('⚠ SAM ACTIVITY DETECTED', 'danger');
+        hud.pushFeed('🧯 Glitch dimension collapsed', 'sam');
+      },
+    });
+
     // Interpolate remote player positions toward server-provided targets.
     for (const remote of state.remotePlayers) {
       if (Number.isFinite(remote._targetX)) {
@@ -854,6 +1051,12 @@ async function boot() {
         hud.setQuests(quests.getActiveQuestCards());
       }
     }
+    const mineClaim = economy.claimMine();
+    if (mineClaim) {
+      hud.showSamPopup(`⛏️ MINE CLAIM READY · +${mineClaim.xp} XP`, 3000);
+      hud.setXp(state.player.xp);
+    }
+    hud.setStatusTicker({ ...economy.getTicker(), energy: duel.getState().energyA || 100 });
     duelOverlay.render();
   }
 

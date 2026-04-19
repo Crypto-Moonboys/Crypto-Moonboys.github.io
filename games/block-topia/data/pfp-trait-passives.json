@@ -1,0 +1,16 @@
+{
+  "version": "1.0",
+  "notes": "Drop-in replacement placeholders for Crypto Moonboys PFP fighter assets.",
+  "assets": {
+    "common": "/games/block-topia/assets/pfp-fighters/fighter-common.svg",
+    "rare": "/games/block-topia/assets/pfp-fighters/fighter-rare.svg",
+    "epic": "/games/block-topia/assets/pfp-fighters/fighter-epic.svg",
+    "glitch": "/games/block-topia/assets/pfp-fighters/fighter-glitch.svg"
+  },
+  "traitPassives": {
+    "moon_eyes": { "name": "Night-Mode Shield", "effect": "Reduce SAM glitch penalty by 12%" },
+    "visor": { "name": "Precision Sync", "effect": "+8% perfect timing window reward" },
+    "neon_hair": { "name": "Pulse Reactor", "effect": "+6 energy regen" },
+    "mask": { "name": "Ghost Packet", "effect": "+9% dodge chance" }
+  }
+}

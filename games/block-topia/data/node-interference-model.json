@@ -1,0 +1,16 @@
+{
+  "version": "1.0",
+  "cooldownMs": 6000,
+  "controlShiftRange": [4, 10],
+  "districtPressureWeights": {
+    "stable": 0.4,
+    "contested": 0.75,
+    "unstable": 1.2,
+    "cooldown": 0.5
+  },
+  "samPressurePerInterference": 2,
+  "npcReactionRadius": 6,
+  "unstableThreshold": 72,
+  "contestedThreshold": 36,
+  "cooldownThreshold": 90
+}
