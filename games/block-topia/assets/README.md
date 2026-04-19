@@ -31,3 +31,9 @@ This asset pack is a production-usable **visual scale lock slice** for `/games/b
   - `assets/props/`
   - `assets/npcs/`
 - Replace SVG art later without changing world logic contracts or render routing.
+
+
+## Duel fighter replacement layer
+- Duel placeholder art lives in `assets/duel-fighters/`.
+- Keep fighter art on transparent backgrounds for clean overlay compositing.
+- Swap visuals by editing `games/block-topia/data/duel-fighter-config.js` mappings; no duel logic changes required.
