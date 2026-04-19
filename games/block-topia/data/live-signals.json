@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-04-19T22:49:40.566Z",
+  "generatedAt": "2026-04-19T23:38:06.891Z",
   "mode": "live-ai",
   "sourceHealth": {
     "coingecko-global": "ok",
@@ -11,84 +11,84 @@
   "signalCount": 5,
   "signals": [
     {
-      "id": "signal-1776638980565-1",
+      "id": "signal-1776641886890-1",
       "lane": "world",
       "priority": 4,
-      "ttlMinutes": 60,
-      "npcLine": "Crypto streets bleeding; market pulse sinks deeper.",
-      "questPulse": "Scan for safe havens amid falling credits.",
-      "worldFeed": "Global tokens flicker under shadow; fear grips nodes.",
-      "clueEvent": "Market-wide cryptoshock triggers spree of digital hacks.",
+      "ttlMinutes": 45,
+      "npcLine": "Crypto grids flicker as market pulse dips into the red zone.",
+      "questPulse": "Decrypt falling market cap data to stabilize local exchanges.",
+      "worldFeed": "Shadow markets hum with fear; volatility spikes unseen in cycles.",
+      "clueEvent": "Nodes report tremors in token flows, signaling systemic stress.",
       "tags": [
-        "market-down",
-        "fear",
+        "market-fall",
+        "volatility",
         "crypto"
       ],
-      "expiresAt": "2026-04-19T23:49:40.565Z"
+      "expiresAt": "2026-04-20T00:23:06.890Z"
     },
     {
-      "id": "signal-1776638980565-2",
+      "id": "signal-1776641886890-2",
       "lane": "ops",
       "priority": 3,
-      "ttlMinutes": 45,
-      "npcLine": "Unit RAVE signals glitch; stability questionable.",
-      "questPulse": "Investigate anomaly around RAVE data streams.",
-      "worldFeed": "Obscure tokens spark whispers; strange volume shifts.",
-      "clueEvent": "Unknown transfer spikes within micro-ledger clusters.",
+      "ttlMinutes": 30,
+      "npcLine": "Trending tokens flicker uncertain—WOJAK and ASTEROID in ghost mode.",
+      "questPulse": "Track unstable cryptos; code breaks hint at covert manipulation.",
+      "worldFeed": "Data rain: obscure coins surface, hinting at shadow syndicate moves.",
+      "clueEvent": "Dashboards reveal shifting scores; algorithms scramble for patterns.",
       "tags": [
-        "anomaly",
-        "token-volatility",
-        "crypto"
+        "crypto-trend",
+        "manipulation",
+        "data-scan"
       ],
-      "expiresAt": "2026-04-19T23:34:40.565Z"
+      "expiresAt": "2026-04-20T00:08:06.890Z"
     },
     {
-      "id": "signal-1776638980565-3",
+      "id": "signal-1776641886890-3",
       "lane": "clue",
       "priority": 5,
-      "ttlMinutes": 30,
-      "npcLine": "WOJAK shadow grafts gain traction in neon trade.",
-      "questPulse": "Trace stealth chatter on Wojak node upticks.",
-      "worldFeed": "Whispers: Wojak codes cracking under digital pressure.",
-      "clueEvent": "Encrypted leaks hint at upcoming market bubble burst.",
+      "ttlMinutes": 60,
+      "npcLine": "Fear index holds tight—whispers warn of deeper crashes ahead.",
+      "questPulse": "Intercept clandestine chatter warning of a persistent downfall cycle.",
+      "worldFeed": "Panic signals spike; digital storefronts brace for sudden collapse.",
+      "clueEvent": "Encrypted logs reveal mass withdrawals ahead of market tremor.",
       "tags": [
-        "leak",
-        "encrypted",
-        "fear"
+        "fear-index",
+        "warning",
+        "market-crisis"
       ],
-      "expiresAt": "2026-04-19T23:19:40.565Z"
+      "expiresAt": "2026-04-20T00:38:06.890Z"
     },
     {
-      "id": "signal-1776638980565-4",
+      "id": "signal-1776641886891-4",
       "lane": "quest",
       "priority": 2,
-      "ttlMinutes": 90,
-      "npcLine": "ASTEROID chain jitters; mining ops report signal loss.",
-      "questPulse": "Recover lost data from defunct asteroid rigs.",
-      "worldFeed": "Economic tremors shake off-world resource grids.",
-      "clueEvent": "Disruption hints at sabotage, mining yields unstable.",
+      "ttlMinutes": 50,
+      "npcLine": "Pulse check: AAVE and PENGU tokens flicker—unknown brokers signal moves.",
+      "questPulse": "Investigate broker nodes for unauthorized trades in minor assets.",
+      "worldFeed": "Micro markets buzz; shadow brokers toy with asset flows.",
+      "clueEvent": "Probe opens on shadow deals tied to trending lesser gears.",
       "tags": [
-        "sabotage",
-        "resource-war",
-        "market-down"
+        "broker-activity",
+        "minor-cryptos",
+        "undercover"
       ],
-      "expiresAt": "2026-04-20T00:19:40.565Z"
+      "expiresAt": "2026-04-20T00:28:06.891Z"
     },
     {
-      "id": "signal-1776638980566-5",
+      "id": "signal-1776641886891-5",
       "lane": "npc",
       "priority": 3,
-      "ttlMinutes": 50,
-      "npcLine": "PIEVERSE net crawlers detect swarm of unknown bots.",
-      "questPulse": "Infiltrate pieverse layers before bots corrupt feeds.",
-      "worldFeed": "Bot plague spreads, eroding confidence in net assets.",
-      "clueEvent": "Automated attacks destabilize token-based social hubs.",
+      "ttlMinutes": 40,
+      "npcLine": "Info rat murmurs: system loads swell with small-coin signals.",
+      "questPulse": "Hack data streams to catch early signals of an uprising trade.",
+      "worldFeed": "Network nodes flicker as low-tier tokens shift unpredictably.",
+      "clueEvent": "Hidden timestamps hint at coordinated token dumps near midnight.",
       "tags": [
-        "bot-attack",
-        "network",
-        "crypto"
+        "info-rat",
+        "small-coins",
+        "early-warning"
       ],
-      "expiresAt": "2026-04-19T23:39:40.566Z"
+      "expiresAt": "2026-04-20T00:18:06.891Z"
     }
   ]
 }
