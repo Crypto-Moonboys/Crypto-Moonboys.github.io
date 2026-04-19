@@ -3,26 +3,18 @@ const QUEST_TOAST_DURATION_MS = 4200;
 const CAPTURE_BANNER_DURATION_MS = 4200;
 const NPC_DIALOGUE_DURATION_MS = 4200;
 const NODE_ALERT_DURATION_MS = 2600;
-const MAX_LOG_ENTRIES = 260;
+const MAX_LOG_ENTRIES = 50;
 
 const STREAM_BY_TYPE = {
-  combat: 'center',
-  quest: 'left',
+  combat: 'left',
+  quest: 'right',
   sam: 'right',
-  system: 'left',
+  system: 'bottom',
 };
 
 function timestamp() {
   const now = new Date();
   return `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
-}
-
-function formatDuration(ms) {
-  const s = Math.max(0, Math.ceil(ms / 1000));
-  const h = Math.floor(s / 3600);
-  const m = Math.floor((s % 3600) / 60);
-  const sec = s % 60;
-  return `${h}h ${String(m).padStart(2, '0')}m ${String(sec).padStart(2, '0')}s`;
 }
 
 export function createHud(doc) {
@@ -31,6 +23,7 @@ export function createHud(doc) {
   const levelStatus = doc.getElementById('level-status');
   const xpStatus = doc.getElementById('xp-status');
   const districtStatus = doc.getElementById('district-status');
+
   const worldStatus = doc.getElementById('world-status');
   const factionStatus = doc.getElementById('faction-status');
   const samStatus = doc.getElementById('sam-status');
@@ -41,8 +34,7 @@ export function createHud(doc) {
 
   const feedLeft = doc.getElementById('stream-left');
   const feedRight = doc.getElementById('stream-right');
-  const feedCenter = doc.getElementById('stream-center');
-  const ticker = doc.getElementById('status-ticker');
+  const feedBottom = doc.getElementById('stream-bottom');
 
   const entryIdentity = doc.getElementById('entry-identity');
   const entryTagline = doc.getElementById('entry-tagline');
@@ -54,9 +46,6 @@ export function createHud(doc) {
   const questToast = doc.getElementById('quest-toast');
   const npcDialogue = doc.getElementById('npc-dialogue');
   const interactPrompt = doc.getElementById('interact-prompt');
-
-  const streamRoot = doc.getElementById('live-stream-canvas');
-  const autoFlow = { enabled: true, speed: 22, y: 0, dragging: false, startY: 0, startOffsetY: 0 };
 
   let samPopupTimer = null;
   let districtBannerTimer = null;
@@ -77,13 +66,7 @@ export function createHud(doc) {
   function streamNode(stream) {
     if (stream === 'left') return feedLeft;
     if (stream === 'right') return feedRight;
-    return feedCenter;
-  }
-
-  function maintainVisibleWindow() {
-    const minY = Math.min(0, streamRoot.clientHeight - streamRoot.scrollHeight);
-    autoFlow.y = Math.max(minY, Math.min(0, autoFlow.y));
-    streamRoot.style.transform = `translateY(${Math.round(autoFlow.y)}px)`;
+    return feedBottom;
   }
 
   function appendLog(stream, text, cssClass = 'system') {
@@ -94,10 +77,11 @@ export function createHud(doc) {
     item.textContent = `[${timestamp()}] ${text}`;
     list.appendChild(item);
     while (list.children.length > MAX_LOG_ENTRIES) list.removeChild(list.firstChild);
-    if (autoFlow.enabled) {
-      autoFlow.y = Math.min(0, autoFlow.y - 24);
-      maintainVisibleWindow();
-    }
+    Array.from(list.children).forEach((entry, index, arr) => {
+      const opacity = Math.max(0.22, 0.35 + (index / Math.max(1, arr.length - 1)) * 0.65);
+      entry.style.opacity = opacity.toFixed(3);
+    });
+    list.scrollTop = list.scrollHeight;
   }
 
   function pushLog(stream, text) {
@@ -105,7 +89,7 @@ export function createHud(doc) {
   }
 
   function pushFeed(text, type = 'system') {
-    const stream = STREAM_BY_TYPE[type] || 'left';
+    const stream = STREAM_BY_TYPE[type] || (String(text || '').includes('🗣️') ? 'left' : 'bottom');
     appendLog(stream, text, type);
   }
 
@@ -114,7 +98,7 @@ export function createHud(doc) {
     const level = Math.max(1, Math.floor(safe / XP_PER_LEVEL) + 1);
     xpStatus.textContent = `${safe} XP`;
     levelStatus.textContent = `L${level} · ${titleFromLevel(level)}`;
-    if (safe > lastXp) pushFeed(`+${safe - lastXp} XP gained`, 'quest');
+    if (safe > lastXp) pushFeed(`+${safe - lastXp} XP gained`, 'system');
     lastXp = safe;
   }
 
@@ -181,47 +165,14 @@ export function createHud(doc) {
     pushLog('right', `Active operations: ${count}`);
   }
 
-  function setStatusTicker(data = {}) {
-    if (!ticker) return;
-    const mineText = data.mineActive ? `Mine claim in ${formatDuration(data.mineClaimInMs || 0)}` : 'Mine idle';
-    ticker.textContent = `⚙ XP ${data.xp || 0} · 💎 Gems ${data.gems || 0} · ⛏ Tier ${data.mineTier || 1} · ${mineText} · 🗡 ${String(data.weaponRarity || 'common').toUpperCase()} L${data.weaponLevel || 1}`;
+  function setEntryTagline(text) {
+    if (entryTagline) entryTagline.textContent = text;
   }
 
-  streamRoot?.addEventListener('pointerdown', (event) => {
-    autoFlow.dragging = true;
-    autoFlow.enabled = false;
-    autoFlow.startY = event.clientY;
-    autoFlow.startOffsetY = autoFlow.y;
-    streamRoot.setPointerCapture?.(event.pointerId);
-  });
-
-  streamRoot?.addEventListener('pointermove', (event) => {
-    if (!autoFlow.dragging) return;
-    const dy = event.clientY - autoFlow.startY;
-    autoFlow.y = autoFlow.startOffsetY + dy;
-    maintainVisibleWindow();
-  });
-
-  function endDrag(event) {
-    if (!autoFlow.dragging) return;
-    autoFlow.dragging = false;
-    autoFlow.enabled = true;
-    streamRoot.releasePointerCapture?.(event.pointerId);
+  function dismissEntryIdentity(delay = 4200) {
+    clearTimeout(identityTimer);
+    identityTimer = setTimeout(() => entryIdentity?.classList.add('hidden'), delay);
   }
-  streamRoot?.addEventListener('pointerup', endDrag);
-  streamRoot?.addEventListener('pointercancel', endDrag);
-
-  let lastTs = performance.now();
-  function flowTick(now) {
-    const dt = Math.min(0.1, (now - lastTs) / 1000);
-    lastTs = now;
-    if (autoFlow.enabled && !autoFlow.dragging) {
-      autoFlow.y -= autoFlow.speed * dt;
-      maintainVisibleWindow();
-    }
-    requestAnimationFrame(flowTick);
-  }
-  requestAnimationFrame(flowTick);
 
   return {
     setPlayerName: (name) => { playerNameEl.textContent = name; },
@@ -238,7 +189,6 @@ export function createHud(doc) {
     setRoom: (name) => { roomStatus.textContent = `Room: ${name}`; },
     setPopulation: (count, max) => { populationStatus.textContent = `Players: ${count} / ${max}`; },
     setQuests,
-    setStatusTicker,
     pushFeed,
     pushLog,
     showSamPopup,
@@ -248,11 +198,8 @@ export function createHud(doc) {
     showDistrictCapture,
     showNpcDialogue,
     showNodeInterference,
-    setEntryTagline: (text) => { if (entryTagline) entryTagline.textContent = text; },
-    dismissEntryIdentity: (delay = 4200) => {
-      clearTimeout(identityTimer);
-      identityTimer = setTimeout(() => entryIdentity?.classList.add('hidden'), delay);
-    },
+    setEntryTagline,
+    dismissEntryIdentity,
     setInteractPrompt: (text, visible) => {
       if (!interactPrompt) return;
       if (text) interactPrompt.textContent = text;
