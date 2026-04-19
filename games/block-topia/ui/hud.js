@@ -32,6 +32,7 @@ export function createHud(doc) {
   const multiplayerStatus = doc.getElementById('mp-status');
   const roomStatus = doc.getElementById('room-status');
   const populationStatus = doc.getElementById('population-status');
+  const multiplayerLiveBanner = doc.getElementById('multiplayer-live-banner');
 
   const feedLeft = doc.getElementById('stream-left');
   const feedRight = doc.getElementById('stream-right');
@@ -136,7 +137,6 @@ export function createHud(doc) {
     questToast.textContent = `✅ ${title} · +${rewardXp} XP`;
     questToast.classList.remove('hidden');
     questToastTimer = setTimeout(() => questToast.classList.add('hidden'), QUEST_TOAST_DURATION_MS);
-    pushFeed(`Quest complete: ${title} (+${rewardXp})`, 'quest');
   }
 
   function showDistrictCapture(text) {
@@ -146,7 +146,6 @@ export function createHud(doc) {
     districtBannerTimer = setTimeout(() => districtCaptureBanner.classList.add('hidden'), CAPTURE_BANNER_DURATION_MS);
     captureFlash?.classList.remove('hidden');
     setTimeout(() => captureFlash?.classList.add('hidden'), 800);
-    pushFeed(text, 'combat');
   }
 
   function showNpcDialogue(name, role, line) {
@@ -192,7 +191,18 @@ export function createHud(doc) {
     setPhase: (name) => { phaseStatus.textContent = `Phase: ${name}`; },
     setScore: () => {},
     setXp,
-    setMultiplayerStatus: (text) => { multiplayerStatus.textContent = text; },
+    setMultiplayerStatus: (text) => {
+      const label = String(text || '');
+      multiplayerStatus.textContent = label;
+      if (!multiplayerLiveBanner) return;
+      if (label.toLowerCase().startsWith('connected')) {
+        multiplayerLiveBanner.textContent = 'LIVE MULTIPLAYER — CONNECTED';
+      } else if (label.toLowerCase().startsWith('connecting')) {
+        multiplayerLiveBanner.textContent = 'LIVE MULTIPLAYER — CONNECTING';
+      } else {
+        multiplayerLiveBanner.textContent = `LIVE MULTIPLAYER — ${label.toUpperCase()}`;
+      }
+    },
     setRoom: (name) => { roomStatus.textContent = `Room: ${name}`; },
     setPopulation: (count, max) => { populationStatus.textContent = `Players: ${count} / ${max}`; },
     setQuests,
