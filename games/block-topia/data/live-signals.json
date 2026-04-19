@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-04-19T21:59:35.764Z",
+  "generatedAt": "2026-04-19T22:49:40.566Z",
   "mode": "live-ai",
   "sourceHealth": {
     "coingecko-global": "ok",
@@ -11,84 +11,84 @@
   "signalCount": 5,
   "signals": [
     {
-      "id": "signal-1776635975763-1",
-      "lane": "quest",
+      "id": "signal-1776638980565-1",
+      "lane": "world",
       "priority": 4,
-      "ttlMinutes": 90,
-      "npcLine": "Crypto shadows flicker; trust no gain without deeper asks.",
-      "questPulse": "Digital gold slipping; scramble nodes before the collapse.",
-      "worldFeed": "Market pulse weakens; silent whispers of vault cracks.",
-      "clueEvent": "Map fragments hint at hidden coin dumps.",
-      "tags": [
-        "crypto",
-        "fear",
-        "collapse"
-      ],
-      "expiresAt": "2026-04-19T23:29:35.763Z"
-    },
-    {
-      "id": "signal-1776635975764-2",
-      "lane": "clue",
-      "priority": 3,
       "ttlMinutes": 60,
-      "npcLine": "Ghost token RAVE echoes cold signals in the net.",
-      "questPulse": "Trace RAVE's phantom trails; uncover lost ledger entries.",
-      "worldFeed": "RAVE trading volume extinguished into the void.",
-      "clueEvent": "Data leak points to rogue node near sector ##.",
+      "npcLine": "Crypto streets bleeding; market pulse sinks deeper.",
+      "questPulse": "Scan for safe havens amid falling credits.",
+      "worldFeed": "Global tokens flicker under shadow; fear grips nodes.",
+      "clueEvent": "Market-wide cryptoshock triggers spree of digital hacks.",
       "tags": [
-        "token",
-        "ghost",
-        "trace"
+        "market-down",
+        "fear",
+        "crypto"
       ],
-      "expiresAt": "2026-04-19T22:59:35.764Z"
+      "expiresAt": "2026-04-19T23:49:40.565Z"
     },
     {
-      "id": "signal-1776635975764-3",
-      "lane": "npc",
-      "priority": 2,
+      "id": "signal-1776638980565-2",
+      "lane": "ops",
+      "priority": 3,
       "ttlMinutes": 45,
-      "npcLine": "WOJAK brokers murmur deals slipping through neon cracks.",
-      "questPulse": "Hunt for WOJAK smuggler before fear floods streets.",
-      "worldFeed": "WOJAK spikes in hidden markets; tension rises.",
-      "clueEvent": "Encrypted messages hint at WOJAK redistribution.",
+      "npcLine": "Unit RAVE signals glitch; stability questionable.",
+      "questPulse": "Investigate anomaly around RAVE data streams.",
+      "worldFeed": "Obscure tokens spark whispers; strange volume shifts.",
+      "clueEvent": "Unknown transfer spikes within micro-ledger clusters.",
       "tags": [
-        "smuggle",
-        "market",
+        "anomaly",
+        "token-volatility",
+        "crypto"
+      ],
+      "expiresAt": "2026-04-19T23:34:40.565Z"
+    },
+    {
+      "id": "signal-1776638980565-3",
+      "lane": "clue",
+      "priority": 5,
+      "ttlMinutes": 30,
+      "npcLine": "WOJAK shadow grafts gain traction in neon trade.",
+      "questPulse": "Trace stealth chatter on Wojak node upticks.",
+      "worldFeed": "Whispers: Wojak codes cracking under digital pressure.",
+      "clueEvent": "Encrypted leaks hint at upcoming market bubble burst.",
+      "tags": [
+        "leak",
+        "encrypted",
         "fear"
       ],
-      "expiresAt": "2026-04-19T22:44:35.764Z"
+      "expiresAt": "2026-04-19T23:19:40.565Z"
     },
     {
-      "id": "signal-1776635975764-4",
-      "lane": "ops",
-      "priority": 5,
-      "ttlMinutes": 120,
-      "npcLine": "Asteroid mining rigs exposed; sabotage incoming.",
-      "questPulse": "Secure the rigs, prevent data breach, hold ground.",
-      "worldFeed": "Asteroid sector under attack; ops scrambling response.",
-      "clueEvent": "Unusual sensor blips near rig ###.",
+      "id": "signal-1776638980565-4",
+      "lane": "quest",
+      "priority": 2,
+      "ttlMinutes": 90,
+      "npcLine": "ASTEROID chain jitters; mining ops report signal loss.",
+      "questPulse": "Recover lost data from defunct asteroid rigs.",
+      "worldFeed": "Economic tremors shake off-world resource grids.",
+      "clueEvent": "Disruption hints at sabotage, mining yields unstable.",
       "tags": [
-        "attack",
-        "resource",
-        "security"
+        "sabotage",
+        "resource-war",
+        "market-down"
       ],
-      "expiresAt": "2026-04-19T23:59:35.764Z"
+      "expiresAt": "2026-04-20T00:19:40.565Z"
     },
     {
-      "id": "signal-1776635975764-5",
-      "lane": "world",
+      "id": "signal-1776638980566-5",
+      "lane": "npc",
       "priority": 3,
-      "ttlMinutes": 75,
-      "npcLine": "Fear grips market nodes; system-wide hesitation spikes.",
-      "questPulse": "Adjust strategies; market's on edge, signals unstable.",
-      "worldFeed": "Global market indexes sputtering; digital trust fraying.",
-      "clueEvent": "Unstable data clusters spreading in core nets.",
+      "ttlMinutes": 50,
+      "npcLine": "PIEVERSE net crawlers detect swarm of unknown bots.",
+      "questPulse": "Infiltrate pieverse layers before bots corrupt feeds.",
+      "worldFeed": "Bot plague spreads, eroding confidence in net assets.",
+      "clueEvent": "Automated attacks destabilize token-based social hubs.",
       "tags": [
-        "fear",
-        "market",
-        "volatility"
+        "bot-attack",
+        "network",
+        "crypto"
       ],
-      "expiresAt": "2026-04-19T23:14:35.764Z"
+      "expiresAt": "2026-04-19T23:39:40.566Z"
     }
   ]
 }
