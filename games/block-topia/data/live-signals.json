@@ -1,62 +1,94 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-04-19T20:00:37.384Z",
-  "mode": "fallback-no-key",
+  "generatedAt": "2026-04-19T21:03:39.772Z",
+  "mode": "live-ai",
   "sourceHealth": {
     "coingecko-global": "ok",
     "coingecko-trending": "ok",
     "fear-greed": "ok",
-    "openai": "missing-key"
+    "openai": "ok"
   },
-  "signalCount": 3,
+  "signalCount": 5,
   "signals": [
     {
-      "id": "signal-1776628837384-1",
+      "id": "signal-1776632619771-1",
       "lane": "world",
+      "priority": 4,
+      "ttlMinutes": 60,
+      "npcLine": "Crypto tides bleed red; shadows grow restless.",
+      "questPulse": "Market shifts spark uneasy calm among fixers.",
+      "worldFeed": "Digital assets shrink, fear whispers through neon alleys.",
+      "clueEvent": "Scarce gains hide in sprawling token graveyards.",
+      "tags": [
+        "market",
+        "fear",
+        "crypto"
+      ],
+      "expiresAt": "2026-04-19T22:03:39.771Z"
+    },
+    {
+      "id": "signal-1776632619772-2",
+      "lane": "ops",
       "priority": 3,
       "ttlMinutes": 45,
-      "npcLine": "Signal board shows Fear pressure. Keep your routes adaptive.",
-      "questPulse": "Map three unstable relay corners before the next SAM sweep.",
-      "worldFeed": "Network mood: Fear. Surveillance pressure remains high.",
-      "clueEvent": "Hidden relay mark: look for the glyph where east lanes cross old neon rail.",
+      "npcLine": "RAVE and WOJAK pulse weak, signals fading.",
+      "questPulse": "Tracking token echoes; traders talk in hushed tones.",
+      "worldFeed": "Trending coins lose their glow under pressure.",
+      "clueEvent": "Crypto shadows blur in fading neon light.",
       "tags": [
-        "sam",
-        "mood",
-        "relay"
+        "tokens",
+        "trend",
+        "signal"
       ],
-      "expiresAt": "2026-04-19T20:45:37.384Z"
+      "expiresAt": "2026-04-19T21:48:39.772Z"
     },
     {
-      "id": "signal-1776628837384-2",
-      "lane": "ops",
-      "priority": 4,
-      "ttlMinutes": 40,
-      "npcLine": "Trend signatures rotating: RAVE · AAVE · PIEVERSE. Couriers are rerouting tonight.",
-      "questPulse": "Intercept two phantom couriers carrying unsigned signal chips.",
-      "worldFeed": "Ops pulse: district relays are shifting faster than normal.",
-      "clueEvent": "Clue pulse: seek a dead terminal with three blinking amber bars.",
-      "tags": [
-        "ops",
-        "courier",
-        "quest"
-      ],
-      "expiresAt": "2026-04-19T20:40:37.384Z"
-    },
-    {
-      "id": "signal-1776628837384-3",
+      "id": "signal-1776632619772-3",
       "lane": "clue",
-      "priority": 2,
-      "ttlMinutes": 60,
-      "npcLine": "A rumor says the old tunnel net is awake again.",
-      "questPulse": "Trace a memory shard path without triggering patrol beacons.",
-      "worldFeed": "World feed: encrypted whispers detected under Revolt blocks.",
-      "clueEvent": "Hidden link hunt: the passphrase starts with moon and ends with static.",
+      "priority": 5,
+      "ttlMinutes": 30,
+      "npcLine": "AAVE and ASTEROID pulse with quiet volatility.",
+      "questPulse": "Unstable channels flicker; opportunity or trap?",
+      "worldFeed": "Sentiment sinks; few brave the volatile streets.",
+      "clueEvent": "Fear masks hidden gains beneath fractured code.",
       "tags": [
-        "clue",
-        "hunt",
-        "world"
+        "volatility",
+        "sentiment",
+        "risk"
       ],
-      "expiresAt": "2026-04-19T21:00:37.384Z"
+      "expiresAt": "2026-04-19T21:33:39.772Z"
+    },
+    {
+      "id": "signal-1776632619772-4",
+      "lane": "quest",
+      "priority": 2,
+      "ttlMinutes": 90,
+      "npcLine": "PIEVERSE whispers secrets in broken data streams.",
+      "questPulse": "Decode the fractured buzz; fortune favors the cautious.",
+      "worldFeed": "Market breathes shallow, players plot new moves.",
+      "clueEvent": "Pieces of the puzzle scattered in ghost markets.",
+      "tags": [
+        "data",
+        "secrets",
+        "puzzle"
+      ],
+      "expiresAt": "2026-04-19T22:33:39.772Z"
+    },
+    {
+      "id": "signal-1776632619772-5",
+      "lane": "npc",
+      "priority": 3,
+      "ttlMinutes": 40,
+      "npcLine": "Watch the shadows where fear breeds opportunity.",
+      "questPulse": "Wary traders double down on fading trends.",
+      "worldFeed": "Whispers of loss breed rumors of revolt.",
+      "clueEvent": "Crypto ghosts haunt the neon wastelands.",
+      "tags": [
+        "fear",
+        "opportunity",
+        "whispers"
+      ],
+      "expiresAt": "2026-04-19T21:43:39.772Z"
     }
   ]
 }
