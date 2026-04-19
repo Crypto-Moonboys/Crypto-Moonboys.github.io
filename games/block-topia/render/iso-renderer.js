@@ -680,21 +680,41 @@ export function createIsoRenderer(canvas) {
     ctx.restore();
   }
 
-  function drawTileOutline(originX, originY, tile, color, alpha = 0.95, width = 2) {
-    if (!tile?.valid) return;
+  function drawSelectedTile(originX, originY, tile, now) {
+    if (!tile?.inBounds) return;
+    const isValid = Boolean(tile.valid);
+    const fillColor = isValid ? '#5ef2ff' : '#ff6c8f';
+    const outlineColor = isValid ? '#8dfbff' : '#ff9bb1';
     const iso = toIso(tile.col, tile.row);
     const x = originX + iso.x;
     const y = originY + iso.y;
+    const centerY = y + HALF_TILE_H;
+    const pulse = 0.75 + (Math.sin(now / 210) + 1) * 0.16;
     ctx.save();
-    ctx.globalAlpha = alpha;
-    ctx.strokeStyle = color;
-    ctx.lineWidth = width;
+    ctx.globalAlpha = isValid ? 0.2 : 0.28;
+    ctx.fillStyle = fillColor;
     ctx.beginPath();
     ctx.moveTo(x, y);
     ctx.lineTo(x + HALF_TILE_W, y + HALF_TILE_H);
     ctx.lineTo(x, y + TILE_H);
     ctx.lineTo(x - HALF_TILE_W, y + HALF_TILE_H);
     ctx.closePath();
+    ctx.fill();
+    ctx.globalAlpha = 0.95;
+    ctx.strokeStyle = outlineColor;
+    ctx.lineWidth = 2.4;
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+    ctx.lineTo(x + HALF_TILE_W, y + HALF_TILE_H);
+    ctx.lineTo(x, y + TILE_H);
+    ctx.lineTo(x - HALF_TILE_W, y + HALF_TILE_H);
+    ctx.closePath();
+    ctx.stroke();
+    ctx.globalAlpha = 0.6;
+    ctx.strokeStyle = outlineColor;
+    ctx.lineWidth = 1.2;
+    ctx.beginPath();
+    ctx.ellipse(x, centerY, HALF_TILE_W * 0.66 * pulse, HALF_TILE_H * 0.58 * pulse, 0, 0, Math.PI * 2);
     ctx.stroke();
     ctx.restore();
   }
@@ -744,7 +764,7 @@ export function createIsoRenderer(canvas) {
     ctx.fillText(state.player.name, sx, sy - 47);
   }
 
-  function drawNpc(originX, originY, npc, now, isNearby, metrics, visible) {
+  function drawNpc(originX, originY, npc, now, isNearby, isHovered, metrics, visible) {
     const iso = toIso(npc.col, npc.row);
     const elevation = getTileElevation(npc.col, npc.row, metrics);
     const sx = originX + iso.x;
@@ -769,13 +789,13 @@ export function createIsoRenderer(canvas) {
       ctx.fill();
     }
 
-    if (isNearby) {
+    if (isNearby || isHovered) {
       const pulse = 0.5 + (Math.sin(now / 220) + 1) * 0.2;
       ctx.globalAlpha = pulse;
-      ctx.strokeStyle = '#ffffff';
-      ctx.lineWidth = 1.5;
+      ctx.strokeStyle = isHovered ? '#5ef2ff' : '#ffffff';
+      ctx.lineWidth = isHovered ? 2 : 1.5;
       ctx.beginPath();
-      ctx.ellipse(sx, sy - 2, 14, 7, 0, 0, Math.PI * 2);
+      ctx.ellipse(sx, sy - 2, isHovered ? 16 : 14, isHovered ? 8 : 7, 0, 0, Math.PI * 2);
       ctx.stroke();
       ctx.globalAlpha = 1;
     }
@@ -787,25 +807,43 @@ export function createIsoRenderer(canvas) {
       ctx.fillText(npc.roleLabel || npc.role || 'NPC', sx + 1, sy - 43);
       ctx.fillStyle = style.color;
       ctx.fillText(npc.roleLabel || npc.role || 'NPC', sx, sy - 44);
-      if (isNearby) {
+      if (isNearby || isHovered) {
         ctx.fillStyle = '#ffffff';
         ctx.fillText(npc.name || 'Citizen', sx, sy - 54);
       }
     }
   }
 
-  function drawRemotePlayer(originX, originY, remote, now, metrics, visible) {
+  function drawRemotePlayer(originX, originY, remote, now, metrics, visible, isHovered, isSelected) {
     const iso = toIso(remote.x, remote.y);
     const elevation = getTileElevation(remote.x, remote.y, metrics);
     const sx = originX + iso.x;
     const sy = originY + iso.y - elevation - 4;
     if (!isWorldPointVisible(sx, sy, visible, 48)) return;
 
-    drawNpcSprite(sx, sy + 2, 'agent', getNpcFrame({ mode: 'active' }, now, false), 1.3);
+    const markerPulse = 0.6 + (Math.sin(now / 220) + 1) * 0.16;
+    if (isHovered || isSelected) {
+      ctx.save();
+      ctx.globalAlpha = isSelected ? 0.32 : 0.2;
+      ctx.fillStyle = isSelected ? '#ffd84d' : '#5ef2ff';
+      ctx.beginPath();
+      ctx.ellipse(sx, sy - 2, (isSelected ? 18 : 14) * markerPulse, (isSelected ? 10 : 8) * markerPulse, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.globalAlpha = 0.95;
+      ctx.strokeStyle = isSelected ? '#ffd84d' : '#8dfbff';
+      ctx.lineWidth = isSelected ? 2.4 : 1.8;
+      ctx.beginPath();
+      ctx.ellipse(sx, sy - 2, isSelected ? 19 : 15, isSelected ? 10 : 8, 0, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    drawNpcSprite(sx, sy + 2, 'agent', getNpcFrame({ mode: 'active' }, now, isSelected), isSelected ? 1.34 : 1.3);
     ctx.fillStyle = '#d7fbff';
-    ctx.font = '600 9px Inter, sans-serif';
+    ctx.font = isSelected ? '700 10px Inter, sans-serif' : '600 9px Inter, sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText(remote.name || 'Player', sx, sy - 44);
+    const label = isSelected ? `🎯 ${remote.name || 'Player'}` : (remote.name || 'Player');
+    ctx.fillText(label, sx, sy - 44);
   }
 
   function isOffscreen(screenX, screenY) {
@@ -846,11 +884,11 @@ export function createIsoRenderer(canvas) {
     ctx.restore();
   }
 
-  function drawControlNode(originX, originY, node, now) {
+  function drawControlNode(originX, originY, node, now, isHovered = false) {
     const iso = toIso(node.x, node.y);
     const cx = originX + iso.x;
     const cy = originY + iso.y + HALF_TILE_H;
-    const baseRadius = 14;
+    const baseRadius = isHovered ? 16 : 14;
     const status = node.status || 'stable';
     const pulseActive = (Number(node.pulseUntil) || 0) > now;
     const unstableFlicker = status === 'unstable'
@@ -912,6 +950,14 @@ export function createIsoRenderer(canvas) {
       ctx.lineWidth = 1.5;
       ctx.beginPath();
       ctx.ellipse(cx, cy, (baseRadius + 9) * haloPulse, (baseRadius + 9) * 0.52 * haloPulse, 0, 0, Math.PI * 2);
+      ctx.stroke();
+    }
+    if (isHovered) {
+      ctx.globalAlpha = 0.95;
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 1.4;
+      ctx.beginPath();
+      ctx.ellipse(cx, cy, (baseRadius + 6), (baseRadius + 6) * 0.52, 0, 0, Math.PI * 2);
       ctx.stroke();
     }
 
@@ -1169,7 +1215,7 @@ export function createIsoRenderer(canvas) {
     drawKeyTilePulse(originX, originY, metrics, now);
 
     drawHoveredTile(originX, originY, state.mouse?.hoverTile, now);
-    drawTileOutline(originX, originY, state.mouse?.selectedTile, '#5ef2ff', 0.96, 2);
+    drawSelectedTile(originX, originY, state.mouse?.selectedTile, now);
     drawMoveTarget(originX, originY, state.player?.moveTarget, now);
 
     const activeOperations = state.signalOperations?.active;
@@ -1184,7 +1230,7 @@ export function createIsoRenderer(canvas) {
     const controlNodes = state.controlNodes;
     if (Array.isArray(controlNodes) && controlNodes.length) {
       for (const node of controlNodes) {
-        drawControlNode(originX, originY, node, now);
+        drawControlNode(originX, originY, node, now, state.mouse?.hoverNodeId === node.id);
       }
     }
 
@@ -1218,7 +1264,16 @@ export function createIsoRenderer(canvas) {
         const screenX = frame.translateX + shakeX + ((originX + iso.x) * zoom);
         const screenY = frame.translateY + shakeY + ((originY + iso.y - elevation - 4) * zoom);
         if (isOffscreen(screenX, screenY)) continue;
-        drawNpc(originX, originY, layer.entity, now, state.player?.nearbyNpcId === layer.entity.id, metrics, visible);
+        drawNpc(
+          originX,
+          originY,
+          layer.entity,
+          now,
+          state.player?.nearbyNpcId === layer.entity.id,
+          state.mouse?.hoverNpcId === layer.entity.id,
+          metrics,
+          visible,
+        );
       } else if (layer.type === 'remote') {
         const remote = layer.entity;
         const iso = toIso(remote.x, remote.y);
@@ -1226,7 +1281,16 @@ export function createIsoRenderer(canvas) {
         const screenX = frame.translateX + shakeX + ((originX + iso.x) * zoom);
         const screenY = frame.translateY + shakeY + ((originY + iso.y - elevation - 4) * zoom);
         if (isOffscreen(screenX, screenY)) continue;
-        drawRemotePlayer(originX, originY, layer.entity, now, metrics, visible);
+        drawRemotePlayer(
+          originX,
+          originY,
+          layer.entity,
+          now,
+          metrics,
+          visible,
+          state.mouse?.hoverRemotePlayerId === layer.entity.id,
+          state.mouse?.selectedRemotePlayerId === layer.entity.id,
+        );
       } else {
         drawPlayer(originX, originY, state, now, metrics);
       }

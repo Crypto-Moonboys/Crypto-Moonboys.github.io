@@ -223,7 +223,9 @@ async function boot() {
     const node = renderer.pickControlNodeFromClientPoint(event.clientX, event.clientY, state);
     if (!node) return false;
     if (!nodeInterference.canInterfere(node.id)) {
-      hud.showNodeInterference(`Node ${node.id.toUpperCase()} is cooling down`, 'warning');
+      const remainingMs = Math.max(0, (Number(node.cooldownUntil) || 0) - Date.now());
+      const remainingSec = Math.max(1, Math.ceil(remainingMs / 1000));
+      hud.showNodeInterference(`Node ${node.id.toUpperCase()} cooling down · ${remainingSec}s`, 'warning');
       return true;
     }
     // Visual-only optimistic pulse — node state is server-authoritative.
@@ -315,6 +317,7 @@ async function boot() {
     const ok = duel.challengePlayer(remotePlayer.id);
     if (!ok) return;
     selectedRemotePlayer = remotePlayer;
+    state.mouse.selectedRemotePlayerId = remotePlayer.id;
     hud.pushFeed(`⚔️ Duel challenge sent to ${remotePlayer.name || remotePlayer.id}`, 'combat');
     duelOverlay.render();
   }
@@ -427,6 +430,13 @@ async function boot() {
     }
 
     if (eventPayload.districtId && Number.isFinite(eventPayload?.districtControl)) {
+      const rippleDistrict = districtStateById.get(eventPayload.districtId);
+      if (rippleDistrict) {
+        hud.showNodeInterference(
+          `District pressure ripple · ${rippleDistrict.name} ${Math.round(Number(eventPayload.districtControl))}%`,
+          'signal',
+        );
+      }
       applyDistrictControlUpdate({
         districtId: eventPayload.districtId,
         control: Number(eventPayload.districtControl),
@@ -466,6 +476,7 @@ async function boot() {
   function updateMouseHover(clientX, clientY) {
     state.mouse.hoverTile = renderer.pickTileFromClientPoint(clientX, clientY, state);
     state.mouse.hoverNpcId = renderer.pickNpcFromClientPoint(clientX, clientY, state)?.id || '';
+    state.mouse.hoverNodeId = renderer.pickControlNodeFromClientPoint(clientX, clientY, state)?.id || '';
     state.mouse.hoverRemotePlayerId = renderer.pickRemotePlayerFromClientPoint?.(clientX, clientY, state)?.id || '';
   }
 
@@ -609,6 +620,8 @@ async function boot() {
         state.camera.panY = state.mouse.cameraStartY + (deltaY / zoom);
         state.mouse.hoverTile = null;
         state.mouse.hoverNpcId = '';
+        state.mouse.hoverNodeId = '';
+        state.mouse.hoverRemotePlayerId = '';
         return;
       }
     }
@@ -618,6 +631,7 @@ async function boot() {
   canvas.addEventListener('mouseleave', () => {
     state.mouse.hoverTile = null;
     state.mouse.hoverNpcId = '';
+    state.mouse.hoverNodeId = '';
     state.mouse.hoverRemotePlayerId = '';
   });
 
@@ -654,9 +668,12 @@ async function boot() {
     const remotePlayer = renderer.pickRemotePlayerFromClientPoint?.(event.clientX, event.clientY, state);
     if (remotePlayer?.id) {
       selectedRemotePlayer = remotePlayer;
+      state.mouse.selectedRemotePlayerId = remotePlayer.id;
       hud.pushFeed(`🎯 Target locked: ${remotePlayer.name || remotePlayer.id} · press F to challenge`, 'combat');
       return;
     }
+    selectedRemotePlayer = null;
+    state.mouse.selectedRemotePlayerId = '';
     state.mouse.selectedTile = renderer.pickTileFromClientPoint(event.clientX, event.clientY, state);
   });
 
@@ -697,6 +714,9 @@ async function boot() {
       hud.setPopulation(players.length, state.room.maxPlayers);
       if (selectedRemotePlayer?.id) {
         selectedRemotePlayer = state.remotePlayers.find((player) => player.id === selectedRemotePlayer.id) || null;
+        if (!selectedRemotePlayer) {
+          state.mouse.selectedRemotePlayerId = '';
+        }
       }
     },
     onWorldSnapshot: (data) => {
@@ -788,7 +808,8 @@ async function boot() {
         duelOverlay.render();
       }
       if (payload?.playerB === localSessionId) {
-        hud.pushFeed(`⚔️ Duel request: ${payload.challengerName || payload.playerAName || 'Player'} challenged you`, 'combat');
+        hud.pushFeed(`⚔️ Duel request from ${payload.challengerName || payload.playerAName || 'Player'} · open panel to accept`, 'combat');
+        hud.showNodeInterference('Duel request received · open duel panel to respond', 'warning');
       }
     },
     onDuelStarted: (payload) => {
@@ -797,6 +818,7 @@ async function boot() {
         duelOverlay.render();
       }
       hud.pushFeed(`⚔️ Duel started: ${payload.playerAName || 'A'} vs ${payload.playerBName || 'B'}`, 'combat');
+      hud.showNodeInterference('Duel live · submit an action in the duel panel', 'sam');
     },
     onDuelActionSubmitted: (payload) => {
       if (duel.getState().duelId && payload?.duelId === duel.getState().duelId) {
@@ -814,6 +836,9 @@ async function boot() {
       }
       if (payload?.samWarning) {
         hud.showNodeInterference(payload.samWarning, 'sam');
+      }
+      if (payload?.winnerName) {
+        hud.showNodeInterference(`Round resolved · winner ${payload.winnerName}`, 'signal');
       }
     },
     onDuelEnded: (payload) => {
@@ -860,9 +885,11 @@ async function boot() {
 
     state.player.nearbyNpcId = nearbyNpc?.id || '';
     const interactText = nearbyNpc
-      ? `⚡ Press E · Talk to ${nearbyNpc.name} (${nearbyNpc.roleLabel || nearbyNpc.role})`
-      : '';
-    const interactVisible = Boolean(nearbyNpc);
+      ? `⚡ Press E or click · Talk to ${nearbyNpc.name} (${nearbyNpc.roleLabel || nearbyNpc.role})`
+      : selectedRemotePlayer
+        ? `⚔️ Press F · Challenge ${selectedRemotePlayer.name || selectedRemotePlayer.id}`
+        : '';
+    const interactVisible = Boolean(nearbyNpc || selectedRemotePlayer);
     if (
       interactText !== lastInteractPromptText
       || interactVisible !== lastInteractPromptVisible

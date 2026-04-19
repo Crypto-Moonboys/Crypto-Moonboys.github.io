@@ -119,7 +119,16 @@ html, body {
 #sam-popup { position: fixed; left: 50%; top: 74px; transform: translateX(-50%); z-index: 700; white-space: pre-line; padding: 10px 12px; }
 #district-capture-banner, #quest-toast { position: fixed; left: 50%; top: 114px; transform: translateX(-50%); z-index: 700; padding: 10px 12px; }
 #npc-dialogue { position: fixed; left: 50%; bottom: 56px; transform: translateX(-50%); z-index: 700; padding: 8px 10px; max-width: min(92vw, 760px); }
-#interact-prompt { position: fixed; left: 50%; bottom: 20px; transform: translateX(-50%); z-index: 620; padding: 6px 10px; }
+#interact-prompt {
+  position: fixed;
+  left: 50%;
+  bottom: 20px;
+  transform: translateX(-50%);
+  z-index: 620;
+  padding: 7px 12px;
+  border-color: rgba(141, 255, 106, 0.36);
+  box-shadow: 0 0 0 1px rgba(94, 242, 255, 0.1), 0 8px 18px rgba(0, 0, 0, 0.28);
+}
 #multiplayer-live-banner { position: fixed; right: 8px; bottom: 8px; z-index: 610; font-size: 11px; color: #aeeeff; padding: 4px 8px; }
 #sam-popup,
 #district-capture-banner,
