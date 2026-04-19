@@ -34,10 +34,12 @@ html, body {
   text-align: center;
   width: min(700px, calc(100vw - 24px));
   padding: 10px 14px;
-  background: rgba(0,0,0,0.15);
-  backdrop-filter: blur(2px);
+  background: linear-gradient(180deg, rgba(4, 10, 24, 0.72), rgba(4, 10, 24, 0.5));
+  backdrop-filter: blur(4px);
+  border: 1px solid rgba(94, 242, 255, 0.2);
   border-radius: 8px;
   transition: opacity 0.7s ease, transform 0.7s ease;
+  pointer-events: none;
 }
 #entry-identity.hidden { opacity: 0; transform: translate(-50%, -16px); pointer-events: none; }
 #entry-identity .chip { margin: 0; font-size: 0.68rem; color: var(--warn); font-weight: 700; }
@@ -58,8 +60,9 @@ html, body {
   flex-wrap: wrap;
   font-size: 12px;
   padding: 4px 8px;
-  background: rgba(0,0,0,0.15);
-  backdrop-filter: blur(2px);
+  background: linear-gradient(180deg, rgba(4, 10, 24, 0.72), rgba(4, 10, 24, 0.5));
+  backdrop-filter: blur(4px);
+  border: 1px solid rgba(94, 242, 255, 0.2);
   border-radius: 8px;
 }
 #operator-hud { top: 8px; left: 8px; }
@@ -67,15 +70,25 @@ html, body {
 
 .stream {
   position: fixed;
-  width: min(30vw, 420px);
+  width: min(28vw, 360px);
   max-height: 42vh;
   overflow: hidden;
-  background: rgba(0,0,0,0.15);
-  backdrop-filter: blur(2px);
+  background: linear-gradient(180deg, rgba(4, 10, 24, 0.6), rgba(4, 10, 24, 0.35));
+  backdrop-filter: blur(3px);
+  border: 1px solid rgba(94, 242, 255, 0.14);
   border-radius: 8px;
-  pointer-events: auto;
+  pointer-events: none;
 }
-.stream ul { list-style: none; margin: 0; padding: 8px; max-height: inherit; overflow: auto; }
+.stream::before {
+  content: attr(aria-label);
+  display: block;
+  padding: 6px 10px 2px;
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgba(174, 238, 255, 0.7);
+}
+.stream ul { list-style: none; margin: 0; padding: 10px 10px 8px; max-height: inherit; overflow: auto; }
 .stream-left { left: 8px; top: 70px; }
 .stream-right { right: 8px; top: 70px; }
 .stream-bottom {
@@ -83,9 +96,9 @@ html, body {
   bottom: 8px;
   transform: translateX(-50%);
   width: min(86vw, 1120px);
-  max-height: 22vh;
+  max-height: 19vh;
 }
-.stream-line { font-size: 12px; line-height: 1.35; margin-bottom: 4px; }
+.stream-line { font-size: 12px; line-height: 1.38; margin-bottom: 5px; text-shadow: 0 1px 0 rgba(0, 0, 0, 0.45); }
 .stream-line.sam { color: #ff83df; }
 .stream-line.combat { color: #ffd84d; }
 .stream-line.quest { color: #8dff6a; }
@@ -98,8 +111,9 @@ html, body {
 #interact-prompt,
 #multiplayer-live-banner,
 #duel-overlay .duel-card {
-  background: rgba(0,0,0,0.15);
-  backdrop-filter: blur(2px);
+  background: linear-gradient(180deg, rgba(4, 10, 24, 0.72), rgba(4, 10, 24, 0.5));
+  backdrop-filter: blur(4px);
+  border: 1px solid rgba(94, 242, 255, 0.2);
   border-radius: 8px;
 }
 #sam-popup { position: fixed; left: 50%; top: 74px; transform: translateX(-50%); z-index: 700; white-space: pre-line; padding: 10px 12px; }
@@ -107,6 +121,14 @@ html, body {
 #npc-dialogue { position: fixed; left: 50%; bottom: 56px; transform: translateX(-50%); z-index: 700; padding: 8px 10px; max-width: min(92vw, 760px); }
 #interact-prompt { position: fixed; left: 50%; bottom: 20px; transform: translateX(-50%); z-index: 620; padding: 6px 10px; }
 #multiplayer-live-banner { position: fixed; right: 8px; bottom: 8px; z-index: 610; font-size: 11px; color: #aeeeff; padding: 4px 8px; }
+#sam-popup,
+#district-capture-banner,
+#quest-toast,
+#npc-dialogue,
+#interact-prompt,
+#multiplayer-live-banner {
+  pointer-events: none;
+}
 
 #sam-impact,
 #phase-flash,

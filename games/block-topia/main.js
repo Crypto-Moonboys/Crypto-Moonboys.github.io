@@ -143,6 +143,16 @@ async function boot() {
     );
   }
 
+  function isEditableTarget(target) {
+    if (!target) return false;
+    const tag = String(target.tagName || '').toLowerCase();
+    return tag === 'input' || tag === 'textarea' || tag === 'select' || target.isContentEditable;
+  }
+
+  function shouldIgnoreHotkey(event) {
+    return event.defaultPrevented || isEditableTarget(event.target);
+  }
+
   function isNpcInInteractionRange(targetNpc) {
     if (!targetNpc) return false;
     const dx = targetNpc.col - state.player.x;
@@ -395,6 +405,43 @@ async function boot() {
     });
   }
 
+
+  function refreshOperationsHud(force = false) {
+    operations.syncFromSignals(force ? { force: true } : undefined);
+    hud.setQuests(quests.getActiveQuestCards());
+  }
+
+  function updateMouseHover(clientX, clientY) {
+    state.mouse.hoverTile = renderer.pickTileFromClientPoint(clientX, clientY, state);
+    state.mouse.hoverNpcId = renderer.pickNpcFromClientPoint(clientX, clientY, state)?.id || '';
+    state.mouse.hoverRemotePlayerId = renderer.pickRemotePlayerFromClientPoint?.(clientX, clientY, state)?.id || '';
+  }
+
+  function updateDistrictHudState(districtId) {
+    const district = state.districts.byId.get(districtId);
+    if (!district) return;
+    const districtStatus = districtStateById.get(district.id);
+    if (district.id !== lastHudDistrictId) {
+      hud.setDistrict(district.name);
+      lastHudDistrictId = district.id;
+    }
+    if (districtStatus) {
+      if (districtStatus.control !== lastHudDistrictControl) {
+        hud.setDistrictControl(districtStatus.control);
+        lastHudDistrictControl = districtStatus.control;
+      }
+      if (districtStatus.owner !== lastHudDistrictOwner) {
+        hud.setDistrictOwner(districtStatus.owner);
+        lastHudDistrictOwner = districtStatus.owner;
+      }
+    }
+    if (district.id !== lastQuestDistrictId) {
+      lastQuestDistrictId = district.id;
+      state.capturePreview = null;
+      hud.setQuests(quests.getActiveQuestCards());
+    }
+  }
+
   function applyLiveSignalRefresh(refreshResult) {
     if (!refreshResult?.changed) return;
 
@@ -421,8 +468,7 @@ async function boot() {
       `live-refresh:${snapshot.generatedAt || snapshot.mode || 'fallback'}`,
     );
     clues.refreshFromSignals?.();
-    operations.syncFromSignals({ force: true });
-    hud.setQuests(quests.getActiveQuestCards());
+    refreshOperationsHud(true);
     hud.setWorldStatus(
       `Unified city online · canon signals ${snapshot.mode || 'fallback'} · ${snapshot.signalCount || 0} active lanes`
       + `${canonSignalState.samNarrativeState?.pressure ? ` · SAM pressure ${Math.round(canonSignalState.samNarrativeState.pressure)}%` : ''}`,
@@ -442,8 +488,7 @@ async function boot() {
   hud.setXp(state.player.xp);
   hud.setRoom(state.room.id);
   hud.setPopulation(0, state.room.maxPlayers);
-  operations.syncFromSignals({ force: true });
-  hud.setQuests(quests.getActiveQuestCards());
+  refreshOperationsHud(true);
   const worldBulletins = liveIntelligence.getWorldFeedLines(2);
   worldBulletins.forEach((line) => pushFeedDeduped(`📡 ${line}`, 'sam', `world-bulletin:${line}`));
   const liveMode = liveIntelligence.getSnapshot().mode || 'fallback';
@@ -467,7 +512,7 @@ async function boot() {
   setTimeout(() => hud.dismissEntryIdentity(0), ENTRY_OVERLAY_TIMEOUT_MS);
 
   window.addEventListener('keydown', (event) => {
-    if (event.repeat) return;
+    if (shouldIgnoreHotkey(event) || event.repeat) return;
     const key = event.key;
     if (key === 'f' || key === 'F') {
       if (selectedRemotePlayer) {
@@ -515,9 +560,7 @@ async function boot() {
         return;
       }
     }
-    state.mouse.hoverTile = renderer.pickTileFromClientPoint(event.clientX, event.clientY, state);
-    state.mouse.hoverNpcId = renderer.pickNpcFromClientPoint(event.clientX, event.clientY, state)?.id || '';
-    state.mouse.hoverRemotePlayerId = renderer.pickRemotePlayerFromClientPoint?.(event.clientX, event.clientY, state)?.id || '';
+    updateMouseHover(event.clientX, event.clientY);
   });
 
   canvas.addEventListener('mouseleave', () => {
@@ -545,9 +588,7 @@ async function boot() {
     if (dragged) {
       state.mouse.suppressClick = true;
       state.mouse.suppressDblClickUntil = performance.now() + MOUSE_DRAG_DOUBLE_CLICK_SUPPRESS_MS;
-      state.mouse.hoverTile = renderer.pickTileFromClientPoint(event.clientX, event.clientY, state);
-      state.mouse.hoverNpcId = renderer.pickNpcFromClientPoint(event.clientX, event.clientY, state)?.id || '';
-      state.mouse.hoverRemotePlayerId = renderer.pickRemotePlayerFromClientPoint?.(event.clientX, event.clientY, state)?.id || '';
+      updateMouseHover(event.clientX, event.clientY);
     }
   });
 
@@ -736,7 +777,7 @@ async function boot() {
   });
 
   window.addEventListener('keydown', (event) => {
-    if (event.key.toLowerCase() !== 'e' || event.repeat || !nearbyNpc) return;
+    if (shouldIgnoreHotkey(event) || event.key.toLowerCase() !== 'e' || event.repeat || !nearbyNpc) return;
     interactWithNpc(nearbyNpc);
   });
 
@@ -798,8 +839,7 @@ async function boot() {
           `op-resolved-detail:${operation.id}`,
         );
         hud.showSamPopup('✔ SIGNAL STABILISED — TRACE COMPLETE', 2600);
-        operations.syncFromSignals();
-        hud.setQuests(quests.getActiveQuestCards());
+        refreshOperationsHud();
       },
       onOperationExpired: (operation) => {
         pushFeedDeduped(
@@ -807,8 +847,7 @@ async function boot() {
           'system',
           `op-expired:${operation.id}`,
         );
-        operations.syncFromSignals();
-        hud.setQuests(quests.getActiveQuestCards());
+        refreshOperationsHud();
       },
     });
     if (Math.random() < NPC_FEED_PULSE_PROBABILITY) {
@@ -829,31 +868,8 @@ async function boot() {
       }
     }
 
-    // Update district HUD when player moves into a new district
-    const district = state.districts.byId.get(state.player.districtId);
-    if (district) {
-      const ds = districtStateById.get(district.id);
-      if (district.id !== lastHudDistrictId) {
-        hud.setDistrict(district.name);
-        lastHudDistrictId = district.id;
-      }
-      if (ds) {
-        if (ds.control !== lastHudDistrictControl) {
-          hud.setDistrictControl(ds.control);
-          lastHudDistrictControl = ds.control;
-        }
-        if (ds.owner !== lastHudDistrictOwner) {
-          hud.setDistrictOwner(ds.owner);
-          lastHudDistrictOwner = ds.owner;
-        }
-      }
-      if (district.id !== lastQuestDistrictId) {
-        lastQuestDistrictId = district.id;
-        // Clear capture preview when entering a new district.
-        state.capturePreview = null;
-        hud.setQuests(quests.getActiveQuestCards());
-      }
-    }
+    // Update district HUD when player moves into a new district.
+    updateDistrictHudState(state.player.districtId);
     duelOverlay.render();
   }
 
