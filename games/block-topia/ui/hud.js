@@ -25,6 +25,7 @@ export function createHud(doc) {
   const districtStatus = doc.getElementById('district-status');
 
   const worldStatus = doc.getElementById('world-status');
+  const aiStatus = doc.getElementById('ai-status');
   const factionStatus = doc.getElementById('faction-status');
   const samStatus = doc.getElementById('sam-status');
   const phaseStatus = doc.getElementById('phase-status');
@@ -180,6 +181,9 @@ export function createHud(doc) {
   return {
     setPlayerName: (name) => { playerNameEl.textContent = name; },
     setWorldStatus: (text) => { worldStatus.textContent = text; },
+    setAiStatus: (text) => {
+      if (aiStatus) aiStatus.textContent = `AI: ${text}`;
+    },
     setDistrict: (name) => { districtStatus.textContent = `District: ${name}`; },
     setDistrictControl,
     setDistrictOwner: (owner) => pushLog('right', `District owner: ${owner || '—'}`),
