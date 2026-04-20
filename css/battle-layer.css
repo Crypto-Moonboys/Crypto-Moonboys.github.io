@@ -211,6 +211,11 @@
   gap: 10px;
 }
 
+.community-list.shell-scroll {
+  max-height: 380px;
+  padding-right: 6px;
+}
+
 .feed-burst,
 .leader-row,
 .mission-row,

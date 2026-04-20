@@ -509,9 +509,10 @@
   var msgEl = document.getElementById('incubator-sync-message');
   if (!box || !identityEl || !msgEl) return;
   var gate = window.MOONBOYS_IDENTITY || null;
-  var linked = !!(gate && gate.isTelegramLinked && gate.isTelegramLinked());
+  var sync = gate && gate.getSyncState ? gate.getSyncState() : null;
+  var linked = !!(sync ? sync.linked : (gate && gate.isTelegramLinked && gate.isTelegramLinked()));
   var auth = gate && gate.getTelegramAuth ? gate.getTelegramAuth() : null;
-  var authOk = !!(auth && auth.hash && auth.auth_date);
+  var authOk = !!(sync ? sync.good : (auth && auth.hash && auth.auth_date));
   var name = gate && gate.getTelegramName ? gate.getTelegramName() : null;
   var username = auth && (auth.username || (auth.user && auth.user.username));
   identityEl.textContent = linked ? ((name || 'Linked Telegram') + (username ? ' (@' + String(username).replace(/^@/, '') + ')' : '')) : 'Not linked';

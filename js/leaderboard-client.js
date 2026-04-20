@@ -21,6 +21,13 @@ function emitArcadeSubmissionStatus(detail = {}) {
   window.dispatchEvent(new CustomEvent("arcade:submission-status", { detail }));
 }
 
+function markSyncHealth(state, reason = "") {
+  if (typeof window === "undefined") return;
+  const gate = window.MOONBOYS_IDENTITY;
+  if (!gate || typeof gate.setSyncHealth !== "function") return;
+  gate.setSyncHealth(state, reason);
+}
+
 function getApiUrl() {
   if (typeof window !== "undefined" && window.LEADERBOARD_API_URL) {
     return String(window.LEADERBOARD_API_URL).replace(/\/$/, "");
@@ -111,6 +118,7 @@ export async function submitScore(player, score, game = "global") {
   const linked = isTelegramLinked();
   result.linked = linked;
   if (!linked) {
+    markSyncHealth("bad", "not_linked");
     // Not competition-active: score stays local only.  Show gate modal if available.
     emitArcadeSubmissionStatus({
       ...result,
@@ -130,6 +138,7 @@ export async function submitScore(player, score, game = "global") {
   let shouldSyncMeta = false;
 
   if (linked) {
+    markSyncHealth("good", "linked_ready");
     emitArcadeSubmissionStatus({
       ...result,
       state: "auto_submitting",
@@ -156,12 +165,14 @@ export async function submitScore(player, score, game = "global") {
             state: "relink_required",
             message: "Re-link required. Run /gklink again to restore Telegram sync and server-side progression.",
           });
+          markSyncHealth("bad", "relink_required");
         } else if (authExpired) {
           emitArcadeSubmissionStatus({
             ...result,
             state: "auth_expired",
             message: "Sync expired. Run /gklink again to refresh your Telegram link.",
           });
+          markSyncHealth("bad", "auth_expired");
         } else {
           emitArcadeSubmissionStatus({
             ...result,
@@ -170,6 +181,7 @@ export async function submitScore(player, score, game = "global") {
           });
         }
       } else if (data && data.accepted === true) {
+        markSyncHealth("good", "accepted_score");
         shouldSyncMeta = true;
         result.accepted = true;
         result.state = "accepted_score";
@@ -194,6 +206,7 @@ export async function submitScore(player, score, game = "global") {
                 ? "Accepted score converted to Block Topia XP."
                 : "Accepted score recorded, but no XP was awarded.",
             });
+            markSyncHealth("good", result.awardedXp > 0 ? "xp_awarded" : "accepted_no_xp");
           } catch (err) {
             console.error("[leaderboard-client] Block Topia progression sync failed:", err);
             var errText = String((err && err.message) || err || "").toLowerCase();
@@ -205,6 +218,7 @@ export async function submitScore(player, score, game = "global") {
                 ? "Sync expired. Run /gklink again to refresh your Telegram link."
                 : "Score accepted for ranking, but Block Topia XP sync did not complete.",
             });
+            if (authRequired) markSyncHealth("bad", "auth_expired");
           }
         } else {
           emitArcadeSubmissionStatus({
@@ -212,6 +226,7 @@ export async function submitScore(player, score, game = "global") {
             state: "score_accepted",
             message: "Score accepted for ranking.",
           });
+          markSyncHealth("good", "accepted_score");
         }
       } else {
         result.state = "rejected_no_xp";
@@ -225,6 +240,7 @@ export async function submitScore(player, score, game = "global") {
       console.error("[leaderboard-client] Score submission failed:", err);
       const errText = String((err && err.message) || err || "").toLowerCase();
       const authExpired = errText.includes("auth") || errText.includes("expired");
+      if (authExpired) markSyncHealth("bad", "auth_expired");
       emitArcadeSubmissionStatus({
         ...result,
         state: authExpired ? "auth_expired" : "sync_error",

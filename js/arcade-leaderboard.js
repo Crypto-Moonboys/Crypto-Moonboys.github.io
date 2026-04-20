@@ -51,6 +51,7 @@ let currentData = [];
 let onRowSelectCallback = null;
 let onModeChangeCallback = null;
 let isFetching = false;
+const PRESENCE_OFFLINE_KEY = 'moonboys_presence_hidden';
 
 // ── DOM helpers ───────────────────────────────────────────────────────────
 function el(id) { return document.getElementById(id); }
@@ -73,6 +74,55 @@ function projectedXpFromScore(value) {
   const num = Number(value);
   if (!Number.isFinite(num) || num < 0) return 0;
   return Math.min(Math.floor(num / 1000), 100);
+}
+
+function isPresenceHidden() {
+  try { return localStorage.getItem(PRESENCE_OFFLINE_KEY) === '1'; } catch { return false; }
+}
+
+function setPresenceHidden(hidden) {
+  try { localStorage.setItem(PRESENCE_OFFLINE_KEY, hidden ? '1' : '0'); } catch {}
+}
+
+function getIdentityApi() {
+  return (typeof window !== 'undefined' && window.MOONBOYS_IDENTITY) ? window.MOONBOYS_IDENTITY : null;
+}
+
+function getCurrentIdentityLabel() {
+  const gate = getIdentityApi();
+  if (!gate) return 'Not linked';
+  const sync = typeof gate.getSyncState === 'function' ? gate.getSyncState() : null;
+  if (!sync || !sync.linked) return 'Not linked';
+  const name = typeof gate.getTelegramName === 'function' ? gate.getTelegramName() : null;
+  const auth = typeof gate.getTelegramAuth === 'function' ? gate.getTelegramAuth() : null;
+  const username = auth && (auth.username || auth.user?.username) ? String(auth.username || auth.user.username).replace(/^@/, '') : '';
+  if (name && username) return `${name} (@${username})`;
+  if (name) return String(name);
+  if (username) return `@${username}`;
+  return 'Linked Telegram account';
+}
+
+function renderLinkedPresence() {
+  const box = el('lb-linked-identity');
+  if (!box) return;
+  const gate = getIdentityApi();
+  const sync = gate && typeof gate.getSyncState === 'function' ? gate.getSyncState() : null;
+  const linked = !!(sync && sync.linked);
+  const online = !!(sync && sync.good && !isPresenceHidden());
+  const display = getCurrentIdentityLabel();
+  box.classList.remove('sync-state--good', 'sync-state--bad', 'presence-offline');
+  box.classList.add(online ? 'sync-state--good' : 'sync-state--bad');
+  if (isPresenceHidden()) box.classList.add('presence-offline');
+  box.innerHTML = linked
+    ? `<strong>You are linked as ${escHtml(display)}</strong><span class="lb-linked-meta">${online ? '● Online presence visible' : (isPresenceHidden() ? '○ Showing as offline' : '○ Sync attention required')}</span>`
+    : '<strong>You are linked as Not linked</strong><span class="lb-linked-meta">Run /gklink to store ranking/XP server-side.</span>';
+
+  const toggle = el('lb-presence-toggle');
+  if (toggle) {
+    toggle.disabled = !linked;
+    toggle.setAttribute('aria-pressed', isPresenceHidden() ? 'true' : 'false');
+    toggle.textContent = isPresenceHidden() ? 'Show as online' : 'Show as offline';
+  }
 }
 
 function medalFor(rank) {
@@ -177,7 +227,7 @@ function renderBreakdown(entry) {
   panel.innerHTML = `
     <div class="lb-bd-header">
       <span class="lb-bd-player">${escHtml(entry.player || '—')}</span>
-      <span class="lb-bd-total">${formatScore(entry.score ?? 0)} Score (Ranking) · Accepted → ≈ +${projectedXpFromScore(entry.score ?? 0)} XP</span>
+      <span class="lb-bd-total">${formatScore(entry.score ?? 0)} · est. +${projectedXpFromScore(entry.score ?? 0)} XP</span>
     </div>
     <div class="lb-bd-grid">${rows.join('')}</div>
   `;
@@ -213,7 +263,7 @@ function renderTable(data) {
       <tr class="lb-row" data-rank="${rank}" tabindex="0" role="button" aria-label="View breakdown for ${escHtml(row.player || 'Player')}">
         <td class="lb-rank">${medalFor(rank)}</td>
         <td class="lb-player">${escHtml(row.player || '—')}</td>
-        <td class="lb-score">${formatScore(row.score ?? 0)} <span class="lb-score-sub" title="Ranking uses score only. Accepted scores can convert into Block Topia XP after sync">(Accepted → ≈ +${projectedXpFromScore(row.score ?? 0)} XP)</span></td>
+        <td class="lb-score">${formatScore(row.score ?? 0)} <span class="lb-score-sub" title="Ranking uses score only. XP stays secondary to score.">· est. +${projectedXpFromScore(row.score ?? 0)} XP</span></td>
       </tr>
     `;
   });
@@ -303,6 +353,20 @@ export function initLeaderboard({ onRowSelect, onModeChange } = {}) {
       refreshBtn.disabled = false;
     });
   }
+
+  const presenceToggle = el('lb-presence-toggle');
+  if (presenceToggle) {
+    presenceToggle.addEventListener('click', () => {
+      setPresenceHidden(!isPresenceHidden());
+      renderLinkedPresence();
+    });
+  }
+  renderLinkedPresence();
+  document.addEventListener('arcade:submission-status', renderLinkedPresence);
+  window.addEventListener('storage', function (event) {
+    if (!event || event.key !== PRESENCE_OFFLINE_KEY) return;
+    renderLinkedPresence();
+  });
 
   loadLeaderboard();
 }
