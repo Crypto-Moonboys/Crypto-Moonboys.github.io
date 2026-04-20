@@ -293,8 +293,11 @@ async function fetchServerProgression() {
     return { ...progressionState, __authError: true, error: 'Telegram auth missing. Re-sync required.' };
   }
   try {
-    const query = encodeURIComponent(JSON.stringify(telegramAuth));
-    const res = await fetch(`${apiBase}/blocktopia/progression?telegram_auth=${query}`);
+    const res = await fetch(`${apiBase}/blocktopia/progression`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ telegram_auth: telegramAuth }),
+    });
     if (!res.ok) {
       const data = await res.json().catch(() => ({}));
       return {

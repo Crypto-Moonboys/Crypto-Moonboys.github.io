@@ -14,6 +14,7 @@ LEADERBOARD_API_URL = "https://moonboys-leaderboard.sercullen.workers.dev"
 binding = "DB"
 database_name = "wikicoms"
 database_id = "8a36e17a-18fa-4b98-90e1-3f269164b166"
+migrations_dir = "migrations"
 
 # ── Telegram secrets ──────────────────────────────────────────────────────────
 # Required for POST /telegram/auth and POST /telegram/webhook.
