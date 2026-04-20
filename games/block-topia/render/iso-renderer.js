@@ -25,6 +25,9 @@ const UNSTABLE_PULSE_RATE = 240;
 const UNSTABLE_PULSE_AMPLITUDE = 0.15;
 const HALO_PULSE_RATE = 180;
 const HALO_PULSE_AMPLITUDE = 0.22;
+const DATA_PACKET_SPEED = 0.00018;
+const DISTRICT_LABEL_FONT = '700 12px Inter, sans-serif';
+const DISTRICT_LABEL_GLOW_FONT = '700 18px "Rajdhani", Inter, sans-serif';
 
 const ROLE_STYLE = {
   vendor: { color: '#ffd84d', factionRing: true },
@@ -48,6 +51,34 @@ const DISTRICT_THEME = {
   'crypto-core': '#ffd84d',
   'moonlit-underbelly': '#8dff6a',
   'revolt-plaza': '#5ef2ff',
+};
+
+const DISTRICT_BOUNDARY_STYLE = {
+  'neon-slums': { stroke: 'rgba(94,242,255,0.7)', fill: 'rgba(40,125,160,0.1)' },
+  'signal-spire': { stroke: 'rgba(255,79,216,0.72)', fill: 'rgba(168,48,130,0.12)' },
+  'crypto-core': { stroke: 'rgba(255,216,77,0.7)', fill: 'rgba(180,138,46,0.12)' },
+  'moonlit-underbelly': { stroke: 'rgba(141,255,106,0.68)', fill: 'rgba(51,130,82,0.12)' },
+  'revolt-plaza': { stroke: 'rgba(114,176,255,0.68)', fill: 'rgba(47,96,180,0.12)' },
+};
+
+const NETWORK_LINKS = [
+  ['core', 'north'],
+  ['core', 'east'],
+  ['core', 'south'],
+  ['core', 'west'],
+  ['north', 'east'],
+  ['east', 'south'],
+  ['south', 'west'],
+  ['west', 'north'],
+];
+
+const NODE_CLASS_THEME = {
+  mining: { color: '#ff7b43', accent: '#ffd76d', label: 'BTC RIG', icon: '₿', size: 1.3 },
+  ai: { color: '#6ce7ff', accent: '#d8f9ff', label: 'AI STACK', icon: 'AI', size: 1.32 },
+  relay: { color: '#7dbbff', accent: '#cdf0ff', label: 'RELAY', icon: '↯', size: 1.05 },
+  control: { color: '#ff5fd3', accent: '#ffd4f1', label: 'CONTROL', icon: '◎', size: 1.15 },
+  hub: { color: '#c08dff', accent: '#efe0ff', label: 'HUB', icon: '◆', size: 1.24 },
+  utility: { color: '#8dff6a', accent: '#defed5', label: 'UTILITY', icon: '⊙', size: 1 },
 };
 
 const TILE_ASSETS = {
@@ -423,9 +454,9 @@ export function createIsoRenderer(canvas) {
     const layerCtx = layerCanvas.getContext('2d');
 
     const grad = layerCtx.createLinearGradient(0, 0, 0, canvas.height);
-    grad.addColorStop(0, '#040916');
-    grad.addColorStop(0.55, '#050a1b');
-    grad.addColorStop(1, '#03060f');
+    grad.addColorStop(0, '#01040d');
+    grad.addColorStop(0.4, '#020816');
+    grad.addColorStop(1, '#02040b');
     layerCtx.fillStyle = grad;
     layerCtx.fillRect(0, 0, canvas.width, canvas.height);
 
@@ -436,7 +467,7 @@ export function createIsoRenderer(canvas) {
     layerCtx.fillStyle = 'rgba(9, 17, 36, 0.9)';
     layerCtx.fillRect(0, Math.round(canvas.height * 0.63), canvas.width, Math.round(canvas.height * 0.37));
 
-    layerCtx.strokeStyle = 'rgba(94,242,255,0.1)';
+    layerCtx.strokeStyle = 'rgba(94,242,255,0.14)';
     layerCtx.lineWidth = 1;
     for (let x = -canvas.height; x < canvas.width + canvas.height; x += 30) {
       layerCtx.beginPath();
@@ -445,7 +476,7 @@ export function createIsoRenderer(canvas) {
       layerCtx.stroke();
     }
 
-    layerCtx.strokeStyle = 'rgba(94,242,255,0.08)';
+    layerCtx.strokeStyle = 'rgba(94,242,255,0.11)';
     for (let y = horizon; y < canvas.height; y += 26) {
       layerCtx.beginPath();
       layerCtx.moveTo(0, y);
@@ -453,12 +484,22 @@ export function createIsoRenderer(canvas) {
       layerCtx.stroke();
     }
 
-    layerCtx.strokeStyle = 'rgba(255,79,216,0.22)';
+    layerCtx.strokeStyle = 'rgba(255,79,216,0.26)';
     layerCtx.lineWidth = 2;
     layerCtx.beginPath();
     layerCtx.moveTo(0, horizon + 2);
     layerCtx.lineTo(canvas.width, horizon + 2);
     layerCtx.stroke();
+
+    layerCtx.globalAlpha = 0.26;
+    for (let i = 0; i < 190; i += 1) {
+      const px = deterministicNoise2D(i, canvas.width) * canvas.width;
+      const py = horizon + deterministicNoise2D(i, canvas.height) * (canvas.height - horizon);
+      const glow = 0.7 + deterministicNoise2D(i, 11) * 1.5;
+      layerCtx.fillStyle = i % 7 === 0 ? 'rgba(255,79,216,0.45)' : 'rgba(94,242,255,0.45)';
+      layerCtx.fillRect(px, py, glow, glow);
+    }
+    layerCtx.globalAlpha = 1;
 
     layerState.baseGrid.canvas = layerCanvas;
     layerState.baseGrid.width = canvas.width;
@@ -521,6 +562,20 @@ export function createIsoRenderer(canvas) {
           roadCtx.lineTo(tilePos.x - HALF_TILE_W, tilePos.y + HALF_TILE_H + 2);
           roadCtx.closePath();
           roadCtx.fill();
+        }
+        if (terrain === 'land' && deterministicNoise2D(col * 2, row * 3) > 0.82) {
+          roadCtx.strokeStyle = district?.id === 'signal-spire'
+            ? 'rgba(255,79,216,0.34)'
+            : 'rgba(94,242,255,0.28)';
+          roadCtx.lineWidth = 1;
+          roadCtx.beginPath();
+          roadCtx.moveTo(tilePos.x - 8, tilePos.y + HALF_TILE_H + 1);
+          roadCtx.lineTo(tilePos.x + 8, tilePos.y + HALF_TILE_H + 1);
+          roadCtx.stroke();
+        }
+        if (terrain === 'land' && deterministicNoise2D(col * 5, row * 7) > 0.87) {
+          roadCtx.fillStyle = 'rgba(141,251,255,0.34)';
+          roadCtx.fillRect(tilePos.x - 1, tilePos.y + HALF_TILE_H, 2, 2);
         }
       }
     }
@@ -591,16 +646,39 @@ export function createIsoRenderer(canvas) {
     for (const districtState of state.districtState || []) {
       const district = state.districts.byId.get(districtState.id);
       if (!district?.grid) continue;
+      const style = DISTRICT_BOUNDARY_STYLE[district.id] || DISTRICT_BOUNDARY_STYLE['neon-slums'];
+      const left = mapToLayerXY(district.grid.col, district.grid.row + (district.grid.h / 2), 1);
+      const top = mapToLayerXY(district.grid.col + (district.grid.w / 2), district.grid.row, 1);
+      const right = mapToLayerXY(district.grid.col + district.grid.w, district.grid.row + (district.grid.h / 2), 1);
+      const bottom = mapToLayerXY(district.grid.col + (district.grid.w / 2), district.grid.row + district.grid.h, 1);
+      worldCtx.save();
+      worldCtx.globalAlpha = 1;
+      worldCtx.fillStyle = style.fill;
+      worldCtx.strokeStyle = style.stroke;
+      worldCtx.lineWidth = 1.35;
+      worldCtx.setLineDash([8, 6]);
+      worldCtx.beginPath();
+      worldCtx.moveTo(left.x, left.y + HALF_TILE_H);
+      worldCtx.lineTo(top.x, top.y + HALF_TILE_H);
+      worldCtx.lineTo(right.x, right.y + HALF_TILE_H);
+      worldCtx.lineTo(bottom.x, bottom.y + HALF_TILE_H);
+      worldCtx.closePath();
+      worldCtx.fill();
+      worldCtx.stroke();
+      worldCtx.setLineDash([]);
+      worldCtx.restore();
+
       const cx = district.grid.col + district.grid.w / 2;
       const cy = district.grid.row + district.grid.h / 2;
       const pos = mapToLayerXY(cx, cy, 0);
       const accent = DISTRICT_THEME[district.id] || '#eaf6ff';
-      worldCtx.fillStyle = 'rgba(0,0,0,0.65)';
-      worldCtx.font = '700 12px Inter, sans-serif';
+      worldCtx.fillStyle = 'rgba(0,0,0,0.78)';
+      worldCtx.font = DISTRICT_LABEL_GLOW_FONT;
       worldCtx.textAlign = 'center';
-      worldCtx.fillText(district.name.toUpperCase(), pos.x + 1, pos.y - 19);
+      worldCtx.fillText(district.name.toUpperCase(), pos.x + 1, pos.y - 16);
       worldCtx.fillStyle = accent;
-      worldCtx.fillText(district.name.toUpperCase(), pos.x, pos.y - 20);
+      worldCtx.font = DISTRICT_LABEL_FONT;
+      worldCtx.fillText(`◈ ${district.name.toUpperCase()} ◈`, pos.x, pos.y - 18);
     }
 
     layerState.mapKey = mapKey;
@@ -884,11 +962,29 @@ export function createIsoRenderer(canvas) {
     ctx.restore();
   }
 
+  function getNodeVisualClass(node) {
+    if (!node) return 'utility';
+    if (node.id === 'core') return 'hub';
+    if (node.id === 'north') return 'ai';
+    if (node.id === 'south') return 'mining';
+    if (node.id === 'east') return 'relay';
+    if (node.id === 'west') return 'control';
+    if (node.districtId === 'crypto-core') return 'hub';
+    if (node.districtId === 'signal-spire') return 'ai';
+    if (node.districtId === 'moonlit-underbelly') return 'mining';
+    if (node.districtId === 'revolt-plaza') return 'relay';
+    if (node.districtId === 'neon-slums') return 'control';
+    return 'utility';
+  }
+
   function drawControlNode(originX, originY, node, now, isHovered = false) {
     const iso = toIso(node.x, node.y);
     const cx = originX + iso.x;
     const cy = originY + iso.y + HALF_TILE_H;
-    const baseRadius = isHovered ? 16 : 14;
+    const nodeClass = getNodeVisualClass(node);
+    const theme = NODE_CLASS_THEME[nodeClass] || NODE_CLASS_THEME.utility;
+    const classScale = theme.size || 1;
+    const baseRadius = (isHovered ? 16 : 14) * classScale;
     const status = node.status || 'stable';
     const pulseActive = (Number(node.pulseUntil) || 0) > now;
     const unstableFlicker = status === 'unstable'
@@ -903,12 +999,12 @@ export function createIsoRenderer(canvas) {
         ? '#ff4fd8'
         : status === 'contested'
           ? '#ff9b42'
-          : '#5ef2ff';
+          : theme.color;
 
     ctx.save();
 
     // Ground fill
-    ctx.globalAlpha = (status === 'unstable' ? 0.34 : 0.25) * unstableFlicker;
+    ctx.globalAlpha = (status === 'unstable' ? 0.38 : 0.25) * unstableFlicker;
     ctx.fillStyle = baseColor;
     ctx.beginPath();
     ctx.ellipse(cx, cy, baseRadius * pulseScale, baseRadius * 0.52 * pulseScale, 0, 0, Math.PI * 2);
@@ -945,12 +1041,19 @@ export function createIsoRenderer(canvas) {
 
     if (pulseActive) {
       const haloPulse = 1 + ((Math.sin(now / HALO_PULSE_RATE) + 1) * HALO_PULSE_AMPLITUDE);
-      ctx.globalAlpha = status === 'unstable' ? 0.45 : 0.3;
+      ctx.globalAlpha = status === 'unstable' ? 0.45 : 0.35;
       ctx.strokeStyle = baseColor;
       ctx.lineWidth = 1.5;
       ctx.beginPath();
       ctx.ellipse(cx, cy, (baseRadius + 9) * haloPulse, (baseRadius + 9) * 0.52 * haloPulse, 0, 0, Math.PI * 2);
       ctx.stroke();
+      if (nodeClass === 'ai' || nodeClass === 'mining' || nodeClass === 'hub') {
+        ctx.globalAlpha = 0.24;
+        ctx.strokeStyle = theme.accent;
+        ctx.beginPath();
+        ctx.ellipse(cx, cy, (baseRadius + 16) * haloPulse, (baseRadius + 16) * 0.5 * haloPulse, 0, 0, Math.PI * 2);
+        ctx.stroke();
+      }
     }
     if (isHovered) {
       ctx.globalAlpha = 0.95;
@@ -961,17 +1064,59 @@ export function createIsoRenderer(canvas) {
       ctx.stroke();
     }
 
+    const glyphY = cy - 1;
+    if (nodeClass === 'ai') {
+      ctx.globalAlpha = 0.8;
+      ctx.strokeStyle = theme.accent;
+      ctx.lineWidth = 1.3;
+      ctx.strokeRect(cx - (baseRadius * 0.5), glyphY - (baseRadius * 0.74), baseRadius, baseRadius * 1.2);
+    } else if (nodeClass === 'mining') {
+      ctx.globalAlpha = 0.92;
+      ctx.strokeStyle = theme.accent;
+      ctx.lineWidth = 1.3;
+      ctx.beginPath();
+      ctx.moveTo(cx - (baseRadius * 0.76), glyphY - 5);
+      ctx.lineTo(cx + (baseRadius * 0.72), glyphY - 5);
+      ctx.moveTo(cx - (baseRadius * 0.62), glyphY);
+      ctx.lineTo(cx + (baseRadius * 0.58), glyphY);
+      ctx.stroke();
+    } else if (nodeClass === 'relay') {
+      ctx.globalAlpha = 0.85;
+      ctx.strokeStyle = theme.accent;
+      ctx.lineWidth = 1.2;
+      ctx.beginPath();
+      ctx.moveTo(cx - 8, glyphY + 3);
+      ctx.lineTo(cx, glyphY - 9);
+      ctx.lineTo(cx + 8, glyphY + 3);
+      ctx.stroke();
+    } else if (nodeClass === 'control') {
+      ctx.globalAlpha = 0.82;
+      ctx.strokeStyle = theme.accent;
+      ctx.lineWidth = 1.2;
+      ctx.beginPath();
+      ctx.arc(cx, glyphY - 2, 5.4, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.arc(cx, glyphY - 2, 1.6, 0, Math.PI * 2);
+      ctx.fillStyle = theme.accent;
+      ctx.fill();
+    }
+
     // Node label
     ctx.globalAlpha = 1;
-    ctx.font = '700 8px Inter, sans-serif';
+    ctx.font = '700 7px Inter, sans-serif';
     ctx.textAlign = 'center';
     ctx.fillStyle = 'rgba(0,0,0,0.7)';
-    ctx.fillText(node.id.toUpperCase(), cx + 1, cy - baseRadius - 3);
-    ctx.fillStyle = baseColor;
-    ctx.fillText(node.id.toUpperCase(), cx, cy - baseRadius - 4);
+    const nodeLabel = `${theme.label} · ${node.id.toUpperCase()}`;
+    ctx.fillText(nodeLabel, cx + 1, cy - baseRadius - 3);
+    ctx.fillStyle = theme.accent;
+    ctx.fillText(nodeLabel, cx, cy - baseRadius - 4);
+    ctx.font = '800 10px Inter, sans-serif';
+    ctx.fillStyle = theme.accent;
+    ctx.fillText(theme.icon, cx, cy + 2);
     if (status === 'unstable' || status === 'cooldown') {
       ctx.fillStyle = status === 'unstable' ? '#ff4fd8' : '#a0b0c8';
-      ctx.fillText(status === 'unstable' ? '⚠' : '⌛', cx, cy + 2);
+      ctx.fillText(status === 'unstable' ? '⚠' : '⌛', cx + (baseRadius * 0.62), cy - 1);
     }
 
     ctx.restore();
@@ -1061,6 +1206,51 @@ export function createIsoRenderer(canvas) {
       ctx.fillStyle = tile.color;
       ctx.beginPath();
       ctx.ellipse(x, y, 18 * pulse, 10 * pulse, 0, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.restore();
+  }
+
+  function drawNetworkDataLinks(originX, originY, controlNodes, now) {
+    if (!Array.isArray(controlNodes) || controlNodes.length < 2) return;
+    const byId = new Map(controlNodes.map((node) => [node.id, node]));
+    ctx.save();
+
+    for (const [fromId, toId] of NETWORK_LINKS) {
+      const from = byId.get(fromId);
+      const to = byId.get(toId);
+      if (!from || !to) continue;
+      const fromIso = toIso(from.x, from.y);
+      const toIsoPoint = toIso(to.x, to.y);
+      const x1 = originX + fromIso.x;
+      const y1 = originY + fromIso.y + HALF_TILE_H;
+      const x2 = originX + toIsoPoint.x;
+      const y2 = originY + toIsoPoint.y + HALF_TILE_H;
+      const isHot = from.status === 'unstable' || to.status === 'unstable' || from.status === 'contested' || to.status === 'contested';
+
+      ctx.globalAlpha = isHot ? 0.48 : 0.3;
+      ctx.strokeStyle = isHot ? 'rgba(255,79,216,0.9)' : 'rgba(94,242,255,0.86)';
+      ctx.lineWidth = isHot ? 2 : 1.5;
+      ctx.beginPath();
+      ctx.moveTo(x1, y1);
+      ctx.lineTo(x2, y2);
+      ctx.stroke();
+
+      ctx.globalAlpha = 0.18;
+      ctx.strokeStyle = 'rgba(210,245,255,0.8)';
+      ctx.lineWidth = 4.5;
+      ctx.beginPath();
+      ctx.moveTo(x1, y1);
+      ctx.lineTo(x2, y2);
+      ctx.stroke();
+
+      const packetPhase = ((now * DATA_PACKET_SPEED) + ((from.x + to.y) * 0.037)) % 1;
+      const px = x1 + ((x2 - x1) * packetPhase);
+      const py = y1 + ((y2 - y1) * packetPhase);
+      ctx.globalAlpha = 0.95;
+      ctx.fillStyle = isHot ? '#ff8bd9' : '#c9f7ff';
+      ctx.beginPath();
+      ctx.arc(px, py, isHot ? 2.2 : 1.8, 0, Math.PI * 2);
       ctx.fill();
     }
     ctx.restore();
@@ -1213,6 +1403,7 @@ export function createIsoRenderer(canvas) {
 
     drawRoadLightStrips(originX, originY, now, metrics);
     drawKeyTilePulse(originX, originY, metrics, now);
+    drawNetworkDataLinks(originX, originY, state.controlNodes, now);
 
     drawHoveredTile(originX, originY, state.mouse?.hoverTile, now);
     drawSelectedTile(originX, originY, state.mouse?.selectedTile, now);
