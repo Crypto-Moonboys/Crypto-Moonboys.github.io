@@ -24,6 +24,18 @@ const DUEL_DISTRICT_PRESSURE_SHIFT = 4;
 const DUEL_SAM_PRESSURE_SHIFT = 2;
 const SAM_STATE_INTERVAL_MS = 1500;
 const MAX_SYSTEM_EVENTS_PER_TICK = 4;
+const WAR_TICK_INTERVAL_MS = 250;
+const WAR_CONTEST_THRESHOLD = 18;
+const WAR_COMBAT_THRESHOLD = 30;
+const RECRUITMENT_NODE_BOOST = 1.4;
+const RECRUITMENT_SUPPORT_GAIN = 2.2;
+const RECRUITMENT_SAM_SUPPRESSION = 1.6;
+const REINFORCEMENT_THRESHOLD = 10;
+const DISTRICT_INSTABILITY_DECAY = 1.2;
+const DISTRICT_INSTABILITY_CONFLICT_GAIN = 4.5;
+const DISTRICT_INSTABILITY_SAM_GAIN = 1.5;
+const NODE_CONFLICT_DECAY = 2.5;
+const SAM_WAR_IMPACT_CLAMP = 18;
 
 const WORLD_DISTRICTS = [
   { id: 'neon-slums', name: 'Neon Slums' },
@@ -146,6 +158,11 @@ export class CityRoom extends Room {
       cooldownUntil: 0,
       lastInterferedBy: null,
       pulseUntil: 0,
+      warState: 'patrolling',
+      contestedBy: null,
+      conflictLevel: 0,
+      recruitmentLevel: 0,
+      samInstability: 0,
     }));
     const links = CONTROL_LINKS.map((link) => ({
       from: link.from.id,
@@ -174,6 +191,10 @@ export class CityRoom extends Room {
         bobSpeed: 0.8 + Math.random() * 0.8,
         interactionRadius: 1.3,
         routeCooldownMs: (i % 4) * 120,
+        combatState: 'patrolling',
+        reinforceCharge: 0,
+        recruitPower: NPC_ROLES[i % NPC_ROLES.length] === 'recruiter' ? 1.3 : 0.45,
+        retreatUntil: 0,
       });
     }
 
@@ -200,17 +221,25 @@ export class CityRoom extends Room {
         name: district.name,
         control: 45 + index * 4,
         owner: index % 2 === 0 ? 'Liberators' : 'Wardens',
+        instability: 12 + (index * 2),
+        support: {
+          Liberators: 45 + (index % 2 === 0 ? 6 : -4),
+          Wardens: 45 + (index % 2 === 1 ? 6 : -4),
+        },
       })),
       controlNodes,
       links,
       factions: {
-        Liberators: { strength: 50 },
-        Wardens: { strength: 50 },
+        Liberators: { strength: 50, warMomentum: 0, recruitment: 0, pressure: 50 },
+        Wardens: { strength: 50, warMomentum: 0, recruitment: 0, pressure: 50 },
       },
       samPhase: 0,
       samPressure: 0,
       playerInterferenceSpike: 0,
       unstableNodeCount: 0,
+      warTickMs: 0,
+      warSamPressureDelta: 0,
+      warEventCooldowns: new Map(),
     };
   }
 
@@ -222,6 +251,7 @@ export class CityRoom extends Room {
     this.snapshotTimerMs += dt;
 
     this.updateNPCs(dt);
+    this.updateWarLayer(dt);
     this.updateFactionState();
     this.updateDistricts();
     this.updateNodeInterference();
@@ -245,11 +275,15 @@ export class CityRoom extends Room {
         faction: npc.faction,
         currentNode: npc.currentNode || null,
         targetNode: npc.targetNode || null,
+        combatState: npc.combatState || 'patrolling',
+        reinforceCharge: Number(npc.reinforceCharge) || 0,
       })),
       districts: this.world.districts.map((d) => ({
         id: d.id,
         control: d.control,
         owner: d.owner,
+        instability: d.instability || 0,
+        support: d.support || { Liberators: 50, Wardens: 50 },
       })),
       controlNodes: this.world.controlNodes.map((node) => ({
         nodeId: node.id,
@@ -261,6 +295,11 @@ export class CityRoom extends Room {
         status: node.status,
         control: node.control,
         owner: node.owner,
+        warState: node.warState || 'patrolling',
+        contestedBy: node.contestedBy || null,
+        conflictLevel: node.conflictLevel || 0,
+        recruitmentLevel: node.recruitmentLevel || 0,
+        samInstability: node.samInstability || 0,
         cooldownUntil: node.cooldownUntil,
         pulseUntil: node.pulseUntil,
         sourcePlayerId: node.lastInterferedBy,
@@ -324,6 +363,14 @@ export class CityRoom extends Room {
     if (this.systemEventsThisTick >= MAX_SYSTEM_EVENTS_PER_TICK) return;
     this.systemEventsThisTick += 1;
     this.broadcast('system', { message });
+  }
+
+  emitWarEvent(key, message, cooldownMs = 3000) {
+    const now = Date.now();
+    const nextAllowed = this.world.warEventCooldowns.get(key) || 0;
+    if (nextAllowed > now) return;
+    this.world.warEventCooldowns.set(key, now + cooldownMs);
+    this.emitSystemEvent(message);
   }
 
   updateNPCs(dt) {
@@ -395,6 +442,173 @@ export class CityRoom extends Room {
     }
   }
 
+  buildNodePresence() {
+    const byNode = new Map(this.world.controlNodes.map((node) => [node.id, {
+      Liberators: 0,
+      Wardens: 0,
+      recruiterLiberators: 0,
+      recruiterWardens: 0,
+    }]));
+    for (const npc of this.world.npcs) {
+      if (!npc || npc.mode !== 'active' || !byNode.has(npc.currentNode)) continue;
+      if (npc.faction !== 'Liberators' && npc.faction !== 'Wardens') continue;
+      const slot = byNode.get(npc.currentNode);
+      slot[npc.faction] += 1;
+      if (npc.role === 'recruiter') {
+        const recruiterKey = npc.faction === 'Liberators' ? 'recruiterLiberators' : 'recruiterWardens';
+        slot[recruiterKey] += 1;
+      }
+    }
+    return byNode;
+  }
+
+  updateWarLayer(dt) {
+    this.world.warTickMs += dt;
+    if (this.world.warTickMs < WAR_TICK_INTERVAL_MS) return;
+    const warDt = this.world.warTickMs / 1000;
+    this.world.warTickMs = 0;
+    const presence = this.buildNodePresence();
+    const districtWar = new Map(this.world.districts.map((district) => [district.id, {
+      conflict: 0,
+      liberatorPressure: 0,
+      wardenPressure: 0,
+      samPressure: 0,
+    }]));
+
+    for (const node of this.world.controlNodes) {
+      const slot = presence.get(node.id) || {};
+      const lCount = slot.Liberators || 0;
+      const wCount = slot.Wardens || 0;
+      const district = this.world.districts.find((entry) => entry.id === node.districtId);
+      const districtStats = districtWar.get(node.districtId);
+      const pressureGap = lCount - wCount;
+      const totalPressure = lCount + wCount;
+      const nodeIsContested = lCount > 0 && wCount > 0;
+      const previousState = node.warState || 'patrolling';
+      node.contestedBy = nodeIsContested ? 'Both' : pressureGap > 0 ? 'Liberators' : pressureGap < 0 ? 'Wardens' : null;
+
+      if (nodeIsContested) {
+        node.warState = Math.abs(pressureGap) <= 1 ? 'fighting' : 'contesting';
+        node.conflictLevel = Math.min(100, (node.conflictLevel || 0) + ((2 + totalPressure) * warDt * 4));
+        node.status = node.status === 'unstable' ? node.status : 'contested';
+        node.interference = Math.min(100, node.interference + (totalPressure * 0.35));
+        districtStats.conflict += node.conflictLevel;
+        this.emitWarEvent(`clash:${node.id}`, `⚔️ Faction clash at ${node.id} (${node.districtId})`);
+      } else {
+        node.conflictLevel = Math.max(0, (node.conflictLevel || 0) - (NODE_CONFLICT_DECAY * warDt * 4));
+      }
+
+      if (pressureGap > 0) {
+        node.control = Math.min(100, node.control + (pressureGap * warDt * 5));
+        districtStats.liberatorPressure += pressureGap;
+      } else if (pressureGap < 0) {
+        node.control = Math.max(-100, node.control + (pressureGap * warDt * 5));
+        districtStats.wardenPressure += Math.abs(pressureGap);
+      }
+
+      const recruiterCount = (slot.recruiterLiberators || 0) + (slot.recruiterWardens || 0);
+      if (recruiterCount > 0 && district) {
+        const lRecruit = slot.recruiterLiberators || 0;
+        const wRecruit = slot.recruiterWardens || 0;
+        const samPenalty = (this.world.samPressure / 100) * RECRUITMENT_SAM_SUPPRESSION;
+        const districtSupport = district.support || { Liberators: 50, Wardens: 50 };
+        const deltaLiberators = Math.max(0, (lRecruit * RECRUITMENT_SUPPORT_GAIN) - samPenalty);
+        const deltaWardens = Math.max(0, (wRecruit * RECRUITMENT_SUPPORT_GAIN) - samPenalty);
+        districtSupport.Liberators = Math.max(0, Math.min(100, districtSupport.Liberators + deltaLiberators - (deltaWardens * 0.4)));
+        districtSupport.Wardens = Math.max(0, Math.min(100, districtSupport.Wardens + deltaWardens - (deltaLiberators * 0.4)));
+        district.support = districtSupport;
+        node.recruitmentLevel = Math.max(0, Math.min(100, (node.recruitmentLevel || 0) + ((deltaLiberators + deltaWardens) * RECRUITMENT_NODE_BOOST)));
+        if (deltaLiberators > 0 || deltaWardens > 0) {
+          const recruitedFaction = deltaLiberators >= deltaWardens ? 'Liberators' : 'Wardens';
+          this.emitWarEvent(
+            `recruit:${node.id}:${recruitedFaction}`,
+            `🗣️ Recruiter secured support at ${district.name} for ${recruitedFaction}`,
+            4200,
+          );
+        } else {
+          this.emitWarEvent(`recruit-blocked:${node.id}`, `🧱 SAM pressure disrupted recruitment at ${node.id}`, 5000);
+        }
+      } else {
+        node.recruitmentLevel = Math.max(0, (node.recruitmentLevel || 0) - (warDt * 5));
+      }
+
+      const nodeSamPush = ((node.conflictLevel || 0) * 0.01) + ((node.interference || 0) * 0.02);
+      node.samInstability = Math.max(0, Math.min(100, (node.samInstability || 0) + nodeSamPush - (warDt * 2)));
+      if (node.samInstability >= 45) {
+        districtStats.samPressure += 1;
+      }
+
+      if (Math.abs(node.control) >= WAR_COMBAT_THRESHOLD && node.conflictLevel >= WAR_COMBAT_THRESHOLD) {
+        node.warState = 'fighting';
+      } else if (node.recruitmentLevel >= REINFORCEMENT_THRESHOLD) {
+        node.warState = 'reinforcing';
+      } else if ((node.conflictLevel || 0) >= WAR_CONTEST_THRESHOLD) {
+        node.warState = 'contesting';
+      } else if ((node.samInstability || 0) >= 50) {
+        node.warState = 'retreating';
+      } else {
+        node.warState = 'patrolling';
+      }
+
+      if (previousState !== node.warState && node.warState === 'reinforcing') {
+        this.emitWarEvent(`reinforce:${node.id}`, `🚚 Reinforcement convoy arrived at ${node.id}`);
+      }
+      if (previousState !== node.warState && node.warState === 'retreating') {
+        this.emitWarEvent(`retreat:${node.id}`, `🏃 Units retreating from ${node.id} under SAM pressure`);
+      }
+    }
+
+    for (const npc of this.world.npcs) {
+      if (!npc || npc.mode !== 'active') continue;
+      const node = this.world.nodeLookup.get(npc.currentNode);
+      if (!node) continue;
+      npc.combatState = node.warState || 'patrolling';
+      const factionBoost = node.contestedBy === npc.faction ? 1.4 : 0.65;
+      npc.reinforceCharge = Math.max(0, Math.min(16, (npc.reinforceCharge || 0) + (npc.recruitPower * factionBoost * warDt)));
+      if (npc.reinforceCharge >= REINFORCEMENT_THRESHOLD && (node.warState === 'contesting' || node.warState === 'fighting')) {
+        const bonus = npc.faction === 'Liberators' ? 3 : -3;
+        node.control = Math.max(-100, Math.min(100, node.control + bonus));
+        npc.reinforceCharge = 0;
+      }
+    }
+
+    let samDelta = 0;
+    for (const district of this.world.districts) {
+      const stats = districtWar.get(district.id) || {};
+      const netPressure = (stats.liberatorPressure || 0) - (stats.wardenPressure || 0);
+      const conflictWeight = (stats.conflict || 0) * 0.004;
+      const supportGap = (district.support?.Liberators || 50) - (district.support?.Wardens || 50);
+      district.instability = Math.max(
+        0,
+        Math.min(
+          100,
+          (district.instability || 0)
+            + conflictWeight * DISTRICT_INSTABILITY_CONFLICT_GAIN
+            + (stats.samPressure || 0) * DISTRICT_INSTABILITY_SAM_GAIN
+            - DISTRICT_INSTABILITY_DECAY,
+        ),
+      );
+      district.control = Math.max(
+        0,
+        Math.min(100, district.control + (netPressure * 0.5) + (supportGap * 0.06) - ((district.instability - 30) * 0.03)),
+      );
+
+      if (district.control >= DISTRICT_CAPTURE_THRESHOLD) district.owner = 'Liberators';
+      else if (district.control <= (100 - DISTRICT_CAPTURE_THRESHOLD)) district.owner = 'Wardens';
+      else district.owner = 'Contested';
+
+      if (district.owner === 'Contested' && district.instability >= 68) {
+        samDelta += 2.4;
+        this.emitWarEvent(`district-collapse:${district.id}`, `🌪️ ${district.name} stability collapsing under active conflict`, 4500);
+      } else if (district.owner !== 'Contested' && district.instability <= 26) {
+        samDelta -= 1.6;
+        this.emitWarEvent(`district-hold:${district.id}:${district.owner}`, `🛡️ ${district.name} stabilizing under ${district.owner}`, 4500);
+      }
+    }
+
+    this.world.warSamPressureDelta = Math.max(-SAM_WAR_IMPACT_CLAMP, Math.min(SAM_WAR_IMPACT_CLAMP, samDelta));
+  }
+
   updateDistricts() {
     if (this.districtTimerMs < DISTRICT_DRIFT_INTERVAL_MS) return;
     this.districtTimerMs = 0;
@@ -409,16 +623,26 @@ export class CityRoom extends Room {
     }
 
     for (const district of this.world.districts) {
+      const previousOwner = district.owner;
       const count = districtNodeCounts.get(district.id) || 1;
       const sum = districtNodeTotals.get(district.id) || 0;
       const normalized = Math.max(-100, Math.min(100, sum / count));
-      district.control = Math.max(0, Math.min(100, 50 + normalized));
+      const instabilityPenalty = ((district.instability || 0) - 35) * 0.12;
+      const supportGap = (district.support?.Liberators || 50) - (district.support?.Wardens || 50);
+      district.control = Math.max(0, Math.min(100, 50 + normalized + (supportGap * 0.14) - instabilityPenalty));
       if (district.control >= DISTRICT_CAPTURE_THRESHOLD) {
         district.owner = 'Liberators';
       } else if (district.control <= (100 - DISTRICT_CAPTURE_THRESHOLD)) {
         district.owner = 'Wardens';
       } else {
         district.owner = 'Contested';
+      }
+      if (previousOwner !== district.owner) {
+        if (district.owner === 'Liberators' || district.owner === 'Wardens') {
+          this.emitWarEvent(`district-flip:${district.id}:${district.owner}`, `🏳️ ${district.name} fell to ${district.owner}`, 3000);
+        } else {
+          this.emitWarEvent(`district-contested:${district.id}`, `⚠️ ${district.name} is now contested`, 3000);
+        }
       }
     }
   }
@@ -430,13 +654,17 @@ export class CityRoom extends Room {
     const unstablePressure = this.world.unstableNodeCount * 1.9;
     const interferencePressure = this.world.playerInterferenceSpike * 0.6;
     const factionPressure = factionGap * 0.35;
-    const pressureRise = unstablePressure + interferencePressure + factionPressure;
+    const warPressure = this.world.warSamPressureDelta || 0;
+    const pressureRise = unstablePressure + interferencePressure + factionPressure + warPressure;
     const pressureDecay = 4;
     this.world.samPressure = Math.max(0, Math.min(140, this.world.samPressure + pressureRise - pressureDecay));
     this.world.playerInterferenceSpike = Math.max(0, this.world.playerInterferenceSpike - 4);
+    this.world.warSamPressureDelta = 0;
 
     if (pressureRise >= 14) {
       this.emitSystemEvent(`🚨 SAM pressure spike detected (+${Math.round(pressureRise)})`);
+    } else if (warPressure <= -3) {
+      this.emitWarEvent('sam-suppressed', '🧯 Coordinated faction defense suppressed local SAM spread', 4000);
     }
 
     if (this.world.samPressure >= SAM_PRESSURE_PHASE_THRESHOLD) {
@@ -463,8 +691,13 @@ export class CityRoom extends Room {
       }
       node.pulseUntil = 0;
       node.interference = Math.max(0, node.interference - NODE_INTERFERENCE_DECAY);
+      node.samInstability = Math.max(0, (node.samInstability || 0) - 1.3);
+      node.recruitmentLevel = Math.max(0, (node.recruitmentLevel || 0) - 0.8);
       if (node.interference >= NODE_UNSTABLE_THRESHOLD) {
         unstableCount += 1;
+      }
+      if ((node.conflictLevel || 0) <= 0 && node.status === 'stable') {
+        node.warState = 'patrolling';
       }
       if (node.interference === 0 && Math.abs(node.control) < 5) {
         node.owner = null;
@@ -494,12 +727,30 @@ export class CityRoom extends Room {
   updateFactionState() {
     let liberatorNodes = 0;
     let wardenNodes = 0;
+    let liberatorRecruitment = 0;
+    let wardenRecruitment = 0;
+    let contestedNodes = 0;
     for (const node of this.world.controlNodes) {
       if (node.owner === 'Liberators') liberatorNodes += 1;
       if (node.owner === 'Wardens') wardenNodes += 1;
+      if (node.contestedBy === 'Both') contestedNodes += 1;
+      if ((node.contestedBy === 'Liberators' || node.owner === 'Liberators') && (node.recruitmentLevel || 0) > 0) {
+        liberatorRecruitment += node.recruitmentLevel;
+      }
+      if ((node.contestedBy === 'Wardens' || node.owner === 'Wardens') && (node.recruitmentLevel || 0) > 0) {
+        wardenRecruitment += node.recruitmentLevel;
+      }
     }
-    this.world.factions.Liberators.strength = Math.max(0, Math.min(100, 50 + (liberatorNodes - wardenNodes)));
-    this.world.factions.Wardens.strength = Math.max(0, Math.min(100, 50 + (wardenNodes - liberatorNodes)));
+    const nodeDelta = liberatorNodes - wardenNodes;
+    const recruitmentDelta = (liberatorRecruitment - wardenRecruitment) * 0.04;
+    this.world.factions.Liberators.strength = Math.max(0, Math.min(100, 50 + nodeDelta + recruitmentDelta));
+    this.world.factions.Wardens.strength = Math.max(0, Math.min(100, 50 - nodeDelta - recruitmentDelta));
+    this.world.factions.Liberators.recruitment = Math.round(liberatorRecruitment);
+    this.world.factions.Wardens.recruitment = Math.round(wardenRecruitment);
+    this.world.factions.Liberators.warMomentum = Math.round((liberatorNodes * 2) + recruitmentDelta - contestedNodes);
+    this.world.factions.Wardens.warMomentum = Math.round((wardenNodes * 2) - recruitmentDelta - contestedNodes);
+    this.world.factions.Liberators.pressure = Math.round(Math.max(0, Math.min(100, 50 + nodeDelta - this.world.samPressure * 0.2)));
+    this.world.factions.Wardens.pressure = Math.round(Math.max(0, Math.min(100, 50 - nodeDelta - this.world.samPressure * 0.2)));
     if (Math.abs(liberatorNodes - wardenNodes) >= 8 && this.worldTickCount % 20 === 0) {
       const leadingFaction = liberatorNodes > wardenNodes ? 'Liberators' : 'Wardens';
       this.emitSystemEvent(`⚔️ Faction clash escalates · ${leadingFaction} pressing advantage`);
@@ -520,6 +771,9 @@ export class CityRoom extends Room {
     node.pulseUntil = now + NODE_PULSE_DURATION_MS;
     node.cooldownUntil = now + NODE_COOLDOWN_MS;
     node.status = node.interference >= NODE_UNSTABLE_THRESHOLD ? 'unstable' : 'contested';
+    node.warState = node.status === 'unstable' ? 'retreating' : 'contesting';
+    node.conflictLevel = Math.max(node.conflictLevel || 0, 22);
+    node.samInstability = Math.max(node.samInstability || 0, 30);
     if (node.interference >= NODE_UNSTABLE_THRESHOLD) {
       node.owner = 'UNSTABLE';
     }
@@ -540,6 +794,11 @@ export class CityRoom extends Room {
       status: node.status,
       control: node.control,
       owner: node.owner,
+      warState: node.warState,
+      conflictLevel: node.conflictLevel,
+      recruitmentLevel: node.recruitmentLevel,
+      contestedBy: node.contestedBy,
+      samInstability: node.samInstability,
       cooldownUntil: node.cooldownUntil,
       pulseUntil: node.pulseUntil,
       sourcePlayerId: client.sessionId,

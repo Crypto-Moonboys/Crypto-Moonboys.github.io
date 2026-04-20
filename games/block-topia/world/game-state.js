@@ -163,6 +163,11 @@ export function createGameState(bundle) {
       cooldownUntil: 0,
       lastInterferedBy: null,
       pulseUntil: 0,
+      warState: 'patrolling',
+      contestedBy: null,
+      conflictLevel: 0,
+      recruitmentLevel: 0,
+      samInstability: 0,
     })),
     quests: {
       model: bundle.questModel,

@@ -9,6 +9,12 @@ function clampPercent(value) {
   return Math.max(0, Math.min(100, number));
 }
 
+function clampSignedPercent(value) {
+  const number = Number(value);
+  if (!Number.isFinite(number)) return 0;
+  return Math.max(-100, Math.min(100, number));
+}
+
 function sanitizeStatus(value) {
   if (value === 'contested' || value === 'unstable' || value === 'cooldown') {
     return value;
@@ -66,8 +72,13 @@ export function createNodeInterferenceSystem(state) {
       node.lastInterferedBy = payload.sourcePlayerId ?? payload.lastInterferedBy ?? node.lastInterferedBy;
     }
     if (payload.interference !== undefined) node.interference = clampPercent(payload.interference);
-    if (payload.control !== undefined) node.control = clampPercent(payload.control);
+    if (payload.control !== undefined) node.control = clampSignedPercent(payload.control);
     if (payload.status !== undefined) node.status = sanitizeStatus(payload.status);
+    if (payload.warState !== undefined) node.warState = String(payload.warState || 'patrolling');
+    if (payload.contestedBy !== undefined) node.contestedBy = payload.contestedBy;
+    if (payload.conflictLevel !== undefined) node.conflictLevel = clampPercent(payload.conflictLevel);
+    if (payload.recruitmentLevel !== undefined) node.recruitmentLevel = clampPercent(payload.recruitmentLevel);
+    if (payload.samInstability !== undefined) node.samInstability = clampPercent(payload.samInstability);
     if (payload.cooldownUntil !== undefined) {
       node.cooldownUntil = Number(payload.cooldownUntil) || 0;
     }
@@ -90,6 +101,11 @@ export function createNodeInterferenceSystem(state) {
       control: node.control,
       owner: node.owner,
       status: node.status,
+      warState: node.warState || 'patrolling',
+      contestedBy: node.contestedBy || null,
+      conflictLevel: Number(node.conflictLevel) || 0,
+      recruitmentLevel: Number(node.recruitmentLevel) || 0,
+      samInstability: Number(node.samInstability) || 0,
       cooldownUntil: node.cooldownUntil,
       sourcePlayerId: payload.sourcePlayerId || node.lastInterferedBy || '',
       samPressureDelta: Number(payload.samPressureDelta) || 0,
@@ -101,7 +117,11 @@ export function createNodeInterferenceSystem(state) {
     };
 
     eventPayload.feedLines.push(`⚡ Node ${node.id.toUpperCase()} interference confirmed`);
-    if (eventPayload.status === 'unstable') {
+    if (eventPayload.warState === 'fighting') {
+      eventPayload.feedLines.push('⚔️ Active faction fighting registered at this node');
+    } else if (eventPayload.warState === 'reinforcing') {
+      eventPayload.feedLines.push('🚚 Reinforcement traffic detected on the corridor');
+    } else if (eventPayload.status === 'unstable') {
       eventPayload.feedLines.push('📡 Network instability escalating around control lanes');
     } else if (eventPayload.status === 'cooldown') {
       eventPayload.feedLines.push('🧯 Node stabilization protocol active');
