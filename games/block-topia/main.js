@@ -68,10 +68,18 @@ const MOUSE_DRAG_DOUBLE_CLICK_SUPPRESS_MS = 400;
 const DEFAULT_AI_ENDPOINT = 'https://api.openai.com/v1/responses';
 const FORCE_SYNC_GATE_FALLBACK_URL = 'https://crypto-moonboys.github.io/gkniftyheads-incubator.html';
 const MINI_GAME_TYPES = new Set(['outbreak', 'firewall', 'router', 'circuit']);
+const MICRO_NOTIFY_DEDUPE_WINDOW_MS = 2600;
+const MICRO_NOTIFY_MAX_ITEMS = 5;
+const microNotifyCache = new Map();
 
 function setBodyStateClass(name, enabled) {
   if (!document || !document.body) return;
   document.body.classList.toggle(name, !!enabled);
+}
+
+function dispatchUiState(name, detail = {}) {
+  if (typeof window === 'undefined' || typeof window.dispatchEvent !== 'function') return;
+  window.dispatchEvent(new CustomEvent(name, { detail }));
 }
 
 function ensureMicroFeed() {
@@ -87,11 +95,26 @@ function ensureMicroFeed() {
 
 function pushMicroNotification(message, tone = 'info') {
   if (!message) return;
+  const text = String(message).trim();
+  if (!text) return;
+  const key = `${tone}::${text.toLowerCase()}`;
+  const now = Date.now();
+  const prev = microNotifyCache.get(key) || 0;
+  if ((now - prev) < MICRO_NOTIFY_DEDUPE_WINDOW_MS) return;
+  microNotifyCache.set(key, now);
+  if (microNotifyCache.size > 140) {
+    for (const [cacheKey, ts] of microNotifyCache.entries()) {
+      if ((now - ts) > 70000) microNotifyCache.delete(cacheKey);
+    }
+  }
   const feed = ensureMicroFeed();
   const item = document.createElement('div');
   item.className = `micro-note micro-note--${tone}`;
-  item.textContent = String(message);
+  item.textContent = text;
   feed.prepend(item);
+  while (feed.children.length > MICRO_NOTIFY_MAX_ITEMS) {
+    feed.lastElementChild?.remove();
+  }
   requestAnimationFrame(() => item.classList.add('is-live'));
   window.setTimeout(() => {
     item.classList.remove('is-live');
@@ -102,6 +125,7 @@ function pushMicroNotification(message, tone = 'info') {
 
 function pulseWorldConflict(ms = 2400) {
   setBodyStateClass('conflict-nearby', true);
+  dispatchUiState('moonboys:world-state', { conflictNearby: true, conflictActive: true, durationMs: Math.max(600, Number(ms) || 2400), ts: Date.now() });
   window.setTimeout(() => setBodyStateClass('conflict-nearby', false), Math.max(600, Number(ms) || 2400));
 }
 
@@ -117,6 +141,7 @@ function updateReactiveGridState(state) {
   setBodyStateClass('conflict-active', inConflict);
   setBodyStateClass('sync-live', syncReady);
   setBodyStateClass('sync-error', !syncReady);
+  dispatchUiState('moonboys:world-state', { conflictActive: inConflict, syncReady, speed, intensity, ts: now });
 }
 
 const DEFAULT_RPG_EFFECTS = {
