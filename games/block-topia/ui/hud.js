@@ -7,6 +7,7 @@ const MAX_LOG_ENTRIES = 50;
 const FEED_STAGGER_MS = 210;
 const FEED_BURST_GRACE_MS = 120;
 const FEED_REPEAT_SUPPRESS_MS = 7000;
+const LEFT_FEED_AUTO_SCROLL_MS = 1200;
 
 const STREAM_BY_TYPE = {
   combat: 'left',
@@ -65,6 +66,18 @@ export function createHud(doc) {
   let lastFeedSignature = '';
   let lastFeedAt = 0;
 
+  let leftFeedTicker = null;
+
+  function startLeftFeedTicker() {
+    if (leftFeedTicker || !feedLeft) return;
+    leftFeedTicker = setInterval(() => {
+      if (feedLeft.children.length < 2) return;
+      const first = feedLeft.firstElementChild;
+      if (first) feedLeft.appendChild(first);
+    }, LEFT_FEED_AUTO_SCROLL_MS);
+  }
+
+
   function titleFromLevel(level) {
     if (level >= 16) return 'District Sovereign';
     if (level >= 12) return 'Signal Warlord';
@@ -93,6 +106,7 @@ export function createHud(doc) {
       entry.style.opacity = opacity.toFixed(3);
     });
     list.scrollTop = list.scrollHeight;
+    if (stream === 'left') startLeftFeedTicker();
   }
 
   function pushLog(stream, text) {

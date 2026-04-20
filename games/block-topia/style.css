@@ -10,7 +10,7 @@ html, body {
   width: 100%;
   height: 100%;
   overflow: hidden;
-  background: #050814;
+  background: #000000;
   color: #eaf6ff;
   font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
 }
@@ -20,10 +20,10 @@ html, body {
   width: 100vw;
   height: 100vh;
   display: block;
-  background: radial-gradient(circle at top, #111a36 0%, #050814 60%);
+  background: #000000;
   transition: background 1.2s ease, filter 0.45s ease;
 }
-#world-canvas.phase-night { background: radial-gradient(circle at top, #1b0a30 0%, #0d0520 60%); }
+#world-canvas.phase-night { background: #000000; }
 
 #entry-identity {
   position: fixed;
@@ -89,7 +89,7 @@ html, body {
   text-transform: uppercase;
   color: rgba(174, 238, 255, 0.7);
 }
-.stream ul { list-style: none; margin: 0; padding: 8px 9px 7px; max-height: inherit; overflow: auto; }
+.stream ul { list-style: none; margin: 0; padding: 8px 9px 7px; max-height: inherit; overflow: hidden; }
 .stream-left { left: 8px; top: 80px; }
 .stream-right { right: 8px; top: 76px; }
 .stream-bottom {
@@ -226,3 +226,5 @@ html, body {
 }
 
 .hidden { display: none !important; }
+
+*::-webkit-scrollbar { width: 0; height: 0; }
