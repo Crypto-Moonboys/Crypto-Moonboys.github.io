@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-04-20T15:17:30.992Z",
+  "generatedAt": "2026-04-20T16:41:10.369Z",
   "mode": "live-ai",
   "sourceHealth": {
     "coingecko-global": "ok",
@@ -11,79 +11,84 @@
   "signalCount": 5,
   "signals": [
     {
-      "id": "signal-1776698250991-1",
+      "id": "signal-1776703270368-1",
       "lane": "world",
       "priority": 4,
-      "ttlMinutes": 30,
-      "npcLine": "Crypto tides turn cold; city vaults tighten.",
-      "questPulse": "Market dives, shadow ops seek hidden gains.",
-      "worldFeed": "Asset chains fracture, trust erodes in neon haze.",
-      "clueEvent": "Vault logs reveal sudden drop in cryptonode sync.",
+      "ttlMinutes": 45,
+      "npcLine": "Market pulse dropping, watchers report rising dread in neon districts.",
+      "questPulse": "Navigate unstable crypto flows; avoid traps in dark net shadows.",
+      "worldFeed": "Crypto tides ebbing low; fear seeps into trading holo-nodes.",
+      "clueEvent": "Data leak hints at shadow syndicate manipulating tokens.",
       "tags": [
-        "market_decline",
-        "crypto_fear"
+        "market-fall",
+        "fear",
+        "crypto"
       ],
-      "expiresAt": "2026-04-20T15:47:30.991Z"
+      "expiresAt": "2026-04-20T17:26:10.368Z"
     },
     {
-      "id": "signal-1776698250992-2",
+      "id": "signal-1776703270368-2",
       "lane": "ops",
       "priority": 3,
-      "ttlMinutes": 20,
-      "npcLine": "RAVE spikes; underground rave techruns spike alerts.",
-      "questPulse": "Scramble cryptic nodes linked to AAVE and RAVE spikes.",
-      "worldFeed": "Ghost signals pulse from abandoned data nets.",
-      "clueEvent": "Encrypted chatter glitched near forgotten subnet hubs.",
+      "ttlMinutes": 30,
+      "npcLine": "RAVE and ASTEROID tokens spike weirdly; keep eyes peeled.",
+      "questPulse": "Intercept encrypted orders targeting volatile assets now.",
+      "worldFeed": "Unusual activity detected on fringe altcoins, risk high.",
+      "clueEvent": "Encrypted chatter reveals pump plans in forbidden sectors.",
       "tags": [
-        "trend_rave",
-        "crypto_ops"
+        "altcoin-spike",
+        "intel",
+        "volatility"
       ],
-      "expiresAt": "2026-04-20T15:37:30.992Z"
+      "expiresAt": "2026-04-20T17:11:10.368Z"
     },
     {
-      "id": "signal-1776698250992-3",
+      "id": "signal-1776703270369-3",
       "lane": "clue",
-      "priority": 2,
-      "ttlMinutes": 45,
-      "npcLine": "WOJAK codes flicker; memes mutate into danger signs.",
-      "questPulse": "Decode cryptic memestream spikes for hidden threats.",
-      "worldFeed": "Memes gone viral, harboring deeper viral traces.",
-      "clueEvent": "Flash crashes sync with memestream anomalies.",
-      "tags": [
-        "memes",
-        "market_clues"
-      ],
-      "expiresAt": "2026-04-20T16:02:30.992Z"
-    },
-    {
-      "id": "signal-1776698250992-4",
-      "lane": "quest",
       "priority": 5,
-      "ttlMinutes": 15,
-      "npcLine": "PENGU packs mobilize; icy fronts threaten digital borders.",
-      "questPulse": "Intercept PENGU payloads before market chills spread.",
-      "worldFeed": "Cold chain hacks target cryptobanks' weak nodes.",
-      "clueEvent": "Frost-bitten data trails point to rogue actors.",
+      "ttlMinutes": 60,
+      "npcLine": "ZRO and PENGU tokens show strange signatures; probe deeper.",
+      "questPulse": "Decrypt unknown contracts; potential for hidden sabotage.",
+      "worldFeed": "Fragmented signals suggest covert market manipulation underway.",
+      "clueEvent": "Blend of old code vectors in token transaction logs.",
       "tags": [
-        "attack_alert",
-        "pengu"
+        "covert-op",
+        "manipulation",
+        "decryption"
       ],
-      "expiresAt": "2026-04-20T15:32:30.992Z"
+      "expiresAt": "2026-04-20T17:41:10.369Z"
     },
     {
-      "id": "signal-1776698250992-5",
-      "lane": "npc",
-      "priority": 1,
-      "ttlMinutes": 60,
-      "npcLine": "ZRO whispers hint at zero-sum plays beneath neon fog.",
-      "questPulse": "Track ZRO token shadows in the fading market glow.",
-      "worldFeed": "Silent exchanges bubble with unspoken tension.",
-      "clueEvent": "Zero-value spikes forecast cryptic market recalibrations.",
+      "id": "signal-1776703270369-4",
+      "lane": "quest",
+      "priority": 2,
+      "ttlMinutes": 20,
+      "npcLine": "Trending tokens flicker on radar; chase the rising waves.",
+      "questPulse": "Hunt new leads in cyber markets before fear spikes again.",
+      "worldFeed": "Sentiment remains low; quick moves needed to capitalize.",
+      "clueEvent": "Shifts in sentiment trickle through underground social grids.",
       "tags": [
-        "zero_sum",
-        "quiet_activity"
+        "trend-chase",
+        "sentiment",
+        "timing"
       ],
-      "expiresAt": "2026-04-20T16:17:30.992Z"
+      "expiresAt": "2026-04-20T17:01:10.369Z"
+    },
+    {
+      "id": "signal-1776703270369-5",
+      "lane": "npc",
+      "priority": 3,
+      "ttlMinutes": 50,
+      "npcLine": "Whispers from market ghosts: many tokens swim in dark currents.",
+      "questPulse": "Track phantom wallets leaking misinformation for syndicate gains.",
+      "worldFeed": "Crypto underworld thrives on chaos; fear feeds profits.",
+      "clueEvent": "Hidden wallet trails fade into ghost protocols.",
+      "tags": [
+        "ghost-wallets",
+        "misinfo",
+        "underworld"
+      ],
+      "expiresAt": "2026-04-20T17:31:10.369Z"
     }
   ]
 }
