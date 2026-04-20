@@ -213,7 +213,7 @@
               // Step 1 complete: save the Telegram identity (tier becomes 'telegram').
               // Step 2 (/gklink via the Telegram bot) is still required to become
               // competition-active.  Do NOT call setTelegramLinked() here.
-              window.MOONBOYS_IDENTITY.saveTelegramIdentity(id.telegram_id, id.display_name);
+              window.MOONBOYS_IDENTITY.saveTelegramIdentity(id.telegram_id, id.display_name, user);
             }
             // Prefill every comment form visible on the page
             Array.prototype.forEach.call(

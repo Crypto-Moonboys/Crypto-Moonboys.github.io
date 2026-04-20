@@ -44,6 +44,7 @@
   var LS_TG_ID     = 'moonboys_tg_id';
   var LS_TG_NAME   = 'moonboys_tg_name';
   var LS_TG_LINKED = 'moonboys_tg_linked';
+  var LS_TG_AUTH   = 'moonboys_tg_auth';
   var MODAL_ID     = 'tg-sync-gate-modal';
   var STYLE_ID     = 'tg-sync-gate-styles';
 
@@ -65,6 +66,17 @@
 
   function getTelegramName() {
     return lsGet(LS_TG_NAME);
+  }
+
+  function getTelegramAuth() {
+    var raw = lsGet(LS_TG_AUTH);
+    if (!raw) return null;
+    try {
+      var parsed = JSON.parse(raw);
+      return parsed && typeof parsed === 'object' ? parsed : null;
+    } catch {
+      return null;
+    }
   }
 
   /**
@@ -91,9 +103,21 @@
    * Persist a verified Telegram identity after a successful /telegram/auth flow.
    * Called by comments.js after the Telegram Login Widget callback succeeds.
    */
-  function saveTelegramIdentity(telegramId, displayName) {
+  function saveTelegramIdentity(telegramId, displayName, authPayload) {
     if (telegramId) lsSet(LS_TG_ID, telegramId);
     if (displayName) lsSet(LS_TG_NAME, displayName);
+    if (authPayload && typeof authPayload === 'object') {
+      var safeAuth = {
+        id:         authPayload.id || telegramId || null,
+        first_name: authPayload.first_name || null,
+        last_name:  authPayload.last_name || null,
+        username:   authPayload.username || null,
+        photo_url:  authPayload.photo_url || null,
+        auth_date:  authPayload.auth_date || null,
+        hash:       authPayload.hash || null,
+      };
+      lsSet(LS_TG_AUTH, JSON.stringify(safeAuth));
+    }
   }
 
   /**
@@ -385,6 +409,8 @@
     getTelegramId:        getTelegramId,
     /** Telegram display name or null */
     getTelegramName:      getTelegramName,
+    /** Last verified Telegram auth payload or null */
+    getTelegramAuth:      getTelegramAuth,
     /** Whether the bot link flow has been completed (competition-active) */
     isTelegramLinked:     isTelegramLinked,
     /** Mark bot link as completed (call after successful /gklink one-time link flow).

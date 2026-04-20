@@ -1,4 +1,5 @@
 import { ArcadeMeta } from '/js/arcade-meta-system.js';
+import { ArcadeSync } from '/js/arcade-sync.js';
 import '/js/arcade-meta-ui.js';
 import '/js/arcade-retention-engine.js';
 
@@ -70,6 +71,7 @@ export async function submitScore(player, score, game = "global") {
   }
   // Normalise to a safe integer (floor to drop any floating-point noise).
   score = Math.floor(score);
+  const gameKey = String(game || "global").toLowerCase();
 
   const linked = isTelegramLinked();
   if (!linked) {
@@ -103,6 +105,13 @@ export async function submitScore(player, score, game = "global") {
       } else {
         shouldSyncMeta = true;
         emitTron("score", { game, score, player: resolvedPlayer, source: "leaderboard-client" });
+        if (gameKey === "blocktopia") {
+          try {
+            await ArcadeSync.syncBlockTopiaProgressionOnAcceptedScore(score, gameKey);
+          } catch (err) {
+            console.error("[leaderboard-client] Block Topia progression sync failed:", err);
+          }
+        }
       }
     } catch (err) {
       console.error("[leaderboard-client] Score submission failed:", err);
