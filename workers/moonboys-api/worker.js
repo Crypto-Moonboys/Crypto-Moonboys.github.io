@@ -60,6 +60,18 @@ const BLOCKTOPIA_ARCADE_MAX_REWARDS_PER_GAME_PER_HOUR = 5;
 const BLOCKTOPIA_MAX_SCORE_SANITY = 1_000_000_000;
 const TELEGRAM_SYNC_XP_MULTIPLIER = 1.1;
 
+const UPGRADE_MAX_LEVEL = 10;
+const UPGRADE_EFFECT_CAP = 0.5;
+const BLOCKTOPIA_ENTRY_BASE_COST = 10;
+const BLOCKTOPIA_ENTRY_TIER_STEP = 2;
+const BLOCKTOPIA_UPGRADES = {
+  efficiency: { column: 'upgrade_efficiency', baseCost: 8 },
+  signal: { column: 'upgrade_signal', baseCost: 10 },
+  defense: { column: 'upgrade_defense', baseCost: 12 },
+  gem: { column: 'upgrade_gem', baseCost: 9 },
+  npc: { column: 'upgrade_npc', baseCost: 11 },
+};
+
 const CORS_HEADERS = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
@@ -82,6 +94,39 @@ function err(message, status = 400) {
 function clamp(value, min, max) {
   return Math.min(max, Math.max(min, value));
 }
+
+function sanitizeUpgradeLevel(rawLevel) {
+  return clamp(Math.floor(Number(rawLevel) || 0), 0, UPGRADE_MAX_LEVEL);
+}
+
+function getUpgradeSnapshot(row = {}) {
+  return {
+    efficiency: sanitizeUpgradeLevel(row?.upgrade_efficiency),
+    signal: sanitizeUpgradeLevel(row?.upgrade_signal),
+    defense: sanitizeUpgradeLevel(row?.upgrade_defense),
+    gem: sanitizeUpgradeLevel(row?.upgrade_gem),
+    npc: sanitizeUpgradeLevel(row?.upgrade_npc),
+  };
+}
+
+function buildUpgradeEffects(upgrades = {}) {
+  const efficiencyDrainReduction = Math.min(UPGRADE_EFFECT_CAP, 0.05 * (upgrades.efficiency || 0));
+  const signalXpBonus = Math.min(UPGRADE_EFFECT_CAP, 0.05 * (upgrades.signal || 0));
+  const defenseEaseBonus = Math.min(UPGRADE_EFFECT_CAP, 0.05 * (upgrades.defense || 0));
+  const gemDropBonus = Math.min(UPGRADE_EFFECT_CAP, 0.03 * (upgrades.gem || 0));
+  const npcAssistBonus = Math.min(UPGRADE_EFFECT_CAP, 0.05 * (upgrades.npc || 0));
+  return { efficiencyDrainReduction, signalXpBonus, defenseEaseBonus, gemDropBonus, npcAssistBonus };
+}
+
+function computeUpgradeCost(base, currentLevel) {
+  return Math.max(1, Math.floor(base * (currentLevel + 1) * 2));
+}
+
+function computeRpgEntryCost(tier) {
+  const safeTier = clamp(Math.floor(Number(tier) || 1), TIER_MIN, TIER_MAX);
+  return BLOCKTOPIA_ENTRY_BASE_COST + (safeTier * BLOCKTOPIA_ENTRY_TIER_STEP);
+}
+
 
 /** Return today's UTC date as a YYYY-MM-DD string. */
 function getTodayUtcDate() {
@@ -365,6 +410,12 @@ async function ensureBlockTopiaProgressionTables(db) {
       gems INTEGER NOT NULL DEFAULT 0,
       tier INTEGER NOT NULL DEFAULT 1,
       win_streak INTEGER NOT NULL DEFAULT 0,
+      upgrade_efficiency INTEGER NOT NULL DEFAULT 0,
+      upgrade_signal INTEGER NOT NULL DEFAULT 0,
+      upgrade_defense INTEGER NOT NULL DEFAULT 0,
+      upgrade_gem INTEGER NOT NULL DEFAULT 0,
+      upgrade_npc INTEGER NOT NULL DEFAULT 0,
+      rpg_mode_active INTEGER NOT NULL DEFAULT 0,
       last_active DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
       updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
     )
@@ -372,6 +423,30 @@ async function ensureBlockTopiaProgressionTables(db) {
   await db.prepare(`
     ALTER TABLE blocktopia_progression
     ADD COLUMN win_streak INTEGER NOT NULL DEFAULT 0
+  `).run().catch(() => {});
+  await db.prepare(`
+    ALTER TABLE blocktopia_progression
+    ADD COLUMN rpg_mode_active INTEGER NOT NULL DEFAULT 0
+  `).run().catch(() => {});
+  await db.prepare(`
+    ALTER TABLE blocktopia_progression
+    ADD COLUMN upgrade_npc INTEGER NOT NULL DEFAULT 0
+  `).run().catch(() => {});
+  await db.prepare(`
+    ALTER TABLE blocktopia_progression
+    ADD COLUMN upgrade_gem INTEGER NOT NULL DEFAULT 0
+  `).run().catch(() => {});
+  await db.prepare(`
+    ALTER TABLE blocktopia_progression
+    ADD COLUMN upgrade_defense INTEGER NOT NULL DEFAULT 0
+  `).run().catch(() => {});
+  await db.prepare(`
+    ALTER TABLE blocktopia_progression
+    ADD COLUMN upgrade_signal INTEGER NOT NULL DEFAULT 0
+  `).run().catch(() => {});
+  await db.prepare(`
+    ALTER TABLE blocktopia_progression
+    ADD COLUMN upgrade_efficiency INTEGER NOT NULL DEFAULT 0
   `).run().catch(() => {});
   await db.prepare(`
     CREATE TABLE IF NOT EXISTS blocktopia_progression_events (
@@ -389,12 +464,17 @@ async function ensureBlockTopiaProgressionTables(db) {
 
 async function getOrCreateBlockTopiaProgression(db, telegramId) {
   await db.prepare(`
-    INSERT INTO blocktopia_progression (telegram_id, xp, gems, tier, win_streak)
-    VALUES (?, 0, 0, 1, 0)
+    INSERT INTO blocktopia_progression (
+      telegram_id, xp, gems, tier, win_streak,
+      upgrade_efficiency, upgrade_signal, upgrade_defense, upgrade_gem, upgrade_npc, rpg_mode_active
+    )
+    VALUES (?, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0)
     ON CONFLICT(telegram_id) DO NOTHING
   `).bind(telegramId).run();
   const row = await db.prepare(
-    `SELECT telegram_id, xp, gems, tier, win_streak, last_active, updated_at
+    `SELECT telegram_id, xp, gems, tier, win_streak,
+            upgrade_efficiency, upgrade_signal, upgrade_defense, upgrade_gem, upgrade_npc,
+            rpg_mode_active, last_active, updated_at
      FROM blocktopia_progression WHERE telegram_id = ?`
   ).bind(telegramId).first();
   return row || {
@@ -403,6 +483,12 @@ async function getOrCreateBlockTopiaProgression(db, telegramId) {
     gems: 0,
     tier: 1,
     win_streak: 0,
+    upgrade_efficiency: 0,
+    upgrade_signal: 0,
+    upgrade_defense: 0,
+    upgrade_gem: 0,
+    upgrade_npc: 0,
+    rpg_mode_active: 0,
     last_active: new Date().toISOString(),
   };
 }
@@ -491,10 +577,14 @@ async function fetchTrustedLeaderboardContext(env, game, telegramId, verifiedUse
   };
 }
 
-function computeBlockTopiaRewards(action, type, score, leaderboardCtx = null) {
+function computeBlockTopiaRewards(action, type, score, leaderboardCtx = null, progression = {}) {
   const safeAction = String(action || '').trim();
   const safeType = String(type || '').trim().toLowerCase();
   const safeScore = Math.max(0, Math.floor(Number(score) || 0));
+  const upgrades = getUpgradeSnapshot(progression);
+  const effects = buildUpgradeEffects(upgrades);
+  const streak = Math.max(0, Math.floor(Number(progression?.win_streak) || 0));
+
   if (safeAction === 'arcade_score') {
     const baseXp = clamp(Math.min(Math.floor(safeScore / 1000), 100), XP_MIN, XP_MAX);
     const trustedRank = Number(leaderboardCtx?.rank || 0);
@@ -509,7 +599,8 @@ function computeBlockTopiaRewards(action, type, score, leaderboardCtx = null) {
     if (trustedRank > 0 && trustedRank <= 100) bonusXp += 10;
     if (trustedRank > 0 && trustedRank <= 50) bonusXp += 20;
     if (trustedRank > 0 && trustedRank <= 10) bonusXp += 50;
-    const totalXp = clamp(baseXp + bonusXp, XP_MIN, XP_MAX);
+    let totalXp = clamp(baseXp + bonusXp, XP_MIN, XP_MAX);
+    totalXp = clamp(Math.floor(totalXp * (1 + effects.signalXpBonus)), XP_MIN, XP_MAX);
     return {
       xp: totalXp,
       base_xp: baseXp,
@@ -517,6 +608,7 @@ function computeBlockTopiaRewards(action, type, score, leaderboardCtx = null) {
       gems: 0,
       score: safeScore,
       reason: 'validated_arcade_score',
+      bonus_flags: [],
       leaderboard: {
         rank: trustedRank,
         top_10_percent_score: top10Score,
@@ -529,20 +621,54 @@ function computeBlockTopiaRewards(action, type, score, leaderboardCtx = null) {
     const xpByType = { firewall: 12, router: 10, outbreak: 8, circuit: 11 };
     const gemsByType = { firewall: 2, router: 1, outbreak: 1, circuit: 2 };
     if (!xpByType[safeType]) return null;
-    return { xp: xpByType[safeType], gems: gemsByType[safeType], score: 0, reason: 'validated_mini_game_win' };
+    const bonusFlags = [];
+    let xp = xpByType[safeType];
+    let gems = gemsByType[safeType];
+
+    xp = clamp(Math.floor(xp * (1 + effects.signalXpBonus)), XP_MIN, XP_MAX);
+    if (streak >= 3) {
+      xp += 1;
+      gems += 1;
+      bonusFlags.push('streak_bonus');
+    }
+    if (Math.random() < 0.12) {
+      xp += 2;
+      bonusFlags.push('speed_bonus');
+    }
+    if (Math.random() < Math.min(0.25, 0.08 + effects.gemDropBonus)) {
+      gems += 1;
+      bonusFlags.push('rare_drop');
+    }
+    if (Math.random() < Math.min(0.15, 0.05 + (effects.signalXpBonus * 0.2))) {
+      xp *= 2;
+      bonusFlags.push('double_xp');
+    }
+    if (Math.random() < Math.min(0.12, 0.04 + (effects.gemDropBonus * 0.2))) {
+      gems *= 2;
+      bonusFlags.push('double_gem');
+    }
+    return {
+      xp: clamp(xp, XP_MIN, XP_MAX),
+      gems: clamp(gems, GEMS_MIN, GEMS_MAX),
+      score: 0,
+      bonus_flags: bonusFlags,
+      reason: 'validated_mini_game_win',
+    };
   }
   if (safeAction === 'mini_game_loss') {
     const allowedTypes = new Set(['firewall', 'router', 'outbreak', 'circuit']);
     if (!allowedTypes.has(safeType)) return null;
-    return { xp: 0, gems: 0, score: 0, reason: 'validated_mini_game_loss' };
+    return { xp: 0, gems: 0, score: 0, bonus_flags: [], reason: 'validated_mini_game_loss' };
   }
   return null;
 }
 
-function applyProgressionDrain(row, now = Date.now()) {
+function applyProgressionDrain(row, now = Date.now(), effects = null) {
   const lastMs = row?.last_active ? new Date(row.last_active).getTime() : now;
   const elapsedMs = Math.max(0, now - (Number.isFinite(lastMs) ? lastMs : now));
-  const drain = Math.floor((elapsedMs / 60000) * BLOCKTOPIA_DRAIN_PER_MINUTE);
+  const upgradeEffects = effects || buildUpgradeEffects(getUpgradeSnapshot(row));
+  const drainScale = Math.max(0.5, 1 - upgradeEffects.efficiencyDrainReduction);
+  const drain = Math.floor((elapsedMs / 60000) * BLOCKTOPIA_DRAIN_PER_MINUTE * drainScale);
   const xpAfterDrain = clamp((Number(row?.xp) || 0) - drain, XP_MIN, XP_MAX);
   return { drain, xpAfterDrain };
 }
@@ -911,16 +1037,26 @@ export default {
         await ensureBlockTopiaProgressionTables(env.DB);
         await upsertTelegramUser(env.DB, verified.user).catch(() => {});
         const row = await getOrCreateBlockTopiaProgression(env.DB, verified.telegramId);
-        const { drain, xpAfterDrain } = applyProgressionDrain(row);
+        const upgrades = getUpgradeSnapshot(row);
+        const effects = buildUpgradeEffects(upgrades);
+        const { drain, xpAfterDrain } = applyProgressionDrain(row, Date.now(), effects);
         const gems = clamp(Number(row.gems) || 0, GEMS_MIN, GEMS_MAX);
         const tierAfter = clamp(Number(row.tier) || 1, TIER_MIN, TIER_MAX);
         const winStreak = Math.max(0, Math.floor(Number(row.win_streak) || 0));
+        const rpgModeActive = Number(row.rpg_mode_active) === 1;
 
         await env.DB.prepare(`
           UPDATE blocktopia_progression
-          SET xp = ?, gems = ?, tier = ?, win_streak = ?, last_active = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP
+          SET xp = ?, gems = ?, tier = ?, win_streak = ?, upgrade_efficiency = ?, upgrade_signal = ?,
+              upgrade_defense = ?, upgrade_gem = ?, upgrade_npc = ?, rpg_mode_active = ?,
+              last_active = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP
           WHERE telegram_id = ?
-        `).bind(xpAfterDrain, gems, tierAfter, winStreak, verified.telegramId).run();
+        `).bind(
+          xpAfterDrain, gems, tierAfter, winStreak,
+          upgrades.efficiency, upgrades.signal, upgrades.defense, upgrades.gem, upgrades.npc,
+          rpgModeActive ? 1 : 0,
+          verified.telegramId,
+        ).run();
 
         return json({
           ok: true,
@@ -931,11 +1067,86 @@ export default {
             tier: tierAfter,
             win_streak: winStreak,
             drain_applied: drain,
+            rpg_mode_active: rpgModeActive,
+            rpg_entry_cost: computeRpgEntryCost(tierAfter),
+            upgrades,
+            effects,
             last_active: new Date().toISOString(),
           },
         });
       } catch {
         return err('Failed to load Block Topia progression', 500);
+      }
+    }
+
+    if (path === '/blocktopia/progression/entry' && request.method === 'POST') {
+      let body;
+      try { body = await request.json(); } catch { return err('Invalid JSON'); }
+      const verified = await verifyTelegramIdentityFromBody(body, env);
+      if (verified.error) return err(verified.error, verified.status || 401);
+      try {
+        await ensureBlockTopiaProgressionTables(env.DB);
+        const row = await getOrCreateBlockTopiaProgression(env.DB, verified.telegramId);
+        const tier = clamp(Math.floor(Number(row.tier) || 1), TIER_MIN, TIER_MAX);
+        const entryCost = computeRpgEntryCost(tier);
+        const gems = clamp(Math.floor(Number(row.gems) || 0), GEMS_MIN, GEMS_MAX);
+        if (gems < entryCost) return err('Not enough gems for RPG mode entry', 402);
+        const nextGems = clamp(gems - entryCost, GEMS_MIN, GEMS_MAX);
+        await env.DB.prepare(`
+          UPDATE blocktopia_progression
+          SET gems = ?, rpg_mode_active = 1, last_active = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP
+          WHERE telegram_id = ?
+        `).bind(nextGems, verified.telegramId).run();
+        return json({ ok: true, progression: { telegram_id: verified.telegramId, gems: nextGems, tier, rpg_mode_active: true, entry_cost_paid: entryCost } });
+      } catch {
+        return err('Failed to enter RPG mode', 500);
+      }
+    }
+
+    if (path === '/blocktopia/progression/upgrade' && request.method === 'POST') {
+      let body;
+      try { body = await request.json(); } catch { return err('Invalid JSON'); }
+      const verified = await verifyTelegramIdentityFromBody(body, env);
+      if (verified.error) return err(verified.error, verified.status || 401);
+      const upgradeId = String(body?.upgrade || '').trim().toLowerCase();
+      const config = BLOCKTOPIA_UPGRADES[upgradeId];
+      if (!config) return err('Invalid upgrade key', 400);
+      try {
+        await ensureBlockTopiaProgressionTables(env.DB);
+        const row = await getOrCreateBlockTopiaProgression(env.DB, verified.telegramId);
+        const upgrades = getUpgradeSnapshot(row);
+        const currentLevel = upgrades[upgradeId];
+        if (currentLevel >= UPGRADE_MAX_LEVEL) return err('Upgrade already at max level', 409);
+        const cost = computeUpgradeCost(config.baseCost, currentLevel);
+        const gems = clamp(Math.floor(Number(row.gems) || 0), GEMS_MIN, GEMS_MAX);
+        if (gems < cost) return err('Not enough gems for upgrade', 402);
+        const nextLevel = clamp(currentLevel + 1, 0, UPGRADE_MAX_LEVEL);
+        const nextGems = clamp(gems - cost, GEMS_MIN, GEMS_MAX);
+        await env.DB.prepare(`
+          UPDATE blocktopia_progression
+          SET gems = ?, ${config.column} = ?, updated_at = CURRENT_TIMESTAMP
+          WHERE telegram_id = ?
+        `).bind(nextGems, nextLevel, verified.telegramId).run();
+        const latest = await getOrCreateBlockTopiaProgression(env.DB, verified.telegramId);
+        const nextUpgrades = getUpgradeSnapshot(latest);
+        return json({
+          ok: true,
+          progression: {
+            telegram_id: verified.telegramId,
+            gems: nextGems,
+            upgrades: nextUpgrades,
+            effects: buildUpgradeEffects(nextUpgrades),
+          },
+          upgrade: {
+            id: upgradeId,
+            level: nextLevel,
+            max_level: UPGRADE_MAX_LEVEL,
+            cost_paid: cost,
+            next_cost: nextLevel >= UPGRADE_MAX_LEVEL ? null : computeUpgradeCost(config.baseCost, nextLevel),
+          },
+        });
+      } catch {
+        return err('Failed to apply RPG upgrade', 500);
       }
     }
 
@@ -975,15 +1186,20 @@ export default {
         leaderboardCtx.improvementEligible =
           score > 0 && score >= leaderboardCtx.trustedBestScore && !alreadyRewardedScore;
       }
-      const rewards = computeBlockTopiaRewards(action, action === 'arcade_score' ? game : type, score, leaderboardCtx);
-      if (!rewards) return err('Invalid action/type for progression update', 400);
-
       try {
         await ensureBlockTopiaProgressionTables(env.DB);
         await upsertTelegramUser(env.DB, verified.user).catch(() => {});
 
         const allowed = await enforceProgressionRateLimit(env.DB, verified.telegramId);
         if (!allowed) return err('Too many progression updates. Try again in a minute.', 429);
+        const row = await getOrCreateBlockTopiaProgression(env.DB, verified.telegramId);
+        const upgrades = getUpgradeSnapshot(row);
+        const effects = buildUpgradeEffects(upgrades);
+        if (action !== 'arcade_score' && Number(row?.rpg_mode_active || 0) !== 1) {
+          return err('RPG mode entry required before mini-game rewards', 403);
+        }
+        const rewards = computeBlockTopiaRewards(action, action === 'arcade_score' ? game : type, score, leaderboardCtx, row);
+        if (!rewards) return err('Invalid action/type for progression update', 400);
         if (action === 'arcade_score') {
           rewards.xp = clamp(Math.floor(rewards.xp * TELEGRAM_SYNC_XP_MULTIPLIER), XP_MIN, XP_MAX);
           const perGameAllowed = await enforceArcadeGameHourlyLimit(env.DB, verified.telegramId, game);
@@ -998,9 +1214,7 @@ export default {
             Math.max(XP_MIN, BLOCKTOPIA_ARCADE_MAX_XP_PER_MINUTE - awardedLastMinute),
           );
         }
-
-        const row = await getOrCreateBlockTopiaProgression(env.DB, verified.telegramId);
-        const { drain, xpAfterDrain } = applyProgressionDrain(row);
+        const { drain, xpAfterDrain } = applyProgressionDrain(row, Date.now(), effects);
         const nextXp = clamp(xpAfterDrain + rewards.xp, XP_MIN, XP_MAX);
         const nextGems = clamp((Number(row.gems) || 0) + rewards.gems, GEMS_MIN, GEMS_MAX);
         const currentTier = clamp(Math.floor(Number(row.tier) || 1), TIER_MIN, TIER_MAX);
@@ -1047,10 +1261,14 @@ export default {
             tier: nextTier,
             win_streak: nextWinStreak,
             drain_applied: drain,
+            rpg_mode_active: Number(row.rpg_mode_active || 0) === 1,
+            upgrades,
+            effects,
             xp_awarded: rewards.xp,
             gems_awarded: rewards.gems,
             xp_base: rewards.base_xp || 0,
             xp_bonus: rewards.bonus_xp || 0,
+            bonus_flags: rewards.bonus_flags || [],
             leaderboard: rewards.leaderboard || null,
             synced_multiplier: syncedMultiplierApplied,
           },

@@ -98,7 +98,9 @@ function bfsPath(adjacency, startId, endId) {
 
 export function createFirewallDefenseSystem(state, options = {}) {
   const difficulty = computeTierDifficulty(options?.tier || 1);
-  const enemySpeedScale = Math.min(difficulty.scale, MAX_ENEMY_SPEED_SCALE);
+  const defenseEaseBonus = Math.max(0, Math.min(0.5, Number(options?.progression?.defenseEaseBonus) || 0));
+  const npcAssistBonus = Math.max(0, Math.min(0.5, Number(options?.progression?.npcAssistBonus) || 0));
+  const enemySpeedScale = Math.min(difficulty.scale * (1 - (defenseEaseBonus * 0.45)), MAX_ENEMY_SPEED_SCALE);
   const nodes = Array.isArray(state?.controlNodes) ? state.controlNodes : [];
   const { byId, adjacency } = buildNetwork(nodes);
   const keyNodeIds = ['core', 'north', 'east', 'south', 'west'].filter((id) => byId.has(id));
@@ -134,7 +136,7 @@ export function createFirewallDefenseSystem(state, options = {}) {
   state.firewallDefense = runtime;
 
   function buildWavePlan() {
-    const countScale = Math.min(difficulty.scale, 2.2);
+    const countScale = Math.min(difficulty.scale * (1 - (defenseEaseBonus * 0.35)), 2.2);
     const waves = WAVE_PLAN.map((entry) => ({
       ...entry,
       count: clamp(Math.round(entry.count * countScale), entry.count, MAX_WAVE_SIZE),
@@ -458,7 +460,7 @@ export function createFirewallDefenseSystem(state, options = {}) {
         hooks.onNpcSupport?.({ type: 'recruiter', nodeId: support.targetNodeId });
       }
 
-      support.cooldown = supportMeta.interval;
+      support.cooldown = supportMeta.interval * (1 - (npcAssistBonus * 0.4));
     }
   }
 

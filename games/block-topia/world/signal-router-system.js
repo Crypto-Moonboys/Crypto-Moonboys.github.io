@@ -107,8 +107,10 @@ function weightedPath(adjacency, startId, endId, edgeMeta, options = {}) {
 
 export function createSignalRouterSystem(state, options = {}) {
   const difficulty = computeTierDifficulty(options?.tier || 1);
-  const timePressureScale = Math.min(difficulty.scale, 2);
-  const corruptionRoll = Math.min(0.15 * difficulty.scale, MAX_CORRUPTION_ROLL);
+  const defenseEaseBonus = Math.max(0, Math.min(0.5, Number(options?.progression?.defenseEaseBonus) || 0));
+  const npcAssistBonus = Math.max(0, Math.min(0.5, Number(options?.progression?.npcAssistBonus) || 0));
+  const timePressureScale = Math.min(difficulty.scale * (1 - (defenseEaseBonus * 0.35)), 2);
+  const corruptionRoll = Math.min(0.15 * difficulty.scale * (1 - (defenseEaseBonus * 0.3)), MAX_CORRUPTION_ROLL);
   const nodes = Array.isArray(state?.controlNodes) ? state.controlNodes : [];
   const { byId, adjacency, edges } = buildGraph(nodes);
   const districtIds = [...new Set(nodes.map((node) => node.districtId).filter(Boolean))];
@@ -282,7 +284,10 @@ export function createSignalRouterSystem(state, options = {}) {
     runtime.status = 'alert';
     runtime.startedAt = now;
     runtime.alertUntil = now + ALERT_MS;
-    runtime.endsAt = now + Math.max(MIN_EVENT_MAX_MS, Math.round(EVENT_MAX_MS / timePressureScale));
+    runtime.endsAt = now + Math.max(
+      MIN_EVENT_MAX_MS,
+      Math.round((EVENT_MAX_MS / timePressureScale) * (1 + (defenseEaseBonus * 0.5))),
+    );
     runtime.eventIndex += 1;
     runtime.selectedNodeId = nodes[0]?.id || '';
     runtime.selectedEdgeKey = '';
@@ -457,7 +462,7 @@ export function createSignalRouterSystem(state, options = {}) {
 
   function assignNpcActors(now) {
     if (now < runtime.npcAssignAt) return;
-    runtime.npcAssignAt = now + NPC_ASSIGN_INTERVAL_MS;
+    runtime.npcAssignAt = now + (NPC_ASSIGN_INTERVAL_MS * (1 - (npcAssistBonus * 0.4)));
     const activeNpcs = (state?.npc?.entities || []).filter((npc) => npc?.mode === 'active');
     if (!activeNpcs.length) return;
 
