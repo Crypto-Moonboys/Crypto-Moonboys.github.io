@@ -87,6 +87,14 @@ function err(msg, status = 400) {
   return json({ error: msg }, status);
 }
 
+function logAntiCheatFailure(event, context = {}) {
+  console.log('[anti-cheat]', JSON.stringify({
+    event,
+    ...context,
+    timestamp: new Date().toISOString(),
+  }));
+}
+
 // ── Season / year helpers (mirrors leaderboard-worker.js math exactly) ────────
 
 function currentSeasonNumber(now = Date.now()) {
@@ -173,7 +181,10 @@ async function saveAntiCheatState(db, state) {
     state.current_season_number,
     state.current_year,
   ).run().catch((e) => {
-    console.log('anti-cheat: saveAntiCheatState error', state.telegram_id, e?.message || e);
+    logAntiCheatFailure('save_state_failed', {
+      telegramId: state.telegram_id,
+      message: e?.message || String(e),
+    });
   });
 }
 
@@ -189,7 +200,13 @@ async function logAntiCheatEvent(db, telegramId, eventType, seasonNumber, year, 
     year         || null,
     riskDelta,
     metadata     || null,
-  ).run().catch(() => {});
+  ).run().catch((error) => {
+    logAntiCheatFailure('event_log_failed', {
+      telegramId,
+      eventType,
+      message: error?.message || String(error),
+    });
+  });
 }
 
 // ── KV block-key helpers (fast lookup used by leaderboard-worker) ─────────────
@@ -199,11 +216,22 @@ function kvBlockKey(telegramId) {
 }
 
 async function setKvBlock(env, telegramId, blockType) {
-  await env.LEADERBOARD.put(kvBlockKey(telegramId), blockType).catch(() => {});
+  await env.LEADERBOARD.put(kvBlockKey(telegramId), blockType).catch((error) => {
+    logAntiCheatFailure('kv_block_set_failed', {
+      telegramId,
+      blockType,
+      message: error?.message || String(error),
+    });
+  });
 }
 
 async function clearKvBlock(env, telegramId) {
-  await env.LEADERBOARD.delete(kvBlockKey(telegramId)).catch(() => {});
+  await env.LEADERBOARD.delete(kvBlockKey(telegramId)).catch((error) => {
+    logAntiCheatFailure('kv_block_clear_failed', {
+      telegramId,
+      message: error?.message || String(error),
+    });
+  });
 }
 
 // ── Risk signal computation ───────────────────────────────────────────────────
@@ -397,14 +425,24 @@ async function weeklyAntiCheatScan(env) {
   for (;;) {
     const rows = await env.DB.prepare(
       `SELECT telegram_id FROM telegram_users ORDER BY telegram_id LIMIT ? OFFSET ?`
-    ).bind(batchSize, offset).all().catch(() => ({ results: [] }));
+    ).bind(batchSize, offset).all().catch((error) => {
+      logAntiCheatFailure('scan_batch_fetch_failed', {
+        offset,
+        batchSize,
+        message: error?.message || String(error),
+      });
+      return { results: [] };
+    });
 
     const batch = rows.results || [];
     if (!batch.length) break;
 
     for (const row of batch) {
       await assessUser(env, row.telegram_id, now).catch((e) => {
-        console.log('anti-cheat: assessUser error', row.telegram_id, e?.message || e);
+        logAntiCheatFailure('assess_user_failed', {
+          telegramId: row.telegram_id,
+          message: e?.message || String(e),
+        });
         errors++;
       });
       processed++;
@@ -489,7 +527,12 @@ export default {
         UPDATE telegram_anticheat_state
         SET is_blocked = 0, block_type = NULL, blocked_reason = NULL, updated_at = CURRENT_TIMESTAMP
         WHERE telegram_id = ?
-      `).bind(telegramId).run().catch(() => {});
+      `).bind(telegramId).run().catch((error) => {
+        logAntiCheatFailure('admin_unblock_state_write_failed', {
+          telegramId,
+          message: error?.message || String(error),
+        });
+      });
 
       const now = Date.now();
       await logAntiCheatEvent(env.DB, telegramId, 'admin_unblock',
@@ -525,7 +568,13 @@ export default {
           block_type     = excluded.block_type,
           blocked_reason = excluded.blocked_reason,
           updated_at     = CURRENT_TIMESTAMP
-      `).bind(telegramId, blockType, reason, sNum, sYear).run().catch(() => {});
+      `).bind(telegramId, blockType, reason, sNum, sYear).run().catch((error) => {
+        logAntiCheatFailure('admin_block_state_write_failed', {
+          telegramId,
+          blockType,
+          message: error?.message || String(error),
+        });
+      });
 
       await setKvBlock(env, telegramId, blockType);
       await logAntiCheatEvent(env.DB, telegramId, 'admin_block', sNum, sYear, 0,
@@ -555,7 +604,12 @@ export default {
         ON CONFLICT(telegram_id) DO UPDATE SET
           lifetime_strikes = 0,
           updated_at       = CURRENT_TIMESTAMP
-      `).bind(telegramId, sNum, sYear).run().catch(() => {});
+      `).bind(telegramId, sNum, sYear).run().catch((error) => {
+        logAntiCheatFailure('admin_clear_strikes_state_write_failed', {
+          telegramId,
+          message: error?.message || String(error),
+        });
+      });
 
       await logAntiCheatEvent(env.DB, telegramId, 'admin_clear_strikes', sNum, sYear, 0, 'Admin action');
 
