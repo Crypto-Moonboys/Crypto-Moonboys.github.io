@@ -864,6 +864,12 @@ export function createIsoRenderer(canvas) {
       ctx.fillText(node.status === 'unstable' ? '⚠ UNSTABLE' : 'CONTESTED', cx, cy - towerH - 22);
     }
 
+    if (node.warState === 'fighting' || node.warState === 'reinforcing' || node.warState === 'retreating') {
+      ctx.fillStyle = node.warState === 'fighting' ? '#ff8da5' : node.warState === 'reinforcing' ? '#7dffb2' : '#ffd49f';
+      const tag = node.warState === 'fighting' ? 'WAR' : node.warState === 'reinforcing' ? 'REINFORCE' : 'RETREAT';
+      ctx.fillText(tag, cx, cy - towerH - 32);
+    }
+
     ctx.restore();
   }
 
