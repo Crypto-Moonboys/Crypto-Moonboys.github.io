@@ -649,3 +649,29 @@
   font-size: 0.8rem;
   color: #a5edf9;
 }
+
+/* === Reactive battle state layer === */
+.faction-player-card.sync-live,
+.faction-player-card.faction-state--active {
+  animation: heartbeat 2.5s infinite;
+}
+
+.faction-player-card.sync-error {
+  animation: alertFlash 1s infinite;
+}
+
+.faction-player-card.faction-boost {
+  animation: statePulse 1.15s ease;
+}
+
+body.conflict-active .battle-shell,
+body.conflict-active .battle-card,
+body.conflict-active .community-card {
+  box-shadow: 0 0 0 1px rgba(255,0,80,.22) inset, 0 0 26px rgba(255,0,80,.2);
+}
+
+body.conflict-active .battle-shell::before,
+body.conflict-active .battle-card::before {
+  opacity: .95;
+  filter: saturate(1.2) brightness(1.1);
+}

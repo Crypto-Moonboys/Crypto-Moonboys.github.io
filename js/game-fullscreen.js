@@ -105,6 +105,7 @@
     btn.id = id;
     btn.setAttribute('aria-label', ariaLabel);
     btn.setAttribute('type', 'button');
+    btn.classList.add('interactive');
     btn.innerHTML =
       '<span class="btn-icon">' + icon + '</span>' +
       '<span class="btn-label"> ' + labelText + '</span>';
@@ -299,6 +300,57 @@
   var inlineSyncActions = null;
   var lastSubmissionState = '';
 
+  function dispatchUiState(name, detail) {
+    if (typeof window === 'undefined' || typeof window.dispatchEvent !== 'function') return;
+    window.dispatchEvent(new CustomEvent(name, { detail: detail || {} }));
+  }
+
+  function ensureMicroFeed() {
+    var root = document.getElementById('micro-notify-feed');
+    if (root) return root;
+    root = document.createElement('aside');
+    root.id = 'micro-notify-feed';
+    root.className = 'micro-notify-feed';
+    root.setAttribute('aria-live', 'polite');
+    root.setAttribute('aria-atomic', 'false');
+    document.body.appendChild(root);
+    return root;
+  }
+
+  function pushMicroNotification(message, tone) {
+    if (!message) return;
+    var feed = ensureMicroFeed();
+    var item = document.createElement('div');
+    item.className = 'micro-note ' + (tone ? ('micro-note--' + tone) : 'micro-note--info');
+    item.textContent = String(message);
+    feed.prepend(item);
+    requestAnimationFrame(function () { item.classList.add('is-live'); });
+    window.setTimeout(function () { item.classList.remove('is-live'); item.classList.add('is-out'); }, 3400);
+    window.setTimeout(function () { item.remove(); }, 4200);
+  }
+
+  function animateNumericNode(node, nextValue, duration) {
+    if (!node) return;
+    var to = Math.max(0, Math.floor(Number(nextValue) || 0));
+    var from = Math.max(0, Math.floor(Number(node.dataset.value || node.textContent || 0) || 0));
+    if (to === from) {
+      node.textContent = String(to);
+      node.dataset.value = String(to);
+      return;
+    }
+    var start = performance.now();
+    var ms = Math.max(250, Number(duration) || 700);
+    function tick(now) {
+      var t = Math.min(1, (now - start) / ms);
+      var eased = 1 - Math.pow(1 - t, 3);
+      var val = Math.round(from + (to - from) * eased);
+      node.textContent = String(val);
+      node.dataset.value = String(val);
+      if (t < 1) requestAnimationFrame(tick);
+    }
+    requestAnimationFrame(tick);
+  }
+
   function getProjectedXp(scoreText) {
     var raw = Number(scoreText);
     if (!isFinite(raw) || raw < 0) return 0;
@@ -329,7 +381,7 @@
     identity.id = 'arcade-sync-identity';
     card.appendChild(identity);
     inlineSyncIdentity = identity;
-    var status = el('div', 'arcade-sync-status sync-state--bad', 'Unsynced play stays local to this browser. Run /gklink in Telegram to store XP and Block Topia progression server-side.');
+    var status = el('div', 'arcade-sync-status sync-error', 'Unsynced play stays local to this browser. Run /gklink in Telegram to store XP and Block Topia progression server-side.');
     status.id = 'arcade-sync-status';
     card.appendChild(status);
     var actions = el('div', 'arcade-sync-actions');
@@ -550,7 +602,7 @@
     cachedSyncIdentity = el('div', 'panel-note panel-note--identity', 'Linked as: Not linked');
     cachedSyncIdentity.id = 'overlay-sync-identity';
     sideLeft.appendChild(cachedSyncIdentity);
-    cachedSyncStatus = el('div', 'panel-note panel-note--status sync-state--bad', 'Unsynced play stays local to this browser. Run /gklink in Telegram to store XP and Block Topia progression server-side.');
+    cachedSyncStatus = el('div', 'panel-note panel-note--status sync-error', 'Unsynced play stays local to this browser. Run /gklink in Telegram to store XP and Block Topia progression server-side.');
     cachedSyncStatus.id = 'overlay-sync-status';
     sideLeft.appendChild(cachedSyncStatus);
     cachedSyncActions = el('div', 'panel-note panel-note--actions');
@@ -643,8 +695,10 @@
     var statusNodes = [cachedSyncStatus, inlineSyncStatus];
     statusNodes.forEach(function (node) {
       if (!node) return;
-      node.classList.remove('sync-state--good', 'sync-state--bad');
-      node.classList.add(isGood ? 'sync-state--good' : 'sync-state--bad');
+      node.classList.remove('sync-live', 'sync-error');
+      node.classList.add(isGood ? 'sync-live' : 'sync-error');
+      document.body.classList.toggle('sync-live', !!isGood);
+      document.body.classList.toggle('sync-error', !isGood);
     });
   }
 
@@ -660,6 +714,7 @@
       case 'linked_ready':
         setSyncVisualState(true);
         setSyncStatusText('Linked — ready. Auto-submit is active for this run.');
+        dispatchUiState('moonboys:sync-state', { state: 'good', reason: state });
         setActionHtml('<a class="sync-action-link" href="/gkniftyheads-incubator.html">Open sync instructions</a>');
         return;
       case 'auto_submitting':
@@ -676,6 +731,12 @@
         setSyncVisualState(true);
         setSyncStatusText('Accepted score converted — XP awarded: ' + (d.awardedXp || 0) + (Number.isFinite(d.totalXp) ? (' · Total XP: ' + d.totalXp) : ''));
         setActionHtml('');
+        if (Number(d.awardedXp) > 0 && cachedLiveProjectedXp) {
+          cachedLiveProjectedXp.classList.add('xp-gain');
+          animateNumericNode(cachedLiveProjectedXp, Number(d.awardedXp || 0), 900);
+          pushMicroNotification('XP gained +' + Number(d.awardedXp || 0), 'success');
+          setTimeout(function () { cachedLiveProjectedXp && cachedLiveProjectedXp.classList.remove('xp-gain'); }, 1100);
+        }
         return;
       case 'accepted_no_xp':
       case 'rejected_no_xp':
@@ -686,6 +747,7 @@
       case 'auth_expired':
         setSyncVisualState(false);
         setSyncStatusText('Sync expired — run /gklink again.');
+        dispatchUiState('moonboys:sync-state', { state: 'bad', reason: state });
         setActionHtml('<a class="sync-action-link sync-action-link--danger" href="/gkniftyheads-incubator.html">Run /gklink</a>');
         return;
       case 'relink_required':
@@ -711,6 +773,31 @@
       var d = event && event.detail ? event.detail : {};
       updateSyncSurfaceState(d.state || '', d);
     });
+    window.addEventListener('moonboys:micro-notify', function (event) {
+      var d = event && event.detail ? event.detail : {};
+      pushMicroNotification(d.message || '', d.tone || 'info');
+    });
+    window.addEventListener('moonboys:xp-gain', function (event) {
+      var d = event && event.detail ? event.detail : {};
+      if (Number(d.amount) > 0) pushMicroNotification('XP gained +' + Number(d.amount), 'success');
+    });
+    window.addEventListener('moonboys:faction-boost', function () {
+      if (!cachedFactionPanel) return;
+      cachedFactionPanel.classList.add('faction-boost');
+      setTimeout(function () { cachedFactionPanel && cachedFactionPanel.classList.remove('faction-boost'); }, 1250);
+    });
+    window.addEventListener('moonboys:score-updated', function () {
+      if (!cachedLiveScore) return;
+      cachedLiveScore.classList.add('score-updated');
+      setTimeout(function () { cachedLiveScore && cachedLiveScore.classList.remove('score-updated'); }, 850);
+    });
+    window.addEventListener('moonboys:sync-state', function (event) {
+      var d = event && event.detail ? event.detail : {};
+      var bad = d.state === 'bad' || d.state === 'error';
+      document.body.classList.toggle('sync-error', bad);
+      document.body.classList.toggle('sync-live', !bad);
+    });
+
     document.addEventListener('arcade-run-game-over', function () {
       if (isLinkedReady()) updateSyncSurfaceState('auto_submitting', {});
       else updateSyncSurfaceState('local_only', {});

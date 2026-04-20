@@ -16,6 +16,11 @@
     return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
   }
 
+  function dispatchUiState(name, detail) {
+    if (typeof window === 'undefined' || typeof window.dispatchEvent !== 'function') return;
+    window.dispatchEvent(new CustomEvent(name, { detail: detail || {} }));
+  }
+
   function normalizeFaction(value) {
     var v = String(value || '').toLowerCase().trim();
     if (v === 'diamond_hands' || v === 'diamondhands') return 'diamond-hands';
@@ -77,6 +82,7 @@
       cooldown_ms_remaining: Math.max(0, Number(data.cooldown_ms_remaining) || 0),
     };
     setCachedStatus(payload);
+    dispatchUiState('moonboys:faction-status', { ...payload, source: 'load', ts: Date.now() });
     return payload;
   }
 
@@ -97,6 +103,7 @@
       cooldown_ms_remaining: Number(data.cooldown_ms) || 0,
     };
     setCachedStatus(payload);
+    dispatchUiState('moonboys:faction-boost', { faction: payload.faction, amount: 0, source: 'join', ts: Date.now() });
     return data;
   }
 
@@ -108,11 +115,19 @@
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ telegram_auth: auth, source: source || 'score_accept', base_xp: Math.max(0, Math.floor(Number(baseXp) || 0)) }),
     });
-    setCachedStatus({
+    var payload = {
       faction: normalizeFaction(data.faction),
       faction_xp: Number(data.faction_xp_total) || 0,
       bonuses: data.bonuses || FACTIONS[normalizeFaction(data.faction)],
       cooldown_ms_remaining: 0,
+    };
+    setCachedStatus(payload);
+    dispatchUiState('moonboys:faction-boost', {
+      faction: payload.faction,
+      amount: Number(data.faction_xp_awarded || data.faction_xp_delta || baseXp || 0),
+      total: payload.faction_xp,
+      source: source || 'score_accept',
+      ts: Date.now(),
     });
     return data;
   }
@@ -127,18 +142,18 @@
     var faction = getVisualMeta(s.faction);
     var linked = isLinked();
     var unaligned = faction.key === 'unaligned';
-    var glowClass = linked && !unaligned ? ' faction-state--active sync-state--good' : ' faction-state--dim';
+    var glowClass = linked && !unaligned ? ' faction-state--active sync-live' : ' faction-state--dim';
     var joinPrompt = unaligned ? '<div class="faction-join-prompt">Choose a faction to unlock alignment bonuses.</div>' : '';
     var actions = (opts && opts.showJoinActions && unaligned)
       ? '<div class="faction-join-actions">' +
-          '<button class="faction-join-btn" data-faction="diamond-hands">Join Diamond Hands</button>' +
-          '<button class="faction-join-btn" data-faction="hodl-warriors">Join HODL Warriors</button>' +
-          '<button class="faction-join-btn" data-faction="graffpunks">Join GraffPUNKS</button>' +
+          '<button class="faction-join-btn interactive" data-faction="diamond-hands">Join Diamond Hands</button>' +
+          '<button class="faction-join-btn interactive" data-faction="hodl-warriors">Join HODL Warriors</button>' +
+          '<button class="faction-join-btn interactive" data-faction="graffpunks">Join GraffPUNKS</button>' +
         '</div>'
       : '';
 
     return '' +
-      '<div class="faction-player-card' + glowClass + '" style="--faction-color:' + esc(faction.color) + '">' +
+      '<div class="faction-player-card interactive ' + glowClass + (linked ? ' player-online' : ' player-offline') + '" style="--faction-color:' + esc(faction.color) + '">' +
         '<div class="faction-player-title">Player Alignment</div>' +
         '<div class="faction-player-row"><span>Faction:</span><strong>' + esc(faction.icon + ' ' + faction.label) + '</strong></div>' +
         '<div class="faction-player-row"><span>XP:</span><strong>' + (Number(s.faction_xp) || 0) + '</strong></div>' +
