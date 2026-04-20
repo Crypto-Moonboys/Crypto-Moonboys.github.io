@@ -132,10 +132,11 @@ function getSyncGateUrl() {
   return cfg.SYNC_GATE_URL || FORCE_SYNC_GATE_FALLBACK_URL;
 }
 
-function redirectToSyncGate(reason = 'Telegram sync required for Block Topia progression.', delayMs = 700) {
+function redirectToSyncGate(reason = 'Telegram sync required for Block Topia progression.', delayMs = 1600) {
   try {
-    hud.showNodeInterference(reason, 'warning');
+    hud.showNodeInterference(`Block Topia entry blocked: ${reason}`, 'warning');
     hud.pushFeed(`🔐 ${reason}`, 'system');
+    hud.pushFeed('Run /gklink in @WIKICOMSBOT to refresh your connection.', 'system');
   } catch {}
   window.setTimeout(() => {
     window.location.replace(getSyncGateUrl());
@@ -264,7 +265,7 @@ async function ensureRpgEntry() {
   const apiBase = getApiBase();
   const telegramAuth = getTelegramAuth();
   if (!apiBase || !telegramAuth?.hash || !telegramAuth?.auth_date) {
-    redirectToSyncGate('Telegram session expired. Re-sync to enter Block Topia.');
+    redirectToSyncGate('Auth expired. Run /gklink again to enter Block Topia.');
     return false;
   }
   const res = await fetch(`${apiBase}/blocktopia/progression/entry`, {
@@ -280,9 +281,10 @@ async function ensureRpgEntry() {
       hud.showNodeInterference('Not enough XP for Block Topia entry', 'warning');
       hud.pushFeed('🧪 Entry economy: XP required to enter; gems are for upgrades and buffs.', 'system');
     } else if (res.status === 401 || res.status === 403) {
-      redirectToSyncGate('Telegram auth is invalid or expired. Re-sync required for Block Topia entry.');
+      redirectToSyncGate('Auth expired. Run /gklink again for Block Topia entry.');
     } else if (message) {
-      hud.showNodeInterference(message, 'warning');
+      hud.showNodeInterference(`Progression unavailable: ${message}`, 'warning');
+      hud.pushFeed(`⚠️ Progression unavailable: ${message}`, 'system');
     }
     return false;
   }
@@ -330,12 +332,12 @@ async function syncMiniGameOutcome(type, outcome) {
 
 async function boot() {
   if (!hasTelegramAuth()) {
-    redirectToSyncGate('Telegram sync required before entering Block Topia.');
+    redirectToSyncGate('Not synced. Run /gklink before entering Block Topia.');
     return;
   }
   const progression = await fetchServerProgression();
   if (progression?.__authError) {
-    redirectToSyncGate(progression?.error || 'Telegram session invalid. Please sync again before entering Block Topia.');
+    redirectToSyncGate(progression?.error || 'Auth expired. Run /gklink again before entering Block Topia.');
     return;
   }
   const playerTier = progression.tier || 1;

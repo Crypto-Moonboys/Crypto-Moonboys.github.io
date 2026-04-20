@@ -224,7 +224,7 @@
     // Show banner if available
     var banner = document.getElementById('gklink-status');
     if (banner) {
-      banner.textContent = '🔗 Confirming your link…';
+      banner.textContent = '🔗 Confirming your /gklink token...';
       banner.style.display = '';
     }
 
@@ -245,19 +245,19 @@
             }
           }
           if (banner) {
-            banner.textContent = '✅ Account linked! Competitive features are now active.';
+            banner.textContent = '✅ Telegram linked successfully. XP and Block Topia progression will now be stored server-side.';
             banner.className = (banner.className || '') + ' gklink-success';
           }
         } else {
           if (banner) {
-            banner.textContent = '❌ Link failed: ' + (result.data && result.data.error ? result.data.error : 'invalid or expired token');
+            banner.textContent = '❌ Sync expired or invalid. Run /gklink again in @WIKICOMSBOT. ' + (result.data && result.data.error ? '(' + result.data.error + ')' : '');
             banner.className = (banner.className || '') + ' gklink-error';
           }
         }
       })
       .catch(function () {
         if (banner) {
-          banner.textContent = '⚠️ Could not reach the server. Please try again.';
+          banner.textContent = '⚠️ Could not reach sync server. Run /gklink again if this keeps happening.';
           banner.className = (banner.className || '') + ' gklink-error';
         }
       });

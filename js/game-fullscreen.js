@@ -277,8 +277,13 @@
   var cachedLiveBest  = null;
   var cachedRightBest = null;
   var cachedSyncStatus = null;
+  var cachedSyncIdentity = null;
+  var cachedSyncActions = null;
   var inlineProjectedXpValue = null;
   var inlineSyncStatus = null;
+  var inlineSyncIdentity = null;
+  var inlineSyncActions = null;
+  var lastSubmissionState = '';
 
   function getProjectedXp(scoreText) {
     var raw = Number(scoreText);
@@ -306,10 +311,42 @@
     note.innerHTML = '' +
       '<strong>Arcade Sync:</strong> Play free without Telegram. Unsynced progress stays in this browser only; clearing browser data may reset local arcade progress. Link Telegram to store Block Topia XP and progression server-side.';
     card.appendChild(note);
-    var status = el('div', 'arcade-sync-status', 'Submission status: waiting for score submission.');
+    var identity = el('div', 'arcade-sync-identity', 'Linked as: Not linked');
+    identity.id = 'arcade-sync-identity';
+    card.appendChild(identity);
+    inlineSyncIdentity = identity;
+    var status = el('div', 'arcade-sync-status sync-state--bad', 'Unsynced — local only. To store XP and Block Topia progression, link with Telegram using /gklink.');
     status.id = 'arcade-sync-status';
     card.appendChild(status);
+    var actions = el('div', 'arcade-sync-actions');
+    actions.id = 'arcade-sync-actions';
+    card.appendChild(actions);
+    inlineSyncActions = actions;
     inlineSyncStatus = status;
+  }
+
+  function getIdentityApi() {
+    return (window && window.MOONBOYS_IDENTITY) || null;
+  }
+
+  function getLinkedIdentityLabel() {
+    var gate = getIdentityApi();
+    var name = gate && typeof gate.getTelegramName === 'function' ? gate.getTelegramName() : null;
+    var auth = gate && typeof gate.getTelegramAuth === 'function' ? gate.getTelegramAuth() : null;
+    var username = auth && (auth.username || (auth.user && auth.user.username)) ? (auth.username || auth.user.username) : null;
+    if (name && username) return String(name) + ' (@' + String(username).replace(/^@/, '') + ')';
+    if (name) return String(name);
+    if (username) return '@' + String(username).replace(/^@/, '');
+    return 'Unknown Telegram account';
+  }
+
+  function isLinkedReady() {
+    var gate = getIdentityApi();
+    if (!gate || typeof gate.isTelegramLinked !== 'function') return false;
+    if (!gate.isTelegramLinked()) return false;
+    if (!gate.getTelegramAuth || !gate.getTelegramAuth()) return false;
+    var auth = gate.getTelegramAuth();
+    return !!(auth && auth.hash && auth.auth_date);
   }
 
   /* ── DOM helpers ─────────────────────────────────────────────────── */
@@ -494,9 +531,16 @@
     cachedLiveBest.id = 'overlay-live-best';
     sideLeft.appendChild(cachedLiveBest);
     sideLeft.appendChild(el('div', 'panel-title', 'Sync Status'));
-    cachedSyncStatus = el('div', 'panel-note panel-note--status', 'No submission yet. Arcade runs locally until a score is synced.');
+    cachedSyncIdentity = el('div', 'panel-note panel-note--identity', 'Linked as: Not linked');
+    cachedSyncIdentity.id = 'overlay-sync-identity';
+    sideLeft.appendChild(cachedSyncIdentity);
+    cachedSyncStatus = el('div', 'panel-note panel-note--status sync-state--bad', 'Unsynced — local only. To store XP and Block Topia progression, link with Telegram using /gklink.');
     cachedSyncStatus.id = 'overlay-sync-status';
     sideLeft.appendChild(cachedSyncStatus);
+    cachedSyncActions = el('div', 'panel-note panel-note--actions');
+    cachedSyncActions.id = 'overlay-sync-actions';
+    sideLeft.appendChild(cachedSyncActions);
+    updateSyncSurfaceState(lastSubmissionState || (isLinkedReady() ? 'linked_ready' : 'local_only'), {});
   }
 
   function buildRightPanel(meta) {
@@ -531,44 +575,89 @@
     if (inlineSyncStatus) inlineSyncStatus.textContent = text;
   }
 
+  function setSyncIdentityText(text) {
+    if (cachedSyncIdentity) cachedSyncIdentity.textContent = text;
+    if (inlineSyncIdentity) inlineSyncIdentity.textContent = text;
+  }
+
+  function setActionHtml(html) {
+    if (cachedSyncActions) cachedSyncActions.innerHTML = html || '';
+    if (inlineSyncActions) inlineSyncActions.innerHTML = html || '';
+  }
+
+  function setSyncVisualState(isGood) {
+    var statusNodes = [cachedSyncStatus, inlineSyncStatus];
+    statusNodes.forEach(function (node) {
+      if (!node) return;
+      node.classList.remove('sync-state--good', 'sync-state--bad');
+      node.classList.add(isGood ? 'sync-state--good' : 'sync-state--bad');
+    });
+  }
+
+  function updateSyncSurfaceState(state, detail) {
+    var d = detail || {};
+    var linked = isLinkedReady();
+    var baseIdentity = linked ? ('Linked as: ' + (d.identityLabel || getLinkedIdentityLabel())) : 'Linked as: Not linked';
+    setSyncIdentityText(baseIdentity);
+    lastSubmissionState = state;
+    switch (state) {
+      case 'linked_ready':
+        setSyncVisualState(true);
+        setSyncStatusText('Linked — ready. Auto-submit is active for this run.');
+        setActionHtml('<a class="sync-action-link" href="/gkniftyheads-incubator.html">Open sync instructions</a>');
+        return;
+      case 'auto_submitting':
+        setSyncVisualState(true);
+        setSyncStatusText('Auto-submitting score...');
+        setActionHtml('');
+        return;
+      case 'score_accepted':
+        setSyncVisualState(true);
+        setSyncStatusText('Score accepted.');
+        setActionHtml('');
+        return;
+      case 'xp_awarded':
+        setSyncVisualState(true);
+        setSyncStatusText('Accepted — XP awarded: ' + (d.awardedXp || 0) + (Number.isFinite(d.totalXp) ? (' · Total XP: ' + d.totalXp) : ''));
+        setActionHtml('');
+        return;
+      case 'accepted_no_xp':
+      case 'rejected_no_xp':
+        setSyncVisualState(true);
+        setSyncStatusText('Accepted — no XP awarded.');
+        setActionHtml('');
+        return;
+      case 'auth_expired':
+        setSyncVisualState(false);
+        setSyncStatusText('Auth expired — run /gklink again.');
+        setActionHtml('<a class="sync-action-link sync-action-link--danger" href="/gkniftyheads-incubator.html">Run /gklink</a>');
+        return;
+      case 'relink_required':
+        setSyncVisualState(false);
+        setSyncStatusText('Re-link required — run /gklink again.');
+        setActionHtml('<a class="sync-action-link sync-action-link--danger" href="/gkniftyheads-incubator.html">Run /gklink</a>');
+        return;
+      case 'sync_error':
+        setSyncVisualState(false);
+        setSyncStatusText('Sync failed. Retry sync.');
+        setActionHtml('<a class="sync-action-link" href="/games/">Retry Sync</a> <a class="sync-action-link" href="/gkniftyheads-incubator.html">Open sync instructions</a>');
+        return;
+      case 'local_only':
+      default:
+        setSyncVisualState(false);
+        setSyncStatusText('Unsynced — local only. To store XP and Block Topia progression, link with Telegram using /gklink.');
+        setActionHtml('<a class="sync-action-link sync-action-link--danger" href="/gkniftyheads-incubator.html">Run /gklink</a>');
+    }
+  }
+
   function bindSubmissionStatus() {
     document.addEventListener('arcade:submission-status', function (event) {
       var d = event && event.detail ? event.detail : {};
-      var base = 'Submission status: ';
-      if (d.state === 'syncing') {
-        setSyncStatusText(base + 'Syncing score… New high score — XP conversion pending.');
-        return;
-      }
-      if (d.state === 'local_only') {
-        setSyncStatusText(base + 'Score recorded (local only). Sync Telegram to convert score into XP.');
-        return;
-      }
-      if (d.state === 'telegram_sync_required') {
-        setSyncStatusText(base + 'Telegram sync required. Accepted score cannot award persistent Block Topia XP until linked.');
-        return;
-      }
-      if (d.state === 'telegram_auth_required') {
-        setSyncStatusText(base + 'Accepted score found, but Telegram auth expired. Re-sync Telegram so XP can be stored.');
-        return;
-      }
-      if (d.state === 'accepted_score') {
-        setSyncStatusText(base + 'Accepted score confirmed for ranking. XP conversion will follow accepted-score rules.');
-        return;
-      }
-      if (d.state === 'xp_awarded') {
-        var totalXpText = (typeof d.totalXp === 'number' && isFinite(d.totalXp))
-          ? (' Total XP: ' + d.totalXp + '.')
-          : '';
-        setSyncStatusText(base + 'Accepted score. Awarded XP: ' + (d.awardedXp || 0) + '.' + totalXpText);
-        return;
-      }
-      if (d.state === 'rejected_no_xp' || d.state === 'accepted_no_xp') {
-        setSyncStatusText(base + 'Score not accepted for XP conversion (no XP awarded).');
-        return;
-      }
-      if (d.state === 'sync_error') {
-        setSyncStatusText(base + 'Sync failed. Score may remain local until retry.');
-      }
+      updateSyncSurfaceState(d.state || '', d);
+    });
+    document.addEventListener('arcade-run-game-over', function () {
+      if (isLinkedReady()) updateSyncSurfaceState('auto_submitting', {});
+      else updateSyncSurfaceState('local_only', {});
     });
   }
 
@@ -886,6 +975,7 @@
   ensureInlineProjectionHud();
   ensureInlineSyncNote();
   bindSubmissionStatus();
+  updateSyncSurfaceState(isLinkedReady() ? 'linked_ready' : 'local_only', {});
 
   // Esc key closes the overlay.
   // Enter / Space trigger the overlay ▶ Start button when the overlay is open
