@@ -458,66 +458,6 @@ async function verifyTelegramIdentityFromBody(body, env) {
   };
 }
 
-async function ensureBlockTopiaProgressionTables(db) {
-  await db.prepare(`
-    CREATE TABLE IF NOT EXISTS blocktopia_progression (
-      telegram_id TEXT PRIMARY KEY,
-      xp INTEGER NOT NULL DEFAULT 0,
-      gems INTEGER NOT NULL DEFAULT 0,
-      tier INTEGER NOT NULL DEFAULT 1,
-      win_streak INTEGER NOT NULL DEFAULT 0,
-      upgrade_efficiency INTEGER NOT NULL DEFAULT 0,
-      upgrade_signal INTEGER NOT NULL DEFAULT 0,
-      upgrade_defense INTEGER NOT NULL DEFAULT 0,
-      upgrade_gem INTEGER NOT NULL DEFAULT 0,
-      upgrade_npc INTEGER NOT NULL DEFAULT 0,
-      rpg_mode_active INTEGER NOT NULL DEFAULT 0,
-      last_active DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-      updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
-    )
-  `).run();
-  await db.prepare(`
-    ALTER TABLE blocktopia_progression
-    ADD COLUMN win_streak INTEGER NOT NULL DEFAULT 0
-  `).run().catch(() => {});
-  await db.prepare(`
-    ALTER TABLE blocktopia_progression
-    ADD COLUMN rpg_mode_active INTEGER NOT NULL DEFAULT 0
-  `).run().catch(() => {});
-  await db.prepare(`
-    ALTER TABLE blocktopia_progression
-    ADD COLUMN upgrade_npc INTEGER NOT NULL DEFAULT 0
-  `).run().catch(() => {});
-  await db.prepare(`
-    ALTER TABLE blocktopia_progression
-    ADD COLUMN upgrade_gem INTEGER NOT NULL DEFAULT 0
-  `).run().catch(() => {});
-  await db.prepare(`
-    ALTER TABLE blocktopia_progression
-    ADD COLUMN upgrade_defense INTEGER NOT NULL DEFAULT 0
-  `).run().catch(() => {});
-  await db.prepare(`
-    ALTER TABLE blocktopia_progression
-    ADD COLUMN upgrade_signal INTEGER NOT NULL DEFAULT 0
-  `).run().catch(() => {});
-  await db.prepare(`
-    ALTER TABLE blocktopia_progression
-    ADD COLUMN upgrade_efficiency INTEGER NOT NULL DEFAULT 0
-  `).run().catch(() => {});
-  await db.prepare(`
-    CREATE TABLE IF NOT EXISTS blocktopia_progression_events (
-      id TEXT PRIMARY KEY,
-      telegram_id TEXT NOT NULL,
-      action TEXT NOT NULL,
-      action_type TEXT,
-      score INTEGER NOT NULL DEFAULT 0,
-      xp_change INTEGER NOT NULL DEFAULT 0,
-      gems_change INTEGER NOT NULL DEFAULT 0,
-      created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
-    )
-  `).run();
-}
-
 async function getOrCreateBlockTopiaProgression(db, telegramId) {
   await db.prepare(`
     INSERT INTO blocktopia_progression (
@@ -1098,7 +1038,6 @@ export default {
       if (verified.error) return err(verified.error, verified.status || 401);
 
       try {
-        await ensureBlockTopiaProgressionTables(env.DB);
         await upsertTelegramUser(env.DB, verified.user).catch(() => {});
         const row = await getOrCreateBlockTopiaProgression(env.DB, verified.telegramId);
         const upgrades = getUpgradeSnapshot(row);
@@ -1150,7 +1089,6 @@ export default {
       const verified = await verifyTelegramIdentityFromBody(body, env);
       if (verified.error) return err(verified.error, verified.status || 401);
       try {
-        await ensureBlockTopiaProgressionTables(env.DB);
         const row = await getOrCreateBlockTopiaProgression(env.DB, verified.telegramId);
         const tier = clamp(Math.floor(Number(row.tier) || 1), TIER_MIN, TIER_MAX);
         const entryCost = computeRpgEntryCost(tier);
@@ -1193,7 +1131,6 @@ export default {
       const config = BLOCKTOPIA_UPGRADES[upgradeId];
       if (!config) return err('Invalid upgrade key', 400);
       try {
-        await ensureBlockTopiaProgressionTables(env.DB);
         const row = await getOrCreateBlockTopiaProgression(env.DB, verified.telegramId);
         const upgrades = getUpgradeSnapshot(row);
         const currentLevel = upgrades[upgradeId];
@@ -1269,7 +1206,6 @@ export default {
           score > 0 && score >= leaderboardCtx.trustedBestScore && !alreadyRewardedScore;
       }
       try {
-        await ensureBlockTopiaProgressionTables(env.DB);
         await upsertTelegramUser(env.DB, verified.user).catch(() => {});
 
         if (action !== 'mini_game_affordability') {
@@ -1498,7 +1434,6 @@ export default {
       if (verified.error) return err(verified.error, verified.status || 401);
 
       try {
-        await ensureBlockTopiaProgressionTables(env.DB);
         await env.DB.prepare(
           `DELETE FROM blocktopia_progression_events WHERE telegram_id = ?`
         ).bind(verified.telegramId).run();
