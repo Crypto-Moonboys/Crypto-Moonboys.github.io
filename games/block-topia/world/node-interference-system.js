@@ -111,6 +111,8 @@ export function createNodeInterferenceSystem(state) {
       samPressureDelta: Number(payload.samPressureDelta) || 0,
       districtControl: Number(payload.districtControl),
       districtOwner: payload.districtOwner || '',
+      districtControlState: payload.districtControlState || '',
+      districtInstability: Number(payload.districtInstability),
       samPressure: Number(payload.samPressure),
       localOnly: false,
       feedLines: [],

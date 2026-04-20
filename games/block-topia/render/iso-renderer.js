@@ -30,6 +30,13 @@ const HALO_PULSE_AMPLITUDE = 0.22;
 const DATA_PACKET_SPEED = 0.00018;
 const DISTRICT_LABEL_FONT = '700 12px Inter, sans-serif';
 const DISTRICT_LABEL_GLOW_FONT = '700 18px "Rajdhani", Inter, sans-serif';
+const DISTRICT_STATE_STYLE = {
+  secure: { fill: 'rgba(94,242,255,0.14)', stroke: 'rgba(94,242,255,0.66)' },
+  contested: { fill: 'rgba(255,216,77,0.12)', stroke: 'rgba(255,216,77,0.6)' },
+  unstable: { fill: 'rgba(255,126,79,0.14)', stroke: 'rgba(255,126,79,0.72)' },
+  collapsing: { fill: 'rgba(255,79,216,0.18)', stroke: 'rgba(255,79,216,0.86)' },
+  captured: { fill: 'rgba(141,255,106,0.14)', stroke: 'rgba(141,255,106,0.68)' },
+};
 
 const ROLE_STYLE = {
   vendor: { color: '#ffd84d', factionRing: true },
@@ -1032,6 +1039,52 @@ export function createIsoRenderer(canvas) {
     ctx.restore();
   }
 
+  function drawDistrictControlOverlay(originX, originY, state, now) {
+    const districtState = Array.isArray(state?.districtState) ? state.districtState : [];
+    if (!districtState.length || !state?.districts?.byId) return;
+    ctx.save();
+    for (const entry of districtState) {
+      const districtMeta = state.districts.byId.get(entry.id);
+      const grid = districtMeta?.grid;
+      if (!grid) continue;
+      const style = DISTRICT_STATE_STYLE[entry.controlState] || DISTRICT_STATE_STYLE.contested;
+      const corners = [
+        toIso(grid.col, grid.row),
+        toIso(grid.col + grid.w, grid.row),
+        toIso(grid.col + grid.w, grid.row + grid.h),
+        toIso(grid.col, grid.row + grid.h),
+      ];
+      const pulse = entry.controlState === 'collapsing' ? 0.78 + ((Math.sin(now / 180) + 1) * 0.11) : 1;
+      ctx.globalAlpha = pulse;
+      ctx.beginPath();
+      corners.forEach((corner, index) => {
+        const px = originX + corner.x;
+        const py = originY + corner.y;
+        if (index === 0) ctx.moveTo(px, py);
+        else ctx.lineTo(px, py);
+      });
+      ctx.closePath();
+      ctx.fillStyle = style.fill;
+      ctx.fill();
+      ctx.strokeStyle = style.stroke;
+      ctx.lineWidth = 1.6;
+      ctx.stroke();
+
+      const center = toIso(grid.col + (grid.w / 2), grid.row + (grid.h / 2));
+      const labelX = originX + center.x;
+      const labelY = originY + center.y;
+      ctx.globalAlpha = 0.9;
+      ctx.fillStyle = 'rgba(2,8,20,0.7)';
+      ctx.font = DISTRICT_LABEL_GLOW_FONT;
+      ctx.textAlign = 'center';
+      ctx.fillText(`${districtMeta.name} · ${String(entry.controlState || 'contested').toUpperCase()}`, labelX, labelY);
+      ctx.fillStyle = '#e8fdff';
+      ctx.font = DISTRICT_LABEL_FONT;
+      ctx.fillText(`${Math.round(Number(entry.control || 0))}% · ${entry.owner || 'Contested'}`, labelX, labelY);
+    }
+    ctx.restore();
+  }
+
   function drawSignalRouterOverlay(originX, originY, state, now) {
     const router = state?.signalRouterView;
     const controlNodes = state?.controlNodes;
@@ -1329,6 +1382,7 @@ export function createIsoRenderer(canvas) {
 
     ctx.drawImage(layerState.roadBlocks.canvas, worldDrawX, worldDrawY);
     ctx.drawImage(layerState.worldObjects.canvas, worldDrawX, worldDrawY);
+    drawDistrictControlOverlay(originX, originY, state, now);
 
     drawNetworkDataLinks(originX, originY, state.controlNodes, now, state);
     drawSignalRouterOverlay(originX, originY, state, now);

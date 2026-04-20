@@ -36,6 +36,17 @@ const DISTRICT_INSTABILITY_CONFLICT_GAIN = 4.5;
 const DISTRICT_INSTABILITY_SAM_GAIN = 1.5;
 const NODE_CONFLICT_DECAY = 2.5;
 const SAM_WAR_IMPACT_CLAMP = 18;
+const PLAYER_NODE_SUPPORT_RADIUS = 8;
+const PLAYER_NODE_SUPPORT_TICK = 1.4;
+const PLAYER_DISTRICT_SUPPORT_TICK = 1.1;
+const PLAYER_WAR_ACTION_IMPACT = {
+  interfere: 7,
+  operation_success: 10,
+  operation_failure: 8,
+  operation_skip: 4,
+  duel_win: 9,
+  duel_loss: 6,
+};
 
 const WORLD_DISTRICTS = [
   { id: 'neon-slums', name: 'Neon Slums' },
@@ -56,6 +67,7 @@ class PlayerState extends Schema {
     this.y = 0;
     this.xp = 0;
     this.currentDistrict = '';
+    this.warStance = 'neutral';
   }
 }
 
@@ -66,6 +78,7 @@ defineTypes(PlayerState, {
   y: 'number',
   xp: 'number',
   currentDistrict: 'string',
+  warStance: 'string',
 });
 
 class RoomState extends Schema {
@@ -129,6 +142,10 @@ export class CityRoom extends Room {
 
     this.onMessage('nodeInterfere', (client, data) => {
       this.handleNodeInterference(client, data);
+    });
+
+    this.onMessage('warAction', (client, data) => {
+      this.handlePlayerWarAction(client, data);
     });
 
     this.onMessage('duelChallenge', (client, data) => {
@@ -226,6 +243,10 @@ export class CityRoom extends Room {
           Liberators: 45 + (index % 2 === 0 ? 6 : -4),
           Wardens: 45 + (index % 2 === 1 ? 6 : -4),
         },
+        pressure: { Liberators: 0, Wardens: 0, neutral: 0 },
+        controlState: 'contested',
+        alliedSupport: 50,
+        hostilePresence: 50,
       })),
       controlNodes,
       links,
@@ -280,10 +301,15 @@ export class CityRoom extends Room {
       })),
       districts: this.world.districts.map((d) => ({
         id: d.id,
+        name: d.name,
         control: d.control,
         owner: d.owner,
         instability: d.instability || 0,
         support: d.support || { Liberators: 50, Wardens: 50 },
+        pressure: d.pressure || { Liberators: 0, Wardens: 0, neutral: 0 },
+        controlState: d.controlState || 'contested',
+        alliedSupport: d.alliedSupport || 50,
+        hostilePresence: d.hostilePresence || 50,
       })),
       controlNodes: this.world.controlNodes.map((node) => ({
         nodeId: node.id,
@@ -462,12 +488,140 @@ export class CityRoom extends Room {
     return byNode;
   }
 
+  buildPlayerWarPresence() {
+    const nodePresence = new Map(this.world.controlNodes.map((node) => [node.id, { assist: 0, disrupt: 0, neutral: 0 }]));
+    const districtPresence = new Map(this.world.districts.map((district) => [district.id, { assist: 0, disrupt: 0, neutral: 0 }]));
+    for (const player of this.state.players.values()) {
+      if (!player) continue;
+      const stance = String(player.warStance || 'neutral');
+      const districtSlot = districtPresence.get(player.currentDistrict);
+      if (districtSlot) {
+        if (stance === 'assist') districtSlot.assist += 1;
+        else if (stance === 'disrupt') districtSlot.disrupt += 1;
+        else districtSlot.neutral += 1;
+      }
+      for (const node of this.world.controlNodes) {
+        const distance = Math.hypot(player.x - node.x, player.y - node.y);
+        if (distance > PLAYER_NODE_SUPPORT_RADIUS) continue;
+        const slot = nodePresence.get(node.id);
+        if (!slot) continue;
+        if (stance === 'assist') slot.assist += 1;
+        else if (stance === 'disrupt') slot.disrupt += 1;
+        else slot.neutral += 1;
+      }
+    }
+    return { nodePresence, districtPresence };
+  }
+
+  getDistrictControlState(district) {
+    const control = Number(district?.control || 50);
+    const instability = Number(district?.instability || 0);
+    const supportGap = (district?.support?.Liberators || 50) - (district?.support?.Wardens || 50);
+    const owner = district?.owner || 'Contested';
+    if ((owner === 'Liberators' || owner === 'Wardens') && control >= 85 && instability <= 28) return 'captured';
+    if (instability >= 78 || (owner === 'Contested' && control >= 42 && control <= 58 && instability >= 62)) return 'collapsing';
+    if (instability >= 56 || Math.abs(supportGap) <= 4) return 'unstable';
+    if (owner === 'Contested' || (control > 35 && control < 65)) return 'contested';
+    return 'secure';
+  }
+
+  applyDistrictStateConsequences(district, previousState = '') {
+    district.controlState = this.getDistrictControlState(district);
+    const ally = district.owner === 'Wardens' ? 'Wardens' : 'Liberators';
+    district.alliedSupport = ally === 'Liberators' ? district.support?.Liberators || 50 : district.support?.Wardens || 50;
+    district.hostilePresence = ally === 'Liberators' ? district.support?.Wardens || 50 : district.support?.Liberators || 50;
+
+    if (district.controlState === 'secure') this.world.warSamPressureDelta -= 1.2;
+    if (district.controlState === 'contested') this.world.warSamPressureDelta += 0.8;
+    if (district.controlState === 'unstable') this.world.warSamPressureDelta += 1.8;
+    if (district.controlState === 'collapsing') this.world.warSamPressureDelta += 3.2;
+    if (district.controlState === 'captured') this.world.warSamPressureDelta -= 2.4;
+
+    if (previousState && previousState !== district.controlState) {
+      this.broadcast('districtControlStateChanged', {
+        districtId: district.id,
+        districtName: district.name,
+        control: district.control,
+        owner: district.owner,
+        controlState: district.controlState,
+        instability: district.instability,
+        support: district.support,
+        samPressure: this.world.samPressure,
+      });
+      if (district.controlState === 'captured') {
+        this.emitWarEvent(`district-captured-state:${district.id}`, `🏴 ${district.name} locked into CAPTURED control under ${district.owner}`, 3200);
+      } else if (district.controlState === 'collapsing') {
+        this.emitWarEvent(`district-collapse-state:${district.id}`, `🕳️ ${district.name} is COLLAPSING · SAM vectors widening`, 3200);
+      } else {
+        this.emitWarEvent(`district-state:${district.id}:${district.controlState}`, `🗺️ ${district.name} shifted to ${district.controlState.toUpperCase()} state`, 2800);
+      }
+    }
+  }
+
+  applyPlayerWarImpact({
+    playerId,
+    districtId,
+    nodeId,
+    intent = 'disrupt',
+    intensity = 6,
+    source = 'interfere',
+  }) {
+    const player = playerId ? this.state.players.get(playerId) : null;
+    const district = this.world.districts.find((entry) => entry.id === districtId) || this.world.districts.find((entry) => entry.id === player?.currentDistrict);
+    let node = nodeId ? this.world.nodeLookup.get(nodeId) : null;
+    if (!node && player) {
+      const nearest = this.world.controlNodes
+        .map((entry) => ({ entry, d: Math.hypot(player.x - entry.x, player.y - entry.y) }))
+        .sort((a, b) => a.d - b.d)[0];
+      node = nearest?.d <= PLAYER_NODE_SUPPORT_RADIUS * 1.6 ? nearest.entry : null;
+    }
+    if (!district || !node) return null;
+
+    const signedIntent = intent === 'assist' ? 1 : intent === 'disrupt' ? -1 : 0;
+    const clampedIntensity = Math.max(1, Math.min(18, Number(intensity) || 6));
+    node.conflictLevel = Math.max(0, Math.min(100, node.conflictLevel + (Math.abs(signedIntent) * clampedIntensity * 0.7)));
+    node.interference = Math.max(0, Math.min(100, node.interference + (signedIntent < 0 ? clampedIntensity * 0.9 : clampedIntensity * 0.35)));
+    node.samInstability = Math.max(0, Math.min(100, node.samInstability + (signedIntent < 0 ? clampedIntensity * 0.7 : -clampedIntensity * 0.28)));
+    node.control = Math.max(-100, Math.min(100, node.control + (signedIntent * clampedIntensity * 1.15)));
+    if (signedIntent !== 0) node.warState = signedIntent > 0 ? 'reinforcing' : 'contesting';
+
+    const supportShift = clampedIntensity * 0.45;
+    if (signedIntent > 0) {
+      district.support.Liberators = Math.max(0, Math.min(100, (district.support.Liberators || 50) + supportShift));
+      district.support.Wardens = Math.max(0, Math.min(100, (district.support.Wardens || 50) - (supportShift * 0.5)));
+    } else if (signedIntent < 0) {
+      district.support.Wardens = Math.max(0, Math.min(100, (district.support.Wardens || 50) + supportShift));
+      district.support.Liberators = Math.max(0, Math.min(100, (district.support.Liberators || 50) - (supportShift * 0.5)));
+    }
+
+    this.world.samPressure = Math.max(0, Math.min(140, this.world.samPressure + (signedIntent < 0 ? clampedIntensity * 0.55 : -clampedIntensity * 0.32)));
+    this.world.playerInterferenceSpike = Math.max(0, this.world.playerInterferenceSpike + (signedIntent < 0 ? clampedIntensity : clampedIntensity * 0.4));
+
+    this.broadcast('playerWarImpact', {
+      source,
+      playerId: playerId || '',
+      districtId: district.id,
+      districtName: district.name,
+      nodeId: node.id,
+      intent,
+      controlState: district.controlState || this.getDistrictControlState(district),
+      intensity: clampedIntensity,
+      nodeControl: node.control,
+      nodeConflictLevel: node.conflictLevel,
+      samPressure: this.world.samPressure,
+    });
+
+    this.emitWarEvent(`player-impact:${district.id}:${intent}:${source}`, `🧑‍🚀 Player ${intent} action at ${node.id} shifted ${district.name} pressure`, 2200);
+    return { district, node };
+  }
+
   updateWarLayer(dt) {
     this.world.warTickMs += dt;
     if (this.world.warTickMs < WAR_TICK_INTERVAL_MS) return;
     const warDt = this.world.warTickMs / 1000;
     this.world.warTickMs = 0;
     const presence = this.buildNodePresence();
+    const playerPresence = this.buildPlayerWarPresence();
     const districtWar = new Map(this.world.districts.map((district) => [district.id, {
       conflict: 0,
       liberatorPressure: 0,
@@ -483,6 +637,10 @@ export class CityRoom extends Room {
       const districtStats = districtWar.get(node.districtId);
       const pressureGap = lCount - wCount;
       const totalPressure = lCount + wCount;
+      const playerNodePressure = playerPresence.nodePresence.get(node.id) || { assist: 0, disrupt: 0, neutral: 0 };
+      const playerDistrictPressure = playerPresence.districtPresence.get(node.districtId) || { assist: 0, disrupt: 0, neutral: 0 };
+      const playerGap = (playerNodePressure.assist - playerNodePressure.disrupt)
+        + ((playerDistrictPressure.assist - playerDistrictPressure.disrupt) * 0.65);
       const nodeIsContested = lCount > 0 && wCount > 0;
       const previousState = node.warState || 'patrolling';
       node.contestedBy = nodeIsContested ? 'Both' : pressureGap > 0 ? 'Liberators' : pressureGap < 0 ? 'Wardens' : null;
@@ -504,6 +662,12 @@ export class CityRoom extends Room {
       } else if (pressureGap < 0) {
         node.control = Math.max(-100, node.control + (pressureGap * warDt * 5));
         districtStats.wardenPressure += Math.abs(pressureGap);
+      }
+      if (playerGap !== 0) {
+        node.control = Math.max(-100, Math.min(100, node.control + (playerGap * PLAYER_NODE_SUPPORT_TICK * warDt)));
+        if (playerGap > 0) districtStats.liberatorPressure += Math.abs(playerGap) * PLAYER_DISTRICT_SUPPORT_TICK;
+        else districtStats.wardenPressure += Math.abs(playerGap) * PLAYER_DISTRICT_SUPPORT_TICK;
+        node.conflictLevel = Math.max(0, Math.min(100, node.conflictLevel + (Math.abs(playerGap) * 0.85)));
       }
 
       const recruiterCount = (slot.recruiterLiberators || 0) + (slot.recruiterWardens || 0);
@@ -574,10 +738,16 @@ export class CityRoom extends Room {
 
     let samDelta = 0;
     for (const district of this.world.districts) {
+      const previousState = district.controlState || 'contested';
       const stats = districtWar.get(district.id) || {};
       const netPressure = (stats.liberatorPressure || 0) - (stats.wardenPressure || 0);
       const conflictWeight = (stats.conflict || 0) * 0.004;
       const supportGap = (district.support?.Liberators || 50) - (district.support?.Wardens || 50);
+      district.pressure = {
+        Liberators: Number((stats.liberatorPressure || 0).toFixed(2)),
+        Wardens: Number((stats.wardenPressure || 0).toFixed(2)),
+        neutral: Number((stats.conflict || 0).toFixed(2)),
+      };
       district.instability = Math.max(
         0,
         Math.min(
@@ -596,6 +766,7 @@ export class CityRoom extends Room {
       if (district.control >= DISTRICT_CAPTURE_THRESHOLD) district.owner = 'Liberators';
       else if (district.control <= (100 - DISTRICT_CAPTURE_THRESHOLD)) district.owner = 'Wardens';
       else district.owner = 'Contested';
+      this.applyDistrictStateConsequences(district, previousState);
 
       if (district.owner === 'Contested' && district.instability >= 68) {
         samDelta += 2.4;
@@ -624,6 +795,7 @@ export class CityRoom extends Room {
 
     for (const district of this.world.districts) {
       const previousOwner = district.owner;
+      const previousState = district.controlState || 'contested';
       const count = districtNodeCounts.get(district.id) || 1;
       const sum = districtNodeTotals.get(district.id) || 0;
       const normalized = Math.max(-100, Math.min(100, sum / count));
@@ -637,6 +809,7 @@ export class CityRoom extends Room {
       } else {
         district.owner = 'Contested';
       }
+      this.applyDistrictStateConsequences(district, previousState);
       if (previousOwner !== district.owner) {
         if (district.owner === 'Liberators' || district.owner === 'Wardens') {
           this.emitWarEvent(`district-flip:${district.id}:${district.owner}`, `🏳️ ${district.name} fell to ${district.owner}`, 3000);
@@ -765,6 +938,16 @@ export class CityRoom extends Room {
     if (!node) return;
     if (node.cooldownUntil > now) return;
 
+    const intent = String(data?.intent || 'disrupt').toLowerCase() === 'assist' ? 'assist' : 'disrupt';
+    const impact = this.applyPlayerWarImpact({
+      playerId: client.sessionId,
+      districtId: node.districtId,
+      nodeId: node.id,
+      intent,
+      intensity: PLAYER_WAR_ACTION_IMPACT.interfere,
+      source: 'interference',
+    });
+
     node.interference = Math.max(0, Math.min(100, node.interference + NODE_INTERFERENCE_GAIN));
     node.control = Math.max(-100, Math.min(100, node.control - NODE_DISTRICT_SHIFT));
     node.lastInterferedBy = client.sessionId;
@@ -779,7 +962,7 @@ export class CityRoom extends Room {
     }
     this.world.playerInterferenceSpike = Math.max(0, this.world.playerInterferenceSpike + NODE_INTERFERENCE_GAIN);
 
-    const district = this.world.districts.find((entry) => entry.id === node.districtId);
+    const district = impact?.district || this.world.districts.find((entry) => entry.id === node.districtId);
     if (!district) return;
 
     const samPressureDelta = SAM_PRESSURE_FROM_INTERFERENCE;
@@ -804,6 +987,8 @@ export class CityRoom extends Room {
       sourcePlayerId: client.sessionId,
       districtControl: district.control,
       districtOwner: district.owner,
+      districtControlState: district.controlState || 'contested',
+      districtInstability: district.instability || 0,
       samPressureDelta,
       samPressure: this.world.samPressure,
     });
@@ -819,6 +1004,7 @@ export class CityRoom extends Room {
     player.x = 50;
     player.y = 50;
     player.xp = 0;
+    player.warStance = 'neutral';
 
     this.state.players.set(client.sessionId, player);
     this.completedQuests.set(client.sessionId, new Set());
@@ -874,6 +1060,42 @@ export class CityRoom extends Room {
         totalXp: player.xp,
       });
     }
+  }
+
+  handlePlayerWarAction(client, data) {
+    const player = this.state.players.get(client.sessionId);
+    if (!player) return;
+    const actionType = String(data?.actionType || '').toLowerCase();
+    const intent = String(data?.intent || '').toLowerCase() === 'assist' ? 'assist' : 'disrupt';
+    const districtId = String(data?.districtId || player.currentDistrict || '');
+    const nodeId = String(data?.nodeId || '').toLowerCase();
+    const baseImpact = PLAYER_WAR_ACTION_IMPACT[actionType] || 5;
+    const result = this.applyPlayerWarImpact({
+      playerId: client.sessionId,
+      districtId,
+      nodeId,
+      intent,
+      intensity: baseImpact,
+      source: actionType || 'player_action',
+    });
+    if (!result) return;
+    player.warStance = intent;
+
+    const district = result.district;
+    this.broadcast('districtCaptureChanged', {
+      districtId: district.id,
+      control: district.control,
+      owner: district.owner,
+      controlState: district.controlState,
+      instability: district.instability,
+      support: district.support,
+    });
+
+    this.emitWarEvent(
+      `player-war-action:${district.id}:${actionType}:${intent}`,
+      `🎯 ${player.name} ${intent === 'assist' ? 'stabilized' : 'destabilized'} ${district.name} via ${actionType || 'operation'}`,
+      1500,
+    );
   }
 
   onDispose() {
@@ -1012,13 +1234,21 @@ export class CityRoom extends Room {
     const duel = this.duels.endDuel(duelId, 'resolved');
     if (!duel) return;
 
-    let rippleDistrict = null;
-    if (this.world.districts.length) {
+    const winner = winnerId ? this.state.players.get(winnerId) : null;
+    let rippleDistrict = winner ? this.world.districts.find((district) => district.id === winner.currentDistrict) : null;
+    if (!rippleDistrict && this.world.districts.length) {
       const seed = Math.abs(String(duelId).split('').reduce((acc, ch) => acc + ch.charCodeAt(0), 0));
       rippleDistrict = this.world.districts[seed % this.world.districts.length];
     }
     if (rippleDistrict) {
       const pressureDirection = winnerId === duel.playerA ? 1 : winnerId === duel.playerB ? -1 : 0;
+      this.applyPlayerWarImpact({
+        playerId: winnerId,
+        districtId: rippleDistrict.id,
+        intent: pressureDirection >= 0 ? 'assist' : 'disrupt',
+        intensity: pressureDirection >= 0 ? PLAYER_WAR_ACTION_IMPACT.duel_win : PLAYER_WAR_ACTION_IMPACT.duel_loss,
+        source: 'duel',
+      });
       rippleDistrict.control = Math.max(
         0,
         Math.min(100, rippleDistrict.control + (pressureDirection * DUEL_DISTRICT_PRESSURE_SHIFT)),
@@ -1032,6 +1262,9 @@ export class CityRoom extends Room {
         districtId: rippleDistrict.id,
         control: rippleDistrict.control,
         owner: rippleDistrict.owner,
+        controlState: rippleDistrict.controlState,
+        instability: rippleDistrict.instability,
+        support: rippleDistrict.support,
       });
     }
     this.world.samPressure = Math.max(0, Math.min(100, this.world.samPressure + DUEL_SAM_PRESSURE_SHIFT));

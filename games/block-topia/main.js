@@ -2,6 +2,7 @@ import {
   connectMultiplayer,
   sendMovement,
   sendNodeInterference,
+  sendWarAction,
   challengePlayer as sendDuelChallenge,
   acceptDuel as sendDuelAccept,
   submitDuelAction as sendDuelAction,
@@ -551,6 +552,7 @@ async function boot() {
   function tryInteractWithClickedNode(event) {
     const node = renderer.pickControlNodeFromClientPoint(event.clientX, event.clientY, state);
     if (!node) return false;
+    state.mouse.selectedNodeId = node.id;
     circuitConnect.setSelectedNode(node.id);
     const circuitState = state.circuitConnectView || circuitConnect.getPublicState();
     if (circuitState.active) {
@@ -588,7 +590,7 @@ async function boot() {
     // Visual-only optimistic pulse — node state is server-authoritative.
     // All real effects (status, feed, HUD, NPC, SAM) come from onNodeInterferenceChanged.
     nodeInterference.beginLocalPulse(node.id);
-    sendNodeInterference(node.id);
+    sendNodeInterference(node.id, event.shiftKey ? 'assist' : 'disrupt');
     return true;
   }
 
@@ -770,22 +772,25 @@ async function boot() {
   }
 
   function applyMiniGameWorldImpact(type, outcome, result = {}) {
-    const district = districtStateById.get(state.player.districtId);
-    if (outcome === 'success') {
-      if (district) applyDistrictControlUpdate({ districtId: district.id, control: district.control + 3 }, 'node');
-      state.sam.pressure = Math.max(0, state.sam.pressure - 2);
-      hud.pushFeed(`✅ ${String(type).toUpperCase()} success stabilized node pressure`, 'combat');
-      return;
-    }
-    if (outcome === 'skip') {
-      if (district) applyDistrictControlUpdate({ districtId: district.id, control: district.control - 1 }, 'node');
-      state.sam.pressure = Math.min(100, state.sam.pressure + 1);
-      hud.pushFeed(`💸 ${String(type).toUpperCase()} skip used · paid containment applied`, 'combat');
-      return;
-    }
-    state.sam.pressure = Math.min(100, state.sam.pressure + (result.samPressureDelta || 6));
-    if (district) applyDistrictControlUpdate({ districtId: district.id, control: district.control - 4 }, 'node');
-    hud.pushFeed(`❌ ${String(type).toUpperCase()} failed · node corruption applied`, 'sam');
+    const intent = outcome === 'success' ? 'assist' : 'disrupt';
+    const actionType = outcome === 'success'
+      ? 'operation_success'
+      : outcome === 'skip'
+        ? 'operation_skip'
+        : 'operation_failure';
+    sendWarAction(actionType, {
+      intent,
+      districtId: state.player.districtId,
+      nodeId: state.mouse.selectedNodeId || state.mouse.hoverNodeId || '',
+    });
+    hud.pushFeed(
+      outcome === 'success'
+        ? `✅ ${String(type).toUpperCase()} success pushed allied district pressure`
+        : outcome === 'skip'
+          ? `💸 ${String(type).toUpperCase()} skip used · district pressure weakened`
+          : `❌ ${String(type).toUpperCase()} failed · hostile pressure surged`,
+      outcome === 'success' ? 'combat' : 'sam',
+    );
   }
 
   async function handleMiniGameOutcome(type, outcome, result = {}) {
@@ -837,7 +842,7 @@ async function boot() {
     });
   }
 
-  function applyDistrictControlUpdate({ districtId, control, owner }, source = 'server', options = {}) {
+  function applyDistrictControlUpdate({ districtId, control, owner, controlState, instability, pressure, support }, source = 'server', options = {}) {
     const district = districtStateById.get(districtId);
     if (!district) return;
     const previousControl = district.control;
@@ -845,10 +850,15 @@ async function boot() {
       district.control = Math.max(0, Math.min(100, control));
     }
     if (owner) district.owner = owner;
+    if (controlState) district.controlState = controlState;
+    if (Number.isFinite(instability)) district.instability = instability;
+    if (pressure) district.pressure = pressure;
+    if (support) district.support = support;
 
     if (state.player.districtId === district.id) {
       hud.setDistrictControl(district.control);
       hud.setDistrictOwner(district.owner);
+      hud.setDistrictState(district.controlState || 'contested');
     }
     if (options.silent) return;
 
@@ -865,7 +875,8 @@ async function boot() {
       pushFeedDeduped(`🏙️ District pressure rerouted · ${district.name} ${controlPct}% control`, 'combat', `district-node-ripple:${district.id}:${controlPct}`);
     } else {
       const controlPct = Math.round(district.control);
-      pushFeedDeduped(`🏙️ District relay synced · ${district.name} ${controlPct}% · ${district.owner}`, 'combat', `district-sync:${district.id}:${controlPct}:${district.owner}`);
+      const stateTag = (district.controlState || 'contested').toUpperCase();
+      pushFeedDeduped(`🏙️ District relay synced · ${district.name} ${controlPct}% · ${district.owner} · ${stateTag}`, 'combat', `district-sync:${district.id}:${controlPct}:${district.owner}:${stateTag}`);
     }
     memory.record('district', {
       at: Date.now(),
@@ -873,6 +884,7 @@ async function boot() {
       previousControl,
       control: district.control,
       owner: district.owner,
+      controlState: district.controlState || 'contested',
       source,
     });
   }
@@ -900,6 +912,8 @@ async function boot() {
         districtId: eventPayload.districtId,
         control: Number(eventPayload.districtControl),
         owner: eventPayload?.districtOwner || '',
+        controlState: eventPayload?.districtControlState || '',
+        instability: Number(eventPayload?.districtInstability),
       }, 'node');
     }
 
@@ -956,6 +970,7 @@ async function boot() {
         hud.setDistrictOwner(districtStatus.owner);
         lastHudDistrictOwner = districtStatus.owner;
       }
+      hud.setDistrictState(districtStatus.controlState || 'contested');
     }
     if (district.id !== lastQuestDistrictId) {
       lastQuestDistrictId = district.id;
@@ -1003,6 +1018,7 @@ async function boot() {
   hud.setDistrict(state.player.districtName);
   hud.setDistrictControl(50);
   hud.setDistrictOwner(state.districtState[0]?.owner || primaryFactionName);
+  hud.setDistrictState(state.districtState[0]?.controlState || 'contested');
   hud.setFactionStatus(`${primaryFactionName} vs ${secondaryFactionName}`);
   hud.setSamPhase(sam.getCurrentPhase().name);
   applyPhase(state.phase, 'system');
@@ -1214,6 +1230,10 @@ async function boot() {
             districtId: incoming.id,
             control: Number(incoming.control),
             owner: incoming.owner || '',
+            controlState: incoming.controlState || '',
+            instability: Number(incoming.instability),
+            pressure: incoming.pressure || null,
+            support: incoming.support || null,
           }, 'snapshot', { silent: true });
         }
       }
@@ -1275,8 +1295,26 @@ async function boot() {
       }
       memory.record('sam', samEvent);
     },
-    onDistrictCaptureChanged: ({ districtId, control, owner }) => {
-      applyDistrictControlUpdate({ districtId, control, owner }, 'server');
+    onDistrictCaptureChanged: ({ districtId, control, owner, controlState, instability, support }) => {
+      applyDistrictControlUpdate({ districtId, control, owner, controlState, instability, support }, 'server');
+    },
+    onDistrictControlStateChanged: (payload) => {
+      applyDistrictControlUpdate({
+        districtId: payload?.districtId,
+        control: Number(payload?.control),
+        owner: payload?.owner,
+        controlState: payload?.controlState,
+        instability: Number(payload?.instability),
+        support: payload?.support || null,
+      }, 'server');
+      if (payload?.districtName && payload?.controlState) {
+        hud.pushFeed(`🗺️ ${payload.districtName} shifted to ${String(payload.controlState).toUpperCase()}`, 'combat');
+      }
+    },
+    onPlayerWarImpact: (payload) => {
+      if (!payload?.districtName) return;
+      const verb = payload.intent === 'assist' ? 'stabilized' : 'destabilized';
+      hud.pushFeed(`🎯 Player action ${verb} ${payload.districtName} via ${payload.source || 'war action'}`, payload.intent === 'assist' ? 'combat' : 'sam');
     },
     onNodeInterferenceChanged: (payload) => {
       const eventPayload = nodeInterference.applyServerNodeUpdate(payload);
