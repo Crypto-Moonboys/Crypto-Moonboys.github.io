@@ -147,6 +147,25 @@ const STATIC_PROP_TEMPLATE = [
   { type: 'graffiti', dCol: -5, dRow: -3, scale: 0.62 }, { type: 'graffiti', dCol: 4, dRow: 0, scale: 0.62 },
 ];
 
+const DISTRICT_SUPPORT_BUILDING_TEMPLATE = [
+  { key: 'medium', dCol: 0, dRow: 0, w: 2, h: 2, yOffset: 138, drawW: 148, drawH: 162 },
+  { key: 'shop', dCol: 2, dRow: 1, w: 2, h: 2, yOffset: 102, drawW: 112, drawH: 108 },
+  { key: 'annex', dCol: -2, dRow: 2, w: 2, h: 2, yOffset: 132, drawW: 118, drawH: 160 },
+  { key: 'tower', dCol: 1, dRow: -2, w: 2, h: 2, yOffset: 238, drawW: 164, drawH: 276 },
+];
+
+const DISTRICT_SUPPORT_PROP_RING = [
+  { type: 'lamp', dCol: -2, dRow: -1, scale: 0.52 },
+  { type: 'lamp', dCol: 2, dRow: -1, scale: 0.52 },
+  { type: 'lamp', dCol: -2, dRow: 2, scale: 0.52 },
+  { type: 'lamp', dCol: 2, dRow: 2, scale: 0.52 },
+  { type: 'barrier', dCol: -3, dRow: 1, scale: 0.62 },
+  { type: 'barrier', dCol: 3, dRow: 0, scale: 0.62 },
+  { type: 'crate', dCol: -1, dRow: 3, scale: 0.58 },
+  { type: 'crate', dCol: 1, dRow: -2, scale: 0.58 },
+  { type: 'sign', dCol: 0, dRow: -3, scale: 0.56 },
+];
+
 function clamp(value, min, max) {
   return Math.max(min, Math.min(max, value));
 }
@@ -175,6 +194,11 @@ function loadImage(path, imageRegistry) {
 function deterministicNoise2D(x, y) {
   const value = Math.sin((x + 1) * 12.9898 + (y + 1) * 78.233) * 43758.5453;
   return value - Math.floor(value);
+}
+
+function canPlaceStructureCell(col, row, metrics) {
+  const terrain = classifyTerrain(col, row, metrics);
+  return terrain === 'land' && !isRoadCell(col, row, metrics);
 }
 
 function getSceneMetrics(state) {
@@ -623,10 +647,105 @@ export function createIsoRenderer(canvas) {
         && spec.row < state.map.height
       ));
 
+    const districtStructures = [];
+    const districtSupportProps = [];
+    const districtStates = state.districtState || [];
+    const districtAnchorOffsets = [
+      { col: -4, row: -3 },
+      { col: 5, row: -1 },
+      { col: -2, row: 4 },
+      { col: 4, row: 3 },
+    ];
+
+    for (const districtState of districtStates) {
+      const district = state.districts.byId.get(districtState.id);
+      if (!district?.grid) continue;
+      const anchorSeed = Math.floor(deterministicNoise2D(district.grid.col + district.grid.w, district.grid.row + district.grid.h) * districtAnchorOffsets.length);
+      for (let i = 0; i < districtAnchorOffsets.length; i += 1) {
+        const offset = districtAnchorOffsets[(anchorSeed + i) % districtAnchorOffsets.length];
+        const baseCol = Math.floor(district.grid.col + district.grid.w * 0.5 + offset.col);
+        const baseRow = Math.floor(district.grid.row + district.grid.h * 0.5 + offset.row);
+        if (
+          baseCol <= 1 || baseCol >= (state.map.width - 2)
+          || baseRow <= 1 || baseRow >= (state.map.height - 2)
+          || !canPlaceStructureCell(baseCol, baseRow, metrics)
+        ) {
+          continue;
+        }
+
+        const template = DISTRICT_SUPPORT_BUILDING_TEMPLATE[i % DISTRICT_SUPPORT_BUILDING_TEMPLATE.length];
+        districtStructures.push({
+          ...template,
+          col: baseCol + template.dCol,
+          row: baseRow + template.dRow,
+        });
+
+        for (const ringProp of DISTRICT_SUPPORT_PROP_RING) {
+          const ringCol = baseCol + ringProp.dCol;
+          const ringRow = baseRow + ringProp.dRow;
+          if (
+            ringCol < 0 || ringCol >= state.map.width
+            || ringRow < 0 || ringRow >= state.map.height
+            || !canPlaceStructureCell(ringCol, ringRow, metrics)
+          ) {
+            continue;
+          }
+          districtSupportProps.push({
+            ...ringProp,
+            col: ringCol,
+            row: ringRow,
+          });
+        }
+      }
+    }
+
+    const distributedStructures = districtStructures
+      .filter((building) => (
+        building.col >= 0
+        && building.col < metrics.width
+        && building.row >= 0
+        && building.row < metrics.height
+        && canPlaceStructureCell(Math.round(building.col), Math.round(building.row), metrics)
+      ))
+      .sort((a, b) => (a.row + a.h) - (b.row + b.h));
+
+    for (const building of distributedStructures) {
+      const path = BUILDING_ASSETS[building.key];
+      const img = imageRegistry[path];
+      if (!img?.complete) continue;
+      const anchorCol = building.col + (building.w / 2) - 0.5;
+      const anchorRow = building.row + (building.h / 2) - 0.5;
+      const elevation = getTileElevation(anchorCol, anchorRow, metrics);
+      const anchor = mapToLayerXY(anchorCol, anchorRow, elevation);
+      const baseX = anchor.x - building.drawW / 2;
+      const baseY = anchor.y - building.yOffset;
+      worldCtx.drawImage(img, baseX, baseY, building.drawW, building.drawH);
+    }
+
+    props.push(...districtSupportProps);
+
     for (let row = 0; row < state.map.height; row += 1) {
       for (let col = 0; col < state.map.width; col += 1) {
         if (classifyTerrain(col, row, metrics) === 'sand' && deterministicNoise2D(col * 7, row * 13) > 0.7) {
           props.push({ type: 'palm', col, row, scale: 0.5 });
+        }
+        if (
+          canPlaceStructureCell(col, row, metrics)
+          && deterministicNoise2D(col * 11, row * 17) > 0.928
+        ) {
+          const utilityRoll = deterministicNoise2D(col * 23, row * 29);
+          props.push({
+            type: utilityRoll > 0.74 ? 'barrier' : utilityRoll > 0.42 ? 'crate' : 'lamp',
+            col,
+            row,
+            scale: utilityRoll > 0.74 ? 0.55 : utilityRoll > 0.42 ? 0.5 : 0.45,
+          });
+        }
+        if (
+          canPlaceStructureCell(col, row, metrics)
+          && deterministicNoise2D(col * 19, row * 31) > 0.954
+        ) {
+          props.push({ type: 'graffiti', col, row, scale: 0.5 });
         }
       }
     }

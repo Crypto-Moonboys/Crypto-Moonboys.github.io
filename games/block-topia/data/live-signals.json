@@ -15,14 +15,14 @@
       "lane": "world",
       "priority": 4,
       "ttlMinutes": 45,
-      "npcLine": "Crypto grids flicker as market pulse dips into the red zone.",
-      "questPulse": "Decrypt falling market cap data to stabilize local exchanges.",
-      "worldFeed": "Shadow markets hum with fear; volatility spikes unseen in cycles.",
-      "clueEvent": "Nodes report tremors in token flows, signaling systemic stress.",
+      "npcLine": "Relay walls are hissing again. Watchers just widened the sweep grid.",
+      "questPulse": "Trace pressure spikes through the district relay lattice and lock contaminated channels.",
+      "worldFeed": "District surveillance pressure surged; control relays are cycling unscheduled sweeps.",
+      "clueEvent": "Node telemetry shows synchronized signal contamination across cross-district links.",
       "tags": [
-        "market-fall",
-        "volatility",
-        "crypto"
+        "relay-pressure",
+        "surveillance",
+        "district-instability"
       ],
       "expiresAt": "2026-04-20T00:23:06.890Z"
     },
@@ -31,14 +31,14 @@
       "lane": "ops",
       "priority": 3,
       "ttlMinutes": 30,
-      "npcLine": "Trending tokens flicker uncertain—WOJAK and ASTEROID in ghost mode.",
-      "questPulse": "Track unstable cryptos; code breaks hint at covert manipulation.",
-      "worldFeed": "Data rain: obscure coins surface, hinting at shadow syndicate moves.",
-      "clueEvent": "Dashboards reveal shifting scores; algorithms scramble for patterns.",
+      "npcLine": "Courier shadows are slipping under blind sectors. Someone is mapping our patrol cadence.",
+      "questPulse": "Intercept covert lane traffic and recover relay keys before they exit Signal Spire.",
+      "worldFeed": "Unmarked courier bursts detected; ward channels report control drift at sector edges.",
+      "clueEvent": "Sweep logs reveal falsified beacon pings masking movement between relays.",
       "tags": [
-        "crypto-trend",
-        "manipulation",
-        "data-scan"
+        "covert-movement",
+        "relay-disruption",
+        "ops-trace"
       ],
       "expiresAt": "2026-04-20T00:08:06.890Z"
     },
@@ -47,14 +47,14 @@
       "lane": "clue",
       "priority": 5,
       "ttlMinutes": 60,
-      "npcLine": "Fear index holds tight—whispers warn of deeper crashes ahead.",
-      "questPulse": "Intercept clandestine chatter warning of a persistent downfall cycle.",
-      "worldFeed": "Panic signals spike; digital storefronts brace for sudden collapse.",
-      "clueEvent": "Encrypted logs reveal mass withdrawals ahead of market tremor.",
+      "npcLine": "Clue net says SAM just flagged a ghost directive. Nobody is claiming authorship.",
+      "questPulse": "Decode intercepted directive fragments and identify who rerouted district control authority.",
+      "worldFeed": "Anomaly pressure rising: command signatures mismatch declared faction routes.",
+      "clueEvent": "Encrypted archive shards reference an unauthorized override window at midnight sweep.",
       "tags": [
-        "fear-index",
-        "warning",
-        "market-crisis"
+        "anomaly",
+        "sam-warning",
+        "control-shift"
       ],
       "expiresAt": "2026-04-20T00:38:06.890Z"
     },
@@ -63,13 +63,13 @@
       "lane": "quest",
       "priority": 2,
       "ttlMinutes": 50,
-      "npcLine": "Pulse check: AAVE and PENGU tokens flicker—unknown brokers signal moves.",
-      "questPulse": "Investigate broker nodes for unauthorized trades in minor assets.",
-      "worldFeed": "Micro markets buzz; shadow brokers toy with asset flows.",
-      "clueEvent": "Probe opens on shadow deals tied to trending lesser gears.",
+      "npcLine": "North relay just dropped into partial silence. Expect pressure teams to flood in.",
+      "questPulse": "Stabilize unstable support nodes and hold the lane against forced control handoff.",
+      "worldFeed": "Support infrastructure under strain; faction pressure teams contest utility sectors.",
+      "clueEvent": "Probe chain marks repeated tampering on low-priority maintenance relays.",
       "tags": [
-        "broker-activity",
-        "minor-cryptos",
+        "support-site",
+        "faction-pressure",
         "undercover"
       ],
       "expiresAt": "2026-04-20T00:28:06.891Z"
@@ -79,13 +79,13 @@
       "lane": "npc",
       "priority": 3,
       "ttlMinutes": 40,
-      "npcLine": "Info rat murmurs: system loads swell with small-coin signals.",
-      "questPulse": "Hack data streams to catch early signals of an uprising trade.",
-      "worldFeed": "Network nodes flicker as low-tier tokens shift unpredictably.",
-      "clueEvent": "Hidden timestamps hint at coordinated token dumps near midnight.",
+      "npcLine": "Street listeners caught a burst of spoofed IDs. Somebody is walking inside trusted bands.",
+      "questPulse": "Inject trace markers into live feeds and expose the spoof chain origin.",
+      "worldFeed": "Signal trust degraded in active sectors; authentication drift is spreading.",
+      "clueEvent": "Hidden timestamps align with covert entry windows across three district relays.",
       "tags": [
         "info-rat",
-        "small-coins",
+        "signal-contamination",
         "early-warning"
       ],
       "expiresAt": "2026-04-20T00:18:06.891Z"
