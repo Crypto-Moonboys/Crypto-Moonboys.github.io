@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-04-20T05:43:18.974Z",
+  "generatedAt": "2026-04-20T08:10:15.619Z",
   "mode": "live-ai",
   "sourceHealth": {
     "coingecko-global": "ok",
@@ -11,84 +11,84 @@
   "signalCount": 5,
   "signals": [
     {
-      "id": "signal-1776663798973-1",
+      "id": "signal-1776672615619-1",
       "lane": "world",
       "priority": 4,
       "ttlMinutes": 45,
-      "npcLine": "Markets drip red; whispers speak of a looming crash.",
-      "questPulse": "Scan for falling assets in the neon bazaar.",
-      "worldFeed": "Capitals shrivel; traders brace under shadowed skies.",
-      "clueEvent": "Flicker in data streams hints at mass sell-off.",
+      "npcLine": "Crypto shadows lengthen, markets bleed silent warnings.",
+      "questPulse": "Scan for hidden nodes among risky altcoin debris.",
+      "worldFeed": "Network flux unsettles; market cap flickers downward.",
+      "clueEvent": "Dwindling digits hint at deeper system unrest.",
       "tags": [
         "market",
-        "fear",
-        "crash"
+        "crypto",
+        "downturn"
       ],
-      "expiresAt": "2026-04-20T06:28:18.973Z"
+      "expiresAt": "2026-04-20T08:55:15.619Z"
     },
     {
-      "id": "signal-1776663798973-2",
+      "id": "signal-1776672615619-2",
       "lane": "ops",
       "priority": 3,
       "ttlMinutes": 30,
-      "npcLine": "RAVE data nodes pulse with zero signal strength.",
-      "questPulse": "Intercept PieveRse's frequency to unlock hidden caches.",
-      "worldFeed": "Asteroids drift; algorithms recalibrate under pressure.",
-      "clueEvent": "Network logs show ghost trades in Wojak's shadow.",
+      "npcLine": "RAVE spikes, but watch—the surge masks lurking decay.",
+      "questPulse": "Investigate strange spikes linked to volatile synth tokens.",
+      "worldFeed": "Unsteady pulses from alt-chain sectors confuse scanners.",
+      "clueEvent": "Volatile signal bursts disrupt stablenet flows.",
       "tags": [
-        "crypto",
-        "data",
-        "intercept"
+        "altcoin",
+        "volatility",
+        "surge"
       ],
-      "expiresAt": "2026-04-20T06:13:18.973Z"
+      "expiresAt": "2026-04-20T08:40:15.619Z"
     },
     {
-      "id": "signal-1776663798973-3",
+      "id": "signal-1776672615619-3",
       "lane": "clue",
       "priority": 5,
-      "ttlMinutes": 60,
-      "npcLine": "Fear index spikes; protocol locks tighten runway exits.",
-      "questPulse": "Trace the AAVE protocol breach before it sparks chaos.",
-      "worldFeed": "Sentiment sensors detect growing paranoia in cybernetics.",
-      "clueEvent": "Encrypted chatter reveals hidden asset dumps tonight.",
+      "ttlMinutes": 20,
+      "npcLine": "Fear levels rise to code red; trust no exchange.",
+      "questPulse": "Decrypt chatter warning of imminent market collapse.",
+      "worldFeed": "Sentiment index crashes—panic algorithms activating.",
+      "clueEvent": "Encrypted warnings of unstable digital credits flood nodes.",
       "tags": [
         "fear",
-        "security",
-        "breach"
+        "sentiment",
+        "alert"
       ],
-      "expiresAt": "2026-04-20T06:43:18.973Z"
+      "expiresAt": "2026-04-20T08:30:15.619Z"
     },
     {
-      "id": "signal-1776663798973-4",
+      "id": "signal-1776672615619-4",
       "lane": "quest",
       "priority": 2,
-      "ttlMinutes": 90,
-      "npcLine": "Hunt RAVE's silent drop; secrets buried in code.",
-      "questPulse": "an operator’s last encrypted transmission for intel.",
-      "worldFeed": "Quiet before storm: markets await the next cyber quake.",
-      "clueEvent": "Fragmented data packets might contain PieveRse coordinates.",
+      "ttlMinutes": 60,
+      "npcLine": "Asteroid token moves stealthily; may unlock covert caches.",
+      "questPulse": "Locate hidden contracts slipping through network cracks.",
+      "worldFeed": "Minor cryptos gravitate toward obscure, shadowed sectors.",
+      "clueEvent": "Ghost leads hint at silent crypto reserves.",
       "tags": [
-        "hunt",
-        "decrypt",
-        "intel"
+        "altcoin",
+        "stealth",
+        "discovery"
       ],
-      "expiresAt": "2026-04-20T07:13:18.973Z"
+      "expiresAt": "2026-04-20T09:10:15.619Z"
     },
     {
-      "id": "signal-1776663798974-5",
+      "id": "signal-1776672615619-5",
       "lane": "npc",
       "priority": 3,
       "ttlMinutes": 50,
-      "npcLine": "Street brokers murmur: 'Asteroid fragments might fund rebels.'",
-      "questPulse": "Barter with shadow traders for forbidden market access.",
-      "worldFeed": "Shadows lengthen as dead assets clutter neon alleys.",
-      "clueEvent": "Hidden logs suggest AAVE nodes tampered with recently.",
+      "npcLine": "WOJAK chants rise; memes mutate into market weapons.",
+      "questPulse": "Track memetic currency shifts disrupting data flows.",
+      "worldFeed": "Culture bugs spread, destabilizing digital economies.",
+      "clueEvent": "Viral codes alter trade patterns unpredictably.",
       "tags": [
-        "rebels",
-        "blackmarket",
-        "tampering"
+        "meme",
+        "culture",
+        "disruption"
       ],
-      "expiresAt": "2026-04-20T06:33:18.974Z"
+      "expiresAt": "2026-04-20T09:00:15.619Z"
     }
   ]
 }
