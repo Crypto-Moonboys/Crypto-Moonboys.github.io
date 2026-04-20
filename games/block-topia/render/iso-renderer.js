@@ -1,3 +1,5 @@
+import { NETWORK_LINES } from '../world/network-lines.js';
+
 const TILE_W = 64;
 const TILE_H = 32;
 const HALF_TILE_W = TILE_W / 2;
@@ -60,17 +62,6 @@ const DISTRICT_BOUNDARY_STYLE = {
   'moonlit-underbelly': { stroke: 'rgba(141,255,106,0.68)', fill: 'rgba(51,130,82,0.12)' },
   'revolt-plaza': { stroke: 'rgba(114,176,255,0.68)', fill: 'rgba(47,96,180,0.12)' },
 };
-
-const NETWORK_LINKS = [
-  ['core', 'north'],
-  ['core', 'east'],
-  ['core', 'south'],
-  ['core', 'west'],
-  ['north', 'east'],
-  ['east', 'south'],
-  ['south', 'west'],
-  ['west', 'north'],
-];
 
 const NODE_CLASS_THEME = {
   mining: { color: '#ff7b43', accent: '#ffd76d', label: 'BTC RIG', icon: '₿', size: 1.3 },
@@ -476,55 +467,8 @@ export function createIsoRenderer(canvas) {
     if (!layerState.baseGrid.dirty && layerState.baseGrid.width === canvas.width && layerState.baseGrid.height === canvas.height) return;
     const layerCanvas = createLayerCanvas(canvas.width, canvas.height);
     const layerCtx = layerCanvas.getContext('2d');
-
-    const grad = layerCtx.createLinearGradient(0, 0, 0, canvas.height);
-    grad.addColorStop(0, '#01040d');
-    grad.addColorStop(0.4, '#020816');
-    grad.addColorStop(1, '#02040b');
-    layerCtx.fillStyle = grad;
+    layerCtx.fillStyle = '#000000';
     layerCtx.fillRect(0, 0, canvas.width, canvas.height);
-
-    const horizon = Math.round(canvas.height * 0.22);
-    layerCtx.fillStyle = 'rgba(16, 34, 54, 0.75)';
-    layerCtx.fillRect(0, horizon, canvas.width, Math.round(canvas.height * 0.06));
-
-    layerCtx.fillStyle = 'rgba(9, 17, 36, 0.9)';
-    layerCtx.fillRect(0, Math.round(canvas.height * 0.63), canvas.width, Math.round(canvas.height * 0.37));
-
-    layerCtx.strokeStyle = 'rgba(94,242,255,0.14)';
-    layerCtx.lineWidth = 1;
-    for (let x = -canvas.height; x < canvas.width + canvas.height; x += 30) {
-      layerCtx.beginPath();
-      layerCtx.moveTo(x, horizon);
-      layerCtx.lineTo(x + canvas.height * 0.72, canvas.height);
-      layerCtx.stroke();
-    }
-
-    layerCtx.strokeStyle = 'rgba(94,242,255,0.11)';
-    for (let y = horizon; y < canvas.height; y += 26) {
-      layerCtx.beginPath();
-      layerCtx.moveTo(0, y);
-      layerCtx.lineTo(canvas.width, y);
-      layerCtx.stroke();
-    }
-
-    layerCtx.strokeStyle = 'rgba(255,79,216,0.26)';
-    layerCtx.lineWidth = 2;
-    layerCtx.beginPath();
-    layerCtx.moveTo(0, horizon + 2);
-    layerCtx.lineTo(canvas.width, horizon + 2);
-    layerCtx.stroke();
-
-    layerCtx.globalAlpha = 0.26;
-    for (let i = 0; i < 190; i += 1) {
-      const px = deterministicNoise2D(i, canvas.width) * canvas.width;
-      const py = horizon + deterministicNoise2D(i, canvas.height) * (canvas.height - horizon);
-      const glow = 0.7 + deterministicNoise2D(i, 11) * 1.5;
-      layerCtx.fillStyle = i % 7 === 0 ? 'rgba(255,79,216,0.45)' : 'rgba(94,242,255,0.45)';
-      layerCtx.fillRect(px, py, glow, glow);
-    }
-    layerCtx.globalAlpha = 1;
-
     layerState.baseGrid.canvas = layerCanvas;
     layerState.baseGrid.width = canvas.width;
     layerState.baseGrid.height = canvas.height;
@@ -538,266 +482,26 @@ export function createIsoRenderer(canvas) {
     const bounds = getWorldBounds(state);
     layerState.worldOffsetX = bounds.offsetX;
     layerState.worldOffsetY = bounds.offsetY;
-    layerState.worldWidth = bounds.width;
-    layerState.worldHeight = bounds.height;
 
     layerState.roadBlocks.canvas = createLayerCanvas(bounds.width, bounds.height);
     layerState.worldObjects.canvas = createLayerCanvas(bounds.width, bounds.height);
 
     const roadCtx = layerState.roadBlocks.canvas.getContext('2d');
-    const worldCtx = layerState.worldObjects.canvas.getContext('2d');
+    roadCtx.clearRect(0, 0, bounds.width, bounds.height);
 
+    roadCtx.strokeStyle = 'rgba(94,242,255,0.34)';
+    roadCtx.lineWidth = 0.8;
     for (let row = 0; row < state.map.height; row += 1) {
       for (let col = 0; col < state.map.width; col += 1) {
-        const terrain = classifyTerrain(col, row, metrics);
-        const elevation = getTileElevation(col, row, metrics);
         const tilePos = mapToLayerXY(col, row, 0);
-
-        drawTileDepth(roadCtx, tilePos.x, tilePos.y, elevation);
-
-        if (terrain === 'water') {
-          drawIsoTile(roadCtx, TILE_ASSETS.water, tilePos.x, tilePos.y, 0);
-          continue;
-        }
-
-        if (isRoadCell(col, row, metrics)) {
-          const road = getRoadType(col, row, metrics);
-          drawIsoTile(roadCtx, TILE_ASSETS[road.key], tilePos.x, tilePos.y, elevation, road.rotate);
-        } else if (terrain === 'sand' || terrain === 'coast') {
-          drawIsoTile(roadCtx, TILE_ASSETS.sand, tilePos.x, tilePos.y, elevation);
-        } else {
-          drawIsoTile(roadCtx, TILE_ASSETS.pavement, tilePos.x, tilePos.y, elevation);
-        }
-
-        if (terrain === 'sand' || terrain === 'coast') {
-          if (classifyTerrain(col, row - 1, metrics) === 'water') drawIsoTile(roadCtx, TILE_ASSETS.coastline, tilePos.x, tilePos.y, elevation, 0);
-          if (classifyTerrain(col + 1, row, metrics) === 'water') drawIsoTile(roadCtx, TILE_ASSETS.coastline, tilePos.x, tilePos.y, elevation, Math.PI / 2);
-          if (classifyTerrain(col, row + 1, metrics) === 'water') drawIsoTile(roadCtx, TILE_ASSETS.coastline, tilePos.x, tilePos.y, elevation, Math.PI);
-          if (classifyTerrain(col - 1, row, metrics) === 'water') drawIsoTile(roadCtx, TILE_ASSETS.coastline, tilePos.x, tilePos.y, elevation, -Math.PI / 2);
-        }
-
-        const district = state.districts.fromGrid(col, row);
-        if (district?.id === 'signal-spire' && deterministicNoise2D(col, row) > 0.78) {
-          roadCtx.fillStyle = MAGENTA_OVERLAY_COLOR;
-          roadCtx.beginPath();
-          roadCtx.moveTo(tilePos.x, tilePos.y + 2);
-          roadCtx.lineTo(tilePos.x + HALF_TILE_W, tilePos.y + HALF_TILE_H + 2);
-          roadCtx.lineTo(tilePos.x, tilePos.y + TILE_H + 2);
-          roadCtx.lineTo(tilePos.x - HALF_TILE_W, tilePos.y + HALF_TILE_H + 2);
-          roadCtx.closePath();
-          roadCtx.fill();
-        }
-        if (terrain === 'land' && deterministicNoise2D(col * 2, row * 3) > 0.82) {
-          roadCtx.strokeStyle = district?.id === 'signal-spire'
-            ? 'rgba(255,79,216,0.34)'
-            : 'rgba(94,242,255,0.28)';
-          roadCtx.lineWidth = 1;
-          roadCtx.beginPath();
-          roadCtx.moveTo(tilePos.x - 8, tilePos.y + HALF_TILE_H + 1);
-          roadCtx.lineTo(tilePos.x + 8, tilePos.y + HALF_TILE_H + 1);
-          roadCtx.stroke();
-        }
-        if (terrain === 'land' && deterministicNoise2D(col * 5, row * 7) > 0.87) {
-          roadCtx.fillStyle = 'rgba(141,251,255,0.34)';
-          roadCtx.fillRect(tilePos.x - 1, tilePos.y + HALF_TILE_H, 2, 2);
-        }
+        roadCtx.beginPath();
+        roadCtx.moveTo(tilePos.x, tilePos.y);
+        roadCtx.lineTo(tilePos.x + HALF_TILE_W, tilePos.y + HALF_TILE_H);
+        roadCtx.lineTo(tilePos.x, tilePos.y + TILE_H);
+        roadCtx.lineTo(tilePos.x - HALF_TILE_W, tilePos.y + HALF_TILE_H);
+        roadCtx.closePath();
+        roadCtx.stroke();
       }
-    }
-
-    const centerCol = Math.round(metrics.centerX);
-    const centerRow = Math.round(metrics.centerY);
-
-    const buildings = SCENE_BUILDING_TEMPLATE
-      .map((building) => ({
-        ...building,
-        col: centerCol + building.dCol,
-        row: centerRow + building.dRow,
-      }))
-      .filter((building) => (
-        building.col >= 0
-        && building.col < metrics.width
-        && building.row >= 0
-        && building.row < metrics.height
-      ))
-      .sort((a, b) => (a.row + a.h) - (b.row + b.h));
-
-    for (const building of buildings) {
-      const path = BUILDING_ASSETS[building.key];
-      const img = imageRegistry[path];
-      if (!img?.complete) continue;
-      const anchorCol = building.col + (building.w / 2) - 0.5;
-      const anchorRow = building.row + (building.h / 2) - 0.5;
-      const elevation = getTileElevation(anchorCol, anchorRow, metrics);
-      const anchor = mapToLayerXY(anchorCol, anchorRow, elevation);
-      const baseX = anchor.x - building.drawW / 2;
-      const baseY = anchor.y - building.yOffset;
-      worldCtx.drawImage(img, baseX, baseY, building.drawW, building.drawH);
-    }
-
-    const props = STATIC_PROP_TEMPLATE
-      .map((spec) => ({
-        ...spec,
-        col: centerCol + spec.dCol,
-        row: centerRow + spec.dRow,
-      }))
-      .filter((spec) => (
-        spec.col >= 0
-        && spec.col < state.map.width
-        && spec.row >= 0
-        && spec.row < state.map.height
-      ));
-
-    const districtStructures = [];
-    const districtSupportProps = [];
-    const districtStates = state.districtState || [];
-    const districtAnchorOffsets = [
-      { col: -4, row: -3 },
-      { col: 5, row: -1 },
-      { col: -2, row: 4 },
-      { col: 4, row: 3 },
-    ];
-
-    for (const districtState of districtStates) {
-      const district = state.districts.byId.get(districtState.id);
-      if (!district?.grid) continue;
-      const anchorSeed = Math.floor(deterministicNoise2D(district.grid.col + district.grid.w, district.grid.row + district.grid.h) * districtAnchorOffsets.length);
-      for (let i = 0; i < districtAnchorOffsets.length; i += 1) {
-        const offset = districtAnchorOffsets[(anchorSeed + i) % districtAnchorOffsets.length];
-        const baseCol = Math.floor(district.grid.col + district.grid.w * 0.5 + offset.col);
-        const baseRow = Math.floor(district.grid.row + district.grid.h * 0.5 + offset.row);
-        if (
-          baseCol <= 1 || baseCol >= (state.map.width - 2)
-          || baseRow <= 1 || baseRow >= (state.map.height - 2)
-          || !canPlaceStructureCell(baseCol, baseRow, metrics)
-        ) {
-          continue;
-        }
-
-        const template = DISTRICT_SUPPORT_BUILDING_TEMPLATE[i % DISTRICT_SUPPORT_BUILDING_TEMPLATE.length];
-        districtStructures.push({
-          ...template,
-          col: baseCol + template.dCol,
-          row: baseRow + template.dRow,
-        });
-
-        for (const ringProp of DISTRICT_SUPPORT_PROP_RING) {
-          const ringCol = baseCol + ringProp.dCol;
-          const ringRow = baseRow + ringProp.dRow;
-          if (
-            ringCol < 0 || ringCol >= state.map.width
-            || ringRow < 0 || ringRow >= state.map.height
-            || !canPlaceStructureCell(ringCol, ringRow, metrics)
-          ) {
-            continue;
-          }
-          districtSupportProps.push({
-            ...ringProp,
-            col: ringCol,
-            row: ringRow,
-          });
-        }
-      }
-    }
-
-    const distributedStructures = districtStructures
-      .filter((building) => (
-        building.col >= 0
-        && building.col < metrics.width
-        && building.row >= 0
-        && building.row < metrics.height
-        && canPlaceStructureCell(Math.round(building.col), Math.round(building.row), metrics)
-      ))
-      .sort((a, b) => (a.row + a.h) - (b.row + b.h));
-
-    for (const building of distributedStructures) {
-      const path = BUILDING_ASSETS[building.key];
-      const img = imageRegistry[path];
-      if (!img?.complete) continue;
-      const anchorCol = building.col + (building.w / 2) - 0.5;
-      const anchorRow = building.row + (building.h / 2) - 0.5;
-      const elevation = getTileElevation(anchorCol, anchorRow, metrics);
-      const anchor = mapToLayerXY(anchorCol, anchorRow, elevation);
-      const baseX = anchor.x - building.drawW / 2;
-      const baseY = anchor.y - building.yOffset;
-      worldCtx.drawImage(img, baseX, baseY, building.drawW, building.drawH);
-    }
-
-    props.push(...districtSupportProps);
-
-    for (let row = 0; row < state.map.height; row += 1) {
-      for (let col = 0; col < state.map.width; col += 1) {
-        if (classifyTerrain(col, row, metrics) === 'sand' && deterministicNoise2D(col * 7, row * 13) > 0.7) {
-          props.push({ type: 'palm', col, row, scale: 0.5 });
-        }
-        if (
-          canPlaceStructureCell(col, row, metrics)
-          && deterministicNoise2D(col * 11, row * 17) > 0.928
-        ) {
-          const utilityRoll = deterministicNoise2D(col * 23, row * 29);
-          props.push({
-            type: utilityRoll > 0.74 ? 'barrier' : utilityRoll > 0.42 ? 'crate' : 'lamp',
-            col,
-            row,
-            scale: utilityRoll > 0.74 ? 0.55 : utilityRoll > 0.42 ? 0.5 : 0.45,
-          });
-        }
-        if (
-          canPlaceStructureCell(col, row, metrics)
-          && deterministicNoise2D(col * 19, row * 31) > 0.954
-        ) {
-          props.push({ type: 'graffiti', col, row, scale: 0.5 });
-        }
-      }
-    }
-
-    for (const prop of props) {
-      const path = PROP_ASSETS[prop.type];
-      const img = imageRegistry[path];
-      if (!img?.complete) continue;
-      const elevation = getTileElevation(prop.col, prop.row, metrics);
-      const pos = mapToLayerXY(prop.col, prop.row, elevation);
-      const scale = prop.scale || 0.56;
-      const drawW = img.width * scale;
-      const drawH = img.height * scale;
-      worldCtx.drawImage(img, pos.x - drawW / 2, pos.y - drawH + 18, drawW, drawH);
-    }
-
-    for (const districtState of state.districtState || []) {
-      const district = state.districts.byId.get(districtState.id);
-      if (!district?.grid) continue;
-      const style = DISTRICT_BOUNDARY_STYLE[district.id] || DISTRICT_BOUNDARY_STYLE['neon-slums'];
-      const left = mapToLayerXY(district.grid.col, district.grid.row + (district.grid.h / 2), 1);
-      const top = mapToLayerXY(district.grid.col + (district.grid.w / 2), district.grid.row, 1);
-      const right = mapToLayerXY(district.grid.col + district.grid.w, district.grid.row + (district.grid.h / 2), 1);
-      const bottom = mapToLayerXY(district.grid.col + (district.grid.w / 2), district.grid.row + district.grid.h, 1);
-      worldCtx.save();
-      worldCtx.globalAlpha = 1;
-      worldCtx.fillStyle = style.fill;
-      worldCtx.strokeStyle = style.stroke;
-      worldCtx.lineWidth = 1.35;
-      worldCtx.setLineDash([8, 6]);
-      worldCtx.beginPath();
-      worldCtx.moveTo(left.x, left.y + HALF_TILE_H);
-      worldCtx.lineTo(top.x, top.y + HALF_TILE_H);
-      worldCtx.lineTo(right.x, right.y + HALF_TILE_H);
-      worldCtx.lineTo(bottom.x, bottom.y + HALF_TILE_H);
-      worldCtx.closePath();
-      worldCtx.fill();
-      worldCtx.stroke();
-      worldCtx.setLineDash([]);
-      worldCtx.restore();
-
-      const cx = district.grid.col + district.grid.w / 2;
-      const cy = district.grid.row + district.grid.h / 2;
-      const pos = mapToLayerXY(cx, cy, 0);
-      const accent = DISTRICT_THEME[district.id] || '#eaf6ff';
-      worldCtx.fillStyle = 'rgba(0,0,0,0.78)';
-      worldCtx.font = DISTRICT_LABEL_GLOW_FONT;
-      worldCtx.textAlign = 'center';
-      worldCtx.fillText(district.name.toUpperCase(), pos.x + 1, pos.y - 16);
-      worldCtx.fillStyle = accent;
-      worldCtx.font = DISTRICT_LABEL_FONT;
-      worldCtx.fillText(`◈ ${district.name.toUpperCase()} ◈`, pos.x, pos.y - 18);
     }
 
     layerState.mapKey = mapKey;
@@ -1084,15 +788,11 @@ export function createIsoRenderer(canvas) {
   function getNodeVisualClass(node) {
     if (!node) return 'utility';
     if (node.id === 'core') return 'hub';
-    if (node.id === 'north') return 'ai';
-    if (node.id === 'south') return 'mining';
-    if (node.id === 'east') return 'relay';
-    if (node.id === 'west') return 'control';
-    if (node.districtId === 'crypto-core') return 'hub';
-    if (node.districtId === 'signal-spire') return 'ai';
-    if (node.districtId === 'moonlit-underbelly') return 'mining';
-    if (node.districtId === 'revolt-plaza') return 'relay';
-    if (node.districtId === 'neon-slums') return 'control';
+    if (node.nodeType === 'district-core') return 'hub';
+    if (node.nodeType === 'ai') return 'ai';
+    if (node.nodeType === 'mining') return 'mining';
+    if (node.nodeType === 'relay') return 'relay';
+    if (node.nodeType === 'control') return 'control';
     return 'utility';
   }
 
@@ -1102,140 +802,48 @@ export function createIsoRenderer(canvas) {
     const cy = originY + iso.y + HALF_TILE_H;
     const nodeClass = getNodeVisualClass(node);
     const theme = NODE_CLASS_THEME[nodeClass] || NODE_CLASS_THEME.utility;
-    const classScale = theme.size || 1;
-    const baseRadius = (isHovered ? 16 : 14) * classScale;
-    const status = node.status || 'stable';
-    const pulseActive = (Number(node.pulseUntil) || 0) > now;
-    const unstableFlicker = status === 'unstable'
-      ? (UNSTABLE_FLICKER_BASE + deterministicNoise2D(Math.floor(now / UNSTABLE_FLICKER_RATE), node.x + node.y) * UNSTABLE_FLICKER_AMPLITUDE)
-      : 1;
-    const pulseScale = status === 'unstable'
-      ? UNSTABLE_PULSE_BASE + (Math.sin(now / UNSTABLE_PULSE_RATE) + 1) * UNSTABLE_PULSE_AMPLITUDE
-      : 0.85 + (Math.sin(now / 600) + 1) * 0.08;
-    const baseColor = status === 'cooldown'
-      ? '#7f8aa3'
-      : status === 'unstable'
-        ? '#ff4fd8'
-        : status === 'contested'
-          ? '#ff9b42'
-          : theme.color;
+    const pulse = 0.82 + (Math.sin((now / 340) + ((node.x + node.y) * 0.1)) + 1) * 0.18;
+    const towerH = 48 * (theme.size || 1);
+    const radius = (isHovered ? 24 : 20) * (theme.size || 1);
 
     ctx.save();
-
-    // Ground fill
-    ctx.globalAlpha = (status === 'unstable' ? 0.38 : 0.25) * unstableFlicker;
-    ctx.fillStyle = baseColor;
+    ctx.globalAlpha = 0.2;
+    ctx.fillStyle = theme.color;
     ctx.beginPath();
-    ctx.ellipse(cx, cy, baseRadius * pulseScale, baseRadius * 0.52 * pulseScale, 0, 0, Math.PI * 2);
+    ctx.ellipse(cx, cy + 1, radius * 1.35 * pulse, radius * 0.55 * pulse, 0, 0, Math.PI * 2);
     ctx.fill();
 
-    // Outer ring
-    ctx.globalAlpha = pulseActive ? 1 : 0.85;
-    ctx.strokeStyle = baseColor;
-    ctx.lineWidth = status === 'unstable' ? 2.8 : status === 'cooldown' ? 1.8 : 2;
-    if (status === 'cooldown') {
-      ctx.setLineDash([4, 4]);
-    }
+    ctx.globalAlpha = 0.75;
+    ctx.strokeStyle = theme.color;
+    ctx.lineWidth = 2;
     ctx.beginPath();
-    ctx.ellipse(cx, cy, baseRadius * pulseScale, baseRadius * 0.52 * pulseScale, 0, 0, Math.PI * 2);
+    ctx.moveTo(cx, cy - towerH);
+    ctx.lineTo(cx, cy - 6);
     ctx.stroke();
-    ctx.setLineDash([]);
 
-    // Interference progress arc
-    const meter = Math.max(
-      0,
-      Math.min(
-        100,
-        Number.isFinite(node.interference) ? node.interference : node.control,
-      ),
-    );
-    if (meter > 0) {
-      ctx.globalAlpha = 0.7;
-      ctx.strokeStyle = status === 'unstable' ? '#ff4fd8' : status === 'contested' ? '#ffd84d' : '#8dff6a';
-      ctx.lineWidth = 3;
-      ctx.beginPath();
-      ctx.ellipse(cx, cy - 2, baseRadius + 5, (baseRadius + 5) * 0.52, 0, -Math.PI / 2, -Math.PI / 2 + ((meter / 100) * Math.PI * 2));
-      ctx.stroke();
-    }
+    ctx.globalAlpha = 0.95;
+    ctx.fillStyle = theme.accent;
+    ctx.beginPath();
+    ctx.arc(cx, cy - towerH, 9 * pulse, 0, Math.PI * 2);
+    ctx.fill();
 
-    if (pulseActive) {
-      const haloPulse = 1 + ((Math.sin(now / HALO_PULSE_RATE) + 1) * HALO_PULSE_AMPLITUDE);
-      ctx.globalAlpha = status === 'unstable' ? 0.45 : 0.35;
-      ctx.strokeStyle = baseColor;
-      ctx.lineWidth = 1.5;
-      ctx.beginPath();
-      ctx.ellipse(cx, cy, (baseRadius + 9) * haloPulse, (baseRadius + 9) * 0.52 * haloPulse, 0, 0, Math.PI * 2);
-      ctx.stroke();
-      if (nodeClass === 'ai' || nodeClass === 'mining' || nodeClass === 'hub') {
-        ctx.globalAlpha = 0.24;
-        ctx.strokeStyle = theme.accent;
-        ctx.beginPath();
-        ctx.ellipse(cx, cy, (baseRadius + 16) * haloPulse, (baseRadius + 16) * 0.5 * haloPulse, 0, 0, Math.PI * 2);
-        ctx.stroke();
-      }
-    }
-    if (isHovered) {
-      ctx.globalAlpha = 0.95;
-      ctx.strokeStyle = '#ffffff';
-      ctx.lineWidth = 1.4;
-      ctx.beginPath();
-      ctx.ellipse(cx, cy, (baseRadius + 6), (baseRadius + 6) * 0.52, 0, 0, Math.PI * 2);
-      ctx.stroke();
-    }
+    ctx.globalAlpha = 0.68;
+    ctx.strokeStyle = theme.color;
+    ctx.lineWidth = 1.3;
+    ctx.beginPath();
+    ctx.arc(cx, cy - towerH, 14 * pulse, 0, Math.PI * 2);
+    ctx.stroke();
 
-    const glyphY = cy - 1;
-    if (nodeClass === 'ai') {
-      ctx.globalAlpha = 0.8;
-      ctx.strokeStyle = theme.accent;
-      ctx.lineWidth = 1.3;
-      ctx.strokeRect(cx - (baseRadius * 0.5), glyphY - (baseRadius * 0.74), baseRadius, baseRadius * 1.2);
-    } else if (nodeClass === 'mining') {
-      ctx.globalAlpha = 0.92;
-      ctx.strokeStyle = theme.accent;
-      ctx.lineWidth = 1.3;
-      ctx.beginPath();
-      ctx.moveTo(cx - (baseRadius * 0.76), glyphY - 5);
-      ctx.lineTo(cx + (baseRadius * 0.72), glyphY - 5);
-      ctx.moveTo(cx - (baseRadius * 0.62), glyphY);
-      ctx.lineTo(cx + (baseRadius * 0.58), glyphY);
-      ctx.stroke();
-    } else if (nodeClass === 'relay') {
-      ctx.globalAlpha = 0.85;
-      ctx.strokeStyle = theme.accent;
-      ctx.lineWidth = 1.2;
-      ctx.beginPath();
-      ctx.moveTo(cx - 8, glyphY + 3);
-      ctx.lineTo(cx, glyphY - 9);
-      ctx.lineTo(cx + 8, glyphY + 3);
-      ctx.stroke();
-    } else if (nodeClass === 'control') {
-      ctx.globalAlpha = 0.82;
-      ctx.strokeStyle = theme.accent;
-      ctx.lineWidth = 1.2;
-      ctx.beginPath();
-      ctx.arc(cx, glyphY - 2, 5.4, 0, Math.PI * 2);
-      ctx.stroke();
-      ctx.beginPath();
-      ctx.arc(cx, glyphY - 2, 1.6, 0, Math.PI * 2);
-      ctx.fillStyle = theme.accent;
-      ctx.fill();
-    }
-
-    // Node label
     ctx.globalAlpha = 1;
-    ctx.font = '700 7px Inter, sans-serif';
+    ctx.fillStyle = theme.accent;
+    ctx.font = '700 8px Inter, sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillStyle = 'rgba(0,0,0,0.7)';
-    const nodeLabel = `${theme.label} · ${node.id.toUpperCase()}`;
-    ctx.fillText(nodeLabel, cx + 1, cy - baseRadius - 3);
-    ctx.fillStyle = theme.accent;
-    ctx.fillText(nodeLabel, cx, cy - baseRadius - 4);
-    ctx.font = '800 10px Inter, sans-serif';
-    ctx.fillStyle = theme.accent;
-    ctx.fillText(theme.icon, cx, cy + 2);
-    if (status === 'unstable' || status === 'cooldown') {
-      ctx.fillStyle = status === 'unstable' ? '#ff4fd8' : '#a0b0c8';
-      ctx.fillText(status === 'unstable' ? '⚠' : '⌛', cx + (baseRadius * 0.62), cy - 1);
+    const label = `${theme.label} · ${node.id.toUpperCase()}`;
+    ctx.fillText(label, cx, cy - towerH - 12);
+
+    if (node.status === 'unstable' || node.status === 'contested') {
+      ctx.fillStyle = node.status === 'unstable' ? '#ff4fd8' : '#ffd84d';
+      ctx.fillText(node.status === 'unstable' ? '⚠ UNSTABLE' : 'CONTESTED', cx, cy - towerH - 22);
     }
 
     ctx.restore();
@@ -1335,41 +943,34 @@ export function createIsoRenderer(canvas) {
     const byId = new Map(controlNodes.map((node) => [node.id, node]));
     ctx.save();
 
-    for (const [fromId, toId] of NETWORK_LINKS) {
-      const from = byId.get(fromId);
-      const to = byId.get(toId);
+    for (const line of NETWORK_LINES) {
+      const from = byId.get(line.from.id) || controlNodes.find((node) => node.x === line.from.x && node.y === line.from.y);
+      const to = byId.get(line.to.id) || controlNodes.find((node) => node.x === line.to.x && node.y === line.to.y);
       if (!from || !to) continue;
+
       const fromIso = toIso(from.x, from.y);
       const toIsoPoint = toIso(to.x, to.y);
       const x1 = originX + fromIso.x;
       const y1 = originY + fromIso.y + HALF_TILE_H;
       const x2 = originX + toIsoPoint.x;
       const y2 = originY + toIsoPoint.y + HALF_TILE_H;
-      const isHot = from.status === 'unstable' || to.status === 'unstable' || from.status === 'contested' || to.status === 'contested';
+      const flowPulse = 0.5 + (Math.sin((now / 220) + (line.id.length * 0.5)) + 1) * 0.25;
 
-      ctx.globalAlpha = isHot ? 0.48 : 0.3;
-      ctx.strokeStyle = isHot ? 'rgba(255,79,216,0.9)' : 'rgba(94,242,255,0.86)';
-      ctx.lineWidth = isHot ? 2 : 1.5;
+      ctx.globalAlpha = 0.45;
+      ctx.strokeStyle = 'rgba(94,242,255,0.95)';
+      ctx.lineWidth = 1.4 + flowPulse;
       ctx.beginPath();
       ctx.moveTo(x1, y1);
       ctx.lineTo(x2, y2);
       ctx.stroke();
 
-      ctx.globalAlpha = 0.18;
-      ctx.strokeStyle = 'rgba(210,245,255,0.8)';
-      ctx.lineWidth = 4.5;
-      ctx.beginPath();
-      ctx.moveTo(x1, y1);
-      ctx.lineTo(x2, y2);
-      ctx.stroke();
-
-      const packetPhase = ((now * DATA_PACKET_SPEED) + ((from.x + to.y) * 0.037)) % 1;
+      const packetPhase = ((now * DATA_PACKET_SPEED * 1.8) + ((from.x + to.y) * 0.021)) % 1;
       const px = x1 + ((x2 - x1) * packetPhase);
       const py = y1 + ((y2 - y1) * packetPhase);
       ctx.globalAlpha = 0.95;
-      ctx.fillStyle = isHot ? '#ff8bd9' : '#c9f7ff';
+      ctx.fillStyle = '#e7fbff';
       ctx.beginPath();
-      ctx.arc(px, py, isHot ? 2.2 : 1.8, 0, Math.PI * 2);
+      ctx.arc(px, py, 2.2, 0, Math.PI * 2);
       ctx.fill();
     }
     ctx.restore();
@@ -1520,8 +1121,6 @@ export function createIsoRenderer(canvas) {
     ctx.drawImage(layerState.roadBlocks.canvas, worldDrawX, worldDrawY);
     ctx.drawImage(layerState.worldObjects.canvas, worldDrawX, worldDrawY);
 
-    drawRoadLightStrips(originX, originY, now, metrics);
-    drawKeyTilePulse(originX, originY, metrics, now);
     drawNetworkDataLinks(originX, originY, state.controlNodes, now);
 
     drawHoveredTile(originX, originY, state.mouse?.hoverTile, now);

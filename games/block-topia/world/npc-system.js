@@ -30,8 +30,8 @@ const FALLBACK_INTEL_PREFIX = '[Fallback]';
 const RECENT_LINE_MEMORY = 4;
 const LINE_REPEAT_PENALTY = 0.22;
 const LAST_LINE_BOUNCE_PENALTY = 0.08;
-const NETWORK_JUMP_CHANCE_ACTIVE = 0.007;
-const NETWORK_JUMP_CHANCE_CROWD = 0.004;
+const NETWORK_JUMP_CHANCE_ACTIVE = 0;
+const NETWORK_JUMP_CHANCE_CROWD = 0;
 
 // District-aware NPC spawn bands (col, row, w, h) matching districts.json grid regions
 const DISTRICT_SPAWN_REGIONS = [
@@ -192,28 +192,32 @@ for (const line of NETWORK_LINES) {
   LINES_BY_COORD.set(toKey, toExisting);
 }
 
+
+const NODE_COORDS = new Map();
+for (const line of NETWORK_LINES) {
+  NODE_COORDS.set(lineCoordKey(line.from), { ...line.from });
+  NODE_COORDS.set(lineCoordKey(line.to), { ...line.to });
+}
+const NETWORK_NODES = Array.from(NODE_COORDS.values());
+
 function randInt(min, max) {
   return min + Math.floor(Math.random() * (max - min));
 }
 
 function spawnPos(regionIndex, count) {
-  const region = DISTRICT_SPAWN_REGIONS[regionIndex % DISTRICT_SPAWN_REGIONS.length];
-  const slots = Math.max(1, Math.floor(count / DISTRICT_SPAWN_REGIONS.length));
-  const slotIndex = Math.floor(regionIndex / DISTRICT_SPAWN_REGIONS.length) % slots;
-  const slotCols = Math.max(1, Math.floor(Math.sqrt(slots)));
-  const slotRows = Math.max(1, Math.ceil(slots / slotCols));
-  const cellW = Math.max(1, Math.floor(region.w / slotCols));
-  const cellH = Math.max(1, Math.floor(region.h / slotRows));
-  const slotCol = slotIndex % slotCols;
-  const slotRow = Math.floor(slotIndex / slotCols);
-  const baseCol = region.col + slotCol * cellW;
-  const baseRow = region.row + slotRow * cellH;
-  const spanW = Math.max(1, Math.min(cellW, region.col + region.w - baseCol));
-  const spanH = Math.max(1, Math.min(cellH, region.row + region.h - baseRow));
+  if (!NETWORK_NODES.length) {
+    const region = DISTRICT_SPAWN_REGIONS[regionIndex % DISTRICT_SPAWN_REGIONS.length];
+    return { col: region.col + 1, row: region.row + 1, districtId: region.id };
+  }
+
+  const node = NETWORK_NODES[(regionIndex * 7 + count) % NETWORK_NODES.length];
+  const district = DISTRICT_SPAWN_REGIONS.find((entry) => (
+    node.x >= entry.col && node.y >= entry.row && node.x < entry.col + entry.w && node.y < entry.row + entry.h
+  ));
   return {
-    col: baseCol + randInt(0, spanW),
-    row: baseRow + randInt(0, spanH),
-    districtId: region.id,
+    col: node.x,
+    row: node.y,
+    districtId: district?.id || 'neon-slums',
   };
 }
 
