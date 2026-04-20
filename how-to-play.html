@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="How to Play Manual — complete player guide for Moonboys Arcade, Block Topia, XP, gems, Telegram sync, events, and progression.">
+  <meta name="robots" content="index, follow">
+  <meta property="og:title" content="🧭 How to Play — Moonboys Systems Manual">
+  <meta property="og:description" content="A complete player-facing guide to the Moonboys ecosystem: arcade, leaderboard, Block Topia, events, XP, gems, and Telegram sync.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://crypto-moonboys.github.io/how-to-play.html">
+  <meta property="og:image" content="https://crypto-moonboys.github.io/img/CRYPTO-MOONBOYS-BITCOIN-LOGO.png">
+  <link rel="canonical" href="https://crypto-moonboys.github.io/how-to-play.html">
+  <title>🧭 How to Play — Moonboys Systems Manual</title>
+  <link rel="stylesheet" href="/css/wiki.css">
+  <link rel="stylesheet" href="/css/battle-layer.css">
+  <link rel="icon" href="/img/favicon.svg" type="image/svg+xml">
+  <style>
+    .manual-hero {
+      padding: 30px 26px;
+      border-radius: var(--radius);
+      border: 1px solid rgba(86,220,255,.34);
+      background: linear-gradient(160deg, rgba(10,23,44,.82), rgba(7,15,30,.74));
+      box-shadow: inset 0 0 0 1px rgba(122,236,255,.08), 0 14px 34px rgba(0,0,0,.3);
+      margin-bottom: 18px;
+    }
+    .manual-hero h1 { margin: 0 0 10px; font-size: 2rem; }
+    .manual-hero p { margin: 0; color: var(--color-text-muted); line-height: 1.7; }
+
+    .manual-pill-row { display:flex; flex-wrap:wrap; gap:10px; margin-top:18px; }
+    .manual-pill {
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      padding:7px 11px;
+      border-radius: 999px;
+      border: 1px solid rgba(86,220,255,.32);
+      background: rgba(9, 31, 56, .52);
+      font-size: .8rem;
+      color: #d6f8ff;
+    }
+
+    .manual-grid {
+      display:grid;
+      grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
+      gap: 14px;
+      margin: 16px 0 24px;
+    }
+    .manual-card {
+      border: 1px solid rgba(86,220,255,.28);
+      border-radius: 12px;
+      background: linear-gradient(165deg, rgba(10,23,44,.76), rgba(8,18,34,.62));
+      padding: 16px 16px 14px;
+      box-shadow: inset 0 0 0 1px rgba(122,236,255,.06), 0 8px 24px rgba(0,0,0,.24);
+    }
+    .manual-card h3 { margin: 0 0 8px; font-size: 1rem; }
+    .manual-card p,
+    .manual-card li { color: var(--color-text-muted); line-height: 1.65; }
+    .manual-card ul { margin: 0; padding-left: 18px; }
+
+    .manual-section {
+      margin: 0 0 22px;
+      border: 1px solid rgba(86,220,255,.24);
+      border-radius: 12px;
+      background: rgba(8,18,34,.7);
+      padding: 18px 18px 16px;
+    }
+    .manual-section h2 {
+      margin: 0 0 8px;
+      font-size: 1.15rem;
+      color: #e7fcff;
+      letter-spacing: .01em;
+    }
+    .manual-section p,
+    .manual-section li {
+      color: var(--color-text-muted);
+      line-height: 1.72;
+      margin: 0 0 8px;
+    }
+    .manual-section ul,
+    .manual-section ol { margin: 0; padding-left: 20px; }
+
+    .manual-event-table-wrap {
+      margin-top: 10px;
+      overflow-x: auto;
+      border: 1px solid rgba(86,220,255,.28);
+      border-radius: 10px;
+    }
+    .manual-event-table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 760px;
+      font-size: .88rem;
+    }
+    .manual-event-table th,
+    .manual-event-table td {
+      text-align: left;
+      vertical-align: top;
+      padding: 10px 12px;
+      border-bottom: 1px solid rgba(86,220,255,.14);
+    }
+    .manual-event-table th {
+      font-size: .74rem;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      color: #9fdff0;
+      background: rgba(14,32,58,.86);
+    }
+    .manual-event-table tr:last-child td { border-bottom: none; }
+
+    .manual-steps {
+      border: 1px solid rgba(86,220,255,.32);
+      border-radius: 12px;
+      background: linear-gradient(165deg, rgba(10,23,44,.78), rgba(8,18,34,.6));
+      padding: 14px 16px;
+      margin-top: 10px;
+    }
+    .manual-steps ol { margin: 0; }
+    .manual-steps code {
+      color: #f4d35e;
+      background: rgba(255,255,255,.06);
+      border-radius: 4px;
+      padding: .1em .35em;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    }
+
+    .manual-faq .manual-card h3 {
+      font-size: .96rem;
+      color: #d6f9ff;
+      margin-bottom: 6px;
+    }
+
+    .manual-nav-card {
+      margin-top: 16px;
+      border: 1px solid rgba(86,220,255,.3);
+      border-radius: 12px;
+      background: rgba(10,25,46,.68);
+      padding: 14px 16px;
+    }
+    .manual-nav-card a { text-decoration: none; }
+  </style>
+</head>
+<body>
+<a class="skip-link" href="#content">Skip to content</a>
+
+<header id="site-header" role="banner">
+  <button class="hamburger" id="hamburger" aria-label="Toggle navigation" aria-expanded="false" aria-controls="sidebar">☰</button>
+  <a href="/index.html" class="site-logo" aria-label="The Crypto Moonboys GK Wiki home">
+    <img src="/img/CRYPTO-MOONBOYS-BITCOIN-LOGO.png" alt="" aria-hidden="true">
+    <span>
+      <span class="logo-text">🌙 The Crypto Moonboys GK Wiki</span>
+      <span class="logo-sub">Blockchain Cryptoism Encyclopedia ⚡️⚡️⚡️</span>
+    </span>
+  </a>
+  <div id="header-search" role="search">
+    <input type="search" id="search-input" placeholder="Search the wiki…" aria-label="Search" autocomplete="off">
+    <button id="search-btn" aria-label="Search">🔍</button>
+    <div id="search-results" role="listbox"></div>
+  </div>
+  <nav class="header-nav" aria-label="Main navigation">
+    <a href="/index.html">Home</a>
+    <a href="/games/">Arcade</a>
+  </nav>
+</header>
+
+<div id="sidebar-overlay" aria-hidden="true"></div>
+
+<div id="layout">
+  <nav id="sidebar" aria-label="Wiki navigation">
+    <div class="sidebar-section">
+      <div class="sidebar-heading">Navigation</div>
+      <div class="sidebar-nav">
+        <a href="/index.html"><span class="nav-icon">🏠</span> Main Page</a>
+        <a href="/games/"><span class="nav-icon">🕹️</span> Arcade</a>
+        <a href="/games/leaderboard.html"><span class="nav-icon">🏆</span> Leaderboard</a>
+        <a href="/gkniftyheads-incubator.html"><span class="nav-icon">🚀</span> Incubator HUB</a>
+        <a href="/community.html"><span class="nav-icon">⚔️</span> Battle Chamber</a>
+        <a href="/how-to-play.html" class="active"><span class="nav-icon">🧭</span> How to Play</a>
+      </div>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-heading">Quick Access</div>
+      <div class="sidebar-nav">
+        <a href="#telegram-sync"><span class="nav-icon">🔗</span> Telegram Sync</a>
+        <a href="#events"><span class="nav-icon">🚨</span> Popups &amp; Events</a>
+        <a href="#xp"><span class="nav-icon">⚡</span> XP</a>
+        <a href="#gems"><span class="nav-icon">💎</span> Gems</a>
+        <a href="#earn-more"><span class="nav-icon">📈</span> How to Earn More</a>
+        <a href="#faq"><span class="nav-icon">❓</span> Troubleshooting</a>
+      </div>
+    </div>
+  </nav>
+
+  <div id="main-wrapper">
+    <main id="content" role="main" class="wiki-content">
+      <nav class="breadcrumb" aria-label="Breadcrumb">
+        <a href="/index.html">Home</a><span class="sep">›</span>
+        <a href="/games/">Arcade</a><span class="sep">›</span>
+        <span aria-current="page">How to Play Manual</span>
+      </nav>
+
+      <section class="manual-hero">
+        <h1>🧭 Moonboys How-To-Play &amp; Systems Manual</h1>
+        <p>
+          This is the one-page player guide for the full ecosystem. If you ever asked “why did this popup happen?”, “why didn’t I get XP?”, or
+          “what does Telegram sync actually do?” — this manual answers it in plain English.
+        </p>
+        <div class="manual-pill-row" aria-label="Core systems">
+          <span class="manual-pill">🕹️ Arcade Score Layer</span>
+          <span class="manual-pill">🏆 Leaderboard Rank Layer</span>
+          <span class="manual-pill">🏙️ Block Topia Survival Layer</span>
+          <span class="manual-pill">🔗 Telegram Identity Layer</span>
+          <span class="manual-pill">⚡ XP + 💎 Gems Economy</span>
+        </div>
+      </section>
+
+      <section class="manual-section" id="what-site-is">
+        <h2>A) What this website is</h2>
+        <p>
+          The Crypto Moonboys site is one connected ecosystem made of four public layers:
+        </p>
+        <div class="manual-grid">
+          <article class="manual-card">
+            <h3>🕹️ Arcade</h3>
+            <p>Free-to-play skill games where you generate score and compete.</p>
+          </article>
+          <article class="manual-card">
+            <h3>📚 Wiki</h3>
+            <p>The lore, factions, characters, events, and strategic context of the world.</p>
+          </article>
+          <article class="manual-card">
+            <h3>⚔️ Battle Chamber</h3>
+            <p>Community intelligence layer: missions, activity, and social coordination.</p>
+          </article>
+          <article class="manual-card">
+            <h3>🏙️ Block Topia</h3>
+            <p>Live RPG world where pressure, events, and survival mechanics run in real time.</p>
+          </article>
+        </div>
+        <p>
+          They are connected, but not identical: <strong>score</strong> determines ranking, <strong>XP</strong> powers survival/progression,
+          <strong>gems</strong> fuel upgrades, and your <strong>synced identity</strong> determines whether progress is persistent or browser-local.
+        </p>
+      </section>
+
+      <section class="manual-section" id="arcade-explained">
+        <h2>B) Arcade explained</h2>
+        <ul>
+          <li>Arcade games are free to play.</li>
+          <li>Your run creates a <strong>score</strong> for the leaderboard.</li>
+          <li><strong>Score is not XP.</strong> Leaderboard rank uses score, not your XP stash.</li>
+          <li>Accepted scores can convert into Block Topia XP when your Telegram identity is synced.</li>
+          <li>If you are unsynced, you can still play and post local run data, but long-term progression stays local/browser-only.</li>
+        </ul>
+      </section>
+
+      <section class="manual-section" id="telegram-sync">
+        <h2>C) Telegram sync (required for stored progression)</h2>
+        <p>
+          Telegram sync is your identity handshake with the live system. Without it, the server cannot safely attach progression to a persistent player identity.
+        </p>
+        <div class="manual-steps" aria-label="Telegram sync steps">
+          <ol>
+            <li>Open the official bot: <a href="https://t.me/WIKICOMSBOT" target="_blank" rel="noopener noreferrer">@WIKICOMSBOT</a>.</li>
+            <li>Run <code>/gkstart</code> (initial bot activation).</li>
+            <li>Run <code>/gklink</code>.</li>
+            <li>Open the link returned by the bot and complete link confirmation.</li>
+            <li>Return to Arcade/Leaderboard/Block Topia and confirm sync is green/linked.</li>
+          </ol>
+        </div>
+        <ul style="margin-top:12px;">
+          <li><strong>When linked:</strong> accepted score-to-XP conversion and progression can persist server-side.</li>
+          <li><strong>If sync expires:</strong> your identity state can go red/invalid until you relink with <code>/gklink</code>.</li>
+          <li><strong>If not linked:</strong> you can play, but progression is local-only and does not behave like full persistent progression.</li>
+        </ul>
+      </section>
+
+      <section class="manual-section" id="block-topia-explained">
+        <h2>D) Block Topia explained</h2>
+        <p>
+          Block Topia is the live world / RPG / node-control layer. It is built around pressure, survival, and response.
+        </p>
+        <ul>
+          <li>XP is required to enter and remain effective inside the world loop.</li>
+          <li>XP drains while active in Block Topia because survival has ongoing system cost.</li>
+          <li>Mini-games can cost XP to engage and may return XP/gems based on outcome.</li>
+          <li>World events are not cosmetic; they reflect current pressure across nodes/districts.</li>
+          <li>SAM pressure and district struggle are active forces in the loop, not background story text.</li>
+        </ul>
+      </section>
+
+      <section class="manual-section" id="events">
+        <h2>E) Why popups and events happen</h2>
+        <p>
+          Events appear because the world state demands a response (node pressure, district conflict, hostile system momentum, or instability windows).
+          They are designed as <strong>state reactions</strong>, not random interruptions.
+        </p>
+
+        <div class="manual-event-table-wrap">
+          <table class="manual-event-table" aria-label="Event explainer table">
+            <thead>
+              <tr>
+                <th>Event Type</th>
+                <th>Why It Appears</th>
+                <th>If You Ignore It</th>
+                <th>If You Succeed</th>
+                <th>If You Fail</th>
+                <th>Paid Skip (if offered)</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Node Outbreak</strong></td>
+                <td>Local node pressure crossed a danger threshold.</td>
+                <td>Node corruption expands; future pressure/events can intensify.</td>
+                <td>Pressure is reduced, node stabilises, potential reward window opens.</td>
+                <td>Outbreak spreads, survival cost can rise, district risk worsens.</td>
+                <td>Skips immediate challenge but usually forfeits event rewards and does not provide full stabilisation value.</td>
+              </tr>
+              <tr>
+                <td><strong>Firewall Defense</strong></td>
+                <td>Hostile traffic or SAM push is stressing a protected route.</td>
+                <td>Defensive integrity drops and follow-up attacks are more likely.</td>
+                <td>Route integrity restored; can preserve node control momentum.</td>
+                <td>System leaks, penalty pressure increases, and chain events may trigger.</td>
+                <td>Bypasses this defense check at a cost, but can reduce long-term upside.</td>
+              </tr>
+              <tr>
+                <td><strong>Signal Routing</strong></td>
+                <td>The world needs active rerouting to keep sectors connected.</td>
+                <td>Route quality degrades, causing weaker support to nearby objectives.</td>
+                <td>Signal flow improves and supports progression efficiency.</td>
+                <td>Misroutes generate instability and can produce extra event load.</td>
+                <td>Can preserve momentum short-term, but you miss route-optimization rewards.</td>
+              </tr>
+              <tr>
+                <td><strong>Circuit Breach / Reconnect</strong></td>
+                <td>Critical circuits were disrupted and need manual response.</td>
+                <td>Disconnected systems stay vulnerable and drain opportunities.</td>
+                <td>Reconnect restores functionality and often lowers pressure drift.</td>
+                <td>Partial blackout continues, reducing safe progression windows.</td>
+                <td>Skip prevents immediate failure, but no mastery reward and less resilience gain.</td>
+              </tr>
+              <tr>
+                <td><strong>District War Pressure</strong></td>
+                <td>NPC and faction influence conflict reached active contest level.</td>
+                <td>You give ground; district influence may swing away from your side.</td>
+                <td>District control and morale improve; better conditions for later runs.</td>
+                <td>Opposition momentum rises and district becomes harder to stabilise.</td>
+                <td>Can avoid immediate losses, but cedes strategic value over time.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="manual-section" id="xp">
+        <h2>F) XP explained</h2>
+        <ul>
+          <li>XP is earned through accepted performance loops (arcade conversion, world actions, and event outcomes).</li>
+          <li>Accepted arcade scores are one major feed into XP.</li>
+          <li>Block Topia uses XP as active survival/progression currency.</li>
+          <li>Mini-games can consume XP to enter and can return XP if you perform well.</li>
+          <li>XP can go down because the world uses drain, failure pressure, and survival costs.</li>
+          <li>In practical terms: XP is not just “level points.” It is your run-time survival fuel.</li>
+        </ul>
+      </section>
+
+      <section class="manual-section" id="gems">
+        <h2>G) Gems explained</h2>
+        <ul>
+          <li>Gems are earned from successful loops/events/mini-game outcomes.</li>
+          <li>Gems are <strong>not</strong> the gate to enter Block Topia.</li>
+          <li>Gems are used for upgrades and deeper RPG progression paths.</li>
+          <li>Upgrades improve later runs (efficiency, resilience, and pressure handling).</li>
+        </ul>
+      </section>
+
+      <section class="manual-section" id="earn-more">
+        <h2>H) How to earn more (practical strategy)</h2>
+        <div class="manual-grid">
+          <article class="manual-card">
+            <h3>Improve score quality</h3>
+            <ul>
+              <li>Master 2–3 games instead of spreading effort thinly.</li>
+              <li>Prioritise clean runs over risky early-score spikes.</li>
+              <li>Use leaderboard refresh cycles to target realistic rank jumps.</li>
+            </ul>
+          </article>
+          <article class="manual-card">
+            <h3>Convert score into XP</h3>
+            <ul>
+              <li>Stay Telegram-linked so accepted runs can persist/convert.</li>
+              <li>If sync turns red, relink before grinding long sessions.</li>
+              <li>Aim for consistency; accepted runs beat one-off spikes.</li>
+            </ul>
+          </article>
+          <article class="manual-card">
+            <h3>Survive longer in Block Topia</h3>
+            <ul>
+              <li>Enter with XP buffer, not minimum threshold mindset.</li>
+              <li>Respond to pressure events early to avoid compounding costs.</li>
+              <li>Use mini-games when expected reward outweighs current XP risk.</li>
+            </ul>
+          </article>
+          <article class="manual-card">
+            <h3>Earn and use gems better</h3>
+            <ul>
+              <li>Prioritise upgrades that improve repeat-run efficiency.</li>
+              <li>Do not burn resources on low-impact convenience too early.</li>
+              <li>Treat gems as long-cycle build currency, not panic spend currency.</li>
+            </ul>
+          </article>
+          <article class="manual-card">
+            <h3>Use skip carefully</h3>
+            <ul>
+              <li>Skip is for damage control, not default play style.</li>
+              <li>If you skip repeatedly, you often lose reward velocity and map influence.</li>
+              <li>Best use case: protect a high-value run state from cascade failure.</li>
+            </ul>
+          </article>
+          <article class="manual-card">
+            <h3>Exploit pressure moments</h3>
+            <ul>
+              <li>Pressure spikes often open high-impact response windows.</li>
+              <li>Winning during these moments improves both rewards and strategic position.</li>
+              <li>Think in loops: score → accepted run → XP → survival → better future runs.</li>
+            </ul>
+          </article>
+        </div>
+      </section>
+
+      <section class="manual-section" id="world">
+        <h2>I) World / NPC / District / SAM explainer</h2>
+        <p>
+          Block Topia is a living war-map, not a static menu. NPC groups recruit, reinforce, and fight for nodes. Districts shift under sustained pressure.
+          SAM acts as the hostile systemic force: it drives instability, stress-tests control, and punishes passive play.
+        </p>
+        <p>
+          Your actions matter because every successful defense, route recovery, and pressure response influences how hard the next cycle hits.
+          You are not just farming points — you are helping decide whether districts stabilise or collapse into hostile control.
+        </p>
+      </section>
+
+      <section class="manual-section manual-faq" id="faq">
+        <h2>J) FAQ / quick troubleshooting</h2>
+        <div class="manual-grid">
+          <article class="manual-card">
+            <h3>I’m linked but can’t enter Block Topia</h3>
+            <p>Most common causes: your current XP is too low for active survival, or your link state is stale. Recheck sync state and relink with <code>/gklink</code> if needed.</p>
+          </article>
+          <article class="manual-card">
+            <h3>I played a game but got no XP</h3>
+            <p>Leaderboard score and XP are separate. XP comes from accepted conversion/stateful systems, especially when identity is synced.</p>
+          </article>
+          <article class="manual-card">
+            <h3>Why does it say local only?</h3>
+            <p>Your session is currently unsynced. Runs still work, but progression is stored in your browser session, not full server-backed profile state.</p>
+          </article>
+          <article class="manual-card">
+            <h3>What does “accepted score” mean?</h3>
+            <p>An accepted score is a run the system validates for ranking/progression pathways. Only accepted runs are eligible for conversion effects.</p>
+          </article>
+          <article class="manual-card">
+            <h3>Why did Block Topia kick me out?</h3>
+            <p>Usually XP drain reached a critical floor, or pressure/failure chains exhausted your current survival state.</p>
+          </article>
+          <article class="manual-card">
+            <h3>Why is sync red?</h3>
+            <p>Your Telegram link likely expired or failed validation. Relink via <code>/gklink</code> and re-open the link from the bot.</p>
+          </article>
+          <article class="manual-card">
+            <h3>What if auth expired?</h3>
+            <p>Run <code>/gklink</code> again, complete the new link handshake, then refresh your game page before continuing long runs.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="manual-nav-card" aria-label="Manual related links">
+        <strong>Next stop:</strong>
+        <a href="/games/">Open Arcade</a> ·
+        <a href="/games/leaderboard.html">View Leaderboard</a> ·
+        <a href="/gkniftyheads-incubator.html">Open Sync Onboarding</a> ·
+        <a href="/games/block-topia/">Enter Block Topia</a>
+      </section>
+    </main>
+
+    <footer id="site-footer" role="contentinfo">
+      <div class="footer-inner">
+        <div class="footer-col">
+          <h4>🌙 The Crypto Moonboys GK Wiki</h4>
+          <p>Player-facing guidance for the live Moonboys ecosystem.</p>
+        </div>
+        <div class="footer-col">
+          <h4>Explore</h4>
+          <ul>
+            <li><a href="/games/">Arcade</a></li>
+            <li><a href="/games/leaderboard.html">Leaderboard</a></li>
+            <li><a href="/gkniftyheads-incubator.html">Incubator HUB</a></li>
+            <li><a href="/community.html">Battle Chamber</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>© 2026 Crypto Moonboys · Not financial advice.</p>
+      </div>
+    </footer>
+  </div>
+</div>
+
+<button id="back-to-top" aria-label="Back to top">↑</button>
+<script src="/js/wiki.js"></script>
+<script src="/js/scroll-shell.js"></script>
+</body>
+</html>
