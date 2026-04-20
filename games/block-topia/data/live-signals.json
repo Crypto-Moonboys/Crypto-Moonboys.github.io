@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-04-20T08:10:15.619Z",
+  "generatedAt": "2026-04-20T10:16:26.473Z",
   "mode": "live-ai",
   "sourceHealth": {
     "coingecko-global": "ok",
@@ -8,87 +8,71 @@
     "fear-greed": "ok",
     "openai": "ok"
   },
-  "signalCount": 5,
+  "signalCount": 4,
   "signals": [
     {
-      "id": "signal-1776672615619-1",
-      "lane": "world",
+      "id": "signal-1776680186472-1",
+      "lane": "npc",
       "priority": 4,
+      "ttlMinutes": 60,
+      "npcLine": "RAVE nodes flicker; trust is thin in the data streams.",
+      "questPulse": "Chasing echoes of a forgotten protocol amid signal noise.",
+      "worldFeed": "Networks churn: new tokens rise in shadowed webs.",
+      "clueEvent": "Encrypted whispers mention a lost AAVE cache.",
+      "tags": [
+        "crypto",
+        "network",
+        "uncertainty"
+      ],
+      "expiresAt": "2026-04-20T11:16:26.472Z"
+    },
+    {
+      "id": "signal-1776680186473-2",
+      "lane": "quest",
+      "priority": 5,
       "ttlMinutes": 45,
-      "npcLine": "Crypto shadows lengthen, markets bleed silent warnings.",
-      "questPulse": "Scan for hidden nodes among risky altcoin debris.",
-      "worldFeed": "Network flux unsettles; market cap flickers downward.",
-      "clueEvent": "Dwindling digits hint at deeper system unrest.",
+      "npcLine": "Ghosts talk of WOJAK spikes destabilizing black markets.",
+      "questPulse": "Infiltrate dark ledgers; decipher unstable asset flows.",
+      "worldFeed": "Market nodes shudder, fear spreading across data veins.",
+      "clueEvent": "Fragmented codes hint at asteroid data fragments.",
       "tags": [
         "market",
-        "crypto",
-        "downturn"
-      ],
-      "expiresAt": "2026-04-20T08:55:15.619Z"
-    },
-    {
-      "id": "signal-1776672615619-2",
-      "lane": "ops",
-      "priority": 3,
-      "ttlMinutes": 30,
-      "npcLine": "RAVE spikes, but watch—the surge masks lurking decay.",
-      "questPulse": "Investigate strange spikes linked to volatile synth tokens.",
-      "worldFeed": "Unsteady pulses from alt-chain sectors confuse scanners.",
-      "clueEvent": "Volatile signal bursts disrupt stablenet flows.",
-      "tags": [
-        "altcoin",
-        "volatility",
-        "surge"
-      ],
-      "expiresAt": "2026-04-20T08:40:15.619Z"
-    },
-    {
-      "id": "signal-1776672615619-3",
-      "lane": "clue",
-      "priority": 5,
-      "ttlMinutes": 20,
-      "npcLine": "Fear levels rise to code red; trust no exchange.",
-      "questPulse": "Decrypt chatter warning of imminent market collapse.",
-      "worldFeed": "Sentiment index crashes—panic algorithms activating.",
-      "clueEvent": "Encrypted warnings of unstable digital credits flood nodes.",
-      "tags": [
         "fear",
-        "sentiment",
-        "alert"
+        "infiltration"
       ],
-      "expiresAt": "2026-04-20T08:30:15.619Z"
+      "expiresAt": "2026-04-20T11:01:26.473Z"
     },
     {
-      "id": "signal-1776672615619-4",
-      "lane": "quest",
-      "priority": 2,
-      "ttlMinutes": 60,
-      "npcLine": "Asteroid token moves stealthily; may unlock covert caches.",
-      "questPulse": "Locate hidden contracts slipping through network cracks.",
-      "worldFeed": "Minor cryptos gravitate toward obscure, shadowed sectors.",
-      "clueEvent": "Ghost leads hint at silent crypto reserves.",
-      "tags": [
-        "altcoin",
-        "stealth",
-        "discovery"
-      ],
-      "expiresAt": "2026-04-20T09:10:15.619Z"
-    },
-    {
-      "id": "signal-1776672615619-5",
-      "lane": "npc",
+      "id": "signal-1776680186473-3",
+      "lane": "world",
       "priority": 3,
-      "ttlMinutes": 50,
-      "npcLine": "WOJAK chants rise; memes mutate into market weapons.",
-      "questPulse": "Track memetic currency shifts disrupting data flows.",
-      "worldFeed": "Culture bugs spread, destabilizing digital economies.",
-      "clueEvent": "Viral codes alter trade patterns unpredictably.",
+      "ttlMinutes": 120,
+      "npcLine": "Digital alleys buzz; new cryptos hide in vast flows.",
+      "questPulse": "Scan for anomalies: silent growth in unknown market caps.",
+      "worldFeed": "Global cryptos surge quietly; ##k+ shadows dancing.",
+      "clueEvent": "Sentiment sensors blink red, signaling rising paranoia.",
       "tags": [
-        "meme",
-        "culture",
-        "disruption"
+        "surge",
+        "shadow",
+        "paranoia"
       ],
-      "expiresAt": "2026-04-20T09:00:15.619Z"
+      "expiresAt": "2026-04-20T12:16:26.473Z"
+    },
+    {
+      "id": "signal-1776680186473-4",
+      "lane": "clue",
+      "priority": 2,
+      "ttlMinutes": 90,
+      "npcLine": "ADA watchers report faint signals beneath the data fog.",
+      "questPulse": "Trace fading ADA trails through encrypted throngs.",
+      "worldFeed": "Fear grips traders; confidence dissolving in digital ether.",
+      "clueEvent": "AAVE codes flicker briefly; patterns shift unpredictably.",
+      "tags": [
+        "trace",
+        "fear",
+        "patterns"
+      ],
+      "expiresAt": "2026-04-20T11:46:26.473Z"
     }
   ]
 }
