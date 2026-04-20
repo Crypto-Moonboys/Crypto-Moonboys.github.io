@@ -462,7 +462,7 @@ export function bootstrapHexGLMonsterMax(root) {
       if (window.MOONBOYS_IDENTITY?.showSyncGateModal) {
         window.MOONBOYS_IDENTITY.showSyncGateModal(true);
       } else {
-        notify('Telegram link required for ranked leaderboard submission. Guest runs stay local.');
+        notify('Telegram sync required for ranked submission. Run /gklink in @WIKICOMSBOT. Unsynced runs stay local.');
       }
       if (startBtn) startBtn.disabled = false;
       resetOverlayStartLabel();

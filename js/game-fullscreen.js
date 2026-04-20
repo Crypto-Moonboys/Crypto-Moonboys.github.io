@@ -315,7 +315,7 @@
     identity.id = 'arcade-sync-identity';
     card.appendChild(identity);
     inlineSyncIdentity = identity;
-    var status = el('div', 'arcade-sync-status sync-state--bad', 'Unsynced — local only. To store XP and Block Topia progression, link with Telegram using /gklink.');
+    var status = el('div', 'arcade-sync-status sync-state--bad', 'Unsynced play stays local to this browser. Run /gklink in Telegram to store XP and Block Topia progression server-side.');
     status.id = 'arcade-sync-status';
     card.appendChild(status);
     var actions = el('div', 'arcade-sync-actions');
@@ -524,7 +524,7 @@
     cachedLiveProjectedXp = el('div', 'score-val score-val--projected', '0');
     cachedLiveProjectedXp.id = 'overlay-live-projected-xp';
     sideLeft.appendChild(cachedLiveProjectedXp);
-    cachedProjectedHint = el('div', 'panel-note', 'Potential Block Topia XP — accepted score required.');
+    cachedProjectedHint = el('div', 'panel-note', 'Potential Block Topia XP — accepted score + Telegram sync required.');
     sideLeft.appendChild(cachedProjectedHint);
     sideLeft.appendChild(el('div', 'panel-title', 'Best'));
     cachedLiveBest = el('div', 'score-val', '0');
@@ -534,7 +534,7 @@
     cachedSyncIdentity = el('div', 'panel-note panel-note--identity', 'Linked as: Not linked');
     cachedSyncIdentity.id = 'overlay-sync-identity';
     sideLeft.appendChild(cachedSyncIdentity);
-    cachedSyncStatus = el('div', 'panel-note panel-note--status sync-state--bad', 'Unsynced — local only. To store XP and Block Topia progression, link with Telegram using /gklink.');
+    cachedSyncStatus = el('div', 'panel-note panel-note--status sync-state--bad', 'Unsynced play stays local to this browser. Run /gklink in Telegram to store XP and Block Topia progression server-side.');
     cachedSyncStatus.id = 'overlay-sync-status';
     sideLeft.appendChild(cachedSyncStatus);
     cachedSyncActions = el('div', 'panel-note panel-note--actions');
@@ -613,39 +613,39 @@
         return;
       case 'score_accepted':
         setSyncVisualState(true);
-        setSyncStatusText('Score accepted.');
+        setSyncStatusText('Score accepted for ranking.');
         setActionHtml('');
         return;
       case 'xp_awarded':
         setSyncVisualState(true);
-        setSyncStatusText('Accepted — XP awarded: ' + (d.awardedXp || 0) + (Number.isFinite(d.totalXp) ? (' · Total XP: ' + d.totalXp) : ''));
+        setSyncStatusText('Accepted score converted — XP awarded: ' + (d.awardedXp || 0) + (Number.isFinite(d.totalXp) ? (' · Total XP: ' + d.totalXp) : ''));
         setActionHtml('');
         return;
       case 'accepted_no_xp':
       case 'rejected_no_xp':
         setSyncVisualState(true);
-        setSyncStatusText('Accepted — no XP awarded.');
+        setSyncStatusText('Accepted score recorded, but no XP was awarded.');
         setActionHtml('');
         return;
       case 'auth_expired':
         setSyncVisualState(false);
-        setSyncStatusText('Auth expired — run /gklink again.');
+        setSyncStatusText('Sync expired — run /gklink again.');
         setActionHtml('<a class="sync-action-link sync-action-link--danger" href="/gkniftyheads-incubator.html">Run /gklink</a>');
         return;
       case 'relink_required':
         setSyncVisualState(false);
-        setSyncStatusText('Re-link required — run /gklink again.');
+        setSyncStatusText('Re-link required — run /gklink again to refresh sync.');
         setActionHtml('<a class="sync-action-link sync-action-link--danger" href="/gkniftyheads-incubator.html">Run /gklink</a>');
         return;
       case 'sync_error':
         setSyncVisualState(false);
-        setSyncStatusText('Sync failed. Retry sync.');
+        setSyncStatusText('Sync failed. Retry, then run /gklink again if needed.');
         setActionHtml('<a class="sync-action-link" href="/games/">Retry Sync</a> <a class="sync-action-link" href="/gkniftyheads-incubator.html">Open sync instructions</a>');
         return;
       case 'local_only':
       default:
         setSyncVisualState(false);
-        setSyncStatusText('Unsynced — local only. To store XP and Block Topia progression, link with Telegram using /gklink.');
+        setSyncStatusText('Unsynced play stays local to this browser. Run /gklink in Telegram to store XP and Block Topia progression server-side.');
         setActionHtml('<a class="sync-action-link sync-action-link--danger" href="/gkniftyheads-incubator.html">Run /gklink</a>');
     }
   }
