@@ -95,14 +95,14 @@ export async function submitScore(player, score, game = "global") {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ player: resolvedPlayer, score, game, telegram_id: telegramId })
       });
+      const data = await res.json().catch(() => ({}));
       if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
         if (data.error === "telegram_sync_required" &&
             typeof window !== "undefined" && window.MOONBOYS_IDENTITY &&
             typeof window.MOONBOYS_IDENTITY.showSyncGateModal === "function") {
           window.MOONBOYS_IDENTITY.showSyncGateModal();
         }
-      } else {
+      } else if (data && data.accepted === true) {
         shouldSyncMeta = true;
         emitTron("score", { game, score, player: resolvedPlayer, source: "leaderboard-client" });
         if (gameKey === "blocktopia") {

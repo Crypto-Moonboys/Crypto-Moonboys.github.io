@@ -68,9 +68,8 @@ export const ArcadeSync = {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        action: "arcade_score_accepted",
-        type: "firewall",
-        game: String(game || "blocktopia"),
+        action: "arcade_score",
+        game: String(game || "blocktopia").toLowerCase(),
         score: Math.floor(safeScore),
         telegram_auth,
       }),

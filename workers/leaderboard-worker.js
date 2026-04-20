@@ -142,6 +142,7 @@ export default {
         .toLowerCase() || "global";
 
       const playerName = player.trim();
+      const telegramId = String(telegram_id).trim();
       const floorScore = Math.floor(parsedScore);
 
       if (submissionMode === "meta") {
@@ -159,6 +160,7 @@ export default {
         );
       }
 
+      let previousBest = 0;
       if (gameKey !== "global") {
         // Update all three per-game boards (all-time, seasonal, yearly) in parallel
         const [board, sBoard, yBoard] = await Promise.all([
@@ -167,21 +169,31 @@ export default {
           getBoard(env, `yearly:${gameKey}`)
         ]);
 
-        const entry = { player: playerName, score: floorScore };
+        const existingEntry = board.find((row) => String(row?.telegram_id || '') === telegramId) || null;
+        previousBest = Number(existingEntry?.score || 0);
+        const entry = { player: playerName, score: floorScore, telegram_id: telegramId };
+        const updatedBoard = upsertEntry(board, entry, PER_GAME_LEADERBOARD_SIZE);
+        const updatedSeasonal = upsertEntry(sBoard, entry, PER_GAME_LEADERBOARD_SIZE);
+        const updatedYearly = upsertEntry(yBoard, entry, PER_GAME_LEADERBOARD_SIZE);
         await Promise.all([
-          env.LEADERBOARD.put(`leaderboard:${gameKey}`,          JSON.stringify(upsertEntry(board,  entry, PER_GAME_LEADERBOARD_SIZE))),
-          env.LEADERBOARD.put(`leaderboard:seasonal:${gameKey}`, JSON.stringify(upsertEntry(sBoard, entry, PER_GAME_LEADERBOARD_SIZE))),
-          env.LEADERBOARD.put(`leaderboard:yearly:${gameKey}`,   JSON.stringify(upsertEntry(yBoard, entry, PER_GAME_LEADERBOARD_SIZE)))
+          env.LEADERBOARD.put(`leaderboard:${gameKey}`,          JSON.stringify(updatedBoard)),
+          env.LEADERBOARD.put(`leaderboard:seasonal:${gameKey}`, JSON.stringify(updatedSeasonal)),
+          env.LEADERBOARD.put(`leaderboard:yearly:${gameKey}`,   JSON.stringify(updatedYearly))
         ]);
 
         // Recompute all three aggregate boards from their respective per-game data
         await recomputeAllBoards(env);
       }
 
-      return new Response(
-        JSON.stringify({ status: "ok" }),
-        { headers: corsHeaders }
-      );
+      const responsePayload = { status: "ok", accepted: true };
+      if (gameKey !== "global") {
+        responsePayload.leaderboard = {
+          game: gameKey,
+          telegram_id: telegramId,
+          previous_best: previousBest,
+        };
+      }
+      return new Response(JSON.stringify(responsePayload), { headers: corsHeaders });
     }
 
     return new Response(

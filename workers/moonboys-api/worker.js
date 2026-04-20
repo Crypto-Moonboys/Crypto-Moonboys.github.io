@@ -55,6 +55,10 @@ const TIER_MIN = 1;
 const TIER_MAX = 50;
 const BLOCKTOPIA_RATE_LIMIT_PER_MIN = 20;
 const BLOCKTOPIA_DRAIN_PER_MINUTE = 2;
+const BLOCKTOPIA_ARCADE_MAX_XP_PER_MINUTE = 200;
+const BLOCKTOPIA_ARCADE_MAX_REWARDS_PER_GAME_PER_HOUR = 5;
+const BLOCKTOPIA_MAX_SCORE_SANITY = 1_000_000_000;
+const TELEGRAM_SYNC_XP_MULTIPLIER = 1.1;
 
 const CORS_HEADERS = {
   'Access-Control-Allow-Origin': '*',
@@ -412,17 +416,113 @@ async function enforceProgressionRateLimit(db, telegramId) {
   return Number(row?.n || 0) < BLOCKTOPIA_RATE_LIMIT_PER_MIN;
 }
 
-function computeBlockTopiaRewards(action, type, score) {
+async function enforceArcadeGameHourlyLimit(db, telegramId, game) {
+  const row = await db.prepare(
+    `SELECT COUNT(*) AS n
+     FROM blocktopia_progression_events
+     WHERE telegram_id = ?
+       AND action = 'arcade_score'
+       AND action_type = ?
+       AND created_at >= datetime('now', '-1 hour')`
+  ).bind(telegramId, game).first().catch(() => ({ n: 0 }));
+  return Number(row?.n || 0) < BLOCKTOPIA_ARCADE_MAX_REWARDS_PER_GAME_PER_HOUR;
+}
+
+async function getArcadeXpAwardedLastMinute(db, telegramId) {
+  const row = await db.prepare(
+    `SELECT COALESCE(SUM(xp_change), 0) AS total
+     FROM blocktopia_progression_events
+     WHERE telegram_id = ?
+       AND action = 'arcade_score'
+       AND created_at >= datetime('now', '-60 seconds')`
+  ).bind(telegramId).first().catch(() => ({ total: 0 }));
+  return Number(row?.total || 0);
+}
+
+async function hasArcadeScoreBeenRewarded(db, telegramId, game, score) {
+  const row = await db.prepare(
+    `SELECT id
+     FROM blocktopia_progression_events
+     WHERE telegram_id = ?
+       AND action = 'arcade_score'
+       AND action_type = ?
+       AND score = ?
+     LIMIT 1`
+  ).bind(telegramId, game, score).first().catch(() => null);
+  return !!row?.id;
+}
+
+function buildLeaderboardApiBase(env) {
+  const configured = typeof env.LEADERBOARD_API_URL === 'string' ? env.LEADERBOARD_API_URL.trim() : '';
+  const fallback = 'https://moonboys-leaderboard.sercullen.workers.dev';
+  return (configured || fallback).replace(/\/$/, '');
+}
+
+function buildLeaderboardIdentityAliasList(verifiedUser) {
+  const aliases = new Set();
+  const username = String(verifiedUser?.username || '').trim();
+  const fullName = [verifiedUser?.first_name, verifiedUser?.last_name].filter(Boolean).join(' ').trim();
+  if (username) aliases.add(username.toLowerCase());
+  if (fullName) aliases.add(fullName.toLowerCase());
+  return aliases;
+}
+
+async function fetchTrustedLeaderboardContext(env, game, telegramId, verifiedUser) {
+  const apiBase = buildLeaderboardApiBase(env);
+  const res = await fetch(`${apiBase}?game=${encodeURIComponent(game)}&mode=raw`);
+  if (!res.ok) throw new Error(`Leaderboard API HTTP ${res.status}`);
+  const board = await res.json().catch(() => []);
+  const list = Array.isArray(board) ? board : [];
+  const aliases = buildLeaderboardIdentityAliasList(verifiedUser);
+  const resolvedTelegramId = String(telegramId || '');
+  const playerEntry = list.find((row) => {
+    if (String(row?.telegram_id || '') === resolvedTelegramId) return true;
+    const player = String(row?.player || '').trim().toLowerCase();
+    return player && aliases.has(player);
+  }) || null;
+  const top10Idx = Math.max(0, Math.ceil(list.length * 0.1) - 1);
+  const top1Idx = Math.max(0, Math.ceil(list.length * 0.01) - 1);
+  return {
+    rank: Number(playerEntry?.rank || 0),
+    boardSize: list.length,
+    top10PercentScore: Number(list[top10Idx]?.score || 0),
+    top1PercentScore: Number(list[top1Idx]?.score || 0),
+    trustedBestScore: Number(playerEntry?.score || 0),
+  };
+}
+
+function computeBlockTopiaRewards(action, type, score, leaderboardCtx = null) {
   const safeAction = String(action || '').trim();
   const safeType = String(type || '').trim().toLowerCase();
   const safeScore = Math.max(0, Math.floor(Number(score) || 0));
-  if (safeAction === 'arcade_score_accepted') {
-    if (safeType !== 'firewall') return null;
+  if (safeAction === 'arcade_score') {
+    const baseXp = clamp(Math.min(Math.floor(safeScore / 1000), 100), XP_MIN, XP_MAX);
+    const trustedRank = Number(leaderboardCtx?.rank || 0);
+    const top10Score = Number(leaderboardCtx?.top10PercentScore || 0);
+    const top1Score = Number(leaderboardCtx?.top1PercentScore || 0);
+    const trustedBestScore = Number(leaderboardCtx?.trustedBestScore || 0);
+    const improvementEligible = leaderboardCtx?.improvementEligible === true;
+    let bonusXp = 0;
+    if (improvementEligible) bonusXp += 10;
+    if (top10Score > 0 && safeScore >= top10Score) bonusXp += 20;
+    if (top1Score > 0 && safeScore >= top1Score) bonusXp += 50;
+    if (trustedRank > 0 && trustedRank <= 100) bonusXp += 10;
+    if (trustedRank > 0 && trustedRank <= 50) bonusXp += 20;
+    if (trustedRank > 0 && trustedRank <= 10) bonusXp += 50;
+    const totalXp = clamp(baseXp + bonusXp, XP_MIN, XP_MAX);
     return {
-      xp: clamp(Math.min(Math.floor(safeScore / 1000), 100), XP_MIN, XP_MAX),
-      gems: clamp(Math.min(Math.floor(safeScore / 5000), 10), GEMS_MIN, GEMS_MAX),
+      xp: totalXp,
+      base_xp: baseXp,
+      bonus_xp: bonusXp,
+      gems: 0,
       score: safeScore,
       reason: 'validated_arcade_score',
+      leaderboard: {
+        rank: trustedRank,
+        top_10_percent_score: top10Score,
+        top_1_percent_score: top1Score,
+        trusted_best_score: trustedBestScore,
+      },
     };
   }
   if (safeAction === 'mini_game_win') {
@@ -850,8 +950,32 @@ export default {
 
       const action = String(body?.action || '').trim();
       const type = String(body?.type || '').trim().toLowerCase();
+      const game = String(body?.game || '').trim().toLowerCase();
       const score = Math.floor(Number(body?.score) || 0);
-      const rewards = computeBlockTopiaRewards(action, type, score);
+      if (!Number.isFinite(score) || score < 0 || score > BLOCKTOPIA_MAX_SCORE_SANITY) {
+        return err('Invalid score payload for progression update', 400);
+      }
+      if (action === 'arcade_score' && (!game || !/^[a-z0-9_-]{2,32}$/.test(game))) {
+        return err('Invalid game key for arcade score update', 400);
+      }
+      let leaderboardCtx = null;
+      if (action === 'arcade_score') {
+        try {
+          leaderboardCtx = await fetchTrustedLeaderboardContext(env, game, verified.telegramId, verified.user);
+        } catch {
+          return err('Failed to verify trusted leaderboard context', 502);
+        }
+        if (!leaderboardCtx || leaderboardCtx.trustedBestScore <= 0) {
+          return err('Score not found on trusted leaderboard', 409);
+        }
+        if (score > leaderboardCtx.trustedBestScore) {
+          return err('Submitted score exceeds trusted leaderboard best', 409);
+        }
+        const alreadyRewardedScore = await hasArcadeScoreBeenRewarded(env.DB, verified.telegramId, game, score);
+        leaderboardCtx.improvementEligible =
+          score > 0 && score >= leaderboardCtx.trustedBestScore && !alreadyRewardedScore;
+      }
+      const rewards = computeBlockTopiaRewards(action, action === 'arcade_score' ? game : type, score, leaderboardCtx);
       if (!rewards) return err('Invalid action/type for progression update', 400);
 
       try {
@@ -860,6 +984,20 @@ export default {
 
         const allowed = await enforceProgressionRateLimit(env.DB, verified.telegramId);
         if (!allowed) return err('Too many progression updates. Try again in a minute.', 429);
+        if (action === 'arcade_score') {
+          rewards.xp = clamp(Math.floor(rewards.xp * TELEGRAM_SYNC_XP_MULTIPLIER), XP_MIN, XP_MAX);
+          const perGameAllowed = await enforceArcadeGameHourlyLimit(env.DB, verified.telegramId, game);
+          if (!perGameAllowed) return err('Arcade rewards capped for this game this hour.', 429);
+          const awardedLastMinute = await getArcadeXpAwardedLastMinute(env.DB, verified.telegramId);
+          if (awardedLastMinute >= BLOCKTOPIA_ARCADE_MAX_XP_PER_MINUTE) {
+            return err('Arcade XP minute cap reached. Try again shortly.', 429);
+          }
+          rewards.xp = clamp(
+            rewards.xp,
+            XP_MIN,
+            Math.max(XP_MIN, BLOCKTOPIA_ARCADE_MAX_XP_PER_MINUTE - awardedLastMinute),
+          );
+        }
 
         const row = await getOrCreateBlockTopiaProgression(env.DB, verified.telegramId);
         const { drain, xpAfterDrain } = applyProgressionDrain(row);
@@ -893,12 +1031,13 @@ export default {
           crypto.randomUUID(),
           verified.telegramId,
           action,
-          type,
+          action === 'arcade_score' ? game : type,
           rewards.score,
           rewards.xp,
           rewards.gems,
         ).run();
 
+        const syncedMultiplierApplied = action === 'arcade_score' ? TELEGRAM_SYNC_XP_MULTIPLIER : 1;
         return json({
           ok: true,
           progression: {
@@ -910,6 +1049,10 @@ export default {
             drain_applied: drain,
             xp_awarded: rewards.xp,
             gems_awarded: rewards.gems,
+            xp_base: rewards.base_xp || 0,
+            xp_bonus: rewards.bonus_xp || 0,
+            leaderboard: rewards.leaderboard || null,
+            synced_multiplier: syncedMultiplierApplied,
           },
         });
       } catch {
