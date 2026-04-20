@@ -334,6 +334,8 @@ CREATE TABLE IF NOT EXISTS blocktopia_progression_events (
   score INTEGER NOT NULL DEFAULT 0,
   xp_change INTEGER NOT NULL DEFAULT 0,
   gems_change INTEGER NOT NULL DEFAULT 0,
+  admin_telegram_id TEXT,
+  reason TEXT,
   created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (telegram_id) REFERENCES blocktopia_progression(telegram_id) ON DELETE CASCADE
 );
