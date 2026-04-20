@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-04-20T10:16:26.473Z",
+  "generatedAt": "2026-04-20T11:52:07.570Z",
   "mode": "live-ai",
   "sourceHealth": {
     "coingecko-global": "ok",
@@ -8,71 +8,87 @@
     "fear-greed": "ok",
     "openai": "ok"
   },
-  "signalCount": 4,
+  "signalCount": 5,
   "signals": [
     {
-      "id": "signal-1776680186472-1",
-      "lane": "npc",
+      "id": "signal-1776685927570-1",
+      "lane": "world",
       "priority": 4,
-      "ttlMinutes": 60,
-      "npcLine": "RAVE nodes flicker; trust is thin in the data streams.",
-      "questPulse": "Chasing echoes of a forgotten protocol amid signal noise.",
-      "worldFeed": "Networks churn: new tokens rise in shadowed webs.",
-      "clueEvent": "Encrypted whispers mention a lost AAVE cache.",
-      "tags": [
-        "crypto",
-        "network",
-        "uncertainty"
-      ],
-      "expiresAt": "2026-04-20T11:16:26.472Z"
-    },
-    {
-      "id": "signal-1776680186473-2",
-      "lane": "quest",
-      "priority": 5,
       "ttlMinutes": 45,
-      "npcLine": "Ghosts talk of WOJAK spikes destabilizing black markets.",
-      "questPulse": "Infiltrate dark ledgers; decipher unstable asset flows.",
-      "worldFeed": "Market nodes shudder, fear spreading across data veins.",
-      "clueEvent": "Fragmented codes hint at asteroid data fragments.",
+      "npcLine": "Crypto pulse sinking, trust low in shadowed markets.",
+      "questPulse": "Trace the falling tide of digital creds.",
+      "worldFeed": "Market cap flickers, values bleeding under pressure.",
+      "clueEvent": "Digits vanish as fear tightens its grip.",
       "tags": [
         "market",
         "fear",
-        "infiltration"
+        "crypto"
       ],
-      "expiresAt": "2026-04-20T11:01:26.473Z"
+      "expiresAt": "2026-04-20T12:37:07.570Z"
     },
     {
-      "id": "signal-1776680186473-3",
-      "lane": "world",
+      "id": "signal-1776685927570-2",
+      "lane": "ops",
       "priority": 3,
-      "ttlMinutes": 120,
-      "npcLine": "Digital alleys buzz; new cryptos hide in vast flows.",
-      "questPulse": "Scan for anomalies: silent growth in unknown market caps.",
-      "worldFeed": "Global cryptos surge quietly; ##k+ shadows dancing.",
-      "clueEvent": "Sentiment sensors blink red, signaling rising paranoia.",
+      "ttlMinutes": 30,
+      "npcLine": "RAVE signal dead, ghost in the circuit.",
+      "questPulse": "Investigate silent nodes disrupting flow.",
+      "worldFeed": "Inactive tokens flicker at zero score.",
+      "clueEvent": "Data packets vanish within static zones.",
       "tags": [
-        "surge",
-        "shadow",
-        "paranoia"
+        "crypto",
+        "silent",
+        "signal"
       ],
-      "expiresAt": "2026-04-20T12:16:26.473Z"
+      "expiresAt": "2026-04-20T12:22:07.570Z"
     },
     {
-      "id": "signal-1776680186473-4",
+      "id": "signal-1776685927570-3",
       "lane": "clue",
-      "priority": 2,
-      "ttlMinutes": 90,
-      "npcLine": "ADA watchers report faint signals beneath the data fog.",
-      "questPulse": "Trace fading ADA trails through encrypted throngs.",
-      "worldFeed": "Fear grips traders; confidence dissolving in digital ether.",
-      "clueEvent": "AAVE codes flicker briefly; patterns shift unpredictably.",
+      "priority": 5,
+      "ttlMinutes": 60,
+      "npcLine": "Fear index spikes as AITECH surges darkly.",
+      "questPulse": "Decode rising AI shadows in the net.",
+      "worldFeed": "Mistrust stirs, tech phantoms edge closer.",
+      "clueEvent": "Anomalous crypto wakes in fear’s wake.",
       "tags": [
-        "trace",
         "fear",
-        "patterns"
+        "aitech",
+        "anomaly"
       ],
-      "expiresAt": "2026-04-20T11:46:26.473Z"
+      "expiresAt": "2026-04-20T12:52:07.570Z"
+    },
+    {
+      "id": "signal-1776685927570-4",
+      "lane": "quest",
+      "priority": 2,
+      "ttlMinutes": 40,
+      "npcLine": "ASTEROID breaks ground; a new frontier lurks.",
+      "questPulse": "Chart unknown crypto outpost beyond fading stars.",
+      "worldFeed": "Markets murmur of unseen digital bodies.",
+      "clueEvent": "Fragments scatter where risk and value collide.",
+      "tags": [
+        "exploration",
+        "crypto",
+        "frontier"
+      ],
+      "expiresAt": "2026-04-20T12:32:07.570Z"
+    },
+    {
+      "id": "signal-1776685927570-5",
+      "lane": "npc",
+      "priority": 3,
+      "ttlMinutes": 35,
+      "npcLine": "Pengu paddles through icy market fears.",
+      "questPulse": "Follow its trail to thaw cold digital seas.",
+      "worldFeed": "Small tokens navigate turbulent, frozen currents.",
+      "clueEvent": "Cold pockets form as trust dips low.",
+      "tags": [
+        "crypto",
+        "fear",
+        "pengu"
+      ],
+      "expiresAt": "2026-04-20T12:27:07.570Z"
     }
   ]
 }
