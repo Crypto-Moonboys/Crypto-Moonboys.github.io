@@ -614,7 +614,8 @@ async function boot() {
   }
 
   function bootstrapEntryIdentity() {
-    hud.setEntryTagline(`Deploying into ${state.player.districtName} · ${getCanonAtmosphereLine()}`);
+    hud.setEntryTagline(`Deploying into ${state.player.districtName} · Entry uses XP (not gems) · Telegram sync stores XP/GEMS progression.`);
+    hud.pushFeed('🧪 Block Topia entry spends XP only. Gems are for upgrades and deeper RPG progression.', 'system');
   }
 
   function applyDuelEndedRipple(payload = {}) {

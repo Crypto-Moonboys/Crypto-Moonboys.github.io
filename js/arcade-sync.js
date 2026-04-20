@@ -1,4 +1,11 @@
 export const ArcadeSync = {
+  getProjectedXpFromScore(score) {
+    const safeScore = Number(score);
+    if (!Number.isFinite(safeScore) || safeScore < 0) return 0;
+    // Local preview only; backend remains authoritative.
+    return Math.min(Math.floor(safeScore / 1000), 100);
+  },
+
   getTelegramAuth() {
     if (typeof window === "undefined") return null;
     if (window.MOONBOYS_IDENTITY && typeof window.MOONBOYS_IDENTITY.getTelegramAuth === "function") {
@@ -58,8 +65,7 @@ export const ArcadeSync = {
       return null;
     }
 
-    // Local preview only; backend remains authoritative.
-    const previewXp = Math.min(Math.floor(safeScore / 1000), 100);
+    const previewXp = this.getProjectedXpFromScore(safeScore);
     try {
       localStorage.setItem("blocktopia_xp_preview", String(previewXp));
     } catch {}

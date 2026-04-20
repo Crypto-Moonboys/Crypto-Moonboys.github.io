@@ -16,6 +16,11 @@ function emitTron(type, data = {}) {
   window.dispatchEvent(new CustomEvent("tron:event", { detail: { type, data } }));
 }
 
+function emitArcadeSubmissionStatus(detail = {}) {
+  if (typeof window === "undefined" || typeof window.dispatchEvent !== "function") return;
+  window.dispatchEvent(new CustomEvent("arcade:submission-status", { detail }));
+}
+
 function getApiUrl() {
   if (typeof window !== "undefined" && window.LEADERBOARD_API_URL) {
     return String(window.LEADERBOARD_API_URL).replace(/\/$/, "");
@@ -72,10 +77,26 @@ export async function submitScore(player, score, game = "global") {
   // Normalise to a safe integer (floor to drop any floating-point noise).
   score = Math.floor(score);
   const gameKey = String(game || "global").toLowerCase();
+  const result = {
+    game: gameKey,
+    score,
+    linked: false,
+    state: "local_only",
+    accepted: false,
+    projectedXp: ArcadeSync.getProjectedXpFromScore(score),
+    awardedXp: 0,
+    totalXp: null,
+  };
 
   const linked = isTelegramLinked();
+  result.linked = linked;
   if (!linked) {
     // Not competition-active: score stays local only.  Show gate modal if available.
+    emitArcadeSubmissionStatus({
+      ...result,
+      state: "local_only",
+      message: "Arcade score saved locally. Telegram sync is required to store Block Topia XP on the server.",
+    });
     if (typeof window !== "undefined" && window.MOONBOYS_IDENTITY &&
         typeof window.MOONBOYS_IDENTITY.showSyncGateModal === "function") {
       window.MOONBOYS_IDENTITY.showSyncGateModal(true); // true = show /link instructions (Step 2 required)
@@ -88,6 +109,11 @@ export async function submitScore(player, score, game = "global") {
   let shouldSyncMeta = false;
 
   if (linked) {
+    emitArcadeSubmissionStatus({
+      ...result,
+      state: "syncing",
+      message: "Syncing score for acceptance check and potential XP conversion…",
+    });
     const api = getApiUrl();
     try {
       const res = await fetch(api, {
@@ -97,24 +123,78 @@ export async function submitScore(player, score, game = "global") {
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
+        result.state = "sync_error";
         if (data.error === "telegram_sync_required" &&
             typeof window !== "undefined" && window.MOONBOYS_IDENTITY &&
             typeof window.MOONBOYS_IDENTITY.showSyncGateModal === "function") {
           window.MOONBOYS_IDENTITY.showSyncGateModal();
+          emitArcadeSubmissionStatus({
+            ...result,
+            state: "telegram_sync_required",
+            message: "Telegram sync is required to store Block Topia XP and progression.",
+          });
+        } else {
+          emitArcadeSubmissionStatus({
+            ...result,
+            state: "sync_error",
+            message: data.error || data.message || "Score sync failed before acceptance confirmation.",
+          });
         }
       } else if (data && data.accepted === true) {
         shouldSyncMeta = true;
+        result.accepted = true;
+        result.state = "accepted_score";
         emitTron("score", { game, score, player: resolvedPlayer, source: "leaderboard-client" });
+        emitArcadeSubmissionStatus({
+          ...result,
+          state: "accepted_score",
+          message: "Accepted score. Processing Block Topia XP conversion…",
+        });
         if (gameKey === "blocktopia") {
           try {
-            await ArcadeSync.syncBlockTopiaProgressionOnAcceptedScore(score, gameKey);
+            const progression = await ArcadeSync.syncBlockTopiaProgressionOnAcceptedScore(score, gameKey);
+            const serverProgress = progression && progression.progression ? progression.progression : {};
+            const awardedXp = Number(progression && (progression.xp_awarded ?? progression.awarded_xp ?? serverProgress.xp_awarded)) || 0;
+            const totalXp = Number(serverProgress.xp ?? progression?.xp_total ?? progression?.total_xp);
+            result.awardedXp = Math.max(0, Math.floor(awardedXp));
+            result.totalXp = Number.isFinite(totalXp) ? Math.floor(totalXp) : null;
+            emitArcadeSubmissionStatus({
+              ...result,
+              state: "xp_awarded",
+              message: result.awardedXp > 0
+                ? "Accepted score converted to Block Topia XP."
+                : "Accepted score synced, but no extra XP was awarded.",
+            });
           } catch (err) {
             console.error("[leaderboard-client] Block Topia progression sync failed:", err);
+            emitArcadeSubmissionStatus({
+              ...result,
+              state: "accepted_no_xp",
+              message: "Score accepted, but Block Topia XP sync did not complete.",
+            });
           }
+        } else {
+          emitArcadeSubmissionStatus({
+            ...result,
+            state: "accepted_score",
+            message: "Accepted score synced to leaderboard.",
+          });
         }
+      } else {
+        result.state = "rejected_no_xp";
+        emitArcadeSubmissionStatus({
+          ...result,
+          state: "rejected_no_xp",
+          message: "Score was not accepted, so no Block Topia XP was awarded.",
+        });
       }
     } catch (err) {
       console.error("[leaderboard-client] Score submission failed:", err);
+      emitArcadeSubmissionStatus({
+        ...result,
+        state: "sync_error",
+        message: "Network error while submitting score. Competitive acceptance not confirmed.",
+      });
     }
   }
 
@@ -145,6 +225,8 @@ export async function submitScore(player, score, game = "global") {
       console.error("[leaderboard-client] Meta sync failed:", err);
     }
   }
+
+  return result;
 }
 
 async function submitMetaScore({ player, telegram_id, game, score, timestamp }) {
