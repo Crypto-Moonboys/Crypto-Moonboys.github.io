@@ -4,6 +4,9 @@ const CAPTURE_BANNER_DURATION_MS = 4200;
 const NPC_DIALOGUE_DURATION_MS = 4200;
 const NODE_ALERT_DURATION_MS = 2600;
 const MAX_LOG_ENTRIES = 50;
+const FEED_STAGGER_MS = 210;
+const FEED_BURST_GRACE_MS = 120;
+const FEED_REPEAT_SUPPRESS_MS = 7000;
 
 const STREAM_BY_TYPE = {
   combat: 'left',
@@ -56,6 +59,11 @@ export function createHud(doc) {
   let identityTimer = null;
   let lastXp = 0;
   let lastQuestCount = null;
+  const feedQueue = [];
+  let feedFlushTimer = null;
+  let feedNextSlotAt = Date.now();
+  let lastFeedSignature = '';
+  let lastFeedAt = 0;
 
   function titleFromLevel(level) {
     if (level >= 16) return 'District Sovereign';
@@ -72,11 +80,11 @@ export function createHud(doc) {
     return feedBottom;
   }
 
-  function appendLog(stream, text, cssClass = 'system') {
+  function appendLog(stream, text, cssClass = 'system', priority = 'ambient') {
     const list = streamNode(stream);
     if (!list || !text) return;
     const item = doc.createElement('li');
-    item.className = `stream-line ${cssClass}`;
+    item.className = `stream-line ${cssClass} priority-${priority}`;
     item.textContent = `[${timestamp()}] ${text}`;
     list.appendChild(item);
     while (list.children.length > MAX_LOG_ENTRIES) list.removeChild(list.firstChild);
@@ -92,8 +100,70 @@ export function createHud(doc) {
   }
 
   function pushFeed(text, type = 'system') {
-    const stream = STREAM_BY_TYPE[type] || (String(text || '').includes('🗣️') ? 'left' : 'bottom');
-    appendLog(stream, text, type);
+    const rawText = String(text || '');
+    const stream = STREAM_BY_TYPE[type] || (rawText.includes('🗣️') ? 'left' : 'bottom');
+    const priority = resolveFeedPriority(type, rawText);
+    const signature = `${type}:${rawText.replace(/\s+/g, ' ').trim().toLowerCase()}`;
+    const now = Date.now();
+    if (
+      priority === 'ambient'
+      && signature === lastFeedSignature
+      && now - lastFeedAt < FEED_REPEAT_SUPPRESS_MS
+    ) {
+      return;
+    }
+    lastFeedSignature = signature;
+    lastFeedAt = now;
+    feedQueue.push({ stream, text: rawText, type, priority, queuedAt: now });
+    scheduleFeedFlush();
+  }
+
+  function resolveFeedPriority(type, text) {
+    const line = String(text || '').toLowerCase();
+    if (
+      type === 'sam'
+      || line.includes('phase shift')
+      || line.includes('captured')
+      || line.includes('sam event')
+      || line.includes('signal rush')
+    ) {
+      return 'critical';
+    }
+    if (
+      type === 'combat'
+      || line.includes('duel')
+      || line.includes('interference')
+      || line.includes('pressure')
+      || line.includes('stabilized')
+      || line.includes('stabilised')
+    ) {
+      return 'important';
+    }
+    return 'ambient';
+  }
+
+  function scheduleFeedFlush() {
+    if (feedFlushTimer) return;
+    const now = Date.now();
+    const wait = Math.max(0, feedNextSlotAt - now);
+    feedFlushTimer = setTimeout(flushFeedQueue, wait);
+  }
+
+  function flushFeedQueue() {
+    feedFlushTimer = null;
+    if (!feedQueue.length) return;
+    feedQueue.sort((a, b) => {
+      const rank = { critical: 0, important: 1, ambient: 2 };
+      const rDiff = rank[a.priority] - rank[b.priority];
+      if (rDiff !== 0) return rDiff;
+      return a.queuedAt - b.queuedAt;
+    });
+    const item = feedQueue.shift();
+    appendLog(item.stream, item.text, item.type, item.priority);
+    const now = Date.now();
+    const spacing = item.priority === 'critical' ? FEED_STAGGER_MS + FEED_BURST_GRACE_MS : FEED_STAGGER_MS;
+    feedNextSlotAt = Math.max(feedNextSlotAt, now) + spacing;
+    if (feedQueue.length) scheduleFeedFlush();
   }
 
   function setXp(value) {

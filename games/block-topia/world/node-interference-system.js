@@ -100,16 +100,16 @@ export function createNodeInterferenceSystem(state) {
       feedLines: [],
     };
 
-    eventPayload.feedLines.push(`⚡ NODE ${node.id.toUpperCase()} INTERFERED`);
+    eventPayload.feedLines.push(`⚡ Node ${node.id.toUpperCase()} interference confirmed`);
     if (eventPayload.status === 'unstable') {
-      eventPayload.feedLines.push('📡 SIGNAL INSTABILITY DETECTED');
+      eventPayload.feedLines.push('📡 Network instability escalating around control lanes');
     } else if (eventPayload.status === 'cooldown') {
-      eventPayload.feedLines.push('🧯 NODE COOLDOWN STABILISING');
+      eventPayload.feedLines.push('🧯 Node stabilization protocol active');
     } else {
-      eventPayload.feedLines.push('🏙️ DISTRICT PRESSURE SHIFTING');
+      eventPayload.feedLines.push('🏙️ District pressure reroute in progress');
     }
     if (eventPayload.samPressureDelta > 0) {
-      eventPayload.feedLines.push('🧠 SAM NOISE RISING');
+      eventPayload.feedLines.push('🧠 SAM pressure index rising');
     }
 
     return eventPayload;
