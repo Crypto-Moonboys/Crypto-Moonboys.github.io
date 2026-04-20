@@ -228,3 +228,60 @@ html, body {
 .hidden { display: none !important; }
 
 *::-webkit-scrollbar { width: 0; height: 0; }
+
+#node-outbreak-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 880;
+  pointer-events: none;
+}
+#node-outbreak-overlay.hidden { display: none; }
+#node-outbreak-overlay .outbreak-underlay {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at center, rgba(255, 51, 126, 0.18), rgba(5, 8, 18, 0.64));
+  animation: outbreak-glitch 0.8s steps(2, end) infinite;
+}
+#node-outbreak-overlay .outbreak-shell {
+  pointer-events: auto;
+  position: absolute;
+  left: 50%;
+  top: 52%;
+  transform: translate(-50%, -50%);
+  width: min(760px, calc(100vw - 24px));
+  padding: 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 79, 216, 0.45);
+  background: linear-gradient(180deg, rgba(6, 9, 26, 0.88), rgba(6, 9, 26, 0.78));
+  box-shadow: 0 0 0 1px rgba(94, 242, 255, 0.15), 0 22px 52px rgba(0, 0, 0, 0.48);
+}
+.outbreak-chip { margin: 0; color: #ff6cd5; font-size: 13px; font-weight: 800; letter-spacing: 0.08em; }
+.outbreak-sub { margin: 6px 0 10px; color: #cbecff; font-size: 12px; }
+.outbreak-bars { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.outbreak-bars label { font-size: 11px; color: #c8e9ff; display: grid; gap: 4px; }
+.outbreak-meter { height: 10px; border-radius: 999px; border: 1px solid rgba(255, 79, 216, 0.35); background: rgba(255, 79, 216, 0.08); overflow: hidden; }
+.outbreak-meter.containment { border-color: rgba(94, 242, 255, 0.35); background: rgba(94, 242, 255, 0.08); }
+.outbreak-meter.pressure { border-color: rgba(255, 131, 80, 0.35); background: rgba(255, 131, 80, 0.08); }
+.outbreak-meter span { display: block; height: 100%; width: 0; background: linear-gradient(90deg, #ff4fd8, #ff7f7f); }
+.outbreak-meter.containment span { background: linear-gradient(90deg, #5ef2ff, #6cb6ff); }
+.outbreak-meter.pressure span { background: linear-gradient(90deg, #ff9346, #ff4f4f); }
+.outbreak-stats { font-size: 12px; color: #d8efff; margin-top: 9px; }
+.outbreak-actions,
+.outbreak-upgrades { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 9px; }
+.outbreak-actions button,
+.outbreak-upgrades button {
+  border: 1px solid rgba(94, 242, 255, 0.34);
+  border-radius: 6px;
+  background: rgba(7, 18, 39, 0.8);
+  color: #dbf2ff;
+  font-size: 12px;
+  padding: 6px 8px;
+}
+.outbreak-traits { font-size: 11px; color: #ffc2ea; margin: 10px 0 4px; }
+.outbreak-log { margin: 0; padding-left: 16px; font-size: 11px; color: #cbe8ff; max-height: 90px; overflow: hidden; }
+@keyframes outbreak-glitch {
+  0%, 100% { opacity: 1; }
+  38% { opacity: 0.9; }
+  40% { opacity: 0.76; }
+  42% { opacity: 1; }
+}

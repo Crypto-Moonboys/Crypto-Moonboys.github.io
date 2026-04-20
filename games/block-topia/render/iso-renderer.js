@@ -802,33 +802,34 @@ export function createIsoRenderer(canvas) {
     const cy = originY + iso.y + HALF_TILE_H;
     const nodeClass = getNodeVisualClass(node);
     const theme = NODE_CLASS_THEME[nodeClass] || NODE_CLASS_THEME.utility;
+    const outbreak = node.outbreak || null;
     const pulse = 0.82 + (Math.sin((now / 340) + ((node.x + node.y) * 0.1)) + 1) * 0.18;
     const towerH = 48 * (theme.size || 1);
     const radius = (isHovered ? 24 : 20) * (theme.size || 1);
 
     ctx.save();
-    ctx.globalAlpha = 0.2;
-    ctx.fillStyle = theme.color;
+    ctx.globalAlpha = outbreak?.infected ? 0.34 : 0.2;
+    ctx.fillStyle = outbreak?.infected ? '#ff4fa2' : theme.color;
     ctx.beginPath();
     ctx.ellipse(cx, cy + 1, radius * 1.35 * pulse, radius * 0.55 * pulse, 0, 0, Math.PI * 2);
     ctx.fill();
 
-    ctx.globalAlpha = 0.75;
-    ctx.strokeStyle = theme.color;
+    ctx.globalAlpha = outbreak?.infected ? 0.95 : 0.75;
+    ctx.strokeStyle = outbreak?.infected ? '#ff4fa2' : theme.color;
     ctx.lineWidth = 2;
     ctx.beginPath();
     ctx.moveTo(cx, cy - towerH);
     ctx.lineTo(cx, cy - 6);
     ctx.stroke();
 
-    ctx.globalAlpha = 0.95;
-    ctx.fillStyle = theme.accent;
+    ctx.globalAlpha = outbreak?.infected ? 1 : 0.95;
+    ctx.fillStyle = outbreak?.infected ? '#ff79be' : theme.accent;
     ctx.beginPath();
     ctx.arc(cx, cy - towerH, 9 * pulse, 0, Math.PI * 2);
     ctx.fill();
 
     ctx.globalAlpha = 0.68;
-    ctx.strokeStyle = theme.color;
+    ctx.strokeStyle = outbreak?.infected ? '#ff8ccd' : theme.color;
     ctx.lineWidth = 1.3;
     ctx.beginPath();
     ctx.arc(cx, cy - towerH, 14 * pulse, 0, Math.PI * 2);
@@ -841,7 +842,13 @@ export function createIsoRenderer(canvas) {
     const label = `${theme.label} · ${node.id.toUpperCase()}`;
     ctx.fillText(label, cx, cy - towerH - 12);
 
-    if (node.status === 'unstable' || node.status === 'contested') {
+    if (outbreak?.infected) {
+      ctx.fillStyle = '#ff79be';
+      ctx.fillText('INFECTED', cx, cy - towerH - 22);
+    } else if (outbreak?.isolated) {
+      ctx.fillStyle = '#5ef2ff';
+      ctx.fillText('ISOLATED', cx, cy - towerH - 22);
+    } else if (node.status === 'unstable' || node.status === 'contested') {
       ctx.fillStyle = node.status === 'unstable' ? '#ff4fd8' : '#ffd84d';
       ctx.fillText(node.status === 'unstable' ? '⚠ UNSTABLE' : 'CONTESTED', cx, cy - towerH - 22);
     }
@@ -955,9 +962,10 @@ export function createIsoRenderer(canvas) {
       const x2 = originX + toIsoPoint.x;
       const y2 = originY + toIsoPoint.y + HALF_TILE_H;
       const flowPulse = 0.5 + (Math.sin((now / 220) + (line.id.length * 0.5)) + 1) * 0.25;
+      const corrupted = Boolean(from.outbreak?.infected || to.outbreak?.infected);
 
-      ctx.globalAlpha = 0.45;
-      ctx.strokeStyle = 'rgba(94,242,255,0.95)';
+      ctx.globalAlpha = corrupted ? 0.78 : 0.45;
+      ctx.strokeStyle = corrupted ? 'rgba(255,79,168,0.94)' : 'rgba(94,242,255,0.95)';
       ctx.lineWidth = 1.4 + flowPulse;
       ctx.beginPath();
       ctx.moveTo(x1, y1);
@@ -968,7 +976,7 @@ export function createIsoRenderer(canvas) {
       const px = x1 + ((x2 - x1) * packetPhase);
       const py = y1 + ((y2 - y1) * packetPhase);
       ctx.globalAlpha = 0.95;
-      ctx.fillStyle = '#e7fbff';
+      ctx.fillStyle = corrupted ? '#ffd2f1' : '#e7fbff';
       ctx.beginPath();
       ctx.arc(px, py, 2.2, 0, Math.PI * 2);
       ctx.fill();
