@@ -95,7 +95,7 @@ export async function submitScore(player, score, game = "global") {
     emitArcadeSubmissionStatus({
       ...result,
       state: "local_only",
-      message: "Arcade score saved locally. Telegram sync is required to store Block Topia XP on the server.",
+      message: "Score recorded (local only). Sync Telegram to convert score into XP.",
     });
     if (typeof window !== "undefined" && window.MOONBOYS_IDENTITY &&
         typeof window.MOONBOYS_IDENTITY.showSyncGateModal === "function") {
@@ -112,7 +112,7 @@ export async function submitScore(player, score, game = "global") {
     emitArcadeSubmissionStatus({
       ...result,
       state: "syncing",
-      message: "Syncing score for acceptance check and potential XP conversion…",
+      message: "Syncing score for acceptance check and XP conversion eligibility…",
     });
     const api = getApiUrl();
     try {
@@ -148,7 +148,7 @@ export async function submitScore(player, score, game = "global") {
         emitArcadeSubmissionStatus({
           ...result,
           state: "accepted_score",
-          message: "Accepted score. Processing Block Topia XP conversion…",
+          message: "New high score — XP conversion pending",
         });
         if (gameKey === "blocktopia") {
           try {
@@ -177,7 +177,7 @@ export async function submitScore(player, score, game = "global") {
           emitArcadeSubmissionStatus({
             ...result,
             state: "accepted_score",
-            message: "Accepted score synced to leaderboard.",
+            message: "Accepted score synced to leaderboard (ranking uses score only).",
           });
         }
       } else {
