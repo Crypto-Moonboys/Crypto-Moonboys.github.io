@@ -456,7 +456,8 @@ export class CityRoom extends Room {
             (node) => node.districtId === nextNode.districtId && node.id !== nextNode.id,
           );
           if (districtPeers.length) {
-            const pick = districtPeers[(this.worldTickCount + nextNode.id.length) % districtPeers.length];
+            const jitter = Math.floor(Math.random() * districtPeers.length);
+            const pick = districtPeers[(this.worldTickCount + nextNode.id.length + jitter) % districtPeers.length];
             npc.targetNode = pick.id;
             npc.path = this.findPath(npc.currentNode, npc.targetNode).slice(1);
           }

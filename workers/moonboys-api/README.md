@@ -23,3 +23,14 @@ Block Topia progression schema is owned by migrations in `migrations/`.
 The worker must not create or alter progression tables during player requests. If a progression route returns a schema error, apply the migrations instead of adding request-time schema patches.
 
 `POST /blocktopia/progression` is the current frontend read path because it keeps the signed Telegram auth payload out of the URL. `GET /blocktopia/progression?telegram_auth=...` remains only as a compatibility fallback for old clients and logs `legacy_get_auth_query_used` when used.
+
+## Block Topia covert network
+
+Phase 1 covert routes live under the same verified Telegram progression model:
+
+- `POST /blocktopia/covert/create`
+- `POST /blocktopia/covert/deploy`
+- `POST /blocktopia/covert/extract`
+- `GET /blocktopia/covert/state`
+
+Each route verifies `telegram_auth`, scopes all reads and writes by the verified `telegram_id`, and rejects agent IDs or node IDs outside that user/canonical control grid. Infiltrator creation, deployment, and mid-operation extraction spend existing Block Topia gems. Due operations resolve during covert route access, write `blocktopia_progression_events` audit rows, and expose small node/district world-effect payloads for the existing Block Topia world layer.
