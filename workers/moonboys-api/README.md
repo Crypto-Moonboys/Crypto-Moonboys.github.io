@@ -34,3 +34,12 @@ Phase 1 covert routes live under the same verified Telegram progression model:
 - `GET /blocktopia/covert/state`
 
 Each route verifies `telegram_auth`, scopes all reads and writes by the verified `telegram_id`, and rejects agent IDs or node IDs outside that user/canonical control grid. Infiltrator creation, deployment, and mid-operation extraction spend existing Block Topia gems. Due operations resolve during covert route access, write `blocktopia_progression_events` audit rows, and expose small node/district world-effect payloads for the existing Block Topia world layer.
+
+Phase 2 extends the same route family without creating a parallel covert system:
+
+- `POST /blocktopia/covert/create` accepts `agent_type` values `infiltrator`, `saboteur`, and `recruiter`.
+- `POST /blocktopia/covert/revive` or `/recover` recovers captured agents for gems.
+- `POST /blocktopia/covert/boost` buys a timed stealth boost and lowers current heat.
+- `POST /blocktopia/covert/retask` or `/reroll` safely moves an active operation to another canonical node for gems.
+
+Heat is stored per agent, rises from deployments, retasks, failures, captures, and higher-risk agent types, decays while idle/exposed, and feeds server-side success, exposure, and capture rolls. Operation rows store bounded world-pressure deltas so saboteur success can push node interference, recruiter success can add district support, and failures/captures can mark local risk without rewriting district, war, SAM, faction, score, leaderboard, or duel systems.
