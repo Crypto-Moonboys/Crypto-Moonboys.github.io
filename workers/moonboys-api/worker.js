@@ -47,6 +47,14 @@ const ANTI_CHEAT_WORKER_URL_DEFAULT = 'https://moonboys-anti-cheat.sercullen.wor
 const XP_FIRST_START = 50;
 const XP_DAILY_CLAIM = 20;
 const XP_GROUP_JOIN  = 10;
+const XP_MIN = 0;
+const XP_MAX = 100000;
+const GEMS_MIN = 0;
+const GEMS_MAX = 10000;
+const TIER_MIN = 1;
+const TIER_MAX = 50;
+const BLOCKTOPIA_RATE_LIMIT_PER_MIN = 20;
+const BLOCKTOPIA_DRAIN_PER_MINUTE = 2;
 
 const CORS_HEADERS = {
   'Access-Control-Allow-Origin': '*',
@@ -65,6 +73,10 @@ function json(data, status = 200) {
 
 function err(message, status = 400) {
   return json({ error: message }, status);
+}
+
+function clamp(value, min, max) {
+  return Math.min(max, Math.max(min, value));
 }
 
 /** Return today's UTC date as a YYYY-MM-DD string. */
@@ -305,6 +317,117 @@ async function getCurrentSeason(db) {
   return db.prepare(
     `SELECT * FROM telegram_seasons ORDER BY id DESC LIMIT 1`
   ).first().catch(() => null);
+}
+
+async function verifyTelegramIdentityFromBody(body, env) {
+  const tg = body?.telegram_auth;
+  if (!tg || typeof tg !== 'object') {
+    return { error: 'verified telegram_auth payload required', status: 401 };
+  }
+  const required = ['id', 'auth_date', 'hash'];
+  for (const key of required) {
+    if (!tg[key]) return { error: `telegram_auth.${key} required`, status: 401 };
+  }
+  const now = Math.floor(Date.now() / 1000);
+  if (now - parseInt(tg.auth_date, 10) > TELEGRAM_AUTH_MAX_AGE) {
+    return { error: 'Telegram auth data has expired', status: 401 };
+  }
+  const valid = await verifyTelegramAuth({
+    id: tg.id,
+    first_name: tg.first_name,
+    last_name: tg.last_name,
+    username: tg.username,
+    photo_url: tg.photo_url,
+    auth_date: tg.auth_date,
+    hash: tg.hash,
+  }, env.TELEGRAM_BOT_TOKEN);
+  if (!valid) return { error: 'Telegram auth verification failed', status: 401 };
+  return {
+    telegramId: String(tg.id),
+    user: {
+      id: String(tg.id),
+      username: tg.username || null,
+      first_name: tg.first_name || null,
+      last_name: tg.last_name || null,
+    },
+  };
+}
+
+async function ensureBlockTopiaProgressionTables(db) {
+  await db.prepare(`
+    CREATE TABLE IF NOT EXISTS blocktopia_progression (
+      telegram_id TEXT PRIMARY KEY,
+      xp INTEGER NOT NULL DEFAULT 0,
+      gems INTEGER NOT NULL DEFAULT 0,
+      tier INTEGER NOT NULL DEFAULT 1,
+      last_active DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+    )
+  `).run();
+  await db.prepare(`
+    CREATE TABLE IF NOT EXISTS blocktopia_progression_events (
+      id TEXT PRIMARY KEY,
+      telegram_id TEXT NOT NULL,
+      action TEXT NOT NULL,
+      action_type TEXT,
+      score INTEGER NOT NULL DEFAULT 0,
+      xp_change INTEGER NOT NULL DEFAULT 0,
+      gems_change INTEGER NOT NULL DEFAULT 0,
+      created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+    )
+  `).run();
+}
+
+async function getOrCreateBlockTopiaProgression(db, telegramId) {
+  await db.prepare(`
+    INSERT INTO blocktopia_progression (telegram_id, xp, gems, tier)
+    VALUES (?, 0, 0, 1)
+    ON CONFLICT(telegram_id) DO NOTHING
+  `).bind(telegramId).run();
+  const row = await db.prepare(
+    `SELECT telegram_id, xp, gems, tier, last_active, updated_at
+     FROM blocktopia_progression WHERE telegram_id = ?`
+  ).bind(telegramId).first();
+  return row || { telegram_id: telegramId, xp: 0, gems: 0, tier: 1, last_active: new Date().toISOString() };
+}
+
+async function enforceProgressionRateLimit(db, telegramId) {
+  const row = await db.prepare(
+    `SELECT COUNT(*) AS n
+     FROM blocktopia_progression_events
+     WHERE telegram_id = ? AND created_at >= datetime('now', '-60 seconds')`
+  ).bind(telegramId).first().catch(() => ({ n: 0 }));
+  return Number(row?.n || 0) < BLOCKTOPIA_RATE_LIMIT_PER_MIN;
+}
+
+function computeBlockTopiaRewards(action, type, score) {
+  const safeAction = String(action || '').trim();
+  const safeType = String(type || '').trim().toLowerCase();
+  const safeScore = Math.max(0, Math.floor(Number(score) || 0));
+  if (safeAction === 'arcade_score_accepted') {
+    if (safeType !== 'firewall') return null;
+    return {
+      xp: clamp(Math.min(Math.floor(safeScore / 1000), 100), XP_MIN, XP_MAX),
+      gems: clamp(Math.min(Math.floor(safeScore / 5000), 10), GEMS_MIN, GEMS_MAX),
+      score: safeScore,
+      reason: 'validated_arcade_score',
+    };
+  }
+  if (safeAction === 'mini_game_win') {
+    const xpByType = { firewall: 12, router: 10, outbreak: 8 };
+    const gemsByType = { firewall: 2, router: 1, outbreak: 1 };
+    if (!xpByType[safeType]) return null;
+    return { xp: xpByType[safeType], gems: gemsByType[safeType], score: 0, reason: 'validated_mini_game_win' };
+  }
+  return null;
+}
+
+function applyProgressionDrain(row, now = Date.now()) {
+  const lastMs = row?.last_active ? new Date(row.last_active).getTime() : now;
+  const elapsedMs = Math.max(0, now - (Number.isFinite(lastMs) ? lastMs : now));
+  const drain = Math.floor((elapsedMs / 60000) * BLOCKTOPIA_DRAIN_PER_MINUTE);
+  const xpAfterDrain = clamp((Number(row?.xp) || 0) - drain, XP_MIN, XP_MAX);
+  return { drain, xpAfterDrain };
 }
 
 // ── Main fetch handler ────────────────────────────────────────────────────────
@@ -648,6 +771,156 @@ export default {
         });
       } catch {
         return err('Failed to load user status', 500);
+      }
+    }
+
+    // ── GET /blocktopia/progression ────────────────────────────────────────
+    // Body/query must include a signed Telegram Login auth payload:
+    // ?telegram_auth=<urlencoded-json> OR POST body shape reused in GET caller.
+    if (path === '/blocktopia/progression' && request.method === 'GET') {
+      const rawAuth = url.searchParams.get('telegram_auth');
+      if (!rawAuth) return err('verified telegram_auth payload required', 401);
+      let tgBody;
+      try {
+        tgBody = { telegram_auth: JSON.parse(rawAuth) };
+      } catch {
+        return err('Invalid telegram_auth payload', 400);
+      }
+
+      const verified = await verifyTelegramIdentityFromBody(tgBody, env);
+      if (verified.error) return err(verified.error, verified.status || 401);
+
+      try {
+        await ensureBlockTopiaProgressionTables(env.DB);
+        await upsertTelegramUser(env.DB, verified.user).catch(() => {});
+        const row = await getOrCreateBlockTopiaProgression(env.DB, verified.telegramId);
+        const { drain, xpAfterDrain } = applyProgressionDrain(row);
+        const gems = clamp(Number(row.gems) || 0, GEMS_MIN, GEMS_MAX);
+        const tier = clamp(Number(row.tier) || 1, TIER_MIN, TIER_MAX);
+        const tierAfter = clamp(Math.floor(xpAfterDrain / 2000) + 1, TIER_MIN, TIER_MAX);
+
+        await env.DB.prepare(`
+          UPDATE blocktopia_progression
+          SET xp = ?, gems = ?, tier = ?, last_active = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP
+          WHERE telegram_id = ?
+        `).bind(xpAfterDrain, gems, tierAfter, verified.telegramId).run();
+
+        return json({
+          ok: true,
+          progression: {
+            telegram_id: verified.telegramId,
+            xp: xpAfterDrain,
+            gems,
+            tier: tierAfter,
+            drain_applied: drain,
+            last_active: new Date().toISOString(),
+          },
+        });
+      } catch {
+        return err('Failed to load Block Topia progression', 500);
+      }
+    }
+
+    // ── POST /blocktopia/progression/mini-game ────────────────────────────
+    // Server-authoritative progression sync; ignores client-provided xp/gems/tier.
+    if (path === '/blocktopia/progression/mini-game' && request.method === 'POST') {
+      let body;
+      try { body = await request.json(); } catch { return err('Invalid JSON'); }
+
+      const verified = await verifyTelegramIdentityFromBody(body, env);
+      if (verified.error) return err(verified.error, verified.status || 401);
+
+      const action = String(body?.action || '').trim();
+      const type = String(body?.type || '').trim().toLowerCase();
+      const score = Math.floor(Number(body?.score) || 0);
+      const rewards = computeBlockTopiaRewards(action, type, score);
+      if (!rewards) return err('Invalid action/type for progression update', 400);
+
+      try {
+        await ensureBlockTopiaProgressionTables(env.DB);
+        await upsertTelegramUser(env.DB, verified.user).catch(() => {});
+
+        const allowed = await enforceProgressionRateLimit(env.DB, verified.telegramId);
+        if (!allowed) return err('Too many progression updates. Try again in a minute.', 429);
+
+        const row = await getOrCreateBlockTopiaProgression(env.DB, verified.telegramId);
+        const { drain, xpAfterDrain } = applyProgressionDrain(row);
+        const nextXp = clamp(xpAfterDrain + rewards.xp, XP_MIN, XP_MAX);
+        const nextGems = clamp((Number(row.gems) || 0) + rewards.gems, GEMS_MIN, GEMS_MAX);
+        const nextTier = clamp(Math.floor(nextXp / 2000) + 1, TIER_MIN, TIER_MAX);
+
+        await env.DB.prepare(`
+          UPDATE blocktopia_progression
+          SET xp = ?, gems = ?, tier = ?, last_active = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP
+          WHERE telegram_id = ?
+        `).bind(nextXp, nextGems, nextTier, verified.telegramId).run();
+
+        await env.DB.prepare(`
+          INSERT INTO blocktopia_progression_events
+            (id, telegram_id, action, action_type, score, xp_change, gems_change)
+          VALUES (?, ?, ?, ?, ?, ?, ?)
+        `).bind(
+          crypto.randomUUID(),
+          verified.telegramId,
+          action,
+          type,
+          rewards.score,
+          rewards.xp,
+          rewards.gems,
+        ).run();
+
+        return json({
+          ok: true,
+          progression: {
+            telegram_id: verified.telegramId,
+            xp: nextXp,
+            gems: nextGems,
+            tier: nextTier,
+            drain_applied: drain,
+            xp_awarded: rewards.xp,
+            gems_awarded: rewards.gems,
+          },
+        });
+      } catch {
+        return err('Failed to sync mini-game progression', 500);
+      }
+    }
+
+    // ── POST /blocktopia/progression/reset ────────────────────────────────
+    // Clears progression and event history for the verified account.
+    if (path === '/blocktopia/progression/reset' && request.method === 'POST') {
+      let body;
+      try { body = await request.json(); } catch { return err('Invalid JSON'); }
+      const verified = await verifyTelegramIdentityFromBody(body, env);
+      if (verified.error) return err(verified.error, verified.status || 401);
+
+      try {
+        await ensureBlockTopiaProgressionTables(env.DB);
+        await env.DB.prepare(
+          `DELETE FROM blocktopia_progression_events WHERE telegram_id = ?`
+        ).bind(verified.telegramId).run();
+        await env.DB.prepare(
+          `DELETE FROM blocktopia_progression WHERE telegram_id = ?`
+        ).bind(verified.telegramId).run();
+        await env.DB.prepare(
+          `INSERT INTO blocktopia_progression (telegram_id, xp, gems, tier, last_active, updated_at)
+           VALUES (?, 0, 0, 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+           ON CONFLICT(telegram_id) DO UPDATE SET
+             xp = 0, gems = 0, tier = 1, last_active = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP`
+        ).bind(verified.telegramId).run();
+
+        return json({
+          ok: true,
+          progression: {
+            telegram_id: verified.telegramId,
+            xp: 0,
+            gems: 0,
+            tier: 1,
+            reset: true,
+          },
+        });
+      } catch {
+        return err('Failed to reset Block Topia progression', 500);
       }
     }
 

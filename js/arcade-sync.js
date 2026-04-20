@@ -1,4 +1,23 @@
 export const ArcadeSync = {
+  getTelegramAuth() {
+    if (typeof window === "undefined") return null;
+    if (window.MOONBOYS_IDENTITY && typeof window.MOONBOYS_IDENTITY.getTelegramAuth === "function") {
+      return window.MOONBOYS_IDENTITY.getTelegramAuth();
+    }
+    try {
+      const raw = localStorage.getItem("moonboys_tg_auth");
+      return raw ? JSON.parse(raw) : null;
+    } catch {
+      return null;
+    }
+  },
+
+  getApiBase() {
+    if (typeof window === "undefined") return null;
+    const cfg = window.MOONBOYS_API || {};
+    return cfg.BASE_URL ? String(cfg.BASE_URL).replace(/\/$/, "") : null;
+  },
+
   getPlayer() {
     let player = localStorage.getItem("moonboys_player");
     if (!player) {
@@ -26,5 +45,42 @@ export const ArcadeSync = {
     if (Math.floor(score) > current) {
       localStorage.setItem(`highscore_${game}`, Math.floor(score));
     }
+  },
+
+  async syncBlockTopiaProgressionOnAcceptedScore(score, game = "blocktopia") {
+    const safeScore = Number(score);
+    if (!Number.isFinite(safeScore) || safeScore < 0) return null;
+    const apiBase = this.getApiBase();
+    if (!apiBase) return null;
+
+    const telegram_auth = this.getTelegramAuth();
+    if (!telegram_auth || !telegram_auth.hash || !telegram_auth.auth_date) {
+      return null;
+    }
+
+    // Local preview only; backend remains authoritative.
+    const previewXp = Math.min(Math.floor(safeScore / 1000), 100);
+    try {
+      localStorage.setItem("blocktopia_xp_preview", String(previewXp));
+    } catch {}
+
+    const response = await fetch(`${apiBase}/blocktopia/progression/mini-game`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        action: "arcade_score_accepted",
+        type: "firewall",
+        game: String(game || "blocktopia"),
+        score: Math.floor(safeScore),
+        telegram_auth,
+      }),
+    });
+
+    if (!response.ok) {
+      const data = await response.json().catch(() => ({}));
+      throw new Error(data.error || `HTTP ${response.status}`);
+    }
+
+    return response.json().catch(() => null);
   }
 };
