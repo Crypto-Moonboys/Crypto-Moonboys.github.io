@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-04-20T13:46:02.812Z",
+  "generatedAt": "2026-04-20T15:17:30.992Z",
   "mode": "live-ai",
   "sourceHealth": {
     "coingecko-global": "ok",
@@ -11,84 +11,79 @@
   "signalCount": 5,
   "signals": [
     {
-      "id": "signal-1776692762812-1",
+      "id": "signal-1776698250991-1",
       "lane": "world",
-      "priority": 3,
-      "ttlMinutes": 45,
-      "npcLine": "City’s crypto pulse dips; shadows feed on dread and chaos.",
-      "questPulse": "Market turns sour, chances in falling assets emerge.",
-      "worldFeed": "Network nodes report fragmented trades amid growing distrust.",
-      "clueEvent": "Digital rumors hint at vaults loosening their grip.",
-      "tags": [
-        "market-fall",
-        "fear",
-        "crypto"
-      ],
-      "expiresAt": "2026-04-20T14:31:02.812Z"
-    },
-    {
-      "id": "signal-1776692762812-2",
-      "lane": "ops",
       "priority": 4,
       "ttlMinutes": 30,
-      "npcLine": "Hacker whispers: AAVE spikes in underground chatter.",
-      "questPulse": "Extraction ops target volatile assets; high risk, high reward.",
-      "worldFeed": "Encrypted channels buzz about elusive gains from shifting tokens.",
-      "clueEvent": "Fragmented data streams reveal bargaining for rare altcoins.",
+      "npcLine": "Crypto tides turn cold; city vaults tighten.",
+      "questPulse": "Market dives, shadow ops seek hidden gains.",
+      "worldFeed": "Asset chains fracture, trust erodes in neon haze.",
+      "clueEvent": "Vault logs reveal sudden drop in cryptonode sync.",
       "tags": [
-        "crypto-opportunity",
-        "volatile",
-        "underworld"
+        "market_decline",
+        "crypto_fear"
       ],
-      "expiresAt": "2026-04-20T14:16:02.812Z"
+      "expiresAt": "2026-04-20T15:47:30.991Z"
     },
     {
-      "id": "signal-1776692762812-3",
+      "id": "signal-1776698250992-2",
+      "lane": "ops",
+      "priority": 3,
+      "ttlMinutes": 20,
+      "npcLine": "RAVE spikes; underground rave techruns spike alerts.",
+      "questPulse": "Scramble cryptic nodes linked to AAVE and RAVE spikes.",
+      "worldFeed": "Ghost signals pulse from abandoned data nets.",
+      "clueEvent": "Encrypted chatter glitched near forgotten subnet hubs.",
+      "tags": [
+        "trend_rave",
+        "crypto_ops"
+      ],
+      "expiresAt": "2026-04-20T15:37:30.992Z"
+    },
+    {
+      "id": "signal-1776698250992-3",
       "lane": "clue",
       "priority": 2,
-      "ttlMinutes": 60,
-      "npcLine": "Whispers: ASTEROID’s orbit changes—something big approaches.",
-      "questPulse": "Decode signals hinting at incoming market disruption.",
-      "worldFeed": "Sensor logs catch erratic activity near token clusters.",
-      "clueEvent": "Shadow drops encoded hints in dark net forums.",
+      "ttlMinutes": 45,
+      "npcLine": "WOJAK codes flicker; memes mutate into danger signs.",
+      "questPulse": "Decode cryptic memestream spikes for hidden threats.",
+      "worldFeed": "Memes gone viral, harboring deeper viral traces.",
+      "clueEvent": "Flash crashes sync with memestream anomalies.",
       "tags": [
-        "alert",
-        "disruption",
-        "crypto"
+        "memes",
+        "market_clues"
       ],
-      "expiresAt": "2026-04-20T14:46:02.812Z"
+      "expiresAt": "2026-04-20T16:02:30.992Z"
     },
     {
-      "id": "signal-1776692762812-4",
+      "id": "signal-1776698250992-4",
       "lane": "quest",
-      "priority": 3,
-      "ttlMinutes": 90,
-      "npcLine": "PENGU’s cold trail leads to frozen assets—unlock secrets.",
-      "questPulse": "Dive into data vaults to recover locked value.",
-      "worldFeed": "Frozen tokens cause glitches, sparks interest in breakers.",
-      "clueEvent": "Hidden ledgers surface in fragmented blockchain archives.",
+      "priority": 5,
+      "ttlMinutes": 15,
+      "npcLine": "PENGU packs mobilize; icy fronts threaten digital borders.",
+      "questPulse": "Intercept PENGU payloads before market chills spread.",
+      "worldFeed": "Cold chain hacks target cryptobanks' weak nodes.",
+      "clueEvent": "Frost-bitten data trails point to rogue actors.",
       "tags": [
-        "frozen-assets",
-        "exploration",
-        "data-quest"
+        "attack_alert",
+        "pengu"
       ],
-      "expiresAt": "2026-04-20T15:16:02.812Z"
+      "expiresAt": "2026-04-20T15:32:30.992Z"
     },
     {
-      "id": "signal-1776692762812-5",
+      "id": "signal-1776698250992-5",
       "lane": "npc",
       "priority": 1,
-      "ttlMinutes": 120,
-      "npcLine": "WOJAK figures lurk, trading fears as currency.",
-      "questPulse": "Hunt unofficial brokers spreading panic and false leads.",
-      "worldFeed": "Murmurs of manipulation by faceless players rise steadily.",
-      "clueEvent": "Intercepted chatter hints at fear-driven market ploys.",
+      "ttlMinutes": 60,
+      "npcLine": "ZRO whispers hint at zero-sum plays beneath neon fog.",
+      "questPulse": "Track ZRO token shadows in the fading market glow.",
+      "worldFeed": "Silent exchanges bubble with unspoken tension.",
+      "clueEvent": "Zero-value spikes forecast cryptic market recalibrations.",
       "tags": [
-        "manipulation",
-        "panic",
-        "shadow-traders"
+        "zero_sum",
+        "quiet_activity"
       ],
-      "expiresAt": "2026-04-20T15:46:02.812Z"
+      "expiresAt": "2026-04-20T16:17:30.992Z"
     }
   ]
 }
