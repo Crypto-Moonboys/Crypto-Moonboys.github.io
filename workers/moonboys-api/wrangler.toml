@@ -2,21 +2,32 @@ name = "moonboys-api"
 main = "worker.js"
 compatibility_date = "2025-01-01"
 
-# D1 database binding — configure before deploying.
-# Copy this block into a [env.production] section and set the real ID:
+# D1 binding names are committed for readability; IDs must be environment-specific.
+# Configure real IDs in [env.<name>] sections, not in top-level config.
 #
-#   [env.production]
-#   [[env.production.d1_databases]]
-#   binding = "DB"
-#   database_name = "moonboys"
-#   database_id = "<YOUR_D1_DATABASE_ID>"
-#
-# To obtain a database ID: run `wrangler d1 create moonboys`
-# and paste the printed ID above.  Never commit a real ID to source control.
-[[d1_databases]]
+# [env.production]
+# [[env.production.d1_databases]]
+# binding = "DB"
+# database_name = "wikicoms"
+# database_id = "<PROD_WIKICOMS_D1_ID>"
+
+[env.dev]
+[[env.dev.d1_databases]]
 binding = "DB"
 database_name = "wikicoms"
-database_id = "8a36e17a-18fa-4b98-90e1-3f269164b166"
+database_id = "YOUR_DEV_WIKICOMS_D1_ID"
+
+[env.staging]
+[[env.staging.d1_databases]]
+binding = "DB"
+database_name = "wikicoms"
+database_id = "YOUR_STAGING_WIKICOMS_D1_ID"
+
+[env.production]
+[[env.production.d1_databases]]
+binding = "DB"
+database_name = "wikicoms"
+database_id = "YOUR_PRODUCTION_WIKICOMS_D1_ID"
 
 # ── Telegram secrets ──────────────────────────────────────────────────────────
 # Required for POST /telegram/auth and POST /telegram/webhook.

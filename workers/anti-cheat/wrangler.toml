@@ -2,25 +2,58 @@ name               = "moonboys-anti-cheat"
 main               = "worker.js"
 compatibility_date = "2024-11-01"
 
-# KV namespace — same binding and ID as leaderboard-worker so the anti-cheat
-# scanner can write anticheat:blocked:{telegram_id} keys that the leaderboard
-# worker reads before accepting score submissions.
-[[kv_namespaces]]
-binding    = "LEADERBOARD"
-id         = "a621c334d9ac439ebaf5f35dd31dddd5"
-preview_id = "a621c334d9ac439ebaf5f35dd31dddd5"
+# Shared binding names are committed for readability; IDs must be environment-specific.
+# Configure real IDs in [env.<name>] sections (example below), not in top-level config.
+#
+# [env.production]
+# [[env.production.kv_namespaces]]
+# binding    = "LEADERBOARD"
+# id         = "<PROD_LEADERBOARD_KV_ID>"
+# preview_id = "<PROD_LEADERBOARD_KV_ID>"
+# [[env.production.d1_databases]]
+# binding       = "DB"
+# database_name = "wikicoms"
+# database_id   = "<PROD_WIKICOMS_D1_ID>"
 
-# D1 database — same instance as moonboys-api (wikicoms).
 # Apply migration 003 before first deploy:
 #   wrangler d1 execute wikicoms --file=../moonboys-api/migrations/003_anticheat.sql --remote
-[[d1_databases]]
-binding       = "DB"
-database_name = "wikicoms"
-database_id   = "8a36e17a-18fa-4b98-90e1-3f269164b166"
 
 # Weekly cron — every Sunday at 00:00 UTC
 [triggers]
 crons = ["0 0 * * 0"]
+
+[env.dev]
+[[env.dev.kv_namespaces]]
+binding    = "LEADERBOARD"
+id         = "YOUR_DEV_LEADERBOARD_KV_ID"
+preview_id = "YOUR_DEV_LEADERBOARD_KV_ID"
+
+[[env.dev.d1_databases]]
+binding       = "DB"
+database_name = "wikicoms"
+database_id   = "YOUR_DEV_WIKICOMS_D1_ID"
+
+[env.staging]
+[[env.staging.kv_namespaces]]
+binding    = "LEADERBOARD"
+id         = "YOUR_STAGING_LEADERBOARD_KV_ID"
+preview_id = "YOUR_STAGING_LEADERBOARD_KV_ID"
+
+[[env.staging.d1_databases]]
+binding       = "DB"
+database_name = "wikicoms"
+database_id   = "YOUR_STAGING_WIKICOMS_D1_ID"
+
+[env.production]
+[[env.production.kv_namespaces]]
+binding    = "LEADERBOARD"
+id         = "YOUR_PRODUCTION_LEADERBOARD_KV_ID"
+preview_id = "YOUR_PRODUCTION_LEADERBOARD_KV_ID"
+
+[[env.production.d1_databases]]
+binding       = "DB"
+database_name = "wikicoms"
+database_id   = "YOUR_PRODUCTION_WIKICOMS_D1_ID"
 
 # Admin secret — set via CLI, never commit the value:
 #   wrangler secret put ADMIN_SECRET

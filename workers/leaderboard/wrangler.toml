@@ -2,15 +2,51 @@ name               = "moonboys-leaderboard"
 main               = "../leaderboard-worker.js"
 compatibility_date = "2024-11-01"
 
-[[kv_namespaces]]
-binding    = "LEADERBOARD"
-id         = "a621c334d9ac439ebaf5f35dd31dddd5"
-preview_id = "a621c334d9ac439ebaf5f35dd31dddd5"
+# Shared binding names are committed for readability; IDs must be environment-specific.
+# Configure real IDs in [env.<name>] sections (example below), not in top-level config.
+#
+# [env.production]
+# [[env.production.kv_namespaces]]
+# binding    = "LEADERBOARD"
+# id         = "<PROD_LEADERBOARD_KV_ID>"
+# preview_id = "<PROD_LEADERBOARD_KV_ID>"
+# [[env.production.d1_databases]]
+# binding       = "DB"
+# database_name = "wikicoms"
+# database_id   = "<PROD_WIKICOMS_D1_ID>"
 
 [triggers]
 crons = ["0 0 * * *"]
 
-[[d1_databases]]
+[env.dev]
+[[env.dev.kv_namespaces]]
+binding    = "LEADERBOARD"
+id         = "YOUR_DEV_LEADERBOARD_KV_ID"
+preview_id = "YOUR_DEV_LEADERBOARD_KV_ID"
+
+[[env.dev.d1_databases]]
 binding       = "DB"
 database_name = "wikicoms"
-database_id   = "8a36e17a-18fa-4b98-90e1-3f269164b166"
+database_id   = "YOUR_DEV_WIKICOMS_D1_ID"
+
+[env.staging]
+[[env.staging.kv_namespaces]]
+binding    = "LEADERBOARD"
+id         = "YOUR_STAGING_LEADERBOARD_KV_ID"
+preview_id = "YOUR_STAGING_LEADERBOARD_KV_ID"
+
+[[env.staging.d1_databases]]
+binding       = "DB"
+database_name = "wikicoms"
+database_id   = "YOUR_STAGING_WIKICOMS_D1_ID"
+
+[env.production]
+[[env.production.kv_namespaces]]
+binding    = "LEADERBOARD"
+id         = "YOUR_PRODUCTION_LEADERBOARD_KV_ID"
+preview_id = "YOUR_PRODUCTION_LEADERBOARD_KV_ID"
+
+[[env.production.d1_databases]]
+binding       = "DB"
+database_name = "wikicoms"
+database_id   = "YOUR_PRODUCTION_WIKICOMS_D1_ID"

@@ -1,12 +1,24 @@
-name            = "block-topia-score"
-main            = "src/index.js"
+name               = "block-topia-score"
+main               = "src/index.js"
 compatibility_date = "2024-11-01"
 
-# R2 bucket binding — set bucket_name to the value of your CLOUDFLARE_R2_BUCKET secret
-# before deploying (e.g. `wrangler deploy --var bucket_name:my-bucket` or edit below).
-[[r2_buckets]]
+# R2 bucket binding names are committed for readability; bucket names are environment-specific.
+# Configure real bucket_name values in [env.<name>] sections.
+
+[env.dev]
+[[env.dev.r2_buckets]]
 binding     = "R2_BUCKET"
-bucket_name = "crypto-moonboys-rpg-memory"
+bucket_name = "YOUR_DEV_R2_BUCKET"
+
+[env.staging]
+[[env.staging.r2_buckets]]
+binding     = "R2_BUCKET"
+bucket_name = "YOUR_STAGING_R2_BUCKET"
+
+[env.production]
+[[env.production.r2_buckets]]
+binding     = "R2_BUCKET"
+bucket_name = "YOUR_PRODUCTION_R2_BUCKET"
 
 # Non-secret variables per docs/r2-worker-env.md
 [vars]
