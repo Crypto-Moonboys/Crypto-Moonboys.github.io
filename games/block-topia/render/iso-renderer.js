@@ -803,19 +803,20 @@ export function createIsoRenderer(canvas) {
     const nodeClass = getNodeVisualClass(node);
     const theme = NODE_CLASS_THEME[nodeClass] || NODE_CLASS_THEME.utility;
     const outbreak = node.outbreak || null;
+    const firewall = node.firewallDefense || null;
     const pulse = 0.82 + (Math.sin((now / 340) + ((node.x + node.y) * 0.1)) + 1) * 0.18;
     const towerH = 48 * (theme.size || 1);
     const radius = (isHovered ? 24 : 20) * (theme.size || 1);
 
     ctx.save();
-    ctx.globalAlpha = outbreak?.infected ? 0.34 : 0.2;
-    ctx.fillStyle = outbreak?.infected ? '#ff4fa2' : theme.color;
+    ctx.globalAlpha = outbreak?.infected ? 0.34 : firewall?.underAttack ? 0.32 : 0.2;
+    ctx.fillStyle = outbreak?.infected ? '#ff4fa2' : firewall?.underAttack ? '#ff4f9e' : theme.color;
     ctx.beginPath();
     ctx.ellipse(cx, cy + 1, radius * 1.35 * pulse, radius * 0.55 * pulse, 0, 0, Math.PI * 2);
     ctx.fill();
 
-    ctx.globalAlpha = outbreak?.infected ? 0.95 : 0.75;
-    ctx.strokeStyle = outbreak?.infected ? '#ff4fa2' : theme.color;
+    ctx.globalAlpha = outbreak?.infected ? 0.95 : firewall?.defended ? 0.95 : 0.75;
+    ctx.strokeStyle = outbreak?.infected ? '#ff4fa2' : firewall?.defended ? '#6be8ff' : theme.color;
     ctx.lineWidth = 2;
     ctx.beginPath();
     ctx.moveTo(cx, cy - towerH);
@@ -823,13 +824,13 @@ export function createIsoRenderer(canvas) {
     ctx.stroke();
 
     ctx.globalAlpha = outbreak?.infected ? 1 : 0.95;
-    ctx.fillStyle = outbreak?.infected ? '#ff79be' : theme.accent;
+    ctx.fillStyle = outbreak?.infected ? '#ff79be' : firewall?.defended ? '#7af6ff' : theme.accent;
     ctx.beginPath();
     ctx.arc(cx, cy - towerH, 9 * pulse, 0, Math.PI * 2);
     ctx.fill();
 
     ctx.globalAlpha = 0.68;
-    ctx.strokeStyle = outbreak?.infected ? '#ff8ccd' : theme.color;
+    ctx.strokeStyle = outbreak?.infected ? '#ff8ccd' : firewall?.boosted ? '#8ca4ff' : theme.color;
     ctx.lineWidth = 1.3;
     ctx.beginPath();
     ctx.arc(cx, cy - towerH, 14 * pulse, 0, Math.PI * 2);
@@ -848,6 +849,9 @@ export function createIsoRenderer(canvas) {
     } else if (outbreak?.isolated) {
       ctx.fillStyle = '#5ef2ff';
       ctx.fillText('ISOLATED', cx, cy - towerH - 22);
+    } else if (firewall?.underAttack) {
+      ctx.fillStyle = '#ff88c5';
+      ctx.fillText('BREACH', cx, cy - towerH - 22);
     } else if (node.status === 'unstable' || node.status === 'contested') {
       ctx.fillStyle = node.status === 'unstable' ? '#ff4fd8' : '#ffd84d';
       ctx.fillText(node.status === 'unstable' ? '⚠ UNSTABLE' : 'CONTESTED', cx, cy - towerH - 22);
@@ -984,6 +988,83 @@ export function createIsoRenderer(canvas) {
     ctx.restore();
   }
 
+  function drawFirewallDefenseOverlay(originX, originY, state, now) {
+    const fw = state?.firewallDefense;
+    const controlNodes = state?.controlNodes;
+    if (!fw?.active || !Array.isArray(controlNodes) || !controlNodes.length) return;
+    const byId = new Map(controlNodes.map((node) => [node.id, node]));
+
+    ctx.save();
+    for (const edge of fw.linkFlashes || []) {
+      const ids = String(edge).split('|');
+      if (ids.length !== 2) continue;
+      const from = byId.get(ids[0]);
+      const to = byId.get(ids[1]);
+      if (!from || !to) continue;
+      const fromIso = toIso(from.x, from.y);
+      const toIsoPoint = toIso(to.x, to.y);
+      const x1 = originX + fromIso.x;
+      const y1 = originY + fromIso.y + HALF_TILE_H;
+      const x2 = originX + toIsoPoint.x;
+      const y2 = originY + toIsoPoint.y + HALF_TILE_H;
+      ctx.globalAlpha = 0.86;
+      ctx.strokeStyle = fw.revealPaths ? 'rgba(255, 95, 175, 0.95)' : 'rgba(255, 76, 140, 0.68)';
+      ctx.lineWidth = fw.revealPaths ? 2.9 : 2.2;
+      ctx.beginPath();
+      ctx.moveTo(x1, y1);
+      ctx.lineTo(x2, y2);
+      ctx.stroke();
+    }
+
+    for (const defense of fw.defenses || []) {
+      const node = byId.get(defense.nodeId);
+      if (!node) continue;
+      const iso = toIso(node.x, node.y);
+      const cx = originX + iso.x;
+      const cy = originY + iso.y + HALF_TILE_H;
+      const radius = defense.typeId === 'purge' ? 10 : 7;
+      ctx.globalAlpha = 0.22;
+      ctx.fillStyle = defense.color || '#65efff';
+      ctx.beginPath();
+      ctx.arc(cx, cy, radius + 4 + Math.sin(now / 180) * 1.2, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.globalAlpha = 0.95;
+      ctx.strokeStyle = defense.color || '#65efff';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+      ctx.stroke();
+    }
+
+    for (const packet of fw.packets || []) {
+      const from = byId.get(packet.fromId);
+      const to = byId.get(packet.toId);
+      if (!from || !to) continue;
+      const fromIso = toIso(from.x, from.y);
+      const toIsoPoint = toIso(to.x, to.y);
+      const x1 = originX + fromIso.x;
+      const y1 = originY + fromIso.y + HALF_TILE_H;
+      const x2 = originX + toIsoPoint.x;
+      const y2 = originY + toIsoPoint.y + HALF_TILE_H;
+      const t = Math.max(0, Math.min(1, packet.edgeT || 0));
+      const px = x1 + ((x2 - x1) * t);
+      const py = y1 + ((y2 - y1) * t);
+      const typeColor = packet.typeId === 'tank' ? '#ff7e6b' : packet.typeId === 'splitter' ? '#ff5fd7' : '#ff4f9e';
+      ctx.globalAlpha = 0.9;
+      ctx.fillStyle = typeColor;
+      ctx.beginPath();
+      ctx.arc(px, py, packet.typeId === 'tank' ? 4.4 : 3.4, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.globalAlpha = 0.2;
+      ctx.strokeStyle = '#ffd0ec';
+      ctx.lineWidth = 1.4;
+      ctx.beginPath();
+      ctx.arc(px, py, packet.typeId === 'tank' ? 6.8 : 5.6, 0, Math.PI * 2);
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
+
   function pickTileFromClientPoint(clientX, clientY, state) {
     if (!state?.map) return null;
     const metrics = getSceneMetrics(state);
@@ -1114,13 +1195,16 @@ export function createIsoRenderer(canvas) {
     drawAnimatedNeonOverlay(now);
 
     const samImpact = state.effects?.samImpactUntil > now;
+    const firewallHeavyHit = state.firewallDefense?.active && state.firewallDefense?.heavyHit;
     const shakeX = samImpact ? (Math.random() * 8 - 4) : 0;
     const shakeY = samImpact ? (Math.random() * 6 - 3) : 0;
+    const firewallShakeX = firewallHeavyHit ? (Math.random() * 6 - 3) : 0;
+    const firewallShakeY = firewallHeavyHit ? (Math.random() * 4 - 2) : 0;
     const frame = getCameraFrame(state);
     const { zoom, originX, originY } = frame;
 
     ctx.save();
-    ctx.translate(frame.translateX + shakeX, frame.translateY + shakeY);
+    ctx.translate(frame.translateX + shakeX + firewallShakeX, frame.translateY + shakeY + firewallShakeY);
     ctx.scale(zoom, zoom);
 
     const worldDrawX = originX - layerState.worldOffsetX;
@@ -1130,6 +1214,7 @@ export function createIsoRenderer(canvas) {
     ctx.drawImage(layerState.worldObjects.canvas, worldDrawX, worldDrawY);
 
     drawNetworkDataLinks(originX, originY, state.controlNodes, now);
+    drawFirewallDefenseOverlay(originX, originY, state, now);
 
     drawHoveredTile(originX, originY, state.mouse?.hoverTile, now);
     drawSelectedTile(originX, originY, state.mouse?.selectedTile, now);
