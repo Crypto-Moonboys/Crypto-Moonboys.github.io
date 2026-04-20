@@ -50,6 +50,7 @@ const NPC_SCAN_INTERVAL_MS = 150;
 const MAX_CLIENT_CROWD_NPCS = 20;
 const REMOTE_PLAYER_LERP_ALPHA = 0.18;
 const LIVE_REFRESH_INTERVAL_MS = 120000; // 2 minutes
+const PROGRESSION_SYNC_INTERVAL_MS = 15000;
 const QUEST_TICK_INTERVAL_MS = 250;
 const FEED_DEDUPE_TTL_MS = 5 * 60 * 1000;
 const MAX_FEED_CACHE_SIZE = 80;
@@ -64,6 +65,7 @@ const CAMERA_ZOOM_WHEEL_STEP = 0.06;
 const MOUSE_DRAG_THRESHOLD_PX = 8;
 const MOUSE_DRAG_DOUBLE_CLICK_SUPPRESS_MS = 400;
 const DEFAULT_AI_ENDPOINT = 'https://api.openai.com/v1/responses';
+const FORCE_SYNC_GATE_FALLBACK_URL = 'https://crypto-moonboys.github.io/gkniftyheads-incubator.html';
 const MINI_GAME_TYPES = new Set(['outbreak', 'firewall', 'router', 'circuit']);
 const DEFAULT_RPG_EFFECTS = {
   efficiencyDrainReduction: 0,
@@ -125,6 +127,16 @@ function getApiBase() {
   return cfg.BASE_URL ? String(cfg.BASE_URL).replace(/\/$/, '') : '';
 }
 
+function getSyncGateUrl() {
+  const cfg = window.MOONBOYS_API || {};
+  return cfg.SYNC_GATE_URL || FORCE_SYNC_GATE_FALLBACK_URL;
+}
+
+function hasTelegramAuth() {
+  const telegramAuth = getTelegramAuth();
+  return Boolean(telegramAuth?.hash && telegramAuth?.auth_date);
+}
+
 function getTelegramAuth() {
   if (window.MOONBOYS_IDENTITY && typeof window.MOONBOYS_IDENTITY.getTelegramAuth === 'function') {
     return window.MOONBOYS_IDENTITY.getTelegramAuth();
@@ -137,6 +149,57 @@ function getTelegramAuth() {
   }
 }
 
+function setServerProgression(next = {}) {
+  progressionState = {
+    ...progressionState,
+    ...next,
+    tier: Number(next.tier ?? progressionState.tier) || 1,
+    effects: { ...DEFAULT_RPG_EFFECTS, ...(next.effects || progressionState.effects || {}) },
+    upgrades: { ...progressionState.upgrades, ...(next.upgrades || progressionState.upgrades || {}) },
+  };
+  return progressionState;
+}
+
+async function fetchMiniGameAffordability(type) {
+  const apiBase = getApiBase();
+  const telegramAuth = getTelegramAuth();
+  if (!apiBase || !telegramAuth?.hash || !telegramAuth?.auth_date) return null;
+  const res = await fetch(`${apiBase}/blocktopia/progression/mini-game`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ action: 'mini_game_affordability', type, score: 0, telegram_auth: telegramAuth }),
+  }).catch(() => null);
+  if (!res?.ok) return null;
+  const data = await res.json().catch(() => null);
+  if (data?.progression) setServerProgression(data.progression);
+  return data;
+}
+
+async function syncMiniGameSkip(type, skipStreak = 0) {
+  const miniGameType = String(type || '').toLowerCase();
+  if (!MINI_GAME_TYPES.has(miniGameType)) return null;
+  const apiBase = getApiBase();
+  const telegramAuth = getTelegramAuth();
+  if (!apiBase || !telegramAuth?.hash || !telegramAuth?.auth_date) return null;
+  const entered = await ensureRpgEntry();
+  if (!entered) return null;
+  const res = await fetch(`${apiBase}/blocktopia/progression/mini-game`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      action: 'mini_game_skip',
+      type: miniGameType,
+      score: 0,
+      skip_streak: Math.max(0, Math.floor(Number(skipStreak) || 0)),
+      telegram_auth: telegramAuth,
+    }),
+  }).catch(() => null);
+  if (!res?.ok) return null;
+  const data = await res.json().catch(() => null);
+  if (data?.progression) setServerProgression(data.progression);
+  return data;
+}
+
 async function fetchServerProgression() {
   const apiBase = getApiBase();
   const telegramAuth = getTelegramAuth();
@@ -147,13 +210,7 @@ async function fetchServerProgression() {
     if (!res.ok) return { ...progressionState };
     const data = await res.json().catch(() => null);
     const progression = data?.progression || {};
-    progressionState = {
-      ...progressionState,
-      ...progression,
-      tier: Number(progression.tier) || 1,
-      effects: { ...DEFAULT_RPG_EFFECTS, ...(progression.effects || {}) },
-      upgrades: { ...progressionState.upgrades, ...(progression.upgrades || {}) },
-    };
+    setServerProgression(progression);
     return progressionState;
   } catch {
     return { ...progressionState };
@@ -172,7 +229,7 @@ async function ensureRpgEntry() {
   }).catch(() => null);
   if (!res?.ok) return false;
   const data = await res.json().catch(() => null);
-  progressionState = { ...progressionState, ...(data?.progression || {}), rpg_mode_active: true };
+  setServerProgression({ ...(data?.progression || {}), rpg_mode_active: true });
   return true;
 }
 
@@ -198,17 +255,16 @@ async function syncMiniGameOutcome(type, outcome) {
   if (!res.ok) return null;
   const data = await res.json().catch(() => null);
   if (data?.progression) {
-    progressionState = {
-      ...progressionState,
-      ...data.progression,
-      effects: { ...DEFAULT_RPG_EFFECTS, ...(data.progression.effects || progressionState.effects || {}) },
-      upgrades: { ...progressionState.upgrades, ...(data.progression.upgrades || progressionState.upgrades || {}) },
-    };
+    setServerProgression(data.progression);
   }
   return data;
 }
 
 async function boot() {
+  if (!hasTelegramAuth()) {
+    window.location.replace(getSyncGateUrl());
+    return;
+  }
   const progression = await fetchServerProgression();
   const playerTier = progression.tier || 1;
   const tierDifficulty = computeTierDifficulty(playerTier);
@@ -330,6 +386,14 @@ async function boot() {
   let lastInteractPromptText = '';
   let lastInteractPromptVisible = false;
   const seenFeed = new Map();
+  const sessionGuard = {
+    gated: false,
+    overlayActive: false,
+    activeMiniGame: '',
+    sessionDead: false,
+    normalInputAllowed: true,
+    skipStreak: 0,
+  };
   const primaryFactionName = state.factions.primary?.name || 'Liberators';
   const secondaryFactionName = state.factions.secondary?.name || 'Wardens';
   const canonAdapter = state.lore?.canonAdapter || {};
@@ -579,6 +643,90 @@ async function boot() {
     return true;
   }
 
+  function syncHudProgression() {
+    hud.setXp(progressionState.xp || 0);
+    hud.setGems(progressionState.gems || 0);
+    hud.setDrainPerMinute(progressionState.drain_per_minute || 0);
+  }
+
+  function closeMiniGameOverlays() {
+    outbreakSystem.setSelectedNode('');
+    firewallDefense.setSelectedNode('');
+    signalRouter.setSelectedNode('');
+    circuitConnect.setSelectedNode('');
+    outbreakOverlay.render({ active: false });
+    firewallOverlay.render({ active: false });
+    signalRouterOverlay.render({ active: false });
+    circuitConnectOverlay.render({ active: false });
+    state.signalRouterView = signalRouter.getPublicState();
+    state.circuitConnectView = circuitConnect.getPublicState();
+  }
+
+  function setActiveMiniGame(type) {
+    sessionGuard.overlayActive = Boolean(type);
+    sessionGuard.activeMiniGame = type || '';
+    sessionGuard.normalInputAllowed = !sessionGuard.overlayActive && !sessionGuard.sessionDead && !sessionGuard.gated;
+  }
+
+  async function ensureMiniGamePlayable(type) {
+    if (sessionGuard.sessionDead || sessionGuard.gated) return false;
+    const server = await fetchMiniGameAffordability(type);
+    if (!server?.progression) return false;
+    syncHudProgression();
+    const canPlay = server.can_play !== false && Number(server.progression.xp || 0) >= Number(server.progression.mini_game_cost || 0);
+    if (!canPlay) {
+      hud.pushFeed(`⛔ ${String(type).toUpperCase()} blocked · XP too low (${server.progression.xp || 0}/${server.progression.mini_game_cost || 0})`, 'sam');
+      hud.pushFeed('⛔ XP unaffordable exit triggered', 'sam');
+      sessionGuard.sessionDead = true;
+      closeMiniGameOverlays();
+      window.location.replace(getSyncGateUrl());
+      return false;
+    }
+    return true;
+  }
+
+  function applyMiniGameWorldImpact(type, outcome, result = {}) {
+    const district = districtStateById.get(state.player.districtId);
+    if (outcome === 'success') {
+      if (district) applyDistrictControlUpdate({ districtId: district.id, control: district.control + 3 }, 'node');
+      state.sam.pressure = Math.max(0, state.sam.pressure - 2);
+      hud.pushFeed(`✅ ${String(type).toUpperCase()} success stabilized node pressure`, 'combat');
+      return;
+    }
+    if (outcome === 'skip') {
+      if (district) applyDistrictControlUpdate({ districtId: district.id, control: district.control - 1 }, 'node');
+      state.sam.pressure = Math.min(100, state.sam.pressure + 1);
+      hud.pushFeed(`💸 ${String(type).toUpperCase()} skip used · paid containment applied`, 'combat');
+      return;
+    }
+    state.sam.pressure = Math.min(100, state.sam.pressure + (result.samPressureDelta || 6));
+    if (district) applyDistrictControlUpdate({ districtId: district.id, control: district.control - 4 }, 'node');
+    hud.pushFeed(`❌ ${String(type).toUpperCase()} failed · node corruption applied`, 'sam');
+  }
+
+  async function handleMiniGameOutcome(type, outcome, result = {}) {
+    const server = outcome === 'skip'
+      ? await syncMiniGameSkip(type, sessionGuard.skipStreak)
+      : await syncMiniGameOutcome(type, outcome);
+    if (outcome === 'skip') sessionGuard.skipStreak += 1;
+    if (outcome === 'success') sessionGuard.skipStreak = 0;
+    if (server?.progression) {
+      syncHudProgression();
+      const bonus = (server.progression.bonus_flags || []).length ? ` · ${server.progression.bonus_flags.join(', ')}` : '';
+      hud.pushFeed(`🧬 Progression synced · XP ${server.progression.xp || 0} · Gems ${server.progression.gems || 0}${bonus}`, 'quest');
+      if (server.exited || server.progression.rpg_mode_active === false) {
+        sessionGuard.sessionDead = true;
+        closeMiniGameOverlays();
+        hud.pushFeed('⛔ XP unaffordable exit', 'sam');
+        window.location.replace(getSyncGateUrl());
+        return;
+      }
+    }
+    applyMiniGameWorldImpact(type, outcome, result);
+    setActiveMiniGame('');
+    closeMiniGameOverlays();
+  }
+
   function interactWithNpc(targetNpc) {
     if (!targetNpc) return;
     const line = npc.getDialogueLine(targetNpc);
@@ -767,7 +915,9 @@ async function boot() {
   hud.setSamPhase(sam.getCurrentPhase().name);
   applyPhase(state.phase, 'system');
   hud.setScore(state.player.score);
-  hud.setXp(state.player.xp);
+  hud.setXp(progressionState.xp || 0);
+  hud.setGems(progressionState.gems || 0);
+  hud.setDrainPerMinute(progressionState.drain_per_minute || 0);
   hud.setRoom(state.room.id);
   hud.setPopulation(0, state.room.maxPlayers);
   refreshOperationsHud(true);
@@ -790,6 +940,18 @@ async function boot() {
       .then((result) => applyLiveSignalRefresh(result))
       .catch(() => {});
   }, LIVE_REFRESH_INTERVAL_MS);
+
+  setInterval(() => {
+    fetchServerProgression().then((next) => {
+      hud.setXp(next.xp || 0);
+      hud.setGems(next.gems || 0);
+      hud.setDrainPerMinute(next.drain_per_minute || 0);
+      if (next.rpg_mode_active === false || (next.xp || 0) <= 0) {
+        hud.showNodeInterference('XP depleted. Block Topia session ended.', 'warning');
+        window.location.replace(getSyncGateUrl());
+      }
+    }).catch(() => {});
+  }, PROGRESSION_SYNC_INTERVAL_MS);
 
   // Fallback: dismiss the entry overlay after 7s in case multiplayer never connects.
   setTimeout(() => hud.dismissEntryIdentity(0), ENTRY_OVERLAY_TIMEOUT_MS);
@@ -879,6 +1041,7 @@ async function boot() {
   });
 
   canvas.addEventListener('click', (event) => {
+    if (!sessionGuard.normalInputAllowed && !sessionGuard.overlayActive) return;
     if (state.mouse.suppressClick) {
       state.mouse.suppressClick = false;
       return;
@@ -898,6 +1061,7 @@ async function boot() {
   });
 
   canvas.addEventListener('dblclick', (event) => {
+    if (!sessionGuard.normalInputAllowed) return;
     if (performance.now() < (state.mouse.suppressDblClickUntil || 0)) return;
     if (tryInteractWithClickedNpc(event)) return;
 
@@ -1074,12 +1238,18 @@ async function boot() {
   });
 
   window.addEventListener('keydown', (event) => {
+    if (!sessionGuard.normalInputAllowed && !sessionGuard.overlayActive) return;
     if (shouldIgnoreHotkey(event) || event.key.toLowerCase() !== 'e' || event.repeat || !nearbyNpc) return;
     interactWithNpc(nearbyNpc);
   });
   window.addEventListener('keydown', (event) => {
+    if (!sessionGuard.normalInputAllowed && !sessionGuard.overlayActive) return;
     if (shouldIgnoreHotkey(event) || event.repeat) return;
     const key = event.key.toLowerCase();
+    if (key === 'k' && sessionGuard.activeMiniGame) {
+      handleMiniGameOutcome(sessionGuard.activeMiniGame, 'skip').catch(() => {});
+      return;
+    }
     const firewallState = firewallDefense.getPublicState();
     if (firewallState.active) {
       const selectedId = firewallState.selectedNodeId;
@@ -1180,12 +1350,18 @@ async function boot() {
     const dt = Math.min(MAX_FRAME_DELTA_SECONDS, (ts - lastTs) / 1000);
     lastTs = ts;
 
-    const keyboardMovementApplied = updatePlayerMotion(state, input, dt, sendMovement);
+    const keyboardMovementApplied = sessionGuard.normalInputAllowed
+      ? updatePlayerMotion(state, input, dt, sendMovement)
+      : false;
     // Keyboard input takes priority and cancels click-move targets to avoid conflicting movement commands.
     if (keyboardMovementApplied && isMovementInputActive()) {
       state.player.moveTarget = null;
     } else {
-      movePlayerTowardTarget(state, dt, sendMovement);
+      if (sessionGuard.normalInputAllowed) {
+        movePlayerTowardTarget(state, dt, sendMovement);
+      } else {
+        state.player.moveTarget = null;
+      }
     }
     // npc.tick() follows server NPC targets (state.npcTargets) when available;
     // falls back to local simulation when the server is unreachable.
@@ -1265,8 +1441,13 @@ async function boot() {
     const duelState = duel.getState();
     firewallDefense.tick(dt, {
       onStart: () => {
-        hud.showSamPopup('🚨 FIREWALL BREACH — DEFEND THE NETWORK', 3600);
-        hud.pushFeed('🚨 FIREWALL BREACH — DEFEND THE NETWORK', 'sam');
+        ensureMiniGamePlayable('firewall').then((ok) => {
+          if (!ok) return;
+          setActiveMiniGame('firewall');
+          hud.showSamPopup('🚨 FIREWALL BREACH — DEFEND THE NETWORK', 3600);
+          hud.pushFeed('🚨 FIREWALL BREACH — DEFEND THE NETWORK', 'sam');
+          hud.pushFeed('💸 Press K to pay XP and skip containment', 'system');
+        });
       },
       onWave: ({ waveIndex, count }) => {
         hud.pushFeed(`🌊 Firewall wave ${waveIndex} detected (${count} packets)`, 'combat');
@@ -1284,26 +1465,7 @@ async function boot() {
         hud.pushFeed(`🤝 NPC ${labels[type] || type} at ${nodeId.toUpperCase()}`, 'combat');
       },
       onResolve: (result) => {
-        syncMiniGameOutcome('firewall', result.outcome).then((server) => {
-          if (!server?.progression) return;
-          const bonus = (server.progression.bonus_flags || []).length ? ` · ${server.progression.bonus_flags.join(', ')}` : '';
-          hud.pushFeed(`🧬 RPG rewards synced · +${server.progression.xp_awarded || 0} XP · +${server.progression.gems_awarded || 0} gems${bonus}`, 'quest');
-        }).catch(() => {});
-        if (result.outcome === 'success') {
-          const reward = awardXp(state, result.rewardXp);
-          state.player.score += result.rewardGems;
-          hud.setXp(reward.xp);
-          hud.setScore(state.player.score);
-          hud.pushFeed(`✅ Firewall defense held · +${result.rewardXp} XP · +${result.rewardGems} gems`, 'quest');
-          hud.showQuestComplete('FIREWALL DEFENSE', result.rewardXp);
-          hud.showNodeInterference('Network stability buff applied', 'signal');
-        } else {
-          state.sam.pressure = Math.min(100, state.sam.pressure + (result.samPressureDelta || 0));
-          const district = districtStateById.get(state.player.districtId);
-          if (district) district.control = Math.max(0, district.control - (result.districtInstabilityPenalty || 0));
-          hud.pushFeed('❌ Firewall collapse · district instability increased', 'sam');
-          hud.showNodeInterference('SAM pressure increased after breach', 'warning');
-        }
+        handleMiniGameOutcome('firewall', result.outcome, result).catch(() => {});
       },
     }, {
       duelActive: duelState.status === 'active',
@@ -1313,10 +1475,15 @@ async function boot() {
 
     outbreakSystem.tick(dt, {
       onStart: ({ nodeId }) => {
-        const node = state.controlNodes.find((n) => n.id === nodeId);
-        const district = districtStateById.get(node?.districtId)?.name || node?.districtId || 'Unknown district';
-        hud.showSamPopup(`🚨 VIRUS ALERT — NODES UNDER ATTACK\nNode ${nodeId.toUpperCase()} · ${district}`, 3800);
-        hud.pushFeed(`🚨 NODE OUTBREAK DEFENSE online at ${nodeId.toUpperCase()} (${district})`, 'sam');
+        ensureMiniGamePlayable('outbreak').then((ok) => {
+          if (!ok) return;
+          setActiveMiniGame('outbreak');
+          const node = state.controlNodes.find((n) => n.id === nodeId);
+          const district = districtStateById.get(node?.districtId)?.name || node?.districtId || 'Unknown district';
+          hud.showSamPopup(`🚨 VIRUS ALERT — NODES UNDER ATTACK\nNode ${nodeId.toUpperCase()} · ${district}`, 3800);
+          hud.pushFeed(`🚨 NODE OUTBREAK DEFENSE online at ${nodeId.toUpperCase()} (${district})`, 'sam');
+          hud.pushFeed('💸 Press K to pay XP and skip containment', 'system');
+        });
       },
       onTrait: (trait) => {
         hud.pushFeed(`🧬 Virus adapted: ${trait.name}`, 'sam');
@@ -1325,27 +1492,7 @@ async function boot() {
         hud.pushFeed(`${burst ? '💥' : '🦠'} Spread ${fromId.toUpperCase()} → ${toId.toUpperCase()}`, 'combat');
       },
       onResolve: (result) => {
-        syncMiniGameOutcome('outbreak', result.outcome).then((server) => {
-          if (!server?.progression) return;
-          const bonus = (server.progression.bonus_flags || []).length ? ` · ${server.progression.bonus_flags.join(', ')}` : '';
-          hud.pushFeed(`🧬 RPG rewards synced · +${server.progression.xp_awarded || 0} XP · +${server.progression.gems_awarded || 0} gems${bonus}`, 'quest');
-        }).catch(() => {});
-        if (result.outcome === 'success') {
-          const reward = awardXp(state, result.rewardXp);
-          state.player.score += result.rewardGems;
-          hud.setXp(reward.xp);
-          hud.pushFeed(`✅ Outbreak contained · +${result.rewardXp} XP · +${result.rewardGems} gems`, 'quest');
-          hud.showQuestComplete('NODE OUTBREAK DEFENSE', result.rewardXp);
-          hud.showNodeInterference(`Containment bonus: +${result.rewardGems} gems`, 'signal');
-        } else {
-          state.sam.pressure = Math.min(100, state.sam.pressure + (result.samPressureDelta || 0));
-          const district = districtStateById.get(state.player.districtId);
-          if (district) {
-            district.control = Math.max(0, district.control - (result.districtControlPenalty || 0));
-          }
-          hud.pushFeed('❌ Outbreak breached threshold · district pressure dropped', 'sam');
-          hud.showNodeInterference('Containment failed: SAM pressure increased', 'warning');
-        }
+        handleMiniGameOutcome('outbreak', result.outcome, result).catch(() => {});
       },
     }, {
       duelActive: duelState.status === 'active' || firewallDefense.getPublicState().active,
@@ -1353,8 +1500,13 @@ async function boot() {
     outbreakOverlay.render(outbreakSystem.getPublicState());
     signalRouter.tick(dt, {
       onStart: ({ message }) => {
-        hud.showSamPopup(`🚨 ${message}`, 3400);
-        hud.pushFeed(`🚨 ${message}`, 'sam');
+        ensureMiniGamePlayable('router').then((ok) => {
+          if (!ok) return;
+          setActiveMiniGame('router');
+          hud.showSamPopup(`🚨 ${message}`, 3400);
+          hud.pushFeed(`🚨 ${message}`, 'sam');
+          hud.pushFeed('💸 Press K to pay XP and skip containment', 'system');
+        });
       },
       onNpc: ({ type, text }) => {
         const labels = {
@@ -1367,26 +1519,7 @@ async function boot() {
         hud.pushFeed(`🤝 NPC ${labels[type] || type} · ${text}`, 'combat');
       },
       onResolve: (result) => {
-        syncMiniGameOutcome('router', result.outcome).then((server) => {
-          if (!server?.progression) return;
-          const bonus = (server.progression.bonus_flags || []).length ? ` · ${server.progression.bonus_flags.join(', ')}` : '';
-          hud.pushFeed(`🧬 RPG rewards synced · +${server.progression.xp_awarded || 0} XP · +${server.progression.gems_awarded || 0} gems${bonus}`, 'quest');
-        }).catch(() => {});
-        if (result.outcome === 'success') {
-          const reward = awardXp(state, result.rewardXp);
-          state.player.score += result.rewardGems;
-          hud.setXp(reward.xp);
-          hud.setScore(state.player.score);
-          hud.pushFeed(`✅ Signal Router stabilized · +${result.rewardXp} XP · +${result.rewardGems} gems`, 'quest');
-          hud.showQuestComplete('SIGNAL ROUTER', result.rewardXp);
-          hud.showNodeInterference('Routing stability boosted', 'signal');
-        } else {
-          state.sam.pressure = Math.min(100, state.sam.pressure + (result.samPressureDelta || 0));
-          const district = districtStateById.get(state.player.districtId);
-          if (district) district.control = Math.max(0, district.control - (result.districtInstabilityPenalty || 0));
-          hud.pushFeed('❌ Signal Router collapse · district instability increased', 'sam');
-          hud.showNodeInterference('SAM pressure increased after route failure', 'warning');
-        }
+        handleMiniGameOutcome('router', result.outcome, result).catch(() => {});
       },
     }, {
       duelActive: duelState.status === 'active',
@@ -1397,8 +1530,13 @@ async function boot() {
     signalRouterOverlay.render(state.signalRouterView);
     circuitConnect.tick(dt, {
       onStart: ({ message }) => {
-        hud.showSamPopup(`🚨 ${message}`, 3600);
-        hud.pushFeed(`🚨 ${message}`, 'sam');
+        ensureMiniGamePlayable('circuit').then((ok) => {
+          if (!ok) return;
+          setActiveMiniGame('circuit');
+          hud.showSamPopup(`🚨 ${message}`, 3600);
+          hud.pushFeed(`🚨 ${message}`, 'sam');
+          hud.pushFeed('💸 Press K to pay XP and skip containment', 'system');
+        });
       },
       onPressure: ({ edgeId }) => {
         hud.pushFeed(`⚠️ Fracture spreading through ${edgeId.toUpperCase()}`, 'sam');
@@ -1413,29 +1551,7 @@ async function boot() {
         hud.pushFeed(`🤝 NPC ${labels[type] || type} · ${text}`, 'combat');
       },
       onResolve: (result) => {
-        syncMiniGameOutcome('circuit', result.outcome).then((server) => {
-          if (!server?.progression) return;
-          const bonus = (server.progression.bonus_flags || []).length ? ` · ${server.progression.bonus_flags.join(', ')}` : '';
-          hud.pushFeed(`🧬 RPG rewards synced · +${server.progression.xp_awarded || 0} XP · +${server.progression.gems_awarded || 0} gems${bonus}`, 'quest');
-        }).catch(() => {});
-        if (result.outcome === 'success') {
-          const reward = awardXp(state, result.rewardXp);
-          state.player.score += result.rewardGems;
-          hud.setXp(reward.xp);
-          hud.setScore(state.player.score);
-          hud.pushFeed(`✅ Circuit Connect recovered · +${result.rewardXp} XP · +${result.rewardGems} gems`, 'quest');
-          hud.showQuestComplete('CIRCUIT CONNECT', result.rewardXp);
-          hud.showNodeInterference('Network stability buff active', 'signal');
-        } else {
-          state.sam.pressure = Math.min(100, state.sam.pressure + (result.samPressureDelta || 0));
-          const district = districtStateById.get(state.player.districtId);
-          if (district) district.control = Math.max(0, district.control - (result.districtInstabilityPenalty || 0));
-          for (const node of state.controlNodes) {
-            node.control = Math.max(0, node.control - (result.nodeStressPenalty || 0));
-          }
-          hud.pushFeed('❌ Circuit Connect failed · district instability and node stress increased', 'sam');
-          hud.showNodeInterference('SAM pressure increased after recovery failure', 'warning');
-        }
+        handleMiniGameOutcome('circuit', result.outcome, result).catch(() => {});
       },
     }, {
       duelActive: duelState.status === 'active',
@@ -1445,6 +1561,20 @@ async function boot() {
     });
     state.circuitConnectView = circuitConnect.getPublicState();
     circuitConnectOverlay.render(state.circuitConnectView);
+    const overlayType = outbreakSystem.getPublicState().active
+      ? 'outbreak'
+      : firewallDefense.getPublicState().active
+        ? 'firewall'
+        : state.signalRouterView?.active
+          ? 'router'
+          : state.circuitConnectView?.active
+            ? 'circuit'
+            : '';
+    if (overlayType && sessionGuard.activeMiniGame !== overlayType) {
+      setActiveMiniGame(overlayType);
+    } else if (!overlayType && sessionGuard.overlayActive) {
+      setActiveMiniGame('');
+    }
 
     // Interpolate remote player positions toward server-provided targets.
     for (const remote of state.remotePlayers) {

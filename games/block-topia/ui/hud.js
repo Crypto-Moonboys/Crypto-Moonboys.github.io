@@ -26,6 +26,8 @@ export function createHud(doc) {
   const playerNameEl = doc.getElementById('player-name');
   const levelStatus = doc.getElementById('level-status');
   const xpStatus = doc.getElementById('xp-status');
+  const gemsStatus = doc.getElementById('gems-status');
+  const drainStatus = doc.getElementById('drain-status');
   const districtStatus = doc.getElementById('district-status');
 
   const worldStatus = doc.getElementById('world-status');
@@ -189,6 +191,18 @@ export function createHud(doc) {
     lastXp = safe;
   }
 
+  function setGems(value) {
+    if (!gemsStatus) return;
+    const safe = Math.max(0, Math.floor(Number(value) || 0));
+    gemsStatus.textContent = `${safe} GEMS`;
+  }
+
+  function setDrainPerMinute(value) {
+    if (!drainStatus) return;
+    const safe = Math.max(0, Math.round(Number(value) || 0));
+    drainStatus.textContent = `DRAIN ${safe}/MIN`;
+  }
+
   function setDistrictControl(pct) {
     if (!districtStatus) return;
     const rounded = Math.round(pct || 0);
@@ -278,6 +292,8 @@ export function createHud(doc) {
     setPhase: (name) => { phaseStatus.textContent = `Phase: ${name}`; },
     setScore: () => {},
     setXp,
+    setGems,
+    setDrainPerMinute,
     setMultiplayerStatus: (text) => {
       const label = String(text || '');
       multiplayerStatus.textContent = label;

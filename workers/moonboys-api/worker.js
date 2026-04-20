@@ -76,6 +76,8 @@ const BLOCKTOPIA_MINI_GAME_GEM_CHANCE_BASE = 0.2;
 const BLOCKTOPIA_MINI_GAME_GEM_CHANCE_TIER_STEP = 0.01;
 const BLOCKTOPIA_MINI_GAME_GEM_CHANCE_CAP = 0.5;
 const BLOCKTOPIA_SURVIVAL_XP_FLOOR = 5;
+const BLOCKTOPIA_SKIP_COST_MULTIPLIER = 1.6;
+const BLOCKTOPIA_SKIP_STREAK_STEP = 0.35;
 const BLOCKTOPIA_UPGRADES = {
   efficiency: { column: 'upgrade_efficiency', baseCost: 8 },
   signal: { column: 'upgrade_signal', baseCost: 10 },
@@ -162,6 +164,13 @@ function computeMiniGameBaseReward(tier) {
 function computeMiniGameLossPenalty(tier) {
   const safeTier = clamp(Math.floor(Number(tier) || 1), TIER_MIN, TIER_MAX);
   return Math.max(0, Math.round(BLOCKTOPIA_MINI_GAME_LOSS_BASE + (safeTier * BLOCKTOPIA_MINI_GAME_LOSS_TIER_STEP)));
+}
+
+function computeMiniGameSkipCost(tier, skipStreak = 0) {
+  const playCost = computeMiniGameCost(tier);
+  const streak = Math.max(0, Math.floor(Number(skipStreak) || 0));
+  const multiplier = BLOCKTOPIA_SKIP_COST_MULTIPLIER + (streak * BLOCKTOPIA_SKIP_STREAK_STEP);
+  return Math.max(playCost + 1, Math.round(playCost * multiplier));
 }
 
 function computeGemDropChance(tier, effects = {}) {
@@ -1233,6 +1242,7 @@ export default {
       const action = String(body?.action || '').trim();
       const type = String(body?.type || '').trim().toLowerCase();
       const game = String(body?.game || '').trim().toLowerCase();
+      const skipStreak = Math.max(0, Math.floor(Number(body?.skip_streak) || 0));
       const score = Math.floor(Number(body?.score) || 0);
       if (!Number.isFinite(score) || score < 0 || score > BLOCKTOPIA_MAX_SCORE_SANITY) {
         return err('Invalid score payload for progression update', 400);
@@ -1261,13 +1271,107 @@ export default {
         await ensureBlockTopiaProgressionTables(env.DB);
         await upsertTelegramUser(env.DB, verified.user).catch(() => {});
 
-        const allowed = await enforceProgressionRateLimit(env.DB, verified.telegramId);
-        if (!allowed) return err('Too many progression updates. Try again in a minute.', 429);
+        if (action !== 'mini_game_affordability') {
+          const allowed = await enforceProgressionRateLimit(env.DB, verified.telegramId);
+          if (!allowed) return err('Too many progression updates. Try again in a minute.', 429);
+        }
         const row = await getOrCreateBlockTopiaProgression(env.DB, verified.telegramId);
         const upgrades = getUpgradeSnapshot(row);
         const effects = buildUpgradeEffects(upgrades);
         if (action !== 'arcade_score' && Number(row?.rpg_mode_active || 0) !== 1) {
           return err('RPG mode entry required before mini-game rewards', 403);
+        }
+        const currentTier = clamp(Math.floor(Number(row.tier) || 1), TIER_MIN, TIER_MAX);
+        const { drain, xpAfterDrain, drainPerMinute } = applyProgressionDrain(row, Date.now(), effects);
+        const miniGameCost = action === 'arcade_score' ? 0 : computeMiniGameCost(currentTier);
+        if (action === 'mini_game_affordability') {
+          return json({
+            ok: true,
+            can_play: xpAfterDrain >= miniGameCost,
+            progression: {
+              telegram_id: verified.telegramId,
+              xp: xpAfterDrain,
+              gems: clamp((Number(row.gems) || 0), GEMS_MIN, GEMS_MAX),
+              tier: currentTier,
+              win_streak: Math.max(0, Math.floor(Number(row.win_streak) || 0)),
+              rpg_mode_active: Number(row.rpg_mode_active || 0) === 1,
+              mini_game_cost: miniGameCost,
+              drain_applied: drain,
+              drain_per_minute: drainPerMinute,
+              upgrades,
+              effects,
+            },
+          });
+        }
+        if (action === 'mini_game_skip') {
+          const skipCost = computeMiniGameSkipCost(currentTier, skipStreak);
+          if (xpAfterDrain < skipCost) {
+            await env.DB.prepare(`
+              UPDATE blocktopia_progression
+              SET xp = ?, rpg_mode_active = 0, win_streak = 0, last_active = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP
+              WHERE telegram_id = ?
+            `).bind(xpAfterDrain, verified.telegramId).run();
+            return json({
+              ok: false,
+              exited: true,
+              reason: 'skip_unaffordable',
+              progression: {
+                telegram_id: verified.telegramId,
+                xp: xpAfterDrain,
+                gems: clamp((Number(row.gems) || 0), GEMS_MIN, GEMS_MAX),
+                tier: currentTier,
+                win_streak: 0,
+                rpg_mode_active: false,
+                mini_game_cost: miniGameCost,
+                skip_cost: skipCost,
+                drain_applied: drain,
+                drain_per_minute: drainPerMinute,
+                upgrades,
+                effects,
+              },
+            }, 409);
+          }
+          const nextXp = clamp(xpAfterDrain - skipCost, XP_MIN, XP_MAX);
+          await env.DB.prepare(`
+            UPDATE blocktopia_progression
+            SET xp = ?, win_streak = 0, last_active = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP
+            WHERE telegram_id = ?
+          `).bind(nextXp, verified.telegramId).run();
+          await env.DB.prepare(`
+            INSERT INTO blocktopia_progression_events
+              (id, telegram_id, action, action_type, score, xp_change, gems_change)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+          `).bind(
+            crypto.randomUUID(),
+            verified.telegramId,
+            action,
+            type,
+            0,
+            -skipCost,
+            0,
+          ).run();
+          return json({
+            ok: true,
+            progression: {
+              telegram_id: verified.telegramId,
+              xp: nextXp,
+              gems: clamp((Number(row.gems) || 0), GEMS_MIN, GEMS_MAX),
+              tier: currentTier,
+              win_streak: 0,
+              rpg_mode_active: Number(row.rpg_mode_active || 0) === 1,
+              mini_game_cost: miniGameCost,
+              skip_cost: skipCost,
+              drain_applied: drain,
+              drain_per_minute: drainPerMinute,
+              upgrades,
+              effects,
+              xp_cost: skipCost,
+              xp_net: -skipCost,
+              bonus_flags: ['paid_skip'],
+              node_corruption_applied: false,
+              sam_pressure_delta: 1,
+            },
+          });
         }
         const rewards = computeBlockTopiaRewards(action, action === 'arcade_score' ? game : type, score, leaderboardCtx, row);
         if (!rewards) return err('Invalid action/type for progression update', 400);
@@ -1285,9 +1389,6 @@ export default {
             Math.max(XP_MIN, BLOCKTOPIA_ARCADE_MAX_XP_PER_MINUTE - awardedLastMinute),
           );
         }
-        const { drain, xpAfterDrain, drainPerMinute } = applyProgressionDrain(row, Date.now(), effects);
-        const currentTier = clamp(Math.floor(Number(row.tier) || 1), TIER_MIN, TIER_MAX);
-        const miniGameCost = action === 'arcade_score' ? 0 : computeMiniGameCost(currentTier);
         if (action !== 'arcade_score' && xpAfterDrain < miniGameCost) {
           await env.DB.prepare(`
             UPDATE blocktopia_progression
