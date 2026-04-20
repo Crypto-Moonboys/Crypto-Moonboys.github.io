@@ -344,6 +344,7 @@ function renderTable(data) {
     tr.classList.toggle('player-online', online);
     tr.classList.toggle('player-offline', !online);
     tr.classList.toggle('player-active', active);
+    tr.classList.toggle('player-online-presence', online);
     if (prev && Number(row.score || 0) > Number(prev.score || 0)) {
       tr.classList.add('score-updated');
       dispatchUiState('moonboys:score-updated', {
@@ -357,6 +358,14 @@ function renderTable(data) {
     }
     const scoreNode = tr.querySelector('.lb-score-value');
     animateNumber(scoreNode, Number(row.score || 0), { duration: 720 });
+    if (online) {
+      dispatchUiState('moonboys:player-online', {
+        player: row.player || '',
+        rank: rankSafe(row, idx),
+        game: currentTab,
+        ts: Date.now(),
+      });
+    }
     previousRowState.set(key, { score: Number(row.score || 0), faction: row.faction || 'unaligned' });
   });
 
@@ -465,6 +474,20 @@ export function initLeaderboard({ onRowSelect, onModeChange } = {}) {
     if (!badge) return;
     badge.classList.add('faction-boost');
     setTimeout(() => badge.classList.remove('faction-boost'), 1200);
+  });
+  window.addEventListener('moonboys:score-updated', function (event) {
+    const detail = event && event.detail ? event.detail : {};
+    if (!detail.player) return;
+    const target = Array.from(document.querySelectorAll('.lb-row')).find((rowNode) => {
+      return String(rowNode.dataset.player || '').toLowerCase() === String(detail.player || '').toLowerCase();
+    });
+    if (!target) return;
+    target.classList.add('score-updated', 'player-active');
+    const scoreNode = target.querySelector('.lb-score-value');
+    if (scoreNode && Number.isFinite(Number(detail.score))) {
+      animateNumber(scoreNode, Number(detail.score || 0), { duration: 760 });
+    }
+    setTimeout(() => target.classList.remove('score-updated'), 850);
   });
   window.addEventListener('storage', function (event) {
     if (!event || event.key !== PRESENCE_OFFLINE_KEY) return;

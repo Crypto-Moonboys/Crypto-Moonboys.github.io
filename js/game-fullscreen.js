@@ -299,6 +299,9 @@
   var inlineSyncIdentity = null;
   var inlineSyncActions = null;
   var lastSubmissionState = '';
+  var microNotifyDedup = new Map();
+  var microNotifyCooldownMs = 2200;
+  var maxMicroItems = 5;
 
   function dispatchUiState(name, detail) {
     if (typeof window === 'undefined' || typeof window.dispatchEvent !== 'function') return;
@@ -319,14 +322,37 @@
 
   function pushMicroNotification(message, tone) {
     if (!message) return;
+    var text = String(message).trim();
+    if (!text) return;
+    var key = (tone || 'info') + '::' + text.toLowerCase();
+    var now = Date.now();
+    var prev = microNotifyDedup.get(key) || 0;
+    if ((now - prev) < microNotifyCooldownMs) return;
+    microNotifyDedup.set(key, now);
+    if (microNotifyDedup.size > 120) {
+      microNotifyDedup.forEach(function (ts, dedupeKey) {
+        if ((now - ts) > 60000) microNotifyDedup.delete(dedupeKey);
+      });
+    }
     var feed = ensureMicroFeed();
     var item = document.createElement('div');
     item.className = 'micro-note ' + (tone ? ('micro-note--' + tone) : 'micro-note--info');
-    item.textContent = String(message);
+    item.textContent = text;
     feed.prepend(item);
+    while (feed.children.length > maxMicroItems) {
+      feed.lastElementChild && feed.lastElementChild.remove();
+    }
     requestAnimationFrame(function () { item.classList.add('is-live'); });
     window.setTimeout(function () { item.classList.remove('is-live'); item.classList.add('is-out'); }, 3400);
     window.setTimeout(function () { item.remove(); }, 4200);
+  }
+
+  function pulseStateClass(name, ms) {
+    if (!document || !document.body || !name) return;
+    document.body.classList.add(name);
+    window.setTimeout(function () {
+      if (document && document.body) document.body.classList.remove(name);
+    }, Math.max(420, Number(ms) || 960));
   }
 
   function animateNumericNode(node, nextValue, duration) {
@@ -779,17 +805,31 @@
     });
     window.addEventListener('moonboys:xp-gain', function (event) {
       var d = event && event.detail ? event.detail : {};
-      if (Number(d.amount) > 0) pushMicroNotification('XP gained +' + Number(d.amount), 'success');
+      if (Number(d.amount) > 0) {
+        pushMicroNotification('XP gained +' + Number(d.amount), 'success');
+        pulseStateClass('xp-gain', 1050);
+      }
     });
-    window.addEventListener('moonboys:faction-boost', function () {
-      if (!cachedFactionPanel) return;
-      cachedFactionPanel.classList.add('faction-boost');
-      setTimeout(function () { cachedFactionPanel && cachedFactionPanel.classList.remove('faction-boost'); }, 1250);
+    window.addEventListener('moonboys:faction-boost', function (event) {
+      var d = event && event.detail ? event.detail : {};
+      if (cachedFactionPanel) {
+        cachedFactionPanel.classList.add('faction-boost');
+        setTimeout(function () { cachedFactionPanel && cachedFactionPanel.classList.remove('faction-boost'); }, 1250);
+      }
+      pulseStateClass('faction-boost', 1200);
+      if (Number(d.amount) > 0) pushMicroNotification('Faction influence +' + Number(d.amount), 'success');
     });
     window.addEventListener('moonboys:score-updated', function () {
       if (!cachedLiveScore) return;
       cachedLiveScore.classList.add('score-updated');
       setTimeout(function () { cachedLiveScore && cachedLiveScore.classList.remove('score-updated'); }, 850);
+      pulseStateClass('score-updated', 900);
+    });
+    window.addEventListener('moonboys:world-state', function (event) {
+      var d = event && event.detail ? event.detail : {};
+      var conflictActive = !!d.conflictActive;
+      document.body.classList.toggle('conflict-active', conflictActive);
+      if (d.conflictNearby) pulseStateClass('conflict-nearby', Number(d.durationMs) || 2200);
     });
     window.addEventListener('moonboys:sync-state', function (event) {
       var d = event && event.detail ? event.detail : {};

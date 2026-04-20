@@ -2541,6 +2541,7 @@ h1, h2, h3, h4,
   position: relative;
   overflow: hidden;
   isolation: isolate;
+  transition: transform .16s ease, box-shadow .22s ease, border-color .2s ease, background-color .2s ease;
 }
 
 .interactive::after {
@@ -2548,19 +2549,22 @@ h1, h2, h3, h4,
   position: absolute;
   inset: 0;
   pointer-events: none;
-  background: linear-gradient(120deg, transparent 0%, rgba(0,255,200,0.15) 50%, transparent 100%);
-  transform: translateX(-110%);
-  transition: transform 0.6s ease;
+  background:
+    linear-gradient(112deg, transparent 18%, rgba(154,246,255,.14) 46%, rgba(79,226,255,.24) 50%, rgba(154,246,255,.14) 54%, transparent 82%);
+  opacity: .85;
+  transform: translateX(-118%);
+  transition: transform .56s cubic-bezier(.22,.61,.36,1), opacity .22s ease;
 }
 
 .interactive:hover::after,
 .interactive:focus-visible::after {
-  transform: translateX(110%);
+  transform: translateX(118%);
+  opacity: 1;
 }
 
 .interactive:active {
-  transform: scale(.97);
-  box-shadow: 0 0 10px rgba(0,255,200,.2) inset;
+  transform: translateY(1px) scale(.985);
+  box-shadow: 0 0 0 1px rgba(114,255,226,.22) inset, 0 0 12px rgba(0,255,200,.12) inset;
 }
 
 .sync-live {
@@ -2676,6 +2680,21 @@ body.conflict-active::before {
 
 .micro-note--success { border-color: rgba(0,255,200,.55); }
 .micro-note--warning { border-color: rgba(255,0,80,.6); }
+.micro-note--info { border-color: rgba(94,194,255,.56); }
+
+body.xp-gain .game-shell,
+body.xp-gain .battle-shell {
+  box-shadow: 0 0 0 1px rgba(67,255,187,.2) inset, 0 0 24px rgba(66,255,186,.09);
+}
+
+body.faction-boost .faction-player-card,
+body.faction-boost .faction-btn.is-active {
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--faction-color, #56dcff) 48%, white) inset, 0 0 26px color-mix(in srgb, var(--faction-color, #56dcff) 35%, transparent);
+}
+
+body.score-updated .lb-row.selected {
+  outline: 1px solid rgba(98,248,255,.44);
+}
 
 @media (prefers-reduced-motion: reduce) {
   .interactive::after,
