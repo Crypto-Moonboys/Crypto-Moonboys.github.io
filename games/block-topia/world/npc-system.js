@@ -47,9 +47,9 @@ const ROLE_DIALOGUE = {
   vendor: [
     'Signal parts fresh off the relay. Cheap today.',
     'Buying or selling? Make it quick — phase is shifting.',
-    'District prices follow SAM. Buy before the next cycle.',
+    'District access windows follow SAM. Move before the next sweep.',
     'I move faction surplus. No ledgers, no questions.',
-    'The Crypto Core runs dry after SAM sweeps. Stock up now.',
+    'The Crypto Core locks down after SAM sweeps. Grab gear and move.',
     'Best crates in the underbelly. Ask anyone.',
   ],
   fighter: [
@@ -58,7 +58,7 @@ const ROLE_DIALOGUE = {
     'I run patrols when SAM goes quiet. Risky business.',
     'You looking for a contract or trouble? Same answer either way.',
     'Signal Spire is heating up. Liberators are making a push.',
-    'Every district has a price. Mine is non-negotiable.',
+    'Every district has a control threshold. I do not negotiate breaches.',
   ],
   agent: [
     'Signal relay is down two nodes east. Rerouting through the Slums.',
@@ -66,7 +66,7 @@ const ROLE_DIALOGUE = {
     'District memory is fragmented here. Trust nothing written.',
     'The factions pay me. The city keeps me breathing.',
     'Three drops, two dead drops, one live relay. Average Tuesday.',
-    'I know which nodes SAM watches. For a price.',
+    'I know which nodes SAM watches. Bring clean credentials.',
   ],
   'lore-keeper': [
     'This district remembers everything — even what you want forgotten.',
@@ -110,8 +110,8 @@ const FACTION_DIALOGUE_OVERLAY = {
 
 const OPERATION_ROLE_DIALOGUE = {
   vendor: [
-    (district) => `Supply lanes in ${district} are breaking. Prices spike every pulse.`,
-    (district) => `Market pressure is climbing in ${district}. Relay stock moves before sunrise.`,
+    (district) => `Supply lanes in ${district} are breaking. Keep your route tight every pulse.`,
+    (district) => `Pressure is climbing in ${district}. Relay stock has to move before sunrise.`,
     (district) => `Courier caches in ${district} are hot. I can barely keep crates moving.`,
   ],
   fighter: [
@@ -138,7 +138,7 @@ const OPERATION_ROLE_DIALOGUE = {
 
 const INTERFERENCE_ROLE_DIALOGUE = {
   vendor: [
-    'Node surge is trashing local prices. Buy now or bleed credits.',
+    'Node surge is shredding local routing. Move now or lose your lane.',
     'Signal instability just burned my relay stock. Move fast.',
   ],
   fighter: [
