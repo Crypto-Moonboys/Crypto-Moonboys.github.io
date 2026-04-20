@@ -102,7 +102,9 @@ function shortestPath(adjacency, startId, endId, edgeMeta) {
 
 export function createCircuitConnectSystem(state, options = {}) {
   const difficulty = computeTierDifficulty(options?.tier || 1);
-  const spreadScale = Math.min(difficulty.scale, 2.4);
+  const defenseEaseBonus = Math.max(0, Math.min(0.5, Number(options?.progression?.defenseEaseBonus) || 0));
+  const npcAssistBonus = Math.max(0, Math.min(0.5, Number(options?.progression?.npcAssistBonus) || 0));
+  const spreadScale = Math.min(difficulty.scale * (1 - (defenseEaseBonus * 0.35)), 2.4);
   const nodes = Array.isArray(state?.controlNodes) ? state.controlNodes : [];
   const { byId, adjacency, edges } = buildGraph(nodes);
 
@@ -271,7 +273,7 @@ export function createCircuitConnectSystem(state, options = {}) {
         type: 'minimum_integrity',
         label: `Maintain network integrity above ${MIN_WIN_INTEGRITY}%`,
         complete: false,
-        deadlineAt: now + EVENT_MAX_MS,
+        deadlineAt: now + Math.round(EVENT_MAX_MS * (1 + (defenseEaseBonus * 0.45))),
       },
     ];
     const extraObjectives = clamp(Math.floor((difficulty.scale - 1) / 1), 0, MAX_OBJECTIVES - runtime.objectives.length);
@@ -296,7 +298,7 @@ export function createCircuitConnectSystem(state, options = {}) {
     runtime.status = 'alert';
     runtime.startedAt = now;
     runtime.alertUntil = now + ALERT_MS;
-    runtime.endsAt = now + EVENT_MAX_MS;
+    runtime.endsAt = now + Math.round(EVENT_MAX_MS * (1 + (defenseEaseBonus * 0.45)));
     runtime.eventIndex += 1;
     runtime.selectedNodeId = nodes[0]?.id || '';
     runtime.logs = [];
@@ -475,7 +477,7 @@ export function createCircuitConnectSystem(state, options = {}) {
 
   function assignNpcActors(now) {
     if (now < runtime.npcAssistAt) return;
-    runtime.npcAssistAt = now + NPC_ASSIGN_INTERVAL_MS;
+    runtime.npcAssistAt = now + (NPC_ASSIGN_INTERVAL_MS * (1 - (npcAssistBonus * 0.4)));
 
     const activeNpcs = (state?.npc?.entities || []).filter((npc) => npc?.mode === 'active');
     if (!activeNpcs.length) return;

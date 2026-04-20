@@ -294,3 +294,24 @@ INSERT OR IGNORE INTO telegram_factions (name, description, icon) VALUES
   ('hodl-warriors', 'Battle-hardened holders in the trenches.', '⚔️'),
   ('moon-mission', 'Focused on lift-off and momentum.', '🚀'),
   ('graffpunks', 'Street-coded rebels of the culture.', '🎨');
+
+-- ── Block Topia RPG progression extensions ───────────────────────────────────
+-- The worker stores Block Topia progression in blocktopia_progression.
+-- These columns back persistent RPG rewards/upgrades.
+
+CREATE TABLE IF NOT EXISTS blocktopia_progression (
+  telegram_id TEXT PRIMARY KEY,
+  xp INTEGER NOT NULL DEFAULT 0,
+  gems INTEGER NOT NULL DEFAULT 0,
+  tier INTEGER NOT NULL DEFAULT 1,
+  win_streak INTEGER NOT NULL DEFAULT 0,
+  last_active DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Migration (run once in existing environments):
+-- ALTER TABLE blocktopia_progression ADD COLUMN upgrade_efficiency INTEGER NOT NULL DEFAULT 0;
+-- ALTER TABLE blocktopia_progression ADD COLUMN upgrade_signal INTEGER NOT NULL DEFAULT 0;
+-- ALTER TABLE blocktopia_progression ADD COLUMN upgrade_defense INTEGER NOT NULL DEFAULT 0;
+-- ALTER TABLE blocktopia_progression ADD COLUMN upgrade_gem INTEGER NOT NULL DEFAULT 0;
+-- ALTER TABLE blocktopia_progression ADD COLUMN upgrade_npc INTEGER NOT NULL DEFAULT 0;

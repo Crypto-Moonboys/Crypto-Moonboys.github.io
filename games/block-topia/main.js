@@ -65,6 +65,20 @@ const MOUSE_DRAG_THRESHOLD_PX = 8;
 const MOUSE_DRAG_DOUBLE_CLICK_SUPPRESS_MS = 400;
 const DEFAULT_AI_ENDPOINT = 'https://api.openai.com/v1/responses';
 const MINI_GAME_TYPES = new Set(['outbreak', 'firewall', 'router', 'circuit']);
+const DEFAULT_RPG_EFFECTS = {
+  efficiencyDrainReduction: 0,
+  signalXpBonus: 0,
+  defenseEaseBonus: 0,
+  gemDropBonus: 0,
+  npcAssistBonus: 0,
+};
+let progressionState = {
+  tier: 1,
+  gems: 0,
+  rpg_mode_active: false,
+  effects: { ...DEFAULT_RPG_EFFECTS },
+  upgrades: { efficiency: 0, signal: 0, defense: 0, gem: 0, npc: 0 },
+};
 const canvas = document.getElementById('world-canvas');
 const hud = createHud(document);
 const renderer = createIsoRenderer(canvas);
@@ -123,19 +137,43 @@ function getTelegramAuth() {
   }
 }
 
-async function fetchServerTier() {
+async function fetchServerProgression() {
   const apiBase = getApiBase();
   const telegramAuth = getTelegramAuth();
-  if (!apiBase || !telegramAuth?.hash || !telegramAuth?.auth_date) return 1;
+  if (!apiBase || !telegramAuth?.hash || !telegramAuth?.auth_date) return { ...progressionState };
   try {
     const query = encodeURIComponent(JSON.stringify(telegramAuth));
     const res = await fetch(`${apiBase}/blocktopia/progression?telegram_auth=${query}`);
-    if (!res.ok) return 1;
+    if (!res.ok) return { ...progressionState };
     const data = await res.json().catch(() => null);
-    return Number(data?.progression?.tier) || 1;
+    const progression = data?.progression || {};
+    progressionState = {
+      ...progressionState,
+      ...progression,
+      tier: Number(progression.tier) || 1,
+      effects: { ...DEFAULT_RPG_EFFECTS, ...(progression.effects || {}) },
+      upgrades: { ...progressionState.upgrades, ...(progression.upgrades || {}) },
+    };
+    return progressionState;
   } catch {
-    return 1;
+    return { ...progressionState };
   }
+}
+
+async function ensureRpgEntry() {
+  if (progressionState.rpg_mode_active) return true;
+  const apiBase = getApiBase();
+  const telegramAuth = getTelegramAuth();
+  if (!apiBase || !telegramAuth?.hash || !telegramAuth?.auth_date) return false;
+  const res = await fetch(`${apiBase}/blocktopia/progression/entry`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ telegram_auth: telegramAuth }),
+  }).catch(() => null);
+  if (!res?.ok) return false;
+  const data = await res.json().catch(() => null);
+  progressionState = { ...progressionState, ...(data?.progression || {}), rpg_mode_active: true };
+  return true;
 }
 
 async function syncMiniGameOutcome(type, outcome) {
@@ -144,6 +182,8 @@ async function syncMiniGameOutcome(type, outcome) {
   const apiBase = getApiBase();
   const telegramAuth = getTelegramAuth();
   if (!apiBase || !telegramAuth?.hash || !telegramAuth?.auth_date) return null;
+  const entered = await ensureRpgEntry();
+  if (!entered) return null;
   const action = outcome === 'success' ? 'mini_game_win' : 'mini_game_loss';
   const res = await fetch(`${apiBase}/blocktopia/progression/mini-game`, {
     method: 'POST',
@@ -156,11 +196,21 @@ async function syncMiniGameOutcome(type, outcome) {
     }),
   });
   if (!res.ok) return null;
-  return res.json().catch(() => null);
+  const data = await res.json().catch(() => null);
+  if (data?.progression) {
+    progressionState = {
+      ...progressionState,
+      ...data.progression,
+      effects: { ...DEFAULT_RPG_EFFECTS, ...(data.progression.effects || progressionState.effects || {}) },
+      upgrades: { ...progressionState.upgrades, ...(data.progression.upgrades || progressionState.upgrades || {}) },
+    };
+  }
+  return data;
 }
 
 async function boot() {
-  const playerTier = await fetchServerTier();
+  const progression = await fetchServerProgression();
+  const playerTier = progression.tier || 1;
   const tierDifficulty = computeTierDifficulty(playerTier);
   const dataBundle = await loadUnifiedData();
   const state = createGameState(dataBundle);
@@ -196,10 +246,11 @@ async function boot() {
     onSubmitAction: (action) => duel.submitAction(action),
     onAcceptDuel: (duelId) => duel.acceptDuel(duelId),
   });
-  const outbreakSystem = createNodeOutbreakSystem(state, { tier: tierDifficulty.tier });
-  const firewallDefense = createFirewallDefenseSystem(state, { tier: tierDifficulty.tier });
-  const signalRouter = createSignalRouterSystem(state, { tier: tierDifficulty.tier });
-  const circuitConnect = createCircuitConnectSystem(state, { tier: tierDifficulty.tier });
+  const upgradeEffects = progression.effects || DEFAULT_RPG_EFFECTS;
+  const outbreakSystem = createNodeOutbreakSystem(state, { tier: tierDifficulty.tier, progression: upgradeEffects });
+  const firewallDefense = createFirewallDefenseSystem(state, { tier: tierDifficulty.tier, progression: upgradeEffects });
+  const signalRouter = createSignalRouterSystem(state, { tier: tierDifficulty.tier, progression: upgradeEffects });
+  const circuitConnect = createCircuitConnectSystem(state, { tier: tierDifficulty.tier, progression: upgradeEffects });
   const outbreakOverlay = createNodeOutbreakOverlay(document, {
     onAction: ({ kind, id }) => {
       const selectedId = outbreakSystem.getPublicState().selectedNodeId;
@@ -1233,7 +1284,11 @@ async function boot() {
         hud.pushFeed(`🤝 NPC ${labels[type] || type} at ${nodeId.toUpperCase()}`, 'combat');
       },
       onResolve: (result) => {
-        syncMiniGameOutcome('firewall', result.outcome).catch(() => {});
+        syncMiniGameOutcome('firewall', result.outcome).then((server) => {
+          if (!server?.progression) return;
+          const bonus = (server.progression.bonus_flags || []).length ? ` · ${server.progression.bonus_flags.join(', ')}` : '';
+          hud.pushFeed(`🧬 RPG rewards synced · +${server.progression.xp_awarded || 0} XP · +${server.progression.gems_awarded || 0} gems${bonus}`, 'quest');
+        }).catch(() => {});
         if (result.outcome === 'success') {
           const reward = awardXp(state, result.rewardXp);
           state.player.score += result.rewardGems;
@@ -1270,7 +1325,11 @@ async function boot() {
         hud.pushFeed(`${burst ? '💥' : '🦠'} Spread ${fromId.toUpperCase()} → ${toId.toUpperCase()}`, 'combat');
       },
       onResolve: (result) => {
-        syncMiniGameOutcome('outbreak', result.outcome).catch(() => {});
+        syncMiniGameOutcome('outbreak', result.outcome).then((server) => {
+          if (!server?.progression) return;
+          const bonus = (server.progression.bonus_flags || []).length ? ` · ${server.progression.bonus_flags.join(', ')}` : '';
+          hud.pushFeed(`🧬 RPG rewards synced · +${server.progression.xp_awarded || 0} XP · +${server.progression.gems_awarded || 0} gems${bonus}`, 'quest');
+        }).catch(() => {});
         if (result.outcome === 'success') {
           const reward = awardXp(state, result.rewardXp);
           state.player.score += result.rewardGems;
@@ -1308,7 +1367,11 @@ async function boot() {
         hud.pushFeed(`🤝 NPC ${labels[type] || type} · ${text}`, 'combat');
       },
       onResolve: (result) => {
-        syncMiniGameOutcome('router', result.outcome).catch(() => {});
+        syncMiniGameOutcome('router', result.outcome).then((server) => {
+          if (!server?.progression) return;
+          const bonus = (server.progression.bonus_flags || []).length ? ` · ${server.progression.bonus_flags.join(', ')}` : '';
+          hud.pushFeed(`🧬 RPG rewards synced · +${server.progression.xp_awarded || 0} XP · +${server.progression.gems_awarded || 0} gems${bonus}`, 'quest');
+        }).catch(() => {});
         if (result.outcome === 'success') {
           const reward = awardXp(state, result.rewardXp);
           state.player.score += result.rewardGems;
@@ -1350,7 +1413,11 @@ async function boot() {
         hud.pushFeed(`🤝 NPC ${labels[type] || type} · ${text}`, 'combat');
       },
       onResolve: (result) => {
-        syncMiniGameOutcome('circuit', result.outcome).catch(() => {});
+        syncMiniGameOutcome('circuit', result.outcome).then((server) => {
+          if (!server?.progression) return;
+          const bonus = (server.progression.bonus_flags || []).length ? ` · ${server.progression.bonus_flags.join(', ')}` : '';
+          hud.pushFeed(`🧬 RPG rewards synced · +${server.progression.xp_awarded || 0} XP · +${server.progression.gems_awarded || 0} gems${bonus}`, 'quest');
+        }).catch(() => {});
         if (result.outcome === 'success') {
           const reward = awardXp(state, result.rewardXp);
           state.player.score += result.rewardGems;

@@ -46,7 +46,8 @@ function buildAdjacency(nodes) {
 
 export function createNodeOutbreakSystem(state, options = {}) {
   const difficulty = computeTierDifficulty(options?.tier || 1);
-  const spreadSpeedScale = Math.min(difficulty.scale, 2.4);
+  const defenseEaseBonus = Math.max(0, Math.min(0.5, Number(options?.progression?.defenseEaseBonus) || 0));
+  const spreadSpeedScale = Math.min(difficulty.scale * (1 - (defenseEaseBonus * 0.5)), 2.4);
   const mutationSpeedScale = Math.min(difficulty.scale, MAX_MUTATION_SPEED_BONUS);
   const startingInfected = clamp(1 + Math.floor((difficulty.scale - 1) / 0.6), 1, MAX_STARTING_INFECTED);
   const nodes = Array.isArray(state?.controlNodes) ? state.controlNodes : [];
