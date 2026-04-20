@@ -197,6 +197,63 @@ body.overlay-open {
   border-radius: 8px;
   padding: 8px 9px;
   margin-top: 4px;
+  transition: box-shadow .25s ease, border-color .25s ease, background .25s ease;
+}
+
+#game-overlay .overlay-side .panel-note--identity {
+  margin-bottom: 4px;
+  color: #d9e5ff;
+}
+
+#game-overlay .overlay-side .panel-note--actions {
+  margin-top: 8px;
+  font-size: .7rem;
+}
+
+.sync-action-link {
+  display: inline-block;
+  margin: 2px 6px 2px 0;
+  padding: 4px 8px;
+  border-radius: 6px;
+  border: 1px solid rgba(94, 226, 255, 0.6);
+  color: #c1f5ff;
+  text-decoration: none;
+  background: rgba(16, 62, 82, 0.4);
+}
+
+.sync-action-link--danger {
+  border-color: rgba(255, 68, 86, 0.72);
+  color: #ffc6d0;
+  background: rgba(78, 12, 22, 0.52);
+}
+
+.sync-action-link--btn {
+  cursor: pointer;
+  font: inherit;
+}
+
+.sync-state--good {
+  border-color: rgba(57, 255, 20, 0.9) !important;
+  background: rgba(18, 66, 31, 0.7) !important;
+  box-shadow: 0 0 10px rgba(57, 255, 20, 0.7), 0 0 24px rgba(57, 255, 20, 0.35);
+  animation: syncPulseGreen 1.15s ease-in-out infinite alternate;
+}
+
+.sync-state--bad {
+  border-color: rgba(255, 58, 58, 0.95) !important;
+  background: rgba(78, 10, 10, 0.74) !important;
+  box-shadow: 0 0 10px rgba(255, 58, 58, 0.65), 0 0 20px rgba(255, 58, 58, 0.4);
+  animation: syncPulseRed .78s steps(2, end) infinite;
+}
+
+@keyframes syncPulseGreen {
+  from { filter: brightness(1); }
+  to { filter: brightness(1.15); }
+}
+
+@keyframes syncPulseRed {
+  from { opacity: 1; }
+  to { opacity: .82; }
 }
 
 #game-overlay .overlay-side .tips-list li {
@@ -298,6 +355,20 @@ body.overlay-open {
   border-radius: 10px;
   padding: 8px 10px;
   background: rgba(12, 18, 34, 0.85);
+}
+
+.game-card .arcade-sync-identity {
+  margin-top: 10px;
+  max-width: 700px;
+  width: 100%;
+  font-size: 0.81rem;
+  color: #d5e3ff;
+}
+
+.game-card .arcade-sync-actions {
+  margin-top: 8px;
+  max-width: 700px;
+  width: 100%;
 }
 
 /* 12. Instruction/hint text under canvas — hidden in fullscreen overlay */

@@ -119,6 +119,28 @@
     .loop-card h4 { margin: 0 0 8px; font-size: .95rem; }
     .loop-card ul { margin: 0; padding-left: 18px; }
     .loop-card li { line-height: 1.65; margin: 0 0 4px; font-size: .9rem; }
+    .incubator-sync-state {
+      border: 1px solid rgba(255,255,255,.18);
+      border-radius: 12px;
+      padding: 14px 16px;
+      margin: 0 0 20px;
+      background: rgba(10,16,28,.75);
+    }
+    .incubator-sync-state strong { display: block; margin-bottom: 6px; color: #fff; }
+    .incubator-sync-state .label { font-size: .84rem; color: var(--color-text-muted); }
+    .incubator-sync-state .value { margin-top: 4px; font-weight: 700; color: #d8e5ff; }
+    .incubator-sync-state.good {
+      border-color: rgba(57,255,20,.86);
+      box-shadow: 0 0 14px rgba(57,255,20,.52), 0 0 28px rgba(57,255,20,.2);
+      animation: incubatorSyncGood 1.2s ease-in-out infinite alternate;
+    }
+    .incubator-sync-state.bad {
+      border-color: rgba(255,70,70,.9);
+      box-shadow: 0 0 12px rgba(255,70,70,.55), 0 0 26px rgba(255,70,70,.2);
+      animation: incubatorSyncBad .8s steps(2,end) infinite;
+    }
+    @keyframes incubatorSyncGood { from{filter:brightness(1)} to{filter:brightness(1.14)} }
+    @keyframes incubatorSyncBad { from{opacity:1} to{opacity:.84} }
   </style>
   <!-- Telegram WebApp SDK — enables fullscreen expand on mobile/iPad when opened via the bot -->
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
@@ -205,6 +227,14 @@
           <a href="https://t.me/gkniftyheads" target="_blank" rel="noopener noreferrer" class="btn btn-primary">📲 Open Group</a>
           <a href="/community.html" class="btn btn-secondary">⚔️ Open Battle Chamber</a>
         </div>
+      </section>
+
+      <section id="incubator-sync-state" class="incubator-sync-state bad" aria-live="polite">
+        <strong>Telegram sync state</strong>
+        <div class="label">Linked identity</div>
+        <div class="value" id="incubator-sync-identity">Not linked</div>
+        <div class="label" style="margin-top:10px">Status</div>
+        <div class="value" id="incubator-sync-message">To store XP and Block Topia progression, link with Telegram using /gklink.</div>
       </section>
 
       <section class="incubator-section" id="what-is-it">
@@ -470,5 +500,33 @@
 <script src="/js/identity-gate.js"></script>
 <script src="/js/wiki.js"></script>
 <script src="/js/battle-layer.js"></script>
+<script>
+(function () {
+  var box = document.getElementById('incubator-sync-state');
+  var identityEl = document.getElementById('incubator-sync-identity');
+  var msgEl = document.getElementById('incubator-sync-message');
+  if (!box || !identityEl || !msgEl) return;
+  var gate = window.MOONBOYS_IDENTITY || null;
+  var linked = !!(gate && gate.isTelegramLinked && gate.isTelegramLinked());
+  var auth = gate && gate.getTelegramAuth ? gate.getTelegramAuth() : null;
+  var authOk = !!(auth && auth.hash && auth.auth_date);
+  var name = gate && gate.getTelegramName ? gate.getTelegramName() : null;
+  var username = auth && (auth.username || (auth.user && auth.user.username));
+  identityEl.textContent = linked ? ((name || 'Linked Telegram') + (username ? ' (@' + String(username).replace(/^@/, '') + ')' : '')) : 'Not linked';
+  if (linked && authOk) {
+    box.classList.remove('bad');
+    box.classList.add('good');
+    msgEl.textContent = 'Telegram linked successfully. XP and Block Topia progression will now be stored server-side.';
+  } else if (linked && !authOk) {
+    box.classList.remove('good');
+    box.classList.add('bad');
+    msgEl.textContent = 'Sync expired — run /gklink again to refresh your connection.';
+  } else {
+    box.classList.remove('good');
+    box.classList.add('bad');
+    msgEl.textContent = 'To store XP and Block Topia progression, link with Telegram using /gklink.';
+  }
+}());
+</script>
 </body>
 </html>
