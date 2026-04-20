@@ -807,19 +807,20 @@ export function createIsoRenderer(canvas) {
     const theme = NODE_CLASS_THEME[nodeClass] || NODE_CLASS_THEME.utility;
     const outbreak = node.outbreak || null;
     const firewall = node.firewallDefense || null;
+    const circuit = node.circuitConnect || null;
     const pulse = 0.82 + (Math.sin((now / 340) + ((node.x + node.y) * 0.1)) + 1) * 0.18;
     const towerH = 48 * (theme.size || 1);
     const radius = (isHovered ? 24 : 20) * (theme.size || 1);
 
     ctx.save();
-    ctx.globalAlpha = outbreak?.infected ? 0.34 : firewall?.underAttack ? 0.32 : 0.2;
-    ctx.fillStyle = outbreak?.infected ? '#ff4fa2' : firewall?.underAttack ? '#ff4f9e' : theme.color;
+    ctx.globalAlpha = outbreak?.infected ? 0.34 : firewall?.underAttack ? 0.32 : circuit?.isolated ? 0.32 : 0.2;
+    ctx.fillStyle = outbreak?.infected ? '#ff4fa2' : firewall?.underAttack ? '#ff4f9e' : circuit?.isolated ? '#ff7f5a' : theme.color;
     ctx.beginPath();
     ctx.ellipse(cx, cy + 1, radius * 1.35 * pulse, radius * 0.55 * pulse, 0, 0, Math.PI * 2);
     ctx.fill();
 
-    ctx.globalAlpha = outbreak?.infected ? 0.95 : firewall?.defended ? 0.95 : 0.75;
-    ctx.strokeStyle = outbreak?.infected ? '#ff4fa2' : firewall?.defended ? '#6be8ff' : theme.color;
+    ctx.globalAlpha = outbreak?.infected ? 0.95 : firewall?.defended ? 0.95 : circuit?.critical ? 0.92 : 0.75;
+    ctx.strokeStyle = outbreak?.infected ? '#ff4fa2' : firewall?.defended ? '#6be8ff' : circuit?.critical ? '#ffca56' : theme.color;
     ctx.lineWidth = 2;
     ctx.beginPath();
     ctx.moveTo(cx, cy - towerH);
@@ -827,13 +828,13 @@ export function createIsoRenderer(canvas) {
     ctx.stroke();
 
     ctx.globalAlpha = outbreak?.infected ? 1 : 0.95;
-    ctx.fillStyle = outbreak?.infected ? '#ff79be' : firewall?.defended ? '#7af6ff' : theme.accent;
+    ctx.fillStyle = outbreak?.infected ? '#ff79be' : firewall?.defended ? '#7af6ff' : circuit?.isolated ? '#ffd4a5' : theme.accent;
     ctx.beginPath();
     ctx.arc(cx, cy - towerH, 9 * pulse, 0, Math.PI * 2);
     ctx.fill();
 
     ctx.globalAlpha = 0.68;
-    ctx.strokeStyle = outbreak?.infected ? '#ff8ccd' : firewall?.boosted ? '#8ca4ff' : theme.color;
+    ctx.strokeStyle = outbreak?.infected ? '#ff8ccd' : firewall?.boosted ? '#8ca4ff' : circuit?.selected ? '#72f0ff' : theme.color;
     ctx.lineWidth = 1.3;
     ctx.beginPath();
     ctx.arc(cx, cy - towerH, 14 * pulse, 0, Math.PI * 2);
@@ -849,6 +850,9 @@ export function createIsoRenderer(canvas) {
     if (outbreak?.infected) {
       ctx.fillStyle = '#ff79be';
       ctx.fillText('INFECTED', cx, cy - towerH - 22);
+    } else if (circuit?.isolated) {
+      ctx.fillStyle = '#ff9f71';
+      ctx.fillText('ISOLATED', cx, cy - towerH - 22);
     } else if (outbreak?.isolated) {
       ctx.fillStyle = '#5ef2ff';
       ctx.fillText('ISOLATED', cx, cy - towerH - 22);
@@ -970,9 +974,21 @@ export function createIsoRenderer(canvas) {
       const y2 = originY + toIsoPoint.y + HALF_TILE_H;
       const flowPulse = 0.5 + (Math.sin((now / 220) + (line.id.length * 0.5)) + 1) * 0.25;
       const corrupted = Boolean(from.outbreak?.infected || to.outbreak?.infected);
+      const circuitState = state.circuitConnectView?.active
+        ? state.circuitConnectView.links?.find((entry) => entry.id === edgeKey(from.id, to.id))?.state
+        : '';
       const routerState = state.signalRouterView?.active
         ? state.signalRouterView.links?.find((entry) => entry.id === edgeKey(from.id, to.id))?.state
         : '';
+      const circuitColor = circuitState === 'broken'
+        ? 'rgba(255,87,99,0.96)'
+        : circuitState === 'unstable'
+          ? 'rgba(255,188,87,0.95)'
+          : circuitState === 'bridge'
+            ? 'rgba(181,115,255,0.96)'
+            : circuitState === 'reinforced'
+              ? 'rgba(102,232,255,0.98)'
+              : '';
       const routerColor = routerState === 'overloaded'
         ? 'rgba(255,183,71,0.95)'
         : routerState === 'corrupted'
@@ -983,9 +999,10 @@ export function createIsoRenderer(canvas) {
               ? 'rgba(105,243,255,0.98)'
               : '';
 
-      ctx.globalAlpha = corrupted ? 0.78 : 0.45;
-      ctx.strokeStyle = routerColor || (corrupted ? 'rgba(255,79,168,0.94)' : 'rgba(94,242,255,0.95)');
-      ctx.lineWidth = (routerState === 'blocked' ? 2.8 : 1.4) + flowPulse;
+      const fractureFlicker = 0.55 + (Math.sin(now / UNSTABLE_FLICKER_RATE + (line.id.length * 2.4)) + 1) * 0.2;
+      ctx.globalAlpha = circuitState === 'broken' ? fractureFlicker : (corrupted ? 0.78 : 0.45);
+      ctx.strokeStyle = circuitColor || routerColor || (corrupted ? 'rgba(255,79,168,0.94)' : 'rgba(94,242,255,0.95)');
+      ctx.lineWidth = ((routerState === 'blocked' || circuitState === 'broken') ? 2.8 : 1.4) + flowPulse;
       ctx.beginPath();
       ctx.moveTo(x1, y1);
       ctx.lineTo(x2, y2);
@@ -995,7 +1012,13 @@ export function createIsoRenderer(canvas) {
       const px = x1 + ((x2 - x1) * packetPhase);
       const py = y1 + ((y2 - y1) * packetPhase);
       ctx.globalAlpha = 0.95;
-      ctx.fillStyle = routerState === 'blocked' ? '#ffd0d8' : (corrupted ? '#ffd2f1' : '#e7fbff');
+      ctx.fillStyle = circuitState === 'broken'
+        ? '#ffb7be'
+        : circuitState === 'unstable'
+          ? '#ffe0af'
+          : routerState === 'blocked'
+            ? '#ffd0d8'
+            : (corrupted ? '#ffd2f1' : '#e7fbff');
       ctx.beginPath();
       ctx.arc(px, py, 2.2, 0, Math.PI * 2);
       ctx.fill();

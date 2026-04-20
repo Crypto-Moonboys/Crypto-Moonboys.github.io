@@ -34,6 +34,8 @@ import { createFirewallDefenseSystem } from './world/firewall-defense-system.js'
 import { createFirewallDefenseOverlay } from './ui/firewall-defense-overlay.js';
 import { createSignalRouterSystem } from './world/signal-router-system.js';
 import { createSignalRouterOverlay } from './ui/signal-router-overlay.js';
+import { createCircuitConnectSystem } from './world/circuit-connect-system.js';
+import { createCircuitConnectOverlay } from './ui/circuit-connect-overlay.js';
 
 const ENTRY_OVERLAY_TIMEOUT_MS = 7000;
 const MAX_FRAME_DELTA_SECONDS = 1 / 30;
@@ -138,6 +140,7 @@ async function boot() {
   const outbreakSystem = createNodeOutbreakSystem(state);
   const firewallDefense = createFirewallDefenseSystem(state);
   const signalRouter = createSignalRouterSystem(state);
+  const circuitConnect = createCircuitConnectSystem(state);
   const outbreakOverlay = createNodeOutbreakOverlay(document, {
     onAction: ({ kind, id }) => {
       const selectedId = outbreakSystem.getPublicState().selectedNodeId;
@@ -187,6 +190,21 @@ async function boot() {
       }
       state.signalRouterView = signalRouter.getPublicState();
       signalRouterOverlay.render(state.signalRouterView);
+    },
+  });
+  const circuitConnectOverlay = createCircuitConnectOverlay(document, {
+    onAction: (actionId) => {
+      const selectedId = (state.circuitConnectView || circuitConnect.getPublicState()).selectedNodeId;
+      const action = circuitConnect.actions[actionId];
+      if (typeof action !== 'function') return;
+      const result = action(selectedId);
+      if (!result?.ok && result?.reason) {
+        hud.showNodeInterference(result.reason, 'warning');
+      } else if (result?.ok) {
+        hud.pushFeed(`🔌 Circuit action: ${actionId}`, 'combat');
+      }
+      state.circuitConnectView = circuitConnect.getPublicState();
+      circuitConnectOverlay.render(state.circuitConnectView);
     },
   });
   let multiplayerConnected = false;
@@ -284,6 +302,13 @@ async function boot() {
   function tryInteractWithClickedNode(event) {
     const node = renderer.pickControlNodeFromClientPoint(event.clientX, event.clientY, state);
     if (!node) return false;
+    circuitConnect.setSelectedNode(node.id);
+    const circuitState = state.circuitConnectView || circuitConnect.getPublicState();
+    if (circuitState.active) {
+      circuitConnectOverlay.render(circuitState);
+      hud.showNodeInterference(`Recovery node locked: ${node.id.toUpperCase()}`, 'signal');
+      return true;
+    }
     firewallDefense.setSelectedNode(node.id);
     const firewallState = firewallDefense.getPublicState();
     if (firewallState.active) {
@@ -965,6 +990,29 @@ async function boot() {
     }
     const outbreakState = outbreakSystem.getPublicState();
     const signalRouterState = state.signalRouterView || signalRouter.getPublicState();
+    const circuitState = state.circuitConnectView || circuitConnect.getPublicState();
+    if (circuitState.active) {
+      const selectedId = circuitState.selectedNodeId;
+      const actionsByKey = {
+        a: 'reconnectLink',
+        s: 'stabilizeLink',
+        d: 'rerouteNode',
+        f: 'deployBridge',
+        g: 'reinforceConnection',
+      };
+      const actionId = actionsByKey[key];
+      if (actionId) {
+        const action = circuitConnect.actions[actionId];
+        const result = action?.(selectedId);
+        if (result?.ok) {
+          hud.pushFeed(`🔌 CIRCUIT CONNECT ${actionId}`, 'combat');
+        } else if (result?.reason) {
+          hud.showNodeInterference(result.reason, 'warning');
+        }
+        state.circuitConnectView = circuitConnect.getPublicState();
+        circuitConnectOverlay.render(state.circuitConnectView);
+      }
+    }
     if (signalRouterState.active) {
       const selectedId = signalRouterState.selectedNodeId;
       const actionsByKey = {
@@ -1221,6 +1269,51 @@ async function boot() {
     });
     state.signalRouterView = signalRouter.getPublicState();
     signalRouterOverlay.render(state.signalRouterView);
+    circuitConnect.tick(dt, {
+      onStart: ({ message }) => {
+        hud.showSamPopup(`🚨 ${message}`, 3600);
+        hud.pushFeed(`🚨 ${message}`, 'sam');
+      },
+      onPressure: ({ edgeId }) => {
+        hud.pushFeed(`⚠️ Fracture spreading through ${edgeId.toUpperCase()}`, 'sam');
+      },
+      onNpc: ({ type, text }) => {
+        const labels = {
+          courier: 'courier signal relay',
+          agent: 'agent route reveal',
+          fighter: 'fighter zone secure',
+          recruiter: 'recruiter repair team',
+        };
+        hud.pushFeed(`🤝 NPC ${labels[type] || type} · ${text}`, 'combat');
+      },
+      onResolve: (result) => {
+        if (result.outcome === 'success') {
+          const reward = awardXp(state, result.rewardXp);
+          state.player.score += result.rewardGems;
+          hud.setXp(reward.xp);
+          hud.setScore(state.player.score);
+          hud.pushFeed(`✅ Circuit Connect recovered · +${result.rewardXp} XP · +${result.rewardGems} gems`, 'quest');
+          hud.showQuestComplete('CIRCUIT CONNECT', result.rewardXp);
+          hud.showNodeInterference('Network stability buff active', 'signal');
+        } else {
+          state.sam.pressure = Math.min(100, state.sam.pressure + (result.samPressureDelta || 0));
+          const district = districtStateById.get(state.player.districtId);
+          if (district) district.control = Math.max(0, district.control - (result.districtInstabilityPenalty || 0));
+          for (const node of state.controlNodes) {
+            node.control = Math.max(0, node.control - (result.nodeStressPenalty || 0));
+          }
+          hud.pushFeed('❌ Circuit Connect failed · district instability and node stress increased', 'sam');
+          hud.showNodeInterference('SAM pressure increased after recovery failure', 'warning');
+        }
+      },
+    }, {
+      duelActive: duelState.status === 'active',
+      outbreakActive: outbreakSystem.getPublicState().active,
+      firewallActive: firewallDefense.getPublicState().active,
+      signalRouterActive: state.signalRouterView?.active,
+    });
+    state.circuitConnectView = circuitConnect.getPublicState();
+    circuitConnectOverlay.render(state.circuitConnectView);
 
     // Interpolate remote player positions toward server-provided targets.
     for (const remote of state.remotePlayers) {
