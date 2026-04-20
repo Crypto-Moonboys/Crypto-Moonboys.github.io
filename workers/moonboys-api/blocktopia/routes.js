@@ -34,6 +34,14 @@ import {
 import { verifyTelegramIdentityFromBody } from './auth.js';
 import { fetchTrustedLeaderboardContext } from './leaderboard.js';
 
+function logBlockTopiaFailure(event, context = {}) {
+  console.log('[blocktopia][progression]', JSON.stringify({
+    event,
+    ...context,
+    timestamp: new Date().toISOString(),
+  }));
+}
+
 export async function handleBlockTopiaProgressionRoute(request, env, url, helpers) {
   const { path } = helpers;
   const { json, err, upsertTelegramUser, verifyTelegramAuth } = helpers;
@@ -52,7 +60,13 @@ export async function handleBlockTopiaProgressionRoute(request, env, url, helper
     if (verified.error) return err(verified.error, verified.status || 401);
 
     try {
-      await upsertTelegramUser(env.DB, verified.user).catch(() => {});
+      await upsertTelegramUser(env.DB, verified.user).catch((error) => {
+        logBlockTopiaFailure('upsert_user_failed', {
+          path,
+          telegramId: verified.telegramId,
+          message: error?.message || String(error),
+        });
+      });
       const row = await getOrCreateBlockTopiaProgression(env.DB, verified.telegramId);
       const upgrades = getUpgradeSnapshot(row);
       const effects = buildUpgradeEffects(upgrades);
@@ -92,7 +106,12 @@ export async function handleBlockTopiaProgressionRoute(request, env, url, helper
           last_active: new Date().toISOString(),
         },
       });
-    } catch {
+    } catch (error) {
+      logBlockTopiaFailure('load_progression_failed', {
+        path,
+        telegramId: verified.telegramId,
+        message: error?.message || String(error),
+      });
       return err('Failed to load Block Topia progression', 500);
     }
   }
@@ -131,7 +150,12 @@ export async function handleBlockTopiaProgressionRoute(request, env, url, helper
           first_mini_game_seed_xp: Math.max(0, seededXp - xpAfterEntry),
         },
       });
-    } catch {
+    } catch (error) {
+      logBlockTopiaFailure('entry_failed', {
+        path,
+        telegramId: verified.telegramId,
+        message: error?.message || String(error),
+      });
       return err('Failed to enter RPG mode', 500);
     }
   }
@@ -177,7 +201,13 @@ export async function handleBlockTopiaProgressionRoute(request, env, url, helper
           next_cost: nextLevel >= UPGRADE_MAX_LEVEL ? null : computeUpgradeCost(config.baseCost, nextLevel),
         },
       });
-    } catch {
+    } catch (error) {
+      logBlockTopiaFailure('upgrade_failed', {
+        path,
+        telegramId: verified.telegramId,
+        upgradeId,
+        message: error?.message || String(error),
+      });
       return err('Failed to apply RPG upgrade', 500);
     }
   }
@@ -204,7 +234,13 @@ export async function handleBlockTopiaProgressionRoute(request, env, url, helper
     if (action === 'arcade_score') {
       try {
         leaderboardCtx = await fetchTrustedLeaderboardContext(env, game, verified.telegramId, verified.user);
-      } catch {
+      } catch (error) {
+        logBlockTopiaFailure('leaderboard_bridge_verification_failed', {
+          path,
+          telegramId: verified.telegramId,
+          game,
+          message: error?.message || String(error),
+        });
         return err('Failed to verify trusted leaderboard context', 502);
       }
       if (!leaderboardCtx || leaderboardCtx.trustedBestScore <= 0) {
@@ -218,7 +254,15 @@ export async function handleBlockTopiaProgressionRoute(request, env, url, helper
         score > 0 && score >= leaderboardCtx.trustedBestScore && !alreadyRewardedScore;
     }
     try {
-      await upsertTelegramUser(env.DB, verified.user).catch(() => {});
+      await upsertTelegramUser(env.DB, verified.user).catch((error) => {
+        logBlockTopiaFailure('upsert_user_failed', {
+          path,
+          telegramId: verified.telegramId,
+          action,
+          game,
+          message: error?.message || String(error),
+        });
+      });
 
       if (action !== 'mini_game_affordability') {
         const allowed = await enforceProgressionRateLimit(env.DB, verified.telegramId);
@@ -432,7 +476,16 @@ export async function handleBlockTopiaProgressionRoute(request, env, url, helper
           synced_multiplier: syncedMultiplierApplied,
         },
       });
-    } catch {
+    } catch (error) {
+      logBlockTopiaFailure('mini_game_sync_failed', {
+        path,
+        telegramId: verified.telegramId,
+        action,
+        type,
+        game,
+        score,
+        message: error?.message || String(error),
+      });
       return err('Failed to sync mini-game progression', 500);
     }
   }
@@ -468,7 +521,12 @@ export async function handleBlockTopiaProgressionRoute(request, env, url, helper
           reset: true,
         },
       });
-    } catch {
+    } catch (error) {
+      logBlockTopiaFailure('reset_failed', {
+        path,
+        telegramId: verified.telegramId,
+        message: error?.message || String(error),
+      });
       return err('Failed to reset Block Topia progression', 500);
     }
   }

@@ -66,6 +66,14 @@ function err(message, status = 400) {
   return json({ error: message }, status);
 }
 
+function logApiFailure(event, context = {}) {
+  console.log('[moonboys-api]', JSON.stringify({
+    event,
+    ...context,
+    timestamp: new Date().toISOString(),
+  }));
+}
+
 /** Return today's UTC date as a YYYY-MM-DD string. */
 function getTodayUtcDate() {
   return new Date().toISOString().slice(0, 10);
@@ -145,7 +153,7 @@ async function callAntiCheatWorker(env, method, acPath, body) {
   const baseUrl = (env.ANTI_CHEAT_WORKER_URL || ANTI_CHEAT_WORKER_URL_DEFAULT).replace(/\/$/, '');
   const adminSecret = env.ADMIN_SECRET;
   if (!adminSecret) {
-    console.log('callAntiCheatWorker: ADMIN_SECRET not configured');
+    logApiFailure('anti_cheat_call_blocked', { reason: 'missing_admin_secret', method, acPath });
     return { error: 'Anti-cheat admin secret not configured' };
   }
   try {
@@ -161,9 +169,20 @@ async function callAntiCheatWorker(env, method, acPath, body) {
     }
     const res  = await fetch(`${baseUrl}${acPath}`, init);
     const text = await res.text();
-    try { return JSON.parse(text); } catch { return { error: text }; }
+    if (!res.ok) {
+      logApiFailure('anti_cheat_http_error', { method, acPath, status: res.status });
+    }
+    try { return JSON.parse(text); } catch (error) {
+      logApiFailure('anti_cheat_parse_error', {
+        method,
+        acPath,
+        status: res.status,
+        message: error?.message || String(error),
+      });
+      return { error: text };
+    }
   } catch (e) {
-    console.log('callAntiCheatWorker error:', e?.message || e);
+    logApiFailure('anti_cheat_network_error', { method, acPath, message: e?.message || String(e) });
     return { error: e?.message || String(e) };
   }
 }
@@ -279,7 +298,13 @@ async function logTelegramActivity(db, telegramId, action, metadata = '') {
   await db.prepare(`
     INSERT INTO telegram_activity_log (id, telegram_id, action, metadata)
     VALUES (?, ?, ?, ?)
-  `).bind(id, telegramId, action, metadata || null).run().catch(() => {});
+  `).bind(id, telegramId, action, metadata || null).run().catch((error) => {
+    logApiFailure('telegram_activity_log_failed', {
+      telegramId,
+      action,
+      message: error?.message || String(error),
+    });
+  });
 }
 
 /**
@@ -341,6 +366,7 @@ export default {
 
       const now = Math.floor(Date.now() / 1000);
       if (now - parseInt(auth_date, 10) > TELEGRAM_AUTH_MAX_AGE) {
+        logApiFailure('telegram_auth_expired', { telegramId: String(id) });
         return err('Telegram auth data has expired', 401);
       }
 
@@ -349,6 +375,7 @@ export default {
         env.TELEGRAM_BOT_TOKEN,
       );
       if (!valid) {
+        logApiFailure('telegram_auth_verification_failed', { telegramId: String(id) });
         return err('Telegram auth verification failed', 401);
       }
 
@@ -490,12 +517,22 @@ export default {
         if (acState && acState.is_blocked === 1) {
           return err('Account is blocked from competitive actions. Contact the Moonboys community on Telegram to appeal.', 403);
         }
-      } catch { /* table absent or query failed — proceed */ }
+      } catch (error) {
+        logApiFailure('telegram_link_anticheat_check_failed', {
+          telegramId: String(telegram_id),
+          message: error?.message || String(error),
+        });
+      }
 
       // Invalidate any existing unused tokens for this user
       await env.DB.prepare(
         `UPDATE telegram_link_tokens SET is_used = 1 WHERE telegram_id = ? AND is_used = 0`
-      ).bind(String(telegram_id)).run().catch(() => {});
+      ).bind(String(telegram_id)).run().catch((error) => {
+        logApiFailure('telegram_link_token_invalidate_failed', {
+          telegramId: String(telegram_id),
+          message: error?.message || String(error),
+        });
+      });
 
       const token     = crypto.randomUUID();
       const expiresAt = new Date(Date.now() + 15 * 60 * 1000).toISOString();
@@ -679,7 +716,12 @@ async function handleTelegramUpdate(update, env) {
   if (msg?.new_chat_members) {
     for (const member of msg.new_chat_members) {
       const telegramId = String(member.id);
-      await upsertTelegramUser(db, member).catch(() => {});
+      await upsertTelegramUser(db, member).catch((error) => {
+        logApiFailure('webhook_member_upsert_failed', {
+          telegramId,
+          message: error?.message || String(error),
+        });
+      });
       await logTelegramActivity(db, telegramId, 'chat_join',
         JSON.stringify({ chat_id: String(msg.chat?.id || '') }));
       // Award join XP only once per user
@@ -687,7 +729,12 @@ async function handleTelegramUpdate(update, env) {
         `SELECT id FROM telegram_xp_log WHERE telegram_id = ? AND action = 'group_join' LIMIT 1`
       ).bind(telegramId).first().catch(() => null);
       if (!prior) {
-        await awardXp(db, telegramId, XP_GROUP_JOIN, 'group_join').catch(() => {});
+        await awardXp(db, telegramId, XP_GROUP_JOIN, 'group_join').catch((error) => {
+          logApiFailure('webhook_group_join_xp_award_failed', {
+            telegramId,
+            message: error?.message || String(error),
+          });
+        });
       }
     }
     return;
@@ -720,7 +767,14 @@ async function handleTelegramUpdate(update, env) {
   const text       = (msg.text || '').trim();
 
   // Upsert user on every interaction so the profile stays fresh
-  if (telegramId) await upsertTelegramUser(db, fromUser).catch(() => {});
+  if (telegramId) {
+    await upsertTelegramUser(db, fromUser).catch((error) => {
+      logApiFailure('webhook_user_upsert_failed', {
+        telegramId,
+        message: error?.message || String(error),
+      });
+    });
+  }
 
   // Only handle bot commands
   if (!text.startsWith('/')) return;
@@ -769,11 +823,21 @@ async function cmdGkStart(db, tok, chatId, telegramId, fromUser) {
 
   let xpMsg = '';
   if (!prior) {
-    await awardXp(db, telegramId, XP_FIRST_START, 'first_start').catch(() => {});
+    await awardXp(db, telegramId, XP_FIRST_START, 'first_start').catch((error) => {
+      logApiFailure('first_start_xp_award_failed', {
+        telegramId,
+        message: error?.message || String(error),
+      });
+    });
     xpMsg = `\n\n⚡ You earned <b>${XP_FIRST_START} XP</b> for your first launch!`;
   }
 
-  await logTelegramActivity(db, telegramId, 'gkstart').catch(() => {});
+  await logTelegramActivity(db, telegramId, 'gkstart').catch((error) => {
+    logApiFailure('gkstart_activity_log_failed', {
+      telegramId,
+      message: error?.message || String(error),
+    });
+  });
 
   const name = escapeHtml(getTelegramDisplayName(fromUser));
   // Inline keyboard: web_app buttons open the site as a fullscreen Telegram
@@ -842,7 +906,12 @@ async function cmdGkLink(db, tok, chatId, telegramId) {
   // Invalidate any existing unused tokens for this user
   await db.prepare(
     `UPDATE telegram_link_tokens SET is_used = 1 WHERE telegram_id = ? AND is_used = 0`
-  ).bind(telegramId).run().catch(() => {});
+  ).bind(telegramId).run().catch((error) => {
+    logApiFailure('gklink_token_invalidate_failed', {
+      telegramId,
+      message: error?.message || String(error),
+    });
+  });
 
   // Generate a new one-time token (15-minute TTL)
   const token     = crypto.randomUUID();
@@ -1003,7 +1072,12 @@ async function cmdGkFaction(db, tok, chatId, telegramId, argStr) {
       );
       return;
     }
-  } catch { /* table absent — proceed */ }
+  } catch (error) {
+    logApiFailure('gkfaction_anticheat_check_failed', {
+      telegramId,
+      message: error?.message || String(error),
+    });
+  }
 
   // Fetch available factions from the DB
   const factionsResult = await db.prepare(
@@ -1041,10 +1115,22 @@ async function cmdGkFaction(db, tok, chatId, telegramId, argStr) {
     INSERT INTO telegram_faction_members (telegram_id, faction_id, role)
     VALUES (?, ?, 'member')
     ON CONFLICT(telegram_id) DO UPDATE SET faction_id = excluded.faction_id
-  `).bind(telegramId, target.id).run().catch(() => {});
+  `).bind(telegramId, target.id).run().catch((error) => {
+    logApiFailure('gkfaction_membership_upsert_failed', {
+      telegramId,
+      factionId: target.id,
+      message: error?.message || String(error),
+    });
+  });
 
   await logTelegramActivity(db, telegramId, 'faction_join',
-    JSON.stringify({ faction: target.name })).catch(() => {});
+    JSON.stringify({ faction: target.name })).catch((error) => {
+    logApiFailure('gkfaction_activity_log_failed', {
+      telegramId,
+      faction: target.name,
+      message: error?.message || String(error),
+    });
+  });
 
   await sendTelegramMessage(tok, chatId,
     `⚔️ You have joined faction <b>${escapeHtml(target.name)}</b>. Loyalty noted, moonboy.`
@@ -1081,7 +1167,12 @@ async function cmdDaily(db, tok, chatId, telegramId) {
       );
       return;
     }
-  } catch { /* table absent — proceed */ }
+  } catch (error) {
+    logApiFailure('daily_anticheat_check_failed', {
+      telegramId,
+      message: error?.message || String(error),
+    });
+  }
 
   // Check if already claimed today using telegram_xp_log
   if (await hasDailyClaimToday(db, telegramId).catch(() => false)) {
@@ -1091,8 +1182,20 @@ async function cmdDaily(db, tok, chatId, telegramId) {
     return;
   }
 
-  await awardXp(db, telegramId, XP_DAILY_CLAIM, 'daily_claim', today).catch(() => {});
-  await logTelegramActivity(db, telegramId, 'daily_claim').catch(() => {});
+  await awardXp(db, telegramId, XP_DAILY_CLAIM, 'daily_claim', today).catch((error) => {
+    logApiFailure('daily_xp_award_failed', {
+      telegramId,
+      date: today,
+      message: error?.message || String(error),
+    });
+  });
+  await logTelegramActivity(db, telegramId, 'daily_claim').catch((error) => {
+    logApiFailure('daily_activity_log_failed', {
+      telegramId,
+      date: today,
+      message: error?.message || String(error),
+    });
+  });
 
   await sendTelegramMessage(tok, chatId,
     `✅ Daily XP claimed! +${XP_DAILY_CLAIM} XP\n\nSee you tomorrow, moonboy. 🚀`
