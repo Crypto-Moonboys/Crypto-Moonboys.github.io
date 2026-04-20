@@ -285,3 +285,47 @@ html, body {
   40% { opacity: 0.76; }
   42% { opacity: 1; }
 }
+
+#firewall-defense-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 870;
+  pointer-events: none;
+}
+#firewall-defense-overlay.hidden { display: none; }
+#firewall-defense-overlay .firewall-underlay {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at center, rgba(10, 18, 36, 0.22), rgba(4, 8, 18, 0.58));
+}
+#firewall-defense-overlay .firewall-shell {
+  pointer-events: auto;
+  position: absolute;
+  left: 50%;
+  top: 56%;
+  transform: translate(-50%, -50%);
+  width: min(760px, calc(100vw - 24px));
+  padding: 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(94, 242, 255, 0.45);
+  background: linear-gradient(180deg, rgba(6, 11, 28, 0.86), rgba(6, 11, 28, 0.74));
+  box-shadow: 0 0 0 1px rgba(255, 79, 190, 0.12), 0 20px 48px rgba(0, 0, 0, 0.42);
+}
+.firewall-chip { margin: 0; color: #7ceeff; font-size: 13px; font-weight: 800; letter-spacing: 0.08em; }
+.firewall-sub { margin: 6px 0 10px; color: #cbecff; font-size: 12px; }
+.firewall-stats { font-size: 12px; color: #d8efff; margin: 4px 0 8px; }
+.firewall-bars { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.firewall-key-row { display: grid; gap: 4px; font-size: 11px; color: #ccecff; }
+.firewall-key-row div { height: 8px; border-radius: 999px; border: 1px solid rgba(108, 198, 255, 0.32); background: rgba(94, 242, 255, 0.08); overflow: hidden; }
+.firewall-key-row i { display: block; height: 100%; background: linear-gradient(90deg, #6cf2ff, #6a95ff); }
+.firewall-actions { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px; }
+.firewall-actions button {
+  border: 1px solid rgba(94, 242, 255, 0.34);
+  border-radius: 6px;
+  background: rgba(7, 18, 39, 0.8);
+  color: #dbf2ff;
+  font-size: 12px;
+  padding: 6px 8px;
+}
+.firewall-hint { font-size: 11px; color: #9fd0f7; margin: 10px 0 4px; }
+.firewall-log { margin: 0; padding-left: 16px; font-size: 11px; color: #cbe8ff; max-height: 90px; overflow: hidden; }

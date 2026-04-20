@@ -30,6 +30,8 @@ import { createNodeOutbreakOverlay } from './ui/node-outbreak-overlay.js';
 import { createIsoRenderer } from './render/iso-renderer.js';
 import { DUEL_FIGHTER_CONFIG } from './data/duel-fighter-config.js';
 import { createNodeOutbreakSystem } from './world/node-outbreak-system.js';
+import { createFirewallDefenseSystem } from './world/firewall-defense-system.js';
+import { createFirewallDefenseOverlay } from './ui/firewall-defense-overlay.js';
 
 const ENTRY_OVERLAY_TIMEOUT_MS = 7000;
 const MAX_FRAME_DELTA_SECONDS = 1 / 30;
@@ -132,6 +134,7 @@ async function boot() {
     onAcceptDuel: (duelId) => duel.acceptDuel(duelId),
   });
   const outbreakSystem = createNodeOutbreakSystem(state);
+  const firewallDefense = createFirewallDefenseSystem(state);
   const outbreakOverlay = createNodeOutbreakOverlay(document, {
     onAction: ({ kind, id }) => {
       const selectedId = outbreakSystem.getPublicState().selectedNodeId;
@@ -154,6 +157,18 @@ async function boot() {
         hud.pushFeed(`🛡️ Outbreak action complete: ${id}`, 'combat');
       }
       outbreakOverlay.render(outbreakSystem.getPublicState());
+    },
+  });
+  const firewallOverlay = createFirewallDefenseOverlay(document, {
+    onDeploy: (defenseId) => {
+      const selectedId = firewallDefense.getPublicState().selectedNodeId;
+      const result = firewallDefense.deployDefense(defenseId, selectedId);
+      if (!result?.ok && result?.reason) {
+        hud.showNodeInterference(result.reason, 'warning');
+      } else if (result?.ok) {
+        hud.pushFeed(`🛡️ ${defenseId.toUpperCase()} deployed at ${selectedId.toUpperCase()}`, 'combat');
+      }
+      firewallOverlay.render(firewallDefense.getPublicState());
     },
   });
   let multiplayerConnected = false;
@@ -251,6 +266,13 @@ async function boot() {
   function tryInteractWithClickedNode(event) {
     const node = renderer.pickControlNodeFromClientPoint(event.clientX, event.clientY, state);
     if (!node) return false;
+    firewallDefense.setSelectedNode(node.id);
+    const firewallState = firewallDefense.getPublicState();
+    if (firewallState.active) {
+      firewallOverlay.render(firewallState);
+      hud.showNodeInterference(`Firewall target locked: ${node.id.toUpperCase()}`, 'signal');
+      return true;
+    }
     outbreakSystem.setSelectedNode(node.id);
     const outbreakState = outbreakSystem.getPublicState();
     if (outbreakState.active) {
@@ -897,6 +919,25 @@ async function boot() {
   window.addEventListener('keydown', (event) => {
     if (shouldIgnoreHotkey(event) || event.repeat) return;
     const key = event.key.toLowerCase();
+    const firewallState = firewallDefense.getPublicState();
+    if (firewallState.active) {
+      const selectedId = firewallState.selectedNodeId;
+      const defenseByKey = {
+        5: 'firewall',
+        6: 'disruptor',
+        7: 'purge',
+      };
+      const defenseId = defenseByKey[key];
+      if (defenseId) {
+        const result = firewallDefense.deployDefense(defenseId, selectedId);
+        if (result?.ok) {
+          hud.pushFeed(`🛡️ FIREWALL defense ${defenseId.toUpperCase()} online`, 'combat');
+        } else if (result?.reason) {
+          hud.showNodeInterference(result.reason, 'warning');
+        }
+        firewallOverlay.render(firewallDefense.getPublicState());
+      }
+    }
     const outbreakState = outbreakSystem.getPublicState();
     if (!outbreakState.active) return;
     const selectedId = outbreakState.selectedNodeId;
@@ -1015,6 +1056,49 @@ async function boot() {
       }
     }
     const duelState = duel.getState();
+    firewallDefense.tick(dt, {
+      onStart: () => {
+        hud.showSamPopup('🚨 FIREWALL BREACH — DEFEND THE NETWORK', 3600);
+        hud.pushFeed('🚨 FIREWALL BREACH — DEFEND THE NETWORK', 'sam');
+      },
+      onWave: ({ waveIndex, count }) => {
+        hud.pushFeed(`🌊 Firewall wave ${waveIndex} detected (${count} packets)`, 'combat');
+      },
+      onNodeHit: ({ nodeId, damage, typeId }) => {
+        hud.pushFeed(`💥 ${typeId.toUpperCase()} hit ${nodeId.toUpperCase()} (-${damage})`, 'combat');
+      },
+      onNpcSupport: ({ type, nodeId }) => {
+        const labels = {
+          courier: 'courier repair',
+          fighter: 'fighter overclock',
+          agent: 'agent route reveal',
+          recruiter: 'recruiter helper unit',
+        };
+        hud.pushFeed(`🤝 NPC ${labels[type] || type} at ${nodeId.toUpperCase()}`, 'combat');
+      },
+      onResolve: (result) => {
+        if (result.outcome === 'success') {
+          const reward = awardXp(state, result.rewardXp);
+          state.player.score += result.rewardGems;
+          hud.setXp(reward.xp);
+          hud.setScore(state.player.score);
+          hud.pushFeed(`✅ Firewall defense held · +${result.rewardXp} XP · +${result.rewardGems} gems`, 'quest');
+          hud.showQuestComplete('FIREWALL DEFENSE', result.rewardXp);
+          hud.showNodeInterference('Network stability buff applied', 'signal');
+        } else {
+          state.sam.pressure = Math.min(100, state.sam.pressure + (result.samPressureDelta || 0));
+          const district = districtStateById.get(state.player.districtId);
+          if (district) district.control = Math.max(0, district.control - (result.districtInstabilityPenalty || 0));
+          hud.pushFeed('❌ Firewall collapse · district instability increased', 'sam');
+          hud.showNodeInterference('SAM pressure increased after breach', 'warning');
+        }
+      },
+    }, {
+      duelActive: duelState.status === 'active',
+      outbreakActive: outbreakSystem.getPublicState().active,
+    });
+    firewallOverlay.render(firewallDefense.getPublicState());
+
     outbreakSystem.tick(dt, {
       onStart: ({ nodeId }) => {
         const node = state.controlNodes.find((n) => n.id === nodeId);
@@ -1047,7 +1131,7 @@ async function boot() {
         }
       },
     }, {
-      duelActive: duelState.status === 'active',
+      duelActive: duelState.status === 'active' || firewallDefense.getPublicState().active,
     });
     outbreakOverlay.render(outbreakSystem.getPublicState());
 
