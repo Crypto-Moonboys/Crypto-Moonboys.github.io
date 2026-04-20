@@ -20,7 +20,7 @@ database_id   = "8a36e17a-18fa-4b98-90e1-3f269164b166"
 
 # Weekly cron — every Sunday at 00:00 UTC
 [triggers]
-crons = ["0 0 * * 0"]
+crons = ["0 0 * * SUN"]
 
 # Admin secret — set via CLI, never commit the value:
 #   wrangler secret put ADMIN_SECRET
