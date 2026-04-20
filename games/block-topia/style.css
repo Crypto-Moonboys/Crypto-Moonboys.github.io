@@ -103,6 +103,13 @@ html, body {
 .stream-line.combat { color: #ffd84d; }
 .stream-line.quest { color: #8dff6a; }
 .stream-line.system { color: #d5e8ff; }
+.stream-line.priority-critical {
+  font-weight: 700;
+  text-shadow: 0 0 10px rgba(255, 79, 216, 0.28), 0 1px 0 rgba(0, 0, 0, 0.5);
+}
+.stream-line.priority-important {
+  font-weight: 600;
+}
 
 #sam-popup,
 #district-capture-banner,

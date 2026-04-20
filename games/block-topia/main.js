@@ -45,6 +45,8 @@ const QUEST_TICK_INTERVAL_MS = 250;
 const FEED_DEDUPE_TTL_MS = 5 * 60 * 1000;
 const MAX_FEED_CACHE_SIZE = 80;
 const NPC_FEED_PULSE_PROBABILITY = 0.002;
+const SAM_PRESENCE_MIN_MS = 18000;
+const SAM_PRESENCE_VARIANCE_MS = 10000;
 const CAMERA_ZOOM_PRESETS = [0.7, 1, 1.4];
 const CAMERA_ZOOM_MIN = 0.7;
 const CAMERA_ZOOM_MAX = 1.4;
@@ -237,9 +239,9 @@ async function boot() {
 
   function classifyFeedType(text) {
     const lower = String(text || '').toLowerCase();
-    if (lower.includes('sam') || lower.includes('signal rush')) return 'sam';
-    if (lower.includes('quest') || lower.includes('xp')) return 'quest';
-    if (lower.includes('captured') || lower.includes('district')) return 'combat';
+    if (lower.includes('sam') || lower.includes('signal rush') || lower.includes('phase')) return 'sam';
+    if (lower.includes('quest') || lower.includes('xp') || lower.includes('operation')) return 'quest';
+    if (lower.includes('captured') || lower.includes('district') || lower.includes('duel') || lower.includes('node')) return 'combat';
     return 'system';
   }
 
@@ -248,7 +250,7 @@ async function boot() {
     hud.setPhase(state.phase);
     hud.triggerPhaseTransition(state.phase);
     hud.pushFeed(
-      `🌗 ${source === 'server' ? 'Network' : 'Street'} phase shift: ${state.phase}`,
+      `🌗 ${source === 'server' ? 'Network relay' : 'Local relay'} confirms phase shift: ${state.phase}`,
       'system',
     );
     canvas.classList.toggle('phase-night', state.phase === 'Night');
@@ -311,14 +313,14 @@ async function boot() {
   function challengeRemotePlayer(remotePlayer) {
     if (!remotePlayer?.id) return;
     if (remotePlayer.id === localSessionId) {
-      hud.pushFeed('⚠️ Cannot challenge yourself.', 'system');
+      hud.pushFeed('⚠️ Duel uplink denied: self-target blocked.', 'system');
       return;
     }
     const ok = duel.challengePlayer(remotePlayer.id);
     if (!ok) return;
     selectedRemotePlayer = remotePlayer;
     state.mouse.selectedRemotePlayerId = remotePlayer.id;
-    hud.pushFeed(`⚔️ Duel challenge sent to ${remotePlayer.name || remotePlayer.id}`, 'combat');
+    hud.pushFeed(`⚔️ Duel challenge transmitted to ${remotePlayer.name || remotePlayer.id}`, 'combat');
     duelOverlay.render();
   }
 
@@ -399,14 +401,14 @@ async function boot() {
     state.effects.districtPulseUntil = Date.now() + DISTRICT_PULSE_DURATION_MS;
     state.effects.districtPulseId = district.id;
     if (previousControl < DISTRICT_CAPTURE_THRESHOLD && district.control >= DISTRICT_CAPTURE_THRESHOLD) {
-      hud.showDistrictCapture(`🏴 ${district.name} CAPTURED · ${district.owner}`);
-      pushFeedDeduped(`🏴 ${district.name} captured by ${district.owner}!`, 'combat', `district-captured:${district.id}:${district.owner}`);
+      hud.showDistrictCapture(`🏴 ${district.name} SECURED · ${district.owner}`);
+      pushFeedDeduped(`🏴 District secured: ${district.name} now held by ${district.owner}`, 'combat', `district-captured:${district.id}:${district.owner}`);
     } else if (source === 'node') {
       const controlPct = Math.round(district.control);
-      pushFeedDeduped(`🏙️ DISTRICT PRESSURE SHIFTING · ${district.name} ${controlPct}%`, 'combat', `district-node-ripple:${district.id}:${controlPct}`);
+      pushFeedDeduped(`🏙️ District pressure rerouted · ${district.name} ${controlPct}% control`, 'combat', `district-node-ripple:${district.id}:${controlPct}`);
     } else {
       const controlPct = Math.round(district.control);
-      pushFeedDeduped(`🏙️ District sync: ${district.name} ${controlPct}% · ${district.owner}`, 'combat', `district-sync:${district.id}:${controlPct}:${district.owner}`);
+      pushFeedDeduped(`🏙️ District relay sync · ${district.name} ${controlPct}% · ${district.owner}`, 'combat', `district-sync:${district.id}:${controlPct}:${district.owner}`);
     }
     memory.record('district', {
       at: Date.now(),
@@ -433,7 +435,7 @@ async function boot() {
       const rippleDistrict = districtStateById.get(eventPayload.districtId);
       if (rippleDistrict) {
         hud.showNodeInterference(
-          `District pressure ripple · ${rippleDistrict.name} ${Math.round(Number(eventPayload.districtControl))}%`,
+          `District response confirmed · ${rippleDistrict.name} ${Math.round(Number(eventPayload.districtControl))}% control`,
           'signal',
         );
       }
@@ -447,7 +449,7 @@ async function boot() {
     npc.reactToNodeInterference?.(eventPayload);
 
     const statusLabel = String(eventPayload.status || 'stable').toUpperCase();
-    hud.showNodeInterference(`NODE ${String(eventPayload.nodeId || '').toUpperCase()} · ${statusLabel}`);
+    hud.showNodeInterference(`Node ${String(eventPayload.nodeId || '').toUpperCase()} state → ${statusLabel}`);
 
     for (const line of eventPayload.feedLines || []) {
       pushFeedDeduped(line, line.includes('SAM') ? 'sam' : 'combat', `node-ripple:${eventPayload.nodeId}:${line}:${source}`);
@@ -526,7 +528,7 @@ async function boot() {
       );
     }
     pushFeedDeduped(
-      `🛰️ Live intelligence refreshed (${snapshot.mode || 'fallback'})`,
+      `🛰️ Intelligence relay refreshed (${snapshot.mode || 'fallback'})`,
       'system',
       `live-refresh:${snapshot.generatedAt || snapshot.mode || 'fallback'}`,
     );
@@ -563,7 +565,8 @@ async function boot() {
     'system',
     `canon-source:${canonAdapter.truthSource || canonLore.truthSource || 'wiki-bible'}`,
   );
-  hud.pushFeed('🔍 Zoom scale test active: [ = further, ] = closer', 'system');
+  hud.pushFeed('🔍 Camera zoom controls: [ = farther, ] = closer', 'system');
+  let nextSamPresenceAt = Date.now() + SAM_PRESENCE_MIN_MS;
 
   setInterval(() => {
     liveIntelligence.refresh()
@@ -783,13 +786,13 @@ async function boot() {
       state.sam.timer = 0;
       const phase = sam.getCurrentPhase();
       hud.setSamPhase(phase.name);
-      hud.pushFeed(`🧠 SAM phase synced: ${phase.name}`, 'sam');
+      hud.pushFeed(`🧠 SAM phase lock acquired: ${phase.name}`, 'sam');
       const samEvent = { at: Date.now(), phase: phase.id, source: 'server' };
       if (phase.id === 'sam-event') {
         samEvent.type = 'giant_encounter';
         npc.spawnSamWave?.();
         state.effects.samImpactUntil = Date.now() + SAM_IMPACT_DURATION_MS;
-        hud.triggerSamImpact('⚡ SAM SIGNAL RUSH — Giant encounter incoming!');
+        hud.triggerSamImpact('⚡ SAM surge detected — giant encounter inbound.');
       } else if (phase.id === 'conflict') {
         state.effects.districtPulseUntil = Date.now() + DISTRICT_PULSE_CONFLICT_MS;
       }
@@ -808,7 +811,7 @@ async function boot() {
         duelOverlay.render();
       }
       if (payload?.playerB === localSessionId) {
-        hud.pushFeed(`⚔️ Duel request from ${payload.challengerName || payload.playerAName || 'Player'} · open panel to accept`, 'combat');
+        hud.pushFeed(`⚔️ Duel request incoming from ${payload.challengerName || payload.playerAName || 'Player'} · open panel to respond`, 'combat');
         hud.showNodeInterference('Duel request received · open duel panel to respond', 'warning');
       }
     },
@@ -817,8 +820,8 @@ async function boot() {
         duel.applyStarted(payload);
         duelOverlay.render();
       }
-      hud.pushFeed(`⚔️ Duel started: ${payload.playerAName || 'A'} vs ${payload.playerBName || 'B'}`, 'combat');
-      hud.showNodeInterference('Duel live · submit an action in the duel panel', 'sam');
+      hud.pushFeed(`⚔️ Duel link live: ${payload.playerAName || 'A'} vs ${payload.playerBName || 'B'}`, 'combat');
+      hud.showNodeInterference('Duel active · submit an action in the duel panel', 'sam');
     },
     onDuelActionSubmitted: (payload) => {
       if (duel.getState().duelId && payload?.duelId === duel.getState().duelId) {
@@ -838,7 +841,7 @@ async function boot() {
         hud.showNodeInterference(payload.samWarning, 'sam');
       }
       if (payload?.winnerName) {
-        hud.showNodeInterference(`Round resolved · winner ${payload.winnerName}`, 'signal');
+        hud.showNodeInterference(`Duel round resolved · winner ${payload.winnerName}`, 'signal');
       }
     },
     onDuelEnded: (payload) => {
@@ -929,11 +932,21 @@ async function boot() {
         refreshOperationsHud();
       },
     });
+    if (Date.now() >= nextSamPresenceAt) {
+      const phaseName = sam.getCurrentPhase().name;
+      const samPresenceLine = phaseName === 'Conflict'
+        ? '🧠 SAM oversight: conflict lanes prioritized for interception.'
+        : phaseName === 'SAM Event'
+          ? '🧠 SAM oversight: surge channels open, monitor critical nodes.'
+          : '🧠 SAM oversight: network baseline stable, anomaly sweep active.';
+      pushFeedDeduped(samPresenceLine, 'sam', `sam-presence:${phaseName}`);
+      nextSamPresenceAt = Date.now() + SAM_PRESENCE_MIN_MS + Math.random() * SAM_PRESENCE_VARIANCE_MS;
+    }
     if (Math.random() < NPC_FEED_PULSE_PROBABILITY) {
       const entities = state.npc.entities || [];
       const npcEntity = entities[Math.floor(Math.random() * entities.length)];
       if (npcEntity) {
-        hud.pushFeed(`⚡ ${(npcEntity.type || 'helper').toUpperCase()}-${npcEntity.id}: Signal active`, 'system');
+        hud.pushFeed(`📶 Civic chatter · ${(npcEntity.type || 'helper').toUpperCase()}-${npcEntity.id} reports local signal motion`, 'system');
       }
     }
 
