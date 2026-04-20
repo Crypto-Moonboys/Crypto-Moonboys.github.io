@@ -78,6 +78,7 @@
       margin-bottom: 18px;
       overflow-x: hidden;
     }
+    .lb-table-outer.shell-scroll { max-height: 430px; }
     .lb-table {
       width: 100%;
       border-collapse: collapse;
@@ -147,6 +148,44 @@
       font-size: .78rem;
       color: var(--color-text-muted);
     }
+    .lb-linked-shell {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 14px;
+    }
+    .lb-linked-identity {
+      flex: 1 1 360px;
+      border: 1px solid rgba(255, 78, 98, .48);
+      border-radius: 12px;
+      padding: 10px 12px;
+      background: rgba(62, 8, 20, .42);
+      color: #ffdbe3;
+      box-shadow: 0 0 0 1px rgba(255, 82, 108, .2) inset;
+    }
+    .lb-linked-identity strong { display: block; font-size: .92rem; }
+    .lb-linked-meta { display: block; margin-top: 4px; color: var(--color-text-muted); font-size: .78rem; }
+    .lb-linked-identity.sync-state--good {
+      border-color: rgba(57, 255, 20, 0.9);
+      background: rgba(18, 66, 31, 0.72);
+      color: #d8ffe7;
+      box-shadow: 0 0 10px rgba(57,255,20,.64), 0 0 22px rgba(57,255,20,.24);
+      animation: lbPulseGreen 1.1s ease-in-out infinite alternate;
+    }
+    .lb-linked-identity.presence-offline.sync-state--good { animation: none; box-shadow: 0 0 0 1px rgba(82,236,112,.22) inset; }
+    @keyframes lbPulseGreen { from { transform: translateZ(0); } to { box-shadow: 0 0 14px rgba(57,255,20,.78), 0 0 28px rgba(57,255,20,.3); } }
+    .lb-presence-btn {
+      padding: 8px 14px;
+      border-radius: 10px;
+      border: 1px solid rgba(86,220,255,.54);
+      background: rgba(9,30,54,.72);
+      color: #d9f6ff;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .lb-presence-btn:disabled { opacity: .45; cursor: not-allowed; }
 
     /* ── Selected-player breakdown panel ─────────────────────────── */
     #lb-breakdown-panel {
@@ -157,6 +196,7 @@
       padding: 16px 20px;
       margin-bottom: 24px;
     }
+    #lb-breakdown-panel.shell-scroll { max-height: 250px; }
     .lb-bd-header {
       display: flex;
       align-items: baseline;
@@ -385,6 +425,13 @@
       <div id="lb-tab-bar" role="tablist" aria-label="Leaderboard filters"></div>
 
       <!-- ── Controls ──────────────────────────────────────────────── -->
+      <div class="lb-linked-shell">
+        <div id="lb-linked-identity" class="lb-linked-identity sync-state--bad" aria-live="polite">
+          <strong>You are linked as Not linked</strong>
+          <span class="lb-linked-meta">Run /gklink to store ranking/XP server-side.</span>
+        </div>
+        <button id="lb-presence-toggle" class="lb-presence-btn" type="button" aria-pressed="false">Show as offline</button>
+      </div>
       <div class="lb-controls">
         <button id="lb-refresh-btn" aria-label="Refresh leaderboard">🔄 Refresh</button>
         <span class="lb-hint">Score (Ranking) updates in real time. Accepted scores can convert into Block Topia XP after Telegram sync.</span>
@@ -392,10 +439,10 @@
 
       <!-- ── Status / table ─────────────────────────────────────────── -->
       <div id="lb-status" style="display:none"></div>
-      <div id="lb-table-wrap" class="lb-table-outer" style="display:none"></div>
+      <div id="lb-table-wrap" class="lb-table-outer shell-scroll" data-shell-scroll style="display:none"></div>
 
       <!-- ── Selected-player breakdown panel ───────────────────────── -->
-      <div id="lb-breakdown-panel" style="display:none" aria-label="Selected player score breakdown" aria-live="polite"></div>
+      <div id="lb-breakdown-panel" class="shell-scroll" data-shell-scroll style="display:none" aria-label="Selected player score breakdown" aria-live="polite"></div>
 
       <!-- ── OG Graph node map ──────────────────────────────────────── -->
       <section class="lb-graph-section" aria-label="Arcade graph">
@@ -444,6 +491,8 @@
 
 <button id="back-to-top" aria-label="Back to top">↑</button>
 <script src="/js/wiki.js"></script>
+<script src="/js/identity-gate.js"></script>
+<script src="/js/scroll-shell.js"></script>
 <script type="module">
 import { initLeaderboard } from '/js/arcade-leaderboard.js';
 import { initGraph, setPlayerState, resetGraph, setGraphMode, setMetaGraphState } from '/js/arcade-graph.js';

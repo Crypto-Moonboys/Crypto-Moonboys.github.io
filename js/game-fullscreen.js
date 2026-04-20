@@ -124,17 +124,23 @@
   overlayBody.className = 'overlay-body';
 
   var sideLeft  = document.createElement('div');
-  sideLeft.className = 'overlay-side overlay-side--left';
+  sideLeft.className = 'overlay-side overlay-side--left shell-scroll';
+  sideLeft.setAttribute('data-shell-scroll', '');
 
   var stage = document.createElement('div');
   stage.className = 'game-stage';
 
   var sideRight = document.createElement('div');
-  sideRight.className = 'overlay-side overlay-side--right';
+  sideRight.className = 'overlay-side overlay-side--right shell-scroll';
+  sideRight.setAttribute('data-shell-scroll', '');
 
   overlayBody.appendChild(sideLeft);
   overlayBody.appendChild(stage);
   overlayBody.appendChild(sideRight);
+  if (window.MOONBOYS_SCROLL_SHELL && typeof window.MOONBOYS_SCROLL_SHELL.mount === 'function') {
+    window.MOONBOYS_SCROLL_SHELL.mount(sideLeft);
+    window.MOONBOYS_SCROLL_SHELL.mount(sideRight);
+  }
 
   // Touch pad
   var touchPad = document.createElement('div');
@@ -344,9 +350,11 @@
     var gate = getIdentityApi();
     if (!gate || typeof gate.isTelegramLinked !== 'function') return false;
     if (!gate.isTelegramLinked()) return false;
-    if (!gate.getTelegramAuth || !gate.getTelegramAuth()) return false;
-    var auth = gate.getTelegramAuth();
-    return !!(auth && auth.hash && auth.auth_date);
+    if (typeof gate.getSyncState === 'function') {
+      var sync = gate.getSyncState();
+      return !!(sync && sync.good);
+    }
+    return true;
   }
 
   /* ── DOM helpers ─────────────────────────────────────────────────── */
@@ -596,7 +604,9 @@
 
   function updateSyncSurfaceState(state, detail) {
     var d = detail || {};
-    var linked = isLinkedReady();
+    var gate = getIdentityApi();
+    var sync = gate && typeof gate.getSyncState === 'function' ? gate.getSyncState() : null;
+    var linked = !!(sync ? sync.linked : isLinkedReady());
     var baseIdentity = linked ? ('Linked as: ' + (d.identityLabel || getLinkedIdentityLabel())) : 'Linked as: Not linked';
     setSyncIdentityText(baseIdentity);
     lastSubmissionState = state;

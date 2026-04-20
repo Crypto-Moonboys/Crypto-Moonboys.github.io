@@ -45,6 +45,7 @@
   var LS_TG_NAME   = 'moonboys_tg_name';
   var LS_TG_LINKED = 'moonboys_tg_linked';
   var LS_TG_AUTH   = 'moonboys_tg_auth';
+  var LS_SYNC_HEALTH = 'moonboys_tg_sync_health';
   var MODAL_ID     = 'tg-sync-gate-modal';
   var STYLE_ID     = 'tg-sync-gate-styles';
 
@@ -79,6 +80,53 @@
     }
   }
 
+  function hasAuthPayload() {
+    var auth = getTelegramAuth();
+    return !!(auth && auth.hash && auth.auth_date);
+  }
+
+  function setSyncHealth(state, reason) {
+    var safeState = state === 'bad' ? 'bad' : 'good';
+    var payload = {
+      state: safeState,
+      reason: reason ? String(reason) : '',
+      updated_at: Date.now(),
+    };
+    lsSet(LS_SYNC_HEALTH, JSON.stringify(payload));
+    return payload;
+  }
+
+  function getSyncHealth() {
+    var raw = lsGet(LS_SYNC_HEALTH);
+    if (!raw) return null;
+    try {
+      var parsed = JSON.parse(raw);
+      if (!parsed || typeof parsed !== 'object') return null;
+      return {
+        state: parsed.state === 'bad' ? 'bad' : 'good',
+        reason: parsed.reason ? String(parsed.reason) : '',
+        updated_at: Number(parsed.updated_at) || null,
+      };
+    } catch {
+      return null;
+    }
+  }
+
+  function getSyncState() {
+    var linked = isTelegramLinked();
+    var auth = hasAuthPayload();
+    var sync = getSyncHealth();
+    var bad = !!(sync && sync.state === 'bad');
+    return {
+      linked: linked,
+      auth: auth,
+      good: linked && !bad,
+      status: !linked ? 'not_linked' : (bad ? 'auth_expired' : 'linked_ready'),
+      reason: bad ? (sync.reason || 'auth_expired') : '',
+      sync: sync,
+    };
+  }
+
   /**
    * Returns true when both Telegram auth (Step 1) AND the bot link flow (Step 2) are complete.
    * Only a linked account is fully competition-active.
@@ -97,6 +145,7 @@
   function setTelegramLinked(telegramId) {
     if (telegramId) lsSet(LS_TG_ID, String(telegramId));
     if (getTelegramId()) lsSet(LS_TG_LINKED, '1');
+    setSyncHealth('good', 'linked');
   }
 
   /**
@@ -118,6 +167,7 @@
       };
       lsSet(LS_TG_AUTH, JSON.stringify(safeAuth));
     }
+    if (telegramId) setSyncHealth('good', 'auth_verified');
   }
 
   /**
@@ -411,6 +461,12 @@
     getTelegramName:      getTelegramName,
     /** Last verified Telegram auth payload or null */
     getTelegramAuth:      getTelegramAuth,
+    /** Lightweight sync state shared across pages. */
+    getSyncState:         getSyncState,
+    /** Lightweight sync health marker (good|bad) for cross-page consistency. */
+    getSyncHealth:        getSyncHealth,
+    /** Update sync health marker after server responses. */
+    setSyncHealth:        setSyncHealth,
     /** Whether the bot link flow has been completed (competition-active) */
     isTelegramLinked:     isTelegramLinked,
     /** Mark bot link as completed (call after successful /gklink one-time link flow).

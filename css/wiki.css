@@ -2085,6 +2085,27 @@ body::after {
   background: linear-gradient(90deg, rgba(86,220,255,.45), transparent);
 }
 
+/* ── Drag/hold scroll shell (shared) ───────────────────────────── */
+.shell-scroll {
+  overflow: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(86,220,255,.58) rgba(10,23,44,.58);
+  cursor: grab;
+}
+.shell-scroll.dragging-scroll { cursor: grabbing; user-select: none; }
+.shell-scroll::-webkit-scrollbar { width: 10px; height: 10px; }
+.shell-scroll::-webkit-scrollbar-track {
+  background: rgba(10,23,44,.55);
+  border-radius: 999px;
+  border: 1px solid rgba(86,220,255,.2);
+}
+.shell-scroll::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  border: 1px solid rgba(122,236,255,.45);
+  background: linear-gradient(180deg, rgba(86,220,255,.8), rgba(89,167,255,.62));
+  box-shadow: 0 0 10px rgba(86,220,255,.26);
+}
+
 h1, h2, h3, h4, .section-heading, .sidebar-heading {
   font-family: 'Rajdhani', 'Inter', var(--font-sans);
   letter-spacing: .04em;
