@@ -171,7 +171,7 @@ export function createHud(doc) {
     const level = Math.max(1, Math.floor(safe / XP_PER_LEVEL) + 1);
     xpStatus.textContent = `${safe} XP`;
     levelStatus.textContent = `L${level} · ${titleFromLevel(level)}`;
-    if (safe > lastXp) pushFeed(`+${safe - lastXp} XP gained`, 'system');
+    if (safe > lastXp) pushFeed(`+${safe - lastXp} XP secured`, 'quest');
     lastXp = safe;
   }
 
@@ -198,8 +198,8 @@ export function createHud(doc) {
   function triggerSamImpact(text) {
     samImpact?.classList.remove('hidden');
     setTimeout(() => samImpact?.classList.add('hidden'), 1800);
-    showSamPopup(`⚡ SAM EVENT\n${text}`, SAM_POPUP_DURATION_MS);
-    pushFeed(`SAM EVENT: ${text}`, 'sam');
+    showSamPopup(`⚡ SAM ALERT\n${text}`, SAM_POPUP_DURATION_MS);
+    pushFeed(`SAM alert: ${text}`, 'sam');
   }
 
   function showQuestComplete(title, rewardXp) {
@@ -238,7 +238,7 @@ export function createHud(doc) {
     const count = Array.isArray(items) ? items.length : 0;
     if (lastQuestCount === count) return;
     lastQuestCount = count;
-    pushLog('right', `Active operations: ${count}`);
+    pushLog('right', `Active signal operations: ${count}`);
   }
 
   function setEntryTagline(text) {
@@ -258,7 +258,7 @@ export function createHud(doc) {
     },
     setDistrict: (name) => { districtStatus.textContent = `District: ${name}`; },
     setDistrictControl,
-    setDistrictOwner: (owner) => pushLog('right', `District owner: ${owner || '—'}`),
+    setDistrictOwner: (owner) => pushLog('right', `District control: ${owner || '—'}`),
     setFactionStatus: (text) => { factionStatus.textContent = `Factions: ${text}`; },
     setSamPhase: (name) => { samStatus.textContent = `SAM: ${name}`; },
     setPhase: (name) => { phaseStatus.textContent = `Phase: ${name}`; },
@@ -269,11 +269,11 @@ export function createHud(doc) {
       multiplayerStatus.textContent = label;
       if (!multiplayerLiveBanner) return;
       if (label.toLowerCase().startsWith('connected')) {
-        multiplayerLiveBanner.textContent = 'LIVE MULTIPLAYER — CONNECTED';
+        multiplayerLiveBanner.textContent = 'LIVE LINK — CONNECTED';
       } else if (label.toLowerCase().startsWith('connecting')) {
-        multiplayerLiveBanner.textContent = 'LIVE MULTIPLAYER — CONNECTING';
+        multiplayerLiveBanner.textContent = 'LIVE LINK — CONNECTING';
       } else {
-        multiplayerLiveBanner.textContent = `LIVE MULTIPLAYER — ${label.toUpperCase()}`;
+        multiplayerLiveBanner.textContent = `LIVE LINK — ${label.toUpperCase()}`;
       }
     },
     setRoom: (name) => { roomStatus.textContent = `Room: ${name}`; },

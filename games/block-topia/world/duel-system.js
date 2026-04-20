@@ -74,7 +74,7 @@ export function createDuelSystem({ sendChallenge, sendAccept, sendAction } = {})
     state.playerB = payload.playerB || state.playerB;
     state.challengerName = payload.challengerName || payload.playerAName || state.challengerName;
     state.defenderName = payload.defenderName || payload.playerBName || state.defenderName;
-    state.requestMessage = payload.message || `${state.challengerName || 'Player'} challenged you.`;
+    state.requestMessage = payload.message || `${state.challengerName || 'Player'} issued a duel request.`;
     state.samWarning = '';
     state.resultMessage = '';
   }
@@ -91,7 +91,7 @@ export function createDuelSystem({ sendChallenge, sendAccept, sendAction } = {})
     state.healthB = Number.isFinite(payload.healthB) ? payload.healthB : state.healthB;
     state.roundDeadline = Number(payload.roundDeadline || 0);
     state.requestMessage = '';
-    state.resultMessage = payload.message || 'Duel started.';
+    state.resultMessage = payload.message || 'Duel link active.';
   }
 
   function applyActionSubmitted(payload = {}) {
@@ -117,7 +117,7 @@ export function createDuelSystem({ sendChallenge, sendAccept, sendAction } = {})
   function applyEnded(payload = {}) {
     if ((payload.duelId || '') && payload.duelId !== state.duelId) return;
     state.status = 'ended';
-    state.resultMessage = payload.message || state.resultMessage || 'Duel ended.';
+    state.resultMessage = payload.message || state.resultMessage || 'Duel link closed.';
     state.samWarning = payload.samWarning || state.samWarning;
   }
 
@@ -126,7 +126,7 @@ export function createDuelSystem({ sendChallenge, sendAccept, sendAction } = {})
       reset();
       return;
     }
-    state.resultMessage = 'Duel in progress.';
+    state.resultMessage = 'Duel link still active.';
   }
 
   function getState() {

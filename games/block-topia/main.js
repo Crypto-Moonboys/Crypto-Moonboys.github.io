@@ -157,10 +157,10 @@ async function boot() {
       'system',
     );
     if (!aiRuntime.model) {
-      hud.pushFeed('⚠️ AI config missing model; set BLOCK_TOPIA_AI.model for testing', 'system');
+      hud.pushFeed('⚠️ AI relay config missing model; set BLOCK_TOPIA_AI.model for relay checks', 'system');
     }
   } else {
-    hud.pushFeed('🤖 AI integration disabled: no BLOCK_TOPIA_AI runtime config', 'system');
+    hud.pushFeed('🤖 AI relay disabled: no BLOCK_TOPIA_AI runtime config', 'system');
   }
   window.blockTopiaAiProbe = () => ({
     ...aiRuntime,
@@ -227,7 +227,7 @@ async function boot() {
     if (!nodeInterference.canInterfere(node.id)) {
       const remainingMs = Math.max(0, (Number(node.cooldownUntil) || 0) - Date.now());
       const remainingSec = Math.max(1, Math.ceil(remainingMs / 1000));
-      hud.showNodeInterference(`Node ${node.id.toUpperCase()} cooling down · ${remainingSec}s`, 'warning');
+      hud.showNodeInterference(`Node ${node.id.toUpperCase()} in cooldown · ${remainingSec}s remaining`, 'warning');
       return true;
     }
     // Visual-only optimistic pulse — node state is server-authoritative.
@@ -250,7 +250,7 @@ async function boot() {
     hud.setPhase(state.phase);
     hud.triggerPhaseTransition(state.phase);
     hud.pushFeed(
-      `🌗 ${source === 'server' ? 'Network relay' : 'Local relay'} confirms phase shift: ${state.phase}`,
+      `🌗 ${source === 'server' ? 'Network relay' : 'Local relay'} confirmed phase shift: ${state.phase}`,
       'system',
     );
     canvas.classList.toggle('phase-night', state.phase === 'Night');
@@ -277,7 +277,7 @@ async function boot() {
       hud.pushFeed(`📜 ${canonLine}`, 'system');
     } else {
       const districtFlavor = lore?.districts?.[0]?.flavor?.[0];
-      if (districtFlavor) hud.pushFeed(`📰 [Fallback] ${districtFlavor}`, 'system');
+      if (districtFlavor) hud.pushFeed(`📰 [Backup lore] ${districtFlavor}`, 'system');
     }
 
     const districtFlavorLine = canonAdapter?.districtLoreById?.[state.player.districtId]?.flavor?.[0];
@@ -293,7 +293,7 @@ async function boot() {
     if (!Array.isArray(rumorPool) || rumorPool.length === 0) return;
     const rumor = rumorPool[Math.floor(Math.random() * rumorPool.length)];
     if (rumor) {
-      const prefix = canonAdapter.fallbackUsed || canonLore.fallbackUsed ? '🗞️ [Fallback]' : '🗞️';
+      const prefix = canonAdapter.fallbackUsed || canonLore.fallbackUsed ? '🗞️ [Backup lore]' : '🗞️';
       hud.pushFeed(`${prefix} ${rumor}`, 'system');
     }
   }
@@ -313,14 +313,14 @@ async function boot() {
   function challengeRemotePlayer(remotePlayer) {
     if (!remotePlayer?.id) return;
     if (remotePlayer.id === localSessionId) {
-      hud.pushFeed('⚠️ Duel uplink denied: self-target blocked.', 'system');
+      hud.pushFeed('⚠️ Duel link denied: self-target blocked.', 'system');
       return;
     }
     const ok = duel.challengePlayer(remotePlayer.id);
     if (!ok) return;
     selectedRemotePlayer = remotePlayer;
     state.mouse.selectedRemotePlayerId = remotePlayer.id;
-    hud.pushFeed(`⚔️ Duel challenge transmitted to ${remotePlayer.name || remotePlayer.id}`, 'combat');
+    hud.pushFeed(`⚔️ Duel request sent to ${remotePlayer.name || remotePlayer.id}`, 'combat');
     duelOverlay.render();
   }
 
@@ -402,13 +402,13 @@ async function boot() {
     state.effects.districtPulseId = district.id;
     if (previousControl < DISTRICT_CAPTURE_THRESHOLD && district.control >= DISTRICT_CAPTURE_THRESHOLD) {
       hud.showDistrictCapture(`🏴 ${district.name} SECURED · ${district.owner}`);
-      pushFeedDeduped(`🏴 District secured: ${district.name} now held by ${district.owner}`, 'combat', `district-captured:${district.id}:${district.owner}`);
+      pushFeedDeduped(`🏴 District secured: ${district.name} now controlled by ${district.owner}`, 'combat', `district-captured:${district.id}:${district.owner}`);
     } else if (source === 'node') {
       const controlPct = Math.round(district.control);
       pushFeedDeduped(`🏙️ District pressure rerouted · ${district.name} ${controlPct}% control`, 'combat', `district-node-ripple:${district.id}:${controlPct}`);
     } else {
       const controlPct = Math.round(district.control);
-      pushFeedDeduped(`🏙️ District relay sync · ${district.name} ${controlPct}% · ${district.owner}`, 'combat', `district-sync:${district.id}:${controlPct}:${district.owner}`);
+      pushFeedDeduped(`🏙️ District relay synced · ${district.name} ${controlPct}% · ${district.owner}`, 'combat', `district-sync:${district.id}:${controlPct}:${district.owner}`);
     }
     memory.record('district', {
       at: Date.now(),
@@ -528,14 +528,14 @@ async function boot() {
       );
     }
     pushFeedDeduped(
-      `🛰️ Intelligence relay refreshed (${snapshot.mode || 'fallback'})`,
+      `🛰️ Intelligence relay refreshed (${snapshot.mode || 'backup'})`,
       'system',
-      `live-refresh:${snapshot.generatedAt || snapshot.mode || 'fallback'}`,
+      `live-refresh:${snapshot.generatedAt || snapshot.mode || 'backup'}`,
     );
     clues.refreshFromSignals?.();
     refreshOperationsHud(true);
     hud.setWorldStatus(
-      `Unified city online · canon signals ${snapshot.mode || 'fallback'} · ${snapshot.signalCount || 0} active lanes`
+      `Unified city online · canon signals ${snapshot.mode || 'backup'} · ${snapshot.signalCount || 0} active lanes`
       + `${canonSignalState.samNarrativeState?.pressure ? ` · SAM pressure ${Math.round(canonSignalState.samNarrativeState.pressure)}%` : ''}`,
     );
   }
@@ -556,12 +556,12 @@ async function boot() {
   refreshOperationsHud(true);
   const worldBulletins = liveIntelligence.getWorldFeedLines(2);
   worldBulletins.forEach((line) => pushFeedDeduped(`📡 ${line}`, 'sam', `world-bulletin:${line}`));
-  const liveMode = liveIntelligence.getSnapshot().mode || 'fallback';
-  pushFeedDeduped(`🛰️ Canon signal bridge online (${liveMode})`, 'system', `live-boot:${liveMode}`);
+  const liveMode = liveIntelligence.getSnapshot().mode || 'backup';
+  pushFeedDeduped(`🛰️ Canon signal bridge active (${liveMode})`, 'system', `live-boot:${liveMode}`);
   bootstrapEntryIdentity();
   bootstrapLoreFeed();
   pushFeedDeduped(
-    `📚 Canon source: ${canonAdapter.truthSource || canonLore.truthSource || '/wiki/bibles/block-topia.json'}${canonAdapter.fallbackUsed ? ' (fallback active)' : ''}`,
+    `📚 Canon source: ${canonAdapter.truthSource || canonLore.truthSource || '/wiki/bibles/block-topia.json'}${canonAdapter.fallbackUsed ? ' (backup lore active)' : ''}`,
     'system',
     `canon-source:${canonAdapter.truthSource || canonLore.truthSource || 'wiki-bible'}`,
   );
@@ -672,7 +672,7 @@ async function boot() {
     if (remotePlayer?.id) {
       selectedRemotePlayer = remotePlayer;
       state.mouse.selectedRemotePlayerId = remotePlayer.id;
-      hud.pushFeed(`🎯 Target locked: ${remotePlayer.name || remotePlayer.id} · press F to challenge`, 'combat');
+      hud.pushFeed(`🎯 Target locked: ${remotePlayer.name || remotePlayer.id} · press F to send duel request`, 'combat');
       return;
     }
     selectedRemotePlayer = null;
@@ -786,7 +786,7 @@ async function boot() {
       state.sam.timer = 0;
       const phase = sam.getCurrentPhase();
       hud.setSamPhase(phase.name);
-      hud.pushFeed(`🧠 SAM phase lock acquired: ${phase.name}`, 'sam');
+      hud.pushFeed(`🧠 SAM phase lock confirmed: ${phase.name}`, 'sam');
       const samEvent = { at: Date.now(), phase: phase.id, source: 'server' };
       if (phase.id === 'sam-event') {
         samEvent.type = 'giant_encounter';
@@ -811,8 +811,8 @@ async function boot() {
         duelOverlay.render();
       }
       if (payload?.playerB === localSessionId) {
-        hud.pushFeed(`⚔️ Duel request incoming from ${payload.challengerName || payload.playerAName || 'Player'} · open panel to respond`, 'combat');
-        hud.showNodeInterference('Duel request received · open duel panel to respond', 'warning');
+        hud.pushFeed(`⚔️ Duel request incoming from ${payload.challengerName || payload.playerAName || 'Player'} · open duel panel to respond`, 'combat');
+        hud.showNodeInterference('Duel request received · open the duel panel to respond', 'warning');
       }
     },
     onDuelStarted: (payload) => {
@@ -820,7 +820,7 @@ async function boot() {
         duel.applyStarted(payload);
         duelOverlay.render();
       }
-      hud.pushFeed(`⚔️ Duel link live: ${payload.playerAName || 'A'} vs ${payload.playerBName || 'B'}`, 'combat');
+      hud.pushFeed(`⚔️ Duel link active: ${payload.playerAName || 'A'} vs ${payload.playerBName || 'B'}`, 'combat');
       hud.showNodeInterference('Duel active · submit an action in the duel panel', 'sam');
     },
     onDuelActionSubmitted: (payload) => {
@@ -888,9 +888,9 @@ async function boot() {
 
     state.player.nearbyNpcId = nearbyNpc?.id || '';
     const interactText = nearbyNpc
-      ? `⚡ Press E or click · Talk to ${nearbyNpc.name} (${nearbyNpc.roleLabel || nearbyNpc.role})`
+      ? `⚡ Press E or click · Engage ${nearbyNpc.name} (${nearbyNpc.roleLabel || nearbyNpc.role})`
       : selectedRemotePlayer
-        ? `⚔️ Press F · Challenge ${selectedRemotePlayer.name || selectedRemotePlayer.id}`
+        ? `⚔️ Press F · Send duel request to ${selectedRemotePlayer.name || selectedRemotePlayer.id}`
         : '';
     const interactVisible = Boolean(nearbyNpc || selectedRemotePlayer);
     if (
@@ -914,13 +914,13 @@ async function boot() {
     });
     operations.tick(dt, {
       onOperationResolved: (operation) => {
-        pushFeedDeduped('✔ SIGNAL STABILISED — TRACE COMPLETE', 'quest', `op-resolved:${operation.id}`);
+        pushFeedDeduped('✔ SIGNAL STABILIZED — TRACE COMPLETE', 'quest', `op-resolved:${operation.id}`);
         pushFeedDeduped(
           `📍 ${operation.title} resolved in ${state.districts.byId.get(operation.districtId)?.name || operation.districtId}`,
           'sam',
           `op-resolved-detail:${operation.id}`,
         );
-        hud.showSamPopup('✔ SIGNAL STABILISED — TRACE COMPLETE', 2600);
+        hud.showSamPopup('✔ SIGNAL STABILIZED — TRACE COMPLETE', 2600);
         refreshOperationsHud();
       },
       onOperationExpired: (operation) => {
