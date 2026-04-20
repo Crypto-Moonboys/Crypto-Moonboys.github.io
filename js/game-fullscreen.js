@@ -272,8 +272,45 @@
   var scoreInterval   = null;
   // Cached overlay score display elements; set in buildLeftPanel / buildRightPanel.
   var cachedLiveScore = null;
+  var cachedLiveProjectedXp = null;
+  var cachedProjectedHint = null;
   var cachedLiveBest  = null;
   var cachedRightBest = null;
+  var cachedSyncStatus = null;
+  var inlineProjectedXpValue = null;
+  var inlineSyncStatus = null;
+
+  function getProjectedXp(scoreText) {
+    var raw = Number(scoreText);
+    if (!isFinite(raw) || raw < 0) return 0;
+    return Math.min(Math.floor(raw / 1000), 100);
+  }
+
+  function ensureInlineProjectionHud() {
+    var hud = document.querySelector('.game-card .hud');
+    if (!hud || document.getElementById('projectedXpValue')) return;
+    var stat = el('div', 'stat stat--projected-xp');
+    stat.innerHTML = '' +
+      '<div class="label">Projected XP</div>' +
+      '<div class="value" id="projectedXpValue">0</div>' +
+      '<div class="subtle">Accepted score required</div>';
+    hud.appendChild(stat);
+    inlineProjectedXpValue = stat.querySelector('#projectedXpValue');
+  }
+
+  function ensureInlineSyncNote() {
+    var card = document.querySelector('.game-card');
+    if (!card || document.getElementById('arcade-sync-hint')) return;
+    var note = el('div', 'arcade-sync-hint');
+    note.id = 'arcade-sync-hint';
+    note.innerHTML = '' +
+      '<strong>Arcade Sync:</strong> Play free without Telegram. Unsynced progress stays in this browser only; clearing browser data may reset local arcade progress. Link Telegram to store Block Topia XP and progression server-side.';
+    card.appendChild(note);
+    var status = el('div', 'arcade-sync-status', 'Submission status: waiting for score submission.');
+    status.id = 'arcade-sync-status';
+    card.appendChild(status);
+    inlineSyncStatus = status;
+  }
 
   /* ── DOM helpers ─────────────────────────────────────────────────── */
 
@@ -446,10 +483,20 @@
     cachedLiveScore = el('div', 'score-val', '0');
     cachedLiveScore.id = 'overlay-live-score';
     sideLeft.appendChild(cachedLiveScore);
+    sideLeft.appendChild(el('div', 'panel-title', 'Projected XP'));
+    cachedLiveProjectedXp = el('div', 'score-val score-val--projected', '0');
+    cachedLiveProjectedXp.id = 'overlay-live-projected-xp';
+    sideLeft.appendChild(cachedLiveProjectedXp);
+    cachedProjectedHint = el('div', 'panel-note', 'Potential Block Topia XP — accepted score required.');
+    sideLeft.appendChild(cachedProjectedHint);
     sideLeft.appendChild(el('div', 'panel-title', 'Best'));
     cachedLiveBest = el('div', 'score-val', '0');
     cachedLiveBest.id = 'overlay-live-best';
     sideLeft.appendChild(cachedLiveBest);
+    sideLeft.appendChild(el('div', 'panel-title', 'Sync Status'));
+    cachedSyncStatus = el('div', 'panel-note panel-note--status', 'No submission yet. Arcade runs locally until a score is synced.');
+    cachedSyncStatus.id = 'overlay-sync-status';
+    sideLeft.appendChild(cachedSyncStatus);
   }
 
   function buildRightPanel(meta) {
@@ -467,12 +514,58 @@
   function updateScores() {
     var scoreNode = document.getElementById('score');
     var bestNode  = document.getElementById('best');
-    if (scoreNode && cachedLiveScore) cachedLiveScore.textContent = scoreNode.textContent || '0';
+    var scoreText = scoreNode ? (scoreNode.textContent || '0') : '0';
+    if (scoreNode && cachedLiveScore) cachedLiveScore.textContent = scoreText;
+    var projected = getProjectedXp(scoreText);
+    if (cachedLiveProjectedXp) cachedLiveProjectedXp.textContent = String(projected);
+    if (inlineProjectedXpValue) inlineProjectedXpValue.textContent = String(projected);
     if (bestNode) {
       var b = bestNode.textContent || '0';
       if (cachedLiveBest)  cachedLiveBest.textContent  = b;
       if (cachedRightBest) cachedRightBest.textContent = b;
     }
+  }
+
+  function setSyncStatusText(text) {
+    if (cachedSyncStatus) cachedSyncStatus.textContent = text;
+    if (inlineSyncStatus) inlineSyncStatus.textContent = text;
+  }
+
+  function bindSubmissionStatus() {
+    document.addEventListener('arcade:submission-status', function (event) {
+      var d = event && event.detail ? event.detail : {};
+      var base = 'Submission status: ';
+      if (d.state === 'syncing') {
+        setSyncStatusText(base + 'Syncing score… waiting for acceptance.');
+        return;
+      }
+      if (d.state === 'local_only') {
+        setSyncStatusText(base + 'Local only (not synced). Arcade is playable, but Telegram sync is required for Block Topia XP storage.');
+        return;
+      }
+      if (d.state === 'telegram_sync_required') {
+        setSyncStatusText(base + 'Telegram sync required. Accepted score cannot award persistent Block Topia XP until linked.');
+        return;
+      }
+      if (d.state === 'accepted_score') {
+        setSyncStatusText(base + 'Accepted score confirmed. Leaderboard sync complete.');
+        return;
+      }
+      if (d.state === 'xp_awarded') {
+        var totalXpText = (typeof d.totalXp === 'number' && isFinite(d.totalXp))
+          ? (' Total XP: ' + d.totalXp + '.')
+          : '';
+        setSyncStatusText(base + 'Accepted score. Awarded XP: ' + (d.awardedXp || 0) + '.' + totalXpText);
+        return;
+      }
+      if (d.state === 'rejected_no_xp' || d.state === 'accepted_no_xp') {
+        setSyncStatusText(base + 'Score not accepted for XP conversion (no XP awarded).');
+        return;
+      }
+      if (d.state === 'sync_error') {
+        setSyncStatusText(base + 'Sync failed. Score may remain local until retry.');
+      }
+    });
   }
 
   /* ── Button state sync ───────────────────────────────────────────── */
@@ -767,6 +860,9 @@
     window.__arcadeMuteSyncBound = true;
   }
   syncMuteBtn();
+  ensureInlineProjectionHud();
+  ensureInlineSyncNote();
+  bindSubmissionStatus();
 
   // Esc key closes the overlay.
   // Enter / Space trigger the overlay ▶ Start button when the overlay is open

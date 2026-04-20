@@ -95,6 +95,30 @@
       font-size:.92rem; color:var(--color-text-muted); line-height:1.65;
     }
     .sync-note strong { color:#c8d0ff; }
+    .loop-manual {
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius);
+      background: linear-gradient(160deg, rgba(247,171,26,.08), rgba(61,90,254,.08));
+      padding: 20px;
+      margin: 16px 0 24px;
+    }
+    .loop-manual h3 { margin: 0 0 6px; font-size: 1.05rem; }
+    .loop-manual p { margin: 0 0 10px; }
+    .loop-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+      gap: 12px;
+      margin-top: 12px;
+    }
+    .loop-card {
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 12px;
+      padding: 12px 12px 10px;
+      background: rgba(10,15,25,.56);
+    }
+    .loop-card h4 { margin: 0 0 8px; font-size: .95rem; }
+    .loop-card ul { margin: 0; padding-left: 18px; }
+    .loop-card li { line-height: 1.65; margin: 0 0 4px; font-size: .9rem; }
   </style>
   <!-- Telegram WebApp SDK — enables fullscreen expand on mobile/iPad when opened via the bot -->
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
@@ -247,6 +271,63 @@
             <h3>4. Feed value back in</h3>
             <p>Every strong build adds new reach, new story, new products, and new market gravity back into the larger Moonboys engine.</p>
           </article>
+        </div>
+      </section>
+
+      <section class="incubator-section" id="arcade-rpg-loop">
+        <h2>Arcade → Telegram Sync → Block Topia (Onboarding Manual)</h2>
+        <p>
+          This is the practical progression loop. Arcade score, XP, and gems each have different jobs, so this section explains exactly what each one does.
+        </p>
+        <div class="loop-manual">
+          <h3>Quick summary</h3>
+          <p>Arcade games are always free to play. Telegram sync is required for persistent Block Topia progression. Block Topia uses XP for entry/survival and uses gems for upgrades.</p>
+          <div class="loop-grid">
+            <article class="loop-card">
+              <h4>🕹️ Arcade</h4>
+              <ul>
+                <li>Arcade is free to play, even without Telegram sync.</li>
+                <li>Raw arcade score is separate from Block Topia XP.</li>
+                <li>Only accepted synced scores can convert into Block Topia XP.</li>
+                <li>Local-only players can still play arcade, but progression is browser-local.</li>
+              </ul>
+            </article>
+            <article class="loop-card">
+              <h4>🔐 Telegram sync</h4>
+              <ul>
+                <li>Required for Block Topia access and server-stored progression.</li>
+                <li>Stores XP, gems, and progression after refresh/device changes.</li>
+                <li>Without sync, arcade progress may reset if browser data is cleared.</li>
+              </ul>
+            </article>
+            <article class="loop-card">
+              <h4>🏙️ Block Topia</h4>
+              <ul>
+                <li>XP is your entry and survival currency.</li>
+                <li>Entering Block Topia costs XP (entry does <strong>not</strong> use gems).</li>
+                <li>XP drains while inside Block Topia.</li>
+                <li>Mini-games cost XP to engage.</li>
+                <li>Winning mini-games can earn XP and gems.</li>
+                <li>Gems are mainly used for upgrades and deeper RPG progression.</li>
+              </ul>
+            </article>
+            <article class="loop-card">
+              <h4>🧩 Node mini-games</h4>
+              <ul>
+                <li>Node events can appear during runs.</li>
+                <li>You can play the mini-game or pay XP to skip/fix it.</li>
+                <li>Repeated skips increase skip XP cost over time.</li>
+              </ul>
+            </article>
+            <article class="loop-card">
+              <h4>💎 RPG layer</h4>
+              <ul>
+                <li>Gems unlock upgrades and build long-term strength.</li>
+                <li>Upgrades improve survival efficiency and reward potential.</li>
+                <li>Higher tier progression increases challenge/difficulty.</li>
+              </ul>
+            </article>
+          </div>
         </div>
       </section>
 
