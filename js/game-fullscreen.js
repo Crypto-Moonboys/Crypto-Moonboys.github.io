@@ -547,6 +547,10 @@
         setSyncStatusText(base + 'Telegram sync required. Accepted score cannot award persistent Block Topia XP until linked.');
         return;
       }
+      if (d.state === 'telegram_auth_required') {
+        setSyncStatusText(base + 'Accepted score found, but Telegram auth expired. Re-sync Telegram so XP can be stored.');
+        return;
+      }
       if (d.state === 'accepted_score') {
         setSyncStatusText(base + 'Accepted score confirmed for ranking. XP conversion will follow accepted-score rules.');
         return;

@@ -167,10 +167,14 @@ export async function submitScore(player, score, game = "global") {
             });
           } catch (err) {
             console.error("[leaderboard-client] Block Topia progression sync failed:", err);
+            var errText = String((err && err.message) || err || "").toLowerCase();
+            var authRequired = errText.includes("auth") || errText.includes("telegram");
             emitArcadeSubmissionStatus({
               ...result,
-              state: "accepted_no_xp",
-              message: "Score accepted, but Block Topia XP sync did not complete.",
+              state: authRequired ? "telegram_auth_required" : "accepted_no_xp",
+              message: authRequired
+                ? "Score accepted, but Telegram auth expired. Re-sync to convert accepted score into XP."
+                : "Score accepted, but Block Topia XP sync did not complete.",
             });
           }
         } else {

@@ -132,6 +132,16 @@ function getSyncGateUrl() {
   return cfg.SYNC_GATE_URL || FORCE_SYNC_GATE_FALLBACK_URL;
 }
 
+function redirectToSyncGate(reason = 'Telegram sync required for Block Topia progression.', delayMs = 700) {
+  try {
+    hud.showNodeInterference(reason, 'warning');
+    hud.pushFeed(`🔐 ${reason}`, 'system');
+  } catch {}
+  window.setTimeout(() => {
+    window.location.replace(getSyncGateUrl());
+  }, Math.max(0, Number(delayMs) || 0));
+}
+
 function hasTelegramAuth() {
   const telegramAuth = getTelegramAuth();
   return Boolean(telegramAuth?.hash && telegramAuth?.auth_date);
@@ -163,14 +173,25 @@ function setServerProgression(next = {}) {
 async function fetchMiniGameAffordability(type) {
   const apiBase = getApiBase();
   const telegramAuth = getTelegramAuth();
-  if (!apiBase || !telegramAuth?.hash || !telegramAuth?.auth_date) return null;
+  if (!apiBase || !telegramAuth?.hash || !telegramAuth?.auth_date) {
+    return { ok: false, error: 'Telegram auth missing. Re-sync required.', auth_required: true };
+  }
   const res = await fetch(`${apiBase}/blocktopia/progression/mini-game`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ action: 'mini_game_affordability', type, score: 0, telegram_auth: telegramAuth }),
   }).catch(() => null);
-  if (!res?.ok) return null;
-  const data = await res.json().catch(() => null);
+  if (!res) return { ok: false, error: 'Progression sync request failed.' };
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    return {
+      ...data,
+      ok: false,
+      error: data?.error || data?.message || `HTTP ${res.status}`,
+      auth_required: res.status === 401 || res.status === 403,
+      __httpStatus: res.status,
+    };
+  }
   if (data?.progression) setServerProgression(data.progression);
   return data;
 }
@@ -180,7 +201,9 @@ async function syncMiniGameSkip(type, skipStreak = 0) {
   if (!MINI_GAME_TYPES.has(miniGameType)) return null;
   const apiBase = getApiBase();
   const telegramAuth = getTelegramAuth();
-  if (!apiBase || !telegramAuth?.hash || !telegramAuth?.auth_date) return null;
+  if (!apiBase || !telegramAuth?.hash || !telegramAuth?.auth_date) {
+    return { ok: false, error: 'Telegram auth missing. Re-sync required.', auth_required: true };
+  }
   const entered = await ensureRpgEntry();
   if (!entered) return null;
   const res = await fetch(`${apiBase}/blocktopia/progression/mini-game`, {
@@ -194,8 +217,18 @@ async function syncMiniGameSkip(type, skipStreak = 0) {
       telegram_auth: telegramAuth,
     }),
   }).catch(() => null);
-  if (!res?.ok) return null;
-  const data = await res.json().catch(() => null);
+  if (!res) return { ok: false, error: 'Skip sync request failed.' };
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    if (data?.progression) setServerProgression(data.progression);
+    return {
+      ...data,
+      ok: false,
+      error: data?.error || data?.message || `HTTP ${res.status}`,
+      auth_required: res.status === 401 || res.status === 403,
+      __httpStatus: res.status,
+    };
+  }
   if (data?.progression) setServerProgression(data.progression);
   return data;
 }
@@ -203,11 +236,20 @@ async function syncMiniGameSkip(type, skipStreak = 0) {
 async function fetchServerProgression() {
   const apiBase = getApiBase();
   const telegramAuth = getTelegramAuth();
-  if (!apiBase || !telegramAuth?.hash || !telegramAuth?.auth_date) return { ...progressionState };
+  if (!apiBase || !telegramAuth?.hash || !telegramAuth?.auth_date) {
+    return { ...progressionState, __authError: true, error: 'Telegram auth missing. Re-sync required.' };
+  }
   try {
     const query = encodeURIComponent(JSON.stringify(telegramAuth));
     const res = await fetch(`${apiBase}/blocktopia/progression?telegram_auth=${query}`);
-    if (!res.ok) return { ...progressionState };
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      return {
+        ...progressionState,
+        __authError: res.status === 401 || res.status === 403,
+        error: data?.error || data?.message || `HTTP ${res.status}`,
+      };
+    }
     const data = await res.json().catch(() => null);
     const progression = data?.progression || {};
     setServerProgression(progression);
@@ -221,7 +263,10 @@ async function ensureRpgEntry() {
   if (progressionState.rpg_mode_active) return true;
   const apiBase = getApiBase();
   const telegramAuth = getTelegramAuth();
-  if (!apiBase || !telegramAuth?.hash || !telegramAuth?.auth_date) return false;
+  if (!apiBase || !telegramAuth?.hash || !telegramAuth?.auth_date) {
+    redirectToSyncGate('Telegram session expired. Re-sync to enter Block Topia.');
+    return false;
+  }
   const res = await fetch(`${apiBase}/blocktopia/progression/entry`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -234,6 +279,10 @@ async function ensureRpgEntry() {
     if (message === 'Not enough XP for Block Topia entry') {
       hud.showNodeInterference('Not enough XP for Block Topia entry', 'warning');
       hud.pushFeed('🧪 Entry economy: XP required to enter; gems are for upgrades and buffs.', 'system');
+    } else if (res.status === 401 || res.status === 403) {
+      redirectToSyncGate('Telegram auth is invalid or expired. Re-sync required for Block Topia entry.');
+    } else if (message) {
+      hud.showNodeInterference(message, 'warning');
     }
     return false;
   }
@@ -246,7 +295,9 @@ async function syncMiniGameOutcome(type, outcome) {
   if (!MINI_GAME_TYPES.has(miniGameType)) return null;
   const apiBase = getApiBase();
   const telegramAuth = getTelegramAuth();
-  if (!apiBase || !telegramAuth?.hash || !telegramAuth?.auth_date) return null;
+  if (!apiBase || !telegramAuth?.hash || !telegramAuth?.auth_date) {
+    return { ok: false, error: 'Telegram auth missing. Re-sync required.', auth_required: true };
+  }
   const entered = await ensureRpgEntry();
   if (!entered) return null;
   const action = outcome === 'success' ? 'mini_game_win' : 'mini_game_loss';
@@ -260,8 +311,17 @@ async function syncMiniGameOutcome(type, outcome) {
       telegram_auth: telegramAuth,
     }),
   });
-  if (!res.ok) return null;
-  const data = await res.json().catch(() => null);
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    if (data?.progression) setServerProgression(data.progression);
+    return {
+      ...data,
+      ok: false,
+      error: data?.error || data?.message || `HTTP ${res.status}`,
+      auth_required: res.status === 401 || res.status === 403,
+      __httpStatus: res.status,
+    };
+  }
   if (data?.progression) {
     setServerProgression(data.progression);
   }
@@ -270,10 +330,14 @@ async function syncMiniGameOutcome(type, outcome) {
 
 async function boot() {
   if (!hasTelegramAuth()) {
-    window.location.replace(getSyncGateUrl());
+    redirectToSyncGate('Telegram sync required before entering Block Topia.');
     return;
   }
   const progression = await fetchServerProgression();
+  if (progression?.__authError) {
+    redirectToSyncGate(progression?.error || 'Telegram session invalid. Please sync again before entering Block Topia.');
+    return;
+  }
   const playerTier = progression.tier || 1;
   const tierDifficulty = computeTierDifficulty(playerTier);
   const dataBundle = await loadUnifiedData();
@@ -680,7 +744,16 @@ async function boot() {
   async function ensureMiniGamePlayable(type) {
     if (sessionGuard.sessionDead || sessionGuard.gated) return false;
     const server = await fetchMiniGameAffordability(type);
-    if (!server?.progression) return false;
+    if (!server?.progression) {
+      if (server?.auth_required) {
+        redirectToSyncGate(server?.error || 'Telegram auth required for mini-game entry.');
+      } else if (server?.error) {
+        hud.showNodeInterference(server.error, 'warning');
+      }
+      closeMiniGameOverlays();
+      setActiveMiniGame('');
+      return false;
+    }
     syncHudProgression();
     const canPlay = server.can_play !== false && Number(server.progression.xp || 0) >= Number(server.progression.mini_game_cost || 0);
     if (!canPlay) {
@@ -717,6 +790,12 @@ async function boot() {
     const server = outcome === 'skip'
       ? await syncMiniGameSkip(type, sessionGuard.skipStreak)
       : await syncMiniGameOutcome(type, outcome);
+    if (server?.auth_required) {
+      closeMiniGameOverlays();
+      setActiveMiniGame('');
+      redirectToSyncGate(server?.error || 'Telegram auth required for progression sync.');
+      return;
+    }
     if (outcome === 'skip') sessionGuard.skipStreak += 1;
     if (outcome === 'success') sessionGuard.skipStreak = 0;
     if (server?.progression) {
@@ -730,6 +809,8 @@ async function boot() {
         window.location.replace(getSyncGateUrl());
         return;
       }
+    } else if (server && server.ok === false) {
+      hud.showNodeInterference(server.error || 'Mini-game result sync failed.', 'warning');
     }
     applyMiniGameWorldImpact(type, outcome, result);
     setActiveMiniGame('');
@@ -952,6 +1033,10 @@ async function boot() {
 
   setInterval(() => {
     fetchServerProgression().then((next) => {
+      if (next?.__authError) {
+        redirectToSyncGate(next?.error || 'Telegram session expired. Re-sync required.');
+        return;
+      }
       hud.setXp(next.xp || 0);
       hud.setGems(next.gems || 0);
       hud.setDrainPerMinute(next.drain_per_minute || 0);

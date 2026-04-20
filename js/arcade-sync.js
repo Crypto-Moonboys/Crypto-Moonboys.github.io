@@ -62,7 +62,7 @@ export const ArcadeSync = {
 
     const telegram_auth = this.getTelegramAuth();
     if (!telegram_auth || !telegram_auth.hash || !telegram_auth.auth_date) {
-      return null;
+      throw new Error("Telegram auth missing or expired. Re-sync required for XP conversion.");
     }
 
     const previewXp = this.getProjectedXpFromScore(safeScore);
@@ -85,7 +85,12 @@ export const ArcadeSync = {
       const data = await response.json().catch(() => ({}));
       throw new Error(data.error || `HTTP ${response.status}`);
     }
-
-    return response.json().catch(() => null);
+    const payload = await response.json().catch(() => null);
+    try {
+      if (payload?.progression) {
+        localStorage.setItem("blocktopia_last_progression", JSON.stringify(payload.progression));
+      }
+    } catch {}
+    return payload;
   }
 };
