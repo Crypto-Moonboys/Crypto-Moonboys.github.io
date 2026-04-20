@@ -329,6 +329,42 @@ function getMoveInterval(mode, role) {
   return CROWD_MOVE_INTERVAL_MIN + Math.random() * CROWD_MOVE_INTERVAL_RANGE;
 }
 
+function stepNetworkMissionNpc(npc, dt) {
+  const mission = npc?.networkMission;
+  if (!mission || !Array.isArray(mission.pathNodeIds) || mission.pathNodeIds.length < 2) return false;
+
+  const pathNodeIds = mission.pathNodeIds;
+  const speed = Number.isFinite(mission.speed) ? mission.speed : 0.38;
+  if (!Number.isFinite(mission.pathIndex)) mission.pathIndex = 0;
+  if (!Number.isFinite(mission.edgeT)) mission.edgeT = 0;
+
+  mission.edgeT += Math.max(0, dt) * speed;
+  while (mission.edgeT >= 1 && mission.pathIndex < pathNodeIds.length - 2) {
+    mission.edgeT -= 1;
+    mission.pathIndex += 1;
+  }
+
+  const fromId = pathNodeIds[mission.pathIndex];
+  const toId = pathNodeIds[Math.min(pathNodeIds.length - 1, mission.pathIndex + 1)];
+  const line = getLine(edgeKey(fromId, toId));
+  if (!line) {
+    delete npc.networkMission;
+    return false;
+  }
+
+  const from = line.from.id === fromId ? line.from : line.to;
+  const to = line.to.id === toId ? line.to : line.from;
+  const t = clamp(mission.edgeT, 0, 1);
+  npc.col = from.x + (to.x - from.x) * t;
+  npc.row = from.y + (to.y - from.y) * t;
+
+  if (mission.pathIndex >= pathNodeIds.length - 2 && mission.edgeT >= 0.995) {
+    mission.pathIndex = 0;
+    mission.edgeT = 0;
+  }
+  return true;
+}
+
 function getInitialMoveTimer(mode, role) {
   return Math.random() * getMoveInterval(mode, role);
 }
@@ -636,6 +672,12 @@ export function createNpcSystem(state, liveIntelligence = null) {
     for (let i = 0; i < batchSize; i += 1) {
       const npc = npcs[(batchIndex + i) % total];
       if (!npc) continue;
+      if (stepNetworkMissionNpc(npc, movementDt)) {
+        if (npc.mode === 'active') {
+          npc.bobPhase += movementDt * npc.bobSpeed;
+        }
+        continue;
+      }
       npc.type = npc.type || 'helper';
       if (!npc.lineId) npc.lineId = pickRandomLineId();
       if (npc.lineDirection !== 1 && npc.lineDirection !== -1) {
