@@ -1,4 +1,4 @@
-import { TELEGRAM_AUTH_MAX_AGE } from './blocktopia/config.js';
+import { TELEGRAM_AUTH_MAX_AGE, XP_MAX, XP_MIN } from './blocktopia/config.js';
 import { verifyTelegramIdentityFromBody } from './blocktopia/auth.js';
 import { getOrCreateBlockTopiaProgression } from './blocktopia/db.js';
 import { handleBlockTopiaProgressionRoute } from './blocktopia/routes.js';
@@ -11,6 +11,7 @@ import { handleBlockTopiaProgressionRoute } from './blocktopia/routes.js';
  * Routes:
  *   GET  /health
  *   GET  /sam/status
+ *   POST /admin/blocktopia/grant-xp
  *   POST /telegram/auth
  *   POST /telegram/webhook
  *   GET  /telegram/profile?telegram_id=
@@ -48,6 +49,7 @@ const ANTI_CHEAT_WORKER_URL_DEFAULT = 'https://moonboys-anti-cheat.sercullen.wor
 const XP_FIRST_START = 50;
 const XP_DAILY_CLAIM = 20;
 const XP_GROUP_JOIN  = 10;
+const BLOCKTOPIA_ADMIN_XP_GRANT_MAX = 50000;
 
 const CORS_HEADERS = {
   'Access-Control-Allow-Origin': '*',
@@ -196,6 +198,13 @@ function isAdminTelegramUser(telegramId, env) {
   const raw = env.ADMIN_TELEGRAM_IDS;
   if (!raw || !telegramId) return false;
   return raw.split(',').map(s => s.trim()).includes(String(telegramId));
+}
+
+function readAdminSecret(request) {
+  return request.headers.get('x-admin-secret')
+    || request.headers.get('X-Admin-Secret')
+    || request.headers.get('x-admin-token')
+    || '';
 }
 
 /**
@@ -407,6 +416,90 @@ export default {
     // ── GET /sam/status ────────────────────────────────────────────────────
     if (path === '/sam/status' && request.method === 'GET') {
       return json({ ok: true, message: 'SAM active and monitoring the wiki.' });
+    }
+
+    // ── POST /admin/blocktopia/grant-xp ───────────────────────────────────
+    // Admin-only tooling endpoint for Block Topia test/ops XP grants.
+    if (path === '/admin/blocktopia/grant-xp' && request.method === 'POST') {
+      const configuredSecret = String(env.ADMIN_SECRET || '').trim();
+      if (!configuredSecret) return err('Admin tooling is not configured', 503);
+      if (readAdminSecret(request) !== configuredSecret) return err('Unauthorized', 401);
+
+      let body;
+      try { body = await request.json(); } catch { return err('Invalid JSON', 400); }
+
+      const telegramId = String(body?.telegram_id || '').trim();
+      const adminTelegramId = String(body?.admin_telegram_id || '').trim();
+      const rawXp = Number(body?.xp);
+      const reason = String(body?.reason || '').trim().slice(0, 280);
+
+      if (!telegramId || !/^\d{5,20}$/.test(telegramId)) {
+        return err('Valid target telegram_id is required', 400);
+      }
+      if (!adminTelegramId || !/^\d{5,20}$/.test(adminTelegramId)) {
+        return err('Valid admin_telegram_id is required', 400);
+      }
+      if (!isAdminTelegramUser(adminTelegramId, env)) {
+        return err('Forbidden: admin not allowed', 403);
+      }
+      if (!Number.isInteger(rawXp) || rawXp <= 0) {
+        return err('xp must be a positive integer', 400);
+      }
+      const grantXp = Math.min(rawXp, BLOCKTOPIA_ADMIN_XP_GRANT_MAX);
+
+      try {
+        const row = await getOrCreateBlockTopiaProgression(env.DB, telegramId);
+        const currentXp = Math.max(XP_MIN, Math.min(XP_MAX, Math.floor(Number(row?.xp) || 0)));
+        const nextXp = Math.max(XP_MIN, Math.min(XP_MAX, currentXp + grantXp));
+        const appliedDelta = nextXp - currentXp;
+        if (appliedDelta <= 0) {
+          return err('XP grant cannot be applied at current XP cap', 409);
+        }
+
+        await env.DB.prepare(`
+          UPDATE blocktopia_progression
+          SET xp = ?, last_active = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP
+          WHERE telegram_id = ?
+        `).bind(nextXp, telegramId).run();
+
+        await env.DB.prepare(`
+          INSERT INTO blocktopia_progression_events
+            (id, telegram_id, action, action_type, score, xp_change, gems_change, admin_telegram_id, reason)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        `).bind(
+          crypto.randomUUID(),
+          telegramId,
+          'admin_grant',
+          'blocktopia_grant_xp',
+          0,
+          appliedDelta,
+          0,
+          adminTelegramId,
+          reason || null,
+        ).run();
+
+        return json({
+          ok: true,
+          target_telegram_id: telegramId,
+          admin_telegram_id: adminTelegramId,
+          requested_xp: rawXp,
+          granted_xp: grantXp,
+          applied_xp: appliedDelta,
+          progression: {
+            telegram_id: telegramId,
+            xp_before: currentXp,
+            xp_after: nextXp,
+          },
+        });
+      } catch (error) {
+        logApiFailure('admin_blocktopia_grant_xp_failed', {
+          telegramId,
+          adminTelegramId,
+          xp: rawXp,
+          message: error?.message || String(error),
+        });
+        return err('Failed to grant Block Topia XP', 500);
+      }
     }
 
     // ── POST /telegram/auth ────────────────────────────────────────────────
