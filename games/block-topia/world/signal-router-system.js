@@ -1,4 +1,5 @@
 import { CONTROL_LINKS } from './control-grid.js';
+import { computeTierDifficulty } from './tier-difficulty.js';
 
 const TRIGGER_MIN_DELAY_MS = 75000;
 const TRIGGER_MAX_DELAY_MS = 140000;
@@ -8,6 +9,9 @@ const ALERT_MS = 3200;
 const EVENT_MIN_MS = 30000;
 const EVENT_MAX_MS = 110000;
 const NPC_ASSIGN_INTERVAL_MS = 2600;
+const MIN_EVENT_MAX_MS = 55000;
+const MAX_CORRUPTION_ROLL = 0.42;
+const MAX_OBJECTIVES = 5;
 
 const LINK_STATES = {
   normal: { id: 'normal', weight: 1, severity: 0, color: '#5ef2ff' },
@@ -101,7 +105,10 @@ function weightedPath(adjacency, startId, endId, edgeMeta, options = {}) {
   return path.reverse();
 }
 
-export function createSignalRouterSystem(state) {
+export function createSignalRouterSystem(state, options = {}) {
+  const difficulty = computeTierDifficulty(options?.tier || 1);
+  const timePressureScale = Math.min(difficulty.scale, 2);
+  const corruptionRoll = Math.min(0.15 * difficulty.scale, MAX_CORRUPTION_ROLL);
   const nodes = Array.isArray(state?.controlNodes) ? state.controlNodes : [];
   const { byId, adjacency, edges } = buildGraph(nodes);
   const districtIds = [...new Set(nodes.map((node) => node.districtId).filter(Boolean))];
@@ -251,6 +258,22 @@ export function createSignalRouterSystem(state) {
         complete: false,
       },
     ];
+    const extraObjectives = clamp(Math.floor((difficulty.scale - 1) / 1.1), 0, MAX_OBJECTIVES - runtime.objectives.length);
+    for (let i = 0; i < extraObjectives; i += 1) {
+      const from = choose(nodes) || nodes[0];
+      const to = choose(nodes.filter((node) => node.id !== from?.id)) || nodes[1] || nodes[0];
+      runtime.objectives.push({
+        id: `aux-${i + 1}`,
+        type: 'aux_route_lock',
+        label: `Stabilize auxiliary route ${from?.id?.toUpperCase()} ↔ ${to?.id?.toUpperCase()}`,
+        fromId: from?.id,
+        toId: to?.id,
+        deadlineAt: now + (34000 + (i * 9000)),
+        holdMs: 5000 + (i * 900),
+        heldMs: 0,
+        complete: false,
+      });
+    }
   }
 
   function beginEvent(hooks = {}) {
@@ -259,7 +282,7 @@ export function createSignalRouterSystem(state) {
     runtime.status = 'alert';
     runtime.startedAt = now;
     runtime.alertUntil = now + ALERT_MS;
-    runtime.endsAt = now + EVENT_MAX_MS;
+    runtime.endsAt = now + Math.max(MIN_EVENT_MAX_MS, Math.round(EVENT_MAX_MS / timePressureScale));
     runtime.eventIndex += 1;
     runtime.selectedNodeId = nodes[0]?.id || '';
     runtime.selectedEdgeKey = '';
@@ -351,7 +374,7 @@ export function createSignalRouterSystem(state) {
       if (next > 82) runtime.congestionPressure += 0.0015;
     }
 
-    if (Math.random() < 0.15) {
+    if (Math.random() < corruptionRoll) {
       const edge = choose([...runtime.linkMeta.keys()]);
       if (edge) {
         const current = runtime.linkMeta.get(edge);
@@ -624,6 +647,7 @@ export function createSignalRouterSystem(state) {
       objectiveTypes: ['hub_to_relay', 'reconnect_cluster', 'maintain_control_path'],
       npcInteractionTypes: ['courier-demand', 'agent-safe-corridor', 'fighter-secure-link', 'recruiter-relief', 'lorekeeper-warning'],
       linkStateIds: Object.keys(LINK_STATES),
+      difficulty,
     };
   }
 

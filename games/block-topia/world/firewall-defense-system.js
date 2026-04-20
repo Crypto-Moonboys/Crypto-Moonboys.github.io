@@ -1,4 +1,5 @@
 import { CONTROL_LINKS } from './control-grid.js';
+import { computeTierDifficulty } from './tier-difficulty.js';
 
 const EVENT_MIN_DELAY_MS = 65000;
 const EVENT_MAX_DELAY_MS = 120000;
@@ -33,6 +34,9 @@ const WAVE_PLAN = [
   { atMs: 19000, count: 10, mix: ['dart', 'splitter', 'tank'] },
   { atMs: 39000, count: 12, mix: ['splitter', 'tank', 'dart', 'tank'] },
 ];
+const MAX_WAVE_COUNT = 6;
+const MAX_WAVE_SIZE = 30;
+const MAX_ENEMY_SPEED_SCALE = 2.1;
 
 function choose(items = []) {
   if (!items.length) return null;
@@ -92,7 +96,9 @@ function bfsPath(adjacency, startId, endId) {
   return path;
 }
 
-export function createFirewallDefenseSystem(state) {
+export function createFirewallDefenseSystem(state, options = {}) {
+  const difficulty = computeTierDifficulty(options?.tier || 1);
+  const enemySpeedScale = Math.min(difficulty.scale, MAX_ENEMY_SPEED_SCALE);
   const nodes = Array.isArray(state?.controlNodes) ? state.controlNodes : [];
   const { byId, adjacency } = buildNetwork(nodes);
   const keyNodeIds = ['core', 'north', 'east', 'south', 'west'].filter((id) => byId.has(id));
@@ -126,6 +132,26 @@ export function createFirewallDefenseSystem(state) {
     eventSeed: 0,
   };
   state.firewallDefense = runtime;
+
+  function buildWavePlan() {
+    const countScale = Math.min(difficulty.scale, 2.2);
+    const waves = WAVE_PLAN.map((entry) => ({
+      ...entry,
+      count: clamp(Math.round(entry.count * countScale), entry.count, MAX_WAVE_SIZE),
+      spawned: false,
+    }));
+    const extraWaveCount = clamp(Math.floor((difficulty.scale - 1) / 0.8), 0, MAX_WAVE_COUNT - waves.length);
+    for (let i = 0; i < extraWaveCount; i += 1) {
+      const last = waves[waves.length - 1] || WAVE_PLAN[WAVE_PLAN.length - 1];
+      waves.push({
+        atMs: last.atMs + 15000 + (i * 9000),
+        count: clamp(Math.round((last.count || 12) * (1.08 + (i * 0.06))), 12, MAX_WAVE_SIZE),
+        mix: [...(last.mix || ['dart', 'tank'])],
+        spawned: false,
+      });
+    }
+    return waves.slice(0, MAX_WAVE_COUNT);
+  }
 
   function log(text) {
     runtime.logs.unshift({ at: Date.now(), text });
@@ -165,7 +191,7 @@ export function createFirewallDefenseSystem(state) {
     runtime.defenses = [];
     runtime.packets = [];
     runtime.waveIndex = 0;
-    runtime.waves = WAVE_PLAN.map((entry) => ({ ...entry, spawned: false }));
+    runtime.waves = buildWavePlan();
     runtime.nodeIntegrity.clear();
     runtime.corruptedNodes.clear();
     runtime.supportNpc = [];
@@ -187,7 +213,7 @@ export function createFirewallDefenseSystem(state) {
     runtime.tokens = 12;
     runtime.tokenTickAt = runtime.startedAt + TOKEN_TICK_MS;
     runtime.waveIndex = 0;
-    runtime.waves = WAVE_PLAN.map((entry) => ({ ...entry, spawned: false }));
+    runtime.waves = buildWavePlan();
     runtime.nodeIntegrity = new Map(nodes.map((node) => [node.id, keyNodeIds.includes(node.id) ? 140 : 100]));
     runtime.corruptedNodes.clear();
     runtime.defenses = [];
@@ -318,7 +344,7 @@ export function createFirewallDefenseSystem(state) {
       const type = ENEMY_TYPES[packet.typeId];
       if (!type) continue;
       const slow = packetEdgeSlowFactor(packet);
-      packet.edgeT += dt * type.speed * slow;
+      packet.edgeT += dt * type.speed * enemySpeedScale * slow;
       runtime.linkFlashUntil.set(pairKey(packet.fromId, packet.toId), now + 260);
 
       while (packet.edgeT >= 1) {
@@ -545,6 +571,7 @@ export function createFirewallDefenseSystem(state) {
       enemyTypes: Object.values(ENEMY_TYPES),
       defenseTypes: Object.values(DEFENSE_TYPES),
       npcSupportTypes: Object.values(NPC_SUPPORT_TYPES),
+      difficulty,
       packets: runtime.packets.map((packet) => ({
         id: packet.id,
         typeId: packet.typeId,
