@@ -1,4 +1,4 @@
-import { TELEGRAM_AUTH_MAX_AGE, XP_MAX, XP_MIN } from './blocktopia/config.js';
+import { GEMS_MAX, GEMS_MIN, TELEGRAM_AUTH_MAX_AGE, XP_MAX, XP_MIN } from './blocktopia/config.js';
 import { verifyTelegramIdentityFromBody } from './blocktopia/auth.js';
 import { getOrCreateBlockTopiaProgression } from './blocktopia/db.js';
 import { handleBlockTopiaProgressionRoute } from './blocktopia/routes.js';
@@ -50,6 +50,7 @@ const XP_FIRST_START = 50;
 const XP_DAILY_CLAIM = 20;
 const XP_GROUP_JOIN  = 10;
 const BLOCKTOPIA_ADMIN_XP_GRANT_MAX = 50000;
+const BLOCKTOPIA_ADMIN_GEMS_GRANT_MAX = 50000;
 
 const CORS_HEADERS = {
   'Access-Control-Allow-Origin': '*',
@@ -419,7 +420,7 @@ export default {
     }
 
     // ── POST /admin/blocktopia/grant-xp ───────────────────────────────────
-    // Admin-only tooling endpoint for Block Topia test/ops XP grants.
+    // Admin-only tooling endpoint for Block Topia test/ops XP + gems grants.
     if (path === '/admin/blocktopia/grant-xp' && request.method === 'POST') {
       const configuredSecret = String(env.ADMIN_SECRET || '').trim();
       if (!configuredSecret) return err('Admin tooling is not configured', 503);
@@ -430,7 +431,10 @@ export default {
 
       const telegramId = String(body?.telegram_id || '').trim();
       const adminTelegramId = String(body?.admin_telegram_id || '').trim();
-      const rawXp = Number(body?.xp);
+      const hasXpInput = body && Object.prototype.hasOwnProperty.call(body, 'xp');
+      const hasGemsInput = body && Object.prototype.hasOwnProperty.call(body, 'gems');
+      const rawXp = hasXpInput ? Number(body?.xp) : null;
+      const rawGems = hasGemsInput ? Number(body?.gems) : null;
       const reason = String(body?.reason || '').trim().slice(0, 280);
 
       if (!telegramId || !/^\d{5,20}$/.test(telegramId)) {
@@ -442,25 +446,35 @@ export default {
       if (!isAdminTelegramUser(adminTelegramId, env)) {
         return err('Forbidden: admin not allowed', 403);
       }
-      if (!Number.isInteger(rawXp) || rawXp <= 0) {
+      if (!hasXpInput && !hasGemsInput) {
+        return err('At least one of xp or gems must be provided', 400);
+      }
+      if (hasXpInput && (!Number.isInteger(rawXp) || rawXp <= 0)) {
         return err('xp must be a positive integer', 400);
       }
-      const grantXp = Math.min(rawXp, BLOCKTOPIA_ADMIN_XP_GRANT_MAX);
+      if (hasGemsInput && (!Number.isInteger(rawGems) || rawGems <= 0)) {
+        return err('gems must be a positive integer', 400);
+      }
+      const grantXp = hasXpInput ? Math.min(rawXp, BLOCKTOPIA_ADMIN_XP_GRANT_MAX) : 0;
+      const grantGems = hasGemsInput ? Math.min(rawGems, BLOCKTOPIA_ADMIN_GEMS_GRANT_MAX) : 0;
 
       try {
         const row = await getOrCreateBlockTopiaProgression(env.DB, telegramId);
         const currentXp = Math.max(XP_MIN, Math.min(XP_MAX, Math.floor(Number(row?.xp) || 0)));
+        const currentGems = Math.max(GEMS_MIN, Math.min(GEMS_MAX, Math.floor(Number(row?.gems) || 0)));
         const nextXp = Math.max(XP_MIN, Math.min(XP_MAX, currentXp + grantXp));
-        const appliedDelta = nextXp - currentXp;
-        if (appliedDelta <= 0) {
-          return err('XP grant cannot be applied at current XP cap', 409);
+        const nextGems = Math.max(GEMS_MIN, Math.min(GEMS_MAX, currentGems + grantGems));
+        const appliedXpDelta = nextXp - currentXp;
+        const appliedGemsDelta = nextGems - currentGems;
+        if (appliedXpDelta <= 0 && appliedGemsDelta <= 0) {
+          return err('Grant cannot be applied at current cap', 409);
         }
 
         await env.DB.prepare(`
           UPDATE blocktopia_progression
-          SET xp = ?, last_active = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP
+          SET xp = ?, gems = ?, last_active = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP
           WHERE telegram_id = ?
-        `).bind(nextXp, telegramId).run();
+        `).bind(nextXp, nextGems, telegramId).run();
 
         await env.DB.prepare(`
           INSERT INTO blocktopia_progression_events
@@ -470,10 +484,10 @@ export default {
           crypto.randomUUID(),
           telegramId,
           'admin_grant',
-          'blocktopia_grant_xp',
+          'blocktopia_grant_xp_gems',
           0,
-          appliedDelta,
-          0,
+          appliedXpDelta,
+          appliedGemsDelta,
           adminTelegramId,
           reason || null,
         ).run();
@@ -482,13 +496,18 @@ export default {
           ok: true,
           target_telegram_id: telegramId,
           admin_telegram_id: adminTelegramId,
-          requested_xp: rawXp,
+          requested_xp: hasXpInput ? rawXp : null,
+          requested_gems: hasGemsInput ? rawGems : null,
           granted_xp: grantXp,
-          applied_xp: appliedDelta,
+          granted_gems: grantGems,
+          applied_xp: appliedXpDelta,
+          applied_gems: appliedGemsDelta,
           progression: {
             telegram_id: telegramId,
             xp_before: currentXp,
             xp_after: nextXp,
+            gems_before: currentGems,
+            gems_after: nextGems,
           },
         });
       } catch (error) {
@@ -496,9 +515,10 @@ export default {
           telegramId,
           adminTelegramId,
           xp: rawXp,
+          gems: rawGems,
           message: error?.message || String(error),
         });
-        return err('Failed to grant Block Topia XP', 500);
+        return err('Failed to grant Block Topia progression resources', 500);
       }
     }
 
