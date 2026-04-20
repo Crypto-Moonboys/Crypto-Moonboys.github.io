@@ -63,7 +63,7 @@ export function createDuelOverlay(doc, duelSystem, { fighterConfig = {}, getLoca
           <p class="duel-fighter-label hidden" id="duel-fighter-opponent-label"></p>
         </article>
       </div>
-      <p class="duel-matchup" id="duel-matchup">Awaiting duel</p>
+      <p class="duel-matchup" id="duel-matchup">Awaiting duel link</p>
       <p class="duel-round" id="duel-round">Round 0</p>
       <p class="duel-hp" id="duel-hp">A:100 · B:100</p>
       <p class="duel-timer" id="duel-timer"></p>
@@ -145,10 +145,10 @@ export function createDuelOverlay(doc, duelSystem, { fighterConfig = {}, getLoca
     roundEl.textContent = `Round ${state.round || 0}`;
     hpEl.textContent = formatHealthLine(state);
     timerEl.textContent = state.status === 'active'
-      ? `Action timer: ${remainingSeconds(state.roundDeadline)}s`
+      ? `Action window: ${remainingSeconds(state.roundDeadline)}s`
       : '';
     resultEl.textContent = state.requestMessage || state.resultMessage || '';
-    samEl.textContent = state.samWarning ? `SAM WARNING: ${state.samWarning}` : '';
+    samEl.textContent = state.samWarning ? `SAM ALERT: ${state.samWarning}` : '';
 
     const active = state.status === 'active';
     actionsEl.classList.toggle('hidden', !active);
@@ -161,7 +161,7 @@ export function createDuelOverlay(doc, duelSystem, { fighterConfig = {}, getLoca
       const acceptBtn = doc.createElement('button');
       acceptBtn.type = 'button';
       acceptBtn.className = 'duel-request-btn';
-      acceptBtn.textContent = 'ACCEPT DUEL';
+      acceptBtn.textContent = 'Accept Duel';
       acceptBtn.addEventListener('click', () => onAccept?.(state.duelId));
       requestActionsEl.appendChild(acceptBtn);
     }
