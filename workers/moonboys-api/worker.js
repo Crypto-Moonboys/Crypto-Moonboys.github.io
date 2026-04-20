@@ -54,7 +54,9 @@ const GEMS_MAX = 10000;
 const TIER_MIN = 1;
 const TIER_MAX = 50;
 const BLOCKTOPIA_RATE_LIMIT_PER_MIN = 20;
-const BLOCKTOPIA_DRAIN_PER_MINUTE = 2;
+const BLOCKTOPIA_DRAIN_BASE_PER_MINUTE = 5;
+const BLOCKTOPIA_DRAIN_TIER_STEP = 0.5;
+const BLOCKTOPIA_DRAIN_MAX_PER_MINUTE = 30;
 const BLOCKTOPIA_ARCADE_MAX_XP_PER_MINUTE = 200;
 const BLOCKTOPIA_ARCADE_MAX_REWARDS_PER_GAME_PER_HOUR = 5;
 const BLOCKTOPIA_MAX_SCORE_SANITY = 1_000_000_000;
@@ -64,6 +66,16 @@ const UPGRADE_MAX_LEVEL = 10;
 const UPGRADE_EFFECT_CAP = 0.5;
 const BLOCKTOPIA_ENTRY_BASE_COST = 10;
 const BLOCKTOPIA_ENTRY_TIER_STEP = 2;
+const BLOCKTOPIA_MINI_GAME_COST_BASE = 10;
+const BLOCKTOPIA_MINI_GAME_COST_TIER_STEP = 1.5;
+const BLOCKTOPIA_MINI_GAME_REWARD_BASE = 20;
+const BLOCKTOPIA_MINI_GAME_REWARD_TIER_STEP = 2;
+const BLOCKTOPIA_MINI_GAME_LOSS_BASE = 10;
+const BLOCKTOPIA_MINI_GAME_LOSS_TIER_STEP = 1;
+const BLOCKTOPIA_MINI_GAME_GEM_CHANCE_BASE = 0.2;
+const BLOCKTOPIA_MINI_GAME_GEM_CHANCE_TIER_STEP = 0.01;
+const BLOCKTOPIA_MINI_GAME_GEM_CHANCE_CAP = 0.5;
+const BLOCKTOPIA_SURVIVAL_XP_FLOOR = 5;
 const BLOCKTOPIA_UPGRADES = {
   efficiency: { column: 'upgrade_efficiency', baseCost: 8 },
   signal: { column: 'upgrade_signal', baseCost: 10 },
@@ -125,6 +137,41 @@ function computeUpgradeCost(base, currentLevel) {
 function computeRpgEntryCost(tier) {
   const safeTier = clamp(Math.floor(Number(tier) || 1), TIER_MIN, TIER_MAX);
   return BLOCKTOPIA_ENTRY_BASE_COST + (safeTier * BLOCKTOPIA_ENTRY_TIER_STEP);
+}
+
+function computeDrainPerMinute(tier, effects = {}) {
+  const safeTier = clamp(Math.floor(Number(tier) || 1), TIER_MIN, TIER_MAX);
+  const base = Math.min(
+    BLOCKTOPIA_DRAIN_MAX_PER_MINUTE,
+    BLOCKTOPIA_DRAIN_BASE_PER_MINUTE + (safeTier * BLOCKTOPIA_DRAIN_TIER_STEP),
+  );
+  const efficiencyBonus = clamp(Number(effects?.efficiencyDrainReduction) || 0, 0, UPGRADE_EFFECT_CAP);
+  return Math.max(0, base * (1 - efficiencyBonus));
+}
+
+function computeMiniGameCost(tier) {
+  const safeTier = clamp(Math.floor(Number(tier) || 1), TIER_MIN, TIER_MAX);
+  return Math.max(1, Math.round(BLOCKTOPIA_MINI_GAME_COST_BASE + (safeTier * BLOCKTOPIA_MINI_GAME_COST_TIER_STEP)));
+}
+
+function computeMiniGameBaseReward(tier) {
+  const safeTier = clamp(Math.floor(Number(tier) || 1), TIER_MIN, TIER_MAX);
+  return Math.max(0, Math.round(BLOCKTOPIA_MINI_GAME_REWARD_BASE + (safeTier * BLOCKTOPIA_MINI_GAME_REWARD_TIER_STEP)));
+}
+
+function computeMiniGameLossPenalty(tier) {
+  const safeTier = clamp(Math.floor(Number(tier) || 1), TIER_MIN, TIER_MAX);
+  return Math.max(0, Math.round(BLOCKTOPIA_MINI_GAME_LOSS_BASE + (safeTier * BLOCKTOPIA_MINI_GAME_LOSS_TIER_STEP)));
+}
+
+function computeGemDropChance(tier, effects = {}) {
+  const safeTier = clamp(Math.floor(Number(tier) || 1), TIER_MIN, TIER_MAX);
+  const baseChance = Math.min(
+    BLOCKTOPIA_MINI_GAME_GEM_CHANCE_CAP,
+    BLOCKTOPIA_MINI_GAME_GEM_CHANCE_BASE + (safeTier * BLOCKTOPIA_MINI_GAME_GEM_CHANCE_TIER_STEP),
+  );
+  const bonus = (Number(effects?.gemDropBonus) || 0) * 0.2;
+  return clamp(baseChance + bonus, 0, BLOCKTOPIA_MINI_GAME_GEM_CHANCE_CAP);
 }
 
 
@@ -618,40 +665,40 @@ function computeBlockTopiaRewards(action, type, score, leaderboardCtx = null, pr
     };
   }
   if (safeAction === 'mini_game_win') {
-    const xpByType = { firewall: 12, router: 10, outbreak: 8, circuit: 11 };
-    const gemsByType = { firewall: 2, router: 1, outbreak: 1, circuit: 2 };
-    if (!xpByType[safeType]) return null;
+    const allowedTypes = new Set(['firewall', 'router', 'outbreak', 'circuit']);
+    if (!allowedTypes.has(safeType)) return null;
     const bonusFlags = [];
-    let xp = xpByType[safeType];
-    let gems = gemsByType[safeType];
+    const tier = clamp(Math.floor(Number(progression?.tier) || 1), TIER_MIN, TIER_MAX);
+    let xp = computeMiniGameBaseReward(tier);
+    let gems = 0;
+    const gemChance = computeGemDropChance(tier, effects);
 
-    xp = clamp(Math.floor(xp * (1 + effects.signalXpBonus)), XP_MIN, XP_MAX);
-    if (streak >= 3) {
-      xp += 1;
-      gems += 1;
-      bonusFlags.push('streak_bonus');
-    }
-    if (Math.random() < 0.12) {
-      xp += 2;
+    const speedBonus = safeScore >= 250 || Math.random() < 0.2;
+    const noDamageBonus = safeScore >= 450 || Math.random() < 0.12;
+    if (speedBonus) {
+      xp += Math.max(2, Math.round(xp * 0.2));
       bonusFlags.push('speed_bonus');
     }
-    if (Math.random() < Math.min(0.25, 0.08 + effects.gemDropBonus)) {
+    if (noDamageBonus) {
+      xp += Math.max(3, Math.round(xp * 0.25));
+      bonusFlags.push('no_damage_bonus');
+    }
+    if (streak >= 3) {
+      xp += Math.max(2, streak);
+      bonusFlags.push('streak_bonus');
+    }
+    xp = clamp(Math.floor(xp * (1 + effects.signalXpBonus)), XP_MIN, XP_MAX);
+
+    if (Math.random() < gemChance) {
       gems += 1;
-      bonusFlags.push('rare_drop');
-    }
-    if (Math.random() < Math.min(0.15, 0.05 + (effects.signalXpBonus * 0.2))) {
-      xp *= 2;
-      bonusFlags.push('double_xp');
-    }
-    if (Math.random() < Math.min(0.12, 0.04 + (effects.gemDropBonus * 0.2))) {
-      gems *= 2;
-      bonusFlags.push('double_gem');
+      bonusFlags.push('gem_drop');
     }
     return {
       xp: clamp(xp, XP_MIN, XP_MAX),
       gems: clamp(gems, GEMS_MIN, GEMS_MAX),
       score: 0,
       bonus_flags: bonusFlags,
+      gem_chance: gemChance,
       reason: 'validated_mini_game_win',
     };
   }
@@ -664,13 +711,21 @@ function computeBlockTopiaRewards(action, type, score, leaderboardCtx = null, pr
 }
 
 function applyProgressionDrain(row, now = Date.now(), effects = null) {
+  if (Number(row?.rpg_mode_active || 0) !== 1) {
+    return {
+      drain: 0,
+      xpAfterDrain: clamp(Number(row?.xp) || 0, XP_MIN, XP_MAX),
+      drainPerMinute: 0,
+    };
+  }
   const lastMs = row?.last_active ? new Date(row.last_active).getTime() : now;
   const elapsedMs = Math.max(0, now - (Number.isFinite(lastMs) ? lastMs : now));
   const upgradeEffects = effects || buildUpgradeEffects(getUpgradeSnapshot(row));
-  const drainScale = Math.max(0.5, 1 - upgradeEffects.efficiencyDrainReduction);
-  const drain = Math.floor((elapsedMs / 60000) * BLOCKTOPIA_DRAIN_PER_MINUTE * drainScale);
+  const tier = clamp(Math.floor(Number(row?.tier) || 1), TIER_MIN, TIER_MAX);
+  const drainPerMinute = computeDrainPerMinute(tier, upgradeEffects);
+  const drain = Math.floor((elapsedMs / 60000) * drainPerMinute);
   const xpAfterDrain = clamp((Number(row?.xp) || 0) - drain, XP_MIN, XP_MAX);
-  return { drain, xpAfterDrain };
+  return { drain, xpAfterDrain, drainPerMinute };
 }
 
 // ── Main fetch handler ────────────────────────────────────────────────────────
@@ -1039,7 +1094,7 @@ export default {
         const row = await getOrCreateBlockTopiaProgression(env.DB, verified.telegramId);
         const upgrades = getUpgradeSnapshot(row);
         const effects = buildUpgradeEffects(upgrades);
-        const { drain, xpAfterDrain } = applyProgressionDrain(row, Date.now(), effects);
+        const { drain, xpAfterDrain, drainPerMinute } = applyProgressionDrain(row, Date.now(), effects);
         const gems = clamp(Number(row.gems) || 0, GEMS_MIN, GEMS_MAX);
         const tierAfter = clamp(Number(row.tier) || 1, TIER_MIN, TIER_MAX);
         const winStreak = Math.max(0, Math.floor(Number(row.win_streak) || 0));
@@ -1067,6 +1122,7 @@ export default {
             tier: tierAfter,
             win_streak: winStreak,
             drain_applied: drain,
+            drain_per_minute: drainPerMinute,
             rpg_mode_active: rpgModeActive,
             rpg_entry_cost: computeRpgEntryCost(tierAfter),
             upgrades,
@@ -1091,13 +1147,28 @@ export default {
         const entryCost = computeRpgEntryCost(tier);
         const gems = clamp(Math.floor(Number(row.gems) || 0), GEMS_MIN, GEMS_MAX);
         if (gems < entryCost) return err('Not enough gems for RPG mode entry', 402);
+        const miniGameCost = computeMiniGameCost(tier);
+        const xp = clamp(Math.floor(Number(row.xp) || 0), XP_MIN, XP_MAX);
+        const seededXp = Math.max(xp, miniGameCost);
         const nextGems = clamp(gems - entryCost, GEMS_MIN, GEMS_MAX);
         await env.DB.prepare(`
           UPDATE blocktopia_progression
-          SET gems = ?, rpg_mode_active = 1, last_active = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP
+          SET xp = ?, gems = ?, rpg_mode_active = 1, last_active = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP
           WHERE telegram_id = ?
-        `).bind(nextGems, verified.telegramId).run();
-        return json({ ok: true, progression: { telegram_id: verified.telegramId, gems: nextGems, tier, rpg_mode_active: true, entry_cost_paid: entryCost } });
+        `).bind(seededXp, nextGems, verified.telegramId).run();
+        return json({
+          ok: true,
+          progression: {
+            telegram_id: verified.telegramId,
+            xp: seededXp,
+            gems: nextGems,
+            tier,
+            rpg_mode_active: true,
+            entry_cost_paid: entryCost,
+            first_mini_game_cost: miniGameCost,
+            first_mini_game_seed_xp: Math.max(0, seededXp - xp),
+          },
+        });
       } catch {
         return err('Failed to enter RPG mode', 500);
       }
@@ -1214,10 +1285,41 @@ export default {
             Math.max(XP_MIN, BLOCKTOPIA_ARCADE_MAX_XP_PER_MINUTE - awardedLastMinute),
           );
         }
-        const { drain, xpAfterDrain } = applyProgressionDrain(row, Date.now(), effects);
-        const nextXp = clamp(xpAfterDrain + rewards.xp, XP_MIN, XP_MAX);
-        const nextGems = clamp((Number(row.gems) || 0) + rewards.gems, GEMS_MIN, GEMS_MAX);
+        const { drain, xpAfterDrain, drainPerMinute } = applyProgressionDrain(row, Date.now(), effects);
         const currentTier = clamp(Math.floor(Number(row.tier) || 1), TIER_MIN, TIER_MAX);
+        const miniGameCost = action === 'arcade_score' ? 0 : computeMiniGameCost(currentTier);
+        if (action !== 'arcade_score' && xpAfterDrain < miniGameCost) {
+          await env.DB.prepare(`
+            UPDATE blocktopia_progression
+            SET xp = ?, rpg_mode_active = 0, win_streak = 0, last_active = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP
+            WHERE telegram_id = ?
+          `).bind(xpAfterDrain, verified.telegramId).run();
+          return json({
+            ok: false,
+            exited: true,
+            reason: 'mini_game_unaffordable',
+            progression: {
+              telegram_id: verified.telegramId,
+              xp: xpAfterDrain,
+              gems: clamp((Number(row.gems) || 0), GEMS_MIN, GEMS_MAX),
+              tier: currentTier,
+              win_streak: 0,
+              rpg_mode_active: false,
+              mini_game_cost: miniGameCost,
+              drain_applied: drain,
+              drain_per_minute: drainPerMinute,
+            },
+          }, 409);
+        }
+        const xpCost = miniGameCost;
+        const xpLossPenalty = action === 'mini_game_loss' ? computeMiniGameLossPenalty(currentTier) : 0;
+        const xpBeforeOutcome = clamp(xpAfterDrain - xpCost, XP_MIN, XP_MAX);
+        let tentativeXp = clamp(xpBeforeOutcome - xpLossPenalty + rewards.xp, XP_MIN, XP_MAX);
+        if (action === 'mini_game_loss' && xpBeforeOutcome > BLOCKTOPIA_SURVIVAL_XP_FLOOR) {
+          tentativeXp = Math.max(BLOCKTOPIA_SURVIVAL_XP_FLOOR, tentativeXp);
+        }
+        const nextXp = tentativeXp;
+        const nextGems = clamp((Number(row.gems) || 0) + rewards.gems, GEMS_MIN, GEMS_MAX);
         const currentStreak = Math.max(0, Math.floor(Number(row.win_streak) || 0));
         let nextTier = currentTier;
         let nextWinStreak = currentStreak;
@@ -1247,7 +1349,7 @@ export default {
           action,
           action === 'arcade_score' ? game : type,
           rewards.score,
-          rewards.xp,
+          rewards.xp - xpCost - xpLossPenalty,
           rewards.gems,
         ).run();
 
@@ -1261,14 +1363,21 @@ export default {
             tier: nextTier,
             win_streak: nextWinStreak,
             drain_applied: drain,
+            drain_per_minute: drainPerMinute,
             rpg_mode_active: Number(row.rpg_mode_active || 0) === 1,
             upgrades,
             effects,
             xp_awarded: rewards.xp,
+            xp_cost: xpCost,
+            xp_loss_penalty: xpLossPenalty,
+            xp_net: rewards.xp - xpCost - xpLossPenalty,
             gems_awarded: rewards.gems,
             xp_base: rewards.base_xp || 0,
             xp_bonus: rewards.bonus_xp || 0,
             bonus_flags: rewards.bonus_flags || [],
+            gem_chance: rewards.gem_chance || 0,
+            node_corruption_applied: action === 'mini_game_loss',
+            sam_pressure_delta: action === 'mini_game_loss' ? 7 : -3,
             leaderboard: rewards.leaderboard || null,
             synced_multiplier: syncedMultiplierApplied,
           },
