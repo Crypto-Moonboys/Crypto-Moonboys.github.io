@@ -858,9 +858,9 @@ async function cmdGkStart(db, tok, chatId, telegramId, fromUser) {
     `🚀 <b>Welcome to Crypto Moonboys GK, ${name}!</b>\n\n` +
     `You've entered the Battle Chamber.\n\n` +
     `<b>What to do next:</b>\n` +
-    `🔗 /gklink — Link your account to the website\n` +
-    `📊 /gkstatus — View your XP and faction\n` +
-    `🏆 /gkleaderboard — Community leaderboard\n` +
+    `🔗 /gklink — Link or refresh Telegram sync with the website\n` +
+    `📊 /gkstatus — View your XP, level, and faction\n` +
+    `🏆 /gkleaderboard — Community XP leaderboard\n` +
     `🗺️ /gkquests — Active missions\n` +
     `⚔️ /gkfaction — Join or view your faction\n` +
     `❓ /gkhelp — Full command list${xpMsg}`,
@@ -882,7 +882,7 @@ async function cmdGkHelp(tok, chatId) {
   await sendTelegramMessage(tok, chatId,
     `📖 <b>Moonboys GK Commands</b>\n\n` +
     `/gkstart — Start and register\n` +
-    `/gklink — Link account to website\n` +
+    `/gklink — Link/refresh Telegram sync (required for Block Topia)\n` +
     `/gkstatus — XP and faction stats\n` +
     `/gkseason — Current season info\n` +
     `/gkleaderboard — Leaderboard\n` +
@@ -892,6 +892,13 @@ async function cmdGkHelp(tok, chatId) {
     `/daily — Claim daily XP\n` +
     `/solve — Submit quest answers\n` +
     `/gkhelp — Help\n\n` +
+    `<b>How sync + progression works</b>\n` +
+    `• /gklink creates a one-time website link and also refreshes expired sync.\n` +
+    `• Linked accounts store XP/progression server-side; unsynced play is local-only.\n` +
+    `• Arcade ranking uses score only. Accepted scores can convert into Block Topia XP.\n` +
+    `• XP is used for Block Topia entry, survival, and mini-game costs.\n` +
+    `• Mini-game wins can reward XP + gems. Gems are upgrade currency, not entry.\n` +
+    `• If sync fails/expired, run /gklink again and use the newest one-time link.\n\n` +
     `<i>Legacy aliases: /start /help /link are still supported.</i>`,
     { reply_markup: replyMarkup },
   );
@@ -929,13 +936,19 @@ async function cmdGkLink(db, tok, chatId, telegramId) {
   const linkUrl = `${SITE_URL}/community.html?gklink=${token}`;
   await sendTelegramMessage(tok, chatId,
     `🔗 <b>Link Your Account</b>\n\n` +
-    `Click the link below to connect your Telegram identity to the Moonboys website:\n\n` +
+    `Click the link below to connect or refresh your Telegram identity on the Moonboys website:\n\n` +
     `<a href="${linkUrl}">🔑 Activate Competition Access</a>\n\n` +
     `<i>This link expires in 15 minutes and can only be used once.</i>\n\n` +
     `After linking:\n` +
     `✅ Your identity is verified\n` +
     `✅ Competitive features unlock\n` +
-    `✅ Leaderboard rankings activate\n\n` +
+    `✅ Linked XP/progression store server-side\n\n` +
+    `How progression works after linking:\n` +
+    `• Arcade ranking uses score only.\n` +
+    `• Accepted scores can convert into Block Topia XP.\n` +
+    `• XP is used for Block Topia entry/survival and mini-game costs.\n` +
+    `• Mini-game wins can reward XP and gems; gems are used for upgrades.\n\n` +
+    `If sync expires or fails, run /gklink again and use the newest link.\n` +
     `To invalidate tokens later, use /gkunlink`
   );
 }

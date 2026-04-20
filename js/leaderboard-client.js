@@ -115,7 +115,7 @@ export async function submitScore(player, score, game = "global") {
     emitArcadeSubmissionStatus({
       ...result,
       state: "local_only",
-      message: "Unsynced — local only. To store XP and Block Topia progression, link with Telegram using /gklink.",
+      message: "Unsynced play stays local to this browser. To store XP and Block Topia progression server-side, run /gklink in Telegram.",
     });
     if (typeof window !== "undefined" && window.MOONBOYS_IDENTITY &&
         typeof window.MOONBOYS_IDENTITY.showSyncGateModal === "function") {
@@ -154,13 +154,13 @@ export async function submitScore(player, score, game = "global") {
           emitArcadeSubmissionStatus({
             ...result,
             state: "relink_required",
-            message: "Re-link required. Run /gklink to store XP and Block Topia progression.",
+            message: "Re-link required. Run /gklink again to restore Telegram sync and server-side progression.",
           });
         } else if (authExpired) {
           emitArcadeSubmissionStatus({
             ...result,
             state: "auth_expired",
-            message: "Auth expired. Run /gklink again to refresh your Telegram link.",
+            message: "Sync expired. Run /gklink again to refresh your Telegram link.",
           });
         } else {
           emitArcadeSubmissionStatus({
@@ -177,7 +177,7 @@ export async function submitScore(player, score, game = "global") {
         emitArcadeSubmissionStatus({
           ...result,
           state: "score_accepted",
-          message: "Score accepted.",
+          message: "Score accepted for ranking.",
         });
         if (gameKey === "blocktopia") {
           try {
@@ -191,8 +191,8 @@ export async function submitScore(player, score, game = "global") {
               ...result,
               state: "xp_awarded",
               message: result.awardedXp > 0
-                ? "XP awarded."
-                : "No XP awarded.",
+                ? "Accepted score converted to Block Topia XP."
+                : "Accepted score recorded, but no XP was awarded.",
             });
           } catch (err) {
             console.error("[leaderboard-client] Block Topia progression sync failed:", err);
@@ -202,15 +202,15 @@ export async function submitScore(player, score, game = "global") {
               ...result,
               state: authRequired ? "auth_expired" : "accepted_no_xp",
               message: authRequired
-                ? "Auth expired. Run /gklink again to refresh your Telegram link."
-                : "Score accepted, but Block Topia XP sync did not complete.",
+                ? "Sync expired. Run /gklink again to refresh your Telegram link."
+                : "Score accepted for ranking, but Block Topia XP sync did not complete.",
             });
           }
         } else {
           emitArcadeSubmissionStatus({
             ...result,
             state: "score_accepted",
-            message: "Score accepted.",
+            message: "Score accepted for ranking.",
           });
         }
       } else {
@@ -218,7 +218,7 @@ export async function submitScore(player, score, game = "global") {
         emitArcadeSubmissionStatus({
           ...result,
           state: "rejected_no_xp",
-          message: "No XP awarded.",
+          message: "Score not accepted for XP conversion.",
         });
       }
     } catch (err) {
@@ -229,7 +229,7 @@ export async function submitScore(player, score, game = "global") {
         ...result,
         state: authExpired ? "auth_expired" : "sync_error",
         message: authExpired
-          ? "Auth expired. Run /gklink again to refresh your Telegram link."
+          ? "Sync expired. Run /gklink again to refresh your Telegram link."
           : "Sync failed. Retry sync to submit this run.",
       });
     }

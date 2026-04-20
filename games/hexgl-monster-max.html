@@ -307,7 +307,7 @@
         <span class="notice-icon" aria-hidden="true">🏆</span>
         <div>
           <strong>Season Active</strong> — 90-day cycle in progress.
-          Score decides ranking. Accepted scores convert to Block Topia XP after Telegram sync.
+          Ranking uses score only. Accepted scores can convert into Block Topia XP after Telegram sync.
         </div>
       </div>
 
@@ -324,7 +324,7 @@
           <strong>2. Begin Run</strong> arms tracking ·
           <strong>3.</strong> enter the race inside HexGL ·
           <strong>4. Start Timer</strong> begins countdown ·
-          <strong>5. Submit</strong> sends score for ranking + XP conversion review · Guest runs stay local
+          <strong>5. Submit</strong> sends score for ranking + accepted-score review for Block Topia XP conversion · Unsynced runs stay local
         </div>
 
         <div id="hexgl-frame-wrap">
@@ -365,8 +365,8 @@
 
         <p class="note" style="color:var(--color-text-muted);font-size:.82rem;margin-top:12px">
           Score formula: <code>500 000 − (finish_time_seconds × 1000)</code>.
-          Score feeds leaderboard ranking. Accepted scores convert into Block Topia XP once synced.
-          Guest runs are local only and do not persist XP/progression.
+          Ranking uses score only. Accepted scores can convert into Block Topia XP once synced.
+          Unsynced runs stay local to this browser and do not persist server-side XP/progression.
         </p>
 
         <div class="attribution">
@@ -379,7 +379,7 @@
 
       <section class="notice info" role="note" aria-label="Arcade system explainer" style="margin-top:18px">
         <span class="notice-icon" aria-hidden="true">🧭</span>
-        <div><strong>Arcade System:</strong> Scores determine leaderboard ranking; accepted scores convert into Block Topia XP; XP is used to enter and survive in Block Topia; gems are earned in Block Topia and used for upgrades; Telegram sync is required to store XP and progression.</div>
+        <div><strong>Arcade System:</strong> Ranking uses score only; accepted scores can convert into Block Topia XP; XP is used for Block Topia entry, survival, and mini-game costs; mini-game wins can reward XP and gems; gems are upgrade currency (not the entry gate); Telegram sync via /gklink is required to store XP and progression server-side.</div>
       </section>
 
       <section style="margin-top:28px">
@@ -393,7 +393,7 @@
           <li>Click <strong>Submit Run</strong> to send your score (ranking metric).</li>
           <li>Score = <code>500 000 − (time_seconds × 1000)</code>. Faster = higher score.</li>
           <li>Scores above 0 qualify for the global leaderboard (ranked by score only).</li>
-          <li>Telegram sync required for competitive ranking — guest runs are local only.</li>
+          <li>Telegram sync via /gklink is required for competitive ranking and server-stored progression — unsynced runs are local-only.</li>
         </ul>
       </section>
 
