@@ -26,8 +26,10 @@ import { createNodeInterferenceSystem } from './world/node-interference-system.j
 import { createDuelSystem } from './world/duel-system.js';
 import { createHud } from './ui/hud.js';
 import { createDuelOverlay } from './ui/duel-overlay.js';
+import { createNodeOutbreakOverlay } from './ui/node-outbreak-overlay.js';
 import { createIsoRenderer } from './render/iso-renderer.js';
 import { DUEL_FIGHTER_CONFIG } from './data/duel-fighter-config.js';
+import { createNodeOutbreakSystem } from './world/node-outbreak-system.js';
 
 const ENTRY_OVERLAY_TIMEOUT_MS = 7000;
 const MAX_FRAME_DELTA_SECONDS = 1 / 30;
@@ -129,6 +131,31 @@ async function boot() {
     onSubmitAction: (action) => duel.submitAction(action),
     onAcceptDuel: (duelId) => duel.acceptDuel(duelId),
   });
+  const outbreakSystem = createNodeOutbreakSystem(state);
+  const outbreakOverlay = createNodeOutbreakOverlay(document, {
+    onAction: ({ kind, id }) => {
+      const selectedId = outbreakSystem.getPublicState().selectedNodeId;
+      let result = null;
+      if (kind === 'upgrade') {
+        result = outbreakSystem.actions.upgrade(id);
+      } else if (id === 'scan') {
+        result = outbreakSystem.actions.scanNode(selectedId);
+      } else if (id === 'isolate') {
+        result = outbreakSystem.actions.isolateNode(selectedId);
+      } else if (id === 'delayLink') {
+        result = outbreakSystem.actions.delayLink(selectedId);
+      } else if (id === 'purge') {
+        result = outbreakSystem.actions.purgeNode(selectedId);
+      }
+      if (!result) return;
+      if (!result.ok && result.reason) {
+        hud.showNodeInterference(result.reason, 'warning');
+      } else if (result.ok) {
+        hud.pushFeed(`🛡️ Outbreak action complete: ${id}`, 'combat');
+      }
+      outbreakOverlay.render(outbreakSystem.getPublicState());
+    },
+  });
   let multiplayerConnected = false;
   let localSessionId = '';
   let nearbyNpc = null;
@@ -224,6 +251,13 @@ async function boot() {
   function tryInteractWithClickedNode(event) {
     const node = renderer.pickControlNodeFromClientPoint(event.clientX, event.clientY, state);
     if (!node) return false;
+    outbreakSystem.setSelectedNode(node.id);
+    const outbreakState = outbreakSystem.getPublicState();
+    if (outbreakState.active) {
+      outbreakOverlay.render(outbreakState);
+      hud.showNodeInterference(`Outbreak target locked: ${node.id.toUpperCase()}`, 'signal');
+      return true;
+    }
     if (!nodeInterference.canInterfere(node.id)) {
       const remainingMs = Math.max(0, (Number(node.cooldownUntil) || 0) - Date.now());
       const remainingSec = Math.max(1, Math.ceil(remainingMs / 1000));
@@ -860,6 +894,37 @@ async function boot() {
     if (shouldIgnoreHotkey(event) || event.key.toLowerCase() !== 'e' || event.repeat || !nearbyNpc) return;
     interactWithNpc(nearbyNpc);
   });
+  window.addEventListener('keydown', (event) => {
+    if (shouldIgnoreHotkey(event) || event.repeat) return;
+    const key = event.key.toLowerCase();
+    const outbreakState = outbreakSystem.getPublicState();
+    if (!outbreakState.active) return;
+    const selectedId = outbreakState.selectedNodeId;
+    if (!selectedId && ['1', '2', '3', '4'].includes(key)) {
+      hud.showNodeInterference('Select a node first.', 'warning');
+      return;
+    }
+    const actionByKey = {
+      1: () => outbreakSystem.actions.scanNode(selectedId),
+      2: () => outbreakSystem.actions.isolateNode(selectedId),
+      3: () => outbreakSystem.actions.delayLink(selectedId),
+      4: () => outbreakSystem.actions.purgeNode(selectedId),
+    };
+    const upgradeByKey = {
+      q: () => outbreakSystem.actions.upgrade('containment'),
+      w: () => outbreakSystem.actions.upgrade('detection'),
+      r: () => outbreakSystem.actions.upgrade('neutralization'),
+    };
+    const action = actionByKey[key] || upgradeByKey[key];
+    if (!action) return;
+    const result = action();
+    if (result?.ok) {
+      hud.pushFeed(`🛡️ NODE OUTBREAK DEFENSE action ${key.toUpperCase()} confirmed`, 'combat');
+    } else if (result?.reason) {
+      hud.showNodeInterference(result.reason, 'warning');
+    }
+    outbreakOverlay.render(outbreakSystem.getPublicState());
+  });
 
   let lastTs = performance.now();
   function logicTick() {
@@ -949,6 +1014,42 @@ async function boot() {
         hud.pushFeed(`📶 Civic chatter · ${(npcEntity.type || 'helper').toUpperCase()}-${npcEntity.id} reports local signal motion`, 'system');
       }
     }
+    const duelState = duel.getState();
+    outbreakSystem.tick(dt, {
+      onStart: ({ nodeId }) => {
+        const node = state.controlNodes.find((n) => n.id === nodeId);
+        const district = districtStateById.get(node?.districtId)?.name || node?.districtId || 'Unknown district';
+        hud.showSamPopup(`🚨 VIRUS ALERT — NODES UNDER ATTACK\nNode ${nodeId.toUpperCase()} · ${district}`, 3800);
+        hud.pushFeed(`🚨 NODE OUTBREAK DEFENSE online at ${nodeId.toUpperCase()} (${district})`, 'sam');
+      },
+      onTrait: (trait) => {
+        hud.pushFeed(`🧬 Virus adapted: ${trait.name}`, 'sam');
+      },
+      onSpread: ({ fromId, toId, burst }) => {
+        hud.pushFeed(`${burst ? '💥' : '🦠'} Spread ${fromId.toUpperCase()} → ${toId.toUpperCase()}`, 'combat');
+      },
+      onResolve: (result) => {
+        if (result.outcome === 'success') {
+          const reward = awardXp(state, result.rewardXp);
+          state.player.score += result.rewardGems;
+          hud.setXp(reward.xp);
+          hud.pushFeed(`✅ Outbreak contained · +${result.rewardXp} XP · +${result.rewardGems} gems`, 'quest');
+          hud.showQuestComplete('NODE OUTBREAK DEFENSE', result.rewardXp);
+          hud.showNodeInterference(`Containment bonus: +${result.rewardGems} gems`, 'signal');
+        } else {
+          state.sam.pressure = Math.min(100, state.sam.pressure + (result.samPressureDelta || 0));
+          const district = districtStateById.get(state.player.districtId);
+          if (district) {
+            district.control = Math.max(0, district.control - (result.districtControlPenalty || 0));
+          }
+          hud.pushFeed('❌ Outbreak breached threshold · district pressure dropped', 'sam');
+          hud.showNodeInterference('Containment failed: SAM pressure increased', 'warning');
+        }
+      },
+    }, {
+      duelActive: duelState.status === 'active',
+    });
+    outbreakOverlay.render(outbreakSystem.getPublicState());
 
     // Interpolate remote player positions toward server-provided targets.
     for (const remote of state.remotePlayers) {
