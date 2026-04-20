@@ -67,6 +67,9 @@ export function createHud(doc) {
   let feedNextSlotAt = Date.now();
   let lastFeedSignature = '';
   let lastFeedAt = 0;
+  let districtName = '';
+  let districtControl = 0;
+  let districtState = 'contested';
 
   let leftFeedTicker = null;
 
@@ -204,9 +207,8 @@ export function createHud(doc) {
   }
 
   function setDistrictControl(pct) {
-    if (!districtStatus) return;
-    const rounded = Math.round(pct || 0);
-    districtStatus.textContent = `District: ${districtStatus.textContent.replace(/^District:\s*/, '')} · ${rounded}% control`;
+    districtControl = Number(pct) || 0;
+    refreshDistrictLine();
   }
 
   function showSamPopup(text, durationMs = 4000) {
@@ -278,14 +280,21 @@ export function createHud(doc) {
     identityTimer = setTimeout(() => entryIdentity?.classList.add('hidden'), delay);
   }
 
+  function refreshDistrictLine() {
+    if (!districtStatus) return;
+    const controlTag = Number.isFinite(districtControl) ? `${Math.round(districtControl)}%` : '0%';
+    districtStatus.textContent = `District: ${districtName || 'Unknown'} · ${controlTag} · ${String(districtState || 'contested').toUpperCase()}`;
+  }
+
   return {
     setPlayerName: (name) => { playerNameEl.textContent = name; },
     setWorldStatus: (text) => { worldStatus.textContent = text; },
     setAiStatus: (text) => {
       if (aiStatus) aiStatus.textContent = `AI: ${text}`;
     },
-    setDistrict: (name) => { districtStatus.textContent = `District: ${name}`; },
+    setDistrict: (name) => { districtName = String(name || 'Unknown'); refreshDistrictLine(); },
     setDistrictControl,
+    setDistrictState: (nextState) => { districtState = String(nextState || 'contested'); refreshDistrictLine(); },
     setDistrictOwner: (owner) => pushLog('right', `District control: ${owner || '—'}`),
     setFactionStatus: (text) => { factionStatus.textContent = `Factions: ${text}`; },
     setSamPhase: (name) => { samStatus.textContent = `SAM: ${name}`; },

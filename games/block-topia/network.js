@@ -33,6 +33,8 @@ export async function connectMultiplayer({
   onSamPhaseChanged,
   onDistrictCaptureChanged,
   onNodeInterferenceChanged,
+  onDistrictControlStateChanged,
+  onPlayerWarImpact,
   onDuelRequested,
   onDuelStarted,
   onDuelActionSubmitted,
@@ -113,6 +115,12 @@ export async function connectMultiplayer({
       room.onMessage('nodeInterferenceChanged', (message) => {
         onNodeInterferenceChanged?.(message);
       });
+      room.onMessage('districtControlStateChanged', (message) => {
+        onDistrictControlStateChanged?.(message);
+      });
+      room.onMessage('playerWarImpact', (message) => {
+        onPlayerWarImpact?.(message);
+      });
 
       room.onMessage('duelRequested', (message) => {
         onDuelRequested?.(message);
@@ -153,13 +161,21 @@ export function sendMovement(x, y) {
   room.send('move', { x, y });
 }
 
-export function sendNodeInterference(nodeId) {
+export function sendNodeInterference(nodeId, intent = 'disrupt') {
   if (!room || !nodeId) return;
-  room.send('nodeInterfere', { nodeId });
+  room.send('nodeInterfere', { nodeId, intent });
 }
 
 export function getRoom() {
   return room;
+}
+
+export function sendWarAction(actionType, payload = {}) {
+  if (!room || !actionType) return;
+  room.send('warAction', {
+    actionType,
+    ...payload,
+  });
 }
 
 export function challengePlayer(targetPlayerId) {
