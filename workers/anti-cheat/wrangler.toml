@@ -11,14 +11,12 @@ id         = "a621c334d9ac439ebaf5f35dd31dddd5"
 preview_id = "a621c334d9ac439ebaf5f35dd31dddd5"
 
 # D1 database — same instance as moonboys-api (wikicoms).
-# Do not commit the live production database UUID; inject it from CI/secrets
-# or an ignored local Wrangler config before deploying.
 # Apply migration 003 before first deploy:
 #   wrangler d1 execute wikicoms --file=../moonboys-api/migrations/003_anticheat.sql --remote
 [[d1_databases]]
 binding       = "DB"
 database_name = "wikicoms"
-database_id   = "00000000-0000-0000-0000-000000000000"
+database_id   = "8a36e17a-18fa-4b98-90e1-3f269164b166"
 
 # Weekly cron — every Sunday at 00:00 UTC
 [triggers]

@@ -4,20 +4,17 @@ This worker owns Telegram identity/community routes and the Block Topia progress
 
 ## D1 deployment
 
-The committed `wrangler.toml` deliberately uses a zero UUID for the `DB` binding so the live production D1 database ID is not stored in git.
+The committed `wrangler.toml` contains the live `wikicoms` D1 binding used by the deployed Moonboys workers.
 
 Before deploying to production:
 
-1. Create an uncommitted Wrangler config from `wrangler.toml` or generate one in CI.
-2. Replace the production `database_id` with the real `wikicoms` D1 UUID from a secret store.
-3. Apply pending D1 migrations before deploying Worker code that depends on them:
+1. Apply pending D1 migrations before deploying Worker code that depends on them.
+2. Deploy the worker with the committed `DB` binding intact.
 
 ```sh
-wrangler d1 migrations apply wikicoms --remote --env production
-wrangler deploy --env production
+wrangler d1 migrations apply wikicoms --remote
+wrangler deploy
 ```
-
-Do not reintroduce the live D1 UUID into committed files.
 
 ## Block Topia progression
 

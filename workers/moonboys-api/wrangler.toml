@@ -2,35 +2,18 @@ name = "moonboys-api"
 main = "worker.js"
 compatibility_date = "2026-04-12"
 
-# Non-secret defaults used by worker.js. Override per environment below when
-# a deployment target needs different Worker URLs.
+# Non-secret production defaults used by worker.js. These may be overridden
+# in the Cloudflare dashboard if the deployed worker URLs change.
 [vars]
 TELEGRAM_BOT_USERNAME = "WIKICOMSBOT"
 ANTI_CHEAT_WORKER_URL = "https://moonboys-anti-cheat.sercullen.workers.dev"
 LEADERBOARD_API_URL = "https://moonboys-leaderboard.sercullen.workers.dev"
 
-# D1 database binding.
-# The committed config intentionally does not contain the live production D1
-# database UUID. For production deploys, copy this file to an ignored local
-# config or inject the real database_id from CI/secrets before running Wrangler.
+# D1 database binding — production wikicoms database.
 [[d1_databases]]
 binding = "DB"
 database_name = "wikicoms"
-database_id = "00000000-0000-0000-0000-000000000000"
-migrations_dir = "migrations"
-
-[env.production]
-name = "moonboys-api"
-
-[env.production.vars]
-TELEGRAM_BOT_USERNAME = "WIKICOMSBOT"
-ANTI_CHEAT_WORKER_URL = "https://moonboys-anti-cheat.sercullen.workers.dev"
-LEADERBOARD_API_URL = "https://moonboys-leaderboard.sercullen.workers.dev"
-
-[[env.production.d1_databases]]
-binding = "DB"
-database_name = "wikicoms"
-database_id = "00000000-0000-0000-0000-000000000000"
+database_id = "8a36e17a-18fa-4b98-90e1-3f269164b166"
 migrations_dir = "migrations"
 
 # ── Telegram secrets ──────────────────────────────────────────────────────────
