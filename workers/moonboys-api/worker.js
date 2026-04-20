@@ -1154,28 +1154,29 @@ export default {
         const row = await getOrCreateBlockTopiaProgression(env.DB, verified.telegramId);
         const tier = clamp(Math.floor(Number(row.tier) || 1), TIER_MIN, TIER_MAX);
         const entryCost = computeRpgEntryCost(tier);
-        const gems = clamp(Math.floor(Number(row.gems) || 0), GEMS_MIN, GEMS_MAX);
-        if (gems < entryCost) return err('Not enough gems for RPG mode entry', 402);
         const miniGameCost = computeMiniGameCost(tier);
         const xp = clamp(Math.floor(Number(row.xp) || 0), XP_MIN, XP_MAX);
-        const seededXp = Math.max(xp, miniGameCost);
-        const nextGems = clamp(gems - entryCost, GEMS_MIN, GEMS_MAX);
+        const gems = clamp(Math.floor(Number(row.gems) || 0), GEMS_MIN, GEMS_MAX);
+        if (xp < entryCost) return err('Not enough XP for Block Topia entry', 402);
+
+        const xpAfterEntry = clamp(xp - entryCost, XP_MIN, XP_MAX);
+        const seededXp = Math.max(xpAfterEntry, miniGameCost);
         await env.DB.prepare(`
           UPDATE blocktopia_progression
           SET xp = ?, gems = ?, rpg_mode_active = 1, last_active = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP
           WHERE telegram_id = ?
-        `).bind(seededXp, nextGems, verified.telegramId).run();
+        `).bind(seededXp, gems, verified.telegramId).run();
         return json({
           ok: true,
           progression: {
             telegram_id: verified.telegramId,
             xp: seededXp,
-            gems: nextGems,
+            gems,
             tier,
             rpg_mode_active: true,
             entry_cost_paid: entryCost,
             first_mini_game_cost: miniGameCost,
-            first_mini_game_seed_xp: Math.max(0, seededXp - xp),
+            first_mini_game_seed_xp: Math.max(0, seededXp - xpAfterEntry),
           },
         });
       } catch {

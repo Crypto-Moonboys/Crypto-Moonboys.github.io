@@ -227,8 +227,16 @@ async function ensureRpgEntry() {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ telegram_auth: telegramAuth }),
   }).catch(() => null);
-  if (!res?.ok) return false;
+  if (!res) return false;
   const data = await res.json().catch(() => null);
+  if (!res.ok) {
+    const message = String(data?.error || data?.message || '').trim();
+    if (message === 'Not enough XP for Block Topia entry') {
+      hud.showNodeInterference('Not enough XP for Block Topia entry', 'warning');
+      hud.pushFeed('🧪 Entry economy: XP required to enter; gems are for upgrades and buffs.', 'system');
+    }
+    return false;
+  }
   setServerProgression({ ...(data?.progression || {}), rpg_mode_active: true });
   return true;
 }
@@ -713,7 +721,7 @@ async function boot() {
     if (server?.progression) {
       syncHudProgression();
       const bonus = (server.progression.bonus_flags || []).length ? ` · ${server.progression.bonus_flags.join(', ')}` : '';
-      hud.pushFeed(`🧬 Progression synced · XP ${server.progression.xp || 0} · Gems ${server.progression.gems || 0}${bonus}`, 'quest');
+      hud.pushFeed(`🧬 Progression synced · XP ${server.progression.xp || 0} (survival) · Gems ${server.progression.gems || 0} (upgrades)${bonus}`, 'quest');
       if (server.exited || server.progression.rpg_mode_active === false) {
         sessionGuard.sessionDead = true;
         closeMiniGameOverlays();
