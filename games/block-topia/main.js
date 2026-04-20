@@ -32,6 +32,8 @@ import { DUEL_FIGHTER_CONFIG } from './data/duel-fighter-config.js';
 import { createNodeOutbreakSystem } from './world/node-outbreak-system.js';
 import { createFirewallDefenseSystem } from './world/firewall-defense-system.js';
 import { createFirewallDefenseOverlay } from './ui/firewall-defense-overlay.js';
+import { createSignalRouterSystem } from './world/signal-router-system.js';
+import { createSignalRouterOverlay } from './ui/signal-router-overlay.js';
 
 const ENTRY_OVERLAY_TIMEOUT_MS = 7000;
 const MAX_FRAME_DELTA_SECONDS = 1 / 30;
@@ -135,6 +137,7 @@ async function boot() {
   });
   const outbreakSystem = createNodeOutbreakSystem(state);
   const firewallDefense = createFirewallDefenseSystem(state);
+  const signalRouter = createSignalRouterSystem(state);
   const outbreakOverlay = createNodeOutbreakOverlay(document, {
     onAction: ({ kind, id }) => {
       const selectedId = outbreakSystem.getPublicState().selectedNodeId;
@@ -169,6 +172,21 @@ async function boot() {
         hud.pushFeed(`🛡️ ${defenseId.toUpperCase()} deployed at ${selectedId.toUpperCase()}`, 'combat');
       }
       firewallOverlay.render(firewallDefense.getPublicState());
+    },
+  });
+  const signalRouterOverlay = createSignalRouterOverlay(document, {
+    onAction: (actionId) => {
+      const selectedId = (state.signalRouterView || signalRouter.getPublicState()).selectedNodeId;
+      const action = signalRouter.actions[actionId];
+      if (typeof action !== 'function') return;
+      const result = action(selectedId);
+      if (!result?.ok && result?.reason) {
+        hud.showNodeInterference(result.reason, 'warning');
+      } else if (result?.ok) {
+        hud.pushFeed(`📡 Signal router action: ${actionId}`, 'combat');
+      }
+      state.signalRouterView = signalRouter.getPublicState();
+      signalRouterOverlay.render(state.signalRouterView);
     },
   });
   let multiplayerConnected = false;
@@ -278,6 +296,13 @@ async function boot() {
     if (outbreakState.active) {
       outbreakOverlay.render(outbreakState);
       hud.showNodeInterference(`Outbreak target locked: ${node.id.toUpperCase()}`, 'signal');
+      return true;
+    }
+    signalRouter.setSelectedNode(node.id);
+    const signalRouterState = state.signalRouterView || signalRouter.getPublicState();
+    if (signalRouterState.active) {
+      signalRouterOverlay.render(signalRouterState);
+      hud.showNodeInterference(`Route node locked: ${node.id.toUpperCase()}`, 'signal');
       return true;
     }
     if (!nodeInterference.canInterfere(node.id)) {
@@ -939,6 +964,29 @@ async function boot() {
       }
     }
     const outbreakState = outbreakSystem.getPublicState();
+    const signalRouterState = state.signalRouterView || signalRouter.getPublicState();
+    if (signalRouterState.active) {
+      const selectedId = signalRouterState.selectedNodeId;
+      const actionsByKey = {
+        z: 'prioritizeRoute',
+        x: 'avoidLink',
+        c: 'rerouteTraffic',
+        v: 'stabilizeLink',
+        b: 'clearCongestion',
+      };
+      const actionId = actionsByKey[key];
+      if (actionId) {
+        const action = signalRouter.actions[actionId];
+        const result = action?.(selectedId);
+        if (result?.ok) {
+          hud.pushFeed(`📡 SIGNAL ROUTER ${actionId}`, 'combat');
+        } else if (result?.reason) {
+          hud.showNodeInterference(result.reason, 'warning');
+        }
+        state.signalRouterView = signalRouter.getPublicState();
+        signalRouterOverlay.render(state.signalRouterView);
+      }
+    }
     if (!outbreakState.active) return;
     const selectedId = outbreakState.selectedNodeId;
     if (!selectedId && ['1', '2', '3', '4'].includes(key)) {
@@ -1134,6 +1182,45 @@ async function boot() {
       duelActive: duelState.status === 'active' || firewallDefense.getPublicState().active,
     });
     outbreakOverlay.render(outbreakSystem.getPublicState());
+    signalRouter.tick(dt, {
+      onStart: ({ message }) => {
+        hud.showSamPopup(`🚨 ${message}`, 3400);
+        hud.pushFeed(`🚨 ${message}`, 'sam');
+      },
+      onNpc: ({ type, text }) => {
+        const labels = {
+          courier: 'courier demand',
+          agent: 'agent corridor',
+          fighter: 'fighter security',
+          recruiter: 'recruiter relief',
+          'lore-keeper': 'lore warning',
+        };
+        hud.pushFeed(`🤝 NPC ${labels[type] || type} · ${text}`, 'combat');
+      },
+      onResolve: (result) => {
+        if (result.outcome === 'success') {
+          const reward = awardXp(state, result.rewardXp);
+          state.player.score += result.rewardGems;
+          hud.setXp(reward.xp);
+          hud.setScore(state.player.score);
+          hud.pushFeed(`✅ Signal Router stabilized · +${result.rewardXp} XP · +${result.rewardGems} gems`, 'quest');
+          hud.showQuestComplete('SIGNAL ROUTER', result.rewardXp);
+          hud.showNodeInterference('Routing stability boosted', 'signal');
+        } else {
+          state.sam.pressure = Math.min(100, state.sam.pressure + (result.samPressureDelta || 0));
+          const district = districtStateById.get(state.player.districtId);
+          if (district) district.control = Math.max(0, district.control - (result.districtInstabilityPenalty || 0));
+          hud.pushFeed('❌ Signal Router collapse · district instability increased', 'sam');
+          hud.showNodeInterference('SAM pressure increased after route failure', 'warning');
+        }
+      },
+    }, {
+      duelActive: duelState.status === 'active',
+      outbreakActive: outbreakSystem.getPublicState().active,
+      firewallActive: firewallDefense.getPublicState().active,
+    });
+    state.signalRouterView = signalRouter.getPublicState();
+    signalRouterOverlay.render(state.signalRouterView);
 
     // Interpolate remote player positions toward server-provided targets.
     for (const remote of state.remotePlayers) {

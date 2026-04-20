@@ -160,6 +160,9 @@ const DISTRICT_SUPPORT_PROP_RING = [
 function clamp(value, min, max) {
   return Math.max(min, Math.min(max, value));
 }
+function edgeKey(aId, bId) {
+  return aId < bId ? `${aId}|${bId}` : `${bId}|${aId}`;
+}
 
 function toIso(col, row) {
   return {
@@ -949,7 +952,7 @@ export function createIsoRenderer(canvas) {
     ctx.restore();
   }
 
-  function drawNetworkDataLinks(originX, originY, controlNodes, now) {
+  function drawNetworkDataLinks(originX, originY, controlNodes, now, state) {
     if (!Array.isArray(controlNodes) || controlNodes.length < 2) return;
     const byId = new Map(controlNodes.map((node) => [node.id, node]));
     ctx.save();
@@ -967,10 +970,22 @@ export function createIsoRenderer(canvas) {
       const y2 = originY + toIsoPoint.y + HALF_TILE_H;
       const flowPulse = 0.5 + (Math.sin((now / 220) + (line.id.length * 0.5)) + 1) * 0.25;
       const corrupted = Boolean(from.outbreak?.infected || to.outbreak?.infected);
+      const routerState = state.signalRouterView?.active
+        ? state.signalRouterView.links?.find((entry) => entry.id === edgeKey(from.id, to.id))?.state
+        : '';
+      const routerColor = routerState === 'overloaded'
+        ? 'rgba(255,183,71,0.95)'
+        : routerState === 'corrupted'
+          ? 'rgba(255,79,216,0.95)'
+          : routerState === 'blocked'
+            ? 'rgba(255,90,111,0.95)'
+            : routerState === 'stabilized'
+              ? 'rgba(105,243,255,0.98)'
+              : '';
 
       ctx.globalAlpha = corrupted ? 0.78 : 0.45;
-      ctx.strokeStyle = corrupted ? 'rgba(255,79,168,0.94)' : 'rgba(94,242,255,0.95)';
-      ctx.lineWidth = 1.4 + flowPulse;
+      ctx.strokeStyle = routerColor || (corrupted ? 'rgba(255,79,168,0.94)' : 'rgba(94,242,255,0.95)');
+      ctx.lineWidth = (routerState === 'blocked' ? 2.8 : 1.4) + flowPulse;
       ctx.beginPath();
       ctx.moveTo(x1, y1);
       ctx.lineTo(x2, y2);
@@ -980,11 +995,84 @@ export function createIsoRenderer(canvas) {
       const px = x1 + ((x2 - x1) * packetPhase);
       const py = y1 + ((y2 - y1) * packetPhase);
       ctx.globalAlpha = 0.95;
-      ctx.fillStyle = corrupted ? '#ffd2f1' : '#e7fbff';
+      ctx.fillStyle = routerState === 'blocked' ? '#ffd0d8' : (corrupted ? '#ffd2f1' : '#e7fbff');
       ctx.beginPath();
       ctx.arc(px, py, 2.2, 0, Math.PI * 2);
       ctx.fill();
     }
+    ctx.restore();
+  }
+
+  function drawSignalRouterOverlay(originX, originY, state, now) {
+    const router = state?.signalRouterView;
+    const controlNodes = state?.controlNodes;
+    if (!router?.active || !Array.isArray(controlNodes) || !controlNodes.length) return;
+    const byId = new Map(controlNodes.map((node) => [node.id, node]));
+    const pulse = 0.68 + (Math.sin(now / 220) + 1) * 0.2;
+
+    ctx.save();
+    ctx.globalAlpha = 0.2;
+    ctx.fillStyle = 'rgba(3,8,19,0.88)';
+    ctx.fillRect(-2200, -2200, 5200, 5200);
+
+    for (const edge of router.links || []) {
+      const from = byId.get(edge.fromId);
+      const to = byId.get(edge.toId);
+      if (!from || !to) continue;
+      const fromIso = toIso(from.x, from.y);
+      const toIsoPoint = toIso(to.x, to.y);
+      const x1 = originX + fromIso.x;
+      const y1 = originY + fromIso.y + HALF_TILE_H;
+      const x2 = originX + toIsoPoint.x;
+      const y2 = originY + toIsoPoint.y + HALF_TILE_H;
+      const color = edge.state === 'overloaded'
+        ? '#ffb347'
+        : edge.state === 'corrupted'
+          ? '#ff4fd8'
+          : edge.state === 'blocked'
+            ? '#ff5a6f'
+            : edge.state === 'stabilized'
+              ? '#69f3ff'
+              : '#5ef2ff';
+      ctx.globalAlpha = edge.state === 'blocked' ? 0.92 : 0.82;
+      ctx.strokeStyle = color;
+      ctx.lineWidth = edge.state === 'blocked' ? 3.2 : edge.state === 'stabilized' ? 2.8 : 2.3;
+      ctx.beginPath();
+      ctx.moveTo(x1, y1);
+      ctx.lineTo(x2, y2);
+      ctx.stroke();
+
+      if (edge.state === 'blocked' || edge.state === 'corrupted') {
+        ctx.globalAlpha = 0.74;
+        ctx.strokeStyle = '#ffd7e7';
+        ctx.lineWidth = 1.4;
+        ctx.beginPath();
+        ctx.moveTo((x1 + x2) / 2 - 4, (y1 + y2) / 2 - 4);
+        ctx.lineTo((x1 + x2) / 2 + 4, (y1 + y2) / 2 + 4);
+        ctx.moveTo((x1 + x2) / 2 + 4, (y1 + y2) / 2 - 4);
+        ctx.lineTo((x1 + x2) / 2 - 4, (y1 + y2) / 2 + 4);
+        ctx.stroke();
+      }
+    }
+
+    for (const objective of router.objectives || []) {
+      if (!objective.path || objective.path.length < 2 || objective.complete) continue;
+      ctx.globalAlpha = 0.4 + pulse * 0.35;
+      ctx.strokeStyle = '#7af2ff';
+      ctx.lineWidth = 2.3;
+      ctx.beginPath();
+      for (let i = 0; i < objective.path.length; i += 1) {
+        const node = byId.get(objective.path[i]);
+        if (!node) continue;
+        const iso = toIso(node.x, node.y);
+        const x = originX + iso.x;
+        const y = originY + iso.y + HALF_TILE_H;
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+    }
+
     ctx.restore();
   }
 
@@ -1213,7 +1301,8 @@ export function createIsoRenderer(canvas) {
     ctx.drawImage(layerState.roadBlocks.canvas, worldDrawX, worldDrawY);
     ctx.drawImage(layerState.worldObjects.canvas, worldDrawX, worldDrawY);
 
-    drawNetworkDataLinks(originX, originY, state.controlNodes, now);
+    drawNetworkDataLinks(originX, originY, state.controlNodes, now, state);
+    drawSignalRouterOverlay(originX, originY, state, now);
     drawFirewallDefenseOverlay(originX, originY, state, now);
 
     drawHoveredTile(originX, originY, state.mouse?.hoverTile, now);
