@@ -1,18 +1,15 @@
 name = "moonboys-api"
 main = "worker.js"
-compatibility_date = "2025-01-01"
+compatibility_date = "2026-04-12"
 
-# D1 database binding — configure before deploying.
-# Copy this block into a [env.production] section and set the real ID:
-#
-#   [env.production]
-#   [[env.production.d1_databases]]
-#   binding = "DB"
-#   database_name = "moonboys"
-#   database_id = "<YOUR_D1_DATABASE_ID>"
-#
-# To obtain a database ID: run `wrangler d1 create moonboys`
-# and paste the printed ID above.  Never commit a real ID to source control.
+# Non-secret production defaults used by worker.js. These may be overridden
+# in the Cloudflare dashboard if the deployed worker URLs change.
+[vars]
+TELEGRAM_BOT_USERNAME = "WIKICOMSBOT"
+ANTI_CHEAT_WORKER_URL = "https://moonboys-anti-cheat.sercullen.workers.dev"
+LEADERBOARD_API_URL = "https://moonboys-leaderboard.sercullen.workers.dev"
+
+# D1 database binding — production wikicoms database.
 [[d1_databases]]
 binding = "DB"
 database_name = "wikicoms"
@@ -24,9 +21,13 @@ database_id = "8a36e17a-18fa-4b98-90e1-3f269164b166"
 #
 #   wrangler secret put TELEGRAM_BOT_TOKEN
 #   wrangler secret put TELEGRAM_BOT_USERNAME
+#   wrangler secret put ADMIN_TELEGRAM_IDS
+#   wrangler secret put ADMIN_SECRET
 #
 # TELEGRAM_BOT_TOKEN    — The bot token from BotFather (used for HMAC verification).
-# TELEGRAM_BOT_USERNAME — The bot @username (used for widget configuration docs).
+# TELEGRAM_BOT_USERNAME — The bot @username (kept for runtime/dashboard consistency).
+# ADMIN_TELEGRAM_IDS    — CSV of Telegram user IDs authorised to run admin bot commands.
+# ADMIN_SECRET          — Shared secret forwarded as X-Admin-Secret to the anti-cheat worker.
 #
 # BotFather setup:
 #   /setdomain   → set to:  moonboys-api.sercullen.workers.dev
@@ -36,12 +37,8 @@ database_id = "8a36e17a-18fa-4b98-90e1-3f269164b166"
 # ── Anti-cheat admin secrets ──────────────────────────────────────────────────
 # Required for /gkban, /gkunban, /gkrisk, /gkclearstrikes bot commands and for
 # the GET /telegram/user/status route to read telegram_anticheat_state from D1.
-# Set via Wrangler CLI — never commit values to source control:
+# Set secrets via Wrangler CLI — never commit secret values to source control.
+# ADMIN_SECRET must match the moonboys-anti-cheat worker's ADMIN_SECRET.
 #
-#   wrangler secret put ADMIN_TELEGRAM_IDS   (comma-separated numeric Telegram user IDs)
-#   wrangler secret put ADMIN_SECRET         (must match the anti-cheat worker's ADMIN_SECRET)
-#   wrangler secret put ANTI_CHEAT_WORKER_URL (e.g. https://moonboys-anti-cheat.sercullen.workers.dev)
-#
-# ADMIN_TELEGRAM_IDS   — CSV of Telegram user IDs authorised to run admin bot commands.
-# ADMIN_SECRET         — Shared secret forwarded as X-Admin-Secret to the anti-cheat worker.
-# ANTI_CHEAT_WORKER_URL — Base URL of the deployed anti-cheat Cloudflare Worker.
+# ANTI_CHEAT_WORKER_URL is a non-secret var above.
+# LEADERBOARD_API_URL is a non-secret var above.

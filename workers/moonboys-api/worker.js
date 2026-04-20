@@ -1659,6 +1659,7 @@ async function cmdGkStart(db, tok, chatId, telegramId, fromUser) {
       ],
     ],
   };
+  await sendTelegramMessage(tok, chatId,
     `🚀 <b>Welcome to Crypto Moonboys GK, ${name}!</b>\n\n` +
     `You've entered the Battle Chamber.\n\n` +
     `<b>What to do next:</b>\n` +
