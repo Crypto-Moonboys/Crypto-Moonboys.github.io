@@ -574,6 +574,16 @@
   // We track pause state locally in the overlay.
   var _isPaused = false;
 
+  function getInvadersOverlayState() {
+    if (typeof window.__invadersOverlayStateHook !== 'function') return null;
+    try {
+      var state = window.__invadersOverlayStateHook();
+      return state && typeof state === 'object' ? state : null;
+    } catch (_) {
+      return null;
+    }
+  }
+
   function syncPauseBtn() {
     var icon = btnPause.querySelector('.btn-icon');
     var lbl  = btnPause.querySelector('.btn-label');
@@ -721,10 +731,14 @@
     // Pause the game if it's actively running before closing.
     // Only pause if we haven't already paused via the overlay btn.
     var gamePauseBtn = document.getElementById('pauseBtn');
-    if (gamePauseBtn && !_isPaused) {
+    var invadersState = getInvadersOverlayState();
+    var isActivelyRunning = invadersState ? (invadersState.running && !invadersState.paused && !invadersState.gameOver) : !_isPaused;
+    if (gamePauseBtn && isActivelyRunning) {
       // Clicking pauseBtn when game is running pauses it; if game isn't running
       // the handler is a no-op (all games check `if (running)`), so safe to call.
       gamePauseBtn.click();
+      _isPaused = true;
+      syncPauseBtn();
       document.dispatchEvent(new CustomEvent('arcade-pause-change', {
         detail: { paused: true }
       }));
@@ -819,7 +833,12 @@
     var gamePauseBtn = document.getElementById('pauseBtn');
     if (gamePauseBtn) {
       gamePauseBtn.click();
-      _isPaused = !_isPaused;
+      var overlayState = getInvadersOverlayState();
+      if (overlayState) {
+        _isPaused = !!overlayState.paused;
+      } else {
+        _isPaused = !_isPaused;
+      }
       syncPauseBtn();
       document.dispatchEvent(new CustomEvent('arcade-pause-change', {
         detail: { paused: _isPaused }
