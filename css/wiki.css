@@ -1880,3 +1880,261 @@ a.hero-stat-link:hover {
   border-color: #9d2a2a;
   color: #ffb4b4;
 }
+/* ============================================================
+   3008 SECURITY FILM VISUAL PASS (sitewide overrides)
+   ============================================================ */
+:root {
+  --color-bg:          #050b14;
+  --color-surface:     rgba(9, 18, 35, 0.72);
+  --color-surface-2:   rgba(12, 26, 48, 0.78);
+  --color-border:      rgba(99, 211, 255, 0.22);
+  --color-text:        #dff7ff;
+  --color-text-muted:  #96aec5;
+  --color-text-link:   #70d9ff;
+  --color-text-link-hover: #9ae9ff;
+  --color-accent:      #ffd36a;
+  --color-accent-dark: #c89c29;
+  --color-cyan:        #56dcff;
+  --color-teal:        #41ffd9;
+  --color-purple:      #a88cff;
+  --font-sans:         'Inter', 'Rajdhani', 'Segoe UI', system-ui, -apple-system, 'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji', sans-serif;
+  --radius:            12px;
+  --shadow:            0 18px 44px rgba(0, 0, 0, 0.45);
+}
+
+body {
+  background:
+    radial-gradient(circle at 15% -10%, rgba(86,220,255,.16), transparent 42%),
+    radial-gradient(circle at 85% 120%, rgba(168,140,255,.12), transparent 40%),
+    linear-gradient(140deg, #040911 0%, #050e1c 42%, #050c18 100%);
+  line-height: 1.72;
+  letter-spacing: .01em;
+  text-rendering: optimizeLegibility;
+  position: relative;
+  min-height: 100vh;
+}
+
+body::before,
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: -1;
+}
+
+body::before {
+  background-image:
+    linear-gradient(rgba(102, 231, 255, 0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(102, 231, 255, 0.07) 1px, transparent 1px);
+  background-size: 72px 72px;
+  opacity: .22;
+  mask-image: radial-gradient(circle at center, rgba(255,255,255,.75), transparent 92%);
+  animation: pulse-grid 10s ease-in-out infinite;
+}
+
+body::after {
+  background:
+    linear-gradient(115deg, transparent 12%, rgba(78, 224, 255, 0.12) 50%, transparent 88%) 0 0 / 210% 100%,
+    radial-gradient(circle at 40% 40%, rgba(86,220,255,.08), transparent 55%);
+  mix-blend-mode: screen;
+  opacity: .4;
+  animation: trace-scan 11s linear infinite;
+}
+
+@keyframes pulse-grid {
+  0%, 100% { opacity: .18; transform: scale(1); }
+  50% { opacity: .30; transform: scale(1.02); }
+}
+
+@keyframes trace-scan {
+  from { background-position: 110% 0, center; }
+  to   { background-position: -130% 0, center; }
+}
+
+#site-header {
+  background: linear-gradient(130deg, rgba(9, 20, 37, .82), rgba(8, 19, 35, .7));
+  box-shadow: 0 8px 30px rgba(0, 0, 0, .45), inset 0 -1px 0 rgba(120, 235, 255, .12);
+  backdrop-filter: blur(16px);
+}
+
+#header-search input {
+  background: rgba(5, 14, 27, .72);
+  transition: border-color .2s, box-shadow .2s, background .2s;
+}
+
+#header-search input:focus {
+  border-color: rgba(112, 217, 255, .85);
+  box-shadow: 0 0 0 2px rgba(112, 217, 255, .16), 0 0 20px rgba(86,220,255,.16);
+  background: rgba(7, 18, 33, .92);
+}
+
+#sidebar {
+  background: linear-gradient(180deg, rgba(7, 18, 33, .84), rgba(7, 16, 30, .76));
+  backdrop-filter: blur(12px);
+}
+
+.sidebar-section + .sidebar-section {
+  border-top: 1px solid rgba(86, 220, 255, .14);
+}
+
+.sidebar-nav a {
+  border-left: 2px solid transparent;
+  transition: background .2s, color .2s, border-color .2s, box-shadow .2s;
+}
+
+.sidebar-nav a:hover {
+  background: rgba(86, 220, 255, .08);
+}
+
+.sidebar-nav a.active {
+  background: rgba(86, 220, 255, .12);
+  color: var(--color-cyan);
+  border-left-color: var(--color-cyan);
+  box-shadow: inset 0 0 0 1px rgba(86,220,255,.18);
+}
+
+.page-title {
+  font-size: 2.05rem;
+  font-weight: 760;
+  line-height: 1.25;
+  letter-spacing: .02em;
+}
+
+.page-title-line {
+  height: 2px;
+  background: linear-gradient(90deg, rgba(86,220,255,.9), rgba(168,140,255,.45), transparent);
+  border-radius: 999px;
+  box-shadow: 0 0 20px rgba(86,220,255,.25);
+}
+
+.home-hero,
+.article-card,
+.featured-article,
+.category-card,
+.article-list-item,
+.price-card,
+.home-widget,
+#toc,
+.infobox,
+.notice,
+.lb-table-outer,
+#lb-breakdown-panel,
+.lb-graph-wrap {
+  background: linear-gradient(170deg, rgba(10, 23, 44, .74), rgba(8, 18, 34, .58));
+  border-color: rgba(99, 211, 255, 0.28);
+  box-shadow: inset 0 0 0 1px rgba(122, 236, 255, .06), 0 10px 30px rgba(0,0,0,.28);
+  backdrop-filter: blur(10px);
+}
+
+.home-hero {
+  border-radius: 18px;
+}
+
+.home-hero::before {
+  background:
+    radial-gradient(ellipse at 50% 0%, rgba(86,220,255,.2), transparent 62%),
+    linear-gradient(180deg, rgba(168,140,255,.06), transparent 56%);
+}
+
+.home-hero h1 {
+  color: #d6f5ff;
+  text-shadow: 0 0 24px rgba(86,220,255,.24);
+}
+
+.article-card,
+.category-card,
+.article-list-item,
+.price-card,
+.home-widget,
+.btn,
+.battle-card,
+.community-card,
+.battle-shell,
+.battle-link-card,
+.faction-btn,
+.community-stat-box,
+.feed-burst,
+.leader-row,
+.mission-row,
+.profile-row,
+.community-row,
+.tg-lb-row,
+.tg-quest-card {
+  transition: border-color .2s, transform .15s, box-shadow .2s, background .2s;
+}
+
+.article-card:hover,
+.category-card:hover,
+.article-list-item:hover,
+.price-card:hover,
+.battle-link-card:hover,
+.faction-btn:hover,
+.faction-btn:focus-visible,
+#lb-refresh-btn:hover,
+.lb-tab:hover,
+.home-search button:hover,
+.btn-primary:hover,
+.btn-secondary:hover {
+  border-color: rgba(86,220,255,.62);
+  box-shadow: 0 0 18px rgba(86,220,255,.18);
+}
+
+.section-heading::after,
+.lb-graph-heading::after {
+  background: linear-gradient(90deg, rgba(86,220,255,.45), transparent);
+}
+
+h1, h2, h3, h4, .section-heading, .sidebar-heading {
+  font-family: 'Rajdhani', 'Inter', var(--font-sans);
+  letter-spacing: .04em;
+}
+
+.btn {
+  border: 1px solid transparent;
+  letter-spacing: .02em;
+}
+
+.btn-primary,
+.home-search button,
+#back-to-top,
+#lb-refresh-btn {
+  background: linear-gradient(130deg, rgba(86,220,255,.2), rgba(65,255,217,.18));
+  color: #d8fbff;
+  border-color: rgba(86,220,255,.6);
+  box-shadow: inset 0 0 0 1px rgba(146,245,255,.22), 0 0 18px rgba(86,220,255,.2);
+}
+
+.btn-secondary,
+.lb-tab,
+.home-search input,
+#header-search input,
+.tg-lb-row,
+.tg-quest-card {
+  background: rgba(10, 26, 47, .65);
+  border-color: rgba(86,220,255,.28);
+}
+
+.lb-tab.active,
+.lb-table tbody tr.selected,
+.lb-table tbody tr:focus {
+  background: rgba(86,220,255,.12);
+  border-color: rgba(86,220,255,.66);
+  color: var(--color-cyan);
+  outline-color: rgba(86,220,255,.66);
+}
+
+.lb-table tbody tr:hover {
+  background: rgba(86,220,255,.07);
+}
+
+#site-footer {
+  background: linear-gradient(180deg, rgba(7, 17, 32, .88), rgba(6, 14, 28, .92));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body::before,
+  body::after {
+    animation: none;
+  }
+}

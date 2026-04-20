@@ -19,9 +19,10 @@
     .incubator-hero {
       padding: 34px 28px;
       margin-bottom: 20px;
-      border: 1px solid var(--color-border);
+      border: 1px solid rgba(86,220,255,.32);
       border-radius: var(--radius);
-      background: radial-gradient(circle at top left, rgba(255,193,7,.12), rgba(255,255,255,.02) 32%, rgba(0,0,0,.22));
+      background: linear-gradient(155deg, rgba(10,23,44,.78), rgba(8,18,34,.56));
+      box-shadow: inset 0 0 0 1px rgba(122,236,255,.06), 0 12px 30px rgba(0,0,0,.28);
     }
     .incubator-hero h1 { margin: 0 0 10px 0; font-size: 2rem; }
     .incubator-lead {
@@ -34,10 +35,11 @@
     .incubator-cta-row { display:flex; flex-wrap:wrap; gap:12px; margin-top:18px; }
     .incubator-grid { display:grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap:18px; margin: 20px 0 28px; }
     .incubator-card {
-      background: var(--color-surface);
-      border: 1px solid var(--color-border);
+      background: linear-gradient(165deg, rgba(10,23,44,.74), rgba(8,18,34,.58));
+      border: 1px solid rgba(86,220,255,.28);
       border-radius: var(--radius);
       padding: 18px 18px 16px;
+      box-shadow: inset 0 0 0 1px rgba(122,236,255,.06), 0 10px 26px rgba(0,0,0,.24);
     }
     .incubator-card h3 { margin:0 0 8px 0; font-size:1rem; }
     .incubator-section { margin-bottom: 28px; }
@@ -45,26 +47,26 @@
     .incubator-section p, .incubator-section li { color: var(--color-text-muted); line-height: 1.75; }
     .incubator-section ul { padding-left: 20px; }
     .incubator-command-box {
-      background:#0a0f19; border:1px solid var(--color-border); border-radius:var(--radius);
+      background:rgba(6,16,31,.86); border:1px solid rgba(86,220,255,.28); border-radius:var(--radius);
       padding:18px; overflow:auto;
     }
-    .incubator-command-box code { white-space:pre-wrap; color:#f4d35e; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+    .incubator-command-box code { white-space:pre-wrap; color:#86ebff; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
     .incubator-highlight {
-      border-left:3px solid var(--color-accent); padding: 10px 0 10px 14px; margin:16px 0;
+      border-left:2px solid rgba(86,220,255,.72); padding: 10px 0 10px 14px; margin:16px 0;
       color: var(--color-text-muted);
     }
     /* Activation flow steps */
     .activation-flow { display:flex; flex-wrap:wrap; gap:14px; margin:18px 0; }
     .activation-step {
       flex:1 1 200px; min-width:180px;
-      background:var(--color-surface); border:1px solid var(--color-border);
+      background:linear-gradient(165deg, rgba(10,23,44,.74), rgba(8,18,34,.58)); border:1px solid rgba(86,220,255,.28);
       border-radius:var(--radius); padding:16px 16px 14px;
       position:relative;
     }
     .activation-step-num {
       display:inline-flex; align-items:center; justify-content:center;
       width:28px; height:28px; border-radius:50%;
-      background:var(--color-accent); color:#000; font-weight:700;
+      background:rgba(86,220,255,.2); color:#d8fbff; border:1px solid rgba(86,220,255,.56); font-weight:700;
       font-size:.85rem; margin-bottom:10px;
     }
     .activation-step h4 { margin:0 0 6px 0; font-size:.95rem; }
@@ -78,27 +80,27 @@
     .command-table { width:100%; border-collapse:collapse; margin:12px 0; font-size:.9rem; }
     .command-table th {
       text-align:left; padding:7px 10px;
-      border-bottom:1px solid var(--color-border);
+      border-bottom:1px solid rgba(86,220,255,.2);
       color:var(--color-text-muted); font-weight:600;
     }
     .command-table td { padding:8px 10px; border-bottom:1px solid rgba(255,255,255,.04); vertical-align:top; }
     .command-table tr:last-child td { border-bottom:none; }
     .command-table td:first-child code {
-      color:#f4d35e; font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+      color:#86ebff; font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
       background:rgba(255,255,255,.05); border-radius:4px; padding:.15em .4em; white-space:nowrap;
     }
     .command-table td:last-child { color:var(--color-text-muted); }
     /* Sync note callout */
     .sync-note {
-      background:rgba(61,90,254,.1); border:1px solid rgba(61,90,254,.35);
+      background:rgba(86,220,255,.08); border:1px solid rgba(86,220,255,.32);
       border-radius:var(--radius); padding:14px 16px; margin:16px 0;
       font-size:.92rem; color:var(--color-text-muted); line-height:1.65;
     }
-    .sync-note strong { color:#c8d0ff; }
+    .sync-note strong { color:#d8f8ff; }
     .loop-manual {
-      border: 1px solid var(--color-border);
+      border: 1px solid rgba(86,220,255,.3);
       border-radius: var(--radius);
-      background: linear-gradient(160deg, rgba(247,171,26,.08), rgba(61,90,254,.08));
+      background: linear-gradient(160deg, rgba(86,220,255,.11), rgba(168,140,255,.1));
       padding: 20px;
       margin: 16px 0 24px;
     }
@@ -111,24 +113,24 @@
       margin-top: 12px;
     }
     .loop-card {
-      border: 1px solid rgba(255,255,255,.12);
+      border: 1px solid rgba(86,220,255,.26);
       border-radius: 12px;
       padding: 12px 12px 10px;
-      background: rgba(10,15,25,.56);
+      background: rgba(8,19,35,.7);
     }
     .loop-card h4 { margin: 0 0 8px; font-size: .95rem; }
     .loop-card ul { margin: 0; padding-left: 18px; }
     .loop-card li { line-height: 1.65; margin: 0 0 4px; font-size: .9rem; }
     .incubator-sync-state {
-      border: 1px solid rgba(255,255,255,.18);
+      border: 1px solid rgba(86,220,255,.28);
       border-radius: 12px;
       padding: 14px 16px;
       margin: 0 0 20px;
-      background: rgba(10,16,28,.75);
+      background: rgba(8,18,34,.78);
     }
     .incubator-sync-state strong { display: block; margin-bottom: 6px; color: #fff; }
     .incubator-sync-state .label { font-size: .84rem; color: var(--color-text-muted); }
-    .incubator-sync-state .value { margin-top: 4px; font-weight: 700; color: #d8e5ff; }
+    .incubator-sync-state .value { margin-top: 4px; font-weight: 700; color: #d8fbff; }
     .incubator-sync-state.good {
       border-color: rgba(57,255,20,.86);
       box-shadow: 0 0 14px rgba(57,255,20,.52), 0 0 28px rgba(57,255,20,.2);
