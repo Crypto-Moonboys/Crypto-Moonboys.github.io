@@ -349,7 +349,7 @@ CREATE INDEX IF NOT EXISTS idx_blocktopia_events_user_action_created
 CREATE INDEX IF NOT EXISTS idx_blocktopia_events_user_action_type_created
   ON blocktopia_progression_events(telegram_id, action, action_type, created_at DESC);
 
--- Block Topia covert network phase 1: player-owned infiltrator agents.
+-- Block Topia covert network: player-owned covert agents.
 
 CREATE TABLE IF NOT EXISTS blocktopia_covert_agents (
   id                  TEXT PRIMARY KEY,
@@ -365,6 +365,8 @@ CREATE TABLE IF NOT EXISTS blocktopia_covert_agents (
   home_district_id    TEXT,
   assigned_operation  TEXT,
   assigned_until      DATETIME,
+  stealth_boost_until DATETIME,
+  recovery_count      INTEGER NOT NULL DEFAULT 0,
   created_at          DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at          DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (telegram_id) REFERENCES blocktopia_progression(telegram_id) ON DELETE CASCADE
@@ -375,6 +377,9 @@ CREATE INDEX IF NOT EXISTS idx_blocktopia_covert_agents_user_status
 
 CREATE INDEX IF NOT EXISTS idx_blocktopia_covert_agents_assigned_operation
   ON blocktopia_covert_agents(assigned_operation);
+
+CREATE INDEX IF NOT EXISTS idx_blocktopia_covert_agents_type_status
+  ON blocktopia_covert_agents(agent_type, status);
 
 CREATE TABLE IF NOT EXISTS blocktopia_covert_operations (
   id                TEXT PRIMARY KEY,
@@ -387,6 +392,14 @@ CREATE TABLE IF NOT EXISTS blocktopia_covert_operations (
   detection_roll    INTEGER,
   reward_xp         INTEGER NOT NULL DEFAULT 0,
   reward_gems       INTEGER NOT NULL DEFAULT 0,
+  heat_before       INTEGER NOT NULL DEFAULT 0,
+  heat_after        INTEGER NOT NULL DEFAULT 0,
+  node_interference_delta INTEGER NOT NULL DEFAULT 0,
+  district_support_delta  INTEGER NOT NULL DEFAULT 0,
+  district_pressure_delta INTEGER NOT NULL DEFAULT 0,
+  faction_pressure_delta  INTEGER NOT NULL DEFAULT 0,
+  sam_pressure_delta      INTEGER NOT NULL DEFAULT 0,
+  local_risk_delta        INTEGER NOT NULL DEFAULT 0,
   started_at        DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   resolves_at       DATETIME NOT NULL,
   created_at        DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -403,6 +416,9 @@ CREATE INDEX IF NOT EXISTS idx_blocktopia_covert_operations_agent_status
 
 CREATE INDEX IF NOT EXISTS idx_blocktopia_covert_operations_target_created
   ON blocktopia_covert_operations(target_node_id, created_at DESC);
+
+CREATE INDEX IF NOT EXISTS idx_blocktopia_covert_operations_pressure
+  ON blocktopia_covert_operations(target_node_id, status, updated_at DESC);
 
 CREATE UNIQUE INDEX IF NOT EXISTS idx_blocktopia_covert_one_active_operation_per_agent
   ON blocktopia_covert_operations(agent_id)
