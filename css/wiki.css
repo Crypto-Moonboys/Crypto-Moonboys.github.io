@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Orbitron:wght@500;600;700;800&family=Share+Tech+Mono&display=swap');
+
 /* ============================================================
    Crypto Moonboys Wiki — Main Stylesheet
    Inspired by Fandom/MediaWiki design
@@ -18,8 +20,9 @@
   --color-green:       #3fb950;
   --color-sidebar-w:   260px;
   --color-header-h:    56px;
-  --font-sans:         'Segoe UI', system-ui, -apple-system, 'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji', sans-serif;
-  --font-mono:         'Cascadia Code', 'Fira Code', monospace;
+  --font-sans:         'Rajdhani', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  --font-display:      'Orbitron', 'Rajdhani', 'Segoe UI', sans-serif;
+  --font-mono:         'Share Tech Mono', 'Cascadia Code', 'Fira Code', monospace;
   --radius:            6px;
   --shadow:            0 2px 8px rgba(0,0,0,.45);
 }
@@ -2260,4 +2263,270 @@ body::-webkit-scrollbar-thumb,
   body::after {
     animation: none;
   }
+}
+
+
+/* ============================================================
+   3008 SHELL TRUTH PASS — typography, node-grid life layer,
+   premium panel system, and custom scroll treatment
+   ============================================================ */
+
+html,
+body {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(104, 243, 255, 0.3) rgba(6, 11, 22, 0.1);
+}
+
+body {
+  position: relative;
+  min-height: 100vh;
+  letter-spacing: 0.016em;
+  text-rendering: optimizeLegibility;
+  font-feature-settings: 'kern' 1;
+  background:
+    radial-gradient(1300px 760px at 18% -10%, rgba(57, 200, 255, 0.1), transparent 72%),
+    radial-gradient(1200px 720px at 95% 4%, rgba(57, 255, 177, 0.08), transparent 70%),
+    #050912;
+}
+
+body::before,
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+}
+
+body::before {
+  z-index: -3;
+  opacity: 0.5;
+  background:
+    linear-gradient(rgba(71, 231, 255, 0.085) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(71, 231, 255, 0.085) 1px, transparent 1px),
+    radial-gradient(circle at 16% 30%, rgba(118, 240, 255, 0.18) 0 1.5px, transparent 2px),
+    radial-gradient(circle at 78% 68%, rgba(118, 240, 255, 0.14) 0 1px, transparent 2px),
+    radial-gradient(circle at 42% 78%, rgba(118, 240, 255, 0.12) 0 1px, transparent 2px);
+  background-size: 54px 54px, 54px 54px, 420px 320px, 520px 420px, 640px 560px;
+  animation: nodeGridShift 80s linear infinite;
+}
+
+body::after {
+  z-index: -2;
+  opacity: 0.32;
+  background:
+    linear-gradient(102deg, transparent 18%, rgba(89, 247, 255, 0.2) 34%, transparent 50%),
+    linear-gradient(122deg, transparent 30%, rgba(131, 103, 255, 0.16) 48%, transparent 66%),
+    repeating-linear-gradient(-42deg, transparent 0 140px, rgba(112, 238, 255, 0.11) 140px 143px, transparent 143px 298px);
+  filter: blur(0.2px);
+  animation: traceSweep 13s linear infinite;
+}
+
+@keyframes nodeGridShift {
+  0% { transform: translate3d(0, 0, 0); }
+  100% { transform: translate3d(-54px, -54px, 0); }
+}
+
+@keyframes traceSweep {
+  0% { background-position: -260px 0, -520px 0, 0 0; }
+  100% { background-position: 720px 0, 860px 0, 0 220px; }
+}
+
+#site-header,
+#sidebar,
+#toc,
+.infobox,
+.notice,
+.article-card,
+.category-card,
+.article-list-item,
+.featured-article,
+.home-hero,
+.home-widget,
+.price-card,
+.comment-form,
+.comments-api-notice,
+.comments-section,
+.page-like-widget,
+.lb-table-outer,
+#lb-breakdown-panel,
+.lb-graph-wrap,
+.manual-hero,
+.manual-card,
+.manual-section,
+.manual-steps,
+.manual-nav-card,
+.community-card,
+.battle-card,
+.battle-shell,
+.battle-link-card {
+  border-color: rgba(102, 233, 255, 0.24) !important;
+  background-color: rgba(6, 14, 28, 0.64) !important;
+  backdrop-filter: blur(10px);
+  box-shadow:
+    0 0 0 1px rgba(130, 247, 255, 0.07) inset,
+    0 18px 42px rgba(0, 0, 0, 0.34);
+}
+
+#site-header,
+#sidebar,
+#site-footer {
+  background: rgba(5, 12, 24, 0.86);
+  backdrop-filter: blur(12px);
+}
+
+h1, h2, h3, h4,
+.page-title,
+.section-heading,
+.logo-text,
+.sidebar-heading,
+.manual-section h2,
+.manual-card h3,
+.home-widget-header,
+.community-card h3,
+.lb-graph-heading {
+  font-family: var(--font-display);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.page-title,
+.home-hero h1,
+.manual-hero h1 {
+  font-weight: 700;
+  line-height: 1.15;
+}
+
+.site-logo .logo-text,
+.page-title,
+.section-heading,
+.manual-hero h1,
+.home-hero h1 {
+  color: #d9f8ff;
+}
+
+.site-logo .logo-sub,
+.article-meta,
+.lb-hint,
+.breadcrumb,
+.wiki-content p,
+.manual-section p,
+.manual-section li,
+.manual-card p,
+.manual-card li,
+.community-row-copy,
+.battle-copy {
+  letter-spacing: 0.02em;
+}
+
+.nav-icon,
+.cat-icon,
+.ali-icon,
+.notice-icon,
+.cat-big-icon,
+.fa-icon {
+  filter: grayscale(0.45) saturate(0.75);
+  opacity: 0.82;
+}
+
+.page-title .emoji,
+.section-heading .emoji,
+.article-badge .emoji {
+  display: none;
+}
+
+.home-hero {
+  text-align: left;
+  border-radius: 14px;
+  padding: 42px 44px;
+  background:
+    linear-gradient(145deg, rgba(5, 18, 36, 0.84), rgba(8, 26, 44, 0.52)) !important;
+}
+
+.home-hero::after {
+  content: '';
+  position: absolute;
+  inset: 10px;
+  border: 1px solid rgba(112, 240, 255, 0.2);
+  border-radius: 10px;
+  pointer-events: none;
+}
+
+.manual-hero {
+  border-radius: 14px;
+  position: relative;
+  overflow: hidden;
+}
+
+.manual-hero::before {
+  content: '';
+  position: absolute;
+  inset: -40% -20%;
+  background: conic-gradient(from 90deg at 50% 50%, transparent 0 25%, rgba(103, 233, 255, 0.16) 35%, transparent 45% 100%);
+  animation: manualSweep 18s linear infinite;
+  pointer-events: none;
+}
+
+@keyframes manualSweep {
+  to { transform: rotate(1turn); }
+}
+
+.shell-scroll,
+#sidebar,
+#search-results,
+.wiki-content pre,
+.manual-event-table-wrap,
+.lb-table-outer,
+#lb-breakdown-panel,
+.community-list {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(108, 240, 255, 0.32) transparent;
+}
+
+.shell-scroll::-webkit-scrollbar,
+#sidebar::-webkit-scrollbar,
+#search-results::-webkit-scrollbar,
+.wiki-content pre::-webkit-scrollbar,
+.manual-event-table-wrap::-webkit-scrollbar,
+.lb-table-outer::-webkit-scrollbar,
+#lb-breakdown-panel::-webkit-scrollbar,
+.community-list::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.shell-scroll::-webkit-scrollbar-track,
+#sidebar::-webkit-scrollbar-track,
+#search-results::-webkit-scrollbar-track,
+.wiki-content pre::-webkit-scrollbar-track,
+.manual-event-table-wrap::-webkit-scrollbar-track,
+.lb-table-outer::-webkit-scrollbar-track,
+#lb-breakdown-panel::-webkit-scrollbar-track,
+.community-list::-webkit-scrollbar-track {
+  background: rgba(5, 11, 20, 0.12);
+}
+
+.shell-scroll::-webkit-scrollbar-thumb,
+#sidebar::-webkit-scrollbar-thumb,
+#search-results::-webkit-scrollbar-thumb,
+.wiki-content pre::-webkit-scrollbar-thumb,
+.manual-event-table-wrap::-webkit-scrollbar-thumb,
+.lb-table-outer::-webkit-scrollbar-thumb,
+#lb-breakdown-panel::-webkit-scrollbar-thumb,
+.community-list::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, rgba(118, 244, 255, 0.48), rgba(78, 188, 255, 0.26));
+  border-radius: 999px;
+  border: 1px solid rgba(163, 245, 255, 0.3);
+}
+
+.shell-scroll.dragging-scroll {
+  cursor: grabbing;
+}
+
+[data-shell-scroll] {
+  cursor: grab;
+}
+
+@media (max-width: 900px) {
+  .home-hero { padding: 30px 24px; }
+  body::before { opacity: 0.42; }
 }

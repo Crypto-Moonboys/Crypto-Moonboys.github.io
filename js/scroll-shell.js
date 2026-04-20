@@ -11,6 +11,7 @@
     node.dataset.shellScrollMounted = '1';
 
     var active = false;
+    var moved = false;
     var startX = 0;
     var startY = 0;
     var startLeft = 0;
@@ -19,7 +20,9 @@
     node.addEventListener('pointerdown', function (event) {
       if (event.pointerType === 'mouse' && event.button !== 0) return;
       if (!canStartDrag(event.target)) return;
+      if (node.scrollHeight <= node.clientHeight && node.scrollWidth <= node.clientWidth) return;
       active = true;
+      moved = false;
       startX = event.clientX;
       startY = event.clientY;
       startLeft = node.scrollLeft;
@@ -32,6 +35,7 @@
       if (!active) return;
       var dx = event.clientX - startX;
       var dy = event.clientY - startY;
+      if (Math.abs(dx) > 3 || Math.abs(dy) > 3) moved = true;
       node.scrollLeft = startLeft - dx;
       node.scrollTop = startTop - dy;
     });
@@ -40,11 +44,14 @@
       if (!active) return;
       active = false;
       node.classList.remove('dragging-scroll');
+      if (moved) event.preventDefault();
       try { node.releasePointerCapture(event.pointerId); } catch (_) {}
     }
 
     node.addEventListener('pointerup', end);
     node.addEventListener('pointercancel', end);
+    node.style.touchAction = 'pan-x pan-y';
+
     node.addEventListener('lostpointercapture', function () {
       active = false;
       node.classList.remove('dragging-scroll');

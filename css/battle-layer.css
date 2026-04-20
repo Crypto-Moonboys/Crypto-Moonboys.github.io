@@ -616,3 +616,36 @@
   box-shadow: 0 0 0 1px rgba(59,209,255,0.30) inset, 0 0 24px rgba(86,220,255,.2);
   background: linear-gradient(180deg, rgba(59,209,255,0.20), rgba(255,255,255,0.04));
 }
+
+/* Battle layer 3008 shell harmonization */
+.community-card,
+.battle-card,
+.battle-shell,
+.battle-link-card,
+.community-stat-box,
+.feed-burst,
+.leader-row,
+.mission-row,
+.profile-row,
+.community-row {
+  border-color: rgba(101, 233, 255, 0.24);
+  background: rgba(5, 16, 30, 0.56);
+  border-radius: 12px;
+  box-shadow: 0 0 0 1px rgba(108, 237, 255, 0.08) inset, 0 14px 36px rgba(0, 0, 0, 0.34);
+}
+
+.community-card::before,
+.battle-card::before,
+.battle-shell::before {
+  background:
+    linear-gradient(120deg, rgba(92, 233, 255, 0.12), transparent 45%),
+    radial-gradient(circle at 80% 24%, rgba(115, 128, 255, 0.12), transparent 40%);
+  opacity: 0.85;
+}
+
+.community-card h3,
+.battle-card h3 {
+  letter-spacing: 0.08em;
+  font-size: 0.8rem;
+  color: #a5edf9;
+}
