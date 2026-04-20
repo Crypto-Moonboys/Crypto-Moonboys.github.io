@@ -33,6 +33,7 @@ import {
 } from './db.js';
 import { verifyTelegramIdentityFromBody } from './auth.js';
 import { fetchTrustedLeaderboardContext } from './leaderboard.js';
+import { handleBlockTopiaCovertRoute } from './covert.js';
 
 function logBlockTopiaFailure(event, context = {}) {
   console.log('[blocktopia][progression]', JSON.stringify({
@@ -92,6 +93,9 @@ async function readProgressionRequestBody(request, url, err) {
 export async function handleBlockTopiaProgressionRoute(request, env, url, helpers) {
   const { path } = helpers;
   const { json, err, upsertTelegramUser, verifyTelegramAuth } = helpers;
+
+  const covertResponse = await handleBlockTopiaCovertRoute(request, env, url, helpers);
+  if (covertResponse) return covertResponse;
 
   if (path === '/blocktopia/progression' && (request.method === 'POST' || request.method === 'GET')) {
     if (request.method === 'GET') {
