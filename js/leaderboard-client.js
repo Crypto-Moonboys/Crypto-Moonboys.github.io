@@ -71,6 +71,34 @@ function getLinkedIdentityLabel() {
   return "Linked Telegram account";
 }
 
+function getCurrentFactionKey() {
+  if (typeof window === "undefined") return "unaligned";
+  const api = window.MOONBOYS_FACTION;
+  if (!api || typeof api.getCachedStatus !== "function") return "unaligned";
+  const status = api.getCachedStatus();
+  return (status && status.faction) ? String(status.faction) : "unaligned";
+}
+
+async function callFactionEarn(source, baseXp) {
+  if (typeof window === "undefined") return null;
+  const cfg = window.MOONBOYS_API || {};
+  const gate = window.MOONBOYS_IDENTITY;
+  if (!cfg.BASE_URL || !gate || typeof gate.getTelegramAuth !== "function") return null;
+  const telegramAuth = gate.getTelegramAuth();
+  if (!telegramAuth || !telegramAuth.hash || !telegramAuth.auth_date) return null;
+  const res = await fetch(String(cfg.BASE_URL).replace(/\/$/, "") + "/faction/earn", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      telegram_auth: telegramAuth,
+      source: source || "score_accept",
+      base_xp: Math.max(0, Math.floor(Number(baseXp) || 0)),
+    }),
+  });
+  if (!res.ok) throw new Error("Faction earn sync failed");
+  return res.json().catch(() => null);
+}
+
 /**
  * Returns true only when both Telegram auth (Step 1) AND /gklink (Step 2) are complete.
  * Competitive leaderboard submission requires the fully linked state.
@@ -149,7 +177,7 @@ export async function submitScore(player, score, game = "global") {
       const res = await fetch(api, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ player: resolvedPlayer, score, game, telegram_id: telegramId })
+        body: JSON.stringify({ player: resolvedPlayer, score, game, telegram_id: telegramId, faction: getCurrentFactionKey() })
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
@@ -191,6 +219,14 @@ export async function submitScore(player, score, game = "global") {
           state: "score_accepted",
           message: "Score accepted for ranking.",
         });
+        try {
+          await callFactionEarn("score_accept", score);
+          if (typeof window !== "undefined" && window.MOONBOYS_FACTION && typeof window.MOONBOYS_FACTION.loadStatus === "function") {
+            window.MOONBOYS_FACTION.loadStatus().catch(() => null);
+          }
+        } catch (error) {
+          console.warn("[leaderboard-client] Faction earn sync failed:", error);
+        }
         if (gameKey === "blocktopia") {
           try {
             const progression = await ArcadeSync.syncBlockTopiaProgressionOnAcceptedScore(score, gameKey);

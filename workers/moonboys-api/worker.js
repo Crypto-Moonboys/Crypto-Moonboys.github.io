@@ -1,4 +1,6 @@
 import { TELEGRAM_AUTH_MAX_AGE } from './blocktopia/config.js';
+import { verifyTelegramIdentityFromBody } from './blocktopia/auth.js';
+import { getOrCreateBlockTopiaProgression } from './blocktopia/db.js';
 import { handleBlockTopiaProgressionRoute } from './blocktopia/routes.js';
 /**
  * Moonboys API — Cloudflare Worker entrypoint
@@ -126,6 +128,61 @@ function escapeHtml(str) {
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;');
+}
+
+const FACTION_UNALIGNED = 'unaligned';
+const FACTION_SWITCH_COOLDOWN_MS = 24 * 60 * 60 * 1000;
+const FACTION_CONFIG = {
+  'diamond-hands': {
+    label: 'Diamond Hands',
+    icon: '💎',
+    color: '#56dcff',
+    bonus: '+XP stability (less decay, better long-term gain)',
+    xpMultiplier: 1.1,
+  },
+  'hodl-warriors': {
+    label: 'HODL Warriors',
+    icon: '⚔️',
+    color: '#ff6ad5',
+    bonus: '+combat rewards (future NPC war) and XP bursts',
+    xpMultiplier: 1.15,
+  },
+  'graffpunks': {
+    label: 'GraffPUNKS',
+    icon: '🎨',
+    color: '#7dff72',
+    bonus: '+event rewards and mission bonuses',
+    xpMultiplier: 1.12,
+  },
+  unaligned: {
+    label: 'Unaligned',
+    icon: '◌',
+    color: '#8b949e',
+    bonus: 'No faction bonus active',
+    xpMultiplier: 1,
+  },
+};
+
+function normalizeFaction(value) {
+  const cleaned = String(value || '').trim().toLowerCase();
+  if (cleaned === 'diamondhands' || cleaned === 'diamond_hands' || cleaned === 'diamond-hands') return 'diamond-hands';
+  if (cleaned === 'hodlwarriors' || cleaned === 'hodl_warriors' || cleaned === 'hodl-warriors') return 'hodl-warriors';
+  if (cleaned === 'graffpunks' || cleaned === 'graff-punks' || cleaned === 'graff_punks') return 'graffpunks';
+  if (cleaned === 'unaligned') return FACTION_UNALIGNED;
+  return null;
+}
+
+function factionMeta(faction) {
+  const key = normalizeFaction(faction) || FACTION_UNALIGNED;
+  const cfg = FACTION_CONFIG[key] || FACTION_CONFIG.unaligned;
+  return {
+    key,
+    label: cfg.label,
+    icon: cfg.icon,
+    color: cfg.color,
+    bonus: cfg.bonus,
+    xp_multiplier: cfg.xpMultiplier,
+  };
 }
 
 // ── Anti-cheat admin helpers ──────────────────────────────────────────────────
@@ -684,6 +741,149 @@ export default {
         });
       } catch {
         return err('Failed to load user status', 500);
+      }
+    }
+
+    // ── GET /faction/status?telegram_auth=... ─────────────────────────────
+    if (path === '/faction/status' && request.method === 'GET') {
+      const rawAuth = url.searchParams.get('telegram_auth');
+      if (!rawAuth) return err('verified telegram_auth payload required', 401);
+      let tgBody;
+      try {
+        tgBody = { telegram_auth: JSON.parse(rawAuth) };
+      } catch {
+        return err('Invalid telegram_auth payload', 400);
+      }
+      const verified = await verifyTelegramIdentityFromBody(tgBody, env, verifyTelegramAuth);
+      if (verified.error) return err(verified.error, verified.status || 401);
+      try {
+        await upsertTelegramUser(env.DB, verified.user);
+        const progression = await getOrCreateBlockTopiaProgression(env.DB, verified.telegramId);
+        const faction = factionMeta(progression?.faction || FACTION_UNALIGNED);
+        return json({
+          ok: true,
+          faction: faction.key,
+          faction_label: faction.label,
+          faction_xp: Math.max(0, Math.floor(Number(progression?.faction_xp) || 0)),
+          bonuses: {
+            label: faction.label,
+            icon: faction.icon,
+            color: faction.color,
+            bonus: faction.bonus,
+            xp_multiplier: faction.xp_multiplier,
+          },
+          cooldown_ms_remaining: Math.max(
+            0,
+            (Number(progression?.faction_last_switch) || 0) + FACTION_SWITCH_COOLDOWN_MS - Date.now(),
+          ),
+        });
+      } catch {
+        return err('Failed to load faction status', 500);
+      }
+    }
+
+    // ── POST /faction/join ─────────────────────────────────────────────────
+    if (path === '/faction/join' && request.method === 'POST') {
+      let body;
+      try { body = await request.json(); } catch { return err('Invalid JSON'); }
+      const verified = await verifyTelegramIdentityFromBody(body, env, verifyTelegramAuth);
+      if (verified.error) return err(verified.error, verified.status || 401);
+      const requestedFaction = normalizeFaction(body?.faction);
+      if (!requestedFaction || requestedFaction === FACTION_UNALIGNED) {
+        return err('Invalid faction selection', 400);
+      }
+      try {
+        await upsertTelegramUser(env.DB, verified.user);
+        const row = await getOrCreateBlockTopiaProgression(env.DB, verified.telegramId);
+        const currentFaction = normalizeFaction(row?.faction) || FACTION_UNALIGNED;
+        const lastSwitch = Number(row?.faction_last_switch) || 0;
+        const now = Date.now();
+        const firstJoin = currentFaction === FACTION_UNALIGNED;
+        const isSwitching = currentFaction !== requestedFaction;
+        if (!firstJoin && isSwitching && lastSwitch > 0 && now - lastSwitch < FACTION_SWITCH_COOLDOWN_MS) {
+          const retryAt = lastSwitch + FACTION_SWITCH_COOLDOWN_MS;
+          return json({
+            error: 'Faction switch cooldown active',
+            retry_at: retryAt,
+            cooldown_ms_remaining: retryAt - now,
+          }, 429);
+        }
+
+        const shouldStampSwitch = isSwitching || firstJoin;
+        await env.DB.prepare(`
+          UPDATE blocktopia_progression
+          SET faction = ?, faction_last_switch = ?, updated_at = CURRENT_TIMESTAMP
+          WHERE telegram_id = ?
+        `).bind(
+          requestedFaction,
+          shouldStampSwitch ? now : lastSwitch || null,
+          verified.telegramId,
+        ).run();
+
+        const meta = factionMeta(requestedFaction);
+        return json({
+          ok: true,
+          faction: meta.key,
+          faction_label: meta.label,
+          faction_xp: Math.max(0, Math.floor(Number(row?.faction_xp) || 0)),
+          bonuses: {
+            icon: meta.icon,
+            color: meta.color,
+            bonus: meta.bonus,
+            xp_multiplier: meta.xp_multiplier,
+          },
+          first_join: firstJoin,
+          switched: isSwitching,
+          cooldown_ms: FACTION_SWITCH_COOLDOWN_MS,
+        });
+      } catch {
+        return err('Failed to join faction', 500);
+      }
+    }
+
+    // ── POST /faction/earn ─────────────────────────────────────────────────
+    if (path === '/faction/earn' && request.method === 'POST') {
+      let body;
+      try { body = await request.json(); } catch { return err('Invalid JSON'); }
+      const verified = await verifyTelegramIdentityFromBody(body, env, verifyTelegramAuth);
+      if (verified.error) return err(verified.error, verified.status || 401);
+      try {
+        await upsertTelegramUser(env.DB, verified.user);
+        const row = await getOrCreateBlockTopiaProgression(env.DB, verified.telegramId);
+        const faction = factionMeta(row?.faction || FACTION_UNALIGNED);
+        const source = String(body?.source || body?.action || 'score_accept').trim().toLowerCase();
+        const baseXpInput = Math.max(0, Math.floor(Number(body?.base_xp) || Number(body?.xp) || 0));
+        const fallbackBase = source === 'mission_complete' ? 60 : (source === 'blocktopia_action' ? 30 : 25);
+        const baseXp = baseXpInput > 0 ? baseXpInput : fallbackBase;
+        const multiplier = faction.xp_multiplier || 1;
+        const awardedFactionXp = faction.key === FACTION_UNALIGNED
+          ? 0
+          : Math.max(1, Math.floor(baseXp * multiplier));
+        const nextFactionXp = Math.max(0, Math.floor(Number(row?.faction_xp) || 0) + awardedFactionXp);
+
+        await env.DB.prepare(`
+          UPDATE blocktopia_progression
+          SET faction_xp = ?, updated_at = CURRENT_TIMESTAMP
+          WHERE telegram_id = ?
+        `).bind(nextFactionXp, verified.telegramId).run();
+
+        return json({
+          ok: true,
+          source,
+          faction: faction.key,
+          faction_label: faction.label,
+          base_xp: baseXp,
+          multiplier,
+          faction_xp_earned: awardedFactionXp,
+          faction_xp_total: nextFactionXp,
+          bonuses: {
+            icon: faction.icon,
+            color: faction.color,
+            bonus: faction.bonus,
+          },
+        });
+      } catch {
+        return err('Failed to award faction XP', 500);
       }
     }
 

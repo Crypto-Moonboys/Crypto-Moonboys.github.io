@@ -292,7 +292,6 @@ CREATE INDEX IF NOT EXISTS idx_telegram_settings_telegram
 INSERT OR IGNORE INTO telegram_factions (name, description, icon) VALUES
   ('diamond-hands', 'Long-term holders with conviction.', '💎'),
   ('hodl-warriors', 'Battle-hardened holders in the trenches.', '⚔️'),
-  ('moon-mission', 'Focused on lift-off and momentum.', '🚀'),
   ('graffpunks', 'Street-coded rebels of the culture.', '🎨');
 
 -- ── Block Topia RPG progression extensions ───────────────────────────────────
@@ -311,6 +310,9 @@ CREATE TABLE IF NOT EXISTS blocktopia_progression (
   upgrade_gem INTEGER NOT NULL DEFAULT 0,
   upgrade_npc INTEGER NOT NULL DEFAULT 0,
   rpg_mode_active INTEGER NOT NULL DEFAULT 0,
+  faction TEXT NOT NULL DEFAULT 'unaligned',
+  faction_xp INTEGER NOT NULL DEFAULT 0,
+  faction_last_switch INTEGER,
   last_active DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 );

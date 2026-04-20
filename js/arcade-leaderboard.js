@@ -76,6 +76,20 @@ function projectedXpFromScore(value) {
   return Math.min(Math.floor(num / 1000), 100);
 }
 
+function factionBadge(row) {
+  var api = (typeof window !== 'undefined') ? window.MOONBOYS_FACTION : null;
+  var key = api && typeof api.normalizeFaction === 'function'
+    ? api.normalizeFaction(row && row.faction)
+    : String((row && row.faction) || 'unaligned');
+  var meta = api && typeof api.getVisualMeta === 'function'
+    ? api.getVisualMeta(key)
+    : { icon: '◌', label: 'Unaligned', color: '#8b949e' };
+  var safeLabel = escHtml((meta && meta.label) || 'Unaligned');
+  var safeIcon = escHtml((meta && meta.icon) || '◌');
+  var safeColor = escHtml((meta && meta.color) || '#8b949e');
+  return `<span class="lb-faction" style="--faction-color:${safeColor}">${safeIcon} ${safeLabel}</span>`;
+}
+
 function isPresenceHidden() {
   try { return localStorage.getItem(PRESENCE_OFFLINE_KEY) === '1'; } catch { return false; }
 }
@@ -251,6 +265,7 @@ function renderTable(data) {
         <tr>
           <th scope="col" class="lb-col-rank">#</th>
           <th scope="col" class="lb-col-player">Player</th>
+          <th scope="col" class="lb-col-faction">Faction</th>
           <th scope="col" class="lb-col-score" title="Ranking uses score only. Accepted scores can convert into Block Topia XP after sync">Score (Ranking)</th>
         </tr>
       </thead>
@@ -263,6 +278,7 @@ function renderTable(data) {
       <tr class="lb-row" data-rank="${rank}" tabindex="0" role="button" aria-label="View breakdown for ${escHtml(row.player || 'Player')}">
         <td class="lb-rank">${medalFor(rank)}</td>
         <td class="lb-player">${escHtml(row.player || '—')}</td>
+        <td class="lb-faction-cell">${factionBadge(row)}</td>
         <td class="lb-score">${formatScore(row.score ?? 0)} <span class="lb-score-sub" title="Ranking uses score only. XP stays secondary to score.">· est. +${projectedXpFromScore(row.score ?? 0)} XP</span></td>
       </tr>
     `;

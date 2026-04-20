@@ -210,6 +210,40 @@ body.overlay-open {
   font-size: .7rem;
 }
 
+#game-overlay .overlay-side .panel-note--faction {
+  margin-top: 4px;
+}
+
+#game-overlay .overlay-side .faction-player-card {
+  border: 1px solid rgba(255,255,255,.16);
+  border-radius: 10px;
+  padding: 8px;
+  background: rgba(8,16,28,.78);
+}
+
+#game-overlay .overlay-side .faction-player-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 6px;
+  margin-bottom: 4px;
+  font-size: .68rem;
+}
+
+#game-overlay .overlay-side .faction-join-actions {
+  display: grid;
+  gap: 6px;
+}
+
+#game-overlay .overlay-side .faction-join-btn {
+  border: 1px solid rgba(94,226,255,.56);
+  border-radius: 8px;
+  background: rgba(16,62,82,.4);
+  color: #c1f5ff;
+  padding: 5px 7px;
+  text-align: left;
+  font-size: .67rem;
+}
+
 .sync-action-link {
   display: inline-block;
   margin: 2px 6px 2px 0;
