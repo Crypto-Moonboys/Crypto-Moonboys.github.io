@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-04-20T02:49:40.106Z",
+  "generatedAt": "2026-04-20T05:43:18.974Z",
   "mode": "live-ai",
   "sourceHealth": {
     "coingecko-global": "ok",
@@ -11,84 +11,84 @@
   "signalCount": 5,
   "signals": [
     {
-      "id": "signal-1776653380106-1",
+      "id": "signal-1776663798973-1",
       "lane": "world",
       "priority": 4,
       "ttlMinutes": 45,
-      "npcLine": "Crypto streets bleed red, trust frays under neon shadows.",
-      "questPulse": "Market caps dip; tech scavengers eye fresh hauls.",
-      "worldFeed": "Active cryptos flicker; chaos breeds in traded codes.",
-      "clueEvent": "Fallen coins sputter; new ghost tokens echo faintly.",
+      "npcLine": "Markets drip red; whispers speak of a looming crash.",
+      "questPulse": "Scan for falling assets in the neon bazaar.",
+      "worldFeed": "Capitals shrivel; traders brace under shadowed skies.",
+      "clueEvent": "Flicker in data streams hints at mass sell-off.",
       "tags": [
-        "market-fall",
-        "crypto",
-        "dystopia"
+        "market",
+        "fear",
+        "crash"
       ],
-      "expiresAt": "2026-04-20T03:34:40.106Z"
+      "expiresAt": "2026-04-20T06:28:18.973Z"
     },
     {
-      "id": "signal-1776653380106-2",
+      "id": "signal-1776663798973-2",
       "lane": "ops",
       "priority": 3,
       "ttlMinutes": 30,
-      "npcLine": "Whispers on datastreams: RAVE signal dead, others flicker.",
-      "questPulse": "Hunt rising nodes; pulse zero on fading tokens.",
-      "worldFeed": "Trading clusters downshift, survival depends on swift hacks.",
-      "clueEvent": "Weak nodes detected; arm up to push through noise.",
+      "npcLine": "RAVE data nodes pulse with zero signal strength.",
+      "questPulse": "Intercept PieveRse's frequency to unlock hidden caches.",
+      "worldFeed": "Asteroids drift; algorithms recalibrate under pressure.",
+      "clueEvent": "Network logs show ghost trades in Wojak's shadow.",
       "tags": [
         "crypto",
-        "signal-fade",
-        "scavenge"
+        "data",
+        "intercept"
       ],
-      "expiresAt": "2026-04-20T03:19:40.106Z"
+      "expiresAt": "2026-04-20T06:13:18.973Z"
     },
     {
-      "id": "signal-1776653380106-3",
+      "id": "signal-1776663798973-3",
       "lane": "clue",
       "priority": 5,
       "ttlMinutes": 60,
-      "npcLine": "PENGU rises silently; shadows lengthen on faltering AAVE.",
-      "questPulse": "Uncover trending echoes; decode volatile pulse shifts.",
-      "worldFeed": "Sentiment bleeds fear; mutants avoid risky exchanges.",
-      "clueEvent": "Trace low-score shifts; fear drives the underground trade.",
+      "npcLine": "Fear index spikes; protocol locks tighten runway exits.",
+      "questPulse": "Trace the AAVE protocol breach before it sparks chaos.",
+      "worldFeed": "Sentiment sensors detect growing paranoia in cybernetics.",
+      "clueEvent": "Encrypted chatter reveals hidden asset dumps tonight.",
       "tags": [
-        "trend",
         "fear",
+        "security",
+        "breach"
+      ],
+      "expiresAt": "2026-04-20T06:43:18.973Z"
+    },
+    {
+      "id": "signal-1776663798973-4",
+      "lane": "quest",
+      "priority": 2,
+      "ttlMinutes": 90,
+      "npcLine": "Hunt RAVE's silent drop; secrets buried in code.",
+      "questPulse": "an operator’s last encrypted transmission for intel.",
+      "worldFeed": "Quiet before storm: markets await the next cyber quake.",
+      "clueEvent": "Fragmented data packets might contain PieveRse coordinates.",
+      "tags": [
+        "hunt",
+        "decrypt",
         "intel"
       ],
-      "expiresAt": "2026-04-20T03:49:40.106Z"
+      "expiresAt": "2026-04-20T07:13:18.973Z"
     },
     {
-      "id": "signal-1776653380106-4",
-      "lane": "quest",
-      "priority": 4,
-      "ttlMinutes": 50,
-      "npcLine": "Gain edge in dark trades; AI brokers play rough.",
-      "questPulse": "Secure rare tokens; distrust clouds network nodes.",
-      "worldFeed": "Markets fracture beneath weight of paranoia and dread.",
-      "clueEvent": "New token hunts spawn; fear fuels frantic moves.",
-      "tags": [
-        "mission",
-        "market-fear",
-        "cybertrade"
-      ],
-      "expiresAt": "2026-04-20T03:39:40.106Z"
-    },
-    {
-      "id": "signal-1776653380106-5",
+      "id": "signal-1776663798974-5",
       "lane": "npc",
-      "priority": 2,
-      "ttlMinutes": 25,
-      "npcLine": "AAVE scars pulse; digital hitmen scout crowdfed wrecks.",
-      "questPulse": "Shadow brokers crawl; cryptic signals fade fast.",
-      "worldFeed": "NPCs trade in whispers, crypto ghosts haunt feeds.",
-      "clueEvent": "Fragmented chains ripple; stake claims among wreckage.",
+      "priority": 3,
+      "ttlMinutes": 50,
+      "npcLine": "Street brokers murmur: 'Asteroid fragments might fund rebels.'",
+      "questPulse": "Barter with shadow traders for forbidden market access.",
+      "worldFeed": "Shadows lengthen as dead assets clutter neon alleys.",
+      "clueEvent": "Hidden logs suggest AAVE nodes tampered with recently.",
       "tags": [
-        "npc",
-        "crypto",
-        "scout"
+        "rebels",
+        "blackmarket",
+        "tampering"
       ],
-      "expiresAt": "2026-04-20T03:14:40.106Z"
+      "expiresAt": "2026-04-20T06:33:18.974Z"
     }
   ]
 }
