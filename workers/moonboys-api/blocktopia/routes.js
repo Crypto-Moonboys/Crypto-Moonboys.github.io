@@ -58,21 +58,49 @@ function factionXpMultiplier(faction) {
   return 1;
 }
 
+function changedRows(result) {
+  return Number(result?.meta?.changes ?? result?.changes ?? 0);
+}
+
+function isValidMiniGameType(type) {
+  return ['firewall', 'router', 'outbreak', 'circuit'].includes(String(type || '').trim().toLowerCase());
+}
+
+function isValidProgressionAction(action) {
+  return ['mini_game_affordability', 'mini_game_skip', 'mini_game_win', 'mini_game_loss', 'arcade_score'].includes(action);
+}
+
+async function readProgressionRequestBody(request, url, err) {
+  if (request.method === 'POST') {
+    try {
+      return { body: await request.json() };
+    } catch {
+      return { response: err('Invalid JSON') };
+    }
+  }
+
+  const rawAuth = url.searchParams.get('telegram_auth');
+  if (!rawAuth) return { response: err('verified telegram_auth payload required', 401) };
+  if (rawAuth.length > 4096) return { response: err('telegram_auth payload too large', 400) };
+  try {
+    return { body: { telegram_auth: JSON.parse(rawAuth) } };
+  } catch {
+    return { response: err('Invalid telegram_auth payload', 400) };
+  }
+}
+
 export async function handleBlockTopiaProgressionRoute(request, env, url, helpers) {
   const { path } = helpers;
   const { json, err, upsertTelegramUser, verifyTelegramAuth } = helpers;
 
-  if (path === '/blocktopia/progression' && request.method === 'GET') {
-    const rawAuth = url.searchParams.get('telegram_auth');
-    if (!rawAuth) return err('verified telegram_auth payload required', 401);
-    let tgBody;
-    try {
-      tgBody = { telegram_auth: JSON.parse(rawAuth) };
-    } catch {
-      return err('Invalid telegram_auth payload', 400);
+  if (path === '/blocktopia/progression' && (request.method === 'POST' || request.method === 'GET')) {
+    if (request.method === 'GET') {
+      logBlockTopiaFailure('legacy_get_auth_query_used', { path });
     }
+    const parsed = await readProgressionRequestBody(request, url, err);
+    if (parsed.response) return parsed.response;
 
-    const verified = await verifyTelegramIdentityFromBody(tgBody, env, verifyTelegramAuth);
+    const verified = await verifyTelegramIdentityFromBody(parsed.body, env, verifyTelegramAuth);
     if (verified.error) return err(verified.error, verified.status || 401);
 
     try {
@@ -92,7 +120,7 @@ export async function handleBlockTopiaProgressionRoute(request, env, url, helper
       const winStreak = Math.max(0, Math.floor(Number(row.win_streak) || 0));
       const rpgModeActive = Number(row.rpg_mode_active) === 1;
 
-      await env.DB.prepare(`
+      const updateResult = await env.DB.prepare(`
         UPDATE blocktopia_progression
         SET xp = ?, gems = ?, tier = ?, win_streak = ?, upgrade_efficiency = ?, upgrade_signal = ?,
             upgrade_defense = ?, upgrade_gem = ?, upgrade_npc = ?, rpg_mode_active = ?,
@@ -104,6 +132,9 @@ export async function handleBlockTopiaProgressionRoute(request, env, url, helper
         rpgModeActive ? 1 : 0,
         verified.telegramId,
       ).run();
+      if (changedRows(updateResult) !== 1) {
+        logBlockTopiaFailure('progression_drain_update_missed', { path, telegramId: verified.telegramId });
+      }
 
       return json({
         ok: true,
@@ -148,11 +179,16 @@ export async function handleBlockTopiaProgressionRoute(request, env, url, helper
 
       const xpAfterEntry = clamp(xp - entryCost, XP_MIN, XP_MAX);
       const seededXp = Math.max(xpAfterEntry, miniGameCost);
-      await env.DB.prepare(`
+      const updateResult = await env.DB.prepare(`
         UPDATE blocktopia_progression
-        SET xp = ?, gems = ?, rpg_mode_active = 1, last_active = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP
-        WHERE telegram_id = ?
-      `).bind(seededXp, gems, verified.telegramId).run();
+        SET xp = CASE WHEN xp - ? < ? THEN ? ELSE xp - ? END,
+            gems = ?,
+            rpg_mode_active = 1,
+            last_active = CURRENT_TIMESTAMP,
+            updated_at = CURRENT_TIMESTAMP
+        WHERE telegram_id = ? AND xp = ? AND gems = ? AND tier = ? AND xp >= ?
+      `).bind(entryCost, miniGameCost, miniGameCost, entryCost, gems, verified.telegramId, row.xp, row.gems, row.tier, entryCost).run();
+      if (changedRows(updateResult) !== 1) return err('Progression changed. Please retry entry.', 409);
       return json({
         ok: true,
         progression: {
@@ -193,19 +229,19 @@ export async function handleBlockTopiaProgressionRoute(request, env, url, helper
       const gems = clamp(Math.floor(Number(row.gems) || 0), GEMS_MIN, GEMS_MAX);
       if (gems < cost) return err('Not enough gems for upgrade', 402);
       const nextLevel = clamp(currentLevel + 1, 0, UPGRADE_MAX_LEVEL);
-      const nextGems = clamp(gems - cost, GEMS_MIN, GEMS_MAX);
-      await env.DB.prepare(`
+      const updateResult = await env.DB.prepare(`
         UPDATE blocktopia_progression
-        SET gems = ?, ${config.column} = ?, updated_at = CURRENT_TIMESTAMP
-        WHERE telegram_id = ?
-      `).bind(nextGems, nextLevel, verified.telegramId).run();
+        SET gems = gems - ?, ${config.column} = ${config.column} + 1, updated_at = CURRENT_TIMESTAMP
+        WHERE telegram_id = ? AND gems >= ? AND ${config.column} = ? AND ${config.column} < ?
+      `).bind(cost, verified.telegramId, cost, currentLevel, UPGRADE_MAX_LEVEL).run();
+      if (changedRows(updateResult) !== 1) return err('Progression changed. Please retry the upgrade.', 409);
       const latest = await getOrCreateBlockTopiaProgression(env.DB, verified.telegramId);
       const nextUpgrades = getUpgradeSnapshot(latest);
       return json({
         ok: true,
         progression: {
           telegram_id: verified.telegramId,
-          gems: nextGems,
+          gems: clamp(Math.floor(Number(latest.gems) || 0), GEMS_MIN, GEMS_MAX),
           upgrades: nextUpgrades,
           effects: buildUpgradeEffects(nextUpgrades),
         },
@@ -238,8 +274,14 @@ export async function handleBlockTopiaProgressionRoute(request, env, url, helper
     const action = String(body?.action || '').trim();
     const type = String(body?.type || '').trim().toLowerCase();
     const game = String(body?.game || '').trim().toLowerCase();
-    const skipStreak = Math.max(0, Math.floor(Number(body?.skip_streak) || 0));
+    const skipStreak = Math.min(100, Math.max(0, Math.floor(Number(body?.skip_streak) || 0)));
     const score = Math.floor(Number(body?.score) || 0);
+    if (!isValidProgressionAction(action)) {
+      return err('Invalid progression action', 400);
+    }
+    if (action !== 'arcade_score' && !isValidMiniGameType(type)) {
+      return err('Invalid mini-game type for progression update', 400);
+    }
     if (!Number.isFinite(score) || score < 0 || score > BLOCKTOPIA_MAX_SCORE_SANITY) {
       return err('Invalid score payload for progression update', 400);
     }
@@ -315,11 +357,19 @@ export async function handleBlockTopiaProgressionRoute(request, env, url, helper
       if (action === 'mini_game_skip') {
         const skipCost = computeMiniGameSkipCost(currentTier, skipStreak);
         if (xpAfterDrain < skipCost) {
-          await env.DB.prepare(`
+          const updateResult = await env.DB.prepare(`
             UPDATE blocktopia_progression
             SET xp = ?, rpg_mode_active = 0, win_streak = 0, last_active = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP
-            WHERE telegram_id = ?
-          `).bind(xpAfterDrain, verified.telegramId).run();
+            WHERE telegram_id = ? AND xp = ? AND gems = ? AND tier = ? AND win_streak = ?
+          `).bind(
+            xpAfterDrain,
+            verified.telegramId,
+            row.xp,
+            row.gems,
+            row.tier,
+            row.win_streak,
+          ).run();
+          if (changedRows(updateResult) !== 1) return err('Progression changed. Please retry.', 409);
           return json({
             ok: false,
             exited: true,
@@ -341,11 +391,19 @@ export async function handleBlockTopiaProgressionRoute(request, env, url, helper
           }, 409);
         }
         const nextXp = clamp(xpAfterDrain - skipCost, XP_MIN, XP_MAX);
-        await env.DB.prepare(`
+        const updateResult = await env.DB.prepare(`
           UPDATE blocktopia_progression
           SET xp = ?, win_streak = 0, last_active = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP
-          WHERE telegram_id = ?
-        `).bind(nextXp, verified.telegramId).run();
+          WHERE telegram_id = ? AND xp = ? AND gems = ? AND tier = ? AND win_streak = ?
+        `).bind(
+          nextXp,
+          verified.telegramId,
+          row.xp,
+          row.gems,
+          row.tier,
+          row.win_streak,
+        ).run();
+        if (changedRows(updateResult) !== 1) return err('Progression changed. Please retry.', 409);
         await env.DB.prepare(`
           INSERT INTO blocktopia_progression_events
             (id, telegram_id, action, action_type, score, xp_change, gems_change)
@@ -402,11 +460,19 @@ export async function handleBlockTopiaProgressionRoute(request, env, url, helper
         );
       }
       if (action !== 'arcade_score' && xpAfterDrain < miniGameCost) {
-        await env.DB.prepare(`
+        const updateResult = await env.DB.prepare(`
           UPDATE blocktopia_progression
           SET xp = ?, rpg_mode_active = 0, win_streak = 0, last_active = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP
-          WHERE telegram_id = ?
-        `).bind(xpAfterDrain, verified.telegramId).run();
+          WHERE telegram_id = ? AND xp = ? AND gems = ? AND tier = ? AND win_streak = ?
+        `).bind(
+          xpAfterDrain,
+          verified.telegramId,
+          row.xp,
+          row.gems,
+          row.tier,
+          row.win_streak,
+        ).run();
+        if (changedRows(updateResult) !== 1) return err('Progression changed. Please retry.', 409);
         return json({
           ok: false,
           exited: true,
@@ -446,11 +512,22 @@ export async function handleBlockTopiaProgressionRoute(request, env, url, helper
       }
       nextTier = clamp(nextTier, TIER_MIN, TIER_MAX);
 
-      await env.DB.prepare(`
+      const updateResult = await env.DB.prepare(`
         UPDATE blocktopia_progression
         SET xp = ?, gems = ?, tier = ?, win_streak = ?, last_active = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP
-        WHERE telegram_id = ?
-      `).bind(nextXp, nextGems, nextTier, nextWinStreak, verified.telegramId).run();
+        WHERE telegram_id = ? AND xp = ? AND gems = ? AND tier = ? AND win_streak = ?
+      `).bind(
+        nextXp,
+        nextGems,
+        nextTier,
+        nextWinStreak,
+        verified.telegramId,
+        row.xp,
+        row.gems,
+        row.tier,
+        row.win_streak,
+      ).run();
+      if (changedRows(updateResult) !== 1) return err('Progression changed. Please retry.', 409);
 
       await env.DB.prepare(`
         INSERT INTO blocktopia_progression_events
@@ -518,18 +595,20 @@ export async function handleBlockTopiaProgressionRoute(request, env, url, helper
     if (verified.error) return err(verified.error, verified.status || 401);
 
     try {
-      await env.DB.prepare(
-        `DELETE FROM blocktopia_progression_events WHERE telegram_id = ?`
-      ).bind(verified.telegramId).run();
-      await env.DB.prepare(
-        `DELETE FROM blocktopia_progression WHERE telegram_id = ?`
-      ).bind(verified.telegramId).run();
-      await env.DB.prepare(
-        `INSERT INTO blocktopia_progression (telegram_id, xp, gems, tier, win_streak, last_active, updated_at)
-         VALUES (?, 0, 0, 1, 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
-         ON CONFLICT(telegram_id) DO UPDATE SET
-           xp = 0, gems = 0, tier = 1, win_streak = 0, last_active = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP`
-      ).bind(verified.telegramId).run();
+      await env.DB.batch([
+        env.DB.prepare(
+          `DELETE FROM blocktopia_progression_events WHERE telegram_id = ?`
+        ).bind(verified.telegramId),
+        env.DB.prepare(
+          `DELETE FROM blocktopia_progression WHERE telegram_id = ?`
+        ).bind(verified.telegramId),
+        env.DB.prepare(
+          `INSERT INTO blocktopia_progression (telegram_id, xp, gems, tier, win_streak, last_active, updated_at)
+           VALUES (?, 0, 0, 1, 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+           ON CONFLICT(telegram_id) DO UPDATE SET
+             xp = 0, gems = 0, tier = 1, win_streak = 0, last_active = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP`
+        ).bind(verified.telegramId),
+      ]);
 
       return json({
         ok: true,
