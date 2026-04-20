@@ -68,6 +68,57 @@ const MOUSE_DRAG_DOUBLE_CLICK_SUPPRESS_MS = 400;
 const DEFAULT_AI_ENDPOINT = 'https://api.openai.com/v1/responses';
 const FORCE_SYNC_GATE_FALLBACK_URL = 'https://crypto-moonboys.github.io/gkniftyheads-incubator.html';
 const MINI_GAME_TYPES = new Set(['outbreak', 'firewall', 'router', 'circuit']);
+
+function setBodyStateClass(name, enabled) {
+  if (!document || !document.body) return;
+  document.body.classList.toggle(name, !!enabled);
+}
+
+function ensureMicroFeed() {
+  let root = document.getElementById('micro-notify-feed');
+  if (root) return root;
+  root = document.createElement('aside');
+  root.id = 'micro-notify-feed';
+  root.className = 'micro-notify-feed';
+  root.setAttribute('aria-live', 'polite');
+  document.body.appendChild(root);
+  return root;
+}
+
+function pushMicroNotification(message, tone = 'info') {
+  if (!message) return;
+  const feed = ensureMicroFeed();
+  const item = document.createElement('div');
+  item.className = `micro-note micro-note--${tone}`;
+  item.textContent = String(message);
+  feed.prepend(item);
+  requestAnimationFrame(() => item.classList.add('is-live'));
+  window.setTimeout(() => {
+    item.classList.remove('is-live');
+    item.classList.add('is-out');
+  }, 3200);
+  window.setTimeout(() => item.remove(), 4100);
+}
+
+function pulseWorldConflict(ms = 2400) {
+  setBodyStateClass('conflict-nearby', true);
+  window.setTimeout(() => setBodyStateClass('conflict-nearby', false), Math.max(600, Number(ms) || 2400));
+}
+
+function updateReactiveGridState(state) {
+  if (!state || !document || !document.body) return;
+  const now = Date.now();
+  const inConflict = Number(state.effects?.districtPulseUntil || 0) > now || state.phase === 'Conflict';
+  const syncReady = hasTelegramAuth();
+  const speed = inConflict ? 1.5 : syncReady ? 1 : 0.45;
+  const intensity = inConflict ? 1 : syncReady ? 0.68 : 0.35;
+  document.body.style.setProperty('--reactive-grid-speed', String(speed));
+  document.body.style.setProperty('--reactive-grid-intensity', String(intensity));
+  setBodyStateClass('conflict-active', inConflict);
+  setBodyStateClass('sync-live', syncReady);
+  setBodyStateClass('sync-error', !syncReady);
+}
+
 const DEFAULT_RPG_EFFECTS = {
   efficiencyDrainReduction: 0,
   signalXpBonus: 0,
@@ -717,6 +768,9 @@ async function boot() {
       }
     }
     hud.pushFeed(text, type);
+    if (type === 'combat' || type === 'quest' || /district|xp|influence|unstable|conflict/i.test(String(text))) {
+      pushMicroNotification(text, type === 'quest' ? 'success' : (type === 'combat' ? 'warning' : 'info'));
+    }
     return true;
   }
 
@@ -867,6 +921,8 @@ async function boot() {
     }
     state.effects.districtPulseUntil = Date.now() + DISTRICT_PULSE_DURATION_MS;
     state.effects.districtPulseId = district.id;
+    pulseWorldConflict(DISTRICT_PULSE_DURATION_MS + 800);
+    pushMicroNotification(`District unstable: ${district.name}`, 'warning');
     if (previousControl < DISTRICT_CAPTURE_THRESHOLD && district.control >= DISTRICT_CAPTURE_THRESHOLD) {
       hud.showDistrictCapture(`🏴 ${district.name} SECURED · ${district.owner}`);
       pushFeedDeduped(`🏴 District secured: ${district.name} now controlled by ${district.owner}`, 'combat', `district-captured:${district.id}:${district.owner}`);
@@ -1292,6 +1348,8 @@ async function boot() {
         hud.triggerSamImpact('⚡ SAM surge detected — giant encounter inbound.');
       } else if (phase.id === 'conflict') {
         state.effects.districtPulseUntil = Date.now() + DISTRICT_PULSE_CONFLICT_MS;
+        pulseWorldConflict(DISTRICT_PULSE_CONFLICT_MS + 1200);
+        pushMicroNotification('Conflict nearby. HUD elevated.', 'warning');
       }
       memory.record('sam', samEvent);
     },
@@ -1309,6 +1367,7 @@ async function boot() {
       }, 'server');
       if (payload?.districtName && payload?.controlState) {
         hud.pushFeed(`🗺️ ${payload.districtName} shifted to ${String(payload.controlState).toUpperCase()}`, 'combat');
+        pushMicroNotification(`${payload.districtName} shifted to ${String(payload.controlState).toUpperCase()}`, 'warning');
       }
     },
     onPlayerWarImpact: (payload) => {
@@ -1726,11 +1785,13 @@ async function boot() {
   }
 
   function renderLoop() {
+    updateReactiveGridState(state);
     renderer.render(state);
     requestAnimationFrame(renderLoop);
   }
 
   setInterval(logicTick, LOGIC_TICK_MS);
+  updateReactiveGridState(state);
   requestAnimationFrame(renderLoop);
 }
 

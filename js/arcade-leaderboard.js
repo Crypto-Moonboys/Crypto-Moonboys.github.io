@@ -53,6 +53,51 @@ let onModeChangeCallback = null;
 let isFetching = false;
 const PRESENCE_OFFLINE_KEY = 'moonboys_presence_hidden';
 
+const previousRowState = new Map();
+
+function dispatchUiState(name, detail = {}) {
+  if (typeof window === 'undefined' || typeof window.dispatchEvent !== 'function') return;
+  window.dispatchEvent(new CustomEvent(name, { detail }));
+}
+
+function isPlayerOnline(row) {
+  if (!row || row.online === false) return false;
+  if (row.online === true || row.status === 'online') return true;
+  const lastSeen = Number(row.last_seen || row.lastSeen || row.updated_at || row.timestamp);
+  if (!Number.isFinite(lastSeen)) return true;
+  return (Date.now() - lastSeen) < 5 * 60 * 1000;
+}
+
+function isPlayerActive(row, prev = null) {
+  if (!row) return false;
+  if (row.active === true || row.status === 'active') return true;
+  const score = Number(row.score || 0);
+  const prevScore = Number(prev && prev.score || 0);
+  return score > prevScore;
+}
+
+function animateNumber(node, nextValue, opts = {}) {
+  if (!node) return;
+  const to = Math.max(0, Math.floor(Number(nextValue) || 0));
+  const from = Math.max(0, Math.floor(Number(node.dataset.value || node.textContent || 0) || 0));
+  const duration = Math.max(220, Number(opts.duration) || 700);
+  if (to === from) {
+    node.textContent = formatScore(to);
+    node.dataset.value = String(to);
+    return;
+  }
+  const start = performance.now();
+  function tick(now) {
+    const t = Math.min(1, (now - start) / duration);
+    const eased = 1 - Math.pow(1 - t, 3);
+    const val = Math.round(from + (to - from) * eased);
+    node.textContent = formatScore(val);
+    node.dataset.value = String(val);
+    if (t < 1) requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+}
+
 // ── DOM helpers ───────────────────────────────────────────────────────────
 function el(id) { return document.getElementById(id); }
 
@@ -124,8 +169,8 @@ function renderLinkedPresence() {
   const linked = !!(sync && sync.linked);
   const online = !!(sync && sync.good && !isPresenceHidden());
   const display = getCurrentIdentityLabel();
-  box.classList.remove('sync-state--good', 'sync-state--bad', 'presence-offline');
-  box.classList.add(online ? 'sync-state--good' : 'sync-state--bad');
+  box.classList.remove('sync-state--good', 'sync-state--bad', 'sync-live', 'sync-error', 'presence-offline');
+  box.classList.add(online ? 'sync-live' : 'sync-error');
   if (isPresenceHidden()) box.classList.add('presence-offline');
   box.innerHTML = linked
     ? `<strong>You are linked as ${escHtml(display)}</strong><span class="lb-linked-meta">${online ? '● Online presence visible' : (isPresenceHidden() ? '○ Showing as offline' : '○ Sync attention required')}</span>`
@@ -152,7 +197,7 @@ function renderTabs() {
   const tabs = currentMode === 'meta' ? META_TABS : RAW_TABS;
   bar.innerHTML = tabs.map(t => `
     <button
-      class="lb-tab${t.key === currentTab ? ' active' : ''}"
+      class="lb-tab interactive${t.key === currentTab ? ' active' : ''}"
       data-tab="${t.key}"
       aria-selected="${t.key === currentTab}"
       role="tab"
@@ -167,8 +212,8 @@ function renderModeToggle() {
   const wrap = el('lb-mode-toggle');
   if (!wrap) return;
   wrap.innerHTML = `
-    <button class="lb-tab${currentMode === DEFAULT_MODE ? ' active' : ''}" data-mode="${DEFAULT_MODE}" aria-pressed="${currentMode === DEFAULT_MODE}">RAW</button>
-    <button class="lb-tab${currentMode === 'meta' ? ' active' : ''}" data-mode="meta" aria-pressed="${currentMode === 'meta'}">META</button>
+    <button class="lb-tab interactive${currentMode === DEFAULT_MODE ? ' active' : ''}" data-mode="${DEFAULT_MODE}" aria-pressed="${currentMode === DEFAULT_MODE}">RAW</button>
+    <button class="lb-tab interactive${currentMode === 'meta' ? ' active' : ''}" data-mode="meta" aria-pressed="${currentMode === 'meta'}">META</button>
   `;
   wrap.querySelectorAll('[data-mode]').forEach((btn) => {
     btn.addEventListener('click', () => switchMode(btn.dataset.mode));
@@ -275,11 +320,11 @@ function renderTable(data) {
   data.forEach((row, i) => {
     const rank = row.rank ?? (i + 1);
     html += `
-      <tr class="lb-row" data-rank="${rank}" tabindex="0" role="button" aria-label="View breakdown for ${escHtml(row.player || 'Player')}">
+      <tr class="lb-row interactive" data-rank="${rank}" data-player="${escHtml(String(row.player || ''))}" tabindex="0" role="button" aria-label="View breakdown for ${escHtml(row.player || 'Player')}">
         <td class="lb-rank">${medalFor(rank)}</td>
         <td class="lb-player">${escHtml(row.player || '—')}</td>
         <td class="lb-faction-cell">${factionBadge(row)}</td>
-        <td class="lb-score">${formatScore(row.score ?? 0)} <span class="lb-score-sub" title="Ranking uses score only. XP stays secondary to score.">· est. +${projectedXpFromScore(row.score ?? 0)} XP</span></td>
+        <td class="lb-score"><span class="lb-score-value" data-score-value="${Math.floor(Number(row.score ?? 0) || 0)}">${formatScore(row.score ?? 0)}</span> <span class="lb-score-sub" title="Ranking uses score only. XP stays secondary to score.">· est. +${projectedXpFromScore(row.score ?? 0)} XP</span></td>
       </tr>
     `;
   });
@@ -289,6 +334,31 @@ function renderTable(data) {
   wrap.style.display = '';
   el('lb-status').style.display = 'none';
   clearBreakdown();
+
+  wrap.querySelectorAll('.lb-row').forEach((tr, idx) => {
+    const row = data[idx] || {};
+    const key = `${String(row.player || '').toLowerCase()}::${rankSafe(row, idx)}`;
+    const prev = previousRowState.get(key);
+    const online = isPlayerOnline(row);
+    const active = isPlayerActive(row, prev);
+    tr.classList.toggle('player-online', online);
+    tr.classList.toggle('player-offline', !online);
+    tr.classList.toggle('player-active', active);
+    if (prev && Number(row.score || 0) > Number(prev.score || 0)) {
+      tr.classList.add('score-updated');
+      dispatchUiState('moonboys:score-updated', {
+        player: row.player || '',
+        score: Number(row.score || 0),
+        previous: Number(prev.score || 0),
+        rank: rankSafe(row, idx),
+        ts: Date.now(),
+      });
+      setTimeout(() => tr.classList.remove('score-updated'), 850);
+    }
+    const scoreNode = tr.querySelector('.lb-score-value');
+    animateNumber(scoreNode, Number(row.score || 0), { duration: 720 });
+    previousRowState.set(key, { score: Number(row.score || 0), faction: row.faction || 'unaligned' });
+  });
 
   wrap.querySelectorAll('.lb-row').forEach(tr => {
     const activate = () => {
@@ -304,6 +374,10 @@ function renderTable(data) {
     tr.addEventListener('click', activate);
     tr.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') activate(); });
   });
+}
+
+function rankSafe(row, i) {
+  return Number(row && row.rank) || (i + 1);
 }
 
 function rowIndexForRank(data, rank) {
@@ -363,6 +437,7 @@ export function initLeaderboard({ onRowSelect, onModeChange } = {}) {
 
   const refreshBtn = el('lb-refresh-btn');
   if (refreshBtn) {
+    refreshBtn.classList.add('interactive');
     refreshBtn.addEventListener('click', async () => {
       refreshBtn.disabled = true;
       await loadLeaderboard();
@@ -372,13 +447,25 @@ export function initLeaderboard({ onRowSelect, onModeChange } = {}) {
 
   const presenceToggle = el('lb-presence-toggle');
   if (presenceToggle) {
+    presenceToggle.classList.add('interactive');
     presenceToggle.addEventListener('click', () => {
       setPresenceHidden(!isPresenceHidden());
       renderLinkedPresence();
     });
   }
   renderLinkedPresence();
-  document.addEventListener('arcade:submission-status', renderLinkedPresence);
+  document.addEventListener('arcade:submission-status', function (event) {
+    renderLinkedPresence();
+    const detail = event && event.detail ? event.detail : {};
+    if (detail.state === 'xp_awarded') dispatchUiState('moonboys:xp-gain', { amount: Number(detail.awardedXp || 0), total: Number(detail.totalXp || 0), ts: Date.now() });
+  });
+
+  window.addEventListener('moonboys:faction-boost', function () {
+    const badge = document.querySelector('.lb-row.selected .lb-faction');
+    if (!badge) return;
+    badge.classList.add('faction-boost');
+    setTimeout(() => badge.classList.remove('faction-boost'), 1200);
+  });
   window.addEventListener('storage', function (event) {
     if (!event || event.key !== PRESENCE_OFFLINE_KEY) return;
     renderLinkedPresence();

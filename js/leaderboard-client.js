@@ -10,6 +10,17 @@ const PRODUCTION_LEADERBOARD_URL = "https://moonboys-leaderboard.sercullen.worke
 // localStorage key shared with identity-gate.js
 const TG_ID_KEY = "moonboys_tg_id";
 
+
+function dispatchUiState(name, detail = {}) {
+  if (typeof window === "undefined" || typeof window.dispatchEvent !== "function") return;
+  window.dispatchEvent(new CustomEvent(name, { detail }));
+}
+
+function emitMicroNotification(message, tone = "info") {
+  if (!message) return;
+  dispatchUiState("moonboys:micro-notify", { message: String(message), tone, ts: Date.now() });
+}
+
 function emitTron(type, data = {}) {
   if (typeof window === "undefined" || typeof window.dispatchEvent !== "function") return;
   window.dispatchEvent(new CustomEvent(`tron:${type}`, { detail: data }));
@@ -26,7 +37,9 @@ function markSyncHealth(state, reason = "") {
   const gate = window.MOONBOYS_IDENTITY;
   if (!gate || typeof gate.setSyncHealth !== "function") return;
   gate.setSyncHealth(state, reason);
+  dispatchUiState("moonboys:sync-state", { state, reason });
 }
+
 
 function getApiUrl() {
   if (typeof window !== "undefined" && window.LEADERBOARD_API_URL) {
@@ -153,6 +166,7 @@ export async function submitScore(player, score, game = "global") {
       state: "local_only",
       message: "Unsynced play stays local to this browser. To store XP and Block Topia progression server-side, run /gklink in Telegram.",
     });
+    emitMicroNotification("Sync required: run /gklink to store progression.", "warning");
     if (typeof window !== "undefined" && window.MOONBOYS_IDENTITY &&
         typeof window.MOONBOYS_IDENTITY.showSyncGateModal === "function") {
       window.MOONBOYS_IDENTITY.showSyncGateModal(true); // true = show /link instructions (Step 2 required)
@@ -200,6 +214,7 @@ export async function submitScore(player, score, game = "global") {
             state: "auth_expired",
             message: "Sync expired. Run /gklink again to refresh your Telegram link.",
           });
+          emitMicroNotification("Sync expired. Re-link required.", "warning");
           markSyncHealth("bad", "auth_expired");
         } else {
           emitArcadeSubmissionStatus({
@@ -214,13 +229,22 @@ export async function submitScore(player, score, game = "global") {
         result.accepted = true;
         result.state = "accepted_score";
         emitTron("score", { game, score, player: resolvedPlayer, source: "leaderboard-client" });
+        dispatchUiState("moonboys:score-updated", { game: gameKey, player: resolvedPlayer, score, ts: Date.now() });
+        emitMicroNotification(`${resolvedPlayer} score accepted (${score}).`, "success");
         emitArcadeSubmissionStatus({
           ...result,
           state: "score_accepted",
           message: "Score accepted for ranking.",
         });
         try {
-          await callFactionEarn("score_accept", score);
+          const factionEarn = await callFactionEarn("score_accept", score);
+          dispatchUiState("moonboys:faction-boost", {
+            source: "score_accept",
+            faction: factionEarn && factionEarn.faction ? String(factionEarn.faction) : getCurrentFactionKey(),
+            amount: Number(factionEarn && (factionEarn.faction_xp_awarded ?? factionEarn.faction_xp_delta ?? factionEarn.base_xp) || 0),
+            ts: Date.now(),
+          });
+          emitMicroNotification("Faction influence increased.", "success");
           if (typeof window !== "undefined" && window.MOONBOYS_FACTION && typeof window.MOONBOYS_FACTION.loadStatus === "function") {
             window.MOONBOYS_FACTION.loadStatus().catch(() => null);
           }
@@ -242,6 +266,10 @@ export async function submitScore(player, score, game = "global") {
                 ? "Accepted score converted to Block Topia XP."
                 : "Accepted score recorded, but no XP was awarded.",
             });
+            if (result.awardedXp > 0) {
+              dispatchUiState("moonboys:xp-gain", { amount: result.awardedXp, total: result.totalXp, game: gameKey, ts: Date.now() });
+              emitMicroNotification(`XP gained +${result.awardedXp}.`, "success");
+            }
             markSyncHealth("good", result.awardedXp > 0 ? "xp_awarded" : "accepted_no_xp");
           } catch (err) {
             console.error("[leaderboard-client] Block Topia progression sync failed:", err);
