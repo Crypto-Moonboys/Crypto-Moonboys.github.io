@@ -42,6 +42,22 @@ function logBlockTopiaFailure(event, context = {}) {
   }));
 }
 
+function normalizeFaction(value) {
+  const cleaned = String(value || '').trim().toLowerCase();
+  if (cleaned === 'diamond-hands' || cleaned === 'diamond_hands' || cleaned === 'diamondhands') return 'diamond-hands';
+  if (cleaned === 'hodl-warriors' || cleaned === 'hodl_warriors' || cleaned === 'hodlwarriors') return 'hodl-warriors';
+  if (cleaned === 'graffpunks' || cleaned === 'graff-punks' || cleaned === 'graff_punks') return 'graffpunks';
+  return 'unaligned';
+}
+
+function factionXpMultiplier(faction) {
+  const key = normalizeFaction(faction);
+  if (key === 'diamond-hands') return 1.1;
+  if (key === 'hodl-warriors') return 1.15;
+  if (key === 'graffpunks') return 1.12;
+  return 1;
+}
+
 export async function handleBlockTopiaProgressionRoute(request, env, url, helpers) {
   const { path } = helpers;
   const { json, err, upsertTelegramUser, verifyTelegramAuth } = helpers;
@@ -370,6 +386,9 @@ export async function handleBlockTopiaProgressionRoute(request, env, url, helper
       if (!rewards) return err('Invalid action/type for progression update', 400);
       if (action === 'arcade_score') {
         rewards.xp = clamp(Math.floor(rewards.xp * TELEGRAM_SYNC_XP_MULTIPLIER), XP_MIN, XP_MAX);
+        const factionMultiplier = factionXpMultiplier(row?.faction);
+        rewards.xp = clamp(Math.floor(rewards.xp * factionMultiplier), XP_MIN, XP_MAX);
+        rewards.faction_multiplier = factionMultiplier;
         const perGameAllowed = await enforceArcadeGameHourlyLimit(env.DB, verified.telegramId, game);
         if (!perGameAllowed) return err('Arcade rewards capped for this game this hour.', 429);
         const awardedLastMinute = await getArcadeXpAwardedLastMinute(env.DB, verified.telegramId);
@@ -474,6 +493,8 @@ export async function handleBlockTopiaProgressionRoute(request, env, url, helper
           sam_pressure_delta: action === 'mini_game_loss' ? 7 : -3,
           leaderboard: rewards.leaderboard || null,
           synced_multiplier: syncedMultiplierApplied,
+          faction: normalizeFaction(row?.faction),
+          faction_multiplier: rewards.faction_multiplier || 1,
         },
       });
     } catch (error) {

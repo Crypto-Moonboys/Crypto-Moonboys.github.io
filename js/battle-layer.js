@@ -48,55 +48,35 @@
     });
   }
 
-  function getFaction() {
-    try { return localStorage.getItem('moonboysFaction'); } catch { return null; }
-  }
-
-  function setFaction(name) {
-    try { localStorage.setItem('moonboysFaction', name); } catch {}
-  }
-
-  function factionSelectorHTML() {
-    var factions = [
-      { id: 'diamond-hands', name: 'Diamond Hands', sub: 'Hold the line through every dip.' },
-      { id: 'hodl-warriors', name: 'HODL Warriors', sub: 'Guardians of the Moonboys legacy.' },
-      { id: 'moon-mission', name: 'Moon Mission', sub: 'Relentless push toward new highs.' },
-      { id: 'graffpunks', name: 'GraffPUNKS', sub: 'Rebels shaping the culture of Web3.' }
-    ];
-
-    var active = getFaction();
-
-    return '<div class="battle-shell"><div class="battle-shell-inner">' +
-      '<h3>Choose Your Faction</h3>' +
-      '<div class="faction-grid">' +
-      factions.map(function (f) {
-        var isActive = active === f.id ? ' is-active' : '';
-        return '<button class="faction-btn' + isActive + '" data-faction="' + esc(f.id) + '">' +
-          '<span class="faction-name">' + esc(f.name) + '</span>' +
-          '<span class="faction-sub">' + esc(f.sub) + '</span>' +
-        '</button>';
-      }).join('') +
-      '</div>' +
-      '<p class="battle-copy">Telegram sync required to align with a faction. Your allegiance is stored locally and syncs with your seasonal Battle Chamber profile.</p>' +
-      '</div></div>';
-  }
-
-  function attachFactionHandlers(container) {
-    container.querySelectorAll('.faction-btn').forEach(function (btn) {
+  async function renderCommunityFactionPanel() {
+    var container = document.getElementById('community-faction-selector');
+    var factionApi = window.MOONBOYS_FACTION;
+    if (!container || !factionApi) return;
+    container.innerHTML = '<div class="community-loading">Loading faction alignment…</div>';
+    var status;
+    try {
+      status = await factionApi.loadStatus();
+    } catch {
+      status = factionApi.getCachedStatus() || { faction: 'unaligned', faction_xp: 0 };
+    }
+    container.innerHTML = factionApi.renderPlayerCard(status, { showJoinActions: true });
+    container.querySelectorAll('.faction-join-btn').forEach(function (btn) {
       btn.addEventListener('click', function () {
-        // Faction alignment is a competitive Battle Chamber action — Telegram sync required.
         var gate = window.MOONBOYS_IDENTITY;
-        var doAlign = function () {
-          var faction = btn.dataset.faction;
-          setFaction(faction);
-          container.querySelectorAll('.faction-btn').forEach(function (b) { b.classList.remove('is-active'); });
-          btn.classList.add('is-active');
+        var joinAction = function () {
+          factionApi.joinFaction(btn.dataset.faction)
+            .then(function () { return factionApi.loadStatus(); })
+            .then(function (latest) {
+              container.innerHTML = factionApi.renderPlayerCard(latest, { showJoinActions: true });
+              renderCommunityFactionPanel();
+            })
+            .catch(function (error) {
+              var msg = (error && error.message) ? error.message : 'Unable to join faction right now.';
+              container.insertAdjacentHTML('beforeend', '<div class="community-empty">' + esc(msg) + '</div>');
+            });
         };
-        if (gate && gate.requireTelegramSync) {
-          gate.requireTelegramSync(doAlign);
-        } else {
-          doAlign();
-        }
+        if (gate && gate.requireLinkedAccount) gate.requireLinkedAccount(joinAction);
+        else joinAction();
       });
     });
   }
@@ -166,11 +146,9 @@
     deck.className = 'battle-deck';
     deck.innerHTML =
       buildBattleMeterHTML(engagement) +
-      factionSelectorHTML() +
       buildMissionHTML(pageId);
 
     target.insertAdjacentElement('afterend', deck);
-    attachFactionHandlers(deck);
   }
 
   function injectCommunityNav() {
@@ -206,7 +184,7 @@
       '</div></div>' +
       '<div class="battle-card"><div class="battle-card-inner">' +
         '<h3>Faction Alignment</h3>' +
-        '<p class="battle-copy">Choose your allegiance: Diamond Hands, HODL Warriors, Moon Mission, or GraffPUNKS.</p>' +
+        '<p class="battle-copy">Choose your allegiance: Diamond Hands, HODL Warriors, or GraffPUNKS.</p>' +
         '<a href="/community.html" class="btn btn-secondary">Choose Faction →</a>' +
       '</div></div>' +
       '<div class="battle-card"><div class="battle-card-inner">' +
@@ -322,11 +300,7 @@
       window.location.pathname.endsWith('/community.html');
     if (!isCommunity) return;
 
-    var factionContainer = document.getElementById('community-faction-selector');
-    if (factionContainer && !factionContainer.hasChildNodes()) {
-      factionContainer.innerHTML = factionSelectorHTML();
-      attachFactionHandlers(factionContainer);
-    }
+    renderCommunityFactionPanel();
 
     var missionsContainer = document.getElementById('community-missions');
     if (missionsContainer && !missionsContainer.hasChildNodes()) {

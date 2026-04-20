@@ -30,6 +30,13 @@
   // Only activate on pages that have both a Start button and a .game-card.
   if (!startBtn || !gameCard) return;
 
+  if (!window.MOONBOYS_FACTION) {
+    var factionScript = document.createElement('script');
+    factionScript.src = '/js/faction-alignment.js';
+    factionScript.defer = true;
+    document.head.appendChild(factionScript);
+  }
+
   /* ── Game metadata ───────────────────────────────────────────────── */
 
   var GAME_META = {
@@ -195,6 +202,7 @@
 
   var _goRestart = null;
   var _goExit    = null;
+  var cachedFactionPanel = null;
 
   function showGameOverModal(score, opts) {
     opts = opts || {};
@@ -548,7 +556,45 @@
     cachedSyncActions = el('div', 'panel-note panel-note--actions');
     cachedSyncActions.id = 'overlay-sync-actions';
     sideLeft.appendChild(cachedSyncActions);
+    sideLeft.appendChild(el('div', 'panel-title', 'Faction Alignment'));
+    cachedFactionPanel = el('div', 'panel-note panel-note--faction');
+    cachedFactionPanel.id = 'overlay-faction-panel';
+    cachedFactionPanel.innerHTML = 'Loading faction card…';
+    sideLeft.appendChild(cachedFactionPanel);
     updateSyncSurfaceState(lastSubmissionState || (isLinkedReady() ? 'linked_ready' : 'local_only'), {});
+    refreshFactionPanel();
+  }
+
+  function refreshFactionPanel() {
+    var panel = cachedFactionPanel || document.getElementById('overlay-faction-panel');
+    if (!panel) return;
+    var factionApi = window.MOONBOYS_FACTION;
+    if (!factionApi || typeof factionApi.renderPlayerCard !== 'function') {
+      panel.textContent = 'Faction system unavailable in this build.';
+      return;
+    }
+    var draw = function (status) {
+      panel.innerHTML = factionApi.renderPlayerCard(status, { showJoinActions: true });
+      panel.querySelectorAll('.faction-join-btn').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          var gate = getIdentityApi();
+          var runJoin = function () {
+            factionApi.joinFaction(btn.dataset.faction)
+              .then(function () { return factionApi.loadStatus(); })
+              .then(draw)
+              .catch(function (error) {
+                var msg = (error && error.message) ? error.message : 'Faction join unavailable right now.';
+                panel.insertAdjacentHTML('beforeend', '<div class=\"panel-note\">' + msg + '</div>');
+              });
+          };
+          if (gate && typeof gate.requireLinkedAccount === 'function') gate.requireLinkedAccount(runJoin);
+          else runJoin();
+        });
+      });
+    };
+    factionApi.loadStatus().then(draw).catch(function () {
+      draw(factionApi.getCachedStatus() || { faction: 'unaligned', faction_xp: 0 });
+    });
   }
 
   function buildRightPanel(meta) {

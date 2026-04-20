@@ -118,6 +118,18 @@
     }
     .lb-rank   { text-align: center; font-weight: 700; font-size: 1rem; }
     .lb-player { font-weight: 600; overflow: visible; text-overflow: clip; }
+    .lb-faction-cell { text-align: center; }
+    .lb-faction {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      border: 1px solid color-mix(in srgb, var(--faction-color) 65%, white);
+      border-radius: 999px;
+      padding: 3px 8px;
+      font-size: .75rem;
+      color: #f4fbff;
+      background: color-mix(in srgb, var(--faction-color) 16%, rgba(8,22,36,.92));
+    }
     .lb-score  { text-align: center; font-weight: 700; color: var(--color-accent); font-variant-numeric: tabular-nums; }
 
     /* Controls row */
@@ -493,6 +505,7 @@
 <script src="/js/wiki.js"></script>
 <script src="/js/identity-gate.js"></script>
 <script src="/js/scroll-shell.js"></script>
+<script src="/js/faction-alignment.js"></script>
 <script type="module">
 import { initLeaderboard } from '/js/arcade-leaderboard.js';
 import { initGraph, setPlayerState, resetGraph, setGraphMode, setMetaGraphState } from '/js/arcade-graph.js';

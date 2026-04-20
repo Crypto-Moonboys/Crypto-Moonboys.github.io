@@ -98,6 +98,8 @@ export default {
       }
 
       const { player, score, game, telegram_id } = body;
+      const rawFaction = String(body.faction || "unaligned").toLowerCase().trim();
+      const faction = ["diamond-hands", "hodl-warriors", "graffpunks"].includes(rawFaction) ? rawFaction : "unaligned";
       const submissionMode = String(body.score_type || "raw").toLowerCase();
 
       // Competitive action — seasonal and all-time score submission requires
@@ -171,7 +173,7 @@ export default {
 
         const existingEntry = board.find((row) => String(row?.telegram_id || '') === telegramId) || null;
         previousBest = Number(existingEntry?.score || 0);
-        const entry = { player: playerName, score: floorScore, telegram_id: telegramId };
+        const entry = { player: playerName, score: floorScore, telegram_id: telegramId, faction };
         const updatedBoard = upsertEntry(board, entry, PER_GAME_LEADERBOARD_SIZE);
         const updatedSeasonal = upsertEntry(sBoard, entry, PER_GAME_LEADERBOARD_SIZE);
         const updatedYearly = upsertEntry(yBoard, entry, PER_GAME_LEADERBOARD_SIZE);
@@ -611,8 +613,10 @@ function upsertEntry(existing, newEntry, limit) {
   if (idx !== -1) {
     if (newEntry.score > (Number(list[idx].score) || 0)) {
       list[idx] = { ...list[idx], ...newEntry };
+    } else {
+      if (newEntry.telegram_id) list[idx].telegram_id = newEntry.telegram_id;
+      if (newEntry.faction) list[idx].faction = newEntry.faction;
     }
-    // else: existing score is better — no update
   } else {
     list.push(newEntry);
   }
