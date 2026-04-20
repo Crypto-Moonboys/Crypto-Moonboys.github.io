@@ -536,11 +536,11 @@
       var d = event && event.detail ? event.detail : {};
       var base = 'Submission status: ';
       if (d.state === 'syncing') {
-        setSyncStatusText(base + 'Syncing score… waiting for acceptance.');
+        setSyncStatusText(base + 'Syncing score… New high score — XP conversion pending.');
         return;
       }
       if (d.state === 'local_only') {
-        setSyncStatusText(base + 'Local only (not synced). Arcade is playable, but Telegram sync is required for Block Topia XP storage.');
+        setSyncStatusText(base + 'Score recorded (local only). Sync Telegram to convert score into XP.');
         return;
       }
       if (d.state === 'telegram_sync_required') {
@@ -548,7 +548,7 @@
         return;
       }
       if (d.state === 'accepted_score') {
-        setSyncStatusText(base + 'Accepted score confirmed. Leaderboard sync complete.');
+        setSyncStatusText(base + 'Accepted score confirmed for ranking. XP conversion will follow accepted-score rules.');
         return;
       }
       if (d.state === 'xp_awarded') {

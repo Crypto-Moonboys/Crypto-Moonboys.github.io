@@ -33,12 +33,12 @@
 
   const WAKE_FALLBACK = {
     score: [
-      'Score packet accepted in Battle Chamber.',
-      'Chain momentum surged from recent score input.'
+      'Player scored — XP conversion pending acceptance.',
+      'Score event logged with projected XP potential.'
     ],
     leaderboard: [
-      'Leaderboard surge incoming.',
-      'Ranking matrix just shifted.'
+      'New high score — XP conversion pending.',
+      'Ranking matrix shifted by score (XP tracks progression only).'
     ],
     sam: [
       'SAM noticing elevated movement.',

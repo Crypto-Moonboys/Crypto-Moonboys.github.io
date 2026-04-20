@@ -69,6 +69,12 @@ function formatScore(value) {
   return Math.floor(num).toLocaleString('en-GB');
 }
 
+function projectedXpFromScore(value) {
+  const num = Number(value);
+  if (!Number.isFinite(num) || num < 0) return 0;
+  return Math.min(Math.floor(num / 1000), 100);
+}
+
 function medalFor(rank) {
   if (rank === 1) return '🥇';
   if (rank === 2) return '🥈';
@@ -171,7 +177,7 @@ function renderBreakdown(entry) {
   panel.innerHTML = `
     <div class="lb-bd-header">
       <span class="lb-bd-player">${escHtml(entry.player || '—')}</span>
-      <span class="lb-bd-total">${formatScore(entry.score ?? 0)} pts</span>
+      <span class="lb-bd-total">${formatScore(entry.score ?? 0)} Score · ≈ +${projectedXpFromScore(entry.score ?? 0)} XP</span>
     </div>
     <div class="lb-bd-grid">${rows.join('')}</div>
   `;
@@ -195,7 +201,7 @@ function renderTable(data) {
         <tr>
           <th scope="col" class="lb-col-rank">#</th>
           <th scope="col" class="lb-col-player">Player</th>
-          <th scope="col" class="lb-col-score">Score</th>
+          <th scope="col" class="lb-col-score" title="Accepted scores convert to Block Topia XP">Score (Ranking)</th>
         </tr>
       </thead>
       <tbody>
@@ -207,7 +213,7 @@ function renderTable(data) {
       <tr class="lb-row" data-rank="${rank}" tabindex="0" role="button" aria-label="View breakdown for ${escHtml(row.player || 'Player')}">
         <td class="lb-rank">${medalFor(rank)}</td>
         <td class="lb-player">${escHtml(row.player || '—')}</td>
-        <td class="lb-score">${formatScore(row.score ?? 0)}</td>
+        <td class="lb-score">${formatScore(row.score ?? 0)} <span class="lb-score-sub" title="Accepted scores convert to Block Topia XP">(≈ +${projectedXpFromScore(row.score ?? 0)} XP)</span></td>
       </tr>
     `;
   });
