@@ -36,6 +36,7 @@ import { createSignalRouterSystem } from './world/signal-router-system.js';
 import { createSignalRouterOverlay } from './ui/signal-router-overlay.js';
 import { createCircuitConnectSystem } from './world/circuit-connect-system.js';
 import { createCircuitConnectOverlay } from './ui/circuit-connect-overlay.js';
+import { computeTierDifficulty } from './world/tier-difficulty.js';
 
 const ENTRY_OVERLAY_TIMEOUT_MS = 7000;
 const MAX_FRAME_DELTA_SECONDS = 1 / 30;
@@ -63,6 +64,7 @@ const CAMERA_ZOOM_WHEEL_STEP = 0.06;
 const MOUSE_DRAG_THRESHOLD_PX = 8;
 const MOUSE_DRAG_DOUBLE_CLICK_SUPPRESS_MS = 400;
 const DEFAULT_AI_ENDPOINT = 'https://api.openai.com/v1/responses';
+const MINI_GAME_TYPES = new Set(['outbreak', 'firewall', 'router', 'circuit']);
 const canvas = document.getElementById('world-canvas');
 const hud = createHud(document);
 const renderer = createIsoRenderer(canvas);
@@ -104,9 +106,66 @@ function resolveAiRuntimeConfig() {
   };
 }
 
+function getApiBase() {
+  const cfg = window.MOONBOYS_API || {};
+  return cfg.BASE_URL ? String(cfg.BASE_URL).replace(/\/$/, '') : '';
+}
+
+function getTelegramAuth() {
+  if (window.MOONBOYS_IDENTITY && typeof window.MOONBOYS_IDENTITY.getTelegramAuth === 'function') {
+    return window.MOONBOYS_IDENTITY.getTelegramAuth();
+  }
+  try {
+    const raw = localStorage.getItem('moonboys_tg_auth');
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+}
+
+async function fetchServerTier() {
+  const apiBase = getApiBase();
+  const telegramAuth = getTelegramAuth();
+  if (!apiBase || !telegramAuth?.hash || !telegramAuth?.auth_date) return 1;
+  try {
+    const query = encodeURIComponent(JSON.stringify(telegramAuth));
+    const res = await fetch(`${apiBase}/blocktopia/progression?telegram_auth=${query}`);
+    if (!res.ok) return 1;
+    const data = await res.json().catch(() => null);
+    return Number(data?.progression?.tier) || 1;
+  } catch {
+    return 1;
+  }
+}
+
+async function syncMiniGameOutcome(type, outcome) {
+  const miniGameType = String(type || '').toLowerCase();
+  if (!MINI_GAME_TYPES.has(miniGameType)) return null;
+  const apiBase = getApiBase();
+  const telegramAuth = getTelegramAuth();
+  if (!apiBase || !telegramAuth?.hash || !telegramAuth?.auth_date) return null;
+  const action = outcome === 'success' ? 'mini_game_win' : 'mini_game_loss';
+  const res = await fetch(`${apiBase}/blocktopia/progression/mini-game`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      action,
+      type: miniGameType,
+      score: 0,
+      telegram_auth: telegramAuth,
+    }),
+  });
+  if (!res.ok) return null;
+  return res.json().catch(() => null);
+}
+
 async function boot() {
+  const playerTier = await fetchServerTier();
+  const tierDifficulty = computeTierDifficulty(playerTier);
   const dataBundle = await loadUnifiedData();
   const state = createGameState(dataBundle);
+  state.blockTopiaTier = tierDifficulty.tier;
+  state.blockTopiaScale = tierDifficulty.scale;
   state.camera.zoomIndex = 1;
   state.camera.zoom = CAMERA_ZOOM_PRESETS[state.camera.zoomIndex];
   const liveIntelligence = createLiveIntelligence();
@@ -137,10 +196,10 @@ async function boot() {
     onSubmitAction: (action) => duel.submitAction(action),
     onAcceptDuel: (duelId) => duel.acceptDuel(duelId),
   });
-  const outbreakSystem = createNodeOutbreakSystem(state);
-  const firewallDefense = createFirewallDefenseSystem(state);
-  const signalRouter = createSignalRouterSystem(state);
-  const circuitConnect = createCircuitConnectSystem(state);
+  const outbreakSystem = createNodeOutbreakSystem(state, { tier: tierDifficulty.tier });
+  const firewallDefense = createFirewallDefenseSystem(state, { tier: tierDifficulty.tier });
+  const signalRouter = createSignalRouterSystem(state, { tier: tierDifficulty.tier });
+  const circuitConnect = createCircuitConnectSystem(state, { tier: tierDifficulty.tier });
   const outbreakOverlay = createNodeOutbreakOverlay(document, {
     onAction: ({ kind, id }) => {
       const selectedId = outbreakSystem.getPublicState().selectedNodeId;
@@ -229,6 +288,7 @@ async function boot() {
   const aiRuntime = resolveAiRuntimeConfig();
 
   hud.setAiStatus(aiRuntime.status);
+  hud.pushFeed(`🧱 Block Topia tier ${tierDifficulty.tier} · difficulty x${tierDifficulty.scale.toFixed(2)}`, 'system');
   if (aiRuntime.hasConfig) {
     hud.pushFeed(
       `🤖 AI config detected · ${aiRuntime.enabled ? 'enabled' : 'disabled'} · endpoint ${aiRuntime.endpoint}`,
@@ -1173,6 +1233,7 @@ async function boot() {
         hud.pushFeed(`🤝 NPC ${labels[type] || type} at ${nodeId.toUpperCase()}`, 'combat');
       },
       onResolve: (result) => {
+        syncMiniGameOutcome('firewall', result.outcome).catch(() => {});
         if (result.outcome === 'success') {
           const reward = awardXp(state, result.rewardXp);
           state.player.score += result.rewardGems;
@@ -1209,6 +1270,7 @@ async function boot() {
         hud.pushFeed(`${burst ? '💥' : '🦠'} Spread ${fromId.toUpperCase()} → ${toId.toUpperCase()}`, 'combat');
       },
       onResolve: (result) => {
+        syncMiniGameOutcome('outbreak', result.outcome).catch(() => {});
         if (result.outcome === 'success') {
           const reward = awardXp(state, result.rewardXp);
           state.player.score += result.rewardGems;
@@ -1246,6 +1308,7 @@ async function boot() {
         hud.pushFeed(`🤝 NPC ${labels[type] || type} · ${text}`, 'combat');
       },
       onResolve: (result) => {
+        syncMiniGameOutcome('router', result.outcome).catch(() => {});
         if (result.outcome === 'success') {
           const reward = awardXp(state, result.rewardXp);
           state.player.score += result.rewardGems;
@@ -1287,6 +1350,7 @@ async function boot() {
         hud.pushFeed(`🤝 NPC ${labels[type] || type} · ${text}`, 'combat');
       },
       onResolve: (result) => {
+        syncMiniGameOutcome('circuit', result.outcome).catch(() => {});
         if (result.outcome === 'success') {
           const reward = awardXp(state, result.rewardXp);
           state.player.score += result.rewardGems;

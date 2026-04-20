@@ -1,4 +1,5 @@
 import { CONTROL_LINKS } from './control-grid.js';
+import { computeTierDifficulty } from './tier-difficulty.js';
 
 const TRIGGER_MIN_DELAY_MS = 90000;
 const TRIGGER_MAX_DELAY_MS = 170000;
@@ -11,6 +12,9 @@ const NPC_ASSIGN_INTERVAL_MS = 3200;
 const NPC_EFFECT_COOLDOWN_MS = 7000;
 const FRACTURE_SPREAD_INTERVAL_MS = 7000;
 const MIN_WIN_INTEGRITY = 72;
+const MIN_SPREAD_INTERVAL_MS = 2600;
+const MAX_START_FRACTURES = 8;
+const MAX_OBJECTIVES = 6;
 
 function clamp(value, min, max) {
   return Math.max(min, Math.min(max, value));
@@ -96,7 +100,9 @@ function shortestPath(adjacency, startId, endId, edgeMeta) {
   return path.reverse();
 }
 
-export function createCircuitConnectSystem(state) {
+export function createCircuitConnectSystem(state, options = {}) {
+  const difficulty = computeTierDifficulty(options?.tier || 1);
+  const spreadScale = Math.min(difficulty.scale, 2.4);
   const nodes = Array.isArray(state?.controlNodes) ? state.controlNodes : [];
   const { byId, adjacency, edges } = buildGraph(nodes);
 
@@ -196,7 +202,8 @@ export function createCircuitConnectSystem(state) {
         if (!clusterSet.has(next)) boundary.push(edgeKey(node.id, next));
       }
     }
-    for (const edgeId of boundary.slice(0, 3)) setEdgeState(edgeId, 'broken');
+    const baseFractureCount = clamp(3 + Math.floor((difficulty.scale - 1) * 1.2), 3, MAX_START_FRACTURES);
+    for (const edgeId of boundary.slice(0, baseFractureCount)) setEdgeState(edgeId, 'broken');
     if (boundary.length) runtime.fractureTypes.push('district_isolation');
 
     const keyNodes = ['core', 'north', 'south', 'east', 'west'].filter((id) => byId.has(id));
@@ -267,6 +274,20 @@ export function createCircuitConnectSystem(state) {
         deadlineAt: now + EVENT_MAX_MS,
       },
     ];
+    const extraObjectives = clamp(Math.floor((difficulty.scale - 1) / 1), 0, MAX_OBJECTIVES - runtime.objectives.length);
+    for (let i = 0; i < extraObjectives; i += 1) {
+      const from = choose(nodes) || nodes[0];
+      const to = choose(nodes.filter((node) => node.id !== from?.id)) || nodes[1] || nodes[0];
+      runtime.objectives.push({
+        id: `repair_path_${i + 1}`,
+        type: 'restore_critical_path',
+        label: `Restore aux path ${String(from?.id || '').toUpperCase()} ↔ ${String(to?.id || '').toUpperCase()}`,
+        fromId: from?.id,
+        toId: to?.id,
+        complete: false,
+        deadlineAt: now + 46000 + (i * 11000),
+      });
+    }
   }
 
   function beginEvent(hooks = {}) {
@@ -283,7 +304,7 @@ export function createCircuitConnectSystem(state) {
     runtime.supportCharges = 2;
     runtime.instability = 0;
     runtime.integrity = 100;
-    runtime.spreadAt = now + FRACTURE_SPREAD_INTERVAL_MS;
+    runtime.spreadAt = now + Math.max(MIN_SPREAD_INTERVAL_MS, Math.round(FRACTURE_SPREAD_INTERVAL_MS / spreadScale));
     runtime.npcAssistAt = now;
 
     resetEdges();
@@ -359,7 +380,7 @@ export function createCircuitConnectSystem(state) {
 
   function spreadFracture(now, hooks = {}) {
     if (now < runtime.spreadAt) return;
-    runtime.spreadAt = now + FRACTURE_SPREAD_INTERVAL_MS;
+    runtime.spreadAt = now + Math.max(MIN_SPREAD_INTERVAL_MS, Math.round(FRACTURE_SPREAD_INTERVAL_MS / spreadScale));
     const unstableEdges = [...runtime.linkMeta.values()].filter((meta) => meta.state === 'unstable' || meta.state === 'broken');
     const seed = choose(unstableEdges);
     if (!seed) return;
@@ -620,6 +641,7 @@ export function createCircuitConnectSystem(state) {
       fractureTypeCount: runtime.fractureTypes.length,
       objectiveTypeCount: 4,
       npcInteractionTypeCount: 4,
+      difficulty,
     };
   }
 

@@ -1,4 +1,5 @@
 import { CONTROL_LINKS } from './control-grid.js';
+import { computeTierDifficulty } from './tier-difficulty.js';
 
 const TRIGGER_MIN_DELAY_MS = 45000;
 const TRIGGER_MAX_DELAY_MS = 90000;
@@ -8,6 +9,9 @@ const INITIAL_ALERT_MS = 3800;
 const MAX_EVENT_MS = 3 * 60 * 1000;
 const TAKEOVER_THRESHOLD = 0.45;
 const TRAIT_INTERVAL_MS = 30000;
+const MIN_SPREAD_INTERVAL_MS = 1800;
+const MAX_STARTING_INFECTED = 4;
+const MAX_MUTATION_SPEED_BONUS = 2.1;
 
 const ACTION_COST = {
   scan: 0,
@@ -40,7 +44,11 @@ function buildAdjacency(nodes) {
   return adjacency;
 }
 
-export function createNodeOutbreakSystem(state) {
+export function createNodeOutbreakSystem(state, options = {}) {
+  const difficulty = computeTierDifficulty(options?.tier || 1);
+  const spreadSpeedScale = Math.min(difficulty.scale, 2.4);
+  const mutationSpeedScale = Math.min(difficulty.scale, MAX_MUTATION_SPEED_BONUS);
+  const startingInfected = clamp(1 + Math.floor((difficulty.scale - 1) / 0.6), 1, MAX_STARTING_INFECTED);
   const nodes = Array.isArray(state?.controlNodes) ? state.controlNodes : [];
   const byId = new Map(nodes.map((node) => [node.id, node]));
   const adjacency = buildAdjacency(nodes);
@@ -133,6 +141,14 @@ export function createNodeOutbreakSystem(state) {
     outbreak.startedAt = Date.now();
     outbreak.alertUntil = Date.now() + INITIAL_ALERT_MS;
     outbreak.infected = new Map([[nodeId, 52]]);
+    if (startingInfected > 1) {
+      const pool = nodes.map((node) => node.id).filter((id) => id !== nodeId);
+      for (let i = 1; i < startingInfected && pool.length; i += 1) {
+        const idx = Math.floor(Math.random() * pool.length);
+        const nextId = pool.splice(idx, 1)[0];
+        outbreak.infected.set(nextId, 36 + Math.random() * 18);
+      }
+    }
     outbreak.isolatedUntil.clear();
     outbreak.linkBlocks.clear();
     outbreak.scannedUntil.clear();
@@ -176,7 +192,8 @@ export function createNodeOutbreakSystem(state) {
     let interval = 7600 - ramp * 2800;
     if (activeTrait('faster-spread')) interval *= 0.68;
     interval *= 1 - (outbreak.upgrades.containment * 0.08);
-    return Math.max(2000, interval);
+    interval /= spreadSpeedScale;
+    return Math.max(MIN_SPREAD_INTERVAL_MS, interval);
   }
 
   function isLinkBlocked(aId, bId, now) {
@@ -359,7 +376,7 @@ export function createNodeOutbreakSystem(state) {
     applyCounters();
     if (now >= outbreak.traitNextAt) {
       evolveTrait(hooks);
-      outbreak.traitNextAt = now + TRAIT_INTERVAL_MS;
+      outbreak.traitNextAt = now + (TRAIT_INTERVAL_MS / mutationSpeedScale);
     }
 
     const interval = spreadIntervalMs(now);
@@ -428,6 +445,7 @@ export function createNodeOutbreakSystem(state) {
       logs: [...outbreak.logs],
       actionCost: { ...ACTION_COST },
       takeoverThreshold: TAKEOVER_THRESHOLD,
+      difficulty,
     };
   }
 

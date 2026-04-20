@@ -360,10 +360,15 @@ async function ensureBlockTopiaProgressionTables(db) {
       xp INTEGER NOT NULL DEFAULT 0,
       gems INTEGER NOT NULL DEFAULT 0,
       tier INTEGER NOT NULL DEFAULT 1,
+      win_streak INTEGER NOT NULL DEFAULT 0,
       last_active DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
       updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
     )
   `).run();
+  await db.prepare(`
+    ALTER TABLE blocktopia_progression
+    ADD COLUMN win_streak INTEGER NOT NULL DEFAULT 0
+  `).run().catch(() => {});
   await db.prepare(`
     CREATE TABLE IF NOT EXISTS blocktopia_progression_events (
       id TEXT PRIMARY KEY,
@@ -380,15 +385,22 @@ async function ensureBlockTopiaProgressionTables(db) {
 
 async function getOrCreateBlockTopiaProgression(db, telegramId) {
   await db.prepare(`
-    INSERT INTO blocktopia_progression (telegram_id, xp, gems, tier)
-    VALUES (?, 0, 0, 1)
+    INSERT INTO blocktopia_progression (telegram_id, xp, gems, tier, win_streak)
+    VALUES (?, 0, 0, 1, 0)
     ON CONFLICT(telegram_id) DO NOTHING
   `).bind(telegramId).run();
   const row = await db.prepare(
-    `SELECT telegram_id, xp, gems, tier, last_active, updated_at
+    `SELECT telegram_id, xp, gems, tier, win_streak, last_active, updated_at
      FROM blocktopia_progression WHERE telegram_id = ?`
   ).bind(telegramId).first();
-  return row || { telegram_id: telegramId, xp: 0, gems: 0, tier: 1, last_active: new Date().toISOString() };
+  return row || {
+    telegram_id: telegramId,
+    xp: 0,
+    gems: 0,
+    tier: 1,
+    win_streak: 0,
+    last_active: new Date().toISOString(),
+  };
 }
 
 async function enforceProgressionRateLimit(db, telegramId) {
@@ -414,10 +426,15 @@ function computeBlockTopiaRewards(action, type, score) {
     };
   }
   if (safeAction === 'mini_game_win') {
-    const xpByType = { firewall: 12, router: 10, outbreak: 8 };
-    const gemsByType = { firewall: 2, router: 1, outbreak: 1 };
+    const xpByType = { firewall: 12, router: 10, outbreak: 8, circuit: 11 };
+    const gemsByType = { firewall: 2, router: 1, outbreak: 1, circuit: 2 };
     if (!xpByType[safeType]) return null;
     return { xp: xpByType[safeType], gems: gemsByType[safeType], score: 0, reason: 'validated_mini_game_win' };
+  }
+  if (safeAction === 'mini_game_loss') {
+    const allowedTypes = new Set(['firewall', 'router', 'outbreak', 'circuit']);
+    if (!allowedTypes.has(safeType)) return null;
+    return { xp: 0, gems: 0, score: 0, reason: 'validated_mini_game_loss' };
   }
   return null;
 }
@@ -796,14 +813,14 @@ export default {
         const row = await getOrCreateBlockTopiaProgression(env.DB, verified.telegramId);
         const { drain, xpAfterDrain } = applyProgressionDrain(row);
         const gems = clamp(Number(row.gems) || 0, GEMS_MIN, GEMS_MAX);
-        const tier = clamp(Number(row.tier) || 1, TIER_MIN, TIER_MAX);
-        const tierAfter = clamp(Math.floor(xpAfterDrain / 2000) + 1, TIER_MIN, TIER_MAX);
+        const tierAfter = clamp(Number(row.tier) || 1, TIER_MIN, TIER_MAX);
+        const winStreak = Math.max(0, Math.floor(Number(row.win_streak) || 0));
 
         await env.DB.prepare(`
           UPDATE blocktopia_progression
-          SET xp = ?, gems = ?, tier = ?, last_active = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP
+          SET xp = ?, gems = ?, tier = ?, win_streak = ?, last_active = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP
           WHERE telegram_id = ?
-        `).bind(xpAfterDrain, gems, tierAfter, verified.telegramId).run();
+        `).bind(xpAfterDrain, gems, tierAfter, winStreak, verified.telegramId).run();
 
         return json({
           ok: true,
@@ -812,6 +829,7 @@ export default {
             xp: xpAfterDrain,
             gems,
             tier: tierAfter,
+            win_streak: winStreak,
             drain_applied: drain,
             last_active: new Date().toISOString(),
           },
@@ -847,13 +865,25 @@ export default {
         const { drain, xpAfterDrain } = applyProgressionDrain(row);
         const nextXp = clamp(xpAfterDrain + rewards.xp, XP_MIN, XP_MAX);
         const nextGems = clamp((Number(row.gems) || 0) + rewards.gems, GEMS_MIN, GEMS_MAX);
-        const nextTier = clamp(Math.floor(nextXp / 2000) + 1, TIER_MIN, TIER_MAX);
+        const currentTier = clamp(Math.floor(Number(row.tier) || 1), TIER_MIN, TIER_MAX);
+        const currentStreak = Math.max(0, Math.floor(Number(row.win_streak) || 0));
+        let nextTier = currentTier;
+        let nextWinStreak = currentStreak;
+        if (action === 'mini_game_win') {
+          nextWinStreak += 1;
+          nextTier += 1;
+          if (nextWinStreak >= 3) nextTier += 1;
+        } else if (action === 'mini_game_loss') {
+          nextTier -= 1;
+          nextWinStreak = 0;
+        }
+        nextTier = clamp(nextTier, TIER_MIN, TIER_MAX);
 
         await env.DB.prepare(`
           UPDATE blocktopia_progression
-          SET xp = ?, gems = ?, tier = ?, last_active = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP
+          SET xp = ?, gems = ?, tier = ?, win_streak = ?, last_active = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP
           WHERE telegram_id = ?
-        `).bind(nextXp, nextGems, nextTier, verified.telegramId).run();
+        `).bind(nextXp, nextGems, nextTier, nextWinStreak, verified.telegramId).run();
 
         await env.DB.prepare(`
           INSERT INTO blocktopia_progression_events
@@ -876,6 +906,7 @@ export default {
             xp: nextXp,
             gems: nextGems,
             tier: nextTier,
+            win_streak: nextWinStreak,
             drain_applied: drain,
             xp_awarded: rewards.xp,
             gems_awarded: rewards.gems,
@@ -903,10 +934,10 @@ export default {
           `DELETE FROM blocktopia_progression WHERE telegram_id = ?`
         ).bind(verified.telegramId).run();
         await env.DB.prepare(
-          `INSERT INTO blocktopia_progression (telegram_id, xp, gems, tier, last_active, updated_at)
-           VALUES (?, 0, 0, 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+          `INSERT INTO blocktopia_progression (telegram_id, xp, gems, tier, win_streak, last_active, updated_at)
+           VALUES (?, 0, 0, 1, 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
            ON CONFLICT(telegram_id) DO UPDATE SET
-             xp = 0, gems = 0, tier = 1, last_active = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP`
+             xp = 0, gems = 0, tier = 1, win_streak = 0, last_active = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP`
         ).bind(verified.telegramId).run();
 
         return json({
@@ -916,6 +947,7 @@ export default {
             xp: 0,
             gems: 0,
             tier: 1,
+            win_streak: 0,
             reset: true,
           },
         });
