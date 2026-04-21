@@ -247,9 +247,12 @@ export function buildDistrictPatrolPlans({
       0,
       100,
     );
+    const hasPreviousPosture = Number.isFinite(Number(previousPlan.postureScore));
     const previousPostureScore = Math.max(0, Number(previousPlan.postureScore) || 0);
     const smoothingFactor = rawPostureScore >= previousPostureScore ? 0.46 : 0.24;
-    const postureScore = Number((previousPostureScore + ((rawPostureScore - previousPostureScore) * smoothingFactor)).toFixed(2));
+    const postureScore = hasPreviousPosture
+      ? Number((previousPostureScore + ((rawPostureScore - previousPostureScore) * smoothingFactor)).toFixed(2))
+      : Number(rawPostureScore.toFixed(2));
     const postureTrend = rawPostureScore > (previousPostureScore + 4)
       ? 'rising'
       : rawPostureScore < (previousPostureScore - 4)
