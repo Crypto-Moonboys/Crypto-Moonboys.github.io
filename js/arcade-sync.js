@@ -10,13 +10,7 @@ export const ArcadeSync = {
     if (typeof window === "undefined") return null;
     const gate = window.MOONBOYS_IDENTITY;
     if (!gate) return null;
-    if (typeof gate.getSignedTelegramAuth === "function") return gate.getSignedTelegramAuth();
-    if (typeof gate.getTelegramAuthStatus === "function" && typeof gate.getTelegramAuth === "function") {
-      const status = gate.getTelegramAuthStatus();
-      if (!status || !status.has_payload || status.expired) return null;
-      return gate.getTelegramAuth();
-    }
-    return null;
+    return typeof gate.getSignedTelegramAuth === "function" ? gate.getSignedTelegramAuth() : null;
   },
 
   getApiBase() {

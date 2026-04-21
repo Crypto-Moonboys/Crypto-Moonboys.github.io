@@ -85,6 +85,10 @@
     }
   }
 
+  /**
+   * Normalize a Telegram auth payload into the stored shape and require signed essentials.
+   * Returns null when id/hash/auth_date are missing; otherwise returns a safe payload object.
+   */
   function normalizeTelegramAuthPayload(authPayload, telegramId) {
     if (!authPayload || typeof authPayload !== 'object') return null;
     var safeAuth = {
@@ -197,6 +201,7 @@
   /**
    * Mark the current Telegram identity as bot-link-completed (competition-active).
    * Call this after the /gklink flow succeeds (e.g. redirect from community.html?gklink=…).
+   * Fail-closed: returns false and does not set linked when ID/payload is missing or payload is expired.
    *
    * @param {string|number} [telegramId] — persisted Telegram ID.
    * @param {object} [authPayload] — signed Telegram auth payload to persist atomically.
@@ -204,14 +209,16 @@
    * @returns {boolean} true only when a fresh signed payload exists and linked state is ready.
    */
   function setTelegramLinked(telegramId, authPayload, displayName) {
-    if (displayName) lsSet(LS_TG_NAME, displayName);
-    if (telegramId) lsSet(LS_TG_ID, String(telegramId));
-    if (authPayload && typeof authPayload === 'object') {
-      saveTelegramIdentity(telegramId || null, displayName || null, authPayload);
-    }
-    var auth = getTelegramAuth();
+    var currentTelegramId = getTelegramId();
+    var resolvedTelegramId = String(
+      telegramId || (authPayload && authPayload.id) || currentTelegramId || ''
+    ).trim() || null;
+    var resolvedDisplayName = displayName || getTelegramName() || null;
+    var auth = authPayload && typeof authPayload === 'object'
+      ? normalizeTelegramAuthPayload(authPayload, resolvedTelegramId)
+      : getTelegramAuth();
     var hasPayload = !!(auth && auth.id && auth.hash && auth.auth_date);
-    if (!getTelegramId()) {
+    if (!resolvedTelegramId) {
       lsRemove(LS_TG_LINKED);
       setSyncHealth('bad', 'missing_telegram_id');
       return false;
@@ -225,6 +232,12 @@
       lsRemove(LS_TG_LINKED);
       setSyncHealth('bad', 'auth_expired');
       return false;
+    }
+    lsSet(LS_TG_ID, resolvedTelegramId);
+    if (resolvedDisplayName) lsSet(LS_TG_NAME, resolvedDisplayName);
+    if (authPayload && typeof authPayload === 'object') {
+      lsSet(LS_TG_AUTH, JSON.stringify(auth));
+      setSyncHealth('good', 'auth_verified');
     }
     lsSet(LS_TG_LINKED, '1');
     setSyncHealth('good', 'linked');
@@ -247,14 +260,20 @@
     if (telegramId) setSyncHealth('good', 'auth_verified');
   }
 
+  /**
+   * Return the shared secure Telegram auth payload for protected routes.
+   * Guarantees: payload exists, is not expired, and payload.id matches stored Telegram ID.
+   * Returns null when any guard fails.
+   */
   function getSignedTelegramAuth() {
     var authStatus = getTelegramAuthStatus();
     if (!authStatus.has_payload) return null;
     if (authStatus.expired) return null;
     var auth = authStatus.auth;
     if (!auth || !auth.id || !auth.hash || !auth.auth_date) return null;
-    if (!getTelegramId()) return null;
-    if (String(getTelegramId()) !== String(auth.id)) return null;
+    var telegramId = getTelegramId();
+    if (!telegramId) return null;
+    if (String(telegramId) !== String(auth.id)) return null;
     return auth;
   }
 
