@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-04-21T15:14:27.345Z",
+  "generatedAt": "2026-04-21T16:36:45.846Z",
   "mode": "live-ai",
   "sourceHealth": {
     "coingecko-global": "ok",
@@ -11,79 +11,84 @@
   "signalCount": 5,
   "signals": [
     {
-      "id": "signal-1776784467345-1",
-      "lane": "npc",
-      "priority": 4,
-      "ttlMinutes": 30,
-      "npcLine": "Whispers say something’s off with CHIP’s core protocols.",
-      "questPulse": "Find anomalies in CHIP network nodes before blackout.",
-      "worldFeed": "Data spikes around CHIP detected; stability unknown.",
-      "clueEvent": "Glitch signs near CHIP clusters spark rumors of sabotage.",
-      "tags": [
-        "crypto",
-        "instability"
-      ],
-      "expiresAt": "2026-04-21T15:44:27.345Z"
-    },
-    {
-      "id": "signal-1776784467345-2",
-      "lane": "quest",
-      "priority": 3,
-      "ttlMinutes": 45,
-      "npcLine": "RAVE circuits pulse with mysterious energy tonight.",
-      "questPulse": "Trace RAVE signal distortions for a hidden message.",
-      "worldFeed": "RAVE sector network shows unusual rhythmic bursts.",
-      "clueEvent": "Unusual RAVE node resonance correlates with city unrest.",
-      "tags": [
-        "network",
-        "signals"
-      ],
-      "expiresAt": "2026-04-21T15:59:27.345Z"
-    },
-    {
-      "id": "signal-1776784467345-3",
-      "lane": "clue",
-      "priority": 5,
-      "ttlMinutes": 25,
-      "npcLine": "AAVE’s vault defense protocols rumored compromised.",
-      "questPulse": "Investigate breaches in AAVE data fortresses.",
-      "worldFeed": "Security alerts spike around AAVE’s core hubs.",
-      "clueEvent": "Encrypted leak detected near AAVE stronghold.",
-      "tags": [
-        "security",
-        "breach"
-      ],
-      "expiresAt": "2026-04-21T15:39:27.345Z"
-    },
-    {
-      "id": "signal-1776784467345-4",
+      "id": "signal-1776789405845-1",
       "lane": "world",
-      "priority": 2,
-      "ttlMinutes": 60,
-      "npcLine": "OPG node farms show unexpected growth patterns.",
-      "questPulse": "Map OPG expansions and anticipate market ripple effects.",
-      "worldFeed": "OPG ecosystems evolving; potential market impact ahead.",
-      "clueEvent": "New OPG clusters emerge in under-monitored sectors.",
+      "priority": 4,
+      "ttlMinutes": 45,
+      "npcLine": "Markets flicker; cryptos clutter the net's dark corners.",
+      "questPulse": "Gather intel on emerging coin shadows.",
+      "worldFeed": "Global cap shows faint pulse amid digital chaos.",
+      "clueEvent": "Spike in newbie cryptos blurs data trails.",
       "tags": [
-        "growth",
-        "ecology"
+        "cryptocurrency",
+        "market",
+        "dystopia"
       ],
-      "expiresAt": "2026-04-21T16:14:27.345Z"
+      "expiresAt": "2026-04-21T17:21:45.845Z"
     },
     {
-      "id": "signal-1776784467345-5",
+      "id": "signal-1776789405846-2",
       "lane": "ops",
       "priority": 3,
-      "ttlMinutes": 40,
-      "npcLine": "PENGU caches under cold surveillance; moves uncertain.",
-      "questPulse": "Extract intel on PENGU’s frozen asset movements.",
-      "worldFeed": "PENGU activity shifts stall; fear grips traders.",
-      "clueEvent": "Silent PENGU transactions hint at deeper game.",
+      "ttlMinutes": 30,
+      "npcLine": "Sentiment drops low; street whispers fret 'fear'.",
+      "questPulse": "Secure trust nodes before panic spreads.",
+      "worldFeed": "Fear ticks up; buy orders retreat silently.",
+      "clueEvent": "Surge in risk aversion disrupts usual flows.",
       "tags": [
-        "surveillance",
+        "sentiment",
+        "risk",
         "fear"
       ],
-      "expiresAt": "2026-04-21T15:54:27.345Z"
+      "expiresAt": "2026-04-21T17:06:45.846Z"
+    },
+    {
+      "id": "signal-1776789405846-3",
+      "lane": "clue",
+      "priority": 2,
+      "ttlMinutes": 60,
+      "npcLine": "RAVE and OPG signals spike, but cloak their meaning.",
+      "questPulse": "Decode patterns in cryptic token chatter.",
+      "worldFeed": "Digital buzz highlights fringe cryptos gaining traction.",
+      "clueEvent": "Unknown assets stir watchers' instincts.",
+      "tags": [
+        "tokens",
+        "trending",
+        "intel"
+      ],
+      "expiresAt": "2026-04-21T17:36:45.846Z"
+    },
+    {
+      "id": "signal-1776789405846-4",
+      "lane": "quest",
+      "priority": 5,
+      "ttlMinutes": 20,
+      "npcLine": "System warns: watch out for unseen market traps.",
+      "questPulse": "Investigate sudden shifts in coin popularity.",
+      "worldFeed": "Clandestine moves hint at market cap manipulation.",
+      "clueEvent": "Rapid rise in obscure coins draws suspicion.",
+      "tags": [
+        "investigation",
+        "market",
+        "warning"
+      ],
+      "expiresAt": "2026-04-21T16:56:45.846Z"
+    },
+    {
+      "id": "signal-1776789405846-5",
+      "lane": "npc",
+      "priority": 3,
+      "ttlMinutes": 40,
+      "npcLine": "AAVE rises quietly, ghosts whisper potential moves.",
+      "questPulse": "Track AAVE’s silent advance amidst chaos.",
+      "worldFeed": "Stealth climbs may signal bigger plays ahead.",
+      "clueEvent": "Subtle upticks in major crypto alliances noted.",
+      "tags": [
+        "whisper",
+        "strategy",
+        "cryptocurrency"
+      ],
+      "expiresAt": "2026-04-21T17:16:45.846Z"
     }
   ]
 }
