@@ -857,18 +857,17 @@ export default {
         return err('Invalid JSON');
       }
 
+      const verified = await verifyTelegramIdentityFromBody(body, env, verifyTelegramAuth);
       console.log('[telegram_link_confirm]', JSON.stringify({
         event: 'payload_received',
-        hasTelegramAuth: !!(body && body.telegram_auth),
-        telegramId: body?.telegram_auth?.id ? String(body.telegram_auth.id) : null,
+        hasTelegramAuth: !!verified?.authPayload,
+        telegramId: verified?.authPayload?.id ? String(verified.authPayload.id) : null,
         timestamp: new Date().toISOString(),
       }));
-
-      const verified = await verifyTelegramIdentityFromBody(body, env, verifyTelegramAuth);
       if (verified?.error) {
         console.log('[telegram_link_confirm]', JSON.stringify({
           event: 'verification_failed',
-          telegramId: body?.telegram_auth?.id ? String(body.telegram_auth.id) : null,
+          telegramId: verified?.authPayload?.id ? String(verified.authPayload.id) : null,
           reason: verified.error,
           status: verified.status || 401,
           timestamp: new Date().toISOString(),
@@ -877,6 +876,13 @@ export default {
       }
 
       try {
+        const acState = await env.DB.prepare(
+          `SELECT is_blocked FROM telegram_anticheat_state WHERE telegram_id = ?`
+        ).bind(String(verified.telegramId)).first().catch(() => null);
+        if (acState && acState.is_blocked === 1) {
+          return err('Account is blocked from competitive actions. Contact the Moonboys community on Telegram to appeal.', 403);
+        }
+
         await upsertTelegramUser(env.DB, verified.user);
         await getOrCreateBlockTopiaProgression(env.DB, verified.telegramId);
         await logTelegramActivity(env.DB, verified.telegramId, 'link_confirmed', JSON.stringify({
@@ -894,22 +900,6 @@ export default {
            FROM telegram_users WHERE telegram_id = ?`
         ).bind(String(verified.telegramId)).first().catch(() => null);
 
-        const signedAuthPayload = await buildSignedTelegramAuthPayload({
-          id: String(verified.telegramId),
-          username: user?.username || verified.user?.username || null,
-          first_name: user?.first_name || verified.user?.first_name || null,
-          last_name: user?.last_name || verified.user?.last_name || null,
-          photo_url: body?.telegram_auth?.photo_url || null,
-        }, env.TELEGRAM_BOT_TOKEN);
-        if (!signedAuthPayload || !signedAuthPayload.hash || !signedAuthPayload.auth_date) {
-          console.log('[telegram_link_confirm]', JSON.stringify({
-            event: 'payload_resign_failed',
-            telegramId: verified.telegramId,
-            timestamp: new Date().toISOString(),
-          }));
-          return err('Failed to generate signed Telegram auth payload', 500);
-        }
-
         console.log('[telegram_link_confirm]', JSON.stringify({
           event: 'verification_succeeded',
           telegramId: verified.telegramId,
@@ -920,7 +910,7 @@ export default {
           ok: true,
           telegram_id: verified.telegramId,
           telegram_name: displayNameFromRow(user || { telegram_id: verified.telegramId }),
-          telegram_auth: signedAuthPayload,
+          telegram_auth: verified.authPayload,
         });
       } catch (error) {
         console.log('[telegram_link_confirm]', JSON.stringify({
@@ -1048,7 +1038,7 @@ export default {
       }
     }
 
-    // ── GET /faction/status?telegram_auth=... ─────────────────────────────
+    // ── GET /faction/status with telegram_auth query payload ──────────────
     if (path === '/faction/status' && request.method === 'GET') {
       const rawAuth = url.searchParams.get('telegram_auth');
       if (!rawAuth) return err('verified telegram_auth payload required', 401);
@@ -1457,7 +1447,7 @@ async function cmdGkLink(db, tok, chatId, telegramId) {
     return;
   }
 
-  const linkUrl = `${SITE_URL}/gkniftyheads-incubator.html?telegram_auth=${encodedPayload}`;
+  const linkUrl = `${SITE_URL}/gkniftyheads-incubator.html#telegram_auth=${encodedPayload}`;
   await sendTelegramMessage(tok, chatId,
     `🔗 <b>Link Your Account</b>\n\n` +
     `Click the link below to connect or refresh your Telegram identity on the Moonboys website:\n\n` +

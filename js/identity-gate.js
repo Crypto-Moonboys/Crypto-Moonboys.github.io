@@ -16,7 +16,7 @@
  * ----------
  *   Step 1 — Telegram auth                               → tier becomes 'telegram'
  *   Step 2 — /gkstart → /gklink → click signed link     → tier becomes 'telegram_linked'
- *            (the bot sends a link that opens gkniftyheads-incubator.html?telegram_auth=… and finishes activation)
+ *            (the bot sends a link that opens gkniftyheads-incubator.html#telegram_auth=… and finishes activation)
  *
  * Usage
  * -----
@@ -216,7 +216,7 @@
 
   /**
    * Mark the current Telegram identity as bot-link-completed (competition-active).
-   * Call this after the /gklink flow succeeds (e.g. redirect from gkniftyheads-incubator.html?telegram_auth=…).
+   * Call this after the /gklink flow succeeds (e.g. redirect from gkniftyheads-incubator.html#telegram_auth=…).
    * Fail-closed: returns false and does not set linked when ID/payload is missing or payload is expired.
    *
    * @param {string|number} [telegramId] — persisted Telegram ID.
@@ -537,7 +537,7 @@
         '<strong>3.</strong> Run <strong>/gklink</strong><br>' +
         '<strong>4.</strong> Click the one-time link the bot sends' +
         '<br><br>' +
-        'The link opens <em>gkniftyheads-incubator.html?telegram_auth=…</em> and finishes activation.';
+        'The link opens <em>gkniftyheads-incubator.html#telegram_auth=…</em> and finishes activation.';
       note  = 'Gravatar accounts can still post comments.';
     } else {
       // Fallback: has Telegram, needs link
