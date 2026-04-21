@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-04-20T23:09:53.237Z",
+  "generatedAt": "2026-04-21T00:06:33.577Z",
   "mode": "live-ai",
   "sourceHealth": {
     "coingecko-global": "ok",
@@ -11,84 +11,84 @@
   "signalCount": 5,
   "signals": [
     {
-      "id": "signal-1776726593236-1",
+      "id": "signal-1776729993577-1",
       "lane": "world",
       "priority": 3,
-      "ttlMinutes": 90,
-      "npcLine": "Cryptos swarm the net; uneasy vibes pulse through the grids.",
-      "questPulse": "Market flux triggers silent alarms—a volatile surge awaits.",
-      "worldFeed": "Network overlays flicker; market cap nudges upward slowly.",
-      "clueEvent": "Data streams spike amid rising market jitters.",
+      "ttlMinutes": 45,
+      "npcLine": "City net trembles as digital assets pulse with uncertain energy.",
+      "questPulse": "Scavenge for lost codes in the waning cryptomarket flux.",
+      "worldFeed": "Global cryptos shimmer with modest gains amid creeping dread.",
+      "clueEvent": "Fragmented data hints at shifting power in shadow markets.",
       "tags": [
-        "market",
+        "cryptomarket",
         "volatility",
-        "crypto"
+        "dystopia"
       ],
-      "expiresAt": "2026-04-21T00:39:53.236Z"
+      "expiresAt": "2026-04-21T00:51:33.577Z"
     },
     {
-      "id": "signal-1776726593237-2",
+      "id": "signal-1776729993577-2",
       "lane": "ops",
       "priority": 4,
-      "ttlMinutes": 60,
-      "npcLine": "RAVE and AAVE buzz low, signals weak but rising fast.",
-      "questPulse": "Tracking subtle asset shifts; digital shadows deepen.",
-      "worldFeed": "Silent contenders stir beneath mainstream radar, watch ASTEROID closely.",
-      "clueEvent": "Unusual wallet activity hints at hidden moves.",
+      "ttlMinutes": 30,
+      "npcLine": "Watch your back—fear surges, making traders erratic and desperate.",
+      "questPulse": "Infiltrate the trading grid and extract encrypted fear metrics.",
+      "worldFeed": "Sentiment sensors spike low; market nerves fray under pressure.",
+      "clueEvent": "Unusual activity from renegade tokens distorts normal flows.",
       "tags": [
-        "crypto",
-        "tracking",
+        "fear",
+        "market-instability",
         "stealth"
       ],
-      "expiresAt": "2026-04-21T00:09:53.237Z"
+      "expiresAt": "2026-04-21T00:36:33.577Z"
     },
     {
-      "id": "signal-1776726593237-3",
+      "id": "signal-1776729993577-3",
       "lane": "clue",
-      "priority": 5,
-      "ttlMinutes": 45,
-      "npcLine": "Fear creeps across circuits; traders grind under pressure.",
-      "questPulse": "Sentiment plummets, data nodes pulse with anxious energy.",
-      "worldFeed": "Networks thrumming with unease—market mood sours fast.",
-      "clueEvent": "Encoded chatter shows spikes of distrust.",
-      "tags": [
-        "sentiment",
-        "fear",
-        "risk"
-      ],
-      "expiresAt": "2026-04-20T23:54:53.237Z"
-    },
-    {
-      "id": "signal-1776726593237-4",
-      "lane": "quest",
       "priority": 2,
-      "ttlMinutes": 120,
-      "npcLine": "PENGU moves quietly; opportunity lurks in cold shadows.",
-      "questPulse": "Hidden tokens stir beneath the digital ice.",
-      "worldFeed": "Signals hint at upcoming asset shifts in minor markets.",
-      "clueEvent": "Ghost trades leave faint trails in peripheral nodes.",
+      "ttlMinutes": 60,
+      "npcLine": "Whispers name shadow coins like RAVE and PIEVERSE as key.",
+      "questPulse": "Trace back suspicious trades to hidden node clusters downtown.",
+      "worldFeed": "Tokens flagged for unusual movement; data scrubbers on alert.",
+      "clueEvent": "Encrypted trails converge on abandoned server towers.",
       "tags": [
-        "stealth",
-        "opportunity",
-        "altcoins"
+        "shadowcoins",
+        "surveillance",
+        "intel"
       ],
-      "expiresAt": "2026-04-21T01:09:53.237Z"
+      "expiresAt": "2026-04-21T01:06:33.577Z"
     },
     {
-      "id": "signal-1776726593237-5",
-      "lane": "npc",
-      "priority": 3,
-      "ttlMinutes": 75,
-      "npcLine": "BTC holds strong; old guard watches, wary but steady.",
-      "questPulse": "Legacy chains hum with power despite market chaos.",
-      "worldFeed": "Stable core persists as smaller coins ripple around it.",
-      "clueEvent": "Whispers of systemic resilience amid unrest.",
+      "id": "signal-1776729993577-4",
+      "lane": "quest",
+      "priority": 5,
+      "ttlMinutes": 20,
+      "npcLine": "High stakes job: hijack PENGU protocols before rival syndicates do.",
+      "questPulse": "Race to secure control over volatile, trending digital currencies.",
+      "worldFeed": "Trending tokens heat up markets; syndicates clash in netspace.",
+      "clueEvent": "Cipher breach detected near high-value asset nodes.",
       "tags": [
-        "legacy",
-        "stability",
-        "core"
+        "heist",
+        "rivalry",
+        "crypto"
       ],
-      "expiresAt": "2026-04-21T00:24:53.237Z"
+      "expiresAt": "2026-04-21T00:26:33.577Z"
+    },
+    {
+      "id": "signal-1776729993577-5",
+      "lane": "npc",
+      "priority": 1,
+      "ttlMinutes": 90,
+      "npcLine": "Old broker warns: 'Markets bleed fear, but opportunity hides there.'",
+      "questPulse": "Gather rumors of market spikes shadowed by systemic paranoia.",
+      "worldFeed": "Low trust triggers higher alertness among digital traders.",
+      "clueEvent": "Unfolding events suggest a shift in market equilibrium.",
+      "tags": [
+        "rumors",
+        "opportunity",
+        "fear"
+      ],
+      "expiresAt": "2026-04-21T01:36:33.577Z"
     }
   ]
 }
