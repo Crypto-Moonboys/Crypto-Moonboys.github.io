@@ -85,10 +85,10 @@
     }
   }
 
-  function normalizeTelegramAuthPayload(authPayload, fallbackTelegramId) {
+  function normalizeTelegramAuthPayload(authPayload, telegramId) {
     if (!authPayload || typeof authPayload !== 'object') return null;
     var safeAuth = {
-      id:         authPayload.id || fallbackTelegramId || null,
+      id:         authPayload.id || telegramId || null,
       first_name: authPayload.first_name || null,
       last_name:  authPayload.last_name || null,
       username:   authPayload.username || null,
@@ -222,7 +222,7 @@
       return false;
     }
     if (isTelegramAuthExpired(auth)) {
-      lsSet(LS_TG_LINKED, '1');
+      lsRemove(LS_TG_LINKED);
       setSyncHealth('bad', 'auth_expired');
       return false;
     }

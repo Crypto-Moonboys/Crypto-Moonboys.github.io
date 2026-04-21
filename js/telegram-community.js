@@ -253,7 +253,7 @@
             }
             if (!linkedOk) {
               if (banner) {
-                banner.textContent = '❌ Link confirmed, but signed Telegram auth payload is missing or expired. Run /gklink again to re-auth.';
+                banner.textContent = '❌ Link failed: signed Telegram auth payload is missing or expired. Run /gklink again to re-auth.';
                 banner.className = (banner.className || '') + ' gklink-error';
               }
               return;
