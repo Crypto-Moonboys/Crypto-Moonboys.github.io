@@ -43,3 +43,10 @@ Phase 2 extends the same route family without creating a parallel covert system:
 - `POST /blocktopia/covert/retask` or `/reroll` safely moves an active operation to another canonical node for gems.
 
 Heat is stored per agent, rises from deployments, retasks, failures, captures, and higher-risk agent types, decays while idle/exposed, and feeds server-side success, exposure, and capture rolls. Operation rows store bounded world-pressure deltas so saboteur success can push node interference, recruiter success can add district support, and failures/captures can mark local risk without rewriting district, war, SAM, faction, score, leaderboard, or duel systems.
+
+Phase 3 adds the first system-response layer without introducing SAM sweeps, district lockdowns, or a separate covert engine:
+
+- `blocktopia_progression.network_heat` now persists player-level covert pressure, decays slowly, and is derived from active agents, agent heat, failures, sabotage tempo, repeated targeting, and exposed/captured states.
+- `GET /blocktopia/covert/state` now returns structured `network_heat`, `sam_awareness`, `local_node_risk`, `district_instability_signals`, and `agent_risk_indicators` payloads for the frontend.
+- Captured agents now use real-time `captured_until` cooldowns that scale with agent heat, network heat, and repeat captures.
+- `POST /blocktopia/covert/reduce-heat`, `POST /blocktopia/covert/recovery-boost`, and `POST /blocktopia/covert/emergency-extract` provide limited gem-based pressure relief while keeping every action auditable through `blocktopia_progression_events`.
