@@ -231,6 +231,12 @@ function createDefaultSharedHunterState() {
   };
 }
 
+function hasSharedHunterSnapshotPayload(snapshot = {}) {
+  return Array.isArray(snapshot?.samHunters)
+    || Array.isArray(snapshot?.hunterFields)
+    || Array.isArray(snapshot?.districtPatrols);
+}
+
 function normalizeSharedHunterState(snapshot = {}, currentDistrictId = '') {
   const samHunters = Array.isArray(snapshot?.samHunters) ? snapshot.samHunters : [];
   const hunterFields = Array.isArray(snapshot?.hunterFields) ? snapshot.hunterFields : [];
@@ -488,6 +494,8 @@ function normalizeCovertState(snapshot = {}, currentDistrictId = '') {
   const nodeEntries = Array.isArray(snapshot?.local_node_risk) ? snapshot.local_node_risk : [];
   const districtEntries = Array.isArray(snapshot?.district_instability_signals) ? snapshot.district_instability_signals : [];
   const agentRiskEntries = Array.isArray(snapshot?.agent_risk_indicators) ? snapshot.agent_risk_indicators : [];
+  const hunterUnits = Array.isArray(snapshot?.hunter_units) ? snapshot.hunter_units : [];
+  const hunterDetectionFields = Array.isArray(snapshot?.hunter_detection_fields) ? snapshot.hunter_detection_fields : [];
   const counterActionSnapshot = snapshot?.counter_actions || {};
   const counterActions = {
     nodeScans: Array.isArray(counterActionSnapshot?.node_scans) ? counterActionSnapshot.node_scans : [],
@@ -495,9 +503,12 @@ function normalizeCovertState(snapshot = {}, currentDistrictId = '') {
     routeDisruptions: Array.isArray(counterActionSnapshot?.route_disruptions) ? counterActionSnapshot.route_disruptions : [],
     summary: counterActionSnapshot?.summary || {},
   };
+  counterActions.nodeScanByNodeId = Object.fromEntries(counterActions.nodeScans.map((entry) => [entry.node_id, entry]));
+  counterActions.localTraceByDistrictId = Object.fromEntries(counterActions.localTraces.map((entry) => [entry.district_id, entry]));
   const nodeRiskById = Object.fromEntries(nodeEntries.map((entry) => [entry.node_id, entry]));
   const districtSignalById = Object.fromEntries(districtEntries.map((entry) => [entry.district_id, entry]));
   const agentRiskById = Object.fromEntries(agentRiskEntries.map((entry) => [entry.agent_id, entry]));
+  const hunterDetectionByNodeId = Object.fromEntries(hunterDetectionFields.map((entry) => [entry.node_id, entry]));
   const activeAgents = agents.filter((agent) => agent?.status === 'active').length;
   const exposedAgents = agents.filter((agent) => agent?.status === 'exposed').length;
   const capturedAgents = agents.filter((agent) => agent?.status === 'captured').length;
@@ -507,6 +518,11 @@ function normalizeCovertState(snapshot = {}, currentDistrictId = '') {
   const currentDistrictNodeRisk = sortedNodeRisk.find((entry) => entry?.district_id === currentDistrictId) || null;
   const sortedDistricts = [...districtEntries].sort((a, b) => (Number(b?.instability) || 0) - (Number(a?.instability) || 0));
   const currentDistrictSignal = districtSignalById[currentDistrictId] || sortedDistricts[0] || null;
+  const currentDistrictHunterPressure = hunterDetectionFields
+    .filter((entry) => entry?.district_id === currentDistrictId)
+    .reduce((highest, entry) => Math.max(highest, Number(entry?.intensity) || 0), 0);
+  const hottestHunterField = [...hunterDetectionFields]
+    .sort((a, b) => (Number(b?.intensity) || 0) - (Number(a?.intensity) || 0))[0] || null;
   const recoveryCost = Math.max(0, Number(snapshot?.costs?.recovery_boost) || 0);
   const gems = Math.max(0, Number(snapshot?.progression?.gems) || 0);
 
@@ -517,6 +533,8 @@ function normalizeCovertState(snapshot = {}, currentDistrictId = '') {
     nodeRiskById,
     districtSignalById,
     agentRiskById,
+    hunterUnits,
+    hunterDetectionByNodeId,
     counterActions,
     summary: {
       activeAgents,
@@ -538,9 +556,9 @@ function normalizeCovertState(snapshot = {}, currentDistrictId = '') {
       activeNodeScans: counterActions.nodeScans.length,
       activeLocalTraces: counterActions.localTraces.length,
       activeRouteDisruptions: counterActions.routeDisruptions.length,
-      activeHunters: 0,
-      currentDistrictHunterPressure: 0,
-      hottestHunterNodeId: '',
+      activeHunters: hunterUnits.filter((entry) => entry?.active !== false).length,
+      currentDistrictHunterPressure,
+      hottestHunterNodeId: hottestHunterField?.node_id || '',
     },
     agents,
     operations,
@@ -802,20 +820,35 @@ async function boot() {
 
   function buildHudCovertSnapshot() {
     const currentDistrictId = state.player.districtId || '';
-    const currentDistrictPatrol = state.sharedWorld?.districtPatrolById?.[currentDistrictId] || null;
-    const currentDistrictHunterPressure = Object.values(state.sharedWorld?.hunterDetectionByNodeId || {})
+    const sharedWorld = state.sharedWorld || createDefaultSharedHunterState();
+    const covertHunterUnits = Array.isArray(state.covert?.hunterUnits) ? state.covert.hunterUnits : [];
+    const covertHunterDetectionByNodeId = state.covert?.hunterDetectionByNodeId || {};
+    const useSharedHunters =
+      (Number(sharedWorld.summary?.activeHunters) || 0) > 0
+      || Object.keys(sharedWorld.hunterDetectionByNodeId || {}).length > 0
+      || Object.keys(sharedWorld.districtPatrolById || {}).length > 0;
+    const hunterUnits = useSharedHunters ? sharedWorld.samHunters : covertHunterUnits;
+    const hunterDetectionByNodeId = useSharedHunters
+      ? (sharedWorld.hunterDetectionByNodeId || {})
+      : covertHunterDetectionByNodeId;
+    const currentDistrictPatrol = sharedWorld.districtPatrolById?.[currentDistrictId] || null;
+    const currentDistrictHunterPressure = Object.values(hunterDetectionByNodeId)
       .filter((entry) => entry?.district_id === currentDistrictId)
       .reduce((highest, entry) => Math.max(highest, Number(entry?.intensity) || 0), 0);
     const merged = {
       ...state.covert,
-      hunterUnits: Array.isArray(state.sharedWorld?.samHunters) ? state.sharedWorld.samHunters : [],
-      hunterDetectionByNodeId: state.sharedWorld?.hunterDetectionByNodeId || {},
+      hunterUnits,
+      hunterDetectionByNodeId,
       summary: {
         ...(state.covert?.summary || {}),
-        activeHunters: Number(state.sharedWorld?.summary?.activeHunters) || 0,
+        activeHunters: useSharedHunters
+          ? (Number(sharedWorld.summary?.activeHunters) || 0)
+          : covertHunterUnits.filter((entry) => entry?.active !== false).length,
         currentDistrictHunterPressure,
         currentDistrictId,
-        hottestHunterNodeId: state.sharedWorld?.summary?.hottestHunterNodeId || '',
+        hottestHunterNodeId: useSharedHunters
+          ? (sharedWorld.summary?.hottestHunterNodeId || '')
+          : (state.covert?.summary?.hottestHunterNodeId || ''),
       },
     };
     if (currentDistrictPatrol) {
@@ -1804,7 +1837,9 @@ async function boot() {
       }
     },
     onWorldSnapshot: (data) => {
-      applySharedHunterSnapshot(data, 'snapshot');
+      if (hasSharedHunterSnapshotPayload(data)) {
+        applySharedHunterSnapshot(data, 'snapshot');
+      }
       if (Array.isArray(data?.npcs)) {
         let crowdCount = 0;
         state.npcTargets = data.npcs.filter((npc) => {

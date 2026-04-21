@@ -1728,21 +1728,10 @@ export async function handleBlockTopiaCovertRoute(request, env, url, helpers) {
   const { path, json, err } = helpers;
   if (!path.startsWith('/blocktopia/covert')) return null;
 
-  if (path === '/blocktopia/covert/state' && (request.method === 'GET' || request.method === 'POST')) {
-    let body;
-    if (request.method === 'GET') {
-      const rawAuth = url.searchParams.get('telegram_auth');
-      if (!rawAuth) return err('verified telegram_auth payload required', 401);
-      try {
-        body = { telegram_auth: JSON.parse(rawAuth) };
-      } catch {
-        return err('Invalid telegram_auth payload', 400);
-      }
-    } else {
-      const parsed = await readJsonBody(request, err);
-      if (parsed.response) return parsed.response;
-      body = parsed.body;
-    }
+  if (path === '/blocktopia/covert/state' && request.method === 'POST') {
+    const parsed = await readJsonBody(request, err);
+    if (parsed.response) return parsed.response;
+    const body = parsed.body;
     const verified = await verifyTelegramIdentityFromBody(body, env, helpers.verifyTelegramAuth);
     if (verified.error) return err(verified.error, verified.status || 401);
     await helpers.upsertTelegramUser(env.DB, verified.user).catch(() => {});

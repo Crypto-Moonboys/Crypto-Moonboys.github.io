@@ -1008,6 +1008,7 @@ export function createIsoRenderer(canvas) {
   function drawNetworkDataLinks(originX, originY, controlNodes, now, state) {
     if (!Array.isArray(controlNodes) || controlNodes.length < 2) return;
     const byId = new Map(controlNodes.map((node) => [node.id, node]));
+    const byCoord = new Map(controlNodes.map((node) => [`${node.x},${node.y}`, node]));
     const networkHeat = Math.max(0, Math.min(100, Number(state?.covert?.networkHeat?.value) || 0));
     const heatBias = networkHeat / 100;
     const routeDisruptions = Array.isArray(state?.covert?.counterActions?.routeDisruptions)
@@ -1016,8 +1017,8 @@ export function createIsoRenderer(canvas) {
     ctx.save();
 
     for (const line of NETWORK_LINES) {
-      const from = byId.get(line.from.id) || controlNodes.find((node) => node.x === line.from.x && node.y === line.from.y);
-      const to = byId.get(line.to.id) || controlNodes.find((node) => node.x === line.to.x && node.y === line.to.y);
+      const from = byId.get(line.from.id) || byCoord.get(`${line.from.x},${line.from.y}`);
+      const to = byId.get(line.to.id) || byCoord.get(`${line.to.x},${line.to.y}`);
       if (!from || !to) continue;
 
       const fromIso = toIso(from.x, from.y);
@@ -1153,16 +1154,14 @@ export function createIsoRenderer(canvas) {
   function drawCovertDistrictOverlay(originX, originY, state, now) {
     const districtState = Array.isArray(state?.districtState) ? state.districtState : [];
     const covertDistricts = state?.covert?.districtSignalById || {};
-    const localTraces = Array.isArray(state?.covert?.counterActions?.localTraces)
-      ? state.covert.counterActions.localTraces
-      : [];
+    const localTraceByDistrictId = state?.covert?.counterActions?.localTraceByDistrictId || {};
     if (!districtState.length || !state?.districts?.byId) return;
     ctx.save();
     for (const entry of districtState) {
       const districtMeta = state.districts.byId.get(entry.id);
       const grid = districtMeta?.grid;
       const covert = covertDistricts[entry.id];
-      const localTrace = localTraces.find((trace) => trace?.district_id === entry.id) || null;
+      const localTrace = localTraceByDistrictId[entry.id] || null;
       if (!grid || (!covert && !localTrace)) continue;
       const instability = Math.max(0, Number(covert?.instability) || 0);
       if (instability < 5 && !localTrace) continue;
@@ -1190,8 +1189,10 @@ export function createIsoRenderer(canvas) {
 
   function drawCovertNodeOverlay(originX, originY, node, now, state) {
     const covert = state?.covert?.nodeRiskById?.[node.id] || null;
-    const nodeScan = state?.covert?.counterActions?.nodeScans?.find((entry) => entry.node_id === node.id) || null;
-    const hunterField = state?.sharedWorld?.hunterDetectionByNodeId?.[node.id] || null;
+    const nodeScan = state?.covert?.counterActions?.nodeScanByNodeId?.[node.id] || null;
+    const hunterField = state?.sharedWorld?.hunterDetectionByNodeId?.[node.id]
+      || state?.covert?.hunterDetectionByNodeId?.[node.id]
+      || null;
     if (!covert && !nodeScan && !hunterField) return;
     const risk = Math.max(0, Number(covert.risk) || 0);
     const hunterIntensity = Math.max(0, Number(hunterField?.intensity) || 0);
