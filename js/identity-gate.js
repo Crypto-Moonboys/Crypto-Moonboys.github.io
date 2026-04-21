@@ -46,6 +46,7 @@
   var LS_TG_LINKED = 'moonboys_tg_linked';
   var LS_TG_AUTH   = 'moonboys_tg_auth';
   var LS_SYNC_HEALTH = 'moonboys_tg_sync_health';
+  var TELEGRAM_AUTH_MAX_AGE_SECONDS = 86400;
   var MODAL_ID     = 'tg-sync-gate-modal';
   var STYLE_ID     = 'tg-sync-gate-styles';
 
@@ -85,6 +86,34 @@
     return !!(auth && auth.hash && auth.auth_date);
   }
 
+  function getTelegramAuthAgeSeconds(auth) {
+    if (!auth || !auth.auth_date) return null;
+    var authDate = Number(auth.auth_date);
+    if (!Number.isFinite(authDate) || authDate <= 0) return null;
+    return Math.floor(Date.now() / 1000) - Math.floor(authDate);
+  }
+
+  function isTelegramAuthExpired(auth) {
+    var age = getTelegramAuthAgeSeconds(auth);
+    if (age == null) return true;
+    if (age < -300) return true;
+    return age > TELEGRAM_AUTH_MAX_AGE_SECONDS;
+  }
+
+  function getTelegramAuthStatus() {
+    var auth = getTelegramAuth();
+    var hasPayload = !!(auth && auth.hash && auth.auth_date);
+    var expired = hasPayload ? isTelegramAuthExpired(auth) : false;
+    var ageSeconds = hasPayload ? getTelegramAuthAgeSeconds(auth) : null;
+    return {
+      has_payload: hasPayload,
+      expired: !!expired,
+      age_seconds: ageSeconds,
+      max_age_seconds: TELEGRAM_AUTH_MAX_AGE_SECONDS,
+      auth: auth,
+    };
+  }
+
   function setSyncHealth(state, reason) {
     var safeState = state === 'bad' ? 'bad' : 'good';
     var payload = {
@@ -114,16 +143,27 @@
 
   function getSyncState() {
     var linked = isTelegramLinked();
-    var auth = hasAuthPayload();
+    var authStatus = getTelegramAuthStatus();
+    var auth = authStatus.has_payload;
     var sync = getSyncHealth();
     var bad = !!(sync && sync.state === 'bad');
+    var expired = !!authStatus.expired || bad;
+    var reason = '';
+    if (expired) {
+      reason = authStatus.expired ? 'auth_expired' : (sync.reason || 'auth_expired');
+    }
+    var ready = linked && auth && !expired;
     return {
       linked: linked,
       auth: auth,
-      good: linked && !bad,
-      status: !linked ? 'not_linked' : (bad ? 'auth_expired' : 'linked_ready'),
-      reason: bad ? (sync.reason || 'auth_expired') : '',
+      auth_expired: !!authStatus.expired,
+      auth_age_seconds: authStatus.age_seconds,
+      auth_max_age_seconds: authStatus.max_age_seconds,
+      good: ready,
+      status: !linked ? 'not_linked' : (!auth ? 'missing_auth_payload' : (expired ? 'auth_expired' : 'linked_ready')),
+      reason: reason,
       sync: sync,
+      auth_status: authStatus,
     };
   }
 
@@ -461,6 +501,10 @@
     getTelegramName:      getTelegramName,
     /** Last verified Telegram auth payload or null */
     getTelegramAuth:      getTelegramAuth,
+    /** Telegram auth payload presence/expiry details for consistent gating. */
+    getTelegramAuthStatus:getTelegramAuthStatus,
+    /** True when the stored Telegram auth payload is missing/expired/invalid. */
+    isTelegramAuthExpired:isTelegramAuthExpired,
     /** Lightweight sync state shared across pages. */
     getSyncState:         getSyncState,
     /** Lightweight sync health marker (good|bad) for cross-page consistency. */

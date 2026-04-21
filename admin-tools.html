@@ -85,10 +85,16 @@
     <h1 class="title">Admin Tools · Block Topia Grant</h1>
     <p class="sub">Hidden admin/testing surface. Not linked in public navigation.</p>
     <div id="access-state" class="state">Checking linked admin access…</div>
+    <div class="actions">
+      <button id="refresh-auth-state" type="button" class="ghost">Refresh auth state</button>
+    </div>
 
     <section id="admin-panel" class="hidden" aria-label="Block Topia admin grant form">
       <form id="grant-form">
         <div class="grid">
+          <label>Current linked Telegram username
+            <input id="admin-telegram-username" type="text" readonly />
+          </label>
           <label>Current linked Telegram ID
             <input id="admin-telegram-id" type="text" readonly />
           </label>
