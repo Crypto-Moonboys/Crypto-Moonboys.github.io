@@ -882,7 +882,14 @@ export default {
         }
 
         await upsertTelegramUser(env.DB, verified.user);
-        await getOrCreateBlockTopiaProgression(env.DB, verified.telegramId);
+        try {
+          await getOrCreateBlockTopiaProgression(env.DB, verified.telegramId);
+        } catch (error) {
+          logApiFailure('telegram_link_confirm_progression_create_failed', {
+            telegramId: verified.telegramId,
+            message: error?.message || String(error),
+          });
+        }
         await logTelegramActivity(env.DB, verified.telegramId, 'link_confirmed', JSON.stringify({
           source: 'signed_payload',
           linked_at: new Date().toISOString(),

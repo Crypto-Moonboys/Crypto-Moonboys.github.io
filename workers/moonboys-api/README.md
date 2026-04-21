@@ -16,6 +16,13 @@ wrangler d1 migrations apply wikicoms --remote
 wrangler deploy
 ```
 
+## Production fix
+
+```sh
+npx wrangler d1 execute wikicoms --file=workers/moonboys-api/migrations/012_wikicoms_schema_fix.sql --remote
+npx wrangler deploy
+```
+
 ## Block Topia progression
 
 Block Topia progression schema is owned by migrations in `migrations/`.

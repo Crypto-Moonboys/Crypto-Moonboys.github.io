@@ -29,7 +29,7 @@ async function getBlockTopiaProgressionSchema(db, { forceRefresh = false } = {})
     return cached.schema;
   }
 
-  const rows = await db.prepare(`PRAGMA table_info(blocktopia_progression)`).all();
+  const rows = await db.prepare(`PRAGMA table_info(blocktopia_progression)`).all().catch(() => ({ results: [] }));
   const columns = new Set((rows?.results || []).map((row) => String(row.name || '').trim()).filter(Boolean));
   const schema = {
     columns,
@@ -53,7 +53,14 @@ export async function hasBlockTopiaFactionColumns(db) {
 }
 
 export async function getOrCreateBlockTopiaProgression(db, telegramId) {
-  const schema = await getBlockTopiaProgressionSchema(db);
+  const schema = await getBlockTopiaProgressionSchema(db).catch(() => ({
+    columns: new Set(),
+    hasFaction: false,
+    hasFactionXp: false,
+    hasFactionLastSwitch: false,
+    hasNetworkHeat: false,
+    hasNetworkHeatUpdatedAt: false,
+  }));
   const insertColumns = [
     'telegram_id',
     'xp',
