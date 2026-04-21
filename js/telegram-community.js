@@ -237,8 +237,11 @@
           // state where no prior Telegram widget auth was performed.
           if (window.MOONBOYS_IDENTITY) {
             var tid = result.data.telegram_id;
+            var authPayload = result.data.telegram_auth && typeof result.data.telegram_auth === 'object'
+              ? result.data.telegram_auth
+              : null;
             if (tid && window.MOONBOYS_IDENTITY.saveTelegramIdentity) {
-              window.MOONBOYS_IDENTITY.saveTelegramIdentity(tid, result.data.telegram_name || null);
+              window.MOONBOYS_IDENTITY.saveTelegramIdentity(tid, result.data.telegram_name || null, authPayload);
             }
             if (window.MOONBOYS_IDENTITY.setTelegramLinked) {
               window.MOONBOYS_IDENTITY.setTelegramLinked(tid || null);
