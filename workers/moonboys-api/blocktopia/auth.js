@@ -8,8 +8,33 @@ function logTelegramAuthFailure(event, context = {}) {
   }));
 }
 
+function parseTelegramAuthPayload(rawValue) {
+  if (!rawValue) return null;
+  if (typeof rawValue === 'object') return rawValue;
+  if (typeof rawValue !== 'string') return null;
+  try {
+    return JSON.parse(rawValue);
+  } catch (_) {}
+  try {
+    const normalized = rawValue.replace(/-/g, '+').replace(/_/g, '/');
+    const pad = normalized.length % 4;
+    const padded = pad ? normalized + '='.repeat(4 - pad) : normalized;
+    return JSON.parse(atob(padded));
+  } catch (_) {}
+  return null;
+}
+
+function readTelegramAuthPayloadFromBody(body) {
+  if (!body) return null;
+  if (typeof body === 'string') return parseTelegramAuthPayload(body);
+  if (typeof body !== 'object') return null;
+  if (body.telegram_auth !== undefined) return parseTelegramAuthPayload(body.telegram_auth);
+  if (body.id || body.auth_date || body.hash) return parseTelegramAuthPayload(body);
+  return null;
+}
+
 export async function verifyTelegramIdentityFromBody(body, env, verifyTelegramAuth) {
-  const tg = body?.telegram_auth;
+  const tg = readTelegramAuthPayloadFromBody(body);
   if (!tg || typeof tg !== 'object') {
     logTelegramAuthFailure('missing_payload');
     return { error: 'verified telegram_auth payload required', status: 401 };
@@ -70,6 +95,15 @@ export async function verifyTelegramIdentityFromBody(body, env, verifyTelegramAu
   }
   return {
     telegramId,
+    authPayload: {
+      id: telegramId,
+      first_name: tg.first_name || null,
+      last_name: tg.last_name || null,
+      username: tg.username || null,
+      photo_url: tg.photo_url || null,
+      auth_date: authDate,
+      hash,
+    },
     user: {
       id: telegramId,
       username: tg.username || null,

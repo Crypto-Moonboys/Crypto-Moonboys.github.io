@@ -3,7 +3,7 @@
 
   var cfg = window.MOONBOYS_API || {};
   var BASE = cfg.BASE_URL || '';
-  var QUERY_KEY = 'telegram_auth';
+  var HASH_KEY = 'telegram_auth';
   var AUTH_STORAGE_KEY = 'MOONBOYS_TELEGRAM_AUTH';
 
   function debug(event, context) {
@@ -54,12 +54,30 @@
     return 'Linked Telegram';
   }
 
-  function cleanQueryParam() {
+  function clearStoredPayload() {
+    try {
+      localStorage.removeItem(AUTH_STORAGE_KEY);
+      localStorage.removeItem('moonboys_tg_auth');
+    } catch (_) {}
+  }
+
+  function scrubTelegramHash() {
     try {
       var url = new URL(window.location.href);
-      url.searchParams.delete(QUERY_KEY);
-      window.history.replaceState({}, '', url.toString());
+      if (!url.hash || url.hash.indexOf(HASH_KEY + '=') === -1) return;
+      url.hash = '';
+      var scrubbed = url.pathname + url.search + url.hash;
+      window.history.replaceState({}, '', scrubbed || url.pathname);
     } catch (_) {}
+  }
+
+  function getHashPayload() {
+    var hash = window.location.hash || '';
+    if (!hash) return null;
+    var trimmed = hash.charAt(0) === '#' ? hash.slice(1) : hash;
+    if (!trimmed) return null;
+    var params = new URLSearchParams(trimmed);
+    return params.get(HASH_KEY);
   }
 
   function emitSyncState(state, reason, telegramId) {
@@ -83,10 +101,8 @@
 
   function boot() {
     if (!BASE) return;
-    console.log('URL:', window.location.href);
-    var params = new URLSearchParams(window.location.search);
-    var rawPayload = params.get(QUERY_KEY);
-    console.log('telegram_auth:', rawPayload);
+    var rawPayload = getHashPayload();
+    scrubTelegramHash();
     if (!rawPayload) {
       setStatus('Not linked', 'Invalid link. Use /gklink again.', false);
       emitSyncState('bad', 'missing_payload');
@@ -98,19 +114,19 @@
     debug('payload_received', { hasPayload: !!parsedPayload });
 
     if (!parsedPayload || typeof parsedPayload !== 'object') {
+      clearStoredPayload();
       setStatus('Not linked', 'Invalid link. Use /gklink again.', false);
       emitSyncState('bad', 'invalid_payload');
       debug('payload_parse_failed', { rawLength: rawPayload.length });
       return;
     }
 
-    persistRawPayload(JSON.stringify(parsedPayload));
     setStatus(getDisplayName(parsedPayload), 'Confirming your Telegram link...', false);
 
     fetch(String(BASE).replace(/\/$/, '') + '/telegram/link/confirm', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ telegram_auth: parsedPayload }),
+      body: JSON.stringify(parsedPayload),
     })
       .then(function (response) {
         return response.json().catch(function () { return {}; }).then(function (data) {
@@ -122,6 +138,7 @@
           var errorMessage = result.data && result.data.error
             ? String(result.data.error)
             : 'Sync verification failed. Run /gklink again.';
+          clearStoredPayload();
           setStatus('Not linked', errorMessage, false);
           emitSyncState('bad', 'verify_failed');
           debug('verify_failed', {
@@ -155,6 +172,7 @@
         }
 
         if (!linkedOk) {
+          clearStoredPayload();
           setStatus('Not linked', 'Signed Telegram auth is missing or expired. Run /gklink again.', false);
           emitSyncState('bad', 'link_persist_failed');
           debug('link_persist_failed', { telegramId: result.data.telegram_id || null });
@@ -164,10 +182,10 @@
         persistRawPayload(JSON.stringify(canonicalPayload));
         setStatus(displayName, 'Telegram linked successfully. XP and Block Topia progression are now sync-live.', true);
         emitSyncState('good', 'linked_ready', result.data.telegram_id);
-        cleanQueryParam();
         debug('verify_success', { telegramId: result.data.telegram_id });
       })
       .catch(function (error) {
+        clearStoredPayload();
         setStatus('Not linked', 'Could not reach the sync server. Run /gklink again if this keeps happening.', false);
         emitSyncState('bad', 'network_error');
         debug('verify_exception', { message: error && error.message ? error.message : String(error) });
