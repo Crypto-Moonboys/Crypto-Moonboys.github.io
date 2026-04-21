@@ -74,7 +74,6 @@ export async function getOrCreateBlockTopiaProgression(db, telegramId) {
     'upgrade_npc',
     'rpg_mode_active',
   ];
-  const insertValues = [telegramId, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0];
   const insertPlaceholders = ['?', '0', '0', '1', '0', '0', '0', '0', '0', '0', '0'];
 
   if (schema.hasFaction) {
@@ -102,7 +101,7 @@ export async function getOrCreateBlockTopiaProgression(db, telegramId) {
     INSERT INTO blocktopia_progression (${insertColumns.join(', ')})
     VALUES (${insertPlaceholders.join(', ')})
     ON CONFLICT(telegram_id) DO NOTHING
-  `).bind(...insertValues).run();
+  `).bind(telegramId).run();
 
   const selectColumns = [
     'telegram_id',
