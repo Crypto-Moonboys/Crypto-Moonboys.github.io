@@ -1,6 +1,6 @@
 import { GEMS_MAX, GEMS_MIN, TELEGRAM_AUTH_MAX_AGE, XP_MAX, XP_MIN } from './blocktopia/config.js';
 import { verifyTelegramIdentityFromBody } from './blocktopia/auth.js';
-import { getOrCreateBlockTopiaProgression } from './blocktopia/db.js';
+import { getOrCreateBlockTopiaProgression, hasBlockTopiaFactionColumns } from './blocktopia/db.js';
 import { handleBlockTopiaProgressionRoute } from './blocktopia/routes.js';
 /**
  * Moonboys API — Cloudflare Worker entrypoint
@@ -388,11 +388,10 @@ async function awardXp(db, telegramId, xpChange, action, referenceId = '') {
     if (xpChange < 0) console.log('awardXp: negative xpChange ignored', JSON.stringify({ telegramId, xpChange, action }));
     return;
   }
-  const logId = crypto.randomUUID();
   await db.prepare(`
-    INSERT INTO telegram_xp_log (id, telegram_id, action, xp_change, reference_id)
-    VALUES (?, ?, ?, ?, ?)
-  `).bind(logId, telegramId, action, xpChange, referenceId || null).run();
+    INSERT INTO telegram_xp_log (telegram_id, action, xp_change, reference_id)
+    VALUES (?, ?, ?, ?)
+  `).bind(telegramId, action, xpChange, referenceId || null).run();
 
   await db.prepare(`
     UPDATE telegram_users
@@ -408,11 +407,10 @@ async function awardXp(db, telegramId, xpChange, action, referenceId = '') {
  * Never throws — failures are silently swallowed.
  */
 async function logTelegramActivity(db, telegramId, action, metadata = '') {
-  const id = crypto.randomUUID();
   await db.prepare(`
-    INSERT INTO telegram_activity_log (id, telegram_id, action, metadata)
-    VALUES (?, ?, ?, ?)
-  `).bind(id, telegramId, action, metadata || null).run().catch((error) => {
+    INSERT INTO telegram_activity_log (telegram_id, action, metadata)
+    VALUES (?, ?, ?)
+  `).bind(telegramId, action, metadata || null).run().catch((error) => {
     logApiFailure('telegram_activity_log_failed', {
       telegramId,
       action,
@@ -1052,6 +1050,24 @@ export default {
       if (verified.error) return err(verified.error, verified.status || 401);
       try {
         await upsertTelegramUser(env.DB, verified.user);
+        if (!(await hasBlockTopiaFactionColumns(env.DB))) {
+          const fallback = factionMeta(FACTION_UNALIGNED);
+          return json({
+            ok: true,
+            schema_pending: true,
+            faction: fallback.key,
+            faction_label: fallback.label,
+            faction_xp: 0,
+            bonuses: {
+              label: fallback.label,
+              icon: fallback.icon,
+              color: fallback.color,
+              bonus: fallback.bonus,
+              xp_multiplier: fallback.xp_multiplier,
+            },
+            cooldown_ms_remaining: 0,
+          });
+        }
         const progression = await getOrCreateBlockTopiaProgression(env.DB, verified.telegramId);
         const faction = factionMeta(progression?.faction || FACTION_UNALIGNED);
         return json({
@@ -1088,6 +1104,9 @@ export default {
       }
       try {
         await upsertTelegramUser(env.DB, verified.user);
+        if (!(await hasBlockTopiaFactionColumns(env.DB))) {
+          return err('Faction progression schema is pending migration', 503);
+        }
         const row = await getOrCreateBlockTopiaProgression(env.DB, verified.telegramId);
         const currentFaction = normalizeFaction(row?.faction) || FACTION_UNALIGNED;
         const lastSwitch = Number(row?.faction_last_switch) || 0;
@@ -1143,6 +1162,9 @@ export default {
       if (verified.error) return err(verified.error, verified.status || 401);
       try {
         await upsertTelegramUser(env.DB, verified.user);
+        if (!(await hasBlockTopiaFactionColumns(env.DB))) {
+          return err('Faction progression schema is pending migration', 503);
+        }
         const row = await getOrCreateBlockTopiaProgression(env.DB, verified.telegramId);
         const faction = factionMeta(row?.faction || FACTION_UNALIGNED);
         const source = String(body?.source || body?.action || 'score_accept').trim().toLowerCase();
