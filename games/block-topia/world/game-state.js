@@ -223,6 +223,19 @@ export function createGameState(bundle) {
       costs: {},
       lastSyncAt: 0,
     },
+    sharedWorld: {
+      samHunters: [],
+      hunterDetectionByNodeId: {},
+      districtPatrolById: {},
+      summary: {
+        activeHunters: 0,
+        currentDistrictHunterPressure: 0,
+        currentDistrictPatrolMode: 'patrol',
+        hottestDistrictId: '',
+        hottestHunterNodeId: '',
+      },
+      lastSyncAt: 0,
+    },
     lore: {
       wikiHooks: bundle.seasonModel.wikiHooks || [],
       canonAdapter: bundle.canonAdapter || bundle.canon || {},

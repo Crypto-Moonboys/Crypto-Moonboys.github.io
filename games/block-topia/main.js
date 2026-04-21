@@ -137,13 +137,14 @@ function updateReactiveGridState(state) {
   const syncReady = hasTelegramAuth();
   const networkHeat = Math.max(0, Math.min(100, Number(state.covert?.networkHeat?.value) || 0));
   const samSensitivity = Math.max(0, Math.min(100, Number(state.covert?.samAwareness?.sensitivity) || 0));
+  const districtPatrolPressure = Math.max(0, Math.min(100, Number(state.sharedWorld?.summary?.currentDistrictHunterPressure) || 0));
   const speed = inConflict ? 1.5 : syncReady ? 1 : 0.45;
   const intensity = inConflict ? 1 : syncReady ? 0.68 : 0.35;
   document.body.style.setProperty('--reactive-grid-speed', String(speed));
   document.body.style.setProperty('--reactive-grid-intensity', String(intensity));
   document.body.style.setProperty('--covert-overlay-opacity', String((networkHeat / 100) * 0.2));
   document.body.style.setProperty('--covert-vignette-opacity', String((networkHeat / 100) * 0.44));
-  document.body.style.setProperty('--covert-scan-opacity', String((samSensitivity / 100) * 0.18));
+  document.body.style.setProperty('--covert-scan-opacity', String(((samSensitivity / 100) * 0.18) + ((districtPatrolPressure / 100) * 0.08)));
   setBodyStateClass('conflict-active', inConflict);
   setBodyStateClass('sync-live', syncReady);
   setBodyStateClass('sync-error', !syncReady);
@@ -152,7 +153,8 @@ function updateReactiveGridState(state) {
   setBodyStateClass('covert-heat-critical', networkHeat >= 75);
   setBodyStateClass('covert-under-watch', samSensitivity >= 40 || networkHeat >= 45);
   setBodyStateClass('covert-counter-actions-live', (Number(state.covert?.summary?.activeCounterActions) || 0) > 0);
-  dispatchUiState('moonboys:world-state', { conflictActive: inConflict, syncReady, speed, intensity, networkHeat, samSensitivity, ts: now });
+  setBodyStateClass('district-under-patrol', districtPatrolPressure >= 4);
+  dispatchUiState('moonboys:world-state', { conflictActive: inConflict, syncReady, speed, intensity, networkHeat, samSensitivity, districtPatrolPressure, ts: now });
 }
 
 const DEFAULT_RPG_EFFECTS = {
@@ -211,6 +213,63 @@ function createDefaultCovertState() {
     costs: {},
     lastSyncAt: 0,
   };
+}
+
+function createDefaultSharedHunterState() {
+  return {
+    samHunters: [],
+    hunterDetectionByNodeId: {},
+    districtPatrolById: {},
+    summary: {
+      activeHunters: 0,
+      currentDistrictHunterPressure: 0,
+      currentDistrictPatrolMode: 'patrol',
+      hottestDistrictId: '',
+      hottestHunterNodeId: '',
+    },
+    lastSyncAt: 0,
+  };
+}
+
+function normalizeSharedHunterState(snapshot = {}, currentDistrictId = '') {
+  const samHunters = Array.isArray(snapshot?.samHunters) ? snapshot.samHunters : [];
+  const hunterFields = Array.isArray(snapshot?.hunterFields) ? snapshot.hunterFields : [];
+  const districtPatrols = Array.isArray(snapshot?.districtPatrols) ? snapshot.districtPatrols : [];
+  const hunterDetectionByNodeId = Object.fromEntries(hunterFields.map((entry) => [entry.node_id, entry]));
+  const districtPatrolById = Object.fromEntries(
+    districtPatrols
+      .filter((entry) => entry?.districtId)
+      .map((entry) => [entry.districtId, entry]),
+  );
+  const currentDistrictHunterPressure = hunterFields
+    .filter((entry) => entry?.district_id === currentDistrictId)
+    .reduce((highest, entry) => Math.max(highest, Number(entry?.intensity) || 0), 0);
+  const hottestField = [...hunterFields].sort((a, b) => (Number(b?.intensity) || 0) - (Number(a?.intensity) || 0))[0] || null;
+  const hottestDistrict = [...districtPatrols].sort((a, b) => (Number(b?.pressureScore) || 0) - (Number(a?.pressureScore) || 0))[0] || null;
+  const currentDistrictPatrol = districtPatrolById[currentDistrictId] || hottestDistrict || null;
+  return {
+    samHunters,
+    hunterDetectionByNodeId,
+    districtPatrolById,
+    summary: {
+      activeHunters: samHunters.filter((entry) => entry?.active !== false).length,
+      currentDistrictHunterPressure,
+      currentDistrictPatrolMode: currentDistrictPatrol?.patrolMode || 'patrol',
+      hottestDistrictId: hottestDistrict?.districtId || '',
+      hottestHunterNodeId: hottestField?.node_id || '',
+    },
+    lastSyncAt: Date.now(),
+  };
+}
+
+function sharedPatrolFlag(mode = '', fallback = 'calm') {
+  const normalized = String(mode || '').trim().toLowerCase();
+  if (normalized === 'trace-response') return 'traced';
+  if (normalized === 'scan-focus') return 'watched';
+  if (normalized === 'route-watch') return 'watched';
+  if (normalized === 'cool-down' || normalized === 'idle') return 'cooling';
+  if (normalized === 'patrol') return 'patrol';
+  return fallback;
 }
 const canvas = document.getElementById('world-canvas');
 const hud = createHud(document);
@@ -429,8 +488,6 @@ function normalizeCovertState(snapshot = {}, currentDistrictId = '') {
   const nodeEntries = Array.isArray(snapshot?.local_node_risk) ? snapshot.local_node_risk : [];
   const districtEntries = Array.isArray(snapshot?.district_instability_signals) ? snapshot.district_instability_signals : [];
   const agentRiskEntries = Array.isArray(snapshot?.agent_risk_indicators) ? snapshot.agent_risk_indicators : [];
-  const hunterUnits = Array.isArray(snapshot?.hunter_units) ? snapshot.hunter_units : [];
-  const hunterFieldEntries = Array.isArray(snapshot?.hunter_detection_fields) ? snapshot.hunter_detection_fields : [];
   const counterActionSnapshot = snapshot?.counter_actions || {};
   const counterActions = {
     nodeScans: Array.isArray(counterActionSnapshot?.node_scans) ? counterActionSnapshot.node_scans : [],
@@ -441,20 +498,15 @@ function normalizeCovertState(snapshot = {}, currentDistrictId = '') {
   const nodeRiskById = Object.fromEntries(nodeEntries.map((entry) => [entry.node_id, entry]));
   const districtSignalById = Object.fromEntries(districtEntries.map((entry) => [entry.district_id, entry]));
   const agentRiskById = Object.fromEntries(agentRiskEntries.map((entry) => [entry.agent_id, entry]));
-  const hunterDetectionByNodeId = Object.fromEntries(hunterFieldEntries.map((entry) => [entry.node_id, entry]));
   const activeAgents = agents.filter((agent) => agent?.status === 'active').length;
   const exposedAgents = agents.filter((agent) => agent?.status === 'exposed').length;
   const capturedAgents = agents.filter((agent) => agent?.status === 'captured').length;
   const recoveringAgents = agentRiskEntries.filter((entry) => entry?.recovery_locked).length;
   const sortedAgentRisk = [...agentRiskEntries].sort((a, b) => (Number(b?.risk) || 0) - (Number(a?.risk) || 0));
   const sortedNodeRisk = [...nodeEntries].sort((a, b) => (Number(b?.risk) || 0) - (Number(a?.risk) || 0));
-  const sortedHunterFields = [...hunterFieldEntries].sort((a, b) => (Number(b?.intensity) || 0) - (Number(a?.intensity) || 0));
   const currentDistrictNodeRisk = sortedNodeRisk.find((entry) => entry?.district_id === currentDistrictId) || null;
   const sortedDistricts = [...districtEntries].sort((a, b) => (Number(b?.instability) || 0) - (Number(a?.instability) || 0));
   const currentDistrictSignal = districtSignalById[currentDistrictId] || sortedDistricts[0] || null;
-  const currentDistrictHunterPressure = sortedHunterFields
-    .filter((entry) => entry?.district_id === currentDistrictId)
-    .reduce((highest, entry) => Math.max(highest, Number(entry?.intensity) || 0), 0);
   const recoveryCost = Math.max(0, Number(snapshot?.costs?.recovery_boost) || 0);
   const gems = Math.max(0, Number(snapshot?.progression?.gems) || 0);
 
@@ -465,8 +517,6 @@ function normalizeCovertState(snapshot = {}, currentDistrictId = '') {
     nodeRiskById,
     districtSignalById,
     agentRiskById,
-    hunterUnits,
-    hunterDetectionByNodeId,
     counterActions,
     summary: {
       activeAgents,
@@ -488,9 +538,9 @@ function normalizeCovertState(snapshot = {}, currentDistrictId = '') {
       activeNodeScans: counterActions.nodeScans.length,
       activeLocalTraces: counterActions.localTraces.length,
       activeRouteDisruptions: counterActions.routeDisruptions.length,
-      activeHunters: hunterUnits.length,
-      currentDistrictHunterPressure,
-      hottestHunterNodeId: sortedHunterFields[0]?.node_id || '',
+      activeHunters: 0,
+      currentDistrictHunterPressure: 0,
+      hottestHunterNodeId: '',
     },
     agents,
     operations,
@@ -585,6 +635,7 @@ async function boot() {
   const dataBundle = await loadUnifiedData();
   const state = createGameState(dataBundle);
   state.covert = createDefaultCovertState();
+  state.sharedWorld = createDefaultSharedHunterState();
   state.blockTopiaTier = tierDifficulty.tier;
   state.blockTopiaScale = tierDifficulty.scale;
   state.camera.zoomIndex = 1;
@@ -749,9 +800,41 @@ async function boot() {
     state.covert.summary.currentDistrictFlag = current.pressure_flag || 'calm';
   }
 
+  function buildHudCovertSnapshot() {
+    const currentDistrictId = state.player.districtId || '';
+    const currentDistrictPatrol = state.sharedWorld?.districtPatrolById?.[currentDistrictId] || null;
+    const currentDistrictHunterPressure = Object.values(state.sharedWorld?.hunterDetectionByNodeId || {})
+      .filter((entry) => entry?.district_id === currentDistrictId)
+      .reduce((highest, entry) => Math.max(highest, Number(entry?.intensity) || 0), 0);
+    const merged = {
+      ...state.covert,
+      hunterUnits: Array.isArray(state.sharedWorld?.samHunters) ? state.sharedWorld.samHunters : [],
+      hunterDetectionByNodeId: state.sharedWorld?.hunterDetectionByNodeId || {},
+      summary: {
+        ...(state.covert?.summary || {}),
+        activeHunters: Number(state.sharedWorld?.summary?.activeHunters) || 0,
+        currentDistrictHunterPressure,
+        currentDistrictId,
+        hottestHunterNodeId: state.sharedWorld?.summary?.hottestHunterNodeId || '',
+      },
+    };
+    if (currentDistrictPatrol) {
+      merged.summary.currentDistrictFlag = sharedPatrolFlag(
+        currentDistrictPatrol.patrolMode,
+        merged.summary.currentDistrictFlag,
+      );
+      merged.summary.currentDistrictPatrolMode = currentDistrictPatrol.patrolMode;
+      merged.summary.currentDistrictInstability = Math.max(
+        Number(merged.summary.currentDistrictInstability) || 0,
+        Math.round(Number(currentDistrictPatrol.pressureScore) || 0),
+      );
+    }
+    return merged;
+  }
+
   function syncCovertHud() {
     alignCovertDistrictFocus();
-    hud.setCovertState(state.covert);
+    hud.setCovertState(buildHudCovertSnapshot());
   }
 
   function getCovertWatchLine(covertState) {
@@ -900,6 +983,57 @@ async function boot() {
         `⚠️ ${formatDistrictName(state.player.districtId)} under SAM hunter scan pressure · covert outcomes are degrading here`,
         'sam',
         `covert-hunter-zone:${state.player.districtId}:${Math.round(next.summary.currentDistrictHunterPressure)}`,
+      );
+    }
+  }
+
+  function applySharedHunterSnapshot(payload, source = 'snapshot') {
+    const previous = state.sharedWorld || createDefaultSharedHunterState();
+    const next = normalizeSharedHunterState(payload, state.player.districtId);
+    state.sharedWorld = next;
+    syncCovertHud();
+    updateReactiveGridState(state);
+
+    if (source === 'silent') return;
+
+    const previousHunters = Number(previous.summary?.activeHunters) || 0;
+    const nextHunters = Number(next.summary?.activeHunters) || 0;
+    if (nextHunters !== previousHunters) {
+      if (nextHunters > 0) {
+        const districtId = next.summary.hottestDistrictId || state.player.districtId || '';
+        pushFeedDeduped(
+          `SAM hunter patrols deployed in shared city space - ${formatDistrictName(districtId)} now under moving surveillance`,
+          'sam',
+          `shared-hunters:${nextHunters}:${districtId}`,
+        );
+      } else {
+        pushFeedDeduped(
+          'Hunter patrol pressure eased across the room',
+          'system',
+          'shared-hunters:cleared',
+        );
+      }
+    }
+
+    const previousPressure = Number(previous.summary?.currentDistrictHunterPressure) || 0;
+    const nextPressure = Number(next.summary?.currentDistrictHunterPressure) || 0;
+    if (nextPressure >= 4 && previousPressure < 4) {
+      pushFeedDeduped(
+        `${formatDistrictName(state.player.districtId)} is under coordinated SAM patrol focus`,
+        'sam',
+        `shared-hunter-zone:${state.player.districtId}:${Math.round(nextPressure)}`,
+      );
+      pushMicroNotification(`${formatDistrictName(state.player.districtId)} patrol pressure rising`, 'warning');
+    }
+
+    const previousMode = String(previous.summary?.currentDistrictPatrolMode || '');
+    const nextMode = String(next.summary?.currentDistrictPatrolMode || '');
+    if (nextMode && nextMode !== previousMode) {
+      const readableMode = nextMode.replace(/-/g, ' ');
+      pushFeedDeduped(
+        `${formatDistrictName(state.player.districtId)} patrol mode shifted to ${readableMode}`,
+        nextMode === 'cool-down' ? 'system' : 'combat',
+        `shared-hunter-mode:${state.player.districtId}:${nextMode}`,
       );
     }
   }
@@ -1670,6 +1804,7 @@ async function boot() {
       }
     },
     onWorldSnapshot: (data) => {
+      applySharedHunterSnapshot(data, 'snapshot');
       if (Array.isArray(data?.npcs)) {
         let crowdCount = 0;
         state.npcTargets = data.npcs.filter((npc) => {
