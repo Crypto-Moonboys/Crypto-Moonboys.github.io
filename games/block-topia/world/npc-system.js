@@ -194,9 +194,12 @@ for (const line of NETWORK_LINES) {
 
 
 const NODE_COORDS = new Map();
+const NODE_BY_ID = new Map();
 for (const line of NETWORK_LINES) {
   NODE_COORDS.set(lineCoordKey(line.from), { ...line.from });
   NODE_COORDS.set(lineCoordKey(line.to), { ...line.to });
+  if (line.from?.id) NODE_BY_ID.set(line.from.id, { ...line.from });
+  if (line.to?.id) NODE_BY_ID.set(line.to.id, { ...line.to });
 }
 const NETWORK_NODES = Array.from(NODE_COORDS.values());
 
@@ -225,6 +228,7 @@ function roleLabel(role) {
   if (role === 'vendor') return 'Vendor';
   if (role === 'fighter') return 'Fighter';
   if (role === 'agent') return 'Agent';
+  if (role === 'sam-hunter') return 'SAM Hunter';
   if (role === 'lore-keeper') return 'Lore Keeper';
   if (role === 'recruiter') return 'Recruiter';
   if (role === 'drifter') return 'Drifter';
@@ -310,6 +314,7 @@ function getRoutineForRole(role) {
   if (role === 'vendor') return 'stall_anchor';
   if (role === 'fighter') return 'aggressive_patrol';
   if (role === 'agent') return 'signal_route';
+  if (role === 'sam-hunter') return 'adaptive_patrol';
   return 'district_patrol';
 }
 
@@ -324,9 +329,125 @@ function getMoveInterval(mode, role) {
     if (role === 'agent' || role === 'recruiter') {
       return PATROL_MOVE_INTERVAL_MIN + Math.random() * PATROL_MOVE_INTERVAL_RANGE;
     }
+    if (role === 'sam-hunter') {
+      return 0.95 + Math.random() * 0.5;
+    }
     return ACTIVE_MOVE_INTERVAL_MIN + Math.random() * ACTIVE_MOVE_INTERVAL_RANGE;
   }
   return CROWD_MOVE_INTERVAL_MIN + Math.random() * CROWD_MOVE_INTERVAL_RANGE;
+}
+
+function ensureHunterEntities(state) {
+  const hunterUnits = Array.isArray(state?.covert?.hunterUnits) ? state.covert.hunterUnits : [];
+  const entities = Array.isArray(state?.npc?.entities) ? state.npc.entities : [];
+  const huntersById = new Map(
+    entities
+      .filter((entry) => entry?.role === 'sam-hunter')
+      .map((entry) => [entry.id, entry]),
+  );
+
+  for (const unit of hunterUnits) {
+    const currentNodeId = unit?.current_node_id || unit?.anchor_node_id || '';
+    const node = NODE_BY_ID.get(currentNodeId) || NODE_BY_ID.get(unit?.anchor_node_id) || null;
+    const col = Number.isFinite(node?.x) ? node.x : Number(unit?.col) || 0;
+    const row = Number.isFinite(node?.y) ? node.y : Number(unit?.row) || 0;
+    const existing = huntersById.get(unit.id);
+    if (existing) {
+      existing.name = 'SAM Hunter';
+      existing.role = 'sam-hunter';
+      existing.roleLabel = 'SAM Hunter';
+      existing.mode = 'hunter';
+      existing.faction = 'Wardens';
+      existing.districtId = unit?.district_id || existing.districtId || 'signal-spire';
+      existing.currentNodeId = unit?.current_node_id || existing.currentNodeId || '';
+      existing.nextNodeId = unit?.next_node_id || existing.nextNodeId || '';
+      existing.pathNodeIds = Array.isArray(unit?.path_node_ids) ? [...unit.path_node_ids] : [];
+      existing.routeNodeIds = Array.isArray(unit?.route_node_ids) ? [...unit.route_node_ids] : [];
+      existing.detectionRadiusSteps = Number(unit?.detection_radius_steps) || 1;
+      existing.hunterIntensity = Number(unit?.intensity) || 0;
+      existing.glyph = String(unit?.glyph || 'scan');
+      existing.warning = String(unit?.warning || '');
+      existing.idle = unit?.idle === true;
+      existing.idleUntil = unit?.idle_until ? Date.parse(unit.idle_until) || 0 : 0;
+      existing.col = Number.isFinite(existing.col) ? existing.col : col;
+      existing.row = Number.isFinite(existing.row) ? existing.row : row;
+      continue;
+    }
+
+    entities.push(createNpc({
+      id: unit.id,
+      role: 'sam-hunter',
+      roleLabel: 'SAM Hunter',
+      name: 'SAM Hunter',
+      mode: 'hunter',
+      faction: 'Wardens',
+      col,
+      row,
+      districtId: unit?.district_id || 'signal-spire',
+      bobSpeed: 0.96,
+      interactionRadius: 0,
+      routine: 'adaptive_patrol',
+      type: 'hunter',
+    }));
+    const hunter = entities[entities.length - 1];
+    hunter.currentNodeId = unit?.current_node_id || '';
+    hunter.nextNodeId = unit?.next_node_id || '';
+    hunter.pathNodeIds = Array.isArray(unit?.path_node_ids) ? [...unit.path_node_ids] : [];
+    hunter.routeNodeIds = Array.isArray(unit?.route_node_ids) ? [...unit.route_node_ids] : [];
+    hunter.detectionRadiusSteps = Number(unit?.detection_radius_steps) || 1;
+    hunter.hunterIntensity = Number(unit?.intensity) || 0;
+    hunter.glyph = String(unit?.glyph || 'scan');
+    hunter.warning = String(unit?.warning || '');
+    hunter.idle = unit?.idle === true;
+    hunter.idleUntil = unit?.idle_until ? Date.parse(unit.idle_until) || 0 : 0;
+    hunter.faction = 'Wardens';
+  }
+
+  state.npc.entities = entities.filter((entry) => {
+    if (entry?.role !== 'sam-hunter') return true;
+    return hunterUnits.some((unit) => unit?.id === entry.id);
+  });
+  state.npc.activeEntities = null;
+  state.npc.activeEntitiesSourceLen = -1;
+}
+
+function stepHunterNpc(npc, dt) {
+  npc.bobPhase += dt * npc.bobSpeed;
+  const now = Date.now();
+  const pathNodeIds = Array.isArray(npc.pathNodeIds) ? npc.pathNodeIds : [];
+  if (npc.idle && Number(npc.idleUntil) > now) {
+    const holdNode = NODE_BY_ID.get(npc.currentNodeId) || NODE_BY_ID.get(npc.nextNodeId);
+    if (holdNode) {
+      npc.col = holdNode.x;
+      npc.row = holdNode.y;
+    }
+    return;
+  }
+  npc.idle = false;
+  if (pathNodeIds.length >= 2) {
+    if (!Number.isFinite(npc.pathProgress)) npc.pathProgress = 0;
+    npc.pathProgress = Math.min(1, npc.pathProgress + (dt * (0.42 + (Math.max(0, Number(npc.hunterIntensity) || 0) * 0.012))));
+    const fromNode = NODE_BY_ID.get(pathNodeIds[0]) || NODE_BY_ID.get(npc.currentNodeId);
+    const toNode = NODE_BY_ID.get(pathNodeIds[1]) || NODE_BY_ID.get(npc.nextNodeId) || fromNode;
+    if (fromNode && toNode) {
+      npc.col = fromNode.x + ((toNode.x - fromNode.x) * npc.pathProgress);
+      npc.row = fromNode.y + ((toNode.y - fromNode.y) * npc.pathProgress);
+    }
+    if (npc.pathProgress >= 0.995) {
+      const shifted = [...pathNodeIds];
+      shifted.shift();
+      npc.pathNodeIds = shifted;
+      npc.currentNodeId = shifted[0] || pathNodeIds[1] || npc.currentNodeId;
+      npc.nextNodeId = shifted[1] || npc.nextNodeId || npc.currentNodeId;
+      npc.pathProgress = 0;
+    }
+  } else {
+    const holdNode = NODE_BY_ID.get(npc.currentNodeId) || NODE_BY_ID.get(npc.nextNodeId);
+    if (holdNode) {
+      npc.col = holdNode.x;
+      npc.row = holdNode.y;
+    }
+  }
 }
 
 function stepNetworkMissionNpc(npc, dt) {
@@ -638,21 +759,22 @@ export function createNpcSystem(state, liveIntelligence = null) {
     if (interferenceContext && Date.now() >= interferenceContext.expiresAt) {
       interferenceContext = null;
     }
+    ensureHunterEntities(state);
     const npcs = state.npc.entities || [];
     const total = npcs.length;
     if (!total) return;
     if (!NETWORK_LINES.length) return;
     rebuildActiveEntitiesIfNeeded();
+    const movementDt = Math.min(0.1, Math.max(0, dt));
 
     // When the server has sent NPC targets, follow server positions via lerp.
     // Local simulation acts as a fallback when no server targets are available.
     if (state.npcTargets?.length) {
-      const targets = state.npcTargets;
-      const len = Math.min(total, targets.length);
+      const targetsById = new Map(state.npcTargets.map((target) => [target.id, target]));
       crowdLerpSkipToggle = !crowdLerpSkipToggle;
-      for (let i = 0; i < len; i += 1) {
-        const entity = npcs[i];
-        const target = targets[i];
+      for (const entity of npcs) {
+        if (!entity || entity.mode === 'hunter') continue;
+        const target = targetsById.get(entity.id);
         if (!entity || !target) continue;
         if (entity.mode === 'crowd' && !crowdLerpSkipToggle) continue;
 
@@ -663,15 +785,21 @@ export function createNpcSystem(state, liveIntelligence = null) {
         }
         if (target.faction) entity.faction = target.faction;
       }
+      for (const npc of npcs) {
+        if (npc?.mode !== 'hunter') continue;
+        stepHunterNpc(npc, movementDt);
+      }
       return;
     }
 
-    // Fallback: local simulation when no server targets are available.
     const batchSize = Math.min(UPDATE_BATCH, total);
-    const movementDt = Math.min(0.1, Math.max(0, dt));
     for (let i = 0; i < batchSize; i += 1) {
       const npc = npcs[(batchIndex + i) % total];
       if (!npc) continue;
+      if (npc.mode === 'hunter') {
+        stepHunterNpc(npc, movementDt);
+        continue;
+      }
       if (stepNetworkMissionNpc(npc, movementDt)) {
         if (npc.mode === 'active') {
           npc.bobPhase += movementDt * npc.bobSpeed;

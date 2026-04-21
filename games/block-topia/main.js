@@ -178,6 +178,8 @@ function createDefaultCovertState() {
     nodeRiskById: {},
     districtSignalById: {},
     agentRiskById: {},
+    hunterUnits: [],
+    hunterDetectionByNodeId: {},
     counterActions: { nodeScans: [], localTraces: [], routeDisruptions: [], summary: {} },
     summary: {
       activeAgents: 0,
@@ -199,6 +201,9 @@ function createDefaultCovertState() {
       activeNodeScans: 0,
       activeLocalTraces: 0,
       activeRouteDisruptions: 0,
+      activeHunters: 0,
+      currentDistrictHunterPressure: 0,
+      hottestHunterNodeId: '',
     },
     agents: [],
     operations: [],
@@ -424,6 +429,8 @@ function normalizeCovertState(snapshot = {}, currentDistrictId = '') {
   const nodeEntries = Array.isArray(snapshot?.local_node_risk) ? snapshot.local_node_risk : [];
   const districtEntries = Array.isArray(snapshot?.district_instability_signals) ? snapshot.district_instability_signals : [];
   const agentRiskEntries = Array.isArray(snapshot?.agent_risk_indicators) ? snapshot.agent_risk_indicators : [];
+  const hunterUnits = Array.isArray(snapshot?.hunter_units) ? snapshot.hunter_units : [];
+  const hunterFieldEntries = Array.isArray(snapshot?.hunter_detection_fields) ? snapshot.hunter_detection_fields : [];
   const counterActionSnapshot = snapshot?.counter_actions || {};
   const counterActions = {
     nodeScans: Array.isArray(counterActionSnapshot?.node_scans) ? counterActionSnapshot.node_scans : [],
@@ -434,15 +441,20 @@ function normalizeCovertState(snapshot = {}, currentDistrictId = '') {
   const nodeRiskById = Object.fromEntries(nodeEntries.map((entry) => [entry.node_id, entry]));
   const districtSignalById = Object.fromEntries(districtEntries.map((entry) => [entry.district_id, entry]));
   const agentRiskById = Object.fromEntries(agentRiskEntries.map((entry) => [entry.agent_id, entry]));
+  const hunterDetectionByNodeId = Object.fromEntries(hunterFieldEntries.map((entry) => [entry.node_id, entry]));
   const activeAgents = agents.filter((agent) => agent?.status === 'active').length;
   const exposedAgents = agents.filter((agent) => agent?.status === 'exposed').length;
   const capturedAgents = agents.filter((agent) => agent?.status === 'captured').length;
   const recoveringAgents = agentRiskEntries.filter((entry) => entry?.recovery_locked).length;
   const sortedAgentRisk = [...agentRiskEntries].sort((a, b) => (Number(b?.risk) || 0) - (Number(a?.risk) || 0));
   const sortedNodeRisk = [...nodeEntries].sort((a, b) => (Number(b?.risk) || 0) - (Number(a?.risk) || 0));
+  const sortedHunterFields = [...hunterFieldEntries].sort((a, b) => (Number(b?.intensity) || 0) - (Number(a?.intensity) || 0));
   const currentDistrictNodeRisk = sortedNodeRisk.find((entry) => entry?.district_id === currentDistrictId) || null;
   const sortedDistricts = [...districtEntries].sort((a, b) => (Number(b?.instability) || 0) - (Number(a?.instability) || 0));
   const currentDistrictSignal = districtSignalById[currentDistrictId] || sortedDistricts[0] || null;
+  const currentDistrictHunterPressure = sortedHunterFields
+    .filter((entry) => entry?.district_id === currentDistrictId)
+    .reduce((highest, entry) => Math.max(highest, Number(entry?.intensity) || 0), 0);
   const recoveryCost = Math.max(0, Number(snapshot?.costs?.recovery_boost) || 0);
   const gems = Math.max(0, Number(snapshot?.progression?.gems) || 0);
 
@@ -453,6 +465,8 @@ function normalizeCovertState(snapshot = {}, currentDistrictId = '') {
     nodeRiskById,
     districtSignalById,
     agentRiskById,
+    hunterUnits,
+    hunterDetectionByNodeId,
     counterActions,
     summary: {
       activeAgents,
@@ -474,6 +488,9 @@ function normalizeCovertState(snapshot = {}, currentDistrictId = '') {
       activeNodeScans: counterActions.nodeScans.length,
       activeLocalTraces: counterActions.localTraces.length,
       activeRouteDisruptions: counterActions.routeDisruptions.length,
+      activeHunters: hunterUnits.length,
+      currentDistrictHunterPressure,
+      hottestHunterNodeId: sortedHunterFields[0]?.node_id || '',
     },
     agents,
     operations,
@@ -739,6 +756,7 @@ async function boot() {
 
   function getCovertWatchLine(covertState) {
     const flags = Array.isArray(covertState?.samAwareness?.pressure_flags) ? covertState.samAwareness.pressure_flags : [];
+    if ((Number(covertState?.summary?.activeHunters) || 0) > 0) return 'hunter patrols deployed';
     if ((Number(covertState?.summary?.activeRouteDisruptions) || 0) > 0) return 'routes disrupted';
     if ((Number(covertState?.summary?.activeLocalTraces) || 0) > 0) return 'district under trace';
     if ((Number(covertState?.summary?.activeNodeScans) || 0) > 0) return 'nodes under scan';
@@ -853,6 +871,35 @@ async function boot() {
         `Recovery urgency rising · ${next.summary.urgentRecoveryAgents} captured agent${next.summary.urgentRecoveryAgents === 1 ? '' : 's'} inside active SAM pressure`,
         'sam',
         `covert-urgent-recovery:${next.summary.urgentRecoveryAgents}`,
+      );
+    }
+
+    if ((Number(next.summary.activeHunters) || 0) !== (Number(previous.summary?.activeHunters) || 0)) {
+      if ((Number(next.summary.activeHunters) || 0) > 0) {
+        const districtId = next.hunterUnits?.[0]?.district_id || next.summary.currentDistrictId || next.summary.hottestDistrictId;
+        pushFeedDeduped(
+          `🛰️ SAM hunter patrols deployed · ${formatDistrictName(districtId)} now under moving surveillance`,
+          'sam',
+          `covert-hunters:${next.summary.activeHunters}:${districtId}`,
+        );
+        hud.showNodeInterference('SAM hunter patrol moving through the district.', 'sam');
+      } else {
+        pushFeedDeduped(
+          '🛰️ Hunter patrol pressure eased · covert lanes briefly opening',
+          'system',
+          'covert-hunters:cleared',
+        );
+      }
+    }
+
+    if (
+      (Number(next.summary.currentDistrictHunterPressure) || 0) >= 4
+      && (Number(previous.summary?.currentDistrictHunterPressure) || 0) < 4
+    ) {
+      pushFeedDeduped(
+        `⚠️ ${formatDistrictName(state.player.districtId)} under SAM hunter scan pressure · covert outcomes are degrading here`,
+        'sam',
+        `covert-hunter-zone:${state.player.districtId}:${Math.round(next.summary.currentDistrictHunterPressure)}`,
       );
     }
   }
