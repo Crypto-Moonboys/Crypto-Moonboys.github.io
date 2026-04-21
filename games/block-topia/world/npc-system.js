@@ -338,7 +338,7 @@ function getMoveInterval(mode, role) {
 }
 
 function ensureHunterEntities(state) {
-  const hunterUnits = Array.isArray(state?.covert?.hunterUnits) ? state.covert.hunterUnits : [];
+  const hunterUnits = Array.isArray(state?.sharedWorld?.samHunters) ? state.sharedWorld.samHunters : [];
   const entities = Array.isArray(state?.npc?.entities) ? state.npc.entities : [];
   const huntersById = new Map(
     entities
@@ -369,8 +369,8 @@ function ensureHunterEntities(state) {
       existing.warning = String(unit?.warning || '');
       existing.idle = unit?.idle === true;
       existing.idleUntil = unit?.idle_until ? Date.parse(unit.idle_until) || 0 : 0;
-      existing.col = Number.isFinite(existing.col) ? existing.col : col;
-      existing.row = Number.isFinite(existing.row) ? existing.row : row;
+      existing.col = Number.isFinite(Number(unit?.col)) ? Number(unit.col) : col;
+      existing.row = Number.isFinite(Number(unit?.row)) ? Number(unit.row) : row;
       continue;
     }
 

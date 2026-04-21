@@ -4,6 +4,13 @@ import { clampPosition, validateMovement } from '../systems/player-system.js';
 import { getDistrictForPosition, createDistrictPayload } from '../systems/district-system.js';
 import { checkAndCompleteQuests } from '../systems/quest-system.js';
 import { createDuelSystem } from '../systems/duel-system.js';
+import {
+  HUNTER_MODE_CONFIG,
+  buildDistrictPatrolPlans,
+  buildHunterAssignmentQueue,
+  buildHunterDetectionFields,
+  trimHunterActivities,
+} from '../systems/hunter-system.js';
 import { CONTROL_NODES, CONTROL_LINKS } from '../../../../games/block-topia/world/control-grid.js';
 
 const ACTIVE_NPC_COUNT = 40;
@@ -23,6 +30,7 @@ const SAM_PRESSURE_RESET_FLOOR = 20;
 const DUEL_DISTRICT_PRESSURE_SHIFT = 4;
 const DUEL_SAM_PRESSURE_SHIFT = 2;
 const SAM_STATE_INTERVAL_MS = 1500;
+const HUNTER_UPDATE_INTERVAL_MS = 250;
 const MAX_SYSTEM_EVENTS_PER_TICK = 4;
 const WAR_TICK_INTERVAL_MS = 250;
 const WAR_CONTEST_THRESHOLD = 18;
@@ -55,8 +63,13 @@ const WORLD_DISTRICTS = [
   { id: 'moonlit-underbelly', name: 'Moonlit Underbelly' },
   { id: 'revolt-plaza', name: 'Revolt Plaza' },
 ];
+const SAM_HUNTER_COUNT = 4;
 
 const NPC_ROLES = ['vendor', 'fighter', 'agent', 'lore-keeper', 'recruiter', 'drifter'];
+
+function clamp(value, min, max) {
+  return Math.max(min, Math.min(max, value));
+}
 
 class PlayerState extends Schema {
   constructor() {
@@ -101,11 +114,13 @@ export class CityRoom extends Room {
     this.districtTimerMs = 0;
     this.snapshotTimerMs = 0;
     this.systemEventsThisTick = 0;
+    this.hunterTimerMs = 0;
 
     this.completedQuests = new Map(); // sessionId -> Set
     this.world = this.createInitialWorld();
     this.world.nodeLookup = new Map(this.world.controlNodes.map((node) => [node.id, node]));
     this.world.linkAdjacency = this.buildLinkAdjacency();
+    this.bootstrapSamHunters();
     this.duels = createDuelSystem({
       getPlayerName: (playerId) => this.state.players.get(playerId)?.name || 'Player',
       getSamPhase: () => this.world.samPhase,
@@ -258,6 +273,23 @@ export class CityRoom extends Room {
       samPressure: 0,
       playerInterferenceSpike: 0,
       unstableNodeCount: 0,
+      samHunters: [],
+      hunterFields: [],
+      districtPatrols: WORLD_DISTRICTS.map((district) => ({
+        districtId: district.id,
+        districtName: district.name,
+        patrolMode: 'patrol',
+        pressureScore: 0,
+        focusNodeId: '',
+        focusNodeIds: [],
+        hottestNodeId: '',
+        repeatedTargetNodeId: '',
+        activityWeight: 0,
+        instability: 0,
+        watchLabel: 'watched',
+        activeHunters: 0,
+      })),
+      hunterActivities: [],
       warTickMs: 0,
       warSamPressureDelta: 0,
       warEventCooldowns: new Map(),
@@ -270,6 +302,7 @@ export class CityRoom extends Room {
     this.samTimerMs += dt;
     this.districtTimerMs += dt;
     this.snapshotTimerMs += dt;
+    this.hunterTimerMs += dt;
 
     this.updateNPCs(dt);
     this.updateWarLayer(dt);
@@ -277,6 +310,7 @@ export class CityRoom extends Room {
     this.updateDistricts();
     this.updateNodeInterference();
     this.updateSAM();
+    this.updateSamHunters(dt);
     this.updateDuels();
 
     if (this.snapshotTimerMs >= WORLD_SNAPSHOT_INTERVAL_MS) {
@@ -311,6 +345,46 @@ export class CityRoom extends Room {
         alliedSupport: d.alliedSupport || 50,
         hostilePresence: d.hostilePresence || 50,
       })),
+      samHunters: this.world.samHunters.map((hunter) => ({
+        id: hunter.id,
+        districtId: hunter.districtId,
+        currentNodeId: hunter.currentNodeId || null,
+        targetNodeId: hunter.targetNodeId || null,
+        focusNodeId: hunter.focusNodeId || null,
+        patrolMode: hunter.patrolMode || 'patrol',
+        detectionRadius: Number(hunter.detectionRadius) || 1,
+        intensity: Number(hunter.intensity) || 0,
+        heatFocus: Number(hunter.heatFocus) || 0,
+        riskFocus: Number(hunter.riskFocus) || 0,
+        active: hunter.active !== false,
+        col: Number(hunter.col) || 0,
+        row: Number(hunter.row) || 0,
+        pathNodeIds: Array.isArray(hunter.pathNodeIds) ? hunter.pathNodeIds.slice(0, 5) : [],
+        routeNodeIds: Array.isArray(hunter.routeNodeIds) ? hunter.routeNodeIds.slice(0, 4) : [],
+        idleUntil: hunter.idleUntil || 0,
+      })),
+      hunterFields: this.world.hunterFields.map((field) => ({
+        node_id: field.node_id,
+        district_id: field.district_id,
+        intensity: Number(field.intensity) || 0,
+        patrol_mode: field.patrol_mode || 'patrol',
+        hunter_ids: Array.isArray(field.hunter_ids) ? field.hunter_ids.slice(0, 4) : [],
+        nearest_steps: Number(field.nearest_steps) || 0,
+      })),
+      districtPatrols: this.world.districtPatrols.map((plan) => ({
+        districtId: plan.districtId,
+        districtName: plan.districtName,
+        patrolMode: plan.patrolMode || 'patrol',
+        pressureScore: Number(plan.pressureScore) || 0,
+        focusNodeId: plan.focusNodeId || null,
+        focusNodeIds: Array.isArray(plan.focusNodeIds) ? plan.focusNodeIds.slice(0, 4) : [],
+        hottestNodeId: plan.hottestNodeId || null,
+        repeatedTargetNodeId: plan.repeatedTargetNodeId || null,
+        activityWeight: Number(plan.activityWeight) || 0,
+        instability: Number(plan.instability) || 0,
+        watchLabel: plan.watchLabel || 'watched',
+        activeHunters: Number(plan.activeHunters) || 0,
+      })),
       controlNodes: this.world.controlNodes.map((node) => ({
         nodeId: node.id,
         districtId: node.districtId,
@@ -335,6 +409,66 @@ export class CityRoom extends Room {
       samPhase: this.world.samPhase,
       samPressure: this.world.samPressure,
     };
+  }
+
+  bootstrapSamHunters() {
+    const seedPlans = buildDistrictPatrolPlans({
+      districts: this.world.districts,
+      controlNodes: this.world.controlNodes,
+      activities: [],
+    });
+    const queue = buildHunterAssignmentQueue(seedPlans, SAM_HUNTER_COUNT);
+    const planByDistrict = new Map(seedPlans.map((plan) => [plan.districtId, plan]));
+    this.world.samHunters = queue.map((districtId, index) => {
+      const plan = planByDistrict.get(districtId) || seedPlans[index % Math.max(seedPlans.length, 1)];
+      const nodeId = plan?.focusNodeId || this.world.controlNodes[index % this.world.controlNodes.length]?.id || '';
+      const node = this.world.nodeLookup.get(nodeId) || this.world.controlNodes[index % this.world.controlNodes.length];
+      return {
+        id: `hunter-${index + 1}`,
+        districtId: plan?.districtId || node?.districtId || 'signal-spire',
+        currentNodeId: node?.id || '',
+        targetNodeId: node?.id || '',
+        focusNodeId: node?.id || '',
+        patrolMode: 'patrol',
+        detectionRadius: 1,
+        intensity: 3,
+        heatFocus: 0,
+        riskFocus: 0,
+        active: true,
+        col: node?.x || 0,
+        row: node?.y || 0,
+        pathNodeIds: node?.id ? [node.id] : [],
+        routeNodeIds: node?.id ? [node.id] : [],
+        pathProgress: 0,
+        idleUntil: 0,
+      };
+    });
+    this.world.hunterFields = buildHunterDetectionFields({
+      hunters: this.world.samHunters,
+      controlNodes: this.world.controlNodes,
+      shortestNodeDistance: (fromNodeId, toNodeId, maxDepth) => this.shortestNodeDistance(fromNodeId, toNodeId, maxDepth),
+    });
+    this.world.districtPatrols = seedPlans;
+  }
+
+  shortestNodeDistance(fromNodeId, toNodeId, maxDepth = 6) {
+    if (!fromNodeId || !toNodeId) return Infinity;
+    if (fromNodeId === toNodeId) return 0;
+    const adjacency = this.world.linkAdjacency;
+    if (!adjacency.has(fromNodeId) || !adjacency.has(toNodeId)) return Infinity;
+    const queue = [{ nodeId: fromNodeId, depth: 0 }];
+    const visited = new Set([fromNodeId]);
+    while (queue.length) {
+      const current = queue.shift();
+      if (!current || current.depth >= maxDepth) continue;
+      for (const neighborId of adjacency.get(current.nodeId) || []) {
+        if (neighborId === toNodeId) return current.depth + 1;
+        if (visited.has(neighborId)) continue;
+        visited.add(neighborId);
+        queue.push({ nodeId: neighborId, depth: current.depth + 1 });
+      }
+    }
+    return Infinity;
   }
 
   buildLinkAdjacency() {
@@ -849,6 +983,119 @@ export class CityRoom extends Room {
     }
   }
 
+  recordHunterActivity({ districtId = '', nodeId = '', type = 'pressure', weight = 1 }) {
+    this.world.hunterActivities.push({
+      at: Date.now(),
+      districtId,
+      nodeId,
+      type,
+      weight: Math.max(0.5, Number(weight) || 1),
+    });
+    this.world.hunterActivities = trimHunterActivities(this.world.hunterActivities);
+  }
+
+  updateSamHunters(dt) {
+    if (this.hunterTimerMs < HUNTER_UPDATE_INTERVAL_MS) return;
+    const elapsedMs = this.hunterTimerMs;
+    this.hunterTimerMs = 0;
+    this.world.hunterActivities = trimHunterActivities(this.world.hunterActivities);
+    const patrolPlans = buildDistrictPatrolPlans({
+      districts: this.world.districts,
+      controlNodes: this.world.controlNodes,
+      activities: this.world.hunterActivities,
+    });
+    const planByDistrict = new Map(patrolPlans.map((plan) => [plan.districtId, { ...plan }]));
+    const assignmentQueue = buildHunterAssignmentQueue(patrolPlans, this.world.samHunters.length);
+    const assignedNodes = new Map();
+
+    for (let index = 0; index < this.world.samHunters.length; index += 1) {
+      const hunter = this.world.samHunters[index];
+      const districtId = assignmentQueue[index] || patrolPlans[index % Math.max(patrolPlans.length, 1)]?.districtId || hunter.districtId;
+      const plan = planByDistrict.get(districtId) || patrolPlans[0];
+      if (!plan) continue;
+      const pickedSet = assignedNodes.get(districtId) || new Set();
+      const focusNodeId = (plan.focusNodeIds || []).find((nodeId) => !pickedSet.has(nodeId))
+        || plan.focusNodeId
+        || hunter.currentNodeId;
+      pickedSet.add(focusNodeId);
+      assignedNodes.set(districtId, pickedSet);
+
+      const modeConfig = HUNTER_MODE_CONFIG[plan.patrolMode] || HUNTER_MODE_CONFIG.patrol;
+      const nextPath = this.findPath(hunter.currentNodeId || focusNodeId, focusNodeId);
+      if (focusNodeId && focusNodeId !== hunter.targetNodeId) {
+        hunter.targetNodeId = focusNodeId;
+        hunter.pathNodeIds = nextPath.length ? nextPath : [focusNodeId];
+        hunter.pathProgress = 0;
+      } else if (!Array.isArray(hunter.pathNodeIds) || !hunter.pathNodeIds.length) {
+        hunter.pathNodeIds = nextPath.length ? nextPath : [focusNodeId];
+      }
+
+      hunter.districtId = districtId;
+      hunter.focusNodeId = focusNodeId;
+      hunter.patrolMode = plan.patrolMode;
+      hunter.detectionRadius = modeConfig.detectionRadius;
+      hunter.intensity = clamp(
+        modeConfig.intensity + Math.round((Number(plan.pressureScore) || 0) / 24),
+        1,
+        9,
+      );
+      hunter.heatFocus = clamp(Number(plan.activityWeight) || 0, 0, 20);
+      hunter.riskFocus = clamp(Number(plan.pressureScore) || 0, 0, 100);
+      hunter.active = true;
+      hunter.routeNodeIds = Array.isArray(hunter.pathNodeIds) ? hunter.pathNodeIds.slice(0, 4) : [focusNodeId];
+
+      const now = Date.now();
+      if ((hunter.idleUntil || 0) > now && (hunter.pathNodeIds?.length || 0) <= 1) {
+        const anchorNode = this.world.nodeLookup.get(hunter.currentNodeId || focusNodeId);
+        if (anchorNode) {
+          hunter.col = anchorNode.x;
+          hunter.row = anchorNode.y;
+        }
+        plan.activeHunters += 1;
+        continue;
+      }
+
+      const pathNodeIds = Array.isArray(hunter.pathNodeIds) ? hunter.pathNodeIds : [];
+      if (pathNodeIds.length >= 2) {
+        const fromNode = this.world.nodeLookup.get(pathNodeIds[0]);
+        const toNode = this.world.nodeLookup.get(pathNodeIds[1]);
+        if (fromNode && toNode) {
+          hunter.pathProgress = Math.min(1, (Number(hunter.pathProgress) || 0) + ((elapsedMs / 1000) * modeConfig.moveSpeed));
+          hunter.col = fromNode.x + ((toNode.x - fromNode.x) * hunter.pathProgress);
+          hunter.row = fromNode.y + ((toNode.y - fromNode.y) * hunter.pathProgress);
+          hunter.currentNodeId = fromNode.id;
+          if (hunter.pathProgress >= 0.995) {
+            hunter.pathNodeIds = pathNodeIds.slice(1);
+            hunter.currentNodeId = toNode.id;
+            hunter.pathProgress = 0;
+            if ((hunter.pathNodeIds?.length || 0) <= 1) {
+              hunter.idleUntil = now + modeConfig.idleMs;
+            }
+          }
+        }
+      } else {
+        const anchorNode = this.world.nodeLookup.get(hunter.currentNodeId || focusNodeId);
+        if (anchorNode) {
+          hunter.currentNodeId = anchorNode.id;
+          hunter.col = anchorNode.x;
+          hunter.row = anchorNode.y;
+        }
+        hunter.idleUntil = now + modeConfig.idleMs;
+      }
+      plan.activeHunters += 1;
+    }
+
+    this.world.districtPatrols = patrolPlans.map((plan) => ({
+      ...plan,
+      activeHunters: planByDistrict.get(plan.districtId)?.activeHunters || 0,
+    }));
+    this.world.hunterFields = buildHunterDetectionFields({
+      hunters: this.world.samHunters,
+      controlNodes: this.world.controlNodes,
+      shortestNodeDistance: (fromNodeId, toNodeId, maxDepth) => this.shortestNodeDistance(fromNodeId, toNodeId, maxDepth),
+    });
+  }
+
   updateNodeInterference() {
     const now = Date.now();
     let unstableCount = 0;
@@ -940,6 +1187,12 @@ export class CityRoom extends Room {
     if (node.cooldownUntil > now) return;
 
     const intent = String(data?.intent || 'disrupt').toLowerCase() === 'assist' ? 'assist' : 'disrupt';
+    this.recordHunterActivity({
+      districtId: node.districtId,
+      nodeId: node.id,
+      type: intent === 'assist' ? 'stabilize' : 'interference',
+      weight: intent === 'assist' ? 0.8 : 1.6,
+    });
     const impact = this.applyPlayerWarImpact({
       playerId: client.sessionId,
       districtId: node.districtId,
@@ -1080,6 +1333,12 @@ export class CityRoom extends Room {
       source: actionType || 'player_action',
     });
     if (!result) return;
+    this.recordHunterActivity({
+      districtId,
+      nodeId,
+      type: actionType || 'player_action',
+      weight: intent === 'assist' ? Math.max(0.75, baseImpact / 8) : Math.max(1, baseImpact / 5),
+    });
     player.warStance = intent;
 
     const district = result.district;
