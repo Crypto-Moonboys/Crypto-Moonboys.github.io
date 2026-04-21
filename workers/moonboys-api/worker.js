@@ -290,11 +290,7 @@ async function sendTelegramMessage(botToken, chatId, text, extra = {}) {
 async function verifyTelegramAuth(data, botToken) {
   if (!botToken || !data || !data.hash) return false;
   const { hash, ...fields } = data;
-  const checkString = Object.keys(fields)
-    .filter(k => fields[k] != null)
-    .sort()
-    .map(k => `${k}=${fields[k]}`)
-    .join('\n');
+  const checkString = buildTelegramAuthCheckString(fields);
   const secretKeyBytes = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(botToken));
   const hmacKey = await crypto.subtle.importKey(
     'raw', secretKeyBytes, { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']
@@ -302,6 +298,41 @@ async function verifyTelegramAuth(data, botToken) {
   const sigBytes = await crypto.subtle.sign('HMAC', hmacKey, new TextEncoder().encode(checkString));
   const sig = Array.from(new Uint8Array(sigBytes)).map(b => b.toString(16).padStart(2, '0')).join('');
   return sig === hash;
+}
+
+function buildTelegramAuthCheckString(fields) {
+  return Object.keys(fields || {})
+    .filter(k => fields[k] != null)
+    .sort()
+    .map(k => `${k}=${fields[k]}`)
+    .join('\n');
+}
+
+async function signTelegramAuthPayload(fields, botToken) {
+  if (!botToken) return null;
+  const checkString = buildTelegramAuthCheckString(fields);
+  const secretKeyBytes = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(botToken));
+  const hmacKey = await crypto.subtle.importKey(
+    'raw', secretKeyBytes, { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']
+  );
+  const sigBytes = await crypto.subtle.sign('HMAC', hmacKey, new TextEncoder().encode(checkString));
+  return Array.from(new Uint8Array(sigBytes)).map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+async function buildSignedTelegramAuthPayload(identity, botToken, authDateSeconds) {
+  if (!identity || !identity.id || !botToken) return null;
+  const authDate = String(authDateSeconds || Math.floor(Date.now() / 1000));
+  const fields = {
+    id: String(identity.id),
+    first_name: identity.first_name || null,
+    last_name: identity.last_name || null,
+    username: identity.username || null,
+    photo_url: identity.photo_url || null,
+    auth_date: authDate,
+  };
+  const hash = await signTelegramAuthPayload(fields, botToken);
+  if (!hash) return null;
+  return { ...fields, hash };
 }
 
 // ── Real-schema helpers ───────────────────────────────────────────────────────
@@ -570,6 +601,13 @@ export default {
       }
 
       const displayName = [first_name, last_name].filter(Boolean).join(' ') || username || String(id);
+      const signedAuthPayload = await buildSignedTelegramAuthPayload({
+        id: String(id),
+        first_name,
+        last_name,
+        username,
+        photo_url,
+      }, env.TELEGRAM_BOT_TOKEN, auth_date);
       return json({
         ok: true,
         identity: {
@@ -578,6 +616,7 @@ export default {
           display_name:      displayName,
           avatar_url:        photo_url || null,
         },
+        telegram_auth: signedAuthPayload,
       });
     }
 
@@ -756,7 +795,25 @@ export default {
           `UPDATE telegram_link_tokens SET is_used = 1 WHERE token = ?`
         ).bind(token).run();
 
-        return json({ ok: true, telegram_id: row.telegram_id });
+        const user = await env.DB.prepare(
+          `SELECT telegram_id, username, first_name, last_name
+           FROM telegram_users WHERE telegram_id = ?`
+        ).bind(String(row.telegram_id)).first().catch(() => null);
+
+        const signedAuthPayload = await buildSignedTelegramAuthPayload({
+          id: String(row.telegram_id),
+          username: user?.username || null,
+          first_name: user?.first_name || null,
+          last_name: user?.last_name || null,
+          photo_url: null,
+        }, env.TELEGRAM_BOT_TOKEN);
+
+        return json({
+          ok: true,
+          telegram_id: row.telegram_id,
+          telegram_name: displayNameFromRow(user || { telegram_id: row.telegram_id }),
+          telegram_auth: signedAuthPayload,
+        });
       } catch {
         return err('Failed to confirm link token', 500);
       }
