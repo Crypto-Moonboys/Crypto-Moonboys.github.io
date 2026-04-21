@@ -71,22 +71,11 @@ function isValidProgressionAction(action) {
   return ['mini_game_affordability', 'mini_game_skip', 'mini_game_win', 'mini_game_loss', 'arcade_score'].includes(action);
 }
 
-async function readProgressionRequestBody(request, url, err) {
-  if (request.method === 'POST') {
-    try {
-      return { body: await request.json() };
-    } catch {
-      return { response: err('Invalid JSON') };
-    }
-  }
-
-  const rawAuth = url.searchParams.get('telegram_auth');
-  if (!rawAuth) return { response: err('verified telegram_auth payload required', 401) };
-  if (rawAuth.length > 4096) return { response: err('telegram_auth payload too large', 400) };
+async function readProgressionRequestBody(request, err) {
   try {
-    return { body: { telegram_auth: JSON.parse(rawAuth) } };
+    return { body: await request.json() };
   } catch {
-    return { response: err('Invalid telegram_auth payload', 400) };
+    return { response: err('Invalid JSON') };
   }
 }
 
@@ -97,11 +86,8 @@ export async function handleBlockTopiaProgressionRoute(request, env, url, helper
   const covertResponse = await handleBlockTopiaCovertRoute(request, env, url, helpers);
   if (covertResponse) return covertResponse;
 
-  if (path === '/blocktopia/progression' && (request.method === 'POST' || request.method === 'GET')) {
-    if (request.method === 'GET') {
-      logBlockTopiaFailure('legacy_get_auth_query_used', { path });
-    }
-    const parsed = await readProgressionRequestBody(request, url, err);
+  if (path === '/blocktopia/progression' && request.method === 'POST') {
+    const parsed = await readProgressionRequestBody(request, err);
     if (parsed.response) return parsed.response;
 
     const verified = await verifyTelegramIdentityFromBody(parsed.body, env, verifyTelegramAuth);
