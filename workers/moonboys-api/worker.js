@@ -20,6 +20,7 @@ import { handleBlockTopiaProgressionRoute } from './blocktopia/routes.js';
  *   GET  /telegram/quests
  *   POST /telegram/link
  *   GET  /telegram/link/confirm?token=
+ *   POST /telegram/link/confirm
  *   GET  /telegram/activity?limit=
  *   GET  /telegram/daily-status?telegram_id=
  *   GET  /telegram/season/current
@@ -333,6 +334,20 @@ async function buildSignedTelegramAuthPayload(identity, botToken, authDateSecond
   const hash = await signTelegramAuthPayload(fields, botToken);
   if (!hash) return null;
   return { ...fields, hash };
+}
+
+function encodeTelegramAuthPayloadForUrl(payload) {
+  if (!payload || typeof payload !== 'object') return '';
+  try {
+    return encodeURIComponent(JSON.stringify(payload));
+  } catch (error) {
+    console.log('[telegram_link]', JSON.stringify({
+      event: 'payload_encode_failed',
+      message: error?.message || String(error),
+      timestamp: new Date().toISOString(),
+    }));
+    return '';
+  }
 }
 
 // ── Real-schema helpers ───────────────────────────────────────────────────────
@@ -827,6 +842,97 @@ export default {
       }
     }
 
+    // ── POST /telegram/link/confirm ────────────────────────────────────────
+    // Body: { telegram_auth }
+    // Verifies a signed Telegram auth payload directly from the /gklink URL.
+    if (path === '/telegram/link/confirm' && request.method === 'POST') {
+      let body;
+      try {
+        body = await request.json();
+      } catch {
+        console.log('[telegram_link_confirm]', JSON.stringify({
+          event: 'invalid_json',
+          timestamp: new Date().toISOString(),
+        }));
+        return err('Invalid JSON');
+      }
+
+      console.log('[telegram_link_confirm]', JSON.stringify({
+        event: 'payload_received',
+        hasTelegramAuth: !!(body && body.telegram_auth),
+        telegramId: body?.telegram_auth?.id ? String(body.telegram_auth.id) : null,
+        timestamp: new Date().toISOString(),
+      }));
+
+      const verified = await verifyTelegramIdentityFromBody(body, env, verifyTelegramAuth);
+      if (verified?.error) {
+        console.log('[telegram_link_confirm]', JSON.stringify({
+          event: 'verification_failed',
+          telegramId: body?.telegram_auth?.id ? String(body.telegram_auth.id) : null,
+          reason: verified.error,
+          status: verified.status || 401,
+          timestamp: new Date().toISOString(),
+        }));
+        return err(verified.error, verified.status || 401);
+      }
+
+      try {
+        await upsertTelegramUser(env.DB, verified.user);
+        await getOrCreateBlockTopiaProgression(env.DB, verified.telegramId);
+        await logTelegramActivity(env.DB, verified.telegramId, 'link_confirmed', JSON.stringify({
+          source: 'signed_payload',
+          linked_at: new Date().toISOString(),
+        })).catch((error) => {
+          logApiFailure('telegram_link_confirm_activity_log_failed', {
+            telegramId: verified.telegramId,
+            message: error?.message || String(error),
+          });
+        });
+
+        const user = await env.DB.prepare(
+          `SELECT telegram_id, username, first_name, last_name
+           FROM telegram_users WHERE telegram_id = ?`
+        ).bind(String(verified.telegramId)).first().catch(() => null);
+
+        const signedAuthPayload = await buildSignedTelegramAuthPayload({
+          id: String(verified.telegramId),
+          username: user?.username || verified.user?.username || null,
+          first_name: user?.first_name || verified.user?.first_name || null,
+          last_name: user?.last_name || verified.user?.last_name || null,
+          photo_url: body?.telegram_auth?.photo_url || null,
+        }, env.TELEGRAM_BOT_TOKEN);
+        if (!signedAuthPayload || !signedAuthPayload.hash || !signedAuthPayload.auth_date) {
+          console.log('[telegram_link_confirm]', JSON.stringify({
+            event: 'payload_resign_failed',
+            telegramId: verified.telegramId,
+            timestamp: new Date().toISOString(),
+          }));
+          return err('Failed to generate signed Telegram auth payload', 500);
+        }
+
+        console.log('[telegram_link_confirm]', JSON.stringify({
+          event: 'verification_succeeded',
+          telegramId: verified.telegramId,
+          timestamp: new Date().toISOString(),
+        }));
+
+        return json({
+          ok: true,
+          telegram_id: verified.telegramId,
+          telegram_name: displayNameFromRow(user || { telegram_id: verified.telegramId }),
+          telegram_auth: signedAuthPayload,
+        });
+      } catch (error) {
+        console.log('[telegram_link_confirm]', JSON.stringify({
+          event: 'confirm_exception',
+          telegramId: verified.telegramId,
+          reason: error?.message || String(error),
+          timestamp: new Date().toISOString(),
+        }));
+        return err('Failed to confirm Telegram link', 500);
+      }
+    }
+
     // ── GET /telegram/activity?limit= ─────────────────────────────────────
     // Reads from telegram_activity_log joined to telegram_users for display name.
     if (path === '/telegram/activity' && request.method === 'GET') {
@@ -1100,7 +1206,7 @@ export default {
 
 // ── Telegram bot command handler ──────────────────────────────────────────────
 
-const SITE_URL = 'https://crypto-moonboys.github.io';
+const SITE_URL = 'https://cryptomoonboys.com';
 
 async function handleTelegramUpdate(update, env) {
   const db  = env.DB;
@@ -1286,17 +1392,17 @@ async function cmdGkHelp(tok, chatId) {
     `/gkleaderboard — Leaderboard\n` +
     `/gkquests — Active missions\n` +
     `/gkfaction [name] — View or join a faction\n` +
-    `/gkunlink — Invalidate link tokens\n` +
+    `/gkunlink — Invalidate legacy link tokens\n` +
     `/daily — Claim daily XP\n` +
     `/solve — Submit quest answers\n` +
     `/gkhelp — Help\n\n` +
     `<b>How sync + progression works</b>\n` +
-    `• /gklink creates a one-time website link and also refreshes expired sync.\n` +
+    `• /gklink creates a signed website link and also refreshes expired sync.\n` +
     `• Linked accounts store XP/progression server-side; unsynced play is local-only.\n` +
     `• Arcade ranking uses score only. Accepted scores can convert into Block Topia XP.\n` +
     `• XP is used for Block Topia entry, survival, and mini-game costs.\n` +
     `• Mini-game wins can reward XP + gems. Gems are upgrade currency, not entry.\n` +
-    `• If sync fails/expired, run /gklink again and use the newest one-time link.\n\n` +
+    `• If sync fails/expired, run /gklink again and use the newest signed link.\n\n` +
     `<i>Legacy aliases: /start /help /link are still supported.</i>`,
     { reply_markup: replyMarkup },
   );
@@ -1308,35 +1414,55 @@ async function cmdGkLink(db, tok, chatId, telegramId) {
     return;
   }
 
-  // Invalidate any existing unused tokens for this user
-  await db.prepare(
-    `UPDATE telegram_link_tokens SET is_used = 1 WHERE telegram_id = ? AND is_used = 0`
-  ).bind(telegramId).run().catch((error) => {
-    logApiFailure('gklink_token_invalidate_failed', {
+  try {
+    const acState = await db.prepare(
+      `SELECT is_blocked FROM telegram_anticheat_state WHERE telegram_id = ?`
+    ).bind(String(telegramId)).first();
+    if (acState && acState.is_blocked === 1) {
+      await sendTelegramMessage(
+        tok,
+        chatId,
+        '🚫 Your account is blocked from competitive actions. Contact the Moonboys community on Telegram to appeal.'
+      );
+      return;
+    }
+  } catch (error) {
+    logApiFailure('gklink_anticheat_check_failed', {
       telegramId,
       message: error?.message || String(error),
     });
-  });
+  }
 
-  // Generate a new one-time token (15-minute TTL)
-  const token     = crypto.randomUUID();
-  const expiresAt = new Date(Date.now() + 15 * 60 * 1000).toISOString();
+  const user = await db.prepare(
+    `SELECT telegram_id, username, first_name, last_name
+     FROM telegram_users WHERE telegram_id = ?`
+  ).bind(telegramId).first().catch(() => null);
 
-  try {
-    await db.prepare(
-      `INSERT INTO telegram_link_tokens (token, telegram_id, expires_at) VALUES (?, ?, ?)`
-    ).bind(token, telegramId, expiresAt).run();
-  } catch {
-    await sendTelegramMessage(tok, chatId, '⚠️ Could not generate a link token. Please try again shortly.');
+  const signedAuthPayload = await buildSignedTelegramAuthPayload({
+    id: String(telegramId),
+    username: user?.username || null,
+    first_name: user?.first_name || null,
+    last_name: user?.last_name || null,
+    photo_url: null,
+  }, tok);
+
+  if (!signedAuthPayload || !signedAuthPayload.hash || !signedAuthPayload.auth_date) {
+    await sendTelegramMessage(tok, chatId, '⚠️ Could not generate a signed Telegram auth payload. Please try /gklink again shortly.');
     return;
   }
 
-  const linkUrl = `${SITE_URL}/community.html?gklink=${token}`;
+  const encodedPayload = encodeTelegramAuthPayloadForUrl(signedAuthPayload);
+  if (!encodedPayload) {
+    await sendTelegramMessage(tok, chatId, '⚠️ Could not build your secure link. Please try /gklink again shortly.');
+    return;
+  }
+
+  const linkUrl = `${SITE_URL}/gkniftyheads-incubator.html?telegram_auth=${encodedPayload}`;
   await sendTelegramMessage(tok, chatId,
     `🔗 <b>Link Your Account</b>\n\n` +
     `Click the link below to connect or refresh your Telegram identity on the Moonboys website:\n\n` +
     `<a href="${linkUrl}">🔑 Activate Competition Access</a>\n\n` +
-    `<i>This link expires in 15 minutes and can only be used once.</i>\n\n` +
+    `<i>This signed link expires in 24 hours. Run /gklink again any time to refresh it.</i>\n\n` +
     `After linking:\n` +
     `✅ Your identity is verified\n` +
     `✅ Competitive features unlock\n` +
@@ -1346,8 +1472,8 @@ async function cmdGkLink(db, tok, chatId, telegramId) {
     `• Accepted scores can convert into Block Topia XP.\n` +
     `• XP is used for Block Topia entry/survival and mini-game costs.\n` +
     `• Mini-game wins can reward XP and gems; gems are used for upgrades.\n\n` +
-    `If sync expires or fails, run /gklink again and use the newest link.\n` +
-    `To invalidate tokens later, use /gkunlink`
+    `If sync expires or fails, run /gklink again and use the newest signed link.\n` +
+    `Refresh your link any time by running /gklink again.`
   );
 }
 

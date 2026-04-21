@@ -224,7 +224,7 @@
           <li>Run <code style="background:rgba(255,255,255,.08);border-radius:4px;padding:.1em .4em;color:#f4d35e;font-family:monospace">/gkstart</code></li>
           <li>Run <code style="background:rgba(255,255,255,.08);border-radius:4px;padding:.1em .4em;color:#f4d35e;font-family:monospace">/gklink</code> and click the link it sends</li>
         </ol>
-        <p style="font-size:.9rem;color:var(--color-text-muted);margin:0 0 18px">The link opens community.html and finishes activation there.</p>
+        <p style="font-size:.9rem;color:var(--color-text-muted);margin:0 0 18px">The link opens this page, verifies your signed Telegram auth automatically, and activates sync-live progression here.</p>
         <div class="incubator-cta-row">
           <a href="https://t.me/WIKICOMSBOT" target="_blank" rel="noopener noreferrer" class="btn btn-primary">🤖 Open Bot</a>
           <a href="https://t.me/gkniftyheads" target="_blank" rel="noopener noreferrer" class="btn btn-primary">📲 Open Group</a>
@@ -378,7 +378,7 @@
       <section class="incubator-section" id="commands">
         <h2>Activation flow &amp; live commands</h2>
         <p>
-          Your account link happens entirely through the <strong>Telegram bot</strong>. This page explains the flow and lists every live <code style="color:#f4d35e;font-family:monospace">/gk*</code> command. When you click the one-time link from <code style="color:#f4d35e;font-family:monospace">/gklink</code>, you are redirected to <strong>community.html?gklink=…</strong> which confirms your identity server-side and marks you as competition-active in your browser.
+          Your account link happens entirely through the <strong>Telegram bot</strong>. This page explains the flow and lists every live <code style="color:#f4d35e;font-family:monospace">/gk*</code> command. When you click the signed link from <code style="color:#f4d35e;font-family:monospace">/gklink</code>, you are redirected to <strong>gkniftyheads-incubator.html?telegram_auth=…</strong> which confirms your identity server-side and marks you as competition-active in your browser.
         </p>
 
         <div class="activation-flow">
@@ -390,22 +390,22 @@
           <div class="activation-step">
             <div class="activation-step-num">2</div>
             <h4>Generate your link</h4>
-            <p>Run <code>/gklink</code> in the bot. The bot sends you a private, one-time link that expires in 15 minutes. Each call invalidates any previous unused tokens.</p>
+            <p>Run <code>/gklink</code> in the bot. The bot sends you a private signed link that lands back on this page and refreshes your sync session. Run it again any time to rotate your auth.</p>
           </div>
           <div class="activation-step">
             <div class="activation-step-num">3</div>
             <h4>Click the link</h4>
-            <p>Tap the link in Telegram. It opens <strong>community.html?gklink=…</strong> in your browser, which calls the API to validate the token and confirm your identity.</p>
+            <p>Tap the link in Telegram. It opens <strong>gkniftyheads-incubator.html?telegram_auth=…</strong> in your browser, which calls the API to validate the signed payload and confirm your identity.</p>
           </div>
           <div class="activation-step">
             <div class="activation-step-num">4</div>
             <h4>Competition active</h4>
-            <p>The page confirms success and marks your browser as <em>telegram_linked</em>. Leaderboard rankings, XP, votes, faction alignment, and seasonal scoring are now unlocked.</p>
+            <p>The page confirms success, stores your signed payload locally, and marks your browser as <em>telegram_linked</em>. Leaderboard rankings, XP, votes, faction alignment, and seasonal scoring are now unlocked.</p>
           </div>
         </div>
 
         <div class="sync-note">
-          <strong>Account sync does not happen on this page.</strong> As explained above, the actual identity confirmation happens at <strong>community.html?gklink=&lt;token&gt;</strong> after you run <strong>/gklink</strong> in the bot.
+          <strong>Account sync now completes on this page.</strong> After you run <strong>/gklink</strong> in the bot, the signed Telegram payload lands here, verifies against the worker, and activates sync-live progression immediately.
         </div>
 
         <h3 style="margin:24px 0 10px">Live <code style="font-size:.85em">/gk*</code> commands</h3>
@@ -502,6 +502,7 @@
 <button id="back-to-top" aria-label="Back to top">↑</button>
 <script src="/js/api-config.js"></script>
 <script src="/js/identity-gate.js"></script>
+<script src="/js/incubator-link.js"></script>
 <script src="/js/wiki.js"></script>
 <script src="/js/battle-layer.js"></script>
 <script>
@@ -510,27 +511,34 @@
   var identityEl = document.getElementById('incubator-sync-identity');
   var msgEl = document.getElementById('incubator-sync-message');
   if (!box || !identityEl || !msgEl) return;
-  var gate = window.MOONBOYS_IDENTITY || null;
-  var sync = gate && gate.getSyncState ? gate.getSyncState() : null;
-  var linked = !!(sync ? sync.linked : (gate && gate.isTelegramLinked && gate.isTelegramLinked()));
-  var auth = gate && gate.getTelegramAuth ? gate.getTelegramAuth() : null;
-  var authOk = !!(sync ? sync.good : (auth && auth.hash && auth.auth_date));
-  var name = gate && gate.getTelegramName ? gate.getTelegramName() : null;
-  var username = auth && (auth.username || (auth.user && auth.user.username));
-  identityEl.textContent = linked ? ((name || 'Linked Telegram') + (username ? ' (@' + String(username).replace(/^@/, '') + ')' : '')) : 'Not linked';
-  if (linked && authOk) {
-    box.classList.remove('bad');
-    box.classList.add('good');
-    msgEl.textContent = 'Telegram linked successfully. XP and Block Topia progression will now be stored server-side.';
-  } else if (linked && !authOk) {
-    box.classList.remove('good');
-    box.classList.add('bad');
-    msgEl.textContent = 'Sync expired — run /gklink again to refresh your connection.';
-  } else {
-    box.classList.remove('good');
-    box.classList.add('bad');
+  function renderSyncState() {
+    var gate = window.MOONBOYS_IDENTITY || null;
+    var sync = gate && gate.getSyncState ? gate.getSyncState() : null;
+    var linkedReady = !!(sync && sync.good);
+    var auth = gate && gate.getTelegramAuth ? gate.getTelegramAuth() : null;
+    var name = gate && gate.getTelegramName ? gate.getTelegramName() : null;
+    var username = auth && (auth.username || (auth.user && auth.user.username));
+    identityEl.textContent = linkedReady ? ((name || 'Linked Telegram') + (username ? ' (@' + String(username).replace(/^@/, '') + ')' : '')) : 'Not linked';
+    box.classList.remove('good', 'bad');
+    box.classList.add(linkedReady ? 'good' : 'bad');
+    document.body.classList.toggle('sync-live', linkedReady);
+    if (linkedReady) {
+      msgEl.textContent = 'Telegram linked successfully. XP and Block Topia progression are now sync-live and stored server-side.';
+      return;
+    }
+    if (sync && sync.linked && sync.status === 'missing_auth_payload') {
+      msgEl.textContent = 'Signed Telegram auth is missing. Run /gklink again to restore server-side sync.';
+      return;
+    }
+    if (sync && (sync.auth_expired || sync.status === 'auth_expired')) {
+      msgEl.textContent = 'Sync expired — run /gklink again to refresh your connection.';
+      return;
+    }
     msgEl.textContent = 'To store XP and Block Topia progression, link with Telegram using /gklink.';
   }
+  renderSyncState();
+  window.addEventListener('moonboys:sync-state', renderSyncState);
+  window.addEventListener('storage', renderSyncState);
 }());
 </script>
 </body>

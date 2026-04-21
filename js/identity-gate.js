@@ -15,8 +15,8 @@
  * Sync model
  * ----------
  *   Step 1 — Telegram auth                               → tier becomes 'telegram'
- *   Step 2 — /gkstart → /gklink → click one-time link   → tier becomes 'telegram_linked'
- *            (the bot sends a link that opens community.html?gklink=… and finishes activation)
+ *   Step 2 — /gkstart → /gklink → click signed link     → tier becomes 'telegram_linked'
+ *            (the bot sends a link that opens gkniftyheads-incubator.html?telegram_auth=… and finishes activation)
  *
  * Usage
  * -----
@@ -45,6 +45,7 @@
   var LS_TG_NAME   = 'moonboys_tg_name';
   var LS_TG_LINKED = 'moonboys_tg_linked';
   var LS_TG_AUTH   = 'moonboys_tg_auth';
+  var LS_TG_AUTH_LEGACY = 'MOONBOYS_TELEGRAM_AUTH';
   var LS_SYNC_HEALTH = 'moonboys_tg_sync_health';
   var TELEGRAM_AUTH_MAX_AGE_SECONDS = 86400;
   var MODAL_ID     = 'tg-sync-gate-modal';
@@ -64,6 +65,21 @@
     try { localStorage.removeItem(key); } catch {}
   }
 
+  function getStoredTelegramAuthRaw() {
+    return lsGet(LS_TG_AUTH) || lsGet(LS_TG_AUTH_LEGACY);
+  }
+
+  function setStoredTelegramAuthRaw(value) {
+    if (!value) return;
+    lsSet(LS_TG_AUTH, value);
+    lsSet(LS_TG_AUTH_LEGACY, value);
+  }
+
+  function clearStoredTelegramAuthRaw() {
+    lsRemove(LS_TG_AUTH);
+    lsRemove(LS_TG_AUTH_LEGACY);
+  }
+
   // ── Public API ───────────────────────────────────────────────
 
   function getTelegramId() {
@@ -75,7 +91,7 @@
   }
 
   function getTelegramAuth() {
-    var raw = lsGet(LS_TG_AUTH);
+    var raw = getStoredTelegramAuthRaw();
     if (!raw) return null;
     try {
       var parsed = JSON.parse(raw);
@@ -200,7 +216,7 @@
 
   /**
    * Mark the current Telegram identity as bot-link-completed (competition-active).
-   * Call this after the /gklink flow succeeds (e.g. redirect from community.html?gklink=…).
+   * Call this after the /gklink flow succeeds (e.g. redirect from gkniftyheads-incubator.html?telegram_auth=…).
    * Fail-closed: returns false and does not set linked when ID/payload is missing or payload is expired.
    *
    * @param {string|number} [telegramId] — persisted Telegram ID.
@@ -225,18 +241,20 @@
     }
     if (!hasPayload) {
       lsRemove(LS_TG_LINKED);
+      clearStoredTelegramAuthRaw();
       setSyncHealth('bad', 'missing_auth_payload');
       return false;
     }
     if (isTelegramAuthExpired(auth)) {
       lsRemove(LS_TG_LINKED);
+      setStoredTelegramAuthRaw(JSON.stringify(auth));
       setSyncHealth('bad', 'auth_expired');
       return false;
     }
     lsSet(LS_TG_ID, resolvedTelegramId);
     if (resolvedDisplayName) lsSet(LS_TG_NAME, resolvedDisplayName);
     if (authPayload && typeof authPayload === 'object') {
-      lsSet(LS_TG_AUTH, JSON.stringify(auth));
+      setStoredTelegramAuthRaw(JSON.stringify(auth));
       setSyncHealth('good', 'auth_verified');
     }
     lsSet(LS_TG_LINKED, '1');
@@ -254,7 +272,7 @@
     if (authPayload && typeof authPayload === 'object') {
       var safeAuth = normalizeTelegramAuthPayload(authPayload, telegramId);
       if (safeAuth) {
-        lsSet(LS_TG_AUTH, JSON.stringify(safeAuth));
+        setStoredTelegramAuthRaw(JSON.stringify(safeAuth));
       }
     }
     if (telegramId) setSyncHealth('good', 'auth_verified');
@@ -415,7 +433,7 @@
 
   function getSyncGateUrl() {
     var cfg = window.MOONBOYS_API || {};
-    return cfg.SYNC_GATE_URL || 'https://crypto-moonboys.github.io/gkniftyheads-incubator.html';
+    return cfg.SYNC_GATE_URL || 'https://cryptomoonboys.com/gkniftyheads-incubator.html';
   }
 
   function injectStyles() {
@@ -519,7 +537,7 @@
         '<strong>3.</strong> Run <strong>/gklink</strong><br>' +
         '<strong>4.</strong> Click the one-time link the bot sends' +
         '<br><br>' +
-        'The link opens <em>community.html?gklink=…</em> and finishes activation.';
+        'The link opens <em>gkniftyheads-incubator.html?telegram_auth=…</em> and finishes activation.';
       note  = 'Gravatar accounts can still post comments.';
     } else {
       // Fallback: has Telegram, needs link
