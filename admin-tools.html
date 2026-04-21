@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Moonboys · Admin Tools</title>
+  <meta name="robots" content="noindex,nofollow" />
+  <style>
+    :root {
+      --bg: #0a0f19;
+      --text: #e8f2ff;
+      --muted: #93a8c2;
+      --glass: rgba(14, 24, 40, 0.74);
+      --line: rgba(148, 196, 255, 0.22);
+      --good: #5df2a5;
+      --warn: #ffd37b;
+      --bad: #ff7387;
+      --accent: #7ec5ff;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      color: var(--text);
+      background: radial-gradient(circle at 20% -10%, #1d3357 0%, var(--bg) 50%), var(--bg);
+      display: grid;
+      place-items: center;
+      padding: 24px;
+    }
+    .shell {
+      width: min(860px, 100%);
+      border: 1px solid var(--line);
+      background: var(--glass);
+      backdrop-filter: blur(8px);
+      border-radius: 16px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, .45);
+      padding: 20px;
+    }
+    .title { margin: 0; font-size: 1.1rem; letter-spacing: .08em; text-transform: uppercase; }
+    .sub { margin: 8px 0 0; color: var(--muted); font-size: .92rem; }
+    .state {
+      margin: 16px 0;
+      padding: 10px 12px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      color: var(--muted);
+      font-size: .9rem;
+      background: rgba(0,0,0,.15);
+    }
+    .state--good { border-color: color-mix(in srgb, var(--good) 42%, var(--line)); color: var(--good); }
+    .state--warn { border-color: color-mix(in srgb, var(--warn) 42%, var(--line)); color: var(--warn); }
+    .state--bad { border-color: color-mix(in srgb, var(--bad) 42%, var(--line)); color: var(--bad); }
+    form { display: grid; gap: 12px; }
+    .grid { display: grid; gap: 10px; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
+    label { display: grid; gap: 6px; font-size: .84rem; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
+    input, textarea, button {
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: rgba(9,15,26,.82);
+      color: var(--text);
+      padding: 10px 12px;
+      font: inherit;
+    }
+    textarea { min-height: 84px; resize: vertical; }
+    .actions { display: flex; flex-wrap: wrap; gap: 8px; }
+    button { cursor: pointer; }
+    .ghost { color: var(--accent); border-color: rgba(126,197,255,.32); }
+    .primary { border-color: rgba(93,242,165,.5); color: var(--good); font-weight: 600; }
+    pre {
+      margin: 0;
+      font-size: .83rem;
+      background: rgba(0,0,0,.3);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 10px;
+      overflow: auto;
+      max-height: 220px;
+    }
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+  <main class="shell" aria-live="polite">
+    <h1 class="title">Admin Tools · Block Topia Grant</h1>
+    <p class="sub">Hidden admin/testing surface. Not linked in public navigation.</p>
+    <div id="access-state" class="state">Checking linked admin access…</div>
+
+    <section id="admin-panel" class="hidden" aria-label="Block Topia admin grant form">
+      <form id="grant-form">
+        <div class="grid">
+          <label>Current linked Telegram ID
+            <input id="admin-telegram-id" type="text" readonly />
+          </label>
+          <label>Target Telegram ID
+            <input id="target-telegram-id" type="text" inputmode="numeric" pattern="[0-9]{5,20}" required />
+          </label>
+        </div>
+
+        <div class="actions">
+          <button type="button" class="ghost" data-fill="me">Grant to me</button>
+          <button type="button" class="ghost" data-fill="xp50k">+50,000 XP</button>
+          <button type="button" class="ghost" data-fill="gems50k">+50,000 Gems</button>
+          <button type="button" class="ghost" data-fill="both50k">+50,000 XP + 50,000 Gems</button>
+        </div>
+
+        <div class="grid">
+          <label>XP Amount
+            <input id="grant-xp" type="number" min="0" step="1" placeholder="0" />
+          </label>
+          <label>Gems Amount
+            <input id="grant-gems" type="number" min="0" step="1" placeholder="0" />
+          </label>
+          <label>Admin Secret
+            <input id="admin-secret" type="password" autocomplete="off" placeholder="Enter at time of use" required />
+          </label>
+        </div>
+
+        <label>Reason (optional)
+          <textarea id="grant-reason" maxlength="280" placeholder="Admin/test reason"></textarea>
+        </label>
+
+        <div class="actions">
+          <button type="submit" class="primary">Submit Block Topia Grant</button>
+        </div>
+      </form>
+
+      <div id="result-state" class="state">Awaiting admin action.</div>
+      <pre id="result-json">{}</pre>
+    </section>
+  </main>
+
+  <script src="/js/api-config.js"></script>
+  <script src="/js/identity-gate.js"></script>
+  <script src="/js/admin-blocktopia-tools.js"></script>
+</body>
+</html>

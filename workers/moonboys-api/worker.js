@@ -11,6 +11,7 @@ import { handleBlockTopiaProgressionRoute } from './blocktopia/routes.js';
  * Routes:
  *   GET  /health
  *   GET  /sam/status
+ *   POST /admin/blocktopia/access
  *   POST /admin/blocktopia/grant-xp
  *   POST /telegram/auth
  *   POST /telegram/webhook
@@ -55,7 +56,7 @@ const BLOCKTOPIA_ADMIN_GEMS_GRANT_MAX = 50000;
 const CORS_HEADERS = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type',
+  'Access-Control-Allow-Headers': 'Content-Type, X-Admin-Secret, x-admin-secret',
 };
 
 // ── Shared utilities ──────────────────────────────────────────────────────────
@@ -417,6 +418,25 @@ export default {
     // ── GET /sam/status ────────────────────────────────────────────────────
     if (path === '/sam/status' && request.method === 'GET') {
       return json({ ok: true, message: 'SAM active and monitoring the wiki.' });
+    }
+
+
+    // ── POST /admin/blocktopia/access ─────────────────────────────────────
+    // Admin access probe for hidden tooling UIs.
+    // Requires verified Telegram auth payload and returns only coarse capability flags.
+    if (path === '/admin/blocktopia/access' && request.method === 'POST') {
+      let body;
+      try { body = await request.json(); } catch { return err('Invalid JSON', 400); }
+
+      const verified = await verifyTelegramIdentityFromBody(body, env, verifyTelegramAuth);
+      if (verified.error) return err(verified.error, verified.status || 401);
+
+      return json({
+        ok: true,
+        telegram_id: verified.telegramId,
+        admin_allowlisted: isAdminTelegramUser(verified.telegramId, env),
+        admin_secret_configured: !!String(env.ADMIN_SECRET || '').trim(),
+      });
     }
 
     // ── POST /admin/blocktopia/grant-xp ───────────────────────────────────
