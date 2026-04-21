@@ -1029,28 +1029,6 @@ async function resolveDueCovertOperations(db, telegramId) {
   return resolved;
 }
 
-async function loadLocalRiskIndicators(db, telegramId) {
-  const rows = await db.prepare(`
-    SELECT target_node_id, SUM(local_risk_delta) AS risk
-    FROM blocktopia_covert_operations
-    WHERE telegram_id = ?
-      AND local_risk_delta > 0
-      AND updated_at >= datetime('now', '-12 hours')
-    GROUP BY target_node_id
-    ORDER BY risk DESC
-    LIMIT 8
-  `).bind(telegramId).all().catch(() => ({ results: [] }));
-
-  return (rows.results || []).map((row) => {
-    const node = CONTROL_NODE_BY_ID.get(row.target_node_id);
-    return {
-      node_id: row.target_node_id,
-      district_id: node?.districtId || null,
-      local_risk: clamp(Number(row.risk) || 0, 0, 20),
-    };
-  });
-}
-
 async function loadCovertState(db, telegramId) {
   const [agents, operations, progression] = await Promise.all([
     db.prepare(`
