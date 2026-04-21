@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-04-21T08:17:23.386Z",
+  "generatedAt": "2026-04-21T10:01:29.614Z",
   "mode": "live-ai",
   "sourceHealth": {
     "coingecko-global": "ok",
@@ -11,84 +11,84 @@
   "signalCount": 5,
   "signals": [
     {
-      "id": "signal-1776759443385-1",
+      "id": "signal-1776765689613-1",
       "lane": "world",
-      "priority": 4,
-      "ttlMinutes": 45,
-      "npcLine": "Markets pulse with low hum; fear colors every trade tonight.",
-      "questPulse": "Scan crypto nodes for anomalies amid rising dread.",
-      "worldFeed": "Active coins flicker, shadows lengthen over digital bazaar.",
-      "clueEvent": "Cryptocurrency cap edges up; silent watchers tune in.",
+      "priority": 3,
+      "ttlMinutes": 90,
+      "npcLine": "Echoes of a thousand coins flicker in neon haze.",
+      "questPulse": "Crypto shifts, but shadows grow longer in the grid.",
+      "worldFeed": "Market tides stir cautiously under fearful skies.",
+      "clueEvent": "New pulses detected; volatile nodes awaken.",
       "tags": [
         "market",
-        "fear",
-        "crypto"
+        "crypto",
+        "volatility"
       ],
-      "expiresAt": "2026-04-21T09:02:23.385Z"
+      "expiresAt": "2026-04-21T11:31:29.613Z"
     },
     {
-      "id": "signal-1776759443386-2",
+      "id": "signal-1776765689614-2",
       "lane": "ops",
-      "priority": 3,
-      "ttlMinutes": 30,
-      "npcLine": "Trendwatchers eye elusive symbols: RAVE, ASTEROID, PENGU shimmer dark.",
-      "questPulse": "Hack trending chains for hidden payloads and data leaks.",
-      "worldFeed": "New symbols stir ghost markets—cryptic, unstable.",
-      "clueEvent": "Significant buzz around five cryptic tokens in shadow forums.",
+      "priority": 4,
+      "ttlMinutes": 60,
+      "npcLine": "Watch sector R: whispers hint at a rogue surge.",
+      "questPulse": "Harvest data spikes for RAVE, ASTEROID, and PENGU trends.",
+      "worldFeed": "Signals show restless trading beneath corporate radars.",
+      "clueEvent": "Anomaly in asset flows near digital outpost.",
       "tags": [
         "trending",
-        "crypto",
-        "intel"
+        "intel",
+        "surveillance"
       ],
-      "expiresAt": "2026-04-21T08:47:23.386Z"
+      "expiresAt": "2026-04-21T11:01:29.614Z"
     },
     {
-      "id": "signal-1776759443386-3",
+      "id": "signal-1776765689614-3",
       "lane": "clue",
       "priority": 5,
-      "ttlMinutes": 25,
-      "npcLine": "Fear index hits corrosive levels; distrust infects neon streets.",
-      "questPulse": "Gather silent whispers about market cap flux and false security.",
-      "worldFeed": "Investor dread seeps through circuits; trust wears thin.",
-      "clueEvent": "Growing anxiety hints at incoming market tremors.",
+      "ttlMinutes": 45,
+      "npcLine": "Fear grinds the city’s gears; trust no circuit.",
+      "questPulse": "Sentiment down; underground brokers scramble for control.",
+      "worldFeed": "Shattered confidence ripples through the crypto bazaar.",
+      "clueEvent": "Dark whispers hint at manipulative algorithm shifts.",
       "tags": [
+        "sentiment",
         "fear",
-        "market",
-        "intel"
+        "manipulation"
       ],
-      "expiresAt": "2026-04-21T08:42:23.386Z"
+      "expiresAt": "2026-04-21T10:46:29.614Z"
     },
     {
-      "id": "signal-1776759443386-4",
+      "id": "signal-1776765689614-4",
       "lane": "quest",
       "priority": 2,
-      "ttlMinutes": 60,
-      "npcLine": "Follow cryptic leads across fragmented digital channels.",
-      "questPulse": "Decipher encrypted chatter on volatile token shifts.",
-      "worldFeed": "Signal spikes warn of shadow operators moving assets.",
-      "clueEvent": "Volatile cryptos spark whispers of a hidden hand’s move.",
+      "ttlMinutes": 120,
+      "npcLine": "Intel nodes flagged: cryptic spikes in unnamed tokens.",
+      "questPulse": "Trace erratic signals from shadow markets leaking info.",
+      "worldFeed": "AAVE and BASED flicker on clandestine data streams.",
+      "clueEvent": "Mysterious traders manipulate thin air valuations.",
       "tags": [
-        "quest",
-        "crypto",
-        "spy"
+        "cryptomarket",
+        "shadow",
+        "manipulation"
       ],
-      "expiresAt": "2026-04-21T09:17:23.386Z"
+      "expiresAt": "2026-04-21T12:01:29.614Z"
     },
     {
-      "id": "signal-1776759443386-5",
+      "id": "signal-1776765689614-5",
       "lane": "npc",
-      "priority": 1,
-      "ttlMinutes": 50,
-      "npcLine": "Whispers of PENGU chill data dens; risks outweigh gains.",
-      "questPulse": "Monitor small cap tokens for sudden price ghosts.",
-      "worldFeed": "Silent whispers tell of cryptos oscillating in fear’s grip.",
-      "clueEvent": "Minor players signal rising danger on market periphery.",
+      "priority": 3,
+      "ttlMinutes": 75,
+      "npcLine": "Quiet vendors whisper: 'The market’s pulse beats in fear.'",
+      "questPulse": "Scan chatter for cryptic patterns tied to rising doubts.",
+      "worldFeed": "Silent fear pervades terminals; traders hesitate.",
+      "clueEvent": "An encrypted message warns of rapid market shifts.",
       "tags": [
         "npc",
-        "crypto",
-        "risk"
+        "psychology",
+        "market"
       ],
-      "expiresAt": "2026-04-21T09:07:23.386Z"
+      "expiresAt": "2026-04-21T11:16:29.614Z"
     }
   ]
 }
