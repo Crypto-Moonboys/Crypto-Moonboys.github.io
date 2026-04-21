@@ -1206,7 +1206,7 @@ export default {
 
 // ── Telegram bot command handler ──────────────────────────────────────────────
 
-const SITE_URL = 'https://crypto-moonboys.github.io';
+const SITE_URL = 'https://cryptomoonboys.com';
 
 async function handleTelegramUpdate(update, env) {
   const db  = env.DB;

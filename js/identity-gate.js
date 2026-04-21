@@ -433,7 +433,7 @@
 
   function getSyncGateUrl() {
     var cfg = window.MOONBOYS_API || {};
-    return cfg.SYNC_GATE_URL || 'https://crypto-moonboys.github.io/gkniftyheads-incubator.html';
+    return cfg.SYNC_GATE_URL || 'https://cryptomoonboys.com/gkniftyheads-incubator.html';
   }
 
   function injectStyles() {

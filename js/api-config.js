@@ -23,7 +23,7 @@ window.MOONBOYS_API = {
 
   /* ── Identity Sync Gate ──────────────────────────────────── */
   // URL shown to users who attempt a competitive action without Telegram sync.
-  SYNC_GATE_URL: 'https://crypto-moonboys.github.io/gkniftyheads-incubator.html',
+  SYNC_GATE_URL: 'https://cryptomoonboys.com/gkniftyheads-incubator.html',
 
   /* ── CoinGecko Public API ────────────────────────────────── */
   // Used for live cryptocurrency price data (no API key required).

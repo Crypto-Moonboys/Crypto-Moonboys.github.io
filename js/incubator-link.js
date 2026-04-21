@@ -83,15 +83,22 @@
 
   function boot() {
     if (!BASE) return;
+    console.log('URL:', window.location.href);
     var params = new URLSearchParams(window.location.search);
     var rawPayload = params.get(QUERY_KEY);
-    if (!rawPayload) return;
+    console.log('telegram_auth:', rawPayload);
+    if (!rawPayload) {
+      setStatus('Not linked', 'Invalid link. Use /gklink again.', false);
+      emitSyncState('bad', 'missing_payload');
+      debug('payload_missing');
+      return;
+    }
 
     var parsedPayload = parseTelegramAuthParam(rawPayload);
     debug('payload_received', { hasPayload: !!parsedPayload });
 
     if (!parsedPayload || typeof parsedPayload !== 'object') {
-      setStatus('Not linked', 'Sync payload is invalid. Run /gklink again in Telegram.', false);
+      setStatus('Not linked', 'Invalid link. Use /gklink again.', false);
       emitSyncState('bad', 'invalid_payload');
       debug('payload_parse_failed', { rawLength: rawPayload.length });
       return;
