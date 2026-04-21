@@ -313,6 +313,8 @@ CREATE TABLE IF NOT EXISTS blocktopia_progression (
   faction TEXT NOT NULL DEFAULT 'unaligned',
   faction_xp INTEGER NOT NULL DEFAULT 0,
   faction_last_switch INTEGER,
+  network_heat INTEGER NOT NULL DEFAULT 0,
+  network_heat_updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   last_active DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
@@ -366,6 +368,8 @@ CREATE TABLE IF NOT EXISTS blocktopia_covert_agents (
   assigned_operation  TEXT,
   assigned_until      DATETIME,
   stealth_boost_until DATETIME,
+  captured_until      DATETIME,
+  capture_count       INTEGER NOT NULL DEFAULT 0,
   recovery_count      INTEGER NOT NULL DEFAULT 0,
   created_at          DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at          DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -380,6 +384,9 @@ CREATE INDEX IF NOT EXISTS idx_blocktopia_covert_agents_assigned_operation
 
 CREATE INDEX IF NOT EXISTS idx_blocktopia_covert_agents_type_status
   ON blocktopia_covert_agents(agent_type, status);
+
+CREATE INDEX IF NOT EXISTS idx_blocktopia_covert_agents_capture_window
+  ON blocktopia_covert_agents(telegram_id, status, captured_until);
 
 CREATE TABLE IF NOT EXISTS blocktopia_covert_operations (
   id                TEXT PRIMARY KEY,
