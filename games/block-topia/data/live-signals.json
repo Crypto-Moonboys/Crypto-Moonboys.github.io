@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-04-21T03:51:54.132Z",
+  "generatedAt": "2026-04-21T06:03:28.877Z",
   "mode": "live-ai",
   "sourceHealth": {
     "coingecko-global": "ok",
@@ -11,84 +11,84 @@
   "signalCount": 5,
   "signals": [
     {
-      "id": "signal-1776743514131-1",
+      "id": "signal-1776751408876-1",
       "lane": "world",
-      "priority": 3,
-      "ttlMinutes": 45,
-      "npcLine": "Crypto streets whisper: RAVE's pulse flat, watch the deadbeats.",
-      "questPulse": "Track dormant token RAVE, find the fading signal node.",
-      "worldFeed": "Market haze thickens; RAVE barely stirs amid shifting layers.",
-      "clueEvent": "Silent RAVE terminals detected in abandoned data hubs.",
-      "tags": [
-        "crypto",
-        "dormant",
-        "surveillance"
-      ],
-      "expiresAt": "2026-04-21T04:36:54.131Z"
-    },
-    {
-      "id": "signal-1776743514132-2",
-      "lane": "ops",
       "priority": 4,
-      "ttlMinutes": 30,
-      "npcLine": "PENGU's fleeting glow draws spec hunters into shadow runs.",
-      "questPulse": "Trace PENGU trail before it vanishes in fear fog.",
-      "worldFeed": "Sentiment dips low; PENGU's attractors flicker under pressure.",
-      "clueEvent": "Encrypted logs show PENGU volume spikes in black market.",
+      "ttlMinutes": 45,
+      "npcLine": "Crypto pulse rising, but fear clogs the streets.",
+      "questPulse": "Scan for shadow trades amid market chaos.",
+      "worldFeed": "Thousands of tokens buzz, but doubt lingers.",
+      "clueEvent": "Unstable cap shifts hint at hidden moves.",
       "tags": [
-        "volatile",
-        "tracker",
+        "cryptocurrency",
+        "market",
         "fear"
       ],
-      "expiresAt": "2026-04-21T04:21:54.132Z"
+      "expiresAt": "2026-04-21T06:48:28.876Z"
     },
     {
-      "id": "signal-1776743514132-3",
-      "lane": "clue",
-      "priority": 5,
-      "ttlMinutes": 20,
-      "npcLine": "ASTEROID climbing fast, a rogue star breaking through fear’s grip.",
-      "questPulse": "Hack into ASTEROID exchanges; decode sudden volume bursts.",
-      "worldFeed": "Networks buzz with ASTEROID’s unsteady signal corridor.",
-      "clueEvent": "Unusual ASTEROID transactions suggest strategic play in shadows.",
+      "id": "signal-1776751408876-2",
+      "lane": "ops",
+      "priority": 3,
+      "ttlMinutes": 60,
+      "npcLine": "RAVE and ASTEROID flicker on underground boards.",
+      "questPulse": "Decrypt signals from trending cyber-assets.",
+      "worldFeed": "Unknown coins gain sudden hype, eyes peeled.",
+      "clueEvent": "Unusual trading volume spikes in fringe tokens.",
       "tags": [
-        "surge",
-        "rogue",
+        "trending",
+        "tokens",
         "intel"
       ],
-      "expiresAt": "2026-04-21T04:11:54.132Z"
+      "expiresAt": "2026-04-21T07:03:28.876Z"
     },
     {
-      "id": "signal-1776743514132-4",
+      "id": "signal-1776751408877-3",
+      "lane": "clue",
+      "priority": 5,
+      "ttlMinutes": 30,
+      "npcLine": "Fear index climbs; trust your cyber instincts.",
+      "questPulse": "Track market fear shadows before they strike.",
+      "worldFeed": "Sentiment drops; digital traders grow jittery.",
+      "clueEvent": "Rising anxiety signals potential market breach.",
+      "tags": [
+        "fear",
+        "market",
+        "alert"
+      ],
+      "expiresAt": "2026-04-21T06:33:28.877Z"
+    },
+    {
+      "id": "signal-1776751408877-4",
       "lane": "quest",
       "priority": 2,
-      "ttlMinutes": 60,
-      "npcLine": "ORDI’s slow creep unsettles data miners in fading zones.",
-      "questPulse": "Infiltrate ORDIs behind the smog, secure cryptic info caches.",
-      "worldFeed": "ORDI edges up in the gloom, stirring nervous watchers.",
-      "clueEvent": "ORDI trace left in ghost market communications.",
+      "ttlMinutes": 50,
+      "npcLine": "PENGU and AAVE whisper of shifting alliances.",
+      "questPulse": "Follow token trails into the neon abyss.",
+      "worldFeed": "Silent moves under bright cyber neon glow.",
+      "clueEvent": "Trending coins hint at new underground factions.",
       "tags": [
-        "incremental",
-        "infiltration",
-        "stealth"
+        "tokens",
+        "alliances",
+        "hype"
       ],
-      "expiresAt": "2026-04-21T04:51:54.132Z"
+      "expiresAt": "2026-04-21T06:53:28.877Z"
     },
     {
-      "id": "signal-1776743514132-5",
+      "id": "signal-1776751408877-5",
       "lane": "npc",
-      "priority": 1,
-      "ttlMinutes": 50,
-      "npcLine": "AAVE’s whispers of stability cut through fear-choked networks.",
-      "questPulse": "Extract AAVE’s anchor data - a key to calm in chaos.",
-      "worldFeed": "AAVE remains steady, a beacon in the volatile night.",
-      "clueEvent": "AAVE-linked safehouses encrypted under deep market watch.",
+      "priority": 3,
+      "ttlMinutes": 40,
+      "npcLine": "Watch ARB’s rise; it’s a signal from shadows.",
+      "questPulse": "Investigate creeping influence among digital currencies.",
+      "worldFeed": "Low-key coin stirs rumors in nether markets.",
+      "clueEvent": "Subtle shift in token power dynamics detected.",
       "tags": [
-        "stability",
-        "anchor",
-        "calm"
+        "coins",
+        "shadow",
+        "influence"
       ],
-      "expiresAt": "2026-04-21T04:41:54.132Z"
+      "expiresAt": "2026-04-21T06:43:28.877Z"
     }
   ]
 }
