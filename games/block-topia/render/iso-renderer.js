@@ -972,6 +972,8 @@ export function createIsoRenderer(canvas) {
   function drawNetworkDataLinks(originX, originY, controlNodes, now, state) {
     if (!Array.isArray(controlNodes) || controlNodes.length < 2) return;
     const byId = new Map(controlNodes.map((node) => [node.id, node]));
+    const networkHeat = Math.max(0, Math.min(100, Number(state?.covert?.networkHeat?.value) || 0));
+    const heatBias = networkHeat / 100;
     ctx.save();
 
     for (const line of NETWORK_LINES) {
@@ -1013,15 +1015,15 @@ export function createIsoRenderer(canvas) {
               : '';
 
       const fractureFlicker = 0.55 + (Math.sin(now / UNSTABLE_FLICKER_RATE + (line.id.length * 2.4)) + 1) * 0.2;
-      ctx.globalAlpha = circuitState === 'broken' ? fractureFlicker : (corrupted ? 0.78 : 0.45);
+      ctx.globalAlpha = circuitState === 'broken' ? fractureFlicker : (corrupted ? 0.78 : (0.45 + (heatBias * 0.16)));
       ctx.strokeStyle = circuitColor || routerColor || (corrupted ? 'rgba(255,79,168,0.94)' : 'rgba(94,242,255,0.95)');
-      ctx.lineWidth = ((routerState === 'blocked' || circuitState === 'broken') ? 2.8 : 1.4) + flowPulse;
+      ctx.lineWidth = ((routerState === 'blocked' || circuitState === 'broken') ? 2.8 : 1.4) + flowPulse + (heatBias * 0.6);
       ctx.beginPath();
       ctx.moveTo(x1, y1);
       ctx.lineTo(x2, y2);
       ctx.stroke();
 
-      const packetPhase = ((now * DATA_PACKET_SPEED * 1.8) + ((from.x + to.y) * 0.021)) % 1;
+      const packetPhase = ((now * DATA_PACKET_SPEED * (1.8 + (heatBias * 0.9))) + ((from.x + to.y) * 0.021)) % 1;
       const px = x1 + ((x2 - x1) * packetPhase);
       const py = y1 + ((y2 - y1) * packetPhase);
       ctx.globalAlpha = 0.95;
@@ -1081,6 +1083,88 @@ export function createIsoRenderer(canvas) {
       ctx.fillStyle = '#e8fdff';
       ctx.font = DISTRICT_LABEL_FONT;
       ctx.fillText(`${Math.round(Number(entry.control || 0))}% · ${entry.owner || 'Contested'}`, labelX, labelY);
+    }
+    ctx.restore();
+  }
+
+  function drawCovertDistrictOverlay(originX, originY, state, now) {
+    const districtState = Array.isArray(state?.districtState) ? state.districtState : [];
+    const covertDistricts = state?.covert?.districtSignalById || {};
+    if (!districtState.length || !state?.districts?.byId) return;
+    ctx.save();
+    for (const entry of districtState) {
+      const districtMeta = state.districts.byId.get(entry.id);
+      const grid = districtMeta?.grid;
+      const covert = covertDistricts[entry.id];
+      if (!grid || !covert) continue;
+      const instability = Math.max(0, Number(covert.instability) || 0);
+      if (instability < 5) continue;
+      const center = toIso(grid.col + (grid.w / 2), grid.row + (grid.h / 2));
+      const labelX = originX + center.x;
+      const labelY = originY + center.y;
+      const ringPulse = 0.88 + ((Math.sin(now / Math.max(160, 260 - (instability * 4))) + 1) * 0.08);
+      const ringW = Math.max(42, (grid.w * HALF_TILE_W * 0.92) * ringPulse);
+      const ringH = Math.max(20, (grid.h * HALF_TILE_H * 0.6) * ringPulse);
+      ctx.globalAlpha = instability >= 18 ? 0.28 : instability >= 10 ? 0.2 : 0.14;
+      ctx.strokeStyle = instability >= 18 ? '#ff4fd8' : instability >= 10 ? '#ff9b67' : '#ffd84d';
+      ctx.lineWidth = instability >= 18 ? 2.3 : 1.6;
+      ctx.beginPath();
+      ctx.ellipse(labelX, labelY + 6, ringW, ringH, 0, 0, Math.PI * 2);
+      ctx.stroke();
+
+      ctx.globalAlpha = 0.92;
+      ctx.fillStyle = instability >= 18 ? '#ff8fe2' : instability >= 10 ? '#ffb18d' : '#ffe18a';
+      ctx.font = '700 10px Inter, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(`${String(covert.pressure_flag || 'calm').toUpperCase()} · instability ${Math.round(instability)}`, labelX, labelY + 12);
+    }
+    ctx.restore();
+  }
+
+  function drawCovertNodeOverlay(originX, originY, node, now, state) {
+    const covert = state?.covert?.nodeRiskById?.[node.id] || null;
+    if (!covert) return;
+    const risk = Math.max(0, Number(covert.risk) || 0);
+    if (risk <= 0) return;
+    const heat = Math.max(0, Math.min(100, Number(state?.covert?.networkHeat?.value) || 0));
+    const color = risk >= 12 ? '#ff4fd8' : risk >= 8 ? '#ff9b67' : '#ffd84d';
+    const iso = toIso(node.x, node.y);
+    const cx = originX + iso.x;
+    const cy = originY + iso.y + HALF_TILE_H;
+    const pulse = 0.84 + ((Math.sin(now / Math.max(120, 300 - (risk * 10))) + 1) * 0.16);
+    const radius = 24 + Math.min(20, risk);
+    ctx.save();
+    ctx.globalAlpha = Math.min(0.34, 0.08 + (risk / 70));
+    ctx.strokeStyle = color;
+    ctx.lineWidth = risk >= 12 ? 2.4 : 1.6;
+    ctx.beginPath();
+    ctx.ellipse(cx, cy + 2, radius * pulse, radius * 0.46 * pulse, 0, 0, Math.PI * 2);
+    ctx.stroke();
+
+    if (risk >= 8 || heat >= 50) {
+      ctx.globalAlpha = 0.22 + Math.min(0.16, heat / 300);
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(cx - 8, cy - 36);
+      ctx.lineTo(cx + 8, cy - 26);
+      ctx.moveTo(cx - 8, cy - 28);
+      ctx.lineTo(cx + 8, cy - 18);
+      ctx.stroke();
+    }
+
+    if (risk >= 12) {
+      ctx.globalAlpha = 0.92;
+      ctx.fillStyle = color;
+      ctx.font = '700 9px Inter, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('TRACE LOCK', cx, cy - 50);
+    } else if (risk >= 8) {
+      ctx.globalAlpha = 0.88;
+      ctx.fillStyle = color;
+      ctx.font = '700 9px Inter, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('UNDER WATCH', cx, cy - 50);
     }
     ctx.restore();
   }
@@ -1383,6 +1467,7 @@ export function createIsoRenderer(canvas) {
     ctx.drawImage(layerState.roadBlocks.canvas, worldDrawX, worldDrawY);
     ctx.drawImage(layerState.worldObjects.canvas, worldDrawX, worldDrawY);
     drawDistrictControlOverlay(originX, originY, state, now);
+    drawCovertDistrictOverlay(originX, originY, state, now);
 
     drawNetworkDataLinks(originX, originY, state.controlNodes, now, state);
     drawSignalRouterOverlay(originX, originY, state, now);
@@ -1405,6 +1490,7 @@ export function createIsoRenderer(canvas) {
     if (Array.isArray(controlNodes) && controlNodes.length) {
       for (const node of controlNodes) {
         drawControlNode(originX, originY, node, now, state.mouse?.hoverNodeId === node.id);
+        drawCovertNodeOverlay(originX, originY, node, now, state);
       }
     }
 

@@ -34,11 +34,23 @@ export function createHud(doc) {
   const aiStatus = doc.getElementById('ai-status');
   const factionStatus = doc.getElementById('faction-status');
   const samStatus = doc.getElementById('sam-status');
+  const covertSamStatus = doc.getElementById('covert-sam-status');
   const phaseStatus = doc.getElementById('phase-status');
   const multiplayerStatus = doc.getElementById('mp-status');
   const roomStatus = doc.getElementById('room-status');
   const populationStatus = doc.getElementById('population-status');
   const multiplayerLiveBanner = doc.getElementById('multiplayer-live-banner');
+  const covertStrip = doc.getElementById('covert-strip');
+  const covertWatchCopy = doc.getElementById('covert-watch-copy');
+  const covertHeatValue = doc.getElementById('covert-heat-value');
+  const covertHeatMeta = doc.getElementById('covert-heat-meta');
+  const covertNodeValue = doc.getElementById('covert-node-value');
+  const covertNodeMeta = doc.getElementById('covert-node-meta');
+  const covertDistrictValue = doc.getElementById('covert-district-value');
+  const covertDistrictMeta = doc.getElementById('covert-district-meta');
+  const covertAgentValue = doc.getElementById('covert-agent-value');
+  const covertAgentMeta = doc.getElementById('covert-agent-meta');
+  const covertRecoveryLine = doc.getElementById('covert-recovery-line');
 
   const feedLeft = doc.getElementById('stream-left');
   const feedRight = doc.getElementById('stream-right');
@@ -286,6 +298,67 @@ export function createHud(doc) {
     districtStatus.textContent = `District: ${districtName || 'Unknown'} · ${controlTag} · ${String(districtState || 'contested').toUpperCase()}`;
   }
 
+  function setCovertState(snapshot = {}) {
+    if (!covertStrip) return;
+    const networkHeat = Math.max(0, Math.min(100, Number(snapshot?.networkHeat?.value) || 0));
+    const networkTier = String(snapshot?.networkHeat?.tier || 'cold').toUpperCase();
+    const samTier = String(snapshot?.samAwareness?.tier || 'cold').toUpperCase();
+    const samSensitivity = Math.max(0, Number(snapshot?.samAwareness?.sensitivity) || 0);
+    const summary = snapshot?.summary || {};
+    const activeAgents = Math.max(0, Number(summary.activeAgents) || 0);
+    const exposedAgents = Math.max(0, Number(summary.exposedAgents) || 0);
+    const capturedAgents = Math.max(0, Number(summary.capturedAgents) || 0);
+    const highRiskAgents = Math.max(0, Number(summary.highRiskAgents) || 0);
+    const highestRisk = Math.max(0, Number(summary.highestRisk) || 0);
+    const hottestNode = snapshot?.nodeRiskById?.[summary.hottestNodeId] || null;
+    const currentDistrict = snapshot?.districtSignalById?.[summary.currentDistrictId] || null;
+    const focusedDistrict = currentDistrict || snapshot?.districtSignalById?.[summary.hottestDistrictId] || null;
+    const districtLabel = String(focusedDistrict?.pressure_flag || summary.currentDistrictFlag || 'calm').toUpperCase();
+    const districtInstability = Math.max(0, Number(focusedDistrict?.instability ?? summary.currentDistrictInstability) || 0);
+    const nodeRisk = Math.max(0, Number(hottestNode?.risk) || 0);
+    const nodeStatus = String(hottestNode?.watch_status || 'quiet').replace(/_/g, ' ');
+
+    covertStrip.dataset.heatTier = String(snapshot?.networkHeat?.tier || 'cold');
+    covertHeatValue.textContent = `${networkHeat}%`;
+    covertHeatMeta.textContent = `${networkTier} · detection floor ${Math.max(0, Number(snapshot?.networkHeat?.derived_floor) || 0)}%`;
+
+    covertNodeValue.textContent = hottestNode ? `${Math.round(nodeRisk)} · ${nodeStatus.toUpperCase()}` : 'QUIET';
+    covertNodeMeta.textContent = hottestNode
+      ? `${String(hottestNode.node_id || '').toUpperCase()} · ${String(hottestNode.district_id || '').replace(/-/g, ' ')}`
+      : 'No covert-hot node in focus';
+
+    covertDistrictValue.textContent = `${districtLabel}`;
+    covertDistrictMeta.textContent = focusedDistrict
+      ? `${String(focusedDistrict.district_id || '').replace(/-/g, ' ')} · instability ${Math.round(districtInstability)}`
+      : 'District pressure nominal';
+
+    covertAgentValue.textContent = `${activeAgents} ACTIVE`;
+    covertAgentMeta.textContent = `${exposedAgents} exposed · ${capturedAgents} captured · ${highRiskAgents} high risk`;
+
+    if (covertSamStatus) covertSamStatus.textContent = `Watch: ${samTier} ${samSensitivity}`;
+
+    const pressureFlags = Array.isArray(snapshot?.samAwareness?.pressure_flags) ? snapshot.samAwareness.pressure_flags : [];
+    const watchCopy = pressureFlags.length
+      ? pressureFlags[0].replace(/_/g, ' ')
+      : networkHeat >= 70
+        ? 'Surveillance pressure peaking.'
+        : networkHeat >= 45
+          ? 'District surveillance elevated.'
+          : 'Signal cover intact.';
+    covertWatchCopy.textContent = watchCopy;
+
+    if (capturedAgents > 0) {
+      const recoverable = summary.recoveryReady
+        ? `Recovery boost ready · ${Math.max(0, Number(summary.recoveryCost) || 0)} gems`
+        : 'Recovery timer active';
+      covertRecoveryLine.textContent = `${capturedAgents} captured · ${Math.max(0, Number(summary.recoveringAgents) || 0)} recovering · ${recoverable}`;
+    } else if (highestRisk >= 70) {
+      covertRecoveryLine.textContent = `High-risk warning · agent exposure ${highestRisk}% · covert routes compromised`;
+    } else {
+      covertRecoveryLine.textContent = 'No captured agents in recovery.';
+    }
+  }
+
   return {
     setPlayerName: (name) => { playerNameEl.textContent = name; },
     setWorldStatus: (text) => { worldStatus.textContent = text; },
@@ -298,6 +371,7 @@ export function createHud(doc) {
     setDistrictOwner: (owner) => pushLog('right', `District control: ${owner || '—'}`),
     setFactionStatus: (text) => { factionStatus.textContent = `Factions: ${text}`; },
     setSamPhase: (name) => { samStatus.textContent = `SAM: ${name}`; },
+    setCovertState,
     setPhase: (name) => { phaseStatus.textContent = `Phase: ${name}`; },
     setScore: () => {},
     setXp,
