@@ -398,46 +398,6 @@ function setServerProgression(next = {}) {
   return progressionState;
 }
 
-function getActiveCooldown() {
-  const cooldown = progressionState?.enforcement?.cooldown || progressionState?.cooldown || null;
-  return cooldown?.active ? cooldown : null;
-}
-
-async function syncNodeInterferencePressure(nodeInterferenceController, nodeId, intent = 'disrupt') {
-  const cooldown = getActiveCooldown();
-  if (cooldown) {
-    const remainingSec = Math.max(1, Math.ceil((Number(cooldown.remainingMs) || 0) / 1000));
-    hud.showNodeInterference(`Cooldown active · ${remainingSec}s remaining`, 'warning');
-    return false;
-  }
-  const apiBase = getApiBase();
-  const telegramAuth = getTelegramAuth();
-  if (apiBase && telegramAuth?.hash && telegramAuth?.auth_date) {
-    const res = await fetch(`${apiBase}/blocktopia/progression/action`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        kind: 'node_interfere',
-        node_id: nodeId,
-        intent,
-        telegram_auth: telegramAuth,
-      }),
-    }).catch(() => null);
-    if (res) {
-      const data = await res.json().catch(() => ({}));
-      if (data?.progression) setServerProgression(data.progression);
-      if (data?.enforcement) setServerProgression({ enforcement: data.enforcement });
-      if (!res.ok) {
-        hud.showNodeInterference(data?.error || 'Node interference blocked', 'warning');
-        return false;
-      }
-    }
-  }
-  nodeInterferenceController.beginLocalPulse(nodeId);
-  sendNodeInterference(nodeId, intent);
-  return true;
-}
-
 async function fetchMiniGameAffordability(type) {
   const apiBase = getApiBase();
   const telegramAuth = getTelegramAuth();
@@ -461,7 +421,6 @@ async function fetchMiniGameAffordability(type) {
     };
   }
   if (data?.progression) setServerProgression(data.progression);
-  if (data?.enforcement) setServerProgression({ enforcement: data.enforcement });
   return data;
 }
 
@@ -490,7 +449,6 @@ async function syncMiniGameSkip(type, skipStreak = 0) {
   const data = await res.json().catch(() => ({}));
   if (!res.ok) {
     if (data?.progression) setServerProgression(data.progression);
-    if (data?.enforcement) setServerProgression({ enforcement: data.enforcement });
     return {
       ...data,
       ok: false,
@@ -500,7 +458,6 @@ async function syncMiniGameSkip(type, skipStreak = 0) {
     };
   }
   if (data?.progression) setServerProgression(data.progression);
-  if (data?.enforcement) setServerProgression({ enforcement: data.enforcement });
   return data;
 }
 
@@ -527,7 +484,6 @@ async function fetchServerProgression() {
     const data = await res.json().catch(() => null);
     const progression = data?.progression || {};
     setServerProgression(progression);
-    if (data?.enforcement) setServerProgression({ enforcement: data.enforcement });
     return progressionState;
   } catch {
     return { ...progressionState };
@@ -548,7 +504,6 @@ async function fetchCovertState() {
     });
     if (!res.ok) {
       const data = await res.json().catch(() => ({}));
-      if (data?.enforcement) setServerProgression({ enforcement: data.enforcement });
       return {
         ...createDefaultCovertState(),
         __authError: res.status === 401 || res.status === 403,
@@ -645,12 +600,6 @@ function normalizeCovertState(snapshot = {}, currentDistrictId = '') {
 }
 
 async function ensureRpgEntry() {
-  const cooldown = getActiveCooldown();
-  if (cooldown) {
-    const remainingSec = Math.max(1, Math.ceil((Number(cooldown.remainingMs) || 0) / 1000));
-    hud.showNodeInterference(`Cooldown active · ${remainingSec}s remaining`, 'warning');
-    return false;
-  }
   if (progressionState.rpg_mode_active) return true;
   const apiBase = getApiBase();
   const telegramAuth = getTelegramAuth();
@@ -706,7 +655,6 @@ async function syncMiniGameOutcome(type, outcome) {
   const data = await res.json().catch(() => ({}));
   if (!res.ok) {
     if (data?.progression) setServerProgression(data.progression);
-    if (data?.enforcement) setServerProgression({ enforcement: data.enforcement });
     return {
       ...data,
       ok: false,
@@ -718,7 +666,6 @@ async function syncMiniGameOutcome(type, outcome) {
   if (data?.progression) {
     setServerProgression(data.progression);
   }
-  if (data?.enforcement) setServerProgression({ enforcement: data.enforcement });
   return data;
 }
 
@@ -1383,7 +1330,10 @@ async function boot() {
       hud.showNodeInterference(`Node ${node.id.toUpperCase()} in cooldown · ${remainingSec}s remaining`, 'warning');
       return true;
     }
-    syncNodeInterferencePressure(nodeInterference, node.id, event.shiftKey ? 'assist' : 'disrupt').catch(() => {});
+    // Visual-only optimistic pulse — node state is server-authoritative.
+    // All real effects (status, feed, HUD, NPC, SAM) come from onNodeInterferenceChanged.
+    nodeInterference.beginLocalPulse(node.id);
+    sendNodeInterference(node.id, event.shiftKey ? 'assist' : 'disrupt');
     return true;
   }
 

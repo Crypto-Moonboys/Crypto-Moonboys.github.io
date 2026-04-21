@@ -251,12 +251,10 @@ function computeDecayedValue(rawValue, updatedAt, intervalMs, amountPerInterval,
 function computeCaptureCooldownMs(agent, networkHeat) {
   const heat = clamp(Number(agent?.heat) || 0, 0, 100);
   const captureCount = Math.max(0, Number(agent?.capture_count) || 0);
-  const heatTier = getNetworkHeatTier(networkHeat);
   const cooldown =
     CAPTURE_BASE_MS
     + (heat * CAPTURE_AGENT_HEAT_MS)
     + (clamp(Number(networkHeat) || 0, 0, 100) * CAPTURE_NETWORK_HEAT_MS)
-    + (heatTier * 5 * 60 * 1000)
     + (captureCount * CAPTURE_HISTORY_MS);
   return Math.min(cooldown, CAPTURE_MAX_MS);
 }
@@ -1533,7 +1531,6 @@ function computeResolution(agent, operation, pressure, pressureSnapshot, nowMs =
   const resilience = clamp(Number(agent.resilience) || 0, 1, 100);
   const loyalty = clamp(Number(agent.loyalty) || 0, 1, 100);
   const heatBefore = clamp(Number(agent.heat) || 0, 0, 100);
-  const heatTier = getNetworkHeatTier(networkHeat);
   const successRoll = Math.floor(Math.random() * 101);
   const detectionRoll = Math.floor(Math.random() * 101);
   const exposedPressure = heatBefore >= 70 ? 7 : 0;
@@ -1543,7 +1540,6 @@ function computeResolution(agent, operation, pressure, pressureSnapshot, nowMs =
       + Math.floor(loyalty * config.loyaltyWeight)
       - Math.floor(heatBefore * config.heatPenalty)
       - Math.floor(networkHeat * 0.14)
-      - (heatTier * 3)
       - (Number(sam.success_penalty) || 0)
       - nodeScanPenalty
       - tracePenalty
@@ -1561,7 +1557,6 @@ function computeResolution(agent, operation, pressure, pressureSnapshot, nowMs =
       + config.typeExposureRisk
       + exposedPressure
       + Math.floor(networkHeat * 0.12)
-      + (heatTier * 2)
       + (Number(sam.detection_modifier) || 0)
       + Math.floor(nodeRisk * 0.35)
       + districtExposureShift
@@ -1577,7 +1572,6 @@ function computeResolution(agent, operation, pressure, pressureSnapshot, nowMs =
       + config.typeCaptureRisk
       + exposedPressure
       + Math.floor(networkHeat * 0.09)
-      + (heatTier * 2)
       + (Number(sam.capture_modifier) || 0)
       + Math.floor(nodeRisk * 0.25)
       + Math.floor(districtInstability * 0.15)
