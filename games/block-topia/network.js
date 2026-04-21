@@ -178,6 +178,11 @@ export function sendWarAction(actionType, payload = {}) {
   });
 }
 
+export function sendCovertPressureSync(reports = []) {
+  if (!room || !Array.isArray(reports) || !reports.length) return;
+  room.send('covertPressureSync', { reports });
+}
+
 export function challengePlayer(targetPlayerId) {
   if (!room || !targetPlayerId) return;
   room.send('duelChallenge', { targetPlayerId });
