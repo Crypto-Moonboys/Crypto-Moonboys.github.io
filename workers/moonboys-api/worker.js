@@ -608,6 +608,10 @@ export default {
         username,
         photo_url,
       }, env.TELEGRAM_BOT_TOKEN, auth_date);
+      if (!signedAuthPayload || !signedAuthPayload.hash || !signedAuthPayload.auth_date) {
+        logApiFailure('telegram_auth_payload_sign_failed', { telegramId: String(id) });
+        return err('Failed to generate signed Telegram auth payload', 500);
+      }
       return json({
         ok: true,
         identity: {
@@ -807,6 +811,10 @@ export default {
           last_name: user?.last_name || null,
           photo_url: null,
         }, env.TELEGRAM_BOT_TOKEN);
+        if (!signedAuthPayload || !signedAuthPayload.hash || !signedAuthPayload.auth_date) {
+          logApiFailure('telegram_link_confirm_auth_payload_sign_failed', { telegramId: String(row.telegram_id) });
+          return err('Failed to generate signed Telegram auth payload', 500);
+        }
 
         return json({
           ok: true,

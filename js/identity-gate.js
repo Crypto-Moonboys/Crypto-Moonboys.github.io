@@ -60,6 +60,10 @@
     try { localStorage.setItem(key, String(val)); } catch {}
   }
 
+  function lsRemove(key) {
+    try { localStorage.removeItem(key); } catch {}
+  }
+
   // ── Public API ───────────────────────────────────────────────
 
   function getTelegramId() {
@@ -79,6 +83,25 @@
     } catch {
       return null;
     }
+  }
+
+  /**
+   * Normalize a Telegram auth payload into the stored shape and require signed essentials.
+   * Returns null when id/hash/auth_date are missing; otherwise returns a safe payload object.
+   */
+  function normalizeTelegramAuthPayload(authPayload, telegramId) {
+    if (!authPayload || typeof authPayload !== 'object') return null;
+    var safeAuth = {
+      id:         authPayload.id || telegramId || null,
+      first_name: authPayload.first_name || null,
+      last_name:  authPayload.last_name || null,
+      username:   authPayload.username || null,
+      photo_url:  authPayload.photo_url || null,
+      auth_date:  authPayload.auth_date || null,
+      hash:       authPayload.hash || null,
+    };
+    if (!safeAuth.id || !safeAuth.hash || !safeAuth.auth_date) return null;
+    return safeAuth;
   }
 
   function hasAuthPayload() {
@@ -178,14 +201,47 @@
   /**
    * Mark the current Telegram identity as bot-link-completed (competition-active).
    * Call this after the /gklink flow succeeds (e.g. redirect from community.html?gklink=…).
+   * Fail-closed: returns false and does not set linked when ID/payload is missing or payload is expired.
    *
-   * @param {string|number} [telegramId] — if supplied, persists the ID first so the
-   *   linked flag is always set even when the browser has no prior Telegram widget auth.
+   * @param {string|number} [telegramId] — persisted Telegram ID.
+   * @param {object} [authPayload] — signed Telegram auth payload to persist atomically.
+   * @param {string} [displayName] — optional display name to persist.
+   * @returns {boolean} true only when a fresh signed payload exists and linked state is ready.
    */
-  function setTelegramLinked(telegramId) {
-    if (telegramId) lsSet(LS_TG_ID, String(telegramId));
-    if (getTelegramId()) lsSet(LS_TG_LINKED, '1');
+  function setTelegramLinked(telegramId, authPayload, displayName) {
+    var currentTelegramId = getTelegramId();
+    var resolvedTelegramId = String(
+      telegramId || (authPayload && authPayload.id) || currentTelegramId || ''
+    ).trim() || null;
+    var resolvedDisplayName = displayName || getTelegramName() || null;
+    var auth = authPayload && typeof authPayload === 'object'
+      ? normalizeTelegramAuthPayload(authPayload, resolvedTelegramId)
+      : getTelegramAuth();
+    var hasPayload = !!(auth && auth.id && auth.hash && auth.auth_date);
+    if (!resolvedTelegramId) {
+      lsRemove(LS_TG_LINKED);
+      setSyncHealth('bad', 'missing_telegram_id');
+      return false;
+    }
+    if (!hasPayload) {
+      lsRemove(LS_TG_LINKED);
+      setSyncHealth('bad', 'missing_auth_payload');
+      return false;
+    }
+    if (isTelegramAuthExpired(auth)) {
+      lsRemove(LS_TG_LINKED);
+      setSyncHealth('bad', 'auth_expired');
+      return false;
+    }
+    lsSet(LS_TG_ID, resolvedTelegramId);
+    if (resolvedDisplayName) lsSet(LS_TG_NAME, resolvedDisplayName);
+    if (authPayload && typeof authPayload === 'object') {
+      lsSet(LS_TG_AUTH, JSON.stringify(auth));
+      setSyncHealth('good', 'auth_verified');
+    }
+    lsSet(LS_TG_LINKED, '1');
     setSyncHealth('good', 'linked');
+    return true;
   }
 
   /**
@@ -196,18 +252,29 @@
     if (telegramId) lsSet(LS_TG_ID, telegramId);
     if (displayName) lsSet(LS_TG_NAME, displayName);
     if (authPayload && typeof authPayload === 'object') {
-      var safeAuth = {
-        id:         authPayload.id || telegramId || null,
-        first_name: authPayload.first_name || null,
-        last_name:  authPayload.last_name || null,
-        username:   authPayload.username || null,
-        photo_url:  authPayload.photo_url || null,
-        auth_date:  authPayload.auth_date || null,
-        hash:       authPayload.hash || null,
-      };
-      lsSet(LS_TG_AUTH, JSON.stringify(safeAuth));
+      var safeAuth = normalizeTelegramAuthPayload(authPayload, telegramId);
+      if (safeAuth) {
+        lsSet(LS_TG_AUTH, JSON.stringify(safeAuth));
+      }
     }
     if (telegramId) setSyncHealth('good', 'auth_verified');
+  }
+
+  /**
+   * Return the shared secure Telegram auth payload for protected routes.
+   * Guarantees: payload exists, is not expired, and payload.id matches stored Telegram ID.
+   * Returns null when any guard fails.
+   */
+  function getSignedTelegramAuth() {
+    var authStatus = getTelegramAuthStatus();
+    if (!authStatus.has_payload) return null;
+    if (authStatus.expired) return null;
+    var auth = authStatus.auth;
+    if (!auth || !auth.id || !auth.hash || !auth.auth_date) return null;
+    var telegramId = getTelegramId();
+    if (!telegramId) return null;
+    if (String(telegramId) !== String(auth.id)) return null;
+    return auth;
   }
 
   /**
@@ -501,6 +568,8 @@
     getTelegramName:      getTelegramName,
     /** Last verified Telegram auth payload or null */
     getTelegramAuth:      getTelegramAuth,
+    /** Last verified signed Telegram auth payload when fresh and ID-matched; otherwise null. */
+    getSignedTelegramAuth:getSignedTelegramAuth,
     /** Telegram auth payload presence/expiry details for consistent gating. */
     getTelegramAuthStatus:getTelegramAuthStatus,
     /** True when the stored Telegram auth payload is missing/expired/invalid. */
@@ -513,8 +582,7 @@
     setSyncHealth:        setSyncHealth,
     /** Whether the bot link flow has been completed (competition-active) */
     isTelegramLinked:     isTelegramLinked,
-    /** Mark bot link as completed (call after successful /gklink one-time link flow).
-     *  Accepts an optional telegramId; if provided, persists the ID first. */
+    /** Mark bot link as completed (call after successful /gklink one-time link flow). */
     setTelegramLinked:    setTelegramLinked,
     /** Persist after a successful /telegram/auth round-trip (Step 1) */
     saveTelegramIdentity: saveTelegramIdentity,

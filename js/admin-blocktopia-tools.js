@@ -80,16 +80,10 @@
   function getAuthContext() {
     var sync = identity.getSyncState ? identity.getSyncState() : null;
     var authStatus = identity.getTelegramAuthStatus ? identity.getTelegramAuthStatus() : null;
-    var linked = sync ? !!sync.linked : !!(identity.isTelegramLinked && identity.isTelegramLinked());
-    var authPayload = authStatus && authStatus.auth
-      ? authStatus.auth
-      : (identity.getTelegramAuth ? identity.getTelegramAuth() : null);
-    var hasAuthPayload = authStatus
-      ? !!authStatus.has_payload
-      : !!(authPayload && authPayload.hash && authPayload.auth_date);
-    var authExpired = authStatus
-      ? !!authStatus.expired
-      : !!(sync && sync.status === 'auth_expired');
+    var linked = sync ? !!sync.linked : false;
+    var authPayload = identity.getSignedTelegramAuth ? identity.getSignedTelegramAuth() : null;
+    var hasAuthPayload = !!authPayload;
+    var authExpired = !!(authStatus && authStatus.expired);
     var telegramId = String(identity.getTelegramId ? (identity.getTelegramId() || '') : '').trim();
 
     return {

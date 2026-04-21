@@ -8,15 +8,9 @@ export const ArcadeSync = {
 
   getTelegramAuth() {
     if (typeof window === "undefined") return null;
-    if (window.MOONBOYS_IDENTITY && typeof window.MOONBOYS_IDENTITY.getTelegramAuth === "function") {
-      return window.MOONBOYS_IDENTITY.getTelegramAuth();
-    }
-    try {
-      const raw = localStorage.getItem("moonboys_tg_auth");
-      return raw ? JSON.parse(raw) : null;
-    } catch {
-      return null;
-    }
+    const gate = window.MOONBOYS_IDENTITY;
+    if (!gate) return null;
+    return typeof gate.getSignedTelegramAuth === "function" ? gate.getSignedTelegramAuth() : null;
   },
 
   getApiBase() {
