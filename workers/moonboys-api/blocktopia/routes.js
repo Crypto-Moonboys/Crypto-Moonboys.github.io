@@ -11,6 +11,9 @@ import {
   UPGRADE_MAX_LEVEL,
   XP_MAX,
   XP_MIN,
+  XP_SOFT_CAP_PER_HOUR,
+  XP_HARD_CAP_PER_DAY,
+  GEM_SOFT_CAP,
 } from './config.js';
 import {
   applyProgressionDrain,
@@ -34,6 +37,21 @@ import {
 import { verifyTelegramIdentityFromBody } from './auth.js';
 import { fetchTrustedLeaderboardContext } from './leaderboard.js';
 import { handleBlockTopiaCovertRoute } from './covert.js';
+import {
+  advanceMiniGameEntropy,
+  applyPressureDelta,
+  applyRewardCaps,
+  buildEnforcementPayload,
+  buildPressureSignals,
+  computeMiniGameRewardMultiplier,
+  enforceCooldown,
+  getNetworkHeatTier,
+  getPpsTier,
+  incrementMiniGameSkipCounter,
+  logProgressionEvent,
+  resetMiniGameSkipCounter,
+  syncPressureDecay,
+} from './enforcement.js';
 
 function logBlockTopiaFailure(event, context = {}) {
   console.log('[blocktopia][progression]', JSON.stringify({
@@ -79,6 +97,27 @@ async function readProgressionRequestBody(request, err) {
   }
 }
 
+function buildProgressionEnvelope(row, extras = {}) {
+  const pressureTier = getPpsTier(row?.player_pressure_score);
+  return {
+    ...extras,
+    enforcement: buildEnforcementPayload(row),
+    pressure_tier: pressureTier.key,
+    caps: {
+      xp_soft_cap_per_hour: XP_SOFT_CAP_PER_HOUR,
+      xp_hard_cap_per_day: XP_HARD_CAP_PER_DAY,
+      gem_soft_cap: GEM_SOFT_CAP,
+    },
+  };
+}
+
+function cooldownBlockedResponse(json, row, message = 'Cooldown active. Let the pressure drop before acting.') {
+  return json({
+    error: message,
+    ...buildProgressionEnvelope(row),
+  }, 429);
+}
+
 export async function handleBlockTopiaProgressionRoute(request, env, url, helpers) {
   const { path } = helpers;
   const { json, err, upsertTelegramUser, verifyTelegramAuth } = helpers;
@@ -101,7 +140,8 @@ export async function handleBlockTopiaProgressionRoute(request, env, url, helper
           message: error?.message || String(error),
         });
       });
-      const row = await getOrCreateBlockTopiaProgression(env.DB, verified.telegramId);
+      const rawRow = await getOrCreateBlockTopiaProgression(env.DB, verified.telegramId);
+      const row = await syncPressureDecay(env.DB, rawRow);
       const upgrades = getUpgradeSnapshot(row);
       const effects = buildUpgradeEffects(upgrades);
       const { drain, xpAfterDrain, drainPerMinute } = applyProgressionDrain(row, Date.now(), effects);
@@ -141,7 +181,10 @@ export async function handleBlockTopiaProgressionRoute(request, env, url, helper
           upgrades,
           effects,
           last_active: new Date().toISOString(),
+          network_heat: clamp(Number(row.network_heat) || 0, 0, 100),
+          heat_tier: getNetworkHeatTier(row.network_heat),
         },
+        ...buildProgressionEnvelope(row),
       });
     } catch (error) {
       logBlockTopiaFailure('load_progression_failed', {
@@ -159,7 +202,10 @@ export async function handleBlockTopiaProgressionRoute(request, env, url, helper
     const verified = await verifyTelegramIdentityFromBody(body, env, verifyTelegramAuth);
     if (verified.error) return err(verified.error, verified.status || 401);
     try {
-      const row = await getOrCreateBlockTopiaProgression(env.DB, verified.telegramId);
+      const rawRow = await getOrCreateBlockTopiaProgression(env.DB, verified.telegramId);
+      const guarded = await enforceCooldown(env.DB, rawRow, { actionType: 'entry', reason: 'entry_attempt' });
+      if (guarded.blocked) return cooldownBlockedResponse(json, guarded.row, 'Cooldown active. Block Topia entry is locked.');
+      const row = guarded.row;
       const tier = clamp(Math.floor(Number(row.tier) || 1), TIER_MIN, TIER_MAX);
       const entryCost = computeRpgEntryCost(tier);
       const miniGameCost = computeMiniGameCost(tier);
@@ -191,6 +237,7 @@ export async function handleBlockTopiaProgressionRoute(request, env, url, helper
           first_mini_game_cost: miniGameCost,
           first_mini_game_seed_xp: Math.max(0, seededXp - xpAfterEntry),
         },
+        ...buildProgressionEnvelope(row),
       });
     } catch (error) {
       logBlockTopiaFailure('entry_failed', {
@@ -211,7 +258,10 @@ export async function handleBlockTopiaProgressionRoute(request, env, url, helper
     const config = BLOCKTOPIA_UPGRADES[upgradeId];
     if (!config) return err('Invalid upgrade key', 400);
     try {
-      const row = await getOrCreateBlockTopiaProgression(env.DB, verified.telegramId);
+      const rawRow = await getOrCreateBlockTopiaProgression(env.DB, verified.telegramId);
+      const guarded = await enforceCooldown(env.DB, rawRow, { actionType: 'upgrade', reason: 'upgrade_attempt', metadata: { upgradeId } });
+      if (guarded.blocked) return cooldownBlockedResponse(json, guarded.row, 'Cooldown active. Upgrades are temporarily locked.');
+      const row = guarded.row;
       const upgrades = getUpgradeSnapshot(row);
       const currentLevel = upgrades[upgradeId];
       if (currentLevel >= UPGRADE_MAX_LEVEL) return err('Upgrade already at max level', 409);
@@ -242,6 +292,7 @@ export async function handleBlockTopiaProgressionRoute(request, env, url, helper
           cost_paid: cost,
           next_cost: nextLevel >= UPGRADE_MAX_LEVEL ? null : computeUpgradeCost(config.baseCost, nextLevel),
         },
+        ...buildProgressionEnvelope(latest),
       });
     } catch (error) {
       logBlockTopiaFailure('upgrade_failed', {
@@ -251,6 +302,63 @@ export async function handleBlockTopiaProgressionRoute(request, env, url, helper
         message: error?.message || String(error),
       });
       return err('Failed to apply RPG upgrade', 500);
+    }
+  }
+
+  if (path === '/blocktopia/progression/action' && request.method === 'POST') {
+    let body;
+    try { body = await request.json(); } catch { return err('Invalid JSON'); }
+    const verified = await verifyTelegramIdentityFromBody(body, env, verifyTelegramAuth);
+    if (verified.error) return err(verified.error, verified.status || 401);
+    const actionKind = String(body?.kind || '').trim().toLowerCase();
+    if (actionKind !== 'node_interfere') return err('Invalid progression action kind', 400);
+    const nodeId = String(body?.node_id || body?.nodeId || '').trim().toLowerCase();
+    if (!/^[a-z0-9_-]{2,40}$/.test(nodeId)) return err('Invalid node_id', 400);
+    try {
+      const rawRow = await getOrCreateBlockTopiaProgression(env.DB, verified.telegramId);
+      const guarded = await enforceCooldown(env.DB, rawRow, {
+        actionType: 'node_interfere',
+        reason: 'node_interfere_attempt',
+        metadata: { node_id: nodeId },
+      });
+      if (guarded.blocked) return cooldownBlockedResponse(json, guarded.row, 'Cooldown active. Node interference is locked.');
+      const signals = await buildPressureSignals(env.DB, guarded.row, {
+        targetType: 'node_interfere',
+        targetId: nodeId,
+      });
+      const delta = 3 + signals.repeatedTargeting + signals.actionBurst;
+      const pressure = await applyPressureDelta(env.DB, guarded.row, delta, {
+        actionType: 'node_interfere',
+        reason: 'node_interfere_spam',
+        metadata: {
+          node_id: nodeId,
+          repeated_targeting: signals.repeatedTargeting,
+          action_burst: signals.actionBurst,
+        },
+      });
+      await logProgressionEvent(env.DB, verified.telegramId, 'node_interfere', nodeId, 0, 0, {
+        reason: 'node_interfere',
+        node_id: nodeId,
+      });
+      return json({
+        ok: true,
+        progression: {
+          telegram_id: verified.telegramId,
+          xp: clamp(Number(pressure.row.xp) || 0, XP_MIN, XP_MAX),
+          gems: clamp(Number(pressure.row.gems) || 0, GEMS_MIN, GEMS_MAX),
+          tier: clamp(Number(pressure.row.tier) || 1, TIER_MIN, TIER_MAX),
+        },
+        ...buildProgressionEnvelope(pressure.row),
+      });
+    } catch (error) {
+      logBlockTopiaFailure('progression_action_failed', {
+        path,
+        telegramId: verified.telegramId,
+        actionKind,
+        nodeId,
+        message: error?.message || String(error),
+      });
+      return err('Failed to sync progression action', 500);
     }
   }
 
@@ -316,7 +424,16 @@ export async function handleBlockTopiaProgressionRoute(request, env, url, helper
         const allowed = await enforceProgressionRateLimit(env.DB, verified.telegramId);
         if (!allowed) return err('Too many progression updates. Try again in a minute.', 429);
       }
-      const row = await getOrCreateBlockTopiaProgression(env.DB, verified.telegramId);
+      const rawRow = await getOrCreateBlockTopiaProgression(env.DB, verified.telegramId);
+      const guarded = await enforceCooldown(env.DB, rawRow, {
+        actionType: action === 'arcade_score' ? game : type,
+        reason: action,
+        metadata: { action, game, type },
+      });
+      if (action !== 'mini_game_affordability' && guarded.blocked) {
+        return cooldownBlockedResponse(json, guarded.row, 'Cooldown active. Rewards and mini-games are temporarily locked.');
+      }
+      const row = guarded.row;
       const upgrades = getUpgradeSnapshot(row);
       const effects = buildUpgradeEffects(upgrades);
       if (action !== 'arcade_score' && Number(row?.rpg_mode_active || 0) !== 1) {
@@ -328,7 +445,7 @@ export async function handleBlockTopiaProgressionRoute(request, env, url, helper
       if (action === 'mini_game_affordability') {
         return json({
           ok: true,
-          can_play: xpAfterDrain >= miniGameCost,
+          can_play: xpAfterDrain >= miniGameCost && !guarded.cooldown.active,
           progression: {
             telegram_id: verified.telegramId,
             xp: xpAfterDrain,
@@ -342,10 +459,32 @@ export async function handleBlockTopiaProgressionRoute(request, env, url, helper
             upgrades,
             effects,
           },
+          ...buildProgressionEnvelope(row),
         });
       }
       if (action === 'mini_game_skip') {
         const skipCost = computeMiniGameSkipCost(currentTier, skipStreak);
+        let updatedRow = await incrementMiniGameSkipCounter(env.DB, row, type);
+        const skipSignals = await buildPressureSignals(env.DB, updatedRow, { gameType: type });
+        const skipPressure = 4 + skipSignals.skipCluster + Math.max(0, Math.floor(skipStreak / 2));
+        const pressureResult = await applyPressureDelta(env.DB, updatedRow, skipPressure, {
+          actionType: type,
+          reason: 'mini_game_skip',
+          metadata: {
+            skip_streak: skipStreak,
+            skip_cost: skipCost,
+            skip_cluster: skipSignals.skipCluster,
+          },
+        });
+        updatedRow = pressureResult.row;
+        if (!pressureResult.cooldown.active && pressureResult.after >= 100) {
+          const struck = await enforceCooldown(env.DB, updatedRow, {
+            actionType: type,
+            reason: 'mini_game_skip_cooldown',
+            metadata: { skip_streak: skipStreak },
+          });
+          updatedRow = struck.row;
+        }
         if (xpAfterDrain < skipCost) {
           const updateResult = await env.DB.prepare(`
             UPDATE blocktopia_progression
@@ -367,7 +506,7 @@ export async function handleBlockTopiaProgressionRoute(request, env, url, helper
             progression: {
               telegram_id: verified.telegramId,
               xp: xpAfterDrain,
-              gems: clamp((Number(row.gems) || 0), GEMS_MIN, GEMS_MAX),
+              gems: clamp((Number(updatedRow.gems) || 0), GEMS_MIN, GEMS_MAX),
               tier: currentTier,
               win_streak: 0,
               rpg_mode_active: false,
@@ -378,6 +517,7 @@ export async function handleBlockTopiaProgressionRoute(request, env, url, helper
               upgrades,
               effects,
             },
+            ...buildProgressionEnvelope(updatedRow),
           }, 409);
         }
         const nextXp = clamp(xpAfterDrain - skipCost, XP_MIN, XP_MAX);
@@ -412,10 +552,10 @@ export async function handleBlockTopiaProgressionRoute(request, env, url, helper
           progression: {
             telegram_id: verified.telegramId,
             xp: nextXp,
-            gems: clamp((Number(row.gems) || 0), GEMS_MIN, GEMS_MAX),
+            gems: clamp((Number(updatedRow.gems) || 0), GEMS_MIN, GEMS_MAX),
             tier: currentTier,
             win_streak: 0,
-            rpg_mode_active: Number(row.rpg_mode_active || 0) === 1,
+            rpg_mode_active: Number(updatedRow.rpg_mode_active || 0) === 1,
             mini_game_cost: miniGameCost,
             skip_cost: skipCost,
             drain_applied: drain,
@@ -424,14 +564,29 @@ export async function handleBlockTopiaProgressionRoute(request, env, url, helper
             effects,
             xp_cost: skipCost,
             xp_net: -skipCost,
-            bonus_flags: ['paid_skip'],
+            bonus_flags: ['paid_skip', ...(skipSignals.skipCluster ? ['skip_cluster_detected'] : [])],
             node_corruption_applied: false,
             sam_pressure_delta: 1,
           },
+          ...buildProgressionEnvelope(updatedRow),
         });
       }
       const rewards = computeBlockTopiaRewards(action, action === 'arcade_score' ? game : type, score, leaderboardCtx, row);
       if (!rewards) return err('Invalid action/type for progression update', 400);
+      const rewardType = action === 'arcade_score' ? game : type;
+      const hiddenMultiplier = computeMiniGameRewardMultiplier(row, rewardType, score);
+      const sameGameSpam = rewardType && row?.mini_game_last_played === rewardType ? 1 : 0;
+      if (action === 'mini_game_win') {
+        rewards.xp = clamp(rewards.xp * hiddenMultiplier, XP_MIN, XP_MAX);
+        if (hiddenMultiplier > 1) {
+          rewards.bonus_flags = [...(rewards.bonus_flags || []), `hidden_${hiddenMultiplier}x`];
+        }
+        if (sameGameSpam) {
+          rewards.xp = Math.floor(rewards.xp * 0.65);
+          rewards.gems = Math.floor(rewards.gems * 0.5);
+          rewards.bonus_flags = [...(rewards.bonus_flags || []), 'same_game_spam_penalty'];
+        }
+      }
       if (action === 'arcade_score') {
         rewards.xp = clamp(Math.floor(rewards.xp * TELEGRAM_SYNC_XP_MULTIPLIER), XP_MIN, XP_MAX);
         const factionMultiplier = factionXpMultiplier(row?.faction);
@@ -482,14 +637,53 @@ export async function handleBlockTopiaProgressionRoute(request, env, url, helper
       }
       const xpCost = miniGameCost;
       const xpLossPenalty = action === 'mini_game_loss' ? computeMiniGameLossPenalty(currentTier) : 0;
+      let nextRow = row;
+      if (action === 'mini_game_win' || action === 'mini_game_loss') {
+        nextRow = await resetMiniGameSkipCounter(env.DB, row, type);
+      } else if (action === 'arcade_score') {
+        nextRow = await advanceMiniGameEntropy(env.DB, verified.telegramId, game).then((seed) => ({
+          ...row,
+          mini_game_last_played: game,
+          mini_game_entropy_seed: seed,
+        }));
+      }
+      const heatTier = getNetworkHeatTier(row.network_heat);
+      const pressureSignals = await buildPressureSignals(env.DB, nextRow, {
+        targetType: action === 'arcade_score' ? 'arcade_score' : action,
+        targetId: rewardType,
+        gameType: rewardType,
+      });
+      let pressureDelta = 0;
+      if (action === 'arcade_score') pressureDelta += Math.max(0, pressureSignals.sameGameChain - 1);
+      if (action === 'mini_game_loss') pressureDelta += 2;
+      if (sameGameSpam) pressureDelta += 3;
+      const pressureApplied = pressureDelta > 0
+        ? await applyPressureDelta(env.DB, nextRow, pressureDelta, {
+          actionType: rewardType,
+          reason: action,
+          metadata: { same_game_spam: sameGameSpam, pressureSignals },
+        })
+        : { row: nextRow, after: Number(nextRow.player_pressure_score) || 0, tier: getPpsTier(nextRow.player_pressure_score), cooldown: guarded.cooldown };
+      nextRow = pressureApplied.row;
+      rewards.xp = Math.floor(rewards.xp * pressureApplied.tier.xpMultiplier);
+      if (heatTier > 0 && action !== 'mini_game_loss') {
+        rewards.xp = Math.max(0, Math.floor(rewards.xp * Math.max(0.2, 1 - (heatTier * 0.08))));
+      }
+      const cappedRewards = await applyRewardCaps(env.DB, nextRow, rewards, {
+        source: action,
+        actionType: rewardType,
+        rejectGemOverflow: action === 'arcade_score',
+      });
+      rewards.xp = cappedRewards.xp;
+      rewards.gems = cappedRewards.gems;
       const xpBeforeOutcome = clamp(xpAfterDrain - xpCost, XP_MIN, XP_MAX);
       let tentativeXp = clamp(xpBeforeOutcome - xpLossPenalty + rewards.xp, XP_MIN, XP_MAX);
       if (action === 'mini_game_loss' && xpBeforeOutcome > BLOCKTOPIA_SURVIVAL_XP_FLOOR) {
         tentativeXp = Math.max(BLOCKTOPIA_SURVIVAL_XP_FLOOR, tentativeXp);
       }
       const nextXp = tentativeXp;
-      const nextGems = clamp((Number(row.gems) || 0) + rewards.gems, GEMS_MIN, GEMS_MAX);
-      const currentStreak = Math.max(0, Math.floor(Number(row.win_streak) || 0));
+      const nextGems = clamp((Number(nextRow.gems) || 0) + rewards.gems, GEMS_MIN, GEMS_MAX);
+      const currentStreak = Math.max(0, Math.floor(Number(nextRow.win_streak) || 0));
       let nextTier = currentTier;
       let nextWinStreak = currentStreak;
       if (action === 'mini_game_win') {
@@ -562,7 +756,11 @@ export async function handleBlockTopiaProgressionRoute(request, env, url, helper
           synced_multiplier: syncedMultiplierApplied,
           faction: normalizeFaction(row?.faction),
           faction_multiplier: rewards.faction_multiplier || 1,
+          heat_tier: heatTier,
+          hidden_reward_multiplier: action === 'mini_game_win' ? hiddenMultiplier : 1,
+          reward_cap_flags: cappedRewards.flags || [],
         },
+        ...buildProgressionEnvelope(nextRow),
       });
     } catch (error) {
       logBlockTopiaFailure('mini_game_sync_failed', {
@@ -575,6 +773,85 @@ export async function handleBlockTopiaProgressionRoute(request, env, url, helper
         message: error?.message || String(error),
       });
       return err('Failed to sync mini-game progression', 500);
+    }
+  }
+
+  if (path === '/blocktopia/progression/duel' && request.method === 'POST') {
+    let body;
+    try { body = await request.json(); } catch { return err('Invalid JSON'); }
+    const verified = await verifyTelegramIdentityFromBody(body, env, verifyTelegramAuth);
+    if (verified.error) return err(verified.error, verified.status || 401);
+    try {
+      const rawRow = await getOrCreateBlockTopiaProgression(env.DB, verified.telegramId);
+      const guarded = await enforceCooldown(env.DB, rawRow, {
+        actionType: 'duel',
+        reason: 'duel_reward_attempt',
+      });
+      if (guarded.blocked) return cooldownBlockedResponse(json, guarded.row, 'Cooldown active. Duel rewards are temporarily locked.');
+      const row = guarded.row;
+      const win = body?.win === true;
+      const jackpot = body?.jackpot === true;
+      const damageDealt = Math.max(0, Math.floor(Number(body?.damage_dealt ?? body?.damageDealt) || 0));
+      let xp = Math.round((100 + (damageDealt * 0.5)) * (win ? 2 : 1) * (jackpot ? 5 : 1));
+      let gems = Math.max(0, Math.round(win ? 0.75 : 0.35));
+      const heatTier = getNetworkHeatTier(row.network_heat);
+      if (heatTier > 0) {
+        xp = Math.max(0, Math.floor(xp * Math.max(0.25, 1 - (heatTier * 0.08))));
+      }
+      const pressureSignals = await buildPressureSignals(env.DB, row, {
+        targetType: 'duel_reward',
+        targetId: win ? 'win' : 'loss',
+      });
+      const pressureResult = await applyPressureDelta(env.DB, row, win ? 1 : 2 + Math.max(0, pressureSignals.actionBurst - 2), {
+        actionType: 'duel',
+        reason: 'duel_reward',
+        metadata: { win, jackpot, damage_dealt: damageDealt },
+      });
+      const capped = await applyRewardCaps(env.DB, pressureResult.row, {
+        xp: Math.floor(xp * pressureResult.tier.xpMultiplier),
+        gems,
+      }, {
+        source: 'duel',
+        actionType: 'duel',
+      });
+      const nextXp = clamp((Number(pressureResult.row.xp) || 0) + capped.xp, XP_MIN, XP_MAX);
+      const nextGems = clamp((Number(pressureResult.row.gems) || 0) + capped.gems, GEMS_MIN, GEMS_MAX);
+      const updateResult = await env.DB.prepare(`
+        UPDATE blocktopia_progression
+        SET xp = ?, gems = ?, last_active = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP
+        WHERE telegram_id = ?
+      `).bind(nextXp, nextGems, verified.telegramId).run();
+      if (changedRows(updateResult) !== 1) return err('Progression changed. Please retry duel reward sync.', 409);
+
+      await logProgressionEvent(env.DB, verified.telegramId, 'duel_reward', win ? 'win' : 'loss', capped.xp, capped.gems, {
+        reason: 'duel_reward',
+        damage_dealt: damageDealt,
+        jackpot,
+        heat_tier: heatTier,
+        reward_cap_flags: capped.flags,
+      });
+
+      return json({
+        ok: true,
+        progression: {
+          telegram_id: verified.telegramId,
+          xp: nextXp,
+          gems: nextGems,
+          tier: clamp(Number(pressureResult.row.tier) || 1, TIER_MIN, TIER_MAX),
+          duel_reward_xp: capped.xp,
+          duel_reward_gems: capped.gems,
+          heat_tier: heatTier,
+          reward_cap_flags: capped.flags,
+        },
+        ...buildProgressionEnvelope(pressureResult.row),
+      });
+    } catch (error) {
+      logBlockTopiaFailure('duel_reward_sync_failed', {
+        path,
+        telegramId: verified.telegramId,
+        message: error?.message || String(error),
+      });
+      return err('Failed to sync duel rewards', 500);
     }
   }
 
@@ -596,7 +873,11 @@ export async function handleBlockTopiaProgressionRoute(request, env, url, helper
           `INSERT INTO blocktopia_progression (telegram_id, xp, gems, tier, win_streak, last_active, updated_at)
            VALUES (?, 0, 0, 1, 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
            ON CONFLICT(telegram_id) DO UPDATE SET
-             xp = 0, gems = 0, tier = 1, win_streak = 0, last_active = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP`
+             xp = 0, gems = 0, tier = 1, win_streak = 0,
+             player_pressure_score = 0, pps_updated_at = CURRENT_TIMESTAMP,
+             cooldown_strikes = 0, last_cooldown_at = NULL,
+             mini_game_skip_count = 0, mini_game_last_played = NULL, mini_game_entropy_seed = 0,
+             last_active = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP`
         ).bind(verified.telegramId),
       ]);
 
@@ -610,6 +891,7 @@ export async function handleBlockTopiaProgressionRoute(request, env, url, helper
           win_streak: 0,
           reset: true,
         },
+        ...buildProgressionEnvelope({ telegram_id: verified.telegramId }),
       });
     } catch (error) {
       logBlockTopiaFailure('reset_failed', {

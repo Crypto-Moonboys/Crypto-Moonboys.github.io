@@ -315,6 +315,13 @@ CREATE TABLE IF NOT EXISTS blocktopia_progression (
   faction_last_switch INTEGER,
   network_heat INTEGER NOT NULL DEFAULT 0,
   network_heat_updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  player_pressure_score INTEGER NOT NULL DEFAULT 0,
+  pps_updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  cooldown_strikes INTEGER NOT NULL DEFAULT 0,
+  last_cooldown_at DATETIME,
+  mini_game_skip_count INTEGER NOT NULL DEFAULT 0,
+  mini_game_last_played TEXT,
+  mini_game_entropy_seed INTEGER NOT NULL DEFAULT 0,
   last_active DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
