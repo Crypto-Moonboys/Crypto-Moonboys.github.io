@@ -305,11 +305,17 @@ export function createHud(doc) {
     const samTier = String(snapshot?.samAwareness?.tier || 'cold').toUpperCase();
     const samSensitivity = Math.max(0, Number(snapshot?.samAwareness?.sensitivity) || 0);
     const summary = snapshot?.summary || {};
+    const counterActions = snapshot?.counterActions || {};
     const activeAgents = Math.max(0, Number(summary.activeAgents) || 0);
     const exposedAgents = Math.max(0, Number(summary.exposedAgents) || 0);
     const capturedAgents = Math.max(0, Number(summary.capturedAgents) || 0);
     const highRiskAgents = Math.max(0, Number(summary.highRiskAgents) || 0);
     const highestRisk = Math.max(0, Number(summary.highestRisk) || 0);
+    const urgentRecoveryAgents = Math.max(0, Number(summary.urgentRecoveryAgents) || 0);
+    const primaryCounterAction = String(counterActions?.summary?.primary_action_label || '').trim();
+    const nodeScanCount = Math.max(0, Number(summary.activeNodeScans) || 0);
+    const localTraceCount = Math.max(0, Number(summary.activeLocalTraces) || 0);
+    const routeDisruptionCount = Math.max(0, Number(summary.activeRouteDisruptions) || 0);
     const hottestNode = snapshot?.nodeRiskById?.[summary.hottestNodeId] || null;
     const currentDistrict = snapshot?.districtSignalById?.[summary.currentDistrictId] || null;
     const focusedDistrict = currentDistrict || snapshot?.districtSignalById?.[summary.hottestDistrictId] || null;
@@ -338,7 +344,9 @@ export function createHud(doc) {
     if (covertSamStatus) covertSamStatus.textContent = `Watch: ${samTier} ${samSensitivity}`;
 
     const pressureFlags = Array.isArray(snapshot?.samAwareness?.pressure_flags) ? snapshot.samAwareness.pressure_flags : [];
-    const watchCopy = pressureFlags.length
+    const watchCopy = primaryCounterAction
+      ? primaryCounterAction
+      : pressureFlags.length
       ? pressureFlags[0].replace(/_/g, ' ')
       : networkHeat >= 70
         ? 'Surveillance pressure peaking.'
@@ -347,7 +355,9 @@ export function createHud(doc) {
           : 'Signal cover intact.';
     covertWatchCopy.textContent = watchCopy;
 
-    if (capturedAgents > 0) {
+    if (urgentRecoveryAgents > 0) {
+      covertRecoveryLine.textContent = `${urgentRecoveryAgents} urgent recovery ${urgentRecoveryAgents === 1 ? 'window' : 'windows'} - SAM counter-actions active${routeDisruptionCount > 0 ? ' - routes unstable' : ''}`;
+    } else if (capturedAgents > 0) {
       const recoverable = summary.recoveryReady
         ? `Recovery boost ready · ${Math.max(0, Number(summary.recoveryCost) || 0)} gems`
         : 'Recovery timer active';
