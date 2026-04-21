@@ -37,6 +37,9 @@ const CAPTURE_HISTORY_MS = 12 * 60 * 1000;
 const CAPTURE_AGENT_HEAT_MS = 25 * 1000;
 const CAPTURE_NETWORK_HEAT_MS = 18 * 1000;
 const CAPTURE_MAX_MS = 4 * 60 * 60 * 1000;
+const NODE_SCAN_DURATION_MS = 18 * 60 * 1000;
+const LOCAL_TRACE_DURATION_MS = 16 * 60 * 1000;
+const ROUTE_DISRUPTION_DURATION_MS = 22 * 60 * 1000;
 
 const AGENT_CONFIG = Object.freeze({
   infiltrator: {
@@ -170,6 +173,22 @@ function parseSqliteTimestamp(value) {
   return Number.isFinite(parsed) ? parsed : 0;
 }
 
+function isoTimestamp(ms) {
+  return new Date(ms).toISOString();
+}
+
+function activeCounterWindow(lastActivityAt, durationMs, nowMs = Date.now()) {
+  const lastActivityMs = parseSqliteTimestamp(lastActivityAt);
+  if (!lastActivityMs || durationMs <= 0) return null;
+  const expiresAtMs = lastActivityMs + durationMs;
+  if (expiresAtMs <= nowMs) return null;
+  return {
+    activated_at: isoTimestamp(lastActivityMs),
+    expires_at: isoTimestamp(expiresAtMs),
+    remaining_ms: expiresAtMs - nowMs,
+  };
+}
+
 function isBoostActive(agent, nowMs = Date.now()) {
   return parseSqliteTimestamp(agent?.stealth_boost_until) > nowMs;
 }
@@ -183,6 +202,14 @@ function pressureLabel(value) {
   if (score >= 75) return 'critical';
   if (score >= 50) return 'high';
   if (score >= 25) return 'elevated';
+  return 'low';
+}
+
+function counterActionSeverity(score) {
+  const value = Number(score) || 0;
+  if (value >= 28) return 'critical';
+  if (value >= 20) return 'high';
+  if (value >= 14) return 'elevated';
   return 'low';
 }
 
@@ -460,7 +487,7 @@ function nodeRiskStatus(row) {
 
 async function loadCovertPressureSnapshot(db, telegramId, progressionRow = null, nowMs = Date.now()) {
   const progression = progressionRow || await getOrCreateBlockTopiaProgression(db, telegramId);
-  const [agentSummary, recentOps, nodeRows] = await Promise.all([
+  const [agentSummary, recentOps, nodeRows, agentDistrictRows] = await Promise.all([
     db.prepare(`
       SELECT
         COUNT(*) AS total_agents,
@@ -497,13 +524,20 @@ async function loadCovertPressureSnapshot(db, telegramId, progressionRow = null,
         SUM(CASE WHEN operation_type = 'recruit' AND status = 'success' THEN 1 ELSE 0 END) AS recruiter_successes,
         SUM(COALESCE(local_risk_delta, 0)) AS local_risk,
         SUM(COALESCE(district_pressure_delta, 0)) AS district_pressure,
-        SUM(COALESCE(sam_pressure_delta, 0)) AS sam_pressure
+        SUM(COALESCE(sam_pressure_delta, 0)) AS sam_pressure,
+        SUM(CASE WHEN status = 'active' THEN 1 ELSE 0 END) AS active_ops,
+        MAX(updated_at) AS last_activity_at
       FROM blocktopia_covert_operations
       WHERE telegram_id = ?
         AND updated_at >= datetime('now', '-12 hours')
       GROUP BY target_node_id
       ORDER BY MAX(updated_at) DESC
       LIMIT 12
+    `).bind(telegramId).all().catch(() => ({ results: [] })),
+    db.prepare(`
+      SELECT current_node_id, home_district_id, status, heat, capture_count, captured_until
+      FROM blocktopia_covert_agents
+      WHERE telegram_id = ?
     `).bind(telegramId).all().catch(() => ({ results: [] })),
   ]);
 
@@ -568,6 +602,8 @@ async function loadCovertPressureSnapshot(db, telegramId, progressionRow = null,
       recent_captures: Number(row.captures) || 0,
       sabotage_pressure: Number(row.sabotage_ops) || 0,
       sam_pressure: Number(row.sam_pressure) || 0,
+      active_ops: Number(row.active_ops) || 0,
+      last_activity_at: row.last_activity_at || null,
     };
     nodeRiskById.set(entry.node_id, entry);
     const districtExisting = districtRiskById.get(entry.district_id) || {
@@ -576,11 +612,16 @@ async function loadCovertPressureSnapshot(db, telegramId, progressionRow = null,
       sabotage_pressure: 0,
       recruiter_relief: 0,
       sam_watch: 0,
+      last_activity_at_ms: 0,
     };
     districtExisting.instability += risk + (Number(row.district_pressure) || 0);
     districtExisting.sabotage_pressure += Number(row.sabotage_ops) || 0;
     districtExisting.recruiter_relief += Number(row.recruiter_successes) || 0;
     districtExisting.sam_watch += Number(row.sam_pressure) || 0;
+    districtExisting.last_activity_at_ms = Math.max(
+      Number(districtExisting.last_activity_at_ms) || 0,
+      parseSqliteTimestamp(row.last_activity_at),
+    );
     districtRiskById.set(entry.district_id, districtExisting);
     return entry;
   }).sort((a, b) => b.risk - a.risk);
@@ -602,11 +643,55 @@ async function loadCovertPressureSnapshot(db, telegramId, progressionRow = null,
         sabotage_pressure: entry.sabotage_pressure,
         recruiter_relief: entry.recruiter_relief,
         sam_watch: entry.sam_watch,
+        last_activity_at: entry.last_activity_at_ms ? isoTimestamp(entry.last_activity_at_ms) : null,
       };
       districtRiskById.set(entry.district_id, signal);
       return signal;
     })
     .sort((a, b) => b.instability - a.instability);
+
+  const districtAgentClusters = new Map();
+  for (const row of agentDistrictRows.results || []) {
+    const nodeDistrictId = CONTROL_NODE_BY_ID.get(row.current_node_id)?.districtId || null;
+    const districtId = nodeDistrictId || row.home_district_id || null;
+    if (!districtId) continue;
+    const cluster = districtAgentClusters.get(districtId) || {
+      district_id: districtId,
+      active_agents: 0,
+      exposed_agents: 0,
+      captured_agents: 0,
+      total_heat: 0,
+      agent_count: 0,
+      repeated_targeting: 0,
+      hottest_node_ids: [],
+      last_activity_at: null,
+    };
+    cluster.agent_count += 1;
+    cluster.total_heat += Math.max(0, Number(row.heat) || 0);
+    if (row.status === 'active') cluster.active_agents += 1;
+    if (row.status === 'exposed') cluster.exposed_agents += 1;
+    if (row.status === 'captured') cluster.captured_agents += 1;
+    if (row.current_node_id) {
+      const nodeEntry = nodeRiskById.get(row.current_node_id);
+      if (nodeEntry) {
+        cluster.repeated_targeting += Math.max(0, Number(nodeEntry.repeated_targeting) || 0);
+        if (!cluster.hottest_node_ids.includes(row.current_node_id)) {
+          cluster.hottest_node_ids.push(row.current_node_id);
+        }
+        const nodeLastActivity = parseSqliteTimestamp(nodeEntry.last_activity_at);
+        if (nodeLastActivity > 0) {
+          cluster.last_activity_at = isoTimestamp(nodeLastActivity);
+        }
+      }
+    }
+    if (!cluster.last_activity_at && (row.status === 'active' || row.status === 'exposed' || row.status === 'captured')) {
+      cluster.last_activity_at = isoTimestamp(nowMs);
+    }
+    districtAgentClusters.set(districtId, cluster);
+  }
+  for (const cluster of districtAgentClusters.values()) {
+    cluster.avg_heat = cluster.agent_count > 0 ? Math.round(cluster.total_heat / cluster.agent_count) : 0;
+  }
 
   const detectionModifier = clamp(Math.floor(sensitivity / 14), 0, 12);
   const captureModifier = clamp(Math.floor(sensitivity / 18), 0, 10);
@@ -617,6 +702,17 @@ async function loadCovertPressureSnapshot(db, telegramId, progressionRow = null,
   if ((Number(agentSummary?.exposed_agents) || 0) > 0) pressureFlags.push('exposed_agents_tracked');
   if ((Number(recentOps?.critical_failures) || 0) > 0) pressureFlags.push('capture_pressure_rising');
   if ((Number(recentOps?.sabotage_ops) || 0) >= 3) pressureFlags.push('sabotage_pattern_detected');
+  const counterActions = buildSamCounterActions({
+    networkHeat,
+    sensitivity,
+    nodeEntries: localNodeRisk,
+    districtSignals: districtInstabilitySignals,
+    districtAgentClusters,
+    nowMs,
+  });
+  if (counterActions.summary.node_scan_count > 0) pressureFlags.push('node_scans_live');
+  if (counterActions.summary.local_trace_count > 0) pressureFlags.push('trace_lock_active');
+  if (counterActions.summary.route_disruption_count > 0) pressureFlags.push('route_disruption_live');
 
   return {
     network_heat: {
@@ -655,12 +751,14 @@ async function loadCovertPressureSnapshot(db, telegramId, progressionRow = null,
     },
     local_node_risk: localNodeRisk,
     district_instability_signals: districtInstabilitySignals,
+    counter_actions: counterActions,
     _internal: {
       detectionModifier,
       captureModifier,
       successPenalty,
       nodeRiskById,
       districtRiskById,
+      ...counterActions._internal,
     },
   };
 }
@@ -670,6 +768,8 @@ function buildAgentRiskIndicators(agents, pressureSnapshot, nowMs = Date.now()) 
   const sam = pressureSnapshot?.sam_awareness || {};
   return (agents || []).map((agent) => {
     const recoveryLocked = agent.status === 'captured' && parseSqliteTimestamp(agent.captured_until) > nowMs;
+    const currentDistrictId = CONTROL_NODE_BY_ID.get(agent.current_node_id)?.districtId || agent.home_district_id || '';
+    const counterAction = resolveCounterActionContext(pressureSnapshot, agent.current_node_id, currentDistrictId);
     const risk = clamp(
       Math.round((Number(agent.heat) || 0) * 0.72)
         + (agent.status === 'exposed' ? 18 : 0)
@@ -684,11 +784,23 @@ function buildAgentRiskIndicators(agents, pressureSnapshot, nowMs = Date.now()) 
       status: agent.status,
       risk,
       pressure_label: pressureLabel(risk),
-      detection_modifier: clamp(Math.floor((risk / 18) + (Number(sam.detection_modifier) || 0)), 0, 12),
-      capture_modifier: clamp(Math.floor((risk / 20) + (Number(sam.capture_modifier) || 0)), 0, 10),
+      detection_modifier: clamp(
+        Math.floor((risk / 18) + (Number(sam.detection_modifier) || 0))
+          + (Number(counterAction.nodeScan?.modifiers?.detection_shift) || 0),
+        0,
+        16,
+      ),
+      capture_modifier: clamp(
+        Math.floor((risk / 20) + (Number(sam.capture_modifier) || 0))
+          + (Number(counterAction.localTrace?.modifiers?.capture_shift) || 0),
+        0,
+        14,
+      ),
       captured_until: agent.captured_until || null,
       recovery_locked: recoveryLocked,
       boost_active: isBoostActive(agent, nowMs),
+      recovery_urgency: recoveryLocked && (counterAction.nodeScan || counterAction.localTrace || counterAction.routeDisruption) ? 'urgent' : 'normal',
+      active_counter_actions: activeCounterActionIds(counterAction),
     };
   });
 }
@@ -748,6 +860,184 @@ async function recentTargetPressure(db, node) {
   };
 }
 
+function buildSamCounterActions(options = {}) {
+  const {
+    networkHeat = 0,
+    sensitivity = 0,
+    nodeEntries = [],
+    districtSignals = [],
+    districtAgentClusters = new Map(),
+    nowMs = Date.now(),
+  } = options;
+
+  const nodeScanByNodeId = new Map();
+  const localTraceByDistrictId = new Map();
+  const routeDisruptionByDistrictId = new Map();
+  const nodeScans = [];
+  const localTraces = [];
+  const routeDisruptions = [];
+
+  for (const entry of nodeEntries) {
+    const scanScore = clamp(
+      Number(entry.risk || 0)
+        + (Number(entry.repeated_targeting || 0) * 4)
+        + (Number(entry.sabotage_pressure || 0) * 3)
+        + (Number(entry.sam_pressure || 0) * 2)
+        + (networkHeat >= 45 ? 3 : 0)
+        + (sensitivity >= 40 ? 3 : 0),
+      0,
+      40,
+    );
+    const window = activeCounterWindow(entry.last_activity_at, NODE_SCAN_DURATION_MS, nowMs);
+    if (!window || scanScore < 14) continue;
+    const action = {
+      id: `node-scan:${entry.node_id}`,
+      type: 'node_scan',
+      severity: counterActionSeverity(scanScore),
+      score: scanScore,
+      node_id: entry.node_id,
+      district_id: entry.district_id,
+      warning: `Node ${String(entry.node_id || '').toUpperCase()} under SAM scan`,
+      modifiers: {
+        success_penalty: clamp(Math.floor(scanScore / 4), 2, 8),
+        detection_shift: clamp(Math.floor(scanScore / 5), 2, 7),
+        capture_shift: clamp(Math.floor(scanScore / 7), 1, 5),
+        node_pressure_delta: scanScore >= 22 ? 2 : 1,
+        stealth_tolerance_penalty: clamp(Math.floor(scanScore / 4), 2, 8),
+      },
+      ...window,
+    };
+    nodeScans.push(action);
+    nodeScanByNodeId.set(action.node_id, action);
+  }
+
+  for (const district of districtSignals) {
+    const cluster = districtAgentClusters.get(district.district_id) || {
+      active_agents: 0,
+      exposed_agents: 0,
+      captured_agents: 0,
+      avg_heat: 0,
+      repeated_targeting: 0,
+      hottest_node_ids: [],
+      last_activity_at: district.last_activity_at || null,
+    };
+    const traceScore = clamp(
+      Number(district.instability || 0)
+        + (Number(district.sabotage_pressure || 0) * 3)
+        + (Number(district.sam_watch || 0) * 2)
+        + (Number(cluster.exposed_agents || 0) * 5)
+        + (Number(cluster.captured_agents || 0) * 6)
+        + Math.floor((Number(cluster.avg_heat) || 0) * 0.16)
+        + (networkHeat >= 50 ? 4 : 0)
+        + (sensitivity >= 45 ? 4 : 0),
+      0,
+      48,
+    );
+    const traceWindow = activeCounterWindow(
+      cluster.last_activity_at || district.last_activity_at,
+      LOCAL_TRACE_DURATION_MS,
+      nowMs,
+    );
+    if (traceWindow && traceScore >= 18) {
+      const action = {
+        id: `local-trace:${district.district_id}`,
+        type: 'local_trace',
+        severity: counterActionSeverity(traceScore),
+        score: traceScore,
+        district_id: district.district_id,
+        affected_node_ids: Array.isArray(cluster.hottest_node_ids) ? cluster.hottest_node_ids.slice(0, 4) : [],
+        warning: `${String(district.district_id || '').replace(/-/g, ' ')} under trace`,
+        modifiers: {
+          success_penalty: clamp(Math.floor(traceScore / 6), 2, 7),
+          detection_shift: clamp(Math.floor(traceScore / 4), 3, 9),
+          capture_shift: clamp(Math.floor(traceScore / 5), 2, 8),
+          exposed_capture_bonus: cluster.exposed_agents > 0 ? 4 : 2,
+          district_pressure_delta: traceScore >= 28 ? 2 : 1,
+        },
+        ...traceWindow,
+      };
+      localTraces.push(action);
+      localTraceByDistrictId.set(action.district_id, action);
+    }
+
+    const routeScore = clamp(
+      Number(district.instability || 0)
+        + (Number(district.sabotage_pressure || 0) * 4)
+        + (Number(cluster.repeated_targeting || 0) * 4)
+        + (Number(cluster.active_agents || 0) * 2)
+        + (Number(cluster.captured_agents || 0) * 3)
+        + (networkHeat >= 40 ? 3 : 0)
+        + (sensitivity >= 38 ? 3 : 0),
+      0,
+      48,
+    );
+    const routeWindow = activeCounterWindow(
+      cluster.last_activity_at || district.last_activity_at,
+      ROUTE_DISRUPTION_DURATION_MS,
+      nowMs,
+    );
+    if (!routeWindow || routeScore < 16) continue;
+    const action = {
+      id: `route-disruption:${district.district_id}`,
+      type: 'route_disruption',
+      severity: counterActionSeverity(routeScore),
+      score: routeScore,
+      district_id: district.district_id,
+      affected_node_ids: Array.isArray(cluster.hottest_node_ids) ? cluster.hottest_node_ids.slice(0, 5) : [],
+      warning: `Routes compromised in ${String(district.district_id || '').replace(/-/g, ' ')}`,
+      modifiers: {
+        deploy_delay_ms: clamp((routeScore - 12) * 15000, 60000, 240000),
+        success_penalty: clamp(Math.floor(routeScore / 8), 1, 6),
+        retask_heat_penalty: clamp(Math.floor(routeScore / 7), 1, 5),
+        emergency_extract_heat_penalty: clamp(Math.floor(routeScore / 9), 1, 4),
+        extract_heat_penalty: clamp(Math.floor(routeScore / 11), 1, 3),
+      },
+      ...routeWindow,
+    };
+    routeDisruptions.push(action);
+    routeDisruptionByDistrictId.set(action.district_id, action);
+  }
+
+  const allActions = [...nodeScans, ...localTraces, ...routeDisruptions]
+    .sort((a, b) => (Number(b.score) || 0) - (Number(a.score) || 0));
+  const primary = allActions[0] || null;
+
+  return {
+    node_scans: nodeScans,
+    local_traces: localTraces,
+    route_disruptions: routeDisruptions,
+    summary: {
+      active_count: allActions.length,
+      node_scan_count: nodeScans.length,
+      local_trace_count: localTraces.length,
+      route_disruption_count: routeDisruptions.length,
+      active_districts: [...new Set(allActions.map((action) => action.district_id).filter(Boolean))],
+      primary_action_type: primary?.type || null,
+      primary_action_label: primary?.warning || null,
+    },
+    _internal: {
+      nodeScanByNodeId,
+      localTraceByDistrictId,
+      routeDisruptionByDistrictId,
+    },
+  };
+}
+
+function resolveCounterActionContext(pressureSnapshot, nodeId, districtId) {
+  const internal = pressureSnapshot?._internal || {};
+  return {
+    nodeScan: internal.nodeScanByNodeId?.get(nodeId) || null,
+    localTrace: internal.localTraceByDistrictId?.get(districtId) || null,
+    routeDisruption: internal.routeDisruptionByDistrictId?.get(districtId) || null,
+  };
+}
+
+function activeCounterActionIds(context = {}) {
+  return [context.nodeScan, context.localTrace, context.routeDisruption]
+    .filter(Boolean)
+    .map((action) => action.id);
+}
+
 function computeResolution(agent, operation, pressure, pressureSnapshot, nowMs = Date.now()) {
   const config = configForAgentType(agent.agent_type);
   const networkHeat = clamp(Number(pressureSnapshot?.network_heat?.value) || 0, 0, 100);
@@ -755,6 +1045,17 @@ function computeResolution(agent, operation, pressure, pressureSnapshot, nowMs =
   const nodeRisk = pressureSnapshot?._internal?.nodeRiskById?.get(operation.target_node_id)?.risk || 0;
   const node = CONTROL_NODE_BY_ID.get(operation.target_node_id);
   const districtInstability = pressureSnapshot?._internal?.districtRiskById?.get(node?.districtId)?.instability || 0;
+  const counterAction = resolveCounterActionContext(pressureSnapshot, operation.target_node_id, node?.districtId || '');
+  const nodeScanPenalty = Number(counterAction.nodeScan?.modifiers?.success_penalty) || 0;
+  const tracePenalty = Number(counterAction.localTrace?.modifiers?.success_penalty) || 0;
+  const routePenalty = Number(counterAction.routeDisruption?.modifiers?.success_penalty) || 0;
+  const detectionShift =
+    (Number(counterAction.nodeScan?.modifiers?.detection_shift) || 0)
+    + (Number(counterAction.localTrace?.modifiers?.detection_shift) || 0);
+  const captureShift =
+    (Number(counterAction.nodeScan?.modifiers?.capture_shift) || 0)
+    + (Number(counterAction.localTrace?.modifiers?.capture_shift) || 0)
+    + (agent.status === 'exposed' ? (Number(counterAction.localTrace?.modifiers?.exposed_capture_bonus) || 0) : 0);
   const stealth = clamp((Number(agent.stealth) || 0) + activeBoostBonus(agent, nowMs), 1, 110);
   const resilience = clamp(Number(agent.resilience) || 0, 1, 100);
   const loyalty = clamp(Number(agent.loyalty) || 0, 1, 100);
@@ -769,6 +1070,9 @@ function computeResolution(agent, operation, pressure, pressureSnapshot, nowMs =
       - Math.floor(heatBefore * config.heatPenalty)
       - Math.floor(networkHeat * 0.14)
       - (Number(sam.success_penalty) || 0)
+      - nodeScanPenalty
+      - tracePenalty
+      - routePenalty
       - Math.floor(pressure.hotness * 0.8),
     18,
     88,
@@ -782,6 +1086,7 @@ function computeResolution(agent, operation, pressure, pressureSnapshot, nowMs =
       + Math.floor(networkHeat * 0.12)
       + (Number(sam.detection_modifier) || 0)
       + Math.floor(nodeRisk * 0.35)
+      - detectionShift
       + pressure.hotness,
     35,
     94,
@@ -796,6 +1101,7 @@ function computeResolution(agent, operation, pressure, pressureSnapshot, nowMs =
       + (Number(sam.capture_modifier) || 0)
       + Math.floor(nodeRisk * 0.25)
       + Math.floor(districtInstability * 0.15)
+      - captureShift
       + Math.floor(pressure.hotness * 0.7),
     55,
     98,
@@ -827,8 +1133,8 @@ function computeResolution(agent, operation, pressure, pressureSnapshot, nowMs =
     heatAfter = heatBefore + config.captureHeat;
     rewardXp = 0;
     rewardGems = 0;
-    deltas.districtPressure = 1 + (networkHeat >= 60 ? 1 : 0);
-    deltas.samPressure = 2 + ((Number(sam.capture_modifier) || 0) >= 3 ? 1 : 0);
+    deltas.districtPressure = 1 + (networkHeat >= 60 ? 1 : 0) + (Number(counterAction.localTrace?.modifiers?.district_pressure_delta) || 0);
+    deltas.samPressure = 2 + ((Number(sam.capture_modifier) || 0) >= 3 ? 1 : 0) + (counterAction.nodeScan ? 1 : 0);
     deltas.localRisk = 4;
     captureDurationMs = computeCaptureCooldownMs(agent, networkHeat);
     capturedUntil = sqliteTimestamp(nowMs + captureDurationMs);
@@ -838,14 +1144,21 @@ function computeResolution(agent, operation, pressure, pressureSnapshot, nowMs =
     const recruiterRelief = config.operationType === 'recruit' ? 1 : 0;
     deltas.nodeInterference = config.world.nodeInterference + (networkHeat >= 60 ? 1 : 0) + sabotageEscalation;
     deltas.districtSupport = config.world.districtSupport + recruiterRelief;
-    deltas.districtPressure = config.world.districtPressure + sabotageEscalation - recruiterRelief;
+    deltas.districtPressure =
+      config.world.districtPressure
+      + sabotageEscalation
+      - recruiterRelief
+      + (Number(counterAction.nodeScan?.modifiers?.node_pressure_delta) || 0);
     deltas.factionPressure = config.world.factionPressure;
-    deltas.samPressure = config.world.samPressure + (networkHeat >= 50 ? 1 : 0);
+    deltas.samPressure =
+      config.world.samPressure
+      + (networkHeat >= 50 ? 1 : 0)
+      + (counterAction.localTrace ? 1 : 0);
     deltas.localRisk = config.operationType === 'sabotage' ? 2 : config.operationType === 'recruit' ? 0 : deltas.localRisk;
   } else {
-    deltas.districtPressure = 1 + (networkHeat >= 50 ? 1 : 0);
-    deltas.samPressure = 1 + ((Number(sam.detection_modifier) || 0) >= 3 ? 1 : 0);
-    deltas.localRisk = exposed ? 3 : 2;
+    deltas.districtPressure = 1 + (networkHeat >= 50 ? 1 : 0) + (counterAction.localTrace ? 1 : 0);
+    deltas.samPressure = 1 + ((Number(sam.detection_modifier) || 0) >= 3 ? 1 : 0) + (counterAction.nodeScan ? 1 : 0);
+    deltas.localRisk = (exposed ? 3 : 2) + (counterAction.routeDisruption ? 1 : 0);
   }
 
   return {
@@ -1053,6 +1366,12 @@ async function loadCovertState(db, telegramId) {
     sam_awareness: pressureSnapshot.sam_awareness,
     local_node_risk: pressureSnapshot.local_node_risk,
     district_instability_signals: pressureSnapshot.district_instability_signals,
+    counter_actions: {
+      node_scans: pressureSnapshot.counter_actions?.node_scans || [],
+      local_traces: pressureSnapshot.counter_actions?.local_traces || [],
+      route_disruptions: pressureSnapshot.counter_actions?.route_disruptions || [],
+      summary: pressureSnapshot.counter_actions?.summary || {},
+    },
     agent_risk_indicators: buildAgentRiskIndicators(publicAgents, pressureSnapshot),
     local_risk_indicators: pressureSnapshot.local_node_risk.map((entry) => ({
       node_id: entry.node_id,
@@ -1181,11 +1500,14 @@ export async function handleBlockTopiaCovertRoute(request, env, url, helpers) {
     }
 
     const config = configForAgentType(agent.agent_type);
+    const pressureBeforeDeploy = await loadCovertPressureSnapshot(env.DB, verified.telegramId);
+    const counterAction = resolveCounterActionContext(pressureBeforeDeploy, node.id, node.districtId);
+    const deployDelayMs = Number(counterAction.routeDisruption?.modifiers?.deploy_delay_ms) || 0;
     const spend = await spendGems(env.DB, verified.telegramId, config.deployCost, 'Progression changed. Please retry covert deploy.');
     if (!spend.ok) return err(spend.message === 'Not enough gems' ? `Not enough gems to deploy ${agent.agent_type}` : spend.message, spend.status);
 
     const operationId = crypto.randomUUID();
-    const resolvesAt = sqliteTimestamp(Date.now() + BLOCKTOPIA_COVERT_OPERATION_MS);
+    const resolvesAt = sqliteTimestamp(Date.now() + BLOCKTOPIA_COVERT_OPERATION_MS + deployDelayMs);
     const heatBefore = clamp(Number(agent.heat) || 0, 0, 100);
     const heatAfterDeploy = clamp(heatBefore + config.deployHeat + (agent.status === 'exposed' ? 6 : 0), 0, 100);
 
@@ -1210,6 +1532,8 @@ export async function handleBlockTopiaCovertRoute(request, env, url, helpers) {
       operation_type: config.operationType,
       heat_before: heatBefore,
       heat_after: heatAfterDeploy,
+      counter_actions: activeCounterActionIds(counterAction),
+      route_delay_ms: deployDelayMs,
     });
     await updateNetworkHeat(env.DB, verified.telegramId, {
       delta: 4 + Number(activeCount?.n || 0) + (agent.agent_type === 'saboteur' ? 2 : 0),
@@ -1258,12 +1582,25 @@ export async function handleBlockTopiaCovertRoute(request, env, url, helpers) {
     }
 
     const config = configForAgentType(agent.agent_type);
+    const targetNode = CONTROL_NODE_BY_ID.get(operation.target_node_id);
+    const pressureForExtract = await loadCovertPressureSnapshot(env.DB, verified.telegramId);
+    const counterAction = resolveCounterActionContext(
+      pressureForExtract,
+      operation.target_node_id,
+      targetNode?.districtId || agent.home_district_id || '',
+    );
+    const routeHeatPenalty = emergency
+      ? (Number(counterAction.routeDisruption?.modifiers?.emergency_extract_heat_penalty) || 0)
+      : (Number(counterAction.routeDisruption?.modifiers?.extract_heat_penalty) || 0);
     const heatAfter = clamp(
-      (Number(agent.heat) || 0) + config.extractHeat - (emergency ? EMERGENCY_EXTRACT_HEAT_RELIEF : 0),
+      (Number(agent.heat) || 0)
+        + config.extractHeat
+        + routeHeatPenalty
+        - (emergency ? EMERGENCY_EXTRACT_HEAT_RELIEF : 0),
       0,
       100,
     );
-    const localRiskDelta = emergency ? 0 : 1;
+    const localRiskDelta = (emergency ? 0 : 1) + (counterAction.localTrace ? 1 : 0);
     await env.DB.batch([
       env.DB.prepare(`
         UPDATE blocktopia_covert_operations
@@ -1283,12 +1620,14 @@ export async function handleBlockTopiaCovertRoute(request, env, url, helpers) {
       mid_operation: midOperation,
       heat_after: heatAfter,
       emergency,
+      counter_actions: activeCounterActionIds(counterAction),
     });
     await logProgressionEvent(env.DB, verified.telegramId, 'covert_failure', operation.target_node_id, 0, 0, {
       agent_id: agentId,
       operation_id: operation.id,
       reason: emergency ? 'emergency_extract' : 'manual_extract',
       local_risk_delta: localRiskDelta,
+      counter_actions: activeCounterActionIds(counterAction),
     });
     await updateNetworkHeat(env.DB, verified.telegramId, {
       delta: emergency ? -EMERGENCY_EXTRACT_NETWORK_RELIEF : 2,
@@ -1485,24 +1824,32 @@ export async function handleBlockTopiaCovertRoute(request, env, url, helpers) {
     const spend = await spendGems(env.DB, verified.telegramId, BLOCKTOPIA_COVERT_RETASK_COST, 'Progression changed. Please retry covert retask.');
     if (!spend.ok) return err(spend.message === 'Not enough gems' ? 'Not enough gems to retask agent' : spend.message, spend.status);
     const config = configForAgentType(agent.agent_type);
-    const heatAfter = clamp((Number(agent.heat) || 0) + config.retaskHeat, 0, 100);
+    const pressureBeforeRetask = await loadCovertPressureSnapshot(env.DB, verified.telegramId);
+    const counterAction = resolveCounterActionContext(pressureBeforeRetask, node.id, node.districtId);
+    const retaskHeatPenalty = Number(counterAction.routeDisruption?.modifiers?.retask_heat_penalty) || 0;
+    const retaskDelayMs = Number(counterAction.routeDisruption?.modifiers?.deploy_delay_ms) || 0;
+    const nextResolveMs = Math.max(Date.now(), parseSqliteTimestamp(operation.resolves_at)) + retaskDelayMs;
+    const nextResolveAt = sqliteTimestamp(nextResolveMs);
+    const heatAfter = clamp((Number(agent.heat) || 0) + config.retaskHeat + retaskHeatPenalty, 0, 100);
     await env.DB.batch([
       env.DB.prepare(`
         UPDATE blocktopia_covert_operations
-        SET target_node_id = ?, heat_after = ?, updated_at = CURRENT_TIMESTAMP
+        SET target_node_id = ?, heat_after = ?, resolves_at = ?, updated_at = CURRENT_TIMESTAMP
         WHERE id = ? AND telegram_id = ? AND status = 'active'
-      `).bind(node.id, heatAfter, operation.id, verified.telegramId),
+      `).bind(node.id, heatAfter, nextResolveAt, operation.id, verified.telegramId),
       env.DB.prepare(`
         UPDATE blocktopia_covert_agents
-        SET heat = ?, current_node_id = ?, home_district_id = COALESCE(home_district_id, ?), updated_at = CURRENT_TIMESTAMP
+        SET heat = ?, current_node_id = ?, home_district_id = COALESCE(home_district_id, ?), assigned_until = ?, updated_at = CURRENT_TIMESTAMP
         WHERE id = ? AND telegram_id = ? AND status = 'active'
-      `).bind(heatAfter, node.id, node.districtId, agentId, verified.telegramId),
+      `).bind(heatAfter, node.id, node.districtId, nextResolveAt, agentId, verified.telegramId),
     ]);
     await logProgressionEvent(env.DB, verified.telegramId, 'covert_retask', node.id, 0, -BLOCKTOPIA_COVERT_RETASK_COST, {
       agent_id: agentId,
       operation_id: operation.id,
       previous_node_id: operation.target_node_id,
       heat_after: heatAfter,
+      resolves_at: nextResolveAt,
+      counter_actions: activeCounterActionIds(counterAction),
     });
     await updateNetworkHeat(env.DB, verified.telegramId, {
       delta: 4 + (agent.agent_type === 'saboteur' ? 2 : 0),

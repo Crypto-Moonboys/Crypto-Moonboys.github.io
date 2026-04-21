@@ -806,12 +806,13 @@ export function createIsoRenderer(canvas) {
     return 'utility';
   }
 
-  function drawControlNode(originX, originY, node, now, isHovered = false) {
+  function drawControlNode(originX, originY, node, now, state, isHovered = false) {
     const iso = toIso(node.x, node.y);
     const cx = originX + iso.x;
     const cy = originY + iso.y + HALF_TILE_H;
     const nodeClass = getNodeVisualClass(node);
     const theme = NODE_CLASS_THEME[nodeClass] || NODE_CLASS_THEME.utility;
+    const nodeScan = state?.covert?.counterActions?.nodeScans?.find((entry) => entry.node_id === node.id) || null;
     const outbreak = node.outbreak || null;
     const firewall = node.firewallDefense || null;
     const circuit = node.circuitConnect || null;
@@ -820,28 +821,28 @@ export function createIsoRenderer(canvas) {
     const radius = (isHovered ? 24 : 20) * (theme.size || 1);
 
     ctx.save();
-    ctx.globalAlpha = outbreak?.infected ? 0.34 : firewall?.underAttack ? 0.32 : circuit?.isolated ? 0.32 : 0.2;
-    ctx.fillStyle = outbreak?.infected ? '#ff4fa2' : firewall?.underAttack ? '#ff4f9e' : circuit?.isolated ? '#ff7f5a' : theme.color;
+    ctx.globalAlpha = nodeScan ? 0.3 : outbreak?.infected ? 0.34 : firewall?.underAttack ? 0.32 : circuit?.isolated ? 0.32 : 0.2;
+    ctx.fillStyle = nodeScan ? '#7ae8ff' : outbreak?.infected ? '#ff4fa2' : firewall?.underAttack ? '#ff4f9e' : circuit?.isolated ? '#ff7f5a' : theme.color;
     ctx.beginPath();
     ctx.ellipse(cx, cy + 1, radius * 1.35 * pulse, radius * 0.55 * pulse, 0, 0, Math.PI * 2);
     ctx.fill();
 
-    ctx.globalAlpha = outbreak?.infected ? 0.95 : firewall?.defended ? 0.95 : circuit?.critical ? 0.92 : 0.75;
-    ctx.strokeStyle = outbreak?.infected ? '#ff4fa2' : firewall?.defended ? '#6be8ff' : circuit?.critical ? '#ffca56' : theme.color;
+    ctx.globalAlpha = nodeScan ? 0.96 : outbreak?.infected ? 0.95 : firewall?.defended ? 0.95 : circuit?.critical ? 0.92 : 0.75;
+    ctx.strokeStyle = nodeScan ? '#7ae8ff' : outbreak?.infected ? '#ff4fa2' : firewall?.defended ? '#6be8ff' : circuit?.critical ? '#ffca56' : theme.color;
     ctx.lineWidth = 2;
     ctx.beginPath();
     ctx.moveTo(cx, cy - towerH);
     ctx.lineTo(cx, cy - 6);
     ctx.stroke();
 
-    ctx.globalAlpha = outbreak?.infected ? 1 : 0.95;
-    ctx.fillStyle = outbreak?.infected ? '#ff79be' : firewall?.defended ? '#7af6ff' : circuit?.isolated ? '#ffd4a5' : theme.accent;
+    ctx.globalAlpha = nodeScan ? 1 : outbreak?.infected ? 1 : 0.95;
+    ctx.fillStyle = nodeScan ? '#d8f8ff' : outbreak?.infected ? '#ff79be' : firewall?.defended ? '#7af6ff' : circuit?.isolated ? '#ffd4a5' : theme.accent;
     ctx.beginPath();
     ctx.arc(cx, cy - towerH, 9 * pulse, 0, Math.PI * 2);
     ctx.fill();
 
     ctx.globalAlpha = 0.68;
-    ctx.strokeStyle = outbreak?.infected ? '#ff8ccd' : firewall?.boosted ? '#8ca4ff' : circuit?.selected ? '#72f0ff' : theme.color;
+    ctx.strokeStyle = nodeScan ? '#9ef6ff' : outbreak?.infected ? '#ff8ccd' : firewall?.boosted ? '#8ca4ff' : circuit?.selected ? '#72f0ff' : theme.color;
     ctx.lineWidth = 1.3;
     ctx.beginPath();
     ctx.arc(cx, cy - towerH, 14 * pulse, 0, Math.PI * 2);
@@ -854,7 +855,10 @@ export function createIsoRenderer(canvas) {
     const label = `${theme.label} · ${node.id.toUpperCase()}`;
     ctx.fillText(label, cx, cy - towerH - 12);
 
-    if (outbreak?.infected) {
+    if (nodeScan) {
+      ctx.fillStyle = '#b9f6ff';
+      ctx.fillText('SCANNED', cx, cy - towerH - 22);
+    } else if (outbreak?.infected) {
       ctx.fillStyle = '#ff79be';
       ctx.fillText('INFECTED', cx, cy - towerH - 22);
     } else if (circuit?.isolated) {
@@ -974,6 +978,9 @@ export function createIsoRenderer(canvas) {
     const byId = new Map(controlNodes.map((node) => [node.id, node]));
     const networkHeat = Math.max(0, Math.min(100, Number(state?.covert?.networkHeat?.value) || 0));
     const heatBias = networkHeat / 100;
+    const routeDisruptions = Array.isArray(state?.covert?.counterActions?.routeDisruptions)
+      ? state.covert.counterActions.routeDisruptions
+      : [];
     ctx.save();
 
     for (const line of NETWORK_LINES) {
@@ -989,6 +996,16 @@ export function createIsoRenderer(canvas) {
       const y2 = originY + toIsoPoint.y + HALF_TILE_H;
       const flowPulse = 0.5 + (Math.sin((now / 220) + (line.id.length * 0.5)) + 1) * 0.25;
       const corrupted = Boolean(from.outbreak?.infected || to.outbreak?.infected);
+      const disrupted = routeDisruptions.find((entry) => (
+        entry?.district_id
+        && (entry.district_id === from.districtId || entry.district_id === to.districtId)
+        && (
+          !Array.isArray(entry.affected_node_ids)
+          || !entry.affected_node_ids.length
+          || entry.affected_node_ids.includes(from.id)
+          || entry.affected_node_ids.includes(to.id)
+        )
+      )) || null;
       const circuitState = state.circuitConnectView?.active
         ? state.circuitConnectView.links?.find((entry) => entry.id === edgeKey(from.id, to.id))?.state
         : '';
@@ -1015,19 +1032,33 @@ export function createIsoRenderer(canvas) {
               : '';
 
       const fractureFlicker = 0.55 + (Math.sin(now / UNSTABLE_FLICKER_RATE + (line.id.length * 2.4)) + 1) * 0.2;
-      ctx.globalAlpha = circuitState === 'broken' ? fractureFlicker : (corrupted ? 0.78 : (0.45 + (heatBias * 0.16)));
-      ctx.strokeStyle = circuitColor || routerColor || (corrupted ? 'rgba(255,79,168,0.94)' : 'rgba(94,242,255,0.95)');
-      ctx.lineWidth = ((routerState === 'blocked' || circuitState === 'broken') ? 2.8 : 1.4) + flowPulse + (heatBias * 0.6);
+      ctx.globalAlpha = disrupted ? 0.88 : circuitState === 'broken' ? fractureFlicker : (corrupted ? 0.78 : (0.45 + (heatBias * 0.16)));
+      ctx.strokeStyle = disrupted ? 'rgba(255,196,92,0.96)' : circuitColor || routerColor || (corrupted ? 'rgba(255,79,168,0.94)' : 'rgba(94,242,255,0.95)');
+      ctx.lineWidth = (((routerState === 'blocked' || circuitState === 'broken') ? 2.8 : 1.4) + flowPulse + (heatBias * 0.6) + (disrupted ? 0.8 : 0));
       ctx.beginPath();
       ctx.moveTo(x1, y1);
       ctx.lineTo(x2, y2);
       ctx.stroke();
 
+      if (disrupted) {
+        ctx.globalAlpha = 0.54;
+        ctx.strokeStyle = 'rgba(255,239,200,0.98)';
+        ctx.lineWidth = 1.2;
+        ctx.beginPath();
+        ctx.moveTo(((x1 + x2) / 2) - 5, ((y1 + y2) / 2) - 5);
+        ctx.lineTo(((x1 + x2) / 2) + 5, ((y1 + y2) / 2) + 5);
+        ctx.moveTo(((x1 + x2) / 2) + 5, ((y1 + y2) / 2) - 5);
+        ctx.lineTo(((x1 + x2) / 2) - 5, ((y1 + y2) / 2) + 5);
+        ctx.stroke();
+      }
+
       const packetPhase = ((now * DATA_PACKET_SPEED * (1.8 + (heatBias * 0.9))) + ((from.x + to.y) * 0.021)) % 1;
       const px = x1 + ((x2 - x1) * packetPhase);
       const py = y1 + ((y2 - y1) * packetPhase);
       ctx.globalAlpha = 0.95;
-      ctx.fillStyle = circuitState === 'broken'
+      ctx.fillStyle = disrupted
+        ? '#fff0c2'
+        : circuitState === 'broken'
         ? '#ffb7be'
         : circuitState === 'unstable'
           ? '#ffe0af'
@@ -1090,44 +1121,49 @@ export function createIsoRenderer(canvas) {
   function drawCovertDistrictOverlay(originX, originY, state, now) {
     const districtState = Array.isArray(state?.districtState) ? state.districtState : [];
     const covertDistricts = state?.covert?.districtSignalById || {};
+    const localTraces = Array.isArray(state?.covert?.counterActions?.localTraces)
+      ? state.covert.counterActions.localTraces
+      : [];
     if (!districtState.length || !state?.districts?.byId) return;
     ctx.save();
     for (const entry of districtState) {
       const districtMeta = state.districts.byId.get(entry.id);
       const grid = districtMeta?.grid;
       const covert = covertDistricts[entry.id];
-      if (!grid || !covert) continue;
-      const instability = Math.max(0, Number(covert.instability) || 0);
-      if (instability < 5) continue;
+      const localTrace = localTraces.find((trace) => trace?.district_id === entry.id) || null;
+      if (!grid || (!covert && !localTrace)) continue;
+      const instability = Math.max(0, Number(covert?.instability) || 0);
+      if (instability < 5 && !localTrace) continue;
       const center = toIso(grid.col + (grid.w / 2), grid.row + (grid.h / 2));
       const labelX = originX + center.x;
       const labelY = originY + center.y;
       const ringPulse = 0.88 + ((Math.sin(now / Math.max(160, 260 - (instability * 4))) + 1) * 0.08);
       const ringW = Math.max(42, (grid.w * HALF_TILE_W * 0.92) * ringPulse);
       const ringH = Math.max(20, (grid.h * HALF_TILE_H * 0.6) * ringPulse);
-      ctx.globalAlpha = instability >= 18 ? 0.28 : instability >= 10 ? 0.2 : 0.14;
-      ctx.strokeStyle = instability >= 18 ? '#ff4fd8' : instability >= 10 ? '#ff9b67' : '#ffd84d';
-      ctx.lineWidth = instability >= 18 ? 2.3 : 1.6;
+      ctx.globalAlpha = localTrace ? 0.34 : instability >= 18 ? 0.28 : instability >= 10 ? 0.2 : 0.14;
+      ctx.strokeStyle = localTrace ? '#ff90c4' : instability >= 18 ? '#ff4fd8' : instability >= 10 ? '#ff9b67' : '#ffd84d';
+      ctx.lineWidth = localTrace ? 2.5 : instability >= 18 ? 2.3 : 1.6;
       ctx.beginPath();
       ctx.ellipse(labelX, labelY + 6, ringW, ringH, 0, 0, Math.PI * 2);
       ctx.stroke();
 
       ctx.globalAlpha = 0.92;
-      ctx.fillStyle = instability >= 18 ? '#ff8fe2' : instability >= 10 ? '#ffb18d' : '#ffe18a';
+      ctx.fillStyle = localTrace ? '#ffc7e2' : instability >= 18 ? '#ff8fe2' : instability >= 10 ? '#ffb18d' : '#ffe18a';
       ctx.font = '700 10px Inter, sans-serif';
       ctx.textAlign = 'center';
-      ctx.fillText(`${String(covert.pressure_flag || 'calm').toUpperCase()} · instability ${Math.round(instability)}`, labelX, labelY + 12);
+      ctx.fillText(`${String((localTrace ? 'under trace' : (covert?.pressure_flag || 'calm'))).toUpperCase()} · instability ${Math.round(instability)}`, labelX, labelY + 12);
     }
     ctx.restore();
   }
 
   function drawCovertNodeOverlay(originX, originY, node, now, state) {
     const covert = state?.covert?.nodeRiskById?.[node.id] || null;
-    if (!covert) return;
+    const nodeScan = state?.covert?.counterActions?.nodeScans?.find((entry) => entry.node_id === node.id) || null;
+    if (!covert && !nodeScan) return;
     const risk = Math.max(0, Number(covert.risk) || 0);
-    if (risk <= 0) return;
+    if (risk <= 0 && !nodeScan) return;
     const heat = Math.max(0, Math.min(100, Number(state?.covert?.networkHeat?.value) || 0));
-    const color = risk >= 12 ? '#ff4fd8' : risk >= 8 ? '#ff9b67' : '#ffd84d';
+    const color = nodeScan ? '#7ae8ff' : risk >= 12 ? '#ff4fd8' : risk >= 8 ? '#ff9b67' : '#ffd84d';
     const iso = toIso(node.x, node.y);
     const cx = originX + iso.x;
     const cy = originY + iso.y + HALF_TILE_H;
@@ -1153,12 +1189,12 @@ export function createIsoRenderer(canvas) {
       ctx.stroke();
     }
 
-    if (risk >= 12) {
+    if (nodeScan || risk >= 12) {
       ctx.globalAlpha = 0.92;
       ctx.fillStyle = color;
       ctx.font = '700 9px Inter, sans-serif';
       ctx.textAlign = 'center';
-      ctx.fillText('TRACE LOCK', cx, cy - 50);
+      ctx.fillText(nodeScan ? 'NODE SCAN' : 'TRACE LOCK', cx, cy - 50);
     } else if (risk >= 8) {
       ctx.globalAlpha = 0.88;
       ctx.fillStyle = color;
@@ -1489,7 +1525,7 @@ export function createIsoRenderer(canvas) {
     const controlNodes = state.controlNodes;
     if (Array.isArray(controlNodes) && controlNodes.length) {
       for (const node of controlNodes) {
-        drawControlNode(originX, originY, node, now, state.mouse?.hoverNodeId === node.id);
+        drawControlNode(originX, originY, node, now, state, state.mouse?.hoverNodeId === node.id);
         drawCovertNodeOverlay(originX, originY, node, now, state);
       }
     }

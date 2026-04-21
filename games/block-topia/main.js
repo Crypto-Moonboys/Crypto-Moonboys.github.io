@@ -151,6 +151,7 @@ function updateReactiveGridState(state) {
   setBodyStateClass('covert-heat-hot', networkHeat >= 50 && networkHeat < 75);
   setBodyStateClass('covert-heat-critical', networkHeat >= 75);
   setBodyStateClass('covert-under-watch', samSensitivity >= 40 || networkHeat >= 45);
+  setBodyStateClass('covert-counter-actions-live', (Number(state.covert?.summary?.activeCounterActions) || 0) > 0);
   dispatchUiState('moonboys:world-state', { conflictActive: inConflict, syncReady, speed, intensity, networkHeat, samSensitivity, ts: now });
 }
 
@@ -177,6 +178,7 @@ function createDefaultCovertState() {
     nodeRiskById: {},
     districtSignalById: {},
     agentRiskById: {},
+    counterActions: { nodeScans: [], localTraces: [], routeDisruptions: [], summary: {} },
     summary: {
       activeAgents: 0,
       exposedAgents: 0,
@@ -192,6 +194,11 @@ function createDefaultCovertState() {
       currentDistrictFlag: 'calm',
       recoveryReady: false,
       recoveryCost: 0,
+      urgentRecoveryAgents: 0,
+      activeCounterActions: 0,
+      activeNodeScans: 0,
+      activeLocalTraces: 0,
+      activeRouteDisruptions: 0,
     },
     agents: [],
     operations: [],
@@ -417,6 +424,13 @@ function normalizeCovertState(snapshot = {}, currentDistrictId = '') {
   const nodeEntries = Array.isArray(snapshot?.local_node_risk) ? snapshot.local_node_risk : [];
   const districtEntries = Array.isArray(snapshot?.district_instability_signals) ? snapshot.district_instability_signals : [];
   const agentRiskEntries = Array.isArray(snapshot?.agent_risk_indicators) ? snapshot.agent_risk_indicators : [];
+  const counterActionSnapshot = snapshot?.counter_actions || {};
+  const counterActions = {
+    nodeScans: Array.isArray(counterActionSnapshot?.node_scans) ? counterActionSnapshot.node_scans : [],
+    localTraces: Array.isArray(counterActionSnapshot?.local_traces) ? counterActionSnapshot.local_traces : [],
+    routeDisruptions: Array.isArray(counterActionSnapshot?.route_disruptions) ? counterActionSnapshot.route_disruptions : [],
+    summary: counterActionSnapshot?.summary || {},
+  };
   const nodeRiskById = Object.fromEntries(nodeEntries.map((entry) => [entry.node_id, entry]));
   const districtSignalById = Object.fromEntries(districtEntries.map((entry) => [entry.district_id, entry]));
   const agentRiskById = Object.fromEntries(agentRiskEntries.map((entry) => [entry.agent_id, entry]));
@@ -439,6 +453,7 @@ function normalizeCovertState(snapshot = {}, currentDistrictId = '') {
     nodeRiskById,
     districtSignalById,
     agentRiskById,
+    counterActions,
     summary: {
       activeAgents,
       exposedAgents,
@@ -454,6 +469,11 @@ function normalizeCovertState(snapshot = {}, currentDistrictId = '') {
       currentDistrictFlag: currentDistrictSignal?.pressure_flag || 'calm',
       recoveryReady: capturedAgents > 0 && recoveryCost > 0 && gems >= recoveryCost,
       recoveryCost,
+      urgentRecoveryAgents: agentRiskEntries.filter((entry) => entry?.recovery_locked && entry?.recovery_urgency === 'urgent').length,
+      activeCounterActions: Number(counterActions.summary?.active_count) || 0,
+      activeNodeScans: counterActions.nodeScans.length,
+      activeLocalTraces: counterActions.localTraces.length,
+      activeRouteDisruptions: counterActions.routeDisruptions.length,
     },
     agents,
     operations,
@@ -684,6 +704,7 @@ async function boot() {
   let lastCovertCapturedCount = 0;
   let lastCovertRecoveryReady = false;
   let lastCovertDistrictFlag = 'calm';
+  let lastCounterActionSignature = '';
 
   function formatDistrictName(districtId) {
     return state.districts.byId.get(districtId)?.name || String(districtId || '').replace(/-/g, ' ');
@@ -718,6 +739,9 @@ async function boot() {
 
   function getCovertWatchLine(covertState) {
     const flags = Array.isArray(covertState?.samAwareness?.pressure_flags) ? covertState.samAwareness.pressure_flags : [];
+    if ((Number(covertState?.summary?.activeRouteDisruptions) || 0) > 0) return 'routes disrupted';
+    if ((Number(covertState?.summary?.activeLocalTraces) || 0) > 0) return 'district under trace';
+    if ((Number(covertState?.summary?.activeNodeScans) || 0) > 0) return 'nodes under scan';
     if (flags.includes('capture_pressure_rising')) return 'covert routes compromised';
     if (flags.includes('sam_listening')) return 'under watch';
     if (flags.includes('repeat_targeting_detected')) return 'signal traced';
@@ -733,6 +757,30 @@ async function boot() {
     syncCovertHud();
 
     if (source === 'silent') return;
+
+    const counterActionSignature = [
+      ...next.counterActions.nodeScans.map((entry) => entry.id),
+      ...next.counterActions.localTraces.map((entry) => entry.id),
+      ...next.counterActions.routeDisruptions.map((entry) => entry.id),
+    ].join('|');
+    if (counterActionSignature !== lastCounterActionSignature) {
+      const primaryCounterAction = next.counterActions.summary?.primary_action_label;
+      if ((Number(next.summary.activeCounterActions) || 0) > 0 && primaryCounterAction) {
+        pushFeedDeduped(
+          `SAM counter-action live · ${primaryCounterAction}`,
+          'sam',
+          `covert-counter:${counterActionSignature}`,
+        );
+        hud.showNodeInterference(primaryCounterAction, 'sam');
+      } else if (lastCounterActionSignature) {
+        pushFeedDeduped(
+          'SAM counter-action window faded · covert lanes briefly stabilizing',
+          'system',
+          'covert-counter:cleared',
+        );
+      }
+      lastCounterActionSignature = counterActionSignature;
+    }
 
     if (next.networkHeat.tier !== lastCovertHeatTier) {
       const watchLine = getCovertWatchLine(next);
@@ -798,6 +846,14 @@ async function boot() {
       lastCovertDistrictFlag = next.summary.currentDistrictFlag;
     } else if ((Number(next.summary.currentDistrictInstability) || 0) < 5) {
       lastCovertDistrictFlag = next.summary.currentDistrictFlag;
+    }
+
+    if ((Number(next.summary.urgentRecoveryAgents) || 0) > 0 && !(Number(previous.summary?.urgentRecoveryAgents) > 0)) {
+      pushFeedDeduped(
+        `Recovery urgency rising · ${next.summary.urgentRecoveryAgents} captured agent${next.summary.urgentRecoveryAgents === 1 ? '' : 's'} inside active SAM pressure`,
+        'sam',
+        `covert-urgent-recovery:${next.summary.urgentRecoveryAgents}`,
+      );
     }
   }
 
