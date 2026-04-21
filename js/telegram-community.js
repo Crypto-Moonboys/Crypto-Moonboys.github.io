@@ -240,11 +240,23 @@
             var authPayload = result.data.telegram_auth && typeof result.data.telegram_auth === 'object'
               ? result.data.telegram_auth
               : null;
-            if (tid && window.MOONBOYS_IDENTITY.saveTelegramIdentity) {
-              window.MOONBOYS_IDENTITY.saveTelegramIdentity(tid, result.data.telegram_name || null, authPayload);
-            }
+            var linkedOk = false;
             if (window.MOONBOYS_IDENTITY.setTelegramLinked) {
-              window.MOONBOYS_IDENTITY.setTelegramLinked(tid || null);
+              linkedOk = !!window.MOONBOYS_IDENTITY.setTelegramLinked(
+                tid || null,
+                authPayload,
+                result.data.telegram_name || null
+              );
+            } else if (tid && window.MOONBOYS_IDENTITY.saveTelegramIdentity) {
+              window.MOONBOYS_IDENTITY.saveTelegramIdentity(tid, result.data.telegram_name || null, authPayload);
+              linkedOk = !!(window.MOONBOYS_IDENTITY.getSignedTelegramAuth && window.MOONBOYS_IDENTITY.getSignedTelegramAuth());
+            }
+            if (!linkedOk) {
+              if (banner) {
+                banner.textContent = '❌ Link confirmed, but signed Telegram auth payload is missing or expired. Run /gklink again to re-auth.';
+                banner.className = (banner.className || '') + ' gklink-error';
+              }
+              return;
             }
           }
           if (banner) {
