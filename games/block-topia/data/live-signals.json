@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-04-21T21:23:24.046Z",
+  "generatedAt": "2026-04-21T22:08:35.503Z",
   "mode": "live-ai",
   "sourceHealth": {
     "coingecko-global": "ok",
@@ -11,79 +11,84 @@
   "signalCount": 5,
   "signals": [
     {
-      "id": "signal-1776806604045-1",
-      "lane": "world",
+      "id": "signal-1776809315503-1",
+      "lane": "npc",
       "priority": 4,
       "ttlMinutes": 45,
-      "npcLine": "Markets bleed; digital ghosts vanish fast tonight.",
-      "questPulse": "Seek out fallen chains; value collapses silently.",
-      "worldFeed": "Global cryptos dive; shadow traders hesitate.",
-      "clueEvent": "Whisper of mass sell-off under neon haze.",
+      "npcLine": "Whispers say CHIP tech nodes glitch after recent market tremors.",
+      "questPulse": "Investigate CHIP data streams for exploitable weaknesses.",
+      "worldFeed": "CHIP circuits flicker amid economic shadows.",
+      "clueEvent": "Uncover hidden bugs in CHIP's codebase.",
       "tags": [
-        "market-collapse",
-        "dystopia"
+        "tech",
+        "vulnerability",
+        "chip"
       ],
-      "expiresAt": "2026-04-21T22:08:24.045Z"
+      "expiresAt": "2026-04-21T22:53:35.503Z"
     },
     {
-      "id": "signal-1776806604046-2",
-      "lane": "ops",
-      "priority": 3,
-      "ttlMinutes": 60,
-      "npcLine": "Fear grip tight; algorithmic traps spike in data streams.",
-      "questPulse": "Harvest risk signals; trust no pulse unverified.",
-      "worldFeed": "Network nodes jitter; sentiment sinks low.",
-      "clueEvent": "Silent sell orders flood the darknet crypts.",
-      "tags": [
-        "fear",
-        "data-warfare"
-      ],
-      "expiresAt": "2026-04-21T22:23:24.046Z"
-    },
-    {
-      "id": "signal-1776806604046-3",
-      "lane": "clue",
-      "priority": 2,
-      "ttlMinutes": 30,
-      "npcLine": "Symbols shift: CHIP fades, ASTEROID stirs underground.",
-      "questPulse": "Decode trending ghosts; power hides in chaos.",
-      "worldFeed": "New tokens spark whispers but draw wary eyes.",
-      "clueEvent": "Low-score tags hint at silent takeovers.",
-      "tags": [
-        "trend-watch",
-        "cryptic"
-      ],
-      "expiresAt": "2026-04-21T21:53:24.046Z"
-    },
-    {
-      "id": "signal-1776806604046-4",
+      "id": "signal-1776809315503-2",
       "lane": "quest",
       "priority": 3,
-      "ttlMinutes": 55,
-      "npcLine": "RAVE and MAGA pulse erratic; watch the feeds.",
-      "questPulse": "Infiltrate network chatter; profit from unstable zones.",
-      "worldFeed": "Volatile tokens blur lines between ally and enemy.",
-      "clueEvent": "Uneasy energy around mid-tier cryptos tonight.",
+      "ttlMinutes": 60,
+      "npcLine": "RAVE sectors buzz with strange signals, ripe for infiltration.",
+      "questPulse": "Trace RAVE frequency distortions to their origin point.",
+      "worldFeed": "RAVE frequencies spike despite market fears.",
+      "clueEvent": "Decrypt RAVE broadcast anomalies.",
       "tags": [
-        "volatility",
-        "intel-gathering"
+        "signal",
+        "infiltration",
+        "rave"
       ],
-      "expiresAt": "2026-04-21T22:18:24.046Z"
+      "expiresAt": "2026-04-21T23:08:35.503Z"
     },
     {
-      "id": "signal-1776806604046-5",
-      "lane": "npc",
-      "priority": 1,
-      "ttlMinutes": 90,
-      "npcLine": "Old-school barter rising; trust in circuits crumbles.",
-      "questPulse": "Find analog trades; digital trust erodes fast.",
-      "worldFeed": "Fear drives many to forgotten markets and blackouts.",
-      "clueEvent": "Subcultures revive physical exchanges beneath neon rain.",
+      "id": "signal-1776809315503-3",
+      "lane": "clue",
+      "priority": 5,
+      "ttlMinutes": 30,
+      "npcLine": "Fear grips the grid; shadows deepen around OPG exchanges.",
+      "questPulse": "Scout OPG vaults before systems collapse.",
+      "worldFeed": "OPG ledgers show eerie instability.",
+      "clueEvent": "Locate OPG breach points under duress.",
       "tags": [
-        "black-market",
-        "analog"
+        "danger",
+        "breach",
+        "opg"
       ],
-      "expiresAt": "2026-04-21T22:53:24.046Z"
+      "expiresAt": "2026-04-21T22:38:35.503Z"
+    },
+    {
+      "id": "signal-1776809315503-4",
+      "lane": "world",
+      "priority": 2,
+      "ttlMinutes": 90,
+      "npcLine": "MAGA caches flicker, their value clouded by sector unrest.",
+      "questPulse": "Monitor MAGA supply chains for illicit flows.",
+      "worldFeed": "MAGA’s shimmer fades with market dread.",
+      "clueEvent": "Trace MAGA anomalies through black market nodes.",
+      "tags": [
+        "cache",
+        "surveillance",
+        "maga"
+      ],
+      "expiresAt": "2026-04-21T23:38:35.503Z"
+    },
+    {
+      "id": "signal-1776809315503-5",
+      "lane": "ops",
+      "priority": 1,
+      "ttlMinutes": 120,
+      "npcLine": "AAVE vaults stand guarded; fear tightens control lines.",
+      "questPulse": "Secure AAVE assets before system lockdown.",
+      "worldFeed": "AAVE holdings frozen amid fear's rise.",
+      "clueEvent": "Identify threats in AAVE's encrypted layers.",
+      "tags": [
+        "security",
+        "vault",
+        "aave"
+      ],
+      "expiresAt": "2026-04-22T00:08:35.503Z"
     }
   ]
 }
