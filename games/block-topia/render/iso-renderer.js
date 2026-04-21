@@ -28,6 +28,8 @@ const UNSTABLE_PULSE_AMPLITUDE = 0.15;
 const HALO_PULSE_RATE = 180;
 const HALO_PULSE_AMPLITUDE = 0.22;
 const DATA_PACKET_SPEED = 0.00018;
+const SURFACE_SCAN_SPEED = 0.00011;
+const NODE_SPARK_SPEED = 0.0018;
 const DISTRICT_LABEL_FONT = '700 12px Inter, sans-serif';
 const DISTRICT_LABEL_GLOW_FONT = '700 18px "Rajdhani", Inter, sans-serif';
 const DISTRICT_STATE_STYLE = {
@@ -56,11 +58,41 @@ const FACTION_COLOR = {
 };
 
 const DISTRICT_THEME = {
-  'neon-slums': '#63f6ff',
-  'signal-spire': '#ff7bcf',
-  'crypto-core': '#ffd84d',
-  'moonlit-underbelly': '#8dff6a',
-  'revolt-plaza': '#5ef2ff',
+  'neon-slums': {
+    color: '#63f6ff',
+    accent: '#7dd8ff',
+    label: 'NEON SLUMS',
+    sublabel: 'Relay swarm / rogue street mesh',
+    glyph: 'RLY',
+  },
+  'signal-spire': {
+    color: '#ff7bcf',
+    accent: '#d9a3ff',
+    label: 'SIGNAL SPIRE',
+    sublabel: 'AI observatory / surveillance towers',
+    glyph: 'AI',
+  },
+  'crypto-core': {
+    color: '#ffd84d',
+    accent: '#ff9347',
+    label: 'CRYPTO CORE',
+    sublabel: 'Mining pressure / heat exchangers',
+    glyph: 'BTC',
+  },
+  'moonlit-underbelly': {
+    color: '#8dff6a',
+    accent: '#73f7c8',
+    label: 'MOONLIT UNDERBELLY',
+    sublabel: 'Utility routes / covert support lattice',
+    glyph: 'UTL',
+  },
+  'revolt-plaza': {
+    color: '#5ef2ff',
+    accent: '#ff6ca8',
+    label: 'REVOLT PLAZA',
+    sublabel: 'Control conflict / influence spikes',
+    glyph: 'CTL',
+  },
 };
 
 const DISTRICT_BOUNDARY_STYLE = {
@@ -197,6 +229,58 @@ function loadImage(path, imageRegistry) {
 function deterministicNoise2D(x, y) {
   const value = Math.sin((x + 1) * 12.9898 + (y + 1) * 78.233) * 43758.5453;
   return value - Math.floor(value);
+}
+
+function applyGlow(targetCtx, color, blur, alpha = 1) {
+  targetCtx.shadowColor = color;
+  targetCtx.shadowBlur = blur;
+  targetCtx.globalAlpha *= alpha;
+}
+
+function drawDiamondPath(targetCtx, x, y, width = HALF_TILE_W, height = HALF_TILE_H) {
+  targetCtx.beginPath();
+  targetCtx.moveTo(x, y);
+  targetCtx.lineTo(x + width, y + height);
+  targetCtx.lineTo(x, y + (height * 2));
+  targetCtx.lineTo(x - width, y + height);
+  targetCtx.closePath();
+}
+
+function getDistrictTheme(districtId) {
+  return DISTRICT_THEME[districtId] || {
+    color: '#5ef2ff',
+    accent: '#d8f9ff',
+    label: String(districtId || 'UNKNOWN').replace(/-/g, ' ').toUpperCase(),
+    sublabel: 'surveillance corridor',
+    glyph: 'NET',
+  };
+}
+
+function getDistrictAt(state, col, row) {
+  if (!state?.districts?.all?.length) return null;
+  return state.districts.all.find((district) => (
+    col >= district.grid.col
+    && row >= district.grid.row
+    && col < district.grid.col + district.grid.w
+    && row < district.grid.row + district.grid.h
+  )) || null;
+}
+
+function getNodeTheme(nodeClass) {
+  const base = NODE_CLASS_THEME[nodeClass] || NODE_CLASS_THEME.utility;
+  const defaults = {
+    mining: { icon: 'BTC', size: 1.38, tower: 52, radius: 22, aura: 32 },
+    ai: { icon: 'AI', size: 1.42, tower: 58, radius: 22, aura: 34 },
+    relay: { icon: 'SIG', size: 1.08, tower: 46, radius: 18, aura: 28 },
+    control: { icon: 'CTL', size: 1.22, tower: 50, radius: 20, aura: 30 },
+    hub: { icon: 'HUB', size: 1.52, tower: 64, radius: 24, aura: 38 },
+    utility: { icon: 'UTL', size: 1.02, tower: 40, radius: 16, aura: 24 },
+  }[nodeClass] || { icon: 'NET', size: 1.08, tower: 46, radius: 18, aura: 28 };
+  return { ...defaults, ...base };
+}
+
+function isAnchorNode(node) {
+  return ['core', 'north', 'east', 'south', 'west'].includes(node?.id);
 }
 
 function canPlaceStructureCell(col, row, metrics) {
@@ -479,8 +563,30 @@ export function createIsoRenderer(canvas) {
     if (!layerState.baseGrid.dirty && layerState.baseGrid.width === canvas.width && layerState.baseGrid.height === canvas.height) return;
     const layerCanvas = createLayerCanvas(canvas.width, canvas.height);
     const layerCtx = layerCanvas.getContext('2d');
-    layerCtx.fillStyle = '#000000';
+    const bg = layerCtx.createRadialGradient(
+      canvas.width * 0.52,
+      canvas.height * 0.48,
+      20,
+      canvas.width * 0.52,
+      canvas.height * 0.48,
+      Math.max(canvas.width, canvas.height) * 0.75,
+    );
+    bg.addColorStop(0, '#07111e');
+    bg.addColorStop(0.4, '#030913');
+    bg.addColorStop(1, '#000000');
+    layerCtx.fillStyle = bg;
     layerCtx.fillRect(0, 0, canvas.width, canvas.height);
+
+    layerCtx.globalAlpha = 0.18;
+    layerCtx.strokeStyle = 'rgba(94,242,255,0.16)';
+    layerCtx.lineWidth = 1;
+    for (let y = -40; y < canvas.height + 40; y += 48) {
+      layerCtx.beginPath();
+      layerCtx.moveTo(0, y);
+      layerCtx.lineTo(canvas.width, y - 22);
+      layerCtx.stroke();
+    }
+    layerCtx.globalAlpha = 1;
     layerState.baseGrid.canvas = layerCanvas;
     layerState.baseGrid.width = canvas.width;
     layerState.baseGrid.height = canvas.height;
@@ -501,18 +607,83 @@ export function createIsoRenderer(canvas) {
     const roadCtx = layerState.roadBlocks.canvas.getContext('2d');
     roadCtx.clearRect(0, 0, bounds.width, bounds.height);
 
-    roadCtx.strokeStyle = 'rgba(94,242,255,0.34)';
-    roadCtx.lineWidth = 0.8;
     for (let row = 0; row < state.map.height; row += 1) {
       for (let col = 0; col < state.map.width; col += 1) {
         const tilePos = mapToLayerXY(col, row, 0);
-        roadCtx.beginPath();
-        roadCtx.moveTo(tilePos.x, tilePos.y);
-        roadCtx.lineTo(tilePos.x + HALF_TILE_W, tilePos.y + HALF_TILE_H);
-        roadCtx.lineTo(tilePos.x, tilePos.y + TILE_H);
-        roadCtx.lineTo(tilePos.x - HALF_TILE_W, tilePos.y + HALF_TILE_H);
-        roadCtx.closePath();
+        const terrain = classifyTerrain(col, row, metrics);
+        const district = getDistrictAt(state, col, row);
+        const districtTheme = getDistrictTheme(district?.id);
+        const noise = deterministicNoise2D(col * 3, row * 5);
+        const isRoad = isRoadCell(col, row, metrics);
+        const elevation = getTileElevation(col, row, metrics);
+
+        roadCtx.save();
+        if (terrain === 'water') {
+          drawDiamondPath(roadCtx, tilePos.x, tilePos.y);
+          roadCtx.fillStyle = `rgba(6,20,34,${0.88 - (noise * 0.08)})`;
+          roadCtx.fill();
+          roadCtx.strokeStyle = 'rgba(70,143,190,0.16)';
+          roadCtx.lineWidth = 0.8;
+          roadCtx.stroke();
+          roadCtx.restore();
+          continue;
+        }
+
+        const baseAlpha = terrain === 'coast' ? 0.48 : terrain === 'sand' ? 0.58 : 0.74;
+        drawDiamondPath(roadCtx, tilePos.x, tilePos.y);
+        roadCtx.fillStyle = terrain === 'coast'
+          ? `rgba(16,34,48,${baseAlpha})`
+          : `rgba(8,16,28,${baseAlpha})`;
+        roadCtx.fill();
+
+        roadCtx.strokeStyle = `rgba(94,242,255,${isRoad ? 0.24 : 0.12 + (noise * 0.06)})`;
+        roadCtx.lineWidth = isRoad ? 1.15 : 0.8;
         roadCtx.stroke();
+
+        if (terrain === 'land' || terrain === 'sand') {
+          roadCtx.globalAlpha = isRoad ? 0.28 : 0.12;
+          roadCtx.strokeStyle = districtTheme.color;
+          roadCtx.lineWidth = isRoad ? 1.2 : 0.7;
+          roadCtx.beginPath();
+          roadCtx.moveTo(tilePos.x - (HALF_TILE_W * 0.52), tilePos.y + (HALF_TILE_H * 0.94));
+          roadCtx.lineTo(tilePos.x + (HALF_TILE_W * 0.52), tilePos.y + (HALF_TILE_H * 0.94));
+          roadCtx.stroke();
+
+          roadCtx.beginPath();
+          roadCtx.moveTo(tilePos.x, tilePos.y + (HALF_TILE_H * 0.26));
+          roadCtx.lineTo(tilePos.x, tilePos.y + (HALF_TILE_H * 1.72));
+          roadCtx.stroke();
+        }
+
+        if (!isRoad && terrain === 'land') {
+          roadCtx.globalAlpha = 0.16;
+          roadCtx.fillStyle = districtTheme.accent;
+          roadCtx.fillRect(tilePos.x - 1, tilePos.y + (HALF_TILE_H * 0.72), 2, 2 + (noise * 3));
+        }
+
+        if (isRoad) {
+          roadCtx.globalAlpha = 0.24;
+          applyGlow(roadCtx, districtTheme.color, 12, 1);
+          roadCtx.strokeStyle = districtTheme.color;
+          roadCtx.lineWidth = 2.2;
+          roadCtx.beginPath();
+          roadCtx.moveTo(tilePos.x - (HALF_TILE_W * 0.58), tilePos.y + HALF_TILE_H);
+          roadCtx.lineTo(tilePos.x + (HALF_TILE_W * 0.58), tilePos.y + HALF_TILE_H);
+          roadCtx.stroke();
+          roadCtx.shadowBlur = 0;
+          roadCtx.globalAlpha = 0.75;
+          roadCtx.fillStyle = districtTheme.color;
+          roadCtx.fillRect(tilePos.x - 1, tilePos.y + HALF_TILE_H - 1, 2, 2);
+        }
+
+        if (terrain === 'land' && elevation >= 4 && noise > 0.62) {
+          roadCtx.globalAlpha = 0.08;
+          roadCtx.fillStyle = districtTheme.color;
+          roadCtx.beginPath();
+          roadCtx.arc(tilePos.x + ((noise - 0.5) * 10), tilePos.y + HALF_TILE_H + ((noise - 0.5) * 6), 1.5, 0, Math.PI * 2);
+          roadCtx.fill();
+        }
+        roadCtx.restore();
       }
     }
 
@@ -916,6 +1087,174 @@ export function createIsoRenderer(canvas) {
     ctx.restore();
   }
 
+  function drawControlNodeEnhanced(originX, originY, node, now, state, isHovered = false) {
+    const iso = toIso(node.x, node.y);
+    const cx = originX + iso.x;
+    const cy = originY + iso.y + HALF_TILE_H;
+    const nodeClass = getNodeVisualClass(node);
+    const theme = getNodeTheme(nodeClass);
+    const districtTheme = getDistrictTheme(node.districtId);
+    const nodeScan = state?.covert?.counterActions?.nodeScans?.find((entry) => entry.node_id === node.id) || null;
+    const outbreak = node.outbreak || null;
+    const firewall = node.firewallDefense || null;
+    const circuit = node.circuitConnect || null;
+    const majorNode = isAnchorNode(node) || node.nodeType === 'district-core' || node.nodeType === 'ai' || node.nodeType === 'mining';
+    const pulse = 0.82 + (Math.sin((now / 340) + ((node.x + node.y) * 0.1)) + 1) * 0.18;
+    const towerH = (theme.tower || 48) * (majorNode ? 1.08 : 1);
+    const radius = (isHovered ? 24 : (theme.radius || 20)) * (majorNode ? 1.1 : 1);
+    const auraRadius = (theme.aura || 28) * (majorNode ? 1.1 : 1);
+    const nodeColor = nodeScan ? '#7ae8ff' : outbreak?.infected ? '#ff4fa2' : firewall?.underAttack ? '#ff4f9e' : circuit?.isolated ? '#ff7f5a' : theme.color;
+    const nodeAccent = nodeScan ? '#d8f8ff' : outbreak?.infected ? '#ff79be' : firewall?.defended ? '#7af6ff' : circuit?.isolated ? '#ffd4a5' : theme.accent;
+
+    ctx.save();
+    ctx.globalAlpha = nodeScan ? 0.3 : outbreak?.infected ? 0.34 : firewall?.underAttack ? 0.32 : circuit?.isolated ? 0.32 : 0.2;
+    applyGlow(ctx, nodeColor, majorNode ? 22 : 16, 1);
+    ctx.fillStyle = nodeColor;
+    ctx.beginPath();
+    ctx.ellipse(cx, cy + 1, radius * 1.35 * pulse, radius * 0.55 * pulse, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.shadowBlur = 0;
+
+    ctx.globalAlpha = 0.12;
+    ctx.strokeStyle = districtTheme.color;
+    ctx.lineWidth = 1.2;
+    ctx.beginPath();
+    ctx.ellipse(cx, cy + 2, auraRadius * 1.34 * pulse, auraRadius * 0.52 * pulse, 0, 0, Math.PI * 2);
+    ctx.stroke();
+
+    ctx.globalAlpha = nodeScan ? 0.96 : outbreak?.infected ? 0.95 : firewall?.defended ? 0.95 : circuit?.critical ? 0.92 : 0.78;
+    ctx.strokeStyle = nodeColor;
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(cx, cy - towerH);
+    ctx.lineTo(cx, cy - 6);
+    ctx.stroke();
+
+    ctx.globalAlpha = 0.95;
+    ctx.fillStyle = nodeAccent;
+    ctx.beginPath();
+    ctx.arc(cx, cy - towerH, (majorNode ? 11 : 9) * pulse, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.globalAlpha = 0.7;
+    ctx.strokeStyle = nodeAccent;
+    ctx.lineWidth = 1.3;
+    ctx.beginPath();
+    ctx.arc(cx, cy - towerH, (majorNode ? 17 : 14) * pulse, 0, Math.PI * 2);
+    ctx.stroke();
+
+    ctx.globalAlpha = 0.95;
+    ctx.strokeStyle = nodeAccent;
+    ctx.fillStyle = 'rgba(6,14,26,0.88)';
+    if (nodeClass === 'mining') {
+      ctx.fillRect(cx - 18, cy - 18, 36, 12);
+      ctx.strokeRect(cx - 18, cy - 18, 36, 12);
+      for (let i = -12; i <= 12; i += 12) {
+        ctx.beginPath();
+        ctx.arc(cx + i, cy - 12, 4.5, 0, Math.PI * 2);
+        ctx.stroke();
+      }
+      ctx.globalAlpha = 0.62;
+      ctx.fillStyle = '#ffb068';
+      for (let i = -10; i <= 10; i += 10) {
+        const spark = (Math.sin((now * NODE_SPARK_SPEED) + i) + 1) * 4;
+        ctx.fillRect(cx + i - 1, cy - 8 - spark, 2, 4 + spark);
+      }
+    } else if (nodeClass === 'ai') {
+      ctx.fillRect(cx - 13, cy - 30, 10, 28);
+      ctx.fillRect(cx + 3, cy - 26, 10, 24);
+      ctx.strokeRect(cx - 13, cy - 30, 10, 28);
+      ctx.strokeRect(cx + 3, cy - 26, 10, 24);
+      ctx.beginPath();
+      ctx.arc(cx, cy - 38, 8, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(cx - 6, cy - 38);
+      ctx.lineTo(cx + 6, cy - 38);
+      ctx.moveTo(cx, cy - 44);
+      ctx.lineTo(cx, cy - 32);
+      ctx.stroke();
+    } else if (nodeClass === 'relay') {
+      ctx.beginPath();
+      ctx.moveTo(cx, cy - 30);
+      ctx.lineTo(cx - 10, cy - 8);
+      ctx.lineTo(cx + 10, cy - 8);
+      ctx.closePath();
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.arc(cx, cy - 30, 6, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.arc(cx, cy - 30, 12, Math.PI * 1.1, Math.PI * 1.9);
+      ctx.stroke();
+    } else if (nodeClass === 'control') {
+      ctx.beginPath();
+      ctx.moveTo(cx, cy - 28);
+      ctx.lineTo(cx + 13, cy - 18);
+      ctx.lineTo(cx, cy - 8);
+      ctx.lineTo(cx - 13, cy - 18);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.arc(cx, cy - 18, 6, 0, Math.PI * 2);
+      ctx.stroke();
+    } else if (nodeClass === 'hub') {
+      ctx.fillRect(cx - 17, cy - 22, 34, 12);
+      ctx.strokeRect(cx - 17, cy - 22, 34, 12);
+      ctx.fillRect(cx - 9, cy - 34, 18, 12);
+      ctx.strokeRect(cx - 9, cy - 34, 18, 12);
+      ctx.beginPath();
+      ctx.moveTo(cx - 18, cy - 10);
+      ctx.lineTo(cx, cy - 2);
+      ctx.lineTo(cx + 18, cy - 10);
+      ctx.stroke();
+    } else {
+      ctx.beginPath();
+      ctx.roundRect(cx - 10, cy - 20, 20, 12, 4);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.arc(cx, cy - 14, 4, 0, Math.PI * 2);
+      ctx.stroke();
+    }
+
+    ctx.globalAlpha = 1;
+    ctx.fillStyle = theme.accent;
+    ctx.font = majorNode ? '700 9px Inter, sans-serif' : '700 8px Inter, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(`${theme.label} / ${node.id.toUpperCase()}`, cx, cy - towerH - 12);
+    ctx.globalAlpha = 0.75;
+    ctx.fillStyle = districtTheme.accent;
+    ctx.font = '700 7px Inter, sans-serif';
+    ctx.fillText(districtTheme.glyph, cx, cy - towerH - 24);
+
+    const stateY = cy - towerH - 34;
+    if (nodeScan) {
+      ctx.fillStyle = '#b9f6ff';
+      ctx.fillText('SCANNED', cx, stateY);
+    } else if (outbreak?.infected) {
+      ctx.fillStyle = '#ff79be';
+      ctx.fillText('INFECTED', cx, stateY);
+    } else if (circuit?.isolated || outbreak?.isolated) {
+      ctx.fillStyle = circuit?.isolated ? '#ff9f71' : '#5ef2ff';
+      ctx.fillText('ISOLATED', cx, stateY);
+    } else if (firewall?.underAttack) {
+      ctx.fillStyle = '#ff88c5';
+      ctx.fillText('BREACH', cx, stateY);
+    } else if (node.status === 'unstable' || node.status === 'contested') {
+      ctx.fillStyle = node.status === 'unstable' ? '#ff4fd8' : '#ffd84d';
+      ctx.fillText(node.status === 'unstable' ? 'UNSTABLE' : 'CONTESTED', cx, stateY);
+    }
+
+    if (node.warState === 'fighting' || node.warState === 'reinforcing' || node.warState === 'retreating') {
+      ctx.fillStyle = node.warState === 'fighting' ? '#ff8da5' : node.warState === 'reinforcing' ? '#7dffb2' : '#ffd49f';
+      const tag = node.warState === 'fighting' ? 'WAR' : node.warState === 'reinforcing' ? 'REINFORCE' : 'RETREAT';
+      ctx.fillText(tag, cx, cy - towerH - 44);
+    }
+
+    ctx.restore();
+  }
+
   function drawOperationSuccess(originX, originY, pulse, now, pulseUntil) {
     if (!pulse || !Number.isFinite(pulse.x) || !Number.isFinite(pulse.y)) return;
     const iso = toIso(pulse.x, pulse.y);
@@ -1105,6 +1444,166 @@ export function createIsoRenderer(canvas) {
     ctx.restore();
   }
 
+  function drawMapSignalOverlay(originX, originY, state, now) {
+    const metrics = getSceneMetrics(state);
+    const scanOffset = (now * SURFACE_SCAN_SPEED * (metrics.width + metrics.height)) % (metrics.width + metrics.height);
+    ctx.save();
+    for (let row = 0; row < state.map.height; row += 4) {
+      for (let col = 0; col < state.map.width; col += 4) {
+        const terrain = classifyTerrain(col, row, metrics);
+        if (terrain === 'water') continue;
+        const district = getDistrictAt(state, col, row);
+        const districtTheme = getDistrictTheme(district?.id);
+        const iso = toIso(col, row);
+        const x = originX + iso.x;
+        const y = originY + iso.y + HALF_TILE_H;
+        const phase = (col + row + scanOffset) % 18;
+        if (phase > 2) continue;
+        ctx.globalAlpha = 0.05 + ((2 - phase) * 0.03);
+        ctx.fillStyle = districtTheme.color;
+        ctx.beginPath();
+        ctx.ellipse(x, y, 10 + ((2 - phase) * 4), 5 + ((2 - phase) * 2), 0, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+    ctx.restore();
+  }
+
+  function isMajorLink(from, to) {
+    return isAnchorNode(from) || isAnchorNode(to) || from.nodeType === 'ai' || to.nodeType === 'ai' || from.nodeType === 'mining' || to.nodeType === 'mining';
+  }
+
+  function drawNetworkDataLinksEnhanced(originX, originY, controlNodes, now, state) {
+    if (!Array.isArray(controlNodes) || controlNodes.length < 2) return;
+    const byId = new Map(controlNodes.map((node) => [node.id, node]));
+    const byCoord = new Map(controlNodes.map((node) => [`${node.x},${node.y}`, node]));
+    const networkHeat = Math.max(0, Math.min(100, Number(state?.covert?.networkHeat?.value) || 0));
+    const heatBias = networkHeat / 100;
+    const routeDisruptions = Array.isArray(state?.covert?.counterActions?.routeDisruptions)
+      ? state.covert.counterActions.routeDisruptions
+      : [];
+    ctx.save();
+
+    for (const line of NETWORK_LINES) {
+      const from = byId.get(line.from.id) || byCoord.get(`${line.from.x},${line.from.y}`);
+      const to = byId.get(line.to.id) || byCoord.get(`${line.to.x},${line.to.y}`);
+      if (!from || !to) continue;
+
+      const fromIso = toIso(from.x, from.y);
+      const toIsoPoint = toIso(to.x, to.y);
+      const x1 = originX + fromIso.x;
+      const y1 = originY + fromIso.y + HALF_TILE_H;
+      const x2 = originX + toIsoPoint.x;
+      const y2 = originY + toIsoPoint.y + HALF_TILE_H;
+      const flowPulse = 0.5 + (Math.sin((now / 220) + (line.id.length * 0.5)) + 1) * 0.25;
+      const corrupted = Boolean(from.outbreak?.infected || to.outbreak?.infected);
+      const disrupted = routeDisruptions.find((entry) => (
+        entry?.district_id
+        && (entry.district_id === from.districtId || entry.district_id === to.districtId)
+        && (
+          !Array.isArray(entry.affected_node_ids)
+          || !entry.affected_node_ids.length
+          || entry.affected_node_ids.includes(from.id)
+          || entry.affected_node_ids.includes(to.id)
+        )
+      )) || null;
+      const circuitState = state.circuitConnectView?.active
+        ? state.circuitConnectView.links?.find((entry) => entry.id === edgeKey(from.id, to.id))?.state
+        : '';
+      const routerState = state.signalRouterView?.active
+        ? state.signalRouterView.links?.find((entry) => entry.id === edgeKey(from.id, to.id))?.state
+        : '';
+      const circuitColor = circuitState === 'broken'
+        ? 'rgba(255,87,99,0.96)'
+        : circuitState === 'unstable'
+          ? 'rgba(255,188,87,0.95)'
+          : circuitState === 'bridge'
+            ? 'rgba(181,115,255,0.96)'
+            : circuitState === 'reinforced'
+              ? 'rgba(102,232,255,0.98)'
+              : '';
+      const routerColor = routerState === 'overloaded'
+        ? 'rgba(255,183,71,0.95)'
+        : routerState === 'corrupted'
+          ? 'rgba(255,79,216,0.95)'
+          : routerState === 'blocked'
+            ? 'rgba(255,90,111,0.95)'
+            : routerState === 'stabilized'
+              ? 'rgba(105,243,255,0.98)'
+              : '';
+      const lineTheme = getDistrictTheme(from.districtId);
+      const baseColor = disrupted
+        ? 'rgba(255,196,92,0.96)'
+        : circuitColor || routerColor || (corrupted ? 'rgba(255,79,168,0.94)' : `rgba(94,242,255,${0.78 + (heatBias * 0.12)})`);
+      const fractureFlicker = 0.55 + (Math.sin(now / UNSTABLE_FLICKER_RATE + (line.id.length * 2.4)) + 1) * 0.2;
+
+      ctx.globalAlpha = disrupted ? 0.28 : circuitState === 'broken' ? fractureFlicker * 0.4 : (corrupted ? 0.34 : (0.16 + (heatBias * 0.1)));
+      applyGlow(ctx, lineTheme.color, disrupted ? 18 : 10, 1);
+      ctx.strokeStyle = lineTheme.color;
+      ctx.lineWidth = 4.8 + (disrupted ? 1.2 : 0);
+      ctx.beginPath();
+      ctx.moveTo(x1, y1);
+      ctx.lineTo(x2, y2);
+      ctx.stroke();
+      ctx.shadowBlur = 0;
+
+      ctx.globalAlpha = disrupted ? 0.88 : circuitState === 'broken' ? fractureFlicker : (corrupted ? 0.78 : (0.45 + (heatBias * 0.16)));
+      ctx.strokeStyle = baseColor;
+      ctx.lineWidth = (((routerState === 'blocked' || circuitState === 'broken') ? 2.8 : 1.7) + flowPulse + (heatBias * 0.6) + (disrupted ? 0.8 : 0));
+      ctx.beginPath();
+      ctx.moveTo(x1, y1);
+      ctx.lineTo(x2, y2);
+      ctx.stroke();
+
+      ctx.globalAlpha = 0.42;
+      ctx.strokeStyle = disrupted ? '#fff0c2' : 'rgba(230,250,255,0.84)';
+      ctx.lineWidth = 0.9;
+      ctx.setLineDash([6, 12]);
+      ctx.lineDashOffset = -((now * 0.03) + (line.id.length * 7));
+      ctx.beginPath();
+      ctx.moveTo(x1, y1);
+      ctx.lineTo(x2, y2);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      if (disrupted) {
+        ctx.globalAlpha = 0.54;
+        ctx.strokeStyle = 'rgba(255,239,200,0.98)';
+        ctx.lineWidth = 1.2;
+        ctx.beginPath();
+        ctx.moveTo(((x1 + x2) / 2) - 5, ((y1 + y2) / 2) - 5);
+        ctx.lineTo(((x1 + x2) / 2) + 5, ((y1 + y2) / 2) + 5);
+        ctx.moveTo(((x1 + x2) / 2) + 5, ((y1 + y2) / 2) - 5);
+        ctx.lineTo(((x1 + x2) / 2) - 5, ((y1 + y2) / 2) + 5);
+        ctx.stroke();
+      }
+
+      const packetPhase = ((now * DATA_PACKET_SPEED * (1.8 + (heatBias * 0.9))) + ((from.x + to.y) * 0.021)) % 1;
+      const packetCount = isMajorLink(from, to) ? 3 : 2;
+      for (let i = 0; i < packetCount; i += 1) {
+        const phase = (packetPhase + (i / packetCount)) % 1;
+        const px = x1 + ((x2 - x1) * phase);
+        const py = y1 + ((y2 - y1) * phase);
+        ctx.globalAlpha = 0.95 - (i * 0.18);
+        ctx.fillStyle = disrupted
+          ? '#fff0c2'
+          : circuitState === 'broken'
+            ? '#ffb7be'
+            : circuitState === 'unstable'
+              ? '#ffe0af'
+              : routerState === 'blocked'
+                ? '#ffd0d8'
+                : (corrupted ? '#ffd2f1' : '#e7fbff');
+        applyGlow(ctx, ctx.fillStyle, 8, 1);
+        ctx.beginPath();
+        ctx.arc(px, py, i === 0 ? 2.8 : 2.1, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.shadowBlur = 0;
+      }
+    }
+    ctx.restore();
+  }
+
   function drawDistrictControlOverlay(originX, originY, state, now) {
     const districtState = Array.isArray(state?.districtState) ? state.districtState : [];
     if (!districtState.length || !state?.districts?.byId) return;
@@ -1147,6 +1646,73 @@ export function createIsoRenderer(canvas) {
       ctx.fillStyle = '#e8fdff';
       ctx.font = DISTRICT_LABEL_FONT;
       ctx.fillText(`${Math.round(Number(entry.control || 0))}% · ${entry.owner || 'Contested'}`, labelX, labelY);
+    }
+    ctx.restore();
+  }
+
+  function drawDistrictControlOverlayEnhanced(originX, originY, state, now) {
+    const districtState = Array.isArray(state?.districtState) ? state.districtState : [];
+    if (!districtState.length || !state?.districts?.byId) return;
+    ctx.save();
+    for (const entry of districtState) {
+      const districtMeta = state.districts.byId.get(entry.id);
+      const grid = districtMeta?.grid;
+      if (!grid) continue;
+      const style = DISTRICT_STATE_STYLE[entry.controlState] || DISTRICT_STATE_STYLE.contested;
+      const districtTheme = getDistrictTheme(entry.id);
+      const corners = [
+        toIso(grid.col, grid.row),
+        toIso(grid.col + grid.w, grid.row),
+        toIso(grid.col + grid.w, grid.row + grid.h),
+        toIso(grid.col, grid.row + grid.h),
+      ];
+      const pulse = entry.controlState === 'collapsing' ? 0.78 + ((Math.sin(now / 180) + 1) * 0.11) : 1;
+      ctx.globalAlpha = pulse;
+      ctx.beginPath();
+      corners.forEach((corner, index) => {
+        const px = originX + corner.x;
+        const py = originY + corner.y;
+        if (index === 0) ctx.moveTo(px, py);
+        else ctx.lineTo(px, py);
+      });
+      ctx.closePath();
+      ctx.fillStyle = style.fill;
+      ctx.fill();
+      ctx.strokeStyle = districtTheme.color;
+      ctx.lineWidth = 1.8;
+      applyGlow(ctx, districtTheme.color, 14, 1);
+      ctx.stroke();
+      ctx.shadowBlur = 0;
+
+      const cornerSize = 20;
+      for (const corner of corners) {
+        const px = originX + corner.x;
+        const py = originY + corner.y;
+        ctx.globalAlpha = 0.75;
+        ctx.strokeStyle = districtTheme.accent;
+        ctx.lineWidth = 1.4;
+        ctx.beginPath();
+        ctx.moveTo(px, py);
+        ctx.lineTo(px + cornerSize, py + 10);
+        ctx.moveTo(px, py);
+        ctx.lineTo(px - cornerSize, py + 10);
+        ctx.stroke();
+      }
+
+      const center = toIso(grid.col + (grid.w / 2), grid.row + (grid.h / 2));
+      const labelX = originX + center.x;
+      const labelY = originY + center.y;
+      ctx.globalAlpha = 0.9;
+      ctx.fillStyle = 'rgba(2,8,20,0.84)';
+      ctx.font = DISTRICT_LABEL_GLOW_FONT;
+      ctx.textAlign = 'center';
+      ctx.fillText(`${districtTheme.label} / ${String(entry.controlState || 'contested').toUpperCase()}`, labelX, labelY - 8);
+      ctx.fillStyle = districtTheme.color;
+      ctx.font = '700 10px Inter, sans-serif';
+      ctx.fillText(districtTheme.sublabel, labelX, labelY + 8);
+      ctx.fillStyle = '#e8fdff';
+      ctx.font = DISTRICT_LABEL_FONT;
+      ctx.fillText(`${Math.round(Number(entry.control || 0))}% / ${entry.owner || 'Contested'}`, labelX, labelY + 22);
     }
     ctx.restore();
   }
@@ -1551,10 +2117,11 @@ export function createIsoRenderer(canvas) {
 
     ctx.drawImage(layerState.roadBlocks.canvas, worldDrawX, worldDrawY);
     ctx.drawImage(layerState.worldObjects.canvas, worldDrawX, worldDrawY);
-    drawDistrictControlOverlay(originX, originY, state, now);
+    drawMapSignalOverlay(originX, originY, state, now);
+    drawDistrictControlOverlayEnhanced(originX, originY, state, now);
     drawCovertDistrictOverlay(originX, originY, state, now);
 
-    drawNetworkDataLinks(originX, originY, state.controlNodes, now, state);
+    drawNetworkDataLinksEnhanced(originX, originY, state.controlNodes, now, state);
     drawSignalRouterOverlay(originX, originY, state, now);
     drawFirewallDefenseOverlay(originX, originY, state, now);
 
@@ -1574,7 +2141,7 @@ export function createIsoRenderer(canvas) {
     const controlNodes = state.controlNodes;
     if (Array.isArray(controlNodes) && controlNodes.length) {
       for (const node of controlNodes) {
-        drawControlNode(originX, originY, node, now, state, state.mouse?.hoverNodeId === node.id);
+        drawControlNodeEnhanced(originX, originY, node, now, state, state.mouse?.hoverNodeId === node.id);
         drawCovertNodeOverlay(originX, originY, node, now, state);
       }
     }
