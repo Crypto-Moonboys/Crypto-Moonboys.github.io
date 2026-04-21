@@ -263,7 +263,8 @@ async function readRewardWindowTotals(db, telegramId) {
       FROM blocktopia_progression_events
       WHERE telegram_id = ?
         AND action != 'admin_grant'
-        AND DATE(created_at) = DATE('now')
+        AND created_at >= datetime('now', 'start of day')
+        AND created_at < datetime('now', 'start of day', '+1 day')
     `).bind(telegramId).first().catch(() => ({ xp: 0 })),
   ]);
   return {
