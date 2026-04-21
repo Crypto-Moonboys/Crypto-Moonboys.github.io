@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-04-21T22:08:35.503Z",
+  "generatedAt": "2026-04-21T23:07:55.579Z",
   "mode": "live-ai",
   "sourceHealth": {
     "coingecko-global": "ok",
@@ -11,84 +11,84 @@
   "signalCount": 5,
   "signals": [
     {
-      "id": "signal-1776809315503-1",
-      "lane": "npc",
+      "id": "signal-1776812875578-1",
+      "lane": "world",
       "priority": 4,
       "ttlMinutes": 45,
-      "npcLine": "Whispers say CHIP tech nodes glitch after recent market tremors.",
-      "questPulse": "Investigate CHIP data streams for exploitable weaknesses.",
-      "worldFeed": "CHIP circuits flicker amid economic shadows.",
-      "clueEvent": "Uncover hidden bugs in CHIP's codebase.",
+      "npcLine": "Crypto tides turn sour; shadows thick with dread.",
+      "questPulse": "Fear spreads through neon alleys; markets recoil.",
+      "worldFeed": "Global crypto dims; value slips beneath the neon haze.",
+      "clueEvent": "Unseen cracks surface in digital finance networks.",
       "tags": [
-        "tech",
-        "vulnerability",
-        "chip"
+        "crypto",
+        "fear",
+        "market_down"
       ],
-      "expiresAt": "2026-04-21T22:53:35.503Z"
+      "expiresAt": "2026-04-21T23:52:55.578Z"
     },
     {
-      "id": "signal-1776809315503-2",
-      "lane": "quest",
-      "priority": 3,
-      "ttlMinutes": 60,
-      "npcLine": "RAVE sectors buzz with strange signals, ripe for infiltration.",
-      "questPulse": "Trace RAVE frequency distortions to their origin point.",
-      "worldFeed": "RAVE frequencies spike despite market fears.",
-      "clueEvent": "Decrypt RAVE broadcast anomalies.",
-      "tags": [
-        "signal",
-        "infiltration",
-        "rave"
-      ],
-      "expiresAt": "2026-04-21T23:08:35.503Z"
-    },
-    {
-      "id": "signal-1776809315503-3",
-      "lane": "clue",
-      "priority": 5,
-      "ttlMinutes": 30,
-      "npcLine": "Fear grips the grid; shadows deepen around OPG exchanges.",
-      "questPulse": "Scout OPG vaults before systems collapse.",
-      "worldFeed": "OPG ledgers show eerie instability.",
-      "clueEvent": "Locate OPG breach points under duress.",
-      "tags": [
-        "danger",
-        "breach",
-        "opg"
-      ],
-      "expiresAt": "2026-04-21T22:38:35.503Z"
-    },
-    {
-      "id": "signal-1776809315503-4",
-      "lane": "world",
-      "priority": 2,
-      "ttlMinutes": 90,
-      "npcLine": "MAGA caches flicker, their value clouded by sector unrest.",
-      "questPulse": "Monitor MAGA supply chains for illicit flows.",
-      "worldFeed": "MAGA’s shimmer fades with market dread.",
-      "clueEvent": "Trace MAGA anomalies through black market nodes.",
-      "tags": [
-        "cache",
-        "surveillance",
-        "maga"
-      ],
-      "expiresAt": "2026-04-21T23:38:35.503Z"
-    },
-    {
-      "id": "signal-1776809315503-5",
+      "id": "signal-1776812875579-2",
       "lane": "ops",
+      "priority": 3,
+      "ttlMinutes": 30,
+      "npcLine": "RAVE pulses upwards, a fleeting spark in dark streets.",
+      "questPulse": "Minor digital traction on fringe tokens; watch for shifts.",
+      "worldFeed": "Low-profile coins flicker with strange, unnoticed energy.",
+      "clueEvent": "Silent surge detected around RAVE micro-exchanges.",
+      "tags": [
+        "tokens",
+        "surge",
+        "low_profile"
+      ],
+      "expiresAt": "2026-04-21T23:37:55.579Z"
+    },
+    {
+      "id": "signal-1776812875579-3",
+      "lane": "clue",
+      "priority": 2,
+      "ttlMinutes": 60,
+      "npcLine": "PENGU whispers through underground channels—signals glitchy, but alive.",
+      "questPulse": "Unknown assets stir beneath neon glows; cryptic hints abound.",
+      "worldFeed": "Trader chatter hints at hidden value shifts in cold chains.",
+      "clueEvent": "Encrypted chatter spikes concerning PENGU cold vaults.",
+      "tags": [
+        "whisper",
+        "encrypted",
+        "cold_storage"
+      ],
+      "expiresAt": "2026-04-22T00:07:55.579Z"
+    },
+    {
+      "id": "signal-1776812875579-4",
+      "lane": "quest",
+      "priority": 5,
+      "ttlMinutes": 20,
+      "npcLine": "CHIP clatters on dim market boards; alert for sharp moves.",
+      "questPulse": "Circuit buzz intensifies around CHIP’s flickering nodes.",
+      "worldFeed": "Chip tokens catch brief neon fire before fading fast.",
+      "clueEvent": "Rapid micro trades detected on CHIP subnets.",
+      "tags": [
+        "alert",
+        "chip",
+        "micro_trades"
+      ],
+      "expiresAt": "2026-04-21T23:27:55.579Z"
+    },
+    {
+      "id": "signal-1776812875579-5",
+      "lane": "npc",
       "priority": 1,
       "ttlMinutes": 120,
-      "npcLine": "AAVE vaults stand guarded; fear tightens control lines.",
-      "questPulse": "Secure AAVE assets before system lockdown.",
-      "worldFeed": "AAVE holdings frozen amid fear's rise.",
-      "clueEvent": "Identify threats in AAVE's encrypted layers.",
+      "npcLine": "OPG fades quietly into market shadows; ghosts in the machine.",
+      "questPulse": "Low impact ripple, barely felt but persistent in code streams.",
+      "worldFeed": "OPG’s digital footprint evaporates into cyber voids.",
+      "clueEvent": "Stealth exits logged on OPG ledger segments.",
       "tags": [
-        "security",
-        "vault",
-        "aave"
+        "ghost",
+        "fade",
+        "stealth"
       ],
-      "expiresAt": "2026-04-22T00:08:35.503Z"
+      "expiresAt": "2026-04-22T01:07:55.579Z"
     }
   ]
 }
