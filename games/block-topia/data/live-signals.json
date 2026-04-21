@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-04-21T19:24:36.482Z",
+  "generatedAt": "2026-04-21T20:27:59.880Z",
   "mode": "live-ai",
   "sourceHealth": {
     "coingecko-global": "ok",
@@ -11,84 +11,84 @@
   "signalCount": 5,
   "signals": [
     {
-      "id": "signal-1776799476482-1",
+      "id": "signal-1776803279879-1",
       "lane": "world",
       "priority": 4,
-      "ttlMinutes": 90,
-      "npcLine": "Market shadows deepen, trust erodes with every silent dip.",
-      "questPulse": "Scan for ghost trades slipping beneath the fear veil.",
-      "worldFeed": "Crypto nodes flicker weak; pulse weakens, panic in the grid.",
-      "clueEvent": "Sudden silence in major token chatter; a storm brews.",
+      "ttlMinutes": 45,
+      "npcLine": "Market pulse downshifted—shadows thicker in crypto alleys.",
+      "questPulse": "Scout for falling neon coins; fear feeds the streets.",
+      "worldFeed": "Digital assets flicker; mass selloffs whisper rebellion.",
+      "clueEvent": "Glitched ledger shows dips amid rising dread index.",
       "tags": [
+        "crypto",
         "fear",
-        "market-fall",
-        "crypto"
+        "marketdown"
       ],
-      "expiresAt": "2026-04-21T20:54:36.482Z"
+      "expiresAt": "2026-04-21T21:12:59.879Z"
     },
     {
-      "id": "signal-1776799476482-2",
+      "id": "signal-1776803279880-2",
       "lane": "ops",
       "priority": 3,
-      "ttlMinutes": 75,
-      "npcLine": "Watch the undercurrents—minor tokens stir, unknown gains lurk.",
-      "questPulse": "Track emerging spikes on off-world assets; anomalies detected.",
-      "worldFeed": "Data leaks show strange activity in fringe markets tonight.",
-      "clueEvent": "Unstable token pulses hint at dark market manipulation.",
-      "tags": [
-        "stealth",
-        "speculation",
-        "crypto"
-      ],
-      "expiresAt": "2026-04-21T20:39:36.482Z"
-    },
-    {
-      "id": "signal-1776799476482-3",
-      "lane": "clue",
-      "priority": 5,
       "ttlMinutes": 60,
-      "npcLine": "Crypto dread thickens; low sentiment breeds opportunists.",
-      "questPulse": "Hunt whispered rumors of protocol exploits before next collapse.",
-      "worldFeed": "Decayed sentiment scores signal deep-rooted market rot now.",
-      "clueEvent": "Signal drops: traders vanish, fear masks true intentions.",
+      "npcLine": "RAVE static lost in vaporwaves; signals weak but rising.",
+      "questPulse": "Hunt for RAVE nodes before silence consumes them.",
+      "worldFeed": "Unknown broadcast spikes lure data scavengers; caution advised.",
+      "clueEvent": "Encrypted chatter hints at shifts in RAVE network.",
       "tags": [
-        "fear",
-        "exploits",
-        "sentiment"
+        "rave",
+        "signal",
+        "datahunt"
       ],
-      "expiresAt": "2026-04-21T20:24:36.482Z"
+      "expiresAt": "2026-04-21T21:27:59.880Z"
     },
     {
-      "id": "signal-1776799476482-4",
-      "lane": "quest",
+      "id": "signal-1776803279880-3",
+      "lane": "clue",
       "priority": 2,
-      "ttlMinutes": 120,
-      "npcLine": "Scout forgotten coin caches; dead zones might yield power-ups.",
-      "questPulse": "Investigate stagnant tokens with hidden potential beneath the noise.",
-      "worldFeed": "Obscure assets flicker—shadow profits await the daring few.",
-      "clueEvent": "Whispers of unrevealed vaults surface in darknet chatter.",
+      "ttlMinutes": 30,
+      "npcLine": "MAGA circuits flicker, instability brewing beneath surface code.",
+      "questPulse": "Decode MAGA’s strange logic loops; anomalies brewing in code.",
+      "worldFeed": "Sentiment weakens; fear ripples through digital veins.",
+      "clueEvent": "Tracebacks reveal odd MAGA protocol spikes at midnight.",
       "tags": [
-        "exploration",
-        "hidden-value",
-        "crypto"
+        "maga",
+        "anomaly",
+        "code"
       ],
-      "expiresAt": "2026-04-21T21:24:36.482Z"
+      "expiresAt": "2026-04-21T20:57:59.880Z"
     },
     {
-      "id": "signal-1776799476482-5",
-      "lane": "npc",
+      "id": "signal-1776803279880-4",
+      "lane": "quest",
       "priority": 3,
-      "ttlMinutes": 80,
-      "npcLine": "Silent nodes relay chatter: 'Asteroid' and 'Chip' pulse with mystery.",
-      "questPulse": "Decrypt cryptic broadcasts around trending yet unstable chains.",
-      "worldFeed": "Energy spikes from enigmatic coins disrupt grid stability.",
-      "clueEvent": "Fragmented token signals draw shadows into the neon night.",
+      "ttlMinutes": 50,
+      "npcLine": "ASTEROID cluster drifts erratic; miners report shifting data masses.",
+      "questPulse": "Harvest unstable ASTEROID fragments before collapse.",
+      "worldFeed": "Shadow markets trade in volatile cosmic bytes.",
+      "clueEvent": "Market nodes near ASTEROID fracture points twitch erratically.",
       "tags": [
-        "mystery",
-        "trending",
-        "crypto"
+        "asteroid",
+        "volatile",
+        "datamining"
       ],
-      "expiresAt": "2026-04-21T20:44:36.482Z"
+      "expiresAt": "2026-04-21T21:17:59.880Z"
+    },
+    {
+      "id": "signal-1776803279880-5",
+      "lane": "npc",
+      "priority": 5,
+      "ttlMinutes": 40,
+      "npcLine": "CHIP units heating; whispers of a price crash imminent.",
+      "questPulse": "Infiltrate CHIP vaults and extract critical data cores.",
+      "worldFeed": "Thermal spikes in CHIP circuits alarm net-runners worldwide.",
+      "clueEvent": "Circuit anomalies predict market turbulence with CHIP tokens.",
+      "tags": [
+        "chip",
+        "crash",
+        "dataraid"
+      ],
+      "expiresAt": "2026-04-21T21:07:59.880Z"
     }
   ]
 }
