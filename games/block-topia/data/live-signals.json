@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-04-21T16:36:45.846Z",
+  "generatedAt": "2026-04-21T17:59:55.956Z",
   "mode": "live-ai",
   "sourceHealth": {
     "coingecko-global": "ok",
@@ -11,84 +11,84 @@
   "signalCount": 5,
   "signals": [
     {
-      "id": "signal-1776789405845-1",
+      "id": "signal-1776794395955-1",
       "lane": "world",
       "priority": 4,
       "ttlMinutes": 45,
-      "npcLine": "Markets flicker; cryptos clutter the net's dark corners.",
-      "questPulse": "Gather intel on emerging coin shadows.",
-      "worldFeed": "Global cap shows faint pulse amid digital chaos.",
-      "clueEvent": "Spike in newbie cryptos blurs data trails.",
+      "npcLine": "Crypto flux dipping, shadows closing on digital wealth.",
+      "questPulse": "Market pulse weakens; scramble your assets.",
+      "worldFeed": "Global credits slipping into the void; traders whisper fear.",
+      "clueEvent": "Market cap bleeds as cryptos falter in digital storm.",
       "tags": [
-        "cryptocurrency",
         "market",
-        "dystopia"
+        "fear",
+        "crypto"
       ],
-      "expiresAt": "2026-04-21T17:21:45.845Z"
+      "expiresAt": "2026-04-21T18:44:55.955Z"
     },
     {
-      "id": "signal-1776789405846-2",
+      "id": "signal-1776794395956-2",
       "lane": "ops",
       "priority": 3,
       "ttlMinutes": 30,
-      "npcLine": "Sentiment drops low; street whispers fret 'fear'.",
-      "questPulse": "Secure trust nodes before panic spreads.",
-      "worldFeed": "Fear ticks up; buy orders retreat silently.",
-      "clueEvent": "Surge in risk aversion disrupts usual flows.",
+      "npcLine": "RAVE’s momentum rising, potential hot spot for covert ops.",
+      "questPulse": "Signal strong on new surge; watch RAVE’s coordinates.",
+      "worldFeed": "New trends spike briefly, stirring the underground circuits.",
+      "clueEvent": "RAVE token pulses stronger amidst chaos; eyes on prize.",
       "tags": [
-        "sentiment",
-        "risk",
-        "fear"
+        "trend",
+        "surge",
+        "crypto"
       ],
-      "expiresAt": "2026-04-21T17:06:45.846Z"
+      "expiresAt": "2026-04-21T18:29:55.956Z"
     },
     {
-      "id": "signal-1776789405846-3",
+      "id": "signal-1776794395956-3",
       "lane": "clue",
       "priority": 2,
       "ttlMinutes": 60,
-      "npcLine": "RAVE and OPG signals spike, but cloak their meaning.",
-      "questPulse": "Decode patterns in cryptic token chatter.",
-      "worldFeed": "Digital buzz highlights fringe cryptos gaining traction.",
-      "clueEvent": "Unknown assets stir watchers' instincts.",
+      "npcLine": "Rustling of AAVE echoes—liquidity nodes shifting fast.",
+      "questPulse": "Movement detected near lending clusters; dig deeper.",
+      "worldFeed": "Protocols ripple; lenders brace for unseen pressure.",
+      "clueEvent": "Unusual activity around debt chains; probe liquidity streams.",
       "tags": [
-        "tokens",
-        "trending",
-        "intel"
+        "finance",
+        "liquidity",
+        "crypto"
       ],
-      "expiresAt": "2026-04-21T17:36:45.846Z"
+      "expiresAt": "2026-04-21T18:59:55.956Z"
     },
     {
-      "id": "signal-1776789405846-4",
+      "id": "signal-1776794395956-4",
       "lane": "quest",
       "priority": 5,
-      "ttlMinutes": 20,
-      "npcLine": "System warns: watch out for unseen market traps.",
-      "questPulse": "Investigate sudden shifts in coin popularity.",
-      "worldFeed": "Clandestine moves hint at market cap manipulation.",
-      "clueEvent": "Rapid rise in obscure coins draws suspicion.",
+      "ttlMinutes": 90,
+      "npcLine": "PENGU rising on rogue waves—grab the chance or crash.",
+      "questPulse": "Seize volatile moment or be lost in the silence.",
+      "worldFeed": "Player factions contest over new token tides; danger high.",
+      "clueEvent": "Penguins' market swim stirs factions; risk the deep.",
       "tags": [
-        "investigation",
-        "market",
-        "warning"
+        "volatility",
+        "opportunity",
+        "risk"
       ],
-      "expiresAt": "2026-04-21T16:56:45.846Z"
+      "expiresAt": "2026-04-21T19:29:55.956Z"
     },
     {
-      "id": "signal-1776789405846-5",
+      "id": "signal-1776794395956-5",
       "lane": "npc",
       "priority": 3,
       "ttlMinutes": 40,
-      "npcLine": "AAVE rises quietly, ghosts whisper potential moves.",
-      "questPulse": "Track AAVE’s silent advance amidst chaos.",
-      "worldFeed": "Stealth climbs may signal bigger plays ahead.",
-      "clueEvent": "Subtle upticks in major crypto alliances noted.",
+      "npcLine": "ASTEROID’s weak signature flickers—potential for sudden boom.",
+      "questPulse": "Keep eyes sharp on cosmic shifts; power plays ahead.",
+      "worldFeed": "Tiny assets warp under pressure; wary traders alert.",
+      "clueEvent": "Asteroid tokens wobble, hinting at explosive moves soon.",
       "tags": [
-        "whisper",
-        "strategy",
-        "cryptocurrency"
+        "alert",
+        "speculation",
+        "crypto"
       ],
-      "expiresAt": "2026-04-21T17:16:45.846Z"
+      "expiresAt": "2026-04-21T18:39:55.956Z"
     }
   ]
 }
