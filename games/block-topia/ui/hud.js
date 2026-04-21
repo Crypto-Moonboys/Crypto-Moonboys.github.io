@@ -316,7 +316,10 @@ export function createHud(doc) {
     const nodeScanCount = Math.max(0, Number(summary.activeNodeScans) || 0);
     const localTraceCount = Math.max(0, Number(summary.activeLocalTraces) || 0);
     const routeDisruptionCount = Math.max(0, Number(summary.activeRouteDisruptions) || 0);
+    const activeHunters = Math.max(0, Number(summary.activeHunters) || 0);
+    const currentHunterPressure = Math.max(0, Number(summary.currentDistrictHunterPressure) || 0);
     const hottestNode = snapshot?.nodeRiskById?.[summary.hottestNodeId] || null;
+    const hottestHunterNode = snapshot?.hunterDetectionByNodeId?.[summary.hottestHunterNodeId] || null;
     const currentDistrict = snapshot?.districtSignalById?.[summary.currentDistrictId] || null;
     const focusedDistrict = currentDistrict || snapshot?.districtSignalById?.[summary.hottestDistrictId] || null;
     const districtLabel = String(focusedDistrict?.pressure_flag || summary.currentDistrictFlag || 'calm').toUpperCase();
@@ -328,10 +331,16 @@ export function createHud(doc) {
     covertHeatValue.textContent = `${networkHeat}%`;
     covertHeatMeta.textContent = `${networkTier} · detection floor ${Math.max(0, Number(snapshot?.networkHeat?.derived_floor) || 0)}%`;
 
-    covertNodeValue.textContent = hottestNode ? `${Math.round(nodeRisk)} · ${nodeStatus.toUpperCase()}` : 'QUIET';
+    covertNodeValue.textContent = hottestNode
+      ? `${Math.round(nodeRisk)} · ${nodeStatus.toUpperCase()}`
+      : hottestHunterNode
+        ? `HUNTER ${Math.round(Math.max(0, Number(hottestHunterNode.intensity) || 0))}`
+        : 'QUIET';
     covertNodeMeta.textContent = hottestNode
       ? `${String(hottestNode.node_id || '').toUpperCase()} · ${String(hottestNode.district_id || '').replace(/-/g, ' ')}`
-      : 'No covert-hot node in focus';
+      : hottestHunterNode
+        ? `${String(hottestHunterNode.node_id || '').toUpperCase()} · moving SAM scan field`
+        : 'No covert-hot node in focus';
 
     covertDistrictValue.textContent = `${districtLabel}`;
     covertDistrictMeta.textContent = focusedDistrict
@@ -339,13 +348,15 @@ export function createHud(doc) {
       : 'District pressure nominal';
 
     covertAgentValue.textContent = `${activeAgents} ACTIVE`;
-    covertAgentMeta.textContent = `${exposedAgents} exposed · ${capturedAgents} captured · ${highRiskAgents} high risk`;
+    covertAgentMeta.textContent = `${exposedAgents} exposed · ${capturedAgents} captured · ${highRiskAgents} high risk · ${activeHunters} hunters`;
 
     if (covertSamStatus) covertSamStatus.textContent = `Watch: ${samTier} ${samSensitivity}`;
 
     const pressureFlags = Array.isArray(snapshot?.samAwareness?.pressure_flags) ? snapshot.samAwareness.pressure_flags : [];
     const watchCopy = primaryCounterAction
       ? primaryCounterAction
+      : activeHunters > 0
+      ? `${activeHunters} hunter patrol${activeHunters === 1 ? '' : 's'} sweeping nearby zones`
       : pressureFlags.length
       ? pressureFlags[0].replace(/_/g, ' ')
       : networkHeat >= 70
@@ -357,6 +368,8 @@ export function createHud(doc) {
 
     if (urgentRecoveryAgents > 0) {
       covertRecoveryLine.textContent = `${urgentRecoveryAgents} urgent recovery ${urgentRecoveryAgents === 1 ? 'window' : 'windows'} - SAM counter-actions active${routeDisruptionCount > 0 ? ' - routes unstable' : ''}`;
+    } else if (activeHunters > 0 && currentHunterPressure > 0) {
+      covertRecoveryLine.textContent = `${activeHunters} hunter patrol${activeHunters === 1 ? '' : 's'} active · district scan pressure ${Math.round(currentHunterPressure)} · covert success reduced in the field`;
     } else if (capturedAgents > 0) {
       const recoverable = summary.recoveryReady
         ? `Recovery boost ready · ${Math.max(0, Number(summary.recoveryCost) || 0)} gems`

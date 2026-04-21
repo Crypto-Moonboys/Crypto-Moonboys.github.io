@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="48" viewBox="0 0 640 48" fill="none">
+  <defs>
+    <g id="hunter">
+      <ellipse cx="16" cy="41" rx="9" ry="3.4" fill="#04111F" opacity="0.42"/>
+      <path d="M16 7L24 12L24 21L16 27L8 21L8 12L16 7Z" fill="#153554"/>
+      <path d="M16 10L21 13V19L16 22L11 19V13L16 10Z" fill="#7AE8FF"/>
+      <path d="M10 23L16 19L22 23L20 34L12 34L10 23Z" fill="#0E243D"/>
+      <path d="M12 25L16 23L20 25L18.5 33L13.5 33L12 25Z" fill="#1E4D77"/>
+      <rect x="13" y="25" width="6" height="4" rx="2" fill="#C8FBFF"/>
+      <path d="M12 34L9 40" stroke="#7AE8FF" stroke-width="2.4" stroke-linecap="round"/>
+      <path d="M20 34L23 40" stroke="#7AE8FF" stroke-width="2.4" stroke-linecap="round"/>
+      <path d="M12 28L7 31" stroke="#7AE8FF" stroke-width="2.2" stroke-linecap="round"/>
+      <path d="M20 28L25 31" stroke="#7AE8FF" stroke-width="2.2" stroke-linecap="round"/>
+      <circle cx="16" cy="16" r="2.6" fill="#F4FEFF"/>
+      <path d="M5 13L2 15" stroke="#7AE8FF" stroke-width="1.8" stroke-linecap="round" opacity="0.75"/>
+      <path d="M27 13L30 15" stroke="#7AE8FF" stroke-width="1.8" stroke-linecap="round" opacity="0.75"/>
+    </g>
+  </defs>
+  <use href="#hunter" x="0"/>
+  <use href="#hunter" x="32"/>
+  <use href="#hunter" x="64"/>
+  <use href="#hunter" x="96"/>
+  <use href="#hunter" x="128"/>
+  <use href="#hunter" x="160"/>
+  <use href="#hunter" x="192"/>
+  <use href="#hunter" x="224"/>
+  <use href="#hunter" x="256"/>
+  <use href="#hunter" x="288"/>
+  <use href="#hunter" x="320"/>
+  <use href="#hunter" x="352"/>
+  <use href="#hunter" x="384"/>
+  <use href="#hunter" x="416"/>
+  <use href="#hunter" x="448"/>
+  <use href="#hunter" x="480"/>
+  <use href="#hunter" x="512"/>
+  <use href="#hunter" x="544"/>
+  <use href="#hunter" x="576"/>
+  <use href="#hunter" x="608"/>
+</svg>

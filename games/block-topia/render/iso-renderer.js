@@ -45,6 +45,7 @@ const ROLE_STYLE = {
   recruiter: { color: '#8dff6a', factionRing: true },
   drifter: { color: '#a0b0c8', factionRing: false },
   agent: { color: '#ff9b42', factionRing: true },
+  'sam-hunter': { color: '#7ae8ff', factionRing: false },
   crowd: { color: '#89a0ba', factionRing: false },
 };
 
@@ -116,6 +117,7 @@ const NPC_ASSETS = {
   agent: '/games/block-topia/assets/npcs/agent.svg',
   recruiter: '/games/block-topia/assets/npcs/recruiter.svg',
   drifter: '/games/block-topia/assets/npcs/drifter.svg',
+  'sam-hunter': '/games/block-topia/assets/npcs/sam-hunter.svg',
   crowd: '/games/block-topia/assets/npcs/crowd-citizen.svg',
   'lore-keeper': '/games/block-topia/assets/npcs/radio-tech.svg',
 };
@@ -683,15 +685,42 @@ export function createIsoRenderer(canvas) {
     if (!isWorldPointVisible(sx, sy, visible, 48)) return;
 
     const style = ROLE_STYLE[npc.role] || ROLE_STYLE.crowd;
+    const isHunter = npc.role === 'sam-hunter' || npc.mode === 'hunter';
+    const hunterPulse = 0.86 + ((Math.sin(now / 260) + 1) * 0.12);
 
-    ctx.globalAlpha = npc.mode === 'active' ? 0.35 : 0.16;
+    ctx.globalAlpha = isHunter ? 0.26 : npc.mode === 'active' ? 0.35 : 0.16;
     ctx.fillStyle = style.color;
     ctx.beginPath();
-    ctx.ellipse(sx, sy - 2, npc.mode === 'active' ? 11 : 8, npc.mode === 'active' ? 6 : 4, 0, 0, Math.PI * 2);
+    ctx.ellipse(
+      sx,
+      sy - 2,
+      isHunter ? 13 * hunterPulse : npc.mode === 'active' ? 11 : 8,
+      isHunter ? 7 * hunterPulse : npc.mode === 'active' ? 6 : 4,
+      0,
+      0,
+      Math.PI * 2,
+    );
     ctx.fill();
     ctx.globalAlpha = 1;
 
-    drawNpcSprite(sx, sy + 2, npc.role || 'drifter', getNpcFrame(npc, now, isNearby), npc.mode === 'active' ? 1.28 : 1.05);
+    if (isHunter) {
+      ctx.save();
+      ctx.globalAlpha = 0.18;
+      ctx.strokeStyle = '#7ae8ff';
+      ctx.lineWidth = 1.4;
+      ctx.beginPath();
+      ctx.ellipse(sx, sy + 4, 18 * hunterPulse, 8 * hunterPulse, 0, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(sx - 8, sy - 30);
+      ctx.lineTo(sx + 8, sy - 22);
+      ctx.moveTo(sx - 8, sy - 22);
+      ctx.lineTo(sx + 8, sy - 14);
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    drawNpcSprite(sx, sy + 2, npc.role || 'drifter', getNpcFrame(npc, now, isNearby), isHunter ? 1.34 : npc.mode === 'active' ? 1.28 : 1.05);
 
     if (npc.mode === 'active' && style.factionRing && npc.faction) {
       ctx.fillStyle = FACTION_COLOR[npc.faction] || FACTION_COLOR.Neutral;
@@ -711,14 +740,17 @@ export function createIsoRenderer(canvas) {
       ctx.globalAlpha = 1;
     }
 
-    if (npc.mode === 'active') {
+    if (npc.mode === 'active' || isHunter) {
       ctx.font = '700 8px Inter, sans-serif';
       ctx.textAlign = 'center';
       ctx.fillStyle = 'rgba(0,0,0,0.7)';
       ctx.fillText(npc.roleLabel || npc.role || 'NPC', sx + 1, sy - 43);
       ctx.fillStyle = style.color;
       ctx.fillText(npc.roleLabel || npc.role || 'NPC', sx, sy - 44);
-      if (isNearby || isHovered) {
+      if (isHunter) {
+        ctx.fillStyle = '#d7fbff';
+        ctx.fillText(String(npc.glyph || 'scan').toUpperCase(), sx, sy - 54);
+      } else if (isNearby || isHovered) {
         ctx.fillStyle = '#ffffff';
         ctx.fillText(npc.name || 'Citizen', sx, sy - 54);
       }
@@ -1159,16 +1191,18 @@ export function createIsoRenderer(canvas) {
   function drawCovertNodeOverlay(originX, originY, node, now, state) {
     const covert = state?.covert?.nodeRiskById?.[node.id] || null;
     const nodeScan = state?.covert?.counterActions?.nodeScans?.find((entry) => entry.node_id === node.id) || null;
-    if (!covert && !nodeScan) return;
+    const hunterField = state?.covert?.hunterDetectionByNodeId?.[node.id] || null;
+    if (!covert && !nodeScan && !hunterField) return;
     const risk = Math.max(0, Number(covert.risk) || 0);
-    if (risk <= 0 && !nodeScan) return;
+    const hunterIntensity = Math.max(0, Number(hunterField?.intensity) || 0);
+    if (risk <= 0 && !nodeScan && hunterIntensity <= 0) return;
     const heat = Math.max(0, Math.min(100, Number(state?.covert?.networkHeat?.value) || 0));
-    const color = nodeScan ? '#7ae8ff' : risk >= 12 ? '#ff4fd8' : risk >= 8 ? '#ff9b67' : '#ffd84d';
+    const color = hunterIntensity > 0 ? '#7ae8ff' : nodeScan ? '#7ae8ff' : risk >= 12 ? '#ff4fd8' : risk >= 8 ? '#ff9b67' : '#ffd84d';
     const iso = toIso(node.x, node.y);
     const cx = originX + iso.x;
     const cy = originY + iso.y + HALF_TILE_H;
-    const pulse = 0.84 + ((Math.sin(now / Math.max(120, 300 - (risk * 10))) + 1) * 0.16);
-    const radius = 24 + Math.min(20, risk);
+    const pulse = 0.84 + ((Math.sin(now / Math.max(120, 300 - (Math.max(risk, hunterIntensity) * 10))) + 1) * 0.16);
+    const radius = 24 + Math.min(20, Math.max(risk, hunterIntensity * 2));
     ctx.save();
     ctx.globalAlpha = Math.min(0.34, 0.08 + (risk / 70));
     ctx.strokeStyle = color;
@@ -1176,6 +1210,14 @@ export function createIsoRenderer(canvas) {
     ctx.beginPath();
     ctx.ellipse(cx, cy + 2, radius * pulse, radius * 0.46 * pulse, 0, 0, Math.PI * 2);
     ctx.stroke();
+
+    if (hunterIntensity > 0) {
+      ctx.globalAlpha = Math.min(0.28, 0.08 + (hunterIntensity / 36));
+      ctx.lineWidth = 1.2;
+      ctx.beginPath();
+      ctx.ellipse(cx, cy + 2, (radius + 10) * pulse, (radius * 0.5) * pulse, 0, 0, Math.PI * 2);
+      ctx.stroke();
+    }
 
     if (risk >= 8 || heat >= 50) {
       ctx.globalAlpha = 0.22 + Math.min(0.16, heat / 300);
@@ -1189,7 +1231,13 @@ export function createIsoRenderer(canvas) {
       ctx.stroke();
     }
 
-    if (nodeScan || risk >= 12) {
+    if (hunterIntensity > 0) {
+      ctx.globalAlpha = 0.92;
+      ctx.fillStyle = color;
+      ctx.font = '700 9px Inter, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('SCAN FIELD', cx, cy - 50);
+    } else if (nodeScan || risk >= 12) {
       ctx.globalAlpha = 0.92;
       ctx.fillStyle = color;
       ctx.font = '700 9px Inter, sans-serif';
