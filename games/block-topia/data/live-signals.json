@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-04-21T13:43:48.468Z",
+  "generatedAt": "2026-04-21T15:14:27.345Z",
   "mode": "live-ai",
   "sourceHealth": {
     "coingecko-global": "ok",
@@ -11,84 +11,79 @@
   "signalCount": 5,
   "signals": [
     {
-      "id": "signal-1776779028467-1",
-      "lane": "world",
+      "id": "signal-1776784467345-1",
+      "lane": "npc",
       "priority": 4,
-      "ttlMinutes": 60,
-      "npcLine": "Crypto tides churn; whispers of shifting powers crack the net.",
-      "questPulse": "Seek vault codes before the cries fade into static.",
-      "worldFeed": "Market pulse shows slight rise amid shadowy fear grounds.",
-      "clueEvent": "Unmarked nodes flare near forgotten datacenters at midnight.",
+      "ttlMinutes": 30,
+      "npcLine": "Whispers say something’s off with CHIP’s core protocols.",
+      "questPulse": "Find anomalies in CHIP network nodes before blackout.",
+      "worldFeed": "Data spikes around CHIP detected; stability unknown.",
+      "clueEvent": "Glitch signs near CHIP clusters spark rumors of sabotage.",
       "tags": [
         "crypto",
-        "market",
-        "fear"
+        "instability"
       ],
-      "expiresAt": "2026-04-21T14:43:48.467Z"
+      "expiresAt": "2026-04-21T15:44:27.345Z"
     },
     {
-      "id": "signal-1776779028467-2",
-      "lane": "ops",
+      "id": "signal-1776784467345-2",
+      "lane": "quest",
       "priority": 3,
       "ttlMinutes": 45,
-      "npcLine": "OPG circuits humming; interference could mean extraction or ambush.",
-      "questPulse": "Monitor OPG frequency spikes; signals may lead to black ops.",
-      "worldFeed": "Cryptic echoes around OPG stocks; trust no broker’s word.",
-      "clueEvent": "Anomaly detected in OPG data flow; trace the source fast.",
+      "npcLine": "RAVE circuits pulse with mysterious energy tonight.",
+      "questPulse": "Trace RAVE signal distortions for a hidden message.",
+      "worldFeed": "RAVE sector network shows unusual rhythmic bursts.",
+      "clueEvent": "Unusual RAVE node resonance correlates with city unrest.",
       "tags": [
-        "opg",
-        "intel",
-        "surveillance"
+        "network",
+        "signals"
       ],
-      "expiresAt": "2026-04-21T14:28:48.467Z"
+      "expiresAt": "2026-04-21T15:59:27.345Z"
     },
     {
-      "id": "signal-1776779028468-3",
+      "id": "signal-1776784467345-3",
       "lane": "clue",
-      "priority": 2,
-      "ttlMinutes": 30,
-      "npcLine": "RAVE node pulses erratically; something buried beneath bright code.",
-      "questPulse": "Decrypt rave transmissions to expose hidden asset movements.",
-      "worldFeed": "RAVE frequencies spike with unknown signals; opportunity or trap?",
-      "clueEvent": "Encrypted chatter around RAVE hotspots; decryptors in demand.",
-      "tags": [
-        "rave",
-        "encryption",
-        "digital"
-      ],
-      "expiresAt": "2026-04-21T14:13:48.468Z"
-    },
-    {
-      "id": "signal-1776779028468-4",
-      "lane": "quest",
       "priority": 5,
-      "ttlMinutes": 120,
-      "npcLine": "Asteroid markets surge like shooting stars—black ops hungry.",
-      "questPulse": "Infiltrate asteroid mining data streams; secret payloads in orbit.",
-      "worldFeed": "Asteroid trading fronts heat up; gangs stake claim to ores.",
-      "clueEvent": "Mining rigs sending stealth signals; treasure or trap unknown.",
+      "ttlMinutes": 25,
+      "npcLine": "AAVE’s vault defense protocols rumored compromised.",
+      "questPulse": "Investigate breaches in AAVE data fortresses.",
+      "worldFeed": "Security alerts spike around AAVE’s core hubs.",
+      "clueEvent": "Encrypted leak detected near AAVE stronghold.",
       "tags": [
-        "asteroid",
-        "mining",
-        "blackops"
+        "security",
+        "breach"
       ],
-      "expiresAt": "2026-04-21T15:43:48.468Z"
+      "expiresAt": "2026-04-21T15:39:27.345Z"
     },
     {
-      "id": "signal-1776779028468-5",
-      "lane": "npc",
-      "priority": 3,
-      "ttlMinutes": 50,
-      "npcLine": "Silent pengu vendor trades in digital ice; secrets colder than steel.",
-      "questPulse": "Find the PENGU contact before cyberwolves do.",
-      "worldFeed": "PENGU activity spikes in undercity; traders whisper of new tech.",
-      "clueEvent": "Frozen payloads appear in PENGU message logs; decode quickly.",
+      "id": "signal-1776784467345-4",
+      "lane": "world",
+      "priority": 2,
+      "ttlMinutes": 60,
+      "npcLine": "OPG node farms show unexpected growth patterns.",
+      "questPulse": "Map OPG expansions and anticipate market ripple effects.",
+      "worldFeed": "OPG ecosystems evolving; potential market impact ahead.",
+      "clueEvent": "New OPG clusters emerge in under-monitored sectors.",
       "tags": [
-        "pengu",
-        "trade",
-        "undercity"
+        "growth",
+        "ecology"
       ],
-      "expiresAt": "2026-04-21T14:33:48.468Z"
+      "expiresAt": "2026-04-21T16:14:27.345Z"
+    },
+    {
+      "id": "signal-1776784467345-5",
+      "lane": "ops",
+      "priority": 3,
+      "ttlMinutes": 40,
+      "npcLine": "PENGU caches under cold surveillance; moves uncertain.",
+      "questPulse": "Extract intel on PENGU’s frozen asset movements.",
+      "worldFeed": "PENGU activity shifts stall; fear grips traders.",
+      "clueEvent": "Silent PENGU transactions hint at deeper game.",
+      "tags": [
+        "surveillance",
+        "fear"
+      ],
+      "expiresAt": "2026-04-21T15:54:27.345Z"
     }
   ]
 }
