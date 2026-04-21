@@ -82,6 +82,7 @@ export function createHud(doc) {
   let districtName = '';
   let districtControl = 0;
   let districtState = 'contested';
+  let districtPosture = 'normal';
 
   let leftFeedTicker = null;
 
@@ -295,7 +296,10 @@ export function createHud(doc) {
   function refreshDistrictLine() {
     if (!districtStatus) return;
     const controlTag = Number.isFinite(districtControl) ? `${Math.round(districtControl)}%` : '0%';
-    districtStatus.textContent = `District: ${districtName || 'Unknown'} · ${controlTag} · ${String(districtState || 'contested').toUpperCase()}`;
+    const postureTag = districtPosture && districtPosture !== 'normal'
+      ? ` · ${String(districtPosture).replace(/_/g, ' ').toUpperCase()}`
+      : '';
+    districtStatus.textContent = `District: ${districtName || 'Unknown'} · ${controlTag} · ${String(districtState || 'contested').toUpperCase()}${postureTag}`;
   }
 
   function setCovertState(snapshot = {}) {
@@ -322,8 +326,18 @@ export function createHud(doc) {
     const hottestHunterNode = snapshot?.hunterDetectionByNodeId?.[summary.hottestHunterNodeId] || null;
     const currentDistrict = snapshot?.districtSignalById?.[summary.currentDistrictId] || null;
     const focusedDistrict = currentDistrict || snapshot?.districtSignalById?.[summary.hottestDistrictId] || null;
-    const districtLabel = String(focusedDistrict?.pressure_flag || summary.currentDistrictFlag || 'calm').toUpperCase();
-    const districtInstability = Math.max(0, Number(focusedDistrict?.instability ?? summary.currentDistrictInstability) || 0);
+    const currentPatrol = snapshot?.districtPatrolById?.[summary.currentDistrictId] || null;
+    const focusedPatrol = currentPatrol || snapshot?.districtPatrolById?.[summary.hottestDistrictId] || null;
+    const districtLabel = String(
+      focusedPatrol?.postureState
+      || focusedDistrict?.pressure_flag
+      || summary.currentDistrictFlag
+      || 'calm',
+    ).toUpperCase().replace(/_/g, ' ');
+    const districtInstability = Math.max(
+      0,
+      Number(focusedPatrol?.postureScore ?? focusedDistrict?.instability ?? summary.currentDistrictInstability) || 0,
+    );
     const nodeRisk = Math.max(0, Number(hottestNode?.risk) || 0);
     const nodeStatus = String(hottestNode?.watch_status || 'quiet').replace(/_/g, ' ');
 
@@ -343,9 +357,11 @@ export function createHud(doc) {
         : 'No covert-hot node in focus';
 
     covertDistrictValue.textContent = `${districtLabel}`;
-    covertDistrictMeta.textContent = focusedDistrict
-      ? `${String(focusedDistrict.district_id || '').replace(/-/g, ' ')} · instability ${Math.round(districtInstability)}`
-      : 'District pressure nominal';
+    covertDistrictMeta.textContent = focusedPatrol
+      ? `${String(focusedPatrol.districtId || '').replace(/-/g, ' ')} · ${focusedPatrol.surveillanceTone || 'watch lanes elevated'} · score ${Math.round(districtInstability)}`
+      : focusedDistrict
+        ? `${String(focusedDistrict.district_id || '').replace(/-/g, ' ')} · instability ${Math.round(districtInstability)}`
+        : 'District pressure nominal';
 
     covertAgentValue.textContent = `${activeAgents} ACTIVE`;
     covertAgentMeta.textContent = `${exposedAgents} exposed · ${capturedAgents} captured · ${highRiskAgents} high risk · ${activeHunters} hunters`;
@@ -355,6 +371,8 @@ export function createHud(doc) {
     const pressureFlags = Array.isArray(snapshot?.samAwareness?.pressure_flags) ? snapshot.samAwareness.pressure_flags : [];
     const watchCopy = primaryCounterAction
       ? primaryCounterAction
+      : focusedPatrol?.warningLine
+      ? focusedPatrol.warningLine
       : activeHunters > 0
       ? `${activeHunters} hunter patrol${activeHunters === 1 ? '' : 's'} sweeping nearby zones`
       : pressureFlags.length
@@ -391,6 +409,7 @@ export function createHud(doc) {
     setDistrict: (name) => { districtName = String(name || 'Unknown'); refreshDistrictLine(); },
     setDistrictControl,
     setDistrictState: (nextState) => { districtState = String(nextState || 'contested'); refreshDistrictLine(); },
+    setDistrictPosture: (nextPosture) => { districtPosture = String(nextPosture || 'normal'); refreshDistrictLine(); },
     setDistrictOwner: (owner) => pushLog('right', `District control: ${owner || '—'}`),
     setFactionStatus: (text) => { factionStatus.textContent = `Factions: ${text}`; },
     setSamPhase: (name) => { samStatus.textContent = `SAM: ${name}`; },

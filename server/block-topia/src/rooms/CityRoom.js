@@ -47,6 +47,7 @@ const SAM_WAR_IMPACT_CLAMP = 18;
 const PLAYER_NODE_SUPPORT_RADIUS = 8;
 const PLAYER_NODE_SUPPORT_TICK = 1.4;
 const PLAYER_DISTRICT_SUPPORT_TICK = 1.1;
+const COVERT_DISTRICT_REPORT_TTL_MS = 90 * 1000;
 const PLAYER_WAR_ACTION_IMPACT = {
   interfere: 7,
   operation_success: 10,
@@ -161,6 +162,10 @@ export class CityRoom extends Room {
 
     this.onMessage('warAction', (client, data) => {
       this.handlePlayerWarAction(client, data);
+    });
+
+    this.onMessage('covertPressureSync', (client, data) => {
+      this.handleCovertPressureSync(client, data);
     });
 
     this.onMessage('duelChallenge', (client, data) => {
@@ -287,9 +292,19 @@ export class CityRoom extends Room {
         activityWeight: 0,
         instability: 0,
         watchLabel: 'watched',
+        postureState: 'normal',
+        postureScore: 0,
+        postureTrend: 'holding',
+        warningLine: `${district.name} is operating on a normal surveillance cycle`,
+        surveillanceTone: 'nominal watch',
+        localTraceCount: 0,
+        routeDisruptionCount: 0,
+        nodeScanCount: 0,
+        covertPressureWeight: 0,
         activeHunters: 0,
       })),
       hunterActivities: [],
+      covertDistrictReports: [],
       warTickMs: 0,
       warSamPressureDelta: 0,
       warEventCooldowns: new Map(),
@@ -383,6 +398,15 @@ export class CityRoom extends Room {
         activityWeight: Number(plan.activityWeight) || 0,
         instability: Number(plan.instability) || 0,
         watchLabel: plan.watchLabel || 'watched',
+        postureState: plan.postureState || 'normal',
+        postureScore: Number(plan.postureScore) || 0,
+        postureTrend: plan.postureTrend || 'holding',
+        warningLine: plan.warningLine || `${plan.districtName || plan.districtId} is operating on a normal surveillance cycle`,
+        surveillanceTone: plan.surveillanceTone || 'nominal watch',
+        localTraceCount: Number(plan.localTraceCount) || 0,
+        routeDisruptionCount: Number(plan.routeDisruptionCount) || 0,
+        nodeScanCount: Number(plan.nodeScanCount) || 0,
+        covertPressureWeight: Number(plan.covertPressureWeight) || 0,
         activeHunters: Number(plan.activeHunters) || 0,
       })),
       controlNodes: this.world.controlNodes.map((node) => ({
@@ -416,6 +440,8 @@ export class CityRoom extends Room {
       districts: this.world.districts,
       controlNodes: this.world.controlNodes,
       activities: [],
+      covertReports: this.world.covertDistrictReports,
+      existingPlans: this.world.districtPatrols,
     });
     const queue = buildHunterAssignmentQueue(seedPlans, SAM_HUNTER_COUNT);
     const planByDistrict = new Map(seedPlans.map((plan) => [plan.districtId, plan]));
@@ -994,15 +1020,28 @@ export class CityRoom extends Room {
     this.world.hunterActivities = trimHunterActivities(this.world.hunterActivities);
   }
 
+  trimCovertDistrictReports(nowMs = Date.now()) {
+    const trimmed = (this.world.covertDistrictReports || []).filter((entry) => (
+      entry
+      && entry.districtId
+      && (nowMs - Number(entry.reportedAt || 0)) <= COVERT_DISTRICT_REPORT_TTL_MS
+    ));
+    this.world.covertDistrictReports = trimmed;
+    return trimmed;
+  }
+
   updateSamHunters(dt) {
     if (this.hunterTimerMs < HUNTER_UPDATE_INTERVAL_MS) return;
     const elapsedMs = this.hunterTimerMs;
     this.hunterTimerMs = 0;
     this.world.hunterActivities = trimHunterActivities(this.world.hunterActivities);
+    this.trimCovertDistrictReports();
     const patrolPlans = buildDistrictPatrolPlans({
       districts: this.world.districts,
       controlNodes: this.world.controlNodes,
       activities: this.world.hunterActivities,
+      covertReports: this.world.covertDistrictReports,
+      existingPlans: this.world.districtPatrols,
     });
     const planByDistrict = new Map(patrolPlans.map((plan) => [plan.districtId, { ...plan }]));
     const assignmentQueue = buildHunterAssignmentQueue(patrolPlans, this.world.samHunters.length);
@@ -1356,6 +1395,38 @@ export class CityRoom extends Room {
       `🎯 ${player.name} ${intent === 'assist' ? 'stabilized' : 'destabilized'} ${district.name} via ${actionType || 'operation'}`,
       1500,
     );
+  }
+
+  handleCovertPressureSync(client, data) {
+    const player = this.state.players.get(client.sessionId);
+    if (!player) return;
+    const reports = Array.isArray(data?.reports) ? data.reports.slice(0, 4) : [];
+    if (!reports.length) return;
+    const now = Date.now();
+    this.trimCovertDistrictReports(now);
+
+    for (const report of reports) {
+      const districtId = String(report?.districtId || '').trim();
+      if (!districtId || !WORLD_DISTRICTS.some((entry) => entry.id === districtId)) continue;
+      this.world.covertDistrictReports = this.world.covertDistrictReports.filter(
+        (entry) => !(entry?.playerId === client.sessionId && entry?.districtId === districtId),
+      );
+      this.world.covertDistrictReports.push({
+        playerId: client.sessionId,
+        playerName: player.name,
+        districtId,
+        reportedAt: now,
+        pressureWeight: Math.max(0, Number(report?.pressureWeight) || 0),
+        repeatedPressure: Math.max(0, Number(report?.repeatedPressure) || 0),
+        localTraceCount: Math.max(0, Number(report?.localTraceCount) || 0),
+        routeDisruptionCount: Math.max(0, Number(report?.routeDisruptionCount) || 0),
+        nodeScanCount: Math.max(0, Number(report?.nodeScanCount) || 0),
+        hunterPressure: Math.max(0, Number(report?.hunterPressure) || 0),
+        networkHeat: Math.max(0, Number(report?.networkHeat) || 0),
+        samAwareness: Math.max(0, Number(report?.samAwareness) || 0),
+        districtInstability: Math.max(0, Number(report?.districtInstability) || 0),
+      });
+    }
   }
 
   onDispose() {

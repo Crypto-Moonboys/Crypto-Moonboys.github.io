@@ -879,6 +879,14 @@ async function loadCovertPressureSnapshot(db, telegramId, progressionRow = null,
   if (counterActions.summary.node_scan_count > 0) pressureFlags.push('node_scans_live');
   if (counterActions.summary.local_trace_count > 0) pressureFlags.push('trace_lock_active');
   if (counterActions.summary.route_disruption_count > 0) pressureFlags.push('route_disruption_live');
+  const districtPreLockdownStates = buildDistrictPreLockdownStates({
+    networkHeat,
+    sensitivity,
+    districtSignals: districtInstabilitySignals,
+    districtAgentClusters,
+    counterActions,
+  });
+  if (districtPreLockdownStates.some((entry) => entry?.state === 'pre_lockdown')) pressureFlags.push('district_pre_lockdown');
   const hunterState = buildHunterUnits({
     networkHeat,
     sensitivity,
@@ -886,6 +894,7 @@ async function loadCovertPressureSnapshot(db, telegramId, progressionRow = null,
     districtSignals: districtInstabilitySignals,
     districtAgentClusters,
     counterActions,
+    preLockdownStates: districtPreLockdownStates,
     nowMs,
   });
   if ((hunterState.summary?.active_count || 0) > 0) pressureFlags.push('hunter_units_deployed');
@@ -927,6 +936,7 @@ async function loadCovertPressureSnapshot(db, telegramId, progressionRow = null,
     },
     local_node_risk: localNodeRisk,
     district_instability_signals: districtInstabilitySignals,
+    district_pre_lockdown_states: districtPreLockdownStates,
     counter_actions: counterActions,
     hunter_units: hunterState.hunter_units,
     hunter_detection_fields: hunterState.detection_fields,
@@ -936,6 +946,7 @@ async function loadCovertPressureSnapshot(db, telegramId, progressionRow = null,
       successPenalty,
       nodeRiskById,
       districtRiskById,
+      preLockdownByDistrictId: new Map((districtPreLockdownStates || []).map((entry) => [entry.district_id, entry])),
       hunterFieldByNodeId: new Map((hunterState.detection_fields || []).map((entry) => [entry.node_id, entry])),
       ...counterActions._internal,
     },
@@ -1202,6 +1213,120 @@ function buildSamCounterActions(options = {}) {
   };
 }
 
+function districtPreLockdownStateForScore(score = 0) {
+  if (score >= 74) return 'pre_lockdown';
+  if (score >= 46) return 'pressured';
+  if (score >= 22) return 'watched';
+  return 'normal';
+}
+
+function districtPreLockdownModifiers(state = 'normal', score = 0) {
+  if (state === 'pre_lockdown') {
+    return {
+      success_penalty: 6,
+      exposure_shift: 8,
+      capture_shift: 6,
+      operation_delay_ms: clamp(Math.round(score * 1800), 60000, 180000),
+      retask_heat_penalty: 3,
+      extract_heat_penalty: 2,
+      district_pressure_delta: 2,
+    };
+  }
+  if (state === 'pressured') {
+    return {
+      success_penalty: 4,
+      exposure_shift: 5,
+      capture_shift: 4,
+      operation_delay_ms: clamp(Math.round(score * 1200), 30000, 120000),
+      retask_heat_penalty: 2,
+      extract_heat_penalty: 1,
+      district_pressure_delta: 1,
+    };
+  }
+  if (state === 'watched') {
+    return {
+      success_penalty: 2,
+      exposure_shift: 3,
+      capture_shift: 2,
+      operation_delay_ms: clamp(Math.round(score * 600), 15000, 60000),
+      retask_heat_penalty: 1,
+      extract_heat_penalty: 0,
+      district_pressure_delta: 1,
+    };
+  }
+  return {
+    success_penalty: 0,
+    exposure_shift: 0,
+    capture_shift: 0,
+    operation_delay_ms: 0,
+    retask_heat_penalty: 0,
+    extract_heat_penalty: 0,
+    district_pressure_delta: 0,
+  };
+}
+
+function buildDistrictPreLockdownStates(options = {}) {
+  const {
+    networkHeat = 0,
+    sensitivity = 0,
+    districtSignals = [],
+    districtAgentClusters = new Map(),
+    counterActions = {},
+  } = options;
+
+  const traceByDistrictId = new Map((counterActions?.local_traces || []).map((entry) => [entry.district_id, entry]));
+  const routeByDistrictId = new Map((counterActions?.route_disruptions || []).map((entry) => [entry.district_id, entry]));
+  const nodeScanCounts = new Map();
+  for (const scan of counterActions?.node_scans || []) {
+    if (!scan?.district_id) continue;
+    nodeScanCounts.set(scan.district_id, (nodeScanCounts.get(scan.district_id) || 0) + 1);
+  }
+
+  return (districtSignals || [])
+    .filter((entry) => entry?.district_id)
+    .map((entry) => {
+      const cluster = districtAgentClusters.get(entry.district_id) || {};
+      const localTrace = traceByDistrictId.get(entry.district_id) || null;
+      const routeDisruption = routeByDistrictId.get(entry.district_id) || null;
+      const nodeScanCount = nodeScanCounts.get(entry.district_id) || 0;
+      const score = clamp(
+        (Number(entry.instability) || 0)
+          + ((Number(entry.sabotage_pressure) || 0) * 4)
+          + ((Number(entry.sam_watch) || 0) * 3)
+          + ((Number(cluster.active_agents) || 0) * 3)
+          + ((Number(cluster.exposed_agents) || 0) * 6)
+          + ((Number(cluster.captured_agents) || 0) * 7)
+          + ((Number(cluster.repeated_targeting) || 0) * 4)
+          + Math.floor((Number(cluster.avg_heat) || 0) * 0.3)
+          + (localTrace ? 18 : 0)
+          + (routeDisruption ? 14 : 0)
+          + (nodeScanCount * 5)
+          + Math.floor(Number(networkHeat || 0) * 0.16)
+          + Math.floor(Number(sensitivity || 0) * 0.18),
+        0,
+        100,
+      );
+      const state = districtPreLockdownStateForScore(score);
+      return {
+        district_id: entry.district_id,
+        state,
+        score,
+        warning_line: state === 'pre_lockdown'
+          ? `${String(entry.district_id || '').replace(/-/g, ' ')} preparing to lock lanes`
+          : state === 'pressured'
+            ? `${String(entry.district_id || '').replace(/-/g, ' ')} tightening surveillance posture`
+            : state === 'watched'
+              ? `${String(entry.district_id || '').replace(/-/g, ' ')} under increased watch`
+              : `${String(entry.district_id || '').replace(/-/g, ' ')} operating normally`,
+        local_trace_count: localTrace ? 1 : 0,
+        route_disruption_count: routeDisruption ? 1 : 0,
+        node_scan_count: nodeScanCount,
+        modifiers: districtPreLockdownModifiers(state, score),
+      };
+    })
+    .sort((left, right) => (Number(right.score) || 0) - (Number(left.score) || 0));
+}
+
 function buildHunterUnits(options = {}) {
   const {
     networkHeat = 0,
@@ -1210,6 +1335,7 @@ function buildHunterUnits(options = {}) {
     districtSignals = [],
     districtAgentClusters = new Map(),
     counterActions = {},
+    preLockdownStates = [],
     nowMs = Date.now(),
   } = options;
 
@@ -1220,12 +1346,14 @@ function buildHunterUnits(options = {}) {
   const routeByDistrictId = new Map(routeDisruptions.map((entry) => [entry.district_id, entry]));
   const scanByNodeId = new Map(nodeScans.map((entry) => [entry.node_id, entry]));
   const districtSignalById = new Map((districtSignals || []).map((entry) => [entry.district_id, entry]));
+  const preLockdownByDistrictId = new Map((preLockdownStates || []).map((entry) => [entry.district_id, entry]));
   const districtCounts = new Map();
 
   const candidateEntries = (nodeEntries || [])
     .map((entry) => {
       const districtSignal = districtSignalById.get(entry.district_id) || null;
       const cluster = districtAgentClusters.get(entry.district_id) || {};
+      const preLockdown = preLockdownByDistrictId.get(entry.district_id) || null;
       const trace = traceByDistrictId.get(entry.district_id) || null;
       const route = routeByDistrictId.get(entry.district_id) || null;
       const scan = scanByNodeId.get(entry.node_id) || null;
@@ -1238,6 +1366,8 @@ function buildHunterUnits(options = {}) {
           + (trace ? 8 : 0)
           + (route ? 6 : 0)
           + (scan ? 5 : 0)
+          + Math.floor((Number(preLockdown?.score) || 0) * 0.18)
+          + (preLockdown?.state === 'pre_lockdown' ? 10 : preLockdown?.state === 'pressured' ? 6 : preLockdown?.state === 'watched' ? 3 : 0)
           + Math.floor((Number(cluster.avg_heat) || 0) * 0.08)
           + (Number(cluster.active_agents) || 0)
           + (networkHeat >= 45 ? 4 : 0)
@@ -1249,6 +1379,7 @@ function buildHunterUnits(options = {}) {
         ...entry,
         districtSignal,
         cluster,
+        preLockdown,
         trace,
         route,
         scan,
@@ -1265,6 +1396,8 @@ function buildHunterUnits(options = {}) {
       Math.floor((networkHeat + sensitivity) / 55)
       + (localTraces.length > 0 ? 1 : 0)
       + (routeDisruptions.length > 1 ? 1 : 0)
+      + ((preLockdownStates || []).some((entry) => entry?.state === 'pressured') ? 1 : 0)
+      + ((preLockdownStates || []).some((entry) => entry?.state === 'pre_lockdown') ? 1 : 0)
       + (candidateEntries[0]?.score >= 28 ? 1 : 0),
     ),
   );
@@ -1281,7 +1414,7 @@ function buildHunterUnits(options = {}) {
     if (districtCount >= HUNTER_DISTRICT_CAP) continue;
     districtCounts.set(entry.district_id, districtCount + 1);
 
-    const widerRange = networkHeat >= 65 || sensitivity >= 60;
+    const widerRange = networkHeat >= 65 || sensitivity >= 60 || entry.preLockdown?.state === 'pre_lockdown';
     const routeNodeIds = sampleHunterNodeIds(entry, entry.districtSignal, entry.cluster, {
       widerRange,
       traceNodes: entry.trace?.affected_node_ids || [],
@@ -1293,7 +1426,7 @@ function buildHunterUnits(options = {}) {
     const currentNodeId = routeNodeIds[routeIndex] || entry.node_id;
     const nextNodeId = routeNodeIds[(routeIndex + 1) % routeSize] || currentNodeId;
     const pathNodeIds = shortestPathNodeIds(currentNodeId, nextNodeId);
-    const idleEvery = entry.trace || entry.route ? 4 : 3;
+    const idleEvery = entry.preLockdown?.state === 'pre_lockdown' ? 5 : entry.trace || entry.route ? 4 : 3;
     const idle = ((timeBucket + slot) % idleEvery) === 0;
     const intensity = clamp(
       Math.ceil(entry.score / 6)
@@ -1316,9 +1449,10 @@ function buildHunterUnits(options = {}) {
         entry.scan ? 'node_scan' : '',
         entry.trace ? 'local_trace' : '',
         entry.route ? 'route_disruption' : '',
+        entry.preLockdown?.state && entry.preLockdown?.state !== 'normal' ? entry.preLockdown.state : '',
         Number(entry.repeated_targeting || 0) > 0 ? 'repeat_targeting' : '',
       ].filter(Boolean),
-      detection_radius_steps: widerRange ? 2 : 1,
+      detection_radius_steps: widerRange ? (entry.preLockdown?.state === 'pre_lockdown' ? 3 : 2) : 1,
       intensity,
       idle,
       idle_until: idle ? isoTimestamp(nowMs + HUNTER_IDLE_MIN_MS + ((slot % 3) * HUNTER_IDLE_RANGE_MS)) : null,
@@ -1347,6 +1481,7 @@ function resolveCounterActionContext(pressureSnapshot, nodeId, districtId) {
     localTrace: internal.localTraceByDistrictId?.get(districtId) || null,
     routeDisruption: internal.routeDisruptionByDistrictId?.get(districtId) || null,
     hunterField: internal.hunterFieldByNodeId?.get(nodeId) || null,
+    districtPreLockdown: internal.preLockdownByDistrictId?.get(districtId) || null,
   };
 }
 
@@ -1364,10 +1499,14 @@ function computeResolution(agent, operation, pressure, pressureSnapshot, nowMs =
   const node = CONTROL_NODE_BY_ID.get(operation.target_node_id);
   const districtInstability = pressureSnapshot?._internal?.districtRiskById?.get(node?.districtId)?.instability || 0;
   const counterAction = resolveCounterActionContext(pressureSnapshot, operation.target_node_id, node?.districtId || '');
+  const districtPreLockdown = counterAction.districtPreLockdown || null;
   const nodeScanPenalty = Number(counterAction.nodeScan?.modifiers?.success_penalty) || 0;
   const tracePenalty = Number(counterAction.localTrace?.modifiers?.success_penalty) || 0;
   const routePenalty = Number(counterAction.routeDisruption?.modifiers?.success_penalty) || 0;
   const hunterPenalty = Number(counterAction.hunterField?.modifiers?.success_penalty) || 0;
+  const districtPosturePenalty = Number(districtPreLockdown?.modifiers?.success_penalty) || 0;
+  const districtExposureShift = Number(districtPreLockdown?.modifiers?.exposure_shift) || 0;
+  const districtCaptureShift = Number(districtPreLockdown?.modifiers?.capture_shift) || 0;
   const detectionShift =
     (Number(counterAction.nodeScan?.modifiers?.detection_shift) || 0)
     + (Number(counterAction.localTrace?.modifiers?.detection_shift) || 0)
@@ -1395,6 +1534,7 @@ function computeResolution(agent, operation, pressure, pressureSnapshot, nowMs =
       - tracePenalty
       - routePenalty
       - hunterPenalty
+      - districtPosturePenalty
       - Math.floor(pressure.hotness * 0.8),
     18,
     88,
@@ -1408,6 +1548,7 @@ function computeResolution(agent, operation, pressure, pressureSnapshot, nowMs =
       + Math.floor(networkHeat * 0.12)
       + (Number(sam.detection_modifier) || 0)
       + Math.floor(nodeRisk * 0.35)
+      + districtExposureShift
       - detectionShift
       + pressure.hotness,
     35,
@@ -1423,6 +1564,7 @@ function computeResolution(agent, operation, pressure, pressureSnapshot, nowMs =
       + (Number(sam.capture_modifier) || 0)
       + Math.floor(nodeRisk * 0.25)
       + Math.floor(districtInstability * 0.15)
+      + districtCaptureShift
       - captureShift
       + Math.floor(pressure.hotness * 0.7),
     55,
@@ -1455,7 +1597,11 @@ function computeResolution(agent, operation, pressure, pressureSnapshot, nowMs =
     heatAfter = heatBefore + config.captureHeat;
     rewardXp = 0;
     rewardGems = 0;
-    deltas.districtPressure = 1 + (networkHeat >= 60 ? 1 : 0) + (Number(counterAction.localTrace?.modifiers?.district_pressure_delta) || 0);
+    deltas.districtPressure =
+      1
+      + (networkHeat >= 60 ? 1 : 0)
+      + (Number(counterAction.localTrace?.modifiers?.district_pressure_delta) || 0)
+      + (Number(districtPreLockdown?.modifiers?.district_pressure_delta) || 0);
     deltas.samPressure = 2 + ((Number(sam.capture_modifier) || 0) >= 3 ? 1 : 0) + (counterAction.nodeScan ? 1 : 0);
     deltas.localRisk = 4;
     captureDurationMs = computeCaptureCooldownMs(agent, networkHeat);
@@ -1470,7 +1616,8 @@ function computeResolution(agent, operation, pressure, pressureSnapshot, nowMs =
       config.world.districtPressure
       + sabotageEscalation
       - recruiterRelief
-      + (Number(counterAction.nodeScan?.modifiers?.node_pressure_delta) || 0);
+      + (Number(counterAction.nodeScan?.modifiers?.node_pressure_delta) || 0)
+      + (Number(districtPreLockdown?.modifiers?.district_pressure_delta) || 0);
     deltas.factionPressure = config.world.factionPressure;
     deltas.samPressure =
       config.world.samPressure
@@ -1478,7 +1625,11 @@ function computeResolution(agent, operation, pressure, pressureSnapshot, nowMs =
       + (counterAction.localTrace ? 1 : 0);
     deltas.localRisk = config.operationType === 'sabotage' ? 2 : config.operationType === 'recruit' ? 0 : deltas.localRisk;
   } else {
-    deltas.districtPressure = 1 + (networkHeat >= 50 ? 1 : 0) + (counterAction.localTrace ? 1 : 0);
+    deltas.districtPressure =
+      1
+      + (networkHeat >= 50 ? 1 : 0)
+      + (counterAction.localTrace ? 1 : 0)
+      + (Number(districtPreLockdown?.modifiers?.district_pressure_delta) || 0);
     deltas.samPressure = 1 + ((Number(sam.detection_modifier) || 0) >= 3 ? 1 : 0) + (counterAction.nodeScan ? 1 : 0);
     deltas.localRisk = (exposed ? 3 : 2) + (counterAction.routeDisruption ? 1 : 0) + (counterAction.hunterField ? 1 : 0);
   }
@@ -1688,6 +1839,7 @@ async function loadCovertState(db, telegramId) {
     sam_awareness: pressureSnapshot.sam_awareness,
     local_node_risk: pressureSnapshot.local_node_risk,
     district_instability_signals: pressureSnapshot.district_instability_signals,
+    district_pre_lockdown_states: pressureSnapshot.district_pre_lockdown_states || [],
     counter_actions: {
       node_scans: pressureSnapshot.counter_actions?.node_scans || [],
       local_traces: pressureSnapshot.counter_actions?.local_traces || [],
@@ -1818,11 +1970,12 @@ export async function handleBlockTopiaCovertRoute(request, env, url, helpers) {
     const deployDelayMs =
       (Number(counterAction.routeDisruption?.modifiers?.deploy_delay_ms) || 0)
       + (Number(counterAction.hunterField?.modifiers?.operation_delay_ms) || 0);
+    const districtDelayMs = Number(counterAction.districtPreLockdown?.modifiers?.operation_delay_ms) || 0;
     const spend = await spendGems(env.DB, verified.telegramId, config.deployCost, 'Progression changed. Please retry covert deploy.');
     if (!spend.ok) return err(spend.message === 'Not enough gems' ? `Not enough gems to deploy ${agent.agent_type}` : spend.message, spend.status);
 
     const operationId = crypto.randomUUID();
-    const resolvesAt = sqliteTimestamp(Date.now() + BLOCKTOPIA_COVERT_OPERATION_MS + deployDelayMs);
+    const resolvesAt = sqliteTimestamp(Date.now() + BLOCKTOPIA_COVERT_OPERATION_MS + deployDelayMs + districtDelayMs);
     const heatBefore = clamp(Number(agent.heat) || 0, 0, 100);
     const heatAfterDeploy = clamp(heatBefore + config.deployHeat + (agent.status === 'exposed' ? 6 : 0), 0, 100);
 
@@ -1848,7 +2001,7 @@ export async function handleBlockTopiaCovertRoute(request, env, url, helpers) {
       heat_before: heatBefore,
       heat_after: heatAfterDeploy,
       counter_actions: activeCounterActionIds(counterAction),
-      route_delay_ms: deployDelayMs,
+      route_delay_ms: deployDelayMs + districtDelayMs,
     });
     await updateNetworkHeat(env.DB, verified.telegramId, {
       delta: 4 + Number(activeCount?.n || 0) + (agent.agent_type === 'saboteur' ? 2 : 0),
@@ -1908,11 +2061,13 @@ export async function handleBlockTopiaCovertRoute(request, env, url, helpers) {
       ? (Number(counterAction.routeDisruption?.modifiers?.emergency_extract_heat_penalty) || 0)
       : (Number(counterAction.routeDisruption?.modifiers?.extract_heat_penalty) || 0);
     const hunterExtractPenalty = Number(counterAction.hunterField?.modifiers?.extract_risk_shift) || 0;
+    const districtExtractPenalty = Number(counterAction.districtPreLockdown?.modifiers?.extract_heat_penalty) || 0;
     const heatAfter = clamp(
       (Number(agent.heat) || 0)
         + config.extractHeat
         + routeHeatPenalty
         + hunterExtractPenalty
+        + districtExtractPenalty
         - (emergency ? EMERGENCY_EXTRACT_HEAT_RELIEF : 0),
       0,
       100,
@@ -2146,13 +2301,15 @@ export async function handleBlockTopiaCovertRoute(request, env, url, helpers) {
     const retaskHeatPenalty = Number(counterAction.routeDisruption?.modifiers?.retask_heat_penalty) || 0;
     const retaskDelayMs =
       (Number(counterAction.routeDisruption?.modifiers?.deploy_delay_ms) || 0)
-      + (Number(counterAction.hunterField?.modifiers?.operation_delay_ms) || 0);
+      + (Number(counterAction.hunterField?.modifiers?.operation_delay_ms) || 0)
+      + (Number(counterAction.districtPreLockdown?.modifiers?.operation_delay_ms) || 0);
     const nextResolveMs = Math.max(Date.now(), parseSqliteTimestamp(operation.resolves_at)) + retaskDelayMs;
     const nextResolveAt = sqliteTimestamp(nextResolveMs);
     const heatAfter = clamp(
       (Number(agent.heat) || 0)
         + config.retaskHeat
         + retaskHeatPenalty
+        + (Number(counterAction.districtPreLockdown?.modifiers?.retask_heat_penalty) || 0)
         + (Number(counterAction.hunterField?.modifiers?.extract_risk_shift) || 0),
       0,
       100,

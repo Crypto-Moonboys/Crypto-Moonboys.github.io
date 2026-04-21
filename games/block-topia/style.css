@@ -408,6 +408,27 @@ body.covert-under-watch #world-hud,
 body.covert-under-watch #operator-hud {
   box-shadow: 0 0 0 1px rgba(255, 216, 77, 0.06), 0 0 28px rgba(255, 79, 216, 0.08);
 }
+body.district-posture-watched #covert-strip,
+body.district-posture-watched #world-hud {
+  border-color: rgba(255, 216, 77, 0.24);
+}
+body.district-posture-pressured {
+  --covert-glow-color: rgba(255, 126, 79, 0.18);
+}
+body.district-posture-pressured #covert-strip,
+body.district-posture-pressured #multiplayer-live-banner {
+  border-color: rgba(255, 126, 79, 0.3);
+  box-shadow: 0 0 0 1px rgba(255, 126, 79, 0.08), 0 14px 28px rgba(0, 0, 0, 0.22);
+}
+body.district-posture-pre-lockdown {
+  --covert-glow-color: rgba(255, 79, 216, 0.22);
+}
+body.district-posture-pre-lockdown #covert-strip,
+body.district-posture-pre-lockdown #world-hud,
+body.district-posture-pre-lockdown #multiplayer-live-banner {
+  border-color: rgba(255, 79, 216, 0.38);
+  box-shadow: 0 0 0 1px rgba(255, 79, 216, 0.1), 0 18px 34px rgba(0, 0, 0, 0.28);
+}
 
 *::-webkit-scrollbar { width: 0; height: 0; }
 

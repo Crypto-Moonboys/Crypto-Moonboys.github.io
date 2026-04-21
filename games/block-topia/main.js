@@ -2,6 +2,7 @@ import {
   connectMultiplayer,
   sendMovement,
   sendNodeInterference,
+  sendCovertPressureSync,
   sendWarAction,
   challengePlayer as sendDuelChallenge,
   acceptDuel as sendDuelAccept,
@@ -138,13 +139,19 @@ function updateReactiveGridState(state) {
   const networkHeat = Math.max(0, Math.min(100, Number(state.covert?.networkHeat?.value) || 0));
   const samSensitivity = Math.max(0, Math.min(100, Number(state.covert?.samAwareness?.sensitivity) || 0));
   const districtPatrolPressure = Math.max(0, Math.min(100, Number(state.sharedWorld?.summary?.currentDistrictHunterPressure) || 0));
+  const districtPostureState = String(state.sharedWorld?.summary?.currentDistrictPostureState || 'normal');
+  const districtPostureScore = Math.max(0, Math.min(100, Number(state.sharedWorld?.summary?.currentDistrictPostureScore) || 0));
   const speed = inConflict ? 1.5 : syncReady ? 1 : 0.45;
   const intensity = inConflict ? 1 : syncReady ? 0.68 : 0.35;
   document.body.style.setProperty('--reactive-grid-speed', String(speed));
   document.body.style.setProperty('--reactive-grid-intensity', String(intensity));
-  document.body.style.setProperty('--covert-overlay-opacity', String((networkHeat / 100) * 0.2));
-  document.body.style.setProperty('--covert-vignette-opacity', String((networkHeat / 100) * 0.44));
-  document.body.style.setProperty('--covert-scan-opacity', String(((samSensitivity / 100) * 0.18) + ((districtPatrolPressure / 100) * 0.08)));
+  document.body.style.setProperty('--covert-overlay-opacity', String(((networkHeat / 100) * 0.2) + ((districtPostureScore / 100) * 0.04)));
+  document.body.style.setProperty('--covert-vignette-opacity', String(((networkHeat / 100) * 0.44) + ((districtPostureScore / 100) * 0.08)));
+  document.body.style.setProperty('--covert-scan-opacity', String(
+    ((samSensitivity / 100) * 0.18)
+    + ((districtPatrolPressure / 100) * 0.08)
+    + ((districtPostureScore / 100) * 0.06),
+  ));
   setBodyStateClass('conflict-active', inConflict);
   setBodyStateClass('sync-live', syncReady);
   setBodyStateClass('sync-error', !syncReady);
@@ -154,7 +161,21 @@ function updateReactiveGridState(state) {
   setBodyStateClass('covert-under-watch', samSensitivity >= 40 || networkHeat >= 45);
   setBodyStateClass('covert-counter-actions-live', (Number(state.covert?.summary?.activeCounterActions) || 0) > 0);
   setBodyStateClass('district-under-patrol', districtPatrolPressure >= 4);
-  dispatchUiState('moonboys:world-state', { conflictActive: inConflict, syncReady, speed, intensity, networkHeat, samSensitivity, districtPatrolPressure, ts: now });
+  setBodyStateClass('district-posture-watched', districtPostureState === 'watched');
+  setBodyStateClass('district-posture-pressured', districtPostureState === 'pressured');
+  setBodyStateClass('district-posture-pre-lockdown', districtPostureState === 'pre_lockdown');
+  dispatchUiState('moonboys:world-state', {
+    conflictActive: inConflict,
+    syncReady,
+    speed,
+    intensity,
+    networkHeat,
+    samSensitivity,
+    districtPatrolPressure,
+    districtPostureState,
+    districtPostureScore,
+    ts: now,
+  });
 }
 
 const DEFAULT_RPG_EFFECTS = {
@@ -224,6 +245,9 @@ function createDefaultSharedHunterState() {
       activeHunters: 0,
       currentDistrictHunterPressure: 0,
       currentDistrictPatrolMode: 'patrol',
+      currentDistrictPostureState: 'normal',
+      currentDistrictPostureScore: 0,
+      currentDistrictWarningLine: '',
       hottestDistrictId: '',
       hottestHunterNodeId: '',
     },
@@ -251,7 +275,10 @@ function normalizeSharedHunterState(snapshot = {}, currentDistrictId = '') {
     .filter((entry) => entry?.district_id === currentDistrictId)
     .reduce((highest, entry) => Math.max(highest, Number(entry?.intensity) || 0), 0);
   const hottestField = [...hunterFields].sort((a, b) => (Number(b?.intensity) || 0) - (Number(a?.intensity) || 0))[0] || null;
-  const hottestDistrict = [...districtPatrols].sort((a, b) => (Number(b?.pressureScore) || 0) - (Number(a?.pressureScore) || 0))[0] || null;
+  const hottestDistrict = [...districtPatrols].sort((a, b) => (
+    (Number(b?.postureScore) || Number(b?.pressureScore) || 0)
+    - (Number(a?.postureScore) || Number(a?.pressureScore) || 0)
+  ))[0] || null;
   const currentDistrictPatrol = districtPatrolById[currentDistrictId] || hottestDistrict || null;
   return {
     samHunters,
@@ -261,6 +288,9 @@ function normalizeSharedHunterState(snapshot = {}, currentDistrictId = '') {
       activeHunters: samHunters.filter((entry) => entry?.active !== false).length,
       currentDistrictHunterPressure,
       currentDistrictPatrolMode: currentDistrictPatrol?.patrolMode || 'patrol',
+      currentDistrictPostureState: currentDistrictPatrol?.postureState || 'normal',
+      currentDistrictPostureScore: Number(currentDistrictPatrol?.postureScore) || 0,
+      currentDistrictWarningLine: currentDistrictPatrol?.warningLine || '',
       hottestDistrictId: hottestDistrict?.districtId || '',
       hottestHunterNodeId: hottestField?.node_id || '',
     },
@@ -271,6 +301,7 @@ function normalizeSharedHunterState(snapshot = {}, currentDistrictId = '') {
 function sharedPatrolFlag(mode = '', fallback = 'calm') {
   const normalized = String(mode || '').trim().toLowerCase();
   if (normalized === 'trace-response') return 'traced';
+  if (normalized === 'pre-lockdown') return 'pre_lockdown';
   if (normalized === 'scan-focus') return 'watched';
   if (normalized === 'route-watch') return 'watched';
   if (normalized === 'cool-down' || normalized === 'idle') return 'cooling';
@@ -791,9 +822,98 @@ async function boot() {
   let lastCovertRecoveryReady = false;
   let lastCovertDistrictFlag = 'calm';
   let lastCounterActionSignature = '';
+  let lastCovertRoomSyncSignature = '';
+  let lastCovertRoomSyncAt = 0;
 
   function formatDistrictName(districtId) {
     return state.districts.byId.get(districtId)?.name || String(districtId || '').replace(/-/g, ' ');
+  }
+
+  function buildCovertRoomReports(covertState = {}) {
+    const districtSignals = Object.values(covertState?.districtSignalById || {});
+    const traceByDistrictId = covertState?.counterActions?.localTraceByDistrictId || {};
+    const routeByDistrictId = Object.fromEntries(
+      (covertState?.counterActions?.routeDisruptions || []).map((entry) => [entry.district_id, entry]),
+    );
+    const nodeScanCountByDistrict = {};
+    for (const scan of covertState?.counterActions?.nodeScans || []) {
+      if (!scan?.district_id) continue;
+      nodeScanCountByDistrict[scan.district_id] = (nodeScanCountByDistrict[scan.district_id] || 0) + 1;
+    }
+    const hunterPressureByDistrict = {};
+    for (const field of Object.values(covertState?.hunterDetectionByNodeId || {})) {
+      if (!field?.district_id) continue;
+      hunterPressureByDistrict[field.district_id] = Math.max(
+        Number(hunterPressureByDistrict[field.district_id]) || 0,
+        Number(field?.intensity) || 0,
+      );
+    }
+
+    const currentDistrictId = state.player.districtId || '';
+    const reports = districtSignals.map((entry) => {
+      const districtId = entry?.district_id || '';
+      const localTrace = traceByDistrictId[districtId] || null;
+      const routeDisruption = routeByDistrictId[districtId] || null;
+      const nodeScanCount = Number(nodeScanCountByDistrict[districtId]) || 0;
+      const hunterPressure = Number(hunterPressureByDistrict[districtId]) || 0;
+      const pressureWeight = Math.max(
+        0,
+        (Number(entry?.instability) || 0)
+          + ((Number(entry?.sabotage_pressure) || 0) * 2.4)
+          + ((Number(entry?.sam_watch) || 0) * 2.1)
+          + (localTrace ? 16 : 0)
+          + (routeDisruption ? 12 : 0)
+          + (nodeScanCount * 4)
+          + (hunterPressure * 5)
+          + ((Number(covertState?.networkHeat?.value) || 0) * 0.12)
+          + ((Number(covertState?.samAwareness?.sensitivity) || 0) * 0.14),
+      );
+      return {
+        districtId,
+        pressureWeight: Math.round(pressureWeight),
+        repeatedPressure: Math.max(0, Number(entry?.sabotage_pressure) || 0),
+        localTraceCount: localTrace ? 1 : 0,
+        routeDisruptionCount: routeDisruption ? 1 : 0,
+        nodeScanCount,
+        hunterPressure: Math.round(hunterPressure),
+        networkHeat: Math.round(Number(covertState?.networkHeat?.value) || 0),
+        samAwareness: Math.round(Number(covertState?.samAwareness?.sensitivity) || 0),
+        districtInstability: Math.round(Number(entry?.instability) || 0),
+        currentDistrict: districtId === currentDistrictId,
+      };
+    });
+
+    return reports
+      .filter((entry) => entry.districtId)
+      .sort((left, right) => (
+        (Number(right.currentDistrict) - Number(left.currentDistrict))
+        || (Number(right.localTraceCount) - Number(left.localTraceCount))
+        || (Number(right.routeDisruptionCount) - Number(left.routeDisruptionCount))
+        || ((Number(right.pressureWeight) || 0) - (Number(left.pressureWeight) || 0))
+      ))
+      .slice(0, 3)
+      .map(({ currentDistrict, ...entry }) => entry);
+  }
+
+  function syncCovertPressureToRoom(covertState = {}, force = false) {
+    if (!multiplayerConnected) return;
+    const reports = buildCovertRoomReports(covertState);
+    if (!reports.length) return;
+    const signature = reports
+      .map((entry) => [
+        entry.districtId,
+        entry.pressureWeight,
+        entry.localTraceCount,
+        entry.routeDisruptionCount,
+        entry.nodeScanCount,
+        entry.hunterPressure,
+      ].join(':'))
+      .join('|');
+    const now = Date.now();
+    if (!force && signature === lastCovertRoomSyncSignature && (now - lastCovertRoomSyncAt) < 10000) return;
+    sendCovertPressureSync(reports);
+    lastCovertRoomSyncSignature = signature;
+    lastCovertRoomSyncAt = now;
   }
 
   function alignCovertDistrictFocus() {
@@ -839,6 +959,7 @@ async function boot() {
       ...state.covert,
       hunterUnits,
       hunterDetectionByNodeId,
+      districtPatrolById: sharedWorld.districtPatrolById || {},
       summary: {
         ...(state.covert?.summary || {}),
         activeHunters: useSharedHunters
@@ -846,20 +967,23 @@ async function boot() {
           : covertHunterUnits.filter((entry) => entry?.active !== false).length,
         currentDistrictHunterPressure,
         currentDistrictId,
+        currentDistrictPostureState: sharedWorld.summary?.currentDistrictPostureState || 'normal',
+        currentDistrictPostureScore: Number(sharedWorld.summary?.currentDistrictPostureScore) || 0,
+        currentDistrictWarningLine: sharedWorld.summary?.currentDistrictWarningLine || '',
         hottestHunterNodeId: useSharedHunters
           ? (sharedWorld.summary?.hottestHunterNodeId || '')
           : (state.covert?.summary?.hottestHunterNodeId || ''),
       },
     };
     if (currentDistrictPatrol) {
-      merged.summary.currentDistrictFlag = sharedPatrolFlag(
+      merged.summary.currentDistrictFlag = currentDistrictPatrol.postureState || sharedPatrolFlag(
         currentDistrictPatrol.patrolMode,
         merged.summary.currentDistrictFlag,
       );
       merged.summary.currentDistrictPatrolMode = currentDistrictPatrol.patrolMode;
       merged.summary.currentDistrictInstability = Math.max(
         Number(merged.summary.currentDistrictInstability) || 0,
-        Math.round(Number(currentDistrictPatrol.pressureScore) || 0),
+        Math.round(Number(currentDistrictPatrol.postureScore || currentDistrictPatrol.pressureScore) || 0),
       );
     }
     return merged;
@@ -889,6 +1013,7 @@ async function boot() {
     const next = normalizeCovertState(payload, state.player.districtId);
     state.covert = next;
     syncCovertHud();
+    syncCovertPressureToRoom(next);
 
     if (source === 'silent') return;
 
@@ -1024,6 +1149,7 @@ async function boot() {
     const previous = state.sharedWorld || createDefaultSharedHunterState();
     const next = normalizeSharedHunterState(payload, state.player.districtId);
     state.sharedWorld = next;
+    hud.setDistrictPosture(next.summary?.currentDistrictPostureState || 'normal');
     syncCovertHud();
     updateReactiveGridState(state);
 
@@ -1067,6 +1193,29 @@ async function boot() {
         `${formatDistrictName(state.player.districtId)} patrol mode shifted to ${readableMode}`,
         nextMode === 'cool-down' ? 'system' : 'combat',
         `shared-hunter-mode:${state.player.districtId}:${nextMode}`,
+      );
+    }
+
+    const previousPosture = String(previous.summary?.currentDistrictPostureState || 'normal');
+    const nextPosture = String(next.summary?.currentDistrictPostureState || 'normal');
+    if (nextPosture !== previousPosture && nextPosture !== 'normal') {
+      const plan = next.districtPatrolById?.[state.player.districtId] || null;
+      pushFeedDeduped(
+        `${formatDistrictName(state.player.districtId)} shifted to ${nextPosture.replace(/_/g, ' ')} posture · ${plan?.warningLine || 'district access pressure rising'}`,
+        nextPosture === 'pre_lockdown' ? 'sam' : 'combat',
+        `shared-district-posture:${state.player.districtId}:${nextPosture}`,
+      );
+      pushMicroNotification(
+        nextPosture === 'pre_lockdown'
+          ? `${formatDistrictName(state.player.districtId)} preparing lockdown lanes`
+          : `${formatDistrictName(state.player.districtId)} surveillance posture rising`,
+        'warning',
+      );
+    } else if (previousPosture !== 'normal' && nextPosture === 'normal') {
+      pushFeedDeduped(
+        `${formatDistrictName(state.player.districtId)} eased back to normal patrol posture`,
+        'system',
+        `shared-district-posture:${state.player.districtId}:normal`,
       );
     }
   }
@@ -1457,6 +1606,7 @@ async function boot() {
       hud.setDistrictControl(district.control);
       hud.setDistrictOwner(district.owner);
       hud.setDistrictState(district.controlState || 'contested');
+      hud.setDistrictPosture(state.sharedWorld?.summary?.currentDistrictPostureState || 'normal');
     }
     if (options.silent) return;
 
@@ -1574,6 +1724,7 @@ async function boot() {
       }
       hud.setDistrictState(districtStatus.controlState || 'contested');
     }
+    hud.setDistrictPosture(state.sharedWorld?.summary?.currentDistrictPostureState || 'normal');
     if (covertNeedsRefresh) syncCovertHud();
     if (district.id !== lastQuestDistrictId) {
       lastQuestDistrictId = district.id;
@@ -1622,6 +1773,7 @@ async function boot() {
   hud.setDistrictControl(50);
   hud.setDistrictOwner(state.districtState[0]?.owner || primaryFactionName);
   hud.setDistrictState(state.districtState[0]?.controlState || 'contested');
+  hud.setDistrictPosture('normal');
   hud.setFactionStatus(`${primaryFactionName} vs ${secondaryFactionName}`);
   hud.setSamPhase(sam.getCurrentPhase().name);
   applyPhase(state.phase, 'system');
@@ -1824,6 +1976,7 @@ async function boot() {
       if (multiplayerConnected) {
         hud.setEntryTagline(`LIVE CITY LINK ESTABLISHED · ${getCanonAtmosphereLine()}`);
         hud.dismissEntryIdentity(ENTRY_DISMISS_DELAY_MS);
+        syncCovertPressureToRoom(state.covert, true);
       }
     },
     onPlayers: (players) => {
