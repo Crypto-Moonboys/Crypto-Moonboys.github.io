@@ -388,6 +388,7 @@ async function awardXp(db, telegramId, xpChange, action, referenceId = '') {
     if (xpChange < 0) console.log('awardXp: negative xpChange ignored', JSON.stringify({ telegramId, xpChange, action }));
     return;
   }
+  // Do not provide id manually; telegram_xp_log.id is INTEGER AUTOINCREMENT.
   await db.prepare(`
     INSERT INTO telegram_xp_log (telegram_id, action, xp_change, reference_id)
     VALUES (?, ?, ?, ?)
@@ -882,7 +883,16 @@ export default {
         }
 
         await upsertTelegramUser(env.DB, verified.user);
-        await getOrCreateBlockTopiaProgression(env.DB, verified.telegramId);
+
+        // Progression schema can drift in production; linking must still succeed.
+        await getOrCreateBlockTopiaProgression(env.DB, verified.telegramId).catch((error) => {
+          logApiFailure('telegram_link_confirm_progression_compat_fallback', {
+            telegramId: verified.telegramId,
+            message: error?.message || String(error),
+          });
+        });
+
+        // Do not provide id manually; telegram_activity_log.id is INTEGER AUTOINCREMENT.
         await logTelegramActivity(env.DB, verified.telegramId, 'link_confirmed', JSON.stringify({
           source: 'signed_payload',
           linked_at: new Date().toISOString(),

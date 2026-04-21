@@ -29,8 +29,14 @@ async function getBlockTopiaProgressionSchema(db, { forceRefresh = false } = {})
     return cached.schema;
   }
 
-  const rows = await db.prepare(`PRAGMA table_info(blocktopia_progression)`).all();
-  const columns = new Set((rows?.results || []).map((row) => String(row.name || '').trim()).filter(Boolean));
+  let columns = new Set();
+  try {
+    const rows = await db.prepare(`PRAGMA table_info(blocktopia_progression)`).all();
+    columns = new Set((rows?.results || []).map((row) => String(row.name || '').trim()).filter(Boolean));
+  } catch {
+    columns = new Set();
+  }
+
   const schema = {
     columns,
     hasFaction: columns.has('faction'),

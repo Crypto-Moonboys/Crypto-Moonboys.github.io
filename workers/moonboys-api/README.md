@@ -50,3 +50,14 @@ Phase 3 adds the first system-response layer without introducing SAM sweeps, dis
 - `GET /blocktopia/covert/state` now returns structured `network_heat`, `sam_awareness`, `local_node_risk`, `district_instability_signals`, and `agent_risk_indicators` payloads for the frontend.
 - Captured agents now use real-time `captured_until` cooldowns that scale with agent heat, network heat, and repeat captures.
 - `POST /blocktopia/covert/reduce-heat`, `POST /blocktopia/covert/recovery-boost`, and `POST /blocktopia/covert/emergency-extract` provide limited gem-based pressure relief while keeping every action auditable through `blocktopia_progression_events`.
+
+## Production hotfix: D1 schema compatibility (2026-04-21)
+
+Production `wikicoms` can miss optional `blocktopia_progression` faction columns required by newer worker code. Apply the one-off compatibility migration before deploy so `/telegram/link/confirm` and progression bootstrap paths cannot fail on schema drift.
+
+Exact production commands:
+
+```sh
+npx wrangler d1 execute wikicoms --file=workers/moonboys-api/migrations/012_wikicoms_schema_fix.sql --remote
+npx wrangler deploy
+```
