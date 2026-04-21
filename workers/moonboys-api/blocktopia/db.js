@@ -5,15 +5,16 @@ export async function getOrCreateBlockTopiaProgression(db, telegramId) {
     INSERT INTO blocktopia_progression (
       telegram_id, xp, gems, tier, win_streak,
       upgrade_efficiency, upgrade_signal, upgrade_defense, upgrade_gem, upgrade_npc, rpg_mode_active,
-      faction, faction_xp, faction_last_switch
+      faction, faction_xp, faction_last_switch, network_heat, network_heat_updated_at
     )
-    VALUES (?, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 'unaligned', 0, NULL)
+    VALUES (?, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 'unaligned', 0, NULL, 0, CURRENT_TIMESTAMP)
     ON CONFLICT(telegram_id) DO NOTHING
   `).bind(telegramId).run();
   const row = await db.prepare(
     `SELECT telegram_id, xp, gems, tier, win_streak,
             upgrade_efficiency, upgrade_signal, upgrade_defense, upgrade_gem, upgrade_npc,
-            rpg_mode_active, faction, faction_xp, faction_last_switch, last_active, updated_at
+            rpg_mode_active, faction, faction_xp, faction_last_switch,
+            network_heat, network_heat_updated_at, last_active, updated_at
      FROM blocktopia_progression WHERE telegram_id = ?`
   ).bind(telegramId).first();
   return row || {
@@ -31,6 +32,8 @@ export async function getOrCreateBlockTopiaProgression(db, telegramId) {
     faction: 'unaligned',
     faction_xp: 0,
     faction_last_switch: null,
+    network_heat: 0,
+    network_heat_updated_at: new Date().toISOString(),
     last_active: new Date().toISOString(),
   };
 }
