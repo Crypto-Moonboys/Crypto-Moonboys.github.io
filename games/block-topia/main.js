@@ -52,6 +52,7 @@ const MAX_CLIENT_CROWD_NPCS = 20;
 const REMOTE_PLAYER_LERP_ALPHA = 0.18;
 const LIVE_REFRESH_INTERVAL_MS = 120000; // 2 minutes
 const PROGRESSION_SYNC_INTERVAL_MS = 15000;
+const COVERT_SYNC_INTERVAL_MS = 20000;
 const QUEST_TICK_INTERVAL_MS = 250;
 const FEED_DEDUPE_TTL_MS = 5 * 60 * 1000;
 const MAX_FEED_CACHE_SIZE = 80;
@@ -134,14 +135,23 @@ function updateReactiveGridState(state) {
   const now = Date.now();
   const inConflict = Number(state.effects?.districtPulseUntil || 0) > now || state.phase === 'Conflict';
   const syncReady = hasTelegramAuth();
+  const networkHeat = Math.max(0, Math.min(100, Number(state.covert?.networkHeat?.value) || 0));
+  const samSensitivity = Math.max(0, Math.min(100, Number(state.covert?.samAwareness?.sensitivity) || 0));
   const speed = inConflict ? 1.5 : syncReady ? 1 : 0.45;
   const intensity = inConflict ? 1 : syncReady ? 0.68 : 0.35;
   document.body.style.setProperty('--reactive-grid-speed', String(speed));
   document.body.style.setProperty('--reactive-grid-intensity', String(intensity));
+  document.body.style.setProperty('--covert-overlay-opacity', String((networkHeat / 100) * 0.2));
+  document.body.style.setProperty('--covert-vignette-opacity', String((networkHeat / 100) * 0.44));
+  document.body.style.setProperty('--covert-scan-opacity', String((samSensitivity / 100) * 0.18));
   setBodyStateClass('conflict-active', inConflict);
   setBodyStateClass('sync-live', syncReady);
   setBodyStateClass('sync-error', !syncReady);
-  dispatchUiState('moonboys:world-state', { conflictActive: inConflict, syncReady, speed, intensity, ts: now });
+  setBodyStateClass('covert-heat-warm', networkHeat >= 25 && networkHeat < 50);
+  setBodyStateClass('covert-heat-hot', networkHeat >= 50 && networkHeat < 75);
+  setBodyStateClass('covert-heat-critical', networkHeat >= 75);
+  setBodyStateClass('covert-under-watch', samSensitivity >= 40 || networkHeat >= 45);
+  dispatchUiState('moonboys:world-state', { conflictActive: inConflict, syncReady, speed, intensity, networkHeat, samSensitivity, ts: now });
 }
 
 const DEFAULT_RPG_EFFECTS = {
@@ -158,6 +168,38 @@ let progressionState = {
   effects: { ...DEFAULT_RPG_EFFECTS },
   upgrades: { efficiency: 0, signal: 0, defense: 0, gem: 0, npc: 0 },
 };
+
+function createDefaultCovertState() {
+  return {
+    online: false,
+    networkHeat: { value: 0, tier: 'cold', derived_floor: 0, factors: {} },
+    samAwareness: { sensitivity: 0, tier: 'cold', pressure_flags: [], elevated_zones: [] },
+    nodeRiskById: {},
+    districtSignalById: {},
+    agentRiskById: {},
+    summary: {
+      activeAgents: 0,
+      exposedAgents: 0,
+      capturedAgents: 0,
+      recoveringAgents: 0,
+      highRiskAgents: 0,
+      highestRisk: 0,
+      highestRiskAgentId: '',
+      hottestNodeId: '',
+      hottestDistrictId: '',
+      currentDistrictId: '',
+      currentDistrictInstability: 0,
+      currentDistrictFlag: 'calm',
+      recoveryReady: false,
+      recoveryCost: 0,
+    },
+    agents: [],
+    operations: [],
+    progression: { gems: 0, xp: 0, tier: 1 },
+    costs: {},
+    lastSyncAt: 0,
+  };
+}
 const canvas = document.getElementById('world-canvas');
 const hud = createHud(document);
 const renderer = createIsoRenderer(canvas);
@@ -340,6 +382,87 @@ async function fetchServerProgression() {
   }
 }
 
+async function fetchCovertState() {
+  const apiBase = getApiBase();
+  const telegramAuth = getTelegramAuth();
+  if (!apiBase || !telegramAuth?.hash || !telegramAuth?.auth_date) {
+    return { ...createDefaultCovertState(), __authError: true, error: 'Telegram auth missing. Re-sync required.' };
+  }
+  try {
+    const res = await fetch(`${apiBase}/blocktopia/covert/state`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ telegram_auth: telegramAuth }),
+    });
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      return {
+        ...createDefaultCovertState(),
+        __authError: res.status === 401 || res.status === 403,
+        error: data?.error || data?.message || `HTTP ${res.status}`,
+      };
+    }
+    return await res.json().catch(() => createDefaultCovertState());
+  } catch {
+    return { ...createDefaultCovertState(), error: 'Covert relay unavailable.' };
+  }
+}
+
+function normalizeCovertState(snapshot = {}, currentDistrictId = '') {
+  const base = createDefaultCovertState();
+  const networkHeat = snapshot?.network_heat || base.networkHeat;
+  const samAwareness = snapshot?.sam_awareness || base.samAwareness;
+  const agents = Array.isArray(snapshot?.agents) ? snapshot.agents : [];
+  const operations = Array.isArray(snapshot?.operations) ? snapshot.operations : [];
+  const nodeEntries = Array.isArray(snapshot?.local_node_risk) ? snapshot.local_node_risk : [];
+  const districtEntries = Array.isArray(snapshot?.district_instability_signals) ? snapshot.district_instability_signals : [];
+  const agentRiskEntries = Array.isArray(snapshot?.agent_risk_indicators) ? snapshot.agent_risk_indicators : [];
+  const nodeRiskById = Object.fromEntries(nodeEntries.map((entry) => [entry.node_id, entry]));
+  const districtSignalById = Object.fromEntries(districtEntries.map((entry) => [entry.district_id, entry]));
+  const agentRiskById = Object.fromEntries(agentRiskEntries.map((entry) => [entry.agent_id, entry]));
+  const activeAgents = agents.filter((agent) => agent?.status === 'active').length;
+  const exposedAgents = agents.filter((agent) => agent?.status === 'exposed').length;
+  const capturedAgents = agents.filter((agent) => agent?.status === 'captured').length;
+  const recoveringAgents = agentRiskEntries.filter((entry) => entry?.recovery_locked).length;
+  const sortedAgentRisk = [...agentRiskEntries].sort((a, b) => (Number(b?.risk) || 0) - (Number(a?.risk) || 0));
+  const sortedNodeRisk = [...nodeEntries].sort((a, b) => (Number(b?.risk) || 0) - (Number(a?.risk) || 0));
+  const currentDistrictNodeRisk = sortedNodeRisk.find((entry) => entry?.district_id === currentDistrictId) || null;
+  const sortedDistricts = [...districtEntries].sort((a, b) => (Number(b?.instability) || 0) - (Number(a?.instability) || 0));
+  const currentDistrictSignal = districtSignalById[currentDistrictId] || sortedDistricts[0] || null;
+  const recoveryCost = Math.max(0, Number(snapshot?.costs?.recovery_boost) || 0);
+  const gems = Math.max(0, Number(snapshot?.progression?.gems) || 0);
+
+  return {
+    online: true,
+    networkHeat,
+    samAwareness,
+    nodeRiskById,
+    districtSignalById,
+    agentRiskById,
+    summary: {
+      activeAgents,
+      exposedAgents,
+      capturedAgents,
+      recoveringAgents,
+      highRiskAgents: agentRiskEntries.filter((entry) => (Number(entry?.risk) || 0) >= 70).length,
+      highestRisk: Number(sortedAgentRisk[0]?.risk) || 0,
+      highestRiskAgentId: sortedAgentRisk[0]?.agent_id || '',
+      hottestNodeId: currentDistrictNodeRisk?.node_id || sortedNodeRisk[0]?.node_id || '',
+      hottestDistrictId: sortedDistricts[0]?.district_id || '',
+      currentDistrictId: currentDistrictId || '',
+      currentDistrictInstability: Number(currentDistrictSignal?.instability) || 0,
+      currentDistrictFlag: currentDistrictSignal?.pressure_flag || 'calm',
+      recoveryReady: capturedAgents > 0 && recoveryCost > 0 && gems >= recoveryCost,
+      recoveryCost,
+    },
+    agents,
+    operations,
+    progression: snapshot?.progression || base.progression,
+    costs: snapshot?.costs || {},
+    lastSyncAt: Date.now(),
+  };
+}
+
 async function ensureRpgEntry() {
   if (progressionState.rpg_mode_active) return true;
   const apiBase = getApiBase();
@@ -424,6 +547,7 @@ async function boot() {
   const tierDifficulty = computeTierDifficulty(playerTier);
   const dataBundle = await loadUnifiedData();
   const state = createGameState(dataBundle);
+  state.covert = createDefaultCovertState();
   state.blockTopiaTier = tierDifficulty.tier;
   state.blockTopiaScale = tierDifficulty.scale;
   state.camera.zoomIndex = 1;
@@ -555,6 +679,127 @@ async function boot() {
   const lore = state.lore?.legacy?.lore || {};
   const districtStateById = new Map(state.districtState.map((district) => [district.id, district]));
   const aiRuntime = resolveAiRuntimeConfig();
+  let lastCovertHeatTier = state.covert.networkHeat.tier;
+  let lastCovertSamTier = state.covert.samAwareness.tier;
+  let lastCovertCapturedCount = 0;
+  let lastCovertRecoveryReady = false;
+  let lastCovertDistrictFlag = 'calm';
+
+  function formatDistrictName(districtId) {
+    return state.districts.byId.get(districtId)?.name || String(districtId || '').replace(/-/g, ' ');
+  }
+
+  function alignCovertDistrictFocus() {
+    const current = state.covert?.districtSignalById?.[state.player.districtId] || null;
+    if (!state.covert?.summary) return;
+    state.covert.progression = {
+      ...(state.covert.progression || {}),
+      gems: Math.max(0, Number(progressionState.gems) || 0),
+      xp: Math.max(0, Number(progressionState.xp) || 0),
+      tier: Math.max(1, Number(progressionState.tier) || Number(state.covert.progression?.tier) || 1),
+    };
+    state.covert.summary.recoveryReady = state.covert.summary.capturedAgents > 0
+      && (Number(state.covert.summary.recoveryCost) || 0) > 0
+      && (Number(state.covert.progression?.gems) || 0) >= (Number(state.covert.summary.recoveryCost) || 0);
+    state.covert.summary.currentDistrictId = state.player.districtId || '';
+    if (!current) {
+      state.covert.summary.currentDistrictInstability = 0;
+      state.covert.summary.currentDistrictFlag = 'calm';
+      return;
+    }
+    state.covert.summary.currentDistrictInstability = Number(current.instability) || 0;
+    state.covert.summary.currentDistrictFlag = current.pressure_flag || 'calm';
+  }
+
+  function syncCovertHud() {
+    alignCovertDistrictFocus();
+    hud.setCovertState(state.covert);
+  }
+
+  function getCovertWatchLine(covertState) {
+    const flags = Array.isArray(covertState?.samAwareness?.pressure_flags) ? covertState.samAwareness.pressure_flags : [];
+    if (flags.includes('capture_pressure_rising')) return 'covert routes compromised';
+    if (flags.includes('sam_listening')) return 'under watch';
+    if (flags.includes('repeat_targeting_detected')) return 'signal traced';
+    if ((Number(covertState?.networkHeat?.value) || 0) >= 70) return 'district surveillance elevated';
+    if ((Number(covertState?.networkHeat?.value) || 0) >= 45) return 'watch lanes tightening';
+    return 'signal cover intact';
+  }
+
+  function applyCovertSnapshot(payload, source = 'poll') {
+    const previous = state.covert || createDefaultCovertState();
+    const next = normalizeCovertState(payload, state.player.districtId);
+    state.covert = next;
+    syncCovertHud();
+
+    if (source === 'silent') return;
+
+    if (next.networkHeat.tier !== lastCovertHeatTier) {
+      const watchLine = getCovertWatchLine(next);
+      pushFeedDeduped(
+        `🕳️ Network heat ${String(next.networkHeat.tier || 'cold').toUpperCase()} · ${watchLine}`,
+        next.networkHeat.value >= 50 ? 'sam' : 'system',
+        `covert-heat:${next.networkHeat.tier}`,
+      );
+      lastCovertHeatTier = next.networkHeat.tier;
+    }
+
+    if (next.samAwareness.tier !== lastCovertSamTier && (Number(next.samAwareness.sensitivity) || 0) >= 25) {
+      pushFeedDeduped(
+        `🧠 SAM awareness ${String(next.samAwareness.tier || 'cold').toUpperCase()} · ${getCovertWatchLine(next)}`,
+        'sam',
+        `covert-sam:${next.samAwareness.tier}`,
+      );
+      lastCovertSamTier = next.samAwareness.tier;
+    }
+
+    if (next.summary.capturedAgents > lastCovertCapturedCount) {
+      pushFeedDeduped(
+        `⚠️ Agent captured · ${next.summary.recoveringAgents} recovering · recovery window active`,
+        'sam',
+        `covert-captured:${next.summary.capturedAgents}`,
+      );
+      hud.showNodeInterference('Agent captured. Recovery timer live.', 'sam');
+      lastCovertCapturedCount = next.summary.capturedAgents;
+    } else if (next.summary.capturedAgents < lastCovertCapturedCount) {
+      pushFeedDeduped(
+        `✅ Captured agent recovered · covert roster stabilizing`,
+        'quest',
+        `covert-recovered:${next.summary.capturedAgents}`,
+      );
+      lastCovertCapturedCount = next.summary.capturedAgents;
+    }
+
+    if (next.summary.recoveryReady && !lastCovertRecoveryReady) {
+      pushFeedDeduped(
+        `💎 Recovery boost ready · ${next.summary.recoveryCost} gems can accelerate captured agent recovery`,
+        'system',
+        `covert-recovery-ready:${next.summary.recoveryCost}`,
+      );
+      lastCovertRecoveryReady = true;
+    } else if (!next.summary.recoveryReady) {
+      lastCovertRecoveryReady = false;
+    }
+
+    if ((next.summary.highestRisk >= 80) && (previous.summary?.highestRisk || 0) < 80) {
+      pushFeedDeduped(
+        `⚠️ High-risk agent warning · exposure ${next.summary.highestRisk}% · covert routes compromised`,
+        'sam',
+        `covert-high-risk:${next.summary.highestRiskAgentId}:${next.summary.highestRisk}`,
+      );
+    }
+
+    if ((next.summary.currentDistrictFlag !== lastCovertDistrictFlag) && (Number(next.summary.currentDistrictInstability) || 0) >= 5) {
+      pushFeedDeduped(
+        `🗺️ ${formatDistrictName(state.player.districtId)} now feels ${String(next.summary.currentDistrictFlag).toUpperCase()} · instability ${Math.round(next.summary.currentDistrictInstability)}`,
+        next.summary.currentDistrictInstability >= 10 ? 'sam' : 'combat',
+        `covert-district:${state.player.districtId}:${next.summary.currentDistrictFlag}:${Math.round(next.summary.currentDistrictInstability)}`,
+      );
+      lastCovertDistrictFlag = next.summary.currentDistrictFlag;
+    } else if ((Number(next.summary.currentDistrictInstability) || 0) < 5) {
+      lastCovertDistrictFlag = next.summary.currentDistrictFlag;
+    }
+  }
 
   hud.setAiStatus(aiRuntime.status);
   hud.pushFeed(`🧱 Block Topia tier ${tierDifficulty.tier} · difficulty x${tierDifficulty.scale.toFixed(2)}`, 'system');
@@ -806,6 +1051,7 @@ async function boot() {
     hud.setXp(progressionState.xp || 0);
     hud.setGems(progressionState.gems || 0);
     hud.setDrainPerMinute(progressionState.drain_per_minute || 0);
+    syncCovertHud();
   }
 
   function closeMiniGameOverlays() {
@@ -1041,9 +1287,11 @@ async function boot() {
     const district = state.districts.byId.get(districtId);
     if (!district) return;
     const districtStatus = districtStateById.get(district.id);
+    let covertNeedsRefresh = false;
     if (district.id !== lastHudDistrictId) {
       hud.setDistrict(district.name);
       lastHudDistrictId = district.id;
+      covertNeedsRefresh = true;
     }
     if (districtStatus) {
       if (districtStatus.control !== lastHudDistrictControl) {
@@ -1056,6 +1304,7 @@ async function boot() {
       }
       hud.setDistrictState(districtStatus.controlState || 'contested');
     }
+    if (covertNeedsRefresh) syncCovertHud();
     if (district.id !== lastQuestDistrictId) {
       lastQuestDistrictId = district.id;
       state.capturePreview = null;
@@ -1110,6 +1359,7 @@ async function boot() {
   hud.setXp(progressionState.xp || 0);
   hud.setGems(progressionState.gems || 0);
   hud.setDrainPerMinute(progressionState.drain_per_minute || 0);
+  syncCovertHud();
   hud.setRoom(state.room.id);
   hud.setPopulation(0, state.room.maxPlayers);
   refreshOperationsHud(true);
@@ -1119,6 +1369,12 @@ async function boot() {
   pushFeedDeduped(`🛰️ Canon signal bridge active (${liveMode})`, 'system', `live-boot:${liveMode}`);
   bootstrapEntryIdentity();
   bootstrapLoreFeed();
+  const initialCovert = await fetchCovertState();
+  if (initialCovert?.__authError) {
+    redirectToSyncGate(initialCovert?.error || 'Telegram session expired. Re-sync required.');
+    return;
+  }
+  applyCovertSnapshot(initialCovert, 'boot');
   pushFeedDeduped(
     `📚 Canon source: ${canonAdapter.truthSource || canonLore.truthSource || '/wiki/bibles/block-topia.json'}${canonAdapter.fallbackUsed ? ' (backup lore active)' : ''}`,
     'system',
@@ -1142,12 +1398,23 @@ async function boot() {
       hud.setXp(next.xp || 0);
       hud.setGems(next.gems || 0);
       hud.setDrainPerMinute(next.drain_per_minute || 0);
+      syncCovertHud();
       if (next.rpg_mode_active === false || (next.xp || 0) <= 0) {
         hud.showNodeInterference('XP depleted. Block Topia session ended.', 'warning');
         window.location.replace(getSyncGateUrl());
       }
     }).catch(() => {});
   }, PROGRESSION_SYNC_INTERVAL_MS);
+
+  setInterval(() => {
+    fetchCovertState().then((next) => {
+      if (next?.__authError) {
+        redirectToSyncGate(next?.error || 'Telegram session expired. Re-sync required.');
+        return;
+      }
+      applyCovertSnapshot(next, 'poll');
+    }).catch(() => {});
+  }, COVERT_SYNC_INTERVAL_MS);
 
   // Fallback: dismiss the entry overlay after 7s in case multiplayer never connects.
   setTimeout(() => hud.dismissEntryIdentity(0), ENTRY_OVERLAY_TIMEOUT_MS);

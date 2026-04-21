@@ -34,11 +34,42 @@
       <span id="ai-status">AI: disabled (no config)</span>
       <span id="phase-status">Phase: Day</span>
       <span id="sam-status">SAM: Phase 1</span>
+      <span id="covert-sam-status">Watch: LOW</span>
       <span id="faction-status">Factions: Liberators vs Wardens</span>
       <span id="mp-status">Connecting…</span>
       <span id="room-status">Room: city</span>
       <span id="population-status">Players: 0 / 100</span>
     </div>
+
+    <section id="covert-strip" aria-label="Covert pressure strip">
+      <div class="covert-strip-head">
+        <span class="covert-chip">COVERT GRID</span>
+        <span id="covert-watch-copy">Signal cover intact.</span>
+      </div>
+      <div class="covert-strip-grid">
+        <article class="covert-cell">
+          <span class="covert-cell-label">Network Heat</span>
+          <strong id="covert-heat-value">0%</strong>
+          <span id="covert-heat-meta">Cold lanes</span>
+        </article>
+        <article class="covert-cell">
+          <span class="covert-cell-label">Local Node</span>
+          <strong id="covert-node-value">Quiet</strong>
+          <span id="covert-node-meta">No hot node selected</span>
+        </article>
+        <article class="covert-cell">
+          <span class="covert-cell-label">District Mood</span>
+          <strong id="covert-district-value">Calm</strong>
+          <span id="covert-district-meta">District pressure nominal</span>
+        </article>
+        <article class="covert-cell">
+          <span class="covert-cell-label">Agent Pressure</span>
+          <strong id="covert-agent-value">0 Active</strong>
+          <span id="covert-agent-meta">No agents under watch</span>
+        </article>
+      </div>
+      <div id="covert-recovery-line" class="covert-recovery-line">No captured agents in recovery.</div>
+    </section>
 
     <section class="stream stream-left" aria-label="Engagement stream"><ul id="stream-left"></ul></section>
     <section class="stream stream-right" aria-label="Signal operations stream"><ul id="stream-right"></ul></section>
