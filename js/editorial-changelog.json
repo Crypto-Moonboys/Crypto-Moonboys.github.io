@@ -8300,6 +8300,759 @@
           "hub_score": 129
         }
       ]
+    },
+    {
+      "run_id": "apply-stub-promotions:2026-04-21",
+      "script": "apply-stub-promotions",
+      "timestamp": "2026-04-21T05:32:21.073Z",
+      "summary": {
+        "total_candidates": 332,
+        "applied_count": 0,
+        "skipped_count": 31,
+        "monitor_count": 136,
+        "hold_count": 165
+      },
+      "actions": [
+        {
+          "action_type": "stub_promotion_skipped",
+          "status": "no_op",
+          "target_url": "/wiki/alfie-blaze.html",
+          "target_title": "Alfie Blaze — Crypto Moonboys Wiki",
+          "promotion_score": 85,
+          "rank_score": 629,
+          "inbound_links": 0,
+          "entity_relevance": true,
+          "reasons": [
+            "entity_relevance:true",
+            "rank_score:629",
+            "growth_priority_action:expand_existing_page"
+          ],
+          "category": "characters",
+          "note": "No stub attributes found; page already promoted or not a stub."
+        },
+        {
+          "action_type": "stub_promotion_skipped",
+          "status": "no_op",
+          "target_url": "/wiki/bitcoin-kids.html",
+          "target_title": "Bitcoin Kids — Crypto Moonboys Wiki",
+          "promotion_score": 110,
+          "rank_score": 724,
+          "inbound_links": 0,
+          "entity_relevance": true,
+          "reasons": [
+            "entity_relevance:true",
+            "rank_score:724",
+            "narrative_path_inclusion:true",
+            "growth_priority_action:expand_existing_page"
+          ],
+          "category": "characters",
+          "note": "No stub attributes found; page already promoted or not a stub."
+        },
+        {
+          "action_type": "stub_promotion_skipped",
+          "status": "no_op",
+          "target_url": "/wiki/bitcoin.html",
+          "target_title": "Bitcoin (BTC) — Crypto Moonboys Wiki",
+          "promotion_score": 578,
+          "rank_score": 621,
+          "inbound_links": 156,
+          "entity_relevance": true,
+          "reasons": [
+            "inbound_links:156",
+            "entity_relevance:true",
+            "rank_score:621",
+            "narrative_path_inclusion:true",
+            "growth_priority_action:expand_existing_page"
+          ],
+          "category": "tokens",
+          "note": "No stub attributes found; page already promoted or not a stub."
+        },
+        {
+          "action_type": "stub_promotion_skipped",
+          "status": "no_op",
+          "target_url": "/wiki/block-topia.html",
+          "target_title": "Block Topia — Crypto Moonboys Wiki",
+          "promotion_score": 85,
+          "rank_score": 755,
+          "inbound_links": 0,
+          "entity_relevance": true,
+          "reasons": [
+            "entity_relevance:true",
+            "rank_score:755",
+            "growth_priority_action:expand_existing_page"
+          ],
+          "category": "characters",
+          "note": "No stub attributes found; page already promoted or not a stub."
+        },
+        {
+          "action_type": "stub_promotion_skipped",
+          "status": "no_op",
+          "target_url": "/wiki/burn-to-earn.html",
+          "target_title": "Burn-to-Earn — Crypto Moonboys Wiki",
+          "promotion_score": 85,
+          "rank_score": 612,
+          "inbound_links": 0,
+          "entity_relevance": true,
+          "reasons": [
+            "entity_relevance:true",
+            "rank_score:612",
+            "growth_priority_action:expand_existing_page"
+          ],
+          "category": "characters",
+          "note": "No stub attributes found; page already promoted or not a stub."
+        },
+        {
+          "action_type": "stub_promotion_skipped",
+          "status": "no_op",
+          "target_url": "/wiki/charlie-buster.html",
+          "target_title": "Charlie Buster — Crypto Moonboys Wiki",
+          "promotion_score": 85,
+          "rank_score": 671,
+          "inbound_links": 0,
+          "entity_relevance": true,
+          "reasons": [
+            "entity_relevance:true",
+            "rank_score:671",
+            "growth_priority_action:expand_existing_page"
+          ],
+          "category": "characters",
+          "note": "No stub attributes found; page already promoted or not a stub."
+        },
+        {
+          "action_type": "stub_promotion_skipped",
+          "status": "no_op",
+          "target_url": "/wiki/crypto-moonboys.html",
+          "target_title": "Crypto Moonboys — Crypto Moonboys Wiki",
+          "promotion_score": 106,
+          "rank_score": 307,
+          "inbound_links": 0,
+          "entity_relevance": true,
+          "reasons": [
+            "entity_relevance:true",
+            "rank_score:307",
+            "narrative_path_inclusion:true",
+            "growth_priority_action:reinforce_hub"
+          ],
+          "category": "characters",
+          "note": "No stub attributes found; page already promoted or not a stub."
+        },
+        {
+          "action_type": "stub_promotion_skipped",
+          "status": "no_op",
+          "target_url": "/wiki/diamond-hands.html",
+          "target_title": "Diamond Hands — Crypto Moonboys Wiki",
+          "promotion_score": 551,
+          "rank_score": 517,
+          "inbound_links": 147,
+          "entity_relevance": true,
+          "reasons": [
+            "inbound_links:147",
+            "entity_relevance:true",
+            "rank_score:517",
+            "narrative_path_inclusion:true",
+            "growth_priority_action:expand_existing_page"
+          ],
+          "category": "characters",
+          "note": "No stub attributes found; page already promoted or not a stub."
+        },
+        {
+          "action_type": "stub_promotion_skipped",
+          "status": "no_op",
+          "target_url": "/wiki/ethereum.html",
+          "target_title": "Ethereum (ETH) — Crypto Moonboys Wiki",
+          "promotion_score": 578,
+          "rank_score": 628,
+          "inbound_links": 156,
+          "entity_relevance": true,
+          "reasons": [
+            "inbound_links:156",
+            "entity_relevance:true",
+            "rank_score:628",
+            "narrative_path_inclusion:true",
+            "growth_priority_action:expand_existing_page"
+          ],
+          "category": "tokens",
+          "note": "No stub attributes found; page already promoted or not a stub."
+        },
+        {
+          "action_type": "stub_promotion_skipped",
+          "status": "no_op",
+          "target_url": "/wiki/genesis-spray.html",
+          "target_title": "Genesis Spray — Crypto Moonboys Wiki",
+          "promotion_score": 81,
+          "rank_score": 456,
+          "inbound_links": 0,
+          "entity_relevance": true,
+          "reasons": [
+            "entity_relevance:true",
+            "rank_score:456",
+            "growth_priority_action:expand_existing_page"
+          ],
+          "category": "factions",
+          "note": "No stub attributes found; page already promoted or not a stub."
+        },
+        {
+          "action_type": "stub_promotion_skipped",
+          "status": "no_op",
+          "target_url": "/wiki/gkniftyheads.html",
+          "target_title": "GKniftyHEADS — Crypto Moonboys Wiki",
+          "promotion_score": 80,
+          "rank_score": 454,
+          "inbound_links": 0,
+          "entity_relevance": true,
+          "reasons": [
+            "entity_relevance:true",
+            "rank_score:454",
+            "growth_priority_action:expand_existing_page"
+          ],
+          "category": "characters",
+          "note": "No stub attributes found; page already promoted or not a stub."
+        },
+        {
+          "action_type": "stub_promotion_skipped",
+          "status": "no_op",
+          "target_url": "/wiki/graffitikings.html",
+          "target_title": "Graffiti Kings — Crypto Moonboys Wiki",
+          "promotion_score": 101,
+          "rank_score": 409,
+          "inbound_links": 0,
+          "entity_relevance": true,
+          "reasons": [
+            "entity_relevance:true",
+            "rank_score:409",
+            "narrative_path_inclusion:true",
+            "growth_priority_action:expand_existing_page"
+          ],
+          "category": "characters",
+          "note": "No stub attributes found; page already promoted or not a stub."
+        },
+        {
+          "action_type": "stub_promotion_skipped",
+          "status": "no_op",
+          "target_url": "/wiki/graffpunks-24-7.html",
+          "target_title": "GraffPUNKS 24/7 — Crypto Moonboys Wiki",
+          "promotion_score": 110,
+          "rank_score": 498,
+          "inbound_links": 0,
+          "entity_relevance": true,
+          "reasons": [
+            "entity_relevance:true",
+            "rank_score:498",
+            "narrative_path_inclusion:true",
+            "growth_priority_action:expand_existing_page"
+          ],
+          "category": "characters",
+          "note": "No stub attributes found; page already promoted or not a stub."
+        },
+        {
+          "action_type": "stub_promotion_skipped",
+          "status": "no_op",
+          "target_url": "/wiki/graffpunks-247-radio.html",
+          "target_title": "GraffPUNKS 247 Radio — Crypto Moonboys Wiki",
+          "promotion_score": 104,
+          "rank_score": 440,
+          "inbound_links": 0,
+          "entity_relevance": true,
+          "reasons": [
+            "entity_relevance:true",
+            "rank_score:440",
+            "narrative_path_inclusion:true",
+            "growth_priority_action:expand_existing_page"
+          ],
+          "category": "characters",
+          "note": "No stub attributes found; page already promoted or not a stub."
+        },
+        {
+          "action_type": "stub_promotion_skipped",
+          "status": "no_op",
+          "target_url": "/wiki/graffpunks.html",
+          "target_title": "GraffPUNKS — Crypto Moonboys Wiki",
+          "promotion_score": 110,
+          "rank_score": 789,
+          "inbound_links": 0,
+          "entity_relevance": true,
+          "reasons": [
+            "entity_relevance:true",
+            "rank_score:789",
+            "narrative_path_inclusion:true",
+            "growth_priority_action:expand_existing_page"
+          ],
+          "category": "characters",
+          "note": "No stub attributes found; page already promoted or not a stub."
+        },
+        {
+          "action_type": "stub_promotion_skipped",
+          "status": "no_op",
+          "target_url": "/wiki/hard-fork-games.html",
+          "target_title": "Hard Fork Games — Crypto Moonboys Wiki",
+          "promotion_score": 117,
+          "rank_score": 415,
+          "inbound_links": 0,
+          "entity_relevance": true,
+          "reasons": [
+            "entity_relevance:true",
+            "rank_score:415",
+            "narrative_path_inclusion:true",
+            "growth_priority_action:reinforce_hub"
+          ],
+          "category": "factions",
+          "note": "No stub attributes found; page already promoted or not a stub."
+        },
+        {
+          "action_type": "stub_promotion_skipped",
+          "status": "no_op",
+          "target_url": "/wiki/hodl-warriors.html",
+          "target_title": "HODL Warriors — Crypto Moonboys Wiki",
+          "promotion_score": 548,
+          "rank_score": 640,
+          "inbound_links": 146,
+          "entity_relevance": true,
+          "reasons": [
+            "inbound_links:146",
+            "entity_relevance:true",
+            "rank_score:640",
+            "narrative_path_inclusion:true",
+            "growth_priority_action:expand_existing_page"
+          ],
+          "category": "characters",
+          "note": "No stub attributes found; page already promoted or not a stub."
+        },
+        {
+          "action_type": "stub_promotion_skipped",
+          "status": "no_op",
+          "target_url": "/wiki/hodl-wars.html",
+          "target_title": "HODL Wars — Crypto Moonboys Wiki",
+          "promotion_score": 536,
+          "rank_score": 706,
+          "inbound_links": 147,
+          "entity_relevance": true,
+          "reasons": [
+            "inbound_links:147",
+            "entity_relevance:true",
+            "rank_score:706",
+            "narrative_path_inclusion:true"
+          ],
+          "category": "factions",
+          "note": "No stub attributes found; page already promoted or not a stub."
+        },
+        {
+          "action_type": "stub_promotion_skipped",
+          "status": "no_op",
+          "target_url": "/wiki/hodl-x-warriors.html",
+          "target_title": "HODL X Warriors — Crypto Moonboys Wiki",
+          "promotion_score": 95,
+          "rank_score": 345,
+          "inbound_links": 0,
+          "entity_relevance": true,
+          "reasons": [
+            "entity_relevance:true",
+            "rank_score:345",
+            "narrative_path_inclusion:true",
+            "growth_priority_action:expand_existing_page"
+          ],
+          "category": "characters",
+          "note": "No stub attributes found; page already promoted or not a stub."
+        },
+        {
+          "action_type": "stub_promotion_skipped",
+          "status": "no_op",
+          "target_url": "/wiki/metaverse-battles.html",
+          "target_title": "Metaverse Battles — Crypto Moonboys Wiki",
+          "promotion_score": 98,
+          "rank_score": 233,
+          "inbound_links": 0,
+          "entity_relevance": true,
+          "reasons": [
+            "entity_relevance:true",
+            "rank_score:233",
+            "narrative_path_inclusion:true",
+            "growth_priority_action:reinforce_hub"
+          ],
+          "category": "factions",
+          "note": "No stub attributes found; page already promoted or not a stub."
+        },
+        {
+          "action_type": "stub_promotion_skipped",
+          "status": "no_op",
+          "target_url": "/wiki/moon-mission.html",
+          "target_title": "Moon Mission — Crypto Moonboys Wiki",
+          "promotion_score": 548,
+          "rank_score": 505,
+          "inbound_links": 146,
+          "entity_relevance": true,
+          "reasons": [
+            "inbound_links:146",
+            "entity_relevance:true",
+            "rank_score:505",
+            "narrative_path_inclusion:true",
+            "growth_priority_action:expand_existing_page"
+          ],
+          "category": "tokens",
+          "note": "No stub attributes found; page already promoted or not a stub."
+        },
+        {
+          "action_type": "stub_promotion_skipped",
+          "status": "no_op",
+          "target_url": "/wiki/nbg-token.html",
+          "target_title": "NBG Token — Crypto Moonboys Wiki",
+          "promotion_score": 80,
+          "rank_score": 453,
+          "inbound_links": 0,
+          "entity_relevance": true,
+          "reasons": [
+            "entity_relevance:true",
+            "rank_score:453",
+            "growth_priority_action:expand_existing_page"
+          ],
+          "category": "factions",
+          "note": "No stub attributes found; page already promoted or not a stub."
+        },
+        {
+          "action_type": "stub_promotion_skipped",
+          "status": "no_op",
+          "target_url": "/wiki/nbg.html",
+          "target_title": "NBG — Crypto Moonboys Wiki",
+          "promotion_score": 85,
+          "rank_score": 583,
+          "inbound_links": 0,
+          "entity_relevance": true,
+          "reasons": [
+            "entity_relevance:true",
+            "rank_score:583",
+            "growth_priority_action:expand_existing_page"
+          ],
+          "category": "characters",
+          "note": "No stub attributes found; page already promoted or not a stub."
+        },
+        {
+          "action_type": "stub_promotion_skipped",
+          "status": "no_op",
+          "target_url": "/wiki/nbgx.html",
+          "target_title": "NBGX — Crypto Moonboys Wiki",
+          "promotion_score": 85,
+          "rank_score": 601,
+          "inbound_links": 0,
+          "entity_relevance": true,
+          "reasons": [
+            "entity_relevance:true",
+            "rank_score:601",
+            "growth_priority_action:expand_existing_page"
+          ],
+          "category": "characters",
+          "note": "No stub attributes found; page already promoted or not a stub."
+        },
+        {
+          "action_type": "stub_promotion_skipped",
+          "status": "no_op",
+          "target_url": "/wiki/null-the-prophet.html",
+          "target_title": "NULL THE PROPHET — Crypto Moonboys Wiki",
+          "promotion_score": 110,
+          "rank_score": 719,
+          "inbound_links": 0,
+          "entity_relevance": true,
+          "reasons": [
+            "entity_relevance:true",
+            "rank_score:719",
+            "narrative_path_inclusion:true",
+            "growth_priority_action:expand_existing_page"
+          ],
+          "category": "characters",
+          "note": "No stub attributes found; page already promoted or not a stub."
+        },
+        {
+          "action_type": "stub_promotion_skipped",
+          "status": "no_op",
+          "target_url": "/wiki/pmsl.html",
+          "target_title": "PMSL — Crypto Moonboys Wiki",
+          "promotion_score": 110,
+          "rank_score": 595,
+          "inbound_links": 0,
+          "entity_relevance": true,
+          "reasons": [
+            "entity_relevance:true",
+            "rank_score:595",
+            "narrative_path_inclusion:true",
+            "growth_priority_action:expand_existing_page"
+          ],
+          "category": "factions",
+          "note": "No stub attributes found; page already promoted or not a stub."
+        },
+        {
+          "action_type": "stub_promotion_skipped",
+          "status": "no_op",
+          "target_url": "/wiki/punk-token.html",
+          "target_title": "$PUNK Token — Crypto Moonboys Wiki",
+          "promotion_score": 85,
+          "rank_score": 699,
+          "inbound_links": 0,
+          "entity_relevance": true,
+          "reasons": [
+            "entity_relevance:true",
+            "rank_score:699",
+            "growth_priority_action:expand_existing_page"
+          ],
+          "category": "characters",
+          "note": "No stub attributes found; page already promoted or not a stub."
+        },
+        {
+          "action_type": "stub_promotion_skipped",
+          "status": "no_op",
+          "target_url": "/wiki/queen-sarah-pfly.html",
+          "target_title": "Queen Sarah P-Fly — Crypto Moonboys Wiki",
+          "promotion_score": 85,
+          "rank_score": 700,
+          "inbound_links": 0,
+          "entity_relevance": true,
+          "reasons": [
+            "entity_relevance:true",
+            "rank_score:700",
+            "growth_priority_action:expand_existing_page"
+          ],
+          "category": "characters",
+          "note": "No stub attributes found; page already promoted or not a stub."
+        },
+        {
+          "action_type": "stub_promotion_skipped",
+          "status": "no_op",
+          "target_url": "/wiki/rave-relics.html",
+          "target_title": "Rave Relics — Crypto Moonboys Wiki",
+          "promotion_score": 84,
+          "rank_score": 489,
+          "inbound_links": 0,
+          "entity_relevance": true,
+          "reasons": [
+            "entity_relevance:true",
+            "rank_score:489",
+            "growth_priority_action:expand_existing_page"
+          ],
+          "category": "factions",
+          "note": "No stub attributes found; page already promoted or not a stub."
+        },
+        {
+          "action_type": "stub_promotion_skipped",
+          "status": "no_op",
+          "target_url": "/wiki/solana.html",
+          "target_title": "Solana (SOL) — Crypto Moonboys Wiki",
+          "promotion_score": 578,
+          "rank_score": 602,
+          "inbound_links": 156,
+          "entity_relevance": true,
+          "reasons": [
+            "inbound_links:156",
+            "entity_relevance:true",
+            "rank_score:602",
+            "narrative_path_inclusion:true",
+            "growth_priority_action:expand_existing_page"
+          ],
+          "category": "tokens",
+          "note": "No stub attributes found; page already promoted or not a stub."
+        },
+        {
+          "action_type": "stub_promotion_skipped",
+          "status": "no_op",
+          "target_url": "/wiki/staking.html",
+          "target_title": "Staking — Crypto Moonboys Wiki",
+          "promotion_score": 85,
+          "rank_score": 600,
+          "inbound_links": 0,
+          "entity_relevance": true,
+          "reasons": [
+            "entity_relevance:true",
+            "rank_score:600",
+            "growth_priority_action:expand_existing_page"
+          ],
+          "category": "characters",
+          "note": "No stub attributes found; page already promoted or not a stub."
+        }
+      ]
+    },
+    {
+      "run_id": "generate-content-expansion:2026-04-21",
+      "script": "generate-content-expansion",
+      "timestamp": "2026-04-21T05:32:21.130Z",
+      "summary": {
+        "total_eligible": 18,
+        "created": 0,
+        "skipped": 18
+      },
+      "actions": [
+        {
+          "action_type": "content_expansion_skipped",
+          "status": "skipped",
+          "target_url": "/wiki/graffpunks-nfts.html",
+          "reason": "already_exists",
+          "source_action_type": "create_bridge_page",
+          "priority_score": 385
+        },
+        {
+          "action_type": "content_expansion_skipped",
+          "status": "skipped",
+          "target_url": "/wiki/games-graffpunks.html",
+          "reason": "already_exists",
+          "source_action_type": "create_bridge_page",
+          "priority_score": 280
+        },
+        {
+          "action_type": "content_expansion_skipped",
+          "status": "skipped",
+          "target_url": "/wiki/bitcoin-graffpunks.html",
+          "reason": "already_exists",
+          "source_action_type": "create_bridge_page",
+          "priority_score": 273
+        },
+        {
+          "action_type": "content_expansion_skipped",
+          "status": "skipped",
+          "target_url": "/wiki/graffpunks-token.html",
+          "reason": "already_exists",
+          "source_action_type": "create_bridge_page",
+          "priority_score": 252
+        },
+        {
+          "action_type": "content_expansion_skipped",
+          "status": "skipped",
+          "target_url": "/wiki/fork-graffpunks.html",
+          "reason": "already_exists",
+          "source_action_type": "create_bridge_page",
+          "priority_score": 236
+        },
+        {
+          "action_type": "content_expansion_skipped",
+          "status": "skipped",
+          "target_url": "/wiki/gk-graffpunks.html",
+          "reason": "already_exists",
+          "source_action_type": "create_bridge_page",
+          "priority_score": 236
+        },
+        {
+          "action_type": "content_expansion_skipped",
+          "status": "skipped",
+          "target_url": "/wiki/graffpunks-kid.html",
+          "reason": "already_exists",
+          "source_action_type": "create_bridge_page",
+          "priority_score": 232
+        },
+        {
+          "action_type": "content_expansion_skipped",
+          "status": "skipped",
+          "target_url": "/wiki/graffpunks-hodl.html",
+          "reason": "already_exists",
+          "source_action_type": "create_bridge_page",
+          "priority_score": 220
+        },
+        {
+          "action_type": "content_expansion_skipped",
+          "status": "skipped",
+          "target_url": "/wiki/graffpunks-nbg.html",
+          "reason": "already_exists",
+          "source_action_type": "create_bridge_page",
+          "priority_score": 208
+        },
+        {
+          "action_type": "content_expansion_skipped",
+          "status": "skipped",
+          "target_url": "/wiki/blockchain-graffpunks.html",
+          "reason": "already_exists",
+          "source_action_type": "create_bridge_page",
+          "priority_score": 200
+        },
+        {
+          "action_type": "content_expansion_skipped",
+          "status": "skipped",
+          "target_url": "/wiki/nfts.html",
+          "reason": "already_exists",
+          "source_action_type": "create_topic_page",
+          "priority_score": 193
+        },
+        {
+          "action_type": "content_expansion_skipped",
+          "status": "skipped",
+          "target_url": "/wiki/bitcoin-nfts.html",
+          "reason": "already_exists",
+          "source_action_type": "create_bridge_page",
+          "priority_score": 175
+        },
+        {
+          "action_type": "content_expansion_skipped",
+          "status": "skipped",
+          "target_url": "/wiki/games-nfts.html",
+          "reason": "already_exists",
+          "source_action_type": "create_bridge_page",
+          "priority_score": 151
+        },
+        {
+          "action_type": "content_expansion_skipped",
+          "status": "skipped",
+          "target_url": "/wiki/bitcoin-tokens.html",
+          "reason": "already_exists",
+          "source_action_type": "create_bridge_page",
+          "priority_score": 150
+        },
+        {
+          "action_type": "content_expansion_skipped",
+          "status": "skipped",
+          "target_url": "/wiki/tokens.html",
+          "reason": "already_exists",
+          "source_action_type": "create_topic_page",
+          "priority_score": 149
+        },
+        {
+          "action_type": "content_expansion_skipped",
+          "status": "skipped",
+          "target_url": "/wiki/kid.html",
+          "reason": "already_exists",
+          "source_action_type": "create_topic_page",
+          "priority_score": 75
+        },
+        {
+          "action_type": "content_expansion_skipped",
+          "status": "skipped",
+          "target_url": "/wiki/gk.html",
+          "reason": "already_exists",
+          "source_action_type": "create_topic_page",
+          "priority_score": 73
+        },
+        {
+          "action_type": "content_expansion_skipped",
+          "status": "skipped",
+          "target_url": "/wiki/blockchain.html",
+          "reason": "already_exists",
+          "source_action_type": "create_topic_page",
+          "priority_score": 71
+        }
+      ]
+    },
+    {
+      "run_id": "ingest-external-intelligence:2026-04-21",
+      "script": "ingest-external-intelligence",
+      "timestamp": "2026-04-21T05:32:21.189Z",
+      "summary": {
+        "total_entries": 0,
+        "ingested": 0,
+        "skipped": 0
+      },
+      "actions": []
+    },
+    {
+      "run_id": "apply-hub-reinforcement:2026-04-21",
+      "script": "apply-hub-reinforcement",
+      "timestamp": "2026-04-21T05:32:21.237Z",
+      "summary": {
+        "total_recommendations": 1,
+        "created": 0,
+        "skipped": 1,
+        "existing_hubs": 3
+      },
+      "actions": [
+        {
+          "action_type": "hub_reinforcement_skipped",
+          "status": "skipped",
+          "target_url": "/wiki/graffiti-queens-in-decentraland-ecosystem.html",
+          "reason": "hub_already_exists",
+          "cluster_id": "decentraland-events",
+          "hub_score": 129
+        }
+      ]
     }
   ]
 }
