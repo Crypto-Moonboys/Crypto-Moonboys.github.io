@@ -6,8 +6,10 @@
   var identity = window.MOONBOYS_IDENTITY || {};
 
   var accessState = document.getElementById('access-state');
+  var refreshAuthBtn = document.getElementById('refresh-auth-state');
   var panel = document.getElementById('admin-panel');
   var form = document.getElementById('grant-form');
+  var adminTelegramUsernameEl = document.getElementById('admin-telegram-username');
   var adminTelegramIdEl = document.getElementById('admin-telegram-id');
   var targetTelegramIdEl = document.getElementById('target-telegram-id');
   var xpEl = document.getElementById('grant-xp');
@@ -16,11 +18,21 @@
   var reasonEl = document.getElementById('grant-reason');
   var resultState = document.getElementById('result-state');
   var resultJson = document.getElementById('result-json');
+  var activeAdminTelegramId = '';
 
   function setState(el, text, tone) {
     if (!el) return;
     el.textContent = text;
     el.className = 'state state--' + (tone || 'warn');
+  }
+
+  function hidePanel() {
+    if (panel) panel.classList.add('hidden');
+    activeAdminTelegramId = '';
+  }
+
+  function showPanel() {
+    if (panel) panel.classList.remove('hidden');
   }
 
   function readInt(input) {
@@ -46,9 +58,9 @@
     return { ok: response.ok, status: response.status, payload: payload };
   }
 
-  function handleQuickFill(kind, selfTelegramId) {
-    if (kind === 'me' && selfTelegramId) {
-      targetTelegramIdEl.value = selfTelegramId;
+  function handleQuickFill(kind) {
+    if (kind === 'me' && activeAdminTelegramId) {
+      targetTelegramIdEl.value = activeAdminTelegramId;
       return;
     }
     if (kind === 'xp50k') {
@@ -65,27 +77,61 @@
     }
   }
 
-  async function boot() {
+  function getAuthContext() {
+    var sync = identity.getSyncState ? identity.getSyncState() : null;
+    var authStatus = identity.getTelegramAuthStatus ? identity.getTelegramAuthStatus() : null;
+    var linked = sync ? !!sync.linked : !!(identity.isTelegramLinked && identity.isTelegramLinked());
+    var authPayload = authStatus && authStatus.auth
+      ? authStatus.auth
+      : (identity.getTelegramAuth ? identity.getTelegramAuth() : null);
+    var hasAuthPayload = authStatus
+      ? !!authStatus.has_payload
+      : !!(authPayload && authPayload.hash && authPayload.auth_date);
+    var authExpired = authStatus
+      ? !!authStatus.expired
+      : !!(sync && sync.status === 'auth_expired');
+    var telegramId = String(identity.getTelegramId ? (identity.getTelegramId() || '') : '').trim();
+
+    return {
+      linked: linked,
+      sync: sync,
+      authPayload: authPayload,
+      hasAuthPayload: hasAuthPayload,
+      authExpired: authExpired,
+      telegramId: telegramId,
+    };
+  }
+
+  function authErrorMessage(ctx) {
+    if (!ctx.linked) return 'Denied: Telegram account is not linked yet. Run /gklink first.';
+    if (!ctx.hasAuthPayload) return 'Denied: linked account found, but signed Telegram auth payload is missing. Re-auth with Telegram.';
+    if (ctx.authExpired) return 'Denied: Telegram auth payload expired. Re-auth with Telegram and retry.';
+    if (!ctx.telegramId) return 'Denied: Telegram ID is missing from local identity state. Re-auth with Telegram.';
+    return '';
+  }
+
+  async function checkAccess() {
+    hidePanel();
+
     if (!API_BASE) {
       setState(accessState, 'API base is not configured.', 'bad');
       return;
     }
 
-    if (!identity.isTelegramLinked || !identity.isTelegramLinked()) {
-      setState(accessState, 'Denied: linked Telegram identity required.', 'bad');
+    var ctx = getAuthContext();
+    var localError = authErrorMessage(ctx);
+    if (localError) {
+      setState(accessState, localError, 'bad');
       return;
     }
 
-    var adminTelegramId = identity.getTelegramId ? String(identity.getTelegramId() || '').trim() : '';
-    var telegramAuth = identity.getTelegramAuth ? identity.getTelegramAuth() : null;
+    var telegramAuth = ctx.authPayload;
+    var adminTelegramId = ctx.telegramId;
+    var username = telegramAuth && telegramAuth.username ? '@' + String(telegramAuth.username).replace(/^@/, '') : '';
 
-    if (!adminTelegramId || !telegramAuth) {
-      setState(accessState, 'Denied: Telegram auth payload is missing. Re-auth with Telegram.', 'bad');
-      return;
-    }
-
-    adminTelegramIdEl.value = adminTelegramId;
-    targetTelegramIdEl.value = adminTelegramId;
+    if (adminTelegramIdEl) adminTelegramIdEl.value = adminTelegramId;
+    if (adminTelegramUsernameEl) adminTelegramUsernameEl.value = username || 'Not available';
+    if (targetTelegramIdEl) targetTelegramIdEl.value = adminTelegramId;
 
     var access;
     try {
@@ -95,33 +141,46 @@
       return;
     }
 
+    var accessPayload = access.payload || {};
+    var backendMessage = String(accessPayload.error || accessPayload.message || '').toLowerCase();
+
     if (!access.ok) {
-      setState(accessState, 'Denied: admin verification failed (' + access.status + ').', 'bad');
-      resultJson.textContent = stringifyPayload(access.payload);
+      var denied = 'Denied: admin verification failed (' + access.status + ').';
+      if (access.status === 401 && backendMessage.indexOf('expired') !== -1) {
+        denied = 'Denied: Telegram auth payload expired. Re-auth with Telegram and retry.';
+      } else if (access.status === 401 && backendMessage.indexOf('required') !== -1) {
+        denied = 'Denied: signed Telegram auth payload is missing or incomplete. Re-auth with Telegram.';
+      }
+      setState(accessState, denied, 'bad');
+      resultJson.textContent = stringifyPayload(accessPayload);
       return;
     }
 
-    var accessPayload = access.payload || {};
     if (!accessPayload.admin_allowlisted) {
-      setState(accessState, 'Denied: this linked Telegram ID is not in the admin allowlist.', 'bad');
+      setState(accessState, 'Denied: linked and authenticated, but this Telegram ID is not in the admin allowlist.', 'bad');
       resultJson.textContent = stringifyPayload(accessPayload);
       return;
     }
     if (!accessPayload.admin_secret_configured) {
-      setState(accessState, 'Denied: backend admin secret is not configured.', 'bad');
+      setState(accessState, 'Denied: linked and allowlisted, but backend admin secret is not configured.', 'bad');
       resultJson.textContent = stringifyPayload(accessPayload);
       return;
     }
 
+    activeAdminTelegramId = adminTelegramId;
     setState(accessState, 'Access approved. Admin-only Block Topia grant panel unlocked.', 'good');
-    panel.classList.remove('hidden');
+    showPanel();
+  }
 
+  function wireQuickFill() {
     document.querySelectorAll('[data-fill]').forEach(function (btn) {
       btn.addEventListener('click', function () {
-        handleQuickFill(btn.getAttribute('data-fill'), adminTelegramId);
+        handleQuickFill(btn.getAttribute('data-fill'));
       });
     });
+  }
 
+  function wireSubmit() {
     form.addEventListener('submit', async function (event) {
       event.preventDefault();
 
@@ -147,10 +206,14 @@
         setState(resultState, 'XP and gems must be whole numbers.', 'bad');
         return;
       }
+      if (!activeAdminTelegramId) {
+        setState(resultState, 'Admin session is not active. Refresh auth state and retry.', 'bad');
+        return;
+      }
 
       var body = {
         telegram_id: targetTelegramId,
-        admin_telegram_id: adminTelegramId,
+        admin_telegram_id: activeAdminTelegramId,
       };
       if (xp !== null && xp > 0) body.xp = xp;
       if (gems !== null && gems > 0) body.gems = gems;
@@ -171,6 +234,31 @@
         setState(resultState, 'Grant failed: network/server unreachable.', 'bad');
       }
     });
+  }
+
+  function wireAutoRefresh() {
+    if (refreshAuthBtn) {
+      refreshAuthBtn.addEventListener('click', function () {
+        checkAccess();
+      });
+    }
+    window.addEventListener('storage', function (event) {
+      var key = event && event.key ? String(event.key) : '';
+      if (key === 'moonboys_tg_id' || key === 'moonboys_tg_linked' || key === 'moonboys_tg_auth' || key === 'moonboys_tg_sync_health') {
+        checkAccess();
+      }
+    });
+    document.addEventListener('visibilitychange', function () {
+      if (document.visibilityState === 'visible') checkAccess();
+    });
+  }
+
+  function boot() {
+    if (!form) return;
+    wireQuickFill();
+    wireSubmit();
+    wireAutoRefresh();
+    checkAccess();
   }
 
   if (document.readyState === 'loading') {
