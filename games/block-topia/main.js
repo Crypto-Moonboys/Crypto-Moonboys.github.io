@@ -432,8 +432,6 @@ async function syncMiniGameSkip(type, skipStreak = 0) {
   if (!apiBase || !telegramAuth?.hash || !telegramAuth?.auth_date) {
     return { ok: false, error: 'Telegram auth missing. Re-sync required.', auth_required: true };
   }
-  const entered = await ensureRpgEntry();
-  if (!entered) return null;
   const res = await fetch(`${apiBase}/blocktopia/progression/mini-game`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -639,8 +637,6 @@ async function syncMiniGameOutcome(type, outcome) {
   if (!apiBase || !telegramAuth?.hash || !telegramAuth?.auth_date) {
     return { ok: false, error: 'Telegram auth missing. Re-sync required.', auth_required: true };
   }
-  const entered = await ensureRpgEntry();
-  if (!entered) return null;
   const action = outcome === 'success' ? 'mini_game_win' : 'mini_game_loss';
   const res = await fetch(`${apiBase}/blocktopia/progression/mini-game`, {
     method: 'POST',
@@ -1509,10 +1505,10 @@ async function boot() {
     const canPlay = server.can_play !== false && Number(server.progression.xp || 0) >= Number(server.progression.mini_game_cost || 0);
     if (!canPlay) {
       hud.pushFeed(`⛔ ${String(type).toUpperCase()} blocked · XP too low (${server.progression.xp || 0}/${server.progression.mini_game_cost || 0})`, 'sam');
-      hud.pushFeed('⛔ XP unaffordable exit triggered', 'sam');
-      sessionGuard.sessionDead = true;
+      hud.showNodeInterference(`${String(type).toUpperCase()} unavailable right now. Keep moving and regain XP to retry.`, 'warning');
+      hud.pushFeed('⚠ XP too low for this mini-game. Block Topia session remains active.', 'system');
       closeMiniGameOverlays();
-      window.location.replace(getSyncGateUrl());
+      setActiveMiniGame('');
       return false;
     }
     return true;
@@ -1557,11 +1553,11 @@ async function boot() {
       const bonus = (server.progression.bonus_flags || []).length ? ` · ${server.progression.bonus_flags.join(', ')}` : '';
       hud.pushFeed(`🧬 Progression synced · XP ${server.progression.xp || 0} (survival) · Gems ${server.progression.gems || 0} (upgrades)${bonus}`, 'quest');
       if (server.exited || server.progression.rpg_mode_active === false) {
-        sessionGuard.sessionDead = true;
-        closeMiniGameOverlays();
-        hud.pushFeed('⛔ XP unaffordable exit', 'sam');
-        window.location.replace(getSyncGateUrl());
-        return;
+        const warningText = server.exited
+          ? `${String(type).toUpperCase()} sync warning: server flagged a mini-game exit state, but the current Block Topia session remains active.`
+          : `${String(type).toUpperCase()} sync warning: RPG mode reported inactive after mini-game sync.`;
+        hud.showNodeInterference(warningText, 'warning');
+        hud.pushFeed(`⚠ ${warningText}`, 'system');
       }
     } else if (server && server.ok === false) {
       hud.showNodeInterference(server.error || 'Mini-game result sync failed.', 'warning');
