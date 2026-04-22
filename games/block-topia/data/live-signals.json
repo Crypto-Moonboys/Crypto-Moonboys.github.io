@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-04-22T06:01:03.956Z",
+  "generatedAt": "2026-04-22T08:15:50.916Z",
   "mode": "live-ai",
   "sourceHealth": {
     "coingecko-global": "ok",
@@ -11,84 +11,84 @@
   "signalCount": 5,
   "signals": [
     {
-      "id": "signal-1776837663955-1",
+      "id": "signal-1776845750915-1",
       "lane": "world",
       "priority": 4,
-      "ttlMinutes": 60,
-      "npcLine": "Market pulse rising, but shadows of dread linger in neon grids.",
-      "questPulse": "Scan city blocks for rogue data spikes—trends shift fast.",
-      "worldFeed": "Crypto nodes flicker; volume surges under veiled threats.",
-      "clueEvent": "Unstable markets stir digital whispers in back alleys.",
+      "ttlMinutes": 120,
+      "npcLine": "Market pulse flickers—cryptos breathing but shadows grow.",
+      "questPulse": "Scan dark nodes for hidden blockchain uprisings.",
+      "worldFeed": "Global digital assets barely stirring amid rising distrust.",
+      "clueEvent": "Data leaks suggest info brokers trading phantom coins.",
       "tags": [
-        "market",
-        "fear",
-        "crypto"
+        "cryptomarket",
+        "uncertainty",
+        "digital-assets"
       ],
-      "expiresAt": "2026-04-22T07:01:03.955Z"
+      "expiresAt": "2026-04-22T10:15:50.915Z"
     },
     {
-      "id": "signal-1776837663956-2",
+      "id": "signal-1776845750916-2",
       "lane": "ops",
-      "priority": 3,
-      "ttlMinutes": 45,
-      "npcLine": "RAVE nodes spike; tastes of digital ecstasy or trap?",
-      "questPulse": "Intercept RAVE signal, trace source before system collapses.",
-      "worldFeed": "Stealth operators chase volatile tokens beneath city neon.",
-      "clueEvent": "Cryptic packets scatter, hinting at underground exploits.",
-      "tags": [
-        "rave",
-        "signal",
-        "crypto"
-      ],
-      "expiresAt": "2026-04-22T06:46:03.956Z"
-    },
-    {
-      "id": "signal-1776837663956-3",
-      "lane": "clue",
-      "priority": 2,
-      "ttlMinutes": 30,
-      "npcLine": "ASTEROID rides a comet trail; eyes locked on drifting gains.",
-      "questPulse": "Decode ASTEROID chatter, unlock hidden transaction nodes.",
-      "worldFeed": "Asteroid token trail leads to decayed cyber hubs.",
-      "clueEvent": "Data fragments whisper on forgotten market edges.",
-      "tags": [
-        "asteroid",
-        "data",
-        "crypto"
-      ],
-      "expiresAt": "2026-04-22T06:31:03.956Z"
-    },
-    {
-      "id": "signal-1776837663956-4",
-      "lane": "quest",
       "priority": 5,
       "ttlMinutes": 90,
-      "npcLine": "BTC still king of the grid, but fear gnaws at its core.",
-      "questPulse": "Secure BTC vaults; enemies prowl for sudden strikes.",
-      "worldFeed": "Old guard cryptocurrencies shudder as new threats emerge.",
-      "clueEvent": "Encrypted alerts signal upcoming market turbulence.",
+      "npcLine": "OPG networks spike; watchdogs scramble in neon back alleys.",
+      "questPulse": "Infiltrate cyber vaults squeezing bursts from OPG's core.",
+      "worldFeed": "Emerging tokens ignite underground ops, whispers of surge.",
+      "clueEvent": "Encrypted chatter hints at pump schemes in shadow markets.",
       "tags": [
-        "btc",
-        "security",
-        "fear"
+        "ops",
+        "crypto-spike",
+        "surge"
       ],
-      "expiresAt": "2026-04-22T07:31:03.956Z"
+      "expiresAt": "2026-04-22T09:45:50.916Z"
     },
     {
-      "id": "signal-1776837663956-5",
-      "lane": "npc",
-      "priority": 1,
-      "ttlMinutes": 20,
-      "npcLine": "CHIP’s whispers barely reach beyond broken circuits tonight.",
-      "questPulse": "Probe CHIP micro-transactions; unknown operators active.",
-      "worldFeed": "Silent tokens in a noisy city struggle for notice.",
-      "clueEvent": "Fractured signals hint at emerging low-profile actors.",
+      "id": "signal-1776845750916-3",
+      "lane": "clue",
+      "priority": 3,
+      "ttlMinutes": 60,
+      "npcLine": "Silent whispers: CHIP nodes flicker, ghosts in the grid.",
+      "questPulse": "Trace signal anomalies in CHIP’s fading broadcast.",
+      "worldFeed": "Low signal on minor tokens, hopeful or hopeless bets.",
+      "clueEvent": "Algorithmic trails reveal possible info tampering.",
       "tags": [
-        "chip",
-        "stealth",
-        "crypto"
+        "clue",
+        "signal-flicker",
+        "ghost-nodes"
       ],
-      "expiresAt": "2026-04-22T06:21:03.956Z"
+      "expiresAt": "2026-04-22T09:15:50.916Z"
+    },
+    {
+      "id": "signal-1776845750916-4",
+      "lane": "quest",
+      "priority": 4,
+      "ttlMinutes": 100,
+      "npcLine": "PENGU and RAVE surge; scavengers seek tech relics behind fame.",
+      "questPulse": "Hunt artifacts from recent token spikes in neon ruins.",
+      "worldFeed": "Forgotten coins awaken sparks of interest in old sectors.",
+      "clueEvent": "Odd trade volumes stir rumors of hidden tech trades.",
+      "tags": [
+        "quest",
+        "artifact-hunt",
+        "token-spikes"
+      ],
+      "expiresAt": "2026-04-22T09:55:50.916Z"
+    },
+    {
+      "id": "signal-1776845750916-5",
+      "lane": "npc",
+      "priority": 2,
+      "ttlMinutes": 80,
+      "npcLine": "AAVE’s shadow lingers; info dealers whisper in dark corners.",
+      "questPulse": "Meet with shady contacts for insider whispers on AAVE.",
+      "worldFeed": "Suspicious silence around certain tokens fuels market paranoia.",
+      "clueEvent": "Obscure signals caught on once-popular AAVE channels.",
+      "tags": [
+        "npc",
+        "whispers",
+        "market-paranoia"
+      ],
+      "expiresAt": "2026-04-22T09:35:50.916Z"
     }
   ]
 }
