@@ -65,6 +65,32 @@ function isRpgModeActive(row) {
   return Number(row?.rpg_mode_active || 0) === 1;
 }
 
+function hasMiniGameSessionEvidence(row) {
+  return Boolean(row?.mini_game_last_played) || Number(row?.mini_game_skip_count || 0) > 0;
+}
+
+async function restoreRpgModeActive(db, row, telegramId, route, { force = false } = {}) {
+  if (isRpgModeActive(row)) return row;
+  if (!force && !hasMiniGameSessionEvidence(row)) return row;
+  const result = await db.prepare(`
+    UPDATE blocktopia_progression
+    SET rpg_mode_active = 1, updated_at = CURRENT_TIMESTAMP
+    WHERE telegram_id = ?
+  `).bind(telegramId).run();
+  if (changedRows(result) !== 1) {
+    logBlockTopiaFailure('restore_rpg_mode_active_missed', {
+      route,
+      telegramId,
+    });
+    return row;
+  }
+  return {
+    ...row,
+    rpg_mode_active: 1,
+    updated_at: new Date().toISOString(),
+  };
+}
+
 function logProgressionResponse(route, progression = {}, meta = {}) {
   console.log('[blocktopia][progression_response]', JSON.stringify({
     route,
@@ -174,13 +200,14 @@ export async function handleBlockTopiaProgressionRoute(request, env, url, helper
       });
       const rawRow = await getOrCreateBlockTopiaProgression(env.DB, verified.telegramId);
       const row = await syncPressureDecay(env.DB, rawRow);
-      const upgrades = getUpgradeSnapshot(row);
+      const progressionRow = await restoreRpgModeActive(env.DB, row, verified.telegramId, '/blocktopia/progression');
+      const upgrades = getUpgradeSnapshot(progressionRow);
       const effects = buildUpgradeEffects(upgrades);
-      const { drain, xpAfterDrain, drainPerMinute } = applyProgressionDrain(row, Date.now(), effects);
-      const gems = clamp(Number(row.gems) || 0, GEMS_MIN, GEMS_MAX);
-      const tierAfter = clamp(Number(row.tier) || 1, TIER_MIN, TIER_MAX);
-      const winStreak = Math.max(0, Math.floor(Number(row.win_streak) || 0));
-      const rpgModeActive = Number(row.rpg_mode_active) === 1;
+      const { drain, xpAfterDrain, drainPerMinute } = applyProgressionDrain(progressionRow, Date.now(), effects);
+      const gems = clamp(Number(progressionRow.gems) || 0, GEMS_MIN, GEMS_MAX);
+      const tierAfter = clamp(Number(progressionRow.tier) || 1, TIER_MIN, TIER_MAX);
+      const winStreak = Math.max(0, Math.floor(Number(progressionRow.win_streak) || 0));
+      const rpgModeActive = isRpgModeActive(progressionRow);
 
       const updateResult = await env.DB.prepare(`
         UPDATE blocktopia_progression
@@ -211,14 +238,14 @@ export async function handleBlockTopiaProgressionRoute(request, env, url, helper
         upgrades,
         effects,
         last_active: new Date().toISOString(),
-        network_heat: clamp(Number(row.network_heat) || 0, 0, 100),
-        heat_tier: getNetworkHeatTier(row.network_heat),
+        network_heat: clamp(Number(progressionRow.network_heat) || 0, 0, 100),
+        heat_tier: getNetworkHeatTier(progressionRow.network_heat),
       };
       logProgressionResponse('/blocktopia/progression', progression, { ok: true });
       return json({
         ok: true,
         progression,
-        ...buildProgressionEnvelope(row),
+        ...buildProgressionEnvelope({ ...progressionRow, rpg_mode_active: rpgModeActive }),
       });
     } catch (error) {
       logBlockTopiaFailure('load_progression_failed', {
@@ -417,12 +444,11 @@ export async function handleBlockTopiaProgressionRoute(request, env, url, helper
       if (action !== 'mini_game_affordability' && guarded.blocked) {
         return cooldownBlockedResponse(json, guarded.row, 'Cooldown active. Rewards and mini-games are temporarily locked.');
       }
-      const row = guarded.row;
+      const row = action === 'arcade_score'
+        ? guarded.row
+        : await restoreRpgModeActive(env.DB, guarded.row, verified.telegramId, '/blocktopia/progression/mini-game', { force: true });
       const upgrades = getUpgradeSnapshot(row);
       const effects = buildUpgradeEffects(upgrades);
-      if (action !== 'arcade_score' && Number(row?.rpg_mode_active || 0) !== 1) {
-        return err('RPG mode entry required before mini-game rewards', 403);
-      }
       const currentTier = clamp(Math.floor(Number(row.tier) || 1), TIER_MIN, TIER_MAX);
       const { drain, xpAfterDrain, drainPerMinute } = applyProgressionDrain(row, Date.now(), effects);
       const miniGameCost = action === 'arcade_score' ? 0 : computeMiniGameCost(currentTier);
@@ -433,7 +459,7 @@ export async function handleBlockTopiaProgressionRoute(request, env, url, helper
           gems: clamp((Number(row.gems) || 0), GEMS_MIN, GEMS_MAX),
           tier: currentTier,
           win_streak: Math.max(0, Math.floor(Number(row.win_streak) || 0)),
-          rpg_mode_active: Number(row.rpg_mode_active || 0) === 1,
+          rpg_mode_active: true,
           mini_game_cost: miniGameCost,
           drain_applied: drain,
           drain_per_minute: drainPerMinute,
@@ -448,7 +474,7 @@ export async function handleBlockTopiaProgressionRoute(request, env, url, helper
           ok: true,
           can_play: xpAfterDrain >= miniGameCost && !guarded.cooldown.active,
           progression,
-          ...buildProgressionEnvelope(row),
+          ...buildProgressionEnvelope({ ...row, rpg_mode_active: 1 }),
         });
       }
       if (action === 'mini_game_skip') {
