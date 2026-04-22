@@ -23,8 +23,10 @@
       min-height: clamp(560px, 76vh, 920px);
       isolation: isolate;
       background: transparent !important;
+      background-color: transparent !important;
       box-shadow: none !important;
       border: 0 !important;
+      outline: 0 !important;
     }
     .graph-page-header,
     .graph-toolbar,
@@ -39,7 +41,9 @@
       max-width: min(760px, calc(100% - 320px));
       padding: 0;
       border: 0;
-      background: transparent;
+      background: transparent !important;
+      background-color: transparent !important;
+      box-shadow: none !important;
     }
     .graph-page-header h1 {
       margin-bottom: 6px;
@@ -64,8 +68,10 @@
       align-items: center;
       gap: 12px;
       padding: 0;
-      background: transparent;
-      border: 0;
+      background: transparent !important;
+      background-color: transparent !important;
+      border: 0 !important;
+      box-shadow: none !important;
     }
     .graph-toolbar label,
     .graph-info-panel h3,
@@ -136,18 +142,22 @@
     .graph-main {
       position: relative;
       min-height: inherit;
-      overflow: hidden;
+      overflow: visible;
       background: transparent !important;
+      background-color: transparent !important;
       box-shadow: none !important;
       border: 0 !important;
+      outline: 0 !important;
     }
     .graph-canvas-wrap {
       position: absolute;
       inset: 0;
       min-width: 0;
       background: transparent !important;
+      background-color: transparent !important;
       box-shadow: none !important;
       border: 0 !important;
+      outline: 0 !important;
     }
     #graph-canvas {
       display: block;
@@ -156,8 +166,10 @@
       cursor: grab;
       touch-action: none;
       background: transparent !important;
+      background-color: transparent !important;
       box-shadow: none !important;
       border: 0 !important;
+      outline: 0 !important;
     }
 
     .graph-info-panel {
@@ -167,8 +179,10 @@
       padding: 0;
       overflow-y: auto;
       font-size: .88rem;
-      background: transparent;
-      border: 0;
+      background: transparent !important;
+      background-color: transparent !important;
+      border: 0 !important;
+      box-shadow: none !important;
     }
     .graph-info-panel h3 {
       margin-bottom: 10px;
@@ -179,12 +193,14 @@
     }
     #graph-info,
     .graph-legend {
-      padding: 16px 18px;
-      border: 1px solid rgba(118, 240, 255, 0.14);
-      border-radius: 18px;
-      background: rgba(5, 14, 28, 0.08);
-      backdrop-filter: blur(2px);
-      -webkit-backdrop-filter: blur(2px);
+      padding: 10px 0;
+      border: 0 !important;
+      border-radius: 0;
+      background: transparent !important;
+      background-color: transparent !important;
+      box-shadow: none !important;
+      backdrop-filter: none;
+      -webkit-backdrop-filter: none;
     }
     #graph-info .ginfo-title {
       display: flex;
@@ -230,7 +246,7 @@
     .ginfo-link:hover { color: var(--color-text); }
 
     .graph-legend {
-      margin-top: 14px;
+      margin-top: 18px;
     }
     .graph-legend h4 {
       margin-bottom: 8px;
@@ -262,12 +278,33 @@
       flex-wrap: wrap;
       gap: 16px;
       padding: 0;
-      border: 0;
-      background: transparent;
+      border: 0 !important;
+      background: transparent !important;
+      background-color: transparent !important;
+      box-shadow: none !important;
       color: rgba(230, 237, 243, 0.82);
       font-size: .8rem;
     }
     .graph-help span { margin-right: 0; }
+
+    .graph-stage,
+    .graph-stage::before,
+    .graph-stage::after,
+    .graph-main,
+    .graph-main::before,
+    .graph-main::after,
+    .graph-canvas-wrap,
+    .graph-canvas-wrap::before,
+    .graph-canvas-wrap::after,
+    #graph-canvas,
+    #graph-canvas::before,
+    #graph-canvas::after {
+      background: transparent !important;
+      background-color: transparent !important;
+      border: 0 !important;
+      box-shadow: none !important;
+      outline: 0 !important;
+    }
 
     @media (max-width: 980px) {
       .graph-page-header {
@@ -383,4 +420,111 @@
         <a href="/wiki/bear-market-siege.html"><span class="nav-icon">🐻</span> Bear Market Siege</a>
         <a href="/wiki/rug-pull-wars.html"><span class="nav-icon">🪤</span> Rug Pull Wars</a>
         <a href="/wiki/satoshi-scroll.html"><span class="nav-icon">📜</span> The Satoshi Scroll</a>
-        <a href="/wiki/fomo-plague.html"><span class="nav-icon">😱</span> The+k�w��
+        <a href="/wiki/fomo-plague.html"><span class="nav-icon">😱</span> The FOMO Plague</a>
+        <a href="/wiki/ngmi-chronicles.html"><span class="nav-icon">💀</span> NGMI Chronicles</a>
+        <a href="/wiki/wagmi-prophecy.html"><span class="nav-icon">🌙</span> The WAGMI Prophecy</a>
+      </div>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-heading">GK Wiki Info</div>
+      <div class="sidebar-nav">
+        <a href="/about.html"><span class="nav-icon">ℹ️</span> About</a>
+        <a href="/about.html#citation"><span class="nav-icon">📋</span> Citation Policy</a>
+        <a href="/about.html#sources"><span class="nav-icon">🔗</span> Source Types</a>
+      </div>
+    </div>
+  </nav>
+
+  <div id="main-wrapper">
+  <main id="content" role="main">
+    <section class="graph-stage" aria-label="Entity graph stage">
+      <div class="graph-page-header">
+        <h1>🌐 Entity Relationship Graph</h1>
+        <p>Interactive visualisation of knowledge connections across all wiki entities. Click a node to explore its relationships.</p>
+      </div>
+
+      <div class="graph-toolbar">
+        <label for="graph-filter-select">Filter:</label>
+        <select id="graph-filter-select" aria-label="Filter by category">
+          <option value="all">All categories</option>
+        </select>
+
+        <label for="graph-search">Search:</label>
+        <input type="search" id="graph-search" placeholder="Find entity..." aria-label="Search entity" autocomplete="off" style="width:190px">
+
+        <button id="graph-reset-btn" type="button">Reset view</button>
+
+        <span class="graph-status" id="graph-status" aria-live="polite"></span>
+      </div>
+
+      <div class="graph-main">
+        <div class="graph-canvas-wrap">
+          <canvas id="graph-canvas" role="img" aria-label="Entity relationship graph"></canvas>
+        </div>
+
+        <aside class="graph-info-panel" aria-label="Node details">
+          <h3>Node Details</h3>
+          <div id="graph-info">
+            <p style="color:var(--color-text-muted);font-size:.84rem">Click or hover a node to see details.</p>
+          </div>
+
+          <div class="graph-legend">
+            <h4>Category colours</h4>
+            <div class="legend-item"><span class="legend-dot" style="background:#58a6ff"></span>Characters</div>
+            <div class="legend-item"><span class="legend-dot" style="background:#f7c948"></span>Factions</div>
+            <div class="legend-item"><span class="legend-dot" style="background:#3fb950"></span>Tokens</div>
+            <div class="legend-item"><span class="legend-dot" style="background:#bc8cff"></span>Concepts</div>
+            <div class="legend-item"><span class="legend-dot" style="background:#ff7b72"></span>Lore</div>
+            <div class="legend-item"><span class="legend-dot" style="background:#8b949e"></span>Other</div>
+          </div>
+        </aside>
+      </div>
+
+      <div class="graph-help" role="note">
+        <span>🖱️ Drag to pan</span>
+        <span>🔍 Scroll to zoom</span>
+        <span>👆 Click node to focus</span>
+        <span>↔️ Drag node to reposition</span>
+      </div>
+    </section>
+  </main>
+
+    <footer id="site-footer" role="contentinfo">
+      <div class="footer-inner">
+        <div class="footer-col">
+          <h4>🌙 The Crypto Moonboys GK Wiki</h4>
+          <p>Fan-driven encyclopedia for the crypto community.</p>
+        </div>
+        <div class="footer-col">
+          <h4>Explore</h4>
+          <ul>
+            <li><a href="/index.html">Main Page</a></li>
+            <li><a href="/categories/index.html">Categories</a></li>
+            <li><a href="/search.html">All Articles</a></li>
+            <li><a href="/about.html">About</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4>⚔️ HODL Wars Lore</h4>
+          <ul>
+            <li><a href="/wiki/hodl-wars.html">HODL Wars</a></li>
+            <li><a href="/wiki/hodl-warriors.html">HODL Warriors</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>© 2026 Crypto Moonboys Wiki · Not financial advice.</p>
+        <p><span class="no-login-note">🔒 No sign-up · No login · Bot-maintained</span></p>
+      </div>
+    </footer>
+  </div>
+</div>
+
+<button id="back-to-top" aria-label="Back to top">↑</button>
+
+<script src="/js/api-config.js"></script>
+<script src="/js/wiki.js"></script>
+<script src="/js/graph-visualization.js"></script>
+
+</body>
+</html>
