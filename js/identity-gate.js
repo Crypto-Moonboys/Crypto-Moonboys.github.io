@@ -50,6 +50,7 @@
   var TELEGRAM_AUTH_MAX_AGE_SECONDS = 86400;
   var MODAL_ID     = 'tg-sync-gate-modal';
   var STYLE_ID     = 'tg-sync-gate-styles';
+  var bootstrapPromise = null;
 
   // ── localStorage helpers ────────────────────────────────────
 
@@ -78,6 +79,11 @@
   function clearStoredTelegramAuthRaw() {
     lsRemove(LS_TG_AUTH);
     lsRemove(LS_TG_AUTH_LEGACY);
+  }
+
+  function getApiBase() {
+    var cfg = window.MOONBOYS_API || {};
+    return cfg.BASE_URL ? String(cfg.BASE_URL).replace(/\/$/, '') : '';
   }
 
   // ── Public API ───────────────────────────────────────────────
@@ -293,6 +299,99 @@
     if (!telegramId) return null;
     if (String(telegramId) !== String(auth.id)) return null;
     return auth;
+  }
+
+  function restoreLinkedTelegramAuth(options) {
+    var opts = options && typeof options === 'object' ? options : {};
+    var force = !!opts.force;
+    var currentAuth = getSignedTelegramAuth();
+    if (!force && currentAuth) {
+      return Promise.resolve({
+        ok: true,
+        source: 'cached_auth',
+        telegram_id: String(currentAuth.id),
+        telegram_auth: currentAuth,
+      });
+    }
+
+    var telegramId = getTelegramId();
+    var apiBase = getApiBase();
+    if (!telegramId || !apiBase) {
+      return Promise.resolve({
+        ok: false,
+        reason: !telegramId ? 'missing_telegram_id' : 'missing_api_base',
+      });
+    }
+
+    if (bootstrapPromise) return bootstrapPromise;
+
+    bootstrapPromise = fetch(
+      apiBase + '/telegram/user/status?telegram_id=' + encodeURIComponent(String(telegramId))
+    )
+      .then(function (response) {
+        return response.json().catch(function () { return {}; }).then(function (data) {
+          return { ok: response.ok, status: response.status, data: data || {} };
+        });
+      })
+      .then(function (result) {
+        var data = result.data || {};
+        var restoredAuth = data.telegram_auth && typeof data.telegram_auth === 'object'
+          ? normalizeTelegramAuthPayload(data.telegram_auth, data.telegram_id || telegramId)
+          : null;
+        var linked = data.linked === true || data.link_confirmed === true;
+        var displayName = data.display_name || data.telegram_name || getTelegramName() || null;
+
+        if (!result.ok) {
+          setSyncHealth('bad', data && data.error ? String(data.error) : 'bootstrap_failed');
+          return {
+            ok: false,
+            reason: data && data.error ? String(data.error) : 'bootstrap_failed',
+            status: result.status,
+          };
+        }
+
+        if (!linked || !restoredAuth) {
+          setSyncHealth('bad', linked ? 'missing_bootstrap_auth' : 'not_linked');
+          return {
+            ok: false,
+            reason: linked ? 'missing_bootstrap_auth' : 'not_linked',
+            status: result.status,
+          };
+        }
+
+        saveTelegramIdentity(data.telegram_id || telegramId, displayName, restoredAuth);
+        var linkedOk = setTelegramLinked(data.telegram_id || telegramId, restoredAuth, displayName);
+        if (!linkedOk) {
+          setSyncHealth('bad', 'bootstrap_persist_failed');
+          return {
+            ok: false,
+            reason: 'bootstrap_persist_failed',
+            status: result.status,
+          };
+        }
+
+        setSyncHealth('good', 'server_bootstrap');
+        return {
+          ok: true,
+          source: 'server_bootstrap',
+          telegram_id: String(data.telegram_id || telegramId),
+          telegram_auth: restoredAuth,
+          linked: true,
+        };
+      })
+      .catch(function (error) {
+        setSyncHealth('bad', 'bootstrap_network_error');
+        return {
+          ok: false,
+          reason: error && error.message ? error.message : String(error),
+          status: 0,
+        };
+      })
+      .finally(function () {
+        bootstrapPromise = null;
+      });
+
+    return bootstrapPromise;
   }
 
   /**
@@ -588,6 +687,8 @@
     getTelegramAuth:      getTelegramAuth,
     /** Last verified signed Telegram auth payload when fresh and ID-matched; otherwise null. */
     getSignedTelegramAuth:getSignedTelegramAuth,
+    /** Recover a fresh signed Telegram auth payload from backend-linked identity state when possible. */
+    restoreLinkedTelegramAuth: restoreLinkedTelegramAuth,
     /** Telegram auth payload presence/expiry details for consistent gating. */
     getTelegramAuthStatus:getTelegramAuthStatus,
     /** True when the stored Telegram auth payload is missing/expired/invalid. */

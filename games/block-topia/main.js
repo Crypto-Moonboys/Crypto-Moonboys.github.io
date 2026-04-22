@@ -390,6 +390,10 @@ function hasTelegramAuth() {
 
 function getTelegramAuth() {
   if (window.MOONBOYS_IDENTITY && typeof window.MOONBOYS_IDENTITY.getTelegramAuth === 'function') {
+    if (typeof window.MOONBOYS_IDENTITY.getSignedTelegramAuth === 'function') {
+      const signed = window.MOONBOYS_IDENTITY.getSignedTelegramAuth();
+      if (signed?.hash && signed?.auth_date) return signed;
+    }
     return window.MOONBOYS_IDENTITY.getTelegramAuth();
   }
   try {
@@ -398,6 +402,14 @@ function getTelegramAuth() {
   } catch {
     return null;
   }
+}
+
+async function restoreTelegramAuthFromBackend(reason = 'blocktopia_boot') {
+  const identity = window.MOONBOYS_IDENTITY;
+  if (!identity || typeof identity.restoreLinkedTelegramAuth !== 'function') return null;
+  const result = await identity.restoreLinkedTelegramAuth({ force: true, reason }).catch(() => null);
+  if (!result?.ok) return null;
+  return result.telegram_auth || getTelegramAuth();
 }
 
 function setServerProgression(next = {}) {
@@ -482,9 +494,13 @@ async function syncMiniGameSkip(type, skipStreak = 0) {
   return data;
 }
 
-async function fetchServerProgression() {
+async function fetchServerProgression(options = {}) {
+  const { allowBootstrap = false, bootstrapReason = 'blocktopia_progression_bootstrap' } = options || {};
   const apiBase = getApiBase();
-  const telegramAuth = getTelegramAuth();
+  let telegramAuth = getTelegramAuth();
+  if ((!telegramAuth?.hash || !telegramAuth?.auth_date) && allowBootstrap) {
+    telegramAuth = await restoreTelegramAuthFromBackend(bootstrapReason);
+  }
   if (!apiBase || !telegramAuth?.hash || !telegramAuth?.auth_date) {
     return { ...progressionState, __authError: true, error: 'Telegram auth missing. Re-sync required.' };
   }
@@ -496,6 +512,12 @@ async function fetchServerProgression() {
     });
     if (!res.ok) {
       const data = await res.json().catch(() => ({}));
+      if ((res.status === 401 || res.status === 403) && allowBootstrap) {
+        const restored = await restoreTelegramAuthFromBackend(`${bootstrapReason}:retry`);
+        if (restored?.hash && restored?.auth_date && restored.hash !== telegramAuth.hash) {
+          return fetchServerProgression({ allowBootstrap: false, bootstrapReason });
+        }
+      }
       return {
         ...progressionState,
         __authError: res.status === 401 || res.status === 403,
@@ -689,11 +711,18 @@ async function syncMiniGameOutcome(type, outcome) {
 }
 
 async function boot() {
-  if (!hasTelegramAuth()) {
+  let telegramAuth = getTelegramAuth();
+  if (!telegramAuth?.hash || !telegramAuth?.auth_date) {
+    telegramAuth = await restoreTelegramAuthFromBackend('blocktopia_boot');
+  }
+  if (!telegramAuth?.hash || !telegramAuth?.auth_date) {
     redirectToSyncGate('Not synced. Run /gklink before entering Block Topia.', 1600, 'boot:missing-auth', true);
     return;
   }
-  const progression = await fetchServerProgression();
+  const progression = await fetchServerProgression({
+    allowBootstrap: true,
+    bootstrapReason: 'blocktopia_boot_progression',
+  });
   if (progression?.__authError) {
     redirectToSyncGate(progression?.error || 'Auth expired. Run /gklink again before entering Block Topia.', 1600, 'boot:progression-auth-error', true);
     return;

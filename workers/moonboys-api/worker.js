@@ -1033,8 +1033,8 @@ export default {
       if (!telegramId) return err('telegram_id required');
 
       try {
-        // Fetch user profile and anti-cheat state in parallel
-        const [user, acState] = await Promise.all([
+        // Fetch user profile, anti-cheat state, and server-side linked evidence in parallel.
+        const [user, acState, linkEvent, blockTopiaProgression] = await Promise.all([
           env.DB.prepare(
             `SELECT telegram_id, username, first_name, last_name, xp, level, created_at
              FROM telegram_users WHERE telegram_id = ?`
@@ -1044,9 +1044,33 @@ export default {
                     season_risk_score, year_risk_score, last_scan_at
              FROM telegram_anticheat_state WHERE telegram_id = ?`
           ).bind(telegramId).first().catch(() => null),
+          env.DB.prepare(
+            `SELECT action, created_at
+             FROM telegram_activity_log
+             WHERE telegram_id = ? AND action = 'link_confirmed'
+             ORDER BY created_at DESC
+             LIMIT 1`
+          ).bind(telegramId).first().catch(() => null),
+          env.DB.prepare(
+            `SELECT telegram_id, xp, gems, tier, rpg_mode_active, updated_at
+             FROM blocktopia_progression
+             WHERE telegram_id = ?
+             LIMIT 1`
+          ).bind(telegramId).first().catch(() => null),
         ]);
 
         if (!user) return err('User not found', 404);
+
+        const linked = Boolean(linkEvent || blockTopiaProgression);
+        const signedAuthPayload = linked
+          ? await buildSignedTelegramAuthPayload({
+            id: String(user.telegram_id),
+            username: user.username || null,
+            first_name: user.first_name || null,
+            last_name: user.last_name || null,
+            photo_url: null,
+          }, env.TELEGRAM_BOT_TOKEN)
+          : null;
 
         return json({
           telegram_id:      user.telegram_id,
@@ -1055,6 +1079,17 @@ export default {
           xp:               user.xp          || 0,
           level:            user.level        || 1,
           member_since:     (user.created_at || '').slice(0, 10),
+          linked,
+          link_confirmed: linked,
+          link_source: linkEvent ? 'telegram_activity_log' : (blockTopiaProgression ? 'blocktopia_progression' : null),
+          telegram_auth: signedAuthPayload,
+          blocktopia_progression: blockTopiaProgression ? {
+            xp: Number(blockTopiaProgression.xp || 0),
+            gems: Number(blockTopiaProgression.gems || 0),
+            tier: Number(blockTopiaProgression.tier || 1),
+            rpg_mode_active: Number(blockTopiaProgression.rpg_mode_active || 0) === 1,
+            updated_at: blockTopiaProgression.updated_at || null,
+          } : null,
           anticheat: acState ? {
             is_blocked:       acState.is_blocked       === 1,
             block_type:       acState.block_type        || null,
