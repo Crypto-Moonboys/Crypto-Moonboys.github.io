@@ -28,16 +28,16 @@ import { createNodeInterferenceSystem } from './world/node-interference-system.j
 import { createDuelSystem } from './world/duel-system.js';
 import { createHud } from './ui/hud.js';
 import { createDuelOverlay } from './ui/duel-overlay.js';
-import { createNodeOutbreakOverlay } from './ui/node-outbreak-overlay.js';
+import { createNodeOutbreakOverlay } from './ui/node-outbreak-overlay.js?v=56987dec';
 import { createIsoRenderer } from './render/iso-renderer.js';
 import { DUEL_FIGHTER_CONFIG } from './data/duel-fighter-config.js';
 import { createNodeOutbreakSystem } from './world/node-outbreak-system.js';
 import { createFirewallDefenseSystem } from './world/firewall-defense-system.js';
-import { createFirewallDefenseOverlay } from './ui/firewall-defense-overlay.js';
+import { createFirewallDefenseOverlay } from './ui/firewall-defense-overlay.js?v=56987dec';
 import { createSignalRouterSystem } from './world/signal-router-system.js';
-import { createSignalRouterOverlay } from './ui/signal-router-overlay.js';
+import { createSignalRouterOverlay } from './ui/signal-router-overlay.js?v=56987dec';
 import { createCircuitConnectSystem } from './world/circuit-connect-system.js';
-import { createCircuitConnectOverlay } from './ui/circuit-connect-overlay.js';
+import { createCircuitConnectOverlay } from './ui/circuit-connect-overlay.js?v=56987dec';
 import { computeTierDifficulty } from './world/tier-difficulty.js';
 
 const ENTRY_OVERLAY_TIMEOUT_MS = 7000;
