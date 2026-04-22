@@ -10,19 +10,20 @@ export function createSignalRouterOverlay(doc, { onAction } = {}) {
   const style = doc.createElement('style');
   style.textContent = `
     #signal-router-overlay.hidden { display: none; }
-    #signal-router-overlay { position: fixed; inset: 0; z-index: 78; pointer-events: none; font-family: Inter, sans-serif; }
-    #signal-router-overlay .router-underlay { position: absolute; inset: 0; background: rgba(3,8,18,0.5); }
-    #signal-router-overlay .router-shell { position: absolute; top: 18px; left: 50%; transform: translateX(-50%); width: min(920px, calc(100vw - 24px)); background: rgba(5,15,32,0.88); border: 1px solid rgba(94,242,255,0.58); border-radius: 12px; box-shadow: 0 0 26px rgba(94,242,255,0.2); color: #d7f9ff; pointer-events: auto; padding: 10px 12px; }
+    #signal-router-overlay { position: fixed; inset: 0; z-index: 878; pointer-events: none; font-family: Inter, sans-serif; }
+    #signal-router-overlay .router-underlay { position: absolute; inset: 0; background: radial-gradient(circle at 78% 18%, rgba(94,242,255,0.08), transparent 24%), linear-gradient(180deg, rgba(3,8,18,0.12), rgba(3,8,18,0.34)); backdrop-filter: blur(1px); }
+    #signal-router-overlay .router-shell { position: absolute; top: 94px; right: 14px; width: min(430px, calc(100vw - 28px)); max-height: min(48vh, 520px); overflow: auto; background: linear-gradient(180deg, rgba(4,14,28,0.94), rgba(4,10,22,0.88)); border: 1px solid rgba(94,242,255,0.34); border-radius: 4px; box-shadow: 0 24px 54px rgba(0,0,0,0.32), inset 0 1px 0 rgba(255,255,255,0.04); color: #d7f9ff; pointer-events: auto; padding: 10px 11px 12px; }
     #signal-router-overlay .router-chip { margin: 0; color: #ff6fa7; letter-spacing: 0.08em; font-weight: 800; }
     #signal-router-overlay .router-sub { margin: 6px 0 8px; color: #7fefff; font-size: 13px; }
-    #signal-router-overlay .router-rows { display: grid; grid-template-columns: 1.4fr 1fr; gap: 10px; }
+    #signal-router-overlay .router-rows { display: grid; grid-template-columns: 1fr; gap: 8px; }
     #signal-router-overlay .router-objectives, #signal-router-overlay .router-legend { margin: 0; padding: 0; list-style: none; display: grid; gap: 6px; }
-    #signal-router-overlay .router-objectives li { background: rgba(9,20,43,0.9); border: 1px solid rgba(94,242,255,0.2); border-radius: 8px; padding: 6px 8px; font-size: 12px; }
+    #signal-router-overlay .router-objectives li { background: rgba(9,20,43,0.9); border: 1px solid rgba(94,242,255,0.2); border-radius: 4px; padding: 6px 8px; font-size: 12px; }
     #signal-router-overlay .router-objectives li.complete { border-color: rgba(94,242,255,0.62); color: #9ff7ff; }
     #signal-router-overlay .router-objectives li.failed { border-color: rgba(255,92,129,0.74); color: #ffc6d6; }
-    #signal-router-overlay .router-actions { margin-top: 10px; display: flex; flex-wrap: wrap; gap: 6px; }
-    #signal-router-overlay .router-actions button { border: 1px solid rgba(94,242,255,0.4); background: rgba(10,30,54,0.84); color: #d7f9ff; border-radius: 8px; padding: 5px 8px; font-size: 12px; cursor: pointer; }
-    #signal-router-overlay .router-log { margin: 8px 0 0; padding: 0; list-style: none; display: grid; gap: 3px; font-size: 11px; color: #a8dff6; }
+    #signal-router-overlay .router-actions { margin-top: 10px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
+    #signal-router-overlay .router-actions button { border: 1px solid rgba(94,242,255,0.32); background: rgba(10,30,54,0.84); color: #d7f9ff; border-radius: 4px; padding: 6px 8px; font-size: 11px; cursor: pointer; text-align: left; }
+    #signal-router-overlay .router-hint { margin: 8px 0 0; font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; color: rgba(174,238,255,0.72); }
+    #signal-router-overlay .router-log { margin: 8px 0 0; padding: 0; list-style: none; display: grid; gap: 3px; font-size: 11px; color: #a8dff6; max-height: 72px; overflow: auto; }
     #signal-router-overlay .router-pressure { margin-top: 8px; height: 8px; background: rgba(255,255,255,0.1); border-radius: 99px; overflow: hidden; }
     #signal-router-overlay .router-pressure i { display: block; height: 100%; background: linear-gradient(90deg, #5ef2ff, #ffb347 55%, #ff4f9e); }
   `;
@@ -42,12 +43,13 @@ export function createSignalRouterOverlay(doc, { onAction } = {}) {
       </div>
       <div class="router-pressure"><i id="router-pressure-meter"></i></div>
       <div class="router-actions">
-        <button type="button" data-action="prioritizeRoute">Prioritize Route</button>
-        <button type="button" data-action="avoidLink">Avoid Link</button>
-        <button type="button" data-action="rerouteTraffic">Reroute Traffic</button>
-        <button type="button" data-action="stabilizeLink">Stabilize Link</button>
-        <button type="button" data-action="clearCongestion">Clear Congestion</button>
+        <button type="button" data-action="prioritizeRoute">Prioritize Route [Z]</button>
+        <button type="button" data-action="avoidLink">Avoid Link [X]</button>
+        <button type="button" data-action="rerouteTraffic">Reroute Traffic [C]</button>
+        <button type="button" data-action="stabilizeLink">Stabilize Link [V]</button>
+        <button type="button" data-action="clearCongestion">Clear Congestion [B]</button>
       </div>
+      <p class="router-hint">Tactical reroute strip. Keep the map visible, lock a node, then use `Z/X/C/V/B` or `K` to skip.</p>
       <ul class="router-log" id="router-log"></ul>
     </div>
   `;

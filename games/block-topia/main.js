@@ -52,8 +52,8 @@ const NPC_SCAN_INTERVAL_MS = 150;
 const MAX_CLIENT_CROWD_NPCS = 20;
 const REMOTE_PLAYER_LERP_ALPHA = 0.18;
 const LIVE_REFRESH_INTERVAL_MS = 120000; // 2 minutes
-const PROGRESSION_SYNC_INTERVAL_MS = 15000;
-const COVERT_SYNC_INTERVAL_MS = 20000;
+const PROGRESSION_SYNC_INTERVAL_MS = 18000;
+const COVERT_SYNC_INTERVAL_MS = 26000;
 const QUEST_TICK_INTERVAL_MS = 250;
 const FEED_DEDUPE_TTL_MS = 5 * 60 * 1000;
 const MAX_FEED_CACHE_SIZE = 80;
@@ -72,6 +72,8 @@ const FORCE_SYNC_GATE_FALLBACK_URL = 'https://crypto-moonboys.github.io/gkniftyh
 const MINI_GAME_TYPES = new Set(['outbreak', 'firewall', 'router', 'circuit']);
 const MICRO_NOTIFY_DEDUPE_WINDOW_MS = 2600;
 const MICRO_NOTIFY_MAX_ITEMS = 5;
+const MINI_GAME_SYNC_QUIET_MS = 5200;
+const MINI_GAME_ENTRY_QUIET_MS = 2800;
 const microNotifyCache = new Map();
 
 function setBodyStateClass(name, enabled) {
@@ -407,6 +409,16 @@ function setServerProgression(next = {}) {
     upgrades: { ...progressionState.upgrades, ...(next.upgrades || progressionState.upgrades || {}) },
   };
   return progressionState;
+}
+
+function createRequestGate() {
+  return {
+    affordability: new Map(),
+    outcomes: new Map(),
+    progressionPollInFlight: false,
+    covertPollInFlight: false,
+    quietUntil: 0,
+  };
 }
 
 async function fetchMiniGameAffordability(type) {
@@ -815,6 +827,7 @@ async function boot() {
     sessionDead: false,
     normalInputAllowed: true,
     skipStreak: 0,
+    requestGate: createRequestGate(),
   };
   const primaryFactionName = state.factions.primary?.name || 'Liberators';
   const secondaryFactionName = state.factions.secondary?.name || 'Wardens';
@@ -1497,11 +1510,55 @@ async function boot() {
     sessionGuard.overlayActive = Boolean(type);
     sessionGuard.activeMiniGame = type || '';
     sessionGuard.normalInputAllowed = !sessionGuard.overlayActive && !sessionGuard.sessionDead && !sessionGuard.gated;
+    setBodyStateClass('has-mini-game', sessionGuard.overlayActive);
+  }
+
+  function holdBackgroundSync(ms = MINI_GAME_SYNC_QUIET_MS) {
+    sessionGuard.requestGate.quietUntil = Math.max(
+      sessionGuard.requestGate.quietUntil,
+      Date.now() + Math.max(800, Number(ms) || 0),
+    );
+  }
+
+  function hasPendingMiniGameSync(type = '') {
+    const safeType = String(type || '').toLowerCase();
+    if (safeType && sessionGuard.requestGate.outcomes.has(safeType)) return true;
+    return sessionGuard.requestGate.outcomes.size > 0;
+  }
+
+  function shouldPauseBackgroundSync() {
+    return sessionGuard.sessionDead
+      || sessionGuard.gated
+      || sessionGuard.overlayActive
+      || sessionGuard.requestGate.affordability.size > 0
+      || sessionGuard.requestGate.outcomes.size > 0
+      || Date.now() < sessionGuard.requestGate.quietUntil;
+  }
+
+  function scheduleManagedPoll(intervalMs, runner) {
+    async function tick() {
+      try {
+        await runner();
+      } catch {}
+      window.setTimeout(tick, intervalMs);
+    }
+    window.setTimeout(tick, intervalMs);
   }
 
   async function ensureMiniGamePlayable(type) {
+    const miniGameType = String(type || '').toLowerCase();
+    if (!MINI_GAME_TYPES.has(miniGameType)) return false;
     if (sessionGuard.sessionDead || sessionGuard.gated) return false;
-    const server = await fetchMiniGameAffordability(type);
+    if (sessionGuard.overlayActive && sessionGuard.activeMiniGame && sessionGuard.activeMiniGame !== miniGameType) return false;
+    if (sessionGuard.requestGate.affordability.has(miniGameType) || hasPendingMiniGameSync(miniGameType)) return false;
+    sessionGuard.requestGate.affordability.set(miniGameType, true);
+    holdBackgroundSync(MINI_GAME_ENTRY_QUIET_MS);
+    let server = null;
+    try {
+      server = await fetchMiniGameAffordability(miniGameType);
+    } finally {
+      sessionGuard.requestGate.affordability.delete(miniGameType);
+    }
     if (!server?.progression) {
       if (server?.auth_required) {
         redirectToSyncGate(server?.error || 'Telegram auth required for mini-game entry.', 1600, 'ensureMiniGamePlayable:auth-required', true);
@@ -1512,6 +1569,7 @@ async function boot() {
       setActiveMiniGame('');
       return false;
     }
+    if (sessionGuard.overlayActive && sessionGuard.activeMiniGame && sessionGuard.activeMiniGame !== miniGameType) return false;
     syncHudProgression();
     const canPlay = server.can_play !== false && Number(server.progression.xp || 0) >= Number(server.progression.mini_game_cost || 0);
     if (!canPlay) {
@@ -1522,6 +1580,7 @@ async function boot() {
       setActiveMiniGame('');
       return false;
     }
+    holdBackgroundSync(MINI_GAME_ENTRY_QUIET_MS);
     return true;
   }
 
@@ -1548,34 +1607,51 @@ async function boot() {
   }
 
   async function handleMiniGameOutcome(type, outcome, result = {}) {
-    const server = outcome === 'skip'
-      ? await syncMiniGameSkip(type, sessionGuard.skipStreak)
-      : await syncMiniGameOutcome(type, outcome);
-    if (server?.auth_required) {
-      closeMiniGameOverlays();
-      setActiveMiniGame('');
-      redirectToSyncGate(server?.error || 'Telegram auth required for progression sync.', 1600, 'handleMiniGameOutcome:auth-required', true);
+    const miniGameType = String(type || '').toLowerCase();
+    if (!MINI_GAME_TYPES.has(miniGameType)) return;
+    if (sessionGuard.requestGate.outcomes.has(miniGameType)) {
+      await sessionGuard.requestGate.outcomes.get(miniGameType);
       return;
     }
-    if (outcome === 'skip') sessionGuard.skipStreak += 1;
-    if (outcome === 'success') sessionGuard.skipStreak = 0;
-    if (server?.progression) {
-      syncHudProgression();
-      const bonus = (server.progression.bonus_flags || []).length ? ` · ${server.progression.bonus_flags.join(', ')}` : '';
-      hud.pushFeed(`🧬 Progression synced · XP ${server.progression.xp || 0} (survival) · Gems ${server.progression.gems || 0} (upgrades)${bonus}`, 'quest');
-      if (server.exited || server.progression.rpg_mode_active === false) {
-        const warningText = server.exited
-          ? `${String(type).toUpperCase()} sync warning: server flagged a mini-game exit state, but the current Block Topia session remains active.`
-          : `${String(type).toUpperCase()} sync warning: RPG mode reported inactive after mini-game sync.`;
-        hud.showNodeInterference(warningText, 'warning');
-        hud.pushFeed(`⚠ ${warningText}`, 'system');
+    const outcomeTask = (async () => {
+      holdBackgroundSync(MINI_GAME_SYNC_QUIET_MS);
+      const server = outcome === 'skip'
+        ? await syncMiniGameSkip(miniGameType, sessionGuard.skipStreak)
+        : await syncMiniGameOutcome(miniGameType, outcome);
+      if (server?.auth_required) {
+        closeMiniGameOverlays();
+        setActiveMiniGame('');
+        redirectToSyncGate(server?.error || 'Telegram auth required for progression sync.', 1600, 'handleMiniGameOutcome:auth-required', true);
+        return;
       }
-    } else if (server && server.ok === false) {
-      hud.showNodeInterference(server.error || 'Mini-game result sync failed.', 'warning');
+      if (outcome === 'skip') sessionGuard.skipStreak += 1;
+      if (outcome === 'success') sessionGuard.skipStreak = 0;
+      if (server?.progression) {
+        syncHudProgression();
+        const bonusFlags = Array.isArray(server.progression.bonus_flags) ? server.progression.bonus_flags : [];
+        const bonus = bonusFlags.length ? ` · ${bonusFlags.join(', ')}` : '';
+        hud.pushFeed(`Progression synced · XP ${server.progression.xp || 0} · Gems ${server.progression.gems || 0}${bonus}`, 'quest');
+        if (server.exited || server.progression.rpg_mode_active === false) {
+          const warningText = server.exited
+            ? `${String(miniGameType).toUpperCase()} sync warning: server flagged a mini-game exit state, but the current Block Topia session remains active.`
+            : `${String(miniGameType).toUpperCase()} sync warning: RPG mode reported inactive after mini-game sync.`;
+          hud.showNodeInterference(warningText, 'warning');
+          hud.pushFeed(`Warning · ${warningText}`, 'system');
+        }
+      } else if (server && server.ok === false) {
+        hud.showNodeInterference(server.error || 'Mini-game result sync failed.', 'warning');
+      }
+      applyMiniGameWorldImpact(miniGameType, outcome, result);
+      setActiveMiniGame('');
+      closeMiniGameOverlays();
+      holdBackgroundSync(2200);
+    })();
+    sessionGuard.requestGate.outcomes.set(miniGameType, outcomeTask);
+    try {
+      await outcomeTask;
+    } finally {
+      sessionGuard.requestGate.outcomes.delete(miniGameType);
     }
-    applyMiniGameWorldImpact(type, outcome, result);
-    setActiveMiniGame('');
-    closeMiniGameOverlays();
   }
 
   function interactWithNpc(targetNpc) {
@@ -1818,8 +1894,11 @@ async function boot() {
       .catch(() => {});
   }, LIVE_REFRESH_INTERVAL_MS);
 
-  setInterval(() => {
-    fetchServerProgression().then((next) => {
+  scheduleManagedPoll(PROGRESSION_SYNC_INTERVAL_MS, async () => {
+    if (sessionGuard.requestGate.progressionPollInFlight || shouldPauseBackgroundSync()) return;
+    sessionGuard.requestGate.progressionPollInFlight = true;
+    try {
+      const next = await fetchServerProgression();
       if (next?.__authError) {
         redirectToSyncGate(next?.error || 'Telegram session expired. Re-sync required.', 1600, 'poll:progression-auth-error', true);
         return;
@@ -1833,20 +1912,27 @@ async function boot() {
           ? 'Block Topia progression sync warning: RPG mode inactive.'
           : 'XP depleted. Block Topia session warning.';
         hud.showNodeInterference(warningText, 'warning');
-        hud.pushFeed(`⚠ ${warningText}`, 'system');
+        hud.pushFeed(`Warning · ${warningText}`, 'system');
       }
-    }).catch(() => {});
-  }, PROGRESSION_SYNC_INTERVAL_MS);
+    } finally {
+      sessionGuard.requestGate.progressionPollInFlight = false;
+    }
+  });
 
-  setInterval(() => {
-    fetchCovertState().then((next) => {
+  scheduleManagedPoll(COVERT_SYNC_INTERVAL_MS, async () => {
+    if (sessionGuard.requestGate.covertPollInFlight || shouldPauseBackgroundSync()) return;
+    sessionGuard.requestGate.covertPollInFlight = true;
+    try {
+      const next = await fetchCovertState();
       if (next?.__authError) {
         redirectToSyncGate(next?.error || 'Telegram session expired. Re-sync required.', 1600, 'poll:covert-auth-error', true);
         return;
       }
       applyCovertSnapshot(next, 'poll');
-    }).catch(() => {});
-  }, COVERT_SYNC_INTERVAL_MS);
+    } finally {
+      sessionGuard.requestGate.covertPollInFlight = false;
+    }
+  });
 
   // Fallback: dismiss the entry overlay after 7s in case multiplayer never connects.
   setTimeout(() => hud.dismissEntryIdentity(0), ENTRY_OVERLAY_TIMEOUT_MS);

@@ -12,7 +12,7 @@ export function createFirewallDefenseOverlay(doc, { onDeploy } = {}) {
   root.className = 'hidden';
   root.innerHTML = `
     <div class="firewall-underlay"></div>
-    <div class="firewall-shell" role="dialog" aria-live="assertive" aria-label="Firewall Defense">
+    <div class="firewall-shell signal-console" role="dialog" aria-live="assertive" aria-label="Firewall Defense">
       <header>
         <p class="firewall-chip">FIREWALL BREACH — DEFEND THE NETWORK</p>
         <p class="firewall-sub" id="firewall-sub">Awaiting node lock…</p>
@@ -20,11 +20,11 @@ export function createFirewallDefenseOverlay(doc, { onDeploy } = {}) {
       <div class="firewall-stats" id="firewall-stats"></div>
       <div class="firewall-bars" id="firewall-bars"></div>
       <div class="firewall-actions">
-        <button type="button" data-defense="firewall">Firewall Node</button>
-        <button type="button" data-defense="disruptor">Pulse Disruptor</button>
-        <button type="button" data-defense="purge">Purge Beam</button>
+        <button type="button" data-defense="firewall">Firewall Node [5]</button>
+        <button type="button" data-defense="disruptor">Pulse Disruptor [6]</button>
+        <button type="button" data-defense="purge">Purge Beam [7]</button>
       </div>
-      <p class="firewall-hint">Select a node on the live map, then deploy (node-only placement).</p>
+      <p class="firewall-hint">Select a node on the live map. Use `5/6/7` to deploy, `K` to skip, and keep the map visible while placing.</p>
       <ul class="firewall-log" id="firewall-log"></ul>
     </div>
   `;

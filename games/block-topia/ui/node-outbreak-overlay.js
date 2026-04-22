@@ -18,7 +18,7 @@ export function createNodeOutbreakOverlay(doc, { onAction } = {}) {
   root.className = 'hidden';
   root.innerHTML = `
     <div class="outbreak-underlay"></div>
-    <div class="outbreak-shell" role="dialog" aria-live="assertive" aria-label="Node Outbreak Defense">
+    <div class="outbreak-shell signal-console" role="dialog" aria-live="assertive" aria-label="Node Outbreak Defense">
       <header class="outbreak-header">
         <p class="outbreak-chip">VIRUS ALERT — NODES UNDER ATTACK</p>
         <p class="outbreak-sub" id="outbreak-sub">Stand by…</p>
@@ -30,17 +30,18 @@ export function createNodeOutbreakOverlay(doc, { onAction } = {}) {
       </div>
       <div class="outbreak-stats" id="outbreak-stats"></div>
       <div class="outbreak-actions">
-        <button type="button" data-action="scan">Scan Node</button>
-        <button type="button" data-action="isolate">Isolate Node</button>
-        <button type="button" data-action="delayLink">Delay Link</button>
-        <button type="button" data-action="purge">Purge Node</button>
+        <button type="button" data-action="scan">Scan Node [1]</button>
+        <button type="button" data-action="isolate">Isolate Node [2]</button>
+        <button type="button" data-action="delayLink">Delay Link [3]</button>
+        <button type="button" data-action="purge">Purge Node [4]</button>
       </div>
       <div class="outbreak-upgrades">
-        <button type="button" data-upgrade="containment">Containment +</button>
-        <button type="button" data-upgrade="detection">Detection +</button>
-        <button type="button" data-upgrade="neutralization">Neutralization +</button>
+        <button type="button" data-upgrade="containment">Containment + [Q]</button>
+        <button type="button" data-upgrade="detection">Detection + [W]</button>
+        <button type="button" data-upgrade="neutralization">Neutralization + [R]</button>
       </div>
       <p class="outbreak-traits" id="outbreak-traits"></p>
+      <p class="outbreak-hint">Node lock required. Use `1-4` for actions, `Q/W/R` for upgrades, `K` to skip.</p>
       <ul class="outbreak-log" id="outbreak-log"></ul>
     </div>
   `;
