@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-04-22T00:02:02.137Z",
+  "generatedAt": "2026-04-22T03:47:55.957Z",
   "mode": "live-ai",
   "sourceHealth": {
     "coingecko-global": "ok",
@@ -8,71 +8,87 @@
     "fear-greed": "ok",
     "openai": "ok"
   },
-  "signalCount": 4,
+  "signalCount": 5,
   "signals": [
     {
-      "id": "signal-1776816122137-1",
+      "id": "signal-1776829675956-1",
       "lane": "world",
       "priority": 4,
-      "ttlMinutes": 45,
-      "npcLine": "Digital shadows flicker; markets pulse with low, wary energy.",
-      "questPulse": "Seek silent nodes—cryptos teeter between light and dark.",
-      "worldFeed": "Network mass swells; ##k cryptos grind uneasy gears.",
-      "clueEvent": "Market cap's faint rise masks deeper systemic rust.",
+      "ttlMinutes": 60,
+      "npcLine": "Market hums with cautious rise, anomalies amid chaos.",
+      "questPulse": "Seek hidden data on rising digital assets.",
+      "worldFeed": "Global market cap flickers, slight pulse in cryptos.",
+      "clueEvent": "Silent nodes hint at shifting values beneath noise.",
       "tags": [
         "market",
         "crypto",
-        "fear"
+        "volatility"
       ],
-      "expiresAt": "2026-04-22T00:47:02.137Z"
+      "expiresAt": "2026-04-22T04:47:55.956Z"
     },
     {
-      "id": "signal-1776816122137-2",
+      "id": "signal-1776829675956-2",
       "lane": "ops",
       "priority": 3,
-      "ttlMinutes": 30,
-      "npcLine": "Asteroid data spikes, but beware false signals from noise.",
-      "questPulse": "Infiltrate trending streams; chip fragments hold hidden codes.",
-      "worldFeed": "Oscillations upstream; small scores draw big eyes.",
-      "clueEvent": "Zero-score MAGA hides in shadows, watch its ghost steps.",
+      "ttlMinutes": 45,
+      "npcLine": "Chatter about CHIP tokens climbing, keep eyes open.",
+      "questPulse": "Intercept transmissions regarding CHIP surging interest.",
+      "worldFeed": "Underground traders favor CHIP circuits, spikes detected.",
+      "clueEvent": "Encrypted broadcasts carry CHIP growth signals.",
       "tags": [
         "trending",
         "intel",
-        "cryptic"
+        "crypto"
       ],
-      "expiresAt": "2026-04-22T00:32:02.137Z"
+      "expiresAt": "2026-04-22T04:32:55.956Z"
     },
     {
-      "id": "signal-1776816122137-3",
+      "id": "signal-1776829675957-3",
       "lane": "clue",
       "priority": 5,
-      "ttlMinutes": 60,
-      "npcLine": "Fear grips the nets; sentiment falls into the red zone.",
-      "questPulse": "Decode the panic waves; trust only fragmented data trails.",
-      "worldFeed": "Sentiment dips sharply; fear tightens its grip underground.",
-      "clueEvent": "Sentiment index locks at low; markets brace for twists.",
+      "ttlMinutes": 30,
+      "npcLine": "PENGU tokens flicker hotter; something whispers beneath.",
+      "questPulse": "Trace source of PENGU's mysterious momentum.",
+      "worldFeed": "Sentiment edges toward fear; uncertainty grows heavy.",
+      "clueEvent": "Data fragments reveal fear-driven market shadows.",
       "tags": [
-        "sentiment",
         "fear",
-        "alert"
+        "market",
+        "mystery"
       ],
-      "expiresAt": "2026-04-22T01:02:02.137Z"
+      "expiresAt": "2026-04-22T04:17:55.957Z"
     },
     {
-      "id": "signal-1776816122137-4",
+      "id": "signal-1776829675957-4",
       "lane": "quest",
       "priority": 2,
-      "ttlMinutes": 25,
-      "npcLine": "Rave buzz spikes briefly; transient flashes of overload.",
-      "questPulse": "Catch the fleeting signal; AAVE and CHIP flicker nearby.",
-      "worldFeed": "Trending anomalies crackle; brief chance for quick gains.",
-      "clueEvent": "Short-lived trends hint at deeper, hidden network tremors.",
+      "ttlMinutes": 90,
+      "npcLine": "RAVE circuits pulse wildly; unstable but lucrative.",
+      "questPulse": "Harvest intel on RAVE's volatile supply chains.",
+      "worldFeed": "Surge rumors unsettle parts of the market grid.",
+      "clueEvent": "Glitches in RAVE's ledger spark whispers of disruption.",
       "tags": [
-        "trend",
-        "flash",
+        "volatility",
+        "cryptic",
         "opportunity"
       ],
-      "expiresAt": "2026-04-22T00:27:02.137Z"
+      "expiresAt": "2026-04-22T05:17:55.957Z"
+    },
+    {
+      "id": "signal-1776829675957-5",
+      "lane": "npc",
+      "priority": 3,
+      "ttlMinutes": 50,
+      "npcLine": "ASTEROID tokens orbit niche nets, slow but steady.",
+      "questPulse": "Connect with underground nodes tracking ASTEROID flows.",
+      "worldFeed": "Small surge noted; cautious interest underground.",
+      "clueEvent": "Subtle signal bursts hint at ASTEROID resilience.",
+      "tags": [
+        "niche",
+        "steady",
+        "crypto"
+      ],
+      "expiresAt": "2026-04-22T04:37:55.957Z"
     }
   ]
 }
