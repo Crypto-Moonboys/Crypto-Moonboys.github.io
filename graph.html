@@ -3,91 +3,151 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Interactive entity relationship graph for the Crypto Moonboys Wiki — explore connections between characters, factions, and tokens.">
+  <meta name="description" content="Interactive entity relationship graph for the Crypto Moonboys Wiki - explore connections between characters, factions, and tokens.">
   <meta name="robots" content="index, follow">
-  <meta property="og:title" content="🌐 Entity Graph — Crypto Moonboys Wiki">
+  <meta property="og:title" content="Entity Graph - Crypto Moonboys Wiki">
   <meta property="og:description" content="Visual knowledge graph of Crypto Moonboys entities and their relationships.">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://crypto-moonboys.github.io/graph.html">
   <link rel="canonical" href="https://crypto-moonboys.github.io/graph.html">
-  <title>🌐 Entity Graph — Crypto Moonboys Wiki</title>
+  <title>Entity Graph - Crypto Moonboys Wiki</title>
   <link rel="stylesheet" href="/css/wiki.css">
   <link rel="icon" href="/img/favicon.svg" type="image/svg+xml">
   <style>
-    /* ── Graph page layout ──────────────────────────────────────────────── */
+    #content {
+      max-width: none;
+      padding: 22px 28px 42px;
+    }
+    .graph-stage {
+      position: relative;
+      min-height: clamp(560px, 76vh, 920px);
+      isolation: isolate;
+      background: transparent !important;
+      box-shadow: none !important;
+      border: 0 !important;
+    }
+    .graph-page-header,
+    .graph-toolbar,
+    .graph-info-panel,
+    .graph-help {
+      position: absolute;
+      z-index: 2;
+    }
     .graph-page-header {
-      padding: 18px 24px 10px;
-      border-bottom: 1px solid var(--color-border);
+      top: 0;
+      left: 0;
+      max-width: min(760px, calc(100% - 320px));
+      padding: 0;
+      border: 0;
+      background: transparent;
     }
     .graph-page-header h1 {
-      font-size: 1.35rem;
+      margin-bottom: 6px;
       color: var(--color-accent);
-      margin-bottom: 4px;
+      font-size: clamp(1.5rem, 2vw, 2.15rem);
+      letter-spacing: .04em;
+      text-transform: uppercase;
+      text-shadow: 0 0 6px rgba(0,0,0,0.6);
     }
     .graph-page-header p {
-      color: var(--color-text-muted);
-      font-size: .875rem;
+      max-width: 680px;
+      color: rgba(230, 237, 243, 0.88);
+      font-size: .95rem;
+      text-shadow: 0 0 6px rgba(0,0,0,0.6);
     }
 
     .graph-toolbar {
+      top: 106px;
+      left: 0;
       display: flex;
       flex-wrap: wrap;
       align-items: center;
-      gap: 10px;
-      padding: 10px 24px;
-      background: var(--color-surface);
-      border-bottom: 1px solid var(--color-border);
+      gap: 12px;
+      padding: 0;
+      background: transparent;
+      border: 0;
+    }
+    .graph-toolbar label,
+    .graph-info-panel h3,
+    .graph-legend h4,
+    .graph-help,
+    .graph-status,
+    .legend-item,
+    .ginfo-cat,
+    .ginfo-rank,
+    .ginfo-auth,
+    .ginfo-connections,
+    #graph-info p {
+      text-shadow: 0 0 6px rgba(0,0,0,0.6);
     }
     .graph-toolbar label {
-      font-size: .8rem;
-      color: var(--color-text-muted);
+      font-size: .85rem;
+      color: rgba(230, 237, 243, 0.88);
+    }
+    .graph-toolbar select,
+    .graph-toolbar input[type="search"],
+    .graph-toolbar button,
+    .ginfo-link {
+      min-height: 42px;
+      padding: 8px 16px;
+      border: 1px solid rgba(118, 240, 255, 0.22);
+      border-radius: 999px;
+      background: rgba(5, 14, 28, 0.18);
+      color: var(--color-text);
+      font-size: .92rem;
+      backdrop-filter: blur(3px);
+      -webkit-backdrop-filter: blur(3px);
+      text-shadow: 0 0 6px rgba(0,0,0,0.6);
+      box-shadow: 0 0 8px rgba(0,0,0,0.3);
     }
     .graph-toolbar select,
     .graph-toolbar input[type="search"] {
-      background: var(--color-surface-2);
-      border: 1px solid var(--color-border);
-      color: var(--color-text);
-      border-radius: var(--radius);
-      padding: 5px 10px;
-      font-size: .85rem;
+      min-width: 160px;
+    }
+    .graph-toolbar input[type="search"]::placeholder {
+      color: rgba(230, 237, 243, 0.62);
     }
     .graph-toolbar select:focus,
-    .graph-toolbar input[type="search"]:focus {
-      outline: 2px solid var(--color-accent);
+    .graph-toolbar input[type="search"]:focus,
+    .graph-toolbar button:focus,
+    .ginfo-link:focus {
+      outline: 2px solid rgba(247, 201, 72, 0.7);
+      outline-offset: 2px;
     }
-    .graph-toolbar button {
-      background: var(--color-surface-2);
-      border: 1px solid var(--color-border);
-      color: var(--color-text);
-      border-radius: var(--radius);
-      padding: 5px 14px;
+    .graph-toolbar button,
+    .ginfo-link {
       cursor: pointer;
-      font-size: .85rem;
-      transition: background .15s;
+      font-weight: 600;
+      transition: border-color .18s ease, background .18s ease, transform .18s ease;
     }
-    .graph-toolbar button:hover {
-      background: var(--color-border);
+    .graph-toolbar button:hover,
+    .ginfo-link:hover {
+      background: rgba(7, 18, 33, 0.28);
+      border-color: rgba(247, 201, 72, 0.42);
+      transform: translateY(-1px);
+      text-decoration: none;
     }
     .graph-status {
-      font-size: .8rem;
-      color: var(--color-text-muted);
-      margin-left: auto;
+      margin-left: 6px;
+      font-size: .82rem;
+      color: rgba(230, 237, 243, 0.78);
     }
 
-    /* ── Main graph area ─────────────────────────────────────────────────── */
     .graph-main {
-      display: flex;
-      gap: 0;
-      height: calc(50vh - 20px);
-      min-height: 300px;
-      max-height: 480px;
+      position: relative;
+      min-height: inherit;
       overflow: hidden;
+      background: transparent !important;
+      box-shadow: none !important;
+      border: 0 !important;
     }
     .graph-canvas-wrap {
-      flex: 1 1 0;
+      position: absolute;
+      inset: 0;
       min-width: 0;
-      position: relative;
-      background: #0d1117;
+      background: transparent !important;
+      box-shadow: none !important;
+      border: 0 !important;
     }
     #graph-canvas {
       display: block;
@@ -95,22 +155,36 @@
       height: 100%;
       cursor: grab;
       touch-action: none;
+      background: transparent !important;
+      box-shadow: none !important;
+      border: 0 !important;
     }
 
-    /* ── Info sidebar ───────────────────────────────────────────────────── */
     .graph-info-panel {
-      width: 240px;
-      flex-shrink: 0;
-      background: var(--color-surface);
-      border-left: 1px solid var(--color-border);
-      padding: 16px;
+      top: 52px;
+      right: 0;
+      width: min(260px, 24vw);
+      padding: 0;
       overflow-y: auto;
-      font-size: .85rem;
+      font-size: .88rem;
+      background: transparent;
+      border: 0;
     }
     .graph-info-panel h3 {
-      font-size: .9rem;
-      color: var(--color-text-muted);
       margin-bottom: 10px;
+      color: rgba(230, 237, 243, 0.82);
+      font-size: .92rem;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+    }
+    #graph-info,
+    .graph-legend {
+      padding: 16px 18px;
+      border: 1px solid rgba(118, 240, 255, 0.14);
+      border-radius: 18px;
+      background: rgba(5, 14, 28, 0.08);
+      backdrop-filter: blur(2px);
+      -webkit-backdrop-filter: blur(2px);
     }
     #graph-info .ginfo-title {
       display: flex;
@@ -141,40 +215,37 @@
     .ginfo-rank { color: var(--color-accent); }
     .ginfo-auth { color: var(--color-text-muted); }
     .ginfo-connections {
+      margin-bottom: 10px;
       font-size: .8rem;
       color: var(--color-text-muted);
-      margin-bottom: 10px;
     }
     .ginfo-link {
       display: inline-block;
-      background: var(--color-accent);
-      color: #000;
-      padding: 4px 12px;
-      border-radius: var(--radius);
-      font-size: .8rem;
+      padding: 8px 14px;
+      color: var(--color-text);
+      font-size: .82rem;
       font-weight: 600;
       text-decoration: none;
     }
-    .ginfo-link:hover { background: var(--color-accent-dark); color: #000; text-decoration: none; }
+    .ginfo-link:hover { color: var(--color-text); }
 
-    /* ── Legend ─────────────────────────────────────────────────────────── */
     .graph-legend {
-      margin-top: 20px;
-      border-top: 1px solid var(--color-border);
-      padding-top: 14px;
+      margin-top: 14px;
     }
     .graph-legend h4 {
-      font-size: .8rem;
-      color: var(--color-text-muted);
       margin-bottom: 8px;
+      color: rgba(230, 237, 243, 0.82);
+      font-size: .84rem;
+      text-transform: uppercase;
+      letter-spacing: .08em;
     }
     .legend-item {
       display: flex;
       align-items: center;
       gap: 7px;
-      font-size: .8rem;
       margin-bottom: 5px;
       color: var(--color-text);
+      font-size: .85rem;
     }
     .legend-dot {
       width: 10px;
@@ -183,23 +254,82 @@
       flex-shrink: 0;
     }
 
-    /* ── Help text ──────────────────────────────────────────────────────── */
     .graph-help {
-      padding: 10px 24px;
-      font-size: .75rem;
-      color: var(--color-text-muted);
-      border-top: 1px solid var(--color-border);
-      background: var(--color-surface);
+      left: 0;
+      right: 0;
+      bottom: 0;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      padding: 0;
+      border: 0;
+      background: transparent;
+      color: rgba(230, 237, 243, 0.82);
+      font-size: .8rem;
     }
-    .graph-help span { margin-right: 14px; }
+    .graph-help span { margin-right: 0; }
+
+    @media (max-width: 980px) {
+      .graph-page-header {
+        max-width: min(640px, calc(100% - 280px));
+      }
+      .graph-toolbar {
+        top: 118px;
+        max-width: calc(100% - 280px);
+      }
+      .graph-info-panel {
+        width: 220px;
+      }
+    }
+
+    @media (max-width: 760px) {
+      #content {
+        padding: 18px 18px 32px;
+      }
+      .graph-stage {
+        min-height: 0;
+      }
+      .graph-page-header,
+      .graph-toolbar,
+      .graph-info-panel,
+      .graph-help {
+        position: relative;
+        top: auto;
+        right: auto;
+        bottom: auto;
+        left: auto;
+        max-width: none;
+      }
+      .graph-page-header {
+        margin-bottom: 14px;
+      }
+      .graph-toolbar {
+        margin-bottom: 14px;
+      }
+      .graph-toolbar select,
+      .graph-toolbar input[type="search"],
+      .graph-toolbar button {
+        width: 100%;
+      }
+      .graph-main {
+        min-height: clamp(360px, 58vh, 520px);
+      }
+      .graph-info-panel {
+        width: 100%;
+        margin-top: 14px;
+      }
+      .graph-help {
+        margin-top: 14px;
+      }
+    }
 
     @media (max-width: 640px) {
       .graph-info-panel { display: none; }
-      .graph-main { height: calc(45vh - 20px); min-height: 260px; max-height: 380px; }
+      .graph-main { min-height: clamp(320px, 54vh, 460px); }
     }
   </style>
 </head>
-<body>
+<body class="graph-page">
 
 <a class="skip-link" href="#content">Skip to content</a>
 
@@ -209,11 +339,11 @@
     <img src="/img/CRYPTO-MOONBOYS-BITCOIN-LOGO.png" alt="" aria-hidden="true">
     <span>
       <span class="logo-text">🌙 The Crypto Moonboys GK Wiki</span>
-      <span class="logo-sub">Blockchain Cryptoism Encyclopedia ⚡️⚡️⚡️</span>
+      <span class="logo-sub">Blockchain Cryptoism Encyclopedia ⚡⚡⚡</span>
     </span>
   </a>
   <div id="header-search" role="search">
-    <input type="search" id="search-input" placeholder="Search the wiki…" aria-label="Search" autocomplete="off">
+    <input type="search" id="search-input" placeholder="Search the wiki..." aria-label="Search" autocomplete="off">
     <button id="search-btn" aria-label="Search">🔍</button>
     <div id="search-results" role="listbox"></div>
   </div>
@@ -232,7 +362,7 @@
         <a href="/index.html"><span class="nav-icon">🏠</span> Main Page</a>
         <a href="/categories/index.html"><span class="nav-icon">📂</span> All Categories</a>
         <a href="/search.html"><span class="nav-icon">🔍</span> All Articles</a>
-        <a href="/timeline.html"><span class="nav-icon">📅</span> Timeline</a>
+        <a href="/timeline.html"><span class="nav-icon">📆</span> Timeline</a>
         <a href="/graph.html"><span class="nav-icon">🌐</span> Entity Graph</a>
         <a href="/dashboard.html"><span class="nav-icon">📊</span> Dashboard</a>
         <a href="/sam.html"><span class="nav-icon">🧠</span> SAM</a>
@@ -241,7 +371,7 @@
       </div>
     </div>
     <div class="sidebar-section">
-      <div class="sidebar-heading">⚔️ HODL WARS LORE$ ⚡️⚡️⚡️</div>
+      <div class="sidebar-heading">⚔️ HODL WARS LORE$ ⚡⚡⚡</div>
       <div class="sidebar-nav">
         <a href="/wiki/hodl-wars.html"><span class="nav-icon">⚔️</span> HODL WAR$</a>
         <a href="/wiki/hodl-warriors.html"><span class="nav-icon">💎</span> HODL WARRIORS</a>
@@ -253,109 +383,4 @@
         <a href="/wiki/bear-market-siege.html"><span class="nav-icon">🐻</span> Bear Market Siege</a>
         <a href="/wiki/rug-pull-wars.html"><span class="nav-icon">🪤</span> Rug Pull Wars</a>
         <a href="/wiki/satoshi-scroll.html"><span class="nav-icon">📜</span> The Satoshi Scroll</a>
-        <a href="/wiki/fomo-plague.html"><span class="nav-icon">😱</span> The FOMO Plague</a>
-        <a href="/wiki/ngmi-chronicles.html"><span class="nav-icon">💀</span> NGMI Chronicles</a>
-        <a href="/wiki/wagmi-prophecy.html"><span class="nav-icon">🌙</span> The WAGMI Prophecy</a>
-      </div>
-    </div>
-    <div class="sidebar-section">
-      <div class="sidebar-heading">GK Wiki Info</div>
-      <div class="sidebar-nav">
-        <a href="/about.html"><span class="nav-icon">ℹ️</span> About</a>
-        <a href="/about.html#citation"><span class="nav-icon">📋</span> Citation Policy</a>
-        <a href="/about.html#sources"><span class="nav-icon">🔗</span> Source Types</a>
-      </div>
-    </div>
-  </nav>
-
-  <div id="main-wrapper">
-  <main id="content" role="main">
-    <div class="graph-page-header">
-      <h1>🌐 Entity Relationship Graph</h1>
-      <p>Interactive visualisation of knowledge connections across all wiki entities. Click a node to explore its relationships.</p>
-    </div>
-
-    <div class="graph-toolbar">
-      <label for="graph-filter-select">Filter:</label>
-      <select id="graph-filter-select" aria-label="Filter by category">
-        <option value="all">All categories</option>
-      </select>
-
-      <label for="graph-search">Search:</label>
-      <input type="search" id="graph-search" placeholder="Find entity…" aria-label="Search entity" autocomplete="off" style="width:160px">
-
-      <button id="graph-reset-btn" type="button">Reset view</button>
-
-      <span class="graph-status" id="graph-status" aria-live="polite"></span>
-    </div>
-
-    <div class="graph-main">
-      <div class="graph-canvas-wrap">
-        <canvas id="graph-canvas" role="img" aria-label="Entity relationship graph"></canvas>
-      </div>
-
-      <aside class="graph-info-panel" aria-label="Node details">
-        <h3>Node Details</h3>
-        <div id="graph-info">
-          <p style="color:var(--color-text-muted);font-size:.8rem">Click or hover a node to see details.</p>
-        </div>
-
-        <div class="graph-legend">
-          <h4>Category colours</h4>
-          <div class="legend-item"><span class="legend-dot" style="background:#58a6ff"></span>Characters</div>
-          <div class="legend-item"><span class="legend-dot" style="background:#f7c948"></span>Factions</div>
-          <div class="legend-item"><span class="legend-dot" style="background:#3fb950"></span>Tokens</div>
-          <div class="legend-item"><span class="legend-dot" style="background:#bc8cff"></span>Concepts</div>
-          <div class="legend-item"><span class="legend-dot" style="background:#ff7b72"></span>Lore</div>
-          <div class="legend-item"><span class="legend-dot" style="background:#8b949e"></span>Other</div>
-        </div>
-      </aside>
-    </div>
-
-    <div class="graph-help" role="note">
-      <span>🖱️ Drag to pan</span>
-      <span>🔍 Scroll to zoom</span>
-      <span>👆 Click node to focus</span>
-      <span>↔️ Drag node to reposition</span>
-    </div>
-  </main>
-
-    <footer id="site-footer" role="contentinfo">
-      <div class="footer-inner">
-        <div class="footer-col">
-          <h4>🌙 The Crypto Moonboys GK Wiki</h4>
-          <p>Fan-driven encyclopedia for the crypto community.</p>
-        </div>
-        <div class="footer-col">
-          <h4>Explore</h4>
-          <ul>
-            <li><a href="/index.html">Main Page</a></li>
-            <li><a href="/categories/index.html">Categories</a></li>
-            <li><a href="/search.html">All Articles</a></li>
-            <li><a href="/about.html">About</a></li>
-          </ul>
-        </div>
-        <div class="footer-col">
-          <h4>⚔️ HODL Wars Lore</h4>
-          <ul>
-            <li><a href="/wiki/hodl-wars.html">HODL Wars</a></li>
-            <li><a href="/wiki/hodl-warriors.html">HODL Warriors</a></li>
-          </ul>
-        </div>
-      </div>
-      <div class="footer-bottom">
-        <p>© 2026 Crypto Moonboys Wiki · Not financial advice.</p>
-        <p><span class="no-login-note">🔒 No sign-up · No login · Bot-maintained</span></p>
-      </div>
-    </footer>
-  </div>
-</div>
-
-<button id="back-to-top" aria-label="Back to top">↑</button>
-
-<script src="/js/api-config.js"></script>
-<script src="/js/wiki.js"></script>
-<script src="/js/graph-visualization.js"></script>
-
-</body>
-</html>
+        <a href="/wiki/fomo-plague.html"><span class="nav-icon">😱</span> The+k�w��

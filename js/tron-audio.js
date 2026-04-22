@@ -12,6 +12,7 @@
   const AUDIO_KEY = 'tron_audio_enabled';
   const HOVER_COOLDOWN_MS = 140;
   const MIN_CONTEXT_RETRY_MS = 1200;
+  const GESTURE_EVENTS = ['pointerdown', 'click', 'keydown', 'touchstart'];
 
   let audioCtx = null;
   let ready = false;
@@ -19,6 +20,8 @@
   let lastHoverAt = 0;
   let lastContextTryAt = 0;
   let ambientNode = null;
+  let userInteracted = false;
+  let unlockListenersBound = false;
 
   function safeNow() {
     return (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
@@ -37,26 +40,54 @@
     try { localStorage.setItem(AUDIO_KEY, v ? '1' : '0'); } catch (_) {}
   }
 
-  function getContext() {
+  function getContext(allowCreate = false) {
     if (audioCtx) return audioCtx;
+    if (!allowCreate) return null;
     const Ctx = window.AudioContext || window.webkitAudioContext;
     if (!Ctx) return null;
-    audioCtx = new Ctx();
+    try {
+      audioCtx = new Ctx();
+    } catch (_) {
+      audioCtx = null;
+    }
     return audioCtx;
   }
 
-  function ensureReady() {
+  function ensureReady(options = {}) {
+    const fromGesture = !!options.fromGesture;
+    const allowCreate = !!options.allowCreate;
     const now = safeNow();
     if (ready) return true;
+    const ctx = getContext(allowCreate);
+    if (!ctx) return false;
+    if (ctx.state === 'running') {
+      ready = true;
+      return true;
+    }
+    if (!fromGesture) return false;
     if (now - lastContextTryAt < MIN_CONTEXT_RETRY_MS) return false;
     lastContextTryAt = now;
-    const ctx = getContext();
-    if (!ctx) return false;
     if (ctx.state === 'suspended') {
       ctx.resume().catch(() => {});
     }
     ready = ctx.state === 'running';
     return ready;
+  }
+
+  function removeUnlockListeners() {
+    if (!unlockListenersBound) return;
+    GESTURE_EVENTS.forEach((eventName) => {
+      window.removeEventListener(eventName, init);
+    });
+    unlockListenersBound = false;
+  }
+
+  function bindUnlockListeners() {
+    if (unlockListenersBound) return;
+    GESTURE_EVENTS.forEach((eventName) => {
+      window.addEventListener(eventName, init, { passive: true });
+    });
+    unlockListenersBound = true;
   }
 
   /**
@@ -72,8 +103,11 @@
   }
 
   function playTone(opts) {
-    const ctx = getContext();
-    if (!ctx || !enabled || !ensureReady()) return;
+    if (!enabled) return;
+    const isGestureTriggered = !!(opts && opts.fromGesture);
+    const canBootContext = userInteracted || isGestureTriggered;
+    const ctx = getContext(canBootContext);
+    if (!ctx || !ensureReady({ allowCreate: canBootContext, fromGesture: canBootContext })) return;
 
     const now = ctx.currentTime;
     const osc = ctx.createOscillator();
@@ -132,8 +166,9 @@
   }
 
   function startAmbient() {
-    const ctx = getContext();
-    if (!ctx || !enabled || !ensureReady() || ambientNode) return;
+    if (ambientNode || !enabled) return;
+    const ctx = getContext(userInteracted);
+    if (!ctx || !ensureReady({ allowCreate: userInteracted, fromGesture: userInteracted })) return;
     const source = ctx.createOscillator();
     const gain = ctx.createGain();
     source.type = 'sine';
@@ -154,17 +189,16 @@
     }
   }
 
-  function init() {
+  function init(event) {
     enabled = readEnabledSetting();
-    ensureReady();
-    window.removeEventListener('pointerdown', init);
-    window.removeEventListener('keydown', init);
-    window.removeEventListener('touchstart', init);
+    bindUnlockListeners();
+    if (!(event && event.isTrusted)) return;
+    userInteracted = true;
+    ensureReady({ allowCreate: true, fromGesture: true });
+    removeUnlockListeners();
   }
 
-  window.addEventListener('pointerdown', init, { once: true, passive: true });
-  window.addEventListener('keydown', init, { once: true, passive: true });
-  window.addEventListener('touchstart', init, { once: true, passive: true });
+  bindUnlockListeners();
 
   window.TRON_AUDIO = {
     get ready() { return ready; },
