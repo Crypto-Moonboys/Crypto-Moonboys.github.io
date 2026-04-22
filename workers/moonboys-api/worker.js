@@ -376,6 +376,64 @@ async function buildSignedTelegramAuthPayload(identity, botToken, authDateSecond
   return { ...fields, hash };
 }
 
+function parseTelegramAuthEvidence(rawValue) {
+  if (!rawValue) return null;
+  if (typeof rawValue === 'object') return rawValue;
+  if (typeof rawValue !== 'string') return null;
+  try {
+    return JSON.parse(rawValue);
+  } catch {}
+  try {
+    const normalized = rawValue.replace(/-/g, '+').replace(/_/g, '/');
+    const pad = normalized.length % 4;
+    const padded = pad ? normalized + '='.repeat(4 - pad) : normalized;
+    return JSON.parse(atob(padded));
+  } catch {}
+  return null;
+}
+
+async function verifyTelegramAuthEvidenceForRestore(body, env) {
+  const tg = parseTelegramAuthEvidence(body?.telegram_auth || body?.auth_evidence || body);
+  if (!tg || typeof tg !== 'object') return null;
+  const telegramId = String(tg.id || '').trim();
+  const authDate = String(tg.auth_date || '').trim();
+  const hash = String(tg.hash || '').trim();
+  if (!/^\d{1,20}$/.test(telegramId)) return null;
+  if (!/^\d{1,12}$/.test(authDate)) return null;
+  if (!/^[a-f0-9]{64}$/i.test(hash)) return null;
+  const authDateSeconds = parseInt(authDate, 10);
+  const now = Math.floor(Date.now() / 1000);
+  if (!Number.isFinite(authDateSeconds)) return null;
+  if (authDateSeconds - now > 300) return null;
+  let valid = false;
+  try {
+    valid = await verifyTelegramAuth({
+      id: telegramId,
+      first_name: tg.first_name,
+      last_name: tg.last_name,
+      username: tg.username,
+      photo_url: tg.photo_url,
+      auth_date: authDate,
+      hash,
+    }, env.TELEGRAM_BOT_TOKEN);
+  } catch {
+    return null;
+  }
+  if (!valid) return null;
+  return {
+    telegramId,
+    authPayload: {
+      id: telegramId,
+      first_name: tg.first_name || null,
+      last_name: tg.last_name || null,
+      username: tg.username || null,
+      photo_url: tg.photo_url || null,
+      auth_date: authDate,
+      hash,
+    },
+  };
+}
+
 function encodeTelegramAuthPayloadForUrl(payload) {
   if (!payload || typeof payload !== 'object') return '';
   try {
@@ -1025,12 +1083,40 @@ export default {
       }
     }
 
-    // ── GET /telegram/user/status?telegram_id= ────────────────────────────
-    // Returns the user's profile and anti-cheat block status for website feedback.
-    // Used by front-end pages to display a "your account is blocked" notice.
-    if (path === '/telegram/user/status' && request.method === 'GET') {
-      const telegramId = url.searchParams.get('telegram_id');
-      if (!telegramId) return err('telegram_id required');
+    // ── GET/POST /telegram/user/status ─────────────────────────────────────
+    // GET keeps the direct telegram_id status lookup for existing pages.
+    // POST additionally accepts signed browser auth evidence so the frontend
+    // can restore a linked identity without already knowing telegram_id.
+    if (path === '/telegram/user/status' && (request.method === 'GET' || request.method === 'POST')) {
+      let requestBody = null;
+      if (request.method === 'POST') {
+        try {
+          requestBody = await request.json();
+        } catch {
+          requestBody = {};
+        }
+      }
+      const restoreEvidence = request.method === 'POST'
+        ? await verifyTelegramAuthEvidenceForRestore(requestBody, env)
+        : null;
+      const telegramId = String(
+        url.searchParams.get('telegram_id')
+        || restoreEvidence?.telegramId
+        || requestBody?.telegram_id
+        || ''
+      ).trim();
+      if (!telegramId) {
+        return json({
+          ok: true,
+          linked: false,
+          link_confirmed: false,
+          recovery: {
+            attempted: request.method === 'POST',
+            restored_from: null,
+          },
+          error: 'not_linked',
+        });
+      }
 
       try {
         // Fetch user profile, anti-cheat state, and server-side linked evidence in parallel.
@@ -1059,7 +1145,18 @@ export default {
           ).bind(telegramId).first().catch(() => null),
         ]);
 
-        if (!user) return err('User not found', 404);
+        if (!user) {
+          return json({
+            ok: true,
+            linked: false,
+            link_confirmed: false,
+            recovery: {
+              attempted: request.method === 'POST',
+              restored_from: restoreEvidence ? 'signed_browser_auth' : (url.searchParams.get('telegram_id') ? 'telegram_id' : null),
+            },
+            error: 'not_linked',
+          });
+        }
 
         const linked = Boolean(linkEvent || blockTopiaProgression);
         const signedAuthPayload = linked
@@ -1081,8 +1178,13 @@ export default {
           member_since:     (user.created_at || '').slice(0, 10),
           linked,
           link_confirmed: linked,
+          ok: true,
           link_source: linkEvent ? 'telegram_activity_log' : (blockTopiaProgression ? 'blocktopia_progression' : null),
           telegram_auth: signedAuthPayload,
+          recovery: {
+            attempted: request.method === 'POST',
+            restored_from: restoreEvidence ? 'signed_browser_auth' : (url.searchParams.get('telegram_id') ? 'telegram_id' : null),
+          },
           blocktopia_progression: blockTopiaProgression ? {
             xp: Number(blockTopiaProgression.xp || 0),
             gems: Number(blockTopiaProgression.gems || 0),

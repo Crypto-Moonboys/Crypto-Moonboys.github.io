@@ -81,6 +81,10 @@
     lsRemove(LS_TG_AUTH_LEGACY);
   }
 
+  function getRawTelegramAuthEvidence() {
+    return getStoredTelegramAuthRaw();
+  }
+
   function getApiBase() {
     var cfg = window.MOONBOYS_API || {};
     return cfg.BASE_URL ? String(cfg.BASE_URL).replace(/\/$/, '') : '';
@@ -314,20 +318,29 @@
       });
     }
 
-    var telegramId = getTelegramId();
     var apiBase = getApiBase();
-    if (!telegramId || !apiBase) {
+    var telegramId = getTelegramId();
+    var authEvidence = getRawTelegramAuthEvidence();
+    if (!apiBase) {
       return Promise.resolve({
         ok: false,
-        reason: !telegramId ? 'missing_telegram_id' : 'missing_api_base',
+        reason: 'missing_api_base',
       });
     }
 
     if (bootstrapPromise) return bootstrapPromise;
 
-    bootstrapPromise = fetch(
-      apiBase + '/telegram/user/status?telegram_id=' + encodeURIComponent(String(telegramId))
-    )
+    bootstrapPromise = fetch(apiBase + '/telegram/user/status', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        telegram_id: telegramId || null,
+        telegram_auth: authEvidence || null,
+        linked: isTelegramLinked(),
+        telegram_name: getTelegramName() || null,
+        sync: getSyncHealth(),
+      }),
+    })
       .then(function (response) {
         return response.json().catch(function () { return {}; }).then(function (data) {
           return { ok: response.ok, status: response.status, data: data || {} };
