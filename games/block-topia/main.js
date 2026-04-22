@@ -37,7 +37,7 @@ import { createFirewallDefenseOverlay } from './ui/firewall-defense-overlay.js?v
 import { createSignalRouterSystem } from './world/signal-router-system.js';
 import { createSignalRouterOverlay } from './ui/signal-router-overlay.js?v=56987dec';
 import { createCircuitConnectSystem } from './world/circuit-connect-system.js';
-import { createCircuitConnectOverlay } from './ui/circuit-connect-overlay.js?v=56987dec';
+import { createCircuitConnectOverlay } from './ui/circuit-connect-overlay.js?v=circuit-breach-pass-1';
 import { computeTierDifficulty } from './world/tier-difficulty.js';
 
 const ENTRY_OVERLAY_TIMEOUT_MS = 7000;
@@ -834,7 +834,9 @@ async function boot() {
       }
       state.circuitConnectView = circuitConnect.getPublicState();
       circuitConnectOverlay.render(state.circuitConnectView);
+      return result;
     },
+    onSkip: () => handleMiniGameOutcome('circuit', 'skip').catch(() => {}),
   });
   let multiplayerConnected = false;
   let localSessionId = '';
@@ -2314,6 +2316,9 @@ async function boot() {
     if (circuitState.active) {
       const selectedId = circuitState.selectedNodeId;
       const actionsByKey = {
+        1: 'reconnectLink',
+        2: 'rerouteNode',
+        3: 'stabilizeLink',
         a: 'reconnectLink',
         s: 'stabilizeLink',
         d: 'rerouteNode',
