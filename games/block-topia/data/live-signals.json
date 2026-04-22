@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-04-21T23:07:55.579Z",
+  "generatedAt": "2026-04-22T00:02:02.137Z",
   "mode": "live-ai",
   "sourceHealth": {
     "coingecko-global": "ok",
@@ -8,87 +8,71 @@
     "fear-greed": "ok",
     "openai": "ok"
   },
-  "signalCount": 5,
+  "signalCount": 4,
   "signals": [
     {
-      "id": "signal-1776812875578-1",
+      "id": "signal-1776816122137-1",
       "lane": "world",
       "priority": 4,
       "ttlMinutes": 45,
-      "npcLine": "Crypto tides turn sour; shadows thick with dread.",
-      "questPulse": "Fear spreads through neon alleys; markets recoil.",
-      "worldFeed": "Global crypto dims; value slips beneath the neon haze.",
-      "clueEvent": "Unseen cracks surface in digital finance networks.",
+      "npcLine": "Digital shadows flicker; markets pulse with low, wary energy.",
+      "questPulse": "Seek silent nodes—cryptos teeter between light and dark.",
+      "worldFeed": "Network mass swells; ##k cryptos grind uneasy gears.",
+      "clueEvent": "Market cap's faint rise masks deeper systemic rust.",
       "tags": [
+        "market",
         "crypto",
-        "fear",
-        "market_down"
+        "fear"
       ],
-      "expiresAt": "2026-04-21T23:52:55.578Z"
+      "expiresAt": "2026-04-22T00:47:02.137Z"
     },
     {
-      "id": "signal-1776812875579-2",
+      "id": "signal-1776816122137-2",
       "lane": "ops",
       "priority": 3,
       "ttlMinutes": 30,
-      "npcLine": "RAVE pulses upwards, a fleeting spark in dark streets.",
-      "questPulse": "Minor digital traction on fringe tokens; watch for shifts.",
-      "worldFeed": "Low-profile coins flicker with strange, unnoticed energy.",
-      "clueEvent": "Silent surge detected around RAVE micro-exchanges.",
+      "npcLine": "Asteroid data spikes, but beware false signals from noise.",
+      "questPulse": "Infiltrate trending streams; chip fragments hold hidden codes.",
+      "worldFeed": "Oscillations upstream; small scores draw big eyes.",
+      "clueEvent": "Zero-score MAGA hides in shadows, watch its ghost steps.",
       "tags": [
-        "tokens",
-        "surge",
-        "low_profile"
+        "trending",
+        "intel",
+        "cryptic"
       ],
-      "expiresAt": "2026-04-21T23:37:55.579Z"
+      "expiresAt": "2026-04-22T00:32:02.137Z"
     },
     {
-      "id": "signal-1776812875579-3",
+      "id": "signal-1776816122137-3",
       "lane": "clue",
-      "priority": 2,
-      "ttlMinutes": 60,
-      "npcLine": "PENGU whispers through underground channels—signals glitchy, but alive.",
-      "questPulse": "Unknown assets stir beneath neon glows; cryptic hints abound.",
-      "worldFeed": "Trader chatter hints at hidden value shifts in cold chains.",
-      "clueEvent": "Encrypted chatter spikes concerning PENGU cold vaults.",
-      "tags": [
-        "whisper",
-        "encrypted",
-        "cold_storage"
-      ],
-      "expiresAt": "2026-04-22T00:07:55.579Z"
-    },
-    {
-      "id": "signal-1776812875579-4",
-      "lane": "quest",
       "priority": 5,
-      "ttlMinutes": 20,
-      "npcLine": "CHIP clatters on dim market boards; alert for sharp moves.",
-      "questPulse": "Circuit buzz intensifies around CHIP’s flickering nodes.",
-      "worldFeed": "Chip tokens catch brief neon fire before fading fast.",
-      "clueEvent": "Rapid micro trades detected on CHIP subnets.",
+      "ttlMinutes": 60,
+      "npcLine": "Fear grips the nets; sentiment falls into the red zone.",
+      "questPulse": "Decode the panic waves; trust only fragmented data trails.",
+      "worldFeed": "Sentiment dips sharply; fear tightens its grip underground.",
+      "clueEvent": "Sentiment index locks at low; markets brace for twists.",
       "tags": [
-        "alert",
-        "chip",
-        "micro_trades"
+        "sentiment",
+        "fear",
+        "alert"
       ],
-      "expiresAt": "2026-04-21T23:27:55.579Z"
+      "expiresAt": "2026-04-22T01:02:02.137Z"
     },
     {
-      "id": "signal-1776812875579-5",
-      "lane": "npc",
-      "priority": 1,
-      "ttlMinutes": 120,
-      "npcLine": "OPG fades quietly into market shadows; ghosts in the machine.",
-      "questPulse": "Low impact ripple, barely felt but persistent in code streams.",
-      "worldFeed": "OPG’s digital footprint evaporates into cyber voids.",
-      "clueEvent": "Stealth exits logged on OPG ledger segments.",
+      "id": "signal-1776816122137-4",
+      "lane": "quest",
+      "priority": 2,
+      "ttlMinutes": 25,
+      "npcLine": "Rave buzz spikes briefly; transient flashes of overload.",
+      "questPulse": "Catch the fleeting signal; AAVE and CHIP flicker nearby.",
+      "worldFeed": "Trending anomalies crackle; brief chance for quick gains.",
+      "clueEvent": "Short-lived trends hint at deeper, hidden network tremors.",
       "tags": [
-        "ghost",
-        "fade",
-        "stealth"
+        "trend",
+        "flash",
+        "opportunity"
       ],
-      "expiresAt": "2026-04-22T01:07:55.579Z"
+      "expiresAt": "2026-04-22T00:27:02.137Z"
     }
   ]
 }
