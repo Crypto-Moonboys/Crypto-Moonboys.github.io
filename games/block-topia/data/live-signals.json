@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-04-22T08:15:50.916Z",
+  "generatedAt": "2026-04-22T10:00:56.304Z",
   "mode": "live-ai",
   "sourceHealth": {
     "coingecko-global": "ok",
@@ -11,84 +11,84 @@
   "signalCount": 5,
   "signals": [
     {
-      "id": "signal-1776845750915-1",
+      "id": "signal-1776852056303-1",
       "lane": "world",
-      "priority": 4,
-      "ttlMinutes": 120,
-      "npcLine": "Market pulse flickers—cryptos breathing but shadows grow.",
-      "questPulse": "Scan dark nodes for hidden blockchain uprisings.",
-      "worldFeed": "Global digital assets barely stirring amid rising distrust.",
-      "clueEvent": "Data leaks suggest info brokers trading phantom coins.",
-      "tags": [
-        "cryptomarket",
-        "uncertainty",
-        "digital-assets"
-      ],
-      "expiresAt": "2026-04-22T10:15:50.915Z"
-    },
-    {
-      "id": "signal-1776845750916-2",
-      "lane": "ops",
-      "priority": 5,
-      "ttlMinutes": 90,
-      "npcLine": "OPG networks spike; watchdogs scramble in neon back alleys.",
-      "questPulse": "Infiltrate cyber vaults squeezing bursts from OPG's core.",
-      "worldFeed": "Emerging tokens ignite underground ops, whispers of surge.",
-      "clueEvent": "Encrypted chatter hints at pump schemes in shadow markets.",
-      "tags": [
-        "ops",
-        "crypto-spike",
-        "surge"
-      ],
-      "expiresAt": "2026-04-22T09:45:50.916Z"
-    },
-    {
-      "id": "signal-1776845750916-3",
-      "lane": "clue",
       "priority": 3,
       "ttlMinutes": 60,
-      "npcLine": "Silent whispers: CHIP nodes flicker, ghosts in the grid.",
-      "questPulse": "Trace signal anomalies in CHIP’s fading broadcast.",
-      "worldFeed": "Low signal on minor tokens, hopeful or hopeless bets.",
-      "clueEvent": "Algorithmic trails reveal possible info tampering.",
+      "npcLine": "Market waves flicker; cap’s barely breathing positive.",
+      "questPulse": "Scan cryptostreams for upticks in forgotten coins.",
+      "worldFeed": "Over seventeen thousand cryptos pulse; many ghosts in the code.",
+      "clueEvent": "Silent shifts hint at lurking market predators.",
       "tags": [
-        "clue",
-        "signal-flicker",
-        "ghost-nodes"
+        "market",
+        "crypto",
+        "trend"
       ],
-      "expiresAt": "2026-04-22T09:15:50.916Z"
+      "expiresAt": "2026-04-22T11:00:56.303Z"
     },
     {
-      "id": "signal-1776845750916-4",
-      "lane": "quest",
+      "id": "signal-1776852056304-2",
+      "lane": "ops",
       "priority": 4,
-      "ttlMinutes": 100,
-      "npcLine": "PENGU and RAVE surge; scavengers seek tech relics behind fame.",
-      "questPulse": "Hunt artifacts from recent token spikes in neon ruins.",
-      "worldFeed": "Forgotten coins awaken sparks of interest in old sectors.",
-      "clueEvent": "Odd trade volumes stir rumors of hidden tech trades.",
+      "ttlMinutes": 45,
+      "npcLine": "Fear dominates the streets; traders jitter, nerves fraying.",
+      "questPulse": "Infiltrate data nodes, extract sentiment shifts.",
+      "worldFeed": "Sentiment index nails low thirty; shadows grow longer.",
+      "clueEvent": "Uneasy whispers over digital nets point to deep unrest.",
       "tags": [
-        "quest",
-        "artifact-hunt",
-        "token-spikes"
+        "sentiment",
+        "fear",
+        "intel"
       ],
-      "expiresAt": "2026-04-22T09:55:50.916Z"
+      "expiresAt": "2026-04-22T10:45:56.304Z"
     },
     {
-      "id": "signal-1776845750916-5",
-      "lane": "npc",
+      "id": "signal-1776852056304-3",
+      "lane": "clue",
       "priority": 2,
-      "ttlMinutes": 80,
-      "npcLine": "AAVE’s shadow lingers; info dealers whisper in dark corners.",
-      "questPulse": "Meet with shady contacts for insider whispers on AAVE.",
-      "worldFeed": "Suspicious silence around certain tokens fuels market paranoia.",
-      "clueEvent": "Obscure signals caught on once-popular AAVE channels.",
+      "ttlMinutes": 30,
+      "npcLine": "Names like CHIP, OPG flicker weakly among cryptos.",
+      "questPulse": "Trace anomaly scores and track subtle field shifts.",
+      "worldFeed": "Few coins stand out, but none break the silence.",
+      "clueEvent": "Trending whispers hint at buried code fragments stirring.",
       "tags": [
-        "npc",
-        "whispers",
-        "market-paranoia"
+        "crypto",
+        "trend",
+        "signal"
       ],
-      "expiresAt": "2026-04-22T09:35:50.916Z"
+      "expiresAt": "2026-04-22T10:30:56.304Z"
+    },
+    {
+      "id": "signal-1776852056304-4",
+      "lane": "quest",
+      "priority": 5,
+      "ttlMinutes": 90,
+      "npcLine": "Find the source behind rare market breath upwards.",
+      "questPulse": "Hunt for ghost nodes triggering slight cap rise.",
+      "worldFeed": "Market cap creeps upward despite fear consuming traders.",
+      "clueEvent": "A faint pulse of hope beats within the grey fog.",
+      "tags": [
+        "marketcap",
+        "powerplay",
+        "mission"
+      ],
+      "expiresAt": "2026-04-22T11:30:56.304Z"
+    },
+    {
+      "id": "signal-1776852056304-5",
+      "lane": "npc",
+      "priority": 1,
+      "ttlMinutes": 120,
+      "npcLine": "Old data miners mumble about forgotten coin clusters.",
+      "questPulse": "Decode fragmented whispers to unlock hidden values.",
+      "worldFeed": "Legacy coins lurk; could they shift the tide?",
+      "clueEvent": "Ancient protocol triggers flicker on deep web scans.",
+      "tags": [
+        "legacy",
+        "hidden",
+        "exploration"
+      ],
+      "expiresAt": "2026-04-22T12:00:56.304Z"
     }
   ]
 }
