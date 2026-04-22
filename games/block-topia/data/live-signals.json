@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-04-22T15:15:43.759Z",
+  "generatedAt": "2026-04-22T16:38:19.250Z",
   "mode": "live-ai",
   "sourceHealth": {
     "coingecko-global": "ok",
@@ -11,84 +11,85 @@
   "signalCount": 5,
   "signals": [
     {
-      "id": "signal-1776870943759-1",
+      "id": "signal-1776875899249-1",
       "lane": "world",
-      "priority": 4,
-      "ttlMinutes": 60,
-      "npcLine": "Markets pulse up slightly, but shadows twist the trade lanes.",
-      "questPulse": "Uncover the source behind a subtle market cap rise.",
-      "worldFeed": "Cryptovoids flicker: ##+ digital assets breathing cold wind.",
-      "clueEvent": "Data spikes hint at hidden manipulation on ## hubs.",
-      "tags": [
-        "market",
-        "trend",
-        "shadow"
-      ],
-      "expiresAt": "2026-04-22T16:15:43.759Z"
-    },
-    {
-      "id": "signal-1776870943759-2",
-      "lane": "ops",
-      "priority": 5,
-      "ttlMinutes": 30,
-      "npcLine": "Fear floods circuits; traders jitter under neon flickers.",
-      "questPulse": "Stabilize a panic ripple in cryptomarkets before collapse.",
-      "worldFeed": "Sentiment sinks; fear index surges amidst silent exchanges.",
-      "clueEvent": "Whispers of a ghost protocol sparking market unease.",
-      "tags": [
-        "sentiment",
-        "panic",
-        "stabilize"
-      ],
-      "expiresAt": "2026-04-22T15:45:43.759Z"
-    },
-    {
-      "id": "signal-1776870943759-3",
-      "lane": "clue",
       "priority": 3,
-      "ttlMinutes": 45,
-      "npcLine": "The CHIP node buzzes quiet, data streams low-score static.",
-      "questPulse": "Trace low-energy signals from CHIP and faded token waves.",
-      "worldFeed": "Some tokens falter; a few rise above the neon smoke.",
-      "clueEvent": "Subtle patterns emerge around PENGU and OPG clusters.",
-      "tags": [
-        "clue",
-        "tokens",
-        "signals"
-      ],
-      "expiresAt": "2026-04-22T16:00:43.759Z"
-    },
-    {
-      "id": "signal-1776870943759-4",
-      "lane": "quest",
-      "priority": 4,
       "ttlMinutes": 90,
-      "npcLine": "RAVE waves thrum the underground markets—danger dances near.",
-      "questPulse": "Decrypt encrypted bursts in RAVE channels to prevent crashes.",
-      "worldFeed": "High buzz on volatile tokens; chaos hides in plain sight.",
-      "clueEvent": "Intel points to destabilizing pulses near RAVE nodes.",
+      "npcLine": "Crypto flux surges; shiny coins glitter yet shadows deepen.",
+      "questPulse": "Data brokers whisper of shifting asset tides; stay alert.",
+      "worldFeed": "Market veins pulse with slight rise amid urban fear.",
+      "clueEvent": "Unknown signal spikes in dark net chatter; value unstable.",
       "tags": [
-        "volatility",
-        "decrypt",
-        "danger"
+        "crypto",
+        "market",
+        "fear"
       ],
-      "expiresAt": "2026-04-22T16:45:43.759Z"
+      "expiresAt": "2026-04-22T18:08:19.249Z"
     },
     {
-      "id": "signal-1776870943759-5",
-      "lane": "npc",
+      "id": "signal-1776875899249-2",
+      "lane": "ops",
+      "priority": 4,
+      "ttlMinutes": 45,
+      "npcLine": "Penguins swim in the data streams, their calls rising loud.",
+      "questPulse": "Trace the PENGU currents before the blockchains freeze up.",
+      "worldFeed": "New code injection found in trending cyber assets cluster.",
+      "clueEvent": "Algorithmic chatter points to risky spikes in nano-tokens.",
+      "tags": [
+        "trending",
+        "crypto",
+        "risk"
+      ],
+      "expiresAt": "2026-04-22T17:23:19.249Z"
+    },
+    {
+      "id": "signal-1776875899249-3",
+      "lane": "clue",
       "priority": 2,
       "ttlMinutes": 120,
-      "npcLine": "BTC legends whisper beneath flickering lights, ancient yet alive.",
-      "questPulse": "Seek the old trader ghost guarding forgotten crypto relics.",
-      "worldFeed": "BTC still the constant in a storm of bytes and bytes.",
-      "clueEvent": "Oldworld nodes reveal fractured data beneath shiny facades.",
+      "npcLine": "Silent whispers: CHIP hackers probing deep; avoid greed traps.",
+      "questPulse": "Decipher the CHIP patterns; false gains lurk beneath glitter.",
+      "worldFeed": "Encrypted packets show unusual CHIP network activity.",
+      "clueEvent": "Fragmented signals hint at pending market shift in tokens.",
       "tags": [
-        "legend",
-        "btc",
-        "relic"
+        "chip",
+        "hacking",
+        "warning"
       ],
-      "expiresAt": "2026-04-22T17:15:43.759Z"
+      "expiresAt": "2026-04-22T18:38:19.249Z"
+    },
+    {
+      "id": "signal-1776875899249-4",
+      "lane": "quest",
+      "priority": 5,
+      "ttlMinutes": 60,
+      "npcLine": "Spikers like SPK and OPG carve paths through neon haze.",
+      "questPulse": "Track volatile clusters before they ignite the grid's flux.",
+      "worldFeed": "System logs reveal sudden surges; heavy volatility inbound.",
+      "clueEvent": "Pulse scan flags emergent assets fighting for dominance.",
+      "tags": [
+        "volatility",
+        "spk",
+        "opg",
+        "power"
+      ],
+      "expiresAt": "2026-04-22T17:38:19.249Z"
+    },
+    {
+      "id": "signal-1776875899249-5",
+      "lane": "npc",
+      "priority": 1,
+      "ttlMinutes": 180,
+      "npcLine": "Fear creeps into coded veins; watchers adjust their optics.",
+      "questPulse": "Old net rats murmur: 'Trust no rise amid the scramble.'",
+      "worldFeed": "Sentiment indexes show rising fear; neon shadows lengthen.",
+      "clueEvent": "Hidden nodes report distrust spreading across cryptolands.",
+      "tags": [
+        "fear",
+        "sentiment",
+        "news"
+      ],
+      "expiresAt": "2026-04-22T19:38:19.249Z"
     }
   ]
 }
