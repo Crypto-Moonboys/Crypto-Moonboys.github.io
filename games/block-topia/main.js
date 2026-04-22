@@ -1822,8 +1822,11 @@ async function boot() {
       hud.setDrainPerMinute(next.drain_per_minute || 0);
       syncCovertHud();
       if (next.rpg_mode_active === false || (next.xp || 0) <= 0) {
-        hud.showNodeInterference('XP depleted. Block Topia session ended.', 'warning');
-        window.location.replace(getSyncGateUrl());
+        const warningText = next.rpg_mode_active === false
+          ? 'Block Topia progression sync warning: RPG mode inactive.'
+          : 'XP depleted. Block Topia session warning.';
+        hud.showNodeInterference(warningText, 'warning');
+        hud.pushFeed(`⚠ ${warningText}`, 'system');
       }
     }).catch(() => {});
   }, PROGRESSION_SYNC_INTERVAL_MS);
