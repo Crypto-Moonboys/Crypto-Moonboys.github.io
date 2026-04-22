@@ -210,6 +210,46 @@ function readAdminSecret(request) {
     || '';
 }
 
+async function writeBlockTopiaAdminGrantAudit(db, {
+  telegramId,
+  adminTelegramId,
+  xpChange = 0,
+  gemsChange = 0,
+  reason = null,
+}) {
+  try {
+    await db.prepare(`
+      INSERT INTO blocktopia_progression_events
+        (id, telegram_id, action, action_type, score, xp_change, gems_change, admin_telegram_id, reason)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `).bind(
+      crypto.randomUUID(),
+      telegramId,
+      'admin_grant',
+      'blocktopia_grant_xp_gems',
+      0,
+      Math.floor(Number(xpChange) || 0),
+      Math.floor(Number(gemsChange) || 0),
+      adminTelegramId,
+      reason || null,
+    ).run();
+  } catch {
+    await db.prepare(`
+      INSERT INTO blocktopia_progression_events
+        (id, telegram_id, action, action_type, score, xp_change, gems_change)
+      VALUES (?, ?, ?, ?, ?, ?, ?)
+    `).bind(
+      crypto.randomUUID(),
+      telegramId,
+      'admin_grant',
+      'blocktopia_grant_xp_gems',
+      0,
+      Math.floor(Number(xpChange) || 0),
+      Math.floor(Number(gemsChange) || 0),
+    ).run();
+  }
+}
+
 /**
  * Call the anti-cheat worker.
  * `method` is the HTTP verb, `acPath` is the route (e.g. '/anticheat/block'),
@@ -524,10 +564,13 @@ export default {
 
       try {
         const row = await getOrCreateBlockTopiaProgression(env.DB, telegramId);
-        const currentXp = Math.max(XP_MIN, Math.min(XP_MAX, Math.floor(Number(row?.xp) || 0)));
-        const currentGems = Math.max(GEMS_MIN, Math.min(GEMS_MAX, Math.floor(Number(row?.gems) || 0)));
-        const nextXp = Math.max(XP_MIN, Math.min(XP_MAX, currentXp + grantXp));
-        const nextGems = Math.max(GEMS_MIN, Math.min(GEMS_MAX, currentGems + grantGems));
+        // Admin grants are trusted tooling actions and must stay outside Phase 4
+        // player enforcement. Do not clamp through reward caps or mutate
+        // pressure/cooldown-adjacent activity state here.
+        const currentXp = Math.max(XP_MIN, Math.floor(Number(row?.xp) || 0));
+        const currentGems = Math.max(GEMS_MIN, Math.floor(Number(row?.gems) || 0));
+        const nextXp = currentXp + grantXp;
+        const nextGems = currentGems + grantGems;
         const appliedXpDelta = nextXp - currentXp;
         const appliedGemsDelta = nextGems - currentGems;
         if (appliedXpDelta <= 0 && appliedGemsDelta <= 0) {
@@ -536,25 +579,17 @@ export default {
 
         await env.DB.prepare(`
           UPDATE blocktopia_progression
-          SET xp = ?, gems = ?, last_active = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP
+          SET xp = ?, gems = ?, updated_at = CURRENT_TIMESTAMP
           WHERE telegram_id = ?
         `).bind(nextXp, nextGems, telegramId).run();
 
-        await env.DB.prepare(`
-          INSERT INTO blocktopia_progression_events
-            (id, telegram_id, action, action_type, score, xp_change, gems_change, admin_telegram_id, reason)
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-        `).bind(
-          crypto.randomUUID(),
+        await writeBlockTopiaAdminGrantAudit(env.DB, {
           telegramId,
-          'admin_grant',
-          'blocktopia_grant_xp_gems',
-          0,
-          appliedXpDelta,
-          appliedGemsDelta,
           adminTelegramId,
-          reason || null,
-        ).run();
+          xpChange: appliedXpDelta,
+          gemsChange: appliedGemsDelta,
+          reason,
+        });
 
         return json({
           ok: true,
