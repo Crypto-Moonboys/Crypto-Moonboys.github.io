@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-04-22T10:00:56.304Z",
+  "generatedAt": "2026-04-22T11:38:00.669Z",
   "mode": "live-ai",
   "sourceHealth": {
     "coingecko-global": "ok",
@@ -11,84 +11,84 @@
   "signalCount": 5,
   "signals": [
     {
-      "id": "signal-1776852056303-1",
+      "id": "signal-1776857880668-1",
       "lane": "world",
-      "priority": 3,
-      "ttlMinutes": 60,
-      "npcLine": "Market waves flicker; cap’s barely breathing positive.",
-      "questPulse": "Scan cryptostreams for upticks in forgotten coins.",
-      "worldFeed": "Over seventeen thousand cryptos pulse; many ghosts in the code.",
-      "clueEvent": "Silent shifts hint at lurking market predators.",
-      "tags": [
-        "market",
-        "crypto",
-        "trend"
-      ],
-      "expiresAt": "2026-04-22T11:00:56.303Z"
-    },
-    {
-      "id": "signal-1776852056304-2",
-      "lane": "ops",
       "priority": 4,
       "ttlMinutes": 45,
-      "npcLine": "Fear dominates the streets; traders jitter, nerves fraying.",
-      "questPulse": "Infiltrate data nodes, extract sentiment shifts.",
-      "worldFeed": "Sentiment index nails low thirty; shadows grow longer.",
-      "clueEvent": "Uneasy whispers over digital nets point to deep unrest.",
+      "npcLine": "The cryptomarkets pulse with uneasy vitality tonight.",
+      "questPulse": "Chaos surges while the main indexes twitch upward.",
+      "worldFeed": "Digital assets flicker as shadows tighten their grip.",
+      "clueEvent": "Unseen forces edge the total cap to rise softly.",
+      "tags": [
+        "market",
+        "volatility",
+        "fear"
+      ],
+      "expiresAt": "2026-04-22T12:23:00.668Z"
+    },
+    {
+      "id": "signal-1776857880669-2",
+      "lane": "ops",
+      "priority": 3,
+      "ttlMinutes": 30,
+      "npcLine": "MAGA and OPG tokens buzz in dark corners.",
+      "questPulse": "Watch those flickering symbols; traders whisper patterns.",
+      "worldFeed": "Trending cyber-tokens draw the eye, promising twisted gains.",
+      "clueEvent": "Anomalies detected around mid-tier cryptos; stay alert.",
+      "tags": [
+        "tokens",
+        "trending",
+        "intel"
+      ],
+      "expiresAt": "2026-04-22T12:08:00.669Z"
+    },
+    {
+      "id": "signal-1776857880669-3",
+      "lane": "clue",
+      "priority": 5,
+      "ttlMinutes": 20,
+      "npcLine": "Cold dread wraps the market’s veins tighter than ever.",
+      "questPulse": "Fear dominates the digital streets, blurring all signals.",
+      "worldFeed": "Sentiment sinks; eyes dart, fingers hesitate on triggers.",
+      "clueEvent": "An ominous chill underlies the otherwise rising cap.",
       "tags": [
         "sentiment",
         "fear",
-        "intel"
+        "danger"
       ],
-      "expiresAt": "2026-04-22T10:45:56.304Z"
+      "expiresAt": "2026-04-22T11:58:00.669Z"
     },
     {
-      "id": "signal-1776852056304-3",
-      "lane": "clue",
-      "priority": 2,
-      "ttlMinutes": 30,
-      "npcLine": "Names like CHIP, OPG flicker weakly among cryptos.",
-      "questPulse": "Trace anomaly scores and track subtle field shifts.",
-      "worldFeed": "Few coins stand out, but none break the silence.",
-      "clueEvent": "Trending whispers hint at buried code fragments stirring.",
-      "tags": [
-        "crypto",
-        "trend",
-        "signal"
-      ],
-      "expiresAt": "2026-04-22T10:30:56.304Z"
-    },
-    {
-      "id": "signal-1776852056304-4",
+      "id": "signal-1776857880669-4",
       "lane": "quest",
-      "priority": 5,
-      "ttlMinutes": 90,
-      "npcLine": "Find the source behind rare market breath upwards.",
-      "questPulse": "Hunt for ghost nodes triggering slight cap rise.",
-      "worldFeed": "Market cap creeps upward despite fear consuming traders.",
-      "clueEvent": "A faint pulse of hope beats within the grey fog.",
+      "priority": 2,
+      "ttlMinutes": 60,
+      "npcLine": "PENGU thrives in the shadows; a ghost in the net.",
+      "questPulse": "Follow the silent surge; hidden opportunities may flicker.",
+      "worldFeed": "A wave of quiet moves on lesser-known chains tonight.",
+      "clueEvent": "Pattern emerges: minor tokens rise without fanfare.",
       "tags": [
-        "marketcap",
-        "powerplay",
-        "mission"
+        "underground",
+        "tokens",
+        "stealth"
       ],
-      "expiresAt": "2026-04-22T11:30:56.304Z"
+      "expiresAt": "2026-04-22T12:38:00.669Z"
     },
     {
-      "id": "signal-1776852056304-5",
+      "id": "signal-1776857880669-5",
       "lane": "npc",
       "priority": 1,
-      "ttlMinutes": 120,
-      "npcLine": "Old data miners mumble about forgotten coin clusters.",
-      "questPulse": "Decode fragmented whispers to unlock hidden values.",
-      "worldFeed": "Legacy coins lurk; could they shift the tide?",
-      "clueEvent": "Ancient protocol triggers flicker on deep web scans.",
+      "ttlMinutes": 15,
+      "npcLine": "AAVE whispers secrets to those who listen close.",
+      "questPulse": "Old guards in crypto circles murmur of subtle shifts.",
+      "worldFeed": "Shades of change swirl around pioneering assets once more.",
+      "clueEvent": "Elder tokens gain faint momentum; something stirring beneath.",
       "tags": [
-        "legacy",
-        "hidden",
-        "exploration"
+        "veteran",
+        "whispers",
+        "shift"
       ],
-      "expiresAt": "2026-04-22T12:00:56.304Z"
+      "expiresAt": "2026-04-22T11:53:00.669Z"
     }
   ]
 }
