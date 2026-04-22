@@ -24,7 +24,7 @@ export function createFirewallDefenseOverlay(doc, { onDeploy } = {}) {
         <button type="button" data-defense="disruptor">Pulse Disruptor [6]</button>
         <button type="button" data-defense="purge">Purge Beam [7]</button>
       </div>
-      <p class="firewall-hint">Select a node on the live map. Use `5/6/7` to deploy, `K` to skip, and keep the map visible while placing.</p>
+      <p class="firewall-hint">Select a node on the live map. Use 5/6/7 to deploy, K to skip, and keep the map visible while placing.</p>
       <ul class="firewall-log" id="firewall-log"></ul>
     </div>
   `;

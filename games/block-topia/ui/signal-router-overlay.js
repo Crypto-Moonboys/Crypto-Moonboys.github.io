@@ -49,7 +49,7 @@ export function createSignalRouterOverlay(doc, { onAction } = {}) {
         <button type="button" data-action="stabilizeLink">Stabilize Link [V]</button>
         <button type="button" data-action="clearCongestion">Clear Congestion [B]</button>
       </div>
-      <p class="router-hint">Tactical reroute strip. Keep the map visible, lock a node, then use `Z/X/C/V/B` or `K` to skip.</p>
+      <p class="router-hint">Tactical reroute strip. Keep the map visible, lock a node, then use Z/X/C/V/B or K to skip.</p>
       <ul class="router-log" id="router-log"></ul>
     </div>
   `;

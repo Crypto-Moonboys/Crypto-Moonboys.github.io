@@ -44,7 +44,7 @@ export function createCircuitConnectOverlay(doc, { onAction } = {}) {
         <button type="button" data-action="deployBridge">Bridge [F]</button>
         <button type="button" data-action="reinforceConnection">Reinforce [G]</button>
       </div>
-      <p class="circuit-hint">Recovery strip active. Lock a node, use `A/S/D/F/G`, and keep `K` visible for skip.</p>
+      <p class="circuit-hint">Recovery strip active. Lock a node, use A/S/D/F/G, and keep K visible for skip.</p>
       <ul class="circuit-log" id="circuit-log"></ul>
     </div>
   `;
