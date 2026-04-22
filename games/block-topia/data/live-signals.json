@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-04-22T13:43:31.424Z",
+  "generatedAt": "2026-04-22T15:15:43.759Z",
   "mode": "live-ai",
   "sourceHealth": {
     "coingecko-global": "ok",
@@ -11,84 +11,84 @@
   "signalCount": 5,
   "signals": [
     {
-      "id": "signal-1776865411423-1",
+      "id": "signal-1776870943759-1",
       "lane": "world",
       "priority": 4,
-      "ttlMinutes": 45,
-      "npcLine": "Market caps flicker up amid creeping dread in the grid.",
-      "questPulse": "Hunt for rising nodes before fear corrupts the streams.",
-      "worldFeed": "Crypto veins pulse with cautious gains, shadows lengthen.",
-      "clueEvent": "Digits climb quietly as anxiety seeps deeper.",
+      "ttlMinutes": 60,
+      "npcLine": "Markets pulse up slightly, but shadows twist the trade lanes.",
+      "questPulse": "Uncover the source behind a subtle market cap rise.",
+      "worldFeed": "Cryptovoids flicker: ##+ digital assets breathing cold wind.",
+      "clueEvent": "Data spikes hint at hidden manipulation on ## hubs.",
       "tags": [
         "market",
-        "fear",
-        "crypto"
+        "trend",
+        "shadow"
       ],
-      "expiresAt": "2026-04-22T14:28:31.423Z"
+      "expiresAt": "2026-04-22T16:15:43.759Z"
     },
     {
-      "id": "signal-1776865411423-2",
+      "id": "signal-1776870943759-2",
       "lane": "ops",
-      "priority": 3,
+      "priority": 5,
       "ttlMinutes": 30,
-      "npcLine": "Nodes CHIP and RAVE lag behind the surge.",
-      "questPulse": "Extract value from dormant codes before the system sighs.",
-      "worldFeed": "Silent tokens crumble while HYPE and ASTEROID rise.",
-      "clueEvent": "Unseen forces hold back weaker signals.",
+      "npcLine": "Fear floods circuits; traders jitter under neon flickers.",
+      "questPulse": "Stabilize a panic ripple in cryptomarkets before collapse.",
+      "worldFeed": "Sentiment sinks; fear index surges amidst silent exchanges.",
+      "clueEvent": "Whispers of a ghost protocol sparking market unease.",
       "tags": [
-        "crypto",
-        "operations",
-        "risk"
+        "sentiment",
+        "panic",
+        "stabilize"
       ],
-      "expiresAt": "2026-04-22T14:13:31.423Z"
+      "expiresAt": "2026-04-22T15:45:43.759Z"
     },
     {
-      "id": "signal-1776865411423-3",
+      "id": "signal-1776870943759-3",
       "lane": "clue",
-      "priority": 5,
-      "ttlMinutes": 60,
-      "npcLine": "HYPE and ASTEROID breach volatile territory—watch your six.",
-      "questPulse": "Track volatile upticks; fear blurs the data stream.",
-      "worldFeed": "Volumes spike unevenly, risk embedded in every byte.",
-      "clueEvent": "Sudden bursts hint at hidden code battles.",
+      "priority": 3,
+      "ttlMinutes": 45,
+      "npcLine": "The CHIP node buzzes quiet, data streams low-score static.",
+      "questPulse": "Trace low-energy signals from CHIP and faded token waves.",
+      "worldFeed": "Some tokens falter; a few rise above the neon smoke.",
+      "clueEvent": "Subtle patterns emerge around PENGU and OPG clusters.",
+      "tags": [
+        "clue",
+        "tokens",
+        "signals"
+      ],
+      "expiresAt": "2026-04-22T16:00:43.759Z"
+    },
+    {
+      "id": "signal-1776870943759-4",
+      "lane": "quest",
+      "priority": 4,
+      "ttlMinutes": 90,
+      "npcLine": "RAVE waves thrum the underground markets—danger dances near.",
+      "questPulse": "Decrypt encrypted bursts in RAVE channels to prevent crashes.",
+      "worldFeed": "High buzz on volatile tokens; chaos hides in plain sight.",
+      "clueEvent": "Intel points to destabilizing pulses near RAVE nodes.",
       "tags": [
         "volatility",
-        "alert",
-        "fear"
+        "decrypt",
+        "danger"
       ],
-      "expiresAt": "2026-04-22T14:43:31.423Z"
+      "expiresAt": "2026-04-22T16:45:43.759Z"
     },
     {
-      "id": "signal-1776865411424-4",
-      "lane": "quest",
-      "priority": 2,
-      "ttlMinutes": 25,
-      "npcLine": "OPG stirs—potential key or trap lies beneath.",
-      "questPulse": "Investigate OPG’s rise; tech spies report anomalies.",
-      "worldFeed": "Anomalous token hints at deeper asset manipulation.",
-      "clueEvent": "Unstable signals flicker near shadow markets.",
-      "tags": [
-        "anomaly",
-        "investigation",
-        "speculation"
-      ],
-      "expiresAt": "2026-04-22T14:08:31.424Z"
-    },
-    {
-      "id": "signal-1776865411424-5",
+      "id": "signal-1776870943759-5",
       "lane": "npc",
-      "priority": 1,
-      "ttlMinutes": 20,
-      "npcLine": "Fear grips the street as markets twist and turn.",
-      "questPulse": "Speak with net runners about fear’s origin in feeds.",
-      "worldFeed": "Apprehension breeds silence; traders whisper of dark days.",
-      "clueEvent": "Unspoken dread creeps through digital alleys.",
+      "priority": 2,
+      "ttlMinutes": 120,
+      "npcLine": "BTC legends whisper beneath flickering lights, ancient yet alive.",
+      "questPulse": "Seek the old trader ghost guarding forgotten crypto relics.",
+      "worldFeed": "BTC still the constant in a storm of bytes and bytes.",
+      "clueEvent": "Oldworld nodes reveal fractured data beneath shiny facades.",
       "tags": [
-        "fear",
-        "npc",
-        "intel"
+        "legend",
+        "btc",
+        "relic"
       ],
-      "expiresAt": "2026-04-22T14:03:31.424Z"
+      "expiresAt": "2026-04-22T17:15:43.759Z"
     }
   ]
 }
