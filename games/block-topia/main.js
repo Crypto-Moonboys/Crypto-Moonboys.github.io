@@ -37,7 +37,7 @@ import { createFirewallDefenseOverlay } from './ui/firewall-defense-overlay.js?v
 import { createSignalRouterSystem } from './world/signal-router-system.js';
 import { createSignalRouterOverlay } from './ui/signal-router-overlay.js?v=56987dec';
 import { createCircuitConnectSystem } from './world/circuit-connect-system.js';
-import { createCircuitConnectOverlay } from './ui/circuit-connect-overlay.js?v=circuit-breach-pass-1';
+import { createCircuitConnectOverlay } from './ui/circuit-connect-overlay.js?v=circuit-breach-pass-2';
 import { computeTierDifficulty } from './world/tier-difficulty.js';
 
 const ENTRY_OVERLAY_TIMEOUT_MS = 7000;
@@ -823,7 +823,7 @@ async function boot() {
   });
   const circuitConnectOverlay = createCircuitConnectOverlay(document, {
     onAction: (actionId) => {
-      const selectedId = (state.circuitConnectView || circuitConnect.getPublicState()).selectedNodeId;
+      const selectedId = syncCircuitPrioritySelection().selectedNodeId;
       const action = circuitConnect.actions[actionId];
       if (typeof action !== 'function') return;
       const result = action(selectedId);
@@ -832,7 +832,7 @@ async function boot() {
       } else if (result?.ok) {
         hud.pushFeed(`🔌 Circuit action: ${actionId}`, 'combat');
       }
-      state.circuitConnectView = circuitConnect.getPublicState();
+      state.circuitConnectView = syncCircuitPrioritySelection({ forceAdvance: result?.ok === true });
       circuitConnectOverlay.render(state.circuitConnectView);
       return result;
     },
@@ -1348,7 +1348,8 @@ async function boot() {
     if (!node) return false;
     state.mouse.selectedNodeId = node.id;
     circuitConnect.setSelectedNode(node.id);
-    const circuitState = state.circuitConnectView || circuitConnect.getPublicState();
+    state.circuitConnectView = circuitConnect.getPublicState();
+    const circuitState = state.circuitConnectView;
     if (circuitState.active) {
       circuitConnectOverlay.render(circuitState);
       hud.showNodeInterference(`Recovery node locked: ${node.id.toUpperCase()}`, 'signal');
@@ -1535,6 +1536,58 @@ async function boot() {
     circuitConnectOverlay.render({ active: false });
     state.signalRouterView = signalRouter.getPublicState();
     state.circuitConnectView = circuitConnect.getPublicState();
+  }
+
+  function getCircuitPriorityObjective(view = {}) {
+    const objectives = (view.objectives || []).filter((objective) => !objective.complete);
+    if (!objectives.length) return null;
+    return objectives
+      .slice()
+      .sort((a, b) => {
+        const aIntegrity = a.type === 'minimum_integrity' ? 1 : 0;
+        const bIntegrity = b.type === 'minimum_integrity' ? 1 : 0;
+        if (aIntegrity !== bIntegrity) return aIntegrity - bIntegrity;
+        return (Number(a.timeLeftMs) || 0) - (Number(b.timeLeftMs) || 0);
+      })[0];
+  }
+
+  function getCircuitPriorityNodeId(view = {}) {
+    const selectedId = String(view.selectedNodeId || '');
+    const objective = getCircuitPriorityObjective(view);
+    if (!objective) return selectedId;
+    if (objective.edgeId) {
+      const edge = (view.links || []).find((entry) => entry.id === objective.edgeId);
+      if (selectedId && (selectedId === edge?.fromId || selectedId === edge?.toId)) return selectedId;
+      return edge?.fromId || edge?.toId || selectedId;
+    }
+    if (selectedId && (selectedId === objective.fromId || selectedId === objective.toId)) return selectedId;
+    return objective.fromId || objective.toId || selectedId;
+  }
+
+  function syncCircuitPrioritySelection({ forceAdvance = false } = {}) {
+    const current = state.circuitConnectView || circuitConnect.getPublicState();
+    if (!current.active) {
+      state.circuitConnectView = current;
+      return current;
+    }
+    const objective = getCircuitPriorityObjective(current);
+    const selectedId = String(current.selectedNodeId || '');
+    const targetId = getCircuitPriorityNodeId(current);
+    const objectiveEdge = objective?.edgeId
+      ? (current.links || []).find((entry) => entry.id === objective.edgeId)
+      : null;
+    const selectedRelevant = objective
+      ? (
+        selectedId === objective.fromId
+        || selectedId === objective.toId
+        || (objectiveEdge && (objectiveEdge.fromId === selectedId || objectiveEdge.toId === selectedId))
+      )
+      : Boolean(selectedId);
+    if (targetId && (forceAdvance || !selectedId || !selectedRelevant) && targetId !== selectedId) {
+      circuitConnect.setSelectedNode(targetId);
+    }
+    state.circuitConnectView = circuitConnect.getPublicState();
+    return state.circuitConnectView;
   }
 
   function setActiveMiniGame(type) {
@@ -2577,6 +2630,7 @@ async function boot() {
         ensureMiniGamePlayable('circuit').then((ok) => {
           if (!ok) return;
           setActiveMiniGame('circuit');
+          state.circuitConnectView = syncCircuitPrioritySelection({ forceAdvance: true });
           hud.showSamPopup(`🚨 ${message}`, 3600);
           hud.pushFeed(`🚨 ${message}`, 'sam');
           hud.pushFeed('💸 Press K to pay XP and skip containment', 'system');
@@ -2603,7 +2657,7 @@ async function boot() {
       firewallActive: firewallDefense.getPublicState().active,
       signalRouterActive: state.signalRouterView?.active,
     });
-    state.circuitConnectView = circuitConnect.getPublicState();
+    state.circuitConnectView = syncCircuitPrioritySelection();
     circuitConnectOverlay.render(state.circuitConnectView);
     const overlayType = outbreakSystem.getPublicState().active
       ? 'outbreak'
