@@ -359,9 +359,20 @@ function getSyncGateUrl() {
   return cfg.SYNC_GATE_URL || FORCE_SYNC_GATE_FALLBACK_URL;
 }
 
-function redirectToSyncGate(reason = 'Telegram sync required for Block Topia progression.', delayMs = 1600) {
+function redirectToSyncGate(
+  reason = 'Telegram sync required for Block Topia progression.',
+  delayMs = 1600,
+  debugPath = 'unknown',
+  confirmedAuthFailure = false,
+) {
   try {
+    if (!confirmedAuthFailure) {
+      hud.showNodeInterference(`Block Topia warning: ${reason}`, 'warning');
+      hud.pushFeed(`⚠ Redirect suppressed [${debugPath}] ${reason}`, 'system');
+      return;
+    }
     hud.showNodeInterference(`Block Topia entry blocked: ${reason}`, 'warning');
+    hud.pushFeed(`🧭 AUTH REDIRECT [${debugPath}]`, 'system');
     hud.pushFeed(`🔐 ${reason}`, 'system');
     hud.pushFeed('Run /gklink in @WIKICOMSBOT to refresh your connection.', 'system');
   } catch {}
@@ -602,7 +613,7 @@ async function ensureRpgEntry() {
   const apiBase = getApiBase();
   const telegramAuth = getTelegramAuth();
   if (!apiBase || !telegramAuth?.hash || !telegramAuth?.auth_date) {
-    redirectToSyncGate('Auth expired. Run /gklink again to enter Block Topia.');
+    redirectToSyncGate('Auth expired. Run /gklink again to enter Block Topia.', 1600, 'ensureRpgEntry:missing-auth', true);
     return false;
   }
   const res = await fetch(`${apiBase}/blocktopia/progression/entry`, {
@@ -618,7 +629,7 @@ async function ensureRpgEntry() {
       hud.showNodeInterference('Not enough XP for Block Topia entry', 'warning');
       hud.pushFeed('🧪 Entry economy: XP required to enter; gems are for upgrades and buffs.', 'system');
     } else if (res.status === 401 || res.status === 403) {
-      redirectToSyncGate('Auth expired. Run /gklink again for Block Topia entry.');
+      redirectToSyncGate('Auth expired. Run /gklink again for Block Topia entry.', 1600, 'ensureRpgEntry:entry-401-403', true);
     } else if (message) {
       hud.showNodeInterference(`Progression unavailable: ${message}`, 'warning');
       hud.pushFeed(`⚠️ Progression unavailable: ${message}`, 'system');
@@ -667,12 +678,12 @@ async function syncMiniGameOutcome(type, outcome) {
 
 async function boot() {
   if (!hasTelegramAuth()) {
-    redirectToSyncGate('Not synced. Run /gklink before entering Block Topia.');
+    redirectToSyncGate('Not synced. Run /gklink before entering Block Topia.', 1600, 'boot:missing-auth', true);
     return;
   }
   const progression = await fetchServerProgression();
   if (progression?.__authError) {
-    redirectToSyncGate(progression?.error || 'Auth expired. Run /gklink again before entering Block Topia.');
+    redirectToSyncGate(progression?.error || 'Auth expired. Run /gklink again before entering Block Topia.', 1600, 'boot:progression-auth-error', true);
     return;
   }
   const playerTier = progression.tier || 1;
@@ -1493,7 +1504,7 @@ async function boot() {
     const server = await fetchMiniGameAffordability(type);
     if (!server?.progression) {
       if (server?.auth_required) {
-        redirectToSyncGate(server?.error || 'Telegram auth required for mini-game entry.');
+        redirectToSyncGate(server?.error || 'Telegram auth required for mini-game entry.', 1600, 'ensureMiniGamePlayable:auth-required', true);
       } else if (server?.error) {
         hud.showNodeInterference(server.error, 'warning');
       }
@@ -1543,7 +1554,7 @@ async function boot() {
     if (server?.auth_required) {
       closeMiniGameOverlays();
       setActiveMiniGame('');
-      redirectToSyncGate(server?.error || 'Telegram auth required for progression sync.');
+      redirectToSyncGate(server?.error || 'Telegram auth required for progression sync.', 1600, 'handleMiniGameOutcome:auth-required', true);
       return;
     }
     if (outcome === 'skip') sessionGuard.skipStreak += 1;
@@ -1789,7 +1800,7 @@ async function boot() {
   bootstrapLoreFeed();
   const initialCovert = await fetchCovertState();
   if (initialCovert?.__authError) {
-    redirectToSyncGate(initialCovert?.error || 'Telegram session expired. Re-sync required.');
+    redirectToSyncGate(initialCovert?.error || 'Telegram session expired. Re-sync required.', 1600, 'boot:initial-covert-auth-error', true);
     return;
   }
   applyCovertSnapshot(initialCovert, 'boot');
@@ -1810,7 +1821,7 @@ async function boot() {
   setInterval(() => {
     fetchServerProgression().then((next) => {
       if (next?.__authError) {
-        redirectToSyncGate(next?.error || 'Telegram session expired. Re-sync required.');
+        redirectToSyncGate(next?.error || 'Telegram session expired. Re-sync required.', 1600, 'poll:progression-auth-error', true);
         return;
       }
       hud.setXp(next.xp || 0);
@@ -1830,7 +1841,7 @@ async function boot() {
   setInterval(() => {
     fetchCovertState().then((next) => {
       if (next?.__authError) {
-        redirectToSyncGate(next?.error || 'Telegram session expired. Re-sync required.');
+        redirectToSyncGate(next?.error || 'Telegram session expired. Re-sync required.', 1600, 'poll:covert-auth-error', true);
         return;
       }
       applyCovertSnapshot(next, 'poll');
