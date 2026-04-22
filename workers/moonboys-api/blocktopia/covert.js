@@ -13,6 +13,7 @@ import {
   BLOCKTOPIA_COVERT_REVIVE_COST,
   BLOCKTOPIA_COVERT_STEALTH_BOOST_COST,
   BLOCKTOPIA_COVERT_SUCCESS_XP,
+  GEM_SOFT_CAP,
   GEMS_MAX,
   GEMS_MIN,
   XP_MAX,
@@ -21,6 +22,15 @@ import {
 import { getOrCreateBlockTopiaProgression } from './db.js';
 import { verifyTelegramIdentityFromBody } from './auth.js';
 import { clamp } from './math.js';
+import {
+  applyPressureDelta,
+  applyRewardCaps,
+  buildEnforcementPayload,
+  buildPressureSignals,
+  enforceCooldown,
+  getNetworkHeatTier,
+  syncPressureDecay,
+} from './enforcement.js';
 
 const AGENT_TYPES = Object.freeze(['infiltrator', 'saboteur', 'recruiter']);
 const BOOST_MS = 30 * 60 * 1000;
@@ -903,6 +913,7 @@ async function loadCovertPressureSnapshot(db, telegramId, progressionRow = null,
     network_heat: {
       value: networkHeat,
       tier: pressureLabel(networkHeat),
+      heat_tier: getNetworkHeatTier(networkHeat),
       decay_interval_ms: NETWORK_HEAT_DECAY_INTERVAL_MS,
       derived_floor: derivedFloor,
       factors: {
@@ -1672,7 +1683,7 @@ async function resolveDueCovertOperations(db, telegramId) {
   for (const row of active.results || []) {
     const node = CONTROL_NODE_BY_ID.get(row.target_node_id);
     if (!node) continue;
-    const progression = await getOrCreateBlockTopiaProgression(db, telegramId);
+    const progression = await syncPressureDecay(db, await getOrCreateBlockTopiaProgression(db, telegramId));
     const pressureSnapshot = await loadCovertPressureSnapshot(db, telegramId, progression);
     const pressure = await recentTargetPressure(db, node);
     const outcome = computeResolution(row, row, pressure, pressureSnapshot);
@@ -1731,6 +1742,36 @@ async function resolveDueCovertOperations(db, telegramId) {
       telegramId,
     ).run();
 
+    const heatTier = getNetworkHeatTier(progression.network_heat);
+    if (outcome.rewardXp > 0) {
+      outcome.rewardXp = Math.max(0, Math.floor(outcome.rewardXp * Math.max(0.25, 1 - (heatTier * 0.08))));
+    }
+    const pressureSignals = await buildPressureSignals(db, progression, {
+      targetType: 'covert_success',
+      targetId: row.target_node_id,
+    });
+    const pressureDelta =
+      (row.operation_type === 'sabotage' ? 5 : row.operation_type === 'recruit' ? 2 : 3)
+      + Math.max(0, pressureSignals.repeatedTargeting);
+    const pressureResult = await applyPressureDelta(db, progression, pressureDelta, {
+      actionType: row.operation_type,
+      reason: outcome.status === 'success' ? 'covert_reward_pressure' : 'covert_failure_pressure',
+      metadata: {
+        operation_id: row.id,
+        node_id: row.target_node_id,
+        repeated_targeting: pressureSignals.repeatedTargeting,
+      },
+      log: outcome.status !== 'success' || pressureDelta > 0,
+    });
+    const cappedRewards = await applyRewardCaps(db, pressureResult.row, {
+      xp: Math.floor(outcome.rewardXp * pressureResult.tier.xpMultiplier),
+      gems: outcome.rewardGems,
+    }, {
+      source: 'covert',
+      actionType: row.operation_type,
+    });
+    outcome.rewardXp = cappedRewards.xp;
+    outcome.rewardGems = cappedRewards.gems;
     if (outcome.rewardXp > 0 || outcome.rewardGems > 0) {
       await db.prepare(`
         UPDATE blocktopia_progression
@@ -1753,10 +1794,12 @@ async function resolveDueCovertOperations(db, telegramId) {
       heat_before: outcome.heatBefore,
       heat_after: outcome.heatAfter,
       network_heat: pressureSnapshot?.network_heat?.value || 0,
+      heat_tier: heatTier,
       local_pressure: outcome.pressure,
       world_effect: worldEffect,
       captured_until: outcome.capturedUntil,
       capture_duration_ms: outcome.captureDurationMs,
+      reward_cap_flags: cappedRewards.flags,
     };
     await logProgressionEvent(db, telegramId, action, row.target_node_id, outcome.rewardXp, outcome.rewardGems, metadata);
     if (outcome.agentStatus === 'exposed') {
@@ -1859,6 +1902,12 @@ async function loadCovertState(db, telegramId) {
       xp: clamp(Number(progression?.xp) || 0, XP_MIN, XP_MAX),
       gems: clamp(Number(progression?.gems) || 0, GEMS_MIN, GEMS_MAX),
       tier: Number(progression?.tier) || 1,
+      network_heat: clamp(Number(progression?.network_heat) || 0, 0, 100),
+      heat_tier: getNetworkHeatTier(progression?.network_heat),
+    },
+    enforcement: buildEnforcementPayload(progression),
+    caps: {
+      gem_soft_cap: GEM_SOFT_CAP,
     },
   };
 }
@@ -1899,6 +1948,18 @@ export async function handleBlockTopiaCovertRoute(request, env, url, helpers) {
   const { body, verified } = auth;
   await applyCovertDecayForUser(env.DB, verified.telegramId);
   await resolveDueCovertOperations(env.DB, verified.telegramId);
+  const progression = await getOrCreateBlockTopiaProgression(env.DB, verified.telegramId);
+  const cooldownGuard = await enforceCooldown(env.DB, progression, {
+    actionType: path.replace('/blocktopia/covert/', ''),
+    reason: 'covert_action',
+  });
+  if (cooldownGuard.blocked) {
+    const state = await loadCovertState(env.DB, verified.telegramId);
+    return json({
+      error: 'Cooldown active. Covert operations are temporarily locked.',
+      ...state,
+    }, 429);
+  }
 
   if (path === '/blocktopia/covert/create') {
     const agentType = normalizeAgentType(body?.agent_type || body?.agentType || body?.type);
@@ -2002,6 +2063,15 @@ export async function handleBlockTopiaCovertRoute(request, env, url, helpers) {
       heat_after: heatAfterDeploy,
       counter_actions: activeCounterActionIds(counterAction),
       route_delay_ms: deployDelayMs + districtDelayMs,
+    });
+    await applyPressureDelta(env.DB, await getOrCreateBlockTopiaProgression(env.DB, verified.telegramId), 6 + Number(activeCount?.n || 0), {
+      actionType: config.operationType,
+      reason: 'covert_deploy_loop',
+      metadata: {
+        agent_id: agentId,
+        operation_id: operationId,
+        node_id: node.id,
+      },
     });
     await updateNetworkHeat(env.DB, verified.telegramId, {
       delta: 4 + Number(activeCount?.n || 0) + (agent.agent_type === 'saboteur' ? 2 : 0),
@@ -2333,6 +2403,16 @@ export async function handleBlockTopiaCovertRoute(request, env, url, helpers) {
       heat_after: heatAfter,
       resolves_at: nextResolveAt,
       counter_actions: activeCounterActionIds(counterAction),
+    });
+    await applyPressureDelta(env.DB, await getOrCreateBlockTopiaProgression(env.DB, verified.telegramId), 8, {
+      actionType: agent.agent_type || 'infiltrator',
+      reason: 'covert_retask_loop',
+      metadata: {
+        agent_id: agentId,
+        operation_id: operation.id,
+        previous_node_id: operation.target_node_id,
+        node_id: node.id,
+      },
     });
     await updateNetworkHeat(env.DB, verified.telegramId, {
       delta: 4 + (agent.agent_type === 'saboteur' ? 2 : 0),

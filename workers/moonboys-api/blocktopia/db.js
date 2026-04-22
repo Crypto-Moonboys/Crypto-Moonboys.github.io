@@ -19,6 +19,13 @@ const BASE_PROGRESSION_DEFAULTS = {
   faction_last_switch: null,
   network_heat: 0,
   network_heat_updated_at: null,
+  player_pressure_score: 0,
+  pps_updated_at: null,
+  cooldown_strikes: 0,
+  last_cooldown_at: null,
+  mini_game_skip_count: 0,
+  mini_game_last_played: null,
+  mini_game_entropy_seed: 0,
   last_active: null,
   updated_at: null,
 };
@@ -38,6 +45,13 @@ async function getBlockTopiaProgressionSchema(db, { forceRefresh = false } = {})
     hasFactionLastSwitch: columns.has('faction_last_switch'),
     hasNetworkHeat: columns.has('network_heat'),
     hasNetworkHeatUpdatedAt: columns.has('network_heat_updated_at'),
+    hasPlayerPressureScore: columns.has('player_pressure_score'),
+    hasPpsUpdatedAt: columns.has('pps_updated_at'),
+    hasCooldownStrikes: columns.has('cooldown_strikes'),
+    hasLastCooldownAt: columns.has('last_cooldown_at'),
+    hasMiniGameSkipCount: columns.has('mini_game_skip_count'),
+    hasMiniGameLastPlayed: columns.has('mini_game_last_played'),
+    hasMiniGameEntropySeed: columns.has('mini_game_entropy_seed'),
   };
 
   PROGRESSION_SCHEMA_CACHE.set(db, {
@@ -60,6 +74,13 @@ export async function getOrCreateBlockTopiaProgression(db, telegramId) {
     hasFactionLastSwitch: false,
     hasNetworkHeat: false,
     hasNetworkHeatUpdatedAt: false,
+    hasPlayerPressureScore: false,
+    hasPpsUpdatedAt: false,
+    hasCooldownStrikes: false,
+    hasLastCooldownAt: false,
+    hasMiniGameSkipCount: false,
+    hasMiniGameLastPlayed: false,
+    hasMiniGameEntropySeed: false,
   }));
   const insertColumns = [
     'telegram_id',
@@ -96,6 +117,34 @@ export async function getOrCreateBlockTopiaProgression(db, telegramId) {
     insertColumns.push('network_heat_updated_at');
     insertPlaceholders.push('CURRENT_TIMESTAMP');
   }
+  if (schema.hasPlayerPressureScore) {
+    insertColumns.push('player_pressure_score');
+    insertPlaceholders.push('0');
+  }
+  if (schema.hasPpsUpdatedAt) {
+    insertColumns.push('pps_updated_at');
+    insertPlaceholders.push('CURRENT_TIMESTAMP');
+  }
+  if (schema.hasCooldownStrikes) {
+    insertColumns.push('cooldown_strikes');
+    insertPlaceholders.push('0');
+  }
+  if (schema.hasLastCooldownAt) {
+    insertColumns.push('last_cooldown_at');
+    insertPlaceholders.push('NULL');
+  }
+  if (schema.hasMiniGameSkipCount) {
+    insertColumns.push('mini_game_skip_count');
+    insertPlaceholders.push('0');
+  }
+  if (schema.hasMiniGameLastPlayed) {
+    insertColumns.push('mini_game_last_played');
+    insertPlaceholders.push('NULL');
+  }
+  if (schema.hasMiniGameEntropySeed) {
+    insertColumns.push('mini_game_entropy_seed');
+    insertPlaceholders.push('0');
+  }
 
   await db.prepare(`
     INSERT INTO blocktopia_progression (${insertColumns.join(', ')})
@@ -123,6 +172,13 @@ export async function getOrCreateBlockTopiaProgression(db, telegramId) {
   if (schema.hasFactionLastSwitch) selectColumns.push('faction_last_switch');
   if (schema.hasNetworkHeat) selectColumns.push('network_heat');
   if (schema.hasNetworkHeatUpdatedAt) selectColumns.push('network_heat_updated_at');
+  if (schema.hasPlayerPressureScore) selectColumns.push('player_pressure_score');
+  if (schema.hasPpsUpdatedAt) selectColumns.push('pps_updated_at');
+  if (schema.hasCooldownStrikes) selectColumns.push('cooldown_strikes');
+  if (schema.hasLastCooldownAt) selectColumns.push('last_cooldown_at');
+  if (schema.hasMiniGameSkipCount) selectColumns.push('mini_game_skip_count');
+  if (schema.hasMiniGameLastPlayed) selectColumns.push('mini_game_last_played');
+  if (schema.hasMiniGameEntropySeed) selectColumns.push('mini_game_entropy_seed');
 
   const row = await db.prepare(
     `SELECT ${selectColumns.join(', ')}
