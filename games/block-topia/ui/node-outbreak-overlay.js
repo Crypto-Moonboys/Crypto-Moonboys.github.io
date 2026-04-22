@@ -41,7 +41,7 @@ export function createNodeOutbreakOverlay(doc, { onAction } = {}) {
         <button type="button" data-upgrade="neutralization">Neutralization + [R]</button>
       </div>
       <p class="outbreak-traits" id="outbreak-traits"></p>
-      <p class="outbreak-hint">Node lock required. Use `1-4` for actions, `Q/W/R` for upgrades, `K` to skip.</p>
+      <p class="outbreak-hint">Node lock required. Use 1-4 for actions, Q/W/R for upgrades, K to skip.</p>
       <ul class="outbreak-log" id="outbreak-log"></ul>
     </div>
   `;
