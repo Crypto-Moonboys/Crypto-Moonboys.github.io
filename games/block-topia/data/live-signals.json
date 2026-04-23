@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-04-23T12:39:56.400Z",
+  "generatedAt": "2026-04-23T15:13:08.802Z",
   "mode": "live-ai",
   "sourceHealth": {
     "coingecko-global": "ok",
@@ -8,71 +8,87 @@
     "fear-greed": "ok",
     "openai": "ok"
   },
-  "signalCount": 4,
+  "signalCount": 5,
   "signals": [
     {
-      "id": "signal-1776947996399-1",
+      "id": "signal-1776957188801-1",
       "lane": "world",
       "priority": 4,
-      "ttlMinutes": 120,
-      "npcLine": "Crypto streets run cold; trust is thinning fast.",
-      "questPulse": "Market pulse dropping, danger lurking in every trade.",
-      "worldFeed": "Digital wealth ebbs, shadows grow on the neon skyline.",
-      "clueEvent": "Sudden market shifts spark whispers of sabotage.",
+      "ttlMinutes": 45,
+      "npcLine": "Crypto markets shudder; pulse fades across neon bazaars.",
+      "questPulse": "Scan for dips; old coins lose grip in shadowed streets.",
+      "worldFeed": "Global credits bleed; digital ledgers flicker with fear.",
+      "clueEvent": "Market cap contracts—a ghost in the machine stirs.",
       "tags": [
         "crypto",
-        "fear",
-        "marketcrash"
+        "market",
+        "decline"
       ],
-      "expiresAt": "2026-04-23T14:39:56.399Z"
+      "expiresAt": "2026-04-23T15:58:08.801Z"
     },
     {
-      "id": "signal-1776947996400-2",
+      "id": "signal-1776957188802-2",
       "lane": "ops",
       "priority": 3,
-      "ttlMinutes": 90,
-      "npcLine": "SPK spikes just got noticed by net runners.",
-      "questPulse": "Unstable tokens flicker; perfect for extraction ops.",
-      "worldFeed": "Rising buzz around banned digital coins; heat intensifies.",
-      "clueEvent": "Encrypted chatter hints at hidden asset movements.",
+      "ttlMinutes": 30,
+      "npcLine": "Data nodes report rising tension around BTC shadows.",
+      "questPulse": "Extract intel on key cryptos; volatility spikes in dark net.",
+      "worldFeed": "Network whispers: dominant currency stumbles, rivals circle.",
+      "clueEvent": "Trending chip tokens overheating; watch for sudden crashes.",
       "tags": [
-        "tokens",
-        "spk",
-        "extraction"
+        "intel",
+        "operations",
+        "crypto"
       ],
-      "expiresAt": "2026-04-23T14:09:56.400Z"
+      "expiresAt": "2026-04-23T15:43:08.802Z"
     },
     {
-      "id": "signal-1776947996400-3",
+      "id": "signal-1776957188802-3",
       "lane": "clue",
-      "priority": 2,
+      "priority": 5,
       "ttlMinutes": 60,
-      "npcLine": "RAVE's strange activity triggers security bots nearby.",
-      "questPulse": "New data points glowing in the neural net's dark.",
-      "worldFeed": "Cryptic patterns emerge on AstroNet, possible hack alerts.",
-      "clueEvent": "Unusual transaction trails traced to abandoned nodes.",
+      "npcLine": "Fear index climbs—cyber traders jitter in the gloom.",
+      "questPulse": "Trace market cap vulnerabilities; exploit uncertainties in coin flow.",
+      "worldFeed": "Cryptoverse unstable: thousands of assets flickering at once.",
+      "clueEvent": "Signal: microdecay in digital asset integrity detected.",
       "tags": [
-        "rave",
-        "hack",
-        "clues"
+        "fear",
+        "instability",
+        "crypto"
       ],
-      "expiresAt": "2026-04-23T13:39:56.400Z"
+      "expiresAt": "2026-04-23T16:13:08.802Z"
     },
     {
-      "id": "signal-1776947996400-4",
+      "id": "signal-1776957188802-4",
       "lane": "quest",
-      "priority": 5,
-      "ttlMinutes": 180,
-      "npcLine": "Pengu token's rise means a jackpot run—risk high.",
-      "questPulse": "Venture into unstable markets before the fear spikes.",
-      "worldFeed": "Digital market volatility promises lucrative bounties.",
-      "clueEvent": "Shadow syndicates recruit fresh runners for token raids.",
+      "priority": 2,
+      "ttlMinutes": 40,
+      "npcLine": "New tokens rise but lack trust; a gamble in neon haze.",
+      "questPulse": "Chase volatile tokens RAVE and SPK; uncover hidden patterns.",
+      "worldFeed": "Exchanges teem with unstable currency flares amid market gloom.",
+      "clueEvent": "Fragmented trade volumes hint at unseen manipulations.",
       "tags": [
-        "pengu",
-        "highrisk",
-        "quest"
+        "trending",
+        "cryptos",
+        "volatility"
       ],
-      "expiresAt": "2026-04-23T15:39:56.400Z"
+      "expiresAt": "2026-04-23T15:53:08.802Z"
+    },
+    {
+      "id": "signal-1776957188802-5",
+      "lane": "npc",
+      "priority": 3,
+      "ttlMinutes": 50,
+      "npcLine": "Old netrats mumble about fading yields; caution thick as smog.",
+      "questPulse": "Engage with street brokers; rumors point to breaking cycles.",
+      "worldFeed": "Digital rumors trace shifting alliances in crypto syndicates.",
+      "clueEvent": "NPC chatter marks timing of market tremors.",
+      "tags": [
+        "npc",
+        "rumor",
+        "crypto"
+      ],
+      "expiresAt": "2026-04-23T16:03:08.802Z"
     }
   ]
 }
