@@ -27,6 +27,12 @@
   const NODE_MAX_RADIUS = 18;
   const EDGE_ALPHA_BASE = 0.25;
   const EDGE_ALPHA_HOVER = 0.7;
+  const MIN_ZOOM = 0.15;
+  const MAX_ZOOM = 2.2;
+  const MIN_CANVAS_HEIGHT = 280;
+  const MIN_VIEWPORT_PADDING = 28;
+  const MAX_VIEWPORT_PADDING = 110;
+  const VIEWPORT_PADDING_RATIO = 0.12;
 
   // Force simulation parameters
   const ITERATIONS      = 400;
@@ -444,7 +450,7 @@
     panX = cx - factor * (cx - panX);
     panY = cy - factor * (cy - panY);
     zoom *= factor;
-    zoom = Math.max(0.15, Math.min(zoom, 8));
+    zoom = Math.max(MIN_ZOOM, Math.min(zoom, MAX_ZOOM));
     hasUserAdjustedView = true;
     draw();
   }
@@ -510,7 +516,7 @@
       if (lastTouchDist > 0) {
         const factor = dist / lastTouchDist;
         zoom *= factor;
-        zoom = Math.max(0.15, Math.min(zoom, 8));
+        zoom = Math.max(MIN_ZOOM, Math.min(zoom, MAX_ZOOM));
         hasUserAdjustedView = true;
         draw();
       }
@@ -605,7 +611,7 @@
     const prevW = canvas.width || 0;
     const prevH = canvas.height || 0;
     const w = container.clientWidth;
-    const h = Math.max(container.clientHeight, 280);
+    const h = Math.max(container.clientHeight, MIN_CANVAS_HEIGHT);
     canvas.width  = w;
     canvas.height = h;
     if (!graphData || !nodePositions.length) return;
@@ -631,10 +637,13 @@
     }
     const spanX = Math.max(maxX - minX, 1);
     const spanY = Math.max(maxY - minY, 1);
-    const pad = Math.max(28, Math.min(Math.min(canvas.width, canvas.height) * 0.12, 110));
+    const pad = Math.max(
+      MIN_VIEWPORT_PADDING,
+      Math.min(Math.min(canvas.width, canvas.height) * VIEWPORT_PADDING_RATIO, MAX_VIEWPORT_PADDING),
+    );
     const fitW = Math.max(canvas.width - pad * 2, 1);
     const fitH = Math.max(canvas.height - pad * 2, 1);
-    const nextZoom = Math.max(0.15, Math.min(Math.min(fitW / spanX, fitH / spanY), 2.2));
+    const nextZoom = Math.max(MIN_ZOOM, Math.min(Math.min(fitW / spanX, fitH / spanY), MAX_ZOOM));
     const centerX = (minX + maxX) / 2;
     const centerY = (minY + maxY) / 2;
     zoom = nextZoom;
