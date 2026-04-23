@@ -84,6 +84,8 @@ const COVERT_HEAT_DECAY_PER_TICK = 0.8;
 const COVERT_OP_SUCCESS_CONTROL = 10;
 const COVERT_FAILURE_SAM_PRESSURE = 8;
 const COVERT_DEPLOY_COOLDOWN_MS = 8000;
+const COVERT_SUCCESS_SAM_INSTABILITY_DISRUPT = 8;
+const COVERT_SUCCESS_SAM_INSTABILITY_ASSIST = -4;
 
 const WORLD_DISTRICTS = [
   { id: 'neon-slums', name: 'Neon Slums' },
@@ -1781,7 +1783,7 @@ export class CityRoom extends Room {
     this.emitSystemEvent(`🕵️ Covert operative deployed to ${nodeId}`);
   }
 
-  handleExtractOperative(client, data) {  // eslint-disable-line no-unused-vars
+  handleExtractOperative(client) {
     const result = this.covertOps.extractOperative(client.sessionId);
     if (result.error) {
       client.send('system', { message: `Extract rejected: ${result.error}` });
@@ -1835,7 +1837,9 @@ export class CityRoom extends Room {
           node.covertHeat = Math.max(0, (node.covertHeat || 0) - COVERT_SUCCESS_HEAT_DECAY);
           node.samInstability = Math.max(
             0,
-            (node.samInstability || 0) + (operative.intent === 'disrupt' ? 8 : -4),
+            (node.samInstability || 0) + (operative.intent === 'disrupt'
+              ? COVERT_SUCCESS_SAM_INSTABILITY_DISRUPT
+              : COVERT_SUCCESS_SAM_INSTABILITY_ASSIST),
           );
           if (node.control >= 15) node.owner = 'Liberators';
           else if (node.control <= -15) node.owner = 'Wardens';
