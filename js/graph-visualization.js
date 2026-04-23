@@ -56,6 +56,8 @@
   let canvas, ctx, infoPanel, searchBox;
   let animFrame = null;
   let layoutDone = false;
+  let graphReady = false;
+  let hasUserAdjustedView = false;
 
   // ── Entry point ──────────────────────────────────────────────────────────
   function init() {
@@ -63,6 +65,9 @@
     ctx       = canvas.getContext('2d');
     infoPanel = document.getElementById('graph-info');
     searchBox = document.getElementById('graph-search');
+    if (canvas && canvas.parentElement) {
+      canvas.parentElement.classList.remove('is-ready');
+    }
 
     resizeCanvas();
     window.addEventListener('resize', resizeCanvas);
@@ -99,8 +104,9 @@
         graphData = data;
         buildFilterOptions(data.nodes);
         buildGraph(data.nodes, data.edges);
-        setStatus('');
+        setStatus('Computing layout…');
         runLayout();
+        setStatus('');
       })
       .catch(err => {
         setStatus('Failed to load graph data: ' + err.message);
@@ -163,26 +169,15 @@
   // ── Force layout ─────────────────────────────────────────────────────────
   function runLayout() {
     layoutDone = false;
-    let step = 0;
-
-    function tick() {
-      if (step >= ITERATIONS) {
-        layoutDone = true;
-        draw();
-        return;
-      }
-
-      // Cool down factor
-      const cool = 1 - step / ITERATIONS;
-
-      simulateStep(cool);
-      step++;
-      draw();
-      animFrame = requestAnimationFrame(tick);
-    }
-
     if (animFrame) cancelAnimationFrame(animFrame);
-    animFrame = requestAnimationFrame(tick);
+    for (let step = 0; step < ITERATIONS; step++) {
+      const cool = 1 - step / ITERATIONS;
+      simulateStep(cool);
+    }
+    layoutDone = true;
+    fitGraphToViewport();
+    revealGraph();
+    draw();
   }
 
   function simulateStep(cool) {
@@ -373,11 +368,13 @@
   }
 
   function onMouseMove(e) {
+    if (!graphReady) return;
     const rect = canvas.getBoundingClientRect();
     const cx = e.clientX - rect.left;
     const cy = e.clientY - rect.top;
 
     if (isPanning) {
+      hasUserAdjustedView = true;
       panX += cx - panStartX;
       panY += cy - panStartY;
       panStartX = cx;
@@ -407,6 +404,7 @@
   }
 
   function onMouseDown(e) {
+    if (!graphReady) return;
     const rect = canvas.getBoundingClientRect();
     const cx = e.clientX - rect.left;
     const cy = e.clientY - rect.top;
@@ -428,6 +426,7 @@
   }
 
   function onMouseUp() {
+    if (!graphReady) return;
     isDragging = false;
     dragNode   = null;
     isPanning  = false;
@@ -435,6 +434,7 @@
   }
 
   function onWheel(e) {
+    if (!graphReady) return;
     e.preventDefault();
     const factor = e.deltaY < 0 ? 1.1 : 0.9;
     const rect = canvas.getBoundingClientRect();
@@ -445,12 +445,14 @@
     panY = cy - factor * (cy - panY);
     zoom *= factor;
     zoom = Math.max(0.15, Math.min(zoom, 8));
+    hasUserAdjustedView = true;
     draw();
   }
 
   // Touch helpers
   let lastTouchDist = 0;
   function onTouchStart(e) {
+    if (!graphReady) return;
     e.preventDefault();
     if (e.touches.length === 1) {
       const t = e.touches[0];
@@ -479,6 +481,7 @@
   }
 
   function onTouchMove(e) {
+    if (!graphReady) return;
     e.preventDefault();
     if (e.touches.length === 1) {
       const t = e.touches[0];
@@ -486,6 +489,7 @@
       const cx = t.clientX - rect.left;
       const cy = t.clientY - rect.top;
       if (isPanning) {
+        hasUserAdjustedView = true;
         panX += cx - panStartX;
         panY += cy - panStartY;
         panStartX = cx;
@@ -507,6 +511,7 @@
         const factor = dist / lastTouchDist;
         zoom *= factor;
         zoom = Math.max(0.15, Math.min(zoom, 8));
+        hasUserAdjustedView = true;
         draw();
       }
       lastTouchDist = dist;
@@ -514,6 +519,7 @@
   }
 
   function onTouchEnd() {
+    if (!graphReady) return;
     isDragging = false;
     dragNode   = null;
     isPanning  = false;
@@ -544,7 +550,8 @@
 
   // ── Controls ─────────────────────────────────────────────────────────────
   function resetView() {
-    panX = 0; panY = 0; zoom = 1;
+    hasUserAdjustedView = false;
+    fitGraphToViewport();
     draw();
   }
 
@@ -554,6 +561,7 @@
       p.visible = (filterCategory === 'all') ||
                   (p.node.category || 'unknown').toLowerCase() === filterCategory;
     }
+    fitGraphToViewport();
     draw();
   }
 
@@ -562,6 +570,7 @@
     if (!q) {
       for (const p of nodePositions) p.visible = true;
       hoveredNode = null;
+      fitGraphToViewport();
       draw();
       return;
     }
@@ -573,6 +582,7 @@
       hoveredNode = match.node;
       showInfo(match.node);
     }
+    fitGraphToViewport();
     draw();
   }
 
@@ -590,12 +600,53 @@
 
   // ── Canvas resize ─────────────────────────────────────────────────────────
   function resizeCanvas() {
+    if (!canvas) return;
     const container = canvas.parentElement;
+    const prevW = canvas.width || 0;
+    const prevH = canvas.height || 0;
     const w = container.clientWidth;
-    const h = Math.max(container.clientHeight, 320);
+    const h = Math.max(container.clientHeight, 280);
     canvas.width  = w;
     canvas.height = h;
-    if (graphData && nodePositions.length) draw();
+    if (!graphData || !nodePositions.length) return;
+    if (!hasUserAdjustedView || !layoutDone) {
+      fitGraphToViewport();
+    } else if (prevW && prevH) {
+      panX += (w - prevW) / 2;
+      panY += (h - prevH) / 2;
+    }
+    draw();
+  }
+
+  function fitGraphToViewport() {
+    const visible = nodePositions.filter(p => p.visible);
+    if (!visible.length || !canvas) return;
+    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+    for (const p of visible) {
+      const r = p.radius;
+      minX = Math.min(minX, p.x - r);
+      minY = Math.min(minY, p.y - r);
+      maxX = Math.max(maxX, p.x + r);
+      maxY = Math.max(maxY, p.y + r);
+    }
+    const spanX = Math.max(maxX - minX, 1);
+    const spanY = Math.max(maxY - minY, 1);
+    const pad = Math.max(28, Math.min(Math.min(canvas.width, canvas.height) * 0.12, 110));
+    const fitW = Math.max(canvas.width - pad * 2, 1);
+    const fitH = Math.max(canvas.height - pad * 2, 1);
+    const nextZoom = Math.max(0.15, Math.min(Math.min(fitW / spanX, fitH / spanY), 2.2));
+    const centerX = (minX + maxX) / 2;
+    const centerY = (minY + maxY) / 2;
+    zoom = nextZoom;
+    panX = canvas.width / 2 - centerX * zoom;
+    panY = canvas.height / 2 - centerY * zoom;
+  }
+
+  function revealGraph() {
+    graphReady = true;
+    if (canvas && canvas.parentElement) {
+      canvas.parentElement.classList.add('is-ready');
+    }
   }
 
   // ── Bootstrap ─────────────────────────────────────────────────────────────

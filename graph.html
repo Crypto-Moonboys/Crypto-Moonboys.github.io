@@ -79,20 +79,24 @@
     }
 
     /* ── Main graph area ─────────────────────────────────────────────────── */
+    body.graph-page #content {
+      max-width: none;
+      padding: 20px 24px 44px;
+    }
     .graph-main {
       display: flex;
-      gap: 0;
-      /* Keep a stable desktop graph viewport without crowding footer/toolbar. */
-      height: clamp(320px, 58vh, 560px);
-      min-height: 0;
-      max-height: none;
-      overflow: hidden;
+      gap: 18px;
+      align-items: stretch;
+      min-height: clamp(360px, 64vh, 760px);
+      overflow: visible;
     }
     .graph-canvas-wrap {
       flex: 1 1 0;
       min-width: 0;
       position: relative;
+      min-height: clamp(360px, 64vh, 760px);
       background: transparent;
+      overflow: visible;
     }
     #graph-canvas {
       display: block;
@@ -100,6 +104,11 @@
       height: 100%;
       cursor: grab;
       touch-action: none;
+      opacity: 0;
+      transition: opacity .12s linear;
+    }
+    .graph-canvas-wrap.is-ready #graph-canvas {
+      opacity: 1;
     }
 
     /* ── Info sidebar ───────────────────────────────────────────────────── */
@@ -197,8 +206,8 @@
       padding: 10px 24px;
       font-size: .75rem;
       color: var(--color-text-muted);
-      border-top: 1px solid var(--color-border);
-      background: var(--color-surface);
+      border-top: none;
+      background: transparent;
     }
     .graph-help span { margin-right: 14px; }
 
@@ -214,11 +223,14 @@
     @media (max-width: 640px) {
       .graph-info-panel { display: none; }
       /* Slightly shorter viewport on narrow screens to prevent vertical overlap. */
-      .graph-main { height: clamp(260px, 46vh, 380px); }
+      .graph-main,
+      .graph-canvas-wrap {
+        min-height: clamp(280px, 52vh, 440px);
+      }
     }
   </style>
 </head>
-<body>
+<body class="graph-page">
 
 <a class="skip-link" href="#content">Skip to content</a>
 
