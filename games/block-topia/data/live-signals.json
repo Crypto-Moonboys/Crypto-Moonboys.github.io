@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-04-23T15:13:08.802Z",
+  "generatedAt": "2026-04-23T17:01:22.309Z",
   "mode": "live-ai",
   "sourceHealth": {
     "coingecko-global": "ok",
@@ -11,84 +11,84 @@
   "signalCount": 5,
   "signals": [
     {
-      "id": "signal-1776957188801-1",
+      "id": "signal-1776963682309-1",
       "lane": "world",
       "priority": 4,
-      "ttlMinutes": 45,
-      "npcLine": "Crypto markets shudder; pulse fades across neon bazaars.",
-      "questPulse": "Scan for dips; old coins lose grip in shadowed streets.",
-      "worldFeed": "Global credits bleed; digital ledgers flicker with fear.",
-      "clueEvent": "Market cap contracts—a ghost in the machine stirs.",
+      "ttlMinutes": 60,
+      "npcLine": "Crypto tides turn dark, whispers of shrinking stacks echo.",
+      "questPulse": "Market cap bleeding, shadows close on digital credits.",
+      "worldFeed": "Global crypto shimmer fades amid rising digital fear.",
+      "clueEvent": "Declining value stirs unrest in neon bazaars.",
       "tags": [
         "crypto",
         "market",
-        "decline"
+        "fear"
       ],
-      "expiresAt": "2026-04-23T15:58:08.801Z"
+      "expiresAt": "2026-04-23T18:01:22.309Z"
     },
     {
-      "id": "signal-1776957188802-2",
+      "id": "signal-1776963682309-2",
       "lane": "ops",
       "priority": 3,
-      "ttlMinutes": 30,
-      "npcLine": "Data nodes report rising tension around BTC shadows.",
-      "questPulse": "Extract intel on key cryptos; volatility spikes in dark net.",
-      "worldFeed": "Network whispers: dominant currency stumbles, rivals circle.",
-      "clueEvent": "Trending chip tokens overheating; watch for sudden crashes.",
+      "ttlMinutes": 45,
+      "npcLine": "MOVR gears rev; new code breaks silence in the net.",
+      "questPulse": "MOVR surges quietly against the dismal market flow.",
+      "worldFeed": "MOVR flickers with potential amid widespread digital gloom.",
+      "clueEvent": "Unseen forces boost MOVR's signal in data fog.",
       "tags": [
-        "intel",
-        "operations",
-        "crypto"
+        "movr",
+        "crypto",
+        "trending"
       ],
-      "expiresAt": "2026-04-23T15:43:08.802Z"
+      "expiresAt": "2026-04-23T17:46:22.309Z"
     },
     {
-      "id": "signal-1776957188802-3",
+      "id": "signal-1776963682309-3",
       "lane": "clue",
+      "priority": 2,
+      "ttlMinutes": 30,
+      "npcLine": "SOMPI’s trace blips intensify; code fragments found nearby.",
+      "questPulse": "SOMPI rising beneath market's dark pulse, hidden paths emerge.",
+      "worldFeed": "SOMPI nodes activate across shadowed networks.",
+      "clueEvent": "Encrypted SOMPI patterns detected in darknet chatter.",
+      "tags": [
+        "sompi",
+        "crypto",
+        "signal"
+      ],
+      "expiresAt": "2026-04-23T17:31:22.309Z"
+    },
+    {
+      "id": "signal-1776963682309-4",
+      "lane": "quest",
       "priority": 5,
-      "ttlMinutes": 60,
-      "npcLine": "Fear index climbs—cyber traders jitter in the gloom.",
-      "questPulse": "Trace market cap vulnerabilities; exploit uncertainties in coin flow.",
-      "worldFeed": "Cryptoverse unstable: thousands of assets flickering at once.",
-      "clueEvent": "Signal: microdecay in digital asset integrity detected.",
+      "ttlMinutes": 90,
+      "npcLine": "Fear grips data veins; operators brace for cyber downturn.",
+      "questPulse": "Sentiment sagging low, chaos brews in code markets.",
+      "worldFeed": "Digital dread spikes, traders vanish into neon haze.",
+      "clueEvent": "Rising fear index triggers black market net movements.",
       "tags": [
         "fear",
-        "instability",
-        "crypto"
+        "sentiment",
+        "crisis"
       ],
-      "expiresAt": "2026-04-23T16:13:08.802Z"
+      "expiresAt": "2026-04-23T18:31:22.309Z"
     },
     {
-      "id": "signal-1776957188802-4",
-      "lane": "quest",
-      "priority": 2,
-      "ttlMinutes": 40,
-      "npcLine": "New tokens rise but lack trust; a gamble in neon haze.",
-      "questPulse": "Chase volatile tokens RAVE and SPK; uncover hidden patterns.",
-      "worldFeed": "Exchanges teem with unstable currency flares amid market gloom.",
-      "clueEvent": "Fragmented trade volumes hint at unseen manipulations.",
-      "tags": [
-        "trending",
-        "cryptos",
-        "volatility"
-      ],
-      "expiresAt": "2026-04-23T15:53:08.802Z"
-    },
-    {
-      "id": "signal-1776957188802-5",
+      "id": "signal-1776963682309-5",
       "lane": "npc",
       "priority": 3,
       "ttlMinutes": 50,
-      "npcLine": "Old netrats mumble about fading yields; caution thick as smog.",
-      "questPulse": "Engage with street brokers; rumors point to breaking cycles.",
-      "worldFeed": "Digital rumors trace shifting alliances in crypto syndicates.",
-      "clueEvent": "NPC chatter marks timing of market tremors.",
+      "npcLine": "SPK sparkles briefly before fading into data void.",
+      "questPulse": "Small gains for SPK lost in looming market storm.",
+      "worldFeed": "SPK streaks across the grid, then silent once more.",
+      "clueEvent": "Burst of SPK activity spotted in sector ##G.",
       "tags": [
-        "npc",
-        "rumor",
-        "crypto"
+        "spk",
+        "crypto",
+        "trend"
       ],
-      "expiresAt": "2026-04-23T16:03:08.802Z"
+      "expiresAt": "2026-04-23T17:51:22.309Z"
     }
   ]
 }
