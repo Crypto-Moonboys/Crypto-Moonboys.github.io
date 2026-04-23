@@ -258,10 +258,6 @@
     ctx.save();
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    // Background
-    ctx.fillStyle = '#0d1117';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-
     ctx.translate(panX, panY);
     ctx.scale(zoom, zoom);
 
@@ -596,7 +592,7 @@
   function resizeCanvas() {
     const container = canvas.parentElement;
     const w = container.clientWidth;
-    const h = Math.max(window.innerHeight * 0.65, 400);
+    const h = Math.max(container.clientHeight, 320);
     canvas.width  = w;
     canvas.height = h;
     if (graphData && nodePositions.length) draw();

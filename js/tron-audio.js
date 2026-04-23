@@ -19,6 +19,9 @@
   let lastHoverAt = 0;
   let lastContextTryAt = 0;
   let ambientNode = null;
+  let userInteracted = false;
+  let unlockListenersBound = false;
+  let resumePromise = null;
 
   function safeNow() {
     return (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
@@ -37,23 +40,44 @@
     try { localStorage.setItem(AUDIO_KEY, v ? '1' : '0'); } catch (_) {}
   }
 
-  function getContext() {
+  function getContext(allowCreate) {
     if (audioCtx) return audioCtx;
+    if (!allowCreate) return null;
     const Ctx = window.AudioContext || window.webkitAudioContext;
     if (!Ctx) return null;
     audioCtx = new Ctx();
     return audioCtx;
   }
 
-  function ensureReady() {
+  function ensureReady(opts = {}) {
+    const fromGesture = !!opts.fromGesture;
+    const allowCreate = !!opts.allowCreate;
+    if (fromGesture) userInteracted = true;
     const now = safeNow();
     if (ready) return true;
-    if (now - lastContextTryAt < MIN_CONTEXT_RETRY_MS) return false;
+    if (!fromGesture && now - lastContextTryAt < MIN_CONTEXT_RETRY_MS) return false;
     lastContextTryAt = now;
-    const ctx = getContext();
+    const canBootContext = userInteracted || fromGesture;
+    const ctx = getContext(allowCreate && canBootContext);
     if (!ctx) return false;
+    if (ctx.state === 'closed') {
+      audioCtx = null;
+      return false;
+    }
     if (ctx.state === 'suspended') {
-      ctx.resume().catch(() => {});
+      if (!canBootContext) return false;
+      if (!resumePromise) {
+        resumePromise = ctx.resume()
+          .catch(() => {})
+          .then(() => {
+            ready = ctx.state === 'running';
+            return ready;
+          })
+          .finally(() => {
+            resumePromise = null;
+          });
+      }
+      return false;
     }
     ready = ctx.state === 'running';
     return ready;
@@ -72,8 +96,9 @@
   }
 
   function playTone(opts) {
-    const ctx = getContext();
-    if (!ctx || !enabled || !ensureReady()) return;
+    if (!enabled || !ensureReady()) return;
+    const ctx = audioCtx;
+    if (!ctx) return;
 
     const now = ctx.currentTime;
     const osc = ctx.createOscillator();
@@ -116,7 +141,7 @@
   }
 
   function stopAmbient() {
-    if (!ambientNode) return;
+    if (!ambientNode || !audioCtx) return;
     try {
       ambientNode.gain.cancelScheduledValues(audioCtx.currentTime);
       ambientNode.gain.setTargetAtTime(0.0001, audioCtx.currentTime, 0.08);
@@ -132,8 +157,9 @@
   }
 
   function startAmbient() {
-    const ctx = getContext();
-    if (!ctx || !enabled || !ensureReady() || ambientNode) return;
+    if (!enabled || ambientNode || !ensureReady()) return;
+    const ctx = audioCtx;
+    if (!ctx) return;
     const source = ctx.createOscillator();
     const gain = ctx.createGain();
     source.type = 'sine';
@@ -154,17 +180,37 @@
     }
   }
 
-  function init() {
-    enabled = readEnabledSetting();
-    ensureReady();
+  function bindUnlockListeners() {
+    if (unlockListenersBound) return;
+    window.addEventListener('pointerdown', init, { passive: true });
+    window.addEventListener('keydown', init, { passive: true });
+    window.addEventListener('touchstart', init, { passive: true });
+    unlockListenersBound = true;
+  }
+
+  function removeUnlockListeners() {
+    if (!unlockListenersBound) return;
     window.removeEventListener('pointerdown', init);
     window.removeEventListener('keydown', init);
     window.removeEventListener('touchstart', init);
+    unlockListenersBound = false;
   }
 
-  window.addEventListener('pointerdown', init, { once: true, passive: true });
-  window.addEventListener('keydown', init, { once: true, passive: true });
-  window.addEventListener('touchstart', init, { once: true, passive: true });
+  function init(event) {
+    enabled = readEnabledSetting();
+    const fromGesture = !!(event && event.isTrusted);
+    if (event && !fromGesture) return;
+    const unlocked = ensureReady({ allowCreate: fromGesture, fromGesture });
+    if (unlocked) {
+      removeUnlockListeners();
+    } else if (resumePromise) {
+      resumePromise.then((isReady) => {
+        if (isReady) removeUnlockListeners();
+      });
+    }
+  }
+
+  bindUnlockListeners();
 
   window.TRON_AUDIO = {
     get ready() { return ready; },

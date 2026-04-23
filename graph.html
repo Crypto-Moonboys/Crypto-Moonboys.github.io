@@ -51,6 +51,9 @@
       padding: 5px 10px;
       font-size: .85rem;
     }
+    .graph-toolbar input[type="search"] {
+      width: min(190px, 46vw);
+    }
     .graph-toolbar select:focus,
     .graph-toolbar input[type="search"]:focus {
       outline: 2px solid var(--color-accent);
@@ -72,22 +75,23 @@
       font-size: .8rem;
       color: var(--color-text-muted);
       margin-left: auto;
+      text-align: right;
     }
 
     /* ── Main graph area ─────────────────────────────────────────────────── */
     .graph-main {
       display: flex;
       gap: 0;
-      height: calc(50vh - 20px);
-      min-height: 300px;
-      max-height: 480px;
+      height: clamp(320px, 58vh, 560px);
+      min-height: 0;
+      max-height: none;
       overflow: hidden;
     }
     .graph-canvas-wrap {
       flex: 1 1 0;
       min-width: 0;
       position: relative;
-      background: #0d1117;
+      background: transparent;
     }
     #graph-canvas {
       display: block;
@@ -156,6 +160,10 @@
       text-decoration: none;
     }
     .ginfo-link:hover { background: var(--color-accent-dark); color: #000; text-decoration: none; }
+    .graph-info-placeholder {
+      color: var(--color-text-muted);
+      font-size: .8rem;
+    }
 
     /* ── Legend ─────────────────────────────────────────────────────────── */
     .graph-legend {
@@ -193,9 +201,17 @@
     }
     .graph-help span { margin-right: 14px; }
 
+    @media (max-width: 920px) {
+      .graph-status {
+        flex-basis: 100%;
+        margin-left: 0;
+        text-align: left;
+      }
+    }
+
     @media (max-width: 640px) {
       .graph-info-panel { display: none; }
-      .graph-main { height: calc(45vh - 20px); min-height: 260px; max-height: 380px; }
+      .graph-main { height: clamp(260px, 46vh, 380px); }
     }
   </style>
 </head>
@@ -282,7 +298,7 @@
       </select>
 
       <label for="graph-search">Search:</label>
-      <input type="search" id="graph-search" placeholder="Find entity…" aria-label="Search entity" autocomplete="off" style="width:160px">
+      <input type="search" id="graph-search" placeholder="Find entity…" aria-label="Search entity" autocomplete="off">
 
       <button id="graph-reset-btn" type="button">Reset view</button>
 
@@ -297,7 +313,7 @@
       <aside class="graph-info-panel" aria-label="Node details">
         <h3>Node Details</h3>
         <div id="graph-info">
-          <p style="color:var(--color-text-muted);font-size:.8rem">Click or hover a node to see details.</p>
+          <p class="graph-info-placeholder">Click or hover a node to see details.</p>
         </div>
 
         <div class="graph-legend">
