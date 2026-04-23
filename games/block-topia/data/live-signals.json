@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-04-23T02:44:01.871Z",
+  "generatedAt": "2026-04-23T05:31:55.165Z",
   "mode": "live-ai",
   "sourceHealth": {
     "coingecko-global": "ok",
@@ -8,67 +8,87 @@
     "fear-greed": "ok",
     "openai": "ok"
   },
-  "signalCount": 4,
+  "signalCount": 5,
   "signals": [
     {
-      "id": "signal-1776912241871-1",
+      "id": "signal-1776922315165-1",
       "lane": "world",
       "priority": 4,
       "ttlMinutes": 45,
-      "npcLine": "Markets flicker; fear hangs thick in the neon air.",
-      "questPulse": "Find the cause behind the sudden crypto jitters.",
-      "worldFeed": "Crypto markets wobble, cautious eyes watch digital gold.",
-      "clueEvent": "Unstable assets spark shadow trades under streetlamp glow.",
+      "npcLine": "Market haze thickens, digital credits slip into red shadows.",
+      "questPulse": "Cap values dive, avoid unstable exchanges tonight.",
+      "worldFeed": "Crypto realm flickers under bearish storm, fear grips nets.",
+      "clueEvent": "Signs of mass sell-off in holographic marketplaces.",
       "tags": [
+        "market",
         "fear",
-        "market-uncertainty"
+        "crypto"
       ],
-      "expiresAt": "2026-04-23T03:29:01.871Z"
+      "expiresAt": "2026-04-23T06:16:55.165Z"
     },
     {
-      "id": "signal-1776912241871-2",
+      "id": "signal-1776922315165-2",
       "lane": "ops",
       "priority": 3,
       "ttlMinutes": 30,
-      "npcLine": "SPK and ASTEROID buzz hotter than static tonight.",
-      "questPulse": "Extract data on trending tokens stirring the underground.",
-      "worldFeed": "Two tokens rise amid market whispers and shadow deals.",
-      "clueEvent": "Encrypted channels leak chatter on CHIP and PENGU spikes.",
+      "npcLine": "Zero trust on risky tokens; secure your wallets tight.",
+      "questPulse": "Investigate flagged alt-coin spikes in neon districts.",
+      "worldFeed": "Signals show volatility; traders err on the side of caution.",
+      "clueEvent": "Unstable asset signatures detected in edge node scans.",
       "tags": [
-        "trending",
-        "crypto-spike"
+        "security",
+        "altcoins",
+        "volatility"
       ],
-      "expiresAt": "2026-04-23T03:14:01.871Z"
+      "expiresAt": "2026-04-23T06:01:55.165Z"
     },
     {
-      "id": "signal-1776912241871-3",
+      "id": "signal-1776922315165-3",
       "lane": "clue",
       "priority": 2,
       "ttlMinutes": 60,
-      "npcLine": "RAVE pulses across data streams; something’s stirring deep.",
-      "questPulse": "Decode RAVE's surge to tap hidden market flows.",
-      "worldFeed": "Neon traders eye RAVE’s sudden burst through firewalls.",
-      "clueEvent": "Flash trades hint at secret alpha in RAVE token.",
+      "npcLine": "Chip scrawl alerts buzz low — new tech coin brewing.",
+      "questPulse": "Trace source of low-score coin activity in back alleys.",
+      "worldFeed": "Emerging tokens spark whispers amid digital bazaars.",
+      "clueEvent": "Low-profile crypto footprints emerge near shadow markets.",
       "tags": [
-        "pulse",
-        "secret-alpha"
+        "emerging",
+        "tech",
+        "coins"
       ],
-      "expiresAt": "2026-04-23T03:44:01.871Z"
+      "expiresAt": "2026-04-23T06:31:55.165Z"
     },
     {
-      "id": "signal-1776912241871-4",
+      "id": "signal-1776922315165-4",
       "lane": "quest",
-      "priority": 5,
-      "ttlMinutes": 20,
-      "npcLine": "Fear feeds chaos; stabilize the system before it fractures.",
-      "questPulse": "Neutralize market panic by securing key exchanges' backdoors.",
-      "worldFeed": "Fear index spikes, hackers scent weakness in the grid.",
-      "clueEvent": "Encrypted panic signals disrupt stability protocols citywide.",
+      "priority": 3,
+      "ttlMinutes": 50,
+      "npcLine": "Pulse on rave token activity spikes; trend or trap?",
+      "questPulse": "Decode patterns behind sudden RAVE bursts across net nodes.",
+      "worldFeed": "Unusual RAVE token moves disrupt minor markets tonight.",
+      "clueEvent": "Potential pump detected, watch for orchestrated hype runs.",
       "tags": [
-        "emergency",
-        "security"
+        "trending",
+        "rave",
+        "pump"
       ],
-      "expiresAt": "2026-04-23T03:04:01.871Z"
+      "expiresAt": "2026-04-23T06:21:55.165Z"
+    },
+    {
+      "id": "signal-1776922315165-5",
+      "lane": "npc",
+      "priority": 5,
+      "ttlMinutes": 40,
+      "npcLine": "Old coin BTC flickers; trust erodes, but veterans hold firm.",
+      "questPulse": "Gather intel on veteran crypto holders' next moves.",
+      "worldFeed": "Dominant token shakes under pressure; veteran nodes whisper caution.",
+      "clueEvent": "Legacy wallet activity hints at upcoming shifts.",
+      "tags": [
+        "btc",
+        "legacy",
+        "veterans"
+      ],
+      "expiresAt": "2026-04-23T06:11:55.165Z"
     }
   ]
 }
