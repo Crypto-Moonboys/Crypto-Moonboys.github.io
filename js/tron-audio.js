@@ -204,9 +204,11 @@
     if (unlocked) {
       removeUnlockListeners();
     } else if (resumePromise) {
-      resumePromise.then((isReady) => {
-        if (isReady) removeUnlockListeners();
-      });
+      resumePromise
+        .then((isReady) => {
+          if (isReady) removeUnlockListeners();
+        })
+        .catch(() => {});
     }
   }
 

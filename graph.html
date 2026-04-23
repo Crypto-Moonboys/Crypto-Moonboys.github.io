@@ -82,6 +82,7 @@
     .graph-main {
       display: flex;
       gap: 0;
+      /* Keep a stable desktop graph viewport without crowding footer/toolbar. */
       height: clamp(320px, 58vh, 560px);
       min-height: 0;
       max-height: none;
@@ -201,6 +202,7 @@
     }
     .graph-help span { margin-right: 14px; }
 
+    /* Let status line wrap below controls before tablet widths get cramped. */
     @media (max-width: 920px) {
       .graph-status {
         flex-basis: 100%;
@@ -211,6 +213,7 @@
 
     @media (max-width: 640px) {
       .graph-info-panel { display: none; }
+      /* Slightly shorter viewport on narrow screens to prevent vertical overlap. */
       .graph-main { height: clamp(260px, 46vh, 380px); }
     }
   </style>
