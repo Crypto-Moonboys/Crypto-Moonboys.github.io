@@ -110,9 +110,7 @@
         graphData = data;
         buildFilterOptions(data.nodes);
         buildGraph(data.nodes, data.edges);
-        setStatus('Computing layout…');
         runLayout();
-        setStatus('');
       })
       .catch(err => {
         setStatus('Failed to load graph data: ' + err.message);
@@ -176,14 +174,33 @@
   function runLayout() {
     layoutDone = false;
     if (animFrame) cancelAnimationFrame(animFrame);
-    for (let step = 0; step < ITERATIONS; step++) {
-      const cool = 1 - step / ITERATIONS;
-      simulateStep(cool);
+    let step = 0;
+    const iterationsPerFrame = 24;
+    setStatus('Computing layout… 0%');
+
+    function tick() {
+      const end = Math.min(step + iterationsPerFrame, ITERATIONS);
+      for (; step < end; step++) {
+        const cool = 1 - step / ITERATIONS;
+        simulateStep(cool);
+      }
+
+      const progress = Math.round((step / ITERATIONS) * 100);
+      setStatus(`Computing layout… ${progress}%`);
+
+      if (step < ITERATIONS) {
+        animFrame = requestAnimationFrame(tick);
+        return;
+      }
+
+      layoutDone = true;
+      fitGraphToViewport();
+      revealGraph();
+      draw();
+      setStatus('');
     }
-    layoutDone = true;
-    fitGraphToViewport();
-    revealGraph();
-    draw();
+
+    animFrame = requestAnimationFrame(tick);
   }
 
   function simulateStep(cool) {
@@ -637,9 +654,12 @@
     }
     const spanX = Math.max(maxX - minX, 1);
     const spanY = Math.max(maxY - minY, 1);
+    const viewportMin = Math.min(canvas.width, canvas.height);
+    const scaledPad = viewportMin * VIEWPORT_PADDING_RATIO;
+    const boundedPad = Math.min(scaledPad, MAX_VIEWPORT_PADDING);
     const pad = Math.max(
       MIN_VIEWPORT_PADDING,
-      Math.min(Math.min(canvas.width, canvas.height) * VIEWPORT_PADDING_RATIO, MAX_VIEWPORT_PADDING),
+      boundedPad,
     );
     const fitW = Math.max(canvas.width - pad * 2, 1);
     const fitH = Math.max(canvas.height - pad * 2, 1);
