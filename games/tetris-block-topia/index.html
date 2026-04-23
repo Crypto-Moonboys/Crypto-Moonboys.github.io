@@ -3,7 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>🐍 SnakeRun 3008 — Crypto Moonboys Arcade</title>
+  <title>🟦 Tetris Block Topia — Crypto Moonboys Arcade</title>
+  <meta name="description" content="Classic falling-block puzzle. Clean controls, next-piece preview, score chains.">
+  <meta name="robots" content="index, follow">
   <link rel="stylesheet" href="/css/wiki.css">
   <link rel="stylesheet" href="/css/game-fullscreen.css">
   <link rel="icon" href="/img/favicon.svg" type="image/svg+xml">
@@ -13,12 +15,25 @@
     .hud .stat{background:rgba(255,255,255,.04);border:1px solid var(--color-border,#333);border-radius:12px;padding:12px;text-align:center}
     .hud .label{font-size:.7rem;color:var(--color-text-muted)}
     .hud .value{font-weight:700;font-size:1.15rem}
-    #snakeCanvas{width:100%;max-width:720px;aspect-ratio:1/1;display:block;margin:0 auto;background:#090c16;border:2px solid #2ec5ff;border-radius:14px;box-shadow:0 0 30px rgba(46,197,255,.18) inset}
+    .tet-wrap{display:flex;gap:16px;justify-content:center;align-items:flex-start;flex-wrap:nowrap}
+    #tetCanvas{width:100%;max-width:300px;aspect-ratio:1/2;height:auto;background:#090c16;border:2px solid #bc8cff;border-radius:14px;box-shadow:0 0 30px rgba(188,140,255,.18) inset;display:block;flex-shrink:1}
+    .tet-side{display:flex;flex-direction:column;gap:14px;min-width:90px;flex-shrink:0}
+    .tet-panel{background:rgba(255,255,255,.04);border:1px solid var(--color-border,#333);border-radius:12px;padding:10px;text-align:center}
+    .tet-panel-label{font-size:.7rem;color:var(--color-text-muted);margin-bottom:6px}
+    #nextCanvas{background:#090c16;border:1px solid #30363d;border-radius:8px;display:block;margin:0 auto;max-width:100%}
     .row{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:14px}
     .game-btn{padding:.8rem 1.1rem;border:none;border-radius:12px;background:#f7ab1a;color:#111;font-weight:700;cursor:pointer}
     .game-btn.alt{background:rgba(255,255,255,.08);color:#fff}
-    .note{margin-top:14px;color:var(--color-text-muted)}
-    @media(max-width:720px){.hud{grid-template-columns:repeat(2,minmax(0,1fr));}}
+    .game-btn:disabled{opacity:.55;cursor:not-allowed}
+    .combo-meter{margin-top:10px;text-align:center;font-weight:800;letter-spacing:.04em;color:#f7c948;opacity:.72;transition:transform .18s ease,opacity .18s ease,color .18s ease;text-shadow:0 0 12px rgba(247,201,72,.45)}
+    .combo-meter.active{opacity:1;color:#ff4fd1;text-shadow:0 0 14px rgba(255,79,209,.6)}
+    .stat.hud-pulse .value{animation:hudPulse .22s ease}
+    .stat.hud-flash{animation:hudFlash .32s ease}
+    @keyframes hudPulse{0%{transform:scale(1)}40%{transform:scale(1.12)}100%{transform:scale(1)}}
+    @keyframes hudFlash{0%{box-shadow:0 0 0 rgba(255,255,255,0)}30%{box-shadow:0 0 20px rgba(255,255,255,.45)}100%{box-shadow:0 0 0 rgba(255,255,255,0)}}
+    .note{margin-top:14px;color:var(--color-text-muted);font-size:.85rem}
+    @media(max-width:600px){.hud{grid-template-columns:repeat(2,minmax(0,1fr));}.tet-side{min-width:70px}}
+    @media(max-width:420px){.tet-side{display:none}#tetCanvas{max-width:100%}}
   </style>
 </head>
 <body>
@@ -53,19 +68,21 @@
       <a href="/games/pac-chain/"><span class="nav-icon">🟡</span> Pac-Chain</a>
       <a href="/games/asteroid-fork/"><span class="nav-icon">🌑</span> Asteroid Fork</a>
       <a href="/games/breakout-bullrun/"><span class="nav-icon">🧱</span> Breakout Bullrun</a>
-      <a href="/games/tetris-block-topia/"><span class="nav-icon">🟦</span> Tetris Block Topia</a>
+      <a href="/games/tetris-block-topia/" class="active"><span class="nav-icon">🟦</span> Tetris Block Topia</a>
       <a href="/games/block-topia-quest-maze/"><span class="nav-icon">🗺️</span> Block Topia Quest Maze</a>
       <a href="/games/crystal-quest/"><span class="nav-icon">🧩</span> Crystal Quest</a>
-      <a href="/games/snake-run/" class="active"><span class="nav-icon">🐍</span> SnakeRun 3008</a>
+      <a href="/games/snake-run/"><span class="nav-icon">🐍</span> SnakeRun 3008</a>
       <a href="/games/block-topia/"><span class="nav-icon">🎮</span> Block Topia: Street Signal 3008</a>
     </div></div>
   </nav>
   <div id="main-wrapper">
     <main id="content" role="main">
-      <nav class="breadcrumb" aria-label="Breadcrumb"><a href="/index.html">Home</a><span class="sep">›</span><a href="/games/">Arcade</a><span class="sep">›</span><span aria-current="page">SnakeRun 3008</span></nav>
+      <nav class="breadcrumb" aria-label="Breadcrumb">
+        <a href="/index.html">Home</a><span class="sep">›</span><a href="/games/">Arcade</a><span class="sep">›</span><span aria-current="page">Tetris Block Topia</span>
+      </nav>
       <div class="category-header">
-        <span class="cat-big-icon" aria-hidden="true">🐍</span>
-        <div><h1 class="page-title">🐍 SnakeRun 3008</h1><p style="color:var(--color-text-muted)">Quick reflex game rebuilt inside the main website shell.</p></div>
+        <span class="cat-big-icon" aria-hidden="true">🟦</span>
+        <div><h1 class="page-title">🟦 Tetris Block Topia</h1><p style="color:var(--color-text-muted)">Falling-block puzzle. Stack smart. Clear lines. Chase the high score.</p></div>
       </div>
       <div class="page-title-line" aria-hidden="true"></div>
 
@@ -73,15 +90,25 @@
         <div class="hud">
           <div class="stat"><div class="label">Score</div><div class="value" id="score">0</div></div>
           <div class="stat"><div class="label">Best</div><div class="value" id="best">0</div></div>
-          <div class="stat"><div class="label">Combo</div><div class="value" id="combo">x1.00</div></div>
-          <div class="stat"><div class="label">Heat</div><div class="value" id="speedLabel">HEAT 0%</div></div>
+          <div class="stat"><div class="label">Level</div><div class="value" id="level">1</div></div>
+          <div class="stat"><div class="label">Lines</div><div class="value" id="lines">0</div></div>
         </div>
-        <canvas id="snakeCanvas" width="720" height="720" aria-label="Snake game"></canvas>
+        <div class="tet-wrap">
+          <canvas id="tetCanvas" aria-label="Tetris Block Topia game"></canvas>
+          <div class="tet-side">
+            <div class="tet-panel">
+              <div class="tet-panel-label">NEXT</div>
+              <canvas id="nextCanvas" width="80" height="80" aria-label="Next piece preview"></canvas>
+            </div>
+          </div>
+        </div>
         <div class="row">
           <button class="game-btn" id="startBtn">Start</button>
           <button class="game-btn alt" id="pauseBtn">Pause</button>
           <button class="game-btn alt" id="resetBtn">Reset</button>
+          <button class="game-btn alt" id="submitBtn">Submit</button>
         </div>
+        <div class="combo-meter" id="comboMeter">COMBO x1</div>
       </div>
     </main>
     <footer id="site-footer"><div class="footer-bottom"><p>Crypto Moonboys GK Wiki ⚡️⚡️⚡️</p></div></footer>
@@ -93,9 +120,9 @@
 <script src="/js/scroll-shell.js"></script>
 <script src="/js/game-fullscreen.js"></script>
 <script type="module">
-import { mountGame }      from '/js/arcade/core/game-shell.js';
-import { bootstrapSnake } from '/js/arcade/games/snake/bootstrap.js';
-mountGame({ root: document.querySelector('.game-card'), bootstrap: bootstrapSnake });
+import { mountGame }       from '/js/arcade/core/game-shell.js';
+import { bootstrapTetris } from '/js/arcade/games/tetris/bootstrap.js';
+mountGame({ root: document.querySelector('.game-card'), bootstrap: bootstrapTetris });
 </script>
 </body>
 </html>
