@@ -92,6 +92,10 @@
 <script src="/js/identity-gate.js"></script>
 <script src="/js/scroll-shell.js"></script>
 <script src="/js/game-fullscreen.js"></script>
-<script type="module" src="./game.js"></script>
+<script type="module">
+import { mountGame }      from '/js/arcade/core/game-shell.js';
+import { bootstrapSnake } from '/js/arcade/games/snake/bootstrap.js';
+mountGame({ root: document.querySelector('.game-card'), bootstrap: bootstrapSnake });
+</script>
 </body>
 </html>
