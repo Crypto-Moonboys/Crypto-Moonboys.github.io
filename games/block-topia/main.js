@@ -861,16 +861,21 @@ async function boot() {
     lastWorldUpdateAt: 0,
   };
 
+  function formatUpdateAge(lastWorldUpdateAt) {
+    if (!lastWorldUpdateAt) return 'never';
+    const ageMs = Date.now() - lastWorldUpdateAt;
+    if (ageMs < 2000) return `${ageMs}ms ago`;
+    return `${(ageMs / 1000).toFixed(1)}s ago`;
+  }
+
   function renderDebugPanel() {
     const panel = document.getElementById('debug-panel');
     if (!panel || panel.hidden) return;
-    const ageMs = debugState.lastWorldUpdateAt ? Date.now() - debugState.lastWorldUpdateAt : -1;
-    const ageTxt = ageMs < 0 ? 'never' : ageMs < 2000 ? `${ageMs}ms ago` : `${(ageMs / 1000).toFixed(1)}s ago`;
     panel.textContent = [
       `Room:        ${debugState.roomName}`,
       `Connection:  ${debugState.connectionState}`,
       `Players:     ${debugState.playerCount} / ${debugState.maxPlayers}`,
-      `Last update: ${ageTxt}`,
+      `Last update: ${formatUpdateAge(debugState.lastWorldUpdateAt)}`,
     ].join('\n');
   }
   const sessionGuard = {

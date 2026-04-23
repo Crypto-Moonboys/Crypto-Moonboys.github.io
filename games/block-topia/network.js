@@ -74,7 +74,9 @@ export async function connectMultiplayer({
   onDuelEnded,
 }) {
   // Use explicit wss:// so the transport protocol is unambiguous.
-  const endpoint = window.BLOCK_TOPIA_SERVER || 'wss://game.cryptomoonboys.com';
+  // Normalise any https:// value from the runtime config to wss://.
+  const rawEndpoint = window.BLOCK_TOPIA_SERVER || 'wss://game.cryptomoonboys.com';
+  const endpoint = rawEndpoint.replace(/^https:\/\//, 'wss://').replace(/^http:\/\//, 'ws://');
   let lastError = null;
 
   if (!window.Colyseus) {
@@ -100,9 +102,10 @@ export async function connectMultiplayer({
       console.log(`[BlockTopia] Joined room "${room.name || roomId}" session=${room.sessionId}`);
 
       // Handle unexpected server-side disconnect after a successful join.
+      const joinedRoomName = room.name || roomId;
       room.onLeave((code) => {
-        console.error(`[BlockTopia] Disconnected from room "${roomId}" (code: ${code})`);
-        onStatus?.({ ws: 'disconnected', joined: false, error: `Disconnected (code: ${code})`, roomId });
+        console.error(`[BlockTopia] Disconnected from room "${joinedRoomName}" (code: ${code})`);
+        onStatus?.({ ws: 'disconnected', joined: false, error: `Disconnected (code: ${code})`, roomId: joinedRoomName });
         onFeed?.(`⚠️ Multiplayer connection lost (code: ${code})`);
       });
 
