@@ -88,17 +88,22 @@
   const HERO_LABEL_FONT_MIN = 11;
   const HERO_LABEL_FONT_BASE = 13;
   const HERO_LABEL_ZOOM_BASE = 0.8;
+  const HERO_LABEL_ZOOM_MAX = 1.35;
   const FULL_LABEL_FONT_MIN = 9;
   const FULL_LABEL_FONT_BASE = 10;
   const LABEL_SHADOW_ALPHA = 0.85;
   const HERO_LABEL_SHADOW_BLUR = 7;
   const FULL_LABEL_SHADOW_BLUR = 3;
+  const LABEL_OFFSET_BASE = 14;
+  const LABEL_OFFSET_ZOOM_MIN = 0.6;
+  const LABEL_OFFSET_ZOOM_MAX = 1.4;
+  const TITLE_TRUNCATE_THRESHOLD = 24;
+  const TITLE_TRUNCATE_LENGTH = 24;
   const MIN_ZOOM = 0.15;
   const MAX_ZOOM = 2.2;
   const MIN_CANVAS_HEIGHT = 280;
   const MIN_VIEWPORT_PADDING = 28;
   const MAX_VIEWPORT_PADDING = 110;
-  const VIEWPORT_PADDING_RATIO = 0.12;
 
   // Force simulation parameters (full graph mode only)
   const ITERATIONS = 400;
@@ -616,8 +621,10 @@
 
       if (shouldDrawLabel) {
         const labelAlpha = isDim ? (isHero ? 0.28 : 0.15) : (isHero ? 0.95 : 0.85);
+        const heroFontZoom = Math.min(Math.max(zoom, HERO_LABEL_ZOOM_BASE), HERO_LABEL_ZOOM_MAX);
+        const labelOffsetZoom = Math.min(Math.max(zoom, LABEL_OFFSET_ZOOM_MIN), LABEL_OFFSET_ZOOM_MAX);
         const fontSize = isHero
-          ? Math.max(HERO_LABEL_FONT_MIN, Math.round(HERO_LABEL_FONT_BASE / Math.max(zoom, HERO_LABEL_ZOOM_BASE)))
+          ? Math.max(HERO_LABEL_FONT_MIN, Math.round(HERO_LABEL_FONT_BASE / heroFontZoom))
           : Math.max(FULL_LABEL_FONT_MIN, Math.round(FULL_LABEL_FONT_BASE / zoom));
         ctx.globalAlpha = labelAlpha;
         ctx.fillStyle = '#e6edf3';
@@ -625,7 +632,7 @@
         ctx.font = `${fontSize}px sans-serif`;
         ctx.shadowColor = `rgba(0,0,0,${LABEL_SHADOW_ALPHA})`;
         ctx.shadowBlur = isHero ? HERO_LABEL_SHADOW_BLUR : FULL_LABEL_SHADOW_BLUR;
-        ctx.fillText(shortTitle(p.node.title), p.x, p.y + r + 14 / Math.max(zoom, 0.6));
+        ctx.fillText(shortTitle(p.node.title), p.x, p.y + r + LABEL_OFFSET_BASE / labelOffsetZoom);
         ctx.shadowBlur = 0;
       }
     }
@@ -635,7 +642,7 @@
 
   function shortTitle(title) {
     const t = String(title || '').replace(/\s*[—–-]\s*Crypto Moonboys Wiki.*$/i, '').trim();
-    return t.length > 24 ? `${t.slice(0, 24)}…` : t;
+    return t.length > TITLE_TRUNCATE_THRESHOLD ? `${t.slice(0, TITLE_TRUNCATE_LENGTH)}…` : t;
   }
 
   function getNeighbours(node) {
@@ -929,7 +936,7 @@
     draw();
   }
 
-  function fitGraphToViewport(paddingRatio = VIEWPORT_PADDING_RATIO) {
+  function fitGraphToViewport(paddingRatio = FULL_VIEWPORT_PADDING_RATIO) {
     const visible = nodePositions.filter((p) => p.visible);
     if (!visible.length || !canvas) return;
 
