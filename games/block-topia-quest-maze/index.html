@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Block Topia Quest Maze — A playable blockchain-themed retro RPG. Explore dungeons, battle crypto monsters, and climb the leaderboard!">
+  <meta name="robots" content="index, follow">
+  <meta property="og:title" content="🧱 Block Topia Quest Maze — Crypto Moonboys Arcade">
+  <meta property="og:description" content="A playable blockchain-themed retro RPG. Explore dungeons, battle crypto monsters, and climb the leaderboard!">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://crypto-moonboys.github.io/games/block-topia-quest-maze/">
+  <meta property="og:image" content="https://crypto-moonboys.github.io/img/CRYPTO-MOONBOYS-BITCOIN-LOGO.png">
+  <title>🧱 Block Topia Quest Maze — Crypto Moonboys Arcade</title>
+  <link rel="stylesheet" href="/css/wiki.css">
+  <link rel="stylesheet" href="/css/game-fullscreen.css">
+  <link rel="icon" href="/img/favicon.svg" type="image/svg+xml">
+  <style>
+    /* ── Page-level game card ─────────────────────────────────────────── */
+    .game-card{background:rgba(255,255,255,.03);border:1px solid var(--color-border,#333);border-radius:16px;padding:18px}
+    #btqm-wrap { max-width: 720px; margin: 0 auto; }
+
+    /* ── Game area ────────────────────────────────────────────────────── */
+    .btqm-game-area { position: relative; width: 100%; }
+    #btqm-canvas {
+      width: 100%;
+      background: linear-gradient(180deg, #05070d 0%, #0f2a1f 100%);
+      border: 2px solid rgba(243,156,18,0.85);
+      border-radius: 4px;
+      overflow: hidden;
+      cursor: none;
+      image-rendering: pixelated;
+      image-rendering: crisp-edges;
+      box-shadow: 0 0 18px rgba(0,255,156,0.25), inset 0 0 16px rgba(0,207,255,0.14);
+    }
+    /* In-page: scale canvas to container width */
+    #btqm-canvas canvas { display: block; width: 100% !important; height: auto !important; }
+
+    /* ── Daily status bar ─────────────────────────────────────────────── */
+    #btqm-daily-bar {
+      display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+      padding: 8px 12px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-top: none;
+      font-size: 0.85em;
+      font-family: monospace;
+    }
+    .btqm-zone-icon {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 24px; height: 24px; border-radius: 4px;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.15);
+      font-size: 0.75em; font-weight: bold; color: #888;
+      transition: all 0.3s;
+    }
+    .btqm-zone-icon.cleared {
+      background: rgba(39,174,96,0.3);
+      border-color: #27ae60;
+      color: #2ecc71;
+    }
+    .btqm-bonus-tag { color: #f39c12; font-weight: bold; }
+    .btqm-score-tag { color: #74b9ff; margin-left: auto; }
+    .btqm-bar-label { color: #888; }
+
+    /* ── Name-entry overlay ───────────────────────────────────────────── */
+    #btqm-name-overlay {
+      position: absolute; top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(10,10,26,0.96);
+      border: 2px solid #f39c12;
+      border-radius: 8px;
+      padding: 2em 2.5em;
+      text-align: center;
+      z-index: 100;
+      min-width: 280px;
+      max-width: 90%;
+      pointer-events: auto;
+    }
+    #btqm-name-overlay h2 { color: #f39c12; font-family: monospace; margin: 0 0 0.5em; }
+    #btqm-name-overlay p  { color: #aaa; font-size: 0.85em; margin: 0 0 1.2em; }
+    #btqm-name-input {
+      width: 100%; box-sizing: border-box;
+      padding: 0.6em 1em;
+      background: rgba(255,255,255,0.05);
+      border: 2px solid #444; border-radius: 6px;
+      color: #eee; font-size: 1em; font-family: monospace;
+      margin-bottom: 1em;
+    }
+    #btqm-name-input:focus { outline: none; border-color: #f39c12; }
+    #btqm-start-btn {
+      padding: 0.7em 2em; background: #f39c12; color: #000;
+      border: none; border-radius: 6px; font-size: 1em; font-weight: bold;
+      cursor: pointer; font-family: monospace; transition: transform .12s ease, box-shadow .12s ease;
+      box-shadow: 0 0 12px rgba(243,156,18,0.35);
+    }
+    #btqm-start-btn:hover { opacity: 0.9; box-shadow: 0 0 16px rgba(243,156,18,0.6); }
+    #btqm-start-btn:active { transform: scale(0.95); }
+    #btqm-continue-btn {
+      padding: 0.7em 2em; background: rgba(255,255,255,0.1); color: #eee;
+      border: 1px solid rgba(255,255,255,0.2); border-radius: 6px; font-size: 1em;
+      cursor: pointer; font-family: monospace; margin-left: 0.5em; transition: transform .12s ease, box-shadow .12s ease;
+      display: none;
+    }
+    #btqm-continue-btn:hover { box-shadow: 0 0 12px rgba(0,255,156,0.35); }
+    #btqm-continue-btn:active { transform: scale(0.95); }
+    #btqm-daily-preview { font-size: 0.8em; color: #888; margin-top: 1em; }
+
+    /* ── Mobile d-pad (in-page only; hidden inside overlay) ──────────── */
+    #btqm-dpad { display: none; }
+    @media (max-width: 720px) {
+      #btqm-dpad {
+        display: grid;
+        grid-template-areas: ". up ." "left confirm right" ". down .";
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 4px; margin-top: 8px; max-width: 200px; margin-left: auto; margin-right: auto;
+      }
+      .dpad-btn {
+        padding: 14px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);
+        border-radius: 6px; color: #eee; font-size: 1.2em; cursor: pointer;
+        user-select: none; -webkit-user-select: none;
+        display: flex; align-items: center; justify-content: center;
+        touch-action: manipulation;
+      }
+      .dpad-btn:active { background: rgba(243,156,18,0.3); border-color: #f39c12; }
+      .dpad-up      { grid-area: up; }
+      .dpad-left    { grid-area: left; }
+      .dpad-confirm { grid-area: confirm; }
+      .dpad-right   { grid-area: right; }
+      .dpad-down    { grid-area: down; }
+    }
+    /* Hide the page-level dpad and daily bar inside the fullscreen overlay */
+    #game-overlay #btqm-dpad,
+    #game-overlay #btqm-daily-bar { display: none !important; }
+
+    /* ── Fullscreen launch row (mirrors all other arcade pages) ─────── */
+    .row { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+    .game-btn {
+      padding: .8rem 1.1rem; border: none; border-radius: 12px;
+      background: #f7ab1a; color: #111; font-weight: 700; cursor: pointer;
+      transition: transform .12s ease, box-shadow .12s ease;
+      box-shadow: 0 0 10px rgba(243,156,18,.34);
+    }
+    .game-btn:hover { box-shadow: 0 0 14px rgba(0,255,156,.4); }
+    .game-btn:active { transform: scale(0.95); }
+    /* Hide the in-page launch row once the overlay is open */
+    #game-overlay .row { display: none !important; }
+  </style>
+</head>
+<body>
+<a class="skip-link" href="#content">Skip to content</a>
+<header id="site-header" role="banner">
+  <button class="hamburger" id="hamburger" aria-label="Toggle navigation" aria-expanded="false" aria-controls="sidebar">☰</button>
+  <a href="/index.html" class="site-logo" aria-label="The Crypto Moonboys GK Wiki home">
+    <img src="/img/CRYPTO-MOONBOYS-BITCOIN-LOGO.png" alt="" aria-hidden="true">
+    <span><span class="logo-text">🌙 The Crypto Moonboys GK Wiki</span><span class="logo-sub">Blockchain Cryptoism Encyclopedia ⚡️⚡️⚡️</span></span>
+  </a>
+  <div id="header-search" role="search">
+    <input type="search" id="search-input" placeholder="Search the wiki…" aria-label="Search" autocomplete="off">
+    <button id="search-btn" aria-label="Search">🔍</button>
+    <div id="search-results" role="listbox"></div>
+  </div>
+  <nav class="header-nav" aria-label="Main navigation">
+    <a href="/index.html">Home</a>
+  </nav>
+</header>
+<div id="sidebar-overlay" aria-hidden="true"></div>
+<div id="layout">
+  <nav id="sidebar" aria-label="Wiki navigation">
+    <div class="sidebar-section">
+      <div class="sidebar-heading">Navigation</div>
+      <div class="sidebar-nav">
+        <a href="/index.html"><span class="nav-icon">🏠</span> Main Page</a>
+        <a href="/games/" class="active"><span class="nav-icon">🕹️</span> Arcade</a>
+      </div>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-heading">Arcade</div>
+      <div class="sidebar-nav">
+        <a href="/games/leaderboard.html"><span class="nav-icon">🏆</span> Leaderboard</a>
+        <a href="/games/hexgl-monster-max/"><span class="nav-icon">🏁</span> HexGL Monster Mode</a>
+        <a href="/games/invaders-3008/"><span class="nav-icon">👾</span> Invaders 3008</a>
+        <a href="/games/pac-chain/"><span class="nav-icon">🟡</span> Pac-Chain</a>
+        <a href="/games/asteroid-fork/"><span class="nav-icon">🌑</span> Asteroid Fork</a>
+        <a href="/games/breakout-bullrun/"><span class="nav-icon">🧱</span> Breakout Bullrun</a>
+        <a href="/games/tetris-block-topia/"><span class="nav-icon">🟦</span> Tetris Block Topia</a>
+        <a href="/games/block-topia-quest-maze/" class="active"><span class="nav-icon">🗺️</span> Block Topia Quest Maze</a>
+        <a href="/games/crystal-quest/"><span class="nav-icon">🧩</span> Crystal Quest</a>
+        <a href="/games/snake-run/"><span class="nav-icon">🐍</span> SnakeRun 3008</a>
+        <a href="/games/block-topia/"><span class="nav-icon">🎮</span> Block Topia: Street Signal 3008</a>
+      </div>
+    </div>
+  </nav>
+  <div id="main-wrapper">
+    <main id="content" role="main">
+      <nav class="breadcrumb" aria-label="Breadcrumb">
+        <a href="/index.html">Home</a><span class="sep">›</span>
+        <a href="/games/">Arcade</a><span class="sep">›</span>
+        <span aria-current="page">Block Topia Quest Maze</span>
+      </nav>
+      <div class="category-header">
+        <span class="cat-big-icon" aria-hidden="true">🧱</span>
+        <div>
+          <h1 class="page-title">🧱 Block Topia Quest Maze</h1>
+          <p style="color:var(--color-text-muted)">A retro dungeon RPG. Battle crypto monsters across 6 zones. Daily quests reset at UTC midnight.</p>
+        </div>
+      </div>
+      <div class="page-title-line" aria-hidden="true"></div>
+
+      <div id="btqm-wrap">
+        <div class="game-card">
+          <div class="btqm-game-area">
+            <div id="btqm-canvas"></div>
+            <div id="btqm-name-overlay" style="display:none;">
+              <h2>⚔️ Block Topia Quest Maze</h2>
+              <p id="btqm-daily-preview">Daily Quest — 0/6 zones cleared today</p>
+              <input id="btqm-name-input" type="text" maxlength="20" placeholder="Enter hero name…" autocomplete="off" spellcheck="false">
+              <div style="display:flex;gap:0.5em;justify-content:center;margin-top:0.5em;">
+                <button id="btqm-start-btn">▶ Enter the Maze</button>
+                <button id="btqm-continue-btn">Continue</button>
+              </div>
+              <div id="btqm-name-err" style="color:#e74c3c;font-size:0.82em;margin-top:0.5em;display:none;">Name must be 2-20 characters.</div>
+            </div>
+          </div>
+          <div id="btqm-daily-bar">
+            <span class="btqm-bar-label">Today:</span>
+            <span class="btqm-zone-icon" title="HODL or FOLD">1</span>
+            <span class="btqm-zone-icon" title="Bear Market Siege">2</span>
+            <span class="btqm-zone-icon" title="FOMO Plague Escape">3</span>
+            <span class="btqm-zone-icon" title="Rug Pull Recovery">4</span>
+            <span class="btqm-zone-icon" title="Whale Lord's Challenge">5</span>
+            <span class="btqm-zone-icon" title="Moon Mission">6</span>
+            <span class="btqm-score-tag">Score: 0</span>
+          </div>
+          <div id="btqm-dpad">
+            <button class="dpad-btn dpad-up" data-key="38">▲</button>
+            <button class="dpad-btn dpad-left" data-key="37">◀</button>
+            <button class="dpad-btn dpad-confirm" data-key="13">✓</button>
+            <button class="dpad-btn dpad-right" data-key="39">▶</button>
+            <button class="dpad-btn dpad-down" data-key="40">▼</button>
+          </div>
+          <!-- Fullscreen shell launch row — mirrors the pattern used by every other arcade game -->
+          <div class="row" style="margin-top:14px">
+            <button id="startBtn" type="button" class="game-btn">▶ Play Fullscreen</button>
+            <button id="pauseBtn" type="button" style="display:none">Pause</button>
+            <button id="resetBtn" type="button" style="display:none">Reset</button>
+          </div>
+        </div>
+      </div>
+
+    </main>
+    <footer id="site-footer">
+      <div class="footer-bottom"><p>Crypto Moonboys GK Wiki ⚡️⚡️⚡️</p></div>
+    </footer>
+  </div>
+</div>
+<button id="back-to-top" aria-label="Back to top">↑</button>
+<script src="/js/wiki.js"></script>
+<script src="/js/identity-gate.js"></script>
+<script src="/js/scroll-shell.js"></script>
+<script src="/js/game-fullscreen.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/phaser@3.70.0/dist/phaser.min.js"></script>
+<script type="module">
+import { mountGame }                        from '/js/arcade/core/game-shell.js';
+import { bootstrapBlockTopiaQuestMaze }     from '/js/arcade/games/block-topia-quest-maze/bootstrap.js';
+mountGame({ root: document.querySelector('.game-card'), bootstrap: bootstrapBlockTopiaQuestMaze });
+</script>
+</body>
+</html>

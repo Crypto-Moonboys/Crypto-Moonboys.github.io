@@ -3,7 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>🐍 SnakeRun 3008 — Crypto Moonboys Arcade</title>
+  <title>🟡 Pac-Chain — Crypto Moonboys Arcade</title>
+  <meta name="description" content="Maze runner with pellets, power mode, and enemy patrols. Chain your score!">
+  <meta name="robots" content="index, follow">
   <link rel="stylesheet" href="/css/wiki.css">
   <link rel="stylesheet" href="/css/game-fullscreen.css">
   <link rel="icon" href="/img/favicon.svg" type="image/svg+xml">
@@ -13,11 +15,13 @@
     .hud .stat{background:rgba(255,255,255,.04);border:1px solid var(--color-border,#333);border-radius:12px;padding:12px;text-align:center}
     .hud .label{font-size:.7rem;color:var(--color-text-muted)}
     .hud .value{font-weight:700;font-size:1.15rem}
-    #snakeCanvas{width:100%;max-width:720px;aspect-ratio:1/1;display:block;margin:0 auto;background:#090c16;border:2px solid #2ec5ff;border-radius:14px;box-shadow:0 0 30px rgba(46,197,255,.18) inset}
+    .hud .stat.chain-pulse{animation:chainPulse .22s ease}
+    @keyframes chainPulse{0%{transform:scale(1)}50%{transform:scale(1.08)}100%{transform:scale(1)}}
+    #pacCanvas{width:100%;max-width:560px;aspect-ratio:1/1;display:block;margin:0 auto;background:#090c16;border:2px solid #f7c948;border-radius:14px;box-shadow:0 0 30px rgba(247,201,72,.18) inset}
     .row{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:14px}
     .game-btn{padding:.8rem 1.1rem;border:none;border-radius:12px;background:#f7ab1a;color:#111;font-weight:700;cursor:pointer}
     .game-btn.alt{background:rgba(255,255,255,.08);color:#fff}
-    .note{margin-top:14px;color:var(--color-text-muted)}
+    .note{margin-top:14px;color:var(--color-text-muted);font-size:.85rem}
     @media(max-width:720px){.hud{grid-template-columns:repeat(2,minmax(0,1fr));}}
   </style>
 </head>
@@ -50,22 +54,24 @@
       <a href="/games/leaderboard.html"><span class="nav-icon">🏆</span> Leaderboard</a>
       <a href="/games/hexgl-monster-max/"><span class="nav-icon">🏁</span> HexGL Monster Mode</a>
       <a href="/games/invaders-3008/"><span class="nav-icon">👾</span> Invaders 3008</a>
-      <a href="/games/pac-chain/"><span class="nav-icon">🟡</span> Pac-Chain</a>
+      <a href="/games/pac-chain/" class="active"><span class="nav-icon">🟡</span> Pac-Chain</a>
       <a href="/games/asteroid-fork/"><span class="nav-icon">🌑</span> Asteroid Fork</a>
       <a href="/games/breakout-bullrun/"><span class="nav-icon">🧱</span> Breakout Bullrun</a>
       <a href="/games/tetris-block-topia/"><span class="nav-icon">🟦</span> Tetris Block Topia</a>
       <a href="/games/block-topia-quest-maze/"><span class="nav-icon">🗺️</span> Block Topia Quest Maze</a>
       <a href="/games/crystal-quest/"><span class="nav-icon">🧩</span> Crystal Quest</a>
-      <a href="/games/snake-run/" class="active"><span class="nav-icon">🐍</span> SnakeRun 3008</a>
+      <a href="/games/snake-run/"><span class="nav-icon">🐍</span> SnakeRun 3008</a>
       <a href="/games/block-topia/"><span class="nav-icon">🎮</span> Block Topia: Street Signal 3008</a>
     </div></div>
   </nav>
   <div id="main-wrapper">
     <main id="content" role="main">
-      <nav class="breadcrumb" aria-label="Breadcrumb"><a href="/index.html">Home</a><span class="sep">›</span><a href="/games/">Arcade</a><span class="sep">›</span><span aria-current="page">SnakeRun 3008</span></nav>
+      <nav class="breadcrumb" aria-label="Breadcrumb">
+        <a href="/index.html">Home</a><span class="sep">›</span><a href="/games/">Arcade</a><span class="sep">›</span><span aria-current="page">Pac-Chain</span>
+      </nav>
       <div class="category-header">
-        <span class="cat-big-icon" aria-hidden="true">🐍</span>
-        <div><h1 class="page-title">🐍 SnakeRun 3008</h1><p style="color:var(--color-text-muted)">Quick reflex game rebuilt inside the main website shell.</p></div>
+        <span class="cat-big-icon" aria-hidden="true">🟡</span>
+        <div><h1 class="page-title">🟡 Pac-Chain</h1><p style="color:var(--color-text-muted)">Navigate the maze, eat pellets, power up, and chain your score.</p></div>
       </div>
       <div class="page-title-line" aria-hidden="true"></div>
 
@@ -73,14 +79,15 @@
         <div class="hud">
           <div class="stat"><div class="label">Score</div><div class="value" id="score">0</div></div>
           <div class="stat"><div class="label">Best</div><div class="value" id="best">0</div></div>
-          <div class="stat"><div class="label">Combo</div><div class="value" id="combo">x1.00</div></div>
-          <div class="stat"><div class="label">Heat</div><div class="value" id="speedLabel">HEAT 0%</div></div>
+          <div class="stat"><div class="label">Chain</div><div class="value" id="chain">x1</div></div>
+          <div class="stat"><div class="label">Level</div><div class="value" id="level">—</div></div>
         </div>
-        <canvas id="snakeCanvas" width="720" height="720" aria-label="Snake game"></canvas>
+        <canvas id="pacCanvas" width="560" height="560" aria-label="Pac-Chain game"></canvas>
         <div class="row">
           <button class="game-btn" id="startBtn">Start</button>
           <button class="game-btn alt" id="pauseBtn">Pause</button>
           <button class="game-btn alt" id="resetBtn">Reset</button>
+          <button class="game-btn alt" id="musicMuteBtn" aria-pressed="false">Mute Music</button>
         </div>
       </div>
     </main>
@@ -93,9 +100,9 @@
 <script src="/js/scroll-shell.js"></script>
 <script src="/js/game-fullscreen.js"></script>
 <script type="module">
-import { mountGame }      from '/js/arcade/core/game-shell.js';
-import { bootstrapSnake } from '/js/arcade/games/snake/bootstrap.js';
-mountGame({ root: document.querySelector('.game-card'), bootstrap: bootstrapSnake });
+import { mountGame }          from '/js/arcade/core/game-shell.js';
+import { bootstrapPacChain }  from '/js/arcade/games/pac-chain/bootstrap.js';
+mountGame({ root: document.querySelector('.game-card'), bootstrap: bootstrapPacChain });
 </script>
 </body>
 </html>
