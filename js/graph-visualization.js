@@ -532,6 +532,8 @@
   // ── Rendering ────────────────────────────────────────────────────────────
   function draw() {
     if (!ctx || !canvas) return;
+    // Never render before layout is complete — prevents intermediate-state glitches
+    if (!layoutDone) return;
 
     ctx.save();
     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -924,9 +926,15 @@
     canvas.width = w;
     canvas.height = h;
 
+    // Do not draw or refit while force layout is running — prevents expand-out-of-frame glitch
+    if (!layoutDone) return;
     if (!nodePositions.length) return;
 
-    if (!hasUserAdjustedView || !layoutDone) {
+    if (!hasUserAdjustedView) {
+      // Hero positions are canvas-center-relative; rebuild for the new canvas size
+      if (currentMode === MODE_HERO) {
+        buildHeroGraph();
+      }
       fitGraphToViewport(currentMode === MODE_HERO ? HERO_VIEWPORT_PADDING_RATIO : FULL_VIEWPORT_PADDING_RATIO);
     } else if (prevW && prevH) {
       panX += (w - prevW) / 2;
