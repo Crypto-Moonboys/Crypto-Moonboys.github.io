@@ -71,7 +71,7 @@
     text.innerHTML =
       '<strong style="color:#f7c948">Null Drift Championship — Season ' + seasonNum + '</strong>' +
       ' &nbsp;|&nbsp; Compete in HexGL Monster Mode for seasonal XP &amp; wiki recognition.' +
-      ' &nbsp;<a href="/games/hexgl-monster-max.html" style="color:#f7c948;text-decoration:underline">Race now →</a>';
+      ' &nbsp;<a href="/games/hexgl-monster-max/" style="color:#f7c948;text-decoration:underline">Race now →</a>';
 
     var closeBtn = document.createElement('button');
     closeBtn.setAttribute('type', 'button');
