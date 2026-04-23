@@ -194,6 +194,13 @@
       }
 
       layoutDone = true;
+      // Sync canvas to current container size (may have changed during layout computation)
+      // before computing the fit, so the viewport dimensions are accurate.
+      const container = canvas.parentElement;
+      const cw = container.clientWidth;
+      const ch = Math.max(container.clientHeight, MIN_CANVAS_HEIGHT);
+      canvas.width  = cw;
+      canvas.height = ch;
       fitGraphToViewport();
       revealGraph();
       draw();
@@ -631,8 +638,10 @@
     const h = Math.max(container.clientHeight, MIN_CANVAS_HEIGHT);
     canvas.width  = w;
     canvas.height = h;
-    if (!graphData || !nodePositions.length) return;
-    if (!hasUserAdjustedView || !layoutDone) {
+    // Never draw or refit until layout is fully done — prevents the
+    // "appears then jumps out of frame" glitch caused by mid-layout resizes.
+    if (!graphData || !nodePositions.length || !layoutDone) return;
+    if (!hasUserAdjustedView) {
       fitGraphToViewport();
     } else if (prevW && prevH) {
       panX += (w - prevW) / 2;
