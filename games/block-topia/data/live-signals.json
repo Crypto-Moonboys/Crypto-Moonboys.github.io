@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-04-23T22:47:22.530Z",
+  "generatedAt": "2026-04-23T23:47:59.974Z",
   "mode": "live-ai",
   "sourceHealth": {
     "coingecko-global": "ok",
@@ -11,81 +11,84 @@
   "signalCount": 5,
   "signals": [
     {
-      "id": "signal-1776984442529-1",
-      "lane": "world",
+      "id": "signal-1776988079973-1",
+      "lane": "npc",
       "priority": 4,
       "ttlMinutes": 45,
-      "npcLine": "Shadow nets flicker; markets twitch under cold fear.",
-      "questPulse": "Scan data streams: pulses dip, risk shadows grow.",
-      "worldFeed": "Global credits wobble, whispers of a dip ripple.",
-      "clueEvent": "Cryptos fade in neon haze; trust frays further.",
+      "npcLine": "Crypto stalls, shadows grow; trust fractures in neon alleys.",
+      "questPulse": "Find the source of market sabotage before assets bleed dry.",
+      "worldFeed": "Digital currencies stumble; streets murmur of impending system shifts.",
+      "clueEvent": "Encrypted whispers hint at a major code breach downtown.",
       "tags": [
-        "market-collapse",
+        "market_down",
         "fear",
-        "crypto"
+        "crypto_crash"
       ],
-      "expiresAt": "2026-04-23T23:32:22.529Z"
+      "expiresAt": "2026-04-24T00:32:59.973Z"
     },
     {
-      "id": "signal-1776984442530-2",
-      "lane": "ops",
+      "id": "signal-1776988079973-2",
+      "lane": "clue",
       "priority": 3,
       "ttlMinutes": 30,
-      "npcLine": "Peng tokens glitch; new players eye unstable codes.",
-      "questPulse": "Explore cold chains: zero score means silent traps.",
-      "worldFeed": "Low ranks signal dormant coins—wait for sparks.",
-      "clueEvent": "Watch quiet nodes; still water hides sharp edges.",
+      "npcLine": "Synthetic chips spike in chatter—nodes flicker with unknown data.",
+      "questPulse": "Trace rogue data packets hidden in chip delivery drones.",
+      "worldFeed": "Tech hubs buzzing; rumors of new virus targeting hardware components.",
+      "clueEvent": "Unusual uptick in CHIP token mentions among underground traders.",
       "tags": [
-        "crypto-scan",
-        "inactive-assets"
+        "tech_threat",
+        "hardware",
+        "chip"
       ],
-      "expiresAt": "2026-04-23T23:17:22.530Z"
+      "expiresAt": "2026-04-24T00:17:59.973Z"
     },
     {
-      "id": "signal-1776984442530-3",
-      "lane": "clue",
+      "id": "signal-1776988079974-3",
+      "lane": "quest",
       "priority": 5,
       "ttlMinutes": 60,
-      "npcLine": "Chip chatter rises; AAVE runs cold but watch spikes.",
-      "questPulse": "Listen to whispers: crypto shadows shift subtly.",
-      "worldFeed": "Sentiment low, fear grips neon market veins.",
-      "clueEvent": "Trading floors pulse with distrust; scan for anomalies.",
+      "npcLine": "PENGU currents heat up; a hidden faction seeks digital dominance.",
+      "questPulse": "Infiltrate rival faction’s data vault to tilt market balance.",
+      "worldFeed": "Increased activity in PENGU channels signals a brewing conflict.",
+      "clueEvent": "Fragmented transmissions reveal plans to disrupt major crypto flows.",
       "tags": [
-        "crypto-volatility",
-        "fear",
-        "pulse"
+        "faction_war",
+        "crypto_power",
+        "pengu"
       ],
-      "expiresAt": "2026-04-23T23:47:22.530Z"
+      "expiresAt": "2026-04-24T00:47:59.974Z"
     },
     {
-      "id": "signal-1776984442530-4",
-      "lane": "quest",
+      "id": "signal-1776988079974-4",
+      "lane": "ops",
       "priority": 2,
-      "ttlMinutes": 90,
-      "npcLine": "SPK flickers faintly; BTC pulses steady under pressure.",
-      "questPulse": "Decrypt quiet sectors; steady beats might hide storms.",
-      "worldFeed": "Market cap declines amid rising cybernetic dread.",
-      "clueEvent": "Shadow brokers move silent under fading credits.",
+      "ttlMinutes": 20,
+      "npcLine": "Old world coin, BTC, barely holds ground in falling shadow.",
+      "questPulse": "Monitor BTC conduits for weak points in supply chain security.",
+      "worldFeed": "Veteran assets wobble; darknet traders eye for takeaway opportunities.",
+      "clueEvent": "BTC transaction pace slows; suspicious pauses detected in ledgers.",
       "tags": [
-        "steady-assets",
-        "market-watch"
+        "btc",
+        "security",
+        "market_volatility"
       ],
-      "expiresAt": "2026-04-24T00:17:22.530Z"
+      "expiresAt": "2026-04-24T00:07:59.974Z"
     },
     {
-      "id": "signal-1776984442530-5",
-      "lane": "npc",
+      "id": "signal-1776988079974-5",
+      "lane": "world",
       "priority": 3,
-      "ttlMinutes": 40,
-      "npcLine": "Fear grips crowds; cyber traders whisper of cold dives.",
-      "questPulse": "Gauge fear levels; new dangers emerge in dark webs.",
-      "worldFeed": "Crypto market breathes shallow; beware sudden shifts.",
-      "clueEvent": "Sentiment dips; trust erodes in neon-lit alleys.",
+      "ttlMinutes": 50,
+      "npcLine": "TAO tokens ripple through net; balance hangs by a thread.",
+      "questPulse": "Secure lost TAO shards to restore network equilibrium.",
+      "worldFeed": "Market fear seeps deeper; low sentiment breaks through layers.",
+      "clueEvent": "TAO subnetwork faces intermittent outages amid rising fear metrics.",
       "tags": [
-        "fear",
-        "market-instability"
+        "network_stability",
+        "tao",
+        "fear"
       ],
-      "expiresAt": "2026-04-23T23:27:22.530Z"
+      "expiresAt": "2026-04-24T00:37:59.974Z"
     }
   ]
 }
