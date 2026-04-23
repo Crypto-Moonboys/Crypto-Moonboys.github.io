@@ -4,6 +4,7 @@ import { clampPosition, validateMovement } from '../systems/player-system.js';
 import { getDistrictForPosition, createDistrictPayload } from '../systems/district-system.js';
 import { checkAndCompleteQuests } from '../systems/quest-system.js';
 import { createDuelSystem } from '../systems/duel-system.js';
+import { createCovertOpsSystem, resolveOperativeMission } from '../systems/covert-ops-system.js';
 import {
   HUNTER_MODE_CONFIG,
   buildDistrictPatrolPlans,
@@ -73,6 +74,16 @@ const PLAYER_WAR_ACTION_IMPACT = {
   duel_win: 9,
   duel_loss: 6,
 };
+
+// Covert ops constants.
+const COVERT_DEPLOY_HEAT = 12;
+const COVERT_EXTRACT_HEAT = 6;
+const COVERT_FAILURE_HEAT = 28;
+const COVERT_SUCCESS_HEAT_DECAY = 15;
+const COVERT_HEAT_DECAY_PER_TICK = 0.8;
+const COVERT_OP_SUCCESS_CONTROL = 10;
+const COVERT_FAILURE_SAM_PRESSURE = 8;
+const COVERT_DEPLOY_COOLDOWN_MS = 8000;
 
 const WORLD_DISTRICTS = [
   { id: 'neon-slums', name: 'Neon Slums' },
@@ -151,6 +162,9 @@ export class CityRoom extends Room {
       getPlayerName: (playerId) => this.state.players.get(playerId)?.name || 'Player',
       getSamPhase: () => this.world.samPhase,
     });
+    this.covertOps = createCovertOpsSystem();
+    // Per-player deploy rate-limiting (sessionId → last accepted deploy timestamp).
+    this.playerDeployTimes = new Map();
 
     console.log('🏙️ CityRoom with District and Quest systems created', options);
     this.setSimulationInterval((dt) => this.updateWorld(dt), 50);
@@ -210,6 +224,14 @@ export class CityRoom extends Room {
     this.onMessage('duelAction', (client, data) => {
       this.handleDuelAction(client, data);
     });
+
+    this.onMessage('deployOperative', (client, data) => {
+      this.handleDeployOperative(client, data);
+    });
+
+    this.onMessage('extractOperative', (client, data) => {
+      this.handleExtractOperative(client, data);
+    });
   }
 
   createInitialWorld() {
@@ -231,6 +253,7 @@ export class CityRoom extends Room {
       conflictLevel: 0,
       recruitmentLevel: 0,
       samInstability: 0,
+      covertHeat: 0,
     }));
     const links = CONTROL_LINKS.map((link) => ({
       from: link.from.id,
@@ -360,6 +383,7 @@ export class CityRoom extends Room {
       this.updateSAM();
       this.updateSamHunters(dt);
       this.updateDuels();
+      this.updateCovertOps();
 
       if (this.snapshotTimerMs >= WORLD_SNAPSHOT_INTERVAL_MS) {
         this.snapshotTimerMs = 0;
@@ -464,6 +488,7 @@ export class CityRoom extends Room {
         conflictLevel: node.conflictLevel || 0,
         recruitmentLevel: node.recruitmentLevel || 0,
         samInstability: node.samInstability || 0,
+        covertHeat: node.covertHeat || 0,
         cooldownUntil: node.cooldownUntil,
         pulseUntil: node.pulseUntil,
         sourcePlayerId: node.lastInterferedBy,
@@ -1180,6 +1205,8 @@ export class CityRoom extends Room {
     let unstableCount = 0;
     for (const node of this.world.controlNodes) {
       if (!node) continue;
+      // Covert heat decays continuously regardless of node cooldown state.
+      node.covertHeat = Math.max(0, (node.covertHeat || 0) - COVERT_HEAT_DECAY_PER_TICK);
       if (node.cooldownUntil > now) {
         if (node.pulseUntil <= now && node.status !== 'cooldown') {
           node.status = 'cooldown';
@@ -1378,10 +1405,12 @@ export class CityRoom extends Room {
         message: 'Duel ended: participant disconnected.',
       });
     }
+    this.covertOps.onPlayerLeave(client.sessionId);
     this.state.players.delete(client.sessionId);
     this.completedQuests.delete(client.sessionId);
     this.playerMoveTimes.delete(client.sessionId);
     this.playerInterfereTimes.delete(client.sessionId);
+    this.playerDeployTimes.delete(client.sessionId);
 
     const playerCount = this.state.players.size;
     console.log(`[CityRoom] Player left · players: ${playerCount}/${this.maxClients}`);
@@ -1696,5 +1725,171 @@ export class CityRoom extends Room {
       message: `⚔️ Duel ripple registered${rippleDistrict ? ` · ${rippleDistrict.name} pressure shifted` : ''}`,
     });
     this.emitSystemEvent(`🎮 Mini-game outcome logged · ${winnerId ? 'victory claimed' : 'draw'} in duel ${duel.duelId}`);
+  }
+
+  // ---------------------------------------------------------------------------
+  // Covert Ops — Phase 1
+  // ---------------------------------------------------------------------------
+
+  handleDeployOperative(client, data) {
+    const player = this.state.players.get(client.sessionId);
+    if (!player) return;
+
+    const nodeId = String(data?.nodeId || '').toLowerCase();
+    if (!nodeId) return;
+
+    const node = this.world.nodeLookup.get(nodeId);
+    if (!node) return;
+
+    // Distance check: same threshold as nodeInterfere.
+    const dx = node.x - player.x;
+    const dy = node.y - player.y;
+    const dist = Math.sqrt(dx * dx + dy * dy);
+    if (dist > NODE_INTERACT_MAX_DISTANCE) {
+      console.warn(`[CityRoom] ${client.sessionId} deploy rejected: node "${nodeId}" out of range (dist=${dist.toFixed(1)})`);
+      return;
+    }
+
+    // Per-player deploy rate limit.
+    const now = Date.now();
+    const lastDeploy = this.playerDeployTimes.get(client.sessionId) || 0;
+    if (now - lastDeploy < COVERT_DEPLOY_COOLDOWN_MS) {
+      client.send('system', { message: 'Operative deploy on cooldown.' });
+      return;
+    }
+
+    const intent = String(data?.intent || 'disrupt').toLowerCase() === 'assist' ? 'assist' : 'disrupt';
+    const result = this.covertOps.deployOperative(client.sessionId, nodeId, intent);
+    if (result.error) {
+      client.send('system', { message: `Deploy rejected: ${result.error}` });
+      return;
+    }
+
+    this.playerDeployTimes.set(client.sessionId, now);
+    node.covertHeat = Math.min(100, (node.covertHeat || 0) + COVERT_DEPLOY_HEAT);
+
+    this.broadcast('operativeDeployed', {
+      operativeId: result.operative.id,
+      playerId: client.sessionId,
+      nodeId,
+      districtId: node.districtId,
+      type: result.operative.type,
+      intent,
+      covertHeat: node.covertHeat,
+    });
+
+    this.emitSystemEvent(`🕵️ Covert operative deployed to ${nodeId}`);
+  }
+
+  handleExtractOperative(client, data) {  // eslint-disable-line no-unused-vars
+    const result = this.covertOps.extractOperative(client.sessionId);
+    if (result.error) {
+      client.send('system', { message: `Extract rejected: ${result.error}` });
+      return;
+    }
+
+    const op = result.operative;
+    const node = this.world.nodeLookup.get(op.nodeId);
+    if (node) {
+      node.covertHeat = Math.min(100, (node.covertHeat || 0) + COVERT_EXTRACT_HEAT);
+    }
+
+    this.broadcast('operativeExtracted', {
+      operativeId: op.id,
+      playerId: client.sessionId,
+      nodeId: op.nodeId,
+      districtId: node?.districtId || '',
+      covertHeat: node?.covertHeat || 0,
+    });
+
+    this.emitSystemEvent(`🔙 Operative extracted from ${op.nodeId}`);
+  }
+
+  updateCovertOps() {
+    const now = Date.now();
+    const resolved = this.covertOps.resolveExpiredOperatives(now, (op) => {
+      const node = this.world.nodeLookup.get(op.nodeId);
+      const districtPlan = this.world.districtPatrols.find(
+        (plan) => plan.districtId === node?.districtId,
+      );
+      return resolveOperativeMission({
+        node,
+        samPressure: this.world.samPressure,
+        districtPostureScore: Number(districtPlan?.postureScore) || 0,
+      });
+    });
+
+    for (const outcome of resolved) {
+      const { operative, success, successChance } = outcome;
+      const node = this.world.nodeLookup.get(operative.nodeId);
+      const district = node
+        ? this.world.districts.find((d) => d.id === node.districtId)
+        : null;
+
+      if (success) {
+        if (node) {
+          const controlShift = operative.intent === 'assist'
+            ? COVERT_OP_SUCCESS_CONTROL
+            : -COVERT_OP_SUCCESS_CONTROL;
+          node.control = Math.max(-100, Math.min(100, node.control + controlShift));
+          node.covertHeat = Math.max(0, (node.covertHeat || 0) - COVERT_SUCCESS_HEAT_DECAY);
+          node.samInstability = Math.max(
+            0,
+            (node.samInstability || 0) + (operative.intent === 'disrupt' ? 8 : -4),
+          );
+          if (node.control >= 15) node.owner = 'Liberators';
+          else if (node.control <= -15) node.owner = 'Wardens';
+        }
+
+        this.broadcast('operativeResolved', {
+          operativeId: operative.id,
+          playerId: operative.playerId,
+          nodeId: operative.nodeId,
+          districtId: node?.districtId || '',
+          success: true,
+          successChance,
+          intent: operative.intent,
+          nodeControl: node?.control ?? null,
+          nodeOwner: node?.owner ?? null,
+          covertHeat: node?.covertHeat ?? null,
+          districtControl: district?.control ?? null,
+          districtOwner: district?.owner ?? null,
+        });
+
+        this.emitSystemEvent(`✅ Covert op SUCCESS at ${operative.nodeId} · control shifted`);
+      } else {
+        if (node) {
+          node.covertHeat = Math.min(100, (node.covertHeat || 0) + COVERT_FAILURE_HEAT);
+        }
+        this.world.samPressure = Math.max(
+          0,
+          Math.min(140, this.world.samPressure + COVERT_FAILURE_SAM_PRESSURE),
+        );
+
+        this.broadcast('operativeResolved', {
+          operativeId: operative.id,
+          playerId: operative.playerId,
+          nodeId: operative.nodeId,
+          districtId: node?.districtId || '',
+          success: false,
+          successChance,
+          intent: operative.intent,
+          nodeControl: node?.control ?? null,
+          nodeOwner: node?.owner ?? null,
+          covertHeat: node?.covertHeat ?? null,
+          districtControl: district?.control ?? null,
+          districtOwner: district?.owner ?? null,
+          samPressure: this.world.samPressure,
+        });
+
+        this.emitSystemEvent(`❌ Covert op BLOWN at ${operative.nodeId} · operative captured`);
+        this.recordHunterActivity({
+          districtId: node?.districtId || '',
+          nodeId: operative.nodeId,
+          type: 'covert-failure',
+          weight: 2.2,
+        });
+      }
+    }
   }
 }
