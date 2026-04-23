@@ -80,6 +80,11 @@
   const HERO_EDGE_SHADOW_BLUR = 16;
   const HERO_NODE_GLOW_MULTIPLIER = 1.95;
   const HERO_NODE_GLOW_ALPHA = 0.12;
+  const HERO_HIT_RADIUS = 10;
+  const HERO_INNER_RADIUS_RATIO = 0.24;
+  const HERO_OUTER_RADIUS_RATIO = 0.4;
+  const HERO_VIEWPORT_PADDING_RATIO = 0.08;
+  const FULL_VIEWPORT_PADDING_RATIO = 0.12;
   const HERO_LABEL_FONT_MIN = 11;
   const HERO_LABEL_FONT_BASE = 13;
   const HERO_LABEL_ZOOM_BASE = 0.8;
@@ -187,9 +192,13 @@
   }
 
   // ── Mode management ──────────────────────────────────────────────────────
+  function normalizeMode(mode) {
+    return mode === MODE_FULL || mode === MODE_HERO ? mode : MODE_HERO;
+  }
+
   function getModeFromURL() {
     const mode = new URLSearchParams(window.location.search).get('mode');
-    return mode === MODE_FULL ? MODE_FULL : MODE_HERO;
+    return normalizeMode(mode);
   }
 
   function updateModeToggleUI(mode) {
@@ -214,7 +223,7 @@
   }
 
   function setMode(mode, { pushHistory = false, syncUrl = true, replaceHistory = false } = {}) {
-    const nextMode = mode === MODE_FULL ? MODE_FULL : MODE_HERO;
+    const nextMode = normalizeMode(mode);
     renderGeneration += 1;
     const generation = renderGeneration;
 
@@ -257,7 +266,7 @@
     setStatus('Hero constellation view');
     buildHeroGraph();
     layoutDone = true;
-    fitGraphToViewport(0.08);
+    fitGraphToViewport(HERO_VIEWPORT_PADDING_RATIO);
     revealGraph();
     draw();
     const anchor = nodePositions.find(p => p.node.id === 'moonboys');
@@ -271,8 +280,8 @@
     const cx = W / 2;
     const cy = H / 2;
 
-    const innerRadius = Math.min(W, H) * 0.24;
-    const outerRadius = Math.min(W, H) * 0.4;
+    const innerRadius = Math.min(W, H) * HERO_INNER_RADIUS_RATIO;
+    const outerRadius = Math.min(W, H) * HERO_OUTER_RADIUS_RATIO;
 
     const layout = {
       moonboys: [0, 0],
@@ -442,7 +451,7 @@
       const ch = Math.max(container.clientHeight, MIN_CANVAS_HEIGHT);
       canvas.width = cw;
       canvas.height = ch;
-      fitGraphToViewport(0.12);
+      fitGraphToViewport(FULL_VIEWPORT_PADDING_RATIO);
       revealGraph();
       draw();
       setStatus('');
@@ -626,7 +635,7 @@
 
   function shortTitle(title) {
     const t = String(title || '').replace(/\s*[—–-]\s*Crypto Moonboys Wiki.*$/i, '').trim();
-    return t.length > 24 ? `${t.slice(0, 22)}…` : t;
+    return t.length > 24 ? `${t.slice(0, 24)}…` : t;
   }
 
   function getNeighbours(node) {
@@ -657,7 +666,7 @@
       const dx = p.x - wx;
       const dy = p.y - wy;
       const d = Math.sqrt(dx * dx + dy * dy);
-      const hitR = Math.max(p.radius / zoom, currentMode === MODE_HERO ? 10 : 6);
+      const hitR = Math.max(p.radius / zoom, currentMode === MODE_HERO ? HERO_HIT_RADIUS : 6);
       if (d < hitR && d < bestDist) {
         best = p;
         bestDist = d;
@@ -847,7 +856,7 @@
   function resetView() {
     if (!nodePositions.length) return;
     hasUserAdjustedView = false;
-    fitGraphToViewport(currentMode === MODE_HERO ? 0.08 : 0.12);
+    fitGraphToViewport(currentMode === MODE_HERO ? HERO_VIEWPORT_PADDING_RATIO : FULL_VIEWPORT_PADDING_RATIO);
     draw();
   }
 
@@ -857,7 +866,7 @@
     for (const p of nodePositions) {
       p.visible = (filterCategory === 'all') || ((p.node.category || 'unknown').toLowerCase() === filterCategory);
     }
-    fitGraphToViewport(0.12);
+    fitGraphToViewport(FULL_VIEWPORT_PADDING_RATIO);
     draw();
   }
 
@@ -867,7 +876,7 @@
     if (!q) {
       for (const p of nodePositions) p.visible = true;
       hoveredNode = null;
-      fitGraphToViewport(0.12);
+      fitGraphToViewport(FULL_VIEWPORT_PADDING_RATIO);
       draw();
       return;
     }
@@ -882,7 +891,7 @@
       showInfo(match.node);
     }
 
-    fitGraphToViewport(0.12);
+    fitGraphToViewport(FULL_VIEWPORT_PADDING_RATIO);
     draw();
   }
 
@@ -911,7 +920,7 @@
     if (!nodePositions.length) return;
 
     if (!hasUserAdjustedView || !layoutDone) {
-      fitGraphToViewport(currentMode === MODE_HERO ? 0.08 : 0.12);
+      fitGraphToViewport(currentMode === MODE_HERO ? HERO_VIEWPORT_PADDING_RATIO : FULL_VIEWPORT_PADDING_RATIO);
     } else if (prevW && prevH) {
       panX += (w - prevW) / 2;
       panY += (h - prevH) / 2;
