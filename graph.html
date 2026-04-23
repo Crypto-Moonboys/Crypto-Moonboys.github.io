@@ -36,6 +36,41 @@
       padding: 10px 24px;
       background: transparent;
     }
+    .graph-mode-toggle {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      border: 1px solid rgba(88,166,255,.35);
+      border-radius: 999px;
+      padding: 3px;
+      background: rgba(13,17,23,.45);
+      box-shadow: 0 0 24px rgba(88,166,255,.15);
+      backdrop-filter: blur(5px);
+    }
+    .graph-mode-toggle button {
+      border: 0;
+      border-radius: 999px;
+      background: transparent;
+      color: var(--color-text-muted);
+      font-weight: 600;
+      letter-spacing: .01em;
+      padding: 7px 14px;
+      cursor: pointer;
+      text-shadow: 0 1px 8px rgba(0,0,0,.4);
+    }
+    .graph-mode-toggle button.is-active {
+      background: rgba(88,166,255,.28);
+      color: var(--color-text);
+      box-shadow: 0 0 20px rgba(88,166,255,.22);
+    }
+    .graph-toolbar-main {
+      display: inline-flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px;
+      flex: 1;
+      min-width: 260px;
+    }
     .graph-toolbar label {
       font-size: .8rem;
       color: var(--color-text-muted);
@@ -69,11 +104,35 @@
     .graph-toolbar button:hover {
       background: var(--color-border);
     }
+    .graph-mode-toggle button {
+      border: 0;
+      background: transparent;
+      color: var(--color-text-muted);
+      box-shadow: none;
+    }
+    .graph-mode-toggle button:hover {
+      background: rgba(88,166,255,.16);
+    }
+    .graph-mode-toggle button.is-active,
+    .graph-mode-toggle button.is-active:hover {
+      background: rgba(88,166,255,.28);
+      color: var(--color-text);
+      box-shadow: 0 0 20px rgba(88,166,255,.22);
+    }
     .graph-status {
       font-size: .8rem;
       color: var(--color-text-muted);
       margin-left: auto;
       text-align: right;
+    }
+    body.graph-mode-hero .graph-toolbar-main {
+      display: none;
+    }
+    body.graph-mode-hero .graph-help {
+      opacity: .7;
+    }
+    body.graph-mode-hero .graph-legend {
+      display: none;
     }
 
     /* ── Main graph area ─────────────────────────────────────────────────── */
@@ -304,15 +363,22 @@
     </div>
 
     <div class="graph-toolbar">
-      <label for="graph-filter-select">Filter:</label>
-      <select id="graph-filter-select" aria-label="Filter by category">
-        <option value="all">All categories</option>
-      </select>
+      <div class="graph-mode-toggle" role="tablist" aria-label="Graph mode">
+        <button id="graph-mode-hero" type="button" role="tab" aria-selected="true">Hero View</button>
+        <button id="graph-mode-full" type="button" role="tab" aria-selected="false">Full Data Graph</button>
+      </div>
 
-      <label for="graph-search">Search:</label>
-      <input type="search" id="graph-search" placeholder="Find entity…" aria-label="Search entity" autocomplete="off">
+      <div class="graph-toolbar-main">
+        <label for="graph-filter-select">Filter:</label>
+        <select id="graph-filter-select" aria-label="Filter by category">
+          <option value="all">All categories</option>
+        </select>
 
-      <button id="graph-reset-btn" type="button">Reset view</button>
+        <label for="graph-search">Search:</label>
+        <input type="search" id="graph-search" placeholder="Find entity…" aria-label="Search entity" autocomplete="off">
+
+        <button id="graph-reset-btn" type="button">Reset view</button>
+      </div>
 
       <span class="graph-status" id="graph-status" aria-live="polite"></span>
     </div>
