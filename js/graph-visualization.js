@@ -659,7 +659,7 @@
     const boundedPad = Math.min(scaledPad, MAX_VIEWPORT_PADDING);
     const pad = Math.max(
       MIN_VIEWPORT_PADDING,
-      boundedPad,
+      boundedPad
     );
     const fitW = Math.max(canvas.width - pad * 2, 1);
     const fitH = Math.max(canvas.height - pad * 2, 1);
