@@ -110,6 +110,10 @@ export class CityRoom extends Room {
   onCreate(options) {
     this.setState(new RoomState());
     this.maxClients = 100;
+    // Keep the room alive even when all players have left so that reconnecting
+    // clients can always use client.join() rather than client.joinOrCreate().
+    // This ensures there is always exactly ONE "city" room instance.
+    this.autoDispose = false;
     this.worldTickCount = 0;
     this.samTimerMs = 0;
     this.districtTimerMs = 0;
@@ -1305,6 +1309,8 @@ export class CityRoom extends Room {
     this.handleDistrictChange(client.sessionId, player);
     client.send('worldSnapshot', this.buildLeanSnapshot());
 
+    const playerCount = this.state.players.size;
+    console.log(`[CityRoom] ${player.name} joined · players: ${playerCount}/${this.maxClients}`);
     this.broadcast('system', {
       message: `${player.name} has entered Block Topia.`,
     });
@@ -1322,6 +1328,8 @@ export class CityRoom extends Room {
     this.state.players.delete(client.sessionId);
     this.completedQuests.delete(client.sessionId);
 
+    const playerCount = this.state.players.size;
+    console.log(`[CityRoom] Player left · players: ${playerCount}/${this.maxClients}`);
     this.broadcast('system', {
       message: `A rebel has left the city.`,
     });
