@@ -27,6 +27,12 @@
   const NODE_MAX_RADIUS = 18;
   const EDGE_ALPHA_BASE = 0.25;
   const EDGE_ALPHA_HOVER = 0.7;
+  const MIN_ZOOM = 0.15;
+  const MAX_ZOOM = 2.2;
+  const MIN_CANVAS_HEIGHT = 280;
+  const MIN_VIEWPORT_PADDING = 28;
+  const MAX_VIEWPORT_PADDING = 110;
+  const VIEWPORT_PADDING_RATIO = 0.12;
 
   // Force simulation parameters
   const ITERATIONS      = 400;
@@ -56,6 +62,8 @@
   let canvas, ctx, infoPanel, searchBox;
   let animFrame = null;
   let layoutDone = false;
+  let graphReady = false;
+  let hasUserAdjustedView = false;
 
   // ── Entry point ──────────────────────────────────────────────────────────
   function init() {
@@ -63,6 +71,9 @@
     ctx       = canvas.getContext('2d');
     infoPanel = document.getElementById('graph-info');
     searchBox = document.getElementById('graph-search');
+    if (canvas && canvas.parentElement) {
+      canvas.parentElement.classList.remove('is-ready');
+    }
 
     resizeCanvas();
     window.addEventListener('resize', resizeCanvas);
@@ -99,7 +110,6 @@
         graphData = data;
         buildFilterOptions(data.nodes);
         buildGraph(data.nodes, data.edges);
-        setStatus('');
         runLayout();
       })
       .catch(err => {
@@ -163,25 +173,40 @@
   // ── Force layout ─────────────────────────────────────────────────────────
   function runLayout() {
     layoutDone = false;
+    if (animFrame) cancelAnimationFrame(animFrame);
     let step = 0;
+    const iterationsPerFrame = 24;
+    setStatus('Computing layout… 0%');
 
     function tick() {
-      if (step >= ITERATIONS) {
-        layoutDone = true;
-        draw();
+      const end = Math.min(step + iterationsPerFrame, ITERATIONS);
+      for (; step < end; step++) {
+        const cool = 1 - step / ITERATIONS;
+        simulateStep(cool);
+      }
+
+      const progress = Math.round((step / ITERATIONS) * 100);
+      setStatus(`Computing layout… ${progress}%`);
+
+      if (step < ITERATIONS) {
+        animFrame = requestAnimationFrame(tick);
         return;
       }
 
-      // Cool down factor
-      const cool = 1 - step / ITERATIONS;
-
-      simulateStep(cool);
-      step++;
+      layoutDone = true;
+      // Sync canvas to current container size (may have changed during layout computation)
+      // before computing the fit, so the viewport dimensions are accurate.
+      const container = canvas.parentElement;
+      const cw = container.clientWidth;
+      const ch = Math.max(container.clientHeight, MIN_CANVAS_HEIGHT);
+      canvas.width  = cw;
+      canvas.height = ch;
+      fitGraphToViewport();
+      revealGraph();
       draw();
-      animFrame = requestAnimationFrame(tick);
+      setStatus('');
     }
 
-    if (animFrame) cancelAnimationFrame(animFrame);
     animFrame = requestAnimationFrame(tick);
   }
 
@@ -373,11 +398,13 @@
   }
 
   function onMouseMove(e) {
+    if (!graphReady) return;
     const rect = canvas.getBoundingClientRect();
     const cx = e.clientX - rect.left;
     const cy = e.clientY - rect.top;
 
     if (isPanning) {
+      hasUserAdjustedView = true;
       panX += cx - panStartX;
       panY += cy - panStartY;
       panStartX = cx;
@@ -407,6 +434,7 @@
   }
 
   function onMouseDown(e) {
+    if (!graphReady) return;
     const rect = canvas.getBoundingClientRect();
     const cx = e.clientX - rect.left;
     const cy = e.clientY - rect.top;
@@ -428,6 +456,7 @@
   }
 
   function onMouseUp() {
+    if (!graphReady) return;
     isDragging = false;
     dragNode   = null;
     isPanning  = false;
@@ -435,6 +464,7 @@
   }
 
   function onWheel(e) {
+    if (!graphReady) return;
     e.preventDefault();
     const factor = e.deltaY < 0 ? 1.1 : 0.9;
     const rect = canvas.getBoundingClientRect();
@@ -444,13 +474,15 @@
     panX = cx - factor * (cx - panX);
     panY = cy - factor * (cy - panY);
     zoom *= factor;
-    zoom = Math.max(0.15, Math.min(zoom, 8));
+    zoom = Math.max(MIN_ZOOM, Math.min(zoom, MAX_ZOOM));
+    hasUserAdjustedView = true;
     draw();
   }
 
   // Touch helpers
   let lastTouchDist = 0;
   function onTouchStart(e) {
+    if (!graphReady) return;
     e.preventDefault();
     if (e.touches.length === 1) {
       const t = e.touches[0];
@@ -479,6 +511,7 @@
   }
 
   function onTouchMove(e) {
+    if (!graphReady) return;
     e.preventDefault();
     if (e.touches.length === 1) {
       const t = e.touches[0];
@@ -486,6 +519,7 @@
       const cx = t.clientX - rect.left;
       const cy = t.clientY - rect.top;
       if (isPanning) {
+        hasUserAdjustedView = true;
         panX += cx - panStartX;
         panY += cy - panStartY;
         panStartX = cx;
@@ -506,7 +540,8 @@
       if (lastTouchDist > 0) {
         const factor = dist / lastTouchDist;
         zoom *= factor;
-        zoom = Math.max(0.15, Math.min(zoom, 8));
+        zoom = Math.max(MIN_ZOOM, Math.min(zoom, MAX_ZOOM));
+        hasUserAdjustedView = true;
         draw();
       }
       lastTouchDist = dist;
@@ -514,6 +549,7 @@
   }
 
   function onTouchEnd() {
+    if (!graphReady) return;
     isDragging = false;
     dragNode   = null;
     isPanning  = false;
@@ -544,7 +580,8 @@
 
   // ── Controls ─────────────────────────────────────────────────────────────
   function resetView() {
-    panX = 0; panY = 0; zoom = 1;
+    hasUserAdjustedView = false;
+    fitGraphToViewport();
     draw();
   }
 
@@ -554,6 +591,7 @@
       p.visible = (filterCategory === 'all') ||
                   (p.node.category || 'unknown').toLowerCase() === filterCategory;
     }
+    fitGraphToViewport();
     draw();
   }
 
@@ -562,6 +600,7 @@
     if (!q) {
       for (const p of nodePositions) p.visible = true;
       hoveredNode = null;
+      fitGraphToViewport();
       draw();
       return;
     }
@@ -573,6 +612,7 @@
       hoveredNode = match.node;
       showInfo(match.node);
     }
+    fitGraphToViewport();
     draw();
   }
 
@@ -590,12 +630,61 @@
 
   // ── Canvas resize ─────────────────────────────────────────────────────────
   function resizeCanvas() {
+    if (!canvas) return;
     const container = canvas.parentElement;
+    const prevW = canvas.width || 0;
+    const prevH = canvas.height || 0;
     const w = container.clientWidth;
-    const h = Math.max(container.clientHeight, 320);
+    const h = Math.max(container.clientHeight, MIN_CANVAS_HEIGHT);
     canvas.width  = w;
     canvas.height = h;
-    if (graphData && nodePositions.length) draw();
+    // Never draw or refit until layout is fully done — prevents the
+    // "appears then jumps out of frame" glitch caused by mid-layout resizes.
+    if (!graphData || !nodePositions.length || !layoutDone) return;
+    if (!hasUserAdjustedView) {
+      fitGraphToViewport();
+    } else if (prevW && prevH) {
+      panX += (w - prevW) / 2;
+      panY += (h - prevH) / 2;
+    }
+    draw();
+  }
+
+  function fitGraphToViewport() {
+    const visible = nodePositions.filter(p => p.visible);
+    if (!visible.length || !canvas) return;
+    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+    for (const p of visible) {
+      const r = p.radius;
+      minX = Math.min(minX, p.x - r);
+      minY = Math.min(minY, p.y - r);
+      maxX = Math.max(maxX, p.x + r);
+      maxY = Math.max(maxY, p.y + r);
+    }
+    const spanX = Math.max(maxX - minX, 1);
+    const spanY = Math.max(maxY - minY, 1);
+    const viewportMin = Math.min(canvas.width, canvas.height);
+    const scaledPad = viewportMin * VIEWPORT_PADDING_RATIO;
+    const boundedPad = Math.min(scaledPad, MAX_VIEWPORT_PADDING);
+    const pad = Math.max(
+      MIN_VIEWPORT_PADDING,
+      boundedPad
+    );
+    const fitW = Math.max(canvas.width - pad * 2, 1);
+    const fitH = Math.max(canvas.height - pad * 2, 1);
+    const nextZoom = Math.max(MIN_ZOOM, Math.min(Math.min(fitW / spanX, fitH / spanY), MAX_ZOOM));
+    const centerX = (minX + maxX) / 2;
+    const centerY = (minY + maxY) / 2;
+    zoom = nextZoom;
+    panX = canvas.width / 2 - centerX * zoom;
+    panY = canvas.height / 2 - centerY * zoom;
+  }
+
+  function revealGraph() {
+    graphReady = true;
+    if (canvas && canvas.parentElement) {
+      canvas.parentElement.classList.add('is-ready');
+    }
   }
 
   // ── Bootstrap ─────────────────────────────────────────────────────────────

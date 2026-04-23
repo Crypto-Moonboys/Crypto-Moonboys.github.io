@@ -17,7 +17,6 @@
     /* ── Graph page layout ──────────────────────────────────────────────── */
     .graph-page-header {
       padding: 18px 24px 10px;
-      border-bottom: 1px solid var(--color-border);
     }
     .graph-page-header h1 {
       font-size: 1.35rem;
@@ -35,8 +34,7 @@
       align-items: center;
       gap: 10px;
       padding: 10px 24px;
-      background: var(--color-surface);
-      border-bottom: 1px solid var(--color-border);
+      background: transparent;
     }
     .graph-toolbar label {
       font-size: .8rem;
@@ -79,20 +77,25 @@
     }
 
     /* ── Main graph area ─────────────────────────────────────────────────── */
+    body.graph-page #content {
+      max-width: none;
+      padding: 20px 24px 44px;
+    }
     .graph-main {
       display: flex;
-      gap: 0;
-      /* Keep a stable desktop graph viewport without crowding footer/toolbar. */
-      height: clamp(320px, 58vh, 560px);
-      min-height: 0;
-      max-height: none;
-      overflow: hidden;
+      gap: 18px;
+      align-items: stretch;
+      height: auto;
+      min-height: 60vh;
+      overflow: visible;
     }
     .graph-canvas-wrap {
       flex: 1 1 0;
       min-width: 0;
       position: relative;
+      min-height: 60vh;
       background: transparent;
+      overflow: visible;
     }
     #graph-canvas {
       display: block;
@@ -100,14 +103,18 @@
       height: 100%;
       cursor: grab;
       touch-action: none;
+      opacity: 0;
+      transition: opacity .12s linear;
+    }
+    .graph-canvas-wrap.is-ready #graph-canvas {
+      opacity: 1;
     }
 
     /* ── Info sidebar ───────────────────────────────────────────────────── */
     .graph-info-panel {
       width: 240px;
       flex-shrink: 0;
-      background: var(--color-surface);
-      border-left: 1px solid var(--color-border);
+      background: transparent;
       padding: 16px;
       overflow-y: auto;
       font-size: .85rem;
@@ -169,7 +176,7 @@
     /* ── Legend ─────────────────────────────────────────────────────────── */
     .graph-legend {
       margin-top: 20px;
-      border-top: 1px solid var(--color-border);
+      border-top: 1px solid rgba(48,54,61,0.5);
       padding-top: 14px;
     }
     .graph-legend h4 {
@@ -197,8 +204,8 @@
       padding: 10px 24px;
       font-size: .75rem;
       color: var(--color-text-muted);
-      border-top: 1px solid var(--color-border);
-      background: var(--color-surface);
+      border-top: none;
+      background: transparent;
     }
     .graph-help span { margin-right: 14px; }
 
@@ -213,12 +220,14 @@
 
     @media (max-width: 640px) {
       .graph-info-panel { display: none; }
-      /* Slightly shorter viewport on narrow screens to prevent vertical overlap. */
-      .graph-main { height: clamp(260px, 46vh, 380px); }
+      .graph-main,
+      .graph-canvas-wrap {
+        min-height: 52vh;
+      }
     }
   </style>
 </head>
-<body>
+<body class="graph-page">
 
 <a class="skip-link" href="#content">Skip to content</a>
 
