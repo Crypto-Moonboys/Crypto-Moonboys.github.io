@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-04-23T18:12:43.163Z",
+  "generatedAt": "2026-04-23T19:50:47.717Z",
   "mode": "live-ai",
   "sourceHealth": {
     "coingecko-global": "ok",
@@ -11,84 +11,84 @@
   "signalCount": 5,
   "signals": [
     {
-      "id": "signal-1776967963163-1",
+      "id": "signal-1776973847716-1",
       "lane": "world",
       "priority": 4,
-      "ttlMinutes": 60,
-      "npcLine": "Crypto tides turn; shadows grow longer in market streets.",
-      "questPulse": "Seek stability amid slipping digital currency walls.",
-      "worldFeed": "Global coin count high, but confidence dims under fear.",
-      "clueEvent": "Market cap sheds old weight, whispers of decline.",
+      "ttlMinutes": 30,
+      "npcLine": "Crypto tides turned cold; shadows lengthen over the neon sprawl.",
+      "questPulse": "Market cap bleeding, clear skies hide stormy deals.",
+      "worldFeed": "Global tokens flicker; some vanish into the grid’s abyss.",
+      "clueEvent": "Chain reactions stoke unrest in downtown bazaars.",
       "tags": [
         "market",
-        "fear",
+        "dissent",
         "crypto"
       ],
-      "expiresAt": "2026-04-23T19:12:43.163Z"
+      "expiresAt": "2026-04-23T20:20:47.716Z"
     },
     {
-      "id": "signal-1776967963163-2",
+      "id": "signal-1776973847717-2",
       "lane": "ops",
-      "priority": 3,
-      "ttlMinutes": 45,
-      "npcLine": "MOVR and SPK buzz in back-alley trades, watch them close.",
-      "questPulse": "Track rising signals in obscure crypto nodes, exploit gaps.",
-      "worldFeed": "Some coins gain pulse; others fade into neon static.",
-      "clueEvent": "New pulse sparks in mid-tier currencies; shadows shift.",
-      "tags": [
-        "crypto",
-        "trade",
-        "intel"
-      ],
-      "expiresAt": "2026-04-23T18:57:43.163Z"
-    },
-    {
-      "id": "signal-1776967963163-3",
-      "lane": "clue",
       "priority": 5,
-      "ttlMinutes": 30,
-      "npcLine": "Fear grips markets; whispers say the biggest falls ahead.",
-      "questPulse": "Decrypt volatile moves before circuits short and burn out.",
-      "worldFeed": "Sentiment index near low; expect chaos in next pulse.",
-      "clueEvent": "Sentiment dips below critical, signaling potential collapse.",
+      "ttlMinutes": 20,
+      "npcLine": "Sentiment crackling—fear rises, miners brace for fallout.",
+      "questPulse": "Networks strain under low trust, hacks spike in data veins.",
+      "worldFeed": "Encrypted chatter warns of asset dumps, vaults go dark.",
+      "clueEvent": "Ghost trader shadows detected near the black market hub.",
       "tags": [
         "fear",
-        "volatility",
-        "warning"
+        "hack",
+        "surveillance"
       ],
-      "expiresAt": "2026-04-23T18:42:43.163Z"
+      "expiresAt": "2026-04-23T20:10:47.717Z"
     },
     {
-      "id": "signal-1776967963163-4",
+      "id": "signal-1776973847717-3",
+      "lane": "clue",
+      "priority": 3,
+      "ttlMinutes": 45,
+      "npcLine": "Asteroid and chip tokens flicker with silent promise.",
+      "questPulse": "Unseen hands tilt the scale, anomalies in the ledger.",
+      "worldFeed": "Whispers of new algorithms causing market ripples surface.",
+      "clueEvent": "Data scavengers find strange code in abandoned blocks.",
+      "tags": [
+        "tokens",
+        "algorithm",
+        "whisper"
+      ],
+      "expiresAt": "2026-04-23T20:35:47.717Z"
+    },
+    {
+      "id": "signal-1776973847717-4",
       "lane": "quest",
       "priority": 2,
-      "ttlMinutes": 90,
-      "npcLine": "PENGU and SPK hold secrets for those who dare to dig.",
-      "questPulse": "Gather intel on hidden coin flows; stakes rising rapidly.",
-      "worldFeed": "Trends shift slowly; undercurrents hint at sudden surges.",
-      "clueEvent": "Rising scores in lesser-known tokens call for attention.",
+      "ttlMinutes": 60,
+      "npcLine": "Ethereum and Aave pipelines show irregular pulses—investigate flow.",
+      "questPulse": "Follow the fading trails in liquidity nodes and shadow contracts.",
+      "worldFeed": "Nodes offline, traders scramble for data fragments.",
+      "clueEvent": "Encoded messages spotted in transaction overloads.",
       "tags": [
-        "exploration",
-        "crypto",
-        "intel"
+        "investigate",
+        "liquidity",
+        "puzzle"
       ],
-      "expiresAt": "2026-04-23T19:42:43.163Z"
+      "expiresAt": "2026-04-23T20:50:47.717Z"
     },
     {
-      "id": "signal-1776967963163-5",
+      "id": "signal-1776973847717-5",
       "lane": "npc",
       "priority": 1,
       "ttlMinutes": 120,
-      "npcLine": "Old timer warns: BTC holds its pulse, but winds feel cold.",
-      "questPulse": "Stay alert, veteran coins may trigger unexpected shifts.",
-      "worldFeed": "Dominant coin flickers, a beacon or a trap remains unclear.",
-      "clueEvent": "BTC sentiment cautiously steady in fearful shadows.",
+      "npcLine": "Old netrunners mutter of shifting forces in this digital war.",
+      "questPulse": "Seek forgotten vaults lost in market chaos.",
+      "worldFeed": "Ancient protocols awaken amid current instability.",
+      "clueEvent": "Rumors of a key hidden in dead code fragments.",
       "tags": [
-        "btc",
-        "legacy",
-        "caution"
+        "nostalgia",
+        "hidden",
+        "vault"
       ],
-      "expiresAt": "2026-04-23T20:12:43.163Z"
+      "expiresAt": "2026-04-23T21:50:47.717Z"
     }
   ]
 }
