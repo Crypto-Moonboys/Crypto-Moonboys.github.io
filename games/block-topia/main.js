@@ -851,6 +851,33 @@ async function boot() {
   let lastInteractPromptText = '';
   let lastInteractPromptVisible = false;
   const seenFeed = new Map();
+
+  // Debug panel state — updated on each connection/snapshot event.
+  const debugState = {
+    connectionState: 'offline',
+    roomName: state.room.id || 'city',
+    playerCount: 0,
+    maxPlayers: state.room.maxPlayers || 100,
+    lastWorldUpdateAt: 0,
+  };
+
+  function formatUpdateAge(lastWorldUpdateAt) {
+    if (!lastWorldUpdateAt) return 'never';
+    const ageMs = Date.now() - lastWorldUpdateAt;
+    if (ageMs < 2000) return `${ageMs}ms ago`;
+    return `${(ageMs / 1000).toFixed(1)}s ago`;
+  }
+
+  function renderDebugPanel() {
+    const panel = document.getElementById('debug-panel');
+    if (!panel || panel.hidden) return;
+    panel.textContent = [
+      `Room:        ${debugState.roomName}`,
+      `Connection:  ${debugState.connectionState}`,
+      `Players:     ${debugState.playerCount} / ${debugState.maxPlayers}`,
+      `Last update: ${formatUpdateAge(debugState.lastWorldUpdateAt)}`,
+    ].join('\n');
+  }
   const sessionGuard = {
     gated: false,
     overlayActive: false,
@@ -2023,6 +2050,15 @@ async function boot() {
 
   window.addEventListener('keydown', (event) => {
     if (shouldIgnoreHotkey(event) || event.repeat) return;
+    // Backtick (`) toggles the debug panel — dev diagnostics only, not visible by default.
+    if (event.key === '`') {
+      const panel = document.getElementById('debug-panel');
+      if (panel) {
+        panel.hidden = !panel.hidden;
+        if (!panel.hidden) renderDebugPanel();
+      }
+      return;
+    }
     const key = event.key;
     if (key === 'f' || key === 'F') {
       if (selectedRemotePlayer) {
@@ -2146,9 +2182,23 @@ async function boot() {
       memoryShard: state.memory.id,
     },
     onStatus: (status) => {
-      const statusText = status.joined
-        ? `Connected (${status.ws})`
-        : `${status.ws}${status.error ? ` · ${status.error}` : ''}`;
+      const wsState = status.ws || 'offline';
+      debugState.connectionState = wsState;
+      debugState.roomName = status.roomId || debugState.roomName;
+      renderDebugPanel();
+
+      let statusText;
+      if (status.joined) {
+        statusText = `Connected (${wsState})`;
+      } else if (wsState === 'room-full') {
+        statusText = '⛔ Room full (100 / 100)';
+        console.warn('[BlockTopia] Room is at capacity — cannot join.');
+      } else if (wsState === 'disconnected') {
+        statusText = `Disconnected${status.error ? ` · ${status.error}` : ''}`;
+        console.error('[BlockTopia] Server disconnect:', status.error || '(no detail)');
+      } else {
+        statusText = `${wsState}${status.error ? ` · ${status.error}` : ''}`;
+      }
       hud.setMultiplayerStatus(statusText);
       if (status.roomId) hud.setRoom(status.roomId);
       if (status.sessionId) localSessionId = status.sessionId;
@@ -2161,6 +2211,8 @@ async function boot() {
     },
     onPlayers: (players) => {
       applyRemotePlayers(state, players);
+      debugState.playerCount = players.length;
+      renderDebugPanel();
       hud.setPopulation(players.length, state.room.maxPlayers);
       if (selectedRemotePlayer?.id) {
         selectedRemotePlayer = state.remotePlayers.find((player) => player.id === selectedRemotePlayer.id) || null;
@@ -2170,6 +2222,8 @@ async function boot() {
       }
     },
     onWorldSnapshot: (data) => {
+      debugState.lastWorldUpdateAt = Date.now();
+      renderDebugPanel();
       if (hasSharedHunterSnapshotPayload(data)) {
         applySharedHunterSnapshot(data, 'snapshot');
       }

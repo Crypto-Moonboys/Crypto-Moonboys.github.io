@@ -7,7 +7,7 @@
   <meta name="description" content="Block Topia unified game: Street Signal identity + Revolt multiplayer + ISO social world. 5 districts, SAM AI, faction war, live quests." />
   <link rel="stylesheet" href="./style.css" />
   <script data-cfasync="false">
-    window.BLOCK_TOPIA_SERVER = window.BLOCK_TOPIA_SERVER || 'https://game.cryptomoonboys.com';
+    window.BLOCK_TOPIA_SERVER = window.BLOCK_TOPIA_SERVER || 'wss://game.cryptomoonboys.com';
   </script>
 </head>
 <body>
@@ -86,6 +86,9 @@
   <div id="interact-prompt" class="hidden">⚡ Press E to engage</div>
 
   <div id="multiplayer-live-banner" role="status" aria-live="polite">LIVE LINK — CONNECTING</div>
+
+  <!-- Debug panel: hidden by default, toggle with ` (backtick) key — dev only -->
+  <pre id="debug-panel" hidden aria-hidden="true"></pre>
 
   <script src="/js/api-config.js"></script>
   <script src="/js/identity-gate.js"></script>

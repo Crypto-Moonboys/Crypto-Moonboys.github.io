@@ -654,3 +654,20 @@ body.has-mini-game .stream-bottom {
     bottom: 146px;
   }
 }
+
+/* Debug panel — hidden by default, toggled via backtick key — dev/diagnostics only */
+#debug-panel {
+  position: fixed;
+  bottom: 8px;
+  left: 8px;
+  z-index: 9000;
+  background: rgba(0, 0, 0, 0.82);
+  color: #5ef2ff;
+  font: 11px/1.55 "Courier New", monospace;
+  padding: 8px 12px;
+  border: 1px solid rgba(94, 242, 255, 0.35);
+  border-radius: 4px;
+  pointer-events: none;
+  white-space: pre;
+  max-width: 320px;
+}

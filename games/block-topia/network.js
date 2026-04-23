@@ -1,9 +1,41 @@
 let room = null;
 let client = null;
 const STATE_CHANGE_THROTTLE_MS = 100;
+// Maximum connection attempts before giving up.
+const MAX_RETRIES = 3;
+// Colyseus error codes used for room-full and not-found detection.
+const ERR_ROOM_FULL = 4215;
+const ERR_ROOM_NOT_FOUND = 4212;
 
 function wait(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function isRoomFullError(error) {
+  return (
+    error?.code === ERR_ROOM_FULL
+    || /full|max.?client/i.test(String(error?.message || ''))
+  );
+}
+
+function isRoomNotFoundError(error) {
+  return (
+    error?.code === ERR_ROOM_NOT_FOUND
+    || /not.?found|cannot find/i.test(String(error?.message || ''))
+  );
+}
+
+// Join an existing room. If the room doesn't exist yet (first boot / server restart),
+// create it. Never create a second room if the first is already full.
+async function joinOrBootstrap(colyseusClient, roomId, options) {
+  try {
+    return await colyseusClient.join(roomId, options);
+  } catch (joinError) {
+    if (!isRoomNotFoundError(joinError)) throw joinError;
+    // Room not yet created — bootstrap it once, then let subsequent clients join it.
+    console.warn(`[BlockTopia] Room "${roomId}" not found — bootstrapping new room instance.`);
+    return colyseusClient.create(roomId, options);
+  }
 }
 
 function toPlayerList(playersState) {
@@ -41,20 +73,24 @@ export async function connectMultiplayer({
   onDuelResolved,
   onDuelEnded,
 }) {
-  const endpoint = window.BLOCK_TOPIA_SERVER || 'https://game.cryptomoonboys.com';
-  const retries = 2;
+  // Use explicit wss:// so the transport protocol is unambiguous.
+  // Normalise any https:// value from the runtime config to wss://.
+  const rawEndpoint = window.BLOCK_TOPIA_SERVER || 'wss://game.cryptomoonboys.com';
+  const endpoint = rawEndpoint.replace(/^https:\/\//, 'wss://').replace(/^http:\/\//, 'ws://');
   let lastError = null;
 
   if (!window.Colyseus) {
+    console.error('[BlockTopia] Colyseus client library not loaded — multiplayer unavailable.');
     onStatus?.({ ws: 'failed', joined: false, error: 'Colyseus not loaded', roomId });
     return null;
   }
 
-  for (let attempt = 1; attempt <= retries; attempt += 1) {
+  for (let attempt = 1; attempt <= MAX_RETRIES; attempt += 1) {
     try {
       onStatus?.({ ws: 'connecting', joined: false, error: '', roomId });
+      console.log(`[BlockTopia] Connecting (attempt ${attempt}/${MAX_RETRIES}) → ${endpoint} room "${roomId}"`);
       client = new window.Colyseus.Client(endpoint);
-      room = await client.joinOrCreate(roomId, {
+      room = await joinOrBootstrap(client, roomId, {
         name: playerName,
         faction: 'Liberators',
         district: roomIdentity?.districtId || 'neon-slums',
@@ -63,6 +99,17 @@ export async function connectMultiplayer({
 
       onStatus?.({ ws: 'connected', joined: true, error: '', roomId: room.name || roomId, sessionId: room.sessionId || '' });
       onFeed?.(`Connected to ${room.name || roomId} (${room.sessionId || 'session pending'})`);
+      console.log(`[BlockTopia] Joined room "${room.name || roomId}" session=${room.sessionId}`);
+
+      // Handle unexpected server-side disconnect after a successful join.
+      // Each room object is independent: this handler is bound to the specific room instance
+      // returned by joinOrBootstrap and will not accumulate across retry attempts.
+      const joinedRoomName = room.name || roomId;
+      room.onLeave((code) => {
+        console.error(`[BlockTopia] Disconnected from room "${joinedRoomName}" (code: ${code})`);
+        onStatus?.({ ws: 'disconnected', joined: false, error: `Disconnected (code: ${code})`, roomId: joinedRoomName });
+        onFeed?.(`⚠️ Multiplayer connection lost (code: ${code})`);
+      });
 
       let lastUpdate = 0;
       room.onStateChange((state) => {
@@ -145,13 +192,26 @@ export async function connectMultiplayer({
       return room;
     } catch (error) {
       lastError = error;
-      onStatus?.({ ws: 'failed', joined: false, error: String(error?.message || error), roomId });
-      if (attempt < retries) {
+      const roomFull = isRoomFullError(error);
+      const wsState = roomFull ? 'room-full' : 'failed';
+      console.error(
+        `[BlockTopia] Connection attempt ${attempt}/${MAX_RETRIES} failed (${wsState}):`,
+        error?.message || error,
+      );
+      onStatus?.({ ws: wsState, joined: false, error: String(error?.message || error), roomId, roomFull });
+      if (roomFull) {
+        // Room is at capacity — do not retry, and never create a second room.
+        onFeed?.('⛔ Block Topia is full (100 players). Try again later.');
+        console.warn('[BlockTopia] Room full — aborting further connection attempts.');
+        return null;
+      }
+      if (attempt < MAX_RETRIES) {
         await wait(2500);
       }
     }
   }
 
+  console.error('[BlockTopia] All connection attempts exhausted:', lastError?.message || lastError);
   onFeed?.(`⚠️ Multiplayer unavailable: ${String(lastError?.message || lastError || 'unknown error')}`);
   return null;
 }
