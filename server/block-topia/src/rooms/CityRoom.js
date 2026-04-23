@@ -18,6 +18,23 @@ const CROWD_NPC_COUNT = 20;
 const DISTRICT_DRIFT_INTERVAL_MS = 1200;
 const WORLD_SNAPSHOT_INTERVAL_MS = 300;
 const DISTRICT_CAPTURE_THRESHOLD = 90;
+// Server-authority validation constants.
+// Move messages arriving faster than this are dropped (max ~20 moves/sec).
+const MOVE_RATE_LIMIT_MS = 50;
+// Maximum grid-tile distance between player and node for interference to be accepted.
+const NODE_INTERACT_MAX_DISTANCE = 15;
+// Minimum time between any two interference attempts by the same player (node cooldown
+// is per-node; this is per-player across all nodes).
+const PLAYER_INTERFERE_COOLDOWN_MS = 1500;
+// Valid duel actions — must match duel-system.js VALID_ACTIONS.
+const VALID_DUEL_ACTIONS = new Set(['fight', 'burn', 'flip', 'run']);
+// Valid war action types — keys of PLAYER_WAR_ACTION_IMPACT.
+const VALID_WAR_ACTION_TYPES = new Set([
+  'interfere', 'operation_success', 'operation_failure',
+  'operation_skip', 'duel_win', 'duel_loss',
+]);
+// Warn if a single world-update tick takes longer than this.
+const WORLD_TICK_WARN_MS = 100;
 const NODE_INTERFERENCE_GAIN = 18;
 const NODE_UNSTABLE_THRESHOLD = 65;
 const NODE_COOLDOWN_MS = 6500;
@@ -120,6 +137,10 @@ export class CityRoom extends Room {
     this.snapshotTimerMs = 0;
     this.systemEventsThisTick = 0;
     this.hunterTimerMs = 0;
+    // Per-player move rate-limiting (sessionId → last accepted move timestamp).
+    this.playerMoveTimes = new Map();
+    // Per-player interference cooldown across all nodes (sessionId → last interfere timestamp).
+    this.playerInterfereTimes = new Map();
 
     this.completedQuests = new Map(); // sessionId -> Set
     this.world = this.createInitialWorld();
@@ -140,6 +161,12 @@ export class CityRoom extends Room {
 
       const { x, y } = data || {};
       if (typeof x !== 'number' || typeof y !== 'number') return;
+
+      // Rate-limit: silently drop move messages arriving faster than MOVE_RATE_LIMIT_MS.
+      const now = Date.now();
+      const lastMove = this.playerMoveTimes.get(client.sessionId) || 0;
+      if (now - lastMove < MOVE_RATE_LIMIT_MS) return;
+      this.playerMoveTimes.set(client.sessionId, now);
 
       const previous = { x: player.x, y: player.y };
       const next = clampPosition(x, y);
@@ -316,25 +343,34 @@ export class CityRoom extends Room {
   }
 
   updateWorld(dt) {
-    this.worldTickCount += 1;
-    this.systemEventsThisTick = 0;
-    this.samTimerMs += dt;
-    this.districtTimerMs += dt;
-    this.snapshotTimerMs += dt;
-    this.hunterTimerMs += dt;
+    const tickStart = Date.now();
+    try {
+      this.worldTickCount += 1;
+      this.systemEventsThisTick = 0;
+      this.samTimerMs += dt;
+      this.districtTimerMs += dt;
+      this.snapshotTimerMs += dt;
+      this.hunterTimerMs += dt;
 
-    this.updateNPCs(dt);
-    this.updateWarLayer(dt);
-    this.updateFactionState();
-    this.updateDistricts();
-    this.updateNodeInterference();
-    this.updateSAM();
-    this.updateSamHunters(dt);
-    this.updateDuels();
+      this.updateNPCs(dt);
+      this.updateWarLayer(dt);
+      this.updateFactionState();
+      this.updateDistricts();
+      this.updateNodeInterference();
+      this.updateSAM();
+      this.updateSamHunters(dt);
+      this.updateDuels();
 
-    if (this.snapshotTimerMs >= WORLD_SNAPSHOT_INTERVAL_MS) {
-      this.snapshotTimerMs = 0;
-      this.broadcast('worldSnapshot', this.buildLeanSnapshot());
+      if (this.snapshotTimerMs >= WORLD_SNAPSHOT_INTERVAL_MS) {
+        this.snapshotTimerMs = 0;
+        this.broadcast('worldSnapshot', this.buildLeanSnapshot());
+      }
+    } catch (error) {
+      console.error(`[CityRoom] updateWorld error on tick ${this.worldTickCount}:`, error?.message || error);
+    }
+    const elapsed = Date.now() - tickStart;
+    if (elapsed > WORLD_TICK_WARN_MS) {
+      console.warn(`[CityRoom] Slow tick #${this.worldTickCount}: ${elapsed}ms (threshold ${WORLD_TICK_WARN_MS}ms)`);
     }
   }
 
@@ -1227,7 +1263,23 @@ export class CityRoom extends Room {
     const now = Date.now();
     const node = this.world.controlNodes.find((entry) => entry.id === nodeId);
     if (!node) return;
+    // Per-node cooldown: prevent rapid re-interference on the same node.
     if (node.cooldownUntil > now) return;
+    // Per-player cooldown: prevent spamming interference on different nodes.
+    const lastInterfere = this.playerInterfereTimes.get(client.sessionId) || 0;
+    if (now - lastInterfere < PLAYER_INTERFERE_COOLDOWN_MS) return;
+    // Distance check: player must be within NODE_INTERACT_MAX_DISTANCE grid tiles of the node.
+    // Both player.x/y and node.x/y are in the same isometric grid coordinate space.
+    const player = this.state.players.get(client.sessionId);
+    if (player) {
+      const dx = node.x - player.x;
+      const dy = node.y - player.y;
+      if (Math.sqrt(dx * dx + dy * dy) > NODE_INTERACT_MAX_DISTANCE) {
+        console.warn(`[CityRoom] ${client.sessionId} rejected: node "${nodeId}" out of range (dist=${Math.sqrt(dx * dx + dy * dy).toFixed(1)})`);
+        return;
+      }
+    }
+    this.playerInterfereTimes.set(client.sessionId, now);
 
     const intent = String(data?.intent || 'disrupt').toLowerCase() === 'assist' ? 'assist' : 'disrupt';
     this.recordHunterActivity({
@@ -1327,6 +1379,8 @@ export class CityRoom extends Room {
     }
     this.state.players.delete(client.sessionId);
     this.completedQuests.delete(client.sessionId);
+    this.playerMoveTimes.delete(client.sessionId);
+    this.playerInterfereTimes.delete(client.sessionId);
 
     const playerCount = this.state.players.size;
     console.log(`[CityRoom] Player left · players: ${playerCount}/${this.maxClients}`);
@@ -1370,6 +1424,17 @@ export class CityRoom extends Room {
     const intent = String(data?.intent || '').toLowerCase() === 'assist' ? 'assist' : 'disrupt';
     const districtId = String(data?.districtId || player.currentDistrict || '');
     const nodeId = String(data?.nodeId || '').toLowerCase();
+
+    // Validate action type and district before applying world state changes.
+    if (actionType && !VALID_WAR_ACTION_TYPES.has(actionType)) {
+      console.warn(`[CityRoom] ${client.sessionId} sent unknown war actionType: "${actionType}"`);
+      return;
+    }
+    if (districtId && !WORLD_DISTRICTS.some((entry) => entry.id === districtId)) {
+      console.warn(`[CityRoom] ${client.sessionId} sent unknown districtId: "${districtId}"`);
+      return;
+    }
+
     const baseImpact = PLAYER_WAR_ACTION_IMPACT[actionType] || 5;
     const result = this.applyPlayerWarImpact({
       playerId: client.sessionId,
@@ -1495,6 +1560,12 @@ export class CityRoom extends Room {
     const duelId = String(data?.duelId || '');
     const action = String(data?.action || '').toLowerCase();
     if (!duelId || !action) return;
+    // Pre-validate action before sending to duel system (defence-in-depth).
+    if (!VALID_DUEL_ACTIONS.has(action)) {
+      console.warn(`[CityRoom] ${client.sessionId} sent invalid duel action: "${action}"`);
+      client.send('system', { message: `Duel action rejected: unknown action "${action}".` });
+      return;
+    }
     const result = this.duels.submitAction(client.sessionId, duelId, action);
     if (result?.error) {
       client.send('system', { message: `Duel action rejected (${result.error})` });
