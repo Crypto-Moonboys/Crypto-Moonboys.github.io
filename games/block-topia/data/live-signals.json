@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-04-23T11:11:05.186Z",
+  "generatedAt": "2026-04-23T12:39:56.400Z",
   "mode": "live-ai",
   "sourceHealth": {
     "coingecko-global": "ok",
@@ -8,87 +8,71 @@
     "fear-greed": "ok",
     "openai": "ok"
   },
-  "signalCount": 5,
+  "signalCount": 4,
   "signals": [
     {
-      "id": "signal-1776942665186-1",
+      "id": "signal-1776947996399-1",
       "lane": "world",
       "priority": 4,
       "ttlMinutes": 120,
-      "npcLine": "Capital seethes, value dips as shadows creep across markets.",
-      "questPulse": "Seek sources of instability before circuits fry.",
-      "worldFeed": "Global credits flicker weak; whispers of systemic strain intensify.",
-      "clueEvent": "Nodes falter; data streams reveal hidden selloffs.",
+      "npcLine": "Crypto streets run cold; trust is thinning fast.",
+      "questPulse": "Market pulse dropping, danger lurking in every trade.",
+      "worldFeed": "Digital wealth ebbs, shadows grow on the neon skyline.",
+      "clueEvent": "Sudden market shifts spark whispers of sabotage.",
       "tags": [
-        "market-fall",
-        "instability",
-        "cyber-risk"
+        "crypto",
+        "fear",
+        "marketcrash"
       ],
-      "expiresAt": "2026-04-23T13:11:05.186Z"
+      "expiresAt": "2026-04-23T14:39:56.399Z"
     },
     {
-      "id": "signal-1776942665186-2",
+      "id": "signal-1776947996400-2",
       "lane": "ops",
       "priority": 3,
       "ttlMinutes": 90,
-      "npcLine": "Crypto arrays fragment, sentiment sinks into fear grid.",
-      "questPulse": "Intercept rogue traders exploiting chaos in digital funds.",
-      "worldFeed": "Algorithms falter amid rising unease; trust wanes.",
-      "clueEvent": "Unusual transaction spikes detected on peripheral ledgers.",
+      "npcLine": "SPK spikes just got noticed by net runners.",
+      "questPulse": "Unstable tokens flicker; perfect for extraction ops.",
+      "worldFeed": "Rising buzz around banned digital coins; heat intensifies.",
+      "clueEvent": "Encrypted chatter hints at hidden asset movements.",
       "tags": [
-        "crypto-volatility",
-        "fear",
-        "surveillance"
-      ],
-      "expiresAt": "2026-04-23T12:41:05.186Z"
-    },
-    {
-      "id": "signal-1776942665186-3",
-      "lane": "clue",
-      "priority": 5,
-      "ttlMinutes": 60,
-      "npcLine": "Fragmented tokens gain faint traction, but danger looms.",
-      "questPulse": "Trace whispers on SPK and CHIP circuits; signals weak but persistent.",
-      "worldFeed": "Trending tokens flicker unevenly; unknown forces at play.",
-      "clueEvent": "Hidden code echoes hint at unstable asset undercurrents.",
-      "tags": [
-        "trending",
-        "crypto-spy",
-        "volatile"
-      ],
-      "expiresAt": "2026-04-23T12:11:05.186Z"
-    },
-    {
-      "id": "signal-1776942665186-4",
-      "lane": "quest",
-      "priority": 2,
-      "ttlMinutes": 180,
-      "npcLine": "Dive into dark nets, unravel cryptic market tremors.",
-      "questPulse": "Hunt digital phantoms riding market fearwaves.",
-      "worldFeed": "Fear index spikes; rogue data syndicates exploit confusion.",
-      "clueEvent": "Encrypted chatter reveals planned pump and dump schemes.",
-      "tags": [
-        "fear",
-        "darknet",
-        "market-quest"
-      ],
-      "expiresAt": "2026-04-23T14:11:05.186Z"
-    },
-    {
-      "id": "signal-1776942665186-5",
-      "lane": "npc",
-      "priority": 3,
-      "ttlMinutes": 75,
-      "npcLine": "Cyber-smugglers murmur of new tokens flickering in the black.",
-      "questPulse": "Engage with informants to map token surges amid dread.",
-      "worldFeed": "Market shadows move swiftly; new digital assets arise from chaos.",
-      "clueEvent": "Leaks show sudden network activity on PENGU and RAVE chains.",
-      "tags": [
-        "informant",
         "tokens",
-        "market-shift"
+        "spk",
+        "extraction"
       ],
-      "expiresAt": "2026-04-23T12:26:05.186Z"
+      "expiresAt": "2026-04-23T14:09:56.400Z"
+    },
+    {
+      "id": "signal-1776947996400-3",
+      "lane": "clue",
+      "priority": 2,
+      "ttlMinutes": 60,
+      "npcLine": "RAVE's strange activity triggers security bots nearby.",
+      "questPulse": "New data points glowing in the neural net's dark.",
+      "worldFeed": "Cryptic patterns emerge on AstroNet, possible hack alerts.",
+      "clueEvent": "Unusual transaction trails traced to abandoned nodes.",
+      "tags": [
+        "rave",
+        "hack",
+        "clues"
+      ],
+      "expiresAt": "2026-04-23T13:39:56.400Z"
+    },
+    {
+      "id": "signal-1776947996400-4",
+      "lane": "quest",
+      "priority": 5,
+      "ttlMinutes": 180,
+      "npcLine": "Pengu token's rise means a jackpot run—risk high.",
+      "questPulse": "Venture into unstable markets before the fear spikes.",
+      "worldFeed": "Digital market volatility promises lucrative bounties.",
+      "clueEvent": "Shadow syndicates recruit fresh runners for token raids.",
+      "tags": [
+        "pengu",
+        "highrisk",
+        "quest"
+      ],
+      "expiresAt": "2026-04-23T15:39:56.400Z"
     }
   ]
 }
