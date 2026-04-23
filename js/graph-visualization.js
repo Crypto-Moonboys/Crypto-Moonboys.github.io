@@ -67,8 +67,27 @@
 
   const NODE_MIN_RADIUS = 4;
   const NODE_MAX_RADIUS = 18;
+  const DEFAULT_EDGE_WEIGHT = 0.5;
+  const EDGE_WEIGHT_OFFSET = 0.2;
   const EDGE_ALPHA_BASE = 0.2;
   const EDGE_ALPHA_HOVER = 0.68;
+  const EDGE_ALPHA_BASE_HERO = 0.46;
+  const EDGE_ALPHA_DIM_HERO = 0.12;
+  const EDGE_ALPHA_DIM_FULL = 0.035;
+  const EDGE_ALPHA_ZOOM_SOFTEN_THRESHOLD = 0.42;
+  const EDGE_ALPHA_ZOOM_SOFTEN_MULTIPLIER = 0.75;
+  const HERO_EDGE_SHADOW_ALPHA = 0.42;
+  const HERO_EDGE_SHADOW_BLUR = 16;
+  const HERO_NODE_GLOW_MULTIPLIER = 1.95;
+  const HERO_NODE_GLOW_ALPHA = 0.12;
+  const HERO_LABEL_FONT_MIN = 11;
+  const HERO_LABEL_FONT_BASE = 13;
+  const HERO_LABEL_ZOOM_BASE = 0.8;
+  const FULL_LABEL_FONT_MIN = 9;
+  const FULL_LABEL_FONT_BASE = 10;
+  const LABEL_SHADOW_ALPHA = 0.85;
+  const HERO_LABEL_SHADOW_BLUR = 7;
+  const FULL_LABEL_SHADOW_BLUR = 3;
   const MIN_ZOOM = 0.15;
   const MAX_ZOOM = 2.2;
   const MIN_CANVAS_HEIGHT = 280;
@@ -252,22 +271,22 @@
     const cx = W / 2;
     const cy = H / 2;
 
-    const inner = Math.min(W, H) * 0.24;
-    const outer = Math.min(W, H) * 0.4;
+    const innerRadius = Math.min(W, H) * 0.24;
+    const outerRadius = Math.min(W, H) * 0.4;
 
     const layout = {
       moonboys: [0, 0],
-      bitcoin: [0, -inner],
-      ethereum: [inner * 0.86, -inner * 0.36],
-      nfts: [inner * 0.92, inner * 0.42],
-      defi: [0.2 * inner, inner * 1.04],
-      dao: [-0.75 * inner, inner * 0.72],
-      community: [-inner * 0.97, 0],
-      lore: [-inner * 0.75, -inner * 0.66],
-      tokenomics: [outer * 0.7, -outer * 0.58],
-      web3: [outer * 0.97, 0],
-      'hodl-wars': [outer * 0.62, outer * 0.72],
-      'diamond-hands': [-outer * 0.82, outer * 0.56],
+      bitcoin: [0, -innerRadius],
+      ethereum: [innerRadius * 0.86, -innerRadius * 0.36],
+      nfts: [innerRadius * 0.92, innerRadius * 0.42],
+      defi: [0.2 * innerRadius, innerRadius * 1.04],
+      dao: [-0.75 * innerRadius, innerRadius * 0.72],
+      community: [-innerRadius * 0.97, 0],
+      lore: [-innerRadius * 0.75, -innerRadius * 0.66],
+      tokenomics: [outerRadius * 0.7, -outerRadius * 0.58],
+      web3: [outerRadius * 0.97, 0],
+      'hodl-wars': [outerRadius * 0.62, outerRadius * 0.72],
+      'diamond-hands': [-outerRadius * 0.82, outerRadius * 0.56],
     };
 
     nodePositions = HERO_NODES.map((node) => {
@@ -341,6 +360,11 @@
 
   // ── Graph construction ───────────────────────────────────────────────────
   function buildGraph(nodes, edges) {
+    if (!Array.isArray(nodes) || !nodes.length) {
+      nodePositions = [];
+      edgeList = [];
+      return;
+    }
     const indexById = new Map();
     const W = canvas.width;
     const H = canvas.height;
@@ -368,7 +392,7 @@
       const si = indexById.get(edge.source);
       const ti = indexById.get(edge.target);
       if (si === undefined || ti === undefined) continue;
-      edgeList.push({ si, ti, weight: edge.weight || 0.5, score: edge.score });
+      edgeList.push({ si, ti, weight: edge.weight || DEFAULT_EDGE_WEIGHT, score: edge.score });
     }
   }
 
@@ -462,7 +486,7 @@
       const dx = pi.x - pj.x;
       const dy = pi.y - pj.y;
       const dist = Math.sqrt(dx * dx + dy * dy) + 1;
-      const force = ATTRACTION * dist * ((edge.weight || 0.5) + 0.2);
+      const force = ATTRACTION * dist * ((edge.weight || DEFAULT_EDGE_WEIGHT) + EDGE_WEIGHT_OFFSET);
       pi.fx -= force * dx;
       pi.fy -= force * dy;
       pj.fx += force * dx;
@@ -517,24 +541,24 @@
       const pj = nodePositions[edge.ti];
       if (!pi || !pj || !pi.visible || !pj.visible) continue;
 
-      let alpha = isHero ? 0.46 : EDGE_ALPHA_BASE;
+      let alpha = isHero ? EDGE_ALPHA_BASE_HERO : EDGE_ALPHA_BASE;
       if (focusNode) {
         const isFocusEdge = pi.node === focusNode || pj.node === focusNode;
-        alpha = isFocusEdge ? EDGE_ALPHA_HOVER : (isHero ? 0.12 : 0.035);
+        alpha = isFocusEdge ? EDGE_ALPHA_HOVER : (isHero ? EDGE_ALPHA_DIM_HERO : EDGE_ALPHA_DIM_FULL);
       }
 
-      if (!isHero && zoom < 0.42) {
-        alpha *= 0.75;
+      if (!isHero && zoom < EDGE_ALPHA_ZOOM_SOFTEN_THRESHOLD) {
+        alpha *= EDGE_ALPHA_ZOOM_SOFTEN_MULTIPLIER;
       }
 
       ctx.beginPath();
       ctx.moveTo(pi.x, pi.y);
       ctx.lineTo(pj.x, pj.y);
       ctx.strokeStyle = isHero ? `rgba(157,197,255,${alpha})` : `rgba(88,166,255,${alpha})`;
-      ctx.lineWidth = ((edge.weight || 0.5) * (isHero ? 2 : 1.5) + (isHero ? 0.5 : 0.3)) / zoom;
+      ctx.lineWidth = ((edge.weight || DEFAULT_EDGE_WEIGHT) * (isHero ? 2 : 1.5) + (isHero ? DEFAULT_EDGE_WEIGHT : 0.3)) / zoom;
       if (isHero) {
-        ctx.shadowColor = 'rgba(88,166,255,0.42)';
-        ctx.shadowBlur = 16 / zoom;
+        ctx.shadowColor = `rgba(88,166,255,${HERO_EDGE_SHADOW_ALPHA})`;
+        ctx.shadowBlur = HERO_EDGE_SHADOW_BLUR / zoom;
       } else {
         ctx.shadowBlur = 0;
       }
@@ -561,8 +585,8 @@
 
       if (isHero) {
         ctx.beginPath();
-        ctx.arc(p.x, p.y, r * 1.95, 0, 2 * Math.PI);
-        ctx.fillStyle = 'rgba(137,198,255,0.12)';
+        ctx.arc(p.x, p.y, r * HERO_NODE_GLOW_MULTIPLIER, 0, 2 * Math.PI);
+        ctx.fillStyle = `rgba(137,198,255,${HERO_NODE_GLOW_ALPHA})`;
         ctx.fill();
       }
 
@@ -584,14 +608,14 @@
       if (shouldDrawLabel) {
         const labelAlpha = isDim ? (isHero ? 0.28 : 0.15) : (isHero ? 0.95 : 0.85);
         const fontSize = isHero
-          ? Math.max(11, Math.round(13 / Math.max(zoom, 0.8)))
-          : Math.max(9, Math.round(10 / zoom));
+          ? Math.max(HERO_LABEL_FONT_MIN, Math.round(HERO_LABEL_FONT_BASE / Math.max(zoom, HERO_LABEL_ZOOM_BASE)))
+          : Math.max(FULL_LABEL_FONT_MIN, Math.round(FULL_LABEL_FONT_BASE / zoom));
         ctx.globalAlpha = labelAlpha;
         ctx.fillStyle = '#e6edf3';
         ctx.textAlign = 'center';
         ctx.font = `${fontSize}px sans-serif`;
-        ctx.shadowColor = 'rgba(0,0,0,0.85)';
-        ctx.shadowBlur = isHero ? 7 : 3;
+        ctx.shadowColor = `rgba(0,0,0,${LABEL_SHADOW_ALPHA})`;
+        ctx.shadowBlur = isHero ? HERO_LABEL_SHADOW_BLUR : FULL_LABEL_SHADOW_BLUR;
         ctx.fillText(shortTitle(p.node.title), p.x, p.y + r + 14 / Math.max(zoom, 0.6));
         ctx.shadowBlur = 0;
       }
