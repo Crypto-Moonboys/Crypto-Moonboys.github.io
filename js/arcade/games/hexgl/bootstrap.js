@@ -1,7 +1,7 @@
 /**
  * bootstrap.js — HexGL (legacy entry point)
  *
- * The canonical HexGL experience is /games/hexgl-monster-max.html.
+ * The canonical HexGL experience is /games/hexgl-monster-max/.
  * /games/hexgl.html redirects there automatically.
  *
  * This module re-exports the canonical Monster Max bootstrap so that any

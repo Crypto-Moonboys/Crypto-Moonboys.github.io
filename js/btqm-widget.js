@@ -88,7 +88,7 @@
       + '<span style="margin-left:auto;color:var(--color-text-muted,#888);font-size:0.85em;">' + clears + '/' + total + ' today</span>'
       + '</div>'
       + progressBar
-      + '<a href="/games/block-topia-quest-maze.html" '
+      + '<a href="/games/block-topia-quest-maze/" '
       + 'style="display:inline-block;margin-top:6px;padding:5px 14px;background:#f39c12;color:#000;'
       + 'border-radius:4px;font-weight:bold;font-size:0.85em;text-decoration:none;font-family:monospace;">'
       + (clears === 0 ? '▶ Start Daily Quest' : clears < 6 ? '▶ Continue Quest (' + clears + '/6)' : '⭐ Full Clear! Play Again')
@@ -126,7 +126,7 @@
       + (fullClear ? '<span style="font-size:0.75em;color:#f39c12;font-weight:bold;">2× FULL CLEAR!</span>' : '<span style="font-size:0.75em;color:#74b9ff;">Score: ' + score + '</span>')
       + '</div>';
 
-    var cta = '<a href="/games/block-topia-quest-maze.html" '
+    var cta = '<a href="/games/block-topia-quest-maze/" '
       + 'style="display:block;margin-top:10px;padding:6px;text-align:center;'
       + 'background:rgba(243,156,18,0.1);border:1px solid rgba(243,156,18,0.3);'
       + 'border-radius:4px;color:#f39c12;font-size:0.82em;font-weight:bold;'
@@ -147,7 +147,7 @@
               + String(i + 1) + '</span>';
           }).join('')
         + '</div>'
-        + '<a href="/games/block-topia-quest-maze.html" '
+        + '<a href="/games/block-topia-quest-maze/" '
         + 'style="display:inline-block;padding:5px 14px;background:#f39c12;color:#000;'
         + 'border-radius:4px;font-weight:bold;font-size:0.85em;text-decoration:none;font-family:monospace;">'
         + '▶ Start Daily Quest'
@@ -156,7 +156,7 @@
     } else {
       el.innerHTML = '<div style="font-size:0.82em;color:var(--color-text-muted,#888);">'
         + '<p style="margin:0 0 8px;">Complete the 6 daily quest zones in Block Topia. All 6 in 24h = double points!</p>'
-        + '<a href="/games/block-topia-quest-maze.html" '
+        + '<a href="/games/block-topia-quest-maze/" '
         + 'style="display:inline-block;padding:6px 14px;background:rgba(243,156,18,0.15);'
         + 'border:1px solid rgba(243,156,18,0.35);border-radius:4px;color:#f39c12;'
         + 'font-weight:bold;font-size:0.85em;text-decoration:none;font-family:monospace;">'
