@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-04-23T20:54:27.008Z",
+  "generatedAt": "2026-04-23T21:47:48.661Z",
   "mode": "live-ai",
   "sourceHealth": {
     "coingecko-global": "ok",
@@ -11,84 +11,84 @@
   "signalCount": 5,
   "signals": [
     {
-      "id": "signal-1776977667007-1",
+      "id": "signal-1776980868660-1",
       "lane": "world",
       "priority": 4,
       "ttlMinutes": 60,
-      "npcLine": "Market shadows deepen; trust fades in digital credits.",
-      "questPulse": "Scan for faltering coin nodes amidst shrinking capital.",
-      "worldFeed": "Global crypto pulse flickers, market cap bleeds steadily.",
-      "clueEvent": "Data stream breach reveals suppressed asset slumps.",
+      "npcLine": "Markets bleed; trust fades into neon shadows.",
+      "questPulse": "Hunt the faltering digital asset before it vanishes.",
+      "worldFeed": "Crypto tides ebbing; echoes of lost credits in the net.",
+      "clueEvent": "Unstable tokens spook the traders on the grid.",
       "tags": [
-        "market-fall",
-        "crypto",
-        "fear"
+        "market-collapse",
+        "fear",
+        "crypto"
       ],
-      "expiresAt": "2026-04-23T21:54:27.007Z"
+      "expiresAt": "2026-04-23T22:47:48.660Z"
     },
     {
-      "id": "signal-1776977667008-2",
+      "id": "signal-1776980868661-2",
       "lane": "ops",
       "priority": 3,
       "ttlMinutes": 45,
-      "npcLine": "Risk algorithms flag rising unrest around AAVE shifts.",
-      "questPulse": "Intercept unstable asset trails; AAVE’s glitch detected.",
-      "worldFeed": "Trending tokens falter; AAVE glitches raise alarms.",
-      "clueEvent": "Encrypted chatter hints at destabilized liquidity nodes.",
+      "npcLine": "Chip spikes caught the net’s eye; watch the surge.",
+      "questPulse": "Intercept signal on rising node CHIP; decode the intent.",
+      "worldFeed": "Anomalous uptick on CHIP subsystem, alert operations.",
+      "clueEvent": "Unexpected activity detected at CHIP circuitry node.",
       "tags": [
-        "liquidity",
-        "security",
-        "asset-instability"
+        "surge",
+        "intel",
+        "chip"
       ],
-      "expiresAt": "2026-04-23T21:39:27.008Z"
+      "expiresAt": "2026-04-23T22:32:48.661Z"
     },
     {
-      "id": "signal-1776977667008-3",
+      "id": "signal-1776980868661-3",
       "lane": "clue",
       "priority": 5,
       "ttlMinutes": 30,
-      "npcLine": "Faint code whispers from CHIP, SPK, and ASTEROID sectors.",
-      "questPulse": "Trace rogue signals; uncover hidden market manipulations.",
-      "worldFeed": "Unstable crypto fragments scatter in code-silence zone.",
-      "clueEvent": "Fragmented data pieces suggest engineered drops on fringe coins.",
+      "npcLine": "Pengu moves swiftly; a frozen asset melts in the dark.",
+      "questPulse": "Track the PENGU phantom before it fades from sight.",
+      "worldFeed": "Whispers of PENGU’s momentum ripple through the market mesh.",
+      "clueEvent": "PENGU token flickers; anomaly in cold data streams.",
       "tags": [
-        "manipulation",
-        "crypto-frag",
-        "intel"
+        "asset-motion",
+        "pengu",
+        "anomaly"
       ],
-      "expiresAt": "2026-04-23T21:24:27.008Z"
+      "expiresAt": "2026-04-23T22:17:48.661Z"
     },
     {
-      "id": "signal-1776977667008-4",
+      "id": "signal-1776980868661-4",
       "lane": "quest",
       "priority": 2,
-      "ttlMinutes": 90,
-      "npcLine": "Fear levels rise; navigate the shifting crypto wasteland.",
-      "questPulse": "Gather intel on market mood swings and token shifts.",
-      "worldFeed": "Sentiment scans reveal pervasive anxiety across the net.",
-      "clueEvent": "Mood trackers highlight fear signals in trade hubs.",
+      "ttlMinutes": 120,
+      "npcLine": "Asteroid drifts wide; scatter nets to contain the threat.",
+      "questPulse": "Secure the ASTEROID transmission before hostile capture.",
+      "worldFeed": "ASTEROID data cluster detected off-chart; scan and recover.",
+      "clueEvent": "System flags outlier signals near ASTEROID network node.",
       "tags": [
-        "sentiment",
-        "psychology",
-        "market-mood"
+        "asset-risk",
+        "asteroid",
+        "recovery"
       ],
-      "expiresAt": "2026-04-23T22:24:27.008Z"
+      "expiresAt": "2026-04-23T23:47:48.661Z"
     },
     {
-      "id": "signal-1776977667008-5",
+      "id": "signal-1776980868661-5",
       "lane": "npc",
-      "priority": 3,
-      "ttlMinutes": 50,
-      "npcLine": "Whispers say PENGU barely breathes in the shadow market.",
-      "questPulse": "Verify PENGU’s status; quiet tokens may hide storms.",
-      "worldFeed": "Silent tokens watch from the dark; movement unknown.",
-      "clueEvent": "Silent wallet activity detected; watch for sudden surges.",
+      "priority": 1,
+      "ttlMinutes": 90,
+      "npcLine": "SPK quiet for now, but silence breeds suspicion.",
+      "questPulse": "Spy the SPK enclave; anticipate the next move.",
+      "worldFeed": "SPK stable but watched; net eyes narrow, waiting.",
+      "clueEvent": "SPK shows no trigger spikes; under surveillance.",
       "tags": [
-        "quiet-tokens",
-        "shadow-market",
-        "intel-gathering"
+        "surveillance",
+        "spk",
+        "waiting"
       ],
-      "expiresAt": "2026-04-23T21:44:27.008Z"
+      "expiresAt": "2026-04-23T23:17:48.661Z"
     }
   ]
 }
