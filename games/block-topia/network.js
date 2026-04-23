@@ -102,6 +102,8 @@ export async function connectMultiplayer({
       console.log(`[BlockTopia] Joined room "${room.name || roomId}" session=${room.sessionId}`);
 
       // Handle unexpected server-side disconnect after a successful join.
+      // Each room object is independent: this handler is bound to the specific room instance
+      // returned by joinOrBootstrap and will not accumulate across retry attempts.
       const joinedRoomName = room.name || roomId;
       room.onLeave((code) => {
         console.error(`[BlockTopia] Disconnected from room "${joinedRoomName}" (code: ${code})`);

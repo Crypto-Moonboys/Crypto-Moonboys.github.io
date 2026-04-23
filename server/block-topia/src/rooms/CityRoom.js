@@ -1274,8 +1274,9 @@ export class CityRoom extends Room {
     if (player) {
       const dx = node.x - player.x;
       const dy = node.y - player.y;
-      if (Math.sqrt(dx * dx + dy * dy) > NODE_INTERACT_MAX_DISTANCE) {
-        console.warn(`[CityRoom] ${client.sessionId} rejected: node "${nodeId}" out of range (dist=${Math.sqrt(dx * dx + dy * dy).toFixed(1)})`);
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      if (dist > NODE_INTERACT_MAX_DISTANCE) {
+        console.warn(`[CityRoom] ${client.sessionId} rejected: node "${nodeId}" out of range (dist=${dist.toFixed(1)})`);
         return;
       }
     }
