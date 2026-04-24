@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-04-24T10:05:31.385Z",
+  "generatedAt": "2026-04-24T11:40:46.007Z",
   "mode": "live-ai",
   "sourceHealth": {
     "coingecko-global": "ok",
@@ -8,71 +8,87 @@
     "fear-greed": "ok",
     "openai": "ok"
   },
-  "signalCount": 4,
+  "signalCount": 5,
   "signals": [
     {
-      "id": "signal-1777025131384-1",
+      "id": "signal-1777030846007-1",
       "lane": "world",
-      "priority": 4,
-      "ttlMinutes": 120,
-      "npcLine": "Crypto tides shift; digital waves whisper of unseen moves.",
-      "questPulse": "Market gears hum quietly; shadows conceal the true value.",
-      "worldFeed": "Silent surge in countless tokens; fate pivots on thin threads.",
-      "clueEvent": "Numbers flicker faintly; trust falters amid climbing uncertainty.",
-      "tags": [
-        "market",
-        "crypto",
-        "uncertainty"
-      ],
-      "expiresAt": "2026-04-24T12:05:31.384Z"
-    },
-    {
-      "id": "signal-1777025131384-2",
-      "lane": "ops",
-      "priority": 5,
-      "ttlMinutes": 60,
-      "npcLine": "Sentiment dives deep—fear grips the neon veins.",
-      "questPulse": "Fear spikes clutter circuits; traders scramble for cover.",
-      "worldFeed": "Pulse monitors bleed red; a storm gathers under digital skies.",
-      "clueEvent": "Eyes dart to volatile nodes; calm erodes fast.",
-      "tags": [
-        "fear",
-        "panic",
-        "volatility"
-      ],
-      "expiresAt": "2026-04-24T11:05:31.384Z"
-    },
-    {
-      "id": "signal-1777025131385-3",
-      "lane": "clue",
       "priority": 3,
-      "ttlMinutes": 90,
-      "npcLine": "Five flickering signals rising; some glow colder than others.",
-      "questPulse": "Symbols spike in dark corners; RAVE and PENGU in spotlight.",
-      "worldFeed": "Tokens flutter like errant sparks; some lead to opportunity.",
-      "clueEvent": "Indexes pulse subtle codes—decode for clandestine gains.",
+      "ttlMinutes": 45,
+      "npcLine": "Crypto markets pulse feebly; shadows stir in digital veins.",
+      "questPulse": "Seek lost data nodes amid rising cyber dread.",
+      "worldFeed": "Market cap ticks up, but the vibe stays grim.",
+      "clueEvent": "Network flickers signal subtle rise, trust is scarce.",
       "tags": [
-        "signals",
-        "tokens",
-        "trending"
+        "crypto",
+        "dystopia",
+        "sentiment"
       ],
-      "expiresAt": "2026-04-24T11:35:31.385Z"
+      "expiresAt": "2026-04-24T12:25:46.007Z"
     },
     {
-      "id": "signal-1777025131385-4",
-      "lane": "quest",
-      "priority": 2,
-      "ttlMinutes": 180,
-      "npcLine": "Seek hidden nodes—cryptic upticks point toward concealed profits.",
-      "questPulse": "Scattered market whispers hint at a turning nexus.",
-      "worldFeed": "Digital seas part slowly; beware the undercurrent below.",
-      "clueEvent": "Quiet growth among many; silent winners await discovery.",
+      "id": "signal-1777030846007-2",
+      "lane": "ops",
+      "priority": 4,
+      "ttlMinutes": 30,
+      "npcLine": "Watch KAT and BSB—ghost coins with hidden agendas.",
+      "questPulse": "Infiltrate underworld ledgers; uncover silent players.",
+      "worldFeed": "Whispers of quiet trades among ghost tokens.",
+      "clueEvent": "Data sniffers detect spikes in obscure token flows.",
       "tags": [
-        "opportunity",
-        "explore",
-        "growth"
+        "crypto",
+        "undercover",
+        "intel"
       ],
-      "expiresAt": "2026-04-24T13:05:31.385Z"
+      "expiresAt": "2026-04-24T12:10:46.007Z"
+    },
+    {
+      "id": "signal-1777030846007-3",
+      "lane": "clue",
+      "priority": 2,
+      "ttlMinutes": 60,
+      "npcLine": "Fear grips the net; trust fractures slowly.",
+      "questPulse": "Decode trust algorithms before the signal collapses.",
+      "worldFeed": "Sentiment dives near bottom; players hesitate in shadows.",
+      "clueEvent": "Sentiment markers blink low; traders pull back.",
+      "tags": [
+        "sentiment",
+        "fear",
+        "market"
+      ],
+      "expiresAt": "2026-04-24T12:40:46.007Z"
+    },
+    {
+      "id": "signal-1777030846007-4",
+      "lane": "quest",
+      "priority": 5,
+      "ttlMinutes": 25,
+      "npcLine": "Eth remains restless; heavy watchers tracking every move.",
+      "questPulse": "Shadow-run to extract vital Eth transaction secrets.",
+      "worldFeed": "ETH under surveillance; moves watched by unseen agents.",
+      "clueEvent": "ETH network heats up amid growing suspicion.",
+      "tags": [
+        "eth",
+        "surveillance",
+        "highrisk"
+      ],
+      "expiresAt": "2026-04-24T12:05:46.007Z"
+    },
+    {
+      "id": "signal-1777030846007-5",
+      "lane": "npc",
+      "priority": 3,
+      "ttlMinutes": 40,
+      "npcLine": "CHIP and PENGU chatter in dark cryptoloops.",
+      "questPulse": "Trace chatter sources; unlock hidden alliances.",
+      "worldFeed": "Lurkers pounce on low-tier tokens seeking profit shadows.",
+      "clueEvent": "Encrypted chatter hints at brewing token shifts.",
+      "tags": [
+        "tokens",
+        "intel",
+        "underground"
+      ],
+      "expiresAt": "2026-04-24T12:20:46.007Z"
     }
   ]
 }
