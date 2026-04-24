@@ -177,16 +177,7 @@ function lineCoordKey(point) {
   return `${point.x},${point.y}`;
 }
 
-function edgeKey(aId, bId) {
-  return aId < bId ? `${aId}|${bId}` : `${bId}|${aId}`;
-}
-
 const LINE_BY_ID = new Map(NETWORK_LINES.map((line) => [line.id, line]));
-const LINE_BY_EDGE_KEY = new Map(
-  NETWORK_LINES
-    .filter((line) => line.from?.id && line.to?.id)
-    .map((line) => [edgeKey(line.from.id, line.to.id), line]),
-);
 const LINES_BY_COORD = new Map();
 for (const line of NETWORK_LINES) {
   const fromKey = lineCoordKey(line.from);
@@ -474,13 +465,12 @@ function stepNetworkMissionNpc(npc, dt) {
     mission.pathIndex += 1;
   }
 
-  if (typeof edgeKey !== 'function') {
-    console.error('[NPC] edgeKey invalid:', edgeKey);
-    return false;
-  }
   const fromId = pathNodeIds[mission.pathIndex];
   const toId = pathNodeIds[Math.min(pathNodeIds.length - 1, mission.pathIndex + 1)];
-  const line = LINE_BY_EDGE_KEY.get(edgeKey(fromId, toId));
+  const line = NETWORK_LINES.find((l) =>
+    (l.from.id === fromId && l.to.id === toId) ||
+    (l.from.id === toId && l.to.id === fromId),
+  );
   if (!line) {
     delete npc.networkMission;
     return false;
