@@ -2320,7 +2320,7 @@ async function boot() {
       let statusText;
       if (status.joined) {
         wsConnectionFailed = false;
-        statusText = `Connected (${wsState})`;
+        statusText = 'Connected (live city)';
       } else if (wsState === 'room-full') {
         wsConnectionFailed = true;
         statusText = 'Live city unavailable. Try again later.';
@@ -2353,6 +2353,12 @@ async function boot() {
       debugState.playerCount = players.length;
       renderDebugPanel();
       hud.setPopulation(players.length, state.room.maxPlayers);
+      // Server is clearly alive if it's pushing player state — restore connected banner.
+      if (wsConnectionFailed) {
+        wsConnectionFailed = false;
+        multiplayerConnected = true;
+        hud.setMultiplayerStatus('Connected (live city)');
+      }
       if (selectedRemotePlayer?.id) {
         selectedRemotePlayer = state.remotePlayers.find((player) => player.id === selectedRemotePlayer.id) || null;
         if (!selectedRemotePlayer) {
@@ -2363,6 +2369,12 @@ async function boot() {
     onWorldSnapshot: (data) => {
       debugState.lastWorldUpdateAt = Date.now();
       renderDebugPanel();
+      // Receiving a snapshot proves the server connection is live — restore connected banner.
+      if (wsConnectionFailed) {
+        wsConnectionFailed = false;
+        multiplayerConnected = true;
+        hud.setMultiplayerStatus('Connected (live city)');
+      }
       if (hasSharedHunterSnapshotPayload(data)) {
         applySharedHunterSnapshot(data, 'snapshot');
       }
