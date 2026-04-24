@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-04-24T22:09:37.684Z",
+  "generatedAt": "2026-04-24T23:08:13.417Z",
   "mode": "live-ai",
   "sourceHealth": {
     "coingecko-global": "ok",
@@ -11,84 +11,84 @@
   "signalCount": 5,
   "signals": [
     {
-      "id": "signal-1777068577683-1",
+      "id": "signal-1777072093416-1",
       "lane": "world",
       "priority": 4,
-      "ttlMinutes": 45,
-      "npcLine": "Markets bleed red; trust is scarce in NeonNet.",
-      "questPulse": "Pulse warns: assets sinking deep in shadow trades.",
-      "worldFeed": "Crypto seas churn—##+ tokens fade in gloom.",
-      "clueEvent": "Data stream shows mass withdrawal signals tonight.",
+      "ttlMinutes": 120,
+      "npcLine": "Crypto shadows deepen; markets bleed under cold neon skies.",
+      "questPulse": "Scan for token anomalies amid growing net tension.",
+      "worldFeed": "Digital credits falter, global ledger wanes in trust.",
+      "clueEvent": "Unstable circuits detected in major trade hubs.",
       "tags": [
-        "market",
-        "fear",
-        "crypto"
+        "market-down",
+        "risk",
+        "cyber-fear"
       ],
-      "expiresAt": "2026-04-24T22:54:37.683Z"
+      "expiresAt": "2026-04-25T01:08:13.416Z"
     },
     {
-      "id": "signal-1777068577684-2",
+      "id": "signal-1777072093416-2",
       "lane": "ops",
       "priority": 3,
-      "ttlMinutes": 60,
-      "npcLine": "Pengu climbs stealthily; eyes on frozen assets.",
-      "questPulse": "Uncover secrets behind the silent Penguin surge.",
-      "worldFeed": "Shadow projects rise amid market's cold sweat.",
-      "clueEvent": "Encrypted chatter hints at hidden token shifts.",
+      "ttlMinutes": 90,
+      "npcLine": "Signal shows five tokens pulsing, but danger masks profits.",
+      "questPulse": "Track trending codes: APE, PENGU, KAT, CHIP, MON.",
+      "worldFeed": "Data spikes hint at volatile token movements soon.",
+      "clueEvent": "Underground whispers targeting rising but unstable assets.",
       "tags": [
-        "trend",
-        "stealth",
-        "crypto"
+        "tracker",
+        "tokens",
+        "volatility"
       ],
-      "expiresAt": "2026-04-24T23:09:37.684Z"
+      "expiresAt": "2026-04-25T00:38:13.416Z"
     },
     {
-      "id": "signal-1777068577684-3",
+      "id": "signal-1777072093417-3",
       "lane": "clue",
       "priority": 5,
-      "ttlMinutes": 30,
-      "npcLine": "Fear index spikes; dive before the plunge hits.",
-      "questPulse": "Decode the whispers of incoming system dive.",
-      "worldFeed": "Sentiment crashes—fear consumes the grid tonight.",
-      "clueEvent": "Volatile patterns spawn across fractured exchanges.",
+      "ttlMinutes": 60,
+      "npcLine": "Fear index climbing—night market eyes twitch at shadow trades.",
+      "questPulse": "Hunt down cause behind dropping digital asset confidence.",
+      "worldFeed": "Sentiment dips; fear contaminates netvoices and backchannels.",
+      "clueEvent": "Blackout briefings reveal panic beneath trading screens.",
       "tags": [
-        "fear",
         "sentiment",
-        "warning"
+        "fear",
+        "intel"
       ],
-      "expiresAt": "2026-04-24T22:39:37.684Z"
+      "expiresAt": "2026-04-25T00:08:13.417Z"
     },
     {
-      "id": "signal-1777068577684-4",
+      "id": "signal-1777072093417-4",
       "lane": "quest",
       "priority": 2,
-      "ttlMinutes": 90,
-      "npcLine": "Track the elusive Kat token’s shadow trail.",
-      "questPulse": "an operator’s digital footprints for hidden gains.",
-      "worldFeed": "Minor spikes disrupt the dim market landscape.",
-      "clueEvent": "Anomalous upticks in forgotten coins detected.",
+      "ttlMinutes": 150,
+      "npcLine": "Data miners needed: sift through noise to find safe grounds.",
+      "questPulse": "Infiltrate rumored hubs for stable crypto caches.",
+      "worldFeed": "Fragmented markets invite skilled hackers for quick gains.",
+      "clueEvent": "Encrypted chatter hints at hidden vaults.",
       "tags": [
-        "trend",
-        "hunt",
-        "crypto"
+        "hack",
+        "explore",
+        "risk"
       ],
-      "expiresAt": "2026-04-24T23:39:37.684Z"
+      "expiresAt": "2026-04-25T01:38:13.417Z"
     },
     {
-      "id": "signal-1777068577684-5",
+      "id": "signal-1777072093417-5",
       "lane": "npc",
       "priority": 3,
-      "ttlMinutes": 50,
-      "npcLine": "Whispers float of Tradoor's door closing soon.",
-      "questPulse": "Investigate the door before it seals shut.",
-      "worldFeed": "Market doors creak; some prepare for descent.",
-      "clueEvent": "Sudden silence around select tokens raises flags.",
+      "ttlMinutes": 110,
+      "npcLine": "Streetwise dealer warns: 'Tokens flare bright, then burn.'",
+      "questPulse": "Gather intel from info brokers on token lifespan.",
+      "worldFeed": "Market flux fuels underground deals; caution advised.",
+      "clueEvent": "Short-lived buzz spotted around select currencies.",
       "tags": [
-        "trend",
-        "mystery",
-        "crypto"
+        "npc-insight",
+        "market-flash",
+        "caution"
       ],
-      "expiresAt": "2026-04-24T22:59:37.684Z"
+      "expiresAt": "2026-04-25T00:58:13.417Z"
     }
   ]
 }
