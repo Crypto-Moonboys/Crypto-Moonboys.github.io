@@ -182,6 +182,7 @@
       <div class="sidebar-heading">Quick Access</div>
       <div class="sidebar-nav">
         <a href="#telegram-sync"><span class="nav-icon">🔗</span> Telegram Sync</a>
+        <a href="#covert-ops"><span class="nav-icon">🕵️</span> Covert Ops</a>
         <a href="#events"><span class="nav-icon">🚨</span> Popups &amp; Events</a>
         <a href="#xp"><span class="nav-icon">⚡</span> XP</a>
         <a href="#gems"><span class="nav-icon">💎</span> Gems</a>
@@ -209,6 +210,7 @@
           <span class="manual-pill">🕹️ Arcade Score Layer</span>
           <span class="manual-pill">Leaderboard Rank Layer</span>
           <span class="manual-pill">🏙️ Block Topia Survival Layer</span>
+          <span class="manual-pill">🕵️ Covert Ops Layer</span>
           <span class="manual-pill">🔗 Telegram Identity Layer</span>
           <span class="manual-pill">⚡ XP + 💎 Gems Economy</span>
         </div>
@@ -287,6 +289,69 @@
           <li>World events are not cosmetic; they reflect current pressure across nodes/districts.</li>
           <li>SAM pressure and district struggle are active forces in the loop, not background story text.</li>
         </ul>
+
+        <h3 style="margin:18px 0 8px;font-size:1rem;color:#e7fcff;">Controls</h3>
+        <ul>
+          <li><strong>Move:</strong> <code>W A S D</code> or arrow keys.</li>
+          <li><strong>Select node / player / tile:</strong> left-click.</li>
+          <li><strong>Move to tile:</strong> double-click a valid tile.</li>
+          <li><strong>Interact with NPC:</strong> <code>E</code> when in range.</li>
+          <li><strong>Challenge player to duel:</strong> select them, then press <code>F</code>.</li>
+          <li><strong>Zoom:</strong> mouse wheel or <code>[</code> / <code>]</code> preset steps.</li>
+          <li><strong>Camera pan:</strong> left mouse button hold + drag.</li>
+        </ul>
+      </section>
+
+      <section class="manual-section" id="covert-ops">
+        <h2>D2) Covert Ops — Signal Runner</h2>
+        <p>
+          The <strong>Signal Runner</strong> is your covert operative. Deploy it to a node to shift that node's control state from the shadows.
+          The server resolves every mission; the client shows the outcome.
+        </p>
+
+        <h3 style="margin:14px 0 8px;font-size:1rem;color:#e7fcff;">How to deploy</h3>
+        <div class="manual-steps" aria-label="Signal Runner deploy steps">
+          <ol>
+            <li>Click a control node on the map — the target ID appears in the Covert Ops panel.</li>
+            <li>Press <strong>Deploy Signal Runner → [NODE]</strong> in the bottom-right panel.</li>
+            <li>Wait ~30 seconds for the server to resolve the mission.</li>
+            <li>Read the result in the feed and the panel: <strong>✅ Success</strong> or <strong>❌ Failure</strong>.</li>
+          </ol>
+        </div>
+
+        <h3 style="margin:14px 0 8px;font-size:1rem;color:#e7fcff;">Mission odds and risks</h3>
+        <ul>
+          <li><strong>Base success: 65%.</strong> SAM pressure and district posture reduce this.</li>
+          <li><strong>Operative loss:</strong> on failure there is a 25% chance the operative is captured. A <strong>🚨 Signal Runner lost</strong> message confirms it.</li>
+          <li>Only one operative can be active at a time. The deploy button is locked during an active mission.</li>
+        </ul>
+
+        <h3 style="margin:14px 0 8px;font-size:1rem;color:#e7fcff;">Player heat</h3>
+        <p>
+          Every deploy and resolution adds <strong>heat</strong> to your personal counter (+8 on success, +16 on failure).
+          Heat decays at 1 unit per second server-side. You cannot manually reduce it.
+        </p>
+        <div class="manual-event-table-wrap">
+          <table class="manual-event-table" aria-label="Heat tier table">
+            <thead>
+              <tr><th>Heat tier</th><th>Range</th><th>Effect</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Cold</td><td>0 – 24</td><td>Normal. Best time to deploy.</td></tr>
+              <tr><td>Warm</td><td>25 – 49</td><td>SAM awareness rising. Consider waiting.</td></tr>
+              <tr><td>Hot</td><td>50 – 74</td><td>Detection risk elevated; viewport vignette activates.</td></tr>
+              <tr><td>Critical</td><td>75 – 100</td><td>Maximum risk. Operations heavily penalised.</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3 style="margin:14px 0 8px;font-size:1rem;color:#e7fcff;">Covert Grid strip (top of screen)</h3>
+        <p>
+          Four cells show live covert state: <strong>Network Heat</strong> (world-level risk across all players),
+          <strong>Local Node</strong> (pressure on your selected node), <strong>District Mood</strong> (posture of your current district),
+          and <strong>Agent Pressure</strong> (how many of your operatives are under SAM scrutiny).
+        </p>
+        <p>Keep Network Heat and your personal heat low before committing to a mission for the best odds.</p>
       </section>
 
       <section class="manual-section" id="events">
@@ -472,6 +537,14 @@
           <article class="manual-card">
             <h3>What if auth expired?</h3>
             <p>Run <code>/gklink</code> again, complete the new link handshake, then refresh your game page before continuing long runs.</p>
+          </article>
+          <article class="manual-card">
+            <h3>Signal Runner deploy button is greyed out</h3>
+            <p>Either no node is selected (click a control node on the map first) or a mission is already running. Only one operative can be active at a time.</p>
+          </article>
+          <article class="manual-card">
+            <h3>My Signal Runner keeps failing</h3>
+            <p>Check your personal heat (shown as <strong>Heat: X</strong> in the Covert Ops panel). If heat is above 50, wait for it to decay below 25 before deploying again. Also check district mood — a <code>pre_lockdown</code> district heavily penalises success odds.</p>
           </article>
         </div>
       </section>

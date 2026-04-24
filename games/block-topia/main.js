@@ -77,6 +77,7 @@ const MINI_GAME_SYNC_QUIET_MS = 5200;
 const MINI_GAME_ENTRY_QUIET_MS = 2800;
 const COVERT_OPS_MISSION_DURATION_MS = 30000;
 const COVERT_DEPLOY_BTN_TEXT = 'Deploy Signal Runner';
+const FTUE_STORAGE_KEY = 'blocktopia_player_experience_seen';
 const microNotifyCache = new Map();
 
 function setBodyStateClass(name, enabled) {
@@ -842,6 +843,7 @@ async function boot() {
     onSkip: () => handleMiniGameOutcome('circuit', 'skip').catch(() => {}),
   });
   let multiplayerConnected = false;
+  let wsConnectionFailed = false;
   let localSessionId = '';
   let nearbyNpc = null;
   let selectedRemotePlayer = null;
@@ -1436,6 +1438,7 @@ async function boot() {
     const node = renderer.pickControlNodeFromClientPoint(event.clientX, event.clientY, state);
     if (!node) return false;
     state.mouse.selectedNodeId = node.id;
+    updateNodeTooltip(node.id);
     circuitConnect.setSelectedNode(node.id);
     state.circuitConnectView = circuitConnect.getPublicState();
     const circuitState = state.circuitConnectView;
@@ -1485,6 +1488,33 @@ async function boot() {
     if (lower.includes('quest') || lower.includes('xp') || lower.includes('operation')) return 'quest';
     if (lower.includes('captured') || lower.includes('district') || lower.includes('duel') || lower.includes('node')) return 'combat';
     return 'system';
+  }
+
+  // Node tooltip — shows plain-English node info on selection; default guidance when nothing is selected.
+  function updateNodeTooltip(nodeId) {
+    const tooltip = document.getElementById('node-tooltip');
+    if (!tooltip) return;
+    if (!nodeId) {
+      const emptyText = wsConnectionFailed
+        ? 'Live city unavailable. Try again later.'
+        : (!multiplayerConnected ? 'Connecting to live city…' : 'Select a glowing node to deploy Signal Runner.');
+      tooltip.innerHTML = emptyText;
+      return;
+    }
+    const node = state.controlNodes.find((n) => n.id === nodeId) || {};
+    const risk = state.covert?.nodeRiskById?.[nodeId] || {};
+    const district = formatDistrictName(node.districtId || '');
+    const control = Number.isFinite(node.control) ? `${Math.round(node.control * 100)}%` : '—';
+    const nodeHeat = Number.isFinite(risk.risk) ? Math.round(risk.risk) : '—';
+    const status = String(node.status || 'stable').replace(/_/g, ' ').toUpperCase();
+    const action = covertOpsLocal.activeOperation ? 'Mission in progress…' : 'Deploy Signal Runner';
+    tooltip.innerHTML = [
+      `<strong>${nodeId.toUpperCase()}</strong> · ${district}`,
+      `Control: ${control} · Status: ${status}`,
+      `Node Heat: ${nodeHeat}`,
+      `Action: ${action}`,
+      `<em>High heat means SAM is watching this node.</em>`,
+    ].join('<br>');
   }
 
   function applyPhase(nextPhase, source = 'local') {
@@ -2048,6 +2078,28 @@ async function boot() {
   pushFeedDeduped(`🛰️ Canon signal bridge active (${liveMode})`, 'system', `live-boot:${liveMode}`);
   bootstrapEntryIdentity();
   bootstrapLoreFeed();
+
+  // Show first-time player overlay once per device. "?" help button always reopens it.
+  try {
+    const ftueOverlay = document.getElementById('ftue-overlay');
+    if (ftueOverlay) {
+      if (!localStorage.getItem(FTUE_STORAGE_KEY)) {
+        ftueOverlay.classList.remove('hidden');
+      }
+      document.getElementById('ftue-dismiss')?.addEventListener('click', () => {
+        ftueOverlay.classList.add('hidden');
+        try { localStorage.setItem(FTUE_STORAGE_KEY, '1'); } catch { /* ignore write error */ }
+      });
+      document.getElementById('ftue-help-btn')?.addEventListener('click', () => {
+        ftueOverlay.classList.remove('hidden');
+      });
+    }
+  } catch (storageError) {
+    // localStorage may be unavailable in private/restricted contexts — skip FTUE silently.
+    if (!(storageError instanceof DOMException)) throw storageError;
+  }
+  // Initialise node tooltip to default guidance (no node selected yet).
+  updateNodeTooltip('');
   const initialCovert = await fetchCovertState();
   if (initialCovert?.__authError) {
     redirectToSyncGate(initialCovert?.error || 'Telegram session expired. Re-sync required.', 1600, 'boot:initial-covert-auth-error', true);
@@ -2240,7 +2292,7 @@ async function boot() {
     const nodeId = state.mouse?.selectedNodeId || '';
     if (!nodeId || covertOpsLocal.activeOperation) return;
     sendDeployOperative(nodeId);
-    hud.pushFeed(`🕵️ Signal Runner deploying to ${nodeId.toUpperCase()}…`, 'combat');
+    hud.pushFeed(`Signal Runner deployed to ${nodeId.toUpperCase()}. Mission resolving.`, 'combat');
   });
 
   await connectMultiplayer({
@@ -2260,17 +2312,26 @@ async function boot() {
 
       let statusText;
       if (status.joined) {
+        wsConnectionFailed = false;
         statusText = `Connected (${wsState})`;
       } else if (wsState === 'room-full') {
-        statusText = '⛔ Room full (100 / 100)';
+        wsConnectionFailed = true;
+        statusText = 'Live city unavailable. Try again later.';
+        pushFeedDeduped('Live city unavailable. Try again later.', 'system', 'ws:room-full');
         console.warn('[BlockTopia] Room is at capacity — cannot join.');
       } else if (wsState === 'disconnected') {
-        statusText = `Disconnected${status.error ? ` · ${status.error}` : ''}`;
+        wsConnectionFailed = true;
+        statusText = 'Live city unavailable. Try again later.';
+        pushFeedDeduped('Live city unavailable. Try again later.', 'system', `ws:disconnected:${Date.now()}`);
         console.error('[BlockTopia] Server disconnect:', status.error || '(no detail)');
+      } else if (wsState === 'connecting' || wsState === 'offline') {
+        statusText = 'Connecting to live city…';
+        pushFeedDeduped('Connecting to live city…', 'system', 'ws:connecting');
       } else {
         statusText = `${wsState}${status.error ? ` · ${status.error}` : ''}`;
       }
       hud.setMultiplayerStatus(statusText);
+      updateNodeTooltip(state.mouse?.selectedNodeId || '');
       if (status.roomId) hud.setRoom(status.roomId);
       if (status.sessionId) localSessionId = status.sessionId;
       multiplayerConnected = Boolean(status.joined);
@@ -2466,7 +2527,7 @@ async function boot() {
         covertOpsLocal.playerHeat = payload.heat;
       }
       refreshCovertOpsPanel();
-      hud.pushFeed(`🕵️ Signal Runner deployed to ${String(payload.nodeId || '').toUpperCase()}`, 'combat');
+      updateNodeTooltip(payload.nodeId || state.mouse?.selectedNodeId || '');
     },
     onOperationResult: (payload) => {
       if (payload?.playerId !== localSessionId) return;
@@ -2476,16 +2537,17 @@ async function boot() {
         covertOpsLocal.playerHeat = payload.heat;
       }
       refreshCovertOpsPanel();
+      updateNodeTooltip(state.mouse?.selectedNodeId || '');
       const nodeLabel = String(payload.nodeId || '').toUpperCase();
       const heatDelta = typeof payload.heatGain === 'number' ? payload.heatGain : null;
-      const heatSuffix = heatDelta !== null ? ` · heat +${heatDelta}` : '';
+      const heatSuffix = heatDelta !== null ? ` Heat +${heatDelta}.` : '';
       if (payload.success) {
-        hud.pushFeed(`✅ Signal Runner succeeded at ${nodeLabel} · node shifted${heatSuffix}`, 'quest');
+        hud.pushFeed(`Signal Runner succeeded at ${nodeLabel}. Node control shifted.${heatSuffix}`, 'quest');
         pushMicroNotification('Signal Runner: mission success.', 'success');
       } else {
-        hud.pushFeed(`❌ Signal Runner failed at ${nodeLabel}${heatSuffix}`, 'sam');
+        hud.pushFeed(`Signal Runner failed at ${nodeLabel}.${heatSuffix}`, 'sam');
         if (payload.operativeLost) {
-          hud.pushFeed('🚨 Signal Runner lost.', 'sam');
+          hud.pushFeed('Signal Runner lost.', 'sam');
         }
         pushMicroNotification(`Signal Runner: mission failed${payload.operativeLost ? ' — operative lost' : ''}.`, 'warning');
       }

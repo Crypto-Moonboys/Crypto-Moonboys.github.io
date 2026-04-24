@@ -747,3 +747,136 @@ body.has-mini-game .stream-bottom {
 }
 .covert-result--success { color: #8dff6a; }
 .covert-result--failure { color: #ff4fd8; }
+
+/* Covert ops hint line */
+.covert-ops-hint {
+  margin: 0;
+  font-size: 9px;
+  color: rgba(174, 238, 255, 0.54);
+  line-height: 1.4;
+  letter-spacing: 0.02em;
+}
+
+/* Feed empty-state placeholder — shown when stream list has no items */
+.stream ul:not(:has(li))::before {
+  content: attr(data-empty-hint);
+  display: block;
+  padding: 4px 0 2px;
+  font-size: 10px;
+  color: rgba(164, 224, 245, 0.38);
+  font-style: italic;
+}
+
+/* FTUE first-time overlay */
+#ftue-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 4, 14, 0.72);
+  backdrop-filter: blur(5px);
+}
+#ftue-overlay.hidden { display: none; }
+.ftue-card {
+  width: min(480px, calc(100vw - 28px));
+  padding: 20px 22px 18px;
+  border-radius: 10px;
+  border: 1px solid rgba(94, 242, 255, 0.34);
+  background: linear-gradient(170deg, rgba(4, 11, 28, 0.97), rgba(3, 8, 22, 0.95));
+  box-shadow: 0 24px 56px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(94, 242, 255, 0.08);
+}
+.ftue-title {
+  margin: 0 0 10px;
+  font-size: 1.12rem;
+  color: #e6f9ff;
+  font-weight: 700;
+}
+.ftue-intro {
+  margin: 0 0 14px;
+  font-size: 13px;
+  line-height: 1.55;
+  color: rgba(234, 246, 255, 0.76);
+}
+.ftue-steps {
+  margin: 0 0 16px;
+  padding-left: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+.ftue-steps li {
+  font-size: 13px;
+  line-height: 1.55;
+  color: #c8ecff;
+}
+.ftue-actions {
+  display: flex;
+  gap: 8px;
+}
+.ftue-dismiss-btn {
+  flex: 1;
+  padding: 10px 14px;
+  background: rgba(94, 242, 255, 0.12);
+  border: 1px solid rgba(94, 242, 255, 0.48);
+  border-radius: 6px;
+  color: #5ef2ff;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  text-align: center;
+  transition: background 0.15s ease;
+}
+.ftue-dismiss-btn:hover {
+  background: rgba(94, 242, 255, 0.22);
+}
+
+/* "?" help button — persistent, reopens FTUE overlay */
+.ftue-help-btn {
+  position: fixed;
+  bottom: 56px;
+  right: 12px;
+  z-index: 320;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: rgba(0, 6, 18, 0.82);
+  border: 1px solid rgba(94, 242, 255, 0.34);
+  color: #5ef2ff;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s ease;
+}
+.ftue-help-btn:hover {
+  background: rgba(94, 242, 255, 0.14);
+}
+
+/* Node tooltip — shows selected node info or default guidance */
+.node-tooltip {
+  position: fixed;
+  bottom: 88px;
+  right: 12px;
+  z-index: 305;
+  width: min(260px, calc(100vw - 24px));
+  padding: 8px 10px;
+  border-radius: 6px;
+  border: 1px solid rgba(94, 242, 255, 0.2);
+  background: rgba(0, 6, 18, 0.82);
+  font: 11px/1.45 "Courier New", monospace;
+  color: #c8f2ff;
+  pointer-events: none;
+}
+.node-tooltip em {
+  color: rgba(255, 216, 77, 0.82);
+  font-style: normal;
+  font-size: 10px;
+  display: block;
+  margin-top: 5px;
+}

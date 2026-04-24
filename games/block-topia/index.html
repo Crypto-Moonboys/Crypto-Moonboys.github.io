@@ -71,9 +71,9 @@
       <div id="covert-recovery-line" class="covert-recovery-line">No captured agents in recovery.</div>
     </section>
 
-    <section class="stream stream-left" aria-label="Engagement stream"><ul id="stream-left"></ul></section>
-    <section class="stream stream-right" aria-label="Signal operations stream"><ul id="stream-right"></ul></section>
-    <section class="stream stream-bottom" aria-label="City relay stream"><ul id="stream-bottom"></ul></section>
+    <section class="stream stream-left" aria-label="Engagement stream"><ul id="stream-left" data-empty-hint="Duels and node events appear here"></ul></section>
+    <section class="stream stream-right" aria-label="Signal operations stream"><ul id="stream-right" data-empty-hint="SAM events and mission results appear here"></ul></section>
+    <section class="stream stream-bottom" aria-label="City relay stream"><ul id="stream-bottom" data-empty-hint="System relay · world status updates appear here"></ul></section>
   </div>
 
   <div id="sam-popup" class="hidden" aria-live="assertive" role="alert"></div>
@@ -90,11 +90,34 @@
       <span class="covert-ops-chip">SIGNAL RUNNER</span>
       <span id="covert-player-heat" class="covert-player-heat">Heat: 0</span>
     </div>
+    <p class="covert-ops-hint">Deploy Signal Runner to shift node control. More Heat means higher risk.</p>
     <div id="covert-node-target" class="covert-node-target" aria-live="polite"></div>
     <button id="covert-deploy-btn" class="covert-deploy-btn" type="button" disabled>Deploy Signal Runner (select node)</button>
     <div id="covert-countdown" class="covert-countdown" aria-live="polite"></div>
     <div id="covert-result" class="covert-result" aria-live="polite"></div>
   </div>
+
+  <div id="ftue-overlay" class="hidden" role="dialog" aria-modal="true" aria-label="Welcome to Block Topia">
+    <div class="ftue-card">
+      <h2 class="ftue-title">Welcome to Block Topia</h2>
+      <p class="ftue-intro">Block Topia is a live city. The world keeps moving whether you act or not.</p>
+      <ol class="ftue-steps">
+        <li>Move around the map.</li>
+        <li>Select glowing nodes.</li>
+        <li>Deploy Signal Runner to shift node control.</li>
+        <li>Watch your Heat.</li>
+        <li>High Heat means SAM is watching.</li>
+        <li>Duels, NPCs, and events can change the city.</li>
+      </ol>
+      <div class="ftue-actions">
+        <button id="ftue-dismiss" class="ftue-dismiss-btn" type="button">Start Playing</button>
+      </div>
+    </div>
+  </div>
+
+  <button id="ftue-help-btn" class="ftue-help-btn" type="button" aria-label="How it works">?</button>
+
+  <div id="node-tooltip" class="node-tooltip" aria-live="polite">Select a glowing node to deploy Signal Runner.</div>
 
   <div id="multiplayer-live-banner" role="status" aria-live="polite">LIVE LINK — CONNECTING</div>
 
