@@ -431,6 +431,18 @@ export function createHud(doc) {
         multiplayerLiveBanner.textContent = `LIVE LINK — ${label.toUpperCase()}`;
       }
     },
+    // city_status_fix: Centralized helper — call ONLY from real network lifecycle events
+    // (room-full, room.onLeave/disconnect, all retries exhausted). Mini-game failures,
+    // node actions, and other local events must NOT call this.
+    setMultiplayerUnavailable: (reason) => {
+      const reasonStr = String(reason || 'unknown');
+      console.warn('[BlockTopia] LIVE LINK marked unavailable from:', reasonStr);
+      const label = 'Live city unavailable. Try again later.';
+      if (multiplayerStatus) multiplayerStatus.textContent = label;
+      if (multiplayerLiveBanner) {
+        multiplayerLiveBanner.textContent = `LIVE LINK — ${label.toUpperCase()}`;
+      }
+    },
     setRoom: (name) => { roomStatus.textContent = `Room: ${name}`; },
     setPopulation: (count, max) => { populationStatus.textContent = `Players: ${count} / ${max}`; },
     setQuests,

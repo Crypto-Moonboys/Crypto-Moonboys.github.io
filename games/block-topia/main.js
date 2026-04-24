@@ -2322,27 +2322,20 @@ async function boot() {
       debugState.roomName = status.roomId || debugState.roomName;
       renderDebugPanel();
 
-      let statusText;
       if (status.joined) {
         wsConnectionFailed = false;
-        statusText = 'Connected (live city)';
+        hud.setMultiplayerStatus('Connected (live city)');
       } else if (wsState === 'room-full') {
         wsConnectionFailed = true;
-        statusText = 'Live city unavailable. Try again later.';
-        pushFeedDeduped('Live city unavailable. Try again later.', 'system', 'ws:room-full');
-        console.warn('[BlockTopia] Room is at capacity — cannot join.');
+        hud.setMultiplayerUnavailable('room-full');
       } else if (wsState === 'disconnected') {
         wsConnectionFailed = true;
-        statusText = 'Live city unavailable. Try again later.';
-        pushFeedDeduped('Live city unavailable. Try again later.', 'system', `ws:disconnected:${Date.now()}`);
-        console.error('[BlockTopia] Server disconnect:', status.error || '(no detail)');
+        hud.setMultiplayerUnavailable('network-disconnect');
       } else if (wsState === 'connecting' || wsState === 'offline') {
-        statusText = 'Connecting to live city…';
-        pushFeedDeduped('Connecting to live city…', 'system', 'ws:connecting');
+        hud.setMultiplayerStatus('Connecting to live city…');
       } else {
-        statusText = `${wsState}${status.error ? ` · ${status.error}` : ''}`;
+        hud.setMultiplayerStatus(wsState);
       }
-      hud.setMultiplayerStatus(statusText);
       updateNodeTooltip(state.mouse?.selectedNodeId || '');
       if (status.roomId) hud.setRoom(status.roomId);
       if (status.sessionId) localSessionId = status.sessionId;
@@ -2477,6 +2470,8 @@ async function boot() {
       hud.pushFeed(`🎯 Player action ${verb} ${payload.districtName} via ${payload.source || 'war action'}`, payload.intent === 'assist' ? 'combat' : 'sam');
     },
     onNodeInterferenceChanged: (payload) => {
+      // city_status_fix rule 4: incoming world traffic confirms the live connection is active.
+      markUiConnected();
       const eventPayload = nodeInterference.applyServerNodeUpdate(payload);
       handleNodeInterferenceRipple(eventPayload || payload, 'server');
     },
