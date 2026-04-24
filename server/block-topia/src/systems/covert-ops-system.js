@@ -1,9 +1,22 @@
 // Covert Ops System — Phase 1
 // Server-authoritative operative lifecycle: deploy, mission resolution, extract / loss.
-// Only the 'ghost' operative type is supported in Phase 1.
+// Only the 'signal-runner' operative type is supported in Phase 1.
 
-export const COVERT_MISSION_DURATION_MS = 15000;
-const COVERT_OPERATIVE_TYPE = 'ghost';
+export const COVERT_MISSION_DURATION_MS = 30000;
+const COVERT_OPERATIVE_TYPE = 'signal-runner';
+
+// Signal Runner base stats (before environmental modifiers).
+export const SIGNAL_RUNNER_STATS = {
+  type: 'signal-runner',
+  name: 'Signal Runner',
+  successChance: 0.65,
+  heatGainSuccess: 8,
+  heatGainFailure: 16,
+  nodeImpactSuccess: 6,
+  nodeImpactFailure: 2,
+  missionDurationMs: 30000,
+  operativeLossChance: 0.25,
+};
 
 function randomId() {
   return `op-${Date.now()}-${Math.floor(Math.random() * 100000)}`;
@@ -22,15 +35,21 @@ function clamp(value, min, max) {
  *   - district patrol posture score     (0 → 0 %, 100 → 15 % penalty)
  *
  * Clamped to a floor of 10 % and a ceiling of 90 %.
+ * Base success chance defaults to Signal Runner's 65 %.
  *
  * @returns {{ success: boolean, successChance: number }}
  */
-export function resolveOperativeMission({ node, samPressure = 0, districtPostureScore = 0 }) {
+export function resolveOperativeMission({
+  node,
+  samPressure = 0,
+  districtPostureScore = 0,
+  baseSuccessChance = SIGNAL_RUNNER_STATS.successChance,
+}) {
   const heat = Number(node?.covertHeat) || 0;
   const heatPenalty = (clamp(heat, 0, 100) / 100) * 0.45;
   const samPenalty = (clamp(samPressure, 0, 140) / 140) * 0.18;
   const posturePenalty = (clamp(districtPostureScore, 0, 100) / 100) * 0.15;
-  const successChance = clamp(0.70 - heatPenalty - samPenalty - posturePenalty, 0.10, 0.90);
+  const successChance = clamp(baseSuccessChance - heatPenalty - samPenalty - posturePenalty, 0.10, 0.90);
   const success = Math.random() < successChance;
   return { success, successChance: Number(successChance.toFixed(3)) };
 }
@@ -55,7 +74,7 @@ export function createCovertOpsSystem() {
   }
 
   /**
-   * Deploy a 'ghost' operative to a node on behalf of a player.
+   * Deploy a 'signal-runner' operative to a node on behalf of a player.
    * Returns { operative } on success or { error: string } on rejection.
    */
   function deployOperative(playerId, nodeId, intent = 'disrupt') {
@@ -107,10 +126,11 @@ export function createCovertOpsSystem() {
       if (nowMs - op.deployedAt < COVERT_MISSION_DURATION_MS) continue;
 
       const outcome = resolveFn(op);
-      op.status = outcome.success ? 'complete' : 'captured';
+      const operativeLost = !outcome.success && Math.random() < SIGNAL_RUNNER_STATS.operativeLossChance;
+      op.status = outcome.success ? 'complete' : operativeLost ? 'lost' : 'captured';
       playerOperative.delete(op.playerId);
       operatives.delete(opId);
-      resolved.push({ operative: op, success: outcome.success, successChance: outcome.successChance });
+      resolved.push({ operative: op, success: outcome.success, successChance: outcome.successChance, operativeLost });
     }
     return resolved;
   }
