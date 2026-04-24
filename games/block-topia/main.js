@@ -2305,6 +2305,13 @@ async function boot() {
     hud.setMultiplayerStatus('Connected (live city)');
   }
 
+  // Threshold (ms) within which a world snapshot counts as proof of a live connection.
+  const RECENT_UPDATE_THRESHOLD_MS = 10000;
+
+  function isRecentlyActive() {
+    return debugState.playerCount > 0 || Date.now() - debugState.lastWorldUpdateAt < RECENT_UPDATE_THRESHOLD_MS;
+  }
+
   await connectMultiplayer({
     playerName: state.player.name,
     roomId: state.room.id,
@@ -2324,14 +2331,14 @@ async function boot() {
         wsConnectionFailed = false;
         hud.setMultiplayerStatus('Connected (live city)');
       } else if (wsState === 'room-full') {
-        if (debugState.playerCount > 0 || Date.now() - debugState.lastWorldUpdateAt < 10000) {
+        if (isRecentlyActive()) {
           markUiConnected();
         } else {
           wsConnectionFailed = true;
           hud.setMultiplayerUnavailable('room-full');
         }
       } else if (wsState === 'disconnected') {
-        if (debugState.playerCount > 0 || Date.now() - debugState.lastWorldUpdateAt < 10000) {
+        if (isRecentlyActive()) {
           markUiConnected();
         } else {
           wsConnectionFailed = true;
