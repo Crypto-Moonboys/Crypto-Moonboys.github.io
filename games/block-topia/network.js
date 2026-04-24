@@ -247,14 +247,41 @@ export async function connectMultiplayer({
   return null;
 }
 
+/**
+ * Returns true only when the room is fully open and ready for sends:
+ * - room exists and has a sessionId (i.e. we completed the join handshake)
+ * - the underlying WebSocket connection object exists and is in OPEN state (readyState === 1)
+ */
+function isRoomOpen() {
+  if (!room || !room.sessionId) return false;
+  const conn = room.connection;
+  if (!conn) return false;
+  // Colyseus v0.16 wraps the WebSocket in a Transport/Connection object whose
+  // raw socket is exposed as conn.ws (or falls back to conn itself for older builds).
+  const ws = conn.ws || conn;
+  // WebSocket.OPEN === 1; use the constant when available, fall back to the literal
+  // in environments where the global WebSocket may not be defined (e.g. unit-test VMs).
+  const OPEN = (typeof WebSocket !== 'undefined' && WebSocket.OPEN) || 1;
+  return ws.readyState === OPEN;
+}
+
 export function sendMovement(x, y) {
-  if (!room) return;
+  if (!isRoomOpen()) {
+    console.warn('[BlockTopia] skipped send on closed room:', 'move');
+    return false;
+  }
   room.send('move', { x, y });
+  return true;
 }
 
 export function sendNodeInterference(nodeId, intent = 'disrupt') {
-  if (!room || !nodeId) return;
+  if (!nodeId) return false;
+  if (!isRoomOpen()) {
+    console.warn('[BlockTopia] skipped send on closed room:', 'nodeInterfere');
+    return false;
+  }
   room.send('nodeInterfere', { nodeId, intent });
+  return true;
 }
 
 export function getRoom() {
@@ -262,31 +289,56 @@ export function getRoom() {
 }
 
 export function sendWarAction(actionType, payload = {}) {
-  if (!room || !actionType) return;
+  if (!actionType) return false;
+  if (!isRoomOpen()) {
+    console.warn('[BlockTopia] skipped send on closed room:', 'warAction');
+    return false;
+  }
   room.send('warAction', {
     actionType,
     ...payload,
   });
+  return true;
 }
 
 export function sendCovertPressureSync(reports = []) {
-  if (!room || !Array.isArray(reports) || !reports.length) return;
+  if (!Array.isArray(reports) || !reports.length) return false;
+  if (!isRoomOpen()) {
+    console.warn('[BlockTopia] skipped send on closed room:', 'covertPressureSync');
+    return false;
+  }
   room.send('covertPressureSync', { reports });
+  return true;
 }
 
 export function challengePlayer(targetPlayerId) {
-  if (!room || !targetPlayerId) return;
+  if (!targetPlayerId) return false;
+  if (!isRoomOpen()) {
+    console.warn('[BlockTopia] skipped send on closed room:', 'duelChallenge');
+    return false;
+  }
   room.send('duelChallenge', { targetPlayerId });
+  return true;
 }
 
 export function acceptDuel(duelId) {
-  if (!room || !duelId) return;
+  if (!duelId) return false;
+  if (!isRoomOpen()) {
+    console.warn('[BlockTopia] skipped send on closed room:', 'duelAccept');
+    return false;
+  }
   room.send('duelAccept', { duelId });
+  return true;
 }
 
 export function submitDuelAction(duelId, action) {
-  if (!room || !duelId || !action) return;
+  if (!duelId || !action) return false;
+  if (!isRoomOpen()) {
+    console.warn('[BlockTopia] skipped send on closed room:', 'duelAction');
+    return false;
+  }
   room.send('duelAction', { duelId, action });
+  return true;
 }
 
 /** sendDuelChallenge — spec-required alias of challengePlayer */
@@ -305,6 +357,11 @@ export function sendDuelAction(duelId, action) {
 }
 
 export function sendDeployOperative(nodeId) {
-  if (!room || !nodeId) return;
+  if (!nodeId) return false;
+  if (!isRoomOpen()) {
+    console.warn('[BlockTopia] skipped send on closed room:', 'deployOperative');
+    return false;
+  }
   room.send('deployOperative', { nodeId });
+  return true;
 }
