@@ -143,104 +143,149 @@ defineTypes(RoomState, {
 
 export class CityRoom extends Room {
   onCreate(options) {
-    this.setState(new RoomState());
-    this.maxClients = 100;
-    // Keep the room alive even when all players have left so that reconnecting
-    // clients can always use client.join() rather than client.joinOrCreate().
-    // This ensures there is always exactly ONE "city" room instance.
-    this.autoDispose = false;
-    this.worldTickCount = 0;
-    this.samTimerMs = 0;
-    this.districtTimerMs = 0;
-    this.snapshotTimerMs = 0;
-    this.systemEventsThisTick = 0;
-    this.hunterTimerMs = 0;
-    // Per-player move rate-limiting (sessionId → last accepted move timestamp).
-    this.playerMoveTimes = new Map();
-    // Per-player interference cooldown across all nodes (sessionId → last interfere timestamp).
-    this.playerInterfereTimes = new Map();
+    try {
+      this.setState(new RoomState());
+      this.maxClients = 100;
+      // Keep the room alive even when all players have left so that reconnecting
+      // clients can always use client.join() rather than client.joinOrCreate().
+      // This ensures there is always exactly ONE "city" room instance.
+      this.autoDispose = false;
+      this.worldTickCount = 0;
+      this.samTimerMs = 0;
+      this.districtTimerMs = 0;
+      this.snapshotTimerMs = 0;
+      this.systemEventsThisTick = 0;
+      this.hunterTimerMs = 0;
+      // Per-player move rate-limiting (sessionId → last accepted move timestamp).
+      this.playerMoveTimes = new Map();
+      // Per-player interference cooldown across all nodes (sessionId → last interfere timestamp).
+      this.playerInterfereTimes = new Map();
 
-    this.completedQuests = new Map(); // sessionId -> Set
-    this.world = this.createInitialWorld();
-    this.world.nodeLookup = new Map(this.world.controlNodes.map((node) => [node.id, node]));
-    this.world.linkAdjacency = this.buildLinkAdjacency();
-    this.bootstrapSamHunters();
-    this.duels = createDuelSystem({
-      getPlayerName: (playerId) => this.state.players.get(playerId)?.name || 'Player',
-      getSamPhase: () => this.world.samPhase,
-    });
-    this.covertOps = createCovertOpsSystem();
-    // Per-player deploy rate-limiting (sessionId → last accepted deploy timestamp).
-    this.playerDeployTimes = new Map();
-    // Server-owned per-player covert heat (sessionId → heat value 0–100).
-    this.playerHeat = new Map();
-
-    console.log('🏙️ CityRoom with District and Quest systems created', options);
-    this.setSimulationInterval((dt) => this.updateWorld(dt), 50);
-
-    this.onMessage('move', (client, data) => {
-      const player = this.state.players.get(client.sessionId);
-      if (!player) return;
-
-      const { x, y } = data || {};
-      if (typeof x !== 'number' || typeof y !== 'number') return;
-
-      // Rate-limit: silently drop move messages arriving faster than MOVE_RATE_LIMIT_MS.
-      const now = Date.now();
-      const lastMove = this.playerMoveTimes.get(client.sessionId) || 0;
-      if (now - lastMove < MOVE_RATE_LIMIT_MS) return;
-      this.playerMoveTimes.set(client.sessionId, now);
-
-      const previous = { x: player.x, y: player.y };
-      const next = clampPosition(x, y);
-
-      if (!validateMovement(previous, next)) return;
-
-      player.x = next.x;
-      player.y = next.y;
-
-      this.handleDistrictChange(client.sessionId, player);
-      this.handleQuestProgress(client.sessionId, player);
-    });
-
-    this.onMessage('interact', (client, data) => {
-      this.broadcast('interaction', {
-        playerId: client.sessionId,
-        target: data?.target || null,
+      this.completedQuests = new Map(); // sessionId -> Set
+      this.world = this.createInitialWorld();
+      this.world.nodeLookup = new Map(this.world.controlNodes.map((node) => [node.id, node]));
+      this.world.linkAdjacency = this.buildLinkAdjacency();
+      this.bootstrapSamHunters();
+      this.duels = createDuelSystem({
+        getPlayerName: (playerId) => this.state.players.get(playerId)?.name || 'Player',
+        getSamPhase: () => this.world.samPhase,
       });
-    });
+      this.covertOps = createCovertOpsSystem();
+      // Per-player deploy rate-limiting (sessionId → last accepted deploy timestamp).
+      this.playerDeployTimes = new Map();
+      // Server-owned per-player covert heat (sessionId → heat value 0–100).
+      this.playerHeat = new Map();
 
-    this.onMessage('nodeInterfere', (client, data) => {
-      this.handleNodeInterference(client, data);
-    });
+      console.log('[CityRoom] created');
+      this.setSimulationInterval((dt) => this.updateWorld(dt), 50);
 
-    this.onMessage('warAction', (client, data) => {
-      this.handlePlayerWarAction(client, data);
-    });
+      this.onMessage('move', (client, data) => {
+        try {
+          const player = this.state.players.get(client.sessionId);
+          if (!player) return;
 
-    this.onMessage('covertPressureSync', (client, data) => {
-      this.handleCovertPressureSync(client, data);
-    });
+          const { x, y } = data || {};
+          if (typeof x !== 'number' || typeof y !== 'number') return;
 
-    this.onMessage('duelChallenge', (client, data) => {
-      this.handleDuelChallenge(client, data);
-    });
+          // Rate-limit: silently drop move messages arriving faster than MOVE_RATE_LIMIT_MS.
+          const now = Date.now();
+          const lastMove = this.playerMoveTimes.get(client.sessionId) || 0;
+          if (now - lastMove < MOVE_RATE_LIMIT_MS) return;
+          this.playerMoveTimes.set(client.sessionId, now);
 
-    this.onMessage('duelAccept', (client, data) => {
-      this.handleDuelAccept(client, data);
-    });
+          const previous = { x: player.x, y: player.y };
+          const next = clampPosition(x, y);
 
-    this.onMessage('duelAction', (client, data) => {
-      this.handleDuelAction(client, data);
-    });
+          if (!validateMovement(previous, next)) return;
 
-    this.onMessage('deployOperative', (client, data) => {
-      this.handleDeployOperative(client, data);
-    });
+          player.x = next.x;
+          player.y = next.y;
 
-    this.onMessage('extractOperative', (client, data) => {
-      this.handleExtractOperative(client, data);
-    });
+          this.handleDistrictChange(client.sessionId, player);
+          this.handleQuestProgress(client.sessionId, player);
+        } catch (err) {
+          console.error('[CityRoom] onMessage(move) error:', err?.message || err);
+        }
+      });
+
+      this.onMessage('interact', (client, data) => {
+        try {
+          this.broadcast('interaction', {
+            playerId: client.sessionId,
+            target: data?.target || null,
+          });
+        } catch (err) {
+          console.error('[CityRoom] onMessage(interact) error:', err?.message || err);
+        }
+      });
+
+      this.onMessage('nodeInterfere', (client, data) => {
+        try {
+          this.handleNodeInterference(client, data);
+        } catch (err) {
+          console.error('[CityRoom] onMessage(nodeInterfere) error:', err?.message || err);
+        }
+      });
+
+      this.onMessage('warAction', (client, data) => {
+        try {
+          this.handlePlayerWarAction(client, data);
+        } catch (err) {
+          console.error('[CityRoom] onMessage(warAction) error:', err?.message || err);
+        }
+      });
+
+      this.onMessage('covertPressureSync', (client, data) => {
+        try {
+          this.handleCovertPressureSync(client, data);
+        } catch (err) {
+          console.error('[CityRoom] onMessage(covertPressureSync) error:', err?.message || err);
+        }
+      });
+
+      this.onMessage('duelChallenge', (client, data) => {
+        try {
+          this.handleDuelChallenge(client, data);
+        } catch (err) {
+          console.error('[CityRoom] onMessage(duelChallenge) error:', err?.message || err);
+        }
+      });
+
+      this.onMessage('duelAccept', (client, data) => {
+        try {
+          this.handleDuelAccept(client, data);
+        } catch (err) {
+          console.error('[CityRoom] onMessage(duelAccept) error:', err?.message || err);
+        }
+      });
+
+      this.onMessage('duelAction', (client, data) => {
+        try {
+          this.handleDuelAction(client, data);
+        } catch (err) {
+          console.error('[CityRoom] onMessage(duelAction) error:', err?.message || err);
+        }
+      });
+
+      this.onMessage('deployOperative', (client, data) => {
+        try {
+          this.handleDeployOperative(client, data);
+        } catch (err) {
+          console.error('[CityRoom] onMessage(deployOperative) error:', err?.message || err);
+        }
+      });
+
+      this.onMessage('extractOperative', (client, data) => {
+        try {
+          this.handleExtractOperative(client, data);
+        } catch (err) {
+          console.error('[CityRoom] onMessage(extractOperative) error:', err?.message || err);
+        }
+      });
+    } catch (err) {
+      console.error('[CityRoom] onCreate error:', err?.message || err, err?.stack);
+      throw err;
+    }
   }
 
   createInitialWorld() {
@@ -1439,49 +1484,60 @@ export class CityRoom extends Room {
   }
 
   onJoin(client, options) {
-    const player = new PlayerState();
-    player.id = client.sessionId;
-    player.name = options?.name || 'Rebel';
-    player.x = 50;
-    player.y = 50;
-    player.xp = 0;
-    player.warStance = 'neutral';
+    try {
+      console.log('[CityRoom] join', client.sessionId);
+      const player = new PlayerState();
+      player.id = client.sessionId;
+      player.name = options?.name || 'Rebel';
+      player.x = 50;
+      player.y = 50;
+      player.xp = 0;
+      player.warStance = 'neutral';
 
-    this.state.players.set(client.sessionId, player);
-    this.completedQuests.set(client.sessionId, new Set());
+      this.state.players.set(client.sessionId, player);
+      this.completedQuests.set(client.sessionId, new Set());
 
-    this.handleDistrictChange(client.sessionId, player);
-    client.send('worldSnapshot', this.buildLeanSnapshot());
+      this.handleDistrictChange(client.sessionId, player);
+      client.send('worldSnapshot', this.buildLeanSnapshot());
 
-    const playerCount = this.state.players.size;
-    console.log(`[CityRoom] ${player.name} joined · players: ${playerCount}/${this.maxClients}`);
-    this.broadcast('system', {
-      message: `${player.name} has entered Block Topia.`,
-    });
+      const playerCount = this.state.players.size;
+      console.log(`[CityRoom] ${player.name} joined · players: ${playerCount}/${this.maxClients}`);
+      this.broadcast('system', {
+        message: `${player.name} has entered Block Topia.`,
+      });
+    } catch (err) {
+      console.error('[CityRoom] onJoin error:', client.sessionId, err?.message || err, err?.stack);
+      throw err;
+    }
   }
 
   onLeave(client) {
-    const endedDuel = this.duels?.onPlayerLeave?.(client.sessionId);
-    if (endedDuel) {
-      this.broadcast('duelEnded', {
-        duelId: endedDuel.duelId,
-        status: 'ended',
-        message: 'Duel ended: participant disconnected.',
-      });
-    }
-    this.covertOps.onPlayerLeave(client.sessionId);
-    this.state.players.delete(client.sessionId);
-    this.completedQuests.delete(client.sessionId);
-    this.playerMoveTimes.delete(client.sessionId);
-    this.playerInterfereTimes.delete(client.sessionId);
-    this.playerDeployTimes.delete(client.sessionId);
-    this.playerHeat.delete(client.sessionId);
+    try {
+      console.log('[CityRoom] leave', client.sessionId);
+      const endedDuel = this.duels?.onPlayerLeave?.(client.sessionId);
+      if (endedDuel) {
+        this.broadcast('duelEnded', {
+          duelId: endedDuel.duelId,
+          status: 'ended',
+          message: 'Duel ended: participant disconnected.',
+        });
+      }
+      this.covertOps.onPlayerLeave(client.sessionId);
+      this.state.players.delete(client.sessionId);
+      this.completedQuests.delete(client.sessionId);
+      this.playerMoveTimes.delete(client.sessionId);
+      this.playerInterfereTimes.delete(client.sessionId);
+      this.playerDeployTimes.delete(client.sessionId);
+      this.playerHeat.delete(client.sessionId);
 
-    const playerCount = this.state.players.size;
-    console.log(`[CityRoom] Player left · players: ${playerCount}/${this.maxClients}`);
-    this.broadcast('system', {
-      message: `A rebel has left the city.`,
-    });
+      const playerCount = this.state.players.size;
+      console.log(`[CityRoom] Player left · players: ${playerCount}/${this.maxClients}`);
+      this.broadcast('system', {
+        message: `A rebel has left the city.`,
+      });
+    } catch (err) {
+      console.error('[CityRoom] onLeave error:', client.sessionId, err?.message || err, err?.stack);
+    }
   }
 
   handleDistrictChange(sessionId, player) {
@@ -1598,7 +1654,7 @@ export class CityRoom extends Room {
   }
 
   onDispose() {
-    console.log('🗑️ CityRoom disposed');
+    console.log('[CityRoom] dispose');
   }
 
   handleDuelChallenge(client, data) {
