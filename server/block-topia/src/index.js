@@ -37,7 +37,7 @@ app.get("/", (req, res) => {
   res.send("Block Topia Game Server is running 🚀");
 });
 server.listen(PORT, async () => {
-  console.log(`🚀 Block Topia Colyseus server running on port ${PORT}`);
+  console.log(`Block Topia server running on port ${PORT}`);
 
   // Pre-create the persistent "city" room so clients always find an existing room
   // rather than relying on the first client to bootstrap it. This prevents the
@@ -45,7 +45,7 @@ server.listen(PORT, async () => {
   // client can fully join.
   try {
     const room = await matchMaker.createRoom('city', {});
-    console.log(`[server] pre-created city room · roomId=${room.roomId}`);
+    console.log(`[BlockTopia] persistent city room bootstrapped:`, room.roomId);
   } catch (err) {
     console.error('[server] failed to pre-create city room:', err?.message || err);
   }

@@ -9,7 +9,6 @@ import {
   acceptDuel as sendDuelAccept,
   submitDuelAction as sendDuelAction,
   isConnected as isRoomConnected,
-  reconnectMultiplayer,
 } from './network.js';
 import { loadUnifiedData } from './world/data-loader.js';
 import {
@@ -850,7 +849,6 @@ async function boot() {
   // Throttle for "Reconnecting to live city…" HUD message on closed-room node clicks (3 s).
   const RECONNECT_HUD_THROTTLE_MS = 3000;
   let lastReconnectHudAt = 0;
-  let reconnectTriggered = false;
   let nearbyNpc = null;
   let selectedRemotePlayer = null;
   let lastNpcScan = performance.now();
@@ -1496,10 +1494,6 @@ async function boot() {
         if (now - lastReconnectHudAt >= RECONNECT_HUD_THROTTLE_MS) {
           hud.showNodeInterference('Reconnecting to live city…', 'system');
           lastReconnectHudAt = now;
-        }
-        if (!reconnectTriggered) {
-          reconnectTriggered = true;
-          reconnectMultiplayer().finally(() => { reconnectTriggered = false; });
         }
       }
       return true;
@@ -2351,7 +2345,6 @@ async function boot() {
 
       if (status.joined) {
         wsConnectionFailed = false;
-        reconnectTriggered = false;
         hud.setMultiplayerStatus('Connected (live city)');
       } else if (wsState === 'room-full') {
         if (isRecentlyActive()) {

@@ -6,6 +6,9 @@ let _reconnecting = false;
 // Prevents concurrent reconnect attempts from both _scheduleReconnect and
 // direct callers (e.g. the node-click handler in main.js).
 let _isConnecting = false;
+// Set to true when the last connection attempt failed with 4211 (city not bootstrapped).
+// Prevents the onLeave handler from triggering pointless reconnect loops.
+let _cityUnavailable = false;
 const STATE_CHANGE_THROTTLE_MS = 100;
 // Throttle closed-room console warnings to once every 3 seconds per message type.
 const CLOSED_ROOM_WARN_THROTTLE_MS = 3000;
@@ -38,24 +41,25 @@ function isRoomNotFoundError(error) {
   );
 }
 
-// Join an existing room. If the room doesn't exist yet (first boot / server restart),
-// create it. Never create a second room if the first is already full.
-async function joinOrBootstrap(colyseusClient, roomId, options) {
+// Join an existing server-created room only. Never creates a room from the browser.
+// If the room does not exist (4211) a clean error with isCityUnavailable=true is thrown
+// so the caller can fail fast without retrying or creating a fallback room.
+async function joinCityOnly(colyseusClient, roomId, options) {
   console.log(`[BlockTopia] join attempt → room "${roomId}"`);
   try {
     const joined = await colyseusClient.join(roomId, options);
     console.log(`[BlockTopia] join succeeded → room "${joined.name || roomId}" session=${joined.sessionId}`);
     return joined;
   } catch (joinError) {
-    if (!isRoomNotFoundError(joinError)) {
-      console.warn(`[BlockTopia] join failed (code=${joinError?.code}): ${joinError?.message || joinError}`);
-      throw joinError;
+    if (isRoomNotFoundError(joinError)) {
+      console.error(`[BlockTopia] Live city unavailable — server room not bootstrapped (code=${joinError?.code}).`);
+      const err = new Error('Live city unavailable — server room not bootstrapped');
+      err.code = ERR_ROOM_NOT_FOUND;
+      err.isCityUnavailable = true;
+      throw err;
     }
-    // Room not yet created — bootstrap it once, then let subsequent clients join it.
-    console.warn(`[BlockTopia] Room "${roomId}" not found (code=${joinError?.code}) — bootstrapping new room instance.`);
-    const created = await colyseusClient.create(roomId, options);
-    console.log(`[BlockTopia] create succeeded → room "${created.name || roomId}" session=${created.sessionId}`);
-    return created;
+    console.warn(`[BlockTopia] join failed (code=${joinError?.code}): ${joinError?.message || joinError}`);
+    throw joinError;
   }
 }
 
@@ -112,6 +116,7 @@ export async function connectMultiplayer({
   const rawEndpoint = window.BLOCK_TOPIA_SERVER || 'wss://game.cryptomoonboys.com';
   const endpoint = rawEndpoint.replace(/^https:\/\//, 'wss://').replace(/^http:\/\//, 'ws://');
   let lastError = null;
+  _cityUnavailable = false;
 
   console.log(`[BlockTopia] Multiplayer init — endpoint: ${endpoint} | room: "${roomId}"`);
 
@@ -126,7 +131,7 @@ export async function connectMultiplayer({
       onStatus?.({ ws: 'connecting', joined: false, error: '', roomId });
       console.log(`[BlockTopia] Connecting (attempt ${attempt}/${MAX_RETRIES}) → ${endpoint} room "${roomId}"`);
       client = new window.Colyseus.Client(endpoint);
-      room = await joinOrBootstrap(client, roomId, {
+      room = await joinCityOnly(client, roomId, {
         name: playerName,
         faction: 'Liberators',
         district: roomIdentity?.districtId || 'neon-slums',
@@ -139,7 +144,7 @@ export async function connectMultiplayer({
 
       // Handle unexpected server-side disconnect after a successful join.
       // Each room object is independent: this handler is bound to the specific room instance
-      // returned by joinOrBootstrap and will not accumulate across retry attempts.
+      // returned by joinCityOnly and will not accumulate across retry attempts.
       const capturedRoomRef = room;
       const joinedRoomName = room.name || roomId;
       room.onLeave((code) => {
@@ -248,16 +253,24 @@ export async function connectMultiplayer({
     } catch (error) {
       lastError = error;
       const roomFull = isRoomFullError(error);
-      const wsState = roomFull ? 'room-full' : 'failed';
+      const cityUnavailable = error?.isCityUnavailable === true;
+      const wsState = roomFull ? 'room-full' : cityUnavailable ? 'unavailable' : 'failed';
       console.error(
         `[BlockTopia] Connection attempt ${attempt}/${MAX_RETRIES} failed (${wsState}):`,
         error?.message || error,
       );
       onStatus?.({ ws: wsState, joined: false, error: String(error?.message || error), roomId, roomFull });
       if (roomFull) {
-        // Room is at capacity — do not retry, and never create a second room.
+        // Room is at capacity — do not retry.
         onFeed?.('⛔ Block Topia is full (100 players). Try again later.');
         console.warn('[BlockTopia] Room full — aborting further connection attempts.');
+        return null;
+      }
+      if (cityUnavailable) {
+        // Server room not bootstrapped — fail cleanly once, no retry, no reconnect loop.
+        _cityUnavailable = true;
+        onFeed?.('⚠️ Live city unavailable — server room not bootstrapped.');
+        console.warn('[BlockTopia] City unavailable — aborting connection attempts.');
         return null;
       }
       if (attempt < MAX_RETRIES) {
@@ -414,6 +427,10 @@ export function sendDeployOperative(nodeId) {
  */
 function _scheduleReconnect() {
   if (_reconnecting || !_reconnectOptions) return;
+  if (_cityUnavailable) {
+    console.warn('[BlockTopia] _scheduleReconnect: city unavailable — not scheduling reconnect.');
+    return;
+  }
   _reconnecting = true;
   // Wait 2.5 s before trying — gives the server time to clean up the old session.
   setTimeout(() => {
