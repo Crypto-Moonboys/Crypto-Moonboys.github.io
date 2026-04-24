@@ -1474,6 +1474,13 @@ async function boot() {
       hud.showNodeInterference(`Node ${node.id.toUpperCase()} in cooldown · ${remainingSec}s remaining`, 'warning');
       return true;
     }
+    // Guard: do not send nodeInterfere until multiplayer is fully joined.
+    // This prevents partial messages reaching the server while the player state isn't ready,
+    // which would cause the server handler to reject the click and could flip LIVE LINK to unavailable.
+    if (!multiplayerConnected) {
+      hud.showNodeInterference('Connecting to live city…', 'system');
+      return true;
+    }
     // Visual-only optimistic pulse — node state is server-authoritative.
     // All real effects (status, feed, HUD, NPC, SAM) come from onNodeInterferenceChanged.
     nodeInterference.beginLocalPulse(node.id);

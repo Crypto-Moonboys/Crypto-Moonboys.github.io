@@ -1294,93 +1294,144 @@ export class CityRoom extends Room {
   }
 
   handleNodeInterference(client, data) {
-    const nodeId = String(data?.nodeId || '').toLowerCase();
-    if (!nodeId) return;
-    const now = Date.now();
-    const node = this.world.controlNodes.find((entry) => entry.id === nodeId);
-    if (!node) return;
-    // Per-node cooldown: prevent rapid re-interference on the same node.
-    if (node.cooldownUntil > now) return;
-    // Per-player cooldown: prevent spamming interference on different nodes.
-    const lastInterfere = this.playerInterfereTimes.get(client.sessionId) || 0;
-    if (now - lastInterfere < PLAYER_INTERFERE_COOLDOWN_MS) return;
-    // Distance check: player must be within NODE_INTERACT_MAX_DISTANCE grid tiles of the node.
-    // Both player.x/y and node.x/y are in the same isometric grid coordinate space.
-    const player = this.state.players.get(client.sessionId);
-    if (player) {
-      const dx = node.x - player.x;
-      const dy = node.y - player.y;
-      const dist = Math.sqrt(dx * dx + dy * dy);
-      if (dist > NODE_INTERACT_MAX_DISTANCE) {
-        console.warn(`[CityRoom] ${client.sessionId} rejected: node "${nodeId}" out of range (dist=${dist.toFixed(1)})`);
+    // --- Defensive validation: reject immediately if session is not fully established ---
+    if (!client || !client.sessionId) return;
+
+    try {
+      // Validate data shape.
+      if (!data || typeof data !== 'object') {
+        client.send('system', { message: 'Cannot process node click: still connecting to live city.' });
         return;
       }
+
+      // Validate nodeId is a non-empty string.
+      if (typeof data.nodeId !== 'string' || !data.nodeId.trim()) {
+        client.send('system', { message: 'Invalid node data.' });
+        return;
+      }
+      const nodeId = data.nodeId.trim().toLowerCase();
+
+      // Validate intent is strictly "assist" or "disrupt" (case-sensitive after trim).
+      const rawIntent = typeof data.intent === 'string' ? data.intent.trim() : '';
+      if (rawIntent !== 'assist' && rawIntent !== 'disrupt') {
+        client.send('system', { message: 'Invalid node data.' });
+        return;
+      }
+      const intent = rawIntent;
+
+      // Validate world and node lookup structures exist.
+      if (!this.world || !Array.isArray(this.world.controlNodes)) {
+        client.send('system', { message: 'Cannot process node click: still connecting to live city.' });
+        return;
+      }
+      const node = this.world.controlNodes.find((entry) => entry && entry.id === nodeId);
+      if (!node) return;
+
+      const now = Date.now();
+
+      // Per-node cooldown: prevent rapid re-interference on the same node.
+      if (typeof node.cooldownUntil === 'number' && node.cooldownUntil > now) return;
+
+      // Per-player cooldown: prevent spamming interference on different nodes.
+      const lastInterfere = this.playerInterfereTimes.get(client.sessionId);
+      if (typeof lastInterfere === 'number' && now - lastInterfere < PLAYER_INTERFERE_COOLDOWN_MS) return;
+
+      // Distance check: player must be within NODE_INTERACT_MAX_DISTANCE grid tiles of the node.
+      // Both player.x/y and node.x/y are in the same isometric grid coordinate space.
+      // Skip the distance check if either the player or the node coordinates are missing/non-numeric.
+      const player = this.state.players.get(client.sessionId);
+      if (!player) {
+        client.send('system', { message: 'Cannot process node click: still connecting to live city.' });
+        return;
+      }
+      if (
+        Number.isFinite(player.x) && Number.isFinite(player.y)
+        && Number.isFinite(node.x) && Number.isFinite(node.y)
+      ) {
+        const dx = node.x - player.x;
+        const dy = node.y - player.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist > NODE_INTERACT_MAX_DISTANCE) {
+          console.warn(`[CityRoom] ${client.sessionId} rejected: node "${nodeId}" out of range (dist=${dist.toFixed(1)})`);
+          return;
+        }
+      }
+
+      this.playerInterfereTimes.set(client.sessionId, now);
+
+      this.recordHunterActivity({
+        districtId: node.districtId,
+        nodeId: node.id,
+        type: intent === 'assist' ? 'stabilize' : 'interference',
+        weight: intent === 'assist' ? 0.8 : 1.6,
+      });
+      const impact = this.applyPlayerWarImpact({
+        playerId: client.sessionId,
+        districtId: node.districtId,
+        nodeId: node.id,
+        intent,
+        intensity: PLAYER_WAR_ACTION_IMPACT.interfere,
+        source: 'interference',
+      });
+
+      node.interference = Math.max(0, Math.min(100, node.interference + NODE_INTERFERENCE_GAIN));
+      node.control = Math.max(-100, Math.min(100, node.control - NODE_DISTRICT_SHIFT));
+      node.lastInterferedBy = client.sessionId;
+      node.pulseUntil = now + NODE_PULSE_DURATION_MS;
+      node.cooldownUntil = now + NODE_COOLDOWN_MS;
+      node.status = node.interference >= NODE_UNSTABLE_THRESHOLD ? 'unstable' : 'contested';
+      node.warState = node.status === 'unstable' ? 'retreating' : 'contesting';
+      node.conflictLevel = Math.max(node.conflictLevel || 0, 22);
+      node.samInstability = Math.max(node.samInstability || 0, 30);
+      if (node.interference >= NODE_UNSTABLE_THRESHOLD) {
+        node.owner = 'UNSTABLE';
+      }
+      this.world.playerInterferenceSpike = Math.max(0, this.world.playerInterferenceSpike + NODE_INTERFERENCE_GAIN);
+
+      const district = impact?.district || this.world.districts.find((entry) => entry.id === node.districtId);
+      if (!district) return;
+
+      const samPressureDelta = SAM_PRESSURE_FROM_INTERFERENCE;
+      this.world.samPressure = Math.max(0, Math.min(140, this.world.samPressure + samPressureDelta));
+
+      this.broadcast('nodeInterferenceChanged', {
+        nodeId: node.id,
+        districtId: node.districtId,
+        nodeX: node.x,
+        nodeY: node.y,
+        interference: node.interference,
+        status: node.status,
+        control: node.control,
+        owner: node.owner,
+        warState: node.warState,
+        conflictLevel: node.conflictLevel,
+        recruitmentLevel: node.recruitmentLevel,
+        contestedBy: node.contestedBy,
+        samInstability: node.samInstability,
+        cooldownUntil: node.cooldownUntil,
+        pulseUntil: node.pulseUntil,
+        sourcePlayerId: client.sessionId,
+        districtControl: district.control,
+        districtOwner: district.owner,
+        districtControlState: district.controlState || 'contested',
+        districtInstability: district.instability || 0,
+        samPressureDelta,
+        samPressure: this.world.samPressure,
+      });
+
+      this.emitSystemEvent(`⚡ NODE ${node.id.toUpperCase()} INTERFERED · ${district.name} pressure shifting`);
+      this.emitSystemEvent(`🧷 Recruitment pulse spotted near ${node.id}`);
+    } catch (err) {
+      console.error(
+        `[CityRoom] handleNodeInterference error — session=${client.sessionId} nodeId=${data?.nodeId} intent=${data?.intent}`,
+        err?.stack || err,
+      );
+      try {
+        client.send('system', { message: 'Node interaction could not be processed. Please try again.' });
+      } catch (_sendErr) {
+        // Ignore secondary send errors — client may have already disconnected.
+      }
     }
-    this.playerInterfereTimes.set(client.sessionId, now);
-
-    const intent = String(data?.intent || 'disrupt').toLowerCase() === 'assist' ? 'assist' : 'disrupt';
-    this.recordHunterActivity({
-      districtId: node.districtId,
-      nodeId: node.id,
-      type: intent === 'assist' ? 'stabilize' : 'interference',
-      weight: intent === 'assist' ? 0.8 : 1.6,
-    });
-    const impact = this.applyPlayerWarImpact({
-      playerId: client.sessionId,
-      districtId: node.districtId,
-      nodeId: node.id,
-      intent,
-      intensity: PLAYER_WAR_ACTION_IMPACT.interfere,
-      source: 'interference',
-    });
-
-    node.interference = Math.max(0, Math.min(100, node.interference + NODE_INTERFERENCE_GAIN));
-    node.control = Math.max(-100, Math.min(100, node.control - NODE_DISTRICT_SHIFT));
-    node.lastInterferedBy = client.sessionId;
-    node.pulseUntil = now + NODE_PULSE_DURATION_MS;
-    node.cooldownUntil = now + NODE_COOLDOWN_MS;
-    node.status = node.interference >= NODE_UNSTABLE_THRESHOLD ? 'unstable' : 'contested';
-    node.warState = node.status === 'unstable' ? 'retreating' : 'contesting';
-    node.conflictLevel = Math.max(node.conflictLevel || 0, 22);
-    node.samInstability = Math.max(node.samInstability || 0, 30);
-    if (node.interference >= NODE_UNSTABLE_THRESHOLD) {
-      node.owner = 'UNSTABLE';
-    }
-    this.world.playerInterferenceSpike = Math.max(0, this.world.playerInterferenceSpike + NODE_INTERFERENCE_GAIN);
-
-    const district = impact?.district || this.world.districts.find((entry) => entry.id === node.districtId);
-    if (!district) return;
-
-    const samPressureDelta = SAM_PRESSURE_FROM_INTERFERENCE;
-    this.world.samPressure = Math.max(0, Math.min(140, this.world.samPressure + samPressureDelta));
-
-    this.broadcast('nodeInterferenceChanged', {
-      nodeId: node.id,
-      districtId: node.districtId,
-      nodeX: node.x,
-      nodeY: node.y,
-      interference: node.interference,
-      status: node.status,
-      control: node.control,
-      owner: node.owner,
-      warState: node.warState,
-      conflictLevel: node.conflictLevel,
-      recruitmentLevel: node.recruitmentLevel,
-      contestedBy: node.contestedBy,
-      samInstability: node.samInstability,
-      cooldownUntil: node.cooldownUntil,
-      pulseUntil: node.pulseUntil,
-      sourcePlayerId: client.sessionId,
-      districtControl: district.control,
-      districtOwner: district.owner,
-      districtControlState: district.controlState || 'contested',
-      districtInstability: district.instability || 0,
-      samPressureDelta,
-      samPressure: this.world.samPressure,
-    });
-
-    this.emitSystemEvent(`⚡ NODE ${node.id.toUpperCase()} INTERFERED · ${district.name} pressure shifting`);
-    this.emitSystemEvent(`🧷 Recruitment pulse spotted near ${node.id}`);
   }
 
   onJoin(client, options) {
