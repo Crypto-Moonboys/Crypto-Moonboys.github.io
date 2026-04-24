@@ -177,7 +177,6 @@ export class CityRoom extends Room {
       // Server-owned per-player covert heat (sessionId → heat value 0–100).
       this.playerHeat = new Map();
 
-      console.log('[CityRoom] created');
       this.setSimulationInterval((dt) => this.updateWorld(dt), 50);
 
       this.onMessage('move', (client, data) => {
