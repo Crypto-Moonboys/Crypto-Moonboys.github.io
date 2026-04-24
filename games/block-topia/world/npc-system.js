@@ -478,7 +478,7 @@ function stepNetworkMissionNpc(npc, dt) {
 
   const from = line.from.id === fromId ? line.from : line.to;
   const to = line.to.id === toId ? line.to : line.from;
-  const t = clamp(mission.edgeT, 0, 1);
+  const t = Math.max(0, Math.min(1, mission.edgeT));
   npc.col = from.x + (to.x - from.x) * t;
   npc.row = from.y + (to.y - from.y) * t;
 
