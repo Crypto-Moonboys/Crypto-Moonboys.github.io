@@ -1,12 +1,12 @@
 {
-  "generated_at": "2026-04-23T05:35:25.526Z",
+  "generated_at": "2026-04-24T05:40:42.926Z",
   "phase": "phase_6",
   "schema_version": "1.0",
   "summary": {
     "total_entries": 226,
     "expand": 0,
-    "reinforce": 24,
-    "monitor": 197,
+    "reinforce": 28,
+    "monitor": 193,
     "hold": 5
   },
   "entries": [
@@ -15,7 +15,7 @@
       "title": "Bitcoin (BTC) — Crypto Moonboys Wiki",
       "momentum_score": 96,
       "authority_trend": "rising",
-      "editorial_activity_score": 70,
+      "editorial_activity_score": 75,
       "predicted_priority": 87,
       "recommendation": "reinforce"
     },
@@ -24,7 +24,7 @@
       "title": "Ethereum (ETH) — Crypto Moonboys Wiki",
       "momentum_score": 96,
       "authority_trend": "rising",
-      "editorial_activity_score": 70,
+      "editorial_activity_score": 75,
       "predicted_priority": 88,
       "recommendation": "reinforce"
     },
@@ -33,7 +33,7 @@
       "title": "HODL Warriors — Crypto Moonboys Wiki",
       "momentum_score": 96,
       "authority_trend": "rising",
-      "editorial_activity_score": 70,
+      "editorial_activity_score": 75,
       "predicted_priority": 69,
       "recommendation": "reinforce"
     },
@@ -42,7 +42,7 @@
       "title": "HODL Wars — Crypto Moonboys Wiki",
       "momentum_score": 96,
       "authority_trend": "rising",
-      "editorial_activity_score": 70,
+      "editorial_activity_score": 75,
       "predicted_priority": 0,
       "recommendation": "reinforce"
     },
@@ -51,7 +51,7 @@
       "title": "Solana (SOL) — Crypto Moonboys Wiki",
       "momentum_score": 96,
       "authority_trend": "rising",
-      "editorial_activity_score": 70,
+      "editorial_activity_score": 75,
       "predicted_priority": 88,
       "recommendation": "reinforce"
     },
@@ -60,7 +60,7 @@
       "title": "Diamond Hands — Crypto Moonboys Wiki",
       "momentum_score": 77,
       "authority_trend": "rising",
-      "editorial_activity_score": 70,
+      "editorial_activity_score": 75,
       "predicted_priority": 93,
       "recommendation": "reinforce"
     },
@@ -69,7 +69,7 @@
       "title": "Moon Mission — Crypto Moonboys Wiki",
       "momentum_score": 77,
       "authority_trend": "rising",
-      "editorial_activity_score": 70,
+      "editorial_activity_score": 75,
       "predicted_priority": 88,
       "recommendation": "reinforce"
     },
@@ -78,7 +78,7 @@
       "title": "GraffPUNKS — Crypto Moonboys Wiki",
       "momentum_score": 73,
       "authority_trend": "rising",
-      "editorial_activity_score": 70,
+      "editorial_activity_score": 75,
       "predicted_priority": 75,
       "recommendation": "reinforce"
     },
@@ -87,7 +87,7 @@
       "title": "Bitcoin Kids — Crypto Moonboys Wiki",
       "momentum_score": 70,
       "authority_trend": "rising",
-      "editorial_activity_score": 70,
+      "editorial_activity_score": 75,
       "predicted_priority": 76,
       "recommendation": "reinforce"
     },
@@ -96,7 +96,7 @@
       "title": "NULL THE PROPHET — Crypto Moonboys Wiki",
       "momentum_score": 70,
       "authority_trend": "rising",
-      "editorial_activity_score": 70,
+      "editorial_activity_score": 75,
       "predicted_priority": 72,
       "recommendation": "reinforce"
     },
@@ -105,7 +105,7 @@
       "title": "Block Topia — Crypto Moonboys Wiki",
       "momentum_score": 67,
       "authority_trend": "rising",
-      "editorial_activity_score": 70,
+      "editorial_activity_score": 75,
       "predicted_priority": 72,
       "recommendation": "reinforce"
     },
@@ -114,7 +114,7 @@
       "title": "PMSL — Crypto Moonboys Wiki",
       "momentum_score": 65,
       "authority_trend": "rising",
-      "editorial_activity_score": 70,
+      "editorial_activity_score": 75,
       "predicted_priority": 85,
       "recommendation": "reinforce"
     },
@@ -123,7 +123,7 @@
       "title": "$PUNK Token — Crypto Moonboys Wiki",
       "momentum_score": 65,
       "authority_trend": "rising",
-      "editorial_activity_score": 70,
+      "editorial_activity_score": 75,
       "predicted_priority": 76,
       "recommendation": "reinforce"
     },
@@ -132,7 +132,7 @@
       "title": "Queen Sarah P-Fly — Crypto Moonboys Wiki",
       "momentum_score": 65,
       "authority_trend": "rising",
-      "editorial_activity_score": 70,
+      "editorial_activity_score": 75,
       "predicted_priority": 74,
       "recommendation": "reinforce"
     },
@@ -141,7 +141,7 @@
       "title": "Charlie Buster — Crypto Moonboys Wiki",
       "momentum_score": 63,
       "authority_trend": "rising",
-      "editorial_activity_score": 70,
+      "editorial_activity_score": 75,
       "predicted_priority": 74,
       "recommendation": "reinforce"
     },
@@ -150,7 +150,7 @@
       "title": "Alfie Blaze — Crypto Moonboys Wiki",
       "momentum_score": 62,
       "authority_trend": "rising",
-      "editorial_activity_score": 70,
+      "editorial_activity_score": 75,
       "predicted_priority": 75,
       "recommendation": "reinforce"
     },
@@ -159,7 +159,7 @@
       "title": "GraffPUNKS 24/7 — Crypto Moonboys Wiki",
       "momentum_score": 62,
       "authority_trend": "rising",
-      "editorial_activity_score": 70,
+      "editorial_activity_score": 75,
       "predicted_priority": 76,
       "recommendation": "reinforce"
     },
@@ -168,7 +168,7 @@
       "title": "Burn-to-Earn — Crypto Moonboys Wiki",
       "momentum_score": 61,
       "authority_trend": "rising",
-      "editorial_activity_score": 70,
+      "editorial_activity_score": 75,
       "predicted_priority": 74,
       "recommendation": "reinforce"
     },
@@ -177,7 +177,7 @@
       "title": "NBGX — Crypto Moonboys Wiki",
       "momentum_score": 61,
       "authority_trend": "rising",
-      "editorial_activity_score": 70,
+      "editorial_activity_score": 75,
       "predicted_priority": 74,
       "recommendation": "reinforce"
     },
@@ -186,7 +186,7 @@
       "title": "Staking — Crypto Moonboys Wiki",
       "momentum_score": 61,
       "authority_trend": "rising",
-      "editorial_activity_score": 70,
+      "editorial_activity_score": 75,
       "predicted_priority": 71,
       "recommendation": "reinforce"
     },
@@ -195,7 +195,7 @@
       "title": "NBG — Crypto Moonboys Wiki",
       "momentum_score": 60,
       "authority_trend": "rising",
-      "editorial_activity_score": 70,
+      "editorial_activity_score": 75,
       "predicted_priority": 75,
       "recommendation": "reinforce"
     },
@@ -204,7 +204,7 @@
       "title": "Graffiti Kings — Crypto Moonboys Wiki",
       "momentum_score": 59,
       "authority_trend": "rising",
-      "editorial_activity_score": 70,
+      "editorial_activity_score": 75,
       "predicted_priority": 97,
       "recommendation": "reinforce"
     },
@@ -213,7 +213,7 @@
       "title": "GraffPUNKS 247 Radio — Crypto Moonboys Wiki",
       "momentum_score": 58,
       "authority_trend": "rising",
-      "editorial_activity_score": 70,
+      "editorial_activity_score": 75,
       "predicted_priority": 76,
       "recommendation": "reinforce"
     },
@@ -222,7 +222,7 @@
       "title": "Hard Fork Games — Crypto Moonboys Wiki",
       "momentum_score": 57,
       "authority_trend": "rising",
-      "editorial_activity_score": 70,
+      "editorial_activity_score": 75,
       "predicted_priority": 125,
       "recommendation": "reinforce"
     },
@@ -231,25 +231,25 @@
       "title": "Rave Relics — Crypto Moonboys Wiki",
       "momentum_score": 56,
       "authority_trend": "rising",
-      "editorial_activity_score": 70,
+      "editorial_activity_score": 75,
       "predicted_priority": 96,
-      "recommendation": "monitor"
+      "recommendation": "reinforce"
     },
     {
       "url": "/wiki/genesis-spray.html",
       "title": "Genesis Spray — Crypto Moonboys Wiki",
       "momentum_score": 55,
       "authority_trend": "rising",
-      "editorial_activity_score": 70,
+      "editorial_activity_score": 75,
       "predicted_priority": 97,
-      "recommendation": "monitor"
+      "recommendation": "reinforce"
     },
     {
       "url": "/wiki/gkniftyheads.html",
       "title": "GKniftyHEADS — Crypto Moonboys Wiki",
       "momentum_score": 55,
       "authority_trend": "rising",
-      "editorial_activity_score": 70,
+      "editorial_activity_score": 75,
       "predicted_priority": 74,
       "recommendation": "monitor"
     },
@@ -267,16 +267,16 @@
       "title": "NBG Token — Crypto Moonboys Wiki",
       "momentum_score": 55,
       "authority_trend": "rising",
-      "editorial_activity_score": 70,
+      "editorial_activity_score": 75,
       "predicted_priority": 85,
-      "recommendation": "monitor"
+      "recommendation": "reinforce"
     },
     {
       "url": "/wiki/hodl-x-warriors.html",
       "title": "HODL X Warriors — Crypto Moonboys Wiki",
       "momentum_score": 54,
       "authority_trend": "rising",
-      "editorial_activity_score": 70,
+      "editorial_activity_score": 75,
       "predicted_priority": 73,
       "recommendation": "monitor"
     },
@@ -294,9 +294,9 @@
       "title": "Crypto Moonboys — Crypto Moonboys Wiki",
       "momentum_score": 53,
       "authority_trend": "rising",
-      "editorial_activity_score": 70,
+      "editorial_activity_score": 75,
       "predicted_priority": 138,
-      "recommendation": "monitor"
+      "recommendation": "reinforce"
     },
     {
       "url": "/wiki/darren-cullen.html",
@@ -411,7 +411,7 @@
       "title": "NFTs (Non-Fungible Tokens) — Crypto Moonboys Wiki",
       "momentum_score": 49,
       "authority_trend": "stable",
-      "editorial_activity_score": 70,
+      "editorial_activity_score": 75,
       "predicted_priority": 110,
       "recommendation": "monitor"
     },
@@ -447,7 +447,7 @@
       "title": "$GK — Crypto Moonboys Wiki",
       "momentum_score": 48,
       "authority_trend": "stable",
-      "editorial_activity_score": 70,
+      "editorial_activity_score": 75,
       "predicted_priority": 101,
       "recommendation": "monitor"
     },
@@ -528,7 +528,7 @@
       "title": "Metaverse Battles — Crypto Moonboys Wiki",
       "momentum_score": 47,
       "authority_trend": "stable",
-      "editorial_activity_score": 70,
+      "editorial_activity_score": 75,
       "predicted_priority": 137,
       "recommendation": "monitor"
     },
@@ -600,7 +600,7 @@
       "title": "Blockchain Technology — Crypto Moonboys Wiki",
       "momentum_score": 45,
       "authority_trend": "stable",
-      "editorial_activity_score": 70,
+      "editorial_activity_score": 75,
       "predicted_priority": 93,
       "recommendation": "monitor"
     },
@@ -1815,7 +1815,7 @@
       "title": "Graffiti Queens In Decentraland Ecosystem — Crypto Moonboys Wiki",
       "momentum_score": 37,
       "authority_trend": "stable",
-      "editorial_activity_score": 70,
+      "editorial_activity_score": 75,
       "predicted_priority": 0,
       "recommendation": "monitor"
     },
@@ -1851,7 +1851,7 @@
       "title": "GraffPUNKS NFTs — Crypto Moonboys Wiki",
       "momentum_score": 37,
       "authority_trend": "stable",
-      "editorial_activity_score": 70,
+      "editorial_activity_score": 75,
       "predicted_priority": 100,
       "recommendation": "monitor"
     },
@@ -1995,7 +1995,7 @@
       "title": "Tokens — Crypto Moonboys Wiki",
       "momentum_score": 37,
       "authority_trend": "stable",
-      "editorial_activity_score": 70,
+      "editorial_activity_score": 75,
       "predicted_priority": 132,
       "recommendation": "monitor"
     },
