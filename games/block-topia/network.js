@@ -2,6 +2,10 @@ let room = null;
 let client = null;
 let _reconnectOptions = null;
 let _reconnecting = false;
+// True while connectMultiplayer() is actively running for a reconnect.
+// Prevents concurrent reconnect attempts from both _scheduleReconnect and
+// direct callers (e.g. the node-click handler in main.js).
+let _isConnecting = false;
 const STATE_CHANGE_THROTTLE_MS = 100;
 // Throttle closed-room console warnings to once every 3 seconds per message type.
 const CLOSED_ROOM_WARN_THROTTLE_MS = 3000;
@@ -421,7 +425,8 @@ function _scheduleReconnect() {
 
 /**
  * Re-run connectMultiplayer using the options saved from the last successful call.
- * Silently no-ops if there are no saved options or if a reconnect is already running.
+ * Silently no-ops if there are no saved options, if a reconnect is already in progress,
+ * or if the room is already open.
  */
 export async function reconnectMultiplayer() {
   if (!_reconnectOptions) {
@@ -432,6 +437,16 @@ export async function reconnectMultiplayer() {
     // Already connected — nothing to do.
     return null;
   }
+  if (_isConnecting) {
+    // A reconnect attempt is already in flight (from _scheduleReconnect or another caller).
+    console.log('[BlockTopia] reconnectMultiplayer: reconnect already in progress — ignoring duplicate call.');
+    return null;
+  }
+  _isConnecting = true;
   console.log('[BlockTopia] reconnectMultiplayer: attempting silent reconnect…');
-  return connectMultiplayer(_reconnectOptions);
+  try {
+    return await connectMultiplayer(_reconnectOptions);
+  } finally {
+    _isConnecting = false;
+  }
 }
