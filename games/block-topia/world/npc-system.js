@@ -901,7 +901,7 @@ export function createNpcSystem(state, liveIntelligence = null) {
       }
       batchIndex = (batchIndex + batchSize) % total;
     } catch (err) {
-      console.error('[NPC] tick error:', err);
+      console.error('[NPC] tick error:', err.stack || err);
     }
   }
 
