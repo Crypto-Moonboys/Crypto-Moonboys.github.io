@@ -90,6 +90,7 @@ const COVERT_SUCCESS_SAM_INSTABILITY_ASSIST = -4;
 // Per-player heat cap and decay (server-owned; separate from node covertHeat).
 const PLAYER_HEAT_MAX = 100;
 const PLAYER_HEAT_DECAY_RATE = 0.05; // per server tick (50 ms) ≈ 1 unit/s
+const COVERT_DEPLOY_HEAT_MULTIPLIER = 0.5; // fraction of heatGainSuccess applied on deploy
 
 const WORLD_DISTRICTS = [
   { id: 'neon-slums', name: 'Neon Slums' },
@@ -1779,7 +1780,7 @@ export class CityRoom extends Room {
 
     const playerHeat = Math.min(
       PLAYER_HEAT_MAX,
-      (this.playerHeat.get(client.sessionId) || 0) + SIGNAL_RUNNER_STATS.heatGainSuccess * 0.5,
+      (this.playerHeat.get(client.sessionId) || 0) + SIGNAL_RUNNER_STATS.heatGainSuccess * COVERT_DEPLOY_HEAT_MULTIPLIER,
     );
     this.playerHeat.set(client.sessionId, playerHeat);
 

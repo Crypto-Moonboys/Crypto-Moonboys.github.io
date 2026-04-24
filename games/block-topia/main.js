@@ -76,6 +76,8 @@ const MICRO_NOTIFY_MAX_ITEMS = 5;
 const MINI_GAME_SYNC_QUIET_MS = 5200;
 const MINI_GAME_ENTRY_QUIET_MS = 2800;
 const COVERT_OPS_MISSION_DURATION_MS = 30000;
+const COVERT_DEPLOY_BTN_TEXT = 'Deploy Signal Runner';
+const COVERT_OPERATIVE_LOST_SUFFIX = ' · OPERATIVE LOST';
 const microNotifyCache = new Map();
 
 function setBodyStateClass(name, enabled) {
@@ -1108,8 +1110,8 @@ async function boot() {
       if (deployBtn) {
         deployBtn.disabled = !selectedNodeId;
         deployBtn.textContent = selectedNodeId
-          ? `Deploy Signal Runner → ${selectedNodeId.toUpperCase()}`
-          : 'Deploy Signal Runner (select node)';
+          ? `${COVERT_DEPLOY_BTN_TEXT} → ${selectedNodeId.toUpperCase()}`
+          : `${COVERT_DEPLOY_BTN_TEXT} (select node)`;
       }
       if (selectedNodeId || covertOpsLocal.lastResult) {
         panel.classList.remove('hidden');
@@ -2475,7 +2477,7 @@ async function boot() {
         hud.pushFeed(`✅ Signal Runner: op SUCCESS at ${nodeLabel} · node impact applied`, 'quest');
         pushMicroNotification('Signal Runner: mission success.', 'success');
       } else {
-        const lostMsg = payload.operativeLost ? ' · OPERATIVE LOST' : '';
+        const lostMsg = payload.operativeLost ? COVERT_OPERATIVE_LOST_SUFFIX : '';
         hud.pushFeed(`❌ Signal Runner: op FAILURE at ${nodeLabel}${lostMsg}`, 'sam');
         pushMicroNotification(`Signal Runner: mission failed${payload.operativeLost ? ' — operative lost' : ''}.`, 'warning');
       }
