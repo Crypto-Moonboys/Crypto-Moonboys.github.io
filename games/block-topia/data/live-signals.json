@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-04-24T08:06:10.363Z",
+  "generatedAt": "2026-04-24T10:05:31.385Z",
   "mode": "live-ai",
   "sourceHealth": {
     "coingecko-global": "ok",
@@ -11,68 +11,68 @@
   "signalCount": 4,
   "signals": [
     {
-      "id": "signal-1777017970363-1",
+      "id": "signal-1777025131384-1",
       "lane": "world",
       "priority": 4,
-      "ttlMinutes": 45,
-      "npcLine": "Crypto flux unstable; trust fades fast in neon grids.",
-      "questPulse": "Market drops; shadow brokers tighten data locks.",
-      "worldFeed": "Global digital tokens bleed value under shadowed skies.",
-      "clueEvent": "Silent exchanges flicker with anxious algorithmic whispers.",
+      "ttlMinutes": 120,
+      "npcLine": "Crypto tides shift; digital waves whisper of unseen moves.",
+      "questPulse": "Market gears hum quietly; shadows conceal the true value.",
+      "worldFeed": "Silent surge in countless tokens; fate pivots on thin threads.",
+      "clueEvent": "Numbers flicker faintly; trust falters amid climbing uncertainty.",
       "tags": [
-        "crypto",
         "market",
-        "fear"
-      ],
-      "expiresAt": "2026-04-24T08:51:10.363Z"
-    },
-    {
-      "id": "signal-1777017970363-2",
-      "lane": "ops",
-      "priority": 3,
-      "ttlMinutes": 30,
-      "npcLine": "Holo traders report spike in underground token chatter.",
-      "questPulse": "Unseen spikes in CHIP and RAVE stir covert ops.",
-      "worldFeed": "Encrypted channels buzz; forbidden coins on rogue watchlists.",
-      "clueEvent": "Data scramblers detect rise in CHIP and RAVE signals.",
-      "tags": [
         "crypto",
-        "trending",
-        "intel"
+        "uncertainty"
       ],
-      "expiresAt": "2026-04-24T08:36:10.363Z"
+      "expiresAt": "2026-04-24T12:05:31.384Z"
     },
     {
-      "id": "signal-1777017970363-3",
-      "lane": "clue",
-      "priority": 2,
-      "ttlMinutes": 60,
-      "npcLine": "SPK waves pulse stronger — silent streets hum unrest.",
-      "questPulse": "Rogue packets hint at OCT and PENGU disrupting nets.",
-      "worldFeed": "Token flickers in the net hint at hidden agendas.",
-      "clueEvent": "Pattern shifts around SPK and OCT tokens signal unrest.",
-      "tags": [
-        "tokens",
-        "disruption",
-        "patterns"
-      ],
-      "expiresAt": "2026-04-24T09:06:10.363Z"
-    },
-    {
-      "id": "signal-1777017970363-4",
-      "lane": "quest",
+      "id": "signal-1777025131384-2",
+      "lane": "ops",
       "priority": 5,
-      "ttlMinutes": 20,
-      "npcLine": "Fear rides high; intel handlers seek data stabilizers now.",
-      "questPulse": "Urgent: Calm cyberstorm, patch leaking digital assets fast.",
-      "worldFeed": "Darkweb brokers scramble to contain spreading market dread.",
-      "clueEvent": "Data breach traces link to sudden market unravel.",
+      "ttlMinutes": 60,
+      "npcLine": "Sentiment dives deep—fear grips the neon veins.",
+      "questPulse": "Fear spikes clutter circuits; traders scramble for cover.",
+      "worldFeed": "Pulse monitors bleed red; a storm gathers under digital skies.",
+      "clueEvent": "Eyes dart to volatile nodes; calm erodes fast.",
       "tags": [
-        "emergency",
         "fear",
-        "patch"
+        "panic",
+        "volatility"
       ],
-      "expiresAt": "2026-04-24T08:26:10.363Z"
+      "expiresAt": "2026-04-24T11:05:31.384Z"
+    },
+    {
+      "id": "signal-1777025131385-3",
+      "lane": "clue",
+      "priority": 3,
+      "ttlMinutes": 90,
+      "npcLine": "Five flickering signals rising; some glow colder than others.",
+      "questPulse": "Symbols spike in dark corners; RAVE and PENGU in spotlight.",
+      "worldFeed": "Tokens flutter like errant sparks; some lead to opportunity.",
+      "clueEvent": "Indexes pulse subtle codes—decode for clandestine gains.",
+      "tags": [
+        "signals",
+        "tokens",
+        "trending"
+      ],
+      "expiresAt": "2026-04-24T11:35:31.385Z"
+    },
+    {
+      "id": "signal-1777025131385-4",
+      "lane": "quest",
+      "priority": 2,
+      "ttlMinutes": 180,
+      "npcLine": "Seek hidden nodes—cryptic upticks point toward concealed profits.",
+      "questPulse": "Scattered market whispers hint at a turning nexus.",
+      "worldFeed": "Digital seas part slowly; beware the undercurrent below.",
+      "clueEvent": "Quiet growth among many; silent winners await discovery.",
+      "tags": [
+        "opportunity",
+        "explore",
+        "growth"
+      ],
+      "expiresAt": "2026-04-24T13:05:31.385Z"
     }
   ]
 }
