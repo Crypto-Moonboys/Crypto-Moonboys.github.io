@@ -842,7 +842,6 @@ async function boot() {
     },
     onSkip: () => handleMiniGameOutcome('circuit', 'skip').catch(() => {}),
   });
-  const CONNECTED_STATUS_TEXT = 'Connected (live city)';
   let multiplayerConnected = false;
   let wsConnectionFailed = false;
   let localSessionId = '';
@@ -2303,10 +2302,9 @@ async function boot() {
     hud.pushFeed(`Signal Runner deployed to ${nodeId.toUpperCase()}. Mission resolving.`, 'combat');
   });
 
-  function restoreConnectionState() {
+  function markUiConnected() {
     wsConnectionFailed = false;
-    multiplayerConnected = true;
-    hud.setMultiplayerStatus(CONNECTED_STATUS_TEXT);
+    hud.setMultiplayerStatus('Connected (live city)');
   }
 
   await connectMultiplayer({
@@ -2327,7 +2325,7 @@ async function boot() {
       let statusText;
       if (status.joined) {
         wsConnectionFailed = false;
-        statusText = CONNECTED_STATUS_TEXT;
+        statusText = 'Connected (live city)';
       } else if (wsState === 'room-full') {
         wsConnectionFailed = true;
         statusText = 'Live city unavailable. Try again later.';
@@ -2360,8 +2358,7 @@ async function boot() {
       debugState.playerCount = players.length;
       renderDebugPanel();
       hud.setPopulation(players.length, state.room.maxPlayers);
-      // Server is clearly alive if it's pushing player state — restore connected banner.
-      if (wsConnectionFailed) restoreConnectionState();
+      markUiConnected();
       if (selectedRemotePlayer?.id) {
         selectedRemotePlayer = state.remotePlayers.find((player) => player.id === selectedRemotePlayer.id) || null;
         if (!selectedRemotePlayer) {
@@ -2370,10 +2367,9 @@ async function boot() {
       }
     },
     onWorldSnapshot: (data) => {
+      markUiConnected();
       debugState.lastWorldUpdateAt = Date.now();
       renderDebugPanel();
-      // Receiving a snapshot proves the server connection is live — restore connected banner.
-      if (wsConnectionFailed) restoreConnectionState();
       if (hasSharedHunterSnapshotPayload(data)) {
         applySharedHunterSnapshot(data, 'snapshot');
       }
