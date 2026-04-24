@@ -90,28 +90,34 @@
       <span class="covert-ops-chip">SIGNAL RUNNER</span>
       <span id="covert-player-heat" class="covert-player-heat">Heat: 0</span>
     </div>
-    <p class="covert-ops-hint">Select a node on the map · deploy operative · result in ~30s</p>
+    <p class="covert-ops-hint">Deploy Signal Runner to shift node control. More Heat means higher risk.</p>
     <div id="covert-node-target" class="covert-node-target" aria-live="polite"></div>
     <button id="covert-deploy-btn" class="covert-deploy-btn" type="button" disabled>Deploy Signal Runner (select node)</button>
     <div id="covert-countdown" class="covert-countdown" aria-live="polite"></div>
     <div id="covert-result" class="covert-result" aria-live="polite"></div>
   </div>
 
-  <div id="ftue-overlay" class="hidden" role="dialog" aria-modal="true" aria-label="New player quick-start guide">
+  <div id="ftue-overlay" class="hidden" role="dialog" aria-modal="true" aria-label="Welcome to Block Topia">
     <div class="ftue-card">
-      <p class="ftue-chip">BLOCK TOPIA · QUICK START</p>
-      <h2 class="ftue-title">How to play — 30 second guide</h2>
+      <h2 class="ftue-title">Welcome to Block Topia</h2>
+      <p class="ftue-intro">Block Topia is a live city. The world keeps moving whether you act or not.</p>
       <ol class="ftue-steps">
-        <li><strong>Move</strong> — WASD or arrow keys</li>
-        <li><strong>Select a node</strong> — click any glowing shape on the map</li>
-        <li><strong>Deploy Signal Runner</strong> — press the button in the bottom-right panel</li>
-        <li><strong>Read the result</strong> — server resolves in ~30s · success shifts node control · failure raises heat</li>
+        <li>Move around the map.</li>
+        <li>Select glowing nodes.</li>
+        <li>Deploy Signal Runner to shift node control.</li>
+        <li>Watch your Heat.</li>
+        <li>High Heat means SAM is watching.</li>
+        <li>Duels, NPCs, and events can change the city.</li>
       </ol>
-      <p class="ftue-warn">⚠️ <strong>Heat</strong> builds each mission. High heat = lower odds. It decays automatically — wait before deploying again.</p>
-      <p class="ftue-warn">🧠 <strong>SAM</strong> is the hostile AI. Respond to 🚨 alerts when they appear — ignoring them drains XP and raises world pressure.</p>
-      <button id="ftue-dismiss" class="ftue-dismiss-btn" type="button">Got it — enter the city</button>
+      <div class="ftue-actions">
+        <button id="ftue-dismiss" class="ftue-dismiss-btn" type="button">Start Playing</button>
+      </div>
     </div>
   </div>
+
+  <button id="ftue-help-btn" class="ftue-help-btn" type="button" aria-label="How it works">?</button>
+
+  <div id="node-tooltip" class="node-tooltip" aria-live="polite">Select a glowing node to deploy Signal Runner.</div>
 
   <div id="multiplayer-live-banner" role="status" aria-live="polite">LIVE LINK — CONNECTING</div>
 
