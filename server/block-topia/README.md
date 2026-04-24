@@ -83,6 +83,7 @@ room.send('move', { x: 10, y: 20 });
 - Host this server on your Contabo VPS.
 - Ensure the VPS firewall allows inbound traffic on ports 80/443.
 - Keep the Colyseus process running locally on `127.0.0.1:2567`.
+- Client default endpoint is `wss://game.cryptomoonboys.com`, so `game.cryptomoonboys.com` must terminate TLS on `443` and reverse-proxy to `127.0.0.1:2567`.
 
 ### Nginx Two-Phase Rollout
 
@@ -113,6 +114,31 @@ sudo certbot certonly --webroot -w /var/www/cryptomoonboys.com \
 
 ```bash
 sudo cp server/block-topia/deploy/nginx/cryptomoonboys.com.phase2.conf /etc/nginx/sites-available/cryptomoonboys.com
+sudo nginx -t
+sudo systemctl reload nginx
+```
+
+### Game Subdomain (required for multiplayer)
+
+Use the dedicated game vhost template:
+
+```
+server/block-topia/deploy/nginx/game.cryptomoonboys.com.conf
+```
+
+Install and enable:
+
+```bash
+sudo cp server/block-topia/deploy/nginx/game.cryptomoonboys.com.conf /etc/nginx/sites-available/game.cryptomoonboys.com
+sudo ln -s /etc/nginx/sites-available/game.cryptomoonboys.com /etc/nginx/sites-enabled/game.cryptomoonboys.com
+sudo nginx -t
+sudo systemctl reload nginx
+```
+
+Issue TLS certificate for the game host:
+
+```bash
+sudo certbot certonly --webroot -w /var/www/cryptomoonboys.com -d game.cryptomoonboys.com
 sudo nginx -t
 sudo systemctl reload nginx
 ```
