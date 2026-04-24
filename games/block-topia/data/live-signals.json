@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-04-24T14:54:14.868Z",
+  "generatedAt": "2026-04-24T16:05:30.812Z",
   "mode": "live-ai",
   "sourceHealth": {
     "coingecko-global": "ok",
@@ -11,84 +11,84 @@
   "signalCount": 5,
   "signals": [
     {
-      "id": "signal-1777042454867-1",
+      "id": "signal-1777046730811-1",
       "lane": "world",
       "priority": 4,
       "ttlMinutes": 45,
-      "npcLine": "Market pulse down, shadows stretch across all sectors.",
-      "questPulse": "Scan for fading crypto shards amid spreading dread.",
-      "worldFeed": "Global digital assets bleed value; trust fractures.",
-      "clueEvent": "Fear spikes as coin counts swell but confidence wanes.",
+      "npcLine": "Market pulses cold, shadows grow thick. No trust in the coin tonight.",
+      "questPulse": "Danger looms as crypto tides drop beneath the neon haze.",
+      "worldFeed": "Global cryptos bleed; fear tightens its grip on net traders.",
+      "clueEvent": "Chains flicker, value drops encrypted in digital mist.",
       "tags": [
-        "crypto",
+        "market",
         "fear",
-        "market_slump"
+        "crypto"
       ],
-      "expiresAt": "2026-04-24T15:39:14.867Z"
+      "expiresAt": "2026-04-24T16:50:30.811Z"
     },
     {
-      "id": "signal-1777042454868-2",
+      "id": "signal-1777046730812-2",
       "lane": "ops",
       "priority": 3,
-      "ttlMinutes": 30,
-      "npcLine": "New tokens churn, but none break past the noise.",
-      "questPulse": "Trace the static behind low-signal cryptos rising silently.",
-      "worldFeed": "Thousands of coins alive, few move the dial.",
-      "clueEvent": "Clusters form around zero-score tokens hiding deeper risks.",
+      "ttlMinutes": 60,
+      "npcLine": "Chip nodes spike—something's stirring beneath the datastream.",
+      "questPulse": "Signal: CHIP token’s shadow climbs; watch for data breach flickers.",
+      "worldFeed": "Chatter spikes on CHIP, possible bot swarm or pump schemes.",
+      "clueEvent": "Anomalies detected around CHIP transactions, trace routes scattered.",
       "tags": [
-        "crypto",
-        "low_activity",
-        "analysis"
+        "chip",
+        "anomaly",
+        "breach"
       ],
-      "expiresAt": "2026-04-24T15:24:14.868Z"
+      "expiresAt": "2026-04-24T17:05:30.812Z"
     },
     {
-      "id": "signal-1777042454868-3",
+      "id": "signal-1777046730812-3",
       "lane": "clue",
       "priority": 5,
-      "ttlMinutes": 60,
-      "npcLine": "Sentiment index crawls near despair — expect chaos.",
-      "questPulse": "Decode the fear pattern spreading through data nodes.",
-      "worldFeed": "Market mood falters, casting long digital shadows.",
-      "clueEvent": "Emoji flickers show rising fear, signal suppressed hopes.",
+      "ttlMinutes": 30,
+      "npcLine": "RAVE nets hum with volatile signals; a trap might drop soon.",
+      "questPulse": "RAVE’s frequency surges then falters—make your move cautious.",
+      "worldFeed": "RAVE token flares briefly in dark webs, whispers of a flip.",
+      "clueEvent": "Digital fingerprint left on RAVE transfers, marker for hunters.",
       "tags": [
-        "sentiment",
-        "fear",
-        "market_mood"
+        "rave",
+        "trap",
+        "volatility"
       ],
-      "expiresAt": "2026-04-24T15:54:14.868Z"
+      "expiresAt": "2026-04-24T16:35:30.812Z"
     },
     {
-      "id": "signal-1777042454868-4",
+      "id": "signal-1777046730812-4",
       "lane": "quest",
       "priority": 2,
-      "ttlMinutes": 50,
-      "npcLine": "Watch trending cryptos—hidden shifts behind quiet ranks.",
-      "questPulse": "Investigate silent surges in weird token clusters.",
-      "worldFeed": "Top trenders flicker weakly; new players lurk unknown.",
-      "clueEvent": "Signals note fluctuations; quiet storms brewing beneath.",
+      "ttlMinutes": 90,
+      "npcLine": "GRASS growth slow but steady; maybe a sleeper play for the brave.",
+      "questPulse": "Watch GRASS under the neon soil—low noise could mean high gain.",
+      "worldFeed": "Silent movements on GRASS, could signal a hidden uprising.",
+      "clueEvent": "Subtle spike in GRASS wallets, unknown origin wallets active.",
       "tags": [
-        "trending",
-        "pattern",
-        "crypto_watch"
+        "grass",
+        "sleeper",
+        "growth"
       ],
-      "expiresAt": "2026-04-24T15:44:14.868Z"
+      "expiresAt": "2026-04-24T17:35:30.812Z"
     },
     {
-      "id": "signal-1777042454868-5",
+      "id": "signal-1777046730812-5",
       "lane": "npc",
       "priority": 3,
-      "ttlMinutes": 40,
-      "npcLine": "Whispers on street: trading floors grow colder by hour.",
-      "questPulse": "Gather rumors—fear chills even the boldest traders.",
-      "worldFeed": "Insider chatter warns decline, some ready to bail.",
-      "clueEvent": "Silence falls in data corridors, tension thickens.",
+      "ttlMinutes": 50,
+      "npcLine": "AAVE shadows fade and reappear; old debts never fully die here.",
+      "questPulse": "AAVE nets flicker—hidden flows hint at shifting loyalties.",
+      "worldFeed": "AAVE watchers report intermittent waves, echoes of past crashes.",
+      "clueEvent": "Ghost transactions found on AAVE chain, origin unknown.",
       "tags": [
-        "rumors",
-        "fear",
-        "trading_floor"
+        "aave",
+        "shadow",
+        "ghost"
       ],
-      "expiresAt": "2026-04-24T15:34:14.868Z"
+      "expiresAt": "2026-04-24T16:55:30.812Z"
     }
   ]
 }
