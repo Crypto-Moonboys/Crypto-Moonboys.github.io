@@ -1481,10 +1481,16 @@ async function boot() {
       hud.showNodeInterference('Connecting to live city…', 'system');
       return true;
     }
+    // Send to server first; only start the optimistic visual pulse if the room is open.
+    // If the room is closed/stale, show a reconnecting message instead.
+    const sent = sendNodeInterference(node.id, event.shiftKey ? 'assist' : 'disrupt');
+    if (!sent) {
+      hud.showNodeInterference('Reconnecting to live city…', 'system');
+      return true;
+    }
     // Visual-only optimistic pulse — node state is server-authoritative.
     // All real effects (status, feed, HUD, NPC, SAM) come from onNodeInterferenceChanged.
     nodeInterference.beginLocalPulse(node.id);
-    sendNodeInterference(node.id, event.shiftKey ? 'assist' : 'disrupt');
     refreshCovertOpsPanel();
     return true;
   }
