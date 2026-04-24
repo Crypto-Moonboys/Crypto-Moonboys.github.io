@@ -2302,6 +2302,11 @@ async function boot() {
     hud.pushFeed(`Signal Runner deployed to ${nodeId.toUpperCase()}. Mission resolving.`, 'combat');
   });
 
+  function markUiConnected() {
+    wsConnectionFailed = false;
+    hud.setMultiplayerStatus('Connected (live city)');
+  }
+
   await connectMultiplayer({
     playerName: state.player.name,
     roomId: state.room.id,
@@ -2320,7 +2325,7 @@ async function boot() {
       let statusText;
       if (status.joined) {
         wsConnectionFailed = false;
-        statusText = `Connected (${wsState})`;
+        statusText = 'Connected (live city)';
       } else if (wsState === 'room-full') {
         wsConnectionFailed = true;
         statusText = 'Live city unavailable. Try again later.';
@@ -2353,6 +2358,7 @@ async function boot() {
       debugState.playerCount = players.length;
       renderDebugPanel();
       hud.setPopulation(players.length, state.room.maxPlayers);
+      markUiConnected();
       if (selectedRemotePlayer?.id) {
         selectedRemotePlayer = state.remotePlayers.find((player) => player.id === selectedRemotePlayer.id) || null;
         if (!selectedRemotePlayer) {
@@ -2361,6 +2367,7 @@ async function boot() {
       }
     },
     onWorldSnapshot: (data) => {
+      markUiConnected();
       debugState.lastWorldUpdateAt = Date.now();
       renderDebugPanel();
       if (hasSharedHunterSnapshotPayload(data)) {
