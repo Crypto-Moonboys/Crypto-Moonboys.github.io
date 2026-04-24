@@ -1,6 +1,11 @@
 let room = null;
 let client = null;
+let _reconnectOptions = null;
+let _reconnecting = false;
 const STATE_CHANGE_THROTTLE_MS = 100;
+// Throttle closed-room console warnings to once every 3 seconds per message type.
+const CLOSED_ROOM_WARN_THROTTLE_MS = 3000;
+const _closedRoomWarnAt = {};
 // Maximum connection attempts before giving up.
 const MAX_RETRIES = 3;
 // Colyseus v0.16 error codes (ErrorCode enum from @colyseus/core):
@@ -88,6 +93,16 @@ export async function connectMultiplayer({
   onOperationResult,
   onCovertState,
 }) {
+  // Persist options/callbacks so reconnectMultiplayer() can reuse them.
+  _reconnectOptions = {
+    playerName, roomId, roomIdentity,
+    onStatus, onPlayers, onWorldSnapshot, onFeed, onQuestCompleted,
+    onSamPhaseChanged, onDistrictCaptureChanged, onNodeInterferenceChanged,
+    onDistrictControlStateChanged, onPlayerWarImpact,
+    onDuelRequested, onDuelStarted, onDuelActionSubmitted, onDuelResolved, onDuelEnded,
+    onOperationStarted, onOperationResult, onCovertState,
+  };
+
   // Use explicit wss:// so the transport protocol is unambiguous.
   // Normalise any https:// value from the runtime config to wss://.
   const rawEndpoint = window.BLOCK_TOPIA_SERVER || 'wss://game.cryptomoonboys.com';
@@ -121,11 +136,18 @@ export async function connectMultiplayer({
       // Handle unexpected server-side disconnect after a successful join.
       // Each room object is independent: this handler is bound to the specific room instance
       // returned by joinOrBootstrap and will not accumulate across retry attempts.
+      const capturedRoomRef = room;
       const joinedRoomName = room.name || roomId;
       room.onLeave((code) => {
+        // Only act if this is still the active room (not already replaced by a reconnect).
+        if (room === capturedRoomRef) {
+          room = null;
+        }
         console.error(`[BlockTopia] Disconnected from room "${joinedRoomName}" (code: ${code})`);
         onStatus?.({ ws: 'disconnected', joined: false, error: `Disconnected (code: ${code})`, roomId: joinedRoomName });
         onFeed?.(`⚠️ Multiplayer connection lost (code: ${code})`);
+        // Begin a silent background reconnect attempt.
+        _scheduleReconnect();
       });
 
       let lastUpdate = 0;
@@ -265,9 +287,25 @@ function isRoomOpen() {
   return ws.readyState === OPEN;
 }
 
+/** Returns true when the multiplayer room is open and ready for sends. */
+export function isConnected() {
+  return isRoomOpen();
+}
+
+/**
+ * Throttled closed-room warning: logs at most once per CLOSED_ROOM_WARN_THROTTLE_MS per msgType.
+ */
+function warnClosedRoom(msgType) {
+  const now = Date.now();
+  if (!_closedRoomWarnAt[msgType] || now - _closedRoomWarnAt[msgType] >= CLOSED_ROOM_WARN_THROTTLE_MS) {
+    console.warn('[BlockTopia] skipped send on closed room:', msgType);
+    _closedRoomWarnAt[msgType] = now;
+  }
+}
+
 export function sendMovement(x, y) {
   if (!isRoomOpen()) {
-    console.warn('[BlockTopia] skipped send on closed room:', 'move');
+    warnClosedRoom('move');
     return false;
   }
   room.send('move', { x, y });
@@ -275,13 +313,13 @@ export function sendMovement(x, y) {
 }
 
 export function sendNodeInterference(nodeId, intent = 'disrupt') {
-  if (!nodeId) return false;
+  if (!nodeId) return { ok: false, reason: 'no-node-id' };
   if (!isRoomOpen()) {
-    console.warn('[BlockTopia] skipped send on closed room:', 'nodeInterfere');
-    return false;
+    warnClosedRoom('nodeInterfere');
+    return { ok: false, reason: 'closed-room' };
   }
   room.send('nodeInterfere', { nodeId, intent });
-  return true;
+  return { ok: true };
 }
 
 export function getRoom() {
@@ -291,7 +329,7 @@ export function getRoom() {
 export function sendWarAction(actionType, payload = {}) {
   if (!actionType) return false;
   if (!isRoomOpen()) {
-    console.warn('[BlockTopia] skipped send on closed room:', 'warAction');
+    warnClosedRoom('warAction');
     return false;
   }
   room.send('warAction', {
@@ -304,7 +342,7 @@ export function sendWarAction(actionType, payload = {}) {
 export function sendCovertPressureSync(reports = []) {
   if (!Array.isArray(reports) || !reports.length) return false;
   if (!isRoomOpen()) {
-    console.warn('[BlockTopia] skipped send on closed room:', 'covertPressureSync');
+    warnClosedRoom('covertPressureSync');
     return false;
   }
   room.send('covertPressureSync', { reports });
@@ -314,7 +352,7 @@ export function sendCovertPressureSync(reports = []) {
 export function challengePlayer(targetPlayerId) {
   if (!targetPlayerId) return false;
   if (!isRoomOpen()) {
-    console.warn('[BlockTopia] skipped send on closed room:', 'duelChallenge');
+    warnClosedRoom('duelChallenge');
     return false;
   }
   room.send('duelChallenge', { targetPlayerId });
@@ -324,7 +362,7 @@ export function challengePlayer(targetPlayerId) {
 export function acceptDuel(duelId) {
   if (!duelId) return false;
   if (!isRoomOpen()) {
-    console.warn('[BlockTopia] skipped send on closed room:', 'duelAccept');
+    warnClosedRoom('duelAccept');
     return false;
   }
   room.send('duelAccept', { duelId });
@@ -334,7 +372,7 @@ export function acceptDuel(duelId) {
 export function submitDuelAction(duelId, action) {
   if (!duelId || !action) return false;
   if (!isRoomOpen()) {
-    console.warn('[BlockTopia] skipped send on closed room:', 'duelAction');
+    warnClosedRoom('duelAction');
     return false;
   }
   room.send('duelAction', { duelId, action });
@@ -359,9 +397,41 @@ export function sendDuelAction(duelId, action) {
 export function sendDeployOperative(nodeId) {
   if (!nodeId) return false;
   if (!isRoomOpen()) {
-    console.warn('[BlockTopia] skipped send on closed room:', 'deployOperative');
+    warnClosedRoom('deployOperative');
     return false;
   }
   room.send('deployOperative', { nodeId });
   return true;
+}
+
+/**
+ * Schedule a silent background reconnect after a short delay.
+ * Guards against concurrent reconnect attempts.
+ */
+function _scheduleReconnect() {
+  if (_reconnecting || !_reconnectOptions) return;
+  _reconnecting = true;
+  // Wait 2.5 s before trying — gives the server time to clean up the old session.
+  setTimeout(() => {
+    reconnectMultiplayer().finally(() => {
+      _reconnecting = false;
+    });
+  }, 2500);
+}
+
+/**
+ * Re-run connectMultiplayer using the options saved from the last successful call.
+ * Silently no-ops if there are no saved options or if a reconnect is already running.
+ */
+export async function reconnectMultiplayer() {
+  if (!_reconnectOptions) {
+    console.warn('[BlockTopia] reconnectMultiplayer: no saved connection options — ignoring.');
+    return null;
+  }
+  if (isRoomOpen()) {
+    // Already connected — nothing to do.
+    return null;
+  }
+  console.log('[BlockTopia] reconnectMultiplayer: attempting silent reconnect…');
+  return connectMultiplayer(_reconnectOptions);
 }

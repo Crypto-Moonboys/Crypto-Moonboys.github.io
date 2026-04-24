@@ -8,6 +8,8 @@ import {
   challengePlayer as sendDuelChallenge,
   acceptDuel as sendDuelAccept,
   submitDuelAction as sendDuelAction,
+  isConnected as isRoomConnected,
+  reconnectMultiplayer,
 } from './network.js';
 import { loadUnifiedData } from './world/data-loader.js';
 import {
@@ -845,6 +847,10 @@ async function boot() {
   let multiplayerConnected = false;
   let wsConnectionFailed = false;
   let localSessionId = '';
+  // Throttle for "Reconnecting to live city…" HUD message on closed-room node clicks (3 s).
+  const RECONNECT_HUD_THROTTLE_MS = 3000;
+  let lastReconnectHudAt = 0;
+  let reconnectTriggered = false;
   let nearbyNpc = null;
   let selectedRemotePlayer = null;
   let lastNpcScan = performance.now();
@@ -1482,10 +1488,20 @@ async function boot() {
       return true;
     }
     // Send to server first; only start the optimistic visual pulse if the room is open.
-    // If the room is closed/stale, show a reconnecting message instead.
-    const sent = sendNodeInterference(node.id, event.shiftKey ? 'assist' : 'disrupt');
-    if (!sent) {
-      hud.showNodeInterference('Reconnecting to live city…', 'system');
+    // If the room is closed/stale, show a reconnecting message (throttled) and trigger reconnect.
+    const result = sendNodeInterference(node.id, event.shiftKey ? 'assist' : 'disrupt');
+    if (!result.ok) {
+      if (result.reason === 'closed-room') {
+        const now = Date.now();
+        if (now - lastReconnectHudAt >= RECONNECT_HUD_THROTTLE_MS) {
+          hud.showNodeInterference('Reconnecting to live city…', 'system');
+          lastReconnectHudAt = now;
+        }
+        if (!reconnectTriggered) {
+          reconnectTriggered = true;
+          reconnectMultiplayer().finally(() => { reconnectTriggered = false; });
+        }
+      }
       return true;
     }
     // Visual-only optimistic pulse — node state is server-authoritative.
@@ -2335,6 +2351,7 @@ async function boot() {
 
       if (status.joined) {
         wsConnectionFailed = false;
+        reconnectTriggered = false;
         hud.setMultiplayerStatus('Connected (live city)');
       } else if (wsState === 'room-full') {
         if (isRecentlyActive()) {
