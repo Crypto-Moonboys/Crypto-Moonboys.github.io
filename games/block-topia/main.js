@@ -77,6 +77,7 @@ const MINI_GAME_SYNC_QUIET_MS = 5200;
 const MINI_GAME_ENTRY_QUIET_MS = 2800;
 const COVERT_OPS_MISSION_DURATION_MS = 30000;
 const COVERT_DEPLOY_BTN_TEXT = 'Deploy Signal Runner';
+const FTUE_STORAGE_KEY = 'bt_ftue_v1';
 const microNotifyCache = new Map();
 
 function setBodyStateClass(name, enabled) {
@@ -854,6 +855,8 @@ async function boot() {
   let lastInteractPromptText = '';
   let lastInteractPromptVisible = false;
   const seenFeed = new Map();
+  // Show node-selection guidance message only once per session, not on every click.
+  let nodeGuidanceShown = false;
 
   // Covert ops: track active operation client-side for countdown / UI.
   const covertOpsLocal = {
@@ -1476,6 +1479,11 @@ async function boot() {
     nodeInterference.beginLocalPulse(node.id);
     sendNodeInterference(node.id, event.shiftKey ? 'assist' : 'disrupt');
     refreshCovertOpsPanel();
+    // One-shot guidance message so new players know the Signal Runner panel is now active.
+    if (!nodeGuidanceShown) {
+      nodeGuidanceShown = true;
+      hud.pushFeed(`💡 Node ${node.id.toUpperCase()} selected — use the Signal Runner panel (bottom-right) to deploy a covert operative`, 'system');
+    }
     return true;
   }
 
@@ -2048,6 +2056,22 @@ async function boot() {
   pushFeedDeduped(`🛰️ Canon signal bridge active (${liveMode})`, 'system', `live-boot:${liveMode}`);
   bootstrapEntryIdentity();
   bootstrapLoreFeed();
+
+  // Show first-time player overlay once per device.
+  try {
+    if (!localStorage.getItem(FTUE_STORAGE_KEY)) {
+      const ftueOverlay = document.getElementById('ftue-overlay');
+      if (ftueOverlay) {
+        ftueOverlay.classList.remove('hidden');
+        document.getElementById('ftue-dismiss')?.addEventListener('click', () => {
+          ftueOverlay.classList.add('hidden');
+          localStorage.setItem(FTUE_STORAGE_KEY, '1');
+        });
+      }
+    }
+  } catch {
+    // localStorage unavailable — skip FTUE silently.
+  }
   const initialCovert = await fetchCovertState();
   if (initialCovert?.__authError) {
     redirectToSyncGate(initialCovert?.error || 'Telegram session expired. Re-sync required.', 1600, 'boot:initial-covert-auth-error', true);
