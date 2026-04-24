@@ -1502,9 +1502,7 @@ async function boot() {
     const tooltip = document.getElementById('node-tooltip');
     if (!tooltip) return;
     if (!nodeId) {
-      const emptyText = wsConnectionFailed
-        ? 'Live city unavailable. Try again later.'
-        : (!multiplayerConnected ? 'Connecting to live city…' : 'Select a glowing node to deploy Signal Runner.');
+      const emptyText = !multiplayerConnected ? 'Connecting to live city…' : 'Select a glowing node to deploy Signal Runner.';
       tooltip.innerHTML = emptyText;
       return;
     }
@@ -2326,11 +2324,19 @@ async function boot() {
         wsConnectionFailed = false;
         hud.setMultiplayerStatus('Connected (live city)');
       } else if (wsState === 'room-full') {
-        wsConnectionFailed = true;
-        hud.setMultiplayerUnavailable('room-full');
+        if (debugState.playerCount > 0 || Date.now() - debugState.lastWorldUpdateAt < 10000) {
+          markUiConnected();
+        } else {
+          wsConnectionFailed = true;
+          hud.setMultiplayerUnavailable('room-full');
+        }
       } else if (wsState === 'disconnected') {
-        wsConnectionFailed = true;
-        hud.setMultiplayerUnavailable('network-disconnect');
+        if (debugState.playerCount > 0 || Date.now() - debugState.lastWorldUpdateAt < 10000) {
+          markUiConnected();
+        } else {
+          wsConnectionFailed = true;
+          hud.setMultiplayerUnavailable('network-disconnect');
+        }
       } else if (wsState === 'connecting' || wsState === 'offline') {
         hud.setMultiplayerStatus('Connecting to live city…');
       } else {
@@ -2405,6 +2411,7 @@ async function boot() {
       }
     },
       onFeed: (line) => {
+      markUiConnected();
       pushFeedDeduped(line, classifyFeedType(line), `network:${line}`);
       memory.record('network', { at: Date.now(), line });
     },
