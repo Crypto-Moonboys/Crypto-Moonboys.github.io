@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-04-24T20:11:03.243Z",
+  "generatedAt": "2026-04-24T21:24:49.549Z",
   "mode": "live-ai",
   "sourceHealth": {
     "coingecko-global": "ok",
@@ -11,86 +11,84 @@
   "signalCount": 5,
   "signals": [
     {
-      "id": "signal-1777061463242-1",
+      "id": "signal-1777065889549-1",
       "lane": "world",
       "priority": 4,
       "ttlMinutes": 45,
-      "npcLine": "Crypto tides bleed red; trust eroding fast in neon alleys.",
-      "questPulse": "Market cap slipping, stay sharp for volatile shadows.",
-      "worldFeed": "Global crypto nets flicker under heavy fear waves.",
-      "clueEvent": "Active tokens drop as fear infects the grid.",
+      "npcLine": "Crypto tides are red; the market bleeds faint hope.",
+      "questPulse": "Salvage value dips, shadows spread in trade lanes.",
+      "worldFeed": "Digital credits flicker; mass panic brews in the neon grid.",
+      "clueEvent": "Network chatter spikes mentioning 'fear' and 'collapse'.",
       "tags": [
-        "crypto",
-        "fear",
-        "volatility"
+        "market",
+        "risk",
+        "dystopia"
       ],
-      "expiresAt": "2026-04-24T20:56:03.242Z"
+      "expiresAt": "2026-04-24T22:09:49.549Z"
     },
     {
-      "id": "signal-1777061463242-2",
+      "id": "signal-1777065889549-2",
       "lane": "ops",
       "priority": 3,
       "ttlMinutes": 30,
-      "npcLine": "Whispers of Ape and Kat tokens stuck in no man’s land.",
-      "questPulse": "Trending tokens caught in static; no clear path forward.",
-      "worldFeed": "Trading floors show quiet signals around mid-tier coins.",
-      "clueEvent": "Low scores on fringe markets hint at pending shifts.",
+      "npcLine": "Nodes report trending tokens losing grip in the flux.",
+      "questPulse": "Hackers sniff weak spots near glitching assets.",
+      "worldFeed": "Data streams pick up whispers of unstable coins.",
+      "clueEvent": "Sudden trade volume drops on obscure digital creds.",
       "tags": [
-        "tokens",
-        "trend",
-        "stasis"
+        "security",
+        "volatility",
+        "crypto"
       ],
-      "expiresAt": "2026-04-24T20:41:03.242Z"
+      "expiresAt": "2026-04-24T21:54:49.549Z"
     },
     {
-      "id": "signal-1777061463243-3",
+      "id": "signal-1777065889549-3",
       "lane": "clue",
-      "priority": 5,
-      "ttlMinutes": 60,
-      "npcLine": "Aave and BTC pulse stronger amidst global dread flickers.",
-      "questPulse": "High-rank tokens may ignite sudden moves; eyes peeled.",
-      "worldFeed": "Core currents pulse beneath the fear-saturated market veil.",
-      "clueEvent": "Sentiment lows mark prime time for high-risk plays.",
-      "tags": [
-        "btc",
-        "aave",
-        "opportunity",
-        "risk"
-      ],
-      "expiresAt": "2026-04-24T21:11:03.243Z"
-    },
-    {
-      "id": "signal-1777061463243-4",
-      "lane": "quest",
       "priority": 2,
-      "ttlMinutes": 20,
-      "npcLine": "Rave’s shadow spreads slightly, a spark in dark circuits.",
-      "questPulse": "Minimal pulse but watch for sudden social surges.",
-      "worldFeed": "Minor tokens flicker; data analysts spy subtle moves.",
-      "clueEvent": "Small signals may trigger larger cascades soon.",
+      "ttlMinutes": 60,
+      "npcLine": "Monitor those ape codes — signals fade into static.",
+      "questPulse": "Silent shifts in token patterns hint at deeper unrest.",
+      "worldFeed": "Crypto symbols flicker, cloaked in uncertainty.",
+      "clueEvent": "Anomalies detected around tokens tagged 'APE' and 'MON'.",
       "tags": [
-        "rave",
-        "minor",
-        "signal",
-        "potential"
+        "intel",
+        "crypto",
+        "warning"
       ],
-      "expiresAt": "2026-04-24T20:31:03.243Z"
+      "expiresAt": "2026-04-24T22:24:49.549Z"
     },
     {
-      "id": "signal-1777061463243-5",
+      "id": "signal-1777065889549-4",
+      "lane": "quest",
+      "priority": 5,
+      "ttlMinutes": 90,
+      "npcLine": "Seek the glitch in the market’s spine; fortune or fall awaits.",
+      "questPulse": "Infiltrate circuits where falling caps disrupt the norm.",
+      "worldFeed": "Survivors barter secrets on crumbling digital exchanges.",
+      "clueEvent": "Dark webs pulse with offers for high-risk token data.",
+      "tags": [
+        "mission",
+        "risk",
+        "exploration"
+      ],
+      "expiresAt": "2026-04-24T22:54:49.549Z"
+    },
+    {
+      "id": "signal-1777065889549-5",
       "lane": "npc",
-      "priority": 4,
-      "ttlMinutes": 40,
-      "npcLine": "Fear grips the street vendors; wallets shrink in neon haze.",
-      "questPulse": "Sentiment low, gains seem ghosts in the data streams.",
-      "worldFeed": "Cyber markets dammed by anxiety; risk appetite wanes.",
-      "clueEvent": "Sentiment score slumps hint at entrenched market dread.",
+      "priority": 1,
+      "ttlMinutes": 20,
+      "npcLine": "Fearing the fade—keep your cred close and eyes closer.",
+      "questPulse": "Street hustlers whisper of fear infecting the neon waves.",
+      "worldFeed": "Rumors swirl: market shadows prey on the weak nodes.",
+      "clueEvent": "Scattered bets placed on tokens losing their glow.",
       "tags": [
         "fear",
-        "sentiment",
-        "market"
+        "rumor",
+        "urban"
       ],
-      "expiresAt": "2026-04-24T20:51:03.243Z"
+      "expiresAt": "2026-04-24T21:44:49.549Z"
     }
   ]
 }
