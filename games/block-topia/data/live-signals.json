@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-04-24T05:36:43.630Z",
+  "generatedAt": "2026-04-24T08:06:10.363Z",
   "mode": "live-ai",
   "sourceHealth": {
     "coingecko-global": "ok",
@@ -8,87 +8,71 @@
     "fear-greed": "ok",
     "openai": "ok"
   },
-  "signalCount": 5,
+  "signalCount": 4,
   "signals": [
     {
-      "id": "signal-1777009003630-1",
+      "id": "signal-1777017970363-1",
       "lane": "world",
       "priority": 4,
       "ttlMinutes": 45,
-      "npcLine": "Market tides turn, shadows deepen; digital gold feels the chill.",
-      "questPulse": "Capitals slip, uncertainty spreads; fortunes fade in neon haze.",
-      "worldFeed": "Crypto nets flicker weak; fear grips data streams worldwide.",
-      "clueEvent": "Market pulse beats slow; beware the next sudden drop.",
+      "npcLine": "Crypto flux unstable; trust fades fast in neon grids.",
+      "questPulse": "Market drops; shadow brokers tighten data locks.",
+      "worldFeed": "Global digital tokens bleed value under shadowed skies.",
+      "clueEvent": "Silent exchanges flicker with anxious algorithmic whispers.",
       "tags": [
-        "market-fall",
-        "fear",
-        "crypto"
+        "crypto",
+        "market",
+        "fear"
       ],
-      "expiresAt": "2026-04-24T06:21:43.630Z"
+      "expiresAt": "2026-04-24T08:51:10.363Z"
     },
     {
-      "id": "signal-1777009003630-2",
+      "id": "signal-1777017970363-2",
       "lane": "ops",
       "priority": 3,
       "ttlMinutes": 30,
-      "npcLine": "Stablecoins wobble; trust erodes in synthetic vaults.",
-      "questPulse": "Guard your credits—synthetic assets fracture under pressure.",
-      "worldFeed": "Synthetic coins stutter; systems brace for shockwaves.",
-      "clueEvent": "Digital stabilizers under strain; risk double-edged.",
+      "npcLine": "Holo traders report spike in underground token chatter.",
+      "questPulse": "Unseen spikes in CHIP and RAVE stir covert ops.",
+      "worldFeed": "Encrypted channels buzz; forbidden coins on rogue watchlists.",
+      "clueEvent": "Data scramblers detect rise in CHIP and RAVE signals.",
       "tags": [
-        "stablecoin",
-        "risk",
-        "finance"
+        "crypto",
+        "trending",
+        "intel"
       ],
-      "expiresAt": "2026-04-24T06:06:43.630Z"
+      "expiresAt": "2026-04-24T08:36:10.363Z"
     },
     {
-      "id": "signal-1777009003630-3",
+      "id": "signal-1777017970363-3",
       "lane": "clue",
       "priority": 2,
-      "ttlMinutes": 20,
-      "npcLine": "RAVE nodes spike—signal or static?",
-      "questPulse": "Encrypted chatter hints at rising cryptic activity.",
-      "worldFeed": "RAVE protocol pulses stronger amid market silence.",
-      "clueEvent": "Hidden data bursts from RAVE cluster detected.",
+      "ttlMinutes": 60,
+      "npcLine": "SPK waves pulse stronger — silent streets hum unrest.",
+      "questPulse": "Rogue packets hint at OCT and PENGU disrupting nets.",
+      "worldFeed": "Token flickers in the net hint at hidden agendas.",
+      "clueEvent": "Pattern shifts around SPK and OCT tokens signal unrest.",
       "tags": [
-        "rave",
-        "signal",
-        "encryption"
+        "tokens",
+        "disruption",
+        "patterns"
       ],
-      "expiresAt": "2026-04-24T05:56:43.630Z"
+      "expiresAt": "2026-04-24T09:06:10.363Z"
     },
     {
-      "id": "signal-1777009003630-4",
+      "id": "signal-1777017970363-4",
       "lane": "quest",
       "priority": 5,
-      "ttlMinutes": 60,
-      "npcLine": "Seek CHIP cores before black market scrap dealers do.",
-      "questPulse": "Rare chips circulate; power players hunt for control.",
-      "worldFeed": "Chip shipments compromised; turf wars ignite in back alleys.",
-      "clueEvent": "Unauthorized chip movement spotted; extraction recommended.",
+      "ttlMinutes": 20,
+      "npcLine": "Fear rides high; intel handlers seek data stabilizers now.",
+      "questPulse": "Urgent: Calm cyberstorm, patch leaking digital assets fast.",
+      "worldFeed": "Darkweb brokers scramble to contain spreading market dread.",
+      "clueEvent": "Data breach traces link to sudden market unravel.",
       "tags": [
-        "chip",
-        "heist",
-        "tech"
+        "emergency",
+        "fear",
+        "patch"
       ],
-      "expiresAt": "2026-04-24T06:36:43.630Z"
-    },
-    {
-      "id": "signal-1777009003630-5",
-      "lane": "npc",
-      "priority": 3,
-      "ttlMinutes": 25,
-      "npcLine": "Pengu faction cold, yet eyes shimmer with hidden plans.",
-      "questPulse": "Pengu operatives activate; alliance offers uneasy silence.",
-      "worldFeed": "Pengu cryptospace quiet, but stakes rise under surface.",
-      "clueEvent": "Pengu data caches accessed; secrets may unravel.",
-      "tags": [
-        "pengu",
-        "faction",
-        "espionage"
-      ],
-      "expiresAt": "2026-04-24T06:01:43.630Z"
+      "expiresAt": "2026-04-24T08:26:10.363Z"
     }
   ]
 }
