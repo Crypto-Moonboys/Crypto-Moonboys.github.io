@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-04-24T18:08:58.194Z",
+  "generatedAt": "2026-04-24T19:29:56.687Z",
   "mode": "live-ai",
   "sourceHealth": {
     "coingecko-global": "ok",
@@ -11,84 +11,84 @@
   "signalCount": 5,
   "signals": [
     {
-      "id": "signal-1777054138193-1",
+      "id": "signal-1777058996686-1",
       "lane": "world",
       "priority": 4,
-      "ttlMinutes": 120,
-      "npcLine": "Market pulse weak, shadow traders whisper fear in the neon haze.",
-      "questPulse": "Crypto tides shift; trust fractures in the digital sprawl.",
-      "worldFeed": "Global caps flicker slight gains amid growing unrest.",
-      "clueEvent": "Fragmented exchanges buzz under low trust protocols.",
+      "ttlMinutes": 45,
+      "npcLine": "Markets tremble under shadow; panic seeps like acid rain.",
+      "questPulse": "Stabilize volatile crypto nodes before collapse.",
+      "worldFeed": "Crypto metrics bleed red; fear grips the grid.",
+      "clueEvent": "Data leaks hint at an underground sell-off wave.",
       "tags": [
-        "market",
+        "volatility",
         "fear",
         "crypto"
       ],
-      "expiresAt": "2026-04-24T20:08:58.193Z"
+      "expiresAt": "2026-04-24T20:14:56.686Z"
     },
     {
-      "id": "signal-1777054138193-2",
+      "id": "signal-1777058996687-2",
       "lane": "ops",
       "priority": 3,
-      "ttlMinutes": 90,
-      "npcLine": "New tokens flicker on the grid; some spike, others ghost.",
-      "questPulse": "Scan the ether for rising signals: PENGU and CHIP show sparks.",
-      "worldFeed": "Unstable coin lifecycles detected; volatility bites sharper.",
-      "clueEvent": "Unusual spikes in obscure tokens draw hacker eyes.",
+      "ttlMinutes": 30,
+      "npcLine": "Tokens flicker in value, watch the quiet spikes.",
+      "questPulse": "Intercept info on rising token KAT, strange uptick detected.",
+      "worldFeed": "Trading bots shift to unknown altcoins amid chaos.",
+      "clueEvent": "Suspicious activity on minor tokens; pattern emerging.",
       "tags": [
-        "tokens",
-        "volatility",
-        "scan"
+        "altcoin",
+        "surveillance",
+        "tokens"
       ],
-      "expiresAt": "2026-04-24T19:38:58.193Z"
+      "expiresAt": "2026-04-24T19:59:56.687Z"
     },
     {
-      "id": "signal-1777054138194-3",
+      "id": "signal-1777058996687-3",
+      "lane": "clue",
+      "priority": 2,
+      "ttlMinutes": 60,
+      "npcLine": "Whispers say CHIP and PENGU circuits hide secrets.",
+      "questPulse": "Decode encrypted chatter on CHIP token fluctuations.",
+      "worldFeed": "Minor coins show odd correlations; signals obscure yet clear.",
+      "clueEvent": "Encrypted packets trace unknown trader movements.",
+      "tags": [
+        "enigma",
+        "crypto",
+        "intel"
+      ],
+      "expiresAt": "2026-04-24T20:29:56.687Z"
+    },
+    {
+      "id": "signal-1777058996687-4",
       "lane": "quest",
       "priority": 5,
-      "ttlMinutes": 60,
-      "npcLine": "Fear shadows market minds; gather intel before the next crash.",
-      "questPulse": "Silence in the chatter hides the real price twists.",
-      "worldFeed": "Sentiment data flags rising panic; survival depends on foresight.",
-      "clueEvent": "Encrypted chatter mentions upcoming market turbulence.",
+      "ttlMinutes": 20,
+      "npcLine": "Fear spikes; shore up defenses against a market crash.",
+      "questPulse": "Secure fragile assets before the next hard dive.",
+      "worldFeed": "Market sentiment dives into panic; prepare for fallout.",
+      "clueEvent": "Network chatter detects draining wallets amid fear.",
       "tags": [
-        "intel",
         "panic",
-        "survival"
+        "defense",
+        "marketcrash"
       ],
-      "expiresAt": "2026-04-24T19:08:58.194Z"
+      "expiresAt": "2026-04-24T19:49:56.687Z"
     },
     {
-      "id": "signal-1777054138194-4",
+      "id": "signal-1777058996687-5",
       "lane": "npc",
-      "priority": 2,
-      "ttlMinutes": 180,
-      "npcLine": "Trader eyes twitch; hopes cling to obsolete hype cycles.",
-      "questPulse": "Outlandish tokens like KAT ripple through darknet whispers.",
-      "worldFeed": "Low-score tokens spawn speculative frictions in empty channels.",
-      "clueEvent": "Digital drifters chase fleeting token rumors in neon alleys.",
+      "priority": 1,
+      "ttlMinutes": 120,
+      "npcLine": "Low fear but creeping; keep eyes peeled on AAVE.",
+      "questPulse": "Monitor AAVE token for quiet buildup or sudden drop.",
+      "worldFeed": "Stable but watchful; some assets quietly gaining ground.",
+      "clueEvent": "Behind the scenes, AAVE stirs subtle moves.",
       "tags": [
-        "speculation",
-        "hype",
-        "digital"
+        "watch",
+        "quiet",
+        "token"
       ],
-      "expiresAt": "2026-04-24T21:08:58.194Z"
-    },
-    {
-      "id": "signal-1777054138194-5",
-      "lane": "clue",
-      "priority": 3,
-      "ttlMinutes": 150,
-      "npcLine": "Cracks appear where optimism once burned brightest.",
-      "questPulse": "Sentiment surveys flicker toward fear; decode hidden signals fast.",
-      "worldFeed": "Subtle market cap upticks mask deeper systemic doubts.",
-      "clueEvent": "Silent transactions spike under cover of night trades.",
-      "tags": [
-        "sentiment",
-        "fear",
-        "undercurrents"
-      ],
-      "expiresAt": "2026-04-24T20:38:58.194Z"
+      "expiresAt": "2026-04-24T21:29:56.687Z"
     }
   ]
 }
