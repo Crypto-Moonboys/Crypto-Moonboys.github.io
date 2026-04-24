@@ -1311,7 +1311,7 @@ export class CityRoom extends Room {
       }
       const nodeId = data.nodeId.trim().toLowerCase();
 
-      // Validate intent is strictly "assist" or "disrupt" (case-sensitive after trim).
+      // Validate intent must be exactly "assist" or "disrupt" (case-sensitive).
       const rawIntent = typeof data.intent === 'string' ? data.intent.trim() : '';
       if (rawIntent !== 'assist' && rawIntent !== 'disrupt') {
         client.send('system', { message: 'Invalid node data.' });
@@ -1338,7 +1338,8 @@ export class CityRoom extends Room {
 
       // Distance check: player must be within NODE_INTERACT_MAX_DISTANCE grid tiles of the node.
       // Both player.x/y and node.x/y are in the same isometric grid coordinate space.
-      // Skip the distance check if either the player or the node coordinates are missing/non-numeric.
+      // If either set of coordinates is non-numeric (corrupted/missing), log a warning and skip
+      // the distance check — a missing position should not allow unconstrained access.
       const player = this.state.players.get(client.sessionId);
       if (!player) {
         client.send('system', { message: 'Cannot process node click: still connecting to live city.' });
@@ -1355,6 +1356,9 @@ export class CityRoom extends Room {
           console.warn(`[CityRoom] ${client.sessionId} rejected: node "${nodeId}" out of range (dist=${dist.toFixed(1)})`);
           return;
         }
+      } else {
+        console.warn(`[CityRoom] ${client.sessionId} skipping distance check for node "${nodeId}": non-numeric coordinates (player=${player.x},${player.y} node=${node.x},${node.y})`);
+        return;
       }
 
       this.playerInterfereTimes.set(client.sessionId, now);
