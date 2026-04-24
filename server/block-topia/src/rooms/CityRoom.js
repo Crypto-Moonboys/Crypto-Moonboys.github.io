@@ -144,6 +144,7 @@ defineTypes(RoomState, {
 export class CityRoom extends Room {
   onCreate(options) {
     try {
+      console.log('[CityRoom] created');
       this.setState(new RoomState());
       this.maxClients = 100;
       // Keep the room alive even when all players have left so that reconnecting
