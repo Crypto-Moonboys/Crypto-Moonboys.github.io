@@ -2307,11 +2307,6 @@ async function boot() {
     hud.setMultiplayerStatus('Connected (live city)');
   }
 
-  // city_status_fix: Single source of truth for the unavailable message used in feed entries.
-  // The HUD status text is managed by hud.setMultiplayerUnavailable(); this constant keeps
-  // the feed messages in sync with it without duplicating the literal.
-  const LIVE_CITY_UNAVAILABLE_TEXT = 'Live city unavailable. Try again later.';
-
   await connectMultiplayer({
     playerName: state.player.name,
     roomId: state.room.id,
@@ -2327,29 +2322,20 @@ async function boot() {
       debugState.roomName = status.roomId || debugState.roomName;
       renderDebugPanel();
 
-      let statusText;
       if (status.joined) {
         wsConnectionFailed = false;
-        statusText = 'Connected (live city)';
+        hud.setMultiplayerStatus('Connected (live city)');
       } else if (wsState === 'room-full') {
-        // city_status_fix rule 1: only real network lifecycle events mark live city unavailable.
         wsConnectionFailed = true;
-        pushFeedDeduped(LIVE_CITY_UNAVAILABLE_TEXT, 'system', 'ws:room-full');
-        console.warn('[BlockTopia] Room is at capacity — cannot join.');
         hud.setMultiplayerUnavailable('room-full');
       } else if (wsState === 'disconnected') {
-        // city_status_fix rule 1: only real network lifecycle events mark live city unavailable.
         wsConnectionFailed = true;
-        pushFeedDeduped(LIVE_CITY_UNAVAILABLE_TEXT, 'system', `ws:disconnected:${Date.now()}`);
-        console.error('[BlockTopia] Server disconnect:', status.error || '(no detail)');
         hud.setMultiplayerUnavailable('network-disconnect');
       } else if (wsState === 'connecting' || wsState === 'offline') {
-        statusText = 'Connecting to live city…';
-        pushFeedDeduped('Connecting to live city…', 'system', 'ws:connecting');
+        hud.setMultiplayerStatus('Connecting to live city…');
       } else {
-        statusText = `${wsState}${status.error ? ` · ${status.error}` : ''}`;
+        hud.setMultiplayerStatus(wsState);
       }
-      if (statusText) hud.setMultiplayerStatus(statusText);
       updateNodeTooltip(state.mouse?.selectedNodeId || '');
       if (status.roomId) hud.setRoom(status.roomId);
       if (status.sessionId) localSessionId = status.sessionId;
