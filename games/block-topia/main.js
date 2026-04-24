@@ -2069,9 +2069,10 @@ async function boot() {
         });
       }
     }
-  } catch {
-    // localStorage unavailable — skip FTUE silently.
-  }
+    } catch (storageError) {
+      // localStorage may be unavailable in private/restricted contexts — skip FTUE silently.
+      if (!(storageError instanceof DOMException)) throw storageError;
+    }
   const initialCovert = await fetchCovertState();
   if (initialCovert?.__authError) {
     redirectToSyncGate(initialCovert?.error || 'Telegram session expired. Re-sync required.', 1600, 'boot:initial-covert-auth-error', true);
