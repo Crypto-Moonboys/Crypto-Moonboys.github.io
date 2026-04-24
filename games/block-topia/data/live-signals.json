@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-04-24T13:26:31.881Z",
+  "generatedAt": "2026-04-24T14:54:14.868Z",
   "mode": "live-ai",
   "sourceHealth": {
     "coingecko-global": "ok",
@@ -11,84 +11,84 @@
   "signalCount": 5,
   "signals": [
     {
-      "id": "signal-1777037191880-1",
+      "id": "signal-1777042454867-1",
       "lane": "world",
       "priority": 4,
-      "ttlMinutes": 60,
-      "npcLine": "Markets jittery; shadows trading cheap nodes in silence.",
-      "questPulse": "Scan for ghost coins slipping under market radars.",
-      "worldFeed": "Cryptoverse sees slight rise; whispers of hidden hands.",
-      "clueEvent": "Unusual uptick in unknown tokens sparks street buzz.",
-      "tags": [
-        "market",
-        "cryptocurrency",
-        "alert"
-      ],
-      "expiresAt": "2026-04-24T14:26:31.880Z"
-    },
-    {
-      "id": "signal-1777037191880-2",
-      "lane": "ops",
-      "priority": 5,
       "ttlMinutes": 45,
-      "npcLine": "Fear grips traders; some dump assets to escape collapse.",
-      "questPulse": "Infiltrate cyber exchanges to sow confusion or gather intel.",
-      "worldFeed": "Sentiment hits cold fear; nodes flicker erratically.",
-      "clueEvent": "Analytics show slow creep of panic through net markets.",
+      "npcLine": "Market pulse down, shadows stretch across all sectors.",
+      "questPulse": "Scan for fading crypto shards amid spreading dread.",
+      "worldFeed": "Global digital assets bleed value; trust fractures.",
+      "clueEvent": "Fear spikes as coin counts swell but confidence wanes.",
       "tags": [
+        "crypto",
         "fear",
-        "market",
-        "ops"
+        "market_slump"
       ],
-      "expiresAt": "2026-04-24T14:11:31.880Z"
+      "expiresAt": "2026-04-24T15:39:14.867Z"
     },
     {
-      "id": "signal-1777037191880-3",
-      "lane": "clue",
+      "id": "signal-1777042454868-2",
+      "lane": "ops",
       "priority": 3,
       "ttlMinutes": 30,
-      "npcLine": "Grass rising in the dirt—new coin sprouts gaining traction.",
-      "questPulse": "Harvest unclaimed tokens before rival clans secure them.",
-      "worldFeed": "Underdog cryptos quietly gain score in dark corners.",
-      "clueEvent": "Signals reveal small but steady growth from fringe assets.",
+      "npcLine": "New tokens churn, but none break past the noise.",
+      "questPulse": "Trace the static behind low-signal cryptos rising silently.",
+      "worldFeed": "Thousands of coins alive, few move the dial.",
+      "clueEvent": "Clusters form around zero-score tokens hiding deeper risks.",
       "tags": [
-        "trend",
-        "growth",
-        "opportunity"
+        "crypto",
+        "low_activity",
+        "analysis"
       ],
-      "expiresAt": "2026-04-24T13:56:31.880Z"
+      "expiresAt": "2026-04-24T15:24:14.868Z"
     },
     {
-      "id": "signal-1777037191881-4",
+      "id": "signal-1777042454868-3",
+      "lane": "clue",
+      "priority": 5,
+      "ttlMinutes": 60,
+      "npcLine": "Sentiment index crawls near despair — expect chaos.",
+      "questPulse": "Decode the fear pattern spreading through data nodes.",
+      "worldFeed": "Market mood falters, casting long digital shadows.",
+      "clueEvent": "Emoji flickers show rising fear, signal suppressed hopes.",
+      "tags": [
+        "sentiment",
+        "fear",
+        "market_mood"
+      ],
+      "expiresAt": "2026-04-24T15:54:14.868Z"
+    },
+    {
+      "id": "signal-1777042454868-4",
       "lane": "quest",
       "priority": 2,
-      "ttlMinutes": 90,
-      "npcLine": "Chip tokens flicker; rumored to embed secret blueprints.",
-      "questPulse": "Retrieve encrypted chips from rival netrovers before shutdown.",
-      "worldFeed": "Whispers claim hidden data within chip tokens' code.",
-      "clueEvent": "Encrypted token transfers spike under moonlight scans.",
+      "ttlMinutes": 50,
+      "npcLine": "Watch trending cryptos—hidden shifts behind quiet ranks.",
+      "questPulse": "Investigate silent surges in weird token clusters.",
+      "worldFeed": "Top trenders flicker weakly; new players lurk unknown.",
+      "clueEvent": "Signals note fluctuations; quiet storms brewing beneath.",
       "tags": [
-        "intel",
-        "chip",
-        "mission"
+        "trending",
+        "pattern",
+        "crypto_watch"
       ],
-      "expiresAt": "2026-04-24T14:56:31.881Z"
+      "expiresAt": "2026-04-24T15:44:14.868Z"
     },
     {
-      "id": "signal-1777037191881-5",
+      "id": "signal-1777042454868-5",
       "lane": "npc",
       "priority": 3,
-      "ttlMinutes": 75,
-      "npcLine": "Pengu clans shuffle assets; icy trade flows spark fights.",
-      "questPulse": "Broker a truce by securing rare water nodes.",
-      "worldFeed": "Pengu factions move under radar, tension builds on ice.",
-      "clueEvent": "Encrypted chatter hints at brewing asset skirmishes.",
+      "ttlMinutes": 40,
+      "npcLine": "Whispers on street: trading floors grow colder by hour.",
+      "questPulse": "Gather rumors—fear chills even the boldest traders.",
+      "worldFeed": "Insider chatter warns decline, some ready to bail.",
+      "clueEvent": "Silence falls in data corridors, tension thickens.",
       "tags": [
-        "conflict",
-        "asset",
-        "npc"
+        "rumors",
+        "fear",
+        "trading_floor"
       ],
-      "expiresAt": "2026-04-24T14:41:31.881Z"
+      "expiresAt": "2026-04-24T15:34:14.868Z"
     }
   ]
 }
