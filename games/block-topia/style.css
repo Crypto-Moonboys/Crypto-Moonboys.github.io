@@ -711,6 +711,12 @@ body.has-mini-game .stream-bottom {
   color: #ff8844;
   font-weight: 600;
 }
+.covert-node-target {
+  font-size: 10px;
+  color: #5ef2ff;
+  min-height: 14px;
+  opacity: 0.85;
+}
 .covert-deploy-btn {
   background: rgba(94, 242, 255, 0.1);
   border: 1px solid rgba(94, 242, 255, 0.45);
