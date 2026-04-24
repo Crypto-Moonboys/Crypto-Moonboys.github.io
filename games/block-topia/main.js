@@ -1502,9 +1502,7 @@ async function boot() {
     const tooltip = document.getElementById('node-tooltip');
     if (!tooltip) return;
     if (!nodeId) {
-      const emptyText = wsConnectionFailed
-        ? 'Live city unavailable. Try again later.'
-        : (!multiplayerConnected ? 'Connecting to live city…' : 'Select a glowing node to deploy Signal Runner.');
+      const emptyText = !multiplayerConnected ? 'Connecting to live city…' : 'Select a glowing node to deploy Signal Runner.';
       tooltip.innerHTML = emptyText;
       return;
     }
@@ -2307,6 +2305,13 @@ async function boot() {
     hud.setMultiplayerStatus('Connected (live city)');
   }
 
+  // Threshold (ms) within which a world snapshot counts as proof of a live connection.
+  const RECENT_UPDATE_THRESHOLD_MS = 10000;
+
+  function isRecentlyActive() {
+    return debugState.playerCount > 0 || Date.now() - debugState.lastWorldUpdateAt < RECENT_UPDATE_THRESHOLD_MS;
+  }
+
   await connectMultiplayer({
     playerName: state.player.name,
     roomId: state.room.id,
@@ -2326,11 +2331,19 @@ async function boot() {
         wsConnectionFailed = false;
         hud.setMultiplayerStatus('Connected (live city)');
       } else if (wsState === 'room-full') {
-        wsConnectionFailed = true;
-        hud.setMultiplayerUnavailable('room-full');
+        if (isRecentlyActive()) {
+          markUiConnected();
+        } else {
+          wsConnectionFailed = true;
+          hud.setMultiplayerUnavailable('room-full');
+        }
       } else if (wsState === 'disconnected') {
-        wsConnectionFailed = true;
-        hud.setMultiplayerUnavailable('network-disconnect');
+        if (isRecentlyActive()) {
+          markUiConnected();
+        } else {
+          wsConnectionFailed = true;
+          hud.setMultiplayerUnavailable('network-disconnect');
+        }
       } else if (wsState === 'connecting' || wsState === 'offline') {
         hud.setMultiplayerStatus('Connecting to live city…');
       } else {
@@ -2405,6 +2418,7 @@ async function boot() {
       }
     },
       onFeed: (line) => {
+      markUiConnected();
       pushFeedDeduped(line, classifyFeedType(line), `network:${line}`);
       memory.record('network', { at: Date.now(), line });
     },
