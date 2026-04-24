@@ -2,7 +2,7 @@ import http from 'http';
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import { Server } from 'colyseus';
+import { Server, matchMaker } from 'colyseus';
 import { monitor } from '@colyseus/monitor';
 
 import { CityRoom } from './rooms/CityRoom.js';
@@ -36,6 +36,17 @@ app.use('/colyseus', monitor());
 app.get("/", (req, res) => {
   res.send("Block Topia Game Server is running 🚀");
 });
-server.listen(PORT, () => {
+server.listen(PORT, async () => {
   console.log(`🚀 Block Topia Colyseus server running on port ${PORT}`);
+
+  // Pre-create the persistent "city" room so clients always find an existing room
+  // rather than relying on the first client to bootstrap it. This prevents the
+  // race condition where the room is created and immediately disposed before any
+  // client can fully join.
+  try {
+    const room = await matchMaker.createRoom('city', {});
+    console.log(`[server] pre-created city room · roomId=${room.roomId}`);
+  } catch (err) {
+    console.error('[server] failed to pre-create city room:', err?.message || err);
+  }
 });
