@@ -77,7 +77,6 @@ const MINI_GAME_SYNC_QUIET_MS = 5200;
 const MINI_GAME_ENTRY_QUIET_MS = 2800;
 const COVERT_OPS_MISSION_DURATION_MS = 30000;
 const COVERT_DEPLOY_BTN_TEXT = 'Deploy Signal Runner';
-const COVERT_OPERATIVE_LOST_SUFFIX = ' · OPERATIVE LOST';
 const microNotifyCache = new Map();
 
 function setBodyStateClass(name, enabled) {
@@ -1090,6 +1089,7 @@ async function boot() {
     const countdownEl = document.getElementById('covert-countdown');
     const heatEl = document.getElementById('covert-player-heat');
     const resultEl = document.getElementById('covert-result');
+    const targetEl = document.getElementById('covert-node-target');
     const selectedNodeId = state.mouse?.selectedNodeId || '';
     const now = Date.now();
     const op = covertOpsLocal.activeOperation;
@@ -1103,10 +1103,14 @@ async function boot() {
       const remaining = Math.max(0, op.missionDurationMs - elapsed);
       const secs = Math.ceil(remaining / 1000);
       if (countdownEl) countdownEl.textContent = secs > 0 ? `⏳ Mission: ${secs}s` : '⏳ Resolving…';
+      if (targetEl) targetEl.textContent = `Target: ${String(op.nodeId || '').toUpperCase()}`;
       if (deployBtn) deployBtn.disabled = true;
       panel.classList.remove('hidden');
     } else {
       if (countdownEl) countdownEl.textContent = '';
+      if (targetEl) {
+        targetEl.textContent = selectedNodeId ? `Target: ${selectedNodeId.toUpperCase()}` : '';
+      }
       if (deployBtn) {
         deployBtn.disabled = !selectedNodeId;
         deployBtn.textContent = selectedNodeId
@@ -2462,7 +2466,7 @@ async function boot() {
         covertOpsLocal.playerHeat = payload.heat;
       }
       refreshCovertOpsPanel();
-      hud.pushFeed(`🕵️ Signal Runner active at ${String(payload.nodeId || '').toUpperCase()} · mission live`, 'combat');
+      hud.pushFeed(`🕵️ Signal Runner deployed to ${String(payload.nodeId || '').toUpperCase()}`, 'combat');
     },
     onOperationResult: (payload) => {
       if (payload?.playerId !== localSessionId) return;
@@ -2473,12 +2477,16 @@ async function boot() {
       }
       refreshCovertOpsPanel();
       const nodeLabel = String(payload.nodeId || '').toUpperCase();
+      const heatDelta = typeof payload.heatGain === 'number' ? payload.heatGain : null;
+      const heatSuffix = heatDelta !== null ? ` · heat +${heatDelta}` : '';
       if (payload.success) {
-        hud.pushFeed(`✅ Signal Runner: op SUCCESS at ${nodeLabel} · node impact applied`, 'quest');
+        hud.pushFeed(`✅ Signal Runner succeeded at ${nodeLabel} · node shifted${heatSuffix}`, 'quest');
         pushMicroNotification('Signal Runner: mission success.', 'success');
       } else {
-        const lostMsg = payload.operativeLost ? COVERT_OPERATIVE_LOST_SUFFIX : '';
-        hud.pushFeed(`❌ Signal Runner: op FAILURE at ${nodeLabel}${lostMsg}`, 'sam');
+        hud.pushFeed(`❌ Signal Runner failed at ${nodeLabel}${heatSuffix}`, 'sam');
+        if (payload.operativeLost) {
+          hud.pushFeed('🚨 Signal Runner lost.', 'sam');
+        }
         pushMicroNotification(`Signal Runner: mission failed${payload.operativeLost ? ' — operative lost' : ''}.`, 'warning');
       }
     },

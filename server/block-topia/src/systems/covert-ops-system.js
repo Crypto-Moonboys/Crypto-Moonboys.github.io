@@ -6,6 +6,22 @@ export const COVERT_MISSION_DURATION_MS = 30000;
 const COVERT_OPERATIVE_TYPE = 'signal-runner';
 
 // Signal Runner base stats (before environmental modifiers).
+//
+// successChance   (0.65) — 65% base probability of mission success before environmental penalties.
+//                          Penalised by node covertHeat (up to -45%), SAM pressure (up to -18%),
+//                          and district patrol posture (up to -15%). Clamped to [10%, 90%].
+//
+// heatGainSuccess  (8)   — Player heat added on a successful mission resolve.
+// heatGainFailure (16)   — Player heat added when the mission fails (higher to discourage reckless ops).
+//
+// nodeImpactSuccess (6)  — Control-point shift applied to the target node on success
+//                          (positive when intent='assist', negative when intent='disrupt').
+// nodeImpactFailure (2)  — Smaller control-point shift applied even on failure.
+//
+// operativeLossChance (0.25) — 25% chance the operative is permanently lost on failure
+//                              (the remaining 75% chance means the operative is merely captured).
+//
+// missionDurationMs (30000) — Time in ms from deploy until the mission auto-resolves server-side.
 export const SIGNAL_RUNNER_STATS = {
   type: 'signal-runner',
   name: 'Signal Runner',
