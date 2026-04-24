@@ -2307,6 +2307,11 @@ async function boot() {
     hud.setMultiplayerStatus('Connected (live city)');
   }
 
+  // city_status_fix: Single source of truth for the unavailable message used in feed entries.
+  // The HUD status text is managed by hud.setMultiplayerUnavailable(); this constant keeps
+  // the feed messages in sync with it without duplicating the literal.
+  const LIVE_CITY_UNAVAILABLE_TEXT = 'Live city unavailable. Try again later.';
+
   await connectMultiplayer({
     playerName: state.player.name,
     roomId: state.room.id,
@@ -2327,22 +2332,24 @@ async function boot() {
         wsConnectionFailed = false;
         statusText = 'Connected (live city)';
       } else if (wsState === 'room-full') {
+        // city_status_fix rule 1: only real network lifecycle events mark live city unavailable.
         wsConnectionFailed = true;
-        statusText = 'Live city unavailable. Try again later.';
-        pushFeedDeduped('Live city unavailable. Try again later.', 'system', 'ws:room-full');
+        pushFeedDeduped(LIVE_CITY_UNAVAILABLE_TEXT, 'system', 'ws:room-full');
         console.warn('[BlockTopia] Room is at capacity — cannot join.');
+        hud.setMultiplayerUnavailable('room-full');
       } else if (wsState === 'disconnected') {
+        // city_status_fix rule 1: only real network lifecycle events mark live city unavailable.
         wsConnectionFailed = true;
-        statusText = 'Live city unavailable. Try again later.';
-        pushFeedDeduped('Live city unavailable. Try again later.', 'system', `ws:disconnected:${Date.now()}`);
+        pushFeedDeduped(LIVE_CITY_UNAVAILABLE_TEXT, 'system', `ws:disconnected:${Date.now()}`);
         console.error('[BlockTopia] Server disconnect:', status.error || '(no detail)');
+        hud.setMultiplayerUnavailable('network-disconnect');
       } else if (wsState === 'connecting' || wsState === 'offline') {
         statusText = 'Connecting to live city…';
         pushFeedDeduped('Connecting to live city…', 'system', 'ws:connecting');
       } else {
         statusText = `${wsState}${status.error ? ` · ${status.error}` : ''}`;
       }
-      hud.setMultiplayerStatus(statusText);
+      if (statusText) hud.setMultiplayerStatus(statusText);
       updateNodeTooltip(state.mouse?.selectedNodeId || '');
       if (status.roomId) hud.setRoom(status.roomId);
       if (status.sessionId) localSessionId = status.sessionId;
@@ -2477,6 +2484,8 @@ async function boot() {
       hud.pushFeed(`🎯 Player action ${verb} ${payload.districtName} via ${payload.source || 'war action'}`, payload.intent === 'assist' ? 'combat' : 'sam');
     },
     onNodeInterferenceChanged: (payload) => {
+      // city_status_fix rule 4: incoming world traffic confirms the live connection is active.
+      markUiConnected();
       const eventPayload = nodeInterference.applyServerNodeUpdate(payload);
       handleNodeInterferenceRipple(eventPayload || payload, 'server');
     },

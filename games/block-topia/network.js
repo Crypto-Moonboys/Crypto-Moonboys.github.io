@@ -242,6 +242,8 @@ export async function connectMultiplayer({
 
   console.error(`[BlockTopia] All ${MAX_RETRIES} connection attempts exhausted. endpoint=${endpoint} room="${roomId}" error:`, lastError?.message || lastError);
   onFeed?.(`⚠️ Multiplayer unavailable: ${String(lastError?.message || lastError || 'unknown error')}`);
+  // city_status_fix rule 1: signal the UI that all retries are exhausted — marks live city unavailable.
+  onStatus?.({ ws: 'disconnected', joined: false, error: String(lastError?.message || lastError || 'unknown error'), roomId });
   return null;
 }
 
