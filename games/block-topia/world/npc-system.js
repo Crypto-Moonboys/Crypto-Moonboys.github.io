@@ -467,7 +467,10 @@ function stepNetworkMissionNpc(npc, dt) {
 
   const fromId = pathNodeIds[mission.pathIndex];
   const toId = pathNodeIds[Math.min(pathNodeIds.length - 1, mission.pathIndex + 1)];
-  const line = getLine(edgeKey(fromId, toId));
+  const line = NETWORK_LINES.find((l) =>
+    (l.from.id === fromId && l.to.id === toId) ||
+    (l.from.id === toId && l.to.id === fromId),
+  );
   if (!line) {
     delete npc.networkMission;
     return false;
@@ -756,136 +759,140 @@ export function createNpcSystem(state, liveIntelligence = null) {
   }
 
   function tick(dt) {
-    if (interferenceContext && Date.now() >= interferenceContext.expiresAt) {
-      interferenceContext = null;
-    }
-    ensureHunterEntities(state);
-    const npcs = state.npc.entities || [];
-    const total = npcs.length;
-    if (!total) return;
-    if (!NETWORK_LINES.length) return;
-    rebuildActiveEntitiesIfNeeded();
-    const movementDt = Math.min(0.1, Math.max(0, dt));
+    try {
+      if (interferenceContext && Date.now() >= interferenceContext.expiresAt) {
+        interferenceContext = null;
+      }
+      ensureHunterEntities(state);
+      const npcs = state.npc.entities || [];
+      const total = npcs.length;
+      if (!total) return;
+      if (!NETWORK_LINES.length) return;
+      rebuildActiveEntitiesIfNeeded();
+      const movementDt = Math.min(0.1, Math.max(0, dt));
 
-    // When the server has sent NPC targets, follow server positions via lerp.
-    // Local simulation acts as a fallback when no server targets are available.
-    if (state.npcTargets?.length) {
-      const targetsById = new Map(state.npcTargets.map((target) => [target.id, target]));
-      crowdLerpSkipToggle = !crowdLerpSkipToggle;
-      for (const entity of npcs) {
-        if (!entity || entity.mode === 'hunter') continue;
-        const target = targetsById.get(entity.id);
-        if (!entity || !target) continue;
-        if (entity.mode === 'crowd' && !crowdLerpSkipToggle) continue;
+      // When the server has sent NPC targets, follow server positions via lerp.
+      // Local simulation acts as a fallback when no server targets are available.
+      if (state.npcTargets?.length) {
+        const targetsById = new Map(state.npcTargets.map((target) => [target.id, target]));
+        crowdLerpSkipToggle = !crowdLerpSkipToggle;
+        for (const entity of npcs) {
+          if (!entity || entity.mode === 'hunter') continue;
+          const target = targetsById.get(entity.id);
+          if (!entity || !target) continue;
+          if (entity.mode === 'crowd' && !crowdLerpSkipToggle) continue;
 
-        entity.col += (target.col - entity.col) * 0.2;
-        entity.row += (target.row - entity.row) * 0.2;
-        if (Number.isFinite(target.bobPhase)) {
-          entity.bobPhase += (target.bobPhase - entity.bobPhase) * 0.2;
+          entity.col += (target.col - entity.col) * 0.2;
+          entity.row += (target.row - entity.row) * 0.2;
+          if (Number.isFinite(target.bobPhase)) {
+            entity.bobPhase += (target.bobPhase - entity.bobPhase) * 0.2;
+          }
+          if (target.faction) entity.faction = target.faction;
         }
-        if (target.faction) entity.faction = target.faction;
-      }
-      for (const npc of npcs) {
-        if (npc?.mode !== 'hunter') continue;
-        stepHunterNpc(npc, movementDt);
-      }
-      return;
-    }
-
-    const batchSize = Math.min(UPDATE_BATCH, total);
-    for (let i = 0; i < batchSize; i += 1) {
-      const npc = npcs[(batchIndex + i) % total];
-      if (!npc) continue;
-      if (npc.mode === 'hunter') {
-        stepHunterNpc(npc, movementDt);
-        continue;
-      }
-      if (stepNetworkMissionNpc(npc, movementDt)) {
-        if (npc.mode === 'active') {
-          npc.bobPhase += movementDt * npc.bobSpeed;
+        for (const npc of npcs) {
+          if (npc?.mode !== 'hunter') continue;
+          stepHunterNpc(npc, movementDt);
         }
-        continue;
+        return;
       }
-      npc.type = npc.type || 'helper';
-      if (!npc.lineId) npc.lineId = pickRandomLineId();
-      if (npc.lineDirection !== 1 && npc.lineDirection !== -1) {
-        npc.lineDirection = randomLineDirectionSign();
-      }
-      if (!Number.isFinite(npc.t)) npc.t = Math.random();
-      if (!Number.isFinite(npc.speed)) npc.speed = 0.2 + Math.random() * 0.3;
 
-      let line = getLine(npc.lineId);
-      if (!line) continue;
-
-      npc.t += npc.speed * movementDt;
-      if (npc.t > 1) {
-        npc.lastLineId = npc.lineId;
-        const next = pickNextLine(npc);
-        npc.lineId = next.lineId;
-        npc.lineDirection = next.lineDirection;
-        npc.recentLineIds.push(npc.lineId);
-        if (npc.recentLineIds.length > RECENT_LINE_MEMORY) {
-          npc.recentLineIds.shift();
+      const batchSize = Math.min(UPDATE_BATCH, total);
+      for (let i = 0; i < batchSize; i += 1) {
+        const npc = npcs[(batchIndex + i) % total];
+        if (!npc) continue;
+        if (npc.mode === 'hunter') {
+          stepHunterNpc(npc, movementDt);
+          continue;
         }
-        npc.t = 0;
-        line = getLine(npc.lineId);
+        if (stepNetworkMissionNpc(npc, movementDt)) {
+          if (npc.mode === 'active') {
+            npc.bobPhase += movementDt * npc.bobSpeed;
+          }
+          continue;
+        }
+        npc.type = npc.type || 'helper';
+        if (!npc.lineId) npc.lineId = pickRandomLineId();
+        if (npc.lineDirection !== 1 && npc.lineDirection !== -1) {
+          npc.lineDirection = randomLineDirectionSign();
+        }
+        if (!Number.isFinite(npc.t)) npc.t = Math.random();
+        if (!Number.isFinite(npc.speed)) npc.speed = 0.2 + Math.random() * 0.3;
+
+        let line = getLine(npc.lineId);
         if (!line) continue;
-      }
 
-      // Occasional random network jump — keeps NPCs spreading
-      // across the entire network instead of converging on heavily-connected hubs.
-      const jumpChance = npc.mode === 'active' ? NETWORK_JUMP_CHANCE_ACTIVE : NETWORK_JUMP_CHANCE_CROWD;
-      if (Math.random() < jumpChance) {
-        npc.lastLineId = npc.lineId;
-        npc.lineId = pickRandomLineId();
-        npc.lineDirection = randomLineDirectionSign();
-        npc.recentLineIds.push(npc.lineId);
-        if (npc.recentLineIds.length > RECENT_LINE_MEMORY) {
-          npc.recentLineIds.shift();
+        npc.t += npc.speed * movementDt;
+        if (npc.t > 1) {
+          npc.lastLineId = npc.lineId;
+          const next = pickNextLine(npc);
+          npc.lineId = next.lineId;
+          npc.lineDirection = next.lineDirection;
+          npc.recentLineIds.push(npc.lineId);
+          if (npc.recentLineIds.length > RECENT_LINE_MEMORY) {
+            npc.recentLineIds.shift();
+          }
+          npc.t = 0;
+          line = getLine(npc.lineId);
+          if (!line) continue;
         }
-        npc.t = Math.random();
-        line = getLine(npc.lineId);
-        if (!line) continue;
-      }
 
-      const direction = npc.lineDirection === -1 ? -1 : 1;
-      const from = direction === 1 ? line.from : line.to;
-      const to = direction === 1 ? line.to : line.from;
-      npc.col = from.x + (to.x - from.x) * npc.t;
-      npc.row = from.y + (to.y - from.y) * npc.t;
+        // Occasional random network jump — keeps NPCs spreading
+        // across the entire network instead of converging on heavily-connected hubs.
+        const jumpChance = npc.mode === 'active' ? NETWORK_JUMP_CHANCE_ACTIVE : NETWORK_JUMP_CHANCE_CROWD;
+        if (Math.random() < jumpChance) {
+          npc.lastLineId = npc.lineId;
+          npc.lineId = pickRandomLineId();
+          npc.lineDirection = randomLineDirectionSign();
+          npc.recentLineIds.push(npc.lineId);
+          if (npc.recentLineIds.length > RECENT_LINE_MEMORY) {
+            npc.recentLineIds.shift();
+          }
+          npc.t = Math.random();
+          line = getLine(npc.lineId);
+          if (!line) continue;
+        }
 
-      // Only active NPCs receive behaviour/dialogue updates in the simulation batch.
-      // Crowd and other non-active modes still move along network lines in fallback mode.
-      if (npc.mode !== 'active') continue;
+        const direction = npc.lineDirection === -1 ? -1 : 1;
+        const from = direction === 1 ? line.from : line.to;
+        const to = direction === 1 ? line.to : line.from;
+        npc.col = from.x + (to.x - from.x) * npc.t;
+        npc.row = from.y + (to.y - from.y) * npc.t;
 
-      npc.bobPhase += movementDt * npc.bobSpeed;
-      npc.moveTimer -= movementDt;
-      if (npc.moveTimer > 0) continue;
-      npc.moveTimer = getMoveInterval(npc.mode, npc.role);
+        // Only active NPCs receive behaviour/dialogue updates in the simulation batch.
+        // Crowd and other non-active modes still move along network lines in fallback mode.
+        if (npc.mode !== 'active') continue;
 
-      // Refresh behaviour hooks each movement tick
-      npc.dialogueHooks = ['react_to_player_presence', 'district_rumor_ping'];
-      npc.memoryHooks   = ['track_faction_shift', 'track_daily_routine'];
-      npc.dialogue = [getDialogueLine(npc)];
+        npc.bobPhase += movementDt * npc.bobSpeed;
+        npc.moveTimer -= movementDt;
+        if (npc.moveTimer > 0) continue;
+        npc.moveTimer = getMoveInterval(npc.mode, npc.role);
 
-      // Active NPCs occasionally nudge a random control node (villains drain it)
-      if (Array.isArray(state.controlNodes) && state.controlNodes.length && Math.random() < CONTROL_NODE_NUDGE_PROBABILITY) {
-        const node = state.controlNodes[Math.floor(Math.random() * state.controlNodes.length)];
-        if (node) {
-          const delta = npc.type === 'villain' ? -CONTROL_NODE_VILLAIN_DRAIN : CONTROL_NODE_HELPER_GAIN;
-          node.control = Math.max(0, Math.min(100, node.control + delta));
+        // Refresh behaviour hooks each movement tick
+        npc.dialogueHooks = ['react_to_player_presence', 'district_rumor_ping'];
+        npc.memoryHooks   = ['track_faction_shift', 'track_daily_routine'];
+        npc.dialogue = [getDialogueLine(npc)];
+
+        // Active NPCs occasionally nudge a random control node (villains drain it)
+        if (Array.isArray(state.controlNodes) && state.controlNodes.length && Math.random() < CONTROL_NODE_NUDGE_PROBABILITY) {
+          const node = state.controlNodes[Math.floor(Math.random() * state.controlNodes.length)];
+          if (node) {
+            const delta = npc.type === 'villain' ? -CONTROL_NODE_VILLAIN_DRAIN : CONTROL_NODE_HELPER_GAIN;
+            node.control = Math.max(0, Math.min(100, node.control + delta));
+          }
+        }
+
+        if (Math.random() < FACTION_SWITCH_PROBABILITY) {
+          if (npc.faction === 'Neutral') {
+            npc.faction = Math.random() < 0.5 ? 'Liberators' : 'Wardens';
+          } else {
+            npc.faction = npc.faction === 'Liberators' ? 'Wardens' : 'Liberators';
+          }
         }
       }
-
-      if (Math.random() < FACTION_SWITCH_PROBABILITY) {
-        if (npc.faction === 'Neutral') {
-          npc.faction = Math.random() < 0.5 ? 'Liberators' : 'Wardens';
-        } else {
-          npc.faction = npc.faction === 'Liberators' ? 'Wardens' : 'Liberators';
-        }
-      }
+      batchIndex = (batchIndex + batchSize) % total;
+    } catch (err) {
+      console.error('[NPC] tick error:', err.stack || err);
     }
-    batchIndex = (batchIndex + batchSize) % total;
   }
 
   function spawnSamWave() {
