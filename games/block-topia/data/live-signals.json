@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-04-23T23:47:59.974Z",
+  "generatedAt": "2026-04-24T02:45:06.319Z",
   "mode": "live-ai",
   "sourceHealth": {
     "coingecko-global": "ok",
@@ -11,84 +11,84 @@
   "signalCount": 5,
   "signals": [
     {
-      "id": "signal-1776988079973-1",
-      "lane": "npc",
-      "priority": 4,
-      "ttlMinutes": 45,
-      "npcLine": "Crypto stalls, shadows grow; trust fractures in neon alleys.",
-      "questPulse": "Find the source of market sabotage before assets bleed dry.",
-      "worldFeed": "Digital currencies stumble; streets murmur of impending system shifts.",
-      "clueEvent": "Encrypted whispers hint at a major code breach downtown.",
-      "tags": [
-        "market_down",
-        "fear",
-        "crypto_crash"
-      ],
-      "expiresAt": "2026-04-24T00:32:59.973Z"
-    },
-    {
-      "id": "signal-1776988079973-2",
-      "lane": "clue",
-      "priority": 3,
-      "ttlMinutes": 30,
-      "npcLine": "Synthetic chips spike in chatter—nodes flicker with unknown data.",
-      "questPulse": "Trace rogue data packets hidden in chip delivery drones.",
-      "worldFeed": "Tech hubs buzzing; rumors of new virus targeting hardware components.",
-      "clueEvent": "Unusual uptick in CHIP token mentions among underground traders.",
-      "tags": [
-        "tech_threat",
-        "hardware",
-        "chip"
-      ],
-      "expiresAt": "2026-04-24T00:17:59.973Z"
-    },
-    {
-      "id": "signal-1776988079974-3",
-      "lane": "quest",
-      "priority": 5,
-      "ttlMinutes": 60,
-      "npcLine": "PENGU currents heat up; a hidden faction seeks digital dominance.",
-      "questPulse": "Infiltrate rival faction’s data vault to tilt market balance.",
-      "worldFeed": "Increased activity in PENGU channels signals a brewing conflict.",
-      "clueEvent": "Fragmented transmissions reveal plans to disrupt major crypto flows.",
-      "tags": [
-        "faction_war",
-        "crypto_power",
-        "pengu"
-      ],
-      "expiresAt": "2026-04-24T00:47:59.974Z"
-    },
-    {
-      "id": "signal-1776988079974-4",
-      "lane": "ops",
-      "priority": 2,
-      "ttlMinutes": 20,
-      "npcLine": "Old world coin, BTC, barely holds ground in falling shadow.",
-      "questPulse": "Monitor BTC conduits for weak points in supply chain security.",
-      "worldFeed": "Veteran assets wobble; darknet traders eye for takeaway opportunities.",
-      "clueEvent": "BTC transaction pace slows; suspicious pauses detected in ledgers.",
-      "tags": [
-        "btc",
-        "security",
-        "market_volatility"
-      ],
-      "expiresAt": "2026-04-24T00:07:59.974Z"
-    },
-    {
-      "id": "signal-1776988079974-5",
+      "id": "signal-1776998706318-1",
       "lane": "world",
       "priority": 3,
-      "ttlMinutes": 50,
-      "npcLine": "TAO tokens ripple through net; balance hangs by a thread.",
-      "questPulse": "Secure lost TAO shards to restore network equilibrium.",
-      "worldFeed": "Market fear seeps deeper; low sentiment breaks through layers.",
-      "clueEvent": "TAO subnetwork faces intermittent outages amid rising fear metrics.",
+      "ttlMinutes": 90,
+      "npcLine": "Crypto tides barely shift—uncertainty shadows the digital bazaar.",
+      "questPulse": "Markets flicker in fear; balance teeters on cyber edge.",
+      "worldFeed": "Global credits pulse steady, with whispers of a fragile rally.",
+      "clueEvent": "Data spikes hint at a muted surge beneath neon lights.",
       "tags": [
-        "network_stability",
-        "tao",
-        "fear"
+        "market",
+        "fear",
+        "crypto"
       ],
-      "expiresAt": "2026-04-24T00:37:59.974Z"
+      "expiresAt": "2026-04-24T04:15:06.318Z"
+    },
+    {
+      "id": "signal-1776998706319-2",
+      "lane": "ops",
+      "priority": 4,
+      "ttlMinutes": 75,
+      "npcLine": "Sentiment circuits glitch—crowds jittery, trust dissolving fast.",
+      "questPulse": "Fear index rising; watch for sudden market flashouts.",
+      "worldFeed": "Trading pods report calm before probable storm in crypto lines.",
+      "clueEvent": "Silent nodes pulse with cryptic chatter; stay alert.",
+      "tags": [
+        "sentiment",
+        "risk",
+        "alert"
+      ],
+      "expiresAt": "2026-04-24T04:00:06.319Z"
+    },
+    {
+      "id": "signal-1776998706319-3",
+      "lane": "clue",
+      "priority": 2,
+      "ttlMinutes": 60,
+      "npcLine": "New tokens glow faintly; PENGU and CHIP run cold trails.",
+      "questPulse": "Rising shadows around ASTEROID and RAVE, signals weakening trust.",
+      "worldFeed": "Coin echoes fade, as digital assets shuffle in streetlights.",
+      "clueEvent": "Subtle shifts on the grid hint at upcoming volatility.",
+      "tags": [
+        "tokens",
+        "trending",
+        "volatile"
+      ],
+      "expiresAt": "2026-04-24T03:45:06.319Z"
+    },
+    {
+      "id": "signal-1776998706319-4",
+      "lane": "quest",
+      "priority": 5,
+      "ttlMinutes": 45,
+      "npcLine": "Hunt the silent code—blockchain whispers lure data scavengers.",
+      "questPulse": "Seek the hidden pattern amid digital fear storm.",
+      "worldFeed": "Encrypted data streams flicker, secrets ripe for extraction.",
+      "clueEvent": "Trace patterns before market chaos unravels trading nodes.",
+      "tags": [
+        "data",
+        "hunt",
+        "highpriority"
+      ],
+      "expiresAt": "2026-04-24T03:30:06.319Z"
+    },
+    {
+      "id": "signal-1776998706319-5",
+      "lane": "npc",
+      "priority": 3,
+      "ttlMinutes": 60,
+      "npcLine": "Old netrunners warn—calm markets mask deeper undercurrents.",
+      "questPulse": "Shadow traders note subtle rises, prepare for rapid shifts.",
+      "worldFeed": "Silent exchanges rumble with muted anticipation and coded fear.",
+      "clueEvent": "Encoded signals from forgotten servers, a call to wary eyes.",
+      "tags": [
+        "trader",
+        "intelligence",
+        "whispers"
+      ],
+      "expiresAt": "2026-04-24T03:45:06.319Z"
     }
   ]
 }
