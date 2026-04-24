@@ -85,6 +85,16 @@
   <div id="npc-dialogue" class="hidden" aria-live="polite"></div>
   <div id="interact-prompt" class="hidden">⚡ Press E to engage</div>
 
+  <div id="covert-ops-panel" class="hidden" aria-label="Covert Ops">
+    <div class="covert-ops-header">
+      <span class="covert-ops-chip">SIGNAL RUNNER</span>
+      <span id="covert-player-heat" class="covert-player-heat">Heat: 0</span>
+    </div>
+    <button id="covert-deploy-btn" class="covert-deploy-btn" type="button" disabled>Deploy Signal Runner (select node)</button>
+    <div id="covert-countdown" class="covert-countdown" aria-live="polite"></div>
+    <div id="covert-result" class="covert-result" aria-live="polite"></div>
+  </div>
+
   <div id="multiplayer-live-banner" role="status" aria-live="polite">LIVE LINK — CONNECTING</div>
 
   <!-- Debug panel: hidden by default, toggle with ` (backtick) key — dev only -->

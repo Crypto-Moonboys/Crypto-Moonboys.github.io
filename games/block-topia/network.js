@@ -72,6 +72,9 @@ export async function connectMultiplayer({
   onDuelActionSubmitted,
   onDuelResolved,
   onDuelEnded,
+  onOperationStarted,
+  onOperationResult,
+  onCovertState,
 }) {
   // Use explicit wss:// so the transport protocol is unambiguous.
   // Normalise any https:// value from the runtime config to wss://.
@@ -189,6 +192,18 @@ export async function connectMultiplayer({
         onDuelEnded?.(message);
       });
 
+      room.onMessage('operationStarted', (message) => {
+        onOperationStarted?.(message);
+      });
+
+      room.onMessage('operationResult', (message) => {
+        onOperationResult?.(message);
+      });
+
+      room.onMessage('covertState', (message) => {
+        onCovertState?.(message);
+      });
+
       return room;
     } catch (error) {
       lastError = error;
@@ -271,4 +286,9 @@ export function sendDuelAccept(duelId) {
 /** sendDuelAction — spec-required alias of submitDuelAction */
 export function sendDuelAction(duelId, action) {
   return submitDuelAction(duelId, action);
+}
+
+export function sendDeployOperative(nodeId) {
+  if (!room || !nodeId) return;
+  room.send('deployOperative', { nodeId });
 }

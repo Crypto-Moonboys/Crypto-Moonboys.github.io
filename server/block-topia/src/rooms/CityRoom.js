@@ -4,7 +4,7 @@ import { clampPosition, validateMovement } from '../systems/player-system.js';
 import { getDistrictForPosition, createDistrictPayload } from '../systems/district-system.js';
 import { checkAndCompleteQuests } from '../systems/quest-system.js';
 import { createDuelSystem } from '../systems/duel-system.js';
-import { createCovertOpsSystem, resolveOperativeMission } from '../systems/covert-ops-system.js';
+import { createCovertOpsSystem, resolveOperativeMission, SIGNAL_RUNNER_STATS } from '../systems/covert-ops-system.js';
 import {
   HUNTER_MODE_CONFIG,
   buildDistrictPatrolPlans,
@@ -87,6 +87,10 @@ const COVERT_DEPLOY_COOLDOWN_MS = 8000;
 const COVERT_SUCCESS_SAM_INSTABILITY_DISRUPT = 8;
 const COVERT_SUCCESS_SAM_INSTABILITY_ASSIST = -4;
 
+// Per-player heat cap and decay (server-owned; separate from node covertHeat).
+const PLAYER_HEAT_MAX = 100;
+const PLAYER_HEAT_DECAY_RATE = 0.05; // per server tick (50 ms) ≈ 1 unit/s
+
 const WORLD_DISTRICTS = [
   { id: 'neon-slums', name: 'Neon Slums' },
   { id: 'signal-spire', name: 'Signal Spire' },
@@ -167,6 +171,8 @@ export class CityRoom extends Room {
     this.covertOps = createCovertOpsSystem();
     // Per-player deploy rate-limiting (sessionId → last accepted deploy timestamp).
     this.playerDeployTimes = new Map();
+    // Server-owned per-player covert heat (sessionId → heat value 0–100).
+    this.playerHeat = new Map();
 
     console.log('🏙️ CityRoom with District and Quest systems created', options);
     this.setSimulationInterval((dt) => this.updateWorld(dt), 50);
@@ -1413,6 +1419,7 @@ export class CityRoom extends Room {
     this.playerMoveTimes.delete(client.sessionId);
     this.playerInterfereTimes.delete(client.sessionId);
     this.playerDeployTimes.delete(client.sessionId);
+    this.playerHeat.delete(client.sessionId);
 
     const playerCount = this.state.players.size;
     console.log(`[CityRoom] Player left · players: ${playerCount}/${this.maxClients}`);
@@ -1770,6 +1777,26 @@ export class CityRoom extends Room {
     this.playerDeployTimes.set(client.sessionId, now);
     node.covertHeat = Math.min(100, (node.covertHeat || 0) + COVERT_DEPLOY_HEAT);
 
+    const playerHeat = Math.min(
+      PLAYER_HEAT_MAX,
+      (this.playerHeat.get(client.sessionId) || 0) + SIGNAL_RUNNER_STATS.heatGainSuccess * 0.5,
+    );
+    this.playerHeat.set(client.sessionId, playerHeat);
+
+    this.broadcast('operationStarted', {
+      operativeId: result.operative.id,
+      playerId: client.sessionId,
+      nodeId,
+      districtId: node.districtId,
+      type: result.operative.type,
+      intent,
+      status: 'started',
+      heat: playerHeat,
+      missionDurationMs: SIGNAL_RUNNER_STATS.missionDurationMs,
+      covertHeat: node.covertHeat,
+    });
+
+    // Legacy broadcast kept for backwards compatibility.
     this.broadcast('operativeDeployed', {
       operativeId: result.operative.id,
       playerId: client.sessionId,
@@ -1818,21 +1845,29 @@ export class CityRoom extends Room {
         node,
         samPressure: this.world.samPressure,
         districtPostureScore: Number(districtPlan?.postureScore) || 0,
+        baseSuccessChance: SIGNAL_RUNNER_STATS.successChance,
       });
     });
 
     for (const outcome of resolved) {
-      const { operative, success, successChance } = outcome;
+      const { operative, success, successChance, operativeLost } = outcome;
       const node = this.world.nodeLookup.get(operative.nodeId);
       const district = node
         ? this.world.districts.find((d) => d.id === node.districtId)
         : null;
 
+      // Update per-player heat (server-owned state).
+      const heatGain = success
+        ? SIGNAL_RUNNER_STATS.heatGainSuccess
+        : SIGNAL_RUNNER_STATS.heatGainFailure;
+      const prevHeat = this.playerHeat.get(operative.playerId) || 0;
+      const newHeat = Math.min(PLAYER_HEAT_MAX, prevHeat + heatGain);
+      this.playerHeat.set(operative.playerId, newHeat);
+
       if (success) {
         if (node) {
-          const controlShift = operative.intent === 'assist'
-            ? COVERT_OP_SUCCESS_CONTROL
-            : -COVERT_OP_SUCCESS_CONTROL;
+          const nodeImpact = SIGNAL_RUNNER_STATS.nodeImpactSuccess;
+          const controlShift = operative.intent === 'assist' ? nodeImpact : -nodeImpact;
           node.control = Math.max(-100, Math.min(100, node.control + controlShift));
           node.covertHeat = Math.max(0, (node.covertHeat || 0) - COVERT_SUCCESS_HEAT_DECAY);
           node.samInstability = Math.max(
@@ -1845,6 +1880,26 @@ export class CityRoom extends Room {
           else if (node.control <= -15) node.owner = 'Wardens';
         }
 
+        this.broadcast('operationResult', {
+          operativeId: operative.id,
+          playerId: operative.playerId,
+          nodeId: operative.nodeId,
+          districtId: node?.districtId || '',
+          status: 'success',
+          result: 'success',
+          success: true,
+          successChance,
+          heat: newHeat,
+          operativeLost: false,
+          intent: operative.intent,
+          nodeControl: node?.control ?? null,
+          nodeOwner: node?.owner ?? null,
+          covertHeat: node?.covertHeat ?? null,
+          districtControl: district?.control ?? null,
+          districtOwner: district?.owner ?? null,
+        });
+
+        // Legacy broadcast.
         this.broadcast('operativeResolved', {
           operativeId: operative.id,
           playerId: operative.playerId,
@@ -1863,6 +1918,9 @@ export class CityRoom extends Room {
         this.emitSystemEvent(`✅ Covert op SUCCESS at ${operative.nodeId} · control shifted`);
       } else {
         if (node) {
+          const nodeImpact = SIGNAL_RUNNER_STATS.nodeImpactFailure;
+          const controlShift = operative.intent === 'assist' ? nodeImpact : -nodeImpact;
+          node.control = Math.max(-100, Math.min(100, node.control + controlShift));
           node.covertHeat = Math.min(100, (node.covertHeat || 0) + COVERT_FAILURE_HEAT);
         }
         this.world.samPressure = Math.max(
@@ -1870,6 +1928,27 @@ export class CityRoom extends Room {
           Math.min(140, this.world.samPressure + COVERT_FAILURE_SAM_PRESSURE),
         );
 
+        this.broadcast('operationResult', {
+          operativeId: operative.id,
+          playerId: operative.playerId,
+          nodeId: operative.nodeId,
+          districtId: node?.districtId || '',
+          status: 'failure',
+          result: 'failure',
+          success: false,
+          successChance,
+          heat: newHeat,
+          operativeLost: operativeLost === true,
+          intent: operative.intent,
+          nodeControl: node?.control ?? null,
+          nodeOwner: node?.owner ?? null,
+          covertHeat: node?.covertHeat ?? null,
+          districtControl: district?.control ?? null,
+          districtOwner: district?.owner ?? null,
+          samPressure: this.world.samPressure,
+        });
+
+        // Legacy broadcast.
         this.broadcast('operativeResolved', {
           operativeId: operative.id,
           playerId: operative.playerId,
@@ -1886,13 +1965,36 @@ export class CityRoom extends Room {
           samPressure: this.world.samPressure,
         });
 
-        this.emitSystemEvent(`❌ Covert op BLOWN at ${operative.nodeId} · operative captured`);
+        const lostMsg = operativeLost ? ' · OPERATIVE LOST' : ' · operative captured';
+        this.emitSystemEvent(`❌ Covert op BLOWN at ${operative.nodeId}${lostMsg}`);
         this.recordHunterActivity({
           districtId: node?.districtId || '',
           nodeId: operative.nodeId,
           type: 'covert-failure',
           weight: 2.2,
         });
+      }
+
+      // Broadcast per-player covert state update so the client can refresh its UI.
+      const targetClient = this.clients?.find?.((c) => c.sessionId === operative.playerId);
+      if (targetClient) {
+        targetClient.send('covertState', {
+          playerId: operative.playerId,
+          heat: newHeat,
+          hasActiveOperation: false,
+          lastResult: success ? 'success' : 'failure',
+          lastNodeId: operative.nodeId,
+          lastDistrictId: node?.districtId || '',
+          operativeLost: operativeLost === true,
+          samPressure: this.world.samPressure,
+        });
+      }
+    }
+
+    // Decay per-player heat each tick.
+    for (const [playerId, heat] of this.playerHeat.entries()) {
+      if (heat > 0) {
+        this.playerHeat.set(playerId, Math.max(0, heat - PLAYER_HEAT_DECAY_RATE));
       }
     }
   }

@@ -4,6 +4,7 @@ import {
   sendNodeInterference,
   sendCovertPressureSync,
   sendWarAction,
+  sendDeployOperative,
   challengePlayer as sendDuelChallenge,
   acceptDuel as sendDuelAccept,
   submitDuelAction as sendDuelAction,
@@ -74,6 +75,7 @@ const MICRO_NOTIFY_DEDUPE_WINDOW_MS = 2600;
 const MICRO_NOTIFY_MAX_ITEMS = 5;
 const MINI_GAME_SYNC_QUIET_MS = 5200;
 const MINI_GAME_ENTRY_QUIET_MS = 2800;
+const COVERT_OPS_MISSION_DURATION_MS = 30000;
 const microNotifyCache = new Map();
 
 function setBodyStateClass(name, enabled) {
@@ -852,6 +854,13 @@ async function boot() {
   let lastInteractPromptVisible = false;
   const seenFeed = new Map();
 
+  // Covert ops: track active operation client-side for countdown / UI.
+  const covertOpsLocal = {
+    activeOperation: null,  // { operativeId, nodeId, deployedAt, missionDurationMs }
+    playerHeat: 0,
+    lastResult: null,       // 'success' | 'failure' | null
+  };
+
   // Debug panel state — updated on each connection/snapshot event.
   const debugState = {
     connectionState: 'offline',
@@ -1070,6 +1079,53 @@ async function boot() {
   function syncCovertHud() {
     alignCovertDistrictFocus();
     hud.setCovertState(buildHudCovertSnapshot());
+  }
+
+  function refreshCovertOpsPanel() {
+    const panel = document.getElementById('covert-ops-panel');
+    if (!panel) return;
+    const deployBtn = document.getElementById('covert-deploy-btn');
+    const countdownEl = document.getElementById('covert-countdown');
+    const heatEl = document.getElementById('covert-player-heat');
+    const resultEl = document.getElementById('covert-result');
+    const selectedNodeId = state.mouse?.selectedNodeId || '';
+    const now = Date.now();
+    const op = covertOpsLocal.activeOperation;
+
+    if (heatEl) {
+      heatEl.textContent = `Heat: ${Math.round(covertOpsLocal.playerHeat)}`;
+    }
+
+    if (op) {
+      const elapsed = now - op.deployedAt;
+      const remaining = Math.max(0, op.missionDurationMs - elapsed);
+      const secs = Math.ceil(remaining / 1000);
+      if (countdownEl) countdownEl.textContent = secs > 0 ? `⏳ Mission: ${secs}s` : '⏳ Resolving…';
+      if (deployBtn) deployBtn.disabled = true;
+      panel.classList.remove('hidden');
+    } else {
+      if (countdownEl) countdownEl.textContent = '';
+      if (deployBtn) {
+        deployBtn.disabled = !selectedNodeId;
+        deployBtn.textContent = selectedNodeId
+          ? `Deploy Signal Runner → ${selectedNodeId.toUpperCase()}`
+          : 'Deploy Signal Runner (select node)';
+      }
+      if (selectedNodeId || covertOpsLocal.lastResult) {
+        panel.classList.remove('hidden');
+      } else {
+        panel.classList.add('hidden');
+      }
+    }
+
+    if (resultEl && covertOpsLocal.lastResult) {
+      resultEl.textContent = covertOpsLocal.lastResult === 'success'
+        ? '✅ Last op: Success'
+        : '❌ Last op: Failure';
+      resultEl.className = `covert-result covert-result--${covertOpsLocal.lastResult}`;
+    } else if (resultEl) {
+      resultEl.textContent = '';
+    }
   }
 
   function getCovertWatchLine(covertState) {
@@ -1413,6 +1469,7 @@ async function boot() {
     // All real effects (status, feed, HUD, NPC, SAM) come from onNodeInterferenceChanged.
     nodeInterference.beginLocalPulse(node.id);
     sendNodeInterference(node.id, event.shiftKey ? 'assist' : 'disrupt');
+    refreshCovertOpsPanel();
     return true;
   }
 
@@ -2172,6 +2229,14 @@ async function boot() {
     state.player.moveTarget = { x: tile.col, y: tile.row };
   });
 
+  // Covert ops deploy button.
+  document.getElementById('covert-deploy-btn')?.addEventListener('click', () => {
+    const nodeId = state.mouse?.selectedNodeId || '';
+    if (!nodeId || covertOpsLocal.activeOperation) return;
+    sendDeployOperative(nodeId);
+    hud.pushFeed(`🕵️ Signal Runner deploying to ${nodeId.toUpperCase()}…`, 'combat');
+  });
+
   await connectMultiplayer({
     playerName: state.player.name,
     roomId: state.room.id,
@@ -2383,6 +2448,51 @@ async function boot() {
         hud.pushFeed(`⚔️ ${payload.message}`, 'combat');
       }
     },
+    onOperationStarted: (payload) => {
+      if (payload?.playerId !== localSessionId) return;
+      covertOpsLocal.activeOperation = {
+        operativeId: payload.operativeId,
+        nodeId: payload.nodeId,
+        deployedAt: Date.now(),
+        missionDurationMs: payload.missionDurationMs || COVERT_OPS_MISSION_DURATION_MS,
+      };
+      if (typeof payload.heat === 'number') {
+        covertOpsLocal.playerHeat = payload.heat;
+      }
+      refreshCovertOpsPanel();
+      hud.pushFeed(`🕵️ Signal Runner active at ${String(payload.nodeId || '').toUpperCase()} · mission live`, 'combat');
+    },
+    onOperationResult: (payload) => {
+      if (payload?.playerId !== localSessionId) return;
+      covertOpsLocal.activeOperation = null;
+      covertOpsLocal.lastResult = payload.result || (payload.success ? 'success' : 'failure');
+      if (typeof payload.heat === 'number') {
+        covertOpsLocal.playerHeat = payload.heat;
+      }
+      refreshCovertOpsPanel();
+      const nodeLabel = String(payload.nodeId || '').toUpperCase();
+      if (payload.success) {
+        hud.pushFeed(`✅ Signal Runner: op SUCCESS at ${nodeLabel} · node impact applied`, 'quest');
+        pushMicroNotification('Signal Runner: mission success.', 'success');
+      } else {
+        const lostMsg = payload.operativeLost ? ' · OPERATIVE LOST' : '';
+        hud.pushFeed(`❌ Signal Runner: op FAILURE at ${nodeLabel}${lostMsg}`, 'sam');
+        pushMicroNotification(`Signal Runner: mission failed${payload.operativeLost ? ' — operative lost' : ''}.`, 'warning');
+      }
+    },
+    onCovertState: (payload) => {
+      if (payload?.playerId !== localSessionId) return;
+      if (typeof payload.heat === 'number') {
+        covertOpsLocal.playerHeat = payload.heat;
+      }
+      if (payload.hasActiveOperation === false) {
+        covertOpsLocal.activeOperation = null;
+      }
+      if (payload.lastResult) {
+        covertOpsLocal.lastResult = payload.lastResult;
+      }
+      refreshCovertOpsPanel();
+    },
   });
 
   window.addEventListener('keydown', (event) => {
@@ -2590,6 +2700,9 @@ async function boot() {
       }
     }
     const duelState = duel.getState();
+
+    // Refresh covert ops countdown every tick when a mission is active.
+    if (covertOpsLocal.activeOperation) refreshCovertOpsPanel();
     firewallDefense.tick(dt, {
       onStart: () => {
         ensureMiniGamePlayable('firewall').then((ok) => {
