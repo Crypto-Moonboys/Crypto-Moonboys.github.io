@@ -3,9 +3,11 @@ let client = null;
 const STATE_CHANGE_THROTTLE_MS = 100;
 // Maximum connection attempts before giving up.
 const MAX_RETRIES = 3;
-// Colyseus error codes used for room-full and not-found detection.
-const ERR_ROOM_FULL = 4215;
-const ERR_ROOM_NOT_FOUND = 4212;
+// Colyseus v0.16 error codes (ErrorCode enum from @colyseus/core):
+//   MATCHMAKE_INVALID_CRITERIA = 4211  -- "no rooms found with provided criteria"
+//   MATCHMAKE_UNHANDLED        = 4213  -- wraps SeatReservationError ("already full")
+const ERR_ROOM_NOT_FOUND = 4211;
+const ERR_ROOM_FULL = 4213;
 
 function wait(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -21,20 +23,30 @@ function isRoomFullError(error) {
 function isRoomNotFoundError(error) {
   return (
     error?.code === ERR_ROOM_NOT_FOUND
-    || /not.?found|cannot find/i.test(String(error?.message || ''))
+    // Defence-in-depth: also match the exact human-readable message Colyseus v0.16 returns
+    // ("no rooms found with provided criteria") and older variant phrases ("not found", "cannot find").
+    || /no rooms found|not.?found|cannot find/i.test(String(error?.message || ''))
   );
 }
 
 // Join an existing room. If the room doesn't exist yet (first boot / server restart),
 // create it. Never create a second room if the first is already full.
 async function joinOrBootstrap(colyseusClient, roomId, options) {
+  console.log(`[BlockTopia] join attempt → room "${roomId}"`);
   try {
-    return await colyseusClient.join(roomId, options);
+    const joined = await colyseusClient.join(roomId, options);
+    console.log(`[BlockTopia] join succeeded → room "${joined.name || roomId}" session=${joined.sessionId}`);
+    return joined;
   } catch (joinError) {
-    if (!isRoomNotFoundError(joinError)) throw joinError;
+    if (!isRoomNotFoundError(joinError)) {
+      console.warn(`[BlockTopia] join failed (code=${joinError?.code}): ${joinError?.message || joinError}`);
+      throw joinError;
+    }
     // Room not yet created — bootstrap it once, then let subsequent clients join it.
-    console.warn(`[BlockTopia] Room "${roomId}" not found — bootstrapping new room instance.`);
-    return colyseusClient.create(roomId, options);
+    console.warn(`[BlockTopia] Room "${roomId}" not found (code=${joinError?.code}) — bootstrapping new room instance.`);
+    const created = await colyseusClient.create(roomId, options);
+    console.log(`[BlockTopia] create succeeded → room "${created.name || roomId}" session=${created.sessionId}`);
+    return created;
   }
 }
 
@@ -81,6 +93,8 @@ export async function connectMultiplayer({
   const rawEndpoint = window.BLOCK_TOPIA_SERVER || 'wss://game.cryptomoonboys.com';
   const endpoint = rawEndpoint.replace(/^https:\/\//, 'wss://').replace(/^http:\/\//, 'ws://');
   let lastError = null;
+
+  console.log(`[BlockTopia] Multiplayer init — endpoint: ${endpoint} | room: "${roomId}"`);
 
   if (!window.Colyseus) {
     console.error('[BlockTopia] Colyseus client library not loaded — multiplayer unavailable.');
@@ -226,7 +240,7 @@ export async function connectMultiplayer({
     }
   }
 
-  console.error('[BlockTopia] All connection attempts exhausted:', lastError?.message || lastError);
+  console.error(`[BlockTopia] All ${MAX_RETRIES} connection attempts exhausted. endpoint=${endpoint} room="${roomId}" error:`, lastError?.message || lastError);
   onFeed?.(`⚠️ Multiplayer unavailable: ${String(lastError?.message || lastError || 'unknown error')}`);
   return null;
 }
