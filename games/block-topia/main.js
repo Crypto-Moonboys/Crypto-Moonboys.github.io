@@ -2,7 +2,6 @@ const GRID_SIZE = 20;
 const TILE_WIDTH = 64;
 const TILE_HEIGHT = 32;
 const MAP_SAFE_MARGIN_RATIO = 0.08;
-const PATCH_ID = "2p-iso-map-base-v1";
 
 if (window.BlockTopiaMap && typeof window.BlockTopiaMap.destroy === "function") {
   window.BlockTopiaMap.destroy();
@@ -26,8 +25,6 @@ const runtime = {
   positionSink: null,
   tiles: createTiles(),
 };
-
-console.log(`[BlockTopiaMap] LOADED ${PATCH_ID}`);
 
 function getTileId(x, y) {
   return y * GRID_SIZE + x;
@@ -567,7 +564,6 @@ function updatePlayers(players = []) {
 }
 
 window.BlockTopiaMap = {
-  patchId: PATCH_ID,
   mount,
   destroy,
   setConnectionStatus,
