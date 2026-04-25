@@ -22,6 +22,8 @@ const PULSE_RADIUS = 2;
 const PULSE_COOLDOWN_TICKS = 50;
 const COUNTDOWN_TICKS = 30;
 const MAX_MATCH_TICKS = 3000;
+const SOLO_FALLBACK_DELAY_MS = 900;
+const MAP_SAFE_MARGIN_PX = 24;
 
 const PRESSURE_BY_TYPE = {
   seeder: 3.2,
@@ -51,6 +53,10 @@ let viewWidth = 0;
 let viewHeight = 0;
 let cameraX = 0;
 let cameraY = 120;
+let worldOffsetX = 0;
+let worldOffsetY = 0;
+let worldScale = 1;
+let soloFallbackTimerId = null;
 
 let activeCommander = 1;
 let selectedSlot = 0;
@@ -65,7 +71,38 @@ const runtime = {
   hashSink: /** @type {null | ((payload: {t:number, hash:string}) => void)} */ (null),
   pulseEvents: /** @type {{playerId:1|2, tileId:number, createdTick:number}[]} */ ([]),
   tileEffects: /** @type {Record<number, {lastDeltaTick:number}>} */ ({}),
+  remoteTrafficSeen: false,
 };
+
+function clearSoloFallbackTimer() {
+  if (soloFallbackTimerId != null) {
+    clearTimeout(soloFallbackTimerId);
+    soloFallbackTimerId = null;
+  }
+}
+
+function readyCount(gameState) {
+  return Number(Boolean(gameState.readyPlayers[1])) + Number(Boolean(gameState.readyPlayers[2]));
+}
+
+function maybeScheduleSoloFallback(gameState) {
+  if (soloFallbackTimerId != null) return;
+  if (runtime.remoteTrafficSeen) return;
+  if (gameState.matchState !== "waiting") return;
+  if (readyCount(gameState) !== 1) return;
+
+  soloFallbackTimerId = setTimeout(() => {
+    soloFallbackTimerId = null;
+    if (runtime.remoteTrafficSeen) return;
+    if (state.matchState !== "waiting") return;
+    if (readyCount(state) !== 1) return;
+
+    state.readyPlayers[1] = true;
+    state.readyPlayers[2] = true;
+    state.matchState = "countdown";
+    state.countdownTicks = COUNTDOWN_TICKS;
+  }, SOLO_FALLBACK_DELAY_MS);
+}
 
 /** @returns {ControlScore} */
 function emptyControlScore() {
@@ -257,8 +294,11 @@ function executeCommand(gameState, command) {
     gameState.readyPlayers[command.playerId] = true;
 
     if (gameState.readyPlayers[1] && gameState.readyPlayers[2]) {
+      clearSoloFallbackTimer();
       gameState.matchState = "countdown";
       gameState.countdownTicks = COUNTDOWN_TICKS;
+    } else {
+      maybeScheduleSoloFallback(gameState);
     }
     return;
   }
@@ -710,10 +750,14 @@ function issueReady(playerId) {
 }
 
 function receiveRemoteCommand(command) {
+  runtime.remoteTrafficSeen = true;
+  clearSoloFallbackTimer();
   queueCommand(command, false);
 }
 
 function receiveRemoteHash(payload) {
+  runtime.remoteTrafficSeen = true;
+  clearSoloFallbackTimer();
   runtime.remoteHashes[payload.t] = payload.hash;
 
   const local = runtime.localHashes[payload.t];
@@ -760,8 +804,8 @@ function onPointerDown(event) {
   }
 
   const rect = canvas.getBoundingClientRect();
-  const px = (event.clientX - rect.left) * (canvas.width / rect.width);
-  const py = (event.clientY - rect.top) * (canvas.height / rect.height);
+  const px = event.clientX - rect.left;
+  const py = event.clientY - rect.top;
 
   const tileId = pickTile(px, py);
   const tile = tileId == null ? null : state.tiles[tileId];
@@ -774,8 +818,10 @@ function onPointerDown(event) {
 }
 
 function pickTile(screenX, screenY) {
-  const localX = screenX - cameraX;
-  const localY = screenY - cameraY;
+  const worldX = (screenX - worldOffsetX) / Math.max(0.0001, worldScale);
+  const worldY = (screenY - worldOffsetY) / Math.max(0.0001, worldScale);
+  const localX = worldX - cameraX;
+  const localY = worldY - cameraY;
 
   const gx = (localX / (TILE_WIDTH / 2) + localY / (TILE_HEIGHT / 2)) / 2;
   const gy = (localY / (TILE_HEIGHT / 2) - localX / (TILE_WIDTH / 2)) / 2;
@@ -817,11 +863,15 @@ function render() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
   drawBackground();
+  ctx.save();
+  ctx.translate(worldOffsetX, worldOffsetY);
+  ctx.scale(worldScale, worldScale);
   drawTiles();
   drawTargetMarkers();
   drawPulseEvents();
   drawPathPreview();
   drawNPCs();
+  ctx.restore();
   drawStatusText();
 
   if (debugEnabled) {
@@ -996,7 +1046,7 @@ function drawStatusText() {
 
 function drawStartOverlay() {
   ctx.fillStyle = "rgba(2, 4, 12, 0.62)";
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.fillRect(0, 0, viewWidth, viewHeight);
 
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
@@ -1004,20 +1054,20 @@ function drawStartOverlay() {
   if (state.matchState === "waiting") {
     ctx.fillStyle = "#ffffff";
     ctx.font = "900 40px Segoe UI";
-    ctx.fillText("PRESSURE PROTOCOL", canvas.width / 2, canvas.height / 2 - 60);
+    ctx.fillText("PRESSURE PROTOCOL", viewWidth / 2, viewHeight / 2 - 60);
     ctx.font = "600 18px Segoe UI";
     ctx.fillStyle = "#d8e6ff";
-    ctx.fillText("Press R to READY for active commander. Tab swaps commander.", canvas.width / 2, canvas.height / 2 - 14);
-    ctx.fillText(`P1 ${state.readyPlayers[1] ? "READY" : "WAITING"} | P2 ${state.readyPlayers[2] ? "READY" : "WAITING"}`, canvas.width / 2, canvas.height / 2 + 18);
+    ctx.fillText("Press R to READY for active commander. Tab swaps commander.", viewWidth / 2, viewHeight / 2 - 14);
+    ctx.fillText(`P1 ${state.readyPlayers[1] ? "READY" : "WAITING"} | P2 ${state.readyPlayers[2] ? "READY" : "WAITING"}`, viewWidth / 2, viewHeight / 2 + 18);
     return;
   }
 
   ctx.fillStyle = "#ffffff";
   ctx.font = "900 54px Segoe UI";
-  ctx.fillText(`${Math.max(1, Math.ceil(state.countdownTicks / 10))}`, canvas.width / 2, canvas.height / 2 - 10);
+  ctx.fillText(`${Math.max(1, Math.ceil(state.countdownTicks / 10))}`, viewWidth / 2, viewHeight / 2 - 10);
   ctx.font = "700 20px Segoe UI";
   ctx.fillStyle = "#d8e6ff";
-  ctx.fillText("MATCH STARTING", canvas.width / 2, canvas.height / 2 + 44);
+  ctx.fillText("MATCH STARTING", viewWidth / 2, viewHeight / 2 + 44);
 }
 
 function drawEndOverlay() {
@@ -1292,9 +1342,21 @@ function resize() {
 
   ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
 
-  const mapPixelWidth = GRID_SIZE * TILE_WIDTH;
-  cameraX = Math.floor(viewWidth / 2 - mapPixelWidth / 4);
-  cameraY = Math.floor(Math.max(88, viewHeight * 0.12));
+  const mapMinX = -((GRID_SIZE - 1) * (TILE_WIDTH / 2));
+  const mapMaxX = ((GRID_SIZE - 1) * (TILE_WIDTH / 2)) + TILE_WIDTH;
+  const mapMinY = 0;
+  const mapMaxY = GRID_SIZE * TILE_HEIGHT;
+  const mapPixelWidth = Math.max(1, mapMaxX - mapMinX);
+  const mapPixelHeight = Math.max(1, mapMaxY - mapMinY);
+
+  const safeWidth = Math.max(1, viewWidth - (MAP_SAFE_MARGIN_PX * 2));
+  const safeHeight = Math.max(1, viewHeight - (MAP_SAFE_MARGIN_PX * 2));
+  worldScale = Math.min(1, safeWidth / mapPixelWidth, safeHeight / mapPixelHeight);
+
+  cameraX = -mapMinX;
+  cameraY = -mapMinY;
+  worldOffsetX = Math.floor((viewWidth - (mapPixelWidth * worldScale)) / 2);
+  worldOffsetY = Math.floor((viewHeight - (mapPixelHeight * worldScale)) / 2);
 }
 
 function clamp(value, min, max) {
@@ -1427,6 +1489,7 @@ function destroy() {
     clearInterval(tickIntervalId);
     tickIntervalId = null;
   }
+  clearSoloFallbackTimer();
 
   window.removeEventListener("resize", resize);
   window.removeEventListener("keydown", onKeyDown);
