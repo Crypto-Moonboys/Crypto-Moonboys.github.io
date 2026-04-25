@@ -5,7 +5,7 @@ import dotenv from 'dotenv';
 import { Server, matchMaker } from 'colyseus';
 import { monitor } from '@colyseus/monitor';
 
-import { CityRoom } from './rooms/CityRoom.js';
+import { MinimalCityRoom } from './rooms/MinimalCityRoom.js';
 import { samWebhookRouter } from './webhooks/samWebhook.js';
 
 dotenv.config();
@@ -29,7 +29,7 @@ const server = http.createServer(app);
 const gameServer = new Server({ server });
 
 // Register rooms
-gameServer.define('city', CityRoom).enableRealtimeListing();
+gameServer.define('city', MinimalCityRoom).enableRealtimeListing();
 
 // Colyseus monitor (protected in production)
 app.use('/colyseus', monitor());

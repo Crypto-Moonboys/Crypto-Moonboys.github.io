@@ -1,10 +1,10 @@
 {
   "id": "city",
-  "maxPlayers": 100,
+  "maxPlayers": 2,
   "autoScale": {
-    "enabled": true,
+    "enabled": false,
     "targetDensity": 70,
-    "overflowPolicy": "spawn_sibling_room",
+    "overflowPolicy": "reject_join",
     "identityPolicy": "room-specific-state"
   },
   "stateHooks": [

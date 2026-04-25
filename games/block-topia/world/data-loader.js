@@ -36,7 +36,7 @@ export async function loadUnifiedData() {
     loadJson(`${BASE}/data/npc-archetypes.json`, { split: {}, archetypes: [] }),
     loadJson(`${BASE}/data/quest-model.json`, { daily: [], weekly: [], seasonal: [], dynamicHooks: [] }),
     loadJson(`${BASE}/data/season-model.json`, { cycleDays: 90 }),
-    loadJson(`${BASE}/data/room-model.json`, { id: 'city', maxPlayers: 100 }),
+    loadJson(`${BASE}/data/room-model.json`, { id: 'city', maxPlayers: 2 }),
     loadJson('/games/data/blocktopia-map.json', {}),
     loadJson('/games/data/blocktopia-npc-profiles.json', { profiles: [] }),
     loadJson('/games/data/blocktopia-season.json', {}),
