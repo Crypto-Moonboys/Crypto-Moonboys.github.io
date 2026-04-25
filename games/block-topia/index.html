@@ -1,14 +1,14 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Pressure Protocol</title>
+    <title>Block Topia - 2P Iso Map Base</title>
     <link rel="stylesheet" href="./styles.css" />
   </head>
   <body>
     <div id="game-shell">
-      <canvas id="game" aria-label="Pressure Protocol battlefield"></canvas>
+      <canvas id="game" aria-label="Block Topia isometric map"></canvas>
     </div>
     <script type="module">
       import "./main.js";
@@ -18,7 +18,7 @@
       let mountAttempts = 0;
 
       const tryMount = () => {
-        const api = window.PressureProtocol;
+        const api = window.BlockTopiaMap;
         if (api && typeof api.mount === "function") {
           api.mount(mountOptions);
           return;
@@ -28,15 +28,15 @@
         if (mountAttempts < MAX_MOUNT_ATTEMPTS) {
           requestAnimationFrame(tryMount);
         } else {
-          console.error("PressureProtocol mount failed: API unavailable");
+          console.error("BlockTopiaMap mount failed: API unavailable");
         }
       };
 
       tryMount();
 
       const cleanup = () => {
-        if (window.PressureProtocol && typeof window.PressureProtocol.destroy === "function") {
-          window.PressureProtocol.destroy();
+        if (window.BlockTopiaMap && typeof window.BlockTopiaMap.destroy === "function") {
+          window.BlockTopiaMap.destroy();
         }
       };
 
