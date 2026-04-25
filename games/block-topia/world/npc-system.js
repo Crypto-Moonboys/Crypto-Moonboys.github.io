@@ -337,6 +337,54 @@ function getMoveInterval(mode, role) {
   return CROWD_MOVE_INTERVAL_MIN + Math.random() * CROWD_MOVE_INTERVAL_RANGE;
 }
 
+function getInitialMoveTimer(mode, role) {
+  return Math.random() * getMoveInterval(mode, role);
+}
+
+function createNpc({
+  id,
+  role,
+  roleLabel: label,
+  name,
+  mode,
+  faction,
+  col,
+  row,
+  districtId,
+  bobSpeed,
+  interactionRadius,
+  routine,
+  type,
+}) {
+  return {
+    id,
+    role,
+    roleLabel: label,
+    name,
+    mode,
+    faction,
+    col,
+    row,
+    districtId,
+    moveTimer: getInitialMoveTimer(mode, role),
+    seed: Math.random() * Math.PI * 2,
+    bobPhase: Math.random() * Math.PI * 2,
+    bobSpeed,
+    interactionRadius,
+    dialogue: [],
+    memoryHooks: [],
+    dialogueHooks: [],
+    routine,
+    lineId: pickRandomLineId(),
+    lineDirection: randomLineDirectionSign(),
+    t: Math.random(),
+    speed: 0.2 + Math.random() * 0.3,
+    type: type || 'helper',
+    recentLineIds: [],
+    lastLineId: '',
+  };
+}
+
 function ensureHunterEntities(state) {
   const hunterUnits = Array.isArray(state?.sharedWorld?.samHunters) ? state.sharedWorld.samHunters : [];
   const entities = Array.isArray(state?.npc?.entities) ? state.npc.entities : [];
@@ -486,10 +534,6 @@ function stepNetworkMissionNpc(npc, dt) {
   return true;
 }
 
-function getInitialMoveTimer(mode, role) {
-  return Math.random() * getMoveInterval(mode, role);
-}
-
 export function createNpcSystem(state, liveIntelligence = null) {
   let batchIndex = 0;
   let crowdLerpSkipToggle = false;
@@ -532,50 +576,6 @@ export function createNpcSystem(state, liveIntelligence = null) {
       ? canonSignalState.samNarrativeState.warnings
       : [];
     return sample([...districtWarnings, ...districtNotes, ...samWarnings], '');
-  }
-
-  function createNpc({
-    id,
-    role,
-    roleLabel: label,
-    name,
-    mode,
-    faction,
-    col,
-    row,
-    districtId,
-    bobSpeed,
-    interactionRadius,
-    routine,
-    type,
-  }) {
-    return {
-      id,
-      role,
-      roleLabel: label,
-      name,
-      mode,
-      faction,
-      col,
-      row,
-      districtId,
-      moveTimer: getInitialMoveTimer(mode, role),
-      seed: Math.random() * Math.PI * 2,
-      bobPhase: Math.random() * Math.PI * 2,
-      bobSpeed,
-      interactionRadius,
-      dialogue: [],
-      memoryHooks: [],
-      dialogueHooks: [],
-      routine,
-      lineId: pickRandomLineId(),
-      lineDirection: randomLineDirectionSign(),
-      t: Math.random(),
-      speed: 0.2 + Math.random() * 0.3,
-      type: type || 'helper',
-      recentLineIds: [],
-      lastLineId: '',
-    };
   }
 
   // Initialise NPC entities with grid positions on first call
