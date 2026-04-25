@@ -6,8 +6,10 @@ import { fileURLToPath } from 'node:url';
 const here = path.dirname(fileURLToPath(import.meta.url));
 const mainPath = path.resolve(here, '../main.js');
 const indexPath = path.resolve(here, '../index.html');
+const isoRendererPath = path.resolve(here, '../render/iso-renderer.js');
 const source = await fs.readFile(mainPath, 'utf8');
 const indexHtml = await fs.readFile(indexPath, 'utf8');
+const isoRendererSource = await fs.readFile(isoRendererPath, 'utf8');
 
 function expectIncludes(snippet, message) {
   assert.ok(source.includes(snippet), message);
@@ -23,6 +25,14 @@ function expectRegex(re, message) {
 
 function expectDomNotIncludes(snippet, message) {
   assert.equal(indexHtml.includes(snippet), false, message);
+}
+
+function expectIsoIncludes(snippet, message) {
+  assert.ok(isoRendererSource.includes(snippet), message);
+}
+
+function expectIsoNotIncludes(snippet, message) {
+  assert.equal(isoRendererSource.includes(snippet), false, message);
 }
 
 // 1) state.controlNodes is empty after boot
@@ -157,6 +167,24 @@ expectDomNotIncludes(
 expectDomNotIncludes(
   'id="district-stream"',
   'index.html must not include district stream containers.',
+);
+
+// 11) Iso renderer map text labels are fully disabled (player name only).
+expectIsoIncludes(
+  'ctx.fillText(state.player.name, sx, sy - 47);',
+  'iso-renderer.js should still draw the player name.',
+);
+expectIsoNotIncludes(
+  'ctx.fillText(`${districtMeta.name}',
+  'iso-renderer.js must not draw district names.',
+);
+expectIsoNotIncludes(
+  'ctx.fillText(`${Math.round(Number(entry.control || 0))}',
+  'iso-renderer.js must not draw control percentages.',
+);
+expectIsoNotIncludes(
+  'ctx.fillText(`${theme.label}',
+  'iso-renderer.js must not draw control node labels.',
 );
 
 console.log('Block Topia passive-map smoke checks passed.');
