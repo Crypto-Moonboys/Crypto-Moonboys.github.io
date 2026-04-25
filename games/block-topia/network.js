@@ -262,7 +262,7 @@ export async function connectMultiplayer({
       onStatus?.({ ws: wsState, joined: false, error: String(error?.message || error), roomId, roomFull });
       if (roomFull) {
         // Room is at capacity — do not retry.
-        onFeed?.('⛔ Block Topia is full (100 players). Try again later.');
+        onFeed?.('⛔ Block Topia is full (2 players). Try again later.');
         console.warn('[BlockTopia] Room full — aborting further connection attempts.');
         return null;
       }

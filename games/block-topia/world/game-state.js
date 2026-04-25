@@ -59,8 +59,8 @@ export function createGameState(bundle) {
     },
     room: {
       id: bundle.roomModel.id || 'city',
-      maxPlayers: bundle.roomModel.maxPlayers || 100,
-      autoScale: bundle.roomModel.autoScale || { enabled: true, overflowPolicy: 'spawn_sibling_room' },
+      maxPlayers: bundle.roomModel.maxPlayers || 2,
+      autoScale: bundle.roomModel.autoScale || { enabled: false, overflowPolicy: 'reject_join' },
       identity: {
         roomStateSeed: nowUtcDaySeed(),
         roomMemoryKey: `city-${nowUtcDaySeed()}`,
