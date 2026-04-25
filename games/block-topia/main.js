@@ -22,6 +22,8 @@ const PULSE_RADIUS = 2;
 const PULSE_COOLDOWN_TICKS = 50;
 const COUNTDOWN_TICKS = 30;
 const MAX_MATCH_TICKS = 3000;
+const MAP_SAFE_MARGIN_RATIO = 0.08;
+const HELP_TEXT = "R Start | 1-3 Select | Click Move | Space Pulse | M Mute | D Debug";
 
 const PRESSURE_BY_TYPE = {
   seeder: 3.2,
@@ -51,10 +53,19 @@ let viewWidth = 0;
 let viewHeight = 0;
 let cameraX = 0;
 let cameraY = 120;
+let cameraScale = 1;
 
 let activeCommander = 1;
 let selectedSlot = 0;
 let debugEnabled = false;
+const urlParams = new URLSearchParams(window.location.search);
+const isLocalHost = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
+const soloTestMode = isLocalHost || urlParams.get("solo") === "1";
+let audioContext = null;
+let soundEnabled = true;
+let matchEndSfxPlayed = false;
+let renderShakeX = 0;
+let renderShakeY = 0;
 
 const runtime = {
   commandQueue: /** @type {Command[]} */ ([]),
@@ -65,7 +76,14 @@ const runtime = {
   hashSink: /** @type {null | ((payload: {t:number, hash:string}) => void)} */ (null),
   pulseEvents: /** @type {{playerId:1|2, tileId:number, createdTick:number}[]} */ ([]),
   tileEffects: /** @type {Record<number, {lastDeltaTick:number}>} */ ({}),
+  captureEvents: /** @type {{tileId:number, owner:1|2, createdTick:number}[]} */ ([]),
+  rippleEvents: /** @type {{tileId:number, playerId:1|2, createdTick:number}[]} */ ([]),
+  moveTrails: /** @type {{npcId:string, tileId:number, ownerId:1|2, createdTick:number}[]} */ ([]),
+  pulseFxUntilTick: 0,
+  shakeUntilTick: 0,
 };
+
+console.log("[PressureProtocol] LOADED pressure-protocol-runtime-fallback-fit-v2");
 
 /** @returns {ControlScore} */
 function emptyControlScore() {
@@ -166,6 +184,104 @@ function createGameState() {
 const state = createGameState();
 state.controlScore = deriveControlScore(state);
 
+function ensureAudioContext() {
+  if (!soundEnabled) {
+    return null;
+  }
+
+  if (!audioContext) {
+    const Ctx = window.AudioContext || window.webkitAudioContext;
+    if (!Ctx) {
+      return null;
+    }
+    audioContext = new Ctx();
+  }
+
+  if (audioContext.state === "suspended") {
+    audioContext.resume().catch(() => {});
+  }
+
+  return audioContext;
+}
+
+function playTone(freq, durationMs, type, volume, attackMs = 8) {
+  const ac = ensureAudioContext();
+  if (!ac) {
+    return;
+  }
+
+  const start = ac.currentTime + 0.002;
+  const end = start + durationMs / 1000;
+  const osc = ac.createOscillator();
+  const gain = ac.createGain();
+  osc.type = type;
+  osc.frequency.setValueAtTime(freq, start);
+  gain.gain.setValueAtTime(0.0001, start);
+  gain.gain.linearRampToValueAtTime(volume, start + attackMs / 1000);
+  gain.gain.exponentialRampToValueAtTime(0.0001, end);
+  osc.connect(gain);
+  gain.connect(ac.destination);
+  osc.start(start);
+  osc.stop(end + 0.01);
+}
+
+function playDualTone(aFreq, bFreq, durationMs, volume) {
+  playTone(aFreq, durationMs, "triangle", volume);
+  playTone(bFreq, durationMs, "sine", volume * 0.75);
+}
+
+function playReadySfx() {
+  playDualTone(540, 690, 110, 0.035);
+}
+
+function playSelectSfx() {
+  playDualTone(760, 990, 60, 0.028);
+}
+
+function playMoveSfx() {
+  playDualTone(330, 440, 85, 0.025);
+}
+
+function playPulseSfx() {
+  playTone(220, 160, "sawtooth", 0.032, 3);
+  playTone(140, 230, "triangle", 0.025, 4);
+}
+
+function playCaptureSfx() {
+  playDualTone(460, 580, 80, 0.026);
+}
+
+function playEndSfx(draw) {
+  if (draw) {
+    playDualTone(320, 350, 240, 0.03);
+    return;
+  }
+
+  playTone(520, 180, "triangle", 0.036);
+  playTone(780, 260, "triangle", 0.032);
+}
+
+function playDeniedSfx() {
+  playTone(180, 120, "square", 0.03, 2);
+}
+
+function setMute(nextEnabled) {
+  soundEnabled = Boolean(nextEnabled);
+}
+
+function maybeStartSoloCountdown() {
+  if (!soloTestMode || state.matchState !== "waiting") {
+    return false;
+  }
+
+  state.readyPlayers[1] = true;
+  state.readyPlayers[2] = true;
+  state.matchState = "countdown";
+  state.countdownTicks = COUNTDOWN_TICKS;
+  playReadySfx();
+  return true;
+}
+
 function gameTick(gameState) {
   if (gameState.matchState === "ended") {
     return;
@@ -206,6 +322,11 @@ function gameTick(gameState) {
     }
   } else {
     gameState.controlScore = deriveControlScore(gameState);
+  }
+
+  if (gameState.matchState === "ended" && !matchEndSfxPlayed) {
+    playEndSfx(gameState.winner == null);
+    matchEndSfxPlayed = true;
   }
 
   emitAndCheckHash(gameState);
@@ -254,11 +375,16 @@ function executeCommand(gameState, command) {
       return;
     }
 
+    const wasReady = gameState.readyPlayers[command.playerId];
     gameState.readyPlayers[command.playerId] = true;
+    if (!wasReady) {
+      playReadySfx();
+    }
 
     if (gameState.readyPlayers[1] && gameState.readyPlayers[2]) {
       gameState.matchState = "countdown";
       gameState.countdownTicks = COUNTDOWN_TICKS;
+      playReadySfx();
     }
     return;
   }
@@ -330,6 +456,7 @@ function moveNPCs(gameState) {
 
       npc.tileId = nextTile.id;
       npc.moveProgress = 0;
+      runtime.moveTrails.push({ npcId: npc.id, tileId: npc.tileId, ownerId: npc.ownerId, createdTick: gameState.tick });
 
       if (npc.targetTileId === npc.tileId) {
         npc.state = "working";
@@ -480,7 +607,9 @@ function applyTilePressure(gameState) {
 }
 
 function resolveOwnership(gameState) {
+  let hasCaptureFlip = false;
   for (const tile of Object.values(gameState.tiles)) {
+    const previousOwner = tile.owner;
     if (tile.terrain === "block") {
       tile.owner = 0;
       continue;
@@ -493,6 +622,15 @@ function resolveOwnership(gameState) {
     } else {
       tile.owner = 0;
     }
+
+    if (tile.owner !== previousOwner && tile.owner !== 0) {
+      runtime.captureEvents.push({ tileId: tile.id, owner: tile.owner, createdTick: gameState.tick });
+      hasCaptureFlip = true;
+    }
+  }
+
+  if (hasCaptureFlip) {
+    playCaptureSfx();
   }
 }
 
@@ -604,6 +742,9 @@ function triggerPulse(gameState, playerId, originTileId) {
   }
 
   const signed = playerId === 1 ? 1 : -1;
+  playPulseSfx();
+  runtime.shakeUntilTick = Math.max(runtime.shakeUntilTick, gameState.tick + 7);
+  runtime.pulseFxUntilTick = Math.max(runtime.pulseFxUntilTick, gameState.tick + 6);
 
   for (const tile of Object.values(gameState.tiles)) {
     if (tile.terrain === "block") {
@@ -619,6 +760,7 @@ function triggerPulse(gameState, playerId, originTileId) {
     const change = signed * PULSE_STRENGTH * falloff;
     tile.pressure += change;
     markTileActivity(tile.id, change, gameState.tick);
+    runtime.rippleEvents.push({ tileId: tile.id, playerId, createdTick: gameState.tick });
   }
 
   runtime.pulseEvents.push({ playerId, tileId: originTileId, createdTick: gameState.tick });
@@ -626,6 +768,9 @@ function triggerPulse(gameState, playerId, originTileId) {
 
 function cleanupEffects(gameState) {
   runtime.pulseEvents = runtime.pulseEvents.filter((event) => gameState.tick - event.createdTick < 20);
+  runtime.captureEvents = runtime.captureEvents.filter((event) => gameState.tick - event.createdTick < 12);
+  runtime.rippleEvents = runtime.rippleEvents.filter((event) => gameState.tick - event.createdTick < 16);
+  runtime.moveTrails = runtime.moveTrails.filter((event) => gameState.tick - event.createdTick < 12);
 }
 
 function controlPercent(playerId) {
@@ -672,27 +817,38 @@ function queueCommand(command, shouldBroadcast) {
 
 function issueMove(playerId, slot, targetTileId) {
   if (state.matchState !== "running") {
+    playDeniedSfx();
     return;
   }
 
   const player = state.players[playerId];
   const npcId = player.npcs[slot];
   if (!npcId || !isValidTargetTile(state, targetTileId)) {
+    playDeniedSfx();
     return;
   }
 
   const command = createLocalCommand("move", playerId, npcId, targetTileId);
   queueCommand(command, true);
+  playMoveSfx();
 }
 
 function issuePulse(playerId, slot) {
   if (state.matchState !== "running") {
+    playDeniedSfx();
     return;
   }
 
   const player = state.players[playerId];
   const npcId = player.npcs[slot];
   if (!npcId) {
+    playDeniedSfx();
+    return;
+  }
+
+  const npc = state.npcs[npcId];
+  if (!npc || state.tick - npc.lastPulseTick < PULSE_COOLDOWN_TICKS) {
+    playDeniedSfx();
     return;
   }
 
@@ -702,6 +858,12 @@ function issuePulse(playerId, slot) {
 
 function issueReady(playerId) {
   if (state.matchState !== "waiting") {
+    playDeniedSfx();
+    return;
+  }
+
+  if (soloTestMode) {
+    maybeStartSoloCountdown();
     return;
   }
 
@@ -728,8 +890,18 @@ function onKeyDown(event) {
     return;
   }
 
+  if (event.key === "m" || event.key === "M") {
+    setMute(!soundEnabled);
+    if (soundEnabled) {
+      playDualTone(620, 760, 70, 0.025);
+    }
+    return;
+  }
+
   if (event.key === "r" || event.key === "R") {
-    issueReady(/** @type {1|2} */ (activeCommander));
+    if (!maybeStartSoloCountdown()) {
+      issueReady(/** @type {1|2} */ (activeCommander));
+    }
     return;
   }
 
@@ -751,6 +923,7 @@ function onKeyDown(event) {
 
   if (event.key === "1" || event.key === "2" || event.key === "3") {
     selectedSlot = Number(event.key) - 1;
+    playSelectSfx();
   }
 }
 
@@ -776,9 +949,11 @@ function onPointerDown(event) {
 function pickTile(screenX, screenY) {
   const localX = screenX - cameraX;
   const localY = screenY - cameraY;
+  const tw = TILE_WIDTH * cameraScale;
+  const th = TILE_HEIGHT * cameraScale;
 
-  const gx = (localX / (TILE_WIDTH / 2) + localY / (TILE_HEIGHT / 2)) / 2;
-  const gy = (localY / (TILE_HEIGHT / 2) - localX / (TILE_WIDTH / 2)) / 2;
+  const gx = (localX / (tw / 2) + localY / (th / 2)) / 2;
+  const gy = (localY / (th / 2) - localX / (tw / 2)) / 2;
 
   const candidates = [
     [Math.floor(gx), Math.floor(gy)],
@@ -797,7 +972,7 @@ function pickTile(screenX, screenY) {
 
     const [cx, cy] = tileToScreen(tx, ty);
     const dx = screenX - cx;
-    const dy = screenY - (cy + TILE_HEIGHT / 2);
+    const dy = screenY - (cy + th / 2);
     const dist = dx * dx + dy * dy;
 
     if (dist < bestDist) {
@@ -815,14 +990,25 @@ function render() {
   }
 
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-
+  const shakePower = state.tick < runtime.shakeUntilTick ? (runtime.shakeUntilTick - state.tick) * 0.32 : 0;
+  renderShakeX = shakePower > 0 ? (Math.random() - 0.5) * 2 * shakePower : 0;
+  renderShakeY = shakePower > 0 ? (Math.random() - 0.5) * 2 * shakePower : 0;
   drawBackground();
+  ctx.save();
+  ctx.translate(renderShakeX, renderShakeY);
   drawTiles();
+  drawMoveTrails();
   drawTargetMarkers();
   drawPulseEvents();
+  drawRippleEvents();
+  drawCaptureFlashes();
   drawPathPreview();
   drawNPCs();
+  ctx.restore();
+
+  drawPulseGlitchOverlay();
   drawStatusText();
+  drawHelperText();
 
   if (debugEnabled) {
     drawDebugOverlay();
@@ -836,13 +1022,13 @@ function render() {
 }
 
 function drawBackground() {
-  const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+  const gradient = ctx.createLinearGradient(0, 0, 0, viewHeight);
   gradient.addColorStop(0, "#040a18");
   gradient.addColorStop(0.45, "#081227");
   gradient.addColorStop(1, "#02050d");
 
   ctx.fillStyle = gradient;
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.fillRect(0, 0, viewWidth, viewHeight);
 }
 
 function drawTiles() {
@@ -856,6 +1042,7 @@ function drawTiles() {
 }
 
 function drawTargetMarkers() {
+  const th = TILE_HEIGHT * cameraScale;
   const selectedNpcId = state.players[activeCommander].npcs[selectedSlot];
   const selectedNpc = state.npcs[selectedNpcId];
 
@@ -864,23 +1051,24 @@ function drawTargetMarkers() {
     const [tx, ty] = tileToScreen(targetTile.x, targetTile.y);
 
     ctx.beginPath();
-    ctx.arc(tx, ty + TILE_HEIGHT / 2, 6, 0, Math.PI * 2);
+    ctx.arc(tx, ty + th / 2, 6 * cameraScale, 0, Math.PI * 2);
     ctx.strokeStyle = selectedNpc.ownerId === 1 ? "#9bc3ff" : "#ffadad";
-    ctx.lineWidth = 2;
+    ctx.lineWidth = 2 * cameraScale;
     ctx.stroke();
 
     ctx.beginPath();
-    ctx.moveTo(tx - 4, ty + TILE_HEIGHT / 2);
-    ctx.lineTo(tx + 4, ty + TILE_HEIGHT / 2);
-    ctx.moveTo(tx, ty + TILE_HEIGHT / 2 - 4);
-    ctx.lineTo(tx, ty + TILE_HEIGHT / 2 + 4);
+    ctx.moveTo(tx - 4 * cameraScale, ty + th / 2);
+    ctx.lineTo(tx + 4 * cameraScale, ty + th / 2);
+    ctx.moveTo(tx, ty + th / 2 - 4 * cameraScale);
+    ctx.lineTo(tx, ty + th / 2 + 4 * cameraScale);
     ctx.stroke();
   }
 }
 
 function drawPathPreview() {
+  const th = TILE_HEIGHT * cameraScale;
   ctx.setLineDash([4, 4]);
-  ctx.lineWidth = 1.5;
+  ctx.lineWidth = 1.5 * cameraScale;
 
   for (const npc of Object.values(state.npcs)) {
     if (npc.state !== "moving" || npc.targetTileId == null || npc.tileId === npc.targetTileId) {
@@ -894,12 +1082,12 @@ function drawPathPreview() {
 
     const [sx, sy] = tileToScreen(state.tiles[npc.tileId].x, state.tiles[npc.tileId].y);
     ctx.beginPath();
-    ctx.moveTo(sx, sy + TILE_HEIGHT / 2 - 12);
+    ctx.moveTo(sx, sy + th / 2 - 12 * cameraScale);
 
     for (const tileId of path) {
       const tile = state.tiles[tileId];
       const [px, py] = tileToScreen(tile.x, tile.y);
-      ctx.lineTo(px, py + TILE_HEIGHT / 2 - 12);
+      ctx.lineTo(px, py + th / 2 - 12 * cameraScale);
     }
 
     ctx.strokeStyle = npc.ownerId === 1 ? "rgba(128,178,255,0.55)" : "rgba(255,128,128,0.55)";
@@ -917,41 +1105,93 @@ function drawNPCs() {
   });
 
   const selectedNpcId = state.players[activeCommander].npcs[selectedSlot];
+  const tw = TILE_WIDTH * cameraScale;
+  const th = TILE_HEIGHT * cameraScale;
 
   for (const npc of sorted) {
     const tile = state.tiles[npc.tileId];
     const [sx, sy] = tileToScreen(tile.x, tile.y);
-    const cx = sx;
-    const cy = sy + TILE_HEIGHT / 2 - 14;
+    const movePulse = npc.state === "moving" ? Math.sin((state.tick + npc.tileId) * 0.5) : 0;
+    const bob = movePulse * 1.8 * cameraScale;
+    const lean = movePulse * 2.2 * cameraScale;
+    const cx = sx + lean;
+    const cy = sy + th / 2 - 13 * cameraScale - bob;
     const isSelected = selectedNpcId === npc.id;
-    const baseColor = npc.ownerId === 1 ? "#2d6fff" : "#ff4040";
+    const baseColor = npc.ownerId === 1 ? "#3a79ff" : "#ff4f4f";
+    const midColor = npc.ownerId === 1 ? "#2b5dd2" : "#cc3f3f";
+    const highlight = npc.ownerId === 1 ? "#9cc4ff" : "#ffc0c0";
+    const ringColor = npc.ownerId === 1 ? "rgba(156,210,255,0.9)" : "rgba(255,182,182,0.9)";
+    const bodyW = Math.max(6, 8.2 * cameraScale);
+    const bodyH = Math.max(8, 10.6 * cameraScale);
+    const headR = Math.max(3.5, 4.5 * cameraScale);
+
+    ctx.beginPath();
+    ctx.ellipse(cx, sy + th / 2 - 2 * cameraScale, bodyW + 2 * cameraScale, bodyH * 0.42, 0, 0, Math.PI * 2);
+    ctx.fillStyle = "rgba(0, 0, 0, 0.28)";
+    ctx.fill();
+
+    if (npc.state === "moving") {
+      ctx.beginPath();
+      ctx.ellipse(cx - lean * 0.8, sy + th / 2 - 2 * cameraScale, bodyW * 1.05, bodyH * 0.34, 0, 0, Math.PI * 2);
+      ctx.fillStyle = npc.ownerId === 1 ? "rgba(108,170,255,0.2)" : "rgba(255,140,140,0.2)";
+      ctx.fill();
+    }
 
     if (isSelected) {
       ctx.beginPath();
-      ctx.arc(cx, cy, 14, 0, Math.PI * 2);
-      ctx.strokeStyle = npc.ownerId === 1 ? "rgba(160,208,255,0.95)" : "rgba(255,170,170,0.95)";
-      ctx.lineWidth = 2.5;
+      ctx.arc(cx, sy + th / 2 - 2 * cameraScale, 10.5 * cameraScale, 0, Math.PI * 2);
+      ctx.strokeStyle = ringColor;
+      ctx.lineWidth = 2.8 * cameraScale;
+      ctx.shadowColor = ringColor;
+      ctx.shadowBlur = 10 * cameraScale;
       ctx.stroke();
+      ctx.shadowBlur = 0;
     }
 
     ctx.beginPath();
-    ctx.arc(cx, cy, 9, 0, Math.PI * 2);
+    ctx.moveTo(cx, cy - bodyH);
+    ctx.lineTo(cx + bodyW, cy - bodyH * 0.25);
+    ctx.lineTo(cx, cy + bodyH * 0.46);
+    ctx.lineTo(cx - bodyW, cy - bodyH * 0.25);
+    ctx.closePath();
     ctx.fillStyle = baseColor;
     ctx.fill();
-
-    ctx.lineWidth = 2;
-    ctx.strokeStyle = "#0d1428";
+    ctx.lineWidth = 1.6 * cameraScale;
+    ctx.strokeStyle = "rgba(8, 12, 26, 0.85)";
     ctx.stroke();
 
+    ctx.beginPath();
+    ctx.moveTo(cx, cy - bodyH * 0.82);
+    ctx.lineTo(cx + bodyW * 0.7, cy - bodyH * 0.2);
+    ctx.lineTo(cx, cy + bodyH * 0.2);
+    ctx.lineTo(cx - bodyW * 0.7, cy - bodyH * 0.2);
+    ctx.closePath();
+    ctx.fillStyle = midColor;
+    ctx.fill();
+
+    ctx.beginPath();
+    ctx.arc(cx, cy - bodyH * 0.98, headR, 0, Math.PI * 2);
+    ctx.fillStyle = highlight;
+    ctx.fill();
+    ctx.lineWidth = 1.3 * cameraScale;
+    ctx.strokeStyle = "rgba(6, 10, 20, 0.8)";
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.arc(cx - headR * 0.22, cy - bodyH * 1.08, Math.max(1, headR * 0.38), 0, Math.PI * 2);
+    ctx.fillStyle = "rgba(255,255,255,0.45)";
+    ctx.fill();
+
     ctx.fillStyle = "#f5f8ff";
-    ctx.font = "700 11px Segoe UI";
+    ctx.font = `700 ${Math.max(9, Math.floor(11 * cameraScale))}px Segoe UI`;
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
-    ctx.fillText(typeGlyph(npc.type), cx, cy + 0.5);
+    ctx.fillText(typeGlyph(npc.type), cx, cy - bodyH * 0.12);
   }
 }
 
 function drawPulseEvents() {
+  const th = TILE_HEIGHT * cameraScale;
   for (const event of runtime.pulseEvents) {
     const tile = state.tiles[event.tileId];
     if (!tile) {
@@ -960,13 +1200,102 @@ function drawPulseEvents() {
 
     const [sx, sy] = tileToScreen(tile.x, tile.y);
     const age = state.tick - event.createdTick;
-    const radius = 14 + age * 5;
+    const radius = (14 + age * 5) * cameraScale;
     const alpha = clamp(1 - age / 20, 0, 1);
 
     ctx.beginPath();
-    ctx.arc(sx, sy + TILE_HEIGHT / 2, radius, 0, Math.PI * 2);
+    ctx.arc(sx, sy + th / 2, radius, 0, Math.PI * 2);
     ctx.strokeStyle = event.playerId === 1 ? `rgba(96, 162, 255, ${0.5 * alpha})` : `rgba(255, 110, 110, ${0.5 * alpha})`;
-    ctx.lineWidth = 2;
+    ctx.lineWidth = 2 * cameraScale;
+    ctx.stroke();
+  }
+}
+
+function drawMoveTrails() {
+  const th = TILE_HEIGHT * cameraScale;
+  for (const trail of runtime.moveTrails) {
+    const tile = state.tiles[trail.tileId];
+    if (!tile) {
+      continue;
+    }
+
+    const age = state.tick - trail.createdTick;
+    const alpha = clamp(1 - age / 12, 0, 1);
+    if (alpha <= 0) {
+      continue;
+    }
+
+    const [sx, sy] = tileToScreen(tile.x, tile.y);
+    const color = trail.ownerId === 1 ? "110,172,255" : "255,110,110";
+    ctx.beginPath();
+    ctx.ellipse(sx, sy + th / 2 - 8 * cameraScale, 5 * cameraScale + age * 0.35, 3 * cameraScale + age * 0.22, 0, 0, Math.PI * 2);
+    ctx.strokeStyle = `rgba(${color}, ${0.45 * alpha})`;
+    ctx.lineWidth = 2 * cameraScale;
+    ctx.stroke();
+  }
+}
+
+function drawRippleEvents() {
+  const th = TILE_HEIGHT * cameraScale;
+  for (const ripple of runtime.rippleEvents) {
+    const tile = state.tiles[ripple.tileId];
+    if (!tile) {
+      continue;
+    }
+
+    const age = state.tick - ripple.createdTick;
+    const alpha = clamp(1 - age / 16, 0, 1);
+    if (alpha <= 0) {
+      continue;
+    }
+
+    const [sx, sy] = tileToScreen(tile.x, tile.y);
+    const color = ripple.playerId === 1 ? "122,186,255" : "255,132,132";
+    drawDiamondOutline(sx, sy, 1 + age * 0.03, `rgba(${color}, ${0.4 * alpha})`, 1.3 * cameraScale);
+    ctx.beginPath();
+    ctx.arc(sx, sy + th / 2, (5 + age * 1.2) * cameraScale, 0, Math.PI * 2);
+    ctx.strokeStyle = `rgba(${color}, ${0.24 * alpha})`;
+    ctx.lineWidth = 1.2 * cameraScale;
+    ctx.stroke();
+  }
+}
+
+function drawCaptureFlashes() {
+  for (const event of runtime.captureEvents) {
+    const tile = state.tiles[event.tileId];
+    if (!tile) {
+      continue;
+    }
+
+    const age = state.tick - event.createdTick;
+    const alpha = clamp(1 - age / 12, 0, 1);
+    if (alpha <= 0) {
+      continue;
+    }
+
+    const [sx, sy] = tileToScreen(tile.x, tile.y);
+    const color = event.owner === 1 ? "162,214,255" : "255,186,186";
+    drawDiamondOutline(sx, sy, 1.05 + age * 0.05, `rgba(${color}, ${0.54 * alpha})`, 2.4 * cameraScale);
+  }
+}
+
+function drawPulseGlitchOverlay() {
+  if (state.tick >= runtime.pulseFxUntilTick) {
+    return;
+  }
+
+  const age = runtime.pulseFxUntilTick - state.tick;
+  const alpha = clamp(age / 8, 0, 0.22);
+  ctx.fillStyle = `rgba(180, 220, 255, ${alpha})`;
+  ctx.fillRect(0, 0, viewWidth, viewHeight);
+
+  const stride = Math.max(4, Math.floor(7 * cameraScale));
+  ctx.strokeStyle = `rgba(28, 46, 84, ${alpha * 1.7})`;
+  ctx.lineWidth = 1;
+  for (let y = 0; y < viewHeight; y += stride) {
+    ctx.beginPath();
+    ctx.moveTo(0, y + ((state.tick + y) % 3));
+    ctx.lineTo(viewWidth, y + ((state.tick + y) % 3));
     ctx.stroke();
   }
 }
@@ -991,12 +1320,38 @@ function drawStatusText() {
 
   ctx.fillStyle = "rgba(235, 244, 255, 0.85)";
   ctx.font = "600 12px Segoe UI";
-  ctx.fillText(`State ${state.matchState.toUpperCase()} | Tick ${state.tick} | Match ${Math.ceil(remaining / 10)}s | CMD P${activeCommander} A${selectedSlot + 1} | Pulse CD ${Math.ceil((cdTicks * TICK_MS) / 1000)}s`, 12, 52);
+  const muteLabel = soundEnabled ? "AUDIO ON" : "AUDIO OFF";
+  ctx.fillText(`State ${state.matchState.toUpperCase()} | Tick ${state.tick} | Match ${Math.ceil(remaining / 10)}s | CMD P${activeCommander} A${selectedSlot + 1} | Pulse CD ${Math.ceil((cdTicks * TICK_MS) / 1000)}s | ${muteLabel}`, 12, 52);
+
+  if (soloTestMode) {
+    ctx.textAlign = "right";
+    ctx.fillStyle = "rgba(240, 246, 255, 0.95)";
+    ctx.font = "700 12px Segoe UI";
+    ctx.fillText("PATCH v2 SOLO READY", viewWidth - 12, 10);
+    ctx.fillText("SOLO TEST MODE", viewWidth - 12, 28);
+  }
+}
+
+function drawHelperText() {
+  const padX = 10;
+  const boxW = Math.min(viewWidth - 20, 540);
+  const boxX = (viewWidth - boxW) / 2;
+  const boxY = viewHeight - 30;
+  ctx.fillStyle = "rgba(5, 10, 22, 0.62)";
+  ctx.fillRect(boxX, boxY, boxW, 22);
+  ctx.strokeStyle = "rgba(166, 196, 255, 0.34)";
+  ctx.lineWidth = 1;
+  ctx.strokeRect(boxX + 0.5, boxY + 0.5, boxW - 1, 21);
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.fillStyle = "rgba(232, 241, 255, 0.9)";
+  ctx.font = "600 11px Segoe UI";
+  ctx.fillText(HELP_TEXT, padX + boxX + (boxW - padX * 2) / 2, boxY + 11.5);
 }
 
 function drawStartOverlay() {
   ctx.fillStyle = "rgba(2, 4, 12, 0.62)";
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.fillRect(0, 0, viewWidth, viewHeight);
 
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
@@ -1004,20 +1359,25 @@ function drawStartOverlay() {
   if (state.matchState === "waiting") {
     ctx.fillStyle = "#ffffff";
     ctx.font = "900 40px Segoe UI";
-    ctx.fillText("PRESSURE PROTOCOL", canvas.width / 2, canvas.height / 2 - 60);
+    ctx.fillText("PRESSURE PROTOCOL", viewWidth / 2, viewHeight / 2 - 60);
     ctx.font = "600 18px Segoe UI";
     ctx.fillStyle = "#d8e6ff";
-    ctx.fillText("Press R to READY for active commander. Tab swaps commander.", canvas.width / 2, canvas.height / 2 - 14);
-    ctx.fillText(`P1 ${state.readyPlayers[1] ? "READY" : "WAITING"} | P2 ${state.readyPlayers[2] ? "READY" : "WAITING"}`, canvas.width / 2, canvas.height / 2 + 18);
+    ctx.fillText(soloTestMode ? "Press R to start instantly in SOLO TEST MODE." : "Press R to READY for active commander. Tab swaps commander.", viewWidth / 2, viewHeight / 2 - 14);
+    ctx.fillText(`P1 ${state.readyPlayers[1] ? "READY" : "WAITING"} | P2 ${state.readyPlayers[2] ? "READY" : "WAITING"}`, viewWidth / 2, viewHeight / 2 + 18);
+    if (soloTestMode) {
+      ctx.font = "700 16px Segoe UI";
+      ctx.fillStyle = "rgba(231, 241, 255, 0.95)";
+      ctx.fillText("PATCH v2 SOLO READY", viewWidth / 2, viewHeight / 2 + 48);
+    }
     return;
   }
 
   ctx.fillStyle = "#ffffff";
   ctx.font = "900 54px Segoe UI";
-  ctx.fillText(`${Math.max(1, Math.ceil(state.countdownTicks / 10))}`, canvas.width / 2, canvas.height / 2 - 10);
+  ctx.fillText(`${Math.max(1, Math.ceil(state.countdownTicks / 10))}`, viewWidth / 2, viewHeight / 2 - 10);
   ctx.font = "700 20px Segoe UI";
   ctx.fillStyle = "#d8e6ff";
-  ctx.fillText("MATCH STARTING", canvas.width / 2, canvas.height / 2 + 44);
+  ctx.fillText("MATCH STARTING", viewWidth / 2, viewHeight / 2 + 44);
 }
 
 function drawEndOverlay() {
@@ -1026,7 +1386,7 @@ function drawEndOverlay() {
   const draw = state.winner == null;
 
   ctx.fillStyle = "rgba(2, 4, 12, 0.76)";
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.fillRect(0, 0, viewWidth, viewHeight);
 
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
@@ -1034,18 +1394,18 @@ function drawEndOverlay() {
   ctx.font = "900 48px Segoe UI";
 
   if (draw) {
-    ctx.fillText("DRAW", canvas.width / 2, canvas.height / 2 - 42);
+    ctx.fillText("DRAW", viewWidth / 2, viewHeight / 2 - 42);
   } else {
-    ctx.fillText(`PLAYER ${state.winner} WINS`, canvas.width / 2, canvas.height / 2 - 42);
+    ctx.fillText(`PLAYER ${state.winner} WINS`, viewWidth / 2, viewHeight / 2 - 42);
   }
 
   ctx.font = "700 20px Segoe UI";
   ctx.fillStyle = "#d8e6ff";
-  ctx.fillText(`Final Control: P1 ${p1Pct}% | P2 ${p2Pct}%`, canvas.width / 2, canvas.height / 2 + 4);
+  ctx.fillText(`Final Control: P1 ${p1Pct}% | P2 ${p2Pct}%`, viewWidth / 2, viewHeight / 2 + 4);
 
   ctx.font = "600 18px Segoe UI";
   ctx.fillStyle = "#f2f6ff";
-  ctx.fillText("Refresh to rematch", canvas.width / 2, canvas.height / 2 + 40);
+  ctx.fillText("Refresh to rematch", viewWidth / 2, viewHeight / 2 + 40);
 }
 
 function drawDebugOverlay() {
@@ -1069,14 +1429,17 @@ function drawDebugOverlay() {
 }
 
 function drawDiamond(sx, sy, tile) {
+  const tw = TILE_WIDTH * cameraScale;
+  const th = TILE_HEIGHT * cameraScale;
   const pressureAbs = Math.min(1, Math.abs(tile.pressure) / 100);
   const activePulse = runtime.tileEffects[tile.id] ? 1 - clamp((state.tick - runtime.tileEffects[tile.id].lastDeltaTick) / 8, 0, 1) : 0;
+  const pressureWave = tile.terrain !== "block" ? Math.sin(state.tick * 0.08 + tile.x * 0.8 + tile.y * 0.6) * 0.5 + 0.5 : 0;
 
   ctx.beginPath();
   ctx.moveTo(sx, sy);
-  ctx.lineTo(sx + TILE_WIDTH / 2, sy + TILE_HEIGHT / 2);
-  ctx.lineTo(sx, sy + TILE_HEIGHT);
-  ctx.lineTo(sx - TILE_WIDTH / 2, sy + TILE_HEIGHT / 2);
+  ctx.lineTo(sx + tw / 2, sy + th / 2);
+  ctx.lineTo(sx, sy + th);
+  ctx.lineTo(sx - tw / 2, sy + th / 2);
   ctx.closePath();
 
   const terrainBase = getTerrainBaseColor(tile.terrain, tile.x, tile.y);
@@ -1084,9 +1447,16 @@ function drawDiamond(sx, sy, tile) {
   ctx.fill();
 
   if (tile.terrain !== "block") {
-    const ownerOverlay = getOwnerOverlay(tile.owner, pressureAbs, activePulse);
+    const ownerOverlay = getOwnerOverlay(tile.owner, pressureAbs, activePulse + pressureWave * 0.12);
     if (ownerOverlay) {
       ctx.fillStyle = ownerOverlay;
+      ctx.fill();
+    }
+
+    if (isNearSpawn(tile, 1) || isNearSpawn(tile, 2)) {
+      const ownerBias = isNearSpawn(tile, 1) ? "122,170,255" : "255,150,150";
+      const alpha = tile.owner === 0 ? 0.06 : 0.11;
+      ctx.fillStyle = `rgba(${ownerBias}, ${alpha})`;
       ctx.fill();
     }
 
@@ -1094,34 +1464,48 @@ function drawDiamond(sx, sy, tile) {
   }
 
   if (tile.terrain === "road") {
-    const glow = 0.2 + 0.22 * (Math.sin(state.tick * 0.09 + tile.x + tile.y) * 0.5 + 0.5);
+    const glow = 0.26 + 0.24 * (Math.sin(state.tick * 0.09 + tile.x + tile.y) * 0.5 + 0.5);
     ctx.strokeStyle = `rgba(140, 196, 255, ${glow})`;
-    ctx.lineWidth = 2.5;
+    ctx.lineWidth = 2.5 * cameraScale;
   } else if (tile.terrain === "grass") {
     ctx.strokeStyle = "rgba(40, 60, 36, 0.9)";
-    ctx.lineWidth = 1.6;
+    ctx.lineWidth = 1.6 * cameraScale;
   } else {
     ctx.strokeStyle = "rgba(72, 78, 96, 0.95)";
-    ctx.lineWidth = 2;
+    ctx.lineWidth = 2 * cameraScale;
   }
 
   ctx.stroke();
 
   if (tile.lockedBy) {
     ctx.beginPath();
-    ctx.arc(sx, sy + TILE_HEIGHT / 2, 7, 0, Math.PI * 2);
+    ctx.arc(sx, sy + th / 2, 7 * cameraScale, 0, Math.PI * 2);
     ctx.fillStyle = tile.lockedBy === 1 ? "rgba(72,140,255,0.95)" : "rgba(255,88,88,0.95)";
     ctx.fill();
 
     ctx.beginPath();
-    ctx.moveTo(sx - 4, sy + TILE_HEIGHT / 2);
-    ctx.lineTo(sx + 4, sy + TILE_HEIGHT / 2);
-    ctx.moveTo(sx, sy + TILE_HEIGHT / 2 - 4);
-    ctx.lineTo(sx, sy + TILE_HEIGHT / 2 + 4);
+    ctx.moveTo(sx - 4 * cameraScale, sy + th / 2);
+    ctx.lineTo(sx + 4 * cameraScale, sy + th / 2);
+    ctx.moveTo(sx, sy + th / 2 - 4 * cameraScale);
+    ctx.lineTo(sx, sy + th / 2 + 4 * cameraScale);
     ctx.strokeStyle = "#ffffff";
-    ctx.lineWidth = 1.6;
+    ctx.lineWidth = 1.6 * cameraScale;
     ctx.stroke();
   }
+}
+
+function drawDiamondOutline(sx, sy, scaleMult, strokeStyle, lineWidth) {
+  const tw = TILE_WIDTH * cameraScale * scaleMult;
+  const th = TILE_HEIGHT * cameraScale * scaleMult;
+  ctx.beginPath();
+  ctx.moveTo(sx, sy);
+  ctx.lineTo(sx + tw / 2, sy + th / 2);
+  ctx.lineTo(sx, sy + th);
+  ctx.lineTo(sx - tw / 2, sy + th / 2);
+  ctx.closePath();
+  ctx.strokeStyle = strokeStyle;
+  ctx.lineWidth = lineWidth;
+  ctx.stroke();
 }
 
 function getTerrainBaseColor(terrain, x, y) {
@@ -1154,19 +1538,20 @@ function getOwnerOverlay(owner, pressureAbs, activePulse) {
 }
 
 function drawPressureArrow(sx, sy, tile) {
+  const th = TILE_HEIGHT * cameraScale;
   const sign = tile.pressure >= 0 ? 1 : -1;
   const magnitude = Math.min(1, Math.abs(tile.pressure) / 100);
   if (magnitude <= 0.03) {
     return;
   }
 
-  const ax = sx - sign * (8 + magnitude * 7);
-  const ay = sy + TILE_HEIGHT / 2;
-  const bx = sx + sign * (8 + magnitude * 7);
-  const by = sy + TILE_HEIGHT / 2;
+  const ax = sx - sign * (8 + magnitude * 7) * cameraScale;
+  const ay = sy + th / 2;
+  const bx = sx + sign * (8 + magnitude * 7) * cameraScale;
+  const by = sy + th / 2;
 
   ctx.strokeStyle = tile.pressure >= 0 ? "rgba(214, 234, 255, 0.72)" : "rgba(255, 224, 224, 0.72)";
-  ctx.lineWidth = 1.5;
+  ctx.lineWidth = 1.5 * cameraScale;
   ctx.beginPath();
   ctx.moveTo(ax, ay);
   ctx.lineTo(bx, by);
@@ -1174,8 +1559,8 @@ function drawPressureArrow(sx, sy, tile) {
 
   ctx.beginPath();
   ctx.moveTo(bx, by);
-  ctx.lineTo(bx - sign * 5, by - 3);
-  ctx.lineTo(bx - sign * 5, by + 3);
+  ctx.lineTo(bx - sign * 5 * cameraScale, by - 3 * cameraScale);
+  ctx.lineTo(bx - sign * 5 * cameraScale, by + 3 * cameraScale);
   ctx.closePath();
   ctx.fillStyle = tile.pressure >= 0 ? "rgba(214, 234, 255, 0.72)" : "rgba(255, 224, 224, 0.72)";
   ctx.fill();
@@ -1269,9 +1654,33 @@ function typeGlyph(type) {
 }
 
 function tileToScreen(x, y) {
-  const screenX = (x - y) * (TILE_WIDTH / 2) + cameraX;
-  const screenY = (x + y) * (TILE_HEIGHT / 2) + cameraY;
+  const tw = TILE_WIDTH * cameraScale;
+  const th = TILE_HEIGHT * cameraScale;
+  const screenX = (x - y) * (tw / 2) + cameraX;
+  const screenY = (x + y) * (th / 2) + cameraY;
   return [screenX, screenY];
+}
+
+function computeIsoBounds(scale) {
+  const tw = TILE_WIDTH * scale;
+  const th = TILE_HEIGHT * scale;
+  let minX = Number.POSITIVE_INFINITY;
+  let minY = Number.POSITIVE_INFINITY;
+  let maxX = Number.NEGATIVE_INFINITY;
+  let maxY = Number.NEGATIVE_INFINITY;
+
+  for (let y = 0; y < GRID_SIZE; y += 1) {
+    for (let x = 0; x < GRID_SIZE; x += 1) {
+      const sx = (x - y) * (tw / 2);
+      const sy = (x + y) * (th / 2);
+      minX = Math.min(minX, sx - tw / 2);
+      maxX = Math.max(maxX, sx + tw / 2);
+      minY = Math.min(minY, sy);
+      maxY = Math.max(maxY, sy + th);
+    }
+  }
+
+  return { minX, maxX, minY, maxY, width: maxX - minX, height: maxY - minY };
 }
 
 function resize() {
@@ -1291,10 +1700,17 @@ function resize() {
   canvas.style.height = `${viewHeight}px`;
 
   ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+  const baseBounds = computeIsoBounds(1);
+  const safeMarginX = viewWidth * MAP_SAFE_MARGIN_RATIO;
+  const safeMarginY = viewHeight * MAP_SAFE_MARGIN_RATIO;
+  const fitWidth = Math.max(64, viewWidth - safeMarginX * 2);
+  const fitHeight = Math.max(64, viewHeight - safeMarginY * 2);
+  const fitScale = Math.min(fitWidth / baseBounds.width, fitHeight / baseBounds.height);
+  cameraScale = clamp(fitScale, 0.35, 1.25);
 
-  const mapPixelWidth = GRID_SIZE * TILE_WIDTH;
-  cameraX = Math.floor(viewWidth / 2 - mapPixelWidth / 4);
-  cameraY = Math.floor(Math.max(88, viewHeight * 0.12));
+  const scaledBounds = computeIsoBounds(cameraScale);
+  cameraX = Math.floor((viewWidth - scaledBounds.width) / 2 - scaledBounds.minX);
+  cameraY = Math.floor((viewHeight - scaledBounds.height) / 2 - scaledBounds.minY);
 }
 
 function clamp(value, min, max) {
