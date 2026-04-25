@@ -1754,10 +1754,15 @@ export function createIsoRenderer(canvas) {
   }
 
   function drawCovertNodeOverlay(originX, originY, node, now, state) {
-    const covert = state?.covert?.nodeRiskById?.[node.id] || null;
-    const nodeScan = state?.covert?.counterActions?.nodeScanByNodeId?.[node.id] || null;
-    const hunterField = state?.sharedWorld?.hunterDetectionByNodeId?.[node.id]
-      || state?.covert?.hunterDetectionByNodeId?.[node.id]
+    if (!node || !node.id || !Number.isFinite(node.x) || !Number.isFinite(node.y)) return;
+    const nodeRiskById = state?.covert?.nodeRiskById;
+    const nodeScanByNodeId = state?.covert?.counterActions?.nodeScanByNodeId;
+    const hunterByNodeId = state?.sharedWorld?.hunterDetectionByNodeId
+      || state?.covert?.hunterDetectionByNodeId
+      || null;
+    const covert = nodeRiskById?.[node.id] || null;
+    const nodeScan = nodeScanByNodeId?.[node.id] || null;
+    const hunterField = hunterByNodeId?.[node.id]
       || null;
     if (!covert && !nodeScan && !hunterField) return;
     const risk = Math.max(0, Number(covert?.risk) || 0);
