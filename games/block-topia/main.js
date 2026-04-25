@@ -24,6 +24,7 @@ const COUNTDOWN_TICKS = 30;
 const MAX_MATCH_TICKS = 3000;
 const MAP_SAFE_MARGIN_RATIO = 0.08;
 const HELP_TEXT = "R Start | 1-3 Select | Click Move | Space Pulse | M Mute | D Debug";
+const PATCH_ID = "pressure-protocol-polish-pass-v1";
 
 const PRESSURE_BY_TYPE = {
   seeder: 3.2,
@@ -85,7 +86,7 @@ const runtime = {
   shakeUntilTick: 0,
 };
 
-console.log("[PressureProtocol] LOADED pressure-protocol-runtime-fallback-fit-v2");
+console.log(`[PressureProtocol] LOADED ${PATCH_ID}`);
 
 /** @returns {ControlScore} */
 function emptyControlScore() {
@@ -1948,6 +1949,7 @@ function destroy() {
 }
 
 window.PressureProtocol = {
+  patchId: PATCH_ID,
   state,
   issueMove,
   issuePulse,
