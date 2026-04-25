@@ -1,7 +1,7 @@
 const GRID_SIZE = 20;
-const TILE_WIDTH = 64;
-const TILE_HEIGHT = 32;
-const MAP_SAFE_MARGIN_RATIO = 0.08;
+const TILE_W = 64;
+const TILE_H = 32;
+const MARGIN = 0.08;
 
 if (window.GameTemplate && typeof window.GameTemplate.destroy === "function") {
   window.GameTemplate.destroy();
@@ -10,444 +10,196 @@ if (window.GameTemplate && typeof window.GameTemplate.destroy === "function") {
 let canvas = null;
 let ctx = null;
 let mounted = false;
-let animationFrameId = null;
-
-let viewWidth = 0;
-let viewHeight = 0;
-let cameraX = 0;
-let cameraY = 0;
-let cameraScale = 1;
+let rafId = null;
+let viewW = 0;
+let viewH = 0;
+let camX = 0;
+let camY = 0;
+let camScale = 1;
 
 const runtime = {
-  player: { id: "local", x: 1, y: 1, color: "#6da9ff" },
-  tiles: createTiles(),
+  player: { x: 1, y: 1, color: "#6da9ff" },
+  tiles: buildTiles(),
 };
 
-function getTileId(x, y) {
-  return y * GRID_SIZE + x;
-}
+// --- Tile map ---
 
-function decideTerrain(x, y) {
-  const lineRoad = x % 5 === 0 || y % 5 === 0;
-  const diagonalRoad = (x + y) % 7 === 0;
-  const hash = ((x + 17) * 928371 + (y + 31) * 192847 + x * y * 11939) % 1000;
-
-  if (lineRoad || diagonalRoad) {
-    return "road";
+function buildTiles() {
+  const t = {};
+  for (let y = 0; y < GRID_SIZE; y++) for (let x = 0; x < GRID_SIZE; x++) {
+    const road = x % 5 === 0 || y % 5 === 0 || (x + y) % 7 === 0;
+    const hash = ((x + 17) * 928371 + (y + 31) * 192847 + x * y * 11939) % 1000;
+    t[y * GRID_SIZE + x] = { x, y, terrain: road ? "road" : hash < 125 ? "block" : "grass" };
   }
-
-  if (hash < 125) {
-    return "block";
-  }
-
-  return "grass";
-}
-
-function createTiles() {
-  const tiles = {};
-
-  for (let y = 0; y < GRID_SIZE; y += 1) {
-    for (let x = 0; x < GRID_SIZE; x += 1) {
-      const id = getTileId(x, y);
-      tiles[id] = {
-        id,
-        x,
-        y,
-        terrain: decideTerrain(x, y),
-      };
-    }
-  }
-
-  forceRoad(tiles, 1, 1);
-  forceRoad(tiles, 2, 1);
-  forceRoad(tiles, 1, 2);
-
-  return tiles;
-}
-
-function forceRoad(tiles, x, y) {
-  const tile = tiles[getTileId(x, y)];
-  if (!tile) {
-    return;
-  }
-  tile.terrain = "road";
-}
-
-function clamp(value, min, max) {
-  return Math.max(min, Math.min(max, value));
+  [[1, 1], [2, 1], [1, 2]].forEach(([x, y]) => { t[y * GRID_SIZE + x].terrain = "road"; });
+  return t;
 }
 
 function isPassable(x, y) {
-  if (x < 0 || y < 0 || x >= GRID_SIZE || y >= GRID_SIZE) {
-    return false;
-  }
-
-  const tile = runtime.tiles[getTileId(x, y)];
-  return Boolean(tile && tile.terrain !== "block");
+  const t = runtime.tiles[y * GRID_SIZE + x];
+  return x >= 0 && y >= 0 && x < GRID_SIZE && y < GRID_SIZE && Boolean(t && t.terrain !== "block");
 }
 
-function computeIsoBounds(scale) {
-  const tw = TILE_WIDTH * scale;
-  const th = TILE_HEIGHT * scale;
-  let minX = Number.POSITIVE_INFINITY;
-  let minY = Number.POSITIVE_INFINITY;
-  let maxX = Number.NEGATIVE_INFINITY;
-  let maxY = Number.NEGATIVE_INFINITY;
+// --- Camera ---
 
-  for (let y = 0; y < GRID_SIZE; y += 1) {
-    for (let x = 0; x < GRID_SIZE; x += 1) {
-      const sx = (x - y) * (tw / 2);
-      const sy = (x + y) * (th / 2);
-      minX = Math.min(minX, sx - tw / 2);
-      maxX = Math.max(maxX, sx + tw / 2);
-      minY = Math.min(minY, sy);
-      maxY = Math.max(maxY, sy + th);
-    }
+function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
+
+function isoBounds(scale) {
+  const tw = TILE_W * scale, th = TILE_H * scale;
+  let [x0, y0, x1, y1] = [Infinity, Infinity, -Infinity, -Infinity];
+  for (let y = 0; y < GRID_SIZE; y++) for (let x = 0; x < GRID_SIZE; x++) {
+    const sx = (x - y) * (tw / 2), sy = (x + y) * (th / 2);
+    x0 = Math.min(x0, sx - tw / 2); x1 = Math.max(x1, sx + tw / 2);
+    y0 = Math.min(y0, sy);          y1 = Math.max(y1, sy + th);
   }
-
-  return {
-    minX,
-    maxX,
-    minY,
-    maxY,
-    width: maxX - minX,
-    height: maxY - minY,
-  };
+  return { minX: x0, minY: y0, width: x1 - x0, height: y1 - y0 };
 }
 
 function tileToScreen(x, y) {
-  const tw = TILE_WIDTH * cameraScale;
-  const th = TILE_HEIGHT * cameraScale;
-  return [
-    (x - y) * (tw / 2) + cameraX,
-    (x + y) * (th / 2) + cameraY,
-  ];
+  return [(x - y) * (TILE_W * camScale / 2) + camX, (x + y) * (TILE_H * camScale / 2) + camY];
 }
 
-function pickTile(screenX, screenY) {
-  const tw = TILE_WIDTH * cameraScale;
-  const th = TILE_HEIGHT * cameraScale;
-
-  const localX = screenX - cameraX;
-  const localY = screenY - cameraY;
-  const gx = (localX / (tw / 2) + localY / (th / 2)) / 2;
-  const gy = (localY / (th / 2) - localX / (tw / 2)) / 2;
-
-  const candidates = [
-    [Math.floor(gx), Math.floor(gy)],
-    [Math.ceil(gx), Math.floor(gy)],
-    [Math.floor(gx), Math.ceil(gy)],
-    [Math.ceil(gx), Math.ceil(gy)],
-  ];
-
-  let best = null;
-  let bestDist = Number.POSITIVE_INFINITY;
-
-  for (const [tx, ty] of candidates) {
-    if (tx < 0 || ty < 0 || tx >= GRID_SIZE || ty >= GRID_SIZE) {
-      continue;
-    }
-
-    const [sx, sy] = tileToScreen(tx, ty);
-    const dx = screenX - sx;
-    const dy = screenY - (sy + th / 2);
-    const dist = dx * dx + dy * dy;
-
-    if (dist < bestDist) {
-      bestDist = dist;
-      best = { x: tx, y: ty };
-    }
-  }
-
-  return best;
+function resize() {
+  if (!canvas || !ctx) return;
+  const dpr = window.devicePixelRatio || 1;
+  const r = (canvas.parentElement ?? canvas).getBoundingClientRect();
+  viewW = Math.max(320, Math.floor(r.width || innerWidth));
+  viewH = Math.max(240, Math.floor(r.height || innerHeight));
+  canvas.width = Math.floor(viewW * dpr); canvas.height = Math.floor(viewH * dpr);
+  canvas.style.width = `${viewW}px`; canvas.style.height = `${viewH}px`;
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  const b = isoBounds(1);
+  camScale = clamp(Math.min((viewW - viewW * MARGIN * 2) / b.width, (viewH - viewH * MARGIN * 2) / b.height), 0.35, 1.25);
+  const s = isoBounds(camScale);
+  camX = Math.floor((viewW - s.width) / 2 - s.minX);
+  camY = Math.floor((viewH - s.height) / 2 - s.minY);
 }
+
+// --- Input ---
 
 function movePlayer(dx, dy) {
-  const nextX = runtime.player.x + dx;
-  const nextY = runtime.player.y + dy;
-
-  if (!isPassable(nextX, nextY)) {
-    return;
-  }
-
-  runtime.player.x = nextX;
-  runtime.player.y = nextY;
+  const nx = runtime.player.x + dx, ny = runtime.player.y + dy;
+  if (isPassable(nx, ny)) { runtime.player.x = nx; runtime.player.y = ny; }
 }
 
-function onKeyDown(event) {
-  const key = event.key;
-
-  if (key === "ArrowUp" || key === "w" || key === "W") {
-    event.preventDefault();
-    movePlayer(0, -1);
-    return;
-  }
-
-  if (key === "ArrowDown" || key === "s" || key === "S") {
-    event.preventDefault();
-    movePlayer(0, 1);
-    return;
-  }
-
-  if (key === "ArrowLeft" || key === "a" || key === "A") {
-    event.preventDefault();
-    movePlayer(-1, 0);
-    return;
-  }
-
-  if (key === "ArrowRight" || key === "d" || key === "D") {
-    event.preventDefault();
-    movePlayer(1, 0);
-  }
+function onKeyDown(e) {
+  const d = { ArrowUp:[0,-1],w:[0,-1],W:[0,-1], ArrowDown:[0,1],s:[0,1],S:[0,1], ArrowLeft:[-1,0],a:[-1,0],A:[-1,0], ArrowRight:[1,0],d:[1,0],D:[1,0] }[e.key];
+  if (d) { e.preventDefault(); movePlayer(d[0], d[1]); }
 }
 
-function onPointerDown(event) {
-  if (!canvas) {
-    return;
+function onPointerDown(e) {
+  if (!canvas) return;
+  const r = canvas.getBoundingClientRect();
+  const px = (e.clientX - r.left) * (canvas.width / r.width);
+  const py = (e.clientY - r.top) * (canvas.height / r.height);
+  const tw = TILE_W * camScale, th = TILE_H * camScale;
+  const lx = px - camX, ly = py - camY;
+  const gx = (lx / (tw / 2) + ly / (th / 2)) / 2;
+  const gy = (ly / (th / 2) - lx / (tw / 2)) / 2;
+  let best = null, bestD = Infinity;
+  for (const [tx, ty] of [[Math.floor(gx),Math.floor(gy)],[Math.ceil(gx),Math.floor(gy)],[Math.floor(gx),Math.ceil(gy)],[Math.ceil(gx),Math.ceil(gy)]]) {
+    if (tx < 0 || ty < 0 || tx >= GRID_SIZE || ty >= GRID_SIZE) continue;
+    const [sx, sy] = tileToScreen(tx, ty);
+    const d = (px - sx) ** 2 + (py - (sy + th / 2)) ** 2;
+    if (d < bestD) { bestD = d; best = { x: tx, y: ty }; }
   }
-
-  const rect = canvas.getBoundingClientRect();
-  const px = (event.clientX - rect.left) * (canvas.width / rect.width);
-  const py = (event.clientY - rect.top) * (canvas.height / rect.height);
-  const tile = pickTile(px, py);
-
-  if (!tile || !isPassable(tile.x, tile.y)) {
-    return;
-  }
-
-  runtime.player.x = tile.x;
-  runtime.player.y = tile.y;
+  if (best && isPassable(best.x, best.y)) { runtime.player.x = best.x; runtime.player.y = best.y; }
 }
 
-function drawBackground() {
-  const gradient = ctx.createLinearGradient(0, 0, 0, viewHeight);
-  gradient.addColorStop(0, "#050b1a");
-  gradient.addColorStop(0.5, "#0a1429");
-  gradient.addColorStop(1, "#03070f");
-  ctx.fillStyle = gradient;
-  ctx.fillRect(0, 0, viewWidth, viewHeight);
-}
-
-function getTerrainColor(tile) {
-  if (tile.terrain === "block") {
-    const shade = 42 + ((tile.x + tile.y) % 3) * 6;
-    return `rgb(${shade}, ${shade + 3}, ${shade + 10})`;
-  }
-
-  if (tile.terrain === "road") {
-    const shade = 70 + ((tile.x * 3 + tile.y * 5) % 4) * 5;
-    return `rgb(${shade}, ${shade + 8}, ${shade + 22})`;
-  }
-
-  const shade = 58 + ((tile.x * 7 + tile.y * 11) % 5) * 4;
-  return `rgb(${shade - 8}, ${shade + 16}, ${shade - 4})`;
-}
-
-function drawDiamond(tile) {
-  const [sx, sy] = tileToScreen(tile.x, tile.y);
-  const tw = TILE_WIDTH * cameraScale;
-  const th = TILE_HEIGHT * cameraScale;
-
-  ctx.beginPath();
-  ctx.moveTo(sx, sy);
-  ctx.lineTo(sx + tw / 2, sy + th / 2);
-  ctx.lineTo(sx, sy + th);
-  ctx.lineTo(sx - tw / 2, sy + th / 2);
-  ctx.closePath();
-  ctx.fillStyle = getTerrainColor(tile);
-  ctx.fill();
-
-  if (tile.terrain === "road") {
-    const glow = 0.2 + 0.2 * (Math.sin(performance.now() * 0.002 + tile.x + tile.y) * 0.5 + 0.5);
-    ctx.strokeStyle = `rgba(150, 205, 255, ${glow})`;
-    ctx.lineWidth = 2.3 * cameraScale;
-  } else if (tile.terrain === "grass") {
-    ctx.strokeStyle = "rgba(40, 60, 36, 0.9)";
-    ctx.lineWidth = 1.5 * cameraScale;
-  } else {
-    ctx.strokeStyle = "rgba(76, 82, 98, 0.95)";
-    ctx.lineWidth = 1.8 * cameraScale;
-  }
-
-  ctx.stroke();
-}
-
-function drawTiles() {
-  for (let y = 0; y < GRID_SIZE; y += 1) {
-    for (let x = 0; x < GRID_SIZE; x += 1) {
-      const tile = runtime.tiles[getTileId(x, y)];
-      drawDiamond(tile);
-    }
-  }
-}
-
-function drawMarker(player) {
-  const [sx, sy] = tileToScreen(player.x, player.y);
-  const th = TILE_HEIGHT * cameraScale;
-  const cy = sy + th / 2 - 12 * cameraScale;
-
-  ctx.beginPath();
-  ctx.ellipse(sx, sy + th / 2 - 1 * cameraScale, 8 * cameraScale, 4 * cameraScale, 0, 0, Math.PI * 2);
-  ctx.fillStyle = "rgba(0, 0, 0, 0.32)";
-  ctx.fill();
-
-  ctx.beginPath();
-  ctx.arc(sx, cy, 9 * cameraScale, 0, Math.PI * 2);
-  ctx.fillStyle = player.color;
-  ctx.fill();
-  ctx.strokeStyle = "rgba(10, 14, 28, 0.95)";
-  ctx.lineWidth = 1.8 * cameraScale;
-  ctx.stroke();
-}
-
-function drawPlayers() {
-  drawMarker(runtime.player);
-}
-
-function drawHud() {
-  const { x, y } = runtime.player;
-
-  ctx.textAlign = "left";
-  ctx.textBaseline = "top";
-  ctx.font = "700 13px Segoe UI";
-  ctx.fillStyle = "rgba(228, 240, 255, 0.95)";
-  ctx.fillText(`(${x}, ${y})`, 12, 10);
-
-  const hint = "Arrow/WASD move | Click tile to move";
-  const boxW = 270;
-  const boxH = 20;
-  const boxX = viewWidth - boxW - 10;
-  const boxY = 10;
-  ctx.fillStyle = "rgba(5, 10, 22, 0.64)";
-  ctx.fillRect(boxX, boxY, boxW, boxH);
-  ctx.strokeStyle = "rgba(166, 196, 255, 0.35)";
-  ctx.lineWidth = 1;
-  ctx.strokeRect(boxX + 0.5, boxY + 0.5, boxW - 1, boxH - 1);
-  ctx.textAlign = "center";
-  ctx.textBaseline = "middle";
-  ctx.font = "600 11px Segoe UI";
-  ctx.fillStyle = "rgba(232, 241, 255, 0.9)";
-  ctx.fillText(hint, boxX + boxW / 2, boxY + boxH / 2 + 0.5);
-}
+// --- Render ---
 
 function render() {
-  if (!mounted || !ctx || !canvas) {
-    return;
+  if (!mounted || !ctx || !canvas) return;
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  // Background
+  const bg = ctx.createLinearGradient(0, 0, 0, viewH);
+  bg.addColorStop(0, "#050b1a"); bg.addColorStop(0.5, "#0a1429"); bg.addColorStop(1, "#03070f");
+  ctx.fillStyle = bg; ctx.fillRect(0, 0, viewW, viewH);
+
+  // Tiles
+  const tw = TILE_W * camScale, th = TILE_H * camScale;
+  for (let y = 0; y < GRID_SIZE; y++) for (let x = 0; x < GRID_SIZE; x++) {
+    const tile = runtime.tiles[y * GRID_SIZE + x];
+    const [sx, sy] = tileToScreen(x, y);
+    ctx.beginPath();
+    ctx.moveTo(sx, sy); ctx.lineTo(sx + tw / 2, sy + th / 2);
+    ctx.lineTo(sx, sy + th); ctx.lineTo(sx - tw / 2, sy + th / 2);
+    ctx.closePath();
+    if (tile.terrain === "road") {
+      const s = 70 + ((x * 3 + y * 5) % 4) * 5;
+      ctx.fillStyle = `rgb(${s},${s + 8},${s + 22})`; ctx.fill();
+      ctx.strokeStyle = `rgba(150,205,255,${0.2 + 0.2 * (Math.sin(performance.now() * 0.002 + x + y) * 0.5 + 0.5)})`;
+      ctx.lineWidth = 2.3 * camScale;
+    } else if (tile.terrain === "block") {
+      const s = 42 + ((x + y) % 3) * 6;
+      ctx.fillStyle = `rgb(${s},${s + 3},${s + 10})`; ctx.fill();
+      ctx.strokeStyle = "rgba(76,82,98,.95)"; ctx.lineWidth = 1.8 * camScale;
+    } else {
+      const s = 58 + ((x * 7 + y * 11) % 5) * 4;
+      ctx.fillStyle = `rgb(${s - 8},${s + 16},${s - 4})`; ctx.fill();
+      ctx.strokeStyle = "rgba(40,60,36,.9)"; ctx.lineWidth = 1.5 * camScale;
+    }
+    ctx.stroke();
   }
 
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  drawBackground();
-  drawTiles();
-  drawPlayers();
-  drawHud();
+  // Player marker
+  const { x: px, y: py, color } = runtime.player;
+  const [sx, sy] = tileToScreen(px, py);
+  const cy = sy + th / 2 - 12 * camScale;
+  ctx.beginPath();
+  ctx.ellipse(sx, sy + th / 2 - camScale, 8 * camScale, 4 * camScale, 0, 0, Math.PI * 2);
+  ctx.fillStyle = "rgba(0,0,0,0.32)"; ctx.fill();
+  ctx.beginPath();
+  ctx.arc(sx, cy, 9 * camScale, 0, Math.PI * 2);
+  ctx.fillStyle = color; ctx.fill();
+  ctx.strokeStyle = "rgba(10,14,28,.95)"; ctx.lineWidth = 1.8 * camScale; ctx.stroke();
+
+  // HUD: position only
+  ctx.textAlign = "left"; ctx.textBaseline = "top";
+  ctx.font = "700 13px Segoe UI"; ctx.fillStyle = "rgba(228,240,255,.95)";
+  ctx.fillText(`(${px}, ${py})`, 12, 10);
 }
+
+// --- Lifecycle ---
 
 function update() {
   // Hook: replace with game-specific logic
 }
 
-function renderFrame() {
-  update();
-  render();
-  if (mounted) {
-    animationFrameId = requestAnimationFrame(renderFrame);
-  }
-}
-
-function resize() {
-  if (!canvas || !ctx) {
-    return;
-  }
-
-  const ratio = window.devicePixelRatio || 1;
-  const host = canvas.parentElement;
-  const hostRect = host ? host.getBoundingClientRect() : canvas.getBoundingClientRect();
-
-  viewWidth = Math.max(320, Math.floor(hostRect.width || window.innerWidth));
-  viewHeight = Math.max(240, Math.floor(hostRect.height || window.innerHeight));
-
-  canvas.width = Math.floor(viewWidth * ratio);
-  canvas.height = Math.floor(viewHeight * ratio);
-  canvas.style.width = `${viewWidth}px`;
-  canvas.style.height = `${viewHeight}px`;
-  ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
-
-  const baseBounds = computeIsoBounds(1);
-  const safeMarginX = viewWidth * MAP_SAFE_MARGIN_RATIO;
-  const safeMarginY = viewHeight * MAP_SAFE_MARGIN_RATIO;
-  const fitWidth = Math.max(64, viewWidth - safeMarginX * 2);
-  const fitHeight = Math.max(64, viewHeight - safeMarginY * 2);
-  cameraScale = clamp(Math.min(fitWidth / baseBounds.width, fitHeight / baseBounds.height), 0.35, 1.25);
-
-  const scaledBounds = computeIsoBounds(cameraScale);
-  cameraX = Math.floor((viewWidth - scaledBounds.width) / 2 - scaledBounds.minX);
-  cameraY = Math.floor((viewHeight - scaledBounds.height) / 2 - scaledBounds.minY);
-}
-
-function resolveMountCanvas(options = {}) {
-  if (options.canvas instanceof HTMLCanvasElement) {
-    return options.canvas;
-  }
-
-  const canvasId = options.canvasId ?? "game";
-  const containerId = options.containerId ?? "game-shell";
-  const existing = document.getElementById(canvasId);
-  if (existing instanceof HTMLCanvasElement) {
-    return existing;
-  }
-
-  const container = document.getElementById(containerId) ?? document.body;
-  const created = document.createElement("canvas");
-  created.id = canvasId;
-  created.setAttribute("aria-label", "Isometric game map");
-  created.style.display = "block";
-  created.style.width = "100%";
-  created.style.height = "100%";
-  container.appendChild(created);
-  return created;
+function loop() {
+  update(); render();
+  if (mounted) rafId = requestAnimationFrame(loop);
 }
 
 function init(options = {}) {
-  if (mounted) {
-    destroy();
+  if (mounted) destroy();
+  const id = options.canvasId ?? "game";
+  let el = options.canvas instanceof HTMLCanvasElement ? options.canvas : document.getElementById(id);
+  if (!(el instanceof HTMLCanvasElement)) {
+    el = document.createElement("canvas");
+    el.id = id;
+    el.setAttribute("aria-label", "Isometric game map");
+    el.style.cssText = "display:block;width:100%;height:100%";
+    (document.getElementById(options.containerId ?? "game-shell") ?? document.body).appendChild(el);
   }
-
-  canvas = resolveMountCanvas(options);
+  canvas = el;
   ctx = canvas.getContext("2d");
-  if (!ctx) {
-    throw new Error("GameTemplate init failed: 2D context unavailable");
-  }
-
+  if (!ctx) throw new Error("GameTemplate init failed: 2D context unavailable");
   mounted = true;
   window.addEventListener("resize", resize);
   window.addEventListener("keydown", onKeyDown);
   canvas.addEventListener("pointerdown", onPointerDown);
-
-  resize();
-  animationFrameId = requestAnimationFrame(renderFrame);
+  resize(); rafId = requestAnimationFrame(loop);
   return canvas;
 }
 
 function destroy() {
-  if (animationFrameId !== null) {
-    cancelAnimationFrame(animationFrameId);
-    animationFrameId = null;
-  }
-
+  if (rafId !== null) { cancelAnimationFrame(rafId); rafId = null; }
   window.removeEventListener("resize", resize);
   window.removeEventListener("keydown", onKeyDown);
-  if (canvas) {
-    canvas.removeEventListener("pointerdown", onPointerDown);
-  }
-
-  mounted = false;
-  ctx = null;
-  canvas = null;
+  if (canvas) canvas.removeEventListener("pointerdown", onPointerDown);
+  mounted = false; ctx = null; canvas = null;
 }
 
-window.GameTemplate = {
-  init,
-  update,
-  render,
-  destroy,
-};
+window.GameTemplate = { init, update, render, destroy };
