@@ -79,6 +79,8 @@ const runtime = {
   captureEvents: /** @type {{tileId:number, owner:1|2, createdTick:number}[]} */ ([]),
   rippleEvents: /** @type {{tileId:number, playerId:1|2, createdTick:number}[]} */ ([]),
   moveTrails: /** @type {{npcId:string, tileId:number, ownerId:1|2, createdTick:number}[]} */ ([]),
+  npcGhostTrails: /** @type {Record<string, {x:number, y:number, ownerId:1|2, life:number}[]>} */ ({}),
+  npcLastScreen: /** @type {Record<string, {x:number, y:number, ownerId:1|2}>} */ ({}),
   pulseFxUntilTick: 0,
   shakeUntilTick: 0,
 };
@@ -854,6 +856,7 @@ function issuePulse(playerId, slot) {
 
   const command = createLocalCommand("pulse", playerId, npcId);
   queueCommand(command, true);
+  playTone(260, 80, "triangle", 0.028, 2);
 }
 
 function issueReady(playerId) {
@@ -990,14 +993,16 @@ function render() {
   }
 
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-  const shakePower = state.tick < runtime.shakeUntilTick ? (runtime.shakeUntilTick - state.tick) * 0.32 : 0;
+  const shakePower = state.tick < runtime.shakeUntilTick ? (runtime.shakeUntilTick - state.tick) * 0.75 : 0;
   renderShakeX = shakePower > 0 ? (Math.random() - 0.5) * 2 * shakePower : 0;
   renderShakeY = shakePower > 0 ? (Math.random() - 0.5) * 2 * shakePower : 0;
+  updateNpcGhostTrails();
   drawBackground();
   ctx.save();
   ctx.translate(renderShakeX, renderShakeY);
   drawTiles();
   drawMoveTrails();
+  drawNpcGhostTrails();
   drawTargetMarkers();
   drawPulseEvents();
   drawRippleEvents();
@@ -1112,10 +1117,10 @@ function drawNPCs() {
     const tile = state.tiles[npc.tileId];
     const [sx, sy] = tileToScreen(tile.x, tile.y);
     const movePulse = npc.state === "moving" ? Math.sin((state.tick + npc.tileId) * 0.5) : 0;
-    const bob = movePulse * 1.8 * cameraScale;
+    const bob = (1.6 + movePulse * 2.4) * cameraScale;
     const lean = movePulse * 2.2 * cameraScale;
     const cx = sx + lean;
-    const cy = sy + th / 2 - 13 * cameraScale - bob;
+    const cy = sy + th / 2 - 14 * cameraScale - bob;
     const isSelected = selectedNpcId === npc.id;
     const baseColor = npc.ownerId === 1 ? "#3a79ff" : "#ff4f4f";
     const midColor = npc.ownerId === 1 ? "#2b5dd2" : "#cc3f3f";
@@ -1126,7 +1131,7 @@ function drawNPCs() {
     const headR = Math.max(3.5, 4.5 * cameraScale);
 
     ctx.beginPath();
-    ctx.ellipse(cx, sy + th / 2 - 2 * cameraScale, bodyW + 2 * cameraScale, bodyH * 0.42, 0, 0, Math.PI * 2);
+    ctx.ellipse(cx, sy + th / 2 - 1.5 * cameraScale, bodyW + 3 * cameraScale, bodyH * 0.5, 0, 0, Math.PI * 2);
     ctx.fillStyle = "rgba(0, 0, 0, 0.28)";
     ctx.fill();
 
@@ -1147,6 +1152,13 @@ function drawNPCs() {
       ctx.stroke();
       ctx.shadowBlur = 0;
     }
+
+    ctx.beginPath();
+    ctx.moveTo(cx, sy + th / 2 - 2 * cameraScale);
+    ctx.lineTo(cx, cy + bodyH * 0.4);
+    ctx.strokeStyle = "rgba(12, 18, 32, 0.45)";
+    ctx.lineWidth = 1.4 * cameraScale;
+    ctx.stroke();
 
     ctx.beginPath();
     ctx.moveTo(cx, cy - bodyH);
@@ -1200,14 +1212,86 @@ function drawPulseEvents() {
 
     const [sx, sy] = tileToScreen(tile.x, tile.y);
     const age = state.tick - event.createdTick;
-    const radius = (14 + age * 5) * cameraScale;
+    const radius = (20 + age * 8) * cameraScale;
     const alpha = clamp(1 - age / 20, 0, 1);
 
     ctx.beginPath();
     ctx.arc(sx, sy + th / 2, radius, 0, Math.PI * 2);
     ctx.strokeStyle = event.playerId === 1 ? `rgba(96, 162, 255, ${0.5 * alpha})` : `rgba(255, 110, 110, ${0.5 * alpha})`;
-    ctx.lineWidth = 2 * cameraScale;
+    ctx.lineWidth = 3 * cameraScale;
+    ctx.shadowColor = event.playerId === 1 ? "rgba(96, 162, 255, 0.6)" : "rgba(255, 110, 110, 0.6)";
+    ctx.shadowBlur = 12 * alpha;
     ctx.stroke();
+    ctx.shadowBlur = 0;
+  }
+}
+
+function updateNpcGhostTrails() {
+  const th = TILE_HEIGHT * cameraScale;
+  for (const npc of Object.values(state.npcs)) {
+    const tile = state.tiles[npc.tileId];
+    if (!tile) {
+      continue;
+    }
+
+    const [sx, sy] = tileToScreen(tile.x, tile.y);
+    const point = { x: sx, y: sy + th / 2 - 10 * cameraScale, ownerId: npc.ownerId };
+    const prev = runtime.npcLastScreen[npc.id];
+    runtime.npcLastScreen[npc.id] = point;
+
+    if (!prev || npc.state !== "moving") {
+      continue;
+    }
+
+    if (!runtime.npcGhostTrails[npc.id]) {
+      runtime.npcGhostTrails[npc.id] = [];
+    }
+
+    runtime.npcGhostTrails[npc.id].push({
+      x: prev.x,
+      y: prev.y,
+      ownerId: npc.ownerId,
+      life: 1,
+    });
+  }
+}
+
+function drawNpcGhostTrails() {
+  for (const [npcId, points] of Object.entries(runtime.npcGhostTrails)) {
+    const npc = state.npcs[npcId];
+    if (!npc) {
+      delete runtime.npcGhostTrails[npcId];
+      continue;
+    }
+
+    const current = runtime.npcLastScreen[npcId];
+    if (!current || points.length === 0) {
+      continue;
+    }
+
+    const color = npc.ownerId === 1 ? "118,188,255" : "255,130,130";
+    let prev = current;
+    for (let i = points.length - 1; i >= 0; i -= 1) {
+      const p = points[i];
+      p.life -= 0.1;
+      if (p.life <= 0) {
+        points.splice(i, 1);
+        continue;
+      }
+
+      const alpha = 0.28 * p.life;
+      ctx.beginPath();
+      ctx.moveTo(prev.x, prev.y);
+      ctx.lineTo(p.x, p.y);
+      ctx.strokeStyle = `rgba(${color}, ${alpha})`;
+      ctx.lineWidth = (2.2 + p.life * 1.6) * cameraScale;
+      ctx.stroke();
+      prev = p;
+    }
+
+    if (points.length === 0) {
+      delete runtime.npcGhostTrails[npcId];
+    }
   }
 }
 
@@ -1285,7 +1369,7 @@ function drawPulseGlitchOverlay() {
   }
 
   const age = runtime.pulseFxUntilTick - state.tick;
-  const alpha = clamp(age / 8, 0, 0.22);
+  const alpha = clamp(age / 7, 0, 0.35);
   ctx.fillStyle = `rgba(180, 220, 255, ${alpha})`;
   ctx.fillRect(0, 0, viewWidth, viewHeight);
 
@@ -1298,6 +1382,14 @@ function drawPulseGlitchOverlay() {
     ctx.lineTo(viewWidth, y + ((state.tick + y) % 3));
     ctx.stroke();
   }
+
+  const centerX = viewWidth / 2;
+  const centerY = viewHeight / 2;
+  ctx.beginPath();
+  ctx.arc(centerX, centerY, (40 + (7 - age) * 38) * cameraScale, 0, Math.PI * 2);
+  ctx.strokeStyle = `rgba(210, 236, 255, ${alpha * 0.85})`;
+  ctx.lineWidth = 4 * cameraScale;
+  ctx.stroke();
 }
 
 function drawStatusText() {
