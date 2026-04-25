@@ -425,6 +425,17 @@ export function createIsoRenderer(canvas) {
   Object.values(PROP_ASSETS).forEach((path) => loadImage(path, imageRegistry));
   Object.values(NPC_ASSETS).forEach((path) => loadImage(path, imageRegistry));
 
+  function getRenderPolicy(state) {
+    const policy = state?.renderPolicy || {};
+    return {
+      showWorldAnnotations: Boolean(policy.showWorldAnnotations),
+      showOverlays: Boolean(policy.showOverlays),
+      showNodeMetadata: Boolean(policy.showNodeMetadata),
+      showNpcLabels: Boolean(policy.showNpcLabels),
+      showNpcMarkers: Boolean(policy.showNpcMarkers),
+    };
+  }
+
   function getCameraFrame(state) {
     if (!state.camera) {
       state.camera = { x: 0, y: 0, zoom: 1, zoomIndex: 1, panX: 0, panY: 0 };
@@ -911,21 +922,7 @@ export function createIsoRenderer(canvas) {
       ctx.globalAlpha = 1;
     }
 
-    if (npc.mode === 'active' || isHunter) {
-      ctx.font = '700 8px Inter, sans-serif';
-      ctx.textAlign = 'center';
-      ctx.fillStyle = 'rgba(0,0,0,0.7)';
-      ctx.fillText(npc.roleLabel || npc.role || 'NPC', sx + 1, sy - 43);
-      ctx.fillStyle = style.color;
-      ctx.fillText(npc.roleLabel || npc.role || 'NPC', sx, sy - 44);
-      if (isHunter) {
-        ctx.fillStyle = '#d7fbff';
-        ctx.fillText(String(npc.glyph || 'scan').toUpperCase(), sx, sy - 54);
-      } else if (isNearby || isHovered) {
-        ctx.fillStyle = '#ffffff';
-        ctx.fillText(npc.name || 'Citizen', sx, sy - 54);
-      }
-    }
+    // World/NPC labels intentionally disabled for clean 2-player map render.
   }
 
   function drawRemotePlayer(originX, originY, remote, now, metrics, visible, isHovered, isSelected) {
@@ -956,8 +953,7 @@ export function createIsoRenderer(canvas) {
     ctx.fillStyle = '#d7fbff';
     ctx.font = isSelected ? '700 10px Inter, sans-serif' : '600 9px Inter, sans-serif';
     ctx.textAlign = 'center';
-    const label = isSelected ? `🎯 ${remote.name || 'Player'}` : (remote.name || 'Player');
-    ctx.fillText(label, sx, sy - 44);
+    const label = remote.name || 'Player';
   }
 
   function isOffscreen(screenX, screenY) {
@@ -994,7 +990,6 @@ export function createIsoRenderer(canvas) {
     ctx.fillStyle = '#eaffff';
     ctx.font = '700 9px Inter, sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText('OP', centerX, centerY - 8);
     ctx.restore();
   }
 
@@ -1056,32 +1051,24 @@ export function createIsoRenderer(canvas) {
     ctx.font = '700 8px Inter, sans-serif';
     ctx.textAlign = 'center';
     const label = `${theme.label} · ${node.id.toUpperCase()}`;
-    ctx.fillText(label, cx, cy - towerH - 12);
 
     if (nodeScan) {
       ctx.fillStyle = '#b9f6ff';
-      ctx.fillText('SCANNED', cx, cy - towerH - 22);
     } else if (outbreak?.infected) {
       ctx.fillStyle = '#ff79be';
-      ctx.fillText('INFECTED', cx, cy - towerH - 22);
     } else if (circuit?.isolated) {
       ctx.fillStyle = '#ff9f71';
-      ctx.fillText('ISOLATED', cx, cy - towerH - 22);
     } else if (outbreak?.isolated) {
       ctx.fillStyle = '#5ef2ff';
-      ctx.fillText('ISOLATED', cx, cy - towerH - 22);
     } else if (firewall?.underAttack) {
       ctx.fillStyle = '#ff88c5';
-      ctx.fillText('BREACH', cx, cy - towerH - 22);
     } else if (node.status === 'unstable' || node.status === 'contested') {
       ctx.fillStyle = node.status === 'unstable' ? '#ff4fd8' : '#ffd84d';
-      ctx.fillText(node.status === 'unstable' ? '⚠ UNSTABLE' : 'CONTESTED', cx, cy - towerH - 22);
     }
 
     if (node.warState === 'fighting' || node.warState === 'reinforcing' || node.warState === 'retreating') {
       ctx.fillStyle = node.warState === 'fighting' ? '#ff8da5' : node.warState === 'reinforcing' ? '#7dffb2' : '#ffd49f';
       const tag = node.warState === 'fighting' ? 'WAR' : node.warState === 'reinforcing' ? 'REINFORCE' : 'RETREAT';
-      ctx.fillText(tag, cx, cy - towerH - 32);
     }
 
     ctx.restore();
@@ -1222,34 +1209,26 @@ export function createIsoRenderer(canvas) {
     ctx.fillStyle = theme.accent;
     ctx.font = majorNode ? '700 9px Inter, sans-serif' : '700 8px Inter, sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText(`${theme.label} / ${node.id.toUpperCase()}`, cx, cy - towerH - 12);
     ctx.globalAlpha = 0.75;
     ctx.fillStyle = districtTheme.accent;
     ctx.font = '700 7px Inter, sans-serif';
-    ctx.fillText(districtTheme.glyph, cx, cy - towerH - 24);
 
     const stateY = cy - towerH - 34;
     if (nodeScan) {
       ctx.fillStyle = '#b9f6ff';
-      ctx.fillText('SCANNED', cx, stateY);
     } else if (outbreak?.infected) {
       ctx.fillStyle = '#ff79be';
-      ctx.fillText('INFECTED', cx, stateY);
     } else if (circuit?.isolated || outbreak?.isolated) {
       ctx.fillStyle = circuit?.isolated ? '#ff9f71' : '#5ef2ff';
-      ctx.fillText('ISOLATED', cx, stateY);
     } else if (firewall?.underAttack) {
       ctx.fillStyle = '#ff88c5';
-      ctx.fillText('BREACH', cx, stateY);
     } else if (node.status === 'unstable' || node.status === 'contested') {
       ctx.fillStyle = node.status === 'unstable' ? '#ff4fd8' : '#ffd84d';
-      ctx.fillText(node.status === 'unstable' ? 'UNSTABLE' : 'CONTESTED', cx, stateY);
     }
 
     if (node.warState === 'fighting' || node.warState === 'reinforcing' || node.warState === 'retreating') {
       ctx.fillStyle = node.warState === 'fighting' ? '#ff8da5' : node.warState === 'reinforcing' ? '#7dffb2' : '#ffd49f';
       const tag = node.warState === 'fighting' ? 'WAR' : node.warState === 'reinforcing' ? 'REINFORCE' : 'RETREAT';
-      ctx.fillText(tag, cx, cy - towerH - 44);
     }
 
     ctx.restore();
@@ -1477,11 +1456,6 @@ export function createIsoRenderer(canvas) {
     if (!Array.isArray(controlNodes) || controlNodes.length < 2) return;
     const byId = new Map(controlNodes.map((node) => [node.id, node]));
     const byCoord = new Map(controlNodes.map((node) => [`${node.x},${node.y}`, node]));
-    const networkHeat = Math.max(0, Math.min(100, Number(state?.covert?.networkHeat?.value) || 0));
-    const heatBias = networkHeat / 100;
-    const routeDisruptions = Array.isArray(state?.covert?.counterActions?.routeDisruptions)
-      ? state.covert.counterActions.routeDisruptions
-      : [];
     ctx.save();
 
     for (const line of NETWORK_LINES) {
@@ -1495,115 +1469,36 @@ export function createIsoRenderer(canvas) {
       const y1 = originY + fromIso.y + HALF_TILE_H;
       const x2 = originX + toIsoPoint.x;
       const y2 = originY + toIsoPoint.y + HALF_TILE_H;
-      const flowPulse = 0.5 + (Math.sin((now / 220) + (line.id.length * 0.5)) + 1) * 0.25;
-      const corrupted = Boolean(from.outbreak?.infected || to.outbreak?.infected);
-      const disrupted = routeDisruptions.find((entry) => (
-        entry?.district_id
-        && (entry.district_id === from.districtId || entry.district_id === to.districtId)
-        && (
-          !Array.isArray(entry.affected_node_ids)
-          || !entry.affected_node_ids.length
-          || entry.affected_node_ids.includes(from.id)
-          || entry.affected_node_ids.includes(to.id)
-        )
-      )) || null;
-      const circuitState = state.circuitConnectView?.active
-        ? state.circuitConnectView.links?.find((entry) => entry.id === edgeKey(from.id, to.id))?.state
-        : '';
-      const routerState = state.signalRouterView?.active
-        ? state.signalRouterView.links?.find((entry) => entry.id === edgeKey(from.id, to.id))?.state
-        : '';
-      const circuitColor = circuitState === 'broken'
-        ? 'rgba(255,87,99,0.96)'
-        : circuitState === 'unstable'
-          ? 'rgba(255,188,87,0.95)'
-          : circuitState === 'bridge'
-            ? 'rgba(181,115,255,0.96)'
-            : circuitState === 'reinforced'
-              ? 'rgba(102,232,255,0.98)'
-              : '';
-      const routerColor = routerState === 'overloaded'
-        ? 'rgba(255,183,71,0.95)'
-        : routerState === 'corrupted'
-          ? 'rgba(255,79,216,0.95)'
-          : routerState === 'blocked'
-            ? 'rgba(255,90,111,0.95)'
-            : routerState === 'stabilized'
-              ? 'rgba(105,243,255,0.98)'
-              : '';
-      const lineTheme = getDistrictTheme(from.districtId);
-      const baseColor = disrupted
-        ? 'rgba(255,196,92,0.96)'
-        : circuitColor || routerColor || (corrupted ? 'rgba(255,79,168,0.94)' : `rgba(94,242,255,${0.78 + (heatBias * 0.12)})`);
-      const fractureFlicker = 0.55 + (Math.sin(now / UNSTABLE_FLICKER_RATE + (line.id.length * 2.4)) + 1) * 0.2;
 
-      ctx.globalAlpha = disrupted ? 0.28 : circuitState === 'broken' ? fractureFlicker * 0.4 : (corrupted ? 0.34 : (0.16 + (heatBias * 0.1)));
-      applyGlow(ctx, lineTheme.color, disrupted ? 18 : 10, 1);
-      ctx.strokeStyle = lineTheme.color;
-      ctx.lineWidth = 4.8 + (disrupted ? 1.2 : 0);
-      ctx.beginPath();
-      ctx.moveTo(x1, y1);
-      ctx.lineTo(x2, y2);
-      ctx.stroke();
-      ctx.shadowBlur = 0;
+      const flowPulse = 0.45 + (Math.sin((now / 240) + (line.id.length * 0.5)) + 1) * 0.2;
 
-      ctx.globalAlpha = disrupted ? 0.88 : circuitState === 'broken' ? fractureFlicker : (corrupted ? 0.78 : (0.45 + (heatBias * 0.16)));
-      ctx.strokeStyle = baseColor;
-      ctx.lineWidth = (((routerState === 'blocked' || circuitState === 'broken') ? 2.8 : 1.7) + flowPulse + (heatBias * 0.6) + (disrupted ? 0.8 : 0));
+      ctx.globalAlpha = 0.25;
+      ctx.strokeStyle = 'rgba(94,242,255,0.65)';
+      ctx.lineWidth = 4.2;
       ctx.beginPath();
       ctx.moveTo(x1, y1);
       ctx.lineTo(x2, y2);
       ctx.stroke();
 
-      ctx.globalAlpha = 0.42;
-      ctx.strokeStyle = disrupted ? '#fff0c2' : 'rgba(230,250,255,0.84)';
-      ctx.lineWidth = 0.9;
-      ctx.setLineDash([6, 12]);
-      ctx.lineDashOffset = -((now * 0.03) + (line.id.length * 7));
+      ctx.globalAlpha = 0.88;
+      ctx.strokeStyle = '#5ef2ff';
+      ctx.lineWidth = 1.8 + flowPulse;
       ctx.beginPath();
       ctx.moveTo(x1, y1);
       ctx.lineTo(x2, y2);
       ctx.stroke();
-      ctx.setLineDash([]);
 
-      if (disrupted) {
-        ctx.globalAlpha = 0.54;
-        ctx.strokeStyle = 'rgba(255,239,200,0.98)';
-        ctx.lineWidth = 1.2;
-        ctx.beginPath();
-        ctx.moveTo(((x1 + x2) / 2) - 5, ((y1 + y2) / 2) - 5);
-        ctx.lineTo(((x1 + x2) / 2) + 5, ((y1 + y2) / 2) + 5);
-        ctx.moveTo(((x1 + x2) / 2) + 5, ((y1 + y2) / 2) - 5);
-        ctx.lineTo(((x1 + x2) / 2) - 5, ((y1 + y2) / 2) + 5);
-        ctx.stroke();
-      }
-
-      const packetPhase = ((now * DATA_PACKET_SPEED * (1.8 + (heatBias * 0.9))) + ((from.x + to.y) * 0.021)) % 1;
-      const packetCount = isMajorLink(from, to) ? 3 : 2;
-      for (let i = 0; i < packetCount; i += 1) {
-        const phase = (packetPhase + (i / packetCount)) % 1;
-        const px = x1 + ((x2 - x1) * phase);
-        const py = y1 + ((y2 - y1) * phase);
-        ctx.globalAlpha = 0.95 - (i * 0.18);
-        ctx.fillStyle = disrupted
-          ? '#fff0c2'
-          : circuitState === 'broken'
-            ? '#ffb7be'
-            : circuitState === 'unstable'
-              ? '#ffe0af'
-              : routerState === 'blocked'
-                ? '#ffd0d8'
-                : (corrupted ? '#ffd2f1' : '#e7fbff');
-        applyGlow(ctx, ctx.fillStyle, 8, 1);
-        ctx.beginPath();
-        ctx.arc(px, py, i === 0 ? 2.8 : 2.1, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.shadowBlur = 0;
-      }
+      const packetPhase = ((now * DATA_PACKET_SPEED * 2.1) + ((from.x + to.y) * 0.021)) % 1;
+      const px = x1 + ((x2 - x1) * packetPhase);
+      const py = y1 + ((y2 - y1) * packetPhase);
+      ctx.globalAlpha = 0.95;
+      ctx.fillStyle = '#e7fbff';
+      ctx.beginPath();
+      ctx.arc(px, py, 2.2, 0, Math.PI * 2);
+      ctx.fill();
     }
     ctx.restore();
   }
-
   function drawDistrictControlOverlay(originX, originY, state, now) {
     const districtState = Array.isArray(state?.districtState) ? state.districtState : [];
     if (!districtState.length || !state?.districts?.byId) return;
@@ -1642,10 +1537,8 @@ export function createIsoRenderer(canvas) {
       ctx.fillStyle = 'rgba(2,8,20,0.7)';
       ctx.font = DISTRICT_LABEL_GLOW_FONT;
       ctx.textAlign = 'center';
-      ctx.fillText(`${districtMeta.name} · ${String(entry.controlState || 'contested').toUpperCase()}`, labelX, labelY);
       ctx.fillStyle = '#e8fdff';
       ctx.font = DISTRICT_LABEL_FONT;
-      ctx.fillText(`${Math.round(Number(entry.control || 0))}% · ${entry.owner || 'Contested'}`, labelX, labelY);
     }
     ctx.restore();
   }
@@ -1706,13 +1599,10 @@ export function createIsoRenderer(canvas) {
       ctx.fillStyle = 'rgba(2,8,20,0.84)';
       ctx.font = DISTRICT_LABEL_GLOW_FONT;
       ctx.textAlign = 'center';
-      ctx.fillText(`${districtTheme.label} / ${String(entry.controlState || 'contested').toUpperCase()}`, labelX, labelY - 8);
       ctx.fillStyle = districtTheme.color;
       ctx.font = '700 10px Inter, sans-serif';
-      ctx.fillText(districtTheme.sublabel, labelX, labelY + 8);
       ctx.fillStyle = '#e8fdff';
       ctx.font = DISTRICT_LABEL_FONT;
-      ctx.fillText(`${Math.round(Number(entry.control || 0))}% / ${entry.owner || 'Contested'}`, labelX, labelY + 22);
     }
     ctx.restore();
   }
@@ -1748,7 +1638,6 @@ export function createIsoRenderer(canvas) {
       ctx.fillStyle = localTrace ? '#ffc7e2' : instability >= 18 ? '#ff8fe2' : instability >= 10 ? '#ffb18d' : '#ffe18a';
       ctx.font = '700 10px Inter, sans-serif';
       ctx.textAlign = 'center';
-      ctx.fillText(`${String((localTrace ? 'under trace' : (covert?.pressure_flag || 'calm'))).toUpperCase()} · instability ${Math.round(instability)}`, labelX, labelY + 12);
     }
     ctx.restore();
   }
@@ -1808,19 +1697,16 @@ export function createIsoRenderer(canvas) {
       ctx.fillStyle = color;
       ctx.font = '700 9px Inter, sans-serif';
       ctx.textAlign = 'center';
-      ctx.fillText('SCAN FIELD', cx, cy - 50);
     } else if (nodeScan || risk >= 12) {
       ctx.globalAlpha = 0.92;
       ctx.fillStyle = color;
       ctx.font = '700 9px Inter, sans-serif';
       ctx.textAlign = 'center';
-      ctx.fillText(nodeScan ? 'NODE SCAN' : 'TRACE LOCK', cx, cy - 50);
     } else if (risk >= 8) {
       ctx.globalAlpha = 0.88;
       ctx.fillStyle = color;
       ctx.font = '700 9px Inter, sans-serif';
       ctx.textAlign = 'center';
-      ctx.fillText('UNDER WATCH', cx, cy - 50);
     }
     ctx.restore();
   }
@@ -2096,6 +1982,7 @@ export function createIsoRenderer(canvas) {
   function render(state) {
     const now = Date.now();
     const metrics = getSceneMetrics(state);
+    const renderPolicy = getRenderPolicy(state);
 
     rebuildBaseGridLayer();
     ensureWorldLayers(state, metrics);
@@ -2122,29 +2009,26 @@ export function createIsoRenderer(canvas) {
 
     ctx.drawImage(layerState.roadBlocks.canvas, worldDrawX, worldDrawY);
     ctx.drawImage(layerState.worldObjects.canvas, worldDrawX, worldDrawY);
-    drawMapSignalOverlay(originX, originY, state, now);
-    drawDistrictControlOverlayEnhanced(originX, originY, state, now);
-    drawCovertDistrictOverlay(originX, originY, state, now);
-
-    drawNetworkDataLinksEnhanced(originX, originY, state.controlNodes, now, state);
-    drawSignalRouterOverlay(originX, originY, state, now);
-    drawFirewallDefenseOverlay(originX, originY, state, now);
-
-    drawHoveredTile(originX, originY, state.mouse?.hoverTile, now);
-    drawSelectedTile(originX, originY, state.mouse?.selectedTile, now);
-    drawMoveTarget(originX, originY, state.player?.moveTarget, now);
-
-    const activeOperations = state.signalOperations?.active;
-    if (activeOperations?.length) {
-      for (const operation of activeOperations) {
-        if (!operation || operation.resolved) continue;
-        drawSignalOperation(originX, originY, operation, now);
-      }
+    if (renderPolicy.showOverlays) {
+      drawMapSignalOverlay(originX, originY, state, now);
+      drawDistrictControlOverlayEnhanced(originX, originY, state, now);
+      drawCovertDistrictOverlay(originX, originY, state, now);
     }
 
-    // Draw Live Control Grid nodes beneath NPCs
+    drawNetworkDataLinksEnhanced(originX, originY, state.controlNodes, now, state);
+    if (renderPolicy.showOverlays) {
+      drawSignalRouterOverlay(originX, originY, state, now);
+      drawFirewallDefenseOverlay(originX, originY, state, now);
+    }
+
+    if (renderPolicy.showOverlays) {
+      drawHoveredTile(originX, originY, state.mouse?.hoverTile, now);
+      drawSelectedTile(originX, originY, state.mouse?.selectedTile, now);
+      drawMoveTarget(originX, originY, state.player?.moveTarget, now);
+    }
+
     const controlNodes = state.controlNodes;
-    if (Array.isArray(controlNodes) && controlNodes.length) {
+    if (renderPolicy.showNodeMetadata && Array.isArray(controlNodes) && controlNodes.length) {
       for (const node of controlNodes) {
         drawControlNodeEnhanced(originX, originY, node, now, state, state.mouse?.hoverNodeId === node.id);
         drawCovertNodeOverlay(originX, originY, node, now, state);
@@ -2156,7 +2040,7 @@ export function createIsoRenderer(canvas) {
 
     renderLayers.length = 0;
     const npcEntities = state.npc?.entities;
-    if (npcEntities?.length) {
+    if (renderPolicy.showNpcMarkers && npcEntities?.length) {
       for (const npc of npcEntities) {
         if (!npc || typeof npc.col !== 'number') continue;
         renderLayers.push({ type: 'npc', y: npc.row, entity: npc });
@@ -2238,3 +2122,4 @@ export function createIsoRenderer(canvas) {
     pickRemotePlayerFromClientPoint,
   };
 }
+

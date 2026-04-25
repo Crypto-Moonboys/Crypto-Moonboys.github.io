@@ -79,6 +79,13 @@ export async function loadUnifiedData() {
     canon: canonState,
     canonAdapter: canonState,
     canonLore: canonState.canonLore,
+    renderPolicy: {
+      showWorldAnnotations: false,
+      showOverlays: false,
+      showNodeMetadata: false,
+      showNpcLabels: false,
+      showNpcMarkers: false,
+    },
     legacy: {
       map: legacyMap,
       npcProfiles: legacyNpcProfiles,

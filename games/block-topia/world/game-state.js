@@ -242,6 +242,13 @@ export function createGameState(bundle) {
       canon: bundle.canonLore || {},
       legacy: bundle.legacy,
     },
+    renderPolicy: {
+      showWorldAnnotations: bundle.renderPolicy?.showWorldAnnotations ?? false,
+      showOverlays: bundle.renderPolicy?.showOverlays ?? false,
+      showNodeMetadata: bundle.renderPolicy?.showNodeMetadata ?? false,
+      showNpcLabels: bundle.renderPolicy?.showNpcLabels ?? false,
+      showNpcMarkers: bundle.renderPolicy?.showNpcMarkers ?? false,
+    },
   };
 }
 
