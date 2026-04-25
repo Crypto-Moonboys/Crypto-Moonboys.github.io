@@ -1223,6 +1223,10 @@ async function boot() {
     });
   }
 
+  function shouldShowConnectingCopy() {
+    return !multiplayerConnected && !isRecentlyActive();
+  }
+
   function getCovertWatchLine(covertState) {
     const flags = Array.isArray(covertState?.samAwareness?.pressure_flags) ? covertState.samAwareness.pressure_flags : [];
     if ((Number(covertState?.summary?.activeHunters) || 0) > 0) return 'hunter patrols deployed';
@@ -1564,7 +1568,7 @@ async function boot() {
     // Guard: do not send nodeInterfere until multiplayer is fully joined.
     // This prevents partial messages reaching the server while the player state isn't ready,
     // which would cause the server handler to reject the click and could flip LIVE LINK to unavailable.
-    if (!multiplayerConnected) {
+    if (shouldShowConnectingCopy()) {
       hud.showNodeInterference('Connecting to live city…', 'system');
       return true;
     }
@@ -1601,7 +1605,9 @@ async function boot() {
     const tooltip = document.getElementById('node-tooltip');
     if (!tooltip) return;
     if (!nodeId) {
-      const emptyText = !multiplayerConnected ? 'Connecting to live city…' : 'Select a glowing node to deploy Signal Runner.';
+      const emptyText = shouldShowConnectingCopy()
+        ? 'Connecting to live city…'
+        : 'Select a glowing node to deploy Signal Runner.';
       tooltip.innerHTML = emptyText;
       return;
     }
@@ -2444,6 +2450,7 @@ async function boot() {
     },
     onStatus: (status) => {
       const wsState = status.ws || 'offline';
+      const hasRecentPresence = isRecentlyActive();
       debugState.connectionState = wsState;
       debugState.roomName = status.roomId || debugState.roomName;
       renderDebugPanel();
@@ -2452,21 +2459,25 @@ async function boot() {
         wsConnectionFailed = false;
         hud.setMultiplayerStatus('Connected (live city)');
       } else if (wsState === 'room-full') {
-        if (isRecentlyActive()) {
+        if (hasRecentPresence) {
           markUiConnected();
         } else {
           wsConnectionFailed = true;
           hud.setMultiplayerUnavailable('room-full');
         }
       } else if (wsState === 'disconnected') {
-        if (isRecentlyActive()) {
+        if (hasRecentPresence) {
           markUiConnected();
         } else {
           wsConnectionFailed = true;
           hud.setMultiplayerUnavailable('network-disconnect');
         }
       } else if (wsState === 'connecting' || wsState === 'offline') {
-        hud.setMultiplayerStatus('Connecting to live city…');
+        if (hasRecentPresence || multiplayerConnected) {
+          markUiConnected();
+        } else {
+          hud.setMultiplayerStatus('Connecting to live city…');
+        }
       } else {
         hud.setMultiplayerStatus(wsState);
       }

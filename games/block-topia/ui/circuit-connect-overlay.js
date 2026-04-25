@@ -253,17 +253,14 @@ export function createCircuitConnectOverlay(doc, { onAction, onSkip } = {}) {
     #circuit-connect-overlay .circuit-dim {
       position: absolute;
       inset: 0;
-      background:
-        radial-gradient(circle at 80% 18%, rgba(94,242,255,0.1), transparent 20%),
-        linear-gradient(180deg, rgba(3,8,18,0.04), rgba(3,8,18,0.18));
-      backdrop-filter: blur(1px);
+      background: transparent;
     }
     #circuit-connect-overlay .circuit-shell {
       position: absolute;
-      top: 92px;
-      right: 14px;
-      width: min(430px, calc(100vw - 28px));
-      max-height: min(74vh, 760px);
+      top: 96px;
+      right: 10px;
+      width: min(360px, calc(100vw - 20px));
+      max-height: min(52vh, 560px);
       overflow: auto;
       padding: 11px 11px 12px;
       border: 1px solid rgba(122, 230, 255, 0.32);
@@ -271,7 +268,7 @@ export function createCircuitConnectOverlay(doc, { onAction, onSkip } = {}) {
       background:
         linear-gradient(180deg, rgba(4, 14, 30, 0.95), rgba(3, 10, 21, 0.91)),
         rgba(5, 11, 22, 0.9);
-      box-shadow: 0 26px 58px rgba(0, 0, 0, 0.34), inset 0 1px 0 rgba(255,255,255,0.05);
+      box-shadow: 0 16px 34px rgba(0, 0, 0, 0.28), inset 0 1px 0 rgba(255,255,255,0.05);
       color: #def7ff;
       pointer-events: auto;
       transition: border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
@@ -690,9 +687,9 @@ export function createCircuitConnectOverlay(doc, { onAction, onSkip } = {}) {
       #circuit-connect-overlay .circuit-shell {
         left: 8px;
         right: 8px;
-        top: 180px;
+        top: 176px;
         width: auto;
-        max-height: min(54vh, 560px);
+        max-height: min(46vh, 480px);
       }
       #circuit-connect-overlay .circuit-meta,
       #circuit-connect-overlay .circuit-status-grid,
