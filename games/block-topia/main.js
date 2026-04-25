@@ -22,8 +22,14 @@ const PULSE_RADIUS = 2;
 const PULSE_COOLDOWN_TICKS = 50;
 const COUNTDOWN_TICKS = 30;
 const MAX_MATCH_TICKS = 3000;
-const SOLO_FALLBACK_DELAY_MS = 900;
-const MAP_SAFE_MARGIN_PX = 24;
+const MAP_FIT_MARGIN_RATIO = 0.08;
+const RUNTIME_PATCH_ID = "pressure-protocol-runtime-fallback-fit-v2";
+const SOLO_TEST_OVERRIDE = (() => {
+  const host = String(window.location.hostname || "").toLowerCase();
+  const localhost = host === "localhost" || host === "127.0.0.1" || host === "::1" || host === "[::1]";
+  const forced = new URLSearchParams(window.location.search).get("solo") === "1";
+  return localhost || forced;
+})();
 
 const PRESSURE_BY_TYPE = {
   seeder: 3.2,
@@ -56,7 +62,6 @@ let cameraY = 120;
 let worldOffsetX = 0;
 let worldOffsetY = 0;
 let worldScale = 1;
-let soloFallbackTimerId = null;
 
 let activeCommander = 1;
 let selectedSlot = 0;
@@ -72,36 +77,23 @@ const runtime = {
   pulseEvents: /** @type {{playerId:1|2, tileId:number, createdTick:number}[]} */ ([]),
   tileEffects: /** @type {Record<number, {lastDeltaTick:number}>} */ ({}),
   remoteTrafficSeen: false,
+  soloTestModeActive: false,
 };
 
-function clearSoloFallbackTimer() {
-  if (soloFallbackTimerId != null) {
-    clearTimeout(soloFallbackTimerId);
-    soloFallbackTimerId = null;
+function shouldUseSoloFallback() {
+  return SOLO_TEST_OVERRIDE || !runtime.remoteTrafficSeen;
+}
+
+function startSoloCountdown(gameState) {
+  if (gameState.matchState !== "waiting") {
+    return false;
   }
-}
-
-function readyCount(gameState) {
-  return Number(Boolean(gameState.readyPlayers[1])) + Number(Boolean(gameState.readyPlayers[2]));
-}
-
-function maybeScheduleSoloFallback(gameState) {
-  if (soloFallbackTimerId != null) return;
-  if (runtime.remoteTrafficSeen) return;
-  if (gameState.matchState !== "waiting") return;
-  if (readyCount(gameState) !== 1) return;
-
-  soloFallbackTimerId = setTimeout(() => {
-    soloFallbackTimerId = null;
-    if (runtime.remoteTrafficSeen) return;
-    if (state.matchState !== "waiting") return;
-    if (readyCount(state) !== 1) return;
-
-    state.readyPlayers[1] = true;
-    state.readyPlayers[2] = true;
-    state.matchState = "countdown";
-    state.countdownTicks = COUNTDOWN_TICKS;
-  }, SOLO_FALLBACK_DELAY_MS);
+  gameState.readyPlayers[1] = true;
+  gameState.readyPlayers[2] = true;
+  gameState.matchState = "countdown";
+  gameState.countdownTicks = COUNTDOWN_TICKS;
+  runtime.soloTestModeActive = true;
+  return true;
 }
 
 /** @returns {ControlScore} */
@@ -294,11 +286,8 @@ function executeCommand(gameState, command) {
     gameState.readyPlayers[command.playerId] = true;
 
     if (gameState.readyPlayers[1] && gameState.readyPlayers[2]) {
-      clearSoloFallbackTimer();
       gameState.matchState = "countdown";
       gameState.countdownTicks = COUNTDOWN_TICKS;
-    } else {
-      maybeScheduleSoloFallback(gameState);
     }
     return;
   }
@@ -751,13 +740,11 @@ function issueReady(playerId) {
 
 function receiveRemoteCommand(command) {
   runtime.remoteTrafficSeen = true;
-  clearSoloFallbackTimer();
   queueCommand(command, false);
 }
 
 function receiveRemoteHash(payload) {
   runtime.remoteTrafficSeen = true;
-  clearSoloFallbackTimer();
   runtime.remoteHashes[payload.t] = payload.hash;
 
   const local = runtime.localHashes[payload.t];
@@ -773,6 +760,10 @@ function onKeyDown(event) {
   }
 
   if (event.key === "r" || event.key === "R") {
+    if (state.matchState === "waiting" && shouldUseSoloFallback()) {
+      startSoloCountdown(state);
+      return;
+    }
     issueReady(/** @type {1|2} */ (activeCommander));
     return;
   }
@@ -1042,6 +1033,14 @@ function drawStatusText() {
   ctx.fillStyle = "rgba(235, 244, 255, 0.85)";
   ctx.font = "600 12px Segoe UI";
   ctx.fillText(`State ${state.matchState.toUpperCase()} | Tick ${state.tick} | Match ${Math.ceil(remaining / 10)}s | CMD P${activeCommander} A${selectedSlot + 1} | Pulse CD ${Math.ceil((cdTicks * TICK_MS) / 1000)}s`, 12, 52);
+
+  if (runtime.soloTestModeActive || SOLO_TEST_OVERRIDE) {
+    ctx.textAlign = "right";
+    ctx.fillStyle = "rgba(255, 214, 79, 0.98)";
+    ctx.font = "700 12px Segoe UI";
+    ctx.fillText("SOLO TEST MODE", viewWidth - 12, 10);
+    ctx.textAlign = "left";
+  }
 }
 
 function drawStartOverlay() {
@@ -1324,6 +1323,37 @@ function tileToScreen(x, y) {
   return [screenX, screenY];
 }
 
+function getProjectedMapBounds() {
+  const halfW = TILE_WIDTH / 2;
+  const halfH = TILE_HEIGHT / 2;
+  const max = GRID_SIZE - 1;
+  const origins = [
+    [0, 0],
+    [max * halfW, max * halfH],
+    [-max * halfW, max * halfH],
+    [0, max * TILE_HEIGHT],
+  ];
+
+  let minX = Infinity;
+  let maxX = -Infinity;
+  let minY = Infinity;
+  let maxY = -Infinity;
+
+  for (const [ox, oy] of origins) {
+    minX = Math.min(minX, ox - halfW);
+    maxX = Math.max(maxX, ox + halfW);
+    minY = Math.min(minY, oy);
+    maxY = Math.max(maxY, oy + TILE_HEIGHT);
+  }
+
+  return {
+    minX,
+    minY,
+    width: Math.max(1, maxX - minX),
+    height: Math.max(1, maxY - minY),
+  };
+}
+
 function resize() {
   if (!canvas || !ctx) {
     return;
@@ -1342,21 +1372,15 @@ function resize() {
 
   ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
 
-  const mapMinX = -((GRID_SIZE - 1) * (TILE_WIDTH / 2));
-  const mapMaxX = ((GRID_SIZE - 1) * (TILE_WIDTH / 2)) + TILE_WIDTH;
-  const mapMinY = 0;
-  const mapMaxY = GRID_SIZE * TILE_HEIGHT;
-  const mapPixelWidth = Math.max(1, mapMaxX - mapMinX);
-  const mapPixelHeight = Math.max(1, mapMaxY - mapMinY);
+  const bounds = getProjectedMapBounds();
+  const safeWidth = Math.max(1, viewWidth * (1 - (MAP_FIT_MARGIN_RATIO * 2)));
+  const safeHeight = Math.max(1, viewHeight * (1 - (MAP_FIT_MARGIN_RATIO * 2)));
+  worldScale = Math.min(safeWidth / bounds.width, safeHeight / bounds.height);
 
-  const safeWidth = Math.max(1, viewWidth - (MAP_SAFE_MARGIN_PX * 2));
-  const safeHeight = Math.max(1, viewHeight - (MAP_SAFE_MARGIN_PX * 2));
-  worldScale = Math.min(1, safeWidth / mapPixelWidth, safeHeight / mapPixelHeight);
-
-  cameraX = -mapMinX;
-  cameraY = -mapMinY;
-  worldOffsetX = Math.floor((viewWidth - (mapPixelWidth * worldScale)) / 2);
-  worldOffsetY = Math.floor((viewHeight - (mapPixelHeight * worldScale)) / 2);
+  cameraX = -bounds.minX;
+  cameraY = -bounds.minY;
+  worldOffsetX = Math.floor((viewWidth - (bounds.width * worldScale)) / 2);
+  worldOffsetY = Math.floor((viewHeight - (bounds.height * worldScale)) / 2);
 }
 
 function clamp(value, min, max) {
@@ -1468,6 +1492,7 @@ function mount(options = {}) {
   }
 
   mounted = true;
+  console.info(`[PressureProtocol] ${RUNTIME_PATCH_ID}`);
   window.addEventListener("resize", resize);
   window.addEventListener("keydown", onKeyDown);
   canvas.addEventListener("pointerdown", onPointerDown);
@@ -1489,7 +1514,6 @@ function destroy() {
     clearInterval(tickIntervalId);
     tickIntervalId = null;
   }
-  clearSoloFallbackTimer();
 
   window.removeEventListener("resize", resize);
   window.removeEventListener("keydown", onKeyDown);
@@ -1503,6 +1527,8 @@ function destroy() {
 }
 
 window.PressureProtocol = {
+  patchId: RUNTIME_PATCH_ID,
+  soloOverride: SOLO_TEST_OVERRIDE,
   state,
   issueMove,
   issuePulse,
