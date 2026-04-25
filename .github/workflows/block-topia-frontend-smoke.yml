@@ -1,0 +1,32 @@
+name: Block Topia Frontend Smoke
+
+on:
+  pull_request:
+    paths:
+      - 'games/block-topia/**'
+      - '.github/workflows/block-topia-frontend-smoke.yml'
+  push:
+    branches:
+      - main
+    paths:
+      - 'games/block-topia/**'
+      - '.github/workflows/block-topia-frontend-smoke.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  npc-system-smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Run npc-system import/order smoke test
+        run: node games/block-topia/tests/npc-system-import-order.test.mjs

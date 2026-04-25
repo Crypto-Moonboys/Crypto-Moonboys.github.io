@@ -1760,7 +1760,7 @@ export function createIsoRenderer(canvas) {
       || state?.covert?.hunterDetectionByNodeId?.[node.id]
       || null;
     if (!covert && !nodeScan && !hunterField) return;
-    const risk = Math.max(0, Number(covert.risk) || 0);
+    const risk = Math.max(0, Number(covert?.risk) || 0);
     const hunterIntensity = Math.max(0, Number(hunterField?.intensity) || 0);
     if (risk <= 0 && !nodeScan && hunterIntensity <= 0) return;
     const heat = Math.max(0, Math.min(100, Number(state?.covert?.networkHeat?.value) || 0));
