@@ -2,6 +2,7 @@ const GRID_SIZE = 20;
 const TILE_W = 64;
 const TILE_H = 32;
 const MARGIN = 0.08;
+const KEY_DELTAS = { ArrowUp:[0,-1],w:[0,-1],W:[0,-1], ArrowDown:[0,1],s:[0,1],S:[0,1], ArrowLeft:[-1,0],a:[-1,0],A:[-1,0], ArrowRight:[1,0],d:[1,0],D:[1,0] };
 
 if (window.GameTemplate && typeof window.GameTemplate.destroy === "function") {
   window.GameTemplate.destroy();
@@ -83,7 +84,7 @@ function movePlayer(dx, dy) {
 }
 
 function onKeyDown(e) {
-  const d = { ArrowUp:[0,-1],w:[0,-1],W:[0,-1], ArrowDown:[0,1],s:[0,1],S:[0,1], ArrowLeft:[-1,0],a:[-1,0],A:[-1,0], ArrowRight:[1,0],d:[1,0],D:[1,0] }[e.key];
+  const d = KEY_DELTAS[e.key];
   if (d) { e.preventDefault(); movePlayer(d[0], d[1]); }
 }
 
@@ -163,15 +164,22 @@ function render() {
 
 // --- Lifecycle ---
 
-function update() {
-  // Hook: replace with game-specific logic
-}
+/** Override with game-specific per-frame logic. Called before render() each frame. */
+function update() {}
 
 function loop() {
   update(); render();
   if (mounted) rafId = requestAnimationFrame(loop);
 }
 
+/**
+ * Mount the game onto a canvas.
+ * @param {object} [options]
+ * @param {HTMLCanvasElement} [options.canvas] - Existing canvas element.
+ * @param {string} [options.canvasId="game"] - ID of canvas to find or create.
+ * @param {string} [options.containerId="game-shell"] - Container ID for auto-created canvas.
+ * @returns {HTMLCanvasElement}
+ */
 function init(options = {}) {
   if (mounted) destroy();
   const id = options.canvasId ?? "game";
@@ -194,6 +202,7 @@ function init(options = {}) {
   return canvas;
 }
 
+/** Cancel the animation loop and remove all event listeners. */
 function destroy() {
   if (rafId !== null) { cancelAnimationFrame(rafId); rafId = null; }
   window.removeEventListener("resize", resize);
