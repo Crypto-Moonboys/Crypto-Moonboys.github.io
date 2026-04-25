@@ -59,6 +59,8 @@ const COVERT_SYNC_INTERVAL_MS = 26000;
 const QUEST_TICK_INTERVAL_MS = 250;
 const FEED_DEDUPE_TTL_MS = 5 * 60 * 1000;
 const MAX_FEED_CACHE_SIZE = 80;
+const DISTRICT_FEED_SHORT_SUPPRESS_MS = 9000;
+const DISTRICT_CAPTURED_STATE_MS = 12000;
 const NPC_FEED_PULSE_PROBABILITY = 0.002;
 const SAM_PRESENCE_MIN_MS = 18000;
 const SAM_PRESENCE_VARIANCE_MS = 10000;
@@ -79,6 +81,7 @@ const MINI_GAME_ENTRY_QUIET_MS = 2800;
 const COVERT_OPS_MISSION_DURATION_MS = 30000;
 const COVERT_DEPLOY_BTN_TEXT = 'Deploy Signal Runner';
 const FTUE_STORAGE_KEY = 'blocktopia_player_experience_seen';
+const TACTICAL_OVERLAY_PRIORITY = ['outbreak', 'firewall', 'router', 'circuit', 'signal-runner'];
 const microNotifyCache = new Map();
 
 function setBodyStateClass(name, enabled) {
@@ -860,6 +863,9 @@ async function boot() {
   let lastInteractPromptText = '';
   let lastInteractPromptVisible = false;
   const seenFeed = new Map();
+  const seenDistrictFeed = new Map();
+  const districtCapturedUntilById = new Map();
+  const tacticalUiState = { foreground: '' };
 
   // Covert ops: track active operation client-side for countdown / UI.
   const covertOpsLocal = {
@@ -921,6 +927,30 @@ async function boot() {
 
   function formatDistrictName(districtId) {
     return state.districts.byId.get(districtId)?.name || String(districtId || '').replace(/-/g, ' ');
+  }
+
+  function normalizeDistrictStateTag(controlState = '') {
+    const line = String(controlState || '').toLowerCase().replace(/_/g, ' ').trim();
+    if (line.includes('capture')) return 'captured';
+    if (line.includes('secure') || line.includes('hold') || line.includes('owned')) return 'secured';
+    return 'contested';
+  }
+
+  function markDistrictCapturedState(districtId) {
+    if (!districtId) return;
+    districtCapturedUntilById.set(districtId, Date.now() + DISTRICT_CAPTURED_STATE_MS);
+  }
+
+  function resolveDistrictDisplayState(districtId, fallbackControlState = '') {
+    const district = districtStateById.get(districtId);
+    if (!district) return normalizeDistrictStateTag(fallbackControlState || 'contested');
+    const now = Date.now();
+    const capturedUntil = districtCapturedUntilById.get(districtId) || 0;
+    if (capturedUntil > now) return 'captured';
+    const normalized = normalizeDistrictStateTag(district.controlState || fallbackControlState);
+    if (normalized === 'contested') return 'contested';
+    if (Number(district.control) >= DISTRICT_CAPTURE_THRESHOLD) return 'secured';
+    return 'contested';
   }
 
   function buildCovertRoomReports(covertState = {}) {
@@ -1138,6 +1168,59 @@ async function boot() {
     } else if (resultEl) {
       resultEl.textContent = '';
     }
+    syncTacticalUiState();
+  }
+
+  function pushDistrictFeed(text, type = 'combat', signature = '') {
+    const normalizedSignature = String(signature || text || '')
+      .toLowerCase()
+      .replace(/\d+%/g, '{pct}')
+      .replace(/\s+/g, ' ')
+      .trim();
+    if (!normalizedSignature) return false;
+    const now = Date.now();
+    const previousAt = seenDistrictFeed.get(normalizedSignature) || 0;
+    if (now - previousAt < DISTRICT_FEED_SHORT_SUPPRESS_MS) return false;
+    seenDistrictFeed.set(normalizedSignature, now);
+    if (seenDistrictFeed.size > 140) {
+      for (const [entryKey, ts] of seenDistrictFeed.entries()) {
+        if (now - ts > DISTRICT_FEED_SHORT_SUPPRESS_MS * 2) seenDistrictFeed.delete(entryKey);
+      }
+    }
+    return pushFeedDeduped(text, type, `district-feed:${normalizedSignature}:${Math.floor(now / DISTRICT_FEED_SHORT_SUPPRESS_MS)}`);
+  }
+
+  function syncTacticalUiState() {
+    const panel = document.getElementById('covert-ops-panel');
+    const flags = {
+      outbreak: Boolean(outbreakSystem.getPublicState().active),
+      firewall: Boolean(firewallDefense.getPublicState().active),
+      router: Boolean(state.signalRouterView?.active),
+      circuit: Boolean(state.circuitConnectView?.active),
+      'signal-runner': Boolean(panel && !panel.classList.contains('hidden')),
+    };
+    const foreground = TACTICAL_OVERLAY_PRIORITY.find((key) => flags[key]) || '';
+    if (tacticalUiState.foreground !== foreground) {
+      tacticalUiState.foreground = foreground;
+      document.body.dataset.tacticalForeground = foreground || 'none';
+      dispatchUiState('moonboys:tactical-ui', { foreground: foreground || 'none', active: flags, ts: Date.now() });
+    }
+
+    const roots = [
+      { id: 'node-outbreak-overlay', key: 'outbreak' },
+      { id: 'firewall-defense-overlay', key: 'firewall' },
+      { id: 'signal-router-overlay', key: 'router' },
+      { id: 'circuit-connect-overlay', key: 'circuit' },
+      { id: 'covert-ops-panel', key: 'signal-runner' },
+    ];
+    roots.forEach(({ id, key }) => {
+      const root = document.getElementById(id);
+      if (!root) return;
+      const active = flags[key];
+      const backgrounded = active && foreground && key !== foreground;
+      root.classList.toggle('tactical-foreground', active && key === foreground);
+      root.classList.toggle('tactical-background', backgrounded);
+    });
   }
 
   function getCovertWatchLine(covertState) {
@@ -1736,6 +1819,7 @@ async function boot() {
     sessionGuard.activeMiniGame = type || '';
     sessionGuard.normalInputAllowed = !sessionGuard.overlayActive && !sessionGuard.sessionDead && !sessionGuard.gated;
     setBodyStateClass('has-mini-game', sessionGuard.overlayActive);
+    syncTacticalUiState();
   }
 
   function holdBackgroundSync(ms = MINI_GAME_SYNC_QUIET_MS) {
@@ -1901,6 +1985,7 @@ async function boot() {
     const district = districtStateById.get(districtId);
     if (!district) return;
     const previousControl = district.control;
+    const previousOwner = district.owner;
     if (Number.isFinite(control)) {
       district.control = Math.max(0, Math.min(100, control));
     }
@@ -1913,7 +1998,7 @@ async function boot() {
     if (state.player.districtId === district.id) {
       hud.setDistrictControl(district.control);
       hud.setDistrictOwner(district.owner);
-      hud.setDistrictState(district.controlState || 'contested');
+      hud.setDistrictState(resolveDistrictDisplayState(district.id, district.controlState || 'contested'));
       hud.setDistrictPosture(state.sharedWorld?.summary?.currentDistrictPostureState || 'normal');
     }
     if (options.silent) return;
@@ -1925,16 +2010,36 @@ async function boot() {
     state.effects.districtPulseId = district.id;
     pulseWorldConflict(DISTRICT_PULSE_DURATION_MS + 800);
     pushMicroNotification(`District unstable: ${district.name}`, 'warning');
-    if (previousControl < DISTRICT_CAPTURE_THRESHOLD && district.control >= DISTRICT_CAPTURE_THRESHOLD) {
-      hud.showDistrictCapture(`🏴 ${district.name} SECURED · ${district.owner}`);
-      pushFeedDeduped(`🏴 District secured: ${district.name} now controlled by ${district.owner}`, 'combat', `district-captured:${district.id}:${district.owner}`);
+    const capturedNow = (
+      (previousControl < DISTRICT_CAPTURE_THRESHOLD && district.control >= DISTRICT_CAPTURE_THRESHOLD)
+      || (Boolean(previousOwner) && Boolean(district.owner) && previousOwner !== district.owner)
+    );
+    if (capturedNow) {
+      markDistrictCapturedState(district.id);
+      if (state.player.districtId === district.id) {
+        hud.setDistrictState(resolveDistrictDisplayState(district.id, district.controlState || 'captured'));
+      }
+      hud.showDistrictCapture(`🏴 ${district.name} CAPTURED · ${district.owner}`);
+      pushDistrictFeed(
+        `🏴 District captured: ${district.name} now controlled by ${district.owner}`,
+        'combat',
+        `captured:${district.id}:${district.owner}`,
+      );
     } else if (source === 'node') {
       const controlPct = Math.round(district.control);
-      pushFeedDeduped(`🏙️ District pressure rerouted · ${district.name} ${controlPct}% control`, 'combat', `district-node-ripple:${district.id}:${controlPct}`);
+      pushDistrictFeed(
+        `🏙️ District pressure rerouted · ${district.name} ${controlPct}% control`,
+        'combat',
+        `node-ripple:${district.id}`,
+      );
     } else {
       const controlPct = Math.round(district.control);
-      const stateTag = (district.controlState || 'contested').toUpperCase();
-      pushFeedDeduped(`🏙️ District relay synced · ${district.name} ${controlPct}% · ${district.owner} · ${stateTag}`, 'combat', `district-sync:${district.id}:${controlPct}:${district.owner}:${stateTag}`);
+      const stateTag = resolveDistrictDisplayState(district.id, district.controlState || 'contested').toUpperCase();
+      pushDistrictFeed(
+        `🏙️ District relay synced · ${district.name} ${controlPct}% · ${district.owner} · ${stateTag}`,
+        'combat',
+        `sync:${district.id}:${district.owner}:${stateTag}`,
+      );
     }
     memory.record('district', {
       at: Date.now(),
@@ -2030,7 +2135,7 @@ async function boot() {
         hud.setDistrictOwner(districtStatus.owner);
         lastHudDistrictOwner = districtStatus.owner;
       }
-      hud.setDistrictState(districtStatus.controlState || 'contested');
+      hud.setDistrictState(resolveDistrictDisplayState(district.id, districtStatus.controlState || 'contested'));
     }
     hud.setDistrictPosture(state.sharedWorld?.summary?.currentDistrictPostureState || 'normal');
     if (covertNeedsRefresh) syncCovertHud();
@@ -2080,7 +2185,7 @@ async function boot() {
   hud.setDistrict(state.player.districtName);
   hud.setDistrictControl(50);
   hud.setDistrictOwner(state.districtState[0]?.owner || primaryFactionName);
-  hud.setDistrictState(state.districtState[0]?.controlState || 'contested');
+  hud.setDistrictState(resolveDistrictDisplayState(state.player.districtId, state.districtState[0]?.controlState || 'contested'));
   hud.setDistrictPosture('normal');
   hud.setFactionStatus(`${primaryFactionName} vs ${secondaryFactionName}`);
   hud.setSamPhase(sam.getCurrentPhase().name);
@@ -2490,8 +2595,13 @@ async function boot() {
         support: payload?.support || null,
       }, 'server');
       if (payload?.districtName && payload?.controlState) {
-        hud.pushFeed(`🗺️ ${payload.districtName} shifted to ${String(payload.controlState).toUpperCase()}`, 'combat');
-        pushMicroNotification(`${payload.districtName} shifted to ${String(payload.controlState).toUpperCase()}`, 'warning');
+        const stateTag = normalizeDistrictStateTag(payload.controlState).toUpperCase();
+        pushDistrictFeed(
+          `🗺️ ${payload.districtName} shifted to ${stateTag}`,
+          'combat',
+          `state-shift:${payload.districtId || payload.districtName}:${stateTag}`,
+        );
+        pushMicroNotification(`${payload.districtName} shifted to ${stateTag}`, 'warning');
       }
     },
     onPlayerWarImpact: (payload) => {
@@ -2951,6 +3061,7 @@ async function boot() {
     } else if (!overlayType && sessionGuard.overlayActive) {
       setActiveMiniGame('');
     }
+    syncTacticalUiState();
 
     // Interpolate remote player positions toward server-provided targets.
     for (const remote of state.remotePlayers) {
