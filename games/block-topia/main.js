@@ -22,7 +22,6 @@ const hudPlayer = document.getElementById('player-name');
 const hudRoom = document.getElementById('room-status');
 const hudPopulation = document.getElementById('population-status');
 const hudConnection = document.getElementById('hud-connection');
-const statusLine = document.getElementById('status-line');
 const errorBanner = document.getElementById('error-banner');
 
 const renderer = createIsoRenderer(canvas);
@@ -35,10 +34,6 @@ let connected = false;
 
 function clampZoom(value) {
   return Math.max(CAMERA_ZOOM_MIN, Math.min(CAMERA_ZOOM_MAX, value));
-}
-
-function setMessage(text) {
-  statusLine.textContent = String(text || '').trim() || 'Ready.';
 }
 
 function setError(text) {
@@ -214,7 +209,6 @@ async function boot() {
   applyPassiveVisualModeGuards();
   syncCameraToPlayer();
 
-  setMessage('Starting Block Topia 2-player base...');
   setError('');
   updateHud();
   bindInput();
@@ -273,13 +267,9 @@ async function boot() {
       applyRemotePlayers(state, remotes);
       updateHud();
     },
-    onFeed: (message) => {
-      if (message) setMessage(message);
-    },
   });
 }
 
 boot().catch((error) => {
   setError(`Game boot failed: ${String(error?.message || error)}`);
-  setMessage('Boot failed.');
 });

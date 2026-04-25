@@ -5,7 +5,9 @@ import { fileURLToPath } from 'node:url';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const mainPath = path.resolve(here, '../main.js');
+const indexPath = path.resolve(here, '../index.html');
 const source = await fs.readFile(mainPath, 'utf8');
+const indexHtml = await fs.readFile(indexPath, 'utf8');
 
 function expectIncludes(snippet, message) {
   assert.ok(source.includes(snippet), message);
@@ -17,6 +19,10 @@ function expectNotIncludes(snippet, message) {
 
 function expectRegex(re, message) {
   assert.ok(re.test(source), message);
+}
+
+function expectDomNotIncludes(snippet, message) {
+  assert.equal(indexHtml.includes(snippet), false, message);
 }
 
 // 1) state.controlNodes is empty after boot
@@ -99,6 +105,58 @@ expectIncludes(
 expectRegex(
   /canvas\.addEventListener\('click',[\s\S]*?if \(state\.mouse\.suppressClick\) \{[\s\S]*?return;[\s\S]*?\}/,
   'Expected click handler to early-return after drag suppression.',
+);
+
+// 9) Old feed / event / popup call paths are removed from main.js.
+expectNotIncludes(
+  'pushFeed(',
+  'main.js must not call pushFeed.',
+);
+expectNotIncludes(
+  'showToast(',
+  'main.js must not call showToast.',
+);
+expectNotIncludes(
+  'showNodeInterference(',
+  'main.js must not call showNodeInterference.',
+);
+expectNotIncludes(
+  'showDistrictCapture(',
+  'main.js must not call showDistrictCapture.',
+);
+expectNotIncludes(
+  'onFeed:',
+  'main.js must not subscribe to legacy feed text events.',
+);
+expectNotIncludes(
+  'onSamPhaseChanged',
+  'main.js must not subscribe to SAM popup/event handlers.',
+);
+expectNotIncludes(
+  'onDistrictCaptureChanged',
+  'main.js must not subscribe to district capture stream handlers.',
+);
+expectNotIncludes(
+  'onDistrictControlStateChanged',
+  'main.js must not subscribe to district stream handlers.',
+);
+
+// 10) DOM does not contain old stream / feed containers.
+expectDomNotIncludes(
+  'id="status-line"',
+  'index.html must not include the old bottom-left status/feed box.',
+);
+expectDomNotIncludes(
+  'id="feed"',
+  'index.html must not include feed containers.',
+);
+expectDomNotIncludes(
+  'id="toast"',
+  'index.html must not include toast containers.',
+);
+expectDomNotIncludes(
+  'id="district-stream"',
+  'index.html must not include district stream containers.',
 );
 
 console.log('Block Topia passive-map smoke checks passed.');
