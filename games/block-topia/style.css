@@ -226,14 +226,15 @@ body::after {
 
 .stream {
   position: fixed;
-  width: min(16vw, 268px);
-  max-height: 21vh;
+  width: min(13vw, 220px);
+  max-height: 16vh;
   overflow: hidden;
-  background: linear-gradient(180deg, rgba(4, 10, 24, 0.6), rgba(4, 10, 24, 0.35));
-  backdrop-filter: blur(3px);
-  border: 1px solid rgba(94, 242, 255, 0.14);
+  background: linear-gradient(180deg, rgba(4, 10, 24, 0.44), rgba(4, 10, 24, 0.22));
+  backdrop-filter: blur(1px);
+  border: 1px solid rgba(94, 242, 255, 0.1);
   border-radius: 4px;
   pointer-events: none;
+  opacity: 0.76;
 }
 .stream::before {
   content: attr(aria-label);
@@ -245,14 +246,15 @@ body::after {
   color: rgba(174, 238, 255, 0.7);
 }
 .stream ul { list-style: none; margin: 0; padding: 8px 9px 7px; max-height: inherit; overflow: hidden; }
-.stream-left { left: 12px; top: 306px; }
-.stream-right { right: 12px; top: 228px; }
+.stream-left { left: 12px; top: 336px; }
+.stream-right { right: 12px; top: 264px; }
 .stream-bottom {
   left: 50%;
   bottom: 12px;
   transform: translateX(-50%);
-  width: min(52vw, 720px);
-  max-height: 11.5vh;
+  width: min(42vw, 560px);
+  max-height: 7.5vh;
+  opacity: 0.7;
 }
 .stream-line { font-size: 11px; line-height: 1.34; margin-bottom: 4px; text-shadow: 0 1px 0 rgba(0, 0, 0, 0.45); }
 .stream-line.sam { color: #ff83df; }
@@ -280,7 +282,7 @@ body::after {
   border-radius: 8px;
 }
 #sam-popup { position: fixed; left: 50%; top: 74px; transform: translateX(-50%); z-index: 700; white-space: pre-line; padding: 10px 12px; }
-#district-capture-banner, #quest-toast { position: fixed; left: 50%; top: 122px; transform: translateX(-50%); z-index: 700; padding: 10px 12px; }
+#district-capture-banner, #quest-toast { position: fixed; left: 50%; top: 88px; transform: translateX(-50%); z-index: 700; padding: 10px 12px; }
 #npc-dialogue { position: fixed; left: 50%; bottom: 56px; transform: translateX(-50%); z-index: 700; padding: 8px 10px; max-width: min(92vw, 760px); }
 #interact-prompt {
   position: fixed;
@@ -443,17 +445,16 @@ body.district-posture-pre-lockdown #multiplayer-live-banner {
 #node-outbreak-overlay .outbreak-underlay {
   position: absolute;
   inset: 0;
-  background: radial-gradient(circle at 82% 16%, rgba(255, 51, 126, 0.08), transparent 20%), linear-gradient(180deg, rgba(5, 8, 18, 0.12), rgba(5, 8, 18, 0.34));
-  backdrop-filter: blur(1px);
-  animation: outbreak-glitch 1.4s steps(2, end) infinite;
+  background: transparent;
+  animation: none;
 }
 #node-outbreak-overlay .outbreak-shell {
   pointer-events: auto;
   position: absolute;
-  right: 14px;
-  top: 94px;
-  width: min(430px, calc(100vw - 28px));
-  max-height: min(48vh, 520px);
+  right: 10px;
+  top: 96px;
+  width: min(360px, calc(100vw - 20px));
+  max-height: min(42vh, 460px);
   overflow: auto;
   padding: 10px 11px 12px;
   border-radius: 4px;
@@ -509,16 +510,15 @@ body.district-posture-pre-lockdown #multiplayer-live-banner {
 #firewall-defense-overlay .firewall-underlay {
   position: absolute;
   inset: 0;
-  background: radial-gradient(circle at 82% 16%, rgba(94, 242, 255, 0.08), transparent 22%), linear-gradient(180deg, rgba(4, 8, 18, 0.12), rgba(4, 8, 18, 0.34));
-  backdrop-filter: blur(1px);
+  background: transparent;
 }
 #firewall-defense-overlay .firewall-shell {
   pointer-events: auto;
   position: absolute;
-  right: 14px;
-  top: 94px;
-  width: min(430px, calc(100vw - 28px));
-  max-height: min(48vh, 520px);
+  right: 10px;
+  top: 96px;
+  width: min(360px, calc(100vw - 20px));
+  max-height: min(42vh, 460px);
   overflow: auto;
   padding: 10px 11px 12px;
   border-radius: 4px;
@@ -532,8 +532,7 @@ body.district-posture-pre-lockdown #multiplayer-live-banner {
 #firewall-defense-overlay.tactical-background .firewall-shell,
 #signal-router-overlay.tactical-background .router-shell,
 #circuit-connect-overlay.tactical-background .circuit-shell {
-  opacity: 0.46;
-  transform: scale(0.985) translateY(6px);
+  display: none;
   pointer-events: none;
 }
 
@@ -541,7 +540,7 @@ body.district-posture-pre-lockdown #multiplayer-live-banner {
 #firewall-defense-overlay.tactical-background .firewall-underlay,
 #signal-router-overlay.tactical-background .router-underlay,
 #circuit-connect-overlay.tactical-background .circuit-dim {
-  opacity: 0.18;
+  opacity: 0;
 }
 
 #covert-ops-panel.tactical-foreground,
@@ -581,12 +580,14 @@ body.has-mini-game #covert-strip {
 body.has-mini-game .stream-left,
 body.has-mini-game .stream-right {
   top: auto;
-  bottom: 124px;
-  max-height: 15vh;
+  bottom: 118px;
+  max-height: 11vh;
+  opacity: 0.62;
 }
 body.has-mini-game .stream-bottom {
-  width: min(42vw, 560px);
-  max-height: 10.5vh;
+  width: min(34vw, 440px);
+  max-height: 6.5vh;
+  opacity: 0.58;
 }
 
 @media (max-width: 980px) {
@@ -603,14 +604,14 @@ body.has-mini-game .stream-bottom {
   }
   .stream-left,
   .stream-right {
-    top: 296px;
-    width: min(34vw, 280px);
+    top: 308px;
+    width: min(30vw, 232px);
   }
   #covert-strip {
     top: 132px;
     width: min(34vw, 280px);
   }
-  .stream-bottom { width: min(48vw, 560px); }
+  .stream-bottom { width: min(42vw, 460px); }
 }
 
 @media (max-width: 720px) {
@@ -635,20 +636,20 @@ body.has-mini-game .stream-bottom {
   .stream-left {
     left: 8px;
     top: auto;
-    bottom: 214px;
-    max-height: 14vh;
+    bottom: 204px;
+    max-height: 12vh;
   }
   .stream-right {
     right: auto;
     left: 8px;
     top: auto;
-    bottom: 132px;
-    max-height: 9vh;
+    bottom: 126px;
+    max-height: 7.5vh;
   }
   .stream-bottom {
     width: calc(100vw - 16px);
-    bottom: 74px;
-    max-height: 8.5vh;
+    bottom: 70px;
+    max-height: 6.5vh;
   }
   #covert-strip {
     left: 8px;
@@ -667,9 +668,9 @@ body.has-mini-game .stream-bottom {
   #firewall-defense-overlay .firewall-shell {
     left: 8px;
     right: 8px;
-    top: 188px;
+    top: 176px;
     width: auto;
-    max-height: min(46vh, 430px);
+    max-height: min(42vh, 400px);
   }
   body.has-mini-game #covert-strip {
     bottom: 8px;

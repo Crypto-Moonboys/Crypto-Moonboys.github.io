@@ -11,8 +11,8 @@ export function createSignalRouterOverlay(doc, { onAction } = {}) {
   style.textContent = `
     #signal-router-overlay.hidden { display: none; }
     #signal-router-overlay { position: fixed; inset: 0; z-index: 878; pointer-events: none; font-family: Inter, sans-serif; }
-    #signal-router-overlay .router-underlay { position: absolute; inset: 0; background: radial-gradient(circle at 78% 18%, rgba(94,242,255,0.08), transparent 24%), linear-gradient(180deg, rgba(3,8,18,0.12), rgba(3,8,18,0.34)); backdrop-filter: blur(1px); }
-    #signal-router-overlay .router-shell { position: absolute; top: 94px; right: 14px; width: min(430px, calc(100vw - 28px)); max-height: min(48vh, 520px); overflow: auto; background: linear-gradient(180deg, rgba(4,14,28,0.94), rgba(4,10,22,0.88)); border: 1px solid rgba(94,242,255,0.34); border-radius: 4px; box-shadow: 0 24px 54px rgba(0,0,0,0.32), inset 0 1px 0 rgba(255,255,255,0.04); color: #d7f9ff; pointer-events: auto; padding: 10px 11px 12px; }
+    #signal-router-overlay .router-underlay { position: absolute; inset: 0; background: transparent; }
+    #signal-router-overlay .router-shell { position: absolute; top: 96px; right: 10px; width: min(360px, calc(100vw - 20px)); max-height: min(42vh, 460px); overflow: auto; background: linear-gradient(180deg, rgba(4,14,28,0.94), rgba(4,10,22,0.88)); border: 1px solid rgba(94,242,255,0.34); border-radius: 4px; box-shadow: 0 16px 34px rgba(0,0,0,0.28), inset 0 1px 0 rgba(255,255,255,0.04); color: #d7f9ff; pointer-events: auto; padding: 10px 11px 12px; }
     #signal-router-overlay .router-chip { margin: 0; color: #ff6fa7; letter-spacing: 0.08em; font-weight: 800; }
     #signal-router-overlay .router-sub { margin: 6px 0 8px; color: #7fefff; font-size: 13px; }
     #signal-router-overlay .router-rows { display: grid; grid-template-columns: 1fr; gap: 8px; }
