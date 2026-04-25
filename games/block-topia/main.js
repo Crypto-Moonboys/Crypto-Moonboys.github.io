@@ -24,10 +24,11 @@ const COUNTDOWN_TICKS = 30;
 const MAX_MATCH_TICKS = 3000;
 const MAP_FIT_MARGIN_RATIO = 0.08;
 const RUNTIME_PATCH_ID = "pressure-protocol-runtime-fallback-fit-v2";
+const SOLO_QUERY_OVERRIDE = new URLSearchParams(window.location.search).get("solo") === "1";
 const SOLO_TEST_OVERRIDE = (() => {
   const host = String(window.location.hostname || "").toLowerCase();
   const localhost = host === "localhost" || host === "127.0.0.1" || host === "::1" || host === "[::1]";
-  const forced = new URLSearchParams(window.location.search).get("solo") === "1";
+  const forced = SOLO_QUERY_OVERRIDE;
   return localhost || forced;
 })();
 
@@ -1038,7 +1039,7 @@ function drawStatusText() {
     ctx.textAlign = "right";
     ctx.fillStyle = "rgba(255, 214, 79, 0.98)";
     ctx.font = "700 12px Segoe UI";
-    ctx.fillText("SOLO TEST MODE", viewWidth - 12, 10);
+    ctx.fillText(SOLO_QUERY_OVERRIDE ? "PATCH v2 SOLO READY" : "SOLO TEST MODE", viewWidth - 12, 10);
     ctx.textAlign = "left";
   }
 }
@@ -1492,6 +1493,7 @@ function mount(options = {}) {
   }
 
   mounted = true;
+  console.log("[PressureProtocol] LOADED pressure-protocol-runtime-fallback-fit-v2");
   console.info(`[PressureProtocol] ${RUNTIME_PATCH_ID}`);
   window.addEventListener("resize", resize);
   window.addEventListener("keydown", onKeyDown);
