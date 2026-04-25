@@ -1,104 +1,98 @@
-# Block Topia (`/games/block-topia/`)
+﻿# Pressure Protocol
 
-This README describes the **current runtime on main** for the Block Topia web client.
+Deterministic 2-player pressure warfare on a 20x20 isometric grid.
 
-## Current Build Summary
+## Run
 
-Block Topia is a browser-based isometric city client that:
+From this folder, launch any static server and open `index.html`.
 
-- renders a full-screen canvas world (`render/iso-renderer.js`),
-- connects to a Colyseus room (`network.js`),
-- runs local HUD/interaction systems (`main.js`, `ui/hud.js`),
-- applies server-driven world updates for districts, node interference, SAM phases, and duels.
+Example:
 
-The default multiplayer endpoint is `https://game.cryptomoonboys.com` (override via `window.BLOCK_TOPIA_SERVER`).
+```powershell
+npx serve .
+```
 
-## Runtime Entry and File Roles
+## Controls
 
-- `index.html`
-  - Declares the canvas and HUD shell.
-  - Loads Colyseus from CDN and boots `main.js` as an ES module.
-- `main.js`
-  - Bootstraps data/state.
-  - Connects multiplayer.
-  - Runs input handling, local tick loop, and render loop.
-  - Coordinates HUD updates and gameplay event wiring.
-- `style.css`
-  - Styles the canvas overlays, feed streams, popups, interaction prompt, and duel card.
-- `ui/hud.js`
-  - Handles HUD text, stream logs, alerts/toasts, and entry banner behavior.
-- `render/iso-renderer.js`
-  - Draws terrain, roads, props, NPCs, remote players, control nodes, and interaction highlights.
-- `network.js`
-  - Owns Colyseus connect/retry flow and message/event forwarding.
+- `Tab`: swap active commander (P1/P2 in hot-seat testing)
+- `R`: send ready command for active commander
+- `1` `2` `3`: select active commander NPC slot
+- `Click passable tile`: queue move command (only while running)
+- `Space`: queue Pulse from selected NPC (only while running)
+- `D`: toggle debug overlay
 
-## World Systems Currently Wired in `main.js`
+## Match Flow
 
-The current client initializes and uses these systems:
+- Match starts in `waiting`
+- Each player sends a lockstep `ready` command
+- When both are ready, deterministic `countdown` runs for 30 ticks
+- After countdown, state becomes `running`
+- At end, state becomes `ended` and simulation freezes
 
-- `world/game-state.js` — canonical local runtime state, movement helpers, remote player merge, visual capture preview.
-- `world/sam-system.js` — SAM phase runtime model used for phase labels/effects.
-- `world/npc-system.js` — NPC simulation + interaction lookup.
-- `world/quest-system.js` — active quest list + quest tick pulses.
-- `world/memory-system.js` — in-session event logging memory.
-- `world/live-intelligence.js` — live signal snapshot refresh + canon signal bridge.
-- `world/clue-signal-system.js` — clue pulse output tied to live signals.
-- `world/signal-operation-system.js` — operation spawn/resolve/expire loop.
-- `world/node-interference-system.js` — local pulse + server interference state sync.
-- `world/duel-system.js` — duel request/action/result state machine.
+## Win Conditions
 
-## Multiplayer Contract (Current)
+- Primary: reduce enemy HP to 0
+- Time cap: 5 minutes (`3000` ticks at `100ms`)
+- Timeout winner order:
+  1. Higher controlled tile count
+  2. Higher total pressure advantage
+  3. If equal, `DRAW`
 
-### Outbound messages
+End overlay shows winner (or draw), final control %, and `Refresh to rematch`.
 
-- `move` `{ x, y }`
-- `nodeInterfere` `{ nodeId }`
-- `duelChallenge` `{ targetPlayerId }`
-- `duelAccept` `{ duelId }`
-- `duelAction` `{ duelId, action }`
+## Core Mechanics
 
-### Inbound messages handled
+- Terrain:
+  - `road` moveCost `0.5`
+  - `grass` moveCost `2`
+  - `block` moveCost `999`
+- Pressure decay each tick (`* 0.98`)
+- Local dominance bonus (`+0.3` / `-0.3`)
+- Anchor lock tiles (enemy pressure into locked tile reduced to `30%`)
+- Spawn-zone pressure bias
+- Pulse ability: radius burst, tick-based cooldown (`50` ticks)
 
-- `system`
-- `districtChanged`
-- `questCompleted`
-- `samPhaseChanged`
-- `districtCaptureChanged`
-- `worldSnapshot`
-- `nodeInterferenceChanged`
-- `duelRequested`
-- `duelStarted`
-- `duelActionSubmitted`
-- `duelResolved`
-- `duelEnded`
+## Deterministic Lockstep Notes
 
-`room.onStateChange` is throttled to reduce high-frequency player map churn before updating remote player state.
+- All gameplay actions are queued commands with future tick `t`
+- Input delay is fixed (`INPUT_DELAY = 3`)
+- Commands execute only when `command.t === state.tick`
+- Command order per tick is deterministic:
+  - `playerId`, then `npcId`, then `type`, then `targetTileId`
+- No random/time-based logic in simulation loop
+- Hard clamps each tick:
+  - pressure in `[-100, 100]`
+  - player HP `>= 0`
 
-## Current Controls and Interaction
+## Sync / Hash Hooks
 
-- **Move:** `WASD` or arrow keys.
-- **Click:** select tile / select remote player target / interact with node or NPC when applicable.
-- **Double-click:** move toward clicked valid tile.
-- **Interact with nearby NPC:** `E`.
-- **Challenge selected remote player:** `F`.
-- **Zoom presets:** `[` and `]`.
-- **Mouse wheel:** smooth zoom in/out.
-- **Mouse drag (LMB hold + move):** camera pan.
+These remain exported on `window.PressureProtocol`:
 
-## Current HUD/UX Behavior
+- `mount(options?)`
+- `destroy()`
+- `setCommandBroadcastSink(fn)`
+- `receiveRemoteCommand(command)`
+- `setHashBroadcastSink(fn)`
+- `receiveRemoteHash({ t, hash })`
+- `enqueueCommand(command)`
+- `issueMove(playerId, slot, tileId)`
+- `issuePulse(playerId, slot)`
+- `issueReady(playerId)`
+- `hashState()`
+- `getSnapshot()`
 
-- Entry identity panel is shown on load and auto-dismisses (or dismisses after successful multiplayer join).
-- Top HUD shows player, XP/level, district, phase, SAM status, room, and population.
-- Three stream panels separate combat, SAM/quest, and system-style feed output.
-- Quest completion, district capture, SAM/node alerts, and NPC dialogue use transient overlays.
-- Multiplayer live banner text reflects current connection status (connecting/connected/failed states).
+A snapshot hash is emitted every 20 ticks and compared to remote hash for desync detection.
 
-## Known Current Limitations
+## Smoke Test
 
-- Many world effects are **server-authoritative**; local client visuals (e.g., node pulse and district capture preview) are feedback only.
-- If Colyseus is unavailable, the client still runs rendering/local systems but multiplayer status remains failed.
-- AI runtime config probe is present (`window.BLOCK_TOPIA_AI`, `window.blockTopiaAiProbe()`), but this build does not execute OpenAI requests.
-
-## Scope Notes
-
-This README intentionally documents only what is currently present in `/games/block-topia/` runtime code and wiring.
+1. Open page and confirm only one canvas scene is visible (iso map + agents + minimal overlays).
+2. Confirm there is no legacy UI: no bottom-left feed, no rotating text, no old event boxes.
+3. Open browser console and confirm no mount/cleanup errors on load.
+4. Press `R` on each commander (`Tab` between them) and verify countdown starts.
+5. Press `1`, `2`, `3` and verify selected NPC ring changes.
+6. Click a passable tile and verify target marker appears and selected agent begins moving.
+7. Press `Space` and verify pulse fires from selected NPC.
+8. Press `D` and verify debug overlay toggles on/off.
+9. Resize browser window and verify map remains centered and canvas fills viewport.
+10. In console run `window.PressureProtocol.mount()` twice; verify tick speed stays normal (no accelerated loop).
+11. Refresh page and repeat step 10 to confirm no duplicate loop after reload.
