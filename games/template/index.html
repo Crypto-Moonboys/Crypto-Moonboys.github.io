@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Game Template</title>
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body>
+    <div id="game-shell">
+      <canvas id="game" aria-label="Isometric game map"></canvas>
+    </div>
+    <script type="module">
+      import "./main.js";
+
+      const mountOptions = { containerId: "game-shell", canvasId: "game" };
+      const MAX_INIT_ATTEMPTS = 8;
+      let initAttempts = 0;
+
+      const tryInit = () => {
+        const api = window.GameTemplate;
+        if (api && typeof api.init === "function") {
+          api.init(mountOptions);
+          return;
+        }
+
+        initAttempts += 1;
+        if (initAttempts < MAX_INIT_ATTEMPTS) {
+          requestAnimationFrame(tryInit);
+        } else {
+          console.error("GameTemplate init failed: API unavailable");
+        }
+      };
+
+      tryInit();
+
+      const cleanup = () => {
+        if (window.GameTemplate && typeof window.GameTemplate.destroy === "function") {
+          window.GameTemplate.destroy();
+        }
+      };
+
+      window.addEventListener("pagehide", cleanup, { once: true });
+      window.addEventListener("beforeunload", cleanup, { once: true });
+    </script>
+  </body>
+</html>
