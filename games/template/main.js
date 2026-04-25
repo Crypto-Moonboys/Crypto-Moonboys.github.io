@@ -429,7 +429,7 @@ function init(options = {}) {
 }
 
 function destroy() {
-  if (animationFrameId != null) {
+  if (animationFrameId !== null) {
     cancelAnimationFrame(animationFrameId);
     animationFrameId = null;
   }
