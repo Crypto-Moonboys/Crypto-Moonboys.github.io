@@ -1,30 +1,47 @@
-<!DOCTYPE html>
+﻿<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Block Topia - 2 Player Base</title>
-  <meta name="description" content="Block Topia 2-player multiplayer base build." />
-  <link rel="stylesheet" href="./style.css" />
-  <script data-cfasync="false">
-    window.BLOCK_TOPIA_SERVER = window.BLOCK_TOPIA_SERVER || 'wss://game.cryptomoonboys.com';
-  </script>
-</head>
-<body>
-  <canvas id="world-canvas" aria-label="Block Topia map"></canvas>
-
-  <div id="hud">
-    <div id="hud-main">
-      <span id="player-name">Player: -</span>
-      <span id="room-status">Room: city</span>
-      <span id="population-status">Players: 0 / 2</span>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pressure Protocol</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div id="game-shell">
+      <canvas id="game" aria-label="Pressure Protocol battlefield"></canvas>
     </div>
-    <div id="hud-connection">Connection: connecting</div>
-  </div>
+    <script type="module">
+      import "./main.js";
 
-  <div id="error-banner" class="hidden" role="alert" aria-live="assertive"></div>
+      const mountOptions = { containerId: "game-shell", canvasId: "game" };
+      const MAX_MOUNT_ATTEMPTS = 8;
+      let mountAttempts = 0;
 
-  <script src="https://unpkg.com/colyseus.js@0.16/dist/colyseus.js" data-cfasync="false"></script>
-  <script type="module" src="./main.js"></script>
-</body>
+      const tryMount = () => {
+        const api = window.PressureProtocol;
+        if (api && typeof api.mount === "function") {
+          api.mount(mountOptions);
+          return;
+        }
+
+        mountAttempts += 1;
+        if (mountAttempts < MAX_MOUNT_ATTEMPTS) {
+          requestAnimationFrame(tryMount);
+        } else {
+          console.error("PressureProtocol mount failed: API unavailable");
+        }
+      };
+
+      tryMount();
+
+      const cleanup = () => {
+        if (window.PressureProtocol && typeof window.PressureProtocol.destroy === "function") {
+          window.PressureProtocol.destroy();
+        }
+      };
+
+      window.addEventListener("pagehide", cleanup, { once: true });
+      window.addEventListener("beforeunload", cleanup, { once: true });
+    </script>
+  </body>
 </html>
