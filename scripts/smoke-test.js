@@ -218,6 +218,96 @@ function checkSearchPage() {
   }
 }
 
+function checkBlockTopiaFrontendCrashGuards() {
+  const npcSource = read('games/block-topia/world/npc-system.js');
+  const createNpcDefIndex = npcSource.indexOf('function createNpc(');
+  if (createNpcDefIndex === -1) {
+    fail('games/block-topia/world/npc-system.js missing module-scope createNpc(...) helper');
+  }
+
+  const ensureStart = npcSource.indexOf('function ensureHunterEntities(');
+  if (ensureStart === -1) {
+    fail('games/block-topia/world/npc-system.js missing ensureHunterEntities(...)');
+  }
+
+  const stepHunterStart = npcSource.indexOf('function stepHunterNpc(');
+  if (stepHunterStart === -1) {
+    fail('games/block-topia/world/npc-system.js missing stepHunterNpc(...)');
+  }
+
+  const ensureBody = npcSource.slice(ensureStart, stepHunterStart);
+  const createNpcCallInEnsure = ensureBody.indexOf('createNpc(');
+  if (createNpcCallInEnsure === -1) {
+    fail('ensureHunterEntities(...) no longer calls createNpc(...) for hunter spawn');
+  }
+
+  const createNpcCallIndex = ensureStart + createNpcCallInEnsure;
+  if (createNpcDefIndex >= createNpcCallIndex) {
+    fail('createNpc(...) must be defined before ensureHunterEntities(...) references it');
+  }
+
+  const isoSource = read('games/block-topia/render/iso-renderer.js');
+  const overlayStart = isoSource.indexOf('function drawCovertNodeOverlay(');
+  if (overlayStart === -1) {
+    fail('games/block-topia/render/iso-renderer.js missing drawCovertNodeOverlay(...)');
+  }
+
+  const overlayEnd = isoSource.indexOf('function drawSignalRouterOverlay(', overlayStart);
+  if (overlayEnd === -1) {
+    fail('Unable to isolate drawCovertNodeOverlay(...) body in iso-renderer.js');
+  }
+
+  const overlayBody = isoSource.slice(overlayStart, overlayEnd);
+  if (!overlayBody.includes('if (!node || !node.id || !Number.isFinite(node.x) || !Number.isFinite(node.y)) return;')) {
+    fail('drawCovertNodeOverlay(...) missing null/invalid node guard');
+  }
+
+  if (!overlayBody.includes('Number(covert?.risk)')) {
+    fail('drawCovertNodeOverlay(...) must read covert risk with optional chaining');
+  }
+
+  if (overlayBody.includes('covert.risk')) {
+    fail('drawCovertNodeOverlay(...) must not directly access covert.risk');
+  }
+
+  const networkSource = read('games/block-topia/network.js');
+  const isRoomOpenStart = networkSource.indexOf('function isRoomOpen() {');
+  if (isRoomOpenStart === -1) {
+    fail('games/block-topia/network.js missing isRoomOpen()');
+  }
+
+  const isConnectedStart = networkSource.indexOf('export function isConnected()', isRoomOpenStart);
+  if (isConnectedStart === -1) {
+    fail('Unable to isolate isRoomOpen() body in games/block-topia/network.js');
+  }
+
+  const isRoomOpenBody = networkSource.slice(isRoomOpenStart, isConnectedStart);
+  if (!isRoomOpenBody.includes('if (!room || !room.sessionId) return false;')) {
+    fail('isRoomOpen() must require room + sessionId before send eligibility');
+  }
+
+  const requiredConnectionShapes = [
+    'conn.ws',
+    'conn.transport?.ws',
+    'conn.transport?.socket',
+    'conn.socket',
+    'conn.websocket',
+  ];
+  for (const shape of requiredConnectionShapes) {
+    if (!isRoomOpenBody.includes(shape)) {
+      fail(`isRoomOpen() missing Colyseus socket shape support: ${shape}`);
+    }
+  }
+
+  if (!isRoomOpenBody.includes("typeof candidate.readyState === 'number'")) {
+    fail('isRoomOpen() must check candidate.readyState before accepting socket candidate');
+  }
+
+  if (!isRoomOpenBody.includes('return ws.readyState === OPEN;')) {
+    fail('isRoomOpen() must still gate sends on OPEN readyState');
+  }
+}
+
 function run() {
   console.log('Running smoke tests...');
 
@@ -228,6 +318,7 @@ function run() {
   checkSiteStats();
   checkSitemap();
   checkSearchPage();
+  checkBlockTopiaFrontendCrashGuards();
 
   console.log('Smoke tests passed ✅');
 }

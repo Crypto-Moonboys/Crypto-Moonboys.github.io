@@ -295,9 +295,26 @@ function isRoomOpen() {
   if (!room || !room.sessionId) return false;
   const conn = room.connection;
   if (!conn) return false;
-  // Colyseus v0.16 wraps the WebSocket in a Transport/Connection object whose
-  // raw socket is exposed as conn.ws (or falls back to conn itself for older builds).
-  const ws = conn.ws || conn;
+  // Colyseus client builds expose the browser socket through different shapes:
+  // - room.connection.ws
+  // - room.connection.transport.ws
+  // - room.connection.transport.socket
+  // - room.connection.socket / room.connection.websocket
+  // - room.connection itself (older/minified builds with readyState)
+  const wsCandidates = [
+    conn.ws,
+    conn.transport?.ws,
+    conn.transport?.socket,
+    conn.socket,
+    conn.websocket,
+    conn,
+  ];
+  const ws = wsCandidates.find((candidate) => (
+    candidate
+    && typeof candidate === 'object'
+    && typeof candidate.readyState === 'number'
+  ));
+  if (!ws) return false;
   // WebSocket.OPEN === 1; use the constant when available, fall back to the literal
   // in environments where the global WebSocket may not be defined (e.g. unit-test VMs).
   const OPEN = (typeof WebSocket !== 'undefined' && WebSocket.OPEN) || 1;
