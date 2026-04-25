@@ -1,3 +1,15 @@
-__pycache__/
 node_modules/
-gigga-sam/node_modules/
+.env
+dist/
+build/
+*.log
+.vscode/
+
+# Wrangler / Cloudflare
+.wrangler/
+workers/**/.wrangler/
+
+# Databases
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal
