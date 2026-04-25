@@ -1,94 +1,62 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-04-24T23:08:13.417Z",
-  "mode": "live-ai",
+  "generatedAt": "2026-04-25T00:05:16.151Z",
+  "mode": "fallback-no-key",
   "sourceHealth": {
     "coingecko-global": "ok",
     "coingecko-trending": "ok",
     "fear-greed": "ok",
-    "openai": "ok"
+    "openai": "missing-key"
   },
-  "signalCount": 5,
+  "signalCount": 3,
   "signals": [
     {
-      "id": "signal-1777072093416-1",
+      "id": "signal-1777075516151-1",
       "lane": "world",
-      "priority": 4,
-      "ttlMinutes": 120,
-      "npcLine": "Crypto shadows deepen; markets bleed under cold neon skies.",
-      "questPulse": "Scan for token anomalies amid growing net tension.",
-      "worldFeed": "Digital credits falter, global ledger wanes in trust.",
-      "clueEvent": "Unstable circuits detected in major trade hubs.",
+      "priority": 3,
+      "ttlMinutes": 45,
+      "npcLine": "Signal board shows Fear pressure. Keep your routes adaptive.",
+      "questPulse": "Map three unstable relay corners before the next SAM sweep.",
+      "worldFeed": "Network mood: Fear. Surveillance pressure remains high.",
+      "clueEvent": "Hidden relay mark: look for the glyph where east lanes cross old neon rail.",
       "tags": [
-        "market-down",
-        "risk",
-        "cyber-fear"
+        "sam",
+        "mood",
+        "relay"
       ],
-      "expiresAt": "2026-04-25T01:08:13.416Z"
+      "expiresAt": "2026-04-25T00:50:16.151Z"
     },
     {
-      "id": "signal-1777072093416-2",
+      "id": "signal-1777075516151-2",
       "lane": "ops",
-      "priority": 3,
-      "ttlMinutes": 90,
-      "npcLine": "Signal shows five tokens pulsing, but danger masks profits.",
-      "questPulse": "Track trending codes: APE, PENGU, KAT, CHIP, MON.",
-      "worldFeed": "Data spikes hint at volatile token movements soon.",
-      "clueEvent": "Underground whispers targeting rising but unstable assets.",
+      "priority": 4,
+      "ttlMinutes": 40,
+      "npcLine": "Trend signatures rotating: APE · KAT · RAVE. Couriers are rerouting tonight.",
+      "questPulse": "Intercept two phantom couriers carrying unsigned signal chips.",
+      "worldFeed": "Ops pulse: district relays are shifting faster than normal.",
+      "clueEvent": "Clue pulse: seek a dead terminal with three blinking amber bars.",
       "tags": [
-        "tracker",
-        "tokens",
-        "volatility"
+        "ops",
+        "courier",
+        "quest"
       ],
-      "expiresAt": "2026-04-25T00:38:13.416Z"
+      "expiresAt": "2026-04-25T00:45:16.151Z"
     },
     {
-      "id": "signal-1777072093417-3",
+      "id": "signal-1777075516151-3",
       "lane": "clue",
-      "priority": 5,
-      "ttlMinutes": 60,
-      "npcLine": "Fear index climbing—night market eyes twitch at shadow trades.",
-      "questPulse": "Hunt down cause behind dropping digital asset confidence.",
-      "worldFeed": "Sentiment dips; fear contaminates netvoices and backchannels.",
-      "clueEvent": "Blackout briefings reveal panic beneath trading screens.",
-      "tags": [
-        "sentiment",
-        "fear",
-        "intel"
-      ],
-      "expiresAt": "2026-04-25T00:08:13.417Z"
-    },
-    {
-      "id": "signal-1777072093417-4",
-      "lane": "quest",
       "priority": 2,
-      "ttlMinutes": 150,
-      "npcLine": "Data miners needed: sift through noise to find safe grounds.",
-      "questPulse": "Infiltrate rumored hubs for stable crypto caches.",
-      "worldFeed": "Fragmented markets invite skilled hackers for quick gains.",
-      "clueEvent": "Encrypted chatter hints at hidden vaults.",
+      "ttlMinutes": 60,
+      "npcLine": "A rumor says the old tunnel net is awake again.",
+      "questPulse": "Trace a memory shard path without triggering patrol beacons.",
+      "worldFeed": "World feed: encrypted whispers detected under Revolt blocks.",
+      "clueEvent": "Hidden link hunt: the passphrase starts with moon and ends with static.",
       "tags": [
-        "hack",
-        "explore",
-        "risk"
+        "clue",
+        "hunt",
+        "world"
       ],
-      "expiresAt": "2026-04-25T01:38:13.417Z"
-    },
-    {
-      "id": "signal-1777072093417-5",
-      "lane": "npc",
-      "priority": 3,
-      "ttlMinutes": 110,
-      "npcLine": "Streetwise dealer warns: 'Tokens flare bright, then burn.'",
-      "questPulse": "Gather intel from info brokers on token lifespan.",
-      "worldFeed": "Market flux fuels underground deals; caution advised.",
-      "clueEvent": "Short-lived buzz spotted around select currencies.",
-      "tags": [
-        "npc-insight",
-        "market-flash",
-        "caution"
-      ],
-      "expiresAt": "2026-04-25T00:58:13.417Z"
+      "expiresAt": "2026-04-25T01:05:16.151Z"
     }
   ]
 }
