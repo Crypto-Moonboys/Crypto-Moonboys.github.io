@@ -335,6 +335,17 @@ bkcore.hexgl.tracks.Cityscape = {
 	{
 		// IMPORTANT
 		this.analyser = this.lib.get("analysers", "track.cityscape.collision");
+		if(!this.analyser)
+		{
+			console.error("CRITICAL: collision analyser is NULL");
+		}
+		else
+		{
+			console.log("Collision analyser:", this.analyser);
+			console.log("Width:", this.analyser.pixels ? this.analyser.pixels.width : undefined);
+			console.log("Height:", this.analyser.pixels ? this.analyser.pixels.height : undefined);
+			console.log("Sample pixel (0,0):", this.analyser.getPixel(0, 0));
+		}
 
 		// SKYBOX
 		var sceneCube = new THREE.Scene();
@@ -425,7 +436,15 @@ bkcore.hexgl.tracks.Cityscape = {
 		var shipControls = new bkcore.hexgl.ShipControls(ctx);
 		shipControls.collisionMap = this.lib.get("analysers", "track.cityscape.collision");
 		shipControls.collisionPixelRatio = 2048.0 / 6000.0;
-		shipControls.collisionDetection = true;
+		if(!shipControls.collisionMap)
+		{
+			console.error("Collision map missing — disabling collision detection");
+			shipControls.collisionDetection = false;
+		}
+		else
+		{
+			shipControls.collisionDetection = true;
+		}
 		shipControls.heightMap = this.lib.get("analysers", "track.cityscape.height");;
 		shipControls.heightPixelRatio = 2048.0 / 6000.0;
 		shipControls.heightBias = 4.0;

@@ -323,6 +323,22 @@ bkcore.hexgl.ShipControls.prototype.reset = function(position, rotation)
 
 	this.mesh.matrix.identity();
 	this.mesh.applyMatrix(this.dummy.matrix);
+
+	// TEMPORARY DIAGNOSTIC — spawn coordinate mapping
+	if(this.collisionMap && this.collisionMap.loaded && this.collisionMap.pixels)
+	{
+		var _sx = Math.round(this.collisionMap.pixels.width/2 + position.x * this.collisionPixelRatio);
+		var _sz = Math.round(this.collisionMap.pixels.height/2 + position.z * this.collisionPixelRatio);
+		console.log("Spawn mapped pixel: x=" + _sx + " z=" + _sz);
+		console.log("Collision pixel at spawn:", this.collisionMap.getPixel(_sx, _sz));
+		if(this.heightMap && this.heightMap.loaded)
+		{
+			var _hpix = this.heightMap.getPixel(_sx, _sz);
+			console.log("Height pixel at spawn:", _hpix);
+			var _hpacked = _hpix.g * 256 + _hpix.b;
+			console.log("Height at spawn (g*256+b / scale + bias):", (_hpacked / this.heightScale + this.heightBias).toFixed(1), "  spawn.y =", position.y);
+		}
+	}
 }
 
 bkcore.hexgl.ShipControls.prototype.terminate = function()
@@ -699,11 +715,21 @@ bkcore.hexgl.ShipControls.prototype.heightCheck = function(dt)
 	if(!this.heightMap || !this.heightMap.loaded)
 		return false;
 
+	// The height.png encodes terrain height in the G and B channels only.
+	// The R channel encodes an unrelated track property; its large values
+	// (r=4-251 on on-track pixels) would push the 24-bit packed value
+	// far above the void threshold when using r*65536+g*256+b.
+	// Off-track void pixels are always r=255, g=255, b=255.
+	// Correct formula: use g*256+b; treat r>=252 as void.
+	var _readHeight = function(map, px, pz) {
+		var p = map.getPixelBilinear(px, pz);
+		if(p.r >= 252) return 16777216; // void sentinel — will be skipped
+		return p.g * 256 + p.b;
+	};
+
 	var x = this.heightMap.pixels.width/2 + this.dummy.position.x * this.heightPixelRatio;
 	var z = this.heightMap.pixels.height/2 + this.dummy.position.z * this.heightPixelRatio;
-	var height = this.heightMap.getPixelFBilinear(x, z) / this.heightScale + this.heightBias;
-
-	var color = this.heightMap.getPixel(x, z);
+	var height = _readHeight(this.heightMap, x, z) / this.heightScale + this.heightBias;
 
 	if(height < 16777)
 	{
@@ -727,7 +753,7 @@ bkcore.hexgl.ShipControls.prototype.heightCheck = function(dt)
 	x = this.heightMap.pixels.width/2 + this.gradientVector.x * this.heightPixelRatio;
 	z = this.heightMap.pixels.height/2 + this.gradientVector.z * this.heightPixelRatio;
 
-	var nheight = this.heightMap.getPixelFBilinear(x, z) / this.heightScale + this.heightBias;
+	var nheight = _readHeight(this.heightMap, x, z) / this.heightScale + this.heightBias;
 
 	if(nheight < 16777)
 		this.gradientTarget = -Math.atan2(nheight-height, 5.0)*this.gradientScale;
@@ -740,16 +766,16 @@ bkcore.hexgl.ShipControls.prototype.heightCheck = function(dt)
 	x = this.heightMap.pixels.width/2 + this.tiltVector.x * this.heightPixelRatio;
 	z = this.heightMap.pixels.height/2 + this.tiltVector.z * this.heightPixelRatio;
 
-	nheight = this.heightMap.getPixelFBilinear(x, z) / this.heightScale + this.heightBias;
+	nheight = _readHeight(this.heightMap, x, z) / this.heightScale + this.heightBias;
 
-	if(nheight >= 16777) // If right project out of bounds, try left projection
+	if(nheight >= 16777) // If right projection out of bounds, try left projection
 	{
 		this.tiltVector.subSelf(this.dummy.position).multiplyScalar(-1).addSelf(this.dummy.position);
 
 		x = this.heightMap.pixels.width/2 + this.tiltVector.x * this.heightPixelRatio;
 		z = this.heightMap.pixels.height/2 + this.tiltVector.z * this.heightPixelRatio;
 
-		nheight = this.heightMap.getPixelFBilinear(x, z) / this.heightScale + this.heightBias;
+		nheight = _readHeight(this.heightMap, x, z) / this.heightScale + this.heightBias;
 	}
 
 	if(nheight < 16777)

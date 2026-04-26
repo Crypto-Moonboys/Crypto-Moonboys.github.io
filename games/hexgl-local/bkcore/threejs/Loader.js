@@ -93,11 +93,17 @@ bkcore.threejs.Loader.prototype.load = function(data)
 	for(var s in data.sounds)
 		this.loadSound(data.sounds[s].src, s, data.sounds[s].loop, data.sounds[s].usePanner);
 
-	this.progressCallback.call(this, this.progress);
+	this.progressCallback.call(this, this.progress, '', '');
 }
 
 bkcore.threejs.Loader.prototype.updateState = function(type, name, state)
 {
+	if(!type || !name)
+	{
+		console.error("Loader received invalid type/name", type, name);
+		return;
+	}
+
 	if(!(type in this.types))
 	{
 		console.warn("Unkown loader type.");
@@ -213,9 +219,17 @@ bkcore.threejs.Loader.prototype.loadAnalyser = function(name, url)
 	var self = this;
 	this.updateState("analysers", name, false);
 	this.data.analysers[name] = new bkcore.ImageData(
-		url, 
-		function(){ 
+		url,
+		function(){
+			if(!self.data.analysers[name])
+			{
+				console.error("Analyser failed to load:", name, url);
+				return;
+			}
 			self.updateState("analysers", name, true);
+		},
+		function(){
+			console.error("Analyser ERROR:", name, url);
 		}
 	);
 }
