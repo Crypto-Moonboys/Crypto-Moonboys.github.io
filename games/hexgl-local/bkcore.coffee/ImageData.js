@@ -11,6 +11,7 @@
     // callback — invoked once the pixel data is ready
     function ImageData(url, callback) {
       var self = this;
+      this.loaded = false;
       this.pixels = null;
       this._data  = null;
 
@@ -25,6 +26,7 @@
         var imageData = ctx.getImageData(0, 0, img.width, img.height);
         self.pixels = { width: img.width, height: img.height };
         self._data  = imageData.data;
+        self.loaded = true;
         if (typeof callback === 'function') {
           callback(self);
         }
@@ -51,6 +53,38 @@
         b: this._data[i + 2],
         a: this._data[i + 3]
       };
+    };
+
+    // Returns {r, g, b, a} bilinearly interpolated at the sub-pixel position (x, y).
+    // Used by ShipControls for smooth collision detection.
+    ImageData.prototype.getPixelBilinear = function(x, y) {
+      if (!this._data || !this.pixels) {
+        return { r: 0, g: 0, b: 0, a: 255 };
+      }
+      var x0 = Math.floor(x), x1 = x0 + 1;
+      var y0 = Math.floor(y), y1 = y0 + 1;
+      var fx = x - x0, fy = y - y0;
+      var p00 = this.getPixel(x0, y0);
+      var p10 = this.getPixel(x1, y0);
+      var p01 = this.getPixel(x0, y1);
+      var p11 = this.getPixel(x1, y1);
+      var w00 = (1 - fx) * (1 - fy);
+      var w10 = fx * (1 - fy);
+      var w01 = (1 - fx) * fy;
+      var w11 = fx * fy;
+      return {
+        r: w00 * p00.r + w10 * p10.r + w01 * p01.r + w11 * p11.r,
+        g: w00 * p00.g + w10 * p10.g + w01 * p01.g + w11 * p11.g,
+        b: w00 * p00.b + w10 * p10.b + w01 * p01.b + w11 * p11.b,
+        a: w00 * p00.a + w10 * p10.a + w01 * p01.a + w11 * p11.a
+      };
+    };
+
+    // Returns the height map value packed as a 24-bit float (r*65536 + g*256 + b),
+    // bilinearly interpolated. Used by ShipControls.heightCheck.
+    ImageData.prototype.getPixelFBilinear = function(x, y) {
+      var p = this.getPixelBilinear(x, y);
+      return p.r * 65536 + p.g * 256 + p.b;
     };
 
     return ImageData;
