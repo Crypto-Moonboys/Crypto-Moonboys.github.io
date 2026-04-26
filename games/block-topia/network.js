@@ -177,7 +177,6 @@ export async function connectMultiplayer({
         // No throttle for the skeleton — propagate every server state change so
         // the client position stays in sync with the authoritative server state.
         const players = toPlayerList(state.players);
-        console.log('[BlockTopia] onStateChange -> players:', players.map((p) => `${p.sessionId}@(${p.x},${p.y})`).join(', '));
         onPlayers?.(players);
       });
 
@@ -277,7 +276,6 @@ export function sendMovement(x, y) {
     warnClosedRoom('move');
     return false;
   }
-  console.log(`[BlockTopia] sendMovement x=${x} y=${y}`);
   room.send('move', { x, y });
   return true;
 }
