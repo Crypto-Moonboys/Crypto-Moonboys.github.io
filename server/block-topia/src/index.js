@@ -31,6 +31,24 @@ const gameServer = new Server({ server });
 // Register rooms
 gameServer.define('city', MinimalCityRoom).enableRealtimeListing();
 
+async function ensurePersistentCityRoom() {
+  try {
+    const existingRooms = await matchMaker.query({ name: 'city', private: false });
+    const existing = Array.isArray(existingRooms) ? existingRooms[0] : null;
+    if (existing?.roomId) {
+      console.log(`[BlockTopia] persistent city room bootstrapped: ${existing.roomId}`);
+      return existing.roomId;
+    }
+  } catch (err) {
+    // Continue with create fallback if query fails for any reason.
+    console.warn('[server] city room query failed, attempting create fallback:', err?.message || err);
+  }
+
+  const room = await matchMaker.createRoom('city', {});
+  console.log(`[BlockTopia] persistent city room bootstrapped: ${room.roomId}`);
+  return room.roomId;
+}
+
 // Colyseus monitor (protected in production)
 app.use('/colyseus', monitor());
 app.get("/", (req, res) => {
@@ -39,13 +57,8 @@ app.get("/", (req, res) => {
 server.listen(PORT, async () => {
   console.log(`Block Topia server running on port ${PORT}`);
 
-  // Pre-create the persistent "city" room so clients always find an existing room
-  // rather than relying on the first client to bootstrap it. This prevents the
-  // race condition where the room is created and immediately disposed before any
-  // client can fully join.
   try {
-    const room = await matchMaker.createRoom('city', {});
-    console.log(`[BlockTopia] persistent city room bootstrapped:`, room.roomId);
+    await ensurePersistentCityRoom();
   } catch (err) {
     console.error('[server] failed to pre-create city room:', err?.message || err);
   }
