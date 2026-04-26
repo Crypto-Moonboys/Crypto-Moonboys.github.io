@@ -17,7 +17,6 @@ let viewHeight = 0;
 let cameraX = 0;
 let cameraY = 0;
 let cameraScale = 1;
-let lastClickedTile = null;
 
 const runtime = {
   localPlayer: { id: "local", x: 1, y: 1, color: "#6da9ff", name: "You", sessionId: "" },
@@ -231,7 +230,6 @@ function onPointerDown(event) {
     return;
   }
 
-  lastClickedTile = tile;
   console.log(`[BlockTopia] click tile selected x=${tile.x} y=${tile.y}`);
 
   // Do NOT mutate local position — server is the source of truth.
@@ -246,26 +244,6 @@ function onPointerDown(event) {
   } else {
     console.warn('[BlockTopia] positionSink not set — click move dropped');
   }
-}
-
-function drawClickOutline() {
-  if (!lastClickedTile) {
-    return;
-  }
-
-  const [sx, sy] = tileToScreen(lastClickedTile.x, lastClickedTile.y);
-  const tw = TILE_WIDTH * cameraScale;
-  const th = TILE_HEIGHT * cameraScale;
-
-  ctx.beginPath();
-  ctx.moveTo(sx, sy);
-  ctx.lineTo(sx + tw / 2, sy + th / 2);
-  ctx.lineTo(sx, sy + th);
-  ctx.lineTo(sx - tw / 2, sy + th / 2);
-  ctx.closePath();
-  ctx.strokeStyle = "rgba(255, 255, 120, 0.85)";
-  ctx.lineWidth = 2.5 * cameraScale;
-  ctx.stroke();
 }
 
 function drawBackground() {
@@ -403,7 +381,6 @@ function render() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   drawBackground();
   drawTiles();
-  drawClickOutline();
   drawPlayers();
   drawHud();
 }
