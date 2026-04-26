@@ -128,17 +128,34 @@
     }
     .rival-block strong { color: #bc8cff; }
     .mini-grid {
-      display:grid;
-      grid-template-columns:repeat(5,minmax(0,1fr));
-      gap:10px;
-      margin-top:12px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0 18px;
+      margin-top: 10px;
+      font-size: .75rem;
+      color: var(--color-text-muted);
     }
     .mini-grid .stat {
-      background: rgba(255,255,255,.03);
-      border: 1px solid var(--color-border, #333);
-      border-radius: 10px;
-      padding: 10px;
-      text-align: center;
+      display: flex;
+      align-items: baseline;
+      gap: 4px;
+      padding: 0;
+      background: none;
+      border: none;
+    }
+    .mini-grid .label {
+      font-size: .62rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .05em;
+      color: rgba(255,255,255,.4);
+      white-space: nowrap;
+    }
+    .mini-grid .value {
+      font-size: .78rem;
+      font-weight: 700;
+      color: #fff;
+      white-space: nowrap;
     }
     .run-badges {
       display:flex;
@@ -376,28 +393,7 @@
         </div>
       </div>
 
-
-      <section class="notice info" role="note" aria-label="Arcade system explainer" style="margin-top:18px">
-        <span class="notice-icon" aria-hidden="true">🧭</span>
-        <div><strong>Arcade System:</strong> Ranking uses score only. Accepted scores can convert into Block Topia XP after Telegram sync. XXX XP is required to enter Block Topia. Use <code>/gklink</code> in <a href="https://t.me/WIKICOMSBOT" target="_blank" rel="noopener noreferrer">@WIKICOMSBOT</a> to link your account.</div>
-      </section>
-
-      <section style="margin-top:28px">
-        <h2 style="font-size:1rem;font-weight:700;color:var(--color-text-muted);margin-bottom:10px">⚙️ How Monster Mode Works</h2>
-        <ul style="font-size:.88rem;line-height:1.8;color:var(--color-text-muted);padding-left:18px">
-          <li>Race the full HexGL circuit loaded directly from the official source.</li>
-          <li>Click <strong>Start</strong> to open fullscreen and load HexGL.</li>
-          <li>When HexGL is loaded, click <strong>Begin Run</strong> in the overlay to arm tracking.</li>
-          <li>Navigate through HexGL and actually enter the race.</li>
-          <li>Once racing, click <strong>Start Timer</strong> — this starts the wrapper countdown and tracks your time.</li>
-          <li>Click <strong>Submit Run</strong> to send your score (ranking metric).</li>
-          <li>Score = <code>500 000 − (time_seconds × 1000)</code>. Faster = higher score.</li>
-          <li>Scores above 0 qualify for the global leaderboard (ranked by score only).</li>
-          <li>Telegram sync via /gklink is required for competitive ranking and server-stored progression — unsynced runs are local-only.</li>
-        </ul>
-      </section>
-
-    </main>
+      </main>
     <footer id="site-footer" role="contentinfo">
       <div class="footer-inner">
         <div class="footer-col">
