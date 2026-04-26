@@ -339,6 +339,13 @@ bkcore.hexgl.tracks.Cityscape = {
 		{
 			console.error("CRITICAL: collision analyser is NULL");
 		}
+		else
+		{
+			console.log("Collision analyser:", this.analyser);
+			console.log("Width:", this.analyser.pixels ? this.analyser.pixels.width : undefined);
+			console.log("Height:", this.analyser.pixels ? this.analyser.pixels.height : undefined);
+			console.log("Sample pixel (0,0):", this.analyser.getPixel(0, 0));
+		}
 
 		// SKYBOX
 		var sceneCube = new THREE.Scene();
