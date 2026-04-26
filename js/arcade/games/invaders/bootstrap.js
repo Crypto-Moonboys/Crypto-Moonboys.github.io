@@ -71,7 +71,6 @@ export function bootstrapInvaders(root) {
   const SHIP_H            = 20;
   const BULLET_SPD        = 560;
   const SHOOT_RATE        = 0.2;
-  const SHOOT_RECOIL      = 8;
   const STREAK_BONUS_RATE = 0.05;
   const MAX_STREAK_BONUS  = 0.5;
   const WAVE_INTRO_DURATION = 2.2;
@@ -333,8 +332,6 @@ export function bootstrapInvaders(root) {
     } else {
       bullets.push({ x: cx - 2, y: by, w: 4, h: 12, vx: 0, vy: BULLET_SPD });
     }
-    const recoilDir = player.moveDir || 1;
-    player.x      = clamp(player.x - SHOOT_RECOIL * recoilDir, 0, W - player.w);
     shootCooldown = activePowerups.has('rapid') ? SHOOT_RATE * 0.4 : SHOOT_RATE;
     playSfx('shoot');
   }
@@ -525,6 +522,8 @@ export function bootstrapInvaders(root) {
           if (Math.random() < POWERUP_BOSS_DROP_CHANCE) powerupItems.push(makeDroppedPowerup(boss.x + boss.w * 0.5, boss.y + boss.h * 0.5));
           boss = null;
           completeWave();
+          updateEffects(dt);
+          return;
         }
       }
 
