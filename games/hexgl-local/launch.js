@@ -44,16 +44,26 @@
 
   u = bkcore.Utils.getURLParameter;
 
-  defaultControls = bkcore.Utils.isTouchDevice() ? 1 : 0;
+  // Default to keyboard (0) when a fine pointer (mouse/trackpad) is available,
+  // even on touch-capable desktops (e.g. Windows Surface).  Only fall back to
+  // touch (1) when the device has touch AND no fine pointer.
+  defaultControls = (bkcore.Utils.isTouchDevice() && !(window.matchMedia && window.matchMedia('(pointer: fine)').matches)) ? 1 : 0;
 
   s = [['controlType', ['KEYBOARD', 'TOUCH', 'LEAP MOTION CONTROLLER', 'GAMEPAD'], defaultControls, defaultControls, 'Controls: '], ['quality', ['LOW', 'MID', 'HIGH', 'VERY HIGH'], 3, 3, 'Quality: '], ['hud', ['OFF', 'ON'], 1, 1, 'HUD: '], ['godmode', ['OFF', 'ON'], 0, 1, 'Godmode: ']];
 
   _fn = function(a) {
-    var e, f, _ref;
-    a[3] = (_ref = u(a[0])) != null ? _ref : a[2];
+    var e, f, _ref, _n;
+    _ref = u(a[0]);
+    if (_ref != null) {
+      _n = parseInt(_ref, 10);
+      a[3] = (_n >= 0 && _n < a[1].length) ? _n : a[2];
+    } else {
+      a[3] = a[2];
+    }
     e = $("s-" + a[0]);
     (f = function() {
-      return e.innerHTML = a[4] + a[1][a[3]];
+      var _label = a[1][a[3]];
+      return e.innerHTML = a[4] + (_label !== undefined ? _label : a[1][a[2]]);
     })();
     return e.onclick = function() {
       return f(a[3] = (a[3] + 1) % a[1].length);
