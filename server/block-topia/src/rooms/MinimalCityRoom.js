@@ -1,21 +1,8 @@
 ﻿import { Room } from 'colyseus';
 import { Schema, ArraySchema, defineTypes } from '@colyseus/schema';
-import { clampPosition, validateMovement } from '../systems/player-system.js';
-
 const MAP_WIDTH = 20;
 const MAP_HEIGHT = 20;
 const PLAYER_SPEED_HINT = 3.2;
-const MAX_MOVE_DISTANCE = 5;
-
-// Minimal blocked cells for server-authoritative passability validation.
-const BLOCKED_CELLS = new Set([
-  '9,9',
-  '9,10',
-  '10,9',
-  '10,10',
-  '4,15',
-  '15,4',
-]);
 
 const SPAWN_SLOTS = [
   { x: 6, y: 10 },
@@ -79,21 +66,12 @@ export class MinimalCityRoom extends Room {
         return;
       }
 
-      const next = clampPosition(nextX, nextY, { min: 0, max: MAP_WIDTH - 1 });
-      const previous = { x: player.x, y: player.y };
-      if (!validateMovement(previous, next, MAX_MOVE_DISTANCE)) {
-        const dist = Math.sqrt((next.x - previous.x) ** 2 + (next.y - previous.y) ** 2);
-        console.warn(`[MinimalCityRoom] move rejected: distance ${dist.toFixed(2)} > MAX_MOVE_DISTANCE ${MAX_MOVE_DISTANCE} session=${client.sessionId}`);
-        return;
-      }
-      if (!this.isPassable(next.x, next.y)) {
-        console.warn(`[MinimalCityRoom] move rejected: tile (${next.x},${next.y}) is blocked session=${client.sessionId}`);
-        return;
-      }
+      const x = Math.max(0, Math.min(19, nextX));
+      const y = Math.max(0, Math.min(19, nextY));
 
-      player.x = next.x;
-      player.y = next.y;
-      console.log(`[MinimalCityRoom] move accepted session=${client.sessionId} -> (${player.x},${player.y})`);
+      player.x = x;
+      player.y = y;
+      console.log('[MOVE APPLIED]', client.sessionId, x, y);
     });
   }
 
@@ -132,10 +110,4 @@ export class MinimalCityRoom extends Room {
     }
   }
 
-  isPassable(x, y) {
-    const ix = Math.round(x);
-    const iy = Math.round(y);
-    if (ix < 0 || iy < 0 || ix >= MAP_WIDTH || iy >= MAP_HEIGHT) return false;
-    return !BLOCKED_CELLS.has(`${ix},${iy}`);
-  }
 }
