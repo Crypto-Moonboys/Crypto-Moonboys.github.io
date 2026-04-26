@@ -27,7 +27,7 @@ Key shared files/folders that must remain:
 - `asteroid-fork`
 - `breakout-bullrun`
 - `crystal-quest`
-- `invaders-3008` — **Current arcade XP &amp; leaderboard source of truth**
+- `invaders-3008` — **Current arcade XP & leaderboard source of truth**
 - `pac-chain`
 - `snake-run`
 - `tetris-block-topia`
