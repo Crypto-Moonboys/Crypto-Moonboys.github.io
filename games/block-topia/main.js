@@ -220,8 +220,10 @@ function onPointerDown(event) {
   }
 
   const rect = canvas.getBoundingClientRect();
-  const px = (event.clientX - rect.left) * (canvas.width / rect.width);
-  const py = (event.clientY - rect.top) * (canvas.height / rect.height);
+  // Use CSS/logical pixel offsets — cameraX/cameraY live in CSS pixel space.
+  // Multiplying by the DPR ratio here would break pickTile on Retina/zoomed displays.
+  const px = event.clientX - rect.left;
+  const py = event.clientY - rect.top;
   const tile = pickTile(px, py);
 
   if (!tile) {
