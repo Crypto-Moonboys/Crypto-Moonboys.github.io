@@ -58,6 +58,9 @@ export class MinimalCityRoom extends Room {
   onCreate() {
     this.setState(new MinimalRoomState());
     this.maxClients = 2;
+    // Keep the city room alive even when empty so join("city") never races
+    // against room disposal and returns 4211.
+    this.autoDispose = false;
     this.playersBySession = new Map();
 
     this.onMessage('move', (client, data) => {
