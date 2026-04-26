@@ -37,6 +37,17 @@ const SOUND_LIBRARY = {
   'pac-chain-power':       { kind: 'tone', type: 'sawtooth', freqStart: 320, freqEnd: 880, duration: 0.12,  volume: 0.05  },
   'pac-chain-ghost-eaten': { kind: 'tone', type: 'triangle', freqStart: 960, freqEnd: 520, duration: 0.10,  volume: 0.04  },
   'pac-chain-hit':         { kind: 'tone', type: 'sawtooth', freqStart: 180, freqEnd: 70,  duration: 0.16,  volume: 0.05  },
+  'pac-chain-level-complete': { kind: 'chord', tones: [
+    { type: 'sine', freqStart: 523, freqEnd: 523, duration: 0.16, volume: 0.05,  delay: 0.00 },
+    { type: 'sine', freqStart: 659, freqEnd: 659, duration: 0.16, volume: 0.045, delay: 0.14 },
+    { type: 'sine', freqStart: 784, freqEnd: 784, duration: 0.16, volume: 0.05,  delay: 0.28 },
+    { type: 'sine', freqStart: 1047, freqEnd: 1047, duration: 0.28, volume: 0.055, delay: 0.42 },
+  ]},
+  'pac-chain-death': { kind: 'chord', tones: [
+    { type: 'sawtooth', freqStart: 440, freqEnd: 110, duration: 0.32, volume: 0.05, delay: 0.00 },
+    { type: 'sawtooth', freqStart: 330, freqEnd: 82,  duration: 0.30, volume: 0.04, delay: 0.06 },
+    { type: 'triangle', freqStart: 220, freqEnd: 55,  duration: 0.28, volume: 0.035, delay: 0.14 },
+  ]},
   'snake-start':        { kind: 'tone',  type: 'triangle', freqStart: 420, freqEnd: 840, duration: 0.10, volume: 0.045 },
   'snake-turn':         { kind: 'tone',  type: 'square',   freqStart: 580, freqEnd: 520, duration: 0.03, volume: 0.024 },
   'snake-eat':          { kind: 'tone',  type: 'triangle', freqStart: 820, freqEnd: 1160, duration: 0.06, volume: 0.036 },
