@@ -1,5 +1,5 @@
-import { ArcadeSync }       from '/js/arcade-sync.js';
-import { submitScore }      from '/js/leaderboard-client.js';
+import { ArcadeSync }              from '/js/arcade-sync.js';
+import { submitScore }             from '/js/leaderboard-client.js';
 import { HEXGL_MONSTER_MAX_CONFIG }  from './config.js';
 import { GameRegistry }              from '/js/arcade/core/game-registry.js';
 import { playSound, isMuted, stopAllSounds } from '/js/arcade/core/audio.js';
