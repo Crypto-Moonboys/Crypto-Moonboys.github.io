@@ -173,13 +173,19 @@ export function bootstrapHexGLMonsterMax(root) {
     var score = calcScore(completedRunMs);
     if (score <= 0) return;
     playUiTone('submit');
-    await submitScore(playerName, score, HEXGL_MONSTER_MAX_CONFIG.id);
-    completedScoreSubmitted = true;
-    if (submitBtn) {
-      submitBtn.textContent = '✅ Submitted';
-      submitBtn.disabled = true;
+    try {
+      await submitScore(playerName, score, HEXGL_MONSTER_MAX_CONFIG.id);
+      completedScoreSubmitted = true;
+      if (submitBtn) {
+        submitBtn.textContent = '✅ Submitted';
+        submitBtn.disabled = true;
+      }
+      setStatus('SUBMITTED');
+    } catch (err) {
+      console.error('[hexgl] autoSubmit failed:', err);
+      notify('Submission failed — click Submit to retry.');
+      if (submitBtn) submitBtn.disabled = false;
     }
-    setStatus('SUBMITTED');
   }
 
   // Called when the HexGL iframe sends a race-finish postMessage event.
@@ -197,7 +203,9 @@ export function bootstrapHexGLMonsterMax(root) {
     setStatus('RUN COMPLETE');
     if (submitBtn) submitBtn.disabled = false;
     if (window.MOONBOYS_IDENTITY?.isTelegramLinked?.()) {
-      autoSubmit();
+      autoSubmit().catch(function (err) {
+        console.error('[hexgl] race-finish auto-submit failed:', err);
+      });
     } else {
       if (window.MOONBOYS_IDENTITY?.showSyncGateModal) {
         window.MOONBOYS_IDENTITY.showSyncGateModal(true);
@@ -289,6 +297,14 @@ export function bootstrapHexGLMonsterMax(root) {
         frameEl.classList.add('loaded');
         notifyReadyToRace();
       });
+      frameEl.addEventListener('error', function () {
+        frameLoaded = false;
+        setStatus('LOAD ERROR');
+        notify('HexGL failed to load. Click Start Fullscreen to retry.');
+        // Re-enable the ctrl-bar button so the user can retry loading.
+        setOverlayStartLabel('🔄', 'Retry');
+        setOverlayStartEnabled(true);
+      });
     }
     window.addEventListener('message', onHexGLMessage);
     document.addEventListener('arcade-overlay-exit', function () {
@@ -296,7 +312,9 @@ export function bootstrapHexGLMonsterMax(root) {
       // Retry auto-submit on overlay exit if there is an unsent valid completed run.
       if (completedRunMs && !completedScoreSubmitted) {
         if (window.MOONBOYS_IDENTITY?.isTelegramLinked?.()) {
-          autoSubmit();
+          autoSubmit().catch(function (err) {
+            console.error('[hexgl] exit auto-submit failed:', err);
+          });
         }
       }
     });
