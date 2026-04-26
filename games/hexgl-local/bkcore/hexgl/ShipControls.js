@@ -505,14 +505,10 @@ bkcore.hexgl.ShipControls.prototype.update = function(dt)
 
 	// Hard floor clamp: prevent ship from clipping below the sampled track surface.
 	// Handles any edge case where accumulated movement pushes position below ground.
-	if(this._groundHeight !== undefined)
+	if(this._groundHeight !== undefined && this.dummy.position.y < this._groundHeight)
 	{
-		if(this.dummy.position.y < this._groundHeight)
-		{
-			this.dummy.position.y = this._groundHeight;
-			if(this.movement.y < 0) this.movement.y = 0;
-		}
-		this._groundHeight = undefined;
+		this.dummy.position.y = this._groundHeight;
+		if(this.movement.y < 0) this.movement.y = 0;
 	}
 
 	this.currentVelocity.copy(this.dummy.position).subSelf(this.collisionPreviousPosition);
