@@ -71,6 +71,9 @@ function toPlayerList(playersState) {
   if (typeof playersState.toArray === 'function') {
     return playersState.toArray().map((player, index) => ({
       id: player?.id || String(index),
+      // player.id is set to client.sessionId on the server — expose it so
+      // updatePlayers() can match the local player by sessionId.
+      sessionId: player?.id || String(index),
       x: Number(player?.x) || 0,
       y: Number(player?.y) || 0,
       name: String(player?.name || ''),
@@ -86,6 +89,7 @@ function toPlayerList(playersState) {
       if (!player) continue;
       list.push({
         id: player?.id || String(i),
+        sessionId: player?.id || String(i),
         x: Number(player?.x) || 0,
         y: Number(player?.y) || 0,
         name: String(player?.name || ''),
@@ -100,6 +104,7 @@ function toPlayerList(playersState) {
     playersState.forEach((player, id) => {
       list.push({
         id: player?.id || String(id),
+        sessionId: player?.id || String(id),
         x: Number(player?.x) || 0,
         y: Number(player?.y) || 0,
         name: String(player?.name || ''),
@@ -110,7 +115,7 @@ function toPlayerList(playersState) {
     return list;
   }
   Object.entries(playersState).forEach(([id, player]) => {
-    list.push({ id, ...player });
+    list.push({ id, sessionId: id, ...player });
   });
   return list;
 }
@@ -168,13 +173,12 @@ export async function connectMultiplayer({
         _scheduleReconnect();
       });
 
-      let lastUpdate = 0;
       room.onStateChange((state) => {
-        const now = performance.now();
-        // Throttle state fan-out to avoid per-frame UI churn on large player maps.
-        if (now - lastUpdate < STATE_CHANGE_THROTTLE_MS) return;
-        lastUpdate = now;
-        onPlayers?.(toPlayerList(state.players));
+        // No throttle for the skeleton — propagate every server state change so
+        // the client position stays in sync with the authoritative server state.
+        const players = toPlayerList(state.players);
+        console.log('[BlockTopia] onStateChange -> players:', players.map((p) => `${p.sessionId}@(${p.x},${p.y})`).join(', '));
+        onPlayers?.(players);
       });
 
       room.onMessage('system', (message) => {
@@ -273,6 +277,7 @@ export function sendMovement(x, y) {
     warnClosedRoom('move');
     return false;
   }
+  console.log(`[BlockTopia] sendMovement x=${x} y=${y}`);
   room.send('move', { x, y });
   return true;
 }
