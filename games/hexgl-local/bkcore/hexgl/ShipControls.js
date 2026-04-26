@@ -499,8 +499,17 @@ bkcore.hexgl.ShipControls.prototype.update = function(dt)
 	this.dummy.translateZ(this.movement.z);
 
 
+	this._groundHeight = undefined;
 	this.heightCheck(dt);
 	this.dummy.translateY(this.movement.y);
+
+	// Hard floor clamp: prevent ship from clipping below the sampled track surface.
+	// Handles any edge case where accumulated movement pushes position below ground.
+	if(this._groundHeight !== undefined && this.dummy.position.y < this._groundHeight)
+	{
+		this.dummy.position.y = this._groundHeight;
+		if(this.movement.y < 0) this.movement.y = 0;
+	}
 
 	this.currentVelocity.copy(this.dummy.position).subSelf(this.collisionPreviousPosition);
 
@@ -735,14 +744,12 @@ bkcore.hexgl.ShipControls.prototype.heightCheck = function(dt)
 	{
 		var delta = (height - this.dummy.position.y);
 
-		if(delta > 0)
-		{
-			this.movement.y += delta;
-		}
-		else
-		{
-			this.movement.y += delta * this.heightLerp;
-		}
+		// Apply near-full correction (0.9) so the ship tracks slopes
+		// immediately with slight smoothing, avoiding hard-snap jitter.
+		this.movement.y += delta * 0.9;
+
+		// Store surface height for the post-translateY floor clamp.
+		this._groundHeight = height;
 	}
 
 	// gradient
