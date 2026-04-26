@@ -80,8 +80,10 @@
       };
     };
 
-    // Returns the height map value packed as a 24-bit float (r*65536 + g*256 + b),
-    // bilinearly interpolated. Used by ShipControls.heightCheck.
+    // Returns a bilinearly interpolated value packed as r*65536 + g*256 + b.
+    // NOTE: ShipControls.heightCheck now uses an inline _readHeight() helper
+    // (g*256+b formula) suited to the Cityscape height.png encoding.
+    // This method is preserved for compatibility with other callers.
     ImageData.prototype.getPixelFBilinear = function(x, y) {
       var p = this.getPixelBilinear(x, y);
       return p.r * 65536 + p.g * 256 + p.b;
