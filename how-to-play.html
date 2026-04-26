@@ -3,10 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="How to Play Manual — complete player guide for Moonboys Arcade, Block Topia, XP, gems, Telegram sync, events, and progression.">
+  <meta name="description" content="How to Play — Moonboys Arcade player guide. Login with Telegram, earn XP, and enter Block Topia.">
   <meta name="robots" content="index, follow">
   <meta property="og:title" content="How to Play — Moonboys Systems Manual">
-  <meta property="og:description" content="A complete player-facing guide to the Moonboys ecosystem: arcade, leaderboard, Block Topia, events, XP, gems, and Telegram sync.">
+  <meta property="og:description" content="New player guide for the Moonboys ecosystem: arcade games, Telegram sync, XP, and Block Topia.">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://crypto-moonboys.github.io/how-to-play.html">
   <meta property="og:image" content="https://crypto-moonboys.github.io/img/CRYPTO-MOONBOYS-BITCOIN-LOGO.png">
@@ -182,11 +182,8 @@
       <div class="sidebar-heading">Quick Access</div>
       <div class="sidebar-nav">
         <a href="#telegram-sync"><span class="nav-icon">🔗</span> Telegram Sync</a>
-        <a href="#covert-ops"><span class="nav-icon">🕵️</span> Covert Ops</a>
-        <a href="#events"><span class="nav-icon">🚨</span> Popups &amp; Events</a>
         <a href="#xp"><span class="nav-icon">⚡</span> XP</a>
-        <a href="#gems"><span class="nav-icon">💎</span> Gems</a>
-        <a href="#earn-more"><span class="nav-icon">📈</span> How to Earn More</a>
+        <a href="#block-topia-explained"><span class="nav-icon">🏙️</span> Block Topia</a>
         <a href="#faq"><span class="nav-icon">❓</span> Troubleshooting</a>
       </div>
     </div>
@@ -203,16 +200,14 @@
       <section class="manual-hero">
         <h1>Moonboys How-To-Play &amp; Systems Manual</h1>
         <p>
-          This is the one-page player guide for the full ecosystem. If you ever asked “why did this popup happen?”, “why didn’t I get XP?”, or
-          “what does Telegram sync actually do?” — this manual answers it in plain English.
+          This is the player guide for the Moonboys ecosystem. Login with Telegram, earn XP through arcade games, and enter Block Topia when you have enough XP.
         </p>
         <div class="manual-pill-row" aria-label="Core systems">
           <span class="manual-pill">🕹️ Arcade Score Layer</span>
-          <span class="manual-pill">Leaderboard Rank Layer</span>
-          <span class="manual-pill">🏙️ Block Topia Survival Layer</span>
-          <span class="manual-pill">🕵️ Covert Ops Layer</span>
+          <span class="manual-pill">🏆 Leaderboard Rank Layer</span>
+          <span class="manual-pill">🏙️ Block Topia</span>
           <span class="manual-pill">🔗 Telegram Identity Layer</span>
-          <span class="manual-pill">⚡ XP + 💎 Gems Economy</span>
+          <span class="manual-pill">⚡ XP Economy</span>
         </div>
       </section>
 
@@ -236,7 +231,7 @@
           </article>
           <article class="manual-card">
             <h3>🏙️ Block Topia</h3>
-            <p>Live RPG world where pressure, events, and survival mechanics run in real time.</p>
+            <p>Clean 2-player isometric map base. Requires Telegram-linked account and XXX XP to enter. More gameplay coming.</p>
           </article>
         </div>
         <p>
@@ -280,169 +275,33 @@
       <section class="manual-section" id="block-topia-explained">
         <h2>D) Block Topia explained</h2>
         <p>
-          Block Topia is the live world / RPG / node-control layer. It is built around pressure, survival, and response.
+          Block Topia is currently a clean 2-player isometric map base. A Telegram-linked account and XXX XP are required to enter.
         </p>
         <ul>
-          <li>XP is required to enter and remain effective inside the world loop.</li>
-          <li>XP drains while active in Block Topia because survival has ongoing system cost.</li>
-          <li>Mini-games can cost XP to engage and may return XP/gems based on outcome.</li>
-          <li>World events are not cosmetic; they reflect current pressure across nodes/districts.</li>
-          <li>SAM pressure and district struggle are active forces in the loop, not background story text.</li>
+          <li>Requires Telegram login and account sync before entry.</li>
+          <li>XXX XP required to enter the Block Topia server.</li>
+          <li>Local and remote player markers are visible on the isometric map.</li>
+          <li>More gameplay systems will be added from <code>/games/template</code> as they are built.</li>
         </ul>
 
         <h3 style="margin:18px 0 8px;font-size:1rem;color:#e7fcff;">Controls</h3>
         <ul>
           <li><strong>Move:</strong> <code>W A S D</code> or arrow keys.</li>
-          <li><strong>Select node / player / tile:</strong> left-click.</li>
-          <li><strong>Move to tile:</strong> double-click a valid tile.</li>
-          <li><strong>Interact with NPC:</strong> <code>E</code> when in range.</li>
-          <li><strong>Challenge player to duel:</strong> select them, then press <code>F</code>.</li>
           <li><strong>Zoom:</strong> mouse wheel or <code>[</code> / <code>]</code> preset steps.</li>
           <li><strong>Camera pan:</strong> left mouse button hold + drag.</li>
         </ul>
       </section>
-
-      <section class="manual-section" id="covert-ops">
-        <h2>D2) Covert Ops — Signal Runner</h2>
-        <p>
-          The <strong>Signal Runner</strong> is your covert operative. Deploy it to a node to shift that node's control state from the shadows.
-          The server resolves every mission; the client shows the outcome.
-        </p>
-
-        <h3 style="margin:14px 0 8px;font-size:1rem;color:#e7fcff;">How to deploy</h3>
-        <div class="manual-steps" aria-label="Signal Runner deploy steps">
-          <ol>
-            <li>Click a control node on the map — the target ID appears in the Covert Ops panel.</li>
-            <li>Press <strong>Deploy Signal Runner → [NODE]</strong> in the bottom-right panel.</li>
-            <li>Wait ~30 seconds for the server to resolve the mission.</li>
-            <li>Read the result in the feed and the panel: <strong>✅ Success</strong> or <strong>❌ Failure</strong>.</li>
-          </ol>
-        </div>
-
-        <h3 style="margin:14px 0 8px;font-size:1rem;color:#e7fcff;">Mission odds and risks</h3>
-        <ul>
-          <li><strong>Base success: 65%.</strong> SAM pressure and district posture reduce this.</li>
-          <li><strong>Operative loss:</strong> on failure there is a 25% chance the operative is captured. A <strong>🚨 Signal Runner lost</strong> message confirms it.</li>
-          <li>Only one operative can be active at a time. The deploy button is locked during an active mission.</li>
-        </ul>
-
-        <h3 style="margin:14px 0 8px;font-size:1rem;color:#e7fcff;">Player heat</h3>
-        <p>
-          Every deploy and resolution adds <strong>heat</strong> to your personal counter (+8 on success, +16 on failure).
-          Heat decays at 1 unit per second server-side. You cannot manually reduce it.
-        </p>
-        <div class="manual-event-table-wrap">
-          <table class="manual-event-table" aria-label="Heat tier table">
-            <thead>
-              <tr><th>Heat tier</th><th>Range</th><th>Effect</th></tr>
-            </thead>
-            <tbody>
-              <tr><td>Cold</td><td>0 – 24</td><td>Normal. Best time to deploy.</td></tr>
-              <tr><td>Warm</td><td>25 – 49</td><td>SAM awareness rising. Consider waiting.</td></tr>
-              <tr><td>Hot</td><td>50 – 74</td><td>Detection risk elevated; viewport vignette activates.</td></tr>
-              <tr><td>Critical</td><td>75 – 100</td><td>Maximum risk. Operations heavily penalised.</td></tr>
-            </tbody>
-          </table>
-        </div>
-
-        <h3 style="margin:14px 0 8px;font-size:1rem;color:#e7fcff;">Covert Grid strip (top of screen)</h3>
-        <p>
-          Four cells show live covert state: <strong>Network Heat</strong> (world-level risk across all players),
-          <strong>Local Node</strong> (pressure on your selected node), <strong>District Mood</strong> (posture of your current district),
-          and <strong>Agent Pressure</strong> (how many of your operatives are under SAM scrutiny).
-        </p>
-        <p>Keep Network Heat and your personal heat low before committing to a mission for the best odds.</p>
-      </section>
-
-      <section class="manual-section" id="events">
-        <h2>E) Why popups and events happen</h2>
-        <p>
-          Events appear because the world state demands a response (node pressure, district conflict, hostile system momentum, or instability windows).
-          They are designed as <strong>state reactions</strong>, not random interruptions.
-        </p>
-
-        <div class="manual-event-table-wrap">
-          <table class="manual-event-table" aria-label="Event explainer table">
-            <thead>
-              <tr>
-                <th>Event Type</th>
-                <th>Why It Appears</th>
-                <th>If You Ignore It</th>
-                <th>If You Succeed</th>
-                <th>If You Fail</th>
-                <th>Paid Skip (if offered)</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td><strong>Node Outbreak</strong></td>
-                <td>Local node pressure crossed a danger threshold.</td>
-                <td>Node corruption expands; future pressure/events can intensify.</td>
-                <td>Pressure is reduced, node stabilises, potential reward window opens.</td>
-                <td>Outbreak spreads, survival cost can rise, district risk worsens.</td>
-                <td>Skips immediate challenge but usually forfeits event rewards and does not provide full stabilisation value.</td>
-              </tr>
-              <tr>
-                <td><strong>Firewall Defense</strong></td>
-                <td>Hostile traffic or SAM push is stressing a protected route.</td>
-                <td>Defensive integrity drops and follow-up attacks are more likely.</td>
-                <td>Route integrity restored; can preserve node control momentum.</td>
-                <td>System leaks, penalty pressure increases, and chain events may trigger.</td>
-                <td>Bypasses this defense check at a cost, but can reduce long-term upside.</td>
-              </tr>
-              <tr>
-                <td><strong>Signal Routing</strong></td>
-                <td>The world needs active rerouting to keep sectors connected.</td>
-                <td>Route quality degrades, causing weaker support to nearby objectives.</td>
-                <td>Signal flow improves and supports progression efficiency.</td>
-                <td>Misroutes generate instability and can produce extra event load.</td>
-                <td>Can preserve momentum short-term, but you miss route-optimization rewards.</td>
-              </tr>
-              <tr>
-                <td><strong>Circuit Breach / Reconnect</strong></td>
-                <td>Critical circuits were disrupted and need manual response.</td>
-                <td>Disconnected systems stay vulnerable and drain opportunities.</td>
-                <td>Reconnect restores functionality and often lowers pressure drift.</td>
-                <td>Partial blackout continues, reducing safe progression windows.</td>
-                <td>Skip prevents immediate failure, but no mastery reward and less resilience gain.</td>
-              </tr>
-              <tr>
-                <td><strong>District War Pressure</strong></td>
-                <td>NPC and faction influence conflict reached active contest level.</td>
-                <td>You give ground; district influence may swing away from your side.</td>
-                <td>District control and morale improve; better conditions for later runs.</td>
-                <td>Opposition momentum rises and district becomes harder to stabilise.</td>
-                <td>Can avoid immediate losses, but cedes strategic value over time.</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </section>
-
       <section class="manual-section" id="xp">
-        <h2>F) XP explained</h2>
+        <h2>E) XP explained</h2>
         <ul>
-          <li>XP is earned through accepted performance loops (arcade conversion, world actions, and event outcomes).</li>
-          <li>Accepted arcade scores are one major feed into XP.</li>
-          <li>Block Topia uses XP as active survival/progression currency.</li>
-          <li>Mini-games can consume XP to enter and can return XP if you perform well.</li>
-          <li>XP can go down because the world uses drain, failure pressure, and survival costs.</li>
-          <li>In practical terms: XP is not just “level points.” It is your run-time survival fuel.</li>
+          <li>XP is earned through accepted arcade score conversions and site activity.</li>
+          <li>Accepted arcade scores can convert to XP when your Telegram identity is synced.</li>
+          <li>XXX XP is required to enter the Block Topia server.</li>
+          <li>Keep playing and earning to build your XP toward the entry threshold.</li>
         </ul>
       </section>
-
-      <section class="manual-section" id="gems">
-        <h2>G) Gems explained</h2>
-        <ul>
-          <li>Gems are earned from successful loops/events/mini-game outcomes.</li>
-          <li>Gems are <strong>not</strong> the gate to enter Block Topia.</li>
-          <li>Gems are used for upgrades and deeper RPG progression paths.</li>
-          <li>Upgrades improve later runs (efficiency, resilience, and pressure handling).</li>
-        </ul>
-      </section>
-
       <section class="manual-section" id="earn-more">
-        <h2>H) How to earn more (practical strategy)</h2>
+        <h2>F) How to earn XP (practical guide)</h2>
         <div class="manual-grid">
           <article class="manual-card">
             <h3>Improve score quality</h3>
@@ -455,80 +314,40 @@
           <article class="manual-card">
             <h3>Convert score into XP</h3>
             <ul>
-              <li>Stay Telegram-linked so accepted runs can persist/convert.</li>
-              <li>If sync turns red, relink before grinding long sessions.</li>
-              <li>Aim for consistency; accepted runs beat one-off spikes.</li>
+              <li>Stay Telegram-linked so accepted runs can persist and convert.</li>
+              <li>If sync turns red, relink with <code>/gklink</code> before long sessions.</li>
+              <li>Aim for consistent runs — accepted runs beat one-off spikes.</li>
             </ul>
           </article>
           <article class="manual-card">
-            <h3>Survive longer in Block Topia</h3>
+            <h3>Reach the Block Topia entry threshold</h3>
             <ul>
-              <li>Enter with XP buffer, not minimum threshold mindset.</li>
-              <li>Respond to pressure events early to avoid compounding costs.</li>
-              <li>Use mini-games when expected reward outweighs current XP risk.</li>
-            </ul>
-          </article>
-          <article class="manual-card">
-            <h3>Earn and use gems better</h3>
-            <ul>
-              <li>Prioritise upgrades that improve repeat-run efficiency.</li>
-              <li>Do not burn resources on low-impact convenience too early.</li>
-              <li>Treat gems as long-cycle build currency, not panic spend currency.</li>
-            </ul>
-          </article>
-          <article class="manual-card">
-            <h3>Use skip carefully</h3>
-            <ul>
-              <li>Skip is for damage control, not default play style.</li>
-              <li>If you skip repeatedly, you often lose reward velocity and map influence.</li>
-              <li>Best use case: protect a high-value run state from cascade failure.</li>
-            </ul>
-          </article>
-          <article class="manual-card">
-            <h3>Exploit pressure moments</h3>
-            <ul>
-              <li>Pressure spikes often open high-impact response windows.</li>
-              <li>Winning during these moments improves both rewards and strategic position.</li>
-              <li>Think in loops: score → accepted run → XP → survival → better future runs.</li>
+              <li>XXX XP is required to enter the Block Topia server.</li>
+              <li>Keep playing arcade games and converting accepted scores to build your XP.</li>
+              <li>Check your XP total in the leaderboard or dashboard before trying to enter.</li>
             </ul>
           </article>
         </div>
       </section>
 
-      <section class="manual-section" id="world">
-        <h2>I) World / NPC / District / SAM explainer</h2>
-        <p>
-          Block Topia is a living war-map, not a static menu. NPC groups recruit, reinforce, and fight for nodes. Districts shift under sustained pressure.
-          SAM acts as the hostile systemic force: it drives instability, stress-tests control, and punishes passive play.
-        </p>
-        <p>
-          Your actions matter because every successful defense, route recovery, and pressure response influences how hard the next cycle hits.
-          You are not just farming points — you are helping decide whether districts stabilise or collapse into hostile control.
-        </p>
-      </section>
-
       <section class="manual-section manual-faq" id="faq">
-        <h2>J) FAQ / quick troubleshooting</h2>
+        <h2>G) FAQ / quick troubleshooting</h2>
         <div class="manual-grid">
           <article class="manual-card">
             <h3>I’m linked but can’t enter Block Topia</h3>
-            <p>Most common causes: your current XP is too low for active survival, or your link state is stale. Recheck sync state and relink with <code>/gklink</code> if needed.</p>
+            <p>Most common cause: your current XP is below the entry threshold (XXX XP required). Check your XP total and keep playing to earn more.</p>
           </article>
           <article class="manual-card">
             <h3>I played a game but got no XP</h3>
-            <p>Leaderboard score and XP are separate. XP comes from accepted conversion/stateful systems, especially when identity is synced.</p>
+            <p>Leaderboard score and XP are separate. XP comes from accepted score conversions when your Telegram identity is synced.</p>
           </article>
           <article class="manual-card">
             <h3>Why does it say local only?</h3>
-            <p>Your session is currently unsynced. Runs still work, but progression is stored in your browser session, not full server-backed profile state.</p>
+            <p>Your session is currently unsynced. Runs still work, but progression is stored in your browser session, not a server-backed profile.</p>
           </article>
           <article class="manual-card">
             <h3>What does “accepted score” mean?</h3>
-            <p>An accepted score is a run the system validates for ranking/progression pathways. Only accepted runs are eligible for conversion effects.</p>
-          </article>
-          <article class="manual-card">
-            <h3>Why did Block Topia kick me out?</h3>
-            <p>Usually XP drain reached a critical floor, or pressure/failure chains exhausted your current survival state.</p>
+            <p>An accepted score is a run the system validates for ranking and XP conversion. Only accepted runs are eligible for XP conversion.</p>
           </article>
           <article class="manual-card">
             <h3>Why is sync red?</h3>
@@ -536,19 +355,10 @@
           </article>
           <article class="manual-card">
             <h3>What if auth expired?</h3>
-            <p>Run <code>/gklink</code> again, complete the new link handshake, then refresh your game page before continuing long runs.</p>
-          </article>
-          <article class="manual-card">
-            <h3>Signal Runner deploy button is greyed out</h3>
-            <p>Either no node is selected (click a control node on the map first) or a mission is already running. Only one operative can be active at a time.</p>
-          </article>
-          <article class="manual-card">
-            <h3>My Signal Runner keeps failing</h3>
-            <p>Check your personal heat (shown as <strong>Heat: X</strong> in the Covert Ops panel). If heat is above 50, wait for it to decay below 25 before deploying again. Also check district mood — a <code>pre_lockdown</code> district heavily penalises success odds.</p>
+            <p>Run <code>/gklink</code> again, complete the new link handshake, then refresh your game page before continuing.</p>
           </article>
         </div>
       </section>
-
       <section class="manual-nav-card" aria-label="Manual related links">
         <strong>Next stop:</strong>
         <a href="/games/">Open Arcade</a> ·
