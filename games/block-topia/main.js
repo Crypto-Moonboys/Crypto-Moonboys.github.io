@@ -172,17 +172,12 @@ function moveLocal(dx, dy) {
   const nextX = runtime.localPlayer.x + dx;
   const nextY = runtime.localPlayer.y + dy;
 
-  if (!isPassable(nextX, nextY)) {
-    return;
-  }
-
-  runtime.localPlayer.x = nextX;
-  runtime.localPlayer.y = nextY;
-
+  // Do NOT mutate local position here — server is the source of truth.
+  // Send the desired target; server validates and broadcasts the accepted position.
   if (runtime.positionSink) {
     runtime.positionSink({
-      x: runtime.localPlayer.x,
-      y: runtime.localPlayer.y,
+      x: nextX,
+      y: nextY,
       sessionId: runtime.localPlayer.sessionId,
     });
   }
@@ -225,17 +220,16 @@ function onPointerDown(event) {
   const py = (event.clientY - rect.top) * (canvas.height / rect.height);
   const tile = pickTile(px, py);
 
-  if (!tile || !isPassable(tile.x, tile.y)) {
+  if (!tile) {
     return;
   }
 
-  runtime.localPlayer.x = tile.x;
-  runtime.localPlayer.y = tile.y;
-
+  // Do NOT mutate local position — server is the source of truth.
+  // Send the desired target; server validates and broadcasts the accepted position.
   if (runtime.positionSink) {
     runtime.positionSink({
-      x: runtime.localPlayer.x,
-      y: runtime.localPlayer.y,
+      x: tile.x,
+      y: tile.y,
       sessionId: runtime.localPlayer.sessionId,
     });
   }
@@ -493,10 +487,9 @@ function setLocalPlayer(payload = {}) {
   const nextX = Number.isFinite(payload.x) ? clamp(Math.floor(payload.x), 0, GRID_SIZE - 1) : runtime.localPlayer.x;
   const nextY = Number.isFinite(payload.y) ? clamp(Math.floor(payload.y), 0, GRID_SIZE - 1) : runtime.localPlayer.y;
 
-  if (isPassable(nextX, nextY)) {
-    runtime.localPlayer.x = nextX;
-    runtime.localPlayer.y = nextY;
-  }
+  // Server already validated the position — apply unconditionally.
+  runtime.localPlayer.x = nextX;
+  runtime.localPlayer.y = nextY;
 
   if (typeof payload.name === "string") {
     runtime.localPlayer.name = payload.name;
@@ -511,10 +504,9 @@ function setRemotePlayer(payload = {}) {
   const nextX = Number.isFinite(payload.x) ? clamp(Math.floor(payload.x), 0, GRID_SIZE - 1) : runtime.remotePlayer.x;
   const nextY = Number.isFinite(payload.y) ? clamp(Math.floor(payload.y), 0, GRID_SIZE - 1) : runtime.remotePlayer.y;
 
-  if (isPassable(nextX, nextY)) {
-    runtime.remotePlayer.x = nextX;
-    runtime.remotePlayer.y = nextY;
-  }
+  // Server already validated the position — apply unconditionally.
+  runtime.remotePlayer.x = nextX;
+  runtime.remotePlayer.y = nextY;
 
   if (typeof payload.name === "string") {
     runtime.remotePlayer.name = payload.name;
