@@ -18,6 +18,12 @@
       import "./main.js";
       import { connectMultiplayer, sendMovement } from "./network.js";
 
+      const params = new URLSearchParams(window.location.search);
+      const serverOverride = params.get("server");
+      if (serverOverride) {
+        window.BLOCK_TOPIA_SERVER = serverOverride;
+      }
+
       const mountOptions = { containerId: "game-shell", canvasId: "game" };
 
       const waitForAPI = () => new Promise((resolve) => {
@@ -36,12 +42,10 @@
 
         api.mount(mountOptions);
 
-        // wire movement → server
         api.setPositionBroadcastSink((pos) => {
           sendMovement(pos.x, pos.y);
         });
 
-        // connect multiplayer
         await connectMultiplayer({
           playerName: "Player",
 
