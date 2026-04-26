@@ -18,6 +18,14 @@
  *  - combo + powerup HUD cells present
  *  - HUD uses .game-card .hud selector (proper specificity for 6-stat grid)
  *  - mobile media query uses .game-card .hud selector
+ * BUGFIX REGRESSION GUARDS
+ *  - Fix 1: boss death in bullets loop returns from update() after completeWave()
+ *  - Fix 1: completeWave/startWave never call resetGame, onGameOver, showGameOverModal
+ *  - Fix 1: submitScore only called inside onGameOver (not during wave completion)
+ *  - Fix 2: tryShoot must not mutate player.x (shoot recoil removed)
+ * CONTROLS
+ *  - Start/Pause/Reset buttons present
+ *  - game-fullscreen.js provides Mute + FS overlay buttons
  * BLOCK TOPIA unchanged
  */
 import assert from 'node:assert/strict';
@@ -34,8 +42,9 @@ const powerupSysPath   = path.join(INVADERS_DIR, 'powerup-system.js');
 const renderSysPath    = path.join(INVADERS_DIR, 'render-system.js');
 const indexPath        = path.resolve(here, '../index.html');
 const blockTopiaPath   = path.resolve(here, '../../block-topia/main.js');
+const gameFsPath       = path.resolve(here, '../../../js/game-fullscreen.js');
 
-const [bootstrapSrc, invaderSysSrc, powerupSysSrc, renderSysSrc, indexHtml, btStat] =
+const [bootstrapSrc, invaderSysSrc, powerupSysSrc, renderSysSrc, indexHtml, btStat, gameFsSrc] =
   await Promise.all([
     fs.readFile(bootstrapPath,  'utf8'),
     fs.readFile(invaderSysPath, 'utf8'),
@@ -43,6 +52,7 @@ const [bootstrapSrc, invaderSysSrc, powerupSysSrc, renderSysSrc, indexHtml, btSt
     fs.readFile(renderSysPath,  'utf8'),
     fs.readFile(indexPath,      'utf8'),
     fs.stat(blockTopiaPath),
+    fs.readFile(gameFsPath,     'utf8'),
   ]);
 
 // ── Bootstrap ─────────────────────────────────────────────────────────────────
@@ -153,5 +163,64 @@ assert.ok(
 
 assert.ok(btStat.size > 1000,
   'Block Topia main.js must still exist and be non-trivial');
+
+// ── Fix 1: Wave transition safety ─────────────────────────────────────────────
+
+// Boss death inside bullets loop must immediately exit update() so the loop
+// never continues with a stale/empty bullets array (which would cause a
+// TypeError on bullets[bi].x and freeze the game loop).
+assert.ok(
+  /boss\s*=\s*null;\s*completeWave\(\);\s*updateEffects\(dt\);\s*return;/.test(bootstrapSrc),
+  'boss death in bullets loop must call updateEffects(dt); return; after completeWave()'
+);
+
+// Extract function bodies for targeted checks (slice between known function declarations).
+const startWaveBody = bootstrapSrc.slice(
+  bootstrapSrc.indexOf('function startWave()'),
+  bootstrapSrc.indexOf('function completeWave()')
+);
+const completeWaveBody = bootstrapSrc.slice(
+  bootstrapSrc.indexOf('function completeWave()'),
+  bootstrapSrc.indexOf('function resetGame()')
+);
+
+assert.ok(!startWaveBody.includes('resetGame('),
+  'startWave must not call resetGame');
+assert.ok(!startWaveBody.includes('onGameOver('),
+  'startWave must not call onGameOver');
+assert.ok(!startWaveBody.includes('showGameOverModal'),
+  'startWave must not call showGameOverModal');
+
+assert.ok(!completeWaveBody.includes('resetGame('),
+  'completeWave must not call resetGame');
+assert.ok(!completeWaveBody.includes('onGameOver('),
+  'completeWave must not call onGameOver');
+assert.ok(!completeWaveBody.includes('showGameOverModal'),
+  'completeWave must not call showGameOverModal');
+
+// submitScore must only be called inside onGameOver — not during wave completion.
+assert.ok(!startWaveBody.includes('submitScore'),
+  'startWave must not call submitScore (score submit is game-over only)');
+assert.ok(!completeWaveBody.includes('submitScore'),
+  'completeWave must not call submitScore (score submit is game-over only)');
+
+// ── Fix 2: Space shoot must not move ship (recoil removed) ────────────────────
+
+assert.ok(!bootstrapSrc.includes('SHOOT_RECOIL'),
+  'SHOOT_RECOIL constant must be removed (shoot recoil removed)');
+
+// tryShoot must not mutate player.x
+const tryShootStart = bootstrapSrc.indexOf('function tryShoot()');
+const tryShootEnd   = bootstrapSrc.indexOf('\n  function ', tryShootStart + 1);
+const tryShootBody  = bootstrapSrc.slice(tryShootStart, tryShootEnd);
+assert.ok(!/player\.x\s*=/.test(tryShootBody),
+  'tryShoot must not assign to player.x (Space fires only, no recoil movement)');
+
+// ── Controls: Start/Pause/Reset in HTML; Mute/FS provided by game-fullscreen ──
+
+assert.ok(gameFsSrc.includes('overlay-btn-mute'),
+  'game-fullscreen.js must provide a Mute overlay button (overlay-btn-mute)');
+assert.ok(gameFsSrc.includes('overlay-btn-fs'),
+  'game-fullscreen.js must provide a FS overlay button (overlay-btn-fs)');
 
 console.log('Invaders 3008 smoke checks passed (refactor).');
