@@ -65,19 +65,35 @@ export class MinimalCityRoom extends Room {
 
     this.onMessage('move', (client, data) => {
       const player = this.playersBySession.get(client.sessionId);
-      if (!player) return;
+      if (!player) {
+        console.warn(`[MinimalCityRoom] move rejected: no player for session=${client.sessionId}`);
+        return;
+      }
 
       const nextX = Number(data?.x);
       const nextY = Number(data?.y);
-      if (!Number.isFinite(nextX) || !Number.isFinite(nextY)) return;
+      console.log(`[MinimalCityRoom] move received session=${client.sessionId} x=${nextX} y=${nextY} (from ${player.x},${player.y})`);
+
+      if (!Number.isFinite(nextX) || !Number.isFinite(nextY)) {
+        console.warn(`[MinimalCityRoom] move rejected: non-finite coords x=${data?.x} y=${data?.y} session=${client.sessionId}`);
+        return;
+      }
 
       const next = clampPosition(nextX, nextY, { min: 0, max: MAP_WIDTH - 1 });
       const previous = { x: player.x, y: player.y };
-      if (!validateMovement(previous, next, MAX_MOVE_DISTANCE)) return;
-      if (!this.isPassable(next.x, next.y)) return;
+      if (!validateMovement(previous, next, MAX_MOVE_DISTANCE)) {
+        const dist = Math.sqrt((next.x - previous.x) ** 2 + (next.y - previous.y) ** 2);
+        console.warn(`[MinimalCityRoom] move rejected: distance ${dist.toFixed(2)} > MAX_MOVE_DISTANCE ${MAX_MOVE_DISTANCE} session=${client.sessionId}`);
+        return;
+      }
+      if (!this.isPassable(next.x, next.y)) {
+        console.warn(`[MinimalCityRoom] move rejected: tile (${next.x},${next.y}) is blocked session=${client.sessionId}`);
+        return;
+      }
 
       player.x = next.x;
       player.y = next.y;
+      console.log(`[MinimalCityRoom] move accepted session=${client.sessionId} -> (${player.x},${player.y})`);
     });
   }
 

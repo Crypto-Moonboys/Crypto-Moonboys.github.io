@@ -175,16 +175,20 @@ function moveLocal(dx, dy) {
   // Do NOT mutate local position here — server is the source of truth.
   // Send the desired target; server validates and broadcasts the accepted position.
   if (runtime.positionSink) {
+    console.log(`[BlockTopia] positionSink called x=${nextX} y=${nextY} (from ${runtime.localPlayer.x},${runtime.localPlayer.y})`);
     runtime.positionSink({
       x: nextX,
       y: nextY,
       sessionId: runtime.localPlayer.sessionId,
     });
+  } else {
+    console.warn('[BlockTopia] positionSink not set — move dropped');
   }
 }
 
 function onKeyDown(event) {
   const key = event.key;
+  console.log(`[BlockTopia] keydown key=${key}`);
 
   if (key === "ArrowUp" || key === "w" || key === "W") {
     event.preventDefault();
@@ -224,14 +228,19 @@ function onPointerDown(event) {
     return;
   }
 
+  console.log(`[BlockTopia] click tile selected x=${tile.x} y=${tile.y}`);
+
   // Do NOT mutate local position — server is the source of truth.
   // Send the desired target; server validates and broadcasts the accepted position.
   if (runtime.positionSink) {
+    console.log(`[BlockTopia] positionSink called x=${tile.x} y=${tile.y} (click)`);
     runtime.positionSink({
       x: tile.x,
       y: tile.y,
       sessionId: runtime.localPlayer.sessionId,
     });
+  } else {
+    console.warn('[BlockTopia] positionSink not set — click move dropped');
   }
 }
 
