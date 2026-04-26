@@ -748,9 +748,19 @@ bkcore.hexgl.ShipControls.prototype.heightCheck = function(dt)
 	{
 		var delta = (height - this.dummy.position.y);
 
-		// Apply near-full correction (0.9) so the ship tracks slopes
-		// immediately with slight smoothing, avoiding hard-snap jitter.
-		this.movement.y += delta * 0.9;
+		// Grounded: ship is within snapping distance of the surface.
+		// Hard-lock vertical velocity and snap position to eliminate slope penetration.
+		// Airborne: use smooth correction so the ship glides back to the surface.
+		var grounded = Math.abs(delta) < 5;
+		if(grounded)
+		{
+			this.movement.y = 0;              // lock vertical velocity — prevents penetration
+			this.dummy.position.y = height;   // snap to surface
+		}
+		else
+		{
+			this.movement.y += delta * 0.9;   // smooth correction while airborne
+		}
 
 		// Store surface height for the post-translateY floor clamp.
 		this._groundHeight = height;
