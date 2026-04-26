@@ -155,9 +155,13 @@ function pickTile(screenX, screenY) {
     }
 
     const [sx, sy] = tileToScreen(tx, ty);
-    const dx = screenX - sx;
-    const dy = screenY - (sy + th / 2);
-    const dist = dx * dx + dy * dy;
+    // Use the diamond-containment metric: Manhattan distance in (tw/2, th/2)-normalized
+    // space.  A point inside the tile diamond has dist ≤ 1; outside has dist > 1.
+    // This correctly handles the 2:1 aspect ratio where Euclidean distance picks the
+    // wrong tile near the left/right vertices of a diamond.
+    const dx = Math.abs(screenX - sx) / (tw / 2);
+    const dy = Math.abs(screenY - (sy + th / 2)) / (th / 2);
+    const dist = dx + dy;
 
     if (dist < bestDist) {
       bestDist = dist;
