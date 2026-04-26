@@ -139,6 +139,14 @@ export function bootstrapPacChain(root) {
   const GLITCH_DURATION = 0.08;
   const GLITCH_COOLDOWN_MIN = 5;
   const GLITCH_COOLDOWN_RANGE = 4;
+  // Ghost AI balance
+  const CHASER_BASE_AGGRESSION     = 0.5;
+  const CHASER_AGGRESSION_PER_LEVEL = 0.04;
+  const CHASER_MAX_AGGRESSION       = 0.9;
+  // Power pellet balance
+  const BASE_POWER_DURATION     = 8;
+  const POWER_REDUCTION_PER_LEVEL = 0.5;
+  const MIN_POWER_DURATION      = 4;
 
   // ── Game state ────────────────────────────────────────────────────────
   let maze = [];
@@ -575,8 +583,9 @@ export function bootstrapPacChain(root) {
       } else {
         switch (e.type) {
           case 'chaser':
-            // 70% chase, 30% random — gets more aggressive per level
-            chosen = Math.random() < Math.min(0.9, 0.5 + level * 0.04) ? pickChaserDir(e) : pickRandomDir(e);
+            // Aggression increases with level; gets more aggressive per level
+            chosen = Math.random() < Math.min(CHASER_MAX_AGGRESSION, CHASER_BASE_AGGRESSION + level * CHASER_AGGRESSION_PER_LEVEL)
+              ? pickChaserDir(e) : pickRandomDir(e);
             break;
           case 'ambusher':
             chosen = Math.random() < 0.65 ? pickAmbusherDir(e) : pickRandomDir(e);
@@ -613,7 +622,7 @@ export function bootstrapPacChain(root) {
       addScore(50, { withChain: true, x: cx, y: cy, color: '#ff8df0' });
       spawnParticleBurst(cx, cy, 10, '#ff4fd1');
       triggerShake(3.5, 0.12);
-      const powerDur = Math.max(4, 8 - level * 0.5);
+      const powerDur = Math.max(MIN_POWER_DURATION, BASE_POWER_DURATION - level * POWER_REDUCTION_PER_LEVEL);
       powerTimer = powerDur;
       ghostCombo = 0;
       enemies.forEach((e) => {
@@ -1446,6 +1455,8 @@ export function bootstrapPacChain(root) {
     document.addEventListener('keydown', onKeyDown);
 
     // Fullscreen resize listeners — store bound refs for proper removal
+    // The 200ms delay on overlay-open lets the CSS transition finish placing
+    // the game-card inside the stage before we measure available dimensions.
     _onOverlayOpen  = function () { setTimeout(handleResize, 200); };
     _onOverlayClose = handleResize;
     _onWindowResize = handleResize;
