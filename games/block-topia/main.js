@@ -139,8 +139,6 @@ function pickTile(screenX, screenY) {
   const gx = (localX / (tw / 2) + localY / (th / 2)) / 2;
   const gy = (localY / (th / 2) - localX / (tw / 2)) / 2;
 
-  console.log('[PICK TILE]', screenX, screenY, '->', gx, gy);
-
   const candidates = [
     [Math.floor(gx), Math.floor(gy)],
     [Math.ceil(gx), Math.floor(gy)],
