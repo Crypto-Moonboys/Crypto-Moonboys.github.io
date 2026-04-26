@@ -253,17 +253,19 @@ bkcore.hexgl.ShipControls = function(ctx)
 		switch(event.keyCode)
 		{
 			case 38: /*up*/	self.key.forward = true; break;
+			case 87: /*W*/	self.key.forward = true; break;
 
 			case 40: /*down*/self.key.backward = true; break;
+			case 83: /*S*/  self.key.backward = true; break;
 
 			case 37: /*left*/self.key.left = true; break;
 
 			case 39: /*right*/self.key.right = true; break;
 
 			case 81: /*Q*/self.key.ltrigger = true; break;
-			case 65: /*A*/self.key.ltrigger = true; break;
+			case 65: /*A*/self.key.ltrigger = true; self.key.left = true; break;
 
-			case 68: /*D*/self.key.rtrigger = true; break;
+			case 68: /*D*/self.key.rtrigger = true; self.key.right = true; break;
 			case 69: /*E*/self.key.rtrigger = true; break;
 		}
 	};
@@ -273,17 +275,19 @@ bkcore.hexgl.ShipControls = function(ctx)
 		switch(event.keyCode)
 		{
 			case 38: /*up*/	self.key.forward = false; break;
+			case 87: /*W*/	self.key.forward = false; break;
 
 			case 40: /*down*/self.key.backward = false; break;
+			case 83: /*S*/  self.key.backward = false; break;
 
 			case 37: /*left*/self.key.left = false; break;
 
 			case 39: /*right*/self.key.right = false; break;
 
 			case 81: /*Q*/self.key.ltrigger = false; break;
-			case 65: /*A*/self.key.ltrigger = false; break;
+			case 65: /*A*/self.key.ltrigger = false; self.key.left = false; break;
 
-			case 68: /*D*/self.key.rtrigger = false; break;
+			case 68: /*D*/self.key.rtrigger = false; self.key.right = false; break;
 			case 69: /*E*/self.key.rtrigger = false; break;
 		}
 	};
@@ -744,9 +748,19 @@ bkcore.hexgl.ShipControls.prototype.heightCheck = function(dt)
 	{
 		var delta = (height - this.dummy.position.y);
 
-		// Apply near-full correction (0.9) so the ship tracks slopes
-		// immediately with slight smoothing, avoiding hard-snap jitter.
-		this.movement.y += delta * 0.9;
+		// Grounded: ship is within snapping distance of the surface.
+		// Hard-lock vertical velocity and snap position to eliminate slope penetration.
+		// Airborne: use smooth correction so the ship glides back to the surface.
+		var grounded = Math.abs(delta) < 15;
+		if(grounded)
+		{
+			this.movement.y = 0;              // lock vertical velocity — prevents penetration
+			this.dummy.position.y = height;   // snap to surface
+		}
+		else
+		{
+			this.movement.y += delta * 0.9;   // smooth correction while airborne
+		}
 
 		// Store surface height for the post-translateY floor clamp.
 		this._groundHeight = height;
