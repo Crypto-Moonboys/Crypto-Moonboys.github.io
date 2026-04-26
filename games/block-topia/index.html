@@ -5,34 +5,61 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Block Topia - 2P Iso Map Base</title>
     <link rel="stylesheet" href="./styles.css" />
+
+    <!-- Colyseus client (required for multiplayer) -->
+    <script src="https://unpkg.com/colyseus.js@^0.16.0/dist/colyseus.js"></script>
   </head>
   <body>
     <div id="game-shell">
       <canvas id="game" aria-label="Block Topia isometric map"></canvas>
     </div>
+
     <script type="module">
       import "./main.js";
+      import { connectMultiplayer, sendMovement } from "./network.js";
 
       const mountOptions = { containerId: "game-shell", canvasId: "game" };
-      const MAX_MOUNT_ATTEMPTS = 8;
-      let mountAttempts = 0;
 
-      const tryMount = () => {
-        const api = window.BlockTopiaMap;
-        if (api && typeof api.mount === "function") {
-          api.mount(mountOptions);
-          return;
-        }
+      const waitForAPI = () => new Promise((resolve) => {
+        const check = () => {
+          if (window.BlockTopiaMap && typeof window.BlockTopiaMap.mount === "function") {
+            resolve(window.BlockTopiaMap);
+          } else {
+            requestAnimationFrame(check);
+          }
+        };
+        check();
+      });
 
-        mountAttempts += 1;
-        if (mountAttempts < MAX_MOUNT_ATTEMPTS) {
-          requestAnimationFrame(tryMount);
-        } else {
-          console.error("BlockTopiaMap mount failed: API unavailable");
-        }
+      const start = async () => {
+        const api = await waitForAPI();
+
+        api.mount(mountOptions);
+
+        // wire movement → server
+        api.setPositionBroadcastSink((pos) => {
+          sendMovement(pos.x, pos.y);
+        });
+
+        // connect multiplayer
+        await connectMultiplayer({
+          playerName: "Player",
+
+          onStatus: (status) => {
+            api.setConnectionStatus(status);
+
+            if (status.sessionId) {
+              api.setLocalPlayer({ sessionId: status.sessionId });
+            }
+          },
+
+          onPlayers: (players) => {
+            api.updatePlayers(players);
+          }
+        });
       };
 
-      tryMount();
+      start();
 
       const cleanup = () => {
         if (window.BlockTopiaMap && typeof window.BlockTopiaMap.destroy === "function") {
