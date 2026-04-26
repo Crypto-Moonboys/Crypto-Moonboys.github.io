@@ -784,9 +784,12 @@ export function bootstrapInvaders(root) {
     stopAllSounds();
     setBestMaybe();
     updateHud();
-    try {
-      await submitScore(ArcadeSync.getPlayer(), score, GAME_ID);
-    } catch (e) {}
+    if (score > 0) {
+      const playerName = window.MOONBOYS_IDENTITY?.getTelegramName?.() || ArcadeSync.getPlayer();
+      try {
+        await submitScore(playerName, score, GAME_ID);
+      } catch (e) {}
+    }
     draw();
     if (window.showGameOverModal) window.showGameOverModal(score);
   }

@@ -69,9 +69,9 @@
 
     var text = document.createElement('span');
     text.innerHTML =
-      '<strong style="color:#f7c948">Null Drift Championship — Season ' + seasonNum + '</strong>' +
-      ' &nbsp;|&nbsp; Compete in HexGL Monster Mode for seasonal XP &amp; wiki recognition.' +
-      ' &nbsp;<a href="/games/hexgl-monster-max/" style="color:#f7c948;text-decoration:underline">Race now →</a>';
+      '<strong style="color:#f7c948">Arcade Season ' + seasonNum + ' — Active Now</strong>' +
+      ' &nbsp;|&nbsp; Invaders 3008 is the current arcade XP &amp; leaderboard source.' +
+      ' &nbsp;<a href="/games/invaders-3008/" style="color:#f7c948;text-decoration:underline">Play now →</a>';
 
     var closeBtn = document.createElement('button');
     closeBtn.setAttribute('type', 'button');

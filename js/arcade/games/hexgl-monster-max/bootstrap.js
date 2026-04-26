@@ -1,5 +1,13 @@
+/**
+ * bootstrap.js — HexGL Monster Max (DEPRECATED — not active XP source)
+ *
+ * HexGL is archived and no longer the arcade leaderboard / XP source of truth.
+ * Invaders 3008 (/games/invaders-3008/) is the current primary arcade XP game.
+ *
+ * Score submission is fully disabled in this file.
+ * HexGL can still be loaded for testing purposes only.
+ */
 import { ArcadeSync }              from '/js/arcade-sync.js';
-import { submitScore }             from '/js/leaderboard-client.js';
 import { HEXGL_MONSTER_MAX_CONFIG }  from './config.js';
 import { GameRegistry }              from '/js/arcade/core/game-registry.js';
 import { playSound, isMuted, stopAllSounds } from '/js/arcade/core/audio.js';
@@ -186,25 +194,11 @@ export function bootstrapHexGLMonsterMax(root) {
     } catch (_) {}
   }
 
+  // HexGL deprecated — not active XP source.
+  // autoSubmit is intentionally disabled: HexGL scores must not reach the
+  // leaderboard or grant XP.  Invaders 3008 is the current arcade XP source.
   async function autoSubmit() {
-    if (!completedRunMs || completedScoreSubmitted) return;
-    if (!window.MOONBOYS_IDENTITY?.isTelegramLinked?.()) return;
-    var score = calcScore(completedRunMs);
-    if (score <= 0) return;
-    playUiTone('submit');
-    try {
-      await submitScore(playerName, score, HEXGL_MONSTER_MAX_CONFIG.id);
-      completedScoreSubmitted = true;
-      if (submitBtn) {
-        submitBtn.textContent = '✅ Submitted';
-        submitBtn.disabled = true;
-      }
-      setStatus('SUBMITTED');
-    } catch (err) {
-      console.error('[hexgl] autoSubmit failed:', err);
-      notify('Submission failed — click Submit to retry.');
-      if (submitBtn) submitBtn.disabled = false;
-    }
+    return;
   }
 
   // Called when the HexGL iframe sends a race-finish postMessage event.
@@ -226,18 +220,9 @@ export function bootstrapHexGLMonsterMax(root) {
     savePersonalBest(ms);
     localStorage.setItem('hexgl_last_run_ms', String(ms));
     setStatus('RUN COMPLETE');
-    if (submitBtn) submitBtn.disabled = false;
-    if (window.MOONBOYS_IDENTITY?.isTelegramLinked?.()) {
-      autoSubmit().catch(function (err) {
-        console.error('[hexgl] race-finish auto-submit failed:', err);
-      });
-    } else {
-      if (window.MOONBOYS_IDENTITY?.showSyncGateModal) {
-        window.MOONBOYS_IDENTITY.showSyncGateModal(true);
-      } else {
-        notify('Run saved locally. Sync with Telegram to submit to leaderboard.');
-      }
-    }
+    // HexGL deprecated — score submission is disabled.  Submit button stays disabled.
+    if (submitBtn) submitBtn.disabled = true;
+    notify('Run recorded locally. Note: HexGL score submission is disabled — Invaders 3008 is the current arcade XP source.');
   }
 
   function onHexGLMessage(event) {
@@ -271,36 +256,13 @@ export function bootstrapHexGLMonsterMax(root) {
     setOverlayStartEnabled(false);
   }
 
+  // HexGL deprecated — not active XP source.
+  // onSubmit is intentionally disabled: HexGL scores must not reach the
+  // leaderboard or grant XP.  Invaders 3008 is the current arcade XP source.
   async function onSubmit() {
-    // Stop wrapper timer if it is running (cleanup only — the wrapper timer
-    // elapsed time is NOT used as a score; only a postMessage race-complete
-    // event can set completedRunMs).
-    stopRunAndCapture();
-
-    if (typeof completedRunMs !== 'number' || completedRunMs < MIN_RUN_MS) {
-      playUiTone('error');
-      if (frameLoaded && !isFrameBlank()) {
-        setStatus('RUN READY');
-        setOverlayStartEnabled(true);
-      }
-      notify('Complete a valid run first (minimum 30 seconds).');
-      return;
-    }
-    var score = calcScore(completedRunMs);
-    if (score <= 0) {
-      playUiTone('error');
-      notify('Run is too slow to qualify for leaderboard submission.');
-      return;
-    }
-    if (!window.MOONBOYS_IDENTITY?.isTelegramLinked?.()) {
-      if (window.MOONBOYS_IDENTITY?.showSyncGateModal) {
-        window.MOONBOYS_IDENTITY.showSyncGateModal(true);
-      } else {
-        notify('Telegram sync required for ranked submission. Run /gklink in @WIKICOMSBOT. Unsynced runs stay local.');
-      }
-      return;
-    }
-    await autoSubmit();
+    playUiTone('error');
+    notify('HexGL score submission is disabled. Invaders 3008 is the current arcade XP source.');
+    return;
   }
 
   function onReset() {
@@ -353,14 +315,7 @@ export function bootstrapHexGLMonsterMax(root) {
     window.addEventListener('message', onHexGLMessage);
     document.addEventListener('arcade-overlay-exit', function () {
       playUiTone('exit');
-      // Retry auto-submit on overlay exit if there is an unsent valid completed run.
-      if (completedRunMs && !completedScoreSubmitted) {
-        if (window.MOONBOYS_IDENTITY?.isTelegramLinked?.()) {
-          autoSubmit().catch(function (err) {
-            console.error('[hexgl] exit auto-submit failed:', err);
-          });
-        }
-      }
+      // HexGL deprecated — not active XP source.  Auto-submit on exit disabled.
     });
     if (startBtn) startBtn.addEventListener('click', onStart);
     if (submitBtn) submitBtn.addEventListener('click', onSubmit);
