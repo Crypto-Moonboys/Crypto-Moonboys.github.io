@@ -2,6 +2,20 @@ const SOUND_LIBRARY = {
   'invaders-shoot':     { kind: 'tone',  type: 'square',   freqStart: 620, freqEnd: 341, duration: 0.05, volume: 0.03 },
   'invaders-hit':       { kind: 'tone',  type: 'triangle', freqStart: 180, freqEnd: 99,  duration: 0.07, volume: 0.04 },
   'invaders-explosion': { kind: 'tone',  type: 'sawtooth', freqStart: 90,  freqEnd: 60,  duration: 0.18, volume: 0.05 },
+  'invaders-powerup':   { kind: 'tone',  type: 'triangle', freqStart: 660, freqEnd: 1320, duration: 0.14, volume: 0.045 },
+  'invaders-player-damage': { kind: 'chord', tones: [
+    { type: 'sawtooth', freqStart: 220, freqEnd: 110, duration: 0.18, volume: 0.05, delay: 0.00 },
+    { type: 'square',   freqStart: 180, freqEnd: 90,  duration: 0.14, volume: 0.04, delay: 0.03 },
+  ]},
+  'invaders-boss-warning': { kind: 'chord', tones: [
+    { type: 'sawtooth', freqStart: 160, freqEnd: 80,  duration: 0.22, volume: 0.06, delay: 0.00 },
+    { type: 'square',   freqStart: 240, freqEnd: 120, duration: 0.18, volume: 0.04, delay: 0.06 },
+  ]},
+  'invaders-game-over': { kind: 'chord', tones: [
+    { type: 'sawtooth', freqStart: 360, freqEnd: 160, duration: 0.28, volume: 0.05, delay: 0.00 },
+    { type: 'sawtooth', freqStart: 280, freqEnd: 120, duration: 0.26, volume: 0.04, delay: 0.08 },
+    { type: 'triangle', freqStart: 220, freqEnd: 80,  duration: 0.24, volume: 0.04, delay: 0.18 },
+  ]},
   'hexgl-start':        { kind: 'tone',  type: 'triangle', freqStart: 440, freqEnd: 660, duration: 0.09, volume: 0.05 },
   'hexgl-reset':        { kind: 'tone',  type: 'sawtooth', freqStart: 300, freqEnd: 170, duration: 0.12, volume: 0.04 },
   'hexgl-submit':       { kind: 'tone',  type: 'sine',     freqStart: 620, freqEnd: 880, duration: 0.12, volume: 0.06 },

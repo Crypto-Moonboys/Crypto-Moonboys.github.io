@@ -4,19 +4,23 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>👾 Invaders 3008 — Crypto Moonboys Arcade</title>
-  <meta name="description" content="Moonboys-themed Space Invaders clone. Survive alien waves, beat the boss, climb the leaderboard.">
+  <meta name="description" content="Moonboys-themed Space Invaders. Six enemy classes, powerups, bunkers, boss waves. Survive and climb the leaderboard.">
   <meta name="robots" content="index, follow">
   <link rel="stylesheet" href="/css/wiki.css">
   <link rel="stylesheet" href="/css/game-fullscreen.css">
   <link rel="icon" href="/img/favicon.svg" type="image/svg+xml">
   <style>
     .game-card{background:rgba(255,255,255,.03);border:1px solid var(--color-border,#333);border-radius:16px;padding:18px}
-    .hud{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:14px}
-    .hud .stat{background:rgba(255,255,255,.04);border:1px solid var(--color-border,#333);border-radius:12px;padding:12px;text-align:center}
-    .hud .label{font-size:.7rem;color:var(--color-text-muted)}
-    .hud .value{font-weight:700;font-size:1.15rem}
-    .hud .value.pulse{animation:scorePulse .18s ease-out}
-    .hud .value.flash{animation:livesFlash .22s ease-out}
+    /* Use .game-card .hud (specificity 0,2,0) to beat body .hud (0,1,1) from
+       game-fullscreen.css on the normal page, while the fullscreen overlay rule
+       #game-overlay .game-card .hud (1,2,0) in game-fullscreen.css still wins
+       and converts the HUD to its compact flex strip. */
+    .game-card .hud{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-bottom:14px}
+    .game-card .hud .stat{background:rgba(255,255,255,.04);border:1px solid var(--color-border,#333);border-radius:12px;padding:12px;text-align:center}
+    .game-card .hud .label{font-size:.7rem;color:var(--color-text-muted)}
+    .game-card .hud .value{font-weight:700;font-size:1.15rem}
+    .game-card .hud .value.pulse{animation:scorePulse .18s ease-out}
+    .game-card .hud .value.flash{animation:livesFlash .22s ease-out}
     @keyframes scorePulse{
       0%{transform:scale(1);color:#fff}
       50%{transform:scale(1.18);color:#f7c948}
@@ -32,7 +36,8 @@
     .game-btn{padding:.8rem 1.1rem;border:none;border-radius:12px;background:#f7ab1a;color:#111;font-weight:700;cursor:pointer}
     .game-btn.alt{background:rgba(255,255,255,.08);color:#fff}
     .note{margin-top:14px;color:var(--color-text-muted);font-size:.85rem}
-    @media(max-width:720px){.hud{grid-template-columns:repeat(2,minmax(0,1fr));}}
+    /* Mobile: 2-column grid so each stat still gets a card box */
+    @media(max-width:720px){.game-card .hud{grid-template-columns:repeat(2,minmax(0,1fr));}}
   </style>
 </head>
 <body>
@@ -90,6 +95,8 @@
           <div class="stat"><div class="label">Best</div><div class="value" id="best">0</div></div>
           <div class="stat"><div class="label">Wave</div><div class="value" id="wave">—</div></div>
           <div class="stat"><div class="label">Lives</div><div class="value" id="lives">3</div></div>
+          <div class="stat"><div class="label">Combo</div><div class="value" id="combo">×1</div></div>
+          <div class="stat"><div class="label">Power</div><div class="value" id="powerup">—</div></div>
         </div>
         <canvas id="invCanvas" width="540" height="660" aria-label="Invaders 3008 game"></canvas>
         <div class="row">
