@@ -176,12 +176,11 @@ function detectGameId() {
   if (path.includes('asteroid')) return 'asteroid-fork';
   if (path.includes('block-topia-quest-maze')) return 'btqm';
   if (path.includes('crystal-quest')) return 'crystal';
-  if (path.includes('hexgl')) return 'hexgl';
   return 'global';
 }
 
 function getRotationGames() {
-  return ['snake', 'crystal', 'btqm', 'invaders', 'pacchain', 'breakout', 'tetris', 'asteroid-fork', 'hexgl'];
+  return ['snake', 'crystal', 'btqm', 'invaders', 'pacchain', 'breakout', 'tetris', 'asteroid-fork'];
 }
 
 function getFeaturedWindow(now = nowMs()) {

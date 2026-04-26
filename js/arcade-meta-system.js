@@ -12,7 +12,6 @@ const LIVE_EVENT_COOLDOWN_MS = 25 * 1000;
 
 const DEFAULT_CONFIG = {
   difficultyWeights: {
-    hexgl: 1.8,
     btqm: 1.5,
     invaders: 1.4,
     breakout: 1.2,
@@ -46,7 +45,6 @@ const DEFAULT_CONFIG = {
   timing: {
     defaultTargetSeconds: 120,
     targetSecondsByGame: {
-      hexgl: 180,
       btqm: 150,
       invaders: 140,
       breakout: 120,
@@ -341,7 +339,7 @@ function randomInRange(min, max) {
 }
 
 function getChaosGameRotation() {
-  return ['snake', 'crystal', 'btqm', 'invaders', 'pacchain', 'breakout', 'tetris', 'asteroids', 'hexgl'];
+  return ['snake', 'crystal', 'btqm', 'invaders', 'pacchain', 'breakout', 'tetris', 'asteroids'];
 }
 
 function getFeaturedChaosWindow(now = nowMs()) {
