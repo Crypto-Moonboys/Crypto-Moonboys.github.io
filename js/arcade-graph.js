@@ -28,7 +28,7 @@ function makeOverviewNodes(cx, cy, r) {
     { id: 'asteroids',  label: '🌑 Asteroids',  color: C.muted  },
     { id: 'breakout',   label: '🧱 Bullrun',    color: '#ff6b35' },
     { id: 'tetris',     label: '🟦 Tetris',     color: '#a78bfa' },
-    { id: 'hexgl',      label: '🏁 HexGL',      color: C.cyan   },
+    // HexGL is deprecated and disabled as XP source. Invaders 3008 is current arcade leaderboard/XP source.
   ];
   const out = [
     { id: 'global', label: '🏆 Arcade', color: C.gold, radius: 26, x: cx, y: cy, fixed: true },
@@ -54,7 +54,7 @@ const OVERVIEW_EDGES = [
   { source: 'global', target: 'asteroids'  },
   { source: 'global', target: 'breakout'   },
   { source: 'global', target: 'tetris'     },
-  { source: 'global', target: 'hexgl'      },
+  // HexGL is deprecated and disabled as XP source. Invaders 3008 is current arcade leaderboard/XP source.
 ];
 
 // ── State ─────────────────────────────────────────────────────────────────
@@ -242,7 +242,7 @@ export function setPlayerState(entry) {
     { id: 'asteroids',  label: '🌑 Asteroids',  color: C.muted,  score: bd.asteroids  ?? null },
     { id: 'breakout',   label: '🧱 Bullrun',   color: '#ff6b35',  score: bd.breakout   ?? null },
     { id: 'tetris',     label: '🟦 Tetris',     color: '#a78bfa',  score: bd.tetris     ?? null },
-    { id: 'hexgl',      label: '🏁 HexGL',      color: C.cyan,     score: bd.hexgl      ?? null },
+    // HexGL is deprecated and disabled as XP source. Invaders 3008 is current arcade leaderboard/XP source.
     { id: 'bonus',      label: '⭐ Bonus',       color: C.green,  score: bd.variety_bonus ?? null },
   ];
 

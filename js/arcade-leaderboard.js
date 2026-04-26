@@ -17,7 +17,7 @@ const RAW_TABS = [
   { key: 'asteroids',  label: '🌑 Asteroids',   icon: '🌑' },
   { key: 'breakout',   label: '🧱 Bullrun',     icon: '🧱' },
   { key: 'tetris',     label: '🟦 Tetris',      icon: '🟦' },
-  { key: 'hexgl',      label: '🏁 HexGL',       icon: '🏁' },
+  // HexGL is deprecated and disabled as XP source. Invaders 3008 is current arcade leaderboard/XP source.
 ];
 
 const META_TABS = [
@@ -38,11 +38,12 @@ const GAME_LABELS = {
   asteroids:  '🌑 Asteroids',
   breakout:   '🧱 Bullrun',
   tetris:     '🟦 Tetris',
-  hexgl:      '🏁 HexGL',
+  // HexGL is deprecated and disabled as XP source. Invaders 3008 is current arcade leaderboard/XP source.
   bonus:      '⭐ Bonus',
 };
 
-const BREAKDOWN_GAMES = ['snake', 'crystal', 'blocktopia', 'invaders', 'pacchain', 'asteroids', 'breakout', 'tetris', 'hexgl'];
+const BREAKDOWN_GAMES = ['snake', 'crystal', 'blocktopia', 'invaders', 'pacchain', 'asteroids', 'breakout', 'tetris'];
+// HexGL is deprecated and disabled as XP source. Invaders 3008 is current arcade leaderboard/XP source.
 
 // ── State ─────────────────────────────────────────────────────────────────
 let currentMode = DEFAULT_MODE;

@@ -176,12 +176,13 @@ function detectGameId() {
   if (path.includes('asteroid')) return 'asteroid-fork';
   if (path.includes('block-topia-quest-maze')) return 'btqm';
   if (path.includes('crystal-quest')) return 'crystal';
-  if (path.includes('hexgl')) return 'hexgl';
+  // HexGL is deprecated and disabled as XP source. Invaders 3008 is current arcade leaderboard/XP source.
   return 'global';
 }
 
 function getRotationGames() {
-  return ['snake', 'crystal', 'btqm', 'invaders', 'pacchain', 'breakout', 'tetris', 'asteroid-fork', 'hexgl'];
+  // HexGL is deprecated and disabled as XP source. Invaders 3008 is current arcade leaderboard/XP source.
+  return ['snake', 'crystal', 'btqm', 'invaders', 'pacchain', 'breakout', 'tetris', 'asteroid-fork'];
 }
 
 function getFeaturedWindow(now = nowMs()) {
