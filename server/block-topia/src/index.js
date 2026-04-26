@@ -31,17 +31,22 @@ const gameServer = new Server({ server });
 // Register rooms
 gameServer.define('city', MinimalCityRoom).enableRealtimeListing();
 
+let _cityRoomBootstrapped = false;
+
 async function ensurePersistentCityRoom() {
+  if (_cityRoomBootstrapped) return;
+  _cityRoomBootstrapped = true;
+
   try {
-    const existingRooms = await matchMaker.query({ name: 'city', private: false });
-    const existing = Array.isArray(existingRooms) ? existingRooms[0] : null;
-    if (existing?.roomId) {
-      console.log(`[BlockTopia] persistent city room bootstrapped: ${existing.roomId}`);
+    const existingRooms = await matchMaker.query({ name: 'city' });
+    if (Array.isArray(existingRooms) && existingRooms.length > 0) {
+      const existing = existingRooms[0];
+      console.log(`[BlockTopia] persistent city room already exists: ${existing.roomId}`);
       return existing.roomId;
     }
   } catch (err) {
     // Continue with create fallback if query fails for any reason.
-    console.warn('[server] city room query failed, attempting create fallback:', err?.message || err);
+    console.warn('[server] city room query failed, attempting create:', err?.message || err);
   }
 
   const room = await matchMaker.createRoom('city', {});
