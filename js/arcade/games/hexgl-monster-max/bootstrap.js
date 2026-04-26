@@ -11,27 +11,29 @@ GameRegistry.register(HEXGL_MONSTER_MAX_CONFIG.id, {
 
 export function bootstrapHexGLMonsterMax(root) {
   // ── DESIGN INVARIANTS — do not remove or drift from these ─────────────────
-  // 1. SCORE SOURCE — IFRAME EVENTS ONLY:
-  //    completedRunMs MUST only be set from a real HexGL race-finish postMessage
-  //    event originating from the HexGL iframe.  It must NEVER be set from a
-  //    wrapper timer, button click, or any other wrapper-owned source.
-  // 2. SCORING UNAVAILABLE BY DEFAULT:
-  //    hexgl.bkcore.com is a cross-origin iframe that does not emit postMessage
-  //    race-finish events.  Until a hosted/local HexGL build that exposes race
-  //    events is served from this site, completedRunMs will never be set and all
-  //    score-related UI remains in "SCORING UNAVAILABLE" state.
-  // 3. AUTO-SUBMIT ON FINISH:
-  //    When a race-finish postMessage event is received and the user is Telegram-
-  //    linked, autoSubmit() fires immediately.  Submit button is manual-retry only.
-  // 4. EXIT FS RETRY:
-  //    On arcade-overlay-exit, if there is an unsent completedRunMs and the user
-  //    is Telegram-linked, autoSubmit() is retried automatically.
-  // 5. UNSYNCED USERS:
-  //    completedRunMs is saved to localStorage.  The sync-gate modal or inline
-  //    message is shown.  Submit button is the manual path once synced.
+  // 1. SINGLE START ACTION:
+  //    onStart() has one phase only.  First click loads the iframe; once loaded
+  //    a second click starts the wrapper timer.  If runActive is already true
+  //    the click is ignored entirely — no double-timer bug.
+  // 2. WRAPPER TIMER IS TEMPORARY SCORING SOURCE:
+  //    completedRunMs is normally set by stopRunAndCapture() (called from Submit
+  //    or from arcade-overlay-exit while a run is in flight).  When a local/
+  //    hosted HexGL build is available, handleRaceComplete() (postMessage path)
+  //    takes precedence and the wrapper timer becomes redundant.
+  // 3. POSTMESSAGE HOOK READY:
+  //    onHexGLMessage listens for { type:'hexgl-race-complete', time:<ms> }.
+  //    When a local HexGL build posts that event, handleRaceComplete() stops the
+  //    wrapper timer and records the real race time.  No other code changes are
+  //    needed at that point.
+  // 4. AUTO-SUBMIT ON FINISH:
+  //    Whenever completedRunMs is set (either path), if the user is Telegram-
+  //    linked autoSubmit() fires immediately.  Submit button is manual-retry only.
+  // 5. EXIT FS RETRY:
+  //    On arcade-overlay-exit, if a run is active it is captured first, then
+  //    auto-submit is retried for synced users.
   // 6. RESET CLEARS SCORE:
-  //    onReset() clears completedRunMs and completedScoreSubmitted, reloads the
-  //    iframe, and returns the page to the initial SCORING UNAVAILABLE state.
+  //    onReset() stops the timer, clears completedRunMs, reloads the iframe, and
+  //    returns the page to RUN READY state.
   // ──────────────────────────────────────────────────────────────────────────
   var MIN_RUN_MS = HEXGL_MONSTER_MAX_CONFIG.minRunMs;
   var FRAME_SRC = 'https://hexgl.bkcore.com/play/';
@@ -46,13 +48,16 @@ export function bootstrapHexGLMonsterMax(root) {
   var resetBtn        = document.getElementById('resetBtn');
   var inlineMessageEl = document.getElementById('hexgl-inline-message');
 
-  var playerName             = 'Guest';
-  var runToken               = 0;
-  var frameLoaded            = false;
-  var completedRunMs         = null;   // set only from iframe race-finish event
-  var completedScoreSubmitted = false; // true once completedRunMs was submitted
-  var statusText             = 'SCORING UNAVAILABLE';
-  var messageTimeoutId       = null;
+  var playerName              = 'Guest';
+  var runToken                = 0;
+  var frameLoaded             = false;
+  var runActive               = false;
+  var runStart                = null;
+  var intervalId              = null;
+  var completedRunMs          = null;
+  var completedScoreSubmitted = false;
+  var statusText              = 'RUN READY';
+  var messageTimeoutId        = null;
 
   function calcScore(ms) {
     return Math.max(0, Math.floor(500000 - (ms / 1000) * 1000));
@@ -69,6 +74,11 @@ export function bootstrapHexGLMonsterMax(root) {
   function getPlayerName() {
     var identityName = window.MOONBOYS_IDENTITY?.getTelegramName?.();
     return identityName || ArcadeSync.getPlayer();
+  }
+
+  function stopTimer() {
+    clearInterval(intervalId);
+    intervalId = null;
   }
 
   function setStatus(text) {
@@ -135,19 +145,18 @@ export function bootstrapHexGLMonsterMax(root) {
     if (labelEl) labelEl.textContent = ' ' + label;
   }
 
-  function notifyReadyToRace() {
-    setStatus('RACE AVAILABLE');
-    notify('HexGL loaded — race inside! Scoring requires game finish events (see status).');
-    setOverlayStartLabel('🏁', 'Open HexGL');
-    // Disable the ctrl-bar button: the iframe is already open; no further action needed.
-    setOverlayStartEnabled(false);
+  function notifyReadyToLaunch() {
+    setStatus('RUN READY');
+    notify('HexGL loaded. Enter the race in HexGL, then click Start Timer.');
+    setOverlayStartLabel('▶', 'Start Timer');
+    setOverlayStartEnabled(true);
   }
 
   function loadFrameForLaunch(forceReload) {
     if (!frameEl) return;
     var shouldReload = !!forceReload || !frameLoaded || isFrameBlank();
     if (!shouldReload) {
-      notifyReadyToRace();
+      notifyReadyToLaunch();
       return;
     }
     frameLoaded = false;
@@ -156,6 +165,17 @@ export function bootstrapHexGLMonsterMax(root) {
     setStatus('LOADING');
     notify('Loading HexGL…');
     frameEl.src = FRAME_SRC + '?t=' + Date.now();
+  }
+
+  // Stops the wrapper timer and returns the elapsed ms.  Returns null if no
+  // run was active.  Does NOT modify completedRunMs — callers do that.
+  function stopRunAndCapture() {
+    if (!runActive) return null;
+    var elapsed = Date.now() - runStart;
+    runActive = false;
+    runStart  = null;
+    stopTimer();
+    return elapsed;
   }
 
   function savePersonalBest(ms) {
@@ -190,7 +210,13 @@ export function bootstrapHexGLMonsterMax(root) {
 
   // Called when the HexGL iframe sends a race-finish postMessage event.
   // Expected shape: { type: 'hexgl-race-complete', time: <milliseconds> }
+  // When a local/hosted HexGL build is used, this path is authoritative and
+  // the wrapper timer is stopped so its elapsed time is discarded.
   function handleRaceComplete(ms) {
+    // Stop wrapper timer (if running) — iframe event is the source of truth.
+    stopRunAndCapture();
+    setOverlayStartEnabled(false);
+
     if (typeof ms !== 'number' || ms < MIN_RUN_MS) {
       notify('Race time too short to qualify (minimum 30 s).');
       return;
@@ -225,21 +251,65 @@ export function bootstrapHexGLMonsterMax(root) {
   }
 
   function onOverlayOpen() {
+    if (runActive) return;  // run in progress — leave it alone
     loadFrameForLaunch(false);
   }
 
   function onStart() {
-    // Loads the HexGL iframe if not already loaded.  Does NOT start a timer
-    // or arm any tracking — scoring comes only from iframe race-finish events.
     refreshIdentity();
-    loadFrameForLaunch(false);
+
+    // Phase 0: iframe not yet loaded — load it, wait for the load event.
+    if (!frameLoaded || isFrameBlank()) {
+      loadFrameForLaunch(false);
+      return;
+    }
+
+    // Guard: ignore if a run is already in progress (prevents double timer).
+    if (runActive) return;
+
+    // Start wrapper timer.
+    runToken += 1;
+    var token = runToken;
+    completedRunMs = null;
+    completedScoreSubmitted = false;
+    runStart = Date.now();
+    runActive = true;
+    setStatus('RUN ACTIVE');
+    playUiTone('start');
+    if (submitBtn) {
+      submitBtn.disabled = false;
+      submitBtn.textContent = '📤 Submit Run';
+    }
+    if (timerEl) timerEl.textContent = fmtTime(0);
+    if (scoreEl) scoreEl.textContent = calcScore(0).toLocaleString();
+    notify('');
+    setOverlayStartEnabled(false);
+    stopTimer();
+    intervalId = setInterval(function () {
+      if (token !== runToken) { stopTimer(); return; }
+      updateRunUI(Date.now() - runStart);
+    }, 100);
   }
 
   async function onSubmit() {
-    // Manual retry path — only works when a valid completed run exists.
-    if (!completedRunMs || completedRunMs < MIN_RUN_MS) {
+    // If a run is active, stop the clock and record the time.
+    var elapsed = stopRunAndCapture();
+    if (elapsed !== null) {
+      completedRunMs = elapsed;
+      completedScoreSubmitted = false;
+      updateRunUI(elapsed);
+      savePersonalBest(elapsed);
+      localStorage.setItem('hexgl_last_run_ms', String(elapsed));
+      setStatus('RUN COMPLETE');
+    }
+
+    if (typeof completedRunMs !== 'number' || completedRunMs < MIN_RUN_MS) {
       playUiTone('error');
-      notify('Complete a valid race in HexGL first. Scoring requires game finish events.');
+      if (frameLoaded && !isFrameBlank()) {
+        setStatus('RUN READY');
+        setOverlayStartEnabled(true);
+      }
+      notify('Complete a valid run first (minimum 30 seconds).');
       return;
     }
     var score = calcScore(completedRunMs);
@@ -262,6 +332,7 @@ export function bootstrapHexGLMonsterMax(root) {
   function onReset() {
     playUiTone('reset');
     runToken += 1;
+    stopRunAndCapture();   // clears runActive / runStart / intervalId
     completedRunMs = null;
     completedScoreSubmitted = false;
     frameLoaded = false;
@@ -272,7 +343,7 @@ export function bootstrapHexGLMonsterMax(root) {
     }
     if (timerEl) timerEl.textContent = '—';
     if (scoreEl) scoreEl.textContent = '—';
-    setStatus('SCORING UNAVAILABLE');
+    setStatus('RUN READY');
     if (startBtn) startBtn.disabled = false;
     if (submitBtn) {
       submitBtn.textContent = '📤 Submit Run';
@@ -283,7 +354,7 @@ export function bootstrapHexGLMonsterMax(root) {
 
   function init() {
     refreshIdentity();
-    setStatus('SCORING UNAVAILABLE');
+    setStatus('RUN READY');
     if (submitBtn) {
       submitBtn.textContent = '📤 Submit Run';
       submitBtn.disabled = true;
@@ -295,13 +366,12 @@ export function bootstrapHexGLMonsterMax(root) {
         if (isFrameBlank()) return;
         frameLoaded = true;
         frameEl.classList.add('loaded');
-        notifyReadyToRace();
+        if (!runActive) notifyReadyToLaunch();
       });
       frameEl.addEventListener('error', function () {
         frameLoaded = false;
         setStatus('LOAD ERROR');
         notify('HexGL failed to load. Click Start Fullscreen to retry.');
-        // Re-enable the ctrl-bar button so the user can retry loading.
         setOverlayStartLabel('🔄', 'Retry');
         setOverlayStartEnabled(true);
       });
@@ -309,6 +379,17 @@ export function bootstrapHexGLMonsterMax(root) {
     window.addEventListener('message', onHexGLMessage);
     document.addEventListener('arcade-overlay-exit', function () {
       playUiTone('exit');
+      // If a run is in flight when the overlay closes, capture it.
+      var elapsed = stopRunAndCapture();
+      if (elapsed !== null) {
+        completedRunMs = elapsed;
+        completedScoreSubmitted = false;
+        updateRunUI(elapsed);
+        savePersonalBest(elapsed);
+        localStorage.setItem('hexgl_last_run_ms', String(elapsed));
+        setStatus('RUN COMPLETE');
+        if (submitBtn) submitBtn.disabled = false;
+      }
       // Retry auto-submit on overlay exit if there is an unsent valid completed run.
       if (completedRunMs && !completedScoreSubmitted) {
         if (window.MOONBOYS_IDENTITY?.isTelegramLinked?.()) {
@@ -335,6 +416,7 @@ export function bootstrapHexGLMonsterMax(root) {
 
   function destroy() {
     runToken += 1;
+    stopRunAndCapture();
     window.removeEventListener('message', onHexGLMessage);
     stopAllSounds();
     clearTimeout(messageTimeoutId);
@@ -352,6 +434,7 @@ export function bootstrapHexGLMonsterMax(root) {
 
   function getScore() {
     if (typeof completedRunMs === 'number') return calcScore(completedRunMs);
+    if (runActive && runStart !== null) return calcScore(Date.now() - runStart);
     return 0;
   }
 
