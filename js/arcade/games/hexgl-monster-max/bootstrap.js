@@ -15,20 +15,21 @@ export function bootstrapHexGLMonsterMax(root) {
   //    onStart() has one phase only.  First click loads the iframe; once loaded
   //    a second click starts the wrapper timer.  If runActive is already true
   //    the click is ignored entirely — no double-timer bug.
-  // 2. WRAPPER TIMER IS TEMPORARY SCORING SOURCE:
-  //    completedRunMs is normally set by stopRunAndCapture() (called from Submit
-  //    or from arcade-overlay-exit while a run is in flight).  When a local/
-  //    hosted HexGL build is available, handleRaceComplete() (postMessage path)
-  //    takes precedence and the wrapper timer becomes redundant.
-  // 3. POSTMESSAGE HOOK READY:
-  //    onHexGLMessage listens for { type:'hexgl-race-complete', time:<ms> }.
-  //    When a local HexGL build posts that event, handleRaceComplete() stops the
-  //    wrapper timer and records the real race time.  No other code changes are
-  //    needed at that point.
+  // 2. DUAL SCORING PATHS (coexist until local build verified):
+  //    a) WRAPPER TIMER — completedRunMs is set by stopRunAndCapture() when the
+  //       user clicks Submit or exits the overlay mid-run.  Always available.
+  //    b) POSTMESSAGE — the local HexGL build at /games/hexgl-local/ emits
+  //       { type:'hexgl-race-complete', time:<ms> } via window.parent.postMessage.
+  //       handleRaceComplete() receives it, stops the wrapper timer, and records
+  //       the authoritative engine time.  This path wins when it fires.
+  //    Do NOT remove path (a) until path (b) is verified working in browser.
+  // 3. ORIGIN-LOCKED POSTMESSAGE:
+  //    onHexGLMessage checks event.origin === window.location.origin so only the
+  //    same-origin local build can trigger handleRaceComplete().
   // 4. AUTO-SUBMIT ON FINISH:
   //    Whenever completedRunMs is set (either path), if the user is Telegram-
   //    linked autoSubmit() fires immediately.  Submit button is manual-retry only.
-  // 5. EXIT FS RETRY:
+  // 5. EXIT FS CAPTURE:
   //    On arcade-overlay-exit, if a run is active it is captured first, then
   //    auto-submit is retried for synced users.
   // 6. RESET CLEARS SCORE:
@@ -36,7 +37,7 @@ export function bootstrapHexGLMonsterMax(root) {
   //    returns the page to RUN READY state.
   // ──────────────────────────────────────────────────────────────────────────
   var MIN_RUN_MS = HEXGL_MONSTER_MAX_CONFIG.minRunMs;
-  var FRAME_SRC = 'https://hexgl.bkcore.com/play/';
+  var FRAME_SRC = '/games/hexgl-local/';
 
   var frameEl         = document.getElementById('hexgl-frame');
   var pilotEl         = document.getElementById('pilot-name');
@@ -242,6 +243,8 @@ export function bootstrapHexGLMonsterMax(root) {
   }
 
   function onHexGLMessage(event) {
+    // Accept messages only from the same origin (local HexGL build).
+    if (event.origin !== window.location.origin) return;
     if (!frameEl || event.source !== frameEl.contentWindow) return;
     var data = event.data;
     if (!data || typeof data !== 'object') return;
