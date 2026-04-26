@@ -1,4 +1,3 @@
-// HexGL is deprecated and disabled as XP source. Invaders 3008 is current arcade leaderboard/XP source.
 const GAMES = ["snake", "crystal", "blocktopia", "invaders", "pacchain", "asteroids", "breakout", "tetris"];
 const VARIETY_BONUS = 500;           // bonus points when a player has scored in all 8 games
 const SEASONAL_BONUS = 0;            // flat seasonal bonus (extend per-season via config if needed)

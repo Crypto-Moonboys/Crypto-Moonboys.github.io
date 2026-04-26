@@ -12,7 +12,6 @@ const LIVE_EVENT_COOLDOWN_MS = 25 * 1000;
 
 const DEFAULT_CONFIG = {
   difficultyWeights: {
-    // HexGL is deprecated and disabled as XP source. Invaders 3008 is current arcade leaderboard/XP source.
     btqm: 1.5,
     invaders: 1.4,
     breakout: 1.2,
@@ -46,7 +45,6 @@ const DEFAULT_CONFIG = {
   timing: {
     defaultTargetSeconds: 120,
     targetSecondsByGame: {
-      // HexGL is deprecated and disabled as XP source. Invaders 3008 is current arcade leaderboard/XP source.
       btqm: 150,
       invaders: 140,
       breakout: 120,
@@ -341,7 +339,6 @@ function randomInRange(min, max) {
 }
 
 function getChaosGameRotation() {
-  // HexGL is deprecated and disabled as XP source. Invaders 3008 is current arcade leaderboard/XP source.
   return ['snake', 'crystal', 'btqm', 'invaders', 'pacchain', 'breakout', 'tetris', 'asteroids'];
 }
 
