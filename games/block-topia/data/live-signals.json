@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-04-26T18:05:48.041Z",
+  "generatedAt": "2026-04-26T19:28:12.015Z",
   "mode": "fallback-no-key",
   "sourceHealth": {
     "coingecko-global": "ok",
@@ -11,7 +11,7 @@
   "signalCount": 3,
   "signals": [
     {
-      "id": "signal-1777226748041-1",
+      "id": "signal-1777231692015-1",
       "lane": "world",
       "priority": 3,
       "ttlMinutes": 45,
@@ -24,14 +24,14 @@
         "mood",
         "relay"
       ],
-      "expiresAt": "2026-04-26T18:50:48.041Z"
+      "expiresAt": "2026-04-26T20:13:12.015Z"
     },
     {
-      "id": "signal-1777226748041-2",
+      "id": "signal-1777231692015-2",
       "lane": "ops",
       "priority": 4,
       "ttlMinutes": 40,
-      "npcLine": "Trend signatures rotating: ZBT · ASTEROID · PENGU. Couriers are rerouting tonight.",
+      "npcLine": "Trend signatures rotating: ZBT · PENGU · AERO. Couriers are rerouting tonight.",
       "questPulse": "Intercept two phantom couriers carrying unsigned signal chips.",
       "worldFeed": "Ops pulse: district relays are shifting faster than normal.",
       "clueEvent": "Clue pulse: seek a dead terminal with three blinking amber bars.",
@@ -40,10 +40,10 @@
         "courier",
         "quest"
       ],
-      "expiresAt": "2026-04-26T18:45:48.041Z"
+      "expiresAt": "2026-04-26T20:08:12.015Z"
     },
     {
-      "id": "signal-1777226748041-3",
+      "id": "signal-1777231692015-3",
       "lane": "clue",
       "priority": 2,
       "ttlMinutes": 60,
@@ -56,7 +56,7 @@
         "hunt",
         "world"
       ],
-      "expiresAt": "2026-04-26T19:05:48.041Z"
+      "expiresAt": "2026-04-26T20:28:12.015Z"
     }
   ]
 }
