@@ -12,14 +12,14 @@ GameRegistry.register(HEXGL_MONSTER_MAX_CONFIG.id, {
 export function bootstrapHexGLMonsterMax(root) {
   // ── DESIGN INVARIANTS — do not remove or drift from these ─────────────────
   // 1. SINGLE START ACTION:
-  //    onStart() has one phase only.  First click loads the iframe; once loaded
-  //    a second click starts the wrapper timer.  If runActive is already true
-  //    the click is ignored entirely — no double-timer bug.
+  //    onStart() has one job: load the iframe if blank, or focus it if already
+  //    loaded.  It never starts a wrapper timer.  The overlay button is labelled
+  //    "Focus Game", not "Start Timer".
   // 2. POSTMESSAGE-ONLY SCORING:
   //    completedRunMs is set ONLY by handleRaceComplete(), which fires when the
   //    local HexGL build at /games/hexgl-local/ emits
   //    { type:'hexgl-race-complete', time:<ms> } via window.parent.postMessage.
-  //    The wrapper timer is for display only and NEVER sets completedRunMs.
+  //    run-timer and score stay "—" until that event arrives.
   //    Submit button stays disabled until that postMessage event arrives.
   // 3. ORIGIN-LOCKED POSTMESSAGE:
   //    onHexGLMessage checks event.origin === window.location.origin so only the
@@ -28,11 +28,11 @@ export function bootstrapHexGLMonsterMax(root) {
   //    When completedRunMs is set via postMessage, if the user is Telegram-
   //    linked autoSubmit() fires immediately.  Submit button is manual-retry only.
   // 5. EXIT FS CLEANUP:
-  //    On arcade-overlay-exit the wrapper timer is stopped (cleanup only) and
-  //    auto-submit is retried if a valid postMessage-sourced run is pending.
+  //    On arcade-overlay-exit auto-submit is retried if a valid postMessage-
+  //    sourced run is pending.
   // 6. RESET CLEARS SCORE:
-  //    onReset() stops the timer, clears completedRunMs, reloads the iframe, and
-  //    returns the page to RUN READY state.
+  //    onReset() clears completedRunMs, reloads the iframe, and returns the
+  //    page to RUN READY state.
   // ──────────────────────────────────────────────────────────────────────────
   var MIN_RUN_MS = HEXGL_MONSTER_MAX_CONFIG.minRunMs;
   var FRAME_SRC = '/games/hexgl-local/';
@@ -146,8 +146,8 @@ export function bootstrapHexGLMonsterMax(root) {
 
   function notifyReadyToLaunch() {
     setStatus('RUN READY');
-    notify('HexGL loaded. Enter the race in HexGL, then click Start Timer.');
-    setOverlayStartLabel('▶', 'Start Timer');
+    notify('HexGL loaded. Click Focus Game to enter the iframe, then start a race.');
+    setOverlayStartLabel('🎮', 'Focus Game');
     setOverlayStartEnabled(true);
   }
 
@@ -265,31 +265,10 @@ export function bootstrapHexGLMonsterMax(root) {
       return;
     }
 
-    // Guard: ignore if a run is already in progress (prevents double timer).
-    if (runActive) return;
-
-    // Start wrapper timer (display only — score requires a postMessage finish event).
-    runToken += 1;
-    var token = runToken;
-    completedRunMs = null;
-    completedScoreSubmitted = false;
-    runStart = Date.now();
-    runActive = true;
-    setStatus('RUN ACTIVE');
-    playUiTone('start');
-    if (submitBtn) {
-      submitBtn.disabled = true;   // stays disabled until postMessage race-complete
-      submitBtn.textContent = '📤 Submit Run';
-    }
-    if (timerEl) timerEl.textContent = fmtTime(0);
-    if (scoreEl) scoreEl.textContent = calcScore(0).toLocaleString();
-    notify('');
+    // Frame already loaded — just focus it so the user can interact with HexGL.
+    // No wrapper timer is started; score only comes from a postMessage race-complete event.
+    try { if (frameEl) frameEl.focus(); } catch (_) {}
     setOverlayStartEnabled(false);
-    stopTimer();
-    intervalId = setInterval(function () {
-      if (token !== runToken) { stopTimer(); return; }
-      updateRunUI(Date.now() - runStart);
-    }, 100);
   }
 
   async function onSubmit() {
@@ -374,9 +353,6 @@ export function bootstrapHexGLMonsterMax(root) {
     window.addEventListener('message', onHexGLMessage);
     document.addEventListener('arcade-overlay-exit', function () {
       playUiTone('exit');
-      // Stop wrapper timer if running (cleanup only — do NOT promote wrapper
-      // time to completedRunMs; score only comes from a postMessage event).
-      stopRunAndCapture();
       // Retry auto-submit on overlay exit if there is an unsent valid completed run.
       if (completedRunMs && !completedScoreSubmitted) {
         if (window.MOONBOYS_IDENTITY?.isTelegramLinked?.()) {
