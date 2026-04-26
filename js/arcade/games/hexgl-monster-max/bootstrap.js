@@ -11,52 +11,48 @@ GameRegistry.register(HEXGL_MONSTER_MAX_CONFIG.id, {
 
 export function bootstrapHexGLMonsterMax(root) {
   // ── DESIGN INVARIANTS — do not remove or drift from these ─────────────────
-  // 1. TWO-PHASE START — NO AUTO-RUN:
-  //    activateRun() MUST ONLY be called from Phase 2 of onStart(), which is
-  //    reached only after the user has explicitly clicked "Begin Run" TWICE:
-  //      Phase 1 (first click): arms the run, changes ctrl button to "Start Timer".
-  //                             No countdown, no timer.
-  //      Phase 2 (second click): user confirms they are actually racing in HexGL.
-  //                              activateRun() fires here and NOWHERE ELSE.
-  //    DO NOT call activateRun() from iframe load, timeout, or any auto path.
-  // 2. TIMER STARTS ONLY AFTER GO: runActive=true is set inside the GO callback
-  //    in activateRun(), never before.  Do not hoist the timer activation.
-  // 3. RESET CANCELS ALL ASYNC PATHS: onReset() increments runToken and clears
-  //    all timeouts, resets runArmed, and restores the ctrl button label.
-  //    Every async callback checks the token and bails if it has changed.
-  // 4. NO PAUSE: HexGL has no #pauseBtn.  Pause is intentionally unsupported for
-  //    this iframe-based game.  Do not reintroduce it.
+  // 1. SCORE SOURCE — IFRAME EVENTS ONLY:
+  //    completedRunMs MUST only be set from a real HexGL race-finish postMessage
+  //    event originating from the HexGL iframe.  It must NEVER be set from a
+  //    wrapper timer, button click, or any other wrapper-owned source.
+  // 2. SCORING UNAVAILABLE BY DEFAULT:
+  //    hexgl.bkcore.com is a cross-origin iframe that does not emit postMessage
+  //    race-finish events.  Until a hosted/local HexGL build that exposes race
+  //    events is served from this site, completedRunMs will never be set and all
+  //    score-related UI remains in "SCORING UNAVAILABLE" state.
+  // 3. AUTO-SUBMIT ON FINISH:
+  //    When a race-finish postMessage event is received and the user is Telegram-
+  //    linked, autoSubmit() fires immediately.  Submit button is manual-retry only.
+  // 4. EXIT FS RETRY:
+  //    On arcade-overlay-exit, if there is an unsent completedRunMs and the user
+  //    is Telegram-linked, autoSubmit() is retried automatically.
+  // 5. UNSYNCED USERS:
+  //    completedRunMs is saved to localStorage.  The sync-gate modal or inline
+  //    message is shown.  Submit button is the manual path once synced.
+  // 6. RESET CLEARS SCORE:
+  //    onReset() clears completedRunMs and completedScoreSubmitted, reloads the
+  //    iframe, and returns the page to the initial SCORING UNAVAILABLE state.
   // ──────────────────────────────────────────────────────────────────────────
   var MIN_RUN_MS = HEXGL_MONSTER_MAX_CONFIG.minRunMs;
   var FRAME_SRC = 'https://hexgl.bkcore.com/play/';
-  var COUNTDOWN_TICK_MS  = 700;  // duration each countdown number is shown
-  var COUNTDOWN_GO_MS    = 600;  // how long GO is shown before timer starts
 
-  var frameEl       = document.getElementById('hexgl-frame');
-  var pilotEl       = document.getElementById('pilot-name');
-  var timerEl       = document.getElementById('run-timer');
-  var scoreEl       = document.getElementById('est-score');
-  var statusEl      = document.getElementById('run-status');
-  var startBtn      = document.getElementById('startBtn');
-  var submitBtn     = document.getElementById('submit-btn');
-  var resetBtn      = document.getElementById('resetBtn');
+  var frameEl         = document.getElementById('hexgl-frame');
+  var pilotEl         = document.getElementById('pilot-name');
+  var timerEl         = document.getElementById('run-timer');
+  var scoreEl         = document.getElementById('est-score');
+  var statusEl        = document.getElementById('run-status');
+  var startBtn        = document.getElementById('startBtn');
+  var submitBtn       = document.getElementById('submit-btn');
+  var resetBtn        = document.getElementById('resetBtn');
   var inlineMessageEl = document.getElementById('hexgl-inline-message');
-  var countdownEl   = document.getElementById('hexgl-countdown');
 
-  var playerName = 'Guest';
-  var runStart   = null;
-  var runActive  = false;
-  var runPending = false;
-  var runArmed   = false;  // true between Phase 1 and Phase 2 of onStart() — no countdown yet
-  var countdownActive = false;  // true while READY/3/2/1/GO sequence is running
-  var intervalId = null;
-  var readyTimeoutId = null;
-  var runToken = 0;
-  var frameLoaded = false;
-  var lastRunMs  = null;
-  var statusText = 'RUN READY';
-  var ambientHandle = null;
-  var messageTimeoutId = null;
+  var playerName             = 'Guest';
+  var runToken               = 0;
+  var frameLoaded            = false;
+  var completedRunMs         = null;   // set only from iframe race-finish event
+  var completedScoreSubmitted = false; // true once completedRunMs was submitted
+  var statusText             = 'SCORING UNAVAILABLE';
+  var messageTimeoutId       = null;
 
   function calcScore(ms) {
     return Math.max(0, Math.floor(500000 - (ms / 1000) * 1000));
@@ -75,19 +71,9 @@ export function bootstrapHexGLMonsterMax(root) {
     return identityName || ArcadeSync.getPlayer();
   }
 
-  function stopTimer() {
-    clearInterval(intervalId);
-    intervalId = null;
-  }
-
   function setStatus(text) {
     statusText = text;
     if (statusEl) statusEl.textContent = text;
-  }
-
-  function clearRunDelays() {
-    clearTimeout(readyTimeoutId);
-    readyTimeoutId = null;
   }
 
   function notify(message) {
@@ -98,21 +84,6 @@ export function bootstrapHexGLMonsterMax(root) {
     messageTimeoutId = setTimeout(function () {
       if (inlineMessageEl) inlineMessageEl.textContent = '';
     }, 2600);
-  }
-
-  function showCountdown(text, isGo) {
-    if (!countdownEl) return;
-    countdownEl.classList.remove('visible', 'go');
-    // Force reflow so the transition re-fires for each step.
-    void countdownEl.offsetWidth;
-    countdownEl.textContent = text;
-    if (isGo) countdownEl.classList.add('go');
-    countdownEl.classList.add('visible');
-  }
-
-  function hideCountdown() {
-    if (!countdownEl) return;
-    countdownEl.classList.remove('visible', 'go');
   }
 
   function isFrameBlank() {
@@ -130,42 +101,13 @@ export function bootstrapHexGLMonsterMax(root) {
   function playUiTone(kind) {
     if (!canUseAudio()) return;
     var soundId = {
-      start: 'hexgl-start',
-      reset: 'hexgl-reset',
+      start:  'hexgl-start',
+      reset:  'hexgl-reset',
       submit: 'hexgl-submit',
-      error: 'hexgl-error',
-      exit: 'hexgl-exit',
+      error:  'hexgl-error',
+      exit:   'hexgl-exit',
     }[kind] || 'hexgl-start';
     playSound(soundId);
-  }
-
-  function stopAmbient() {
-    if (!ambientHandle) return;
-    try {
-      ambientHandle.stop();
-    } catch (_) {}
-    ambientHandle = null;
-  }
-
-  function syncAmbient() {
-    if (!canUseAudio() || runActive || !runPending) {
-      stopAmbient();
-      return;
-    }
-    if (ambientHandle) return;
-    ambientHandle = playSound('hexgl-ambient');
-  }
-
-  // noteIdx 0 = for "3", 1 = for "2", 2 = for "1" — rising pitch sequence.
-  function playCountdownTick(noteIdx) {
-    if (!canUseAudio()) return;
-    var idx = noteIdx >= 0 && noteIdx < 3 ? noteIdx + 1 : 1;
-    playSound('hexgl-countdown-' + idx);
-  }
-
-  function playGoChord() {
-    if (!canUseAudio()) return;
-    playSound('hexgl-go');
   }
 
   function refreshIdentity() {
@@ -177,59 +119,6 @@ export function bootstrapHexGLMonsterMax(root) {
     var score = calcScore(ms);
     if (timerEl) timerEl.textContent = fmtTime(ms);
     if (scoreEl) scoreEl.textContent = score.toLocaleString();
-  }
-
-  function activateRun(token) {
-    if (token !== runToken || !runPending || countdownActive || runActive) return;
-    countdownActive = true;
-    setStatus('COUNTDOWN');
-    // Start ambient drone during countdown (only if audio context is now running).
-    syncAmbient();
-
-    // READY → 3 → 2 → 1 → GO sequence.
-    var steps  = ['READY', '3', '2', '1'];
-    var idx    = 0;
-
-    function tick() {
-      if (token !== runToken || !runPending) {
-        countdownActive = false;
-        hideCountdown();
-        return;
-      }
-      if (idx < steps.length) {
-        showCountdown(steps[idx], false);
-        if (idx > 0) playCountdownTick(idx - 1); // step '3'→noteIdx 0, '2'→1, '1'→2
-        idx++;
-        readyTimeoutId = setTimeout(tick, COUNTDOWN_TICK_MS);
-      } else {
-        // Show GO.
-        showCountdown('GO', true);
-        stopAmbient();
-        playGoChord();
-        readyTimeoutId = setTimeout(function () {
-          if (token !== runToken || !runPending) {
-            countdownActive = false;
-            hideCountdown();
-            return;
-          }
-          // Timer starts ONLY here — after GO completes — never before.
-          countdownActive = false;
-          hideCountdown();
-          runPending = false;
-          runActive  = true;
-          runStart   = Date.now();
-          setStatus('RUN ACTIVE');
-          stopTimer();
-          intervalId = setInterval(function () {
-            updateRunUI(Date.now() - runStart);
-          }, 100);
-          updateRunUI(0);
-          if (submitBtn) submitBtn.disabled = false;
-        }, COUNTDOWN_GO_MS);
-      }
-    }
-
-    tick();
   }
 
   function setOverlayStartEnabled(enabled) {
@@ -246,22 +135,19 @@ export function bootstrapHexGLMonsterMax(root) {
     if (labelEl) labelEl.textContent = ' ' + label;
   }
 
-  function resetOverlayStartLabel() {
-    setOverlayStartLabel('🏁', 'Begin Run');
-  }
-
-  function notifyReadyToLaunch() {
-    setStatus('READY TO LAUNCH');
-    notify('HexGL loaded. Click Begin Run, enter the race, then click Start Timer.');
-    resetOverlayStartLabel();
-    setOverlayStartEnabled(true);
+  function notifyReadyToRace() {
+    setStatus('RACE AVAILABLE');
+    notify('HexGL loaded — race inside! Scoring requires game finish events (see status).');
+    setOverlayStartLabel('🏁', 'Open HexGL');
+    // Disable the ctrl-bar button: the iframe is already open; no further action needed.
+    setOverlayStartEnabled(false);
   }
 
   function loadFrameForLaunch(forceReload) {
     if (!frameEl) return;
     var shouldReload = !!forceReload || !frameLoaded || isFrameBlank();
     if (!shouldReload) {
-      notifyReadyToLaunch();
+      notifyReadyToRace();
       return;
     }
     frameLoaded = false;
@@ -270,25 +156,6 @@ export function bootstrapHexGLMonsterMax(root) {
     setStatus('LOADING');
     notify('Loading HexGL…');
     frameEl.src = FRAME_SRC + '?t=' + Date.now();
-  }
-
-  function cancelTrackedRun() {
-    runArmed = false;
-    resetOverlayStartLabel();
-    runToken += 1;
-    clearRunDelays();
-    stopTimer();
-    runStart = null;
-    runActive = false;
-    runPending = false;
-    countdownActive = false;
-    stopAmbient();
-    hideCountdown();
-  }
-
-  function onOverlayOpen() {
-    if (runActive || runPending || countdownActive) return;
-    loadFrameForLaunch(false);
   }
 
   function savePersonalBest(ms) {
@@ -300,120 +167,95 @@ export function bootstrapHexGLMonsterMax(root) {
     } catch (_) {}
   }
 
+  async function autoSubmit() {
+    if (!completedRunMs || completedScoreSubmitted) return;
+    if (!window.MOONBOYS_IDENTITY?.isTelegramLinked?.()) return;
+    var score = calcScore(completedRunMs);
+    if (score <= 0) return;
+    playUiTone('submit');
+    await submitScore(playerName, score, HEXGL_MONSTER_MAX_CONFIG.id);
+    completedScoreSubmitted = true;
+    if (submitBtn) {
+      submitBtn.textContent = '✅ Submitted';
+      submitBtn.disabled = true;
+    }
+    setStatus('SUBMITTED');
+  }
+
+  // Called when the HexGL iframe sends a race-finish postMessage event.
+  // Expected shape: { type: 'hexgl-race-complete', time: <milliseconds> }
+  function handleRaceComplete(ms) {
+    if (typeof ms !== 'number' || ms < MIN_RUN_MS) {
+      notify('Race time too short to qualify (minimum 30 s).');
+      return;
+    }
+    completedRunMs = ms;
+    completedScoreSubmitted = false;
+    updateRunUI(ms);
+    savePersonalBest(ms);
+    localStorage.setItem('hexgl_last_run_ms', String(ms));
+    setStatus('RUN COMPLETE');
+    if (submitBtn) submitBtn.disabled = false;
+    if (window.MOONBOYS_IDENTITY?.isTelegramLinked?.()) {
+      autoSubmit();
+    } else {
+      if (window.MOONBOYS_IDENTITY?.showSyncGateModal) {
+        window.MOONBOYS_IDENTITY.showSyncGateModal(true);
+      } else {
+        notify('Run saved locally. Sync with Telegram to submit to leaderboard.');
+      }
+    }
+  }
+
+  function onHexGLMessage(event) {
+    if (!frameEl || event.source !== frameEl.contentWindow) return;
+    var data = event.data;
+    if (!data || typeof data !== 'object') return;
+    if (data.type === 'hexgl-race-complete' && typeof data.time === 'number' && data.time > 0) {
+      handleRaceComplete(data.time);
+    }
+  }
+
+  function onOverlayOpen() {
+    loadFrameForLaunch(false);
+  }
+
   function onStart() {
-    // Phase 0: frame not yet loaded — load it and wait.
-    // Phase 1 (first explicit click, frame loaded): arm the run.
-    //          Status → RACE LOADED. Button → "Start Timer". No countdown.
-    //          User must now enter the race inside HexGL.
-    // Phase 2 (second explicit click): user confirms they are racing.
-    //          activateRun() is called HERE and ONLY HERE.
+    // Loads the HexGL iframe if not already loaded.  Does NOT start a timer
+    // or arm any tracking — scoring comes only from iframe race-finish events.
     refreshIdentity();
-
-    if (!frameLoaded || isFrameBlank()) {
-      loadFrameForLaunch(false);
-      return;
-    }
-    if (runActive || runPending || countdownActive) return;
-
-    if (!runArmed) {
-      // ── Phase 1: arm ──────────────────────────────────────────────────────
-      runArmed = true;
-      playUiTone('start');
-      setStatus('RACE LOADED');
-      notify('Now enter the race in HexGL. When racing, click Start Timer.');
-      setOverlayStartLabel('⏱', 'Start Timer');
-      return;
-    }
-
-    // ── Phase 2: user confirms they are in the race ────────────────────────
-    // activateRun() is the ONLY call site in this file.
-    runArmed = false;
-    resetOverlayStartLabel();
-    playUiTone('start');
-    runToken += 1;
-    clearRunDelays();
-    stopTimer();
-    hideCountdown();
-    stopAmbient();
-    runActive = false;
-    runPending = true;
-    countdownActive = false;
-    runStart = null;
-    lastRunMs = null;
-    setOverlayStartEnabled(false);
-    if (submitBtn) submitBtn.disabled = true;
-    if (submitBtn) submitBtn.textContent = '📤 Submit Run';
-    if (timerEl) timerEl.textContent = '—';
-    if (scoreEl) scoreEl.textContent = '—';
-    notify('');
-    syncAmbient();
-    activateRun(runToken);
+    loadFrameForLaunch(false);
   }
 
   async function onSubmit() {
-    if (runPending || countdownActive) {
+    // Manual retry path — only works when a valid completed run exists.
+    if (!completedRunMs || completedRunMs < MIN_RUN_MS) {
       playUiTone('error');
-      notify('Run countdown is active. Wait for RUN ACTIVE.');
+      notify('Complete a valid race in HexGL first. Scoring requires game finish events.');
       return;
     }
-    if (runActive) {
-      runActive = false;
-      lastRunMs = Date.now() - runStart;
-      stopTimer();
-      setStatus('RUN COMPLETE');
-      syncAmbient();
-    }
-    if (typeof lastRunMs !== 'number' || lastRunMs < MIN_RUN_MS) {
-      playUiTone('error');
-      if (startBtn) startBtn.disabled = false;
-      resetOverlayStartLabel();
-      setStatus('READY TO LAUNCH');
-      setOverlayStartEnabled(true);
-      notify('Complete a valid run first (minimum 30 seconds).');
-      return;
-    }
-    var score = calcScore(lastRunMs);
+    var score = calcScore(completedRunMs);
     if (score <= 0) {
       playUiTone('error');
-      if (startBtn) startBtn.disabled = false;
-      resetOverlayStartLabel();
-      setStatus('READY TO LAUNCH');
-      setOverlayStartEnabled(true);
       notify('Run is too slow to qualify for leaderboard submission.');
       return;
     }
-    playUiTone('submit');
-    updateRunUI(lastRunMs);
-    savePersonalBest(lastRunMs);
-    localStorage.setItem('hexgl_last_run_ms', String(lastRunMs));
-
     if (!window.MOONBOYS_IDENTITY?.isTelegramLinked?.()) {
       if (window.MOONBOYS_IDENTITY?.showSyncGateModal) {
         window.MOONBOYS_IDENTITY.showSyncGateModal(true);
       } else {
         notify('Telegram sync required for ranked submission. Run /gklink in @WIKICOMSBOT. Unsynced runs stay local.');
       }
-      if (startBtn) startBtn.disabled = false;
-      resetOverlayStartLabel();
-      setStatus('READY TO LAUNCH');
-      setOverlayStartEnabled(true);
       return;
     }
-
-    await submitScore(playerName, score, HEXGL_MONSTER_MAX_CONFIG.id);
-    if (submitBtn) {
-      submitBtn.textContent = '✅ Submitted';
-      submitBtn.disabled = true;
-    }
-    if (startBtn) startBtn.disabled = false;
-    resetOverlayStartLabel();
-    setStatus('SUBMITTED');
+    await autoSubmit();
   }
 
   function onReset() {
     playUiTone('reset');
-    cancelTrackedRun();   // clears runArmed, resets ctrl button label, cancels token
-    lastRunMs = null;
+    runToken += 1;
+    completedRunMs = null;
+    completedScoreSubmitted = false;
     frameLoaded = false;
     setOverlayStartEnabled(false);
     if (frameEl) {
@@ -422,7 +264,7 @@ export function bootstrapHexGLMonsterMax(root) {
     }
     if (timerEl) timerEl.textContent = '—';
     if (scoreEl) scoreEl.textContent = '—';
-    setStatus('LOADING');
+    setStatus('SCORING UNAVAILABLE');
     if (startBtn) startBtn.disabled = false;
     if (submitBtn) {
       submitBtn.textContent = '📤 Submit Run';
@@ -433,6 +275,7 @@ export function bootstrapHexGLMonsterMax(root) {
 
   function init() {
     refreshIdentity();
+    setStatus('SCORING UNAVAILABLE');
     if (submitBtn) {
       submitBtn.textContent = '📤 Submit Run';
       submitBtn.disabled = true;
@@ -444,42 +287,24 @@ export function bootstrapHexGLMonsterMax(root) {
         if (isFrameBlank()) return;
         frameLoaded = true;
         frameEl.classList.add('loaded');
-        if (!runPending && !countdownActive && !runActive) {
-          notifyReadyToLaunch();
-        }
+        notifyReadyToRace();
       });
     }
-    document.addEventListener('arcade-mute-change', function () {
-      syncAmbient();
-    });
+    window.addEventListener('message', onHexGLMessage);
     document.addEventListener('arcade-overlay-exit', function () {
-      // When the overlay is closed while a run is in flight, reset everything
-      // so there is no ghost timer running silently in the background.
-      // If no run is active, just play the exit tone.
-      if (runActive || runPending || countdownActive) {
-        cancelTrackedRun();
-        playUiTone('exit');
-        if (submitBtn) {
-          submitBtn.textContent = '📤 Submit Run';
-          submitBtn.disabled = true;
+      playUiTone('exit');
+      // Retry auto-submit on overlay exit if there is an unsent valid completed run.
+      if (completedRunMs && !completedScoreSubmitted) {
+        if (window.MOONBOYS_IDENTITY?.isTelegramLinked?.()) {
+          autoSubmit();
         }
-        if (frameLoaded && !isFrameBlank()) {
-          setStatus('READY TO LAUNCH');
-          setOverlayStartEnabled(true);
-        } else {
-          setStatus('LOADING');
-          setOverlayStartEnabled(false);
-        }
-        notify('');
-      } else {
-        playUiTone('exit');
       }
     });
     if (startBtn) startBtn.addEventListener('click', onStart);
     if (submitBtn) submitBtn.addEventListener('click', onSubmit);
     if (resetBtn) resetBtn.addEventListener('click', onReset);
-    // Expose a direct-call hook so the overlay can invoke onStart() without
-    // going through the DOM click path (avoids event-listener races).
+    // Expose hooks so game-fullscreen.js can drive iframe loading without
+    // going through the DOM click path.
     window.__hexglStartHook = onStart;
     window.__hexglOverlayOpenHook = onOverlayOpen;
     setStatus(statusText);
@@ -492,13 +317,8 @@ export function bootstrapHexGLMonsterMax(root) {
 
   function destroy() {
     runToken += 1;
-    runArmed = false;
-    clearRunDelays();
-    stopTimer();
-    stopAmbient();
+    window.removeEventListener('message', onHexGLMessage);
     stopAllSounds();
-    countdownActive = false;
-    hideCountdown();
     clearTimeout(messageTimeoutId);
     notify('');
     if (frameEl) {
@@ -508,14 +328,12 @@ export function bootstrapHexGLMonsterMax(root) {
     if (startBtn) startBtn.removeEventListener('click', onStart);
     if (submitBtn) submitBtn.removeEventListener('click', onSubmit);
     if (resetBtn) resetBtn.removeEventListener('click', onReset);
-    // Clear the global hooks so a future page-load doesn't call a stale closure.
     delete window.__hexglStartHook;
     delete window.__hexglOverlayOpenHook;
   }
 
   function getScore() {
-    if (typeof lastRunMs === 'number') return calcScore(lastRunMs);
-    if (runActive && runStart !== null) return calcScore(Date.now() - runStart);
+    if (typeof completedRunMs === 'number') return calcScore(completedRunMs);
     return 0;
   }
 
