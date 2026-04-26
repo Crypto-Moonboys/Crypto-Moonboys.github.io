@@ -744,9 +744,9 @@ bkcore.hexgl.ShipControls.prototype.heightCheck = function(dt)
 	{
 		var delta = (height - this.dummy.position.y);
 
-		// Apply full correction in both directions so the ship tracks
-		// downslopes immediately instead of floating above descending road.
-		this.movement.y += delta;
+		// Apply near-full correction (0.9) so the ship tracks slopes
+		// immediately with slight smoothing, avoiding hard-snap jitter.
+		this.movement.y += delta * 0.9;
 
 		// Store surface height for the post-translateY floor clamp.
 		this._groundHeight = height;
