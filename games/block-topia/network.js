@@ -81,35 +81,12 @@ function toPlayerList(playersState) {
 export async function connectMultiplayer({
   playerName,
   roomId = 'city',
-  roomIdentity,
   onStatus,
   onPlayers,
-  onWorldSnapshot,
   onFeed,
-  onQuestCompleted,
-  onSamPhaseChanged,
-  onDistrictCaptureChanged,
-  onNodeInterferenceChanged,
-  onDistrictControlStateChanged,
-  onPlayerWarImpact,
-  onDuelRequested,
-  onDuelStarted,
-  onDuelActionSubmitted,
-  onDuelResolved,
-  onDuelEnded,
-  onOperationStarted,
-  onOperationResult,
-  onCovertState,
 }) {
   // Persist options/callbacks so reconnectMultiplayer() can reuse them.
-  _reconnectOptions = {
-    playerName, roomId, roomIdentity,
-    onStatus, onPlayers, onWorldSnapshot, onFeed, onQuestCompleted,
-    onSamPhaseChanged, onDistrictCaptureChanged, onNodeInterferenceChanged,
-    onDistrictControlStateChanged, onPlayerWarImpact,
-    onDuelRequested, onDuelStarted, onDuelActionSubmitted, onDuelResolved, onDuelEnded,
-    onOperationStarted, onOperationResult, onCovertState,
-  };
+  _reconnectOptions = { playerName, roomId, onStatus, onPlayers, onFeed };
 
   // Use explicit wss:// so the transport protocol is unambiguous.
   // Normalise any https:// value from the runtime config to wss://.
@@ -131,12 +108,7 @@ export async function connectMultiplayer({
       onStatus?.({ ws: 'connecting', joined: false, error: '', roomId });
       console.log(`[BlockTopia] Connecting (attempt ${attempt}/${MAX_RETRIES}) → ${endpoint} room "${roomId}"`);
       client = new window.Colyseus.Client(endpoint);
-      room = await joinCityOnly(client, roomId, {
-        name: playerName,
-        faction: 'Liberators',
-        district: roomIdentity?.districtId || 'neon-slums',
-        roomIdentity,
-      });
+      room = await joinCityOnly(client, roomId, { name: playerName });
 
       onStatus?.({ ws: 'connected', joined: true, error: '', roomId: room.name || roomId, sessionId: room.sessionId || '' });
       onFeed?.(`Connected to ${room.name || roomId} (${room.sessionId || 'session pending'})`);
@@ -172,83 +144,6 @@ export async function connectMultiplayer({
         onFeed?.(`📢 ${message?.message || 'System update'}`);
       });
 
-      room.onMessage('districtChanged', (message) => {
-        onFeed?.(`🏙️ ${message?.playerId || 'Player'} entered ${message?.districtName || 'district'}`);
-      });
-
-      // Carried forward from Block Topia Revolt: award XP and report quest completion
-      // Server broadcasts { playerId, questId, title, rewardXp, totalXp } — forward questId so
-      // the client quest system can match and remove the correct active quest by id.
-      room.onMessage('questCompleted', (message) => {
-        const questId  = message?.questId  || '';
-        const title    = message?.title    || 'Quest';
-        const rewardXp = message?.rewardXp || 0;
-        onFeed?.(`✅ ${title} (+${rewardXp} XP)`);
-        onQuestCompleted?.({ questId, title, rewardXp });
-      });
-
-      room.onMessage('samPhaseChanged', (message) => {
-        const phaseIndex = Number(message?.phaseIndex);
-        if (Number.isFinite(phaseIndex)) {
-          onSamPhaseChanged?.({ phaseIndex });
-        }
-      });
-
-      room.onMessage('districtCaptureChanged', (message) => {
-        const districtId = message?.districtId || '';
-        const control = Number(message?.control);
-        const owner = message?.owner || message?.factionOwner || message?.faction || '';
-        if (districtId) {
-          onDistrictCaptureChanged?.({ districtId, control, owner });
-        }
-      });
-
-      room.onMessage('worldSnapshot', (data) => {
-        onWorldSnapshot?.(data);
-      });
-
-      room.onMessage('nodeInterferenceChanged', (message) => {
-        onNodeInterferenceChanged?.(message);
-      });
-      room.onMessage('districtControlStateChanged', (message) => {
-        onDistrictControlStateChanged?.(message);
-      });
-      room.onMessage('playerWarImpact', (message) => {
-        onPlayerWarImpact?.(message);
-      });
-
-      room.onMessage('duelRequested', (message) => {
-        onDuelRequested?.(message);
-      });
-
-      room.onMessage('duelStarted', (message) => {
-        onDuelStarted?.(message);
-      });
-
-      room.onMessage('duelActionSubmitted', (message) => {
-        onDuelActionSubmitted?.(message);
-      });
-
-      room.onMessage('duelResolved', (message) => {
-        onDuelResolved?.(message);
-      });
-
-      room.onMessage('duelEnded', (message) => {
-        onDuelEnded?.(message);
-      });
-
-      room.onMessage('operationStarted', (message) => {
-        onOperationStarted?.(message);
-      });
-
-      room.onMessage('operationResult', (message) => {
-        onOperationResult?.(message);
-      });
-
-      room.onMessage('covertState', (message) => {
-        onCovertState?.(message);
-      });
-
       return room;
     } catch (error) {
       lastError = error;
@@ -281,7 +176,6 @@ export async function connectMultiplayer({
 
   console.error(`[BlockTopia] All ${MAX_RETRIES} connection attempts exhausted. endpoint=${endpoint} room="${roomId}" error:`, lastError?.message || lastError);
   onFeed?.(`⚠️ Multiplayer unavailable: ${String(lastError?.message || lastError || 'unknown error')}`);
-  // city_status_fix rule 1: signal the UI that all retries are exhausted — marks live city unavailable.
   onStatus?.({ ws: 'disconnected', joined: false, error: String(lastError?.message || lastError || 'unknown error'), roomId });
   return null;
 }
@@ -346,96 +240,8 @@ export function sendMovement(x, y) {
   return true;
 }
 
-export function sendNodeInterference(nodeId, intent = 'disrupt') {
-  if (!nodeId) return { ok: false, reason: 'no-node-id' };
-  if (!isRoomOpen()) {
-    warnClosedRoom('nodeInterfere');
-    return { ok: false, reason: 'closed-room' };
-  }
-  room.send('nodeInterfere', { nodeId, intent });
-  return { ok: true };
-}
-
 export function getRoom() {
   return room;
-}
-
-export function sendWarAction(actionType, payload = {}) {
-  if (!actionType) return false;
-  if (!isRoomOpen()) {
-    warnClosedRoom('warAction');
-    return false;
-  }
-  room.send('warAction', {
-    actionType,
-    ...payload,
-  });
-  return true;
-}
-
-export function sendCovertPressureSync(reports = []) {
-  if (!Array.isArray(reports) || !reports.length) return false;
-  if (!isRoomOpen()) {
-    warnClosedRoom('covertPressureSync');
-    return false;
-  }
-  room.send('covertPressureSync', { reports });
-  return true;
-}
-
-export function challengePlayer(targetPlayerId) {
-  if (!targetPlayerId) return false;
-  if (!isRoomOpen()) {
-    warnClosedRoom('duelChallenge');
-    return false;
-  }
-  room.send('duelChallenge', { targetPlayerId });
-  return true;
-}
-
-export function acceptDuel(duelId) {
-  if (!duelId) return false;
-  if (!isRoomOpen()) {
-    warnClosedRoom('duelAccept');
-    return false;
-  }
-  room.send('duelAccept', { duelId });
-  return true;
-}
-
-export function submitDuelAction(duelId, action) {
-  if (!duelId || !action) return false;
-  if (!isRoomOpen()) {
-    warnClosedRoom('duelAction');
-    return false;
-  }
-  room.send('duelAction', { duelId, action });
-  return true;
-}
-
-/** sendDuelChallenge — spec-required alias of challengePlayer */
-export function sendDuelChallenge(targetId) {
-  return challengePlayer(targetId);
-}
-
-/** sendDuelAccept — spec-required alias of acceptDuel */
-export function sendDuelAccept(duelId) {
-  return acceptDuel(duelId);
-}
-
-/** sendDuelAction — spec-required alias of submitDuelAction */
-export function sendDuelAction(duelId, action) {
-  return submitDuelAction(duelId, action);
-}
-
-export function sendDeployOperative(nodeId) {
-  if (!nodeId) return false;
-  if (!isRoomOpen()) {
-    warnClosedRoom('deployOperative');
-    return false;
-  }
-  room.send('deployOperative', { nodeId });
-  return true;
 }
 
 /**
