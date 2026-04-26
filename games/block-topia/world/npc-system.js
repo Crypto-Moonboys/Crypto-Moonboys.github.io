@@ -386,6 +386,10 @@ function createNpc({
 }
 
 function ensureHunterEntities(state) {
+  if (typeof createNpc !== 'function') {
+    console.error('[NPC] createNpc missing – abort spawn');
+    return;
+  }
   const hunterUnits = Array.isArray(state?.sharedWorld?.samHunters) ? state.sharedWorld.samHunters : [];
   const entities = Array.isArray(state?.npc?.entities) ? state.npc.entities : [];
   const huntersById = new Map(

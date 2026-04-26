@@ -1643,7 +1643,8 @@ export function createIsoRenderer(canvas) {
   }
 
   function drawCovertNodeOverlay(originX, originY, node, now, state) {
-    if (!node || !node.id || !Number.isFinite(node.x) || !Number.isFinite(node.y)) return;
+    if (!node) return;
+    if (!node.id || !Number.isFinite(node.x) || !Number.isFinite(node.y)) return;
     const nodeRiskById = state?.covert?.nodeRiskById;
     const nodeScanByNodeId = state?.covert?.counterActions?.nodeScanByNodeId;
     const hunterByNodeId = state?.sharedWorld?.hunterDetectionByNodeId

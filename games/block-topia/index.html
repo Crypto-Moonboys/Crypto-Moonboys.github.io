@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Block Topia - 2P Iso Map Base</title>
     <link rel="stylesheet" href="./styles.css" />
+    <!-- Colyseus v0.16 client (required for multiplayer) -->
+    <script src="https://unpkg.com/colyseus.js@0.16/dist/colyseus.js"></script>
   </head>
   <body>
     <div id="game-shell">
@@ -12,6 +14,7 @@
     </div>
     <script type="module">
       import "./main.js";
+      import { connectMultiplayer, sendMovement } from "./network.js";
 
       const mountOptions = { containerId: "game-shell", canvasId: "game" };
       const MAX_MOUNT_ATTEMPTS = 8;
@@ -21,6 +24,7 @@
         const api = window.BlockTopiaMap;
         if (api && typeof api.mount === "function") {
           api.mount(mountOptions);
+          startMultiplayer();
           return;
         }
 
@@ -31,6 +35,30 @@
           console.error("BlockTopiaMap mount failed: API unavailable");
         }
       };
+
+      function startMultiplayer() {
+        const playerName = `Player_${Math.floor(Math.random() * 9000) + 1000}`;
+        connectMultiplayer({
+          playerName,
+          roomId: "city",
+          onStatus(status) {
+            window.BlockTopiaMap?.setConnectionStatus(status);
+            if (typeof status.sessionId === "string" && status.sessionId) {
+              window.BlockTopiaMap?.setLocalPlayer({ sessionId: status.sessionId });
+            }
+          },
+          onPlayers(players) {
+            window.BlockTopiaMap?.updatePlayers(players);
+          },
+          onFeed(msg) {
+            console.log("[BlockTopia feed]", msg);
+          },
+        }).then((connectedRoom) => {
+          if (connectedRoom) {
+            window.BlockTopiaMap?.setPositionBroadcastSink(({ x, y }) => sendMovement(x, y));
+          }
+        });
+      }
 
       tryMount();
 
