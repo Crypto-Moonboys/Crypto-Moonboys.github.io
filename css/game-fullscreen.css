@@ -367,42 +367,38 @@ body.overlay-open {
 }
 
 .game-card .arcade-sync-hint {
-  margin-top: 12px;
-  max-width: 700px;
-  font-size: 0.82rem;
-  line-height: 1.55;
+  margin-top: 8px;
+  font-size: 0.75rem;
+  line-height: 1.5;
   color: var(--color-text-muted, #8b949e);
-  background: rgba(61, 90, 254, 0.1);
-  border: 1px solid rgba(61, 90, 254, 0.4);
-  border-radius: 10px;
-  padding: 10px 12px;
 }
 
 .game-card .arcade-sync-status {
-  margin-top: 10px;
-  max-width: 700px;
-  width: 100%;
-  font-size: 0.82rem;
-  line-height: 1.5;
-  color: #cfd6ff;
-  border: 1px solid rgba(255, 255, 255, 0.16);
-  border-radius: 10px;
-  padding: 8px 10px;
-  background: rgba(12, 18, 34, 0.85);
+  margin-top: 4px;
+  font-size: 0.75rem;
+  line-height: 1.4;
+  color: var(--color-text-muted, #8b949e);
 }
 
 .game-card .arcade-sync-identity {
-  margin-top: 10px;
-  max-width: 700px;
-  width: 100%;
-  font-size: 0.81rem;
-  color: #d5e3ff;
+  margin-top: 4px;
+  font-size: 0.75rem;
+  color: var(--color-text-muted, #8b949e);
 }
 
 .game-card .arcade-sync-actions {
-  margin-top: 8px;
-  max-width: 700px;
-  width: 100%;
+  margin-top: 6px;
+  font-size: 0.75rem;
+}
+
+/* Sync blocks are non-essential in the fullscreen overlay — hide them to give
+   the canvas maximum vertical space. The right side panel already shows sync
+   status and identity for wide-screen layouts. */
+#game-overlay .game-card .arcade-sync-hint,
+#game-overlay .game-card .arcade-sync-status,
+#game-overlay .game-card .arcade-sync-identity,
+#game-overlay .game-card .arcade-sync-actions {
+  display: none !important;
 }
 
 /* 12. Instruction/hint text under canvas — hidden in fullscreen overlay */

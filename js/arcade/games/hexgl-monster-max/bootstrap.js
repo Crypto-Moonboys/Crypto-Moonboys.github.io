@@ -1,5 +1,5 @@
-import { ArcadeSync }                from '/js/arcade-sync.js';
-import { submitScore, fetchLeaderboard } from '/js/leaderboard-client.js';
+import { ArcadeSync }              from '/js/arcade-sync.js';
+import { submitScore }             from '/js/leaderboard-client.js';
 import { HEXGL_MONSTER_MAX_CONFIG }  from './config.js';
 import { GameRegistry }              from '/js/arcade/core/game-registry.js';
 import { playSound, isMuted, stopAllSounds } from '/js/arcade/core/audio.js';
@@ -28,8 +28,6 @@ export function bootstrapHexGLMonsterMax(root) {
   //    this iframe-based game.  Do not reintroduce it.
   // ──────────────────────────────────────────────────────────────────────────
   var MIN_RUN_MS = HEXGL_MONSTER_MAX_CONFIG.minRunMs;
-  // 470000 corresponds to a 30-second run under score = 500000 - (seconds * 1000).
-  var PERFECT_RUN_SCORE = 470000;
   var FRAME_SRC = 'https://hexgl.bkcore.com/play/';
   var COUNTDOWN_TICK_MS  = 700;  // duration each countdown number is shown
   var COUNTDOWN_GO_MS    = 600;  // how long GO is shown before timer starts
@@ -39,17 +37,6 @@ export function bootstrapHexGLMonsterMax(root) {
   var timerEl       = document.getElementById('run-timer');
   var scoreEl       = document.getElementById('est-score');
   var statusEl      = document.getElementById('run-status');
-  var runActiveEl   = document.getElementById('run-active-indicator');
-  var deltaEl       = document.getElementById('delta-best');
-  var perfectEl     = document.getElementById('perfect-run');
-  var rivalBlock    = document.getElementById('rival-block');
-  var rivalNameEl   = document.getElementById('rival-name');
-  var rivalTimeEl   = document.getElementById('rival-time');
-  var topPlayerEl   = document.getElementById('top-player');
-  var rankEl        = document.getElementById('your-rank');
-  var totalScoreEl  = document.getElementById('total-arcade-score');
-  var gamesPlayedEl = document.getElementById('games-played');
-  var lastRunEl     = document.getElementById('last-run');
   var startBtn      = document.getElementById('startBtn');
   var submitBtn     = document.getElementById('submit-btn');
   var resetBtn      = document.getElementById('resetBtn');
@@ -67,7 +54,6 @@ export function bootstrapHexGLMonsterMax(root) {
   var runToken = 0;
   var frameLoaded = false;
   var lastRunMs  = null;
-  var bestRunMs  = null;
   var statusText = 'RUN READY';
   var ambientHandle = null;
   var messageTimeoutId = null;
@@ -191,16 +177,6 @@ export function bootstrapHexGLMonsterMax(root) {
     var score = calcScore(ms);
     if (timerEl) timerEl.textContent = fmtTime(ms);
     if (scoreEl) scoreEl.textContent = score.toLocaleString();
-    if (runActiveEl) runActiveEl.style.display = runActive ? '' : 'none';
-    if (perfectEl) perfectEl.style.display = score >= PERFECT_RUN_SCORE ? '' : 'none';
-    if (deltaEl) {
-      if (typeof bestRunMs !== 'number') {
-        deltaEl.textContent = '—';
-      } else {
-        var delta = (ms - bestRunMs) / 1000;
-        deltaEl.textContent = (delta <= 0 ? '-' : '+') + Math.abs(delta).toFixed(2) + 's';
-      }
-    }
   }
 
   function activateRun(token) {
@@ -315,19 +291,6 @@ export function bootstrapHexGLMonsterMax(root) {
     loadFrameForLaunch(false);
   }
 
-  function loadRival() {
-    try {
-      var stored = localStorage.getItem('hexgl_best_run');
-      if (!stored) return;
-      var data = JSON.parse(stored);
-      if (!data || typeof data.ms !== 'number') return;
-      bestRunMs = data.ms;
-      if (rivalBlock) rivalBlock.style.display = '';
-      if (rivalNameEl) rivalNameEl.textContent = data.name || 'You';
-      if (rivalTimeEl) rivalTimeEl.textContent = fmtTime(data.ms);
-    } catch (_) {}
-  }
-
   function savePersonalBest(ms) {
     try {
       var current = JSON.parse(localStorage.getItem('hexgl_best_run') || 'null');
@@ -335,37 +298,6 @@ export function bootstrapHexGLMonsterMax(root) {
         localStorage.setItem('hexgl_best_run', JSON.stringify({ ms: ms, name: playerName }));
       }
     } catch (_) {}
-    loadRival();
-  }
-
-  function updateCrossGameStats() {
-    try {
-      if (lastRunEl) {
-        lastRunEl.textContent = (typeof lastRunMs === 'number') ? fmtTime(lastRunMs) : '—';
-      }
-      fetchLeaderboard('global').then(function (rows) {
-        if (!Array.isArray(rows) || !rows.length) return;
-        if (topPlayerEl) topPlayerEl.textContent = rows[0].player || '—';
-        var playerKey = String(playerName || '').toLowerCase();
-        var me = rows.find(function (row) {
-          return String(row.player || '').toLowerCase() === playerKey;
-        });
-        if (!me) return;
-        if (rankEl) rankEl.textContent = '#' + String(me.rank || '—');
-        if (totalScoreEl) totalScoreEl.textContent = Number(me.score || 0).toLocaleString();
-        if (gamesPlayedEl) {
-          var b = me.breakdown || {};
-          var played = Object.keys(b).filter(function (k) {
-            return k !== 'variety_bonus' && Number(b[k] || 0) > 0;
-          }).length;
-          gamesPlayedEl.textContent = String(played);
-        }
-      }).catch(function (err) {
-        console.warn('[hexgl-monster-max] fetchLeaderboard failed:', err);
-      });
-    } catch (err) {
-      console.warn('[hexgl-monster-max] updateCrossGameStats error:', err);
-    }
   }
 
   function onStart() {
@@ -413,9 +345,6 @@ export function bootstrapHexGLMonsterMax(root) {
     if (submitBtn) submitBtn.textContent = '📤 Submit Run';
     if (timerEl) timerEl.textContent = '—';
     if (scoreEl) scoreEl.textContent = '—';
-    if (deltaEl) deltaEl.textContent = '—';
-    if (runActiveEl) runActiveEl.style.display = 'none';
-    if (perfectEl) perfectEl.style.display = 'none';
     notify('');
     syncAmbient();
     activateRun(runToken);
@@ -468,7 +397,6 @@ export function bootstrapHexGLMonsterMax(root) {
       resetOverlayStartLabel();
       setStatus('READY TO LAUNCH');
       setOverlayStartEnabled(true);
-      updateCrossGameStats();
       return;
     }
 
@@ -480,7 +408,6 @@ export function bootstrapHexGLMonsterMax(root) {
     if (startBtn) startBtn.disabled = false;
     resetOverlayStartLabel();
     setStatus('SUBMITTED');
-    updateCrossGameStats();
   }
 
   function onReset() {
@@ -495,23 +422,17 @@ export function bootstrapHexGLMonsterMax(root) {
     }
     if (timerEl) timerEl.textContent = '—';
     if (scoreEl) scoreEl.textContent = '—';
-    if (deltaEl) deltaEl.textContent = '—';
     setStatus('LOADING');
-    if (runActiveEl) runActiveEl.style.display = 'none';
-    if (perfectEl) perfectEl.style.display = 'none';
     if (startBtn) startBtn.disabled = false;
     if (submitBtn) {
       submitBtn.textContent = '📤 Submit Run';
       submitBtn.disabled = true;
     }
     notify('Loading HexGL…');
-    updateCrossGameStats();
   }
 
   function init() {
     refreshIdentity();
-    loadRival();
-    updateCrossGameStats();
     if (submitBtn) {
       submitBtn.textContent = '📤 Submit Run';
       submitBtn.disabled = true;
@@ -542,8 +463,6 @@ export function bootstrapHexGLMonsterMax(root) {
           submitBtn.textContent = '📤 Submit Run';
           submitBtn.disabled = true;
         }
-        if (runActiveEl) runActiveEl.style.display = 'none';
-        if (perfectEl) perfectEl.style.display = 'none';
         if (frameLoaded && !isFrameBlank()) {
           setStatus('READY TO LAUNCH');
           setOverlayStartEnabled(true);

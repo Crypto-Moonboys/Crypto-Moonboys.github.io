@@ -358,8 +358,9 @@ function ensureUi() {
     .arcade-retention-toast.medium{border-color:rgba(46,197,255,.75)}
     #arcade-retention-banner{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);background:rgba(11,16,28,.92);border:1px solid rgba(247,201,72,.45);border-radius:999px;padding:8px 14px;color:#f5f8ff;font-size:.73rem;font-weight:700;opacity:0;transition:opacity .18s ease,transform .18s ease}
     #arcade-retention-banner.active{opacity:1;transform:translateX(-50%) scale(1.03)}
-    #arcade-retention-mission-chip{position:fixed;right:16px;top:170px;background:rgba(247,201,72,.14);border:1px solid rgba(247,201,72,.62);color:#fff;border-radius:999px;padding:7px 12px;font-size:.68rem;font-weight:800;letter-spacing:.02em;max-width:280px;line-height:1.2}
+    #arcade-retention-mission-chip{position:fixed;right:16px;bottom:80px;background:rgba(247,201,72,.14);border:1px solid rgba(247,201,72,.62);color:#fff;border-radius:999px;padding:7px 12px;font-size:.68rem;font-weight:800;letter-spacing:.02em;max-width:280px;line-height:1.2}
     #arcade-retention-mission-chip.pulse{animation:retentionPulse .6s ease-in-out infinite alternate}
+    body.overlay-open #arcade-retention-mission-chip{display:none!important}
     @keyframes retentionPulse{0%{transform:scale(1)}100%{transform:scale(1.03)}}
   `;
   document.head.appendChild(style);
