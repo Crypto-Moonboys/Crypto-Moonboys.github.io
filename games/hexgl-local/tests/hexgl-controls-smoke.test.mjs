@@ -43,19 +43,27 @@ assert.ok(
 // ---------------------------------------------------------------------------
 // 3. A key (65) sets BOTH ltrigger AND left (steer + drift)
 // ---------------------------------------------------------------------------
-const aKeyBlock = shipControlsSrc.match(/case 65:[^;]*;[^;]*;/s);
+const aKeyBlock = shipControlsSrc.match(/case 65:[\s\S]*?break;/);
 assert.ok(
-  aKeyBlock && aKeyBlock[0].includes('key.ltrigger') && aKeyBlock[0].includes('key.left'),
-  'ShipControls.js case 65 (A) must set both key.ltrigger and key.left'
+  aKeyBlock && aKeyBlock[0].includes('key.ltrigger'),
+  'ShipControls.js case 65 (A) must set key.ltrigger'
+);
+assert.ok(
+  aKeyBlock && aKeyBlock[0].includes('key.left'),
+  'ShipControls.js case 65 (A) must also set key.left for WASD steer-left'
 );
 
 // ---------------------------------------------------------------------------
 // 4. D key (68) sets BOTH rtrigger AND right (steer + drift)
 // ---------------------------------------------------------------------------
-const dKeyBlock = shipControlsSrc.match(/case 68:[^;]*;[^;]*;/s);
+const dKeyBlock = shipControlsSrc.match(/case 68:[\s\S]*?break;/);
 assert.ok(
-  dKeyBlock && dKeyBlock[0].includes('key.rtrigger') && dKeyBlock[0].includes('key.right'),
-  'ShipControls.js case 68 (D) must set both key.rtrigger and key.right'
+  dKeyBlock && dKeyBlock[0].includes('key.rtrigger'),
+  'ShipControls.js case 68 (D) must set key.rtrigger'
+);
+assert.ok(
+  dKeyBlock && dKeyBlock[0].includes('key.right'),
+  'ShipControls.js case 68 (D) must also set key.right for WASD steer-right'
 );
 
 // ---------------------------------------------------------------------------

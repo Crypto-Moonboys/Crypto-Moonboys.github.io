@@ -47,7 +47,8 @@
   // Default to keyboard (0) when a fine pointer (mouse/trackpad) is available,
   // even on touch-capable desktops (e.g. Windows Surface).  Only fall back to
   // touch (1) when the device has touch AND no fine pointer.
-  defaultControls = (bkcore.Utils.isTouchDevice() && !(window.matchMedia && window.matchMedia('(pointer: fine)').matches)) ? 1 : 0;
+  var hasFinePointer = !!(window.matchMedia && window.matchMedia('(pointer: fine)').matches);
+  defaultControls = (bkcore.Utils.isTouchDevice() && !hasFinePointer) ? 1 : 0;
 
   s = [['controlType', ['KEYBOARD', 'TOUCH', 'LEAP MOTION CONTROLLER', 'GAMEPAD'], defaultControls, defaultControls, 'Controls: '], ['quality', ['LOW', 'MID', 'HIGH', 'VERY HIGH'], 3, 3, 'Quality: '], ['hud', ['OFF', 'ON'], 1, 1, 'HUD: '], ['godmode', ['OFF', 'ON'], 0, 1, 'Godmode: ']];
 
@@ -56,7 +57,7 @@
     _ref = u(a[0]);
     if (_ref != null) {
       _n = parseInt(_ref, 10);
-      a[3] = (_n >= 0 && _n < a[1].length) ? _n : a[2];
+      a[3] = (!isNaN(_n) && _n >= 0 && _n < a[1].length) ? _n : a[2];
     } else {
       a[3] = a[2];
     }
