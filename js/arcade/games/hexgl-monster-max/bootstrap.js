@@ -420,8 +420,9 @@ export function bootstrapHexGLMonsterMax(root) {
   }
 
   function getScore() {
+    // Only returns a score after a real race-complete postMessage event.
+    // Wrapper timer elapsed time is NEVER used as a score.
     if (typeof completedRunMs === 'number') return calcScore(completedRunMs);
-    if (runActive && runStart !== null) return calcScore(Date.now() - runStart);
     return 0;
   }
 
