@@ -13,7 +13,6 @@
   var adminTelegramIdEl = document.getElementById('admin-telegram-id');
   var targetTelegramIdEl = document.getElementById('target-telegram-id');
   var xpEl = document.getElementById('grant-xp');
-  var gemsEl = document.getElementById('grant-gems');
   var secretEl = document.getElementById('admin-secret');
   var reasonEl = document.getElementById('grant-reason');
   var resultState = document.getElementById('result-state');
@@ -66,14 +65,6 @@
     if (kind === 'xp50k') {
       xpEl.value = '50000';
       return;
-    }
-    if (kind === 'gems50k') {
-      gemsEl.value = '50000';
-      return;
-    }
-    if (kind === 'both50k') {
-      xpEl.value = '50000';
-      gemsEl.value = '50000';
     }
   }
 
@@ -180,7 +171,6 @@
 
       var targetTelegramId = String(targetTelegramIdEl.value || '').trim();
       var xp = readInt(xpEl);
-      var gems = readInt(gemsEl);
       var reason = String(reasonEl.value || '').trim();
       var secret = String(secretEl.value || '');
 
@@ -192,12 +182,12 @@
         setState(resultState, 'Admin secret is required at submit time.', 'bad');
         return;
       }
-      if ((xp === null || xp === 0) && (gems === null || gems === 0)) {
-        setState(resultState, 'Enter a positive XP and/or gems amount.', 'bad');
+      if (xp === null || xp === 0) {
+        setState(resultState, 'Enter a positive XP amount.', 'bad');
         return;
       }
-      if (Number.isNaN(xp) || Number.isNaN(gems)) {
-        setState(resultState, 'XP and gems must be whole numbers.', 'bad');
+      if (Number.isNaN(xp)) {
+        setState(resultState, 'XP must be a whole number.', 'bad');
         return;
       }
       if (!activeAdminTelegramId) {
@@ -210,7 +200,6 @@
         admin_telegram_id: activeAdminTelegramId,
       };
       if (xp !== null && xp > 0) body.xp = xp;
-      if (gems !== null && gems > 0) body.gems = gems;
       if (reason) body.reason = reason;
 
       setState(resultState, 'Submitting grant request…', 'warn');
@@ -219,7 +208,7 @@
         var payload = outcome.payload || {};
         var reasonText = payload.error || payload.message || '';
         if (outcome.ok) {
-          setState(resultState, 'Grant succeeded. ' + (reasonText ? reasonText : 'XP/Gems updated.'), 'good');
+          setState(resultState, 'Grant succeeded. ' + (reasonText ? reasonText : 'XP updated.'), 'good');
         } else {
           setState(resultState, 'Grant failed (' + outcome.status + '). ' + (reasonText || 'See response payload.'), 'bad');
         }
