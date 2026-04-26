@@ -1,4 +1,4 @@
-let room = null;
+﻿let room = null;
 let client = null;
 let _reconnectOptions = null;
 let _reconnecting = false;
@@ -45,15 +45,15 @@ function isRoomNotFoundError(error) {
 // If the room does not exist (4211) a clean error with isCityUnavailable=true is thrown
 // so the caller can fail fast without retrying or creating a fallback room.
 async function joinCityOnly(colyseusClient, roomId, options) {
-  console.log(`[BlockTopia] join attempt → room "${roomId}"`);
+  console.log(`[BlockTopia] join attempt -> room "${roomId}"`);
   try {
     const joined = await colyseusClient.join(roomId, options);
-    console.log(`[BlockTopia] join succeeded → room "${joined.name || roomId}" session=${joined.sessionId}`);
+    console.log(`[BlockTopia] join succeeded -> room "${joined.name || roomId}" session=${joined.sessionId}`);
     return joined;
   } catch (joinError) {
     if (isRoomNotFoundError(joinError)) {
-      console.error(`[BlockTopia] Live city unavailable — server room not bootstrapped (code=${joinError?.code}).`);
-      const err = new Error('Live city unavailable — server room not bootstrapped');
+      console.error(`[BlockTopia] Live city unavailable - server room not bootstrapped (code=${joinError?.code}).`);
+      const err = new Error('Live city unavailable - server room not bootstrapped');
       err.code = ERR_ROOM_NOT_FOUND;
       err.isCityUnavailable = true;
       throw err;
@@ -66,9 +66,46 @@ async function joinCityOnly(colyseusClient, roomId, options) {
 function toPlayerList(playersState) {
   const list = [];
   if (!playersState) return list;
+
+  // ArraySchema (and some schema proxy variants) expose toArray().
+  if (typeof playersState.toArray === 'function') {
+    return playersState.toArray().map((player, index) => ({
+      id: player?.id || String(index),
+      x: Number(player?.x) || 0,
+      y: Number(player?.y) || 0,
+      name: String(player?.name || ''),
+      faction: String(player?.faction || ''),
+      district: String(player?.district || ''),
+    }));
+  }
+
+  // Array-like schema fallbacks where forEach is unavailable/unreliable.
+  if (typeof playersState.length === 'number' && playersState.length >= 0) {
+    for (let i = 0; i < playersState.length; i += 1) {
+      const player = playersState[i];
+      if (!player) continue;
+      list.push({
+        id: player?.id || String(i),
+        x: Number(player?.x) || 0,
+        y: Number(player?.y) || 0,
+        name: String(player?.name || ''),
+        faction: String(player?.faction || ''),
+        district: String(player?.district || ''),
+      });
+    }
+    return list;
+  }
+
   if (typeof playersState.forEach === 'function') {
     playersState.forEach((player, id) => {
-      list.push({ id, ...player });
+      list.push({
+        id: player?.id || String(id),
+        x: Number(player?.x) || 0,
+        y: Number(player?.y) || 0,
+        name: String(player?.name || ''),
+        faction: String(player?.faction || ''),
+        district: String(player?.district || ''),
+      });
     });
     return list;
   }
@@ -95,10 +132,10 @@ export async function connectMultiplayer({
   let lastError = null;
   _cityUnavailable = false;
 
-  console.log(`[BlockTopia] Multiplayer init — endpoint: ${endpoint} | room: "${roomId}"`);
+  console.log(`[BlockTopia] Multiplayer init - endpoint: ${endpoint} | room: "${roomId}"`);
 
   if (!window.Colyseus) {
-    console.error('[BlockTopia] Colyseus client library not loaded — multiplayer unavailable.');
+    console.error('[BlockTopia] Colyseus client library not loaded - multiplayer unavailable.');
     onStatus?.({ ws: 'failed', joined: false, error: 'Colyseus not loaded', roomId });
     return null;
   }
@@ -106,7 +143,7 @@ export async function connectMultiplayer({
   for (let attempt = 1; attempt <= MAX_RETRIES; attempt += 1) {
     try {
       onStatus?.({ ws: 'connecting', joined: false, error: '', roomId });
-      console.log(`[BlockTopia] Connecting (attempt ${attempt}/${MAX_RETRIES}) → ${endpoint} room "${roomId}"`);
+      console.log(`[BlockTopia] Connecting (attempt ${attempt}/${MAX_RETRIES}) -> ${endpoint} room "${roomId}"`);
       client = new window.Colyseus.Client(endpoint);
       room = await joinCityOnly(client, roomId, { name: playerName });
 
@@ -126,7 +163,7 @@ export async function connectMultiplayer({
         }
         console.error(`[BlockTopia] Disconnected from room "${joinedRoomName}" (code: ${code})`);
         onStatus?.({ ws: 'disconnected', joined: false, error: `Disconnected (code: ${code})`, roomId: joinedRoomName });
-        onFeed?.(`⚠️ Multiplayer connection lost (code: ${code})`);
+        onFeed?.(`Multiplayer connection lost (code: ${code})`);
         // Begin a silent background reconnect attempt.
         _scheduleReconnect();
       });
@@ -141,7 +178,7 @@ export async function connectMultiplayer({
       });
 
       room.onMessage('system', (message) => {
-        onFeed?.(`📢 ${message?.message || 'System update'}`);
+        onFeed?.(`System: ${message?.message || 'System update'}`);
       });
 
       return room;
@@ -156,16 +193,16 @@ export async function connectMultiplayer({
       );
       onStatus?.({ ws: wsState, joined: false, error: String(error?.message || error), roomId, roomFull });
       if (roomFull) {
-        // Room is at capacity — do not retry.
-        onFeed?.('⛔ Block Topia is full (2 players). Try again later.');
-        console.warn('[BlockTopia] Room full — aborting further connection attempts.');
+        // Room is at capacity - do not retry.
+        onFeed?.('Block Topia is full (2 players). Try again later.');
+        console.warn('[BlockTopia] Room full - aborting further connection attempts.');
         return null;
       }
       if (cityUnavailable) {
-        // Server room not bootstrapped — fail cleanly once, no retry, no reconnect loop.
+        // Server room not bootstrapped - fail cleanly once, no retry, no reconnect loop.
         _cityUnavailable = true;
-        onFeed?.('⚠️ Live city unavailable — server room not bootstrapped.');
-        console.warn('[BlockTopia] City unavailable — aborting connection attempts.');
+        onFeed?.('Live city unavailable - server room not bootstrapped.');
+        console.warn('[BlockTopia] City unavailable - aborting connection attempts.');
         return null;
       }
       if (attempt < MAX_RETRIES) {
@@ -175,7 +212,7 @@ export async function connectMultiplayer({
   }
 
   console.error(`[BlockTopia] All ${MAX_RETRIES} connection attempts exhausted. endpoint=${endpoint} room="${roomId}" error:`, lastError?.message || lastError);
-  onFeed?.(`⚠️ Multiplayer unavailable: ${String(lastError?.message || lastError || 'unknown error')}`);
+  onFeed?.(`Multiplayer unavailable: ${String(lastError?.message || lastError || 'unknown error')}`);
   onStatus?.({ ws: 'disconnected', joined: false, error: String(lastError?.message || lastError || 'unknown error'), roomId });
   return null;
 }
@@ -251,11 +288,11 @@ export function getRoom() {
 function _scheduleReconnect() {
   if (_reconnecting || !_reconnectOptions) return;
   if (_cityUnavailable) {
-    console.warn('[BlockTopia] _scheduleReconnect: city unavailable — not scheduling reconnect.');
+    console.warn('[BlockTopia] _scheduleReconnect: city unavailable - not scheduling reconnect.');
     return;
   }
   _reconnecting = true;
-  // Wait 2.5 s before trying — gives the server time to clean up the old session.
+  // Wait 2.5 s before trying - gives the server time to clean up the old session.
   setTimeout(() => {
     reconnectMultiplayer().finally(() => {
       _reconnecting = false;
@@ -270,20 +307,20 @@ function _scheduleReconnect() {
  */
 export async function reconnectMultiplayer() {
   if (!_reconnectOptions) {
-    console.warn('[BlockTopia] reconnectMultiplayer: no saved connection options — ignoring.');
+    console.warn('[BlockTopia] reconnectMultiplayer: no saved connection options - ignoring.');
     return null;
   }
   if (isRoomOpen()) {
-    // Already connected — nothing to do.
+    // Already connected - nothing to do.
     return null;
   }
   if (_isConnecting) {
     // A reconnect attempt is already in flight (from _scheduleReconnect or another caller).
-    console.log('[BlockTopia] reconnectMultiplayer: reconnect already in progress — ignoring duplicate call.');
+    console.log('[BlockTopia] reconnectMultiplayer: reconnect already in progress - ignoring duplicate call.');
     return null;
   }
   _isConnecting = true;
-  console.log('[BlockTopia] reconnectMultiplayer: attempting silent reconnect…');
+  console.log('[BlockTopia] reconnectMultiplayer: attempting silent reconnect...');
   try {
     return await connectMultiplayer(_reconnectOptions);
   } finally {
