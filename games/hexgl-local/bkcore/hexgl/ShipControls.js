@@ -751,7 +751,7 @@ bkcore.hexgl.ShipControls.prototype.heightCheck = function(dt)
 		// Grounded: ship is within snapping distance of the surface.
 		// Hard-lock vertical velocity and snap position to eliminate slope penetration.
 		// Airborne: use smooth correction so the ship glides back to the surface.
-		var grounded = Math.abs(delta) < 5;
+		var grounded = Math.abs(delta) < 15;
 		if(grounded)
 		{
 			this.movement.y = 0;              // lock vertical velocity — prevents penetration
