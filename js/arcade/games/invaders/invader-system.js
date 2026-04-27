@@ -54,8 +54,13 @@ export const BOSS_BULLET_SPEED_PER_WAVE  = 14;
 export const BOSS_SPREAD_NORMAL          = [-8, 8];
 export const BOSS_SPREAD_AGGRESSIVE      = [-16, 0, 16];
 
+// Boss phase 3 — 5-way rage spread
+export const BOSS_SPREAD_PHASE3 = [-24, -12, 0, 12, 24];
+
 // Misc
-export const SHIELD_SPAWN_CHANCE = 0.15;
+export const SHIELD_SPAWN_CHANCE  = 0.15;
+export const BOMBER_SPAWN_CHANCE  = 0.12;  // wave >= 6
+export const HUNTER_SPAWN_CHANCE  = 0.10;  // wave >= 9
 
 // Bunkers
 export const BUNKER_COUNT      = 4;
@@ -91,7 +96,13 @@ export function buildGrid(wave, W, rand) {
   for (let r = 0; r < ROWS; r++) {
     for (let c = 0; c < COLS; c++) {
       let type = rowToType(r);
-      if (wave >= 4 && type !== 'tank' && Math.random() < SHIELD_SPAWN_CHANCE) type = 'shield';
+      if (wave >= 4 && type !== 'tank' && Math.random() < SHIELD_SPAWN_CHANCE) {
+        type = 'shield';
+      } else if (wave >= 6 && type !== 'tank' && Math.random() < BOMBER_SPAWN_CHANCE) {
+        type = 'bomber';
+      } else if (wave >= 9 && type !== 'tank' && Math.random() < HUNTER_SPAWN_CHANCE) {
+        type = 'hunter';
+      }
       const hp       = typeToHp(type);
       const shieldHp = typeToShieldHp(type);
       invaders.push({
@@ -129,6 +140,23 @@ export function buildGrid(wave, W, rand) {
     invShootTimer: rand(invShootInterval * 0.6, invShootInterval * 1.3),
     invDropping: false,
   };
+}
+
+// ── Boss phase helper ─────────────────────────────────────────────────────────
+
+/**
+ * Returns the current combat phase of the boss (1, 2, or 3) based on HP.
+ *   Phase 1 (HP > 66 %): standard fire
+ *   Phase 2 (HP 33–66 %): spread fire + speed boost
+ *   Phase 3 (HP < 33 %): rage — 5-way spread, max speed, rapid fire
+ * @param {{ hp: number, maxHp: number }} boss
+ * @returns {1|2|3}
+ */
+export function getBossPhase(boss) {
+  const ratio = boss.hp / boss.maxHp;
+  if (ratio > 0.66) return 1;
+  if (ratio > 0.33) return 2;
+  return 3;
 }
 
 // ── Boss builder ──────────────────────────────────────────────────────────────

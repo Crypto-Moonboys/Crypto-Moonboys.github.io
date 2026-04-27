@@ -114,6 +114,11 @@ export function bootstrapPacChain(root) {
 
   const MAZE_POOL = [BASE_MAZE, MAZE_1, MAZE_2];
 
+  // Row index (0-based) of the horizontal side-tunnel in every maze layout.
+  // Only this row allows left/right wrap; all other rows are walled off at
+  // the canvas edge and must never wrap.
+  const TUNNEL_ROW = 10;
+
   // ── Game constants ────────────────────────────────────────────────────
   const PLAYER_START_X = 10;
   const PLAYER_START_Y = 16;
@@ -316,6 +321,9 @@ export function bootstrapPacChain(root) {
   function tileCenter(t) { return t * CELL + CELL / 2; }
 
   function isWall(cx, cy) {
+    // The horizontal tunnel row is open at both left and right canvas edges —
+    // treat those virtual cells as passages so entities can enter the tunnel.
+    if (cy === TUNNEL_ROW && (cx < 0 || cx >= COLS)) return false;
     if (cx < 0 || cy < 0 || cx >= COLS || cy >= ROWS) return true;
     return maze[cy][cx] === 0;
   }
@@ -495,9 +503,19 @@ export function bootstrapPacChain(root) {
       e.y = Math.max(0, Math.min(ROWS - 1, newTY));
     }
 
-    // Tunnel wrap (horizontal)
-    if (e.px < 0) { e.px = W; e.x = COLS - 1; }
-    if (e.px > W) { e.px = 0; e.x = 0; }
+    // Tunnel wrap (horizontal) — only valid on the dedicated tunnel row.
+    // Wrapping to CELL*0.5 / W-CELL*0.5 places the entity at the tile-centre
+    // of the first/last column, preventing edge-stick on re-entry.
+    if (e.y === TUNNEL_ROW) {
+      if (e.px < 0) {
+        e.px = W - CELL * 0.5;
+        e.x = COLS - 1;
+      }
+      if (e.px > W) {
+        e.px = CELL * 0.5;
+        e.x = 0;
+      }
+    }
   }
 
   // ─────────────────────────────────────────────────────────────────────
