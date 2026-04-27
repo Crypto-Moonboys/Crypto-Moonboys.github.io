@@ -1,68 +1,110 @@
-/**
- * BaseGame.js — Shared engine layer for arcade games.
- *
- * Provides:
- *  - requestAnimationFrame loop with capped delta-time (max 50 ms per frame)
- *  - Keyboard state map (this.keys)
- *  - Input listener management with Space / Arrow-key preventDefault
- *  - start / stop lifecycle helpers
- *
- * Usage:
- *   import { BaseGame } from '/js/arcade/engine/BaseGame.js';
- *
- *   const engine = new BaseGame();
- *   engine.onTick    = (dt) => { update(dt); draw(); };
- *   engine.onKeyDown = (e)  => { /* game-specific key actions *\/ };
- *   engine.attachInput();
- *   engine.startLoop();
- *   // later:
- *   engine.destroy();
- */
-
-/** Maximum delta-time per frame (seconds).  Caps spikes from tab re-focus. */
 const MAX_DT = 0.05;
 
-export class BaseGame {
-  constructor() {
-    /** Keys currently held down — key name → true. */
-    this.keys = {};
+const PREVENT_SCROLL_KEYS = {
+  ' ': true,
+  ArrowLeft: true,
+  ArrowRight: true,
+  ArrowUp: true,
+  ArrowDown: true,
+};
 
-    this._raf       = null;
-    this._lastTime  = 0;
+export class BaseGame {
+  constructor(options) {
+    const opts = options || {};
+
+    this.keys = {};
+    this.context = opts.context || {};
+
+    this._raf = null;
+    this._lastTime = 0;
     this._tickBound = this._tick.bind(this);
 
-    // Store bound refs so removeEventListener matches correctly.
     this._boundKeyDown = this._handleKeyDown.bind(this);
-    this._boundKeyUp   = this._handleKeyUp.bind(this);
+    this._boundKeyUp = this._handleKeyUp.bind(this);
+
+    this._systems = [];
+    this._systemMap = {};
+    this._isGameOver = false;
+
+    this.onTick = null;
+    this.onKeyDown = null;
+
+    this._hooks = {
+      init: typeof opts.init === 'function' ? opts.init : null,
+      update: typeof opts.update === 'function' ? opts.update : null,
+      render: typeof opts.render === 'function' ? opts.render : null,
+      gameOver: typeof opts.gameOver === 'function' ? opts.gameOver : null,
+      input: typeof opts.input === 'function' ? opts.input : null,
+    };
+
+    if (opts.systems) {
+      this.loadSystems(opts.systems);
+    }
   }
 
-  // ── Overridable hooks ──────────────────────────────────────────────────
+  setLifecycleHooks(hooks) {
+    const next = hooks || {};
+    if (typeof next.init === 'function') this._hooks.init = next.init;
+    if (typeof next.update === 'function') this._hooks.update = next.update;
+    if (typeof next.render === 'function') this._hooks.render = next.render;
+    if (typeof next.gameOver === 'function') this._hooks.gameOver = next.gameOver;
+    if (typeof next.input === 'function') this._hooks.input = next.input;
+  }
 
-  /**
-   * Called every animation frame with a capped delta-time in seconds.
-   * Override to run update + draw.
-   * @param {number} dt  Elapsed seconds since last frame (≤ MAX_DT).
-   */
-  onTick(dt) {} // eslint-disable-line no-unused-vars
+  loadSystems(systemFactories) {
+    this._systems = [];
+    this._systemMap = {};
 
-  /**
-   * Called on every keydown event after the keys map is updated and
-   * browser-default actions for Space / Arrow keys are suppressed.
-   * Override for game-specific key actions (e.g. shooting on Space).
-   * @param {KeyboardEvent} e
-   */
-  onKeyDown(e) {} // eslint-disable-line no-unused-vars
+    if (!systemFactories) return;
 
-  // ── Loop ──────────────────────────────────────────────────────────────
+    let entries = [];
+    if (Array.isArray(systemFactories)) {
+      entries = systemFactories.map(function (factory, index) {
+        return [String(index), factory];
+      });
+    } else {
+      entries = Object.entries(systemFactories);
+    }
 
-  /** Start (or restart) the rAF loop. */
+    for (const [name, factory] of entries) {
+      if (typeof factory !== 'function') continue;
+      const system = factory({ engine: this, context: this.context, name: name }) || {};
+      const wrapped = {
+        name: name,
+        init: typeof system.init === 'function' ? system.init : null,
+        update: typeof system.update === 'function' ? system.update : null,
+        render: typeof system.render === 'function' ? system.render : null,
+        gameOver: typeof system.gameOver === 'function' ? system.gameOver : null,
+        onInput: typeof system.onInput === 'function' ? system.onInput : null,
+        destroy: typeof system.destroy === 'function' ? system.destroy : null,
+        raw: system,
+      };
+      this._systems.push(wrapped);
+      this._systemMap[name] = wrapped.raw;
+    }
+  }
+
+  getSystem(name) {
+    return this._systemMap[name] || null;
+  }
+
+  async init() {
+    for (const system of this._systems) {
+      if (system.init) {
+        await system.init(this.context);
+      }
+    }
+    if (this._hooks.init) {
+      await this._hooks.init(this.context);
+    }
+  }
+
   startLoop() {
     if (this._raf !== null) cancelAnimationFrame(this._raf);
     this._lastTime = performance.now();
     this._raf = requestAnimationFrame(this._tickBound);
   }
 
-  /** Cancel the rAF loop without touching input listeners. */
   stopLoop() {
     if (this._raf !== null) {
       cancelAnimationFrame(this._raf);
@@ -70,47 +112,84 @@ export class BaseGame {
     }
   }
 
-  // ── Input ─────────────────────────────────────────────────────────────
+  async gameOver(reason) {
+    if (this._isGameOver) return;
+    this._isGameOver = true;
+    this.stopLoop();
 
-  /** Attach keyboard listeners to document. */
+    for (const system of this._systems) {
+      if (system.gameOver) {
+        await system.gameOver(this.context, reason);
+      }
+    }
+
+    if (this._hooks.gameOver) {
+      await this._hooks.gameOver(this.context, reason);
+    }
+  }
+
   attachInput() {
     document.addEventListener('keydown', this._boundKeyDown);
-    document.addEventListener('keyup',   this._boundKeyUp);
+    document.addEventListener('keyup', this._boundKeyUp);
   }
 
-  /** Remove keyboard listeners from document. */
   detachInput() {
     document.removeEventListener('keydown', this._boundKeyDown);
-    document.removeEventListener('keyup',   this._boundKeyUp);
+    document.removeEventListener('keyup', this._boundKeyUp);
   }
 
-  // ── Full teardown ─────────────────────────────────────────────────────
-
-  /** Stop loop and remove input listeners. */
   destroy() {
     this.stopLoop();
     this.detachInput();
-  }
 
-  // ── Private ───────────────────────────────────────────────────────────
+    for (const system of this._systems) {
+      if (system.destroy) {
+        try {
+          system.destroy(this.context);
+        } catch (_) {}
+      }
+    }
+
+    this._systems = [];
+    this._systemMap = {};
+  }
 
   _tick(ts) {
     const dt = Math.min((ts - this._lastTime) / 1000, MAX_DT);
     this._lastTime = ts;
-    this.onTick(dt);
+
+    if (typeof this.onTick === 'function') {
+      this.onTick(dt);
+    } else {
+      for (const system of this._systems) {
+        if (system.update) system.update(dt, this.context);
+      }
+      if (this._hooks.update) this._hooks.update(dt, this.context);
+
+      for (const system of this._systems) {
+        if (system.render) system.render(dt, this.context);
+      }
+      if (this._hooks.render) this._hooks.render(dt, this.context);
+    }
+
     this._raf = requestAnimationFrame(this._tickBound);
   }
 
   _handleKeyDown(e) {
     this.keys[e.key] = true;
-    // Prevent Space from scrolling the page on game screens.
-    if (e.key === ' ') e.preventDefault();
-    // Prevent arrow-key page scrolling while the game is focused.
-    if (e.key === 'ArrowLeft' || e.key === 'ArrowRight' ||
-        e.key === 'ArrowUp'   || e.key === 'ArrowDown') {
+
+    if (PREVENT_SCROLL_KEYS[e.key]) {
       e.preventDefault();
     }
-    this.onKeyDown(e);
+
+    for (const system of this._systems) {
+      if (system.onInput) {
+        system.onInput(e, this.context);
+      }
+    }
+
+    if (this._hooks.input) this._hooks.input(e, this.context);
+    if (typeof this.onKeyDown === 'function') this.onKeyDown(e);
   }
 
   _handleKeyUp(e) {

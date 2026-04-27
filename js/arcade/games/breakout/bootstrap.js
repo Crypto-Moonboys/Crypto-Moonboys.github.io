@@ -1,20 +1,30 @@
-/**
- * bootstrap.js — Breakout Bullrun game module
+﻿/**
+ * bootstrap.js â€” Breakout Bullrun game module
  * Branch: fix/breakout-system-integration
  */
 
 import { ArcadeSync } from '/js/arcade-sync.js';
 import { submitScore } from '/js/leaderboard-client.js';
 import { BREAKOUT_CONFIG } from './config.js';
-import { GameRegistry } from '/js/arcade/core/game-registry.js';
+import { createGameAdapter, registerGameAdapter, bootstrapFromAdapter } from '/js/arcade/engine/game-adapter.js';
 import { playSound, stopAllSounds, isMuted } from '/js/arcade/core/audio.js';
 
-GameRegistry.register(BREAKOUT_CONFIG.id, {
-  label: BREAKOUT_CONFIG.label,
-  bootstrap: bootstrapBreakout,
+export const BREAKOUT_ADAPTER = createGameAdapter({
+  id: BREAKOUT_CONFIG.id,
+  name: BREAKOUT_CONFIG.label,
+  systems: {},
+  legacyBootstrap: function (root) {
+    return createLegacybootstrapBreakout(root);
+  },
 });
 
+registerGameAdapter(BREAKOUT_CONFIG, BREAKOUT_ADAPTER, bootstrapBreakout);
+
 export function bootstrapBreakout(root) {
+  return bootstrapFromAdapter(root, BREAKOUT_ADAPTER);
+}
+
+function createLegacybootstrapBreakout(root) {
   const GAME_ID = BREAKOUT_CONFIG.id;
   const canvas = document.getElementById('brkCanvas');
   const ctx = canvas.getContext('2d');
@@ -288,8 +298,8 @@ export function bootstrapBreakout(root) {
   function updateHud() {
     if (scoreEl) scoreEl.textContent = String(Math.floor(score));
     if (bestEl) bestEl.textContent = String(Math.floor(best));
-    if (levelEl) levelEl.textContent = String(level || '—');
-    if (comboEl) comboEl.textContent = `×${combo}`;
+    if (levelEl) levelEl.textContent = String(level || 'â€”');
+    if (comboEl) comboEl.textContent = `Ã—${combo}`;
   }
 
   function resetGame() {
@@ -896,7 +906,7 @@ export function bootstrapBreakout(root) {
       ctx.fillStyle = '#ff4fd1';
       ctx.font = `bold ${Math.floor(18 * pulse)}px system-ui`;
       ctx.textAlign = 'center';
-      ctx.fillText(`COMBO ×${combo}`, W / 2, H - 78);
+      ctx.fillText(`COMBO Ã—${combo}`, W / 2, H - 78);
     }
 
     if (combo >= 6) {

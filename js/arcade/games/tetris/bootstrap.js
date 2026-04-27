@@ -1,15 +1,25 @@
-import { ArcadeSync } from '/js/arcade-sync.js';
+﻿import { ArcadeSync } from '/js/arcade-sync.js';
 import { submitScore } from '/js/leaderboard-client.js';
 import { TETRIS_CONFIG } from './config.js';
-import { GameRegistry } from '/js/arcade/core/game-registry.js';
+import { createGameAdapter, registerGameAdapter, bootstrapFromAdapter } from '/js/arcade/engine/game-adapter.js';
 import { playSound, stopAllSounds, isMuted } from '/js/arcade/core/audio.js';
 
-GameRegistry.register(TETRIS_CONFIG.id, {
-  label: TETRIS_CONFIG.label,
-  bootstrap: bootstrapTetris,
+export const TETRIS_ADAPTER = createGameAdapter({
+  id: TETRIS_CONFIG.id,
+  name: TETRIS_CONFIG.label,
+  systems: {},
+  legacyBootstrap: function (root) {
+    return createLegacybootstrapTetris(root);
+  },
 });
 
+registerGameAdapter(TETRIS_CONFIG, TETRIS_ADAPTER, bootstrapTetris);
+
 export function bootstrapTetris(root) {
+  return bootstrapFromAdapter(root, TETRIS_ADAPTER);
+}
+
+function createLegacybootstrapTetris(root) {
   const GAME_ID = TETRIS_CONFIG.id;
   const COLS = 10;
   const ROWS = 20;
@@ -170,7 +180,7 @@ export function bootstrapTetris(root) {
     }
     if (submitInFlight) {
       submitBtn.disabled = true;
-      submitBtn.textContent = 'Submitting…';
+      submitBtn.textContent = 'Submittingâ€¦';
       return;
     }
     if (submittedRunScore) {

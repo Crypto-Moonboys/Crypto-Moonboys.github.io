@@ -1,17 +1,27 @@
-import { loadGameData } from '/js/data-loader.js';
+﻿import { loadGameData } from '/js/data-loader.js';
 import { ArcadeSync } from '/js/arcade-sync.js';
 import { submitScore } from '/js/leaderboard-client.js';
 import { CRYSTAL_QUEST_CONFIG } from './config.js';
-import { GameRegistry } from '/js/arcade/core/game-registry.js';
+import { createGameAdapter, registerGameAdapter, bootstrapFromAdapter } from '/js/arcade/engine/game-adapter.js';
 import { playSound, stopAllSounds, isMuted } from '/js/arcade/core/audio.js';
 import { createSamAgent } from './sam-agent.js';
 
-GameRegistry.register(CRYSTAL_QUEST_CONFIG.id, {
-  label: CRYSTAL_QUEST_CONFIG.label,
-  bootstrap: bootstrapCrystalQuest,
+export const CRYSTAL_QUEST_ADAPTER = createGameAdapter({
+  id: CRYSTAL_QUEST_CONFIG.id,
+  name: CRYSTAL_QUEST_CONFIG.label,
+  systems: {},
+  legacyBootstrap: function (root) {
+    return createLegacybootstrapCrystalQuest(root);
+  },
 });
 
+registerGameAdapter(CRYSTAL_QUEST_CONFIG, CRYSTAL_QUEST_ADAPTER, bootstrapCrystalQuest);
+
 export function bootstrapCrystalQuest(root) {
+  return bootstrapFromAdapter(root, CRYSTAL_QUEST_ADAPTER);
+}
+
+function createLegacybootstrapCrystalQuest(root) {
   var GAME_ID = CRYSTAL_QUEST_CONFIG.id;
   var PACKS = [
     '/games/data/question_pack_001.json',
@@ -21,7 +31,7 @@ export function bootstrapCrystalQuest(root) {
   var RUN_MIN = 5;
   var RUN_MAX = 10;
 
-  // ── DOM refs ────────────────────────────────────────────────────────────────
+  // â”€â”€ DOM refs â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   var scoreCount     = document.getElementById('scoreCount');
   var streakCount    = document.getElementById('streakCount');
   var remainingCount = document.getElementById('remainingCount');
@@ -59,7 +69,7 @@ export function bootstrapCrystalQuest(root) {
 
   var sam = createSamAgent({ root: samRoot, messageEl: samMessage });
 
-  // ── Game state ──────────────────────────────────────────────────────────────
+  // â”€â”€ Game state â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   var score = 0;
   var streak = 0;
   var run = null;
@@ -69,7 +79,7 @@ export function bootstrapCrystalQuest(root) {
   var knownQuestionIds = new Set();
   var loreUnlocked = [];   // crystals secured this run
 
-  // ── Visual helpers ──────────────────────────────────────────────────────────
+  // â”€â”€ Visual helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   function setGlow(type) {
     if (!pulseLayer) return;
     pulseLayer.classList.remove('pulse-start', 'pulse-correct', 'pulse-error', 'pulse-warning', 'pulse-hype', 'pulse-complete');
@@ -89,13 +99,13 @@ export function bootstrapCrystalQuest(root) {
     }
   }
 
-  // ── Audio helper ────────────────────────────────────────────────────────────
+  // â”€â”€ Audio helper â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   function playQuestSound(soundId) {
     if (isMuted()) return;
     try { playSound(soundId); } catch (_) {}
   }
 
-  // ── Answer helpers ──────────────────────────────────────────────────────────
+  // â”€â”€ Answer helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   function normalizeAnswer(value) {
     return String(value || '')
       .trim()
@@ -116,7 +126,7 @@ export function bootstrapCrystalQuest(root) {
     return Math.floor(baseScore) + streakBonus;
   }
 
-  // ── Seeded shuffle ──────────────────────────────────────────────────────────
+  // â”€â”€ Seeded shuffle â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   function shuffle(arr, seed) {
     var out = arr.slice();
     var s = (seed >>> 0) || 1;
@@ -149,7 +159,7 @@ export function bootstrapCrystalQuest(root) {
     return t1 + t2;
   }
 
-  // ── Pack loading ────────────────────────────────────────────────────────────
+  // â”€â”€ Pack loading â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   async function loadNextPack() {
     if (loadedPackIndex + 1 >= PACKS.length) return false;
     loadedPackIndex += 1;
@@ -165,7 +175,7 @@ export function bootstrapCrystalQuest(root) {
 
     unusedQuestions = unusedQuestions.concat(shuffle(fresh, nextSeed()));
     sourceLabel.textContent = 'Pack ' + String(loadedPackIndex + 1).padStart(3, '0');
-    statusLine.textContent = 'Pack ' + (loadedPackIndex + 1) + ' online — ' + fresh.length + ' new signals.';
+    statusLine.textContent = 'Pack ' + (loadedPackIndex + 1) + ' online â€” ' + fresh.length + ' new signals.';
 
     if (loadedPackIndex > 0) {
       sam.onPackUnlock();
@@ -187,7 +197,7 @@ export function bootstrapCrystalQuest(root) {
     return unusedQuestions.length >= minCount;
   }
 
-  // ── Run state helpers ───────────────────────────────────────────────────────
+  // â”€â”€ Run state helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   function getCurrentQuestion() {
     if (!run) return null;
     return run.questionSet[run.index] || null;
@@ -225,12 +235,12 @@ export function bootstrapCrystalQuest(root) {
     run.submitted = true;
     updateHud();
     if (feedback)   feedback.textContent   = canSubmitIdentity()
-      ? '🏆 Run complete. Score submitted to leaderboard.'
-      : '🏁 Run complete. Link identity to sync this score next run.';
+      ? 'ðŸ† Run complete. Score submitted to leaderboard.'
+      : 'ðŸ Run complete. Link identity to sync this score next run.';
     if (statusLine) statusLine.textContent = 'Run sealed at score ' + score + '.';
   }
 
-  // ── HUD ─────────────────────────────────────────────────────────────────────
+  // â”€â”€ HUD â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   function updateHud() {
     if (scoreCount)     scoreCount.textContent     = String(score);
     if (streakCount)    streakCount.textContent     = String(streak);
@@ -239,8 +249,8 @@ export function bootstrapCrystalQuest(root) {
     syncRunButtons();
   }
 
-  // ── Difficulty badge ────────────────────────────────────────────────────────
-  var DIFF_LABELS = { easy: '⬡ Easy', medium: '◈ Medium', hard: '⬟ Hard', default: '◇ Unknown' };
+  // â”€â”€ Difficulty badge â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  var DIFF_LABELS = { easy: 'â¬¡ Easy', medium: 'â—ˆ Medium', hard: 'â¬Ÿ Hard', default: 'â—‡ Unknown' };
   var DIFF_CLASSES = { easy: 'diff-easy', medium: 'diff-medium', hard: 'diff-hard' };
 
   function renderDifficultyBadge(difficulty) {
@@ -251,7 +261,7 @@ export function bootstrapCrystalQuest(root) {
     questDiff.style.display = 'inline-block';
   }
 
-  // ── Mission progress ─────────────────────────────────────────────────────────
+  // â”€â”€ Mission progress â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   function renderMissionProgress() {
     if (!questProgress || !run) return;
     var total = run.questionSet.length;
@@ -259,15 +269,15 @@ export function bootstrapCrystalQuest(root) {
     questProgress.textContent = 'Mission ' + (done + 1) + ' of ' + total;
   }
 
-  // ── Quest renderer ───────────────────────────────────────────────────────────
+  // â”€â”€ Quest renderer â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   function renderCurrentQuestion() {
     var q = getCurrentQuestion();
     if (!q) {
       if (questTitle)    questTitle.textContent  = 'No active mission';
       if (questClue)     questClue.textContent   = 'Press Start Quest to begin a lore hunt run.';
-      if (questLink)     { questLink.href = '#'; questLink.textContent = '—'; }
+      if (questLink)     { questLink.href = '#'; questLink.textContent = 'â€”'; }
       if (questDiff)     questDiff.style.display = 'none';
-      if (questProgress) questProgress.textContent = '—';
+      if (questProgress) questProgress.textContent = 'â€”';
       return;
     }
     if (questTitle) questTitle.textContent = q.title || 'Untitled mission';
@@ -281,7 +291,7 @@ export function bootstrapCrystalQuest(root) {
     if (answerInput) answerInput.value = '';
   }
 
-  // ── Lore discovery log ───────────────────────────────────────────────────────
+  // â”€â”€ Lore discovery log â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   function showLoreLog() {
     if (loreLogEl) loreLogEl.style.display = '';
   }
@@ -294,7 +304,7 @@ export function bootstrapCrystalQuest(root) {
     entry.setAttribute('aria-label', 'Crystal secured: ' + question.title);
     var icon = document.createElement('span');
     icon.className = 'lore-icon';
-    icon.textContent = '💎';
+    icon.textContent = 'ðŸ’Ž';
     var text = document.createElement('span');
     text.className = 'lore-title';
     text.textContent = question.title || 'Unknown';
@@ -315,7 +325,7 @@ export function bootstrapCrystalQuest(root) {
     if (loreLogEl) loreLogEl.style.display = 'none';
   }
 
-  // ── Run complete banner ──────────────────────────────────────────────────────
+  // â”€â”€ Run complete banner â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   function showRunCompleteBanner() {
     if (!runBannerEl) return;
 
@@ -326,14 +336,14 @@ export function bootstrapCrystalQuest(root) {
     if (rcbScoreEl)  rcbScoreEl.textContent  = String(score);
     if (rcbStatsEl)  rcbStatsEl.textContent  =
       correct + ' / ' + total + ' crystals secured' +
-      (skipped ? '  ·  ' + skipped + ' signal' + (skipped === 1 ? '' : 's') + ' skipped' : '');
+      (skipped ? '  Â·  ' + skipped + ' signal' + (skipped === 1 ? '' : 's') + ' skipped' : '');
 
     if (rcbLoreEl && loreUnlocked.length) {
       rcbLoreEl.innerHTML = '';
       loreUnlocked.slice(-5).forEach(function (e) {
         var span = document.createElement('span');
         span.className = 'rcb-lore-tag';
-        span.textContent = '💎 ' + e.title;
+        span.textContent = 'ðŸ’Ž ' + e.title;
         rcbLoreEl.appendChild(span);
       });
       rcbLoreEl.style.display = '';
@@ -348,7 +358,7 @@ export function bootstrapCrystalQuest(root) {
     if (rcbLoreEl) rcbLoreEl.style.display = 'none';
   }
 
-  // ── Sync payload prep ────────────────────────────────────────────────────────
+  // â”€â”€ Sync payload prep â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   function syncQuestRun(sessionData) {
     var payload = {
       sessionId:  sessionData.sessionId,
@@ -362,7 +372,7 @@ export function bootstrapCrystalQuest(root) {
   }
   window.syncQuestRun = syncQuestRun;
 
-  // ── Run session factory ──────────────────────────────────────────────────────
+  // â”€â”€ Run session factory â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   function createRunSession(questionSet, seed) {
     return {
       sessionId:  'cq-' + Date.now().toString(36) + '-' + secureToken(),
@@ -378,14 +388,14 @@ export function bootstrapCrystalQuest(root) {
     };
   }
 
-  // ── Start run ────────────────────────────────────────────────────────────────
+  // â”€â”€ Start run â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   async function startRun() {
     var seed = nextSeed();
     var runLength = RUN_MIN + Math.floor(Math.abs(seed) % (RUN_MAX - RUN_MIN + 1));
     var hasEnough = await ensureQuestionSupply(runLength);
 
     if (!hasEnough) {
-      if (feedback) feedback.textContent = '⚠️ Not enough signals to start a run. Check lore packs.';
+      if (feedback) feedback.textContent = 'âš ï¸ Not enough signals to start a run. Check lore packs.';
       sam.setIdle('Mission data unavailable.');
       return;
     }
@@ -405,11 +415,11 @@ export function bootstrapCrystalQuest(root) {
     setGlow('pulse-start');
     playQuestSound('start');
 
-    if (statusLine) statusLine.textContent = 'Session ' + run.sessionId + ' · seed ' + run.seed + ' · ' + runLength + ' missions.';
-    if (feedback)   feedback.textContent   = '🔮 Run armed. Track the wiki trail and lock every crystal.';
+    if (statusLine) statusLine.textContent = 'Session ' + run.sessionId + ' Â· seed ' + run.seed + ' Â· ' + runLength + ' missions.';
+    if (feedback)   feedback.textContent   = 'ðŸ”® Run armed. Track the wiki trail and lock every crystal.';
   }
 
-  // ── Question progression ──────────────────────────────────────────────────────
+  // â”€â”€ Question progression â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   function advanceQuestion() {
     var q = getCurrentQuestion();
     if (!q || !run) return;
@@ -417,7 +427,7 @@ export function bootstrapCrystalQuest(root) {
     run.index += 1;
 
     if (run.index >= run.questionSet.length) {
-      // ── RUN COMPLETE ──
+      // â”€â”€ RUN COMPLETE â”€â”€
       run.completed = true;
       renderCurrentQuestion();
       updateHud();
@@ -440,7 +450,7 @@ export function bootstrapCrystalQuest(root) {
     updateHud();
   }
 
-  // ── Submit answer ─────────────────────────────────────────────────────────────
+  // â”€â”€ Submit answer â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   function submitAnswer() {
     if (!run || run.completed) return;
     var q = getCurrentQuestion();
@@ -468,25 +478,25 @@ export function bootstrapCrystalQuest(root) {
         setGlow('pulse-correct');
       }
       playQuestSound('correct');
-      if (feedback) feedback.textContent = '💎 Crystal secured: ' + (q.title || 'Lore entry') + '  (+' + scoreGain + ')';
+      if (feedback) feedback.textContent = 'ðŸ’Ž Crystal secured: ' + (q.title || 'Lore entry') + '  (+' + scoreGain + ')';
     } else {
       streak = 0;
       run.answers.push({ questionId: q.id, answer: guess, correct: false, skipped: false, scoreGain: 0 });
       sam.onWrong();
       setGlow('pulse-error');
       playQuestSound('error');
-      if (feedback) feedback.textContent = '❌ Signal mismatch. Re-read: ' + (q.wiki_url || 'the linked page.');
-      return;   // stay on same question — wrong does not advance
+      if (feedback) feedback.textContent = 'âŒ Signal mismatch. Re-read: ' + (q.wiki_url || 'the linked page.');
+      return;   // stay on same question â€” wrong does not advance
     }
 
     advanceQuestion();
   }
 
-  // ── Skip question ─────────────────────────────────────────────────────────────
+  // â”€â”€ Skip question â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   function skipQuestion() {
     if (!run || run.completed) return;
     if (skipsLeft() <= 0) {
-      if (feedback) feedback.textContent = '�� No skips remaining. All signals are mandatory.';
+      if (feedback) feedback.textContent = 'ï¿½ï¿½ No skips remaining. All signals are mandatory.';
       sam.onSkip(0);
       setGlow('pulse-warning');
       return;
@@ -509,12 +519,12 @@ export function bootstrapCrystalQuest(root) {
     setGlow('pulse-warning');
     playQuestSound('error');
     var remaining = skipsLeft();
-    if (feedback) feedback.textContent = '⚠️ Signal bypassed. -' + penalty + ' score. ' + remaining + ' skip' + (remaining === 1 ? '' : 's') + ' left.';
+    if (feedback) feedback.textContent = 'âš ï¸ Signal bypassed. -' + penalty + ' score. ' + remaining + ' skip' + (remaining === 1 ? '' : 's') + ' left.';
 
     advanceQuestion();
   }
 
-  // ── Lifecycle ─────────────────────────────────────────────────────────────────
+  // â”€â”€ Lifecycle â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   async function init() {
     ensureParticles();
     setGlow('pulse-start');
@@ -530,8 +540,8 @@ export function bootstrapCrystalQuest(root) {
     clearLoreLog();
     hideRunCompleteBanner();
 
-    if (sourceLabel) sourceLabel.textContent = 'Loading…';
-    if (statusLine)  statusLine.textContent  = 'Initializing lore packs…';
+    if (sourceLabel) sourceLabel.textContent = 'Loadingâ€¦';
+    if (statusLine)  statusLine.textContent  = 'Initializing lore packsâ€¦';
 
     await ensureQuestionSupply(RUN_MIN);
 
@@ -545,8 +555,8 @@ export function bootstrapCrystalQuest(root) {
     }
 
     if (statusLine) statusLine.textContent = linked
-      ? 'Identity linked — leaderboard enabled after run completion.'
-      : 'Identity not linked — score stays local until account is linked.';
+      ? 'Identity linked â€” leaderboard enabled after run completion.'
+      : 'Identity not linked â€” score stays local until account is linked.';
 
     renderCurrentQuestion();
     updateHud();

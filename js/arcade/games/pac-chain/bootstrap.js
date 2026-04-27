@@ -1,15 +1,25 @@
-import { ArcadeSync } from '/js/arcade-sync.js';
+﻿import { ArcadeSync } from '/js/arcade-sync.js';
 import { submitScore } from '/js/leaderboard-client.js';
 import { PAC_CHAIN_CONFIG } from './config.js';
-import { GameRegistry } from '/js/arcade/core/game-registry.js';
+import { createGameAdapter, registerGameAdapter, bootstrapFromAdapter } from '/js/arcade/engine/game-adapter.js';
 import { playSound, stopAllSounds, isMuted } from '/js/arcade/core/audio.js';
 
-GameRegistry.register(PAC_CHAIN_CONFIG.id, {
-  label: PAC_CHAIN_CONFIG.label,
-  bootstrap: bootstrapPacChain,
+export const PAC_CHAIN_ADAPTER = createGameAdapter({
+  id: PAC_CHAIN_CONFIG.id,
+  name: PAC_CHAIN_CONFIG.label,
+  systems: {},
+  legacyBootstrap: function (root) {
+    return createLegacybootstrapPacChain(root);
+  },
 });
 
+registerGameAdapter(PAC_CHAIN_CONFIG, PAC_CHAIN_ADAPTER, bootstrapPacChain);
+
 export function bootstrapPacChain(root) {
+  return bootstrapFromAdapter(root, PAC_CHAIN_ADAPTER);
+}
+
+function createLegacybootstrapPacChain(root) {
   const GAME_ID = PAC_CHAIN_CONFIG.id;
   const canvas = document.getElementById('pacCanvas');
   const ctx = canvas && canvas.getContext ? canvas.getContext('2d') : null;

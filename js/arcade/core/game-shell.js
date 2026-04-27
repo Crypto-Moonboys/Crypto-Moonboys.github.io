@@ -1,5 +1,6 @@
+﻿import { bootstrapFromAdapter } from '/js/arcade/engine/game-adapter.js';
 /**
- * game-shell.js — Arcade Game Shell
+ * game-shell.js â€” Arcade Game Shell
  *
  * Mounts a game module onto the page and manages its standardised lifecycle.
  * Integrates with the existing leaderboard, identity, and fullscreen systems.
@@ -31,16 +32,23 @@ const LIFECYCLE_METHODS = ['init', 'start', 'pause', 'resume', 'reset', 'destroy
  *
  * @param {object}   options
  * @param {Element}  options.root      - Anchor element for the game (e.g. .game-card).
- * @param {Function} options.bootstrap - Factory: (root) → lifecycle object.
+ * @param {Function} options.bootstrap - Factory: (root) â†’ lifecycle object.
  * @returns {Promise<object>}          - Resolves to the game lifecycle object.
  */
 export async function mountGame(options) {
   var root      = options.root;
   var bootstrap = options.bootstrap;
+  var adapter = options.adapter || null;
 
   if (!(root instanceof Element)) {
     console.error('[game-shell] root must be a DOM Element');
     return null;
+  }
+
+  if (typeof bootstrap !== 'function' && adapter) {
+    bootstrap = function (mountRoot) {
+      return bootstrapFromAdapter(mountRoot, adapter);
+    };
   }
 
   if (typeof bootstrap !== 'function') {
