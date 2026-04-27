@@ -9,6 +9,9 @@ import { POWERUP_COLORS, POWERUP_ICONS, POWERUP_DURATION } from './powerup-syste
 import { WAVE_BOSS, BUNKER_BLOCK_W, BUNKER_BLOCK_H } from './invader-system.js';
 import { UPGRADE_DEFS, UPGRADE_COLORS } from './upgrade-system.js';
 
+// Boss phase colour palette — shared between drawBoss() and the phase label.
+const BOSS_PHASE_COLORS = ['#ff4444', '#ff8800', '#ff0055'];
+
 /**
  * @param {CanvasRenderingContext2D} ctx
  * @param {number} W  canvas logical width
@@ -198,7 +201,7 @@ export function createRenderer(ctx, W, H) {
     const isHit      = b.hitTimer > 0;
     const cx         = b.x + b.w / 2;
     const cut        = 10;
-    const phaseColors = ['#ff4444', '#ff8800', '#ff0055'];
+    const phaseColors = BOSS_PHASE_COLORS;
     const bodyColor   = phaseColors[(phase || 1) - 1];
     ctx.save();
     ctx.shadowBlur  = phase === 3 ? 28 : 18;
@@ -232,7 +235,7 @@ export function createRenderer(ctx, W, H) {
     ctx.strokeRect(b.x, b.y - 10, b.w, 6);
     // Phase indicator
     const phaseLabel = ['P1', 'P2', '⚡P3'][( phase || 1) - 1];
-    const phaseCol   = ['#ff4444', '#ff8800', '#ff0055'][( phase || 1) - 1];
+    const phaseCol   = BOSS_PHASE_COLORS[( phase || 1) - 1];
     ctx.fillStyle   = phaseCol;
     ctx.font        = 'bold 10px system-ui';
     ctx.textAlign   = 'center';

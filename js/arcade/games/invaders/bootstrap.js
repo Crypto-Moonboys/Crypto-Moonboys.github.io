@@ -86,6 +86,11 @@ export function bootstrapInvaders(root) {
   const BOMB_RADIUS   = 90;    // area-damage radius in px
   const BOMB_SIZE     = 18;    // half-size of bomb bullet hitbox
 
+  // Boss movement speed multipliers per phase
+  const BOSS_PHASE1_SPEED_MULT = 1.0;
+  const BOSS_PHASE2_SPEED_MULT = 1.2;
+  const BOSS_PHASE3_SPEED_MULT = 1.55;
+
   // ── Game state ────────────────────────────────────────────────────────────────
 
   let score    = 0;
@@ -528,7 +533,9 @@ export function bootstrapInvaders(root) {
     // Boss movement & phase-based shooting
     if (boss) {
       const bossPhase = getBossPhase(boss);
-      const phaseSpeedMult = bossPhase === 3 ? 1.55 : bossPhase === 2 ? 1.2 : 1;
+      const phaseSpeedMult = bossPhase === 3 ? BOSS_PHASE3_SPEED_MULT
+                           : bossPhase === 2 ? BOSS_PHASE2_SPEED_MULT
+                           : BOSS_PHASE1_SPEED_MULT;
       boss.x += boss.speed * slowMult * boss.dir * phaseSpeedMult * dt;
       if (boss.x <= 0)          { boss.x = 0;          boss.dir =  1; }
       if (boss.x + boss.w >= W) { boss.x = W - boss.w; boss.dir = -1; }

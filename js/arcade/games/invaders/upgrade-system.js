@@ -42,12 +42,17 @@ export function makeUpgrades() {
 /**
  * Pick 3 distinct upgrade choices.
  * Prefers upgrades that are not yet maxed; falls back to all if needed.
+ * Uses a Fisher-Yates shuffle for uniform randomness.
  */
 export function pickUpgradeChoices(upgrades) {
   const available = UPGRADE_DEFS.filter((d) => upgrades[d.id] < d.maxLevel);
-  const pool = available.length >= 3 ? available : UPGRADE_DEFS.slice();
-  const shuffled = pool.slice().sort(() => Math.random() - 0.5);
-  return shuffled.slice(0, 3);
+  const pool = available.length >= 3 ? available.slice() : UPGRADE_DEFS.slice();
+  // Fisher-Yates shuffle
+  for (let i = pool.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    const tmp = pool[i]; pool[i] = pool[j]; pool[j] = tmp;
+  }
+  return pool.slice(0, 3);
 }
 
 /**
