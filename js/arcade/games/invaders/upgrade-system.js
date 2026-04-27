@@ -9,13 +9,23 @@
 // ── Upgrade catalogue ─────────────────────────────────────────────────────────
 
 export const UPGRADE_DEFS = [
-  { id: 'fireRate',   label: 'FIRE RATE',   icon: '⚡', desc: 'Shoot 25% faster',           maxLevel: 4 },
-  { id: 'spreadShot', label: 'SPREAD',      icon: '↔',  desc: '+1 bullet angle per level',  maxLevel: 3 },
-  { id: 'shieldStr',  label: 'SHIELD',      icon: '🛡', desc: 'Shield blocks +1 extra hit',  maxLevel: 2 },
-  { id: 'bulletDmg',  label: 'DAMAGE',      icon: '💥', desc: 'Bullets deal +1 HP damage',  maxLevel: 3 },
-  { id: 'scoreBoost', label: 'SCORE BOOST', icon: '✨', desc: '+30% score per kill',         maxLevel: 4 },
-  { id: 'drone',      label: 'DRONE',       icon: '🤖', desc: 'Orbiting drone auto-fires',   maxLevel: 1 },
-  { id: 'bombShot',   label: 'BOMB SHOT',   icon: '💣', desc: '[B] Area-damage bomb shot',   maxLevel: 1 },
+  { id: 'fireRate',   label: 'FIRE RATE',   icon: '⚡', desc: 'Shoot 25% faster',           maxLevel: 4, rarity: 'common' },
+  { id: 'spreadShot', label: 'SPREAD',      icon: '↔',  desc: '+1 bullet angle per level',  maxLevel: 3, rarity: 'common' },
+  { id: 'shieldStr',  label: 'SHIELD',      icon: '🛡', desc: 'Shield blocks +1 extra hit',  maxLevel: 2, rarity: 'common' },
+  { id: 'bulletDmg',  label: 'DAMAGE',      icon: '💥', desc: 'Bullets deal +1 HP damage',  maxLevel: 3, rarity: 'common' },
+  { id: 'scoreBoost', label: 'SCORE BOOST', icon: '✨', desc: '+30% score per kill',         maxLevel: 4, rarity: 'common' },
+  { id: 'drone',      label: 'DRONE',       icon: '🤖', desc: 'Orbiting drone auto-fires',   maxLevel: 1, rarity: 'common' },
+  { id: 'bombShot',   label: 'BOMB SHOT',   icon: '💣', desc: '[B] Area-damage bomb shot',   maxLevel: 1, rarity: 'common' },
+  { id: 'doubleDrone',     label: 'TWIN DRONE',     icon: '🤖🤖', desc: '2nd drone companion',        maxLevel: 1, rarity: 'rare'      },
+  { id: 'piercing',        label: 'PIERCING',        icon: '⬆',   desc: 'Bullets pierce one enemy',   maxLevel: 1, rarity: 'rare'      },
+  { id: 'chainLightning',  label: 'CHAIN LIGHTNING', icon: '⚡⚡',  desc: 'Hits chain to 2 nearby',    maxLevel: 1, rarity: 'epic'      },
+  { id: 'explosiveRounds', label: 'EXPLOSIVE',       icon: '💥',   desc: 'Small explosion on hit',     maxLevel: 1, rarity: 'epic'      },
+  { id: 'shieldRegen',     label: 'SHIELD REGEN',    icon: '🛡',   desc: 'Shield auto-regens 15s',     maxLevel: 1, rarity: 'rare'      },
+  { id: 'autoBomb',        label: 'AUTO BOMB',       icon: '💣',   desc: 'Bomb auto-recharges faster', maxLevel: 1, rarity: 'rare'      },
+  { id: 'slowDodge',       label: 'SLOW DODGE',      icon: '⏱',   desc: 'Double-tap slows time 1.5s', maxLevel: 1, rarity: 'epic'      },
+  { id: 'magnetPowerups',  label: 'MAGNET',          icon: '🧲',   desc: 'Powerups attracted to ship', maxLevel: 1, rarity: 'common'    },
+  { id: 'bossDmg',         label: 'BOSS SLAYER',     icon: '🎯',   desc: '+50% damage to bosses',      maxLevel: 2, rarity: 'rare'      },
+  { id: 'revive',          label: 'REVIVE',          icon: '❤️',   desc: 'Auto-revive once per run',   maxLevel: 1, rarity: 'legendary' },
 ];
 
 export const UPGRADE_COLORS = {
@@ -142,4 +152,62 @@ export function getUpgradeStats(upgrades, baseShootRate) {
     hasBombShot:    (upgrades.bombShot  || 0) > 0,
     shootRate:      getUpgradedShootRate(base, upgrades),
   };
+}
+
+// ── Rarity ────────────────────────────────────────────────────────────────────
+
+export const RARITY_COLORS = {
+  common:    '#8b949e',
+  rare:      '#2ec5ff',
+  epic:      '#bc8cff',
+  legendary: '#f7c948',
+};
+
+// ── Risk/reward choices ───────────────────────────────────────────────────────
+
+export const RISK_REWARD_DEFS = [
+  { id: 'doubleEnemies', label: 'DOUBLE ENEMIES', desc: '2x enemy density → 2x score this wave', risk: 'medium' },
+  { id: 'noShield',      label: 'NO SHIELD',      desc: 'No shield next wave → guaranteed rare',  risk: 'medium' },
+  { id: 'earlyBoss',     label: 'EARLY BOSS',     desc: 'Boss appears now → epic reward',         risk: 'high'   },
+  { id: 'blackoutWave',  label: 'BLACKOUT',       desc: 'Next wave is blackout → rare reward',    risk: 'medium' },
+  { id: 'oneLife',       label: 'ONE LIFE',       desc: 'One life only → triple score next wave', risk: 'high'   },
+  { id: 'skipWave',      label: 'SKIP WAVE',      desc: 'Skip wave → no reward but stay safe',    risk: 'none'   },
+];
+
+/** Returns true if a risk/reward screen should be offered this wave. */
+export function shouldOfferRiskReward(wave) {
+  return wave > 0 && wave % 5 === 0;
+}
+
+/** Pick 2 random risk/reward choices. */
+export function pickRiskRewardChoices() {
+  const pool = RISK_REWARD_DEFS.slice();
+  for (let i = pool.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [pool[i], pool[j]] = [pool[j], pool[i]];
+  }
+  return pool.slice(0, 2);
+}
+
+/**
+ * Pick 3 upgrade choices respecting rarity thresholds.
+ * wave < 5: common only; 5-10: +rare; 11-20: +epic; 21+: +legendary
+ */
+export function pickUpgradeChoicesWithRarity(upgrades, wave) {
+  const w = wave || 1;
+  const rarities = w >= 21 ? ['common', 'rare', 'epic', 'legendary']
+                 : w >= 11 ? ['common', 'rare', 'epic']
+                 : w >= 5  ? ['common', 'rare']
+                 :            ['common'];
+  let available = UPGRADE_DEFS.filter(
+    d => upgrades[d.id] < d.maxLevel && rarities.includes(d.rarity || 'common'),
+  );
+  let pool = available.length >= 3 ? available.slice()
+           : UPGRADE_DEFS.filter(d => upgrades[d.id] < d.maxLevel);
+  if (pool.length < 3) pool = [...new Set(pool.concat(UPGRADE_DEFS))];
+  for (let i = pool.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [pool[i], pool[j]] = [pool[j], pool[i]];
+  }
+  return pool.slice(0, 3);
 }

@@ -62,6 +62,15 @@ export const SHIELD_SPAWN_CHANCE  = 0.15;
 export const BOMBER_SPAWN_CHANCE  = 0.12;  // wave >= 6
 export const HUNTER_SPAWN_CHANCE  = 0.10;  // wave >= 9
 
+// New enemy type spawn chances
+export const ZIGZAG_SPAWN_CHANCE   = 0.12;  // wave >= 5
+export const SPLITTER_SPAWN_CHANCE = 0.08;  // wave >= 7
+export const HEALER_SPAWN_CHANCE   = 0.06;  // wave >= 8
+export const SNIPER_SPAWN_CHANCE   = 0.08;  // wave >= 10
+export const KAMIKAZE_SPAWN_CHANCE = 0.07;  // wave >= 6
+export const CLOAKED_SPAWN_CHANCE  = 0.06;  // wave >= 11
+export const GOLDEN_SPAWN_CHANCE   = 0.02;  // wave >= 4 (rare)
+
 // Bunkers
 export const BUNKER_COUNT      = 4;
 export const BUNKER_BLOCK_W    = 14;
@@ -76,7 +85,11 @@ export function rowToType(row) {
   return ['shooter', 'tank', 'fast', 'basic'][row] || 'basic';
 }
 
-export function typeToHp(type)       { return type === 'tank'   ? 2 : 1; }
+export function typeToHp(type) {
+  if (type === 'tank')     return 2;
+  if (type === 'splitter') return 2;
+  return 1;
+}
 export function typeToShieldHp(type) { return type === 'shield' ? 2 : 0; }
 
 // ── Grid builder ─────────────────────────────────────────────────────────────
@@ -96,12 +109,27 @@ export function buildGrid(wave, W, rand) {
   for (let r = 0; r < ROWS; r++) {
     for (let c = 0; c < COLS; c++) {
       let type = rowToType(r);
-      if (wave >= 4 && type !== 'tank' && Math.random() < SHIELD_SPAWN_CHANCE) {
+      // Golden is rarest — check first
+      if (wave >= 4 && type !== 'tank' && Math.random() < GOLDEN_SPAWN_CHANCE) {
+        type = 'golden';
+      } else if (wave >= 4 && type !== 'tank' && Math.random() < SHIELD_SPAWN_CHANCE) {
         type = 'shield';
       } else if (wave >= 6 && type !== 'tank' && Math.random() < BOMBER_SPAWN_CHANCE) {
         type = 'bomber';
       } else if (wave >= 9 && type !== 'tank' && Math.random() < HUNTER_SPAWN_CHANCE) {
         type = 'hunter';
+      } else if (wave >= 5 && type !== 'tank' && Math.random() < ZIGZAG_SPAWN_CHANCE) {
+        type = 'zigzag';
+      } else if (wave >= 6 && type !== 'tank' && Math.random() < KAMIKAZE_SPAWN_CHANCE) {
+        type = 'kamikaze';
+      } else if (wave >= 7 && type !== 'tank' && Math.random() < SPLITTER_SPAWN_CHANCE) {
+        type = 'splitter';
+      } else if (wave >= 8 && type !== 'tank' && Math.random() < HEALER_SPAWN_CHANCE) {
+        type = 'healer';
+      } else if (wave >= 10 && type !== 'tank' && Math.random() < SNIPER_SPAWN_CHANCE) {
+        type = 'sniper';
+      } else if (wave >= 11 && type !== 'tank' && Math.random() < CLOAKED_SPAWN_CHANCE) {
+        type = 'cloaked';
       }
       const hp       = typeToHp(type);
       const shieldHp = typeToShieldHp(type);
@@ -115,6 +143,10 @@ export function buildGrid(wave, W, rand) {
         alive: true,
         seed: Math.random() * Math.PI * 2 + c * 0.35,
         hitTimer: 0, shieldHitTimer: 0,
+        mutations: [],
+        healTimer: type === 'healer' ? 3 : 0,
+        sniperTimer: type === 'sniper' ? 4 : 0,
+        cloakAlpha: 1,
       });
     }
   }
@@ -233,4 +265,33 @@ export function makeEnemyBullet(shooter, wave) {
     wave * ENEMY_BULLET_SPEED_PER_WAVE +
     (wave >= WAVE_AGGRESSIVE ? ENEMY_BULLET_SPEED_AGGRESSIVE_BONUS : 0);
   return { x: shooter.x + shooter.w / 2 - 2, y: shooter.y + shooter.h, w: 4, h: 12, vy: speed };
+}
+
+// ── Mutation system ───────────────────────────────────────────────────────────
+
+export const MUTATION_DEFS = [
+  { id: 'fireTwice',    label: '2x FIRE',     minWave: 10 },
+  { id: 'diagonal',     label: 'DIAGONAL',    minWave: 12 },
+  { id: 'leavesMines',  label: 'MINES',       minWave: 14 },
+  { id: 'bombResist',   label: 'BOMB RESIST', minWave: 16 },
+  { id: 'shieldNearby', label: 'SHIELD AURA', minWave: 18 },
+  { id: 'teleportOnce', label: 'TELEPORT',    minWave: 20 },
+];
+
+/**
+ * Apply random mutations to invaders in a grid (call after buildGrid for wave >= 10).
+ * Mutates in place.
+ */
+export function applyMutations(invaders, wave) {
+  const available = MUTATION_DEFS.filter(m => wave >= m.minWave);
+  if (!available.length) return;
+  for (const inv of invaders) {
+    if (!inv.mutations) inv.mutations = [];
+    const mutChance = Math.min(0.6, (wave - 9) * 0.04);
+    for (const mut of available) {
+      if (Math.random() < mutChance * 0.4) {
+        inv.mutations.push(mut.id);
+      }
+    }
+  }
 }

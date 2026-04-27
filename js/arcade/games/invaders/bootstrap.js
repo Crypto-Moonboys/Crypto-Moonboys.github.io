@@ -36,6 +36,9 @@ import {
   BUNKER_BLOCK_W, BUNKER_BLOCK_H,
   buildGrid, spawnBoss, buildBunkers, makeEnemyBullet,
   calcInvaderPoints, getBossPhase,
+  MUTATION_DEFS, applyMutations,
+  ZIGZAG_SPAWN_CHANCE, SPLITTER_SPAWN_CHANCE, HEALER_SPAWN_CHANCE,
+  SNIPER_SPAWN_CHANCE, KAMIKAZE_SPAWN_CHANCE, CLOAKED_SPAWN_CHANCE, GOLDEN_SPAWN_CHANCE,
 } from './invader-system.js';
 
 import {
@@ -46,7 +49,24 @@ import {
 import {
   makeUpgrades, pickUpgradeChoices, applyUpgrade,
   getUpgradedShootRate, getUpgradedBulletDmg, getUpgradedScoreMult, getSpreadAngles,
+  RARITY_COLORS, shouldOfferRiskReward, pickRiskRewardChoices, pickUpgradeChoicesWithRarity,
 } from './upgrade-system.js';
+
+import {
+  MODIFIER_BLACKOUT,
+  WAVE_MODIFIER_DEFS,
+  createScalingDirector, tickDirector, pickWaveModifier,
+  shouldFirePressureEvent, pickSurpriseEvent, getEventTier,
+  updateIntensity, checkForcedChaos, getBossAggressionMult,
+} from './event-system.js';
+
+import {
+  buildRunSummary, recordRunStats, checkMilestones, getDailyVariation,
+} from './meta-system.js';
+
+import {
+  BOSS_ARCHETYPE_DEFS, pickBossArchetype, spawnBossArchetype,
+} from './boss-archetypes.js';
 
 import { createRenderer } from './render-system.js';
 
@@ -136,6 +156,50 @@ export function bootstrapInvaders(root) {
   let upgradePhase   = false;   // false | 'picking'
   let upgradeChoices = [];
 
+  // ── Roguelite: scaling director & wave modifiers ──────────────────────────────
+  let director          = createScalingDirector();
+  let activeModifier    = null;   // current WAVE_MODIFIER_DEFS entry or null
+  let modifierData      = {};     // scratch object for the modifier
+  let activeEvent       = null;   // current SURPRISE_EVENT_DEFS entry or null
+  let eventData         = {};     // scratch object for the event
+  let eventTimer        = 0;
+  let warningBanner     = null;   // { text, color, timer, maxTimer }
+  let eventBanner       = null;   // { text, color, timer }
+  let mutationFlash     = 0;
+  let riskRewardPhase   = false;  // false | 'picking'
+  let riskRewardChoices = [];
+  let activeRiskReward  = null;
+  let empActive         = false;
+  let empTimer          = 0;
+  let panicMode         = false;
+  let panicTimer        = 0;
+  let shieldRegenTimer  = 0;
+  let bossDmgBoost      = 1;
+  let reviveUsed        = false;
+  let slowDodgeTimer    = 0;
+  let slowDodgeActive   = false;
+  let asteroids         = [];
+  let laserWarning      = null;
+  let miniEnemies       = [];
+  let droneHijacked     = false;
+  let droneHijackTimer  = 0;
+  // Double-tap tracking for slow dodge
+  let lastLeftTapTime   = 0;
+  let lastRightTapTime  = 0;
+  // Wave score multiplier (for oneLife risk/reward)
+  let waveScoreMult     = 1;
+
+  // ── Meta / intensity feedback ─────────────────────────────────────────────────
+  let runStats            = { bossesDefeated: 0, highestIntensity: 0 };
+  let intensityPrevBand   = 'calm';    // 'calm' | 'rising' | 'chaotic'
+  let intensityPulseTimer = 0;         // visual threshold-crossing pulse duration
+  let intensityPulseColor = '#ff4444';
+  let recoveryTimer       = 0;         // post-chaos recovery visual (seconds)
+  let runSummary          = null;      // populated on game over
+  /** @type {Array<{ text: string, timer: number }>} */
+  let milestoneToasts     = [];
+  const dailyVariation    = getDailyVariation();  // fixed for the session
+
   // ── Game-feel state ───────────────────────────────────────────────────────────
   let screenFlashTimer = 0;
   let droneAngle       = 0;
@@ -219,9 +283,24 @@ export function bootstrapInvaders(root) {
       game_over:     'invaders-game-over',
       wave_clear:    'invaders-wave-clear',
       upgrade:       'invaders-upgrade',
+      event_start:   'invaders-powerup',
+      event_clear:   'invaders-wave-clear',
+      boss_intro:    'invaders-boss-warning',
+      rare_enemy:    'invaders-powerup',
+      legendary:     'invaders-upgrade',
     };
     const id = map[type];
     if (id) playSound(id);
+  }
+
+  /** Show a brief floating text on screen (uses warningBanner for simplicity). */
+  function addFloatingText(text, color) {
+    warningBanner = { text, color: color || '#f7c948', timer: 1.8, maxTimer: 1.8 };
+  }
+
+  /** Drop one random powerup from sky at random X. */
+  function spawnPowerupRain() {
+    powerupItems.push(makeDroppedPowerup(rand(30, W - 30), -10));
   }
 
   function spawnExplosion(x, y, intensity, color) {
@@ -286,13 +365,34 @@ export function bootstrapInvaders(root) {
     lastActivatedPowerup = null;
     waveIntroTimer       = WAVE_INTRO_DURATION;
     bunkers              = buildBunkers(W, H);
+    asteroids            = [];
+    miniEnemies          = [];
+    laserWarning         = null;
+    waveScoreMult        = 1;
 
-    if (wave % WAVE_BOSS === 0) {
-      const r = spawnBoss(wave, W, rand);
-      boss               = r.boss;
-      invShootTimer      = r.invShootTimer;
-      bossEntering       = r.bossEntering;
-      bossWarningSounded = r.bossWarningSounded;
+    // Apply active risk/reward effects for this wave
+    const forceBoss = activeRiskReward && activeRiskReward.id === 'earlyBoss';
+    if (activeRiskReward && activeRiskReward.id === 'oneLife') {
+      lives = 1;
+      waveScoreMult = 3;
+      addFloatingText('ONE LIFE — 3x SCORE', '#ff4444');
+    }
+    if (activeRiskReward && activeRiskReward.id === 'noShield') {
+      player.shielded = false;
+    }
+
+    const isBossWave = forceBoss || (wave % WAVE_BOSS === 0);
+
+    if (isBossWave) {
+      const archetype = pickBossArchetype(wave, director);
+      const r         = spawnBossArchetype(archetype, wave, W);
+      boss               = r;
+      invShootTimer      = rand(0.8, 1.4);
+      bossEntering       = true;
+      bossWarningSounded = false;
+      // Show boss warning banner
+      warningBanner = { text: archetype.warningText, color: archetype.color, timer: 2.2, maxTimer: 2.2 };
+      director.bossHistory = director.bossHistory || [];
     } else {
       const g       = buildGrid(wave, W, rand);
       invaders      = g.invaders;
@@ -301,21 +401,129 @@ export function bootstrapInvaders(root) {
       invShootInterval = g.invShootInterval;
       invShootTimer = g.invShootTimer;
       invDropping   = g.invDropping;
+
+      // Apply risk/reward double-enemies
+      if (activeRiskReward && activeRiskReward.id === 'doubleEnemies') {
+        const extra = buildGrid(wave, W, rand);
+        for (const inv of extra.invaders) {
+          inv.y += 180;
+          inv.hp    = 1;
+          inv.maxHp = 1;
+        }
+        invaders = invaders.concat(extra.invaders);
+        waveScoreMult = Math.max(waveScoreMult, 2);
+      }
+
+      // Apply mutations for wave >= 10
+      if (wave >= 10) {
+        applyMutations(invaders, wave);
+        if (invaders.some(i => i.mutations && i.mutations.length > 0)) mutationFlash = 0.4;
+      }
+
+      // Pick and apply wave modifier
+      if (activeModifier && activeModifier.remove) {
+        activeModifier.remove(buildModifierState());
+      }
+      // Force blackout modifier if risk/reward selected it
+      if (activeRiskReward && activeRiskReward.id === 'blackoutWave') {
+        activeModifier = WAVE_MODIFIER_DEFS.find(m => m.id === MODIFIER_BLACKOUT) || null;
+      } else {
+        activeModifier = pickWaveModifier(wave, director);
+      }
+      modifierData   = {};
+      if (activeModifier) {
+        activeModifier.apply(buildModifierState());
+        // Show modifier banner
+        eventBanner = { text: '⚡ ' + activeModifier.label, color: activeModifier.color, timer: 2.5 };
+        if (activeModifier.id === 'reverseDrift') invDir = -1;
+      }
     }
+
+    // Reset risk/reward for next wave
+    activeRiskReward = null;
+
     updateHud();
   }
 
+  // ── Roguelite state builders ──────────────────────────────────────────────────
+
+  function buildModifierState() {
+    return {
+      invaders, invBullets, bullets, player, wave, elapsed, W, H,
+      modifierData,
+      get invSpeed() { return invSpeed; },
+      set invSpeed(v) { invSpeed = v; },
+      get invDir() { return invDir; },
+      set invDir(v) { invDir = v; },
+      bunkers, asteroids,
+      rand, spawnExplosion, addScore, playSfx, screenShake,
+      addFloatingText, spawnPowerupRain, panicMode, panicTimer,
+      get empActive() { return empActive; },
+      set empActive(v) { empActive = v; },
+      get empTimer() { return empTimer; },
+      set empTimer(v) { empTimer = v; },
+      get droneHijacked() { return droneHijacked; },
+      set droneHijacked(v) { droneHijacked = v; },
+      get droneHijackTimer() { return droneHijackTimer; },
+      set droneHijackTimer(v) { droneHijackTimer = v; },
+      miniEnemies,
+      get laserWarning() { return laserWarning; },
+      set laserWarning(v) { laserWarning = v; },
+    };
+  }
+
+  function buildEventState() {
+    return {
+      invaders, invBullets, bullets, player, wave, elapsed, W, H,
+      boss, asteroids, miniEnemies,
+      get laserWarning() { return laserWarning; },
+      set laserWarning(v) { laserWarning = v; },
+      rand, spawnExplosion, addScore, playSfx, screenShake,
+      addFloatingText, spawnPowerupRain,
+      get empActive() { return empActive; },
+      set empActive(v) { empActive = v; },
+      get empTimer() { return empTimer; },
+      set empTimer(v) { empTimer = v; },
+      get panicMode() { return panicMode; },
+      set panicMode(v) { panicMode = v; },
+      get panicTimer() { return panicTimer; },
+      set panicTimer(v) { panicTimer = v; },
+      get droneHijacked() { return droneHijacked; },
+      set droneHijacked(v) { droneHijacked = v; },
+      get droneHijackTimer() { return droneHijackTimer; },
+      set droneHijackTimer(v) { droneHijackTimer = v; },
+    };
+  }
+
   function completeWave() {
+    // Remove active modifier
+    if (activeModifier && activeModifier.remove) {
+      activeModifier.remove(buildModifierState());
+    }
+    activeModifier = null;
+    modifierData   = {};
+    activeEvent    = null;
+    eventTimer     = 0;
+
     if (wave > 0) {
       const survival = wave * 50;
       addScore(survival, W * 0.5, 82, '#3fb950');
       spawnExplosion(W * 0.5, 95, 0.8, '#3fb950');
     }
     playSfx('wave_clear');
-    // Pause before the next wave and let the player choose an upgrade
-    upgradeChoices = pickUpgradeChoices(upgrades);
-    upgradePhase   = 'picking';
-    // startWave() is called from the onKeyDown handler once a choice is made
+    updateIntensity(director, 0, { waveClear: true, lives });
+    // Partial pressure reset on wave clear so the next wave still builds quickly
+    director.pressure = Math.max(0, (director.pressure || 0) - 40);
+
+    // Risk/reward screen every 5 waves (shown before upgrade)
+    if (shouldOfferRiskReward(wave)) {
+      riskRewardChoices = pickRiskRewardChoices();
+      riskRewardPhase   = 'picking';
+    } else {
+      // Go straight to upgrade screen
+      upgradeChoices = pickUpgradeChoicesWithRarity(upgrades, wave);
+      upgradePhase   = 'picking';
+    }
   }
 
   function resetGame() {
@@ -351,6 +559,43 @@ export function bootstrapInvaders(root) {
     droneAngle       = 0;
     droneCooldown    = 0;
     bombCooldown     = 0;
+    // Roguelite state reset
+    director          = createScalingDirector();
+    activeModifier    = null;
+    modifierData      = {};
+    activeEvent       = null;
+    eventData         = {};
+    eventTimer        = 0;
+    warningBanner     = null;
+    eventBanner       = null;
+    mutationFlash     = 0;
+    riskRewardPhase   = false;
+    riskRewardChoices = [];
+    activeRiskReward  = null;
+    empActive         = false;
+    empTimer          = 0;
+    panicMode         = false;
+    panicTimer        = 0;
+    shieldRegenTimer  = 0;
+    bossDmgBoost      = 1;
+    reviveUsed        = false;
+    slowDodgeTimer    = 0;
+    slowDodgeActive   = false;
+    asteroids         = [];
+    laserWarning      = null;
+    miniEnemies       = [];
+    droneHijacked     = false;
+    droneHijackTimer  = 0;
+    lastLeftTapTime   = 0;
+    lastRightTapTime  = 0;
+    waveScoreMult     = 1;
+    // Meta / intensity feedback
+    runStats            = { bossesDefeated: 0, highestIntensity: 0 };
+    intensityPrevBand   = 'calm';
+    intensityPulseTimer = 0;
+    recoveryTimer       = 0;
+    runSummary          = null;
+    milestoneToasts     = [];
     player = { x: W / 2, y: H - 50, w: SHIP_W, h: SHIP_H, speed: 320, moveDir: 1, shielded: false };
     updateHud();
     draw();
@@ -359,14 +604,15 @@ export function bootstrapInvaders(root) {
   // ── Shooting ──────────────────────────────────────────────────────────────────
 
   function tryShoot() {
-    if (shootCooldown > 0 || !running || paused || gameOver || waveIntroTimer > 0 || upgradePhase === 'picking') return;
-    const cx     = player.x + player.w / 2;
-    const by     = player.y - 2;
-    const angles = getSpreadAngles(upgrades, activePowerups.has('spread'));
-    const dmg    = getUpgradedBulletDmg(upgrades);
+    if (shootCooldown > 0 || !running || paused || gameOver || waveIntroTimer > 0 || upgradePhase === 'picking' || riskRewardPhase === 'picking') return;
+    const cx      = player.x + player.w / 2;
+    const by      = player.y - 2;
+    const angles  = getSpreadAngles(upgrades, activePowerups.has('spread'));
+    const dmg     = getUpgradedBulletDmg(upgrades);
+    const piercing = !empActive && upgrades.piercing > 0;
     for (const ang of angles) {
       bullets.push({ x: cx - 2 + Math.sin(ang) * 8, y: by, w: 4, h: 12,
-                     vx: Math.sin(ang) * BULLET_SPD, vy: BULLET_SPD, dmg });
+                     vx: Math.sin(ang) * BULLET_SPD, vy: BULLET_SPD, dmg, piercing });
     }
     const baseRate = activePowerups.has('rapid') ? SHOOT_RATE * 0.4 : SHOOT_RATE;
     shootCooldown  = getUpgradedShootRate(baseRate, upgrades);
@@ -430,19 +676,127 @@ export function bootstrapInvaders(root) {
   function update(dt) {
     if (!running || paused || gameOver) { updateEffects(dt); return; }
 
-    // Freeze simulation during the between-wave upgrade screen
-    if (upgradePhase === 'picking') { updateEffects(dt); return; }
+    // Freeze simulation during between-wave screens
+    if (upgradePhase === 'picking' || riskRewardPhase === 'picking') { updateEffects(dt); return; }
 
     elapsed += dt;
 
     if (waveIntroTimer > 0) { waveIntroTimer -= dt; updateEffects(dt); return; }
 
+    // Per-frame player-damage flag (set to true in each hit path below)
+    let _damageFlagThisFrame = false;
+
+    // Recovery visual timer
+    if (recoveryTimer > 0) recoveryTimer = Math.max(0, recoveryTimer - dt);
+
+    // Tick scaling director (pass event-active flag + daily pressure multiplier)
+    tickDirector(director, dt, score, wave, lives, upgrades, !!activeEvent, dailyVariation.eventRateMult || 1);
+
+    // Forced chaos: inject a surprise event if the player has been safe too long
+    if (!activeEvent && checkForcedChaos(director)) {
+      const ev = pickSurpriseEvent(wave, director);
+      if (ev) {
+        activeEvent = ev;
+        eventTimer  = ev.duration || 0;
+        eventData   = {};
+        ev.execute(buildEventState());
+        eventBanner = { text: '⚡ CHAOS: ' + ev.label, color: '#ff0055', timer: 2.5 };
+        playSfx('event_start');
+        director._eventCooldown = ev.cooldown || 30;
+        director.pressure       = 0;
+      }
+    }
+
+    // Pressure-based event trigger (deterministic — fires when pressure reaches 100)
+    if (!activeEvent && shouldFirePressureEvent(director)) {
+      const tier = getEventTier(director.intensity || 0);
+      const ev   = pickSurpriseEvent(wave, director, tier);
+      if (ev) {
+        activeEvent = ev;
+        eventTimer  = ev.duration || 0;
+        eventData   = {};
+        ev.execute(buildEventState());
+        eventBanner = { text: '⚠️ ' + ev.label, color: ev.color, timer: 2.5 };
+        playSfx('event_start');
+        director._eventCooldown = ev.cooldown || 30;
+        director.pressure       = 0;
+      } else {
+        // No eligible event — bleed off pressure so we don't get stuck at 100
+        director.pressure = 50;
+      }
+    }
+    if (activeEvent) {
+      eventTimer -= dt;
+      if (activeEvent.tickActive) activeEvent.tickActive(buildEventState(), dt);
+      if (eventTimer <= 0) {
+        if (activeEvent.remove) activeEvent.remove(buildEventState());
+        activeEvent = null;
+        eventTimer  = 0;
+        eventData   = {};
+        playSfx('event_clear');
+      }
+    }
+
+    // Tick wave modifier
+    if (activeModifier && activeModifier.tick) activeModifier.tick(buildModifierState(), dt);
+    // Handle fake-safe-wave double-speed trigger
+    if (modifierData.fakeMutated) {
+      modifierData.fakeMutated = false;
+      invSpeed *= 2;
+    }
+
+    // Decay warning/event banners
+    if (warningBanner) { warningBanner.timer -= dt; if (warningBanner.timer <= 0) warningBanner = null; }
+    if (eventBanner)   { eventBanner.timer   -= dt; if (eventBanner.timer   <= 0) eventBanner   = null; }
+    if (mutationFlash  > 0) mutationFlash -= dt;
+
+    // EMP timer
+    if (empActive) { empTimer -= dt; if (empTimer <= 0) { empActive = false; empTimer = 0; } }
+
+    // Panic mode
+    if (panicMode) { panicTimer -= dt; if (panicTimer <= 0) { panicMode = false; panicTimer = 0; } }
+
+    // Shield regen
+    if (upgrades.shieldRegen > 0 && !player.shielded) {
+      shieldRegenTimer -= dt;
+      if (shieldRegenTimer <= 0) {
+        player.shielded    = true;
+        shieldRegenTimer   = 15;
+        addFloatingText('SHIELD RESTORED', '#3fb950');
+        updateHud();
+      }
+    }
+
+    // Slow dodge timer
+    if (slowDodgeActive) { slowDodgeTimer -= dt; if (slowDodgeTimer <= 0) { slowDodgeActive = false; slowDodgeTimer = 0; } }
+
+    // Drone hijack timer
+    if (droneHijacked) { droneHijackTimer -= dt; if (droneHijackTimer <= 0) { droneHijacked = false; droneHijackTimer = 0; } }
+
     // Powerup timers (via powerup-system)
     if (tickPowerups(activePowerups, player, dt)) updateHud();
 
+    // Magnet powerups toward player
+    if (upgrades.magnetPowerups > 0) {
+      const px = player.x + player.w / 2;
+      const py = player.y + player.h / 2;
+      for (const p of powerupItems) {
+        const dx = px - (p.x + p.r);
+        const dy = py - (p.y + p.r);
+        const dist = Math.sqrt(dx * dx + dy * dy) || 1;
+        const pull = Math.min(200, 6000 / dist);
+        p.x += (dx / dist) * pull * dt;
+        p.y += (dy / dist) * pull * dt;
+      }
+    }
+
+    // Auto bomb accelerated cooldown
+    if (upgrades.autoBomb > 0 && bombCooldown > 0) bombCooldown -= dt * 0.5;
+
     // Player movement
-    if (keys.ArrowLeft || keys.a) { player.moveDir = -1; player.x -= player.speed * dt; }
-    if (keys.ArrowRight || keys.d) { player.moveDir = 1;  player.x += player.speed * dt; }
+    const playerSpeed = player.speed * (panicMode ? 1.5 : 1) * (slowDodgeActive ? 0.3 : 1);
+    if (keys.ArrowLeft || keys.a) { player.moveDir = -1; player.x -= playerSpeed * dt; }
+    if (keys.ArrowRight || keys.d) { player.moveDir = 1;  player.x += playerSpeed * dt; }
     player.x = clamp(player.x, 0, W - player.w);
 
     if (shootCooldown > 0) shootCooldown -= dt;
@@ -450,7 +804,7 @@ export function bootstrapInvaders(root) {
     if (streakTimer > 0) { streakTimer -= dt; if (streakTimer <= 0) streak = 0; }
 
     // Drone companion auto-fire
-    if (upgrades.drone > 0) {
+    if (upgrades.drone > 0 && !droneHijacked) {
       droneAngle    += dt * 1.8;
       droneCooldown -= dt;
       if (droneCooldown <= 0) {
@@ -464,7 +818,7 @@ export function bootstrapInvaders(root) {
 
     // Boss entrance
     if (bossEntering && boss) {
-      if (!bossWarningSounded) { bossWarningSounded = true; playSfx('boss_warning'); }
+      if (!bossWarningSounded) { bossWarningSounded = true; playSfx('boss_intro'); }
       boss.y += 120 * dt;
       if (boss.y >= 30) { boss.y = 30; bossEntering = false; }
       updateEffects(dt);
@@ -481,7 +835,120 @@ export function bootstrapInvaders(root) {
       if (inv.shieldHitTimer > 0) inv.shieldHitTimer -= dt;
     }
 
-    const slowMult = activePowerups.has('slow') ? 0.45 : 1;
+    const speedModMult = slowDodgeActive ? 0.3 : 1;
+    const slowMult = (activePowerups.has('slow') ? 0.45 : 1) * (panicMode ? 2 : 1) * speedModMult;
+
+    // Healer invaders
+    for (const inv of invaders) {
+      if (!inv.alive || inv.type !== 'healer') continue;
+      inv.healTimer = (inv.healTimer || 3) - dt;
+      if (inv.healTimer <= 0) {
+        inv.healTimer = 3;
+        let nearest = null; let nearDist = 80;
+        for (const other of invaders) {
+          if (!other.alive || other === inv) continue;
+          const dx = (other.x - inv.x); const dy = (other.y - inv.y);
+          const d = Math.sqrt(dx * dx + dy * dy);
+          if (d < nearDist) { nearDist = d; nearest = other; }
+        }
+        if (nearest) {
+          nearest.hp = Math.min(nearest.maxHp || nearest.hp + 1, nearest.hp + 1);
+          spawnExplosion(nearest.x + nearest.w / 2, nearest.y + nearest.h / 2, 0.3, '#3fb950');
+        }
+      }
+    }
+
+    // Sniper invaders
+    for (const inv of invaders) {
+      if (!inv.alive || inv.type !== 'sniper') continue;
+      inv.sniperTimer = (inv.sniperTimer || 4) - dt;
+      if (inv.sniperTimer <= 0) {
+        inv.sniperTimer = 4;
+        const bx = inv.x + inv.w / 2;
+        const by = inv.y + inv.h;
+        const tx = player.x + player.w / 2;
+        const ty = player.y;
+        const ang = Math.atan2(ty - by, tx - bx);
+        const spd = 220 + wave * 4;
+        invBullets.push({ x: bx - 2, y: by, w: 4, h: 12, vy: spd * Math.sin(ang), vx: spd * Math.cos(ang) });
+      }
+    }
+
+    // Laser warning tick
+    if (laserWarning) {
+      laserWarning.chargeTimer -= dt;
+      if (!laserWarning.fired && laserWarning.chargeTimer <= 0) {
+        laserWarning.fired = true;
+        const px = player.x + player.w / 2;
+        if (Math.abs(px - laserWarning.x) < 40) {
+          lives--;
+          triggerHudFx(livesEl, 'flash', 220);
+          updateHud();
+          spawnExplosion(px, player.y + player.h / 2, 1.5, '#ff3333');
+          screenShake(8, 0.25);
+          playSfx('player_damage');
+          _damageFlagThisFrame = true;
+          if (lives <= 0) {
+            if (!reviveUsed && upgrades.revive > 0) {
+              lives      = 1;
+              reviveUsed = true;
+              addFloatingText('REVIVED!', '#3fb950');
+              updateHud();
+            } else {
+              onGameOver(); updateEffects(dt); return;
+            }
+          }
+        }
+      }
+      if (laserWarning.fired) laserWarning = null;
+    }
+
+    // Asteroid ticking
+    for (let ai = asteroids.length - 1; ai >= 0; ai--) {
+      const a = asteroids[ai];
+      a.x += (a.vx || 0) * dt;
+      a.y += (a.vy || 80) * dt;
+      if (a.y > H + 40) { asteroids.splice(ai, 1); continue; }
+      if (rectsOverlap(a.x - a.r, a.y - a.r, a.r * 2, a.r * 2, player.x, player.y, player.w, player.h)) {
+        asteroids.splice(ai, 1);
+        if (!player.shielded) {
+          lives--;
+          triggerHudFx(livesEl, 'flash', 220);
+          updateHud();
+          spawnExplosion(player.x + player.w / 2, player.y + player.h / 2, 1.2, '#ff6b2b');
+          screenShake(7, 0.24);
+          playSfx('player_damage');
+          _damageFlagThisFrame = true;
+          if (lives <= 0) {
+            if (!reviveUsed && upgrades.revive > 0) {
+              lives      = 1;
+              reviveUsed = true;
+              addFloatingText('REVIVED!', '#3fb950');
+              updateHud();
+            } else {
+              onGameOver(); updateEffects(dt); return;
+            }
+          }
+        } else {
+          player.shielded = false;
+          activePowerups.delete('shield');
+          updateHud();
+        }
+      }
+    }
+
+    // Mini enemy ticking
+    for (let mi = miniEnemies.length - 1; mi >= 0; mi--) {
+      const me = miniEnemies[mi];
+      me.x += (me.vx || 0) * dt;
+      me.y += (me.vy || 60) * dt;
+      me.shootTimer = (me.shootTimer || 2) - dt;
+      if (me.shootTimer <= 0) {
+        me.shootTimer = 1.5 + Math.random();
+        invBullets.push({ x: me.x, y: me.y + 8, w: 4, h: 10, vy: 160 });
+      }
+      if (me.y > H + 30) { miniEnemies.splice(mi, 1); continue; }
+    }
 
     // Invader grid movement (hunters drift toward player)
     if (!boss && invaders.length) {
@@ -508,6 +975,25 @@ export function bootstrapInvaders(root) {
           if (i.type === 'hunter') {
             const targetX = player.x + player.w / 2 - i.w / 2;
             drift += (targetX - i.x) * 0.9 * dt;
+          }
+          // Zigzag: sinusoidal Y movement
+          if (i.type === 'zigzag') {
+            i.y += Math.sin(elapsed * 4 + i.seed) * 30 * dt;
+          }
+          // Kamikaze: dive toward player once they get low on the screen
+          if (i.type === 'kamikaze' && i.y > H * 0.35) {
+            const tx = player.x + player.w / 2 - i.w / 2;
+            i.x += (tx - i.x) * 3 * dt;
+            i.y += 90 * dt;
+          }
+          // Cloaked: update visibility
+          if (i.type === 'cloaked') {
+            i.cloakAlpha = 0.2 + 0.8 * (Math.sin(elapsed * 2 + i.seed) + 1) / 2;
+          }
+          // Golden: figure-8 movement
+          if (i.type === 'golden') {
+            i.x += Math.cos(elapsed * 2 + i.seed) * 60 * dt;
+            i.y += Math.sin(elapsed * 4 + i.seed) * 20 * dt;
           }
           i.x += drift;
           minX = Math.min(minX, i.x);
@@ -561,7 +1047,7 @@ export function bootstrapInvaders(root) {
           speed    = (BOSS_BULLET_SPEED_BASE + wave * BOSS_BULLET_SPEED_PER_WAVE) * 1.6 * slowMult;
           interval = baseInterval * 0.5;
         }
-        invShootTimer = interval;
+        invShootTimer = interval / getBossAggressionMult(director);
         for (const sx of spread) {
           invBullets.push({ x: boss.x + boss.w / 2 + sx, y: boss.y + boss.h, w: 4, h: 14, vy: speed });
         }
@@ -621,12 +1107,13 @@ export function bootstrapInvaders(root) {
 
       // Check if bomb killed the boss
       if (boss && boss.hp <= 0) {
-        addScore(500 * wave * getScoreMultiplier(activePowerups) * getUpgradedScoreMult(upgrades),
+        addScore(500 * wave * bossDmgBoost * waveScoreMult * getScoreMultiplier(activePowerups) * getUpgradedScoreMult(upgrades),
           boss.x + boss.w * 0.5, boss.y - 16, '#ff4fd1');
         spawnExplosion(boss.x + boss.w * 0.5, boss.y + boss.h * 0.5, 2.0, '#ff4444');
         screenShake(12, 0.4);
         playSfx('explosion');
         if (Math.random() < POWERUP_BOSS_DROP_CHANCE) powerupItems.push(makeDroppedPowerup(boss.x + boss.w * 0.5, boss.y + boss.h * 0.5));
+        runStats.bossesDefeated++;
         boss = null;
         completeWave();
         updateEffects(dt);
@@ -658,9 +1145,10 @@ export function bootstrapInvaders(root) {
           }
         }
       }
-      if (hit) { bullets.splice(bi, 1); continue; }
+      if (hit) { if (!b.piercing) bullets.splice(bi, 1); continue; }
 
-      for (const inv of invaders) {
+      for (let ii = invaders.length - 1; ii >= 0; ii--) {
+        const inv = invaders[ii];
         if (!inv.alive) continue;
         if (rectsOverlap(b.x, b.y, b.w, b.h, inv.x, inv.y, inv.w, inv.h)) {
           if (inv.shieldHp > 0) {
@@ -672,13 +1160,58 @@ export function bootstrapInvaders(root) {
             const dmg = b.dmg || 1;
             inv.hp -= dmg;
             inv.hitTimer = 0.12;
+            // Explosive rounds
+            if (!empActive && upgrades.explosiveRounds > 0) {
+              spawnExplosion(b.x, b.y, 0.5, '#ff6b2b');
+              for (const other of invaders) {
+                if (!other.alive || other === inv) continue;
+                const dx = (other.x + other.w / 2) - (inv.x + inv.w / 2);
+                const dy = (other.y + other.h / 2) - (inv.y + inv.h / 2);
+                if (dx * dx + dy * dy <= 40 * 40) { other.hp -= 1; if (other.hp <= 0) other.alive = false; }
+              }
+            }
             if (inv.hp <= 0) {
               inv.alive = false;
               streak++;
               streakTimer = 1.8;
               const pts = calcInvaderPoints(inv, wave, streak, { STREAK_BONUS_RATE, MAX_STREAK_BONUS })
-                * getScoreMultiplier(activePowerups) * getUpgradedScoreMult(upgrades);
-              addScore(pts, inv.x + inv.w * 0.5, inv.y, '#f7c948');
+                * getScoreMultiplier(activePowerups) * getUpgradedScoreMult(upgrades) * waveScoreMult;
+
+              // Golden invader bonus
+              if (inv.type === 'golden') {
+                addScore(pts * 3, inv.x + inv.w * 0.5, inv.y, '#ffd700');
+                powerupItems.push(makeDroppedPowerup(inv.x + inv.w * 0.5, inv.y + inv.h));
+                addFloatingText('GOLDEN!', '#ffd700');
+                playSfx('legendary');
+              } else {
+                addScore(pts, inv.x + inv.w * 0.5, inv.y, '#f7c948');
+              }
+
+              // Splitter: spawn 2 baby invaders
+              if (inv.type === 'splitter') {
+                for (let s = 0; s < 2; s++) {
+                  invaders.push({
+                    x: inv.x + (s - 0.5) * 12, y: inv.y, w: inv.w * 0.6, h: inv.h * 0.6,
+                    hp: 1, maxHp: 1, alive: true, type: 'basic',
+                    row: inv.row, col: inv.col, seed: Math.random() * 100,
+                    hitTimer: 0, shieldHp: 0, shieldHitTimer: 0,
+                    mutations: [], healTimer: 3, sniperTimer: 4, cloakAlpha: 1,
+                  });
+                }
+              }
+
+              // Chain lightning
+              if (!empActive && upgrades.chainLightning > 0) {
+                const targets = invaders
+                  .filter(o => o.alive && o !== inv)
+                  .map(o => ({ o, d2: (o.x - inv.x) ** 2 + (o.y - inv.y) ** 2 }))
+                  .sort((a, b2) => a.d2 - b2.d2)
+                  .slice(0, 2);
+                for (const { o, d2 } of targets) {
+                  if (d2 <= 120 * 120) { o.hp -= 1; if (o.hp <= 0) { o.alive = false; } spawnExplosion(o.x + o.w / 2, o.y + o.h / 2, 0.3, '#80d8ff'); }
+                }
+              }
+
               // Bomber death: radial bullet burst + chain explosion
               if (inv.type === 'bomber') {
                 playSfx('explosion');
@@ -697,17 +1230,8 @@ export function bootstrapInvaders(root) {
                 playSfx('hit');
               }
               if (Math.random() < POWERUP_DROP_CHANCE) powerupItems.push(makeDroppedPowerup(inv.x + inv.w * 0.5, inv.y + inv.h));
-              // If this was the last living invader, advance to the next wave
-              // immediately in the same update() run — do not wait for the next
-              // frame, which would leave one tick where the empty invader grid
-              // could trigger unintended code paths (e.g. a stale game-over check).
               if (!boss && invaders.every((i) => !i.alive)) {
-                // Safe to splice here: the function returns immediately after,
-                // so the loop index is never advanced past bi.
-                // startWave() (via completeWave()) resets bullets=[], so any
-                // remaining unprocessed bullets are intentionally discarded —
-                // matching the existing boss-kill wave-transition behaviour.
-                bullets.splice(bi, 1);
+                if (!b.piercing) bullets.splice(bi, 1);
                 completeWave();
                 updateEffects(dt);
                 return;
@@ -717,27 +1241,28 @@ export function bootstrapInvaders(root) {
             }
           }
           hit = true;
-          break;
+          if (!b.piercing) break;
         }
       }
 
       if (!hit && boss && rectsOverlap(b.x, b.y, b.w, b.h, boss.x, boss.y, boss.w, boss.h)) {
         hit = true;
-        const dmg = b.dmg || 1;
+        const dmg = (b.dmg || 1) * bossDmgBoost;
         boss.hp -= dmg;
         boss.hitTimer = 0.12;
-        addScore(20 * wave * dmg * getScoreMultiplier(activePowerups) * getUpgradedScoreMult(upgrades),
+        addScore(20 * wave * dmg * waveScoreMult * getScoreMultiplier(activePowerups) * getUpgradedScoreMult(upgrades),
           boss.x + boss.w * 0.5, boss.y - 4, '#ff9b9b');
         spawnExplosion(b.x, b.y, 0.5, '#ff8888');
         screenShake(3, 0.12);
         playSfx('hit');
         if (boss.hp <= 0) {
-          addScore(500 * wave * getScoreMultiplier(activePowerups) * getUpgradedScoreMult(upgrades),
+          addScore(500 * wave * bossDmgBoost * waveScoreMult * getScoreMultiplier(activePowerups) * getUpgradedScoreMult(upgrades),
             boss.x + boss.w * 0.5, boss.y - 16, '#ff4fd1');
           spawnExplosion(boss.x + boss.w * 0.5, boss.y + boss.h * 0.5, 1.9, '#ff4444');
           screenShake(10, 0.35);
           playSfx('explosion');
           if (Math.random() < POWERUP_BOSS_DROP_CHANCE) powerupItems.push(makeDroppedPowerup(boss.x + boss.w * 0.5, boss.y + boss.h * 0.5));
+          runStats.bossesDefeated++;
           boss = null;
           completeWave();
           updateEffects(dt);
@@ -745,7 +1270,7 @@ export function bootstrapInvaders(root) {
         }
       }
 
-      if (hit) bullets.splice(bi, 1);
+      if (hit && !b.piercing) bullets.splice(bi, 1);
     }
 
     // Enemy bullets vs bunkers + player
@@ -781,11 +1306,72 @@ export function bootstrapInvaders(root) {
           spawnExplosion(player.x + player.w * 0.5, player.y + player.h * 0.4, 1.2, '#ff4444');
           screenShake(7, 0.24);
           playSfx('player_damage');
+          _damageFlagThisFrame = true;
           streak = 0;
           streakTimer = 0;
-          if (lives <= 0) { onGameOver(); updateEffects(dt); return; }
+          if (lives <= 0) {
+            if (!reviveUsed && upgrades.revive > 0) {
+              lives      = 1;
+              reviveUsed = true;
+              addFloatingText('REVIVED!', '#3fb950');
+              updateHud();
+            } else {
+              onGameOver(); updateEffects(dt); return;
+            }
+          }
         }
       }
+    }
+
+    // ── Per-frame intensity update ────────────────────────────────────────────
+    {
+      const alive    = invaders.filter((i) => i.alive);
+      const pcx      = player.x + player.w / 2;
+      const pcy      = player.y + player.h / 2;
+      const nearCount = alive.filter((i) => {
+        const dx = (i.x + i.w / 2) - pcx;
+        const dy = (i.y + i.h / 2) - pcy;
+        return dx * dx + dy * dy < 140 * 140;
+      }).length;
+      updateIntensity(director, dt, {
+        damageTaken:       _damageFlagThisFrame,
+        enemiesNearPlayer: nearCount,
+        bossActive:        !!boss,
+        lives,
+        waveClear:         false,
+      });
+      if (director.intensity > runStats.highestIntensity) {
+        runStats.highestIntensity = director.intensity;
+      }
+    }
+
+    // ── Intensity threshold crossings ─────────────────────────────────────────
+    {
+      const iv   = director.intensity;
+      const band = iv >= 80 ? 'chaotic' : iv >= 60 ? 'rising' : 'calm';
+      if (band !== intensityPrevBand) {
+        if (band === 'rising' && intensityPrevBand === 'calm') {
+          intensityPulseTimer = 0.4;
+          intensityPulseColor = '#ff8800';
+          playSfx('boss_warning');
+        } else if (band === 'chaotic') {
+          intensityPulseTimer = 0.7;
+          intensityPulseColor = '#ff0055';
+          screenShake(4, 0.35);
+          playSfx('boss_warning');
+        } else if (band === 'calm' && intensityPrevBand !== 'calm') {
+          recoveryTimer = 0.6;
+          playSfx('wave_clear');
+        }
+        intensityPrevBand = band;
+      }
+      if (intensityPulseTimer > 0) intensityPulseTimer = Math.max(0, intensityPulseTimer - dt);
+    }
+
+    // ── Milestone toasts tick ─────────────────────────────────────────────────
+    for (let ti = milestoneToasts.length - 1; ti >= 0; ti--) {
+      milestoneToasts[ti].timer -= dt;
+      if (milestoneToasts[ti].timer <= 0) milestoneToasts.splice(ti, 1);
     }
 
     updateEffects(dt);
@@ -804,6 +1390,18 @@ export function bootstrapInvaders(root) {
       particles, scoreTexts, hitFlashes, stars,
       upgradePhase, upgradeChoices, upgrades,
       screenFlashTimer, droneAngle, bombCooldown,
+      // Roguelite additions
+      warningBanner, eventBanner, mutationFlash,
+      activeModifier, activeEvent,
+      empActive, empTimer, panicMode, panicTimer,
+      asteroids, laserWarning, miniEnemies,
+      riskRewardPhase, riskRewardChoices,
+      // Intensity feedback + meta
+      intensity: director.intensity,
+      intensityPulseTimer, intensityPulseColor,
+      recoveryTimer,
+      runSummary,
+      milestoneToasts,
     });
   }
 
@@ -811,16 +1409,45 @@ export function bootstrapInvaders(root) {
 
   engine.onTick    = (dt) => { update(dt); draw(); };
   engine.onKeyDown = (e)  => {
+    // During the risk/reward screen: 1/2 select, then move to upgrade screen
+    if (riskRewardPhase === 'picking') {
+      const idx = { '1': 0, '2': 1 }[e.key];
+      if (idx !== undefined && riskRewardChoices[idx]) {
+        activeRiskReward  = riskRewardChoices[idx];
+        riskRewardPhase   = false;
+        riskRewardChoices = [];
+        playSfx('upgrade');
+        // Apply one-time risk/reward effects immediately
+        if (activeRiskReward.id === 'skipWave') {
+          activeRiskReward = null;
+          startWave();
+          return;
+        }
+        if (activeRiskReward.id === 'noShield') {
+          // Applied at wave start
+        }
+        if (activeRiskReward.id === 'blackoutWave') {
+          // Will be applied via forceModifier in startWave (handled via activeRiskReward)
+        }
+        // Now show upgrade screen
+        upgradeChoices = pickUpgradeChoicesWithRarity(upgrades, wave);
+        upgradePhase   = 'picking';
+      }
+      return;
+    }
     // During the upgrade screen: 1/2/3 select an upgrade, then start next wave
     if (upgradePhase === 'picking') {
       const idx = { '1': 0, '2': 1, '3': 2 }[e.key];
       if (idx !== undefined && upgradeChoices[idx]) {
         const def = upgradeChoices[idx];
+        // Add piercing flag to bullets if needed
         const applied = applyUpgrade(def.id, upgrades);
         if (!applied) {
           // Already maxed — grant a score bonus instead
           addScore(wave * 200 + 500, W / 2, H / 2, '#bc8cff');
         }
+        // Update bossDmgBoost
+        bossDmgBoost = upgrades.bossDmg > 0 ? 1 + upgrades.bossDmg * 0.5 : 1;
         upgradePhase   = false;
         upgradeChoices = [];
         screenFlashTimer = 0.35;
@@ -828,6 +1455,23 @@ export function bootstrapInvaders(root) {
         startWave();
       }
       return; // block all other keys during upgrade screen
+    }
+    // Slow dodge double-tap detection
+    if (e.key === 'ArrowLeft' || e.key === 'a') {
+      const now = performance.now() / 1000;
+      if (now - lastLeftTapTime < 0.3 && upgrades.slowDodge > 0) {
+        slowDodgeActive = true;
+        slowDodgeTimer  = 1.5;
+      }
+      lastLeftTapTime = now;
+    }
+    if (e.key === 'ArrowRight' || e.key === 'd') {
+      const now = performance.now() / 1000;
+      if (now - lastRightTapTime < 0.3 && upgrades.slowDodge > 0) {
+        slowDodgeActive = true;
+        slowDodgeTimer  = 1.5;
+      }
+      lastRightTapTime = now;
     }
     if (e.key === ' ' && running && !paused && waveIntroTimer <= 0) tryShoot();
     if ((e.key === 'b' || e.key === 'B') && running && !paused) tryBombShot();
@@ -842,6 +1486,30 @@ export function bootstrapInvaders(root) {
     setBestMaybe();
     updateHud();
     playSfx('game_over');
+
+    // Build run summary and persist meta-stats
+    const survivalTime = elapsed;
+    recordRunStats({ score, wave, survival: survivalTime });
+    const newMilestones = checkMilestones({
+      wave,
+      bossesDefeated:   runStats.bossesDefeated,
+      highestIntensity: runStats.highestIntensity,
+      score,
+      survival:         survivalTime,
+    });
+    runSummary = buildRunSummary({
+      score,
+      wave,
+      bossesDefeated:   runStats.bossesDefeated,
+      upgradeCount:     Object.values(upgrades).reduce((a, b) => a + (Number(b) || 0), 0),
+      highestIntensity: runStats.highestIntensity,
+      survival:         survivalTime,
+    });
+    // Queue milestone toasts so they display on the summary screen
+    for (const text of newMilestones) {
+      milestoneToasts.push({ text, timer: 6.0 });
+    }
+
     if (score > 0) {
       const playerName = window.MOONBOYS_IDENTITY?.getTelegramName?.() || ArcadeSync.getPlayer();
       try { await submitScore(playerName, score, GAME_ID); } catch (e) {}

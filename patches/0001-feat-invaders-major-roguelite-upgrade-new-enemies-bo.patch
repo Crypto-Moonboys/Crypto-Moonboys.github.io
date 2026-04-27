@@ -1,0 +1,2378 @@
+From 3003b8a7e5d4c98d63dbc371013cc1edc6ae844f Mon Sep 17 00:00:00 2001
+From: "copilot-swe-agent[bot]" <198982749+Copilot@users.noreply.github.com>
+Date: Mon, 27 Apr 2026 01:57:46 +0000
+Subject: [PATCH 1/2] =?UTF-8?q?feat(invaders):=20major=20roguelite=20upgra?=
+ =?UTF-8?q?de=20=E2=80=94=20new=20enemies,=20bosses,=20wave=20modifiers,?=
+ =?UTF-8?q?=20events,=20upgrades?=
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+- Add event-system.js: 11 wave modifiers, 10 surprise events, scaling director
+- Add boss-archetypes.js: 6 unique boss archetypes with special behaviors
+- Extend invader-system.js: 7 new enemy types (zigzag, splitter, healer, sniper,
+  kamikaze, cloaked, golden) + mutation system
+- Extend upgrade-system.js: rarity system, 10 new upgrades (piercing, chain
+  lightning, explosive rounds, shield regen, auto bomb, slow dodge, magnet
+  powerups, boss damage, revive, double drone), risk/reward mechanics
+- Extend render-system.js: draw all new enemy types, boss archetypes, wave
+  modifier overlays, event banners, mutation flash, asteroid/laser/EMP/panic
+  effects, risk/reward selection screen with rarity borders
+- Extend bootstrap.js: wire all new systems into game loop — new state vars,
+  updated startWave/update/completeWave/onKeyDown/draw/resetGame, scaling
+  director ticking, surprise event triggering, piercing/chain/explosive bullet
+  mechanics, revive intercept, slow dodge double-tap, shield regen, EMP,
+  panic mode, boss damage boost, wave score multiplier
+
+Co-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>
+
+Co-authored-by: HODLKONG64 <214493755+HODLKONG64@users.noreply.github.com>
+---
+ js/arcade/games/invaders/bootstrap.js       | 609 ++++++++++++++++++--
+ js/arcade/games/invaders/boss-archetypes.js | 143 +++++
+ js/arcade/games/invaders/event-system.js    | 503 ++++++++++++++++
+ js/arcade/games/invaders/invader-system.js  |  65 ++-
+ js/arcade/games/invaders/render-system.js   | 549 ++++++++++++++++--
+ js/arcade/games/invaders/upgrade-system.js  |  82 ++-
+ 6 files changed, 1863 insertions(+), 88 deletions(-)
+ create mode 100644 js/arcade/games/invaders/boss-archetypes.js
+ create mode 100644 js/arcade/games/invaders/event-system.js
+
+diff --git a/js/arcade/games/invaders/bootstrap.js b/js/arcade/games/invaders/bootstrap.js
+index 864dc30..73d73de 100644
+--- a/js/arcade/games/invaders/bootstrap.js
++++ b/js/arcade/games/invaders/bootstrap.js
+@@ -36,6 +36,9 @@ import {
+   BUNKER_BLOCK_W, BUNKER_BLOCK_H,
+   buildGrid, spawnBoss, buildBunkers, makeEnemyBullet,
+   calcInvaderPoints, getBossPhase,
++  MUTATION_DEFS, applyMutations,
++  ZIGZAG_SPAWN_CHANCE, SPLITTER_SPAWN_CHANCE, HEALER_SPAWN_CHANCE,
++  SNIPER_SPAWN_CHANCE, KAMIKAZE_SPAWN_CHANCE, CLOAKED_SPAWN_CHANCE, GOLDEN_SPAWN_CHANCE,
+ } from './invader-system.js';
+ 
+ import {
+@@ -46,8 +49,18 @@ import {
+ import {
+   makeUpgrades, pickUpgradeChoices, applyUpgrade,
+   getUpgradedShootRate, getUpgradedBulletDmg, getUpgradedScoreMult, getSpreadAngles,
++  RARITY_COLORS, shouldOfferRiskReward, pickRiskRewardChoices, pickUpgradeChoicesWithRarity,
+ } from './upgrade-system.js';
+ 
++import {
++  createScalingDirector, tickDirector, pickWaveModifier,
++  shouldTriggerSurpriseEvent, pickSurpriseEvent,
++} from './event-system.js';
++
++import {
++  BOSS_ARCHETYPE_DEFS, pickBossArchetype, spawnBossArchetype,
++} from './boss-archetypes.js';
++
+ import { createRenderer } from './render-system.js';
+ 
+ GameRegistry.register(INVADERS_CONFIG.id, {
+@@ -136,6 +149,39 @@ export function bootstrapInvaders(root) {
+   let upgradePhase   = false;   // false | 'picking'
+   let upgradeChoices = [];
+ 
++  // ── Roguelite: scaling director & wave modifiers ──────────────────────────────
++  let director          = createScalingDirector();
++  let activeModifier    = null;   // current WAVE_MODIFIER_DEFS entry or null
++  let modifierData      = {};     // scratch object for the modifier
++  let activeEvent       = null;   // current SURPRISE_EVENT_DEFS entry or null
++  let eventData         = {};     // scratch object for the event
++  let eventTimer        = 0;
++  let warningBanner     = null;   // { text, color, timer, maxTimer }
++  let eventBanner       = null;   // { text, color, timer }
++  let mutationFlash     = 0;
++  let riskRewardPhase   = false;  // false | 'picking'
++  let riskRewardChoices = [];
++  let activeRiskReward  = null;
++  let empActive         = false;
++  let empTimer          = 0;
++  let panicMode         = false;
++  let panicTimer        = 0;
++  let shieldRegenTimer  = 0;
++  let bossDmgBoost      = 1;
++  let reviveUsed        = false;
++  let slowDodgeTimer    = 0;
++  let slowDodgeActive   = false;
++  let asteroids         = [];
++  let laserWarning      = null;
++  let miniEnemies       = [];
++  let droneHijacked     = false;
++  let droneHijackTimer  = 0;
++  // Double-tap tracking for slow dodge
++  let lastLeftTapTime   = 0;
++  let lastRightTapTime  = 0;
++  // Wave score multiplier (for oneLife risk/reward)
++  let waveScoreMult     = 1;
++
+   // ── Game-feel state ───────────────────────────────────────────────────────────
+   let screenFlashTimer = 0;
+   let droneAngle       = 0;
+@@ -219,11 +265,26 @@ export function bootstrapInvaders(root) {
+       game_over:     'invaders-game-over',
+       wave_clear:    'invaders-wave-clear',
+       upgrade:       'invaders-upgrade',
++      event_start:   'invaders-powerup',
++      event_clear:   'invaders-wave-clear',
++      boss_intro:    'invaders-boss-warning',
++      rare_enemy:    'invaders-powerup',
++      legendary:     'invaders-upgrade',
+     };
+     const id = map[type];
+     if (id) playSound(id);
+   }
+ 
++  /** Show a brief floating text on screen (uses warningBanner for simplicity). */
++  function addFloatingText(text, color) {
++    warningBanner = { text, color: color || '#f7c948', timer: 1.8, maxTimer: 1.8 };
++  }
++
++  /** Drop one random powerup from sky at random X. */
++  function spawnPowerupRain() {
++    powerupItems.push(makeDroppedPowerup(rand(30, W - 30), -10));
++  }
++
+   function spawnExplosion(x, y, intensity, color) {
+     intensity = intensity || 1;
+     color     = color     || '#ff4fd1';
+@@ -286,13 +347,34 @@ export function bootstrapInvaders(root) {
+     lastActivatedPowerup = null;
+     waveIntroTimer       = WAVE_INTRO_DURATION;
+     bunkers              = buildBunkers(W, H);
++    asteroids            = [];
++    miniEnemies          = [];
++    laserWarning         = null;
++    waveScoreMult        = 1;
++
++    // Apply active risk/reward effects for this wave
++    const forceBoss = activeRiskReward && activeRiskReward.id === 'earlyBoss';
++    if (activeRiskReward && activeRiskReward.id === 'oneLife') {
++      lives = 1;
++      waveScoreMult = 3;
++      addFloatingText('ONE LIFE — 3x SCORE', '#ff4444');
++    }
++    if (activeRiskReward && activeRiskReward.id === 'noShield') {
++      player.shielded = false;
++    }
+ 
+-    if (wave % WAVE_BOSS === 0) {
+-      const r = spawnBoss(wave, W, rand);
+-      boss               = r.boss;
+-      invShootTimer      = r.invShootTimer;
+-      bossEntering       = r.bossEntering;
+-      bossWarningSounded = r.bossWarningSounded;
++    const isBossWave = forceBoss || (wave % WAVE_BOSS === 0);
++
++    if (isBossWave) {
++      const archetype = pickBossArchetype(wave, director);
++      const r         = spawnBossArchetype(archetype, wave, W);
++      boss               = r;
++      invShootTimer      = rand(0.8, 1.4);
++      bossEntering       = true;
++      bossWarningSounded = false;
++      // Show boss warning banner
++      warningBanner = { text: archetype.warningText, color: archetype.color, timer: 2.2, maxTimer: 2.2 };
++      director.bossHistory = director.bossHistory || [];
+     } else {
+       const g       = buildGrid(wave, W, rand);
+       invaders      = g.invaders;
+@@ -301,21 +383,121 @@ export function bootstrapInvaders(root) {
+       invShootInterval = g.invShootInterval;
+       invShootTimer = g.invShootTimer;
+       invDropping   = g.invDropping;
++
++      // Apply risk/reward double-enemies
++      if (activeRiskReward && activeRiskReward.id === 'doubleEnemies') {
++        const extra = buildGrid(wave, W, rand);
++        for (const inv of extra.invaders) {
++          inv.y += 180;
++          inv.hp    = 1;
++          inv.maxHp = 1;
++        }
++        invaders = invaders.concat(extra.invaders);
++        waveScoreMult = Math.max(waveScoreMult, 2);
++      }
++
++      // Apply mutations for wave >= 10
++      if (wave >= 10) {
++        applyMutations(invaders, wave);
++        if (invaders.some(i => i.mutations && i.mutations.length > 0)) mutationFlash = 0.4;
++      }
++
++      // Pick and apply wave modifier
++      if (activeModifier && activeModifier.remove) {
++        activeModifier.remove(buildModifierState());
++      }
++      activeModifier = pickWaveModifier(wave, director);
++      modifierData   = {};
++      if (activeModifier) {
++        activeModifier.apply(buildModifierState());
++        // Show modifier banner
++        eventBanner = { text: '⚡ ' + activeModifier.label, color: activeModifier.color, timer: 2.5 };
++        if (activeModifier.id === 'reverseDrift') invDir = -1;
++      }
+     }
++
++    // Reset risk/reward for next wave
++    activeRiskReward = null;
++
+     updateHud();
+   }
+ 
++  // ── Roguelite state builders ──────────────────────────────────────────────────
++
++  function buildModifierState() {
++    return {
++      invaders, invBullets, bullets, player, wave, elapsed, W, H,
++      modifierData,
++      get invSpeed() { return invSpeed; },
++      set invSpeed(v) { invSpeed = v; },
++      get invDir() { return invDir; },
++      set invDir(v) { invDir = v; },
++      bunkers, asteroids,
++      rand, spawnExplosion, addScore, playSfx, screenShake,
++      addFloatingText, spawnPowerupRain, panicMode, panicTimer,
++      get empActive() { return empActive; },
++      set empActive(v) { empActive = v; },
++      get empTimer() { return empTimer; },
++      set empTimer(v) { empTimer = v; },
++      get droneHijacked() { return droneHijacked; },
++      set droneHijacked(v) { droneHijacked = v; },
++      get droneHijackTimer() { return droneHijackTimer; },
++      set droneHijackTimer(v) { droneHijackTimer = v; },
++      miniEnemies,
++      get laserWarning() { return laserWarning; },
++      set laserWarning(v) { laserWarning = v; },
++    };
++  }
++
++  function buildEventState() {
++    return {
++      invaders, invBullets, bullets, player, wave, elapsed, W, H,
++      boss, asteroids, miniEnemies,
++      get laserWarning() { return laserWarning; },
++      set laserWarning(v) { laserWarning = v; },
++      rand, spawnExplosion, addScore, playSfx, screenShake,
++      addFloatingText, spawnPowerupRain,
++      get empActive() { return empActive; },
++      set empActive(v) { empActive = v; },
++      get empTimer() { return empTimer; },
++      set empTimer(v) { empTimer = v; },
++      get panicMode() { return panicMode; },
++      set panicMode(v) { panicMode = v; },
++      get panicTimer() { return panicTimer; },
++      set panicTimer(v) { panicTimer = v; },
++      get droneHijacked() { return droneHijacked; },
++      set droneHijacked(v) { droneHijacked = v; },
++      get droneHijackTimer() { return droneHijackTimer; },
++      set droneHijackTimer(v) { droneHijackTimer = v; },
++    };
++  }
++
+   function completeWave() {
++    // Remove active modifier
++    if (activeModifier && activeModifier.remove) {
++      activeModifier.remove(buildModifierState());
++    }
++    activeModifier = null;
++    modifierData   = {};
++    activeEvent    = null;
++    eventTimer     = 0;
++
+     if (wave > 0) {
+       const survival = wave * 50;
+       addScore(survival, W * 0.5, 82, '#3fb950');
+       spawnExplosion(W * 0.5, 95, 0.8, '#3fb950');
+     }
+     playSfx('wave_clear');
+-    // Pause before the next wave and let the player choose an upgrade
+-    upgradeChoices = pickUpgradeChoices(upgrades);
+-    upgradePhase   = 'picking';
+-    // startWave() is called from the onKeyDown handler once a choice is made
++
++    // Risk/reward screen every 5 waves (shown before upgrade)
++    if (shouldOfferRiskReward(wave)) {
++      riskRewardChoices = pickRiskRewardChoices();
++      riskRewardPhase   = 'picking';
++    } else {
++      // Go straight to upgrade screen
++      upgradeChoices = pickUpgradeChoicesWithRarity(upgrades, wave);
++      upgradePhase   = 'picking';
++    }
+   }
+ 
+   function resetGame() {
+@@ -351,6 +533,36 @@ export function bootstrapInvaders(root) {
+     droneAngle       = 0;
+     droneCooldown    = 0;
+     bombCooldown     = 0;
++    // Roguelite state reset
++    director          = createScalingDirector();
++    activeModifier    = null;
++    modifierData      = {};
++    activeEvent       = null;
++    eventData         = {};
++    eventTimer        = 0;
++    warningBanner     = null;
++    eventBanner       = null;
++    mutationFlash     = 0;
++    riskRewardPhase   = false;
++    riskRewardChoices = [];
++    activeRiskReward  = null;
++    empActive         = false;
++    empTimer          = 0;
++    panicMode         = false;
++    panicTimer        = 0;
++    shieldRegenTimer  = 0;
++    bossDmgBoost      = 1;
++    reviveUsed        = false;
++    slowDodgeTimer    = 0;
++    slowDodgeActive   = false;
++    asteroids         = [];
++    laserWarning      = null;
++    miniEnemies       = [];
++    droneHijacked     = false;
++    droneHijackTimer  = 0;
++    lastLeftTapTime   = 0;
++    lastRightTapTime  = 0;
++    waveScoreMult     = 1;
+     player = { x: W / 2, y: H - 50, w: SHIP_W, h: SHIP_H, speed: 320, moveDir: 1, shielded: false };
+     updateHud();
+     draw();
+@@ -359,14 +571,15 @@ export function bootstrapInvaders(root) {
+   // ── Shooting ──────────────────────────────────────────────────────────────────
+ 
+   function tryShoot() {
+-    if (shootCooldown > 0 || !running || paused || gameOver || waveIntroTimer > 0 || upgradePhase === 'picking') return;
+-    const cx     = player.x + player.w / 2;
+-    const by     = player.y - 2;
+-    const angles = getSpreadAngles(upgrades, activePowerups.has('spread'));
+-    const dmg    = getUpgradedBulletDmg(upgrades);
++    if (shootCooldown > 0 || !running || paused || gameOver || waveIntroTimer > 0 || upgradePhase === 'picking' || riskRewardPhase === 'picking') return;
++    const cx      = player.x + player.w / 2;
++    const by      = player.y - 2;
++    const angles  = getSpreadAngles(upgrades, activePowerups.has('spread'));
++    const dmg     = getUpgradedBulletDmg(upgrades);
++    const piercing = !empActive && upgrades.piercing > 0;
+     for (const ang of angles) {
+       bullets.push({ x: cx - 2 + Math.sin(ang) * 8, y: by, w: 4, h: 12,
+-                     vx: Math.sin(ang) * BULLET_SPD, vy: BULLET_SPD, dmg });
++                     vx: Math.sin(ang) * BULLET_SPD, vy: BULLET_SPD, dmg, piercing });
+     }
+     const baseRate = activePowerups.has('rapid') ? SHOOT_RATE * 0.4 : SHOOT_RATE;
+     shootCooldown  = getUpgradedShootRate(baseRate, upgrades);
+@@ -430,19 +643,99 @@ export function bootstrapInvaders(root) {
+   function update(dt) {
+     if (!running || paused || gameOver) { updateEffects(dt); return; }
+ 
+-    // Freeze simulation during the between-wave upgrade screen
+-    if (upgradePhase === 'picking') { updateEffects(dt); return; }
++    // Freeze simulation during between-wave screens
++    if (upgradePhase === 'picking' || riskRewardPhase === 'picking') { updateEffects(dt); return; }
+ 
+     elapsed += dt;
+ 
+     if (waveIntroTimer > 0) { waveIntroTimer -= dt; updateEffects(dt); return; }
+ 
++    // Tick scaling director + check for surprise events
++    tickDirector(director, dt, score, wave, lives, upgrades);
++    if (!activeEvent && shouldTriggerSurpriseEvent(director, dt)) {
++      const ev = pickSurpriseEvent(wave, director);
++      if (ev) {
++        activeEvent = ev;
++        eventTimer  = ev.duration || 0;
++        eventData   = {};
++        ev.execute(buildEventState());
++        eventBanner = { text: '⚠️ ' + ev.label, color: ev.color, timer: 2.5 };
++        playSfx('event_start');
++        director._eventCooldown = ev.cooldown || 30;
++      }
++    }
++    if (activeEvent) {
++      eventTimer -= dt;
++      if (activeEvent.tickActive) activeEvent.tickActive(buildEventState(), dt);
++      if (eventTimer <= 0) {
++        if (activeEvent.remove) activeEvent.remove(buildEventState());
++        activeEvent = null;
++        eventTimer  = 0;
++        eventData   = {};
++        playSfx('event_clear');
++      }
++    }
++
++    // Tick wave modifier
++    if (activeModifier && activeModifier.tick) activeModifier.tick(buildModifierState(), dt);
++    // Handle fake-safe-wave double-speed trigger
++    if (modifierData.fakeMutated) {
++      modifierData.fakeMutated = false;
++      invSpeed *= 2;
++    }
++
++    // Decay warning/event banners
++    if (warningBanner) { warningBanner.timer -= dt; if (warningBanner.timer <= 0) warningBanner = null; }
++    if (eventBanner)   { eventBanner.timer   -= dt; if (eventBanner.timer   <= 0) eventBanner   = null; }
++    if (mutationFlash  > 0) mutationFlash -= dt;
++
++    // EMP timer
++    if (empActive) { empTimer -= dt; if (empTimer <= 0) { empActive = false; empTimer = 0; } }
++
++    // Panic mode
++    if (panicMode) { panicTimer -= dt; if (panicTimer <= 0) { panicMode = false; panicTimer = 0; } }
++
++    // Shield regen
++    if (upgrades.shieldRegen > 0 && !player.shielded) {
++      shieldRegenTimer -= dt;
++      if (shieldRegenTimer <= 0) {
++        player.shielded    = true;
++        shieldRegenTimer   = 15;
++        addFloatingText('SHIELD RESTORED', '#3fb950');
++        updateHud();
++      }
++    }
++
++    // Slow dodge timer
++    if (slowDodgeActive) { slowDodgeTimer -= dt; if (slowDodgeTimer <= 0) { slowDodgeActive = false; slowDodgeTimer = 0; } }
++
++    // Drone hijack timer
++    if (droneHijacked) { droneHijackTimer -= dt; if (droneHijackTimer <= 0) { droneHijacked = false; droneHijackTimer = 0; } }
++
+     // Powerup timers (via powerup-system)
+     if (tickPowerups(activePowerups, player, dt)) updateHud();
+ 
++    // Magnet powerups toward player
++    if (upgrades.magnetPowerups > 0) {
++      const px = player.x + player.w / 2;
++      const py = player.y + player.h / 2;
++      for (const p of powerupItems) {
++        const dx = px - (p.x + p.r);
++        const dy = py - (p.y + p.r);
++        const dist = Math.sqrt(dx * dx + dy * dy) || 1;
++        const pull = Math.min(200, 6000 / dist);
++        p.x += (dx / dist) * pull * dt;
++        p.y += (dy / dist) * pull * dt;
++      }
++    }
++
++    // Auto bomb accelerated cooldown
++    if (upgrades.autoBomb > 0 && bombCooldown > 0) bombCooldown -= dt * 0.5;
++
+     // Player movement
+-    if (keys.ArrowLeft || keys.a) { player.moveDir = -1; player.x -= player.speed * dt; }
+-    if (keys.ArrowRight || keys.d) { player.moveDir = 1;  player.x += player.speed * dt; }
++    const playerSpeed = player.speed * (panicMode ? 1.5 : 1) * (slowDodgeActive ? 0.3 : 1);
++    if (keys.ArrowLeft || keys.a) { player.moveDir = -1; player.x -= playerSpeed * dt; }
++    if (keys.ArrowRight || keys.d) { player.moveDir = 1;  player.x += playerSpeed * dt; }
+     player.x = clamp(player.x, 0, W - player.w);
+ 
+     if (shootCooldown > 0) shootCooldown -= dt;
+@@ -450,7 +743,7 @@ export function bootstrapInvaders(root) {
+     if (streakTimer > 0) { streakTimer -= dt; if (streakTimer <= 0) streak = 0; }
+ 
+     // Drone companion auto-fire
+-    if (upgrades.drone > 0) {
++    if (upgrades.drone > 0 && !droneHijacked) {
+       droneAngle    += dt * 1.8;
+       droneCooldown -= dt;
+       if (droneCooldown <= 0) {
+@@ -464,7 +757,7 @@ export function bootstrapInvaders(root) {
+ 
+     // Boss entrance
+     if (bossEntering && boss) {
+-      if (!bossWarningSounded) { bossWarningSounded = true; playSfx('boss_warning'); }
++      if (!bossWarningSounded) { bossWarningSounded = true; playSfx('boss_intro'); }
+       boss.y += 120 * dt;
+       if (boss.y >= 30) { boss.y = 30; bossEntering = false; }
+       updateEffects(dt);
+@@ -481,7 +774,118 @@ export function bootstrapInvaders(root) {
+       if (inv.shieldHitTimer > 0) inv.shieldHitTimer -= dt;
+     }
+ 
+-    const slowMult = activePowerups.has('slow') ? 0.45 : 1;
++    const speedModMult = slowDodgeActive ? 0.3 : 1;
++    const slowMult = (activePowerups.has('slow') ? 0.45 : 1) * (panicMode ? 2 : 1) * speedModMult;
++
++    // Healer invaders
++    for (const inv of invaders) {
++      if (!inv.alive || inv.type !== 'healer') continue;
++      inv.healTimer = (inv.healTimer || 3) - dt;
++      if (inv.healTimer <= 0) {
++        inv.healTimer = 3;
++        let nearest = null; let nearDist = 80;
++        for (const other of invaders) {
++          if (!other.alive || other === inv) continue;
++          const dx = (other.x - inv.x); const dy = (other.y - inv.y);
++          const d = Math.sqrt(dx * dx + dy * dy);
++          if (d < nearDist) { nearDist = d; nearest = other; }
++        }
++        if (nearest) {
++          nearest.hp = Math.min(nearest.maxHp || nearest.hp + 1, nearest.hp + 1);
++          spawnExplosion(nearest.x + nearest.w / 2, nearest.y + nearest.h / 2, 0.3, '#3fb950');
++        }
++      }
++    }
++
++    // Sniper invaders
++    for (const inv of invaders) {
++      if (!inv.alive || inv.type !== 'sniper') continue;
++      inv.sniperTimer = (inv.sniperTimer || 4) - dt;
++      if (inv.sniperTimer <= 0) {
++        inv.sniperTimer = 4;
++        const bx = inv.x + inv.w / 2;
++        const by = inv.y + inv.h;
++        const tx = player.x + player.w / 2;
++        const ty = player.y;
++        const ang = Math.atan2(ty - by, tx - bx);
++        const spd = 220 + wave * 4;
++        invBullets.push({ x: bx - 2, y: by, w: 4, h: 12, vy: spd * Math.sin(ang), vx: spd * Math.cos(ang) });
++      }
++    }
++
++    // Laser warning tick
++    if (laserWarning) {
++      laserWarning.chargeTimer -= dt;
++      if (!laserWarning.fired && laserWarning.chargeTimer <= 0) {
++        laserWarning.fired = true;
++        const px = player.x + player.w / 2;
++        if (Math.abs(px - laserWarning.x) < 40) {
++          lives--;
++          triggerHudFx(livesEl, 'flash', 220);
++          updateHud();
++          spawnExplosion(px, player.y + player.h / 2, 1.5, '#ff3333');
++          screenShake(8, 0.25);
++          playSfx('player_damage');
++          if (lives <= 0) {
++            if (!reviveUsed && upgrades.revive > 0) {
++              lives      = 1;
++              reviveUsed = true;
++              addFloatingText('REVIVED!', '#3fb950');
++              updateHud();
++            } else {
++              onGameOver(); updateEffects(dt); return;
++            }
++          }
++        }
++      }
++      if (laserWarning.fired) laserWarning = null;
++    }
++
++    // Asteroid ticking
++    for (let ai = asteroids.length - 1; ai >= 0; ai--) {
++      const a = asteroids[ai];
++      a.x += (a.vx || 0) * dt;
++      a.y += (a.vy || 80) * dt;
++      if (a.y > H + 40) { asteroids.splice(ai, 1); continue; }
++      if (rectsOverlap(a.x - a.r, a.y - a.r, a.r * 2, a.r * 2, player.x, player.y, player.w, player.h)) {
++        asteroids.splice(ai, 1);
++        if (!player.shielded) {
++          lives--;
++          triggerHudFx(livesEl, 'flash', 220);
++          updateHud();
++          spawnExplosion(player.x + player.w / 2, player.y + player.h / 2, 1.2, '#ff6b2b');
++          screenShake(7, 0.24);
++          playSfx('player_damage');
++          if (lives <= 0) {
++            if (!reviveUsed && upgrades.revive > 0) {
++              lives      = 1;
++              reviveUsed = true;
++              addFloatingText('REVIVED!', '#3fb950');
++              updateHud();
++            } else {
++              onGameOver(); updateEffects(dt); return;
++            }
++          }
++        } else {
++          player.shielded = false;
++          activePowerups.delete('shield');
++          updateHud();
++        }
++      }
++    }
++
++    // Mini enemy ticking
++    for (let mi = miniEnemies.length - 1; mi >= 0; mi--) {
++      const me = miniEnemies[mi];
++      me.x += (me.vx || 0) * dt;
++      me.y += (me.vy || 60) * dt;
++      me.shootTimer = (me.shootTimer || 2) - dt;
++      if (me.shootTimer <= 0) {
++        me.shootTimer = 1.5 + Math.random();
++        invBullets.push({ x: me.x, y: me.y + 8, w: 4, h: 10, vy: 160 });
++      }
++      if (me.y > H + 30) { miniEnemies.splice(mi, 1); continue; }
++    }
+ 
+     // Invader grid movement (hunters drift toward player)
+     if (!boss && invaders.length) {
+@@ -509,6 +913,25 @@ export function bootstrapInvaders(root) {
+             const targetX = player.x + player.w / 2 - i.w / 2;
+             drift += (targetX - i.x) * 0.9 * dt;
+           }
++          // Zigzag: sinusoidal Y movement
++          if (i.type === 'zigzag') {
++            i.y += Math.sin(elapsed * 4 + i.seed) * 30 * dt;
++          }
++          // Kamikaze: dive toward player once they get low on the screen
++          if (i.type === 'kamikaze' && i.y > H * 0.35) {
++            const tx = player.x + player.w / 2 - i.w / 2;
++            i.x += (tx - i.x) * 3 * dt;
++            i.y += 90 * dt;
++          }
++          // Cloaked: update visibility
++          if (i.type === 'cloaked') {
++            i.cloakAlpha = 0.2 + 0.8 * (Math.sin(elapsed * 2 + i.seed) + 1) / 2;
++          }
++          // Golden: figure-8 movement
++          if (i.type === 'golden') {
++            i.x += Math.cos(elapsed * 2 + i.seed) * 60 * dt;
++            i.y += Math.sin(elapsed * 4 + i.seed) * 20 * dt;
++          }
+           i.x += drift;
+           minX = Math.min(minX, i.x);
+           maxX = Math.max(maxX, i.x + i.w);
+@@ -621,7 +1044,7 @@ export function bootstrapInvaders(root) {
+ 
+       // Check if bomb killed the boss
+       if (boss && boss.hp <= 0) {
+-        addScore(500 * wave * getScoreMultiplier(activePowerups) * getUpgradedScoreMult(upgrades),
++        addScore(500 * wave * bossDmgBoost * waveScoreMult * getScoreMultiplier(activePowerups) * getUpgradedScoreMult(upgrades),
+           boss.x + boss.w * 0.5, boss.y - 16, '#ff4fd1');
+         spawnExplosion(boss.x + boss.w * 0.5, boss.y + boss.h * 0.5, 2.0, '#ff4444');
+         screenShake(12, 0.4);
+@@ -658,9 +1081,10 @@ export function bootstrapInvaders(root) {
+           }
+         }
+       }
+-      if (hit) { bullets.splice(bi, 1); continue; }
++      if (hit) { if (!b.piercing) bullets.splice(bi, 1); continue; }
+ 
+-      for (const inv of invaders) {
++      for (let ii = invaders.length - 1; ii >= 0; ii--) {
++        const inv = invaders[ii];
+         if (!inv.alive) continue;
+         if (rectsOverlap(b.x, b.y, b.w, b.h, inv.x, inv.y, inv.w, inv.h)) {
+           if (inv.shieldHp > 0) {
+@@ -672,13 +1096,58 @@ export function bootstrapInvaders(root) {
+             const dmg = b.dmg || 1;
+             inv.hp -= dmg;
+             inv.hitTimer = 0.12;
++            // Explosive rounds
++            if (!empActive && upgrades.explosiveRounds > 0) {
++              spawnExplosion(b.x, b.y, 0.5, '#ff6b2b');
++              for (const other of invaders) {
++                if (!other.alive || other === inv) continue;
++                const dx = (other.x + other.w / 2) - (inv.x + inv.w / 2);
++                const dy = (other.y + other.h / 2) - (inv.y + inv.h / 2);
++                if (dx * dx + dy * dy <= 40 * 40) { other.hp -= 1; if (other.hp <= 0) other.alive = false; }
++              }
++            }
+             if (inv.hp <= 0) {
+               inv.alive = false;
+               streak++;
+               streakTimer = 1.8;
+               const pts = calcInvaderPoints(inv, wave, streak, { STREAK_BONUS_RATE, MAX_STREAK_BONUS })
+-                * getScoreMultiplier(activePowerups) * getUpgradedScoreMult(upgrades);
+-              addScore(pts, inv.x + inv.w * 0.5, inv.y, '#f7c948');
++                * getScoreMultiplier(activePowerups) * getUpgradedScoreMult(upgrades) * waveScoreMult;
++
++              // Golden invader bonus
++              if (inv.type === 'golden') {
++                addScore(pts * 3, inv.x + inv.w * 0.5, inv.y, '#ffd700');
++                powerupItems.push(makeDroppedPowerup(inv.x + inv.w * 0.5, inv.y + inv.h));
++                addFloatingText('GOLDEN!', '#ffd700');
++                playSfx('legendary');
++              } else {
++                addScore(pts, inv.x + inv.w * 0.5, inv.y, '#f7c948');
++              }
++
++              // Splitter: spawn 2 baby invaders
++              if (inv.type === 'splitter') {
++                for (let s = 0; s < 2; s++) {
++                  invaders.push({
++                    x: inv.x + (s - 0.5) * 12, y: inv.y, w: inv.w * 0.6, h: inv.h * 0.6,
++                    hp: 1, maxHp: 1, alive: true, type: 'basic',
++                    row: inv.row, col: inv.col, seed: Math.random() * 100,
++                    hitTimer: 0, shieldHp: 0, shieldHitTimer: 0,
++                    mutations: [], healTimer: 3, sniperTimer: 4, cloakAlpha: 1,
++                  });
++                }
++              }
++
++              // Chain lightning
++              if (!empActive && upgrades.chainLightning > 0) {
++                const targets = invaders
++                  .filter(o => o.alive && o !== inv)
++                  .map(o => ({ o, d2: (o.x - inv.x) ** 2 + (o.y - inv.y) ** 2 }))
++                  .sort((a, b2) => a.d2 - b2.d2)
++                  .slice(0, 2);
++                for (const { o, d2 } of targets) {
++                  if (d2 <= 120 * 120) { o.hp -= 1; if (o.hp <= 0) { o.alive = false; } spawnExplosion(o.x + o.w / 2, o.y + o.h / 2, 0.3, '#80d8ff'); }
++                }
++              }
++
+               // Bomber death: radial bullet burst + chain explosion
+               if (inv.type === 'bomber') {
+                 playSfx('explosion');
+@@ -697,17 +1166,8 @@ export function bootstrapInvaders(root) {
+                 playSfx('hit');
+               }
+               if (Math.random() < POWERUP_DROP_CHANCE) powerupItems.push(makeDroppedPowerup(inv.x + inv.w * 0.5, inv.y + inv.h));
+-              // If this was the last living invader, advance to the next wave
+-              // immediately in the same update() run — do not wait for the next
+-              // frame, which would leave one tick where the empty invader grid
+-              // could trigger unintended code paths (e.g. a stale game-over check).
+               if (!boss && invaders.every((i) => !i.alive)) {
+-                // Safe to splice here: the function returns immediately after,
+-                // so the loop index is never advanced past bi.
+-                // startWave() (via completeWave()) resets bullets=[], so any
+-                // remaining unprocessed bullets are intentionally discarded —
+-                // matching the existing boss-kill wave-transition behaviour.
+-                bullets.splice(bi, 1);
++                if (!b.piercing) bullets.splice(bi, 1);
+                 completeWave();
+                 updateEffects(dt);
+                 return;
+@@ -717,22 +1177,22 @@ export function bootstrapInvaders(root) {
+             }
+           }
+           hit = true;
+-          break;
++          if (!b.piercing) break;
+         }
+       }
+ 
+       if (!hit && boss && rectsOverlap(b.x, b.y, b.w, b.h, boss.x, boss.y, boss.w, boss.h)) {
+         hit = true;
+-        const dmg = b.dmg || 1;
++        const dmg = (b.dmg || 1) * bossDmgBoost;
+         boss.hp -= dmg;
+         boss.hitTimer = 0.12;
+-        addScore(20 * wave * dmg * getScoreMultiplier(activePowerups) * getUpgradedScoreMult(upgrades),
++        addScore(20 * wave * dmg * waveScoreMult * getScoreMultiplier(activePowerups) * getUpgradedScoreMult(upgrades),
+           boss.x + boss.w * 0.5, boss.y - 4, '#ff9b9b');
+         spawnExplosion(b.x, b.y, 0.5, '#ff8888');
+         screenShake(3, 0.12);
+         playSfx('hit');
+         if (boss.hp <= 0) {
+-          addScore(500 * wave * getScoreMultiplier(activePowerups) * getUpgradedScoreMult(upgrades),
++          addScore(500 * wave * bossDmgBoost * waveScoreMult * getScoreMultiplier(activePowerups) * getUpgradedScoreMult(upgrades),
+             boss.x + boss.w * 0.5, boss.y - 16, '#ff4fd1');
+           spawnExplosion(boss.x + boss.w * 0.5, boss.y + boss.h * 0.5, 1.9, '#ff4444');
+           screenShake(10, 0.35);
+@@ -745,7 +1205,7 @@ export function bootstrapInvaders(root) {
+         }
+       }
+ 
+-      if (hit) bullets.splice(bi, 1);
++      if (hit && !b.piercing) bullets.splice(bi, 1);
+     }
+ 
+     // Enemy bullets vs bunkers + player
+@@ -783,7 +1243,16 @@ export function bootstrapInvaders(root) {
+           playSfx('player_damage');
+           streak = 0;
+           streakTimer = 0;
+-          if (lives <= 0) { onGameOver(); updateEffects(dt); return; }
++          if (lives <= 0) {
++            if (!reviveUsed && upgrades.revive > 0) {
++              lives      = 1;
++              reviveUsed = true;
++              addFloatingText('REVIVED!', '#3fb950');
++              updateHud();
++            } else {
++              onGameOver(); updateEffects(dt); return;
++            }
++          }
+         }
+       }
+     }
+@@ -804,6 +1273,12 @@ export function bootstrapInvaders(root) {
+       particles, scoreTexts, hitFlashes, stars,
+       upgradePhase, upgradeChoices, upgrades,
+       screenFlashTimer, droneAngle, bombCooldown,
++      // Roguelite additions
++      warningBanner, eventBanner, mutationFlash,
++      activeModifier, activeEvent,
++      empActive, empTimer, panicMode, panicTimer,
++      asteroids, laserWarning, miniEnemies,
++      riskRewardPhase, riskRewardChoices,
+     });
+   }
+ 
+@@ -811,16 +1286,45 @@ export function bootstrapInvaders(root) {
+ 
+   engine.onTick    = (dt) => { update(dt); draw(); };
+   engine.onKeyDown = (e)  => {
++    // During the risk/reward screen: 1/2 select, then move to upgrade screen
++    if (riskRewardPhase === 'picking') {
++      const idx = { '1': 0, '2': 1 }[e.key];
++      if (idx !== undefined && riskRewardChoices[idx]) {
++        activeRiskReward  = riskRewardChoices[idx];
++        riskRewardPhase   = false;
++        riskRewardChoices = [];
++        playSfx('upgrade');
++        // Apply one-time risk/reward effects immediately
++        if (activeRiskReward.id === 'skipWave') {
++          activeRiskReward = null;
++          startWave();
++          return;
++        }
++        if (activeRiskReward.id === 'noShield') {
++          // Applied at wave start
++        }
++        if (activeRiskReward.id === 'blackoutWave') {
++          // Will be applied via forceModifier in startWave (handled via activeRiskReward)
++        }
++        // Now show upgrade screen
++        upgradeChoices = pickUpgradeChoicesWithRarity(upgrades, wave);
++        upgradePhase   = 'picking';
++      }
++      return;
++    }
+     // During the upgrade screen: 1/2/3 select an upgrade, then start next wave
+     if (upgradePhase === 'picking') {
+       const idx = { '1': 0, '2': 1, '3': 2 }[e.key];
+       if (idx !== undefined && upgradeChoices[idx]) {
+         const def = upgradeChoices[idx];
++        // Add piercing flag to bullets if needed
+         const applied = applyUpgrade(def.id, upgrades);
+         if (!applied) {
+           // Already maxed — grant a score bonus instead
+           addScore(wave * 200 + 500, W / 2, H / 2, '#bc8cff');
+         }
++        // Update bossDmgBoost
++        bossDmgBoost = upgrades.bossDmg > 0 ? 1 + upgrades.bossDmg * 0.5 : 1;
+         upgradePhase   = false;
+         upgradeChoices = [];
+         screenFlashTimer = 0.35;
+@@ -829,6 +1333,23 @@ export function bootstrapInvaders(root) {
+       }
+       return; // block all other keys during upgrade screen
+     }
++    // Slow dodge double-tap detection
++    if (e.key === 'ArrowLeft' || e.key === 'a') {
++      const now = performance.now() / 1000;
++      if (now - lastLeftTapTime < 0.3 && upgrades.slowDodge > 0) {
++        slowDodgeActive = true;
++        slowDodgeTimer  = 1.5;
++      }
++      lastLeftTapTime = now;
++    }
++    if (e.key === 'ArrowRight' || e.key === 'd') {
++      const now = performance.now() / 1000;
++      if (now - lastRightTapTime < 0.3 && upgrades.slowDodge > 0) {
++        slowDodgeActive = true;
++        slowDodgeTimer  = 1.5;
++      }
++      lastRightTapTime = now;
++    }
+     if (e.key === ' ' && running && !paused && waveIntroTimer <= 0) tryShoot();
+     if ((e.key === 'b' || e.key === 'B') && running && !paused) tryBombShot();
+   };
+diff --git a/js/arcade/games/invaders/boss-archetypes.js b/js/arcade/games/invaders/boss-archetypes.js
+new file mode 100644
+index 0000000..64e2d5a
+--- /dev/null
++++ b/js/arcade/games/invaders/boss-archetypes.js
+@@ -0,0 +1,143 @@
++/**
++ * boss-archetypes.js — Boss archetype definitions and helpers for Invaders 3008.
++ *
++ * Pure game logic — no DOM or canvas access.
++ */
++
++// ── Archetype definitions ─────────────────────────────────────────────────────
++
++export const BOSS_ARCHETYPE_DEFS = [
++  {
++    id: 'theWall',
++    label: 'THE WALL',
++    warningText: 'UNSTOPPABLE FORCE INCOMING',
++    color: '#888888',
++    phase2Text: 'ARMOUR CRACKING',
++    phase3Text: 'BERSERK MODE',
++    deathColor: '#aaaaaa',
++    hpMult: 2.2,
++    speedMult: 0.5,
++    bulletPattern: 'wall',
++  },
++  {
++    id: 'theSplitter',
++    label: 'THE SPLITTER',
++    warningText: 'IT MULTIPLIES...',
++    color: '#00ff88',
++    phase2Text: 'SPAWNING DRONES',
++    phase3Text: 'DRONE STORM',
++    deathColor: '#00ff44',
++    hpMult: 1.4,
++    speedMult: 1.1,
++    bulletPattern: 'splitter',
++  },
++  {
++    id: 'theSniper',
++    label: 'THE SNIPER',
++    warningText: 'TARGET LOCKED',
++    color: '#ff2222',
++    phase2Text: 'RAPID TARGETING',
++    phase3Text: 'TRIPLE LOCK',
++    deathColor: '#ff8888',
++    hpMult: 0.9,
++    speedMult: 1.6,
++    bulletPattern: 'sniper',
++  },
++  {
++    id: 'theSwarmKing',
++    label: 'THE SWARM KING',
++    warningText: 'THE HIVE AWAKENS',
++    color: '#ffaa00',
++    phase2Text: 'REINFORCEMENTS CALLED',
++    phase3Text: 'ENDLESS SWARM',
++    deathColor: '#ffcc44',
++    hpMult: 1.2,
++    speedMult: 1.0,
++    bulletPattern: 'swarmking',
++  },
++  {
++    id: 'theGlitchCore',
++    label: 'THE GLITCH CORE',
++    warningText: 'REALITY CORRUPTED',
++    color: '#cc00ff',
++    phase2Text: 'PHASE UNSTABLE',
++    phase3Text: 'FULL CORRUPTION',
++    deathColor: '#ff00ff',
++    hpMult: 1.0,
++    speedMult: 0,   // uses teleport, not normal movement
++    bulletPattern: 'glitch',
++  },
++  {
++    id: 'theBomber',
++    label: 'THE BOMBER',
++    warningText: 'INCOMING ORDNANCE',
++    color: '#ff6b00',
++    phase2Text: 'CARPET BOMBING',
++    phase3Text: 'TOTAL ANNIHILATION',
++    deathColor: '#ff9900',
++    hpMult: 1.1,
++    speedMult: 1.2,
++    bulletPattern: 'bomber',
++  },
++];
++
++// ── Helpers ───────────────────────────────────────────────────────────────────
++
++/**
++ * Pick a boss archetype for the given wave, cycling and avoiding recent repeats.
++ * @param {number} wave
++ * @param {{ bossHistory: string[] }} director
++ * @returns {object} archetype def
++ */
++export function pickBossArchetype(wave, director) {
++  const recent = (director.bossHistory || []).slice(-2);
++  const available = BOSS_ARCHETYPE_DEFS.filter(a => !recent.includes(a.id));
++  const pool = available.length ? available : BOSS_ARCHETYPE_DEFS;
++  // Use wave as a seed for variety but with some randomness
++  const baseIdx = wave % pool.length;
++  const offset  = Math.random() < 0.4 ? 0 : Math.floor(Math.random() * pool.length);
++  const archetype = pool[(baseIdx + offset) % pool.length];
++  if (!director.bossHistory) director.bossHistory = [];
++  director.bossHistory.push(archetype.id);
++  if (director.bossHistory.length > 6) director.bossHistory.shift();
++  return archetype;
++}
++
++/**
++ * Create a boss object from an archetype.
++ * @param {object} archetype  from BOSS_ARCHETYPE_DEFS
++ * @param {number} wave
++ * @param {number} W          canvas width
++ * @returns {object}
++ */
++export function spawnBossArchetype(archetype, wave, W) {
++  const w  = archetype.id === 'theWall' ? 120 : 80;
++  const h  = archetype.id === 'theWall' ? 54  : 44;
++  const hp = Math.round((8 + wave) * archetype.hpMult);
++  return {
++    x: W / 2 - w / 2,
++    y: -(h + 10),
++    w, h,
++    hp,
++    maxHp:      hp,
++    hpDisplay:  hp,
++    dir:        1,
++    speed:      (92 + wave * 10) * (archetype.speedMult || 1),
++    flashTimer: 0,
++    hitTimer:   0,
++    archetypeId:      archetype.id,
++    phase:            1,
++    // Archetype-specific state
++    teleportTimer:    archetype.id === 'theGlitchCore' ? 2 : 0,
++    summonTimer:      archetype.id === 'theSwarmKing'  ? 8 : 0,
++    sniperCharging:   false,
++    sniperChargeTimer:0,
++    sniperTarget:     null,
++    fakeDeath:        false,
++    fakeDeathDone:    false,
++    droneSpawns:      [],
++    shootCooldown:    0,
++    phaseTransitioned2: false,
++    phaseTransitioned3: false,
++  };
++}
+diff --git a/js/arcade/games/invaders/event-system.js b/js/arcade/games/invaders/event-system.js
+new file mode 100644
+index 0000000..666b2a1
+--- /dev/null
++++ b/js/arcade/games/invaders/event-system.js
+@@ -0,0 +1,503 @@
++/**
++ * event-system.js — Wave modifiers, surprise events, and scaling director
++ * for Invaders 3008.
++ *
++ * Pure game logic — no DOM or canvas access.
++ */
++
++// ── Wave modifier IDs ─────────────────────────────────────────────────────────
++
++export const MODIFIER_NONE             = 'none';
++export const MODIFIER_LOW_GRAVITY      = 'lowGravityBullets';
++export const MODIFIER_FAST_INVADERS    = 'fastInvaders';
++export const MODIFIER_BLACKOUT         = 'blackout';
++export const MODIFIER_SHIELDED_WAVE    = 'shieldedWave';
++export const MODIFIER_BOMBER_SWARM     = 'bomberSwarm';
++export const MODIFIER_HUNTER_PATROL    = 'hunterPatrol';
++export const MODIFIER_REVERSE_DRIFT    = 'reverseDrift';
++export const MODIFIER_ASTEROID_DEBRIS  = 'asteroidDebris';
++export const MODIFIER_UNSTABLE_BUNKERS = 'unstableBunkers';
++export const MODIFIER_POWERUP_RAIN     = 'powerupRain';
++export const MODIFIER_FAKE_SAFE_WAVE   = 'fakeSafeWave';
++
++// ── Wave modifier definitions ─────────────────────────────────────────────────
++// Each modifier: { id, label, color, rarity, apply(state), tick(state,dt), remove(state) }
++// state = { invaders, invBullets, bullets, player, wave, elapsed, W, H,
++//           modifierData, rand, spawnExplosion, addScore, playSfx, screenShake,
++//           addFloatingText, asteroids, miniEnemies, laserWarning,
++//           empActive, empTimer, panicMode, panicTimer, spawnPowerupRain,
++//           droneHijacked, droneHijackTimer, invSpeed, invDir, bunkers }
++
++export const WAVE_MODIFIER_DEFS = [
++  {
++    id: MODIFIER_LOW_GRAVITY,
++    label: 'LOW GRAVITY',
++    color: '#bc8cff',
++    rarity: 'common',
++    apply(state) {},
++    tick(state, dt) {
++      for (const b of state.invBullets) {
++        if (b.vx === undefined) b.vx = (Math.random() - 0.5) * 30;
++        b.vx += (Math.random() - 0.5) * 20 * dt;
++        b.vy = Math.max(30, b.vy - 70 * dt);
++      }
++    },
++    remove(state) {},
++  },
++
++  {
++    id: MODIFIER_FAST_INVADERS,
++    label: 'SPEED SURGE',
++    color: '#f7c948',
++    rarity: 'common',
++    apply(state) {
++      state.modifierData.origSpeed = state.invSpeed;
++      state.invSpeed *= 1.8;
++    },
++    tick(state, dt) {},
++    remove(state) {
++      if (state.modifierData.origSpeed !== undefined) {
++        state.invSpeed = state.modifierData.origSpeed;
++      }
++    },
++  },
++
++  {
++    id: MODIFIER_BLACKOUT,
++    label: 'BLACKOUT',
++    color: '#444466',
++    rarity: 'rare',
++    apply(state) {
++      state.modifierData.blackoutTimer = 0;
++      state.modifierData.blackoutAlpha = 0;
++    },
++    tick(state, dt) {
++      state.modifierData.blackoutTimer = (state.modifierData.blackoutTimer || 0) + dt;
++      const cycle = state.modifierData.blackoutTimer % 4;
++      // 0-1: fade in, 1-2: solid, 2-3: fade out, 3-4: clear
++      if (cycle < 1)      state.modifierData.blackoutAlpha = cycle;
++      else if (cycle < 2) state.modifierData.blackoutAlpha = 1;
++      else if (cycle < 3) state.modifierData.blackoutAlpha = 3 - cycle;
++      else                state.modifierData.blackoutAlpha = 0;
++    },
++    remove(state) {
++      state.modifierData.blackoutAlpha = 0;
++    },
++  },
++
++  {
++    id: MODIFIER_SHIELDED_WAVE,
++    label: 'SHIELDED WAVE',
++    color: '#2ec5ff',
++    rarity: 'rare',
++    apply(state) {
++      for (const inv of state.invaders) {
++        if (inv.alive && inv.shieldHp === 0) {
++          inv.shieldHp    = 1;
++          inv.maxShieldHp = Math.max(inv.maxShieldHp || 0, 1);
++        }
++      }
++    },
++    tick(state, dt) {},
++    remove(state) {},
++  },
++
++  {
++    id: MODIFIER_BOMBER_SWARM,
++    label: 'BOMBER SWARM',
++    color: '#ff8c00',
++    rarity: 'common',
++    apply(state) {
++      // Flag checked in buildGrid via modifierData — or retroactively convert some invaders
++      for (const inv of state.invaders) {
++        if (inv.alive && inv.type !== 'tank' && Math.random() < 0.35) {
++          inv.type  = 'bomber';
++          inv.hp    = 1;
++          inv.maxHp = 1;
++        }
++      }
++    },
++    tick(state, dt) {},
++    remove(state) {},
++  },
++
++  {
++    id: MODIFIER_HUNTER_PATROL,
++    label: 'HUNTER PATROL',
++    color: '#cc1111',
++    rarity: 'common',
++    apply(state) {
++      for (const inv of state.invaders) {
++        if (inv.alive && inv.type !== 'tank' && Math.random() < 0.30) {
++          inv.type  = 'hunter';
++          inv.hp    = 1;
++          inv.maxHp = 1;
++        }
++      }
++    },
++    tick(state, dt) {},
++    remove(state) {},
++  },
++
++  {
++    id: MODIFIER_REVERSE_DRIFT,
++    label: 'REVERSE DRIFT',
++    color: '#3fb950',
++    rarity: 'common',
++    apply(state) { state.invDir = -1; },
++    tick(state, dt) {},
++    remove(state) {},
++  },
++
++  {
++    id: MODIFIER_ASTEROID_DEBRIS,
++    label: 'ASTEROID FIELD',
++    color: '#888888',
++    rarity: 'rare',
++    apply(state) {
++      state.modifierData.asteroidTimer = 4;
++    },
++    tick(state, dt) {
++      state.modifierData.asteroidTimer = (state.modifierData.asteroidTimer || 4) - dt;
++      if (state.modifierData.asteroidTimer <= 0) {
++        state.modifierData.asteroidTimer = 4;
++        state.asteroids.push({
++          x:  Math.random() * (state.W - 40) + 20,
++          y:  -20,
++          r:  14 + Math.random() * 10,
++          vy: 160 + Math.random() * 70,
++        });
++      }
++    },
++    remove(state) {
++      if (state.asteroids) state.asteroids.length = 0;
++    },
++  },
++
++  {
++    id: MODIFIER_UNSTABLE_BUNKERS,
++    label: 'FRAGILE BUNKERS',
++    color: '#ff4fd1',
++    rarity: 'common',
++    apply(state) {
++      for (const bunker of state.bunkers) {
++        for (const blk of bunker) { blk.hp = 1; blk.maxHp = 1; }
++      }
++    },
++    tick(state, dt) {},
++    remove(state) {},
++  },
++
++  {
++    id: MODIFIER_POWERUP_RAIN,
++    label: 'POWERUP RAIN',
++    color: '#ff4fd1',
++    rarity: 'rare',
++    apply(state) { state.modifierData.powerupRainTimer = 3; },
++    tick(state, dt) {
++      state.modifierData.powerupRainTimer = (state.modifierData.powerupRainTimer || 3) - dt;
++      if (state.modifierData.powerupRainTimer <= 0) {
++        state.modifierData.powerupRainTimer = 3;
++        if (typeof state.spawnPowerupRain === 'function') state.spawnPowerupRain();
++      }
++    },
++    remove(state) {},
++  },
++
++  {
++    id: MODIFIER_FAKE_SAFE_WAVE,
++    label: 'DECOY WAVE',
++    color: '#3fb950',
++    rarity: 'epic',
++    apply(state) {
++      state.modifierData.fakeSafeTriggered  = false;
++      state.modifierData.fakeSafeInitAlive  = state.invaders.filter(i => i.alive).length;
++    },
++    tick(state, dt) {
++      if (state.modifierData.fakeSafeTriggered) return;
++      const alive = state.invaders.filter(i => i.alive).length;
++      const init  = state.modifierData.fakeSafeInitAlive || 1;
++      if (alive > 0 && alive <= init * 0.5) {
++        state.modifierData.fakeSafeTriggered = true;
++        for (const inv of state.invaders) {
++          if (!inv.alive) continue;
++          inv.type  = 'fast';
++        }
++        // Double global invader speed signal via modifierData flag
++        state.modifierData.fakeMutated = true;
++        if (typeof state.addFloatingText === 'function') state.addFloatingText('AMBUSH!', '#ff4444');
++        if (typeof state.playSfx === 'function') state.playSfx('player_damage');
++      }
++    },
++    remove(state) {},
++  },
++];
++
++// ── Surprise event definitions ────────────────────────────────────────────────
++// Each event: { id, label, color, minWave, trigger(state), execute(state),
++//               tickActive(state,dt), duration }
++
++export const SURPRISE_EVENT_DEFS = [
++  {
++    id: 'ambushDrop',
++    label: 'AMBUSH!',
++    color: '#ff4444',
++    minWave: 2,
++    duration: 0,
++    trigger(state) { return Math.random() < 0.15; },
++    execute(state) {
++      for (let i = 0; i < 5; i++) {
++        state.invaders.push({
++          x: Math.random() * (state.W - 36),
++          y: -28 - i * 10,
++          w: 36, h: 28, row: 0, type: 'fast',
++          hp: 1, maxHp: 1, shieldHp: 0, maxShieldHp: 0,
++          alive: true, seed: Math.random() * Math.PI * 2,
++          hitTimer: 0, shieldHitTimer: 0, mutations: [],
++        });
++      }
++    },
++    tickActive(state, dt) {},
++  },
++
++  {
++    id: 'rogueMini',
++    label: 'ROGUE MINI BOSS',
++    color: '#ff8c00',
++    minWave: 3,
++    duration: 30,
++    trigger(state) { return Math.random() < 0.12; },
++    execute(state) {
++      state.miniEnemies.push({
++        x: Math.random() * (state.W - 50),
++        y: 20,
++        w: 48, h: 36,
++        hp: 8, maxHp: 8,
++        speed: 80 + state.wave * 5,
++        dir: 1,
++        type: 'mini_boss',
++        hitTimer: 0,
++        shootTimer: 1.5,
++      });
++    },
++    tickActive(state, dt) {},
++  },
++
++  {
++    id: 'laserSweep',
++    label: 'LASER SWEEP',
++    color: '#ff2222',
++    minWave: 4,
++    duration: 3,
++    trigger(state) { return !!state.boss && Math.random() < 0.20; },
++    execute(state) {
++      const bx = state.boss ? state.boss.x + state.boss.w / 2 : state.W / 2;
++      state.laserWarning = { x: bx, chargeTimer: 1.5, fired: false };
++    },
++    tickActive(state, dt) {},
++  },
++
++  {
++    id: 'meteorShower',
++    label: 'METEOR SHOWER',
++    color: '#888888',
++    minWave: 3,
++    duration: 0,
++    trigger(state) { return Math.random() < 0.12; },
++    execute(state) {
++      for (let i = 0; i < 8; i++) {
++        state.asteroids.push({
++          x:  Math.random() * (state.W - 30) + 15,
++          y:  -20 - i * 40,
++          r:  10 + Math.random() * 8,
++          vy: 200 + Math.random() * 80,
++        });
++      }
++    },
++    tickActive(state, dt) {},
++  },
++
++  {
++    id: 'empBlast',
++    label: 'EMP BLAST',
++    color: '#2ec5ff',
++    minWave: 5,
++    duration: 5,
++    trigger(state) { return Math.random() < 0.10; },
++    execute(state) {
++      state.empActive = true;
++      state.empTimer  = 5;
++      if (typeof state.addFloatingText === 'function') state.addFloatingText('EMP! UPGRADES DISABLED', '#2ec5ff');
++    },
++    tickActive(state, dt) {},
++  },
++
++  {
++    id: 'droneHijack',
++    label: 'DRONE HIJACKED',
++    color: '#cc00ff',
++    minWave: 4,
++    duration: 5,
++    trigger(state) { return Math.random() < 0.10; },
++    execute(state) {
++      state.droneHijacked      = true;
++      state.droneHijackTimer   = 5;
++    },
++    tickActive(state, dt) {},
++  },
++
++  {
++    id: 'goldenInvader',
++    label: 'GOLDEN INVADER',
++    color: '#f7c948',
++    minWave: 2,
++    duration: 20,
++    trigger(state) { return Math.random() < 0.18; },
++    execute(state) {
++      state.invaders.push({
++        x: 20 + Math.random() * (state.W - 60),
++        y: 50 + Math.random() * 40,
++        w: 36, h: 28, row: 0, type: 'golden',
++        hp: 1, maxHp: 1, shieldHp: 0, maxShieldHp: 0,
++        alive: true, seed: Math.random() * Math.PI * 2,
++        hitTimer: 0, shieldHitTimer: 0, mutations: [],
++      });
++      if (typeof state.playSfx === 'function') state.playSfx('rare_enemy');
++    },
++    tickActive(state, dt) {},
++  },
++
++  {
++    id: 'cursedInvader',
++    label: 'CURSED INVADER',
++    color: '#ff00ff',
++    minWave: 4,
++    duration: 0,
++    trigger(state) { return Math.random() < 0.12; },
++    execute(state) {
++      state.invaders.push({
++        x: state.W / 2 - 18,
++        y: 40,
++        w: 36, h: 28, row: 0, type: 'cursed',
++        hp: 2, maxHp: 2, shieldHp: 0, maxShieldHp: 0,
++        alive: true, seed: Math.random() * Math.PI * 2,
++        hitTimer: 0, shieldHitTimer: 0,
++        isCursed: true, mutations: [],
++      });
++    },
++    tickActive(state, dt) {},
++  },
++
++  {
++    id: 'supplyCrate',
++    label: 'SUPPLY DROP',
++    color: '#3fb950',
++    minWave: 1,
++    duration: 0,
++    trigger(state) { return Math.random() < 0.20; },
++    execute(state) {
++      if (typeof state.spawnPowerupRain === 'function') state.spawnPowerupRain();
++    },
++    tickActive(state, dt) {},
++  },
++
++  {
++    id: 'panicMode',
++    label: 'PANIC MODE',
++    color: '#ff4444',
++    minWave: 5,
++    duration: 10,
++    trigger(state) { return Math.random() < 0.08; },
++    execute(state) {
++      state.panicMode  = true;
++      state.panicTimer = 10;
++      if (typeof state.addFloatingText === 'function') state.addFloatingText('PANIC MODE!', '#ff4444');
++    },
++    tickActive(state, dt) {},
++  },
++];
++
++// ── Scaling director ──────────────────────────────────────────────────────────
++
++/** Create a fresh scaling director. */
++export function createScalingDirector() {
++  return {
++    wave:               0,
++    lives:              3,
++    recentDamageTaken:  0,
++    scorePace:          0,
++    bossHistory:        [],
++    eventHistory:       [],
++    modifierHistory:    [],
++    upgradeCount:       0,
++    consecutiveDeaths:  0,
++    _eventCooldown:     0,
++  };
++}
++
++/** Tick the scaling director. Call every update frame. */
++export function tickDirector(director, dt, score, wave, lives, upgrades) {
++  director.wave  = wave;
++  director.lives = lives;
++  director.scorePace = wave > 0 ? score / wave : 0;
++  director.upgradeCount = upgrades
++    ? Object.values(upgrades).reduce((a, b) => a + (Number(b) || 0), 0)
++    : 0;
++  if (director._eventCooldown > 0) director._eventCooldown -= dt;
++  if (director.recentDamageTaken > 0) {
++    director.recentDamageTaken = Math.max(0, director.recentDamageTaken - dt * 0.5);
++  }
++}
++
++/**
++ * Pick a wave modifier based on wave and director state.
++ * Returns a modifier def or null.
++ */
++export function pickWaveModifier(wave, director) {
++  if (wave < 2) return null;
++  const available = WAVE_MODIFIER_DEFS.filter((m) => {
++    if (m.id === MODIFIER_SHIELDED_WAVE    && wave < 3)  return false;
++    if (m.id === MODIFIER_BLACKOUT         && wave < 4)  return false;
++    if (m.id === MODIFIER_ASTEROID_DEBRIS  && wave < 4)  return false;
++    if (m.id === MODIFIER_FAKE_SAFE_WAVE   && wave < 5)  return false;
++    if (m.rarity === 'epic'  && wave < 8)  return false;
++    if (m.rarity === 'rare'  && wave < 4)  return false;
++    const recent = director.modifierHistory.slice(-3);
++    if (recent.includes(m.id)) return false;
++    return true;
++  });
++  if (!available.length) return null;
++  if (Math.random() > 0.52) return null; // ~48 % chance of any modifier
++  const def = available[Math.floor(Math.random() * available.length)];
++  director.modifierHistory.push(def.id);
++  if (director.modifierHistory.length > 8) director.modifierHistory.shift();
++  return def;
++}
++
++/**
++ * Returns true if a surprise event should trigger this frame.
++ * Probability scales with wave and is gated by a cooldown.
++ */
++export function shouldTriggerSurpriseEvent(director, dt) {
++  if (director._eventCooldown > 0) return false;
++  if (director.wave < 2) return false;
++  const chancePerSecond = 0.008 + director.wave * 0.0008;
++  return Math.random() < chancePerSecond * dt;
++}
++
++/** Pick which surprise event to fire (avoids recent repeats). */
++export function pickSurpriseEvent(wave, director) {
++  const available = SURPRISE_EVENT_DEFS.filter((e) => {
++    if (e.minWave > wave) return false;
++    const recent = director.eventHistory.slice(-4);
++    if (recent.includes(e.id)) return false;
++    return true;
++  });
++  const pool = available.length ? available : SURPRISE_EVENT_DEFS.filter(e => e.minWave <= wave);
++  if (!pool.length) return null;
++  const def = pool[Math.floor(Math.random() * pool.length)];
++  director.eventHistory.push(def.id);
++  if (director.eventHistory.length > 8) director.eventHistory.shift();
++  director._eventCooldown = 15;
++  return def;
++}
+diff --git a/js/arcade/games/invaders/invader-system.js b/js/arcade/games/invaders/invader-system.js
+index 73e029a..8b52ae3 100644
+--- a/js/arcade/games/invaders/invader-system.js
++++ b/js/arcade/games/invaders/invader-system.js
+@@ -62,6 +62,15 @@ export const SHIELD_SPAWN_CHANCE  = 0.15;
+ export const BOMBER_SPAWN_CHANCE  = 0.12;  // wave >= 6
+ export const HUNTER_SPAWN_CHANCE  = 0.10;  // wave >= 9
+ 
++// New enemy type spawn chances
++export const ZIGZAG_SPAWN_CHANCE   = 0.12;  // wave >= 5
++export const SPLITTER_SPAWN_CHANCE = 0.08;  // wave >= 7
++export const HEALER_SPAWN_CHANCE   = 0.06;  // wave >= 8
++export const SNIPER_SPAWN_CHANCE   = 0.08;  // wave >= 10
++export const KAMIKAZE_SPAWN_CHANCE = 0.07;  // wave >= 6
++export const CLOAKED_SPAWN_CHANCE  = 0.06;  // wave >= 11
++export const GOLDEN_SPAWN_CHANCE   = 0.02;  // wave >= 4 (rare)
++
+ // Bunkers
+ export const BUNKER_COUNT      = 4;
+ export const BUNKER_BLOCK_W    = 14;
+@@ -76,7 +85,11 @@ export function rowToType(row) {
+   return ['shooter', 'tank', 'fast', 'basic'][row] || 'basic';
+ }
+ 
+-export function typeToHp(type)       { return type === 'tank'   ? 2 : 1; }
++export function typeToHp(type) {
++  if (type === 'tank')     return 2;
++  if (type === 'splitter') return 2;
++  return 1;
++}
+ export function typeToShieldHp(type) { return type === 'shield' ? 2 : 0; }
+ 
+ // ── Grid builder ─────────────────────────────────────────────────────────────
+@@ -96,12 +109,27 @@ export function buildGrid(wave, W, rand) {
+   for (let r = 0; r < ROWS; r++) {
+     for (let c = 0; c < COLS; c++) {
+       let type = rowToType(r);
+-      if (wave >= 4 && type !== 'tank' && Math.random() < SHIELD_SPAWN_CHANCE) {
++      // Golden is rarest — check first
++      if (wave >= 4 && type !== 'tank' && Math.random() < GOLDEN_SPAWN_CHANCE) {
++        type = 'golden';
++      } else if (wave >= 4 && type !== 'tank' && Math.random() < SHIELD_SPAWN_CHANCE) {
+         type = 'shield';
+       } else if (wave >= 6 && type !== 'tank' && Math.random() < BOMBER_SPAWN_CHANCE) {
+         type = 'bomber';
+       } else if (wave >= 9 && type !== 'tank' && Math.random() < HUNTER_SPAWN_CHANCE) {
+         type = 'hunter';
++      } else if (wave >= 5 && type !== 'tank' && Math.random() < ZIGZAG_SPAWN_CHANCE) {
++        type = 'zigzag';
++      } else if (wave >= 6 && type !== 'tank' && Math.random() < KAMIKAZE_SPAWN_CHANCE) {
++        type = 'kamikaze';
++      } else if (wave >= 7 && type !== 'tank' && Math.random() < SPLITTER_SPAWN_CHANCE) {
++        type = 'splitter';
++      } else if (wave >= 8 && type !== 'tank' && Math.random() < HEALER_SPAWN_CHANCE) {
++        type = 'healer';
++      } else if (wave >= 10 && type !== 'tank' && Math.random() < SNIPER_SPAWN_CHANCE) {
++        type = 'sniper';
++      } else if (wave >= 11 && type !== 'tank' && Math.random() < CLOAKED_SPAWN_CHANCE) {
++        type = 'cloaked';
+       }
+       const hp       = typeToHp(type);
+       const shieldHp = typeToShieldHp(type);
+@@ -115,6 +143,10 @@ export function buildGrid(wave, W, rand) {
+         alive: true,
+         seed: Math.random() * Math.PI * 2 + c * 0.35,
+         hitTimer: 0, shieldHitTimer: 0,
++        mutations: [],
++        healTimer: type === 'healer' ? 3 : 0,
++        sniperTimer: type === 'sniper' ? 4 : 0,
++        cloakAlpha: 1,
+       });
+     }
+   }
+@@ -234,3 +266,32 @@ export function makeEnemyBullet(shooter, wave) {
+     (wave >= WAVE_AGGRESSIVE ? ENEMY_BULLET_SPEED_AGGRESSIVE_BONUS : 0);
+   return { x: shooter.x + shooter.w / 2 - 2, y: shooter.y + shooter.h, w: 4, h: 12, vy: speed };
+ }
++
++// ── Mutation system ───────────────────────────────────────────────────────────
++
++export const MUTATION_DEFS = [
++  { id: 'fireTwice',    label: '2x FIRE',     minWave: 10 },
++  { id: 'diagonal',     label: 'DIAGONAL',    minWave: 12 },
++  { id: 'leavesMines',  label: 'MINES',       minWave: 14 },
++  { id: 'bombResist',   label: 'BOMB RESIST', minWave: 16 },
++  { id: 'shieldNearby', label: 'SHIELD AURA', minWave: 18 },
++  { id: 'teleportOnce', label: 'TELEPORT',    minWave: 20 },
++];
++
++/**
++ * Apply random mutations to invaders in a grid (call after buildGrid for wave >= 10).
++ * Mutates in place.
++ */
++export function applyMutations(invaders, wave) {
++  const available = MUTATION_DEFS.filter(m => wave >= m.minWave);
++  if (!available.length) return;
++  for (const inv of invaders) {
++    if (!inv.mutations) inv.mutations = [];
++    const mutChance = Math.min(0.6, (wave - 9) * 0.04);
++    for (const mut of available) {
++      if (Math.random() < mutChance * 0.4) {
++        inv.mutations.push(mut.id);
++      }
++    }
++  }
++}
+diff --git a/js/arcade/games/invaders/render-system.js b/js/arcade/games/invaders/render-system.js
+index aad56b8..dd29307 100644
+--- a/js/arcade/games/invaders/render-system.js
++++ b/js/arcade/games/invaders/render-system.js
+@@ -7,7 +7,8 @@
+ 
+ import { POWERUP_COLORS, POWERUP_ICONS, POWERUP_DURATION } from './powerup-system.js';
+ import { WAVE_BOSS, BUNKER_BLOCK_W, BUNKER_BLOCK_H } from './invader-system.js';
+-import { UPGRADE_DEFS, UPGRADE_COLORS } from './upgrade-system.js';
++import { UPGRADE_DEFS, UPGRADE_COLORS, RARITY_COLORS } from './upgrade-system.js';
++import { BOSS_ARCHETYPE_DEFS } from './boss-archetypes.js';
+ 
+ // Boss phase colour palette — shared between drawBoss() and the phase label.
+ const BOSS_PHASE_COLORS = ['#ff4444', '#ff8800', '#ff0055'];
+@@ -179,18 +180,169 @@ export function createRenderer(ctx, W, H) {
+     ctx.stroke();
+   }
+ 
+-  function drawInvader(inv) {
++  function drawInvaderZigzag(x, y, w, h, hitFrac) {
++    ctx.fillStyle = hitFrac > 0 ? '#ffffaa' : '#ffff00';
++    ctx.beginPath();
++    ctx.moveTo(x + w / 2, y + 2);
++    ctx.lineTo(x + w - 2, y + h / 2);
++    ctx.lineTo(x + w / 2, y + h - 2);
++    ctx.lineTo(x + 2,     y + h / 2);
++    ctx.closePath();
++    ctx.fill();
++    ctx.fillStyle = '#000';
++    ctx.beginPath();
++    ctx.arc(x + w / 2, y + h / 2, 4, 0, Math.PI * 2);
++    ctx.fill();
++  }
++
++  function drawInvaderSplitter(x, y, w, h, hitFrac, hpRatio) {
++    ctx.fillStyle = hitFrac > 0 ? '#aaffff' : '#00cccc';
++    ctx.beginPath();
++    ctx.arc(x + w / 2 - 6, y + h / 2, w / 4, 0, Math.PI * 2);
++    ctx.fill();
++    ctx.beginPath();
++    ctx.arc(x + w / 2 + 6, y + h / 2, w / 4, 0, Math.PI * 2);
++    ctx.fill();
++    ctx.fillStyle = '#006666';
++    ctx.fillRect(x + w / 2 - 4, y + h / 2 - 3, 8, 6);
++    if (hpRatio < 1) {
++      ctx.fillStyle = '#111';
++      ctx.fillRect(x, y + h + 1, w, 3);
++      ctx.fillStyle = hpRatio > 0.5 ? '#00cccc' : '#f7c948';
++      ctx.fillRect(x, y + h + 1, w * hpRatio, 3);
++    }
++  }
++
++  function drawInvaderHealer(x, y, w, h, hitFrac) {
++    ctx.save();
++    ctx.fillStyle = hitFrac > 0 ? '#aaffaa' : '#00cc44';
++    ctx.shadowBlur  = 8;
++    ctx.shadowColor = '#00ff44';
++    ctx.fillRect(x + w / 2 - 4, y + 3,     8,     h - 6);
++    ctx.fillRect(x + 3,          y + h / 2 - 4, w - 6, 8);
++    ctx.shadowBlur = 0;
++    ctx.restore();
++  }
++
++  function drawInvaderSniper(x, y, w, h, hitFrac) {
++    ctx.fillStyle = hitFrac > 0 ? '#ffbbbb' : '#aa0000';
++    ctx.fillRect(x + 4, y + 4, w - 8, h - 8);
++    // Targeting reticle
++    ctx.strokeStyle = hitFrac > 0 ? '#fff' : '#ff4444';
++    ctx.lineWidth = 1;
++    const cx = x + w / 2;
++    const cy = y + h / 2;
++    const r  = 7;
++    ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.stroke();
++    ctx.beginPath(); ctx.moveTo(cx - r - 3, cy); ctx.lineTo(cx + r + 3, cy); ctx.stroke();
++    ctx.beginPath(); ctx.moveTo(cx, cy - r - 3); ctx.lineTo(cx, cy + r + 3); ctx.stroke();
++  }
++
++  function drawInvaderKamikaze(x, y, w, h, hitFrac) {
++    ctx.fillStyle = hitFrac > 0 ? '#ffddb0' : '#ff6600';
++    ctx.beginPath();
++    ctx.moveTo(x + w / 2, y + h);      // tip pointing down
++    ctx.lineTo(x + 2,     y + 2);
++    ctx.lineTo(x + w - 2, y + 2);
++    ctx.closePath();
++    ctx.fill();
++    ctx.fillStyle = '#ffcc00';
++    ctx.beginPath();
++    ctx.arc(x + w / 2, y + h * 0.45, 4, 0, Math.PI * 2);
++    ctx.fill();
++  }
++
++  function drawInvaderCloaked(x, y, w, h, hitFrac, cloakAlpha) {
++    const alpha = cloakAlpha !== undefined ? cloakAlpha : 1;
++    ctx.save();
++    ctx.globalAlpha = alpha * (hitFrac > 0 ? 0.9 : 1);
++    ctx.fillStyle = hitFrac > 0 ? '#ddbbff' : '#9933ff';
++    ctx.beginPath();
++    ctx.moveTo(x + w / 2, y + 2);
++    ctx.lineTo(x + w - 2, y + h - 2);
++    ctx.lineTo(x + 2,     y + h - 2);
++    ctx.closePath();
++    ctx.fill();
++    ctx.strokeStyle = '#cc00ff';
++    ctx.lineWidth   = 1.5;
++    ctx.stroke();
++    ctx.globalAlpha = 1;
++    ctx.restore();
++  }
++
++  function drawInvaderGolden(x, y, w, h, hitFrac, elapsed) {
++    const t   = elapsed || 0;
++    const spins = 5;
++    ctx.save();
++    ctx.translate(x + w / 2, y + h / 2);
++    ctx.rotate(t * 1.2);
++    ctx.fillStyle = hitFrac > 0 ? '#ffffaa' : '#f7c948';
++    ctx.shadowBlur  = 12;
++    ctx.shadowColor = '#f7c948';
++    for (let k = 0; k < spins; k++) {
++      const a0 = (k / spins) * Math.PI * 2 - Math.PI / 2;
++      const a1 = a0 + Math.PI / spins;
++      ctx.beginPath();
++      ctx.moveTo(0, 0);
++      ctx.lineTo(Math.cos(a0) * (w / 2 - 3), Math.sin(a0) * (h / 2 - 3));
++      ctx.lineTo(Math.cos(a1) * (w / 4),     Math.sin(a1) * (h / 4));
++      ctx.closePath();
++      ctx.fill();
++    }
++    ctx.shadowBlur = 0;
++    ctx.fillStyle = '#fff';
++    ctx.beginPath(); ctx.arc(0, 0, 4, 0, Math.PI * 2); ctx.fill();
++    ctx.restore();
++  }
++
++  function drawInvaderCursed(x, y, w, h, hitFrac) {
++    ctx.fillStyle = hitFrac > 0 ? '#ffbbff' : '#cc00cc';
++    ctx.beginPath();
++    ctx.arc(x + w / 2, y + h / 2, w / 2 - 2, 0, Math.PI * 2);
++    ctx.fill();
++    ctx.strokeStyle = '#ff00ff';
++    ctx.lineWidth = 2;
++    ctx.stroke();
++    ctx.fillStyle = '#ffaaff';
++    ctx.font = 'bold 12px system-ui';
++    ctx.textAlign = 'center';
++    ctx.textBaseline = 'middle';
++    ctx.fillText('☠', x + w / 2, y + h / 2);
++    ctx.textBaseline = 'alphabetic';
++  }
++
++  function drawInvader(inv, elapsed) {
+     const hf      = clamp(inv.hitTimer / 0.12, 0, 1);
+     const sf      = inv.maxShieldHp > 0 ? inv.shieldHp / inv.maxShieldHp : 0;
+     const hpRatio = clamp(inv.hp / inv.maxHp, 0, 1);
+     switch (inv.type) {
+-      case 'fast':    drawInvaderFast(inv.x, inv.y, inv.w, inv.h, hf); break;
+-      case 'tank':    drawInvaderTank(inv.x, inv.y, inv.w, inv.h, hf, hpRatio); break;
+-      case 'shooter': drawInvaderShooter(inv.x, inv.y, inv.w, inv.h, hf); break;
+-      case 'shield':  drawInvaderShield(inv.x, inv.y, inv.w, inv.h, hf, sf); break;
+-      case 'bomber':  drawInvaderBomber(inv.x, inv.y, inv.w, inv.h, hf); break;
+-      case 'hunter':  drawInvaderHunter(inv.x, inv.y, inv.w, inv.h, hf); break;
+-      default:        drawInvaderBasic(inv.x, inv.y, inv.w, inv.h, hf);
++      case 'fast':     drawInvaderFast(inv.x, inv.y, inv.w, inv.h, hf); break;
++      case 'tank':     drawInvaderTank(inv.x, inv.y, inv.w, inv.h, hf, hpRatio); break;
++      case 'shooter':  drawInvaderShooter(inv.x, inv.y, inv.w, inv.h, hf); break;
++      case 'shield':   drawInvaderShield(inv.x, inv.y, inv.w, inv.h, hf, sf); break;
++      case 'bomber':   drawInvaderBomber(inv.x, inv.y, inv.w, inv.h, hf); break;
++      case 'hunter':   drawInvaderHunter(inv.x, inv.y, inv.w, inv.h, hf); break;
++      case 'zigzag':   drawInvaderZigzag(inv.x, inv.y, inv.w, inv.h, hf); break;
++      case 'splitter': drawInvaderSplitter(inv.x, inv.y, inv.w, inv.h, hf, hpRatio); break;
++      case 'healer':   drawInvaderHealer(inv.x, inv.y, inv.w, inv.h, hf); break;
++      case 'sniper':   drawInvaderSniper(inv.x, inv.y, inv.w, inv.h, hf); break;
++      case 'kamikaze': drawInvaderKamikaze(inv.x, inv.y, inv.w, inv.h, hf); break;
++      case 'cloaked':  drawInvaderCloaked(inv.x, inv.y, inv.w, inv.h, hf, inv.cloakAlpha); break;
++      case 'golden':   drawInvaderGolden(inv.x, inv.y, inv.w, inv.h, hf, elapsed); break;
++      case 'cursed':   drawInvaderCursed(inv.x, inv.y, inv.w, inv.h, hf); break;
++      default:         drawInvaderBasic(inv.x, inv.y, inv.w, inv.h, hf);
++    }
++    // Mutation indicator: small coloured ring
++    if (inv.mutations && inv.mutations.length > 0) {
++      ctx.save();
++      ctx.strokeStyle = '#bc8cff';
++      ctx.lineWidth   = 1;
++      ctx.globalAlpha = 0.7;
++      ctx.beginPath();
++      ctx.arc(inv.x + inv.w / 2, inv.y + inv.h / 2, inv.w * 0.58, 0, Math.PI * 2);
++      ctx.stroke();
++      ctx.globalAlpha = 1;
++      ctx.restore();
+     }
+   }
+ 
+@@ -201,45 +353,86 @@ export function createRenderer(ctx, W, H) {
+     const isHit      = b.hitTimer > 0;
+     const cx         = b.x + b.w / 2;
+     const cut        = 10;
++
++    // Determine colour from archetype if available, else fall back to phase colours
++    const archetype   = b.archetypeId
++      ? BOSS_ARCHETYPE_DEFS.find(a => a.id === b.archetypeId)
++      : null;
+     const phaseColors = BOSS_PHASE_COLORS;
+-    const bodyColor   = phaseColors[(phase || 1) - 1];
++    const baseColor   = archetype ? archetype.color : phaseColors[(phase || 1) - 1];
++    const bodyColor   = isHit ? '#ffd3d3' : isShooting ? '#ff2f2f' : baseColor;
++
+     ctx.save();
+     ctx.shadowBlur  = phase === 3 ? 28 : 18;
+-    ctx.shadowColor = bodyColor;
+-    ctx.fillStyle   = isHit ? '#ffd3d3' : isShooting ? '#ff2f2f' : bodyColor;
+-    ctx.beginPath();
+-    ctx.moveTo(cx - b.w / 2 + cut, b.y);
+-    ctx.lineTo(cx + b.w / 2 - cut, b.y);
+-    ctx.lineTo(cx + b.w / 2,       b.y + cut);
+-    ctx.lineTo(cx + b.w / 2,       b.y + b.h - cut);
+-    ctx.lineTo(cx + b.w / 2 - cut, b.y + b.h);
+-    ctx.lineTo(cx - b.w / 2 + cut, b.y + b.h);
+-    ctx.lineTo(cx - b.w / 2,       b.y + b.h - cut);
+-    ctx.lineTo(cx - b.w / 2,       b.y + cut);
+-    ctx.closePath();
+-    ctx.fill();
++    ctx.shadowColor = baseColor;
++    ctx.fillStyle   = bodyColor;
++
++    // theWall: heavier rectangular shape
++    if (b.archetypeId === 'theWall') {
++      ctx.beginPath();
++      ctx.rect(b.x, b.y, b.w, b.h);
++      ctx.fill();
++      ctx.fillStyle = isHit ? '#ffd3d3' : '#555';
++      ctx.fillRect(b.x + 6, b.y + 6, b.w - 12, b.h - 12);
++    } else if (b.archetypeId === 'theGlitchCore') {
++      // Glitch: jittery polygon
++      ctx.beginPath();
++      const jitter = () => (Math.random() - 0.5) * 6;
++      ctx.moveTo(cx + jitter(),         b.y + jitter());
++      ctx.lineTo(b.x + b.w + jitter(),  b.y + b.h / 2 + jitter());
++      ctx.lineTo(cx + jitter(),         b.y + b.h + jitter());
++      ctx.lineTo(b.x + jitter(),        b.y + b.h / 2 + jitter());
++      ctx.closePath();
++      ctx.fill();
++    } else {
++      // Default hexagonal body
++      ctx.beginPath();
++      ctx.moveTo(cx - b.w / 2 + cut, b.y);
++      ctx.lineTo(cx + b.w / 2 - cut, b.y);
++      ctx.lineTo(cx + b.w / 2,       b.y + cut);
++      ctx.lineTo(cx + b.w / 2,       b.y + b.h - cut);
++      ctx.lineTo(cx + b.w / 2 - cut, b.y + b.h);
++      ctx.lineTo(cx - b.w / 2 + cut, b.y + b.h);
++      ctx.lineTo(cx - b.w / 2,       b.y + b.h - cut);
++      ctx.lineTo(cx - b.w / 2,       b.y + cut);
++      ctx.closePath();
++      ctx.fill();
++    }
+     ctx.shadowBlur = 0;
++
++    // Eyes
+     ctx.fillStyle  = '#fff';
+     ctx.beginPath(); ctx.arc(cx - 16, b.y + 14, 7, 0, Math.PI * 2); ctx.fill();
+     ctx.beginPath(); ctx.arc(cx + 16, b.y + 14, 7, 0, Math.PI * 2); ctx.fill();
+-    ctx.fillStyle  = '#ff0000';
++    ctx.fillStyle  = archetype ? archetype.color : '#ff0000';
+     ctx.beginPath(); ctx.arc(cx - 16, b.y + 14, 3.5, 0, Math.PI * 2); ctx.fill();
+     ctx.beginPath(); ctx.arc(cx + 16, b.y + 14, 3.5, 0, Math.PI * 2); ctx.fill();
+     ctx.restore();
++
++    // HP bar
+     ctx.fillStyle   = '#333';
+     ctx.fillRect(b.x, b.y - 10, b.w, 6);
+-    ctx.fillStyle   = '#f7c948';
++    ctx.fillStyle   = archetype ? archetype.color : '#f7c948';
+     ctx.fillRect(b.x, b.y - 10, b.w * clamp(b.hpDisplay / b.maxHp, 0, 1), 6);
+     ctx.strokeStyle = '#555';
+     ctx.lineWidth   = 1;
+     ctx.strokeRect(b.x, b.y - 10, b.w, 6);
+-    // Phase indicator
+-    const phaseLabel = ['P1', 'P2', '⚡P3'][( phase || 1) - 1];
+-    const phaseCol   = BOSS_PHASE_COLORS[( phase || 1) - 1];
+-    ctx.fillStyle   = phaseCol;
+-    ctx.font        = 'bold 10px system-ui';
++
++    // Label (archetype or generic)
++    const bossLabel  = archetype ? archetype.label : ('BOSS ' + (phase === 3 ? '⚡' : ''));
++    const phaseText  = archetype
++      ? (phase === 3 ? archetype.phase3Text : phase === 2 ? archetype.phase2Text : null)
++      : ['P1', 'P2', '⚡P3'][(phase || 1) - 1];
++    const labelColor = archetype ? archetype.color : phaseColors[(phase || 1) - 1];
++    ctx.fillStyle   = labelColor;
++    ctx.font        = 'bold 9px system-ui';
+     ctx.textAlign   = 'center';
+-    ctx.fillText(phaseLabel, b.x + b.w / 2, b.y - 14);
++    ctx.fillText(bossLabel, b.x + b.w / 2, b.y - 14);
++    if (phaseText) {
++      ctx.fillStyle = phaseColors[(phase || 1) - 1];
++      ctx.font      = 'bold 8px system-ui';
++      ctx.fillText(phaseText, b.x + b.w / 2, b.y - 23);
++    }
+   }
+ 
+   // ── Background ────────────────────────────────────────────────────────────────
+@@ -480,12 +673,14 @@ export function createRenderer(ctx, W, H) {
+       else               ctx.rect(cx, cardY, cardW, cardH);
+       ctx.fill();
+ 
+-      // Card border
++      // Card border — use rarity color if available, else upgrade color
++      const rarity   = def.rarity || 'common';
++      const rarityCol = RARITY_COLORS[rarity] || col;
+       ctx.save();
+-      ctx.strokeStyle = atMax ? '#555' : col;
++      ctx.strokeStyle = atMax ? '#555' : rarityCol;
+       ctx.lineWidth   = 2;
+       ctx.shadowBlur  = atMax ? 0 : 8;
+-      ctx.shadowColor = col;
++      ctx.shadowColor = rarityCol;
+       ctx.beginPath();
+       if (ctx.roundRect) ctx.roundRect(cx, cardY, cardW, cardH, 10);
+       else               ctx.rect(cx, cardY, cardW, cardH);
+@@ -493,6 +688,14 @@ export function createRenderer(ctx, W, H) {
+       ctx.shadowBlur = 0;
+       ctx.restore();
+ 
++      // Rarity label
++      if (!atMax) {
++        ctx.fillStyle = rarityCol;
++        ctx.font      = 'bold 8px system-ui';
++        ctx.textAlign = 'center';
++        ctx.fillText(rarity.toUpperCase(), cx + cardW / 2, cardY + 12);
++      }
++
+       // Key number
+       ctx.fillStyle = atMax ? '#555' : col;
+       ctx.font      = 'bold 24px system-ui';
+@@ -525,6 +728,268 @@ export function createRenderer(ctx, W, H) {
+     }
+   }
+ 
++  // ── Warning / event banners ────────────────────────────────────────────────────
++
++  function drawWarningBanner(banner) {
++    if (!banner || banner.timer <= 0) return;
++    const alpha = Math.min(1, banner.timer / 0.5, banner.timer);
++    ctx.save();
++    ctx.globalAlpha = clamp(alpha, 0, 1);
++    ctx.fillStyle   = banner.color || '#ff4444';
++    ctx.shadowBlur  = 16;
++    ctx.shadowColor = banner.color || '#ff4444';
++    ctx.font        = 'bold 20px system-ui';
++    ctx.textAlign   = 'center';
++    ctx.fillText(banner.text, W / 2, 36);
++    ctx.shadowBlur  = 0;
++    ctx.globalAlpha = 1;
++    ctx.restore();
++  }
++
++  function drawEventBanner(banner) {
++    if (!banner || banner.timer <= 0) return;
++    const alpha = Math.min(1, banner.timer / 0.3, banner.timer);
++    ctx.save();
++    ctx.globalAlpha = clamp(alpha, 0, 1) * 0.92;
++    ctx.fillStyle   = 'rgba(0,0,0,0.55)';
++    ctx.fillRect(0, H / 2 - 22, W, 44);
++    ctx.fillStyle   = banner.color || '#f7c948';
++    ctx.shadowBlur  = 12;
++    ctx.shadowColor = banner.color || '#f7c948';
++    ctx.font        = 'bold 16px system-ui';
++    ctx.textAlign   = 'center';
++    ctx.fillText(banner.text, W / 2, H / 2 + 6);
++    ctx.shadowBlur  = 0;
++    ctx.globalAlpha = 1;
++    ctx.restore();
++  }
++
++  function drawMutationFlash(intensity) {
++    if (!intensity || intensity <= 0) return;
++    ctx.save();
++    ctx.globalAlpha = clamp(intensity * 0.4, 0, 0.4);
++    ctx.fillStyle   = '#bc8cff';
++    ctx.fillRect(0, 0, W, H);
++    ctx.globalAlpha = 1;
++    ctx.restore();
++  }
++
++  // ── Asteroids ──────────────────────────────────────────────────────────────────
++
++  function drawAsteroids(asteroids) {
++    if (!asteroids || !asteroids.length) return;
++    for (const a of asteroids) {
++      ctx.save();
++      ctx.fillStyle   = '#555566';
++      ctx.shadowBlur  = 4;
++      ctx.shadowColor = '#888';
++      ctx.beginPath();
++      ctx.arc(a.x, a.y, a.r, 0, Math.PI * 2);
++      ctx.fill();
++      ctx.shadowBlur = 0;
++      // Crack lines
++      ctx.strokeStyle = '#333';
++      ctx.lineWidth   = 1;
++      ctx.beginPath();
++      ctx.moveTo(a.x - a.r * 0.3, a.y - a.r * 0.2);
++      ctx.lineTo(a.x + a.r * 0.2, a.y + a.r * 0.4);
++      ctx.moveTo(a.x + a.r * 0.1, a.y - a.r * 0.5);
++      ctx.lineTo(a.x - a.r * 0.3, a.y + a.r * 0.1);
++      ctx.stroke();
++      ctx.restore();
++    }
++  }
++
++  // ── Laser warning ──────────────────────────────────────────────────────────────
++
++  function drawLaserWarning(laserWarning) {
++    if (!laserWarning) return;
++    const alpha = laserWarning.fired ? 0 : Math.min(1, laserWarning.chargeTimer * 0.8);
++    ctx.save();
++    ctx.globalAlpha = clamp(alpha, 0, 1);
++    ctx.strokeStyle = laserWarning.fired ? '#ff0000' : '#ff8800';
++    ctx.lineWidth   = laserWarning.fired ? 6 : 2;
++    ctx.shadowBlur  = laserWarning.fired ? 20 : 8;
++    ctx.shadowColor = '#ff4400';
++    ctx.setLineDash([8, 6]);
++    ctx.beginPath();
++    ctx.moveTo(laserWarning.x, 0);
++    ctx.lineTo(laserWarning.x, H);
++    ctx.stroke();
++    ctx.setLineDash([]);
++    ctx.shadowBlur  = 0;
++    ctx.globalAlpha = 1;
++    ctx.restore();
++  }
++
++  // ── Mini enemies ───────────────────────────────────────────────────────────────
++
++  function drawMiniEnemies(miniEnemies) {
++    if (!miniEnemies || !miniEnemies.length) return;
++    for (const m of miniEnemies) {
++      ctx.save();
++      ctx.fillStyle   = m.hitTimer > 0 ? '#ffd0a0' : '#ff8c00';
++      ctx.shadowBlur  = 10;
++      ctx.shadowColor = '#ff8c00';
++      ctx.beginPath();
++      const cx = m.x + m.w / 2;
++      ctx.moveTo(cx,         m.y);
++      ctx.lineTo(m.x + m.w, m.y + m.h / 2);
++      ctx.lineTo(cx,         m.y + m.h);
++      ctx.lineTo(m.x,        m.y + m.h / 2);
++      ctx.closePath();
++      ctx.fill();
++      ctx.shadowBlur  = 0;
++      // HP bar
++      ctx.fillStyle = '#333';
++      ctx.fillRect(m.x, m.y - 8, m.w, 4);
++      ctx.fillStyle = '#ff8c00';
++      ctx.fillRect(m.x, m.y - 8, m.w * clamp(m.hp / m.maxHp, 0, 1), 4);
++      ctx.restore();
++    }
++  }
++
++  // ── EMP overlay ────────────────────────────────────────────────────────────────
++
++  function drawEmpOverlay(empActive, empTimer) {
++    if (!empActive) return;
++    const pulse = 0.5 + 0.5 * Math.sin(Date.now() * 0.008);
++    ctx.save();
++    ctx.globalAlpha = 0.12 * pulse;
++    ctx.fillStyle   = '#2ec5ff';
++    ctx.fillRect(0, 0, W, H);
++    ctx.globalAlpha = 1;
++    ctx.fillStyle   = '#2ec5ff';
++    ctx.font        = 'bold 11px system-ui';
++    ctx.textAlign   = 'center';
++    ctx.fillText('EMP ACTIVE ' + (empTimer || 0).toFixed(1) + 's', W / 2, H - 44);
++    ctx.restore();
++  }
++
++  // ── Panic mode indicator ──────────────────────────────────────────────────────
++
++  function drawPanicMode(panicMode, panicTimer, elapsed) {
++    if (!panicMode) return;
++    const pulse = 0.6 + 0.4 * Math.sin((elapsed || 0) * 8);
++    ctx.save();
++    ctx.globalAlpha = pulse * 0.18;
++    ctx.fillStyle   = '#ff4444';
++    ctx.fillRect(0, 0, W, H);
++    ctx.globalAlpha = 1;
++    ctx.fillStyle   = '#ff4444';
++    ctx.shadowBlur  = 10;
++    ctx.shadowColor = '#ff4444';
++    ctx.font        = 'bold 14px system-ui';
++    ctx.textAlign   = 'center';
++    ctx.fillText('⚠ PANIC MODE ' + (panicTimer || 0).toFixed(1) + 's ⚠', W / 2, H - 56);
++    ctx.shadowBlur  = 0;
++    ctx.restore();
++  }
++
++  // ── Active modifier pill ──────────────────────────────────────────────────────
++
++  function drawActiveModifier(activeModifier) {
++    if (!activeModifier) return;
++    const col = activeModifier.color || '#f7c948';
++    ctx.save();
++    ctx.fillStyle   = 'rgba(0,0,0,0.6)';
++    ctx.globalAlpha = 0.88;
++    ctx.beginPath();
++    if (ctx.roundRect) ctx.roundRect(W / 2 - 62, 2, 124, 18, 5);
++    else ctx.rect(W / 2 - 62, 2, 124, 18);
++    ctx.fill();
++    ctx.globalAlpha = 1;
++    ctx.fillStyle   = col;
++    ctx.shadowBlur  = 6;
++    ctx.shadowColor = col;
++    ctx.font        = 'bold 10px system-ui';
++    ctx.textAlign   = 'center';
++    ctx.fillText('⚡ ' + activeModifier.label, W / 2, 14);
++    ctx.shadowBlur  = 0;
++    ctx.restore();
++  }
++
++  // ── Risk/reward screen ────────────────────────────────────────────────────────
++
++  function drawRiskRewardScreen(choices) {
++    ctx.fillStyle = 'rgba(40, 5, 5, 0.94)';
++    ctx.fillRect(0, 0, W, H);
++
++    ctx.save();
++    ctx.shadowBlur  = 14;
++    ctx.shadowColor = '#ff4444';
++    ctx.fillStyle   = '#ff4444';
++    ctx.font        = 'bold 22px system-ui';
++    ctx.textAlign   = 'center';
++    ctx.fillText('CHOOSE YOUR FATE', W / 2, 70);
++    ctx.shadowBlur  = 0;
++    ctx.fillStyle   = '#f7c948';
++    ctx.font        = '13px system-ui';
++    ctx.fillText('Risk vs. Reward  ( 1 / 2 )', W / 2, 95);
++    ctx.restore();
++
++    const cardW  = 150;
++    const cardH  = 140;
++    const gap    = 20;
++    const totalW = 2 * cardW + gap;
++    const startX = (W - totalW) / 2;
++    const cardY  = 118;
++
++    const riskColors = { high: '#ff4444', medium: '#f7c948', none: '#3fb950' };
++    for (let i = 0; i < choices.length; i++) {
++      const def  = choices[i];
++      const cx   = startX + i * (cardW + gap);
++      const col  = riskColors[def.risk] || '#888';
++      ctx.fillStyle = 'rgba(20, 5, 5, 0.96)';
++      ctx.beginPath();
++      if (ctx.roundRect) ctx.roundRect(cx, cardY, cardW, cardH, 10);
++      else               ctx.rect(cx, cardY, cardW, cardH);
++      ctx.fill();
++      ctx.save();
++      ctx.strokeStyle = col;
++      ctx.lineWidth   = 2;
++      ctx.shadowBlur  = 8;
++      ctx.shadowColor = col;
++      ctx.beginPath();
++      if (ctx.roundRect) ctx.roundRect(cx, cardY, cardW, cardH, 10);
++      else               ctx.rect(cx, cardY, cardW, cardH);
++      ctx.stroke();
++      ctx.shadowBlur = 0;
++      ctx.restore();
++
++      ctx.fillStyle = col;
++      ctx.font      = 'bold 22px system-ui';
++      ctx.textAlign = 'center';
++      ctx.fillText(String(i + 1), cx + cardW / 2, cardY + 30);
++
++      ctx.fillStyle = '#eee';
++      ctx.font      = 'bold 12px system-ui';
++      ctx.fillText(def.label, cx + cardW / 2, cardY + 55);
++
++      ctx.fillStyle = '#8b949e';
++      ctx.font      = '10px system-ui';
++      // Wrap description across 2 lines roughly
++      const words = def.desc.split(' ');
++      let line = '';
++      let lineY = cardY + 75;
++      for (const word of words) {
++        const test = line ? line + ' ' + word : word;
++        if (ctx.measureText(test).width > cardW - 16) {
++          ctx.fillText(line, cx + cardW / 2, lineY);
++          line  = word;
++          lineY += 13;
++        } else {
++          line = test;
++        }
++      }
++      if (line) ctx.fillText(line, cx + cardW / 2, lineY);
++
++      ctx.fillStyle = col;
++      ctx.font      = 'bold 9px system-ui';
++      ctx.fillText('RISK: ' + (def.risk || '?').toUpperCase(), cx + cardW / 2, cardY + cardH - 10);
++    }
++  }
++
+   // ── Screen flash ──────────────────────────────────────────────────────────────
+ 
+   function drawScreenFlash(flashTimer) {
+@@ -587,8 +1052,10 @@ export function createRenderer(ctx, W, H) {
+     drawBunkers(s.bunkers);
+     drawShip(s.player);
+     if (s.upgrades && s.upgrades.drone > 0) drawDrone(s.player, s.droneAngle);
+-    for (const inv of s.invaders) { if (inv.alive) drawInvader(inv); }
++    for (const inv of s.invaders) { if (inv.alive) drawInvader(inv, s.elapsed); }
+     if (s.boss) drawBoss(s.boss, s.bossPhase);
++    drawMiniEnemies(s.miniEnemies);
++    drawAsteroids(s.asteroids);
+ 
+     // Player bullets — regular (cyan) and bomb (orange glow)
+     ctx.save();
+@@ -626,6 +1093,13 @@ export function createRenderer(ctx, W, H) {
+     drawWaveIntro(s.waveIntroTimer, s.wave, s.WAVE_INTRO_DURATION);
+     drawComboOverlay(s.streak, s.streakTimer);
+     drawActivePowerupOverlay(s.activePowerups);
++    drawLaserWarning(s.laserWarning);
++    drawActiveModifier(s.activeModifier);
++    drawWarningBanner(s.warningBanner);
++    drawEventBanner(s.eventBanner);
++    drawMutationFlash(s.mutationFlash);
++    drawEmpOverlay(s.empActive, s.empTimer);
++    drawPanicMode(s.panicMode, s.panicTimer, s.elapsed);
+ 
+     // Bomb cooldown indicator (canvas HUD only — no DOM)
+     if (s.upgrades && s.upgrades.bombShot > 0) {
+@@ -646,6 +1120,11 @@ export function createRenderer(ctx, W, H) {
+       drawUpgradeScreen(s.upgradeChoices, s.upgrades);
+     }
+ 
++    // Risk/reward screen (shown before upgrade screen)
++    if (s.riskRewardPhase === 'picking') {
++      drawRiskRewardScreen(s.riskRewardChoices);
++    }
++
+     // Screen flash (drawn above everything)
+     drawScreenFlash(s.screenFlashTimer || 0);
+ 
+diff --git a/js/arcade/games/invaders/upgrade-system.js b/js/arcade/games/invaders/upgrade-system.js
+index b393c02..a6323b7 100644
+--- a/js/arcade/games/invaders/upgrade-system.js
++++ b/js/arcade/games/invaders/upgrade-system.js
+@@ -9,13 +9,23 @@
+ // ── Upgrade catalogue ─────────────────────────────────────────────────────────
+ 
+ export const UPGRADE_DEFS = [
+-  { id: 'fireRate',   label: 'FIRE RATE',   icon: '⚡', desc: 'Shoot 25% faster',           maxLevel: 4 },
+-  { id: 'spreadShot', label: 'SPREAD',      icon: '↔',  desc: '+1 bullet angle per level',  maxLevel: 3 },
+-  { id: 'shieldStr',  label: 'SHIELD',      icon: '🛡', desc: 'Shield blocks +1 extra hit',  maxLevel: 2 },
+-  { id: 'bulletDmg',  label: 'DAMAGE',      icon: '💥', desc: 'Bullets deal +1 HP damage',  maxLevel: 3 },
+-  { id: 'scoreBoost', label: 'SCORE BOOST', icon: '✨', desc: '+30% score per kill',         maxLevel: 4 },
+-  { id: 'drone',      label: 'DRONE',       icon: '🤖', desc: 'Orbiting drone auto-fires',   maxLevel: 1 },
+-  { id: 'bombShot',   label: 'BOMB SHOT',   icon: '💣', desc: '[B] Area-damage bomb shot',   maxLevel: 1 },
++  { id: 'fireRate',   label: 'FIRE RATE',   icon: '⚡', desc: 'Shoot 25% faster',           maxLevel: 4, rarity: 'common' },
++  { id: 'spreadShot', label: 'SPREAD',      icon: '↔',  desc: '+1 bullet angle per level',  maxLevel: 3, rarity: 'common' },
++  { id: 'shieldStr',  label: 'SHIELD',      icon: '🛡', desc: 'Shield blocks +1 extra hit',  maxLevel: 2, rarity: 'common' },
++  { id: 'bulletDmg',  label: 'DAMAGE',      icon: '💥', desc: 'Bullets deal +1 HP damage',  maxLevel: 3, rarity: 'common' },
++  { id: 'scoreBoost', label: 'SCORE BOOST', icon: '✨', desc: '+30% score per kill',         maxLevel: 4, rarity: 'common' },
++  { id: 'drone',      label: 'DRONE',       icon: '🤖', desc: 'Orbiting drone auto-fires',   maxLevel: 1, rarity: 'common' },
++  { id: 'bombShot',   label: 'BOMB SHOT',   icon: '💣', desc: '[B] Area-damage bomb shot',   maxLevel: 1, rarity: 'common' },
++  { id: 'doubleDrone',     label: 'TWIN DRONE',     icon: '🤖🤖', desc: '2nd drone companion',        maxLevel: 1, rarity: 'rare'      },
++  { id: 'piercing',        label: 'PIERCING',        icon: '⬆',   desc: 'Bullets pierce one enemy',   maxLevel: 1, rarity: 'rare'      },
++  { id: 'chainLightning',  label: 'CHAIN LIGHTNING', icon: '⚡⚡',  desc: 'Hits chain to 2 nearby',    maxLevel: 1, rarity: 'epic'      },
++  { id: 'explosiveRounds', label: 'EXPLOSIVE',       icon: '💥',   desc: 'Small explosion on hit',     maxLevel: 1, rarity: 'epic'      },
++  { id: 'shieldRegen',     label: 'SHIELD REGEN',    icon: '🛡',   desc: 'Shield auto-regens 15s',     maxLevel: 1, rarity: 'rare'      },
++  { id: 'autoBomb',        label: 'AUTO BOMB',       icon: '💣',   desc: 'Bomb auto-recharges faster', maxLevel: 1, rarity: 'rare'      },
++  { id: 'slowDodge',       label: 'SLOW DODGE',      icon: '⏱',   desc: 'Double-tap slows time 1.5s', maxLevel: 1, rarity: 'epic'      },
++  { id: 'magnetPowerups',  label: 'MAGNET',          icon: '🧲',   desc: 'Powerups attracted to ship', maxLevel: 1, rarity: 'common'    },
++  { id: 'bossDmg',         label: 'BOSS SLAYER',     icon: '🎯',   desc: '+50% damage to bosses',      maxLevel: 2, rarity: 'rare'      },
++  { id: 'revive',          label: 'REVIVE',          icon: '❤️',   desc: 'Auto-revive once per run',   maxLevel: 1, rarity: 'legendary' },
+ ];
+ 
+ export const UPGRADE_COLORS = {
+@@ -143,3 +153,61 @@ export function getUpgradeStats(upgrades, baseShootRate) {
+     shootRate:      getUpgradedShootRate(base, upgrades),
+   };
+ }
++
++// ── Rarity ────────────────────────────────────────────────────────────────────
++
++export const RARITY_COLORS = {
++  common:    '#8b949e',
++  rare:      '#2ec5ff',
++  epic:      '#bc8cff',
++  legendary: '#f7c948',
++};
++
++// ── Risk/reward choices ───────────────────────────────────────────────────────
++
++export const RISK_REWARD_DEFS = [
++  { id: 'doubleEnemies', label: 'DOUBLE ENEMIES', desc: '2x enemy density → 2x score this wave', risk: 'medium' },
++  { id: 'noShield',      label: 'NO SHIELD',      desc: 'No shield next wave → guaranteed rare',  risk: 'medium' },
++  { id: 'earlyBoss',     label: 'EARLY BOSS',     desc: 'Boss appears now → epic reward',         risk: 'high'   },
++  { id: 'blackoutWave',  label: 'BLACKOUT',       desc: 'Next wave is blackout → rare reward',    risk: 'medium' },
++  { id: 'oneLife',       label: 'ONE LIFE',       desc: 'One life only → triple score next wave', risk: 'high'   },
++  { id: 'skipWave',      label: 'SKIP WAVE',      desc: 'Skip wave → no reward but stay safe',    risk: 'none'   },
++];
++
++/** Returns true if a risk/reward screen should be offered this wave. */
++export function shouldOfferRiskReward(wave) {
++  return wave > 0 && wave % 5 === 0;
++}
++
++/** Pick 2 random risk/reward choices. */
++export function pickRiskRewardChoices() {
++  const pool = RISK_REWARD_DEFS.slice();
++  for (let i = pool.length - 1; i > 0; i--) {
++    const j = Math.floor(Math.random() * (i + 1));
++    [pool[i], pool[j]] = [pool[j], pool[i]];
++  }
++  return pool.slice(0, 2);
++}
++
++/**
++ * Pick 3 upgrade choices respecting rarity thresholds.
++ * wave < 5: common only; 5-10: +rare; 11-20: +epic; 21+: +legendary
++ */
++export function pickUpgradeChoicesWithRarity(upgrades, wave) {
++  const w = wave || 1;
++  const rarities = w >= 21 ? ['common', 'rare', 'epic', 'legendary']
++                 : w >= 11 ? ['common', 'rare', 'epic']
++                 : w >= 5  ? ['common', 'rare']
++                 :            ['common'];
++  let available = UPGRADE_DEFS.filter(
++    d => upgrades[d.id] < d.maxLevel && rarities.includes(d.rarity || 'common'),
++  );
++  let pool = available.length >= 3 ? available.slice()
++           : UPGRADE_DEFS.filter(d => upgrades[d.id] < d.maxLevel);
++  if (pool.length < 3) pool = pool.concat(UPGRADE_DEFS);
++  for (let i = pool.length - 1; i > 0; i--) {
++    const j = Math.floor(Math.random() * (i + 1));
++    [pool[i], pool[j]] = [pool[j], pool[i]];
++  }
++  return pool.slice(0, 3);
++}
+-- 
+2.53.0
+
