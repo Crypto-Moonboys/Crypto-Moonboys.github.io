@@ -629,13 +629,10 @@ function handleDirectionInput(state, x, y) {
   if (!state.running || state.paused || state.gameOver) return;
   const reversed = state.eventState.id === 'reverse-controls';
   const intended = reversed ? { x: -x, y: -y } : { x: x, y: y };
-
-  if (!state.waitingForFirstInput) {
-    const nx = state.nextDir.x;
-    const ny = state.nextDir.y;
-    if (intended.x === -nx && intended.y === -ny) return;
-    if (intended.x === nx && intended.y === ny) return;
-  }
+  const nx = state.nextDir.x;
+  const ny = state.nextDir.y;
+  if (intended.x === -nx && intended.y === -ny) return;
+  if (intended.x === nx && intended.y === ny) return;
 
   state.nextDir = intended;
   state.targetHeadingAngle = Math.atan2(state.nextDir.y, state.nextDir.x);
