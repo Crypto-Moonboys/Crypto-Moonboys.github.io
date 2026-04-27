@@ -16,6 +16,7 @@ import { submitScore } from '/js/leaderboard-client.js';
 import { INVADERS_CONFIG } from './config.js';
 import { GameRegistry } from '/js/arcade/core/game-registry.js';
 import { playSound, stopAllSounds, isMuted } from '/js/arcade/core/audio.js';
+import { BaseGame } from '/js/arcade/engine/BaseGame.js';
 
 import {
   ROWS, COLS, INV_W, INV_H, INV_PAD,
@@ -57,6 +58,7 @@ export function bootstrapInvaders(root) {
   const H       = canvas.height;
 
   const renderer = createRenderer(ctx, W, H);
+  const engine   = new BaseGame();
 
   const scoreEl   = document.getElementById('score');
   const bestEl    = document.getElementById('best');
@@ -84,8 +86,6 @@ export function bootstrapInvaders(root) {
   let paused   = false;
   let gameOver = false;
   let best     = ArcadeSync.getHighScore(GAME_ID);
-  let raf      = null;
-  let lastTime = 0;
   let elapsed  = 0;
 
   let player = { x: W / 2, y: H - 50, w: SHIP_W, h: SHIP_H, speed: 320, moveDir: 1, shielded: false };
@@ -127,7 +127,7 @@ export function bootstrapInvaders(root) {
     stars.push({ x: Math.random() * W, y: Math.random() * H, z: Math.random(), spd: 10 + Math.random() * 35 });
   }
 
-  const keys = {};
+  const keys = engine.keys;
 
   // ── Utilities ─────────────────────────────────────────────────────────────────
 
@@ -601,15 +601,12 @@ export function bootstrapInvaders(root) {
     });
   }
 
-  // ── Game loop ─────────────────────────────────────────────────────────────────
+  // ── Engine hooks (loop + input via BaseGame) ──────────────────────────────────
 
-  function loop(ts) {
-    const dt = Math.min((ts - lastTime) / 1000, 0.05);
-    lastTime = ts;
-    update(dt);
-    draw();
-    raf = requestAnimationFrame(loop);
-  }
+  engine.onTick    = (dt) => { update(dt); draw(); };
+  engine.onKeyDown = (e)  => {
+    if (e.key === ' ' && running && !paused && waveIntroTimer <= 0) tryShoot();
+  };
 
   // ── Game over ─────────────────────────────────────────────────────────────────
 
@@ -628,19 +625,6 @@ export function bootstrapInvaders(root) {
     if (window.showGameOverModal) window.showGameOverModal(score);
   }
 
-  // ── Input ─────────────────────────────────────────────────────────────────────
-
-  function onKeyDown(e) {
-    keys[e.key] = true;
-    if (e.key === ' ' && running && !paused && waveIntroTimer <= 0) {
-      e.preventDefault();
-      tryShoot();
-    }
-    if ((e.key === 'ArrowLeft' || e.key === 'ArrowRight') && running) e.preventDefault();
-  }
-
-  function onKeyUp(e) { keys[e.key] = false; }
-
   // ── Lifecycle ─────────────────────────────────────────────────────────────────
 
   function init() {
@@ -648,8 +632,7 @@ export function bootstrapInvaders(root) {
     updateHud();
     draw();
     window.__invadersOverlayStateHook = getOverlayState;
-    document.addEventListener('keydown', onKeyDown);
-    document.addEventListener('keyup', onKeyUp);
+    engine.attachInput();
     const startBtn = document.getElementById('startBtn');
     const pauseBtn = document.getElementById('pauseBtn');
     const resetBtn = document.getElementById('resetBtn');
@@ -664,9 +647,7 @@ export function bootstrapInvaders(root) {
     paused   = false;
     gameOver = false;
     startWave();
-    lastTime = performance.now();
-    if (raf) cancelAnimationFrame(raf);
-    raf = requestAnimationFrame(loop);
+    engine.startLoop();
   }
 
   function pause() {
@@ -678,19 +659,16 @@ export function bootstrapInvaders(root) {
   }
 
   function reset() {
-    if (raf) cancelAnimationFrame(raf);
+    engine.stopLoop();
     stopAllSounds();
     resetGame();
-    lastTime = performance.now();
-    raf = requestAnimationFrame(loop);
+    engine.startLoop();
   }
 
   function destroy() {
-    if (raf) cancelAnimationFrame(raf);
+    engine.destroy();
     stopAllSounds();
     if (window.__invadersOverlayStateHook === getOverlayState) delete window.__invadersOverlayStateHook;
-    document.removeEventListener('keydown', onKeyDown);
-    document.removeEventListener('keyup', onKeyUp);
     const startBtn = document.getElementById('startBtn');
     const pauseBtn = document.getElementById('pauseBtn');
     const resetBtn = document.getElementById('resetBtn');
