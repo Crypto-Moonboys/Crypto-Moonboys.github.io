@@ -502,6 +502,11 @@ export function bootstrapInvaders(root) {
               // frame, which would leave one tick where the empty invader grid
               // could trigger unintended code paths (e.g. a stale game-over check).
               if (!boss && invaders.every((i) => !i.alive)) {
+                // Remove the killing bullet from the array before starting the
+                // new wave.  startWave() resets bullets=[] so any remaining
+                // bullets are intentionally discarded — the new wave begins
+                // with a clean slate, matching how boss-kill wave transitions
+                // already work.
                 bullets.splice(bi, 1);
                 completeWave();
                 updateEffects(dt);
