@@ -32,16 +32,21 @@ import {
   BOSS_SHOOT_INTERVAL_MIN, BOSS_SHOOT_INTERVAL_MAX,
   BOSS_SHOOT_INTERVAL_SCALE_MIN, BOSS_SHOOT_INTERVAL_PER_WAVE,
   BOSS_BULLET_SPEED_BASE, BOSS_BULLET_SPEED_PER_WAVE,
-  BOSS_SPREAD_NORMAL, BOSS_SPREAD_AGGRESSIVE,
+  BOSS_SPREAD_NORMAL, BOSS_SPREAD_AGGRESSIVE, BOSS_SPREAD_PHASE3,
   BUNKER_BLOCK_W, BUNKER_BLOCK_H,
   buildGrid, spawnBoss, buildBunkers, makeEnemyBullet,
-  calcInvaderPoints,
+  calcInvaderPoints, getBossPhase,
 } from './invader-system.js';
 
 import {
   POWERUP_DROP_CHANCE, POWERUP_BOSS_DROP_CHANCE,
   makeDroppedPowerup, activatePowerup, tickPowerups, getScoreMultiplier,
 } from './powerup-system.js';
+
+import {
+  makeUpgrades, pickUpgradeChoices, applyUpgrade,
+  getUpgradedShootRate, getUpgradedBulletDmg, getUpgradedScoreMult, getSpreadAngles,
+} from './upgrade-system.js';
 
 import { createRenderer } from './render-system.js';
 
@@ -77,6 +82,10 @@ export function bootstrapInvaders(root) {
   const MAX_STREAK_BONUS  = 0.5;
   const WAVE_INTRO_DURATION = 2.2;
 
+  const BOMB_COOLDOWN = 5.0;   // seconds between bomb shots
+  const BOMB_RADIUS   = 90;    // area-damage radius in px
+  const BOMB_SIZE     = 18;    // half-size of bomb bullet hitbox
+
   // ── Game state ────────────────────────────────────────────────────────────────
 
   let score    = 0;
@@ -92,6 +101,7 @@ export function bootstrapInvaders(root) {
 
   let bullets       = [];
   let shootCooldown = 0;
+  let bombCooldown  = 0;
 
   let invaders         = [];
   let invDir           = 1;
@@ -115,6 +125,16 @@ export function bootstrapInvaders(root) {
   let lastActivatedPowerup = null;
 
   let bunkers = [];
+
+  // ── Permanent run upgrades + between-wave screen ──────────────────────────────
+  let upgrades       = makeUpgrades();
+  let upgradePhase   = false;   // false | 'picking'
+  let upgradeChoices = [];
+
+  // ── Game-feel state ───────────────────────────────────────────────────────────
+  let screenFlashTimer = 0;
+  let droneAngle       = 0;
+  let droneCooldown    = 0;
 
   const particles  = [];
   const scoreTexts = [];
@@ -192,6 +212,8 @@ export function bootstrapInvaders(root) {
       player_damage: 'invaders-player-damage',
       boss_warning:  'invaders-boss-warning',
       game_over:     'invaders-game-over',
+      wave_clear:    'invaders-wave-clear',
+      upgrade:       'invaders-upgrade',
     };
     const id = map[type];
     if (id) playSound(id);
@@ -236,6 +258,7 @@ export function bootstrapInvaders(root) {
       shakeTime -= dt; shakeIntensity *= 0.9;
       if (shakeTime <= 0) { shakeTime = 0; shakeIntensity = 0; }
     }
+    if (screenFlashTimer > 0) screenFlashTimer -= dt;
     for (const s of stars) {
       s.y += s.spd * dt * (0.65 + wave * 0.03);
       if (s.y > H + 4) { s.y = -4; s.x = Math.random() * W; }
@@ -283,7 +306,11 @@ export function bootstrapInvaders(root) {
       addScore(survival, W * 0.5, 82, '#3fb950');
       spawnExplosion(W * 0.5, 95, 0.8, '#3fb950');
     }
-    startWave();
+    playSfx('wave_clear');
+    // Pause before the next wave and let the player choose an upgrade
+    upgradeChoices = pickUpgradeChoices(upgrades);
+    upgradePhase   = 'picking';
+    // startWave() is called from the onKeyDown handler once a choice is made
   }
 
   function resetGame() {
@@ -312,6 +339,13 @@ export function bootstrapInvaders(root) {
     hitFlashes.length = 0;
     shakeTime      = 0;
     shakeIntensity = 0;
+    upgrades       = makeUpgrades();
+    upgradePhase   = false;
+    upgradeChoices = [];
+    screenFlashTimer = 0;
+    droneAngle       = 0;
+    droneCooldown    = 0;
+    bombCooldown     = 0;
     player = { x: W / 2, y: H - 50, w: SHIP_W, h: SHIP_H, speed: 320, moveDir: 1, shielded: false };
     updateHud();
     draw();
@@ -320,26 +354,80 @@ export function bootstrapInvaders(root) {
   // ── Shooting ──────────────────────────────────────────────────────────────────
 
   function tryShoot() {
-    if (shootCooldown > 0 || !running || paused || gameOver || waveIntroTimer > 0) return;
-    const cx = player.x + player.w / 2;
-    const by = player.y - 2;
-    if (activePowerups.has('spread')) {
-      const angles = [-Math.PI / 12, 0, Math.PI / 12];
-      for (const ang of angles) {
-        bullets.push({ x: cx - 2 + Math.sin(ang) * 8, y: by, w: 4, h: 12,
-                       vx: Math.sin(ang) * BULLET_SPD, vy: BULLET_SPD });
-      }
-    } else {
-      bullets.push({ x: cx - 2, y: by, w: 4, h: 12, vx: 0, vy: BULLET_SPD });
+    if (shootCooldown > 0 || !running || paused || gameOver || waveIntroTimer > 0 || upgradePhase === 'picking') return;
+    const cx     = player.x + player.w / 2;
+    const by     = player.y - 2;
+    const angles = getSpreadAngles(upgrades, activePowerups.has('spread'));
+    const dmg    = getUpgradedBulletDmg(upgrades);
+    for (const ang of angles) {
+      bullets.push({ x: cx - 2 + Math.sin(ang) * 8, y: by, w: 4, h: 12,
+                     vx: Math.sin(ang) * BULLET_SPD, vy: BULLET_SPD, dmg });
     }
-    shootCooldown = activePowerups.has('rapid') ? SHOOT_RATE * 0.4 : SHOOT_RATE;
+    const baseRate = activePowerups.has('rapid') ? SHOOT_RATE * 0.4 : SHOOT_RATE;
+    shootCooldown  = getUpgradedShootRate(baseRate, upgrades);
     playSfx('shoot');
+  }
+
+  function tryBombShot() {
+    if (!upgrades.bombShot || bombCooldown > 0 || !running || paused || gameOver || waveIntroTimer > 0 || upgradePhase === 'picking') return;
+    const cx = player.x + player.w / 2;
+    bullets.push({ x: cx - BOMB_SIZE, y: player.y - BOMB_SIZE * 2,
+                   w: BOMB_SIZE * 2, h: BOMB_SIZE * 2, vx: 0, vy: BULLET_SPD * 0.55, isBomb: true });
+    bombCooldown = BOMB_COOLDOWN;
+    playSfx('shoot');
+  }
+
+  /**
+   * Area-damage explosion centred at (bx, by).
+   * Kills / damages all invaders and the boss within BOMB_RADIUS pixels.
+   * Does NOT call completeWave or return — the caller handles that.
+   */
+  function detonateBomb(bx, by) {
+    spawnExplosion(bx, by, 2.5, '#ff6b2b');
+    screenShake(6, 0.28);
+    playSfx('explosion');
+
+    for (const inv of invaders) {
+      if (!inv.alive) continue;
+      const dx = (inv.x + inv.w / 2) - bx;
+      const dy = (inv.y + inv.h / 2) - by;
+      if (dx * dx + dy * dy > BOMB_RADIUS * BOMB_RADIUS) continue;
+      if (inv.shieldHp > 0) {
+        inv.shieldHp = 0;
+        inv.shieldHitTimer = 0.2;
+      } else {
+        inv.alive = false;
+        streak++; streakTimer = 1.8;
+        const pts = calcInvaderPoints(inv, wave, streak, { STREAK_BONUS_RATE, MAX_STREAK_BONUS })
+          * getScoreMultiplier(activePowerups) * getUpgradedScoreMult(upgrades);
+        addScore(pts, inv.x + inv.w * 0.5, inv.y, '#ff6b2b');
+        spawnExplosion(inv.x + inv.w * 0.5, inv.y + inv.h * 0.5, inv.type === 'bomber' ? 1.2 : 0.7, '#ff6b2b');
+      }
+    }
+
+    if (boss) {
+      const dx = (boss.x + boss.w / 2) - bx;
+      const dy = (boss.y + boss.h / 2) - by;
+      if (dx * dx + dy * dy <= BOMB_RADIUS * BOMB_RADIUS) {
+        const dmg = 4;
+        boss.hp -= dmg;
+        boss.hitTimer = 0.15;
+        addScore(20 * wave * dmg * getScoreMultiplier(activePowerups) * getUpgradedScoreMult(upgrades),
+          boss.x + boss.w / 2, boss.y - 4, '#ff9b9b');
+        spawnExplosion(boss.x + boss.w / 2, boss.y + boss.h / 2, 1.8, '#ff6b2b');
+        screenShake(10, 0.35);
+      }
+    }
   }
 
   // ── Update ────────────────────────────────────────────────────────────────────
 
   function update(dt) {
     if (!running || paused || gameOver) { updateEffects(dt); return; }
+
+    // Freeze simulation during the between-wave upgrade screen
+    if (upgradePhase === 'picking') { updateEffects(dt); return; }
+
     elapsed += dt;
 
     if (waveIntroTimer > 0) { waveIntroTimer -= dt; updateEffects(dt); return; }
@@ -353,7 +441,21 @@ export function bootstrapInvaders(root) {
     player.x = clamp(player.x, 0, W - player.w);
 
     if (shootCooldown > 0) shootCooldown -= dt;
+    if (bombCooldown  > 0) bombCooldown  -= dt;
     if (streakTimer > 0) { streakTimer -= dt; if (streakTimer <= 0) streak = 0; }
+
+    // Drone companion auto-fire
+    if (upgrades.drone > 0) {
+      droneAngle    += dt * 1.8;
+      droneCooldown -= dt;
+      if (droneCooldown <= 0) {
+        droneCooldown = 0.7;
+        const dmg = getUpgradedBulletDmg(upgrades);
+        const bx  = player.x + player.w / 2 + Math.cos(droneAngle) * 44;
+        const by  = player.y + player.h / 2 + Math.sin(droneAngle) * 28;
+        bullets.push({ x: bx - 2, y: by, w: 4, h: 8, vx: 0, vy: BULLET_SPD * 0.85, dmg });
+      }
+    }
 
     // Boss entrance
     if (bossEntering && boss) {
@@ -366,7 +468,7 @@ export function bootstrapInvaders(root) {
 
     // Player bullet movement
     for (const b of bullets) { b.y -= b.vy * dt; b.x += (b.vx || 0) * dt; }
-    bullets = bullets.filter((b) => b.y > -20 && b.x > -20 && b.x < W + 20);
+    bullets = bullets.filter((b) => b.y > -60 && b.x > -60 && b.x < W + 60);
 
     // Invader hit timers
     for (const inv of invaders) {
@@ -376,7 +478,7 @@ export function bootstrapInvaders(root) {
 
     const slowMult = activePowerups.has('slow') ? 0.45 : 1;
 
-    // Invader grid movement
+    // Invader grid movement (hunters drift toward player)
     if (!boss && invaders.length) {
       const alive = invaders.filter((i) => i.alive);
       if (!alive.length) { completeWave(); updateEffects(dt); return; }
@@ -396,6 +498,11 @@ export function bootstrapInvaders(root) {
             drift += (Math.random() - 0.5) * (wave >= WAVE_ZIGZAG ? ERRATIC_MOVEMENT_ZIGZAG : ERRATIC_MOVEMENT_BASE) * dt;
           } else if (i.row === 3 && wave >= WAVE_ZIGZAG) {
             drift += Math.sin(elapsed * 7 + i.seed) * 8 * dt;
+          }
+          // Hunters: additional eased drift toward player's X
+          if (i.type === 'hunter') {
+            const targetX = player.x + player.w / 2 - i.w / 2;
+            drift += (targetX - i.x) * 0.9 * dt;
           }
           i.x += drift;
           minX = Math.min(minX, i.x);
@@ -418,9 +525,11 @@ export function bootstrapInvaders(root) {
       }
     }
 
-    // Boss movement & shooting
+    // Boss movement & phase-based shooting
     if (boss) {
-      boss.x += boss.speed * slowMult * boss.dir * dt;
+      const bossPhase = getBossPhase(boss);
+      const phaseSpeedMult = bossPhase === 3 ? 1.55 : bossPhase === 2 ? 1.2 : 1;
+      boss.x += boss.speed * slowMult * boss.dir * phaseSpeedMult * dt;
       if (boss.x <= 0)          { boss.x = 0;          boss.dir =  1; }
       if (boss.x + boss.w >= W) { boss.x = W - boss.w; boss.dir = -1; }
       invShootTimer -= dt;
@@ -429,19 +538,35 @@ export function bootstrapInvaders(root) {
       if (boss.hitTimer > 0)     boss.hitTimer   -= dt;
       boss.hpDisplay += (boss.hp - boss.hpDisplay) * Math.min(1, dt * 14);
       if (invShootTimer <= 0) {
-        invShootTimer = rand(BOSS_SHOOT_INTERVAL_MIN, BOSS_SHOOT_INTERVAL_MAX) *
+        const baseInterval = rand(BOSS_SHOOT_INTERVAL_MIN, BOSS_SHOOT_INTERVAL_MAX) *
           Math.max(BOSS_SHOOT_INTERVAL_SCALE_MIN, 1 - wave * BOSS_SHOOT_INTERVAL_PER_WAVE);
-        const spread = wave >= WAVE_AGGRESSIVE ? BOSS_SPREAD_AGGRESSIVE : BOSS_SPREAD_NORMAL;
-        const speed  = (BOSS_BULLET_SPEED_BASE + wave * BOSS_BULLET_SPEED_PER_WAVE) * slowMult;
+        let spread, speed, interval;
+        if (bossPhase === 1) {
+          spread   = BOSS_SPREAD_NORMAL;
+          speed    = (BOSS_BULLET_SPEED_BASE + wave * BOSS_BULLET_SPEED_PER_WAVE) * slowMult;
+          interval = baseInterval;
+        } else if (bossPhase === 2) {
+          spread   = BOSS_SPREAD_AGGRESSIVE;
+          speed    = (BOSS_BULLET_SPEED_BASE + wave * BOSS_BULLET_SPEED_PER_WAVE) * 1.25 * slowMult;
+          interval = baseInterval * 0.75;
+        } else {
+          spread   = BOSS_SPREAD_PHASE3;
+          speed    = (BOSS_BULLET_SPEED_BASE + wave * BOSS_BULLET_SPEED_PER_WAVE) * 1.6 * slowMult;
+          interval = baseInterval * 0.5;
+        }
+        invShootTimer = interval;
         for (const sx of spread) {
           invBullets.push({ x: boss.x + boss.w / 2 + sx, y: boss.y + boss.h, w: 4, h: 14, vy: speed });
         }
       }
     }
 
-    // Enemy bullets
-    for (const b of invBullets) b.y += b.vy * dt;
-    invBullets = invBullets.filter((b) => b.y < H + 20);
+    // Enemy bullet movement (supports vx for bomber radial bullets)
+    for (const b of invBullets) {
+      b.y += b.vy * dt;
+      if (b.vx !== undefined) b.x += b.vx * dt;
+    }
+    invBullets = invBullets.filter((b) => b.y < H + 20 && b.y > -H && b.x > -60 && b.x < W + 60);
 
     // Powerup items
     for (const p of powerupItems) p.y += p.vy * dt;
@@ -458,9 +583,60 @@ export function bootstrapInvaders(root) {
       }
     }
 
-    // Player bullets vs bunkers + invaders + boss
+    // ── Bomb detonation pass (before normal bullet collision) ──────────────────
+    for (let bi = bullets.length - 1; bi >= 0; bi--) {
+      const b = bullets[bi];
+      if (!b.isBomb) continue;
+      // Check for any collision that should trigger the bomb
+      let shouldDetonate = false;
+      for (const bunker of bunkers) {
+        for (const blk of bunker) {
+          if (blk.hp > 0 && rectsOverlap(b.x, b.y, b.w, b.h, blk.x, blk.y, BUNKER_BLOCK_W, BUNKER_BLOCK_H)) {
+            shouldDetonate = true; break;
+          }
+        }
+        if (shouldDetonate) break;
+      }
+      if (!shouldDetonate) {
+        for (const inv of invaders) {
+          if (inv.alive && rectsOverlap(b.x, b.y, b.w, b.h, inv.x, inv.y, inv.w, inv.h)) {
+            shouldDetonate = true; break;
+          }
+        }
+      }
+      if (!shouldDetonate && boss && rectsOverlap(b.x, b.y, b.w, b.h, boss.x, boss.y, boss.w, boss.h)) {
+        shouldDetonate = true;
+      }
+      if (!shouldDetonate) continue;
+
+      detonateBomb(b.x + b.w / 2, b.y + b.h / 2);
+      bullets.splice(bi, 1);
+
+      // Check if bomb killed the boss
+      if (boss && boss.hp <= 0) {
+        addScore(500 * wave * getScoreMultiplier(activePowerups) * getUpgradedScoreMult(upgrades),
+          boss.x + boss.w * 0.5, boss.y - 16, '#ff4fd1');
+        spawnExplosion(boss.x + boss.w * 0.5, boss.y + boss.h * 0.5, 2.0, '#ff4444');
+        screenShake(12, 0.4);
+        playSfx('explosion');
+        if (Math.random() < POWERUP_BOSS_DROP_CHANCE) powerupItems.push(makeDroppedPowerup(boss.x + boss.w * 0.5, boss.y + boss.h * 0.5));
+        boss = null;
+        completeWave();
+        updateEffects(dt);
+        return;
+      }
+      // Check if bomb cleared all invaders
+      if (!boss && invaders.every((i) => !i.alive)) {
+        completeWave();
+        updateEffects(dt);
+        return;
+      }
+    }
+
+    // ── Player bullets vs bunkers + invaders + boss ────────────────────────────
     for (let bi = bullets.length - 1; bi >= 0; bi--) {
       const b   = bullets[bi];
+      if (b.isBomb) continue; // already handled above
       let   hit = false;
 
       for (const bunker of bunkers) {
@@ -486,16 +662,33 @@ export function bootstrapInvaders(root) {
             spawnExplosion(b.x, b.y, 0.3, '#2ec5ff');
             playSfx('hit');
           } else {
-            inv.hp--;
+            const dmg = b.dmg || 1;
+            inv.hp -= dmg;
             inv.hitTimer = 0.12;
             if (inv.hp <= 0) {
               inv.alive = false;
               streak++;
               streakTimer = 1.8;
-              const pts = calcInvaderPoints(inv, wave, streak, { STREAK_BONUS_RATE, MAX_STREAK_BONUS }) * getScoreMultiplier(activePowerups);
+              const pts = calcInvaderPoints(inv, wave, streak, { STREAK_BONUS_RATE, MAX_STREAK_BONUS })
+                * getScoreMultiplier(activePowerups) * getUpgradedScoreMult(upgrades);
               addScore(pts, inv.x + inv.w * 0.5, inv.y, '#f7c948');
-              spawnExplosion(inv.x + inv.w * 0.5, inv.y + inv.h * 0.5, 0.7, '#ff4fd1');
-              playSfx('hit');
+              // Bomber death: radial bullet burst + chain explosion
+              if (inv.type === 'bomber') {
+                playSfx('explosion');
+                spawnExplosion(inv.x + inv.w * 0.5, inv.y + inv.h * 0.5, 1.4, '#ff6b2b');
+                const bx = inv.x + inv.w / 2;
+                const by = inv.y + inv.h / 2;
+                const bombSpd = 170 + wave * 6;
+                for (let k = 0; k < 8; k++) {
+                  const angle = (k / 8) * Math.PI * 2;
+                  invBullets.push({ x: bx - 2, y: by - 6, w: 4, h: 10,
+                                    vy: bombSpd * Math.sin(angle),
+                                    vx: bombSpd * Math.cos(angle) });
+                }
+              } else {
+                spawnExplosion(inv.x + inv.w * 0.5, inv.y + inv.h * 0.5, 0.7, '#ff4fd1');
+                playSfx('hit');
+              }
               if (Math.random() < POWERUP_DROP_CHANCE) powerupItems.push(makeDroppedPowerup(inv.x + inv.w * 0.5, inv.y + inv.h));
               // If this was the last living invader, advance to the next wave
               // immediately in the same update() run — do not wait for the next
@@ -523,14 +716,17 @@ export function bootstrapInvaders(root) {
 
       if (!hit && boss && rectsOverlap(b.x, b.y, b.w, b.h, boss.x, boss.y, boss.w, boss.h)) {
         hit = true;
-        boss.hp--;
+        const dmg = b.dmg || 1;
+        boss.hp -= dmg;
         boss.hitTimer = 0.12;
-        addScore(20 * wave * getScoreMultiplier(activePowerups), boss.x + boss.w * 0.5, boss.y - 4, '#ff9b9b');
+        addScore(20 * wave * dmg * getScoreMultiplier(activePowerups) * getUpgradedScoreMult(upgrades),
+          boss.x + boss.w * 0.5, boss.y - 4, '#ff9b9b');
         spawnExplosion(b.x, b.y, 0.5, '#ff8888');
         screenShake(3, 0.12);
         playSfx('hit');
         if (boss.hp <= 0) {
-          addScore(500 * wave * getScoreMultiplier(activePowerups), boss.x + boss.w * 0.5, boss.y - 16, '#ff4fd1');
+          addScore(500 * wave * getScoreMultiplier(activePowerups) * getUpgradedScoreMult(upgrades),
+            boss.x + boss.w * 0.5, boss.y - 16, '#ff4fd1');
           spawnExplosion(boss.x + boss.w * 0.5, boss.y + boss.h * 0.5, 1.9, '#ff4444');
           screenShake(10, 0.35);
           playSfx('explosion');
@@ -591,13 +787,16 @@ export function bootstrapInvaders(root) {
   // ── Draw (delegates to renderer) ─────────────────────────────────────────────
 
   function draw() {
+    const bossPhase = boss ? getBossPhase(boss) : 0;
     renderer.draw({
       running, paused, gameOver, score, lives, wave,
       elapsed, streak, streakTimer, waveIntroTimer, WAVE_INTRO_DURATION,
       shakeTime, shakeIntensity,
-      player, invaders, boss, bullets, invBullets,
+      player, invaders, boss, bossPhase, bullets, invBullets,
       bunkers, powerupItems, activePowerups,
       particles, scoreTexts, hitFlashes, stars,
+      upgradePhase, upgradeChoices, upgrades,
+      screenFlashTimer, droneAngle, bombCooldown,
     });
   }
 
@@ -605,7 +804,26 @@ export function bootstrapInvaders(root) {
 
   engine.onTick    = (dt) => { update(dt); draw(); };
   engine.onKeyDown = (e)  => {
+    // During the upgrade screen: 1/2/3 select an upgrade, then start next wave
+    if (upgradePhase === 'picking') {
+      const idx = { '1': 0, '2': 1, '3': 2 }[e.key];
+      if (idx !== undefined && upgradeChoices[idx]) {
+        const def = upgradeChoices[idx];
+        const applied = applyUpgrade(def.id, upgrades);
+        if (!applied) {
+          // Already maxed — grant a score bonus instead
+          addScore(wave * 200 + 500, W / 2, H / 2, '#bc8cff');
+        }
+        upgradePhase   = false;
+        upgradeChoices = [];
+        screenFlashTimer = 0.35;
+        playSfx('upgrade');
+        startWave();
+      }
+      return; // block all other keys during upgrade screen
+    }
     if (e.key === ' ' && running && !paused && waveIntroTimer <= 0) tryShoot();
+    if ((e.key === 'b' || e.key === 'B') && running && !paused) tryBombShot();
   };
 
   // ── Game over ─────────────────────────────────────────────────────────────────

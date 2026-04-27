@@ -16,6 +16,17 @@ const SOUND_LIBRARY = {
     { type: 'sawtooth', freqStart: 280, freqEnd: 120, duration: 0.26, volume: 0.04, delay: 0.08 },
     { type: 'triangle', freqStart: 220, freqEnd: 80,  duration: 0.24, volume: 0.04, delay: 0.18 },
   ]},
+  'invaders-wave-clear': { kind: 'chord', tones: [
+    { type: 'sine', freqStart: 523, freqEnd: 523, duration: 0.14, volume: 0.05,  delay: 0.00 },
+    { type: 'sine', freqStart: 659, freqEnd: 659, duration: 0.14, volume: 0.045, delay: 0.12 },
+    { type: 'sine', freqStart: 784, freqEnd: 784, duration: 0.18, volume: 0.05,  delay: 0.24 },
+    { type: 'sine', freqStart: 1047, freqEnd: 1047, duration: 0.22, volume: 0.055, delay: 0.38 },
+  ]},
+  'invaders-upgrade': { kind: 'chord', tones: [
+    { type: 'sine',     freqStart: 660,  freqEnd: 880,  duration: 0.16, volume: 0.05,  delay: 0.00 },
+    { type: 'triangle', freqStart: 880,  freqEnd: 1320, duration: 0.16, volume: 0.04,  delay: 0.04 },
+    { type: 'sine',     freqStart: 1320, freqEnd: 1760, duration: 0.20, volume: 0.045, delay: 0.08 },
+  ]},
   'hexgl-start':        { kind: 'tone',  type: 'triangle', freqStart: 440, freqEnd: 660, duration: 0.09, volume: 0.05 },
   'hexgl-reset':        { kind: 'tone',  type: 'sawtooth', freqStart: 300, freqEnd: 170, duration: 0.12, volume: 0.04 },
   'hexgl-submit':       { kind: 'tone',  type: 'sine',     freqStart: 620, freqEnd: 880, duration: 0.12, volume: 0.06 },
