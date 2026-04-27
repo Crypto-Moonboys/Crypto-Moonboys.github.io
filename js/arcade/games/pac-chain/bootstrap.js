@@ -32,6 +32,7 @@ function createLegacybootstrapPacChain(root) {
   const COLS = 20;
   const ROWS = 20;
   const TUNNEL_ROW = 10;
+  const TUNNEL_WRAP_THRESHOLD = 0.5;
   const BASE_CELL = 28;
   const PLAYER_START = { x: 10, y: 16 };
   const BASE_LIVES = 3;
@@ -454,8 +455,8 @@ function createLegacybootstrapPacChain(root) {
     actor.x = (actor.px - cell / 2) / cell;
     actor.y = (actor.py - cell / 2) / cell;
     if (Math.round(actor.y) === TUNNEL_ROW) {
-      if (actor.x < -0.5) { actor.x = COLS - 1; actor.px = tileCenter(COLS - 1, cell); }
-      else if (actor.x > COLS - 0.5) { actor.x = 0; actor.px = tileCenter(0, cell); }
+      if (actor.x < -TUNNEL_WRAP_THRESHOLD) { actor.x = COLS - 1; actor.px = tileCenter(COLS - 1, cell); }
+      else if (actor.x > COLS - TUNNEL_WRAP_THRESHOLD) { actor.x = 0; actor.px = tileCenter(0, cell); }
     }
     if (state.levelState.teleportTunnels) {
       if (Math.round(actor.x) === 1 && Math.round(actor.y) === 1) { actor.x = COLS - 2; actor.y = ROWS - 2; }
