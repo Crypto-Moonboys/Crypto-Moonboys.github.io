@@ -680,12 +680,13 @@
     startRun(name) {
       const heroName = name.slice(0, 18);
       this.audio.ensure();
-        this.player = {
+      this.player = {
         name: heroName,
-          hp: 120,
-          maxHp: 120,
-          xp: 0,
-          atk: 16,
+        hp: 145,
+        maxHp: 145,
+        gold: 60,
+        xp: 0,
+        atk: 16,
         def: 5,
         critChance: 0.12,
         heavyCrit: 0.16,
@@ -896,7 +897,7 @@
       const enemies = Array.from({ length: enemyCount }).map((_, idx) => {
         const role = node.type === "boss" ? "attacker" : roles[idx % roles.length];
         const tpl = ROLE_TEMPLATES[role];
-        const scale = 1 + node.difficulty * 0.17 + (node.type === "elite" ? 0.3 : 0) + (node.type === "boss" ? 0.55 : 0);
+        const scale = 1 + node.difficulty * 0.12 + (node.type === "elite" ? 0.2 : 0) + (node.type === "boss" ? 0.45 : 0);
         const hp = Math.round(tpl.hp * scale + randi(-4, 8));
         return {
           id: idx + 1,
@@ -1071,7 +1072,7 @@
           this.log(enemy.role + " #" + enemy.id + " infects you with toxin.");
         }
 
-        const dmg = this.dealDamage(this.player, action.value, false, "enemy");
+        const dmg = this.dealDamage(this.player, action.value * 0.72, false, "enemy");
         this.player.combo = Math.max(0, this.player.combo - 1);
         this.log(enemy.role + " #" + enemy.id + " hits for " + dmg + ".");
         this.audio.hit();
@@ -1188,6 +1189,7 @@
         const xpGain = 18 + node.difficulty * 6 + (node.type === "elite" ? 22 : 0) + (node.type === "boss" ? 70 : 0);
         this.player.gold += reward;
         this.player.xp += xpGain;
+        this.player.hp = clamp(this.player.hp + 10, 0, this.player.maxHp);
         this.meta.zonesCleared += 1;
         this.log("Encounter won. Earned " + reward + " gold and " + xpGain + " XP.");
         if (node.type === "boss") this.meta.bossesDefeated += 1;
@@ -1239,6 +1241,7 @@
       this.player.pos.py = 5 * this.tileSize;
       this.player.pos.vx = 0;
       this.player.pos.vy = 0;
+      this.player.hp = clamp(this.player.hp + 12, 0, this.player.maxHp);
       this.pendingChoices = options;
       this.spawnPortals(options);
       this.phase = "map";
@@ -1400,8 +1403,12 @@
     frame(ts) {
       const dt = Math.min(0.033, (ts - this.lastTs) / 1000 || 0.016);
       this.lastTs = ts;
-      this.tick(dt);
-      this.render();
+      try {
+        this.tick(dt);
+        this.render();
+      } catch (err) {
+        console.error("btqm-frame-error", err);
+      }
       requestAnimationFrame((nextTs) => this.frame(nextTs));
     }
 
@@ -1539,7 +1546,7 @@
         c.fillText("D" + node.difficulty, px + 8, py + this.tileSize + 14);
       });
 
-      this.drawPlayer(offX, offY);
+      if (this.player) this.drawPlayer(offX, offY);
       this.drawParticles();
     }
 
