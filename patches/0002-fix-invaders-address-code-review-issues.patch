@@ -1,0 +1,62 @@
+From e13b97956f788db1444b592bd1c3ba7535d9d489 Mon Sep 17 00:00:00 2001
+From: "copilot-swe-agent[bot]" <198982749+Copilot@users.noreply.github.com>
+Date: Mon, 27 Apr 2026 01:59:40 +0000
+Subject: [PATCH 2/2] fix(invaders): address code review issues
+
+- Deduplicate upgrade pool in pickUpgradeChoicesWithRarity to prevent
+  returning fewer than 3 unique choices
+- Import MODIFIER_BLACKOUT and WAVE_MODIFIER_DEFS in bootstrap.js
+- Force BLACKOUT wave modifier in startWave() when blackoutWave
+  risk/reward is active, ensuring it actually takes effect
+
+Co-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>
+
+Co-authored-by: HODLKONG64 <214493755+HODLKONG64@users.noreply.github.com>
+---
+ js/arcade/games/invaders/bootstrap.js      | 9 ++++++++-
+ js/arcade/games/invaders/upgrade-system.js | 2 +-
+ 2 files changed, 9 insertions(+), 2 deletions(-)
+
+diff --git a/js/arcade/games/invaders/bootstrap.js b/js/arcade/games/invaders/bootstrap.js
+index 73d73de..4933024 100644
+--- a/js/arcade/games/invaders/bootstrap.js
++++ b/js/arcade/games/invaders/bootstrap.js
+@@ -53,6 +53,8 @@ import {
+ } from './upgrade-system.js';
+ 
+ import {
++  MODIFIER_BLACKOUT,
++  WAVE_MODIFIER_DEFS,
+   createScalingDirector, tickDirector, pickWaveModifier,
+   shouldTriggerSurpriseEvent, pickSurpriseEvent,
+ } from './event-system.js';
+@@ -406,7 +408,12 @@ export function bootstrapInvaders(root) {
+       if (activeModifier && activeModifier.remove) {
+         activeModifier.remove(buildModifierState());
+       }
+-      activeModifier = pickWaveModifier(wave, director);
++      // Force blackout modifier if risk/reward selected it
++      if (activeRiskReward && activeRiskReward.id === 'blackoutWave') {
++        activeModifier = WAVE_MODIFIER_DEFS.find(m => m.id === MODIFIER_BLACKOUT) || null;
++      } else {
++        activeModifier = pickWaveModifier(wave, director);
++      }
+       modifierData   = {};
+       if (activeModifier) {
+         activeModifier.apply(buildModifierState());
+diff --git a/js/arcade/games/invaders/upgrade-system.js b/js/arcade/games/invaders/upgrade-system.js
+index a6323b7..43c9629 100644
+--- a/js/arcade/games/invaders/upgrade-system.js
++++ b/js/arcade/games/invaders/upgrade-system.js
+@@ -204,7 +204,7 @@ export function pickUpgradeChoicesWithRarity(upgrades, wave) {
+   );
+   let pool = available.length >= 3 ? available.slice()
+            : UPGRADE_DEFS.filter(d => upgrades[d.id] < d.maxLevel);
+-  if (pool.length < 3) pool = pool.concat(UPGRADE_DEFS);
++  if (pool.length < 3) pool = [...new Set(pool.concat(UPGRADE_DEFS))];
+   for (let i = pool.length - 1; i > 0; i--) {
+     const j = Math.floor(Math.random() * (i + 1));
+     [pool[i], pool[j]] = [pool[j], pool[i]];
+-- 
+2.53.0
+
