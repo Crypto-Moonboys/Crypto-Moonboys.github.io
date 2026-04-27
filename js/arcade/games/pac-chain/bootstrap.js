@@ -454,8 +454,8 @@ function createLegacybootstrapPacChain(root) {
     actor.x = (actor.px - cell / 2) / cell;
     actor.y = (actor.py - cell / 2) / cell;
     if (Math.round(actor.y) === TUNNEL_ROW) {
-      if (actor.x < -0.7) { actor.x = COLS - 0.2; actor.px = tileCenter(actor.x, cell); }
-      else if (actor.x > COLS - 0.3) { actor.x = -0.2; actor.px = tileCenter(actor.x, cell); }
+      if (actor.x < -0.5) { actor.x = COLS - 1; actor.px = tileCenter(COLS - 1, cell); }
+      else if (actor.x > COLS - 0.5) { actor.x = 0; actor.px = tileCenter(0, cell); }
     }
     if (state.levelState.teleportTunnels) {
       if (Math.round(actor.x) === 1 && Math.round(actor.y) === 1) { actor.x = COLS - 2; actor.y = ROWS - 2; }
@@ -882,13 +882,7 @@ function createLegacybootstrapPacChain(root) {
   }
   function startLoop() { if (state.loopActive) return; state.loopActive = true; state.lastFrameTs = performance.now(); state.rafId = requestAnimationFrame(loop); }
   function stopLoop() { state.loopActive = false; if (state.rafId) { cancelAnimationFrame(state.rafId); state.rafId = 0; } }
-  function startMusic() {
-    if (!state.isRunning || state.isPaused || state.isGameOver || state.mutedMusic || isMuted() || state.musicHandles.length) return;
-    const bass = playSound('pac-chain-music-bass', { kind: 'tone', type: 'square', freqStart: 92, freqEnd: 92, duration: null, loop: true, volume: 0.008 });
-    const lead = playSound('pac-chain-music-lead', { kind: 'tone', type: 'triangle', freqStart: 276, freqEnd: 278, duration: null, loop: true, volume: 0.006 });
-    if (bass) state.musicHandles.push(bass);
-    if (lead) state.musicHandles.push(lead);
-  }
+  function startMusic() {}
   function stopMusic() { while (state.musicHandles.length) { const h = state.musicHandles.pop(); try { if (h && typeof h.stop === 'function') h.stop(); } catch (_) {} } }
   function syncMusicButton() { if (ui.music) { ui.music.textContent = state.mutedMusic ? 'Unmute Music' : 'Mute Music'; ui.music.setAttribute('aria-pressed', String(state.mutedMusic)); } }
   function handleResize() { applyScale(); draw(); }
