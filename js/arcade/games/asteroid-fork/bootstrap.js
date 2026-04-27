@@ -289,16 +289,17 @@ function applyFullscreenFit(state) {
   const stageRect = stage.getBoundingClientRect();
   const hud = card.querySelector('.hud');
   const hudHeight = hud ? hud.getBoundingClientRect().height : 0;
-  const ctrlBar = overlayOpen ? overlay.querySelector('#overlay-ctrl-bar') : null;
-  const ctrlBarHeight = ctrlBar ? ctrlBar.getBoundingClientRect().height : 36;
 
   let availableW = Math.max(320, Math.floor(stageRect.width - 16));
   let availableH;
   if (overlayOpen) {
-    const viewportH = window.innerHeight || stageRect.height;
-    availableH = Math.max(220, Math.floor(viewportH - ctrlBarHeight - hudHeight - 30));
+    const touchPad = overlay.querySelector('.overlay-touch-pad');
+    const touchPadVisible = !!(touchPad && getComputedStyle(touchPad).display !== 'none');
+    const touchPadHeight = touchPadVisible ? touchPad.getBoundingClientRect().height : 0;
+    availableH = Math.max(220, Math.floor(stageRect.height - hudHeight - touchPadHeight - 16));
   } else {
-    availableH = Math.max(240, Math.floor((window.innerHeight || stageRect.height) - 220));
+    const viewportH = window.innerHeight || stageRect.height;
+    availableH = Math.max(240, Math.floor(viewportH - 220));
   }
 
   const aspect = WORLD_W / WORLD_H;
@@ -1619,8 +1620,8 @@ function adapterInput(context, event) {
     state.gameOver = true;
   }
   if (event.key === 'Enter' || event.key === 'NumpadEnter') {
-    event.preventDefault();
     if (!state.running || state.gameOver) {
+      event.preventDefault();
       if (typeof window.hideGameOverModal === 'function') window.hideGameOverModal();
       resetRun(state);
       state.running = true;
