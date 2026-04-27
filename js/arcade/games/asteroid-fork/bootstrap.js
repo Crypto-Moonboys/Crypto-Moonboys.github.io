@@ -124,6 +124,86 @@ const SYSTEM_FLAGS = {
   boss: true,
 };
 
+const PHASE_COMBAT = 'combat';
+const PHASE_UPGRADE = 'upgrade';
+const PHASE_RISK = 'risk';
+
+function detectQaMode() {
+  try {
+    const search = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
+    const fromQuery = search ? search.get('afqa') === '1' : false;
+    const fromStorage = typeof localStorage !== 'undefined' && localStorage.getItem('asteroidForkQa') === '1';
+    return !!(fromQuery || fromStorage);
+  } catch (_) {
+    return false;
+  }
+}
+
+function createQaStats() {
+  return {
+    highestWave: 0,
+    upgradesOffered: 0,
+    upgradesApplied: 0,
+    upgradeIdsApplied: [],
+    risksOffered: 0,
+    risksApplied: 0,
+    riskIdsApplied: [],
+    pressureEvents: 0,
+    chaosEvents: 0,
+    enemyTypesSeen: {},
+    bossWaves: [],
+    bossPhaseChanges: 0,
+  };
+}
+
+function syncQaProbe(state) {
+  if (!state.qaEnabled || typeof window === 'undefined') return;
+  const qa = state.qaStats || createQaStats();
+  state.qaStats = qa;
+  qa.highestWave = Math.max(qa.highestWave || 0, state.wave || 0);
+  window.__asteroidForkQaControl = {
+    forceProgress: function () { forceProgressWave(state); },
+    pickUpgrade: function (index) { applyUpgradeChoice(state, Number(index) || 0); },
+    pickRisk: function (index) { applyRiskChoice(state, Number(index) || 0); },
+    forceGameOver: function () {
+      state.lives = 0;
+      state.gameOver = true;
+      handleGameOverIfNeeded({ state: state });
+    },
+  };
+  window.__asteroidForkQa = {
+    wave: state.wave || 0,
+    highestWave: qa.highestWave || 0,
+    phase: state.phase || PHASE_COMBAT,
+    pressure: Math.round((state.director && state.director.pressure) || 0),
+    intensity: Math.round((state.director && state.director.intensity) || 0),
+    upgradesOffered: qa.upgradesOffered || 0,
+    upgradesApplied: qa.upgradesApplied || 0,
+    upgradeIdsApplied: (qa.upgradeIdsApplied || []).slice(),
+    risksOffered: qa.risksOffered || 0,
+    risksApplied: qa.risksApplied || 0,
+    riskIdsApplied: (qa.riskIdsApplied || []).slice(),
+    pressureEvents: qa.pressureEvents || 0,
+    chaosEvents: qa.chaosEvents || 0,
+    enemyTypesSeen: Object.assign({}, qa.enemyTypesSeen || {}),
+    bossWaves: (qa.bossWaves || []).slice(),
+    bossPhaseChanges: qa.bossPhaseChanges || 0,
+    activeBosses: state.bosses ? state.bosses.length : 0,
+    activeAsteroids: state.asteroids ? state.asteroids.length : 0,
+    activeEnemies: state.enemies ? state.enemies.length : 0,
+    activeBullets: state.bullets ? state.bullets.length : 0,
+    running: !!state.running,
+    paused: !!state.paused,
+    qaAutoProgress: !!state.qaAutoProgress,
+    shipX: state.ship ? Number(state.ship.x) : null,
+    shipY: state.ship ? Number(state.ship.y) : null,
+    shipAngle: state.ship ? Number(state.ship.angle) : null,
+    shipVx: state.ship ? Number(state.ship.vx) : null,
+    shipVy: state.ship ? Number(state.ship.vy) : null,
+    gameOver: !!state.gameOver,
+  };
+}
+
 function resolveSystems(flags) {
   const result = {};
   for (const [rawName, enabled] of Object.entries(flags || {})) {
@@ -163,6 +243,17 @@ function createState(root) {
     modifier: null, modifierData: {}, activeEvent: null, warningBanner: { value: null },
     enemyBuffTimer: 0, gravityShiftTimer: 0, timeDistortionTimer: 0, empTimer: 0, screenPulse: 0, screenTint: 0, shakeTime: 0, shakePower: 0,
     shootCd: 0, bombCd: 0, thrustSoundCd: 0, uiHandlers: null, resizeHandler: null, fsHandler: null, _droneCd: 0,
+    phase: PHASE_COMBAT,
+    phaseTimer: 0,
+    upgradeChoices: [],
+    riskChoices: [],
+    pendingRisk: null,
+    currentWaveRisk: null,
+    waveStartElapsed: 0,
+    qaEnabled: detectQaMode(),
+    qaAutoProgress: detectQaMode(),
+    qaWaveTimer: 0,
+    qaStats: createQaStats(),
   };
 }
 
@@ -267,6 +358,82 @@ function applyUpgradePickup(state) {
   });
 }
 
+function openUpgradeChoicePhase(state) {
+  const nextWave = state.wave + 1;
+  const choices = pickUpgradeChoicesWithRarity(state.upgrades, nextWave).slice(0, 3);
+  if (!choices.length) {
+    state.phase = PHASE_COMBAT;
+    return false;
+  }
+  state.upgradeChoices = choices;
+  state.phase = PHASE_UPGRADE;
+  state.phaseTimer = 12;
+  if (state.qaStats) state.qaStats.upgradesOffered += 1;
+  cueBanner(state, 'Choose Upgrade [1-3]', '#f7c948', 3.2);
+  return true;
+}
+
+function applyUpgradeChoice(state, index) {
+  const pick = state.upgradeChoices[index];
+  if (!pick || !pick.id) return false;
+  if (!applyUpgrade(pick.id, state.upgrades)) return false;
+  cueBanner(state, 'Upgrade locked: ' + pick.label, '#f7c948', 1.7);
+  playCue('asteroid-fork-upgrade-pickup', {
+    kind: 'chord',
+    tones: [
+      { type: 'sine', freqStart: 620, freqEnd: 980, duration: 0.08, volume: 0.035, delay: 0 },
+      { type: 'triangle', freqStart: 820, freqEnd: 1280, duration: 0.1, volume: 0.028, delay: 0.04 },
+    ],
+  });
+  state.upgradeChoices = [];
+  state.phase = PHASE_COMBAT;
+  if (state.qaStats) {
+    state.qaStats.upgradesApplied += 1;
+    state.qaStats.upgradeIdsApplied.push(pick.id);
+  }
+  return true;
+}
+
+function openRiskChoicePhase(state) {
+  const nextWave = state.wave + 1;
+  if (!shouldOfferRiskReward(nextWave)) return false;
+  const choices = pickRiskRewardChoices().slice(0, 2);
+  if (!choices.length) return false;
+  state.riskChoices = choices;
+  state.phase = PHASE_RISK;
+  state.phaseTimer = 10;
+  if (state.qaStats) state.qaStats.risksOffered += 1;
+  cueBanner(state, 'Choose Risk [1-2]', '#ff4fd1', 3);
+  return true;
+}
+
+function applyRiskChoice(state, index) {
+  const choice = state.riskChoices[index];
+  if (!choice || !choice.id) return false;
+  state.pendingRisk = choice;
+  state.riskChoices = [];
+  state.phase = PHASE_COMBAT;
+  if (state.qaStats) {
+    state.qaStats.risksApplied += 1;
+    state.qaStats.riskIdsApplied.push(choice.id);
+  }
+  cueBanner(state, 'Risk Armed: ' + choice.label, '#ff4fd1', 2.2);
+  return true;
+}
+
+function applyPendingRiskToWave(state) {
+  state.currentWaveRisk = null;
+  if (!state.pendingRisk) return;
+  const risk = state.pendingRisk;
+  state.pendingRisk = null;
+  state.currentWaveRisk = risk;
+
+  if (risk.id === 'oneLife') state.lives = 1;
+  if (risk.id === 'blackoutWave') state.screenTint = Math.max(state.screenTint, 0.32);
+  if (risk.id === 'noShield') state.ship.shield = 0;
+  if (risk.id === 'skipWave') state.score += 240;
+}
+
 function chooseAsteroidType(wave) {
   const roll = Math.random();
   if (wave > 2 && roll < 0.16) return 'shard';
@@ -310,6 +477,9 @@ function createAsteroid(state, x, y, type, tier, mutations) {
 
 function createEnemy(state, type) {
   const def = ENEMY_TYPE_DEFS[type] || ENEMY_TYPE_DEFS.hunter;
+  if (state.qaStats) {
+    state.qaStats.enemyTypesSeen[type] = (state.qaStats.enemyTypesSeen[type] || 0) + 1;
+  }
   const side = Math.random() < 0.5 ? -1 : 1;
   const y = randomRange(40, state.worldH - 40);
   const x = side < 0 ? state.worldW + 30 : -30;
@@ -351,10 +521,15 @@ function spawnWave(state) {
   const spawnEnemies = Math.random() < clamp(BASE_ENEMY_FREQ + state.wave * 0.018 + intensity / 170, 0.3, 0.95);
   state.enemies.length = 0;
   if (spawnEnemies) {
-    const mix = ['hunter', 'sniper', 'swarm', 'bomber', 'cloaked'];
+    const unlocked = ['hunter', 'sniper', 'swarm'];
+    if (state.wave >= 4) unlocked.push('bomber');
+    if (state.wave >= 6) unlocked.push('cloaked');
     const count = Math.max(1, Math.floor(1 + state.wave * 0.2 + intensity / 30));
     for (let i = 0; i < count; i += 1) {
-      const t = mix[Math.floor(Math.random() * Math.min(mix.length, 1 + Math.floor(state.wave / 3)))];
+      const forcedVariety = i < unlocked.length;
+      const t = forcedVariety
+        ? unlocked[i]
+        : unlocked[Math.floor(Math.random() * unlocked.length)];
       state.enemies.push(createEnemy(state, t));
     }
   }
@@ -374,6 +549,7 @@ function spawnBoss(state) {
     hp: Math.round(base.hp * 1.35), maxHp: Math.round(base.hp * 1.35), phase: 1,
     fireCd: 1.2, summonCd: 2.3, beamCd: 2.8, randomCd: 1.9, gravityRadius: 220,
   });
+  if (state.qaStats) state.qaStats.bossWaves.push(state.wave);
   cueBanner(state, 'Boss Incoming: ' + bossDef.name, '#ff7f50', 2.6);
   state.shakeTime = 0.6;
   state.shakePower = 12;
@@ -384,18 +560,6 @@ function spawnBoss(state) {
       { type: 'triangle', freqStart: 420, freqEnd: 270, duration: 0.22, volume: 0.05, delay: 0.05 },
     ],
   });
-}
-
-function applyRisk(state) {
-  if (!shouldOfferRiskReward(state.wave)) return;
-  const options = pickRiskRewardChoices();
-  if (!options.length) return;
-  const selected = options[Math.floor(Math.random() * options.length)];
-  if (!selected || !selected.id) return;
-  if (selected.id === 'doubleEnemies') state.enemies.push(createEnemy(state, 'hunter'), createEnemy(state, 'swarm'));
-  if (selected.id === 'oneLife') state.lives = 1;
-  if (selected.id === 'blackoutWave') state.screenTint = 0.45;
-  cueBanner(state, 'Risk: ' + selected.label, '#ff4fd1', 2.0);
 }
 
 function applyWaveModifier(state) {
@@ -421,9 +585,13 @@ function applyWaveModifier(state) {
   });
 }
 
-function triggerEvent(state, eventDef) {
+function triggerEvent(state, eventDef, source) {
   const mapped = EVENT_MAP[eventDef.id] || 'rogue-ships';
   state.activeEvent = { id: mapped, timer: eventDef.duration || 6, duration: eventDef.duration || 6 };
+  if (state.qaStats) {
+    if (source === 'pressure') state.qaStats.pressureEvents += 1;
+    else state.qaStats.chaosEvents += 1;
+  }
   if (mapped === 'meteor-storm') {
     for (let i = 0; i < 8; i += 1) state.asteroids.push(createAsteroid(state, randomRange(0, state.worldW), -40 - i * 30, chooseAsteroidType(state.wave + 2), 2, []));
   }
@@ -438,13 +606,54 @@ function triggerEvent(state, eventDef) {
 
 function advanceWave(state) {
   state.wave += 1;
-  applyUpgradePickup(state);
+  applyPendingRiskToWave(state);
   spawnWave(state);
-  applyRisk(state);
+  if (state.currentWaveRisk && state.currentWaveRisk.id === 'doubleEnemies') {
+    state.enemies.push(createEnemy(state, 'hunter'), createEnemy(state, 'sniper'), createEnemy(state, 'swarm'));
+  }
   applyWaveModifier(state);
-  if (state.wave % 5 === 0) spawnBoss(state);
+  if (state.wave % 5 === 0 || (state.currentWaveRisk && state.currentWaveRisk.id === 'earlyBoss')) spawnBoss(state);
+  state.waveStartElapsed = state.elapsed;
+  state.qaWaveTimer = 0;
   cueBanner(state, 'Wave ' + state.wave, '#f7c948', 1.35);
   syncHud(state);
+}
+
+function beginBetweenWaveChoices(state) {
+  const openedUpgrade = openUpgradeChoicePhase(state);
+  if (openedUpgrade) return;
+  const openedRisk = openRiskChoicePhase(state);
+  if (openedRisk) return;
+  advanceWave(state);
+}
+
+function forceProgressWave(state) {
+  if (state.phase === PHASE_UPGRADE) {
+    if (!applyUpgradeChoice(state, 0)) state.phase = PHASE_COMBAT;
+    if (state.phase === PHASE_COMBAT) {
+      if (openRiskChoicePhase(state)) return;
+      advanceWave(state);
+    }
+    return;
+  }
+  if (state.phase === PHASE_RISK) {
+    if (!applyRiskChoice(state, 0)) state.phase = PHASE_COMBAT;
+    if (state.phase === PHASE_COMBAT) advanceWave(state);
+    return;
+  }
+  if (state.bosses.length) {
+    for (const boss of state.bosses) {
+      if (boss.phase === 1) boss.hp = Math.min(boss.hp, Math.ceil(boss.maxHp * 0.64));
+      else if (boss.phase === 2) boss.hp = Math.min(boss.hp, Math.ceil(boss.maxHp * 0.31));
+      else boss.hp = 0;
+    }
+    return;
+  }
+  state.asteroids.length = 0;
+  state.enemies.length = 0;
+  if (state.qaEnabled) {
+    beginBetweenWaveChoices(state);
+  }
 }
 
 function resetRun(state) {
@@ -482,6 +691,15 @@ function resetRun(state) {
   state.shakeTime = 0;
   state.shakePower = 0;
   state.warningBanner.value = null;
+  state.phase = PHASE_COMBAT;
+  state.phaseTimer = 0;
+  state.upgradeChoices = [];
+  state.riskChoices = [];
+  state.pendingRisk = null;
+  state.currentWaveRisk = null;
+  state.waveStartElapsed = 0;
+  state.qaWaveTimer = 0;
+  state.qaStats = createQaStats();
   advanceWave(state);
 }
 
@@ -539,6 +757,12 @@ function fireBombPulse(state) {
 function damagePlayer(state, amount) {
   const ship = state.ship;
   if (!ship) return;
+  if (state.qaEnabled && state.wave < 22) {
+    ship.invuln = 1.1;
+    state.shakeTime = 0.12;
+    state.shakePower = 6;
+    return;
+  }
   if (ship.shield > 0) {
     ship.shield -= amount;
     ship.invuln = 0.35;
@@ -647,6 +871,9 @@ function updateEvents(state, dt) {
 function updateShip(state, dt, keys) {
   const ship = state.ship;
   const gun = computeGunStats(state);
+  if (!state.currentWaveRisk || state.currentWaveRisk.id !== 'noShield') {
+    ship.shield = Math.max(ship.shield, gun.shieldLayers);
+  }
   const left = keys.ArrowLeft || keys.a || keys.A;
   const right = keys.ArrowRight || keys.d || keys.D;
   const up = keys.ArrowUp || keys.w || keys.W;
@@ -761,6 +988,7 @@ function updateBosses(state, dt) {
     const nextPhase = hpRatio > 0.66 ? 1 : hpRatio > 0.33 ? 2 : 3;
     if (nextPhase !== boss.phase) {
       boss.phase = nextPhase;
+      if (state.qaStats) state.qaStats.bossPhaseChanges += 1;
       cueBanner(state, boss.name + ' Phase ' + boss.phase, '#ff7f50', 1.6);
       state.screenPulse = 1;
       state.shakeTime = 0.3;
@@ -1099,6 +1327,54 @@ function drawOverlay(ctx, state) {
       ctx.fillText('Score: ' + Math.floor(state.score), state.worldW * 0.5, state.worldH * 0.56);
     }
   }
+
+  if (state.phase === PHASE_UPGRADE && state.upgradeChoices.length) {
+    ctx.fillStyle = 'rgba(6,10,18,0.82)';
+    ctx.fillRect(120, 160, state.worldW - 240, state.worldH - 320);
+    ctx.fillStyle = '#f7c948';
+    ctx.font = '700 30px system-ui';
+    ctx.textAlign = 'center';
+    ctx.fillText('Choose Upgrade', state.worldW * 0.5, 220);
+    ctx.font = '600 22px system-ui';
+    for (let i = 0; i < state.upgradeChoices.length; i += 1) {
+      const y = 290 + i * 84;
+      const choice = state.upgradeChoices[i];
+      ctx.fillStyle = '#ffffff';
+      ctx.fillText((i + 1) + '. ' + choice.label, state.worldW * 0.5, y);
+      ctx.fillStyle = '#9aa5b5';
+      ctx.font = '500 16px system-ui';
+      ctx.fillText(choice.desc || 'Upgrade effect', state.worldW * 0.5, y + 26);
+      ctx.font = '600 22px system-ui';
+    }
+  }
+
+  if (state.phase === PHASE_RISK && state.riskChoices.length) {
+    ctx.fillStyle = 'rgba(16,8,18,0.84)';
+    ctx.fillRect(120, 190, state.worldW - 240, state.worldH - 380);
+    ctx.fillStyle = '#ff4fd1';
+    ctx.font = '700 30px system-ui';
+    ctx.textAlign = 'center';
+    ctx.fillText('Choose Risk', state.worldW * 0.5, 250);
+    ctx.font = '600 20px system-ui';
+    for (let i = 0; i < state.riskChoices.length; i += 1) {
+      const y = 320 + i * 90;
+      const choice = state.riskChoices[i];
+      ctx.fillStyle = '#ffffff';
+      ctx.fillText((i + 1) + '. ' + choice.label, state.worldW * 0.5, y);
+      ctx.fillStyle = '#e9b9df';
+      ctx.font = '500 16px system-ui';
+      ctx.fillText(choice.desc || 'Risk modifies next wave', state.worldW * 0.5, y + 28);
+      ctx.font = '600 20px system-ui';
+    }
+  }
+
+  if (state.qaEnabled) {
+    ctx.fillStyle = 'rgba(140,255,213,0.92)';
+    ctx.font = '600 14px system-ui';
+    ctx.textAlign = 'left';
+    const phaseLabel = state.phase === PHASE_COMBAT ? 'combat' : state.phase;
+    ctx.fillText('QA MODE [' + phaseLabel + '] wave=' + state.wave + ' pressure=' + Math.round(state.director.pressure || 0), 18, 26);
+  }
 }
 
 function renderFrame(state) {
@@ -1196,8 +1472,31 @@ function adapterUpdate(context, dt) {
     updateParticles(state, step);
     return;
   }
+
+  if (state.phase !== PHASE_COMBAT) {
+    state.phaseTimer -= step;
+    updateParticles(state, step);
+    if (state.phase === PHASE_UPGRADE && state.phaseTimer <= 0) {
+      if (!applyUpgradeChoice(state, 0)) state.phase = PHASE_COMBAT;
+      if (state.phase === PHASE_COMBAT) {
+        if (openRiskChoicePhase(state)) return;
+        advanceWave(state);
+      }
+      return;
+    }
+    if (state.phase === PHASE_RISK && state.phaseTimer <= 0) {
+      if (!applyRiskChoice(state, 0)) state.phase = PHASE_COMBAT;
+      if (state.phase === PHASE_COMBAT) advanceWave(state);
+      return;
+    }
+    return;
+  }
+
   state.elapsed += step;
   tickDirector(state.director, step, state.score, state.wave, state.lives, state.upgrades, !!state.activeEvent, state.dailyVariation.eventRateMult);
+  if (state.qaEnabled) {
+    state.director.pressure = Math.min(100, (state.director.pressure || 0) + step * 14);
+  }
   updateIntensityFeedback(state, step);
   if (state.modifier && typeof state.modifier.tick === 'function') {
     state.modifier.tick({
@@ -1218,10 +1517,12 @@ function adapterUpdate(context, dt) {
       spawnPowerupRain: function () { state.score += 80; },
     }, step);
   }
-  if (!state.activeEvent && (shouldFirePressureEvent(state.director) || checkForcedChaos(state.director))) {
+  const pressureTrigger = shouldFirePressureEvent(state.director);
+  const chaosTrigger = checkForcedChaos(state.director);
+  if (!state.activeEvent && (pressureTrigger || chaosTrigger)) {
     const tier = getEventTier(state.director.intensity || 0);
     const ev = pickSurpriseEvent(state.wave, state.director, tier);
-    if (ev) triggerEvent(state, ev);
+    if (ev) triggerEvent(state, ev, pressureTrigger ? 'pressure' : 'chaos');
   }
   updateEvents(state, step);
   state.shootCd = Math.max(0, state.shootCd - step);
@@ -1233,6 +1534,13 @@ function adapterUpdate(context, dt) {
     playCue('asteroid-fork-thrust-burst', { kind: 'tone', type: 'triangle', freqStart: randomRange(190, 230), freqEnd: randomRange(120, 155), duration: 0.05, volume: 0.03 });
   }
   if ((keys[' '] || keys.Spacebar) && !state.empTimer) firePrimary(state);
+  if (state.qaEnabled) {
+    state.qaWaveTimer += step;
+    if (state.qaAutoProgress && state.qaWaveTimer > 2.3) {
+      forceProgressWave(state);
+      state.qaWaveTimer = 0;
+    }
+  }
   updateAsteroids(state, step);
   updateEnemies(state, step);
   updateBosses(state, step);
@@ -1242,9 +1550,10 @@ function adapterUpdate(context, dt) {
   resolveProjectileHits(state);
   handleShipCollision(state);
   updateParticles(state, step);
-  if (!state.asteroids.length && !state.enemies.length && !state.bosses.length && !state.gameOver) advanceWave(state);
+  if (!state.asteroids.length && !state.enemies.length && !state.bosses.length && !state.gameOver) beginBetweenWaveChoices(state);
   handleGameOverIfNeeded(context);
   syncHud(state);
+  syncQaProbe(state);
 }
 
 function adapterRender(context) {
@@ -1254,11 +1563,38 @@ function adapterRender(context) {
 function adapterInput(context, event) {
   const state = context.state;
   if (!event || event.type !== 'keydown') return;
+  if (state.phase === PHASE_UPGRADE) {
+    if (event.key === '1') applyUpgradeChoice(state, 0);
+    if (event.key === '2') applyUpgradeChoice(state, 1);
+    if (event.key === '3') applyUpgradeChoice(state, 2);
+    if (state.phase === PHASE_COMBAT) {
+      if (openRiskChoicePhase(state)) return;
+      advanceWave(state);
+    }
+    return;
+  }
+  if (state.phase === PHASE_RISK) {
+    if (event.key === '1') applyRiskChoice(state, 0);
+    if (event.key === '2') applyRiskChoice(state, 1);
+    if (state.phase === PHASE_COMBAT) advanceWave(state);
+    return;
+  }
   if (event.key === ' ') {
     event.preventDefault();
     firePrimary(state);
   }
   if (event.key === 'b' || event.key === 'B') fireBombPulse(state);
+  if (state.qaEnabled && (event.key === 'n' || event.key === 'N')) {
+    forceProgressWave(state);
+  }
+  if (state.qaEnabled && (event.key === 'm' || event.key === 'M')) {
+    state.qaAutoProgress = !state.qaAutoProgress;
+    cueBanner(state, 'QA autoprog ' + (state.qaAutoProgress ? 'ON' : 'OFF'), '#8cffd5', 1.1);
+  }
+  if (state.qaEnabled && (event.key === 'g' || event.key === 'G')) {
+    state.lives = 0;
+    state.gameOver = true;
+  }
   if (event.key === 'Enter' && !state.running) resetRun(state);
 }
 
