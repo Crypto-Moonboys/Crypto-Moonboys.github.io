@@ -1,20 +1,26 @@
-import { ArcadeSync }                        from '/js/arcade-sync.js';
+﻿import { ArcadeSync }                        from '/js/arcade-sync.js';
 import { submitScore }                       from '/js/leaderboard-client.js';
-import { SNAKE_CONFIG }                      from './config.js';
-import { GameRegistry }                      from '/js/arcade/core/game-registry.js';
+import { SNAKE_CONFIG } from './config.js';
+import { createGameAdapter, registerGameAdapter } from '/js/arcade/engine/game-adapter.js';
 import { playSound, stopAllSounds, isMuted } from '/js/arcade/core/audio.js';
+import { createFrameDebug } from '/js/arcade/core/frame-debug.js';
 
-GameRegistry.register(SNAKE_CONFIG.id, {
-  label: SNAKE_CONFIG.label,
-  bootstrap: bootstrapSnake,
+export const SNAKE_ADAPTER = createGameAdapter({
+  id: SNAKE_CONFIG.id,
+  name: SNAKE_CONFIG.label,
+  systems: {},
+  legacyBootstrap: function (root) {
+    return bootstrapSnake(root);
+  },
 });
 
+registerGameAdapter(SNAKE_CONFIG, SNAKE_ADAPTER, bootstrapSnake);
 var FOOD_VISUALS = Object.freeze({
-  normal:     { color: '#f7ab1a', halo: '#fff0b5', label: 'CORE',      points: 10, icon: '●' },
-  speed:      { color: '#36f7d7', halo: '#bffcff', label: 'BOOST',     points: 16, icon: '⚡' },
-  multiplier: { color: '#ff4fd1', halo: '#ffd3f4', label: 'MULTI',     points: 20, icon: '✶' },
-  ghost:      { color: '#9d7dff', halo: '#d9cfff', label: 'GHOST',     points: 18, icon: '◌' },
-  chaos:      { color: '#ff5f5f', halo: '#ffd3d3', label: 'CHAOS',     points: 22, icon: '☢' },
+  normal:     { color: '#f7ab1a', halo: '#fff0b5', label: 'CORE',      points: 10, icon: 'â—' },
+  speed:      { color: '#36f7d7', halo: '#bffcff', label: 'BOOST',     points: 16, icon: 'âš¡' },
+  multiplier: { color: '#ff4fd1', halo: '#ffd3f4', label: 'MULTI',     points: 20, icon: 'âœ¶' },
+  ghost:      { color: '#9d7dff', halo: '#d9cfff', label: 'GHOST',     points: 18, icon: 'â—Œ' },
+  chaos:      { color: '#ff5f5f', halo: '#ffd3d3', label: 'CHAOS',     points: 22, icon: 'â˜¢' },
 });
 
 var MAX_FOOD_SPAWN_ATTEMPTS = 600;
@@ -38,6 +44,7 @@ var HEAT_LENGTH_MS_STEP = 0.35;
 var MAX_FRAME_CATCHUP_STEPS = 8;
 
 export function bootstrapSnake(root) {
+  const frameDebug = createFrameDebug(SNAKE_CONFIG.id);
   var canvas = document.getElementById('snakeCanvas');
   var ctx = canvas.getContext('2d');
   var scoreEl = document.getElementById('score');
@@ -158,9 +165,9 @@ export function bootstrapSnake(root) {
     if (multiplierTimer > 0) flags.push('x2 ' + multiplierTimer.toFixed(1) + 's');
     if (ghostTimer > 0) flags.push('GHOST ' + ghostTimer.toFixed(1) + 's');
     if (chaosTimer > 0) flags.push('CHAOS ' + chaosTimer.toFixed(1) + 's');
-    if (doublePickupsLeft > 0) flags.push('2xPICK ×' + doublePickupsLeft);
+    if (doublePickupsLeft > 0) flags.push('2xPICK Ã—' + doublePickupsLeft);
     if (comboSavePending) flags.push('SAVE \u2713');
-    return 'HEAT ' + pct + '%' + (flags.length ? ' • ' + flags.join(' • ') : '');
+    return 'HEAT ' + pct + '%' + (flags.length ? ' â€¢ ' + flags.join(' â€¢ ') : '');
   }
 
   function updateHud() {
@@ -315,7 +322,7 @@ export function bootstrapSnake(root) {
     updateHud();
   }
 
-  // Probabilistic gameplay-modifier bonus — no fake score injection.
+  // Probabilistic gameplay-modifier bonus â€” no fake score injection.
   // Every modifier affects actual play: pickup value, speed, ghost phase, or streak survival.
   var BONUS_CHANCE_BASE = 0.18;
   var BONUS_CHANCE_COMBO_STEP = 0.04;
@@ -327,12 +334,12 @@ export function bootstrapSnake(root) {
 
     var roll = Math.random();
     if (roll < 0.28) {
-      // Double food value for the next 1–3 real pickups.
+      // Double food value for the next 1â€“3 real pickups.
       var extra = 1 + Math.floor(Math.random() * 3);
       doublePickupsLeft = Math.max(doublePickupsLeft, extra);
       spawnFloatingText('2x NEXT ' + doublePickupsLeft, W * 0.5, H * 0.18, '#9de7ff', 1.1);
     } else if (roll < 0.50) {
-      // Bonus speed window — pick up more food while it lasts.
+      // Bonus speed window â€” pick up more food while it lasts.
       speedBoostTimer = Math.max(speedBoostTimer, specialFoods.speed.durationSec * 0.7);
       spawnFloatingText('BONUS BOOST', W * 0.5, H * 0.18, '#76fff0', 1.1);
     } else if (roll < 0.68) {
@@ -341,11 +348,11 @@ export function bootstrapSnake(root) {
         specialFoods.multiplier.durationSec * 0.5);
       spawnFloatingText('x2 EXTENDED', W * 0.5, H * 0.18, '#ff8ce3', 1.1);
     } else if (roll < 0.84) {
-      // One-time combo save — next expiry resets to 1 instead of 0.
+      // One-time combo save â€” next expiry resets to 1 instead of 0.
       comboSavePending = true;
       spawnFloatingText('SAVE ARMED', W * 0.5, H * 0.18, '#ffe08e', 1.1);
     } else {
-      // Brief ghost phase — body-collision bypass tied to real survival.
+      // Brief ghost phase â€” body-collision bypass tied to real survival.
       ghostTimer = Math.max(ghostTimer, specialFoods.ghost.durationSec * 0.5);
       spawnFloatingText('PHASE BONUS', W * 0.5, H * 0.18, '#baabff', 1.1);
     }
@@ -470,7 +477,7 @@ export function bootstrapSnake(root) {
     updateHud();
     submitScore(ArcadeSync.getPlayer(), score, GAME_ID);
     if (window.showGameOverModal) window.showGameOverModal(score);
-    else alert('Game Over — Score: ' + score);
+    else alert('Game Over â€” Score: ' + score);
   }
 
   function stepGame() {
@@ -615,7 +622,7 @@ export function bootstrapSnake(root) {
     ctx.font = '700 ' + Math.max(10, Math.floor(size * 0.34)) + 'px system-ui';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillText(food.icon || '●', c.x, c.y + 0.5);
+    ctx.fillText(food.icon || 'â—', c.x, c.y + 0.5);
   }
 
   function calculateEyeOffset(direction, radius) {
@@ -760,6 +767,7 @@ export function bootstrapSnake(root) {
   }
 
   function frame(ts) {
+    frameDebug.tick(ts);
     if (!lastFrameSec) lastFrameSec = ts / 1000;
     var now = ts / 1000;
     var dt = clamp(now - lastFrameSec, 0, MAX_FRAME_DELTA_SEC);
@@ -810,6 +818,7 @@ export function bootstrapSnake(root) {
   }
 
   function onKeyDown(e) {
+    frameDebug.input('keydown', e.key);
     var key = String(e.key || '').toLowerCase();
     if (key === 'arrowup' || key === 'w') {
       e.preventDefault();

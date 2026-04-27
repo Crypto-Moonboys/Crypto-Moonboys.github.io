@@ -1,5 +1,5 @@
-/**
- * bootstrap.js — HexGL (legacy entry point)
+﻿/**
+ * bootstrap.js â€” HexGL (legacy entry point)
  *
  * The canonical HexGL experience is /games/hexgl-monster-max/.
  * /games/hexgl.html redirects there automatically.
@@ -10,3 +10,5 @@
  */
 
 export { bootstrapHexGLMonsterMax as bootstrapHexGL } from '../hexgl-monster-max/bootstrap.js';
+
+export { HEXGL_MONSTER_MAX_ADAPTER as HEXGL_ADAPTER } from '../hexgl-monster-max/bootstrap.js';

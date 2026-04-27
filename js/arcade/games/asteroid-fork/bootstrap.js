@@ -1,5 +1,5 @@
-/**
- * bootstrap.js — Asteroid Fork game module
+﻿/**
+ * bootstrap.js â€” Asteroid Fork game module
  *
  * Contains all Asteroid Fork game logic.  Exports bootstrapAsteroidFork(), which is
  * the entry point called by game-shell.js via mountGame().
@@ -9,23 +9,29 @@
  *  - submitScore  (leaderboard-client.js remote submission)
  *  - window.showGameOverModal          (game-fullscreen.js)
  *
- * Built on latest main — inherits merged audio system (PR #200) and
+ * Built on latest main â€” inherits merged audio system (PR #200) and
  * follows Pac-Chain cleanup pattern (PR #201).
  * No fake reward logic. Real gameplay score only.
  */
 
 import { ArcadeSync }                        from '/js/arcade-sync.js';
 import { submitScore }                       from '/js/leaderboard-client.js';
-import { ASTEROID_FORK_CONFIG }              from './config.js';
-import { GameRegistry }                      from '/js/arcade/core/game-registry.js';
+import { ASTEROID_FORK_CONFIG } from './config.js';
+import { createGameAdapter, registerGameAdapter } from '/js/arcade/engine/game-adapter.js';
 import { playSound, stopAllSounds, isMuted } from '/js/arcade/core/audio.js';
+import { createFrameDebug } from '/js/arcade/core/frame-debug.js';
 
 // Register in the central registry when this module is first imported.
-GameRegistry.register(ASTEROID_FORK_CONFIG.id, {
-  label:     ASTEROID_FORK_CONFIG.label,
-  bootstrap: bootstrapAsteroidFork,
+export const ASTEROID_FORK_ADAPTER = createGameAdapter({
+  id: ASTEROID_FORK_CONFIG.id,
+  name: ASTEROID_FORK_CONFIG.label,
+  systems: {},
+  legacyBootstrap: function (root) {
+    return bootstrapAsteroidFork(root);
+  },
 });
 
+registerGameAdapter(ASTEROID_FORK_CONFIG, ASTEROID_FORK_ADAPTER, bootstrapAsteroidFork);
 /**
  * Bootstrap the Asteroid Fork game.
  *
@@ -49,6 +55,7 @@ export function bootstrapAsteroidFork(root) {
   let score = 0, lives = 3, wave = 0, running = false, paused = false, gameOver = false;
   let best = ArcadeSync.getHighScore(GAME_ID);
   let raf = null, lastTime = 0;
+  const frameDebug = createFrameDebug(GAME_ID);
 
   // Wave intro banner state
   let waveIntroTime = 0, waveIntroNum = 0;
@@ -56,13 +63,17 @@ export function bootstrapAsteroidFork(root) {
   const keys = {};
 
   function onKeyDown(e) {
+    frameDebug.input('keydown', e.key);
     keys[e.key] = true;
     if (e.key === ' ' && running && !paused) { e.preventDefault(); tryShoot(); }
     if (['ArrowLeft', 'ArrowRight', 'ArrowUp'].includes(e.key)) e.preventDefault();
   }
-  function onKeyUp(e) { keys[e.key] = false; }
+  function onKeyUp(e) {
+    frameDebug.input('keyup', e.key);
+    keys[e.key] = false;
+  }
 
-  // ── Entity state ──────────────────────────────────────────────────────────
+  // â”€â”€ Entity state â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   let ship;
   const SHIP_VERTS = [{x:0,y:-18},{x:-11,y:12},{x:0,y:7},{x:11,y:12}];
@@ -76,7 +87,7 @@ export function bootstrapAsteroidFork(root) {
   let shakeTime = 0;
   let shakeIntensity = 0;
 
-  // Persistent scrolling starfield — initialised once, updated every frame
+  // Persistent scrolling starfield â€” initialised once, updated every frame
   const stars = [];
   for (let i = 0; i < 60; i++) {
     stars.push({
@@ -88,14 +99,14 @@ export function bootstrapAsteroidFork(root) {
     });
   }
 
-  // ── Audio ──────────────────────────────────────────────────────────────────
+  // â”€â”€ Audio â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   function playGameSound(id) {
     if (isMuted()) return;
     playSound(id);
   }
 
-  // ── Entity factories ───────────────────────────────────────────────────────
+  // â”€â”€ Entity factories â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   function makeShip() {
     return { x: W / 2, y: H / 2, vx: 0, vy: 0, angle: 0, thrusting: false };
@@ -126,7 +137,7 @@ export function bootstrapAsteroidFork(root) {
     return { x, y, vx: Math.cos(ang) * spd, vy: Math.sin(ang) * spd, r, tier, verts, angle: 0, spin: (Math.random() - 0.5) * 1.2 };
   }
 
-  // ── Controls ───────────────────────────────────────────────────────────────
+  // â”€â”€ Controls â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   function tryShoot() {
     if (shootCooldown > 0) return;
@@ -138,12 +149,12 @@ export function bootstrapAsteroidFork(root) {
 
   function wrap(v, max) { return ((v % max) + max) % max; }
 
-  // ── HUD helpers ────────────────────────────────────────────────────────────
+  // â”€â”€ HUD helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   function updateHud() {
     scoreEl.textContent = score;
     bestEl.textContent  = best;
-    waveEl.textContent  = wave || '—';
+    waveEl.textContent  = wave || 'â€”';
     livesEl.textContent = lives;
   }
 
@@ -173,7 +184,7 @@ export function bootstrapAsteroidFork(root) {
     }
   }
 
-  // ── Reset ──────────────────────────────────────────────────────────────────
+  // â”€â”€ Reset â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   function resetGame() {
     score = 0; lives = 3; wave = 0; running = false; paused = false; gameOver = false;
@@ -185,7 +196,7 @@ export function bootstrapAsteroidFork(root) {
     updateHud(); draw();
   }
 
-  // ── Visual effect helpers ──────────────────────────────────────────────────
+  // â”€â”€ Visual effect helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   function spawnParticles(x, y, color, count) {
     for (let i = 0; i < count; i++) {
@@ -228,7 +239,7 @@ export function bootstrapAsteroidFork(root) {
     shakeTime      = Math.max(shakeTime,      duration);
   }
 
-  // ── Effect tick ────────────────────────────────────────────────────────────
+  // â”€â”€ Effect tick â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   function updateEffects(dt) {
     // Particles
@@ -272,7 +283,7 @@ export function bootstrapAsteroidFork(root) {
     }
   }
 
-  // ── Game update ────────────────────────────────────────────────────────────
+  // â”€â”€ Game update â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   function update(dt) {
     if (!running || paused || gameOver) { updateEffects(dt); return; }
@@ -314,7 +325,7 @@ export function bootstrapAsteroidFork(root) {
       a.angle += a.spin * dt;
     });
 
-    // Wave clear — start next wave
+    // Wave clear â€” start next wave
     if (!asteroids.length) {
       wave++;
       waveIntroTime = 1.8; waveIntroNum = wave;
@@ -324,7 +335,7 @@ export function bootstrapAsteroidFork(root) {
       return;
     }
 
-    // Bullet ↔ asteroid collisions
+    // Bullet â†” asteroid collisions
     for (let bi = bullets.length - 1; bi >= 0; bi--) {
       const b = bullets[bi];
       for (let ai = asteroids.length - 1; ai >= 0; ai--) {
@@ -349,7 +360,7 @@ export function bootstrapAsteroidFork(root) {
       }
     }
 
-    // Ship ↔ asteroid collision
+    // Ship â†” asteroid collision
     if (invincible <= 0) {
       for (const a of asteroids) {
         if (Math.hypot(ship.x - a.x, ship.y - a.y) < a.r + 10) {
@@ -373,7 +384,7 @@ export function bootstrapAsteroidFork(root) {
     updateEffects(dt);
   }
 
-  // ── Rendering helpers ──────────────────────────────────────────────────────
+  // â”€â”€ Rendering helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   function transformedVerts(verts, x, y, angle) {
     return verts.map(v => ({
@@ -389,7 +400,7 @@ export function bootstrapAsteroidFork(root) {
     ctx.closePath(); ctx.stroke();
   }
 
-  // ── Main draw ──────────────────────────────────────────────────────────────
+  // â”€â”€ Main draw â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   function draw() {
     // Screen shake transform
@@ -434,7 +445,7 @@ export function bootstrapAsteroidFork(root) {
       ctx.restore(); return;
     }
 
-    // Asteroids — soft outer glow (second draw at low alpha / wide line) + sharp inner
+    // Asteroids â€” soft outer glow (second draw at low alpha / wide line) + sharp inner
     asteroids.forEach(a => {
       const verts = transformedVerts(a.verts, a.x, a.y, a.angle);
       ctx.globalAlpha = 0.13;
@@ -443,7 +454,7 @@ export function bootstrapAsteroidFork(root) {
       drawPoly(verts, '#bc8cff', 2);
     });
 
-    // Bullets — directional streak + bright dot head
+    // Bullets â€” directional streak + bright dot head
     bullets.forEach(b => {
       const spd = Math.hypot(b.vx, b.vy);
       if (spd > 1) {
@@ -489,7 +500,7 @@ export function bootstrapAsteroidFork(root) {
     });
     ctx.globalAlpha = 1;
 
-    // Ship — outer glow layer + solid inner
+    // Ship â€” outer glow layer + solid inner
     if (invincible <= 0 || Math.floor(invincible * 8) % 2 === 0) {
       const sv = transformedVerts(SHIP_VERTS, ship.x, ship.y, ship.angle);
       ctx.globalAlpha = 0.18;
@@ -524,15 +535,16 @@ export function bootstrapAsteroidFork(root) {
     ctx.restore();
   }
 
-  // ── Game loop ──────────────────────────────────────────────────────────────
+  // â”€â”€ Game loop â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   function loop(ts) {
+    frameDebug.tick(ts);
     const dt = Math.min((ts - lastTime) / 1000, 0.05); lastTime = ts;
     update(dt); draw();
     raf = requestAnimationFrame(loop);
   }
 
-  // ── Game over ──────────────────────────────────────────────────────────────
+  // â”€â”€ Game over â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   async function onGameOver() {
     running = false; gameOver = true;
@@ -544,7 +556,7 @@ export function bootstrapAsteroidFork(root) {
     if (window.showGameOverModal) window.showGameOverModal(score);
   }
 
-  // ── Lifecycle implementation ───────────────────────────────────────────────
+  // â”€â”€ Lifecycle implementation â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   function init() {
     best = ArcadeSync.getHighScore(GAME_ID);
@@ -615,7 +627,7 @@ export function bootstrapAsteroidFork(root) {
 
   function getScore() { return score; }
 
-  // ── Public lifecycle object ────────────────────────────────────────────────
+  // â”€â”€ Public lifecycle object â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   return { init, start, pause, resume, reset, destroy, getScore };
 }

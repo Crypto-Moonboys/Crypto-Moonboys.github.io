@@ -1,16 +1,28 @@
-import { ArcadeSync } from '/js/arcade-sync.js';
+﻿import { ArcadeSync } from '/js/arcade-sync.js';
 import { submitScore } from '/js/leaderboard-client.js';
 import { TETRIS_CONFIG } from './config.js';
-import { GameRegistry } from '/js/arcade/core/game-registry.js';
+import { createGameAdapter, registerGameAdapter, bootstrapFromAdapter } from '/js/arcade/engine/game-adapter.js';
 import { playSound, stopAllSounds, isMuted } from '/js/arcade/core/audio.js';
+import { createFrameDebug } from '/js/arcade/core/frame-debug.js';
 
-GameRegistry.register(TETRIS_CONFIG.id, {
-  label: TETRIS_CONFIG.label,
-  bootstrap: bootstrapTetris,
+export const TETRIS_ADAPTER = createGameAdapter({
+  id: TETRIS_CONFIG.id,
+  name: TETRIS_CONFIG.label,
+  systems: {},
+  legacyBootstrap: function (root) {
+    return createLegacybootstrapTetris(root);
+  },
 });
 
+registerGameAdapter(TETRIS_CONFIG, TETRIS_ADAPTER, bootstrapTetris);
+
 export function bootstrapTetris(root) {
+  return bootstrapFromAdapter(root, TETRIS_ADAPTER);
+}
+
+function createLegacybootstrapTetris(root) {
   const GAME_ID = TETRIS_CONFIG.id;
+  const frameDebug = createFrameDebug(GAME_ID);
   const COLS = 10;
   const ROWS = 20;
   const CELL = 30;
@@ -170,7 +182,7 @@ export function bootstrapTetris(root) {
     }
     if (submitInFlight) {
       submitBtn.disabled = true;
-      submitBtn.textContent = 'Submitting…';
+      submitBtn.textContent = 'Submittingâ€¦';
       return;
     }
     if (submittedRunScore) {
@@ -778,6 +790,7 @@ export function bootstrapTetris(root) {
   }
 
   function loop(ts) {
+    frameDebug.tick(ts);
     const dt = Math.min((ts - lastTime) / 1000, 0.05);
     lastTime = ts;
     updateEffects(dt);
@@ -871,6 +884,7 @@ export function bootstrapTetris(root) {
   }
 
   function onKeyDown(e) {
+    frameDebug.input('keydown', e.key);
     if (!keys[e.key]) {
       keys[e.key] = true;
       if (!isRunActive()) return;
@@ -908,6 +922,7 @@ export function bootstrapTetris(root) {
   }
 
   function onKeyUp(e) {
+    frameDebug.input('keyup', e.key);
     keys[e.key] = false;
     if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'ArrowRight' || e.key === 'd') {
       dasDir = 0;

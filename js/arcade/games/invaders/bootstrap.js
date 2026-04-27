@@ -1,5 +1,5 @@
-/**
- * bootstrap.js — Invaders 3008 orchestrator.
+﻿/**
+ * bootstrap.js â€” Invaders 3008 orchestrator.
  *
  * Wires together invader-system, powerup-system, and render-system.
  * Contains only: game state, game loop, input, scoring, wave management,
@@ -14,7 +14,7 @@
 import { ArcadeSync } from '/js/arcade-sync.js';
 import { submitScore } from '/js/leaderboard-client.js';
 import { INVADERS_CONFIG } from './config.js';
-import { GameRegistry } from '/js/arcade/core/game-registry.js';
+import { createGameAdapter, registerGameAdapter, bootstrapFromAdapter } from '/js/arcade/engine/game-adapter.js';
 import { playSound, stopAllSounds, isMuted } from '/js/arcade/core/audio.js';
 import { BaseGame } from '/js/arcade/engine/BaseGame.js';
 
@@ -36,10 +36,13 @@ import {
   BUNKER_BLOCK_W, BUNKER_BLOCK_H,
   buildGrid, spawnBoss, buildBunkers, makeEnemyBullet,
   calcInvaderPoints, getBossPhase,
-  MUTATION_DEFS, applyMutations,
-  ZIGZAG_SPAWN_CHANCE, SPLITTER_SPAWN_CHANCE, HEALER_SPAWN_CHANCE,
+    ZIGZAG_SPAWN_CHANCE, SPLITTER_SPAWN_CHANCE, HEALER_SPAWN_CHANCE,
   SNIPER_SPAWN_CHANCE, KAMIKAZE_SPAWN_CHANCE, CLOAKED_SPAWN_CHANCE, GOLDEN_SPAWN_CHANCE,
 } from './invader-system.js';
+
+import {
+  MUTATION_DEFS, applyMutations,
+} from '/js/arcade/systems/mutation-system.js';
 
 import {
   POWERUP_DROP_CHANCE, POWERUP_BOSS_DROP_CHANCE,
@@ -50,7 +53,7 @@ import {
   makeUpgrades, pickUpgradeChoices, applyUpgrade,
   getUpgradedShootRate, getUpgradedBulletDmg, getUpgradedScoreMult, getSpreadAngles,
   RARITY_COLORS, shouldOfferRiskReward, pickRiskRewardChoices, pickUpgradeChoicesWithRarity,
-} from './upgrade-system.js';
+} from '/js/arcade/systems/upgrade-system.js';
 
 import {
   MODIFIER_BLACKOUT,
@@ -58,24 +61,34 @@ import {
   createScalingDirector, tickDirector, pickWaveModifier,
   shouldFirePressureEvent, pickSurpriseEvent, getEventTier,
   updateIntensity, checkForcedChaos, getBossAggressionMult,
-} from './event-system.js';
+} from '/js/arcade/systems/event-system.js';
 
 import {
   buildRunSummary, recordRunStats, checkMilestones, getDailyVariation,
-} from './meta-system.js';
+} from '/js/arcade/systems/meta-system.js';
 
 import {
   BOSS_ARCHETYPE_DEFS, pickBossArchetype, spawnBossArchetype,
-} from './boss-archetypes.js';
+} from '/js/arcade/systems/boss-system.js';
 
 import { createRenderer } from './render-system.js';
 
-GameRegistry.register(INVADERS_CONFIG.id, {
-  label: INVADERS_CONFIG.label,
-  bootstrap: bootstrapInvaders,
+export const INVADERS_ADAPTER = createGameAdapter({
+  id: INVADERS_CONFIG.id,
+  name: INVADERS_CONFIG.label,
+  systems: { upgrade: true, director: true, event: true, mutation: true, boss: true, risk: true, meta: true, feedback: true },
+  legacyBootstrap: function (root) {
+    return createLegacybootstrapInvaders(root);
+  },
 });
 
+registerGameAdapter(INVADERS_CONFIG, INVADERS_ADAPTER, bootstrapInvaders);
+
 export function bootstrapInvaders(root) {
+  return bootstrapFromAdapter(root, INVADERS_ADAPTER);
+}
+
+function createLegacybootstrapInvaders(root) {
   const GAME_ID = INVADERS_CONFIG.id;
   const canvas  = document.getElementById('invCanvas');
   const ctx     = canvas.getContext('2d');
@@ -83,7 +96,7 @@ export function bootstrapInvaders(root) {
   const H       = canvas.height;
 
   const renderer = createRenderer(ctx, W, H);
-  const engine   = new BaseGame();
+  const engine   = new BaseGame({ context: { adapter: { id: GAME_ID } } });
 
   const scoreEl   = document.getElementById('score');
   const bestEl    = document.getElementById('best');
@@ -92,7 +105,7 @@ export function bootstrapInvaders(root) {
   const comboEl   = document.getElementById('combo');
   const powerupEl = document.getElementById('powerup');
 
-  // ── Misc constants ────────────────────────────────────────────────────────────
+  // â”€â”€ Misc constants â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   const SHIP_W            = 36;
   const SHIP_H            = 20;
@@ -111,7 +124,7 @@ export function bootstrapInvaders(root) {
   const BOSS_PHASE2_SPEED_MULT = 1.2;
   const BOSS_PHASE3_SPEED_MULT = 1.55;
 
-  // ── Game state ────────────────────────────────────────────────────────────────
+  // â”€â”€ Game state â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   let score    = 0;
   let lives    = 3;
@@ -151,12 +164,12 @@ export function bootstrapInvaders(root) {
 
   let bunkers = [];
 
-  // ── Permanent run upgrades + between-wave screen ──────────────────────────────
+  // â”€â”€ Permanent run upgrades + between-wave screen â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   let upgrades       = makeUpgrades();
   let upgradePhase   = false;   // false | 'picking'
   let upgradeChoices = [];
 
-  // ── Roguelite: scaling director & wave modifiers ──────────────────────────────
+  // â”€â”€ Roguelite: scaling director & wave modifiers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   let director          = createScalingDirector();
   let activeModifier    = null;   // current WAVE_MODIFIER_DEFS entry or null
   let modifierData      = {};     // scratch object for the modifier
@@ -189,7 +202,7 @@ export function bootstrapInvaders(root) {
   // Wave score multiplier (for oneLife risk/reward)
   let waveScoreMult     = 1;
 
-  // ── Meta / intensity feedback ─────────────────────────────────────────────────
+  // â”€â”€ Meta / intensity feedback â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   let runStats            = { bossesDefeated: 0, highestIntensity: 0 };
   let intensityPrevBand   = 'calm';    // 'calm' | 'rising' | 'chaotic'
   let intensityPulseTimer = 0;         // visual threshold-crossing pulse duration
@@ -200,7 +213,7 @@ export function bootstrapInvaders(root) {
   let milestoneToasts     = [];
   const dailyVariation    = getDailyVariation();  // fixed for the session
 
-  // ── Game-feel state ───────────────────────────────────────────────────────────
+  // â”€â”€ Game-feel state â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   let screenFlashTimer = 0;
   let droneAngle       = 0;
   let droneCooldown    = 0;
@@ -218,7 +231,7 @@ export function bootstrapInvaders(root) {
 
   const keys = engine.keys;
 
-  // ── Utilities ─────────────────────────────────────────────────────────────────
+  // â”€â”€ Utilities â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   function rand(a, b) { return a + Math.random() * (b - a); }
   function clamp(v, mn, mx) { return Math.max(mn, Math.min(mx, v)); }
@@ -229,7 +242,7 @@ export function bootstrapInvaders(root) {
 
   function getOverlayState() { return { running, paused, gameOver }; }
 
-  // ── HUD ───────────────────────────────────────────────────────────────────────
+  // â”€â”€ HUD â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   function triggerHudFx(el, cls, ms) {
     if (!el) return;
@@ -264,7 +277,7 @@ export function bootstrapInvaders(root) {
     }
   }
 
-  // ── Effects ───────────────────────────────────────────────────────────────────
+  // â”€â”€ Effects â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   function screenShake(intensity, duration) {
     shakeIntensity = Math.max(shakeIntensity, intensity);
@@ -349,7 +362,7 @@ export function bootstrapInvaders(root) {
     }
   }
 
-  // ── Wave management ───────────────────────────────────────────────────────────
+  // â”€â”€ Wave management â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   function startWave() {
     wave++;
@@ -375,7 +388,7 @@ export function bootstrapInvaders(root) {
     if (activeRiskReward && activeRiskReward.id === 'oneLife') {
       lives = 1;
       waveScoreMult = 3;
-      addFloatingText('ONE LIFE — 3x SCORE', '#ff4444');
+      addFloatingText('ONE LIFE â€” 3x SCORE', '#ff4444');
     }
     if (activeRiskReward && activeRiskReward.id === 'noShield') {
       player.shielded = false;
@@ -434,7 +447,7 @@ export function bootstrapInvaders(root) {
       if (activeModifier) {
         activeModifier.apply(buildModifierState());
         // Show modifier banner
-        eventBanner = { text: '⚡ ' + activeModifier.label, color: activeModifier.color, timer: 2.5 };
+        eventBanner = { text: 'âš¡ ' + activeModifier.label, color: activeModifier.color, timer: 2.5 };
         if (activeModifier.id === 'reverseDrift') invDir = -1;
       }
     }
@@ -445,7 +458,7 @@ export function bootstrapInvaders(root) {
     updateHud();
   }
 
-  // ── Roguelite state builders ──────────────────────────────────────────────────
+  // â”€â”€ Roguelite state builders â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   function buildModifierState() {
     return {
@@ -601,7 +614,7 @@ export function bootstrapInvaders(root) {
     draw();
   }
 
-  // ── Shooting ──────────────────────────────────────────────────────────────────
+  // â”€â”€ Shooting â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   function tryShoot() {
     if (shootCooldown > 0 || !running || paused || gameOver || waveIntroTimer > 0 || upgradePhase === 'picking' || riskRewardPhase === 'picking') return;
@@ -631,7 +644,7 @@ export function bootstrapInvaders(root) {
   /**
    * Area-damage explosion centred at (bx, by).
    * Kills / damages all invaders and the boss within BOMB_RADIUS pixels.
-   * Does NOT call completeWave or return — the caller handles that.
+   * Does NOT call completeWave or return â€” the caller handles that.
    */
   function detonateBomb(bx, by) {
     spawnExplosion(bx, by, 2.5, '#ff6b2b');
@@ -671,7 +684,7 @@ export function bootstrapInvaders(root) {
     }
   }
 
-  // ── Update ────────────────────────────────────────────────────────────────────
+  // â”€â”€ Update â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   function update(dt) {
     if (!running || paused || gameOver) { updateEffects(dt); return; }
@@ -700,14 +713,14 @@ export function bootstrapInvaders(root) {
         eventTimer  = ev.duration || 0;
         eventData   = {};
         ev.execute(buildEventState());
-        eventBanner = { text: '⚡ CHAOS: ' + ev.label, color: '#ff0055', timer: 2.5 };
+        eventBanner = { text: 'âš¡ CHAOS: ' + ev.label, color: '#ff0055', timer: 2.5 };
         playSfx('event_start');
         director._eventCooldown = ev.cooldown || 30;
         director.pressure       = 0;
       }
     }
 
-    // Pressure-based event trigger (deterministic — fires when pressure reaches 100)
+    // Pressure-based event trigger (deterministic â€” fires when pressure reaches 100)
     if (!activeEvent && shouldFirePressureEvent(director)) {
       const tier = getEventTier(director.intensity || 0);
       const ev   = pickSurpriseEvent(wave, director, tier);
@@ -716,12 +729,12 @@ export function bootstrapInvaders(root) {
         eventTimer  = ev.duration || 0;
         eventData   = {};
         ev.execute(buildEventState());
-        eventBanner = { text: '⚠️ ' + ev.label, color: ev.color, timer: 2.5 };
+        eventBanner = { text: 'âš ï¸ ' + ev.label, color: ev.color, timer: 2.5 };
         playSfx('event_start');
         director._eventCooldown = ev.cooldown || 30;
         director.pressure       = 0;
       } else {
-        // No eligible event — bleed off pressure so we don't get stuck at 100
+        // No eligible event â€” bleed off pressure so we don't get stuck at 100
         director.pressure = 50;
       }
     }
@@ -1076,7 +1089,7 @@ export function bootstrapInvaders(root) {
       }
     }
 
-    // ── Bomb detonation pass (before normal bullet collision) ──────────────────
+    // â”€â”€ Bomb detonation pass (before normal bullet collision) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     for (let bi = bullets.length - 1; bi >= 0; bi--) {
       const b = bullets[bi];
       if (!b.isBomb) continue;
@@ -1127,7 +1140,7 @@ export function bootstrapInvaders(root) {
       }
     }
 
-    // ── Player bullets vs bunkers + invaders + boss ────────────────────────────
+    // â”€â”€ Player bullets vs bunkers + invaders + boss â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     for (let bi = bullets.length - 1; bi >= 0; bi--) {
       const b   = bullets[bi];
       if (b.isBomb) continue; // already handled above
@@ -1323,7 +1336,7 @@ export function bootstrapInvaders(root) {
       }
     }
 
-    // ── Per-frame intensity update ────────────────────────────────────────────
+    // â”€â”€ Per-frame intensity update â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     {
       const alive    = invaders.filter((i) => i.alive);
       const pcx      = player.x + player.w / 2;
@@ -1345,7 +1358,7 @@ export function bootstrapInvaders(root) {
       }
     }
 
-    // ── Intensity threshold crossings ─────────────────────────────────────────
+    // â”€â”€ Intensity threshold crossings â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     {
       const iv   = director.intensity;
       const band = iv >= 80 ? 'chaotic' : iv >= 60 ? 'rising' : 'calm';
@@ -1368,7 +1381,7 @@ export function bootstrapInvaders(root) {
       if (intensityPulseTimer > 0) intensityPulseTimer = Math.max(0, intensityPulseTimer - dt);
     }
 
-    // ── Milestone toasts tick ─────────────────────────────────────────────────
+    // â”€â”€ Milestone toasts tick â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     for (let ti = milestoneToasts.length - 1; ti >= 0; ti--) {
       milestoneToasts[ti].timer -= dt;
       if (milestoneToasts[ti].timer <= 0) milestoneToasts.splice(ti, 1);
@@ -1377,7 +1390,7 @@ export function bootstrapInvaders(root) {
     updateEffects(dt);
   }
 
-  // ── Draw (delegates to renderer) ─────────────────────────────────────────────
+  // â”€â”€ Draw (delegates to renderer) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   function draw() {
     const bossPhase = boss ? getBossPhase(boss) : 0;
@@ -1405,7 +1418,7 @@ export function bootstrapInvaders(root) {
     });
   }
 
-  // ── Engine hooks (loop + input via BaseGame) ──────────────────────────────────
+  // â”€â”€ Engine hooks (loop + input via BaseGame) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   engine.onTick    = (dt) => { update(dt); draw(); };
   engine.onKeyDown = (e)  => {
@@ -1443,7 +1456,7 @@ export function bootstrapInvaders(root) {
         // Add piercing flag to bullets if needed
         const applied = applyUpgrade(def.id, upgrades);
         if (!applied) {
-          // Already maxed — grant a score bonus instead
+          // Already maxed â€” grant a score bonus instead
           addScore(wave * 200 + 500, W / 2, H / 2, '#bc8cff');
         }
         // Update bossDmgBoost
@@ -1477,7 +1490,7 @@ export function bootstrapInvaders(root) {
     if ((e.key === 'b' || e.key === 'B') && running && !paused) tryBombShot();
   };
 
-  // ── Game over ─────────────────────────────────────────────────────────────────
+  // â”€â”€ Game over â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   async function onGameOver() {
     running  = false;
@@ -1518,7 +1531,7 @@ export function bootstrapInvaders(root) {
     if (window.showGameOverModal) window.showGameOverModal(score);
   }
 
-  // ── Lifecycle ─────────────────────────────────────────────────────────────────
+  // â”€â”€ Lifecycle â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   function init() {
     best = ArcadeSync.getHighScore(GAME_ID);

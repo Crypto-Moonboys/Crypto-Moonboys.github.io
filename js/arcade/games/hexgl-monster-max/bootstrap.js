@@ -1,5 +1,5 @@
-/**
- * bootstrap.js — HexGL Monster Max (DEPRECATED — not active XP source)
+﻿/**
+ * bootstrap.js â€” HexGL Monster Max (DEPRECATED â€” not active XP source)
  *
  * HexGL is archived and no longer the arcade leaderboard / XP source of truth.
  * Invaders 3008 (/games/invaders-3008/) is the current primary arcade XP game.
@@ -8,17 +8,22 @@
  * HexGL can still be loaded for testing purposes only.
  */
 import { ArcadeSync }              from '/js/arcade-sync.js';
-import { HEXGL_MONSTER_MAX_CONFIG }  from './config.js';
-import { GameRegistry }              from '/js/arcade/core/game-registry.js';
+import { HEXGL_MONSTER_MAX_CONFIG } from './config.js';
+import { createGameAdapter, registerGameAdapter } from '/js/arcade/engine/game-adapter.js';
 import { playSound, isMuted, stopAllSounds } from '/js/arcade/core/audio.js';
 
-GameRegistry.register(HEXGL_MONSTER_MAX_CONFIG.id, {
-  label: HEXGL_MONSTER_MAX_CONFIG.label,
-  bootstrap: bootstrapHexGLMonsterMax,
+export const HEXGL_MONSTER_MAX_ADAPTER = createGameAdapter({
+  id: HEXGL_MONSTER_MAX_CONFIG.id,
+  name: HEXGL_MONSTER_MAX_CONFIG.label,
+  systems: {},
+  legacyBootstrap: function (root) {
+    return bootstrapHexGLMonsterMax(root);
+  },
 });
 
+registerGameAdapter(HEXGL_MONSTER_MAX_CONFIG, HEXGL_MONSTER_MAX_ADAPTER, bootstrapHexGLMonsterMax);
 export function bootstrapHexGLMonsterMax(root) {
-  // ── DESIGN INVARIANTS — do not remove or drift from these ─────────────────
+  // â”€â”€ DESIGN INVARIANTS â€” do not remove or drift from these â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   // 1. SINGLE START ACTION:
   //    onStart() has one job: load the iframe if blank, or focus it if already
   //    loaded.  It never starts a wrapper timer.  The overlay button is labelled
@@ -27,7 +32,7 @@ export function bootstrapHexGLMonsterMax(root) {
   //    completedRunMs is set ONLY by handleRaceComplete(), which fires when the
   //    local HexGL build at /games/hexgl-local/ emits
   //    { type:'hexgl-race-complete', time:<ms> } via window.parent.postMessage.
-  //    run-timer and score stay "—" until that event arrives.
+  //    run-timer and score stay "â€”" until that event arrives.
   //    Submit button stays disabled until that postMessage event arrives.
   // 3. ORIGIN-LOCKED POSTMESSAGE:
   //    onHexGLMessage checks event.origin === window.location.origin so only the
@@ -41,7 +46,7 @@ export function bootstrapHexGLMonsterMax(root) {
   // 6. RESET CLEARS SCORE:
   //    onReset() clears completedRunMs, reloads the iframe, and returns the
   //    page to RUN READY state.
-  // ──────────────────────────────────────────────────────────────────────────
+  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   var MIN_RUN_MS = HEXGL_MONSTER_MAX_CONFIG.minRunMs;
   var FRAME_SRC = '/games/hexgl-local/';
 
@@ -155,7 +160,7 @@ export function bootstrapHexGLMonsterMax(root) {
   function notifyReadyToLaunch() {
     setStatus('RUN READY');
     notify('HexGL loaded. Click Focus Game to enter the iframe, then start a race.');
-    setOverlayStartLabel('🎮', 'Focus Game');
+    setOverlayStartLabel('ðŸŽ®', 'Focus Game');
     setOverlayStartEnabled(true);
   }
 
@@ -170,12 +175,12 @@ export function bootstrapHexGLMonsterMax(root) {
     frameEl.classList.remove('loaded');
     setOverlayStartEnabled(false);
     setStatus('LOADING');
-    notify('Loading HexGL…');
+    notify('Loading HexGLâ€¦');
     frameEl.src = FRAME_SRC + '?t=' + Date.now();
   }
 
   // Stops the wrapper timer and returns the elapsed ms.  Returns null if no
-  // run was active.  Does NOT modify completedRunMs — callers do that.
+  // run was active.  Does NOT modify completedRunMs â€” callers do that.
   function stopRunAndCapture() {
     if (!runActive) return null;
     var elapsed = Date.now() - runStart;
@@ -194,7 +199,7 @@ export function bootstrapHexGLMonsterMax(root) {
     } catch (_) {}
   }
 
-  // HexGL deprecated — not active XP source.
+  // HexGL deprecated â€” not active XP source.
   // autoSubmit is intentionally disabled: HexGL scores must not reach the
   // leaderboard or grant XP.  Invaders 3008 is the current arcade XP source.
   async function autoSubmit() {
@@ -206,7 +211,7 @@ export function bootstrapHexGLMonsterMax(root) {
   // When a local/hosted HexGL build is used, this path is authoritative and
   // the wrapper timer is stopped so its elapsed time is discarded.
   function handleRaceComplete(ms) {
-    // Stop wrapper timer (if running) — iframe event is the source of truth.
+    // Stop wrapper timer (if running) â€” iframe event is the source of truth.
     stopRunAndCapture();
     setOverlayStartEnabled(false);
 
@@ -220,9 +225,9 @@ export function bootstrapHexGLMonsterMax(root) {
     savePersonalBest(ms);
     localStorage.setItem('hexgl_last_run_ms', String(ms));
     setStatus('RUN COMPLETE');
-    // HexGL deprecated — score submission is disabled.  Submit button stays disabled.
+    // HexGL deprecated â€” score submission is disabled.  Submit button stays disabled.
     if (submitBtn) submitBtn.disabled = true;
-    notify('Run recorded locally. Note: HexGL score submission is disabled — Invaders 3008 is the current arcade XP source.');
+    notify('Run recorded locally. Note: HexGL score submission is disabled â€” Invaders 3008 is the current arcade XP source.');
   }
 
   function onHexGLMessage(event) {
@@ -237,26 +242,26 @@ export function bootstrapHexGLMonsterMax(root) {
   }
 
   function onOverlayOpen() {
-    if (runActive) return;  // run in progress — leave it alone
+    if (runActive) return;  // run in progress â€” leave it alone
     loadFrameForLaunch(false);
   }
 
   function onStart() {
     refreshIdentity();
 
-    // Phase 0: iframe not yet loaded — load it, wait for the load event.
+    // Phase 0: iframe not yet loaded â€” load it, wait for the load event.
     if (!frameLoaded || isFrameBlank()) {
       loadFrameForLaunch(false);
       return;
     }
 
-    // Frame already loaded — just focus it so the user can interact with HexGL.
+    // Frame already loaded â€” just focus it so the user can interact with HexGL.
     // No wrapper timer is started; score only comes from a postMessage race-complete event.
     try { if (frameEl) frameEl.focus(); } catch (_) {}
     setOverlayStartEnabled(false);
   }
 
-  // HexGL deprecated — not active XP source.
+  // HexGL deprecated â€” not active XP source.
   // onSubmit is intentionally disabled: HexGL scores must not reach the
   // leaderboard or grant XP.  Invaders 3008 is the current arcade XP source.
   async function onSubmit() {
@@ -277,22 +282,22 @@ export function bootstrapHexGLMonsterMax(root) {
       frameEl.classList.remove('loaded');
       frameEl.src = FRAME_SRC + '?t=' + Date.now();
     }
-    if (timerEl) timerEl.textContent = '—';
-    if (scoreEl) scoreEl.textContent = '—';
+    if (timerEl) timerEl.textContent = 'â€”';
+    if (scoreEl) scoreEl.textContent = 'â€”';
     setStatus('RUN READY');
     if (startBtn) startBtn.disabled = false;
     if (submitBtn) {
-      submitBtn.textContent = '📤 Submit Run';
+      submitBtn.textContent = 'ðŸ“¤ Submit Run';
       submitBtn.disabled = true;
     }
-    notify('Loading HexGL…');
+    notify('Loading HexGLâ€¦');
   }
 
   function init() {
     refreshIdentity();
     setStatus('RUN READY');
     if (submitBtn) {
-      submitBtn.textContent = '📤 Submit Run';
+      submitBtn.textContent = 'ðŸ“¤ Submit Run';
       submitBtn.disabled = true;
     }
     setOverlayStartEnabled(false);
@@ -308,14 +313,14 @@ export function bootstrapHexGLMonsterMax(root) {
         frameLoaded = false;
         setStatus('LOAD ERROR');
         notify('HexGL failed to load. Click Start Fullscreen to retry.');
-        setOverlayStartLabel('🔄', 'Retry');
+        setOverlayStartLabel('ðŸ”„', 'Retry');
         setOverlayStartEnabled(true);
       });
     }
     window.addEventListener('message', onHexGLMessage);
     document.addEventListener('arcade-overlay-exit', function () {
       playUiTone('exit');
-      // HexGL deprecated — not active XP source.  Auto-submit on exit disabled.
+      // HexGL deprecated â€” not active XP source.  Auto-submit on exit disabled.
     });
     if (startBtn) startBtn.addEventListener('click', onStart);
     if (submitBtn) submitBtn.addEventListener('click', onSubmit);
