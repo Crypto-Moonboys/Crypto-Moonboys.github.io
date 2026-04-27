@@ -17,12 +17,12 @@ import { createScalingDirector, tickDirector, pickWaveModifier, checkForcedChaos
 import { shouldFirePressureEvent, getEventTier, updateIntensity } from '/js/arcade/systems/event-system.js';
 import { applyMutations } from '/js/arcade/systems/mutation-system.js';
 import { pickBossArchetype } from '/js/arcade/systems/boss-system.js';
-import { shouldOfferRiskReward, pickRiskRewardChoices } from '/js/arcade/systems/risk-system.js';
+import { pickRiskRewardChoices } from '/js/arcade/systems/risk-system.js';
 import { buildRunSummary, recordRunStats, checkMilestones, getDailyVariation } from '/js/arcade/systems/meta-system.js';
 import { pulseHudElement, setTransientBanner } from '/js/arcade/systems/feedback-system.js';
 import { playSound, stopAllSounds, isMuted } from '/js/arcade/core/audio.js';
 
-const GAME_ID = 'snake-run';
+const GAME_ID = SNAKE_RUN_CONFIG.id;
 const WORLD_W = 1600;
 const WORLD_H = 900;
 const GRID_COLS = 44;
@@ -127,6 +127,13 @@ function tileToWorld(x, y) {
     x: (x + 0.5) * CELL,
     y: (y + 0.5) * CELL,
   };
+}
+
+function triggerGameOver(state) {
+  if (state.gameOver) return;
+  state.gameOver = true;
+  state.running = false;
+  state.paused = false;
 }
 
 function createState(root) {
@@ -334,9 +341,13 @@ function spawnFood(state, forceType) {
     const y = Math.floor(rand(0, GRID_ROWS));
     if (isCellBlocked(state, x, y, false)) continue;
     if (state.foods.some((f) => f.x === x && f.y === y)) continue;
-    state.foods.push({ x: x, y: y, type: pickType, pulse: Math.random() * 20, ttl: 15 + Math.random() * 8 });
+    state.foods.push({ x: x, y: y, type: pickType, pulse: Math.random() * 20 });
     return;
   }
+}
+
+function shouldTriggerRiskPhase(wave) {
+  return wave > 0 && wave % 3 === 0 && wave % 5 !== 0;
 }
 
 function seedWave(state) {
@@ -535,12 +546,14 @@ function clearWave(state) {
   state.shrinkingRate = 0.02 + state.wave * 0.0012;
 
   if (state.wave % 5 === 0) beginBossWave(state);
-  else if (shouldOfferRiskReward(state.wave)) {
+  else if (shouldTriggerRiskPhase(state.wave)) {
     state.phase = 'risk';
     state.phaseTimer = 10;
     state.riskChoices = pickRiskRewardChoices ? pickRiskRewardChoices() : [];
     setTransientBanner(state.warningBanner, 'Risk choice: Z/X', '#ffcc79', 2.2);
-  } else offerUpgrades(state);
+  } else {
+    offerUpgrades(state);
+  }
 
   seedWave(state);
 }
@@ -703,7 +716,10 @@ function applyFoodEffect(state, food) {
   state.foodsThisWave += 1;
 
   if (food.type === 'shield') state.upgrades['shield-segment'] = Math.max(state.upgrades['shield-segment'], 1);
-  if (food.type === 'multiplier') state.combo += 1;
+  if (food.type === 'multiplier') {
+    state.combo += 1;
+    state.comboTimer = state.comboWindow;
+  }
   if (food.type === 'poison') state.growthQueue = Math.max(0, state.growthQueue - 2);
   if (food.type === 'golden') {
     if (state.boss) state.boss.hp -= 9 + state.upgrades['score-mult'] * 2;
@@ -772,8 +788,7 @@ function snakeStep(state) {
   const head = state.snake[0];
   const nextHead = { x: head.x + state.dir.x, y: head.y + state.dir.y };
   if (checkHeadCollision(state, nextHead)) {
-    state.gameOver = true;
-    state.running = false;
+    triggerGameOver(state);
     return;
   }
 
@@ -850,7 +865,7 @@ function updateThreats(state, dt) {
       state.shake = Math.max(state.shake, 9);
       if (state.upgrades['shield-segment'] > 0) state.upgrades['shield-segment'] -= 1;
       else if (state.upgrades['ghost-phase'] > 0) state.upgrades['ghost-phase'] -= 1;
-      else state.gameOver = true;
+      else triggerGameOver(state);
       cue('snake-run-hit', makeTone(190, 90, 0.12, 'sawtooth', 0.06));
     }
   }
@@ -865,7 +880,7 @@ function updateThreats(state, dt) {
       state.flash = Math.max(state.flash, 0.7);
       state.shake = Math.max(state.shake, 8);
       if (state.upgrades['shield-segment'] > 0) state.upgrades['shield-segment'] -= 1;
-      else state.gameOver = true;
+      else triggerGameOver(state);
     }
   }
 
@@ -881,7 +896,7 @@ function updateThreats(state, dt) {
       state.flash = Math.max(state.flash, 0.75);
       state.shake = Math.max(state.shake, 10);
       if (state.upgrades['ghost-phase'] > 0) state.upgrades['ghost-phase'] -= 1;
-      else state.gameOver = true;
+      else triggerGameOver(state);
     }
   }
 
@@ -890,7 +905,7 @@ function updateThreats(state, dt) {
     if (t.x === head.x && t.y === head.y) {
       state.flash = Math.max(state.flash, 0.6);
       if (state.upgrades['shield-segment'] > 0) state.upgrades['shield-segment'] -= 1;
-      else state.gameOver = true;
+      else triggerGameOver(state);
       t.ttl = 0;
     }
   }
@@ -918,7 +933,7 @@ function updateThreats(state, dt) {
       state.flash = Math.max(state.flash, 0.65);
       state.shake = Math.max(state.shake, 8);
       if (state.upgrades['shield-segment'] > 0) state.upgrades['shield-segment'] -= 1;
-      else state.gameOver = true;
+      else triggerGameOver(state);
     }
   }
 }
@@ -940,7 +955,7 @@ function updateBoss(state, dt) {
   if (boss.type === 'mega-serpent') {
     boss.x = lerp(boss.x, head.x, dt * (0.7 + phase * 0.25));
     boss.y = lerp(boss.y, head.y, dt * (0.4 + phase * 0.2));
-    if (Math.abs(boss.x - head.x) < 1 && Math.abs(boss.y - head.y) < 1) state.gameOver = true;
+    if (Math.abs(boss.x - head.x) < 1 && Math.abs(boss.y - head.y) < 1) triggerGameOver(state);
   } else if (boss.type === 'grid-crusher') {
     state.arenaTargetInset = Math.min(9, state.arenaTargetInset + dt * (0.3 + phase * 0.18));
     if (Math.random() < dt * (0.4 + phase * 0.3)) state.hazards.collapseZones.push({ x: Math.floor(rand(2, GRID_COLS - 2)), y: Math.floor(rand(2, GRID_ROWS - 2)), timer: 1.6, active: true });
@@ -957,7 +972,7 @@ function updateBoss(state, dt) {
       boss.x = Math.floor(rand(2, GRID_COLS - 2));
       boss.y = Math.floor(rand(2, GRID_ROWS - 2));
       state.flash = Math.max(state.flash, 0.5);
-      if (Math.abs(boss.x - head.x) <= 1 && Math.abs(boss.y - head.y) <= 1) state.gameOver = true;
+      if (Math.abs(boss.x - head.x) <= 1 && Math.abs(boss.y - head.y) <= 1) triggerGameOver(state);
     }
   }
 
@@ -1322,13 +1337,19 @@ function adapterInput(context, event) {
   }
 
   if (key === 'p' || key === 'P') {
-    state.paused = !state.paused;
-    if (state.paused) stopAllSounds();
+    if (state.paused) {
+      state.paused = false;
+      if (context.engine) context.engine.startLoop();
+    } else {
+      state.paused = true;
+      if (context.engine) context.engine.stopLoop();
+      stopAllSounds();
+    }
   }
 }
 
 function adapterGameOver(context) {
-  context.state.gameOver = true;
+  triggerGameOver(context.state);
 }
 
 export const SNAKE_RUN_ADAPTER = createGameAdapter({
