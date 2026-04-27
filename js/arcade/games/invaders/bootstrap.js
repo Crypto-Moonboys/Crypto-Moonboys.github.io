@@ -56,7 +56,7 @@ import {
   MODIFIER_BLACKOUT,
   WAVE_MODIFIER_DEFS,
   createScalingDirector, tickDirector, pickWaveModifier,
-  shouldTriggerSurpriseEvent, pickSurpriseEvent,
+  shouldFirePressureEvent, pickSurpriseEvent, getEventTier,
   updateIntensity, checkForcedChaos, getBossAggressionMult,
 } from './event-system.js';
 
@@ -512,6 +512,8 @@ export function bootstrapInvaders(root) {
     }
     playSfx('wave_clear');
     updateIntensity(director, 0, { waveClear: true, lives });
+    // Partial pressure reset on wave clear so the next wave still builds quickly
+    director.pressure = Math.max(0, (director.pressure || 0) - 40);
 
     // Risk/reward screen every 5 waves (shown before upgrade)
     if (shouldOfferRiskReward(wave)) {
@@ -687,8 +689,8 @@ export function bootstrapInvaders(root) {
     // Recovery visual timer
     if (recoveryTimer > 0) recoveryTimer = Math.max(0, recoveryTimer - dt);
 
-    // Tick scaling director + check for surprise events
-    tickDirector(director, dt, score, wave, lives, upgrades);
+    // Tick scaling director (pass event-active flag + daily pressure multiplier)
+    tickDirector(director, dt, score, wave, lives, upgrades, !!activeEvent, dailyVariation.eventRateMult || 1);
 
     // Forced chaos: inject a surprise event if the player has been safe too long
     if (!activeEvent && checkForcedChaos(director)) {
@@ -701,11 +703,14 @@ export function bootstrapInvaders(root) {
         eventBanner = { text: '⚡ CHAOS: ' + ev.label, color: '#ff0055', timer: 2.5 };
         playSfx('event_start');
         director._eventCooldown = ev.cooldown || 30;
+        director.pressure       = 0;
       }
     }
 
-    if (!activeEvent && shouldTriggerSurpriseEvent(director, dt * (dailyVariation.eventRateMult || 1))) {
-      const ev = pickSurpriseEvent(wave, director);
+    // Pressure-based event trigger (deterministic — fires when pressure reaches 100)
+    if (!activeEvent && shouldFirePressureEvent(director)) {
+      const tier = getEventTier(director.intensity || 0);
+      const ev   = pickSurpriseEvent(wave, director, tier);
       if (ev) {
         activeEvent = ev;
         eventTimer  = ev.duration || 0;
@@ -714,6 +719,10 @@ export function bootstrapInvaders(root) {
         eventBanner = { text: '⚠️ ' + ev.label, color: ev.color, timer: 2.5 };
         playSfx('event_start');
         director._eventCooldown = ev.cooldown || 30;
+        director.pressure       = 0;
+      } else {
+        // No eligible event — bleed off pressure so we don't get stuck at 100
+        director.pressure = 50;
       }
     }
     if (activeEvent) {

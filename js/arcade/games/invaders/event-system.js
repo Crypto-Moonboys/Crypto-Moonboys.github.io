@@ -237,11 +237,17 @@ export const WAVE_MODIFIER_DEFS = [
 // Each event: { id, label, color, minWave, trigger(state), execute(state),
 //               tickActive(state,dt), duration }
 
+// ── Event tiers ───────────────────────────────────────────────────────────────
+// tier1 = minor (low intensity)
+// tier2 = pressure (mid intensity)
+// tier3 = spike (high intensity)
+
 export const SURPRISE_EVENT_DEFS = [
   {
     id: 'ambushDrop',
     label: 'AMBUSH!',
     color: '#ff4444',
+    tier: 'tier1',
     minWave: 2,
     duration: 0,
     trigger(state) { return Math.random() < 0.15; },
@@ -264,6 +270,7 @@ export const SURPRISE_EVENT_DEFS = [
     id: 'rogueMini',
     label: 'ROGUE MINI BOSS',
     color: '#ff8c00',
+    tier: 'tier2',
     minWave: 3,
     duration: 30,
     trigger(state) { return Math.random() < 0.12; },
@@ -287,6 +294,7 @@ export const SURPRISE_EVENT_DEFS = [
     id: 'laserSweep',
     label: 'LASER SWEEP',
     color: '#ff2222',
+    tier: 'tier3',
     minWave: 4,
     duration: 3,
     trigger(state) { return !!state.boss && Math.random() < 0.20; },
@@ -301,6 +309,7 @@ export const SURPRISE_EVENT_DEFS = [
     id: 'meteorShower',
     label: 'METEOR SHOWER',
     color: '#888888',
+    tier: 'tier2',
     minWave: 3,
     duration: 0,
     trigger(state) { return Math.random() < 0.12; },
@@ -321,6 +330,7 @@ export const SURPRISE_EVENT_DEFS = [
     id: 'empBlast',
     label: 'EMP BLAST',
     color: '#2ec5ff',
+    tier: 'tier3',
     minWave: 5,
     duration: 5,
     trigger(state) { return Math.random() < 0.10; },
@@ -336,6 +346,7 @@ export const SURPRISE_EVENT_DEFS = [
     id: 'droneHijack',
     label: 'DRONE HIJACKED',
     color: '#cc00ff',
+    tier: 'tier2',
     minWave: 4,
     duration: 5,
     trigger(state) { return Math.random() < 0.10; },
@@ -350,6 +361,7 @@ export const SURPRISE_EVENT_DEFS = [
     id: 'goldenInvader',
     label: 'GOLDEN INVADER',
     color: '#f7c948',
+    tier: 'tier1',
     minWave: 2,
     duration: 20,
     trigger(state) { return Math.random() < 0.18; },
@@ -371,6 +383,7 @@ export const SURPRISE_EVENT_DEFS = [
     id: 'cursedInvader',
     label: 'CURSED INVADER',
     color: '#ff00ff',
+    tier: 'tier2',
     minWave: 4,
     duration: 0,
     trigger(state) { return Math.random() < 0.12; },
@@ -392,6 +405,7 @@ export const SURPRISE_EVENT_DEFS = [
     id: 'supplyCrate',
     label: 'SUPPLY DROP',
     color: '#3fb950',
+    tier: 'tier1',
     minWave: 1,
     duration: 0,
     trigger(state) { return Math.random() < 0.20; },
@@ -405,6 +419,7 @@ export const SURPRISE_EVENT_DEFS = [
     id: 'panicMode',
     label: 'PANIC MODE',
     color: '#ff4444',
+    tier: 'tier3',
     minWave: 5,
     duration: 10,
     trigger(state) { return Math.random() < 0.08; },
@@ -445,11 +460,27 @@ export function createScalingDirector() {
     lastDamageTime:         0,
     /** _elapsedTotal value at the last "safe" moment (wave clear / long calm). */
     lastSafeTime:           0,
+
+    // ── Pressure-based event triggering ───────────────────────────────────
+    /** Deterministic accumulator (0–100) that triggers events when full.
+     *  Accumulates while no event is active; resets to 0 after each fire. */
+    pressure:           0,
   };
 }
 
-/** Tick the scaling director. Call every update frame. */
-export function tickDirector(director, dt, score, wave, lives, upgrades) {
+/**
+ * Tick the scaling director. Call every update frame.
+ *
+ * @param {object}  director
+ * @param {number}  dt
+ * @param {number}  score
+ * @param {number}  wave
+ * @param {number}  lives
+ * @param {object}  upgrades
+ * @param {boolean} [eventActive=false]  Whether a surprise event is currently running.
+ * @param {number}  [pressureRateMult=1] Daily-variation multiplier for pressure accumulation rate.
+ */
+export function tickDirector(director, dt, score, wave, lives, upgrades, eventActive, pressureRateMult) {
   director.wave  = wave;
   director.lives = lives;
   director.scorePace = wave > 0 ? score / wave : 0;
@@ -468,6 +499,17 @@ export function tickDirector(director, dt, score, wave, lives, upgrades) {
   // Passive intensity decay: no damage for more than 8 s → calm down
   if (director._timeSinceLastDamage > 8) {
     director.intensity = Math.max(0, director.intensity - 5 * dt);
+  }
+
+  // ── Pressure accumulation ────────────────────────────────────────────────
+  // Pressure only builds while no event is running and wave >= 2.
+  // Rate = base + intensity bonus, scaled by optional dailyVariation multiplier.
+  if (!eventActive && wave >= 2) {
+    const intensity    = director.intensity || 0;
+    const baseRate     = 5;                             // units/sec — fills in 20 s at base
+    const intensityAdd = intensity * 0.08;              // up to +8/s at full chaos
+    const rate         = (baseRate + intensityAdd) * (pressureRateMult || 1);
+    director.pressure  = Math.min(100, (director.pressure || 0) + rate * dt);
   }
 }
 
@@ -618,33 +660,59 @@ export function pickWaveModifier(wave, director) {
 }
 
 /**
- * Returns true if a surprise event should trigger this frame.
- * Probability scales with wave and intensity; gated by a per-event cooldown.
+ * Map intensity to an event tier.
  *
- * Intensity bands:
- *   0–30  (calm)   → 0.3× base rate
- *   31–60 (rising) → 1.0× base rate
- *   61–100 (chaos) → up to 1.7× base rate
+ * low  (0–39)  → 'tier1'  (minor — supply drop, golden invader, ambush)
+ * mid  (40–69) → 'tier2'  (pressure — rogue mini, meteor, hijack, cursed)
+ * high (70–100)→ 'tier3'  (spike — laser, EMP, panic)
+ *
+ * @param {number} intensity  0–100
+ * @returns {'tier1'|'tier2'|'tier3'}
  */
-export function shouldTriggerSurpriseEvent(director, dt) {
-  if (director._eventCooldown > 0) return false;
-  if (director.wave < 2) return false;
-  const base          = 0.008 + director.wave * 0.0008;
-  const intensity     = director.intensity || 0;
-  const intensityMult = 0.3 + intensity / 100 * 1.4;
-  return Math.random() < base * intensityMult * dt;
+export function getEventTier(intensity) {
+  if (intensity >= 70) return 'tier3';
+  if (intensity >= 40) return 'tier2';
+  return 'tier1';
 }
 
-/** Pick which surprise event to fire (avoids recent repeats). */
-export function pickSurpriseEvent(wave, director) {
-  const available = SURPRISE_EVENT_DEFS.filter((e) => {
-    if (e.minWave > wave) return false;
-    const recent = director.eventHistory.slice(-4);
-    if (recent.includes(e.id)) return false;
-    return true;
-  });
-  const pool = available.length ? available : SURPRISE_EVENT_DEFS.filter(e => e.minWave <= wave);
+/**
+ * Returns true when accumulated pressure has reached the trigger threshold
+ * and the event cooldown has expired.
+ *
+ * This replaces the old RNG-only check: events are now guaranteed once
+ * enough time / danger has accumulated, while still being unpredictable
+ * in *which* event fires and *exactly* when within the pressure cycle.
+ *
+ * @param {object} director  Scaling director
+ * @returns {boolean}
+ */
+export function shouldFirePressureEvent(director) {
+  if (director._eventCooldown > 0) return false;
+  if (director.wave < 2) return false;
+  return (director.pressure || 0) >= 100;
+}
+
+/** Pick which surprise event to fire (avoids recent repeats).
+ *
+ * Prefers events matching the current intensity tier; falls back to any
+ * available event when the preferred tier has no eligible entries.
+ *
+ * @param {number} wave
+ * @param {object} director
+ * @param {string} [tier]  'tier1'|'tier2'|'tier3' — defaults to derived from intensity
+ */
+export function pickSurpriseEvent(wave, director, tier) {
+  const activeTier = tier || getEventTier(director.intensity || 0);
+  const recent     = director.eventHistory.slice(-4);
+
+  // Build pool: prefer matching tier, fall back to any available event
+  const eligible = SURPRISE_EVENT_DEFS.filter((e) => e.minWave <= wave && !recent.includes(e.id));
+  const tiered   = eligible.filter((e) => e.tier === activeTier);
+  const pool     = tiered.length ? tiered : (eligible.length ? eligible : SURPRISE_EVENT_DEFS.filter(e => e.minWave <= wave));
+
   if (!pool.length) return null;
+
+  // Small jitter: pick randomly within the tier pool so runs feel different
   const def = pool[Math.floor(Math.random() * pool.length)];
   director.eventHistory.push(def.id);
   if (director.eventHistory.length > 8) director.eventHistory.shift();
