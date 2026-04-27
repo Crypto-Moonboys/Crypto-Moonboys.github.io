@@ -432,6 +432,19 @@ export function createScalingDirector() {
     upgradeCount:       0,
     consecutiveDeaths:  0,
     _eventCooldown:     0,
+
+    // ── Intensity control ──────────────────────────────────────────────────
+    /** Tension meter clamped 0–100. Drives event frequency, modifier weight,
+     *  boss aggression, and forced-chaos triggers. */
+    intensity:              0,
+    /** Total game-time elapsed (seconds). Used to timestamp events. */
+    _elapsedTotal:          0,
+    /** Seconds since the player last took damage. */
+    _timeSinceLastDamage:   0,
+    /** _elapsedTotal value when the player last took damage. */
+    lastDamageTime:         0,
+    /** _elapsedTotal value at the last "safe" moment (wave clear / long calm). */
+    lastSafeTime:           0,
   };
 }
 
@@ -447,28 +460,158 @@ export function tickDirector(director, dt, score, wave, lives, upgrades) {
   if (director.recentDamageTaken > 0) {
     director.recentDamageTaken = Math.max(0, director.recentDamageTaken - dt * 0.5);
   }
+
+  // ── Intensity timers ────────────────────────────────────────────────────
+  director._elapsedTotal        += dt;
+  director._timeSinceLastDamage += dt;
+
+  // Passive intensity decay: no damage for more than 8 s → calm down
+  if (director._timeSinceLastDamage > 8) {
+    director.intensity = Math.max(0, director.intensity - 5 * dt);
+  }
+}
+
+// ── INTENSITY_SAFE seconds of calm before forced-chaos kicks in ───────────────
+const INTENSITY_SAFE_THRESHOLD = 20; // seconds
+
+/**
+ * Update the intensity meter each frame based on in-game conditions.
+ *
+ * Call this from the game loop with a snapshot of the current danger state.
+ *
+ * @param {object} director       Scaling director from createScalingDirector()
+ * @param {number} dt             Delta-time in seconds
+ * @param {object} [ctx]          Context snapshot
+ * @param {boolean} [ctx.damageTaken=false]       Player took damage this frame
+ * @param {number}  [ctx.enemiesNearPlayer=0]     Invaders within striking range
+ * @param {boolean} [ctx.bossActive=false]        A boss is currently alive
+ * @param {number}  [ctx.lives=3]                 Current player lives
+ * @param {boolean} [ctx.waveClear=false]         Wave just cleared this frame
+ */
+export function updateIntensity(director, dt, {
+  damageTaken        = false,
+  enemiesNearPlayer  = 0,
+  bossActive         = false,
+  lives              = 3,
+  waveClear          = false,
+} = {}) {
+  let delta = 0;
+
+  // Increases ────────────────────────────────────────────────────────────
+  if (damageTaken) {
+    delta += 25;
+    director._timeSinceLastDamage = 0;
+    director.lastDamageTime       = director._elapsedTotal;
+  }
+
+  if (bossActive) {
+    delta += 8 * dt;
+  }
+
+  if (enemiesNearPlayer > 0) {
+    delta += Math.min(enemiesNearPlayer, 5) * 2 * dt;
+  }
+
+  if (lives <= 1) {
+    delta += 4 * dt;
+  } else if (lives === 2) {
+    delta += 2 * dt;
+  }
+
+  // Decreases ───────────────────────────────────────────────────────────
+  if (waveClear) {
+    delta -= 30;
+    director.lastSafeTime = director._elapsedTotal;
+  }
+
+  director.intensity = Math.min(100, Math.max(0, director.intensity + delta));
 }
 
 /**
- * Pick a wave modifier based on wave and director state.
+ * Return true when the player has been safe long enough that a forced surprise
+ * event should be injected to break the calm.
+ *
+ * Resets the event cooldown so pickSurpriseEvent() fires immediately.
+ *
+ * @param {object} director  Scaling director
+ * @returns {boolean}
+ */
+export function checkForcedChaos(director) {
+  if (director.wave < 2) return false;
+  if (director._eventCooldown > 0) return false;
+  if (director.intensity >= 25) return false;
+  if (director._timeSinceLastDamage < INTENSITY_SAFE_THRESHOLD) return false;
+
+  // Reset timers so the chaos event fires and cooldown engages
+  director._timeSinceLastDamage = 0;
+  director.lastSafeTime         = director._elapsedTotal;
+  director._eventCooldown       = 0; // let pickSurpriseEvent set it
+  return true;
+}
+
+/**
+ * Return a boss aggression multiplier driven by intensity.
+ *
+ * At intensity 0   → 1.0× (baseline)
+ * At intensity 100 → 2.0× (double fire rate / bullet spread)
+ *
+ * @param {object} director
+ * @returns {number}  1.0 – 2.0
+ */
+export function getBossAggressionMult(director) {
+  return 1.0 + (director.intensity || 0) / 100;
+}
+
+/**
+ * Pick a wave modifier based on wave, director state, and current intensity.
+ *
+ * At low intensity (< 30) only common modifiers are eligible and the trigger
+ * probability drops to ~30 %.  At high intensity (≥ 70) rare/epic modifiers are
+ * unlocked one wave earlier and the trigger probability climbs to ~70 %.
+ *
  * Returns a modifier def or null.
  */
 export function pickWaveModifier(wave, director) {
   if (wave < 2) return null;
+  const intensity = director.intensity || 0;
+
+  // Trigger probability scales with intensity: calm→30 %, neutral→48 %, chaos→70 %
+  const triggerChance = 0.30 + intensity / 100 * 0.40;
+
   const available = WAVE_MODIFIER_DEFS.filter((m) => {
     if (m.id === MODIFIER_SHIELDED_WAVE    && wave < 3)  return false;
     if (m.id === MODIFIER_BLACKOUT         && wave < 4)  return false;
     if (m.id === MODIFIER_ASTEROID_DEBRIS  && wave < 4)  return false;
     if (m.id === MODIFIER_FAKE_SAFE_WAVE   && wave < 5)  return false;
-    if (m.rarity === 'epic'  && wave < 8)  return false;
-    if (m.rarity === 'rare'  && wave < 4)  return false;
+    // At low intensity only common modifiers are eligible
+    if (intensity < 30 && m.rarity !== 'common')         return false;
+    // Rarity gates (relaxed by 1 wave at high intensity)
+    const bonusWave = intensity >= 70 ? 1 : 0;
+    if (m.rarity === 'epic'  && wave < 8  - bonusWave)   return false;
+    if (m.rarity === 'rare'  && wave < 4  - bonusWave)   return false;
     const recent = director.modifierHistory.slice(-3);
     if (recent.includes(m.id)) return false;
     return true;
   });
   if (!available.length) return null;
-  if (Math.random() > 0.52) return null; // ~48 % chance of any modifier
-  const def = available[Math.floor(Math.random() * available.length)];
+  if (Math.random() > triggerChance) return null;
+
+  // At high intensity weight towards higher-rarity modifiers
+  const weights = available.map((m) => {
+    if (intensity >= 70) {
+      return m.rarity === 'epic' ? 3 : m.rarity === 'rare' ? 2 : 1;
+    }
+    return 1;
+  });
+  const totalWeight = weights.reduce((s, w) => s + w, 0);
+  let roll = Math.random() * totalWeight;
+  let def;
+  for (let i = 0; i < available.length; i++) {
+    roll -= weights[i];
+    if (roll <= 0) { def = available[i]; break; }
+  }
+  def = def || available[available.length - 1];
+
   director.modifierHistory.push(def.id);
   if (director.modifierHistory.length > 8) director.modifierHistory.shift();
   return def;
@@ -476,13 +619,20 @@ export function pickWaveModifier(wave, director) {
 
 /**
  * Returns true if a surprise event should trigger this frame.
- * Probability scales with wave and is gated by a cooldown.
+ * Probability scales with wave and intensity; gated by a per-event cooldown.
+ *
+ * Intensity bands:
+ *   0–30  (calm)   → 0.3× base rate
+ *   31–60 (rising) → 1.0× base rate
+ *   61–100 (chaos) → up to 1.7× base rate
  */
 export function shouldTriggerSurpriseEvent(director, dt) {
   if (director._eventCooldown > 0) return false;
   if (director.wave < 2) return false;
-  const chancePerSecond = 0.008 + director.wave * 0.0008;
-  return Math.random() < chancePerSecond * dt;
+  const base          = 0.008 + director.wave * 0.0008;
+  const intensity     = director.intensity || 0;
+  const intensityMult = 0.3 + intensity / 100 * 1.4;
+  return Math.random() < base * intensityMult * dt;
 }
 
 /** Pick which surprise event to fire (avoids recent repeats). */

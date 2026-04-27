@@ -2,18 +2,38 @@
  * director-system.js — Unified director facade for Invaders 3008.
  *
  * Re-exports the scaling director, wave modifiers, surprise events, and boss
- * archetypes from their respective modules and provides a single
- *   spawnBoss(type, wave, W)
- * convenience function as a typed entry-point for boss creation.
+ * archetypes from their respective modules and provides:
+ *
+ *   spawnBoss(type, wave, W, director)  — typed boss creation entry-point
+ *   updateIntensity(director, dt, ctx) — tension-meter driver
+ *   checkForcedChaos(director)         — forced-surprise trigger
+ *   getBossAggressionMult(director)    — intensity → aggression multiplier
+ *   INTENSITY_CALM / RISING / CHAOTIC  — band thresholds for callers
  *
  * Pure game logic — no DOM or canvas access.
  */
+
+// ── Intensity band constants ──────────────────────────────────────────────────
+/** Below this value the game is in a "calm" phase. */
+export const INTENSITY_CALM    = 30;
+/** Above this value the game is in a "rising" phase. */
+export const INTENSITY_RISING  = 60;
+/** Above this value the game is in a "chaotic" phase. */
+export const INTENSITY_CHAOTIC = 80;
 
 // ── Director state ────────────────────────────────────────────────────────────
 
 export {
   createScalingDirector,
   tickDirector,
+} from './event-system.js';
+
+// ── Intensity control ─────────────────────────────────────────────────────────
+
+export {
+  updateIntensity,
+  checkForcedChaos,
+  getBossAggressionMult,
 } from './event-system.js';
 
 // ── Wave modifiers ────────────────────────────────────────────────────────────
@@ -126,4 +146,20 @@ export function wasBossRecent(archetypeId, director, windowSize = 2) {
  */
 export function wasEventRecent(eventId, director, windowSize = 4) {
   return (director.eventHistory || []).slice(-windowSize).includes(eventId);
+}
+
+// ── Intensity helper ──────────────────────────────────────────────────────────
+
+/**
+ * Return a human-readable intensity band name for the current director state.
+ * Useful for HUD display or debug overlays.
+ *
+ * @param {object} director
+ * @returns {'calm'|'rising'|'chaotic'}
+ */
+export function getIntensityBand(director) {
+  const i = director.intensity || 0;
+  if (i >= INTENSITY_CHAOTIC) return 'chaotic';
+  if (i >= INTENSITY_RISING)  return 'rising';
+  return 'calm';
 }
