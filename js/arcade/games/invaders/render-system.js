@@ -999,6 +999,159 @@ export function createRenderer(ctx, W, H) {
     ctx.fillRect(0, 0, W, H);
   }
 
+  // ── Intensity feedback ────────────────────────────────────────────────────────
+
+  /** Red vignette overlay that grows with intensity above 30. */
+  function drawIntensityFeedback(intensity, elapsed) {
+    if (intensity < 30) return;
+    const t     = (intensity - 30) / 70;            // 0 at intensity 30, 1 at 100
+    const pulse = 0.7 + 0.3 * Math.sin(elapsed * (2 + t * 8)); // faster at high intensity
+    const alpha = t * 0.32 * pulse;
+    const grad  = ctx.createRadialGradient(W / 2, H / 2, H * 0.15, W / 2, H / 2, H * 0.85);
+    grad.addColorStop(0, 'rgba(0,0,0,0)');
+    grad.addColorStop(1, `rgba(180,20,20,${alpha.toFixed(3)})`);
+    ctx.save();
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, W, H);
+    ctx.restore();
+  }
+
+  /** Brief full-screen flash when intensity crosses a threshold (30 / 60 / 80). */
+  function drawIntensityPulse(pulseTimer, pulseColor) {
+    if (pulseTimer <= 0) return;
+    ctx.save();
+    ctx.globalAlpha = clamp(pulseTimer * 0.55, 0, 0.55);
+    ctx.fillStyle   = pulseColor || '#ff4444';
+    ctx.fillRect(0, 0, W, H);
+    ctx.globalAlpha = 1;
+    ctx.restore();
+  }
+
+  /** Cool blue tint during the post-chaos recovery moment. */
+  function drawRecoveryOverlay(recoveryTimer) {
+    if (recoveryTimer <= 0) return;
+    ctx.save();
+    ctx.globalAlpha = clamp(recoveryTimer * 0.28, 0, 0.28);
+    ctx.fillStyle   = '#2ec5ff';
+    ctx.fillRect(0, 0, W, H);
+    ctx.globalAlpha = 1;
+    ctx.restore();
+  }
+
+  /** Stack of brief milestone unlock toasts in the top-centre area. */
+  function drawMilestoneToasts(toasts) {
+    if (!toasts || !toasts.length) return;
+    ctx.save();
+    let ty = 56;
+    for (const t of toasts) {
+      const alpha = clamp(t.timer / 0.6, 0, 1);
+      ctx.globalAlpha = alpha;
+      ctx.font        = 'bold 11px system-ui';
+      ctx.textAlign   = 'center';
+      const tw = ctx.measureText(t.text).width + 22;
+      ctx.fillStyle = 'rgba(0,0,0,0.75)';
+      ctx.beginPath();
+      if (ctx.roundRect) ctx.roundRect(W / 2 - tw / 2, ty - 13, tw, 18, 4);
+      else               ctx.rect(W / 2 - tw / 2, ty - 13, tw, 18);
+      ctx.fill();
+      ctx.fillStyle   = '#f7c948';
+      ctx.shadowBlur  = 8;
+      ctx.shadowColor = '#f7c948';
+      ctx.fillText(t.text, W / 2, ty);
+      ctx.shadowBlur  = 0;
+      ty += 22;
+    }
+    ctx.globalAlpha = 1;
+    ctx.restore();
+  }
+
+  /** Full run-summary screen drawn over the game-over state. */
+  function drawRunSummary(summary) {
+    // Dark backdrop
+    ctx.fillStyle = 'rgba(5, 8, 20, 0.96)';
+    ctx.fillRect(0, 0, W, H);
+
+    ctx.save();
+
+    // "GAME OVER" header
+    ctx.textAlign   = 'center';
+    ctx.shadowBlur  = 20;
+    ctx.shadowColor = '#ff4fd1';
+    ctx.fillStyle   = '#ff4fd1';
+    ctx.font        = 'bold 30px system-ui';
+    ctx.fillText('GAME OVER', W / 2, 46);
+    ctx.shadowBlur  = 0;
+
+    // Rating letter
+    ctx.shadowBlur  = 18;
+    ctx.shadowColor = summary.ratingColor;
+    ctx.fillStyle   = summary.ratingColor;
+    ctx.font        = 'bold 52px system-ui';
+    ctx.fillText(summary.rating, W / 2, 108);
+    ctx.shadowBlur  = 0;
+
+    // Stats grid (2 columns × 3 rows)
+    const stats = [
+      ['SCORE',      summary.score.toLocaleString()],
+      ['WAVE',       String(summary.wave)],
+      ['BOSSES',     String(summary.bossesDefeated)],
+      ['UPGRADES',   String(summary.upgradeCount)],
+      ['MAX CHAOS',  summary.highestIntensity + '%'],
+      ['SURVIVED',   summary.survival + 's'],
+    ];
+    const col1X = W / 2 - 92;
+    const col2X = W / 2 + 8;
+    let gy = 132;
+    for (let idx = 0; idx < stats.length; idx++) {
+      const [label, val] = stats[idx];
+      const sx = idx % 2 === 0 ? col1X : col2X;
+      ctx.fillStyle   = '#8b949e';
+      ctx.font        = '10px system-ui';
+      ctx.textAlign   = 'left';
+      ctx.fillText(label, sx, gy);
+      ctx.fillStyle   = '#f7c948';
+      ctx.font        = 'bold 13px system-ui';
+      ctx.fillText(val, sx, gy + 14);
+      if (idx % 2 === 1) gy += 30;
+    }
+    gy += 26;
+
+    // Divider
+    ctx.strokeStyle = 'rgba(255,255,255,0.1)';
+    ctx.lineWidth   = 1;
+    ctx.beginPath();
+    ctx.moveTo(W * 0.1, gy);
+    ctx.lineTo(W * 0.9, gy);
+    ctx.stroke();
+    gy += 12;
+
+    // Personal bests
+    ctx.textAlign   = 'center';
+    ctx.fillStyle   = '#3fb950';
+    ctx.font        = 'bold 9px system-ui';
+    ctx.fillText('PERSONAL BESTS', W / 2, gy);
+    gy += 13;
+    ctx.fillStyle = '#8b949e';
+    ctx.font      = '10px system-ui';
+    ctx.fillText(
+      'Score ' + summary.bestScore.toLocaleString() +
+      '  ·  Wave ' + summary.bestWave +
+      '  ·  ' + summary.bestSurvival + 's',
+      W / 2, gy,
+    );
+    gy += 10;
+    ctx.fillStyle = '#555';
+    ctx.font      = '9px system-ui';
+    ctx.fillText('Run #' + summary.totalRuns, W / 2, gy + 6);
+
+    // Restart hint
+    ctx.fillStyle = '#555';
+    ctx.font      = '11px system-ui';
+    ctx.fillText('Press Start to play again', W / 2, H - 14);
+
+    ctx.restore();
+  }
+
   // ── Main draw ─────────────────────────────────────────────────────────────────
 
   /**
@@ -1035,16 +1188,21 @@ export function createRenderer(ctx, W, H) {
     }
     if (s.gameOver) {
       drawEffects(s.particles, s.scoreTexts, s.hitFlashes);
-      ctx.fillStyle = '#ff4fd1';
-      ctx.font      = 'bold 32px system-ui';
-      ctx.textAlign = 'center';
-      ctx.fillText('GAME OVER', W / 2, H / 2 - 20);
-      ctx.fillStyle = '#f7c948';
-      ctx.font      = 'bold 20px system-ui';
-      ctx.fillText('Score: ' + s.score, W / 2, H / 2 + 20);
-      ctx.fillStyle = '#8b949e';
-      ctx.font      = '16px system-ui';
-      ctx.fillText('Press Start to play again', W / 2, H / 2 + 55);
+      if (s.runSummary) {
+        drawRunSummary(s.runSummary);
+        drawMilestoneToasts(s.milestoneToasts || []);
+      } else {
+        ctx.fillStyle = '#ff4fd1';
+        ctx.font      = 'bold 32px system-ui';
+        ctx.textAlign = 'center';
+        ctx.fillText('GAME OVER', W / 2, H / 2 - 20);
+        ctx.fillStyle = '#f7c948';
+        ctx.font      = 'bold 20px system-ui';
+        ctx.fillText('Score: ' + s.score, W / 2, H / 2 + 20);
+        ctx.fillStyle = '#8b949e';
+        ctx.font      = '16px system-ui';
+        ctx.fillText('Press Start to play again', W / 2, H / 2 + 55);
+      }
       ctx.restore();
       return;
     }
@@ -1101,6 +1259,11 @@ export function createRenderer(ctx, W, H) {
     drawEmpOverlay(s.empActive, s.empTimer);
     drawPanicMode(s.panicMode, s.panicTimer, s.elapsed);
 
+    // Intensity feedback layer (drawn above gameplay, below HUD)
+    drawIntensityFeedback(s.intensity || 0, s.elapsed);
+    drawIntensityPulse(s.intensityPulseTimer || 0, s.intensityPulseColor);
+    drawRecoveryOverlay(s.recoveryTimer || 0);
+
     // Bomb cooldown indicator (canvas HUD only — no DOM)
     if (s.upgrades && s.upgrades.bombShot > 0) {
       const ready = (s.bombCooldown || 0) <= 0;
@@ -1127,6 +1290,9 @@ export function createRenderer(ctx, W, H) {
 
     // Screen flash (drawn above everything)
     drawScreenFlash(s.screenFlashTimer || 0);
+
+    // Milestone toasts (live in-game notifications)
+    drawMilestoneToasts(s.milestoneToasts || []);
 
     ctx.restore();
   }

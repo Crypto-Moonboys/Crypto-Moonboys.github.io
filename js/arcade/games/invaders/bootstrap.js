@@ -57,7 +57,12 @@ import {
   WAVE_MODIFIER_DEFS,
   createScalingDirector, tickDirector, pickWaveModifier,
   shouldTriggerSurpriseEvent, pickSurpriseEvent,
+  updateIntensity, checkForcedChaos, getBossAggressionMult,
 } from './event-system.js';
+
+import {
+  buildRunSummary, recordRunStats, checkMilestones, getDailyVariation,
+} from './meta-system.js';
 
 import {
   BOSS_ARCHETYPE_DEFS, pickBossArchetype, spawnBossArchetype,
@@ -183,6 +188,17 @@ export function bootstrapInvaders(root) {
   let lastRightTapTime  = 0;
   // Wave score multiplier (for oneLife risk/reward)
   let waveScoreMult     = 1;
+
+  // ── Meta / intensity feedback ─────────────────────────────────────────────────
+  let runStats            = { bossesDefeated: 0, highestIntensity: 0 };
+  let intensityPrevBand   = 'calm';    // 'calm' | 'rising' | 'chaotic'
+  let intensityPulseTimer = 0;         // visual threshold-crossing pulse duration
+  let intensityPulseColor = '#ff4444';
+  let recoveryTimer       = 0;         // post-chaos recovery visual (seconds)
+  let runSummary          = null;      // populated on game over
+  /** @type {Array<{ text: string, timer: number }>} */
+  let milestoneToasts     = [];
+  const dailyVariation    = getDailyVariation();  // fixed for the session
 
   // ── Game-feel state ───────────────────────────────────────────────────────────
   let screenFlashTimer = 0;
@@ -495,6 +511,7 @@ export function bootstrapInvaders(root) {
       spawnExplosion(W * 0.5, 95, 0.8, '#3fb950');
     }
     playSfx('wave_clear');
+    updateIntensity(director, 0, { waveClear: true, lives });
 
     // Risk/reward screen every 5 waves (shown before upgrade)
     if (shouldOfferRiskReward(wave)) {
@@ -570,6 +587,13 @@ export function bootstrapInvaders(root) {
     lastLeftTapTime   = 0;
     lastRightTapTime  = 0;
     waveScoreMult     = 1;
+    // Meta / intensity feedback
+    runStats            = { bossesDefeated: 0, highestIntensity: 0 };
+    intensityPrevBand   = 'calm';
+    intensityPulseTimer = 0;
+    recoveryTimer       = 0;
+    runSummary          = null;
+    milestoneToasts     = [];
     player = { x: W / 2, y: H - 50, w: SHIP_W, h: SHIP_H, speed: 320, moveDir: 1, shielded: false };
     updateHud();
     draw();
@@ -657,9 +681,30 @@ export function bootstrapInvaders(root) {
 
     if (waveIntroTimer > 0) { waveIntroTimer -= dt; updateEffects(dt); return; }
 
+    // Per-frame player-damage flag (set to true in each hit path below)
+    let _damageFlagThisFrame = false;
+
+    // Recovery visual timer
+    if (recoveryTimer > 0) recoveryTimer = Math.max(0, recoveryTimer - dt);
+
     // Tick scaling director + check for surprise events
     tickDirector(director, dt, score, wave, lives, upgrades);
-    if (!activeEvent && shouldTriggerSurpriseEvent(director, dt)) {
+
+    // Forced chaos: inject a surprise event if the player has been safe too long
+    if (!activeEvent && checkForcedChaos(director)) {
+      const ev = pickSurpriseEvent(wave, director);
+      if (ev) {
+        activeEvent = ev;
+        eventTimer  = ev.duration || 0;
+        eventData   = {};
+        ev.execute(buildEventState());
+        eventBanner = { text: '⚡ CHAOS: ' + ev.label, color: '#ff0055', timer: 2.5 };
+        playSfx('event_start');
+        director._eventCooldown = ev.cooldown || 30;
+      }
+    }
+
+    if (!activeEvent && shouldTriggerSurpriseEvent(director, dt * (dailyVariation.eventRateMult || 1))) {
       const ev = pickSurpriseEvent(wave, director);
       if (ev) {
         activeEvent = ev;
@@ -833,6 +878,7 @@ export function bootstrapInvaders(root) {
           spawnExplosion(px, player.y + player.h / 2, 1.5, '#ff3333');
           screenShake(8, 0.25);
           playSfx('player_damage');
+          _damageFlagThisFrame = true;
           if (lives <= 0) {
             if (!reviveUsed && upgrades.revive > 0) {
               lives      = 1;
@@ -863,6 +909,7 @@ export function bootstrapInvaders(root) {
           spawnExplosion(player.x + player.w / 2, player.y + player.h / 2, 1.2, '#ff6b2b');
           screenShake(7, 0.24);
           playSfx('player_damage');
+          _damageFlagThisFrame = true;
           if (lives <= 0) {
             if (!reviveUsed && upgrades.revive > 0) {
               lives      = 1;
@@ -991,7 +1038,7 @@ export function bootstrapInvaders(root) {
           speed    = (BOSS_BULLET_SPEED_BASE + wave * BOSS_BULLET_SPEED_PER_WAVE) * 1.6 * slowMult;
           interval = baseInterval * 0.5;
         }
-        invShootTimer = interval;
+        invShootTimer = interval / getBossAggressionMult(director);
         for (const sx of spread) {
           invBullets.push({ x: boss.x + boss.w / 2 + sx, y: boss.y + boss.h, w: 4, h: 14, vy: speed });
         }
@@ -1057,6 +1104,7 @@ export function bootstrapInvaders(root) {
         screenShake(12, 0.4);
         playSfx('explosion');
         if (Math.random() < POWERUP_BOSS_DROP_CHANCE) powerupItems.push(makeDroppedPowerup(boss.x + boss.w * 0.5, boss.y + boss.h * 0.5));
+        runStats.bossesDefeated++;
         boss = null;
         completeWave();
         updateEffects(dt);
@@ -1205,6 +1253,7 @@ export function bootstrapInvaders(root) {
           screenShake(10, 0.35);
           playSfx('explosion');
           if (Math.random() < POWERUP_BOSS_DROP_CHANCE) powerupItems.push(makeDroppedPowerup(boss.x + boss.w * 0.5, boss.y + boss.h * 0.5));
+          runStats.bossesDefeated++;
           boss = null;
           completeWave();
           updateEffects(dt);
@@ -1248,6 +1297,7 @@ export function bootstrapInvaders(root) {
           spawnExplosion(player.x + player.w * 0.5, player.y + player.h * 0.4, 1.2, '#ff4444');
           screenShake(7, 0.24);
           playSfx('player_damage');
+          _damageFlagThisFrame = true;
           streak = 0;
           streakTimer = 0;
           if (lives <= 0) {
@@ -1262,6 +1312,57 @@ export function bootstrapInvaders(root) {
           }
         }
       }
+    }
+
+    // ── Per-frame intensity update ────────────────────────────────────────────
+    {
+      const alive    = invaders.filter((i) => i.alive);
+      const pcx      = player.x + player.w / 2;
+      const pcy      = player.y + player.h / 2;
+      const nearCount = alive.filter((i) => {
+        const dx = (i.x + i.w / 2) - pcx;
+        const dy = (i.y + i.h / 2) - pcy;
+        return dx * dx + dy * dy < 140 * 140;
+      }).length;
+      updateIntensity(director, dt, {
+        damageTaken:       _damageFlagThisFrame,
+        enemiesNearPlayer: nearCount,
+        bossActive:        !!boss,
+        lives,
+        waveClear:         false,
+      });
+      if (director.intensity > runStats.highestIntensity) {
+        runStats.highestIntensity = director.intensity;
+      }
+    }
+
+    // ── Intensity threshold crossings ─────────────────────────────────────────
+    {
+      const iv   = director.intensity;
+      const band = iv >= 80 ? 'chaotic' : iv >= 60 ? 'rising' : 'calm';
+      if (band !== intensityPrevBand) {
+        if (band === 'rising' && intensityPrevBand === 'calm') {
+          intensityPulseTimer = 0.4;
+          intensityPulseColor = '#ff8800';
+          playSfx('boss_warning');
+        } else if (band === 'chaotic') {
+          intensityPulseTimer = 0.7;
+          intensityPulseColor = '#ff0055';
+          screenShake(4, 0.35);
+          playSfx('boss_warning');
+        } else if (band === 'calm' && intensityPrevBand !== 'calm') {
+          recoveryTimer = 0.6;
+          playSfx('wave_clear');
+        }
+        intensityPrevBand = band;
+      }
+      if (intensityPulseTimer > 0) intensityPulseTimer = Math.max(0, intensityPulseTimer - dt);
+    }
+
+    // ── Milestone toasts tick ─────────────────────────────────────────────────
+    for (let ti = milestoneToasts.length - 1; ti >= 0; ti--) {
+      milestoneToasts[ti].timer -= dt;
+      if (milestoneToasts[ti].timer <= 0) milestoneToasts.splice(ti, 1);
     }
 
     updateEffects(dt);
@@ -1286,6 +1387,12 @@ export function bootstrapInvaders(root) {
       empActive, empTimer, panicMode, panicTimer,
       asteroids, laserWarning, miniEnemies,
       riskRewardPhase, riskRewardChoices,
+      // Intensity feedback + meta
+      intensity: director.intensity,
+      intensityPulseTimer, intensityPulseColor,
+      recoveryTimer,
+      runSummary,
+      milestoneToasts,
     });
   }
 
@@ -1370,6 +1477,30 @@ export function bootstrapInvaders(root) {
     setBestMaybe();
     updateHud();
     playSfx('game_over');
+
+    // Build run summary and persist meta-stats
+    const survivalTime = elapsed;
+    recordRunStats({ score, wave, survival: survivalTime });
+    const newMilestones = checkMilestones({
+      wave,
+      bossesDefeated:   runStats.bossesDefeated,
+      highestIntensity: runStats.highestIntensity,
+      score,
+      survival:         survivalTime,
+    });
+    runSummary = buildRunSummary({
+      score,
+      wave,
+      bossesDefeated:   runStats.bossesDefeated,
+      upgradeCount:     Object.values(upgrades).reduce((a, b) => a + (Number(b) || 0), 0),
+      highestIntensity: runStats.highestIntensity,
+      survival:         survivalTime,
+    });
+    // Queue milestone toasts so they display on the summary screen
+    for (const text of newMilestones) {
+      milestoneToasts.push({ text, timer: 6.0 });
+    }
+
     if (score > 0) {
       const playerName = window.MOONBOYS_IDENTITY?.getTelegramName?.() || ArcadeSync.getPlayer();
       try { await submitScore(playerName, score, GAME_ID); } catch (e) {}
