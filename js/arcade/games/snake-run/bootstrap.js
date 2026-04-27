@@ -13,8 +13,8 @@ import {
   createMetaSystem,
   createFeedbackSystem,
 } from '/js/arcade/systems/index.js';
-import { createScalingDirector, tickDirector, pickWaveModifier, updateIntensity, checkForcedChaos, getBossAggressionMult } from '/js/arcade/systems/director-system.js';
-import { shouldFirePressureEvent, getEventTier } from '/js/arcade/systems/event-system.js';
+import { createScalingDirector, tickDirector, pickWaveModifier, checkForcedChaos, getBossAggressionMult } from '/js/arcade/systems/director-system.js';
+import { shouldFirePressureEvent, getEventTier, updateIntensity } from '/js/arcade/systems/event-system.js';
 import { applyMutations } from '/js/arcade/systems/mutation-system.js';
 import { pickBossArchetype } from '/js/arcade/systems/boss-system.js';
 import { shouldOfferRiskReward, pickRiskRewardChoices } from '/js/arcade/systems/risk-system.js';
