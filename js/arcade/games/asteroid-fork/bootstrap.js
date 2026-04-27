@@ -279,10 +279,29 @@ function cueBanner(state, text, color, seconds) {
 
 function applyFullscreenFit(state) {
   if (!state.canvas || !state.root) return;
-  const container = state.root.closest('.game-card') || state.root;
-  const rect = container.getBoundingClientRect();
-  const availableW = Math.max(320, rect.width - 16);
-  const availableH = Math.max(240, window.innerHeight * 0.88);
+  const overlay = document.getElementById('game-overlay');
+  const overlayOpen = !!(overlay && overlay.classList.contains('active'));
+  const card = state.root.closest('.game-card') || state.root;
+  const stage = overlayOpen
+    ? (overlay.querySelector('.game-stage') || overlay.querySelector('.game-card') || card)
+    : card;
+
+  const stageRect = stage.getBoundingClientRect();
+  const hud = card.querySelector('.hud');
+  const hudHeight = hud ? hud.getBoundingClientRect().height : 0;
+
+  let availableW = Math.max(320, Math.floor(stageRect.width - 16));
+  let availableH;
+  if (overlayOpen) {
+    const touchPad = overlay.querySelector('.overlay-touch-pad');
+    const touchPadVisible = !!(touchPad && getComputedStyle(touchPad).display !== 'none');
+    const touchPadHeight = touchPadVisible ? touchPad.getBoundingClientRect().height : 0;
+    availableH = Math.max(220, Math.floor(stageRect.height - hudHeight - touchPadHeight - 16));
+  } else {
+    const viewportH = window.innerHeight || stageRect.height;
+    availableH = Math.max(240, Math.floor(viewportH - 220));
+  }
+
   const aspect = WORLD_W / WORLD_H;
   let targetW = availableW;
   let targetH = targetW / aspect;
@@ -290,10 +309,15 @@ function applyFullscreenFit(state) {
     targetH = availableH;
     targetW = targetH * aspect;
   }
-  state.canvas.style.width = targetW + 'px';
-  state.canvas.style.height = targetH + 'px';
+
+  state.canvas.style.width = Math.floor(targetW) + 'px';
+  state.canvas.style.height = Math.floor(targetH) + 'px';
   state.canvas.style.maxWidth = 'none';
+  state.canvas.style.maxHeight = 'none';
+  state.canvas.style.display = 'block';
+  state.canvas.style.margin = '0 auto';
   state.canvas.style.aspectRatio = String(WORLD_W) + ' / ' + String(WORLD_H);
+
   const dpr = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
   state.dpr = dpr;
   state.canvas.width = Math.round(targetW * dpr);
@@ -1595,7 +1619,16 @@ function adapterInput(context, event) {
     state.lives = 0;
     state.gameOver = true;
   }
-  if (event.key === 'Enter' && !state.running) resetRun(state);
+  if (event.key === 'Enter' || event.key === 'NumpadEnter') {
+    if (!state.running || state.gameOver) {
+      event.preventDefault();
+      if (typeof window.hideGameOverModal === 'function') window.hideGameOverModal();
+      resetRun(state);
+      state.running = true;
+      state.paused = false;
+      if (context.engine) context.engine.startLoop();
+    }
+  }
 }
 
 function adapterGameOver(context) {
