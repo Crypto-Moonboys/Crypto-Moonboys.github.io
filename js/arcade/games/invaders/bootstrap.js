@@ -53,6 +53,8 @@ import {
 } from './upgrade-system.js';
 
 import {
+  MODIFIER_BLACKOUT,
+  WAVE_MODIFIER_DEFS,
   createScalingDirector, tickDirector, pickWaveModifier,
   shouldTriggerSurpriseEvent, pickSurpriseEvent,
 } from './event-system.js';
@@ -406,7 +408,12 @@ export function bootstrapInvaders(root) {
       if (activeModifier && activeModifier.remove) {
         activeModifier.remove(buildModifierState());
       }
-      activeModifier = pickWaveModifier(wave, director);
+      // Force blackout modifier if risk/reward selected it
+      if (activeRiskReward && activeRiskReward.id === 'blackoutWave') {
+        activeModifier = WAVE_MODIFIER_DEFS.find(m => m.id === MODIFIER_BLACKOUT) || null;
+      } else {
+        activeModifier = pickWaveModifier(wave, director);
+      }
       modifierData   = {};
       if (activeModifier) {
         activeModifier.apply(buildModifierState());

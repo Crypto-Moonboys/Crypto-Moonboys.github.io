@@ -204,7 +204,7 @@ export function pickUpgradeChoicesWithRarity(upgrades, wave) {
   );
   let pool = available.length >= 3 ? available.slice()
            : UPGRADE_DEFS.filter(d => upgrades[d.id] < d.maxLevel);
-  if (pool.length < 3) pool = pool.concat(UPGRADE_DEFS);
+  if (pool.length < 3) pool = [...new Set(pool.concat(UPGRADE_DEFS))];
   for (let i = pool.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
     [pool[i], pool[j]] = [pool[j], pool[i]];
