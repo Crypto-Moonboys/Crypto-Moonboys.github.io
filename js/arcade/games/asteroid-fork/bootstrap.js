@@ -19,6 +19,7 @@ import { submitScore }                       from '/js/leaderboard-client.js';
 import { ASTEROID_FORK_CONFIG } from './config.js';
 import { createGameAdapter, registerGameAdapter } from '/js/arcade/engine/game-adapter.js';
 import { playSound, stopAllSounds, isMuted } from '/js/arcade/core/audio.js';
+import { createFrameDebug } from '/js/arcade/core/frame-debug.js';
 
 // Register in the central registry when this module is first imported.
 export const ASTEROID_FORK_ADAPTER = createGameAdapter({
@@ -54,6 +55,7 @@ export function bootstrapAsteroidFork(root) {
   let score = 0, lives = 3, wave = 0, running = false, paused = false, gameOver = false;
   let best = ArcadeSync.getHighScore(GAME_ID);
   let raf = null, lastTime = 0;
+  const frameDebug = createFrameDebug(GAME_ID);
 
   // Wave intro banner state
   let waveIntroTime = 0, waveIntroNum = 0;
@@ -61,11 +63,15 @@ export function bootstrapAsteroidFork(root) {
   const keys = {};
 
   function onKeyDown(e) {
+    frameDebug.input('keydown', e.key);
     keys[e.key] = true;
     if (e.key === ' ' && running && !paused) { e.preventDefault(); tryShoot(); }
     if (['ArrowLeft', 'ArrowRight', 'ArrowUp'].includes(e.key)) e.preventDefault();
   }
-  function onKeyUp(e) { keys[e.key] = false; }
+  function onKeyUp(e) {
+    frameDebug.input('keyup', e.key);
+    keys[e.key] = false;
+  }
 
   // â”€â”€ Entity state â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
@@ -532,6 +538,7 @@ export function bootstrapAsteroidFork(root) {
   // â”€â”€ Game loop â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   function loop(ts) {
+    frameDebug.tick(ts);
     const dt = Math.min((ts - lastTime) / 1000, 0.05); lastTime = ts;
     update(dt); draw();
     raf = requestAnimationFrame(loop);

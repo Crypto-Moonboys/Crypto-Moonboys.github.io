@@ -8,6 +8,7 @@ import { submitScore } from '/js/leaderboard-client.js';
 import { BREAKOUT_CONFIG } from './config.js';
 import { createGameAdapter, registerGameAdapter, bootstrapFromAdapter } from '/js/arcade/engine/game-adapter.js';
 import { playSound, stopAllSounds, isMuted } from '/js/arcade/core/audio.js';
+import { createFrameDebug } from '/js/arcade/core/frame-debug.js';
 
 export const BREAKOUT_ADAPTER = createGameAdapter({
   id: BREAKOUT_CONFIG.id,
@@ -26,6 +27,7 @@ export function bootstrapBreakout(root) {
 
 function createLegacybootstrapBreakout(root) {
   const GAME_ID = BREAKOUT_CONFIG.id;
+  const frameDebug = createFrameDebug(GAME_ID);
   const canvas = document.getElementById('brkCanvas');
   const ctx = canvas.getContext('2d');
   const W = canvas.width;
@@ -339,6 +341,7 @@ function createLegacybootstrapBreakout(root) {
   }
 
   function onKeyDown(e) {
+    frameDebug.input('keydown', e.key);
     keys[e.key] = true;
     if (e.key === ' ' && running && !paused) {
       e.preventDefault();
@@ -348,6 +351,7 @@ function createLegacybootstrapBreakout(root) {
   }
 
   function onKeyUp(e) {
+    frameDebug.input('keyup', e.key);
     keys[e.key] = false;
   }
 
@@ -976,6 +980,7 @@ function createLegacybootstrapBreakout(root) {
   }
 
   function loop(ts) {
+    frameDebug.tick(ts);
     const dt = Math.min((ts - lastTime) / 1000, 0.05);
     lastTime = ts;
     update(dt);

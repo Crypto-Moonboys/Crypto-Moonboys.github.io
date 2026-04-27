@@ -3,6 +3,7 @@ import { submitScore } from '/js/leaderboard-client.js';
 import { PAC_CHAIN_CONFIG } from './config.js';
 import { createGameAdapter, registerGameAdapter, bootstrapFromAdapter } from '/js/arcade/engine/game-adapter.js';
 import { playSound, stopAllSounds, isMuted } from '/js/arcade/core/audio.js';
+import { createFrameDebug } from '/js/arcade/core/frame-debug.js';
 
 export const PAC_CHAIN_ADAPTER = createGameAdapter({
   id: PAC_CHAIN_CONFIG.id,
@@ -21,6 +22,7 @@ export function bootstrapPacChain(root) {
 
 function createLegacybootstrapPacChain(root) {
   const GAME_ID = PAC_CHAIN_CONFIG.id;
+  const frameDebug = createFrameDebug(GAME_ID);
   const canvas = document.getElementById('pacCanvas');
   const ctx = canvas && canvas.getContext ? canvas.getContext('2d') : null;
   if (!canvas || !ctx) {
@@ -870,6 +872,7 @@ function createLegacybootstrapPacChain(root) {
   }
 
   function loop(ts) {
+    frameDebug.tick(ts);
     if (!state.loopActive) return;
     const dt = clamp((ts - (state.lastFrameTs || ts)) / 1000, 0, 0.05);
     state.lastFrameTs = ts;
@@ -910,6 +913,7 @@ function createLegacybootstrapPacChain(root) {
   function onResetClick() { stopMusic(); stopAllSounds(); resetRun(); startLoop(); }
   function onMusicMuteClick() { state.mutedMusic = !state.mutedMusic; syncMusicButton(); if (state.mutedMusic) stopMusic(); else startMusic(); }
   function onKeyDown(e) {
+    frameDebug.input('keydown', e.key);
     const key = e.key;
     if (key === 'ArrowLeft' || key === 'a' || key === 'A') { state.input.dx = -1; state.input.dy = 0; e.preventDefault(); }
     else if (key === 'ArrowRight' || key === 'd' || key === 'D') { state.input.dx = 1; state.input.dy = 0; e.preventDefault(); }

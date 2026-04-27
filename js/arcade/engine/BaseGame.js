@@ -1,3 +1,5 @@
+import { createFrameDebug } from '/js/arcade/core/frame-debug.js';
+
 const MAX_DT = 0.05;
 
 const PREVENT_SCROLL_KEYS = {
@@ -40,6 +42,9 @@ export class BaseGame {
     if (opts.systems) {
       this.loadSystems(opts.systems);
     }
+
+    const debugId = (this.context && this.context.adapter && this.context.adapter.id) || 'base-game';
+    this._frameDebug = createFrameDebug(debugId);
   }
 
   setLifecycleHooks(hooks) {
@@ -155,6 +160,7 @@ export class BaseGame {
   }
 
   _tick(ts) {
+    this._frameDebug.tick(ts);
     const dt = Math.min((ts - this._lastTime) / 1000, MAX_DT);
     this._lastTime = ts;
 
@@ -176,6 +182,7 @@ export class BaseGame {
   }
 
   _handleKeyDown(e) {
+    this._frameDebug.input('keydown', e.key);
     this.keys[e.key] = true;
 
     if (PREVENT_SCROLL_KEYS[e.key]) {
@@ -193,6 +200,7 @@ export class BaseGame {
   }
 
   _handleKeyUp(e) {
+    this._frameDebug.input('keyup', e.key);
     this.keys[e.key] = false;
   }
 }

@@ -3,6 +3,7 @@ import { submitScore }                       from '/js/leaderboard-client.js';
 import { SNAKE_CONFIG } from './config.js';
 import { createGameAdapter, registerGameAdapter } from '/js/arcade/engine/game-adapter.js';
 import { playSound, stopAllSounds, isMuted } from '/js/arcade/core/audio.js';
+import { createFrameDebug } from '/js/arcade/core/frame-debug.js';
 
 export const SNAKE_ADAPTER = createGameAdapter({
   id: SNAKE_CONFIG.id,
@@ -43,6 +44,7 @@ var HEAT_LENGTH_MS_STEP = 0.35;
 var MAX_FRAME_CATCHUP_STEPS = 8;
 
 export function bootstrapSnake(root) {
+  const frameDebug = createFrameDebug(SNAKE_CONFIG.id);
   var canvas = document.getElementById('snakeCanvas');
   var ctx = canvas.getContext('2d');
   var scoreEl = document.getElementById('score');
@@ -765,6 +767,7 @@ export function bootstrapSnake(root) {
   }
 
   function frame(ts) {
+    frameDebug.tick(ts);
     if (!lastFrameSec) lastFrameSec = ts / 1000;
     var now = ts / 1000;
     var dt = clamp(now - lastFrameSec, 0, MAX_FRAME_DELTA_SEC);
@@ -815,6 +818,7 @@ export function bootstrapSnake(root) {
   }
 
   function onKeyDown(e) {
+    frameDebug.input('keydown', e.key);
     var key = String(e.key || '').toLowerCase();
     if (key === 'arrowup' || key === 'w') {
       e.preventDefault();

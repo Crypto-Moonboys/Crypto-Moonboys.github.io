@@ -3,6 +3,7 @@ import { submitScore } from '/js/leaderboard-client.js';
 import { TETRIS_CONFIG } from './config.js';
 import { createGameAdapter, registerGameAdapter, bootstrapFromAdapter } from '/js/arcade/engine/game-adapter.js';
 import { playSound, stopAllSounds, isMuted } from '/js/arcade/core/audio.js';
+import { createFrameDebug } from '/js/arcade/core/frame-debug.js';
 
 export const TETRIS_ADAPTER = createGameAdapter({
   id: TETRIS_CONFIG.id,
@@ -21,6 +22,7 @@ export function bootstrapTetris(root) {
 
 function createLegacybootstrapTetris(root) {
   const GAME_ID = TETRIS_CONFIG.id;
+  const frameDebug = createFrameDebug(GAME_ID);
   const COLS = 10;
   const ROWS = 20;
   const CELL = 30;
@@ -788,6 +790,7 @@ function createLegacybootstrapTetris(root) {
   }
 
   function loop(ts) {
+    frameDebug.tick(ts);
     const dt = Math.min((ts - lastTime) / 1000, 0.05);
     lastTime = ts;
     updateEffects(dt);
@@ -881,6 +884,7 @@ function createLegacybootstrapTetris(root) {
   }
 
   function onKeyDown(e) {
+    frameDebug.input('keydown', e.key);
     if (!keys[e.key]) {
       keys[e.key] = true;
       if (!isRunActive()) return;
@@ -918,6 +922,7 @@ function createLegacybootstrapTetris(root) {
   }
 
   function onKeyUp(e) {
+    frameDebug.input('keyup', e.key);
     keys[e.key] = false;
     if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'ArrowRight' || e.key === 'd') {
       dasDir = 0;

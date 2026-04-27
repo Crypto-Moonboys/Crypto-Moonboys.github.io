@@ -96,7 +96,7 @@ function createLegacybootstrapInvaders(root) {
   const H       = canvas.height;
 
   const renderer = createRenderer(ctx, W, H);
-  const engine   = new BaseGame();
+  const engine   = new BaseGame({ context: { adapter: { id: GAME_ID } } });
 
   const scoreEl   = document.getElementById('score');
   const bestEl    = document.getElementById('best');
