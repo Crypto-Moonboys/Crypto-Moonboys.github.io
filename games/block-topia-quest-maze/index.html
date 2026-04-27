@@ -629,19 +629,23 @@
       this.tilePulse = 0;
       this.idleTimer = 0;
 
-      this.ui.heroStart.addEventListener("click", () => this.startRun(this.ui.heroName.value.trim() || "Runner"));
+      this.ui.heroStart.addEventListener("click", () => this.startRun(this.resolveHeroName() || "Runner"));
       document.getElementById("resetBtn").addEventListener("click", () => this.resetToTitle());
+      document.getElementById("startBtn").addEventListener("click", () => this.startOrRestartRun());
       this.prefillHeroName();
 
       window.addEventListener("keydown", (e) => {
-        if (["ArrowUp","ArrowDown","ArrowLeft","ArrowRight"," ","Enter","NumpadEnter"].includes(e.key)) e.preventDefault();
-        this.keys.add(e.key);
-        if (e.key === "Enter" || e.key === "NumpadEnter") {
-          if (this.startOrRestartRunFromKeyboard()) return;
+        const keyToken = this.getKeyToken(e);
+        if (["ArrowUp","ArrowDown","ArrowLeft","ArrowRight"," ","Enter"].includes(keyToken)) e.preventDefault();
+        this.keys.add(keyToken);
+        if (keyToken === "Enter") {
+          if (this.startOrRestartRun()) return;
           this.onConfirm();
         }
       });
-      window.addEventListener("keyup", (e) => this.keys.delete(e.key));
+      window.addEventListener("keyup", (e) => {
+        this.keys.delete(this.getKeyToken(e));
+      });
 
       this.setCard("Block Topia Quest Maze", "Name your hero and start a new run. Runs are procedural and never end early.", [], true);
       this.log("Run loop active: start run -> path -> encounter -> upgrade -> boss -> restart.");
@@ -681,15 +685,30 @@
       if (!current) this.ui.heroName.value = linked.slice(0, 18);
     }
 
-    startOrRestartRunFromKeyboard() {
+    getKeyToken(e) {
+      if (!e) return "";
+      return (e.key === "Enter" || e.code === "NumpadEnter") ? "Enter" : e.key;
+    }
+
+    resolveHeroName() {
+      const candidate = String(this.ui.heroName.value || (this.player && this.player.name) || this.getLinkedHeroName() || "Runner").trim();
+      return candidate.slice(0, 18);
+    }
+
+    startOrRestartRun() {
       if (!["title", "gameover", "victory"].includes(this.phase)) return false;
-      const candidate = (this.ui.heroName.value || (this.player && this.player.name) || this.getLinkedHeroName() || "Runner").trim();
-      this.startRun(candidate || "Runner");
+      const candidate = this.resolveHeroName() || "Runner";
+      if (this.phase === "gameover" || this.phase === "victory") {
+        this.resetToTitle(candidate);
+      }
+      this.startRun(candidate);
       return true;
     }
 
-    resetToTitle() {
+    resetToTitle(heroName = "") {
+      const preferred = String(heroName || this.resolveHeroName() || "").trim().slice(0, 18);
       this.phase = "title";
+      this.keys.clear();
       this.player = null;
       this.nodes = [];
       this.currentDepth = 0;
@@ -699,10 +718,14 @@
       this.encounter = null;
       this.upgradeChoices = [];
       this.damageTexts = [];
-      this.log("Run reset. Ready for a new run.");
-      this.setCard("Block Topia Quest Maze", "Name your hero and start another run.", [], true);
-      this.prefillHeroName();
+      this.particles = [];
+      this.bannerTimer = 0;
+      this.ui.banner.classList.remove("show");
       this.setActions([]);
+      this.setCard("Block Topia Quest Maze", "Name your hero and start another run.", [], true);
+      if (preferred) this.ui.heroName.value = preferred;
+      else this.prefillHeroName();
+      this.log("Run reset. Ready for a new run.");
       this.updateHud();
     }
 
@@ -1685,10 +1708,6 @@
         c.fillStyle = "rgba(255,255,255," + (this.screenFlash * 0.55).toFixed(3) + ")";
         c.fillRect(0, 0, this.width, this.height);
       }
-    }
-
-    toggleFullscreen() {
-      return !!document.getElementById("game-overlay");
     }
 
   }
