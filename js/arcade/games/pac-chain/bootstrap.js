@@ -504,10 +504,17 @@ export function bootstrapPacChain(root) {
     }
 
     // Tunnel wrap (horizontal) — only valid on the dedicated tunnel row.
-    // Entities on any other row must never wrap; they hit the wall and stop.
+    // Wrapping to CELL*0.5 / W-CELL*0.5 places the entity at the tile-centre
+    // of the first/last column, preventing edge-stick on re-entry.
     if (e.y === TUNNEL_ROW) {
-      if (e.px < 0) { e.px = W; e.x = COLS - 1; }
-      if (e.px > W) { e.px = 0; e.x = 0; }
+      if (e.px < 0) {
+        e.px = W - CELL * 0.5;
+        e.x = COLS - 1;
+      }
+      if (e.px > W) {
+        e.px = CELL * 0.5;
+        e.x = 0;
+      }
     }
   }
 
