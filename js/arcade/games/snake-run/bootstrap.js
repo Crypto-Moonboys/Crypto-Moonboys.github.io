@@ -161,6 +161,7 @@ function createState(root) {
     fixedAccumulator: 0,
     moveAccumulator: 0,
     moveProgress: 0,
+    waitingForFirstInput: true,
     worldW: WORLD_W,
     worldH: WORLD_H,
     camera: { x: WORLD_W * 0.5, y: WORLD_H * 0.5 },
@@ -233,6 +234,7 @@ function resetRun(state) {
   state.fixedAccumulator = 0;
   state.moveAccumulator = 0;
   state.moveProgress = 0;
+  state.waitingForFirstInput = true;
   state.combo = 0;
   state.comboTimer = 0;
   state.running = true;
@@ -569,16 +571,37 @@ function updateViewport(state) {
   if (!state.canvas) return;
   const dpr = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
   const rect = state.canvas.parentElement ? state.canvas.parentElement.getBoundingClientRect() : state.canvas.getBoundingClientRect();
+  const overlay = document.getElementById('game-overlay');
+  const overlayOpen = !!(overlay && overlay.classList.contains('active'));
+  const aspect = WORLD_W / WORLD_H;
+
   const aw = Math.max(320, Math.floor(rect.width - 8));
-  const ah = Math.max(240, Math.floor((window.innerHeight || rect.height) - 220));
-  const scale = Math.min(aw / WORLD_W, ah / WORLD_H);
-  const dw = Math.floor(WORLD_W * scale);
-  const dh = Math.floor(WORLD_H * scale);
+  let targetW = aw;
+  let targetH = targetW / aspect;
+
+  if (overlayOpen) {
+    const hudHeight = state.root ? ((state.root.querySelector('.hud') || {}).offsetHeight || 0) : 0;
+    const chromeHeight = 36 + hudHeight + 28;
+    const vh = window.innerHeight || rect.height;
+    const maxH = Math.max(220, Math.floor(vh - chromeHeight));
+    if (targetH > maxH) {
+      targetH = maxH;
+      targetW = targetH * aspect;
+    }
+  }
+
+  const dw = Math.max(320, Math.floor(targetW));
+  const dh = Math.max(180, Math.floor(targetH));
   state.canvas.style.width = dw + 'px';
   state.canvas.style.height = dh + 'px';
+  state.canvas.style.maxWidth = 'none';
+  state.canvas.style.display = 'block';
+  state.canvas.style.margin = '0 auto';
+  state.canvas.style.aspectRatio = String(WORLD_W) + ' / ' + String(WORLD_H);
+
   state.canvas.width = Math.floor(dw * dpr);
   state.canvas.height = Math.floor(dh * dpr);
-  state.view.scale = scale;
+  state.view.scale = dw / WORLD_W;
   state.view.width = dw;
   state.view.height = dh;
   state.view.offsetX = (aw - dw) * 0.5;
@@ -604,15 +627,17 @@ function unregisterResize(state) {
 
 function handleDirectionInput(state, x, y) {
   if (!state.running || state.paused || state.gameOver) return;
+  const reversed = state.eventState.id === 'reverse-controls';
+  const intended = reversed ? { x: -x, y: -y } : { x: x, y: y };
   const nx = state.nextDir.x;
   const ny = state.nextDir.y;
-  if (x === -nx && y === -ny) return;
-  if (x === nx && y === ny) return;
+  if (intended.x === -nx && intended.y === -ny) return;
+  if (intended.x === nx && intended.y === ny) return;
 
-  const reversed = state.eventState.id === 'reverse-controls';
-  state.nextDir = reversed ? { x: -x, y: -y } : { x: x, y: y };
+  state.nextDir = intended;
   state.targetHeadingAngle = Math.atan2(state.nextDir.y, state.nextDir.x);
   state.turnEase = 0;
+  if (state.waitingForFirstInput) state.waitingForFirstInput = false;
   cue('snake-run-tick', makeTone(580, 500, 0.03, 'square', 0.028));
 }
 
@@ -1001,6 +1026,13 @@ function updateSim(state, dt) {
     if (state.warningBanner.value.timer <= 0) state.warningBanner.value = null;
   }
 
+  if (state.waitingForFirstInput) {
+    state.moveAccumulator = 0;
+    state.moveProgress = 0;
+    updateHud(state);
+    return;
+  }
+
   updateEventsAndDirector(state, dt);
 
   state.arenaInset = lerp(state.arenaInset, state.arenaTargetInset, dt * (0.9 + state.shrinkingRate));
@@ -1344,6 +1376,17 @@ function adapterInput(context, event) {
       state.paused = true;
       if (context.engine) context.engine.stopLoop();
       stopAllSounds();
+    }
+  }
+
+  if (key === 'Enter' || key === 'NumpadEnter') {
+    event.preventDefault();
+    if (!state.running || state.gameOver) {
+      if (typeof window.hideGameOverModal === 'function') window.hideGameOverModal();
+      resetRun(state);
+      state.running = true;
+      state.paused = false;
+      if (context.engine) context.engine.startLoop();
     }
   }
 }
