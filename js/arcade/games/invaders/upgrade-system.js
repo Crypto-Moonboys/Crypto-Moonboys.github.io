@@ -111,3 +111,35 @@ export function getSpreadAngles(upgrades, hasPowerup) {
 export function getShieldStrength(upgrades) {
   return 1 + (upgrades.shieldStr || 0);
 }
+
+/**
+ * Return a flat snapshot of all derived stats for the current upgrades state.
+ * Useful for rendering upgrade summaries and for passing a clean read-only
+ * view to any subsystem that just needs the computed numbers.
+ *
+ * @param {object} upgrades  mutable upgrades object from makeUpgrades()
+ * @param {number} baseShootRate  base shoot cooldown in seconds (default 0.2)
+ * @returns {{
+ *   fireRateLevel: number,
+ *   spreadLevel:   number,
+ *   shieldStrength: number,
+ *   bulletDmg:     number,
+ *   scoreMult:     number,
+ *   hasDrone:      boolean,
+ *   hasBombShot:   boolean,
+ *   shootRate:     number,
+ * }}
+ */
+export function getUpgradeStats(upgrades, baseShootRate) {
+  const base = typeof baseShootRate === 'number' ? baseShootRate : 0.2;
+  return {
+    fireRateLevel:  upgrades.fireRate   || 0,
+    spreadLevel:    upgrades.spreadShot || 0,
+    shieldStrength: getShieldStrength(upgrades),
+    bulletDmg:      getUpgradedBulletDmg(upgrades),
+    scoreMult:      getUpgradedScoreMult(upgrades),
+    hasDrone:       (upgrades.drone     || 0) > 0,
+    hasBombShot:    (upgrades.bombShot  || 0) > 0,
+    shootRate:      getUpgradedShootRate(base, upgrades),
+  };
+}
