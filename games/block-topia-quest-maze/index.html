@@ -278,6 +278,10 @@
         grid-template-columns: 1fr;
       }
     }
+
+    #game-overlay #btqm-controls {
+      display: none !important;
+    }
   </style>
 </head>
 <body>
@@ -627,12 +631,15 @@
 
       this.ui.heroStart.addEventListener("click", () => this.startRun(this.ui.heroName.value.trim() || "Runner"));
       document.getElementById("resetBtn").addEventListener("click", () => this.resetToTitle());
-      document.getElementById("startBtn").addEventListener("click", () => this.toggleFullscreen());
+      this.prefillHeroName();
 
       window.addEventListener("keydown", (e) => {
-        if (["ArrowUp","ArrowDown","ArrowLeft","ArrowRight"," "].includes(e.key)) e.preventDefault();
+        if (["ArrowUp","ArrowDown","ArrowLeft","ArrowRight"," ","Enter","NumpadEnter"].includes(e.key)) e.preventDefault();
         this.keys.add(e.key);
-        if (e.key === "Enter") this.onConfirm();
+        if (e.key === "Enter" || e.key === "NumpadEnter") {
+          if (this.startOrRestartRunFromKeyboard()) return;
+          this.onConfirm();
+        }
       });
       window.addEventListener("keyup", (e) => this.keys.delete(e.key));
 
@@ -660,6 +667,27 @@
       this.ui.meta.textContent = "Best " + this.meta.bestRun + " | Zones " + this.meta.zonesCleared + " | Bosses " + this.meta.bossesDefeated;
     }
 
+    getLinkedHeroName() {
+      const identity = window.MOONBOYS_IDENTITY;
+      if (!identity || typeof identity.isTelegramLinked !== "function" || !identity.isTelegramLinked()) return "";
+      const linked = typeof identity.getTelegramName === "function" ? identity.getTelegramName() : "";
+      return String(linked || "").trim();
+    }
+
+    prefillHeroName() {
+      const linked = this.getLinkedHeroName();
+      if (!linked) return;
+      const current = String(this.ui.heroName.value || "").trim();
+      if (!current) this.ui.heroName.value = linked.slice(0, 18);
+    }
+
+    startOrRestartRunFromKeyboard() {
+      if (!["title", "gameover", "victory"].includes(this.phase)) return false;
+      const candidate = (this.ui.heroName.value || (this.player && this.player.name) || this.getLinkedHeroName() || "Runner").trim();
+      this.startRun(candidate || "Runner");
+      return true;
+    }
+
     resetToTitle() {
       this.phase = "title";
       this.player = null;
@@ -673,6 +701,7 @@
       this.damageTexts = [];
       this.log("Run reset. Ready for a new run.");
       this.setCard("Block Topia Quest Maze", "Name your hero and start another run.", [], true);
+      this.prefillHeroName();
       this.setActions([]);
       this.updateHud();
     }
@@ -1659,13 +1688,9 @@
     }
 
     toggleFullscreen() {
-      const holder = document.getElementById("btqm-canvas-wrap");
-      if (!document.fullscreenElement) {
-        if (holder.requestFullscreen) holder.requestFullscreen().catch(() => {});
-      } else {
-        document.exitFullscreen().catch(() => {});
-      }
+      return !!document.getElementById("game-overlay");
     }
+
   }
 
   const game = new Game();
