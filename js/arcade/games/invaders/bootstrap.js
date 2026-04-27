@@ -497,6 +497,16 @@ export function bootstrapInvaders(root) {
               spawnExplosion(inv.x + inv.w * 0.5, inv.y + inv.h * 0.5, 0.7, '#ff4fd1');
               playSfx('hit');
               if (Math.random() < POWERUP_DROP_CHANCE) powerupItems.push(makeDroppedPowerup(inv.x + inv.w * 0.5, inv.y + inv.h));
+              // If this was the last living invader, advance to the next wave
+              // immediately in the same update() run — do not wait for the next
+              // frame, which would leave one tick where the empty invader grid
+              // could trigger unintended code paths (e.g. a stale game-over check).
+              if (!boss && invaders.every((i) => !i.alive)) {
+                bullets.splice(bi, 1);
+                completeWave();
+                updateEffects(dt);
+                return;
+              }
             } else {
               playSfx('hit');
             }
