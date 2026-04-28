@@ -9,7 +9,8 @@ CREATE TABLE IF NOT EXISTS arcade_progression_state (
   arcade_daily_key TEXT NOT NULL DEFAULT '',
   arcade_restriction_level INTEGER NOT NULL DEFAULT 0,
   restricted_until DATETIME,
-  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (telegram_id) REFERENCES telegram_users(telegram_id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS arcade_progression_events (
@@ -24,7 +25,8 @@ CREATE TABLE IF NOT EXISTS arcade_progression_events (
   status TEXT NOT NULL DEFAULT 'accepted',
   reason TEXT,
   processed_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  UNIQUE(telegram_id, client_run_id)
+  UNIQUE(telegram_id, client_run_id),
+  FOREIGN KEY (telegram_id) REFERENCES telegram_users(telegram_id) ON DELETE CASCADE
 );
 
 CREATE INDEX IF NOT EXISTS idx_arcade_progression_events_user_time
@@ -45,5 +47,6 @@ CREATE TABLE IF NOT EXISTS arcade_game_enforcement_state (
   lockout_until DATETIME,
   lockout_count INTEGER NOT NULL DEFAULT 0,
   updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (telegram_id, game)
+  PRIMARY KEY (telegram_id, game),
+  FOREIGN KEY (telegram_id) REFERENCES telegram_users(telegram_id) ON DELETE CASCADE
 );

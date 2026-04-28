@@ -36,7 +36,6 @@ import {
 } from './db.js';
 import { verifyTelegramIdentityFromBody } from './auth.js';
 import { fetchTrustedLeaderboardContext } from './leaderboard.js';
-import { handleBlockTopiaCovertRoute } from './covert.js';
 import {
   advanceMiniGameEntropy,
   applyPressureDelta,
@@ -176,11 +175,24 @@ function cooldownBlockedResponse(json, row, message = 'Cooldown active. Let the 
   }, 429);
 }
 
+function handleBlockTopiaCovertRoute(path, method, json, err) {
+  if (!path.startsWith('/blocktopia/covert')) return null;
+  if (path === '/blocktopia/covert' && ['GET', 'POST'].includes(method)) {
+    return json({
+      ok: false,
+      disabled: true,
+      code: 'covert_worker_disabled',
+      message: 'Block Topia covert operations are disabled in the Cloudflare Worker runtime.',
+    }, 503);
+  }
+  return err('Not found', 404);
+}
+
 export async function handleBlockTopiaProgressionRoute(request, env, url, helpers) {
   const { path } = helpers;
   const { json, err, upsertTelegramUser, verifyTelegramAuth } = helpers;
 
-  const covertResponse = await handleBlockTopiaCovertRoute(request, env, url, helpers);
+  const covertResponse = handleBlockTopiaCovertRoute(path, request.method, json, err);
   if (covertResponse) return covertResponse;
 
   if (path === '/blocktopia/progression' && request.method === 'POST') {
