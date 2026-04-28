@@ -73,6 +73,17 @@ import {
 
 import { createRenderer } from './render-system.js';
 
+const INVADERS_BUILD_TAG = "invaders-bootstrap-debug-v1";
+
+function emitInvadersDebug(stage, detail = {}) {
+  if (typeof window === "undefined") return;
+  const payload = { stage, ...detail, build: INVADERS_BUILD_TAG, ts: Date.now() };
+  try {
+    console.info("[invaders-debug]", payload);
+    window.dispatchEvent(new CustomEvent("arcade:debug", { detail: payload }));
+  } catch {}
+}
+
 export const INVADERS_ADAPTER = createGameAdapter({
   id: INVADERS_CONFIG.id,
   name: INVADERS_CONFIG.label,
@@ -1523,9 +1534,30 @@ function createLegacybootstrapInvaders(root) {
       milestoneToasts.push({ text, timer: 6.0 });
     }
 
+    emitInvadersDebug("game_over_score_submit_start", {
+      game: GAME_ID,
+      score,
+      linked: !!window.MOONBOYS_IDENTITY?.isTelegramLinked?.(),
+    });
     if (score > 0) {
       const playerName = window.MOONBOYS_IDENTITY?.getTelegramName?.() || ArcadeSync.getPlayer();
-      try { await submitScore(playerName, score, GAME_ID); } catch (e) {}
+      try {
+        const submitResult = await submitScore(playerName, score, GAME_ID);
+        emitInvadersDebug("game_over_score_submit_result", {
+          game: GAME_ID,
+          score,
+          player: playerName,
+          accepted: !!submitResult?.accepted,
+          linked: !!submitResult?.linked,
+          state: submitResult?.state || "unknown",
+        });
+      } catch (e) {
+        emitInvadersDebug("game_over_score_submit_error", {
+          game: GAME_ID,
+          score,
+          error: String((e && e.message) || e || "unknown_error"),
+        });
+      }
     }
     draw();
     if (window.showGameOverModal) window.showGameOverModal(score);
