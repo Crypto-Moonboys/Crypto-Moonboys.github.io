@@ -33,7 +33,31 @@ The worker must not create or alter progression tables during player requests. I
 
 ## Block Topia covert network
 
-Phase 1 covert routes live under the same verified Telegram progression model:
+The legacy covert route family is intentionally disabled inside the Cloudflare Worker runtime to keep deploy bundles self-contained and free of frontend `/games/` imports.
+
+- `GET /blocktopia/covert` and `POST /blocktopia/covert` return `503` with `covert_worker_disabled`.
+- Other `/blocktopia/covert*` paths return `404`.
+
+This does not affect `/health`, `/sam/status`, Telegram routes, `/arcade/progression/sync`, or `/blocktopia/progression*`.
+
+## Arcade progression sync idempotency
+
+`POST /arcade/progression/sync` now uses server-side run claiming for `(telegram_id, client_run_id)` before awarding XP.
+
+- First request claims the run and is the only request allowed to award XP.
+- Duplicate/retry requests return `status: "duplicate"` with `xp_awarded: 0`.
+- Schema for arcade sync tables is migration-owned (`014_shared_arcade_progression_sync.sql`), and runtime now requires tables to exist instead of creating fallback tables on live traffic.
+
+Manual duplicate validation flow:
+
+1. Submit the same signed `/arcade/progression/sync` payload twice with identical `client_run_id`.
+2. First response should include `status: "accepted"` (or `rejected` by policy) and at most one XP award for that run.
+3. Second response must include `status: "duplicate"` and `xp_awarded: 0`.
+4. Confirm no additional XP delta on the second submission.
+
+Historical Phase 1/2/3 covert notes (for reference only):
+
+Phase 1 covert routes lived under the same verified Telegram progression model:
 
 - `POST /blocktopia/covert/create`
 - `POST /blocktopia/covert/deploy`

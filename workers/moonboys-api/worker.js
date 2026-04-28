@@ -55,7 +55,6 @@ const ARCADE_XP_PER_POINT = 0.02;
 const ARCADE_XP_MAX_PER_RUN = 120;
 const ARCADE_XP_DAILY_CAP = 2200;
 const ARCADE_REPEAT_WINDOW_MINUTES = 30;
-const ARCADE_REPEAT_THRESHOLD = 4;
 const ARCADE_REPEAT_COOLDOWN_MINUTES = 10;
 const ARCADE_MAX_BATCH_ENTRIES = 50;
 const ARCADE_SCORE_SANITY_MAX = 1_000_000_000;
@@ -509,51 +508,22 @@ async function awardXp(db, telegramId, xpChange, action, referenceId = '') {
 }
 
 async function ensureArcadeProgressionTables(db) {
-  await db.batch([
-    db.prepare(`
-      CREATE TABLE IF NOT EXISTS arcade_progression_state (
-        telegram_id TEXT PRIMARY KEY,
-        arcade_xp_total INTEGER NOT NULL DEFAULT 0,
-        arcade_daily_xp INTEGER NOT NULL DEFAULT 0,
-        arcade_daily_key TEXT NOT NULL DEFAULT '',
-        arcade_restriction_level INTEGER NOT NULL DEFAULT 0,
-        restricted_until DATETIME,
-        updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
-      )
-    `),
-    db.prepare(`
-      CREATE TABLE IF NOT EXISTS arcade_progression_events (
-        id TEXT PRIMARY KEY,
-        telegram_id TEXT NOT NULL,
-        client_run_id TEXT NOT NULL,
-        game TEXT NOT NULL,
-        raw_score INTEGER NOT NULL DEFAULT 0,
-        local_meta_points INTEGER NOT NULL DEFAULT 0,
-        normalized_points INTEGER NOT NULL DEFAULT 0,
-        xp_awarded INTEGER NOT NULL DEFAULT 0,
-        status TEXT NOT NULL DEFAULT 'accepted',
-        reason TEXT,
-        processed_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-        UNIQUE(telegram_id, client_run_id)
-      )
-    `),
-    db.prepare(`
-      CREATE TABLE IF NOT EXISTS arcade_game_enforcement_state (
-        telegram_id TEXT NOT NULL,
-        game TEXT NOT NULL,
-        ceiling_hits INTEGER NOT NULL DEFAULT 0,
-        cooldown_level INTEGER NOT NULL DEFAULT 0,
-        cooldown_until DATETIME,
-        last_ceiling_hit_at DATETIME,
-        repeat_window_expires_at DATETIME,
-        xp_weight REAL NOT NULL DEFAULT 1.0,
-        lockout_until DATETIME,
-        lockout_count INTEGER NOT NULL DEFAULT 0,
-        updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-        PRIMARY KEY (telegram_id, game)
-      )
-    `),
-  ]);
+  const requiredTables = [
+    'arcade_progression_state',
+    'arcade_progression_events',
+    'arcade_game_enforcement_state',
+  ];
+  for (const tableName of requiredTables) {
+    const row = await db.prepare(`
+      SELECT name
+      FROM sqlite_master
+      WHERE type = 'table' AND name = ?
+      LIMIT 1
+    `).bind(tableName).first().catch(() => null);
+    if (!row?.name) {
+      throw new Error(`missing_required_table:${tableName}`);
+    }
+  }
 }
 
 function normalizeArcadeGameKey(value) {
@@ -577,7 +547,9 @@ function normalizeArcadeGameKey(value) {
     block_topia_quest_maze: 'btqm',
     blocktopia: 'btqm',
   };
-  return aliases[key] || key || 'global';
+  const normalized = aliases[key] || key || 'global';
+  const allowed = new Set(['invaders', 'pacchain', 'asteroids', 'breakout', 'tetris', 'crystal', 'snake', 'btqm', 'global']);
+  return allowed.has(normalized) ? normalized : 'global';
 }
 
 function normalizeScore(value) {
@@ -592,12 +564,6 @@ function normalizeMetaPoints(value) {
   return Math.max(0, Math.min(1_000_000_000, Math.floor(n)));
 }
 
-function normalizeTimestamp(value) {
-  const n = Number(value);
-  if (!Number.isFinite(n) || n <= 0) return Date.now();
-  return Math.floor(n);
-}
-
 function computeNormalizedArcadePoints(game, rawScore, localMetaPoints) {
   const safeScore = normalizeScore(rawScore);
   const safeMeta = normalizeMetaPoints(localMetaPoints);
@@ -609,8 +575,8 @@ function computeNormalizedArcadePoints(game, rawScore, localMetaPoints) {
     tetris: 1.05,
     crystal: 1.0,
     snake: 0.95,
-    blocktopia: 1.25,
     btqm: 1.25,
+    global: 1.0,
   };
   const gameWeight = Number(difficultyWeights[normalizeArcadeGameKey(game)]) || 1;
   const fromScore = Math.floor((safeScore / 25) * gameWeight);
@@ -1460,27 +1426,37 @@ export default {
             continue;
           }
 
-          const existing = await env.DB.prepare(`
-            SELECT id, xp_awarded, status, reason
-            FROM arcade_progression_events
-            WHERE telegram_id = ? AND client_run_id = ?
-            LIMIT 1
-          `).bind(verified.telegramId, clientRunId).first().catch(() => null);
-          if (existing) {
-            duplicateCount += 1;
-            results.push({
-              client_run_id: clientRunId,
-              status: 'duplicate',
-              reason: existing.reason || 'already_processed',
-              xp_awarded: Number(existing.xp_awarded || 0),
-            });
-            continue;
-          }
-
           const game = normalizeArcadeGameKey(input?.game);
           const rawScore = normalizeScore(input?.raw_score);
           const localMetaPoints = normalizeMetaPoints(input?.meta_points);
           const normalizedPoints = computeNormalizedArcadePoints(game, rawScore, localMetaPoints);
+
+          const claimed = await env.DB.prepare(`
+            INSERT INTO arcade_progression_events
+              (id, telegram_id, client_run_id, game, raw_score, local_meta_points, normalized_points, xp_awarded, status, reason, processed_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, 0, 'processing', 'claim_pending', CURRENT_TIMESTAMP)
+            ON CONFLICT(telegram_id, client_run_id) DO NOTHING
+          `).bind(
+            crypto.randomUUID(),
+            verified.telegramId,
+            clientRunId,
+            game,
+            rawScore,
+            localMetaPoints,
+            normalizedPoints,
+          ).run();
+          const claimChanges = Number(claimed?.meta?.changes ?? claimed?.changes ?? 0);
+          if (claimChanges !== 1) {
+            duplicateCount += 1;
+            results.push({
+              client_run_id: clientRunId,
+              status: 'duplicate',
+              reason: 'already_processed',
+              xp_awarded: 0,
+            });
+            continue;
+          }
+
           const perGameCeiling = Math.max(200, Math.floor(6000 * (game === 'invaders' ? 1.2 : 1)));
           let enforcement = await getOrCreateGameEnforcementState(env.DB, verified.telegramId, game);
           const lockoutUntilMs = parseSqliteTs(enforcement.lockout_until);
@@ -1490,18 +1466,13 @@ export default {
           if (lockoutUntilMs && lockoutUntilMs > nowMs) {
             rejectedCount += 1;
             await env.DB.prepare(`
-              INSERT INTO arcade_progression_events
-                (id, telegram_id, client_run_id, game, raw_score, local_meta_points, normalized_points, xp_awarded, status, reason, processed_at)
-              VALUES (?, ?, ?, ?, ?, ?, ?, 0, 'rejected', ?, CURRENT_TIMESTAMP)
+              UPDATE arcade_progression_events
+              SET status = 'rejected', reason = ?, xp_awarded = 0, processed_at = CURRENT_TIMESTAMP
+              WHERE telegram_id = ? AND client_run_id = ?
             `).bind(
-              crypto.randomUUID(),
+              'game_lockout_active',
               verified.telegramId,
               clientRunId,
-              game,
-              rawScore,
-              localMetaPoints,
-              normalizedPoints,
-              'game_lockout_active',
             ).run();
             results.push({ client_run_id: clientRunId, status: 'rejected', reason: 'game_lockout_active', xp_awarded: 0 });
             continue;
@@ -1510,18 +1481,13 @@ export default {
           if (cooldownUntilMs && cooldownUntilMs > nowMs) {
             rejectedCount += 1;
             await env.DB.prepare(`
-              INSERT INTO arcade_progression_events
-                (id, telegram_id, client_run_id, game, raw_score, local_meta_points, normalized_points, xp_awarded, status, reason, processed_at)
-              VALUES (?, ?, ?, ?, ?, ?, ?, 0, 'rejected', ?, CURRENT_TIMESTAMP)
+              UPDATE arcade_progression_events
+              SET status = 'rejected', reason = ?, xp_awarded = 0, processed_at = CURRENT_TIMESTAMP
+              WHERE telegram_id = ? AND client_run_id = ?
             `).bind(
-              crypto.randomUUID(),
+              'game_cooldown_active',
               verified.telegramId,
               clientRunId,
-              game,
-              rawScore,
-              localMetaPoints,
-              normalizedPoints,
-              'game_cooldown_active',
             ).run();
             results.push({ client_run_id: clientRunId, status: 'rejected', reason: 'game_cooldown_active', xp_awarded: 0 });
             continue;
@@ -1590,19 +1556,19 @@ export default {
           }
 
           await env.DB.prepare(`
-            INSERT INTO arcade_progression_events
-              (id, telegram_id, client_run_id, game, raw_score, local_meta_points, normalized_points, xp_awarded, status, reason, processed_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'accepted', ?, CURRENT_TIMESTAMP)
+            UPDATE arcade_progression_events
+            SET game = ?, raw_score = ?, local_meta_points = ?, normalized_points = ?,
+                xp_awarded = ?, status = 'accepted', reason = ?, processed_at = CURRENT_TIMESTAMP
+            WHERE telegram_id = ? AND client_run_id = ?
           `).bind(
-            crypto.randomUUID(),
-            verified.telegramId,
-            clientRunId,
             game,
             rawScore,
             localMetaPoints,
             normalizedPoints,
             xpAwarded,
             reason,
+            verified.telegramId,
+            clientRunId,
           ).run();
 
           acceptedCount += 1;
