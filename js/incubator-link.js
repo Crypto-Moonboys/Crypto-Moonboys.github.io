@@ -99,6 +99,33 @@
     } catch (_) {}
   }
 
+  function syncPendingArcadeProgressAfterLink() {
+    function runSync(api) {
+      if (!api || typeof api.syncPendingArcadeProgress !== 'function') return;
+      api.syncPendingArcadeProgress().then(function (summary) {
+        debug('pending_arcade_sync', summary || {});
+      }).catch(function (error) {
+        debug('pending_arcade_sync_failed', { message: error && error.message ? error.message : String(error) });
+      });
+    }
+    if (window.MOONBOYS_ARCADE_SYNC) {
+      runSync(window.MOONBOYS_ARCADE_SYNC);
+      return;
+    }
+    try {
+      import('/js/arcade-sync.js').then(function (mod) {
+        if (mod && mod.ArcadeSync) {
+          window.MOONBOYS_ARCADE_SYNC = mod.ArcadeSync;
+          runSync(mod.ArcadeSync);
+        }
+      }).catch(function (error) {
+        debug('pending_arcade_sync_import_failed', { message: error && error.message ? error.message : String(error) });
+      });
+    } catch (error) {
+      debug('pending_arcade_sync_import_unsupported', { message: error && error.message ? error.message : String(error) });
+    }
+  }
+
   function boot() {
     if (!BASE) return;
     var rawPayload = getHashPayload();
@@ -182,6 +209,7 @@
         persistRawPayload(JSON.stringify(canonicalPayload));
         setStatus(displayName, 'Telegram linked successfully. XP and Block Topia progression are now sync-live.', true);
         emitSyncState('good', 'linked_ready', result.data.telegram_id);
+        syncPendingArcadeProgressAfterLink();
         debug('verify_success', { telegramId: result.data.telegram_id });
       })
       .catch(function (error) {

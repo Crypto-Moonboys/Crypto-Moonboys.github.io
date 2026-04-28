@@ -51,6 +51,14 @@ const ANTI_CHEAT_WORKER_URL_DEFAULT = 'https://moonboys-anti-cheat.sercullen.wor
 const XP_FIRST_START = 50;
 const XP_DAILY_CLAIM = 20;
 const XP_GROUP_JOIN  = 10;
+const ARCADE_XP_PER_POINT = 0.02;
+const ARCADE_XP_MAX_PER_RUN = 120;
+const ARCADE_XP_DAILY_CAP = 2200;
+const ARCADE_REPEAT_WINDOW_MINUTES = 30;
+const ARCADE_REPEAT_THRESHOLD = 4;
+const ARCADE_REPEAT_COOLDOWN_MINUTES = 10;
+const ARCADE_MAX_BATCH_ENTRIES = 50;
+const ARCADE_SCORE_SANITY_MAX = 1_000_000_000;
 const BLOCKTOPIA_ADMIN_XP_GRANT_MAX = 50000;
 const BLOCKTOPIA_ADMIN_GEMS_GRANT_MAX = 50000;
 
@@ -498,6 +506,202 @@ async function awardXp(db, telegramId, xpChange, action, referenceId = '') {
         updated_at = CURRENT_TIMESTAMP
     WHERE telegram_id = ?
   `).bind(xpChange, xpChange, telegramId).run();
+}
+
+async function ensureArcadeProgressionTables(db) {
+  await db.batch([
+    db.prepare(`
+      CREATE TABLE IF NOT EXISTS arcade_progression_state (
+        telegram_id TEXT PRIMARY KEY,
+        arcade_xp_total INTEGER NOT NULL DEFAULT 0,
+        arcade_daily_xp INTEGER NOT NULL DEFAULT 0,
+        arcade_daily_key TEXT NOT NULL DEFAULT '',
+        arcade_restriction_level INTEGER NOT NULL DEFAULT 0,
+        restricted_until DATETIME,
+        updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+      )
+    `),
+    db.prepare(`
+      CREATE TABLE IF NOT EXISTS arcade_progression_events (
+        id TEXT PRIMARY KEY,
+        telegram_id TEXT NOT NULL,
+        client_run_id TEXT NOT NULL,
+        game TEXT NOT NULL,
+        raw_score INTEGER NOT NULL DEFAULT 0,
+        local_meta_points INTEGER NOT NULL DEFAULT 0,
+        normalized_points INTEGER NOT NULL DEFAULT 0,
+        xp_awarded INTEGER NOT NULL DEFAULT 0,
+        status TEXT NOT NULL DEFAULT 'accepted',
+        reason TEXT,
+        processed_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(telegram_id, client_run_id)
+      )
+    `),
+    db.prepare(`
+      CREATE TABLE IF NOT EXISTS arcade_game_enforcement_state (
+        telegram_id TEXT NOT NULL,
+        game TEXT NOT NULL,
+        ceiling_hits INTEGER NOT NULL DEFAULT 0,
+        cooldown_level INTEGER NOT NULL DEFAULT 0,
+        cooldown_until DATETIME,
+        last_ceiling_hit_at DATETIME,
+        repeat_window_expires_at DATETIME,
+        xp_weight REAL NOT NULL DEFAULT 1.0,
+        lockout_until DATETIME,
+        lockout_count INTEGER NOT NULL DEFAULT 0,
+        updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY (telegram_id, game)
+      )
+    `),
+  ]);
+}
+
+function normalizeArcadeGameKey(value) {
+  const key = String(value || 'global').toLowerCase().replace(/[^a-z0-9_-]/g, '');
+  const aliases = {
+    'invaders-3008': 'invaders',
+    invaders3008: 'invaders',
+    'pac-chain': 'pacchain',
+    pac_chain: 'pacchain',
+    'asteroid-fork': 'asteroids',
+    asteroid_fork: 'asteroids',
+    'breakout-bullrun': 'breakout',
+    breakout_bullrun: 'breakout',
+    'tetris-block-topia': 'tetris',
+    tetris_block_topia: 'tetris',
+    'crystal-quest': 'crystal',
+    crystal_quest: 'crystal',
+    'snake-run': 'snake',
+    snake_run: 'snake',
+    'block-topia-quest-maze': 'btqm',
+    block_topia_quest_maze: 'btqm',
+    blocktopia: 'btqm',
+  };
+  return aliases[key] || key || 'global';
+}
+
+function normalizeScore(value) {
+  const n = Number(value);
+  if (!Number.isFinite(n)) return 0;
+  return Math.max(0, Math.min(ARCADE_SCORE_SANITY_MAX, Math.floor(n)));
+}
+
+function normalizeMetaPoints(value) {
+  const n = Number(value);
+  if (!Number.isFinite(n)) return 0;
+  return Math.max(0, Math.min(1_000_000_000, Math.floor(n)));
+}
+
+function normalizeTimestamp(value) {
+  const n = Number(value);
+  if (!Number.isFinite(n) || n <= 0) return Date.now();
+  return Math.floor(n);
+}
+
+function computeNormalizedArcadePoints(game, rawScore, localMetaPoints) {
+  const safeScore = normalizeScore(rawScore);
+  const safeMeta = normalizeMetaPoints(localMetaPoints);
+  const difficultyWeights = {
+    invaders: 1.35,
+    pacchain: 1.1,
+    asteroids: 1.15,
+    breakout: 1.15,
+    tetris: 1.05,
+    crystal: 1.0,
+    snake: 0.95,
+    blocktopia: 1.25,
+    btqm: 1.25,
+  };
+  const gameWeight = Number(difficultyWeights[normalizeArcadeGameKey(game)]) || 1;
+  const fromScore = Math.floor((safeScore / 25) * gameWeight);
+  const blended = Math.max(fromScore, Math.floor(safeMeta * 0.85));
+  return Math.max(0, Math.min(200000, blended));
+}
+
+function sqliteNowFromMs(ms = Date.now()) {
+  return new Date(ms).toISOString().replace('T', ' ').slice(0, 19);
+}
+
+function isoDayFromMs(ms = Date.now()) {
+  return new Date(ms).toISOString().slice(0, 10);
+}
+
+function parseSqliteTs(value) {
+  if (!value) return null;
+  const text = String(value).includes('T') ? String(value) : `${String(value).replace(' ', 'T')}Z`;
+  const ts = Date.parse(text);
+  return Number.isFinite(ts) ? ts : null;
+}
+
+async function getOrCreateArcadeProgressionState(db, telegramId, nowMs = Date.now()) {
+  const dayKey = isoDayFromMs(nowMs);
+  await db.prepare(`
+    INSERT INTO arcade_progression_state
+      (telegram_id, arcade_xp_total, arcade_daily_xp, arcade_daily_key, arcade_restriction_level, restricted_until, updated_at)
+    VALUES (?, 0, 0, ?, 0, NULL, CURRENT_TIMESTAMP)
+    ON CONFLICT(telegram_id) DO NOTHING
+  `).bind(telegramId, dayKey).run();
+
+  const row = await db.prepare(`
+    SELECT telegram_id, arcade_xp_total, arcade_daily_xp, arcade_daily_key, arcade_restriction_level, restricted_until
+    FROM arcade_progression_state
+    WHERE telegram_id = ?
+    LIMIT 1
+  `).bind(telegramId).first();
+
+  if (!row) {
+    return {
+      telegram_id: telegramId,
+      arcade_xp_total: 0,
+      arcade_daily_xp: 0,
+      arcade_daily_key: dayKey,
+      arcade_restriction_level: 0,
+      restricted_until: null,
+    };
+  }
+
+  if (String(row.arcade_daily_key || '') !== dayKey) {
+    await db.prepare(`
+      UPDATE arcade_progression_state
+      SET arcade_daily_xp = 0, arcade_daily_key = ?, updated_at = CURRENT_TIMESTAMP
+      WHERE telegram_id = ?
+    `).bind(dayKey, telegramId).run();
+    return {
+      ...row,
+      arcade_daily_xp: 0,
+      arcade_daily_key: dayKey,
+    };
+  }
+  return row;
+}
+
+async function getOrCreateGameEnforcementState(db, telegramId, game) {
+  await db.prepare(`
+    INSERT INTO arcade_game_enforcement_state
+      (telegram_id, game, ceiling_hits, cooldown_level, cooldown_until, last_ceiling_hit_at, repeat_window_expires_at, xp_weight, lockout_until, lockout_count, updated_at)
+    VALUES (?, ?, 0, 0, NULL, NULL, NULL, 1.0, NULL, 0, CURRENT_TIMESTAMP)
+    ON CONFLICT(telegram_id, game) DO NOTHING
+  `).bind(telegramId, game).run();
+
+  const row = await db.prepare(`
+    SELECT telegram_id, game, ceiling_hits, cooldown_level, cooldown_until, last_ceiling_hit_at,
+           repeat_window_expires_at, xp_weight, lockout_until, lockout_count
+    FROM arcade_game_enforcement_state
+    WHERE telegram_id = ? AND game = ?
+    LIMIT 1
+  `).bind(telegramId, game).first();
+  return row || {
+    telegram_id: telegramId,
+    game,
+    ceiling_hits: 0,
+    cooldown_level: 0,
+    cooldown_until: null,
+    last_ceiling_hit_at: null,
+    repeat_window_expires_at: null,
+    xp_weight: 1,
+    lockout_until: null,
+    lockout_count: 0,
+  };
 }
 
 /**
@@ -1216,6 +1420,246 @@ export default {
     }
 
     // ── GET /faction/status with telegram_auth query payload ──────────────
+    // Shared arcade progression sync endpoint.
+    if (path === '/arcade/progression/sync' && request.method === 'POST') {
+      let body;
+      try { body = await request.json(); } catch { return err('Invalid JSON', 400); }
+      const verified = await verifyTelegramIdentityFromBody(body, env, verifyTelegramAuth);
+      if (verified.error) return err(verified.error, verified.status || 401);
+
+      const entries = Array.isArray(body?.entries) ? body.entries.slice(0, ARCADE_MAX_BATCH_ENTRIES) : [];
+      if (!entries.length) return json({ ok: true, results: [], synced: { accepted: 0, duplicate: 0, rejected: 0 } });
+
+      try {
+        await ensureArcadeProgressionTables(env.DB);
+        await upsertTelegramUser(env.DB, verified.user);
+
+        const nowMs = Date.now();
+        let state = await getOrCreateArcadeProgressionState(env.DB, verified.telegramId, nowMs);
+        const nowSql = sqliteNowFromMs(nowMs);
+        const restrictedUntilMs = parseSqliteTs(state.restricted_until);
+        if (restrictedUntilMs && restrictedUntilMs > nowMs) {
+          return json({
+            ok: false,
+            error: 'Arcade progression is temporarily restricted',
+            restricted_until: new Date(restrictedUntilMs).toISOString(),
+          }, 429);
+        }
+
+        const results = [];
+        let acceptedCount = 0;
+        let duplicateCount = 0;
+        let rejectedCount = 0;
+        let xpBatchAwarded = 0;
+
+        for (const input of entries) {
+          const clientRunId = String(input?.client_run_id || '').trim().slice(0, 128);
+          if (!clientRunId) {
+            rejectedCount += 1;
+            results.push({ client_run_id: null, status: 'rejected', reason: 'missing_client_run_id', xp_awarded: 0 });
+            continue;
+          }
+
+          const existing = await env.DB.prepare(`
+            SELECT id, xp_awarded, status, reason
+            FROM arcade_progression_events
+            WHERE telegram_id = ? AND client_run_id = ?
+            LIMIT 1
+          `).bind(verified.telegramId, clientRunId).first().catch(() => null);
+          if (existing) {
+            duplicateCount += 1;
+            results.push({
+              client_run_id: clientRunId,
+              status: 'duplicate',
+              reason: existing.reason || 'already_processed',
+              xp_awarded: Number(existing.xp_awarded || 0),
+            });
+            continue;
+          }
+
+          const game = normalizeArcadeGameKey(input?.game);
+          const rawScore = normalizeScore(input?.raw_score);
+          const localMetaPoints = normalizeMetaPoints(input?.meta_points);
+          const normalizedPoints = computeNormalizedArcadePoints(game, rawScore, localMetaPoints);
+          const perGameCeiling = Math.max(200, Math.floor(6000 * (game === 'invaders' ? 1.2 : 1)));
+          let enforcement = await getOrCreateGameEnforcementState(env.DB, verified.telegramId, game);
+          const lockoutUntilMs = parseSqliteTs(enforcement.lockout_until);
+          const cooldownUntilMs = parseSqliteTs(enforcement.cooldown_until);
+          const repeatWindowUntilMs = parseSqliteTs(enforcement.repeat_window_expires_at);
+
+          if (lockoutUntilMs && lockoutUntilMs > nowMs) {
+            rejectedCount += 1;
+            await env.DB.prepare(`
+              INSERT INTO arcade_progression_events
+                (id, telegram_id, client_run_id, game, raw_score, local_meta_points, normalized_points, xp_awarded, status, reason, processed_at)
+              VALUES (?, ?, ?, ?, ?, ?, ?, 0, 'rejected', ?, CURRENT_TIMESTAMP)
+            `).bind(
+              crypto.randomUUID(),
+              verified.telegramId,
+              clientRunId,
+              game,
+              rawScore,
+              localMetaPoints,
+              normalizedPoints,
+              'game_lockout_active',
+            ).run();
+            results.push({ client_run_id: clientRunId, status: 'rejected', reason: 'game_lockout_active', xp_awarded: 0 });
+            continue;
+          }
+
+          if (cooldownUntilMs && cooldownUntilMs > nowMs) {
+            rejectedCount += 1;
+            await env.DB.prepare(`
+              INSERT INTO arcade_progression_events
+                (id, telegram_id, client_run_id, game, raw_score, local_meta_points, normalized_points, xp_awarded, status, reason, processed_at)
+              VALUES (?, ?, ?, ?, ?, ?, ?, 0, 'rejected', ?, CURRENT_TIMESTAMP)
+            `).bind(
+              crypto.randomUUID(),
+              verified.telegramId,
+              clientRunId,
+              game,
+              rawScore,
+              localMetaPoints,
+              normalizedPoints,
+              'game_cooldown_active',
+            ).run();
+            results.push({ client_run_id: clientRunId, status: 'rejected', reason: 'game_cooldown_active', xp_awarded: 0 });
+            continue;
+          }
+
+          let xpWeight = Math.max(0.2, Math.min(1, Number(enforcement.xp_weight) || 1));
+          let ceilingHits = Math.max(0, Math.floor(Number(enforcement.ceiling_hits) || 0));
+          let cooldownLevel = Math.max(0, Math.floor(Number(enforcement.cooldown_level) || 0));
+          let nextCooldownUntil = null;
+          let nextRepeatWindow = null;
+          let lockoutUntil = null;
+          let lockoutCount = Math.max(0, Math.floor(Number(enforcement.lockout_count) || 0));
+          let reason = 'accepted';
+
+          const hitCeiling = normalizedPoints >= perGameCeiling;
+          if (hitCeiling) {
+            ceilingHits += 1;
+            const repeatedHit = repeatWindowUntilMs && repeatWindowUntilMs > nowMs;
+            cooldownLevel = Math.min(5, repeatedHit ? cooldownLevel + 1 : Math.max(1, cooldownLevel));
+            const cooldownMins = [0, 5, 12, 30, 90, 360][cooldownLevel] || 360;
+            nextCooldownUntil = new Date(nowMs + cooldownMins * 60 * 1000).toISOString();
+            nextRepeatWindow = new Date(nowMs + ARCADE_REPEAT_COOLDOWN_MINUTES * 60 * 1000 + ARCADE_REPEAT_WINDOW_MINUTES * 60 * 1000).toISOString();
+            xpWeight = Math.max(0.2, Number((xpWeight - 0.08).toFixed(4)));
+            reason = repeatedHit ? 'repeat_window_ceiling_hit' : 'per_game_ceiling_hit';
+            if (ceilingHits >= 8 || xpWeight <= 0.2) {
+              lockoutCount += 1;
+              lockoutUntil = new Date(nowMs + Math.min(7, lockoutCount) * 60 * 60 * 1000).toISOString();
+              reason = 'game_lockout_triggered';
+            }
+          } else if (xpWeight < 1) {
+            xpWeight = Math.min(1, Number((xpWeight + 0.01).toFixed(4)));
+          }
+
+          const baseXp = Math.min(ARCADE_XP_MAX_PER_RUN, Math.floor(normalizedPoints * ARCADE_XP_PER_POINT));
+          let xpAwarded = Math.floor(baseXp * xpWeight);
+          if (state.arcade_daily_xp >= ARCADE_XP_DAILY_CAP) {
+            xpAwarded = 0;
+            reason = 'daily_cap_reached';
+          } else if (state.arcade_daily_xp + xpAwarded > ARCADE_XP_DAILY_CAP) {
+            xpAwarded = Math.max(0, ARCADE_XP_DAILY_CAP - state.arcade_daily_xp);
+            reason = 'daily_cap_clamped';
+          }
+
+          await env.DB.prepare(`
+            UPDATE arcade_game_enforcement_state
+            SET ceiling_hits = ?, cooldown_level = ?, cooldown_until = ?, last_ceiling_hit_at = ?,
+                repeat_window_expires_at = ?, xp_weight = ?, lockout_until = ?, lockout_count = ?,
+                updated_at = CURRENT_TIMESTAMP
+            WHERE telegram_id = ? AND game = ?
+          `).bind(
+            ceilingHits,
+            cooldownLevel,
+            nextCooldownUntil,
+            hitCeiling ? nowSql : enforcement.last_ceiling_hit_at || null,
+            nextRepeatWindow,
+            xpWeight,
+            lockoutUntil,
+            lockoutCount,
+            verified.telegramId,
+            game,
+          ).run();
+
+          if (xpAwarded > 0) {
+            await awardXp(env.DB, verified.telegramId, xpAwarded, 'arcade_progress_sync', `${game}:${clientRunId}`);
+            xpBatchAwarded += xpAwarded;
+          }
+
+          await env.DB.prepare(`
+            INSERT INTO arcade_progression_events
+              (id, telegram_id, client_run_id, game, raw_score, local_meta_points, normalized_points, xp_awarded, status, reason, processed_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'accepted', ?, CURRENT_TIMESTAMP)
+          `).bind(
+            crypto.randomUUID(),
+            verified.telegramId,
+            clientRunId,
+            game,
+            rawScore,
+            localMetaPoints,
+            normalizedPoints,
+            xpAwarded,
+            reason,
+          ).run();
+
+          acceptedCount += 1;
+          state.arcade_xp_total = Math.max(0, Math.floor(Number(state.arcade_xp_total) || 0) + xpAwarded);
+          state.arcade_daily_xp = Math.max(0, Math.floor(Number(state.arcade_daily_xp) || 0) + xpAwarded);
+          results.push({
+            client_run_id: clientRunId,
+            status: 'accepted',
+            reason,
+            game,
+            xp_awarded: xpAwarded,
+            normalized_points: normalizedPoints,
+            xp_weight: xpWeight,
+            cooldown_until: nextCooldownUntil,
+            lockout_until: lockoutUntil,
+          });
+        }
+
+        await env.DB.prepare(`
+          UPDATE arcade_progression_state
+          SET arcade_xp_total = ?, arcade_daily_xp = ?, arcade_daily_key = ?, updated_at = CURRENT_TIMESTAMP
+          WHERE telegram_id = ?
+        `).bind(
+          Math.max(0, Math.floor(Number(state.arcade_xp_total) || 0)),
+          Math.max(0, Math.floor(Number(state.arcade_daily_xp) || 0)),
+          isoDayFromMs(nowMs),
+          verified.telegramId,
+        ).run();
+
+        if (xpBatchAwarded > 0) {
+          await logTelegramActivity(env.DB, verified.telegramId, 'arcade_progress_sync', JSON.stringify({
+            runs_synced: acceptedCount,
+            xp_awarded: xpBatchAwarded,
+            at: new Date(nowMs).toISOString(),
+          }));
+        }
+
+        return json({
+          ok: true,
+          telegram_id: verified.telegramId,
+          results,
+          synced: {
+            accepted: acceptedCount,
+            duplicate: duplicateCount,
+            rejected: rejectedCount,
+            xp_awarded: xpBatchAwarded,
+          },
+        });
+      } catch (syncError) {
+        logApiFailure('arcade_progression_sync_failed', {
+          telegramId: verified.telegramId,
+          message: syncError?.message || String(syncError),
+        });
+        return err('Failed to sync arcade progression', 500);
+      }
+    }
+
     if (path === '/faction/status' && request.method === 'GET') {
       const rawAuth = url.searchParams.get('telegram_auth');
       if (!rawAuth) return err('verified telegram_auth payload required', 401);

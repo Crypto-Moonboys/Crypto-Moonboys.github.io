@@ -323,7 +323,7 @@
               <ul>
                 <li>Arcade is free to play, even without Telegram sync.</li>
                 <li>Raw arcade score is separate from Block Topia XP.</li>
-                <li>Accepted scores can convert into Block Topia XP when Telegram sync is active.</li>
+                <li>Accepted scores can sync into shared community XP and Block Topia progression when Telegram sync is active.</li>
                 <li>Local-only players can still play arcade, but progression is browser-local.</li>
               </ul>
             </article>
@@ -505,7 +505,7 @@
     box.classList.add(linkedReady ? 'good' : 'bad');
     document.body.classList.toggle('sync-live', linkedReady);
     if (linkedReady) {
-      msgEl.textContent = 'Telegram linked successfully. XP and Block Topia progression are now sync-live and stored server-side.';
+      msgEl.textContent = 'Telegram linked successfully. Arcade progression, community XP, and Block Topia progression are now sync-live and stored server-side.';
       return;
     }
     if (sync && sync.linked && sync.status === 'missing_auth_payload') {
@@ -525,3 +525,4 @@
 </script>
 </body>
 </html>
+
