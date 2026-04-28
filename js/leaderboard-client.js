@@ -420,14 +420,28 @@ export async function submitScore(player, score, game = "global") {
     shouldSyncPending,
     reason: shouldSyncPending ? "linked_with_pending_queue" : (!linked ? "not_linked" : "empty_queue"),
   });
-  if (shouldSyncPending) {
+  emitArcadeDebug("sync_trigger_check", {
+    game: gameKey,
+    score,
+    linked,
+    accepted: result.accepted,
+    pending: ArcadeSync.getPendingCount(),
+    shouldSyncPending,
+  });
+
+  if (linked && ArcadeSync.getPendingCount() > 0) {
     try {
-      emitArcadeDebug("pending_sync_start", {
+      console.info("[arcade-sync-debug] forcing sync trigger", {
+        pending: ArcadeSync.getPendingCount()
+      });
+      emitArcadeDebug("sync_start", {
         game: gameKey,
         score,
-        pendingBeforeSync,
+        pendingBeforeSync: ArcadeSync.getPendingCount(),
       });
-      const syncSummary = await ArcadeSync.syncPendingArcadeProgress();
+      const syncSummary = await ArcadeSync.syncPendingArcadeProgress({
+        reason: "post_score_submit"
+      });
       emitArcadeDebug("pending_sync_response", {
         game: gameKey,
         score,
