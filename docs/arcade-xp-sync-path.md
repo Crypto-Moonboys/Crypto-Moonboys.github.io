@@ -50,3 +50,10 @@ Defined in:
 - Leaderboard ranking remains score-based.
 - Existing Block Topia progression route remains intact.
 - Existing Invaders accepted-score path remains intact and now also participates in shared progression sync.
+
+## Manual validation: rejected linked score is not queued
+1. Link Telegram so account is `telegram_linked`.
+2. Force a linked submit failure/reject path (for example: temporary auth failure, anti-cheat block, or API reject).
+3. Submit a run while linked and confirm `result.accepted !== true`.
+4. Check localStorage key `moonboys_arcade_pending_progress_v1`.
+5. Confirm no new pending entry was added for that rejected linked run.

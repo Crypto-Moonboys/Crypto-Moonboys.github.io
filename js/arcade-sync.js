@@ -54,7 +54,26 @@ export const ArcadeSync = {
 
   normalizeGame(game) {
     const cleaned = String(game || "global").toLowerCase().replace(/[^a-z0-9_-]/g, "");
-    return cleaned || "global";
+    const aliases = {
+      "invaders-3008": "invaders",
+      invaders3008: "invaders",
+      "pac-chain": "pacchain",
+      pac_chain: "pacchain",
+      "asteroid-fork": "asteroids",
+      asteroid_fork: "asteroids",
+      "breakout-bullrun": "breakout",
+      breakout_bullrun: "breakout",
+      "tetris-block-topia": "tetris",
+      tetris_block_topia: "tetris",
+      "crystal-quest": "crystal",
+      crystal_quest: "crystal",
+      "snake-run": "snake",
+      snake_run: "snake",
+      "block-topia-quest-maze": "btqm",
+      block_topia_quest_maze: "btqm",
+      blocktopia: "btqm",
+    };
+    return aliases[cleaned] || cleaned || "global";
   },
 
   makeRunId(run = {}) {

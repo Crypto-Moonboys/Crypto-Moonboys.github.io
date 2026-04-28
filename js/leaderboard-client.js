@@ -329,18 +329,22 @@ export async function submitScore(player, score, game = "global") {
     console.error("[leaderboard-client] Meta tracking failed:", err);
   }
 
-  try {
-    // Always keep a local pending run record so pre-link play can sync later.
-    // The server remains authoritative during sync acceptance.
-    ArcadeSync.queuePendingProgress({
-      game: gameKey,
-      raw_score: score,
-      meta_points: Number(metaResult?.meta_points) || 0,
-      timestamp: Number(metaResult?.timestamp) || Date.now(),
-      source: "score_submit",
-    });
-  } catch (err) {
-    console.warn("[leaderboard-client] Pending progress queue failed:", err);
+  const shouldQueuePending =
+    (!linked) || (linked && result.accepted === true);
+  if (shouldQueuePending) {
+    try {
+      // Unsynced users always queue locally for later Telegram sync.
+      // Linked users queue only when leaderboard accepted the run.
+      ArcadeSync.queuePendingProgress({
+        game: gameKey,
+        raw_score: score,
+        meta_points: Number(metaResult?.meta_points) || 0,
+        timestamp: Number(metaResult?.timestamp) || Date.now(),
+        source: "score_submit",
+      });
+    } catch (err) {
+      console.warn("[leaderboard-client] Pending progress queue failed:", err);
+    }
   }
 
   if (shouldSyncMeta && metaResult && metaResult.tracked) {
