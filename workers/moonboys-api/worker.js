@@ -1766,8 +1766,12 @@ export default {
             faction_label: fallbackFaction.label,
             base_xp: baseXp,
             multiplier: 1,
+            faction_xp_awarded: 0,
+            faction_xp_delta: 0,
             faction_xp_earned: 0,
             faction_xp_total: 0,
+            xp_awarded: 0,
+            xp_delta: 0,
             bonuses: {
               icon: fallbackFaction.icon,
               color: fallbackFaction.color,
