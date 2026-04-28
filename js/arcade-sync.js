@@ -2,6 +2,7 @@ export const ArcadeSync = {
   PENDING_KEY: "moonboys_arcade_pending_progress_v1",
   PENDING_MAX: 250,
   PENDING_BATCH: 25,
+  PRODUCTION_API_BASE: "https://moonboys-api.sercullen.workers.dev",
 
   getProjectedXpFromScore(score) {
     const safeScore = Number(score);
@@ -30,8 +31,22 @@ export const ArcadeSync = {
 
   getApiBase() {
     if (typeof window === "undefined") return null;
-    const cfg = window.MOONBOYS_API || {};
-    return cfg.BASE_URL ? String(cfg.BASE_URL).replace(/\/$/, "") : null;
+    const candidates = [
+      { key: "window.MOONBOYS_API.BASE_URL", value: window.MOONBOYS_API && window.MOONBOYS_API.BASE_URL },
+      { key: "window.API_CONFIG.BASE_URL", value: window.API_CONFIG && window.API_CONFIG.BASE_URL },
+      { key: "window.MOONBOYS_CONFIG.API_BASE", value: window.MOONBOYS_CONFIG && window.MOONBOYS_CONFIG.API_BASE },
+      { key: "fallback:production", value: this.PRODUCTION_API_BASE },
+    ];
+
+    for (const candidate of candidates) {
+      if (!candidate.value) continue;
+      const resolved = String(candidate.value).trim().replace(/\/$/, "");
+      if (!resolved) continue;
+      this.emitDebug("api_base_resolved", { apiBase: resolved, source: candidate.key });
+      return resolved;
+    }
+
+    return null;
   },
 
   getPlayer() {
@@ -152,10 +167,12 @@ export const ArcadeSync = {
   },
 
   emitDebug(stage, detail = {}) {
-    if (typeof window === "undefined" || typeof window.dispatchEvent !== "function") return;
-    const payload = { stage, ...detail, source: "arcade-sync", ts: Date.now() };
-    console.info("[arcade-sync-debug]", payload);
-    window.dispatchEvent(new CustomEvent("arcade:debug", { detail: payload }));
+    try {
+      if (typeof window === "undefined" || typeof window.dispatchEvent !== "function") return;
+      const payload = { stage, ...detail, source: "arcade-sync", ts: Date.now() };
+      console.info("[arcade-sync-debug]", payload);
+      window.dispatchEvent(new CustomEvent("arcade:debug", { detail: payload }));
+    } catch {}
   },
 
   async syncPendingArcadeProgress(options = {}) {
