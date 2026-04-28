@@ -9,6 +9,7 @@ const PRODUCTION_LEADERBOARD_URL = "https://moonboys-leaderboard.sercullen.worke
 
 // localStorage key shared with identity-gate.js
 const TG_ID_KEY = "moonboys_tg_id";
+const LEADERBOARD_DEBUG_BUILD = "leaderboard-client-debug-v2";
 
 
 function dispatchUiState(name, detail = {}) {
@@ -30,6 +31,13 @@ function emitTron(type, data = {}) {
 function emitArcadeSubmissionStatus(detail = {}) {
   if (typeof window === "undefined" || typeof window.dispatchEvent !== "function") return;
   window.dispatchEvent(new CustomEvent("arcade:submission-status", { detail }));
+}
+
+function emitArcadeDebug(stage, detail = {}) {
+  if (typeof window === "undefined" || typeof window.dispatchEvent !== "function") return;
+  const payload = { stage, ...detail, build: LEADERBOARD_DEBUG_BUILD, ts: Date.now() };
+  console.info("[arcade-debug]", payload);
+  window.dispatchEvent(new CustomEvent("arcade:debug", { detail: payload }));
 }
 
 function markSyncHealth(state, reason = "") {
@@ -158,6 +166,12 @@ export async function submitScore(player, score, game = "global") {
 
   const linked = isTelegramLinked();
   result.linked = linked;
+  emitArcadeDebug("leaderboard_submit_start", {
+    game: gameKey,
+    score,
+    linked,
+    pendingBefore: ArcadeSync.getPendingCount(),
+  });
   if (!linked) {
     markSyncHealth("bad", "not_linked");
     // Not competition-active: score stays local only.  Show gate modal if available.
@@ -180,6 +194,11 @@ export async function submitScore(player, score, game = "global") {
   let shouldSyncMeta = false;
 
   if (linked) {
+    emitArcadeDebug("auth_restore_result", {
+      linked,
+      hasTelegramId: !!telegramId,
+      hasSignedAuth: !!(await ArcadeSync.getTelegramAuth()),
+    });
     markSyncHealth("good", "linked_ready");
     emitArcadeSubmissionStatus({
       ...result,
@@ -194,6 +213,13 @@ export async function submitScore(player, score, game = "global") {
         body: JSON.stringify({ player: resolvedPlayer, score, game, telegram_id: telegramId, faction: getCurrentFactionKey() })
       });
       const data = await res.json().catch(() => ({}));
+      emitArcadeDebug("leaderboard_result", {
+        game: gameKey,
+        score,
+        httpStatus: res.status,
+        accepted: data && data.accepted === true,
+        bodyState: data && (data.state || data.error || data.message || null),
+      });
       if (!res.ok) {
         result.state = "sync_error";
         const errText = String(data.error || data.message || "").toLowerCase();
@@ -293,6 +319,11 @@ export async function submitScore(player, score, game = "global") {
           markSyncHealth("good", "accepted_score");
         }
       } else {
+        emitArcadeDebug("leaderboard_not_accepted", {
+          game: gameKey,
+          score,
+          reason: data?.reason || data?.error || data?.message || "accepted_false",
+        });
         result.state = "rejected_no_xp";
         emitArcadeSubmissionStatus({
           ...result,
@@ -331,6 +362,13 @@ export async function submitScore(player, score, game = "global") {
 
   const shouldQueuePending =
     (!linked) || (linked && result.accepted === true);
+  emitArcadeDebug("pending_queue_decision", {
+    game: gameKey,
+    score,
+    linked,
+    accepted: result.accepted,
+    shouldQueuePending,
+  });
   if (shouldQueuePending) {
     try {
       // Unsynced users always queue locally for later Telegram sync.
@@ -342,8 +380,18 @@ export async function submitScore(player, score, game = "global") {
         timestamp: Number(metaResult?.timestamp) || Date.now(),
         source: "score_submit",
       });
+      emitArcadeDebug("pending_queue_write", {
+        game: gameKey,
+        score,
+        pendingAfter: ArcadeSync.getPendingCount(),
+      });
     } catch (err) {
       console.warn("[leaderboard-client] Pending progress queue failed:", err);
+      emitArcadeDebug("pending_queue_write_error", {
+        game: gameKey,
+        score,
+        error: String((err && err.message) || err || "unknown_error"),
+      });
     }
   }
 
@@ -361,9 +409,34 @@ export async function submitScore(player, score, game = "global") {
     }
   }
 
-  if (linked && result.accepted) {
+  const pendingBeforeSync = ArcadeSync.getPendingCount();
+  const shouldSyncPending = linked && pendingBeforeSync > 0;
+  emitArcadeDebug("pending_sync_decision", {
+    game: gameKey,
+    score,
+    linked,
+    accepted: result.accepted,
+    pendingBeforeSync,
+    shouldSyncPending,
+    reason: shouldSyncPending ? "linked_with_pending_queue" : (!linked ? "not_linked" : "empty_queue"),
+  });
+  if (shouldSyncPending) {
     try {
+      emitArcadeDebug("pending_sync_start", {
+        game: gameKey,
+        score,
+        pendingBeforeSync,
+      });
       const syncSummary = await ArcadeSync.syncPendingArcadeProgress();
+      emitArcadeDebug("pending_sync_response", {
+        game: gameKey,
+        score,
+        synced: Number(syncSummary?.synced) || 0,
+        rejected: Number(syncSummary?.rejected) || 0,
+        remaining: Number(syncSummary?.remaining) || 0,
+        skipped: !!syncSummary?.skipped,
+        reason: syncSummary?.reason || null,
+      });
       emitArcadeSubmissionStatus({
         ...result,
         state: "progression_synced",
@@ -376,7 +449,21 @@ export async function submitScore(player, score, game = "global") {
       }
     } catch (syncErr) {
       console.error("[leaderboard-client] Pending progression sync failed:", syncErr);
+      emitArcadeDebug("pending_sync_error", {
+        game: gameKey,
+        score,
+        error: String((syncErr && syncErr.message) || syncErr || "unknown_error"),
+      });
     }
+  } else {
+    emitArcadeDebug("pending_sync_skipped", {
+      game: gameKey,
+      score,
+      linked,
+      accepted: result.accepted,
+      pendingBeforeSync,
+      reason: !linked ? "not_linked" : "empty_queue",
+    });
   }
 
   return result;

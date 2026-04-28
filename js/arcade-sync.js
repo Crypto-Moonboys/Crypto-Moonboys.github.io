@@ -15,25 +15,17 @@ export const ArcadeSync = {
     const gate = window.MOONBOYS_IDENTITY;
     if (!gate) return null;
     if (typeof gate.getSignedTelegramAuth !== "function") return null;
-
-    const signed = gate.getSignedTelegramAuth();
+    let signed = await gate.getSignedTelegramAuth();
     if (signed && signed.hash && signed.auth_date) return signed;
 
-    if (typeof gate.isTelegramLinked === "function" &&
-        gate.isTelegramLinked() === true &&
-        typeof gate.restoreLinkedTelegramAuth === "function") {
+    const linked = typeof gate.isTelegramLinked === "function" ? !!gate.isTelegramLinked() : false;
+    if (linked && typeof gate.restoreLinkedTelegramAuth === "function") {
       try {
-        const restored = await gate.restoreLinkedTelegramAuth();
-        if (restored && restored.ok === true) {
-          const refreshed = gate.getSignedTelegramAuth();
-          if (refreshed && refreshed.hash && refreshed.auth_date) return refreshed;
-        }
-      } catch (error) {
-        console.warn("[arcade-sync] restoreLinkedTelegramAuth failed:", error);
-      }
+        await gate.restoreLinkedTelegramAuth();
+      } catch {}
+      signed = await gate.getSignedTelegramAuth();
     }
-
-    return null;
+    return signed || null;
   },
 
   getApiBase() {
@@ -159,28 +151,31 @@ export const ArcadeSync = {
     return this.getPendingProgress().length;
   },
 
+  emitDebug(stage, detail = {}) {
+    if (typeof window === "undefined" || typeof window.dispatchEvent !== "function") return;
+    const payload = { stage, ...detail, source: "arcade-sync", ts: Date.now() };
+    console.info("[arcade-sync-debug]", payload);
+    window.dispatchEvent(new CustomEvent("arcade:debug", { detail: payload }));
+  },
+
   async syncPendingArcadeProgress(options = {}) {
     const pending = this.getPendingProgress();
-    if (!pending.length) return { synced: 0, remaining: 0, skipped: true, reason: "empty_queue" };
+    if (!pending.length) {
+      this.emitDebug("sync_skip", { reason: "empty_queue" });
+      return { synced: 0, remaining: 0, skipped: true, reason: "empty_queue" };
+    }
 
     const apiBase = this.getApiBase();
-    if (!apiBase) return { synced: 0, remaining: pending.length, skipped: true, reason: "missing_api_base" };
+    if (!apiBase) {
+      this.emitDebug("sync_skip", { reason: "missing_api_base", pending: pending.length });
+      return { synced: 0, remaining: pending.length, skipped: true, reason: "missing_api_base" };
+    }
     const telegram_auth = await this.getTelegramAuth();
     if (!telegram_auth || !telegram_auth.hash || !telegram_auth.auth_date) {
-      try {
-        if (typeof window !== "undefined" && typeof window.dispatchEvent === "function") {
-          window.dispatchEvent(new CustomEvent("moonboys:arcade-sync-skipped", {
-            detail: {
-              reason: "missing_auth",
-              pending: pending.length,
-              ts: Date.now(),
-            },
-          }));
-        }
-      } catch {}
-      console.warn("[arcade-sync] syncPendingArcadeProgress skipped: missing_auth", { pending: pending.length });
+      this.emitDebug("sync_skip", { reason: "missing_auth", pending: pending.length });
       return { synced: 0, remaining: pending.length, skipped: true, reason: "missing_auth" };
     }
+    this.emitDebug("sync_auth_restored", { pending: pending.length, hasHash: !!telegram_auth.hash, hasAuthDate: !!telegram_auth.auth_date });
 
     const onProgress = typeof options.onProgress === "function" ? options.onProgress : null;
     const keep = [];
@@ -191,6 +186,7 @@ export const ArcadeSync = {
       const batch = pending.slice(index, index + this.PENDING_BATCH);
       let payload;
       try {
+        this.emitDebug("sync_request_sent", { endpoint: `${apiBase}/arcade/progression/sync`, batchSize: batch.length });
         const res = await fetch(`${apiBase}/arcade/progression/sync`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -200,6 +196,7 @@ export const ArcadeSync = {
           }),
         });
         payload = await res.json().catch(() => ({}));
+        this.emitDebug("sync_response_received", { httpStatus: res.status, batchSize: batch.length, resultCount: Array.isArray(payload?.results) ? payload.results.length : 0 });
         if (!res.ok) throw new Error(payload.error || `HTTP ${res.status}`);
       } catch (error) {
         // Network or auth uncertainty: keep entire batch to avoid data loss.
