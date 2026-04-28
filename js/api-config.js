@@ -15,7 +15,10 @@
  * all engagement features automatically activate.
  */
 
-window.MOONBOYS_API = {
+window.MOONBOYS_API = window.MOONBOYS_API || {};
+window.MOONBOYS_API.BASE_URL = "https://moonboys-api.sercullen.workers.dev";
+
+Object.assign(window.MOONBOYS_API, {
 
   /* ── Backend API ─────────────────────────────────────────── */
   // Live Cloudflare Worker endpoint powering all engagement features.
@@ -111,4 +114,4 @@ window.MOONBOYS_API = {
     ENABLE_MISSIONS: true,
     ENABLE_BATTLE_LAYER: true
   }
-};
+});
