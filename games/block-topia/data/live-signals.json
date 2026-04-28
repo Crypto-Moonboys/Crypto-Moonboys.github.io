@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-04-27T23:54:54.146Z",
+  "generatedAt": "2026-04-28T03:22:01.314Z",
   "mode": "fallback-no-key",
   "sourceHealth": {
     "coingecko-global": "ok",
@@ -11,27 +11,27 @@
   "signalCount": 3,
   "signals": [
     {
-      "id": "signal-1777334094145-1",
+      "id": "signal-1777346521313-1",
       "lane": "world",
       "priority": 3,
       "ttlMinutes": 45,
-      "npcLine": "Signal board shows Neutral pressure. Keep your routes adaptive.",
+      "npcLine": "Signal board shows Fear pressure. Keep your routes adaptive.",
       "questPulse": "Map three unstable relay corners before the next SAM sweep.",
-      "worldFeed": "Network mood: Neutral. Surveillance pressure remains mixed.",
+      "worldFeed": "Network mood: Fear. Surveillance pressure remains high.",
       "clueEvent": "Hidden relay mark: look for the glyph where east lanes cross old neon rail.",
       "tags": [
         "sam",
         "mood",
         "relay"
       ],
-      "expiresAt": "2026-04-28T00:39:54.145Z"
+      "expiresAt": "2026-04-28T04:07:01.313Z"
     },
     {
-      "id": "signal-1777334094146-2",
+      "id": "signal-1777346521314-2",
       "lane": "ops",
       "priority": 4,
       "ttlMinutes": 40,
-      "npcLine": "Trend signatures rotating: BSB · PENGU · LUNC. Couriers are rerouting tonight.",
+      "npcLine": "Trend signatures rotating: RAVE · BTC · CHIP. Couriers are rerouting tonight.",
       "questPulse": "Intercept two phantom couriers carrying unsigned signal chips.",
       "worldFeed": "Ops pulse: district relays are shifting faster than normal.",
       "clueEvent": "Clue pulse: seek a dead terminal with three blinking amber bars.",
@@ -40,10 +40,10 @@
         "courier",
         "quest"
       ],
-      "expiresAt": "2026-04-28T00:34:54.146Z"
+      "expiresAt": "2026-04-28T04:02:01.314Z"
     },
     {
-      "id": "signal-1777334094146-3",
+      "id": "signal-1777346521314-3",
       "lane": "clue",
       "priority": 2,
       "ttlMinutes": 60,
@@ -56,7 +56,7 @@
         "hunt",
         "world"
       ],
-      "expiresAt": "2026-04-28T00:54:54.146Z"
+      "expiresAt": "2026-04-28T04:22:01.314Z"
     }
   ]
 }
