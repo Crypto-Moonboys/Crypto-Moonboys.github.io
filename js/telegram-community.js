@@ -80,7 +80,7 @@
       }).join('');
 
       el.innerHTML =
-        '<div class="tg-lb-header">Community XP <span class="tg-lb-note">(separate from arcade scores)</span></div>' +
+        '<div class="tg-lb-header">Community XP <span class="tg-lb-note">(includes synced arcade progression)</span></div>' +
         '<div class="tg-lb-list">' + rows + '</div>';
     });
   }

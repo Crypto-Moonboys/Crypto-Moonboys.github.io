@@ -329,6 +329,20 @@ export async function submitScore(player, score, game = "global") {
     console.error("[leaderboard-client] Meta tracking failed:", err);
   }
 
+  try {
+    // Always keep a local pending run record so pre-link play can sync later.
+    // The server remains authoritative during sync acceptance.
+    ArcadeSync.queuePendingProgress({
+      game: gameKey,
+      raw_score: score,
+      meta_points: Number(metaResult?.meta_points) || 0,
+      timestamp: Number(metaResult?.timestamp) || Date.now(),
+      source: "score_submit",
+    });
+  } catch (err) {
+    console.warn("[leaderboard-client] Pending progress queue failed:", err);
+  }
+
   if (shouldSyncMeta && metaResult && metaResult.tracked) {
     try {
       await submitMetaScore({
@@ -340,6 +354,24 @@ export async function submitScore(player, score, game = "global") {
       });
     } catch (err) {
       console.error("[leaderboard-client] Meta sync failed:", err);
+    }
+  }
+
+  if (linked && result.accepted) {
+    try {
+      const syncSummary = await ArcadeSync.syncPendingArcadeProgress();
+      emitArcadeSubmissionStatus({
+        ...result,
+        state: "progression_synced",
+        syncedRuns: Number(syncSummary?.synced) || 0,
+        pendingRuns: Number(syncSummary?.remaining) || 0,
+        message: "Accepted run synced to shared arcade progression.",
+      });
+      if ((Number(syncSummary?.synced) || 0) > 0) {
+        emitMicroNotification(`Progress synced (${syncSummary.synced} run${syncSummary.synced === 1 ? "" : "s"}).`, "success");
+      }
+    } catch (syncErr) {
+      console.error("[leaderboard-client] Pending progression sync failed:", syncErr);
     }
   }
 
