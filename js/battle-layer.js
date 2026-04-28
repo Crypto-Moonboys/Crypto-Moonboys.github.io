@@ -169,32 +169,6 @@
     }
   }
 
-  function injectHomeStrip() {
-    if (window.location.pathname !== '/' && window.location.pathname !== '/index.html') return;
-    var hero = document.querySelector('.home-hero');
-    if (!hero || document.querySelector('.battle-strip')) return;
-
-    var strip = document.createElement('div');
-    strip.className = 'battle-strip';
-    strip.innerHTML =
-      '<div class="battle-card"><div class="battle-card-inner">' +
-        '<h3>Battle Chamber</h3>' +
-        '<p class="battle-copy">Dive into the heart of community engagement — track activity, join a faction, and shape the narrative.</p>' +
-        '<a href="/community.html" class="btn btn-primary">Enter the Chamber →</a>' +
-      '</div></div>' +
-      '<div class="battle-card"><div class="battle-card-inner">' +
-        '<h3>Faction Alignment</h3>' +
-        '<p class="battle-copy">Choose your allegiance: Diamond Hands, HODL Warriors, or GraffPUNKS.</p>' +
-        '<a href="/community.html" class="btn btn-secondary">Choose Faction →</a>' +
-      '</div></div>' +
-      '<div class="battle-card"><div class="battle-card-inner">' +
-        '<h3>Daily Missions</h3>' +
-        '<p class="battle-copy">Comment, like, and vote on citations across the wiki to influence the Moonboys narrative.</p>' +
-      '</div></div>';
-
-    hero.insertAdjacentElement('afterend', strip);
-  }
-
   // ── Community page API hydration ────────────────────────────────────────
 
   // Minimum hex-string length that constitutes a real stored hash (MD5=32, SHA-256=64).
@@ -325,7 +299,6 @@
 
   function init() {
     injectCommunityNav();
-    injectHomeStrip();
     injectArticleBattleLayer();
     populateCommunityPage();
   }
