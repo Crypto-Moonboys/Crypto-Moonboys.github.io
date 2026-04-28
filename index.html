@@ -3,25 +3,121 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="The Crypto GK Moonboys Wiki — fan-driven crypto encyclopedia and lore hub. Browse categories, explore featured pages, and use the canonical article hub at /search.html.">
+  <meta name="description" content="Stop logging in to claim. Start showing up to build. Play the Crypto Moonboys arcade, earn XP, link Telegram, enter Block Topia, and build with GK.">
   <meta name="robots" content="index, follow">
-  <meta property="og:title" content="🌙 The Crypto GK Moonboys Wiki Cryptoism Encyclopedia">
-  <meta property="og:description" content="Fan-driven crypto encyclopedia and lore hub. Browse categories, explore featured pages, and use the canonical article hub at /search.html.">
+  <meta property="og:title" content="Crypto Moonboys — Stop Claiming. Start Building.">
+  <meta property="og:description" content="Walk in. Play. Earn XP. Link Telegram. Enter Block Topia. Build, own, and control your position in the GK system.">
   <meta property="og:type" content="website">
-  <meta property="og:url" content="https://crypto-moonboys.github.io/">
-  <meta property="og:image" content="https://crypto-moonboys.github.io/img/CRYPTO-MOONBOYS-BITCOIN-LOGO.png">
-  <link rel="canonical" href="https://crypto-moonboys.github.io/">
-  <title>The Crypto Moonboys GK Wiki — Cryptoism Encyclopedia </title>
+  <meta property="og:url" content="https://cryptomoonboys.com/">
+  <meta property="og:image" content="https://cryptomoonboys.com/img/CRYPTO-MOONBOYS-BITCOIN-LOGO.png">
+  <link rel="canonical" href="https://cryptomoonboys.com/">
+  <title>Crypto Moonboys — Stop Claiming. Start Building.</title>
   <link rel="stylesheet" href="/css/wiki.css">
   <link rel="stylesheet" href="/css/battle-layer.css">
   <link rel="icon" href="/img/favicon.svg" type="image/svg+xml">
   <style>
+    .launch-hero {
+      position: relative;
+      overflow: hidden;
+      padding: clamp(38px, 7vw, 90px) clamp(18px, 4vw, 54px);
+      margin-bottom: 28px;
+      border: 1px solid rgba(86,220,255,.34);
+      border-radius: var(--radius);
+      background:
+        radial-gradient(circle at top left, rgba(86,220,255,.18), transparent 32%),
+        radial-gradient(circle at bottom right, rgba(255,204,0,.15), transparent 30%),
+        linear-gradient(155deg, rgba(10,23,44,.9), rgba(4,9,18,.88));
+      box-shadow: inset 0 0 0 1px rgba(122,236,255,.06), 0 18px 44px rgba(0,0,0,.35);
+    }
+    .launch-hero::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      opacity: .08;
+      background-image: linear-gradient(90deg, #fff 1px, transparent 1px), linear-gradient(#fff 1px, transparent 1px);
+      background-size: 42px 42px;
+      pointer-events: none;
+    }
+    .launch-hero-inner { position: relative; z-index: 1; max-width: 1080px; }
+    .launch-kicker {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 18px;
+      padding: 8px 12px;
+      border: 1px solid rgba(86,220,255,.35);
+      border-radius: 999px;
+      background: rgba(86,220,255,.08);
+      color: #d8fbff;
+      font-size: .86rem;
+      font-weight: 700;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+    }
+    .launch-hero h1 {
+      margin: 0;
+      max-width: 920px;
+      font-size: clamp(2.25rem, 8vw, 6.3rem);
+      line-height: .9;
+      letter-spacing: -.065em;
+      text-transform: uppercase;
+    }
+    .launch-hero h1 span { display: block; }
+    .launch-lead {
+      max-width: 760px;
+      margin: 22px 0 0;
+      color: var(--color-text-muted);
+      font-size: clamp(1rem, 2vw, 1.35rem);
+      line-height: 1.58;
+    }
+    .launch-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 28px; }
+    .launch-actions .btn { font-size: 1.04rem; padding: 13px 22px; }
+    .launch-route {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 22px;
+      color: var(--color-text-muted);
+      font-size: .96rem;
+    }
+    .launch-route span {
+      display: inline-flex;
+      align-items: center;
+      padding: 7px 10px;
+      border: 1px solid rgba(255,255,255,.1);
+      border-radius: 999px;
+      background: rgba(255,255,255,.04);
+    }
+    .launch-panel-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 14px;
+      margin: 24px 0 32px;
+    }
+    .launch-panel {
+      border: 1px solid rgba(86,220,255,.26);
+      border-radius: var(--radius);
+      background: linear-gradient(165deg, rgba(10,23,44,.74), rgba(8,18,34,.58));
+      padding: 18px;
+    }
+    .launch-panel strong { display:block; margin-bottom: 7px; color: #fff; }
+    .launch-panel p { margin: 0; color: var(--color-text-muted); line-height: 1.6; font-size: .94rem; }
+    .system-strip {
+      margin: 0 0 28px;
+      padding: 18px 20px;
+      border-left: 3px solid rgba(255,204,0,.9);
+      background: rgba(255,204,0,.06);
+      color: var(--color-text-muted);
+      line-height: 1.65;
+    }
+    .system-strip strong { color: #fff; }
     .hero-logo-img {
       display: block;
-      margin: 0 auto 20px;
-      max-width: min(360px, 88vw);
+      margin: 8px 0 0;
+      max-width: min(300px, 78vw);
       width: 100%;
       height: auto;
+      filter: drop-shadow(0 12px 26px rgba(0,0,0,.35));
     }
   </style>
 </head>
@@ -31,19 +127,19 @@
 
 <header id="site-header" role="banner">
   <button class="hamburger" id="hamburger" aria-label="Toggle navigation" aria-expanded="false" aria-controls="sidebar">☰</button>
-    <a href="/index.html" class="site-logo" aria-label="The Crypto Moonboys GK Wiki home">
+  <a href="/index.html" class="site-logo" aria-label="Crypto Moonboys home">
     <img src="/img/CRYPTO-MOONBOYS-BITCOIN-LOGO.png" alt="" aria-hidden="true">
     <span>
-      <span class="logo-text">The Crypto Moonboys GK Wiki</span>
-      <span class="logo-sub">Crypto Intelligence & Lore Console</span>
+      <span class="logo-text">Crypto Moonboys</span>
+      <span class="logo-sub">Play. Earn. Build. Own it.</span>
     </span>
   </a>
   <div id="header-search" role="search">
-    <input type="search" id="search-input" placeholder="Search the wiki…" aria-label="Search" autocomplete="off">
+    <input type="search" id="search-input" placeholder="Search the system…" aria-label="Search" autocomplete="off">
     <button id="search-btn" aria-label="Search">🔍</button>
     <div id="search-results" role="listbox"></div>
   </div>
-    <nav class="header-nav" aria-label="Main navigation">
+  <nav class="header-nav" aria-label="Main navigation">
     <a href="/index.html" class="active" aria-current="page">Home</a>
   </nav>
 </header>
@@ -51,20 +147,26 @@
 <div id="sidebar-overlay" aria-hidden="true"></div>
 
 <div id="layout">
-    <nav id="sidebar" aria-label="Wiki navigation">
+  <nav id="sidebar" aria-label="Wiki navigation">
     <div class="sidebar-section">
-      <div class="sidebar-heading">Navigation</div>
+      <div class="sidebar-heading">Start Here</div>
       <div class="sidebar-nav">
-        <a href="/index.html"><span class="nav-icon">🏠</span> Main Page</a>
-        <a href="/categories/index.html"><span class="nav-icon">📂</span> All Categories</a>
+        <a href="/index.html" class="active"><span class="nav-icon">🏠</span> Main Page</a>
+        <a href="/games/"><span class="nav-icon">🕹️</span> Arcade</a>
+        <a href="/how-to-play.html"><span class="nav-icon">◈</span> How to Play</a>
+        <a href="/gkniftyheads-incubator.html"><span class="nav-icon">🚀</span> Incubator HUB</a>
+        <a href="/community.html"><span class="nav-icon">⚔️</span> Battle Chamber</a>
+      </div>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-heading">Explore</div>
+      <div class="sidebar-nav">
         <a href="/search.html"><span class="nav-icon">🔍</span> All Articles</a>
+        <a href="/categories/index.html"><span class="nav-icon">📂</span> All Categories</a>
         <a href="/timeline.html"><span class="nav-icon">📅</span> Timeline</a>
         <a href="/graph.html"><span class="nav-icon">🌐</span> Entity Graph</a>
         <a href="/dashboard.html"><span class="nav-icon">📊</span> Dashboard</a>
         <a href="/sam.html"><span class="nav-icon">🧠</span> SAM</a>
-        <a href="/games/"><span class="nav-icon">🕹️</span> Arcade</a>
-        <a href="/how-to-play.html"><span class="nav-icon">◈</span> How to Play</a>
-        <a href="/gkniftyheads-incubator.html"><span class="nav-icon">🚀</span> Incubator HUB</a>
       </div>
     </div>
     <div class="sidebar-section">
@@ -75,22 +177,16 @@
         <a href="/wiki/diamond-hands.html"><span class="nav-icon">💎</span> Diamond Hands</a>
         <a href="/wiki/paper-hands.html"><span class="nav-icon">🧻</span> Paper Hands</a>
         <a href="/wiki/whale-lords.html"><span class="nav-icon">🐳</span> The Whale Lords</a>
-        <a href="/wiki/moon-mission.html"><span class="nav-icon">🚀</span> Moon Mission</a>
-        <a href="/wiki/the-great-dip.html"><span class="nav-icon">📉</span> The Great Dip</a>
-        <a href="/wiki/bear-market-siege.html"><span class="nav-icon">🐻</span> Bear Market Siege</a>
-        <a href="/wiki/rug-pull-wars.html"><span class="nav-icon">🪤</span> Rug Pull Wars</a>
         <a href="/wiki/satoshi-scroll.html"><span class="nav-icon">📜</span> The Satoshi Scroll</a>
-        <a href="/wiki/fomo-plague.html"><span class="nav-icon">😱</span> The FOMO Plague</a>
-        <a href="/wiki/ngmi-chronicles.html"><span class="nav-icon">💀</span> NGMI Chronicles</a>
-        <a href="/wiki/wagmi-prophecy.html"><span class="nav-icon">🌙</span> The WAGMI Prophecy</a>
+        <a href="/categories/lore.html"><span class="nav-icon">📚</span> All Lore</a>
       </div>
     </div>
     <div class="sidebar-section">
-      <div class="sidebar-heading">GK Wiki Info</div>
+      <div class="sidebar-heading">GK Info</div>
       <div class="sidebar-nav">
         <a href="/about.html"><span class="nav-icon">ℹ️</span> About</a>
+        <a href="/about/what-is-crypto-moonboys.html"><span class="nav-icon">🌙</span> What Is Crypto Moonboys?</a>
         <a href="/about.html#citation"><span class="nav-icon">📋</span> Citation Policy</a>
-        <a href="/about.html#sources"><span class="nav-icon">🔗</span> Source Types</a>
       </div>
     </div>
   </nav>
@@ -98,175 +194,89 @@
   <div id="main-wrapper">
     <main id="content" role="main">
 
-      <section class="home-hero">
-        <h1>The Crypto Moonboys GK Wiki</h1>
-        <p>A live intelligence map for crypto culture, lore, and systems. No sign-up, no login — just verified pages, tools, and mission context from the GKniftyHEADS network.</p>
-
-        <img
-          src="/crypto-moonboys-logo.png"
-          alt="Crypto Moonboys — Web3 NFT Universe"
-          class="hero-logo-img"
-          loading="lazy"
-        >
-
-        <div style="margin:0 0 18px 0;color:var(--color-text-muted);font-size:.98rem">
-          The canonical article hub is <a href="/search.html">/search.html</a>. Use it for full search, stable ranking, and the live article index.
-        </div>
-
-        <div class="hero-stats">
-          <a href="/search.html" class="hero-stat hero-stat-link">
-            <div class="stat-num stat-total-articles" data-stat="article-count">—</div>
-            <div class="stat-label">Articles</div>
-          </a>
-          <a href="/categories/index.html" class="hero-stat hero-stat-link">
-            <div class="stat-num stat-total-categories" data-stat="category-count">—</div>
-            <div class="stat-label">Categories</div>
-          </a>
-          <div class="hero-stat">
-            <div class="stat-num stat-last-updated" data-stat="last_updated">—</div>
-            <div class="stat-label">Last updated</div>
+      <section class="launch-hero">
+        <div class="launch-hero-inner">
+          <div class="launch-kicker">GK system booting · action required</div>
+          <h1>
+            <span>Stop logging in to claim.</span>
+            <span>Start showing up to build.</span>
+          </h1>
+          <p class="launch-lead">
+            Crypto Moonboys is not just a wiki. It is the front door to the GKniftyHEADS system: play the arcade, earn XP, link Telegram, enter Block Topia, join the Battle Chamber, and build with the culture instead of watching it.
+          </p>
+          <div class="launch-actions">
+            <a href="/games/" class="btn btn-primary">🎮 PLAY NOW</a>
+            <a href="/gkniftyheads-incubator.html" class="btn btn-secondary">🔗 Link Telegram</a>
+            <a href="/community.html" class="btn btn-secondary">⚔️ Battle Chamber</a>
           </div>
+          <div class="launch-route" aria-label="System route">
+            <span>Arcade</span><span>XP</span><span>Telegram Sync</span><span>Block Topia</span><span>HODL Wars</span><span>Build / Own / Control</span>
+          </div>
+          <img src="/crypto-moonboys-logo.png" alt="Crypto Moonboys — Web3 NFT Universe" class="hero-logo-img" loading="lazy">
         </div>
       </section>
 
+      <div class="system-strip">
+        <strong>This page is the floor.</strong> The first action is play. The second action is link. The proof lives in XP, leaderboards, missions, factions, NFTs, burns, lore, and what the community builds on top.
+      </div>
+
+      <div class="launch-panel-grid" aria-label="Core system paths">
+        <a href="/games/" class="launch-panel">
+          <strong>🎮 Arcade = first action</strong>
+          <p>Start free. Play first. Earn XP signals before the deeper system asks anything from you.</p>
+        </a>
+        <a href="/gkniftyheads-incubator.html" class="launch-panel">
+          <strong>🔗 Telegram = identity</strong>
+          <p>Run /gkstart and /gklink to save progression, unlock sync, and become more than a browser visitor.</p>
+        </a>
+        <a href="/community.html" class="launch-panel">
+          <strong>⚔️ Battle Chamber = proof</strong>
+          <p>Leaderboards, activity, faction alignment and missions show who is moving and who is just watching.</p>
+        </a>
+        <a href="/about/what-is-crypto-moonboys.html" class="launch-panel">
+          <strong>🌙 What is this?</strong>
+          <p>The short answer: a street-born culture system where play, ownership, lore, IP and building connect.</p>
+        </a>
+      </div>
+
+      <section class="home-hero" aria-label="Live system stats">
+        <h2>Live System Index</h2>
+        <p>Use the index when you need depth. Use the arcade when you are ready to move.</p>
+        <div class="hero-stats">
+          <a href="/search.html" class="hero-stat hero-stat-link"><div class="stat-num stat-total-articles" data-stat="article-count">—</div><div class="stat-label">Articles</div></a>
+          <a href="/categories/index.html" class="hero-stat hero-stat-link"><div class="stat-num stat-total-categories" data-stat="category-count">—</div><div class="stat-label">Categories</div></a>
+          <div class="hero-stat"><div class="stat-num stat-last-updated" data-stat="last_updated">—</div><div class="stat-label">Last updated</div></div>
+        </div>
+      </section>
+
+      <h2 class="section-heading">Core Routes</h2>
       <div class="featured-article">
-        <div class="fa-icon"><img class="btc-logo-icon" src="/CRYPTO-MOONBOYS-BITCOIN-LOGO.png" alt="₿"></div>
+        <div class="fa-icon">🕹️</div>
         <div class="featured-article-body">
-          <div class="article-meta" style="margin-bottom:6px">
-            <span class="article-badge">⭐ Featured</span>
-          </div>
-          <h3><a href="/wiki/bitcoin.html">Bitcoin (BTC)</a></h3>
-          <p>Bitcoin is the world's first and largest cryptocurrency by market cap. Created in 2009 by the pseudonymous Satoshi Nakamoto, it introduced the concept of a trustless, peer-to-peer digital money system using blockchain technology.</p>
-          <a href="/wiki/bitcoin.html" class="btn btn-primary">Read Article →</a>
+          <div class="article-meta" style="margin-bottom:6px"><span class="article-badge">Start Here</span></div>
+          <h3><a href="/games/">Arcade</a></h3>
+          <p>Easy entry. Real action. Play first, build XP, then link Telegram to make progression stick.</p>
+          <a href="/games/" class="btn btn-primary">Play Now →</a>
         </div>
       </div>
 
-      <div class="price-ticker-section">
-        <h2 class="section-heading">Live Prices</h2>
-        <div class="price-ticker-grid" aria-label="Live cryptocurrency prices" aria-busy="true"></div>
-      </div>
-
-      <h2 class="section-heading">Browse by Category</h2>
-      <div class="category-grid">
-        <a href="/categories/cryptocurrencies.html" class="category-card">
-          <span class="cat-icon"><img class="btc-logo-icon" src="/CRYPTO-MOONBOYS-BITCOIN-LOGO.png" alt="₿"></span>
-          <div>
-            <div class="cat-name">Cryptocurrencies</div>
-            <div class="cat-count">Bitcoin, Ethereum, Solana &amp; more</div>
-          </div>
-        </a>
-        <a href="/categories/concepts.html" class="category-card">
-          <span class="cat-icon">🏦</span>
-          <div>
-            <div class="cat-name">Concepts</div>
-            <div class="cat-count">DeFi, NFTs, Tokenomics &amp; more</div>
-          </div>
-        </a>
-        <a href="/categories/technology.html" class="category-card">
-          <span class="cat-icon">⛓️</span>
-          <div>
-            <div class="cat-name">Technology</div>
-            <div class="cat-count">Blockchain, Web3 &amp; more</div>
-          </div>
-        </a>
-        <a href="/categories/tools.html" class="category-card">
-          <span class="cat-icon">👛</span>
-          <div>
-            <div class="cat-name">Tools &amp; Platforms</div>
-            <div class="cat-count">Wallets, Exchanges &amp; more</div>
-          </div>
-        </a>
-        <a href="/categories/lore.html" class="category-card">
-          <span class="cat-icon">⚔️</span>
-          <div>
-            <div class="cat-name">Lore</div>
-            <div class="cat-count">HODL Wars, Moon Missions &amp; more</div>
-          </div>
-        </a>
-        <a href="/categories/designer-toys.html" class="category-card">
-          <span class="cat-icon">🧸</span>
-          <div>
-            <div class="cat-name">Crypto Designer Toys</div>
-            <div class="cat-count">Art meets Web3 merchandise &amp; more</div>
-          </div>
-        </a>
-        <a href="/categories/guerilla-marketing.html" class="category-card">
-          <span class="cat-icon">🎨</span>
-          <div>
-            <div class="cat-name">Guerilla Marketing</div>
-            <div class="cat-count">Sticker drops, street promotions &amp; more</div>
-          </div>
-        </a>
-        <a href="/categories/graffiti-street-art.html" class="category-card">
-          <span class="cat-icon">🎨</span>
-          <div>
-            <div class="cat-name">Graffiti &amp; Street Art</div>
-            <div class="cat-count">Graffiti Kings, street art culture &amp; more</div>
-          </div>
-        </a>
-        <a href="/categories/nfts-digital-art.html" class="category-card">
-          <span class="cat-icon">🖼️</span>
-          <div>
-            <div class="cat-name">NFTs &amp; Digital Art</div>
-            <div class="cat-count">GKniftyHEADS, digital collections &amp; more</div>
-          </div>
-        </a>
-        <a href="/categories/punk-culture.html" class="category-card">
-          <span class="cat-icon">⚡️</span>
-          <div>
-            <div class="cat-name">Punk Culture</div>
-            <div class="cat-count">GraffPUNKS, BanksyPunks &amp; more</div>
-          </div>
-        </a>
-        <a href="/categories/gaming.html" class="category-card">
-          <span class="cat-icon">⌁</span>
-          <div>
-            <div class="cat-name">Gaming</div>
-            <div class="cat-count">Blockchain gaming, GameFi &amp; more</div>
-          </div>
-        </a>
-        <a href="/categories/community-people.html" class="category-card">
-          <span class="cat-icon">👥</span>
-          <div>
-            <div class="cat-name">Community &amp; People</div>
-            <div class="cat-count">Writers, contributors &amp; more</div>
-          </div>
-        </a>
-        <a href="/categories/media-publishing.html" class="category-card">
-          <span class="cat-icon">📻</span>
-          <div>
-            <div class="cat-name">Media &amp; Publishing</div>
-            <div class="cat-count">Podcasts, radio, articles &amp; more</div>
-          </div>
-        </a>
-        <a href="/categories/art-creativity.html" class="category-card">
-          <span class="cat-icon">🎭</span>
-          <div>
-            <div class="cat-name">Art &amp; Creativity</div>
-            <div class="cat-count">Visual art, illustration &amp; more</div>
-          </div>
-        </a>
-        <a href="/categories/activism-counter-culture.html" class="category-card">
-          <span class="cat-icon">✊</span>
-          <div>
-            <div class="cat-name">Activism &amp; Counter-Culture</div>
-            <div class="cat-count">Challenging norms, anti-establishment &amp; more</div>
-          </div>
-        </a>
-      </div>
-
-      
-
-      <h2 class="section-heading">Builder Access</h2>
       <div class="featured-article">
         <div class="fa-icon">🚀</div>
         <div class="featured-article-body">
-          <div class="article-meta" style="margin-bottom:6px">
-            <span class="article-badge">New</span>
-          </div>
+          <div class="article-meta" style="margin-bottom:6px"><span class="article-badge">Identity</span></div>
           <h3><a href="/gkniftyheads-incubator.html">GKniftyHEADS Incubator HUB</a></h3>
-          <p>The first-contact builder page for the Telegram community — explaining the mission, the system, the creator economy angle, the Moonboys universe, and how new people plug into the wider Graffiti Kings × Web3 culture machine.</p>
-          <a href="/gkniftyheads-incubator.html" class="btn btn-primary">Open Incubator HUB →</a>
+          <p>Link Telegram, activate XP sync, join the group, and move from visitor to system participant.</p>
+          <a href="/gkniftyheads-incubator.html" class="btn btn-primary">Link Telegram →</a>
+        </div>
+      </div>
+
+      <div class="featured-article">
+        <div class="fa-icon">⚔️</div>
+        <div class="featured-article-body">
+          <div class="article-meta" style="margin-bottom:6px"><span class="article-badge">Proof</span></div>
+          <h3><a href="/community.html">Battle Chamber</a></h3>
+          <p>Track XP, leaderboard movement, missions, live activity and faction alignment. If you act, it shows.</p>
+          <a href="/community.html" class="btn btn-primary">Open Battle Chamber →</a>
         </div>
       </div>
 
@@ -274,128 +284,59 @@
       <div class="featured-article">
         <div class="fa-icon">⌁</div>
         <div class="featured-article-body">
-          <div class="article-meta" style="margin-bottom:6px">
-            <span class="article-badge">🆕 New Game</span>
-          </div>
+          <div class="article-meta" style="margin-bottom:6px"><span class="article-badge">Block Topia</span></div>
           <h3><a href="/games/block-topia/">Block Topia</a></h3>
-          <p>Clean 2-player isometric map base. Join with a Telegram-linked account and explore the live city. More gameplay systems coming.</p>
-          <a href="/games/block-topia/" class="btn btn-primary">Play Now →</a>
+          <p>Clean 2-player isometric map base. Telegram-linked progression prepares the route into the deeper NPC battle layer.</p>
+          <a href="/games/block-topia/" class="btn btn-primary">Enter Block Topia →</a>
         </div>
       </div>
 
-<h2 class="section-heading">⚡️ Activity &amp; Battle Layer</h2>
+      <h2 class="section-heading">⚡️ Activity &amp; Battle Layer</h2>
       <div class="home-widgets-grid">
-        <div class="home-widget">
-          <div class="home-widget-header">
-            <span class="home-widget-icon" aria-hidden="true">🤖</span> SAM Status
-          </div>
-          <div class="home-widget-body" id="sam-status-widget" aria-live="polite"></div>
-        </div>
+        <div class="home-widget"><div class="home-widget-header"><span class="home-widget-icon" aria-hidden="true">🤖</span> SAM Status</div><div class="home-widget-body" id="sam-status-widget" aria-live="polite"></div></div>
+        <div class="home-widget"><div class="home-widget-header"><span class="home-widget-icon" aria-hidden="true">📡</span> Live Feed</div><div class="home-widget-body" id="live-feed-widget" aria-live="polite"></div></div>
+        <div class="home-widget"><div class="home-widget-header"><span class="home-widget-icon" aria-hidden="true">🏆</span> Leaderboard</div><div class="home-widget-body" id="leaderboard-widget" aria-live="polite"></div></div>
+        <div class="home-widget"><div class="home-widget-header"><span class="home-widget-icon" aria-hidden="true">🔥</span> Trending Pages</div><div class="home-widget-body" id="activity-panel" aria-live="polite"></div></div>
+        <div class="home-widget"><div class="home-widget-header"><span class="home-widget-icon" aria-hidden="true">⚔️</span> Battle Layer</div><div class="home-widget-body" id="comments-teaser" aria-live="polite"></div></div>
+      </div>
 
-        <div class="home-widget">
-          <div class="home-widget-header">
-            <span class="home-widget-icon" aria-hidden="true">📡</span> Live Feed
-          </div>
-          <div class="home-widget-body" id="live-feed-widget" aria-live="polite"></div>
-        </div>
+      <div class="price-ticker-section">
+        <h2 class="section-heading">Live Prices</h2>
+        <div class="price-ticker-grid" aria-label="Live cryptocurrency prices" aria-busy="true"></div>
+      </div>
 
-        <div class="home-widget">
-          <div class="home-widget-header">
-            <span class="home-widget-icon" aria-hidden="true">🏆</span> Leaderboard
-          </div>
-          <div class="home-widget-body" id="leaderboard-widget" aria-live="polite"></div>
-        </div>
-
-        <div class="home-widget">
-          <div class="home-widget-header">
-            <span class="home-widget-icon" aria-hidden="true">🔥</span> Trending Pages
-          </div>
-          <div class="home-widget-body" id="activity-panel" aria-live="polite"></div>
-        </div>
-
-        <div class="home-widget">
-          <div class="home-widget-header">
-            <span class="home-widget-icon" aria-hidden="true">⚔️</span> Battle Layer
-          </div>
-          <div class="home-widget-body" id="comments-teaser" aria-live="polite"></div>
-        </div>
-
+      <h2 class="section-heading">Explore The System</h2>
+      <div class="category-grid">
+        <a href="/categories/gaming.html" class="category-card"><span class="cat-icon">⌁</span><div><div class="cat-name">Gaming</div><div class="cat-count">Arcade, Block Topia, HODL Wars</div></div></a>
+        <a href="/categories/nfts-digital-art.html" class="category-card"><span class="cat-icon">🖼️</span><div><div class="cat-name">NFTs &amp; Digital Art</div><div class="cat-count">GKniftyHEADS, collections, ownership</div></div></a>
+        <a href="/categories/graffiti-street-art.html" class="category-card"><span class="cat-icon">🎨</span><div><div class="cat-name">Graffiti &amp; Street Art</div><div class="cat-count">Graffiti Kings, street art culture</div></div></a>
+        <a href="/categories/lore.html" class="category-card"><span class="cat-icon">⚔️</span><div><div class="cat-name">Lore</div><div class="cat-count">HODL Wars, factions, 3008</div></div></a>
+        <a href="/categories/media-publishing.html" class="category-card"><span class="cat-icon">📻</span><div><div class="cat-name">Media &amp; Publishing</div><div class="cat-count">Radio, podcasts, broadcasts</div></div></a>
+        <a href="/categories/community-people.html" class="category-card"><span class="cat-icon">👥</span><div><div class="cat-name">Community &amp; People</div><div class="cat-count">Builders, contributors, factions</div></div></a>
+        <a href="/categories/cryptocurrencies.html" class="category-card"><span class="cat-icon"><img class="btc-logo-icon" src="/CRYPTO-MOONBOYS-BITCOIN-LOGO.png" alt="₿"></span><div><div class="cat-name">Cryptocurrencies</div><div class="cat-count">Bitcoin, Ethereum, Solana, WAX</div></div></a>
+        <a href="/categories/concepts.html" class="category-card"><span class="cat-icon">🏦</span><div><div class="cat-name">Concepts</div><div class="cat-count">DeFi, NFTs, tokenomics</div></div></a>
+        <a href="/categories/technology.html" class="category-card"><span class="cat-icon">⛓️</span><div><div class="cat-name">Technology</div><div class="cat-count">Blockchain, Web3, tools</div></div></a>
+        <a href="/categories/tools.html" class="category-card"><span class="cat-icon">👛</span><div><div class="cat-name">Tools &amp; Platforms</div><div class="cat-count">Wallets, exchanges, platforms</div></div></a>
+        <a href="/categories/designer-toys.html" class="category-card"><span class="cat-icon">🧸</span><div><div class="cat-name">Crypto Designer Toys</div><div class="cat-count">Phygital merch and collectibles</div></div></a>
+        <a href="/categories/activism-counter-culture.html" class="category-card"><span class="cat-icon">✊</span><div><div class="cat-name">Activism &amp; Counter-Culture</div><div class="cat-count">Anti-system culture and action</div></div></a>
       </div>
 
       <h2 class="section-heading">Recent Articles</h2>
       <div class="article-grid">
-        <a href="/wiki/hodl-wars.html" class="article-card">
-          <div class="article-card-img">⚔️</div>
-          <div class="article-card-body">
-            <div class="article-card-title">HODL WARS LORE$</div>
-            <div class="article-card-desc">The central mythological lore of the Crypto Moonboys — an epic saga of Diamond Hands warriors.</div>
-          </div>
-          <div class="article-card-cat">Lore</div>
-        </a>
-        <a href="/wiki/ethereum.html" class="article-card">
-          <div class="article-card-img">Ξ</div>
-          <div class="article-card-body">
-            <div class="article-card-title">Ethereum (ETH)</div>
-            <div class="article-card-desc">A decentralised platform enabling smart contracts and decentralised applications.</div>
-          </div>
-          <div class="article-card-cat">Cryptocurrencies</div>
-        </a>
-        <a href="/wiki/defi.html" class="article-card">
-          <div class="article-card-img">🏦</div>
-          <div class="article-card-body">
-            <div class="article-card-title">DeFi</div>
-            <div class="article-card-desc">An ecosystem of financial applications built on blockchain networks, removing traditional intermediaries.</div>
-          </div>
-          <div class="article-card-cat">Concepts</div>
-        </a>
-        <a href="/wiki/nfts.html" class="article-card">
-          <div class="article-card-img">🎨</div>
-          <div class="article-card-body">
-            <div class="article-card-title">NFTs</div>
-            <div class="article-card-desc">Unique digital assets verified using blockchain technology representing ownership of digital items.</div>
-          </div>
-          <div class="article-card-cat">Concepts</div>
-        </a>
-        <a href="/wiki/wagmi-prophecy.html" class="article-card">
-          <div class="article-card-img">🌙</div>
-          <div class="article-card-body">
-            <div class="article-card-title">The WAGMI Prophecy</div>
-            <div class="article-card-desc">We're All Gonna Make It 🐸 the guiding star of the HODL Wars and ultimate declaration of optimism.</div>
-          </div>
-          <div class="article-card-cat">Lore</div>
-        </a>
-        <a href="/wiki/solana.html" class="article-card">
-          <div class="article-card-img">◎</div>
-          <div class="article-card-body">
-            <div class="article-card-title">Solana (SOL)</div>
-            <div class="article-card-desc">A high-performance blockchain popular with DeFi and NFT projects.</div>
-          </div>
-          <div class="article-card-cat">Cryptocurrencies</div>
-        </a>
+        <a href="/wiki/hodl-wars.html" class="article-card"><div class="article-card-img">⚔️</div><div class="article-card-body"><div class="article-card-title">HODL WARS LORE$</div><div class="article-card-desc">The central conflict layer of the Crypto Moonboys universe.</div></div><div class="article-card-cat">Lore</div></a>
+        <a href="/wiki/bitcoin.html" class="article-card"><div class="article-card-img"><img class="btc-logo-icon" src="/CRYPTO-MOONBOYS-BITCOIN-LOGO.png" alt="₿"></div><div class="article-card-body"><div class="article-card-title">Bitcoin</div><div class="article-card-desc">The original chain and the signal behind the Bitcoin Kid myth.</div></div><div class="article-card-cat">Cryptocurrencies</div></a>
+        <a href="/wiki/nfts.html" class="article-card"><div class="article-card-img">🎨</div><div class="article-card-body"><div class="article-card-title">NFTs</div><div class="article-card-desc">Digital ownership, collectibles, access and creator IP.</div></div><div class="article-card-cat">Concepts</div></a>
+        <a href="/wiki/wagmi-prophecy.html" class="article-card"><div class="article-card-img">🌙</div><div class="article-card-body"><div class="article-card-title">The WAGMI Prophecy</div><div class="article-card-desc">The optimistic myth layer inside the HODL Wars archive.</div></div><div class="article-card-cat">Lore</div></a>
       </div>
 
     </main>
 
     <footer id="site-footer" role="contentinfo">
       <div class="footer-inner">
-        <div class="footer-col">
-          <h4>The Crypto Moonboys GK Wiki</h4>
-          <p>Fan-driven crypto intelligence archive for the Moonboys network.</p>
-        </div>
-        <div class="footer-col">
-          <h4>Explore</h4>
-          <ul>
-            <li><a href="/index.html">Main Page</a></li>
-            <li><a href="/search.html">All Articles</a></li>
-            <li><a href="/timeline.html">Timeline</a></li>
-            <li><a href="/about.html">About</a></li>
-          </ul>
-        </div>
+        <div class="footer-col"><h4>Crypto Moonboys</h4><p>The GK system front door: play, earn XP, link, build, own, control.</p></div>
+        <div class="footer-col"><h4>Start</h4><ul><li><a href="/games/">Arcade</a></li><li><a href="/gkniftyheads-incubator.html">Link Telegram</a></li><li><a href="/community.html">Battle Chamber</a></li><li><a href="/about.html">About</a></li></ul></div>
       </div>
-      <div class="footer-bottom">
-        <p>Crypto Moonboys GK Wiki · A GKniftyHEADS production · Not financial advice.</p>
-        <p><span class="no-login-note">🔒 No sign-up · No login · NO F#K$ G1V£N 🖕👀 Bot-maintained 🤖</span></p>
-      </div>
+      <div class="footer-bottom"><p>Crypto Moonboys · A GKniftyHEADS production · Not financial advice.</p><p><span class="no-login-note">Stop logging in to claim. Start showing up to build.</span></p></div>
     </footer>
   </div>
 </div>
@@ -415,7 +356,7 @@
     .then(response => response.json())
     .then(data => console.log('Worker connected:', data))
     .catch(err => console.error('Worker connection failed:', err));
-</script>  
+</script>
 
 </body>
 </html>
