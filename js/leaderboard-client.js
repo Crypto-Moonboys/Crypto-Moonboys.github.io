@@ -197,7 +197,7 @@ export async function submitScore(player, score, game = "global") {
     emitArcadeDebug("auth_restore_result", {
       linked,
       hasTelegramId: !!telegramId,
-      hasSignedAuth: !!ArcadeSync.getTelegramAuth(),
+      hasSignedAuth: !!(await ArcadeSync.getTelegramAuth()),
     });
     markSyncHealth("good", "linked_ready");
     emitArcadeSubmissionStatus({
