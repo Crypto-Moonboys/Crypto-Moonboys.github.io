@@ -10,11 +10,30 @@ export const ArcadeSync = {
     return Math.min(Math.floor(safeScore / 1000), 100);
   },
 
-  getTelegramAuth() {
+  async getTelegramAuth() {
     if (typeof window === "undefined") return null;
     const gate = window.MOONBOYS_IDENTITY;
     if (!gate) return null;
-    return typeof gate.getSignedTelegramAuth === "function" ? gate.getSignedTelegramAuth() : null;
+    if (typeof gate.getSignedTelegramAuth !== "function") return null;
+
+    const signed = gate.getSignedTelegramAuth();
+    if (signed && signed.hash && signed.auth_date) return signed;
+
+    if (typeof gate.isTelegramLinked === "function" &&
+        gate.isTelegramLinked() === true &&
+        typeof gate.restoreLinkedTelegramAuth === "function") {
+      try {
+        const restored = await gate.restoreLinkedTelegramAuth();
+        if (restored && restored.ok === true) {
+          const refreshed = gate.getSignedTelegramAuth();
+          if (refreshed && refreshed.hash && refreshed.auth_date) return refreshed;
+        }
+      } catch (error) {
+        console.warn("[arcade-sync] restoreLinkedTelegramAuth failed:", error);
+      }
+    }
+
+    return null;
   },
 
   getApiBase() {
@@ -146,8 +165,20 @@ export const ArcadeSync = {
 
     const apiBase = this.getApiBase();
     if (!apiBase) return { synced: 0, remaining: pending.length, skipped: true, reason: "missing_api_base" };
-    const telegram_auth = this.getTelegramAuth();
+    const telegram_auth = await this.getTelegramAuth();
     if (!telegram_auth || !telegram_auth.hash || !telegram_auth.auth_date) {
+      try {
+        if (typeof window !== "undefined" && typeof window.dispatchEvent === "function") {
+          window.dispatchEvent(new CustomEvent("moonboys:arcade-sync-skipped", {
+            detail: {
+              reason: "missing_auth",
+              pending: pending.length,
+              ts: Date.now(),
+            },
+          }));
+        }
+      } catch {}
+      console.warn("[arcade-sync] syncPendingArcadeProgress skipped: missing_auth", { pending: pending.length });
       return { synced: 0, remaining: pending.length, skipped: true, reason: "missing_auth" };
     }
 
@@ -210,7 +241,7 @@ export const ArcadeSync = {
     const apiBase = this.getApiBase();
     if (!apiBase) return null;
 
-    const telegram_auth = this.getTelegramAuth();
+    const telegram_auth = await this.getTelegramAuth();
     if (!telegram_auth || !telegram_auth.hash || !telegram_auth.auth_date) {
       throw new Error("Telegram auth missing or expired. Re-sync required for XP conversion.");
     }
