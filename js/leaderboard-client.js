@@ -420,6 +420,15 @@ export async function submitScore(player, score, game = "global") {
     shouldSyncPending,
     reason: shouldSyncPending ? "linked_with_pending_queue" : (!linked ? "not_linked" : "empty_queue"),
   });
+  emitArcadeDebug("sync_trigger_check", {
+    game: gameKey,
+    score,
+    linked,
+    accepted: result.accepted,
+    pending: pendingBeforeSync,
+    shouldSyncPending,
+  });
+
   if (shouldSyncPending) {
     try {
       emitArcadeDebug("pending_sync_start", {
