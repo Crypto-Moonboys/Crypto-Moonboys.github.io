@@ -1751,15 +1751,32 @@ export default {
       if (verified.error) return err(verified.error, verified.status || 401);
       try {
         await upsertTelegramUser(env.DB, verified.user);
-        if (!(await hasBlockTopiaFactionColumns(env.DB))) {
-          return err('Faction progression schema is pending migration', 503);
-        }
-        const row = await getOrCreateBlockTopiaProgression(env.DB, verified.telegramId);
-        const faction = factionMeta(row?.faction || FACTION_UNALIGNED);
         const source = String(body?.source || body?.action || 'score_accept').trim().toLowerCase();
         const baseXpInput = Math.max(0, Math.floor(Number(body?.base_xp) || Number(body?.xp) || 0));
         const fallbackBase = source === 'mission_complete' ? 60 : (source === 'blocktopia_action' ? 30 : 25);
         const baseXp = baseXpInput > 0 ? baseXpInput : fallbackBase;
+        if (!(await hasBlockTopiaFactionColumns(env.DB))) {
+          const fallbackFaction = factionMeta(FACTION_UNALIGNED);
+          return json({
+            ok: true,
+            skipped: true,
+            source,
+            reason: 'faction_progression_schema_pending',
+            faction: fallbackFaction.key,
+            faction_label: fallbackFaction.label,
+            base_xp: baseXp,
+            multiplier: 1,
+            faction_xp_earned: 0,
+            faction_xp_total: 0,
+            bonuses: {
+              icon: fallbackFaction.icon,
+              color: fallbackFaction.color,
+              bonus: fallbackFaction.bonus,
+            },
+          });
+        }
+        const row = await getOrCreateBlockTopiaProgression(env.DB, verified.telegramId);
+        const faction = factionMeta(row?.faction || FACTION_UNALIGNED);
         const multiplier = faction.xp_multiplier || 1;
         const awardedFactionXp = faction.key === FACTION_UNALIGNED
           ? 0
