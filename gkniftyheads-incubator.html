@@ -218,14 +218,14 @@
       <section class="incubator-hero">
         <h1>Link Your Telegram Account</h1>
         <p class="incubator-lead">
-          To unlock XP, leaderboard access, faction actions, and other competitive features, do this:
+          This is the Link step in the system. Do this after you play and earn:
         </p>
         <ol style="padding-left:20px;margin:0 0 16px;color:var(--color-text-muted);line-height:2">
           <li>Open the bot</li>
           <li>Run <code style="background:rgba(255,255,255,.08);border-radius:4px;padding:.1em .4em;color:#f4d35e;font-family:monospace">/gkstart</code></li>
           <li>Run <code style="background:rgba(255,255,255,.08);border-radius:4px;padding:.1em .4em;color:#f4d35e;font-family:monospace">/gklink</code> and click the link it sends</li>
         </ol>
-        <p style="font-size:.9rem;color:var(--color-text-muted);margin:0 0 18px">The link opens this page, verifies your signed Telegram auth automatically, and activates sync-live progression here.</p>
+        <p style="font-size:.9rem;color:var(--color-text-muted);margin:0 0 18px">The link opens this page, verifies Telegram auth, and turns on synced progression.</p>
         <div class="incubator-cta-row">
           <a href="https://t.me/WIKICOMSBOT" target="_blank" rel="noopener noreferrer" class="btn btn-primary">🤖 Open Bot</a>
           <a href="https://t.me/gkniftyheads" target="_blank" rel="noopener noreferrer" class="btn btn-primary">📲 Open Group</a>
@@ -273,7 +273,7 @@
       <section class="incubator-section" id="why-join">
         <h2>Why this matters</h2>
         <p>
-          Most NFT ecosystems stop at ownership. Most creator communities stop at vibes. Most brand communities stop at marketing. This one is trying to fuse culture, ownership, infrastructure, and utility into something far larger. The goal is to let creators build with real backing, shared credibility, and an expanding brand universe instead of starting from cold every time.
+          Most projects stop at claiming. This system is built for action. It fuses culture, ownership, infrastructure, and utility into something larger. The goal is to let creators build with real backing, shared credibility, and an expanding brand universe instead of starting from cold every time.
         </p>
         <ul>
           <li><strong>Street-to-blockchain bridge:</strong> real culture, not fabricated internet-only branding.</li>
@@ -316,14 +316,14 @@
         </p>
         <div class="loop-manual">
           <h3>Quick summary</h3>
-          <p>Arcade games are always free to play. Telegram sync is required for persistent Block Topia progression. XXX XP is required to enter Block Topia.</p>
+          <p>Arcade games are always free to play. Telegram sync is required for persistent Block Topia progression.</p>
           <div class="loop-grid">
             <article class="loop-card">
               <h4>🕹️ Arcade</h4>
               <ul>
                 <li>Arcade is free to play, even without Telegram sync.</li>
                 <li>Raw arcade score is separate from Block Topia XP.</li>
-                <li>Accepted scores can convert into Block Topia XP when Telegram sync is active.</li>
+                <li>Accepted scores can sync into shared community XP and Block Topia progression when Telegram sync is active.</li>
                 <li>Local-only players can still play arcade, but progression is browser-local.</li>
               </ul>
             </article>
@@ -338,7 +338,7 @@
             <article class="loop-card">
               <h4>🏙️ Block Topia</h4>
               <ul>
-                <li>Requires Telegram-linked account and XXX XP to enter.</li>
+                <li>Requires a Telegram-linked account to enter.</li>
                 <li>Currently a clean 2-player isometric map base.</li>
                 <li>More gameplay systems will be added as they are built.</li>
               </ul>
@@ -426,7 +426,7 @@
       <section class="incubator-section" id="vision">
         <h2>Long-term vision</h2>
         <p>
-          The endgame is not just another drop. It is a living multiverse of <strong>Moonboys empires</strong>, connected factions, creator-owned brands, cross-chain products, media experiments, games, toys, merchandise, phygital releases, and real-world collaborations. The longer arc is about proving that culture born from real underground movements can onboard global brands to blockchain, while still preserving the raw creative fire that made it matter in the first place.
+          The endgame is not another passive drop. It is a living multiverse of <strong>Moonboys empires</strong>, connected factions, creator-owned brands, cross-chain products, media experiments, games, toys, merchandise, phygital releases, and real-world collaborations. The longer arc is about proving that culture born from real underground movements can onboard global brands to blockchain, while still preserving the raw creative fire that made it matter in the first place.
         </p>
         <p>
           This is why the Incubator HUB matters. It is where that future becomes operational. It is where builders stop watching from the outside and start participating from the inside.
@@ -505,7 +505,7 @@
     box.classList.add(linkedReady ? 'good' : 'bad');
     document.body.classList.toggle('sync-live', linkedReady);
     if (linkedReady) {
-      msgEl.textContent = 'Telegram linked successfully. XP and Block Topia progression are now sync-live and stored server-side.';
+      msgEl.textContent = 'Telegram linked successfully. Arcade progression, community XP, and Block Topia progression are now sync-live and stored server-side.';
       return;
     }
     if (sync && sync.linked && sync.status === 'missing_auth_payload') {
@@ -525,3 +525,4 @@
 </script>
 </body>
 </html>
+
