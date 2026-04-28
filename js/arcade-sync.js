@@ -174,6 +174,15 @@ export const ArcadeSync = {
     return this.getPendingProgress().length;
   },
 
+  emitDebug(stage, detail = {}) {
+    try {
+      if (typeof window === "undefined" || typeof window.dispatchEvent !== "function") return;
+      const payload = { stage, ...detail, source: "arcade-sync", ts: Date.now() };
+      console.info("[arcade-sync-debug]", payload);
+      window.dispatchEvent(new CustomEvent("arcade:debug", { detail: payload }));
+    } catch {}
+  },
+
   async syncPendingArcadeProgress(options = {}) {
     const pending = this.getPendingProgress();
     if (!pending.length) return { synced: 0, remaining: 0, skipped: true, reason: "empty_queue" };

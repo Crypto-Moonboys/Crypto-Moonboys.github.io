@@ -16,14 +16,13 @@
  */
 
 window.MOONBOYS_API = window.MOONBOYS_API || {};
-window.MOONBOYS_API.BASE_URL = "https://moonboys-api.sercullen.workers.dev";
+if (!window.MOONBOYS_API.BASE_URL) {
+  window.MOONBOYS_API.BASE_URL = "https://moonboys-api.sercullen.workers.dev";
+}
 
 Object.assign(window.MOONBOYS_API, {
 
   /* ── Backend API ─────────────────────────────────────────── */
-  // Live Cloudflare Worker endpoint powering all engagement features.
-  BASE_URL: 'https://moonboys-api.sercullen.workers.dev',
-
   /* ── Identity Sync Gate ──────────────────────────────────── */
   // URL shown to users who attempt a competitive action without Telegram sync.
   SYNC_GATE_URL: 'https://cryptomoonboys.com/gkniftyheads-incubator.html',
