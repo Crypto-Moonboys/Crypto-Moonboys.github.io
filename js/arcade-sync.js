@@ -15,25 +15,17 @@ export const ArcadeSync = {
     const gate = window.MOONBOYS_IDENTITY;
     if (!gate) return null;
     if (typeof gate.getSignedTelegramAuth !== "function") return null;
-
-    const signed = await gate.getSignedTelegramAuth();
+    let signed = await gate.getSignedTelegramAuth();
     if (signed && signed.hash && signed.auth_date) return signed;
 
-    if (typeof gate.isTelegramLinked === "function" &&
-        gate.isTelegramLinked() === true &&
-        typeof gate.restoreLinkedTelegramAuth === "function") {
+    const linked = typeof gate.isTelegramLinked === "function" ? !!gate.isTelegramLinked() : false;
+    if (linked && typeof gate.restoreLinkedTelegramAuth === "function") {
       try {
-        const restored = await gate.restoreLinkedTelegramAuth();
-        if (restored && restored.ok === true) {
-          const refreshed = await gate.getSignedTelegramAuth();
-          if (refreshed && refreshed.hash && refreshed.auth_date) return refreshed;
-        }
-      } catch (error) {
-        console.warn("[arcade-sync] restoreLinkedTelegramAuth failed:", error);
-      }
+        await gate.restoreLinkedTelegramAuth();
+      } catch {}
+      signed = await gate.getSignedTelegramAuth();
     }
-
-    return null;
+    return signed || null;
   },
 
   getApiBase() {
