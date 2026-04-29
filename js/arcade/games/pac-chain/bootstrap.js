@@ -8,7 +8,7 @@ import { createFrameDebug } from '/js/arcade/core/frame-debug.js';
 export const PAC_CHAIN_ADAPTER = createGameAdapter({
   id: PAC_CHAIN_CONFIG.id,
   name: PAC_CHAIN_CONFIG.label,
-  systems: {},
+  systems: { upgrade: true, director: true, event: true, mutation: true, boss: true, risk: true, meta: true, feedback: true },
   legacyBootstrap: function (root) {
     return createLegacybootstrapPacChain(root);
   },
