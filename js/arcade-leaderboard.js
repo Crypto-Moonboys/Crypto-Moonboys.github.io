@@ -5,7 +5,13 @@
    ============================================================ */
 
 import { fetchLeaderboard } from '/js/leaderboard-client.js';
-import { UNLINKED, API_UNAVAILABLE } from '/js/components/ui-status-copy.js';
+
+// Resolved text constants — use global set by ui-status-copy.js (classic script);
+// fall back to literals so the module works even if the script tag is missing.
+const COPY = window.UI_STATUS_COPY || {
+  UNLINKED:        'Telegram not linked \u2014 run /gklink',
+  API_UNAVAILABLE: 'Core API unavailable',
+};
 
 // ── Constants ─────────────────────────────────────────────────────────────
 const RAW_TABS = [
@@ -148,9 +154,9 @@ function getIdentityApi() {
 
 function getCurrentIdentityLabel() {
   const gate = getIdentityApi();
-  if (!gate) return UNLINKED;
+  if (!gate) return COPY.UNLINKED;
   const sync = typeof gate.getSyncState === 'function' ? gate.getSyncState() : null;
-  if (!sync || !sync.linked) return UNLINKED;
+  if (!sync || !sync.linked) return COPY.UNLINKED;
   const name = typeof gate.getTelegramName === 'function' ? gate.getTelegramName() : null;
   const auth = typeof gate.getTelegramAuth === 'function' ? gate.getTelegramAuth() : null;
   const username = auth && (auth.username || auth.user?.username) ? String(auth.username || auth.user.username).replace(/^@/, '') : '';
@@ -173,7 +179,7 @@ function renderLinkedPresence() {
   if (isPresenceHidden()) box.classList.add('presence-offline');
   box.innerHTML = linked
     ? `<strong>You are linked as ${escHtml(display)}</strong><span class="lb-linked-meta">${online ? '● Online presence visible' : (isPresenceHidden() ? '○ Presence hidden' : '○ Sync attention required')}</span>`
-    : `<strong>${escHtml(UNLINKED)}</strong><span class="lb-linked-meta">Link to store ranking/XP server-side.</span>`;
+    : `<strong>${escHtml(COPY.UNLINKED)}</strong><span class="lb-linked-meta">Link to store ranking/XP server-side.</span>`;
 
   const toggle = el('lb-presence-toggle');
   if (toggle) {
@@ -431,7 +437,7 @@ async function loadLeaderboard() {
     // Network/fetch failure (TypeError) → Core API unavailable
     // Invalid/unexpected data shape → show the original error message
     const isNetworkError = err instanceof TypeError;
-    setErrorState(isNetworkError ? API_UNAVAILABLE : (err && err.message ? err.message : API_UNAVAILABLE));
+    setErrorState(isNetworkError ? COPY.API_UNAVAILABLE : (err && err.message ? err.message : COPY.API_UNAVAILABLE));
   } finally {
     isFetching = false;
   }

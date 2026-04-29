@@ -18,27 +18,19 @@
  *   Faction XP   = faction alignment only
  *   Community XP = Telegram / community activity only
  *
- * Usage (ES module):
- *   import { UNLINKED, API_UNAVAILABLE } from '/js/components/ui-status-copy.js';
- *
- * Usage (IIFE / classic script, loaded before the consumer):
+ * Usage (classic script, loaded before the consumer):
  *   window.UI_STATUS_COPY.UNLINKED
  */
+(function () {
+  'use strict';
 
-export const UNLINKED            = 'Telegram not linked \u2014 run /gklink';
-export const FEATURE_UNAVAILABLE = 'Feature not yet available';
-export const API_UNAVAILABLE     = 'Core API unavailable';
-export const SYNC_IN_PROGRESS    = 'Sync in progress';
-export const SYNC_READY          = 'Sync ready';
+  if (typeof window === 'undefined') return;
 
-// Expose globally so IIFE consumers (engagement.js, comments.js, etc.)
-// can reference window.UI_STATUS_COPY without needing module syntax.
-if (typeof window !== 'undefined') {
-  window.UI_STATUS_COPY = {
-    UNLINKED,
-    FEATURE_UNAVAILABLE,
-    API_UNAVAILABLE,
-    SYNC_IN_PROGRESS,
-    SYNC_READY,
-  };
-}
+  window.UI_STATUS_COPY = Object.freeze({
+    UNLINKED:            'Telegram not linked \u2014 run /gklink',
+    FEATURE_UNAVAILABLE: 'Feature not yet available',
+    API_UNAVAILABLE:     'Core API unavailable',
+    SYNC_IN_PROGRESS:    'Sync in progress',
+    SYNC_READY:          'Sync ready',
+  });
+}());
