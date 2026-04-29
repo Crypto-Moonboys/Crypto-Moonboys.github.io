@@ -184,7 +184,7 @@ export function bootstrapSnake(root) {
     hideSnakeUpgradeModal();
 
     // Apply cross-game modifier effects for this run
-    var crossMods = getActiveModifiers(GAME_ID, SNAKE_CONFIG.crossGameTags || []);
+    const crossMods = getActiveModifiers(GAME_ID, SNAKE_CONFIG.crossGameTags || []);
     if (hasEffect(crossMods, 'scoreMult')) {
       run.scoreMult *= getStatEffect(crossMods, 'scoreMult', 1);
     }
@@ -199,10 +199,10 @@ export function bootstrapSnake(root) {
 
   function maybeMutateFood(f) {
     if (!director) return;
-    var intensity = director.intensity || 0;
+    const intensity = director.intensity || 0;
     // Golden Chance modifier: reduce the mutation threshold so rare mutations appear sooner
-    var goldenBoost = (run && run._goldenSpawnBoost) || 0;
-    var effectiveIntensity = intensity + goldenBoost * 100;
+    const goldenBoost = (run && run._goldenSpawnBoost) || 0;
+    const effectiveIntensity = intensity + goldenBoost * 100;
     var candidates = MUTATION_DEFS.filter(function(m) { return effectiveIntensity >= m.threshold; });
     if (!candidates.length) return;
     if (Math.random() > MUTATION_CHANCE) return;

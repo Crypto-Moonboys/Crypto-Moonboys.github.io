@@ -24,7 +24,7 @@ import {
 
 // ── Rarity colours (matches upgrade-system palette) ─────────────────────────
 
-var RARITY_COLORS = {
+const RARITY_COLORS = {
   common:    '#88ccee',
   uncommon:  '#3fb950',
   rare:      '#f7c948',
@@ -33,13 +33,13 @@ var RARITY_COLORS = {
 
 // ── CSS injected once per page ───────────────────────────────────────────────
 
-var _cssInjected = false;
+let _cssInjected = false;
 
 function _injectStyles() {
   if (_cssInjected) return;
   _cssInjected = true;
 
-  var style = document.createElement('style');
+  const style = document.createElement('style');
   style.id = 'cm-modifier-panel-styles';
   style.textContent = [
     '#cm-modifier-panel{margin-top:14px;background:rgba(255,255,255,.03);border:1px solid var(--color-border,#333);border-radius:16px;padding:0;overflow:hidden}',
@@ -86,23 +86,23 @@ export function mountModifierPanel(container) {
 
   _injectStyles();
 
-  var panel = document.createElement('div');
+  const panel = document.createElement('div');
   panel.id = 'cm-modifier-panel';
 
   if (!container) {
-    var gameCard = document.querySelector('.game-card');
+    const gameCard = document.querySelector('.game-card');
     if (!gameCard) return null;
     gameCard.parentNode.insertBefore(panel, gameCard.nextSibling);
   } else {
     container.appendChild(panel);
   }
 
-  var _collapsed = false;
+  let _collapsed = false;
 
   function render() {
-    var unlocked = getUnlockedModifiers();
-    var activeId = getActiveModifier();
-    var activeDef = activeId ? getModifierDef(activeId) : null;
+    const unlocked = getUnlockedModifiers();
+    const activeId = getActiveModifier();
+    const activeDef = activeId ? getModifierDef(activeId) : null;
 
     var html = '';
 
@@ -152,7 +152,7 @@ export function mountModifierPanel(container) {
     panel.innerHTML = html;
 
     // Wire events
-    var headerBtn = panel.querySelector('#cm-mod-header-btn');
+    const headerBtn = panel.querySelector('#cm-mod-header-btn');
     if (headerBtn) {
       headerBtn.addEventListener('click', function () {
         _collapsed = !_collapsed;
@@ -163,7 +163,7 @@ export function mountModifierPanel(container) {
       });
     }
 
-    var clearBtn = panel.querySelector('[data-action="clear"]');
+    const clearBtn = panel.querySelector('[data-action="clear"]');
     if (clearBtn) {
       clearBtn.addEventListener('click', function (e) {
         e.stopPropagation();
@@ -172,7 +172,7 @@ export function mountModifierPanel(container) {
       });
     }
 
-    var modBtns = panel.querySelectorAll('.cm-mod-item:not([disabled])');
+    const modBtns = panel.querySelectorAll('.cm-mod-item:not([disabled])');
     modBtns.forEach(function (btn) {
       btn.addEventListener('click', function () {
         var id = btn.dataset.modId;

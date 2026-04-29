@@ -141,7 +141,7 @@ export var MODIFIER_DEFS = Object.freeze([
 
 // ── Internal lookup ──────────────────────────────────────────────────────────
 
-var _byId = new Map(MODIFIER_DEFS.map(function (m) { return [m.id, m]; }));
+const _byId = new Map(MODIFIER_DEFS.map(function (m) { return [m.id, m]; }));
 
 // ── Storage helpers ──────────────────────────────────────────────────────────
 
