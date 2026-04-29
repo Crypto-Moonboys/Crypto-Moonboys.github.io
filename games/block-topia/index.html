@@ -16,6 +16,8 @@
       <div id="bt-gate-content">
         <p class="bt-gate__checking">Checking access&hellip;</p>
       </div>
+      <!-- Status panel shown in the gate screen -->
+      <div id="bt-gate-status-panel" data-csp-panel style="margin-top:20px;max-width:480px;margin-left:auto;margin-right:auto"></div>
     </div>
 
     <!-- Game shell — hidden until gate passes -->
@@ -25,6 +27,8 @@
 
     <script src="/js/api-config.js"></script>
     <script src="/js/identity-gate.js"></script>
+    <script src="/js/faction-alignment.js"></script>
+    <script src="/js/components/connection-status-panel.js"></script>
     <script type="module">
       import { BLOCKTOPIA_MULTIPLAYER_REQUIRED_XP } from "/shared/block-topia/constants.js";
 

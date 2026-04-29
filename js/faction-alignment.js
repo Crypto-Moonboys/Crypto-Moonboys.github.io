@@ -155,8 +155,8 @@
     return '' +
       '<div class="faction-player-card interactive ' + glowClass + (linked ? ' player-online' : ' player-offline') + '" style="--faction-color:' + esc(faction.color) + '">' +
         '<div class="faction-player-title">Player Alignment</div>' +
-        '<div class="faction-player-row"><span>Faction:</span><strong>' + esc(faction.icon + ' ' + faction.label) + '</strong></div>' +
-        '<div class="faction-player-row"><span>XP:</span><strong>' + (Number(s.faction_xp) || 0) + '</strong></div>' +
+        '<div class="faction-player-row"><span>Faction:</span><strong>' + (unaligned ? 'No faction selected yet' : esc(faction.icon + ' ' + faction.label)) + '</strong></div>' +
+        (unaligned ? '' : '<div class="faction-player-row"><span>Faction XP:</span><strong>' + (Number(s.faction_xp) || 0) + '</strong></div>') +
         '<div class="faction-player-row"><span>Bonus:</span><strong>' + esc((s.bonuses && s.bonuses.bonus) || faction.bonus) + '</strong></div>' +
         joinPrompt + actions +
       '</div>';
