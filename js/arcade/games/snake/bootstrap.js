@@ -704,7 +704,9 @@ export function bootstrapSnake(root) {
     playGameSound('snake-eat');
   }
 
-  function eatFood() {
+  // Shared pickup logic — applies full combo/scoring/effects to any food item.
+  // Does NOT respawn food, increment foodEaten, or check wave progress.
+  function eatFoodItem(f) {
     var now = timeAlive;
     if (now - lastEatTimeSec <= getRunComboWindow()) comboCount += 1;
     else comboCount = 1;
@@ -717,20 +719,23 @@ export function bootstrapSnake(root) {
     var heatMul = 1 + recalcHeat() * 0.35;
     var doubleMul = doublePickupsLeft > 0 ? 2 : 1;
     if (doublePickupsLeft > 0) doublePickupsLeft -= 1;
-    var gain = Math.max(1, Math.round(food.points * comboMul * lengthMul * effectMul * heatMul * doubleMul * getRunScoreMultiplier()));
+    var gain = Math.max(1, Math.round(f.points * comboMul * lengthMul * effectMul * heatMul * doubleMul * getRunScoreMultiplier()));
     score += gain;
 
     if (comboCount >= 3) playGameSound('snake-combo');
-    applyFoodEffect(food.type);
+    applyFoodEffect(f.type);
 
-    var center = centerFromCell(food);
-    var burstCount = 11 + Math.min(26, comboCount * 3) + (food.type !== 'normal' ? 8 : 0);
-    spawnBurst(center.x, center.y, food.color, burstCount, comboCount >= 4 ? 1.18 : 1);
-    spawnFloatingText('+' + gain, center.x, center.y - 8, food.color, 1 + Math.min(0.7, comboCount * 0.06));
+    var center = centerFromCell(f);
+    var burstCount = 11 + Math.min(26, comboCount * 3) + (f.type !== 'normal' ? 8 : 0);
+    spawnBurst(center.x, center.y, f.color, burstCount, comboCount >= 4 ? 1.18 : 1);
+    spawnFloatingText('+' + gain, center.x, center.y - 8, f.color, 1 + Math.min(0.7, comboCount * 0.06));
     if (comboCount > 1) spawnFloatingText('COMBO x' + comboMul.toFixed(2), center.x, center.y + 14, '#ffe08e', 0.92);
     triggerShake(effects.turnShake * (1 + Math.min(1.2, comboCount * 0.08)), 0.06 + Math.min(0.16, comboCount * 0.015));
-
     setBestMaybe();
+  }
+
+  function eatFood() {
+    eatFoodItem(food);
     var wasBossFood = food.mutated === 'boss';
     food = spawnFood();
     foodEaten++;
@@ -851,13 +856,9 @@ export function bootstrapSnake(root) {
         var ef = extraFoods[_ei];
         if (ef.x === head.x && ef.y === head.y) {
           extraFoods.splice(_ei, 1);
-          var gain = Math.max(1, Math.round(ef.points * getComboMultiplier() * getLengthMultiplier() * getEffectMultiplier() * getRunScoreMultiplier()));
-          score += gain;
-          setBestMaybe();
-          var ec2 = centerFromCell(ef);
-          spawnBurst(ec2.x, ec2.y, ef.color || '#3fb950', 10, 1);
-          spawnFloatingText('+' + gain, ec2.x, ec2.y - 8, ef.color || '#3fb950', 1);
-          playGameSound('snake-eat');
+          eatFoodItem(ef);
+          updateHud();
+          rollGameplayBonus();
           ateExtra = true;
           break;  // only eat one extra per step
         }
@@ -963,50 +964,36 @@ export function bootstrapSnake(root) {
     }
   }
 
-  function drawFood(t) {
-    if (!food) return;
-    var c = centerFromCell(food);
-    var pulse = 0.55 + 0.45 * Math.sin(t * 8.5 + food.pulseSeed);
+  // Draws a single food item using the full radial-gradient orb visual.
+  function drawFoodItem(f, t) {
+    var c = centerFromCell(f);
+    var pulse = 0.55 + 0.45 * Math.sin(t * 8.5 + (f.pulseSeed || 0));
     var radius = size * (0.23 + pulse * 0.14);
     var orb = ctx.createRadialGradient(c.x, c.y, radius * 0.2, c.x, c.y, radius * 2.1);
     orb.addColorStop(0, '#ffffff');
-    orb.addColorStop(0.2, food.halo);
-    orb.addColorStop(0.5, food.color);
+    orb.addColorStop(0.2, f.halo || 'rgba(255,255,255,0.3)');
+    orb.addColorStop(0.5, f.color);
     orb.addColorStop(1, 'rgba(0,0,0,0)');
     ctx.fillStyle = orb;
     ctx.beginPath();
     ctx.arc(c.x, c.y, radius * 2.1, 0, Math.PI * 2);
     ctx.fill();
-
-    ctx.fillStyle = food.color;
+    ctx.fillStyle = f.color;
     ctx.beginPath();
     ctx.arc(c.x, c.y, radius, 0, Math.PI * 2);
     ctx.fill();
-
     ctx.fillStyle = 'rgba(255,255,255,0.92)';
     ctx.font = '700 ' + Math.max(10, Math.floor(size * 0.34)) + 'px system-ui';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillText(food.icon || 'â—', c.x, c.y + 0.5);
+    ctx.fillText(f.icon || 'â—', c.x, c.y + 0.5);
+  }
 
-    // Draw any extra flood foods
+  function drawFood(t) {
+    if (!food) return;
+    drawFoodItem(food, t);
     for (var _fi = 0; _fi < extraFoods.length; _fi++) {
-      var ef = extraFoods[_fi];
-      var ec = centerFromCell(ef);
-      var ep = 0.55 + 0.45 * Math.sin(t * 8.5 + (ef.pulseSeed || 0));
-      var er = size * (0.23 + ep * 0.14);
-      ctx.shadowColor = '#b8ffcc';
-      ctx.shadowBlur = 8;
-      ctx.fillStyle = ef.color || '#3fb950';
-      ctx.beginPath();
-      ctx.arc(ec.x, ec.y, er, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.shadowBlur = 0;
-      ctx.fillStyle = 'rgba(255,255,255,0.85)';
-      ctx.font = '700 ' + Math.max(9, Math.floor(size * 0.28)) + 'px system-ui';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillText(ef.icon || '\u25cb', ec.x, ec.y + 0.5);
+      drawFoodItem(extraFoods[_fi], t);
     }
   }
 
