@@ -6,6 +6,12 @@
   var HASH_KEY = 'telegram_auth';
   var AUTH_STORAGE_KEY = 'MOONBOYS_TELEGRAM_AUTH';
 
+  // Resolved text constants — fall back to literals so no type="module" is needed.
+  var COPY = window.UI_STATUS_COPY || {
+    UNLINKED:        'Telegram not linked \u2014 run /gklink',
+    API_UNAVAILABLE: 'Core API unavailable',
+  };
+
   function debug(event, context) {
     try {
       console.log('[incubator-link]', event, context || {});
@@ -131,7 +137,7 @@
     var rawPayload = getHashPayload();
     scrubTelegramHash();
     if (!rawPayload) {
-      setStatus('Telegram not linked \u2014 run /gklink', 'Invalid link. Use /gklink again.', false);
+      setStatus(COPY.UNLINKED, 'Invalid link. Use /gklink again.', false);
       emitSyncState('bad', 'missing_payload');
       debug('payload_missing');
       return;
@@ -142,7 +148,7 @@
 
     if (!parsedPayload || typeof parsedPayload !== 'object') {
       clearStoredPayload();
-      setStatus('Telegram not linked \u2014 run /gklink', 'Invalid link. Use /gklink again.', false);
+      setStatus(COPY.UNLINKED, 'Invalid link. Use /gklink again.', false);
       emitSyncState('bad', 'invalid_payload');
       debug('payload_parse_failed', { rawLength: rawPayload.length });
       return;
@@ -166,7 +172,7 @@
             ? String(result.data.error)
             : 'Sync verification failed. Run /gklink again.';
           clearStoredPayload();
-          setStatus('Telegram not linked \u2014 run /gklink', errorMessage, false);
+          setStatus(COPY.UNLINKED, errorMessage, false);
           emitSyncState('bad', 'verify_failed');
           debug('verify_failed', {
             status: result.status,
@@ -200,7 +206,7 @@
 
         if (!linkedOk) {
           clearStoredPayload();
-          setStatus('Telegram not linked \u2014 run /gklink', 'Signed Telegram auth is missing or expired. Run /gklink again.', false);
+          setStatus(COPY.UNLINKED, 'Signed Telegram auth is missing or expired. Run /gklink again.', false);
           emitSyncState('bad', 'link_persist_failed');
           debug('link_persist_failed', { telegramId: result.data.telegram_id || null });
           return;
@@ -214,7 +220,7 @@
       })
       .catch(function (error) {
         clearStoredPayload();
-        setStatus('Telegram not linked \u2014 run /gklink', 'Core API unavailable \u2014 run /gklink again if this persists.', false);
+        setStatus(COPY.UNLINKED, COPY.API_UNAVAILABLE + ' \u2014 run /gklink again if this persists.', false);
         emitSyncState('bad', 'network_error');
         debug('verify_exception', { message: error && error.message ? error.message : String(error) });
       });

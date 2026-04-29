@@ -28,6 +28,14 @@
   var BASE     = cfg.BASE_URL || null;
   var FEATURES = cfg.FEATURES || {};
 
+  // Resolved text constants — use the shared module's global when available,
+  // fall back to the same literal values so this file needs no type="module".
+  var COPY = window.UI_STATUS_COPY || {
+    UNLINKED:            'Telegram not linked \u2014 run /gklink',
+    FEATURE_UNAVAILABLE: 'Feature not yet available',
+    API_UNAVAILABLE:     'Core API unavailable',
+  };
+
   // ── Derive page ID from URL when not supplied ────────────────
 
   function defaultPageId() {
@@ -102,7 +110,7 @@
       if (btn.disabled) return;
 
       if (!BASE || !FEATURES.LIKES) {
-        statusEl.textContent = '⚠️ Likes feature not yet available.';
+        statusEl.textContent = '\u26a0\ufe0f ' + COPY.FEATURE_UNAVAILABLE;
         return;
       }
 

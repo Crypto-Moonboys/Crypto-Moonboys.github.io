@@ -1,10 +1,11 @@
 /* ============================================================
    arcade-leaderboard.js — Shared Moonboys Arcade leaderboard UI
    Reads from the shared worker via leaderboard-client.js.
-   No external dependencies.
+   Uses shared status copy from ui-status-copy.js.
    ============================================================ */
 
 import { fetchLeaderboard } from '/js/leaderboard-client.js';
+import { UNLINKED, API_UNAVAILABLE } from '/js/components/ui-status-copy.js';
 
 // ── Constants ─────────────────────────────────────────────────────────────
 const RAW_TABS = [
@@ -147,9 +148,9 @@ function getIdentityApi() {
 
 function getCurrentIdentityLabel() {
   const gate = getIdentityApi();
-  if (!gate) return 'Telegram not linked \u2014 run /gklink';
+  if (!gate) return UNLINKED;
   const sync = typeof gate.getSyncState === 'function' ? gate.getSyncState() : null;
-  if (!sync || !sync.linked) return 'Telegram not linked \u2014 run /gklink';
+  if (!sync || !sync.linked) return UNLINKED;
   const name = typeof gate.getTelegramName === 'function' ? gate.getTelegramName() : null;
   const auth = typeof gate.getTelegramAuth === 'function' ? gate.getTelegramAuth() : null;
   const username = auth && (auth.username || auth.user?.username) ? String(auth.username || auth.user.username).replace(/^@/, '') : '';
@@ -172,7 +173,7 @@ function renderLinkedPresence() {
   if (isPresenceHidden()) box.classList.add('presence-offline');
   box.innerHTML = linked
     ? `<strong>You are linked as ${escHtml(display)}</strong><span class="lb-linked-meta">${online ? '● Online presence visible' : (isPresenceHidden() ? '○ Presence hidden' : '○ Sync attention required')}</span>`
-    : '<strong>Telegram not linked \u2014 run /gklink</strong><span class="lb-linked-meta">Link to store ranking/XP server-side.</span>';
+    : `<strong>${escHtml(UNLINKED)}</strong><span class="lb-linked-meta">Link to store ranking/XP server-side.</span>`;
 
   const toggle = el('lb-presence-toggle');
   if (toggle) {
@@ -427,7 +428,10 @@ async function loadLeaderboard() {
     renderTable(data);
   } catch (err) {
     console.error('[arcade-leaderboard]', err);
-    setErrorState('Core API unavailable');
+    // Network/fetch failure (TypeError) → Core API unavailable
+    // Invalid/unexpected data shape → show the original error message
+    const isNetworkError = err instanceof TypeError;
+    setErrorState(isNetworkError ? API_UNAVAILABLE : (err && err.message ? err.message : API_UNAVAILABLE));
   } finally {
     isFetching = false;
   }

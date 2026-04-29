@@ -28,6 +28,13 @@
   var BASE     = cfg.BASE_URL || null;
   var FEATURES = cfg.FEATURES || {};
 
+  // Resolved text constants — fall back to literals so no type="module" is needed.
+  var COPY = window.UI_STATUS_COPY || {
+    UNLINKED:            'Telegram not linked \u2014 run /gklink',
+    FEATURE_UNAVAILABLE: 'Feature not yet available',
+    API_UNAVAILABLE:     'Core API unavailable',
+  };
+
   // ── HTML escape (XSS prevention) ─────────────────────────────
 
   function escapeHtml(str) {
@@ -55,7 +62,7 @@
 
   function initTgLeaderboard(el) {
     if (!BASE || !FEATURES.TELEGRAM_COMMUNITY) {
-      el.innerHTML = '<div class="community-empty">Feature not yet available.</div>';
+      el.innerHTML = '<div class="community-empty">' + COPY.FEATURE_UNAVAILABLE + '</div>';
       return;
     }
     el.innerHTML = '<div class="community-loading">Loading community leaderboard…</div>';
@@ -89,7 +96,7 @@
 
   function initTgQuestPanel(el) {
     if (!BASE || !FEATURES.TELEGRAM_COMMUNITY) {
-      el.innerHTML = '<div class="community-empty">Feature not yet available.</div>';
+      el.innerHTML = '<div class="community-empty">' + COPY.FEATURE_UNAVAILABLE + '</div>';
       return;
     }
     el.innerHTML = '<div class="community-loading">Loading quests…</div>';
@@ -120,11 +127,11 @@
   function initTgProfileCard(el) {
     var telegramId = el.dataset.telegramId;
     if (!telegramId) {
-      el.innerHTML = '<div class="community-empty">Telegram not linked \u2014 run /gklink.</div>';
+      el.innerHTML = '<div class="community-empty">' + COPY.UNLINKED + '</div>';
       return;
     }
     if (!BASE || !FEATURES.TELEGRAM_COMMUNITY) {
-      el.innerHTML = '<div class="community-empty">Feature not yet available.</div>';
+      el.innerHTML = '<div class="community-empty">' + COPY.FEATURE_UNAVAILABLE + '</div>';
       return;
     }
     el.innerHTML = '<div class="community-loading">Loading profile…</div>';
@@ -183,7 +190,7 @@
 
   function initTgActivityFeed(el) {
     if (!BASE || !FEATURES.TELEGRAM_COMMUNITY) {
-      el.innerHTML = '<div class="community-empty">Feature not yet available.</div>';
+      el.innerHTML = '<div class="community-empty">' + COPY.FEATURE_UNAVAILABLE + '</div>';
       return;
     }
     el.innerHTML = '<div class="community-loading">Loading activity…</div>';
@@ -276,7 +283,7 @@
       })
       .catch(function () {
         if (banner) {
-          banner.textContent = '\u26a0\ufe0f Core API unavailable \u2014 run /gklink again if this persists.';
+          banner.textContent = '\u26a0\ufe0f ' + COPY.API_UNAVAILABLE + ' \u2014 run /gklink again if this persists.';
           banner.className = (banner.className || '') + ' gklink-error';
         }
       });
