@@ -82,15 +82,23 @@
 </head>
 <body>
   <main class="shell" aria-live="polite">
-    <h1 class="title">Admin Tools · Block Topia Grant</h1>
+    <h1 class="title">Admin Tools · XP Grants</h1>
     <p class="sub">Hidden admin/testing surface. Not linked in public navigation.</p>
     <div id="access-state" class="state">Checking linked admin access…</div>
     <div class="actions">
       <button id="refresh-auth-state" type="button" class="ghost">Refresh auth state</button>
     </div>
 
-    <section id="admin-panel" class="hidden" aria-label="Block Topia admin grant form">
-      <form id="grant-form">
+    <section id="admin-panel" class="hidden" aria-label="Admin grant panel">
+
+      <!-- ── Arcade XP Grant ────────────────────────────────────────────── -->
+      <h2 style="margin:20px 0 8px;font-size:.95rem;letter-spacing:.06em;text-transform:uppercase;color:var(--accent)">
+        Arcade XP Grant
+        <span style="font-size:.78rem;font-weight:400;color:var(--muted);text-transform:none;letter-spacing:0">
+          — updates <code>arcade_progression_state.arcade_xp_total</code> (Block Topia multiplayer gate)
+        </span>
+      </h2>
+      <form id="arcade-grant-form">
         <div class="grid">
           <label>Current linked Telegram username
             <input id="admin-telegram-username" type="text" readonly />
@@ -99,26 +107,66 @@
             <input id="admin-telegram-id" type="text" readonly />
           </label>
           <label>Target Telegram ID
-            <input id="target-telegram-id" type="text" inputmode="numeric" pattern="[0-9]{5,20}" required />
+            <input id="arcade-target-telegram-id" type="text" inputmode="numeric" pattern="[0-9]{5,20}" required />
           </label>
         </div>
 
         <div class="actions">
-          <button type="button" class="ghost" data-fill="me">Grant to me</button>
-          <button type="button" class="ghost" data-fill="xp50k">+50,000 XP</button>
+          <button type="button" class="ghost" data-fill="arcade-me">Grant to me</button>
+          <button type="button" class="ghost" data-fill="arcade-xp50k">+50,000 Arcade XP</button>
         </div>
 
         <div class="grid">
-          <label>XP Amount
-            <input id="grant-xp" type="number" min="0" step="1" placeholder="0" />
+          <label>Arcade XP Amount
+            <input id="arcade-grant-xp" type="number" min="1" step="1" placeholder="0" />
           </label>
           <label>Admin Secret
-            <input id="admin-secret" type="password" autocomplete="off" placeholder="Enter at time of use" required />
+            <input id="arcade-admin-secret" type="password" autocomplete="off" placeholder="Enter at time of use" required />
           </label>
         </div>
 
         <label>Reason (optional)
-          <textarea id="grant-reason" maxlength="280" placeholder="Admin/test reason"></textarea>
+          <textarea id="arcade-grant-reason" maxlength="280" placeholder="Admin/test reason"></textarea>
+        </label>
+
+        <div class="actions">
+          <button type="submit" class="primary">Submit Arcade XP Grant</button>
+        </div>
+      </form>
+
+      <div id="arcade-result-state" class="state">Awaiting admin action.</div>
+      <pre id="arcade-result-json">{}</pre>
+
+      <!-- ── Block Topia XP Grant ──────────────────────────────────────── -->
+      <h2 style="margin:24px 0 8px;font-size:.95rem;letter-spacing:.06em;text-transform:uppercase;color:var(--warn)">
+        Block Topia XP Grant
+        <span style="font-size:.78rem;font-weight:400;color:var(--muted);text-transform:none;letter-spacing:0">
+          — updates <code>blocktopia_progression.xp</code> (in-game economy only, not the multiplayer gate)
+        </span>
+      </h2>
+      <form id="bt-grant-form">
+        <div class="grid">
+          <label>Target Telegram ID
+            <input id="bt-target-telegram-id" type="text" inputmode="numeric" pattern="[0-9]{5,20}" required />
+          </label>
+        </div>
+
+        <div class="actions">
+          <button type="button" class="ghost" data-fill="bt-me">Grant to me</button>
+          <button type="button" class="ghost" data-fill="bt-xp50k">+50,000 BT XP</button>
+        </div>
+
+        <div class="grid">
+          <label>XP Amount
+            <input id="bt-grant-xp" type="number" min="0" step="1" placeholder="0" />
+          </label>
+          <label>Admin Secret
+            <input id="bt-admin-secret" type="password" autocomplete="off" placeholder="Enter at time of use" required />
+          </label>
+        </div>
+
+        <label>Reason (optional)
+          <textarea id="bt-grant-reason" maxlength="280" placeholder="Admin/test reason"></textarea>
         </label>
 
         <div class="actions">
@@ -126,8 +174,8 @@
         </div>
       </form>
 
-      <div id="result-state" class="state">Awaiting admin action.</div>
-      <pre id="result-json">{}</pre>
+      <div id="bt-result-state" class="state">Awaiting admin action.</div>
+      <pre id="bt-result-json">{}</pre>
     </section>
   </main>
 
