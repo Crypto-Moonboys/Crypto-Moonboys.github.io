@@ -95,7 +95,9 @@
 <script type="module">
 import { mountGame }      from '/js/arcade/core/game-shell.js';
 import { bootstrapSnakeRun } from '/js/arcade/games/snake-run/bootstrap.js';
+import { mountModifierPanel } from '/js/arcade/systems/cross-game-modifier-ui.js';
 mountGame({ root: document.querySelector('.game-card'), bootstrap: bootstrapSnakeRun });
+mountModifierPanel();
 </script>
 </body>
 </html>

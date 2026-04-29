@@ -8,4 +8,7 @@ export var TETRIS_CONFIG = Object.freeze({
 
   /** Display label used by GameRegistry. */
   label: '🟦 Tetris Block Topia',
+
+  /** Cross-game modifier compatibility tags. */
+  crossGameTags: Object.freeze(['physics']),
 });

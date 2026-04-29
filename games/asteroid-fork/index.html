@@ -111,7 +111,9 @@
 <script type="module">
 import { mountGame }              from '/js/arcade/core/game-shell.js';
 import { bootstrapAsteroidFork }  from '/js/arcade/games/asteroid-fork/bootstrap.js';
+import { mountModifierPanel } from '/js/arcade/systems/cross-game-modifier-ui.js';
 mountGame({ root: document.querySelector('.game-card'), bootstrap: bootstrapAsteroidFork });
+mountModifierPanel();
 </script>
 </body>
 </html>

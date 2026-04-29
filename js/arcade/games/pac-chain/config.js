@@ -8,4 +8,7 @@ export var PAC_CHAIN_CONFIG = Object.freeze({
 
   /** Display label used by GameRegistry. */
   label: '🟡 Pac-Chain',
+
+  /** Cross-game modifier compatibility tags. */
+  crossGameTags: Object.freeze(['maze']),
 });

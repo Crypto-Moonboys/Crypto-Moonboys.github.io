@@ -8,4 +8,7 @@ export var CRYSTAL_QUEST_CONFIG = Object.freeze({
 
   /** Display label used by GameRegistry. */
   label: '🧩 Crystal Quest',
+
+  /** Cross-game modifier compatibility tags. */
+  crossGameTags: Object.freeze(['puzzle']),
 });

@@ -8,4 +8,7 @@ export const BREAKOUT_BULLRUN_CONFIG = Object.freeze({
 
   /** Display label used by GameRegistry. */
   label: '🧱 Breakout Bullrun',
+
+  /** Cross-game modifier compatibility tags. */
+  crossGameTags: Object.freeze(['breakout']),
 });

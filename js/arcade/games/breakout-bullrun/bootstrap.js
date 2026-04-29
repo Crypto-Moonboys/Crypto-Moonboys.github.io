@@ -17,6 +17,7 @@ import {
 } from '/js/arcade/engine/game-adapter.js';
 import { playSound, stopAllSounds, isMuted } from '/js/arcade/core/audio.js';
 import { BaseGame } from '/js/arcade/engine/BaseGame.js';
+import { getActiveModifiers, hasEffect, getStatEffect } from '/js/arcade/systems/cross-game-modifier-system.js';
 
 import {
   B_W, B_H, B_PAD, B_COLS,
@@ -503,6 +504,25 @@ function createLegacyBootstrapBreakoutBullrun(root) {
   const renderer = createRenderer(ctx, W, H);
   const keys     = engine.keys;
 
+  // ── Cross-game modifier state ─────────────────────────────────────────────
+  let _bbCrossMods        = getActiveModifiers(GAME_ID, BREAKOUT_BULLRUN_CONFIG.crossGameTags || []);
+  let bbModScoreMult      = getStatEffect(_bbCrossMods, 'scoreMult', 1);
+  let bbModShieldedStart  = hasEffect(_bbCrossMods, 'shieldedStart');
+  let bbModPressureRate   = getStatEffect(_bbCrossMods, 'pressureRate', 1);
+  let bbModMagnetLuck     = hasEffect(_bbCrossMods, 'magnetPickups');
+  let bbModRecoveryPulse  = hasEffect(_bbCrossMods, 'recoveryPulse');
+  let bbModBossHunter     = getStatEffect(_bbCrossMods, 'bossDmgMult', 1);
+
+  function _bbRefreshCrossMods() {
+    _bbCrossMods        = getActiveModifiers(GAME_ID, BREAKOUT_BULLRUN_CONFIG.crossGameTags || []);
+    bbModScoreMult      = getStatEffect(_bbCrossMods, 'scoreMult', 1);
+    bbModShieldedStart  = hasEffect(_bbCrossMods, 'shieldedStart');
+    bbModPressureRate   = getStatEffect(_bbCrossMods, 'pressureRate', 1);
+    bbModMagnetLuck     = hasEffect(_bbCrossMods, 'magnetPickups');
+    bbModRecoveryPulse  = hasEffect(_bbCrossMods, 'recoveryPulse');
+    bbModBossHunter     = getStatEffect(_bbCrossMods, 'bossDmgMult', 1);
+  }
+
   // ── Utilities ─────────────────────────────────────────────────────────────
 
   function rand(a, b) { return a + Math.random() * (b - a); }
@@ -529,7 +549,7 @@ function createLegacyBootstrapBreakoutBullrun(root) {
 
   function addScore(pts, x, y, color) {
     if (!pts) return;
-    score += pts;
+    score += Math.round(pts * bbModScoreMult);
     setBestMaybe();
     updateHud();
     triggerHudFx(scoreEl ? scoreEl.closest('.stat') : null, 'pulse', 180);
@@ -772,6 +792,12 @@ function createLegacyBootstrapBreakoutBullrun(root) {
       ball.vx = ball.vx * 0.7 + (cx - ball.x) * 0.5;
     }
 
+    // Magnet Luck modifier: gentler drift when the upgrade is not equipped
+    if (bbModMagnetLuck && upgrades.magnet === 0) {
+      const cx = paddle.x + pw / 2;
+      ball.vx = ball.vx * 0.88 + (cx - ball.x) * 0.2;
+    }
+
     ball.y = py - ball.r - 1;
     spawnParticle(ball.x, py, '#f7ab1a', 5);
     playSfx('paddle');
@@ -852,7 +878,7 @@ function createLegacyBootstrapBreakoutBullrun(root) {
       return;
     }
 
-    boss.hp -= 1;
+    boss.hp -= Math.ceil(1 * bbModBossHunter);
     boss.hitTimer = 0.15;
     boss.hpDisplay += (boss.hp - boss.hpDisplay) * 0.8;
     addScore(40 * wave, boss.x + boss.w / 2, boss.y, '#ff9b9b');
@@ -977,7 +1003,7 @@ function createLegacyBootstrapBreakoutBullrun(root) {
 
     // ── Scaling director ────────────────────────────────────────────────────
 
-    tickDirector(director, dt, score, wave, lives, upgrades, !!activeEvent, dailyVariation.eventRateMult || 1);
+    tickDirector(director, dt, score, wave, lives, upgrades, !!activeEvent, (dailyVariation.eventRateMult || 1) * bbModPressureRate);
 
     // ── Forced chaos event ──────────────────────────────────────────────────
 
@@ -1027,6 +1053,10 @@ function createLegacyBootstrapBreakoutBullrun(root) {
         activeEvent = null;
         eventTimer  = 0;
         eventData   = {};
+        // Recovery Pulse modifier: restore one life/shield when a chaos event ends
+        if (bbModRecoveryPulse && shieldFloorHp === 0) {
+          shieldFloorHp = 1;
+        }
       }
     }
 
@@ -1701,6 +1731,12 @@ function createLegacyBootstrapBreakoutBullrun(root) {
     paddle.x  = W / 2 - PAD_BASE_W / 2;
     paddle.vx = 0;
     paddle.w  = PAD_BASE_W;
+    // Re-fetch cross-game modifiers so each new run picks up any selection change
+    _bbRefreshCrossMods();
+    // Shielded Start: add a floor shield charge at run start
+    if (bbModShieldedStart) {
+      lives += 1;
+    }
     updateHud();
   }
 

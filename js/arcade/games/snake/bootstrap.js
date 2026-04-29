@@ -6,6 +6,7 @@ import { playSound, stopAllSounds, isMuted } from '/js/arcade/core/audio.js';
 import { createFrameDebug } from '/js/arcade/core/frame-debug.js';
 import { recordRunStats, checkMilestones } from './meta-system.js';
 import { createScalingDirector, tickDirector, shouldFirePressureEvent, updateIntensity, checkForcedChaos } from '/js/arcade/systems/event-system.js';
+import { getActiveModifiers, hasEffect, getStatEffect } from '/js/arcade/systems/cross-game-modifier-system.js';
 
 export const SNAKE_ADAPTER = createGameAdapter({
   id: SNAKE_CONFIG.id,
@@ -181,12 +182,28 @@ export function bootstrapSnake(root) {
     eventGoldenRush = 0;
     extraFoods = [];
     hideSnakeUpgradeModal();
+
+    // Apply cross-game modifier effects for this run
+    const crossMods = getActiveModifiers(GAME_ID, SNAKE_CONFIG.crossGameTags || []);
+    if (hasEffect(crossMods, 'scoreMult')) {
+      run.scoreMult *= getStatEffect(crossMods, 'scoreMult', 1);
+    }
+    if (hasEffect(crossMods, 'shieldedStart')) {
+      run.shieldCharges += 1;
+    }
+    // Store pressure-rate multiplier for the director tick
+    run._pressureRateMult = getStatEffect(crossMods, 'pressureRate', 1);
+    // Store golden-spawn boost for food mutation
+    run._goldenSpawnBoost = getStatEffect(crossMods, 'goldenSpawnBoost', 0);
   }
 
   function maybeMutateFood(f) {
     if (!director) return;
-    var intensity = director.intensity || 0;
-    var candidates = MUTATION_DEFS.filter(function(m) { return intensity >= m.threshold; });
+    const intensity = director.intensity || 0;
+    // Golden Chance modifier: reduce the mutation threshold so rare mutations appear sooner
+    const goldenBoost = (run && run._goldenSpawnBoost) || 0;
+    const effectiveIntensity = intensity + goldenBoost * 100;
+    var candidates = MUTATION_DEFS.filter(function(m) { return effectiveIntensity >= m.threshold; });
     if (!candidates.length) return;
     if (Math.random() > MUTATION_CHANCE) return;
     var def = candidates[Math.floor(Math.random() * candidates.length)];
@@ -299,7 +316,8 @@ export function bootstrapSnake(root) {
 
   function tickSnakeDirector(dt) {
     if (!director || !run) return;
-    tickDirector(director, dt);
+    // Pass pressure-rate multiplier as 8th arg to slow pressure build by the modifier amount
+    tickDirector(director, dt, undefined, undefined, undefined, undefined, undefined, run._pressureRateMult || 1);
     var heatIntensity = Math.min(100, heat * 62);
     director.intensity = Math.max(director.intensity || 0, heatIntensity);
     runStats.highestIntensity = Math.max(runStats.highestIntensity, director.intensity);

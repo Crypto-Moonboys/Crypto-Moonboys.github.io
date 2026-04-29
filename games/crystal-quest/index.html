@@ -229,7 +229,9 @@
 <script type="module">
 import { mountGame } from '/js/arcade/core/game-shell.js';
 import { bootstrapCrystalQuest } from '/js/arcade/games/crystal-quest/bootstrap.js';
+import { mountModifierPanel } from '/js/arcade/systems/cross-game-modifier-ui.js';
 mountGame({ root: document.querySelector('.game-card'), bootstrap: bootstrapCrystalQuest });
+mountModifierPanel();
 </script>
 </body>
 </html>
