@@ -4,11 +4,13 @@ import { SNAKE_CONFIG } from './config.js';
 import { createGameAdapter, registerGameAdapter } from '/js/arcade/engine/game-adapter.js';
 import { playSound, stopAllSounds, isMuted } from '/js/arcade/core/audio.js';
 import { createFrameDebug } from '/js/arcade/core/frame-debug.js';
+import { buildRunSummary, recordRunStats, checkMilestones, getDailyVariation } from './meta-system.js';
+import { createScalingDirector, tickDirector, shouldFirePressureEvent, updateIntensity, checkForcedChaos } from '/js/arcade/systems/event-system.js';
 
 export const SNAKE_ADAPTER = createGameAdapter({
   id: SNAKE_CONFIG.id,
   name: SNAKE_CONFIG.label,
-  systems: {},
+  systems: { upgrade: true, director: true, event: true, mutation: true, boss: true, risk: true, meta: true, feedback: true },
   legacyBootstrap: function (root) {
     return bootstrapSnake(root);
   },
@@ -101,6 +103,243 @@ export function bootstrapSnake(root) {
   var accumulatorMs = 0;
   var renderTime = 0;
   var frozenRenderTime = 0;
+
+  // === Roguelite / Director constants ===
+  var WAVE_SIZE = 10;
+  var BOSS_WAVE_EVERY = 5;
+  var UPGRADE_DEFS = [
+    { id: 'scoreBoost',   name: '📈 Score Frenzy',  rarity: 'common',    desc: '+20% score on all food this run.',          apply: function(r) { r.scoreMult += 0.20; } },
+    { id: 'speedDown',    name: '🐢 Slow Burn',      rarity: 'common',    desc: 'Base movement 8% slower (more control).',   apply: function(r) { r.speedSlowdown += 0.08; } },
+    { id: 'comboBonus',   name: '⛓ Chain Master',   rarity: 'uncommon',  desc: 'Combo window +0.4 seconds.',                apply: function(r) { r.comboWindowBonus += 0.4; } },
+    { id: 'shield',       name: '🛡 Ghost Skin',      rarity: 'rare',      desc: 'Next self-collision is blocked once.',      apply: function(r) { r.shieldCharges += 1; } },
+    { id: 'doubleFood',   name: '✶ Double Harvest',  rarity: 'uncommon',  desc: 'Next 3 food pickups count as double.',      apply: function(r) { r.doublePickupBonus += 3; } },
+    { id: 'lengthBonus',  name: '🔮 Surge Protocol', rarity: 'rare',      desc: '+15% score for every 5 segments of length.', apply: function(r) { r.lengthScaleBonus += 0.15; } },
+    { id: 'revive',       name: '💎 Nano Respawn',   rarity: 'legendary', desc: 'One respawn token — survives one collision.', apply: function(r) { r.reviveTokens += 1; } },
+  ];
+  var RARITY_COLORS = { common: '#88ccee', uncommon: '#3fb950', rare: '#f7c948', legendary: '#ff4fd1' };
+
+  var SNAKE_EVENTS = [
+    { id: 'foodFlood',   minWave: 2, weight: 1.2, execute: function() { eventFoodFlood = 3; spawnFloatingTextLocal('🍎 FOOD FLOOD!', '#3fb950'); } },
+    { id: 'reverseWind', minWave: 3, weight: 0.9, execute: function() { eventReverseTimer = 5; spawnFloatingTextLocal('🌀 REVERSE WIND!', '#bc8cff'); } },
+    { id: 'chaosField',  minWave: 2, weight: 1.0, execute: function() { chaosTimer = Math.max(chaosTimer, 4); spawnFloatingTextLocal('☢ CHAOS FIELD!', '#ff5f5f'); } },
+    { id: 'goldenRush',  minWave: 4, weight: 0.8, execute: function() { eventGoldenRush = 8; spawnFloatingTextLocal('⭐ GOLDEN RUSH!', '#f7c948'); } },
+    { id: 'speedGhost',  minWave: 3, weight: 0.9, execute: function() { ghostTimer = Math.max(ghostTimer, 5); speedBoostTimer = Math.max(speedBoostTimer, 3); spawnFloatingTextLocal('👻 SPEED GHOST!', '#9d7dff'); } },
+  ];
+
+  var MUTATION_DEFS = [
+    { id: 'mega',   threshold: 40, apply: function(f) { f.mutated = 'mega';   f.points = Math.floor(f.points * 2.2); f.color = '#ff8c00'; f.label = 'MEGA'; } },
+    { id: 'golden', threshold: 60, apply: function(f) { f.mutated = 'golden'; f.points = Math.floor(f.points * 3.5); f.color = '#f7c948'; f.label = 'GOLDEN'; } },
+    { id: 'toxic',  threshold: 75, apply: function(f) { f.mutated = 'toxic';  f.points = Math.floor(f.points * 1.6); f.color = '#4cff6e'; f.label = 'TOXIC'; f.toxic = true; } },
+    { id: 'boss',   threshold: 90, apply: function(f) { f.mutated = 'boss';   f.points = Math.floor(f.points * 5.0); f.color = '#ff4fd1'; f.label = 'APEX'; f.moving = true; } },
+  ];
+
+  // === Run / wave state ===
+  var wave = 0;
+  var foodEaten = 0;
+  var lastWaveFoodCount = 0;
+  var snakePhase = 'combat';
+  var snakeUpgradeChoices = [];
+  var director = null;
+  var runStats = { bossesDefeated: 0, highestIntensity: 0, upgradeCount: 0 };
+  var run = null;
+  var submittedMeta = false;
+  var snakeOverlayEl = null;
+  var snakeBannerQueue = [];
+  var snakeBannerTimer = 0;
+  var eventFoodFlood = 0;
+  var eventReverseTimer = 0;
+  var eventGoldenRush = 0;
+
+  // === Helper functions ===
+  function spawnFloatingTextLocal(text, color) {
+    spawnFloatingText(text, W * 0.5, H * 0.2, color || '#f7c948', 1.1);
+  }
+
+  function initRunState() {
+    run = { scoreMult: 1, speedSlowdown: 0, comboWindowBonus: 0, shieldCharges: 0, doublePickupBonus: 0, lengthScaleBonus: 0, reviveTokens: 0 };
+    runStats = { bossesDefeated: 0, highestIntensity: 0, upgradeCount: 0 };
+    wave = 0;
+    foodEaten = 0;
+    lastWaveFoodCount = 0;
+    snakePhase = 'combat';
+    director = createScalingDirector();
+    submittedMeta = false;
+    eventFoodFlood = 0;
+    eventReverseTimer = 0;
+    eventGoldenRush = 0;
+    hideSnakeUpgradeModal();
+  }
+
+  function maybeMutateFood(f) {
+    if (!director) return;
+    var intensity = director.intensity || 0;
+    var candidates = MUTATION_DEFS.filter(function(m) { return intensity >= m.threshold; });
+    if (!candidates.length) return;
+    if (Math.random() > 0.22) return;
+    var def = candidates[Math.floor(Math.random() * candidates.length)];
+    def.apply(f);
+  }
+
+  function checkWaveProgress() {
+    if (!run || gameOver) return;
+    if (foodEaten - lastWaveFoodCount >= WAVE_SIZE) {
+      wave++;
+      lastWaveFoodCount = foodEaten;
+      onWaveClear();
+    }
+  }
+
+  function onWaveClear() {
+    if (!run) return;
+    updateIntensity(director, 0, {});
+    director.pressure = Math.max(0, director.pressure - 15);
+    if (wave % BOSS_WAVE_EVERY === 0 && wave > 0) {
+      triggerBossWave();
+    } else {
+      triggerSnakeUpgradePhase();
+    }
+  }
+
+  function triggerBossWave() {
+    snakePhase = 'boss';
+    runStats.bossesDefeated++;
+    if (food) {
+      food.mutated = 'boss';
+      food.points = Math.max(food.points, 120);
+      food.color = '#ff4fd1';
+      food.label = 'BOSS';
+      food.moving = true;
+      food.mvx = Math.random() > 0.5 ? 1 : -1;
+      food.mvy = 0;
+      food.mvTimer = 0;
+    }
+    spawnFloatingTextLocal('💀 BOSS FOOD!', '#ff4fd1');
+    setTimeout(function() {
+      if (!gameOver && snakePhase === 'boss') {
+        snakePhase = 'combat';
+        triggerSnakeUpgradePhase();
+      }
+    }, 1200);
+  }
+
+  function triggerSnakeUpgradePhase() {
+    if (gameOver) return;
+    snakePhase = 'upgrade';
+    running = false;
+    var pool = UPGRADE_DEFS.slice();
+    var choices = [];
+    for (var i = 0; i < 3 && pool.length; i++) {
+      var idx = Math.floor(Math.random() * pool.length);
+      choices.push(pool.splice(idx, 1)[0]);
+    }
+    snakeUpgradeChoices = choices;
+    showSnakeUpgradeModal();
+  }
+
+  function showSnakeUpgradeModal() {
+    if (!snakeOverlayEl) {
+      snakeOverlayEl = document.createElement('div');
+      snakeOverlayEl.style.cssText = 'position:absolute;inset:0;background:rgba(0,0,20,0.88);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:20;font-family:monospace;';
+      var gameCard = canvas.closest('.game-card') || canvas.parentElement;
+      if (gameCard) { gameCard.style.position = 'relative'; gameCard.appendChild(snakeOverlayEl); }
+    }
+    var title = document.createElement('h2');
+    title.textContent = '⬆ WAVE ' + wave + ' — CHOOSE UPGRADE';
+    title.style.cssText = 'color:#36f7d7;margin-bottom:16px;font-size:1rem;text-align:center;';
+    var grid2 = document.createElement('div');
+    grid2.style.cssText = 'display:flex;flex-direction:column;gap:8px;width:90%;max-width:300px;';
+    snakeUpgradeChoices.forEach(function(ch) {
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      var rc = RARITY_COLORS[ch.rarity] || '#aaa';
+      btn.style.cssText = 'background:#0d1a2e;border:2px solid ' + rc + ';color:' + rc + ';padding:10px 14px;border-radius:6px;cursor:pointer;text-align:left;';
+      btn.innerHTML = '<strong>' + ch.name + '</strong><br><span style="font-size:0.8em;color:#aaa">' + ch.desc + '</span>';
+      btn.addEventListener('click', function() { applySnakeUpgradeChoice(ch); });
+      grid2.appendChild(btn);
+    });
+    snakeOverlayEl.innerHTML = '';
+    snakeOverlayEl.appendChild(title);
+    snakeOverlayEl.appendChild(grid2);
+    snakeOverlayEl.style.display = 'flex';
+  }
+
+  function applySnakeUpgradeChoice(choice) {
+    if (choice && run) {
+      choice.apply(run);
+      runStats.upgradeCount++;
+      if (run.doublePickupBonus > 0) {
+        doublePickupsLeft = Math.max(doublePickupsLeft, run.doublePickupBonus);
+      }
+    }
+    hideSnakeUpgradeModal();
+    snakePhase = 'combat';
+    running = true;
+    if (raf === null) {
+      lastFrameSec = performance.now() / 1000;
+      raf = requestAnimationFrame(frame);
+    }
+  }
+
+  function hideSnakeUpgradeModal() {
+    if (snakeOverlayEl) snakeOverlayEl.style.display = 'none';
+  }
+
+  function tickSnakeDirector(dt) {
+    if (!director || !run) return;
+    tickDirector(director, dt);
+    var heatIntensity = Math.min(100, heat * 62);
+    director.intensity = Math.max(director.intensity || 0, heatIntensity);
+    runStats.highestIntensity = Math.max(runStats.highestIntensity, director.intensity);
+    if (eventReverseTimer > 0) eventReverseTimer -= dt;
+    if (eventGoldenRush > 0) eventGoldenRush -= dt;
+    if (eventFoodFlood > 0) eventFoodFlood -= dt;
+    if (shouldFirePressureEvent(director)) {
+      var eligible = SNAKE_EVENTS.filter(function(e) { return e.minWave <= wave; });
+      if (eligible.length) {
+        var pick = eligible[Math.floor(Math.random() * eligible.length)];
+        pick.execute();
+      }
+      director.eventCooldown = 15 + Math.random() * 10;
+    }
+    var chaos = checkForcedChaos(director);
+    if (chaos) {
+      chaosTimer = Math.max(chaosTimer, 3);
+      chaosJitter = Math.random() * 0.15;
+      spawnFloatingTextLocal('🔥 CHAOS!', '#ff4fd1');
+    }
+    snakeBannerTimer -= dt;
+  }
+
+  function getRunScoreMultiplier() {
+    if (!run) return 1;
+    var mult = run.scoreMult || 1;
+    if (eventGoldenRush > 0) mult *= 2;
+    var lengthBonus = run.lengthScaleBonus || 0;
+    if (lengthBonus > 0 && snake.length >= 5) {
+      var groups = Math.floor((snake.length - 5) / 5);
+      mult += groups * lengthBonus;
+    }
+    return mult;
+  }
+
+  function getRunComboWindow() {
+    var base = SNAKE_CONFIG.movement.comboWindowSec;
+    return base + ((run && run.comboWindowBonus) || 0);
+  }
+
+  function finalizeMetaRun() {
+    if (submittedMeta) return;
+    submittedMeta = true;
+    var runData = {
+      score: score,
+      wave: wave,
+      survival: Math.round(timeAlive || 0),
+      bossesDefeated: runStats.bossesDefeated || 0,
+      upgradeCount: runStats.upgradeCount || 0,
+      highestIntensity: runStats.highestIntensity || 0,
+    };
+    try { recordRunStats(runData); checkMilestones(runData); } catch(_) {}
+  }
 
   function playGameSound(id, options) {
     if (isMuted()) return null;
@@ -267,7 +506,7 @@ export function bootstrapSnake(root) {
       };
       var occupied = snake.some(function (seg) { return seg.x === candidate.x && seg.y === candidate.y; });
       if (!occupied) {
-        return {
+        var spawnedFood = {
           x: candidate.x,
           y: candidate.y,
           type: type,
@@ -278,9 +517,11 @@ export function bootstrapSnake(root) {
           points: points,
           pulseSeed: Math.random() * 999,
         };
+        maybeMutateFood(spawnedFood);
+        return spawnedFood;
       }
     }
-    return {
+    var fallbackFood = {
       x: Math.floor(grid / 2),
       y: Math.floor(grid / 2),
       type: 'normal',
@@ -291,6 +532,8 @@ export function bootstrapSnake(root) {
       points: FOOD_VISUALS.normal.points,
       pulseSeed: Math.random() * 999,
     };
+    maybeMutateFood(fallbackFood);
+    return fallbackFood;
   }
 
   function clearRuntimeState() {
@@ -320,6 +563,7 @@ export function bootstrapSnake(root) {
     food = spawnFood();
     setBestMaybe();
     updateHud();
+    initRunState();
   }
 
   // Probabilistic gameplay-modifier bonus â€” no fake score injection.
@@ -397,9 +641,9 @@ export function bootstrapSnake(root) {
 
   function eatFood() {
     var now = timeAlive;
-    if (now - lastEatTimeSec <= movement.comboWindowSec) comboCount += 1;
+    if (now - lastEatTimeSec <= getRunComboWindow()) comboCount += 1;
     else comboCount = 1;
-    comboTimer = movement.comboWindowSec;
+    comboTimer = getRunComboWindow();
     lastEatTimeSec = now;
 
     var comboMul = getComboMultiplier();
@@ -408,7 +652,7 @@ export function bootstrapSnake(root) {
     var heatMul = 1 + recalcHeat() * 0.35;
     var doubleMul = doublePickupsLeft > 0 ? 2 : 1;
     if (doublePickupsLeft > 0) doublePickupsLeft -= 1;
-    var gain = Math.max(1, Math.round(food.points * comboMul * lengthMul * effectMul * heatMul * doubleMul));
+    var gain = Math.max(1, Math.round(food.points * comboMul * lengthMul * effectMul * heatMul * doubleMul * getRunScoreMultiplier()));
     score += gain;
 
     if (comboCount >= 3) playGameSound('snake-combo');
@@ -423,6 +667,8 @@ export function bootstrapSnake(root) {
 
     setBestMaybe();
     food = spawnFood();
+    foodEaten++;
+    checkWaveProgress();
     updateHud();
     rollGameplayBonus();
   }
@@ -468,6 +714,7 @@ export function bootstrapSnake(root) {
     running = false;
     paused = false;
     gameOver = true;
+    finalizeMetaRun();
     stopAllSounds();
     playGameSound('snake-game-over');
     explodeSnake();
@@ -488,10 +735,33 @@ export function bootstrapSnake(root) {
     var willEat = head.x === food.x && head.y === food.y;
 
     if (head.x < 0 || head.x >= grid || head.y < 0 || head.y >= grid) {
+      if (run && run.reviveTokens > 0) {
+        run.reviveTokens--;
+        spawnFloatingTextLocal('💎 RESPAWN!', '#f7c948');
+        snake = [{ x: Math.floor(grid/2), y: Math.floor(grid/2) }, { x: Math.floor(grid/2)-1, y: Math.floor(grid/2) }];
+        prevSnake = cloneSnake(snake);
+        dir = { x: 1, y: 0 };
+        nextDir = { x: 1, y: 0 };
+        return;
+      }
       onGameOver();
       return;
     }
     if (isSelfCollision(head, willEat)) {
+      if (run && run.shieldCharges > 0) {
+        run.shieldCharges--;
+        spawnFloatingTextLocal('🛡 SHIELD!', '#2ec5ff');
+        return;
+      }
+      if (run && run.reviveTokens > 0) {
+        run.reviveTokens--;
+        spawnFloatingTextLocal('💎 RESPAWN!', '#f7c948');
+        snake = [{ x: Math.floor(grid/2), y: Math.floor(grid/2) }, { x: Math.floor(grid/2)-1, y: Math.floor(grid/2) }];
+        prevSnake = cloneSnake(snake);
+        dir = { x: 1, y: 0 };
+        nextDir = { x: 1, y: 0 };
+        return;
+      }
       onGameOver();
       return;
     }
@@ -785,6 +1055,19 @@ export function bootstrapSnake(root) {
     if (running && !gameOver) {
       timeAlive += dt;
       updateGameplayTimers(dt);
+      if (snakePhase === 'combat') {
+        tickSnakeDirector(dt);
+      }
+      if (food && food.moving) {
+        food.mvTimer = (food.mvTimer || 0) + dt;
+        if (food.mvTimer >= 0.8) {
+          food.mvTimer = 0;
+          var nx = food.x + (food.mvx || 0);
+          var ny = food.y + (food.mvy || 0);
+          if (nx >= 0 && nx < grid && ny >= 0 && ny < grid) { food.x = nx; food.y = ny; }
+          else { food.mvx = -(food.mvx || 0); food.mvy = -(food.mvy || 0); }
+        }
+      }
       accumulatorMs += dt * 1000;
       var stepMs = getStepMs();
       var frameStepMs = stepMs;
