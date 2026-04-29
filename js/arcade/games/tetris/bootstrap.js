@@ -4,11 +4,13 @@ import { TETRIS_CONFIG } from './config.js';
 import { createGameAdapter, registerGameAdapter, bootstrapFromAdapter } from '/js/arcade/engine/game-adapter.js';
 import { playSound, stopAllSounds, isMuted } from '/js/arcade/core/audio.js';
 import { createFrameDebug } from '/js/arcade/core/frame-debug.js';
+import { buildRunSummary, recordRunStats, checkMilestones, getDailyVariation } from './meta-system.js';
+import { createScalingDirector, tickDirector, shouldFirePressureEvent, pickSurpriseEvent, updateIntensity, checkForcedChaos, getBossAggressionMult } from '/js/arcade/systems/event-system.js';
 
 export const TETRIS_ADAPTER = createGameAdapter({
   id: TETRIS_CONFIG.id,
   name: TETRIS_CONFIG.label,
-  systems: {},
+  systems: { upgrade: true, director: true, event: true, mutation: true, boss: true, risk: true, meta: true, feedback: true },
   legacyBootstrap: function (root) {
     return createLegacybootstrapTetris(root);
   },
@@ -32,6 +34,35 @@ function createLegacybootstrapTetris(root) {
   const LEVEL_SHAKE_GAIN_PER_LEVEL = 0.08;
   const BACK_TO_BACK_BONUS_MULTIPLIER = 0.45;
   const BACK_TO_BACK_CHAIN_STEP_BONUS = 35;
+
+  // ── Roguelite / Director constants ────────────────────────────────────────
+  const WAVE_SIZE = 5;
+  const BOSS_WAVE_EVERY = 5;
+  const UPGRADE_DEFS = [
+    { id: 'scoreBoost',  name: '📈 Score Rush',     rarity: 'common',    desc: '+20% score on all line clears this run.',     apply(s) { s.scoreMult += 0.20; } },
+    { id: 'dropSlowdown', name: '🕐 Time Dilation', rarity: 'common',    desc: '-8% drop speed permanently this run.',        apply(s) { s.dropSlowdown += 0.08; } },
+    { id: 'comboBonus',  name: '⛓ Chain Power',     rarity: 'uncommon',  desc: 'Combo multiplier cap +1.',                    apply(s) { s.comboBoostMax += 1; } },
+    { id: 'shield',      name: '🛡 Block Shield',    rarity: 'rare',      desc: 'Next top-out attempt is blocked once.',       apply(s) { s.shieldCharges += 1; } },
+    { id: 'ghost',       name: '👻 Phantom Line',    rarity: 'uncommon',  desc: 'Every 10th clear scores double.',             apply(s) { s.phantomLineBonus += 1; } },
+    { id: 'levelRush',   name: '⚡ Level Rush',      rarity: 'rare',      desc: 'Advance one level instantly and gain score.', apply(s) { s.levelRush += 1; } },
+    { id: 'revive',      name: '💎 Crystal Revive',  rarity: 'legendary', desc: 'One revive token — survives one top-out.',    apply(s) { s.reviveTokens += 1; } },
+  ];
+  const RARITY_COLORS = { common: '#88ccee', uncommon: '#3fb950', rare: '#f7c948', legendary: '#ff4fd1' };
+
+  const TETRIS_EVENTS = [
+    { id: 'speedBurst',   minWave: 2, weight: 1.2, execute(s) { director.eventBoostTimer = 6; addFloatBanner(s, '⚡ SPEED BURST!', '#f7c948'); } },
+    { id: 'garbageLine',  minWave: 3, weight: 1.0, execute(s) { injectGarbageLines(s, 1 + Math.floor((director.intensity || 0) / 40)); addFloatBanner(s, '☣ GARBAGE DROP!', '#ff4fd1'); } },
+    { id: 'mirrorFlip',   minWave: 4, weight: 0.7, execute(s) { director.mirrorTimer = 8; addFloatBanner(s, '🔄 MIRROR MODE!', '#bc8cff'); } },
+    { id: 'powerClear',   minWave: 3, weight: 0.9, execute(s) { triggerPowerClear(s); addFloatBanner(s, '💥 POWER CLEAR!', '#2ec5ff'); } },
+    { id: 'doubleScore',  minWave: 5, weight: 0.8, execute(s) { director.doubleScoreTimer = 10; addFloatBanner(s, '✶ DOUBLE SCORE!', '#ff8c00'); } },
+  ];
+
+  const MUTATION_DEFS = [
+    { id: 'heavy',   threshold: 40, apply(piece) { piece.mutated = 'heavy';   piece.color = '#ff8c00'; piece.scoreBonus = 1.4; } },
+    { id: 'ghost',   threshold: 55, apply(piece) { piece.mutated = 'ghost';   piece.color = '#bc8cff'; piece.fallThrough = true; } },
+    { id: 'golden',  threshold: 70, apply(piece) { piece.mutated = 'golden';  piece.color = '#f7c948'; piece.scoreBonus = 2.0; } },
+    { id: 'cursed',  threshold: 85, apply(piece) { piece.mutated = 'cursed';  piece.color = '#ff4fd1'; piece.cursed = true; } },
+  ];
 
   const canvas = document.getElementById('tetCanvas');
   if (!canvas) throw new Error('Missing #tetCanvas for Tetris Block Topia');
@@ -93,6 +124,19 @@ function createLegacybootstrapTetris(root) {
   let raf = null;
   let lastTime = 0;
   let elapsed = 0;
+
+  // ── Roguelite run state ────────────────────────────────────────────────────
+  let wave = 0;
+  let lastWaveLevel = 0;
+  let phase = 'combat'; // 'combat' | 'upgrade' | 'boss'
+  let upgradeChoices = [];
+  let director = null;
+  let runStats = { bossesDefeated: 0, highestIntensity: 0, upgradeCount: 0, survivalSec: 0 };
+  let run = null;
+  let submittedMeta = false;
+  let overlayEl = null;
+  let bannerQueue = [];
+  let bannerTimer = 0;
 
   let board = [];
   let current = null;
@@ -203,7 +247,8 @@ function createLegacybootstrapTetris(root) {
 
   function addScore(amount) {
     if (!Number.isFinite(amount) || amount <= 0) return;
-    score += Math.floor(amount);
+    const mult = getRunScoreMult();
+    score += Math.floor(amount * mult);
     setBestMaybe();
     triggerHudFx(scoreStatEl, 'hud-pulse', 220);
   }
@@ -224,10 +269,200 @@ function createLegacybootstrapTetris(root) {
     syncSubmitButton();
   }
 
+  // ── Roguelite / Director helpers ──────────────────────────────────────────
+
+  function initRunState() {
+    run = { scoreMult: 1, dropSlowdown: 0, comboBoostMax: 0, shieldCharges: 0, phantomLineBonus: 0, levelRush: 0, reviveTokens: 0 };
+    runStats = { bossesDefeated: 0, highestIntensity: 0, upgradeCount: 0, survivalSec: 0 };
+    wave = 0;
+    lastWaveLevel = 0;
+    phase = 'combat';
+    director = createScalingDirector();
+    submittedMeta = false;
+  }
+
+  function addFloatBanner(_s, text, color) {
+    bannerQueue.push({ text, color: color || '#f7c948', ttl: 2.2 });
+  }
+
+  function injectGarbageLines(_s, count) {
+    for (let g = 0; g < count; g++) {
+      board.shift();
+      const row = Array(COLS).fill(null);
+      for (let c = 0; c < COLS; c++) if (Math.random() > 0.3) row[c] = '#556677';
+      board.push(row);
+    }
+  }
+
+  function triggerPowerClear(_s) {
+    let cleared = 0;
+    for (let r = board.length - 1; r >= 0 && cleared < 2; r--) {
+      if (board[r].some((c) => c !== null)) {
+        board.splice(r, 1);
+        board.unshift(Array(COLS).fill(null));
+        cleared++;
+      }
+    }
+    if (cleared > 0) addScore(cleared * 200 * level);
+  }
+
+  function maybeMutatePiece(piece) {
+    if (!director) return;
+    const intensity = director.intensity || 0;
+    const candidates = MUTATION_DEFS.filter((m) => intensity >= m.threshold);
+    if (!candidates.length) return;
+    if (Math.random() > 0.18) return;
+    const def = candidates[Math.floor(Math.random() * candidates.length)];
+    def.apply(piece);
+  }
+
+  function checkWaveProgress() {
+    if (!run || gameOver) return;
+    const currentWave = Math.floor((level - 1) / WAVE_SIZE);
+    if (currentWave > wave) {
+      wave = currentWave;
+      lastWaveLevel = level;
+      onWaveClear();
+    }
+  }
+
+  function onWaveClear() {
+    if (!run) return;
+    updateIntensity(director, 0, { bossKill: false });
+    director.pressure = Math.max(0, director.pressure - 20);
+    if (wave % BOSS_WAVE_EVERY === 0 && wave > 0) {
+      triggerBossWave();
+    } else {
+      triggerUpgradePhase();
+    }
+  }
+
+  function triggerBossWave() {
+    phase = 'boss';
+    runStats.bossesDefeated++;
+    director.eventBoostTimer = 12;
+    injectGarbageLines(null, 2);
+    addFloatBanner(null, '💀 BOSS WAVE!', '#ff4fd1');
+    playGameSound('level');
+    setTimeout(() => {
+      if (!gameOver && phase === 'boss') {
+        phase = 'combat';
+        triggerUpgradePhase();
+      }
+    }, 1500);
+  }
+
+  function triggerUpgradePhase() {
+    if (gameOver) return;
+    phase = 'upgrade';
+    paused = true;
+    const pool = UPGRADE_DEFS.slice();
+    const choices = [];
+    for (let i = 0; i < 3 && pool.length; i++) {
+      const idx = Math.floor(Math.random() * pool.length);
+      choices.push(pool.splice(idx, 1)[0]);
+    }
+    upgradeChoices = choices;
+    showUpgradeModal();
+  }
+
+  function showUpgradeModal() {
+    if (!overlayEl) {
+      overlayEl = document.createElement('div');
+      overlayEl.style.cssText = 'position:absolute;inset:0;background:rgba(0,0,20,0.88);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:20;font-family:monospace;';
+      const gameCard = canvas.closest('.game-card') || canvas.parentElement;
+      if (gameCard) { gameCard.style.position = 'relative'; gameCard.appendChild(overlayEl); }
+    }
+    const title = document.createElement('h2');
+    title.textContent = '⬆ WAVE ' + wave + ' CLEAR — CHOOSE UPGRADE';
+    title.style.cssText = 'color:#f7c948;margin-bottom:16px;font-size:1rem;text-align:center;';
+    const grid = document.createElement('div');
+    grid.style.cssText = 'display:flex;flex-direction:column;gap:8px;width:90%;max-width:320px;';
+    upgradeChoices.forEach((ch) => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      const rc = RARITY_COLORS[ch.rarity] || '#aaa';
+      btn.style.cssText = `background:#0d1a2e;border:2px solid ${rc};color:${rc};padding:10px 14px;border-radius:6px;cursor:pointer;text-align:left;`;
+      btn.innerHTML = '<strong>' + ch.name + '</strong><br><span style="font-size:0.8em;color:#aaa">' + ch.desc + '</span>';
+      btn.addEventListener('click', () => { applyUpgradeChoice(ch); });
+      grid.appendChild(btn);
+    });
+    overlayEl.innerHTML = '';
+    overlayEl.appendChild(title);
+    overlayEl.appendChild(grid);
+    overlayEl.style.display = 'flex';
+  }
+
+  function applyUpgradeChoice(choice) {
+    if (choice && run) {
+      choice.apply(run);
+      runStats.upgradeCount++;
+      if (run.levelRush > 0 && run.levelRush !== lastRunLevelRush) {
+        lastRunLevelRush = run.levelRush;
+        level += 1;
+        addScore(500 * level);
+        dropInterval = Math.max(0.07, 1.0 - (level - 1) * 0.08);
+      }
+      playGameSound('level');
+    }
+    hideUpgradeModal();
+    phase = 'combat';
+    paused = false;
+  }
+
+  let lastRunLevelRush = 0;
+
+  function hideUpgradeModal() {
+    if (overlayEl) overlayEl.style.display = 'none';
+  }
+
+  function tickDirectorState(dt) {
+    if (!director || !run) return;
+    tickDirector(director, dt);
+    updateIntensity(director, dt, {});
+    runStats.highestIntensity = Math.max(runStats.highestIntensity, director.intensity || 0);
+    if (shouldFirePressureEvent(director)) {
+      const ev = TETRIS_EVENTS.filter((e) => e.minWave <= wave);
+      if (ev.length) {
+        const pick = ev[Math.floor(Math.random() * ev.length)];
+        pick.execute({});
+      }
+      director.eventCooldown = 12 + Math.random() * 8;
+    }
+    const chaos = checkForcedChaos(director);
+    if (chaos) {
+      injectGarbageLines(null, 1);
+      addFloatBanner(null, '🔥 CHAOS!', '#ff4fd1');
+    }
+    if (director.eventBoostTimer > 0) {
+      director.eventBoostTimer -= dt;
+      dropInterval = Math.max(0.07, (dropInterval - dt * 0.002));
+    }
+    if (director.mirrorTimer > 0) director.mirrorTimer -= dt;
+    if (director.doubleScoreTimer > 0) director.doubleScoreTimer -= dt;
+  }
+
+  function getRunScoreMult() {
+    let m = run ? run.scoreMult : 1;
+    if (director && director.doubleScoreTimer > 0) m *= 2;
+    return m;
+  }
+
+  function getRunDropInterval(base) {
+    if (!run) return base;
+    const slowdown = run.dropSlowdown || 0;
+    return base + base * slowdown;
+  }
+
+  function getRunComboMax(base) {
+    if (!run) return base;
+    return base + (run.comboBoostMax || 0);
+  }
+
   function randPiece() {
     const key = PIECE_KEYS[Math.floor(Math.random() * PIECE_KEYS.length)];
     const shape = SHAPES[key];
-    return {
+    const piece = {
       key,
       rot: 0,
       row: -1,
@@ -235,6 +470,8 @@ function createLegacybootstrapTetris(root) {
       color: shape.color,
       shape,
     };
+    maybeMutatePiece(piece);
+    return piece;
   }
 
   function pieceCells(piece, rot) {
@@ -362,7 +599,7 @@ function createLegacybootstrapTetris(root) {
   function handleClearScoring(cleared) {
     const baseLineScore = [0, 100, 300, 500, 800][cleared] || 0;
     comboChain += 1;
-    comboMultiplier = Math.min(4, Math.max(1, comboChain));
+    comboMultiplier = Math.min(getRunComboMax(4), Math.max(1, comboChain));
 
     let backToBackBonus = 0;
     const isBackToBackType = cleared >= 4;
@@ -387,7 +624,8 @@ function createLegacybootstrapTetris(root) {
     lines += cleared;
     const prevLevel = level;
     level = Math.floor(lines / 10) + 1;
-    dropInterval = Math.max(0.07, 1.0 - (level - 1) * 0.08);
+    dropInterval = Math.max(0.07, getRunDropInterval(1.0 - (level - 1) * 0.08));
+    checkWaveProgress();
 
     triggerHudFx(linesStatEl, 'hud-pulse', 260);
     if (level > prevLevel) {
@@ -793,6 +1031,16 @@ function createLegacybootstrapTetris(root) {
     frameDebug.tick(ts);
     const dt = Math.min((ts - lastTime) / 1000, 0.05);
     lastTime = ts;
+    if (isRunActive()) {
+      tickDirectorState(dt);
+      runStats.survivalSec += dt;
+      bannerTimer -= dt;
+      if (bannerTimer <= 0 && bannerQueue.length) {
+        const b = bannerQueue.shift();
+        addFloatingText(b.text, canvas.width * 0.5, canvas.height * 0.2, b.color || '#f7c948', 1.1);
+        bannerTimer = 1.5;
+      }
+    }
     updateEffects(dt);
     updateGameplay(dt);
     draw(dt);
@@ -829,6 +1077,19 @@ function createLegacybootstrapTetris(root) {
     stopAllSounds();
     setBestMaybe();
     updateHud();
+
+    if (!submittedMeta) {
+      submittedMeta = true;
+      const runData = {
+        score: score,
+        wave: wave,
+        survival: Math.round(runStats.survivalSec || 0),
+        bossesDefeated: runStats.bossesDefeated || 0,
+        upgradeCount: runStats.upgradeCount || 0,
+        highestIntensity: runStats.highestIntensity || 0,
+      };
+      try { recordRunStats(runData); checkMilestones(runData); } catch (_) {}
+    }
 
     if (canSubmitCompetitive()) {
       await submitRunScore();
@@ -877,6 +1138,8 @@ function createLegacybootstrapTetris(root) {
     lastWasB2BType = false;
     submittedRunScore = false;
     submitInFlight = false;
+    initRunState();
+    lastRunLevelRush = 0;
 
     resetBoardState();
     if (comboEl) comboEl.classList.remove('active');
