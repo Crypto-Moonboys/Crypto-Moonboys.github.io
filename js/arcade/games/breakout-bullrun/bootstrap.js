@@ -507,21 +507,6 @@ function createLegacyBootstrapBreakoutBullrun(root) {
 
   function rand(a, b) { return a + Math.random() * (b - a); }
   function clamp(v, mn, mx) { return Math.max(mn, Math.min(mx, v)); }
-
-  function circleLine(cx, cy, r, x1, y1, x2, y2) {
-    const dx = x2 - x1; const dy = y2 - y1;
-    const fx = x1 - cx; const fy = y1 - cy;
-    const a  = dx * dx + dy * dy;
-    const b  = 2 * (fx * dx + fy * dy);
-    const c  = fx * fx + fy * fy - r * r;
-    const disc = b * b - 4 * a * c;
-    if (disc < 0) return false;
-    const t1 = (-b - Math.sqrt(disc)) / (2 * a);
-    const t2 = (-b + Math.sqrt(disc)) / (2 * a);
-    return (t1 >= 0 && t1 <= 1) || (t2 >= 0 && t2 <= 1);
-  }
-
-  function triggerHudFx(el, cls, ms) {
     if (!el) return;
     el.classList.remove(cls);
     void el.offsetWidth;
@@ -1409,7 +1394,7 @@ function createLegacyBootstrapBreakoutBullrun(root) {
       for (const b of bricks) {
         if (!b.alive) continue;
         if (lb.x > b.x && lb.x < b.x + b.w && lb.y > b.y && lb.y < b.y + b.h) {
-          hitBrick(b, {}, { piercing: 0, explosive: 0 }, spawnParticle, addScore, screenShake, addBanner, bricks, combo);
+          hitBrick(b, null, upgrades, spawnParticle, addScore, screenShake, addBanner, bricks, combo);
           laserBullets.splice(li, 1);
           hit = true;
           break;
@@ -1604,7 +1589,7 @@ function createLegacyBootstrapBreakoutBullrun(root) {
     const cx = (e.clientX !== undefined ? e.clientX : e.touches[0].clientX) - rect.left;
     const nx = cx * scaleX - paddle.w / 2;
     paddle.x = clamp(nx, 0, W - paddle.w);
-    paddle.vx = 0; // snap target
+    paddle.targetVx = 0; // mouse input: clear inertia target so update() decays naturally
   }
 
   function onPointerTap(e) {

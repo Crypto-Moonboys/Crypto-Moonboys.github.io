@@ -19,6 +19,25 @@ import { BRICK_COLORS, BRICK_GLOW, B_W, B_H } from './brick-system.js';
 function lerp(a, b, t) { return a + (b - a) * t; }
 function clamp(v, mn, mx) { return Math.max(mn, Math.min(mx, v)); }
 
+/** Polyfill roundRect for browsers that lack it (Safari < 15.4, older Edge). */
+function roundRect(ctx, x, y, w, h, r) {
+  if (typeof ctx.roundRect === 'function') {
+    ctx.roundRect(x, y, w, h, r);
+  } else {
+    const R = Math.min(r, w / 2, h / 2);
+    ctx.moveTo(x + R, y);
+    ctx.lineTo(x + w - R, y);
+    ctx.quadraticCurveTo(x + w, y, x + w, y + R);
+    ctx.lineTo(x + w, y + h - R);
+    ctx.quadraticCurveTo(x + w, y + h, x + w - R, y + h);
+    ctx.lineTo(x + R, y + h);
+    ctx.quadraticCurveTo(x, y + h, x, y + h - R);
+    ctx.lineTo(x, y + R);
+    ctx.quadraticCurveTo(x, y, x + R, y);
+    ctx.closePath();
+  }
+}
+
 // ── Boss colour map ───────────────────────────────────────────────────────────
 
 const BOSS_COLORS = {
@@ -86,7 +105,7 @@ export function createRenderer(ctx, W, H) {
     ctx.globalAlpha = alpha;
     ctx.fillStyle = flash > 0 ? '#ffffff' : color;
     ctx.beginPath();
-    ctx.roundRect(b.x, b.y, b.w, b.h, 4);
+    roundRect(ctx, b.x, b.y, b.w, b.h, 4);
     ctx.fill();
 
     // HP bar for multi-hit bricks
@@ -132,7 +151,7 @@ export function createRenderer(ctx, W, H) {
     ctx.shadowBlur  = 14;
     ctx.fillStyle = gColor;
     ctx.beginPath();
-    ctx.roundRect(paddle.x, paddle.y, paddle.w, paddle.h, 5);
+    roundRect(ctx, paddle.x, paddle.y, paddle.w, paddle.h, 5);
     ctx.fill();
 
     // Shield floor upgrade
@@ -265,7 +284,7 @@ export function createRenderer(ctx, W, H) {
         ctx.save();
         ctx.fillStyle = '#ff4fd1';
         ctx.beginPath();
-        ctx.roundRect(h.x - h.hw, h.y, h.hw * 2, h.hh, 4);
+        roundRect(ctx, h.x - h.hw, h.y, h.hw * 2, h.hh, 4);
         ctx.fill();
         ctx.restore();
       }
@@ -312,7 +331,7 @@ export function createRenderer(ctx, W, H) {
     // Boss body
     ctx.fillStyle = flashColor;
     ctx.beginPath();
-    ctx.roundRect(boss.x, boss.y, boss.w, boss.h, 8);
+    roundRect(ctx, boss.x, boss.y, boss.w, boss.h, 8);
     ctx.fill();
 
     // Phase indicator lines
@@ -421,7 +440,7 @@ export function createRenderer(ctx, W, H) {
     const tw = ctx.measureText(text).width + 24;
     ctx.fillStyle = 'rgba(0,0,0,0.65)';
     ctx.beginPath();
-    ctx.roundRect(W / 2 - tw / 2, 6, tw, 28, 6);
+    roundRect(ctx, W / 2 - tw / 2, 6, tw, 28, 6);
     ctx.fill();
 
     ctx.fillStyle    = color;
@@ -484,13 +503,13 @@ export function createRenderer(ctx, W, H) {
 
       ctx.fillStyle = 'rgba(30,40,60,0.95)';
       ctx.beginPath();
-      ctx.roundRect(cx, cy, cardW, cardH, 10);
+      roundRect(ctx, cx, cy, cardW, cardH, 10);
       ctx.fill();
 
       ctx.strokeStyle = rarityColor;
       ctx.lineWidth   = 1.5;
       ctx.beginPath();
-      ctx.roundRect(cx, cy, cardW, cardH, 10);
+      roundRect(ctx, cx, cy, cardW, cardH, 10);
       ctx.stroke();
 
       ctx.fillStyle = rarityColor;
@@ -616,7 +635,7 @@ export function createRenderer(ctx, W, H) {
       const tw = ctx.measureText(t.text).width + 20;
       ctx.font = 'bold 12px monospace';
       ctx.beginPath();
-      ctx.roundRect(W / 2 - tw / 2, ty - 16, tw, 24, 6);
+      roundRect(ctx, W / 2 - tw / 2, ty - 16, tw, 24, 6);
       ctx.fill();
       ctx.fillStyle = '#f7c948';
       ctx.textAlign    = 'center';
