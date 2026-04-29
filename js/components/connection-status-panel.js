@@ -29,11 +29,16 @@
 (function () {
   'use strict';
 
-  var REQUIRED_XP = 50;
+  // Fallback only — authoritative value comes from /blocktopia/progression.
+  var FALLBACK_REQUIRED_XP = 50;
   var STYLE_ID = 'csp-styles';
 
-  // Per-session XP cache; invalidated on identity/faction events.
-  var _arcadeXpCache = null;
+  // ── Per-session cache ─────────────────────────────────────────────────
+  // _progressionCache: { arcadeXp, requiredXp } once resolved; null until then.
+  // _progressionInflight: the in-flight Promise (shared by all concurrent callers).
+  // Clearing both on invalidate ensures the next call starts fresh.
+  var _progressionCache = null;
+  var _progressionInflight = null;
   var _apiOnlineCache = null;
 
   // ── Helpers ────────────────────────────────────────────────────────────
@@ -87,11 +92,23 @@
     return meta ? (meta.icon + ' ' + meta.label) : status.faction;
   }
 
+  /**
+   * Derives a human-readable sync label from getSyncState() output.
+   * Checks all known representations of auth_expired and missing_auth_payload
+   * so the label is correct regardless of which field the identity layer populates.
+   */
   function syncLabel(state) {
     if (!state || !state.linked) return 'Not linked';
     if (state.good) return 'Ready';
-    if (state.auth_expired) return 'Auth expired — relink';
-    if (state.status === 'missing_auth_payload') return 'Pending';
+    var expired =
+      state.auth_expired === true ||
+      state.status === 'auth_expired' ||
+      state.reason === 'auth_expired';
+    if (expired) return 'Auth expired — relink';
+    var pending =
+      state.status === 'missing_auth_payload' ||
+      state.reason === 'missing_auth_payload';
+    if (pending) return 'Pending';
     return 'Error';
   }
 
@@ -103,39 +120,63 @@
 
   // ── Async data ─────────────────────────────────────────────────────────
 
-  async function fetchArcadeXp() {
-    if (_arcadeXpCache !== null) return _arcadeXpCache;
-    var gate = getIdentity();
-    if (!gate) return 0;
+  /**
+   * Fetches /blocktopia/progression once per session.
+   * Returns { arcadeXp, requiredXp } — requiredXp comes from the API response;
+   * falls back to FALLBACK_REQUIRED_XP when the field is absent.
+   *
+   * De-duplication: all concurrent callers share the single in-flight Promise
+   * so only one HTTP request is made even when multiple panels/badges render
+   * simultaneously.
+   */
+  function fetchProgression() {
+    // Return cached result immediately when available.
+    if (_progressionCache !== null) return Promise.resolve(_progressionCache);
+    // Return the existing in-flight Promise to de-duplicate concurrent calls.
+    if (_progressionInflight !== null) return _progressionInflight;
 
-    var telegramAuth = null;
-    if (typeof gate.getSignedTelegramAuth === 'function') {
-      telegramAuth = gate.getSignedTelegramAuth();
-    }
-    if (!telegramAuth && typeof gate.restoreLinkedTelegramAuth === 'function') {
+    _progressionInflight = (async function () {
+      var fallback = { arcadeXp: 0, requiredXp: FALLBACK_REQUIRED_XP };
       try {
-        var restored = await gate.restoreLinkedTelegramAuth().catch(function () { return null; });
-        telegramAuth = restored && restored.ok ? restored.telegram_auth : null;
-      } catch (_) {}
-    }
-    if (!telegramAuth) return 0;
+        var gate = getIdentity();
+        if (!gate) { _progressionCache = fallback; _progressionInflight = null; return _progressionCache; }
 
-    var apiBase = getApiBase();
-    if (!apiBase) return 0;
+        var telegramAuth = null;
+        if (typeof gate.getSignedTelegramAuth === 'function') {
+          telegramAuth = gate.getSignedTelegramAuth();
+        }
+        if (!telegramAuth && typeof gate.restoreLinkedTelegramAuth === 'function') {
+          var restored = await gate.restoreLinkedTelegramAuth().catch(function () { return null; });
+          telegramAuth = restored && restored.ok ? restored.telegram_auth : null;
+        }
+        if (!telegramAuth) { _progressionCache = fallback; _progressionInflight = null; return _progressionCache; }
 
-    try {
-      var res = await fetch(apiBase + '/blocktopia/progression', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ telegram_auth: telegramAuth }),
-      });
-      var payload = await res.json().catch(function () { return {}; });
-      if (res.ok && payload && payload.ok === true && payload.progression) {
-        _arcadeXpCache = Math.max(0, Math.floor(Number(payload.progression.arcade_xp_total) || 0));
-        return _arcadeXpCache;
+        var apiBase = getApiBase();
+        if (!apiBase) { _progressionCache = fallback; _progressionInflight = null; return _progressionCache; }
+
+        var res = await fetch(apiBase + '/blocktopia/progression', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ telegram_auth: telegramAuth }),
+        });
+        var payload = await res.json().catch(function () { return {}; });
+        if (res.ok && payload && payload.ok === true && payload.progression) {
+          var prog = payload.progression;
+          _progressionCache = {
+            arcadeXp: Math.max(0, Math.floor(Number(prog.arcade_xp_total) || 0)),
+            requiredXp: Math.max(1, Math.floor(Number(prog.required_xp) || FALLBACK_REQUIRED_XP)),
+          };
+        } else {
+          _progressionCache = fallback;
+        }
+      } catch (_) {
+        _progressionCache = fallback;
       }
-    } catch (_) {}
-    return 0;
+      _progressionInflight = null;
+      return _progressionCache;
+    }());
+
+    return _progressionInflight;
   }
 
   async function checkApiOnline() {
@@ -162,9 +203,11 @@
     var linked = isLinked();
     var name = getDisplayName();
     var state = getSyncState();
-    var arcadeXp = linked ? await fetchArcadeXp() : 0;
+    var progression = linked ? await fetchProgression() : { arcadeXp: 0, requiredXp: FALLBACK_REQUIRED_XP };
+    var arcadeXp = progression.arcadeXp;
+    var requiredXp = progression.requiredXp;
     var apiOnline = await checkApiOnline();
-    var blocktopiaUnlocked = linked && arcadeXp >= REQUIRED_XP;
+    var blocktopiaUnlocked = linked && arcadeXp >= requiredXp;
     var faction = factionLabel();
     var sync = syncLabel(state);
     var syncClass = syncBadgeClass(state);
@@ -188,7 +231,7 @@
     } else {
       btAccess =
         '<span class="csp-val-locked">🔒 Locked — ' +
-        esc(String(arcadeXp)) + ' / ' + REQUIRED_XP + ' Arcade XP</span>';
+        esc(String(arcadeXp)) + ' / ' + requiredXp + ' Arcade XP</span>';
     }
 
     return '' +
@@ -211,7 +254,7 @@
         '<div class="csp-item-label">Required XP' +
           '<span class="csp-item-note">Block Topia entry</span>' +
         '</div>' +
-        '<div class="csp-item-val">' + REQUIRED_XP + '</div>' +
+        '<div class="csp-item-val">' + requiredXp + '</div>' +
       '</div>' +
 
       '<div class="csp-item csp-item--wide">' +
@@ -250,8 +293,10 @@
       return '<a href="/gkniftyheads-incubator.html" class="csp-badge csp-badge--unlinked" aria-label="Link Telegram to activate">🔗 Link Telegram</a>';
     }
     var name = getDisplayName();
-    var arcadeXp = await fetchArcadeXp();
-    var unlocked = arcadeXp >= REQUIRED_XP;
+    var progression = await fetchProgression();
+    var arcadeXp = progression.arcadeXp;
+    var requiredXp = progression.requiredXp;
+    var unlocked = arcadeXp >= requiredXp;
     return '' +
       '<span class="csp-badge csp-badge--linked" aria-label="Status: connected">' +
       'Connected as ' + esc(name || 'Player') +
@@ -300,25 +345,45 @@
 
   // ── Public mount helpers ───────────────────────────────────────────────
 
+  /**
+   * Mounts the full status panel into a container element.
+   * Uses a per-element render token (stored in dataset) so an older async
+   * render that completes after a newer one was started does not overwrite it.
+   */
   async function mount(containerOrId) {
     var el = typeof containerOrId === 'string'
       ? document.getElementById(containerOrId)
       : containerOrId;
     if (!el) return;
     injectStyles();
+    // Increment the token so any render started before this call can detect
+    // that a newer render is now in progress and must not write its result.
+    var token = (Number(el.dataset.cspToken || 0) + 1);
+    el.dataset.cspToken = String(token);
     el.innerHTML = '<div class="csp-loading">Checking status…</div>';
     var html = await buildPanelHTML();
-    el.innerHTML = html;
+    // Only commit the result if no newer render was launched after us.
+    if (String(el.dataset.cspToken) === String(token)) {
+      el.innerHTML = html;
+    }
   }
 
+  /**
+   * Mounts the compact header badge into a container element.
+   * Uses the same render-token pattern as mount() to prevent stale writes.
+   */
   async function mountBadge(containerOrId) {
     var el = typeof containerOrId === 'string'
       ? document.getElementById(containerOrId)
       : containerOrId;
     if (!el) return;
     injectStyles();
+    var token = (Number(el.dataset.cspToken || 0) + 1);
+    el.dataset.cspToken = String(token);
     var html = await buildBadgeHTML();
-    el.innerHTML = html;
+    if (String(el.dataset.cspToken) === String(token)) {
+      el.innerHTML = html;
+    }
   }
 
   // ── Global badge injection into header ────────────────────────────────
@@ -337,7 +402,8 @@
   // ── Reactive refresh on identity/faction events ────────────────────────
 
   function invalidateAndRefresh() {
-    _arcadeXpCache = null;
+    _progressionCache = null;
+    _progressionInflight = null;
     _apiOnlineCache = null;
     document.querySelectorAll('[data-csp-panel]').forEach(function (el) { mount(el); });
     var badge = document.getElementById('moonboys-global-status-badge');
