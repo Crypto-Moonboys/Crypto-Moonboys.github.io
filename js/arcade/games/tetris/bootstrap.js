@@ -342,7 +342,7 @@ function createLegacybootstrapTetris(root) {
 
   function triggerBossWave() {
     phase = 'boss';
-    runStats.bossesDefeated++;
+    // bossesDefeated incremented only if the player survives the boss wave (timeout fires without game over)
     director.eventBoostTimer = 12;
     injectGarbageLines(null, 2);
     addFloatBanner(null, '💀 BOSS WAVE!', '#ff4fd1');
@@ -350,6 +350,7 @@ function createLegacybootstrapTetris(root) {
     bossTimeout = setTimeout(() => {
       bossTimeout = null;
       if (!gameOver && phase === 'boss') {
+        runStats.bossesDefeated++;
         phase = 'combat';
         triggerUpgradePhase();
       }
