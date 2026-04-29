@@ -895,6 +895,8 @@ export default {
           WHERE telegram_id = ?
         `).bind(xpAfter, telegramId).run();
 
+        // Reuse the shared Block Topia audit log for arcade admin grants to avoid schema duplication.
+        // The reason field ('arcade_xp_admin_grant') distinguishes these entries from BT grants.
         await writeBlockTopiaAdminGrantAudit(env.DB, {
           telegramId,
           adminTelegramId,

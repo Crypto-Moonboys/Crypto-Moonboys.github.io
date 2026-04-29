@@ -82,6 +82,10 @@
       btTargetTelegramIdEl.value = activeAdminTelegramId;
       return;
     }
+    if (kind === 'bt-xp50k') {
+      xpEl.value = '50000';
+      return;
+    }
   }
 
   function getAuthContext() {
@@ -154,18 +158,24 @@
         denied = 'Denied: signed Telegram auth payload is missing or incomplete. Re-auth with Telegram.';
       }
       setState(accessState, denied, 'bad');
-      arcadeResultJson.textContent = stringifyPayload(accessPayload);
+      var serialized = stringifyPayload(accessPayload);
+      arcadeResultJson.textContent = serialized;
+      resultJson.textContent = serialized;
       return;
     }
 
     if (!accessPayload.admin_allowlisted) {
       setState(accessState, 'Denied: linked and authenticated, but this Telegram ID is not in the admin allowlist.', 'bad');
-      arcadeResultJson.textContent = stringifyPayload(accessPayload);
+      var serialized = stringifyPayload(accessPayload);
+      arcadeResultJson.textContent = serialized;
+      resultJson.textContent = serialized;
       return;
     }
     if (!accessPayload.admin_secret_configured) {
       setState(accessState, 'Denied: linked and allowlisted, but backend admin secret is not configured.', 'bad');
-      arcadeResultJson.textContent = stringifyPayload(accessPayload);
+      var serialized = stringifyPayload(accessPayload);
+      arcadeResultJson.textContent = serialized;
+      resultJson.textContent = serialized;
       return;
     }
 
