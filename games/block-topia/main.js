@@ -180,14 +180,20 @@ function moveLocal(dx, dy) {
   const nextX = runtime.localPlayer.x + dx;
   const nextY = runtime.localPlayer.y + dy;
 
-  // Do NOT mutate local position here — server is the source of truth.
-  // Send the desired target; server validates and broadcasts the accepted position.
+  // Multiplayer active → server is authoritative; send desired target.
   if (runtime.positionSink) {
     runtime.positionSink({
       x: nextX,
       y: nextY,
       sessionId: runtime.localPlayer.sessionId,
     });
+    return;
+  }
+
+  // Fallback → apply local movement when not connected (prevents frozen map).
+  if (isPassable(nextX, nextY)) {
+    runtime.localPlayer.x = nextX;
+    runtime.localPlayer.y = nextY;
   }
 }
 
@@ -234,14 +240,20 @@ function onPointerDown(event) {
     return;
   }
 
-  // Do NOT mutate local position — server is the source of truth.
-  // Send the desired target; server validates and broadcasts the accepted position.
+  // Multiplayer active → server is authoritative; send desired target.
   if (runtime.positionSink) {
     runtime.positionSink({
       x: tile.x,
       y: tile.y,
       sessionId: runtime.localPlayer.sessionId,
     });
+    return;
+  }
+
+  // Fallback → apply local movement when not connected (prevents frozen map).
+  if (isPassable(tile.x, tile.y)) {
+    runtime.localPlayer.x = tile.x;
+    runtime.localPlayer.y = tile.y;
   }
 }
 
