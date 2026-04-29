@@ -41,22 +41,32 @@
   // Shared across all LAS instances on the page; survives refreshes.
   var _activityLog = [];
 
+  var _logRenderScheduled = false;
+
   function addToLog(entry) {
     _activityLog.unshift(entry);
     if (_activityLog.length > LOG_MAX) _activityLog.length = LOG_MAX;
     // Emit to event bus
     var bus = window.MOONBOYS_EVENT_BUS;
     if (bus && typeof bus.emit === 'function') bus.emit('activity:event', entry);
-    // Re-render all panels immediately (defer to avoid re-entrancy)
-    setTimeout(function () {
-      document.querySelectorAll('[data-las-panel]').forEach(function (el) { mount(el); });
-    }, 0);
+    // Re-render all panels; batch rapid events into a single paint cycle.
+    if (!_logRenderScheduled) {
+      _logRenderScheduled = true;
+      var raf = typeof requestAnimationFrame === 'function' ? requestAnimationFrame : function (fn) { fn(); };
+      raf(function () {
+        _logRenderScheduled = false;
+        document.querySelectorAll('[data-las-panel]').forEach(function (el) { mount(el); });
+      });
+    }
+  }
+
+  function pad2(n) {
+    return n < 10 ? '0' + n : String(n);
   }
 
   function formatTime() {
     var d = new Date();
-    return d.getHours().toString().padStart(2, '0') + ':' +
-           d.getMinutes().toString().padStart(2, '0');
+    return pad2(d.getHours()) + ':' + pad2(d.getMinutes());
   }
 
   function buildLogEntry(type, text) {
