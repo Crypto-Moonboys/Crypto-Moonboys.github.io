@@ -90,9 +90,8 @@ function createLegacybootstrapBreakout(root) {
   let lastTime = 0;
   let elapsed = 0;
 
-  // Cross-game modifier: score surge
-  const _brCrossMods  = getActiveModifiers(GAME_ID, BREAKOUT_CONFIG.crossGameTags || []);
-  const brModScoreMult = getStatEffect(_brCrossMods, 'scoreMult', 1);
+  // Cross-game modifier: fetched fresh each run in resetGame()
+  let brModScoreMult = 1;
 
   let balls = [];
   let launched = false;
@@ -310,6 +309,12 @@ function createLegacybootstrapBreakout(root) {
   }
 
   function resetGame() {
+    // Re-fetch modifier so UI panel changes take effect on the next run
+    brModScoreMult = getStatEffect(
+      getActiveModifiers(GAME_ID, BREAKOUT_CONFIG.crossGameTags || []),
+      'scoreMult', 1
+    );
+
     score = 0;
     level = 1;
     combo = 1;

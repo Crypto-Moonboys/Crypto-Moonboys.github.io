@@ -219,7 +219,7 @@ function createLegacybootstrapInvaders(root) {
   let _crossMods          = getActiveModifiers(GAME_ID, INVADERS_CONFIG.crossGameTags || []);
   let modScoreMult        = getStatEffect(_crossMods, 'scoreMult', 1);
   let modShieldedStart    = hasEffect(_crossMods, 'shieldedStart');
-  let modSlowChaos        = hasEffect(_crossMods, 'pressureRate');
+  let modPressureRate     = getStatEffect(_crossMods, 'pressureRate', 1);
   let modBossHunterMult   = getStatEffect(_crossMods, 'bossDmgMult', 1);
   let modMagnetLuck       = hasEffect(_crossMods, 'magnetPickups');
   let modRecoveryPulse    = hasEffect(_crossMods, 'recoveryPulse');
@@ -229,7 +229,7 @@ function createLegacybootstrapInvaders(root) {
     _crossMods          = getActiveModifiers(GAME_ID, INVADERS_CONFIG.crossGameTags || []);
     modScoreMult        = getStatEffect(_crossMods, 'scoreMult', 1);
     modShieldedStart    = hasEffect(_crossMods, 'shieldedStart');
-    modSlowChaos        = hasEffect(_crossMods, 'pressureRate');
+    modPressureRate     = getStatEffect(_crossMods, 'pressureRate', 1);
     modBossHunterMult   = getStatEffect(_crossMods, 'bossDmgMult', 1);
     modMagnetLuck       = hasEffect(_crossMods, 'magnetPickups');
     modRecoveryPulse    = hasEffect(_crossMods, 'recoveryPulse');
@@ -756,12 +756,7 @@ function createLegacybootstrapInvaders(root) {
     if (recoveryTimer > 0) recoveryTimer = Math.max(0, recoveryTimer - dt);
 
     // Tick scaling director (pass event-active flag + daily pressure multiplier)
-    tickDirector(director, dt, score, wave, lives, upgrades, !!activeEvent, dailyVariation.eventRateMult || 1);
-
-    // Slow Chaos modifier: bleed a fraction of pressure each frame (-10% rate)
-    if (modSlowChaos && director.pressure > 0) {
-      director.pressure = Math.max(0, director.pressure - 10 * dt);
-    }
+    tickDirector(director, dt, score, wave, lives, upgrades, !!activeEvent, (dailyVariation.eventRateMult || 1) * modPressureRate);
 
     // Forced chaos: inject a surprise event if the player has been safe too long
     if (!activeEvent && checkForcedChaos(director)) {

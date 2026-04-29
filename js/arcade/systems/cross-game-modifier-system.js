@@ -264,6 +264,12 @@ export function getActiveModifiers(gameId, tags) {
   var activeId = getActiveModifier();
   if (!activeId) return [];
 
+  // Safety: if the stored active modifier is no longer unlocked, clear it and bail
+  if (!isModifierUnlocked(activeId)) {
+    clearActiveModifier();
+    return [];
+  }
+
   var def = _byId.get(activeId);
   if (!def) return [];
 

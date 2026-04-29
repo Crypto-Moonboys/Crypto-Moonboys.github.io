@@ -505,22 +505,22 @@ function createLegacyBootstrapBreakoutBullrun(root) {
   const keys     = engine.keys;
 
   // ── Cross-game modifier state ─────────────────────────────────────────────
-  let _bbCrossMods       = getActiveModifiers(GAME_ID, BREAKOUT_BULLRUN_CONFIG.crossGameTags || []);
-  let bbModScoreMult     = getStatEffect(_bbCrossMods, 'scoreMult', 1);
-  let bbModShieldedStart = hasEffect(_bbCrossMods, 'shieldedStart');
-  let bbModSlowChaos     = hasEffect(_bbCrossMods, 'pressureRate');
-  let bbModMagnetLuck    = hasEffect(_bbCrossMods, 'magnetPickups');
-  let bbModRecoveryPulse = hasEffect(_bbCrossMods, 'recoveryPulse');
-  let bbModBossHunter    = getStatEffect(_bbCrossMods, 'bossDmgMult', 1);
+  let _bbCrossMods        = getActiveModifiers(GAME_ID, BREAKOUT_BULLRUN_CONFIG.crossGameTags || []);
+  let bbModScoreMult      = getStatEffect(_bbCrossMods, 'scoreMult', 1);
+  let bbModShieldedStart  = hasEffect(_bbCrossMods, 'shieldedStart');
+  let bbModPressureRate   = getStatEffect(_bbCrossMods, 'pressureRate', 1);
+  let bbModMagnetLuck     = hasEffect(_bbCrossMods, 'magnetPickups');
+  let bbModRecoveryPulse  = hasEffect(_bbCrossMods, 'recoveryPulse');
+  let bbModBossHunter     = getStatEffect(_bbCrossMods, 'bossDmgMult', 1);
 
   function _bbRefreshCrossMods() {
-    _bbCrossMods       = getActiveModifiers(GAME_ID, BREAKOUT_BULLRUN_CONFIG.crossGameTags || []);
-    bbModScoreMult     = getStatEffect(_bbCrossMods, 'scoreMult', 1);
-    bbModShieldedStart = hasEffect(_bbCrossMods, 'shieldedStart');
-    bbModSlowChaos     = hasEffect(_bbCrossMods, 'pressureRate');
-    bbModMagnetLuck    = hasEffect(_bbCrossMods, 'magnetPickups');
-    bbModRecoveryPulse = hasEffect(_bbCrossMods, 'recoveryPulse');
-    bbModBossHunter    = getStatEffect(_bbCrossMods, 'bossDmgMult', 1);
+    _bbCrossMods        = getActiveModifiers(GAME_ID, BREAKOUT_BULLRUN_CONFIG.crossGameTags || []);
+    bbModScoreMult      = getStatEffect(_bbCrossMods, 'scoreMult', 1);
+    bbModShieldedStart  = hasEffect(_bbCrossMods, 'shieldedStart');
+    bbModPressureRate   = getStatEffect(_bbCrossMods, 'pressureRate', 1);
+    bbModMagnetLuck     = hasEffect(_bbCrossMods, 'magnetPickups');
+    bbModRecoveryPulse  = hasEffect(_bbCrossMods, 'recoveryPulse');
+    bbModBossHunter     = getStatEffect(_bbCrossMods, 'bossDmgMult', 1);
   }
 
   // ── Utilities ─────────────────────────────────────────────────────────────
@@ -1003,12 +1003,7 @@ function createLegacyBootstrapBreakoutBullrun(root) {
 
     // ── Scaling director ────────────────────────────────────────────────────
 
-    tickDirector(director, dt, score, wave, lives, upgrades, !!activeEvent, dailyVariation.eventRateMult || 1);
-
-    // Slow Chaos modifier: bleed pressure each frame
-    if (bbModSlowChaos && director.pressure > 0) {
-      director.pressure = Math.max(0, director.pressure - 10 * dt);
-    }
+    tickDirector(director, dt, score, wave, lives, upgrades, !!activeEvent, (dailyVariation.eventRateMult || 1) * bbModPressureRate);
 
     // ── Forced chaos event ──────────────────────────────────────────────────
 

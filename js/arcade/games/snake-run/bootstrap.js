@@ -286,14 +286,19 @@ function resetRun(state) {
   state.runStats = { bossesDefeated: 0, highestIntensity: 0 };
 
   // Apply cross-game modifier effects for this run
+  // (computed before the upgrades reset so we can read effects cleanly;
+  //  shieldedStart is applied after the reset loop below)
   const _srCrossMods = getActiveModifiers(GAME_ID, SNAKE_RUN_CONFIG.crossGameTags || []);
-  state._crossModScoreMult = getStatEffect(_srCrossMods, 'scoreMult', 1);
-  if (hasEffect(_srCrossMods, 'shieldedStart')) {
-    state.upgrades['shield-segment'] = Math.max(state.upgrades['shield-segment'], 1);
-  }
-  state._crossModSlowChaos = hasEffect(_srCrossMods, 'pressureRate');
+  state._crossModScoreMult   = getStatEffect(_srCrossMods, 'scoreMult', 1);
+  state._crossModPressureRate = getStatEffect(_srCrossMods, 'pressureRate', 1);
+  const _srShieldedStart = hasEffect(_srCrossMods, 'shieldedStart');
 
   for (const key of Object.keys(state.upgrades)) state.upgrades[key] = 0;
+
+  // Shielded Start: applied after upgrades reset so it isn't wiped
+  if (_srShieldedStart) {
+    state.upgrades['shield-segment'] = 1;
+  }
 
   state.foods = [];
   for (let i = 0; i < 5; i += 1) spawnFood(state, 'normal');
@@ -706,13 +711,8 @@ function updateEventsAndDirector(state, dt) {
     Math.max(1, 3 - Math.floor(state.upgrades['shield-segment'] / 2)),
     state.upgrades,
     !!state.eventState.id,
-    state.dailyVariation ? state.dailyVariation.eventRateMult : 1
+    (state.dailyVariation ? state.dailyVariation.eventRateMult : 1) * (state._crossModPressureRate || 1)
   );
-
-  // Slow Chaos modifier: bleed pressure each frame
-  if (state._crossModSlowChaos && state.director.pressure > 0) {
-    state.director.pressure = Math.max(0, state.director.pressure - 10 * dt);
-  }
 
   const near = state.hazards.drones.length + state.hazards.hunterSnakes.length + (state.boss ? 4 : 0);
   updateIntensity(state.director, dt, {
