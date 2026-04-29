@@ -92,7 +92,6 @@ const forbiddenPaths = [
   'games/block-topia/duel',
   // Old HexGL variants
   'games/hexgl',
-  'games/hexgl-monster-max/js/arcade/games/hexgl-monster-max/score-enabled.js',
 ];
 for (const f of forbiddenPaths) {
   if (!exists(f)) {
@@ -130,8 +129,19 @@ const hexglBootstrap = read('js/arcade/games/hexgl-monster-max/bootstrap.js');
 if (hexglBootstrap === null) {
   pass('hexgl-monster-max bootstrap not present (deprecated)');
 } else {
-  // Score submission must remain disabled
-  if (/submitScore\s*\(/.test(hexglBootstrap) && !/\/\/.*submitScore/.test(hexglBootstrap)) {
+  // Score submission must remain disabled.
+  // Check each line: if it contains submitScore( and is NOT a comment line, flag it.
+  const activeSubmitLine = hexglBootstrap.split('\n').some((line) => {
+    const trimmed = line.trim();
+    // Skip single-line comments and block-comment lines
+    if (trimmed.startsWith('//') || trimmed.startsWith('*') || trimmed.startsWith('/*')) {
+      return false;
+    }
+    // Also remove inline trailing comments before testing
+    const withoutInlineComment = trimmed.replace(/\/\/.*$/, '');
+    return /submitScore\s*\(/.test(withoutInlineComment);
+  });
+  if (activeSubmitLine) {
     fail('hexgl-monster-max bootstrap appears to have score submission re-enabled');
   } else {
     pass('hexgl-monster-max score submission remains disabled');

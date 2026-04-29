@@ -38,7 +38,7 @@ The following paths were removed by design and must **not** be re-introduced:
 | `games/block-topia/ui/` | Block Topia clean-state reset |
 | `games/block-topia/economy/` | Block Topia clean-state reset |
 | `games/block-topia/duel/` | Block Topia clean-state reset |
-| `games/hexgl/` | HexGL deprecated, not an active game |
+| `games/hexgl/` | HexGL deprecated; only `hexgl-monster-max` archive remains |
 
 ### 4 — README.md content
 `README.md` must contain the headings:
