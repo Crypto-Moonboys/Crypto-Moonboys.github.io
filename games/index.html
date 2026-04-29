@@ -83,13 +83,15 @@
 
       <section class="notice info" role="note" aria-label="Arcade system explainer">
         <span class="notice-icon" aria-hidden="true">◈</span>
-        <div><strong>Arcade System:</strong> Rank = score only. Accepted runs can convert to XP after Telegram sync. XP is required to enter Block Topia. Use <code>/gklink</code> in <a href="https://t.me/WIKICOMSBOT" target="_blank" rel="noopener noreferrer">@WIKICOMSBOT</a> to link your account.</div>
+        <div><strong>Arcade System:</strong> Rank = score only. Accepted runs can convert to Arcade XP after Telegram sync. 50 Arcade XP is required to enter Block Topia. Use <code>/gklink</code> in <a href="https://t.me/WIKICOMSBOT" target="_blank" rel="noopener noreferrer">@WIKICOMSBOT</a> to link your account.</div>
       </section>
 
       <div class="notice warning" role="note">
         <span class="notice-icon" aria-hidden="true">◈</span>
         <div><strong>Live Multiplayer</strong> — Enter the Block Topia city shell: <a href="/games/block-topia/" rel="noopener">cryptomoonboys.com/games/block-topia/</a></div>
       </div>
+
+      <div id="arcade-status-panel" data-csp-panel style="margin-bottom:18px"></div>
 
       <div class="article-list" aria-label="Games in the Moonboys Arcade">
         <a href="/games/leaderboard.html" class="article-list-item">
@@ -176,7 +178,7 @@
           <div class="ali-icon">🏙️</div>
           <div>
             <div class="ali-title">Block Topia</div>
-            <div class="ali-desc">Clean 2-player isometric map base. Requires Telegram-linked account and XXX XP to enter. More gameplay systems coming.</div>
+            <div class="ali-desc">Clean 2-player isometric map base. Requires Telegram-linked account and 50 Arcade XP to enter. More gameplay systems coming.</div>
             <div class="ali-meta">Multiplayer · ISO 3D · Live</div>
           </div>
         </a>
@@ -208,6 +210,10 @@
 </div>
 
 <button id="back-to-top" aria-label="Back to top">↑</button>
+<script src="/js/api-config.js"></script>
+<script src="/js/identity-gate.js"></script>
+<script src="/js/faction-alignment.js"></script>
+<script src="/js/components/connection-status-panel.js"></script>
 <script src="/js/wiki.js"></script>
 </body>
 </html>

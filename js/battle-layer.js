@@ -188,7 +188,7 @@
     var el = document.getElementById('community-leaderboard');
     if (!el) return;
     if (!BASE || !FEATURES.LEADERBOARD) {
-      el.innerHTML = '<div class="community-empty">Engagement API not connected.</div>';
+      el.innerHTML = '<div class="community-empty">Connected to Core API — leaderboard data coming soon.</div>';
       return;
     }
     el.innerHTML = '<div class="community-loading">Loading contributors…</div>';
@@ -217,7 +217,7 @@
     var el = document.getElementById('community-feed');
     if (!el) return;
     if (!BASE || !FEATURES.LIVE_FEED) {
-      el.innerHTML = '<div class="community-empty">Live feed not connected.</div>';
+      el.innerHTML = '<div class="community-empty">Connected to Core API — live feed coming soon.</div>';
       return;
     }
     el.innerHTML = '<div class="community-loading">Loading activity…</div>';
@@ -245,7 +245,7 @@
     var el = document.getElementById('community-stats-grid');
     if (!el) return;
     if (!BASE || !FEATURES.ACTIVITY_PANEL) {
-      el.innerHTML = '<div class="community-empty">Activity panel not connected.</div>';
+      el.innerHTML = '<div class="community-empty">Connected to Core API — activity panel coming soon.</div>';
       return;
     }
     el.innerHTML = '<div class="community-loading">Loading trending pages…</div>';
