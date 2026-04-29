@@ -885,15 +885,21 @@ export default {
       const grantXp = Math.min(rawXp, ARCADE_ADMIN_XP_GRANT_MAX);
 
       try {
-        const state = await getOrCreateArcadeProgressionState(env.DB, telegramId);
-        const xpBefore = Math.max(0, Math.floor(Number(state.arcade_xp_total) || 0));
-        const xpAfter = xpBefore + grantXp;
-
         await env.DB.prepare(`
-          UPDATE arcade_progression_state
-          SET arcade_xp_total = ?, updated_at = CURRENT_TIMESTAMP
-          WHERE telegram_id = ?
-        `).bind(xpAfter, telegramId).run();
+          INSERT INTO arcade_progression_state
+            (telegram_id, arcade_xp_total, arcade_daily_xp, arcade_daily_key, arcade_restriction_level, restricted_until, updated_at)
+          VALUES (?, ?, 0, '', 0, NULL, CURRENT_TIMESTAMP)
+          ON CONFLICT(telegram_id)
+          DO UPDATE SET
+            arcade_xp_total = arcade_progression_state.arcade_xp_total + excluded.arcade_xp_total,
+            updated_at = CURRENT_TIMESTAMP
+        `).bind(telegramId, grantXp).run();
+
+        const row = await env.DB.prepare(`
+          SELECT arcade_xp_total FROM arcade_progression_state WHERE telegram_id = ? LIMIT 1
+        `).bind(telegramId).first();
+        const xpAfter = Math.max(0, Math.floor(Number(row?.arcade_xp_total) || 0));
+        const xpBefore = Math.max(0, xpAfter - grantXp);
 
         // Reuse the shared Block Topia audit log for arcade admin grants to avoid schema duplication.
         // The reason field ('arcade_xp_admin_grant') distinguishes these entries from BT grants.
