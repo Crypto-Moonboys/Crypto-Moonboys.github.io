@@ -147,9 +147,9 @@ function getIdentityApi() {
 
 function getCurrentIdentityLabel() {
   const gate = getIdentityApi();
-  if (!gate) return 'Not linked';
+  if (!gate) return 'Telegram not linked \u2014 run /gklink';
   const sync = typeof gate.getSyncState === 'function' ? gate.getSyncState() : null;
-  if (!sync || !sync.linked) return 'Not linked';
+  if (!sync || !sync.linked) return 'Telegram not linked \u2014 run /gklink';
   const name = typeof gate.getTelegramName === 'function' ? gate.getTelegramName() : null;
   const auth = typeof gate.getTelegramAuth === 'function' ? gate.getTelegramAuth() : null;
   const username = auth && (auth.username || auth.user?.username) ? String(auth.username || auth.user.username).replace(/^@/, '') : '';
@@ -171,14 +171,14 @@ function renderLinkedPresence() {
   box.classList.add(online ? 'sync-live' : 'sync-error');
   if (isPresenceHidden()) box.classList.add('presence-offline');
   box.innerHTML = linked
-    ? `<strong>You are linked as ${escHtml(display)}</strong><span class="lb-linked-meta">${online ? '● Online presence visible' : (isPresenceHidden() ? '○ Showing as offline' : '○ Sync attention required')}</span>`
-    : '<strong>You are linked as Not linked</strong><span class="lb-linked-meta">Run /gklink to store ranking/XP server-side.</span>';
+    ? `<strong>You are linked as ${escHtml(display)}</strong><span class="lb-linked-meta">${online ? '● Online presence visible' : (isPresenceHidden() ? '○ Presence hidden' : '○ Sync attention required')}</span>`
+    : '<strong>Telegram not linked \u2014 run /gklink</strong><span class="lb-linked-meta">Link to store ranking/XP server-side.</span>';
 
   const toggle = el('lb-presence-toggle');
   if (toggle) {
     toggle.disabled = !linked;
     toggle.setAttribute('aria-pressed', isPresenceHidden() ? 'true' : 'false');
-    toggle.textContent = isPresenceHidden() ? 'Show as online' : 'Show as offline';
+    toggle.textContent = isPresenceHidden() ? 'Show presence' : 'Hide presence';
   }
 }
 
@@ -284,7 +284,7 @@ function renderBreakdown(entry) {
   panel.innerHTML = `
     <div class="lb-bd-header">
       <span class="lb-bd-player">${escHtml(entry.player || '—')}</span>
-      <span class="lb-bd-total">${formatScore(entry.score ?? 0)} · est. +${projectedXpFromScore(entry.score ?? 0)} XP</span>
+      <span class="lb-bd-total">${formatScore(entry.score ?? 0)} · est. +${projectedXpFromScore(entry.score ?? 0)} Arcade XP</span>
     </div>
     <div class="lb-bd-grid">${rows.join('')}</div>
   `;
@@ -309,7 +309,7 @@ function renderTable(data) {
           <th scope="col" class="lb-col-rank">#</th>
           <th scope="col" class="lb-col-player">Player</th>
           <th scope="col" class="lb-col-faction">Faction</th>
-          <th scope="col" class="lb-col-score" title="Ranking uses score only. Accepted scores can convert into Block Topia XP after sync">Score (Ranking)</th>
+          <th scope="col" class="lb-col-score" title="Ranking uses score only. Accepted scores can convert into Arcade XP after sync">Score (Ranking)</th>
         </tr>
       </thead>
       <tbody>
@@ -322,7 +322,7 @@ function renderTable(data) {
         <td class="lb-rank">${medalFor(rank)}</td>
         <td class="lb-player">${escHtml(row.player || '—')}</td>
         <td class="lb-faction-cell">${factionBadge(row)}</td>
-        <td class="lb-score"><span class="lb-score-value" data-score-value="${Math.floor(Number(row.score ?? 0) || 0)}">${formatScore(row.score ?? 0)}</span> <span class="lb-score-sub" title="Ranking uses score only. XP stays secondary to score.">· est. +${projectedXpFromScore(row.score ?? 0)} XP</span></td>
+        <td class="lb-score"><span class="lb-score-value" data-score-value="${Math.floor(Number(row.score ?? 0) || 0)}">${formatScore(row.score ?? 0)}</span> <span class="lb-score-sub" title="Ranking uses score only. XP stays secondary to score.">· est. +${projectedXpFromScore(row.score ?? 0)} Arcade XP</span></td>
       </tr>
     `;
   });
@@ -427,7 +427,7 @@ async function loadLeaderboard() {
     renderTable(data);
   } catch (err) {
     console.error('[arcade-leaderboard]', err);
-    setErrorState(err.message || 'Could not load leaderboard.');
+    setErrorState('Core API unavailable');
   } finally {
     isFetching = false;
   }

@@ -151,7 +151,7 @@
       }
 
       if (!BASE || !FEATURES.COMMENTS) {
-        status.textContent = '⏳ Community comments are coming soon — backend not yet live.';
+        status.textContent = '⏳ Feature not yet available.';
         status.className   = 'comment-form-status cm-loading';
         return;
       }
@@ -340,11 +340,11 @@
         if (data) {
           renderComments(listEl, data.comments || []);
         } else {
-          listEl.innerHTML = '<div class="comments-error">Could not load comments.</div>';
+          listEl.innerHTML = '<div class="comments-error">Core API unavailable — could not load comments.</div>';
         }
       })
       .catch(function () {
-        listEl.innerHTML = '<div class="comments-error">Could not load comments.</div>';
+        listEl.innerHTML = '<div class="comments-error">Core API unavailable — could not load comments.</div>';
       });
   }
 

@@ -98,7 +98,7 @@
    * so the label is correct regardless of which field the identity layer populates.
    */
   function syncLabel(state) {
-    if (!state || !state.linked) return 'Not linked';
+    if (!state || !state.linked) return 'Telegram not linked \u2014 run /gklink';
     if (state.good) return 'Ready';
     var expired =
       state.auth_expired === true ||
@@ -276,7 +276,7 @@
       '<div class="csp-item">' +
         '<div class="csp-item-label">Core API</div>' +
         '<div class="csp-item-val ' + (apiOnline ? 'csp-val-good' : 'csp-val-locked') + '">' +
-          (apiOnline ? '● Online' : '○ Offline') +
+          (apiOnline ? '● Online' : 'Core API unavailable') +
         '</div>' +
       '</div>' +
 

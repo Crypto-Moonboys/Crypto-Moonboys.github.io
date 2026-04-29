@@ -6,7 +6,7 @@
  *
  * Configure MOONBOYS_API.BASE_URL in js/api-config.js.
  * When BASE_URL is null or feature flags are false, controls render
- * with a clear "API not connected" notice — nothing breaks.
+ * with a clear "Feature not yet available" notice — nothing breaks.
  *
  * Identity tiers (enforced by backend + this file):
  *   guest           — button renders but action blocked (sync gate modal shown)

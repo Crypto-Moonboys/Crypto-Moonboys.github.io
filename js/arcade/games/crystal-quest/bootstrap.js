@@ -555,8 +555,8 @@ function createLegacybootstrapCrystalQuest(root) {
     }
 
     if (statusLine) statusLine.textContent = linked
-      ? 'Identity linked â€” leaderboard enabled after run completion.'
-      : 'Identity not linked â€” score stays local until account is linked.';
+      ? 'Identity linked — leaderboard enabled after run completion.'
+      : 'Telegram not linked — run /gklink to store score server-side.';
 
     renderCurrentQuestion();
     updateHud();

@@ -213,7 +213,7 @@
         }).join('');
       })
       .catch(function () {
-        el.innerHTML = '<div class="community-empty">Could not load leaderboard.</div>';
+        el.innerHTML = '<div class="community-empty">Core API unavailable.</div>';
       });
   }
 
@@ -245,7 +245,7 @@
         }).join('');
       })
       .catch(function () {
-        el.innerHTML = '<div class="community-empty">Could not load feed.</div>';
+        el.innerHTML = '<div class="community-empty">Core API unavailable.</div>';
       });
   }
 
@@ -277,7 +277,7 @@
         }).join('');
       })
       .catch(function () {
-        el.innerHTML = '<div class="community-empty">Could not load trending pages.</div>';
+        el.innerHTML = '<div class="community-empty">Core API unavailable.</div>';
       });
   }
 

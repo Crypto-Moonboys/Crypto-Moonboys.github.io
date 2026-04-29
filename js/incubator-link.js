@@ -131,7 +131,7 @@
     var rawPayload = getHashPayload();
     scrubTelegramHash();
     if (!rawPayload) {
-      setStatus('Not linked', 'Invalid link. Use /gklink again.', false);
+      setStatus('Telegram not linked \u2014 run /gklink', 'Invalid link. Use /gklink again.', false);
       emitSyncState('bad', 'missing_payload');
       debug('payload_missing');
       return;
@@ -142,7 +142,7 @@
 
     if (!parsedPayload || typeof parsedPayload !== 'object') {
       clearStoredPayload();
-      setStatus('Not linked', 'Invalid link. Use /gklink again.', false);
+      setStatus('Telegram not linked \u2014 run /gklink', 'Invalid link. Use /gklink again.', false);
       emitSyncState('bad', 'invalid_payload');
       debug('payload_parse_failed', { rawLength: rawPayload.length });
       return;
@@ -166,7 +166,7 @@
             ? String(result.data.error)
             : 'Sync verification failed. Run /gklink again.';
           clearStoredPayload();
-          setStatus('Not linked', errorMessage, false);
+          setStatus('Telegram not linked \u2014 run /gklink', errorMessage, false);
           emitSyncState('bad', 'verify_failed');
           debug('verify_failed', {
             status: result.status,
@@ -200,7 +200,7 @@
 
         if (!linkedOk) {
           clearStoredPayload();
-          setStatus('Not linked', 'Signed Telegram auth is missing or expired. Run /gklink again.', false);
+          setStatus('Telegram not linked \u2014 run /gklink', 'Signed Telegram auth is missing or expired. Run /gklink again.', false);
           emitSyncState('bad', 'link_persist_failed');
           debug('link_persist_failed', { telegramId: result.data.telegram_id || null });
           return;
@@ -214,7 +214,7 @@
       })
       .catch(function (error) {
         clearStoredPayload();
-        setStatus('Not linked', 'Could not reach the sync server. Run /gklink again if this keeps happening.', false);
+        setStatus('Telegram not linked \u2014 run /gklink', 'Core API unavailable \u2014 run /gklink again if this persists.', false);
         emitSyncState('bad', 'network_error');
         debug('verify_exception', { message: error && error.message ? error.message : String(error) });
       });
