@@ -25,25 +25,7 @@
 
     <script src="/js/api-config.js"></script>
     <script src="/js/identity-gate.js"></script>
-    <!-- Hard entry gate — runs synchronously before any ESM module evaluates.
-         Redirects immediately if the user is not Telegram-linked or has insufficient XP.
-         The async API-based XP check inside the module remains as a deeper layer. -->
-    <script>
-      (function () {
-        var REQUIRED_XP = (window.BLOCKTOPIA_MULTIPLAYER_REQUIRED_XP || 50);
-        var isLinked = window.MOONBOYS_IDENTITY
-          && typeof window.MOONBOYS_IDENTITY.isTelegramLinked === 'function'
-          && window.MOONBOYS_IDENTITY.isTelegramLinked() === true;
-        var xp = (window.MOONBOYS_XP && window.MOONBOYS_XP.arcade_total) || 0;
-        if (!isLinked || xp < REQUIRED_XP) {
-          window.location.href = '/gkniftyheads-incubator.html';
-          throw new Error('blocktopia_entry_gate_blocked');
-        }
-      }());
-    </script>
     <script type="module">
-      import "./main.js";
-      import { connectMultiplayer, sendMovement } from "./network.js";
       import { BLOCKTOPIA_MULTIPLAYER_REQUIRED_XP } from "/shared/block-topia/constants.js";
 
       const mountOptions = { containerId: "game-shell", canvasId: "game" };
@@ -188,6 +170,12 @@
       }
 
       async function mountAndConnect(telegramAuth, arcadeXpTotal) {
+        // Dynamic imports — main.js and network.js are only loaded after the
+        // server-side XP gate has been verified.  Loading them earlier would
+        // render the map canvas before the check completes.
+        await import("./main.js");
+        const { connectMultiplayer, sendMovement } = await import("./network.js");
+
         // Wait for BlockTopiaMap API (main.js registers it synchronously but ESM
         // evaluation order may shift it to the next microtask tick).
         await new Promise((resolve, reject) => {
