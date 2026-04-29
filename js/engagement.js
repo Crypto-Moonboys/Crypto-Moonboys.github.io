@@ -102,7 +102,7 @@
       if (btn.disabled) return;
 
       if (!BASE || !FEATURES.LIKES) {
-        statusEl.textContent = '⚠️ Likes API not connected yet.';
+        statusEl.textContent = '⚠️ Likes feature not yet available.';
         return;
       }
 

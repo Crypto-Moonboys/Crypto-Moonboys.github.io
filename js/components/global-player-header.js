@@ -27,7 +27,7 @@
  *   Score         = leaderboard ranking
  *   Arcade XP     = multiplayer gate progress (Block Topia entry)
  *   Block Topia XP = in-game progression only
- *   Faction XP    = faction alignment only
+ *   Faction       = faction alignment only
  */
 (function () {
   'use strict';

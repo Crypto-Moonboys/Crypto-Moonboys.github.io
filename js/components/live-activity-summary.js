@@ -7,7 +7,7 @@
  *   - Core API: online / unavailable
  *     (never shows "not connected" when BASE_URL is set — only "unavailable" if a
  *      network call fails, or "not configured" when BASE_URL is genuinely absent)
- *   - Recent sync state (from MOONBOYS_IDENTITY)
+ *   - Identity / sync state (from MOONBOYS_IDENTITY)
  *   - Current faction state (from MOONBOYS_FACTION)
  *   - Clear fallback text when individual features are unavailable
  *
@@ -15,7 +15,7 @@
  *   Score         = leaderboard ranking
  *   Arcade XP     = multiplayer gate progress (Block Topia entry)
  *   Block Topia XP = in-game progression only
- *   Faction XP    = faction alignment only
+ *   Faction       = faction alignment only
  *
  * Usage — auto-mount:
  *   <div data-las-panel></div>
@@ -26,9 +26,9 @@
  *   window.MOONBOYS_LIVE_ACTIVITY.refresh()
  *
  * Depends on (all optional — graceful fallback if absent):
- *   window.MOONBOYS_API       (api-config.js)
- *   window.MOONBOYS_IDENTITY  (identity-gate.js)
- *   window.MOONBOYS_FACTION   (faction-alignment.js)
+ *   window.MOONBOYS_API          (api-config.js)
+ *   window.MOONBOYS_IDENTITY     (identity-gate.js)
+ *   window.MOONBOYS_FACTION      (faction-alignment.js)
  *   window.MOONBOYS_STATUS_PANEL (connection-status-panel.js)
  */
 (function () {
@@ -56,12 +56,6 @@
     return !!(gate && typeof gate.isTelegramLinked === 'function' && gate.isTelegramLinked());
   }
 
-  function getSyncState() {
-    var gate = window.MOONBOYS_IDENTITY;
-    if (!gate || typeof gate.getSyncState !== 'function') return null;
-    return gate.getSyncState();
-  }
-
   function getFactionStatus() {
     var fa = window.MOONBOYS_FACTION;
     if (!fa) return null;
@@ -69,14 +63,20 @@
   }
 
   // ── API online check ─────────────────────────────────────────────────────
-  // Reuses MOONBOYS_STATUS_PANEL cache when available to avoid a duplicate
-  // /blocktopia/progression request burst.
+  // Delegates to MOONBOYS_STATUS_PANEL.checkApiOnline() (connection-status-panel.js)
+  // so there is ONE source of truth and no duplicate HTTP polling.
+  // The local fallback runs only when CSP has not loaded on this page.
 
   var _apiOnlineCache = null;
   var _apiOnlineInflight = null;
 
   function checkApiOnline() {
-    // Share the MOONBOYS_STATUS_PANEL API-online cache when available.
+    // Preferred: reuse the shared cache from MOONBOYS_STATUS_PANEL.
+    var csp = window.MOONBOYS_STATUS_PANEL;
+    if (csp && typeof csp.checkApiOnline === 'function') {
+      return csp.checkApiOnline();
+    }
+    // Local fallback for pages where CSP is not loaded.
     if (_apiOnlineCache !== null) return Promise.resolve(_apiOnlineCache);
     if (_apiOnlineInflight !== null) return _apiOnlineInflight;
 
@@ -106,22 +106,35 @@
     return _apiOnlineInflight;
   }
 
-  // ── Sync summary ─────────────────────────────────────────────────────────
+  // ── Sync / identity summary ───────────────────────────────────────────────
+  // Four distinct cases — never collapsed:
+  //   1. Identity layer missing  → "Identity system unavailable"
+  //   2. Identity present, not linked → "Telegram not linked — run /gklink"
+  //   3. Linked, not yet synced  → "Sync in progress"
+  //   4. Linked + valid          → "Sync ready"
 
-  function syncSummary(state) {
+  function syncSummary() {
+    var gate = window.MOONBOYS_IDENTITY;
+
+    // Case 1: identity layer not loaded
+    if (!gate || typeof gate.getSyncState !== 'function') {
+      return { text: 'Identity system unavailable', good: false };
+    }
+
+    var state = gate.getSyncState();
+
+    // Case 2: identity present but Telegram not linked
     if (!state || !state.linked) {
-      return { text: 'Telegram not linked — run /gklink to activate sync', good: false };
+      return { text: 'Telegram not linked — run /gklink', good: false };
     }
-    if (state.good) return { text: 'Sync ready', good: true };
-    var expired =
-      state.auth_expired === true ||
-      state.status === 'auth_expired' ||
-      state.reason === 'auth_expired';
-    if (expired) return { text: 'Auth expired — relink Telegram', good: false };
-    if (state.status === 'missing_auth_payload' || state.reason === 'missing_auth_payload') {
-      return { text: 'Sync pending', good: false };
+
+    // Case 4: linked and fully synced
+    if (state.good) {
+      return { text: 'Sync ready', good: true };
     }
-    return { text: 'Sync error', good: false };
+
+    // Case 3: linked but auth not yet resolved (pending, expired, etc.)
+    return { text: 'Sync in progress', good: false };
   }
 
   // ── Faction summary ──────────────────────────────────────────────────────
@@ -132,24 +145,21 @@
     }
     var fa = window.MOONBOYS_FACTION;
     var meta = fa && typeof fa.getVisualMeta === 'function' ? fa.getVisualMeta(status.faction) : null;
-    var label = meta ? (meta.icon + ' ' + meta.label) : String(status.faction);
-    var xp = typeof status.faction_xp === 'number' ? status.faction_xp : 0;
-    return label + ' · Faction XP: ' + xp;
+    return meta ? (meta.icon + ' ' + meta.label) : String(status.faction);
   }
 
   // ── Build HTML ────────────────────────────────────────────────────────────
 
   async function buildHTML() {
     var linked = isLinked();
-    var state = getSyncState();
     var faction = getFactionStatus();
     var apiBase = getApiBase();
-    var sync = syncSummary(state);
+    var sync = syncSummary();
     var factionText = factionSummary(faction);
 
     // Determine API status label.
     // "not configured" when BASE_URL is absent; "unavailable" only when a
-    // live request fails — never just "not connected".
+    // live request fails — never "not connected".
     var apiStatusText;
     var apiStatusClass;
     if (!apiBase) {
@@ -179,7 +189,7 @@
           '</span>' +
         '</div>' +
         '<div class="las-row">' +
-          '<span class="las-label">Faction XP</span>' +
+          '<span class="las-label">Faction</span>' +
           '<span class="las-val">' + esc(factionText) + '</span>' +
         '</div>' +
         (!linked
@@ -231,6 +241,7 @@
   }
 
   function refresh() {
+    // Clear local fallback cache only (when CSP is present its own cache governs).
     _apiOnlineCache = null;
     _apiOnlineInflight = null;
     document.querySelectorAll('[data-las-panel]').forEach(function (el) { mount(el); });

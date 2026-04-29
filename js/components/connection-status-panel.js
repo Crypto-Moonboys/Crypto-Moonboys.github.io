@@ -220,7 +220,7 @@
     if (linked) {
       identityRow =
         '<span class="csp-dot csp-dot--green" aria-hidden="true"></span>' +
-        'Telegram: <strong>' + esc(name || 'Linked Player') + '</strong>';
+        'Telegram: <strong>' + esc(name || 'Player') + '</strong>';
     } else {
       identityRow =
         '<span class="csp-dot csp-dot--red" aria-hidden="true"></span>' +
@@ -444,6 +444,10 @@
     mount: mount,
     mountBadge: mountBadge,
     refresh: invalidateAndRefresh,
+    /** Shared API-online check — returns a Promise<boolean>. Other components
+     *  must delegate here instead of issuing their own HEAD request so there
+     *  is a single source of truth and no duplicate polling. */
+    checkApiOnline: checkApiOnline,
   };
 
 }());
