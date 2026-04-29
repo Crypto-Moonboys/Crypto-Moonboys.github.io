@@ -13,6 +13,7 @@ import { handleBlockTopiaProgressionRoute } from './blocktopia/routes.js';
  *   GET  /sam/status
  *   POST /admin/blocktopia/access
  *   POST /admin/blocktopia/grant-xp
+ *   POST /admin/arcade/grant-xp
  *   POST /telegram/auth
  *   POST /telegram/webhook
  *   GET  /telegram/profile?telegram_id=
@@ -60,6 +61,7 @@ const ARCADE_MAX_BATCH_ENTRIES = 50;
 const ARCADE_SCORE_SANITY_MAX = 1_000_000_000;
 const BLOCKTOPIA_ADMIN_XP_GRANT_MAX = 50000;
 const BLOCKTOPIA_ADMIN_GEMS_GRANT_MAX = 50000;
+const ARCADE_ADMIN_XP_GRANT_MAX = 50000;
 
 const CORS_HEADERS = {
   'Access-Control-Allow-Origin': '*',
@@ -846,6 +848,81 @@ export default {
           message: error?.message || String(error),
         });
         return err('Failed to grant Block Topia progression resources', 500);
+      }
+    }
+
+    // ── POST /admin/arcade/grant-xp ───────────────────────────────────────
+    // Admin-only tooling endpoint to grant Arcade XP (arcade_progression_state.arcade_xp_total).
+    // This is the value checked by the Block Topia multiplayer gate.
+    if (path === '/admin/arcade/grant-xp' && request.method === 'POST') {
+      const configuredSecret = String(env.ADMIN_SECRET || '').trim();
+      if (!configuredSecret) return err('Admin tooling is not configured', 503);
+      if (readAdminSecret(request) !== configuredSecret) return err('Unauthorized', 401);
+
+      let body;
+      try { body = await request.json(); } catch { return err('Invalid JSON', 400); }
+
+      const telegramId = String(body?.telegram_id || '').trim();
+      const adminTelegramId = String(body?.admin_telegram_id || '').trim();
+      const rawXp = body && Object.prototype.hasOwnProperty.call(body, 'xp') ? Number(body.xp) : null;
+      const reason = String(body?.reason || '').trim().slice(0, 280);
+
+      if (!telegramId || !/^\d{5,20}$/.test(telegramId)) {
+        return err('Valid target telegram_id is required', 400);
+      }
+      if (!adminTelegramId || !/^\d{5,20}$/.test(adminTelegramId)) {
+        return err('Valid admin_telegram_id is required', 400);
+      }
+      if (!isAdminTelegramUser(adminTelegramId, env)) {
+        return err('Forbidden: admin not allowed', 403);
+      }
+      if (rawXp === null) {
+        return err('xp is required', 400);
+      }
+      if (!Number.isInteger(rawXp) || rawXp <= 0) {
+        return err('xp must be a positive integer', 400);
+      }
+      const grantXp = Math.min(rawXp, ARCADE_ADMIN_XP_GRANT_MAX);
+
+      try {
+        const state = await getOrCreateArcadeProgressionState(env.DB, telegramId);
+        const xpBefore = Math.max(0, Math.floor(Number(state.arcade_xp_total) || 0));
+        const xpAfter = xpBefore + grantXp;
+
+        await env.DB.prepare(`
+          UPDATE arcade_progression_state
+          SET arcade_xp_total = ?, updated_at = CURRENT_TIMESTAMP
+          WHERE telegram_id = ?
+        `).bind(xpAfter, telegramId).run();
+
+        await writeBlockTopiaAdminGrantAudit(env.DB, {
+          telegramId,
+          adminTelegramId,
+          xpChange: grantXp,
+          gemsChange: 0,
+          reason: reason || 'arcade_xp_admin_grant',
+        });
+
+        return json({
+          ok: true,
+          target_telegram_id: telegramId,
+          admin_telegram_id: adminTelegramId,
+          requested_xp: rawXp,
+          granted_xp: grantXp,
+          arcade_progression: {
+            telegram_id: telegramId,
+            arcade_xp_total_before: xpBefore,
+            arcade_xp_total_after: xpAfter,
+          },
+        });
+      } catch (error) {
+        logApiFailure('admin_arcade_grant_xp_failed', {
+          telegramId,
+          adminTelegramId,
+          xp: rawXp,
+          message: error?.message || String(error),
+        });
+        return err('Failed to grant Arcade XP', 500);
       }
     }
 
