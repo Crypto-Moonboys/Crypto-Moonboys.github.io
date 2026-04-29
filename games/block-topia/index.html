@@ -29,7 +29,6 @@
       import { BLOCKTOPIA_MULTIPLAYER_REQUIRED_XP } from "/shared/block-topia/constants.js";
 
       const mountOptions = { containerId: "game-shell", canvasId: "game" };
-      const MAX_MOUNT_ATTEMPTS = 8;
 
       function getApiBase() {
         const cfg = window.MOONBOYS_API || {};
@@ -165,8 +164,13 @@
         }
 
         // ── Gate passed: mount the map, then connect multiplayer ─────
-        showGameShell();
-        await mountAndConnect(telegramAuth, arcadeXpTotal);
+        try {
+          await mountAndConnect(telegramAuth, arcadeXpTotal);
+        } catch (_mountErr) {
+          showGateScreen(
+            buildErrorGate("Unable to start Block Topia right now. Please try again.")
+          );
+        }
       }
 
       async function mountAndConnect(telegramAuth, arcadeXpTotal) {
@@ -176,30 +180,15 @@
         await import("./main.js");
         const { connectMultiplayer, sendMovement } = await import("./network.js");
 
-        // Wait for BlockTopiaMap API (main.js registers it synchronously but ESM
-        // evaluation order may shift it to the next microtask tick).
-        await new Promise((resolve, reject) => {
-          let attempts = 0;
-          const tryMount = () => {
-            const api = window.BlockTopiaMap;
-            if (api && typeof api.mount === "function") {
-              try {
-                api.mount(mountOptions);
-                resolve();
-              } catch (err) {
-                reject(err);
-              }
-              return;
-            }
-            attempts += 1;
-            if (attempts < MAX_MOUNT_ATTEMPTS) {
-              requestAnimationFrame(tryMount);
-            } else {
-              reject(new Error("BlockTopiaMap mount failed: API unavailable"));
-            }
-          };
-          requestAnimationFrame(tryMount);
-        });
+        // main.js registers window.BlockTopiaMap synchronously during evaluation.
+        const api = window.BlockTopiaMap;
+        if (!api || typeof api.mount !== "function") {
+          throw new Error("BlockTopiaMap API unavailable after import");
+        }
+        api.mount(mountOptions);
+
+        // Gate fully passed — reveal the game shell.
+        showGameShell();
 
         const playerName = `Player_${Math.floor(Math.random() * 9000) + 1000}`;
         console.log(`[BlockTopia] gate passed — ${arcadeXpTotal} XP — connecting multiplayer`);
