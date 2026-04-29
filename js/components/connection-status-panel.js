@@ -418,6 +418,12 @@
     ['moonboys:sync-state', 'moonboys:faction-status', 'moonboys:faction-boost'].forEach(function (evt) {
       window.addEventListener(evt, invalidateAndRefresh);
     });
+    // Refresh immediately when arcade XP changes so all panels show the new total.
+    window.addEventListener('moonboys:xp-gain', function () {
+      _progressionCache = null;
+      _progressionInflight = null;
+      invalidateAndRefresh();
+    });
     window.addEventListener('storage', function (e) {
       if (e.key && e.key.startsWith('moonboys_')) invalidateAndRefresh();
     });

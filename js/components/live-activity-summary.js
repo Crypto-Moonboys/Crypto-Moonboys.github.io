@@ -35,6 +35,33 @@
   'use strict';
 
   var STYLE_ID = 'las-styles';
+  var LOG_MAX = 6; // max recent activity entries to show
+
+  // ── In-memory activity log ────────────────────────────────────────────────
+  // Shared across all LAS instances on the page; survives refreshes.
+  var _activityLog = [];
+
+  function addToLog(entry) {
+    _activityLog.unshift(entry);
+    if (_activityLog.length > LOG_MAX) _activityLog.length = LOG_MAX;
+    // Emit to event bus
+    var bus = window.MOONBOYS_EVENT_BUS;
+    if (bus && typeof bus.emit === 'function') bus.emit('activity:event', entry);
+    // Re-render all panels immediately (defer to avoid re-entrancy)
+    setTimeout(function () {
+      document.querySelectorAll('[data-las-panel]').forEach(function (el) { mount(el); });
+    }, 0);
+  }
+
+  function formatTime() {
+    var d = new Date();
+    return d.getHours().toString().padStart(2, '0') + ':' +
+           d.getMinutes().toString().padStart(2, '0');
+  }
+
+  function buildLogEntry(type, text) {
+    return { type: type, text: text, time: formatTime(), ts: Date.now() };
+  }
 
   // ── Helpers ─────────────────────────────────────────────────────────────
 
@@ -150,6 +177,19 @@
 
   // ── Build HTML ────────────────────────────────────────────────────────────
 
+  function buildLogHTML() {
+    if (!_activityLog.length) return '';
+    var rows = _activityLog.map(function (e) {
+      var icon = e.type === 'xp' ? '⚡' : e.type === 'faction' ? '🏴' : e.type === 'sync' ? '🔗' : '📡';
+      return '<div class="las-event-row">' +
+        '<span class="las-event-time">' + esc(e.time) + '</span>' +
+        '<span class="las-event-icon" aria-hidden="true">' + icon + '</span>' +
+        '<span class="las-event-text">' + esc(e.text) + '</span>' +
+        '</div>';
+    }).join('');
+    return '<div class="las-event-log" aria-label="Recent activity">' + rows + '</div>';
+  }
+
   async function buildHTML() {
     var linked = isLinked();
     var faction = getFactionStatus();
@@ -199,6 +239,7 @@
               '</a>' +
             '</div>'
           : '') +
+        buildLogHTML() +
       '</div>'
     );
   }
@@ -219,6 +260,11 @@
       '.las-val--bad{color:#f85149}',
       '.las-val--warn{color:#d2991d}',
       '.las-link{color:#56dcff;text-decoration:underline;font-size:.8rem}',
+      '.las-event-log{margin-top:6px;border-top:1px solid rgba(86,220,255,.1);padding-top:6px;display:flex;flex-direction:column;gap:3px}',
+      '.las-event-row{display:flex;align-items:baseline;gap:5px;font-size:.75rem}',
+      '.las-event-time{color:var(--color-text-muted,#8b949e);flex-shrink:0;font-size:.68rem}',
+      '.las-event-icon{flex-shrink:0}',
+      '.las-event-text{color:var(--color-text,#e6f0ff);opacity:.85}',
     ].join('\n');
     (document.head || document.documentElement).appendChild(style);
   }
@@ -247,6 +293,45 @@
     document.querySelectorAll('[data-las-panel]').forEach(function (el) { mount(el); });
   }
 
+  // ── Event log listeners ───────────────────────────────────────────────────
+
+  function listenForActivity() {
+    window.addEventListener('moonboys:xp-gain', function (e) {
+      var d = (e && e.detail) || {};
+      var amount = Number(d.amount || 0);
+      var total = Number(d.total || 0);
+      var text = amount > 0
+        ? 'Arcade XP +' + amount + (total ? ' (total ' + total + ')' : '')
+        : 'Arcade XP synced';
+      addToLog(buildLogEntry('xp', text));
+    });
+
+    window.addEventListener('moonboys:faction-boost', function (e) {
+      var d = (e && e.detail) || {};
+      var fa = window.MOONBOYS_FACTION;
+      var meta = fa && typeof fa.getVisualMeta === 'function' ? fa.getVisualMeta(d.faction) : null;
+      var fLabel = meta ? (meta.icon + ' ' + meta.label) : String(d.faction || 'faction');
+      var text = d.source === 'join'
+        ? 'Joined ' + fLabel
+        : 'Faction XP earned (' + fLabel + ')';
+      addToLog(buildLogEntry('faction', text));
+    });
+
+    window.addEventListener('moonboys:sync-state', function (e) {
+      var d = (e && e.detail) || {};
+      var text = d.state === 'good' || d.state === 'xp_awarded' || d.state === 'accepted_no_xp'
+        ? 'Sync complete'
+        : d.state === 'bad' ? 'Sync issue detected' : 'Syncing\u2026';
+      addToLog(buildLogEntry('sync', text));
+    });
+
+    window.addEventListener('moonboys:score-updated', function (e) {
+      var d = (e && e.detail) || {};
+      var text = 'Score recorded' + (d.game ? ' (' + d.game + ')' : '');
+      addToLog(buildLogEntry('score', text));
+    });
+  }
+
   // ── Bootstrap ─────────────────────────────────────────────────────────────
 
   function bootstrap() {
@@ -258,6 +343,7 @@
     window.addEventListener('storage', function (e) {
       if (e.key && e.key.startsWith('moonboys_')) refresh();
     });
+    listenForActivity();
   }
 
   if (document.readyState === 'loading') {
@@ -271,6 +357,7 @@
   window.MOONBOYS_LIVE_ACTIVITY = {
     mount: mount,
     refresh: refresh,
+    addEvent: function (type, text) { addToLog(buildLogEntry(type || 'info', text || '')); },
   };
 
 }());
