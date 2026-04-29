@@ -82,6 +82,7 @@ export function bootstrapSnake(root) {
   var dir = { x: 1, y: 0 };
   var nextDir = { x: 1, y: 0 };
   var food = null;
+  var extraFoods = [];          // food-flood extras — cleared when timer expires
 
   var speedBoostTimer = 0;
   var multiplierTimer = 0;
@@ -120,8 +121,18 @@ export function bootstrapSnake(root) {
   var RARITY_COLORS = { common: '#88ccee', uncommon: '#3fb950', rare: '#f7c948', legendary: '#ff4fd1' };
 
   var SNAKE_EVENTS = [
-    { id: 'foodFlood',   minWave: 2, weight: 1.2, execute: function() { eventFoodFlood = 3; spawnFloatingTextLocal('🍎 FOOD FLOOD!', '#3fb950'); } },
-    { id: 'reverseWind', minWave: 3, weight: 0.9, execute: function() { eventReverseTimer = 5; spawnFloatingTextLocal('🌀 REVERSE WIND!', '#bc8cff'); } },
+    { id: 'foodFlood',   minWave: 2, weight: 1.2, execute: function() {
+        eventFoodFlood = 6;
+        // Spawn 2 extra food items that coexist with the main food for the duration
+        for (var _i = 0; _i < 2; _i++) extraFoods.push(spawnExtraFood());
+        spawnFloatingTextLocal('🍎 FOOD FLOOD!', '#3fb950');
+      }
+    },
+    { id: 'reverseWind', minWave: 3, weight: 0.9, execute: function() {
+        eventReverseTimer = 5;
+        spawnFloatingTextLocal('🌀 REVERSE WIND!', '#bc8cff');
+      }
+    },
     { id: 'chaosField',  minWave: 2, weight: 1.0, execute: function() { chaosTimer = Math.max(chaosTimer, 4); spawnFloatingTextLocal('☢ CHAOS FIELD!', '#ff5f5f'); } },
     { id: 'goldenRush',  minWave: 4, weight: 0.8, execute: function() { eventGoldenRush = 8; spawnFloatingTextLocal('⭐ GOLDEN RUSH!', '#f7c948'); } },
     { id: 'speedGhost',  minWave: 3, weight: 0.9, execute: function() { ghostTimer = Math.max(ghostTimer, 5); speedBoostTimer = Math.max(speedBoostTimer, 3); spawnFloatingTextLocal('👻 SPEED GHOST!', '#9d7dff'); } },
@@ -168,6 +179,7 @@ export function bootstrapSnake(root) {
     eventFoodFlood = 0;
     eventReverseTimer = 0;
     eventGoldenRush = 0;
+    extraFoods = [];
     hideSnakeUpgradeModal();
   }
 
@@ -203,7 +215,7 @@ export function bootstrapSnake(root) {
 
   function triggerBossWave() {
     snakePhase = 'boss';
-    runStats.bossesDefeated++;
+    // bossesDefeated is incremented only when the boss food is actually eaten (in eatFood)
     if (food) {
       food.mutated = 'boss';
       food.points = Math.max(food.points, 120);
@@ -291,9 +303,12 @@ export function bootstrapSnake(root) {
     var heatIntensity = Math.min(100, heat * 62);
     director.intensity = Math.max(director.intensity || 0, heatIntensity);
     runStats.highestIntensity = Math.max(runStats.highestIntensity, director.intensity);
-    if (eventReverseTimer > 0) eventReverseTimer -= dt;
-    if (eventGoldenRush > 0) eventGoldenRush -= dt;
-    if (eventFoodFlood > 0) eventFoodFlood -= dt;
+    if (eventReverseTimer > 0) eventReverseTimer = Math.max(0, eventReverseTimer - dt);
+    if (eventGoldenRush > 0) eventGoldenRush = Math.max(0, eventGoldenRush - dt);
+    if (eventFoodFlood > 0) {
+      eventFoodFlood = Math.max(0, eventFoodFlood - dt);
+      if (eventFoodFlood <= 0) extraFoods = [];  // clear extras when flood ends
+    }
     if (shouldFirePressureEvent(director)) {
       var eligible = SNAKE_EVENTS.filter(function(e) { return e.minWave <= wave; });
       if (eligible.length) {
@@ -405,9 +420,11 @@ export function bootstrapSnake(root) {
     if (multiplierTimer > 0) flags.push('x2 ' + multiplierTimer.toFixed(1) + 's');
     if (ghostTimer > 0) flags.push('GHOST ' + ghostTimer.toFixed(1) + 's');
     if (chaosTimer > 0) flags.push('CHAOS ' + chaosTimer.toFixed(1) + 's');
-    if (doublePickupsLeft > 0) flags.push('2xPICK Ã—' + doublePickupsLeft);
+    if (eventReverseTimer > 0) flags.push('REVERSE ' + eventReverseTimer.toFixed(1) + 's');
+    if (eventFoodFlood > 0) flags.push('FLOOD ' + eventFoodFlood.toFixed(1) + 's');
+    if (doublePickupsLeft > 0) flags.push('2xPICK ×' + doublePickupsLeft);
     if (comboSavePending) flags.push('SAVE \u2713');
-    return 'HEAT ' + pct + '%' + (flags.length ? ' â€¢ ' + flags.join(' â€¢ ') : '');
+    return 'HEAT ' + pct + '%' + (flags.length ? ' • ' + flags.join(' • ') : '');
   }
 
   function updateHud() {
@@ -537,6 +554,52 @@ export function bootstrapSnake(root) {
     return fallbackFood;
   }
 
+  // Spawn an extra food item for food-flood events, avoiding snake + main food + existing extras.
+  function spawnExtraFood() {
+    var visual = FOOD_VISUALS.normal;
+    for (var attempts = 0; attempts < MAX_FOOD_SPAWN_ATTEMPTS; attempts++) {
+      var candidate = {
+        x: Math.floor(Math.random() * grid),
+        y: Math.floor(Math.random() * grid),
+      };
+      var blocked = snake.some(function(seg) { return seg.x === candidate.x && seg.y === candidate.y; });
+      if (!blocked && food && food.x === candidate.x && food.y === candidate.y) blocked = true;
+      if (!blocked) {
+        for (var ei = 0; ei < extraFoods.length; ei++) {
+          if (extraFoods[ei].x === candidate.x && extraFoods[ei].y === candidate.y) { blocked = true; break; }
+        }
+      }
+      if (!blocked) {
+        return {
+          x: candidate.x,
+          y: candidate.y,
+          type: 'normal',
+          color: '#3fb950',
+          halo: '#b8ffcc',
+          icon: '🍎',
+          label: 'FLOOD',
+          points: 15,
+          pulseSeed: Math.random() * 999,
+          isExtra: true,
+        };
+      }
+    }
+    // Fallback — place at a safe-ish corner
+    return {
+      x: Math.floor(Math.random() * 4),
+      y: Math.floor(Math.random() * 4),
+      type: 'normal',
+      color: '#3fb950',
+      halo: '#b8ffcc',
+      icon: '🍎',
+      label: 'FLOOD',
+      points: 15,
+      pulseSeed: Math.random() * 999,
+      isExtra: true,
+    };
+  }
+
+
   function clearRuntimeState() {
     score = 0;
     timeAlive = 0;
@@ -557,6 +620,7 @@ export function bootstrapSnake(root) {
     shakeTime = 0;
     shakeIntensity = 0;
     accumulatorMs = 0;
+    extraFoods = [];
     dir = { x: 1, y: 0 };
     nextDir = { x: 1, y: 0 };
     snake = [{ x: 12, y: 12 }, { x: 11, y: 12 }, { x: 10, y: 12 }];
@@ -667,8 +731,19 @@ export function bootstrapSnake(root) {
     triggerShake(effects.turnShake * (1 + Math.min(1.2, comboCount * 0.08)), 0.06 + Math.min(0.16, comboCount * 0.015));
 
     setBestMaybe();
+    var wasBossFood = food.mutated === 'boss';
     food = spawnFood();
     foodEaten++;
+    if (wasBossFood) {
+      runStats.bossesDefeated++;
+      if (snakePhase === 'boss') {
+        snakePhase = 'combat';
+        triggerSnakeUpgradePhase();
+        updateHud();
+        rollGameplayBonus();
+        return;  // triggerSnakeUpgradePhase pauses the run; skip checkWaveProgress to avoid double-trigger
+      }
+    }
     checkWaveProgress();
     updateHud();
     rollGameplayBonus();
@@ -685,7 +760,7 @@ export function bootstrapSnake(root) {
   }
 
   function resolveInputDirection(x, y) {
-    if (chaosTimer > 0) return { x: -x, y: -y };
+    if (chaosTimer > 0 || eventReverseTimer > 0) return { x: -x, y: -y };
     return { x: x, y: y };
   }
 
@@ -769,7 +844,26 @@ export function bootstrapSnake(root) {
 
     snake.unshift(head);
     if (willEat) eatFood();
-    else snake.pop();
+    else {
+      // Check if head lands on any extra flood food
+      var ateExtra = false;
+      for (var _ei = extraFoods.length - 1; _ei >= 0; _ei--) {
+        var ef = extraFoods[_ei];
+        if (ef.x === head.x && ef.y === head.y) {
+          extraFoods.splice(_ei, 1);
+          var gain = Math.max(1, Math.round(ef.points * getComboMultiplier() * getLengthMultiplier() * getEffectMultiplier() * getRunScoreMultiplier()));
+          score += gain;
+          setBestMaybe();
+          var ec2 = centerFromCell(ef);
+          spawnBurst(ec2.x, ec2.y, ef.color || '#3fb950', 10, 1);
+          spawnFloatingText('+' + gain, ec2.x, ec2.y - 8, ef.color || '#3fb950', 1);
+          playGameSound('snake-eat');
+          ateExtra = true;
+          break;  // only eat one extra per step
+        }
+      }
+      if (!ateExtra) snake.pop();
+    }
     updateHud();
   }
 
@@ -894,6 +988,26 @@ export function bootstrapSnake(root) {
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillText(food.icon || 'â—', c.x, c.y + 0.5);
+
+    // Draw any extra flood foods
+    for (var _fi = 0; _fi < extraFoods.length; _fi++) {
+      var ef = extraFoods[_fi];
+      var ec = centerFromCell(ef);
+      var ep = 0.55 + 0.45 * Math.sin(t * 8.5 + (ef.pulseSeed || 0));
+      var er = size * (0.23 + ep * 0.14);
+      ctx.shadowColor = '#b8ffcc';
+      ctx.shadowBlur = 8;
+      ctx.fillStyle = ef.color || '#3fb950';
+      ctx.beginPath();
+      ctx.arc(ec.x, ec.y, er, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.shadowBlur = 0;
+      ctx.fillStyle = 'rgba(255,255,255,0.85)';
+      ctx.font = '700 ' + Math.max(9, Math.floor(size * 0.28)) + 'px system-ui';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(ef.icon || '\u25cb', ec.x, ec.y + 0.5);
+    }
   }
 
   function calculateEyeOffset(direction, radius) {
