@@ -34,6 +34,7 @@ function createLegacybootstrapTetris(root) {
   const LEVEL_SHAKE_GAIN_PER_LEVEL = 0.08;
   const BACK_TO_BACK_BONUS_MULTIPLIER = 0.45;
   const BACK_TO_BACK_CHAIN_STEP_BONUS = 35;
+  const MUTATION_CHANCE = 0.18;
 
   // ── Roguelite / Director constants ────────────────────────────────────────
   const WAVE_SIZE = 5;
@@ -137,6 +138,7 @@ function createLegacybootstrapTetris(root) {
   let overlayEl = null;
   let bannerQueue = [];
   let bannerTimer = 0;
+  let bossTimeout = null;
 
   let board = [];
   let current = null;
@@ -279,6 +281,7 @@ function createLegacybootstrapTetris(root) {
     phase = 'combat';
     director = createScalingDirector();
     submittedMeta = false;
+    if (bossTimeout !== null) { clearTimeout(bossTimeout); bossTimeout = null; }
   }
 
   function addFloatBanner(_s, text, color) {
@@ -311,7 +314,7 @@ function createLegacybootstrapTetris(root) {
     const intensity = director.intensity || 0;
     const candidates = MUTATION_DEFS.filter((m) => intensity >= m.threshold);
     if (!candidates.length) return;
-    if (Math.random() > 0.18) return;
+    if (Math.random() > MUTATION_CHANCE) return;
     const def = candidates[Math.floor(Math.random() * candidates.length)];
     def.apply(piece);
   }
@@ -344,7 +347,8 @@ function createLegacybootstrapTetris(root) {
     injectGarbageLines(null, 2);
     addFloatBanner(null, '💀 BOSS WAVE!', '#ff4fd1');
     playGameSound('level');
-    setTimeout(() => {
+    bossTimeout = setTimeout(() => {
+      bossTimeout = null;
       if (!gameOver && phase === 'boss') {
         phase = 'combat';
         triggerUpgradePhase();
@@ -401,7 +405,7 @@ function createLegacybootstrapTetris(root) {
         lastRunLevelRush = run.levelRush;
         level += 1;
         addScore(500 * level);
-        dropInterval = Math.max(0.07, 1.0 - (level - 1) * 0.08);
+        dropInterval = calcBaseDropInterval();
       }
       playGameSound('level');
     }
@@ -457,6 +461,10 @@ function createLegacybootstrapTetris(root) {
   function getRunComboMax(base) {
     if (!run) return base;
     return base + (run.comboBoostMax || 0);
+  }
+
+  function calcBaseDropInterval() {
+    return Math.max(0.07, getRunDropInterval(1.0 - (level - 1) * 0.08));
   }
 
   function randPiece() {
@@ -624,7 +632,7 @@ function createLegacybootstrapTetris(root) {
     lines += cleared;
     const prevLevel = level;
     level = Math.floor(lines / 10) + 1;
-    dropInterval = Math.max(0.07, getRunDropInterval(1.0 - (level - 1) * 0.08));
+    dropInterval = calcBaseDropInterval();
     checkWaveProgress();
 
     triggerHudFx(linesStatEl, 'hud-pulse', 260);
@@ -1088,7 +1096,7 @@ function createLegacybootstrapTetris(root) {
         upgradeCount: runStats.upgradeCount || 0,
         highestIntensity: runStats.highestIntensity || 0,
       };
-      try { recordRunStats(runData); checkMilestones(runData); } catch (_) {}
+      try { recordRunStats(runData); checkMilestones(runData); } catch (err) { console.error('[tetris] meta error:', err); }
     }
 
     if (canSubmitCompetitive()) {
@@ -1245,6 +1253,7 @@ function createLegacybootstrapTetris(root) {
 
   function destroy() {
     if (raf) cancelAnimationFrame(raf);
+    if (bossTimeout !== null) { clearTimeout(bossTimeout); bossTimeout = null; }
     stopAllSounds();
 
     document.removeEventListener('keydown', onKeyDown);

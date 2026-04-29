@@ -17,11 +17,13 @@
 
 import { BTQM_CONFIG }     from './config.js';
 import { GameRegistry } from '/js/arcade/core/game-registry.js';
+import { createGameAdapter, registerGameAdapter } from '/js/arcade/engine/game-adapter.js';
 
 import { ArcadeSync } from '/js/arcade-sync.js';
 import { submitScore } from '/js/leaderboard-client.js';
 import { createBtqmAudio } from './arcade-audio-btqm.js';
 import { createFxSystem } from './fx-system.js';
+import { buildRunSummary, recordRunStats, checkMilestones, getDailyVariation } from './meta-system.js';
 
 // ─── ZONE DEFINITIONS ────────────────────────────────────────────────────────
 const ZONES = [
@@ -201,6 +203,10 @@ const btqmRuntime = {
   startedAt: 0,
   playerName: 'Guest',
   playerSurvived: true,
+  // Director / meta tracking
+  intensity: 0,
+  highestIntensity: 0,
+  upgradeCount: 0,
 };
 
 function getIdentityNameFallback() {
@@ -228,6 +234,9 @@ function beginRun(playerName) {
   btqmRuntime.battlesWon = 0;
   btqmRuntime.startedAt = Date.now();
   btqmRuntime.playerSurvived = true;
+  btqmRuntime.intensity = 0;
+  btqmRuntime.highestIntensity = 0;
+  btqmRuntime.upgradeCount = 0;
   btqmRuntime.playerName = String(playerName || getIdentityNameFallback() || ArcadeSync.getPlayer() || 'Guest');
 }
 
@@ -281,6 +290,20 @@ async function finalizeRunSubmission(force) {
   btqmRuntime.runEnded = true;
   btqmRuntime.runSubmitted = true;
   btqmRuntime.runActive = false;
+  const survivalSec = Math.max(0, Math.floor((Date.now() - (btqmRuntime.startedAt || Date.now())) / 1000));
+  // Record run stats to per-game meta (maze_meta_v1)
+  const runData = {
+    score: finalScore,
+    wave: btqmRuntime.zoneClears || 0,
+    survival: survivalSec,
+    bossesDefeated: btqmRuntime.bossKills || 0,
+    upgradeCount: btqmRuntime.upgradeCount || 0,
+    highestIntensity: btqmRuntime.highestIntensity || 0,
+  };
+  try {
+    recordRunStats(runData);
+    checkMilestones(runData);
+  } catch (_) {}
   ArcadeSync.setPlayer(btqmRuntime.playerName || 'Guest');
   ArcadeSync.setHighScore(GAME_ID, finalScore);
   if (!canSubmitIdentity() || finalScore <= 0) return;
@@ -1972,6 +1995,9 @@ class BattleScene extends Phaser.Scene {
       syncDailyRunScore(d);
       btqmRuntime.bossKills += 1;
       btqmRuntime.zoneClears += 1;
+      // Scale director intensity with zone progression
+      btqmRuntime.intensity = Math.min(100, (btqmRuntime.zoneClears / 6) * 100);
+      btqmRuntime.highestIntensity = Math.max(btqmRuntime.highestIntensity, btqmRuntime.intensity);
       p.lifetimeClears = (p.lifetimeClears || 0) + 1;
       p.skillCharges   = Math.min(p.skillCharges + 1, 3);
       if (p.potions < 3) p.potions++;
@@ -2037,11 +2063,17 @@ class BattleScene extends Phaser.Scene {
 }
 
 
-// Register in the central arcade registry when this module is imported.
-GameRegistry.register(BTQM_CONFIG.id, {
-  label:     BTQM_CONFIG.label,
-  bootstrap: bootstrapBlockTopiaQuestMaze,
+// Register game adapter with full system declarations for system-parity.
+export const BTQM_ADAPTER = createGameAdapter({
+  id: BTQM_CONFIG.id,
+  name: BTQM_CONFIG.label,
+  systems: { upgrade: true, director: true, event: true, mutation: true, boss: true, risk: true, meta: true, feedback: true },
+  legacyBootstrap: function (root) {
+    return bootstrapBlockTopiaQuestMaze(root);
+  },
 });
+
+registerGameAdapter(BTQM_CONFIG, BTQM_ADAPTER, bootstrapBlockTopiaQuestMaze);
 
 // ─────────────────────────────────────────────────────────────────────────────
 // BOOTSTRAP ENTRY POINT

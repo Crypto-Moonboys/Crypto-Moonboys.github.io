@@ -37,7 +37,7 @@ import {
 } from '/js/arcade/systems/event-system.js';
 import { applyMutations } from '/js/arcade/systems/mutation-system.js';
 import { pickBossArchetype, spawnBossArchetype } from '/js/arcade/systems/boss-system.js';
-import { buildRunSummary, recordRunStats, checkMilestones, getDailyVariation } from '/js/arcade/systems/meta-system.js';
+import { buildRunSummary, recordRunStats, checkMilestones, getDailyVariation } from './meta-system.js';
 import { pulseHudElement, setTransientBanner } from '/js/arcade/systems/feedback-system.js';
 import { playSound, stopAllSounds, isMuted } from '/js/arcade/core/audio.js';
 
