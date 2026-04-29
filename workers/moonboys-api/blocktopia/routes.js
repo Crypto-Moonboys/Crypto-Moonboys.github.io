@@ -1,6 +1,7 @@
 import {
   BLOCKTOPIA_ARCADE_MAX_XP_PER_MINUTE,
   BLOCKTOPIA_MAX_SCORE_SANITY,
+  BLOCKTOPIA_MULTIPLAYER_REQUIRED_XP,
   BLOCKTOPIA_SURVIVAL_XP_FLOOR,
   BLOCKTOPIA_UPGRADES,
   GEMS_MAX,
@@ -253,9 +254,12 @@ export async function handleBlockTopiaProgressionRoute(request, env, url, helper
         logBlockTopiaFailure('progression_drain_update_missed', { path, telegramId: verified.telegramId });
       }
 
+      const arcadeXpTotal = Math.max(0, Math.floor(Number(arcadeState?.arcade_xp_total) || 0));
       const progression = {
         telegram_id: verified.telegramId,
-        arcade_xp_total: Math.max(0, Math.floor(Number(arcadeState?.arcade_xp_total) || 0)),
+        arcade_xp_total: arcadeXpTotal,
+        required_xp: BLOCKTOPIA_MULTIPLAYER_REQUIRED_XP,
+        can_enter_multiplayer: arcadeXpTotal >= BLOCKTOPIA_MULTIPLAYER_REQUIRED_XP,
         xp: xpAfterDrain,
         gems,
         tier: tierAfter,
