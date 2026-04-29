@@ -107,6 +107,7 @@ export function bootstrapSnake(root) {
   // === Roguelite / Director constants ===
   var WAVE_SIZE = 10;
   var BOSS_WAVE_EVERY = 5;
+  var MUTATION_CHANCE = 0.22; // probability that a food item becomes mutated
   var UPGRADE_DEFS = [
     { id: 'scoreBoost',   name: '📈 Score Frenzy',  rarity: 'common',    desc: '+20% score on all food this run.',          apply: function(r) { r.scoreMult += 0.20; } },
     { id: 'speedDown',    name: '🐢 Slow Burn',      rarity: 'common',    desc: 'Base movement 8% slower (more control).',   apply: function(r) { r.speedSlowdown += 0.08; } },
@@ -175,7 +176,7 @@ export function bootstrapSnake(root) {
     var intensity = director.intensity || 0;
     var candidates = MUTATION_DEFS.filter(function(m) { return intensity >= m.threshold; });
     if (!candidates.length) return;
-    if (Math.random() > 0.22) return;
+    if (Math.random() > MUTATION_CHANCE) return;
     var def = candidates[Math.floor(Math.random() * candidates.length)];
     def.apply(f);
   }
