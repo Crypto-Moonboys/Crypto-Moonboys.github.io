@@ -4,7 +4,7 @@ import { SNAKE_CONFIG } from './config.js';
 import { createGameAdapter, registerGameAdapter } from '/js/arcade/engine/game-adapter.js';
 import { playSound, stopAllSounds, isMuted } from '/js/arcade/core/audio.js';
 import { createFrameDebug } from '/js/arcade/core/frame-debug.js';
-import { buildRunSummary, recordRunStats, checkMilestones, getDailyVariation } from './meta-system.js';
+import { recordRunStats, checkMilestones } from './meta-system.js';
 import { createScalingDirector, tickDirector, shouldFirePressureEvent, updateIntensity, checkForcedChaos } from '/js/arcade/systems/event-system.js';
 
 export const SNAKE_ADAPTER = createGameAdapter({

@@ -23,7 +23,7 @@ import { ArcadeSync } from '/js/arcade-sync.js';
 import { submitScore } from '/js/leaderboard-client.js';
 import { createBtqmAudio } from './arcade-audio-btqm.js';
 import { createFxSystem } from './fx-system.js';
-import { buildRunSummary, recordRunStats, checkMilestones, getDailyVariation } from './meta-system.js';
+import { recordRunStats, checkMilestones } from './meta-system.js';
 
 // ─── ZONE DEFINITIONS ────────────────────────────────────────────────────────
 const ZONES = [
