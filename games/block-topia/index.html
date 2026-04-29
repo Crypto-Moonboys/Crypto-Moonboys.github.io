@@ -12,10 +12,15 @@
     <div id="game-shell">
       <canvas id="game" aria-label="Block Topia isometric map"></canvas>
     </div>
+    <p id="blocktopia-entry-gate-message" style="margin:12px auto 0;max-width:960px;padding:0 12px;color:#d7d9e6;font:500 14px/1.5 system-ui,sans-serif;">
+      Block Topia multiplayer requires Telegram link + 50 arcade XP. Arcade games remain free to play.
+    </p>
     <script src="/js/api-config.js"></script>
+    <script src="/js/identity-gate.js"></script>
     <script type="module">
       import "./main.js";
       import { connectMultiplayer, sendMovement } from "./network.js";
+      import { BLOCKTOPIA_MULTIPLAYER_REQUIRED_XP } from "/shared/block-topia/constants.js";
 
       const mountOptions = { containerId: "game-shell", canvasId: "game" };
       const MAX_MOUNT_ATTEMPTS = 8;
@@ -37,11 +42,78 @@
         }
       };
 
-      function startMultiplayer() {
+      function getApiBase() {
+        const cfg = window.MOONBOYS_API || {};
+        return cfg.BASE_URL ? String(cfg.BASE_URL).replace(/\/$/, "") : "";
+      }
+
+      function setGateMessage(text) {
+        const el = document.getElementById("blocktopia-entry-gate-message");
+        if (el) el.textContent = text;
+      }
+
+      async function fetchProgressionForGate(telegramAuth) {
+        const apiBase = getApiBase();
+        if (!apiBase) {
+          throw new Error("api_base_missing");
+        }
+        const res = await fetch(`${apiBase}/blocktopia/progression`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ telegram_auth: telegramAuth }),
+        });
+        const payload = await res.json().catch(() => ({}));
+        if (!res.ok || !payload || payload.ok !== true) {
+          throw new Error(payload?.error || "progression_fetch_failed");
+        }
+        return payload.progression || null;
+      }
+
+      async function startMultiplayer() {
+        const identity = window.MOONBOYS_IDENTITY || null;
+        const linked = !!(identity && typeof identity.isTelegramLinked === "function" && identity.isTelegramLinked());
+        if (!linked) {
+          const msg = "Link Telegram to enter Block Topia multiplayer.";
+          setGateMessage(msg);
+          window.BlockTopiaMap?.setConnectionStatus({ ws: "blocked", joined: false, error: msg, roomId: "city" });
+          return;
+        }
+
+        let telegramAuth = identity && typeof identity.getSignedTelegramAuth === "function" ? identity.getSignedTelegramAuth() : null;
+        if (!telegramAuth && identity && typeof identity.restoreLinkedTelegramAuth === "function") {
+          const restored = await identity.restoreLinkedTelegramAuth().catch(() => null);
+          telegramAuth = restored?.ok ? restored.telegram_auth : null;
+        }
+        if (!telegramAuth) {
+          const msg = "Link Telegram to enter Block Topia multiplayer.";
+          setGateMessage(msg);
+          window.BlockTopiaMap?.setConnectionStatus({ ws: "blocked", joined: false, error: msg, roomId: "city" });
+          return;
+        }
+
+        let progression = null;
+        try {
+          progression = await fetchProgressionForGate(telegramAuth);
+        } catch (_error) {
+          const msg = "Unable to verify multiplayer access right now. Please try again.";
+          setGateMessage(msg);
+          window.BlockTopiaMap?.setConnectionStatus({ ws: "failed", joined: false, error: msg, roomId: "city" });
+          return;
+        }
+        const arcadeXpTotal = Math.max(0, Math.floor(Number(progression?.arcade_xp_total) || 0));
+        if (arcadeXpTotal < BLOCKTOPIA_MULTIPLAYER_REQUIRED_XP) {
+          const msg = `You need ${BLOCKTOPIA_MULTIPLAYER_REQUIRED_XP} XP to enter Block Topia multiplayer. Play arcade games and sync Telegram to earn XP.`;
+          setGateMessage(msg);
+          window.BlockTopiaMap?.setConnectionStatus({ ws: "blocked", joined: false, error: msg, roomId: "city" });
+          return;
+        }
+
+        setGateMessage(`Multiplayer unlocked. Telegram linked + ${arcadeXpTotal} arcade XP.`);
         const playerName = `Player_${Math.floor(Math.random() * 9000) + 1000}`;
         connectMultiplayer({
           playerName,
           roomId: "city",
+          telegramAuth,
           onStatus(status) {
             window.BlockTopiaMap?.setConnectionStatus(status);
             if (typeof status.sessionId === "string" && status.sessionId) {

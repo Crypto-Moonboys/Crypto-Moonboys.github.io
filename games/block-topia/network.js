@@ -1,4 +1,5 @@
-﻿let room = null;
+﻿import { BLOCKTOPIA_MULTIPLAYER_REQUIRED_XP } from '../../shared/block-topia/constants.js';
+let room = null;
 let client = null;
 let _reconnectOptions = null;
 let _reconnecting = false;
@@ -39,6 +40,22 @@ function isRoomNotFoundError(error) {
     // ("no rooms found with provided criteria") and older variant phrases ("not found", "cannot find").
     || /no rooms found|not.?found|cannot find/i.test(String(error?.message || ''))
   );
+}
+
+function getEntryGateReason(error) {
+  const message = String(error?.message || '').trim();
+  if (message === 'telegram_required' || message === 'xp_required' || message === 'auth_invalid' || message === 'progression_unavailable') {
+    return message;
+  }
+  return null;
+}
+
+function toEntryGateMessage(reason) {
+  if (reason === 'telegram_required') return 'Link Telegram to enter Block Topia multiplayer.';
+  if (reason === 'xp_required') return `You need ${BLOCKTOPIA_MULTIPLAYER_REQUIRED_XP} XP to enter Block Topia multiplayer. Play arcade games and sync Telegram to earn XP.`;
+  if (reason === 'auth_invalid') return 'Unable to verify multiplayer access right now. Please relink Telegram and try again.';
+  if (reason === 'progression_unavailable') return 'Unable to verify multiplayer access right now. Please try again.';
+  return 'Multiplayer access blocked.';
 }
 
 // Join an existing server-created room only. Never creates a room from the browser.
@@ -123,12 +140,13 @@ function toPlayerList(playersState) {
 export async function connectMultiplayer({
   playerName,
   roomId = 'city',
+  telegramAuth = null,
   onStatus,
   onPlayers,
   onFeed,
 }) {
   // Persist options/callbacks so reconnectMultiplayer() can reuse them.
-  _reconnectOptions = { playerName, roomId, onStatus, onPlayers, onFeed };
+  _reconnectOptions = { playerName, roomId, telegramAuth, onStatus, onPlayers, onFeed };
 
   // Use explicit wss:// so the transport protocol is unambiguous.
   // Normalise any https:// value from the runtime config to wss://.
@@ -150,7 +168,7 @@ export async function connectMultiplayer({
       onStatus?.({ ws: 'connecting', joined: false, error: '', roomId });
       console.log(`[BlockTopia] Connecting (attempt ${attempt}/${MAX_RETRIES}) -> ${endpoint} room "${roomId}"`);
       client = new window.Colyseus.Client(endpoint);
-      room = await joinCityOnly(client, roomId, { name: playerName });
+      room = await joinCityOnly(client, roomId, { name: playerName, telegram_auth: telegramAuth });
 
       onStatus?.({ ws: 'connected', joined: true, error: '', roomId: room.name || roomId, sessionId: room.sessionId || '' });
       onFeed?.(`Connected to ${room.name || roomId} (${room.sessionId || 'session pending'})`);
@@ -187,6 +205,13 @@ export async function connectMultiplayer({
       return room;
     } catch (error) {
       lastError = error;
+      const gateReason = getEntryGateReason(error);
+      if (gateReason) {
+        const gateMessage = toEntryGateMessage(gateReason);
+        onStatus?.({ ws: 'blocked', joined: false, error: gateMessage, roomId, reason: gateReason });
+        onFeed?.(gateMessage);
+        return null;
+      }
       const roomFull = isRoomFullError(error);
       const cityUnavailable = error?.isCityUnavailable === true;
       const wsState = roomFull ? 'room-full' : cityUnavailable ? 'unavailable' : 'failed';
@@ -330,3 +355,4 @@ export async function reconnectMultiplayer() {
     _isConnecting = false;
   }
 }
+

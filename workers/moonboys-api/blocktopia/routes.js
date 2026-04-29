@@ -213,6 +213,22 @@ export async function handleBlockTopiaProgressionRoute(request, env, url, helper
       const rawRow = await getOrCreateBlockTopiaProgression(env.DB, verified.telegramId);
       const row = await syncPressureDecay(env.DB, rawRow);
       const progressionRow = await restoreRpgModeActive(env.DB, row, verified.telegramId, '/blocktopia/progression');
+      let arcadeState = null;
+      try {
+        arcadeState = await env.DB.prepare(`
+          SELECT arcade_xp_total
+          FROM arcade_progression_state
+          WHERE telegram_id = ?
+          LIMIT 1
+        `).bind(verified.telegramId).first();
+      } catch (arcadeLookupError) {
+        logBlockTopiaFailure('arcade_progression_lookup_failed', {
+          path,
+          telegramId: verified.telegramId,
+          message: arcadeLookupError?.message || String(arcadeLookupError),
+        });
+        return err('Failed to load arcade progression state', 500);
+      }
       const upgrades = getUpgradeSnapshot(progressionRow);
       const effects = buildUpgradeEffects(upgrades);
       const { drain, xpAfterDrain, drainPerMinute } = applyProgressionDrain(progressionRow, Date.now(), effects);
@@ -239,6 +255,7 @@ export async function handleBlockTopiaProgressionRoute(request, env, url, helper
 
       const progression = {
         telegram_id: verified.telegramId,
+        arcade_xp_total: Math.max(0, Math.floor(Number(arcadeState?.arcade_xp_total) || 0)),
         xp: xpAfterDrain,
         gems,
         tier: tierAfter,
