@@ -33,3 +33,122 @@ body {
   position: relative;
   overflow: hidden;
 }
+
+/* ── Entry gate screen ─────────────────────────────────────── */
+
+#bt-gate {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 32px 20px;
+  text-align: center;
+  background: radial-gradient(circle at 50% 20%, var(--bg-mid), var(--bg-top) 60%, var(--bg-bottom));
+  pointer-events: auto;
+}
+
+#bt-gate.bt-gate--hidden {
+  display: none;
+}
+
+.bt-gate__logo {
+  font-size: 2rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  color: #a9c8ff;
+  margin-bottom: 8px;
+}
+
+.bt-gate__subtitle {
+  font-size: 0.85rem;
+  color: #5a6a90;
+  margin-bottom: 40px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.bt-gate__icon {
+  font-size: 3rem;
+  margin-bottom: 20px;
+  line-height: 1;
+}
+
+.bt-gate__heading {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #e7efff;
+  margin: 0 0 12px;
+  max-width: 480px;
+}
+
+.bt-gate__body {
+  font-size: 0.97rem;
+  color: #9aaac8;
+  max-width: 440px;
+  line-height: 1.6;
+  margin: 0 0 32px;
+}
+
+.bt-gate__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: center;
+}
+
+.bt-gate__btn {
+  display: inline-block;
+  padding: 10px 24px;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.bt-gate__btn:hover {
+  opacity: 0.85;
+}
+
+.bt-gate__btn--primary {
+  background: #3b6fff;
+  color: #fff;
+  border: none;
+}
+
+.bt-gate__btn--secondary {
+  background: transparent;
+  color: #a9c8ff;
+  border: 1.5px solid #3b5a99;
+}
+
+.bt-gate__checking {
+  color: #5a6a90;
+  font-size: 0.9rem;
+  margin-top: 8px;
+}
+
+.bt-gate__xp-bar-wrap {
+  width: 260px;
+  height: 8px;
+  background: #0f1c38;
+  border-radius: 4px;
+  margin: 0 auto 28px;
+  overflow: hidden;
+  border: 1px solid #1e2f50;
+}
+
+.bt-gate__xp-bar {
+  height: 100%;
+  background: linear-gradient(90deg, #2a4fa0, #5b8fff);
+  border-radius: 4px;
+  transition: width 0.4s ease;
+}
+
+.bt-gate__xp-label {
+  font-size: 0.8rem;
+  color: #6a80a8;
+  margin-bottom: 4px;
+}

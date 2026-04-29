@@ -9,12 +9,20 @@
     <script src="https://unpkg.com/colyseus.js@0.16/dist/colyseus.js"></script>
   </head>
   <body>
-    <div id="game-shell">
+    <!-- Entry gate — shown while checking or when access is denied -->
+    <div id="bt-gate" role="main" aria-live="polite">
+      <div class="bt-gate__logo">Block Topia</div>
+      <div class="bt-gate__subtitle">Multiplayer City</div>
+      <div id="bt-gate-content">
+        <p class="bt-gate__checking">Checking access&hellip;</p>
+      </div>
+    </div>
+
+    <!-- Game shell — hidden until gate passes -->
+    <div id="game-shell" style="display:none">
       <canvas id="game" aria-label="Block Topia isometric map"></canvas>
     </div>
-    <p id="blocktopia-entry-gate-message" style="margin:12px auto 0;max-width:960px;padding:0 12px;color:#d7d9e6;font:500 14px/1.5 system-ui,sans-serif;">
-      Block Topia multiplayer requires Telegram link + 50 arcade XP. Arcade games remain free to play.
-    </p>
+
     <script src="/js/api-config.js"></script>
     <script src="/js/identity-gate.js"></script>
     <script type="module">
@@ -23,40 +31,84 @@
       import { BLOCKTOPIA_MULTIPLAYER_REQUIRED_XP } from "/shared/block-topia/constants.js";
 
       const mountOptions = { containerId: "game-shell", canvasId: "game" };
-      const MAX_MOUNT_ATTEMPTS = 8;
-      let mountAttempts = 0;
-
-      const tryMount = () => {
-        const api = window.BlockTopiaMap;
-        if (api && typeof api.mount === "function") {
-          api.mount(mountOptions);
-          startMultiplayer();
-          return;
-        }
-
-        mountAttempts += 1;
-        if (mountAttempts < MAX_MOUNT_ATTEMPTS) {
-          requestAnimationFrame(tryMount);
-        } else {
-          console.error("BlockTopiaMap mount failed: API unavailable");
-        }
-      };
 
       function getApiBase() {
         const cfg = window.MOONBOYS_API || {};
         return cfg.BASE_URL ? String(cfg.BASE_URL).replace(/\/$/, "") : "";
       }
 
-      function setGateMessage(text) {
-        const el = document.getElementById("blocktopia-entry-gate-message");
-        if (el) el.textContent = text;
+      function showGateScreen(html) {
+        const content = document.getElementById("bt-gate-content");
+        if (content) content.innerHTML = html;
+        const gate = document.getElementById("bt-gate");
+        if (gate) gate.classList.remove("bt-gate--hidden");
+        const shell = document.getElementById("game-shell");
+        if (shell) shell.style.display = "none";
+      }
+
+      function showGameShell() {
+        const gate = document.getElementById("bt-gate");
+        if (gate) gate.classList.add("bt-gate--hidden");
+        const shell = document.getElementById("game-shell");
+        if (shell) shell.style.display = "";
+      }
+
+      function buildUnlinkedGate() {
+        return `
+          <div class="bt-gate__icon" aria-hidden="true">🔒</div>
+          <h1 class="bt-gate__heading">Telegram link required</h1>
+          <p class="bt-gate__body">
+            Link your Telegram account to enter Block Topia multiplayer.<br>
+            Arcade games remain free to play.
+          </p>
+          <div class="bt-gate__actions">
+            <a class="bt-gate__btn bt-gate__btn--primary" href="/gkniftyheads-incubator.html">
+              Link Telegram
+            </a>
+            <a class="bt-gate__btn bt-gate__btn--secondary" href="/games/invaders-3008/">
+              Play Invaders 3008 (Free)
+            </a>
+          </div>`;
+      }
+
+      function buildXpGate(current, required) {
+        const pct = Math.min(100, Math.floor((current / required) * 100));
+        return `
+          <div class="bt-gate__icon" aria-hidden="true">🎮</div>
+          <h1 class="bt-gate__heading">You need ${required} XP to enter</h1>
+          <p class="bt-gate__body">
+            Play arcade games and sync Telegram to earn XP.<br>
+            Block Topia multiplayer unlocks at ${required} arcade XP.
+          </p>
+          <p class="bt-gate__xp-label">Your XP: ${current} / ${required}</p>
+          <div class="bt-gate__xp-bar-wrap" role="progressbar" aria-valuenow="${current}" aria-valuemin="0" aria-valuemax="${required}" aria-label="XP progress">
+            <div class="bt-gate__xp-bar" style="width:${pct}%"></div>
+          </div>
+          <div class="bt-gate__actions">
+            <a class="bt-gate__btn bt-gate__btn--primary" href="/games/invaders-3008/">
+              Play Invaders 3008
+            </a>
+            <a class="bt-gate__btn bt-gate__btn--secondary" href="/leaderboard.html">
+              Arcade Leaderboard
+            </a>
+          </div>`;
+      }
+
+      function buildErrorGate(message) {
+        return `
+          <div class="bt-gate__icon" aria-hidden="true">⚠️</div>
+          <h1 class="bt-gate__heading">Access check failed</h1>
+          <p class="bt-gate__body">${message}</p>
+          <div class="bt-gate__actions">
+            <button class="bt-gate__btn bt-gate__btn--primary" onclick="location.reload()">
+              Try Again
+            </button>
+          </div>`;
       }
 
       async function fetchProgressionForGate(telegramAuth) {
         const apiBase = getApiBase();
-        if (!apiBase) {
-          throw new Error("api_base_missing");
-        }
+        if (!apiBase) throw new Error("api_base_missing");
         const res = await fetch(`${apiBase}/blocktopia/progression`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -69,47 +121,84 @@
         return payload.progression || null;
       }
 
-      async function startMultiplayer() {
+      async function runGateAndLaunch() {
         const identity = window.MOONBOYS_IDENTITY || null;
-        const linked = !!(identity && typeof identity.isTelegramLinked === "function" && identity.isTelegramLinked());
+
+        // ── Step 1: Telegram link check ──────────────────────────────
+        const linked = !!(
+          identity &&
+          typeof identity.isTelegramLinked === "function" &&
+          identity.isTelegramLinked()
+        );
         if (!linked) {
-          const msg = "Link Telegram to enter Block Topia multiplayer.";
-          setGateMessage(msg);
-          window.BlockTopiaMap?.setConnectionStatus({ ws: "blocked", joined: false, error: msg, roomId: "city" });
+          showGateScreen(buildUnlinkedGate());
           return;
         }
 
-        let telegramAuth = identity && typeof identity.getSignedTelegramAuth === "function" ? identity.getSignedTelegramAuth() : null;
+        // ── Step 2: Resolve signed auth token ────────────────────────
+        let telegramAuth =
+          identity && typeof identity.getSignedTelegramAuth === "function"
+            ? identity.getSignedTelegramAuth()
+            : null;
         if (!telegramAuth && identity && typeof identity.restoreLinkedTelegramAuth === "function") {
           const restored = await identity.restoreLinkedTelegramAuth().catch(() => null);
           telegramAuth = restored?.ok ? restored.telegram_auth : null;
         }
         if (!telegramAuth) {
-          const msg = "Link Telegram to enter Block Topia multiplayer.";
-          setGateMessage(msg);
-          window.BlockTopiaMap?.setConnectionStatus({ ws: "blocked", joined: false, error: msg, roomId: "city" });
+          showGateScreen(buildUnlinkedGate());
           return;
         }
 
+        // ── Step 3: XP gate check ────────────────────────────────────
         let progression = null;
         try {
           progression = await fetchProgressionForGate(telegramAuth);
-        } catch (_error) {
-          const msg = "Unable to verify multiplayer access right now. Please try again.";
-          setGateMessage(msg);
-          window.BlockTopiaMap?.setConnectionStatus({ ws: "failed", joined: false, error: msg, roomId: "city" });
+        } catch (_err) {
+          showGateScreen(
+            buildErrorGate("Unable to verify multiplayer access right now. Please try again.")
+          );
           return;
         }
         const arcadeXpTotal = Math.max(0, Math.floor(Number(progression?.arcade_xp_total) || 0));
         if (arcadeXpTotal < BLOCKTOPIA_MULTIPLAYER_REQUIRED_XP) {
-          const msg = `You need ${BLOCKTOPIA_MULTIPLAYER_REQUIRED_XP} XP to enter Block Topia multiplayer. Play arcade games and sync Telegram to earn XP.`;
-          setGateMessage(msg);
-          window.BlockTopiaMap?.setConnectionStatus({ ws: "blocked", joined: false, error: msg, roomId: "city" });
+          showGateScreen(buildXpGate(arcadeXpTotal, BLOCKTOPIA_MULTIPLAYER_REQUIRED_XP));
           return;
         }
 
-        setGateMessage(`Multiplayer unlocked. Telegram linked + ${arcadeXpTotal} arcade XP.`);
+        // ── Gate passed: mount the map, then connect multiplayer ─────
+        showGameShell();
+        await mountAndConnect(telegramAuth, arcadeXpTotal);
+      }
+
+      async function mountAndConnect(telegramAuth, arcadeXpTotal) {
+        // Wait for BlockTopiaMap API (main.js registers it synchronously but ESM
+        // evaluation order may shift it to the next microtask tick).
+        await new Promise((resolve, reject) => {
+          let attempts = 0;
+          const MAX_ATTEMPTS = 8;
+          const tryMount = () => {
+            const api = window.BlockTopiaMap;
+            if (api && typeof api.mount === "function") {
+              try {
+                api.mount(mountOptions);
+                resolve();
+              } catch (err) {
+                reject(err);
+              }
+              return;
+            }
+            attempts += 1;
+            if (attempts < MAX_ATTEMPTS) {
+              requestAnimationFrame(tryMount);
+            } else {
+              reject(new Error("BlockTopiaMap mount failed: API unavailable"));
+            }
+          };
+          requestAnimationFrame(tryMount);
+        });
+
         const playerName = `Player_${Math.floor(Math.random() * 9000) + 1000}`;
+        console.log(`[BlockTopia] gate passed — ${arcadeXpTotal} XP — connecting multiplayer`);
         connectMultiplayer({
           playerName,
           roomId: "city",
@@ -133,7 +222,7 @@
         });
       }
 
-      tryMount();
+      runGateAndLaunch();
 
       const cleanup = () => {
         if (window.BlockTopiaMap && typeof window.BlockTopiaMap.destroy === "function") {
