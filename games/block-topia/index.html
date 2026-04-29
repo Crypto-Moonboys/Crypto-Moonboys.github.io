@@ -71,6 +71,7 @@
 
       function buildXpGate(current, required) {
         const pct = Math.min(100, Math.floor((current / required) * 100));
+        const ariaXpNow = Math.min(required, Math.max(0, current));
         const xpLabel = current === 0
           ? `Your synced Block Topia XP is 0 / ${required}. Play arcade games, then sync Telegram to convert accepted scores into XP.`
           : `Your XP: ${current} / ${required}`;
@@ -82,7 +83,7 @@
             Block Topia multiplayer unlocks at ${required} arcade XP.
           </p>
           <p class="bt-gate__xp-label">${xpLabel}</p>
-          <div class="bt-gate__xp-bar-wrap" role="progressbar" aria-valuenow="${current}" aria-valuemin="0" aria-valuemax="${required}" aria-label="XP progress">
+          <div class="bt-gate__xp-bar-wrap" role="progressbar" aria-valuenow="${ariaXpNow}" aria-valuemin="0" aria-valuemax="${required}" aria-label="XP progress">
             <div class="bt-gate__xp-bar" style="width:${pct}%"></div>
           </div>
           <div class="bt-gate__actions">
@@ -134,8 +135,9 @@
         if (!linked) {
           console.log("blocktopia_gate_progression_result", JSON.stringify({
             linked: false,
-            telegram_id: null,
             arcade_xp_total: null,
+            required_xp: null,
+            can_enter_multiplayer: false,
             reason: "not_linked",
             status: "blocked",
           }));
@@ -155,16 +157,15 @@
         if (!telegramAuth) {
           console.log("blocktopia_gate_progression_result", JSON.stringify({
             linked: true,
-            telegram_id: null,
             arcade_xp_total: null,
+            required_xp: null,
+            can_enter_multiplayer: false,
             reason: "no_telegram_auth",
             status: "blocked",
           }));
           showGateScreen(buildUnlinkedGate());
           return;
         }
-
-        const telegramId = telegramAuth?.id ?? null;
 
         // ── Step 3: XP gate check ────────────────────────────────────
         let progression = null;
@@ -173,8 +174,9 @@
         } catch (_err) {
           console.log("blocktopia_gate_progression_result", JSON.stringify({
             linked: true,
-            telegram_id: telegramId,
             arcade_xp_total: null,
+            required_xp: null,
+            can_enter_multiplayer: false,
             reason: "progression_fetch_failed",
             status: "error",
           }));
@@ -184,22 +186,26 @@
           return;
         }
         const arcadeXpTotal = Math.max(0, Math.floor(Number(progression?.arcade_xp_total) || 0));
-        if (arcadeXpTotal < BLOCKTOPIA_MULTIPLAYER_REQUIRED_XP) {
+        const requiredXp = Math.max(1, Math.floor(Number(progression?.required_xp) || BLOCKTOPIA_MULTIPLAYER_REQUIRED_XP));
+        const canEnter = progression?.can_enter_multiplayer === true || arcadeXpTotal >= requiredXp;
+        if (!canEnter) {
           console.log("blocktopia_gate_progression_result", JSON.stringify({
             linked: true,
-            telegram_id: telegramId,
             arcade_xp_total: arcadeXpTotal,
+            required_xp: requiredXp,
+            can_enter_multiplayer: false,
             reason: "insufficient_xp",
             status: "blocked",
           }));
-          showGateScreen(buildXpGate(arcadeXpTotal, BLOCKTOPIA_MULTIPLAYER_REQUIRED_XP));
+          showGateScreen(buildXpGate(arcadeXpTotal, requiredXp));
           return;
         }
 
         console.log("blocktopia_gate_progression_result", JSON.stringify({
           linked: true,
-          telegram_id: telegramId,
           arcade_xp_total: arcadeXpTotal,
+          required_xp: requiredXp,
+          can_enter_multiplayer: true,
           reason: "xp_satisfied",
           status: "pass",
         }));
