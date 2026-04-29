@@ -1,62 +1,94 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-04-29T14:38:02.421Z",
-  "mode": "fallback-no-key",
+  "generatedAt": "2026-04-29T16:28:48.880Z",
+  "mode": "live-ai",
   "sourceHealth": {
     "coingecko-global": "ok",
     "coingecko-trending": "ok",
     "fear-greed": "ok",
-    "openai": "missing-key"
+    "openai": "ok"
   },
-  "signalCount": 3,
+  "signalCount": 5,
   "signals": [
     {
-      "id": "signal-1777473482421-1",
+      "id": "signal-1777480128879-1",
       "lane": "world",
-      "priority": 3,
-      "ttlMinutes": 45,
-      "npcLine": "Signal board shows Fear pressure. Keep your routes adaptive.",
-      "questPulse": "Map three unstable relay corners before the next SAM sweep.",
-      "worldFeed": "Network mood: Fear. Surveillance pressure remains high.",
-      "clueEvent": "Hidden relay mark: look for the glyph where east lanes cross old neon rail.",
-      "tags": [
-        "sam",
-        "mood",
-        "relay"
-      ],
-      "expiresAt": "2026-04-29T15:23:02.421Z"
-    },
-    {
-      "id": "signal-1777473482421-2",
-      "lane": "ops",
       "priority": 4,
-      "ttlMinutes": 40,
-      "npcLine": "Trend signatures rotating: AI · ULTIMA · PENGU. Couriers are rerouting tonight.",
-      "questPulse": "Intercept two phantom couriers carrying unsigned signal chips.",
-      "worldFeed": "Ops pulse: district relays are shifting faster than normal.",
-      "clueEvent": "Clue pulse: seek a dead terminal with three blinking amber bars.",
+      "ttlMinutes": 45,
+      "npcLine": "Crypto tides bleeding, market pulse sinking fast.",
+      "questPulse": "Shadow brokers whisper downturn; trust nothing shallow.",
+      "worldFeed": "Market cap bleeding; sharp drop shadows neon streets.",
+      "clueEvent": "Unseen sell-off strikes active coins; chaos brews beneath.",
       "tags": [
-        "ops",
-        "courier",
-        "quest"
+        "crash",
+        "fear",
+        "crypto"
       ],
-      "expiresAt": "2026-04-29T15:18:02.421Z"
+      "expiresAt": "2026-04-29T17:13:48.879Z"
     },
     {
-      "id": "signal-1777473482421-3",
+      "id": "signal-1777480128880-2",
+      "lane": "ops",
+      "priority": 3,
+      "ttlMinutes": 30,
+      "npcLine": "Fear sensors flicker; traders retreat to safe zones.",
+      "questPulse": "Signal shows growing fear index; capitalize on panic waves.",
+      "worldFeed": "Sentiment drops; digital animals skitter in volatile markets.",
+      "clueEvent": "Fear level spikes quietly; eyes watch for flash crash.",
+      "tags": [
+        "sentiment",
+        "panic",
+        "trading"
+      ],
+      "expiresAt": "2026-04-29T16:58:48.880Z"
+    },
+    {
+      "id": "signal-1777480128880-3",
       "lane": "clue",
       "priority": 2,
       "ttlMinutes": 60,
-      "npcLine": "A rumor says the old tunnel net is awake again.",
-      "questPulse": "Trace a memory shard path without triggering patrol beacons.",
-      "worldFeed": "World feed: encrypted whispers detected under Revolt blocks.",
-      "clueEvent": "Hidden link hunt: the passphrase starts with moon and ends with static.",
+      "npcLine": "Tokens named AI and MON flicker without steady ground.",
+      "questPulse": "Scattered signals: Blend and Pros chase unstable shadows.",
+      "worldFeed": "Five unknown cryptos surf distress waves; few hold steady.",
+      "clueEvent": "Rising rogue assets confuse the network's market trackers.",
       "tags": [
-        "clue",
-        "hunt",
-        "world"
+        "trend",
+        "cryptocurrency",
+        "volatile"
       ],
-      "expiresAt": "2026-04-29T15:38:02.421Z"
+      "expiresAt": "2026-04-29T17:28:48.880Z"
+    },
+    {
+      "id": "signal-1777480128880-4",
+      "lane": "quest",
+      "priority": 3,
+      "ttlMinutes": 50,
+      "npcLine": "Data decks suggest fractured crypto paths; pick your risk.",
+      "questPulse": "Fragmented coins pulse with chance; risky gains await bold.",
+      "worldFeed": "Markets splinter; undercurrents of opportunity amid decay.",
+      "clueEvent": "Active nodes fluctuate wildly; some will rise from ashes.",
+      "tags": [
+        "risk",
+        "opportunity",
+        "crypto"
+      ],
+      "expiresAt": "2026-04-29T17:18:48.880Z"
+    },
+    {
+      "id": "signal-1777480128880-5",
+      "lane": "npc",
+      "priority": 1,
+      "ttlMinutes": 40,
+      "npcLine": "Quiet whispers urge caution; no safe harbor this night.",
+      "questPulse": "Watch the blind spots; fear feeds unseen predators here.",
+      "worldFeed": "Traders mute; digital shadows lengthen with growing dread.",
+      "clueEvent": "Fear’s grip tightens; delicate assets fall into the void.",
+      "tags": [
+        "fear",
+        "stealth",
+        "caution"
+      ],
+      "expiresAt": "2026-04-29T17:08:48.880Z"
     }
   ]
 }
