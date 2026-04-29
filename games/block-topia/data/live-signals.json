@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-04-29T19:48:34.881Z",
+  "generatedAt": "2026-04-29T21:07:16.349Z",
   "mode": "live-ai",
   "sourceHealth": {
     "coingecko-global": "ok",
@@ -11,84 +11,84 @@
   "signalCount": 5,
   "signals": [
     {
-      "id": "signal-1777492114880-1",
+      "id": "signal-1777496836349-1",
       "lane": "world",
       "priority": 4,
-      "ttlMinutes": 45,
-      "npcLine": "Market caps bleed, streets whisper of collapse.",
-      "questPulse": "Find the cause of the digital crash before networks fail.",
-      "worldFeed": "Cryptos flicker with unease amid mounting losses.",
-      "clueEvent": "Shadow syndicates exploit the dip for power grabs.",
+      "ttlMinutes": 120,
+      "npcLine": "Market cap bleeding, shadows creep over cryptos.",
+      "questPulse": "Scan for dying assets, salvage what's left.",
+      "worldFeed": "Global crypto grid flickers under fear's grip.",
+      "clueEvent": "Data nodes show mass selloffs in ghost chains.",
       "tags": [
+        "market-crash",
         "crypto",
-        "crash",
         "fear"
       ],
-      "expiresAt": "2026-04-29T20:33:34.880Z"
+      "expiresAt": "2026-04-29T23:07:16.349Z"
     },
     {
-      "id": "signal-1777492114881-2",
+      "id": "signal-1777496836349-2",
       "lane": "ops",
       "priority": 3,
-      "ttlMinutes": 30,
-      "npcLine": "Fear stalks the markets; traders vanish overnight.",
-      "questPulse": "Extract data on the sudden surge of AI-linked assets.",
-      "worldFeed": "'AI' symbols spike in dark net chatter.",
-      "clueEvent": "Algorithmic entities making moves beneath the radar.",
+      "ttlMinutes": 90,
+      "npcLine": "AI tokens spike, a chance to hack the system.",
+      "questPulse": "Exploit AI asset rising before it crashes.",
+      "worldFeed": "Rumors of AI-driven pump cycles hitting markets.",
+      "clueEvent": "Encrypted chatter hints at AI asset manipulations.",
       "tags": [
         "ai",
-        "market",
-        "surge"
+        "pump",
+        "exploit"
       ],
-      "expiresAt": "2026-04-29T20:18:34.881Z"
+      "expiresAt": "2026-04-29T22:37:16.349Z"
     },
     {
-      "id": "signal-1777492114881-3",
+      "id": "signal-1777496836349-3",
       "lane": "clue",
       "priority": 2,
       "ttlMinutes": 60,
-      "npcLine": "ULTIMA and PLUME networks flicker under pressure.",
-      "questPulse": "Trace the interference disrupting key cryptos' signals.",
-      "worldFeed": "Trendy tokens whirl in uncertain currents; pulse fades in and out.",
-      "clueEvent": "Possible rogue patch injecting volatility into chains.",
+      "npcLine": "PLUME clusters scatter, trace their fading signatures.",
+      "questPulse": "Decode fading PLUME signals for hidden value.",
+      "worldFeed": "PLUME tokens dropping signals, anomaly detected.",
+      "clueEvent": "Network logs reveal strange PLUME transaction bursts.",
       "tags": [
-        "token",
-        "volatility",
-        "interference"
+        "plume",
+        "signal",
+        "anomaly"
       ],
-      "expiresAt": "2026-04-29T20:48:34.881Z"
+      "expiresAt": "2026-04-29T22:07:16.349Z"
     },
     {
-      "id": "signal-1777492114881-4",
+      "id": "signal-1777496836349-4",
       "lane": "quest",
       "priority": 3,
-      "ttlMinutes": 50,
-      "npcLine": "Rise of PENGU stirs shadow brokers’ interest.",
-      "questPulse": "Infiltrate PENGU clan; uncover secrets behind their ascent.",
-      "worldFeed": "New players bet on overlooked assets amid chaos.",
-      "clueEvent": "Whispers of a silent rebellion in digital exchange hubs.",
+      "ttlMinutes": 110,
+      "npcLine": "SOL energy flickers; miners brace for power shifts.",
+      "questPulse": "Secure unstable SOL nodes before blackout hits.",
+      "worldFeed": "SOL nodes unstable in current market chaos.",
+      "clueEvent": "Power grids linked to SOL token volatility spike.",
       "tags": [
-        "pengu",
-        "rebellion",
-        "shadow"
+        "sol",
+        "instability",
+        "power"
       ],
-      "expiresAt": "2026-04-29T20:38:34.881Z"
+      "expiresAt": "2026-04-29T22:57:16.349Z"
     },
     {
-      "id": "signal-1777492114881-5",
+      "id": "signal-1777496836349-5",
       "lane": "npc",
-      "priority": 1,
-      "ttlMinutes": 20,
-      "npcLine": "Fear hangs thick; even bots hesitate now.",
-      "questPulse": "Help calm jittery traders or exploit their panic.",
-      "worldFeed": "Sentiment tanks, trust in code evaporates.",
-      "clueEvent": "Sentiment index hits crisis low, influencing cybernetic markets.",
+      "priority": 5,
+      "ttlMinutes": 45,
+      "npcLine": "Blend network's mixing gear jammed, suspicious activity.",
+      "questPulse": "Investigate BLEND interference, possible sabotage attempts.",
+      "worldFeed": "Blend liquidity hits sudden freeze, insiders wary.",
+      "clueEvent": "Encrypted logs show unusual access near BLEND mixers.",
       "tags": [
-        "sentiment",
-        "fear",
-        "panic"
+        "blend",
+        "sabotage",
+        "freeze"
       ],
-      "expiresAt": "2026-04-29T20:08:34.881Z"
+      "expiresAt": "2026-04-29T21:52:16.349Z"
     }
   ]
 }
