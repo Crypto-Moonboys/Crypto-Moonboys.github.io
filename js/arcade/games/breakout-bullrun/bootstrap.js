@@ -33,7 +33,7 @@ import {
 
 import {
   buildRunSummary, recordRunStats, checkMilestones, getDailyVariation,
-} from '/js/arcade/systems/meta-system.js';
+} from './meta-system.js';
 
 // ── Upgrade catalogue ─────────────────────────────────────────────────────────
 
@@ -507,6 +507,8 @@ function createLegacyBootstrapBreakoutBullrun(root) {
 
   function rand(a, b) { return a + Math.random() * (b - a); }
   function clamp(v, mn, mx) { return Math.max(mn, Math.min(mx, v)); }
+
+  function triggerHudFx(el, cls, ms) {
     if (!el) return;
     el.classList.remove(cls);
     void el.offsetWidth;
@@ -982,14 +984,17 @@ function createLegacyBootstrapBreakoutBullrun(root) {
     if (!activeEvent && checkForcedChaos(director)) {
       const ev = pickBBSurpriseEvent(wave);
       if (ev) {
-        activeEvent = ev;
-        eventTimer  = ev.duration || 0;
-        eventData   = {};
+        eventData = {};
         ev.execute({ bricks, balls, laserWarnings, W, H, eventData, addBanner });
         eventBanner = { text: '⚡ CHAOS: ' + ev.label, color: '#ff0055', timer: 2.5 };
         playSfx('event');
         director._eventCooldown = 30;
         director.pressure       = 0;
+        // Only track timed events; instant (duration=0) events are fire-and-forget.
+        if ((ev.duration || 0) > 0) {
+          activeEvent = ev;
+          eventTimer  = ev.duration;
+        }
       }
     }
 
@@ -998,14 +1003,17 @@ function createLegacyBootstrapBreakoutBullrun(root) {
     if (!activeEvent && shouldFirePressureEvent(director)) {
       const ev = pickBBSurpriseEvent(wave);
       if (ev) {
-        activeEvent = ev;
-        eventTimer  = ev.duration || 0;
-        eventData   = {};
+        eventData = {};
         ev.execute({ bricks, balls, laserWarnings, W, H, eventData, addBanner });
         eventBanner = { text: '⚠ ' + ev.label, color: ev.color, timer: 2.5 };
         playSfx('event');
         director._eventCooldown = ev.cooldown || 30;
         director.pressure       = 0;
+        // Only track timed events; instant (duration=0) events are fire-and-forget.
+        if ((ev.duration || 0) > 0) {
+          activeEvent = ev;
+          eventTimer  = ev.duration;
+        }
       } else {
         director.pressure = 50;
       }
@@ -1014,7 +1022,7 @@ function createLegacyBootstrapBreakoutBullrun(root) {
     if (activeEvent) {
       if (eventTimer > 0) eventTimer -= dt;
       if (activeEvent.tickActive) activeEvent.tickActive({ bricks, balls, laserWarnings, W, H, eventData }, dt);
-      if (eventTimer <= 0 && (activeEvent.duration || 0) > 0) {
+      if (eventTimer <= 0) {
         if (activeEvent.remove) activeEvent.remove({ bricks, balls, laserWarnings, W, H, eventData });
         activeEvent = null;
         eventTimer  = 0;
@@ -1051,7 +1059,7 @@ function createLegacyBootstrapBreakoutBullrun(root) {
 
     // ── Sticky ball position ────────────────────────────────────────────────
 
-    if (stickyBall && !launched) {
+    if (stickyBall) {
       stickyBall.x = paddle.x + paddle.w / 2;
       stickyBall.y = paddle.y - BALL_R - 1;
     }
@@ -1486,7 +1494,7 @@ function createLegacyBootstrapBreakoutBullrun(root) {
 
     // Merge sticky ball into render-ball list
     const renderBalls = balls.slice();
-    if (stickyBall && !launched) {
+    if (stickyBall) {
       renderBalls.push({
         x: stickyBall.x, y: stickyBall.y,
         r: BALL_R, vx: 0, vy: 0, trail: [],

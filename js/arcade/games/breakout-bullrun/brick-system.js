@@ -254,12 +254,14 @@ export function applyBrickMutations(bricks, wave) {
     }
     // Bricks gain movement
     if (wave >= 15 && r < 0.06 && b.type === 'normal' && b.vx === 0) {
-      b.type = 'moving';
-      b.vx   = (Math.random() < 0.5 ? 1 : -1) * (35 + Math.random() * 25);
+      b.type  = 'moving';
+      b.vx    = (Math.random() < 0.5 ? 1 : -1) * (35 + Math.random() * 25);
+      b.score = BRICK_SCORE['moving'];
     }
     // Bricks become explosive
     if (wave >= 18 && r < 0.05 && b.type === 'normal') {
-      b.type = 'explosive';
+      b.type  = 'explosive';
+      b.score = BRICK_SCORE['explosive'];
     }
   }
 }

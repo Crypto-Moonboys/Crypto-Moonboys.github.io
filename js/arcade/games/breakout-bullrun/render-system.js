@@ -632,8 +632,8 @@ export function createRenderer(ctx, W, H) {
       ctx.save();
       ctx.globalAlpha = alpha;
       ctx.fillStyle   = 'rgba(0,0,0,0.75)';
-      const tw = ctx.measureText(t.text).width + 20;
       ctx.font = 'bold 12px monospace';
+      const tw = ctx.measureText(t.text).width + 20;
       ctx.beginPath();
       roundRect(ctx, W / 2 - tw / 2, ty - 16, tw, 24, 6);
       ctx.fill();
