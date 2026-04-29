@@ -142,15 +142,16 @@
     if (_apiOnlineCache !== null) return _apiOnlineCache;
     var apiBase = getApiBase();
     if (!apiBase) { _apiOnlineCache = false; return false; }
+    var ac = new AbortController();
+    var timer = setTimeout(function () { ac.abort(); }, 4000);
     try {
       // A HEAD to the base returns a response (even 404) when the worker is up.
-      var ac = new AbortController();
-      var timer = setTimeout(function () { ac.abort(); }, 4000);
       var res = await fetch(apiBase, { method: 'HEAD', signal: ac.signal });
-      clearTimeout(timer);
       _apiOnlineCache = res.status < 500;
     } catch (_) {
       _apiOnlineCache = false;
+    } finally {
+      clearTimeout(timer);
     }
     return _apiOnlineCache;
   }
@@ -199,7 +200,7 @@
 
       '<div class="csp-item">' +
         '<div class="csp-item-label">Arcade XP' +
-          '<span class="csp-item-note">gate progress</span>' +
+          '<span class="csp-item-note">Block Topia gate progress</span>' +
         '</div>' +
         '<div class="csp-item-val">' +
           (linked ? esc(String(arcadeXp)) : '—') +
