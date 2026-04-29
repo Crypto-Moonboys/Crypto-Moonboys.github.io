@@ -17,6 +17,7 @@ import { INVADERS_CONFIG } from './config.js';
 import { createGameAdapter, registerGameAdapter, bootstrapFromAdapter } from '/js/arcade/engine/game-adapter.js';
 import { playSound, stopAllSounds, isMuted } from '/js/arcade/core/audio.js';
 import { BaseGame } from '/js/arcade/engine/BaseGame.js';
+import { getActiveModifiers, hasEffect, getStatEffect } from '/js/arcade/systems/cross-game-modifier-system.js';
 
 import {
   ROWS, COLS, INV_W, INV_H, INV_PAD,
@@ -213,6 +214,28 @@ function createLegacybootstrapInvaders(root) {
   // Wave score multiplier (for oneLife risk/reward)
   let waveScoreMult     = 1;
 
+  // ── Cross-game modifier state ─────────────────────────────────────────────
+  // Fetched at run start and re-fetched on reset so changes take effect.
+  let _crossMods          = getActiveModifiers(GAME_ID, INVADERS_CONFIG.crossGameTags || []);
+  let modScoreMult        = getStatEffect(_crossMods, 'scoreMult', 1);
+  let modShieldedStart    = hasEffect(_crossMods, 'shieldedStart');
+  let modSlowChaos        = hasEffect(_crossMods, 'pressureRate');
+  let modBossHunterMult   = getStatEffect(_crossMods, 'bossDmgMult', 1);
+  let modMagnetLuck       = hasEffect(_crossMods, 'magnetPickups');
+  let modRecoveryPulse    = hasEffect(_crossMods, 'recoveryPulse');
+  let modGoldenChance     = getStatEffect(_crossMods, 'goldenSpawnBoost', 0);
+
+  function _refreshCrossMods() {
+    _crossMods          = getActiveModifiers(GAME_ID, INVADERS_CONFIG.crossGameTags || []);
+    modScoreMult        = getStatEffect(_crossMods, 'scoreMult', 1);
+    modShieldedStart    = hasEffect(_crossMods, 'shieldedStart');
+    modSlowChaos        = hasEffect(_crossMods, 'pressureRate');
+    modBossHunterMult   = getStatEffect(_crossMods, 'bossDmgMult', 1);
+    modMagnetLuck       = hasEffect(_crossMods, 'magnetPickups');
+    modRecoveryPulse    = hasEffect(_crossMods, 'recoveryPulse');
+    modGoldenChance     = getStatEffect(_crossMods, 'goldenSpawnBoost', 0);
+  }
+
   // â”€â”€ Meta / intensity feedback â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   let runStats            = { bossesDefeated: 0, highestIntensity: 0 };
   let intensityPrevBand   = 'calm';    // 'calm' | 'rising' | 'chaotic'
@@ -279,7 +302,7 @@ function createLegacybootstrapInvaders(root) {
   function addScore(points, x, y, color) {
     if (!points) return;
     color = color || '#f7c948';
-    score += points;
+    score += Math.round(points * modScoreMult);
     setBestMaybe();
     updateHud();
     triggerHudFx(scoreEl, 'pulse', 180);
@@ -394,6 +417,14 @@ function createLegacybootstrapInvaders(root) {
     laserWarning         = null;
     waveScoreMult        = 1;
 
+    // Shielded Start modifier: grant bonus shield/life on the first wave of a run
+    if (wave === 1 && modShieldedStart) {
+      lives += 1;
+      player.shielded = true;
+      addFloatingText('SHIELDED START!', '#3fb950');
+      updateHud();
+    }
+
     // Apply active risk/reward effects for this wave
     const forceBoss = activeRiskReward && activeRiskReward.id === 'earlyBoss';
     if (activeRiskReward && activeRiskReward.id === 'oneLife') {
@@ -442,6 +473,15 @@ function createLegacybootstrapInvaders(root) {
       if (wave >= 10) {
         applyMutations(invaders, wave);
         if (invaders.some(i => i.mutations && i.mutations.length > 0)) mutationFlash = 0.4;
+      }
+
+      // Golden Chance modifier: upgrade some basic invaders to golden type
+      if (modGoldenChance > 0) {
+        for (const inv of invaders) {
+          if (inv.type === 'basic' && inv.alive && Math.random() < modGoldenChance) {
+            inv.type = 'golden';
+          }
+        }
       }
 
       // Pick and apply wave modifier
@@ -621,6 +661,8 @@ function createLegacybootstrapInvaders(root) {
     runSummary          = null;
     milestoneToasts     = [];
     player = { x: W / 2, y: H - 50, w: SHIP_W, h: SHIP_H, speed: 320, moveDir: 1, shielded: false };
+    // Re-fetch cross-game modifiers so each new run picks up any selection change
+    _refreshCrossMods();
     updateHud();
     draw();
   }
@@ -684,7 +726,7 @@ function createLegacybootstrapInvaders(root) {
       const dx = (boss.x + boss.w / 2) - bx;
       const dy = (boss.y + boss.h / 2) - by;
       if (dx * dx + dy * dy <= BOMB_RADIUS * BOMB_RADIUS) {
-        const dmg = 4;
+        const dmg = Math.ceil(4 * modBossHunterMult);
         boss.hp -= dmg;
         boss.hitTimer = 0.15;
         addScore(20 * wave * dmg * getScoreMultiplier(activePowerups) * getUpgradedScoreMult(upgrades),
@@ -715,6 +757,11 @@ function createLegacybootstrapInvaders(root) {
 
     // Tick scaling director (pass event-active flag + daily pressure multiplier)
     tickDirector(director, dt, score, wave, lives, upgrades, !!activeEvent, dailyVariation.eventRateMult || 1);
+
+    // Slow Chaos modifier: bleed a fraction of pressure each frame (-10% rate)
+    if (modSlowChaos && director.pressure > 0) {
+      director.pressure = Math.max(0, director.pressure - 10 * dt);
+    }
 
     // Forced chaos: inject a surprise event if the player has been safe too long
     if (!activeEvent && checkForcedChaos(director)) {
@@ -758,6 +805,12 @@ function createLegacybootstrapInvaders(root) {
         eventTimer  = 0;
         eventData   = {};
         playSfx('event_clear');
+        // Recovery Pulse modifier: restore shield when a chaos event ends
+        if (modRecoveryPulse && !player.shielded) {
+          player.shielded = true;
+          addFloatingText('RECOVERY PULSE!', '#3fb950');
+          updateHud();
+        }
       }
     }
 
@@ -809,6 +862,20 @@ function createLegacybootstrapInvaders(root) {
         const dy = py - (p.y + p.r);
         const dist = Math.sqrt(dx * dx + dy * dy) || 1;
         const pull = Math.min(200, 6000 / dist);
+        p.x += (dx / dist) * pull * dt;
+        p.y += (dy / dist) * pull * dt;
+      }
+    }
+
+    // Magnet Luck modifier: pickup magnetism without the upgrade (weaker pull)
+    if (modMagnetLuck && upgrades.magnetPowerups === 0) {
+      const px = player.x + player.w / 2;
+      const py = player.y + player.h / 2;
+      for (const p of powerupItems) {
+        const dx = px - (p.x + p.r);
+        const dy = py - (p.y + p.r);
+        const dist = Math.sqrt(dx * dx + dy * dy) || 1;
+        const pull = Math.min(120, 3000 / dist);
         p.x += (dx / dist) * pull * dt;
         p.y += (dy / dist) * pull * dt;
       }
@@ -1271,7 +1338,7 @@ function createLegacybootstrapInvaders(root) {
 
       if (!hit && boss && rectsOverlap(b.x, b.y, b.w, b.h, boss.x, boss.y, boss.w, boss.h)) {
         hit = true;
-        const dmg = (b.dmg || 1) * bossDmgBoost;
+        const dmg = (b.dmg || 1) * bossDmgBoost * modBossHunterMult;
         boss.hp -= dmg;
         boss.hitTimer = 0.12;
         addScore(20 * wave * dmg * waveScoreMult * getScoreMultiplier(activePowerups) * getUpgradedScoreMult(upgrades),

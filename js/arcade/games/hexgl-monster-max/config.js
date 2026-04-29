@@ -11,4 +11,7 @@ export var HEXGL_MONSTER_MAX_CONFIG = Object.freeze({
 
   /** Minimum valid run duration in milliseconds (anti-cheat). */
   minRunMs: 30 * 1000,
+
+  /** Cross-game modifier compatibility tags. */
+  crossGameTags: Object.freeze(['physics', 'racing']),
 });

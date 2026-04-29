@@ -12,6 +12,9 @@ import {
   createRiskSystem,
   createMetaSystem,
   createFeedbackSystem,
+  getActiveModifiers,
+  hasEffect,
+  getStatEffect,
 } from '/js/arcade/systems/index.js';
 import { createScalingDirector, tickDirector, pickWaveModifier, checkForcedChaos, getBossAggressionMult } from '/js/arcade/systems/director-system.js';
 import { shouldFirePressureEvent, getEventTier, updateIntensity } from '/js/arcade/systems/event-system.js';
@@ -281,6 +284,14 @@ function resetRun(state) {
   state.waveFoodTarget = 8;
   state.boss = null;
   state.runStats = { bossesDefeated: 0, highestIntensity: 0 };
+
+  // Apply cross-game modifier effects for this run
+  const _srCrossMods = getActiveModifiers(GAME_ID, SNAKE_RUN_CONFIG.crossGameTags || []);
+  state._crossModScoreMult = getStatEffect(_srCrossMods, 'scoreMult', 1);
+  if (hasEffect(_srCrossMods, 'shieldedStart')) {
+    state.upgrades['shield-segment'] = Math.max(state.upgrades['shield-segment'], 1);
+  }
+  state._crossModSlowChaos = hasEffect(_srCrossMods, 'pressureRate');
 
   for (const key of Object.keys(state.upgrades)) state.upgrades[key] = 0;
 
@@ -698,6 +709,11 @@ function updateEventsAndDirector(state, dt) {
     state.dailyVariation ? state.dailyVariation.eventRateMult : 1
   );
 
+  // Slow Chaos modifier: bleed pressure each frame
+  if (state._crossModSlowChaos && state.director.pressure > 0) {
+    state.director.pressure = Math.max(0, state.director.pressure - 10 * dt);
+  }
+
   const near = state.hazards.drones.length + state.hazards.hunterSnakes.length + (state.boss ? 4 : 0);
   updateIntensity(state.director, dt, {
     damageTaken: state.flash > 0.45,
@@ -737,7 +753,8 @@ function applyFoodEffect(state, food) {
   state.growthQueue += growth;
 
   const multiplier = 1 + state.upgrades['score-mult'] * 0.22 + state.combo * 0.12;
-  state.score += Math.max(1, Math.floor(def.score * multiplier * state.riskMult));
+  const crossScoreMult = state._crossModScoreMult || 1;
+  state.score += Math.max(1, Math.floor(def.score * multiplier * state.riskMult * crossScoreMult));
   state.foodsThisWave += 1;
 
   if (food.type === 'shield') state.upgrades['shield-segment'] = Math.max(state.upgrades['shield-segment'], 1);

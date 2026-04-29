@@ -9,6 +9,7 @@ import { BREAKOUT_CONFIG } from './config.js';
 import { createGameAdapter, registerGameAdapter, bootstrapFromAdapter } from '/js/arcade/engine/game-adapter.js';
 import { playSound, stopAllSounds, isMuted } from '/js/arcade/core/audio.js';
 import { createFrameDebug } from '/js/arcade/core/frame-debug.js';
+import { getActiveModifiers, getStatEffect } from '/js/arcade/systems/cross-game-modifier-system.js';
 
 export const BREAKOUT_ADAPTER = createGameAdapter({
   id: BREAKOUT_CONFIG.id,
@@ -88,6 +89,10 @@ function createLegacybootstrapBreakout(root) {
   let raf = null;
   let lastTime = 0;
   let elapsed = 0;
+
+  // Cross-game modifier: score surge
+  const _brCrossMods  = getActiveModifiers(GAME_ID, BREAKOUT_CONFIG.crossGameTags || []);
+  const brModScoreMult = getStatEffect(_brCrossMods, 'scoreMult', 1);
 
   let balls = [];
   let launched = false;
@@ -287,7 +292,7 @@ function createLegacybootstrapBreakout(root) {
 
   function addScore(points, x, y, color = '#f7c948') {
     if (!Number.isFinite(points) || points <= 0) return;
-    score += Math.floor(points);
+    score += Math.floor(points * brModScoreMult);
     setBestMaybe();
     updateHud();
     effects.scorePulse = 0.22;

@@ -108,7 +108,9 @@
 <script type="module">
 import { mountGame }                from '/js/arcade/core/game-shell.js';
 import { bootstrapBreakoutBullrun } from '/js/arcade/games/breakout-bullrun/bootstrap.js';
+import { mountModifierPanel } from '/js/arcade/systems/cross-game-modifier-ui.js';
 mountGame({ root: document.querySelector('.game-card'), bootstrap: bootstrapBreakoutBullrun });
+mountModifierPanel();
 </script>
 </body>
 </html>

@@ -8,4 +8,7 @@ export var INVADERS_CONFIG = Object.freeze({
 
   /** Display label used by GameRegistry. */
   label: '👾 Invaders 3008',
+
+  /** Cross-game modifier compatibility tags. */
+  crossGameTags: Object.freeze(['shooter']),
 });

@@ -6,6 +6,7 @@ import { playSound, stopAllSounds, isMuted } from '/js/arcade/core/audio.js';
 import { createFrameDebug } from '/js/arcade/core/frame-debug.js';
 import { recordRunStats, checkMilestones } from './meta-system.js';
 import { createScalingDirector, tickDirector, shouldFirePressureEvent, updateIntensity, checkForcedChaos } from '/js/arcade/systems/event-system.js';
+import { getActiveModifiers, hasEffect, getStatEffect } from '/js/arcade/systems/cross-game-modifier-system.js';
 
 export const SNAKE_ADAPTER = createGameAdapter({
   id: SNAKE_CONFIG.id,
@@ -181,12 +182,28 @@ export function bootstrapSnake(root) {
     eventGoldenRush = 0;
     extraFoods = [];
     hideSnakeUpgradeModal();
+
+    // Apply cross-game modifier effects for this run
+    var crossMods = getActiveModifiers(GAME_ID, SNAKE_CONFIG.crossGameTags || []);
+    if (hasEffect(crossMods, 'scoreMult')) {
+      run.scoreMult *= getStatEffect(crossMods, 'scoreMult', 1);
+    }
+    if (hasEffect(crossMods, 'shieldedStart')) {
+      run.shieldCharges += 1;
+    }
+    // Store slow-chaos flag for the director tick
+    run._slowChaos = hasEffect(crossMods, 'pressureRate');
+    // Store golden-spawn boost for food mutation
+    run._goldenSpawnBoost = getStatEffect(crossMods, 'goldenSpawnBoost', 0);
   }
 
   function maybeMutateFood(f) {
     if (!director) return;
     var intensity = director.intensity || 0;
-    var candidates = MUTATION_DEFS.filter(function(m) { return intensity >= m.threshold; });
+    // Golden Chance modifier: reduce the mutation threshold so rare mutations appear sooner
+    var goldenBoost = (run && run._goldenSpawnBoost) || 0;
+    var effectiveIntensity = intensity + goldenBoost * 100;
+    var candidates = MUTATION_DEFS.filter(function(m) { return effectiveIntensity >= m.threshold; });
     if (!candidates.length) return;
     if (Math.random() > MUTATION_CHANCE) return;
     var def = candidates[Math.floor(Math.random() * candidates.length)];
@@ -300,6 +317,10 @@ export function bootstrapSnake(root) {
   function tickSnakeDirector(dt) {
     if (!director || !run) return;
     tickDirector(director, dt);
+    // Slow Chaos modifier: bleed pressure each frame (-10% rate)
+    if (run._slowChaos && director.pressure > 0) {
+      director.pressure = Math.max(0, director.pressure - 10 * dt);
+    }
     var heatIntensity = Math.min(100, heat * 62);
     director.intensity = Math.max(director.intensity || 0, heatIntensity);
     runStats.highestIntensity = Math.max(runStats.highestIntensity, director.intensity);

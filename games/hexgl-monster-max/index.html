@@ -324,7 +324,9 @@
 <script type="module">
 import { mountGame }                 from '/js/arcade/core/game-shell.js';
 import { bootstrapHexGLMonsterMax } from '/js/arcade/games/hexgl-monster-max/bootstrap.js';
+import { mountModifierPanel } from '/js/arcade/systems/cross-game-modifier-ui.js';
 mountGame({ root: document.getElementById('hexgl-game-card'), bootstrap: bootstrapHexGLMonsterMax });
+mountModifierPanel();
 </script>
 </body>
 </html>

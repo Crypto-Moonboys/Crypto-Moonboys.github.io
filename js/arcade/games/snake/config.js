@@ -11,6 +11,9 @@ export var SNAKE_CONFIG = Object.freeze({
   /** Display label used by game-fullscreen.js metadata. */
   label: '🐍 SnakeRun 3008',
 
+  /** Cross-game modifier compatibility tags. */
+  crossGameTags: Object.freeze(['snake']),
+
   /** Number of grid cells along each axis. */
   grid: 24,
 

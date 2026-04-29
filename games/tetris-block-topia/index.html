@@ -122,7 +122,9 @@
 <script type="module">
 import { mountGame }       from '/js/arcade/core/game-shell.js';
 import { bootstrapTetris } from '/js/arcade/games/tetris/bootstrap.js';
+import { mountModifierPanel } from '/js/arcade/systems/cross-game-modifier-ui.js';
 mountGame({ root: document.querySelector('.game-card'), bootstrap: bootstrapTetris });
+mountModifierPanel();
 </script>
 </body>
 </html>

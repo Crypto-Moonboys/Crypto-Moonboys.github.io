@@ -11,4 +11,7 @@ export var BTQM_CONFIG = Object.freeze({
 
   /** Key used for leaderboard score submission. */
   leaderboardKey: 'blocktopia',
+
+  /** Cross-game modifier compatibility tags. */
+  crossGameTags: Object.freeze(['maze']),
 });
