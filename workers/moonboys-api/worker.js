@@ -885,30 +885,40 @@ export default {
       const grantXp = Math.min(rawXp, ARCADE_ADMIN_XP_GRANT_MAX);
 
       try {
+        const currentArcadeDailyKey = new Date().toISOString().slice(0, 10);
+
+        const rowBefore = await env.DB.prepare(`
+          SELECT arcade_xp_total FROM arcade_progression_state WHERE telegram_id = ? LIMIT 1
+        `).bind(telegramId).first();
+        const xpBefore = Math.max(0, Math.floor(Number(rowBefore?.arcade_xp_total) || 0));
+
         await env.DB.prepare(`
           INSERT INTO arcade_progression_state
             (telegram_id, arcade_xp_total, arcade_daily_xp, arcade_daily_key, arcade_restriction_level, restricted_until, updated_at)
-          VALUES (?, ?, 0, '', 0, NULL, CURRENT_TIMESTAMP)
+          VALUES (?, ?, 0, ?, 0, NULL, CURRENT_TIMESTAMP)
           ON CONFLICT(telegram_id)
           DO UPDATE SET
             arcade_xp_total = arcade_progression_state.arcade_xp_total + excluded.arcade_xp_total,
             updated_at = CURRENT_TIMESTAMP
-        `).bind(telegramId, grantXp).run();
+        `).bind(telegramId, grantXp, currentArcadeDailyKey).run();
 
-        const row = await env.DB.prepare(`
+        const rowAfter = await env.DB.prepare(`
           SELECT arcade_xp_total FROM arcade_progression_state WHERE telegram_id = ? LIMIT 1
         `).bind(telegramId).first();
-        const xpAfter = Math.max(0, Math.floor(Number(row?.arcade_xp_total) || 0));
-        const xpBefore = Math.max(0, xpAfter - grantXp);
+        const xpAfter = Math.max(0, Math.floor(Number(rowAfter?.arcade_xp_total) || 0));
+
+        const auditReason = reason
+          ? `arcade_xp_admin_grant: ${reason}`
+          : 'arcade_xp_admin_grant';
 
         // Reuse the shared Block Topia audit log for arcade admin grants to avoid schema duplication.
-        // The reason field ('arcade_xp_admin_grant') distinguishes these entries from BT grants.
+        // The reason field (prefixed 'arcade_xp_admin_grant') distinguishes these entries from BT grants.
         await writeBlockTopiaAdminGrantAudit(env.DB, {
           telegramId,
           adminTelegramId,
           xpChange: grantXp,
           gemsChange: 0,
-          reason: reason || 'arcade_xp_admin_grant',
+          reason: auditReason,
         });
 
         return json({
