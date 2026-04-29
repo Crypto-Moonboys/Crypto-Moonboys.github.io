@@ -23,11 +23,11 @@
   // Block Topia XP grant form elements
   var btGrantForm = document.getElementById('bt-grant-form');
   var btTargetTelegramIdEl = document.getElementById('bt-target-telegram-id');
-  var xpEl = document.getElementById('grant-xp');
-  var secretEl = document.getElementById('admin-secret');
-  var reasonEl = document.getElementById('grant-reason');
-  var resultState = document.getElementById('result-state');
-  var resultJson = document.getElementById('result-json');
+  var btXpEl = document.getElementById('bt-grant-xp');
+  var btSecretEl = document.getElementById('bt-admin-secret');
+  var btReasonEl = document.getElementById('bt-grant-reason');
+  var btResultState = document.getElementById('bt-result-state');
+  var btResultJson = document.getElementById('bt-result-json');
 
   var activeAdminTelegramId = '';
 
@@ -83,7 +83,7 @@
       return;
     }
     if (kind === 'bt-xp50k') {
-      xpEl.value = '50000';
+      btXpEl.value = '50000';
       return;
     }
   }
@@ -160,7 +160,7 @@
       setState(accessState, denied, 'bad');
       var serialized = stringifyPayload(accessPayload);
       arcadeResultJson.textContent = serialized;
-      resultJson.textContent = serialized;
+      btResultJson.textContent = serialized;
       return;
     }
 
@@ -168,14 +168,14 @@
       setState(accessState, 'Denied: linked and authenticated, but this Telegram ID is not in the admin allowlist.', 'bad');
       var serialized = stringifyPayload(accessPayload);
       arcadeResultJson.textContent = serialized;
-      resultJson.textContent = serialized;
+      btResultJson.textContent = serialized;
       return;
     }
     if (!accessPayload.admin_secret_configured) {
       setState(accessState, 'Denied: linked and allowlisted, but backend admin secret is not configured.', 'bad');
       var serialized = stringifyPayload(accessPayload);
       arcadeResultJson.textContent = serialized;
-      resultJson.textContent = serialized;
+      btResultJson.textContent = serialized;
       return;
     }
 
@@ -254,28 +254,28 @@
       event.preventDefault();
 
       var targetTelegramId = String(btTargetTelegramIdEl.value || '').trim();
-      var xp = readInt(xpEl);
-      var reason = String(reasonEl.value || '').trim();
-      var secret = String(secretEl.value || '');
+      var xp = readInt(btXpEl);
+      var reason = String(btReasonEl.value || '').trim();
+      var secret = String(btSecretEl.value || '');
 
       if (!/^\d{5,20}$/.test(targetTelegramId)) {
-        setState(resultState, 'Invalid target Telegram ID.', 'bad');
+        setState(btResultState, 'Invalid target Telegram ID.', 'bad');
         return;
       }
       if (!secret) {
-        setState(resultState, 'Admin secret is required at submit time.', 'bad');
+        setState(btResultState, 'Admin secret is required at submit time.', 'bad');
         return;
       }
       if (xp === null || xp === 0) {
-        setState(resultState, 'Enter a positive XP amount.', 'bad');
+        setState(btResultState, 'Enter a positive XP amount.', 'bad');
         return;
       }
       if (Number.isNaN(xp)) {
-        setState(resultState, 'XP must be a whole number.', 'bad');
+        setState(btResultState, 'XP must be a whole number.', 'bad');
         return;
       }
       if (!activeAdminTelegramId) {
-        setState(resultState, 'Admin session is not active. Refresh auth state and retry.', 'bad');
+        setState(btResultState, 'Admin session is not active. Refresh auth state and retry.', 'bad');
         return;
       }
 
@@ -286,19 +286,19 @@
       if (xp !== null && xp > 0) body.xp = xp;
       if (reason) body.reason = reason;
 
-      setState(resultState, 'Submitting Block Topia grant request…', 'warn');
+      setState(btResultState, 'Submitting Block Topia grant request…', 'warn');
       try {
         var outcome = await postJson('/admin/blocktopia/grant-xp', body, { 'X-Admin-Secret': secret });
         var payload = outcome.payload || {};
         var reasonText = payload.error || payload.message || '';
         if (outcome.ok) {
-          setState(resultState, 'Grant succeeded. ' + (reasonText ? reasonText : 'XP updated.'), 'good');
+          setState(btResultState, 'Grant succeeded. ' + (reasonText ? reasonText : 'XP updated.'), 'good');
         } else {
-          setState(resultState, 'Grant failed (' + outcome.status + '). ' + (reasonText || 'See response payload.'), 'bad');
+          setState(btResultState, 'Grant failed (' + outcome.status + '). ' + (reasonText || 'See response payload.'), 'bad');
         }
-        resultJson.textContent = stringifyPayload(payload);
+        btResultJson.textContent = stringifyPayload(payload);
       } catch {
-        setState(resultState, 'Grant failed: network/server unreachable.', 'bad');
+        setState(btResultState, 'Grant failed: network/server unreachable.', 'bad');
       }
     });
   }
@@ -321,11 +321,10 @@
   }
 
   function boot() {
-    if (!arcadeGrantForm || !btGrantForm) return;
     wireQuickFill();
-    wireArcadeSubmit();
-    wireBtSubmit();
     wireAutoRefresh();
+    if (arcadeGrantForm) wireArcadeSubmit();
+    if (btGrantForm) wireBtSubmit();
     checkAccess();
   }
 
