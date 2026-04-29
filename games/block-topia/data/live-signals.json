@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-04-29T18:00:07.417Z",
+  "generatedAt": "2026-04-29T19:48:34.881Z",
   "mode": "live-ai",
   "sourceHealth": {
     "coingecko-global": "ok",
@@ -11,84 +11,84 @@
   "signalCount": 5,
   "signals": [
     {
-      "id": "signal-1777485607417-1",
+      "id": "signal-1777492114880-1",
       "lane": "world",
       "priority": 4,
-      "ttlMinutes": 60,
-      "npcLine": "Crypto shadows deepen as fear grips every node.",
-      "questPulse": "Scan market ghost data for sudden shifts.",
-      "worldFeed": "Global cryptomarkets bleed value under heavy shadow.",
-      "clueEvent": "Flickering tokens hint at unseen tampering.",
+      "ttlMinutes": 45,
+      "npcLine": "Market caps bleed, streets whisper of collapse.",
+      "questPulse": "Find the cause of the digital crash before networks fail.",
+      "worldFeed": "Cryptos flicker with unease amid mounting losses.",
+      "clueEvent": "Shadow syndicates exploit the dip for power grabs.",
       "tags": [
         "crypto",
-        "fear",
-        "market"
+        "crash",
+        "fear"
       ],
-      "expiresAt": "2026-04-29T19:00:07.417Z"
+      "expiresAt": "2026-04-29T20:33:34.880Z"
     },
     {
-      "id": "signal-1777485607417-2",
+      "id": "signal-1777492114881-2",
       "lane": "ops",
       "priority": 3,
-      "ttlMinutes": 45,
-      "npcLine": "Ultima spikes on radar—possibility of rogue AI bid.",
-      "questPulse": "Infiltrate nodes pushing phantom Ultima trades.",
-      "worldFeed": "Trading bots exploit blind spots; watch AI-linked assets.",
-      "clueEvent": "Uneven trade volumes signal coded manipulation.",
+      "ttlMinutes": 30,
+      "npcLine": "Fear stalks the markets; traders vanish overnight.",
+      "questPulse": "Extract data on the sudden surge of AI-linked assets.",
+      "worldFeed": "'AI' symbols spike in dark net chatter.",
+      "clueEvent": "Algorithmic entities making moves beneath the radar.",
       "tags": [
-        "bots",
         "ai",
-        "manipulation"
+        "market",
+        "surge"
       ],
-      "expiresAt": "2026-04-29T18:45:07.417Z"
+      "expiresAt": "2026-04-29T20:18:34.881Z"
     },
     {
-      "id": "signal-1777485607417-3",
+      "id": "signal-1777492114881-3",
       "lane": "clue",
       "priority": 2,
-      "ttlMinutes": 30,
-      "npcLine": "Blend signals mix—watch for counterfeit algorithms.",
-      "questPulse": "Trace prosumer data trails corrupting liquidity.",
-      "worldFeed": "Market murk thickens; blend tokens fluctuate unnaturally.",
-      "clueEvent": "Odd timestamp clusters in trade logs detected.",
+      "ttlMinutes": 60,
+      "npcLine": "ULTIMA and PLUME networks flicker under pressure.",
+      "questPulse": "Trace the interference disrupting key cryptos' signals.",
+      "worldFeed": "Trendy tokens whirl in uncertain currents; pulse fades in and out.",
+      "clueEvent": "Possible rogue patch injecting volatility into chains.",
       "tags": [
-        "fraud",
-        "algorithms",
-        "blend"
+        "token",
+        "volatility",
+        "interference"
       ],
-      "expiresAt": "2026-04-29T18:30:07.417Z"
+      "expiresAt": "2026-04-29T20:48:34.881Z"
     },
     {
-      "id": "signal-1777485607417-4",
+      "id": "signal-1777492114881-4",
       "lane": "quest",
       "priority": 3,
       "ttlMinutes": 50,
-      "npcLine": "Pi nodes flicker, harboring encrypted secrets.",
-      "questPulse": "Decrypt lost packets to reveal hidden agendas.",
-      "worldFeed": "Silent whispers rise about Pi network anomalies.",
-      "clueEvent": "Data echoes from dark net flares.",
+      "npcLine": "Rise of PENGU stirs shadow brokers’ interest.",
+      "questPulse": "Infiltrate PENGU clan; uncover secrets behind their ascent.",
+      "worldFeed": "New players bet on overlooked assets amid chaos.",
+      "clueEvent": "Whispers of a silent rebellion in digital exchange hubs.",
       "tags": [
-        "encryption",
-        "pi",
-        "secrets"
+        "pengu",
+        "rebellion",
+        "shadow"
       ],
-      "expiresAt": "2026-04-29T18:50:07.417Z"
+      "expiresAt": "2026-04-29T20:38:34.881Z"
     },
     {
-      "id": "signal-1777485607417-5",
+      "id": "signal-1777492114881-5",
       "lane": "npc",
       "priority": 1,
       "ttlMinutes": 20,
-      "npcLine": "Pros hunters report signs of market decay.",
-      "questPulse": "Collect intel on fading pros trends.",
-      "worldFeed": "Low scores hint at distrust brewing within ranks.",
-      "clueEvent": "Corrupted datasets found in prosumer streams.",
+      "npcLine": "Fear hangs thick; even bots hesitate now.",
+      "questPulse": "Help calm jittery traders or exploit their panic.",
+      "worldFeed": "Sentiment tanks, trust in code evaporates.",
+      "clueEvent": "Sentiment index hits crisis low, influencing cybernetic markets.",
       "tags": [
-        "decay",
-        "intel",
-        "pros"
+        "sentiment",
+        "fear",
+        "panic"
       ],
-      "expiresAt": "2026-04-29T18:20:07.417Z"
+      "expiresAt": "2026-04-29T20:08:34.881Z"
     }
   ]
 }
