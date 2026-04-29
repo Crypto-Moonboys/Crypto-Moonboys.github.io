@@ -3,141 +3,62 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="How to Play — Moonboys Arcade player guide. Login with Telegram, earn XP, and enter Block Topia.">
+  <meta name="description" content="How to Play Crypto Moonboys — walk in, play arcade games, earn XP, link Telegram, unlock Block Topia, and build your position in the GK system.">
   <meta name="robots" content="index, follow">
-  <meta property="og:title" content="How to Play — Moonboys Systems Manual">
-  <meta property="og:description" content="New player guide for the Moonboys ecosystem: arcade games, Telegram sync, XP, and Block Topia.">
+  <meta property="og:title" content="How to Play Crypto Moonboys — Play, Earn XP, Unlock Block Topia">
+  <meta property="og:description" content="A fun player guide for the Crypto Moonboys system: Arcade → XP → Telegram Sync → Block Topia → Battle Chamber.">
   <meta property="og:type" content="website">
-  <meta property="og:url" content="https://crypto-moonboys.github.io/how-to-play.html">
-  <meta property="og:image" content="https://crypto-moonboys.github.io/img/CRYPTO-MOONBOYS-BITCOIN-LOGO.png">
-  <link rel="canonical" href="https://crypto-moonboys.github.io/how-to-play.html">
-  <title>How to Play — Moonboys Systems Manual</title>
+  <meta property="og:url" content="https://cryptomoonboys.com/how-to-play.html">
+  <meta property="og:image" content="https://cryptomoonboys.com/img/CRYPTO-MOONBOYS-BITCOIN-LOGO.png">
+  <link rel="canonical" href="https://cryptomoonboys.com/how-to-play.html">
+  <title>How to Play Crypto Moonboys — Play, Earn XP, Unlock Block Topia</title>
   <link rel="stylesheet" href="/css/wiki.css">
   <link rel="stylesheet" href="/css/battle-layer.css">
   <link rel="icon" href="/img/favicon.svg" type="image/svg+xml">
   <style>
     .manual-hero {
-      padding: 30px 26px;
+      position: relative;
+      overflow: hidden;
+      padding: clamp(34px, 6vw, 78px) clamp(22px, 4vw, 46px);
       border-radius: var(--radius);
-      border: 1px solid rgba(86,220,255,.34);
-      background: linear-gradient(160deg, rgba(10,23,44,.82), rgba(7,15,30,.74));
-      box-shadow: inset 0 0 0 1px rgba(122,236,255,.08), 0 14px 34px rgba(0,0,0,.3);
-      margin-bottom: 18px;
+      border: 1px solid rgba(86,220,255,.38);
+      background:
+        radial-gradient(circle at top left, rgba(86,220,255,.20), transparent 34%),
+        radial-gradient(circle at bottom right, rgba(255,204,0,.15), transparent 30%),
+        linear-gradient(160deg, rgba(10,23,44,.9), rgba(6,13,27,.86));
+      box-shadow: inset 0 0 0 1px rgba(122,236,255,.08), 0 18px 44px rgba(0,0,0,.35);
+      margin-bottom: 22px;
     }
-    .manual-hero h1 { margin: 0 0 10px; font-size: 2rem; }
-    .manual-hero p { margin: 0; color: var(--color-text-muted); line-height: 1.7; }
-
+    .manual-hero::before {
+      content: ""; position:absolute; inset:0; opacity:.08;
+      background-image: linear-gradient(90deg,#fff 1px,transparent 1px),linear-gradient(#fff 1px,transparent 1px);
+      background-size: 42px 42px; pointer-events:none;
+    }
+    .manual-hero > * { position:relative; z-index:1; }
+    .manual-hero h1 { margin: 0 0 12px; font-size: clamp(2.1rem, 6vw, 5rem); line-height:.92; letter-spacing:-.055em; text-transform:uppercase; }
+    .manual-hero p { margin: 0; color: var(--color-text-muted); line-height: 1.65; max-width:850px; font-size: clamp(1rem, 2vw, 1.25rem); }
+    .manual-kicker { display:inline-flex; margin-bottom:14px; padding:7px 11px; border:1px solid rgba(255,204,0,.45); border-radius:999px; background:rgba(255,204,0,.08); color:#f4d35e; font-size:.78rem; font-weight:800; letter-spacing:.08em; text-transform:uppercase; }
+    .manual-cta-row { display:flex; flex-wrap:wrap; gap:12px; margin-top:24px; }
+    .manual-cta-row .btn { padding:12px 18px; font-weight:800; text-transform:uppercase; letter-spacing:.04em; }
     .manual-pill-row { display:flex; flex-wrap:wrap; gap:10px; margin-top:18px; }
-    .manual-pill {
-      display:inline-flex;
-      align-items:center;
-      gap:6px;
-      padding:7px 11px;
-      border-radius: 999px;
-      border: 1px solid rgba(86,220,255,.32);
-      background: rgba(9, 31, 56, .52);
-      font-size: .8rem;
-      color: #d6f8ff;
-    }
-
-    .manual-grid {
-      display:grid;
-      grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
-      gap: 14px;
-      margin: 16px 0 24px;
-    }
-    .manual-card {
-      border: 1px solid rgba(86,220,255,.28);
-      border-radius: 12px;
-      background: linear-gradient(165deg, rgba(10,23,44,.76), rgba(8,18,34,.62));
-      padding: 16px 16px 14px;
-      box-shadow: inset 0 0 0 1px rgba(122,236,255,.06), 0 8px 24px rgba(0,0,0,.24);
-    }
-    .manual-card h3 { margin: 0 0 8px; font-size: 1rem; }
-    .manual-card p,
-    .manual-card li { color: var(--color-text-muted); line-height: 1.65; }
-    .manual-card ul { margin: 0; padding-left: 18px; }
-
-    .manual-section {
-      margin: 0 0 22px;
-      border: 1px solid rgba(86,220,255,.24);
-      border-radius: 12px;
-      background: rgba(8,18,34,.7);
-      padding: 18px 18px 16px;
-    }
-    .manual-section h2 {
-      margin: 0 0 8px;
-      font-size: 1.15rem;
-      color: #e7fcff;
-      letter-spacing: .01em;
-    }
-    .manual-section p,
-    .manual-section li {
-      color: var(--color-text-muted);
-      line-height: 1.72;
-      margin: 0 0 8px;
-    }
-    .manual-section ul,
-    .manual-section ol { margin: 0; padding-left: 20px; }
-
-    .manual-event-table-wrap {
-      margin-top: 10px;
-      overflow-x: auto;
-      border: 1px solid rgba(86,220,255,.28);
-      border-radius: 10px;
-    }
-    .manual-event-table {
-      width: 100%;
-      border-collapse: collapse;
-      min-width: 760px;
-      font-size: .88rem;
-    }
-    .manual-event-table th,
-    .manual-event-table td {
-      text-align: left;
-      vertical-align: top;
-      padding: 10px 12px;
-      border-bottom: 1px solid rgba(86,220,255,.14);
-    }
-    .manual-event-table th {
-      font-size: .74rem;
-      text-transform: uppercase;
-      letter-spacing: .06em;
-      color: #9fdff0;
-      background: rgba(14,32,58,.86);
-    }
-    .manual-event-table tr:last-child td { border-bottom: none; }
-
-    .manual-steps {
-      border: 1px solid rgba(86,220,255,.32);
-      border-radius: 12px;
-      background: linear-gradient(165deg, rgba(10,23,44,.78), rgba(8,18,34,.6));
-      padding: 14px 16px;
-      margin-top: 10px;
-    }
-    .manual-steps ol { margin: 0; }
-    .manual-steps code {
-      color: #f4d35e;
-      background: rgba(255,255,255,.06);
-      border-radius: 4px;
-      padding: .1em .35em;
-      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-    }
-
-    .manual-faq .manual-card h3 {
-      font-size: .96rem;
-      color: #d6f9ff;
-      margin-bottom: 6px;
-    }
-
-    .manual-nav-card {
-      margin-top: 16px;
-      border: 1px solid rgba(86,220,255,.3);
-      border-radius: 12px;
-      background: rgba(10,25,46,.68);
-      padding: 14px 16px;
-    }
-    .manual-nav-card a { text-decoration: none; }
+    .manual-pill { display:inline-flex; align-items:center; gap:6px; padding:7px 11px; border-radius:999px; border:1px solid rgba(86,220,255,.32); background:rgba(9,31,56,.52); font-size:.8rem; color:#d6f8ff; }
+    .manual-route { margin: 18px 0 0; padding:14px 16px; border:1px solid rgba(86,220,255,.28); border-radius:12px; background:rgba(6,14,28,.58); color:#d8fbff; font-weight:700; line-height:1.7; }
+    .manual-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); gap:14px; margin:16px 0 24px; }
+    .manual-card { border:1px solid rgba(86,220,255,.28); border-radius:12px; background:linear-gradient(165deg,rgba(10,23,44,.76),rgba(8,18,34,.62)); padding:16px 16px 14px; box-shadow:inset 0 0 0 1px rgba(122,236,255,.06),0 8px 24px rgba(0,0,0,.24); }
+    .manual-card h3 { margin:0 0 8px; font-size:1rem; color:#e7fcff; }
+    .manual-card p,.manual-card li { color:var(--color-text-muted); line-height:1.65; }
+    .manual-card ul { margin:0; padding-left:18px; }
+    .manual-section { margin:0 0 22px; border:1px solid rgba(86,220,255,.24); border-radius:12px; background:rgba(8,18,34,.7); padding:20px 20px 18px; }
+    .manual-section h2 { margin:0 0 8px; font-size:1.25rem; color:#e7fcff; letter-spacing:.01em; text-transform:uppercase; }
+    .manual-section p,.manual-section li { color:var(--color-text-muted); line-height:1.72; margin:0 0 8px; }
+    .manual-section ul,.manual-section ol { margin:0; padding-left:20px; }
+    .manual-steps { border:1px solid rgba(86,220,255,.32); border-radius:12px; background:linear-gradient(165deg,rgba(10,23,44,.78),rgba(8,18,34,.6)); padding:14px 16px; margin-top:10px; }
+    .manual-steps ol { margin:0; }
+    .manual-steps code,.manual-section code,.manual-card code { color:#f4d35e; background:rgba(255,255,255,.06); border-radius:4px; padding:.1em .35em; font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; }
+    .manual-wow { border-left:3px solid rgba(255,204,0,.9); padding:14px 0 14px 16px; margin:18px 0; color:var(--color-text-muted); background:rgba(255,204,0,.05); }
+    .manual-faq .manual-card h3 { font-size:.96rem; color:#d6f9ff; margin-bottom:6px; }
+    .manual-nav-card { margin-top:16px; border:1px solid rgba(86,220,255,.3); border-radius:12px; background:linear-gradient(165deg,rgba(10,25,46,.78),rgba(7,16,31,.68)); padding:18px 18px; }
+    .manual-nav-card a { text-decoration:none; font-weight:700; }
   </style>
 </head>
 <body>
@@ -145,248 +66,156 @@
 
 <header id="site-header" role="banner">
   <button class="hamburger" id="hamburger" aria-label="Toggle navigation" aria-expanded="false" aria-controls="sidebar">☰</button>
-  <a href="/index.html" class="site-logo" aria-label="The Crypto Moonboys GK Wiki home">
+  <a href="/index.html" class="site-logo" aria-label="Crypto Moonboys home">
     <img src="/img/CRYPTO-MOONBOYS-BITCOIN-LOGO.png" alt="" aria-hidden="true">
-    <span>
-      <span class="logo-text">The Crypto Moonboys GK Wiki</span>
-      <span class="logo-sub">Crypto Intelligence & Lore Console</span>
-    </span>
+    <span><span class="logo-text">Crypto Moonboys</span><span class="logo-sub">Play. Earn. Build. Own it.</span></span>
   </a>
   <div id="header-search" role="search">
-    <input type="search" id="search-input" placeholder="Search the wiki…" aria-label="Search" autocomplete="off">
+    <input type="search" id="search-input" placeholder="Search the system…" aria-label="Search" autocomplete="off">
     <button id="search-btn" aria-label="Search">🔍</button>
     <div id="search-results" role="listbox"></div>
   </div>
-  <nav class="header-nav" aria-label="Main navigation">
-    <a href="/index.html">Home</a>
-    <a href="/games/">Arcade</a>
-  </nav>
+  <nav class="header-nav" aria-label="Main navigation"><a href="/index.html">Home</a><a href="/games/">Arcade</a></nav>
 </header>
 
 <div id="sidebar-overlay" aria-hidden="true"></div>
-
 <div id="layout">
   <nav id="sidebar" aria-label="Wiki navigation">
-    <div class="sidebar-section">
-      <div class="sidebar-heading">Navigation</div>
-      <div class="sidebar-nav">
-        <a href="/index.html"><span class="nav-icon">🏠</span> Main Page</a>
-        <a href="/games/"><span class="nav-icon">🕹️</span> Arcade</a>
-        <a href="/games/leaderboard.html"><span class="nav-icon">🏆</span> Leaderboard</a>
-        <a href="/gkniftyheads-incubator.html"><span class="nav-icon">🚀</span> Incubator HUB</a>
-        <a href="/community.html"><span class="nav-icon">⚔️</span> Battle Chamber</a>
-        <a href="/how-to-play.html" class="active"><span class="nav-icon">◈</span> How to Play</a>
-      </div>
-    </div>
-    <div class="sidebar-section">
-      <div class="sidebar-heading">Quick Access</div>
-      <div class="sidebar-nav">
-        <a href="#telegram-sync"><span class="nav-icon">🔗</span> Telegram Sync</a>
-        <a href="#xp"><span class="nav-icon">⚡</span> XP</a>
-        <a href="#block-topia-explained"><span class="nav-icon">🏙️</span> Block Topia</a>
-        <a href="#faq"><span class="nav-icon">❓</span> Troubleshooting</a>
-      </div>
-    </div>
+    <div class="sidebar-section"><div class="sidebar-heading">Start Here</div><div class="sidebar-nav">
+      <a href="/index.html"><span class="nav-icon">🏠</span> Main Page</a>
+      <a href="/games/"><span class="nav-icon">🕹️</span> Arcade</a>
+      <a href="/games/leaderboard.html"><span class="nav-icon">🏆</span> Leaderboard</a>
+      <a href="/gkniftyheads-incubator.html"><span class="nav-icon">🚀</span> Incubator HUB</a>
+      <a href="/community.html"><span class="nav-icon">⚔️</span> Battle Chamber</a>
+      <a href="/how-to-play.html" class="active"><span class="nav-icon">◈</span> How to Play</a>
+    </div></div>
+    <div class="sidebar-section"><div class="sidebar-heading">Quick Access</div><div class="sidebar-nav">
+      <a href="#quick-start"><span class="nav-icon">🚀</span> Quick Start</a>
+      <a href="#arcade-explained"><span class="nav-icon">🕹️</span> Arcade</a>
+      <a href="#xp"><span class="nav-icon">⚡</span> XP</a>
+      <a href="#telegram-sync"><span class="nav-icon">🔗</span> Telegram Sync</a>
+      <a href="#block-topia-explained"><span class="nav-icon">🏙️</span> Block Topia</a>
+      <a href="#faq"><span class="nav-icon">❓</span> Quick Fixes</a>
+    </div></div>
   </nav>
 
   <div id="main-wrapper">
     <main id="content" role="main" class="wiki-content">
-      <nav class="breadcrumb" aria-label="Breadcrumb">
-        <a href="/index.html">Home</a><span class="sep">›</span>
-        <a href="/games/">Arcade</a><span class="sep">›</span>
-        <span aria-current="page">How to Play Manual</span>
-      </nav>
+      <nav class="breadcrumb" aria-label="Breadcrumb"><a href="/index.html">Home</a><span class="sep">›</span><a href="/games/">Arcade</a><span class="sep">›</span><span aria-current="page">How to Play</span></nav>
 
       <section class="manual-hero">
-        <h1>Moonboys How-To-Play &amp; Systems Manual</h1>
-        <p>
-          This is the player guide for the Moonboys ecosystem. Login with Telegram, earn XP through arcade games, and enter Block Topia when you have enough XP.
-        </p>
-        <div class="manual-pill-row" aria-label="Core systems">
-          <span class="manual-pill">🕹️ Arcade Score Layer</span>
-          <span class="manual-pill">🏆 Leaderboard Rank Layer</span>
-          <span class="manual-pill">🏙️ Block Topia</span>
-          <span class="manual-pill">🔗 Telegram Identity Layer</span>
-          <span class="manual-pill">⚡ XP Economy</span>
+        <span class="manual-kicker">New player route · start here</span>
+        <h1>Walk in. Play. Earn XP. Unlock the city.</h1>
+        <p>This is the fun route into Crypto Moonboys. Start in the arcade, stack XP, link Telegram so your progress sticks, then push toward Block Topia, Battle Chamber status, factions, and HODL Wars.</p>
+        <div class="manual-cta-row" role="navigation" aria-label="Primary play actions">
+          <a href="/games/" class="btn btn-primary">🎮 Play Arcade</a>
+          <a href="/gkniftyheads-incubator.html" class="btn btn-secondary">🔗 Link Telegram</a>
+          <a href="/community.html" class="btn btn-secondary">⚔️ Battle Chamber</a>
         </div>
+        <div class="manual-pill-row" aria-label="Core systems">
+          <span class="manual-pill">🕹️ Fast arcade runs</span>
+          <span class="manual-pill">⚡ XP progression</span>
+          <span class="manual-pill">🔗 Telegram identity</span>
+          <span class="manual-pill">🏙️ Block Topia access</span>
+          <span class="manual-pill">⚔️ HODL Wars path</span>
+        </div>
+        <div class="manual-route">Arcade → Score → XP → Telegram Sync → Block Topia → Battle Chamber → Build / Own / Control</div>
       </section>
 
-      <section class="manual-section" id="what-site-is">
-        <h2>A) What this website is</h2>
-        <p>
-          The Crypto Moonboys site is one connected ecosystem made of four public layers:
-        </p>
+      <section class="manual-section" id="quick-start">
+        <h2>Start Fast</h2>
+        <p>You do not need to read a whitepaper. You do not need to understand every faction. You just need to start moving.</p>
+        <div class="manual-steps"><ol>
+          <li><a href="/games/">Open the Arcade</a>.</li>
+          <li>Play any game and build score.</li>
+          <li>Link Telegram so XP and progress can stick.</li>
+          <li>Build enough XP to enter Block Topia.</li>
+          <li>Use the Battle Chamber to track your position.</li>
+        </ol></div>
+        <div class="manual-wow"><strong>Simple rule:</strong> play first. The system makes more sense once you have a score to protect.</div>
+      </section>
+
+      <section class="manual-section" id="what-this-is">
+        <h2>This Is A Game Loop, Not A Claim Button</h2>
+        <p>Most Web3 systems train people to connect, click, claim, and leave. Crypto Moonboys is built the other way round.</p>
+        <p>You play. You earn. You come back. You build position. The more you show up, the more the system opens.</p>
+      </section>
+
+      <section class="manual-section" id="the-loop">
+        <h2>The Loop</h2>
         <div class="manual-grid">
-          <article class="manual-card">
-            <h3>🕹️ Arcade</h3>
-            <p>Free-to-play skill games where you generate score and compete.</p>
-          </article>
-          <article class="manual-card">
-            <h3>📚 Wiki</h3>
-            <p>The lore, factions, characters, events, and strategic context of the world.</p>
-          </article>
-          <article class="manual-card">
-            <h3>⚔️ Battle Chamber</h3>
-            <p>Community intelligence layer: missions, activity, and social coordination.</p>
-          </article>
-          <article class="manual-card">
-            <h3>🏙️ Block Topia</h3>
-            <p>Clean 2-player isometric map base. Requires Telegram-linked account and XXX XP to enter. More gameplay coming.</p>
-          </article>
+          <article class="manual-card"><h3>1. Play</h3><p>Arcade games are the front door. Free to enter. No wallet required to start.</p></article>
+          <article class="manual-card"><h3>2. Earn XP</h3><p>Good runs, accepted scores, and activity build XP. XP is your progression signal.</p></article>
+          <article class="manual-card"><h3>3. Link Telegram</h3><p>Telegram sync turns you from a browser visitor into a persistent player identity.</p></article>
+          <article class="manual-card"><h3>4. Unlock</h3><p>XP and identity unlock deeper areas like Block Topia, missions, and future systems.</p></article>
         </div>
-        <p>
-          They are connected: <strong>score</strong> determines ranking, <strong>XP</strong> is required to enter Block Topia,
-          and your <strong>synced identity</strong> determines whether progress is persistent or browser-local.
-        </p>
       </section>
 
       <section class="manual-section" id="arcade-explained">
-        <h2>B) Arcade explained</h2>
-        <ul>
-          <li>Arcade games are free to play.</li>
-          <li>Your run creates a <strong>score</strong> for the leaderboard.</li>
-          <li><strong>Score is not XP.</strong> Leaderboard rank uses score, not your XP stash.</li>
-          <li>Accepted scores can convert into Block Topia XP when your Telegram identity is synced.</li>
-          <li>If you are unsynced, you can still play and post local run data, but long-term progression stays local/browser-only.</li>
-        </ul>
+        <h2>Arcade: First Door</h2>
+        <p>The arcade is where you start moving. Play games, chase score, climb ranks, and begin building XP.</p>
+        <ul><li>Free to play</li><li>Fast sessions</li><li>Score creates leaderboard movement</li><li>Accepted scores can convert into XP when Telegram is synced</li></ul>
+      </section>
+
+      <section class="manual-section" id="xp">
+        <h2>XP: Your Progress Signal</h2>
+        <p>XP is not just a number. It is proof that you showed up.</p>
+        <ul><li>XP helps unlock deeper systems</li><li>XP tracks activity and progression</li><li>XP matters more when your Telegram identity is linked</li><li>XXX XP is required to enter Block Topia</li></ul>
       </section>
 
       <section class="manual-section" id="telegram-sync">
-        <h2>C) Telegram sync (required for stored progression)</h2>
-        <p>
-          Telegram sync is your identity handshake with the live system. Without it, the server cannot safely attach progression to a persistent player identity.
-        </p>
-        <div class="manual-steps" aria-label="Telegram sync steps">
-          <ol>
-            <li>Open the official bot: <a href="https://t.me/WIKICOMSBOT" target="_blank" rel="noopener noreferrer">@WIKICOMSBOT</a>.</li>
-            <li>Run <code>/gkstart</code> (initial bot activation).</li>
-            <li>Run <code>/gklink</code>.</li>
-            <li>Open the link returned by the bot and complete link confirmation.</li>
-            <li>Return to Arcade/Leaderboard/Block Topia and confirm sync is green/linked.</li>
-          </ol>
-        </div>
-        <ul style="margin-top:12px;">
-          <li><strong>When linked:</strong> accepted score-to-XP conversion and progression can persist server-side.</li>
-          <li><strong>If sync expires:</strong> your identity state can go red/invalid until you relink with <code>/gklink</code>.</li>
-          <li><strong>If not linked:</strong> you can play, but progression is local-only and does not behave like full persistent progression.</li>
-        </ul>
+        <h2>Telegram Sync: Save Your Position</h2>
+        <p>If you want progression to matter, link Telegram. This connects your player identity to the live system.</p>
+        <div class="manual-steps"><ol>
+          <li>Open <a href="https://t.me/WIKICOMSBOT" target="_blank" rel="noopener noreferrer">@WIKICOMSBOT</a>.</li>
+          <li>Run <code>/gkstart</code>.</li>
+          <li>Run <code>/gklink</code>.</li>
+          <li>Click the link from the bot.</li>
+          <li>Return to the site and continue playing.</li>
+        </ol></div>
+        <p>If sync goes red or expires, run <code>/gklink</code> again.</p>
       </section>
 
       <section class="manual-section" id="block-topia-explained">
-        <h2>D) Block Topia explained</h2>
-        <p>
-          Block Topia is currently a clean 2-player isometric map base. A Telegram-linked account and XXX XP are required to enter.
-        </p>
-        <ul>
-          <li>Requires Telegram login and account sync before entry.</li>
-          <li>XXX XP required to enter the Block Topia server.</li>
-          <li>Local and remote player markers are visible on the isometric map.</li>
-          <li>More gameplay systems will be added from <code>/games/template</code> as they are built.</li>
-        </ul>
-
+        <h2>Block Topia: The Next Door</h2>
+        <p>Block Topia is where the arcade path starts becoming a world. You need a linked Telegram account and enough XP to enter.</p>
+        <ul><li>Requires Telegram sync</li><li>Requires XXX XP</li><li>Built as a 2-player isometric map base</li><li>Future gameplay expands into NPC battles, upgrades, and HODL Wars systems</li></ul>
         <h3 style="margin:18px 0 8px;font-size:1rem;color:#e7fcff;">Controls</h3>
-        <ul>
-          <li><strong>Move:</strong> <code>W A S D</code> or arrow keys.</li>
-          <li><strong>Zoom:</strong> mouse wheel or <code>[</code> / <code>]</code> preset steps.</li>
-          <li><strong>Camera pan:</strong> left mouse button hold + drag.</li>
-        </ul>
+        <ul><li><strong>Move:</strong> <code>W A S D</code> or arrow keys</li><li><strong>Zoom:</strong> mouse wheel or <code>[</code> / <code>]</code></li><li><strong>Camera pan:</strong> hold left mouse button and drag</li></ul>
       </section>
-      <section class="manual-section" id="xp">
-        <h2>E) XP explained</h2>
-        <ul>
-          <li>XP is earned through accepted arcade score conversions and site activity.</li>
-          <li>Accepted arcade scores can convert to XP when your Telegram identity is synced.</li>
-          <li>XXX XP is required to enter the Block Topia server.</li>
-          <li>Keep playing and earning to build your XP toward the entry threshold.</li>
-        </ul>
+
+      <section class="manual-section" id="battle-chamber">
+        <h2>Battle Chamber: Proof You Moved</h2>
+        <p>The Battle Chamber is where the system starts showing who is active. Leaderboards, missions, activity, and faction signals live there.</p>
+        <p><strong>If you act, it shows. If you do nothing, nothing happens.</strong></p>
       </section>
-      <section class="manual-section" id="earn-more">
-        <h2>F) How to earn XP (practical guide)</h2>
+
+      <section class="manual-section" id="how-to-win">
+        <h2>How To Get Ahead</h2>
         <div class="manual-grid">
-          <article class="manual-card">
-            <h3>Improve score quality</h3>
-            <ul>
-              <li>Master 2–3 games instead of spreading effort thinly.</li>
-              <li>Prioritise clean runs over risky early-score spikes.</li>
-              <li>Use leaderboard refresh cycles to target realistic rank jumps.</li>
-            </ul>
-          </article>
-          <article class="manual-card">
-            <h3>Convert score into XP</h3>
-            <ul>
-              <li>Stay Telegram-linked so accepted runs can persist and convert.</li>
-              <li>If sync turns red, relink with <code>/gklink</code> before long sessions.</li>
-              <li>Aim for consistent runs — accepted runs beat one-off spikes.</li>
-            </ul>
-          </article>
-          <article class="manual-card">
-            <h3>Reach the Block Topia entry threshold</h3>
-            <ul>
-              <li>XXX XP is required to enter the Block Topia server.</li>
-              <li>Keep playing arcade games and converting accepted scores to build your XP.</li>
-              <li>Check your XP total in the leaderboard or dashboard before trying to enter.</li>
-            </ul>
-          </article>
+          <article class="manual-card"><h3>Master A Few Games</h3><p>Do not scatter your effort. Pick 2–3 arcade games and improve your score quality.</p></article>
+          <article class="manual-card"><h3>Stay Linked</h3><p>Before long sessions, check Telegram sync. Red sync means wasted progression.</p></article>
+          <article class="manual-card"><h3>Play Consistently</h3><p>One lucky run is good. Consistent accepted runs are better.</p></article>
+          <article class="manual-card"><h3>Watch The Chamber</h3><p>Use Battle Chamber to see where you stand and what to do next.</p></article>
         </div>
       </section>
 
       <section class="manual-section manual-faq" id="faq">
-        <h2>G) FAQ / quick troubleshooting</h2>
+        <h2>Quick Fixes</h2>
         <div class="manual-grid">
-          <article class="manual-card">
-            <h3>I’m linked but can’t enter Block Topia</h3>
-            <p>Most common cause: your current XP is below the entry threshold (XXX XP required). Check your XP total and keep playing to earn more.</p>
-          </article>
-          <article class="manual-card">
-            <h3>I played a game but got no XP</h3>
-            <p>Leaderboard score and XP are separate. XP comes from accepted score conversions when your Telegram identity is synced.</p>
-          </article>
-          <article class="manual-card">
-            <h3>Why does it say local only?</h3>
-            <p>Your session is currently unsynced. Runs still work, but progression is stored in your browser session, not a server-backed profile.</p>
-          </article>
-          <article class="manual-card">
-            <h3>What does “accepted score” mean?</h3>
-            <p>An accepted score is a run the system validates for ranking and XP conversion. Only accepted runs are eligible for XP conversion.</p>
-          </article>
-          <article class="manual-card">
-            <h3>Why is sync red?</h3>
-            <p>Your Telegram link likely expired or failed validation. Relink via <code>/gklink</code> and re-open the link from the bot.</p>
-          </article>
-          <article class="manual-card">
-            <h3>What if auth expired?</h3>
-            <p>Run <code>/gklink</code> again, complete the new link handshake, then refresh your game page before continuing.</p>
-          </article>
+          <article class="manual-card"><h3>I played but got no XP</h3><p>Score and XP are separate. XP requires accepted score conversion and Telegram sync.</p></article>
+          <article class="manual-card"><h3>I cannot enter Block Topia</h3><p>You probably need more XP or need to relink Telegram. XXX XP is required.</p></article>
+          <article class="manual-card"><h3>Why does it say local only?</h3><p>You are not synced. Local runs stay in the browser and do not act like full progression.</p></article>
+          <article class="manual-card"><h3>Sync is red</h3><p>Run <code>/gklink</code> again and open the new link from the bot.</p></article>
         </div>
       </section>
-      <section class="manual-nav-card" aria-label="Manual related links">
-        <strong>Next stop:</strong>
-        <a href="/games/">Open Arcade</a> ·
-        <a href="/games/leaderboard.html">View Leaderboard</a> ·
-        <a href="/gkniftyheads-incubator.html">Open Sync Onboarding</a> ·
-        <a href="/games/block-topia/">Enter Block Topia</a>
-      </section>
+
+      <section class="manual-nav-card" aria-label="Manual related links"><strong>Start now:</strong> <a href="/games/">Play Arcade</a> · <a href="/gkniftyheads-incubator.html">Link Telegram</a> · <a href="/community.html">Battle Chamber</a> · <a href="/games/block-topia/">Block Topia</a></section>
     </main>
 
     <footer id="site-footer" role="contentinfo">
-      <div class="footer-inner">
-        <div class="footer-col">
-          <h4>The Crypto Moonboys GK Wiki</h4>
-          <p>Player-facing guidance for the live Moonboys ecosystem.</p>
-        </div>
-        <div class="footer-col">
-          <h4>Explore</h4>
-          <ul>
-            <li><a href="/games/">Arcade</a></li>
-            <li><a href="/games/leaderboard.html">Leaderboard</a></li>
-            <li><a href="/gkniftyheads-incubator.html">Incubator HUB</a></li>
-            <li><a href="/community.html">Battle Chamber</a></li>
-          </ul>
-        </div>
-      </div>
-      <div class="footer-bottom">
-        <p>© 2026 Crypto Moonboys · Not financial advice.</p>
-      </div>
+      <div class="footer-inner"><div class="footer-col"><h4>Crypto Moonboys</h4><p>Player-facing route into the live GK system.</p></div><div class="footer-col"><h4>Explore</h4><ul><li><a href="/games/">Arcade</a></li><li><a href="/games/leaderboard.html">Leaderboard</a></li><li><a href="/gkniftyheads-incubator.html">Incubator HUB</a></li><li><a href="/community.html">Battle Chamber</a></li></ul></div></div>
+      <div class="footer-bottom"><p>© 2026 Crypto Moonboys · Not financial advice.</p></div>
     </footer>
   </div>
 </div>
