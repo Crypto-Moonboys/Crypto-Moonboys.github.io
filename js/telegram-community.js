@@ -28,6 +28,13 @@
   var BASE     = cfg.BASE_URL || null;
   var FEATURES = cfg.FEATURES || {};
 
+  // Resolved text constants — fall back to literals so no type="module" is needed.
+  var COPY = window.UI_STATUS_COPY || {
+    UNLINKED:            'Telegram not linked \u2014 run /gklink',
+    FEATURE_UNAVAILABLE: 'Feature not yet available',
+    API_UNAVAILABLE:     'Core API unavailable',
+  };
+
   // ── HTML escape (XSS prevention) ─────────────────────────────
 
   function escapeHtml(str) {
@@ -55,7 +62,7 @@
 
   function initTgLeaderboard(el) {
     if (!BASE || !FEATURES.TELEGRAM_COMMUNITY) {
-      el.innerHTML = '<div class="community-empty">Telegram leaderboard coming soon.</div>';
+      el.innerHTML = '<div class="community-empty">' + COPY.FEATURE_UNAVAILABLE + '</div>';
       return;
     }
     el.innerHTML = '<div class="community-loading">Loading community leaderboard…</div>';
@@ -75,7 +82,7 @@
           '<span class="tg-lb-rank">' + (i + 1) + '</span>' +
           avatar +
           '<span class="tg-lb-name">' + name + faction + '</span>' +
-          '<span class="tg-lb-xp">⚡ ' + (e.xp || 0) + ' XP</span>' +
+          '<span class="tg-lb-xp">⚡ ' + (e.xp || 0) + ' Community XP</span>' +
         '</div>';
       }).join('');
 
@@ -89,7 +96,7 @@
 
   function initTgQuestPanel(el) {
     if (!BASE || !FEATURES.TELEGRAM_COMMUNITY) {
-      el.innerHTML = '<div class="community-empty">Quest board coming soon.</div>';
+      el.innerHTML = '<div class="community-empty">' + COPY.FEATURE_UNAVAILABLE + '</div>';
       return;
     }
     el.innerHTML = '<div class="community-loading">Loading quests…</div>';
@@ -105,7 +112,7 @@
         var ends = q.end_date ? ' <span class="tg-quest-ends">Ends: ' + escapeHtml(String(q.end_date).slice(0, 10)) + '</span>' : '';
         return '<div class="tg-quest-card">' +
           '<div class="tg-quest-title">' + escapeHtml(q.title) + ends + '</div>' +
-          '<div class="tg-quest-type">Reward: ⚡' + (q.xp_reward || 0) + ' XP</div>' +
+          '<div class="tg-quest-type">Reward: ⚡' + (q.xp_reward || 0) + ' Community XP</div>' +
           '<div class="tg-quest-desc">' + escapeHtml(q.description || '') + '</div>' +
           '<div class="tg-quest-solve">Complete via Telegram bot: use <code>/gkquests</code> for details.</div>' +
         '</div>';
@@ -119,8 +126,12 @@
 
   function initTgProfileCard(el) {
     var telegramId = el.dataset.telegramId;
-    if (!telegramId || !BASE || !FEATURES.TELEGRAM_COMMUNITY) {
-      el.innerHTML = '<div class="community-empty">Connect Telegram to see your profile here.</div>';
+    if (!telegramId) {
+      el.innerHTML = '<div class="community-empty">' + COPY.UNLINKED + '</div>';
+      return;
+    }
+    if (!BASE || !FEATURES.TELEGRAM_COMMUNITY) {
+      el.innerHTML = '<div class="community-empty">' + COPY.FEATURE_UNAVAILABLE + '</div>';
       return;
     }
     el.innerHTML = '<div class="community-loading">Loading profile…</div>';
@@ -149,7 +160,7 @@
           '<div class="tg-profile-info">' +
             '<div class="tg-profile-name">' + escapeHtml(displayName) + '</div>' +
             '<div class="tg-profile-badges">' + linked + factionBadge + '</div>' +
-            '<div class="tg-profile-xp">⚡ ' + (p.xp || 0) + ' XP &nbsp;|&nbsp; Level ' + (p.level || 1) + '</div>' +
+            '<div class="tg-profile-xp">⚡ ' + (p.xp || 0) + ' Community XP &nbsp;|&nbsp; Level ' + (p.level || 1) + '</div>' +
           '</div>' +
         '</div>';
     });
@@ -179,7 +190,7 @@
 
   function initTgActivityFeed(el) {
     if (!BASE || !FEATURES.TELEGRAM_COMMUNITY) {
-      el.innerHTML = '<div class="community-empty">No Telegram activity yet.</div>';
+      el.innerHTML = '<div class="community-empty">' + COPY.FEATURE_UNAVAILABLE + '</div>';
       return;
     }
     el.innerHTML = '<div class="community-loading">Loading activity…</div>';
@@ -272,7 +283,7 @@
       })
       .catch(function () {
         if (banner) {
-          banner.textContent = '⚠️ Could not reach sync server. Run /gklink again if this keeps happening.';
+          banner.textContent = '\u26a0\ufe0f ' + COPY.API_UNAVAILABLE + ' \u2014 run /gklink again if this persists.';
           banner.className = (banner.className || '') + ' gklink-error';
         }
       });

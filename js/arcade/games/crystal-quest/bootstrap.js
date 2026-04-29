@@ -6,6 +6,9 @@ import { createGameAdapter, registerGameAdapter, bootstrapFromAdapter } from '/j
 import { playSound, stopAllSounds, isMuted } from '/js/arcade/core/audio.js';
 import { createSamAgent } from './sam-agent.js';
 
+// UI status copy — use the global set by ui-status-copy.js (classic script); fall back to literal.
+const COPY = window.UI_STATUS_COPY || { UNLINKED: 'Telegram not linked \u2014 run /gklink' };
+
 export const CRYSTAL_QUEST_ADAPTER = createGameAdapter({
   id: CRYSTAL_QUEST_CONFIG.id,
   name: CRYSTAL_QUEST_CONFIG.label,
@@ -555,8 +558,8 @@ function createLegacybootstrapCrystalQuest(root) {
     }
 
     if (statusLine) statusLine.textContent = linked
-      ? 'Identity linked â€” leaderboard enabled after run completion.'
-      : 'Identity not linked â€” score stays local until account is linked.';
+      ? 'Identity linked — leaderboard enabled after run completion.'
+      : COPY.UNLINKED;
 
     renderCurrentQuestion();
     updateHud();

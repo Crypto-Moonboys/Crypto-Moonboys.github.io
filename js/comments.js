@@ -27,6 +27,13 @@
   var FEATURES = cfg.FEATURES || {};
   var TG_BOT   = cfg.TELEGRAM_BOT_USERNAME || null;
 
+  // Resolved text constants — fall back to literals so no type="module" is needed.
+  var COPY = window.UI_STATUS_COPY || {
+    UNLINKED:            'Telegram not linked \u2014 run /gklink',
+    FEATURE_UNAVAILABLE: 'Feature not yet available',
+    API_UNAVAILABLE:     'Core API unavailable',
+  };
+
   // ── HTML escape (prevents XSS when API data is rendered via innerHTML) ──
 
   function esc(str) {
@@ -151,7 +158,7 @@
       }
 
       if (!BASE || !FEATURES.COMMENTS) {
-        status.textContent = '⏳ Community comments are coming soon — backend not yet live.';
+        status.textContent = '\u23f3 ' + COPY.FEATURE_UNAVAILABLE;
         status.className   = 'comment-form-status cm-loading';
         return;
       }
@@ -340,11 +347,11 @@
         if (data) {
           renderComments(listEl, data.comments || []);
         } else {
-          listEl.innerHTML = '<div class="comments-error">Could not load comments.</div>';
+          listEl.innerHTML = '<div class="comments-error">' + COPY.API_UNAVAILABLE + ' \u2014 could not load comments.</div>';
         }
       })
       .catch(function () {
-        listEl.innerHTML = '<div class="comments-error">Could not load comments.</div>';
+        listEl.innerHTML = '<div class="comments-error">' + COPY.API_UNAVAILABLE + ' \u2014 could not load comments.</div>';
       });
   }
 

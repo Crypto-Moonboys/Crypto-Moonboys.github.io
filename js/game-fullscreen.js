@@ -403,7 +403,7 @@
     note.innerHTML = '' +
       '<strong>Arcade Sync:</strong> Play free without Telegram. Unsynced progress stays in this browser only; clearing browser data may reset local arcade progress. Link Telegram to store Block Topia XP and progression server-side.';
     card.appendChild(note);
-    var identity = el('div', 'arcade-sync-identity', 'Linked as: Not linked');
+    var identity = el('div', 'arcade-sync-identity', 'Telegram not linked \u2014 run /gklink');
     identity.id = 'arcade-sync-identity';
     card.appendChild(identity);
     inlineSyncIdentity = identity;
@@ -614,18 +614,18 @@
     cachedLiveScore = el('div', 'score-val', '0');
     cachedLiveScore.id = 'overlay-live-score';
     sideLeft.appendChild(cachedLiveScore);
-    sideLeft.appendChild(el('div', 'panel-title', 'Projected XP'));
+    sideLeft.appendChild(el('div', 'panel-title', 'Projected Arcade XP'));
     cachedLiveProjectedXp = el('div', 'score-val score-val--projected', '0');
     cachedLiveProjectedXp.id = 'overlay-live-projected-xp';
     sideLeft.appendChild(cachedLiveProjectedXp);
-    cachedProjectedHint = el('div', 'panel-note', 'Potential Block Topia XP — accepted score + Telegram sync required.');
+    cachedProjectedHint = el('div', 'panel-note', 'Potential Arcade XP \u2014 accepted score + Telegram sync required.');
     sideLeft.appendChild(cachedProjectedHint);
     sideLeft.appendChild(el('div', 'panel-title', 'Best'));
     cachedLiveBest = el('div', 'score-val', '0');
     cachedLiveBest.id = 'overlay-live-best';
     sideLeft.appendChild(cachedLiveBest);
     sideLeft.appendChild(el('div', 'panel-title', 'Sync Status'));
-    cachedSyncIdentity = el('div', 'panel-note panel-note--identity', 'Linked as: Not linked');
+    cachedSyncIdentity = el('div', 'panel-note panel-note--identity', 'Telegram not linked \u2014 run /gklink');
     cachedSyncIdentity.id = 'overlay-sync-identity';
     sideLeft.appendChild(cachedSyncIdentity);
     cachedSyncStatus = el('div', 'panel-note panel-note--status sync-error', 'Unsynced play stays local to this browser. Run /gklink in Telegram to store XP and Block Topia progression server-side.');
@@ -733,7 +733,7 @@
     var gate = getIdentityApi();
     var sync = gate && typeof gate.getSyncState === 'function' ? gate.getSyncState() : null;
     var linked = !!(sync ? sync.linked : isLinkedReady());
-    var baseIdentity = linked ? ('Linked as: ' + (d.identityLabel || getLinkedIdentityLabel())) : 'Linked as: Not linked';
+    var baseIdentity = linked ? ('Linked as: ' + (d.identityLabel || getLinkedIdentityLabel())) : 'Telegram not linked \u2014 run /gklink';
     setSyncIdentityText(baseIdentity);
     lastSubmissionState = state;
     switch (state) {
