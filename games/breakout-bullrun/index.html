@@ -83,8 +83,8 @@
       <div class="game-card">
         <div class="hud">
           <div class="stat"><div class="label">Score</div><div class="value" id="score">0</div></div>
-          <div class="stat"><div class="label">Best (Local)</div><div class="value" id="best">0</div></div>
-          <div class="stat"><div class="label">Level</div><div class="value" id="level">—</div></div>
+          <div class="stat"><div class="label">Best</div><div class="value" id="best">0</div></div>
+          <div class="stat"><div class="label">Wave</div><div class="value" id="level">—</div></div>
           <div class="stat"><div class="label">Combo</div><div class="value" id="combo">×1</div></div>
         </div>
         <canvas id="brkCanvas" width="560" height="720" aria-label="Breakout Bullrun game"></canvas>
@@ -92,8 +92,8 @@
           <button class="game-btn" id="startBtn">Start</button>
           <button class="game-btn alt" id="pauseBtn">Pause</button>
           <button class="game-btn alt" id="resetBtn">Reset</button>
-          <button class="game-btn alt" id="musicMuteBtn" aria-pressed="false">Music Off</button>
         </div>
+        <p class="note">Move: mouse / arrow keys &nbsp;|&nbsp; Launch ball: Space &nbsp;|&nbsp; Laser [B] &nbsp;|&nbsp; Slow ball: hold Z &nbsp;|&nbsp; Select upgrade: 1/2/3 or click</p>
       </div>
     </main>
     <footer id="site-footer"><div class="footer-bottom"><p>Crypto Moonboys GK Wiki ⚡️⚡️⚡️</p></div></footer>
@@ -106,9 +106,9 @@
 <script src="/js/game-fullscreen.js"></script>
 <script src="/js/api-config.js"></script>
 <script type="module">
-import { mountGame }        from '/js/arcade/core/game-shell.js';
-import { bootstrapBreakout } from '/js/arcade/games/breakout/bootstrap.js';
-mountGame({ root: document.querySelector('.game-card'), bootstrap: bootstrapBreakout });
+import { mountGame }                from '/js/arcade/core/game-shell.js';
+import { bootstrapBreakoutBullrun } from '/js/arcade/games/breakout-bullrun/bootstrap.js';
+mountGame({ root: document.querySelector('.game-card'), bootstrap: bootstrapBreakoutBullrun });
 </script>
 </body>
 </html>

@@ -93,6 +93,38 @@ const SOUND_LIBRARY = {
   'meta-chain-unlock':    { kind: 'tone',  type: 'triangle', freqStart: 680, freqEnd: 1210, duration: 0.12, volume: 0.04 },
   'meta-featured-window': { kind: 'tone',  type: 'sine',     freqStart: 420, freqEnd: 860, duration: 0.10, volume: 0.032 },
   'meta-streak-save-warning': { kind: 'tone', type: 'square', freqStart: 340, freqEnd: 280, duration: 0.09, volume: 0.032 },
+  // ── Breakout Bullrun ─────────────────────────────────────────────────────
+  'brk-paddle':    { kind: 'tone',  type: 'triangle', freqStart: 520, freqEnd: 680, duration: 0.04, volume: 0.038 },
+  'brk-break':     { kind: 'tone',  type: 'square',   freqStart: 340, freqEnd: 180, duration: 0.07, volume: 0.038 },
+  'brk-shield':    { kind: 'tone',  type: 'sine',     freqStart: 700, freqEnd: 900, duration: 0.06, volume: 0.034 },
+  'brk-explosion': { kind: 'chord', tones: [
+    { type: 'sawtooth', freqStart: 120, freqEnd: 60,  duration: 0.18, volume: 0.05, delay: 0.00 },
+    { type: 'square',   freqStart: 80,  freqEnd: 40,  duration: 0.16, volume: 0.04, delay: 0.04 },
+  ]},
+  'brk-boss-intro': { kind: 'chord', tones: [
+    { type: 'sawtooth', freqStart: 180, freqEnd: 90,  duration: 0.22, volume: 0.06, delay: 0.00 },
+    { type: 'square',   freqStart: 260, freqEnd: 130, duration: 0.18, volume: 0.04, delay: 0.07 },
+  ]},
+  'brk-wave-clear': { kind: 'chord', tones: [
+    { type: 'sine', freqStart: 523,  freqEnd: 523,  duration: 0.13, volume: 0.05,  delay: 0.00 },
+    { type: 'sine', freqStart: 659,  freqEnd: 659,  duration: 0.13, volume: 0.045, delay: 0.11 },
+    { type: 'sine', freqStart: 784,  freqEnd: 784,  duration: 0.16, volume: 0.05,  delay: 0.22 },
+    { type: 'sine', freqStart: 1047, freqEnd: 1047, duration: 0.20, volume: 0.055, delay: 0.34 },
+  ]},
+  'brk-upgrade': { kind: 'chord', tones: [
+    { type: 'sine',     freqStart: 660,  freqEnd: 880,  duration: 0.14, volume: 0.05,  delay: 0.00 },
+    { type: 'triangle', freqStart: 880,  freqEnd: 1320, duration: 0.14, volume: 0.04,  delay: 0.04 },
+    { type: 'sine',     freqStart: 1320, freqEnd: 1760, duration: 0.18, volume: 0.045, delay: 0.08 },
+  ]},
+  'brk-game-over': { kind: 'chord', tones: [
+    { type: 'sawtooth', freqStart: 380, freqEnd: 160, duration: 0.28, volume: 0.05, delay: 0.00 },
+    { type: 'sawtooth', freqStart: 290, freqEnd: 120, duration: 0.26, volume: 0.04, delay: 0.08 },
+    { type: 'triangle', freqStart: 220, freqEnd: 80,  duration: 0.24, volume: 0.04, delay: 0.18 },
+  ]},
+  'brk-event': { kind: 'chord', tones: [
+    { type: 'sawtooth', freqStart: 440, freqEnd: 640, duration: 0.12, volume: 0.04, delay: 0.00 },
+    { type: 'square',   freqStart: 660, freqEnd: 880, duration: 0.10, volume: 0.03, delay: 0.02 },
+  ]},
 };
 
 // Keep a defensive default here so module-driven game pages remain safe even if
