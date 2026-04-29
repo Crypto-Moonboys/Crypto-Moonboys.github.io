@@ -137,11 +137,11 @@
 
     _progressionInflight = (async function () {
       var fallback = { arcadeXp: 0, requiredXp: FALLBACK_REQUIRED_XP };
-      try {
-        var gate = getIdentity();
-        if (!gate) { _progressionCache = fallback; _progressionInflight = null; return _progressionCache; }
+      var gate = getIdentity();
+      var telegramAuth = null;
+      var apiBase = '';
 
-        var telegramAuth = null;
+      if (gate) {
         if (typeof gate.getSignedTelegramAuth === 'function') {
           telegramAuth = gate.getSignedTelegramAuth();
         }
@@ -149,29 +149,33 @@
           var restored = await gate.restoreLinkedTelegramAuth().catch(function () { return null; });
           telegramAuth = restored && restored.ok ? restored.telegram_auth : null;
         }
-        if (!telegramAuth) { _progressionCache = fallback; _progressionInflight = null; return _progressionCache; }
+        apiBase = getApiBase();
+      }
 
-        var apiBase = getApiBase();
-        if (!apiBase) { _progressionCache = fallback; _progressionInflight = null; return _progressionCache; }
-
-        var res = await fetch(apiBase + '/blocktopia/progression', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ telegram_auth: telegramAuth }),
-        });
-        var payload = await res.json().catch(function () { return {}; });
-        if (res.ok && payload && payload.ok === true && payload.progression) {
-          var prog = payload.progression;
-          _progressionCache = {
-            arcadeXp: Math.max(0, Math.floor(Number(prog.arcade_xp_total) || 0)),
-            requiredXp: Math.max(1, Math.floor(Number(prog.required_xp) || FALLBACK_REQUIRED_XP)),
-          };
-        } else {
+      if (telegramAuth && apiBase) {
+        try {
+          var res = await fetch(apiBase + '/blocktopia/progression', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ telegram_auth: telegramAuth }),
+          });
+          var payload = await res.json().catch(function () { return {}; });
+          if (res.ok && payload && payload.ok === true && payload.progression) {
+            var prog = payload.progression;
+            _progressionCache = {
+              arcadeXp: Math.max(0, Math.floor(Number(prog.arcade_xp_total) || 0)),
+              requiredXp: Math.max(1, Math.floor(Number(prog.required_xp) || FALLBACK_REQUIRED_XP)),
+            };
+          } else {
+            _progressionCache = fallback;
+          }
+        } catch (_) {
           _progressionCache = fallback;
         }
-      } catch (_) {
+      } else {
         _progressionCache = fallback;
       }
+
       _progressionInflight = null;
       return _progressionCache;
     }());
@@ -203,7 +207,7 @@
     var linked = isLinked();
     var name = getDisplayName();
     var state = getSyncState();
-    var progression = linked ? await fetchProgression() : { arcadeXp: 0, requiredXp: FALLBACK_REQUIRED_XP };
+    var progression = await fetchProgression();
     var arcadeXp = progression.arcadeXp;
     var requiredXp = progression.requiredXp;
     var apiOnline = await checkApiOnline();
