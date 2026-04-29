@@ -20,7 +20,7 @@
     <script type="module">
       import "./main.js";
       import { connectMultiplayer, sendMovement } from "./network.js";
-      import { BLOCKTOPIA_MULTIPLAYER_REQUIRED_XP } from "/shared/blocktopia/constants.js";
+      import { BLOCKTOPIA_MULTIPLAYER_REQUIRED_XP } from "/shared/block-topia/constants.js";
 
       const mountOptions = { containerId: "game-shell", canvasId: "game" };
       const MAX_MOUNT_ATTEMPTS = 8;
@@ -54,7 +54,9 @@
 
       async function fetchProgressionForGate(telegramAuth) {
         const apiBase = getApiBase();
-        if (!apiBase) return null;
+        if (!apiBase) {
+          throw new Error("api_base_missing");
+        }
         const res = await fetch(`${apiBase}/blocktopia/progression`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },

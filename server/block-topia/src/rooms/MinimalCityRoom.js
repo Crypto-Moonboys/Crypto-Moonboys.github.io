@@ -1,11 +1,12 @@
 ﻿import { Room } from 'colyseus';
 import { Schema, ArraySchema, defineTypes } from '@colyseus/schema';
-import { BLOCKTOPIA_MULTIPLAYER_REQUIRED_XP } from '../../../../shared/blocktopia/constants.js';
+import { BLOCKTOPIA_MULTIPLAYER_REQUIRED_XP } from '../../../../shared/block-topia/constants.js';
 
 const MAP_WIDTH = 20;
 const MAP_HEIGHT = 20;
 const PLAYER_SPEED_HINT = 3.2;
 const DEFAULT_MOONBOYS_API_BASE = 'https://moonboys-api.sercullen.workers.dev';
+const PROGRESSION_FETCH_TIMEOUT_MS = 3000;
 
 const SPAWN_SLOTS = [
   { x: 6, y: 10 },
@@ -130,14 +131,24 @@ async function validateMultiplayerEntry(options = {}) {
   }
 
   const apiBase = resolveApiBase();
-  const response = await fetch(`${apiBase}/blocktopia/progression`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ telegram_auth: telegramAuth }),
-  }).catch(() => null);
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort('progression_timeout'), PROGRESSION_FETCH_TIMEOUT_MS);
+  let response = null;
+  try {
+    response = await fetch(`${apiBase}/blocktopia/progression`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ telegram_auth: telegramAuth }),
+      signal: controller.signal,
+    });
+  } catch {
+    return { ok: false, reason: 'progression_unavailable' };
+  } finally {
+    clearTimeout(timeoutId);
+  }
 
   if (!response) {
-    return { ok: false, reason: 'auth_invalid' };
+    return { ok: false, reason: 'progression_unavailable' };
   }
 
   const payload = await response.json().catch(() => ({}));

@@ -1,4 +1,5 @@
-﻿let room = null;
+﻿import { BLOCKTOPIA_MULTIPLAYER_REQUIRED_XP } from '../../shared/block-topia/constants.js';
+let room = null;
 let client = null;
 let _reconnectOptions = null;
 let _reconnecting = false;
@@ -43,7 +44,7 @@ function isRoomNotFoundError(error) {
 
 function getEntryGateReason(error) {
   const message = String(error?.message || '').trim();
-  if (message === 'telegram_required' || message === 'xp_required' || message === 'auth_invalid') {
+  if (message === 'telegram_required' || message === 'xp_required' || message === 'auth_invalid' || message === 'progression_unavailable') {
     return message;
   }
   return null;
@@ -51,8 +52,9 @@ function getEntryGateReason(error) {
 
 function toEntryGateMessage(reason) {
   if (reason === 'telegram_required') return 'Link Telegram to enter Block Topia multiplayer.';
-  if (reason === 'xp_required') return 'You need 50 XP to enter Block Topia multiplayer. Play arcade games and sync Telegram to earn XP.';
+  if (reason === 'xp_required') return `You need ${BLOCKTOPIA_MULTIPLAYER_REQUIRED_XP} XP to enter Block Topia multiplayer. Play arcade games and sync Telegram to earn XP.`;
   if (reason === 'auth_invalid') return 'Unable to verify multiplayer access right now. Please relink Telegram and try again.';
+  if (reason === 'progression_unavailable') return 'Unable to verify multiplayer access right now. Please try again.';
   return 'Multiplayer access blocked.';
 }
 
@@ -353,3 +355,4 @@ export async function reconnectMultiplayer() {
     _isConnecting = false;
   }
 }
+
