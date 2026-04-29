@@ -173,6 +173,28 @@
     .dash-table {
       min-width: 0;
     }
+
+    /* ── Live events feed ────────────────────────────────────────────────── */
+    .dash-live-row {
+      display: flex;
+      gap: 8px;
+      align-items: baseline;
+      font-size: .82rem;
+      padding: 3px 0;
+      border-bottom: 1px solid rgba(86,220,255,.06);
+    }
+    .dash-live-time {
+      color: var(--color-text-muted, #8b949e);
+      font-size: .7rem;
+      flex-shrink: 0;
+    }
+    .dash-live-text {
+      color: var(--color-text, #e6f0ff);
+    }
+    .dash-live-placeholder {
+      color: var(--color-text-muted, #8b949e);
+      font-size: .82rem;
+    }
   </style>
 </head>
 <body>

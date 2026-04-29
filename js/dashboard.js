@@ -850,10 +850,10 @@
 
   function dashEventRowHTML(entry) {
     const icon = DASH_EVENT_ICONS[entry.type] || '📡';
-    return `<div class="dash-live-row" style="display:flex;gap:8px;align-items:baseline;font-size:.82rem;padding:3px 0;border-bottom:1px solid rgba(86,220,255,.06)">` +
-      `<span style="color:var(--color-text-muted,#8b949e);font-size:.7rem;flex-shrink:0">${entry.time}</span>` +
+    return `<div class="dash-live-row">` +
+      `<span class="dash-live-time">${entry.time}</span>` +
       `<span aria-hidden="true">${icon}</span>` +
-      `<span style="color:var(--color-text,#e6f0ff)">${entry.text}</span>` +
+      `<span class="dash-live-text">${entry.text}</span>` +
       `</div>`;
   }
 
@@ -862,7 +862,7 @@
     if (!container) return;
 
     // Initialise with a placeholder — replaced on first event.
-    container.innerHTML = '<p style="color:var(--color-text-muted,#8b949e);font-size:.82rem">Waiting for player activity\u2026</p>';
+    container.innerHTML = '<p class="dash-live-placeholder">Waiting for player activity\u2026</p>';
 
     const bus = window.MOONBOYS_EVENT_BUS;
     if (!bus) return;

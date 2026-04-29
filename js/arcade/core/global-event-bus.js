@@ -77,6 +77,12 @@
   // ── Single source of truth ─────────────────────────────────────────────────
   // window.MOONBOYS_STATE mirrors the latest known XP, faction, and last event
   // so any page can read the current state synchronously without re-fetching.
+  //
+  // Note: xp and faction start at their zero/default values and are updated
+  // as events arrive.  For the authoritative persisted values use
+  // MOONBOYS_STATUS_PANEL (which fetches /blocktopia/progression) or
+  // MOONBOYS_FACTION (which fetches the faction API).  MOONBOYS_STATE is an
+  // in-session overlay for instant UI updates only.
 
   window.MOONBOYS_STATE = { xp: 0, faction: 'unaligned', lastEvent: null };
 

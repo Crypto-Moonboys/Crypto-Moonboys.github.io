@@ -331,7 +331,9 @@
       });
 
       bus.on('faction:update', function (d) {
-        // Skip initial page-load fetches — only log actual joins or XP changes.
+        // Only log user-initiated events.  faction-alignment.js sets d.source
+        // to 'join', 'earn', etc. for real actions; initial page-load fetches
+        // arrive without a source (or source === 'load') and are skipped here.
         if (!d.source || d.source === 'load') return;
         var fa = window.MOONBOYS_FACTION;
         var meta = fa && typeof fa.getVisualMeta === 'function' ? fa.getVisualMeta(d.faction) : null;

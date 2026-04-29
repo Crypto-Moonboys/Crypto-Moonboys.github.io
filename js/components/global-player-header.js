@@ -122,7 +122,11 @@
 
   function bootstrap() {
     injectFixedBadge();
-    // Defer panel creation so live-activity-summary.js can initialise first.
+    // Defer panel creation by one task to guarantee live-activity-summary.js
+    // has already bootstrapped and set window.MOONBOYS_LIVE_ACTIVITY.  Both
+    // scripts load synchronously in the same <head>, but LAS bootstraps via
+    // DOMContentLoaded too; the deferred call runs after all DOMContentLoaded
+    // handlers, ensuring LAS.mount() is callable.
     setTimeout(autoMountActivityPanel, 0);
   }
 
