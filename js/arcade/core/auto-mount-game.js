@@ -108,7 +108,12 @@ export async function autoMountGame() {
     return null;
   }
 
-  var game = await mountGame({ root: root, bootstrap: bootstrapFn });
-  mountModifierPanel();
-  return game;
+  try {
+    var game = await mountGame({ root: root, bootstrap: bootstrapFn });
+    mountModifierPanel();
+    return game;
+  } catch (err) {
+    console.error('[auto-mount] Failed to mount game "' + gameId + '":', err);
+    return null;
+  }
 }

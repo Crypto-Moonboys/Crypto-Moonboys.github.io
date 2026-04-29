@@ -107,21 +107,30 @@
 <script src="/js/api-config.js"></script>
 <script type="module">
 // Auto-mount via manifest (pilot: data-game-id="breakout-bullrun" on .game-card).
-// Falls back to the manual bootstrap if auto-mount fails.
+// Falls back to the manual bootstrap if auto-mount fails or rejects.
 import { autoMountGame } from '/js/arcade/core/auto-mount-game.js';
-autoMountGame().then(function (game) {
-  if (!game) {
-    // Fallback: manual bootstrap (proven working path kept as safety net).
-    import('/js/arcade/games/breakout-bullrun/bootstrap.js').then(function (mod) {
-      import('/js/arcade/core/game-shell.js').then(function (shell) {
-        import('/js/arcade/systems/cross-game-modifier-ui.js').then(function (ui) {
-          shell.mountGame({ root: document.querySelector('.game-card'), bootstrap: mod.bootstrapBreakoutBullrun });
-          ui.mountModifierPanel();
+
+function mountManualFallback() {
+  import('/js/arcade/games/breakout-bullrun/bootstrap.js').then(function (mod) {
+    import('/js/arcade/core/game-shell.js').then(function (shell) {
+      import('/js/arcade/systems/cross-game-modifier-ui.js').then(function (ui) {
+        shell.mountGame({
+          root: document.querySelector('.game-card'),
+          bootstrap: mod.bootstrapBreakoutBullrun
         });
+        ui.mountModifierPanel();
       });
     });
-  }
-});
+  });
+}
+
+autoMountGame()
+  .then(function (game) {
+    if (!game) mountManualFallback();
+  })
+  .catch(function () {
+    mountManualFallback();
+  });
 </script>
 </body>
 </html>

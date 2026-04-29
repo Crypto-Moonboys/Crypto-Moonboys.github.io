@@ -68,7 +68,7 @@ function extractStringField(block, field) {
 
 // Extract array of string values from a field like: field: Object.freeze(['a','b'])
 function extractArrayField(block, field) {
-  const re = new RegExp(field + '\\s*:[\\s\\S]*?Object\\.freeze\\(\\[([^\\]]+)\\]\\)');
+  const re = new RegExp(field + '\\s*:[\\s\\S]*?Object\\.freeze\\(\\[([^\\]]*)\\]\\)');
   const m = block.match(re);
   if (!m) return [];
   const items = m[1].match(/['"]([^'"]+)['"]/g);
