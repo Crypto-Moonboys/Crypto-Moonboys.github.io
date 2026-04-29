@@ -177,7 +177,7 @@ if (exists('robots.txt')) {
   pass('robots.txt present at root');
   // Must not also exist in a sub-directory that would shadow it
   if (exists('games/robots.txt')) {
-    warn('games/robots.txt also exists — may shadow root robots.txt');
+    fail('games/robots.txt also exists — may shadow root robots.txt');
   }
 } else {
   fail('robots.txt missing from root');
@@ -198,12 +198,16 @@ for (const gameDir of gameDirs) {
     warn(`No index.html found for game: ${gameDir}`);
     continue;
   }
+  let hasForbiddenRef = false;
   for (const ref of forbiddenScriptRefs) {
     if (src.includes(ref)) {
+      hasForbiddenRef = true;
       fail(`${indexPath} references forbidden script: "${ref}"`);
     }
   }
-  pass(`${gameDir}/index.html: no forbidden script references`);
+  if (!hasForbiddenRef) {
+    pass(`${gameDir}/index.html: no forbidden script references`);
+  }
 }
 
 // ── Summary ───────────────────────────────────────────────────────────────────
