@@ -220,7 +220,7 @@
     if (linked) {
       identityRow =
         '<span class="csp-dot csp-dot--green" aria-hidden="true"></span>' +
-        'Connected as <strong>' + esc(name || 'Telegram User') + '</strong>';
+        'Telegram: <strong>' + esc(name || 'Linked Player') + '</strong>';
     } else {
       identityRow =
         '<span class="csp-dot csp-dot--red" aria-hidden="true"></span>' +
@@ -302,8 +302,8 @@
     var requiredXp = progression.requiredXp;
     var unlocked = arcadeXp >= requiredXp;
     return '' +
-      '<span class="csp-badge csp-badge--linked" aria-label="Status: connected">' +
-      'Connected as ' + esc(name || 'Player') +
+      '<span class="csp-badge csp-badge--linked" aria-label="Status: Telegram linked">' +
+      'Telegram: ' + esc(name || 'Player') +
       ' · Arcade XP <strong>' + arcadeXp + '</strong>' +
       ' · Block Topia ' + (unlocked ? 'unlocked' : 'locked') +
       '</span>';

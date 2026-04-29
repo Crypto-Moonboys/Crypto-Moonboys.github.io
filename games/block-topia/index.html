@@ -29,6 +29,7 @@
     <script src="/js/identity-gate.js"></script>
     <script src="/js/faction-alignment.js"></script>
     <script src="/js/components/connection-status-panel.js"></script>
+    <script src="/js/components/global-player-header.js"></script>
     <script type="module">
       import { BLOCKTOPIA_MULTIPLAYER_REQUIRED_XP } from "/shared/block-topia/constants.js";
 
@@ -77,14 +78,14 @@
         const pct = Math.min(100, Math.floor((current / required) * 100));
         const ariaXpNow = Math.min(required, Math.max(0, current));
         const xpLabel = current === 0
-          ? `Your synced Block Topia XP is 0 / ${required}. Play arcade games, then sync Telegram to convert accepted scores into XP.`
-          : `Your XP: ${current} / ${required}`;
+          ? `Your Arcade XP is 0 / ${required}. Play arcade games, then sync Telegram to convert accepted scores into Arcade XP.`
+          : `Your Arcade XP: ${current} / ${required}`;
         return `
           <div class="bt-gate__icon" aria-hidden="true">🎮</div>
-          <h1 class="bt-gate__heading">You need ${required} XP to enter</h1>
+          <h1 class="bt-gate__heading">You need ${required} Arcade XP to enter</h1>
           <p class="bt-gate__body">
-            Play arcade games and sync Telegram to earn XP.<br>
-            Block Topia multiplayer unlocks at ${required} arcade XP.
+            Play arcade games and sync Telegram to earn Arcade XP.<br>
+            Block Topia multiplayer unlocks at ${required} Arcade XP.
           </p>
           <p class="bt-gate__xp-label">${xpLabel}</p>
           <div class="bt-gate__xp-bar-wrap" role="progressbar" aria-valuenow="${ariaXpNow}" aria-valuemin="0" aria-valuemax="${required}" aria-label="XP progress">

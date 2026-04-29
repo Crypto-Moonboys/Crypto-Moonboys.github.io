@@ -72,6 +72,7 @@
 <script src="/js/incubator-link.js"></script>
 <script src="/js/faction-alignment.js"></script>
 <script src="/js/components/connection-status-panel.js"></script>
+<script src="/js/components/global-player-header.js"></script>
 <script>
 (function(){var box=document.getElementById('incubator-sync-state');var identityEl=document.getElementById('incubator-sync-identity');var msgEl=document.getElementById('incubator-sync-message');if(!box||!identityEl||!msgEl)return;function renderSyncState(){var gate=window.MOONBOYS_IDENTITY||null;var sync=gate&&gate.getSyncState?gate.getSyncState():null;var linkedReady=!!(sync&&sync.good);var auth=gate&&gate.getTelegramAuth?gate.getTelegramAuth():null;var name=gate&&gate.getTelegramName?gate.getTelegramName():null;var username=auth&&(auth.username||(auth.user&&auth.user.username));identityEl.textContent=linkedReady?((name||'Linked Telegram')+(username?' (@'+String(username).replace(/^@/,'')+')':'')):'Not linked';box.classList.remove('good','bad');box.classList.add(linkedReady?'good':'bad');document.body.classList.toggle('sync-live',linkedReady);if(linkedReady){msgEl.textContent='Telegram linked. Progression is now sync-live.';return;}msgEl.textContent='Run /gkstart then /gklink in the bot to activate sync.';}renderSyncState();window.addEventListener('moonboys:sync-state',renderSyncState);window.addEventListener('storage',renderSyncState);}());
 </script>
