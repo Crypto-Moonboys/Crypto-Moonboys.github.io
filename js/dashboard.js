@@ -840,10 +840,58 @@
   function capitalize(s) { return s ? s.charAt(0).toUpperCase() + s.slice(1) : ''; }
   function noData(msg) { return `<p style="color:var(--color-text-muted)">${msg}</p>`; }
 
+  // ── Live Player Events (event bus) ────────────────────────────────────────
+  // Subscribes to activity:event on MOONBOYS_EVENT_BUS and renders a
+  // timestamped feed in #dash-live-events.  No "Activity unavailable" state —
+  // if no events have fired yet the container shows a placeholder.
+
+  const DASH_EVENT_MAX = 12;
+  const DASH_EVENT_ICONS = { xp: '⚡', faction: '🏴', sync: '🔗', score: '🏆' };
+
+  function dashEventRowHTML(entry) {
+    const icon = DASH_EVENT_ICONS[entry.type] || '📡';
+    return `<div class="dash-live-row" style="display:flex;gap:8px;align-items:baseline;font-size:.82rem;padding:3px 0;border-bottom:1px solid rgba(86,220,255,.06)">` +
+      `<span style="color:var(--color-text-muted,#8b949e);font-size:.7rem;flex-shrink:0">${entry.time}</span>` +
+      `<span aria-hidden="true">${icon}</span>` +
+      `<span style="color:var(--color-text,#e6f0ff)">${entry.text}</span>` +
+      `</div>`;
+  }
+
+  function connectToEventBus() {
+    const container = qs('#dash-live-events');
+    if (!container) return;
+
+    // Initialise with a placeholder — replaced on first event.
+    container.innerHTML = '<p style="color:var(--color-text-muted,#8b949e);font-size:.82rem">Waiting for player activity\u2026</p>';
+
+    const bus = window.MOONBOYS_EVENT_BUS;
+    if (!bus) return;
+
+    bus.on('activity:event', function (entry) {
+      // Remove placeholder on first real event.
+      const placeholder = container.querySelector('p');
+      if (placeholder) placeholder.remove();
+
+      const tmp = document.createElement('div');
+      tmp.innerHTML = dashEventRowHTML(entry);
+      container.insertBefore(tmp.firstChild, container.firstChild);
+
+      // Trim to DASH_EVENT_MAX rows.
+      while (container.children.length > DASH_EVENT_MAX) {
+        container.removeChild(container.lastChild);
+      }
+    });
+  }
+
   // ── Bootstrap ─────────────────────────────────────────────────────────────
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init);
-  } else {
+  function initAll() {
     init();
+    connectToEventBus();
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initAll);
+  } else {
+    initAll();
   }
 }());

@@ -799,43 +799,78 @@
       var d = event && event.detail ? event.detail : {};
       updateSyncSurfaceState(d.state || '', d);
     });
-    window.addEventListener('moonboys:micro-notify', function (event) {
-      var d = event && event.detail ? event.detail : {};
-      pushMicroNotification(d.message || '', d.tone || 'info');
-    });
-    window.addEventListener('moonboys:xp-gain', function (event) {
-      var d = event && event.detail ? event.detail : {};
-      if (Number(d.amount) > 0) {
-        pushMicroNotification('XP gained +' + Number(d.amount), 'success');
-        pulseStateClass('xp-gain', 1050);
-      }
-    });
-    window.addEventListener('moonboys:faction-boost', function (event) {
-      var d = event && event.detail ? event.detail : {};
-      if (cachedFactionPanel) {
-        cachedFactionPanel.classList.add('faction-boost');
-        setTimeout(function () { cachedFactionPanel && cachedFactionPanel.classList.remove('faction-boost'); }, 1250);
-      }
-      pulseStateClass('faction-boost', 1200);
-      if (Number(d.amount) > 0) pushMicroNotification('Faction influence +' + Number(d.amount), 'success');
-    });
-    window.addEventListener('moonboys:score-updated', function () {
-      if (!cachedLiveScore) return;
-      cachedLiveScore.classList.add('score-updated');
-      setTimeout(function () { cachedLiveScore && cachedLiveScore.classList.remove('score-updated'); }, 850);
-      pulseStateClass('score-updated', 900);
-    });
+    var _bus = window.MOONBOYS_EVENT_BUS;
+    if (_bus) {
+      _bus.on('activity:event', function (d) {
+        if (d._src === 'moonboys:micro-notify') {
+          pushMicroNotification(d.message || '', d.tone || 'info');
+        } else if (d._src === 'moonboys:score-updated') {
+          if (!cachedLiveScore) return;
+          cachedLiveScore.classList.add('score-updated');
+          setTimeout(function () { cachedLiveScore && cachedLiveScore.classList.remove('score-updated'); }, 850);
+          pulseStateClass('score-updated', 900);
+        }
+      });
+      _bus.on('xp:update', function (d) {
+        if (Number(d.amount) > 0) {
+          pushMicroNotification('XP gained +' + Number(d.amount), 'success');
+          pulseStateClass('xp-gain', 1050);
+        }
+      });
+      _bus.on('faction:update', function (d) {
+        if (cachedFactionPanel) {
+          cachedFactionPanel.classList.add('faction-boost');
+          setTimeout(function () { cachedFactionPanel && cachedFactionPanel.classList.remove('faction-boost'); }, 1250);
+        }
+        pulseStateClass('faction-boost', 1200);
+        if (Number(d.amount) > 0) pushMicroNotification('Faction influence +' + Number(d.amount), 'success');
+      });
+      _bus.on('sync:state', function (d) {
+        var bad = d.state === 'bad' || d.state === 'error';
+        document.body.classList.toggle('sync-error', bad);
+        document.body.classList.toggle('sync-live', !bad);
+      });
+    } else {
+      // Defensive fallback if bus is unavailable.
+      window.addEventListener('moonboys:micro-notify', function (event) {
+        var d = event && event.detail ? event.detail : {};
+        pushMicroNotification(d.message || '', d.tone || 'info');
+      });
+      window.addEventListener('moonboys:xp-gain', function (event) {
+        var d = event && event.detail ? event.detail : {};
+        if (Number(d.amount) > 0) {
+          pushMicroNotification('XP gained +' + Number(d.amount), 'success');
+          pulseStateClass('xp-gain', 1050);
+        }
+      });
+      window.addEventListener('moonboys:faction-boost', function (event) {
+        var d = event && event.detail ? event.detail : {};
+        if (cachedFactionPanel) {
+          cachedFactionPanel.classList.add('faction-boost');
+          setTimeout(function () { cachedFactionPanel && cachedFactionPanel.classList.remove('faction-boost'); }, 1250);
+        }
+        pulseStateClass('faction-boost', 1200);
+        if (Number(d.amount) > 0) pushMicroNotification('Faction influence +' + Number(d.amount), 'success');
+      });
+      window.addEventListener('moonboys:score-updated', function () {
+        if (!cachedLiveScore) return;
+        cachedLiveScore.classList.add('score-updated');
+        setTimeout(function () { cachedLiveScore && cachedLiveScore.classList.remove('score-updated'); }, 850);
+        pulseStateClass('score-updated', 900);
+      });
+      window.addEventListener('moonboys:sync-state', function (event) {
+        var d = event && event.detail ? event.detail : {};
+        var bad = d.state === 'bad' || d.state === 'error';
+        document.body.classList.toggle('sync-error', bad);
+        document.body.classList.toggle('sync-live', !bad);
+      });
+    }
+    // moonboys:world-state has no bus bridge — keep on window.
     window.addEventListener('moonboys:world-state', function (event) {
       var d = event && event.detail ? event.detail : {};
       var conflictActive = !!d.conflictActive;
       document.body.classList.toggle('conflict-active', conflictActive);
       if (d.conflictNearby) pulseStateClass('conflict-nearby', Number(d.durationMs) || 2200);
-    });
-    window.addEventListener('moonboys:sync-state', function (event) {
-      var d = event && event.detail ? event.detail : {};
-      var bad = d.state === 'bad' || d.state === 'error';
-      document.body.classList.toggle('sync-error', bad);
-      document.body.classList.toggle('sync-live', !bad);
     });
 
     document.addEventListener('arcade-run-game-over', function () {

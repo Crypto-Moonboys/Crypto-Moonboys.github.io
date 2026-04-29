@@ -41,22 +41,41 @@
   // Shared across all LAS instances on the page; survives refreshes.
   var _activityLog = [];
 
-  var _logRenderScheduled = false;
+  function buildLogRowHTML(e) {
+    var icon = e.type === 'xp' ? '⚡' : e.type === 'faction' ? '🏴' : e.type === 'sync' ? '🔗' : '📡';
+    return '<div class="las-event-row">' +
+      '<span class="las-event-time">' + esc(e.time) + '</span>' +
+      '<span class="las-event-icon" aria-hidden="true">' + icon + '</span>' +
+      '<span class="las-event-text">' + esc(e.text) + '</span>' +
+      '</div>';
+  }
 
   function addToLog(entry) {
     _activityLog.unshift(entry);
     if (_activityLog.length > LOG_MAX) _activityLog.length = LOG_MAX;
-    // Emit to event bus
+
+    // Emit to event bus (bus is set up before LAS loads, so it's always available).
     var bus = window.MOONBOYS_EVENT_BUS;
     if (bus && typeof bus.emit === 'function') bus.emit('activity:event', entry);
-    // Re-render all panels; batch rapid events into a single paint cycle.
-    if (!_logRenderScheduled) {
-      _logRenderScheduled = true;
-      var raf = typeof requestAnimationFrame === 'function' ? requestAnimationFrame : function (fn) { fn(); };
-      raf(function () {
-        _logRenderScheduled = false;
-        document.querySelectorAll('[data-las-panel]').forEach(function (el) { mount(el); });
+
+    // ── Performance: append directly to existing log containers ────────────
+    // Avoids a full async panel remount on every event.  Only fall back to
+    // full remount when the log container doesn't exist yet (first event).
+    var logContainers = document.querySelectorAll('[data-las-panel] [data-las-log]');
+    if (logContainers.length > 0) {
+      var rowHTML = buildLogRowHTML(entry);
+      logContainers.forEach(function (logEl) {
+        var tmp = document.createElement('div');
+        tmp.innerHTML = rowHTML;
+        logEl.insertBefore(tmp.firstChild, logEl.firstChild);
+        // Trim rows beyond LOG_MAX.
+        while (logEl.children.length > LOG_MAX) {
+          logEl.removeChild(logEl.lastChild);
+        }
       });
+    } else {
+      // Panels exist but haven't rendered the log container yet; do one full mount.
+      document.querySelectorAll('[data-las-panel]').forEach(function (el) { mount(el); });
     }
   }
 
@@ -189,15 +208,8 @@
 
   function buildLogHTML() {
     if (!_activityLog.length) return '';
-    var rows = _activityLog.map(function (e) {
-      var icon = e.type === 'xp' ? '⚡' : e.type === 'faction' ? '🏴' : e.type === 'sync' ? '🔗' : '📡';
-      return '<div class="las-event-row">' +
-        '<span class="las-event-time">' + esc(e.time) + '</span>' +
-        '<span class="las-event-icon" aria-hidden="true">' + icon + '</span>' +
-        '<span class="las-event-text">' + esc(e.text) + '</span>' +
-        '</div>';
-    }).join('');
-    return '<div class="las-event-log" aria-label="Recent activity">' + rows + '</div>';
+    var rows = _activityLog.map(buildLogRowHTML).join('');
+    return '<div class="las-event-log" aria-label="Recent activity" data-las-log>' + rows + '</div>';
   }
 
   async function buildHTML() {
@@ -306,40 +318,75 @@
   // ── Event log listeners ───────────────────────────────────────────────────
 
   function listenForActivity() {
-    window.addEventListener('moonboys:xp-gain', function (e) {
-      var d = (e && e.detail) || {};
-      var amount = Number(d.amount || 0);
-      var total = Number(d.total || 0);
-      var text = amount > 0
-        ? 'Arcade XP +' + amount + (total ? ' (total ' + total + ')' : '')
-        : 'Arcade XP synced';
-      addToLog(buildLogEntry('xp', text));
-    });
+    var bus = window.MOONBOYS_EVENT_BUS;
+    if (bus) {
+      // All activity comes through the bus — no direct moonboys:* listeners needed.
+      bus.on('xp:update', function (d) {
+        var amount = Number(d.amount || 0);
+        var total = Number(d.total || 0);
+        var text = amount > 0
+          ? 'Arcade XP +' + amount + (total ? ' (total ' + total + ')' : '')
+          : 'Arcade XP synced';
+        addToLog(buildLogEntry('xp', text));
+      });
 
-    window.addEventListener('moonboys:faction-boost', function (e) {
-      var d = (e && e.detail) || {};
-      var fa = window.MOONBOYS_FACTION;
-      var meta = fa && typeof fa.getVisualMeta === 'function' ? fa.getVisualMeta(d.faction) : null;
-      var fLabel = meta ? (meta.icon + ' ' + meta.label) : String(d.faction || 'faction');
-      var text = d.source === 'join'
-        ? 'Joined ' + fLabel
-        : 'Faction XP earned (' + fLabel + ')';
-      addToLog(buildLogEntry('faction', text));
-    });
+      bus.on('faction:update', function (d) {
+        // Skip initial page-load fetches — only log actual joins or XP changes.
+        if (!d.source || d.source === 'load') return;
+        var fa = window.MOONBOYS_FACTION;
+        var meta = fa && typeof fa.getVisualMeta === 'function' ? fa.getVisualMeta(d.faction) : null;
+        var fLabel = meta ? (meta.icon + ' ' + meta.label) : String(d.faction || 'faction');
+        var text = d.source === 'join'
+          ? 'Joined ' + fLabel
+          : 'Faction XP earned (' + fLabel + ')';
+        addToLog(buildLogEntry('faction', text));
+      });
 
-    window.addEventListener('moonboys:sync-state', function (e) {
-      var d = (e && e.detail) || {};
-      var text = d.state === 'good' || d.state === 'xp_awarded' || d.state === 'accepted_no_xp'
-        ? 'Sync complete'
-        : d.state === 'bad' ? 'Sync issue detected' : 'Syncing\u2026';
-      addToLog(buildLogEntry('sync', text));
-    });
+      bus.on('sync:state', function (d) {
+        var text = d.state === 'good' || d.state === 'xp_awarded' || d.state === 'accepted_no_xp'
+          ? 'Sync complete'
+          : d.state === 'bad' ? 'Sync issue detected' : 'Syncing\u2026';
+        addToLog(buildLogEntry('sync', text));
+      });
 
-    window.addEventListener('moonboys:score-updated', function (e) {
-      var d = (e && e.detail) || {};
-      var text = 'Score recorded' + (d.game ? ' (' + d.game + ')' : '');
-      addToLog(buildLogEntry('score', text));
-    });
+      // Score updates arrive as activity:event from the bus bridge.
+      bus.on('activity:event', function (d) {
+        if (d._src === 'moonboys:score-updated') {
+          var text = 'Score recorded' + (d.game ? ' (' + d.game + ')' : '');
+          addToLog(buildLogEntry('score', text));
+        }
+      });
+    } else {
+      // Defensive fallback: direct window listeners if bus is unavailable.
+      window.addEventListener('moonboys:xp-gain', function (e) {
+        var d = (e && e.detail) || {};
+        var amount = Number(d.amount || 0);
+        var total = Number(d.total || 0);
+        var text = amount > 0
+          ? 'Arcade XP +' + amount + (total ? ' (total ' + total + ')' : '')
+          : 'Arcade XP synced';
+        addToLog(buildLogEntry('xp', text));
+      });
+      window.addEventListener('moonboys:faction-boost', function (e) {
+        var d = (e && e.detail) || {};
+        var fa = window.MOONBOYS_FACTION;
+        var meta = fa && typeof fa.getVisualMeta === 'function' ? fa.getVisualMeta(d.faction) : null;
+        var fLabel = meta ? (meta.icon + ' ' + meta.label) : String(d.faction || 'faction');
+        var text = d.source === 'join' ? 'Joined ' + fLabel : 'Faction XP earned (' + fLabel + ')';
+        addToLog(buildLogEntry('faction', text));
+      });
+      window.addEventListener('moonboys:sync-state', function (e) {
+        var d = (e && e.detail) || {};
+        var text = d.state === 'good' || d.state === 'xp_awarded' || d.state === 'accepted_no_xp'
+          ? 'Sync complete'
+          : d.state === 'bad' ? 'Sync issue detected' : 'Syncing\u2026';
+        addToLog(buildLogEntry('sync', text));
+      });
+      window.addEventListener('moonboys:score-updated', function (e) {
+        var d = (e && e.detail) || {};
+        addToLog(buildLogEntry('score', 'Score recorded' + (d.game ? ' (' + d.game + ')' : '')));
+      });
+    }
   }
 
   // ── Bootstrap ─────────────────────────────────────────────────────────────
@@ -347,9 +394,16 @@
   function bootstrap() {
     injectStyles();
     document.querySelectorAll('[data-las-panel]').forEach(function (el) { mount(el); });
-    ['moonboys:sync-state', 'moonboys:faction-status', 'moonboys:faction-boost'].forEach(function (evt) {
-      window.addEventListener(evt, refresh);
-    });
+    var bus = window.MOONBOYS_EVENT_BUS;
+    if (bus) {
+      // Refresh static rows (API status, sync state, faction) on relevant events.
+      bus.on('sync:state', refresh);
+      bus.on('faction:update', refresh);
+    } else {
+      ['moonboys:sync-state', 'moonboys:faction-status', 'moonboys:faction-boost'].forEach(function (evt) {
+        window.addEventListener(evt, refresh);
+      });
+    }
     window.addEventListener('storage', function (e) {
       if (e.key && e.key.startsWith('moonboys_')) refresh();
     });

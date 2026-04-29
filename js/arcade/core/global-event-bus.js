@@ -74,6 +74,32 @@
     });
   });
 
+  // ── Single source of truth ─────────────────────────────────────────────────
+  // window.MOONBOYS_STATE mirrors the latest known XP, faction, and last event
+  // so any page can read the current state synchronously without re-fetching.
+
+  window.MOONBOYS_STATE = { xp: 0, faction: 'unaligned', lastEvent: null };
+
+  on('xp:update', function (p) {
+    if (typeof p.total === 'number' && p.total > 0) {
+      window.MOONBOYS_STATE.xp = p.total;
+    } else if (typeof p.amount === 'number' && p.amount > 0) {
+      window.MOONBOYS_STATE.xp += p.amount;
+    }
+    window.MOONBOYS_STATE.lastEvent = p;
+  });
+
+  on('faction:update', function (p) {
+    if (p.faction && p.faction !== 'unaligned') {
+      window.MOONBOYS_STATE.faction = p.faction;
+    }
+    window.MOONBOYS_STATE.lastEvent = p;
+  });
+
+  on('activity:event', function (p) {
+    window.MOONBOYS_STATE.lastEvent = p;
+  });
+
   // ── Public API ─────────────────────────────────────────────────────────────
   window.MOONBOYS_EVENT_BUS = { on: on, off: off, emit: emit };
 
