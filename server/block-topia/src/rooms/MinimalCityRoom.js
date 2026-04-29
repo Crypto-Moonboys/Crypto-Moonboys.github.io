@@ -1,8 +1,11 @@
 ﻿import { Room } from 'colyseus';
 import { Schema, ArraySchema, defineTypes } from '@colyseus/schema';
+import { BLOCKTOPIA_MULTIPLAYER_REQUIRED_XP } from '../../../../shared/blocktopia/constants.js';
+
 const MAP_WIDTH = 20;
 const MAP_HEIGHT = 20;
 const PLAYER_SPEED_HINT = 3.2;
+const DEFAULT_MOONBOYS_API_BASE = 'https://moonboys-api.sercullen.workers.dev';
 
 const SPAWN_SLOTS = [
   { x: 6, y: 10 },
@@ -75,7 +78,12 @@ export class MinimalCityRoom extends Room {
     });
   }
 
-  onJoin(client, options = {}) {
+  async onJoin(client, options = {}) {
+    const validation = await validateMultiplayerEntry(options);
+    if (!validation.ok) {
+      throw new Error(validation.reason);
+    }
+
     const slotIndex = this.state.players.length % SPAWN_SLOTS.length;
     const spawn = SPAWN_SLOTS[slotIndex];
 
@@ -109,5 +117,52 @@ export class MinimalCityRoom extends Room {
       this.broadcast('system', { message: `${player.name} left the city.` });
     }
   }
+}
 
+function resolveApiBase() {
+  return String(process.env.MOONBOYS_API_BASE || DEFAULT_MOONBOYS_API_BASE).replace(/\/$/, '');
+}
+
+async function validateMultiplayerEntry(options = {}) {
+  const telegramAuth = normalizeAuthPayload(options.telegram_auth ?? options.telegramAuth ?? options.identity_token);
+  if (!telegramAuth) {
+    return { ok: false, reason: 'telegram_required' };
+  }
+
+  const apiBase = resolveApiBase();
+  const response = await fetch(`${apiBase}/blocktopia/progression`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ telegram_auth: telegramAuth }),
+  }).catch(() => null);
+
+  if (!response) {
+    return { ok: false, reason: 'auth_invalid' };
+  }
+
+  const payload = await response.json().catch(() => ({}));
+  if (!response.ok || payload?.ok !== true) {
+    return { ok: false, reason: 'auth_invalid' };
+  }
+
+  const arcadeXpTotal = Math.max(0, Math.floor(Number(payload?.progression?.arcade_xp_total) || 0));
+  if (arcadeXpTotal < BLOCKTOPIA_MULTIPLAYER_REQUIRED_XP) {
+    return { ok: false, reason: 'xp_required' };
+  }
+
+  return { ok: true };
+}
+
+function normalizeAuthPayload(raw) {
+  if (!raw) return null;
+  if (typeof raw === 'string') {
+    try {
+      const parsed = JSON.parse(raw);
+      return parsed && typeof parsed === 'object' ? parsed : null;
+    } catch {
+      return null;
+    }
+  }
+  if (typeof raw === 'object') return raw;
+  return null;
 }
