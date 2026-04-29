@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-04-29T21:07:16.349Z",
+  "generatedAt": "2026-04-29T22:31:31.284Z",
   "mode": "live-ai",
   "sourceHealth": {
     "coingecko-global": "ok",
@@ -11,84 +11,84 @@
   "signalCount": 5,
   "signals": [
     {
-      "id": "signal-1777496836349-1",
+      "id": "signal-1777501891284-1",
       "lane": "world",
       "priority": 4,
-      "ttlMinutes": 120,
-      "npcLine": "Market cap bleeding, shadows creep over cryptos.",
-      "questPulse": "Scan for dying assets, salvage what's left.",
-      "worldFeed": "Global crypto grid flickers under fear's grip.",
-      "clueEvent": "Data nodes show mass selloffs in ghost chains.",
+      "ttlMinutes": 45,
+      "npcLine": "Market pulse weak, shadows grow longer tonight.",
+      "questPulse": "Cryptos dip; keep your credits close.",
+      "worldFeed": "Global market breathes shallow, signals flicker uncertain.",
+      "clueEvent": "Cap value slips, dusk over digital vaults.",
       "tags": [
-        "market-crash",
-        "crypto",
+        "market",
+        "decline",
         "fear"
       ],
-      "expiresAt": "2026-04-29T23:07:16.349Z"
+      "expiresAt": "2026-04-29T23:16:31.284Z"
     },
     {
-      "id": "signal-1777496836349-2",
+      "id": "signal-1777501891284-2",
       "lane": "ops",
       "priority": 3,
-      "ttlMinutes": 90,
-      "npcLine": "AI tokens spike, a chance to hack the system.",
-      "questPulse": "Exploit AI asset rising before it crashes.",
-      "worldFeed": "Rumors of AI-driven pump cycles hitting markets.",
-      "clueEvent": "Encrypted chatter hints at AI asset manipulations.",
+      "ttlMinutes": 30,
+      "npcLine": "PENGU's rise flickers—possible trap or leap?",
+      "questPulse": "Watch token shifts; trends could flip fast.",
+      "worldFeed": "Some assets spike oddly; hackers might probe.",
+      "clueEvent": "Unusual buzz around PENGU network nodes.",
       "tags": [
-        "ai",
-        "pump",
-        "exploit"
+        "crypto",
+        "spike",
+        "watch"
       ],
-      "expiresAt": "2026-04-29T22:37:16.349Z"
+      "expiresAt": "2026-04-29T23:01:31.284Z"
     },
     {
-      "id": "signal-1777496836349-3",
+      "id": "signal-1777501891284-3",
       "lane": "clue",
+      "priority": 5,
+      "ttlMinutes": 20,
+      "npcLine": "Blend’s low-key moves hide bigger plays.",
+      "questPulse": "Patch into BLEND’s stealth patterns, decrypt the twist.",
+      "worldFeed": "Low-score token hides in plain sight.",
+      "clueEvent": "BLEND’s signal subdued, but not silent.",
+      "tags": [
+        "stealth",
+        "crypto",
+        "intel"
+      ],
+      "expiresAt": "2026-04-29T22:51:31.284Z"
+    },
+    {
+      "id": "signal-1777501891284-4",
+      "lane": "quest",
       "priority": 2,
       "ttlMinutes": 60,
-      "npcLine": "PLUME clusters scatter, trace their fading signatures.",
-      "questPulse": "Decode fading PLUME signals for hidden value.",
-      "worldFeed": "PLUME tokens dropping signals, anomaly detected.",
-      "clueEvent": "Network logs reveal strange PLUME transaction bursts.",
+      "npcLine": "AI’s surge draws eyes—tech or trap?",
+      "questPulse": "Scan for AI anomalies, ripples in network flow.",
+      "worldFeed": "AI token catches whispers in the net.",
+      "clueEvent": "Neuron spikes near AI ticker zones.",
       "tags": [
-        "plume",
-        "signal",
+        "ai",
+        "pulse",
         "anomaly"
       ],
-      "expiresAt": "2026-04-29T22:07:16.349Z"
+      "expiresAt": "2026-04-29T23:31:31.284Z"
     },
     {
-      "id": "signal-1777496836349-4",
-      "lane": "quest",
-      "priority": 3,
-      "ttlMinutes": 110,
-      "npcLine": "SOL energy flickers; miners brace for power shifts.",
-      "questPulse": "Secure unstable SOL nodes before blackout hits.",
-      "worldFeed": "SOL nodes unstable in current market chaos.",
-      "clueEvent": "Power grids linked to SOL token volatility spike.",
-      "tags": [
-        "sol",
-        "instability",
-        "power"
-      ],
-      "expiresAt": "2026-04-29T22:57:16.349Z"
-    },
-    {
-      "id": "signal-1777496836349-5",
+      "id": "signal-1777501891284-5",
       "lane": "npc",
-      "priority": 5,
-      "ttlMinutes": 45,
-      "npcLine": "Blend network's mixing gear jammed, suspicious activity.",
-      "questPulse": "Investigate BLEND interference, possible sabotage attempts.",
-      "worldFeed": "Blend liquidity hits sudden freeze, insiders wary.",
-      "clueEvent": "Encrypted logs show unusual access near BLEND mixers.",
+      "priority": 1,
+      "ttlMinutes": 50,
+      "npcLine": "Plume’s soft rise invites cyber whispers.",
+      "questPulse": "Follow faint trails around PLUME’s orbit.",
+      "worldFeed": "PLUME’s light moves, calm but watched.",
+      "clueEvent": "Subtle shifts hint at hidden forces.",
       "tags": [
-        "blend",
-        "sabotage",
-        "freeze"
+        "whisper",
+        "token",
+        "lowprofile"
       ],
-      "expiresAt": "2026-04-29T21:52:16.349Z"
+      "expiresAt": "2026-04-29T23:21:31.284Z"
     }
   ]
 }
