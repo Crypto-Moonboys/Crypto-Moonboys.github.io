@@ -3,258 +3,73 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Battle Chamber — Community intelligence hub for the Crypto Moonboys ecosystem.">
+  <meta name="description" content="Battle Chamber is the proof layer: XP, leaderboards, missions, faction movement and activity for players who show up.">
   <meta name="robots" content="index, follow">
+  <meta property="og:title" content="Battle Chamber — Crypto Moonboys">
+  <meta property="og:description" content="Battle Chamber is the proof layer: XP, leaderboards, missions, faction movement and activity for players who show up.">
+  <meta property="og:type" content="website">
+  <meta property="og:image" content="https://cryptomoonboys.com/img/CRYPTO-MOONBOYS-BITCOIN-LOGO.png">
   <title>Battle Chamber — Crypto Moonboys</title>
   <link rel="stylesheet" href="/css/wiki.css">
   <link rel="stylesheet" href="/css/battle-layer.css">
   <link rel="icon" href="/img/favicon.svg" type="image/svg+xml">
-  <!-- Telegram WebApp SDK — enables fullscreen expand on mobile/iPad when opened via the bot -->
-  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+  <style>
+    .wtf-hero{padding:clamp(34px,6vw,78px) clamp(18px,4vw,46px);margin-bottom:24px;border:1px solid rgba(86,220,255,.34);border-radius:var(--radius);background:radial-gradient(circle at 15% 10%,rgba(255,204,0,.18),transparent 28%),radial-gradient(circle at 90% 20%,rgba(86,220,255,.18),transparent 32%),linear-gradient(155deg,rgba(10,23,44,.94),rgba(3,8,17,.92));box-shadow:inset 0 0 0 1px rgba(122,236,255,.07),0 18px 44px rgba(0,0,0,.36);overflow:hidden;position:relative}
+    .wtf-hero:before{content:"";position:absolute;inset:0;opacity:.07;background-image:linear-gradient(90deg,#fff 1px,transparent 1px),linear-gradient(#fff 1px,transparent 1px);background-size:38px 38px;pointer-events:none}.wtf-hero>*{position:relative;z-index:1}.wtf-kicker{display:inline-flex;gap:8px;align-items:center;padding:7px 11px;border:1px solid rgba(255,204,0,.42);border-radius:999px;background:rgba(255,204,0,.08);font-size:.78rem;text-transform:uppercase;letter-spacing:.08em;color:#ffe78a;font-weight:800;margin-bottom:16px}.wtf-hero h1{margin:0;max-width:1050px;font-size:clamp(2.1rem,7vw,5.7rem);line-height:.9;letter-spacing:-.055em;text-transform:uppercase}.wtf-lead{max-width:860px;margin:20px 0 0;color:var(--color-text-muted);font-size:clamp(1.02rem,2vw,1.3rem);line-height:1.55}.wtf-cta-row{display:flex;flex-wrap:wrap;gap:12px;margin-top:26px}.wtf-cta-row .btn{font-size:1.02rem;padding:12px 20px}.wtf-flow{display:flex;flex-wrap:wrap;gap:8px;margin:22px 0 0}.wtf-flow span{padding:7px 10px;border:1px solid rgba(255,255,255,.1);border-radius:999px;background:rgba(255,255,255,.04);color:var(--color-text-muted);font-size:.9rem}.wtf-section{margin:0 0 24px;padding:22px;border:1px solid rgba(86,220,255,.24);border-radius:14px;background:linear-gradient(165deg,rgba(10,23,44,.72),rgba(8,18,34,.58));box-shadow:0 10px 28px rgba(0,0,0,.18)}.wtf-section h2{margin:0 0 10px;font-size:clamp(1.35rem,3vw,2.1rem);text-transform:uppercase;letter-spacing:-.025em}.wtf-section h3{margin:18px 0 8px;color:#e7fcff}.wtf-section p,.wtf-section li{color:var(--color-text-muted);line-height:1.72}.wtf-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px;margin:16px 0}.wtf-card{border:1px solid rgba(86,220,255,.25);border-radius:13px;background:rgba(6,16,31,.7);padding:16px}.wtf-card strong{display:block;color:#fff;margin-bottom:6px}.wtf-card p{margin:0}.wtf-punch{border-left:4px solid rgba(255,204,0,.92);padding:14px 0 14px 16px;margin:18px 0;color:#fff;background:rgba(255,204,0,.05)}.wtf-mini{font-size:.9rem;color:var(--color-text-muted)}.reveal{animation:fadeup .45s ease both}@keyframes fadeup{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+  </style>
+
 </head>
 <body>
-<script>
-  // Initialize Telegram WebApp if running inside the Telegram client.
-  // This expands the WebApp to full height and signals readiness to the client.
-  if (window.Telegram && window.Telegram.WebApp) {
-    window.Telegram.WebApp.ready();
-    window.Telegram.WebApp.expand();
-  }
-</script>
-
 <a class="skip-link" href="#content">Skip to content</a>
-
 <header id="site-header" role="banner">
   <button class="hamburger" id="hamburger" aria-label="Toggle navigation" aria-expanded="false" aria-controls="sidebar">☰</button>
-  <a href="/index.html" class="site-logo" aria-label="The Crypto Moonboys GK Wiki home">
+  <a href="/index.html" class="site-logo" aria-label="Crypto Moonboys home">
     <img src="/img/CRYPTO-MOONBOYS-BITCOIN-LOGO.png" alt="" aria-hidden="true">
-    <span>
-      <span class="logo-text">The Crypto Moonboys GK Wiki</span>
-      <span class="logo-sub">Blockchain Cryptoism Encyclopedia</span>
-    </span>
+    <span><span class="logo-text">Crypto Moonboys</span><span class="logo-sub">Play. Earn. Build. Own it.</span></span>
   </a>
-  <nav class="header-nav" aria-label="Main navigation">
-    <a href="/index.html">Home</a>
-  </nav>
+  <div id="header-search" role="search"><input type="search" id="search-input" placeholder="Search the system…" aria-label="Search" autocomplete="off"><button id="search-btn" aria-label="Search">🔍</button><div id="search-results" role="listbox"></div></div>
+  <nav class="header-nav" aria-label="Main navigation"><a href="/index.html">Home</a><a href="/games/">Arcade</a></nav>
 </header>
 <div id="sidebar-overlay" aria-hidden="true"></div>
-
 <div id="layout">
   <nav id="sidebar" aria-label="Wiki navigation">
-    <div class="sidebar-section">
-      <div class="sidebar-heading">Navigation</div>
-      <div class="sidebar-nav">
-        <a href="/index.html"><span class="nav-icon">🏠</span> Main Page</a>
-        <a href="/community.html" class="active"><span class="nav-icon">⚔️</span> Battle Chamber</a>
-        <a href="/gkniftyheads-incubator.html"><span class="nav-icon">🚀</span> Incubator HUB</a>
-      </div>
-    </div>
+    <div class="sidebar-section"><div class="sidebar-heading">Start Here</div><div class="sidebar-nav">
+      <a href="/index.html"><span class="nav-icon">🏠</span> Main Page</a>
+      <a href="/games/"><span class="nav-icon">🕹️</span> Arcade</a>
+      <a href="/how-to-play.html"><span class="nav-icon">◈</span> How to Play</a>
+      <a href="/gkniftyheads-incubator.html"><span class="nav-icon">🚀</span> Incubator HUB</a>
+      <a href="/community.html" class="active"><span class="nav-icon">⚔️</span> Battle Chamber</a>
+      <a href="/about.html"><span class="nav-icon">ℹ️</span> About</a>
+      <a href="/about/what-is-crypto-moonboys.html"><span class="nav-icon">🌙</span> What Is Crypto Moonboys?</a>
+    </div></div>
+    <div class="sidebar-section"><div class="sidebar-heading">HODL Wars</div><div class="sidebar-nav">
+      <a href="/wiki/hodl-wars.html"><span class="nav-icon">⚔️</span> HODL WAR$</a>
+      <a href="/wiki/hodl-warriors.html"><span class="nav-icon">💎</span> HODL WARRIORS</a>
+      <a href="/categories/lore.html"><span class="nav-icon">📚</span> All Lore</a>
+    </div></div>
   </nav>
-
   <div id="main-wrapper">
+
     <main id="content" role="main">
-      <section class="community-hero">
-        <h1>Battle Chamber</h1>
-        <p>The Battle Chamber is where proof happens. Track XP, activity, and faction momentum after you play, earn, and link Telegram.</p>
-      </section>
-
-      <section class="community-hero-grid">
-        <div class="community-card">
-          <div class="community-card-inner">
-            <h3>Engagement Snapshot</h3>
-            <div class="community-stat-grid" id="community-stats-grid">
-              <div class="community-loading">Loading trending pages…</div>
-            </div>
-          </div>
-        </div>
-        <div class="community-card">
-          <div class="community-card-inner">
-            <h3>Faction Alignment</h3>
-            <div id="community-faction-selector"></div>
-          </div>
-        </div>
-      </section>
-
-      <section class="community-grid">
-        <div class="community-main">
-          <div class="community-card">
-            <div class="community-card-inner">
-              <h3>Top Contributors</h3>
-              <div id="community-leaderboard" class="community-list shell-scroll" data-shell-scroll>
-                <div class="community-loading">Loading contributors…</div>
-              </div>
-            </div>
-          </div>
-
-          <div class="community-card">
-            <div class="community-card-inner">
-              <h3>Live Activity Feed</h3>
-              <div id="community-feed" class="community-list shell-scroll" data-shell-scroll>
-                <div class="community-empty">No activity yet — the battle is just beginning.</div>
-              </div>
-            </div>
-          </div>
-
-          <!-- GK Link confirmation banner — shown only when ?gklink= param is present -->
-          <div id="gklink-status" class="gklink-banner" style="display:none" role="status" aria-live="polite"></div>
-
-          <!-- Telegram Community XP Leaderboard -->
-          <div class="community-card">
-            <div class="community-card-inner">
-              <h3>Telegram Community XP</h3>
-              <div id="tg-community-leaderboard" class="community-list shell-scroll" data-shell-scroll></div>
-            </div>
-          </div>
-
-          <!-- Telegram XP Activity Feed -->
-          <div class="community-card">
-            <div class="community-card-inner">
-              <h3>Community XP Activity</h3>
-              <div id="tg-activity-feed" class="community-list shell-scroll" data-shell-scroll></div>
-            </div>
-          </div>
-        </div>
-
-        <div class="community-side">
-          <div class="community-card">
-            <div class="community-card-inner">
-              <h3>Mission Board</h3>
-              <div id="community-missions" class="community-list shell-scroll" data-shell-scroll></div>
-            </div>
-          </div>
-
-          <!-- Active Lore Quests -->
-          <div class="community-card">
-            <div class="community-card-inner">
-              <h3>Lore Quests</h3>
-              <!-- Telegram quest panel (populated by telegram-community.js after auth) -->
-              <div id="tg-quest-panel"></div>
-            </div>
-          </div>
-
-          <!-- Daily Claim Status (populated after Telegram auth) -->
-          <div class="community-card" id="tg-daily-card" style="display:none">
-            <div class="community-card-inner">
-              <h3>Daily XP</h3>
-              <div id="tg-daily-status"></div>
-            </div>
-          </div>
-
-          <!-- Telegram Profile Card (populated after Telegram auth) -->
-          <div class="community-card" id="tg-profile-card-wrap" style="display:none">
-            <div class="community-card-inner">
-              <h3>Your Telegram Profile</h3>
-              <div id="tg-profile-card"></div>
-            </div>
-          </div>
-
-          <div class="community-card">
-            <div class="community-card-inner">
-              <h3>Community Forge</h3>
-              <p>This is the proof layer for the system. Activity, XP, and faction actions show who is actually building.</p>
-              <div class="community-link-grid">
-                <a href="/gkniftyheads-incubator.html" class="battle-link-card">
-                  <strong>Open Incubator HUB</strong>
-                  <div class="battle-copy">Link your Telegram identity so XP, quests, and rankings stay synced.</div>
-                </a>
-                <a href="/search.html" class="battle-link-card">
-                  <strong>Explore Articles</strong>
-                  <div class="battle-copy">Use the wiki to find context, quests, and build targets.</div>
-                </a>
-                <a href="/games/" class="battle-link-card">
-                  <strong>Enter the Arcade</strong>
-                  <div class="battle-copy">Start the flow: play first, then return with XP.</div>
-                </a>
-                <a href="/how-to-play.html" class="battle-link-card">
-                  <strong>Read How to Play</strong>
-                  <div class="battle-copy">Telegram sync, XP, and how to enter Block Topia.</div>
-                </a>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section class="community-section">
-        <div class="community-card">
-          <div class="community-card-inner">
-            <h3>Community Discussion</h3>
-            <div class="wiki-comments" data-page-id="community"></div>
-          </div>
-        </div>
-      </section>
+      <section class="wtf-hero"><span class="wtf-kicker">proof layer live</span><h1>If you moved, it shows here.</h1><p class="wtf-lead">The Battle Chamber is where the system stops talking and starts recording. XP, activity, missions, leaderboard pressure and faction alignment all surface here. Spectators disappear. Builders leave marks.</p><div class="wtf-cta-row"><a href="/games/" class="btn btn-primary">Play First</a><a href="/gkniftyheads-incubator.html" class="btn btn-secondary">Link Telegram</a></div></section>
+      <section class="wtf-section"><h2>What this page does</h2><p>This is not a forum. This is the scoreboard for movement. If the arcade is the gate, this is the arena wall showing who is active.</p><div class="wtf-grid"><div class="wtf-card"><strong>Leaderboards</strong><p>See who is stacking XP and position.</p></div><div class="wtf-card"><strong>Activity Feed</strong><p>The pulse of what is happening.</p></div><div class="wtf-card"><strong>Factions</strong><p>Pick alignment and start carrying signal.</p></div><div class="wtf-card"><strong>Missions</strong><p>Quests and actions that point people where to move next.</p></div></div></section>
+      <section class="community-hero-grid"><div class="community-card"><div class="community-card-inner"><h3>Engagement Snapshot</h3><div class="community-stat-grid" id="community-stats-grid"><div class="community-loading">Loading trending pages…</div></div></div></div><div class="community-card"><div class="community-card-inner"><h3>Faction Alignment</h3><div id="community-faction-selector"></div></div></div></section>
+      <section class="community-grid"><div class="community-main"><div class="community-card"><div class="community-card-inner"><h3>Top Contributors</h3><div id="community-leaderboard" class="community-list shell-scroll" data-shell-scroll><div class="community-loading">Loading contributors…</div></div></div></div><div class="community-card"><div class="community-card-inner"><h3>Live Activity Feed</h3><div id="community-feed" class="community-list shell-scroll" data-shell-scroll><div class="community-empty">No activity yet — the battle is just beginning.</div></div></div></div><div id="gklink-status" class="gklink-banner" style="display:none" role="status" aria-live="polite"></div><div class="community-card"><div class="community-card-inner"><h3>Telegram Community XP</h3><div id="tg-community-leaderboard" class="community-list shell-scroll" data-shell-scroll></div></div></div><div class="community-card"><div class="community-card-inner"><h3>Community XP Activity</h3><div id="tg-activity-feed" class="community-list shell-scroll" data-shell-scroll></div></div></div></div><div class="community-side"><div class="community-card"><div class="community-card-inner"><h3>Mission Board</h3><div id="community-missions" class="community-list shell-scroll" data-shell-scroll></div></div></div><div class="community-card"><div class="community-card-inner"><h3>Lore Quests</h3><div id="tg-quest-panel"></div></div></div><div class="community-card" id="tg-daily-card" style="display:none"><div class="community-card-inner"><h3>Daily XP</h3><div id="tg-daily-status"></div></div></div><div class="community-card" id="tg-profile-card-wrap" style="display:none"><div class="community-card-inner"><h3>Your Telegram Profile</h3><div id="tg-profile-card"></div></div></div><div class="community-card"><div class="community-card-inner"><h3>Next Moves</h3><div class="community-link-grid"><a href="/games/" class="battle-link-card"><strong>Enter Arcade</strong><div class="battle-copy">Generate score and XP movement.</div></a><a href="/gkniftyheads-incubator.html" class="battle-link-card"><strong>Open Incubator</strong><div class="battle-copy">Sync identity with /gkstart and /gklink.</div></a><a href="/how-to-play.html" class="battle-link-card"><strong>How To Play</strong><div class="battle-copy">Fast guide for new players.</div></a></div></div></div></div></section>
+      <section class="community-section"><div class="community-card"><div class="community-card-inner"><h3>Community Discussion</h3><div class="wiki-comments" data-page-id="community"></div></div></div></section>
     </main>
-
-    <footer id="site-footer" role="contentinfo">
-      <div class="footer-inner">
-        <div class="footer-col">
-          <h4>Crypto Moonboys</h4>
-          <p>Fan-driven crypto encyclopedia and cultural movement.</p>
-        </div>
-      </div>
-      <div class="footer-bottom">
-        <p>© 2026 Crypto Moonboys · Not financial advice.</p>
-      </div>
-    </footer>
+    <footer id="site-footer" role="contentinfo"><div class="footer-inner"><div class="footer-col"><h4>Crypto Moonboys</h4><p>Stop logging in to claim. Start showing up to build.</p></div><div class="footer-col"><h4>Start</h4><ul><li><a href="/games/">Arcade</a></li><li><a href="/gkniftyheads-incubator.html">Link Telegram</a></li><li><a href="/community.html">Battle Chamber</a></li></ul></div></div><div class="footer-bottom"><p>© 2026 Crypto Moonboys · Not financial advice.</p></div></footer>
   </div>
 </div>
-
 <button id="back-to-top" aria-label="Back to top">↑</button>
-
 <script src="/js/api-config.js"></script>
 <script src="/js/identity-gate.js"></script>
 <script src="/js/wiki.js"></script>
 <script src="/js/scroll-shell.js"></script>
+<script src="/js/battle-layer.js"></script>
 <script src="/js/engagement.js"></script>
 <script src="/js/comments.js"></script>
 <script src="/js/faction-alignment.js"></script>
-<script src="/js/battle-layer.js"></script>
 <script src="/js/telegram-community.js"></script>
-<script>
-// After Telegram auth via the comment widget, show the profile card and daily status.
-(function () {
-  var origCb = window._moonboysTgAuth;
-  window._moonboysTgAuth = function (user) {
-    if (origCb) origCb(user);
-    var cfg = window.MOONBOYS_API || {};
-    var BASE = cfg.BASE_URL || null;
-    if (!BASE) return;
-    fetch(BASE + '/telegram/auth', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(user),
-    })
-      .then(function (r) { return r.ok ? r.json() : null; })
-      .then(function (data) {
-        if (!data || !data.ok || !data.identity) return;
-        var tid = data.identity.telegram_id;
-
-        // Show and hydrate profile card
-        var cardWrap = document.getElementById('tg-profile-card-wrap');
-        var card     = document.getElementById('tg-profile-card');
-        if (cardWrap && card) {
-          card.dataset.telegramId = tid;
-          cardWrap.style.display  = '';
-          if (window.MOONBOYS_TG_COMMUNITY) {
-            window.MOONBOYS_TG_COMMUNITY.initProfileCard(card);
-          }
-        }
-
-        // Show and hydrate daily status
-        var dailyCard   = document.getElementById('tg-daily-card');
-        var dailyStatus = document.getElementById('tg-daily-status');
-        if (dailyCard && dailyStatus) {
-          dailyStatus.dataset.telegramId = tid;
-          dailyCard.style.display        = '';
-          if (window.MOONBOYS_TG_COMMUNITY) {
-            window.MOONBOYS_TG_COMMUNITY.initDailyStatus(dailyStatus);
-          }
-        }
-      })
-      .catch(function () {});
-  };
-}());
-</script>
-
 </body>
 </html>
