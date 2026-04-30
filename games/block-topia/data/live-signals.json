@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-04-30T08:39:12.441Z",
+  "generatedAt": "2026-04-30T10:56:30.307Z",
   "mode": "live-ai",
   "sourceHealth": {
     "coingecko-global": "ok",
@@ -11,84 +11,84 @@
   "signalCount": 5,
   "signals": [
     {
-      "id": "signal-1777538352441-1",
+      "id": "signal-1777546590306-1",
       "lane": "world",
       "priority": 3,
-      "ttlMinutes": 45,
-      "npcLine": "Crypto tides fall; markets bleed shadows.",
-      "questPulse": "Scan network for sinking asset patterns.",
-      "worldFeed": "Global market cap shrinks under fear’s grip.",
-      "clueEvent": "Sector-wide sell-off triggers quiet alarms.",
+      "ttlMinutes": 90,
+      "npcLine": "Market's bleeding, tech stocks dive—stay sharp in the neon shadows.",
+      "questPulse": "Scan for weak sectors, exploit digital cracks before the next wave.",
+      "worldFeed": "Global caps shrink, whispers of a crash in the data underbelly.",
+      "clueEvent": "Unusual sell-offs trace back to unknown vaults; hack for intel.",
       "tags": [
-        "market-downturn",
-        "fear",
-        "crypto"
+        "market",
+        "crash",
+        "opportunity"
       ],
-      "expiresAt": "2026-04-30T09:24:12.440Z"
+      "expiresAt": "2026-04-30T12:26:30.306Z"
     },
     {
-      "id": "signal-1777538352441-2",
+      "id": "signal-1777546590307-2",
       "lane": "ops",
       "priority": 4,
-      "ttlMinutes": 30,
-      "npcLine": "AI protocols spike; silent watchers activated.",
-      "questPulse": "Intercept AI-driven trades gaining momentum.",
-      "worldFeed": "Sentiment fears clutch as AI tech strains.",
-      "clueEvent": "Unusual AI token activity disrupts grids.",
+      "ttlMinutes": 60,
+      "npcLine": "Crypto nodes flicker—fear spreads, risk premiums spike unseen.",
+      "questPulse": "Intercept lost tokens, reroute cyber-assets under cover of dusk.",
+      "worldFeed": "Trading floor glitches hint at organized digital theft rings.",
+      "clueEvent": "Encrypted chatter suggests upcoming blackout on major exchanges.",
       "tags": [
-        "ai",
-        "surveillance",
-        "market-ops"
+        "crypto",
+        "fear",
+        "heist"
       ],
-      "expiresAt": "2026-04-30T09:09:12.441Z"
+      "expiresAt": "2026-04-30T11:56:30.307Z"
     },
     {
-      "id": "signal-1777538352441-3",
+      "id": "signal-1777546590307-3",
       "lane": "clue",
       "priority": 2,
-      "ttlMinutes": 60,
-      "npcLine": "Bio-synthetics buzz low; signals weak, fading.",
-      "questPulse": "Trace bio token fluctuations for hidden moves.",
-      "worldFeed": "Bio assets lag behind urban market chaos.",
-      "clueEvent": "Bio asset signals distort in fear’s echo.",
+      "ttlMinutes": 120,
+      "npcLine": "Trends shifting—names like ULTIMA and BIO buzz in the noise.",
+      "questPulse": "Decode shifting signals to unlock untapped market subnets.",
+      "worldFeed": "Data spikes on unknown cryptos; insider nodes humming softly.",
+      "clueEvent": "Hidden pattern emerges linking biotech tokens to shadow decks.",
       "tags": [
-        "bio",
-        "flicker",
-        "clue"
+        "signals",
+        "biotech",
+        "crypto"
       ],
-      "expiresAt": "2026-04-30T09:39:12.441Z"
+      "expiresAt": "2026-04-30T12:56:30.307Z"
     },
     {
-      "id": "signal-1777538352441-4",
+      "id": "signal-1777546590307-4",
       "lane": "quest",
-      "priority": 3,
-      "ttlMinutes": 50,
-      "npcLine": "Ultima shadow slips unnoticed through dead zones.",
-      "questPulse": "an operator’s dark path before it vanishes.",
-      "worldFeed": "Crypto landscape cluttered; Ultima drifts unseen.",
-      "clueEvent": "Low activity on rumored Ultima circuit.",
+      "priority": 5,
+      "ttlMinutes": 45,
+      "npcLine": "Fear-laced market pulse—extract salvage before system collapses.",
+      "questPulse": "Dive into node blackouts; retrieve lost assets from collapsing chains.",
+      "worldFeed": "Fear index at max—digital markets jitter like live wires.",
+      "clueEvent": "Ghost market orders point toward an imminent wipe event.",
       "tags": [
-        "ultima",
-        "stealth",
-        "quest"
+        "fear",
+        "urgent",
+        "salvage"
       ],
-      "expiresAt": "2026-04-30T09:29:12.441Z"
+      "expiresAt": "2026-04-30T11:41:30.307Z"
     },
     {
-      "id": "signal-1777538352441-5",
+      "id": "signal-1777546590307-5",
       "lane": "npc",
-      "priority": 1,
-      "ttlMinutes": 25,
-      "npcLine": "Plume whispers: winds may yet turn volatile.",
-      "questPulse": "an operator’s subtle shifts for market sidewinds.",
-      "worldFeed": "Plume’s pulse flickers amid the fear storm.",
-      "clueEvent": "Soft surges detected in Plume signal trails.",
+      "priority": 3,
+      "ttlMinutes": 75,
+      "npcLine": "MEGA’s silent—something’s off. Trust the shadows, not the buzz.",
+      "questPulse": "Follow cold trails, MEGA’s silence is the loudest warning yet.",
+      "worldFeed": "Token chatter drops dead; netizens whisper of sabotage.",
+      "clueEvent": "Sudden token silence masks a deeper systemic breach.",
       "tags": [
-        "plume",
-        "whisper",
-        "npc"
+        "mega",
+        "silence",
+        "sabotage"
       ],
-      "expiresAt": "2026-04-30T09:04:12.441Z"
+      "expiresAt": "2026-04-30T12:11:30.307Z"
     }
   ]
 }
