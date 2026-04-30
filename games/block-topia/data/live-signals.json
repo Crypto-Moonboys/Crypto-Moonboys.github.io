@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-04-30T10:56:30.307Z",
+  "generatedAt": "2026-04-30T12:17:05.477Z",
   "mode": "live-ai",
   "sourceHealth": {
     "coingecko-global": "ok",
@@ -11,84 +11,84 @@
   "signalCount": 5,
   "signals": [
     {
-      "id": "signal-1777546590306-1",
+      "id": "signal-1777551425476-1",
       "lane": "world",
-      "priority": 3,
-      "ttlMinutes": 90,
-      "npcLine": "Market's bleeding, tech stocks dive—stay sharp in the neon shadows.",
-      "questPulse": "Scan for weak sectors, exploit digital cracks before the next wave.",
-      "worldFeed": "Global caps shrink, whispers of a crash in the data underbelly.",
-      "clueEvent": "Unusual sell-offs trace back to unknown vaults; hack for intel.",
-      "tags": [
-        "market",
-        "crash",
-        "opportunity"
-      ],
-      "expiresAt": "2026-04-30T12:26:30.306Z"
-    },
-    {
-      "id": "signal-1777546590307-2",
-      "lane": "ops",
       "priority": 4,
       "ttlMinutes": 60,
-      "npcLine": "Crypto nodes flicker—fear spreads, risk premiums spike unseen.",
-      "questPulse": "Intercept lost tokens, reroute cyber-assets under cover of dusk.",
-      "worldFeed": "Trading floor glitches hint at organized digital theft rings.",
-      "clueEvent": "Encrypted chatter suggests upcoming blackout on major exchanges.",
+      "npcLine": "Crypto tides fall; trust erodes beneath neon haze.",
+      "questPulse": "Market shadows deepen, risking all credit and data.",
+      "worldFeed": "Global coinage bleeds value; keep your creds guarded.",
+      "clueEvent": "Sudden liquidity drains across alt chains detected.",
       "tags": [
         "crypto",
-        "fear",
-        "heist"
+        "economy",
+        "fear"
       ],
-      "expiresAt": "2026-04-30T11:56:30.307Z"
+      "expiresAt": "2026-04-30T13:17:05.476Z"
     },
     {
-      "id": "signal-1777546590307-3",
-      "lane": "clue",
-      "priority": 2,
-      "ttlMinutes": 120,
-      "npcLine": "Trends shifting—names like ULTIMA and BIO buzz in the noise.",
-      "questPulse": "Decode shifting signals to unlock untapped market subnets.",
-      "worldFeed": "Data spikes on unknown cryptos; insider nodes humming softly.",
-      "clueEvent": "Hidden pattern emerges linking biotech tokens to shadow decks.",
-      "tags": [
-        "signals",
-        "biotech",
-        "crypto"
-      ],
-      "expiresAt": "2026-04-30T12:56:30.307Z"
-    },
-    {
-      "id": "signal-1777546590307-4",
-      "lane": "quest",
-      "priority": 5,
+      "id": "signal-1777551425476-2",
+      "lane": "ops",
+      "priority": 3,
       "ttlMinutes": 45,
-      "npcLine": "Fear-laced market pulse—extract salvage before system collapses.",
-      "questPulse": "Dive into node blackouts; retrieve lost assets from collapsing chains.",
-      "worldFeed": "Fear index at max—digital markets jitter like live wires.",
-      "clueEvent": "Ghost market orders point toward an imminent wipe event.",
+      "npcLine": "Mega and Ultima chains flicker erratically. Stay alert.",
+      "questPulse": "Data sniffers pick spikes in MEGA token chatter.",
+      "worldFeed": "Ultima nodes report anomalous transaction surges.",
+      "clueEvent": "Unusual transaction bursts traced to ULTIMA sector.",
       "tags": [
-        "fear",
-        "urgent",
-        "salvage"
+        "cryptocurrency",
+        "surveillance",
+        "alert"
       ],
-      "expiresAt": "2026-04-30T11:41:30.307Z"
+      "expiresAt": "2026-04-30T13:02:05.476Z"
     },
     {
-      "id": "signal-1777546590307-5",
+      "id": "signal-1777551425477-3",
+      "lane": "clue",
+      "priority": 5,
+      "ttlMinutes": 30,
+      "npcLine": "Fear index rising; watch for panic signs in crowd.",
+      "questPulse": "Sentiment drops hard. A market panic may loom.",
+      "worldFeed": "Public mood sours as crypto values slide sharply.",
+      "clueEvent": "Spike in fear chatter detected on underground forums.",
+      "tags": [
+        "sentiment",
+        "panic",
+        "fear"
+      ],
+      "expiresAt": "2026-04-30T12:47:05.477Z"
+    },
+    {
+      "id": "signal-1777551425477-4",
+      "lane": "quest",
+      "priority": 2,
+      "ttlMinutes": 50,
+      "npcLine": "AI tokens gain whispers, promising hidden algorithm hacks.",
+      "questPulse": "Rumors swirl around AI coin’s secret data breach.",
+      "worldFeed": "Speculation grows on AI-based market moves soon.",
+      "clueEvent": "Encrypted leaks hint at AI coin impending drop.",
+      "tags": [
+        "ai",
+        "hacking",
+        "rumors"
+      ],
+      "expiresAt": "2026-04-30T13:07:05.477Z"
+    },
+    {
+      "id": "signal-1777551425477-5",
       "lane": "npc",
       "priority": 3,
-      "ttlMinutes": 75,
-      "npcLine": "MEGA’s silent—something’s off. Trust the shadows, not the buzz.",
-      "questPulse": "Follow cold trails, MEGA’s silence is the loudest warning yet.",
-      "worldFeed": "Token chatter drops dead; netizens whisper of sabotage.",
-      "clueEvent": "Sudden token silence masks a deeper systemic breach.",
+      "ttlMinutes": 40,
+      "npcLine": "USDM currency remains stable but eyes flicker with doubt.",
+      "questPulse": "Steady valuations mask shifting alliances and backdoor deals.",
+      "worldFeed": "Silent handlers shuffle USDM chips behind the scene.",
+      "clueEvent": "Whisper networks hint at hidden moves in USDM vault.",
       "tags": [
-        "mega",
-        "silence",
-        "sabotage"
+        "stablecoin",
+        "deception",
+        "undercurrents"
       ],
-      "expiresAt": "2026-04-30T12:11:30.307Z"
+      "expiresAt": "2026-04-30T12:57:05.477Z"
     }
   ]
 }
