@@ -7,6 +7,15 @@ import { createFrameDebug } from '/js/arcade/core/frame-debug.js';
 import { recordRunStats, checkMilestones } from './meta-system.js';
 import { createScalingDirector, tickDirector, shouldFirePressureEvent, updateIntensity, checkForcedChaos } from '/js/arcade/systems/event-system.js';
 import { getActiveModifiers, hasEffect, getStatEffect } from '/js/arcade/systems/cross-game-modifier-system.js';
+import {
+  getPlayerFaction, getFactionEffects,
+  applyFactionStartingShield, applyFactionEventRate, applyFactionComboBonus,
+} from '/js/arcade/systems/faction-effect-system.js';
+import { recordContribution } from '/js/arcade/systems/faction-war-system.js';
+import { recordMissionProgress } from '/js/arcade/systems/faction-missions.js';
+import { recordLogin, recordWarContribution } from '/js/arcade/systems/faction-streaks.js';
+import { checkRankUp } from '/js/arcade/systems/faction-ranks.js';
+import { emitFactionGain } from '/js/arcade/systems/live-activity.js';
 
 export const SNAKE_ADAPTER = createGameAdapter({
   id: SNAKE_CONFIG.id,
@@ -195,6 +204,24 @@ export function bootstrapSnake(root) {
     run._pressureRateMult = getStatEffect(crossMods, 'pressureRate', 1);
     // Store golden-spawn boost for food mutation
     run._goldenSpawnBoost = getStatEffect(crossMods, 'goldenSpawnBoost', 0);
+
+    // Apply faction effects (additive on top of cross-game modifiers)
+    try {
+      var _faction = getPlayerFaction();
+      var _factionFx = getFactionEffects(_faction);
+      // Faction score: baked into run.scoreMult (combo bias for GraffPUNKS via comboWindowBonus)
+      run.scoreMult *= _factionFx.scoreMultiplier;
+      // Faction shield bonus: +1 shield charge for HODL Warriors
+      run.shieldCharges = applyFactionStartingShield(run.shieldCharges, _faction, { supportsShield: true });
+      // Faction chaos modifier blended with cross-game pressure rate
+      run._pressureRateMult *= applyFactionEventRate(1, _faction);
+      // Faction combo-window bias for GraffPUNKS
+      run.comboWindowBonus += applyFactionComboBonus(0, _faction) * 0.4;
+      // Store faction id on run for onGameOver access
+      run._factionId = _faction;
+      // Show faction bonus text if meaningful
+      if (_factionFx.bonusText) spawnFloatingTextLocal(_factionFx.bonusText, '#f7c948');
+    } catch (_) {}
   }
 
   function maybeMutateFood(f) {
@@ -822,8 +849,22 @@ export function bootstrapSnake(root) {
     setBestMaybe();
     updateHud();
     submitScore(ArcadeSync.getPlayer(), score, GAME_ID);
+    // —— Faction war contribution (additive, does not alter submitScore) ————
+    try {
+      var _factionId = (run && run._factionId) || getPlayerFaction();
+      if (score > 0 && _factionId && _factionId !== 'unaligned') {
+        var contrib = Math.max(1, Math.floor(score / 100));
+        recordContribution(_factionId, 'score_submission', contrib);
+        recordWarContribution();
+        checkRankUp(_factionId);
+        emitFactionGain(_factionId, contrib, 'score_submission');
+      }
+      recordMissionProgress(_factionId, 'survive', Math.floor(timeAlive || 0));
+      recordMissionProgress(_factionId, 'runs', 1);
+      recordLogin();
+    } catch (_) {}
     if (window.showGameOverModal) window.showGameOverModal(score);
-    else alert('Game Over â€” Score: ' + score);
+    else alert('Game Over — Score: ' + score);
   }
 
   function stepGame() {

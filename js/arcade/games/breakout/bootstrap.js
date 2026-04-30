@@ -10,6 +10,15 @@ import { createGameAdapter, registerGameAdapter, bootstrapFromAdapter } from '/j
 import { playSound, stopAllSounds, isMuted } from '/js/arcade/core/audio.js';
 import { createFrameDebug } from '/js/arcade/core/frame-debug.js';
 import { getActiveModifiers, getStatEffect } from '/js/arcade/systems/cross-game-modifier-system.js';
+import {
+  getPlayerFaction, getFactionEffects,
+  applyFactionScore, applyFactionComboBonus,
+} from '/js/arcade/systems/faction-effect-system.js';
+import { recordContribution } from '/js/arcade/systems/faction-war-system.js';
+import { recordMissionProgress } from '/js/arcade/systems/faction-missions.js';
+import { recordLogin, recordWarContribution } from '/js/arcade/systems/faction-streaks.js';
+import { checkRankUp } from '/js/arcade/systems/faction-ranks.js';
+import { emitFactionGain } from '/js/arcade/systems/live-activity.js';
 
 export const BREAKOUT_ADAPTER = createGameAdapter({
   id: BREAKOUT_CONFIG.id,
@@ -92,6 +101,9 @@ function createLegacybootstrapBreakout(root) {
 
   // Cross-game modifier: fetched fresh each run in resetGame()
   let brModScoreMult = 1;
+  // Faction state: refreshed each run alongside cross-game modifiers
+  let _brFactionId = 'unaligned';
+  let _brFactionFx = null;
 
   let balls = [];
   let launched = false;
@@ -291,7 +303,8 @@ function createLegacybootstrapBreakout(root) {
 
   function addScore(points, x, y, color = '#f7c948') {
     if (!Number.isFinite(points) || points <= 0) return;
-    score += Math.floor(points * brModScoreMult);
+    const factionPts = applyFactionScore(points, _brFactionId, { timeAlive: elapsed });
+    score += Math.floor(factionPts * brModScoreMult);
     setBestMaybe();
     updateHud();
     effects.scorePulse = 0.22;
@@ -314,6 +327,14 @@ function createLegacybootstrapBreakout(root) {
       getActiveModifiers(GAME_ID, BREAKOUT_CONFIG.crossGameTags || []),
       'scoreMult', 1
     );
+    // Re-fetch faction state for the new run
+    try {
+      _brFactionId = getPlayerFaction();
+      _brFactionFx = getFactionEffects(_brFactionId);
+    } catch (_) {
+      _brFactionId = 'unaligned';
+      _brFactionFx = null;
+    }
 
     score = 0;
     level = 1;
@@ -523,7 +544,7 @@ function createLegacybootstrapBreakout(root) {
           effects.comboPulse = 0.25;
           triggerHudFx(comboStatEl, 'pulse', 200);
 
-          const points = b.value * combo;
+          const points = b.value * applyFactionComboBonus(combo, _brFactionId);
           addScore(points, b.x + b.w / 2, b.y + b.h / 2, '#f7c948');
 
           if (combo >= 3 && combo % 4 === 0) {
@@ -1015,6 +1036,19 @@ function createLegacybootstrapBreakout(root) {
           await submitScore(ArcadeSync.getPlayer(), Math.floor(score), GAME_ID);
         } catch (_) {}
       }
+      // ── Faction war contribution (additive, does not alter submitScore) ────
+      try {
+        if (score > 0 && _brFactionId && _brFactionId !== 'unaligned') {
+          const contrib = Math.max(1, Math.floor(score / 100));
+          recordContribution(_brFactionId, 'score_submission', contrib);
+          recordWarContribution();
+          checkRankUp(_brFactionId);
+          emitFactionGain(_brFactionId, contrib, 'score_submission');
+        }
+        recordMissionProgress(_brFactionId, 'survive', Math.floor(elapsed));
+        recordMissionProgress(_brFactionId, 'runs', 1);
+        recordLogin();
+      } catch (_) {}
     }
 
     draw();

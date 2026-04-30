@@ -117,6 +117,7 @@
 // Auto-mount via manifest (pilot: data-game-id="breakout-bullrun" on .game-card).
 // Falls back to the manual bootstrap if auto-mount fails or rejects.
 import { autoMountGame } from '/js/arcade/core/auto-mount-game.js';
+import { mountFactionHud } from '/js/arcade/ui/faction-hud.js';
 
 function mountManualFallback() {
   import('/js/arcade/games/breakout-bullrun/bootstrap.js').then(function (mod) {
@@ -127,6 +128,7 @@ function mountManualFallback() {
           bootstrap: mod.bootstrapBreakoutBullrun
         });
         ui.mountModifierPanel();
+        mountFactionHud();
       });
     });
   });
@@ -135,6 +137,7 @@ function mountManualFallback() {
 autoMountGame()
   .then(function (game) {
     if (!game) mountManualFallback();
+    else mountFactionHud();
   })
   .catch(function () {
     mountManualFallback();
