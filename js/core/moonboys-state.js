@@ -11,7 +11,7 @@
  *   hydrateState()      — async: restore from localStorage then fetch API if linked
  *
  * Internal state shape:
- *   { xp: 0, faction: 'unaligned', lastEvent: null, updatedAt: 0 }
+ *   { xp: 0, faction: 'unaligned', lastEvent: null, updatedAt: 0, sync: null }
  *
  * Load order: must appear AFTER global-event-bus.js so that
  * MOONBOYS_EVENT_BUS is already available when this file executes.
@@ -26,7 +26,7 @@
 
   var STORAGE_KEY = 'moonboys_state_v1';
 
-  var DEFAULT_STATE = { xp: 0, faction: 'unaligned', lastEvent: null, updatedAt: 0 };
+  var DEFAULT_STATE = { xp: 0, faction: 'unaligned', lastEvent: null, updatedAt: 0, sync: null };
 
   // ── Internal state ──────────────────────────────────────────────────────────
 
@@ -60,6 +60,7 @@
         faction:    typeof parsed.faction === 'string' ? parsed.faction  : DEFAULT_STATE.faction,
         lastEvent:  parsed.lastEvent !== undefined    ? parsed.lastEvent : DEFAULT_STATE.lastEvent,
         updatedAt:  typeof parsed.updatedAt === 'number' ? parsed.updatedAt : DEFAULT_STATE.updatedAt,
+        sync: null, // sync state is session-only; never restored from localStorage
       };
       return true;
     } catch (_) {
@@ -203,6 +204,12 @@
       if (d.faction && d.faction !== 'unaligned') {
         setState({ faction: d.faction, lastEvent: 'faction' });
       }
+    });
+
+    // Bridge sync events into state so every MOONBOYS_STATE subscriber receives
+    // live sync updates — UI components must read state.sync, not the raw bus.
+    bus.on('sync:state', function (d) {
+      setState({ sync: d });
     });
 
     bus.on('activity:event', function (d) {

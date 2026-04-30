@@ -215,7 +215,9 @@
 
   /**
    * Patches all rendered faction rows across every mounted LAS panel.
-   * Called from the MOONBOYS_STATE subscriber whenever state.faction changes.
+   * Called from the MOONBOYS_STATE subscriber whenever state changes.
+   * @param {string|null|undefined} faction - faction key (e.g. 'bulls', 'bears')
+   *   or falsy to fall back to MOONBOYS_FACTION.getCachedStatus().
    */
   function updateFactionUI(faction) {
     var factionText = factionSummary(faction ? { faction: faction } : getFactionStatus());
@@ -226,14 +228,28 @@
 
   /**
    * Patches all rendered sync rows across every mounted LAS panel.
-   * Call sites:
-   *   1. MOONBOYS_STATE.subscribe() — keeps the row current when XP/faction state changes.
-   *   2. bus.on('sync:state') — patches the row immediately when a sync event fires,
-   *      since MOONBOYS_STATE does not carry sync/identity state.
-   * Reads sync state synchronously from MOONBOYS_IDENTITY (always available).
+   *
+   * @param {Object|null|undefined} syncPayload - state.sync from MOONBOYS_STATE.
+   *   When non-null, its `.state` string drives the display text so the row
+   *   reflects the most-recent bus event without any additional identity reads.
+   *   When absent (initial render before the first sync:state event fires) it
+   *   falls back to syncSummary() which reads from MOONBOYS_IDENTITY.
+   *
+   * Sole call site: MOONBOYS_STATE.subscribe() — state.sync is populated by the
+   * bus.on('sync:state') bridge in moonboys-state.js.
    */
-  function updateSyncUI() {
-    var sync = syncSummary();
+  function updateSyncUI(syncPayload) {
+    var sync;
+    if (syncPayload && typeof syncPayload.state === 'string') {
+      var s = syncPayload.state;
+      var good = s === 'good' || s === 'xp_awarded' || s === 'accepted_no_xp';
+      var text = good ? 'Sync ready'
+        : s === 'bad' ? 'Sync issue detected'
+        : 'Sync in progress';
+      sync = { text: text, good: good };
+    } else {
+      sync = syncSummary();
+    }
     document.querySelectorAll('[data-las-panel] [data-las-sync]').forEach(function (el) {
       el.textContent = sync.text;
       el.className = 'las-val ' + (sync.good ? 'las-val--good' : 'las-val--warn');
@@ -383,9 +399,9 @@
         ? 'Sync complete'
         : d.state === 'bad' ? 'Sync issue detected' : 'Syncing\u2026';
       addToLog(buildLogEntry('sync', text));
-      // Also patch the sync row immediately — MOONBOYS_STATE does not track
-      // sync state, so the bus event is the only trigger available here.
-      updateSyncUI();
+      // UI row update is handled exclusively by the MOONBOYS_STATE subscriber
+      // (moonboys-state.js bridges sync:state into state.sync so every subscriber
+      //  receives the update automatically — no direct UI call needed here).
     });
 
     // Score updates arrive via the bus bridge as activity:event with _src set.
@@ -403,13 +419,13 @@
     injectStyles();
     document.querySelectorAll('[data-las-panel]').forEach(function (el) { mount(el); });
 
-    // State is truth, bus is events only.
-    // After initial mount, all UI state rows are updated exclusively through
-    // MOONBOYS_STATE.subscribe() — no refresh(), no remount.
+    // MOONBOYS_STATE is the single source of truth for all UI rows.
+    // state.sync is populated by the bus.on('sync:state') bridge in
+    // moonboys-state.js, so both faction and sync update through one path.
     if (window.MOONBOYS_STATE && typeof window.MOONBOYS_STATE.subscribe === 'function') {
       window.MOONBOYS_STATE.subscribe(function (state) {
         updateFactionUI(state.faction);
-        updateSyncUI();
+        updateSyncUI(state.sync);
       });
     }
 
