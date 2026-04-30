@@ -300,5 +300,6 @@ npx wrangler d1 execute wikicoms --remote \
    FROM blocktopia_progression;
    ```
 
-3. Apply the new migration instead, and mark 012 as applied in `d1_migrations`
-   only after confirming all data is correct.
+3. **Do not mark migration 012 as applied in `d1_migrations` when using this alternative.**
+   Migration 012 was not run; it should remain unapplied (or absent) in the tracking table.
+   Mark only the new repair migration (016 or equivalent) as applied once its data is confirmed correct.
