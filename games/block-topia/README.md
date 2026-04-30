@@ -6,7 +6,7 @@ Block Topia is currently a clean 2-player isometric map base.
 
 - 2-player isometric map — local and remote player marker support.
 - Minimal connection HUD (connect / disconnect status).
-- Telegram-linked account required. XXX XP required to enter.
+- Telegram-linked account required. 50 Arcade XP required to enter.
 - No Pressure Protocol runtime.
 - No solo mode.
 - No old Block Topia variants.
