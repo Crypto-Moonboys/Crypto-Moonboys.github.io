@@ -11,7 +11,7 @@
  *   hydrateState()      — async: restore from localStorage then fetch API if linked
  *
  * Internal state shape:
- *   { xp: 0, faction: 'unaligned', lastEvent: null, updatedAt: 0 }
+ *   { xp: 0, faction: 'unaligned', lastEvent: null, updatedAt: 0, sync: null }
  *
  * Load order: must appear AFTER global-event-bus.js so that
  * MOONBOYS_EVENT_BUS is already available when this file executes.
@@ -26,7 +26,7 @@
 
   var STORAGE_KEY = 'moonboys_state_v1';
 
-  var DEFAULT_STATE = { xp: 0, faction: 'unaligned', lastEvent: null, updatedAt: 0 };
+  var DEFAULT_STATE = { xp: 0, faction: 'unaligned', lastEvent: null, updatedAt: 0, sync: null };
 
   // ── Internal state ──────────────────────────────────────────────────────────
 
@@ -60,6 +60,7 @@
         faction:    typeof parsed.faction === 'string' ? parsed.faction  : DEFAULT_STATE.faction,
         lastEvent:  parsed.lastEvent !== undefined    ? parsed.lastEvent : DEFAULT_STATE.lastEvent,
         updatedAt:  typeof parsed.updatedAt === 'number' ? parsed.updatedAt : DEFAULT_STATE.updatedAt,
+        sync: null, // sync state is session-only; never restored from localStorage
       };
       return true;
     } catch (_) {
@@ -205,6 +206,12 @@
       }
     });
 
+    // Bridge sync events into state so every MOONBOYS_STATE subscriber receives
+    // live sync updates — UI components must read state.sync, not the raw bus.
+    bus.on('sync:state', function (d) {
+      setState({ sync: d });
+    });
+
     bus.on('activity:event', function (d) {
       setState({ lastEvent: d });
     });
@@ -215,14 +222,32 @@
   _restore();
 
   // ── Publish ─────────────────────────────────────────────────────────────────
-  // Frozen: only the four named methods are accessible; direct property mutation
+  // Frozen: only the named methods are accessible; direct property mutation
   // from external code is blocked at runtime.
-  window.MOONBOYS_STATE = Object.freeze({
+  var _api = Object.freeze({
     getState: getState,
     setState: setState,
     subscribe: subscribe,
     hydrateState: hydrateState,
+    /** Returns the current number of active state subscribers. Used by the
+     *  dev debug panel and diagnostics; never call setState() from here. */
+    getSubscriberCount: function () { return _subscribers.length; },
   });
+
+  // Proxy wraps the frozen API to emit a console warning whenever external
+  // code attempts a direct property write (e.g. window.MOONBOYS_STATE.xp = 5).
+  // All property reads pass through transparently.
+  window.MOONBOYS_STATE = (typeof Proxy !== 'undefined')
+    ? new Proxy(_api, {
+        set: function (target, prop) {
+          console.warn(
+            '[moonboys-state] Rejected direct write to window.MOONBOYS_STATE.' +
+            String(prop) + '. Use setState() instead.'
+          );
+          return false; // signals the write was rejected
+        },
+      })
+    : _api;
 
   // Run hydration once the page is ready (non-blocking; UI renders with cached state first).
   // When DOM is already loaded, defer to the next task (setTimeout 0) so that
