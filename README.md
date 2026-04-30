@@ -2,6 +2,16 @@
 
 Crypto Moonboys is the live website for the project, including the arcade and shared frontend support assets.
 
+## Project Vision
+
+Crypto Moonboys is a living Web3 wiki.
+
+The wiki is the foundation. The system makes it alive.
+
+**Live loop:** Arcade → Score → Arcade XP → Telegram Sync → Battle Chamber → Block Topia
+
+**Vision loop:** Read → Play → Earn → Stay → Build → Own → Control
+
 ## Repository Scope
 
 This repository is the active website runtime and should stay clean and focused.
