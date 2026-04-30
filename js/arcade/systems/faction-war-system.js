@@ -49,13 +49,14 @@ function _safeParse(raw, fallback) {
 
 // ── Date helpers ─────────────────────────────────────────────────────────────
 
-function _pad2(n) {
-  return String(n).padStart(2, '0');
+function _dateKey(d) {
+  return d.getUTCFullYear()
+    + '-' + String(d.getUTCMonth() + 1).padStart(2, '0')
+    + '-' + String(d.getUTCDate()).padStart(2, '0');
 }
 
 function _todayKey() {
-  var d = new Date();
-  return d.getUTCFullYear() + '-' + _pad2(d.getUTCMonth() + 1) + '-' + _pad2(d.getUTCDate());
+  return _dateKey(new Date());
 }
 
 /**
@@ -70,7 +71,7 @@ function _thisWeekKey() {
   var thu = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate() + (4 - dow)));
   var yearStart = new Date(Date.UTC(thu.getUTCFullYear(), 0, 1));
   var weekNum = Math.ceil(((thu - yearStart) / 86400000 + 1) / 7);
-  return thu.getUTCFullYear() + '-W' + _pad2(weekNum);
+  return thu.getUTCFullYear() + '-W' + String(weekNum).padStart(2, '0');
 }
 
 // ── Internal state ───────────────────────────────────────────────────────────
@@ -309,8 +310,7 @@ function _calcMomentum(dailyMap) {
   var consecutive = 0;
   for (var i = 0; i < 7; i++) {
     var d = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate() - i));
-    var k = d.getUTCFullYear() + '-' + _pad2(d.getUTCMonth() + 1) + '-' + _pad2(d.getUTCDate());
-    if (dailyMap[k] > 0) { consecutive++; } else { break; }
+    if (dailyMap[_dateKey(d)] > 0) { consecutive++; } else { break; }
   }
   if (consecutive >= 7) return 3;
   if (consecutive >= 4) return 2;

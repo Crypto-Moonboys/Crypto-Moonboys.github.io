@@ -98,10 +98,14 @@ function _safeParse(raw, fallback) {
   catch (_) { return fallback; }
 }
 
+function _dateKey(d) {
+  return d.getUTCFullYear()
+    + '-' + String(d.getUTCMonth() + 1).padStart(2, '0')
+    + '-' + String(d.getUTCDate()).padStart(2, '0');
+}
+
 function _todayKey() {
-  var d = new Date();
-  var pad = function (n) { return String(n).padStart(2, '0'); };
-  return d.getUTCFullYear() + '-' + pad(d.getUTCMonth() + 1) + '-' + pad(d.getUTCDate());
+  return _dateKey(new Date());
 }
 
 // ── State management ─────────────────────────────────────────────────────────
