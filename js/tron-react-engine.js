@@ -93,6 +93,9 @@
   }
 
   // AI wake-up hook: no network call made from the browser.
+  // NOT LIVE. No worker route currently exists for /api/ai-wakeup-proxy.
+  // Do not expose this as a functional UI action until the backend route is implemented
+  // with proper authentication, rate-limiting, and abuse protection.
   // TODO: When a server-side /api/ai-wakeup-proxy route is fully implemented with proper
   // authentication, rate-limiting, and abuse protection, restore the call here by
   // replacing pickWakeLine with a fetch to that route and falling back to WAKE_FALLBACK on error.
