@@ -201,4 +201,105 @@ the state — do not modify or delete the broken one without first auditing the 
 | No `001_initial.sql` | The initial schema was applied via `schema.sql`, not Wrangler migrations.  Wrangler has no record of the initial tables. |
 | `002` blocked on `telegram_profiles` | Fixed in this PR by adding `CREATE TABLE IF NOT EXISTS telegram_profiles`. |
 | Duplicate-column failures in 005, 006, 009, 011, 013 | Production columns already exist from a manual 011 repair.  Use step 5 above — verify every column and index from each migration exists in production before marking it applied. |
-| `012` drops `blocktopia_progression` | This is a destructive rebuild migration.  Only run when directed.  Faction XP is preserved only if rows were inserted with faction defaults. |
+| `012` drops `blocktopia_progression` | **DESTRUCTIVE REBUILD.** Do not run without preflight. See §8. INSERT SELECT does NOT preserve faction, faction_xp, or faction_last_switch — all existing faction data will be reset to defaults. |
+
+---
+
+## 8. Migration 012 — required preflight and safety gate
+
+> ⛔ **Migration 012 is destructive. It MUST NOT be run without completing the preflight
+> below. Skipping this step will silently erase all live faction progress.**
+
+### What migration 012 does
+
+`012_wikicoms_schema_fix.sql` drops and recreates the `blocktopia_progression` table using
+a temporary rebuild table and `ALTER TABLE … RENAME TO`.
+
+The `INSERT SELECT` copies only these columns from the old table:
+`telegram_id`, `xp`, `gems`, `tier`, `win_streak`, `upgrade_efficiency`,
+`upgrade_signal`, `upgrade_defense`, `upgrade_gem`, `upgrade_npc`,
+`rpg_mode_active`, `network_heat`, `network_heat_updated_at`, `last_active`,
+`updated_at`.
+
+**The following columns are NOT copied and will be reset to defaults:**
+
+| Column | Default after 012 |
+|---|---|
+| `faction` | `'unaligned'` |
+| `faction_xp` | `0` |
+| `faction_last_switch` | `NULL` |
+
+### Required preflight — 5 steps
+
+**Step 1 — check whether the faction columns exist:**
+
+```sh
+npx wrangler d1 execute wikicoms --remote \
+  --config workers/moonboys-api/wrangler.toml \
+  --command "PRAGMA table_info('blocktopia_progression');"
+```
+
+**Step 2 — check the returned `name` column** for all three of:
+- `faction`
+- `faction_xp`
+- `faction_last_switch`
+
+**Step 3 — only if all three columns exist, run the at-risk row count:**
+
+```sh
+npx wrangler d1 execute wikicoms --remote \
+  --config workers/moonboys-api/wrangler.toml \
+  --command "SELECT COUNT(*) AS at_risk_rows FROM blocktopia_progression WHERE faction != 'unaligned' OR faction_xp > 0 OR faction_last_switch IS NOT NULL;"
+```
+
+**Step 4 — if `at_risk_rows > 0`:**
+- **STOP. Do not run migration 012.**
+- Live `faction`/`faction_xp`/`faction_last_switch` data exists.
+- Running migration 012 will permanently erase that data.
+- Create a new repair migration that preserves those columns (see "If at_risk_rows > 0" section below).
+
+**Step 5 — if any of the three columns are missing from PRAGMA output:**
+- The at-risk row count is not applicable — that faction data cannot exist in columns that do not yet exist.
+- Migration 012 is still a destructive rebuild. Proceed only if you accept that the table will be dropped and recreated.
+- Continue to the decision gate below.
+
+### If at_risk_rows > 0 — what to do instead
+
+1. **Do not apply migration 012.**
+2. Create a **new numbered migration** (e.g. `016_blocktopia_progression_faction_safe_rebuild.sql`)
+   that performs the same rebuild but includes `faction`, `faction_xp`, and
+   `faction_last_switch` in the INSERT SELECT:
+
+   ```sql
+   INSERT INTO blocktopia_progression__016_rebuild (
+     telegram_id, xp, gems, tier, win_streak,
+     upgrade_efficiency, upgrade_signal, upgrade_defense,
+     upgrade_gem, upgrade_npc, rpg_mode_active,
+     faction, faction_xp, faction_last_switch,
+     network_heat, network_heat_updated_at, last_active, updated_at
+   )
+   SELECT
+     telegram_id,
+     COALESCE(xp, 0),
+     COALESCE(gems, 0),
+     COALESCE(tier, 1),
+     COALESCE(win_streak, 0),
+     COALESCE(upgrade_efficiency, 0),
+     COALESCE(upgrade_signal, 0),
+     COALESCE(upgrade_defense, 0),
+     COALESCE(upgrade_gem, 0),
+     COALESCE(upgrade_npc, 0),
+     COALESCE(rpg_mode_active, 0),
+     COALESCE(faction, 'unaligned'),
+     COALESCE(faction_xp, 0),
+     faction_last_switch,
+     COALESCE(network_heat, 0),
+     COALESCE(network_heat_updated_at, CURRENT_TIMESTAMP),
+     COALESCE(last_active, CURRENT_TIMESTAMP),
+     COALESCE(updated_at, CURRENT_TIMESTAMP)
+   FROM blocktopia_progression;
+   ```
+
+3. **Do not mark migration 012 as applied in `d1_migrations` when using this alternative.**
+   Migration 012 was not run; it should remain unapplied (or absent) in the tracking table.
+   Mark only the new repair migration (016 or equivalent) as applied once its data is confirmed correct.

@@ -207,19 +207,54 @@ An expanded comment was added documenting this behaviour.
 
 ### `012_wikicoms_schema_fix.sql`
 
+> ⛔ **DESTRUCTIVE MIGRATION — MUST NOT BE RUN WITHOUT PREFLIGHT**
+> See `docs/D1_MIGRATION_RUNBOOK.md` §8 for the required preflight query.
+
 | Property | Value |
 |---|---|
 | Tables dropped & rebuilt | `blocktopia_progression` (DROP IF EXISTS + full rebuild with rename) |
-| Uses `DROP TABLE IF EXISTS` | ✅ for temp tables; ✅ `DROP TABLE IF EXISTS blocktopia_progression` (fixed in this PR) |
-| Safe on existing production D1 | ⚠️ still destructive — drops and recreates `blocktopia_progression`; `IF EXISTS` prevents a crash if the table is absent, but the INSERT SELECT that precedes it will still fail if the table is missing |
+| Uses `DROP TABLE IF EXISTS` | ✅ for temp tables; ✅ `DROP TABLE IF EXISTS blocktopia_progression` |
+| Safe on existing production D1 | ❌ **DESTRUCTIVE** — drops and recreates `blocktopia_progression` |
 | Unsafe / order-dependent | ⚠️ requires `blocktopia_progression` to exist before the data-copy INSERT |
 
-**Risk note:** The `DROP TABLE IF EXISTS blocktopia_progression` and INSERT SELECT in this migration
-preserves core progression data but drops `faction`/`faction_xp`/`faction_last_switch` if
-they were added by 005 or 011 and not yet included in the rebuild's INSERT SELECT column
-list.  The rebuild _does_ include `faction`/`faction_xp`/`faction_last_switch` in the target
-schema, so those columns will exist in the final table with default values — but any live
-faction data from rows inserted before this migration may need backfill.
+**⚠️ Faction data is NOT preserved by the INSERT SELECT:**
+
+The `INSERT SELECT` in this migration copies only these columns:
+`telegram_id`, `xp`, `gems`, `tier`, `win_streak`, `upgrade_efficiency`,
+`upgrade_signal`, `upgrade_defense`, `upgrade_gem`, `upgrade_npc`,
+`rpg_mode_active`, `network_heat`, `network_heat_updated_at`, `last_active`,
+`updated_at`.
+
+The columns `faction`, `faction_xp`, and `faction_last_switch` are **not
+included in the SELECT** and will be reset to their defaults (`'unaligned'`, `0`,
+`NULL`) for every existing row.
+
+**Required preflight — run before applying 012:**
+
+Step 1 — check whether faction columns exist:
+
+```sql
+PRAGMA table_info('blocktopia_progression');
+```
+
+Inspect the `name` column for `faction`, `faction_xp`, and `faction_last_switch`.
+
+Step 2 — only if all three columns exist, run the at-risk row count:
+
+```sql
+SELECT COUNT(*) AS at_risk_rows
+FROM blocktopia_progression
+WHERE faction != 'unaligned'
+   OR faction_xp > 0
+   OR faction_last_switch IS NOT NULL;
+```
+
+If `at_risk_rows > 0`, **do not run migration 012**. Create a new repair
+migration that preserves those column values before proceeding.
+
+If any of the three columns are missing, the at-risk query is not applicable —
+that faction data cannot exist in columns that do not yet exist. Migration 012
+is still destructive; proceed only when directed in the runbook.
 
 This migration was added as part of a known repair cycle and should only be applied when
 directed in the runbook.
@@ -273,7 +308,7 @@ A comment was added documenting expected failure modes.
 | `008` | Bare `ALTER TABLE` — no guard | Fails if bootstrapped from full schema.sql | ✅ Comment added |
 | `009` | Bare `ALTER TABLE` — no guard | `network_heat` already in production | ✅ Comment added |
 | `011` | Bare `ALTER TABLE` — duplicates 005+006 | Fails if 005+006 applied first | ✅ Comment added |
-| `012` | `DROP TABLE IF EXISTS blocktopia_progression` | Guarded with `IF EXISTS`; still destructive for data if table exists — INSERT SELECT backfill risk for faction data | ✅ Fixed to use `IF EXISTS` |
+| `012` | `DROP TABLE IF EXISTS blocktopia_progression` + INSERT SELECT silently drops faction/faction_xp/faction_last_switch values | **DATA LOSS** if faction rows exist — run preflight query first; see runbook §8 | ✅ Warning comments added; preflight query documented |
 | `013` | Bare `ALTER TABLE` — no guard | Fails if schema.sql was used to bootstrap | ✅ Comment added |
 
 ---
