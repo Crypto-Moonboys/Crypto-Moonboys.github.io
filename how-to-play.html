@@ -137,18 +137,17 @@
           <li><strong>Pick any arcade game</strong> from the <a href="/games/">Arcade</a>.</li>
           <li><strong>Play a run</strong> — your session builds a score in real time.</li>
           <li><strong>Submit your score at game over</strong> — accepted scores go on record.</li>
-          <li><strong>The score gives you Arcade XP</strong> — XP is the universal progression signal across the arcade.</li>
+          <li><strong>The score gives you Arcade XP</strong> — XP is the progression signal across the arcade (requires Telegram link to persist server-side).</li>
           <li><strong>Arcade XP updates your account</strong> — synced when Telegram is linked.</li>
         </ol></div>
         <p>Your Arcade XP counts toward:</p>
         <ul>
-          <li><strong>Daily progress</strong> — Daily Missions track activity each day</li>
-          <li><strong>Seasonal competitions</strong> — XP builds your Season standing</li>
-          <li><strong>Leaderboard position</strong> — top scores and XP are ranked on the <a href="/games/leaderboard.html">Leaderboard</a></li>
-          <li><strong>Faction / Clan contribution</strong> — your runs feed into your Faction's war effort</li>
-          <li><strong>Unlock and progression systems</strong> — XP gates access to deeper features like Block Topia</li>
+          <li><strong>Leaderboard position</strong> — score rank on the <a href="/games/leaderboard.html">Leaderboard</a> (score only, XP does not affect rank)</li>
+          <li><strong>Block Topia entry gate</strong> — 50 Arcade XP unlocks Block Topia (requires Telegram sync)</li>
+          <li><strong>Faction XP</strong> — joining a faction earns separate Faction XP that tracks your alignment level</li>
         </ul>
-        <div class="manual-wow"><strong>One loop. Every game.</strong> No matter which arcade game you play, the same XP, Season, Leaderboard, and Faction systems receive your contribution.</div>
+        <p><em>Note: Daily Missions, Seasons, and Faction war standings are locally scaffolded. They track progress client-side but are not yet fully server-backed. Do not rely on them for persistent cross-device progress.</em></p>
+        <div class="manual-wow"><strong>Core loop:</strong> Arcade → score → accepted run → Telegram sync → Arcade XP → 50 XP unlocks Block Topia.</div>
       </section>
 
       <section class="manual-section" id="game-types">
@@ -185,8 +184,8 @@
       </section>
 
       <section class="manual-section" id="cross-game-modifiers">
-        <h2>Cross-Game Modifiers</h2>
-        <p>Cross-Game Modifiers are temporary arcade-wide bonuses. When active, they change the conditions across compatible games.</p>
+        <h2>Cross-Game Modifiers <span style="font-size:.78rem;font-weight:700;color:#f4d35e;background:rgba(255,204,0,.10);border:1px solid rgba(255,204,0,.35);border-radius:999px;padding:3px 9px;vertical-align:middle;">Partially wired · local only</span></h2>
+        <p>Cross-Game Modifiers are temporary arcade-wide bonuses. The modifier definitions and compatibility tags are wired into each game. Modifier state is stored locally — it is not server-backed or cross-device.</p>
         <div class="manual-grid">
           <article class="manual-card">
             <h3>📈 Score Surge</h3>
@@ -214,13 +213,13 @@
           <li>Not every Cross-Game Modifier affects every game</li>
           <li>Modifiers only apply to compatible game types</li>
           <li>No modifier changes the core Arcade XP formula directly</li>
+          <li>Modifier persistence is local to your browser session</li>
         </ul>
-        <div class="manual-wow">Check which modifier is currently active before choosing your game. Picking a compatible game type lets you get more from the same run.</div>
       </section>
 
       <section class="manual-section" id="daily-quests">
-        <h2>Daily Missions</h2>
-        <p>Daily Missions rotate regularly and give you focused objectives to complete across the arcade.</p>
+        <h2>Daily Missions <span style="font-size:.78rem;font-weight:700;color:#f4d35e;background:rgba(255,204,0,.10);border:1px solid rgba(255,204,0,.35);border-radius:999px;padding:3px 9px;vertical-align:middle;">Scaffolded · local only</span></h2>
+        <p>Daily Missions are defined and tracked locally in your browser. Mission progress resets daily and is not synced server-side or cross-device.</p>
         <p>Missions may ask you to:</p>
         <ul>
           <li>Survive longer in a run</li>
@@ -231,34 +230,33 @@
           <li>Hit score targets in specific game types</li>
         </ul>
         <ul>
-          <li><strong>Daily Missions refresh</strong> — new objectives appear regularly</li>
-          <li><strong>Missions help Faction progress</strong> — completing missions feeds your Faction's standing</li>
-          <li><strong>Missions give reasons to try different games</strong> — the right mission might send you to a game type you have not played yet</li>
+          <li><strong>Daily Missions refresh</strong> — new objectives appear regularly (local rotation)</li>
+          <li><strong>Mission progress is browser-only</strong> — not backed by the server at this stage</li>
         </ul>
-        <div class="manual-wow">Daily Missions keep the arcade from going stale. They direct attention to different games and reward players who show up consistently, not just players who had one lucky run.</div>
       </section>
 
       <section class="manual-section" id="seasons">
-        <h2>Season Competitions</h2>
-        <p>Arcade progress is tracked across a Season. A Season is a defined competition window where your Arcade XP and scores accumulate toward a seasonal position.</p>
+        <h2>Season Competitions <span style="font-size:.78rem;font-weight:700;color:#7ec8e3;background:rgba(86,220,255,.08);border:1px solid rgba(86,220,255,.3);border-radius:999px;padding:3px 9px;vertical-align:middle;">Coming next</span></h2>
+        <p>Season competitions are planned but not yet fully live. The leaderboard currently tracks all-time scores. Seasonal windows and standing resets are not yet active.</p>
         <ul>
-          <li>Scores and Arcade XP build your seasonal standing over time</li>
-          <li>Every Season gives players a fresh competition window</li>
-          <li>The goal is not just one high score — it is repeated activity across games over the Season</li>
+          <li>Scores and Arcade XP will build seasonal standing once seasons go live</li>
+          <li>Every Season will give players a fresh competition window</li>
           <li>Seasons reset the competition energy so standings remain contested</li>
         </ul>
-        <p>Season rewards may be added or expanded over time. No specific rewards are promised at this stage.</p>
+        <p>No season rewards are promised at this stage.</p>
       </section>
 
       <section class="manual-section" id="factions">
-        <h2>Factions / Clans</h2>
-        <p>Players can align with a Faction. Factions make the arcade feel like a team competition rather than solo play. Your runs, missions, and Arcade XP contribute to your Faction's standing in the faction war.</p>
+        <h2>Factions / Clans <span style="font-size:.78rem;font-weight:700;color:#56dcff;background:rgba(86,220,255,.08);border:1px solid rgba(86,220,255,.3);border-radius:999px;padding:3px 9px;vertical-align:middle;">Live · gameplay effects active</span></h2>
+        <p>Players can align with a Faction. Faction effects are wired into compatible arcade games — they adjust score multipliers, chaos rates, shield counts, and combo bonuses inside those games.</p>
+        <p><strong>Faction XP</strong> is separate from Arcade XP. Faction XP tracks your alignment level and faction standing only. It does not count toward the Block Topia gate.</p>
+        <p><strong>Faction war standings</strong> (who is winning the season war) are currently tracked locally in your browser. Cross-player faction war results are not yet server-backed.</p>
         <div class="manual-grid">
           <article class="manual-card">
             <h3>💎 Diamond Hands</h3>
             <ul>
               <li>Endurance-focused playstyle</li>
-              <li>Rewards longer survival runs</li>
+              <li>Survival bonus after 30 s alive</li>
               <li>Lower chaos pressure during runs</li>
             </ul>
           </article>
@@ -281,11 +279,11 @@
         </div>
         <p>Key facts about Factions:</p>
         <ul>
-          <li>Factions affect compatible supported games — not every game responds to faction traits</li>
-          <li>Faction contribution builds faction war progress over the Season</li>
-          <li>Factions turn the arcade into a team competition alongside the solo Leaderboard</li>
+          <li>Faction gameplay effects are active in: Invaders 3008, Pac-Chain, Tetris Block Topia, Breakout Bullrun, Asteroid Fork, SnakeRun 3008</li>
+          <li>Faction XP is earned via <code>/faction/earn</code> — separate from Arcade XP</li>
+          <li>Faction war standings are local-only at this stage</li>
         </ul>
-        <div class="manual-wow">Choose a Faction that matches how you want to play. Your runs feed the whole faction, not just your personal score.</div>
+        <div class="manual-wow">Choose a Faction that matches how you want to play. Faction effects change conditions inside your run right now.</div>
       </section>
 
       <section class="manual-section" id="quick-start">
@@ -325,8 +323,18 @@
 
       <section class="manual-section" id="xp">
         <h2>XP: Your Progress Signal</h2>
-        <p>XP is not just a number. It is proof that you showed up.</p>
-        <ul><li>XP helps unlock deeper systems</li><li>XP tracks activity and progression</li><li>XP matters more when your Telegram identity is linked</li><li>XXX XP is required to enter Block Topia</li></ul>
+        <p>XP is not just a number. It is proof that you showed up. The arcade tracks four separate signals — they are not interchangeable.</p>
+        <ul>
+          <li><strong>Score</strong> — determines leaderboard rank only. Does not affect any XP.</li>
+          <li><strong>Arcade XP</strong> — earned from accepted synced runs. Gates Block Topia entry. Requires Telegram link to persist.</li>
+          <li><strong>Faction XP</strong> — earned by joining and playing under a faction. Tracks alignment level. Does not count toward Block Topia gate.</li>
+          <li><strong>Block Topia XP</strong> — in-game progression inside Block Topia itself. Separate from all of the above.</li>
+        </ul>
+        <ul>
+          <li>Arcade XP helps unlock deeper systems</li>
+          <li>Arcade XP matters more when your Telegram identity is linked</li>
+          <li><strong>50 Arcade XP</strong> is required to enter Block Topia</li>
+        </ul>
       </section>
 
       <section class="manual-section" id="telegram-sync">
@@ -344,8 +352,8 @@
 
       <section class="manual-section" id="block-topia-explained">
         <h2>Block Topia: The Next Door</h2>
-        <p>Block Topia is where the arcade path starts becoming a world. You need a linked Telegram account and enough XP to enter.</p>
-        <ul><li>Requires Telegram sync</li><li>Requires XXX XP</li><li>Built as a 2-player isometric map base</li><li>Future gameplay expands into NPC battles, upgrades, and HODL Wars systems</li></ul>
+        <p>Block Topia is where the arcade path starts becoming a world. You need a linked Telegram account and enough Arcade XP to enter.</p>
+        <ul><li>Requires Telegram sync</li><li>Requires <strong>50 Arcade XP</strong></li><li>Built as a 2-player isometric map base</li><li>Future gameplay expands into NPC battles, upgrades, and HODL Wars systems</li></ul>
         <h3 style="margin:18px 0 8px;font-size:1rem;color:#e7fcff;">Controls</h3>
         <ul><li><strong>Move:</strong> <code>W A S D</code> or arrow keys</li><li><strong>Zoom:</strong> mouse wheel or <code>[</code> / <code>]</code></li><li><strong>Camera pan:</strong> hold left mouse button and drag</li></ul>
       </section>
@@ -370,7 +378,7 @@
         <h2>Quick Fixes</h2>
         <div class="manual-grid">
           <article class="manual-card"><h3>I played but got no XP</h3><p>Score and XP are separate. XP requires accepted score conversion and Telegram sync.</p></article>
-          <article class="manual-card"><h3>I cannot enter Block Topia</h3><p>You probably need more XP or need to relink Telegram. XXX XP is required.</p></article>
+          <article class="manual-card"><h3>I cannot enter Block Topia</h3><p>You probably need more XP or need to relink Telegram. <strong>50 Arcade XP</strong> is required.</p></article>
           <article class="manual-card"><h3>Why does it say local only?</h3><p>You are not synced. Local runs stay in the browser and do not act like full progression.</p></article>
           <article class="manual-card"><h3>Sync is red</h3><p>Run <code>/gklink</code> again and open the new link from the bot.</p></article>
         </div>
