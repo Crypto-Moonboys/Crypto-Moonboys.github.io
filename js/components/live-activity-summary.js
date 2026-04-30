@@ -209,6 +209,35 @@
     return meta ? (meta.icon + ' ' + meta.label) : String(status.faction);
   }
 
+  // ── Inline DOM patchers ──────────────────────────────────────────────────
+  // These are the ONLY way UI rows update after initial mount.
+  // No remount, no refresh() call — only targeted textContent / className patches.
+
+  /**
+   * Patches all rendered faction rows across every mounted LAS panel.
+   * Called from the MOONBOYS_STATE subscriber whenever state.faction changes.
+   */
+  function updateFactionUI(faction) {
+    var factionText = factionSummary(faction ? { faction: faction } : getFactionStatus());
+    document.querySelectorAll('[data-las-panel] [data-las-faction]').forEach(function (el) {
+      el.textContent = factionText;
+    });
+  }
+
+  /**
+   * Patches all rendered sync rows across every mounted LAS panel.
+   * Called from the MOONBOYS_STATE subscriber on every state notification so
+   * the sync label stays current whenever identity/XP state changes.
+   * Reads sync state synchronously from MOONBOYS_IDENTITY (always available).
+   */
+  function updateSyncUI() {
+    var sync = syncSummary();
+    document.querySelectorAll('[data-las-panel] [data-las-sync]').forEach(function (el) {
+      el.textContent = sync.text;
+      el.className = 'las-val ' + (sync.good ? 'las-val--good' : 'las-val--warn');
+    });
+  }
+
   // ── Build HTML ────────────────────────────────────────────────────────────
 
   function buildLogHTML() {
@@ -251,13 +280,13 @@
         '</div>' +
         '<div class="las-row">' +
           '<span class="las-label">Sync</span>' +
-          '<span class="las-val ' + (sync.good ? 'las-val--good' : 'las-val--warn') + '">' +
+          '<span class="las-val ' + (sync.good ? 'las-val--good' : 'las-val--warn') + '" data-las-sync>' +
             esc(sync.text) +
           '</span>' +
         '</div>' +
         '<div class="las-row">' +
           '<span class="las-label">Faction</span>' +
-          '<span class="las-val">' + esc(factionText) + '</span>' +
+          '<span class="las-val" data-las-faction>' + esc(factionText) + '</span>' +
         '</div>' +
         (!linked
           ? '<div class="las-row las-row--cta">' +
@@ -368,21 +397,19 @@
   function bootstrap() {
     injectStyles();
     document.querySelectorAll('[data-las-panel]').forEach(function (el) { mount(el); });
-    var bus = window.MOONBOYS_EVENT_BUS;
-    // Refresh static rows on sync-state changes (identity/link updates).
-    bus.on('sync:state', refresh);
-    // Faction and XP changes arrive via MOONBOYS_STATE.subscribe() — no
-    // storage listener or direct bus.on('faction:update') needed here since
-    // state already covers both keys (moonboys_state_v1 / moonboys_faction_status_v1).
+
+    // State is truth, bus is events only.
+    // After initial mount, all UI state rows are updated exclusively through
+    // MOONBOYS_STATE.subscribe() — no refresh(), no remount.
     if (window.MOONBOYS_STATE && typeof window.MOONBOYS_STATE.subscribe === 'function') {
-      var _lastFaction = null;
       window.MOONBOYS_STATE.subscribe(function (state) {
-        if (state.faction !== _lastFaction) {
-          _lastFaction = state.faction;
-          refresh();
-        }
+        updateFactionUI(state.faction);
+        updateSyncUI();
       });
     }
+
+    // Bus listeners are used ONLY to append log entries; they never trigger
+    // full remounts or refresh() calls.
     listenForActivity();
   }
 
