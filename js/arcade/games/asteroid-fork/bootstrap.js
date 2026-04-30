@@ -40,8 +40,9 @@ import { pickBossArchetype, spawnBossArchetype } from '/js/arcade/systems/boss-s
 import { buildRunSummary, recordRunStats, checkMilestones, getDailyVariation } from './meta-system.js';
 import { pulseHudElement, setTransientBanner } from '/js/arcade/systems/feedback-system.js';
 import { playSound, stopAllSounds, isMuted } from '/js/arcade/core/audio.js';
+import { getActiveModifiers, hasEffect, getStatEffect } from '/js/arcade/systems/cross-game-modifier-system.js';
 import {
-  getPlayerFaction,
+  getPlayerFaction, getFactionEffects,
   applyFactionScore, applyFactionStartingShield, applyFactionEventRate,
 } from '/js/arcade/systems/faction-effect-system.js';
 import { recordContribution } from '/js/arcade/systems/faction-war-system.js';
@@ -265,6 +266,7 @@ function createState(root) {
     qaStats: createQaStats(),
     factionId: 'unaligned',
     factionPressureMult: 1,
+    modScoreMult: 1,
   };
 }
 
@@ -735,12 +737,22 @@ function resetRun(state) {
   state.waveStartElapsed = 0;
   state.qaWaveTimer = 0;
   state.qaStats = createQaStats();
+
+  // ── Cross-game modifiers ─────────────────────────────────────────────────
+  const crossMods = getActiveModifiers(GAME_ID, ASTEROID_FORK_CONFIG.crossGameTags || []);
+  state.modScoreMult = getStatEffect(crossMods, 'scoreMult', 1);
+  const modPressureRate = getStatEffect(crossMods, 'pressureRate', 1);
+  const modShielded = hasEffect(crossMods, 'shieldedStart');
+  if (modShielded) state.lives = Math.min(state.lives + 1, 5);
+
   // ── Faction: refresh faction id and apply starting-shield + chaos modifier ─
   try {
     state.factionId = getPlayerFaction();
+    const _fx = getFactionEffects(state.factionId);
     state.lives = applyFactionStartingShield(state.lives, state.factionId, { supportsShield: true });
-    state.factionPressureMult = applyFactionEventRate(1, state.factionId);
-  } catch (_) { state.factionId = 'unaligned'; state.factionPressureMult = 1; }
+    state.factionPressureMult = applyFactionEventRate(1, state.factionId) * modPressureRate;
+    if (_fx.bonusText) setTransientBanner(state.root, _fx.bonusText, '#f7c948');
+  } catch (_) { state.factionId = 'unaligned'; state.factionPressureMult = modPressureRate; }
   advanceWave(state);
 }
 
@@ -864,7 +876,7 @@ function splitAsteroid(state, asteroid) {
 
 function awardAsteroidKill(state, asteroid) {
   const def = ASTEROID_TYPE_DEFS[asteroid.type] || ASTEROID_TYPE_DEFS.basic;
-  const rawScore = def.score * (1 + state.wave * 0.15);
+  const rawScore = def.score * (1 + state.wave * 0.15) * (state.modScoreMult || 1);
   state.score += applyFactionScore(rawScore, state.factionId, { timeAlive: state.elapsed });
   if (state.score > state.best) {
     state.best = state.score;
@@ -872,7 +884,7 @@ function awardAsteroidKill(state, asteroid) {
   }
   pulseHud(state, state.scoreEl, 'pulse', 180);
   if (asteroid.type === 'crystal') {
-    state.score += applyFactionScore(180, state.factionId, { timeAlive: state.elapsed });
+    state.score += applyFactionScore(180 * (state.modScoreMult || 1), state.factionId, { timeAlive: state.elapsed });
     applyUpgradePickup(state);
     cueBanner(state, 'Crystal Reward', '#8cffd5', 1.2);
   }

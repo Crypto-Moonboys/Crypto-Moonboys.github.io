@@ -39,6 +39,8 @@
 
   // Unsubscribe token for MOONBOYS_STATE subscriber (avoids leak if re-bootstrapped)
   var _stateUnsub = null;
+  // Guard: bus listeners registered at most once (prevents duplicate log entries on re-bootstrap)
+  var _activityListenersAdded = false;
 
   // ── In-memory activity log ────────────────────────────────────────────────
   // Shared across all LAS instances on the page; survives refreshes.
@@ -373,7 +375,12 @@
   // ── Event log listeners ───────────────────────────────────────────────────
 
   function listenForActivity() {
+    // Null guard: skip if bus is unavailable
     var bus = window.MOONBOYS_EVENT_BUS;
+    if (!bus) return;
+    // Idempotency guard: register listeners only once to prevent duplicate log entries
+    if (_activityListenersAdded) return;
+    _activityListenersAdded = true;
     bus.on('xp:update', function (d) {
       var amount = Number(d.amount || 0);
       var total = Number(d.total || 0);
