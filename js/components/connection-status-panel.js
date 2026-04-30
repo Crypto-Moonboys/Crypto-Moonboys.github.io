@@ -416,26 +416,13 @@
 
   function listenForUpdates() {
     var bus = window.MOONBOYS_EVENT_BUS;
-    if (bus) {
-      // Use event bus — single subscription path, no dual listeners.
-      bus.on('sync:state', invalidateAndRefresh);
-      bus.on('faction:update', invalidateAndRefresh);
-      bus.on('xp:update', function () {
-        _progressionCache = null;
-        _progressionInflight = null;
-        invalidateAndRefresh();
-      });
-    } else {
-      // Defensive fallback for pages that somehow skip the bus (shouldn't occur).
-      ['moonboys:sync-state', 'moonboys:faction-status', 'moonboys:faction-boost'].forEach(function (evt) {
-        window.addEventListener(evt, invalidateAndRefresh);
-      });
-      window.addEventListener('moonboys:xp-gain', function () {
-        _progressionCache = null;
-        _progressionInflight = null;
-        invalidateAndRefresh();
-      });
-    }
+    bus.on('sync:state', invalidateAndRefresh);
+    bus.on('faction:update', invalidateAndRefresh);
+    bus.on('xp:update', function () {
+      _progressionCache = null;
+      _progressionInflight = null;
+      invalidateAndRefresh();
+    });
     window.addEventListener('storage', function (e) {
       if (e.key && e.key.startsWith('moonboys_')) invalidateAndRefresh();
     });

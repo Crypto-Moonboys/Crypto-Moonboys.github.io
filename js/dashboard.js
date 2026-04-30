@@ -861,13 +861,17 @@
     const container = qs('#dash-live-events');
     if (!container) return;
 
-    // Initialise with a placeholder — replaced on first event.
+    // Initialise with a placeholder — replaced on first formatted event.
     container.innerHTML = '<p class="dash-live-placeholder">Waiting for player activity\u2026</p>';
 
     const bus = window.MOONBOYS_EVENT_BUS;
-    if (!bus) return;
 
+    // Only display LAS-formatted entries (have `text` + `time` fields).
+    // Raw bridge events (from global-event-bus bridges) carry `_src` but no
+    // `text`, so they are skipped here to prevent double-display.
     bus.on('activity:event', function (entry) {
+      if (!entry.text || !entry.time) return;
+
       // Remove placeholder on first real event.
       const placeholder = container.querySelector('p');
       if (placeholder) placeholder.remove();

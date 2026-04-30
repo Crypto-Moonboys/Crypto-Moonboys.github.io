@@ -54,9 +54,8 @@
     _activityLog.unshift(entry);
     if (_activityLog.length > LOG_MAX) _activityLog.length = LOG_MAX;
 
-    // Emit to event bus (bus is set up before LAS loads, so it's always available).
-    var bus = window.MOONBOYS_EVENT_BUS;
-    if (bus && typeof bus.emit === 'function') bus.emit('activity:event', entry);
+    // Single emit — bus is mandatory (loaded before this file on every page).
+    window.MOONBOYS_EVENT_BUS.emit('activity:event', entry);
 
     // ── Performance: append directly to existing log containers ────────────
     // Avoids a full async panel remount on every event.  Only fall back to
@@ -319,76 +318,43 @@
 
   function listenForActivity() {
     var bus = window.MOONBOYS_EVENT_BUS;
-    if (bus) {
-      // All activity comes through the bus — no direct moonboys:* listeners needed.
-      bus.on('xp:update', function (d) {
-        var amount = Number(d.amount || 0);
-        var total = Number(d.total || 0);
-        var text = amount > 0
-          ? 'Arcade XP +' + amount + (total ? ' (total ' + total + ')' : '')
-          : 'Arcade XP synced';
-        addToLog(buildLogEntry('xp', text));
-      });
+    bus.on('xp:update', function (d) {
+      var amount = Number(d.amount || 0);
+      var total = Number(d.total || 0);
+      var text = amount > 0
+        ? 'Arcade XP +' + amount + (total ? ' (total ' + total + ')' : '')
+        : 'Arcade XP synced';
+      addToLog(buildLogEntry('xp', text));
+    });
 
-      bus.on('faction:update', function (d) {
-        // Only log user-initiated events.  faction-alignment.js sets d.source
-        // to 'join', 'earn', etc. for real actions; initial page-load fetches
-        // arrive without a source (or source === 'load') and are skipped here.
-        if (!d.source || d.source === 'load') return;
-        var fa = window.MOONBOYS_FACTION;
-        var meta = fa && typeof fa.getVisualMeta === 'function' ? fa.getVisualMeta(d.faction) : null;
-        var fLabel = meta ? (meta.icon + ' ' + meta.label) : String(d.faction || 'faction');
-        var text = d.source === 'join'
-          ? 'Joined ' + fLabel
-          : 'Faction XP earned (' + fLabel + ')';
-        addToLog(buildLogEntry('faction', text));
-      });
+    bus.on('faction:update', function (d) {
+      // Only log user-initiated events.  faction-alignment.js sets d.source
+      // to 'join', 'earn', etc. for real actions; initial page-load fetches
+      // arrive without a source (or source === 'load') and are skipped here.
+      if (!d.source || d.source === 'load') return;
+      var fa = window.MOONBOYS_FACTION;
+      var meta = fa && typeof fa.getVisualMeta === 'function' ? fa.getVisualMeta(d.faction) : null;
+      var fLabel = meta ? (meta.icon + ' ' + meta.label) : String(d.faction || 'faction');
+      var text = d.source === 'join'
+        ? 'Joined ' + fLabel
+        : 'Faction XP earned (' + fLabel + ')';
+      addToLog(buildLogEntry('faction', text));
+    });
 
-      bus.on('sync:state', function (d) {
-        var text = d.state === 'good' || d.state === 'xp_awarded' || d.state === 'accepted_no_xp'
-          ? 'Sync complete'
-          : d.state === 'bad' ? 'Sync issue detected' : 'Syncing\u2026';
-        addToLog(buildLogEntry('sync', text));
-      });
+    bus.on('sync:state', function (d) {
+      var text = d.state === 'good' || d.state === 'xp_awarded' || d.state === 'accepted_no_xp'
+        ? 'Sync complete'
+        : d.state === 'bad' ? 'Sync issue detected' : 'Syncing\u2026';
+      addToLog(buildLogEntry('sync', text));
+    });
 
-      // Score updates arrive as activity:event from the bus bridge.
-      bus.on('activity:event', function (d) {
-        if (d._src === 'moonboys:score-updated') {
-          var text = 'Score recorded' + (d.game ? ' (' + d.game + ')' : '');
-          addToLog(buildLogEntry('score', text));
-        }
-      });
-    } else {
-      // Defensive fallback: direct window listeners if bus is unavailable.
-      window.addEventListener('moonboys:xp-gain', function (e) {
-        var d = (e && e.detail) || {};
-        var amount = Number(d.amount || 0);
-        var total = Number(d.total || 0);
-        var text = amount > 0
-          ? 'Arcade XP +' + amount + (total ? ' (total ' + total + ')' : '')
-          : 'Arcade XP synced';
-        addToLog(buildLogEntry('xp', text));
-      });
-      window.addEventListener('moonboys:faction-boost', function (e) {
-        var d = (e && e.detail) || {};
-        var fa = window.MOONBOYS_FACTION;
-        var meta = fa && typeof fa.getVisualMeta === 'function' ? fa.getVisualMeta(d.faction) : null;
-        var fLabel = meta ? (meta.icon + ' ' + meta.label) : String(d.faction || 'faction');
-        var text = d.source === 'join' ? 'Joined ' + fLabel : 'Faction XP earned (' + fLabel + ')';
-        addToLog(buildLogEntry('faction', text));
-      });
-      window.addEventListener('moonboys:sync-state', function (e) {
-        var d = (e && e.detail) || {};
-        var text = d.state === 'good' || d.state === 'xp_awarded' || d.state === 'accepted_no_xp'
-          ? 'Sync complete'
-          : d.state === 'bad' ? 'Sync issue detected' : 'Syncing\u2026';
-        addToLog(buildLogEntry('sync', text));
-      });
-      window.addEventListener('moonboys:score-updated', function (e) {
-        var d = (e && e.detail) || {};
-        addToLog(buildLogEntry('score', 'Score recorded' + (d.game ? ' (' + d.game + ')' : '')));
-      });
-    }
+    // Score updates arrive via the bus bridge as activity:event with _src set.
+    bus.on('activity:event', function (d) {
+      if (d._src === 'moonboys:score-updated') {
+        var text = 'Score recorded' + (d.game ? ' (' + d.game + ')' : '');
+        addToLog(buildLogEntry('score', text));
+      }
+    });
   }
 
   // ── Bootstrap ─────────────────────────────────────────────────────────────
@@ -397,15 +363,9 @@
     injectStyles();
     document.querySelectorAll('[data-las-panel]').forEach(function (el) { mount(el); });
     var bus = window.MOONBOYS_EVENT_BUS;
-    if (bus) {
-      // Refresh static rows (API status, sync state, faction) on relevant events.
-      bus.on('sync:state', refresh);
-      bus.on('faction:update', refresh);
-    } else {
-      ['moonboys:sync-state', 'moonboys:faction-status', 'moonboys:faction-boost'].forEach(function (evt) {
-        window.addEventListener(evt, refresh);
-      });
-    }
+    // Refresh static rows (API status, sync state, faction) on relevant events.
+    bus.on('sync:state', refresh);
+    bus.on('faction:update', refresh);
     window.addEventListener('storage', function (e) {
       if (e.key && e.key.startsWith('moonboys_')) refresh();
     });

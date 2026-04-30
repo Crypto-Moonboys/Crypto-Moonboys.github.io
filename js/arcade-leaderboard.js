@@ -478,50 +478,26 @@ export function initLeaderboard({ onRowSelect, onModeChange } = {}) {
   });
 
   var _bus = window.MOONBOYS_EVENT_BUS;
-  if (_bus) {
-    _bus.on('faction:update', function () {
-      var badge = document.querySelector('.lb-row.selected .lb-faction');
-      if (!badge) return;
-      badge.classList.add('faction-boost');
-      setTimeout(function () { badge.classList.remove('faction-boost'); }, 1200);
+  _bus.on('faction:update', function () {
+    var badge = document.querySelector('.lb-row.selected .lb-faction');
+    if (!badge) return;
+    badge.classList.add('faction-boost');
+    setTimeout(function () { badge.classList.remove('faction-boost'); }, 1200);
+  });
+  _bus.on('activity:event', function (detail) {
+    if (detail._src !== 'moonboys:score-updated') return;
+    if (!detail.player) return;
+    var target = Array.from(document.querySelectorAll('.lb-row')).find(function (rowNode) {
+      return String(rowNode.dataset.player || '').toLowerCase() === String(detail.player || '').toLowerCase();
     });
-    _bus.on('activity:event', function (detail) {
-      if (detail._src !== 'moonboys:score-updated') return;
-      if (!detail.player) return;
-      var target = Array.from(document.querySelectorAll('.lb-row')).find(function (rowNode) {
-        return String(rowNode.dataset.player || '').toLowerCase() === String(detail.player || '').toLowerCase();
-      });
-      if (!target) return;
-      target.classList.add('score-updated', 'player-active');
-      var scoreNode = target.querySelector('.lb-score-value');
-      if (scoreNode && Number.isFinite(Number(detail.score))) {
-        animateNumber(scoreNode, Number(detail.score || 0), { duration: 760 });
-      }
-      setTimeout(function () { target.classList.remove('score-updated'); }, 850);
-    });
-  } else {
-    // Defensive fallback if bus is unavailable.
-    window.addEventListener('moonboys:faction-boost', function () {
-      var badge = document.querySelector('.lb-row.selected .lb-faction');
-      if (!badge) return;
-      badge.classList.add('faction-boost');
-      setTimeout(function () { badge.classList.remove('faction-boost'); }, 1200);
-    });
-    window.addEventListener('moonboys:score-updated', function (event) {
-      var detail = event && event.detail ? event.detail : {};
-      if (!detail.player) return;
-      var target = Array.from(document.querySelectorAll('.lb-row')).find(function (rowNode) {
-        return String(rowNode.dataset.player || '').toLowerCase() === String(detail.player || '').toLowerCase();
-      });
-      if (!target) return;
-      target.classList.add('score-updated', 'player-active');
-      var scoreNode = target.querySelector('.lb-score-value');
-      if (scoreNode && Number.isFinite(Number(detail.score))) {
-        animateNumber(scoreNode, Number(detail.score || 0), { duration: 760 });
-      }
-      setTimeout(function () { target.classList.remove('score-updated'); }, 850);
-    });
-  }
+    if (!target) return;
+    target.classList.add('score-updated', 'player-active');
+    var scoreNode = target.querySelector('.lb-score-value');
+    if (scoreNode && Number.isFinite(Number(detail.score))) {
+      animateNumber(scoreNode, Number(detail.score || 0), { duration: 760 });
+    }
+    setTimeout(function () { target.classList.remove('score-updated'); }, 850);
+  });
   window.addEventListener('storage', function (event) {
     if (!event || event.key !== PRESENCE_OFFLINE_KEY) return;
     renderLinkedPresence();

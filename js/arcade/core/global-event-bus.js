@@ -10,6 +10,7 @@
  *   faction:update — Faction joined or changed (bridged from moonboys:faction-*)
  *   sync:state     — Telegram sync state changed (bridged from moonboys:sync-state)
  *   activity:event — General activity (score, XP, faction, notify)
+ *   world:state    — World/conflict state changed (bridged from moonboys:world-state)
  *
  * Usage:
  *   MOONBOYS_EVENT_BUS.on('xp:update', function(payload) { ... });
@@ -66,6 +67,7 @@
     { src: 'moonboys:xp-gain',        target: 'activity:event' },
     { src: 'moonboys:faction-boost',  target: 'activity:event' },
     { src: 'moonboys:micro-notify',   target: 'activity:event' },
+    { src: 'moonboys:world-state',    target: 'world:state' },
   ];
 
   BRIDGES.forEach(function (b) {
