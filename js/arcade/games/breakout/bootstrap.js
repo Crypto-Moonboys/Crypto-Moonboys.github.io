@@ -9,10 +9,10 @@ import { BREAKOUT_CONFIG } from './config.js';
 import { createGameAdapter, registerGameAdapter, bootstrapFromAdapter } from '/js/arcade/engine/game-adapter.js';
 import { playSound, stopAllSounds, isMuted } from '/js/arcade/core/audio.js';
 import { createFrameDebug } from '/js/arcade/core/frame-debug.js';
-import { getActiveModifiers, getStatEffect } from '/js/arcade/systems/cross-game-modifier-system.js';
+import { getActiveModifiers, hasEffect, getStatEffect } from '/js/arcade/systems/cross-game-modifier-system.js';
 import {
   getPlayerFaction, getFactionEffects,
-  applyFactionScore, applyFactionComboBonus,
+  applyFactionScore, applyFactionComboBonus, applyFactionStartingShield, applyFactionEventRate,
 } from '/js/arcade/systems/faction-effect-system.js';
 import { recordContribution } from '/js/arcade/systems/faction-war-system.js';
 import { recordMissionProgress } from '/js/arcade/systems/faction-missions.js';
@@ -100,10 +100,12 @@ function createLegacybootstrapBreakout(root) {
   let elapsed = 0;
 
   // Cross-game modifier: fetched fresh each run in resetGame()
-  let brModScoreMult = 1;
+  let brModScoreMult   = 1;
   // Faction state: refreshed each run alongside cross-game modifiers
-  let _brFactionId = 'unaligned';
-  let _brFactionFx = null;
+  let _brFactionId     = 'unaligned';
+  let _brFactionFx     = null;
+  let _brEventRateMult = 1; // faction chaos modifier × cross-game pressureRate
+  let _brShieldCharges = 0; // faction + modifier starting shield charges (ball-save)
 
   let balls = [];
   let launched = false;
@@ -323,18 +325,24 @@ function createLegacybootstrapBreakout(root) {
 
   function resetGame() {
     // Re-fetch modifier so UI panel changes take effect on the next run
-    brModScoreMult = getStatEffect(
-      getActiveModifiers(GAME_ID, BREAKOUT_CONFIG.crossGameTags || []),
-      'scoreMult', 1
-    );
+    const crossMods = getActiveModifiers(GAME_ID, BREAKOUT_CONFIG.crossGameTags || []);
+    brModScoreMult = getStatEffect(crossMods, 'scoreMult', 1);
+    const modPressureRate = getStatEffect(crossMods, 'pressureRate', 1);
+
     // Re-fetch faction state for the new run
+    _brShieldCharges = 0;
     try {
       _brFactionId = getPlayerFaction();
       _brFactionFx = getFactionEffects(_brFactionId);
+      _brShieldCharges = applyFactionStartingShield(0, _brFactionId, { supportsShield: true });
+      _brEventRateMult = applyFactionEventRate(1, _brFactionId) * modPressureRate;
     } catch (_) {
       _brFactionId = 'unaligned';
       _brFactionFx = null;
+      _brEventRateMult = modPressureRate;
     }
+    // shieldedStart modifier grants one extra shield charge
+    if (hasEffect(crossMods, 'shieldedStart')) _brShieldCharges += 1;
 
     score = 0;
     level = 1;
@@ -648,7 +656,8 @@ function createLegacybootstrapBreakout(root) {
     if (effects.glitchCooldown > 0) effects.glitchCooldown -= dt;
     if (effects.glitchCooldown <= 0 && Math.random() < 0.0025) {
       effects.glitchTimer = 0.08;
-      effects.glitchCooldown = 4 + Math.random() * 5;
+      // Scale cooldown by faction/modifier event rate (GraffPUNKS = more glitches, Diamond Hands = fewer)
+      effects.glitchCooldown = (4 + Math.random() * 5) / (_brEventRateMult || 1);
     }
 
     for (const g of glyphs) {
@@ -728,6 +737,12 @@ function createLegacybootstrapBreakout(root) {
     }
 
     if (!balls.length) {
+      // Shield charge (from HODL Warriors faction or shielded_start modifier): absorb one ball-out
+      if (_brShieldCharges > 0) {
+        _brShieldCharges -= 1;
+        resetBallStack();
+        return;
+      }
       onGameOver();
       return;
     }

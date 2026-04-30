@@ -41,6 +41,8 @@
   var _progressionCache = null;
   var _progressionInflight = null;
   var _apiOnlineCache = null;
+  // Unsubscribe token for MOONBOYS_STATE subscriber (avoids leak if re-initialised)
+  var _stateUnsub = null;
 
   // ── Helpers ────────────────────────────────────────────────────────────
 
@@ -450,7 +452,8 @@
     // XP, faction, and Block Topia access state are patched without remounting
     // the entire panel — no API re-fetch, no full DOM replacement.
     if (window.MOONBOYS_STATE && typeof window.MOONBOYS_STATE.subscribe === 'function') {
-      window.MOONBOYS_STATE.subscribe(function (state) {
+      if (_stateUnsub) { try { _stateUnsub(); } catch (_) {} }
+      _stateUnsub = window.MOONBOYS_STATE.subscribe(function (state) {
         var linked = isLinked();
 
         // ── Arcade XP ─────────────────────────────────────────────────────────

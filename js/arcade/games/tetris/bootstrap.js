@@ -6,6 +6,16 @@ import { playSound, stopAllSounds, isMuted } from '/js/arcade/core/audio.js';
 import { createFrameDebug } from '/js/arcade/core/frame-debug.js';
 import { recordRunStats, checkMilestones } from './meta-system.js';
 import { createScalingDirector, tickDirector, shouldFirePressureEvent, updateIntensity, checkForcedChaos } from '/js/arcade/systems/event-system.js';
+import { getActiveModifiers, hasEffect, getStatEffect } from '/js/arcade/systems/cross-game-modifier-system.js';
+import {
+  getPlayerFaction, getFactionEffects,
+  applyFactionScore, applyFactionStartingShield, applyFactionEventRate, applyFactionComboBonus,
+} from '/js/arcade/systems/faction-effect-system.js';
+import { recordContribution } from '/js/arcade/systems/faction-war-system.js';
+import { recordMissionProgress } from '/js/arcade/systems/faction-missions.js';
+import { recordLogin, recordWarContribution } from '/js/arcade/systems/faction-streaks.js';
+import { checkRankUp } from '/js/arcade/systems/faction-ranks.js';
+import { emitFactionGain } from '/js/arcade/systems/live-activity.js';
 
 export const TETRIS_ADAPTER = createGameAdapter({
   id: TETRIS_CONFIG.id,
@@ -125,6 +135,13 @@ function createLegacybootstrapTetris(root) {
   let raf = null;
   let lastTime = 0;
   let elapsed = 0;
+
+  // ── Faction + modifier state (refreshed each run) ─────────────────────────
+  let _tetrisFactionId   = 'unaligned';
+  let _tetrisModScoreMult   = 1;
+  let _tetrisModShielded    = false;
+  let _tetrisEventRateMult  = 1; // faction chaos modifier × cross-game pressureRate
+  let _tetrisModGoldenBoost = 0; // goldenSpawnBoost modifier — lowers golden mutation threshold
 
   // ── Roguelite run state ────────────────────────────────────────────────────
   let wave = 0;
@@ -249,8 +266,8 @@ function createLegacybootstrapTetris(root) {
 
   function addScore(amount) {
     if (!Number.isFinite(amount) || amount <= 0) return;
-    const mult = getRunScoreMult();
-    score += Math.floor(amount * mult);
+    const mult = getRunScoreMult() * _tetrisModScoreMult;
+    score += applyFactionScore(Math.floor(amount * mult), _tetrisFactionId, { timeAlive: elapsed });
     setBestMaybe();
     triggerHudFx(scoreStatEl, 'hud-pulse', 220);
   }
@@ -282,6 +299,25 @@ function createLegacybootstrapTetris(root) {
     director = createScalingDirector();
     submittedMeta = false;
     if (bossTimeout !== null) { clearTimeout(bossTimeout); bossTimeout = null; }
+
+    // ── Cross-game modifiers ─────────────────────────────────────────────────
+    const crossMods = getActiveModifiers(GAME_ID, TETRIS_CONFIG.crossGameTags || []);
+    _tetrisModScoreMult = getStatEffect(crossMods, 'scoreMult', 1);
+    _tetrisModShielded  = hasEffect(crossMods, 'shieldedStart');
+    const modPressureRate = getStatEffect(crossMods, 'pressureRate', 1);
+    _tetrisModGoldenBoost = getStatEffect(crossMods, 'goldenSpawnBoost', 0);
+    if (_tetrisModShielded) run.shieldCharges += 1;
+
+    // ── Faction: refresh faction id, apply starting-shield + event-rate ──────
+    try {
+      _tetrisFactionId = getPlayerFaction();
+      const _fx = getFactionEffects(_tetrisFactionId);
+      run.shieldCharges = applyFactionStartingShield(run.shieldCharges, _tetrisFactionId, { supportsShield: true });
+      _tetrisEventRateMult = applyFactionEventRate(1, _tetrisFactionId) * modPressureRate;
+      // Apply faction combo bonus to run: GraffPUNKS extends the combo window
+      run.comboBoostMax += (applyFactionComboBonus(1, _tetrisFactionId) - 1) * 4;
+      if (_fx.bonusText) addFloatBanner(null, _fx.bonusText, '#f7c948');
+    } catch (_) { _tetrisFactionId = 'unaligned'; _tetrisEventRateMult = modPressureRate; }
   }
 
   function addFloatBanner(_s, text, color) {
@@ -312,7 +348,9 @@ function createLegacybootstrapTetris(root) {
   function maybeMutatePiece(piece) {
     if (!director) return;
     const intensity = director.intensity || 0;
-    const candidates = MUTATION_DEFS.filter((m) => intensity >= m.threshold);
+    // goldenSpawnBoost modifier lowers the mutation threshold, making rare pieces appear sooner
+    const effectiveIntensity = intensity + (_tetrisModGoldenBoost || 0) * 100;
+    const candidates = MUTATION_DEFS.filter((m) => effectiveIntensity >= m.threshold);
     if (!candidates.length) return;
     if (Math.random() > MUTATION_CHANCE) return;
     const def = candidates[Math.floor(Math.random() * candidates.length)];
@@ -423,7 +461,7 @@ function createLegacybootstrapTetris(root) {
 
   function tickDirectorState(dt) {
     if (!director || !run) return;
-    tickDirector(director, dt);
+    tickDirector(director, dt, score, wave, run.shieldCharges, null, false, _tetrisEventRateMult);
     updateIntensity(director, dt, {});
     runStats.highestIntensity = Math.max(runStats.highestIntensity, director.intensity || 0);
     if (shouldFirePressureEvent(director)) {
@@ -1103,6 +1141,20 @@ function createLegacybootstrapTetris(root) {
     if (canSubmitCompetitive()) {
       await submitRunScore();
     }
+
+    // ── Faction war contribution ───────────────────────────────────────────
+    try {
+      if (score > 0 && _tetrisFactionId && _tetrisFactionId !== 'unaligned') {
+        const contrib = Math.max(1, Math.floor(score / 100));
+        recordContribution(_tetrisFactionId, 'score_submission', contrib);
+        recordWarContribution();
+        checkRankUp(_tetrisFactionId);
+        emitFactionGain(_tetrisFactionId, contrib, 'score_submission');
+      }
+      recordMissionProgress(_tetrisFactionId, 'survive', Math.round(runStats.survivalSec || 0));
+      recordMissionProgress(_tetrisFactionId, 'runs', 1);
+      recordLogin();
+    } catch (_) {}
 
     if (window.showGameOverModal) window.showGameOverModal(Math.floor(score));
   }

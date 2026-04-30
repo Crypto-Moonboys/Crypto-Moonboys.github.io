@@ -40,6 +40,16 @@ import { pickBossArchetype, spawnBossArchetype } from '/js/arcade/systems/boss-s
 import { buildRunSummary, recordRunStats, checkMilestones, getDailyVariation } from './meta-system.js';
 import { pulseHudElement, setTransientBanner } from '/js/arcade/systems/feedback-system.js';
 import { playSound, stopAllSounds, isMuted } from '/js/arcade/core/audio.js';
+import { getActiveModifiers, hasEffect, getStatEffect } from '/js/arcade/systems/cross-game-modifier-system.js';
+import {
+  getPlayerFaction, getFactionEffects,
+  applyFactionScore, applyFactionStartingShield, applyFactionEventRate,
+} from '/js/arcade/systems/faction-effect-system.js';
+import { recordContribution } from '/js/arcade/systems/faction-war-system.js';
+import { recordMissionProgress } from '/js/arcade/systems/faction-missions.js';
+import { recordLogin, recordWarContribution } from '/js/arcade/systems/faction-streaks.js';
+import { checkRankUp } from '/js/arcade/systems/faction-ranks.js';
+import { emitFactionGain } from '/js/arcade/systems/live-activity.js';
 
 const GAME_ID = 'asteroids';
 const WORLD_W = 1280;
@@ -254,6 +264,10 @@ function createState(root) {
     qaAutoProgress: detectQaMode(),
     qaWaveTimer: 0,
     qaStats: createQaStats(),
+    factionId: 'unaligned',
+    factionPressureMult: 1,
+    modScoreMult: 1,
+    modGoldenBoost: 0, // goldenSpawnBoost modifier — increases crystal asteroid spawn chance
   };
 }
 
@@ -458,14 +472,15 @@ function applyPendingRiskToWave(state) {
   if (risk.id === 'skipWave') state.score += 240;
 }
 
-function chooseAsteroidType(wave) {
+function chooseAsteroidType(wave, goldenBoost) {
   const roll = Math.random();
+  const crystalThreshold = 0.72 + (goldenBoost || 0);   // golden spawn boost raises crystal chance
   if (wave > 2 && roll < 0.16) return 'shard';
   if (wave > 3 && roll < 0.29) return 'heavy';
   if (wave > 4 && roll < 0.41) return 'cluster';
   if (wave > 5 && roll < 0.52) return 'explosive';
   if (wave > 6 && roll < 0.62) return 'magnetic';
-  if (wave > 7 && roll < 0.72) return 'crystal';
+  if (wave > 7 && roll < crystalThreshold) return 'crystal';
   if (wave > 8 && roll < 0.82) return 'cursed';
   return 'basic';
 }
@@ -539,7 +554,7 @@ function spawnWave(state) {
   for (let i = 0; i < asteroidCount; i += 1) {
     const x = Math.random() < 0.5 ? randomRange(-50, 0) : randomRange(state.worldW, state.worldW + 50);
     const y = randomRange(0, state.worldH);
-    state.asteroids.push(createAsteroid(state, x, y, chooseAsteroidType(state.wave), 3, []));
+    state.asteroids.push(createAsteroid(state, x, y, chooseAsteroidType(state.wave, state.modGoldenBoost), 3, []));
   }
 
   const spawnEnemies = Math.random() < clamp(BASE_ENEMY_FREQ + state.wave * 0.018 + intensity / 170, 0.3, 0.95);
@@ -617,7 +632,7 @@ function triggerEvent(state, eventDef, source) {
     else state.qaStats.chaosEvents += 1;
   }
   if (mapped === 'meteor-storm') {
-    for (let i = 0; i < 8; i += 1) state.asteroids.push(createAsteroid(state, randomRange(0, state.worldW), -40 - i * 30, chooseAsteroidType(state.wave + 2), 2, []));
+    for (let i = 0; i < 8; i += 1) state.asteroids.push(createAsteroid(state, randomRange(0, state.worldW), -40 - i * 30, chooseAsteroidType(state.wave + 2, state.modGoldenBoost), 2, []));
   }
   if (mapped === 'rogue-ships') state.enemies.push(createEnemy(state, 'hunter'), createEnemy(state, 'sniper'), createEnemy(state, 'swarm'));
   if (mapped === 'emp') state.empTimer = 5;
@@ -724,6 +739,23 @@ function resetRun(state) {
   state.waveStartElapsed = 0;
   state.qaWaveTimer = 0;
   state.qaStats = createQaStats();
+
+  // ── Cross-game modifiers ─────────────────────────────────────────────────
+  const crossMods = getActiveModifiers(GAME_ID, ASTEROID_FORK_CONFIG.crossGameTags || []);
+  state.modScoreMult = getStatEffect(crossMods, 'scoreMult', 1);
+  const modPressureRate = getStatEffect(crossMods, 'pressureRate', 1);
+  state.modGoldenBoost = getStatEffect(crossMods, 'goldenSpawnBoost', 0);
+  const modShielded = hasEffect(crossMods, 'shieldedStart');
+  if (modShielded) state.lives = Math.min(state.lives + 1, 5);
+
+  // ── Faction: refresh faction id and apply starting-shield + chaos modifier ─
+  try {
+    state.factionId = getPlayerFaction();
+    const _fx = getFactionEffects(state.factionId);
+    state.lives = Math.min(applyFactionStartingShield(state.lives, state.factionId, { supportsShield: true }), 5);
+    state.factionPressureMult = applyFactionEventRate(1, state.factionId) * modPressureRate;
+    if (_fx.bonusText) setTransientBanner(state.root, _fx.bonusText, '#f7c948');
+  } catch (_) { state.factionId = 'unaligned'; state.factionPressureMult = modPressureRate; }
   advanceWave(state);
 }
 
@@ -847,14 +879,15 @@ function splitAsteroid(state, asteroid) {
 
 function awardAsteroidKill(state, asteroid) {
   const def = ASTEROID_TYPE_DEFS[asteroid.type] || ASTEROID_TYPE_DEFS.basic;
-  state.score += def.score * (1 + state.wave * 0.15);
+  const rawScore = def.score * (1 + state.wave * 0.15) * (state.modScoreMult || 1);
+  state.score += applyFactionScore(rawScore, state.factionId, { timeAlive: state.elapsed });
   if (state.score > state.best) {
     state.best = state.score;
     ArcadeSync.setHighScore(GAME_ID, state.best);
   }
   pulseHud(state, state.scoreEl, 'pulse', 180);
   if (asteroid.type === 'crystal') {
-    state.score += 180;
+    state.score += applyFactionScore(180 * (state.modScoreMult || 1), state.factionId, { timeAlive: state.elapsed });
     applyUpgradePickup(state);
     cueBanner(state, 'Crystal Reward', '#8cffd5', 1.2);
   }
@@ -1473,6 +1506,20 @@ function handleGameOverIfNeeded(context) {
   recordRunStats({ score: summary.score, wave: summary.wave, survival: summary.survival });
   try { localStorage.setItem('asteroid_fork_last_run', JSON.stringify({ summary: summary, milestones: milestones, at: Date.now() })); } catch (_) {}
   submitScore(ArcadeSync.getPlayer(), Math.floor(state.score), GAME_ID).catch(function () {});
+  // ── Faction war contribution ─────────────────────────────────────────────
+  try {
+    const fid = state.factionId || 'unaligned';
+    if (summary.score > 0 && fid && fid !== 'unaligned') {
+      const contrib = Math.max(1, Math.floor(summary.score / 100));
+      recordContribution(fid, 'score_submission', contrib);
+      recordWarContribution();
+      checkRankUp(fid);
+      emitFactionGain(fid, contrib, 'score_submission');
+    }
+    recordMissionProgress(fid, 'survive', Math.round(state.elapsed || 0));
+    recordMissionProgress(fid, 'runs', 1);
+    recordLogin();
+  } catch (_) {}
   if (window.showGameOverModal) window.showGameOverModal(Math.floor(state.score));
   syncHud(state);
 }
@@ -1517,7 +1564,7 @@ function adapterUpdate(context, dt) {
   }
 
   state.elapsed += step;
-  tickDirector(state.director, step, state.score, state.wave, state.lives, state.upgrades, !!state.activeEvent, state.dailyVariation.eventRateMult);
+  tickDirector(state.director, step, state.score, state.wave, state.lives, state.upgrades, !!state.activeEvent, (state.dailyVariation.eventRateMult || 1) * (state.factionPressureMult || 1));
   if (state.qaEnabled) {
     state.director.pressure = Math.min(100, (state.director.pressure || 0) + step * 14);
   }
