@@ -58,7 +58,7 @@ export function emitFactionGain(factionId, amount, source) {
     faction: String(factionId || 'unaligned'),
     amount:  amt,
     source:  String(source || 'unknown'),
-    text:    _factionLabel(factionId) + ' +'  + amt + ' war power',
+    text:    _factionLabel(factionId) + ' +' + amt + ' war power',
   });
 }
 

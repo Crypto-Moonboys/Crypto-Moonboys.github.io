@@ -217,8 +217,7 @@ export function recordMissionProgress(factionId, eventType, value) {
       }
     });
 
-    if (changed) _saveState(s);
-    else _saveState(s);  // always persist incremental progress
+    _saveState(s);  // always persist incremental progress
   } catch (e) {
     try { console.warn('[faction-missions] recordMissionProgress error:', e); } catch (_) {}
   }
