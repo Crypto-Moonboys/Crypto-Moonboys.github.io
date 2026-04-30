@@ -9,7 +9,10 @@
 --   manual repair), this statement will fail with "duplicate column name".
 -- * That error is expected and safe to ignore on repeat runs.
 -- * To check before running:
---   SELECT faction, faction_xp, faction_last_switch FROM blocktopia_progression LIMIT 1;
+--   PRAGMA table_info('blocktopia_progression');
+--   Verify that 'faction', 'faction_xp', and 'faction_last_switch' are NOT listed in the
+--   'name' column before running. If they already appear, this migration is already applied
+--   and the duplicate-column errors are expected.
 
 ALTER TABLE blocktopia_progression ADD COLUMN faction TEXT NOT NULL DEFAULT 'unaligned';
 ALTER TABLE blocktopia_progression ADD COLUMN faction_xp INTEGER NOT NULL DEFAULT 0;
