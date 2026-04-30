@@ -8,6 +8,7 @@ import * as meta from '/js/arcade/systems/meta-system.js';
 import * as feedback from '/js/arcade/systems/feedback-system.js';
 
 export * from '/js/arcade/systems/cross-game-modifier-system.js';
+export * from '/js/arcade/systems/faction-effect-system.js';
 
 function createPassthroughSystem(name, apiModule) {
   return function () {

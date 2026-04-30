@@ -18,6 +18,15 @@ import { createGameAdapter, registerGameAdapter, bootstrapFromAdapter } from '/j
 import { playSound, stopAllSounds, isMuted } from '/js/arcade/core/audio.js';
 import { BaseGame } from '/js/arcade/engine/BaseGame.js';
 import { getActiveModifiers, hasEffect, getStatEffect } from '/js/arcade/systems/cross-game-modifier-system.js';
+import {
+  getPlayerFaction, getFactionEffects,
+  applyFactionScore, applyFactionStartingShield, applyFactionEventRate,
+} from '/js/arcade/systems/faction-effect-system.js';
+import { recordContribution } from '/js/arcade/systems/faction-war-system.js';
+import { recordMissionProgress } from '/js/arcade/systems/faction-missions.js';
+import { recordLogin, recordWarContribution } from '/js/arcade/systems/faction-streaks.js';
+import { checkRankUp } from '/js/arcade/systems/faction-ranks.js';
+import { emitFactionGain } from '/js/arcade/systems/live-activity.js';
 
 import {
   ROWS, COLS, INV_W, INV_H, INV_PAD,
@@ -234,6 +243,24 @@ function createLegacybootstrapInvaders(root) {
     modMagnetLuck       = hasEffect(_crossMods, 'magnetPickups');
     modRecoveryPulse    = hasEffect(_crossMods, 'recoveryPulse');
     modGoldenChance     = getStatEffect(_crossMods, 'goldenSpawnBoost', 0);
+    _refreshFactionState();
+  }
+
+  // ── Faction state ─────────────────────────────────────────────────────────
+  // Read-only, refreshed each run alongside cross-game modifiers.
+  let _factionId           = 'unaligned';
+  let _factionPressureMult = 1;
+
+  function _refreshFactionState() {
+    try {
+      _factionId = getPlayerFaction();
+      const _fx  = getFactionEffects(_factionId);
+      // Blend faction chaos modifier with the cross-game pressure rate
+      _factionPressureMult = applyFactionEventRate(1, _factionId);
+    } catch (_) {
+      _factionId           = 'unaligned';
+      _factionPressureMult = 1;
+    }
   }
 
   // â”€â”€ Meta / intensity feedback â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -302,7 +329,8 @@ function createLegacybootstrapInvaders(root) {
   function addScore(points, x, y, color) {
     if (!points) return;
     color = color || '#f7c948';
-    score += Math.round(points * modScoreMult);
+    const factionPts = applyFactionScore(points, _factionId, { timeAlive: elapsed });
+    score += Math.round(factionPts * modScoreMult);
     setBestMaybe();
     updateHud();
     triggerHudFx(scoreEl, 'pulse', 180);
@@ -663,6 +691,13 @@ function createLegacybootstrapInvaders(root) {
     player = { x: W / 2, y: H - 50, w: SHIP_W, h: SHIP_H, speed: 320, moveDir: 1, shielded: false };
     // Re-fetch cross-game modifiers so each new run picks up any selection change
     _refreshCrossMods();
+    // Apply faction starting-shield bonus (HODL Warriors: +1 life)
+    const factionShieldedLives = applyFactionStartingShield(lives, _factionId, { supportsShield: true });
+    if (factionShieldedLives > lives) {
+      lives = factionShieldedLives;
+      const _fxEntry = getFactionEffects(_factionId);
+      if (_fxEntry && _fxEntry.bonusText) addFloatingText(_fxEntry.bonusText, '#ff6ad5');
+    }
     updateHud();
     draw();
   }
@@ -755,8 +790,8 @@ function createLegacybootstrapInvaders(root) {
     // Recovery visual timer
     if (recoveryTimer > 0) recoveryTimer = Math.max(0, recoveryTimer - dt);
 
-    // Tick scaling director (pass event-active flag + daily pressure multiplier)
-    tickDirector(director, dt, score, wave, lives, upgrades, !!activeEvent, (dailyVariation.eventRateMult || 1) * modPressureRate);
+    // Tick scaling director (pass event-active flag + daily pressure multiplier + faction chaos modifier)
+    tickDirector(director, dt, score, wave, lives, upgrades, !!activeEvent, (dailyVariation.eventRateMult || 1) * modPressureRate * _factionPressureMult);
 
     // Forced chaos: inject a surprise event if the player has been safe too long
     if (!activeEvent && checkForcedChaos(director)) {
@@ -1572,6 +1607,20 @@ function createLegacybootstrapInvaders(root) {
     setBestMaybe();
     updateHud();
     playSfx('game_over');
+
+    // ── Faction war contribution (additive, does not alter submitScore) ──────
+    try {
+      if (score > 0 && _factionId && _factionId !== 'unaligned') {
+        const contrib = Math.max(1, Math.floor(score / 100));
+        recordContribution(_factionId, 'score_submission', contrib);
+        recordWarContribution();
+        checkRankUp(_factionId);
+        emitFactionGain(_factionId, contrib, 'score_submission');
+      }
+      recordMissionProgress(_factionId, 'survive', Math.floor(elapsed));
+      recordMissionProgress(_factionId, 'runs', 1);
+      recordLogin();
+    } catch (_) {}
 
     // Build run summary and persist meta-stats
     const survivalTime = elapsed;

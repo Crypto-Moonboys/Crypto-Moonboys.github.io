@@ -104,8 +104,10 @@
 import { mountGame }      from '/js/arcade/core/game-shell.js';
 import { bootstrapSnakeRun } from '/js/arcade/games/snake-run/bootstrap.js';
 import { mountModifierPanel } from '/js/arcade/systems/cross-game-modifier-ui.js';
+import { mountFactionHud } from '/js/arcade/ui/faction-hud.js';
 mountGame({ root: document.querySelector('.game-card'), bootstrap: bootstrapSnakeRun });
 mountModifierPanel();
+mountFactionHud();
 </script>
 </body>
 </html>

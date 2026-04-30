@@ -127,8 +127,10 @@
 import { mountGame }         from '/js/arcade/core/game-shell.js';
 import { bootstrapInvaders } from '/js/arcade/games/invaders/bootstrap.js';
 import { mountModifierPanel } from '/js/arcade/systems/cross-game-modifier-ui.js';
+import { mountFactionHud } from '/js/arcade/ui/faction-hud.js';
 mountGame({ root: document.querySelector('.game-card'), bootstrap: bootstrapInvaders });
 mountModifierPanel();
+mountFactionHud();
 </script>
 </body>
 </html>

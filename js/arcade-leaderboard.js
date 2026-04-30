@@ -5,6 +5,9 @@
    ============================================================ */
 
 import { fetchLeaderboard } from '/js/leaderboard-client.js';
+import { getFactionStandings } from '/js/arcade/systems/faction-war-system.js';
+import { getDailyRotation } from '/js/arcade/systems/global-rotation-system.js';
+import { getAllRanks } from '/js/arcade/systems/faction-ranks.js';
 
 // Resolved text constants — use global set by ui-status-copy.js (classic script);
 // fall back to literals so the module works even if the script tag is missing.
@@ -443,6 +446,96 @@ async function loadLeaderboard() {
   }
 }
 
+// ── Faction war standings layer ───────────────────────────────────────────
+// This aggregates faction contribution separately from core leaderboard scores.
+// It does not modify score submission math or leaderboard core logic.
+
+const FACTION_COLORS = {
+  'diamond-hands': '#56dcff',
+  'hodl-warriors': '#ff6ad5',
+  graffpunks:      '#7dff72',
+};
+
+const FACTION_LABELS = {
+  'diamond-hands': '💎 Diamond Hands',
+  'hodl-warriors': '⚔️ HODL Warriors',
+  graffpunks:      '🎨 GraffPUNKS',
+};
+
+function renderFactionStandings() {
+  var container = el('lb-faction-standings');
+  if (!container) {
+    // Create and inject after #lb-body or #lb-table-wrap if present
+    var anchor = el('lb-body') || el('lb-table-wrap') || document.querySelector('.lb-wrap, main');
+    if (!anchor) return;
+    container = document.createElement('div');
+    container.id = 'lb-faction-standings';
+    anchor.insertAdjacentElement('afterend', container);
+  }
+
+  var standings, rotation, ranks;
+  try { standings = getFactionStandings(); } catch (_) { standings = []; }
+  try { rotation  = getDailyRotation(); }   catch (_) { rotation = null; }
+  try { ranks     = getAllRanks(); }         catch (_) { ranks = []; }
+
+  var rankMap = {};
+  ranks.forEach(function (r) { rankMap[r.faction] = r.rank; });
+
+  var rowsHtml = standings.map(function (s, i) {
+    var color  = FACTION_COLORS[s.faction] || '#8b949e';
+    var label  = FACTION_LABELS[s.faction] || s.faction;
+    var rank   = rankMap[s.faction] || {};
+    var rankBadge = escHtml((rank.badge || '◌') + ' ' + (rank.label || 'Recruit'));
+    var medal  = i === 0 ? '🥇' : i === 1 ? '🥈' : '🥉';
+    var momentum = '';
+    for (var m = 0; m < (s.momentum || 0); m++) momentum += '🔥';
+    return '<tr class="lb-fw-row">'
+      + '<td class="lb-fw-rank">' + medal + '</td>'
+      + '<td class="lb-fw-name" style="color:' + escHtml(color) + '">' + escHtml(label) + '</td>'
+      + '<td class="lb-fw-power">' + formatScore(s.power) + '</td>'
+      + '<td class="lb-fw-daily">' + formatScore(s.daily) + '</td>'
+      + '<td class="lb-fw-weekly">' + formatScore(s.weekly) + '</td>'
+      + '<td class="lb-fw-rank-badge">' + rankBadge + '</td>'
+      + '<td class="lb-fw-momentum">' + (momentum || '—') + '</td>'
+      + '</tr>';
+  }).join('');
+
+  var rotationHtml = rotation
+    ? '<div class="lb-fw-rotation">📅 Today: ' + escHtml(rotation.label || '—') + '</div>'
+    : '';
+
+  container.innerHTML = '<div class="lb-fw-section">'
+    + '<h3 class="lb-fw-title">⚔️ Faction War Standings</h3>'
+    + rotationHtml
+    + (standings.length
+      ? '<table class="lb-fw-table"><thead><tr>'
+        + '<th></th><th>Faction</th><th>Power</th><th>Daily</th><th>Weekly</th><th>Rank</th><th>Momentum</th>'
+        + '</tr></thead><tbody>' + rowsHtml + '</tbody></table>'
+      : '<p class="lb-fw-empty">No faction data yet. Play arcade games to earn faction war power.</p>'
+    )
+    + '</div>';
+}
+
+function _injectFactionStandingsStyles() {
+  if (document.getElementById('lb-faction-standings-styles')) return;
+  var style = document.createElement('style');
+  style.id = 'lb-faction-standings-styles';
+  style.textContent = [
+    '.lb-fw-section{margin-top:20px;background:rgba(255,255,255,.03);border:1px solid var(--color-border,#333);border-radius:16px;padding:14px 16px}',
+    '.lb-fw-title{font-size:.88rem;font-weight:700;letter-spacing:.04em;color:#f7c948;margin:0 0 10px}',
+    '.lb-fw-rotation{font-size:.76rem;color:#56dcff;margin-bottom:10px;border-bottom:1px solid var(--color-border,#2a2a2a);padding-bottom:8px}',
+    '.lb-fw-table{width:100%;border-collapse:collapse;font-size:.78rem}',
+    '.lb-fw-table th{text-align:left;padding:4px 6px;color:var(--color-text-muted,#888);font-weight:600;border-bottom:1px solid var(--color-border,#333)}',
+    '.lb-fw-table td{padding:5px 6px;border-bottom:1px solid rgba(255,255,255,.05)}',
+    '.lb-fw-rank{font-size:1rem;width:28px}',
+    '.lb-fw-power{font-weight:700}',
+    '.lb-fw-rank-badge{font-size:.72rem;color:var(--color-text-muted,#aaa)}',
+    '.lb-fw-momentum{font-size:.78rem}',
+    '.lb-fw-empty{font-size:.78rem;color:var(--color-text-muted,#888);margin:0}',
+  ].join('');
+  document.head.appendChild(style);
+}
+
 // ── Public init ───────────────────────────────────────────────────────────
 export function initLeaderboard({ onRowSelect, onModeChange } = {}) {
   if (onRowSelect) onRowSelectCallback = onRowSelect;
@@ -502,6 +595,16 @@ export function initLeaderboard({ onRowSelect, onModeChange } = {}) {
     if (!event || event.key !== PRESENCE_OFFLINE_KEY) return;
     renderLinkedPresence();
   });
+
+  // Inject faction war standings below the core leaderboard (separate from score logic)
+  _injectFactionStandingsStyles();
+  renderFactionStandings();
+
+  // Refresh standings when faction war data changes
+  var _busRef = window.MOONBOYS_EVENT_BUS;
+  if (_busRef && typeof _busRef.on === 'function') {
+    _busRef.on('faction:war:contribution', function () { renderFactionStandings(); });
+  }
 
   loadLeaderboard();
 }
