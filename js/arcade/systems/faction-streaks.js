@@ -262,7 +262,9 @@ export async function hydrateStreaksFromServer() {
     if (data && data.ok && data.linked && data.mission_streaks) {
       var ms = data.mission_streaks;
       var s = _loadState();
-      // Server is authoritative — assign directly, do not use Math.max
+      // Server is authoritative for count and lastDate — assign directly without Math.max.
+      // The 'best' field tracks the all-time local high-water mark and uses Math.max
+      // to preserve a local best that may exceed the server's current streak value.
       if (typeof ms.mission_streak === 'number') {
         s.mission.count = ms.mission_streak;
         s.mission.best = Math.max(s.mission.best || 0, ms.mission_streak);

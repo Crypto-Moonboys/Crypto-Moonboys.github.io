@@ -2238,7 +2238,7 @@ export default {
       const missionId = String(body?.mission_id || '').trim();
       const rawAmount = body && Object.prototype.hasOwnProperty.call(body, 'amount')
         ? Number(body.amount)
-        : 1;
+        : 1; // default: 1 increment when amount is omitted
       if (!Number.isFinite(rawAmount)) return err('amount must be a positive number', 400);
       const amount = Math.floor(rawAmount);
       if (amount <= 0) return err('amount must be a positive integer', 400);
@@ -2353,15 +2353,15 @@ export default {
       const rawContribution = Number(body?.contribution);
       if (!Number.isFinite(rawContribution) || rawContribution <= 0) return err('contribution must be a positive integer', 400);
       const contribution = Math.floor(rawContribution);
-      if (contribution > FACTION_SIGNAL_CONTRIBUTION_MAX) return err('contribution exceeds max per request', 400);
+      if (contribution > FACTION_SIGNAL_CONTRIBUTION_MAX) return err(`contribution exceeds max per request (${FACTION_SIGNAL_CONTRIBUTION_MAX})`, 400);
       // Validate game_id: alphanumeric, hyphens, underscores only; max 64 chars
       const rawGameId = String(body?.game_id || 'global').trim();
-      if (!/^[a-zA-Z0-9_-]{1,64}$/.test(rawGameId)) return err('game_id contains invalid characters', 400);
+      if (!/^[a-zA-Z0-9_-]{1,64}$/.test(rawGameId)) return err('game_id must contain only alphanumeric characters, hyphens, and underscores (max 64 chars)', 400);
       const gameId = rawGameId;
       // Validate reason against allowlist; fall back to 'score_submission' if omitted
       const rawReason = String(body?.reason || 'score_submission').trim().toLowerCase();
       const reason = FACTION_SIGNAL_ALLOWED_REASONS.has(rawReason) ? rawReason : null;
-      if (!reason) return err('reason not recognised', 400);
+      if (!reason) return err('reason not recognized', 400);
       try {
         { const _ptCheck = await ensurePlayerStateTables(env.DB); if (_ptCheck) return _ptCheck.response; }
         const todayKey = getTodayUtcDate();

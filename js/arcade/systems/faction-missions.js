@@ -201,7 +201,7 @@ export function recordMissionProgress(factionId, eventType, value) {
     selected.forEach(function (m) {
       if (m.type !== eventType) return;
       if (completedToday.indexOf(m.id) !== -1) return;
-      var delta = Math.max(0, Math.floor(Number(value) || 0));
+      var delta = Math.floor(Number(value) || 0);
       if (delta <= 0) return;  // no-op — skip update and server sync
       dailyProg[m.id] = (dailyProg[m.id] || 0) + delta;
       if (dailyProg[m.id] >= m.target) {
