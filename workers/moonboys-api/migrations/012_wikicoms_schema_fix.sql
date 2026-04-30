@@ -76,7 +76,7 @@ SELECT
   COALESCE(updated_at, CURRENT_TIMESTAMP)
 FROM blocktopia_progression;
 
-DROP TABLE blocktopia_progression;
+DROP TABLE IF EXISTS blocktopia_progression;
 ALTER TABLE blocktopia_progression__012_rebuild RENAME TO blocktopia_progression;
 
 CREATE INDEX IF NOT EXISTS idx_blocktopia_progression_xp

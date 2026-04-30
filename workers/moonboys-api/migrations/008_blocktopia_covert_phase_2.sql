@@ -2,6 +2,15 @@
 --
 -- Apply to live D1 database:
 --   wrangler d1 execute wikicoms --file=workers/moonboys-api/migrations/008_blocktopia_covert_phase_2.sql --remote
+--
+-- Production safety notes:
+-- * SQLite/D1 does not support "ALTER TABLE … ADD COLUMN IF NOT EXISTS".
+-- * If any column below already exists (e.g. because schema.sql was used to bootstrap the
+--   live DB), this statement will fail with "duplicate column name".
+-- * That error is expected and safe to ignore on repeat runs.
+-- * To check before running:
+--   SELECT stealth_boost_until, recovery_count FROM blocktopia_covert_agents LIMIT 1;
+--   SELECT heat_before, heat_after FROM blocktopia_covert_operations LIMIT 1;
 
 ALTER TABLE blocktopia_covert_agents ADD COLUMN stealth_boost_until DATETIME;
 ALTER TABLE blocktopia_covert_agents ADD COLUMN recovery_count INTEGER NOT NULL DEFAULT 0;
