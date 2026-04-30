@@ -21,3 +21,6 @@ jobs:
 
       - name: Run anti-drift checks
         run: node scripts/anti-drift-check.mjs
+
+      - name: No dead placeholder copy
+        run: node scripts/no-dead-placeholder-copy.mjs

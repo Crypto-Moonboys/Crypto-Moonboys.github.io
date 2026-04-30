@@ -8,7 +8,8 @@
  *
  * Exit codes:
  *   0 — all clear
- *   1 — dead placeholder text found in one or more core pages
+ *   1 — dead placeholder text found in one or more core pages, or a
+ *       required core file is missing
  */
 
 import { readFileSync, existsSync } from 'fs';
@@ -37,9 +38,12 @@ const CORE_JS = [
   'js/arcade-leaderboard.js',
 ];
 
-// ── Forbidden patterns (case-insensitive) ────────────────────────────────────
+// ── Forbidden patterns ───────────────────────────────────────────────────────
 // These must never appear as user-facing copy in core pages.
 // Exceptions: content inside <!-- ... --> HTML comments is ignored.
+// All regexes must NOT use the global flag (g) — they are used with exec()
+// against the full source string and the global flag would cause stateful
+// lastIndex behaviour that makes repeated .exec() calls unreliable here.
 const FORBIDDEN = [
   /will appear here once(?: the)? engagement layer is live/i,
   /once community engagement is live/i,
@@ -59,8 +63,8 @@ const FORBIDDEN = [
   /future layer shown as live/i,
 ];
 
-// Strip HTML comments so we don't flag commented-out legacy copy.
-// Processes line by line to avoid regex patterns that may miss edge cases.
+// ── HTML comment stripper ────────────────────────────────────────────────────
+// Character-by-character walk so no regex can miss nested/pathological cases.
 function stripHtmlComments(src) {
   var result = [];
   var inComment = false;
@@ -80,6 +84,30 @@ function stripHtmlComments(src) {
   return result.join('');
 }
 
+// ── Line-number helper ───────────────────────────────────────────────────────
+// Returns the 1-based line number for a character offset in src.
+function lineNumberForIndex(src, index) {
+  return src.slice(0, index).split('\n').length;
+}
+
+// ── Scan a single file against all FORBIDDEN patterns ───────────────────────
+// Scans against the full source string so multi-line strings are caught.
+function scanFile(rel, src) {
+  var found = 0;
+  for (var p = 0; p < FORBIDDEN.length; p++) {
+    var pattern = FORBIDDEN[p];
+    var match = pattern.exec(src);
+    if (match) {
+      var line = lineNumberForIndex(src, match.index);
+      console.error('[FAIL]  ' + rel + ':' + line + '  →  matched: ' + pattern);
+      console.error('        ' + match[0].slice(0, 120));
+      found++;
+    }
+  }
+  return found;
+}
+
+// ── Main ─────────────────────────────────────────────────────────────────────
 let failures = 0;
 
 const allFiles = [...CORE_PAGES, ...CORE_JS];
@@ -87,33 +115,21 @@ const allFiles = [...CORE_PAGES, ...CORE_JS];
 for (const rel of allFiles) {
   const abs = join(ROOT, rel);
   if (!existsSync(abs)) {
-    // Only warn for HTML pages that are expected to exist
-    if (rel.endsWith('.html')) {
-      console.warn(`[skip]  ${rel} — file not found`);
-    }
+    console.error(`[FAIL]  ${rel} — expected core file not found`);
+    failures++;
     continue;
   }
 
   const raw = readFileSync(abs, 'utf8');
   const src = rel.endsWith('.html') ? stripHtmlComments(raw) : raw;
-  const lines = src.split('\n');
 
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i];
-    for (const pattern of FORBIDDEN) {
-      if (pattern.test(line)) {
-        console.error(`[FAIL]  ${rel}:${i + 1}  →  matched: ${pattern}`);
-        console.error(`        ${line.trim().slice(0, 120)}`);
-        failures++;
-      }
-    }
-  }
+  failures += scanFile(rel, src);
 }
 
 if (failures === 0) {
   console.log('[PASS]  No dead placeholder copy found in core pages.');
   process.exit(0);
 } else {
-  console.error(`\n[FAIL]  ${failures} dead-placeholder violation(s) found. Fix before merging.`);
+  console.error(`\n[FAIL]  ${failures} violation(s) found. Fix before merging.`);
   process.exit(1);
 }

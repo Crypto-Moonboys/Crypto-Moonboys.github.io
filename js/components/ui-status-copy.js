@@ -36,8 +36,9 @@
 
     /**
      * Panel-level HTML helpers.
-     * Each returns a safe HTML string for rendering in a widget body.
-     * All values are static — no XSS risk.
+     * Each returns a controlled HTML string for rendering in a widget body.
+     * Helpers return controlled HTML strings. Dynamic values are coerced
+     * before interpolation — no raw caller input is ever inserted directly.
      */
     panels: Object.freeze({
 
@@ -82,7 +83,9 @@
 
       /** Block Topia gate is locked. */
       blockTopiaLocked: function (requiredXp) {
-        var req = requiredXp || 50;
+        // Coerce to a safe positive integer; fall back to the default threshold.
+        var n = Number(requiredXp);
+        var req = (Number.isFinite(n) && n > 0) ? Math.floor(n) : 50;
         return '<p class="status-hint">Reach ' + req + ' Arcade XP and link Telegram to unlock Block Topia Multiplayer.</p>';
       },
     }),
