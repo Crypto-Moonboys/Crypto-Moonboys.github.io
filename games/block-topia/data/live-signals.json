@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-04-30T19:24:23.464Z",
+  "generatedAt": "2026-04-30T20:39:41.557Z",
   "mode": "live-ai",
   "sourceHealth": {
     "coingecko-global": "ok",
@@ -11,85 +11,84 @@
   "signalCount": 5,
   "signals": [
     {
-      "id": "signal-1777577063463-1",
+      "id": "signal-1777581581556-1",
       "lane": "world",
       "priority": 4,
-      "ttlMinutes": 45,
-      "npcLine": "Market flux tightens; fear grip squeezes trade nodes.",
-      "questPulse": "Unstable credits spike in shadow markets; risky gains lure.",
-      "worldFeed": "Global cryptos jitter; asset flows hint at unseen hand.",
-      "clueEvent": "Widespread fear lowers node transaction speeds.",
+      "ttlMinutes": 120,
+      "npcLine": "Crypto tides shift; trust falters in neon-lit alleys.",
+      "questPulse": "Recover lost funds from shadow exchanges before market dives.",
+      "worldFeed": "Digital credit rises slightly; fear grips the data streets.",
+      "clueEvent": "Encrypted chatter hints at looming pump and dump schemes.",
       "tags": [
-        "market",
+        "crypto",
         "fear",
-        "crypto"
+        "market-shift"
       ],
-      "expiresAt": "2026-04-30T20:09:23.463Z"
+      "expiresAt": "2026-04-30T22:39:41.556Z"
     },
     {
-      "id": "signal-1777577063464-2",
+      "id": "signal-1777581581557-2",
       "lane": "ops",
       "priority": 3,
-      "ttlMinutes": 30,
-      "npcLine": "Pulse on ACN and TAO spikes—potential data breaches.",
-      "questPulse": "Surveillance tags ping unusual activity on mid-tier tokens.",
-      "worldFeed": "Node disruptions reported near key crypto hubs.",
-      "clueEvent": "Encrypted packets trace to volatile asset clusters.",
+      "ttlMinutes": 90,
+      "npcLine": "Pengu’s remnants gather; whispers of rise under neon smog.",
+      "questPulse": "Intercept rogue traders exploiting MEGA and PENGU weaknesses.",
+      "worldFeed": "Small spikes in alt-data suggest brewing token skirmishes.",
+      "clueEvent": "Fragmented signals reveal new players in forgotten markets.",
       "tags": [
-        "surveillance",
-        "crypto",
-        "alert"
+        "altcoins",
+        "trade",
+        "intel"
       ],
-      "expiresAt": "2026-04-30T19:54:23.464Z"
+      "expiresAt": "2026-04-30T22:09:41.557Z"
     },
     {
-      "id": "signal-1777577063464-3",
+      "id": "signal-1777581581557-3",
       "lane": "clue",
-      "priority": 2,
-      "ttlMinutes": 60,
-      "npcLine": "LUNC and PENGU currents shift; traders whisper of shift.",
-      "questPulse": "Silent shifts in token waves presage upheaval.",
-      "worldFeed": "Crypto undercurrents surge without clear origin signals.",
-      "clueEvent": "Data mines catch faint hints of market manipulation.",
-      "tags": [
-        "crypto",
-        "manipulation",
-        "whispers"
-      ],
-      "expiresAt": "2026-04-30T20:24:23.464Z"
-    },
-    {
-      "id": "signal-1777577063464-4",
-      "lane": "quest",
       "priority": 5,
-      "ttlMinutes": 120,
-      "npcLine": "Hunt for rogue code spreading anomalies in crypto cores.",
-      "questPulse": "Decode hidden scripts affecting token valuations urgently.",
-      "worldFeed": "Networks infected, value distortions spike around core nodes.",
-      "clueEvent": "Trace marks reveal path of synthetic market destabilizers.",
+      "ttlMinutes": 60,
+      "npcLine": "Fear level spikes; insiders mask moves behind coded hazes.",
+      "questPulse": "Decode market whispers to anticipate sudden drops.",
+      "worldFeed": "Subtle shifts in cryptostreams hint at massive sell-offs.",
+      "clueEvent": "Silent alerts pulse from unseen nodes across the grid.",
       "tags": [
-        "hunt",
-        "rogue-code",
-        "crypto",
-        "urgent"
+        "fear",
+        "market-collapse",
+        "intel"
       ],
-      "expiresAt": "2026-04-30T21:24:23.464Z"
+      "expiresAt": "2026-04-30T21:39:41.557Z"
     },
     {
-      "id": "signal-1777577063464-5",
+      "id": "signal-1777581581557-4",
+      "lane": "quest",
+      "priority": 2,
+      "ttlMinutes": 150,
+      "npcLine": "LUNC shadows flicker; chance for courier-run of secret data.",
+      "questPulse": "Extract hidden info tied to unstable coins before fadeout.",
+      "worldFeed": "Minor activity clusters near volatile tokens; stay alert.",
+      "clueEvent": "Lines cross in dark net forums discussing token revival.",
+      "tags": [
+        "data-run",
+        "tokens",
+        "quest"
+      ],
+      "expiresAt": "2026-04-30T23:09:41.557Z"
+    },
+    {
+      "id": "signal-1777581581557-5",
       "lane": "npc",
       "priority": 1,
-      "ttlMinutes": 15,
-      "npcLine": "Silent whispers: MEGA fades in the shadowed market noise.",
-      "questPulse": "Low signal on MEGA; potential system ghost.",
-      "worldFeed": "Data streams drop MEGA pulse below detection for now.",
-      "clueEvent": "Ghost packets hide near MEGA clusters.",
+      "ttlMinutes": 180,
+      "npcLine": "Old mon whispers of a coming shift; trust no one.",
+      "questPulse": "Seek alliances with lost traders wary of new schemes.",
+      "worldFeed": "Market calm masks undercurrents of unrest among peers.",
+      "clueEvent": "Cryptic warnings issued via encrypted broadcasts to select few.",
       "tags": [
-        "ghost",
-        "market",
-        "low-signal"
+        "trust",
+        "alliances",
+        "rumors"
       ],
-      "expiresAt": "2026-04-30T19:39:23.464Z"
+      "expiresAt": "2026-04-30T23:39:41.557Z"
     }
   ]
 }
