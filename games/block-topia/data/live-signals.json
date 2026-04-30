@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-04-30T22:57:39.563Z",
+  "generatedAt": "2026-04-30T23:57:41.692Z",
   "mode": "live-ai",
   "sourceHealth": {
     "coingecko-global": "ok",
@@ -11,84 +11,84 @@
   "signalCount": 5,
   "signals": [
     {
-      "id": "signal-1777589859563-1",
+      "id": "signal-1777593461691-1",
       "lane": "world",
       "priority": 4,
       "ttlMinutes": 45,
-      "npcLine": "Market pulse rises slightly; shadows shift beneath neon lights.",
-      "questPulse": "Find the data shard tracking the shifting digital assets.",
-      "worldFeed": "Crypto cosmos flickers with minor uptick amid unrest.",
-      "clueEvent": "Silent traders whisper rumors of new asset stirring fears.",
-      "tags": [
-        "market-flux",
-        "digital-assets",
-        "low-risk"
-      ],
-      "expiresAt": "2026-04-30T23:42:39.563Z"
-    },
-    {
-      "id": "signal-1777589859563-2",
-      "lane": "ops",
-      "priority": 5,
-      "ttlMinutes": 30,
-      "npcLine": "Fear grips the network; spikes in volatility detected.",
-      "questPulse": "Infiltrate the secure node to extract volatile asset data.",
-      "worldFeed": "Sentiment drops, traders tighten grip on fading neon fortunes.",
-      "clueEvent": "Encrypted chatter hints at impending market shifts.",
+      "npcLine": "Market pulse flickers—fear grips neon streets.",
+      "questPulse": "Shadow traders sniff volatile flows. Stay alert.",
+      "worldFeed": "Cryptos pulse weak, but underground codes shift.",
+      "clueEvent": "Data shards reveal cautious chatter in dark nets.",
       "tags": [
         "fear",
         "volatility",
-        "high-risk"
+        "cryptos"
       ],
-      "expiresAt": "2026-04-30T23:27:39.563Z"
+      "expiresAt": "2026-05-01T00:42:41.691Z"
     },
     {
-      "id": "signal-1777589859563-3",
-      "lane": "clue",
+      "id": "signal-1777593461691-2",
+      "lane": "ops",
       "priority": 3,
-      "ttlMinutes": 60,
-      "npcLine": "New tokens like MEGA and ACN curve quietly in shadows.",
-      "questPulse": "Locate the operator behind rising token whispers.",
-      "worldFeed": "Unknown currencies surface amidst turbulent cyber tides.",
-      "clueEvent": "Fragmented signals reveal unusual token activity patterns.",
+      "ttlMinutes": 30,
+      "npcLine": "Whispers of new coins, but trust runs low.",
+      "questPulse": "Scan for bullish ghosts among silent blockchains.",
+      "worldFeed": "Active tokens swell; liquidity war heats up.",
+      "clueEvent": "Signal spike on lesser-known cryptos—could be trap.",
       "tags": [
-        "emerging-assets",
-        "whispers",
-        "medium-risk"
+        "cryptos",
+        "alert",
+        "scan"
       ],
-      "expiresAt": "2026-04-30T23:57:39.563Z"
+      "expiresAt": "2026-05-01T00:27:41.691Z"
     },
     {
-      "id": "signal-1777589859563-4",
+      "id": "signal-1777593461691-3",
+      "lane": "clue",
+      "priority": 5,
+      "ttlMinutes": 20,
+      "npcLine": "Odd buzz around 'PENGU' relics—something hides beneath.",
+      "questPulse": "Decrypt hidden codes linked to fresh symbols rising.",
+      "worldFeed": "Undercity nodes detect unusual chatter tagged 'PENGU'.",
+      "clueEvent": "Encrypted message hints at surge in shadow market.",
+      "tags": [
+        "mystery",
+        "encryption",
+        "pengu"
+      ],
+      "expiresAt": "2026-05-01T00:17:41.691Z"
+    },
+    {
+      "id": "signal-1777593461691-4",
       "lane": "quest",
       "priority": 2,
-      "ttlMinutes": 90,
-      "npcLine": "Neon phantoms BIO and AI emerge, altering digital landscapes.",
-      "questPulse": "Trace back the origins of biotech and AI token flows.",
-      "worldFeed": "Synthetic sentience blurs with blockchain shadows.",
-      "clueEvent": "Ghost nodes pulse with biotech and AI token signatures.",
+      "ttlMinutes": 60,
+      "npcLine": "Old corps' biotech secrets leak; risk high.",
+      "questPulse": "Gather intel on BIO faction’s shadow experiments.",
+      "worldFeed": "Biotech rumors swirl, promise revolutions or collapse.",
+      "clueEvent": "Encrypted leaks suggest breakthrough—and sabotage risk.",
       "tags": [
-        "ai",
         "biotech",
-        "exploration"
+        "risk",
+        "intel"
       ],
-      "expiresAt": "2026-05-01T00:27:39.563Z"
+      "expiresAt": "2026-05-01T00:57:41.691Z"
     },
     {
-      "id": "signal-1777589859563-5",
+      "id": "signal-1777593461692-5",
       "lane": "npc",
       "priority": 3,
-      "ttlMinutes": 50,
-      "npcLine": "PENGU's chill sends ripples through the data maze.",
-      "questPulse": "Connect with street brokers watching the cold token's rise.",
-      "worldFeed": "Icy winds blow through token markets, sparking cautious moves.",
-      "clueEvent": "Broker logs reference PENGU's growing influence underground.",
+      "ttlMinutes": 40,
+      "npcLine": "Mega market traders whisper: nothing’s certain here.",
+      "questPulse": "Track ACN operators weaving webs in market chaos.",
+      "worldFeed": "Trader nets flicker, tension rising under neon glow.",
+      "clueEvent": "Encrypted nods hint at corporate power plays.",
       "tags": [
-        "cold-token",
-        "underground",
-        "medium-risk"
+        "traders",
+        "market",
+        "uncertainty"
       ],
-      "expiresAt": "2026-04-30T23:47:39.563Z"
+      "expiresAt": "2026-05-01T00:37:41.692Z"
     }
   ]
 }
