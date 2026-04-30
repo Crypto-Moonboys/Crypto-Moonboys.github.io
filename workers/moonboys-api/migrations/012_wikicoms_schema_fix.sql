@@ -1,5 +1,34 @@
 -- Migration 012: repair the live Block Topia progression schema on D1.
 --
+-- !! DESTRUCTIVE MIGRATION — READ BEFORE APPLYING !!
+-- =====================================================
+-- This migration DROPS and RECREATES blocktopia_progression.
+-- DO NOT run this migration casually or as part of a routine deploy.
+-- Apply ONLY when directed in docs/D1_MIGRATION_RUNBOOK.md (§8).
+--
+-- PREFLIGHT REQUIRED — run the query below before applying:
+--
+--   SELECT COUNT(*) AS at_risk_rows
+--   FROM blocktopia_progression
+--   WHERE faction != 'unaligned'
+--      OR faction_xp > 0
+--      OR faction_last_switch IS NOT NULL;
+--
+-- If at_risk_rows > 0, DO NOT RUN THIS MIGRATION.
+-- Those rows have live faction/faction_xp/faction_last_switch data.
+-- The INSERT SELECT in this migration does NOT copy those columns.
+-- Running now will PERMANENTLY RESET all faction progress to defaults.
+-- Instead, create a new repair migration that preserves those columns
+-- before attempting this rebuild.  See docs/D1_MIGRATION_RUNBOOK.md §8.
+--
+-- DATA LOSS RISK DETAIL:
+--   The INSERT SELECT below copies only the columns listed explicitly.
+--   faction, faction_xp, and faction_last_switch are NOT in the SELECT.
+--   Any existing faction data will be lost and reset to defaults:
+--     faction          → 'unaligned'
+--     faction_xp       → 0
+--     faction_last_switch → NULL
+--
 -- Cloudflare D1 does not accept:
 --   ALTER TABLE ... ADD COLUMN IF NOT EXISTS ...
 --

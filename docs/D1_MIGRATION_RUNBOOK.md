@@ -201,4 +201,76 @@ the state — do not modify or delete the broken one without first auditing the 
 | No `001_initial.sql` | The initial schema was applied via `schema.sql`, not Wrangler migrations.  Wrangler has no record of the initial tables. |
 | `002` blocked on `telegram_profiles` | Fixed in this PR by adding `CREATE TABLE IF NOT EXISTS telegram_profiles`. |
 | Duplicate-column failures in 005, 006, 009, 011, 013 | Production columns already exist from a manual 011 repair.  Use step 5 above — verify every column and index from each migration exists in production before marking it applied. |
-| `012` drops `blocktopia_progression` | This is a destructive rebuild migration.  Only run when directed.  Faction XP is preserved only if rows were inserted with faction defaults. |
+| `012` drops `blocktopia_progression` | **DESTRUCTIVE REBUILD.** Do not run without preflight. See §8. INSERT SELECT does NOT preserve faction, faction_xp, or faction_last_switch — all existing faction data will be reset to defaults. |
+
+---
+
+## 8. Migration 012 — required preflight and safety gate
+
+> ⛔ **Migration 012 is destructive. It MUST NOT be run without completing the preflight
+> below. Skipping this step will silently erase all live faction progress.**
+
+### What migration 012 does
+
+`012_wikicoms_schema_fix.sql` drops and recreates the `blocktopia_progression` table using
+a temporary rebuild table and `ALTER TABLE … RENAME TO`.
+
+The `INSERT SELECT` copies only these columns from the old table:
+`telegram_id`, `xp`, `gems`, `tier`, `win_streak`, `upgrade_efficiency`,
+`upgrade_signal`, `upgrade_defense`, `upgrade_gem`, `upgrade_npc`,
+`rpg_mode_active`, `network_heat`, `network_heat_updated_at`, `last_active`,
+`updated_at`.
+
+**The following columns are NOT copied and will be reset to defaults:**
+
+| Column | Default after 012 |
+|---|---|
+| `faction` | `'unaligned'` |
+| `faction_xp` | `0` |
+| `faction_last_switch` | `NULL` |
+
+### Required preflight query
+
+Before applying migration 012, run the following query against production:
+
+```sh
+npx wrangler d1 execute wikicoms --remote \
+  --config workers/moonboys-api/wrangler.toml \
+  --command "SELECT COUNT(*) AS at_risk_rows FROM blocktopia_progression WHERE faction != 'unaligned' OR faction_xp > 0 OR faction_last_switch IS NOT NULL;"
+```
+
+### Decision gate
+
+| Result | Action |
+|---|---|
+| `at_risk_rows = 0` | Safe to apply 012. All rows have default faction values. Proceed. |
+| `at_risk_rows > 0` | **DO NOT RUN 012.** Live faction/faction_xp/faction_last_switch data exists. Running now will permanently erase it. |
+
+### If at_risk_rows > 0 — what to do instead
+
+1. **Do not apply migration 012.**
+2. Create a **new numbered migration** (e.g. `016_blocktopia_progression_faction_safe_rebuild.sql`)
+   that performs the same rebuild but includes `faction`, `faction_xp`, and
+   `faction_last_switch` in the INSERT SELECT:
+
+   ```sql
+   INSERT INTO blocktopia_progression__016_rebuild (
+     telegram_id, xp, gems, tier, win_streak,
+     upgrade_efficiency, upgrade_signal, upgrade_defense,
+     upgrade_gem, upgrade_npc, rpg_mode_active,
+     faction, faction_xp, faction_last_switch,
+     network_heat, network_heat_updated_at, last_active, updated_at
+   )
+   SELECT
+     telegram_id,
+     COALESCE(xp, 0),
+     -- ... other columns ...
+     COALESCE(faction, 'unaligned'),
+     COALESCE(faction_xp, 0),
+     faction_last_switch,
+     -- ... rest of columns ...
+   FROM blocktopia_progression;
+   ```
+
+3. Apply the new migration instead, and mark 012 as applied in `d1_migrations`
+   only after confirming all data is correct.
