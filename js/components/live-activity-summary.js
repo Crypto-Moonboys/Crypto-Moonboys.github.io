@@ -369,12 +369,20 @@
     injectStyles();
     document.querySelectorAll('[data-las-panel]').forEach(function (el) { mount(el); });
     var bus = window.MOONBOYS_EVENT_BUS;
-    // Refresh static rows (API status, sync state, faction) on relevant events.
+    // Refresh static rows on sync-state changes (identity/link updates).
     bus.on('sync:state', refresh);
-    bus.on('faction:update', refresh);
-    window.addEventListener('storage', function (e) {
-      if (e.key && e.key.startsWith('moonboys_')) refresh();
-    });
+    // Faction and XP changes arrive via MOONBOYS_STATE.subscribe() — no
+    // storage listener or direct bus.on('faction:update') needed here since
+    // state already covers both keys (moonboys_state_v1 / moonboys_faction_status_v1).
+    if (window.MOONBOYS_STATE && typeof window.MOONBOYS_STATE.subscribe === 'function') {
+      var _lastFaction = null;
+      window.MOONBOYS_STATE.subscribe(function (state) {
+        if (state.faction !== _lastFaction) {
+          _lastFaction = state.faction;
+          refresh();
+        }
+      });
+    }
     listenForActivity();
   }
 

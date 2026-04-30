@@ -215,14 +215,32 @@
   _restore();
 
   // ── Publish ─────────────────────────────────────────────────────────────────
-  // Frozen: only the four named methods are accessible; direct property mutation
+  // Frozen: only the named methods are accessible; direct property mutation
   // from external code is blocked at runtime.
-  window.MOONBOYS_STATE = Object.freeze({
+  var _api = Object.freeze({
     getState: getState,
     setState: setState,
     subscribe: subscribe,
     hydrateState: hydrateState,
+    /** Returns the current number of active state subscribers. Used by the
+     *  dev debug panel and diagnostics; never call setState() from here. */
+    getSubscriberCount: function () { return _subscribers.length; },
   });
+
+  // Proxy wraps the frozen API to emit a console warning whenever external
+  // code attempts a direct property write (e.g. window.MOONBOYS_STATE.xp = 5).
+  // All property reads pass through transparently.
+  window.MOONBOYS_STATE = (typeof Proxy !== 'undefined')
+    ? new Proxy(_api, {
+        set: function (target, prop) {
+          console.warn(
+            '[moonboys-state] Rejected direct write to window.MOONBOYS_STATE.' +
+            String(prop) + '. Use setState() instead.'
+          );
+          return false; // signals the write was rejected
+        },
+      })
+    : _api;
 
   // Run hydration once the page is ready (non-blocking; UI renders with cached state first).
   // When DOM is already loaded, defer to the next task (setTimeout 0) so that

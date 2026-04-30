@@ -433,8 +433,15 @@
     // Storage listener: remount panel only on identity/sync changes that are
     // persisted in localStorage (e.g. Telegram link state).
     // moonboys_state_v1 changes are handled via MOONBOYS_STATE.subscribe() below.
+    // moonboys_faction_status_v1 changes are covered by MOONBOYS_STATE (faction
+    // arrives via the bus and is written to state by moonboys-state.js).
     window.addEventListener('storage', function (e) {
-      if (e.key && e.key.startsWith('moonboys_') && e.key !== 'moonboys_state_v1') {
+      if (
+        e.key &&
+        e.key.startsWith('moonboys_') &&
+        e.key !== 'moonboys_state_v1' &&
+        e.key !== 'moonboys_faction_status_v1'
+      ) {
         invalidateAndRefresh();
       }
     });
