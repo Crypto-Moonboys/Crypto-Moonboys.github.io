@@ -723,6 +723,15 @@ async function getCurrentSeason(db) {
 
 // ── Player state helpers ──────────────────────────────────────────────────────
 
+// Maximum contribution points accepted per single faction signal request.
+// Prevents arbitrarily large client numbers from skewing faction totals.
+const FACTION_SIGNAL_CONTRIBUTION_MAX = 10000;
+
+// Allowed reason values for faction signal contributions.
+const FACTION_SIGNAL_ALLOWED_REASONS = new Set([
+  'score_submission', 'mission_complete', 'arcade_run', 'daily_bonus', 'war_contribution', 'manual',
+]);
+
 const PLAYER_STATE_TABLES = [
   'player_modifier_state',
   'player_daily_mission_state',
@@ -737,9 +746,24 @@ async function ensurePlayerStateTables(db) {
       `SELECT name FROM sqlite_master WHERE type = 'table' AND name = ? LIMIT 1`
     ).bind(tableName).first().catch(() => null);
     if (!row?.name) {
-      throw new Error(`missing_required_table:${tableName}`);
+      // Return a structured Response so callers can return it directly.
+      // This is not a server error — it means migration 015 has not been applied yet.
+      return {
+        _isPlayerStateUnavailable: true,
+        tableName,
+        response: new Response(JSON.stringify({
+          ok: false,
+          error: 'player_state_unavailable',
+          reason: `migration_pending:${tableName}`,
+          message: 'Player state tables are not yet configured. Apply migration 015.',
+        }), {
+          status: 503,
+          headers: { 'Content-Type': 'application/json', 'Retry-After': '60' },
+        }),
+      };
     }
   }
+  return null; // all tables present
 }
 
 function safeJsonParse(raw, fallback) {
@@ -2011,7 +2035,7 @@ export default {
       }
       const telegramId = verified.telegramId;
       try {
-        await ensurePlayerStateTables(env.DB);
+        { const _ptCheck = await ensurePlayerStateTables(env.DB); if (_ptCheck) return _ptCheck.response; }
         const [arcadeState, faction, modState, streakState, masteryRows] = await Promise.all([
           env.DB.prepare(
             `SELECT arcade_xp_total FROM arcade_progression_state WHERE telegram_id = ? LIMIT 1`
@@ -2086,15 +2110,20 @@ export default {
           },
           modifiers: modState ? {
             active_modifier_id: modState.active_modifier_id || null,
-            unlocked_modifiers: safeJsonParse(modState.unlocked_modifiers_json, null),
-          } : { active_modifier_id: null, unlocked_modifiers: null, source: 'not_configured' },
+            unlocked_modifiers: safeJsonParse(modState.unlocked_modifiers_json, []),
+          } : { active_modifier_id: null, unlocked_modifiers: [] },
           daily_missions: { date: todayKey, progress: dailyMissions },
           mission_streaks: streakState ? {
             mission_streak: streakState.mission_streak || 0,
             contribution_streak: streakState.contribution_streak || 0,
             last_mission_date: streakState.last_mission_date || null,
             last_contribution_date: streakState.last_contribution_date || null,
-          } : { source: 'not_configured', mission_streak: 0, contribution_streak: 0 },
+          } : {
+            mission_streak: 0,
+            contribution_streak: 0,
+            last_mission_date: null,
+            last_contribution_date: null,
+          },
           faction_signal: { date: todayKey, contributions: factionSignal },
           game_mastery: gameMastery,
         });
@@ -2116,7 +2145,7 @@ export default {
       const verified = await verifyTelegramIdentityFromBody(body, env, verifyTelegramAuth);
       if (verified.error) return err(verified.error, verified.status || 401);
       try {
-        await ensurePlayerStateTables(env.DB);
+        { const _ptCheck = await ensurePlayerStateTables(env.DB); if (_ptCheck) return _ptCheck.response; }
         const row = await env.DB.prepare(
           `SELECT active_modifier_id, unlocked_modifiers_json FROM player_modifier_state WHERE telegram_id = ? LIMIT 1`
         ).bind(verified.telegramId).first().catch(() => null);
@@ -2147,7 +2176,7 @@ export default {
         return err('Invalid modifier id', 400);
       }
       try {
-        await ensurePlayerStateTables(env.DB);
+        { const _ptCheck = await ensurePlayerStateTables(env.DB); if (_ptCheck) return _ptCheck.response; }
         const nowStr = new Date().toISOString();
         await env.DB.prepare(`
           INSERT INTO player_modifier_state (telegram_id, active_modifier_id, updated_at)
@@ -2174,7 +2203,7 @@ export default {
       const verified = await verifyTelegramIdentityFromBody(body, env, verifyTelegramAuth);
       if (verified.error) return err(verified.error, verified.status || 401);
       try {
-        await ensurePlayerStateTables(env.DB);
+        { const _ptCheck = await ensurePlayerStateTables(env.DB); if (_ptCheck) return _ptCheck.response; }
         const todayKey = getTodayUtcDate();
         const rows = await env.DB.prepare(
           `SELECT mission_id, progress, completed FROM player_daily_mission_state
@@ -2207,11 +2236,16 @@ export default {
       const verified = await verifyTelegramIdentityFromBody(body, env, verifyTelegramAuth);
       if (verified.error) return err(verified.error, verified.status || 401);
       const missionId = String(body?.mission_id || '').trim();
-      const amount = Math.max(0, Math.floor(Number(body?.amount) || 1));
+      const rawAmount = body && Object.prototype.hasOwnProperty.call(body, 'amount')
+        ? Number(body.amount)
+        : 1;
+      if (!Number.isFinite(rawAmount)) return err('amount must be a positive number', 400);
+      const amount = Math.floor(rawAmount);
+      if (amount <= 0) return err('amount must be a positive integer', 400);
       const target = Math.max(1, Math.floor(Number(body?.target) || 1));
       if (!missionId) return err('mission_id required', 400);
       try {
-        await ensurePlayerStateTables(env.DB);
+        { const _ptCheck = await ensurePlayerStateTables(env.DB); if (_ptCheck) return _ptCheck.response; }
         const todayKey = getTodayUtcDate();
         const nowStr = new Date().toISOString();
         // Upsert mission progress
@@ -2266,7 +2300,7 @@ export default {
       // For faction signal, auth is optional — we return aggregate data, with personal data when linked
       const verified = await verifyTelegramIdentityFromBody(body, env, verifyTelegramAuth).catch(() => ({ error: 'no_auth' }));
       try {
-        await ensurePlayerStateTables(env.DB);
+        { const _ptCheck = await ensurePlayerStateTables(env.DB); if (_ptCheck) return _ptCheck.response; }
         const todayKey = getTodayUtcDate();
         const weekKey = getIsoWeekKey();
         // Get aggregate faction totals for today and week
@@ -2316,12 +2350,20 @@ export default {
       if (verified.error) return err(verified.error, verified.status || 401);
       const factionId = normalizeFaction(body?.faction_id);
       if (!factionId || factionId === FACTION_UNALIGNED) return err('Valid faction_id required', 400);
-      const contribution = Math.max(0, Math.floor(Number(body?.contribution) || 0));
-      if (!contribution) return err('contribution must be a positive integer', 400);
-      const gameId = String(body?.game_id || 'global').trim().slice(0, 64);
-      const reason = String(body?.reason || 'score_submission').trim().slice(0, 64);
+      const rawContribution = Number(body?.contribution);
+      if (!Number.isFinite(rawContribution) || rawContribution <= 0) return err('contribution must be a positive integer', 400);
+      const contribution = Math.floor(rawContribution);
+      if (contribution > FACTION_SIGNAL_CONTRIBUTION_MAX) return err('contribution exceeds max per request', 400);
+      // Validate game_id: alphanumeric, hyphens, underscores only; max 64 chars
+      const rawGameId = String(body?.game_id || 'global').trim();
+      if (!/^[a-zA-Z0-9_-]{1,64}$/.test(rawGameId)) return err('game_id contains invalid characters', 400);
+      const gameId = rawGameId;
+      // Validate reason against allowlist; fall back to 'score_submission' if omitted
+      const rawReason = String(body?.reason || 'score_submission').trim().toLowerCase();
+      const reason = FACTION_SIGNAL_ALLOWED_REASONS.has(rawReason) ? rawReason : null;
+      if (!reason) return err('reason not recognised', 400);
       try {
-        await ensurePlayerStateTables(env.DB);
+        { const _ptCheck = await ensurePlayerStateTables(env.DB); if (_ptCheck) return _ptCheck.response; }
         const todayKey = getTodayUtcDate();
         const weekKey = getIsoWeekKey();
         const nowStr = new Date().toISOString();
@@ -2373,7 +2415,7 @@ export default {
       const masteryXpDelta = Math.max(0, Math.min(500, Math.floor(Number(body?.mastery_xp_delta) || 0)));
       if (!gameId || gameId === 'global') return err('Valid game_id required', 400);
       try {
-        await ensurePlayerStateTables(env.DB);
+        { const _ptCheck = await ensurePlayerStateTables(env.DB); if (_ptCheck) return _ptCheck.response; }
         const nowStr = new Date().toISOString();
         await env.DB.prepare(`
           INSERT INTO player_game_mastery_state (telegram_id, game_id, best_score, runs_played, mastery_xp, updated_at)

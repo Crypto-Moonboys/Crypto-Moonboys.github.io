@@ -201,14 +201,16 @@ export function recordMissionProgress(factionId, eventType, value) {
     selected.forEach(function (m) {
       if (m.type !== eventType) return;
       if (completedToday.indexOf(m.id) !== -1) return;
-      dailyProg[m.id] = (dailyProg[m.id] || 0) + Math.max(0, Number(value) || 0);
+      var delta = Math.max(0, Math.floor(Number(value) || 0));
+      if (delta <= 0) return;  // no-op — skip update and server sync
+      dailyProg[m.id] = (dailyProg[m.id] || 0) + delta;
       if (dailyProg[m.id] >= m.target) {
         completedToday.push(m.id);
         changed = true;
         _emitMissionComplete(fk, m, 'daily');
       }
       // Sync incremental progress to server for linked users
-      _syncMissionProgressToServer(m.id, Math.max(0, Number(value) || 0), m.target);
+      _syncMissionProgressToServer(m.id, delta, m.target);
     });
 
     // Seasonal missions

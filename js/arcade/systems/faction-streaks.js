@@ -243,7 +243,8 @@ function _getApiBase() {
 
 /**
  * Hydrate streak state from server for Telegram-linked users.
- * Updates the localStorage cache with server values.
+ * Uses /player/state which includes both mission_streak and contribution_streak.
+ * Server values overwrite local cache directly (no Math.max).
  * @returns {Promise<void>}
  */
 export async function hydrateStreaksFromServer() {
@@ -252,17 +253,25 @@ export async function hydrateStreaksFromServer() {
   var apiBase = _getApiBase();
   if (!auth || !apiBase) return;
   try {
-    var res = await fetch(apiBase + '/player/daily-missions', {
+    var res = await fetch(apiBase + '/player/state', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ telegram_auth: auth }),
     });
     var data = res.ok ? await res.json().catch(function () { return {}; }) : {};
-    if (data && data.ok) {
+    if (data && data.ok && data.linked && data.mission_streaks) {
+      var ms = data.mission_streaks;
       var s = _loadState();
-      if (typeof data.mission_streak === 'number') {
-        s.mission.count = Math.max(s.mission.count || 0, data.mission_streak);
-        if (data.last_mission_date) s.mission.lastDate = data.last_mission_date;
+      // Server is authoritative — assign directly, do not use Math.max
+      if (typeof ms.mission_streak === 'number') {
+        s.mission.count = ms.mission_streak;
+        s.mission.best = Math.max(s.mission.best || 0, ms.mission_streak);
+        if (ms.last_mission_date) s.mission.lastDate = ms.last_mission_date;
+      }
+      if (typeof ms.contribution_streak === 'number') {
+        s.contribution.count = ms.contribution_streak;
+        s.contribution.best = Math.max(s.contribution.best || 0, ms.contribution_streak);
+        if (ms.last_contribution_date) s.contribution.lastDate = ms.last_contribution_date;
       }
       _saveState(s);
     }

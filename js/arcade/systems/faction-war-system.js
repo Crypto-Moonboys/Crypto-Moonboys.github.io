@@ -356,6 +356,7 @@ function _getApiBase() {
 /**
  * Sync faction contribution to the server for Telegram-linked users.
  * Fires-and-forgets; never throws.
+ * Maps local CONTRIBUTION_SOURCES to the server's FACTION_SIGNAL_ALLOWED_REASONS allowlist.
  * @param {string} factionId
  * @param {number} amount
  * @param {string} reason
@@ -365,6 +366,15 @@ function _syncContributionToServer(factionId, amount, reason) {
   var auth = _getSignedAuth();
   var apiBase = _getApiBase();
   if (!auth || !apiBase) return;
+  // Map local source keys to server-recognised reason values.
+  var SERVER_REASON_MAP = {
+    score_submission: 'score_submission',
+    mission_complete: 'mission_complete',
+    streak_bonus:     'war_contribution',
+    global_event:     'arcade_run',
+    other:            'arcade_run',
+  };
+  var serverReason = SERVER_REASON_MAP[reason] || 'score_submission';
   try {
     fetch(apiBase + '/faction/signal/contribute', {
       method: 'POST',
@@ -373,7 +383,7 @@ function _syncContributionToServer(factionId, amount, reason) {
         telegram_auth: auth,
         faction_id: factionId,
         contribution: amount,
-        reason: reason || 'score_submission',
+        reason: serverReason,
       }),
     }).catch(function () {});
   } catch (_) {}
