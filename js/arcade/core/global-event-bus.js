@@ -77,50 +77,21 @@
   });
 
   // ── Single source of truth ─────────────────────────────────────────────────
-  // window.MOONBOYS_STATE is the authoritative in-session state for XP,
-  // faction, and last event.  The full singleton (localStorage persistence,
-  // subscribe, hydrateState) lives in js/core/moonboys-state.js which loads
-  // right after this file.  A minimal compat shim is created here so pages
-  // that don't yet include moonboys-state.js still work.
+  // window.MOONBOYS_STATE is the authoritative persistent state for XP, faction,
+  // and last event.  The full singleton lives in js/core/moonboys-state.js which
+  // loads immediately after this file on every page.
   //
-  // All writes go through _stateSet() which delegates to setState() when the
-  // full singleton is available, and falls back to direct object assignment on
-  // the compat shim when it is not.
+  // State writes are owned EXCLUSIVELY by moonboys-state.js via its bus.on()
+  // listeners.  This file only bridges legacy moonboys:* CustomEvents to the
+  // unified bus names — it does NOT write to state directly.
+  //
+  // A minimal compat shim is placed here so that pages which have not yet
+  // loaded moonboys-state.js still expose a readable MOONBOYS_STATE object
+  // (the singleton guard in moonboys-state.js will upgrade it on load).
 
   if (!window.MOONBOYS_STATE) {
     window.MOONBOYS_STATE = { xp: 0, faction: 'unaligned', lastEvent: null, updatedAt: 0 };
   }
-
-  function _stateSet(partial) {
-    var s = window.MOONBOYS_STATE;
-    if (s && typeof s.setState === 'function') {
-      s.setState(partial);
-    } else if (s) {
-      Object.assign(s, partial);
-    }
-  }
-
-  on('xp:update', function (p) {
-    var currentXp = (window.MOONBOYS_STATE && typeof window.MOONBOYS_STATE.getState === 'function')
-      ? window.MOONBOYS_STATE.getState().xp
-      : (window.MOONBOYS_STATE ? window.MOONBOYS_STATE.xp : 0);
-    var newXp = (typeof p.total === 'number' && p.total > 0)
-      ? p.total
-      : (typeof p.amount === 'number' && p.amount > 0 ? currentXp + p.amount : currentXp);
-    _stateSet({ xp: newXp, lastEvent: p });
-  });
-
-  on('faction:update', function (p) {
-    if (p.faction && p.faction !== 'unaligned') {
-      _stateSet({ faction: p.faction, lastEvent: p });
-    } else {
-      _stateSet({ lastEvent: p });
-    }
-  });
-
-  on('activity:event', function (p) {
-    _stateSet({ lastEvent: p });
-  });
 
   // ── Public API ─────────────────────────────────────────────────────────────
   window.MOONBOYS_EVENT_BUS = { on: on, off: off, emit: emit };

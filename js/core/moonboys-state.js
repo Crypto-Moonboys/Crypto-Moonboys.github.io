@@ -100,16 +100,20 @@
   /**
    * Hydrate MOONBOYS_STATE from the API if the user is linked.
    * 1. Sync restore from localStorage (already done on module load).
-   * 2. If user is linked, fetch /blocktopia/progression and /faction status.
+   * 2. If user is linked, fetch /blocktopia/progression and snapshot faction.
    * 3. Call setState() with real values so all subscribers update immediately.
    *
-   * This is idempotent — safe to call multiple times (will not re-fetch once
-   * progression data has already been loaded into state for this session).
+   * HYDRATION LOCK: _hydrated is set to true at the START of the first call.
+   * After hydrateState() runs, state may only be updated via bus events
+   * (xp:update, faction:update, activity:event).  No subsequent API call may
+   * write to state.  Calling hydrateState() again is a no-op.
    */
   var _hydrated = false;
 
   function hydrateState() {
     if (_hydrated) return Promise.resolve(getState());
+    // Lock immediately — prevents any concurrent or re-entrant call from
+    // issuing a second fetch and overwriting live event-driven state.
     _hydrated = true;
 
     var gate = window.MOONBOYS_IDENTITY || null;
@@ -132,7 +136,9 @@
 
       if (!telegramAuth) return getState();
 
-      // Fetch XP from progression endpoint (same as connection-status-panel).
+      // Fetch the authoritative XP value from the API.  This is the ONLY time
+      // the API is consulted for state — all subsequent XP changes arrive via
+      // bus events (xp:update) which update state through the bus listeners below.
       try {
         var res = await fetch(apiBase + '/blocktopia/progression', {
           method: 'POST',
@@ -148,8 +154,8 @@
         }
       } catch (_) {}
 
-      // Faction is managed by MOONBOYS_FACTION; subscribe to bus for updates.
-      // Snapshot current cached faction if available.
+      // Snapshot cached faction if available; subsequent faction changes arrive
+      // exclusively via faction:update bus events.
       var fa = window.MOONBOYS_FACTION;
       if (fa && typeof fa.getCachedStatus === 'function') {
         var cachedFaction = fa.getCachedStatus();
@@ -162,8 +168,9 @@
     }());
   }
 
-  // ── Bus integration ─────────────────────────────────────────────────────────
-  // Hook into MOONBOYS_EVENT_BUS so every bus event keeps state in sync.
+  // ── Bus integration (SOLE write path post-hydration) ────────────────────────
+  // After hydrateState() completes, ALL state changes must arrive through these
+  // bus listeners.  No component may call setState() directly for XP or faction.
   // global-event-bus.js is guaranteed to have run before this file.
 
   var bus = window.MOONBOYS_EVENT_BUS;
