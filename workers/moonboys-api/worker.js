@@ -26,6 +26,14 @@ import { handleBlockTopiaProgressionRoute } from './blocktopia/routes.js';
  *   GET  /telegram/daily-status?telegram_id=
  *   GET  /telegram/season/current
  *   GET  /telegram/user/status?telegram_id=
+ *   GET/POST /player/state
+ *   GET/POST /player/modifiers
+ *   POST /player/modifiers/active
+ *   GET/POST /player/daily-missions
+ *   POST /player/daily-missions/progress
+ *   GET/POST /faction/signal
+ *   POST /faction/signal/contribute
+ *   POST /player/mastery/update
  *
  * Telegram bot commands (POST /telegram/webhook):
  *   /gkstart /gkhelp /gklink /gkstatus /gkseason /gkleaderboard /gkquests /gkfaction /gkunlink
@@ -711,6 +719,106 @@ async function getCurrentSeason(db) {
   return db.prepare(
     `SELECT * FROM telegram_seasons ORDER BY id DESC LIMIT 1`
   ).first().catch(() => null);
+}
+
+// ── Player state helpers ──────────────────────────────────────────────────────
+
+// Maximum contribution points accepted per single faction signal request.
+// Prevents arbitrarily large client numbers from skewing faction totals.
+const FACTION_SIGNAL_CONTRIBUTION_MAX = 10000;
+
+// Allowed reason values for faction signal contributions.
+const FACTION_SIGNAL_ALLOWED_REASONS = new Set([
+  'score_submission', 'mission_complete', 'arcade_run', 'daily_bonus', 'war_contribution', 'manual',
+]);
+
+const PLAYER_STATE_TABLES = [
+  'player_modifier_state',
+  'player_daily_mission_state',
+  'player_faction_signal_state',
+  'player_streak_state',
+  'player_game_mastery_state',
+];
+
+async function ensurePlayerStateTables(db) {
+  for (const tableName of PLAYER_STATE_TABLES) {
+    const row = await db.prepare(
+      `SELECT name FROM sqlite_master WHERE type = 'table' AND name = ? LIMIT 1`
+    ).bind(tableName).first().catch(() => null);
+    if (!row?.name) {
+      // Return a structured Response so callers can return it directly.
+      // This is not a server error — it means migration 015 has not been applied yet.
+      return {
+        _isPlayerStateUnavailable: true,
+        tableName,
+        response: new Response(JSON.stringify({
+          ok: false,
+          error: 'player_state_unavailable',
+          reason: `migration_pending:${tableName}`,
+          message: 'Player state tables are not yet configured. Apply migration 015.',
+        }), {
+          status: 503,
+          headers: { 'Content-Type': 'application/json', 'Retry-After': '60' },
+        }),
+      };
+    }
+  }
+  return null; // all tables present
+}
+
+function safeJsonParse(raw, fallback) {
+  try { return raw != null ? JSON.parse(raw) : fallback; } catch { return fallback; }
+}
+
+function getIsoWeekKey() {
+  const d = new Date();
+  const dow = d.getUTCDay() || 7;
+  const thu = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate() + (4 - dow)));
+  const yearStart = new Date(Date.UTC(thu.getUTCFullYear(), 0, 1));
+  const weekNum = Math.ceil(((thu - yearStart) / 86400000 + 1) / 7);
+  return thu.getUTCFullYear() + '-W' + String(weekNum).padStart(2, '0');
+}
+
+async function _updateMissionStreak(db, telegramId, todayKey) {
+  try {
+    const row = await db.prepare(
+      `SELECT mission_streak, last_mission_date FROM player_streak_state WHERE telegram_id = ? LIMIT 1`
+    ).bind(telegramId).first().catch(() => null);
+    const lastDate = row?.last_mission_date || null;
+    const nowStr = new Date().toISOString();
+    if (lastDate === todayKey) return; // already recorded today
+    const yesterday = new Date(new Date(todayKey + 'T00:00:00Z').getTime() - 86400000).toISOString().slice(0, 10);
+    const newStreak = lastDate === yesterday ? (row?.mission_streak || 0) + 1 : 1;
+    await db.prepare(`
+      INSERT INTO player_streak_state (telegram_id, mission_streak, last_mission_date, updated_at)
+      VALUES (?, ?, ?, ?)
+      ON CONFLICT(telegram_id) DO UPDATE SET
+        mission_streak = ?,
+        last_mission_date = ?,
+        updated_at = ?
+    `).bind(telegramId, newStreak, todayKey, nowStr, newStreak, todayKey, nowStr).run();
+  } catch { /* non-fatal */ }
+}
+
+async function _updateContributionStreak(db, telegramId, todayKey) {
+  try {
+    const row = await db.prepare(
+      `SELECT contribution_streak, last_contribution_date FROM player_streak_state WHERE telegram_id = ? LIMIT 1`
+    ).bind(telegramId).first().catch(() => null);
+    const lastDate = row?.last_contribution_date || null;
+    const nowStr = new Date().toISOString();
+    if (lastDate === todayKey) return; // already recorded today
+    const yesterday = new Date(new Date(todayKey + 'T00:00:00Z').getTime() - 86400000).toISOString().slice(0, 10);
+    const newStreak = lastDate === yesterday ? (row?.contribution_streak || 0) + 1 : 1;
+    await db.prepare(`
+      INSERT INTO player_streak_state (telegram_id, contribution_streak, last_contribution_date, updated_at)
+      VALUES (?, ?, ?, ?)
+      ON CONFLICT(telegram_id) DO UPDATE SET
+        contribution_streak = ?,
+        last_contribution_date = ?,
+        updated_at = ?
+    `).bind(telegramId, newStreak, todayKey, nowStr, newStreak, todayKey, nowStr).run().catch(() => {});
+  } catch { /* non-fatal */ }
 }
 
 // ── Main fetch handler ────────────────────────────────────────────────────────
@@ -1905,6 +2013,433 @@ export default {
         });
       } catch {
         return err('Failed to award faction XP', 500);
+      }
+    }
+
+    // ── GET /player/state ─────────────────────────────────────────────────
+    // Returns full server-backed player state for a Telegram-linked user.
+    // Requires a signed telegram_auth payload in the query string or POST body.
+    if (path === '/player/state' && (request.method === 'GET' || request.method === 'POST')) {
+      let body = {};
+      if (request.method === 'POST') {
+        try { body = await request.json(); } catch { return err('Invalid JSON', 400); }
+      } else {
+        const rawAuth = url.searchParams.get('telegram_auth');
+        if (rawAuth) {
+          try { body = { telegram_auth: JSON.parse(rawAuth) }; } catch { return err('Invalid telegram_auth', 400); }
+        }
+      }
+      const verified = await verifyTelegramIdentityFromBody(body, env, verifyTelegramAuth);
+      if (verified.error) {
+        return json({ ok: true, linked: false, message: 'Telegram link required for persistent player state' });
+      }
+      const telegramId = verified.telegramId;
+      try {
+        { const _ptCheck = await ensurePlayerStateTables(env.DB); if (_ptCheck) return _ptCheck.response; }
+        const [arcadeState, faction, modState, streakState, masteryRows] = await Promise.all([
+          env.DB.prepare(
+            `SELECT arcade_xp_total FROM arcade_progression_state WHERE telegram_id = ? LIMIT 1`
+          ).bind(telegramId).first().catch(() => null),
+          getUserFaction(env.DB, telegramId),
+          env.DB.prepare(
+            `SELECT active_modifier_id, unlocked_modifiers_json FROM player_modifier_state WHERE telegram_id = ? LIMIT 1`
+          ).bind(telegramId).first().catch(() => null),
+          env.DB.prepare(
+            `SELECT mission_streak, contribution_streak, last_mission_date, last_contribution_date
+             FROM player_streak_state WHERE telegram_id = ? LIMIT 1`
+          ).bind(telegramId).first().catch(() => null),
+          env.DB.prepare(
+            `SELECT game_id, best_score, runs_played, mastery_xp FROM player_game_mastery_state WHERE telegram_id = ?`
+          ).bind(telegramId).all().catch(() => ({ results: [] })),
+        ]);
+
+        const todayKey = getTodayUtcDate();
+        const missionRows = await env.DB.prepare(
+          `SELECT mission_id, progress, completed FROM player_daily_mission_state
+           WHERE telegram_id = ? AND mission_date = ?`
+        ).bind(telegramId, todayKey).all().catch(() => ({ results: [] }));
+
+        const factionId = faction?.id || faction?.name || null;
+        const normalizedFaction = normalizeFaction(factionId) || FACTION_UNALIGNED;
+
+        const factionSignalRows = await env.DB.prepare(
+          `SELECT faction_id, contribution FROM player_faction_signal_state
+           WHERE telegram_id = ? AND day_key = ?`
+        ).bind(telegramId, todayKey).all().catch(() => ({ results: [] }));
+
+        const blocktopiaState = await env.DB.prepare(
+          `SELECT xp, gems, tier FROM blocktopia_progression WHERE telegram_id = ? LIMIT 1`
+        ).bind(telegramId).first().catch(() => null);
+
+        const BLOCKTOPIA_REQUIRED_XP = 50;
+        const arcadeXpTotal = Math.max(0, Math.floor(Number(arcadeState?.arcade_xp_total) || 0));
+
+        const gameMastery = {};
+        for (const row of (masteryRows?.results || [])) {
+          gameMastery[row.game_id] = {
+            best_score: row.best_score || 0,
+            runs_played: row.runs_played || 0,
+            mastery_xp: row.mastery_xp || 0,
+          };
+        }
+
+        const dailyMissions = {};
+        for (const row of (missionRows?.results || [])) {
+          dailyMissions[row.mission_id] = {
+            progress: row.progress || 0,
+            completed: (row.completed || 0) === 1,
+          };
+        }
+
+        const factionSignal = {};
+        for (const row of (factionSignalRows?.results || [])) {
+          factionSignal[row.faction_id] = row.contribution || 0;
+        }
+
+        return json({
+          ok: true,
+          linked: true,
+          telegram_id: telegramId,
+          arcade_xp_total: arcadeXpTotal,
+          faction: normalizedFaction,
+          faction_rank: faction?.role || null,
+          blocktopia: {
+            required_xp: BLOCKTOPIA_REQUIRED_XP,
+            can_enter_multiplayer: arcadeXpTotal >= BLOCKTOPIA_REQUIRED_XP,
+            xp: blocktopiaState ? Math.max(0, Math.floor(Number(blocktopiaState.xp) || 0)) : 0,
+          },
+          modifiers: modState ? {
+            active_modifier_id: modState.active_modifier_id || null,
+            unlocked_modifiers: safeJsonParse(modState.unlocked_modifiers_json, []),
+          } : { active_modifier_id: null, unlocked_modifiers: [] },
+          daily_missions: { date: todayKey, progress: dailyMissions },
+          mission_streaks: streakState ? {
+            mission_streak: streakState.mission_streak || 0,
+            contribution_streak: streakState.contribution_streak || 0,
+            last_mission_date: streakState.last_mission_date || null,
+            last_contribution_date: streakState.last_contribution_date || null,
+          } : {
+            mission_streak: 0,
+            contribution_streak: 0,
+            last_mission_date: null,
+            last_contribution_date: null,
+          },
+          faction_signal: { date: todayKey, contributions: factionSignal },
+          game_mastery: gameMastery,
+        });
+      } catch (e) {
+        logApiFailure('player_state_failed', { telegramId, message: e?.message || String(e) });
+        return err('Failed to load player state', 500);
+      }
+    }
+
+    // ── GET /player/modifiers ─────────────────────────────────────────────
+    if (path === '/player/modifiers' && (request.method === 'GET' || request.method === 'POST')) {
+      let body = {};
+      if (request.method === 'POST') {
+        try { body = await request.json(); } catch { return err('Invalid JSON', 400); }
+      } else {
+        const rawAuth = url.searchParams.get('telegram_auth');
+        if (rawAuth) { try { body = { telegram_auth: JSON.parse(rawAuth) }; } catch { return err('Invalid telegram_auth', 400); } }
+      }
+      const verified = await verifyTelegramIdentityFromBody(body, env, verifyTelegramAuth);
+      if (verified.error) return err(verified.error, verified.status || 401);
+      try {
+        { const _ptCheck = await ensurePlayerStateTables(env.DB); if (_ptCheck) return _ptCheck.response; }
+        const row = await env.DB.prepare(
+          `SELECT active_modifier_id, unlocked_modifiers_json FROM player_modifier_state WHERE telegram_id = ? LIMIT 1`
+        ).bind(verified.telegramId).first().catch(() => null);
+        return json({
+          ok: true,
+          telegram_id: verified.telegramId,
+          active_modifier_id: row?.active_modifier_id || null,
+          unlocked_modifiers: row?.unlocked_modifiers_json ? safeJsonParse(row.unlocked_modifiers_json, null) : null,
+        });
+      } catch (e) {
+        return err('Failed to load modifiers', 500);
+      }
+    }
+
+    // ── POST /player/modifiers/active ─────────────────────────────────────
+    if (path === '/player/modifiers/active' && request.method === 'POST') {
+      let body;
+      try { body = await request.json(); } catch { return err('Invalid JSON', 400); }
+      const verified = await verifyTelegramIdentityFromBody(body, env, verifyTelegramAuth);
+      if (verified.error) return err(verified.error, verified.status || 401);
+      const activeModifierId = body?.active_modifier_id !== undefined ? String(body.active_modifier_id || '').trim() : undefined;
+      if (activeModifierId === undefined) return err('active_modifier_id required', 400);
+      const VALID_MODIFIER_IDS = new Set([
+        'score_surge', 'shielded_start', 'slow_chaos', 'risk_bonus',
+        'boss_hunter', 'magnet_luck', 'recovery_pulse', 'golden_chance',
+      ]);
+      if (activeModifierId !== '' && !VALID_MODIFIER_IDS.has(activeModifierId)) {
+        return err('Invalid modifier id', 400);
+      }
+      try {
+        { const _ptCheck = await ensurePlayerStateTables(env.DB); if (_ptCheck) return _ptCheck.response; }
+        const nowStr = new Date().toISOString();
+        await env.DB.prepare(`
+          INSERT INTO player_modifier_state (telegram_id, active_modifier_id, updated_at)
+          VALUES (?, ?, ?)
+          ON CONFLICT(telegram_id) DO UPDATE SET
+            active_modifier_id = excluded.active_modifier_id,
+            updated_at = excluded.updated_at
+        `).bind(verified.telegramId, activeModifierId || null, nowStr).run();
+        return json({ ok: true, telegram_id: verified.telegramId, active_modifier_id: activeModifierId || null });
+      } catch (e) {
+        return err('Failed to save modifier', 500);
+      }
+    }
+
+    // ── GET /player/daily-missions ────────────────────────────────────────
+    if (path === '/player/daily-missions' && (request.method === 'GET' || request.method === 'POST')) {
+      let body = {};
+      if (request.method === 'POST') {
+        try { body = await request.json(); } catch { return err('Invalid JSON', 400); }
+      } else {
+        const rawAuth = url.searchParams.get('telegram_auth');
+        if (rawAuth) { try { body = { telegram_auth: JSON.parse(rawAuth) }; } catch { return err('Invalid telegram_auth', 400); } }
+      }
+      const verified = await verifyTelegramIdentityFromBody(body, env, verifyTelegramAuth);
+      if (verified.error) return err(verified.error, verified.status || 401);
+      try {
+        { const _ptCheck = await ensurePlayerStateTables(env.DB); if (_ptCheck) return _ptCheck.response; }
+        const todayKey = getTodayUtcDate();
+        const rows = await env.DB.prepare(
+          `SELECT mission_id, progress, completed FROM player_daily_mission_state
+           WHERE telegram_id = ? AND mission_date = ?`
+        ).bind(verified.telegramId, todayKey).all().catch(() => ({ results: [] }));
+        const streakRow = await env.DB.prepare(
+          `SELECT mission_streak, last_mission_date FROM player_streak_state WHERE telegram_id = ? LIMIT 1`
+        ).bind(verified.telegramId).first().catch(() => null);
+        const progress = {};
+        for (const r of (rows?.results || [])) {
+          progress[r.mission_id] = { progress: r.progress || 0, completed: (r.completed || 0) === 1 };
+        }
+        return json({
+          ok: true,
+          telegram_id: verified.telegramId,
+          date: todayKey,
+          progress,
+          mission_streak: streakRow?.mission_streak || 0,
+          last_mission_date: streakRow?.last_mission_date || null,
+        });
+      } catch (e) {
+        return err('Failed to load daily missions', 500);
+      }
+    }
+
+    // ── POST /player/daily-missions/progress ──────────────────────────────
+    if (path === '/player/daily-missions/progress' && request.method === 'POST') {
+      let body;
+      try { body = await request.json(); } catch { return err('Invalid JSON', 400); }
+      const verified = await verifyTelegramIdentityFromBody(body, env, verifyTelegramAuth);
+      if (verified.error) return err(verified.error, verified.status || 401);
+      const missionId = String(body?.mission_id || '').trim();
+      const rawAmount = body && Object.prototype.hasOwnProperty.call(body, 'amount')
+        ? Number(body.amount)
+        : 1; // default: 1 increment when amount is omitted
+      if (!Number.isFinite(rawAmount)) return err('amount must be a positive number', 400);
+      const amount = Math.floor(rawAmount);
+      if (amount <= 0) return err('amount must be a positive integer', 400);
+      const target = Math.max(1, Math.floor(Number(body?.target) || 1));
+      if (!missionId) return err('mission_id required', 400);
+      try {
+        { const _ptCheck = await ensurePlayerStateTables(env.DB); if (_ptCheck) return _ptCheck.response; }
+        const todayKey = getTodayUtcDate();
+        const nowStr = new Date().toISOString();
+        // Upsert mission progress
+        await env.DB.prepare(`
+          INSERT INTO player_daily_mission_state (telegram_id, mission_date, mission_id, progress, completed, updated_at)
+          VALUES (?, ?, ?, ?, 0, ?)
+          ON CONFLICT(telegram_id, mission_date, mission_id) DO UPDATE SET
+            progress = CASE WHEN completed = 1 THEN progress
+                            ELSE MIN(player_daily_mission_state.progress + ?, ?)
+                       END,
+            completed = CASE WHEN completed = 1 THEN 1
+                             WHEN player_daily_mission_state.progress + ? >= ? THEN 1
+                             ELSE 0
+                        END,
+            updated_at = excluded.updated_at
+        `).bind(
+          verified.telegramId, todayKey, missionId, amount, nowStr,
+          amount, target,
+          amount, target,
+        ).run();
+        const updated = await env.DB.prepare(
+          `SELECT progress, completed FROM player_daily_mission_state
+           WHERE telegram_id = ? AND mission_date = ? AND mission_id = ? LIMIT 1`
+        ).bind(verified.telegramId, todayKey, missionId).first().catch(() => null);
+        const justCompleted = updated && (updated.completed || 0) === 1;
+        // Update mission streak if completed
+        if (justCompleted) {
+          await _updateMissionStreak(env.DB, verified.telegramId, todayKey);
+        }
+        return json({
+          ok: true,
+          telegram_id: verified.telegramId,
+          mission_id: missionId,
+          date: todayKey,
+          progress: updated?.progress || 0,
+          completed: justCompleted,
+        });
+      } catch (e) {
+        return err('Failed to record mission progress', 500);
+      }
+    }
+
+    // ── GET /faction/signal ───────────────────────────────────────────────
+    if (path === '/faction/signal' && (request.method === 'GET' || request.method === 'POST')) {
+      let body = {};
+      if (request.method === 'POST') {
+        try { body = await request.json(); } catch { return err('Invalid JSON', 400); }
+      } else {
+        const rawAuth = url.searchParams.get('telegram_auth');
+        if (rawAuth) { try { body = { telegram_auth: JSON.parse(rawAuth) }; } catch { return err('Invalid telegram_auth', 400); } }
+      }
+      // For faction signal, auth is optional — we return aggregate data, with personal data when linked
+      const verified = await verifyTelegramIdentityFromBody(body, env, verifyTelegramAuth).catch(() => ({ error: 'no_auth' }));
+      try {
+        { const _ptCheck = await ensurePlayerStateTables(env.DB); if (_ptCheck) return _ptCheck.response; }
+        const todayKey = getTodayUtcDate();
+        const weekKey = getIsoWeekKey();
+        // Get aggregate faction totals for today and week
+        const [todayTotals, weekTotals] = await Promise.all([
+          env.DB.prepare(
+            `SELECT faction_id, SUM(contribution) as total FROM player_faction_signal_state
+             WHERE day_key = ? GROUP BY faction_id`
+          ).bind(todayKey).all().catch(() => ({ results: [] })),
+          env.DB.prepare(
+            `SELECT faction_id, SUM(contribution) as total FROM player_faction_signal_state
+             WHERE week_key = ? GROUP BY faction_id`
+          ).bind(weekKey).all().catch(() => ({ results: [] })),
+        ]);
+        const todayMap = {};
+        for (const r of (todayTotals?.results || [])) todayMap[r.faction_id] = r.total || 0;
+        const weekMap = {};
+        for (const r of (weekTotals?.results || [])) weekMap[r.faction_id] = r.total || 0;
+        const response = {
+          ok: true,
+          pre_season: true,
+          label: 'Faction Signal — Pre-Season',
+          date: todayKey,
+          week: weekKey,
+          faction_totals_today: todayMap,
+          faction_totals_week: weekMap,
+        };
+        if (!verified.error) {
+          const myRow = await env.DB.prepare(
+            `SELECT faction_id, contribution FROM player_faction_signal_state
+             WHERE telegram_id = ? AND day_key = ?`
+          ).bind(verified.telegramId, todayKey).all().catch(() => ({ results: [] }));
+          const myContribs = {};
+          for (const r of (myRow?.results || [])) myContribs[r.faction_id] = r.contribution || 0;
+          response.player_contribution_today = myContribs;
+        }
+        return json(response);
+      } catch (e) {
+        return err('Failed to load faction signal', 500);
+      }
+    }
+
+    // ── POST /faction/signal/contribute ───────────────────────────────────
+    if (path === '/faction/signal/contribute' && request.method === 'POST') {
+      let body;
+      try { body = await request.json(); } catch { return err('Invalid JSON', 400); }
+      const verified = await verifyTelegramIdentityFromBody(body, env, verifyTelegramAuth);
+      if (verified.error) return err(verified.error, verified.status || 401);
+      const factionId = normalizeFaction(body?.faction_id);
+      if (!factionId || factionId === FACTION_UNALIGNED) return err('Valid faction_id required', 400);
+      const rawContribution = Number(body?.contribution);
+      if (!Number.isFinite(rawContribution) || rawContribution <= 0) return err('contribution must be a positive integer', 400);
+      const contribution = Math.floor(rawContribution);
+      if (contribution > FACTION_SIGNAL_CONTRIBUTION_MAX) return err(`contribution exceeds max per request (${FACTION_SIGNAL_CONTRIBUTION_MAX})`, 400);
+      // Validate game_id: alphanumeric, hyphens, underscores only; max 64 chars
+      const rawGameId = String(body?.game_id || 'global').trim();
+      if (!/^[a-zA-Z0-9_-]{1,64}$/.test(rawGameId)) return err('game_id must contain only alphanumeric characters, hyphens, and underscores (max 64 chars)', 400);
+      const gameId = rawGameId;
+      // Validate reason against allowlist; fall back to 'score_submission' if omitted
+      const rawReason = String(body?.reason || 'score_submission').trim().toLowerCase();
+      const reason = FACTION_SIGNAL_ALLOWED_REASONS.has(rawReason) ? rawReason : null;
+      if (!reason) return err('reason not recognized', 400);
+      try {
+        { const _ptCheck = await ensurePlayerStateTables(env.DB); if (_ptCheck) return _ptCheck.response; }
+        const todayKey = getTodayUtcDate();
+        const weekKey = getIsoWeekKey();
+        const nowStr = new Date().toISOString();
+        await env.DB.prepare(`
+          INSERT INTO player_faction_signal_state
+            (telegram_id, faction_id, day_key, week_key, contribution, updated_at)
+          VALUES (?, ?, ?, ?, ?, ?)
+          ON CONFLICT(telegram_id, faction_id, day_key) DO UPDATE SET
+            contribution = player_faction_signal_state.contribution + excluded.contribution,
+            updated_at = excluded.updated_at
+        `).bind(verified.telegramId, factionId, todayKey, weekKey, contribution, nowStr).run();
+        // Update contribution streak
+        await _updateContributionStreak(env.DB, verified.telegramId, todayKey);
+        // Get updated totals
+        const [myRow, todayTotal, weekTotal] = await Promise.all([
+          env.DB.prepare(
+            `SELECT contribution FROM player_faction_signal_state
+             WHERE telegram_id = ? AND faction_id = ? AND day_key = ? LIMIT 1`
+          ).bind(verified.telegramId, factionId, todayKey).first().catch(() => null),
+          env.DB.prepare(
+            `SELECT SUM(contribution) as total FROM player_faction_signal_state
+             WHERE faction_id = ? AND day_key = ?`
+          ).bind(factionId, todayKey).first().catch(() => null),
+          env.DB.prepare(
+            `SELECT SUM(contribution) as total FROM player_faction_signal_state
+             WHERE faction_id = ? AND week_key = ?`
+          ).bind(factionId, weekKey).first().catch(() => null),
+        ]);
+        return json({
+          ok: true,
+          faction_id: factionId,
+          player_contribution_today: myRow?.contribution || 0,
+          faction_totals_today: { [factionId]: todayTotal?.total || 0 },
+          faction_totals_week: { [factionId]: weekTotal?.total || 0 },
+        });
+      } catch (e) {
+        return err('Failed to record faction signal contribution', 500);
+      }
+    }
+
+    // ── POST /player/mastery/update ───────────────────────────────────────
+    if (path === '/player/mastery/update' && request.method === 'POST') {
+      let body;
+      try { body = await request.json(); } catch { return err('Invalid JSON', 400); }
+      const verified = await verifyTelegramIdentityFromBody(body, env, verifyTelegramAuth);
+      if (verified.error) return err(verified.error, verified.status || 401);
+      const gameId = normalizeArcadeGameKey(body?.game_id);
+      const rawScore = Math.max(0, Math.floor(Number(body?.score) || 0));
+      const masteryXpDelta = Math.max(0, Math.min(500, Math.floor(Number(body?.mastery_xp_delta) || 0)));
+      if (!gameId || gameId === 'global') return err('Valid game_id required', 400);
+      try {
+        { const _ptCheck = await ensurePlayerStateTables(env.DB); if (_ptCheck) return _ptCheck.response; }
+        const nowStr = new Date().toISOString();
+        await env.DB.prepare(`
+          INSERT INTO player_game_mastery_state (telegram_id, game_id, best_score, runs_played, mastery_xp, updated_at)
+          VALUES (?, ?, ?, 1, ?, ?)
+          ON CONFLICT(telegram_id, game_id) DO UPDATE SET
+            best_score = MAX(player_game_mastery_state.best_score, excluded.best_score),
+            runs_played = player_game_mastery_state.runs_played + 1,
+            mastery_xp = player_game_mastery_state.mastery_xp + excluded.mastery_xp,
+            updated_at = excluded.updated_at
+        `).bind(verified.telegramId, gameId, rawScore, masteryXpDelta, nowStr).run();
+        const updated = await env.DB.prepare(
+          `SELECT best_score, runs_played, mastery_xp FROM player_game_mastery_state
+           WHERE telegram_id = ? AND game_id = ? LIMIT 1`
+        ).bind(verified.telegramId, gameId).first().catch(() => null);
+        return json({
+          ok: true,
+          telegram_id: verified.telegramId,
+          game_id: gameId,
+          best_score: updated?.best_score || rawScore,
+          runs_played: updated?.runs_played || 1,
+          mastery_xp: updated?.mastery_xp || masteryXpDelta,
+        });
+      } catch (e) {
+        return err('Failed to update mastery', 500);
       }
     }
 

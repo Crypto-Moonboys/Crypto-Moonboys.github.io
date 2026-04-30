@@ -11,7 +11,8 @@
  *   hydrateState()      — async: restore from localStorage then fetch API if linked
  *
  * Internal state shape:
- *   { xp: 0, faction: 'unaligned', lastEvent: null, updatedAt: 0, sync: null }
+ *   { xp: 0, faction: 'unaligned', lastEvent: null, updatedAt: 0, sync: null,
+ *     linked: false, source: 'guest'|'server'|'cache', syncedAt: null }
  *
  * Load order: must appear AFTER global-event-bus.js so that
  * MOONBOYS_EVENT_BUS is already available when this file executes.
@@ -26,7 +27,7 @@
 
   var STORAGE_KEY = 'moonboys_state_v1';
 
-  var DEFAULT_STATE = { xp: 0, faction: 'unaligned', lastEvent: null, updatedAt: 0, sync: null };
+  var DEFAULT_STATE = { xp: 0, faction: 'unaligned', lastEvent: null, updatedAt: 0, sync: null, linked: false, source: 'guest', syncedAt: null };
 
   // ── Internal state ──────────────────────────────────────────────────────────
 
@@ -37,7 +38,15 @@
 
   function _save() {
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(_state));
+      // Only persist stable state fields; session-only fields (sync, linked, source, syncedAt)
+      // are re-established during hydration on each page load.
+      var toSave = {
+        xp:        _state.xp,
+        faction:   _state.faction,
+        lastEvent: _state.lastEvent,
+        updatedAt: _state.updatedAt,
+      };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(toSave));
     } catch (_) {}
   }
 
@@ -61,6 +70,9 @@
         lastEvent:  parsed.lastEvent !== undefined    ? parsed.lastEvent : DEFAULT_STATE.lastEvent,
         updatedAt:  typeof parsed.updatedAt === 'number' ? parsed.updatedAt : DEFAULT_STATE.updatedAt,
         sync: null, // sync state is session-only; never restored from localStorage
+        linked: false,  // re-established during hydration
+        source: 'cache', // was persisted; will be upgraded to 'server' or marked 'guest' after hydration
+        syncedAt: null,
       };
       return true;
     } catch (_) {
@@ -144,7 +156,10 @@
         } catch (_) {}
       }
 
-      if (!telegramAuth) return getState();
+      if (!telegramAuth) {
+        setState({ linked: false, source: 'guest' });
+        return getState();
+      }
 
       // Fetch the authoritative XP value from the API.  This is the ONLY time
       // the API is consulted for state — all subsequent XP changes arrive via
@@ -163,7 +178,9 @@
           // cached/live value.  This prevents a stale API response from rolling
           // back XP that has already been updated by in-session bus events.
           if (incomingXp >= _state.xp) {
-            setState({ xp: incomingXp });
+            setState({ xp: incomingXp, linked: true, source: 'server', syncedAt: Date.now() });
+          } else {
+            setState({ linked: true, source: 'server', syncedAt: Date.now() });
           }
         }
       } catch (_) {}

@@ -4,8 +4,9 @@
  * Tracks faction power, daily and weekly contributions, momentum, and
  * contribution sources without altering submitScore or XP base math.
  *
- * All state is persisted to localStorage.  No backend API is assumed.
- * The system is purely additive around existing arcade systems.
+ * For Telegram-linked users, contributions are also posted to the server
+ * via POST /faction/signal/contribute. localStorage is used as a local
+ * display cache only.
  *
  * Storage keys:
  *   fw_war_state_v1  — { factions: { [key]: WarFaction }, season: number, updatedAt: number }
@@ -173,6 +174,9 @@ export function recordContribution(factionId, source, amount) {
       power: entry.power,
       momentum: entry.momentum,
     });
+
+    // Sync contribution to server for Telegram-linked users
+    _syncContributionToServer(fk, amt, safeSource);
   } catch (e) {
     try { console.warn('[faction-war] recordContribution error:', e); } catch (_) {}
   }
@@ -322,5 +326,65 @@ function _emitWarEvent(eventName, payload) {
   try {
     var bus = (typeof window !== 'undefined') && window.MOONBOYS_EVENT_BUS;
     if (bus && typeof bus.emit === 'function') bus.emit(eventName, payload || {});
+  } catch (_) {}
+}
+
+// ── Server sync helpers ───────────────────────────────────────────────────────
+
+function _isLinked() {
+  try {
+    var identity = (typeof window !== 'undefined') && window.MOONBOYS_IDENTITY;
+    return !!(identity && typeof identity.isTelegramLinked === 'function' && identity.isTelegramLinked());
+  } catch (_) { return false; }
+}
+
+function _getSignedAuth() {
+  try {
+    var identity = (typeof window !== 'undefined') && window.MOONBOYS_IDENTITY;
+    if (!identity || typeof identity.getSignedTelegramAuth !== 'function') return null;
+    return identity.getSignedTelegramAuth();
+  } catch (_) { return null; }
+}
+
+function _getApiBase() {
+  try {
+    var cfg = (typeof window !== 'undefined') && window.MOONBOYS_API;
+    return cfg && cfg.BASE_URL ? String(cfg.BASE_URL).replace(/\/$/, '') : '';
+  } catch (_) { return ''; }
+}
+
+/**
+ * Sync faction contribution to the server for Telegram-linked users.
+ * Fires-and-forgets; never throws.
+ * Maps local CONTRIBUTION_SOURCES to the server's FACTION_SIGNAL_ALLOWED_REASONS allowlist.
+ * @param {string} factionId
+ * @param {number} amount
+ * @param {string} reason
+ */
+function _syncContributionToServer(factionId, amount, reason) {
+  if (!_isLinked()) return;
+  var auth = _getSignedAuth();
+  var apiBase = _getApiBase();
+  if (!auth || !apiBase) return;
+  // Map local source keys to server-recognised reason values.
+  var SERVER_REASON_MAP = {
+    score_submission: 'score_submission',
+    mission_complete: 'mission_complete',
+    streak_bonus:     'war_contribution',
+    global_event:     'arcade_run',
+    other:            'arcade_run',
+  };
+  var serverReason = SERVER_REASON_MAP[reason] || 'score_submission';
+  try {
+    fetch(apiBase + '/faction/signal/contribute', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        telegram_auth: auth,
+        faction_id: factionId,
+        contribution: amount,
+        reason: serverReason,
+      }),
+    }).catch(function () {});
   } catch (_) {}
 }

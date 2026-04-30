@@ -62,18 +62,45 @@
 
       /** Mission is local-only (localStorage, not server-backed). */
       localMissionOnly: function () {
-        return '<span class="mission-scope-badge">Local mission \u2014 server sync coming later.</span>';
+        return '<span class="mission-scope-badge local-only">Guest progress \u2014 <a href="/gkniftyheads-incubator.html">Link Telegram</a> to persist missions.</span>';
       },
 
-      /** Faction war standings are pre-season / localStorage only. */
+      /** Mission is server-synced. */
+      missionSynced: function () {
+        return '<span class="mission-scope-badge synced">\u2705 Daily Missions \u2014 synced</span>';
+      },
+
+      /** Faction war standings are pre-season / server-backed. */
       preSeasonFactionSignal: function () {
-        return '<p class="lb-fw-preseason">Faction signal is currently based on local arcade activity in this browser. '
-          + 'Full server-backed seasonal war standings are a future layer.</p>';
+        return '<p class="lb-fw-preseason"><strong>Faction Signal \u2014 Pre-Season.</strong> '
+          + 'Contributions from linked players are tracked server-side. '
+          + 'Full seasonal war standings are a future layer.</p>';
+      },
+
+      /** Faction signal prompt for unlinked users. */
+      factionSignalUnlinked: function () {
+        return '<p class="lb-fw-preseason">Faction signal is local-only in this browser. '
+          + '<a href="/gkniftyheads-incubator.html">Link Telegram</a> to contribute to server-backed faction standings.</p>';
+      },
+
+      /** Show sync pending notice. */
+      syncPending: function () {
+        return '<span class="sync-pending-badge">\u23F3 Server sync pending\u2026</span>';
+      },
+
+      /** Show offline cache notice. */
+      offlineCache: function () {
+        return '<span class="sync-offline-badge">\u26A0\uFE0F Offline cache \u2014 reconnect to sync</span>';
       },
 
       /** Prompt user to link Telegram. */
       telegramRequired: function () {
         return '<p class="status-hint">Link Telegram via <a href="/gkniftyheads-incubator.html">/gklink</a> to persist Arcade XP and unlock server-backed features.</p>';
+      },
+
+      /** Progress is guest-only. */
+      guestProgressOnly: function () {
+        return '<p class="status-hint guest-progress">\uD83D\uDCCB Guest progress \u2014 not persisted. <a href="/gkniftyheads-incubator.html">Link Telegram to persist this progress.</a></p>';
       },
 
       /** Block Topia gate is unlocked. */
