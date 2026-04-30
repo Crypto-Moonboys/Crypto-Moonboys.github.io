@@ -10,8 +10,9 @@
 
 import { readFileSync, existsSync } from 'fs';
 import { resolve } from 'path';
+import { fileURLToPath } from 'url';
 
-const ROOT = new URL('..', import.meta.url).pathname;
+const ROOT = fileURLToPath(new URL('..', import.meta.url));
 
 let failures = 0;
 let warnings = 0;
@@ -27,6 +28,7 @@ function read(rel) {
 }
 
 function scriptLineNumbers(html, fragment) {
+  // Returns all line numbers containing the fragment (may appear more than once).
   return html.split('\n')
     .map((line, i) => ({ line: line.trim(), n: i + 1 }))
     .filter(({ line }) => line.includes(fragment))
