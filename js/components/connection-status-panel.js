@@ -272,14 +272,14 @@
 
       '<div class="csp-item csp-item--wide">' +
         '<div class="csp-item-label">Block Topia access</div>' +
-        '<div class="csp-item-val">' + btAccess + '</div>' +
+        '<div class="csp-item-val" data-csp-bt-access>' + btAccess + '</div>' +
       '</div>' +
 
       '<div class="csp-item">' +
         '<div class="csp-item-label">Faction' +
           '<span class="csp-item-note">alignment only</span>' +
         '</div>' +
-        '<div class="csp-item-val">' + esc(faction) + '</div>' +
+        '<div class="csp-item-val" data-csp-faction>' + esc(faction) + '</div>' +
       '</div>' +
 
       '<div class="csp-item">' +
@@ -314,7 +314,7 @@
       '<span class="csp-badge csp-badge--linked" aria-label="Status: Telegram linked">' +
       'Telegram: ' + esc(name || 'Player') +
       ' · Arcade XP <strong data-csp-badge-xp>' + arcadeXp + '</strong>' +
-      ' · Block Topia ' + (unlocked ? 'unlocked' : 'locked') +
+      ' · Block Topia <span data-csp-badge-bt>' + (unlocked ? 'unlocked' : 'locked') + '</span>' +
       '</span>';
   }
 
@@ -414,6 +414,12 @@
 
   // ── Reactive refresh on identity/faction events ────────────────────────
 
+  /**
+   * Full invalidate-and-remount.  Only called on non-XP state changes that
+   * require a full rerender: identity/sync localStorage changes (e.g. Telegram
+   * link/unlink).  XP, faction, and BT access are handled inline by the
+   * MOONBOYS_STATE.subscribe() callback — no remount needed for those.
+   */
   function invalidateAndRefresh() {
     _progressionCache = null;
     _progressionInflight = null;
@@ -424,33 +430,58 @@
   }
 
   function listenForUpdates() {
-    var bus = window.MOONBOYS_EVENT_BUS;
-    // Sync/faction changes require a full panel remount (identity/gate state may change).
-    bus.on('sync:state', invalidateAndRefresh);
-    bus.on('faction:update', invalidateAndRefresh);
-    // XP changes are handled exclusively via MOONBOYS_STATE.subscribe() below —
-    // no full panel remount needed; only the XP display nodes are updated inline.
+    // Storage listener: remount panel only on identity/sync changes that are
+    // persisted in localStorage (e.g. Telegram link state).
+    // moonboys_state_v1 changes are handled via MOONBOYS_STATE.subscribe() below.
     window.addEventListener('storage', function (e) {
-      // Re-render on identity/sync state changes stored in localStorage.
-      // Exclude moonboys_state_v1 — those changes come through subscribe() instead.
       if (e.key && e.key.startsWith('moonboys_') && e.key !== 'moonboys_state_v1') {
         invalidateAndRefresh();
       }
     });
 
-    // Subscribe to MOONBOYS_STATE for instant XP updates.
-    // XP comes exclusively from MOONBOYS_STATE — no API re-fetch on XP events.
+    // Subscribe to MOONBOYS_STATE for instant inline updates.
+    // XP, faction, and Block Topia access state are patched without remounting
+    // the entire panel — no API re-fetch, no full DOM replacement.
     if (window.MOONBOYS_STATE && typeof window.MOONBOYS_STATE.subscribe === 'function') {
       window.MOONBOYS_STATE.subscribe(function (state) {
-        // Flash all rendered Arcade XP values inline — no full DOM remount.
+        var linked = isLinked();
+
+        // ── Arcade XP ─────────────────────────────────────────────────────────
         document.querySelectorAll('.csp-item-val[data-csp-xp]').forEach(function (el) {
-          el.textContent = String(state.xp);
+          el.textContent = linked ? String(state.xp) : '—';
         });
-        // Also flash the badge XP value if visible.
         var badge = document.getElementById('moonboys-global-status-badge');
         if (badge) {
           var xpNode = badge.querySelector('[data-csp-badge-xp]');
           if (xpNode) xpNode.textContent = String(state.xp);
+        }
+
+        // ── Faction text ──────────────────────────────────────────────────────
+        var factionText = factionLabel();
+        document.querySelectorAll('.csp-item-val[data-csp-faction]').forEach(function (el) {
+          el.textContent = factionText;
+        });
+
+        // ── Block Topia access state ──────────────────────────────────────────
+        var requiredXp = (_progressionCache && _progressionCache.requiredXp) || FALLBACK_REQUIRED_XP;
+        var unlocked = linked && state.xp >= requiredXp;
+
+        document.querySelectorAll('.csp-item-val[data-csp-bt-access]').forEach(function (el) {
+          var btHtml;
+          if (!linked) {
+            btHtml = '<span class="csp-val-locked">\uD83D\uDD12 Telegram link required</span>';
+          } else if (unlocked) {
+            btHtml = '<span class="csp-val-good">\u2705 Unlocked</span>';
+          } else {
+            btHtml = '<span class="csp-val-locked">\uD83D\uDD12 Locked \u2014 ' +
+              esc(String(state.xp)) + ' / ' + requiredXp + ' Arcade XP</span>';
+          }
+          el.innerHTML = btHtml;
+        });
+
+        if (badge) {
+          var btNode = badge.querySelector('[data-csp-badge-bt]');
+          if (btNode) btNode.textContent = unlocked ? 'unlocked' : 'locked';
         }
       });
     }

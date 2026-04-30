@@ -85,12 +85,19 @@
   // listeners.  This file only bridges legacy moonboys:* CustomEvents to the
   // unified bus names — it does NOT write to state directly.
   //
-  // A minimal compat shim is placed here so that pages which have not yet
-  // loaded moonboys-state.js still expose a readable MOONBOYS_STATE object
-  // (the singleton guard in moonboys-state.js will upgrade it on load).
+  // No compat shim.  If moonboys-state.js is not loaded, the diagnostic below
+  // fires after DOMContentLoaded so misconfigured pages are caught immediately.
 
-  if (!window.MOONBOYS_STATE) {
-    window.MOONBOYS_STATE = { xp: 0, faction: 'unaligned', lastEvent: null, updatedAt: 0 };
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function () {
+      if (!window.MOONBOYS_STATE || typeof window.MOONBOYS_STATE.getState !== 'function') {
+        console.error('[FATAL] MOONBOYS_STATE not loaded before event bus usage');
+      }
+    }, { once: true });
+  } else {
+    if (!window.MOONBOYS_STATE || typeof window.MOONBOYS_STATE.getState !== 'function') {
+      console.error('[FATAL] MOONBOYS_STATE not loaded before event bus usage');
+    }
   }
 
   // ── Public API ─────────────────────────────────────────────────────────────

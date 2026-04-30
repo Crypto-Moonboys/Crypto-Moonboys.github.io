@@ -75,6 +75,15 @@
 
   function setState(partial) {
     if (!partial || typeof partial !== 'object') return;
+    // ── Input validation ───────────────────────────────────────────────────────
+    // Reject the entire update if any supplied field fails validation.
+    // This prevents corrupted XP values or non-string factions from entering state.
+    if ('xp' in partial) {
+      if (!Number.isInteger(partial.xp) || partial.xp < 0) return;
+    }
+    if ('faction' in partial) {
+      if (typeof partial.faction !== 'string') return;
+    }
     Object.assign(_state, partial);
     _state.updatedAt = Date.now();
     _save();
@@ -148,9 +157,13 @@
         var payload = await res.json().catch(function () { return {}; });
         if (res.ok && payload && payload.ok === true && payload.progression) {
           var prog = payload.progression;
-          setState({
-            xp: Math.max(0, Math.floor(Number(prog.arcade_xp_total) || 0)),
-          });
+          var incomingXp = Math.max(0, Math.floor(Number(prog.arcade_xp_total) || 0));
+          // Only apply the API value if it is at least as high as the current
+          // cached/live value.  This prevents a stale API response from rolling
+          // back XP that has already been updated by in-session bus events.
+          if (incomingXp >= _state.xp) {
+            setState({ xp: incomingXp });
+          }
         }
       } catch (_) {}
 
@@ -180,6 +193,9 @@
       var newXp = (typeof d.total === 'number' && d.total > 0)
         ? d.total
         : (typeof d.amount === 'number' && d.amount > 0 ? currentXp + d.amount : currentXp);
+      // Dedup guard: skip if XP hasn't changed to prevent redundant writes and
+      // duplicate subscriber notifications.
+      if (newXp === currentXp) return;
       setState({ xp: newXp, lastEvent: 'xp' });
     });
 
@@ -199,7 +215,14 @@
   _restore();
 
   // ── Publish ─────────────────────────────────────────────────────────────────
-  window.MOONBOYS_STATE = { getState: getState, setState: setState, subscribe: subscribe, hydrateState: hydrateState };
+  // Frozen: only the four named methods are accessible; direct property mutation
+  // from external code is blocked at runtime.
+  window.MOONBOYS_STATE = Object.freeze({
+    getState: getState,
+    setState: setState,
+    subscribe: subscribe,
+    hydrateState: hydrateState,
+  });
 
   // Run hydration once the page is ready (non-blocking; UI renders with cached state first).
   // When DOM is already loaded, defer to the next task (setTimeout 0) so that
