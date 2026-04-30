@@ -162,11 +162,10 @@
     if (!el) return;
 
     if (!BASE || !FEATURES.LEADERBOARD) {
-      var copy = (window.UI_STATUS_COPY && window.UI_STATUS_COPY.panels)
+      el.innerHTML = (window.UI_STATUS_COPY && window.UI_STATUS_COPY.panels)
         ? window.UI_STATUS_COPY.panels.leaderboardUnavailable()
-        : '<div class="widget-unavailable"><p>Arcade leaderboard temporarily unavailable.</p>' +
-          '<a href="/games/leaderboard.html" class="btn btn-secondary">Open full leaderboard \u2192</a></div>';
-      el.innerHTML = copy;
+        : '<div class="widget-unavailable"><p>Arcade leaderboard temporarily unavailable.</p>'
+          + '<a href="/games/leaderboard.html" class="btn btn-secondary">Open full leaderboard \u2192</a></div>';
       return;
     }
 

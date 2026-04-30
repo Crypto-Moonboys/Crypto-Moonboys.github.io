@@ -509,7 +509,7 @@ function renderFactionStandings() {
     : '<p class="lb-fw-preseason">Faction signal is currently based on local arcade activity in this browser. '
       + 'Full server-backed seasonal war standings are a future layer.</p>';
 
-  var allZero = standings.length > 0 && standings.every(function (s) { return !s.power && !s.daily && !s.weekly; });
+  var allZero = standings.length > 0 && standings.every(function (s) { return s.power === 0 && s.daily === 0 && s.weekly === 0; });
 
   container.innerHTML = '<div class="lb-fw-section">'
     + '<h3 class="lb-fw-title">\u26A1 Faction Signal \u2014 Pre-Season</h3>'

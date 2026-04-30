@@ -192,11 +192,10 @@
       return;
     }
     if (!FEATURES.LEADERBOARD) {
-      var copy = (window.UI_STATUS_COPY && window.UI_STATUS_COPY.panels)
+      el.innerHTML = (window.UI_STATUS_COPY && window.UI_STATUS_COPY.panels)
         ? window.UI_STATUS_COPY.panels.leaderboardUnavailable()
-        : '<p>Arcade leaderboard temporarily unavailable.</p>'
-          + '<a href="/games/leaderboard.html" class="btn btn-secondary">View full leaderboard \u2192</a>';
-      el.innerHTML = '<div class="community-empty">' + copy + '</div>';
+        : '<div class="widget-unavailable"><p>Arcade leaderboard temporarily unavailable.</p>'
+          + '<a href="/games/leaderboard.html" class="btn btn-secondary">Open full leaderboard \u2192</a></div>';
       return;
     }
     el.innerHTML = '<div class="community-loading">Loading contributors…</div>';
@@ -311,6 +310,8 @@
       var communityMissions = [
         {
           tag: 'Daily Arcade',
+          // "Accepted" means a completed run submitted via the arcade sync flow.
+          // Run acceptance is determined by the arcade-sync system (score > 0).
           text: 'Play one accepted arcade run today.',
           href: '/games/',
           local: true

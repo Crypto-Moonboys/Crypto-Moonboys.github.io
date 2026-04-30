@@ -59,9 +59,25 @@ const FORBIDDEN = [
   /future layer shown as live/i,
 ];
 
-// Strip HTML comments so we don't flag commented-out legacy copy
+// Strip HTML comments so we don't flag commented-out legacy copy.
+// Processes line by line to avoid regex patterns that may miss edge cases.
 function stripHtmlComments(src) {
-  return src.replace(/<!--[\s\S]*?-->/g, '');
+  var result = [];
+  var inComment = false;
+  for (var i = 0; i < src.length; i++) {
+    if (!inComment && src[i] === '<' && src.slice(i, i + 4) === '<!--') {
+      inComment = true;
+      i += 3;
+      continue;
+    }
+    if (inComment && src[i] === '-' && src.slice(i, i + 3) === '-->') {
+      inComment = false;
+      i += 2;
+      continue;
+    }
+    if (!inComment) result.push(src[i]);
+  }
+  return result.join('');
 }
 
 let failures = 0;
