@@ -29,12 +29,13 @@
 (function () {
   'use strict';
 
-  // Fallback only — authoritative value comes from /blocktopia/progression.
+  // Fallback used when the API does not return required_xp.
   var FALLBACK_REQUIRED_XP = 50;
   var STYLE_ID = 'csp-styles';
 
   // ── Per-session cache ─────────────────────────────────────────────────
-  // _progressionCache: { arcadeXp, requiredXp } once resolved; null until then.
+  // _progressionCache: { requiredXp } once resolved; null until then.
+  // Arcade XP is NOT cached here — it is read from MOONBOYS_STATE exclusively.
   // _progressionInflight: the in-flight Promise (shared by all concurrent callers).
   // Clearing both on invalidate ensures the next call starts fresh.
   var _progressionCache = null;
@@ -122,21 +123,22 @@
 
   /**
    * Fetches /blocktopia/progression once per session.
-   * Returns { arcadeXp, requiredXp } — requiredXp comes from the API response;
-   * falls back to FALLBACK_REQUIRED_XP when the field is absent.
+   * Returns { requiredXp } — XP for the Block Topia gate threshold only.
+   * Arcade XP displayed in the UI is read from MOONBOYS_STATE.getState().xp,
+   * which is hydrated by moonboys-state.js and kept up-to-date via bus events.
    *
    * De-duplication: all concurrent callers share the single in-flight Promise
    * so only one HTTP request is made even when multiple panels/badges render
    * simultaneously.
    */
-  function fetchProgression() {
+  function fetchRequiredXp() {
     // Return cached result immediately when available.
     if (_progressionCache !== null) return Promise.resolve(_progressionCache);
     // Return the existing in-flight Promise to de-duplicate concurrent calls.
     if (_progressionInflight !== null) return _progressionInflight;
 
     _progressionInflight = (async function () {
-      var fallback = { arcadeXp: 0, requiredXp: FALLBACK_REQUIRED_XP };
+      var fallback = { requiredXp: FALLBACK_REQUIRED_XP };
       var gate = getIdentity();
       var telegramAuth = null;
       var apiBase = '';
@@ -163,7 +165,6 @@
           if (res.ok && payload && payload.ok === true && payload.progression) {
             var prog = payload.progression;
             _progressionCache = {
-              arcadeXp: Math.max(0, Math.floor(Number(prog.arcade_xp_total) || 0)),
               requiredXp: Math.max(1, Math.floor(Number(prog.required_xp) || FALLBACK_REQUIRED_XP)),
             };
           } else {
@@ -182,6 +183,14 @@
 
     return _progressionInflight;
   }
+
+  /** Returns the current Arcade XP from MOONBOYS_STATE (authoritative). */
+  function getArcadeXp() {
+    var ms = window.MOONBOYS_STATE;
+    if (ms && typeof ms.getState === 'function') return ms.getState().xp;
+    return (ms && typeof ms.xp === 'number') ? ms.xp : 0;
+  }
+
 
   async function checkApiOnline() {
     if (_apiOnlineCache !== null) return _apiOnlineCache;
@@ -207,8 +216,8 @@
     var linked = isLinked();
     var name = getDisplayName();
     var state = getSyncState();
-    var progression = await fetchProgression();
-    var arcadeXp = progression.arcadeXp;
+    var progression = await fetchRequiredXp();
+    var arcadeXp = getArcadeXp();
     var requiredXp = progression.requiredXp;
     var apiOnline = await checkApiOnline();
     var blocktopiaUnlocked = linked && arcadeXp >= requiredXp;
@@ -249,7 +258,7 @@
         '<div class="csp-item-label">Arcade XP' +
           '<span class="csp-item-note">Block Topia gate progress</span>' +
         '</div>' +
-        '<div class="csp-item-val">' +
+        '<div class="csp-item-val" data-csp-xp>' +
           (linked ? esc(String(arcadeXp)) : '—') +
         '</div>' +
       '</div>' +
@@ -263,14 +272,14 @@
 
       '<div class="csp-item csp-item--wide">' +
         '<div class="csp-item-label">Block Topia access</div>' +
-        '<div class="csp-item-val">' + btAccess + '</div>' +
+        '<div class="csp-item-val" data-csp-bt-access>' + btAccess + '</div>' +
       '</div>' +
 
       '<div class="csp-item">' +
         '<div class="csp-item-label">Faction' +
           '<span class="csp-item-note">alignment only</span>' +
         '</div>' +
-        '<div class="csp-item-val">' + esc(faction) + '</div>' +
+        '<div class="csp-item-val" data-csp-faction>' + esc(faction) + '</div>' +
       '</div>' +
 
       '<div class="csp-item">' +
@@ -297,15 +306,15 @@
       return '<a href="/gkniftyheads-incubator.html" class="csp-badge csp-badge--unlinked" aria-label="Link Telegram to activate">🔗 Link Telegram</a>';
     }
     var name = getDisplayName();
-    var progression = await fetchProgression();
-    var arcadeXp = progression.arcadeXp;
+    var progression = await fetchRequiredXp();
+    var arcadeXp = getArcadeXp();
     var requiredXp = progression.requiredXp;
     var unlocked = arcadeXp >= requiredXp;
     return '' +
       '<span class="csp-badge csp-badge--linked" aria-label="Status: Telegram linked">' +
       'Telegram: ' + esc(name || 'Player') +
-      ' · Arcade XP <strong>' + arcadeXp + '</strong>' +
-      ' · Block Topia ' + (unlocked ? 'unlocked' : 'locked') +
+      ' · Arcade XP <strong data-csp-badge-xp>' + arcadeXp + '</strong>' +
+      ' · Block Topia <span data-csp-badge-bt>' + (unlocked ? 'unlocked' : 'locked') + '</span>' +
       '</span>';
   }
 
@@ -405,6 +414,12 @@
 
   // ── Reactive refresh on identity/faction events ────────────────────────
 
+  /**
+   * Full invalidate-and-remount.  Only called on non-XP state changes that
+   * require a full rerender: identity/sync localStorage changes (e.g. Telegram
+   * link/unlink).  XP, faction, and BT access are handled inline by the
+   * MOONBOYS_STATE.subscribe() callback — no remount needed for those.
+   */
   function invalidateAndRefresh() {
     _progressionCache = null;
     _progressionInflight = null;
@@ -415,12 +430,61 @@
   }
 
   function listenForUpdates() {
-    ['moonboys:sync-state', 'moonboys:faction-status', 'moonboys:faction-boost'].forEach(function (evt) {
-      window.addEventListener(evt, invalidateAndRefresh);
-    });
+    // Storage listener: remount panel only on identity/sync changes that are
+    // persisted in localStorage (e.g. Telegram link state).
+    // moonboys_state_v1 changes are handled via MOONBOYS_STATE.subscribe() below.
     window.addEventListener('storage', function (e) {
-      if (e.key && e.key.startsWith('moonboys_')) invalidateAndRefresh();
+      if (e.key && e.key.startsWith('moonboys_') && e.key !== 'moonboys_state_v1') {
+        invalidateAndRefresh();
+      }
     });
+
+    // Subscribe to MOONBOYS_STATE for instant inline updates.
+    // XP, faction, and Block Topia access state are patched without remounting
+    // the entire panel — no API re-fetch, no full DOM replacement.
+    if (window.MOONBOYS_STATE && typeof window.MOONBOYS_STATE.subscribe === 'function') {
+      window.MOONBOYS_STATE.subscribe(function (state) {
+        var linked = isLinked();
+
+        // ── Arcade XP ─────────────────────────────────────────────────────────
+        document.querySelectorAll('.csp-item-val[data-csp-xp]').forEach(function (el) {
+          el.textContent = linked ? String(state.xp) : '—';
+        });
+        var badge = document.getElementById('moonboys-global-status-badge');
+        if (badge) {
+          var xpNode = badge.querySelector('[data-csp-badge-xp]');
+          if (xpNode) xpNode.textContent = String(state.xp);
+        }
+
+        // ── Faction text ──────────────────────────────────────────────────────
+        var factionText = factionLabel();
+        document.querySelectorAll('.csp-item-val[data-csp-faction]').forEach(function (el) {
+          el.textContent = factionText;
+        });
+
+        // ── Block Topia access state ──────────────────────────────────────────
+        var requiredXp = (_progressionCache && _progressionCache.requiredXp) || FALLBACK_REQUIRED_XP;
+        var unlocked = linked && state.xp >= requiredXp;
+
+        document.querySelectorAll('.csp-item-val[data-csp-bt-access]').forEach(function (el) {
+          var btHtml;
+          if (!linked) {
+            btHtml = '<span class="csp-val-locked">\uD83D\uDD12 Telegram link required</span>';
+          } else if (unlocked) {
+            btHtml = '<span class="csp-val-good">\u2705 Unlocked</span>';
+          } else {
+            btHtml = '<span class="csp-val-locked">\uD83D\uDD12 Locked \u2014 ' +
+              esc(String(state.xp)) + ' / ' + requiredXp + ' Arcade XP</span>';
+          }
+          el.innerHTML = btHtml;
+        });
+
+        if (badge) {
+          var btNode = badge.querySelector('[data-csp-badge-bt]');
+          if (btNode) btNode.textContent = unlocked ? 'unlocked' : 'locked';
+        }
+      });
+    }
   }
 
   // ── Bootstrap ─────────────────────────────────────────────────────────

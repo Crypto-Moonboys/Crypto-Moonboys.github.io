@@ -840,10 +840,76 @@
   function capitalize(s) { return s ? s.charAt(0).toUpperCase() + s.slice(1) : ''; }
   function noData(msg) { return `<p style="color:var(--color-text-muted)">${msg}</p>`; }
 
+  // ── Live Player Events (event bus) ────────────────────────────────────────
+  // Subscribes to activity:event on MOONBOYS_EVENT_BUS and renders a
+  // timestamped feed in #dash-live-events.  No "Activity unavailable" state —
+  // if no events have fired yet the container shows a placeholder.
+
+  const DASH_EVENT_MAX = 12;
+  const DASH_EVENT_ICONS = { xp: '⚡', faction: '🏴', sync: '🔗', score: '🏆' };
+
+  function dashEventRowHTML(entry) {
+    const icon = DASH_EVENT_ICONS[entry.type] || '📡';
+    return `<div class="dash-live-row">` +
+      `<span class="dash-live-time">${entry.time}</span>` +
+      `<span aria-hidden="true">${icon}</span>` +
+      `<span class="dash-live-text">${entry.text}</span>` +
+      `</div>`;
+  }
+
+  function connectToEventBus() {
+    const container = qs('#dash-live-events');
+    if (!container) return;
+
+    // Initialise with a placeholder — replaced on first formatted event.
+    container.innerHTML = '<p class="dash-live-placeholder">Waiting for player activity\u2026</p>';
+
+    const bus = window.MOONBOYS_EVENT_BUS;
+
+    // Only display LAS-formatted entries (have `text` + `time` fields).
+    // Raw bridge events (from global-event-bus bridges) carry `_src` but no
+    // `text`, so they are skipped here to prevent double-display.
+    bus.on('activity:event', function (entry) {
+      if (!entry.text || !entry.time) return;
+
+      // Remove placeholder on first real event.
+      const placeholder = container.querySelector('p');
+      if (placeholder) placeholder.remove();
+
+      const tmp = document.createElement('div');
+      tmp.innerHTML = dashEventRowHTML(entry);
+      container.insertBefore(tmp.firstChild, container.firstChild);
+
+      // Trim to DASH_EVENT_MAX rows.
+      while (container.children.length > DASH_EVENT_MAX) {
+        container.removeChild(container.lastChild);
+      }
+    });
+
+    // Subscribe to MOONBOYS_STATE for instant state-driven UI updates.
+    // Updates any [data-dash-xp] and [data-dash-faction] elements without
+    // re-rendering the full dashboard.
+    if (window.MOONBOYS_STATE && typeof window.MOONBOYS_STATE.subscribe === 'function') {
+      window.MOONBOYS_STATE.subscribe(function (state) {
+        document.querySelectorAll('[data-dash-xp]').forEach(function (el) {
+          el.textContent = String(state.xp);
+        });
+        document.querySelectorAll('[data-dash-faction]').forEach(function (el) {
+          el.textContent = state.faction !== 'unaligned' ? state.faction : 'None';
+        });
+      });
+    }
+  }
+
   // ── Bootstrap ─────────────────────────────────────────────────────────────
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init);
-  } else {
+  function initAll() {
     init();
+    connectToEventBus();
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initAll);
+  } else {
+    initAll();
   }
 }());

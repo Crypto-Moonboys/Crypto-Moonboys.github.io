@@ -97,9 +97,37 @@
   }
 
   // ── Bootstrap ─────────────────────────────────────────────────────────
+  /**
+   * Auto-creates a [data-las-panel] element if the page has none.
+   * Inserted after #site-header (wiki pages) or after the fixed badge (game
+   * pages without a wiki-shell). For pages that already have a [data-las-panel]
+   * in their markup this is a no-op.
+   */
+  function autoMountActivityPanel() {
+    if (document.querySelector('[data-las-panel]')) return; // already present
+    var wrap = document.createElement('div');
+    wrap.setAttribute('data-las-panel', '');
+    wrap.style.marginBottom = '12px';
+    var header = document.getElementById('site-header');
+    if (header && header.parentNode) {
+      // Wiki-shell pages: insert directly after the header.
+      header.parentNode.insertBefore(wrap, header.nextSibling);
+    }
+    // For game pages the fixed badge is already compact; skip appending to body
+    // to avoid overlapping the canvas. LAS will still bootstrap on the element
+    // if it was added above.
+    var las = window.MOONBOYS_LIVE_ACTIVITY;
+    if (las && typeof las.mount === 'function') las.mount(wrap);
+  }
 
   function bootstrap() {
     injectFixedBadge();
+    // Defer panel creation by one task to guarantee live-activity-summary.js
+    // has already bootstrapped and set window.MOONBOYS_LIVE_ACTIVITY.  Both
+    // scripts load synchronously in the same <head>, but LAS bootstraps via
+    // DOMContentLoaded too; the deferred call runs after all DOMContentLoaded
+    // handlers, ensuring LAS.mount() is callable.
+    setTimeout(autoMountActivityPanel, 0);
   }
 
   if (document.readyState === 'loading') {

@@ -21,6 +21,11 @@
     window.dispatchEvent(new CustomEvent(name, { detail: detail || {} }));
   }
 
+  function emitToBus(event, payload) {
+    var bus = window.MOONBOYS_EVENT_BUS;
+    if (bus && typeof bus.emit === 'function') bus.emit(event, payload || {});
+  }
+
   function normalizeFaction(value) {
     var v = String(value || '').toLowerCase().trim();
     if (v === 'diamond_hands' || v === 'diamondhands') return 'diamond-hands';
@@ -83,6 +88,7 @@
     };
     setCachedStatus(payload);
     dispatchUiState('moonboys:faction-status', { ...payload, source: 'load', ts: Date.now() });
+    emitToBus('faction:update', { faction: payload.faction, faction_xp: payload.faction_xp, source: 'load', ts: Date.now() });
     return payload;
   }
 
@@ -104,6 +110,7 @@
     };
     setCachedStatus(payload);
     dispatchUiState('moonboys:faction-boost', { faction: payload.faction, amount: 0, source: 'join', ts: Date.now() });
+    emitToBus('faction:update', { faction: payload.faction, faction_xp: payload.faction_xp, source: 'join', ts: Date.now() });
     return data;
   }
 
@@ -121,14 +128,16 @@
       bonuses: data.bonuses || FACTIONS[normalizeFaction(data.faction)],
       cooldown_ms_remaining: 0,
     };
+    var xpAmount = Number(data.faction_xp_awarded || data.faction_xp_delta || baseXp || 0);
     setCachedStatus(payload);
     dispatchUiState('moonboys:faction-boost', {
       faction: payload.faction,
-      amount: Number(data.faction_xp_awarded || data.faction_xp_delta || baseXp || 0),
+      amount: xpAmount,
       total: payload.faction_xp,
       source: source || 'score_accept',
       ts: Date.now(),
     });
+    emitToBus('faction:update', { faction: payload.faction, faction_xp: payload.faction_xp, amount: xpAmount, source: source || 'score_accept', ts: Date.now() });
     return data;
   }
 
