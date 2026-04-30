@@ -213,7 +213,7 @@ An expanded comment was added documenting this behaviour.
 | Property | Value |
 |---|---|
 | Tables dropped & rebuilt | `blocktopia_progression` (DROP IF EXISTS + full rebuild with rename) |
-| Uses `DROP TABLE IF EXISTS` | ✅ for temp tables; ✅ `DROP TABLE IF EXISTS blocktopia_progression` (fixed in this PR) |
+| Uses `DROP TABLE IF EXISTS` | ✅ for temp tables; ✅ `DROP TABLE IF EXISTS blocktopia_progression` |
 | Safe on existing production D1 | ❌ **DESTRUCTIVE** — drops and recreates `blocktopia_progression` |
 | Unsafe / order-dependent | ⚠️ requires `blocktopia_progression` to exist before the data-copy INSERT |
 
@@ -231,6 +231,16 @@ included in the SELECT** and will be reset to their defaults (`'unaligned'`, `0`
 
 **Required preflight — run before applying 012:**
 
+Step 1 — check whether faction columns exist:
+
+```sql
+PRAGMA table_info('blocktopia_progression');
+```
+
+Inspect the `name` column for `faction`, `faction_xp`, and `faction_last_switch`.
+
+Step 2 — only if all three columns exist, run the at-risk row count:
+
 ```sql
 SELECT COUNT(*) AS at_risk_rows
 FROM blocktopia_progression
@@ -241,6 +251,10 @@ WHERE faction != 'unaligned'
 
 If `at_risk_rows > 0`, **do not run migration 012**. Create a new repair
 migration that preserves those column values before proceeding.
+
+If any of the three columns are missing, the at-risk query is not applicable —
+that faction data cannot exist in columns that do not yet exist. Migration 012
+is still destructive; proceed only when directed in the runbook.
 
 This migration was added as part of a known repair cycle and should only be applied when
 directed in the runbook.

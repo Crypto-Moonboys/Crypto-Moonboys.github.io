@@ -229,9 +229,22 @@ The `INSERT SELECT` copies only these columns from the old table:
 | `faction_xp` | `0` |
 | `faction_last_switch` | `NULL` |
 
-### Required preflight query
+### Required preflight — 5 steps
 
-Before applying migration 012, run the following query against production:
+**Step 1 — check whether the faction columns exist:**
+
+```sh
+npx wrangler d1 execute wikicoms --remote \
+  --config workers/moonboys-api/wrangler.toml \
+  --command "PRAGMA table_info('blocktopia_progression');"
+```
+
+**Step 2 — check the returned `name` column** for all three of:
+- `faction`
+- `faction_xp`
+- `faction_last_switch`
+
+**Step 3 — only if all three columns exist, run the at-risk row count:**
 
 ```sh
 npx wrangler d1 execute wikicoms --remote \
@@ -239,12 +252,16 @@ npx wrangler d1 execute wikicoms --remote \
   --command "SELECT COUNT(*) AS at_risk_rows FROM blocktopia_progression WHERE faction != 'unaligned' OR faction_xp > 0 OR faction_last_switch IS NOT NULL;"
 ```
 
-### Decision gate
+**Step 4 — if `at_risk_rows > 0`:**
+- **STOP. Do not run migration 012.**
+- Live `faction`/`faction_xp`/`faction_last_switch` data exists.
+- Running migration 012 will permanently erase that data.
+- Create a new repair migration that preserves those columns (see "If at_risk_rows > 0" section below).
 
-| Result | Action |
-|---|---|
-| `at_risk_rows = 0` | Safe to apply 012. All rows have default faction values. Proceed. |
-| `at_risk_rows > 0` | **DO NOT RUN 012.** Live faction/faction_xp/faction_last_switch data exists. Running now will permanently erase it. |
+**Step 5 — if any of the three columns are missing from PRAGMA output:**
+- The at-risk row count is not applicable — that faction data cannot exist in columns that do not yet exist.
+- Migration 012 is still a destructive rebuild. Proceed only if you accept that the table will be dropped and recreated.
+- Continue to the decision gate below.
 
 ### If at_risk_rows > 0 — what to do instead
 

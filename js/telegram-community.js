@@ -58,6 +58,32 @@
       .catch(function () { return null; });
   }
 
+  // ── Telegram ID resolution ────────────────────────────────────
+
+  /**
+   * Derive the current user's Telegram ID without requiring data-telegram-id
+   * to be set in static HTML.
+   *
+   * Lookup order:
+   *   1. el.dataset.telegramId   — explicit static override on the element
+   *   2. MOONBOYS_IDENTITY.getTelegramId()  — identity singleton (loaded before this script)
+   *
+   * Returns null (never throws) when no ID is available; callers render
+   * the normal unlinked empty state in that case.
+   */
+  function resolveTelegramId(el) {
+    if (el && el.dataset && el.dataset.telegramId) {
+      return el.dataset.telegramId;
+    }
+    try {
+      if (window.MOONBOYS_IDENTITY && typeof window.MOONBOYS_IDENTITY.getTelegramId === 'function') {
+        var id = window.MOONBOYS_IDENTITY.getTelegramId();
+        if (id) return String(id);
+      }
+    } catch (_) {}
+    return null;
+  }
+
   // ── Telegram Community XP Leaderboard ────────────────────────
 
   function initTgLeaderboard(el) {
@@ -125,7 +151,7 @@
   // ── Telegram Profile Card ─────────────────────────────────────
 
   function initTgProfileCard(el) {
-    var telegramId = el.dataset.telegramId;
+    var telegramId = resolveTelegramId(el);
     if (!telegramId) {
       el.innerHTML = '<div class="community-empty">' + COPY.UNLINKED + '</div>';
       return;
@@ -169,7 +195,7 @@
   // ── Daily Claim Status ────────────────────────────────────────
 
   function initTgDailyStatus(el) {
-    var telegramId = el.dataset.telegramId;
+    var telegramId = resolveTelegramId(el);
     if (!telegramId || !BASE || !FEATURES.TELEGRAM_COMMUNITY) {
       el.innerHTML = '';
       return;
