@@ -885,6 +885,20 @@
         container.removeChild(container.lastChild);
       }
     });
+
+    // Subscribe to MOONBOYS_STATE for instant state-driven UI updates.
+    // Updates any [data-dash-xp] and [data-dash-faction] elements without
+    // re-rendering the full dashboard.
+    if (window.MOONBOYS_STATE && typeof window.MOONBOYS_STATE.subscribe === 'function') {
+      window.MOONBOYS_STATE.subscribe(function (state) {
+        document.querySelectorAll('[data-dash-xp]').forEach(function (el) {
+          el.textContent = String(state.xp);
+        });
+        document.querySelectorAll('[data-dash-faction]').forEach(function (el) {
+          el.textContent = state.faction !== 'unaligned' ? state.faction : 'None';
+        });
+      });
+    }
   }
 
   // ── Bootstrap ─────────────────────────────────────────────────────────────

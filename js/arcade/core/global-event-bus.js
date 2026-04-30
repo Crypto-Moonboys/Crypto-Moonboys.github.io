@@ -77,35 +77,49 @@
   });
 
   // ── Single source of truth ─────────────────────────────────────────────────
-  // window.MOONBOYS_STATE mirrors the latest known XP, faction, and last event
-  // so any page can read the current state synchronously without re-fetching.
+  // window.MOONBOYS_STATE is the authoritative in-session state for XP,
+  // faction, and last event.  The full singleton (localStorage persistence,
+  // subscribe, hydrateState) lives in js/core/moonboys-state.js which loads
+  // right after this file.  A minimal compat shim is created here so pages
+  // that don't yet include moonboys-state.js still work.
   //
-  // Note: xp and faction start at their zero/default values and are updated
-  // as events arrive.  For the authoritative persisted values use
-  // MOONBOYS_STATUS_PANEL (which fetches /blocktopia/progression) or
-  // MOONBOYS_FACTION (which fetches the faction API).  MOONBOYS_STATE is an
-  // in-session overlay for instant UI updates only.
+  // All writes go through _stateSet() which delegates to setState() when the
+  // full singleton is available, and falls back to direct object assignment on
+  // the compat shim when it is not.
 
-  window.MOONBOYS_STATE = { xp: 0, faction: 'unaligned', lastEvent: null };
+  if (!window.MOONBOYS_STATE) {
+    window.MOONBOYS_STATE = { xp: 0, faction: 'unaligned', lastEvent: null, updatedAt: 0 };
+  }
+
+  function _stateSet(partial) {
+    var s = window.MOONBOYS_STATE;
+    if (s && typeof s.setState === 'function') {
+      s.setState(partial);
+    } else if (s) {
+      Object.assign(s, partial);
+    }
+  }
 
   on('xp:update', function (p) {
-    if (typeof p.total === 'number' && p.total > 0) {
-      window.MOONBOYS_STATE.xp = p.total;
-    } else if (typeof p.amount === 'number' && p.amount > 0) {
-      window.MOONBOYS_STATE.xp += p.amount;
-    }
-    window.MOONBOYS_STATE.lastEvent = p;
+    var currentXp = (window.MOONBOYS_STATE && typeof window.MOONBOYS_STATE.getState === 'function')
+      ? window.MOONBOYS_STATE.getState().xp
+      : (window.MOONBOYS_STATE ? window.MOONBOYS_STATE.xp : 0);
+    var newXp = (typeof p.total === 'number' && p.total > 0)
+      ? p.total
+      : (typeof p.amount === 'number' && p.amount > 0 ? currentXp + p.amount : currentXp);
+    _stateSet({ xp: newXp, lastEvent: p });
   });
 
   on('faction:update', function (p) {
     if (p.faction && p.faction !== 'unaligned') {
-      window.MOONBOYS_STATE.faction = p.faction;
+      _stateSet({ faction: p.faction, lastEvent: p });
+    } else {
+      _stateSet({ lastEvent: p });
     }
-    window.MOONBOYS_STATE.lastEvent = p;
   });
 
   on('activity:event', function (p) {
-    window.MOONBOYS_STATE.lastEvent = p;
+    _stateSet({ lastEvent: p });
   });
 
   // ── Public API ─────────────────────────────────────────────────────────────

@@ -249,7 +249,7 @@
         '<div class="csp-item-label">Arcade XP' +
           '<span class="csp-item-note">Block Topia gate progress</span>' +
         '</div>' +
-        '<div class="csp-item-val">' +
+        '<div class="csp-item-val" data-csp-xp>' +
           (linked ? esc(String(arcadeXp)) : '—') +
         '</div>' +
       '</div>' +
@@ -304,7 +304,7 @@
     return '' +
       '<span class="csp-badge csp-badge--linked" aria-label="Status: Telegram linked">' +
       'Telegram: ' + esc(name || 'Player') +
-      ' · Arcade XP <strong>' + arcadeXp + '</strong>' +
+      ' · Arcade XP <strong data-csp-badge-xp>' + arcadeXp + '</strong>' +
       ' · Block Topia ' + (unlocked ? 'unlocked' : 'locked') +
       '</span>';
   }
@@ -426,6 +426,24 @@
     window.addEventListener('storage', function (e) {
       if (e.key && e.key.startsWith('moonboys_')) invalidateAndRefresh();
     });
+
+    // Subscribe to MOONBOYS_STATE for instant XP flash when state is hydrated
+    // or updated.  This fires immediately after hydrateState() resolves so the
+    // badge shows real XP without waiting for a full panel remount.
+    if (window.MOONBOYS_STATE && typeof window.MOONBOYS_STATE.subscribe === 'function') {
+      window.MOONBOYS_STATE.subscribe(function (state) {
+        // Flash all rendered Arcade XP values inline — no full DOM remount.
+        document.querySelectorAll('.csp-item-val[data-csp-xp]').forEach(function (el) {
+          el.textContent = String(state.xp);
+        });
+        // Also flash the badge XP value if visible.
+        var badge = document.getElementById('moonboys-global-status-badge');
+        if (badge) {
+          var xpNode = badge.querySelector('[data-csp-badge-xp]');
+          if (xpNode) xpNode.textContent = String(state.xp);
+        }
+      });
+    }
   }
 
   // ── Bootstrap ─────────────────────────────────────────────────────────
