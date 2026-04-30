@@ -256,7 +256,7 @@ function createLegacybootstrapInvaders(root) {
       _factionId = getPlayerFaction();
       const _fx  = getFactionEffects(_factionId);
       // Blend faction chaos modifier with the cross-game pressure rate
-      _factionPressureMult = applyFactionEventRate(1, _factionId) / 1;
+      _factionPressureMult = applyFactionEventRate(1, _factionId);
     } catch (_) {
       _factionId           = 'unaligned';
       _factionPressureMult = 1;

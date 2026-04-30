@@ -150,11 +150,13 @@ export function getWeeklyRotation() {
   var dominant    = _safeGetDominant();
   var featured    = rng() < 0.60 ? dominant : factions[Math.floor(rng() * factions.length)];
 
-  var monday = new Date();
-  var dow = monday.getUTCDay();
-  monday.setUTCDate(monday.getUTCDate() - ((dow + 6) % 7));
-  var weekStr = monday.getUTCFullYear() + '-W'
-    + String(monday.getUTCDate()).padStart(2, '0');
+  // ISO 8601 week key (Thursday-determines-year rule) — same algorithm as faction-war-system
+  var _wd = new Date();
+  var _dow = _wd.getUTCDay() || 7;
+  var _thu = new Date(Date.UTC(_wd.getUTCFullYear(), _wd.getUTCMonth(), _wd.getUTCDate() + (4 - _dow)));
+  var _ys = new Date(Date.UTC(_thu.getUTCFullYear(), 0, 1));
+  var _wn = Math.ceil(((_thu - _ys) / 86400000 + 1) / 7);
+  var weekStr = _thu.getUTCFullYear() + '-W' + String(_wn).padStart(2, '0');
 
   var theme = SEASON_THEMES[themeIdx];
   var label = theme + ' | ' + (FACTION_LABELS[featured] || featured) + ' pressure';
