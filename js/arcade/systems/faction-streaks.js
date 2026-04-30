@@ -6,6 +6,10 @@
  *   • mission streak       — consecutive days with at least one completed mission
  *   • contribution streak  — consecutive days with a faction war contribution
  *
+ * For Telegram-linked users, mission and contribution streaks are updated
+ * server-side when the corresponding mission/contribution events succeed.
+ * localStorage caches the display state; the server is authoritative.
+ *
  * Streaks feed the faction war contribution system (via bonus metadata) but
  * do NOT alter XP base math.
  *
@@ -17,6 +21,7 @@
  *   recordWarContribution()    — call when war contribution is recorded
  *   getStreakState()           — { login, mission, contribution } streak objects
  *   getStreakBonusMeta()       — { multiplier, label } for display / war feed
+ *   hydrateStreaksFromServer()  — async: loads server state for linked users
  */
 
 var STREAKS_STORAGE_KEY = 'fw_streaks_v1';
@@ -208,6 +213,58 @@ function _emitStreakEvent(type, count) {
     var bus = (typeof window !== 'undefined') && window.MOONBOYS_EVENT_BUS;
     if (bus && typeof bus.emit === 'function') {
       bus.emit('faction:streak:update', { type: type, count: count, ts: Date.now() });
+    }
+  } catch (_) {}
+}
+
+// ── Server hydration ─────────────────────────────────────────────────────────
+
+function _isLinked() {
+  try {
+    var identity = (typeof window !== 'undefined') && window.MOONBOYS_IDENTITY;
+    return !!(identity && typeof identity.isTelegramLinked === 'function' && identity.isTelegramLinked());
+  } catch (_) { return false; }
+}
+
+function _getSignedAuth() {
+  try {
+    var identity = (typeof window !== 'undefined') && window.MOONBOYS_IDENTITY;
+    if (!identity || typeof identity.getSignedTelegramAuth !== 'function') return null;
+    return identity.getSignedTelegramAuth();
+  } catch (_) { return null; }
+}
+
+function _getApiBase() {
+  try {
+    var cfg = (typeof window !== 'undefined') && window.MOONBOYS_API;
+    return cfg && cfg.BASE_URL ? String(cfg.BASE_URL).replace(/\/$/, '') : '';
+  } catch (_) { return ''; }
+}
+
+/**
+ * Hydrate streak state from server for Telegram-linked users.
+ * Updates the localStorage cache with server values.
+ * @returns {Promise<void>}
+ */
+export async function hydrateStreaksFromServer() {
+  if (!_isLinked()) return;
+  var auth = _getSignedAuth();
+  var apiBase = _getApiBase();
+  if (!auth || !apiBase) return;
+  try {
+    var res = await fetch(apiBase + '/player/daily-missions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ telegram_auth: auth }),
+    });
+    var data = res.ok ? await res.json().catch(function () { return {}; }) : {};
+    if (data && data.ok) {
+      var s = _loadState();
+      if (typeof data.mission_streak === 'number') {
+        s.mission.count = Math.max(s.mission.count || 0, data.mission_streak);
+        if (data.last_mission_date) s.mission.lastDate = data.last_mission_date;
+      }
+      _saveState(s);
     }
   } catch (_) {}
 }

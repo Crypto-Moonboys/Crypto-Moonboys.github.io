@@ -4,11 +4,14 @@
  * Provides a read-only, localStorage-persisted modifier system that any
  * compatible arcade game can query.  No game should mutate these definitions.
  *
+ * For Telegram-linked users, active modifier state is server-backed.
+ * localStorage is used as a guest cache and UI display cache only.
+ *
  * Public API:
  *   MODIFIER_DEFS                    — frozen array of all modifier definitions
  *   getModifierDef(id)               — retrieve one definition by id
  *   getAllModifierDefs()              — retrieve all definitions
- *   getUnlockedModifiers()           — array of unlocked modifier ids from localStorage
+ *   getUnlockedModifiers()           — array of unlocked modifier ids
  *   unlockModifier(id)               — persist a modifier as unlocked
  *   isModifierUnlocked(id)           — boolean check
  *   getActiveModifier()              — currently selected modifier id (or null)
@@ -18,6 +21,7 @@
  *   hasEffect(activeMods, key)       — true if any active mod has the given effect
  *   getStatEffect(activeMods, key, defaultValue) — get numeric/bool effect value
  *   getModifierHistory()             — array of { id, gameId, ts } usage records
+ *   hydrateModifiersFromServer()     — async: loads server state for linked users
  */
 
 // ── Storage keys ────────────────────────────────────────────────────────────
@@ -233,6 +237,7 @@ export function getActiveModifier() {
 
 /**
  * Set a modifier as active.  The modifier must exist and be unlocked.
+ * For Telegram-linked users, syncs the change to the server.
  * @param {string} id
  * @returns {boolean} true on success
  */
@@ -240,14 +245,17 @@ export function setActiveModifier(id) {
   if (!_byId.has(id)) return false;
   if (!isModifierUnlocked(id)) return false;
   _safeSet(STORAGE_KEY_ACTIVE, id);
+  _syncActiveModifierToServer(id);
   return true;
 }
 
 /**
  * Clear the active modifier.
+ * For Telegram-linked users, syncs the change to the server.
  */
 export function clearActiveModifier() {
   _safeRemove(STORAGE_KEY_ACTIVE);
+  _syncActiveModifierToServer(null);
 }
 
 /**
@@ -337,5 +345,78 @@ function _recordModifierUse(id, gameId) {
     // Cap at 200 entries to avoid unbounded growth
     if (history.length > 200) history.splice(0, history.length - 200);
     _safeSet(STORAGE_KEY_HISTORY, JSON.stringify(history));
+  } catch (_) {}
+}
+
+// ── Server sync helpers ───────────────────────────────────────────────────────
+
+function _isLinked() {
+  try {
+    var identity = window.MOONBOYS_IDENTITY;
+    return !!(identity && typeof identity.isTelegramLinked === 'function' && identity.isTelegramLinked());
+  } catch (_) { return false; }
+}
+
+function _getSignedAuth() {
+  try {
+    var identity = window.MOONBOYS_IDENTITY;
+    if (!identity || typeof identity.getSignedTelegramAuth !== 'function') return null;
+    return identity.getSignedTelegramAuth();
+  } catch (_) { return null; }
+}
+
+function _getApiBase() {
+  try {
+    var cfg = window.MOONBOYS_API;
+    return cfg && cfg.BASE_URL ? String(cfg.BASE_URL).replace(/\/$/, '') : '';
+  } catch (_) { return ''; }
+}
+
+/**
+ * Sync the active modifier to the server for linked users.
+ * Fires-and-forgets; never throws.
+ * @param {string|null} modifierId
+ */
+function _syncActiveModifierToServer(modifierId) {
+  if (!_isLinked()) return;
+  var auth = _getSignedAuth();
+  var apiBase = _getApiBase();
+  if (!auth || !apiBase) return;
+  try {
+    fetch(apiBase + '/player/modifiers/active', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ telegram_auth: auth, active_modifier_id: modifierId || '' }),
+    }).catch(function () {});
+  } catch (_) {}
+}
+
+/**
+ * Hydrate active modifier from server for Telegram-linked users.
+ * Updates localStorage cache with the server value.
+ * Safe to call on page load; no-op for unlinked users.
+ * @returns {Promise<void>}
+ */
+export async function hydrateModifiersFromServer() {
+  if (!_isLinked()) return;
+  var auth = _getSignedAuth();
+  var apiBase = _getApiBase();
+  if (!auth || !apiBase) return;
+  try {
+    var res = await fetch(apiBase + '/player/modifiers', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ telegram_auth: auth }),
+    });
+    var data = await res.json().catch(function () { return {}; });
+    if (res.ok && data && data.ok) {
+      var serverId = data.active_modifier_id || null;
+      // Update localStorage cache with server value
+      if (serverId && _byId.has(serverId)) {
+        _safeSet(STORAGE_KEY_ACTIVE, serverId);
+      } else if (!serverId) {
+        _safeRemove(STORAGE_KEY_ACTIVE);
+      }
+    }
   } catch (_) {}
 }

@@ -24,3 +24,6 @@ jobs:
 
       - name: No dead placeholder copy
         run: node scripts/no-dead-placeholder-copy.mjs
+
+      - name: No linked-user local-only progression
+        run: node scripts/no-linked-local-progression.mjs

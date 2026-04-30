@@ -4,9 +4,8 @@
  * Provides 3 daily missions per faction, seasonal missions, and rotating
  * objectives.  Progress is tracked in localStorage and resets daily.
  *
- * Mission progress must not crash games that do not emit every event type.
- * All progress-recording helpers are no-ops when the event type is not
- * relevant to any active mission.
+ * For Telegram-linked users, mission progress is also written to the server.
+ * localStorage caches the last successful server response.
  *
  * Storage key: fw_missions_v1
  *
@@ -17,6 +16,7 @@
  *   getMissionProgress(factionId, missionId)  — { progress, target, complete }
  *   getCompletedMissions(factionId)           — array of completed mission ids
  *   resetDailyMissions()                      — called automatically on new day
+ *   hydrateMissionsFromServer()               — async: loads server state for linked users
  */
 
 import { getRotationSeed } from '/js/arcade/systems/global-rotation-system.js';
@@ -207,6 +207,8 @@ export function recordMissionProgress(factionId, eventType, value) {
         changed = true;
         _emitMissionComplete(fk, m, 'daily');
       }
+      // Sync incremental progress to server for linked users
+      _syncMissionProgressToServer(m.id, Math.max(0, Number(value) || 0), m.target);
     });
 
     // Seasonal missions
@@ -328,6 +330,94 @@ function _emitMissionComplete(factionId, mission, tier) {
         reward: mission.reward,
         ts: Date.now(),
       });
+    }
+  } catch (_) {}
+}
+
+// ── Server sync helpers ───────────────────────────────────────────────────────
+
+function _isLinked() {
+  try {
+    var identity = (typeof window !== 'undefined') && window.MOONBOYS_IDENTITY;
+    return !!(identity && typeof identity.isTelegramLinked === 'function' && identity.isTelegramLinked());
+  } catch (_) { return false; }
+}
+
+function _getSignedAuth() {
+  try {
+    var identity = (typeof window !== 'undefined') && window.MOONBOYS_IDENTITY;
+    if (!identity || typeof identity.getSignedTelegramAuth !== 'function') return null;
+    return identity.getSignedTelegramAuth();
+  } catch (_) { return null; }
+}
+
+function _getApiBase() {
+  try {
+    var cfg = (typeof window !== 'undefined') && window.MOONBOYS_API;
+    return cfg && cfg.BASE_URL ? String(cfg.BASE_URL).replace(/\/$/, '') : '';
+  } catch (_) { return ''; }
+}
+
+/**
+ * Sync mission progress to the server for Telegram-linked users.
+ * Fires-and-forgets; never throws.
+ * @param {string} missionId
+ * @param {number} amount
+ * @param {number} target
+ */
+function _syncMissionProgressToServer(missionId, amount, target) {
+  if (!_isLinked()) return;
+  var auth = _getSignedAuth();
+  var apiBase = _getApiBase();
+  if (!auth || !apiBase) return;
+  try {
+    fetch(apiBase + '/player/daily-missions/progress', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        telegram_auth: auth,
+        mission_id: missionId,
+        amount: amount,
+        target: target,
+      }),
+    }).catch(function () {});
+  } catch (_) {}
+}
+
+/**
+ * Hydrate daily mission progress from server for Telegram-linked users.
+ * Merges server values into the local state cache.
+ * @returns {Promise<void>}
+ */
+export async function hydrateMissionsFromServer() {
+  if (!_isLinked()) return;
+  var auth = _getSignedAuth();
+  var apiBase = _getApiBase();
+  if (!auth || !apiBase) return;
+  try {
+    var res = await fetch(apiBase + '/player/daily-missions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ telegram_auth: auth }),
+    });
+    var data = res.ok ? await res.json().catch(function () { return {}; }) : {};
+    if (data && data.ok && data.progress && data.date) {
+      var today = _todayKey();
+      if (data.date !== today) return;
+      var s = _loadState();
+      s.daily[today] = s.daily[today] || {};
+      s.completed.daily[today] = s.completed.daily[today] || [];
+      var serverProgress = data.progress;
+      Object.keys(serverProgress).forEach(function (mId) {
+        var mData = serverProgress[mId];
+        if (typeof mData.progress === 'number') {
+          s.daily[today][mId] = Math.max(s.daily[today][mId] || 0, mData.progress);
+        }
+        if (mData.completed && s.completed.daily[today].indexOf(mId) === -1) {
+          s.completed.daily[today].push(mId);
+        }
+      });
+      _saveState(s);
     }
   } catch (_) {}
 }
