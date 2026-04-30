@@ -264,11 +264,22 @@ npx wrangler d1 execute wikicoms --remote \
    SELECT
      telegram_id,
      COALESCE(xp, 0),
-     -- ... other columns ...
+     COALESCE(gems, 0),
+     COALESCE(tier, 1),
+     COALESCE(win_streak, 0),
+     COALESCE(upgrade_efficiency, 0),
+     COALESCE(upgrade_signal, 0),
+     COALESCE(upgrade_defense, 0),
+     COALESCE(upgrade_gem, 0),
+     COALESCE(upgrade_npc, 0),
+     COALESCE(rpg_mode_active, 0),
      COALESCE(faction, 'unaligned'),
      COALESCE(faction_xp, 0),
      faction_last_switch,
-     -- ... rest of columns ...
+     COALESCE(network_heat, 0),
+     COALESCE(network_heat_updated_at, CURRENT_TIMESTAMP),
+     COALESCE(last_active, CURRENT_TIMESTAMP),
+     COALESCE(updated_at, CURRENT_TIMESTAMP)
    FROM blocktopia_progression;
    ```
 
