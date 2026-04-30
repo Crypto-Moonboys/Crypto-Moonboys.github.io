@@ -11,8 +11,11 @@
   <meta property="og:url" content="https://crypto-moonboys.github.io/block-topia.html">
   <meta property="og:image" content="https://crypto-moonboys.github.io/img/CRYPTO-MOONBOYS-BITCOIN-LOGO.png">
   <title>⚙️ Block Topia Intelligence — Crypto Moonboys Wiki</title>
-  <link rel="stylesheet" href="css/wiki.css">
+  <link rel="stylesheet" href="/css/wiki.css">
   <link rel="icon" href="/img/favicon.svg" type="image/svg+xml">
+  <style>
+    .intel-cta-row { margin-top: 0.75em; display: flex; gap: 10px; flex-wrap: wrap; }
+  </style>
 </head>
 <body>
 <a class="skip-link" href="#content">Skip to content</a>
@@ -86,6 +89,24 @@
 
       <h1 class="page-title">⚙️ Block Topia Intelligence</h1>
       <div class="page-title-line" aria-hidden="true"></div>
+
+      <div class="notice warning" role="note" style="margin-bottom:1.5em;">
+        <span class="notice-icon" aria-hidden="true">⚠️</span>
+        <div>
+          <strong>This is the Block Topia Intelligence Dashboard — not the playable Block Topia game.</strong><br>
+          This page shows SAM cycle data: entity rankings, focus plan, keyword bank, and trend signals.
+          <br>
+          To enter the live Block Topia multiplayer map, go to
+          <a href="/games/block-topia/"><strong>/games/block-topia/</strong></a>.
+          <br>
+          <div class="intel-cta-row">
+            <a href="/games/block-topia/" class="btn btn-primary">🏙️ Enter Block Topia Multiplayer</a>
+            <a href="/games/block-topia-quest-maze/" class="btn btn-secondary">🗺️ Play Block Topia Quest Maze</a>
+            <a href="/community.html" class="btn btn-secondary">⚔️ Return to Battle Chamber</a>
+          </div>
+          <!-- Future cleanup: consider renaming this file to block-topia-intelligence.html with redirect. -->
+        </div>
+      </div>
 
       <div class="notice info" style="text-align:center; font-size:1.05em;">
         <span class="notice-icon" aria-hidden="true">⚙️</span>
@@ -177,7 +198,16 @@
   </div>
 </div>
 <button id="back-to-top" aria-label="Back to top">↑</button>
-<script src="js/wiki.js"></script>
+<script src="/js/api-config.js"></script>
+<script src="/js/identity-gate.js"></script>
+<script src="/js/components/ui-status-copy.js"></script>
+<script src="/js/arcade/core/global-event-bus.js"></script>
+<script src="/js/core/moonboys-state.js"></script>
+<script src="/js/faction-alignment.js"></script>
+<script src="/js/components/connection-status-panel.js"></script>
+<script src="/js/components/global-player-header.js"></script>
+<script src="/js/components/live-activity-summary.js"></script>
+<script src="/js/wiki.js"></script>
 <script>
 (function () {
   'use strict';
