@@ -9,7 +9,7 @@ import { createScalingDirector, tickDirector, shouldFirePressureEvent, updateInt
 import { getActiveModifiers, hasEffect, getStatEffect } from '/js/arcade/systems/cross-game-modifier-system.js';
 import {
   getPlayerFaction, getFactionEffects,
-  applyFactionStartingShield, applyFactionEventRate, applyFactionComboBonus,
+  applyFactionScore, applyFactionStartingShield, applyFactionEventRate, applyFactionComboBonus,
 } from '/js/arcade/systems/faction-effect-system.js';
 import { recordContribution } from '/js/arcade/systems/faction-war-system.js';
 import { recordMissionProgress } from '/js/arcade/systems/faction-missions.js';
@@ -764,7 +764,8 @@ export function bootstrapSnake(root) {
     var heatMul = 1 + recalcHeat() * 0.35;
     var doubleMul = doublePickupsLeft > 0 ? 2 : 1;
     if (doublePickupsLeft > 0) doublePickupsLeft -= 1;
-    var gain = Math.max(1, Math.round(f.points * comboMul * lengthMul * effectMul * heatMul * doubleMul * getRunScoreMultiplier()));
+    var baseGain = Math.max(1, Math.round(f.points * comboMul * lengthMul * effectMul * heatMul * doubleMul * getRunScoreMultiplier()));
+    var gain = applyFactionScore(baseGain, (run && run._factionId) || 'unaligned', { timeAlive: timeAlive });
     score += gain;
 
     if (comboCount >= 3) playGameSound('snake-combo');

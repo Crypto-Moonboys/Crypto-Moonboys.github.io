@@ -40,6 +40,15 @@ import { pickBossArchetype, spawnBossArchetype } from '/js/arcade/systems/boss-s
 import { buildRunSummary, recordRunStats, checkMilestones, getDailyVariation } from './meta-system.js';
 import { pulseHudElement, setTransientBanner } from '/js/arcade/systems/feedback-system.js';
 import { playSound, stopAllSounds, isMuted } from '/js/arcade/core/audio.js';
+import {
+  getPlayerFaction,
+  applyFactionScore, applyFactionStartingShield, applyFactionEventRate,
+} from '/js/arcade/systems/faction-effect-system.js';
+import { recordContribution } from '/js/arcade/systems/faction-war-system.js';
+import { recordMissionProgress } from '/js/arcade/systems/faction-missions.js';
+import { recordLogin, recordWarContribution } from '/js/arcade/systems/faction-streaks.js';
+import { checkRankUp } from '/js/arcade/systems/faction-ranks.js';
+import { emitFactionGain } from '/js/arcade/systems/live-activity.js';
 
 const GAME_ID = 'asteroids';
 const WORLD_W = 1280;
@@ -254,6 +263,8 @@ function createState(root) {
     qaAutoProgress: detectQaMode(),
     qaWaveTimer: 0,
     qaStats: createQaStats(),
+    factionId: 'unaligned',
+    factionPressureMult: 1,
   };
 }
 
@@ -724,6 +735,12 @@ function resetRun(state) {
   state.waveStartElapsed = 0;
   state.qaWaveTimer = 0;
   state.qaStats = createQaStats();
+  // ── Faction: refresh faction id and apply starting-shield + chaos modifier ─
+  try {
+    state.factionId = getPlayerFaction();
+    state.lives = applyFactionStartingShield(state.lives, state.factionId, { supportsShield: true });
+    state.factionPressureMult = applyFactionEventRate(1, state.factionId);
+  } catch (_) { state.factionId = 'unaligned'; state.factionPressureMult = 1; }
   advanceWave(state);
 }
 
@@ -847,14 +864,15 @@ function splitAsteroid(state, asteroid) {
 
 function awardAsteroidKill(state, asteroid) {
   const def = ASTEROID_TYPE_DEFS[asteroid.type] || ASTEROID_TYPE_DEFS.basic;
-  state.score += def.score * (1 + state.wave * 0.15);
+  const rawScore = def.score * (1 + state.wave * 0.15);
+  state.score += applyFactionScore(rawScore, state.factionId, { timeAlive: state.elapsed });
   if (state.score > state.best) {
     state.best = state.score;
     ArcadeSync.setHighScore(GAME_ID, state.best);
   }
   pulseHud(state, state.scoreEl, 'pulse', 180);
   if (asteroid.type === 'crystal') {
-    state.score += 180;
+    state.score += applyFactionScore(180, state.factionId, { timeAlive: state.elapsed });
     applyUpgradePickup(state);
     cueBanner(state, 'Crystal Reward', '#8cffd5', 1.2);
   }
@@ -1473,6 +1491,20 @@ function handleGameOverIfNeeded(context) {
   recordRunStats({ score: summary.score, wave: summary.wave, survival: summary.survival });
   try { localStorage.setItem('asteroid_fork_last_run', JSON.stringify({ summary: summary, milestones: milestones, at: Date.now() })); } catch (_) {}
   submitScore(ArcadeSync.getPlayer(), Math.floor(state.score), GAME_ID).catch(function () {});
+  // ── Faction war contribution ─────────────────────────────────────────────
+  try {
+    const fid = state.factionId || 'unaligned';
+    if (summary.score > 0 && fid && fid !== 'unaligned') {
+      const contrib = Math.max(1, Math.floor(summary.score / 100));
+      recordContribution(fid, 'score_submission', contrib);
+      recordWarContribution();
+      checkRankUp(fid);
+      emitFactionGain(fid, contrib, 'score_submission');
+    }
+    recordMissionProgress(fid, 'survive', Math.round(state.elapsed || 0));
+    recordMissionProgress(fid, 'runs', 1);
+    recordLogin();
+  } catch (_) {}
   if (window.showGameOverModal) window.showGameOverModal(Math.floor(state.score));
   syncHud(state);
 }
@@ -1517,7 +1549,7 @@ function adapterUpdate(context, dt) {
   }
 
   state.elapsed += step;
-  tickDirector(state.director, step, state.score, state.wave, state.lives, state.upgrades, !!state.activeEvent, state.dailyVariation.eventRateMult);
+  tickDirector(state.director, step, state.score, state.wave, state.lives, state.upgrades, !!state.activeEvent, (state.dailyVariation.eventRateMult || 1) * (state.factionPressureMult || 1));
   if (state.qaEnabled) {
     state.director.pressure = Math.min(100, (state.director.pressure || 0) + step * 14);
   }

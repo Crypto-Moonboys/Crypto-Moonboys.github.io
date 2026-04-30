@@ -6,6 +6,15 @@ import { playSound, stopAllSounds, isMuted } from '/js/arcade/core/audio.js';
 import { createFrameDebug } from '/js/arcade/core/frame-debug.js';
 import { recordRunStats, checkMilestones } from './meta-system.js';
 import { createScalingDirector, tickDirector, shouldFirePressureEvent, updateIntensity, checkForcedChaos } from '/js/arcade/systems/event-system.js';
+import {
+  getPlayerFaction,
+  applyFactionScore, applyFactionStartingShield,
+} from '/js/arcade/systems/faction-effect-system.js';
+import { recordContribution } from '/js/arcade/systems/faction-war-system.js';
+import { recordMissionProgress } from '/js/arcade/systems/faction-missions.js';
+import { recordLogin, recordWarContribution } from '/js/arcade/systems/faction-streaks.js';
+import { checkRankUp } from '/js/arcade/systems/faction-ranks.js';
+import { emitFactionGain } from '/js/arcade/systems/live-activity.js';
 
 export const TETRIS_ADAPTER = createGameAdapter({
   id: TETRIS_CONFIG.id,
@@ -125,6 +134,9 @@ function createLegacybootstrapTetris(root) {
   let raf = null;
   let lastTime = 0;
   let elapsed = 0;
+
+  // ── Faction state (refreshed each run) ────────────────────────────────────
+  let _tetrisFactionId = 'unaligned';
 
   // ── Roguelite run state ────────────────────────────────────────────────────
   let wave = 0;
@@ -250,7 +262,7 @@ function createLegacybootstrapTetris(root) {
   function addScore(amount) {
     if (!Number.isFinite(amount) || amount <= 0) return;
     const mult = getRunScoreMult();
-    score += Math.floor(amount * mult);
+    score += applyFactionScore(Math.floor(amount * mult), _tetrisFactionId, { timeAlive: elapsed });
     setBestMaybe();
     triggerHudFx(scoreStatEl, 'hud-pulse', 220);
   }
@@ -282,6 +294,11 @@ function createLegacybootstrapTetris(root) {
     director = createScalingDirector();
     submittedMeta = false;
     if (bossTimeout !== null) { clearTimeout(bossTimeout); bossTimeout = null; }
+    // ── Faction: refresh faction id and apply starting-shield bonus ──────────
+    try {
+      _tetrisFactionId = getPlayerFaction();
+      run.shieldCharges = applyFactionStartingShield(run.shieldCharges, _tetrisFactionId, { supportsShield: true });
+    } catch (_) { _tetrisFactionId = 'unaligned'; }
   }
 
   function addFloatBanner(_s, text, color) {
@@ -1103,6 +1120,20 @@ function createLegacybootstrapTetris(root) {
     if (canSubmitCompetitive()) {
       await submitRunScore();
     }
+
+    // ── Faction war contribution ───────────────────────────────────────────
+    try {
+      if (score > 0 && _tetrisFactionId && _tetrisFactionId !== 'unaligned') {
+        const contrib = Math.max(1, Math.floor(score / 100));
+        recordContribution(_tetrisFactionId, 'score_submission', contrib);
+        recordWarContribution();
+        checkRankUp(_tetrisFactionId);
+        emitFactionGain(_tetrisFactionId, contrib, 'score_submission');
+      }
+      recordMissionProgress(_tetrisFactionId, 'survive', Math.round(runStats.survivalSec || 0));
+      recordMissionProgress(_tetrisFactionId, 'runs', 1);
+      recordLogin();
+    } catch (_) {}
 
     if (window.showGameOverModal) window.showGameOverModal(Math.floor(score));
   }

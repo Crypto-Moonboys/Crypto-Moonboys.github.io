@@ -4,6 +4,15 @@ import { PAC_CHAIN_CONFIG } from './config.js';
 import { createGameAdapter, registerGameAdapter, bootstrapFromAdapter } from '/js/arcade/engine/game-adapter.js';
 import { playSound, stopAllSounds, isMuted } from '/js/arcade/core/audio.js';
 import { createFrameDebug } from '/js/arcade/core/frame-debug.js';
+import {
+  getPlayerFaction,
+  applyFactionScore, applyFactionStartingShield,
+} from '/js/arcade/systems/faction-effect-system.js';
+import { recordContribution } from '/js/arcade/systems/faction-war-system.js';
+import { recordMissionProgress } from '/js/arcade/systems/faction-missions.js';
+import { recordLogin, recordWarContribution } from '/js/arcade/systems/faction-streaks.js';
+import { checkRankUp } from '/js/arcade/systems/faction-ranks.js';
+import { emitFactionGain } from '/js/arcade/systems/live-activity.js';
 
 export const PAC_CHAIN_ADAPTER = createGameAdapter({
   id: PAC_CHAIN_CONFIG.id,
@@ -157,6 +166,9 @@ function createLegacybootstrapPacChain(root) {
   const tileCenter = (t, c) => t * c + c / 2;
   const cloneMaze = (base) => base.map((r) => r.slice());
 
+  // ── Faction state (refreshed each run) ──────────────────────────────────
+  let _pacFactionId = 'unaligned';
+
   function addBanner(s, text, kind) {
     s.bannerQueue.push({ text, kind: kind || 'event', ttl: 2.1 });
     if (kind === 'warning') cue('warning');
@@ -209,7 +221,8 @@ function createLegacybootstrapPacChain(root) {
       state.player.ghostChain += 1;
       chainMult = 1 + state.player.ghostChain * 0.22;
     }
-    const points = Math.floor(baseValue * chainMult * state.levelState.scoreMult * state.run.pelletValueMult * state.levelState.pelletValueMult);
+    const rawPoints = Math.floor(baseValue * chainMult * state.levelState.scoreMult * state.run.pelletValueMult * state.levelState.pelletValueMult);
+    const points = applyFactionScore(rawPoints, _pacFactionId, { timeAlive: state.time });
     state.score += points;
     if (state.score > state.bestScore) { state.bestScore = state.score; ArcadeSync.setHighScore(GAME_ID, state.bestScore); }
     if (typeof x === 'number' && typeof y === 'number') state.floatingTexts.push({ x, y, text: '+' + points, life: 0.9, vy: -20 });
@@ -262,6 +275,11 @@ function createLegacybootstrapPacChain(root) {
       playerSpeedMult: 1, pelletValueMult: 1, powerDurationBonus: 0, powerGhostSlow: 0.28, chainBonus: 0, shieldCharges: 0, revives: 0,
       activeRisks: {}, rareUpgradeBoost: 0, stats: { ghostsEaten: 0, highestIntensity: 0, eventsTriggered: 0, eliteDefeated: 0 },
     };
+    // ── Faction: refresh faction id and apply starting-shield bonus ──────────
+    try {
+      _pacFactionId = getPlayerFaction();
+      state.run.shieldCharges = applyFactionStartingShield(state.run.shieldCharges, _pacFactionId, { supportsShield: true });
+    } catch (_) { _pacFactionId = 'unaligned'; }
   }
   function buildLevelState() {
     state.levelState = {
@@ -722,6 +740,19 @@ function createLegacybootstrapPacChain(root) {
       state.submitDone = true;
       try { await submitScore(resolveCompetitivePlayer(), state.score, GAME_ID); } catch (_) {}
     }
+    // ── Faction war contribution ───────────────────────────────────────────
+    try {
+      if (state.score > 0 && _pacFactionId && _pacFactionId !== 'unaligned') {
+        const contrib = Math.max(1, Math.floor(state.score / 100));
+        recordContribution(_pacFactionId, 'score_submission', contrib);
+        recordWarContribution();
+        checkRankUp(_pacFactionId);
+        emitFactionGain(_pacFactionId, contrib, 'score_submission');
+      }
+      recordMissionProgress(_pacFactionId, 'survive', Math.round(state.time || 0));
+      recordMissionProgress(_pacFactionId, 'runs', 1);
+      recordLogin();
+    } catch (_) {}
     if (typeof window !== 'undefined' && typeof window.showGameOverModal === 'function') window.showGameOverModal(state.score);
   }
 

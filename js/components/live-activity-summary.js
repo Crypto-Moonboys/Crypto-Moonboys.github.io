@@ -37,6 +37,9 @@
   var STYLE_ID = 'las-styles';
   var LOG_MAX = 6; // max recent activity entries to show
 
+  // Unsubscribe token for MOONBOYS_STATE subscriber (avoids leak if re-bootstrapped)
+  var _stateUnsub = null;
+
   // ── In-memory activity log ────────────────────────────────────────────────
   // Shared across all LAS instances on the page; survives refreshes.
   var _activityLog = [];
@@ -423,7 +426,8 @@
     // state.sync is populated by the bus.on('sync:state') bridge in
     // moonboys-state.js, so both faction and sync update through one path.
     if (window.MOONBOYS_STATE && typeof window.MOONBOYS_STATE.subscribe === 'function') {
-      window.MOONBOYS_STATE.subscribe(function (state) {
+      if (_stateUnsub) { try { _stateUnsub(); } catch (_) {} }
+      _stateUnsub = window.MOONBOYS_STATE.subscribe(function (state) {
         updateFactionUI(state.faction);
         updateSyncUI(state.sync);
       });
