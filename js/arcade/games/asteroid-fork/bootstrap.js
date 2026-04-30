@@ -752,7 +752,7 @@ function resetRun(state) {
   try {
     state.factionId = getPlayerFaction();
     const _fx = getFactionEffects(state.factionId);
-    state.lives = applyFactionStartingShield(state.lives, state.factionId, { supportsShield: true });
+    state.lives = Math.min(applyFactionStartingShield(state.lives, state.factionId, { supportsShield: true }), 5);
     state.factionPressureMult = applyFactionEventRate(1, state.factionId) * modPressureRate;
     if (_fx.bonusText) setTransientBanner(state.root, _fx.bonusText, '#f7c948');
   } catch (_) { state.factionId = 'unaligned'; state.factionPressureMult = modPressureRate; }

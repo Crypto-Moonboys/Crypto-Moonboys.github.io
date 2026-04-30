@@ -40,9 +40,18 @@
   // Unsubscribe token for MOONBOYS_STATE subscriber (avoids leak if re-bootstrapped)
   var _stateUnsub = null;
 
+  // ── True singleton: survive script re-execution (dynamic injection / re-mount) ──
+  // All shared mutable state lives on window.__MOONBOYS_LAS_SINGLETON so that a
+  // second execution of this IIFE reuses the existing log array and listener
+  // registration flag rather than resetting them.
+  if (!window.__MOONBOYS_LAS_SINGLETON) {
+    window.__MOONBOYS_LAS_SINGLETON = { activityLog: [], addToLog: null, listenersRegistered: false };
+  }
+  var _singleton = window.__MOONBOYS_LAS_SINGLETON;
+
   // ── In-memory activity log ────────────────────────────────────────────────
-  // Shared across all LAS instances on the page; survives refreshes.
-  var _activityLog = [];
+  // Always points to the same array held by the singleton, even after re-execution.
+  var _activityLog = _singleton.activityLog;
 
   function buildLogRowHTML(e) {
     var icon = e.type === 'xp' ? '⚡' : e.type === 'faction' ? '🏴' : e.type === 'sync' ? '🔗' : '📡';
@@ -86,6 +95,9 @@
       document.querySelectorAll('[data-las-panel]').forEach(function (el) { mount(el); });
     }
   }
+  // Store addToLog on the singleton so a re-executing IIFE reuses the same function
+  // reference (and the same _activityLog closure) rather than creating a new one.
+  if (!_singleton.addToLog) { _singleton.addToLog = addToLog; }
 
   function pad2(n) {
     return n < 10 ? '0' + n : String(n);
@@ -376,9 +388,10 @@
     // Null guard: skip if bus is unavailable
     var bus = window.MOONBOYS_EVENT_BUS;
     if (!bus) return;
-    // Idempotency guard: register listeners only once even if this script is loaded twice
-    if (window._lasInitialized) return;
-    window._lasInitialized = true;
+    // Idempotency guard: register listeners only once even if this script re-executes.
+    // Stored on the singleton (not a module-scoped var) so it survives re-execution.
+    if (_singleton.listenersRegistered) return;
+    _singleton.listenersRegistered = true;
     bus.on('xp:update', function (d) {
       var amount = Number(d.amount || 0);
       var total = Number(d.total || 0);
