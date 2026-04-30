@@ -1,86 +1,34 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="The Incubator HUB is the Telegram identity gate for Crypto Moonboys: run /gkstart, /gklink, sync XP and enter the builder layer.">
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="GKniftyHEADS Incubator: link Telegram identity to the living wiki system.">
   <meta name="robots" content="index, follow">
-  <meta property="og:title" content="GKniftyHEADS Incubator — Link In, Level Up">
-  <meta property="og:description" content="The Incubator HUB is the Telegram identity gate for Crypto Moonboys: run /gkstart, /gklink, sync XP and enter the builder layer.">
-  <meta property="og:type" content="website">
-  <meta property="og:image" content="https://cryptomoonboys.com/img/CRYPTO-MOONBOYS-BITCOIN-LOGO.png">
-  <title>GKniftyHEADS Incubator — Link In, Level Up</title>
-  <link rel="stylesheet" href="/css/wiki.css">
-  <link rel="stylesheet" href="/css/battle-layer.css">
-  <link rel="icon" href="/img/favicon.svg" type="image/svg+xml">
-
-  <style>
-    .wtf-hero{padding:clamp(34px,6vw,78px) clamp(18px,4vw,46px);margin-bottom:24px;border:1px solid rgba(86,220,255,.34);border-radius:var(--radius);background:radial-gradient(circle at 15% 10%,rgba(255,204,0,.18),transparent 28%),radial-gradient(circle at 90% 20%,rgba(86,220,255,.18),transparent 32%),linear-gradient(155deg,rgba(10,23,44,.94),rgba(3,8,17,.92));box-shadow:inset 0 0 0 1px rgba(122,236,255,.07),0 18px 44px rgba(0,0,0,.36);overflow:hidden;position:relative}
-    .wtf-hero:before{content:"";position:absolute;inset:0;opacity:.07;background-image:linear-gradient(90deg,#fff 1px,transparent 1px),linear-gradient(#fff 1px,transparent 1px);background-size:38px 38px;pointer-events:none}.wtf-hero>*{position:relative;z-index:1}.wtf-kicker{display:inline-flex;gap:8px;align-items:center;padding:7px 11px;border:1px solid rgba(255,204,0,.42);border-radius:999px;background:rgba(255,204,0,.08);font-size:.78rem;text-transform:uppercase;letter-spacing:.08em;color:#ffe78a;font-weight:800;margin-bottom:16px}.wtf-hero h1{margin:0;max-width:1050px;font-size:clamp(2.1rem,7vw,5.7rem);line-height:.9;letter-spacing:-.055em;text-transform:uppercase}.wtf-lead{max-width:860px;margin:20px 0 0;color:var(--color-text-muted);font-size:clamp(1.02rem,2vw,1.3rem);line-height:1.55}.wtf-cta-row{display:flex;flex-wrap:wrap;gap:12px;margin-top:26px}.wtf-cta-row .btn{font-size:1.02rem;padding:12px 20px}.wtf-flow{display:flex;flex-wrap:wrap;gap:8px;margin:22px 0 0}.wtf-flow span{padding:7px 10px;border:1px solid rgba(255,255,255,.1);border-radius:999px;background:rgba(255,255,255,.04);color:var(--color-text-muted);font-size:.9rem}.wtf-section{margin:0 0 24px;padding:22px;border:1px solid rgba(86,220,255,.24);border-radius:14px;background:linear-gradient(165deg,rgba(10,23,44,.72),rgba(8,18,34,.58));box-shadow:0 10px 28px rgba(0,0,0,.18)}.wtf-section h2{margin:0 0 10px;font-size:clamp(1.35rem,3vw,2.1rem);text-transform:uppercase;letter-spacing:-.025em}.wtf-section h3{margin:18px 0 8px;color:#e7fcff}.wtf-section p,.wtf-section li{color:var(--color-text-muted);line-height:1.72}.wtf-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px;margin:16px 0}.wtf-card{border:1px solid rgba(86,220,255,.25);border-radius:13px;background:rgba(6,16,31,.7);padding:16px}.wtf-card strong{display:block;color:#fff;margin-bottom:6px}.wtf-card p{margin:0}.wtf-punch{border-left:4px solid rgba(255,204,0,.92);padding:14px 0 14px 16px;margin:18px 0;color:#fff;background:rgba(255,204,0,.05)}.wtf-mini{font-size:.9rem;color:var(--color-text-muted)}.reveal{animation:fadeup .45s ease both}@keyframes fadeup{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
-  </style>
-
+  <meta property="og:title" content="GKniftyHEADS Incubator — Link Your Identity">
+  <meta property="og:description" content="Telegram is the identity bridge for Crypto Moonboys.">
+  <meta property="og:type" content="website"><meta property="og:image" content="https://cryptomoonboys.com/img/CRYPTO-MOONBOYS-BITCOIN-LOGO.png">
+  <title>GKniftyHEADS Incubator — Link Your Identity</title>
+  <link rel="stylesheet" href="/css/wiki.css"><link rel="stylesheet" href="/css/battle-layer.css"><link rel="icon" href="/img/favicon.svg" type="image/svg+xml">
+  <style>.page-hero,.section{border:1px solid rgba(86,220,255,.26);border-radius:12px;background:rgba(8,18,34,.72)}.page-hero{padding:clamp(30px,6vw,70px) clamp(20px,4vw,44px);margin-bottom:18px}.section{margin:0 0 18px;padding:18px}.section h2{margin:0 0 10px;text-transform:uppercase}.section p,.section li{color:var(--color-text-muted);line-height:1.7}.cta-row{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px}</style>
 </head>
 <body>
 <a class="skip-link" href="#content">Skip to content</a>
-<header id="site-header" role="banner">
-  <button class="hamburger" id="hamburger" aria-label="Toggle navigation" aria-expanded="false" aria-controls="sidebar">☰</button>
-  <a href="/index.html" class="site-logo" aria-label="Crypto Moonboys home">
-    <img src="/img/CRYPTO-MOONBOYS-BITCOIN-LOGO.png" alt="" aria-hidden="true">
-    <span><span class="logo-text">Crypto Moonboys</span><span class="logo-sub">Play. Earn. Build. Own it.</span></span>
-  </a>
-  <div id="header-search" role="search"><input type="search" id="search-input" placeholder="Search the system…" aria-label="Search" autocomplete="off"><button id="search-btn" aria-label="Search">🔍</button><div id="search-results" role="listbox"></div></div>
-  <nav class="header-nav" aria-label="Main navigation"><a href="/index.html">Home</a><a href="/games/">Arcade</a></nav>
-</header>
+<header id="site-header" role="banner"><button class="hamburger" id="hamburger" aria-label="Toggle navigation" aria-expanded="false" aria-controls="sidebar">☰</button><a href="/index.html" class="site-logo" aria-label="Crypto Moonboys home"><img src="/img/CRYPTO-MOONBOYS-BITCOIN-LOGO.png" alt="" aria-hidden="true"><span><span class="logo-text">Crypto Moonboys</span><span class="logo-sub">Play. Earn. Build. Own it.</span></span></a><div id="header-search" role="search"><input type="search" id="search-input" placeholder="Search the system..." aria-label="Search" autocomplete="off"><button id="search-btn" aria-label="Search">🔍</button><div id="search-results" role="listbox"></div></div><nav class="header-nav" aria-label="Main navigation"><a href="/index.html">Home</a><a href="/games/">Arcade</a></nav></header>
 <div id="sidebar-overlay" aria-hidden="true"></div>
-<div id="layout">
-  <nav id="sidebar" aria-label="Wiki navigation">
-    <div class="sidebar-section"><div class="sidebar-heading">Start Here</div><div class="sidebar-nav">
-      <a href="/index.html"><span class="nav-icon">🏠</span> Main Page</a>
-      <a href="/games/"><span class="nav-icon">🕹️</span> Arcade</a>
-      <a href="/how-to-play.html"><span class="nav-icon">◈</span> How to Play</a>
-      <a href="/gkniftyheads-incubator.html" class="active"><span class="nav-icon">🚀</span> Incubator HUB</a>
-      <a href="/community.html"><span class="nav-icon">⚔️</span> Battle Chamber</a>
-      <a href="/about.html"><span class="nav-icon">ℹ️</span> About</a>
-      <a href="/about/what-is-crypto-moonboys.html"><span class="nav-icon">🌙</span> What Is Crypto Moonboys?</a>
-    </div></div>
-    <div class="sidebar-section"><div class="sidebar-heading">HODL Wars</div><div class="sidebar-nav">
-      <a href="/wiki/hodl-wars.html"><span class="nav-icon">⚔️</span> HODL WAR$</a>
-      <a href="/wiki/hodl-warriors.html"><span class="nav-icon">💎</span> HODL WARRIORS</a>
-      <a href="/categories/lore.html"><span class="nav-icon">📚</span> All Lore</a>
-    </div></div>
-  </nav>
-  <div id="main-wrapper">
-
-    <main id="content" role="main" class="wiki-content">
-      <section class="wtf-hero"><span class="wtf-kicker">identity gate</span><h1>This is where visitors become players.</h1><p class="wtf-lead">You played. You felt the system. Now make it stick. The Incubator links your Telegram identity so XP, quests, leaderboards, Block Topia and future faction systems know who you are.</p><div class="wtf-cta-row"><a href="https://t.me/WIKICOMSBOT" target="_blank" rel="noopener noreferrer" class="btn btn-primary">Open Bot</a><a href="https://t.me/gkniftyheads" target="_blank" rel="noopener noreferrer" class="btn btn-secondary">Join Group</a><a href="/community.html" class="btn btn-secondary">Battle Chamber</a></div><div class="wtf-flow"><span>/gkstart</span><span>/gklink</span><span>Click Link</span><span>Sync Live</span><span>Build</span></div></section>
-      <section id="incubator-sync-state" class="incubator-sync-state bad" aria-live="polite"><strong>Telegram sync state</strong><div class="label">Linked identity</div><div class="value" id="incubator-sync-identity">Telegram not linked — run /gklink</div><div class="label" style="margin-top:10px">Status</div><div class="value" id="incubator-sync-message">Run /gkstart then /gklink in Telegram to activate sync.</div></section>
-      <div id="incubator-status-panel" data-csp-panel style="margin-bottom:18px"></div>
-      <div data-las-panel style="margin-bottom:18px"></div>
-      <section class="wtf-section"><h2>Why link?</h2><p>Because local play is just a spark. Sync turns it into a profile. A profile can hold XP, rank, faction movement and deeper access.</p><div class="wtf-grid"><div class="wtf-card"><strong>XP sticks</strong><p>Progress can survive refreshes and devices.</p></div><div class="wtf-card"><strong>Leaderboards matter</strong><p>Your identity connects to public movement.</p></div><div class="wtf-card"><strong>Quests open</strong><p>Lore, missions and season actions need a player.</p></div><div class="wtf-card"><strong>Block Topia waits</strong><p>Deeper systems need a synced identity.</p></div></div></section>
-      <section class="wtf-section" id="commands"><h2>Do this now</h2><div class="activation-flow"><div class="activation-step"><div class="activation-step-num">1</div><h4>Open the bot</h4><p>Use <a href="https://t.me/WIKICOMSBOT" target="_blank" rel="noopener noreferrer">@WIKICOMSBOT</a>.</p></div><div class="activation-step"><div class="activation-step-num">2</div><h4>Run /gkstart</h4><p>Register and wake up your profile.</p></div><div class="activation-step"><div class="activation-step-num">3</div><h4>Run /gklink</h4><p>The bot gives you a signed link.</p></div><div class="activation-step"><div class="activation-step-num">4</div><h4>Click it</h4><p>You land here, verified and sync-live.</p></div></div></section>
-      <section class="wtf-section"><h2>What the Incubator really is</h2><p>It is the social command layer: a place for players, artists, collectors, builders, writers, coders, radio heads, faction operators and culture people to find their lane.</p><p class="wtf-punch"><strong>GK is the floor. The community builds on top.</strong></p></section>
-      <section class="wtf-section"><h2>Commands</h2><table class="command-table"><tbody><tr><td><code>/gkstart</code></td><td>Register your profile.</td></tr><tr><td><code>/gklink</code></td><td>Generate your identity sync link.</td></tr><tr><td><code>/gkstatus</code></td><td>Check XP, level and alignment.</td></tr><tr><td><code>/gkleaderboard</code></td><td>Show community XP leaders.</td></tr><tr><td><code>/gkquests</code></td><td>See active missions.</td></tr><tr><td><code>/daily</code></td><td>Claim daily XP when active.</td></tr></tbody></table></section>
-    </main>
-    <footer id="site-footer" role="contentinfo"><div class="footer-inner"><div class="footer-col"><h4>Crypto Moonboys</h4><p>Stop logging in to claim. Start showing up to build.</p></div><div class="footer-col"><h4>Start</h4><ul><li><a href="/games/">Arcade</a></li><li><a href="/gkniftyheads-incubator.html">Link Telegram</a></li><li><a href="/community.html">Battle Chamber</a></li></ul></div></div><div class="footer-bottom"><p>© 2026 Crypto Moonboys · Not financial advice.</p></div></footer>
-  </div>
-</div>
+<div id="layout"><nav id="sidebar" aria-label="Wiki navigation"><div class="sidebar-section"><div class="sidebar-heading">Start Here</div><div class="sidebar-nav"><a href="/index.html"><span class="nav-icon">🏠</span> Main Page</a><a href="/games/"><span class="nav-icon">🕹️</span> Arcade</a><a href="/how-to-play.html"><span class="nav-icon">◆</span> How to Play</a><a href="/gkniftyheads-incubator.html" class="active"><span class="nav-icon">🚀</span> Incubator HUB</a><a href="/community.html"><span class="nav-icon">⚔️</span> Battle Chamber</a></div></div></nav>
+<div id="main-wrapper"><main id="content" role="main" class="wiki-content">
+<nav class="breadcrumb" aria-label="Breadcrumb"><a href="/index.html">Home</a><span class="sep">›</span><span aria-current="page">GKniftyHEADS Incubator</span></nav>
+<section class="page-hero"><h1>GKniftyHEADS Incubator — Link Your Identity</h1><p>The Incubator is the identity bridge. It connects your Telegram identity to the living Crypto Moonboys wiki system so your activity can be remembered.</p></section>
+<section class="section"><h2>1. What This Page Does</h2><p>This page is where a visitor becomes a persistent participant. Browser activity is temporary. Telegram identity lets the system remember you across sessions.</p></section>
+<section class="section"><h2>2. Why Telegram Matters</h2><p>Telegram is not just a chat link. It is the identity bridge for the system. Once linked, the system can connect your arcade activity, XP, faction alignment, and future access layers to one identity.</p></section>
+<section class="section"><h2>3. What Linking Unlocks</h2><ul><li>persistent Arcade XP</li><li>better account recognition</li><li>Battle Chamber visibility</li><li>Block Topia access progress</li><li>faction participation</li><li>future builder and creator layers</li></ul></section>
+<section class="section"><h2>4. How To Link</h2><p>Step 1 — Open the Telegram bot<br>Step 2 — Use <code>/gkstart</code><br>Step 3 — Use <code>/gklink</code><br>Step 4 — Return to the site<br>Step 5 — Check your sync / status panel<br>Step 6 — Play arcade runs so accepted activity can attach to your identity</p></section>
+<section class="section"><h2>5. Arcade XP And Identity</h2><p>Arcade XP only matters properly when the system can remember who earned it. Linking prevents you from being a temporary visitor.</p></section>
+<section class="section"><h2>6. Block Topia Gate</h2><p>To enter Block Topia multiplayer, you need:</p><ul><li>Telegram linked</li><li>50 Arcade XP</li></ul><p>This gate is not about making access hard. It proves you moved through the system.</p></section>
+<section class="section"><h2>7. Privacy / Trust Copy</h2><p>The site uses Telegram identity to connect your activity to your account. Do not expose private keys. Do not share seed phrases. Crypto Moonboys will never need your wallet seed phrase.</p></section>
+<section class="section"><h2>8. Next Actions</h2><div class="cta-row"><a href="/games/" class="btn btn-primary">Play Arcade</a><a href="/community.html" class="btn btn-secondary">Open Battle Chamber</a><a href="/how-to-play.html" class="btn btn-secondary">Read How To Play</a><a href="/games/block-topia/" class="btn btn-secondary">Enter Block Topia</a></div></section>
+</main><footer id="site-footer" role="contentinfo"><div class="footer-inner"><div class="footer-col"><h4>Crypto Moonboys</h4><p>Living Web3 wiki system.</p></div><div class="footer-col"><h4>Start</h4><ul><li><a href="/games/">Arcade</a></li><li><a href="/gkniftyheads-incubator.html">Link Telegram</a></li><li><a href="/community.html">Battle Chamber</a></li></ul></div></div><div class="footer-bottom"><p>© 2026 Crypto Moonboys · Not financial advice.</p></div></footer></div></div>
 <button id="back-to-top" aria-label="Back to top">↑</button>
-<script src="/js/api-config.js"></script>
-<script src="/js/identity-gate.js"></script>
-<script src="/js/components/ui-status-copy.js"></script>
-<script src="/js/arcade/core/global-event-bus.js"></script>
-    <script src="/js/core/moonboys-state.js"></script>
-
-<script src="/js/wiki.js"></script>
-<script src="/js/scroll-shell.js"></script>
-<script src="/js/battle-layer.js"></script>
-<script src="/js/incubator-link.js"></script>
-<script src="/js/faction-alignment.js"></script>
-<script src="/js/components/connection-status-panel.js"></script>
-<script src="/js/components/global-player-header.js"></script>
-<script src="/js/components/live-activity-summary.js"></script>
-<script>
-(function(){var box=document.getElementById('incubator-sync-state');var identityEl=document.getElementById('incubator-sync-identity');var msgEl=document.getElementById('incubator-sync-message');if(!box||!identityEl||!msgEl)return;function renderSyncState(){var gate=window.MOONBOYS_IDENTITY||null;var sync=gate&&gate.getSyncState?gate.getSyncState():null;var linkedReady=!!(sync&&sync.good);var auth=gate&&gate.getTelegramAuth?gate.getTelegramAuth():null;var name=gate&&gate.getTelegramName?gate.getTelegramName():null;var username=auth&&(auth.username||(auth.user&&auth.user.username));identityEl.textContent=linkedReady?((name||'Linked Telegram')+(username?' (@'+String(username).replace(/^@/,'')+')':'')):'Telegram not linked — run /gklink';box.classList.remove('good','bad');box.classList.add(linkedReady?'good':'bad');document.body.classList.toggle('sync-live',linkedReady);if(linkedReady){msgEl.textContent='Telegram linked. Progression is now sync-live.';return;}msgEl.textContent='Run /gkstart then /gklink in the bot to activate sync.';}renderSyncState();window.addEventListener('moonboys:sync-state',renderSyncState);window.addEventListener('storage',renderSyncState);}());
-</script>
+<script src="/js/api-config.js"></script><script src="/js/identity-gate.js"></script><script src="/js/components/ui-status-copy.js"></script><script src="/js/arcade/core/global-event-bus.js"></script><script src="/js/core/moonboys-state.js"></script><script src="/js/wiki.js"></script><script src="/js/scroll-shell.js"></script><script src="/js/battle-layer.js"></script><script src="/js/incubator-link.js"></script><script src="/js/faction-alignment.js"></script><script src="/js/components/connection-status-panel.js"></script><script src="/js/components/global-player-header.js"></script><script src="/js/components/live-activity-summary.js"></script>
 </body>
 </html>

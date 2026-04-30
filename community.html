@@ -1,93 +1,78 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Battle Chamber is the proof layer: Arcade XP, Leaderboard, Daily Missions, Faction standings, and Season competitions for players who show up.">
+  <meta name="description" content="Battle Chamber: the public proof wall for Crypto Moonboys activity.">
   <meta name="robots" content="index, follow">
-  <meta property="og:title" content="Battle Chamber — Crypto Moonboys">
-  <meta property="og:description" content="Battle Chamber is the proof layer: Arcade XP, Leaderboard, Daily Missions, Faction standings, and Season competitions for players who show up.">
+  <meta property="og:title" content="Battle Chamber — The Proof Wall">
+  <meta property="og:description" content="If the wiki is memory and the arcade is action, the Battle Chamber is proof.">
   <meta property="og:type" content="website">
   <meta property="og:image" content="https://cryptomoonboys.com/img/CRYPTO-MOONBOYS-BITCOIN-LOGO.png">
-  <title>Battle Chamber — Crypto Moonboys</title>
+  <title>Battle Chamber — The Proof Wall</title>
   <link rel="stylesheet" href="/css/wiki.css">
   <link rel="stylesheet" href="/css/battle-layer.css">
   <link rel="icon" href="/img/favicon.svg" type="image/svg+xml">
-
   <style>
-    .wtf-hero{padding:clamp(34px,6vw,78px) clamp(18px,4vw,46px);margin-bottom:24px;border:1px solid rgba(86,220,255,.34);border-radius:var(--radius);background:radial-gradient(circle at 15% 10%,rgba(255,204,0,.18),transparent 28%),radial-gradient(circle at 90% 20%,rgba(86,220,255,.18),transparent 32%),linear-gradient(155deg,rgba(10,23,44,.94),rgba(3,8,17,.92));box-shadow:inset 0 0 0 1px rgba(122,236,255,.07),0 18px 44px rgba(0,0,0,.36);overflow:hidden;position:relative}
-    .wtf-hero:before{content:"";position:absolute;inset:0;opacity:.07;background-image:linear-gradient(90deg,#fff 1px,transparent 1px),linear-gradient(#fff 1px,transparent 1px);background-size:38px 38px;pointer-events:none}.wtf-hero>*{position:relative;z-index:1}.wtf-kicker{display:inline-flex;gap:8px;align-items:center;padding:7px 11px;border:1px solid rgba(255,204,0,.42);border-radius:999px;background:rgba(255,204,0,.08);font-size:.78rem;text-transform:uppercase;letter-spacing:.08em;color:#ffe78a;font-weight:800;margin-bottom:16px}.wtf-hero h1{margin:0;max-width:1050px;font-size:clamp(2.1rem,7vw,5.7rem);line-height:.9;letter-spacing:-.055em;text-transform:uppercase}.wtf-lead{max-width:860px;margin:20px 0 0;color:var(--color-text-muted);font-size:clamp(1.02rem,2vw,1.3rem);line-height:1.55}.wtf-cta-row{display:flex;flex-wrap:wrap;gap:12px;margin-top:26px}.wtf-cta-row .btn{font-size:1.02rem;padding:12px 20px}.wtf-flow{display:flex;flex-wrap:wrap;gap:8px;margin:22px 0 0}.wtf-flow span{padding:7px 10px;border:1px solid rgba(255,255,255,.1);border-radius:999px;background:rgba(255,255,255,.04);color:var(--color-text-muted);font-size:.9rem}.wtf-section{margin:0 0 24px;padding:22px;border:1px solid rgba(86,220,255,.24);border-radius:14px;background:linear-gradient(165deg,rgba(10,23,44,.72),rgba(8,18,34,.58));box-shadow:0 10px 28px rgba(0,0,0,.18)}.wtf-section h2{margin:0 0 10px;font-size:clamp(1.35rem,3vw,2.1rem);text-transform:uppercase;letter-spacing:-.025em}.wtf-section h3{margin:18px 0 8px;color:#e7fcff}.wtf-section p,.wtf-section li{color:var(--color-text-muted);line-height:1.72}.wtf-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px;margin:16px 0}.wtf-card{border:1px solid rgba(86,220,255,.25);border-radius:13px;background:rgba(6,16,31,.7);padding:16px}.wtf-card strong{display:block;color:#fff;margin-bottom:6px}.wtf-card p{margin:0}.wtf-punch{border-left:4px solid rgba(255,204,0,.92);padding:14px 0 14px 16px;margin:18px 0;color:#fff;background:rgba(255,204,0,.05)}.wtf-mini{font-size:.9rem;color:var(--color-text-muted)}.reveal{animation:fadeup .45s ease both}@keyframes fadeup{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+    .page-hero,.section{border:1px solid rgba(86,220,255,.26);border-radius:12px;background:rgba(8,18,34,.72)}
+    .page-hero{padding:clamp(30px,6vw,70px) clamp(20px,4vw,44px);margin-bottom:18px}
+    .section{margin:0 0 18px;padding:18px}
+    .section h2{margin:0 0 10px;text-transform:uppercase}
+    .section p,.section li{color:var(--color-text-muted);line-height:1.7}
+    .cta-row{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px}
   </style>
-
 </head>
 <body>
 <a class="skip-link" href="#content">Skip to content</a>
 <header id="site-header" role="banner">
   <button class="hamburger" id="hamburger" aria-label="Toggle navigation" aria-expanded="false" aria-controls="sidebar">☰</button>
-  <a href="/index.html" class="site-logo" aria-label="Crypto Moonboys home">
-    <img src="/img/CRYPTO-MOONBOYS-BITCOIN-LOGO.png" alt="" aria-hidden="true">
-    <span><span class="logo-text">Crypto Moonboys</span><span class="logo-sub">Play. Earn. Build. Own it.</span></span>
-  </a>
-  <div id="header-search" role="search"><input type="search" id="search-input" placeholder="Search the system…" aria-label="Search" autocomplete="off"><button id="search-btn" aria-label="Search">🔍</button><div id="search-results" role="listbox"></div></div>
+  <a href="/index.html" class="site-logo" aria-label="Crypto Moonboys home"><img src="/img/CRYPTO-MOONBOYS-BITCOIN-LOGO.png" alt="" aria-hidden="true"><span><span class="logo-text">Crypto Moonboys</span><span class="logo-sub">Play. Earn. Build. Own it.</span></span></a>
+  <div id="header-search" role="search"><input type="search" id="search-input" placeholder="Search the system..." aria-label="Search" autocomplete="off"><button id="search-btn" aria-label="Search">🔍</button><div id="search-results" role="listbox"></div></div>
   <nav class="header-nav" aria-label="Main navigation"><a href="/index.html">Home</a><a href="/games/">Arcade</a></nav>
 </header>
 <div id="sidebar-overlay" aria-hidden="true"></div>
 <div id="layout">
-   <nav id="sidebar" aria-label="Wiki navigation">
-    <div class="sidebar-section"><div class="sidebar-heading">Start Here</div><div class="sidebar-nav">
-      <a href="/index.html"><span class="nav-icon">🏠</span> Main Page</a>
-      <a href="/games/"><span class="nav-icon">🕹️</span> Arcade</a>
-      <a href="/games/leaderboard.html"><span class="nav-icon">🏆</span> Leaderboard</a>
-      <a href="/how-to-play.html"><span class="nav-icon">◈</span> How to Play</a>
-      <a href="/gkniftyheads-incubator.html"><span class="nav-icon">🚀</span> Incubator HUB</a>
-      <a href="/community.html" class="active"><span class="nav-icon">⚔️</span> Battle Chamber</a>
-      <a href="/about.html"><span class="nav-icon">ℹ️</span> About</a>
-      <a href="/about/what-is-crypto-moonboys.html"><span class="nav-icon">🌙</span> What Is Crypto Moonboys?</a>
-    </div></div>
-    <div class="sidebar-section"><div class="sidebar-heading">Quick Access</div><div class="sidebar-nav">
-      <a href="#arcade-war"><span class="nav-icon">⚔️</span> Join the Arcade War</a>
-      <a href="#community-stats-grid"><span class="nav-icon">📊</span> Engagement Snapshot</a>
-      <a href="#community-leaderboard"><span class="nav-icon">🏆</span> Top Contributors</a>
-      <a href="#community-missions"><span class="nav-icon">📋</span> Mission Board</a>
-    </div></div>
-    <div class="sidebar-section"><div class="sidebar-heading">HODL Wars</div><div class="sidebar-nav">
-      <a href="/wiki/hodl-wars.html"><span class="nav-icon">⚔️</span> HODL WAR$</a>
-      <a href="/wiki/hodl-warriors.html"><span class="nav-icon">💎</span> HODL WARRIORS</a>
-      <a href="/categories/lore.html"><span class="nav-icon">📚</span> All Lore</a>
-    </div></div>
-  </nav>
+  <nav id="sidebar" aria-label="Wiki navigation"><div class="sidebar-section"><div class="sidebar-heading">Start Here</div><div class="sidebar-nav"><a href="/index.html"><span class="nav-icon">🏠</span> Main Page</a><a href="/games/"><span class="nav-icon">🕹️</span> Arcade</a><a href="/games/leaderboard.html"><span class="nav-icon">🏆</span> Leaderboard</a><a href="/how-to-play.html"><span class="nav-icon">◆</span> How to Play</a><a href="/gkniftyheads-incubator.html"><span class="nav-icon">🚀</span> Incubator HUB</a><a href="/community.html" class="active"><span class="nav-icon">⚔️</span> Battle Chamber</a></div></div></nav>
   <div id="main-wrapper">
-
     <main id="content" role="main">
-      <section class="wtf-hero"><span class="wtf-kicker">proof layer live</span><h1>If you moved, it shows here.</h1><p class="wtf-lead">The Battle Chamber is where the system stops talking and starts recording. Arcade XP, activity, Daily Missions, Leaderboard pressure, Faction alignment, and Season standings all surface here. Spectators disappear. Builders leave marks.</p><div class="wtf-cta-row"><a href="/games/" class="btn btn-primary">🎮 Play Arcade</a><a href="/how-to-play.html" class="btn btn-secondary">◈ How to Play</a><a href="/gkniftyheads-incubator.html" class="btn btn-secondary">🔗 Link Telegram</a><a href="/games/leaderboard.html" class="btn btn-secondary">🏆 Leaderboard</a></div></section>
-
-      <section class="wtf-section" id="arcade-war">
-        <h2>Join the Arcade War</h2>
-        <p>The arcade is not just a score machine. It is a live competition with Daily Missions, Seasons, Factions, and Cross-Game Modifiers all running at once. Here is how to be part of it:</p>
-        <div class="wtf-grid">
-          <div class="wtf-card"><strong>🎮 Play Games</strong><p>Every run in any arcade game earns Arcade XP. Arcade XP feeds the whole system.</p></div>
-          <div class="wtf-card"><strong>⚡ Earn Arcade XP</strong><p>Arcade XP builds your Leaderboard position, Season standing, and Faction contribution all at once.</p></div>
-          <div class="wtf-card"><strong>📋 Complete Daily Missions</strong><p>Daily Missions rotate and give you focused objectives. Completing them helps your Faction and keeps your activity streak alive.</p></div>
-          <div class="wtf-card"><strong>⚔️ Join a Faction</strong><p>Align with Diamond Hands, HODL Warriors, or GraffPUNKS. Your runs feed your Faction's war effort every Season.</p></div>
-          <div class="wtf-card"><strong>🏆 Climb the Season</strong><p>Seasons are time-boxed competition windows. Consistent play across games builds your seasonal position — not just one lucky run.</p></div>
-          <div class="wtf-card"><strong>🔄 Stay Active</strong><p>Daily Missions reset. Seasons reset. Faction standings shift. The system stays alive because players keep showing up.</p></div>
-        </div>
-        <div class="wtf-punch">Pick a Faction. Play your games. Complete your missions. Your side climbs when you do.</div>
-        <div class="wtf-cta-row" style="margin-top:20px;">
-          <a href="/games/" class="btn btn-primary">🎮 Play Arcade</a>
-          <a href="/how-to-play.html" class="btn btn-secondary">◈ How to Play</a>
-          <a href="/gkniftyheads-incubator.html" class="btn btn-secondary">🔗 Join / Sync Telegram</a>
-          <a href="/games/leaderboard.html" class="btn btn-secondary">🏆 View Leaderboard</a>
-        </div>
+      <nav class="breadcrumb" aria-label="Breadcrumb"><a href="/index.html">Home</a><span class="sep">›</span><span aria-current="page">Battle Chamber</span></nav>
+      <section class="page-hero">
+        <h1>Battle Chamber — The Proof Wall</h1>
+        <p>The Battle Chamber is where Crypto Moonboys activity becomes visible. If the wiki is memory and the arcade is action, the Battle Chamber is proof. It shows who is moving, who is playing, who is syncing, who is building position, and which factions are carrying signal.</p>
       </section>
-      <section class="wtf-section"><h2>What this page does</h2><p>This is not a forum. This is the scoreboard for movement. If the arcade is the gate, this is the arena wall showing who is active.</p><div class="wtf-grid"><div class="wtf-card"><strong>Leaderboard</strong><p>See who is stacking Arcade XP and climbing position.</p></div><div class="wtf-card"><strong>Activity Feed</strong><p>The pulse of what is happening right now.</p></div><div class="wtf-card"><strong>Factions</strong><p>Pick alignment and start carrying signal for your side.</p></div><div class="wtf-card"><strong>Daily Missions</strong><p>Rotating objectives that point players where to move next.</p></div></div></section>
-      <section class="community-hero-grid"><div class="community-card"><div class="community-card-inner"><h3>Engagement Snapshot</h3><div class="community-stat-grid" id="community-stats-grid"><div class="community-loading">Loading trending pages…</div></div></div></div><div class="community-card"><div class="community-card-inner"><h3>Faction Alignment</h3><div id="community-faction-selector"></div></div></div></section>
+
+      <section class="section">
+        <h2>1. What The Battle Chamber Is</h2>
+        <p>This is not a normal community page. It is the public proof wall of the living Web3 wiki. The Battle Chamber turns invisible activity into visible movement.</p>
+        <p>It should show:</p>
+        <ul>
+          <li>Arcade XP movement</li><li>leaderboard pressure</li><li>live activity</li><li>faction alignment</li><li>mission movement</li><li>Telegram-linked identity</li><li>next steps into Block Topia</li>
+        </ul>
+      </section>
+
+      <section class="section"><h2>2. Why It Matters</h2><p>People believe what they can see. A leaderboard, activity feed, faction signal, and progression panel turn the system from “trust us” into “look”. The Battle Chamber is where action becomes public.</p></section>
+      <section class="section"><h2>3. Join The Arcade War</h2><p>Play games. Earn Arcade XP. Complete missions. Join a faction. Help your side move. Seasons and deeper faction wars may expand over time, but the behaviour starts now: show up, act, sync, and be seen.</p></section>
+      <section class="section"><h2>4. Factions Are Crews</h2><p>Factions are not just labels. They are the digital crew layer.<br>Diamond Hands hold.<br>HODL Warriors survive.<br>GraffPUNKS disrupt.<br>Pick the side that matches how you play.</p></section>
+      <section class="section"><h2>5. What Is Live Now</h2><ul><li>activity panels</li><li>leaderboard / contributor surfaces</li><li>Telegram identity status</li><li>faction alignment</li><li>arcade links</li><li>mission board surfaces where implemented</li><li>Battle Chamber as public proof layer</li></ul></section>
+      <section class="section"><h2>6. What Comes Later</h2><ul><li>full seasonal HODL Wars</li><li>deeper faction standings</li><li>richer mission layers</li><li>more public unlock feeds</li><li>stronger Block Topia connection</li><li>creator and builder signals</li></ul></section>
+
+      <section class="community-hero-grid"><div class="community-card"><div class="community-card-inner"><h3>Engagement Snapshot</h3><div class="community-stat-grid" id="community-stats-grid"><div class="community-loading">Loading trending pages...</div></div></div></div><div class="community-card"><div class="community-card-inner"><h3>Faction Alignment</h3><div id="community-faction-selector"></div></div></div></section>
       <div id="community-status-panel" data-csp-panel style="margin-bottom:18px"></div>
       <div data-las-panel style="margin-bottom:18px"></div>
-      <section class="community-grid"><div class="community-main"><div class="community-card"><div class="community-card-inner"><h3>Top Contributors</h3><div id="community-leaderboard" class="community-list shell-scroll" data-shell-scroll><div class="community-loading">Loading contributors…</div></div></div></div><div class="community-card"><div class="community-card-inner"><h3>Live Activity Feed</h3><div id="community-feed" class="community-list shell-scroll" data-shell-scroll><div class="community-empty">No activity yet — the battle is just beginning.</div></div></div></div><div id="gklink-status" class="gklink-banner" style="display:none" role="status" aria-live="polite"></div><div class="community-card"><div class="community-card-inner"><h3>Telegram Community XP</h3><div id="tg-community-leaderboard" class="community-list shell-scroll" data-shell-scroll></div></div></div><div class="community-card"><div class="community-card-inner"><h3>Community XP Activity</h3><div id="tg-activity-feed" class="community-list shell-scroll" data-shell-scroll></div></div></div></div><div class="community-side"><div class="community-card"><div class="community-card-inner"><h3>Mission Board</h3><div id="community-missions" class="community-list shell-scroll" data-shell-scroll></div></div></div><div class="community-card"><div class="community-card-inner"><h3>Lore Quests</h3><div id="tg-quest-panel"></div></div></div><div class="community-card" id="tg-daily-card" style="display:none"><div class="community-card-inner"><h3>Daily XP</h3><div id="tg-daily-status"></div></div></div><div class="community-card" id="tg-profile-card-wrap" style="display:none"><div class="community-card-inner"><h3>Your Telegram Profile</h3><div id="tg-profile-card"></div></div></div><div class="community-card"><div class="community-card-inner"><h3>Next Moves</h3><div class="community-link-grid"><a href="/games/" class="battle-link-card"><strong>Enter Arcade</strong><div class="battle-copy">Generate score and XP movement.</div></a><a href="/gkniftyheads-incubator.html" class="battle-link-card"><strong>Open Incubator</strong><div class="battle-copy">Sync identity with /gkstart and /gklink.</div></a><a href="/how-to-play.html" class="battle-link-card"><strong>How To Play</strong><div class="battle-copy">Fast guide for new players.</div></a></div></div></div></div></section>
-      <section class="community-section"><div class="community-card"><div class="community-card-inner"><h3>Community Discussion</h3><div class="wiki-comments" data-page-id="community"></div></div></div></section>
+      <section class="community-grid"><div class="community-main"><div class="community-card"><div class="community-card-inner"><h3>Top Contributors</h3><div id="community-leaderboard" class="community-list shell-scroll" data-shell-scroll><div class="community-loading">Loading contributors...</div></div></div></div><div class="community-card"><div class="community-card-inner"><h3>Live Activity Feed</h3><div id="community-feed" class="community-list shell-scroll" data-shell-scroll><div class="community-empty">No activity yet.</div></div></div></div></div><div class="community-side"><div class="community-card"><div class="community-card-inner"><h3>Mission Board</h3><div id="community-missions" class="community-list shell-scroll" data-shell-scroll></div></div></div></div></section>
+
+      <section class="section">
+        <h2>7. Next Actions</h2>
+        <div class="cta-row">
+          <a href="/games/" class="btn btn-primary">Play Arcade</a>
+          <a href="/how-to-play.html" class="btn btn-secondary">Read How To Play</a>
+          <a href="/gkniftyheads-incubator.html" class="btn btn-secondary">Link Telegram</a>
+          <a href="/games/leaderboard.html" class="btn btn-secondary">View Leaderboard</a>
+          <a href="/games/block-topia/" class="btn btn-secondary">Enter Block Topia</a>
+        </div>
+      </section>
     </main>
-    <footer id="site-footer" role="contentinfo"><div class="footer-inner"><div class="footer-col"><h4>Crypto Moonboys</h4><p>Stop logging in to claim. Start showing up to build.</p></div><div class="footer-col"><h4>Start</h4><ul><li><a href="/games/">Arcade</a></li><li><a href="/gkniftyheads-incubator.html">Link Telegram</a></li><li><a href="/community.html">Battle Chamber</a></li></ul></div></div><div class="footer-bottom"><p>© 2026 Crypto Moonboys · Not financial advice.</p></div></footer>
+    <footer id="site-footer" role="contentinfo"><div class="footer-inner"><div class="footer-col"><h4>Crypto Moonboys</h4><p>Living Web3 wiki system.</p></div><div class="footer-col"><h4>Start</h4><ul><li><a href="/games/">Arcade</a></li><li><a href="/gkniftyheads-incubator.html">Link Telegram</a></li><li><a href="/community.html">Battle Chamber</a></li></ul></div></div><div class="footer-bottom"><p>© 2026 Crypto Moonboys · Not financial advice.</p></div></footer>
   </div>
 </div>
 <button id="back-to-top" aria-label="Back to top">↑</button>
@@ -95,8 +80,7 @@
 <script src="/js/identity-gate.js"></script>
 <script src="/js/components/ui-status-copy.js"></script>
 <script src="/js/arcade/core/global-event-bus.js"></script>
-    <script src="/js/core/moonboys-state.js"></script>
-
+<script src="/js/core/moonboys-state.js"></script>
 <script src="/js/faction-alignment.js"></script>
 <script src="/js/wiki.js"></script>
 <script src="/js/scroll-shell.js"></script>
