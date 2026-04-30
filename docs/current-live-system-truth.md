@@ -50,7 +50,7 @@ These are four distinct progression signals. They are not interchangeable.
 - Stored server-side in `arcade_progression_state.arcade_xp_total`.
 - Synced via `POST /arcade/progression/sync` in `workers/moonboys-api/worker.js`.
 - Anti-farm controls: per-game ceiling, repeat-window detection, daily XP cap.
-- **Block Topia entry gate: 50 Arcade XP** (`BLOCKTOPIA_MULTIPLAYER_REQUIRED_XP = 50` in `shared/block-topia/constants.js`).
+  - **Block Topia entry gate: 50 Arcade XP.** The authoritative value is the server response `required_xp` from `/blocktopia/progression`, configured server-side in `workers/moonboys-api/blocktopia/config.js`. `shared/block-topia/constants.js` is a shared default that should match the server value.
 
 ### Faction XP (Alignment level)
 - Source: `POST /faction/earn` in `js/faction-alignment.js`.
@@ -69,10 +69,10 @@ These are four distinct progression signals. They are not interchangeable.
 ## Telegram Sync Rules
 
 1. Link via `/gklink` in [@WIKICOMSBOT](https://t.me/WIKICOMSBOT).
-2. Unsynced runs are queued locally via `ArcadeSync.queuePendingProgress()`.
+2. Unlinked runs are queued locally via `ArcadeSync.queuePendingProgress()` as pending progress, but they cannot sync or earn server Arcade XP until Telegram linking is completed.
 3. On link completion, pending queue is flushed via `ArcadeSync.syncPendingArcadeProgress()`.
 4. Server validates signed `telegram_auth` payload on every sync.
-5. Rejected or unlinked runs are **not** queued — no XP for rejected scores.
+5. Rejected linked runs are **not** queued — rejected scores earn no XP.
 6. Sync expires; re-run `/gklink` if status panel shows red.
 
 ---
@@ -82,7 +82,9 @@ These are four distinct progression signals. They are not interchangeable.
 - Requirement: Telegram-linked account **AND** ≥ 50 Arcade XP.
 - Gate enforced by `/blocktopia/progression` route in `workers/moonboys-api/blocktopia/routes.js`.
 - Returns `can_enter_multiplayer: true/false` and `required_xp` from server.
-- Constant source: `shared/block-topia/constants.js` → `BLOCKTOPIA_MULTIPLAYER_REQUIRED_XP = 50`.
+- Authoritative source: server response `required_xp` from `/blocktopia/progression`.
+- Server config: `workers/moonboys-api/blocktopia/config.js`.
+- Shared/client default: `shared/block-topia/constants.js` → `BLOCKTOPIA_MULTIPLAYER_REQUIRED_XP = 50` (must stay aligned with server config).
 
 ---
 
@@ -131,7 +133,8 @@ These are four distinct progression signals. They are not interchangeable.
 | Purpose | File |
 |---|---|
 | Arcade XP sync path doc | `docs/arcade-xp-sync-path.md` |
-| Block Topia XP gate constant | `shared/block-topia/constants.js` |
+| Block Topia XP gate (server config) | `workers/moonboys-api/blocktopia/config.js` |
+| Block Topia XP gate (shared/client default) | `shared/block-topia/constants.js` |
 | Faction effect system | `js/arcade/systems/faction-effect-system.js` |
 | Cross-game modifier system | `js/arcade/systems/cross-game-modifier-system.js` |
 | Daily missions (local) | `js/arcade/systems/faction-missions.js` |

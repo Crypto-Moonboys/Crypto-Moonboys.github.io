@@ -60,7 +60,7 @@ Block Topia multiplayer requires:
 1. A Telegram-linked account (`/gklink` in @WIKICOMSBOT).
 2. At least **50 Arcade XP** accumulated across accepted synced runs.
 
-The gate value is defined in `shared/block-topia/constants.js` as `BLOCKTOPIA_MULTIPLAYER_REQUIRED_XP = 50`.
+The authoritative gate value is returned by the server as `progression.required_xp` from `/blocktopia/progression`. The server-side configuration is in `workers/moonboys-api/blocktopia/config.js`. `shared/block-topia/constants.js` provides a matching shared/client default and must stay aligned with the server config.
 
 ## HexGL Status (Deprecated)
 
