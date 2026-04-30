@@ -226,8 +226,10 @@
 
   /**
    * Patches all rendered sync rows across every mounted LAS panel.
-   * Called from the MOONBOYS_STATE subscriber on every state notification so
-   * the sync label stays current whenever identity/XP state changes.
+   * Call sites:
+   *   1. MOONBOYS_STATE.subscribe() — keeps the row current when XP/faction state changes.
+   *   2. bus.on('sync:state') — patches the row immediately when a sync event fires,
+   *      since MOONBOYS_STATE does not carry sync/identity state.
    * Reads sync state synchronously from MOONBOYS_IDENTITY (always available).
    */
   function updateSyncUI() {
@@ -381,6 +383,9 @@
         ? 'Sync complete'
         : d.state === 'bad' ? 'Sync issue detected' : 'Syncing\u2026';
       addToLog(buildLogEntry('sync', text));
+      // Also patch the sync row immediately — MOONBOYS_STATE does not track
+      // sync state, so the bus event is the only trigger available here.
+      updateSyncUI();
     });
 
     // Score updates arrive via the bus bridge as activity:event with _src set.
