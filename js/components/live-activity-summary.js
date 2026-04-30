@@ -54,7 +54,13 @@
     _activityLog.unshift(entry);
     if (_activityLog.length > LOG_MAX) _activityLog.length = LOG_MAX;
 
-    // Single emit — bus is mandatory (loaded before this file on every page).
+    // Bus is mandatory: global-event-bus.js is listed before this file on
+    // every page (see load order in HTML).  Guard is kept as a belt-and-suspenders
+    // safeguard in case the load order ever changes.
+    if (!window.MOONBOYS_EVENT_BUS || typeof window.MOONBOYS_EVENT_BUS.emit !== 'function') {
+      console.warn('[live-activity-summary] MOONBOYS_EVENT_BUS unavailable — activity:event not emitted.');
+      return;
+    }
     window.MOONBOYS_EVENT_BUS.emit('activity:event', entry);
 
     // ── Performance: append directly to existing log containers ────────────

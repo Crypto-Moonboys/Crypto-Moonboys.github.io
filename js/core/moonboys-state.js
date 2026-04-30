@@ -195,11 +195,15 @@
   window.MOONBOYS_STATE = { getState: getState, setState: setState, subscribe: subscribe, hydrateState: hydrateState };
 
   // Run hydration once the page is ready (non-blocking; UI renders with cached state first).
+  // When DOM is already loaded, defer to the next task (setTimeout 0) so that
+  // synchronous script tags loaded after this file (CSP, header, LAS) have
+  // executed and had a chance to register their state subscribers before the
+  // first setState() call from hydrateState() fires.  This is safe because all
+  // peer components are loaded from static <script> tags in the same HTML page,
+  // which complete synchronously before any task-queue callbacks run.
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', function () { hydrateState(); });
   } else {
-    // Use setTimeout to defer after synchronous script execution so all
-    // other components (CSP, header) have a chance to register their subscribers.
     setTimeout(function () { hydrateState(); }, 0);
   }
 
