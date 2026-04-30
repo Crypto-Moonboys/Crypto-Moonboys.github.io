@@ -24,6 +24,10 @@
 
 var _feedHandlers = [];
 
+// Map<handler, { activity, missionWrapper, warWrapper, streakWrapper }>
+// Tracks the per-handler bus wrappers so all four can be removed on unsubscribe.
+var _busWrappers = typeof Map !== 'undefined' ? new Map() : null;
+
 // ── Internal emit ────────────────────────────────────────────────────────────
 
 function _bus() {
@@ -34,12 +38,16 @@ function _emit(type, payload) {
   var detail = Object.assign({ type: type, ts: Date.now() }, payload || {});
   var b = _bus();
   if (b && typeof b.emit === 'function') {
+    // Bus exists — only emit via the bus.  Registered handlers receive events
+    // through their bus.on() subscriptions; calling _feedHandlers directly here
+    // would cause each handler to fire twice.
     b.emit('faction:activity', detail);
-  }
-  // Also notify local subscribers directly so HUD updates even without bus
-  var snapshot = _feedHandlers.slice();
-  for (var i = 0; i < snapshot.length; i++) {
-    try { snapshot[i](detail); } catch (_) {}
+  } else {
+    // No bus — notify local subscribers directly.
+    var snapshot = _feedHandlers.slice();
+    for (var i = 0; i < snapshot.length; i++) {
+      try { snapshot[i](detail); } catch (_) {}
+    }
   }
 }
 
@@ -122,30 +130,57 @@ export function subscribeActivityFeed(handler) {
   if (_feedHandlers.indexOf(handler) === -1) {
     _feedHandlers.push(handler);
   }
-  // Also subscribe to bus events from external emitters
   var b = _bus();
-  if (b && typeof b.on === 'function') {
-    b.on('faction:activity', handler);
-    b.on('faction:mission:complete', function (d) {
-      handler(Object.assign({ type: 'mission_complete', text: '✅ ' + (d.label || 'Mission complete') }, d));
-    });
-    b.on('faction:war:contribution', function (d) {
-      handler(Object.assign({ type: 'faction_gain', text: _factionLabel(d.faction) + ' +' + (d.amount || 0) + ' war power' }, d));
-    });
-    b.on('faction:streak:update', function (d) {
-      handler(Object.assign({ type: 'streak', text: '🔥 ' + (d.type || '') + ' streak: day ' + (d.count || 1) }, d));
+  if (!b || typeof b.on !== 'function') return;
+
+  // Build dedicated wrapper functions so every one can be precisely removed.
+  var missionWrapper = function (d) {
+    handler(Object.assign({ type: 'mission_complete', text: '✅ ' + (d.label || 'Mission complete') }, d));
+  };
+  var warWrapper = function (d) {
+    handler(Object.assign({ type: 'faction_gain', text: _factionLabel(d.faction) + ' +' + (d.amount || 0) + ' war power' }, d));
+  };
+  var streakWrapper = function (d) {
+    handler(Object.assign({ type: 'streak', text: '🔥 ' + (d.type || '') + ' streak: day ' + (d.count || 1) }, d));
+  };
+
+  // faction:activity events are emitted by _emit() via the bus, so handler
+  // itself is the correct listener — no wrapper needed.
+  b.on('faction:activity',       handler);
+  b.on('faction:mission:complete', missionWrapper);
+  b.on('faction:war:contribution', warWrapper);
+  b.on('faction:streak:update',   streakWrapper);
+
+  // Track all four wrappers so unsubscribeActivityFeed can remove them all.
+  if (_busWrappers) {
+    _busWrappers.set(handler, {
+      activity:       handler,
+      missionWrapper: missionWrapper,
+      warWrapper:     warWrapper,
+      streakWrapper:  streakWrapper,
     });
   }
 }
 
 /**
  * Unsubscribe from the activity feed.
+ * Removes the handler and ALL associated bus wrappers (4 events).
  * @param {Function} handler
  */
 export function unsubscribeActivityFeed(handler) {
   _feedHandlers = _feedHandlers.filter(function (h) { return h !== handler; });
   var b = _bus();
-  if (b && typeof b.off === 'function') {
+  if (!b || typeof b.off !== 'function') return;
+
+  var wrappers = _busWrappers && _busWrappers.get(handler);
+  if (wrappers) {
+    b.off('faction:activity',        wrappers.activity);
+    b.off('faction:mission:complete', wrappers.missionWrapper);
+    b.off('faction:war:contribution', wrappers.warWrapper);
+    b.off('faction:streak:update',   wrappers.streakWrapper);
+    _busWrappers.delete(handler);
+  } else {
+    // Fallback: try to remove the handler directly from faction:activity
     b.off('faction:activity', handler);
   }
 }

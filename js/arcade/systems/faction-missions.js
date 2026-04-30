@@ -100,7 +100,8 @@ function _safeParse(raw, fallback) {
 
 function _todayKey() {
   var d = new Date();
-  return d.getUTCFullYear() + '-' + (d.getUTCMonth() + 1) + '-' + d.getUTCDate();
+  var pad = function (n) { return String(n).padStart(2, '0'); };
+  return d.getUTCFullYear() + '-' + pad(d.getUTCMonth() + 1) + '-' + pad(d.getUTCDate());
 }
 
 // ── State management ─────────────────────────────────────────────────────────

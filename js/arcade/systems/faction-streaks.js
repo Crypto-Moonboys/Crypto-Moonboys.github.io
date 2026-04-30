@@ -36,15 +36,19 @@ function _safeParse(raw, fallback) {
   catch (_) { return fallback; }
 }
 
+function _pad2(n) {
+  return String(n).padStart(2, '0');
+}
+
 function _todayKey() {
   var d = new Date();
-  return d.getUTCFullYear() + '-' + (d.getUTCMonth() + 1) + '-' + d.getUTCDate();
+  return d.getUTCFullYear() + '-' + _pad2(d.getUTCMonth() + 1) + '-' + _pad2(d.getUTCDate());
 }
 
 function _yesterdayKey() {
   var d = new Date();
   d.setUTCDate(d.getUTCDate() - 1);
-  return d.getUTCFullYear() + '-' + (d.getUTCMonth() + 1) + '-' + d.getUTCDate();
+  return d.getUTCFullYear() + '-' + _pad2(d.getUTCMonth() + 1) + '-' + _pad2(d.getUTCDate());
 }
 
 // ── Default state ────────────────────────────────────────────────────────────

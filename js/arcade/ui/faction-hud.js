@@ -125,6 +125,10 @@ function _buildHtml(factionId, fx, rotation, missionsDone, total, rank) {
     dots += '<span class="fh-mission-dot ' + (i < missionsDone ? 'done' : 'pending') + '"></span>';
   }
 
+  // Bonus row is always rendered; hidden via inline style when there is no bonus text.
+  // This ensures panel.querySelector('.fh-val--bonus') always resolves for live updates.
+  var bonusDisplay = fx.bonusText ? '' : 'display:none';
+
   return [
     '<div class="fh-header" role="button" tabindex="0" aria-expanded="true" id="fh-toggle-btn">',
       '<span class="fh-title">⚡ Faction</span>',
@@ -135,12 +139,10 @@ function _buildHtml(factionId, fx, rotation, missionsDone, total, rank) {
         '<span class="fh-label">Faction</span>',
         '<span class="fh-val">' + _esc(fx.label || factionId) + '</span>',
       '</div>',
-      fx.bonusText ? (
-        '<div class="fh-row">'
-        + '<span class="fh-label">Bonus</span>'
-        + '<span class="fh-val fh-val--bonus">' + _esc(fx.bonusText) + '</span>'
-        + '</div>'
-      ) : '',
+      '<div class="fh-row" id="fh-bonus-row" style="' + bonusDisplay + '">',
+        '<span class="fh-label">Bonus</span>',
+        '<span class="fh-val fh-val--bonus">' + _esc(fx.bonusText || '') + '</span>',
+      '</div>',
       '<div class="fh-row">',
         '<span class="fh-label">Rank</span>',
         '<span class="fh-val fh-val--rank" style="color:' + _esc(color) + '">' + _esc(rankText) + '</span>',
@@ -224,6 +226,15 @@ export function mountFactionHud() {
 
     if (toggleBtn) toggleBtn.addEventListener('click', function (e) { e.stopPropagation(); _toggle(); });
     if (header)    header.addEventListener('click', _toggle);
+    // Keyboard accessibility: Enter / Space trigger the toggle
+    if (header) {
+      header.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          _toggle();
+        }
+      });
+    }
 
     // Wire live ticker
     _tickerEl = panel.querySelector('#fh-ticker');
@@ -239,8 +250,10 @@ export function mountFactionHud() {
         var nextFx      = getFactionEffects(nextFaction);
         var nextColor   = _factionColor(nextFaction);
         panel.style.setProperty('--faction-color', nextColor);
-        var bonusEl = panel.querySelector('.fh-val--bonus');
-        if (bonusEl) bonusEl.textContent = nextFx.bonusText || '';
+        var bonusRow = panel.querySelector('#fh-bonus-row');
+        var bonusEl  = panel.querySelector('.fh-val--bonus');
+        if (bonusEl)  bonusEl.textContent = nextFx.bonusText || '';
+        if (bonusRow) bonusRow.style.display = nextFx.bonusText ? '' : 'none';
         var factionValEl = panel.querySelector('.fh-val');
         if (factionValEl) factionValEl.textContent = nextFx.label || nextFaction;
       });

@@ -49,17 +49,28 @@ function _safeParse(raw, fallback) {
 
 // ── Date helpers ─────────────────────────────────────────────────────────────
 
-function _todayKey() {
-  var d = new Date();
-  return d.getUTCFullYear() + '-' + (d.getUTCMonth() + 1) + '-' + d.getUTCDate();
+function _pad2(n) {
+  return String(n).padStart(2, '0');
 }
 
+function _todayKey() {
+  var d = new Date();
+  return d.getUTCFullYear() + '-' + _pad2(d.getUTCMonth() + 1) + '-' + _pad2(d.getUTCDate());
+}
+
+/**
+ * ISO 8601 week key: YYYY-Www (e.g. 2026-W05).
+ * The ISO week containing a Thursday determines the year.
+ */
 function _thisWeekKey() {
   var d = new Date();
-  var dayOfWeek = d.getUTCDay();                 // 0 = Sunday
-  var monday = new Date(d);
-  monday.setUTCDate(d.getUTCDate() - ((dayOfWeek + 6) % 7));
-  return monday.getUTCFullYear() + '-W' + monday.getUTCDate();
+  // ISO weekday: 1 = Mon … 7 = Sun
+  var dow = d.getUTCDay() || 7;
+  // Thursday of the current week (determines the ISO year)
+  var thu = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate() + (4 - dow)));
+  var yearStart = new Date(Date.UTC(thu.getUTCFullYear(), 0, 1));
+  var weekNum = Math.ceil(((thu - yearStart) / 86400000 + 1) / 7);
+  return thu.getUTCFullYear() + '-W' + _pad2(weekNum);
 }
 
 // ── Internal state ───────────────────────────────────────────────────────────
@@ -275,7 +286,19 @@ function _normaliseFactionKey(id) {
 }
 
 function _trimKeys(obj, maxKeys) {
-  var keys = Object.keys(obj).sort();
+  // Parse each key to a numeric timestamp for chronological ordering.
+  // Supports both YYYY-MM-DD daily keys and YYYY-Www ISO week keys.
+  function _keyToMs(k) {
+    var wMatch = String(k).match(/^(\d{4})-W(\d{2})$/);
+    if (wMatch) {
+      // Approximate: Jan 1 of year + (week - 1) * 7 days
+      return Date.UTC(Number(wMatch[1]), 0, 1) + (Number(wMatch[2]) - 1) * 7 * 86400000;
+    }
+    var dMatch = String(k).match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    if (dMatch) return Date.UTC(Number(dMatch[1]), Number(dMatch[2]) - 1, Number(dMatch[3]));
+    return 0;
+  }
+  var keys = Object.keys(obj).sort(function (a, b) { return _keyToMs(a) - _keyToMs(b); });
   while (keys.length > maxKeys) {
     delete obj[keys.shift()];
   }
@@ -285,9 +308,8 @@ function _calcMomentum(dailyMap) {
   var today = new Date();
   var consecutive = 0;
   for (var i = 0; i < 7; i++) {
-    var d = new Date(today);
-    d.setUTCDate(today.getUTCDate() - i);
-    var k = d.getUTCFullYear() + '-' + (d.getUTCMonth() + 1) + '-' + d.getUTCDate();
+    var d = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate() - i));
+    var k = d.getUTCFullYear() + '-' + _pad2(d.getUTCMonth() + 1) + '-' + _pad2(d.getUTCDate());
     if (dailyMap[k] > 0) { consecutive++; } else { break; }
   }
   if (consecutive >= 7) return 3;

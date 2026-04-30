@@ -215,8 +215,8 @@ export function bootstrapSnake(root) {
       run.shieldCharges = applyFactionStartingShield(run.shieldCharges, _faction, { supportsShield: true });
       // Faction chaos modifier blended with cross-game pressure rate
       run._pressureRateMult *= applyFactionEventRate(1, _faction);
-      // Faction combo-window bias for GraffPUNKS
-      run.comboWindowBonus += applyFactionComboBonus(0, _faction) * 0.4;
+      // Faction combo-window bias: delta = (modifier - 1) * 0.4 seconds (GraffPUNKS: +25%)
+      run.comboWindowBonus += (applyFactionComboBonus(1, _faction) - 1) * 0.4;
       // Store faction id on run for onGameOver access
       run._factionId = _faction;
       // Show faction bonus text if meaningful
