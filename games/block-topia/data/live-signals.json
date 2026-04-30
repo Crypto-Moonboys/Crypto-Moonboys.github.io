@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-04-29T23:55:41.019Z",
+  "generatedAt": "2026-04-30T03:25:27.183Z",
   "mode": "live-ai",
   "sourceHealth": {
     "coingecko-global": "ok",
@@ -11,84 +11,84 @@
   "signalCount": 5,
   "signals": [
     {
-      "id": "signal-1777506941019-1",
+      "id": "signal-1777519527182-1",
       "lane": "world",
       "priority": 4,
-      "ttlMinutes": 60,
-      "npcLine": "Markets bleed; shadows grow thicker in an operator.",
-      "questPulse": "Seek<Token> hiding beneath crypto chaos.",
-      "worldFeed": "Global caps slip, fear whispers through data streams.",
-      "clueEvent": "Crypto tides turn sour; trust drains like leaking circuits.",
+      "ttlMinutes": 45,
+      "npcLine": "Crypto pulse weakening; shadows grow longer in digital bazaars.",
+      "questPulse": "Seek stability amid crashing market echoes; trust is scarce.",
+      "worldFeed": "Market cap bleeds, fear grips neon-lit exchanges.",
+      "clueEvent": "Whispers of failing tokens rise in underground forums.",
       "tags": [
         "market",
         "fear",
-        "dystopia"
+        "crypto"
       ],
-      "expiresAt": "2026-04-30T00:55:41.019Z"
+      "expiresAt": "2026-04-30T04:10:27.182Z"
     },
     {
-      "id": "signal-1777506941019-2",
+      "id": "signal-1777519527182-2",
       "lane": "ops",
       "priority": 3,
-      "ttlMinutes": 45,
-      "npcLine": "AI nodes spike; automation cracks in the skyline.",
-      "questPulse": "Extract secret code from rogue AI mesh.",
-      "worldFeed": "AI algorithms pulse with strange new patterns.",
-      "clueEvent": "Synthetic minds shimmer, but logic is fragmented.",
+      "ttlMinutes": 30,
+      "npcLine": "AI-driven trades spike; algorithms hunting whales tonight.",
+      "questPulse": "Infiltrate server nodes to decode stealth trading patterns.",
+      "worldFeed": "Automated agents tilt market scales, risking chaos.",
+      "clueEvent": "Data streams reveal suspicious AI market plays.",
       "tags": [
         "ai",
-        "tech",
-        "surveillance"
+        "automation",
+        "trading"
       ],
-      "expiresAt": "2026-04-30T00:40:41.019Z"
+      "expiresAt": "2026-04-30T03:55:27.182Z"
     },
     {
-      "id": "signal-1777506941019-3",
+      "id": "signal-1777519527183-3",
       "lane": "clue",
       "priority": 2,
-      "ttlMinutes": 30,
-      "npcLine": "PLUME data trails vanish into the void.",
-      "questPulse": "Decode lost PLUME packets before corporate eyes.",
-      "worldFeed": "Whispers of vanished signals stir the dark net.",
-      "clueEvent": "Digital smoke screens rise amid data smog.",
+      "ttlMinutes": 60,
+      "npcLine": "PENGU asset chatter heats up; could be heat or hype.",
+      "questPulse": "Track viral spikes and shadow brokers pushing pengu tokens.",
+      "worldFeed": "Rogue cryptos gain traction against the fading sun.",
+      "clueEvent": "Encrypted chats hint at rising digital penguin cult.",
       "tags": [
-        "data",
-        "cloaking",
-        "mystery"
+        "altcoin",
+        "rumor",
+        "clue"
       ],
-      "expiresAt": "2026-04-30T00:25:41.019Z"
+      "expiresAt": "2026-04-30T04:25:27.183Z"
     },
     {
-      "id": "signal-1777506941019-4",
+      "id": "signal-1777519527183-4",
       "lane": "quest",
-      "priority": 5,
+      "priority": 3,
       "ttlMinutes": 90,
-      "npcLine": "ULTIMA fades; power shifts in unseen networks.",
-      "questPulse": "Infiltrate fading circuits, claim forgotten nodes.",
-      "worldFeed": "Old crypto ghosts lose grip on neon grids.",
-      "clueEvent": "System echoes hint at unstable power plays.",
-      "tags": [
-        "crypto",
-        "power",
-        "infiltration"
-      ],
-      "expiresAt": "2026-04-30T01:25:41.019Z"
-    },
-    {
-      "id": "signal-1777506941019-5",
-      "lane": "npc",
-      "priority": 1,
-      "ttlMinutes": 20,
-      "npcLine": "BLEND syndicate whispers; their mix distorts reality.",
-      "questPulse": "Trace BLEND brokers before shadows swallow them.",
-      "worldFeed": "Blenders twist data, blurring truth and lies.",
-      "clueEvent": "Signs point to hidden trades in dark alleys.",
+      "npcLine": "PLUME syndicate spreads like smog; trace their influence.",
+      "questPulse": "Uncover hidden cartel investments in fragmented markets.",
+      "worldFeed": "Shadow factions manipulate faint market signals.",
+      "clueEvent": "Messages intercepted: PLUME fingerprints on recent hacks.",
       "tags": [
         "syndicate",
-        "deception",
-        "trade"
+        "influence",
+        "plume"
       ],
-      "expiresAt": "2026-04-30T00:15:41.019Z"
+      "expiresAt": "2026-04-30T04:55:27.183Z"
+    },
+    {
+      "id": "signal-1777519527183-5",
+      "lane": "npc",
+      "priority": 1,
+      "ttlMinutes": 120,
+      "npcLine": "PROS agents vanish; rumors say they’re caught in crossfire.",
+      "questPulse": "Find missing brokers tangled in market warfare.",
+      "worldFeed": "Silent silos hold secrets of last PROS moves.",
+      "clueEvent": "Cold trails suggest coverup in high-stakes trades.",
+      "tags": [
+        "missing",
+        "danger",
+        "market"
+      ],
+      "expiresAt": "2026-04-30T05:25:27.183Z"
     }
   ]
 }
