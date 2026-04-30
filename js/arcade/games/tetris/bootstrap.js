@@ -141,6 +141,7 @@ function createLegacybootstrapTetris(root) {
   let _tetrisModScoreMult   = 1;
   let _tetrisModShielded    = false;
   let _tetrisEventRateMult  = 1; // faction chaos modifier × cross-game pressureRate
+  let _tetrisModGoldenBoost = 0; // goldenSpawnBoost modifier — lowers golden mutation threshold
 
   // ── Roguelite run state ────────────────────────────────────────────────────
   let wave = 0;
@@ -304,6 +305,7 @@ function createLegacybootstrapTetris(root) {
     _tetrisModScoreMult = getStatEffect(crossMods, 'scoreMult', 1);
     _tetrisModShielded  = hasEffect(crossMods, 'shieldedStart');
     const modPressureRate = getStatEffect(crossMods, 'pressureRate', 1);
+    _tetrisModGoldenBoost = getStatEffect(crossMods, 'goldenSpawnBoost', 0);
     if (_tetrisModShielded) run.shieldCharges += 1;
 
     // ── Faction: refresh faction id, apply starting-shield + event-rate ──────
@@ -346,7 +348,9 @@ function createLegacybootstrapTetris(root) {
   function maybeMutatePiece(piece) {
     if (!director) return;
     const intensity = director.intensity || 0;
-    const candidates = MUTATION_DEFS.filter((m) => intensity >= m.threshold);
+    // goldenSpawnBoost modifier lowers the mutation threshold, making rare pieces appear sooner
+    const effectiveIntensity = intensity + (_tetrisModGoldenBoost || 0) * 100;
+    const candidates = MUTATION_DEFS.filter((m) => effectiveIntensity >= m.threshold);
     if (!candidates.length) return;
     if (Math.random() > MUTATION_CHANCE) return;
     const def = candidates[Math.floor(Math.random() * candidates.length)];

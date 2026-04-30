@@ -267,6 +267,7 @@ function createState(root) {
     factionId: 'unaligned',
     factionPressureMult: 1,
     modScoreMult: 1,
+    modGoldenBoost: 0, // goldenSpawnBoost modifier — increases crystal asteroid spawn chance
   };
 }
 
@@ -471,14 +472,15 @@ function applyPendingRiskToWave(state) {
   if (risk.id === 'skipWave') state.score += 240;
 }
 
-function chooseAsteroidType(wave) {
+function chooseAsteroidType(wave, goldenBoost) {
   const roll = Math.random();
+  const crystalThreshold = 0.72 + (goldenBoost || 0);   // golden spawn boost raises crystal chance
   if (wave > 2 && roll < 0.16) return 'shard';
   if (wave > 3 && roll < 0.29) return 'heavy';
   if (wave > 4 && roll < 0.41) return 'cluster';
   if (wave > 5 && roll < 0.52) return 'explosive';
   if (wave > 6 && roll < 0.62) return 'magnetic';
-  if (wave > 7 && roll < 0.72) return 'crystal';
+  if (wave > 7 && roll < crystalThreshold) return 'crystal';
   if (wave > 8 && roll < 0.82) return 'cursed';
   return 'basic';
 }
@@ -552,7 +554,7 @@ function spawnWave(state) {
   for (let i = 0; i < asteroidCount; i += 1) {
     const x = Math.random() < 0.5 ? randomRange(-50, 0) : randomRange(state.worldW, state.worldW + 50);
     const y = randomRange(0, state.worldH);
-    state.asteroids.push(createAsteroid(state, x, y, chooseAsteroidType(state.wave), 3, []));
+    state.asteroids.push(createAsteroid(state, x, y, chooseAsteroidType(state.wave, state.modGoldenBoost), 3, []));
   }
 
   const spawnEnemies = Math.random() < clamp(BASE_ENEMY_FREQ + state.wave * 0.018 + intensity / 170, 0.3, 0.95);
@@ -630,7 +632,7 @@ function triggerEvent(state, eventDef, source) {
     else state.qaStats.chaosEvents += 1;
   }
   if (mapped === 'meteor-storm') {
-    for (let i = 0; i < 8; i += 1) state.asteroids.push(createAsteroid(state, randomRange(0, state.worldW), -40 - i * 30, chooseAsteroidType(state.wave + 2), 2, []));
+    for (let i = 0; i < 8; i += 1) state.asteroids.push(createAsteroid(state, randomRange(0, state.worldW), -40 - i * 30, chooseAsteroidType(state.wave + 2, state.modGoldenBoost), 2, []));
   }
   if (mapped === 'rogue-ships') state.enemies.push(createEnemy(state, 'hunter'), createEnemy(state, 'sniper'), createEnemy(state, 'swarm'));
   if (mapped === 'emp') state.empTimer = 5;
@@ -742,6 +744,7 @@ function resetRun(state) {
   const crossMods = getActiveModifiers(GAME_ID, ASTEROID_FORK_CONFIG.crossGameTags || []);
   state.modScoreMult = getStatEffect(crossMods, 'scoreMult', 1);
   const modPressureRate = getStatEffect(crossMods, 'pressureRate', 1);
+  state.modGoldenBoost = getStatEffect(crossMods, 'goldenSpawnBoost', 0);
   const modShielded = hasEffect(crossMods, 'shieldedStart');
   if (modShielded) state.lives = Math.min(state.lives + 1, 5);
 

@@ -171,6 +171,7 @@ function createLegacybootstrapPacChain(root) {
   let _pacFactionId      = 'unaligned';
   let _pacModScoreMult   = 1;
   let _pacEventRateMult  = 1; // faction chaos modifier × cross-game pressureRate
+  let _pacGoldenBoost    = 0; // goldenSpawnBoost modifier — boosts goldenPellet event weight
 
   function addBanner(s, text, kind) {
     s.bannerQueue.push({ text, kind: kind || 'event', ttl: 2.1 });
@@ -283,6 +284,7 @@ function createLegacybootstrapPacChain(root) {
     const crossMods = getActiveModifiers(GAME_ID, PAC_CHAIN_CONFIG.crossGameTags || []);
     _pacModScoreMult = getStatEffect(crossMods, 'scoreMult', 1);
     const modPressureRate = getStatEffect(crossMods, 'pressureRate', 1);
+    _pacGoldenBoost = getStatEffect(crossMods, 'goldenSpawnBoost', 0);
     if (hasEffect(crossMods, 'shieldedStart')) state.run.shieldCharges += 1;
 
     // ── Faction: refresh faction id, apply starting-shield + event-rate ──────
@@ -423,10 +425,16 @@ function createLegacybootstrapPacChain(root) {
     const pool = available.length ? available : eventDefs.filter((e) => state.level >= e.minLevel);
     if (!pool.length) return;
     let total = 0;
-    pool.forEach((i) => { total += i.weight; });
+    // goldenSpawnBoost modifier increases the goldenPellet event's effective weight
+    const goldenBoost = _pacGoldenBoost || 0;
+    pool.forEach((i) => { total += i.weight + (goldenBoost > 0 && i.id === 'goldenPellet' ? goldenBoost * 2 : 0); });
     let roll = Math.random() * total;
     let picked = pool[0];
-    for (let i = 0; i < pool.length; i += 1) { roll -= pool[i].weight; if (roll <= 0) { picked = pool[i]; break; } }
+    for (let i = 0; i < pool.length; i += 1) {
+      const w = pool[i].weight + (goldenBoost > 0 && pool[i].id === 'goldenPellet' ? goldenBoost * 2 : 0);
+      roll -= w;
+      if (roll <= 0) { picked = pool[i]; break; }
+    }
     d.pressure = Math.max(0, d.pressure - d.threshold * 0.72);
     d.eventCooldown = clamp(8 - state.level * 0.18, 3.3, 8.2);
     history.unshift(picked.id);

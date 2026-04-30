@@ -209,8 +209,8 @@ export function bootstrapSnake(root) {
     try {
       var _faction = getPlayerFaction();
       var _factionFx = getFactionEffects(_faction);
-      // Faction score: baked into run.scoreMult (combo bias for GraffPUNKS via comboWindowBonus)
-      run.scoreMult *= _factionFx.scoreMultiplier;
+      // Faction score is applied via applyFactionScore() at food-collection time;
+      // do NOT also bake it into run.scoreMult to avoid double-application.
       // Faction shield bonus: +1 shield charge for HODL Warriors
       run.shieldCharges = applyFactionStartingShield(run.shieldCharges, _faction, { supportsShield: true });
       // Faction chaos modifier blended with cross-game pressure rate
