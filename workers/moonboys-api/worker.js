@@ -2086,9 +2086,7 @@ export default {
           },
           modifiers: modState ? {
             active_modifier_id: modState.active_modifier_id || null,
-            unlocked_modifiers: modState.unlocked_modifiers_json
-              ? JSON.parse(modState.unlocked_modifiers_json).catch?.() || JSON.parse(modState.unlocked_modifiers_json)
-              : null,
+            unlocked_modifiers: safeJsonParse(modState.unlocked_modifiers_json, null),
           } : { active_modifier_id: null, unlocked_modifiers: null, source: 'not_configured' },
           daily_missions: { date: todayKey, progress: dailyMissions },
           mission_streaks: streakState ? {

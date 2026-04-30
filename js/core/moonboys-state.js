@@ -12,10 +12,7 @@
  *
  * Internal state shape:
  *   { xp: 0, faction: 'unaligned', lastEvent: null, updatedAt: 0, sync: null,
- *     linked: false, source: 'guest', syncedAt: null }
- *
- * Internal state shape:
- *   { xp: 0, faction: 'unaligned', lastEvent: null, updatedAt: 0, sync: null }
+ *     linked: false, source: 'guest'|'server'|'cache', syncedAt: null }
  *
  * Load order: must appear AFTER global-event-bus.js so that
  * MOONBOYS_EVENT_BUS is already available when this file executes.
