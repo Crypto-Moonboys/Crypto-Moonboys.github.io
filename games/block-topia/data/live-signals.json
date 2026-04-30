@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-04-30T21:57:06.921Z",
+  "generatedAt": "2026-04-30T22:57:39.563Z",
   "mode": "live-ai",
   "sourceHealth": {
     "coingecko-global": "ok",
@@ -11,84 +11,84 @@
   "signalCount": 5,
   "signals": [
     {
-      "id": "signal-1777586226921-1",
+      "id": "signal-1777589859563-1",
       "lane": "world",
-      "priority": 3,
-      "ttlMinutes": 45,
-      "npcLine": "Market flux shakes neon grids; trust none in the trading pits.",
-      "questPulse": "Investigate sudden spikes in shadowcoin chatter near biotech hubs.",
-      "worldFeed": "Crypto shadows thin but pulse with cautious pulse under fear’s veil.",
-      "clueEvent": "Unusual volume in unknown tokens sparks whispers of deep hideouts.",
-      "tags": [
-        "market",
-        "fear",
-        "crypto"
-      ],
-      "expiresAt": "2026-04-30T22:42:06.921Z"
-    },
-    {
-      "id": "signal-1777586226921-2",
-      "lane": "ops",
       "priority": 4,
-      "ttlMinutes": 30,
-      "npcLine": "Algorithms glitch; cyber brokers falter in the fear flood.",
-      "questPulse": "Trace bleeding edges of altcoin networks before the wipeout.",
-      "worldFeed": "Market cap inches upward, but street nets buzz with tension.",
-      "clueEvent": "Detect blackout patterns in crypto nodes; data leaks probable.",
+      "ttlMinutes": 45,
+      "npcLine": "Market pulse rises slightly; shadows shift beneath neon lights.",
+      "questPulse": "Find the data shard tracking the shifting digital assets.",
+      "worldFeed": "Crypto cosmos flickers with minor uptick amid unrest.",
+      "clueEvent": "Silent traders whisper rumors of new asset stirring fears.",
       "tags": [
-        "ops",
-        "intel",
-        "crypto"
+        "market-flux",
+        "digital-assets",
+        "low-risk"
       ],
-      "expiresAt": "2026-04-30T22:27:06.921Z"
+      "expiresAt": "2026-04-30T23:42:39.563Z"
     },
     {
-      "id": "signal-1777586226921-3",
-      "lane": "clue",
-      "priority": 2,
-      "ttlMinutes": 60,
-      "npcLine": "Whisper: Newcomer tokens spike weirdly; could be traps or gold.",
-      "questPulse": "Scavenge for odd trading anomalies amid rising dread signals.",
-      "worldFeed": "Fear index breeds cautious hold; shadow trades morph faster.",
-      "clueEvent": "Tagged trail of fallen coins leads to hidden market ruins.",
-      "tags": [
-        "clue",
-        "scrutiny",
-        "tokens"
-      ],
-      "expiresAt": "2026-04-30T22:57:06.921Z"
-    },
-    {
-      "id": "signal-1777586226921-4",
-      "lane": "quest",
+      "id": "signal-1777589859563-2",
+      "lane": "ops",
       "priority": 5,
-      "ttlMinutes": 20,
-      "npcLine": "Urgent: Decode erratic trading blips before contracts expire.",
-      "questPulse": "Decrypt blackout transfers; secure volatile assets in fearstorm.",
-      "worldFeed": "Crypto war intensifies; data phantoms hunt for weak nodes.",
-      "clueEvent": "Ghost chain transactions spike—dangerous opportunities or traps?",
+      "ttlMinutes": 30,
+      "npcLine": "Fear grips the network; spikes in volatility detected.",
+      "questPulse": "Infiltrate the secure node to extract volatile asset data.",
+      "worldFeed": "Sentiment drops, traders tighten grip on fading neon fortunes.",
+      "clueEvent": "Encrypted chatter hints at impending market shifts.",
       "tags": [
-        "quest",
-        "crypto",
-        "urgent"
+        "fear",
+        "volatility",
+        "high-risk"
       ],
-      "expiresAt": "2026-04-30T22:17:06.921Z"
+      "expiresAt": "2026-04-30T23:27:39.563Z"
     },
     {
-      "id": "signal-1777586226921-5",
+      "id": "signal-1777589859563-3",
+      "lane": "clue",
+      "priority": 3,
+      "ttlMinutes": 60,
+      "npcLine": "New tokens like MEGA and ACN curve quietly in shadows.",
+      "questPulse": "Locate the operator behind rising token whispers.",
+      "worldFeed": "Unknown currencies surface amidst turbulent cyber tides.",
+      "clueEvent": "Fragmented signals reveal unusual token activity patterns.",
+      "tags": [
+        "emerging-assets",
+        "whispers",
+        "medium-risk"
+      ],
+      "expiresAt": "2026-04-30T23:57:39.563Z"
+    },
+    {
+      "id": "signal-1777589859563-4",
+      "lane": "quest",
+      "priority": 2,
+      "ttlMinutes": 90,
+      "npcLine": "Neon phantoms BIO and AI emerge, altering digital landscapes.",
+      "questPulse": "Trace back the origins of biotech and AI token flows.",
+      "worldFeed": "Synthetic sentience blurs with blockchain shadows.",
+      "clueEvent": "Ghost nodes pulse with biotech and AI token signatures.",
+      "tags": [
+        "ai",
+        "biotech",
+        "exploration"
+      ],
+      "expiresAt": "2026-05-01T00:27:39.563Z"
+    },
+    {
+      "id": "signal-1777589859563-5",
       "lane": "npc",
       "priority": 3,
-      "ttlMinutes": 40,
-      "npcLine": "Runner whispers: 'Biotech coins dance in fear’s alpha shadow.'",
-      "questPulse": "Track biotech token whispers for rogue AI trading signals.",
-      "worldFeed": "Sentiment down; biotech cryptos flicker uncertain hopes in dark webs.",
-      "clueEvent": "Data miners uncover secret biotech token clusters in decay zones.",
+      "ttlMinutes": 50,
+      "npcLine": "PENGU's chill sends ripples through the data maze.",
+      "questPulse": "Connect with street brokers watching the cold token's rise.",
+      "worldFeed": "Icy winds blow through token markets, sparking cautious moves.",
+      "clueEvent": "Broker logs reference PENGU's growing influence underground.",
       "tags": [
-        "npc",
-        "biotech",
-        "intel"
+        "cold-token",
+        "underground",
+        "medium-risk"
       ],
-      "expiresAt": "2026-04-30T22:37:06.921Z"
+      "expiresAt": "2026-04-30T23:47:39.563Z"
     }
   ]
 }
