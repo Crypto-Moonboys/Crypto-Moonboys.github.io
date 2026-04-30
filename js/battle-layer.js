@@ -192,7 +192,11 @@
       return;
     }
     if (!FEATURES.LEADERBOARD) {
-      el.innerHTML = '<div class="community-empty">Connected to Core API — leaderboard data coming soon.</div>';
+      var copy = (window.UI_STATUS_COPY && window.UI_STATUS_COPY.panels)
+        ? window.UI_STATUS_COPY.panels.leaderboardUnavailable()
+        : '<p>Arcade leaderboard temporarily unavailable.</p>'
+          + '<a href="/games/leaderboard.html" class="btn btn-secondary">View full leaderboard \u2192</a>';
+      el.innerHTML = '<div class="community-empty">' + copy + '</div>';
       return;
     }
     el.innerHTML = '<div class="community-loading">Loading contributors…</div>';
@@ -225,7 +229,10 @@
       return;
     }
     if (!FEATURES.LIVE_FEED) {
-      el.innerHTML = '<div class="community-empty">Connected to Core API — live feed coming soon.</div>';
+      var noActivity = (window.UI_STATUS_COPY && window.UI_STATUS_COPY.panels)
+        ? window.UI_STATUS_COPY.panels.noActivityYet()
+        : '<p>No visible activity yet. Play an arcade run, link Telegram, or join a faction to create movement.</p>';
+      el.innerHTML = '<div class="community-empty">' + noActivity + '</div>';
       return;
     }
     el.innerHTML = '<div class="community-loading">Loading activity…</div>';
@@ -257,7 +264,15 @@
       return;
     }
     if (!FEATURES.ACTIVITY_PANEL) {
-      el.innerHTML = '<div class="community-empty">Connected to Core API — activity panel coming soon.</div>';
+      el.innerHTML =
+        '<div class="community-stat-card community-stat-info">' +
+          '<p>Your engagement snapshot will reflect Telegram-linked status, Arcade XP, faction alignment, and leaderboard rank once data is available.</p>' +
+          '<p class="status-hint">' +
+            '<a href="/gkniftyheads-incubator.html">Link Telegram</a> to persist Arcade XP \u00b7 ' +
+            '<a href="/games/">Play Arcade</a> to create activity \u00b7 ' +
+            '<a href="/community.html#faction">Choose a faction</a> to join the crew layer.' +
+          '</p>' +
+        '</div>';
       return;
     }
     el.innerHTML = '<div class="community-loading">Loading trending pages…</div>';
@@ -290,16 +305,44 @@
 
     var missionsContainer = document.getElementById('community-missions');
     if (missionsContainer && !missionsContainer.hasChildNodes()) {
+      var localBadge = (window.UI_STATUS_COPY && window.UI_STATUS_COPY.panels)
+        ? window.UI_STATUS_COPY.panels.localMissionOnly()
+        : '<span class="mission-scope-badge">Local mission \u2014 server sync coming later.</span>';
       var communityMissions = [
-        { tag: 'Engage', text: 'Post a comment on any wiki article to add to the community intelligence.' },
-        { tag: 'Signal', text: 'Like an article to boost its standing in the Moonboys ecosystem.' },
-        { tag: 'Cite', text: 'Vote on a citation to strengthen the credibility of the knowledge base.' },
-        { tag: 'Align', text: 'Choose your faction above to register your allegiance.' }
+        {
+          tag: 'Daily Arcade',
+          text: 'Play one accepted arcade run today.',
+          href: '/games/',
+          local: true
+        },
+        {
+          tag: 'Faction',
+          text: 'Choose a faction and contribute score through supported games.',
+          href: '/community.html',
+          local: true
+        },
+        {
+          tag: 'Block Topia Gate',
+          text: 'Reach 50 Arcade XP and link Telegram to unlock Block Topia Multiplayer.',
+          href: '/games/block-topia/',
+          local: false
+        },
+        {
+          tag: 'System',
+          text: 'Read How To Play, then enter the arcade.',
+          href: '/how-to-play.html',
+          local: false
+        }
       ];
       missionsContainer.innerHTML = communityMissions.map(function (m) {
+        var link = m.href
+          ? ' <a href="' + esc(m.href) + '" class="mission-cta-link">Start \u2192</a>'
+          : '';
+        var scope = m.local ? localBadge : '';
         return '<div class="mission-row">' +
           '<span class="mission-tag">' + esc(m.tag) + '</span>' +
-          '<div class="mission-text">' + esc(m.text) + '</div>' +
+          '<div class="mission-text">' + esc(m.text) + link + '</div>' +
+          scope +
         '</div>';
       }).join('');
     }

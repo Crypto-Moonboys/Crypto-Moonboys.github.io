@@ -114,9 +114,15 @@
     if (!el) return;
 
     if (!BASE || !FEATURES.LIVE_FEED) {
-      el.innerHTML = placeholder('📡',
-        'Live activity feed — community interactions will appear here once the engagement layer is live.'
-      );
+      el.innerHTML =
+        '<div class="live-activity-panel">' +
+          '<p class="live-activity-desc">Recent activity is generated from synced arcade runs, faction actions, and Battle Chamber events. ' +
+            'Play an arcade game, link Telegram, or join a faction to create visible movement.</p>' +
+          '<div class="live-activity-cta">' +
+            '<a href="/games/" class="btn btn-primary">Play Arcade</a>' +
+            '<a href="/community.html" class="btn btn-secondary">Open Battle Chamber</a>' +
+          '</div>' +
+        '</div>';
       return;
     }
 
@@ -156,9 +162,11 @@
     if (!el) return;
 
     if (!BASE || !FEATURES.LEADERBOARD) {
-      el.innerHTML = placeholder('🏆',
-        'Top contributors leaderboard — rankings will appear here once community engagement is live.'
-      );
+      var copy = (window.UI_STATUS_COPY && window.UI_STATUS_COPY.panels)
+        ? window.UI_STATUS_COPY.panels.leaderboardUnavailable()
+        : '<div class="widget-unavailable"><p>Arcade leaderboard temporarily unavailable.</p>' +
+          '<a href="/games/leaderboard.html" class="btn btn-secondary">Open full leaderboard \u2192</a></div>';
+      el.innerHTML = copy;
       return;
     }
 
@@ -196,9 +204,17 @@
     if (!el) return;
 
     if (!BASE || !FEATURES.ACTIVITY_PANEL) {
-      el.innerHTML = placeholder('🔥',
-        'Trending pages — most-viewed and most-discussed articles will surface here once engagement tracking is live.'
-      );
+      el.innerHTML =
+        '<div class="explore-wiki-panel">' +
+          '<p class="explore-wiki-desc">Explore the Living Wiki</p>' +
+          '<ul class="explore-wiki-links">' +
+            '<li><a href="/search.html">\uD83D\uDCD6 All Articles</a></li>' +
+            '<li><a href="/timeline.html">\uD83D\uDCC5 Timeline</a></li>' +
+            '<li><a href="/graph.html">\uD83C\uDF10 Entity Graph</a></li>' +
+            '<li><a href="/wiki/hodl-wars.html">\u2694\uFE0F HODL Wars</a></li>' +
+            '<li><a href="/how-to-play.html">\u25C6 How To Play</a></li>' +
+          '</ul>' +
+        '</div>';
       return;
     }
 
@@ -235,10 +251,10 @@
         '<div class="battle-teaser">' +
           '<div class="bt-icon" aria-hidden="true">⚔️</div>' +
           '<div class="bt-body">' +
-            '<div class="bt-title">Battle Layer — HODL vs NGMI</div>' +
-            '<div class="bt-sub">Drop your takes directly on any wiki article. ' +
-              'Community comments and article battles are launching soon.</div>' +
-            '<div class="bt-cta"><a href="/search.html" class="btn btn-primary">Explore Articles →</a></div>' +
+            '<div class="bt-title">Battle Chamber</div>' +
+            '<div class="bt-sub">The Battle Chamber is the proof wall. It shows Arcade XP movement, ' +
+              'faction alignment, leaderboard pressure, and player activity across the living wiki.</div>' +
+            '<div class="bt-cta"><a href="/community.html" class="btn btn-primary">Open Battle Chamber \u2192</a></div>' +
           '</div>' +
         '</div>';
       return;

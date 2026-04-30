@@ -504,14 +504,22 @@ function renderFactionStandings() {
     ? '<div class="lb-fw-rotation">📅 Today: ' + escHtml(rotation.label || '—') + '</div>'
     : '';
 
+  var preSeasonCopy = (window.UI_STATUS_COPY && window.UI_STATUS_COPY.panels)
+    ? window.UI_STATUS_COPY.panels.preSeasonFactionSignal()
+    : '<p class="lb-fw-preseason">Faction signal is currently based on local arcade activity in this browser. '
+      + 'Full server-backed seasonal war standings are a future layer.</p>';
+
+  var allZero = standings.length > 0 && standings.every(function (s) { return !s.power && !s.daily && !s.weekly; });
+
   container.innerHTML = '<div class="lb-fw-section">'
-    + '<h3 class="lb-fw-title">⚔️ Faction War Standings</h3>'
+    + '<h3 class="lb-fw-title">\u26A1 Faction Signal \u2014 Pre-Season</h3>'
+    + preSeasonCopy
     + rotationHtml
-    + (standings.length
+    + (standings.length && !allZero
       ? '<table class="lb-fw-table"><thead><tr>'
         + '<th></th><th>Faction</th><th>Power</th><th>Daily</th><th>Weekly</th><th>Rank</th><th>Momentum</th>'
         + '</tr></thead><tbody>' + rowsHtml + '</tbody></table>'
-      : '<p class="lb-fw-empty">No faction data yet. Play arcade games to earn faction war power.</p>'
+      : '<p class="lb-fw-empty">No faction signal recorded yet. Choose a faction and play supported arcade games to start movement.</p>'
     )
     + '</div>';
 }
@@ -532,6 +540,7 @@ function _injectFactionStandingsStyles() {
     '.lb-fw-rank-badge{font-size:.72rem;color:var(--color-text-muted,#aaa)}',
     '.lb-fw-momentum{font-size:.78rem}',
     '.lb-fw-empty{font-size:.78rem;color:var(--color-text-muted,#888);margin:0}',
+    '.lb-fw-preseason{font-size:.76rem;color:var(--color-text-muted,#888);margin:0 0 10px;font-style:italic}',
   ].join('');
   document.head.appendChild(style);
 }
