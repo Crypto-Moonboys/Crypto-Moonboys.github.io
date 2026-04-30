@@ -2,6 +2,26 @@
 
 Crypto Moonboys is the live website for the project, including the arcade and shared frontend support assets.
 
+## Project Vision
+
+Crypto Moonboys is the live front door to the Graffiti Kings / GKniftyHEADS system.
+
+The live loop:
+
+Arcade → Accepted Score → Arcade XP → Telegram Sync → Battle Chamber → Block Topia Gate
+
+The long-term vision:
+
+Play → Earn → Stay → Build → Own → Control
+
+This repository must never drift into:
+
+- "just a wiki"
+- "just an NFT project"
+- "just an arcade"
+
+It is a **connected system**.
+
 ## Repository Scope
 
 This repository is the active website runtime and should stay clean and focused.
