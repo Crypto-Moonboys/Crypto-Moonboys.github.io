@@ -18,8 +18,13 @@
 --   that were bootstrapped with schema.sql rather than through the Wrangler migration
 --   chain.  It is a no-op on any DB that already has the columns.
 -- * To check before running:
---   SELECT faction, faction_xp, faction_last_switch FROM blocktopia_progression LIMIT 1;
---   SELECT admin_telegram_id, reason FROM blocktopia_progression_events LIMIT 1;
+--   PRAGMA table_info('blocktopia_progression');
+--   Verify that 'faction', 'faction_xp', and 'faction_last_switch' are NOT in the 'name'
+--   column before running. If they already appear, those ALTER TABLE statements are
+--   already applied and the duplicate-column errors are expected.
+--   PRAGMA table_info('blocktopia_progression_events');
+--   Verify that 'admin_telegram_id' and 'reason' are NOT in the 'name' column.
+--   If they already appear, those ALTER TABLE statements are already applied.
 
 ALTER TABLE blocktopia_progression ADD COLUMN faction TEXT NOT NULL DEFAULT 'unaligned';
 ALTER TABLE blocktopia_progression ADD COLUMN faction_xp INTEGER NOT NULL DEFAULT 0;

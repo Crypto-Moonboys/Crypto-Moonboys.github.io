@@ -8,6 +8,9 @@
 --   repair), this statement will fail with "duplicate column name".
 -- * That error is expected and safe to ignore on repeat runs.
 -- * To check before running:
---   SELECT admin_telegram_id, reason FROM blocktopia_progression_events LIMIT 1;
+--   PRAGMA table_info('blocktopia_progression_events');
+--   Verify that 'admin_telegram_id' and 'reason' are NOT listed in the 'name' column
+--   before running. If they already appear, this migration is already applied and the
+--   duplicate-column error is expected.
 ALTER TABLE blocktopia_progression_events ADD COLUMN admin_telegram_id TEXT;
 ALTER TABLE blocktopia_progression_events ADD COLUMN reason TEXT;

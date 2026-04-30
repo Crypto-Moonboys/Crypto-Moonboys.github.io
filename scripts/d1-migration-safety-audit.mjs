@@ -96,13 +96,16 @@ function checkFile(filePath, fileName) {
     }
 
     // ── Destructive ALTER: RENAME TO existing tables ──────────────────────────
-    // Flag renames that look like they target a real production table name.
-    if (/ALTER\s+TABLE\s+\S+\s+RENAME\s+TO\s+(?!.*__\d+_rebuild)/i.test(line)) {
-      // Allow renaming _rebuild tables back to canonical names (012 pattern)
-      const isRebuildRename = /RENAME\s+TO\s+\S+(?:__\d+_rebuild)?$/i.test(line) === false;
-      warnings.push(
-        `  line ${lineno}: ALTER TABLE RENAME TO — verify this is intentional and not destructive — "${line.trim()}"`
-      );
+    // Allow renaming _rebuild tables back to canonical names (012 pattern):
+    //   ALTER TABLE blocktopia_progression__012_rebuild RENAME TO blocktopia_progression;
+    // Only warn on other RENAME TO patterns that could clobber a live table.
+    if (/ALTER\s+TABLE\s+\S+\s+RENAME\s+TO/i.test(line)) {
+      const isRebuildRename = /ALTER\s+TABLE\s+\S+__\d+_rebuild\s+RENAME\s+TO/i.test(line);
+      if (!isRebuildRename) {
+        warnings.push(
+          `  line ${lineno}: ALTER TABLE RENAME TO — verify this is intentional and not destructive — "${line.trim()}"`
+        );
+      }
     }
 
     // ── DROP COLUMN ──────────────────────────────────────────────────────────

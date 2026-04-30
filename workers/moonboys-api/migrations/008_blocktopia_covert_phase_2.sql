@@ -9,8 +9,14 @@
 --   live DB), this statement will fail with "duplicate column name".
 -- * That error is expected and safe to ignore on repeat runs.
 -- * To check before running:
---   SELECT stealth_boost_until, recovery_count FROM blocktopia_covert_agents LIMIT 1;
---   SELECT heat_before, heat_after FROM blocktopia_covert_operations LIMIT 1;
+--   PRAGMA table_info('blocktopia_covert_agents');
+--   Verify that 'stealth_boost_until' and 'recovery_count' are NOT in the 'name' column.
+--   PRAGMA table_info('blocktopia_covert_operations');
+--   Verify that 'heat_before', 'heat_after', 'node_interference_delta',
+--   'district_support_delta', 'district_pressure_delta', 'faction_pressure_delta',
+--   'sam_pressure_delta', and 'local_risk_delta' are NOT in the 'name' column.
+--   If any of those columns already appear, all statements for that table are already
+--   applied and the duplicate-column errors are expected.
 
 ALTER TABLE blocktopia_covert_agents ADD COLUMN stealth_boost_until DATETIME;
 ALTER TABLE blocktopia_covert_agents ADD COLUMN recovery_count INTEGER NOT NULL DEFAULT 0;

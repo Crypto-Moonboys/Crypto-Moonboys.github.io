@@ -11,8 +11,12 @@
 -- * Same applies to captured_until / capture_count on blocktopia_covert_agents.
 -- * Those errors are expected and safe to ignore on repeat runs.
 -- * To check before running:
---   SELECT network_heat FROM blocktopia_progression LIMIT 1;
---   SELECT captured_until FROM blocktopia_covert_agents LIMIT 1;
+--   PRAGMA table_info('blocktopia_progression');
+--   Verify that 'network_heat' and 'network_heat_updated_at' are NOT in the 'name' column.
+--   PRAGMA table_info('blocktopia_covert_agents');
+--   Verify that 'captured_until' and 'capture_count' are NOT in the 'name' column.
+--   If any of those columns already appear, the corresponding ALTER TABLE is already
+--   applied and the duplicate-column error is expected.
 
 ALTER TABLE blocktopia_progression ADD COLUMN network_heat INTEGER NOT NULL DEFAULT 0;
 ALTER TABLE blocktopia_progression ADD COLUMN network_heat_updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP;

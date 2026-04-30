@@ -209,12 +209,12 @@ An expanded comment was added documenting this behaviour.
 
 | Property | Value |
 |---|---|
-| Tables dropped & rebuilt | `blocktopia_progression` (DROP + full rebuild with rename) |
-| Uses `DROP TABLE IF EXISTS` | ✅ for temp tables; ⚠️ bare `DROP TABLE blocktopia_progression` |
-| Safe on existing production D1 | ⚠️ destructive — drops and recreates `blocktopia_progression`; copies data forward without `faction` columns via INSERT SELECT |
-| Unsafe / order-dependent | ⚠️ requires `blocktopia_progression` to exist |
+| Tables dropped & rebuilt | `blocktopia_progression` (DROP IF EXISTS + full rebuild with rename) |
+| Uses `DROP TABLE IF EXISTS` | ✅ for temp tables; ✅ `DROP TABLE IF EXISTS blocktopia_progression` (fixed in this PR) |
+| Safe on existing production D1 | ⚠️ still destructive — drops and recreates `blocktopia_progression`; `IF EXISTS` prevents a crash if the table is absent, but the INSERT SELECT that precedes it will still fail if the table is missing |
+| Unsafe / order-dependent | ⚠️ requires `blocktopia_progression` to exist before the data-copy INSERT |
 
-**Risk note:** The `DROP TABLE blocktopia_progression` and INSERT SELECT in this migration
+**Risk note:** The `DROP TABLE IF EXISTS blocktopia_progression` and INSERT SELECT in this migration
 preserves core progression data but drops `faction`/`faction_xp`/`faction_last_switch` if
 they were added by 005 or 011 and not yet included in the rebuild's INSERT SELECT column
 list.  The rebuild _does_ include `faction`/`faction_xp`/`faction_last_switch` in the target
@@ -273,7 +273,7 @@ A comment was added documenting expected failure modes.
 | `008` | Bare `ALTER TABLE` — no guard | Fails if bootstrapped from full schema.sql | ✅ Comment added |
 | `009` | Bare `ALTER TABLE` — no guard | `network_heat` already in production | ✅ Comment added |
 | `011` | Bare `ALTER TABLE` — duplicates 005+006 | Fails if 005+006 applied first | ✅ Comment added |
-| `012` | `DROP TABLE blocktopia_progression` | Destructive; data loss risk for faction data | ⚠️ No change; addressed in runbook |
+| `012` | `DROP TABLE IF EXISTS blocktopia_progression` | Guarded with `IF EXISTS`; still destructive for data if table exists — INSERT SELECT backfill risk for faction data | ✅ Fixed to use `IF EXISTS` |
 | `013` | Bare `ALTER TABLE` — no guard | Fails if schema.sql was used to bootstrap | ✅ Comment added |
 
 ---
