@@ -1,106 +1,47 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="The full Crypto Moonboys system pitch: why it exists, how it works, why GK matters, and how players become builders, owners and culture operators.">
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="What Is Crypto Moonboys? The canonical long-form explanation.">
   <meta name="robots" content="index, follow">
-  <meta property="og:title" content="What Is Crypto Moonboys? — Full WTF System Pitch">
-  <meta property="og:description" content="The full Crypto Moonboys system pitch: why it exists, how it works, why GK matters, and how players become builders, owners and culture operators.">
-  <meta property="og:type" content="website">
-  <meta property="og:image" content="https://cryptomoonboys.com/img/CRYPTO-MOONBOYS-BITCOIN-LOGO.png">
-  <title>What Is Crypto Moonboys? — Full WTF System Pitch</title>
-  <link rel="stylesheet" href="/css/wiki.css">
-  <link rel="stylesheet" href="/css/battle-layer.css">
-  <link rel="icon" href="/img/favicon.svg" type="image/svg+xml">
-
-  <style>
-    .wtf-hero{padding:clamp(34px,6vw,78px) clamp(18px,4vw,46px);margin-bottom:24px;border:1px solid rgba(86,220,255,.34);border-radius:var(--radius);background:radial-gradient(circle at 15% 10%,rgba(255,204,0,.18),transparent 28%),radial-gradient(circle at 90% 20%,rgba(86,220,255,.18),transparent 32%),linear-gradient(155deg,rgba(10,23,44,.94),rgba(3,8,17,.92));box-shadow:inset 0 0 0 1px rgba(122,236,255,.07),0 18px 44px rgba(0,0,0,.36);overflow:hidden;position:relative}
-    .wtf-hero:before{content:"";position:absolute;inset:0;opacity:.07;background-image:linear-gradient(90deg,#fff 1px,transparent 1px),linear-gradient(#fff 1px,transparent 1px);background-size:38px 38px;pointer-events:none}.wtf-hero>*{position:relative;z-index:1}.wtf-kicker{display:inline-flex;gap:8px;align-items:center;padding:7px 11px;border:1px solid rgba(255,204,0,.42);border-radius:999px;background:rgba(255,204,0,.08);font-size:.78rem;text-transform:uppercase;letter-spacing:.08em;color:#ffe78a;font-weight:800;margin-bottom:16px}.wtf-hero h1{margin:0;max-width:1050px;font-size:clamp(2.1rem,7vw,5.7rem);line-height:.9;letter-spacing:-.055em;text-transform:uppercase}.wtf-lead{max-width:860px;margin:20px 0 0;color:var(--color-text-muted);font-size:clamp(1.02rem,2vw,1.3rem);line-height:1.55}.wtf-cta-row{display:flex;flex-wrap:wrap;gap:12px;margin-top:26px}.wtf-cta-row .btn{font-size:1.02rem;padding:12px 20px}.wtf-flow{display:flex;flex-wrap:wrap;gap:8px;margin:22px 0 0}.wtf-flow span{padding:7px 10px;border:1px solid rgba(255,255,255,.1);border-radius:999px;background:rgba(255,255,255,.04);color:var(--color-text-muted);font-size:.9rem}.wtf-section{margin:0 0 24px;padding:22px;border:1px solid rgba(86,220,255,.24);border-radius:14px;background:linear-gradient(165deg,rgba(10,23,44,.72),rgba(8,18,34,.58));box-shadow:0 10px 28px rgba(0,0,0,.18)}.wtf-section h2{margin:0 0 10px;font-size:clamp(1.35rem,3vw,2.1rem);text-transform:uppercase;letter-spacing:-.025em}.wtf-section h3{margin:18px 0 8px;color:#e7fcff}.wtf-section p,.wtf-section li{color:var(--color-text-muted);line-height:1.72}.wtf-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px;margin:16px 0}.wtf-card{border:1px solid rgba(86,220,255,.25);border-radius:13px;background:rgba(6,16,31,.7);padding:16px}.wtf-card strong{display:block;color:#fff;margin-bottom:6px}.wtf-card p{margin:0}.wtf-punch{border-left:4px solid rgba(255,204,0,.92);padding:14px 0 14px 16px;margin:18px 0;color:#fff;background:rgba(255,204,0,.05)}.wtf-mini{font-size:.9rem;color:var(--color-text-muted)}.reveal{animation:fadeup .45s ease both}@keyframes fadeup{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
-  </style>
-
+  <meta property="og:title" content="What Is Crypto Moonboys?">
+  <meta property="og:description" content="Crypto Moonboys is a living Web3 wiki system.">
+  <meta property="og:type" content="website"><meta property="og:image" content="https://cryptomoonboys.com/img/CRYPTO-MOONBOYS-BITCOIN-LOGO.png">
+  <title>What Is Crypto Moonboys?</title>
+  <link rel="stylesheet" href="/css/wiki.css"><link rel="stylesheet" href="/css/battle-layer.css"><link rel="icon" href="/img/favicon.svg" type="image/svg+xml">
+  <style>.page-hero,.section{border:1px solid rgba(86,220,255,.26);border-radius:12px;background:rgba(8,18,34,.72)}.page-hero{padding:clamp(30px,6vw,70px) clamp(20px,4vw,44px);margin-bottom:18px}.section{margin:0 0 18px;padding:18px}.section h2{margin:0 0 10px;text-transform:uppercase}.section p,.section li, .section td{color:var(--color-text-muted);line-height:1.7}.table{width:100%;border-collapse:collapse}.table td{padding:10px;border:1px solid rgba(86,220,255,.2)}.cta-row{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px}</style>
 </head>
 <body>
 <a class="skip-link" href="#content">Skip to content</a>
-<header id="site-header" role="banner">
-  <button class="hamburger" id="hamburger" aria-label="Toggle navigation" aria-expanded="false" aria-controls="sidebar">☰</button>
-  <a href="/index.html" class="site-logo" aria-label="Crypto Moonboys home">
-    <img src="/img/CRYPTO-MOONBOYS-BITCOIN-LOGO.png" alt="" aria-hidden="true">
-    <span><span class="logo-text">Crypto Moonboys</span><span class="logo-sub">Play. Earn. Build. Own it.</span></span>
-  </a>
-  <div id="header-search" role="search"><input type="search" id="search-input" placeholder="Search the system…" aria-label="Search" autocomplete="off"><button id="search-btn" aria-label="Search">🔍</button><div id="search-results" role="listbox"></div></div>
-  <nav class="header-nav" aria-label="Main navigation"><a href="/index.html">Home</a><a href="/games/">Arcade</a></nav>
-</header>
+<header id="site-header" role="banner"><button class="hamburger" id="hamburger" aria-label="Toggle navigation" aria-expanded="false" aria-controls="sidebar">☰</button><a href="/index.html" class="site-logo" aria-label="Crypto Moonboys home"><img src="/img/CRYPTO-MOONBOYS-BITCOIN-LOGO.png" alt="" aria-hidden="true"><span><span class="logo-text">Crypto Moonboys</span><span class="logo-sub">Play. Earn. Build. Own it.</span></span></a><div id="header-search" role="search"><input type="search" id="search-input" placeholder="Search the system..." aria-label="Search" autocomplete="off"><button id="search-btn" aria-label="Search">🔍</button><div id="search-results" role="listbox"></div></div><nav class="header-nav" aria-label="Main navigation"><a href="/index.html">Home</a><a href="/games/">Arcade</a></nav></header>
 <div id="sidebar-overlay" aria-hidden="true"></div>
-<div id="layout">
-  <nav id="sidebar" aria-label="Wiki navigation">
-    <div class="sidebar-section"><div class="sidebar-heading">Start Here</div><div class="sidebar-nav">
-      <a href="/index.html"><span class="nav-icon">🏠</span> Main Page</a>
-      <a href="/games/"><span class="nav-icon">🕹️</span> Arcade</a>
-      <a href="/how-to-play.html"><span class="nav-icon">◈</span> How to Play</a>
-      <a href="/gkniftyheads-incubator.html"><span class="nav-icon">🚀</span> Incubator HUB</a>
-      <a href="/community.html"><span class="nav-icon">⚔️</span> Battle Chamber</a>
-      <a href="/about.html"><span class="nav-icon">ℹ️</span> About</a>
-      <a href="/about/what-is-crypto-moonboys.html" class="active"><span class="nav-icon">🌙</span> What Is Crypto Moonboys?</a>
-    </div></div>
-    <div class="sidebar-section"><div class="sidebar-heading">HODL Wars</div><div class="sidebar-nav">
-      <a href="/wiki/hodl-wars.html"><span class="nav-icon">⚔️</span> HODL WAR$</a>
-      <a href="/wiki/hodl-warriors.html"><span class="nav-icon">💎</span> HODL WARRIORS</a>
-      <a href="/categories/lore.html"><span class="nav-icon">📚</span> All Lore</a>
-    </div></div>
-  </nav>
-  <div id="main-wrapper">
-
-    <main id="content" role="main">
-      <nav class="breadcrumb" aria-label="Breadcrumb"><a href="/index.html">Home</a><span class="sep">›</span><a href="/about.html">About</a><span class="sep">›</span><span>What Is Crypto Moonboys?</span></nav>
-      <section class="wtf-hero"><span class="wtf-kicker">read this once</span><h1>Most people will think this is a game. That is how they miss it.</h1><p class="wtf-lead">Crypto Moonboys is a street-born, game-driven, ownership-backed culture system built by Graffiti Kings / GKniftyHEADS. It looks playful at the door because the door is meant to be easy. Underneath is a builder economy, faction world, IP engine, and proof layer for people who actually move.</p><div class="wtf-cta-row"><a href="/games/" class="btn btn-primary">Enter The Arcade</a><a href="/gkniftyheads-incubator.html" class="btn btn-secondary">Link Identity</a><a href="/community.html" class="btn btn-secondary">See The Battle Chamber</a></div></section>
-      <article class="wiki-content">
-        <section class="wtf-section reveal"><h2>This is not another NFT project</h2><p>NFT projects sold images. Meme coins sold noise. DAOs sold votes nobody used. Crypto Moonboys sells a different idea: <strong>show up and the system opens.</strong></p><p>Play is the funnel. XP is the signal. Telegram is identity. NFTs are ownership. Factions are belonging. The Battle Chamber is proof. Block Topia is the next world.</p></section>
-        <section class="wtf-section reveal"><h2>The history under the hood</h2><p>Graffiti Kings already spent 40+ years doing what most Web3 projects pretend they can do: get people moving, change behaviour, create identity, build scenes, and turn walls into messages people remember.</p><p class="wtf-punch">Now the walls are digital, global and live 24/7.</p></section>
-        <section class="wtf-section reveal"><h2>The system loop</h2><div class="wtf-flow"><span>Walk In</span><span>Play</span><span>Earn XP</span><span>Link</span><span>Compete</span><span>Build</span><span>Own</span><span>Control</span></div><p>You do not need to understand the whole machine before you start. The machine reveals itself as you act.</p><p>Read → Play → Earn XP → Link → Battle Chamber → Block Topia → Build</p></section>
-        <section class="wtf-section reveal"><h2>How the system works</h2><p>The system is simple:</p><ul><li>Score = how well you play</li><li>XP = proof that you showed up</li><li>Telegram = your identity</li></ul><p>No action = nothing happens.<br>More action = more access.</p><p>XP is not given. It is earned through activity.</p></section>
-        <section class="wtf-section reveal"><h2>What each layer does</h2><div class="wtf-grid"><div class="wtf-card"><strong>Arcade</strong><p>Fast entry. No permission. Play first.</p></div><div class="wtf-card"><strong>XP</strong><p>Action becomes progression. Consistency matters.</p></div><div class="wtf-card"><strong>Telegram</strong><p>Your player identity becomes persistent.</p></div><div class="wtf-card"><strong>Battle Chamber</strong><p>The system shows who is active.</p></div><div class="wtf-card"><strong>Factions</strong><p>You pick a side and carry a signal.</p></div><div class="wtf-card"><strong>NFT/IP</strong><p>Assets become access, identity and rights.</p></div><div class="wtf-card"><strong>Block Topia</strong><p>Clean 2-player isometric map base. Deeper gameplay is planned and not live yet.</p></div><div class="wtf-card"><strong>Builders</strong><p>Players become creators, operators and owners.</p></div></div></section>
-        <section class="wtf-section reveal"><h2>Why it feels different</h2><p>Because it starts like a fun fair and deepens into a living system. Walk in, try something, win something, stay longer, unlock more, meet people, build with them, and own part of what you help grow.</p><p><strong>Most systems want your attention. This one wants your action.</strong></p></section>
-        <section class="wtf-section reveal"><h2>The future</h2><p>Seasonal HODL Wars. NPC battles. Faction progression. Creator IP. Phygital drops. Radio. Lore. Street campaigns. NFTs that unlock more than bragging rights. The goal is not one drop. The goal is a culture engine that keeps expanding.</p></section>
-        <section class="wtf-section reveal"><h2>What exists today vs what is coming</h2>
-          <h3>Live system</h3>
-          <ul>
-            <li>Arcade games — playable, scores accepted</li>
-            <li>Arcade XP — server-side when Telegram is linked</li>
-            <li>Telegram identity sync via <code>/gklink</code></li>
-            <li>Battle Chamber — activity panels and faction signals</li>
-            <li>Faction gameplay effects — active in all main arcade games</li>
-            <li>Block Topia — clean 2-player isometric map base (requires Telegram + 50 Arcade XP)</li>
-          </ul>
-          <h3>Future layers <span class="wtf-mini">(planned, not yet live)</span></h3>
-          <ul>
-            <li>NPC battles</li>
-            <li>Seasonal HODL Wars</li>
-            <li>Deeper economy and progression systems</li>
-            <li>Extended Block Topia gameplay</li>
-            <li>Creator and IP expansion</li>
-          </ul>
-        </section>
-        <section class="wtf-section reveal"><h2>Enter</h2><p>You do not need permission. You do not need to read ten Substacks. You need to start.</p><p><a href="/games/">→ PLAY NOW</a><br><a href="/gkniftyheads-incubator.html">→ LINK TELEGRAM</a><br><a href="/community.html">→ ENTER BATTLE CHAMBER</a></p></section>
-      </article>
-    </main>
-    <footer id="site-footer" role="contentinfo"><div class="footer-inner"><div class="footer-col"><h4>Crypto Moonboys</h4><p>Stop logging in to claim. Start showing up to build.</p></div><div class="footer-col"><h4>Start</h4><ul><li><a href="/games/">Arcade</a></li><li><a href="/gkniftyheads-incubator.html">Link Telegram</a></li><li><a href="/community.html">Battle Chamber</a></li></ul></div></div><div class="footer-bottom"><p>© 2026 Crypto Moonboys · Not financial advice.</p></div></footer>
-  </div>
-</div>
+<div id="layout"><nav id="sidebar" aria-label="Wiki navigation"><div class="sidebar-section"><div class="sidebar-heading">Start Here</div><div class="sidebar-nav"><a href="/index.html"><span class="nav-icon">🏠</span> Main Page</a><a href="/games/"><span class="nav-icon">🕹️</span> Arcade</a><a href="/how-to-play.html"><span class="nav-icon">◆</span> How to Play</a><a href="/gkniftyheads-incubator.html"><span class="nav-icon">🚀</span> Incubator HUB</a><a href="/community.html"><span class="nav-icon">⚔️</span> Battle Chamber</a><a href="/about.html"><span class="nav-icon">ℹ️</span> About</a><a href="/about/what-is-crypto-moonboys.html" class="active"><span class="nav-icon">🌙</span> What Is Crypto Moonboys?</a></div></div></nav>
+<div id="main-wrapper"><main id="content" role="main">
+<nav class="breadcrumb" aria-label="Breadcrumb"><a href="/index.html">Home</a><span class="sep">›</span><a href="/about.html">About</a><span class="sep">›</span><span aria-current="page">What Is Crypto Moonboys?</span></nav>
+<section class="page-hero"><h1>What Is Crypto Moonboys?</h1><p>Most people will get Crypto Moonboys wrong at first glance. They will see a wiki, arcade games, NFTs, crypto words, Telegram sync, factions, Block Topia, HODL Wars, GraffPUNKS, GKniftyHEADS, and a wall of names and lore. Then they will try to put it in a small box. That is how they miss it.</p><p><strong>Crypto Moonboys is a living Web3 wiki system.</strong></p></section>
+<section class="section"><h2>1. The Full Answer</h2><p>Crypto Moonboys is a universe you can read, a system you can enter, a game layer you can play, a culture map you can explore, and a community machine you can help build.</p></section>
+<section class="section"><h2>2. Before Web3, There Was The Wall</h2><p>Before wallets, there were walls.<br>Before NFTs, there were names.<br>Before tokens, there were crews.<br>The wall was the first feed.<br>The tag was the first username.<br>The crew was the first community layer.<br>The piece was proof of work.</p></section>
+<section class="section"><h2>3. The Old Internet Made People Consumers</h2><p>The internet trained people to scroll, like, react, save, forget, and repeat. Web3 promised change, but many projects repeated the same mistake: claim, wait, speculate, complain, leave. Crypto Moonboys is built against that.</p><p><strong>Stop logging in to claim. Start showing up to build.</strong></p></section>
+<section class="section"><h2>4. What Crypto Moonboys Actually Is</h2><p>It is a living Web3 wiki system.<br>The wiki explains.<br>The arcade activates.<br>XP proves.<br>Telegram remembers.<br>Battle Chamber displays.<br>Factions create sides.<br>Block Topia opens the next door.<br>NFTs become artefacts.<br>Future builder systems expand the universe.</p></section>
+<section class="section"><h2>5. Why A Wiki?</h2><p>Large worlds need memory. Games without memory become shallow. NFT projects without memory become image folders. Communities without memory become chat noise. The wiki is the memory layer.</p></section>
+<section class="section"><h2>6. The Core Loop</h2><p><strong>Read:</strong> The wiki gives context while you play.<br><strong>Play:</strong> The arcade is the first action layer.<br><strong>Earn XP:</strong> XP is proof of action, not money.<br><strong>Link:</strong> Telegram is the identity bridge.<br><strong>Battle Chamber:</strong> Public proof wall.<br><strong>Block Topia:</strong> Live now as a clean 2-player base; deeper layers later.<br><strong>Build:</strong> The long-term layer where players become creators and operators.</p></section>
+<section class="section"><h2>7. Live Now vs Future</h2><table class="table"><tbody><tr><td><strong>Live now</strong></td><td>public wiki / knowledge system; lore and article pages; categories/archive structure; playable arcade games; accepted score submission; Arcade XP when Telegram linked; Telegram identity sync; leaderboard systems; Battle Chamber activity/community layers; faction gameplay effects in supported active games; Block Topia clean 2-player isometric base; Block Topia gate: Telegram linked + 50 Arcade XP</td></tr><tr><td><strong>Future</strong></td><td>NPC battles; deeper Block Topia gameplay; seasonal HODL Wars; richer faction progression; creator/IP expansion; wider economy systems; phygital drops; community-built extensions; deeper lore automation; stronger wiki-to-game links</td></tr></tbody></table></section>
+<section class="section"><h2>8. Why It Feels Different</h2><p>It does not start with a sale. It starts with a world, then gives you a door. The door is the arcade.</p></section>
+<section class="section"><h2>9. Street Art Roots</h2><p>Street art is not decoration. It is communication, identity, territory, memory, and permissionless publishing. Crypto Moonboys translates that into a digital system.</p></section>
+<section class="section"><h2>10. Wiki As World Engine</h2><p>A normal wiki answers questions. Crypto Moonboys should create questions and then give players actions.</p></section>
+<section class="section"><h2>11. Arcade Is Not A Side Feature</h2><p>The arcade is the activation layer. It turns readers into players.</p></section>
+<section class="section"><h2>12. XP Is The Filter</h2><p>XP separates spectators from participants. It is proof of action.</p></section>
+<section class="section"><h2>13. Telegram Is Identity</h2><p>Telegram sync is the identity bridge.</p></section>
+<section class="section"><h2>14. Battle Chamber Is Proof</h2><p>The Battle Chamber is where action surfaces.</p></section>
+<section class="section"><h2>15. Block Topia Is The Next Door</h2><p>Live now: clean 2-player isometric base.<br>Gate: Telegram linked + 50 Arcade XP.<br>Future: deeper gameplay later.</p></section>
+<section class="section"><h2>16. NFTs Are Artefacts</h2><p>No profit promises. NFTs are artefacts, identity markers, access points, ownership signals, possible IP anchors.</p></section>
+<section class="section"><h2>17. Factions Create Belonging</h2><p>Factions create sides, playstyle, identity, rivalry, and reasons to return.</p></section>
+<section class="section"><h2>18. Creator Engine Future</h2><p>Long-term, players can become builders and operators inside the culture engine.</p></section>
+<section class="section"><h2>19. Who This Is For</h2><p>For systems people, lore people, game people, builders, collectors, street culture people, Web3 people tired of empty utility.</p></section>
+<section class="section"><h2>20. The Real Sell</h2><p>If you want another site to scroll, ignore this. If you want a strange, deep, street-born, game-driven Web3 universe you can read, play, enter, and help build, Crypto Moonboys is worth your time.</p></section>
+<section class="section"><h2>21. Final Word</h2><p><strong>THE WIKI IS ALIVE.</strong><br>Read → Play → Earn XP → Link → Battle Chamber → Block Topia → Build.</p><div class="cta-row"><a href="/how-to-play.html" class="btn btn-secondary">Start With How To Play</a><a href="/index.html" class="btn btn-secondary">Explore The Wiki</a><a href="/games/" class="btn btn-primary">Play Arcade</a><a href="/gkniftyheads-incubator.html" class="btn btn-secondary">Link Telegram</a><a href="/community.html" class="btn btn-secondary">Open Battle Chamber</a></div></section>
+</main><footer id="site-footer" role="contentinfo"><div class="footer-inner"><div class="footer-col"><h4>Crypto Moonboys</h4><p>Living Web3 wiki system.</p></div><div class="footer-col"><h4>Start</h4><ul><li><a href="/games/">Arcade</a></li><li><a href="/gkniftyheads-incubator.html">Link Telegram</a></li><li><a href="/community.html">Battle Chamber</a></li></ul></div></div><div class="footer-bottom"><p>© 2026 Crypto Moonboys · Not financial advice.</p></div></footer></div></div>
 <button id="back-to-top" aria-label="Back to top">↑</button>
-<script src="/js/api-config.js"></script>
-<script src="/js/identity-gate.js"></script>
-<script src="/js/components/ui-status-copy.js"></script>
-<script src="/js/arcade/core/global-event-bus.js"></script>
-    <script src="/js/core/moonboys-state.js"></script>
-
-<script src="/js/faction-alignment.js"></script>
-<script src="/js/components/connection-status-panel.js"></script>
-<script src="/js/components/global-player-header.js"></script>
-<script src="/js/components/live-activity-summary.js"></script>
-<script src="/js/wiki.js"></script>
-<script src="/js/scroll-shell.js"></script>
-<script src="/js/battle-layer.js"></script>
-
+<script src="/js/api-config.js"></script><script src="/js/identity-gate.js"></script><script src="/js/components/ui-status-copy.js"></script><script src="/js/arcade/core/global-event-bus.js"></script><script src="/js/core/moonboys-state.js"></script><script src="/js/faction-alignment.js"></script><script src="/js/components/connection-status-panel.js"></script><script src="/js/components/global-player-header.js"></script><script src="/js/components/live-activity-summary.js"></script><script src="/js/wiki.js"></script><script src="/js/scroll-shell.js"></script><script src="/js/battle-layer.js"></script>
 </body>
 </html>
