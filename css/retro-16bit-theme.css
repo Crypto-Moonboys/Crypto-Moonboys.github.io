@@ -606,6 +606,48 @@ a.hero-stat-link:hover {
   background: #050814;
 }
 
+.retro-hero-bg::before,
+.retro-hero-bg::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.retro-hero-bg::before {
+  z-index: 2;
+  background:
+    radial-gradient(60% 22% at 18% 24%, rgba(93, 56, 170, 0.22) 0%, rgba(93, 56, 170, 0) 72%),
+    radial-gradient(48% 18% at 76% 18%, rgba(44, 140, 220, 0.16) 0%, rgba(44, 140, 220, 0) 72%),
+    repeating-linear-gradient(
+      90deg,
+      rgba(26, 38, 92, 0.08) 0 8px,
+      rgba(10, 18, 42, 0.02) 8px 16px
+    );
+  opacity: 0.34;
+  transform: translate3d(-1.5%, 0, 0);
+  animation: hero-atmo-drift 42s linear infinite alternate;
+}
+
+.retro-hero-bg::after {
+  z-index: 4;
+  background:
+    repeating-linear-gradient(
+      0deg,
+      rgba(0, 0, 0, 0) 0 3px,
+      rgba(0, 229, 255, 0.045) 3px 4px
+    ),
+    linear-gradient(
+      100deg,
+      rgba(255, 45, 120, 0.07) 0%,
+      rgba(0, 0, 0, 0) 36%,
+      rgba(0, 229, 255, 0.08) 60%,
+      rgba(0, 0, 0, 0) 100%
+    );
+  opacity: 0.22;
+  animation: hero-neon-flicker 7s steps(3, end) infinite;
+}
+
 .hero-layer {
   position: absolute;
   inset: 0;
@@ -617,23 +659,10 @@ a.hero-stat-link:hover {
   image-rendering: pixelated;
 }
 
-.hero-real-bg { z-index: 1; }
-.hero-real-clouds {
-  z-index: 2;
-  opacity: 0.52;
-  animation: real-cloud-drift 80s linear infinite alternate;
-}
-.hero-real-moon {
-  z-index: 3;
-  opacity: 0.48;
-  animation: real-moon-pulse 6s ease-in-out infinite alternate;
-  mix-blend-mode: screen;
-}
-.hero-real-lights {
-  z-index: 4;
-  opacity: 0.75;
-  animation: real-light-flicker 3.5s steps(2, end) infinite;
-  mix-blend-mode: screen;
+.hero-real-bg {
+  z-index: 1;
+  object-fit: contain;
+  object-position: center top;
 }
 .hero-real-ui-overlay {
   z-index: 5;
@@ -645,31 +674,24 @@ a.hero-stat-link:hover {
   z-index: 10;
 }
 
-@keyframes real-cloud-drift {
-  from { transform: translate3d(-1.8%, 0, 0); }
-  to { transform: translate3d(1.8%, 0, 0); }
+@keyframes hero-atmo-drift {
+  from { transform: translate3d(-1.5%, 0, 0); }
+  to { transform: translate3d(1.5%, -0.6%, 0); }
 }
 
-@keyframes real-moon-pulse {
-  from { opacity: 0.42; }
-  to { opacity: 0.68; }
-}
-
-@keyframes real-light-flicker {
-  0%, 100% { opacity: 0.62; }
-  12% { opacity: 0.95; }
-  24% { opacity: 0.48; }
-  41% { opacity: 0.84; }
-  55% { opacity: 0.36; }
-  73% { opacity: 0.92; }
-  88% { opacity: 0.58; }
+@keyframes hero-neon-flicker {
+  0%, 100% { opacity: 0.2; }
+  12% { opacity: 0.27; }
+  31% { opacity: 0.16; }
+  52% { opacity: 0.24; }
+  77% { opacity: 0.14; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .hero-real-clouds,
-  .hero-real-moon,
-  .hero-real-lights {
+  .retro-hero-bg::before,
+  .retro-hero-bg::after {
     animation: none !important;
+    transform: none !important;
   }
 }
 
