@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-05-01T07:13:24.736Z",
+  "generatedAt": "2026-05-01T09:16:37.276Z",
   "mode": "live-ai",
   "sourceHealth": {
     "coingecko-global": "ok",
@@ -11,84 +11,83 @@
   "signalCount": 5,
   "signals": [
     {
-      "id": "signal-1777619604736-1",
+      "id": "signal-1777626997275-1",
       "lane": "world",
       "priority": 4,
-      "ttlMinutes": 90,
-      "npcLine": "Market’s breathing cold; cryptos flicker with nervous life.",
-      "questPulse": "Hunt the source behind volatile trades before circuits fry.",
-      "worldFeed": "Network nodes pulse uneasy; shadow exchanges whisper shifts.",
-      "clueEvent": "Data leak hints at unknown player inflating net worth.",
+      "ttlMinutes": 60,
+      "npcLine": "Market cap flickers up—fragile, like neon on a rainy night.",
+      "questPulse": "Scavenge data shards from volatile tokens before the crash.",
+      "worldFeed": "Crypto tides rise slightly amid shadowed whispers of unknown gains.",
+      "clueEvent": "Sensors detect rising liquidity flows in peripheral nets.",
       "tags": [
-        "crypto",
-        "volatility",
-        "shadow"
+        "market",
+        "volatility"
       ],
-      "expiresAt": "2026-05-01T08:43:24.736Z"
+      "expiresAt": "2026-05-01T10:16:37.275Z"
     },
     {
-      "id": "signal-1777619604736-2",
+      "id": "signal-1777626997276-2",
       "lane": "ops",
       "priority": 3,
-      "ttlMinutes": 60,
-      "npcLine": "Fear’s ticking up; scans show jitter across trading decks.",
-      "questPulse": "Trace coded signals from rising star tokens.",
-      "worldFeed": "Sentiment sensors flash high alert amid cryptic surges.",
-      "clueEvent": "Unstable coins spike briefly amid data fog.",
+      "ttlMinutes": 45,
+      "npcLine": "Fear grips the blockchain grid. Nodes showing signs of shutdown.",
+      "questPulse": "Intercept panic-driven transactions before they lock the network.",
+      "worldFeed": "Sentiment sinks to anxious lows; operators brace for fallout.",
+      "clueEvent": "Unusual transaction volume spikes in obscure token clusters.",
       "tags": [
-        "sentiment",
         "fear",
-        "signal"
+        "network",
+        "risk"
       ],
-      "expiresAt": "2026-05-01T08:13:24.736Z"
+      "expiresAt": "2026-05-01T10:01:37.276Z"
     },
     {
-      "id": "signal-1777619604736-3",
+      "id": "signal-1777626997276-3",
       "lane": "clue",
       "priority": 5,
-      "ttlMinutes": 45,
-      "npcLine": "ACN node glitched—could be entry point for deep hacks.",
-      "questPulse": "Decipher erratic readings from ACN cluster before blackout.",
-      "worldFeed": "Glitches ripple through ACN’s ledger, shaking trust.",
-      "clueEvent": "Encoding errors in trending node—warning or trap?",
+      "ttlMinutes": 30,
+      "npcLine": "Pengu tokens gathering smog—a signal, or a trap?",
+      "questPulse": "Trace hidden pockets where the AI assets coalesce in silence.",
+      "worldFeed": "Small tokens trend upwards, slipping through market scrapers.",
+      "clueEvent": "Rise in microtransactions around lesser-known assets detected.",
       "tags": [
-        "hack",
-        "acn",
-        "glitch"
+        "trending",
+        "tokens",
+        "stealth"
       ],
-      "expiresAt": "2026-05-01T07:58:24.736Z"
+      "expiresAt": "2026-05-01T09:46:37.276Z"
     },
     {
-      "id": "signal-1777619604736-4",
+      "id": "signal-1777626997276-4",
       "lane": "quest",
       "priority": 2,
-      "ttlMinutes": 75,
-      "npcLine": "PENGU’s shadow climbs fast—trade secrets or false lead?",
-      "questPulse": "Follow frozen trails to uncover black market tweaks.",
-      "worldFeed": "PENGU’s code adaptation puzzles analysts; patterns diverge.",
-      "clueEvent": "Trading anomalies spike around PENGU’s signature.",
+      "ttlMinutes": 90,
+      "npcLine": "Asteroids fragmenting on investment charts—unstable opportunity awaits.",
+      "questPulse": "Hunt the fragmented leads scattered across deep net channels.",
+      "worldFeed": "Complex asset clusters shift erratically under scrutiny.",
+      "clueEvent": "Volatility spikes hint at exploitable micro-movements in core tokens.",
       "tags": [
-        "blackmarket",
-        "pengu",
-        "anomaly"
+        "opportunity",
+        "volatility",
+        "risk"
       ],
-      "expiresAt": "2026-05-01T08:28:24.736Z"
+      "expiresAt": "2026-05-01T10:46:37.276Z"
     },
     {
-      "id": "signal-1777619604736-5",
+      "id": "signal-1777626997276-5",
       "lane": "npc",
       "priority": 3,
       "ttlMinutes": 50,
-      "npcLine": "LUNC whispers in data winds; fear fuels its rise.",
-      "questPulse": "Gather info on LUNC’s surge before chaos blooms.",
-      "worldFeed": "Fear metrics climb, LUNC coins harvest market unease.",
-      "clueEvent": "Unusual transaction clusters detected near LUNC nodes.",
+      "npcLine": "SkyAI whispers warnings—code frail, fate uncertain.",
+      "questPulse": "Decode murmurs from rogue AI wallets before system locks down.",
+      "worldFeed": "AI-driven tokens pulse with faint but unstable signals.",
+      "clueEvent": "Unusual AI transactional patterns hint at emerging threats.",
       "tags": [
-        "lunc",
-        "fear",
-        "surge"
+        "ai",
+        "anomaly",
+        "intel"
       ],
-      "expiresAt": "2026-05-01T08:03:24.736Z"
+      "expiresAt": "2026-05-01T10:06:37.276Z"
     }
   ]
 }
