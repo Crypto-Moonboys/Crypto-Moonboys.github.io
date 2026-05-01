@@ -313,10 +313,15 @@ function maybeGenerateComebackMission(now = nowMs()) {
   const created = buildMission(now);
   state.comeback_mission = created;
   writeState();
-  emitPrompt('comeback-mission', created.label, {
+  emitPrompt('comeback-mission', 'Complete accepted runs before the timer ends.', {
     urgency: 'high',
     countdown_ms: Math.max(0, Number(created.expires_at) - now),
     sound: 'meta-comeback-prompt',
+    title: 'Comeback Mission',
+    body: created.label,
+    cta: { label: 'Start Arcade', href: '/games/' },
+    cta2: isLinked() ? null : { label: 'Link Telegram', href: '/gkniftyheads-incubator.html' },
+    footer: 'Mission progress updates after accepted game runs.',
   });
   pushUpdate();
   return created;
@@ -344,6 +349,29 @@ function markPrompt(key, now = nowMs()) {
   state.session.prompt_count = Math.max(0, Number(state.session.prompt_count) || 0) + 1;
 }
 
+function isLinked() {
+  try {
+    return !!(window.MOONBOYS_STATE && window.MOONBOYS_STATE.getState().linked);
+  } catch (_) { return false; }
+}
+
+function emitNotificationAction(type, action, target) {
+  try {
+    if (window.MOONBOYS_EVENT_BUS && typeof window.MOONBOYS_EVENT_BUS.emit === 'function') {
+      window.MOONBOYS_EVENT_BUS.emit('notification:action', {
+        type: String(type || 'retention'),
+        action: String(action || ''),
+        target: String(target || ''),
+        source: 'arcade-retention',
+        ts: Date.now(),
+      });
+    }
+    if (window.MOONBOYS_LIVE_ACTIVITY && typeof window.MOONBOYS_LIVE_ACTIVITY.addEvent === 'function') {
+      window.MOONBOYS_LIVE_ACTIVITY.addEvent('info', String(action || 'Prompt') + ' prompt opened');
+    }
+  } catch (_) {}
+}
+
 function ensureUi() {
   if (root || typeof document === 'undefined') return;
   const style = document.createElement('style');
@@ -352,12 +380,22 @@ function ensureUi() {
     #arcade-retention-root{position:fixed;inset:0;pointer-events:none;z-index:10001}
     #arcade-retention-toasts{position:fixed;top:16px;right:16px;display:grid;gap:8px;max-width:300px}
     .arcade-retention-toast{pointer-events:none;background:rgba(8,12,22,.92);border:1px solid rgba(255,255,255,.16);color:#fff;border-radius:10px;padding:10px 12px;font-size:.76rem;font-weight:700;line-height:1.3;box-shadow:0 10px 30px rgba(0,0,0,.35)}
+    .arcade-retention-toast.actionable{pointer-events:auto}
     .arcade-retention-toast.critical{border-color:rgba(255,84,84,.75)}
     .arcade-retention-toast.high{border-color:rgba(247,171,26,.8)}
     .arcade-retention-toast.medium{border-color:rgba(46,197,255,.75)}
+    .art-title{font-size:.72rem;font-weight:800;text-transform:uppercase;letter-spacing:.04em;margin-bottom:3px;opacity:.85}
+    .art-body{font-size:.74rem;font-weight:600;line-height:1.4;margin-bottom:6px}
+    .art-cta-row{display:flex;flex-wrap:wrap;gap:5px;margin-top:4px}
+    .art-cta-btn{display:inline-block;padding:3px 9px;border-radius:5px;background:rgba(97,246,255,.14);border:1px solid rgba(97,246,255,.42);color:#d9fbff;font-size:.7rem;font-weight:700;text-decoration:none;cursor:pointer;transition:background 140ms ease,border-color 140ms ease}
+    .art-cta-btn:hover,.art-cta-btn:focus-visible{background:rgba(97,246,255,.26);border-color:rgba(97,246,255,.7);outline:none}
+    .art-cta-btn.secondary{background:transparent;border-color:rgba(255,255,255,.2);color:rgba(200,220,230,.75);font-size:.67rem}
+    .art-cta-btn.secondary:hover,.art-cta-btn.secondary:focus-visible{border-color:rgba(255,255,255,.35);color:#d9fbff}
+    .art-footer{font-size:.65rem;font-weight:500;opacity:.55;margin-top:5px;line-height:1.3}
+    .art-chip-link{color:inherit;text-decoration:none;display:block}
     #arcade-retention-banner{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);background:rgba(11,16,28,.92);border:1px solid rgba(247,201,72,.45);border-radius:999px;padding:8px 14px;color:#f5f8ff;font-size:.73rem;font-weight:700;opacity:0;transition:opacity .18s ease,transform .18s ease}
     #arcade-retention-banner.active{opacity:1;transform:translateX(-50%) scale(1.03)}
-    #arcade-retention-mission-chip{position:fixed;right:16px;bottom:80px;background:rgba(247,201,72,.14);border:1px solid rgba(247,201,72,.62);color:#fff;border-radius:999px;padding:7px 12px;font-size:.68rem;font-weight:800;letter-spacing:.02em;max-width:280px;line-height:1.2}
+    #arcade-retention-mission-chip{position:fixed;right:16px;bottom:80px;pointer-events:auto;background:rgba(247,201,72,.14);border:1px solid rgba(247,201,72,.62);color:#fff;border-radius:999px;padding:7px 12px;font-size:.68rem;font-weight:800;letter-spacing:.02em;max-width:280px;line-height:1.2}
     #arcade-retention-mission-chip.pulse{animation:retentionPulse .6s ease-in-out infinite alternate}
     body.overlay-open #arcade-retention-mission-chip{display:none!important}
     @keyframes retentionPulse{0%{transform:scale(1)}100%{transform:scale(1.03)}}
@@ -383,13 +421,73 @@ function showToast(message, opts = {}) {
   const key = String(opts.key || message).slice(0, MAX_TOAST_KEY_LENGTH);
   const duplicate = Array.from(toastRoot.children).some((node) => node?.dataset?.key === key);
   if (duplicate) return;
+
+  const hasCta = !!(opts.cta && opts.cta.href && opts.cta.label);
   const toast = document.createElement('div');
-  toast.className = `arcade-retention-toast ${opts.urgency || 'medium'}`;
+  toast.className = `arcade-retention-toast ${opts.urgency || 'medium'}${hasCta ? ' actionable' : ''}`;
   toast.dataset.key = key;
+
   const countdown = Number(opts.countdown_ms) > 0 ? ` • ${formatCountdown(Number(opts.countdown_ms))}` : '';
-  toast.textContent = `${message}${countdown}`;
+
+  if (opts.title || hasCta) {
+    // Structured layout: title / body / CTA row / footer
+    if (opts.title) {
+      const titleEl = document.createElement('div');
+      titleEl.className = 'art-title';
+      titleEl.textContent = opts.title;
+      toast.appendChild(titleEl);
+    }
+
+    const bodyEl = document.createElement('div');
+    bodyEl.className = 'art-body';
+    bodyEl.textContent = `${opts.body || message}${countdown}`;
+    toast.appendChild(bodyEl);
+
+    if (hasCta) {
+      const ctaRow = document.createElement('div');
+      ctaRow.className = 'art-cta-row';
+
+      const ctaBtn = document.createElement('a');
+      ctaBtn.className = 'art-cta-btn';
+      ctaBtn.href = opts.cta.href;
+      ctaBtn.textContent = opts.cta.label;
+      ctaBtn.addEventListener('click', () => {
+        emitNotificationAction(opts.key || 'unknown', opts.cta.label, opts.cta.href);
+        toast.remove();
+      });
+      ctaRow.appendChild(ctaBtn);
+
+      if (opts.cta2 && opts.cta2.href && opts.cta2.label) {
+        const cta2Btn = document.createElement('a');
+        cta2Btn.className = 'art-cta-btn secondary';
+        cta2Btn.href = opts.cta2.href;
+        cta2Btn.textContent = opts.cta2.label;
+        cta2Btn.addEventListener('click', () => {
+          emitNotificationAction(opts.key || 'unknown', opts.cta2.label, opts.cta2.href);
+          toast.remove();
+        });
+        ctaRow.appendChild(cta2Btn);
+      }
+
+      toast.appendChild(ctaRow);
+    }
+
+    if (opts.footer) {
+      const footerEl = document.createElement('div');
+      footerEl.className = 'art-footer';
+      footerEl.textContent = opts.footer;
+      toast.appendChild(footerEl);
+    }
+  } else {
+    // Fallback: simple single-line text (backward compat for callers without title/cta)
+    toast.textContent = `${message}${countdown}`;
+  }
+
   toastRoot.appendChild(toast);
-  setTimeout(() => { toast.remove(); }, clamp(Number(opts.duration_ms) || 2400, 1200, 4200));
+  const displayMs = hasCta
+    ? clamp(Number(opts.duration_ms) || 5000, 3000, 7000)
+    : clamp(Number(opts.duration_ms) || 2400, 1200, 4200);
+  setTimeout(() => { toast.remove(); }, displayMs);
 }
 
 function showBanner(message, durationMs = 2200) {
@@ -411,7 +509,15 @@ function updateMissionChip(context = getLiveContext()) {
   }
   const remain = Math.max(0, Number(mission.expires_at) - nowMs());
   missionChip.style.display = 'block';
-  missionChip.textContent = `MISSION • ${mission.label} • ${formatCountdown(remain)}`;
+  missionChip.innerHTML = '';
+  const link = document.createElement('a');
+  link.className = 'art-chip-link';
+  link.href = '/games/';
+  link.textContent = `MISSION • ${mission.label} • ${formatCountdown(remain)}`;
+  link.addEventListener('click', () => {
+    emitNotificationAction('mission-chip', 'Start Arcade', '/games/');
+  });
+  missionChip.appendChild(link);
   missionChip.classList.toggle('pulse', remain <= MISSION_URGENT_WINDOW_MS);
 }
 
@@ -476,10 +582,16 @@ function closeSession(now = nowMs()) {
 
 function markStreakSave(now = nowMs()) {
   state.metrics.streak_saves = Math.max(0, Number(state.metrics.streak_saves) || 0) + 1;
-  emitPrompt('streak-save', '1 run to save streak', {
+  emitPrompt('streak-save', 'Play one accepted arcade run to protect your streak.', {
     urgency: 'critical',
     cooldownMs: STREAK_WARNING_COOLDOWN_MS,
     sound: 'meta-streak-save-warning',
+    title: 'Streak at risk',
+    cta: { label: 'Play Now', href: '/games/' },
+    cta2: isLinked() ? null : { label: 'Link Telegram', href: '/gkniftyheads-incubator.html' },
+    footer: isLinked()
+      ? 'Synced streak state active. · Arcade XP path: Play → Submit → Accepted → Synced'
+      : 'Link Telegram to persist streaks. · Arcade XP path: Play → Submit → Accepted → Synced',
   });
 }
 
@@ -498,10 +610,11 @@ function updateMissionProgress(game, now = nowMs()) {
     mission.completed = true;
     mission.completed_at = now;
     state.metrics.comeback_success = Math.max(0, Number(state.metrics.comeback_success) || 0) + 1;
-    emitPrompt('mission-complete', 'Comeback mission complete', {
+    emitPrompt('mission-complete', 'Comeback mission complete — mission progress recorded.', {
       urgency: 'medium',
       sound: 'meta-comeback-prompt',
       duration_ms: 2600,
+      title: 'Mission Complete',
     });
   }
 }
@@ -586,13 +699,45 @@ function maybeEmitHooks(now = nowMs()) {
   const context = getLiveContext(now);
   if (context.return_hook) {
     let sound = null;
-    if (context.return_hook.key === 'streak-save') sound = 'meta-streak-save-warning';
-    else if (context.return_hook.key === 'featured-window') sound = 'meta-featured-window';
-    emitPrompt(context.return_hook.key, context.return_hook.label, {
-      urgency: context.return_hook.urgency,
+    let extraOpts = {};
+    const hk = context.return_hook;
+    if (hk.key === 'streak-save') {
+      sound = 'meta-streak-save-warning';
+      extraOpts = {
+        title: 'Streak at risk',
+        body: 'Play one accepted arcade run to protect your streak.',
+        cta: { label: 'Play Now', href: '/games/' },
+        cta2: isLinked() ? null : { label: 'Link Telegram', href: '/gkniftyheads-incubator.html' },
+        footer: isLinked()
+          ? 'Synced streak state active. · Arcade XP path: Play → Submit → Accepted → Synced'
+          : 'Link Telegram to persist streaks. · Arcade XP path: Play → Submit → Accepted → Synced',
+      };
+    } else if (hk.key === 'chaos-window') {
+      extraOpts = {
+        title: 'Chaos Window',
+        body: 'Higher-pressure run window active. Good for GraffPUNKS / combo-focused play.',
+        cta: { label: 'Play Supported Game', href: '/games/' },
+      };
+    } else if (hk.key === 'quest-expiry') {
+      extraOpts = {
+        title: 'Quest chain expires soon',
+        body: 'Finish a valid arcade run before the countdown ends.',
+        cta: { label: 'Continue Mission', href: '/games/' },
+      };
+    } else if (hk.key === 'featured-window') {
+      sound = 'meta-featured-window';
+      extraOpts = {
+        title: 'Featured Game Bonus',
+        body: 'Play the featured game while the window is active.',
+        cta: { label: 'Open Featured Game', href: '/games/' },
+      };
+    }
+    emitPrompt(hk.key, hk.label, {
+      urgency: hk.urgency,
       countdown_ms: 0,
       sound,
       banner: true,
+      ...extraOpts,
     });
   }
 
@@ -602,6 +747,9 @@ function maybeEmitHooks(now = nowMs()) {
       urgency: 'high',
       countdown_ms: chain.expires_in_ms,
       sound: 'meta-chain-unlock',
+      title: 'Mission chain expiring',
+      body: 'Finish a valid arcade run before the countdown ends.',
+      cta: { label: 'Continue Mission', href: '/games/' },
     });
   }
 
@@ -610,6 +758,9 @@ function maybeEmitHooks(now = nowMs()) {
       urgency: 'medium',
       countdown_ms: context.featured_window.countdown_ms,
       sound: 'meta-featured-window',
+      title: 'Featured Game Bonus',
+      body: 'Play the featured game while the window is active.',
+      cta: { label: 'Open Featured Game', href: '/games/' },
     });
   }
 }
@@ -653,6 +804,8 @@ function wireLifecycle() {
       sound: 'meta-chain-unlock',
       banner: false,
       duration_ms: 1900,
+      title: 'Chain Unlocked',
+      footer: 'Submit a valid arcade run to advance to the next chain step.',
     });
   });
 

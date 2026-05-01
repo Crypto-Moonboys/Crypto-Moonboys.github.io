@@ -14,6 +14,10 @@
   const HEALTH_TIMEOUT_MS = 4500;
   const DEMO_WAKEUP_IDLE_MS = 95000;
   const HOVER_AUDIO_COOLDOWN_MS = 120;
+  const IDLE_WAKEUP_COOLDOWN_MS = 20 * 60 * 1000;
+  const IDLE_TOAST_SESSION_KEY = 'tron_idle_toast_ts_v1';
+  const API_ONLINE_SESSION_KEY = 'tron_api_online_shown_v1';
+  const TOAST_MUTE_KEY = 'moonboys_toasts_muted_v1';
   const CLICKABLE_SELECTOR = 'a,button,.btn,[role="button"],.article-card,.category-card,.article-list-item,.home-widget,[data-clickable="true"]';
 
   const root = document.body;
@@ -33,29 +37,33 @@
 
   const WAKE_FALLBACK = {
     score: [
-      'Player scored — XP conversion pending acceptance.',
-      'Score event logged with projected XP potential.'
+      'Score detected — submit at game over to qualify for Arcade XP.',
     ],
     leaderboard: [
-      'New high score — XP conversion pending.',
-      'Ranking matrix shifted by score (XP tracks progression only).'
+      'Score registered — check the leaderboard for ranking.',
     ],
     sam: [
-      'SAM noticing elevated movement.',
-      'SAM relay picked up a fresh signal.'
+      'SAM signal detected — read the system layer.',
     ],
     wakeup: [
-      'District pressure rising.',
-      'A watcher just crossed the wire.'
+      'Battle Chamber signal detected — check public activity.',
+      'Quiet line detected — play a run to create real movement.',
     ],
     api: [
-      'System wake-up detected.',
-      'Core uplink restored.'
+      'Core API online — XP sync and leaderboard routes are reachable.',
     ],
     generic: [
-      'Signal spike detected in Battle Chamber.',
-      'Reactive layer heartbeat elevated.'
-    ]
+      'Battle Chamber signal detected — check public activity.',
+    ],
+  };
+
+  const WAKE_CTA = {
+    api:         { label: 'View Battle Chamber', href: '/community.html' },
+    score:       { label: 'View Leaderboard',    href: '/games/leaderboard.html' },
+    leaderboard: { label: 'View Leaderboard',    href: '/games/leaderboard.html' },
+    sam:         { label: 'Open SAM',            href: '/sam.html' },
+    wakeup:      { label: 'Open Battle Chamber', href: '/community.html' },
+    generic:     { label: 'Open Battle Chamber', href: '/community.html' },
   };
 
   function now() {
@@ -104,6 +112,38 @@
     return randomFrom(bucket);
   }
 
+  function isToastMuted() {
+    try { return !!localStorage.getItem(TOAST_MUTE_KEY); } catch (_) { return false; }
+  }
+
+  function canFireIdleToast() {
+    try {
+      const last = Number(sessionStorage.getItem(IDLE_TOAST_SESSION_KEY) || 0);
+      return (Date.now() - last) >= IDLE_WAKEUP_COOLDOWN_MS;
+    } catch (_) { return true; }
+  }
+
+  function markIdleToast() {
+    try { sessionStorage.setItem(IDLE_TOAST_SESSION_KEY, String(Date.now())); } catch (_) {}
+  }
+
+  function emitNotificationAction(type, action, target) {
+    try {
+      if (window.MOONBOYS_EVENT_BUS && typeof window.MOONBOYS_EVENT_BUS.emit === 'function') {
+        window.MOONBOYS_EVENT_BUS.emit('notification:action', {
+          type: String(type || 'tron'),
+          action: String(action || ''),
+          target: String(target || ''),
+          source: 'tron',
+          ts: Date.now(),
+        });
+      }
+      if (window.MOONBOYS_LIVE_ACTIVITY && typeof window.MOONBOYS_LIVE_ACTIVITY.addEvent === 'function') {
+        window.MOONBOYS_LIVE_ACTIVITY.addEvent('info', String(action || 'Prompt') + ' prompt opened');
+      }
+    } catch (_) {}
+  }
+
   function ensureWakeToast() {
     let el = document.getElementById('tron-wake-toast');
     if (el) return el;
@@ -118,6 +158,11 @@
 
   function showWakeLine(type, data = {}) {
     if (isReducedMotion()) return;
+    const resolvedType = type === 'api-online' ? 'api' : String(type || 'generic');
+    // Score/leaderboard are informational and bypass mute; atmospheric types respect mute
+    const isCritical = resolvedType === 'score' || resolvedType === 'leaderboard';
+    if (!isCritical && isToastMuted()) return;
+
     const toast = ensureWakeToast();
     let message = '';
     if (data && typeof data.message === 'string' && data.message.trim()) {
@@ -126,11 +171,60 @@
       message = pickWakeLine(type);
     }
     if (!message) return;
-    toast.textContent = `⚡ ${message}`;
+
+    const cta = WAKE_CTA[resolvedType] || null;
+    const hasCta = !!(cta && cta.href && cta.label);
+    const muteAllowed = !isCritical;
+
+    // Build DOM nodes (safe, no innerHTML)
+    toast.innerHTML = '';
+    toast.classList.toggle('actionable', hasCta || muteAllowed);
+
+    const msgEl = document.createElement('span');
+    msgEl.className = 'twt-msg';
+    msgEl.textContent = `⚡ ${message}`;
+    toast.appendChild(msgEl);
+
+    const actRow = document.createElement('div');
+    actRow.className = 'twt-act-row';
+
+    if (hasCta) {
+      const ctaEl = document.createElement('a');
+      ctaEl.className = 'twt-cta';
+      ctaEl.href = cta.href;
+      ctaEl.textContent = cta.label;
+      ctaEl.setAttribute('role', 'button');
+      ctaEl.addEventListener('click', () => {
+        emitNotificationAction(resolvedType, cta.label, cta.href);
+        toast.classList.remove('is-visible');
+      });
+      actRow.appendChild(ctaEl);
+    }
+
+    if (muteAllowed) {
+      const muteBtn = document.createElement('button');
+      muteBtn.className = 'twt-mute';
+      muteBtn.type = 'button';
+      muteBtn.textContent = 'Mute pulses';
+      muteBtn.setAttribute('aria-label', 'Mute pulse notifications');
+      muteBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        try { localStorage.setItem(TOAST_MUTE_KEY, '1'); } catch (_) {}
+        toast.classList.remove('is-visible');
+      });
+      actRow.appendChild(muteBtn);
+    }
+
+    if (actRow.children.length) {
+      toast.appendChild(actRow);
+    }
+
     toast.classList.remove('is-visible');
     void toast.offsetWidth;
     toast.classList.add('is-visible');
-    setTimeout(() => toast.classList.remove('is-visible'), 3200);
+    const visibleMs = hasCta ? 5000 : 3200;
+    if (toast._autoHideTimer) clearTimeout(toast._autoHideTimer);
+    toast._autoHideTimer = setTimeout(() => toast.classList.remove('is-visible'), visibleMs);
   }
 
   function playAudioFor(type) {
@@ -193,7 +287,14 @@
     state.connected = !!isConnected;
     updateBodyClasses();
     if (!prev && state.connected) {
-      pulse('api-online', { message: 'Core API uplink online.' });
+      try {
+        if (!sessionStorage.getItem(API_ONLINE_SESSION_KEY)) {
+          sessionStorage.setItem(API_ONLINE_SESSION_KEY, '1');
+          pulse('api-online', { message: 'Core API online — XP sync and leaderboard routes are reachable.' });
+        }
+      } catch (_) {
+        pulse('api-online', { message: 'Core API online — XP sync and leaderboard routes are reachable.' });
+      }
     }
     if (prev && !state.connected) {
       root.classList.add('tron-api-drop');
@@ -322,8 +423,9 @@
     if (modeTimer) clearInterval(modeTimer);
     modeTimer = setInterval(() => {
       reconcileMode();
-      if (state.connected && now() - state.lastEventAt > DEMO_WAKEUP_IDLE_MS) {
-        pulse('wakeup', { message: 'Quiet line detected. Running wake-up demo pulse.' });
+      if (state.connected && now() - state.lastEventAt > DEMO_WAKEUP_IDLE_MS && canFireIdleToast()) {
+        markIdleToast();
+        pulse('wakeup', { message: 'Quiet line detected — play a run to create real movement.' });
       }
     }, 1000);
   }
