@@ -610,6 +610,10 @@ a.hero-stat-link:hover {
 
 .home-hero .retro-hero-bg {
   background: #050814;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  overflow: hidden;
 }
 
 .retro-hero-bg::before,
@@ -666,6 +670,13 @@ a.hero-stat-link:hover {
 }
 
 .hero-real-bg {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  height: auto;
+  max-width: 100%;
   z-index: 1;
   object-fit: contain;
   object-position: center top;
