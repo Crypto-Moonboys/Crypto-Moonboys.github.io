@@ -11,7 +11,7 @@
 /* ── PALETTE & VARIABLE OVERRIDES ──────────────────────────── */
 :root {
   /* Base surface overrides */
-  --color-bg:              #040c14;
+  --color-bg:              #000000;
   --color-surface:         #091525;
   --color-surface-2:       #0d1e30;
   --color-border:          rgba(0, 229, 255, 0.22);
@@ -353,7 +353,7 @@ a:hover           { color: var(--neon-magenta); }
  */
 .home-hero,
 .home-hero.launch-hero {
-  background: #030812 !important;
+  background: #000000 !important;
   border: 3px solid var(--neon-cyan) !important;
   border-radius: 0 !important;
   box-shadow:
@@ -601,7 +601,7 @@ a.hero-stat-link:hover {
   user-select: none;
 }
 
-/* Pixel-art city background asset — full-width scene */
+/* Hero city background image — full-width scene */
 .hero-city-bg-img {
   position: absolute;
   bottom: 0;
@@ -609,49 +609,20 @@ a.hero-stat-link:hover {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: center bottom;
-  opacity: 0.82;
-  image-rendering: pixelated;
+  object-position: center center;
+  opacity: 0.90;
 }
 
-/* Stars layer — kept but made subtler since city SVG has its own stars */
+/* Stars layer — hidden; new background image includes stars */
 .retro-stars {
-  position: absolute;
-  inset: 0;
-  background-image:
-    radial-gradient(1px 1px at  8%  12%, rgba(255, 255, 255, 0.50) 0, transparent 100%),
-    radial-gradient(1px 1px at 15%   5%, rgba(0, 229, 255, 0.40)   0, transparent 100%),
-    radial-gradient(2px 2px at 22%  18%, rgba(255, 255, 255, 0.35) 0, transparent 100%),
-    radial-gradient(1px 1px at 30%   8%, rgba(255, 255, 255, 0.40) 0, transparent 100%),
-    radial-gradient(1px 1px at 38%  14%, rgba(190, 76, 247, 0.45)  0, transparent 100%),
-    radial-gradient(1px 1px at 45%   6%, rgba(255, 255, 255, 0.38) 0, transparent 100%),
-    radial-gradient(2px 2px at 55%  10%, rgba(0, 229, 255, 0.38)   0, transparent 100%),
-    radial-gradient(1px 1px at 62%   4%, rgba(255, 255, 255, 0.50) 0, transparent 100%),
-    radial-gradient(1px 1px at 70%  16%, rgba(255, 255, 255, 0.32) 0, transparent 100%),
-    radial-gradient(1px 1px at 75%   7%, rgba(190, 76, 247, 0.38)  0, transparent 100%);
+  display: none;
 }
 
 
-/* Pixel city SVG — the inline animated SVG in index.html (not the bg asset).
- * Its .city-light-a* children use the lightBlink keyframe animations defined
- * elsewhere in this file to create flickering window-light effects.
- * The static background scene is handled by hero-city-bg-img. */
+/* Pixel city SVG — removed from HTML; styles kept for backward compat */
 .retro-city-svg {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  height: auto;
-  max-height: 55%;
-  opacity: 0.70;
+  display: none;
 }
-
-/* City window-light animation groups */
-.retro-city-svg .city-light-a1 { animation: lightBlink1 3.2s 0.0s  infinite; }
-.retro-city-svg .city-light-a2 { animation: lightBlink2 2.6s 0.9s  infinite; }
-.retro-city-svg .city-light-a3 { animation: lightBlink3 4.3s 1.6s  infinite; }
-.retro-city-svg .city-light-a4 { animation: lightBlink1 5.5s 2.4s  infinite; }
-.retro-city-svg .city-light-a5 { animation: lightBlink2 3.8s 3.8s  infinite; }
 
 /* ── HOMEPAGE RIGHT-PANEL LAYOUT ─────────────────────────────── */
 /* Three-column grid: sidebar | content | right-panel */
