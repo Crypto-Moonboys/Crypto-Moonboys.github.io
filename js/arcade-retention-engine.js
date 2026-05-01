@@ -313,6 +313,8 @@ function maybeGenerateComebackMission(now = nowMs()) {
   const created = buildMission(now);
   state.comeback_mission = created;
   writeState();
+  // message is the short descriptor used in arcade-retention-prompt event payload;
+  // opts.body overrides the displayed text in the structured toast with the mission-specific label.
   emitPrompt('comeback-mission', 'Complete accepted runs before the timer ends.', {
     urgency: 'high',
     countdown_ms: Math.max(0, Number(created.expires_at) - now),
@@ -353,6 +355,15 @@ function isLinked() {
   try {
     return !!(window.MOONBOYS_STATE && window.MOONBOYS_STATE.getState().linked);
   } catch (_) { return false; }
+}
+
+// Shared XP path footer shown on streak/mission toasts so users know how Arcade XP is earned.
+const XP_PATH_FOOTER = 'Arcade XP path: Play → Submit → Accepted → Synced';
+
+function getStreakFooterText() {
+  return isLinked()
+    ? `Synced streak state active. · ${XP_PATH_FOOTER}`
+    : `Link Telegram to persist streaks. · ${XP_PATH_FOOTER}`;
 }
 
 function emitNotificationAction(type, action, target) {
@@ -509,7 +520,10 @@ function updateMissionChip(context = getLiveContext()) {
   }
   const remain = Math.max(0, Number(mission.expires_at) - nowMs());
   missionChip.style.display = 'block';
-  missionChip.innerHTML = '';
+  // Clear previous chip content using explicit child removal
+  while (missionChip.firstChild) {
+    missionChip.removeChild(missionChip.firstChild);
+  }
   const link = document.createElement('a');
   link.className = 'art-chip-link';
   link.href = '/games/';
@@ -589,9 +603,7 @@ function markStreakSave(now = nowMs()) {
     title: 'Streak at risk',
     cta: { label: 'Play Now', href: '/games/' },
     cta2: isLinked() ? null : { label: 'Link Telegram', href: '/gkniftyheads-incubator.html' },
-    footer: isLinked()
-      ? 'Synced streak state active. · Arcade XP path: Play → Submit → Accepted → Synced'
-      : 'Link Telegram to persist streaks. · Arcade XP path: Play → Submit → Accepted → Synced',
+    footer: getStreakFooterText(),
   });
 }
 
@@ -708,9 +720,7 @@ function maybeEmitHooks(now = nowMs()) {
         body: 'Play one accepted arcade run to protect your streak.',
         cta: { label: 'Play Now', href: '/games/' },
         cta2: isLinked() ? null : { label: 'Link Telegram', href: '/gkniftyheads-incubator.html' },
-        footer: isLinked()
-          ? 'Synced streak state active. · Arcade XP path: Play → Submit → Accepted → Synced'
-          : 'Link Telegram to persist streaks. · Arcade XP path: Play → Submit → Accepted → Synced',
+        footer: getStreakFooterText(),
       };
     } else if (hk.key === 'chaos-window') {
       extraOpts = {

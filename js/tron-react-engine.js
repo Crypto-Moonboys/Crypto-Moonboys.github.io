@@ -176,8 +176,10 @@
     const hasCta = !!(cta && cta.href && cta.label);
     const muteAllowed = !isCritical;
 
-    // Build DOM nodes (safe, no innerHTML)
-    toast.innerHTML = '';
+    // Clear previous toast content using explicit child removal (avoids innerHTML = '')
+    while (toast.firstChild) {
+      toast.removeChild(toast.firstChild);
+    }
     toast.classList.toggle('actionable', hasCta || muteAllowed);
 
     const msgEl = document.createElement('span');
