@@ -1,4 +1,11 @@
-import { chromium } from 'playwright-core';
+let chromium;
+try {
+  ({ chromium } = await import('playwright-core'));
+} catch (error) {
+  console.error('[arcade-loop-integrity-check] Missing optional dependency: playwright-core');
+  console.error('Install it before running this browser audit: npm install --save-dev playwright-core');
+  process.exit(1);
+}
 import http from 'node:http';
 import fs from 'node:fs';
 import path from 'node:path';

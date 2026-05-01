@@ -218,93 +218,46 @@ function checkSearchPage() {
   }
 }
 
-function checkBlockTopiaFrontendCrashGuards() {
-  const npcSource = read('games/block-topia/world/npc-system.js');
-  const createNpcDefIndex = npcSource.indexOf('function createNpc(');
-  if (createNpcDefIndex === -1) {
-    fail('games/block-topia/world/npc-system.js missing module-scope createNpc(...) helper');
-  }
-
-  const ensureStart = npcSource.indexOf('function ensureHunterEntities(');
-  if (ensureStart === -1) {
-    fail('games/block-topia/world/npc-system.js missing ensureHunterEntities(...)');
-  }
-
-  const stepHunterStart = npcSource.indexOf('function stepHunterNpc(');
-  if (stepHunterStart === -1) {
-    fail('games/block-topia/world/npc-system.js missing stepHunterNpc(...)');
-  }
-
-  const ensureBody = npcSource.slice(ensureStart, stepHunterStart);
-  const createNpcCallInEnsure = ensureBody.indexOf('createNpc(');
-  if (createNpcCallInEnsure === -1) {
-    fail('ensureHunterEntities(...) no longer calls createNpc(...) for hunter spawn');
-  }
-
-  const createNpcCallIndex = ensureStart + createNpcCallInEnsure;
-  if (createNpcDefIndex >= createNpcCallIndex) {
-    fail('createNpc(...) must be defined before ensureHunterEntities(...) references it');
-  }
-
-  const isoSource = read('games/block-topia/render/iso-renderer.js');
-  const overlayStart = isoSource.indexOf('function drawCovertNodeOverlay(');
-  if (overlayStart === -1) {
-    fail('games/block-topia/render/iso-renderer.js missing drawCovertNodeOverlay(...)');
-  }
-
-  const overlayEnd = isoSource.indexOf('function drawSignalRouterOverlay(', overlayStart);
-  if (overlayEnd === -1) {
-    fail('Unable to isolate drawCovertNodeOverlay(...) body in iso-renderer.js');
-  }
-
-  const overlayBody = isoSource.slice(overlayStart, overlayEnd);
-  if (!overlayBody.includes('if (!node || !node.id || !Number.isFinite(node.x) || !Number.isFinite(node.y)) return;')) {
-    fail('drawCovertNodeOverlay(...) missing null/invalid node guard');
-  }
-
-  if (!overlayBody.includes('Number(covert?.risk)')) {
-    fail('drawCovertNodeOverlay(...) must read covert risk with optional chaining');
-  }
-
-  if (overlayBody.includes('covert.risk')) {
-    fail('drawCovertNodeOverlay(...) must not directly access covert.risk');
-  }
-
-  const networkSource = read('games/block-topia/network.js');
-  const isRoomOpenStart = networkSource.indexOf('function isRoomOpen() {');
-  if (isRoomOpenStart === -1) {
-    fail('games/block-topia/network.js missing isRoomOpen()');
-  }
-
-  const isConnectedStart = networkSource.indexOf('export function isConnected()', isRoomOpenStart);
-  if (isConnectedStart === -1) {
-    fail('Unable to isolate isRoomOpen() body in games/block-topia/network.js');
-  }
-
-  const isRoomOpenBody = networkSource.slice(isRoomOpenStart, isConnectedStart);
-  if (!isRoomOpenBody.includes('if (!room || !room.sessionId) return false;')) {
-    fail('isRoomOpen() must require room + sessionId before send eligibility');
-  }
-
-  const requiredConnectionShapes = [
-    'conn.ws',
-    'conn.transport?.ws',
-    'conn.transport?.socket',
-    'conn.socket',
-    'conn.websocket',
+function checkBlockTopiaCleanState() {
+  // Verify the three active Block Topia runtime files exist (clean skeleton state).
+  const required = [
+    'games/block-topia/main.js',
+    'games/block-topia/network.js',
+    'games/block-topia/index.html',
   ];
-  for (const shape of requiredConnectionShapes) {
-    if (!isRoomOpenBody.includes(shape)) {
-      fail(`isRoomOpen() missing Colyseus socket shape support: ${shape}`);
+  for (const f of required) {
+    if (!exists(f)) fail(`Missing Block Topia active file: ${f}`);
+  }
+
+  // main.js must NOT reference deleted old systems (NPC, covert-ops, overlay, pressure).
+  const mainSource = read('games/block-topia/main.js');
+  const forbiddenInMain = [
+    'npc-system',
+    'drawCovertNodeOverlay',
+    'signalOperations',
+    'controlNodes',
+    'PressureProtocol',
+    'street-signal',
+    'solo mode',
+  ];
+  for (const token of forbiddenInMain) {
+    if (mainSource.includes(token)) {
+      fail(`games/block-topia/main.js must not reference deleted system: "${token}"`);
     }
   }
 
-  if (!isRoomOpenBody.includes("typeof candidate.readyState === 'number'")) {
-    fail('isRoomOpen() must check candidate.readyState before accepting socket candidate');
-  }
-
-  if (!isRoomOpenBody.includes('return ws.readyState === OPEN;')) {
-    fail('isRoomOpen() must still gate sends on OPEN readyState');
+  // network.js must be client-only — no server bootstrap patterns.
+  const networkSource = read('games/block-topia/network.js');
+  const forbiddenInNetwork = [
+    'express()',
+    'app.listen',
+    "require('express')",
+    'http.createServer',
+  ];
+  for (const token of forbiddenInNetwork) {
+    if (networkSource.includes(token)) {
+      fail(`games/block-topia/network.js must not contain server-side pattern: "${token}"`);
+    }
   }
 }
 
@@ -318,7 +271,7 @@ function run() {
   checkSiteStats();
   checkSitemap();
   checkSearchPage();
-  checkBlockTopiaFrontendCrashGuards();
+  checkBlockTopiaCleanState();
 
   console.log('Smoke tests passed ✅');
 }
