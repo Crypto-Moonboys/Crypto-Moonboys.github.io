@@ -195,7 +195,7 @@ for (const [gameId, exceptions] of Object.entries(ACTIVE_GAMES_AUDIT)) {
 
   // [6] Faction contribution hook — all 3 args required: (factionId, 'score_submission', amount)
   const hasContribHook = /recordContribution\s*\(/.test(bsSrc);
-  const hasCorrectContribSig = /recordContribution\s*\([^,]+,\s*['"]score_submission['"]\s*,\s*[^)]+\)/.test(bsSrc);
+  const hasCorrectContribSig = /recordContribution\s*\([^,]+,\s*['"]score_submission['"]\s*,\s*[^),]+\)/.test(bsSrc);
   if (!hasContribHook) {
     checkOrException('noContribHook', 'missing recordContribution hook');
   } else if (!hasCorrectContribSig) {

@@ -166,7 +166,7 @@ function _buildMissionSection(missions, deltas) {
     // Show delta if any event with a matching type was recorded this run
     var delta  = deltaMap[m.type] || 0;
     var deltaText = delta > 0
-      ? ' <span class="rsp-mission-delta" aria-label="Progress this run: +' + delta + '">(+' + delta + ' this run)</span>'
+      ? ' <span class="rsp-mission-delta" aria-label="Progress gained this run: ' + delta + '">(+' + delta + ' this run)</span>'
       : '';
     return '<li class="rsp-mission-item' + (m.complete ? ' rsp-mission--done' : '') + '">'
       + _esc(m.label) + ' — ' + status + deltaText
