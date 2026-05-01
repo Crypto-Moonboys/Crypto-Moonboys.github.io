@@ -456,7 +456,11 @@
   function getLinkedSyncState() {
     var gate = getIdentityApi();
     if (!gate || typeof gate.getSyncState !== 'function') {
-      return isLinkedReady() ? 'linked_ready' : 'local_only';
+      // Fallback: use isTelegramLinked() directly without re-entering getSyncState()
+      if (gate && typeof gate.isTelegramLinked === 'function' && gate.isTelegramLinked()) {
+        return 'linked_ready';
+      }
+      return 'local_only';
     }
     var sync = gate.getSyncState();
     if (!sync || !sync.linked) return 'local_only';
@@ -866,7 +870,8 @@
         document.body.classList.toggle('sync-live', !bad);
         // When identity changes (e.g. restore or re-link), refresh arcade banners
         // unless an active submission result is already being displayed.
-        if (!lastSubmissionState || lastSubmissionState === 'local_only') {
+        var activeSubmissionStates = ['auto_submitting', 'score_accepted', 'xp_awarded', 'accepted_no_xp', 'rejected_no_xp'];
+        if (activeSubmissionStates.indexOf(lastSubmissionState) === -1) {
           updateSyncSurfaceState(getLinkedSyncState(), {});
         }
       });

@@ -149,7 +149,7 @@
           setStatus(name, 'Telegram linked. XP and Block Topia progression sync is ready.', true);
           emitSyncState('good', 'already_linked');
         } else {
-          setStatus(name, 'Sync may need refreshing \u2014 run /gklink again to restore server sync.', false);
+          setStatus(name, 'Sync may need refreshing — run /gklink again to restore server sync.', false);
           emitSyncState('bad', 'sync_stale');
         }
       } else {
