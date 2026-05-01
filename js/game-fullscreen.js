@@ -299,6 +299,10 @@
   var inlineSyncIdentity = null;
   var inlineSyncActions = null;
   var lastSubmissionState = '';
+  // States that represent an active in-flight or completed submission result.
+  // While in these states, incoming sync:state events should not overwrite the
+  // submission feedback with a generic identity-linked message.
+  var ACTIVE_SUBMISSION_STATES = ['auto_submitting', 'score_accepted', 'xp_awarded', 'accepted_no_xp', 'rejected_no_xp'];
   var microNotifyDedup = new Map();
   var microNotifyCooldownMs = 2200;
   var maxMicroItems = 5;
@@ -873,7 +877,7 @@
         // Ignore events that this file itself dispatched to avoid a feedback loop:
         // updateSyncSurfaceState → dispatchUiState('moonboys:sync-state') → bridge
         // emits sync:state → handler calls updateSyncSurfaceState again.
-        if (d && (d.source === 'game-fullscreen' || d._src === 'game-fullscreen')) return;
+        if (d && d.source === 'game-fullscreen') return;
         var bad = d.state === 'bad' || d.state === 'error';
         document.body.classList.toggle('sync-error', bad);
         document.body.classList.toggle('sync-live', !bad);
@@ -881,8 +885,7 @@
         // unless an active submission result is already being displayed.
         // suppressDispatch: true prevents re-emitting moonboys:sync-state and
         // completing the feedback loop.
-        var activeSubmissionStates = ['auto_submitting', 'score_accepted', 'xp_awarded', 'accepted_no_xp', 'rejected_no_xp'];
-        if (activeSubmissionStates.indexOf(lastSubmissionState) === -1) {
+        if (ACTIVE_SUBMISSION_STATES.indexOf(lastSubmissionState) === -1) {
           updateSyncSurfaceState(getLinkedSyncState(), {}, { suppressDispatch: true });
         }
       });
