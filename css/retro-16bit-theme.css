@@ -610,80 +610,56 @@ a.hero-stat-link:hover {
 
 .home-hero .retro-hero-bg {
   background: #050814;
-  display: flex;
-  align-items: flex-start;
-  justify-content: center;
   overflow: hidden;
 }
 
 .retro-hero-bg::before,
 .retro-hero-bg::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-}
-
-.retro-hero-bg::before {
-  z-index: 2;
-  background:
-    radial-gradient(60% 22% at 18% 24%, rgba(93, 56, 170, 0.22) 0%, rgba(93, 56, 170, 0) 72%),
-    radial-gradient(48% 18% at 76% 18%, rgba(44, 140, 220, 0.16) 0%, rgba(44, 140, 220, 0) 72%),
-    repeating-linear-gradient(
-      90deg,
-      rgba(26, 38, 92, 0.08) 0 8px,
-      rgba(10, 18, 42, 0.02) 8px 16px
-    );
-  opacity: 0.34;
-  transform: translate3d(-1.5%, 0, 0);
-  animation: hero-atmo-drift 42s linear infinite alternate;
-}
-
-.retro-hero-bg::after {
-  z-index: 4;
-  background:
-    repeating-linear-gradient(
-      0deg,
-      rgba(0, 0, 0, 0) 0 3px,
-      rgba(0, 229, 255, 0.045) 3px 4px
-    ),
-    linear-gradient(
-      100deg,
-      rgba(255, 45, 120, 0.07) 0%,
-      rgba(0, 0, 0, 0) 36%,
-      rgba(0, 229, 255, 0.08) 60%,
-      rgba(0, 0, 0, 0) 100%
-    );
-  opacity: 0.22;
-  animation: hero-neon-flicker 7s steps(3, end) infinite;
+  content: none;
 }
 
 .hero-layer {
   position: absolute;
-  inset: 0;
   width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: center top;
+  height: auto;
   pointer-events: none;
   image-rendering: pixelated;
 }
 
-.hero-real-bg {
+.hero-split-section,
+.hero-split-overlay {
   position: absolute;
-  top: 0;
-  left: 50%;
-  transform: translateX(-50%);
+  left: 0;
   width: 100%;
-  height: auto;
-  max-width: 100%;
-  z-index: 1;
-  object-fit: contain;
+  height: 33.334%;
+  object-fit: cover;
   object-position: center top;
 }
+
+.hero-split-top { top: 0; z-index: 1; }
+.hero-split-middle { top: 33.333%; z-index: 1; }
+.hero-split-bottom { top: 66.666%; z-index: 1; }
+
+.hero-split-overlay { opacity: 0.34; z-index: 2; }
+.hero-split-overlay-top {
+  top: 0;
+  animation: hero-overlay-drift 44s linear infinite alternate;
+}
+.hero-split-overlay-middle {
+  top: 33.333%;
+  animation: hero-overlay-flicker 6.5s steps(3, end) infinite;
+}
+.hero-split-overlay-bottom {
+  top: 66.666%;
+  animation: hero-overlay-drift 52s linear infinite alternate-reverse;
+}
+
 .hero-real-ui-overlay {
-  z-index: 5;
-  opacity: 0.72;
+  inset: 0;
+  height: 100%;
+  object-fit: fill;
+  z-index: 3;
+  opacity: 0.6;
 }
 
 .home-hero > *:not(.retro-hero-bg) {
@@ -691,22 +667,23 @@ a.hero-stat-link:hover {
   z-index: 10;
 }
 
-@keyframes hero-atmo-drift {
-  from { transform: translate3d(-1.5%, 0, 0); }
-  to { transform: translate3d(1.5%, -0.6%, 0); }
+@keyframes hero-overlay-drift {
+  from { transform: translate3d(-1.2%, 0, 0); }
+  to { transform: translate3d(1.2%, 0, 0); }
 }
 
-@keyframes hero-neon-flicker {
-  0%, 100% { opacity: 0.2; }
-  12% { opacity: 0.27; }
-  31% { opacity: 0.16; }
-  52% { opacity: 0.24; }
-  77% { opacity: 0.14; }
+@keyframes hero-overlay-flicker {
+  0%, 100% { opacity: 0.28; }
+  18% { opacity: 0.4; }
+  39% { opacity: 0.23; }
+  63% { opacity: 0.36; }
+  84% { opacity: 0.25; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .retro-hero-bg::before,
-  .retro-hero-bg::after {
+  .hero-split-overlay-top,
+  .hero-split-overlay-middle,
+  .hero-split-overlay-bottom {
     animation: none !important;
     transform: none !important;
   }
@@ -1170,9 +1147,6 @@ body.page-home #layout > #homepage-right-panel:not(#sidebar):not(#main-wrapper) 
     min-width: 140px !important;
     font-size: 0.44rem !important;
     padding: 10px 12px !important;
-  }
-  .hero-real-bg {
-    opacity: 0.72;
   }
 }
 
