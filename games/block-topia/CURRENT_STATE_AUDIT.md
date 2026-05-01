@@ -111,7 +111,7 @@ These files exist in the repository but are **not imported or reachable** from a
 | `economy/economy-system.js` | Player economy |
 | `duel/signal-duel-system.js` | Signal Duel variant |
 | `style.css` | Old stylesheet (targets `#world-canvas`, `#hud`, etc. — not present in active `index.html`) |
-| `data/` (all files) | Old data models: `districts.json`, `npc-archetypes.json`, `sam-phases.json`, `quest-model.json`, `factions.json`, `live-signals.json`, `node-interference-model.json`, `room-model.json`, `season-model.json`, `duel-fighter-config.js` |
+| `data/` (all files) | Old data models: `districts.json`, `npc-archetypes.json`, `sam-phases.json`, `quest-model.json`, `factions.json`, `node-interference-model.json`, `room-model.json`, `season-model.json`, `duel-fighter-config.js` |
 | `assets/` (all files) | SVG tile / building / prop / NPC spritesheets — not referenced by active canvas renderer |
 
 ### Server — dead files
