@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- pixel-panel-frame.svg
+     9-slice pixel-art window frame — 24×24 px, 8px corners
+     Use as: border-image: url('pixel-panel-frame.svg') 8 / 8px;
+     Cyan corner L-brackets with dark notch pixels at the four corners.
+     Edges are transparent so the CSS border fills them.
+-->
+<svg xmlns="http://www.w3.org/2000/svg"
+     width="24" height="24"
+     shape-rendering="crispEdges"
+     viewBox="0 0 24 24">
+  <!-- Top-left bracket -->
+  <rect x="0" y="0" width="8" height="2" fill="#00e5ff"/>
+  <rect x="0" y="2" width="2" height="6" fill="#00e5ff"/>
+  <!-- Top-right bracket -->
+  <rect x="16" y="0" width="8" height="2" fill="#00e5ff"/>
+  <rect x="22" y="2" width="2" height="6" fill="#00e5ff"/>
+  <!-- Bottom-left bracket -->
+  <rect x="0"  y="22" width="8" height="2" fill="#00e5ff"/>
+  <rect x="0"  y="16" width="2" height="6" fill="#00e5ff"/>
+  <!-- Bottom-right bracket -->
+  <rect x="16" y="22" width="8" height="2" fill="#00e5ff"/>
+  <rect x="22" y="16" width="2" height="6" fill="#00e5ff"/>
+  <!-- Dark pixel notches at the four true corners -->
+  <rect x="0"  y="0"  width="2" height="2" fill="#001820"/>
+  <rect x="22" y="0"  width="2" height="2" fill="#001820"/>
+  <rect x="0"  y="22" width="2" height="2" fill="#001820"/>
+  <rect x="22" y="22" width="2" height="2" fill="#001820"/>
+</svg>
