@@ -93,9 +93,69 @@ body.tron-event .tron-agent-node {
   z-index: 9998;
 }
 
+.tron-wake-toast.actionable {
+  pointer-events: auto;
+}
+
 .tron-wake-toast.is-visible {
   opacity: 1;
   transform: translateY(0) scale(1);
+}
+
+.twt-msg {
+  display: block;
+}
+
+.tron-wake-toast.actionable .twt-msg {
+  margin-bottom: 7px;
+}
+
+.twt-act-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.twt-cta {
+  display: inline-block;
+  padding: 3px 9px;
+  border-radius: 5px;
+  background: rgba(97, 246, 255, 0.14);
+  border: 1px solid rgba(97, 246, 255, 0.45);
+  color: #d9fbff;
+  font-size: 0.74rem;
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background 160ms ease, border-color 160ms ease;
+}
+
+.twt-cta:hover,
+.twt-cta:focus-visible {
+  background: rgba(97, 246, 255, 0.26);
+  border-color: rgba(97, 246, 255, 0.72);
+  outline: none;
+}
+
+.twt-mute {
+  display: inline-block;
+  padding: 3px 8px;
+  border-radius: 5px;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  color: rgba(185, 205, 210, 0.65);
+  font-size: 0.68rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 160ms ease, color 160ms ease;
+}
+
+.twt-mute:hover,
+.twt-mute:focus-visible {
+  border-color: rgba(255, 255, 255, 0.28);
+  color: rgba(210, 228, 238, 0.88);
+  outline: none;
 }
 
 .home-hero,
