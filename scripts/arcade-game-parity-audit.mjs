@@ -193,15 +193,15 @@ for (const [gameId, exceptions] of Object.entries(ACTIVE_GAMES_AUDIT)) {
   if (hasMissionHook) { pass(gameId + ': contains recordMissionProgress hook'); }
   else { checkOrException('noMissionHook', 'missing recordMissionProgress hook'); }
 
-  // [6] Faction contribution hook — correct 3-arg signature required
+  // [6] Faction contribution hook — all 3 args required: (factionId, 'score_submission', amount)
   const hasContribHook = /recordContribution\s*\(/.test(bsSrc);
-  const hasCorrectContribSig = /recordContribution\s*\([^,]+,\s*['"]score_submission['"]/.test(bsSrc);
+  const hasCorrectContribSig = /recordContribution\s*\([^,]+,\s*['"]score_submission['"]\s*,\s*[^)]+\)/.test(bsSrc);
   if (!hasContribHook) {
     checkOrException('noContribHook', 'missing recordContribution hook');
   } else if (!hasCorrectContribSig) {
-    fail(gameId + ': recordContribution called without correct source argument — expected recordContribution(fId, "score_submission", amount)');
+    fail(gameId + ': recordContribution missing required 3-arg signature — expected recordContribution(fId, "score_submission", amount)');
   } else {
-    pass(gameId + ': recordContribution hook present with correct signature');
+    pass(gameId + ': recordContribution hook present with correct 3-arg signature');
   }
 
   // [7a] No fake XP wording in bootstrap

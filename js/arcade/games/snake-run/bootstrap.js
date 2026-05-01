@@ -548,7 +548,7 @@ function applyUpgradeChoice(state, index) {
   setTransientBanner(state.warningBanner, 'Upgrade: ' + choice.label, '#8bf9ff', 1.8);
   _srEmitBus('arcade:upgrade-selected', {
     gameId: GAME_ID, factionId: state._srFactionId || 'unaligned',
-    upgradeId: choice.id, upgradeLabel: choice.label, category: choice.category || 'survival', ts: Date.now(),
+    upgradeId: choice.id, upgradeLabel: choice.label, category: choice.category, ts: Date.now(),
   });
 }
 

@@ -165,7 +165,9 @@ function _buildMissionSection(missions, deltas) {
     var status = m.complete ? '✅' : (pct >= 100 ? '✅' : pct + '%');
     // Show delta if any event with a matching type was recorded this run
     var delta  = deltaMap[m.type] || 0;
-    var deltaText = delta > 0 ? ' <span class="rsp-mission-delta">(+' + delta + ' this run)</span>' : '';
+    var deltaText = delta > 0
+      ? ' <span class="rsp-mission-delta" aria-label="Progress this run: +' + delta + '">(+' + delta + ' this run)</span>'
+      : '';
     return '<li class="rsp-mission-item' + (m.complete ? ' rsp-mission--done' : '') + '">'
       + _esc(m.label) + ' — ' + status + deltaText
       + '</li>';
@@ -208,10 +210,10 @@ function _buildCTASection(isLinked) {
 function _playAgain() {
   try {
     var ev = new CustomEvent('arcade:play-again', { bubbles: true, cancelable: true });
-    var handled = !(typeof window !== 'undefined' && window.dispatchEvent(ev) !== false);
-    // dispatchEvent returns false only if preventDefault was called
-    if (!handled) return;
-    // No listener prevented the default → fall back to page reload
+    // dispatchEvent returns false only when preventDefault() was called by a listener
+    var prevented = (typeof window !== 'undefined') && (window.dispatchEvent(ev) === false);
+    if (prevented) return; // game handled the restart
+    // No listener prevented default → fall back to page reload
     setTimeout(function () { if (typeof window !== 'undefined') window.location.reload(); }, 120);
   } catch (_) {
     try { if (typeof window !== 'undefined') window.location.reload(); } catch (__) {}
