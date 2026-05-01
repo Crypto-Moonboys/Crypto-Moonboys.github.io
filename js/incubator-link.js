@@ -137,9 +137,25 @@
     var rawPayload = getHashPayload();
     scrubTelegramHash();
     if (!rawPayload) {
-      setStatus(COPY.UNLINKED, 'Invalid link. Use /gklink again.', false);
-      emitSyncState('bad', 'missing_payload');
       debug('payload_missing');
+      // Normal page visit (no #telegram_auth in URL) — do NOT show "Invalid link".
+      // Show the current identity state: linked-ready, or neutral unlinked prompt.
+      var gate = window.MOONBOYS_IDENTITY;
+      var isLinked = gate && typeof gate.isTelegramLinked === 'function' && gate.isTelegramLinked();
+      if (isLinked) {
+        var name = (typeof gate.getTelegramName === 'function' && gate.getTelegramName()) || 'Linked Telegram';
+        var syncState = typeof gate.getSyncState === 'function' ? gate.getSyncState() : null;
+        if (syncState && syncState.good) {
+          setStatus(name, 'Telegram linked. XP and Block Topia progression sync is ready.', true);
+          emitSyncState('good', 'already_linked');
+        } else {
+          setStatus(name, 'Sync may need refreshing — run /gklink again to restore server sync.', false);
+          emitSyncState('bad', 'sync_stale');
+        }
+      } else {
+        setStatus(COPY.UNLINKED, 'Run /gklink in Telegram to link your account and enable server-side sync.', false);
+        emitSyncState('bad', 'not_linked');
+      }
       return;
     }
 

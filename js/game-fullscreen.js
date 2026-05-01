@@ -299,6 +299,10 @@
   var inlineSyncIdentity = null;
   var inlineSyncActions = null;
   var lastSubmissionState = '';
+  // States that represent an active in-flight or completed submission result.
+  // While in these states, incoming sync:state events should not overwrite the
+  // submission feedback with a generic identity-linked message.
+  var ACTIVE_SUBMISSION_STATES = ['auto_submitting', 'score_accepted', 'xp_awarded', 'accepted_no_xp', 'rejected_no_xp'];
   var microNotifyDedup = new Map();
   var microNotifyCooldownMs = 2200;
   var maxMicroItems = 5;
@@ -441,6 +445,32 @@
       return !!(sync && sync.good);
     }
     return true;
+  }
+
+  /**
+   * Return the correct updateSyncSurfaceState key based on the full MOONBOYS_IDENTITY
+   * sync state.  Distinguishes linked-but-expired from truly unlinked so that
+   * linked users never see "local_only / Unsynced" warnings.
+   *
+   *   'linked_ready'    — linked + auth valid
+   *   'auth_expired'    — linked + auth expired (needs /gklink refresh)
+   *   'relink_required' — linked + auth payload missing or other sync problem
+   *   'local_only'      — not linked at all
+   */
+  function getLinkedSyncState() {
+    var gate = getIdentityApi();
+    if (!gate || typeof gate.getSyncState !== 'function') {
+      // Fallback: use isTelegramLinked() directly without re-entering getSyncState()
+      if (gate && typeof gate.isTelegramLinked === 'function' && gate.isTelegramLinked()) {
+        return 'linked_ready';
+      }
+      return 'local_only';
+    }
+    var sync = gate.getSyncState();
+    if (!sync || !sync.linked) return 'local_only';
+    if (sync.good) return 'linked_ready';
+    if (sync.status === 'auth_expired') return 'auth_expired';
+    return 'relink_required';
   }
 
   /* ── DOM helpers ─────────────────────────────────────────────────── */
@@ -639,7 +669,7 @@
     cachedFactionPanel.id = 'overlay-faction-panel';
     cachedFactionPanel.innerHTML = 'Loading faction card…';
     sideLeft.appendChild(cachedFactionPanel);
-    updateSyncSurfaceState(lastSubmissionState || (isLinkedReady() ? 'linked_ready' : 'local_only'), {});
+    updateSyncSurfaceState(lastSubmissionState || getLinkedSyncState(), {});
     refreshFactionPanel();
   }
 
@@ -728,8 +758,9 @@
     });
   }
 
-  function updateSyncSurfaceState(state, detail) {
+  function updateSyncSurfaceState(state, detail, options) {
     var d = detail || {};
+    var suppressDispatch = options && options.suppressDispatch === true;
     var gate = getIdentityApi();
     var sync = gate && typeof gate.getSyncState === 'function' ? gate.getSyncState() : null;
     var linked = !!(sync ? sync.linked : isLinkedReady());
@@ -740,7 +771,9 @@
       case 'linked_ready':
         setSyncVisualState(true);
         setSyncStatusText('Linked — ready. Auto-submit is active for this run.');
-        dispatchUiState('moonboys:sync-state', { state: 'good', reason: state });
+        if (!suppressDispatch) {
+          dispatchUiState('moonboys:sync-state', { state: 'good', reason: state, source: 'game-fullscreen' });
+        }
         setActionHtml('<a class="sync-action-link" href="/gkniftyheads-incubator.html">Open sync instructions</a>');
         return;
       case 'auto_submitting':
@@ -773,7 +806,9 @@
       case 'auth_expired':
         setSyncVisualState(false);
         setSyncStatusText('Sync expired — run /gklink again.');
-        dispatchUiState('moonboys:sync-state', { state: 'bad', reason: state });
+        if (!suppressDispatch) {
+          dispatchUiState('moonboys:sync-state', { state: 'bad', reason: state, source: 'game-fullscreen' });
+        }
         setActionHtml('<a class="sync-action-link sync-action-link--danger" href="/gkniftyheads-incubator.html">Run /gklink</a>');
         return;
       case 'relink_required':
@@ -799,46 +834,78 @@
       var d = event && event.detail ? event.detail : {};
       updateSyncSurfaceState(d.state || '', d);
     });
-    var _bus = window.MOONBOYS_EVENT_BUS;
-    _bus.on('activity:event', function (d) {
-      if (d._src === 'moonboys:micro-notify') {
-        pushMicroNotification(d.message || '', d.tone || 'info');
-      } else if (d._src === 'moonboys:score-updated') {
-        if (!cachedLiveScore) return;
-        cachedLiveScore.classList.add('score-updated');
-        setTimeout(function () { cachedLiveScore && cachedLiveScore.classList.remove('score-updated'); }, 850);
-        pulseStateClass('score-updated', 900);
-      }
-    });
-    _bus.on('xp:update', function (d) {
-      if (Number(d.amount) > 0) {
-        pushMicroNotification('XP gained +' + Number(d.amount), 'success');
-        pulseStateClass('xp-gain', 1050);
-      }
-    });
-    _bus.on('faction:update', function (d) {
-      if (cachedFactionPanel) {
-        cachedFactionPanel.classList.add('faction-boost');
-        setTimeout(function () { cachedFactionPanel && cachedFactionPanel.classList.remove('faction-boost'); }, 1250);
-      }
-      pulseStateClass('faction-boost', 1200);
-      if (Number(d.amount) > 0) pushMicroNotification('Faction influence +' + Number(d.amount), 'success');
-    });
-    _bus.on('sync:state', function (d) {
-      var bad = d.state === 'bad' || d.state === 'error';
-      document.body.classList.toggle('sync-error', bad);
-      document.body.classList.toggle('sync-live', !bad);
-    });
-    _bus.on('world:state', function (d) {
-      var conflictActive = !!d.conflictActive;
-      document.body.classList.toggle('conflict-active', conflictActive);
-      if (d.conflictNearby) pulseStateClass('conflict-nearby', Number(d.durationMs) || 2200);
-    });
 
     document.addEventListener('arcade-run-game-over', function () {
-      if (isLinkedReady()) updateSyncSurfaceState('auto_submitting', {});
+      // Use isTelegramLinked (not isLinkedReady) so that linked-but-expired
+      // users still attempt submission rather than silently falling to local_only.
+      var gate = getIdentityApi();
+      var linked = gate && typeof gate.isTelegramLinked === 'function'
+        ? gate.isTelegramLinked()
+        : isLinkedReady();
+      if (linked) updateSyncSurfaceState('auto_submitting', {});
       else updateSyncSurfaceState('local_only', {});
     });
+
+    function bindBusHandlers() {
+      var _bus = window.MOONBOYS_EVENT_BUS;
+      if (!_bus) return;
+      _bus.on('activity:event', function (d) {
+        if (d._src === 'moonboys:micro-notify') {
+          pushMicroNotification(d.message || '', d.tone || 'info');
+        } else if (d._src === 'moonboys:score-updated') {
+          if (!cachedLiveScore) return;
+          cachedLiveScore.classList.add('score-updated');
+          setTimeout(function () { cachedLiveScore && cachedLiveScore.classList.remove('score-updated'); }, 850);
+          pulseStateClass('score-updated', 900);
+        }
+      });
+      _bus.on('xp:update', function (d) {
+        if (Number(d.amount) > 0) {
+          pushMicroNotification('XP gained +' + Number(d.amount), 'success');
+          pulseStateClass('xp-gain', 1050);
+        }
+      });
+      _bus.on('faction:update', function (d) {
+        if (cachedFactionPanel) {
+          cachedFactionPanel.classList.add('faction-boost');
+          setTimeout(function () { cachedFactionPanel && cachedFactionPanel.classList.remove('faction-boost'); }, 1250);
+        }
+        pulseStateClass('faction-boost', 1200);
+        if (Number(d.amount) > 0) pushMicroNotification('Faction influence +' + Number(d.amount), 'success');
+      });
+      _bus.on('sync:state', function (d) {
+        // Ignore events that this file itself dispatched to avoid a feedback loop:
+        // updateSyncSurfaceState → dispatchUiState('moonboys:sync-state') → bridge
+        // emits sync:state → handler calls updateSyncSurfaceState again.
+        if (d && d.source === 'game-fullscreen') return;
+        var bad = d.state === 'bad' || d.state === 'error';
+        document.body.classList.toggle('sync-error', bad);
+        document.body.classList.toggle('sync-live', !bad);
+        // When identity changes (e.g. restore or re-link), refresh arcade banners
+        // unless an active submission result is already being displayed.
+        // suppressDispatch: true prevents re-emitting moonboys:sync-state and
+        // completing the feedback loop.
+        if (ACTIVE_SUBMISSION_STATES.indexOf(lastSubmissionState) === -1) {
+          updateSyncSurfaceState(getLinkedSyncState(), {}, { suppressDispatch: true });
+        }
+      });
+      _bus.on('world:state', function (d) {
+        var conflictActive = !!d.conflictActive;
+        document.body.classList.toggle('conflict-active', conflictActive);
+        if (d.conflictNearby) pulseStateClass('conflict-nearby', Number(d.durationMs) || 2200);
+      });
+    }
+
+    // global-event-bus.js may load after game-fullscreen.js on some pages.
+    // Defer bus handler registration to DOMContentLoaded when needed so the
+    // bus is guaranteed to be available.
+    if (window.MOONBOYS_EVENT_BUS) {
+      bindBusHandlers();
+    } else if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', bindBusHandlers);
+    } else {
+      bindBusHandlers();
+    }
   }
 
   /* ── Button state sync ───────────────────────────────────────────── */
@@ -1154,8 +1221,11 @@
   syncMuteBtn();
   ensureInlineProjectionHud();
   ensureInlineSyncNote();
+  // Update inline sync notes immediately using the authoritative linked/sync state.
+  // This must run before bindSubmissionStatus() so the notes reflect the correct
+  // state even if bus registration is deferred to DOMContentLoaded.
+  updateSyncSurfaceState(getLinkedSyncState(), {});
   bindSubmissionStatus();
-  updateSyncSurfaceState(isLinkedReady() ? 'linked_ready' : 'local_only', {});
 
   // Esc key closes the overlay.
   // Enter / Space trigger the overlay ▶ Start button when the overlay is open
