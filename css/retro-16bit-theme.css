@@ -368,7 +368,7 @@ a:hover           { color: var(--neon-magenta); }
     100% calc(100% - 10px), calc(100% - 10px) 100%,
     10px 100%, 0 calc(100% - 10px)
   ) !important;
-  overflow: hidden;
+  overflow: visible;
   position: relative;
   padding: 22px 28px 24px !important;
   margin-bottom: 24px !important;
@@ -451,10 +451,16 @@ a:hover           { color: var(--neon-magenta); }
 
 /* Hero logo */
 .hero-logo-img {
+  display: block;
+  width: min(58vw, 520px);
+  max-width: 100%;
+  height: auto;
+  margin: 28px auto 18px;
+  object-fit: contain;
   filter: drop-shadow(0 6px 18px rgba(0, 229, 255, 0.22))
           drop-shadow(0 0 36px rgba(255, 45, 120, 0.14));
   position: relative;
-  z-index: 2;
+  z-index: 12;
   image-rendering: pixelated;
 }
 
@@ -1135,6 +1141,11 @@ body.page-home #layout > #homepage-right-panel:not(#sidebar):not(#main-wrapper) 
   .page-home #layout {
     display: flex !important;
     flex-direction: column;
+  }
+
+  .hero-logo-img {
+    width: min(82vw, 420px);
+    margin: 20px auto 14px;
   }
 }
 
