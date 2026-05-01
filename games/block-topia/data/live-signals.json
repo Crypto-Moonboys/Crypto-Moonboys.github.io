@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-05-01T04:03:13.705Z",
+  "generatedAt": "2026-05-01T07:13:24.736Z",
   "mode": "live-ai",
   "sourceHealth": {
     "coingecko-global": "ok",
@@ -11,84 +11,84 @@
   "signalCount": 5,
   "signals": [
     {
-      "id": "signal-1777608193705-1",
+      "id": "signal-1777619604736-1",
       "lane": "world",
-      "priority": 3,
-      "ttlMinutes": 45,
-      "npcLine": "Market flux sparks shadow moves across neon grids.",
-      "questPulse": "Seek unstable creds amid growing crypto unrest.",
-      "worldFeed": "Digital assets barely rise, fear shadows every trade.",
-      "clueEvent": "Market cap creeps upward as anxiety spikes.",
-      "tags": [
-        "crypto",
-        "market",
-        "fear"
-      ],
-      "expiresAt": "2026-05-01T04:48:13.705Z"
-    },
-    {
-      "id": "signal-1777608193705-2",
-      "lane": "ops",
       "priority": 4,
-      "ttlMinutes": 30,
-      "npcLine": "Whisper of a new coin surging in dark nets.",
-      "questPulse": "Track LUNC ripples before they vanish into ghosts.",
-      "worldFeed": "Unknown token drawing eyes; score spikes without reason.",
-      "clueEvent": "Shadow channels pump LUNC amid market tremors.",
-      "tags": [
-        "crypto",
-        "ops",
-        "trending"
-      ],
-      "expiresAt": "2026-05-01T04:33:13.705Z"
-    },
-    {
-      "id": "signal-1777608193705-3",
-      "lane": "clue",
-      "priority": 2,
-      "ttlMinutes": 60,
-      "npcLine": "Asteroid strikes markets with quiet, steady pressure.",
-      "questPulse": "Trace silent buyers pushing ASTEROID through the void.",
-      "worldFeed": "New asset ticks upward, eyes wary of unknown motives.",
-      "clueEvent": "Subtle movements hint at larger plays behind scenes.",
-      "tags": [
-        "crypto",
-        "clue",
-        "trend"
-      ],
-      "expiresAt": "2026-05-01T05:03:13.705Z"
-    },
-    {
-      "id": "signal-1777608193705-4",
-      "lane": "quest",
-      "priority": 5,
-      "ttlMinutes": 20,
-      "npcLine": "Fear grips traders; exploit hesitation in crypto veins.",
-      "questPulse": "Leverage market dread to seize fleeting digital gains.",
-      "worldFeed": "Sentiment dips to fearful lows, chaos brews quietly.",
-      "clueEvent": "Fear index spikes as markets jitter nervously.",
-      "tags": [
-        "fear",
-        "quest",
-        "crypto"
-      ],
-      "expiresAt": "2026-05-01T04:23:13.705Z"
-    },
-    {
-      "id": "signal-1777608193705-5",
-      "lane": "npc",
-      "priority": 1,
       "ttlMinutes": 90,
-      "npcLine": "PENGU token moves unseen, potential hidden beneath ice.",
-      "questPulse": "Investigate PENGU whispers; cold profits in warm hands.",
-      "worldFeed": "Quiet buzz surrounds PENGU; unknown players activate scripts.",
-      "clueEvent": "Low profile but gaining score, watch closely.",
+      "npcLine": "Market’s breathing cold; cryptos flicker with nervous life.",
+      "questPulse": "Hunt the source behind volatile trades before circuits fry.",
+      "worldFeed": "Network nodes pulse uneasy; shadow exchanges whisper shifts.",
+      "clueEvent": "Data leak hints at unknown player inflating net worth.",
       "tags": [
         "crypto",
-        "npc",
-        "hidden"
+        "volatility",
+        "shadow"
       ],
-      "expiresAt": "2026-05-01T05:33:13.705Z"
+      "expiresAt": "2026-05-01T08:43:24.736Z"
+    },
+    {
+      "id": "signal-1777619604736-2",
+      "lane": "ops",
+      "priority": 3,
+      "ttlMinutes": 60,
+      "npcLine": "Fear’s ticking up; scans show jitter across trading decks.",
+      "questPulse": "Trace coded signals from rising star tokens.",
+      "worldFeed": "Sentiment sensors flash high alert amid cryptic surges.",
+      "clueEvent": "Unstable coins spike briefly amid data fog.",
+      "tags": [
+        "sentiment",
+        "fear",
+        "signal"
+      ],
+      "expiresAt": "2026-05-01T08:13:24.736Z"
+    },
+    {
+      "id": "signal-1777619604736-3",
+      "lane": "clue",
+      "priority": 5,
+      "ttlMinutes": 45,
+      "npcLine": "ACN node glitched—could be entry point for deep hacks.",
+      "questPulse": "Decipher erratic readings from ACN cluster before blackout.",
+      "worldFeed": "Glitches ripple through ACN’s ledger, shaking trust.",
+      "clueEvent": "Encoding errors in trending node—warning or trap?",
+      "tags": [
+        "hack",
+        "acn",
+        "glitch"
+      ],
+      "expiresAt": "2026-05-01T07:58:24.736Z"
+    },
+    {
+      "id": "signal-1777619604736-4",
+      "lane": "quest",
+      "priority": 2,
+      "ttlMinutes": 75,
+      "npcLine": "PENGU’s shadow climbs fast—trade secrets or false lead?",
+      "questPulse": "Follow frozen trails to uncover black market tweaks.",
+      "worldFeed": "PENGU’s code adaptation puzzles analysts; patterns diverge.",
+      "clueEvent": "Trading anomalies spike around PENGU’s signature.",
+      "tags": [
+        "blackmarket",
+        "pengu",
+        "anomaly"
+      ],
+      "expiresAt": "2026-05-01T08:28:24.736Z"
+    },
+    {
+      "id": "signal-1777619604736-5",
+      "lane": "npc",
+      "priority": 3,
+      "ttlMinutes": 50,
+      "npcLine": "LUNC whispers in data winds; fear fuels its rise.",
+      "questPulse": "Gather info on LUNC’s surge before chaos blooms.",
+      "worldFeed": "Fear metrics climb, LUNC coins harvest market unease.",
+      "clueEvent": "Unusual transaction clusters detected near LUNC nodes.",
+      "tags": [
+        "lunc",
+        "fear",
+        "surge"
+      ],
+      "expiresAt": "2026-05-01T08:03:24.736Z"
     }
   ]
 }
