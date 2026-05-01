@@ -596,32 +596,76 @@ a.hero-stat-link:hover {
   position: absolute;
   inset: 0;
   z-index: 0;
-  pointer-events: none;
   overflow: hidden;
+  pointer-events: none;
   user-select: none;
+  image-rendering: pixelated;
 }
 
-/* Hero city background image — full-width scene */
-.hero-city-bg-img {
+.hero-layer {
   position: absolute;
-  bottom: 0;
-  left: 0;
+  inset: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: center center;
-  opacity: 0.90;
+  pointer-events: none;
+  image-rendering: pixelated;
 }
 
-/* Stars layer — hidden; new background image includes stars */
-.retro-stars {
-  display: none;
+.hero-real-bg { z-index: 1; }
+.hero-real-clouds {
+  z-index: 2;
+  opacity: 0.52;
+  animation: real-cloud-drift 80s linear infinite alternate;
+}
+.hero-real-moon {
+  z-index: 3;
+  opacity: 0.55;
+  animation: real-moon-pulse 6s ease-in-out infinite alternate;
+  mix-blend-mode: screen;
+}
+.hero-real-lights {
+  z-index: 4;
+  opacity: 0.75;
+  animation: real-light-flicker 3.5s steps(2, end) infinite;
+  mix-blend-mode: screen;
+}
+.hero-real-ui-overlay {
+  z-index: 5;
+  opacity: 0.72;
 }
 
+.home-hero > *:not(.retro-hero-bg) {
+  position: relative;
+  z-index: 10;
+}
 
-/* Pixel city SVG — removed from HTML; styles kept for backward compat */
-.retro-city-svg {
-  display: none;
+@keyframes real-cloud-drift {
+  from { transform: translate3d(-1.8%, 0, 0); }
+  to { transform: translate3d(1.8%, 0, 0); }
+}
+
+@keyframes real-moon-pulse {
+  from { filter: brightness(1) saturate(1); }
+  to { filter: brightness(1.18) saturate(1.22) drop-shadow(0 0 18px rgba(190, 76, 247, 0.8)); }
+}
+
+@keyframes real-light-flicker {
+  0%, 100% { opacity: 0.62; }
+  12% { opacity: 0.95; }
+  24% { opacity: 0.48; }
+  41% { opacity: 0.84; }
+  55% { opacity: 0.36; }
+  73% { opacity: 0.92; }
+  88% { opacity: 0.58; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-real-clouds,
+  .hero-real-moon,
+  .hero-real-lights {
+    animation: none !important;
+  }
 }
 
 /* ── HOMEPAGE RIGHT-PANEL LAYOUT ─────────────────────────────── */
@@ -1078,8 +1122,8 @@ body.page-home #layout > #homepage-right-panel:not(#sidebar):not(#main-wrapper) 
     font-size: 0.44rem !important;
     padding: 10px 12px !important;
   }
-  .hero-city-bg-img {
-    opacity: 0.60;
+  .hero-real-bg {
+    opacity: 0.72;
   }
 }
 
