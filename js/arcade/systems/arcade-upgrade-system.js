@@ -33,7 +33,7 @@
 
 // ── Category constants ────────────────────────────────────────────────────────
 
-export var UPGRADE_CATEGORIES = Object.freeze({
+export const UPGRADE_CATEGORIES = Object.freeze({
   SURVIVAL: 'survival',
   SCORE:    'score',
   RARE:     'rare',
@@ -47,7 +47,7 @@ export var UPGRADE_CATEGORIES = Object.freeze({
  * Maps faction id to a list of preferred upgrade categories in priority order.
  * Used by getUpgradeChoices() to bias the 3 options toward the faction's style.
  */
-export var UPGRADE_CATEGORY_BIAS = Object.freeze({
+export const UPGRADE_CATEGORY_BIAS = Object.freeze({
   'diamond-hands': Object.freeze(['score', 'survival', 'faction']),
   'hodl-warriors': Object.freeze(['survival', 'faction', 'score']),
   'graffpunks':    Object.freeze(['chaos', 'rare', 'faction']),
@@ -60,7 +60,7 @@ export var UPGRADE_CATEGORY_BIAS = Object.freeze({
  * All shared upgrade definitions.  Games may extend these locally; this
  * catalogue defines the shared vocabulary.
  */
-export var ARCADE_UPGRADE_DEFS = Object.freeze([
+export const ARCADE_UPGRADE_DEFS = Object.freeze([
 
   // ── Survival ────────────────────────────────────────────────────────────────
 

@@ -127,7 +127,7 @@ function _buildPanelHTML(factionId, fxDef, modDef, missions, bestScore, gameId) 
 
 function _buildWhyLine(missions, modDef, isLinked) {
   if (missions.length > 0 && !missions[0].complete) {
-    return 'Complete today\'s mission to grow faction signal.';
+    return 'Complete today\u2019s mission to grow faction signal.';
   }
   if (modDef) {
     return 'Your modifier is active — ' + modDef.label + ' applies this run.';
