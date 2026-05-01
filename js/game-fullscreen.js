@@ -754,8 +754,9 @@
     });
   }
 
-  function updateSyncSurfaceState(state, detail) {
+  function updateSyncSurfaceState(state, detail, options) {
     var d = detail || {};
+    var suppressDispatch = options && options.suppressDispatch === true;
     var gate = getIdentityApi();
     var sync = gate && typeof gate.getSyncState === 'function' ? gate.getSyncState() : null;
     var linked = !!(sync ? sync.linked : isLinkedReady());
@@ -766,7 +767,9 @@
       case 'linked_ready':
         setSyncVisualState(true);
         setSyncStatusText('Linked — ready. Auto-submit is active for this run.');
-        dispatchUiState('moonboys:sync-state', { state: 'good', reason: state });
+        if (!suppressDispatch) {
+          dispatchUiState('moonboys:sync-state', { state: 'good', reason: state, source: 'game-fullscreen' });
+        }
         setActionHtml('<a class="sync-action-link" href="/gkniftyheads-incubator.html">Open sync instructions</a>');
         return;
       case 'auto_submitting':
@@ -799,7 +802,9 @@
       case 'auth_expired':
         setSyncVisualState(false);
         setSyncStatusText('Sync expired — run /gklink again.');
-        dispatchUiState('moonboys:sync-state', { state: 'bad', reason: state });
+        if (!suppressDispatch) {
+          dispatchUiState('moonboys:sync-state', { state: 'bad', reason: state, source: 'game-fullscreen' });
+        }
         setActionHtml('<a class="sync-action-link sync-action-link--danger" href="/gkniftyheads-incubator.html">Run /gklink</a>');
         return;
       case 'relink_required':
@@ -865,14 +870,20 @@
         if (Number(d.amount) > 0) pushMicroNotification('Faction influence +' + Number(d.amount), 'success');
       });
       _bus.on('sync:state', function (d) {
+        // Ignore events that this file itself dispatched to avoid a feedback loop:
+        // updateSyncSurfaceState → dispatchUiState('moonboys:sync-state') → bridge
+        // emits sync:state → handler calls updateSyncSurfaceState again.
+        if (d && (d.source === 'game-fullscreen' || d._src === 'game-fullscreen')) return;
         var bad = d.state === 'bad' || d.state === 'error';
         document.body.classList.toggle('sync-error', bad);
         document.body.classList.toggle('sync-live', !bad);
         // When identity changes (e.g. restore or re-link), refresh arcade banners
         // unless an active submission result is already being displayed.
+        // suppressDispatch: true prevents re-emitting moonboys:sync-state and
+        // completing the feedback loop.
         var activeSubmissionStates = ['auto_submitting', 'score_accepted', 'xp_awarded', 'accepted_no_xp', 'rejected_no_xp'];
         if (activeSubmissionStates.indexOf(lastSubmissionState) === -1) {
-          updateSyncSurfaceState(getLinkedSyncState(), {});
+          updateSyncSurfaceState(getLinkedSyncState(), {}, { suppressDispatch: true });
         }
       });
       _bus.on('world:state', function (d) {
