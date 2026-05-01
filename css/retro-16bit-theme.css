@@ -307,6 +307,9 @@ a:hover           { color: var(--neon-magenta); }
   border-radius: 8px;
   overflow: hidden;
   position: relative;
+  /* Tighten vertical padding so the hero doesn't tower over viewport */
+  padding: 22px 28px 24px !important;
+  margin-bottom: 24px !important;
 }
 
 /* Remove old yellow radial gradient */
@@ -453,6 +456,13 @@ a:hover           { color: var(--neon-magenta); }
 .launch-route-flow a      { color: var(--neon-green); }
 .launch-route-flow a:hover { color: var(--neon-yellow); }
 
+/* Tighten hero element spacing so logo is fully visible without scroll */
+.home-hero .launch-manifesto { margin: 4px auto 8px !important; }
+.home-hero .launch-subcopy   { margin: 0 auto 10px !important; }
+.home-hero .hero-logo-img    { margin-bottom: 10px !important; }
+.home-hero .launch-cta-row   { margin: 8px 0 10px !important; }
+.home-hero .launch-route     { padding: 10px 14px !important; }
+
 /* ── HERO STATS ──────────────────────────────────────────────── */
 .hero-stats {
   position: relative;
@@ -583,7 +593,8 @@ a.hero-stat-link:hover {
   left: 0;
   width: 100%;
   height: auto;
-  max-height: 48%;
+  max-height: 30%;
+  opacity: 0.65;
 }
 
 /* City window-light animation groups */
@@ -596,7 +607,7 @@ a.hero-stat-link:hover {
 /* ── HOMEPAGE RIGHT-PANEL LAYOUT ─────────────────────────────── */
 /* Three-column grid: sidebar | content | right-panel */
 .page-home #layout {
-  display: grid;
+  display: grid !important;
   grid-template-columns: var(--color-sidebar-w) 1fr var(--right-panel-w);
   align-items: start;
 }
@@ -609,25 +620,28 @@ a.hero-stat-link:hover {
 }
 
 /* ── RIGHT PANEL ─────────────────────────────────────────────── */
-/* wiki.css has a defensive guard:
- *   #layout > *:not(#sidebar):not(#main-wrapper) { max-width:0!important; overflow:hidden!important; padding:0!important }
- * The !important overrides below beat that rule so the panel is
- * visible when the 3-column grid is active (desktop ≥ 1201 px).
+/* wiki.css has a defensive guard with specificity (0,3,0):
+ *   #layout > *:not(#sidebar):not(#main-wrapper) { flex:0 0 0!important; max-width:0!important; overflow:hidden!important; ... }
+ * This selector has specificity (0,3,1) — one type selector higher —
+ * so it beats the guard for all !important declarations, making the
+ * panel visible when the 3-column grid is active (desktop ≥ 1201 px).
  */
-#homepage-right-panel {
-  position: sticky;
-  top: var(--color-header-h);
-  height: calc(100vh - var(--color-header-h));
+body.page-home #layout > #homepage-right-panel {
+  position: sticky !important;
+  top: var(--color-header-h) !important;
+  height: calc(100vh - var(--color-header-h)) !important;
   overflow-y: auto !important;
   overflow-x: hidden !important;
   padding: 14px 10px !important;
   margin: 0 !important;
   max-width: var(--right-panel-w) !important;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  border-left: 1px solid rgba(255, 45, 120, 0.28);
-  background: rgba(4, 10, 18, 0.6);
+  width: var(--right-panel-w) !important;
+  min-width: 0 !important; /* allows grid item to respect column bounds even with wide inner content */
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 12px !important;
+  border-left: 1px solid rgba(255, 45, 120, 0.28) !important;
+  background: rgba(4, 10, 18, 0.6) !important;
   scrollbar-width: thin;
   scrollbar-color: rgba(0, 229, 255, 0.3) transparent;
 }
@@ -884,13 +898,13 @@ a.hero-stat-link:hover {
   .page-home #layout {
     grid-template-columns: var(--color-sidebar-w) 1fr;
   }
-  #homepage-right-panel { display: none; }
+  body.page-home #layout > #homepage-right-panel { display: none !important; }
 }
 
 /* Stack layout on mobile */
 @media (max-width: 900px) {
   .page-home #layout {
-    display: flex;
+    display: flex !important;
     flex-direction: column;
   }
 }
