@@ -5,7 +5,8 @@
    ============================================================ */
 
 /* ── PIXEL FONT IMPORT ───────────────────────────────────────── */
-@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+/* Press Start 2P is loaded in index.html via a <link> tag;
+   this file relies on that HTML import rather than duplicating it. */
 
 /* ── PALETTE & VARIABLE OVERRIDES ──────────────────────────── */
 :root {
@@ -639,16 +640,11 @@ a.hero-stat-link:hover {
     radial-gradient(1px 1px at 75%   7%, rgba(190, 76, 247, 0.38)  0, transparent 100%);
 }
 
-/*
- * Moon — now hidden in favour of the moon in home-hero-city-bg.svg.
- * The CSS moon is kept but made invisible so the SVG asset's
- * pixel-art moon shows through cleanly.
- */
-.retro-moon {
-  display: none;
-}
 
-/* Pixel city SVG — kept for animated window lights; positioned behind content */
+/* Pixel city SVG — the inline animated SVG in index.html (not the bg asset).
+ * Its .city-light-a* children use the lightBlink keyframe animations defined
+ * elsewhere in this file to create flickering window-light effects.
+ * The static background scene is handled by hero-city-bg-img. */
 .retro-city-svg {
   position: absolute;
   bottom: 0;
