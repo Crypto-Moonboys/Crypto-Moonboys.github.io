@@ -620,30 +620,34 @@ a.hero-stat-link:hover {
 }
 
 /* ── RIGHT PANEL ─────────────────────────────────────────────── */
-/* wiki.css has a defensive guard with specificity (0,3,0):
+/* wiki.css has a defensive guard with specificity (0,3,0,0):
  *   #layout > *:not(#sidebar):not(#main-wrapper) { flex:0 0 0!important; max-width:0!important; overflow:hidden!important; ... }
- * This selector has specificity (0,3,1) — one type selector higher —
- * so it beats the guard for all !important declarations, making the
- * panel visible when the 3-column grid is active (desktop ≥ 1201 px).
+ *   IDs counted: #layout=1, :not(#sidebar)=1, :not(#main-wrapper)=1 → total 3 IDs.
+ *
+ * The selector below mirrors the guard's :not() pseudo-classes, giving it
+ * specificity (0,4,1,1): #layout=1 + #homepage-right-panel=1 + :not(#sidebar)=1 + :not(#main-wrapper)=1
+ * = 4 IDs, plus .page-home=1 class, body=1 type.  4 IDs > 3 IDs, so every
+ * !important declaration here wins, making the panel visible at desktop (≥1201 px).
  */
-body.page-home #layout > #homepage-right-panel {
+body.page-home #layout > #homepage-right-panel:not(#sidebar):not(#main-wrapper) {
   position: sticky !important;
   top: var(--color-header-h) !important;
   height: calc(100vh - var(--color-header-h)) !important;
+  flex: 0 0 var(--right-panel-w) !important;
+  width: var(--right-panel-w) !important;
+  min-width: var(--right-panel-w) !important;
+  max-width: var(--right-panel-w) !important;
   overflow-y: auto !important;
   overflow-x: hidden !important;
   padding: 14px 10px !important;
   margin: 0 !important;
-  max-width: var(--right-panel-w) !important;
-  width: var(--right-panel-w) !important;
-  min-width: 0 !important; /* allows grid item to respect column bounds even with wide inner content */
   display: flex !important;
   flex-direction: column !important;
   gap: 12px !important;
   border-left: 1px solid rgba(255, 45, 120, 0.28) !important;
   background: rgba(4, 10, 18, 0.6) !important;
-  scrollbar-width: thin;
-  scrollbar-color: rgba(0, 229, 255, 0.3) transparent;
+  scrollbar-width: thin !important;
+  scrollbar-color: rgba(0, 229, 255, 0.3) transparent !important;
 }
 #homepage-right-panel::-webkit-scrollbar       { width: 4px; }
 #homepage-right-panel::-webkit-scrollbar-track { background: transparent; }
@@ -898,7 +902,15 @@ body.page-home #layout > #homepage-right-panel {
   .page-home #layout {
     grid-template-columns: var(--color-sidebar-w) 1fr;
   }
-  body.page-home #layout > #homepage-right-panel { display: none !important; }
+  body.page-home #layout > #homepage-right-panel:not(#sidebar):not(#main-wrapper) {
+    display: none !important;
+    flex: 0 0 0 !important;
+    width: 0 !important;
+    min-width: 0 !important;
+    max-width: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+  }
 }
 
 /* Stack layout on mobile */
