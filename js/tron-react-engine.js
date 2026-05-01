@@ -168,7 +168,7 @@
     if (data && typeof data.message === 'string' && data.message.trim()) {
       message = data.message.trim();
     } else {
-      message = pickWakeLine(type);
+      message = pickWakeLine(resolvedType);
     }
     if (!message) return;
 
@@ -195,7 +195,6 @@
       ctaEl.className = 'twt-cta';
       ctaEl.href = cta.href;
       ctaEl.textContent = cta.label;
-      ctaEl.setAttribute('role', 'button');
       ctaEl.addEventListener('click', () => {
         emitNotificationAction(resolvedType, cta.label, cta.href);
         toast.classList.remove('is-visible');

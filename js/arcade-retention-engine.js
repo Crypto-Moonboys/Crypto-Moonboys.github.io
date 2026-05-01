@@ -742,7 +742,12 @@ function maybeEmitHooks(now = nowMs()) {
         cta: { label: 'Open Featured Game', href: '/games/' },
       };
     }
-    emitPrompt(hk.key, hk.label, {
+    let promptMessage = hk.label;
+    if (hk.key === 'streak-save') promptMessage = 'Play one accepted arcade run to protect your streak.';
+    else if (hk.key === 'chaos-window') promptMessage = 'Higher-pressure run window active. Good for GraffPUNKS / combo-focused play.';
+    else if (hk.key === 'quest-expiry') promptMessage = 'Finish a valid arcade run before the countdown ends.';
+    else if (hk.key === 'featured-window') promptMessage = 'Play the featured game while the window is active.';
+    emitPrompt(hk.key, promptMessage, {
       urgency: hk.urgency,
       countdown_ms: 0,
       sound,
