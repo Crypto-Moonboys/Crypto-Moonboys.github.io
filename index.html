@@ -40,6 +40,9 @@
     overflow: hidden !important;
     pointer-events: none !important;
     background: #050814 !important;
+    display: flex !important;
+    align-items: flex-start !important;
+    justify-content: center !important;
   }
 
   body.page-home .home-hero.launch-hero .hero-layer {
@@ -53,8 +56,11 @@
 
   body.page-home .home-hero.launch-hero .hero-real-bg {
     z-index: 1 !important;
-    object-fit: cover !important;
+    object-fit: contain !important;
     object-position: center top !important;
+    height: auto !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
     opacity: 0.72 !important;
     filter: saturate(1.12) contrast(1.05) brightness(0.82);
   }
