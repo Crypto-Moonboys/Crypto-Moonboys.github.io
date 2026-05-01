@@ -1,0 +1,345 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- home-hero-city-bg.svg
+     Pixel-art cyberpunk city night scene — 1400×420
+     Used as hero background on the homepage.
+     No Moonboys logo baked in. Pure scene art.
+-->
+<svg xmlns="http://www.w3.org/2000/svg"
+     viewBox="0 0 1400 420"
+     shape-rendering="crispEdges"
+     preserveAspectRatio="xMidYMax slice">
+  <defs>
+    <!-- Sky -->
+    <linearGradient id="bg-sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%"   stop-color="#010108"/>
+      <stop offset="45%"  stop-color="#03031c"/>
+      <stop offset="80%"  stop-color="#080628"/>
+      <stop offset="100%" stop-color="#0c0830"/>
+    </linearGradient>
+    <!-- Moon fill -->
+    <radialGradient id="moon-fill" cx="38%" cy="35%" r="65%">
+      <stop offset="0%"   stop-color="#e8c0fa"/>
+      <stop offset="22%"  stop-color="#c070e0"/>
+      <stop offset="52%"  stop-color="#8030b8"/>
+      <stop offset="78%"  stop-color="#4c1082"/>
+      <stop offset="100%" stop-color="#1e0840"/>
+    </radialGradient>
+    <!-- Moon glow halo -->
+    <radialGradient id="moon-halo" cx="50%" cy="50%" r="50%">
+      <stop offset="0%"   stop-color="rgba(180,60,240,0.22)"/>
+      <stop offset="55%"  stop-color="rgba(140,40,200,0.10)"/>
+      <stop offset="100%" stop-color="rgba(100,20,160,0)"/>
+    </radialGradient>
+    <!-- Pixel checker overlay for moon -->
+    <pattern id="moon-px" x="0" y="0" width="8" height="8" patternUnits="userSpaceOnUse">
+      <rect x="0" y="0" width="4" height="4" fill="rgba(30,0,60,0.28)"/>
+      <rect x="4" y="4" width="4" height="4" fill="rgba(30,0,60,0.28)"/>
+    </pattern>
+    <!-- Clip moon -->
+    <clipPath id="moon-clip">
+      <circle cx="1100" cy="88" r="78"/>
+    </clipPath>
+    <!-- Water surface -->
+    <linearGradient id="water-grad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%"   stop-color="#060620"/>
+      <stop offset="100%" stop-color="#020210"/>
+    </linearGradient>
+  </defs>
+
+  <!-- ── SKY ──────────────────────────────────────────────────── -->
+  <rect width="1400" height="420" fill="url(#bg-sky)"/>
+
+  <!-- ── STARS ─────────────────────────────────────────────────── -->
+  <rect x="42"   y="14"  width="2" height="2" fill="rgba(255,255,255,0.90)"/>
+  <rect x="82"   y="7"   width="2" height="2" fill="rgba(0,229,255,0.80)"/>
+  <rect x="142"  y="22"  width="2" height="2" fill="rgba(255,255,255,0.75)"/>
+  <rect x="184"  y="11"  width="2" height="2" fill="rgba(255,255,255,0.85)"/>
+  <rect x="226"  y="30"  width="2" height="2" fill="rgba(190,76,247,0.80)"/>
+  <rect x="316"  y="17"  width="2" height="2" fill="rgba(255,255,255,0.80)"/>
+  <rect x="384"  y="12"  width="2" height="2" fill="rgba(0,229,255,0.65)"/>
+  <rect x="446"  y="26"  width="2" height="2" fill="rgba(255,255,255,0.70)"/>
+  <rect x="524"  y="8"   width="2" height="2" fill="rgba(255,255,255,0.90)"/>
+  <rect x="604"  y="20"  width="2" height="2" fill="rgba(190,76,247,0.72)"/>
+  <rect x="664"  y="13"  width="2" height="2" fill="rgba(255,255,255,0.60)"/>
+  <rect x="756"  y="29"  width="2" height="2" fill="rgba(0,229,255,0.55)"/>
+  <rect x="824"  y="11"  width="2" height="2" fill="rgba(255,255,255,0.80)"/>
+  <rect x="904"  y="23"  width="2" height="2" fill="rgba(255,255,255,0.65)"/>
+  <rect x="966"  y="6"   width="2" height="2" fill="rgba(190,76,247,0.85)"/>
+  <rect x="1006" y="28"  width="2" height="2" fill="rgba(255,255,255,0.70)"/>
+  <rect x="1062" y="14"  width="2" height="2" fill="rgba(0,229,255,0.70)"/>
+  <rect x="1164" y="19"  width="2" height="2" fill="rgba(255,255,255,0.60)"/>
+  <rect x="1224" y="9"   width="2" height="2" fill="rgba(255,255,255,0.85)"/>
+  <rect x="1284" y="31"  width="2" height="2" fill="rgba(190,76,247,0.65)"/>
+  <rect x="1342" y="15"  width="2" height="2" fill="rgba(255,255,255,0.78)"/>
+  <!-- extra small stars -->
+  <rect x="110"  y="6"   width="1" height="1" fill="rgba(255,255,255,0.55)"/>
+  <rect x="260"  y="16"  width="1" height="1" fill="rgba(0,229,255,0.50)"/>
+  <rect x="490"  y="10"  width="1" height="1" fill="rgba(255,255,255,0.60)"/>
+  <rect x="700"  y="18"  width="1" height="1" fill="rgba(190,76,247,0.55)"/>
+  <rect x="870"  y="8"   width="1" height="1" fill="rgba(255,255,255,0.65)"/>
+  <rect x="1140" y="24"  width="1" height="1" fill="rgba(0,229,255,0.45)"/>
+  <rect x="1370" y="8"   width="1" height="1" fill="rgba(255,255,255,0.60)"/>
+  <!-- cross/plus star decorations (like mockup) -->
+  <rect x="468"  y="17"  width="1" height="5" fill="rgba(255,255,255,0.55)"/>
+  <rect x="466"  y="19"  width="5" height="1" fill="rgba(255,255,255,0.55)"/>
+  <rect x="1198" y="13"  width="1" height="5" fill="rgba(0,229,255,0.55)"/>
+  <rect x="1196" y="15"  width="5" height="1" fill="rgba(0,229,255,0.55)"/>
+
+  <!-- ── MOON HALO ────────────────────────────────────────────── -->
+  <circle cx="1100" cy="88" r="130" fill="url(#moon-halo)"/>
+
+  <!-- ── MOON BODY ───────────────────────────────────────────── -->
+  <circle cx="1100" cy="88" r="78"  fill="url(#moon-fill)"/>
+  <!-- Pixel texture overlay -->
+  <circle cx="1100" cy="88" r="78"  fill="url(#moon-px)"/>
+  <!-- Pixel craters -->
+  <rect x="1052" y="54"  width="16" height="16" fill="#3a0878" opacity="0.65" clip-path="url(#moon-clip)"/>
+  <rect x="1056" y="58"  width="8"  height="8"  fill="#200848" opacity="0.80" clip-path="url(#moon-clip)"/>
+  <rect x="1090" y="100" width="14" height="14" fill="#3a0878" opacity="0.58" clip-path="url(#moon-clip)"/>
+  <rect x="1093" y="103" width="6"  height="6"  fill="#200848" opacity="0.72" clip-path="url(#moon-clip)"/>
+  <rect x="1118" y="62"  width="20" height="20" fill="#3a0878" opacity="0.52" clip-path="url(#moon-clip)"/>
+  <rect x="1122" y="66"  width="12" height="12" fill="#200848" opacity="0.65" clip-path="url(#moon-clip)"/>
+  <rect x="1070" y="88"  width="10" height="10" fill="#3a0878" opacity="0.45" clip-path="url(#moon-clip)"/>
+  <rect x="1108" y="44"  width="8"  height="8"  fill="#280858" opacity="0.60" clip-path="url(#moon-clip)"/>
+  <rect x="1078" y="118" width="12" height="8"  fill="#3a0878" opacity="0.40" clip-path="url(#moon-clip)"/>
+  <!-- Moon edge pixel ring -->
+  <circle cx="1100" cy="88" r="78"  fill="none" stroke="rgba(210,120,255,0.28)" stroke-width="2"/>
+
+  <!-- ── PIXEL CLOUDS (rect-based, no blur) ────────────────────── -->
+  <!-- Cloud 1 – left sky -->
+  <rect x="62"  y="55" width="16" height="8"  fill="#1e0e40"/>
+  <rect x="54"  y="47" width="32" height="8"  fill="#2c1252"/>
+  <rect x="46"  y="39" width="48" height="8"  fill="#241048"/>
+  <rect x="54"  y="31" width="32" height="8"  fill="#1c0c3c"/>
+  <rect x="62"  y="23" width="16" height="8"  fill="#140a2e"/>
+  <!-- Cloud 2 – center-left -->
+  <rect x="324" y="44" width="24" height="8"  fill="#1e0e40"/>
+  <rect x="312" y="36" width="48" height="8"  fill="#2c1252"/>
+  <rect x="300" y="28" width="72" height="8"  fill="#261048"/>
+  <rect x="312" y="20" width="48" height="8"  fill="#1c0c3c"/>
+  <rect x="324" y="12" width="24" height="8"  fill="#140a2e"/>
+  <!-- Cloud 3 – large center -->
+  <rect x="584" y="52" width="32" height="8"  fill="#200e42"/>
+  <rect x="568" y="44" width="64" height="8"  fill="#2e1254"/>
+  <rect x="552" y="36" width="96" height="8"  fill="#281048"/>
+  <rect x="560" y="28" width="80" height="8"  fill="#200e3e"/>
+  <rect x="576" y="20" width="48" height="8"  fill="#180c32"/>
+  <rect x="584" y="12" width="32" height="8"  fill="#12082a"/>
+  <!-- Cloud 4 – near moon, left -->
+  <rect x="882" y="60" width="48" height="8"  fill="#240e46"/>
+  <rect x="866" y="52" width="80" height="8"  fill="#301256"/>
+  <rect x="850" y="44" width="112" height="8" fill="#2a1048"/>
+  <rect x="858" y="36" width="96" height="8"  fill="#220e3e"/>
+  <rect x="874" y="28" width="64" height="8"  fill="#1a0a32"/>
+  <!-- Cloud 5 – far right -->
+  <rect x="1270" y="50" width="40" height="8"  fill="#1e0e40"/>
+  <rect x="1258" y="42" width="64" height="8"  fill="#2c1252"/>
+  <rect x="1254" y="34" width="72" height="8"  fill="#241048"/>
+  <rect x="1262" y="26" width="56" height="8"  fill="#1c0c3c"/>
+  <rect x="1270" y="18" width="40" height="8"  fill="#140a2e"/>
+
+  <!-- ── BACKGROUND CITY LAYER (faint, deep) ────────────────────── -->
+  <rect x="0"    y="250" width="28"  height="170" fill="#0a0820"/>
+  <rect x="32"   y="225" width="22"  height="195" fill="#0c0924"/>
+  <rect x="58"   y="205" width="18"  height="215" fill="#0a0820"/>
+  <rect x="80"   y="242" width="30"  height="178" fill="#0c0924"/>
+  <rect x="115"  y="262" width="20"  height="158" fill="#0a0820"/>
+  <rect x="140"  y="182" width="24"  height="238" fill="#100b28"/>
+  <rect x="168"  y="222" width="20"  height="198" fill="#0c0924"/>
+  <rect x="192"  y="202" width="28"  height="218" fill="#0a0820"/>
+  <rect x="240"  y="232" width="22"  height="188" fill="#0c0924"/>
+  <rect x="266"  y="197" width="18"  height="223" fill="#100b28"/>
+  <rect x="288"  y="242" width="24"  height="178" fill="#0a0820"/>
+  <rect x="316"  y="212" width="28"  height="208" fill="#0c0924"/>
+  <rect x="348"  y="182" width="20"  height="238" fill="#100b28"/>
+  <rect x="1200" y="232" width="24"  height="188" fill="#0c0924"/>
+  <rect x="1228" y="197" width="20"  height="223" fill="#100b28"/>
+  <rect x="1252" y="247" width="28"  height="173" fill="#0a0820"/>
+  <rect x="1284" y="217" width="22"  height="203" fill="#0c0924"/>
+  <rect x="1310" y="187" width="30"  height="233" fill="#100b28"/>
+  <rect x="1344" y="227" width="24"  height="193" fill="#0a0820"/>
+  <rect x="1372" y="252" width="28"  height="168" fill="#0c0924"/>
+
+  <!-- ── MAIN CITY LAYER ────────────────────────────────────────── -->
+  <!-- Left cluster -->
+  <rect x="0"    y="158" width="48"  height="262" fill="#060614" stroke="rgba(0,229,255,0.25)" stroke-width="1"/>
+  <rect x="20"   y="147" width="4"   height="13"  fill="rgba(0,229,255,0.85)"/>
+  <rect x="52"   y="128" width="38"  height="292" fill="#07071a" stroke="rgba(255,45,120,0.30)" stroke-width="1"/>
+  <rect x="62"   y="116" width="4"   height="14"  fill="rgba(255,45,120,0.90)"/>
+  <rect x="94"   y="98"  width="22"  height="322" fill="#060614" stroke="rgba(0,229,255,0.22)" stroke-width="1"/>
+  <rect x="104"  y="86"  width="2"   height="14"  fill="rgba(0,229,255,0.90)"/>
+  <rect x="100"  y="96"  width="10"  height="2"   fill="rgba(0,229,255,0.60)"/>
+  <rect x="120"  y="138" width="52"  height="282" fill="#060614" stroke="rgba(0,229,255,0.20)" stroke-width="1"/>
+  <rect x="176"  y="168" width="32"  height="252" fill="#07071a"/>
+  <!-- Left-center -->
+  <rect x="212"  y="118" width="42"  height="302" fill="#060614" stroke="rgba(0,229,255,0.25)" stroke-width="1"/>
+  <rect x="230"  y="106" width="2"   height="14"  fill="rgba(0,229,255,0.90)"/>
+  <rect x="258"  y="143" width="30"  height="277" fill="#07071a"/>
+  <rect x="292"  y="103" width="46"  height="317" fill="#060614" stroke="rgba(255,45,120,0.28)" stroke-width="1"/>
+  <rect x="313"  y="90"  width="2"   height="15"  fill="rgba(255,45,120,0.90)"/>
+  <rect x="342"  y="148" width="34"  height="272" fill="#07071a"/>
+  <rect x="380"  y="78"  width="60"  height="342" fill="#060614" stroke="rgba(0,229,255,0.28)" stroke-width="1"/>
+  <rect x="407"  y="64"  width="2"   height="16"  fill="rgba(0,229,255,0.85)"/>
+  <rect x="403"  y="72"  width="10"  height="2"   fill="rgba(0,229,255,0.55)"/>
+  <rect x="444"  y="128" width="28"  height="292" fill="#07071a"/>
+  <!-- Center cluster -->
+  <rect x="476"  y="93"  width="54"  height="327" fill="#060614" stroke="rgba(0,229,255,0.22)" stroke-width="1"/>
+  <rect x="500"  y="78"  width="2"   height="17"  fill="rgba(255,45,120,0.90)"/>
+  <rect x="534"  y="118" width="36"  height="302" fill="#07071a"/>
+  <rect x="574"  y="73"  width="50"  height="347" fill="#060614" stroke="rgba(255,45,120,0.30)" stroke-width="1"/>
+  <rect x="628"  y="108" width="24"  height="312" fill="#07071a" stroke="rgba(0,229,255,0.18)" stroke-width="1"/>
+  <rect x="656"  y="128" width="58"  height="292" fill="#060614"/>
+  <rect x="718"  y="88"  width="40"  height="332" fill="#060614" stroke="rgba(0,229,255,0.25)" stroke-width="1"/>
+  <rect x="736"  y="74"  width="2"   height="16"  fill="rgba(0,229,255,0.90)"/>
+  <!-- Right-center -->
+  <rect x="762"  y="118" width="36"  height="302" fill="#07071a"/>
+  <rect x="802"  y="78"  width="48"  height="342" fill="#060614" stroke="rgba(255,45,120,0.30)" stroke-width="1"/>
+  <rect x="824"  y="64"  width="2"   height="16"  fill="rgba(255,45,120,0.90)"/>
+  <rect x="854"  y="103" width="56"  height="317" fill="#060614" stroke="rgba(0,229,255,0.22)" stroke-width="1"/>
+  <rect x="914"  y="138" width="38"  height="282" fill="#07071a"/>
+  <rect x="956"  y="98"  width="44"  height="322" fill="#060614" stroke="rgba(0,229,255,0.24)" stroke-width="1"/>
+  <rect x="976"  y="84"  width="2"   height="16"  fill="rgba(0,229,255,0.85)"/>
+  <rect x="972"  y="92"  width="10"  height="2"   fill="rgba(0,229,255,0.50)"/>
+  <rect x="1004" y="128" width="42"  height="292" fill="#07071a"/>
+  <!-- Right cluster -->
+  <rect x="1050" y="88"  width="32"  height="332" fill="#060614" stroke="rgba(255,45,120,0.28)" stroke-width="1"/>
+  <rect x="1086" y="118" width="62"  height="302" fill="#060614" stroke="rgba(0,229,255,0.20)" stroke-width="1"/>
+  <rect x="1152" y="153" width="32"  height="267" fill="#07071a"/>
+  <rect x="1188" y="103" width="46"  height="317" fill="#060614" stroke="rgba(0,229,255,0.25)" stroke-width="1"/>
+  <rect x="1208" y="88"  width="2"   height="17"  fill="rgba(0,229,255,0.90)"/>
+
+  <!-- ── NEON ACCENT BANDS (horizontal stripes on building tops) ── -->
+  <rect x="380"  y="78"  width="60"  height="3"  fill="rgba(0,229,255,0.65)"/>
+  <rect x="292"  y="103" width="46"  height="3"  fill="rgba(255,45,120,0.65)"/>
+  <rect x="574"  y="73"  width="50"  height="3"  fill="rgba(255,45,120,0.55)"/>
+  <rect x="802"  y="78"  width="48"  height="3"  fill="rgba(255,45,120,0.60)"/>
+  <rect x="1188" y="103" width="46"  height="3"  fill="rgba(0,229,255,0.55)"/>
+  <rect x="476"  y="93"  width="54"  height="3"  fill="rgba(0,229,255,0.50)"/>
+  <rect x="854"  y="103" width="56"  height="3"  fill="rgba(0,229,255,0.50)"/>
+
+  <!-- ── FOREGROUND BUILDINGS (darkest, closest layer) ──────────── -->
+  <rect x="0"    y="278" width="62"  height="142" fill="#040412"/>
+  <rect x="66"   y="263" width="46"  height="157" fill="#050516"/>
+  <rect x="116"  y="298" width="38"  height="122" fill="#040412"/>
+  <rect x="158"  y="273" width="54"  height="147" fill="#050516"/>
+  <rect x="216"  y="308" width="42"  height="112" fill="#040412"/>
+  <rect x="1198" y="283" width="50"  height="137" fill="#050516"/>
+  <rect x="1252" y="268" width="58"  height="152" fill="#040412"/>
+  <rect x="1314" y="293" width="44"  height="127" fill="#050516"/>
+  <rect x="1362" y="258" width="38"  height="162" fill="#040412"/>
+
+  <!-- ── WINDOW LIGHTS ──────────────────────────────────────────── -->
+  <!-- Left cluster -->
+  <rect x="58"   y="138" width="5"  height="5"  fill="#00e5ff" opacity="0.90"/>
+  <rect x="72"   y="158" width="4"  height="4"  fill="#ffd600" opacity="0.80"/>
+  <rect x="101"  y="113" width="5"  height="5"  fill="#00e5ff" opacity="0.85"/>
+  <rect x="127"  y="148" width="5"  height="5"  fill="#ffd600" opacity="0.78"/>
+  <rect x="140"  y="168" width="4"  height="4"  fill="#00e5ff" opacity="0.70"/>
+  <rect x="156"  y="186" width="4"  height="4"  fill="#be4cf7" opacity="0.65"/>
+  <rect x="219"  y="128" width="5"  height="5"  fill="#00e5ff" opacity="0.82"/>
+  <rect x="234"  y="148" width="4"  height="4"  fill="#be4cf7" opacity="0.78"/>
+  <rect x="248"  y="168" width="4"  height="4"  fill="#ffd600" opacity="0.68"/>
+  <rect x="297"  y="116" width="5"  height="5"  fill="#ffd600" opacity="0.78"/>
+  <rect x="312"  y="132" width="4"  height="4"  fill="#00e5ff" opacity="0.72"/>
+  <rect x="328"  y="152" width="4"  height="4"  fill="#ff2d78" opacity="0.62"/>
+  <rect x="387"  y="90"  width="5"  height="5"  fill="#00e5ff" opacity="0.92"/>
+  <rect x="402"  y="106" width="4"  height="4"  fill="#ff2d78" opacity="0.82"/>
+  <rect x="418"  y="122" width="5"  height="5"  fill="#ffd600" opacity="0.72"/>
+  <rect x="432"  y="142" width="4"  height="4"  fill="#00e5ff" opacity="0.65"/>
+  <!-- Center windows -->
+  <rect x="483"  y="106" width="5"  height="5"  fill="#00e5ff" opacity="0.88"/>
+  <rect x="498"  y="122" width="4"  height="4"  fill="#ffd600" opacity="0.80"/>
+  <rect x="516"  y="138" width="5"  height="5"  fill="#be4cf7" opacity="0.78"/>
+  <rect x="530"  y="158" width="4"  height="4"  fill="#00e5ff" opacity="0.68"/>
+  <rect x="581"  y="86"  width="5"  height="5"  fill="#00e5ff" opacity="0.92"/>
+  <rect x="597"  y="102" width="4"  height="4"  fill="#ff2d78" opacity="0.82"/>
+  <rect x="614"  y="118" width="5"  height="5"  fill="#ffd600" opacity="0.75"/>
+  <rect x="637"  y="122" width="5"  height="5"  fill="#00e5ff" opacity="0.72"/>
+  <rect x="662"  y="138" width="4"  height="4"  fill="#ffd600" opacity="0.78"/>
+  <rect x="680"  y="158" width="5"  height="5"  fill="#00e5ff" opacity="0.68"/>
+  <rect x="725"  y="100" width="5"  height="5"  fill="#ffd600" opacity="0.88"/>
+  <rect x="742"  y="118" width="4"  height="4"  fill="#00e5ff" opacity="0.82"/>
+  <rect x="756"  y="136" width="4"  height="4"  fill="#be4cf7" opacity="0.72"/>
+  <!-- Right cluster windows -->
+  <rect x="809"  y="90"  width="5"  height="5"  fill="#ff2d78" opacity="0.92"/>
+  <rect x="826"  y="108" width="4"  height="4"  fill="#00e5ff" opacity="0.82"/>
+  <rect x="842"  y="126" width="5"  height="5"  fill="#ffd600" opacity="0.78"/>
+  <rect x="861"  y="113" width="5"  height="5"  fill="#00e5ff" opacity="0.88"/>
+  <rect x="878"  y="130" width="4"  height="4"  fill="#be4cf7" opacity="0.82"/>
+  <rect x="894"  y="148" width="4"  height="4"  fill="#00e5ff" opacity="0.72"/>
+  <rect x="963"  y="110" width="5"  height="5"  fill="#ffd600" opacity="0.82"/>
+  <rect x="980"  y="126" width="4"  height="4"  fill="#00e5ff" opacity="0.74"/>
+  <rect x="996"  y="142" width="5"  height="5"  fill="#ffd600" opacity="0.68"/>
+  <rect x="1012" y="138" width="4"  height="4"  fill="#be4cf7" opacity="0.65"/>
+  <rect x="1057" y="100" width="5"  height="5"  fill="#00e5ff" opacity="0.88"/>
+  <rect x="1074" y="116" width="4"  height="4"  fill="#ff2d78" opacity="0.82"/>
+  <rect x="1092" y="130" width="5"  height="5"  fill="#ffd600" opacity="0.78"/>
+  <rect x="1110" y="146" width="4"  height="4"  fill="#00e5ff" opacity="0.72"/>
+  <rect x="1126" y="162" width="4"  height="4"  fill="#be4cf7" opacity="0.65"/>
+  <rect x="1195" y="116" width="5"  height="5"  fill="#ffd600" opacity="0.82"/>
+  <rect x="1212" y="132" width="4"  height="4"  fill="#00e5ff" opacity="0.78"/>
+  <rect x="1228" y="150" width="5"  height="5"  fill="#be4cf7" opacity="0.72"/>
+
+  <!-- ── BRIDGE / WATERFRONT ─────────────────────────────────────── -->
+  <rect x="0"   y="383" width="1400" height="8"  fill="#060620"/>
+  <rect x="0"   y="391" width="1400" height="5"  fill="#040418"/>
+  <!-- Bridge top line neon -->
+  <rect x="0"   y="383" width="1400" height="1"  fill="rgba(0,229,255,0.38)"/>
+  <!-- Bridge pillars -->
+  <rect x="100"  y="379" width="6"  height="12"  fill="#080832"/>
+  <rect x="200"  y="379" width="6"  height="12"  fill="#080832"/>
+  <rect x="300"  y="379" width="6"  height="12"  fill="#080832"/>
+  <rect x="400"  y="379" width="6"  height="12"  fill="#080832"/>
+  <rect x="500"  y="379" width="6"  height="12"  fill="#080832"/>
+  <rect x="600"  y="379" width="6"  height="12"  fill="#080832"/>
+  <rect x="700"  y="379" width="6"  height="12"  fill="#080832"/>
+  <rect x="800"  y="379" width="6"  height="12"  fill="#080832"/>
+  <rect x="900"  y="379" width="6"  height="12"  fill="#080832"/>
+  <rect x="1000" y="379" width="6"  height="12"  fill="#080832"/>
+  <rect x="1100" y="379" width="6"  height="12"  fill="#080832"/>
+  <rect x="1200" y="379" width="6"  height="12"  fill="#080832"/>
+  <rect x="1300" y="379" width="6"  height="12"  fill="#080832"/>
+  <!-- Street lamps (cross/plus shapes) -->
+  <rect x="150"  y="370" width="2"  height="12"  fill="rgba(0,229,255,0.72)"/>
+  <rect x="146"  y="372" width="10" height="2"   fill="rgba(0,229,255,0.72)"/>
+  <rect x="350"  y="370" width="2"  height="12"  fill="rgba(0,229,255,0.72)"/>
+  <rect x="346"  y="372" width="10" height="2"   fill="rgba(0,229,255,0.72)"/>
+  <rect x="550"  y="370" width="2"  height="12"  fill="rgba(57,255,20,0.72)"/>
+  <rect x="546"  y="372" width="10" height="2"   fill="rgba(57,255,20,0.72)"/>
+  <rect x="750"  y="370" width="2"  height="12"  fill="rgba(0,229,255,0.72)"/>
+  <rect x="746"  y="372" width="10" height="2"   fill="rgba(0,229,255,0.72)"/>
+  <rect x="950"  y="370" width="2"  height="12"  fill="rgba(57,255,20,0.72)"/>
+  <rect x="946"  y="372" width="10" height="2"   fill="rgba(57,255,20,0.72)"/>
+  <rect x="1150" y="370" width="2"  height="12"  fill="rgba(0,229,255,0.72)"/>
+  <rect x="1146" y="372" width="10" height="2"   fill="rgba(0,229,255,0.72)"/>
+  <rect x="1350" y="370" width="2"  height="12"  fill="rgba(0,229,255,0.72)"/>
+  <rect x="1346" y="372" width="10" height="2"   fill="rgba(0,229,255,0.72)"/>
+  <!-- Neon green bar (dock structure, like mockup) -->
+  <rect x="420"  y="368" width="64" height="4"   fill="rgba(57,255,20,0.55)"/>
+  <rect x="1080" y="368" width="80" height="4"   fill="rgba(57,255,20,0.42)"/>
+
+  <!-- ── WATER REFLECTION ────────────────────────────────────────── -->
+  <rect x="0"   y="396" width="1400" height="24" fill="url(#water-grad)"/>
+  <!-- Neon reflections in water -->
+  <rect x="150"  y="398" width="2"  height="8"   fill="rgba(0,229,255,0.40)"/>
+  <rect x="350"  y="400" width="2"  height="5"   fill="rgba(0,229,255,0.36)"/>
+  <rect x="550"  y="398" width="2"  height="8"   fill="rgba(57,255,20,0.36)"/>
+  <rect x="750"  y="400" width="2"  height="5"   fill="rgba(0,229,255,0.40)"/>
+  <rect x="950"  y="398" width="2"  height="8"   fill="rgba(57,255,20,0.32)"/>
+  <rect x="1150" y="400" width="2"  height="5"   fill="rgba(0,229,255,0.36)"/>
+  <rect x="1350" y="398" width="2"  height="8"   fill="rgba(0,229,255,0.40)"/>
+  <!-- Horizontal water shimmer lines -->
+  <rect x="0"   y="404" width="1400" height="1"  fill="rgba(0,10,50,0.75)"/>
+  <rect x="0"   y="409" width="1400" height="1"  fill="rgba(0,10,50,0.60)"/>
+  <rect x="0"   y="414" width="1400" height="1"  fill="rgba(0,10,50,0.45)"/>
+  <!-- Wide neon glow blobs reflecting off water -->
+  <rect x="380"  y="398" width="10" height="16"  fill="rgba(0,229,255,0.10)"/>
+  <rect x="806"  y="398" width="10" height="16"  fill="rgba(255,45,120,0.10)"/>
+  <rect x="1190" y="398" width="10" height="16"  fill="rgba(0,229,255,0.10)"/>
+
+  <!-- ── AMBIENT GLOW (city neon reflecting upward) ──────────────── -->
+  <rect x="0"   y="355" width="320"  height="45" fill="rgba(0,229,255,0.025)"/>
+  <rect x="320" y="345" width="380"  height="55" fill="rgba(255,45,120,0.020)"/>
+  <rect x="700" y="350" width="280"  height="50" fill="rgba(0,229,255,0.025)"/>
+  <rect x="980" y="355" width="420"  height="45" fill="rgba(190,76,247,0.020)"/>
+</svg>
