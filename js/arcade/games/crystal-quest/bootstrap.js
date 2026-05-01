@@ -5,6 +5,15 @@ import { CRYSTAL_QUEST_CONFIG } from './config.js';
 import { createGameAdapter, registerGameAdapter, bootstrapFromAdapter } from '/js/arcade/engine/game-adapter.js';
 import { playSound, stopAllSounds, isMuted } from '/js/arcade/core/audio.js';
 import { createSamAgent } from './sam-agent.js';
+import { getActiveModifiers, hasEffect, getStatEffect } from '/js/arcade/systems/cross-game-modifier-system.js';
+import {
+  getPlayerFaction, getFactionEffects,
+} from '/js/arcade/systems/faction-effect-system.js';
+import { recordContribution } from '/js/arcade/systems/faction-war-system.js';
+import { recordMissionProgress } from '/js/arcade/systems/faction-missions.js';
+import { recordLogin, recordWarContribution } from '/js/arcade/systems/faction-streaks.js';
+import { checkRankUp } from '/js/arcade/systems/faction-ranks.js';
+import { emitFactionGain } from '/js/arcade/systems/live-activity.js';
 
 // UI status copy — use the global set by ui-status-copy.js (classic script); fall back to literal.
 const COPY = window.UI_STATUS_COPY || { UNLINKED: 'Telegram not linked \u2014 run /gklink' };
@@ -81,6 +90,27 @@ function createLegacybootstrapCrystalQuest(root) {
   var usedQuestions   = [];
   var knownQuestionIds = new Set();
   var loreUnlocked = [];   // crystals secured this run
+
+  // ── Faction state ─────────────────────────────────────────────────────────
+  var _cqFactionId = 'unaligned';
+  var _cqFxDef     = null;
+  var _cqCrossMods     = [];
+  var _cqModScoreMult  = 1;
+
+  function _cqInitFaction() {
+    _cqFactionId    = getPlayerFaction();
+    _cqFxDef        = getFactionEffects(_cqFactionId);
+    _cqCrossMods    = getActiveModifiers(GAME_ID, CRYSTAL_QUEST_CONFIG.crossGameTags || []);
+    _cqModScoreMult = getStatEffect(_cqCrossMods, 'scoreMult', 1);
+    recordLogin(_cqFactionId);
+  }
+
+  function _cqEmitBus(event, detail) {
+    try {
+      var bus = (typeof window !== 'undefined') && window.MOONBOYS_EVENT_BUS;
+      if (bus && typeof bus.emit === 'function') bus.emit(event, detail);
+    } catch (_) {}
+  }
 
   // â”€â”€ Visual helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   function setGlow(type) {
@@ -237,6 +267,24 @@ function createLegacybootstrapCrystalQuest(root) {
     }
     run.submitted = true;
     updateHud();
+
+    // ── Faction + mission hooks ───────────────────────────────────────────────
+    try {
+      var fId = _cqFactionId || 'unaligned';
+      var contrib = Math.max(1, Math.floor(score / 100));
+      recordMissionProgress(fId, 'runs', 1);
+      recordMissionProgress(fId, 'score', score);
+      if (streak >= 3) recordMissionProgress(fId, 'combo', streak);
+      if (score > 0) {
+        recordContribution(fId, 'score_submission', contrib);
+        recordWarContribution(fId, contrib);
+        checkRankUp(fId);
+        emitFactionGain(fId, contrib, 'score_submission');
+        recordMissionProgress(fId, 'war_contrib', contrib);
+        _cqEmitBus('arcade:faction-signal', { gameId: GAME_ID, factionId: fId, amount: contrib, ts: Date.now() });
+        _cqEmitBus('arcade:mission-progress', { gameId: GAME_ID, factionId: fId, ts: Date.now() });
+      }
+    } catch (_) {}
     if (feedback)   feedback.textContent   = canSubmitIdentity()
       ? 'ðŸ† Run complete. Score submitted to leaderboard.'
       : 'ðŸ Run complete. Link identity to sync this score next run.';
@@ -403,6 +451,7 @@ function createLegacybootstrapCrystalQuest(root) {
       return;
     }
 
+    _cqInitFaction();
     var questionSet = unusedQuestions.splice(0, runLength);
     run = createRunSession(questionSet, seed);
     score = 0;
@@ -481,6 +530,13 @@ function createLegacybootstrapCrystalQuest(root) {
         setGlow('pulse-correct');
       }
       playQuestSound('correct');
+      // Apply cross-game score multiplier
+      if (_cqModScoreMult !== 1) score = Math.round(score - scoreGain + scoreGain * _cqModScoreMult);
+      // Emit combo milestone
+      if (streak === 3 || streak === 5) {
+        _cqEmitBus('arcade:perk-triggered', { gameId: GAME_ID, factionId: _cqFactionId, perkKey: 'comboStreak', ts: Date.now() });
+        recordMissionProgress(_cqFactionId, 'combo', streak);
+      }
       if (feedback) feedback.textContent = 'ðŸ’Ž Crystal secured: ' + (q.title || 'Lore entry') + '  (+' + scoreGain + ')';
     } else {
       streak = 0;

@@ -24,6 +24,15 @@ import { pickRiskRewardChoices } from '/js/arcade/systems/risk-system.js';
 import { buildRunSummary, recordRunStats, checkMilestones, getDailyVariation } from '/js/arcade/systems/meta-system.js';
 import { pulseHudElement, setTransientBanner } from '/js/arcade/systems/feedback-system.js';
 import { playSound, stopAllSounds, isMuted } from '/js/arcade/core/audio.js';
+import {
+  getPlayerFaction, getFactionEffects,
+  applyFactionStartingShield, applyFactionEventRate,
+} from '/js/arcade/systems/faction-effect-system.js';
+import { recordContribution } from '/js/arcade/systems/faction-war-system.js';
+import { recordMissionProgress } from '/js/arcade/systems/faction-missions.js';
+import { recordLogin, recordWarContribution } from '/js/arcade/systems/faction-streaks.js';
+import { checkRankUp } from '/js/arcade/systems/faction-ranks.js';
+import { emitFactionGain } from '/js/arcade/systems/live-activity.js';
 
 const GAME_ID = SNAKE_RUN_CONFIG.id;
 const WORLD_W = 1600;
@@ -32,6 +41,13 @@ const GRID_COLS = 44;
 const GRID_ROWS = 26;
 const CELL = 32;
 const FIXED_STEP = 1 / 60;
+
+function _srEmitBus(event, detail) {
+  try {
+    var bus = (typeof window !== 'undefined') && window.MOONBOYS_EVENT_BUS;
+    if (bus && typeof bus.emit === 'function') bus.emit(event, detail);
+  } catch (_) {}
+}
 
 const SYSTEM_FACTORIES = {
   upgrade: createUpgradeSystem,
@@ -79,14 +95,14 @@ const FOOD_DEFS = {
 };
 
 const UPGRADE_DEFS = [
-  { id: 'speed-control', label: 'Speed Control', desc: 'Smoother, faster snake cadence.' },
-  { id: 'segment-growth', label: 'Segment Growth', desc: 'Food grants more body growth.' },
-  { id: 'score-mult', label: 'Score Mult', desc: 'Permanent score multiplier.' },
-  { id: 'shield-segment', label: 'Shield Segment', desc: 'Gain shield charges.' },
-  { id: 'ghost-phase', label: 'Ghost Phase', desc: 'Pass through one hit.' },
-  { id: 'magnet-food', label: 'Magnet Food', desc: 'Nearby food drifts to you.' },
-  { id: 'auto-turn', label: 'Auto Turn Assist', desc: 'Auto-steer away from traps.' },
-  { id: 'split-snake', label: 'Split Snake', desc: 'Spawn a helper clone.' },
+  { id: 'speed-control',  label: 'Speed Control',      desc: 'Smoother, faster snake cadence.',       category: 'score'    },
+  { id: 'segment-growth', label: 'Segment Growth',      desc: 'Food grants more body growth.',         category: 'score'    },
+  { id: 'score-mult',     label: 'Score Mult',          desc: 'Permanent score multiplier.',           category: 'score'    },
+  { id: 'shield-segment', label: 'Shield Segment',      desc: 'Gain shield charges.',                  category: 'survival' },
+  { id: 'ghost-phase',    label: 'Ghost Phase',         desc: 'Pass through one hit.',                 category: 'survival' },
+  { id: 'magnet-food',    label: 'Magnet Food',         desc: 'Nearby food drifts to you.',            category: 'score'    },
+  { id: 'auto-turn',      label: 'Auto Turn Assist',    desc: 'Auto-steer away from traps.',           category: 'survival' },
+  { id: 'split-snake',    label: 'Split Snake',         desc: 'Spawn a helper clone.',                 category: 'rare'     },
 ];
 
 const BOSS_TYPES = ['mega-serpent', 'grid-crusher', 'orb-core', 'phantom-snake'];
@@ -227,6 +243,10 @@ function createState(root) {
     metaLast: null,
     resizeHandler: null,
     fsHandler: null,
+    // Faction state — populated in resetRun()
+    _srFactionId: 'unaligned',
+    _srFxDef: null,
+    _srFactionPerkFired: false,
   };
 }
 
@@ -299,6 +319,21 @@ function resetRun(state) {
   if (_srShieldedStart) {
     state.upgrades['shield-segment'] = 1;
   }
+
+  // ── Faction init ────────────────────────────────────────────────────────────
+  state._srFactionId      = getPlayerFaction();
+  state._srFxDef          = getFactionEffects(state._srFactionId);
+  state._srFactionPerkFired = false;
+
+  // HODL Warriors: +1 shield segment at run start
+  const _srFactionShield = applyFactionStartingShield(0, state._srFactionId, { supportsShield: true });
+  if (_srFactionShield > 0) {
+    state.upgrades['shield-segment'] = Math.max(state.upgrades['shield-segment'], 1) + _srFactionShield;
+    _srEmitBus('arcade:perk-triggered', { gameId: GAME_ID, factionId: state._srFactionId, perkKey: 'shieldBonus', ts: Date.now() });
+  }
+  // Apply faction chaos modifier to pressureRate
+  state._crossModPressureRate = state._crossModPressureRate * applyFactionEventRate(1, state._srFactionId);
+  recordLogin(state._srFactionId);
 
   state.foods = [];
   for (let i = 0; i < 5; i += 1) spawnFood(state, 'normal');
@@ -511,6 +546,10 @@ function applyUpgradeChoice(state, index) {
   state.pendingUpgradeChoices = [];
   cue('snake-run-upgrade', makeTone(620, 980, 0.11, 'triangle', 0.05));
   setTransientBanner(state.warningBanner, 'Upgrade: ' + choice.label, '#8bf9ff', 1.8);
+  _srEmitBus('arcade:upgrade-selected', {
+    gameId: GAME_ID, factionId: state._srFactionId || 'unaligned',
+    upgradeId: choice.id, upgradeLabel: choice.label, category: choice.category, ts: Date.now(),
+  });
 }
 
 function applyRiskChoice(state, index) {
@@ -1043,6 +1082,13 @@ function updateSim(state, dt) {
     if (state.warningBanner.value.timer <= 0) state.warningBanner.value = null;
   }
 
+  // Faction survival bonus: Diamond Hands triggers after 45s
+  if (!state._srFactionPerkFired && state._srFxDef && state._srFxDef.rewardBias === 'endurance' && state.elapsed > 45) {
+    state._srFactionPerkFired = true;
+    _srEmitBus('arcade:perk-triggered', { gameId: GAME_ID, factionId: state._srFactionId, perkKey: 'survivalBonus', ts: Date.now() });
+    setTransientBanner(state.warningBanner, '💎 Diamond Hands: Endurance bonus active!', '#b9f2ff', 2.5);
+  }
+
   if (state.waitingForFirstInput) {
     state.moveAccumulator = 0;
     state.moveProgress = 0;
@@ -1359,6 +1405,27 @@ function adapterUpdate(context, dt) {
     };
 
     submitScore(ArcadeSync.getPlayer(), Math.floor(state.score), GAME_ID);
+
+    // ── Faction + mission hooks ───────────────────────────────────────────────
+    try {
+      const fId = state._srFactionId || 'unaligned';
+      const contrib = Math.max(1, Math.floor(state.score / 100));
+      recordMissionProgress(fId, 'runs', 1);
+      recordMissionProgress(fId, 'score', Math.floor(state.score));
+      recordMissionProgress(fId, 'survive', Math.floor(state.elapsed));
+      if (state.elapsed > 45 && state.score > 0) recordMissionProgress(fId, 'bank_score', 1);
+      if (state.runStats.bossesDefeated > 0) recordMissionProgress(fId, 'boss_defeated', state.runStats.bossesDefeated);
+      if (state.score > 0) {
+        recordContribution(fId, 'score_submission', contrib);
+        recordWarContribution(fId, contrib);
+        checkRankUp(fId);
+        emitFactionGain(fId, contrib, 'score_submission');
+        recordMissionProgress(fId, 'war_contrib', contrib);
+        _srEmitBus('arcade:faction-signal', { gameId: GAME_ID, factionId: fId, amount: contrib, ts: Date.now() });
+        _srEmitBus('arcade:mission-progress', { gameId: GAME_ID, factionId: fId, ts: Date.now() });
+      }
+    } catch (_) {}
+
     if (window.showGameOverModal) window.showGameOverModal(Math.floor(state.score), state.metaLast && state.metaLast.runSummary ? state.metaLast.runSummary : undefined);
   }
 }

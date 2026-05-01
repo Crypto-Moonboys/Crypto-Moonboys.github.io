@@ -18,6 +18,15 @@ import {
 import { playSound, stopAllSounds, isMuted } from '/js/arcade/core/audio.js';
 import { BaseGame } from '/js/arcade/engine/BaseGame.js';
 import { getActiveModifiers, hasEffect, getStatEffect } from '/js/arcade/systems/cross-game-modifier-system.js';
+import {
+  getPlayerFaction, getFactionEffects,
+  applyFactionStartingShield, applyFactionEventRate,
+} from '/js/arcade/systems/faction-effect-system.js';
+import { recordContribution } from '/js/arcade/systems/faction-war-system.js';
+import { recordMissionProgress } from '/js/arcade/systems/faction-missions.js';
+import { recordLogin, recordWarContribution } from '/js/arcade/systems/faction-streaks.js';
+import { checkRankUp } from '/js/arcade/systems/faction-ranks.js';
+import { emitFactionGain } from '/js/arcade/systems/live-activity.js';
 
 import {
   B_W, B_H, B_PAD, B_COLS,
@@ -385,6 +394,24 @@ export function bootstrapBreakoutBullrun(root) {
 
 function createLegacyBootstrapBreakoutBullrun(root) {
   const GAME_ID = BREAKOUT_BULLRUN_CONFIG.id;
+
+  // ── Faction state ─────────────────────────────────────────────────────────
+  let _bbFactionId       = 'unaligned';
+  let _bbFxDef           = null;
+  let _bbFactionPerkFired = false;   // true once survival bonus triggers this run
+
+  function _bbInitFaction() {
+    _bbFactionId       = getPlayerFaction();
+    _bbFxDef           = getFactionEffects(_bbFactionId);
+    _bbFactionPerkFired = false;
+  }
+
+  function _bbEmitBus(event, detail) {
+    try {
+      var bus = (typeof window !== 'undefined') && window.MOONBOYS_EVENT_BUS;
+      if (bus && typeof bus.emit === 'function') bus.emit(event, detail);
+    } catch (_) {}
+  }
 
   const canvas = document.getElementById('brkCanvas');
   if (!canvas) {
@@ -956,6 +983,26 @@ function createLegacyBootstrapBreakoutBullrun(root) {
       } catch (_) {}
     }
 
+    // ── Faction + mission hooks ───────────────────────────────────────────────
+    try {
+      const fId = _bbFactionId || 'unaligned';
+      const contrib = Math.max(1, Math.floor(score / 100));
+      recordMissionProgress(fId, 'runs', 1);
+      recordMissionProgress(fId, 'score', score);
+      recordMissionProgress(fId, 'survive', Math.floor(elapsed));
+      if (elapsed > 45 && score > 0) recordMissionProgress(fId, 'bank_score', 1);
+      if (runStats.bossesDefeated > 0) recordMissionProgress(fId, 'boss_defeated', runStats.bossesDefeated);
+      if (score > 0) {
+        recordContribution(fId, 'score_submission', contrib);
+        recordWarContribution(fId, contrib);
+        checkRankUp(fId);
+        emitFactionGain(fId, contrib, 'score_submission');
+        recordMissionProgress(fId, 'war_contrib', contrib);
+        _bbEmitBus('arcade:faction-signal', { gameId: GAME_ID, factionId: fId, amount: contrib, ts: Date.now() });
+        _bbEmitBus('arcade:mission-progress', { gameId: GAME_ID, factionId: fId, ts: Date.now() });
+      }
+    } catch (_) {}
+
     draw();
     if (window.showGameOverModal) window.showGameOverModal(score);
   }
@@ -1003,7 +1050,17 @@ function createLegacyBootstrapBreakoutBullrun(root) {
 
     // ── Scaling director ────────────────────────────────────────────────────
 
-    tickDirector(director, dt, score, wave, lives, upgrades, !!activeEvent, (dailyVariation.eventRateMult || 1) * bbModPressureRate);
+    tickDirector(director, dt, score, wave, lives, upgrades, !!activeEvent,
+      (dailyVariation.eventRateMult || 1)
+      * bbModPressureRate
+      * (_bbFxDef ? applyFactionEventRate(1, _bbFactionId) : 1));
+
+    // Faction survival bonus: Diamond Hands activates after 45s
+    if (!_bbFactionPerkFired && _bbFxDef && _bbFxDef.rewardBias === 'endurance' && elapsed > 45) {
+      _bbFactionPerkFired = true;
+      _bbEmitBus('arcade:perk-triggered', { gameId: GAME_ID, factionId: _bbFactionId, perkKey: 'survivalBonus', ts: Date.now() });
+      addBanner('💎 Diamond Hands: Endurance bonus active!', '#b9f2ff');
+    }
 
     // ── Forced chaos event ──────────────────────────────────────────────────
 
@@ -1577,6 +1634,12 @@ function createLegacyBootstrapBreakoutBullrun(root) {
       if (idx !== undefined && upgradeChoices[idx]) {
         const applied = applyUpgrade(upgradeChoices[idx].id, upgrades);
         if (!applied) addScore(wave * 150 + 300, W / 2, H / 2, '#bc8cff');
+        // Emit upgrade-selected event
+        _bbEmitBus('arcade:upgrade-selected', {
+          gameId: GAME_ID, factionId: _bbFactionId,
+          upgradeId: upgradeChoices[idx].id, upgradeLabel: upgradeChoices[idx].label,
+          category: upgradeChoices[idx].rarity || 'common', ts: Date.now(),
+        });
         upgradePhase   = false;
         upgradeChoices = [];
         screenFlashTimer = 0.35;
@@ -1733,10 +1796,18 @@ function createLegacyBootstrapBreakoutBullrun(root) {
     paddle.w  = PAD_BASE_W;
     // Re-fetch cross-game modifiers so each new run picks up any selection change
     _bbRefreshCrossMods();
-    // Shielded Start: add a floor shield charge at run start
+    // Faction: initialise faction effects for this run
+    _bbInitFaction();
+    // Shielded Start: add a floor shield charge at run start (modifier or faction HODL Warriors)
     if (bbModShieldedStart) {
       lives += 1;
     }
+    const _bbFactionShield = _bbFxDef ? applyFactionStartingShield(0, _bbFactionId, { supportsShield: true }) : 0;
+    if (_bbFactionShield > 0) {
+      lives += _bbFactionShield;
+      _bbEmitBus('arcade:perk-triggered', { gameId: GAME_ID, factionId: _bbFactionId, perkKey: 'shieldBonus', ts: Date.now() });
+    }
+    recordLogin(_bbFactionId);
     updateHud();
   }
 
