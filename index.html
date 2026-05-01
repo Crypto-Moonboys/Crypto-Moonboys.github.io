@@ -20,164 +20,6 @@
   <link rel="stylesheet" href="/css/retro-16bit-theme.css">
   <link rel="icon" href="/img/favicon.svg" type="image/svg+xml">
 
-<style id="homepage-emergency-hero-lock">
-  body.page-home .home-hero.launch-hero {
-    position: relative !important;
-    overflow: hidden !important;
-    isolation: isolate;
-    min-height: 680px;
-    padding: clamp(26px, 4vw, 48px) clamp(18px, 4vw, 48px) 34px !important;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: flex-start;
-  }
-
-  body.page-home .home-hero.launch-hero .retro-hero-bg {
-    position: absolute !important;
-    inset: 0 !important;
-    z-index: 0 !important;
-    overflow: hidden !important;
-    pointer-events: none !important;
-    background: #050814 !important;
-    display: flex !important;
-    align-items: flex-start !important;
-    justify-content: center !important;
-  }
-
-  body.page-home .home-hero.launch-hero .hero-layer {
-    position: absolute !important;
-    inset: 0 !important;
-    width: 100% !important;
-    height: 100% !important;
-    pointer-events: none !important;
-    image-rendering: pixelated;
-  }
-
-  body.page-home .home-hero.launch-hero .hero-real-bg {
-    z-index: 1 !important;
-    object-fit: contain !important;
-    object-position: center top !important;
-    height: auto !important;
-    left: 50% !important;
-    transform: translateX(-50%) !important;
-    opacity: 0.72 !important;
-    filter: saturate(1.12) contrast(1.05) brightness(0.82);
-  }
-
-  body.page-home .home-hero.launch-hero .hero-real-ui-overlay {
-    z-index: 4 !important;
-    object-fit: fill !important;
-    opacity: 0.62 !important;
-  }
-
-  body.page-home .home-hero.launch-hero .retro-hero-bg::before {
-    content: "";
-    position: absolute;
-    inset: -4%;
-    z-index: 2;
-    pointer-events: none;
-    background:
-      radial-gradient(48% 18% at 18% 24%, rgba(126, 70, 255, 0.18), transparent 72%),
-      radial-gradient(38% 16% at 78% 18%, rgba(0, 229, 255, 0.12), transparent 72%),
-      repeating-linear-gradient(90deg, rgba(255, 45, 120, 0.045) 0 8px, rgba(0, 229, 255, 0.035) 8px 16px, rgba(0, 0, 0, 0) 16px 32px);
-    opacity: 0.38;
-    animation: homeHeroAtmoDrift 44s linear infinite alternate;
-  }
-
-  body.page-home .home-hero.launch-hero .retro-hero-bg::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    z-index: 3;
-    pointer-events: none;
-    background:
-      repeating-linear-gradient(0deg, rgba(0, 0, 0, 0) 0 3px, rgba(0, 229, 255, 0.05) 3px 4px),
-      linear-gradient(100deg, rgba(255, 45, 120, 0.08) 0%, rgba(0, 0, 0, 0) 32%, rgba(0, 229, 255, 0.08) 60%, rgba(0, 0, 0, 0) 100%);
-    opacity: 0.2;
-    animation: homeHeroNeonFlicker 8s steps(3, end) infinite;
-  }
-
-  body.page-home .home-hero.launch-hero > :not(.retro-hero-bg) {
-    position: relative !important;
-    z-index: 10 !important;
-  }
-
-  body.page-home .home-hero.launch-hero h1,
-  body.page-home .home-hero.launch-hero .launch-manifesto,
-  body.page-home .home-hero.launch-hero .launch-subcopy {
-    text-align: center;
-    max-width: 880px;
-  }
-
-  body.page-home .home-hero.launch-hero .launch-subcopy {
-    max-width: 780px;
-  }
-
-  body.page-home .home-hero.launch-hero .hero-logo-img {
-    display: block !important;
-    width: clamp(260px, 38vw, 500px) !important;
-    max-width: min(92%, 500px) !important;
-    height: auto !important;
-    max-height: 350px !important;
-    object-fit: contain !important;
-    margin: 22px auto 20px !important;
-    z-index: 12 !important;
-    image-rendering: pixelated;
-  }
-
-  body.page-home .home-hero.launch-hero .launch-cta-row,
-  body.page-home .home-hero.launch-hero .launch-route,
-  body.page-home .home-hero.launch-hero .hero-stats {
-    position: relative !important;
-    z-index: 13 !important;
-    width: min(100%, 980px);
-  }
-
-  body.page-home .home-hero.launch-hero .launch-cta-row {
-    display: flex;
-    justify-content: center;
-    flex-wrap: wrap;
-    gap: 14px;
-    margin-top: 0;
-  }
-
-  body.page-home .home-hero.launch-hero .launch-route { margin-top: 18px; }
-  body.page-home .home-hero.launch-hero .hero-stats { margin-top: 18px; }
-
-  @keyframes homeHeroAtmoDrift {
-    from { transform: translate3d(-1.4%, 0, 0); }
-    to { transform: translate3d(1.4%, -0.5%, 0); }
-  }
-
-  @keyframes homeHeroNeonFlicker {
-    0%, 100% { opacity: 0.2; }
-    24% { opacity: 0.28; }
-    50% { opacity: 0.16; }
-    72% { opacity: 0.25; }
-  }
-
-  @media (max-width: 900px) {
-    body.page-home .home-hero.launch-hero {
-      min-height: 560px;
-      padding: 24px 16px 28px !important;
-    }
-    body.page-home .home-hero.launch-hero .hero-logo-img {
-      width: min(82vw, 390px) !important;
-      max-height: 280px !important;
-      margin: 18px auto 16px !important;
-    }
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    body.page-home .home-hero.launch-hero .retro-hero-bg::before,
-    body.page-home .home-hero.launch-hero .retro-hero-bg::after {
-      animation: none !important;
-      transform: none !important;
-    }
-  }
-</style>
-
 </head>
 <body class="page-home">
 
@@ -255,7 +97,14 @@
 
       <section class="home-hero launch-hero">
         <div class="retro-hero-bg" aria-hidden="true">
-          <img class="hero-layer hero-real-bg" src="/assets/ui/home-hero-city-only-bg.jpg" alt="" decoding="async" fetchpriority="high">
+          <img class="hero-layer hero-split-section hero-split-top" src="/assets/ui/home-hero-split/section_top.png" alt="" decoding="async" fetchpriority="high">
+          <img class="hero-layer hero-split-section hero-split-middle" src="/assets/ui/home-hero-split/section_middle.png" alt="" decoding="async" fetchpriority="high">
+          <img class="hero-layer hero-split-section hero-split-bottom" src="/assets/ui/home-hero-split/section_bottom.png" alt="" decoding="async" fetchpriority="high">
+
+          <img class="hero-layer hero-split-overlay hero-split-overlay-top" src="/assets/ui/home-hero-split/animation_overlay_top.png" alt="" decoding="async" fetchpriority="low">
+          <img class="hero-layer hero-split-overlay hero-split-overlay-middle" src="/assets/ui/home-hero-split/animation_overlay_middle.png" alt="" decoding="async" fetchpriority="low">
+          <img class="hero-layer hero-split-overlay hero-split-overlay-bottom" src="/assets/ui/home-hero-split/animation_overlay_bottom.png" alt="" decoding="async" fetchpriority="low">
+
           <img class="hero-layer hero-real-ui-overlay" src="/assets/ui/home-ui-real-overlay.svg" alt="" decoding="async" fetchpriority="low">
         </div>
 
