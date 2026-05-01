@@ -1,0 +1,941 @@
+/* ============================================================
+   RETRO 16-BIT CYBERPUNK THEME
+   Crypto Moonboys GK Wiki — Locked visual direction
+   Neon magenta / cyan / green · CRT scanline · Pixel HUD
+   ============================================================ */
+
+/* ── PALETTE & VARIABLE OVERRIDES ──────────────────────────── */
+:root {
+  /* Base surface overrides */
+  --color-bg:              #040c14;
+  --color-surface:         #091525;
+  --color-surface-2:       #0d1e30;
+  --color-border:          rgba(0, 229, 255, 0.22);
+  --color-text:            #d4f0ff;
+  --color-text-muted:      #5a98b8;
+  --color-text-link:       #00e5ff;
+  --color-text-link-hover: #ff2d78;
+  --color-accent:          #ffd600;
+  --color-accent-dark:     #cc9900;
+  --color-green:           #39ff14;
+  --color-red:             #ff2d78;
+  --shadow:                0 4px 18px rgba(0, 0, 0, 0.7);
+
+  /* Neon accent palette */
+  --neon-magenta: #ff2d78;
+  --neon-cyan:    #00e5ff;
+  --neon-green:   #39ff14;
+  --neon-yellow:  #ffd600;
+  --neon-purple:  #be4cf7;
+  --neon-orange:  #ff8a00;
+
+  /* Glow presets */
+  --glow-cyan:    0 0 8px rgba(0, 229, 255, 0.8),  0 0 20px rgba(0, 229, 255, 0.3);
+  --glow-magenta: 0 0 8px rgba(255, 45, 120, 0.8), 0 0 20px rgba(255, 45, 120, 0.3);
+  --glow-green:   0 0 8px rgba(57, 255, 20, 0.7),  0 0 16px rgba(57, 255, 20, 0.25);
+  --glow-yellow:  0 0 8px rgba(255, 214, 0, 0.7),  0 0 16px rgba(255, 214, 0, 0.25);
+
+  /* Layout dimensions */
+  --right-panel-w: 270px;
+}
+
+/* ── PREFERS-REDUCED-MOTION ──────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.05ms !important;
+  }
+}
+
+/* ── ANIMATION KEYFRAMES ─────────────────────────────────────── */
+
+@keyframes moonGlow {
+  0%   { box-shadow: 0 0 30px rgba(190, 76, 247, 0.5), 0 0 60px rgba(190, 76, 247, 0.2); }
+  100% { box-shadow: 0 0 55px rgba(190, 76, 247, 0.75), 0 0 100px rgba(190, 76, 247, 0.32); }
+}
+
+@keyframes cloudDrift {
+  0%   { transform: translateX(-260px); }
+  100% { transform: translateX(110vw); }
+}
+
+@keyframes edgeFlicker {
+  0%, 89%, 91%, 93%, 100% { opacity: 1; }
+  90%  { opacity: 0.72; }
+  92%  { opacity: 0.92; }
+}
+
+@keyframes starTwinkle {
+  0%, 100% { opacity: 0.8; }
+  50%       { opacity: 0.2; }
+}
+
+/* City window-light blink variants */
+@keyframes lightBlink1 {
+  0%, 100%   { opacity: 0.9; }
+  47%, 53%   { opacity: 0.08; }
+}
+@keyframes lightBlink2 {
+  0%, 100%   { opacity: 0.8; }
+  28%, 34%   { opacity: 0.06; }
+  65%, 68%   { opacity: 0.55; }
+}
+@keyframes lightBlink3 {
+  0%, 100%   { opacity: 0.72; }
+  58%, 64%   { opacity: 0.04; }
+}
+
+/* ── GLOBAL OVERRIDES ───────────────────────────────────────── */
+body {
+  background: var(--color-bg);
+  color: var(--color-text);
+}
+
+/* CRT scanlines overlay — very subtle, does not affect readability */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 9998;
+  pointer-events: none;
+  background-image: repeating-linear-gradient(
+    0deg,
+    transparent 0,
+    transparent 3px,
+    rgba(0, 0, 0, 0.042) 3px,
+    rgba(0, 0, 0, 0.042) 4px
+  );
+}
+
+/* CRT edge vignette — light corner darkening */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 9997;
+  pointer-events: none;
+  background: radial-gradient(
+    ellipse at center,
+    transparent 62%,
+    rgba(0, 0, 0, 0.32) 100%
+  );
+}
+
+a                 { color: var(--neon-cyan); }
+a:hover           { color: var(--neon-magenta); }
+
+/* ── SITE HEADER ─────────────────────────────────────────────── */
+#site-header {
+  background: rgba(4, 12, 20, 0.94);
+  border-bottom: 2px solid var(--neon-magenta);
+  box-shadow: 0 2px 20px rgba(255, 45, 120, 0.28),
+              0 0 0 1px rgba(255, 45, 120, 0.12);
+  backdrop-filter: blur(8px);
+}
+
+.site-logo img {
+  image-rendering: pixelated;
+  border-radius: 4px;
+  border: 1px solid rgba(0, 229, 255, 0.4);
+  box-shadow: 0 0 8px rgba(0, 229, 255, 0.3);
+}
+
+.site-logo .logo-text {
+  font-family: var(--font-display);
+  color: var(--neon-cyan);
+  text-shadow: var(--glow-cyan);
+  letter-spacing: 0.04em;
+}
+
+.site-logo .logo-sub {
+  color: var(--neon-magenta);
+  opacity: 0.8;
+  letter-spacing: 0.06em;
+  text-shadow: 0 0 6px rgba(255, 45, 120, 0.5);
+}
+
+/* Search bar */
+#header-search input {
+  background: rgba(0, 10, 20, 0.8);
+  border-color: rgba(0, 229, 255, 0.38);
+  color: var(--color-text);
+  font-family: var(--font-mono);
+  letter-spacing: 0.03em;
+}
+#header-search input:focus {
+  border-color: var(--neon-cyan);
+  box-shadow: 0 0 12px rgba(0, 229, 255, 0.3);
+}
+#header-search button       { color: var(--neon-cyan); }
+#header-search button:hover { color: var(--neon-magenta); }
+
+/* Search results */
+#search-results {
+  background: rgba(9, 21, 37, 0.97);
+  border-color: rgba(0, 229, 255, 0.3);
+}
+#search-results .sr-item:hover { background: rgba(0, 229, 255, 0.07); }
+#search-results .sr-cat        { color: var(--neon-cyan); }
+
+/* Header nav */
+.header-nav a {
+  font-family: var(--font-display);
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  letter-spacing: 0.06em;
+}
+.header-nav a:hover {
+  background: rgba(0, 229, 255, 0.09);
+  color: var(--neon-cyan);
+}
+.header-nav a.active { color: var(--neon-yellow); }
+
+.hamburger { color: var(--neon-cyan); }
+
+/* ── SIDEBAR ─────────────────────────────────────────────────── */
+#sidebar {
+  background: rgba(4, 12, 20, 0.96);
+  border-right: 1px solid rgba(255, 45, 120, 0.3);
+}
+
+.sidebar-section + .sidebar-section {
+  border-top-color: rgba(0, 229, 255, 0.15);
+}
+
+.sidebar-heading {
+  font-family: var(--font-display);
+  color: var(--neon-magenta);
+  text-shadow: 0 0 8px rgba(255, 45, 120, 0.5);
+  letter-spacing: 0.1em;
+}
+
+.sidebar-nav a {
+  color: var(--color-text-muted);
+  font-size: 0.84rem;
+  transition: background 0.15s, color 0.15s, border-color 0.15s, text-shadow 0.15s;
+}
+.sidebar-nav a:hover {
+  background: rgba(0, 229, 255, 0.07);
+  color: var(--neon-cyan);
+  text-decoration: none;
+  text-shadow: 0 0 6px rgba(0, 229, 255, 0.4);
+}
+.sidebar-nav a.active {
+  background: rgba(255, 45, 120, 0.1);
+  color: var(--neon-magenta);
+  border-left-color: var(--neon-magenta);
+  text-shadow: 0 0 6px rgba(255, 45, 120, 0.5);
+}
+
+.nav-icon {
+  filter: drop-shadow(0 0 3px rgba(0, 229, 255, 0.45));
+}
+
+/* ── SECTION HEADINGS ────────────────────────────────────────── */
+.section-heading {
+  font-family: var(--font-display);
+  color: var(--neon-cyan);
+  text-shadow: 0 0 8px rgba(0, 229, 255, 0.4);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.section-heading::after {
+  background: linear-gradient(90deg, rgba(0, 229, 255, 0.45), transparent);
+}
+
+/* ── CATEGORY CARDS ──────────────────────────────────────────── */
+.category-card {
+  background: rgba(9, 21, 37, 0.72);
+  border-color: rgba(0, 229, 255, 0.2);
+  transition: border-color 0.2s, transform 0.15s, box-shadow 0.2s;
+}
+.category-card:hover {
+  border-color: var(--neon-cyan);
+  box-shadow: 0 0 14px rgba(0, 229, 255, 0.22);
+  transform: translateY(-2px);
+  text-decoration: none;
+}
+.category-card .cat-name {
+  font-family: var(--font-display);
+  font-size: 0.8rem;
+  color: var(--neon-cyan);
+  letter-spacing: 0.03em;
+}
+.category-card .cat-count {
+  font-size: 0.7rem;
+  color: var(--color-text-muted);
+}
+
+/* ── ARTICLE CARDS ───────────────────────────────────────────── */
+.article-card {
+  background: rgba(9, 21, 37, 0.72);
+  border-color: rgba(0, 229, 255, 0.17);
+}
+.article-card:hover {
+  border-color: var(--neon-magenta);
+  box-shadow: 0 0 14px rgba(255, 45, 120, 0.18);
+}
+.article-card-title {
+  font-family: var(--font-display);
+  font-size: 0.86rem;
+  color: var(--color-text);
+}
+.article-card-cat {
+  color: var(--neon-yellow);
+  border-top-color: rgba(0, 229, 255, 0.12);
+}
+.article-card-img {
+  background: rgba(5, 14, 28, 0.65);
+  color: var(--neon-cyan);
+  filter: drop-shadow(0 0 4px rgba(0, 229, 255, 0.5));
+}
+
+/* ── HOME HERO ───────────────────────────────────────────────── */
+.home-hero,
+.home-hero.launch-hero {
+  background: linear-gradient(
+    180deg,
+    #030815 0%,
+    #060f22 30%,
+    #0a1535 65%,
+    #0d1a28 100%
+  ) !important;
+  border: 2px solid var(--neon-magenta) !important;
+  box-shadow: 0 0 30px rgba(255, 45, 120, 0.25),
+              inset 0 0 60px rgba(0, 10, 30, 0.5) !important;
+  border-radius: 8px;
+  overflow: hidden;
+  position: relative;
+}
+
+/* Remove old yellow radial gradient */
+.home-hero::before { background: none !important; }
+
+/* Hero heading */
+.home-hero h1 {
+  font-family: var(--font-display);
+  color: #fff;
+  text-shadow: 0 0 14px rgba(0, 229, 255, 0.7),
+               0 0 32px rgba(0, 229, 255, 0.25);
+  font-size: clamp(1.8rem, 4vw, 2.8rem);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  position: relative;
+  z-index: 2;
+}
+
+/* Living Web3 Wiki kicker badge */
+.launch-kicker {
+  color: var(--neon-cyan) !important;
+  border-color: rgba(0, 229, 255, 0.5) !important;
+  background: rgba(0, 229, 255, 0.1) !important;
+  font-family: var(--font-display);
+  text-shadow: 0 0 6px rgba(0, 229, 255, 0.4);
+  position: relative;
+  z-index: 2;
+  border-radius: 4px !important;
+}
+
+/* Hero manifesto lines */
+.launch-manifesto {
+  color: var(--neon-cyan) !important;
+  font-family: var(--font-display);
+  text-shadow: 0 0 8px rgba(0, 229, 255, 0.28);
+  font-size: clamp(1rem, 2vw, 1.22rem) !important;
+  letter-spacing: 0.03em;
+  position: relative;
+  z-index: 2;
+}
+
+.launch-subcopy {
+  color: var(--color-text-muted) !important;
+  position: relative;
+  z-index: 2;
+}
+
+/* Hero logo */
+.hero-logo-img {
+  filter: drop-shadow(0 8px 24px rgba(0, 229, 255, 0.18))
+          drop-shadow(0 0 40px rgba(255, 45, 120, 0.12));
+  position: relative;
+  z-index: 2;
+}
+
+/* ── CTA BUTTONS ─────────────────────────────────────────────── */
+.launch-cta-row {
+  position: relative;
+  z-index: 2;
+}
+
+.launch-cta-primary,
+.launch-cta-secondary {
+  font-family: var(--font-display);
+  font-size: 0.8rem !important;
+  letter-spacing: 0.1em !important;
+  border-radius: 6px !important;
+  font-weight: 700;
+  text-transform: uppercase;
+  transition: background 0.2s, box-shadow 0.2s, transform 0.15s;
+}
+
+/* Explore the Wiki — cyan */
+.launch-cta-row a:nth-child(1),
+.launch-cta-primary {
+  background: rgba(0, 229, 255, 0.12) !important;
+  border: 2px solid var(--neon-cyan) !important;
+  color: var(--neon-cyan) !important;
+  box-shadow: 0 0 14px rgba(0, 229, 255, 0.28),
+              inset 0 0 12px rgba(0, 229, 255, 0.07) !important;
+}
+.launch-cta-row a:nth-child(1):hover,
+.launch-cta-primary:hover {
+  background: rgba(0, 229, 255, 0.22) !important;
+  box-shadow: var(--glow-cyan),
+              inset 0 0 18px rgba(0, 229, 255, 0.12) !important;
+  text-decoration: none;
+  transform: translateY(-1px);
+}
+
+/* Play Arcade — magenta */
+.launch-cta-row a:nth-child(2) {
+  background: rgba(255, 45, 120, 0.15) !important;
+  border: 2px solid var(--neon-magenta) !important;
+  color: #fff !important;
+  box-shadow: 0 0 14px rgba(255, 45, 120, 0.28),
+              inset 0 0 12px rgba(255, 45, 120, 0.07) !important;
+}
+.launch-cta-row a:nth-child(2):hover {
+  background: rgba(255, 45, 120, 0.28) !important;
+  box-shadow: var(--glow-magenta),
+              inset 0 0 18px rgba(255, 45, 120, 0.12) !important;
+  text-decoration: none;
+  transform: translateY(-1px);
+}
+
+/* Link Telegram — green */
+.launch-cta-row a:nth-child(3) {
+  background: rgba(57, 255, 20, 0.1) !important;
+  border: 2px solid var(--neon-green) !important;
+  color: var(--neon-green) !important;
+  box-shadow: 0 0 14px rgba(57, 255, 20, 0.22),
+              inset 0 0 12px rgba(57, 255, 20, 0.05) !important;
+}
+.launch-cta-row a:nth-child(3):hover {
+  background: rgba(57, 255, 20, 0.2) !important;
+  box-shadow: var(--glow-green),
+              inset 0 0 18px rgba(57, 255, 20, 0.1) !important;
+  text-decoration: none;
+  transform: translateY(-1px);
+}
+
+/* ── ROUTE BAR ───────────────────────────────────────────────── */
+.launch-route {
+  background: rgba(4, 12, 20, 0.82) !important;
+  border: 1px solid rgba(0, 229, 255, 0.35) !important;
+  border-radius: 6px !important;
+  position: relative;
+  z-index: 2;
+  backdrop-filter: blur(4px);
+}
+.launch-route-title {
+  font-family: var(--font-display);
+  color: var(--neon-magenta) !important;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-size: 0.7rem;
+}
+.launch-route-flow {
+  color: var(--neon-cyan) !important;
+  font-family: var(--font-mono);
+  font-size: 0.84rem;
+}
+.launch-route-flow a      { color: var(--neon-green); }
+.launch-route-flow a:hover { color: var(--neon-yellow); }
+
+/* ── HERO STATS ──────────────────────────────────────────────── */
+.hero-stats {
+  position: relative;
+  z-index: 2;
+}
+.hero-stat .stat-num {
+  color: var(--neon-cyan);
+  font-family: var(--font-display);
+  text-shadow: 0 0 8px rgba(0, 229, 255, 0.5);
+}
+.hero-stat .stat-label {
+  color: var(--color-text-muted);
+  font-family: var(--font-display);
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+a.hero-stat-link:hover {
+  background: rgba(0, 229, 255, 0.08);
+}
+
+/* ── HERO DECORATIVE BACKGROUND ──────────────────────────────── */
+.retro-hero-bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+  user-select: none;
+}
+
+/* Stars — radial-gradient dots scattered across upper sky */
+.retro-stars {
+  position: absolute;
+  inset: 0;
+  background-image:
+    radial-gradient(1px 1px at  8%  12%, rgba(255, 255, 255, 0.80) 0, transparent 100%),
+    radial-gradient(1px 1px at 15%   5%, rgba(0, 229, 255, 0.70)   0, transparent 100%),
+    radial-gradient(2px 2px at 22%  18%, rgba(255, 255, 255, 0.55) 0, transparent 100%),
+    radial-gradient(1px 1px at 30%   8%, rgba(255, 255, 255, 0.70) 0, transparent 100%),
+    radial-gradient(1px 1px at 38%  14%, rgba(190, 76, 247, 0.75)  0, transparent 100%),
+    radial-gradient(1px 1px at 45%   6%, rgba(255, 255, 255, 0.60) 0, transparent 100%),
+    radial-gradient(2px 2px at 55%  10%, rgba(0, 229, 255, 0.65)   0, transparent 100%),
+    radial-gradient(1px 1px at 62%   4%, rgba(255, 255, 255, 0.80) 0, transparent 100%),
+    radial-gradient(1px 1px at 70%  16%, rgba(255, 255, 255, 0.50) 0, transparent 100%),
+    radial-gradient(1px 1px at 75%   7%, rgba(190, 76, 247, 0.60)  0, transparent 100%),
+    radial-gradient(1px 1px at 82%  12%, rgba(255, 255, 255, 0.70) 0, transparent 100%),
+    radial-gradient(2px 2px at 88%   5%, rgba(0, 229, 255, 0.60)   0, transparent 100%),
+    radial-gradient(1px 1px at 93%  18%, rgba(255, 255, 255, 0.80) 0, transparent 100%),
+    radial-gradient(1px 1px at 97%   9%, rgba(255, 255, 255, 0.50) 0, transparent 100%),
+    radial-gradient(1px 1px at  5%  22%, rgba(255, 255, 255, 0.40) 0, transparent 100%),
+    radial-gradient(1px 1px at 18%  28%, rgba(0, 229, 255, 0.38)   0, transparent 100%),
+    radial-gradient(1px 1px at 50%  22%, rgba(255, 255, 255, 0.30) 0, transparent 100%),
+    radial-gradient(1px 1px at 77%  25%, rgba(190, 76, 247, 0.38)  0, transparent 100%),
+    radial-gradient(1px 1px at 35%  28%, rgba(255, 255, 255, 0.32) 0, transparent 100%),
+    radial-gradient(1px 1px at 66%  20%, rgba(255, 255, 255, 0.45) 0, transparent 100%);
+}
+
+/* Moon — radial-gradient circle, upper right */
+.retro-moon {
+  position: absolute;
+  top: 6%;
+  right: 7%;
+  width: 128px;
+  height: 128px;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle at 38% 38%,
+    #e8b4f8 0%,
+    #bf60d8 28%,
+    #8030b0 55%,
+    #4a1080 78%,
+    #260848 100%
+  );
+  box-shadow: 0 0 30px rgba(190, 76, 247, 0.5),
+              0 0 60px rgba(190, 76, 247, 0.22),
+              0 0 100px rgba(190, 76, 247, 0.1);
+  animation: moonGlow 5s ease-in-out infinite alternate;
+}
+
+/* Moon crater detail */
+.retro-moon::before {
+  content: '';
+  position: absolute;
+  top: 18%;
+  left: 22%;
+  width: 28%;
+  height: 28%;
+  border-radius: 50%;
+  background: rgba(60, 8, 88, 0.45);
+}
+
+/* Drifting clouds — dark purple, blur creates haze */
+.retro-cloud {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(14px);
+}
+.retro-cloud-1 {
+  top: 10%;
+  left: -240px;
+  width: 200px;
+  height: 38px;
+  background: rgba(100, 28, 150, 0.32);
+  animation: cloudDrift 52s linear infinite;
+}
+.retro-cloud-2 {
+  top: 5%;
+  left: -320px;
+  width: 260px;
+  height: 28px;
+  background: rgba(70, 18, 115, 0.24);
+  animation: cloudDrift 72s 20s linear infinite;
+}
+.retro-cloud-3 {
+  top: 20%;
+  left: -180px;
+  width: 140px;
+  height: 22px;
+  background: rgba(0, 90, 160, 0.20);
+  animation: cloudDrift 44s 34s linear infinite;
+}
+
+/* Pixel city SVG — positioned at the bottom of the hero */
+.retro-city-svg {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: auto;
+  max-height: 48%;
+}
+
+/* City window-light animation groups */
+.retro-city-svg .city-light-a1 { animation: lightBlink1 3.2s 0.0s  infinite; }
+.retro-city-svg .city-light-a2 { animation: lightBlink2 2.6s 0.9s  infinite; }
+.retro-city-svg .city-light-a3 { animation: lightBlink3 4.3s 1.6s  infinite; }
+.retro-city-svg .city-light-a4 { animation: lightBlink1 5.5s 2.4s  infinite; }
+.retro-city-svg .city-light-a5 { animation: lightBlink2 3.8s 3.8s  infinite; }
+
+/* ── HOMEPAGE RIGHT-PANEL LAYOUT ─────────────────────────────── */
+/* Three-column grid: sidebar | content | right-panel */
+.page-home #layout {
+  display: grid;
+  grid-template-columns: var(--color-sidebar-w) 1fr var(--right-panel-w);
+  align-items: start;
+}
+
+/* Ensure main wrapper still stacks vertically inside the grid */
+.page-home #main-wrapper {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── RIGHT PANEL ─────────────────────────────────────────────── */
+/* wiki.css has a defensive guard:
+ *   #layout > *:not(#sidebar):not(#main-wrapper) { max-width:0!important; overflow:hidden!important; padding:0!important }
+ * The !important overrides below beat that rule so the panel is
+ * visible when the 3-column grid is active (desktop ≥ 1201 px).
+ */
+#homepage-right-panel {
+  position: sticky;
+  top: var(--color-header-h);
+  height: calc(100vh - var(--color-header-h));
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  padding: 14px 10px !important;
+  margin: 0 !important;
+  max-width: var(--right-panel-w) !important;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  border-left: 1px solid rgba(255, 45, 120, 0.28);
+  background: rgba(4, 10, 18, 0.6);
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 229, 255, 0.3) transparent;
+}
+#homepage-right-panel::-webkit-scrollbar       { width: 4px; }
+#homepage-right-panel::-webkit-scrollbar-track { background: transparent; }
+#homepage-right-panel::-webkit-scrollbar-thumb {
+  background: rgba(0, 229, 255, 0.28);
+  border-radius: 2px;
+}
+
+/* ── HUD BOXES ───────────────────────────────────────────────── */
+.retro-hud-box {
+  background: rgba(5, 14, 26, 0.88);
+  border: 1px solid rgba(0, 229, 255, 0.38);
+  border-radius: 6px;
+  overflow: hidden;
+  flex-shrink: 0;
+  animation: edgeFlicker 9s ease-in-out infinite;
+}
+.retro-hud-box:nth-child(2) { animation-delay: -3.1s; }
+.retro-hud-box:nth-child(3) { animation-delay: -6.3s; }
+
+.retro-hud-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 10px 6px;
+  background: linear-gradient(90deg,
+    rgba(0, 229, 255, 0.18) 0%,
+    rgba(0, 229, 255, 0.03) 100%
+  );
+  border-bottom: 1px solid rgba(0, 229, 255, 0.3);
+  font-family: var(--font-display);
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--neon-cyan);
+  text-shadow: 0 0 6px rgba(0, 229, 255, 0.6);
+}
+
+.retro-hud-title-icon {
+  font-size: 0.72rem;
+  line-height: 1;
+  opacity: 0.85;
+}
+
+.retro-hud-body {
+  padding: 10px;
+  font-size: 0.78rem;
+  min-height: 40px;
+  color: var(--color-text);
+}
+
+/* Nudge CSP and LAS content to match retro sizing */
+.retro-hud-body [class*="csp-"],
+.retro-hud-body [class*="las-"] {
+  font-size: 0.76rem;
+}
+
+/* ── REUSABLE THEME CLASSES ──────────────────────────────────── */
+
+.retro-panel {
+  background: rgba(5, 14, 26, 0.85);
+  border: 1px solid rgba(0, 229, 255, 0.35);
+  border-radius: 6px;
+  padding: 14px;
+}
+
+.retro-pixel-card {
+  background: rgba(5, 14, 26, 0.78);
+  border: 1px solid rgba(255, 45, 120, 0.3);
+  border-radius: 6px;
+  padding: 12px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.retro-pixel-card:hover {
+  border-color: var(--neon-magenta);
+  box-shadow: 0 0 12px rgba(255, 45, 120, 0.24);
+}
+
+.retro-dialogue {
+  background: rgba(2, 8, 18, 0.92);
+  border: 2px solid var(--neon-cyan);
+  border-radius: 4px;
+  padding: 14px 16px;
+  font-family: var(--font-mono);
+  box-shadow: 0 0 16px rgba(0, 229, 255, 0.2);
+}
+
+.retro-loading-bar {
+  width: 100%;
+  height: 8px;
+  background: rgba(0, 229, 255, 0.1);
+  border: 1px solid rgba(0, 229, 255, 0.3);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.retro-loading-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--neon-cyan), var(--neon-green));
+  box-shadow: 0 0 8px rgba(0, 229, 255, 0.6);
+}
+
+.retro-scanlines {
+  position: relative;
+}
+.retro-scanlines::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image: repeating-linear-gradient(
+    0deg,
+    transparent 0,
+    transparent 3px,
+    rgba(0, 0, 0, 0.06) 3px,
+    rgba(0, 0, 0, 0.06) 4px
+  );
+}
+
+/* Named placeholders for cross-page reuse */
+.retro-city-bg  {}
+.retro-moon-bg  {}
+
+/* ── HOME WIDGETS ────────────────────────────────────────────── */
+.home-widget {
+  background: rgba(9, 21, 37, 0.72);
+  border-color: rgba(0, 229, 255, 0.2);
+  border-radius: 8px;
+}
+.home-widget-header {
+  border-bottom-color: rgba(0, 229, 255, 0.18);
+  color: var(--neon-cyan);
+  font-family: var(--font-display);
+  letter-spacing: 0.08em;
+  background: rgba(0, 229, 255, 0.05);
+}
+.home-widget-icon {
+  filter: drop-shadow(0 0 3px rgba(0, 229, 255, 0.5));
+}
+
+/* "Why this wiki is different" widget (uses inline style) */
+.home-widget[style] {
+  background: rgba(9, 21, 37, 0.72) !important;
+  border: 1px solid rgba(0, 229, 255, 0.22) !important;
+  border-radius: 8px;
+}
+.home-widget[style] h2 {
+  color: var(--neon-cyan);
+  font-family: var(--font-display);
+  text-shadow: 0 0 6px rgba(0, 229, 255, 0.28);
+  letter-spacing: 0.04em;
+}
+.home-widget[style] ul { color: var(--color-text-muted); }
+
+/* Right-panel live-feed sizing */
+#homepage-right-panel .feed-item {
+  padding: 5px 0;
+  font-size: 0.74rem;
+  border-bottom-color: rgba(0, 229, 255, 0.1);
+}
+#homepage-right-panel .feed-text { color: var(--color-text); }
+#homepage-right-panel .feed-time { color: var(--neon-cyan); opacity: 0.6; }
+
+/* ── LIVE FEED / ACTIVITY ────────────────────────────────────── */
+.feed-item { border-bottom-color: rgba(0, 229, 255, 0.12); }
+.feed-text  { color: var(--color-text); }
+.feed-time  { color: var(--neon-cyan); opacity: 0.6; }
+
+/* Leaderboard */
+.lb-rank  { color: var(--neon-yellow); }
+.lb-score { color: var(--neon-cyan); }
+
+/* Activity panel */
+.activity-title { color: var(--neon-cyan); }
+
+/* ── PRICE TICKER ────────────────────────────────────────────── */
+.price-card {
+  background: rgba(9, 21, 37, 0.72);
+  border-color: rgba(0, 229, 255, 0.17);
+}
+.price-card:hover {
+  border-color: var(--neon-cyan);
+  box-shadow: 0 0 10px rgba(0, 229, 255, 0.18);
+}
+.price-card-symbol { font-family: var(--font-display); color: var(--neon-cyan); }
+.price-change-pos  { color: var(--neon-green); }
+.price-change-neg  { color: var(--neon-magenta); }
+
+/* ── BATTLE LAYER OVERRIDES ──────────────────────────────────── */
+.battle-card,
+.community-card,
+.home-widget.battle-widget,
+.battle-shell,
+.feed-burst,
+.leader-row,
+.mission-row,
+.profile-row,
+.community-row {
+  background: rgba(6, 16, 30, 0.7);
+  border-color: rgba(0, 229, 255, 0.22);
+  box-shadow: 0 0 0 1px rgba(0, 229, 255, 0.06) inset,
+              0 12px 28px rgba(0, 0, 0, 0.4);
+}
+
+/* ── BUTTONS (global) ────────────────────────────────────────── */
+.btn-primary {
+  background: var(--neon-cyan);
+  color: #000;
+  font-family: var(--font-display);
+  letter-spacing: 0.06em;
+}
+.btn-primary:hover {
+  background: #00bfdb;
+  text-decoration: none;
+}
+
+/* ── FOOTER ──────────────────────────────────────────────────── */
+#site-footer {
+  background: rgba(4, 10, 18, 0.96);
+  border-top-color: rgba(255, 45, 120, 0.28);
+}
+#site-footer h4 {
+  color: var(--neon-cyan);
+  font-family: var(--font-display);
+}
+.footer-bottom { border-top-color: rgba(0, 229, 255, 0.18); }
+.footer-bottom .no-login-note {
+  border-color: rgba(57, 255, 20, 0.28);
+  background: rgba(57, 255, 20, 0.06);
+  color: var(--neon-green);
+}
+
+/* ── BACK TO TOP ─────────────────────────────────────────────── */
+#back-to-top {
+  background: rgba(0, 229, 255, 0.18);
+  border: 1px solid var(--neon-cyan);
+  color: var(--neon-cyan);
+  box-shadow: var(--glow-cyan);
+}
+#back-to-top:hover {
+  background: rgba(0, 229, 255, 0.32);
+  transform: translateY(-2px);
+}
+
+/* ── SIDEBAR OVERLAY (mobile) ────────────────────────────────── */
+#sidebar-overlay { background: rgba(2, 8, 18, 0.82); }
+
+/* ── RESPONSIVE ──────────────────────────────────────────────── */
+
+/* Collapse right panel below 1200 px */
+@media (max-width: 1200px) {
+  .page-home #layout {
+    grid-template-columns: var(--color-sidebar-w) 1fr;
+  }
+  #homepage-right-panel { display: none; }
+}
+
+/* Stack layout on mobile */
+@media (max-width: 900px) {
+  .page-home #layout {
+    display: flex;
+    flex-direction: column;
+  }
+}
+
+/* Tighten hero on small screens */
+@media (max-width: 640px) {
+  .home-hero h1 {
+    font-size: 1.6rem;
+  }
+  .launch-cta-primary,
+  .launch-cta-secondary {
+    min-width: 140px !important;
+    font-size: 0.74rem !important;
+    padding: 10px 12px !important;
+  }
+  .retro-moon {
+    width: 80px;
+    height: 80px;
+    top: 4%;
+    right: 4%;
+  }
+}
+
+/* ── WIKI ARTICLE CONTENT ────────────────────────────────────── */
+.wiki-content h2 { border-bottom-color: rgba(0, 229, 255, 0.2); }
+.wiki-content a.cite-ref { color: var(--neon-yellow); }
+
+/* Page title accent line */
+.page-title-line {
+  background: linear-gradient(90deg, var(--neon-magenta), transparent);
+}
+
+/* ── TABLE OF CONTENTS ───────────────────────────────────────── */
+#toc {
+  background: rgba(9, 21, 37, 0.72);
+  border-color: rgba(0, 229, 255, 0.2);
+}
+#toc .toc-title { color: var(--neon-cyan); }
+
+/* ── INFOBOX ─────────────────────────────────────────────────── */
+.infobox {
+  background: rgba(9, 21, 37, 0.72);
+  border-color: rgba(0, 229, 255, 0.2);
+}
+.infobox-title {
+  background: var(--neon-magenta);
+  color: #fff;
+}
