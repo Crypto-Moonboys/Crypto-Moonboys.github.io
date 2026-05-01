@@ -609,13 +609,20 @@ a.hero-stat-link:hover {
 }
 
 /* ── RIGHT PANEL ─────────────────────────────────────────────── */
+/* wiki.css has a defensive guard:
+ *   #layout > *:not(#sidebar):not(#main-wrapper) { max-width:0!important; overflow:hidden!important; padding:0!important }
+ * The !important overrides below beat that rule so the panel is
+ * visible when the 3-column grid is active (desktop ≥ 1201 px).
+ */
 #homepage-right-panel {
   position: sticky;
   top: var(--color-header-h);
   height: calc(100vh - var(--color-header-h));
-  overflow-y: auto;
-  overflow-x: hidden;
-  padding: 14px 10px;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  padding: 14px 10px !important;
+  margin: 0 !important;
+  max-width: var(--right-panel-w) !important;
   display: flex;
   flex-direction: column;
   gap: 12px;
