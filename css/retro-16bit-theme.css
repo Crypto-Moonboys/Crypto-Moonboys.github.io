@@ -620,7 +620,7 @@ a.hero-stat-link:hover {
 }
 .hero-real-moon {
   z-index: 3;
-  opacity: 0.55;
+  opacity: 0.48;
   animation: real-moon-pulse 6s ease-in-out infinite alternate;
   mix-blend-mode: screen;
 }
@@ -646,8 +646,8 @@ a.hero-stat-link:hover {
 }
 
 @keyframes real-moon-pulse {
-  from { filter: brightness(1) saturate(1); }
-  to { filter: brightness(1.18) saturate(1.22) drop-shadow(0 0 18px rgba(190, 76, 247, 0.8)); }
+  from { opacity: 0.42; }
+  to { opacity: 0.68; }
 }
 
 @keyframes real-light-flicker {
