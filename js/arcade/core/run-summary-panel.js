@@ -149,12 +149,25 @@ function _buildStatusLine(submitted, isLinked, score) {
 function _buildMissionSection(missions, deltas) {
   if (!missions || missions.length === 0) return '';
 
+  // Build a lookup of delta amounts by type so we can show "+N this run"
+  var deltaMap = {};
+  if (Array.isArray(deltas)) {
+    deltas.forEach(function (d) {
+      if (d && d.type) {
+        deltaMap[d.type] = (deltaMap[d.type] || 0) + (Number(d.value) || 0);
+      }
+    });
+  }
+
   var lines = missions.map(function (m) {
-    var prog    = Math.min(m.progress, m.target);
-    var pct     = m.target > 0 ? Math.round((prog / m.target) * 100) : 0;
-    var status  = m.complete ? '✅' : (pct >= 100 ? '✅' : pct + '%');
+    var prog   = Math.min(m.progress, m.target);
+    var pct    = m.target > 0 ? Math.round((prog / m.target) * 100) : 0;
+    var status = m.complete ? '✅' : (pct >= 100 ? '✅' : pct + '%');
+    // Show delta if any event with a matching type was recorded this run
+    var delta  = deltaMap[m.type] || 0;
+    var deltaText = delta > 0 ? ' <span class="rsp-mission-delta">(+' + delta + ' this run)</span>' : '';
     return '<li class="rsp-mission-item' + (m.complete ? ' rsp-mission--done' : '') + '">'
-      + _esc(m.label) + ' — ' + status
+      + _esc(m.label) + ' — ' + status + deltaText
       + '</li>';
   });
 
@@ -175,11 +188,40 @@ function _buildCTASection(isLinked) {
     '<a class="rsp-cta rsp-cta--link" href="/how-to-play.html#link-telegram">Link Telegram</a>';
 
   return '<div class="rsp-cta-row">'
-    + '<button class="rsp-cta rsp-cta--primary" onclick="window.dispatchEvent(new CustomEvent(\'arcade:play-again\'))">Play Again</button>'
+    + '<button class="rsp-cta rsp-cta--primary" onclick="window.MOONBOYS_RUN_SUMMARY&&window.MOONBOYS_RUN_SUMMARY.playAgain()">Play Again</button>'
     + '<a class="rsp-cta" href="' + lbLink + '">Leaderboard</a>'
     + '<a class="rsp-cta" href="' + btLink + '">Battle Chamber</a>'
     + telegramBtn
     + '</div>';
+}
+
+// ── Play Again helper ──────────────────────────────────────────────────────────
+
+/**
+ * Shared Play Again helper exposed as window.MOONBOYS_RUN_SUMMARY.playAgain().
+ *
+ * Dispatches a cancelable CustomEvent('arcade:play-again') so games can handle
+ * a clean in-page restart.  If no listener calls event.preventDefault() the
+ * helper falls back to window.location.reload() after a 120 ms delay so the
+ * button press visually registers first.
+ */
+function _playAgain() {
+  try {
+    var ev = new CustomEvent('arcade:play-again', { bubbles: true, cancelable: true });
+    var handled = !(typeof window !== 'undefined' && window.dispatchEvent(ev) !== false);
+    // dispatchEvent returns false only if preventDefault was called
+    if (!handled) return;
+    // No listener prevented the default → fall back to page reload
+    setTimeout(function () { if (typeof window !== 'undefined') window.location.reload(); }, 120);
+  } catch (_) {
+    try { if (typeof window !== 'undefined') window.location.reload(); } catch (__) {}
+  }
+}
+
+if (typeof window !== 'undefined') {
+  window.MOONBOYS_RUN_SUMMARY = Object.assign(window.MOONBOYS_RUN_SUMMARY || {}, {
+    playAgain: _playAgain,
+  });
 }
 
 // ── Internal helpers ──────────────────────────────────────────────────────────

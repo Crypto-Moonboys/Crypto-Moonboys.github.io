@@ -20,7 +20,7 @@ import { BaseGame } from '/js/arcade/engine/BaseGame.js';
 import { getActiveModifiers, hasEffect, getStatEffect } from '/js/arcade/systems/cross-game-modifier-system.js';
 import {
   getPlayerFaction, getFactionEffects,
-  applyFactionStartingShield, applyFactionEventRate, applyFactionComboBonus,
+  applyFactionStartingShield, applyFactionEventRate,
 } from '/js/arcade/systems/faction-effect-system.js';
 import { recordContribution } from '/js/arcade/systems/faction-war-system.js';
 import { recordMissionProgress } from '/js/arcade/systems/faction-missions.js';
@@ -993,10 +993,10 @@ function createLegacyBootstrapBreakoutBullrun(root) {
       if (elapsed > 45 && score > 0) recordMissionProgress(fId, 'bank_score', 1);
       if (runStats.bossesDefeated > 0) recordMissionProgress(fId, 'boss_defeated', runStats.bossesDefeated);
       if (score > 0) {
-        recordContribution(fId, contrib);
+        recordContribution(fId, 'score_submission', contrib);
         recordWarContribution(fId, contrib);
         checkRankUp(fId);
-        emitFactionGain(fId, contrib);
+        emitFactionGain(fId, contrib, 'score_submission');
         recordMissionProgress(fId, 'war_contrib', contrib);
         _bbEmitBus('arcade:faction-signal', { gameId: GAME_ID, factionId: fId, amount: contrib, ts: Date.now() });
         _bbEmitBus('arcade:mission-progress', { gameId: GAME_ID, factionId: fId, ts: Date.now() });

@@ -59,10 +59,8 @@ Each game needs in-run options/upgrades appropriate to its format.
 ### Minimum requirements:
 Every active game with upgrades must have at least:
 - 3 upgrade options when an upgrade moment triggers.
-- At least 1 survival-category option.
-- At least 1 score/combo-category option.
-- At least 1 rare or chaos-category option.
-- Faction upgrade bias: if the player's faction is `graffpunks`, chaos/rare options should appear more often; `hodl-warriors` should see survival options more often; `diamond-hands` should see score/endurance options more often.
+- **Enforced mix:** `getUpgradeChoices()` guarantees at least 1 survival-category, 1 score/combo-category, and 1 rare/chaos-category option when the compatible pool is large enough. If the pool is too small, fewer options are returned (no padding).
+- Faction upgrade bias applies *within each slot*: the specific upgrade picked for each slot is biased toward the faction's preferred categories. This means faction identity still matters without overriding the category mix guarantee.
 
 ### Upgrade moments (game-appropriate):
 Games should offer upgrades at safe, natural moments:
@@ -74,12 +72,12 @@ Games should offer upgrades at safe, natural moments:
 - Interval milestone (e.g. every 60 seconds alive)
 
 ### Games without canvas/physics upgrades (e.g. Crystal Quest):
-Quiz-format games are exempt from the upgrade layer. Use streak bonuses, rare question events, and faction-biased scoring as the equivalent layer.
+Quiz-format games are exempt from the upgrade layer. Streak bonuses, rare question events, and faction-biased scoring serve as the equivalent progression layer. This is a documented exception — not a gap.
 
-### Emit on upgrade selected:
+### Emit on upgrade selected (emit the real category from the def):
 ```js
 MOONBOYS_EVENT_BUS.emit('arcade:upgrade-selected', {
-  gameId, factionId, upgradeId, upgradeLabel, category, ts
+  gameId, factionId, upgradeId, upgradeLabel, category, ts  // category from upgrade def, not hardcoded
 });
 ```
 
@@ -127,16 +125,18 @@ Additional events where supported:
 
 ## 6. Faction Contribution Hook
 
-After a run with an accepted score (any positive score submitted), call:
+After a run with a positive score submitted, call:
 
 ```js
-recordContribution(factionId, contributionAmount);
-recordWarContribution(factionId, contributionAmount);
+recordContribution(factionId, 'score_submission', contributionAmount);
+recordWarContribution(factionId);
 checkRankUp(factionId);
-emitFactionGain(factionId, contributionAmount);
+emitFactionGain(factionId, contributionAmount, 'score_submission');
 ```
 
 Contribution amount = `Math.max(1, Math.floor(score / 100))` — game-appropriate scale.
+
+**Wording rule:** this records an estimated contribution to local/pending state. It is NOT a confirmed server reward. Use wording: "faction signal updates after accepted activity."
 
 Emit:
 ```js

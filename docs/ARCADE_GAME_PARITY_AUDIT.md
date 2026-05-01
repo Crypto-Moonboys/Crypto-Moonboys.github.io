@@ -12,9 +12,9 @@ Active games: Invaders 3008, Pac-Chain, Asteroid Fork, Breakout Bullrun, SnakeRu
 | Mark | Meaning |
 |------|---------|
 | ✅ Live | Fully implemented and wired |
-| ⚠️ Partial | Present but incomplete or not emitting hooks |
+| ⚠️ Partial | Present but incomplete or not emitting all hooks |
 | ❌ Missing | Not present; needs to be added |
-| — N/A | Not applicable to this game type |
+| — Exception | Not applicable to this game type — documented exception in `arcade-game-parity-audit.mjs` |
 
 ---
 
@@ -24,12 +24,12 @@ Active games: Invaders 3008, Pac-Chain, Asteroid Fork, Breakout Bullrun, SnakeRu
 |---|---|---|---|---|---|---|---|
 | **Faction effects** | ✅ Live | ✅ Live | ✅ Live | ✅ Live | ✅ Live | ✅ Live | ✅ Live |
 | **Cross-game modifier support** | ✅ Live | ✅ Live | ✅ Live | ✅ Live | ✅ Live | ✅ Live | ✅ Live |
-| **In-run upgrades** | ✅ Live | ✅ Live | ✅ Live | ✅ Live | ✅ Live | ✅ Live | — N/A |
-| **Upgrade selection screen** | ✅ Live | ✅ Live | ✅ Live | ✅ Live | ✅ Live | ✅ Live | — N/A |
-| **Boss / elite / pressure events** | ✅ Live | ✅ Live | ✅ Live | ✅ Live | ✅ Live | ✅ Live | — N/A |
-| **Rare reward / rare spawn system** | ✅ Live | ✅ Live | ✅ Live | ⚠️ Partial | ✅ Live | ✅ Live | — N/A |
+| **In-run upgrades** | ✅ Live | ✅ Live | ✅ Live | ✅ Live | ✅ Live | ✅ Live | — Exception |
+| **Upgrade selection screen** | ✅ Live | ✅ Live | ✅ Live | ✅ Live | ✅ Live | ✅ Live | — Exception |
+| **Boss / elite / pressure events** | ✅ Live | ✅ Live | ✅ Live | ✅ Live | ✅ Live | ✅ Live | — Exception |
+| **Rare reward / rare spawn system** | ✅ Live | ✅ Live | ✅ Live | ⚠️ Partial | ✅ Live | ✅ Live | — Exception |
 | **Combo / streak system** | ✅ Live | ✅ Live | ✅ Live | ✅ Live | ✅ Live | ✅ Live | ✅ Live |
-| **Shield / defense system** | ✅ Live | ✅ Live | ✅ Live | ✅ Live | ✅ Live | ✅ Live | — N/A |
+| **Shield / defense system** | ✅ Live | ✅ Live | ✅ Live | ✅ Live | ✅ Live | ✅ Live | — Exception |
 | **Mission progress hooks** | ✅ Live | ✅ Live | ✅ Live | ✅ Live | ✅ Live | ✅ Live | ✅ Live |
 | **Faction contribution hooks** | ✅ Live | ✅ Live | ✅ Live | ✅ Live | ✅ Live | ✅ Live | ✅ Live |
 | **Post-run reward breakdown** | ✅ Live | ✅ Live | ✅ Live | ✅ Live | ✅ Live | ✅ Live | ✅ Live |
@@ -38,10 +38,10 @@ Active games: Invaders 3008, Pac-Chain, Asteroid Fork, Breakout Bullrun, SnakeRu
 | **Mobile-safe controls** | ⚠️ Partial | ⚠️ Partial | ⚠️ Partial | ⚠️ Partial | ⚠️ Partial | ⚠️ Partial | ✅ Live |
 | **Pre-run context panel** | ✅ Live | ✅ Live | ✅ Live | ✅ Live | ✅ Live | ✅ Live | ✅ Live |
 | **Event bus: arcade:perk-triggered** | ✅ Live | ✅ Live | ✅ Live | ✅ Live | ✅ Live | ✅ Live | ✅ Live |
-| **Event bus: arcade:upgrade-selected** | ✅ Live | ✅ Live | ✅ Live | ✅ Live | ✅ Live | ✅ Live | — N/A |
+| **Event bus: arcade:upgrade-selected** | ✅ Live | ✅ Live | ✅ Live | ✅ Live | ✅ Live | ✅ Live | — Exception |
 | **Event bus: arcade:mission-progress** | ✅ Live | ✅ Live | ✅ Live | ✅ Live | ✅ Live | ✅ Live | ✅ Live |
 | **Event bus: arcade:faction-signal** | ✅ Live | ✅ Live | ✅ Live | ✅ Live | ✅ Live | ✅ Live | ✅ Live |
-| **Shared arcade-upgrade-system integration** | ⚠️ Partial | ⚠️ Partial | ⚠️ Partial | ⚠️ Partial | ⚠️ Partial | ⚠️ Partial | — N/A |
+| **Shared arcade-upgrade-system integration** | ⚠️ Partial | ⚠️ Partial | ⚠️ Partial | ⚠️ Partial | ⚠️ Partial | ⚠️ Partial | — Exception |
 
 ---
 
@@ -83,9 +83,11 @@ Active games: Invaders 3008, Pac-Chain, Asteroid Fork, Breakout Bullrun, SnakeRu
 
 ### Crystal Quest (`crystal`)
 - Quiz/lore game — no canvas/physics mechanics.
-- Added: faction effects (score, combo, rare spawn bias), mission hooks, contribution hooks, event bus emissions (this PR).
+- **Documented exception:** upgrades, bosses, rare spawn system, and shield system are not applicable to the quiz format. These features are exempted in `arcade-game-parity-audit.mjs` and produce WARN (not FAIL) during automated checks.
+- **What Crystal Quest does have:** faction effects (score multiplier, combo tracking, rare question bias), mission hooks, contribution hooks (correct 3-arg signature), event bus emissions (`arcade:perk-triggered`, `arcade:faction-signal`, `arcade:mission-progress`).
+- **Parity equivalent layer:** streak bonuses (combo streak at 3 and 5), faction-biased score multiplier via cross-game modifiers, and per-run mission delta tracking serve as the equivalent of the upgrade/perk layer.
 - Mobile-safe: text input, no directional controls needed.
-- N/A: upgrades, bosses, shield system — not applicable to quiz format.
+- Crystal Quest meets the minimum faction/mission/contribution parity standard for its format.
 
 ---
 

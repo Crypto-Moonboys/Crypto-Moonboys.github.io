@@ -26,7 +26,7 @@ import { pulseHudElement, setTransientBanner } from '/js/arcade/systems/feedback
 import { playSound, stopAllSounds, isMuted } from '/js/arcade/core/audio.js';
 import {
   getPlayerFaction, getFactionEffects,
-  applyFactionStartingShield, applyFactionEventRate, applyFactionComboBonus,
+  applyFactionStartingShield, applyFactionEventRate,
 } from '/js/arcade/systems/faction-effect-system.js';
 import { recordContribution } from '/js/arcade/systems/faction-war-system.js';
 import { recordMissionProgress } from '/js/arcade/systems/faction-missions.js';
@@ -95,14 +95,14 @@ const FOOD_DEFS = {
 };
 
 const UPGRADE_DEFS = [
-  { id: 'speed-control', label: 'Speed Control', desc: 'Smoother, faster snake cadence.' },
-  { id: 'segment-growth', label: 'Segment Growth', desc: 'Food grants more body growth.' },
-  { id: 'score-mult', label: 'Score Mult', desc: 'Permanent score multiplier.' },
-  { id: 'shield-segment', label: 'Shield Segment', desc: 'Gain shield charges.' },
-  { id: 'ghost-phase', label: 'Ghost Phase', desc: 'Pass through one hit.' },
-  { id: 'magnet-food', label: 'Magnet Food', desc: 'Nearby food drifts to you.' },
-  { id: 'auto-turn', label: 'Auto Turn Assist', desc: 'Auto-steer away from traps.' },
-  { id: 'split-snake', label: 'Split Snake', desc: 'Spawn a helper clone.' },
+  { id: 'speed-control',  label: 'Speed Control',      desc: 'Smoother, faster snake cadence.',       category: 'score'    },
+  { id: 'segment-growth', label: 'Segment Growth',      desc: 'Food grants more body growth.',         category: 'score'    },
+  { id: 'score-mult',     label: 'Score Mult',          desc: 'Permanent score multiplier.',           category: 'score'    },
+  { id: 'shield-segment', label: 'Shield Segment',      desc: 'Gain shield charges.',                  category: 'survival' },
+  { id: 'ghost-phase',    label: 'Ghost Phase',         desc: 'Pass through one hit.',                 category: 'survival' },
+  { id: 'magnet-food',    label: 'Magnet Food',         desc: 'Nearby food drifts to you.',            category: 'score'    },
+  { id: 'auto-turn',      label: 'Auto Turn Assist',    desc: 'Auto-steer away from traps.',           category: 'survival' },
+  { id: 'split-snake',    label: 'Split Snake',         desc: 'Spawn a helper clone.',                 category: 'rare'     },
 ];
 
 const BOSS_TYPES = ['mega-serpent', 'grid-crusher', 'orb-core', 'phantom-snake'];
@@ -548,7 +548,7 @@ function applyUpgradeChoice(state, index) {
   setTransientBanner(state.warningBanner, 'Upgrade: ' + choice.label, '#8bf9ff', 1.8);
   _srEmitBus('arcade:upgrade-selected', {
     gameId: GAME_ID, factionId: state._srFactionId || 'unaligned',
-    upgradeId: choice.id, upgradeLabel: choice.label, category: 'survival', ts: Date.now(),
+    upgradeId: choice.id, upgradeLabel: choice.label, category: choice.category || 'survival', ts: Date.now(),
   });
 }
 
@@ -1416,10 +1416,10 @@ function adapterUpdate(context, dt) {
       if (state.elapsed > 45 && state.score > 0) recordMissionProgress(fId, 'bank_score', 1);
       if (state.runStats.bossesDefeated > 0) recordMissionProgress(fId, 'boss_defeated', state.runStats.bossesDefeated);
       if (state.score > 0) {
-        recordContribution(fId, contrib);
+        recordContribution(fId, 'score_submission', contrib);
         recordWarContribution(fId, contrib);
         checkRankUp(fId);
-        emitFactionGain(fId, contrib);
+        emitFactionGain(fId, contrib, 'score_submission');
         recordMissionProgress(fId, 'war_contrib', contrib);
         _srEmitBus('arcade:faction-signal', { gameId: GAME_ID, factionId: fId, amount: contrib, ts: Date.now() });
         _srEmitBus('arcade:mission-progress', { gameId: GAME_ID, factionId: fId, ts: Date.now() });

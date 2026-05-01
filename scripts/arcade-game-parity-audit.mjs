@@ -6,18 +6,28 @@
  * Checks (all run even if an earlier check fails so you get the full picture):
  *   1. Manifest entry exists.
  *   2. Bootstrap file exists on disk.
- *   3. Bootstrap imports faction-effect-system OR has a documented exception.
- *   4. Bootstrap imports cross-game-modifier-system OR has a documented exception.
- *   5. Bootstrap contains recordMissionProgress / mission event hook OR documented exception.
- *   6. Bootstrap contains faction contribution hook (recordContribution) OR documented exception.
- *   7. Bootstrap does NOT contain fake XP wording (claiming XP was awarded).
+ *   3. Bootstrap imports faction-effect-system OR documented exception.
+ *   4. Bootstrap imports cross-game-modifier-system OR documented exception.
+ *   5. Bootstrap contains recordMissionProgress / mission hook OR documented exception.
+ *   6. Bootstrap contains recordContribution OR documented exception.
+ *   7. Bootstrap + game index.html do NOT contain fake XP wording.
+ *
+ * Exception handling:
+ *   If ACTIVE_GAMES_AUDIT has an exception key that matches a failing check,
+ *   the failure is downgraded to a WARN with the documented reason instead of
+ *   blocking the run.  Unrelated checks still FAIL.
+ *
+ * Output labels:
+ *   PASS — check verified true
+ *   WARN — check could not be confirmed but a documented exception covers it
+ *   FAIL — check failed with no valid exception
  *
  * Usage:
  *   node scripts/arcade-game-parity-audit.mjs
  *
  * Exit codes:
- *   0 — all checks passed (warnings printed but not failures)
- *   1 — one or more FAIL checks
+ *   0 — no FAIL (warnings allowed)
+ *   1 — one or more FAIL
  */
 
 import fs from 'node:fs';
@@ -33,7 +43,6 @@ let warnings = 0;
 function fail(msg) { console.error('  [FAIL] ' + msg); failures++; }
 function warn(msg)  { console.warn('  [WARN] ' + msg); warnings++; }
 function pass(msg)  { console.log('  [PASS] ' + msg); }
-function note(msg)  { console.log('  [NOTE] ' + msg); }
 
 function exists(rel) { return fs.existsSync(path.join(ROOT, rel)); }
 function readText(rel) {
@@ -86,24 +95,34 @@ const entryBlocks = [];
 }
 
 const manifest = entryBlocks.map(block => ({
-  id: extractStringField(block, 'id'),
+  id:            extractStringField(block, 'id'),
   bootstrapPath: extractStringField(block, 'bootstrapPath'),
+  page:          extractStringField(block, 'page'),
 })).filter(e => e.id);
 
 // ── Active games under audit ──────────────────────────────────────────────────
+//
+// Exception keys must match the check slugs below:
+//   noFactionImport, noModifierImport, noMissionHook, noContribHook, noUpgrades, noShield
+//
+// When an exception key is present, the associated check emits WARN instead of FAIL.
 
-// Mapping from game id → exception notes (null = no exception, must pass all checks)
 const ACTIVE_GAMES_AUDIT = {
-  invaders:          null,
-  pacchain:          null,
-  asteroids:         null,
+  invaders:           null,
+  pacchain:           null,
+  asteroids:          null,
   'breakout-bullrun': null,
   'snake-run':        null,
-  tetris:            null,
-  crystal:           { noUpgrades: 'quiz format — upgrades N/A', noShield: 'quiz format — shield N/A' },
+  tetris:             null,
+  crystal: {
+    noUpgrades: 'Quiz/lore format — upgrade layer N/A (streak + rare question events serve equivalent role)',
+    noShield:   'Quiz/lore format — shield system N/A',
+  },
 };
 
 // ── Fake XP wording patterns ──────────────────────────────────────────────────
+//
+// These patterns are checked in BOTH the bootstrap file AND the game's index.html.
 
 const FAKE_XP_PATTERNS = [
   /you earned \d+ (arcade\s+)?xp/i,
@@ -112,6 +131,9 @@ const FAKE_XP_PATTERNS = [
   /passive (income|reward)/i,
   /passive xp/i,
   /xp credited/i,
+  /click to claim (arcade\s+)?xp/i,
+  /free xp/i,
+  /guaranteed (arcade\s+)?xp/i,
 ];
 
 // ── Run checks ────────────────────────────────────────────────────────────────
@@ -120,6 +142,15 @@ console.log('\n[arcade-game-parity-audit] Checking ' + Object.keys(ACTIVE_GAMES_
 
 for (const [gameId, exceptions] of Object.entries(ACTIVE_GAMES_AUDIT)) {
   console.log('\n── ' + gameId + ' ──────────────────────────');
+
+  // Helper: emit PASS, WARN (if exception), or FAIL
+  function checkOrException(exKey, failMsg, passMsg) {
+    if (exceptions && exceptions[exKey]) {
+      warn(gameId + ': ' + failMsg + ' — EXCEPTION: ' + exceptions[exKey]);
+    } else {
+      fail(gameId + ': ' + failMsg);
+    }
+  }
 
   // [1] Manifest entry
   const entry = manifest.find(e => e.id === gameId);
@@ -132,42 +163,60 @@ for (const [gameId, exceptions] of Object.entries(ACTIVE_GAMES_AUDIT)) {
   if (!exists(bsRel)) { fail(gameId + ': bootstrap file "' + bsRel + '" not found on disk'); continue; }
   pass(gameId + ': bootstrap file exists → ' + bsRel);
 
-  const src = readText(bsRel) || '';
+  const bsSrc = readText(bsRel) || '';
 
-  // [3] Faction effect import
-  const hasFactionImport = /faction-effect-system/.test(src);
-  if (hasFactionImport) { pass(gameId + ': imports faction-effect-system'); }
-  else { fail(gameId + ': no faction-effect-system import — must import getPlayerFaction/getFactionEffects'); }
-
-  // [4] Cross-game modifier import (may be direct or via systems/index.js re-export)
-  const hasModifierImport = /cross-game-modifier-system/.test(src)
-    || (/getActiveModifiers/.test(src) && /arcade\/systems\/index/.test(src));
-  if (hasModifierImport) { pass(gameId + ': imports cross-game-modifier-system'); }
-  else { fail(gameId + ': no cross-game-modifier-system import'); }
-
-  // [5] Mission progress hook
-  const hasMissionHook = /recordMissionProgress/.test(src);
-  if (hasMissionHook) { pass(gameId + ': contains recordMissionProgress hook'); }
-  else { fail(gameId + ': missing recordMissionProgress hook — must report mission events on run end'); }
-
-  // [6] Faction contribution hook
-  const hasContribHook = /recordContribution/.test(src);
-  if (hasContribHook) { pass(gameId + ': contains recordContribution hook'); }
-  else { fail(gameId + ': missing recordContribution hook'); }
-
-  // [7] No fake XP wording
-  const fakeMatches = FAKE_XP_PATTERNS.filter(re => re.test(src));
-  if (fakeMatches.length === 0) { pass(gameId + ': no fake XP wording detected'); }
-  else {
-    for (const re of fakeMatches) {
-      fail(gameId + ': fake XP wording detected (pattern: ' + re.toString() + ')');
-    }
+  // Derive index.html path from manifest page field
+  // page field looks like '/games/snake-run/' → 'games/snake-run/index.html'
+  const pageRel = entry.page ? entry.page.replace(/^\//, '') + 'index.html' : null;
+  const pageSrc = pageRel ? (readText(pageRel) || '') : '';
+  if (!pageRel) {
+    warn(gameId + ': no page path in manifest — index.html not checked for fake XP wording');
+  } else if (!exists(pageRel)) {
+    warn(gameId + ': game index.html not found at "' + pageRel + '" — skipping HTML fake XP check');
+  } else {
+    pass(gameId + ': game index.html found → ' + pageRel);
   }
 
-  // Additional info
-  if (exceptions) {
-    for (const [key, reason] of Object.entries(exceptions)) {
-      note(gameId + ': exception — ' + key + ': ' + reason);
+  // [3] Faction effect import
+  const hasFactionImport = /faction-effect-system/.test(bsSrc);
+  if (hasFactionImport) { pass(gameId + ': imports faction-effect-system'); }
+  else { checkOrException('noFactionImport', 'no faction-effect-system import'); }
+
+  // [4] Cross-game modifier import (may be direct or via systems/index.js re-export)
+  const hasModifierImport = /cross-game-modifier-system/.test(bsSrc)
+    || (/getActiveModifiers/.test(bsSrc) && /arcade\/systems\/index/.test(bsSrc));
+  if (hasModifierImport) { pass(gameId + ': imports cross-game-modifier-system'); }
+  else { checkOrException('noModifierImport', 'no cross-game-modifier-system import'); }
+
+  // [5] Mission progress hook
+  const hasMissionHook = /recordMissionProgress/.test(bsSrc);
+  if (hasMissionHook) { pass(gameId + ': contains recordMissionProgress hook'); }
+  else { checkOrException('noMissionHook', 'missing recordMissionProgress hook'); }
+
+  // [6] Faction contribution hook — correct 3-arg signature required
+  const hasContribHook = /recordContribution\s*\(/.test(bsSrc);
+  const hasCorrectContribSig = /recordContribution\s*\([^,]+,\s*['"]score_submission['"]/.test(bsSrc);
+  if (!hasContribHook) {
+    checkOrException('noContribHook', 'missing recordContribution hook');
+  } else if (!hasCorrectContribSig) {
+    fail(gameId + ': recordContribution called without correct source argument — expected recordContribution(fId, "score_submission", amount)');
+  } else {
+    pass(gameId + ': recordContribution hook present with correct signature');
+  }
+
+  // [7a] No fake XP wording in bootstrap
+  const bsFakeMatches = FAKE_XP_PATTERNS.filter(re => re.test(bsSrc));
+  if (bsFakeMatches.length === 0) { pass(gameId + ': no fake XP wording in bootstrap'); }
+  else {
+    for (const re of bsFakeMatches) fail(gameId + ': fake XP wording in bootstrap (pattern: ' + re.toString() + ')');
+  }
+
+  // [7b] No fake XP wording in game index.html
+  if (pageSrc) {
+    const htmlFakeMatches = FAKE_XP_PATTERNS.filter(re => re.test(pageSrc));
+    if (htmlFakeMatches.length === 0) { pass(gameId + ': no fake XP wording in game index.html'); }
+    else {
+      for (const re of htmlFakeMatches) fail(gameId + ': fake XP wording in game index.html (pattern: ' + re.toString() + ')');
     }
   }
 }
@@ -176,11 +225,11 @@ for (const [gameId, exceptions] of Object.entries(ACTIVE_GAMES_AUDIT)) {
 
 console.log('\n─────────────────────────────────────────────');
 if (failures === 0 && warnings === 0) {
-  console.log('✅  All parity checks passed — every active game meets minimum standard.');
+  console.log('✅  All parity checks passed.');
 } else if (failures === 0) {
-  console.log('⚠️   Passed with ' + warnings + ' warning(s).');
+  console.log('⚠️   Passed with ' + warnings + ' warning(s) — see documented exceptions above.');
 } else {
-  console.error('❌  ' + failures + ' failure(s), ' + warnings + ' warning(s). See above for details.');
+  console.error('❌  ' + failures + ' FAIL, ' + warnings + ' WARN. Review required before merge.');
 }
 console.log('─────────────────────────────────────────────\n');
 process.exit(failures > 0 ? 1 : 0);

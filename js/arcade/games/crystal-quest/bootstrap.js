@@ -276,10 +276,10 @@ function createLegacybootstrapCrystalQuest(root) {
       recordMissionProgress(fId, 'score', score);
       if (streak >= 3) recordMissionProgress(fId, 'combo', streak);
       if (score > 0) {
-        recordContribution(fId, contrib);
+        recordContribution(fId, 'score_submission', contrib);
         recordWarContribution(fId, contrib);
         checkRankUp(fId);
-        emitFactionGain(fId, contrib);
+        emitFactionGain(fId, contrib, 'score_submission');
         recordMissionProgress(fId, 'war_contrib', contrib);
         _cqEmitBus('arcade:faction-signal', { gameId: GAME_ID, factionId: fId, amount: contrib, ts: Date.now() });
         _cqEmitBus('arcade:mission-progress', { gameId: GAME_ID, factionId: fId, ts: Date.now() });

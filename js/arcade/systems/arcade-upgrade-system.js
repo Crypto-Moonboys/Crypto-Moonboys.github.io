@@ -21,8 +21,10 @@
  *   id              {string}   — unique identifier
  *   label           {string}   — display name
  *   description     {string}   — player-facing effect description
- *   tags            {string[]} — compatible game tags (from GAME_TAGS)
- *   compatibleGames {string[]} — explicit game ids (empty = all games)
+ *   tags            {string[]} — game tags that make this upgrade compatible (required unless
+ *                                the game is listed explicitly in compatibleGames)
+ *   compatibleGames {string[]} — explicit game ids that always match regardless of tags.
+ *                                Empty means "rely on tags only" — not "all games".
  *   compatibleFactions {string[]} — factions that can see this (empty = all factions)
  *   rarity          {string}   — 'common' | 'uncommon' | 'rare' | 'legendary'
  *   category        {string}   — 'survival' | 'score' | 'rare' | 'chaos' | 'faction'
@@ -373,33 +375,45 @@ export function getUpgradesByCategory(category) {
 /**
  * Return 3 faction-aware upgrade choices for a game.
  *
- * Selection rules:
- *  1. Filter to upgrades compatible with this game (tags or compatibleGames).
- *  2. Filter out upgrades incompatible with this faction.
- *  3. Bias toward the faction's preferred category order.
- *  4. Always try to include at least one survival, one score/combo, one rare/chaos.
- *  5. Return exactly 3 (or fewer if the filtered pool is too small).
+ * Compatibility rules:
+ *   - An upgrade is compatible if its game id is explicitly listed in
+ *     `compatibleGames`, OR if any of its `tags` overlap the provided
+ *     `modifierTags` list.  `compatibleGames: []` means "match by tags only" —
+ *     it does NOT mean "all games".
+ *   - Faction filter still applies: if `compatibleFactions` is non-empty, only
+ *     the listed factions will see the upgrade.
+ *
+ * Selection strategy (enforces parity mix):
+ *   1. Try to pick 1 upgrade from the survival category.
+ *   2. Try to pick 1 upgrade from the score/combo category.
+ *   3. Try to pick 1 upgrade from the rare/chaos category.
+ *   Each slot falls back to any available upgrade if its target category
+ *   is exhausted.  Faction bias (UPGRADE_CATEGORY_BIAS) controls which
+ *   upgrade is chosen *within* each slot's candidate pool.
+ *   Remaining slots (if pool is too small for the minimum mix) are filled
+ *   from the faction-biased pool without duplication.
  *
  * @param {object} opts
  * @param {string}   opts.gameId         — current game id (e.g. 'invaders')
  * @param {string}   opts.factionId      — current player faction
- * @param {string[]} [opts.modifierTags] — game's crossGameTags
+ * @param {string[]} [opts.modifierTags] — game's crossGameTags (used for tag compatibility)
  * @param {object}   [opts.currentRunState] — optional run context (wave, score, elapsed)
  * @returns {object[]} array of 0–3 upgrade defs (frozen)
  */
 export function getUpgradeChoices(opts) {
-  var gameId      = (opts && opts.gameId)      || '';
-  var factionId   = _normaliseFaction((opts && opts.factionId) || '');
-  var tags        = Array.isArray(opts && opts.modifierTags) ? opts.modifierTags : [];
+  var gameId    = (opts && opts.gameId)    || '';
+  var factionId = _normaliseFaction((opts && opts.factionId) || '');
+  var tags      = Array.isArray(opts && opts.modifierTags) ? opts.modifierTags : [];
 
-  // Filter: compatible with this game's tags or explicitly listed
+  // Filter: compatible with this game
+  // - explicit match: game listed in compatibleGames
+  // - tag match: upgrade tags overlap the provided modifierTags
+  // - compatibleGames: [] means "tag-only" (does NOT auto-match all games)
   var pool = ARCADE_UPGRADE_DEFS.filter(function (u) {
-    // Tag compatibility check
-    var tagMatch = u.tags.some(function (t) { return tags.indexOf(t) !== -1; });
-    // Explicit game list (empty = all games)
-    var gameMatch = u.compatibleGames.length === 0 || u.compatibleGames.indexOf(gameId) !== -1;
-    if (!tagMatch && !gameMatch) return false;
-    // Faction check (empty = all factions)
+    var explicitMatch = u.compatibleGames.length > 0 && u.compatibleGames.indexOf(gameId) !== -1;
+    var tagMatch      = u.tags.some(function (t) { return tags.indexOf(t) !== -1; });
+    if (!explicitMatch && !tagMatch) return false;
+    // Faction filter: empty = all factions
     if (u.compatibleFactions.length > 0) {
       return u.compatibleFactions.indexOf(factionId) !== -1;
     }
@@ -408,25 +422,47 @@ export function getUpgradeChoices(opts) {
 
   if (pool.length === 0) return [];
 
-  // Build biased list: try to pick 1 from each preferred category bucket, then fill randomly
-  var bias = UPGRADE_CATEGORY_BIAS[factionId] || UPGRADE_CATEGORY_BIAS['unaligned'];
-  var selected = [];
-  var used = new Set();
+  // ── Enforce minimum mix: survival + score + rare/chaos ────────────────────
+  // Within each mandatory slot, prefer the faction's bias order within the
+  // relevant categories so faction identity still has meaning.
+  var SURVIVAL_CATS = ['survival', 'faction'];
+  var SCORE_CATS    = ['score'];
+  var RARE_CATS     = ['rare', 'chaos'];
 
-  // Pick one from each preferred category in order
-  for (var bi = 0; bi < bias.length && selected.length < 3; bi++) {
-    var cat = bias[bi];
-    var catPool = pool.filter(function (u) { return u.category === cat && !used.has(u.id); });
-    if (catPool.length === 0) continue;
-    var pick = catPool[Math.floor(Math.random() * catPool.length)];
-    selected.push(pick);
-    used.add(pick.id);
+  var selected = [];
+  var used     = new Set();
+
+  function _pickFromCats(cats) {
+    // Try in faction-bias order first, then any matching category
+    var bias     = UPGRADE_CATEGORY_BIAS[factionId] || UPGRADE_CATEGORY_BIAS['unaligned'];
+    var ordered  = bias.filter(function (c) { return cats.indexOf(c) !== -1; });
+    // Append any cat not in bias list
+    cats.forEach(function (c) { if (ordered.indexOf(c) === -1) ordered.push(c); });
+    for (var ci = 0; ci < ordered.length; ci++) {
+      var catPool = pool.filter(function (u) { return u.category === ordered[ci] && !used.has(u.id); });
+      if (catPool.length === 0) continue;
+      var pick = catPool[Math.floor(Math.random() * catPool.length)];
+      selected.push(pick);
+      used.add(pick.id);
+      return true;
+    }
+    return false;
   }
 
-  // Fill remaining slots from any category
+  _pickFromCats(SURVIVAL_CATS);
+  if (selected.length < 2) _pickFromCats(SCORE_CATS);
+  if (selected.length < 3) _pickFromCats(RARE_CATS);
+
+  // Fill remaining slots from faction-biased pool (no category constraint)
   if (selected.length < 3) {
-    var remaining = pool.filter(function (u) { return !used.has(u.id); });
-    _shuffle(remaining);
+    var bias     = UPGRADE_CATEGORY_BIAS[factionId] || UPGRADE_CATEGORY_BIAS['unaligned'];
+    var remaining = [];
+    bias.forEach(function (cat) {
+      pool.forEach(function (u) {
+        if (u.category === cat && !used.has(u.id)) remaining.push(u);
+      });
+    });
+    pool.forEach(function (u) { if (!used.has(u.id) && remaining.indexOf(u) === -1) remaining.push(u); });
     for (var ri = 0; ri < remaining.length && selected.length < 3; ri++) {
       selected.push(remaining[ri]);
       used.add(remaining[ri].id);
