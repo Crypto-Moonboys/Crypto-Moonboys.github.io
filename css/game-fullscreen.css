@@ -331,7 +331,7 @@ body.overlay-open {
 /* 9. HUD strip inside overlay */
 #game-overlay .hud {
   width: 100%;
-  max-width: 600px;
+  max-width: 960px;
   margin-bottom: 0;
 }
 
@@ -411,6 +411,29 @@ body.overlay-open {
   justify-content: center;
   flex-shrink: 1;
   overflow: hidden;
+}
+
+#game-overlay #snakeCanvas {
+  width: min(100%, calc((100dvh - 36px - 140px) * 16 / 9)) !important;
+  max-width: none !important;
+  max-height: calc(100dvh - 36px - 140px) !important;
+}
+
+#game-overlay #tetCanvas {
+  width: min(calc((100dvh - 36px - 132px) / 2), calc((100vw - 420px) * 0.72)) !important;
+  max-width: none !important;
+  max-height: calc(100dvh - 36px - 132px) !important;
+}
+
+@supports not (height: 1dvh) {
+  #game-overlay #snakeCanvas {
+    width: min(100%, calc((100vh - 36px - 140px) * 16 / 9)) !important;
+    max-height: calc(100vh - 36px - 140px) !important;
+  }
+  #game-overlay #tetCanvas {
+    width: min(calc((100vh - 36px - 132px) / 2), calc((100vw - 420px) * 0.72)) !important;
+    max-height: calc(100vh - 36px - 132px) !important;
+  }
 }
 
 /* 13. Touch pad */

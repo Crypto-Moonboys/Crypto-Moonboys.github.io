@@ -288,7 +288,11 @@ a:hover           { color: var(--neon-magenta); }
   transition: background 0.1s, color 0.1s, border-color 0.1s;
   display: flex;
   align-items: center;
-  gap: 0;
+  gap: 8px;
+  min-height: 30px;
+  line-height: 1.45;
+  white-space: normal;
+  overflow-wrap: anywhere;
   padding: 7px 12px;
 }
 .sidebar-nav a:hover {

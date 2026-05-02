@@ -56,9 +56,18 @@
     .diff-unknown{background:rgba(180,180,180,.12);color:#aaa;border:1px solid rgba(180,180,180,.2)}
     .quest-progress{font-size:.82rem;color:var(--color-text-muted);margin-left:auto}
 
-    /* ── SAM panel ── */
-    .sam-panel{display:flex;gap:10px;align-items:flex-start;background:rgba(255,255,255,.05);border:1px solid var(--color-border,#333);border-radius:12px;padding:12px;margin-top:14px;transition:border-color .25s ease,box-shadow .25s ease}
-    .sam-avatar{flex-shrink:0;width:42px;height:42px;border-radius:50%;display:grid;place-items:center;background:rgba(122,220,255,.14);font-weight:700;font-size:.85rem;letter-spacing:.05em}
+    /* ── SAM mission terminal ── */
+    .sam-terminal{display:grid;grid-template-columns:minmax(160px,230px) minmax(0,1fr);gap:14px;margin-top:14px;align-items:start}
+    .sam-head{position:relative;border:1px solid rgba(89,216,255,.45);border-radius:14px;background:radial-gradient(circle at 45% 35%,rgba(89,216,255,.2),rgba(8,16,28,.95) 62%);padding:14px;box-shadow:0 0 22px rgba(89,216,255,.2),inset 0 0 28px rgba(89,216,255,.12)}
+    .sam-head-face{aspect-ratio:1/1;display:grid;place-items:center;border:2px solid rgba(122,220,255,.42);border-radius:12px;background:linear-gradient(180deg,rgba(13,28,44,.95),rgba(5,12,20,.98))}
+    .sam-eyes{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+    .sam-eye{width:26px;height:16px;border-radius:3px;background:linear-gradient(180deg,#7af7ff,#2ec5ff);box-shadow:0 0 16px rgba(46,197,255,.7);position:relative}
+    .sam-eye::after{content:"";position:absolute;inset:4px 7px 4px 7px;border-radius:2px;background:#0b1120}
+    .sam-mouth{margin-top:14px;height:10px;width:88px;border:2px solid rgba(122,220,255,.55);border-radius:3px;box-shadow:0 0 14px rgba(89,216,255,.5) inset}
+    .sam-tag{font-size:.66rem;letter-spacing:.12em;text-transform:uppercase;color:#9bd7ff;margin-top:10px;text-align:center}
+    .sam-panel{position:relative;background:rgba(3,10,22,.86);border:1px solid rgba(89,216,255,.35);border-radius:16px;padding:14px 16px 14px 16px;transition:border-color .25s ease,box-shadow .25s ease}
+    .sam-panel::before{content:"";position:absolute;left:-12px;top:28px;border-width:10px 12px 10px 0;border-style:solid;border-color:transparent rgba(89,216,255,.35) transparent transparent}
+    .sam-panel::after{content:"";position:absolute;left:-10px;top:29px;border-width:9px 11px 9px 0;border-style:solid;border-color:transparent rgba(3,10,22,.95) transparent transparent}
     .sam-body{min-width:0}
     .sam-title{font-weight:700;font-size:.93rem}
     .sam-message{font-size:.86rem;color:var(--color-text-muted);margin-top:5px;min-height:1.3em;transition:color .2s ease}
@@ -94,6 +103,7 @@
     .rcb-lore{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
     .rcb-lore-tag{font-size:.78rem;background:rgba(122,220,255,.1);border:1px solid rgba(122,220,255,.2);border-radius:20px;padding:3px 9px;color:#aed9ff;white-space:nowrap}
 
+    @media(max-width:860px){.sam-terminal{grid-template-columns:1fr}.sam-head{max-width:260px;justify-self:center}.sam-panel::before,.sam-panel::after{display:none}}
     @media(max-width:720px){.meta{grid-template-columns:repeat(2,minmax(0,1fr))}}
   </style>
 </head>
@@ -161,23 +171,29 @@
             <div class="stat"><div class="small">Skips Left</div><div id="skipsLeftCount" style="font-weight:700;font-size:1.15rem">2</div></div>
           </div>
 
-          <!-- Current mission clue box -->
-          <div class="quest-box glow">
-            <div class="quest-meta">
-              <span id="questDifficulty" class="diff-badge" style="display:none" aria-label="Difficulty"></span>
-              <span id="questProgress" class="quest-progress" aria-label="Mission progress">—</span>
+          <div class="sam-terminal">
+            <div class="sam-head" aria-hidden="true">
+              <div class="sam-head-face">
+                <div>
+                  <div class="sam-eyes"><div class="sam-eye"></div><div class="sam-eye"></div></div>
+                  <div class="sam-mouth"></div>
+                </div>
+              </div>
+              <div class="sam-tag">S.A.M. // Mission Terminal</div>
             </div>
-            <h3 id="questTitle">No active mission</h3>
-            <p id="questClue">Press Start Quest to begin a lore hunt run.</p>
-            <p class="small">Signal trail: <a id="questLink" href="#" target="_blank" rel="noopener noreferrer">—</a></p>
-          </div>
 
-          <!-- SAM guide -->
-          <div id="samAgent" class="sam-panel sam-idle" data-sam-state="idle" aria-live="polite">
-            <div class="sam-avatar">SAM</div>
-            <div class="sam-body">
-              <div class="sam-title">🔮 Signal Analysis Module</div>
-              <div class="sam-message" id="samMessage">Crystal array online. Ready to hunt.</div>
+            <div id="samAgent" class="sam-panel sam-idle glow" data-sam-state="idle" aria-live="polite">
+              <div class="sam-body">
+                <div class="quest-meta">
+                  <span id="questDifficulty" class="diff-badge" style="display:none" aria-label="Difficulty"></span>
+                  <span id="questProgress" class="quest-progress" aria-label="Mission progress">—</span>
+                </div>
+                <div class="sam-title">🔮 Signal Analysis Module // Live Quest Feed</div>
+                <h3 id="questTitle">No active mission</h3>
+                <p id="questClue">Press Start Quest to begin a lore hunt run.</p>
+                <p class="small">Signal trail: <a id="questLink" href="#" target="_blank" rel="noopener noreferrer">—</a></p>
+                <div class="sam-message" id="samMessage">Crystal array online. Ready to hunt.</div>
+              </div>
             </div>
           </div>
 
