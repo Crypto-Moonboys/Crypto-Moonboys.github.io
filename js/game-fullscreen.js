@@ -634,44 +634,26 @@
 
   function buildLeftPanel(meta) {
     sideLeft.innerHTML = '';
+    // Game card — title only
+    var gameInfoCard = el('div', 'fs-card');
     var name = el('div', 'game-name', meta.label);
     name.style.color = meta.color;
-    sideLeft.appendChild(name);
-    sideLeft.appendChild(el('div', 'panel-title', 'Controls'));
+    gameInfoCard.appendChild(name);
+    sideLeft.appendChild(gameInfoCard);
+    // Controls card
+    var ctrlCard = el('div', 'fs-card');
+    ctrlCard.appendChild(el('div', 'panel-title', 'Controls'));
     var ul = el('ul', 'ctrl-list');
     meta.controls.forEach(function (c) { ul.appendChild(el('li', null, c)); });
-    sideLeft.appendChild(ul);
-    sideLeft.appendChild(el('div', 'panel-title', 'Live Score'));
-    cachedLiveScore = el('div', 'score-val', '0');
-    cachedLiveScore.id = 'overlay-live-score';
-    sideLeft.appendChild(cachedLiveScore);
-    sideLeft.appendChild(el('div', 'panel-title', 'Projected Arcade XP'));
-    cachedLiveProjectedXp = el('div', 'score-val score-val--projected', '0');
-    cachedLiveProjectedXp.id = 'overlay-live-projected-xp';
-    sideLeft.appendChild(cachedLiveProjectedXp);
-    cachedProjectedHint = el('div', 'panel-note', 'Potential Arcade XP \u2014 accepted score + Telegram sync required.');
-    sideLeft.appendChild(cachedProjectedHint);
-    sideLeft.appendChild(el('div', 'panel-title', 'Best'));
-    cachedLiveBest = el('div', 'score-val', '0');
-    cachedLiveBest.id = 'overlay-live-best';
-    sideLeft.appendChild(cachedLiveBest);
-    sideLeft.appendChild(el('div', 'panel-title', 'Sync Status'));
-    cachedSyncIdentity = el('div', 'panel-note panel-note--identity', 'Telegram not linked \u2014 run /gklink');
-    cachedSyncIdentity.id = 'overlay-sync-identity';
-    sideLeft.appendChild(cachedSyncIdentity);
-    cachedSyncStatus = el('div', 'panel-note panel-note--status sync-error', 'Unsynced play stays local to this browser. Run /gklink in Telegram to store XP and Block Topia progression server-side.');
-    cachedSyncStatus.id = 'overlay-sync-status';
-    sideLeft.appendChild(cachedSyncStatus);
-    cachedSyncActions = el('div', 'panel-note panel-note--actions');
-    cachedSyncActions.id = 'overlay-sync-actions';
-    sideLeft.appendChild(cachedSyncActions);
-    sideLeft.appendChild(el('div', 'panel-title', 'Faction Alignment'));
-    cachedFactionPanel = el('div', 'panel-note panel-note--faction');
-    cachedFactionPanel.id = 'overlay-faction-panel';
-    cachedFactionPanel.innerHTML = 'Loading faction card…';
-    sideLeft.appendChild(cachedFactionPanel);
-    updateSyncSurfaceState(lastSubmissionState || getLinkedSyncState(), {});
-    refreshFactionPanel();
+    ctrlCard.appendChild(ul);
+    sideLeft.appendChild(ctrlCard);
+    // Tips card
+    var tipsCard = el('div', 'fs-card');
+    tipsCard.appendChild(el('div', 'panel-title', 'Tips'));
+    var tipsUl = el('ul', 'tips-list');
+    meta.tips.forEach(function (t) { tipsUl.appendChild(el('li', null, t)); });
+    tipsCard.appendChild(tipsUl);
+    sideLeft.appendChild(tipsCard);
   }
 
   function refreshFactionPanel() {
@@ -708,14 +690,47 @@
 
   function buildRightPanel(meta) {
     sideRight.innerHTML = '';
-    sideRight.appendChild(el('div', 'panel-title', 'Tips'));
-    var ul = el('ul', 'tips-list');
-    meta.tips.forEach(function (t) { ul.appendChild(el('li', null, t)); });
-    sideRight.appendChild(ul);
-    sideRight.appendChild(el('div', 'panel-title', 'Your Best'));
-    cachedRightBest = el('div', 'score-val', '0');
-    cachedRightBest.id = 'overlay-best-right';
-    sideRight.appendChild(cachedRightBest);
+    // Score card — live score + projected XP + best score
+    var scoreCard = el('div', 'fs-card');
+    scoreCard.appendChild(el('div', 'panel-title', 'Live Score'));
+    cachedLiveScore = el('div', 'score-val', '0');
+    cachedLiveScore.id = 'overlay-live-score';
+    scoreCard.appendChild(cachedLiveScore);
+    scoreCard.appendChild(el('div', 'panel-title', 'Projected Arcade XP'));
+    cachedLiveProjectedXp = el('div', 'score-val score-val--projected', '0');
+    cachedLiveProjectedXp.id = 'overlay-live-projected-xp';
+    scoreCard.appendChild(cachedLiveProjectedXp);
+    cachedProjectedHint = el('div', 'panel-note', 'Potential Arcade XP \u2014 accepted score + Telegram sync required.');
+    scoreCard.appendChild(cachedProjectedHint);
+    scoreCard.appendChild(el('div', 'panel-title', 'Best'));
+    cachedLiveBest = el('div', 'score-val', '0');
+    cachedLiveBest.id = 'overlay-live-best';
+    scoreCard.appendChild(cachedLiveBest);
+    cachedRightBest = cachedLiveBest;
+    sideRight.appendChild(scoreCard);
+    // Sync card — Telegram identity + status + actions
+    var syncCard = el('div', 'fs-card');
+    syncCard.appendChild(el('div', 'panel-title', 'Sync Status'));
+    cachedSyncIdentity = el('div', 'panel-note panel-note--identity', 'Telegram not linked \u2014 run /gklink');
+    cachedSyncIdentity.id = 'overlay-sync-identity';
+    syncCard.appendChild(cachedSyncIdentity);
+    cachedSyncStatus = el('div', 'panel-note panel-note--status sync-error', 'Unsynced play stays local to this browser. Run /gklink in Telegram to store XP and Block Topia progression server-side.');
+    cachedSyncStatus.id = 'overlay-sync-status';
+    syncCard.appendChild(cachedSyncStatus);
+    cachedSyncActions = el('div', 'panel-note panel-note--actions');
+    cachedSyncActions.id = 'overlay-sync-actions';
+    syncCard.appendChild(cachedSyncActions);
+    sideRight.appendChild(syncCard);
+    // Faction card — alignment + bonus + join actions
+    var factionCard = el('div', 'fs-card');
+    factionCard.appendChild(el('div', 'panel-title', 'Faction Alignment'));
+    cachedFactionPanel = el('div', 'panel-note panel-note--faction');
+    cachedFactionPanel.id = 'overlay-faction-panel';
+    cachedFactionPanel.innerHTML = 'Loading faction card\u2026';
+    factionCard.appendChild(cachedFactionPanel);
+    sideRight.appendChild(factionCard);
+    updateSyncSurfaceState(lastSubmissionState || getLinkedSyncState(), {});
+    refreshFactionPanel();
   }
 
   function updateScores() {
