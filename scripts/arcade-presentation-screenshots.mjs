@@ -1,7 +1,7 @@
-import { chromium } from 'playwright-core';
 import http from 'node:http';
 import fs from 'node:fs';
 import path from 'node:path';
+import { spawnSync } from 'node:child_process';
 
 const rootDir = process.cwd();
 const outDir = path.join(rootDir, 'artifacts', 'arcade-presentation');
@@ -20,12 +20,20 @@ function mimeType(filePath) {
 }
 
 function createServer(port) {
-  return http.createServer((req, res) => {
+  const server = http.createServer((req, res) => {
     try {
       const requestPath = decodeURIComponent((req.url || '/').split('?')[0]);
       const cleanPath = requestPath.replace(/^\/+/, '');
-      let filePath = path.join(rootDir, cleanPath);
-      if (requestPath.endsWith('/')) filePath = path.join(rootDir, cleanPath, 'index.html');
+      const basePath = requestPath.endsWith('/')
+        ? path.resolve(rootDir, cleanPath, 'index.html')
+        : path.resolve(rootDir, cleanPath);
+      const rel = path.relative(rootDir, basePath);
+      if (rel.startsWith('..') || path.isAbsolute(rel)) {
+        res.statusCode = 403;
+        res.end('Forbidden');
+        return;
+      }
+      const filePath = basePath;
       if (!fs.existsSync(filePath) || fs.statSync(filePath).isDirectory()) {
         res.statusCode = 404;
         res.end('Not found');
@@ -37,18 +45,44 @@ function createServer(port) {
       res.statusCode = 500;
       res.end(String(err));
     }
-  }).listen(port, '127.0.0.1');
+  });
+  return server;
 }
 
 function chromePath() {
-  const c = [
-    'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
-    'C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe',
-    'C:\\Program Files\\Microsoft\\Edge\\Application\\msedge.exe',
-    'C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe',
-  ];
-  for (const p of c) if (fs.existsSync(p)) return p;
-  throw new Error('No Chrome/Edge executable found.');
+  const fromEnv = process.env.CHROME_PATH;
+  if (fromEnv && fs.existsSync(fromEnv)) return fromEnv;
+
+  const platform = process.platform;
+  if (platform === 'win32') {
+    const candidates = [
+      'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
+      'C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe',
+      'C:\\Program Files\\Microsoft\\Edge\\Application\\msedge.exe',
+      'C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe',
+    ];
+    for (const p of candidates) if (fs.existsSync(p)) return p;
+    return null;
+  }
+
+  if (platform === 'darwin') {
+    const candidates = [
+      '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
+      '/Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge',
+    ];
+    for (const p of candidates) if (fs.existsSync(p)) return p;
+    return null;
+  }
+
+  const bins = ['google-chrome', 'chromium', 'chromium-browser', 'microsoft-edge'];
+  for (const bin of bins) {
+    const found = spawnSync('which', [bin], { encoding: 'utf8' });
+    if (found.status === 0) {
+      const resolved = (found.stdout || '').trim().split('\n')[0];
+      if (resolved && fs.existsSync(resolved)) return resolved;
+    }
+  }
+  return null;
 }
 
 const pages = [
@@ -67,9 +101,38 @@ async function openOverlay(page) {
 }
 
 async function main() {
-  const localPort = 4321;
-  const server = createServer(localPort);
-  const browser = await chromium.launch({ headless: true, executablePath: chromePath() });
+  let chromium;
+  try {
+    ({ chromium } = await import('playwright-core'));
+  } catch (_) {
+    console.error('playwright-core is required for screenshot capture. Install dependencies or run npm install.');
+    process.exit(1);
+  }
+
+  const browserExecutable = chromePath();
+  if (!browserExecutable) {
+    console.error('No Chrome/Edge executable found. Install Chrome or Edge, or set CHROME_PATH to a valid executable path.');
+    process.exit(1);
+  }
+
+  const server = createServer(0);
+  try {
+    await new Promise((resolve, reject) => {
+      server.once('error', reject);
+      server.listen(0, '127.0.0.1', resolve);
+    });
+  } catch (err) {
+    console.error('Failed to start local screenshot server:', err && err.message ? err.message : err);
+    process.exit(1);
+  }
+  const address = server.address();
+  const localPort = address && typeof address === 'object' ? address.port : null;
+  if (!localPort) {
+    console.error('Failed to determine local screenshot server port.');
+    process.exit(1);
+  }
+
+  const browser = await chromium.launch({ headless: true, executablePath: browserExecutable });
   try {
     const contexts = {
       before: await browser.newContext({ viewport: { width: 1600, height: 900 } }),
@@ -98,7 +161,9 @@ async function main() {
     console.log(`Output: ${outDir}`);
   } finally {
     await browser.close();
-    await new Promise((r) => server.close(r));
+    if (server.listening) {
+      await new Promise((r) => server.close(r));
+    }
   }
 }
 

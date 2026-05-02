@@ -420,7 +420,7 @@ body.overlay-open {
 }
 
 #game-overlay #tetCanvas {
-  width: min(calc((100dvh - 36px - 132px) / 2), calc((100vw - 420px) * 0.72)) !important;
+  width: min(calc((100dvh - 36px - 132px) / 2), max(220px, calc((100vw - 420px) * 0.72))) !important;
   max-width: none !important;
   max-height: calc(100dvh - 36px - 132px) !important;
 }
@@ -431,8 +431,22 @@ body.overlay-open {
     max-height: calc(100vh - 36px - 140px) !important;
   }
   #game-overlay #tetCanvas {
-    width: min(calc((100vh - 36px - 132px) / 2), calc((100vw - 420px) * 0.72)) !important;
+    width: min(calc((100vh - 36px - 132px) / 2), max(220px, calc((100vw - 420px) * 0.72))) !important;
     max-height: calc(100vh - 36px - 132px) !important;
+  }
+}
+
+@media (max-width: 1099px) {
+  #game-overlay #tetCanvas {
+    width: min(86vw, calc((100dvh - 36px - 132px) / 2)) !important;
+  }
+}
+
+@supports not (height: 1dvh) {
+  @media (max-width: 1099px) {
+    #game-overlay #tetCanvas {
+      width: min(86vw, calc((100vh - 36px - 132px) / 2)) !important;
+    }
   }
 }
 
