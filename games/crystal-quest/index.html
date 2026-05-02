@@ -293,11 +293,9 @@ mountModifierPanel();
   document.addEventListener('fullscreenchange',      function () {
     if (!document.fullscreenElement) auditDom('after-native-fs-exit');
   });
-  if (typeof document.addEventListener === 'function') {
-    document.addEventListener('visibilitychange', function () {
-      if (document.visibilityState === 'visible') auditDom('on-visibility-visible');
-    });
-  }
+  document.addEventListener('visibilitychange', function () {
+    if (document.visibilityState === 'visible') auditDom('on-visibility-visible');
+  });
 }());
 </script>
 </body>
