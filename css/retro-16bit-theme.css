@@ -2896,7 +2896,6 @@ body.page-has-right-panel .retro-hud-body {
 
 body.page-has-right-panel .retro-hud-body [class*="label"] {
   font-family: var(--font-pixel, "Press Start 2P", monospace) !important;
-  font-size: 0.46rem !important;
   line-height: 1.55 !important;
   letter-spacing: 0.07em !important;
   color: var(--ui-cyan);
@@ -2928,7 +2927,6 @@ body.page-has-right-panel .retro-hud-title {
     linear-gradient(90deg, rgba(255,45,120,.30), rgba(0,229,255,.10)) !important;
   border-bottom: 3px solid var(--ui-cyan) !important;
   color: var(--ui-cyan) !important;
-  font-size: 0.50rem !important;
   line-height: 1.4 !important;
   text-shadow: 0 0 8px var(--ui-cyan), 2px 2px 0 #000 !important;
 }
@@ -2967,7 +2965,6 @@ body.page-has-right-panel .sidebar-nav a {
   padding: 8px 9px !important;
   border-left: 3px solid transparent;
   border-bottom: 1px solid rgba(0,229,255,.10);
-  font-size: 0.46rem !important;
   line-height: 1.55 !important;
 }
 
@@ -3575,7 +3572,6 @@ body.page-has-right-panel .sidebar-heading {
   border-left: 0 !important;
   border-bottom: 3px solid var(--ui-cyan) !important;
   color: var(--ui-cyan) !important;
-  font-size: 0.48rem !important;
   line-height: 1.4 !important;
   text-shadow: 0 0 8px var(--ui-cyan), 2px 2px 0 #000 !important;
   box-shadow: none !important;
@@ -3614,7 +3610,6 @@ body.page-has-right-panel .sidebar-nav a {
   padding: 7px 9px !important;
   border-left: 3px solid transparent !important;
   border-bottom: 1px solid rgba(0, 229, 255, 0.10) !important;
-  font-size: 0.44rem !important;
   line-height: 1.55 !important;
 }
 
@@ -3997,7 +3992,6 @@ body.page-has-right-panel .ali-icon {
 
 body.page-has-right-panel .ali-title {
   font-family: var(--font-pixel, "Press Start 2P", monospace) !important;
-  font-size: 0.44rem !important;
   color: var(--neon-cyan) !important;
   text-shadow: 0 0 6px rgba(0, 229, 255, 0.55), 1px 1px 0 #000 !important;
   text-transform: uppercase;
@@ -4006,14 +4000,12 @@ body.page-has-right-panel .ali-title {
 }
 
 body.page-has-right-panel .ali-desc {
-  font-size: clamp(0.68rem, 0.78vw, 0.82rem) !important;
   color: rgba(157, 215, 238, 0.85) !important;
   line-height: 1.5;
 }
 
 body.page-has-right-panel .ali-meta {
   font-family: var(--font-pixel, "Press Start 2P", monospace) !important;
-  font-size: 0.34rem !important;
   color: var(--neon-magenta) !important;
   text-shadow: 0 0 5px rgba(255, 45, 120, 0.45) !important;
   letter-spacing: 0.06em;
@@ -4067,7 +4059,6 @@ body.page-has-right-panel .timeline-item {
 
 body.page-has-right-panel .tl-title a {
   font-family: var(--font-pixel, "Press Start 2P", monospace) !important;
-  font-size: 0.42rem !important;
   color: var(--neon-cyan) !important;
   text-shadow: 0 0 6px rgba(0, 229, 255, 0.50), 1px 1px 0 #000 !important;
   text-decoration: none !important;
@@ -4083,7 +4074,6 @@ body.page-has-right-panel .tl-title a:hover {
 body.page-has-right-panel .tl-tag {
   display: inline-block;
   font-family: var(--font-pixel, "Press Start 2P", monospace) !important;
-  font-size: 0.32rem !important;
   padding: 2px 5px;
   background: rgba(0, 229, 255, 0.10) !important;
   border: 1px solid rgba(0, 229, 255, 0.45) !important;
@@ -4095,7 +4085,6 @@ body.page-has-right-panel .tl-event-badge,
 body.page-has-right-panel .era-badge {
   display: inline-block;
   font-family: var(--font-pixel, "Press Start 2P", monospace) !important;
-  font-size: 0.34rem !important;
   padding: 2px 6px;
   background: rgba(255, 45, 120, 0.14) !important;
   border: 1px solid rgba(255, 45, 120, 0.55) !important;
@@ -4104,7 +4093,6 @@ body.page-has-right-panel .era-badge {
 
 body.page-has-right-panel .view-btn {
   font-family: var(--font-pixel, "Press Start 2P", monospace) !important;
-  font-size: 0.40rem !important;
   padding: 7px 12px !important;
   background: rgba(0, 0, 0, 0.75) !important;
   border: 2px solid rgba(0, 229, 255, 0.45) !important;
@@ -4223,7 +4211,6 @@ body.page-has-right-panel .sam-panel.sam-panel--red {
 
 body.page-has-right-panel .sam-panel-title {
   font-family: var(--font-pixel, "Press Start 2P", monospace) !important;
-  font-size: 0.44rem !important;
   color: var(--neon-cyan) !important;
   text-shadow: 0 0 7px rgba(0, 229, 255, 0.65), 1px 1px 0 #000 !important;
   text-transform: uppercase;
@@ -4246,7 +4233,6 @@ body.page-has-right-panel .sam-graph-section {
 
 body.page-has-right-panel .sam-graph-title {
   font-family: var(--font-pixel, "Press Start 2P", monospace) !important;
-  font-size: 0.46rem !important;
   color: var(--neon-cyan) !important;
   text-shadow: 0 0 7px rgba(0, 229, 255, 0.65), 1px 1px 0 #000 !important;
   text-transform: uppercase;
@@ -4305,7 +4291,6 @@ body.page-has-right-panel .article-meta {
 body.page-has-right-panel .article-badge {
   display: inline-block;
   font-family: var(--font-pixel, "Press Start 2P", monospace) !important;
-  font-size: 0.34rem !important;
   padding: 3px 7px !important;
   background: rgba(0, 229, 255, 0.10) !important;
   border: 1px solid rgba(0, 229, 255, 0.45) !important;
@@ -4315,7 +4300,6 @@ body.page-has-right-panel .article-badge {
 
 body.page-has-right-panel .meta-item {
   font-family: var(--font-pixel, "Press Start 2P", monospace) !important;
-  font-size: 0.34rem !important;
   color: var(--color-text-muted) !important;
   letter-spacing: 0.04em;
 }
@@ -4547,7 +4531,6 @@ body.page-game .lb-tab {
   background: rgba(0, 0, 0, 0.75) !important;
   color: rgba(157, 215, 238, 0.80) !important;
   font-family: var(--font-pixel, "Press Start 2P", monospace) !important;
-  font-size: 0.50rem !important;
   text-transform: uppercase !important;
   letter-spacing: 0.07em !important;
   clip-path: polygon(
@@ -4838,11 +4821,11 @@ body.page-game .lb-hint {
 }
 
 /* ==========================================================================
-   TYPOGRAPHY CONSISTENCY CORRECTION — SHARED NEON SHELL PAGES
-   Raises all readable UI text on page-has-right-panel / page-game pages
-   to match the visual scale of index.html.
-   Added at the END to override all earlier declarations via specificity +
-   !important where the earlier rules already used !important.
+   FINAL SHARED SITE SHELL NORMALISATION
+   Single source of truth for all non-home shared shell page typography.
+   Applies to every page carrying page-has-right-panel or page-game.
+   Uses :is() for grouped selectors where possible.
+   All font-size values meet or exceed hard minimums defined in design spec.
    DO NOT touch: gameplay JS, Worker files, XP logic, leaderboard logic,
    submitScore, Telegram/auth, Block Topia multiplayer, score APIs.
    ========================================================================== */
@@ -4853,10 +4836,17 @@ body.page-game {
   font-size: 16px;
 }
 
-/* ── Header logo ─────────────────────────────────────────────── */
+/* ── Page title / h1 — override wiki.css 2rem ───────────────── */
+:is(body.page-has-right-panel, body.page-game) h1,
+:is(body.page-has-right-panel, body.page-game) .page-title {
+  font-size: clamp(0.68rem, 1.6vw, 0.88rem) !important;
+  line-height: 1.45 !important;
+}
+
+/* ── Header logo — minimum 0.78rem for brand legibility ───────── */
 body.page-has-right-panel .site-logo .logo-text,
 body.page-game .site-logo .logo-text {
-  font-size: 0.60rem !important;
+  font-size: 0.78rem !important;
 }
 
 body.page-has-right-panel .site-logo .logo-sub,
@@ -4892,13 +4882,17 @@ body.page-game .sidebar-nav a {
 
 /* ── Right HUD titles ───────────────────────────────────────── */
 body.page-has-right-panel .retro-hud-title,
-body.page-game .retro-hud-title {
+body.page-has-right-panel #homepage-right-panel .retro-hud-title,
+body.page-game .retro-hud-title,
+body.page-game #homepage-right-panel .retro-hud-title {
   font-size: 0.56rem !important;
 }
 
 /* ── Right HUD body text ────────────────────────────────────── */
 body.page-has-right-panel .retro-hud-body,
-body.page-game .retro-hud-body {
+body.page-has-right-panel #homepage-right-panel .retro-hud-body,
+body.page-game .retro-hud-body,
+body.page-game #homepage-right-panel .retro-hud-body {
   font-size: 0.72rem !important;
 }
 
@@ -4994,4 +4988,19 @@ body.page-game .meta-item {
   body.page-game .sidebar-nav a {
     font-size: 0.60rem !important;
   }
+}
+
+/* ── CSP / LAS injected panels and live feed — enforce readable scale ── */
+:is(body.page-has-right-panel, body.page-game) .csp-panel,
+:is(body.page-has-right-panel, body.page-game) [data-csp-panel],
+:is(body.page-has-right-panel, body.page-game) .las-panel,
+:is(body.page-has-right-panel, body.page-game) [data-las-panel],
+:is(body.page-has-right-panel, body.page-game) #live-feed-widget {
+  font-size: 0.68rem !important;
+}
+
+/* ── Article / lore body text — must meet 0.9rem minimum ───────── */
+:is(body.page-has-right-panel, body.page-game) .lore-paragraph,
+:is(body.page-has-right-panel, body.page-game) .lead-paragraph {
+  font-size: clamp(0.90rem, 1.0vw, 1.0rem) !important;
 }
