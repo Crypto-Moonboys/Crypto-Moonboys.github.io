@@ -4378,6 +4378,7 @@ body.page-has-right-panel .sam-panel * {
    NON-HOME PAGES — EXTEND BROKEN NEON FRAME TO RETRO-HUD-BOX
    Mirror the body.page-home enhanced HUD panel treatment for all pages
    that carry page-has-right-panel or page-game.
+   Shared non-home shell reinforcement. Keep homepage-only hero rules under body.page-home.
    ========================================================================== */
 
 body.page-has-right-panel .retro-hud-box,
@@ -4546,7 +4547,7 @@ body.page-game .lb-tab {
   background: rgba(0, 0, 0, 0.75) !important;
   color: rgba(157, 215, 238, 0.80) !important;
   font-family: var(--font-pixel, "Press Start 2P", monospace) !important;
-  font-size: 0.38rem !important;
+  font-size: 0.50rem !important;
   text-transform: uppercase !important;
   letter-spacing: 0.07em !important;
   clip-path: polygon(
@@ -4591,7 +4592,7 @@ body.page-game .lb-table thead th {
   background: rgba(0, 0, 0, 0.70) !important;
   color: var(--neon-yellow) !important;
   font-family: var(--font-pixel, "Press Start 2P", monospace) !important;
-  font-size: 0.34rem !important;
+  font-size: 0.50rem !important;
   text-transform: uppercase !important;
   letter-spacing: 0.08em !important;
   border-bottom: 2px solid rgba(0, 229, 255, 0.35) !important;
@@ -4610,7 +4611,7 @@ body.page-game .lb-table tbody tr:last-child { border-bottom: none !important; }
 
 body.page-game .lb-rank {
   font-family: var(--font-pixel, "Press Start 2P", monospace) !important;
-  font-size: 0.44rem !important;
+  font-size: 0.50rem !important;
   color: var(--neon-yellow) !important;
   text-shadow: 0 0 6px rgba(255, 214, 0, 0.55) !important;
   text-align: center !important;
@@ -4618,7 +4619,7 @@ body.page-game .lb-rank {
 
 body.page-game .lb-score {
   font-family: var(--font-pixel, "Press Start 2P", monospace) !important;
-  font-size: 0.40rem !important;
+  font-size: 0.50rem !important;
   color: var(--neon-cyan) !important;
   text-shadow: 0 0 6px rgba(0, 229, 255, 0.55) !important;
   text-align: center !important;
@@ -4629,7 +4630,7 @@ body.page-game .lb-faction {
   border: 1px solid rgba(0, 229, 255, 0.45) !important;
   background: rgba(0, 229, 255, 0.08) !important;
   font-family: var(--font-pixel, "Press Start 2P", monospace) !important;
-  font-size: 0.34rem !important;
+  font-size: 0.50rem !important;
   color: var(--neon-cyan) !important;
   text-transform: uppercase !important;
   letter-spacing: 0.05em !important;
@@ -4646,7 +4647,7 @@ body.page-game .lb-faction {
   background: rgba(0, 0, 0, 0.75) !important;
   color: var(--neon-cyan) !important;
   font-family: var(--font-pixel, "Press Start 2P", monospace) !important;
-  font-size: 0.38rem !important;
+  font-size: 0.50rem !important;
   text-transform: uppercase !important;
   letter-spacing: 0.07em !important;
   cursor: pointer;
@@ -4681,7 +4682,7 @@ body.page-game .lb-linked-identity {
 }
 body.page-game .lb-linked-identity strong {
   font-family: var(--font-pixel, "Press Start 2P", monospace) !important;
-  font-size: 0.40rem !important;
+  font-size: 0.50rem !important;
   color: var(--neon-magenta) !important;
   text-shadow: 0 0 6px rgba(255, 45, 120, 0.55) !important;
   text-transform: uppercase;
@@ -4706,7 +4707,7 @@ body.page-game .lb-presence-btn {
   background: rgba(0, 0, 0, 0.75) !important;
   color: var(--neon-cyan) !important;
   font-family: var(--font-pixel, "Press Start 2P", monospace) !important;
-  font-size: 0.38rem !important;
+  font-size: 0.50rem !important;
   text-transform: uppercase;
   letter-spacing: 0.06em;
   cursor: pointer;
@@ -4735,7 +4736,7 @@ body.page-game .lb-presence-btn {
 
 body.page-game .lb-bd-player {
   font-family: var(--font-pixel, "Press Start 2P", monospace) !important;
-  font-size: 0.44rem !important;
+  font-size: 0.50rem !important;
   color: var(--neon-cyan) !important;
   text-shadow: 0 0 6px rgba(0, 229, 255, 0.55) !important;
   text-transform: uppercase;
@@ -4743,7 +4744,7 @@ body.page-game .lb-bd-player {
 }
 body.page-game .lb-bd-total {
   font-family: var(--font-pixel, "Press Start 2P", monospace) !important;
-  font-size: 0.44rem !important;
+  font-size: 0.50rem !important;
   color: var(--neon-yellow) !important;
   text-shadow: 0 0 6px rgba(255, 214, 0, 0.55) !important;
   font-variant-numeric: tabular-nums;
@@ -4762,14 +4763,14 @@ body.page-game .lb-bd-row {
 }
 body.page-game .lb-bd-label {
   font-family: var(--font-pixel, "Press Start 2P", monospace) !important;
-  font-size: 0.34rem !important;
+  font-size: 0.50rem !important;
   color: rgba(157, 215, 238, 0.70) !important;
   text-transform: uppercase;
   letter-spacing: 0.06em;
 }
 body.page-game .lb-bd-val {
   font-family: var(--font-pixel, "Press Start 2P", monospace) !important;
-  font-size: 0.44rem !important;
+  font-size: 0.50rem !important;
   color: var(--neon-cyan) !important;
   text-shadow: 0 0 5px rgba(0, 229, 255, 0.50) !important;
   font-variant-numeric: tabular-nums;
@@ -4781,7 +4782,7 @@ body.page-game .lb-bd-bonus .lb-bd-val {
 
 body.page-game .lb-graph-heading {
   font-family: var(--font-pixel, "Press Start 2P", monospace) !important;
-  font-size: 0.44rem !important;
+  font-size: 0.50rem !important;
   color: var(--neon-cyan) !important;
   text-shadow: 0 0 7px rgba(0, 229, 255, 0.55) !important;
   text-transform: uppercase;
@@ -4812,7 +4813,7 @@ body.page-game #lb-graph-reset {
   background: rgba(0, 0, 0, 0.85) !important;
   color: rgba(157, 215, 238, 0.70) !important;
   font-family: var(--font-pixel, "Press Start 2P", monospace) !important;
-  font-size: 0.34rem !important;
+  font-size: 0.50rem !important;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.70) !important;
