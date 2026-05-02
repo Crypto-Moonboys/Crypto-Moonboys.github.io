@@ -4373,3 +4373,465 @@ body.page-has-right-panel .sam-panel * {
   overflow-wrap: anywhere;
   word-break: normal;
 }
+
+/* ==========================================================================
+   NON-HOME PAGES — EXTEND BROKEN NEON FRAME TO RETRO-HUD-BOX
+   Mirror the body.page-home enhanced HUD panel treatment for all pages
+   that carry page-has-right-panel or page-game.
+   ========================================================================== */
+
+body.page-has-right-panel .retro-hud-box,
+body.page-game .retro-hud-box {
+  position: relative;
+  isolation: isolate;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background:
+    linear-gradient(180deg, rgba(7, 14, 34, 0.88), rgba(1, 5, 14, 0.94)) padding-box !important;
+  box-shadow:
+    6px 6px 0 rgba(0, 0, 0, 0.88),
+    0 0 0 2px rgba(255, 45, 120, 0.80),
+    0 0 0 5px rgba(0, 229, 255, 0.23),
+    0 0 22px rgba(255, 45, 120, 0.28),
+    inset 0 0 0 2px rgba(0, 229, 255, 0.20) !important;
+  clip-path: polygon(
+    0 10px, 10px 0,
+    calc(100% - 10px) 0, 100% 10px,
+    100% calc(100% - 10px), calc(100% - 10px) 100%,
+    10px 100%, 0 calc(100% - 10px)
+  );
+}
+
+body.page-has-right-panel .retro-hud-box::before,
+body.page-game .retro-hud-box::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  background:
+    linear-gradient(90deg,
+      var(--neon-magenta) 0 42px, transparent 42px 62px,
+      var(--neon-cyan) 62px 132px, transparent 132px 178px,
+      var(--neon-magenta) 178px 238px, transparent 238px 100%) top left / 100% 3px no-repeat,
+    linear-gradient(90deg,
+      transparent 0 8%, var(--neon-cyan) 8% 21%, transparent 21% 34%,
+      var(--neon-magenta) 34% 56%, transparent 56% 74%,
+      var(--neon-cyan) 74% 92%, transparent 92% 100%) bottom left / 100% 3px no-repeat,
+    linear-gradient(180deg,
+      var(--neon-cyan) 0 26px, transparent 26px 58px,
+      var(--neon-magenta) 58px 122px, transparent 122px 190px,
+      var(--neon-cyan) 190px 260px, transparent 260px 100%) top left / 3px 100% no-repeat,
+    linear-gradient(180deg,
+      transparent 0 12%, var(--neon-magenta) 12% 28%, transparent 28% 42%,
+      var(--neon-cyan) 42% 64%, transparent 64% 82%,
+      var(--neon-magenta) 82% 100%) top right / 3px 100% no-repeat;
+  opacity: 0.90;
+  filter: drop-shadow(0 0 4px rgba(0, 229, 255, 0.55));
+  animation: neonFramePulse 3.8s steps(3, end) infinite;
+}
+
+body.page-has-right-panel .retro-hud-box::after,
+body.page-game .retro-hud-box::after {
+  content: "";
+  position: absolute;
+  inset: 5px;
+  z-index: 3;
+  pointer-events: none;
+  background:
+    linear-gradient(var(--neon-yellow), var(--neon-yellow)) top left / 18px 3px no-repeat,
+    linear-gradient(var(--neon-yellow), var(--neon-yellow)) top left / 3px 18px no-repeat,
+    linear-gradient(var(--neon-cyan), var(--neon-cyan)) top right / 26px 3px no-repeat,
+    linear-gradient(var(--neon-cyan), var(--neon-cyan)) top right / 3px 26px no-repeat,
+    linear-gradient(var(--neon-magenta), var(--neon-magenta)) bottom left / 30px 3px no-repeat,
+    linear-gradient(var(--neon-magenta), var(--neon-magenta)) bottom left / 3px 30px no-repeat,
+    linear-gradient(var(--neon-cyan), var(--neon-cyan)) bottom right / 22px 3px no-repeat,
+    linear-gradient(var(--neon-cyan), var(--neon-cyan)) bottom right / 3px 22px no-repeat;
+  opacity: 0.93;
+  filter: drop-shadow(0 0 6px rgba(255, 45, 120, 0.65));
+  animation: neonCornerGlitch 5.4s steps(4, end) infinite;
+}
+
+body.page-has-right-panel .retro-hud-box > *,
+body.page-game .retro-hud-box > * {
+  position: relative;
+  z-index: 5;
+}
+
+/* Enhanced sidebar heading for all non-home pages */
+body.page-has-right-panel .sidebar-heading,
+body.page-game .sidebar-heading {
+  background:
+    repeating-linear-gradient(90deg, rgba(255, 45, 120, 0.14) 0 4px, rgba(0, 229, 255, 0.04) 4px 7px, transparent 7px 12px),
+    linear-gradient(90deg, rgba(255, 45, 120, 0.18), rgba(0, 0, 0, 0)) !important;
+  border-left: 3px solid var(--neon-magenta) !important;
+  border-bottom: 1px solid rgba(0, 229, 255, 0.22) !important;
+  box-shadow: inset 2px 0 6px rgba(255, 45, 120, 0.08) !important;
+  padding: 9px 14px 7px !important;
+}
+
+body.page-has-right-panel .sidebar-nav a,
+body.page-game .sidebar-nav a {
+  border-bottom: 1px solid rgba(0, 229, 255, 0.07);
+}
+body.page-has-right-panel .sidebar-nav a:hover,
+body.page-game .sidebar-nav a:hover {
+  background: rgba(0, 229, 255, 0.10);
+  box-shadow: inset 3px 0 0 var(--neon-cyan);
+}
+body.page-has-right-panel .sidebar-nav a.active,
+body.page-game .sidebar-nav a.active {
+  background: rgba(255, 45, 120, 0.14);
+  box-shadow: inset 3px 0 0 var(--neon-magenta);
+}
+
+/* ==========================================================================
+   JS-INJECTED STATUS PANELS — Override inline border-radius from CSP/LAS
+   connection-status-panel.js and live-activity-summary.js inject styles
+   that include border-radius. Override here to enforce neon HUD look.
+   ========================================================================== */
+
+.csp-panel {
+  border-radius: 0 !important;
+  border: 0 !important;
+  padding: 10px 12px !important;
+  background: linear-gradient(180deg, rgba(5, 12, 28, 0.88), rgba(1, 5, 14, 0.94)) !important;
+  box-shadow:
+    3px 3px 0 rgba(0, 0, 0, 0.80),
+    0 0 0 2px rgba(0, 229, 255, 0.50),
+    0 0 0 4px rgba(255, 45, 120, 0.12),
+    inset 0 0 0 1px rgba(0, 229, 255, 0.10) !important;
+  clip-path: polygon(
+    0 5px, 5px 0,
+    calc(100% - 5px) 0, 100% 5px,
+    100% calc(100% - 5px), calc(100% - 5px) 100%,
+    5px 100%, 0 calc(100% - 5px)
+  );
+}
+
+.las-panel {
+  border-radius: 0 !important;
+  border: 0 !important;
+  padding: 8px 12px !important;
+  background: linear-gradient(180deg, rgba(5, 12, 28, 0.88), rgba(1, 5, 14, 0.94)) !important;
+  box-shadow:
+    3px 3px 0 rgba(0, 0, 0, 0.80),
+    0 0 0 2px rgba(190, 76, 247, 0.45),
+    0 0 0 4px rgba(0, 229, 255, 0.10),
+    inset 0 0 0 1px rgba(190, 76, 247, 0.10) !important;
+  clip-path: polygon(
+    0 5px, 5px 0,
+    calc(100% - 5px) 0, 100% 5px,
+    100% calc(100% - 5px), calc(100% - 5px) 100%,
+    5px 100%, 0 calc(100% - 5px)
+  );
+}
+
+/* ==========================================================================
+   GAME SHELL PAGES — LEADERBOARD NEON HUD OVERRIDES
+   body.page-game scoped rules for leaderboard-specific classes.
+   These override old SaaS styles from wiki.css and leaderboard inline CSS.
+   ========================================================================== */
+
+body.page-game .lb-intro {
+  color: rgba(157, 215, 238, 0.85) !important;
+  font-size: clamp(0.72rem, 0.82vw, 0.88rem) !important;
+  margin-bottom: 20px;
+  line-height: 1.6;
+}
+
+body.page-game .lb-tab {
+  border-radius: 0 !important;
+  border: 2px solid rgba(0, 229, 255, 0.45) !important;
+  background: rgba(0, 0, 0, 0.75) !important;
+  color: rgba(157, 215, 238, 0.80) !important;
+  font-family: var(--font-pixel, "Press Start 2P", monospace) !important;
+  font-size: 0.38rem !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.07em !important;
+  clip-path: polygon(
+    0 4px, 4px 0, calc(100% - 4px) 0, 100% 4px,
+    100% calc(100% - 4px), calc(100% - 4px) 100%, 4px 100%, 0 calc(100% - 4px)
+  );
+  box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.75) !important;
+  padding: 7px 16px !important;
+}
+
+body.page-game .lb-tab:hover {
+  background: rgba(0, 229, 255, 0.10) !important;
+  color: var(--neon-cyan) !important;
+  border-color: var(--neon-cyan) !important;
+  box-shadow: 3px 3px 0 rgba(0, 229, 255, 0.22) !important;
+}
+
+body.page-game .lb-tab.active {
+  background: rgba(0, 229, 255, 0.14) !important;
+  border-color: var(--neon-cyan) !important;
+  color: var(--neon-cyan) !important;
+  text-shadow: 0 0 6px rgba(0, 229, 255, 0.55) !important;
+  box-shadow: 3px 3px 0 rgba(0, 229, 255, 0.22) !important;
+}
+
+body.page-game .lb-table-outer {
+  border-radius: 0 !important;
+  border: 0 !important;
+  background: linear-gradient(180deg, rgba(5, 12, 28, 0.90), rgba(1, 5, 14, 0.96)) !important;
+  box-shadow:
+    4px 4px 0 rgba(0, 0, 0, 0.85),
+    0 0 0 2px rgba(0, 229, 255, 0.55),
+    0 0 0 4px rgba(255, 45, 120, 0.18),
+    inset 0 0 0 1px rgba(0, 229, 255, 0.12) !important;
+  clip-path: polygon(
+    0 6px, 6px 0, calc(100% - 6px) 0, 100% 6px,
+    100% calc(100% - 6px), calc(100% - 6px) 100%, 6px 100%, 0 calc(100% - 6px)
+  );
+}
+
+body.page-game .lb-table thead th {
+  background: rgba(0, 0, 0, 0.70) !important;
+  color: var(--neon-yellow) !important;
+  font-family: var(--font-pixel, "Press Start 2P", monospace) !important;
+  font-size: 0.34rem !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.08em !important;
+  border-bottom: 2px solid rgba(0, 229, 255, 0.35) !important;
+  text-shadow: 0 0 6px rgba(255, 214, 0, 0.55) !important;
+  white-space: nowrap;
+}
+
+body.page-game .lb-table tbody tr:hover { background: rgba(0, 229, 255, 0.07) !important; }
+body.page-game .lb-table tbody tr.selected {
+  background: rgba(0, 229, 255, 0.11) !important;
+  box-shadow: inset 0 0 0 1px rgba(0, 229, 255, 0.55) !important;
+  outline: none !important;
+}
+body.page-game .lb-table tbody tr { border-bottom: 1px solid rgba(0, 229, 255, 0.10) !important; }
+body.page-game .lb-table tbody tr:last-child { border-bottom: none !important; }
+
+body.page-game .lb-rank {
+  font-family: var(--font-pixel, "Press Start 2P", monospace) !important;
+  font-size: 0.44rem !important;
+  color: var(--neon-yellow) !important;
+  text-shadow: 0 0 6px rgba(255, 214, 0, 0.55) !important;
+  text-align: center !important;
+}
+
+body.page-game .lb-score {
+  font-family: var(--font-pixel, "Press Start 2P", monospace) !important;
+  font-size: 0.40rem !important;
+  color: var(--neon-cyan) !important;
+  text-shadow: 0 0 6px rgba(0, 229, 255, 0.55) !important;
+  text-align: center !important;
+}
+
+body.page-game .lb-faction {
+  border-radius: 0 !important;
+  border: 1px solid rgba(0, 229, 255, 0.45) !important;
+  background: rgba(0, 229, 255, 0.08) !important;
+  font-family: var(--font-pixel, "Press Start 2P", monospace) !important;
+  font-size: 0.34rem !important;
+  color: var(--neon-cyan) !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.05em !important;
+  clip-path: polygon(
+    0 3px, 3px 0, calc(100% - 3px) 0, 100% 3px,
+    100% calc(100% - 3px), calc(100% - 3px) 100%, 3px 100%, 0 calc(100% - 3px)
+  );
+  padding: 3px 8px !important;
+}
+
+#lb-refresh-btn {
+  border-radius: 0 !important;
+  border: 2px solid rgba(0, 229, 255, 0.55) !important;
+  background: rgba(0, 0, 0, 0.75) !important;
+  color: var(--neon-cyan) !important;
+  font-family: var(--font-pixel, "Press Start 2P", monospace) !important;
+  font-size: 0.38rem !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.07em !important;
+  cursor: pointer;
+  clip-path: polygon(
+    0 4px, 4px 0, calc(100% - 4px) 0, 100% 4px,
+    100% calc(100% - 4px), calc(100% - 4px) 100%, 4px 100%, 0 calc(100% - 4px)
+  );
+  box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.80) !important;
+  padding: 7px 16px !important;
+}
+#lb-refresh-btn:hover {
+  background: rgba(0, 229, 255, 0.12) !important;
+  box-shadow: 3px 3px 0 rgba(0, 229, 255, 0.25) !important;
+}
+#lb-refresh-btn:disabled { opacity: 0.45; cursor: default; }
+
+body.page-game .lb-linked-identity {
+  border-radius: 0 !important;
+  border: 0 !important;
+  padding: 10px 12px;
+  background: linear-gradient(180deg, rgba(5, 12, 28, 0.90), rgba(1, 5, 14, 0.96)) !important;
+  color: rgba(157, 215, 238, 0.88) !important;
+  box-shadow:
+    3px 3px 0 rgba(0, 0, 0, 0.80),
+    0 0 0 2px rgba(255, 45, 120, 0.55),
+    0 0 0 4px rgba(0, 229, 255, 0.12),
+    inset 0 0 0 1px rgba(255, 45, 120, 0.18) !important;
+  clip-path: polygon(
+    0 5px, 5px 0, calc(100% - 5px) 0, 100% 5px,
+    100% calc(100% - 5px), calc(100% - 5px) 100%, 5px 100%, 0 calc(100% - 5px)
+  );
+}
+body.page-game .lb-linked-identity strong {
+  font-family: var(--font-pixel, "Press Start 2P", monospace) !important;
+  font-size: 0.40rem !important;
+  color: var(--neon-magenta) !important;
+  text-shadow: 0 0 6px rgba(255, 45, 120, 0.55) !important;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+body.page-game .lb-linked-identity.sync-state--good {
+  box-shadow:
+    3px 3px 0 rgba(0, 0, 0, 0.80),
+    0 0 0 2px rgba(57, 255, 20, 0.80),
+    0 0 0 4px rgba(0, 229, 255, 0.18),
+    inset 0 0 0 1px rgba(57, 255, 20, 0.25) !important;
+  color: rgba(200, 255, 220, 0.90) !important;
+}
+body.page-game .lb-linked-identity.sync-state--good strong {
+  color: var(--neon-green, #39ff14) !important;
+  text-shadow: 0 0 8px rgba(57, 255, 20, 0.65) !important;
+}
+
+body.page-game .lb-presence-btn {
+  border-radius: 0 !important;
+  border: 2px solid rgba(0, 229, 255, 0.50) !important;
+  background: rgba(0, 0, 0, 0.75) !important;
+  color: var(--neon-cyan) !important;
+  font-family: var(--font-pixel, "Press Start 2P", monospace) !important;
+  font-size: 0.38rem !important;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  clip-path: polygon(
+    0 4px, 4px 0, calc(100% - 4px) 0, 100% 4px,
+    100% calc(100% - 4px), calc(100% - 4px) 100%, 4px 100%, 0 calc(100% - 4px)
+  );
+  box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.75) !important;
+  padding: 8px 14px !important;
+}
+
+#lb-breakdown-panel {
+  border-radius: 0 !important;
+  border: 0 !important;
+  background: linear-gradient(180deg, rgba(5, 12, 28, 0.90), rgba(1, 5, 14, 0.96)) !important;
+  box-shadow:
+    4px 4px 0 rgba(0, 0, 0, 0.85),
+    0 0 0 2px rgba(0, 229, 255, 0.55),
+    0 0 0 4px rgba(255, 45, 120, 0.15),
+    inset 0 0 0 1px rgba(0, 229, 255, 0.12) !important;
+  clip-path: polygon(
+    0 6px, 6px 0, calc(100% - 6px) 0, 100% 6px,
+    100% calc(100% - 6px), calc(100% - 6px) 100%, 6px 100%, 0 calc(100% - 6px)
+  );
+}
+
+body.page-game .lb-bd-player {
+  font-family: var(--font-pixel, "Press Start 2P", monospace) !important;
+  font-size: 0.44rem !important;
+  color: var(--neon-cyan) !important;
+  text-shadow: 0 0 6px rgba(0, 229, 255, 0.55) !important;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+body.page-game .lb-bd-total {
+  font-family: var(--font-pixel, "Press Start 2P", monospace) !important;
+  font-size: 0.44rem !important;
+  color: var(--neon-yellow) !important;
+  text-shadow: 0 0 6px rgba(255, 214, 0, 0.55) !important;
+  font-variant-numeric: tabular-nums;
+}
+body.page-game .lb-bd-row {
+  border-radius: 0 !important;
+  border: 0 !important;
+  background: rgba(0, 229, 255, 0.04) !important;
+  box-shadow:
+    2px 2px 0 rgba(0, 0, 0, 0.75),
+    0 0 0 1px rgba(0, 229, 255, 0.30) !important;
+  clip-path: polygon(
+    0 3px, 3px 0, calc(100% - 3px) 0, 100% 3px,
+    100% calc(100% - 3px), calc(100% - 3px) 100%, 3px 100%, 0 calc(100% - 3px)
+  );
+}
+body.page-game .lb-bd-label {
+  font-family: var(--font-pixel, "Press Start 2P", monospace) !important;
+  font-size: 0.34rem !important;
+  color: rgba(157, 215, 238, 0.70) !important;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+body.page-game .lb-bd-val {
+  font-family: var(--font-pixel, "Press Start 2P", monospace) !important;
+  font-size: 0.44rem !important;
+  color: var(--neon-cyan) !important;
+  text-shadow: 0 0 5px rgba(0, 229, 255, 0.50) !important;
+  font-variant-numeric: tabular-nums;
+}
+body.page-game .lb-bd-bonus .lb-bd-val {
+  color: var(--neon-green, #39ff14) !important;
+  text-shadow: 0 0 5px rgba(57, 255, 20, 0.50) !important;
+}
+
+body.page-game .lb-graph-heading {
+  font-family: var(--font-pixel, "Press Start 2P", monospace) !important;
+  font-size: 0.44rem !important;
+  color: var(--neon-cyan) !important;
+  text-shadow: 0 0 7px rgba(0, 229, 255, 0.55) !important;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+body.page-game .lb-graph-heading::after {
+  background: linear-gradient(90deg, rgba(0, 229, 255, 0.45), transparent) !important;
+}
+
+body.page-game .lb-graph-wrap {
+  border-radius: 0 !important;
+  border: 0 !important;
+  background: linear-gradient(170deg, rgba(3, 8, 20, 0.95), rgba(1, 4, 12, 0.97)) !important;
+  box-shadow:
+    4px 4px 0 rgba(0, 0, 0, 0.85),
+    0 0 0 2px rgba(0, 229, 255, 0.50),
+    0 0 0 4px rgba(255, 45, 120, 0.12),
+    inset 0 0 0 1px rgba(0, 229, 255, 0.10) !important;
+  clip-path: polygon(
+    0 6px, 6px 0, calc(100% - 6px) 0, 100% 6px,
+    100% calc(100% - 6px), calc(100% - 6px) 100%, 6px 100%, 0 calc(100% - 6px)
+  );
+}
+
+body.page-game #lb-graph-reset {
+  border-radius: 0 !important;
+  border: 1px solid rgba(0, 229, 255, 0.40) !important;
+  background: rgba(0, 0, 0, 0.85) !important;
+  color: rgba(157, 215, 238, 0.70) !important;
+  font-family: var(--font-pixel, "Press Start 2P", monospace) !important;
+  font-size: 0.34rem !important;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.70) !important;
+  clip-path: polygon(
+    0 3px, 3px 0, calc(100% - 3px) 0, 100% 3px,
+    100% calc(100% - 3px), calc(100% - 3px) 100%, 3px 100%, 0 calc(100% - 3px)
+  );
+}
+body.page-game #lb-graph-reset:hover {
+  background: rgba(0, 229, 255, 0.10) !important;
+  color: var(--neon-cyan) !important;
+}
+
+body.page-game .lb-legend-item {
+  font-size: 0.72rem !important;
+  color: rgba(157, 215, 238, 0.65) !important;
+}
+
+body.page-game .lb-hint {
+  font-size: clamp(0.62rem, 0.72vw, 0.78rem) !important;
+  color: rgba(157, 215, 238, 0.65) !important;
+}

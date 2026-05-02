@@ -16,15 +16,11 @@
   <link rel="stylesheet" href="/css/retro-16bit-theme.css">
   <link rel="icon" href="/img/favicon.svg" type="image/svg+xml">
   <style>
-    /* ── Leaderboard page scoped styles ──────────────────────────── */
+    /* ── Leaderboard page — neon HUD layout shell ──────────────────── */
     .lb-intro {
-      color: var(--color-text-muted);
-      font-size: .9rem;
       margin-bottom: 20px;
       line-height: 1.6;
     }
-
-    /* Tab bar */
     #lb-mode-toggle {
       display: flex;
       gap: 8px;
@@ -36,130 +32,27 @@
       gap: 8px;
       margin-bottom: 18px;
     }
-    .lb-tab {
-      padding: 7px 18px;
-      border-radius: 20px;
-      border: 1px solid rgba(86,220,255,.3);
-      background: rgba(10, 26, 47, .65);
-      color: var(--color-text-muted);
-      font-size: .85rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: background .15s, color .15s, border-color .15s, box-shadow .15s;
-    }
-    .lb-tab:hover {
-      background: rgba(86,220,255,.12);
-      color: var(--color-text);
-      border-color: rgba(86,220,255,.58);
-      box-shadow: 0 0 16px rgba(86,220,255,.16);
-    }
-    .lb-tab.active {
-      background: rgba(86,220,255,.14);
-      border-color: rgba(86,220,255,.68);
-      color: var(--color-cyan, #56dcff);
-      box-shadow: 0 0 16px rgba(86,220,255,.16);
-    }
-
-    /* Status line (loading / empty / error) */
     #lb-status {
       padding: 32px 0;
       text-align: center;
       font-size: .9rem;
     }
-    .lb-spinner { color: var(--color-text-muted); }
-    .lb-error   { color: var(--color-red); }
-    .lb-empty   { color: var(--color-text-muted); }
-
-    /* ── Main leaderboard table (3 columns only) ──────────────────── */
-    .lb-table-outer {
-      border-radius: var(--radius);
-      border: 1px solid rgba(86,220,255,.28);
-      background: linear-gradient(170deg, rgba(10,23,44,.74), rgba(8,18,34,.58));
-      box-shadow: inset 0 0 0 1px rgba(122,236,255,.06), 0 10px 30px rgba(0,0,0,.28);
-      margin-bottom: 18px;
-      overflow-x: hidden;
-    }
-    .lb-table-outer.shell-scroll { max-height: 430px; }
-    .lb-table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: .88rem;
-      table-layout: auto;
-    }
-    .lb-table thead th {
-      background: var(--color-surface-2);
-      color: var(--color-text-muted);
-      font-size: .75rem;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: .06em;
-      padding: 8px 14px;
-      text-align: center;
-      border-bottom: 1px solid var(--color-border);
-      white-space: nowrap;
-    }
     .lb-col-player { text-align: left; min-width: 180px; overflow: visible; text-overflow: clip; }
-    .lb-table tbody tr {
-      border-bottom: 1px solid rgba(48,54,61,.5);
-      transition: background .12s;
-      cursor: pointer;
-    }
-    .lb-table tbody tr:last-child { border-bottom: none; }
-    .lb-table tbody tr:hover { background: rgba(86,220,255,.07); }
-    .lb-table tbody tr.selected { background: rgba(86,220,255,.11); outline: 1px solid rgba(86,220,255,.66); }
-    .lb-table tbody tr:focus { outline: 2px solid rgba(86,220,255,.66); outline-offset: -2px; }
+    .lb-table tbody tr:focus { outline: 2px solid rgba(0, 229, 255, .55); outline-offset: -2px; }
     .lb-table th,
-    .lb-table td {
-      padding: 10px 14px;
-      white-space: nowrap;
-    }
-    .lb-table td {
-      color: var(--color-text);
-      vertical-align: middle;
-    }
-    .lb-rank   { text-align: center; font-weight: 700; font-size: 1rem; }
-    .lb-player { font-weight: 600; overflow: visible; text-overflow: clip; }
+    .lb-table td { padding: 10px 14px; white-space: nowrap; }
+    .lb-table td { vertical-align: middle; }
+    .lb-rank { text-align: center; }
+    .lb-player { overflow: visible; text-overflow: clip; }
     .lb-faction-cell { text-align: center; }
-    .lb-faction {
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      border: 1px solid color-mix(in srgb, var(--faction-color) 65%, white);
-      border-radius: 999px;
-      padding: 3px 8px;
-      font-size: .75rem;
-      color: #f4fbff;
-      background: color-mix(in srgb, var(--faction-color) 16%, rgba(8,22,36,.92));
-    }
-    .lb-score  { text-align: center; font-weight: 700; color: var(--color-accent); font-variant-numeric: tabular-nums; }
-
-    /* Controls row */
+    .lb-faction { display: inline-flex; align-items: center; gap: 4px; }
+    .lb-score { text-align: center; font-variant-numeric: tabular-nums; }
     .lb-controls {
       display: flex;
       align-items: center;
       gap: 12px;
       margin-bottom: 14px;
       flex-wrap: wrap;
-    }
-    #lb-refresh-btn {
-      padding: 7px 16px;
-      border-radius: var(--radius);
-      border: 1px solid rgba(86,220,255,.62);
-      background: linear-gradient(130deg, rgba(86,220,255,.2), rgba(65,255,217,.18));
-      color: #d8fbff;
-      font-size: .85rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: background .15s, border-color .15s, box-shadow .15s;
-    }
-    #lb-refresh-btn:hover {
-      background: linear-gradient(130deg, rgba(86,220,255,.3), rgba(65,255,217,.28));
-      box-shadow: inset 0 0 0 1px rgba(146,245,255,.22), 0 0 18px rgba(86,220,255,.2);
-    }
-    #lb-refresh-btn:disabled { opacity: .5; cursor: default; }
-    .lb-hint {
-      font-size: .78rem;
-      color: var(--color-text-muted);
     }
     .lb-linked-shell {
       display: flex;
@@ -169,47 +62,10 @@
       flex-wrap: wrap;
       margin-bottom: 14px;
     }
-    .lb-linked-identity {
-      flex: 1 1 360px;
-      border: 1px solid rgba(255, 78, 98, .48);
-      border-radius: 12px;
-      padding: 10px 12px;
-      background: rgba(62, 8, 20, .42);
-      color: #ffdbe3;
-      box-shadow: 0 0 0 1px rgba(255, 82, 108, .2) inset;
-    }
-    .lb-linked-identity strong { display: block; font-size: .92rem; }
-    .lb-linked-meta { display: block; margin-top: 4px; color: var(--color-text-muted); font-size: .78rem; }
-    .lb-linked-identity.sync-state--good {
-      border-color: rgba(57, 255, 20, 0.9);
-      background: rgba(18, 66, 31, 0.72);
-      color: #d8ffe7;
-      box-shadow: 0 0 10px rgba(57,255,20,.64), 0 0 22px rgba(57,255,20,.24);
-      animation: lbPulseGreen 1.1s ease-in-out infinite alternate;
-    }
-    .lb-linked-identity.presence-offline.sync-state--good { animation: none; box-shadow: 0 0 0 1px rgba(82,236,112,.22) inset; }
-    @keyframes lbPulseGreen { from { transform: translateZ(0); } to { box-shadow: 0 0 14px rgba(57,255,20,.78), 0 0 28px rgba(57,255,20,.3); } }
-    .lb-presence-btn {
-      padding: 8px 14px;
-      border-radius: 10px;
-      border: 1px solid rgba(86,220,255,.54);
-      background: rgba(9,30,54,.72);
-      color: #d9f6ff;
-      font-weight: 700;
-      cursor: pointer;
-    }
-    .lb-presence-btn:disabled { opacity: .45; cursor: not-allowed; }
-
-    /* ── Selected-player breakdown panel ─────────────────────────── */
-    #lb-breakdown-panel {
-      border: 1px solid rgba(86,220,255,.28);
-      border-radius: var(--radius);
-      background: linear-gradient(170deg, rgba(10,23,44,.74), rgba(8,18,34,.58));
-      box-shadow: inset 0 0 0 1px rgba(122,236,255,.06), 0 10px 30px rgba(0,0,0,.28);
-      padding: 16px 20px;
-      margin-bottom: 24px;
-    }
-    #lb-breakdown-panel.shell-scroll { max-height: 250px; }
+    .lb-linked-identity { flex: 1 1 360px; }
+    .lb-linked-meta { display: block; margin-top: 4px; }
+    .lb-linked-identity strong { display: block; }
+    @keyframes lbPulseGreen { from { filter: none; } to { filter: drop-shadow(0 0 6px rgba(57,255,20,.55)); } }
     .lb-bd-header {
       display: flex;
       align-items: baseline;
@@ -218,117 +74,29 @@
       margin-bottom: 14px;
       flex-wrap: wrap;
     }
-    .lb-bd-player {
-      font-size: 1.05rem;
-      font-weight: 700;
-      color: var(--color-text);
-    }
-    .lb-bd-total {
-      font-size: 1.05rem;
-      font-weight: 700;
-      color: var(--color-accent);
-      font-variant-numeric: tabular-nums;
-    }
     .lb-bd-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
       gap: 8px;
     }
-    .lb-bd-row {
-      display: flex;
-      flex-direction: column;
-      background: rgba(86,220,255,.05);
-      border: 1px solid rgba(86,220,255,.18);
-      border-radius: 8px;
-      padding: 8px 12px;
-      gap: 2px;
-    }
-    .lb-bd-label {
-      font-size: .72rem;
-      color: var(--color-text-muted);
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: .05em;
-    }
-    .lb-bd-val {
-      font-size: .95rem;
-      font-weight: 700;
-      color: var(--color-text);
-      font-variant-numeric: tabular-nums;
-    }
-    .lb-bd-bonus .lb-bd-val { color: var(--color-green, #3fb950); }
-
-    @media (max-width: 480px) {
-      .lb-bd-grid { grid-template-columns: repeat(2, 1fr); }
-    }
-
-    /* Graph section */
-    .lb-graph-section {
-      margin: 28px 0;
-    }
-    .lb-graph-heading {
-      font-size: 1rem;
-      font-weight: 700;
-      color: var(--color-text-muted);
-      margin-bottom: 10px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    .lb-graph-heading::after {
-      content: '';
-      flex: 1;
-      height: 1px;
-      background: var(--color-border);
-    }
-    .lb-graph-wrap {
-      border: 1px solid rgba(86,220,255,.28);
-      border-radius: 14px;
-      overflow: hidden;
-      background: linear-gradient(170deg, rgba(8,14,26,.95), rgba(7,18,32,.92));
-      position: relative;
-      box-shadow: inset 0 0 0 1px rgba(122,236,255,.06), 0 10px 30px rgba(0,0,0,.28);
-    }
-    #arcade-graph-canvas {
-      display: block;
-      width: 100%;
-    }
+    .lb-bd-row { display: flex; flex-direction: column; padding: 8px 12px; gap: 2px; }
+    .lb-graph-section { margin: 28px 0; }
+    .lb-graph-heading { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+    .lb-graph-heading::after { content: ''; flex: 1; height: 2px; }
+    .lb-graph-wrap { overflow: hidden; position: relative; }
+    #arcade-graph-canvas { display: block; width: 100%; }
     .lb-graph-legend {
       display: flex;
       flex-wrap: wrap;
       gap: 10px 18px;
       padding: 10px 16px;
-      border-top: 1px solid var(--color-border);
-      background: rgba(9,12,22,.6);
     }
-    .lb-legend-item {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      font-size: .75rem;
-      color: var(--color-text-muted);
-    }
-    .lb-legend-dot {
-      width: 10px;
-      height: 10px;
-      border-radius: 50%;
-      flex-shrink: 0;
-    }
-    #lb-graph-reset {
-      position: absolute;
-      top: 8px;
-      right: 10px;
-      padding: 4px 10px;
-      border-radius: var(--radius);
-      border: 1px solid var(--color-border);
-      background: rgba(22,27,34,.85);
-      color: var(--color-text-muted);
-      font-size: .75rem;
-      cursor: pointer;
-      transition: background .15s;
-      backdrop-filter: blur(2px);
-    }
-    #lb-graph-reset:hover { background: var(--color-border); color: var(--color-text); }
+    .lb-legend-item { display: flex; align-items: center; gap: 6px; }
+    .lb-legend-dot { width: 10px; height: 10px; flex-shrink: 0; }
+    #lb-graph-reset { position: absolute; top: 8px; right: 10px; padding: 4px 10px; cursor: pointer; }
+    #lb-refresh-btn:disabled { opacity: .5; cursor: default; }
+    .lb-presence-btn:disabled { opacity: .45; cursor: not-allowed; }
+    @media (max-width: 480px) { .lb-bd-grid { grid-template-columns: repeat(2, 1fr); } }
   </style>
 </head>
 <body class="page-game page-has-right-panel">
@@ -357,37 +125,37 @@
     <div class="sidebar-section">
       <div class="sidebar-heading">Navigation</div>
       <div class="sidebar-nav">
-        <a href="/index.html"><span class="nav-icon">🏠</span> Main Page</a>
-        <a href="/categories/index.html"><span class="nav-icon">📂</span> All Categories</a>
-        <a href="/search.html"><span class="nav-icon">🔍</span> All Articles</a>
-        <a href="/timeline.html"><span class="nav-icon">📅</span> Timeline</a>
-        <a href="/graph.html"><span class="nav-icon">🌐</span> Entity Graph</a>
-        <a href="/dashboard.html"><span class="nav-icon">📊</span> Dashboard</a>
-        <a href="/games/" class="active"><span class="nav-icon">🕹️</span> Arcade</a>
+        <a href="/index.html"><span class="nav-icon">⌂</span> Main Page</a>
+        <a href="/categories/index.html"><span class="nav-icon">≡</span> All Categories</a>
+        <a href="/search.html"><span class="nav-icon">◈</span> All Articles</a>
+        <a href="/timeline.html"><span class="nav-icon">▤</span> Timeline</a>
+        <a href="/graph.html"><span class="nav-icon">◎</span> Entity Graph</a>
+        <a href="/dashboard.html"><span class="nav-icon">▦</span> Dashboard</a>
+        <a href="/games/" class="active"><span class="nav-icon">◉</span> Arcade</a>
       </div>
     </div>
     <div class="sidebar-section">
       <div class="sidebar-heading">Arcade</div>
       <div class="sidebar-nav">
-        <a href="/games/leaderboard.html" class="active"><span class="nav-icon">🏆</span> Leaderboard</a>
-        <a href="/how-to-play.html"><span class="nav-icon">◈</span> How to Play Manual</a>
-        <a href="/games/invaders-3008/"><span class="nav-icon">👾</span> Invaders 3008</a>
-        <a href="/games/pac-chain/"><span class="nav-icon">🟡</span> Pac-Chain</a>
-        <a href="/games/asteroid-fork/"><span class="nav-icon">🌑</span> Asteroid Fork</a>
-        <a href="/games/breakout-bullrun/"><span class="nav-icon">🧱</span> Breakout Bullrun</a>
-        <a href="/games/tetris-block-topia/"><span class="nav-icon">🟦</span> Tetris Block Topia</a>
-        <a href="/games/block-topia-quest-maze/"><span class="nav-icon">🗺️</span> Block Topia Quest Maze</a>
-        <a href="/games/crystal-quest/"><span class="nav-icon">🧩</span> Crystal Quest</a>
-        <a href="/games/snake-run/"><span class="nav-icon">🐍</span> SnakeRun 3008</a>
-        <a href="/games/block-topia/"><span class="nav-icon">🏙️</span> Block Topia Multiplayer</a>
+        <a href="/games/leaderboard.html" class="active"><span class="nav-icon">▦</span> Leaderboard</a>
+        <a href="/how-to-play.html"><span class="nav-icon">◆</span> How to Play Manual</a>
+        <a href="/games/invaders-3008/"><span class="nav-icon">✕</span> Invaders 3008</a>
+        <a href="/games/pac-chain/"><span class="nav-icon">◉</span> Pac-Chain</a>
+        <a href="/games/asteroid-fork/"><span class="nav-icon">◎</span> Asteroid Fork</a>
+        <a href="/games/breakout-bullrun/"><span class="nav-icon">▭</span> Breakout Bullrun</a>
+        <a href="/games/tetris-block-topia/"><span class="nav-icon">▦</span> Tetris Block Topia</a>
+        <a href="/games/block-topia-quest-maze/"><span class="nav-icon">▤</span> Block Topia Quest Maze</a>
+        <a href="/games/crystal-quest/"><span class="nav-icon">◇</span> Crystal Quest</a>
+        <a href="/games/snake-run/"><span class="nav-icon">≡</span> SnakeRun 3008</a>
+        <a href="/games/block-topia/"><span class="nav-icon">◈</span> Block Topia Multiplayer</a>
       </div>
     </div>
     <div class="sidebar-section">
       <div class="sidebar-heading">GK Wiki Info</div>
       <div class="sidebar-nav">
-        <a href="/about.html"><span class="nav-icon">ℹ️</span> About</a>
-        <a href="/about.html#citation"><span class="nav-icon">📋</span> Citation Policy</a>
-        <a href="/about.html#sources"><span class="nav-icon">🔗</span> Source Types</a>
+        <a href="/about.html"><span class="nav-icon">◈</span> About</a>
+        <a href="/about.html#citation"><span class="nav-icon">≡</span> Citation Policy</a>
+        <a href="/about.html#sources"><span class="nav-icon">◎</span> Source Types</a>
       </div>
     </div>
   </nav>
@@ -437,8 +205,7 @@
       </section>
 
       <!-- ── Status Panel ──────────────────────────────────────────── -->
-      <div id="lb-status-panel" data-csp-panel style="margin-bottom:18px"></div>
-      <div data-las-panel style="margin-bottom:18px"></div>
+      <div id="lb-status-panel" style="margin-bottom:18px"></div>
 
       <!-- ── Tab bar ─────────────────────────────────────────────── -->
       <div id="lb-mode-toggle" role="group" aria-label="Leaderboard mode"></div>
@@ -508,6 +275,97 @@
       </div>
     </footer>
   </div>
+
+  <aside id="homepage-right-panel" aria-label="Player and system status">
+
+    <!-- ── PLAYER STATUS ── -->
+    <div class="retro-hud-box hud-box--player">
+      <div class="retro-hud-title">
+        <span class="retro-hud-title-icon" aria-hidden="true">▶</span>
+        Player Status
+        <span class="retro-hud-mascot" aria-hidden="true">🐻</span>
+      </div>
+      <div class="retro-hud-body">
+        <div class="hud-player-portrait-row">
+          <div class="hud-avatar-box" role="img" aria-label="Player avatar">
+            <span class="hud-avatar-icon" aria-hidden="true">👾</span>
+          </div>
+          <div class="hud-player-info">
+            <div class="hud-info-row">
+              <span class="hud-label">PLAYER:</span>
+              <span class="hud-value hud-player-name">—</span>
+            </div>
+            <div class="hud-info-row">
+              <span class="hud-label">RANK:</span>
+              <span class="hud-value hud-rank-val">—</span>
+            </div>
+            <div class="hud-info-row">
+              <span class="hud-label">XP:</span>
+              <span class="hud-value hud-xp-inline"><span class="hud-xp-cur">--</span>&thinsp;/&thinsp;<span class="hud-xp-max">--</span></span>
+            </div>
+          </div>
+        </div>
+        <div class="hud-xp-bar-wrap">
+          <span class="hud-xp-label">XP</span>
+          <div class="hud-xp-track"><div class="hud-xp-fill"></div></div>
+          <span class="hud-xp-pct">--</span>
+        </div>
+        <div class="hud-stats-row">
+          <div class="hud-stat-chip"><span class="hud-stat-icon" aria-hidden="true">🪙</span><span class="hud-stat-val">--</span></div>
+          <div class="hud-stat-chip"><span class="hud-stat-icon" aria-hidden="true">💎</span><span class="hud-stat-val">--</span></div>
+          <div class="hud-stat-chip"><span class="hud-stat-icon" aria-hidden="true">⚡</span><span class="hud-stat-val">--</span></div>
+        </div>
+        <div data-csp-panel></div>
+      </div>
+    </div>
+
+    <!-- ── SYSTEM STATUS ── -->
+    <div class="retro-hud-box hud-box--system">
+      <div class="retro-hud-title">
+        <span class="retro-hud-title-icon" aria-hidden="true">▶</span>
+        System Status
+        <span class="retro-hud-mascot" aria-hidden="true">🤖</span>
+      </div>
+      <div class="retro-hud-body">
+        <div class="hud-sys-table" aria-label="System status indicators">
+          <div class="hud-sys-row">
+            <span class="hud-sys-label">NETWORK</span>
+            <span class="hud-sys-val hud-sys-online">ONLINE</span>
+            <span class="hud-sys-dot" aria-hidden="true"></span>
+          </div>
+          <div class="hud-sys-row">
+            <span class="hud-sys-label">ARCADE SERVER</span>
+            <span class="hud-sys-val hud-sys-online">ONLINE</span>
+            <span class="hud-sys-dot" aria-hidden="true"></span>
+          </div>
+          <div class="hud-sys-row">
+            <span class="hud-sys-label">LEADERBOARD</span>
+            <span class="hud-sys-val hud-sys-online">ACTIVE</span>
+            <span class="hud-sys-dot" aria-hidden="true"></span>
+          </div>
+        </div>
+        <div data-las-panel></div>
+      </div>
+    </div>
+
+    <!-- ── LIVE SYSTEM FEED ── -->
+    <div class="retro-hud-box hud-box--feed">
+      <div class="retro-hud-title">
+        <span class="retro-hud-title-icon" aria-hidden="true">▶</span>
+        Live System Feed
+        <span class="retro-hud-mascot" aria-hidden="true">⛑️</span>
+      </div>
+      <div class="retro-hud-body" id="live-feed-widget">
+        <div class="hud-feed-item">
+          <span class="hud-feed-icon" aria-hidden="true">📡</span>
+          <span class="hud-feed-text">Connecting to feed…</span>
+          <span class="hud-feed-time">--:--</span>
+        </div>
+      </div>
+    </div>
+
+  </aside><!-- /#homepage-right-panel -->
+
 </div>
 
 <button id="back-to-top" aria-label="Back to top">↑</button>
