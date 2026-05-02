@@ -2612,8 +2612,11 @@ body.page-home .sidebar-section {
 }
 
 /* Kill the plain border-top between sections — gap is now handled by margin */
+/* Kill inherited stacked-section separators/spacing — gap is now handled by HUD box margin */
 body.page-home .sidebar-section + .sidebar-section {
   border-top: 0 !important;
+  margin-top: 0 !important;
+  padding-top: 0 !important;
 }
 
 /* Nth-child color themes: cyan for 2nd, purple for 3rd (mirrors right-panel cadence) */
