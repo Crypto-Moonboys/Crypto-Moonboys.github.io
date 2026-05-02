@@ -70,6 +70,11 @@
       label: '🧱 Block Topia', color: '#f39c12', touchScheme: 'dpad',
       controls: ['↑↓←→ / WASD — Move', 'ENTER / SPACE — Enter zone', 'ESC — World map', '1 Attack  2 Skill  3 Moon  4 Potion  5 Flee'],
       tips: ['Defeat boss to unlock exit', 'Daily quests reset at UTC midnight', 'Clear all 6 zones = 2× score bonus']
+    },
+    questTitle: {
+      label: '🧩 Crystal Quest', color: '#7adcff', touchScheme: null,
+      controls: ['Type answer in the input field', 'Press Enter or Submit Answer', 'Use Skip — 2 per run', 'Correct streak = bonus score'],
+      tips: ['Follow the wiki signal trail', 'Read the clue + linked page carefully', 'Build streak for max bonus', 'Wrong answer stays on same question']
     }
   };
 
