@@ -11,6 +11,9 @@
  *   6. submitScore only appears in game-over / submission paths, not in
  *      top-level page HTML or unrelated JS modules.
  *
+ * Active games: invaders-3008, pac-chain, asteroid-fork, breakout-bullrun,
+ *   tetris-block-topia, crystal-quest, block-topia-quest-maze, snake-run
+ *
  * Usage:
  *   node scripts/arcade-architecture-audit.mjs
  *
@@ -147,14 +150,11 @@ const ACTIVE_GAME_DIRS = [
   'games/pac-chain',
   'games/snake-run',
   'games/tetris-block-topia',
-  'games/hexgl-monster-max',
   'games/block-topia-quest-maze',
   'games/crystal-quest',
 ];
 
 // Mapping from game directory to expected manifest id.
-// The id is derived from the game page path (trimmed slashes + removing "games/").
-// For cases where the directory name doesn't match the id we list them explicitly.
 const DIR_TO_ID = {
   'games/invaders-3008': 'invaders',
   'games/asteroid-fork': 'asteroids',
@@ -162,7 +162,6 @@ const DIR_TO_ID = {
   'games/pac-chain': 'pacchain',
   'games/snake-run': 'snake-run',
   'games/tetris-block-topia': 'tetris',
-  'games/hexgl-monster-max': 'hexgl',
   'games/block-topia-quest-maze': 'blocktopia',
   'games/crystal-quest': 'crystal',
 };
@@ -170,8 +169,6 @@ const DIR_TO_ID = {
 // Pages that do NOT need data-game-id because they use a legacy bootstrap
 // pattern that is intentionally kept (must be explicitly documented here).
 const LEGACY_EXCEPTIONS = new Set([
-  // HexGL Monster Max uses an iframe-based bootstrap with a separate start flow.
-  '/games/hexgl-monster-max/',
   // Block Topia Quest Maze has an IIFE bootstrap outside the module system.
   '/games/block-topia-quest-maze/',
   // Block Topia multiplayer — separate architecture, not part of arcade manifest.
@@ -285,7 +282,6 @@ const ALLOWED_SUBMITSCORE_PATTERNS = [
 // Directories to skip entirely in check 6 (vendored code, legacy stubs, tests).
 const SKIP_DIRS = new Set([
   '.git', 'node_modules',
-  'hexgl-local',   // vendored HexGL
   'games/core',    // legacy stub directory
   'games/js',      // legacy unused blocktopia files
 ]);

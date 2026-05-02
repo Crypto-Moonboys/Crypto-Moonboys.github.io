@@ -1,9 +1,9 @@
 # Arcade Game Parity Audit
 
 **Scope:** Active arcade games audited for progression-impact standard.
-**Date:** 2026-05-01
+**Date:** 2026-05-02
 
-Active games: Invaders 3008, Pac-Chain, Asteroid Fork, Breakout Bullrun, SnakeRun 3008, Tetris Block Topia, Crystal Quest
+Active games: Invaders 3008, Pac-Chain, Asteroid Fork, Breakout Bullrun, SnakeRun 3008, Tetris Block Topia, Crystal Quest, Block Topia Quest Maze
 
 ---
 
@@ -20,28 +20,28 @@ Active games: Invaders 3008, Pac-Chain, Asteroid Fork, Breakout Bullrun, SnakeRu
 
 ## Parity Feature Matrix
 
-| Feature | Invaders 3008 | Pac-Chain | Asteroid Fork | Breakout Bullrun | SnakeRun 3008 | Tetris Block Topia | Crystal Quest |
-|---|---|---|---|---|---|---|---|
-| **Faction effects** | ✅ Live | ✅ Live | ✅ Live | ✅ Live | ✅ Live | ✅ Live | ✅ Live |
-| **Cross-game modifier support** | ✅ Live | ✅ Live | ✅ Live | ✅ Live | ✅ Live | ✅ Live | ✅ Live |
-| **In-run upgrades** | ✅ Live | ✅ Live | ✅ Live | ✅ Live | ✅ Live | ✅ Live | — Exception |
-| **Upgrade selection screen** | ✅ Live | ✅ Live | ✅ Live | ✅ Live | ✅ Live | ✅ Live | — Exception |
-| **Boss / elite / pressure events** | ✅ Live | ✅ Live | ✅ Live | ✅ Live | ✅ Live | ✅ Live | — Exception |
-| **Rare reward / rare spawn system** | ✅ Live | ✅ Live | ✅ Live | ⚠️ Partial | ✅ Live | ✅ Live | — Exception |
-| **Combo / streak system** | ✅ Live | ✅ Live | ✅ Live | ✅ Live | ✅ Live | ✅ Live | ✅ Live |
-| **Shield / defense system** | ✅ Live | ✅ Live | ✅ Live | ✅ Live | ✅ Live | ✅ Live | — Exception |
-| **Mission progress hooks** | ✅ Live | ✅ Live | ✅ Live | ✅ Live | ✅ Live | ✅ Live | ✅ Live |
-| **Faction contribution hooks** | ✅ Live | ✅ Live | ✅ Live | ✅ Live | ✅ Live | ✅ Live | ✅ Live |
-| **Post-run reward breakdown** | ✅ Live | ✅ Live | ✅ Live | ✅ Live | ✅ Live | ✅ Live | ✅ Live |
-| **Sound / visual feedback** | ✅ Live | ✅ Live | ✅ Live | ✅ Live | ✅ Live | ✅ Live | ✅ Live |
-| **Game-over CTA (Battle Chamber / Leaderboard)** | ✅ Live | ✅ Live | ✅ Live | ✅ Live | ✅ Live | ✅ Live | ✅ Live |
-| **Mobile-safe controls** | ⚠️ Partial | ⚠️ Partial | ⚠️ Partial | ⚠️ Partial | ⚠️ Partial | ⚠️ Partial | ✅ Live |
-| **Pre-run context panel** | ✅ Live | ✅ Live | ✅ Live | ✅ Live | ✅ Live | ✅ Live | ✅ Live |
-| **Event bus: arcade:perk-triggered** | ✅ Live | ✅ Live | ✅ Live | ✅ Live | ✅ Live | ✅ Live | ✅ Live |
-| **Event bus: arcade:upgrade-selected** | ✅ Live | ✅ Live | ✅ Live | ✅ Live | ✅ Live | ✅ Live | — Exception |
-| **Event bus: arcade:mission-progress** | ✅ Live | ✅ Live | ✅ Live | ✅ Live | ✅ Live | ✅ Live | ✅ Live |
-| **Event bus: arcade:faction-signal** | ✅ Live | ✅ Live | ✅ Live | ✅ Live | ✅ Live | ✅ Live | ✅ Live |
-| **Shared arcade-upgrade-system integration** | ⚠️ Partial | ⚠️ Partial | ⚠️ Partial | ⚠️ Partial | ⚠️ Partial | ⚠️ Partial | — Exception |
+| Feature | Invaders 3008 | Pac-Chain | Asteroid Fork | Breakout Bullrun | SnakeRun 3008 | Tetris Block Topia | Crystal Quest | Block Topia Quest Maze |
+|---|---|---|---|---|---|---|---|---|
+| **Faction effects** | ✅ Live | ✅ Live | ✅ Live | ✅ Live | ✅ Live | ✅ Live | ✅ Live | — Exception |
+| **Cross-game modifier support** | ✅ Live | ✅ Live | ✅ Live | ✅ Live | ✅ Live | ✅ Live | ✅ Live | — Exception |
+| **In-run upgrades** | ✅ Live | ✅ Live | ✅ Live | ✅ Live | ✅ Live | ✅ Live | — Exception | ✅ Live |
+| **Upgrade selection screen** | ✅ Live | ✅ Live | ✅ Live | ✅ Live | ✅ Live | ✅ Live | — Exception | ✅ Live |
+| **Boss / elite / pressure events** | ✅ Live | ✅ Live | ✅ Live | ✅ Live | ✅ Live | ✅ Live | — Exception | ✅ Live |
+| **Rare reward / rare spawn system** | ✅ Live | ✅ Live | ✅ Live | ⚠️ Partial | ✅ Live | ✅ Live | — Exception | ✅ Live |
+| **Combo / streak system** | ✅ Live | ✅ Live | ✅ Live | ✅ Live | ✅ Live | ✅ Live | ✅ Live | ✅ Live |
+| **Shield / defense system** | ✅ Live | ✅ Live | ✅ Live | ✅ Live | ✅ Live | ✅ Live | — Exception | ✅ Live |
+| **Mission progress hooks** | ✅ Live | ✅ Live | ✅ Live | ✅ Live | ✅ Live | ✅ Live | ✅ Live | — Exception |
+| **Faction contribution hooks** | ✅ Live | ✅ Live | ✅ Live | ✅ Live | ✅ Live | ✅ Live | ✅ Live | — Exception |
+| **Post-run reward breakdown** | ✅ Live | ✅ Live | ✅ Live | ✅ Live | ✅ Live | ✅ Live | ✅ Live | ✅ Live |
+| **Sound / visual feedback** | ✅ Live | ✅ Live | ✅ Live | ✅ Live | ✅ Live | ✅ Live | ✅ Live | ✅ Live |
+| **Game-over CTA (Battle Chamber / Leaderboard)** | ✅ Live | ✅ Live | ✅ Live | ✅ Live | ✅ Live | ✅ Live | ✅ Live | ✅ Live |
+| **Mobile-safe controls** | ⚠️ Partial | ⚠️ Partial | ⚠️ Partial | ⚠️ Partial | ⚠️ Partial | ⚠️ Partial | ✅ Live | ✅ Live |
+| **Pre-run context panel** | ✅ Live | ✅ Live | ✅ Live | ✅ Live | ✅ Live | ✅ Live | ✅ Live | ✅ Live |
+| **Event bus: arcade:perk-triggered** | ✅ Live | ✅ Live | ✅ Live | ✅ Live | ✅ Live | ✅ Live | ✅ Live | — Exception |
+| **Event bus: arcade:upgrade-selected** | ✅ Live | ✅ Live | ✅ Live | ✅ Live | ✅ Live | ✅ Live | — Exception | — Exception |
+| **Event bus: arcade:mission-progress** | ✅ Live | ✅ Live | ✅ Live | ✅ Live | ✅ Live | ✅ Live | ✅ Live | — Exception |
+| **Event bus: arcade:faction-signal** | ✅ Live | ✅ Live | ✅ Live | ✅ Live | ✅ Live | ✅ Live | ✅ Live | — Exception |
+| **Shared arcade-upgrade-system integration** | ⚠️ Partial | ⚠️ Partial | ⚠️ Partial | ⚠️ Partial | ⚠️ Partial | ⚠️ Partial | — Exception | — Exception |
 
 ---
 
@@ -88,6 +88,12 @@ Active games: Invaders 3008, Pac-Chain, Asteroid Fork, Breakout Bullrun, SnakeRu
 - **Parity equivalent layer:** streak bonuses (combo streak at 3 and 5), faction-biased score multiplier via cross-game modifiers, and per-run mission delta tracking serve as the equivalent of the upgrade/perk layer.
 - Mobile-safe: text input, no directional controls needed.
 - Crystal Quest meets the minimum faction/mission/contribution parity standard for its format.
+
+### Block Topia Quest Maze (`blocktopia`)
+- Phaser 3 RPG dungeon crawler — 6 crypto-themed zones, turn-based battles, daily reset.
+- **Documented exception:** faction-effect-system, cross-game-modifier-system, mission hooks, and faction contribution hooks are not wired in the current IIFE/Phaser bootstrap. These are exempted in `arcade-game-parity-audit.mjs` and produce WARN (not FAIL) during automated checks.
+- **What BTQM does have:** full submitScore + ArcadeSync, post-run score submission, game-over CTA, audio/FX system, milestone/meta tracking, in-run upgrades, boss encounters.
+- Score and ArcadeSync integration meet the minimum parity standard for this format.
 
 ---
 

@@ -1,6 +1,6 @@
 # Current Live System Truth
 
-> Audit snapshot — reflects main branch as of 2026-04-30.
+> Audit snapshot — reflects main branch as of 2026-05-02.
 > Update this file whenever a system's status changes.
 
 ---
@@ -21,15 +21,6 @@ All games listed below are linked from `/games/index.html` and accept score subm
 | SnakeRun 3008 | `games/snake-run/` | ✅ | ✅ | ✅ |
 
 **Block Topia** (`games/block-topia/`) is listed on the arcade page but is a gated multiplayer map, not a score-submission arcade game.
-
----
-
-## Deprecated Games
-
-| Game | Folder | Status |
-|---|---|---|
-| HexGL Monster Max | `games/hexgl-monster-max/` | Archived — score submission disabled, not in arcade nav |
-| HexGL Local | `games/hexgl-local/` | Archived — not in arcade nav |
 
 ---
 

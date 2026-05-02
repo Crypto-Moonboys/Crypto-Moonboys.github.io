@@ -54,9 +54,9 @@ const PROGRESSION_FILES = [
 const GAME_BOOTSTRAP_FILES = [
   'js/arcade/games/invaders/bootstrap.js',
   'js/arcade/games/asteroid-fork/bootstrap.js',
-  'js/arcade/games/snake/bootstrap.js',
+  'js/arcade/games/snake-run/bootstrap.js',
   'js/arcade/games/block-topia-quest-maze/bootstrap.js',
-  'js/arcade/games/breakout/bootstrap.js',
+  'js/arcade/games/breakout-bullrun/bootstrap.js',
   'js/arcade/games/tetris/bootstrap.js',
   'js/arcade/games/pac-chain/bootstrap.js',
 ];

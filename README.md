@@ -72,15 +72,6 @@ Block Topia multiplayer requires:
 
 The authoritative gate value is returned by the server as `progression.required_xp` from `/blocktopia/progression`. The server-side configuration is in `workers/moonboys-api/blocktopia/config.js`. `shared/block-topia/constants.js` provides a matching shared/client default and must stay aligned with the server config.
 
-## HexGL Status (Deprecated)
-
-`hexgl-monster-max` and `hexgl-local` are **archived and not active**.
-
-- HexGL is deprecated as an XP source.
-- Score submission is fully disabled in `js/arcade/games/hexgl-monster-max/bootstrap.js`.
-- HexGL pages are kept for archival/test purposes only.
-- HexGL does not appear in the active arcade navigation.
-
 ## Block Topia Status (Current)
 
 `/games/block-topia/` is now only a clean 2-player isometric map base.

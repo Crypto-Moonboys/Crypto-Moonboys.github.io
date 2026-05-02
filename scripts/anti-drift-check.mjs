@@ -77,6 +77,8 @@ const requiredGames = [
   'games/pac-chain',
   'games/snake-run',
   'games/tetris-block-topia',
+  'games/crystal-quest',
+  'games/block-topia-quest-maze',
 ];
 for (const g of requiredGames) {
   if (exists(g)) {
@@ -94,8 +96,18 @@ const forbiddenPaths = [
   'games/block-topia/ui',
   'games/block-topia/economy',
   'games/block-topia/duel',
-  // Old HexGL variants
+  // Dead HexGL game folders
   'games/hexgl',
+  'games/hexgl-local',
+  'games/hexgl-monster-max',
+  // Dead JS arcade bootstrap directories
+  'js/arcade/games/hexgl',
+  'js/arcade/games/hexgl-monster',
+  'js/arcade/games/hexgl-monster-max',
+  'js/arcade/games/blocktopia-phaser',
+  'js/arcade/games/blocktopia-social-hub',
+  'js/arcade/games/breakout',
+  'js/arcade/games/snake',
 ];
 for (const f of forbiddenPaths) {
   if (!exists(f)) {
@@ -127,28 +139,51 @@ if (!readme) {
   }
 }
 
-// ── 5. HexGL must not be re-activated as an XP source ────────────────────────
-console.log('\n[5] HexGL XP source check');
-const hexglBootstrap = read('js/arcade/games/hexgl-monster-max/bootstrap.js');
-if (hexglBootstrap === null) {
-  pass('hexgl-monster-max bootstrap not present (deprecated)');
+// ── 5. Arcade manifest contains only live games ───────────────────────────────
+console.log('\n[5] Arcade manifest contains only live arcade games');
+const manifestSrc = read('js/arcade/arcade-manifest.js');
+const LIVE_GAME_IDS = new Set([
+  'invaders', 'pacchain', 'asteroids', 'breakout-bullrun',
+  'snake-run', 'tetris', 'blocktopia', 'crystal',
+]);
+if (!manifestSrc) {
+  fail('js/arcade/arcade-manifest.js not found');
 } else {
-  // Score submission must remain disabled.
-  // Check each line: if it contains submitScore( and is NOT a comment line, flag it.
-  const activeSubmitLine = hexglBootstrap.split('\n').some((line) => {
-    const trimmed = line.trim();
-    // Skip single-line comments and block-comment lines
-    if (trimmed.startsWith('//') || trimmed.startsWith('*') || trimmed.startsWith('/*')) {
-      return false;
-    }
-    // Also remove inline trailing comments before testing
-    const withoutInlineComment = trimmed.replace(/\/\/.*$/, '');
-    return /submitScore\s*\(/.test(withoutInlineComment);
-  });
-  if (activeSubmitLine) {
-    fail('hexgl-monster-max bootstrap appears to have score submission re-enabled');
+  // Extract all id: '...' entries from the manifest source.
+  const idPattern = /\bid\s*:\s*['"]([^'"]+)['"]/g;
+  const foundIds = [];
+  let m;
+  while ((m = idPattern.exec(manifestSrc)) !== null) {
+    foundIds.push(m[1]);
+  }
+
+  // Enforce count
+  if (foundIds.length !== LIVE_GAME_IDS.size) {
+    fail(`Arcade manifest has ${foundIds.length} entries; expected ${LIVE_GAME_IDS.size}.`);
   } else {
-    pass('hexgl-monster-max score submission remains disabled');
+    pass(`Arcade manifest has exactly ${LIVE_GAME_IDS.size} entries`);
+  }
+
+  // Enforce no unexpected ids
+  let unexpectedFound = false;
+  for (const id of foundIds.slice().sort()) {
+    if (!LIVE_GAME_IDS.has(id)) {
+      fail(`Arcade manifest has unexpected game id: "${id}".`);
+      unexpectedFound = true;
+    }
+  }
+
+  // Enforce no missing live ids
+  let missingFound = false;
+  for (const id of Array.from(LIVE_GAME_IDS).sort()) {
+    if (!foundIds.includes(id)) {
+      fail(`Arcade manifest missing live game id: "${id}".`);
+      missingFound = true;
+    }
+  }
+
+  if (!unexpectedFound && !missingFound && foundIds.length === LIVE_GAME_IDS.size) {
+    pass('Arcade manifest ids match live game set exactly');
   }
 }
 
