@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-04-25T05:19:13.152Z",
+  "generated_at": "2026-05-02T05:41:30.966Z",
   "phase": "phase_6",
   "schema_version": "1.0",
   "summary": {
@@ -218,9 +218,9 @@
       "governance_action": "review"
     },
     {
-      "url": "/wiki/pyralith.html",
-      "title": "PYRALITH — Crypto Moonboys Wiki",
-      "governance_priority_score": 45,
+      "url": "/wiki/quell.html",
+      "title": "Quell — Crypto Moonboys Wiki",
+      "governance_priority_score": 46,
       "trust_band": "high",
       "authority_band": "weak",
       "narrative_importance": 40,
@@ -228,8 +228,8 @@
       "governance_action": "review"
     },
     {
-      "url": "/wiki/quell.html",
-      "title": "Quell — Crypto Moonboys Wiki",
+      "url": "/wiki/pyralith.html",
+      "title": "PYRALITH — Crypto Moonboys Wiki",
       "governance_priority_score": 45,
       "trust_band": "high",
       "authority_band": "weak",
@@ -488,6 +488,16 @@
       "governance_action": "watch"
     },
     {
+      "url": "/wiki/xrp-kids.html",
+      "title": "XRP Kids — Crypto Moonboys Wiki",
+      "governance_priority_score": 36,
+      "trust_band": "medium",
+      "authority_band": "developing",
+      "narrative_importance": 0,
+      "editorial_risk": 3,
+      "governance_action": "watch"
+    },
+    {
       "url": "/wiki/2025-metaverse-launch-party.html",
       "title": "2025 Metaverse Launch Party — Crypto Moonboys Wiki",
       "governance_priority_score": 35,
@@ -550,16 +560,6 @@
     {
       "url": "/wiki/trevor-fung.html",
       "title": "Trevor Fung — Crypto Moonboys Wiki",
-      "governance_priority_score": 35,
-      "trust_band": "medium",
-      "authority_band": "developing",
-      "narrative_importance": 0,
-      "editorial_risk": 3,
-      "governance_action": "watch"
-    },
-    {
-      "url": "/wiki/xrp-kids.html",
-      "title": "XRP Kids — Crypto Moonboys Wiki",
       "governance_priority_score": 35,
       "trust_band": "medium",
       "authority_band": "developing",
@@ -1328,6 +1328,16 @@
       "governance_action": "watch"
     },
     {
+      "url": "/wiki/hodl-wars-ecosystem.html",
+      "title": "HODL Wars Ecosystem — Crypto Moonboys Wiki",
+      "governance_priority_score": 28,
+      "trust_band": "medium",
+      "authority_band": "weak",
+      "narrative_importance": 0,
+      "editorial_risk": 3,
+      "governance_action": "watch"
+    },
+    {
       "url": "/wiki/jodie-zoom-2000.html",
       "title": "Jodie ZOOM 2000 — Crypto Moonboys Wiki",
       "governance_priority_score": 28,
@@ -1535,16 +1545,6 @@
       "authority_band": "weak",
       "narrative_importance": 0,
       "editorial_risk": 0,
-      "governance_action": "watch"
-    },
-    {
-      "url": "/wiki/hodl-wars-ecosystem.html",
-      "title": "HODL Wars Ecosystem — Crypto Moonboys Wiki",
-      "governance_priority_score": 27,
-      "trust_band": "medium",
-      "authority_band": "weak",
-      "narrative_importance": 0,
-      "editorial_risk": 3,
       "governance_action": "watch"
     },
     {
