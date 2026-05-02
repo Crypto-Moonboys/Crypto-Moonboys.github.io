@@ -1518,3 +1518,409 @@ body.page-home #layout > #homepage-right-panel:not(#sidebar):not(#main-wrapper) 
     6px 100%, 0 calc(100% - 6px)
   );
 }
+/* ==========================================================================
+   HOMEPAGE 16-BIT NEON UI UNIFIER
+   Append this at the END of css/retro-16bit-theme.css.
+   Purpose: stop mixed styling, text drift, plain frames, and modern-card feel.
+   Scope: homepage only. No JS/gameplay/auth logic.
+   ========================================================================== */
+
+body.page-home {
+  --ui-bg-deep: rgba(1, 5, 14, 0.92);
+  --ui-bg-panel: rgba(3, 9, 24, 0.88);
+  --ui-bg-title: rgba(255, 45, 120, 0.18);
+  --ui-text: #eaf8ff;
+  --ui-muted: rgba(157, 215, 238, 0.78);
+  --ui-cyan: var(--neon-cyan, #00e5ff);
+  --ui-pink: var(--neon-magenta, #ff2d78);
+  --ui-yellow: var(--neon-yellow, #ffd600);
+  --ui-green: var(--neon-green, #39ff14);
+  --ui-purple: var(--neon-purple, #be4cf7);
+}
+
+/* Stop mixed font sizes/styles */
+body.page-home .home-hero,
+body.page-home .home-widget,
+body.page-home .retro-info-panel,
+body.page-home .category-card,
+body.page-home .article-card,
+body.page-home .launch-route,
+body.page-home .retro-hud-box {
+  font-family: var(--font-mono, "Courier New", monospace);
+}
+
+body.page-home .sidebar-heading,
+body.page-home .section-heading,
+body.page-home .retro-hud-title,
+body.page-home .launch-kicker,
+body.page-home .launch-cta-row a,
+body.page-home .launch-route-title,
+body.page-home .cat-name,
+body.page-home .article-card-title,
+body.page-home .article-card-cat {
+  font-family: var(--font-pixel, "Press Start 2P", monospace) !important;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  -webkit-font-smoothing: none;
+  text-rendering: geometricPrecision;
+}
+
+body.page-home .launch-subcopy,
+body.page-home .cat-count,
+body.page-home .article-card-desc,
+body.page-home .retro-hud-body,
+body.page-home .home-widget p,
+body.page-home .home-widget li {
+  font-family: var(--font-mono, "Courier New", monospace) !important;
+  font-size: clamp(0.72rem, 0.78vw, 0.88rem);
+  line-height: 1.55;
+  color: var(--ui-muted);
+}
+
+/* Stop text drifting out */
+body.page-home .retro-hud-body,
+body.page-home .retro-hud-body *,
+body.page-home .category-card,
+body.page-home .category-card *,
+body.page-home .article-card,
+body.page-home .article-card *,
+body.page-home .launch-route,
+body.page-home .launch-route *,
+body.page-home .home-widget,
+body.page-home .home-widget * {
+  min-width: 0;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  word-break: normal;
+}
+
+body.page-home .retro-hud-body {
+  font-size: 0.72rem !important;
+  line-height: 1.35 !important;
+  letter-spacing: 0.02em !important;
+}
+
+body.page-home .retro-hud-body [class*="label"],
+body.page-home .retro-hud-body strong,
+body.page-home .retro-hud-body b {
+  font-family: var(--font-pixel, "Press Start 2P", monospace) !important;
+  font-size: 0.46rem !important;
+  line-height: 1.55 !important;
+  letter-spacing: 0.07em !important;
+  color: var(--ui-cyan);
+  text-shadow: 0 0 6px rgba(0,229,255,.75), 2px 2px 0 #000;
+}
+
+body.page-home #homepage-right-panel {
+  min-width: 250px;
+  max-width: 310px;
+}
+
+body.page-home .article-card-desc {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  min-height: 4.6em;
+}
+
+body.page-home .cat-name,
+body.page-home .article-card-title {
+  font-size: clamp(0.44rem, 0.52vw, 0.58rem) !important;
+  line-height: 1.55 !important;
+}
+
+body.page-home .cat-count {
+  font-size: 0.72rem !important;
+  line-height: 1.45 !important;
+}
+
+/* Shared broken neon frame system */
+body.page-home .home-hero,
+body.page-home .retro-hud-box,
+body.page-home .category-card,
+body.page-home .article-card,
+body.page-home .launch-route,
+body.page-home .retro-info-panel,
+body.page-home .home-widget {
+  position: relative;
+  isolation: isolate;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background:
+    linear-gradient(180deg, rgba(7, 14, 34, 0.88), rgba(1, 5, 14, 0.94)) padding-box !important;
+  box-shadow:
+    6px 6px 0 rgba(0, 0, 0, 0.88),
+    0 0 0 2px rgba(255, 45, 120, 0.80),
+    0 0 0 5px rgba(0, 229, 255, 0.23),
+    0 0 22px rgba(255, 45, 120, 0.28),
+    inset 0 0 0 2px rgba(0, 229, 255, 0.20) !important;
+  clip-path: polygon(
+    0 10px, 10px 0,
+    calc(100% - 10px) 0, 100% 10px,
+    100% calc(100% - 10px), calc(100% - 10px) 100%,
+    10px 100%, 0 calc(100% - 10px)
+  );
+}
+
+body.page-home .home-hero::before,
+body.page-home .retro-hud-box::before,
+body.page-home .category-card::before,
+body.page-home .article-card::before,
+body.page-home .launch-route::before,
+body.page-home .retro-info-panel::before,
+body.page-home .home-widget::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  background:
+    linear-gradient(90deg,
+      var(--ui-pink) 0 42px, transparent 42px 62px,
+      var(--ui-cyan) 62px 132px, transparent 132px 178px,
+      var(--ui-pink) 178px 238px, transparent 238px 100%) top left / 100% 3px no-repeat,
+    linear-gradient(90deg,
+      transparent 0 8%, var(--ui-cyan) 8% 21%, transparent 21% 34%,
+      var(--ui-pink) 34% 56%, transparent 56% 74%,
+      var(--ui-cyan) 74% 92%, transparent 92% 100%) bottom left / 100% 3px no-repeat,
+    linear-gradient(180deg,
+      var(--ui-cyan) 0 26px, transparent 26px 58px,
+      var(--ui-pink) 58px 122px, transparent 122px 190px,
+      var(--ui-cyan) 190px 260px, transparent 260px 100%) top left / 3px 100% no-repeat,
+    linear-gradient(180deg,
+      transparent 0 12%, var(--ui-pink) 12% 28%, transparent 28% 42%,
+      var(--ui-cyan) 42% 64%, transparent 64% 82%,
+      var(--ui-pink) 82% 100%) top right / 3px 100% no-repeat;
+  opacity: 0.92;
+  filter: drop-shadow(0 0 5px rgba(0,229,255,.65));
+  animation: neonFramePulse 3.8s steps(3, end) infinite;
+}
+
+body.page-home .home-hero::after,
+body.page-home .retro-hud-box::after,
+body.page-home .category-card::after,
+body.page-home .article-card::after,
+body.page-home .launch-route::after,
+body.page-home .retro-info-panel::after,
+body.page-home .home-widget::after {
+  content: "";
+  position: absolute;
+  inset: 5px;
+  z-index: 3;
+  pointer-events: none;
+  background:
+    linear-gradient(var(--ui-yellow), var(--ui-yellow)) top left / 18px 3px no-repeat,
+    linear-gradient(var(--ui-yellow), var(--ui-yellow)) top left / 3px 18px no-repeat,
+    linear-gradient(var(--ui-cyan), var(--ui-cyan)) top right / 26px 3px no-repeat,
+    linear-gradient(var(--ui-cyan), var(--ui-cyan)) top right / 3px 26px no-repeat,
+    linear-gradient(var(--ui-pink), var(--ui-pink)) bottom left / 30px 3px no-repeat,
+    linear-gradient(var(--ui-pink), var(--ui-pink)) bottom left / 3px 30px no-repeat,
+    linear-gradient(var(--ui-cyan), var(--ui-cyan)) bottom right / 22px 3px no-repeat,
+    linear-gradient(var(--ui-cyan), var(--ui-cyan)) bottom right / 3px 22px no-repeat;
+  opacity: 0.95;
+  filter: drop-shadow(0 0 7px rgba(255,45,120,.70));
+  animation: neonCornerGlitch 5.4s steps(4, end) infinite;
+}
+
+body.page-home .home-hero > *,
+body.page-home .retro-hud-box > *,
+body.page-home .category-card > *,
+body.page-home .article-card > *,
+body.page-home .launch-route > *,
+body.page-home .retro-info-panel > *,
+body.page-home .home-widget > * {
+  position: relative;
+  z-index: 5;
+}
+
+/* Right HUD */
+body.page-home #homepage-right-panel {
+  background:
+    repeating-linear-gradient(0deg, rgba(0,229,255,.035) 0 2px, transparent 2px 5px),
+    linear-gradient(180deg, rgba(4, 8, 24, .86), rgba(1, 4, 12, .95)) !important;
+  border-left: 4px solid var(--ui-pink) !important;
+  box-shadow:
+    inset 3px 0 0 rgba(0, 229, 255, 0.55),
+    -10px 0 22px rgba(255, 45, 120, 0.16),
+    0 0 24px rgba(0, 229, 255, 0.10) !important;
+}
+
+body.page-home .retro-hud-title {
+  min-height: 38px;
+  padding: 10px 12px !important;
+  background:
+    repeating-linear-gradient(90deg, rgba(255,45,120,.18) 0 4px, rgba(0,229,255,.08) 4px 7px, transparent 7px 12px),
+    linear-gradient(90deg, rgba(255,45,120,.30), rgba(0,229,255,.10)) !important;
+  border-bottom: 3px solid var(--ui-cyan) !important;
+  color: var(--ui-cyan) !important;
+  font-size: 0.50rem !important;
+  line-height: 1.4 !important;
+  text-shadow: 0 0 8px var(--ui-cyan), 2px 2px 0 #000 !important;
+}
+
+body.page-home .retro-hud-body {
+  background:
+    repeating-linear-gradient(0deg, rgba(0,229,255,.025) 0 2px, transparent 2px 6px),
+    rgba(0, 0, 0, 0.22);
+  padding: 14px 12px !important;
+}
+
+body.page-home .retro-hud-body > * {
+  margin-bottom: 8px;
+}
+
+body.page-home .retro-hud-body .status-row,
+body.page-home .retro-hud-body .stat-row,
+body.page-home .retro-hud-body [class*="row"] {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+  align-items: center;
+}
+
+/* Sidebar */
+body.page-home #sidebar {
+  background:
+    repeating-linear-gradient(0deg, rgba(0,229,255,.035) 0 2px, transparent 2px 5px),
+    linear-gradient(180deg, rgba(2,8,18,.96), rgba(1,4,12,.98)) !important;
+  border-right: 4px solid rgba(255,45,120,.75) !important;
+  box-shadow: inset -3px 0 0 rgba(0,229,255,.45), 10px 0 24px rgba(0,0,0,.55);
+}
+
+body.page-home .sidebar-heading {
+  margin: 10px 10px 8px;
+  padding: 9px 9px 7px !important;
+  background: rgba(255,45,120,.12);
+  color: var(--ui-yellow) !important;
+  border-left: 3px solid var(--ui-pink);
+  border-bottom: 2px solid rgba(0,229,255,.55);
+  box-shadow: 3px 3px 0 rgba(0,0,0,.65), 0 0 10px rgba(255,214,0,.18);
+}
+
+body.page-home .sidebar-nav a {
+  margin: 4px 10px;
+  padding: 8px 9px !important;
+  border-left: 3px solid transparent;
+  border-bottom: 1px solid rgba(0,229,255,.10);
+  font-size: 0.46rem !important;
+  line-height: 1.55 !important;
+}
+
+body.page-home .sidebar-nav a:hover,
+body.page-home .sidebar-nav a.active {
+  background: rgba(0,229,255,.11) !important;
+  border-left-color: var(--ui-pink);
+  color: #fff !important;
+  box-shadow: inset 0 0 0 1px rgba(0,229,255,.25), 0 0 10px rgba(0,229,255,.16);
+}
+
+body.page-home .nav-icon,
+body.page-home .cat-icon,
+body.page-home .article-card-img,
+body.page-home .cta-btn-icon,
+body.page-home .retro-hud-title-icon {
+  color: var(--ui-cyan) !important;
+  text-shadow:
+    0 0 7px var(--ui-cyan),
+    0 0 14px rgba(0,229,255,.50),
+    2px 2px 0 #000 !important;
+  image-rendering: pixelated;
+}
+
+/* Buttons / Route / Hero */
+body.page-home .launch-cta-row a {
+  font-size: 0.50rem !important;
+  line-height: 1.35 !important;
+  min-height: 48px;
+  padding: 14px 18px !important;
+  text-shadow: 0 0 8px currentColor, 2px 2px 0 #000 !important;
+  box-shadow:
+    6px 6px 0 rgba(0,0,0,.90),
+    0 0 0 2px rgba(0,229,255,.16),
+    0 0 16px rgba(255,45,120,.22) !important;
+}
+
+body.page-home .launch-cta-row a:hover {
+  transform: translate(-3px, -3px) !important;
+}
+
+body.page-home .launch-cta-row a:active {
+  transform: translate(2px, 2px) !important;
+  box-shadow: 2px 2px 0 rgba(0,0,0,.90), 0 0 10px currentColor !important;
+}
+
+body.page-home .launch-route-flow {
+  font-size: clamp(0.42rem, 0.54vw, 0.58rem) !important;
+  line-height: 1.85 !important;
+  color: var(--ui-cyan) !important;
+  text-shadow: 0 0 6px rgba(0,229,255,.50), 2px 2px 0 #000;
+}
+
+body.page-home .home-hero h1 {
+  text-shadow: 0 0 10px rgba(255,255,255,.35), 3px 3px 0 #000, -2px 0 0 rgba(255,45,120,.45) !important;
+}
+
+body.page-home .launch-manifesto {
+  color: var(--ui-cyan) !important;
+  text-shadow: 0 0 8px rgba(0,229,255,.70), 2px 2px 0 #000 !important;
+}
+
+body.page-home .launch-subcopy {
+  color: rgba(190, 230, 246, 0.86) !important;
+  text-shadow: 2px 2px 0 rgba(0,0,0,.85);
+}
+
+@keyframes neonFramePulse {
+  0%, 100% { opacity: 0.78; filter: drop-shadow(0 0 4px rgba(0,229,255,.48)); }
+  34% { opacity: 1; filter: drop-shadow(0 0 7px rgba(255,45,120,.72)); }
+  67% { opacity: 0.88; filter: drop-shadow(0 0 7px rgba(0,229,255,.72)); }
+}
+
+@keyframes neonCornerGlitch {
+  0%, 100% { opacity: 0.88; transform: translate(0, 0); }
+  11% { opacity: 1; transform: translate(1px, 0); }
+  18% { opacity: 0.70; transform: translate(-1px, 1px); }
+  31% { opacity: 1; transform: translate(0, -1px); }
+  63% { opacity: 0.78; transform: translate(1px, 1px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body.page-home .home-hero::before,
+  body.page-home .home-hero::after,
+  body.page-home .retro-hud-box::before,
+  body.page-home .retro-hud-box::after,
+  body.page-home .category-card::before,
+  body.page-home .category-card::after,
+  body.page-home .article-card::before,
+  body.page-home .article-card::after,
+  body.page-home .launch-route::before,
+  body.page-home .launch-route::after,
+  body.page-home .retro-info-panel::before,
+  body.page-home .retro-info-panel::after,
+  body.page-home .home-widget::before,
+  body.page-home .home-widget::after {
+    animation: none !important;
+  }
+}
+
+@media (max-width: 1200px) {
+  body.page-home #homepage-right-panel {
+    max-width: none;
+  }
+}
+
+@media (max-width: 900px) {
+  body.page-home .sidebar-nav a {
+    font-size: 0.50rem !important;
+  }
+
+  body.page-home .retro-hud-body {
+    font-size: 0.78rem !important;
+  }
+
+  body.page-home .launch-cta-row a {
+    width: 100%;
+    justify-content: center;
+  }
+}
