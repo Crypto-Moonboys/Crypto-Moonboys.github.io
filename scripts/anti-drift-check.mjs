@@ -146,16 +146,44 @@ const LIVE_GAME_IDS = new Set([
   'invaders', 'pacchain', 'asteroids', 'breakout-bullrun',
   'snake-run', 'tetris', 'blocktopia', 'crystal',
 ]);
-const DEAD_GAME_REFS = ['hexgl', 'hexgl-monster-max', 'hexgl-local', 'breakout/', 'snake/'];
 if (!manifestSrc) {
   fail('js/arcade/arcade-manifest.js not found');
 } else {
-  for (const dead of DEAD_GAME_REFS) {
-    if (manifestSrc.includes(dead)) {
-      fail(`Arcade manifest references dead game: "${dead}"`);
-    } else {
-      pass(`Arcade manifest does not reference dead game: "${dead}"`);
+  // Extract all id: '...' entries from the manifest source.
+  const idPattern = /\bid\s*:\s*['"]([^'"]+)['"]/g;
+  const foundIds = [];
+  let m;
+  while ((m = idPattern.exec(manifestSrc)) !== null) {
+    foundIds.push(m[1]);
+  }
+
+  // Enforce count
+  if (foundIds.length !== LIVE_GAME_IDS.size) {
+    fail(`Arcade manifest has ${foundIds.length} entries; expected ${LIVE_GAME_IDS.size}.`);
+  } else {
+    pass(`Arcade manifest has exactly ${LIVE_GAME_IDS.size} entries`);
+  }
+
+  // Enforce no unexpected ids
+  let unexpectedFound = false;
+  for (const id of foundIds.slice().sort()) {
+    if (!LIVE_GAME_IDS.has(id)) {
+      fail(`Arcade manifest has unexpected game id: "${id}".`);
+      unexpectedFound = true;
     }
+  }
+
+  // Enforce no missing live ids
+  let missingFound = false;
+  for (const id of Array.from(LIVE_GAME_IDS).sort()) {
+    if (!foundIds.includes(id)) {
+      fail(`Arcade manifest missing live game id: "${id}".`);
+      missingFound = true;
+    }
+  }
+
+  if (!unexpectedFound && !missingFound && foundIds.length === LIVE_GAME_IDS.size) {
+    pass('Arcade manifest ids match live game set exactly');
   }
 }
 

@@ -20,7 +20,7 @@ The following files **must always** exist at the repository root:
 | `CNAME` | Custom domain binding |
 
 ### 2 — Required arcade game directories
-All active arcade games must remain present:
+All eight live arcade games must remain present:
 
 - `games/invaders-3008`
 - `games/asteroid-fork`
@@ -28,6 +28,11 @@ All active arcade games must remain present:
 - `games/pac-chain`
 - `games/snake-run`
 - `games/tetris-block-topia`
+- `games/crystal-quest`
+- `games/block-topia-quest-maze`
+
+The arcade manifest (`js/arcade/arcade-manifest.js`) must contain **exactly** these eight game IDs:
+`invaders`, `pacchain`, `asteroids`, `breakout-bullrun`, `snake-run`, `tetris`, `blocktopia`, `crystal`.
 
 ### 3 — Forbidden paths
 The following paths were removed by design and must **not** be re-introduced:
@@ -38,7 +43,16 @@ The following paths were removed by design and must **not** be re-introduced:
 | `games/block-topia/ui/` | Block Topia clean-state reset |
 | `games/block-topia/economy/` | Block Topia clean-state reset |
 | `games/block-topia/duel/` | Block Topia clean-state reset |
-| `games/hexgl/` | HexGL deprecated; only `hexgl-monster-max` archive remains |
+| `games/hexgl/` | Dead game — removed in arcade cleanup |
+| `games/hexgl-local/` | Dead game — removed in arcade cleanup |
+| `games/hexgl-monster-max/` | Dead game — removed in arcade cleanup |
+| `js/arcade/games/hexgl/` | Dead bootstrap — removed in arcade cleanup |
+| `js/arcade/games/hexgl-monster/` | Dead bootstrap — removed in arcade cleanup |
+| `js/arcade/games/hexgl-monster-max/` | Dead bootstrap — removed in arcade cleanup |
+| `js/arcade/games/blocktopia-phaser/` | Dead bootstrap — removed in arcade cleanup |
+| `js/arcade/games/blocktopia-social-hub/` | Dead bootstrap — removed in arcade cleanup |
+| `js/arcade/games/breakout/` | Superseded by `breakout-bullrun` |
+| `js/arcade/games/snake/` | Superseded by `snake-run` |
 
 ### 4 — README.md content
 `README.md` must contain the headings:
@@ -47,22 +61,18 @@ The following paths were removed by design and must **not** be re-introduced:
 - `Arcade Structure`
 - `Current Live Arcade Games`
 
-### 5 — HexGL XP lockout
-`hexgl-monster-max` score submission must remain disabled.
-Re-activating `submitScore()` in its bootstrap is a drift violation.
-
-### 6 — Block Topia clean state
+### 5 — Block Topia clean state
 `games/block-topia/main.js` and `network.js` must not reference:
 
 - `PressureProtocol`
 - `street-signal`
 - `solo mode`
 
-### 7 — robots.txt location
+### 6 — robots.txt location
 `robots.txt` must remain at the repository root and must not be duplicated
 inside game subdirectories.
 
-### 8 — Arcade index pages
+### 7 — Arcade index pages
 Active game `index.html` files must not reference forbidden scripts:
 
 - `hexgl-score-submit`
