@@ -86,7 +86,10 @@
 
 /* ── GLOBAL OVERRIDES ───────────────────────────────────────── */
 body {
-  background: var(--color-bg);
+  background:
+    linear-gradient(rgba(0, 4, 12, 0.62), rgba(0, 4, 12, 0.62)),
+    url('/crypto%20moonboys%20wiki.jpg') center center / cover no-repeat fixed;
+  background-color: var(--color-bg);
   color: var(--color-text);
 }
 
@@ -118,6 +121,27 @@ body::before {
     transparent 62%,
     rgba(0, 0, 0, 0.32) 100%
   );
+}
+
+/* Home page: slow neon haze drift layer above site background */
+body.page-home::before {
+  background:
+    radial-gradient(ellipse 140% 60% at 50% 30%, rgba(0, 229, 255, 0.04) 0%, transparent 70%),
+    radial-gradient(ellipse 80% 40% at 80% 70%, rgba(190, 76, 247, 0.03) 0%, transparent 60%),
+    radial-gradient(ellipse at center, transparent 62%, rgba(0, 0, 0, 0.32) 100%);
+  animation: home-neon-haze 18s ease-in-out infinite alternate;
+}
+
+@keyframes home-neon-haze {
+  from { transform: translateY(0) scale(1); opacity: 0.7; }
+  to   { transform: translateY(-10px) scale(1.015); opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body.page-home::before {
+    animation: none !important;
+    transform: none !important;
+  }
 }
 
 a                 { color: var(--neon-cyan); }
@@ -452,16 +476,13 @@ a:hover           { color: var(--neon-magenta); }
 /* Hero logo */
 .hero-logo-img {
   display: block;
-  width: min(58vw, 520px);
+  width: min(72vw, 760px);
   max-width: 100%;
   height: auto;
-  margin: 28px auto 18px;
+  margin: 24px auto 20px;
   object-fit: contain;
-  filter: drop-shadow(0 6px 18px rgba(0, 229, 255, 0.22))
-          drop-shadow(0 0 36px rgba(255, 45, 120, 0.14));
   position: relative;
   z-index: 12;
-  image-rendering: pixelated;
 }
 
 /* ── CTA BUTTONS ─────────────────────────────────────────────── */
@@ -598,95 +619,10 @@ a.hero-stat-link:hover {
 }
 
 /* ── HERO DECORATIVE BACKGROUND ──────────────────────────────── */
-.retro-hero-bg {
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-  overflow: hidden;
-  pointer-events: none;
-  user-select: none;
-  image-rendering: pixelated;
-}
-
-.home-hero .retro-hero-bg {
-  background: #050814;
-  overflow: hidden;
-}
-
-.retro-hero-bg::before,
-.retro-hero-bg::after {
-  content: none;
-}
-
-.hero-layer {
-  position: absolute;
-  width: 100%;
-  height: auto;
-  pointer-events: none;
-  image-rendering: pixelated;
-}
-
-.hero-split-section,
-.hero-split-overlay {
-  position: absolute;
-  left: 0;
-  width: 100%;
-  height: 33.334%;
-  object-fit: cover;
-  object-position: center top;
-}
-
-.hero-split-top { top: 0; z-index: 1; }
-.hero-split-middle { top: 33.333%; z-index: 1; }
-.hero-split-bottom { top: 66.666%; z-index: 1; }
-
-.hero-split-overlay { opacity: 0.35; z-index: 2; }
-.hero-split-overlay-top {
-  top: 0;
-  animation: hero-overlay-drift 18s linear infinite alternate;
-}
-.hero-split-overlay-middle {
-  top: 33.333%;
-  animation: hero-overlay-flicker 3.2s steps(4, end) infinite;
-}
-.hero-split-overlay-bottom {
-  top: 66.666%;
-  animation: hero-overlay-drift 22s linear infinite alternate-reverse;
-}
-
-.hero-real-ui-overlay {
-  inset: 0;
-  height: 100%;
-  object-fit: fill;
-  z-index: 3;
-  opacity: 0.6;
-}
-
-.home-hero > *:not(.retro-hero-bg) {
+/* Split layer system removed — hero uses a single stable image */
+.home-hero > * {
   position: relative;
   z-index: 10;
-}
-
-@keyframes hero-overlay-drift {
-  from { transform: translate3d(-6%, 0, 0); }
-  to { transform: translate3d(6%, -1%, 0); }
-}
-
-@keyframes hero-overlay-flicker {
-  0%, 100% { opacity: 0.36; }
-  18% { opacity: 0.72; }
-  33% { opacity: 0.42; }
-  57% { opacity: 0.78; }
-  76% { opacity: 0.30; }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .hero-split-overlay-top,
-  .hero-split-overlay-middle,
-  .hero-split-overlay-bottom {
-    animation: none !important;
-    transform: none !important;
-  }
 }
 
 /* ── HOMEPAGE RIGHT-PANEL LAYOUT ─────────────────────────────── */
@@ -1132,7 +1068,7 @@ body.page-home #layout > #homepage-right-panel:not(#sidebar):not(#main-wrapper) 
   }
 
   .hero-logo-img {
-    width: min(82vw, 420px);
+    width: min(92vw, 520px);
     margin: 20px auto 14px;
   }
 }
