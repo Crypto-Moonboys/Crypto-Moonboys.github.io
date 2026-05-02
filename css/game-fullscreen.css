@@ -1031,3 +1031,57 @@ body.sync-error #game-overlay {
 body.conflict-active #game-overlay {
   background: radial-gradient(circle at 20% 12%, rgba(255,0,80,.07), transparent 50%), #090c16;
 }
+
+/* ===== CRYSTAL QUEST (text-based quiz game) FULLSCREEN OVERRIDES =====
+   Crystal Quest has no canvas — it is a text input/quiz game.
+   The standard canvas-game overlay rules must be relaxed so the answer
+   input, submit button, and mission content stay visible and usable.
+   ===================================================================== */
+
+/* 1. Game card: bounded width, scrollable, auto height (not stretched) */
+#game-overlay .crystal-quest-card {
+  max-width: 760px !important;
+  width: 100% !important;
+  height: auto !important;
+  max-height: 100%;
+  overflow-y: auto;
+  align-self: flex-start;
+  align-items: stretch;
+  padding: 14px 16px !important;
+}
+
+/* 2. Layer-top must fill the constrained card width */
+#game-overlay .crystal-quest-card .layer-top {
+  width: 100%;
+}
+
+/* 3. Control rows — show answer input, submit, skip, start, reset buttons.
+      Override the blanket ".game-card .row { display: none }" rule that
+      hides button rows for canvas games (where the overlay ctrl bar takes over). */
+#game-overlay .crystal-quest-card .row {
+  display: flex !important;
+  width: 100%;
+  align-self: stretch;
+  justify-content: flex-start;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* 4. quest-box must stay visible (not suppressed by any box rule) */
+#game-overlay .crystal-quest-card .quest-box {
+  display: block !important;
+}
+
+/* 5. Allow the game stage to scroll vertically so tall quiz content is reachable */
+#game-overlay .game-stage:has(.crystal-quest-card) {
+  overflow-y: auto;
+  align-items: flex-start;
+  padding-top: 16px;
+}
+
+/* 6. Responsive: on narrow screens tighten the padding */
+@media (max-width: 600px) {
+  #game-overlay .crystal-quest-card {
+    padding: 10px 10px !important;
+  }
+}

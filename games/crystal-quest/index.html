@@ -7,6 +7,7 @@
   <meta name="description" content="Wiki lore hunt. Follow signal trails, discover hidden answers, and build your crystal score.">
   <meta name="robots" content="index, follow">
   <link rel="stylesheet" href="/css/wiki.css">
+  <link rel="stylesheet" href="/css/game-fullscreen.css">
   <link rel="icon" href="/img/favicon.svg" type="image/svg+xml">
   <style>
     /* ── Core layout ── */
@@ -156,7 +157,7 @@
       </div>
       <div class="page-title-line" aria-hidden="true"></div>
 
-      <div class="game-card">
+      <div class="game-card crystal-quest-card">
         <!-- Visual atmosphere layers -->
         <div id="crystalPulseLayer" class="pulse-start" aria-hidden="true"></div>
         <div id="crystalParticles" aria-hidden="true"></div>
@@ -256,6 +257,46 @@ import { bootstrapCrystalQuest } from '/js/arcade/games/crystal-quest/bootstrap.
 import { mountModifierPanel } from '/js/arcade/systems/cross-game-modifier-ui.js';
 mountGame({ root: document.querySelector('.game-card'), bootstrap: bootstrapCrystalQuest });
 mountModifierPanel();
+</script>
+<script>
+/* Crystal Quest — lightweight DOM regression guard.
+   Runs checks after overlay toggle events and on page visibility changes.
+   Fails silently in production; logs to console for debugging. */
+(function () {
+  'use strict';
+  var GAME_ROOT_SELECTOR = '.crystal-quest-card';
+  var INTENDED_CONTAINER = '#content';
+  var FS_CONTROLS_ID = 'overlay-ctrl-bar';
+
+  function auditDom(label) {
+    var roots = document.querySelectorAll(GAME_ROOT_SELECTOR);
+    var container = document.querySelector(INTENDED_CONTAINER);
+    var fsControls = document.querySelectorAll('#' + FS_CONTROLS_ID);
+    var overlay = document.getElementById('game-overlay');
+    var overlayActive = !!(overlay && overlay.classList.contains('active'));
+    var issues = [];
+    if (roots.length > 1) issues.push('Duplicate Crystal Quest roots: ' + roots.length);
+    if (!overlayActive && container && roots.length === 1 && !container.contains(roots[0])) {
+      issues.push('Game root is outside ' + INTENDED_CONTAINER + ' while not in fullscreen');
+    }
+    if (document.body.classList.contains('overlay-open') && !overlayActive) {
+      issues.push('overlay-open class on body but overlay not active');
+    }
+    if (fsControls.length > 1) issues.push('Duplicate overlay ctrl bars: ' + fsControls.length);
+    if (issues.length) {
+      console.warn('[crystal-quest audit] ' + label + ':', issues.join('; '));
+    }
+  }
+
+  document.addEventListener('arcade-overlay-close', function () { auditDom('after-overlay-close'); });
+  document.addEventListener('arcade-overlay-open',  function () { auditDom('after-overlay-open'); });
+  document.addEventListener('fullscreenchange',      function () {
+    if (!document.fullscreenElement) auditDom('after-native-fs-exit');
+  });
+  document.addEventListener('visibilitychange', function () {
+    if (document.visibilityState === 'visible') auditDom('on-visibility-visible');
+  });
+}());
 </script>
 </body>
 </html>
