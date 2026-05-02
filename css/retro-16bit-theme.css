@@ -2987,10 +2987,13 @@ body.page-has-right-panel .retro-hud-title-icon {
   image-rendering: pixelated;
 }
 
+@media (max-width: 1200px) {
   body.page-has-right-panel #homepage-right-panel {
     max-width: none;
   }
+}
 
+@media (max-width: 900px) {
   body.page-has-right-panel .sidebar-nav a {
     font-size: 0.50rem !important;
   }
@@ -2998,6 +3001,7 @@ body.page-has-right-panel .retro-hud-title-icon {
   body.page-has-right-panel .retro-hud-body {
     font-size: 0.78rem !important;
   }
+}
 
 body.page-has-right-panel #homepage-right-panel .retro-hud-title {
   display: flex;
@@ -3632,4 +3636,740 @@ body.page-has-right-panel .sidebar-nav a.active {
   body.page-has-right-panel #homepage-right-panel {
     max-width: none;
   }
+}
+
+/* ==========================================================================
+   SHARED NEON FRAME SYSTEM — ALL CONVERTED PAGES
+   Extends the homepage card/panel neon frame treatment to body.page-has-right-panel.
+   Mirrors body.page-home rules for neon frames, sidebar sections, typography,
+   icons, and center content panels. CSS-only change.
+   No JS/gameplay/auth/XP/worker logic touched.
+   ========================================================================== */
+
+/* ── Neon frame base: clip-path octagon + layered box-shadow ── */
+body.page-has-right-panel .retro-hud-box,
+body.page-has-right-panel .category-card,
+body.page-has-right-panel .article-card,
+body.page-has-right-panel .retro-info-panel,
+body.page-has-right-panel .home-widget {
+  position: relative;
+  isolation: isolate;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background:
+    linear-gradient(180deg, rgba(7, 14, 34, 0.88), rgba(1, 5, 14, 0.94)) padding-box !important;
+  box-shadow:
+    6px 6px 0 rgba(0, 0, 0, 0.88),
+    0 0 0 2px rgba(255, 45, 120, 0.80),
+    0 0 0 5px rgba(0, 229, 255, 0.23),
+    0 0 22px rgba(255, 45, 120, 0.28),
+    inset 0 0 0 2px rgba(0, 229, 255, 0.20) !important;
+  clip-path: polygon(
+    0 10px, 10px 0,
+    calc(100% - 10px) 0, 100% 10px,
+    100% calc(100% - 10px), calc(100% - 10px) 100%,
+    10px 100%, 0 calc(100% - 10px)
+  );
+}
+
+/* ── Segmented / broken frame lines (::before) ─────────────── */
+body.page-has-right-panel .retro-hud-box::before,
+body.page-has-right-panel .retro-info-panel::before,
+body.page-has-right-panel .home-widget::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  background:
+    linear-gradient(90deg,
+      var(--ui-pink) 0 42px, transparent 42px 62px,
+      var(--ui-cyan) 62px 132px, transparent 132px 178px,
+      var(--ui-pink) 178px 238px, transparent 238px 100%) top left / 100% 3px no-repeat,
+    linear-gradient(90deg,
+      transparent 0 8%, var(--ui-cyan) 8% 21%, transparent 21% 34%,
+      var(--ui-pink) 34% 56%, transparent 56% 74%,
+      var(--ui-cyan) 74% 92%, transparent 92% 100%) bottom left / 100% 3px no-repeat,
+    linear-gradient(180deg,
+      var(--ui-cyan) 0 26px, transparent 26px 58px,
+      var(--ui-pink) 58px 122px, transparent 122px 190px,
+      var(--ui-cyan) 190px 260px, transparent 260px 100%) top left / 3px 100% no-repeat,
+    linear-gradient(180deg,
+      transparent 0 12%, var(--ui-pink) 12% 28%, transparent 28% 42%,
+      var(--ui-cyan) 42% 64%, transparent 64% 82%,
+      var(--ui-pink) 82% 100%) top right / 3px 100% no-repeat;
+  opacity: 0.92;
+  filter: drop-shadow(0 0 5px rgba(0,229,255,.65));
+  animation: neonFramePulse 3.8s steps(3, end) infinite;
+}
+
+/* ── Corner bracket accents (::after) ──────────────────────── */
+body.page-has-right-panel .retro-hud-box::after,
+body.page-has-right-panel .retro-info-panel::after,
+body.page-has-right-panel .home-widget::after {
+  content: "";
+  position: absolute;
+  inset: 5px;
+  z-index: 3;
+  pointer-events: none;
+  background:
+    linear-gradient(var(--ui-yellow), var(--ui-yellow)) top left / 18px 3px no-repeat,
+    linear-gradient(var(--ui-yellow), var(--ui-yellow)) top left / 3px 18px no-repeat,
+    linear-gradient(var(--ui-cyan), var(--ui-cyan)) top right / 26px 3px no-repeat,
+    linear-gradient(var(--ui-cyan), var(--ui-cyan)) top right / 3px 26px no-repeat,
+    linear-gradient(var(--ui-pink), var(--ui-pink)) bottom left / 30px 3px no-repeat,
+    linear-gradient(var(--ui-pink), var(--ui-pink)) bottom left / 3px 30px no-repeat,
+    linear-gradient(var(--ui-cyan), var(--ui-cyan)) bottom right / 22px 3px no-repeat,
+    linear-gradient(var(--ui-cyan), var(--ui-cyan)) bottom right / 3px 22px no-repeat;
+  opacity: 0.95;
+  filter: drop-shadow(0 0 7px rgba(255,45,120,.70));
+  animation: neonCornerGlitch 5.4s steps(4, end) infinite;
+}
+
+/* ── Lift children above pseudo-elements ───────────────────── */
+body.page-has-right-panel .retro-hud-box > *,
+body.page-has-right-panel .category-card > *,
+body.page-has-right-panel .article-card > *,
+body.page-has-right-panel .retro-info-panel > *,
+body.page-has-right-panel .home-widget > * {
+  position: relative;
+  z-index: 5;
+}
+
+/* ── Reduced-motion: disable card frame animations ────────── */
+@media (prefers-reduced-motion: reduce) {
+  body.page-has-right-panel .retro-hud-box::before,
+  body.page-has-right-panel .retro-hud-box::after,
+  body.page-has-right-panel .retro-info-panel::before,
+  body.page-has-right-panel .retro-info-panel::after,
+  body.page-has-right-panel .home-widget::before,
+  body.page-has-right-panel .home-widget::after {
+    animation: none !important;
+  }
+}
+
+/* ==========================================================================
+   SIDEBAR SECTION — FULL HUD BOX FRAME
+   Matches the homepage sidebar-section neon treatment.
+   ========================================================================== */
+
+body.page-has-right-panel .sidebar-section {
+  position: relative;
+  isolation: isolate;
+  margin: 10px 8px !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: linear-gradient(180deg, rgba(7, 14, 34, 0.90), rgba(1, 5, 14, 0.96)) !important;
+  box-shadow:
+    6px 6px 0 rgba(0, 0, 0, 0.88),
+    0 0 0 2px rgba(255, 45, 120, 0.82),
+    0 0 0 5px rgba(0, 229, 255, 0.24),
+    0 0 22px rgba(255, 45, 120, 0.28),
+    inset 0 0 0 2px rgba(0, 229, 255, 0.20) !important;
+  clip-path: polygon(
+    0 8px, 8px 0,
+    calc(100% - 8px) 0, 100% 8px,
+    100% calc(100% - 8px), calc(100% - 8px) 100%,
+    8px 100%, 0 calc(100% - 8px)
+  );
+  filter: drop-shadow(0 0 10px rgba(255, 45, 120, 0.52));
+}
+
+body.page-has-right-panel .sidebar-section + .sidebar-section {
+  border-top: 0 !important;
+  margin-top: 0 !important;
+  padding-top: 0 !important;
+}
+
+body.page-has-right-panel .sidebar-section:nth-child(2) {
+  box-shadow:
+    6px 6px 0 rgba(0, 0, 0, 0.88),
+    0 0 0 2px rgba(0, 229, 255, 0.82),
+    0 0 0 5px rgba(255, 45, 120, 0.24),
+    0 0 22px rgba(0, 229, 255, 0.25),
+    inset 0 0 0 2px rgba(255, 45, 120, 0.20) !important;
+  filter: drop-shadow(0 0 10px rgba(0, 229, 255, 0.50));
+}
+
+body.page-has-right-panel .sidebar-section:nth-child(3) {
+  box-shadow:
+    6px 6px 0 rgba(0, 0, 0, 0.88),
+    0 0 0 2px rgba(190, 76, 247, 0.72),
+    0 0 0 5px rgba(0, 229, 255, 0.22),
+    0 0 22px rgba(190, 76, 247, 0.25),
+    inset 0 0 0 2px rgba(0, 229, 255, 0.18) !important;
+  filter: drop-shadow(0 0 10px rgba(190, 76, 247, 0.48));
+}
+
+body.page-has-right-panel .sidebar-section::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  background:
+    linear-gradient(90deg,
+      var(--ui-pink) 0 42px, transparent 42px 62px,
+      var(--ui-cyan) 62px 132px, transparent 132px 178px,
+      var(--ui-pink) 178px 238px, transparent 238px 100%) top left / 100% 3px no-repeat,
+    linear-gradient(90deg,
+      transparent 0 8%, var(--ui-cyan) 8% 21%, transparent 21% 34%,
+      var(--ui-pink) 34% 56%, transparent 56% 74%,
+      var(--ui-cyan) 74% 92%, transparent 92% 100%) bottom left / 100% 3px no-repeat,
+    linear-gradient(180deg,
+      var(--ui-cyan) 0 26px, transparent 26px 58px,
+      var(--ui-pink) 58px 122px, transparent 122px 190px,
+      var(--ui-cyan) 190px 260px, transparent 260px 100%) top left / 3px 100% no-repeat,
+    linear-gradient(180deg,
+      transparent 0 12%, var(--ui-pink) 12% 28%, transparent 28% 42%,
+      var(--ui-cyan) 42% 64%, transparent 64% 82%,
+      var(--ui-pink) 82% 100%) top right / 3px 100% no-repeat;
+  opacity: 0.90;
+  filter: drop-shadow(0 0 5px rgba(0, 229, 255, 0.65));
+  animation: neonFramePulse 3.8s steps(3, end) infinite;
+}
+
+body.page-has-right-panel .sidebar-section::after {
+  content: "";
+  position: absolute;
+  inset: 5px;
+  z-index: 3;
+  pointer-events: none;
+  background:
+    linear-gradient(var(--ui-yellow), var(--ui-yellow)) top left    / 16px 3px no-repeat,
+    linear-gradient(var(--ui-yellow), var(--ui-yellow)) top left    / 3px 16px no-repeat,
+    linear-gradient(var(--ui-cyan),   var(--ui-cyan))   top right   / 22px 3px no-repeat,
+    linear-gradient(var(--ui-cyan),   var(--ui-cyan))   top right   / 3px 22px no-repeat,
+    linear-gradient(var(--ui-pink),   var(--ui-pink))   bottom left / 26px 3px no-repeat,
+    linear-gradient(var(--ui-pink),   var(--ui-pink))   bottom left / 3px 26px no-repeat,
+    linear-gradient(var(--ui-cyan),   var(--ui-cyan))   bottom right / 20px 3px no-repeat,
+    linear-gradient(var(--ui-cyan),   var(--ui-cyan))   bottom right / 3px 20px no-repeat;
+  opacity: 0.95;
+  filter: drop-shadow(0 0 7px rgba(255, 45, 120, 0.70));
+  animation: neonCornerGlitch 5.4s steps(4, end) infinite;
+}
+
+body.page-has-right-panel .sidebar-section > * {
+  position: relative;
+  z-index: 5;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body.page-has-right-panel .sidebar-section::before,
+  body.page-has-right-panel .sidebar-section::after {
+    animation: none !important;
+  }
+}
+
+/* ── Sidebar nav a:hover ───────────────────────────────────── */
+body.page-has-right-panel .sidebar-nav a:hover {
+  background: rgba(0, 229, 255, 0.12) !important;
+  border-left-color: var(--ui-pink) !important;
+  color: #fff !important;
+  box-shadow: inset 0 0 0 1px rgba(0, 229, 255, 0.28), 0 0 10px rgba(0, 229, 255, 0.16) !important;
+}
+
+/* ==========================================================================
+   SHARED TYPOGRAPHY — ALL CONVERTED PAGES
+   ========================================================================== */
+
+body.page-has-right-panel h1,
+body.page-has-right-panel .page-title {
+  font-family: var(--font-pixel, "Press Start 2P", monospace) !important;
+  color: var(--neon-cyan) !important;
+  text-shadow:
+    0 0 10px rgba(0, 229, 255, 0.65),
+    2px 2px 0 rgba(0, 0, 0, 0.85) !important;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  line-height: 1.45;
+}
+
+body.page-has-right-panel h2,
+body.page-has-right-panel .era-heading,
+body.page-has-right-panel .dash-section-heading {
+  font-family: var(--font-pixel, "Press Start 2P", monospace) !important;
+  color: var(--neon-cyan) !important;
+  text-shadow:
+    0 0 8px rgba(0, 229, 255, 0.55),
+    1px 1px 0 rgba(0, 0, 0, 0.9) !important;
+  font-size: clamp(0.50rem, 1.1vw, 0.65rem) !important;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  line-height: 1.5;
+}
+
+body.page-has-right-panel h3 {
+  font-family: var(--font-pixel, "Press Start 2P", monospace) !important;
+  color: var(--neon-magenta) !important;
+  text-shadow: 0 0 7px rgba(255, 45, 120, 0.55), 1px 1px 0 #000 !important;
+  font-size: clamp(0.44rem, 0.9vw, 0.56rem) !important;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/* ── Icon glow treatment ─────────────────────────────────────── */
+body.page-has-right-panel .nav-icon,
+body.page-has-right-panel .cat-icon,
+body.page-has-right-panel .cat-big-icon,
+body.page-has-right-panel .article-card-img,
+body.page-has-right-panel .cta-btn-icon,
+body.page-has-right-panel .ali-icon,
+body.page-has-right-panel .notice-icon {
+  color: var(--neon-cyan) !important;
+  text-shadow:
+    0 0 7px var(--neon-cyan),
+    0 0 14px rgba(0, 229, 255, 0.50),
+    2px 2px 0 #000 !important;
+  image-rendering: pixelated;
+}
+
+/* ==========================================================================
+   CENTER CONTENT CARDS — ALL CONVERTED PAGES
+   Shared neon panel/card styling for page-specific center content classes.
+   ========================================================================== */
+
+/* ── Page title decorative line ─────────────────────────────── */
+body.page-has-right-panel .page-title-line {
+  height: 3px;
+  background: linear-gradient(90deg,
+    var(--neon-magenta) 0 30%, var(--neon-cyan) 30% 60%, transparent 60% 100%);
+  margin: 8px 0 16px;
+  opacity: 0.85;
+}
+
+/* ── Category header ─────────────────────────────────────────── */
+body.page-has-right-panel .category-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+body.page-has-right-panel .cat-big-icon {
+  font-size: 2.2rem;
+  line-height: 1;
+  filter: drop-shadow(0 0 8px rgba(0, 229, 255, 0.65));
+}
+
+/* ── Article list items (.article-list-item / .ali-*) ───────── */
+body.page-has-right-panel .article-list-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 12px !important;
+  margin-bottom: 6px;
+  background: linear-gradient(180deg, rgba(5, 12, 28, 0.88), rgba(1, 5, 14, 0.94)) !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow:
+    4px 4px 0 rgba(0, 0, 0, 0.80),
+    0 0 0 2px rgba(255, 45, 120, 0.60),
+    0 0 0 4px rgba(0, 229, 255, 0.18),
+    inset 0 0 0 1px rgba(0, 229, 255, 0.15) !important;
+  clip-path: polygon(
+    0 6px, 6px 0,
+    calc(100% - 6px) 0, 100% 6px,
+    100% calc(100% - 6px), calc(100% - 6px) 100%,
+    6px 100%, 0 calc(100% - 6px)
+  );
+  text-decoration: none !important;
+  color: var(--color-text) !important;
+}
+
+body.page-has-right-panel .article-list-item:hover {
+  box-shadow:
+    4px 4px 0 rgba(0, 0, 0, 0.90),
+    0 0 0 2px rgba(0, 229, 255, 0.80),
+    0 0 0 4px rgba(255, 45, 120, 0.22),
+    inset 0 0 0 1px rgba(255, 45, 120, 0.20) !important;
+  filter: drop-shadow(0 0 8px rgba(0, 229, 255, 0.35));
+}
+
+body.page-has-right-panel .ali-icon {
+  font-size: 1.5rem;
+  line-height: 1.2;
+  flex-shrink: 0;
+  width: 28px;
+  text-align: center;
+  filter: drop-shadow(0 0 6px rgba(0, 229, 255, 0.55));
+}
+
+body.page-has-right-panel .ali-title {
+  font-family: var(--font-pixel, "Press Start 2P", monospace) !important;
+  font-size: 0.44rem !important;
+  color: var(--neon-cyan) !important;
+  text-shadow: 0 0 6px rgba(0, 229, 255, 0.55), 1px 1px 0 #000 !important;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  margin-bottom: 3px;
+}
+
+body.page-has-right-panel .ali-desc {
+  font-size: clamp(0.68rem, 0.78vw, 0.82rem) !important;
+  color: rgba(157, 215, 238, 0.85) !important;
+  line-height: 1.5;
+}
+
+body.page-has-right-panel .ali-meta {
+  font-family: var(--font-pixel, "Press Start 2P", monospace) !important;
+  font-size: 0.34rem !important;
+  color: var(--neon-magenta) !important;
+  text-shadow: 0 0 5px rgba(255, 45, 120, 0.45) !important;
+  letter-spacing: 0.06em;
+  margin-top: 4px;
+}
+
+/* ── Timeline items ──────────────────────────────────────────── */
+body.page-has-right-panel .timeline-hero {
+  padding: 16px 20px;
+  background: linear-gradient(180deg, rgba(5, 12, 28, 0.90), rgba(1, 5, 14, 0.96)) !important;
+  border-left: 4px solid var(--neon-magenta) !important;
+  border-bottom: 2px solid rgba(0, 229, 255, 0.30) !important;
+  margin-bottom: 14px;
+  box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.70) !important;
+}
+
+body.page-has-right-panel .era-section {
+  margin-bottom: 18px;
+}
+
+body.page-has-right-panel .era-heading {
+  padding: 8px 12px !important;
+  background:
+    repeating-linear-gradient(90deg, rgba(0, 229, 255, 0.12) 0 4px, rgba(255, 45, 120, 0.04) 4px 7px, transparent 7px 12px),
+    linear-gradient(90deg, rgba(0, 229, 255, 0.18), rgba(0, 0, 0, 0)) !important;
+  border-left: 4px solid var(--neon-cyan) !important;
+  border-bottom: 2px solid rgba(0, 229, 255, 0.25) !important;
+  margin-bottom: 8px;
+  box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.65) !important;
+}
+
+body.page-has-right-panel .timeline-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+body.page-has-right-panel .timeline-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 8px 12px !important;
+  background: linear-gradient(180deg, rgba(5, 12, 28, 0.85), rgba(1, 5, 14, 0.92)) !important;
+  border-left: 3px solid rgba(0, 229, 255, 0.45) !important;
+  border-bottom: 1px solid rgba(0, 229, 255, 0.12) !important;
+  box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.65) !important;
+}
+
+body.page-has-right-panel .tl-title a {
+  font-family: var(--font-pixel, "Press Start 2P", monospace) !important;
+  font-size: 0.42rem !important;
+  color: var(--neon-cyan) !important;
+  text-shadow: 0 0 6px rgba(0, 229, 255, 0.50), 1px 1px 0 #000 !important;
+  text-decoration: none !important;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+body.page-has-right-panel .tl-title a:hover {
+  color: var(--neon-magenta) !important;
+  text-shadow: 0 0 6px rgba(255, 45, 120, 0.55), 1px 1px 0 #000 !important;
+}
+
+body.page-has-right-panel .tl-tag {
+  display: inline-block;
+  font-family: var(--font-pixel, "Press Start 2P", monospace) !important;
+  font-size: 0.32rem !important;
+  padding: 2px 5px;
+  background: rgba(0, 229, 255, 0.10) !important;
+  border: 1px solid rgba(0, 229, 255, 0.45) !important;
+  color: var(--neon-cyan) !important;
+  margin-right: 3px;
+}
+
+body.page-has-right-panel .tl-event-badge,
+body.page-has-right-panel .era-badge {
+  display: inline-block;
+  font-family: var(--font-pixel, "Press Start 2P", monospace) !important;
+  font-size: 0.34rem !important;
+  padding: 2px 6px;
+  background: rgba(255, 45, 120, 0.14) !important;
+  border: 1px solid rgba(255, 45, 120, 0.55) !important;
+  color: var(--neon-magenta) !important;
+}
+
+body.page-has-right-panel .view-btn {
+  font-family: var(--font-pixel, "Press Start 2P", monospace) !important;
+  font-size: 0.40rem !important;
+  padding: 7px 12px !important;
+  background: rgba(0, 0, 0, 0.75) !important;
+  border: 2px solid rgba(0, 229, 255, 0.45) !important;
+  border-radius: 0 !important;
+  color: var(--neon-cyan) !important;
+  cursor: pointer;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.75) !important;
+}
+
+body.page-has-right-panel .view-btn.active,
+body.page-has-right-panel .view-btn:hover {
+  background: rgba(0, 229, 255, 0.14) !important;
+  border-color: var(--neon-cyan) !important;
+  color: #fff !important;
+  box-shadow: 3px 3px 0 rgba(0, 229, 255, 0.22) !important;
+}
+
+body.page-has-right-panel .timeline-filter {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-bottom: 10px;
+}
+
+/* ── Dashboard sections ──────────────────────────────────────── */
+body.page-has-right-panel .dash-intro {
+  font-size: clamp(0.72rem, 0.82vw, 0.90rem) !important;
+  color: rgba(157, 215, 238, 0.88) !important;
+  line-height: 1.6;
+  margin-bottom: 14px;
+}
+
+body.page-has-right-panel .dash-section {
+  padding: 12px 16px !important;
+  margin-bottom: 10px;
+  background: linear-gradient(180deg, rgba(5, 12, 28, 0.88), rgba(1, 5, 14, 0.94)) !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow:
+    4px 4px 0 rgba(0, 0, 0, 0.80),
+    0 0 0 2px rgba(0, 229, 255, 0.55),
+    0 0 0 4px rgba(255, 45, 120, 0.15),
+    inset 0 0 0 1px rgba(0, 229, 255, 0.12) !important;
+  clip-path: polygon(
+    0 6px, 6px 0,
+    calc(100% - 6px) 0, 100% 6px,
+    100% calc(100% - 6px), calc(100% - 6px) 100%,
+    6px 100%, 0 calc(100% - 6px)
+  );
+}
+
+body.page-has-right-panel .dash-section-heading {
+  padding: 6px 0 8px !important;
+  border-bottom: 2px solid rgba(0, 229, 255, 0.28) !important;
+  margin-bottom: 10px !important;
+}
+
+/* ── SAM panels ─────────────────────────────────────────────── */
+body.page-has-right-panel .sam-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 10px;
+}
+
+body.page-has-right-panel .sam-panel {
+  padding: 12px 14px !important;
+  background: linear-gradient(180deg, rgba(5, 12, 28, 0.90), rgba(1, 5, 14, 0.96)) !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow:
+    4px 4px 0 rgba(0, 0, 0, 0.80),
+    0 0 0 2px rgba(255, 45, 120, 0.70),
+    0 0 0 4px rgba(0, 229, 255, 0.20),
+    inset 0 0 0 1px rgba(0, 229, 255, 0.18) !important;
+  clip-path: polygon(
+    0 6px, 6px 0,
+    calc(100% - 6px) 0, 100% 6px,
+    100% calc(100% - 6px), calc(100% - 6px) 100%,
+    6px 100%, 0 calc(100% - 6px)
+  );
+}
+
+body.page-has-right-panel .sam-panel.sam-panel--blue {
+  box-shadow:
+    4px 4px 0 rgba(0, 0, 0, 0.80),
+    0 0 0 2px rgba(0, 229, 255, 0.75),
+    0 0 0 4px rgba(255, 45, 120, 0.18),
+    inset 0 0 0 1px rgba(0, 229, 255, 0.22) !important;
+}
+
+body.page-has-right-panel .sam-panel.sam-panel--yellow {
+  box-shadow:
+    4px 4px 0 rgba(0, 0, 0, 0.80),
+    0 0 0 2px rgba(255, 214, 0, 0.70),
+    0 0 0 4px rgba(0, 229, 255, 0.18),
+    inset 0 0 0 1px rgba(255, 214, 0, 0.18) !important;
+}
+
+body.page-has-right-panel .sam-panel.sam-panel--green {
+  box-shadow:
+    4px 4px 0 rgba(0, 0, 0, 0.80),
+    0 0 0 2px rgba(57, 255, 20, 0.65),
+    0 0 0 4px rgba(0, 229, 255, 0.18),
+    inset 0 0 0 1px rgba(57, 255, 20, 0.18) !important;
+}
+
+body.page-has-right-panel .sam-panel.sam-panel--red {
+  box-shadow:
+    4px 4px 0 rgba(0, 0, 0, 0.80),
+    0 0 0 2px rgba(255, 45, 120, 0.75),
+    0 0 0 4px rgba(190, 76, 247, 0.20),
+    inset 0 0 0 1px rgba(255, 45, 120, 0.22) !important;
+}
+
+body.page-has-right-panel .sam-panel-title {
+  font-family: var(--font-pixel, "Press Start 2P", monospace) !important;
+  font-size: 0.44rem !important;
+  color: var(--neon-cyan) !important;
+  text-shadow: 0 0 7px rgba(0, 229, 255, 0.65), 1px 1px 0 #000 !important;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  margin-bottom: 8px;
+  padding-bottom: 6px;
+  border-bottom: 2px solid rgba(0, 229, 255, 0.22) !important;
+}
+
+body.page-has-right-panel .sam-graph-section {
+  padding: 12px 14px !important;
+  margin-top: 12px;
+  background: linear-gradient(180deg, rgba(3, 8, 20, 0.92), rgba(1, 4, 12, 0.97)) !important;
+  border: 0 !important;
+  box-shadow:
+    4px 4px 0 rgba(0, 0, 0, 0.80),
+    0 0 0 2px rgba(0, 229, 255, 0.55),
+    inset 0 0 0 1px rgba(0, 229, 255, 0.12) !important;
+}
+
+body.page-has-right-panel .sam-graph-title {
+  font-family: var(--font-pixel, "Press Start 2P", monospace) !important;
+  font-size: 0.46rem !important;
+  color: var(--neon-cyan) !important;
+  text-shadow: 0 0 7px rgba(0, 229, 255, 0.65), 1px 1px 0 #000 !important;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  margin-bottom: 6px;
+}
+
+/* ── Wiki content panels ─────────────────────────────────────── */
+body.page-has-right-panel .wiki-content {
+  min-width: 0;
+  max-width: 100%;
+}
+
+body.page-has-right-panel .wiki-section {
+  margin-bottom: 14px;
+  padding: 10px 14px !important;
+  background: linear-gradient(180deg, rgba(5, 12, 28, 0.85), rgba(1, 5, 14, 0.92)) !important;
+  border-left: 4px solid rgba(0, 229, 255, 0.50) !important;
+  border-bottom: 1px solid rgba(0, 229, 255, 0.15) !important;
+  box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.65) !important;
+}
+
+body.page-has-right-panel .wiki-section h2 {
+  margin-top: 0;
+  padding-bottom: 6px;
+  border-bottom: 2px solid rgba(0, 229, 255, 0.22) !important;
+  margin-bottom: 10px;
+}
+
+body.page-has-right-panel .lore-fact-block {
+  padding: 8px 10px !important;
+  margin-bottom: 8px;
+  background: rgba(0, 229, 255, 0.04) !important;
+  border-left: 3px solid rgba(255, 45, 120, 0.50) !important;
+}
+
+body.page-has-right-panel .lore-paragraph,
+body.page-has-right-panel .lead-paragraph {
+  font-size: clamp(0.72rem, 0.82vw, 0.90rem) !important;
+  color: var(--color-text, #d4f0ff) !important;
+  line-height: 1.65;
+  min-width: 0;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+
+/* ── Article meta / badges ───────────────────────────────────── */
+body.page-has-right-panel .article-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 12px;
+  align-items: center;
+}
+
+body.page-has-right-panel .article-badge {
+  display: inline-block;
+  font-family: var(--font-pixel, "Press Start 2P", monospace) !important;
+  font-size: 0.34rem !important;
+  padding: 3px 7px !important;
+  background: rgba(0, 229, 255, 0.10) !important;
+  border: 1px solid rgba(0, 229, 255, 0.45) !important;
+  color: var(--neon-cyan) !important;
+  letter-spacing: 0.05em;
+}
+
+body.page-has-right-panel .meta-item {
+  font-family: var(--font-pixel, "Press Start 2P", monospace) !important;
+  font-size: 0.34rem !important;
+  color: var(--color-text-muted) !important;
+  letter-spacing: 0.04em;
+}
+
+body.page-has-right-panel .article-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-bottom: 10px;
+}
+
+/* ── Notice / info boxes ─────────────────────────────────────── */
+body.page-has-right-panel .notice {
+  padding: 10px 14px !important;
+  margin-bottom: 10px;
+  background: rgba(0, 229, 255, 0.05) !important;
+  border: 0 !important;
+  border-left: 4px solid var(--neon-cyan) !important;
+  border-radius: 0 !important;
+  box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.65) !important;
+}
+
+body.page-has-right-panel .notice.info {
+  border-left-color: var(--neon-cyan) !important;
+  background: rgba(0, 229, 255, 0.05) !important;
+}
+
+body.page-has-right-panel .notice.warning {
+  border-left-color: var(--neon-yellow) !important;
+  background: rgba(255, 214, 0, 0.05) !important;
+}
+
+body.page-has-right-panel .notice-icon {
+  color: var(--neon-cyan) !important;
+  text-shadow: 0 0 6px rgba(0, 229, 255, 0.65) !important;
+}
+
+/* ── Text overflow guards ────────────────────────────────────── */
+body.page-has-right-panel .retro-hud-body,
+body.page-has-right-panel .retro-hud-body *,
+body.page-has-right-panel .category-card,
+body.page-has-right-panel .category-card *,
+body.page-has-right-panel .article-card,
+body.page-has-right-panel .article-card *,
+body.page-has-right-panel .article-list-item,
+body.page-has-right-panel .article-list-item *,
+body.page-has-right-panel .timeline-item,
+body.page-has-right-panel .timeline-item *,
+body.page-has-right-panel .dash-section,
+body.page-has-right-panel .dash-section *,
+body.page-has-right-panel .sam-panel,
+body.page-has-right-panel .sam-panel * {
+  min-width: 0;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  word-break: normal;
 }
