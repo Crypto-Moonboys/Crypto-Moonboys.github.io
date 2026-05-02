@@ -17,6 +17,7 @@ const NPC_COUNT = 14;
 const SIM_TICK_MS = 200;
 const ATTACK_RANGE = 1.3;
 const ATTACK_DAMAGE = 24;
+const ATTACK_COOLDOWN_MS = 350;
 const PLAYER_MAX_HP = 100;
 const NPC_MAX_HP = 40;
 const RESPAWN_MS = 5000;
@@ -91,6 +92,7 @@ export class MinimalCityRoom extends Room {
     this.maxClients = 2;
     this.autoDispose = false;
     this.playersBySession = new Map();
+    this.lastAttackAtBySession = new Map();
     this.pendingRespawnByNpcId = new Map();
     this.terrain = buildTerrainGrid(MAP_WIDTH, MAP_HEIGHT);
     this._seedNpcs();
@@ -114,6 +116,10 @@ export class MinimalCityRoom extends Room {
     this.onMessage('attack', (client) => {
       const player = this.playersBySession.get(client.sessionId);
       if (!player || player.hp <= 0) return;
+      const now = Date.now();
+      const lastAttackAt = this.lastAttackAtBySession.get(client.sessionId) || 0;
+      if (now - lastAttackAt < ATTACK_COOLDOWN_MS) return;
+      this.lastAttackAtBySession.set(client.sessionId, now);
       const target = this._findNearestNpc(player, ATTACK_RANGE);
       if (!target) return;
       target.hp = Math.max(0, target.hp - ATTACK_DAMAGE);
@@ -163,6 +169,7 @@ export class MinimalCityRoom extends Room {
   onLeave(client) {
     const player = this.playersBySession.get(client.sessionId);
     this.playersBySession.delete(client.sessionId);
+    this.lastAttackAtBySession.delete(client.sessionId);
     if (player) {
       const index = this.state.players.findIndex((entry) => entry.id === client.sessionId);
       if (index >= 0) this.state.players.splice(index, 1);
