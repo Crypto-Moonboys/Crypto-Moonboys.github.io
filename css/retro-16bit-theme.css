@@ -4836,3 +4836,158 @@ body.page-game .lb-hint {
   font-size: clamp(0.62rem, 0.72vw, 0.78rem) !important;
   color: rgba(157, 215, 238, 0.65) !important;
 }
+
+/* ==========================================================================
+   TYPOGRAPHY CONSISTENCY CORRECTION — SHARED NEON SHELL PAGES
+   Raises all readable UI text on page-has-right-panel / page-game pages
+   to match the visual scale of index.html.
+   Added at the END to override all earlier declarations via specificity +
+   !important where the earlier rules already used !important.
+   DO NOT touch: gameplay JS, Worker files, XP logic, leaderboard logic,
+   submitScore, Telegram/auth, Block Topia multiplayer, score APIs.
+   ========================================================================== */
+
+/* ── Base font-size anchor ────────────────────────────────────── */
+body.page-has-right-panel,
+body.page-game {
+  font-size: 16px;
+}
+
+/* ── Header logo ─────────────────────────────────────────────── */
+body.page-has-right-panel .site-logo .logo-text,
+body.page-game .site-logo .logo-text {
+  font-size: 0.60rem !important;
+}
+
+body.page-has-right-panel .site-logo .logo-sub,
+body.page-game .site-logo .logo-sub {
+  font-size: 0.46rem !important;
+}
+
+/* ── Header search ──────────────────────────────────────────── */
+body.page-has-right-panel #header-search input,
+body.page-game #header-search input {
+  font-size: 0.80rem !important;
+  font-family: var(--font-mono, "Courier New", monospace) !important;
+}
+
+/* ── Header nav ─────────────────────────────────────────────── */
+body.page-has-right-panel .header-nav a,
+body.page-game .header-nav a {
+  font-size: 0.56rem !important;
+}
+
+/* ── Sidebar headings ───────────────────────────────────────── */
+body.page-has-right-panel .sidebar-heading,
+body.page-game .sidebar-heading {
+  font-size: 0.58rem !important;
+}
+
+/* ── Sidebar nav links ──────────────────────────────────────── */
+body.page-has-right-panel .sidebar-nav a,
+body.page-game .sidebar-nav a {
+  font-size: 0.56rem !important;
+  line-height: 1.55 !important;
+}
+
+/* ── Right HUD titles ───────────────────────────────────────── */
+body.page-has-right-panel .retro-hud-title,
+body.page-game .retro-hud-title {
+  font-size: 0.56rem !important;
+}
+
+/* ── Right HUD body text ────────────────────────────────────── */
+body.page-has-right-panel .retro-hud-body,
+body.page-game .retro-hud-body {
+  font-size: 0.72rem !important;
+}
+
+/* ── HUD label / value text ─────────────────────────────────── */
+body.page-has-right-panel .retro-hud-body [class*="label"],
+body.page-game .retro-hud-body [class*="label"] {
+  font-size: 0.56rem !important;
+}
+
+body.page-has-right-panel .hud-label,
+body.page-game .hud-label {
+  font-size: 0.56rem !important;
+}
+
+body.page-has-right-panel .hud-value,
+body.page-game .hud-value {
+  font-size: 0.58rem !important;
+}
+
+/* ── Game / article list card text ─────────────────────────── */
+body.page-has-right-panel .ali-title,
+body.page-game .ali-title {
+  font-size: 0.62rem !important;
+}
+
+body.page-has-right-panel .ali-desc,
+body.page-game .ali-desc {
+  font-size: clamp(0.86rem, 0.9vw, 0.96rem) !important;
+}
+
+body.page-has-right-panel .ali-meta,
+body.page-game .ali-meta {
+  font-size: 0.55rem !important;
+}
+
+/* ── Leaderboard tab buttons ────────────────────────────────── */
+body.page-game .lb-tab {
+  font-size: 0.56rem !important;
+}
+
+/* ── Timeline item titles and tags ──────────────────────────── */
+body.page-has-right-panel .tl-title a,
+body.page-game .tl-title a {
+  font-size: 0.56rem !important;
+}
+
+body.page-has-right-panel .tl-tag,
+body.page-game .tl-tag {
+  font-size: 0.44rem !important;
+}
+
+body.page-has-right-panel .tl-event-badge,
+body.page-has-right-panel .era-badge,
+body.page-game .tl-event-badge,
+body.page-game .era-badge {
+  font-size: 0.44rem !important;
+}
+
+body.page-has-right-panel .view-btn,
+body.page-game .view-btn {
+  font-size: 0.52rem !important;
+}
+
+/* ── SAM panel titles ───────────────────────────────────────── */
+body.page-has-right-panel .sam-panel-title,
+body.page-game .sam-panel-title {
+  font-size: 0.58rem !important;
+}
+
+body.page-has-right-panel .sam-graph-title,
+body.page-game .sam-graph-title {
+  font-size: 0.58rem !important;
+}
+
+/* ── Article meta badges ────────────────────────────────────── */
+body.page-has-right-panel .article-badge,
+body.page-game .article-badge {
+  font-size: 0.44rem !important;
+}
+
+body.page-has-right-panel .meta-item,
+body.page-game .meta-item {
+  font-size: 0.50rem !important;
+}
+
+/* ── Mobile: keep sidebar nav readable ─────────────────────── */
+@media (max-width: 900px) {
+  body.page-has-right-panel .sidebar-nav a,
+  body.page-game .sidebar-nav a {
+    font-size: 0.60rem !important;
+  }
+}
