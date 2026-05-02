@@ -833,16 +833,14 @@ a.hero-stat-link:hover {
 /* Three-column grid: sidebar | content | right-panel
  * Applied to homepage (page-home) and all converted pages (page-has-right-panel)
  */
-.page-home #layout,
-.page-has-right-panel #layout {
+body.page-home #layout {
   display: grid !important;
   grid-template-columns: var(--color-sidebar-w) 1fr var(--right-panel-w);
   align-items: start;
 }
 
 /* Ensure main wrapper still stacks vertically inside the grid */
-.page-home #main-wrapper,
-.page-has-right-panel #main-wrapper {
+body.page-home #main-wrapper {
   min-width: 0;
   display: flex;
   flex-direction: column;
@@ -858,8 +856,7 @@ a.hero-stat-link:hover {
  * = 4 IDs, plus .page-home/.page-has-right-panel=1 class, body=1 type.  4 IDs > 3 IDs, so
  * every !important declaration here wins, making the panel visible at desktop (≥1201 px).
  */
-body.page-home #layout > #homepage-right-panel:not(#sidebar):not(#main-wrapper),
-body.page-has-right-panel #layout > #homepage-right-panel:not(#sidebar):not(#main-wrapper) {
+body.page-home #layout > #homepage-right-panel:not(#sidebar):not(#main-wrapper) {
   position: sticky !important;
   top: var(--color-header-h) !important;
   height: calc(100vh - var(--color-header-h)) !important;
@@ -1336,12 +1333,10 @@ body.page-has-right-panel #layout > #homepage-right-panel:not(#sidebar):not(#mai
 
 /* Collapse right panel below 1200 px */
 @media (max-width: 1200px) {
-  .page-home #layout,
-  .page-has-right-panel #layout {
+  body.page-home #layout {
     grid-template-columns: var(--color-sidebar-w) 1fr;
   }
-  body.page-home #layout > #homepage-right-panel:not(#sidebar):not(#main-wrapper),
-  body.page-has-right-panel #layout > #homepage-right-panel:not(#sidebar):not(#main-wrapper) {
+  body.page-home #layout > #homepage-right-panel:not(#sidebar):not(#main-wrapper) {
     display: none !important;
     flex: 0 0 0 !important;
     width: 0 !important;
@@ -1354,8 +1349,7 @@ body.page-has-right-panel #layout > #homepage-right-panel:not(#sidebar):not(#mai
 
 /* Stack layout on mobile */
 @media (max-width: 900px) {
-  .page-home #layout,
-  .page-has-right-panel #layout {
+  body.page-home #layout {
     display: flex !important;
     flex-direction: column;
   }
@@ -2774,1707 +2768,10 @@ body.page-home .sidebar-nav a.active {
   }
 }
 
-/* ==========================================================================
-   SHARED PAGE PANELS — ALL NON-HOME PAGES
-   Applies to pages using .page-hero / .section / .route-pill patterns.
-   Uses !important to beat same-specificity inline <style> blocks that load
-   after this file in the HTML cascade (how-to-play, gkniftyheads-incubator,
-   community, about/*, wiki/*, etc.).
-   No gameplay / XP / auth / worker logic touched.
-   ========================================================================== */
-
-/* ── Page hero panel ───────────────────────────────────────────── */
-.page-hero {
-  border: 3px solid var(--neon-magenta) !important;
-  border-radius: 0 !important;
-  background: rgba(3, 10, 22, 0.92) !important;
-  box-shadow:
-    0 0 0 1px rgba(0, 229, 255, 0.20),
-    5px 5px 0 rgba(0, 0, 0, 0.82),
-    0 0 18px rgba(255, 45, 120, 0.22) !important;
-  clip-path: polygon(
-    0 10px, 10px 0,
-    calc(100% - 10px) 0, 100% 10px,
-    100% calc(100% - 10px), calc(100% - 10px) 100%,
-    10px 100%, 0 calc(100% - 10px)
-  );
-}
-
-.page-hero h1 {
-  font-family: var(--font-pixel) !important;
-  color: var(--neon-cyan) !important;
-  text-shadow:
-    0 0 10px rgba(0, 229, 255, 0.65),
-    2px 2px 0 rgba(0, 0, 0, 0.85) !important;
-  text-transform: uppercase;
-  line-height: 1.45;
-  letter-spacing: 0.04em;
-}
-
-/* ── Section cards ─────────────────────────────────────────────── */
-.section {
-  border: 2px solid rgba(0, 229, 255, 0.38) !important;
-  border-left: 4px solid var(--neon-magenta) !important;
-  border-radius: 0 !important;
-  background: rgba(3, 10, 22, 0.88) !important;
-  box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.70) !important;
-}
-
-.section h2 {
-  font-family: var(--font-pixel) !important;
-  color: var(--neon-cyan) !important;
-  text-shadow:
-    0 0 8px rgba(0, 229, 255, 0.60),
-    1px 1px 0 rgba(0, 0, 0, 0.9) !important;
-  font-size: clamp(0.48rem, 1.2vw, 0.62rem) !important;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  border-bottom: 2px solid rgba(0, 229, 255, 0.22) !important;
-  padding-bottom: 6px !important;
-}
-
-/* ── Route pill (how-to-play, etc.) ───────────────────────────── */
-.route-pill {
-  background: rgba(2, 6, 14, 0.96) !important;
-  border: 2px solid var(--neon-cyan) !important;
-  border-radius: 0 !important;
-  color: var(--neon-cyan) !important;
-}
-
-/* ── Breadcrumb neon links ─────────────────────────────────────── */
-.breadcrumb a {
-  color: var(--neon-cyan) !important;
-}
-.breadcrumb a:hover {
-  color: var(--neon-magenta) !important;
-}
-
-/* ── Shared btn-secondary retro treatment ─────────────────────── */
-/* Only overrides visual properties; layout/size left to wiki.css */
-.btn-secondary {
-  background: rgba(0, 0, 0, 0.88) !important;
-  border: 2px solid rgba(0, 229, 255, 0.55) !important;
-  border-radius: 0 !important;
-  color: var(--neon-cyan) !important;
-  box-shadow: 3px 3px 0 rgba(0, 229, 255, 0.18) !important;
-}
-.btn-secondary:hover {
-  background: rgba(0, 229, 255, 0.12) !important;
-  border-color: var(--neon-cyan) !important;
-  transform: translate(-1px, -1px);
-  text-decoration: none;
-  box-shadow: 4px 4px 0 rgba(0, 229, 255, 0.28) !important;
-}
-
-/* ============================================================
-   PAGE-HAS-RIGHT-PANEL — RIGHT PANEL & SIDEBAR SHARED STYLES
-   Extends homepage HUD/sidebar styles to all converted pages.
-   ============================================================ */
-
-body.page-has-right-panel {
-  --ui-bg-deep: rgba(1, 5, 14, 0.92);
-  --ui-bg-panel: rgba(3, 9, 24, 0.88);
-  --ui-bg-title: rgba(255, 45, 120, 0.18);
-  --ui-text: #eaf8ff;
-  --ui-muted: rgba(157, 215, 238, 0.78);
-  --ui-cyan: var(--neon-cyan, #00e5ff);
-  --ui-pink: var(--neon-magenta, #ff2d78);
-  --ui-yellow: var(--neon-yellow, #ffd600);
-  --ui-green: var(--neon-green, #39ff14);
-  --ui-purple: var(--neon-purple, #be4cf7);
-}
-
-body.page-has-right-panel .retro-hud-box {
-  font-family: var(--font-mono, "Courier New", monospace);
-}
-
-body.page-has-right-panel .retro-hud-body {
-  font-size: 0.72rem !important;
-  line-height: 1.35 !important;
-  letter-spacing: 0.02em !important;
-}
-
-body.page-has-right-panel .retro-hud-body [class*="label"] {
-  font-family: var(--font-pixel, "Press Start 2P", monospace) !important;
-  line-height: 1.55 !important;
-  letter-spacing: 0.07em !important;
-  color: var(--ui-cyan);
-  text-shadow: 0 0 6px rgba(0,229,255,.75), 2px 2px 0 #000;
-}
-
-body.page-has-right-panel .retro-hud-body b {
-  font-size: inherit !important;
-  color: var(--ui-text) !important;
-  text-shadow: 0 0 6px rgba(255,255,255,.22), 2px 2px 0 #000;
-}
-
-body.page-has-right-panel #homepage-right-panel {
-  background:
-    repeating-linear-gradient(0deg, rgba(0,229,255,.035) 0 2px, transparent 2px 5px),
-    linear-gradient(180deg, rgba(4, 8, 24, .86), rgba(1, 4, 12, .95)) !important;
-  border-left: 4px solid var(--ui-pink) !important;
-  box-shadow:
-    inset 3px 0 0 rgba(0, 229, 255, 0.55),
-    -10px 0 22px rgba(255, 45, 120, 0.16),
-    0 0 24px rgba(0, 229, 255, 0.10) !important;
-}
-
-body.page-has-right-panel .retro-hud-title {
-  min-height: 38px;
-  padding: 10px 12px !important;
-  background:
-    repeating-linear-gradient(90deg, rgba(255,45,120,.18) 0 4px, rgba(0,229,255,.08) 4px 7px, transparent 7px 12px),
-    linear-gradient(90deg, rgba(255,45,120,.30), rgba(0,229,255,.10)) !important;
-  border-bottom: 3px solid var(--ui-cyan) !important;
-  color: var(--ui-cyan) !important;
-  line-height: 1.4 !important;
-  text-shadow: 0 0 8px var(--ui-cyan), 2px 2px 0 #000 !important;
-}
-
-body.page-has-right-panel .retro-hud-body {
-  background:
-    repeating-linear-gradient(0deg, rgba(0,229,255,.025) 0 2px, transparent 2px 6px),
-    rgba(0, 0, 0, 0.22);
-  padding: 14px 12px !important;
-}
-
-body.page-has-right-panel .retro-hud-body > * {
-  margin-bottom: 8px;
-}
-
-body.page-has-right-panel #sidebar {
-  background:
-    repeating-linear-gradient(0deg, rgba(0,229,255,.035) 0 2px, transparent 2px 5px),
-    linear-gradient(180deg, rgba(2,8,18,.96), rgba(1,4,12,.98)) !important;
-  border-right: 4px solid rgba(255,45,120,.75) !important;
-  box-shadow: inset -3px 0 0 rgba(0,229,255,.45), 10px 0 24px rgba(0,0,0,.55);
-}
-
-body.page-has-right-panel .sidebar-heading {
-  margin: 10px 10px 8px;
-  padding: 9px 9px 7px !important;
-  background: rgba(255,45,120,.12);
-  color: var(--ui-yellow) !important;
-  border-left: 3px solid var(--ui-pink);
-  border-bottom: 2px solid rgba(0,229,255,.55);
-  box-shadow: 3px 3px 0 rgba(0,0,0,.65), 0 0 10px rgba(255,214,0,.18);
-}
-
-body.page-has-right-panel .sidebar-nav a {
-  margin: 4px 10px;
-  padding: 8px 9px !important;
-  border-left: 3px solid transparent;
-  border-bottom: 1px solid rgba(0,229,255,.10);
-  line-height: 1.55 !important;
-}
-
-body.page-has-right-panel .sidebar-nav a.active {
-  background: rgba(0,229,255,.11) !important;
-  border-left-color: var(--ui-pink);
-  color: #fff !important;
-  box-shadow: inset 0 0 0 1px rgba(0,229,255,.25), 0 0 10px rgba(0,229,255,.16);
-}
-
-body.page-has-right-panel .retro-hud-title-icon {
-  color: var(--ui-cyan) !important;
-  text-shadow:
-    0 0 7px var(--ui-cyan),
-    0 0 14px rgba(0,229,255,.50),
-    2px 2px 0 #000 !important;
-  image-rendering: pixelated;
-}
-
-@media (max-width: 1200px) {
-  body.page-has-right-panel #homepage-right-panel {
-    max-width: none;
-  }
-}
-
-@media (max-width: 900px) {
-  body.page-has-right-panel .sidebar-nav a {
-    font-size: 0.50rem !important;
-  }
-
-  body.page-has-right-panel .retro-hud-body {
-    font-size: 0.78rem !important;
-  }
-}
-
-body.page-has-right-panel #homepage-right-panel .retro-hud-title {
-  display: flex;
-  align-items: center;
-  flex-wrap: nowrap;
-}
-
-body.page-has-right-panel #homepage-right-panel .retro-hud-mascot {
-  margin-left: auto;
-  padding-left: 6px;
-  font-size: 1.35rem;
-  line-height: 1;
-  flex-shrink: 0;
-  filter: drop-shadow(0 0 6px rgba(255, 45, 120, 0.75));
-  image-rendering: pixelated;
-}
-
-body.page-has-right-panel .retro-hud-box.hud-box--player {
-  border: 3px solid var(--neon-magenta) !important;
-  box-shadow:
-    inset 0 0 0 2px rgba(0, 229, 255, 0.32),
-    6px 6px 0 rgba(0, 0, 0, 0.90) !important;
-  filter: drop-shadow(0 0 10px rgba(255, 45, 120, 0.55));
-}
-
-body.page-has-right-panel .retro-hud-box.hud-box--system {
-  border: 3px solid var(--neon-cyan) !important;
-  box-shadow:
-    inset 0 0 0 2px rgba(255, 45, 120, 0.32),
-    6px 6px 0 rgba(0, 0, 0, 0.90) !important;
-  filter: drop-shadow(0 0 10px rgba(0, 229, 255, 0.55));
-}
-
-body.page-has-right-panel .retro-hud-box.hud-box--feed {
-  border: 3px solid var(--neon-purple) !important;
-  box-shadow:
-    inset 0 0 0 2px rgba(0, 229, 255, 0.28),
-    6px 6px 0 rgba(0, 0, 0, 0.90) !important;
-  filter: drop-shadow(0 0 10px rgba(190, 76, 247, 0.50));
-}
-
-body.page-has-right-panel .hud-box--player .retro-hud-title {
-  background:
-    repeating-linear-gradient(90deg, rgba(255,45,120,.22) 0 4px, rgba(0,229,255,.06) 4px 7px, transparent 7px 12px),
-    linear-gradient(90deg, rgba(255,45,120,.35), rgba(0,0,0,0)) !important;
-  border-bottom: 3px solid var(--neon-cyan) !important;
-  color: var(--neon-magenta) !important;
-  text-shadow: 0 0 8px var(--neon-magenta), 2px 2px 0 #000 !important;
-}
-
-body.page-has-right-panel .hud-box--system .retro-hud-title {
-  background:
-    repeating-linear-gradient(90deg, rgba(0,229,255,.18) 0 4px, rgba(255,45,120,.05) 4px 7px, transparent 7px 12px),
-    linear-gradient(90deg, rgba(0,229,255,.28), rgba(0,0,0,0)) !important;
-  border-bottom: 3px solid var(--neon-magenta) !important;
-  color: var(--neon-cyan) !important;
-  text-shadow: 0 0 8px var(--neon-cyan), 2px 2px 0 #000 !important;
-}
-
-body.page-has-right-panel .hud-box--feed .retro-hud-title {
-  background:
-    repeating-linear-gradient(90deg, rgba(190,76,247,.20) 0 4px, rgba(0,229,255,.05) 4px 7px, transparent 7px 12px),
-    linear-gradient(90deg, rgba(190,76,247,.30), rgba(0,0,0,0)) !important;
-  border-bottom: 3px solid var(--neon-purple) !important;
-  color: var(--neon-purple) !important;
-  text-shadow: 0 0 8px var(--neon-purple), 2px 2px 0 #000 !important;
-}
-
-body.page-has-right-panel #homepage-right-panel .hud-box--feed .retro-hud-mascot {
-  filter: drop-shadow(0 0 6px rgba(190, 76, 247, 0.80));
-}
-
-body.page-has-right-panel #homepage-right-panel .hud-box--system .retro-hud-mascot {
-  filter: drop-shadow(0 0 6px rgba(0, 229, 255, 0.80));
-}
-
-body.page-has-right-panel .hud-box--player::before { border-color: var(--neon-cyan) !important; }
-
-body.page-has-right-panel .hud-box--player::after  { border-color: var(--neon-magenta) !important; }
-
-body.page-has-right-panel .hud-box--system::before { border-color: var(--neon-magenta) !important; }
-
-body.page-has-right-panel .hud-box--system::after  { border-color: var(--neon-cyan) !important; }
-
-body.page-has-right-panel .hud-box--feed::before   { border-color: var(--neon-purple) !important; }
-
-body.page-has-right-panel .hud-box--feed::after    { border-color: var(--neon-cyan) !important; }
-
-body.page-has-right-panel #homepage-right-panel .hud-player-portrait-row {
-  display: flex;
-  gap: 10px;
-  align-items: flex-start;
-  margin-bottom: 10px;
-}
-
-body.page-has-right-panel #homepage-right-panel .hud-avatar-box {
-  flex-shrink: 0;
-  width: 64px;
-  height: 64px;
-  background: rgba(0, 0, 0, 0.80);
-  border: 3px solid var(--neon-magenta);
-  box-shadow:
-    inset 0 0 0 1px rgba(0, 229, 255, 0.40),
-    0 0 10px rgba(255, 45, 120, 0.45),
-    2px 2px 0 rgba(0, 0, 0, 0.90);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
-  image-rendering: pixelated;
-  position: relative;
-}
-
-body.page-has-right-panel #homepage-right-panel .hud-avatar-icon {
-  font-size: 2.5rem;
-  line-height: 1;
-  image-rendering: pixelated;
-  filter: drop-shadow(0 0 5px rgba(0, 229, 255, 0.65));
-}
-
-body.page-has-right-panel #homepage-right-panel .hud-player-info {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-}
-
-body.page-has-right-panel #homepage-right-panel .hud-info-row {
-  display: flex;
-  align-items: baseline;
-  gap: 5px;
-  flex-wrap: nowrap;
-  overflow: hidden;
-  min-width: 0;
-}
-
-body.page-has-right-panel #homepage-right-panel .hud-label {
-  font-family: var(--font-pixel);
-  font-size: 0.38rem;
-  color: var(--neon-magenta);
-  text-shadow: 0 0 6px rgba(255, 45, 120, 0.65);
-  letter-spacing: 0.07em;
-  flex-shrink: 0;
-  white-space: nowrap;
-  text-transform: uppercase;
-  line-height: 1.6;
-}
-
-body.page-has-right-panel #homepage-right-panel .hud-value {
-  font-family: var(--font-pixel);
-  font-size: 0.40rem;
-  color: #eaf8ff;
-  text-shadow: 1px 1px 0 #000;
-  letter-spacing: 0.04em;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  min-width: 0;
-  max-width: 100%;
-  line-height: 1.6;
-}
-
-body.page-has-right-panel #homepage-right-panel .hud-rank-val {
-  color: var(--neon-yellow) !important;
-  text-shadow: 0 0 8px rgba(255, 214, 0, 0.70), 1px 1px 0 #000 !important;
-}
-
-body.page-has-right-panel #homepage-right-panel .hud-xp-inline {
-  color: var(--neon-cyan) !important;
-  text-shadow: 0 0 6px rgba(0, 229, 255, 0.60), 1px 1px 0 #000 !important;
-}
-
-body.page-has-right-panel #homepage-right-panel .hud-xp-bar-wrap {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  margin-bottom: 9px;
-}
-
-body.page-has-right-panel #homepage-right-panel .hud-xp-label {
-  font-family: var(--font-pixel);
-  font-size: 0.38rem;
-  color: var(--neon-magenta);
-  text-shadow: 0 0 6px rgba(255, 45, 120, 0.65);
-  flex-shrink: 0;
-  letter-spacing: 0.08em;
-  line-height: 1;
-}
-
-body.page-has-right-panel #homepage-right-panel .hud-xp-track {
-  flex: 1;
-  height: 10px;
-  background: rgba(0, 0, 0, 0.65);
-  border: 2px solid rgba(0, 229, 255, 0.55);
-  overflow: hidden;
-  position: relative;
-  box-shadow: inset 0 0 0 1px rgba(0, 229, 255, 0.10);
-}
-
-body.page-has-right-panel #homepage-right-panel .hud-xp-fill {
-  height: 100%;
-  background: repeating-linear-gradient(
-    90deg,
-    var(--neon-green) 0,
-    var(--neon-green) 4px,
-    rgba(57, 255, 20, 0.72) 4px,
-    rgba(57, 255, 20, 0.72) 6px
-  );
-  box-shadow: 0 0 6px var(--neon-green);
-  min-width: 0;
-  transition: width 0.4s ease;
-}
-
-body.page-has-right-panel #homepage-right-panel .hud-xp-pct {
-  font-family: var(--font-pixel);
-  font-size: 0.38rem;
-  color: var(--neon-cyan);
-  text-shadow: 0 0 6px rgba(0, 229, 255, 0.65);
-  flex-shrink: 0;
-  min-width: 2.6em;
-  text-align: right;
-  line-height: 1;
-}
-
-body.page-has-right-panel #homepage-right-panel .hud-stats-row {
-  display: flex;
-  gap: 5px;
-  justify-content: space-between;
-  margin-bottom: 10px;
-}
-
-body.page-has-right-panel #homepage-right-panel .hud-stat-chip {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  justify-content: center;
-  padding: 5px 3px;
-  background: rgba(0, 0, 0, 0.60);
-  border: 2px solid rgba(255, 45, 120, 0.50);
-  box-shadow: inset 0 0 0 1px rgba(0, 229, 255, 0.10), 2px 2px 0 rgba(0,0,0,0.7);
-  min-width: 0;
-  overflow: hidden;
-}
-
-body.page-has-right-panel #homepage-right-panel .hud-stat-icon {
-  font-size: 0.88rem;
-  line-height: 1;
-  flex-shrink: 0;
-}
-
-body.page-has-right-panel #homepage-right-panel .hud-stat-val {
-  font-family: var(--font-pixel);
-  font-size: 0.38rem;
-  color: var(--neon-cyan);
-  text-shadow: 0 0 5px rgba(0, 229, 255, 0.55);
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  line-height: 1;
-}
-
-body.page-has-right-panel #homepage-right-panel .hud-sys-table {
-  display: flex;
-  flex-direction: column;
-  gap: 0;
-  margin-bottom: 6px;
-}
-
-body.page-has-right-panel #homepage-right-panel .hud-sys-row {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  padding: 5px 6px;
-  border-bottom: 1px solid rgba(0, 229, 255, 0.12);
-  min-width: 0;
-}
-
-body.page-has-right-panel #homepage-right-panel .hud-sys-row:last-child { border-bottom: none; }
-
-body.page-has-right-panel #homepage-right-panel .hud-sys-label {
-  font-family: var(--font-pixel);
-  font-size: 0.36rem;
-  color: var(--color-text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  flex: 1;
-  min-width: 0;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  line-height: 1.6;
-}
-
-body.page-has-right-panel #homepage-right-panel .hud-sys-val {
-  font-family: var(--font-pixel);
-  font-size: 0.38rem;
-  letter-spacing: 0.06em;
-  flex-shrink: 0;
-  text-shadow: 0 0 6px currentColor;
-  white-space: nowrap;
-  line-height: 1.6;
-}
-
-body.page-has-right-panel #homepage-right-panel .hud-sys-online { color: var(--neon-green); }
-
-body.page-has-right-panel #homepage-right-panel .hud-sys-ratio  { color: var(--neon-yellow); }
-
-body.page-has-right-panel #homepage-right-panel .hud-sys-warn   { color: var(--neon-orange); }
-
-body.page-has-right-panel #homepage-right-panel .hud-sys-error  { color: var(--neon-magenta); }
-
-body.page-has-right-panel #homepage-right-panel .hud-sys-dot {
-  width: 8px;
-  height: 8px;
-  min-width: 8px;
-  border-radius: 50%;
-  background: var(--neon-green);
-  box-shadow: 0 0 7px var(--neon-green);
-  flex-shrink: 0;
-  display: inline-block;
-}
-
-body.page-has-right-panel #homepage-right-panel .feed-item {
-  display: flex !important;
-  align-items: flex-start !important;
-  gap: 5px !important;
-  padding: 5px 0 !important;
-  border-bottom: 1px solid rgba(190, 76, 247, 0.18) !important;
-  min-width: 0;
-}
-
-body.page-has-right-panel #homepage-right-panel .feed-item:last-child { border-bottom: none !important; }
-
-body.page-has-right-panel #homepage-right-panel .hud-feed-icon {
-  font-size: 0.78rem;
-  line-height: 1.35;
-  flex-shrink: 0;
-  width: 16px;
-  text-align: center;
-}
-
-body.page-has-right-panel #homepage-right-panel .feed-text {
-  font-family: var(--font-pixel) !important;
-  font-size: 0.36rem !important;
-  color: #d0eaff !important;
-  flex: 1 !important;
-  min-width: 0;
-  overflow-wrap: anywhere;
-  line-height: 1.65;
-  letter-spacing: 0.02em;
-}
-
-body.page-has-right-panel #homepage-right-panel .feed-time {
-  font-family: var(--font-pixel) !important;
-  font-size: 0.34rem !important;
-  color: var(--neon-cyan) !important;
-  text-shadow: 0 0 5px rgba(0, 229, 255, 0.60) !important;
-  flex-shrink: 0 !important;
-  opacity: 1 !important;
-  white-space: nowrap;
-  align-self: flex-start;
-  padding-top: 2px;
-}
-
-body.page-has-right-panel [data-csp-panel] .csp-panel {
-  background: transparent !important;
-  border: none !important;
-  border-radius: 0 !important;
-  padding: 2px 0 0 !important;
-  font-family: var(--font-pixel) !important;
-  font-size: 0.38rem !important;
-  color: var(--color-text) !important;
-}
-
-body.page-has-right-panel [data-csp-panel] .csp-row {
-  font-family: var(--font-pixel) !important;
-  font-size: 0.38rem !important;
-  gap: 6px !important;
-  margin-bottom: 6px !important;
-}
-
-body.page-has-right-panel [data-csp-panel] .csp-grid {
-  gap: 5px !important;
-}
-
-body.page-has-right-panel [data-csp-panel] .csp-item {
-  background: rgba(0, 0, 0, 0.50) !important;
-  border: 2px solid rgba(0, 229, 255, 0.35) !important;
-  border-radius: 0 !important;
-  box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.75) !important;
-  padding: 6px 8px !important;
-}
-
-body.page-has-right-panel [data-csp-panel] .csp-item-label {
-  font-family: var(--font-pixel) !important;
-  font-size: 0.34rem !important;
-  color: var(--neon-magenta) !important;
-  text-shadow: 0 0 5px rgba(255, 45, 120, 0.55) !important;
-  letter-spacing: 0.06em !important;
-  font-weight: 400 !important;
-}
-
-body.page-has-right-panel [data-csp-panel] .csp-item-note {
-  font-family: var(--font-pixel) !important;
-  font-size: 0.30rem !important;
-  color: var(--color-text-muted) !important;
-  opacity: 0.85 !important;
-}
-
-body.page-has-right-panel [data-csp-panel] .csp-item-val {
-  font-family: var(--font-pixel) !important;
-  font-size: 0.36rem !important;
-  color: #eaf8ff !important;
-  font-weight: 400 !important;
-  margin-top: 3px !important;
-}
-
-body.page-has-right-panel [data-csp-panel] .csp-item-val--badge {
-  border-radius: 0 !important;
-  padding: 2px 6px !important;
-}
-
-body.page-has-right-panel [data-csp-panel] .csp-badge--good {
-  background: rgba(57, 255, 20, 0.10) !important;
-  border: 2px solid rgba(57, 255, 20, 0.55) !important;
-  color: var(--neon-green) !important;
-  border-radius: 0 !important;
-}
-
-body.page-has-right-panel [data-csp-panel] .csp-badge--warn {
-  background: rgba(255, 138, 0, 0.10) !important;
-  border: 2px solid rgba(255, 138, 0, 0.55) !important;
-  color: var(--neon-orange) !important;
-  border-radius: 0 !important;
-}
-
-body.page-has-right-panel [data-csp-panel] .csp-badge--bad {
-  background: rgba(255, 45, 120, 0.10) !important;
-  border: 2px solid rgba(255, 45, 120, 0.55) !important;
-  color: var(--neon-magenta) !important;
-  border-radius: 0 !important;
-}
-
-body.page-has-right-panel [data-csp-panel] .csp-dot {
-  border-radius: 0 !important;
-}
-
-body.page-has-right-panel [data-csp-panel] .csp-dot--green {
-  background: var(--neon-green) !important;
-  box-shadow: 0 0 6px var(--neon-green) !important;
-}
-
-body.page-has-right-panel [data-csp-panel] .csp-dot--red {
-  background: var(--neon-magenta) !important;
-  box-shadow: 0 0 6px var(--neon-magenta) !important;
-}
-
-body.page-has-right-panel [data-csp-panel] .csp-val-good   { color: var(--neon-green)   !important; }
-
-body.page-has-right-panel [data-csp-panel] .csp-val-locked { color: var(--neon-magenta) !important; }
-
-body.page-has-right-panel [data-csp-panel] .csp-link {
-  color: var(--neon-cyan) !important;
-  font-family: var(--font-pixel) !important;
-  font-size: 0.36rem !important;
-}
-
-body.page-has-right-panel [data-las-panel] .las-panel {
-  background: transparent !important;
-  border: none !important;
-  border-radius: 0 !important;
-  padding: 4px 0 0 !important;
-  font-family: var(--font-pixel) !important;
-  font-size: 0.36rem !important;
-  color: var(--color-text) !important;
-  gap: 2px !important;
-}
-
-body.page-has-right-panel [data-las-panel] .las-row {
-  padding: 3px 4px !important;
-  border-bottom: 1px solid rgba(0, 229, 255, 0.10) !important;
-  flex-wrap: nowrap !important;
-  gap: 6px !important;
-}
-
-body.page-has-right-panel [data-las-panel] .las-label {
-  font-family: var(--font-pixel) !important;
-  font-size: 0.34rem !important;
-  color: var(--color-text-muted) !important;
-  min-width: 52px !important;
-  letter-spacing: 0.05em !important;
-  font-weight: 400 !important;
-}
-
-body.page-has-right-panel [data-las-panel] .las-val {
-  font-family: var(--font-pixel) !important;
-  font-size: 0.36rem !important;
-  color: #eaf8ff !important;
-  font-weight: 400 !important;
-}
-
-body.page-has-right-panel [data-las-panel] .las-val--good { color: var(--neon-green)   !important; }
-
-body.page-has-right-panel [data-las-panel] .las-val--bad  { color: var(--neon-magenta) !important; }
-
-body.page-has-right-panel [data-las-panel] .las-val--warn { color: var(--neon-orange)  !important; }
-
-body.page-has-right-panel [data-las-panel] .las-link {
-  color: var(--neon-cyan) !important;
-  font-family: var(--font-pixel) !important;
-  font-size: 0.34rem !important;
-}
-
-body.page-has-right-panel [data-las-panel] .las-event-log {
-  border-top: 2px solid rgba(0, 229, 255, 0.20) !important;
-  border-radius: 0 !important;
-  margin-top: 4px !important;
-  padding-top: 4px !important;
-  gap: 2px !important;
-}
-
-body.page-has-right-panel [data-las-panel] .las-event-row {
-  padding: 3px 0 !important;
-  border-bottom: 1px solid rgba(190, 76, 247, 0.10) !important;
-  gap: 5px !important;
-}
-
-body.page-has-right-panel [data-las-panel] .las-event-time {
-  font-family: var(--font-pixel) !important;
-  font-size: 0.32rem !important;
-  color: var(--neon-cyan) !important;
-  text-shadow: 0 0 5px rgba(0, 229, 255, 0.55) !important;
-}
-
-body.page-has-right-panel [data-las-panel] .las-event-icon {
-  flex-shrink: 0 !important;
-  width: 14px;
-  text-align: center;
-}
-
-body.page-has-right-panel [data-las-panel] .las-event-text {
-  font-family: var(--font-pixel) !important;
-  font-size: 0.34rem !important;
-  color: #d0eaff !important;
-  opacity: 1 !important;
-  overflow-wrap: anywhere;
-  min-width: 0;
-  flex: 1;
-}
-
-body.page-has-right-panel .hud-box--feed .retro-hud-body {
-  background:
-    repeating-linear-gradient(0deg, rgba(0,229,255,.018) 0 2px, transparent 2px 6px),
-    rgba(0, 0, 0, 0.28) !important;
-}
-
-body.page-has-right-panel .hud-box--feed .retro-hud-body {
-  padding: 12px 10px !important;
-}
-
-body.page-has-right-panel .sidebar-heading {
-  min-height: 36px;
-  margin: 0 !important;
-  padding: 10px 10px 9px !important;
-  background:
-    repeating-linear-gradient(90deg, rgba(255, 45, 120, 0.20) 0 4px, rgba(0, 229, 255, 0.07) 4px 7px, transparent 7px 12px),
-    linear-gradient(90deg, rgba(255, 45, 120, 0.32), rgba(0, 0, 0, 0)) !important;
-  border-left: 0 !important;
-  border-bottom: 3px solid var(--ui-cyan) !important;
-  color: var(--ui-cyan) !important;
-  line-height: 1.4 !important;
-  text-shadow: 0 0 8px var(--ui-cyan), 2px 2px 0 #000 !important;
-  box-shadow: none !important;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-body.page-has-right-panel .sidebar-section:nth-child(2) .sidebar-heading {
-  background:
-    repeating-linear-gradient(90deg, rgba(0, 229, 255, 0.18) 0 4px, rgba(255, 45, 120, 0.05) 4px 7px, transparent 7px 12px),
-    linear-gradient(90deg, rgba(0, 229, 255, 0.28), rgba(0, 0, 0, 0)) !important;
-  border-bottom-color: var(--ui-pink) !important;
-  color: var(--ui-pink) !important;
-  text-shadow: 0 0 8px var(--ui-pink), 2px 2px 0 #000 !important;
-}
-
-body.page-has-right-panel .sidebar-section:nth-child(3) .sidebar-heading {
-  background:
-    repeating-linear-gradient(90deg, rgba(190, 76, 247, 0.18) 0 4px, rgba(0, 229, 255, 0.05) 4px 7px, transparent 7px 12px),
-    linear-gradient(90deg, rgba(190, 76, 247, 0.28), rgba(0, 0, 0, 0)) !important;
-  border-bottom-color: var(--neon-purple) !important;
-  color: var(--neon-purple) !important;
-  text-shadow: 0 0 8px var(--neon-purple), 2px 2px 0 #000 !important;
-}
-
-body.page-has-right-panel .sidebar-nav {
-  padding: 6px 0 8px;
-  background:
-    repeating-linear-gradient(0deg, rgba(0, 229, 255, 0.018) 0 2px, transparent 2px 6px),
-    rgba(0, 0, 0, 0.14);
-}
-
-body.page-has-right-panel .sidebar-nav a {
-  margin: 3px 8px !important;
-  padding: 7px 9px !important;
-  border-left: 3px solid transparent !important;
-  border-bottom: 1px solid rgba(0, 229, 255, 0.10) !important;
-  line-height: 1.55 !important;
-}
-
-body.page-has-right-panel .sidebar-nav a.active {
-  background: rgba(0, 229, 255, 0.12) !important;
-  border-left-color: var(--ui-pink) !important;
-  color: #fff !important;
-  box-shadow: inset 0 0 0 1px rgba(0, 229, 255, 0.28), 0 0 10px rgba(0, 229, 255, 0.16) !important;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  body.page-has-right-panel .retro-hud-box::before,
-  body.page-has-right-panel .retro-hud-box::after {
-    animation: none !important;
-  }
-}
-
-@media (max-width: 1200px) {
-  body.page-has-right-panel #homepage-right-panel {
-    max-width: none;
-  }
-}
-
-/* ==========================================================================
-   SHARED NEON FRAME SYSTEM — ALL CONVERTED PAGES
-   Extends the homepage card/panel neon frame treatment to body.page-has-right-panel.
-   Mirrors body.page-home rules for neon frames, sidebar sections, typography,
-   icons, and center content panels. CSS-only change.
-   No JS/gameplay/auth/XP/worker logic touched.
-   ========================================================================== */
-
-/* ── Neon frame base: clip-path octagon + layered box-shadow ── */
-body.page-has-right-panel .retro-hud-box,
-body.page-has-right-panel .category-card,
-body.page-has-right-panel .article-card,
-body.page-has-right-panel .retro-info-panel,
-body.page-has-right-panel .home-widget {
-  position: relative;
-  isolation: isolate;
-  border: 0 !important;
-  border-radius: 0 !important;
-  background:
-    linear-gradient(180deg, rgba(7, 14, 34, 0.88), rgba(1, 5, 14, 0.94)) padding-box !important;
-  box-shadow:
-    6px 6px 0 rgba(0, 0, 0, 0.88),
-    0 0 0 2px rgba(255, 45, 120, 0.80),
-    0 0 0 5px rgba(0, 229, 255, 0.23),
-    0 0 22px rgba(255, 45, 120, 0.28),
-    inset 0 0 0 2px rgba(0, 229, 255, 0.20) !important;
-  clip-path: polygon(
-    0 10px, 10px 0,
-    calc(100% - 10px) 0, 100% 10px,
-    100% calc(100% - 10px), calc(100% - 10px) 100%,
-    10px 100%, 0 calc(100% - 10px)
-  );
-}
-
-/* ── Segmented / broken frame lines (::before) ─────────────── */
-body.page-has-right-panel .retro-hud-box::before,
-body.page-has-right-panel .retro-info-panel::before,
-body.page-has-right-panel .home-widget::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: 2;
-  pointer-events: none;
-  background:
-    linear-gradient(90deg,
-      var(--ui-pink) 0 42px, transparent 42px 62px,
-      var(--ui-cyan) 62px 132px, transparent 132px 178px,
-      var(--ui-pink) 178px 238px, transparent 238px 100%) top left / 100% 3px no-repeat,
-    linear-gradient(90deg,
-      transparent 0 8%, var(--ui-cyan) 8% 21%, transparent 21% 34%,
-      var(--ui-pink) 34% 56%, transparent 56% 74%,
-      var(--ui-cyan) 74% 92%, transparent 92% 100%) bottom left / 100% 3px no-repeat,
-    linear-gradient(180deg,
-      var(--ui-cyan) 0 26px, transparent 26px 58px,
-      var(--ui-pink) 58px 122px, transparent 122px 190px,
-      var(--ui-cyan) 190px 260px, transparent 260px 100%) top left / 3px 100% no-repeat,
-    linear-gradient(180deg,
-      transparent 0 12%, var(--ui-pink) 12% 28%, transparent 28% 42%,
-      var(--ui-cyan) 42% 64%, transparent 64% 82%,
-      var(--ui-pink) 82% 100%) top right / 3px 100% no-repeat;
-  opacity: 0.92;
-  filter: drop-shadow(0 0 5px rgba(0,229,255,.65));
-  animation: neonFramePulse 3.8s steps(3, end) infinite;
-}
-
-/* ── Corner bracket accents (::after) ──────────────────────── */
-body.page-has-right-panel .retro-hud-box::after,
-body.page-has-right-panel .retro-info-panel::after,
-body.page-has-right-panel .home-widget::after {
-  content: "";
-  position: absolute;
-  inset: 5px;
-  z-index: 3;
-  pointer-events: none;
-  background:
-    linear-gradient(var(--ui-yellow), var(--ui-yellow)) top left / 18px 3px no-repeat,
-    linear-gradient(var(--ui-yellow), var(--ui-yellow)) top left / 3px 18px no-repeat,
-    linear-gradient(var(--ui-cyan), var(--ui-cyan)) top right / 26px 3px no-repeat,
-    linear-gradient(var(--ui-cyan), var(--ui-cyan)) top right / 3px 26px no-repeat,
-    linear-gradient(var(--ui-pink), var(--ui-pink)) bottom left / 30px 3px no-repeat,
-    linear-gradient(var(--ui-pink), var(--ui-pink)) bottom left / 3px 30px no-repeat,
-    linear-gradient(var(--ui-cyan), var(--ui-cyan)) bottom right / 22px 3px no-repeat,
-    linear-gradient(var(--ui-cyan), var(--ui-cyan)) bottom right / 3px 22px no-repeat;
-  opacity: 0.95;
-  filter: drop-shadow(0 0 7px rgba(255,45,120,.70));
-  animation: neonCornerGlitch 5.4s steps(4, end) infinite;
-}
-
-/* ── Lift children above pseudo-elements ───────────────────── */
-body.page-has-right-panel .retro-hud-box > *,
-body.page-has-right-panel .category-card > *,
-body.page-has-right-panel .article-card > *,
-body.page-has-right-panel .retro-info-panel > *,
-body.page-has-right-panel .home-widget > * {
-  position: relative;
-  z-index: 5;
-}
-
-/* ── Reduced-motion: disable card frame animations ────────── */
-@media (prefers-reduced-motion: reduce) {
-  body.page-has-right-panel .retro-hud-box::before,
-  body.page-has-right-panel .retro-hud-box::after,
-  body.page-has-right-panel .retro-info-panel::before,
-  body.page-has-right-panel .retro-info-panel::after,
-  body.page-has-right-panel .home-widget::before,
-  body.page-has-right-panel .home-widget::after {
-    animation: none !important;
-  }
-}
-
-/* ==========================================================================
-   SIDEBAR SECTION — FULL HUD BOX FRAME
-   Matches the homepage sidebar-section neon treatment.
-   ========================================================================== */
-
-body.page-has-right-panel .sidebar-section {
-  position: relative;
-  isolation: isolate;
-  margin: 10px 8px !important;
-  border: 0 !important;
-  border-radius: 0 !important;
-  background: linear-gradient(180deg, rgba(7, 14, 34, 0.90), rgba(1, 5, 14, 0.96)) !important;
-  box-shadow:
-    6px 6px 0 rgba(0, 0, 0, 0.88),
-    0 0 0 2px rgba(255, 45, 120, 0.82),
-    0 0 0 5px rgba(0, 229, 255, 0.24),
-    0 0 22px rgba(255, 45, 120, 0.28),
-    inset 0 0 0 2px rgba(0, 229, 255, 0.20) !important;
-  clip-path: polygon(
-    0 8px, 8px 0,
-    calc(100% - 8px) 0, 100% 8px,
-    100% calc(100% - 8px), calc(100% - 8px) 100%,
-    8px 100%, 0 calc(100% - 8px)
-  );
-  filter: drop-shadow(0 0 10px rgba(255, 45, 120, 0.52));
-}
-
-body.page-has-right-panel .sidebar-section + .sidebar-section {
-  border-top: 0 !important;
-  margin-top: 0 !important;
-  padding-top: 0 !important;
-}
-
-body.page-has-right-panel .sidebar-section:nth-child(2) {
-  box-shadow:
-    6px 6px 0 rgba(0, 0, 0, 0.88),
-    0 0 0 2px rgba(0, 229, 255, 0.82),
-    0 0 0 5px rgba(255, 45, 120, 0.24),
-    0 0 22px rgba(0, 229, 255, 0.25),
-    inset 0 0 0 2px rgba(255, 45, 120, 0.20) !important;
-  filter: drop-shadow(0 0 10px rgba(0, 229, 255, 0.50));
-}
-
-body.page-has-right-panel .sidebar-section:nth-child(3) {
-  box-shadow:
-    6px 6px 0 rgba(0, 0, 0, 0.88),
-    0 0 0 2px rgba(190, 76, 247, 0.72),
-    0 0 0 5px rgba(0, 229, 255, 0.22),
-    0 0 22px rgba(190, 76, 247, 0.25),
-    inset 0 0 0 2px rgba(0, 229, 255, 0.18) !important;
-  filter: drop-shadow(0 0 10px rgba(190, 76, 247, 0.48));
-}
-
-body.page-has-right-panel .sidebar-section::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: 2;
-  pointer-events: none;
-  background:
-    linear-gradient(90deg,
-      var(--ui-pink) 0 42px, transparent 42px 62px,
-      var(--ui-cyan) 62px 132px, transparent 132px 178px,
-      var(--ui-pink) 178px 238px, transparent 238px 100%) top left / 100% 3px no-repeat,
-    linear-gradient(90deg,
-      transparent 0 8%, var(--ui-cyan) 8% 21%, transparent 21% 34%,
-      var(--ui-pink) 34% 56%, transparent 56% 74%,
-      var(--ui-cyan) 74% 92%, transparent 92% 100%) bottom left / 100% 3px no-repeat,
-    linear-gradient(180deg,
-      var(--ui-cyan) 0 26px, transparent 26px 58px,
-      var(--ui-pink) 58px 122px, transparent 122px 190px,
-      var(--ui-cyan) 190px 260px, transparent 260px 100%) top left / 3px 100% no-repeat,
-    linear-gradient(180deg,
-      transparent 0 12%, var(--ui-pink) 12% 28%, transparent 28% 42%,
-      var(--ui-cyan) 42% 64%, transparent 64% 82%,
-      var(--ui-pink) 82% 100%) top right / 3px 100% no-repeat;
-  opacity: 0.90;
-  filter: drop-shadow(0 0 5px rgba(0, 229, 255, 0.65));
-  animation: neonFramePulse 3.8s steps(3, end) infinite;
-}
-
-body.page-has-right-panel .sidebar-section::after {
-  content: "";
-  position: absolute;
-  inset: 5px;
-  z-index: 3;
-  pointer-events: none;
-  background:
-    linear-gradient(var(--ui-yellow), var(--ui-yellow)) top left    / 16px 3px no-repeat,
-    linear-gradient(var(--ui-yellow), var(--ui-yellow)) top left    / 3px 16px no-repeat,
-    linear-gradient(var(--ui-cyan),   var(--ui-cyan))   top right   / 22px 3px no-repeat,
-    linear-gradient(var(--ui-cyan),   var(--ui-cyan))   top right   / 3px 22px no-repeat,
-    linear-gradient(var(--ui-pink),   var(--ui-pink))   bottom left / 26px 3px no-repeat,
-    linear-gradient(var(--ui-pink),   var(--ui-pink))   bottom left / 3px 26px no-repeat,
-    linear-gradient(var(--ui-cyan),   var(--ui-cyan))   bottom right / 20px 3px no-repeat,
-    linear-gradient(var(--ui-cyan),   var(--ui-cyan))   bottom right / 3px 20px no-repeat;
-  opacity: 0.95;
-  filter: drop-shadow(0 0 7px rgba(255, 45, 120, 0.70));
-  animation: neonCornerGlitch 5.4s steps(4, end) infinite;
-}
-
-body.page-has-right-panel .sidebar-section > * {
-  position: relative;
-  z-index: 5;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  body.page-has-right-panel .sidebar-section::before,
-  body.page-has-right-panel .sidebar-section::after {
-    animation: none !important;
-  }
-}
-
-/* ── Sidebar nav a:hover ───────────────────────────────────── */
-body.page-has-right-panel .sidebar-nav a:hover {
-  background: rgba(0, 229, 255, 0.12) !important;
-  border-left-color: var(--ui-pink) !important;
-  color: #fff !important;
-  box-shadow: inset 0 0 0 1px rgba(0, 229, 255, 0.28), 0 0 10px rgba(0, 229, 255, 0.16) !important;
-}
-
-/* ==========================================================================
-   SHARED TYPOGRAPHY — ALL CONVERTED PAGES
-   ========================================================================== */
-
-body.page-has-right-panel h1,
-body.page-has-right-panel .page-title {
-  font-family: var(--font-pixel, "Press Start 2P", monospace) !important;
-  color: var(--neon-cyan) !important;
-  text-shadow:
-    0 0 10px rgba(0, 229, 255, 0.65),
-    2px 2px 0 rgba(0, 0, 0, 0.85) !important;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  line-height: 1.45;
-}
-
-body.page-has-right-panel h2,
-body.page-has-right-panel .era-heading,
-body.page-has-right-panel .dash-section-heading {
-  font-family: var(--font-pixel, "Press Start 2P", monospace) !important;
-  color: var(--neon-cyan) !important;
-  text-shadow:
-    0 0 8px rgba(0, 229, 255, 0.55),
-    1px 1px 0 rgba(0, 0, 0, 0.9) !important;
-  font-size: clamp(0.50rem, 1.1vw, 0.65rem) !important;
-  letter-spacing: 0.07em;
-  text-transform: uppercase;
-  line-height: 1.5;
-}
-
-body.page-has-right-panel h3 {
-  font-family: var(--font-pixel, "Press Start 2P", monospace) !important;
-  color: var(--neon-magenta) !important;
-  text-shadow: 0 0 7px rgba(255, 45, 120, 0.55), 1px 1px 0 #000 !important;
-  font-size: clamp(0.44rem, 0.9vw, 0.56rem) !important;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-}
-
-/* ── Icon glow treatment ─────────────────────────────────────── */
-body.page-has-right-panel .nav-icon,
-body.page-has-right-panel .cat-icon,
-body.page-has-right-panel .cat-big-icon,
-body.page-has-right-panel .article-card-img,
-body.page-has-right-panel .cta-btn-icon,
-body.page-has-right-panel .ali-icon,
-body.page-has-right-panel .notice-icon {
-  color: var(--neon-cyan) !important;
-  text-shadow:
-    0 0 7px var(--neon-cyan),
-    0 0 14px rgba(0, 229, 255, 0.50),
-    2px 2px 0 #000 !important;
-  image-rendering: pixelated;
-}
-
-/* ==========================================================================
-   CENTER CONTENT CARDS — ALL CONVERTED PAGES
-   Shared neon panel/card styling for page-specific center content classes.
-   ========================================================================== */
-
-/* ── Page title decorative line ─────────────────────────────── */
-body.page-has-right-panel .page-title-line {
-  height: 3px;
-  background: linear-gradient(90deg,
-    var(--neon-magenta) 0 30%, var(--neon-cyan) 30% 60%, transparent 60% 100%);
-  margin: 8px 0 16px;
-  opacity: 0.85;
-}
-
-/* ── Category header ─────────────────────────────────────────── */
-body.page-has-right-panel .category-header {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 12px;
-}
-
-body.page-has-right-panel .cat-big-icon {
-  font-size: 2.2rem;
-  line-height: 1;
-  filter: drop-shadow(0 0 8px rgba(0, 229, 255, 0.65));
-}
-
-/* ── Article list items (.article-list-item / .ali-*) ───────── */
-body.page-has-right-panel .article-list-item {
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  padding: 10px 12px !important;
-  margin-bottom: 6px;
-  background: linear-gradient(180deg, rgba(5, 12, 28, 0.88), rgba(1, 5, 14, 0.94)) !important;
-  border: 0 !important;
-  border-radius: 0 !important;
-  box-shadow:
-    4px 4px 0 rgba(0, 0, 0, 0.80),
-    0 0 0 2px rgba(255, 45, 120, 0.60),
-    0 0 0 4px rgba(0, 229, 255, 0.18),
-    inset 0 0 0 1px rgba(0, 229, 255, 0.15) !important;
-  clip-path: polygon(
-    0 6px, 6px 0,
-    calc(100% - 6px) 0, 100% 6px,
-    100% calc(100% - 6px), calc(100% - 6px) 100%,
-    6px 100%, 0 calc(100% - 6px)
-  );
-  text-decoration: none !important;
-  color: var(--color-text) !important;
-}
-
-body.page-has-right-panel .article-list-item:hover {
-  box-shadow:
-    4px 4px 0 rgba(0, 0, 0, 0.90),
-    0 0 0 2px rgba(0, 229, 255, 0.80),
-    0 0 0 4px rgba(255, 45, 120, 0.22),
-    inset 0 0 0 1px rgba(255, 45, 120, 0.20) !important;
-  filter: drop-shadow(0 0 8px rgba(0, 229, 255, 0.35));
-}
-
-body.page-has-right-panel .ali-icon {
-  font-size: 1.5rem;
-  line-height: 1.2;
-  flex-shrink: 0;
-  width: 28px;
-  text-align: center;
-  filter: drop-shadow(0 0 6px rgba(0, 229, 255, 0.55));
-}
-
-body.page-has-right-panel .ali-title {
-  font-family: var(--font-pixel, "Press Start 2P", monospace) !important;
-  color: var(--neon-cyan) !important;
-  text-shadow: 0 0 6px rgba(0, 229, 255, 0.55), 1px 1px 0 #000 !important;
-  text-transform: uppercase;
-  letter-spacing: 0.07em;
-  margin-bottom: 3px;
-}
-
-body.page-has-right-panel .ali-desc {
-  color: rgba(157, 215, 238, 0.85) !important;
-  line-height: 1.5;
-}
-
-body.page-has-right-panel .ali-meta {
-  font-family: var(--font-pixel, "Press Start 2P", monospace) !important;
-  color: var(--neon-magenta) !important;
-  text-shadow: 0 0 5px rgba(255, 45, 120, 0.45) !important;
-  letter-spacing: 0.06em;
-  margin-top: 4px;
-}
-
-/* ── Timeline items ──────────────────────────────────────────── */
-body.page-has-right-panel .timeline-hero {
-  padding: 16px 20px;
-  background: linear-gradient(180deg, rgba(5, 12, 28, 0.90), rgba(1, 5, 14, 0.96)) !important;
-  border-left: 4px solid var(--neon-magenta) !important;
-  border-bottom: 2px solid rgba(0, 229, 255, 0.30) !important;
-  margin-bottom: 14px;
-  box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.70) !important;
-}
-
-body.page-has-right-panel .era-section {
-  margin-bottom: 18px;
-}
-
-body.page-has-right-panel .era-heading {
-  padding: 8px 12px !important;
-  background:
-    repeating-linear-gradient(90deg, rgba(0, 229, 255, 0.12) 0 4px, rgba(255, 45, 120, 0.04) 4px 7px, transparent 7px 12px),
-    linear-gradient(90deg, rgba(0, 229, 255, 0.18), rgba(0, 0, 0, 0)) !important;
-  border-left: 4px solid var(--neon-cyan) !important;
-  border-bottom: 2px solid rgba(0, 229, 255, 0.25) !important;
-  margin-bottom: 8px;
-  box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.65) !important;
-}
-
-body.page-has-right-panel .timeline-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-body.page-has-right-panel .timeline-item {
-  display: flex;
-  align-items: flex-start;
-  gap: 8px;
-  padding: 8px 12px !important;
-  background: linear-gradient(180deg, rgba(5, 12, 28, 0.85), rgba(1, 5, 14, 0.92)) !important;
-  border-left: 3px solid rgba(0, 229, 255, 0.45) !important;
-  border-bottom: 1px solid rgba(0, 229, 255, 0.12) !important;
-  box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.65) !important;
-}
-
-body.page-has-right-panel .tl-title a {
-  font-family: var(--font-pixel, "Press Start 2P", monospace) !important;
-  color: var(--neon-cyan) !important;
-  text-shadow: 0 0 6px rgba(0, 229, 255, 0.50), 1px 1px 0 #000 !important;
-  text-decoration: none !important;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-}
-
-body.page-has-right-panel .tl-title a:hover {
-  color: var(--neon-magenta) !important;
-  text-shadow: 0 0 6px rgba(255, 45, 120, 0.55), 1px 1px 0 #000 !important;
-}
-
-body.page-has-right-panel .tl-tag {
-  display: inline-block;
-  font-family: var(--font-pixel, "Press Start 2P", monospace) !important;
-  padding: 2px 5px;
-  background: rgba(0, 229, 255, 0.10) !important;
-  border: 1px solid rgba(0, 229, 255, 0.45) !important;
-  color: var(--neon-cyan) !important;
-  margin-right: 3px;
-}
-
-body.page-has-right-panel .tl-event-badge,
-body.page-has-right-panel .era-badge {
-  display: inline-block;
-  font-family: var(--font-pixel, "Press Start 2P", monospace) !important;
-  padding: 2px 6px;
-  background: rgba(255, 45, 120, 0.14) !important;
-  border: 1px solid rgba(255, 45, 120, 0.55) !important;
-  color: var(--neon-magenta) !important;
-}
-
-body.page-has-right-panel .view-btn {
-  font-family: var(--font-pixel, "Press Start 2P", monospace) !important;
-  padding: 7px 12px !important;
-  background: rgba(0, 0, 0, 0.75) !important;
-  border: 2px solid rgba(0, 229, 255, 0.45) !important;
-  border-radius: 0 !important;
-  color: var(--neon-cyan) !important;
-  cursor: pointer;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.75) !important;
-}
-
-body.page-has-right-panel .view-btn.active,
-body.page-has-right-panel .view-btn:hover {
-  background: rgba(0, 229, 255, 0.14) !important;
-  border-color: var(--neon-cyan) !important;
-  color: #fff !important;
-  box-shadow: 3px 3px 0 rgba(0, 229, 255, 0.22) !important;
-}
-
-body.page-has-right-panel .timeline-filter {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 5px;
-  margin-bottom: 10px;
-}
-
-/* ── Dashboard sections ──────────────────────────────────────── */
-body.page-has-right-panel .dash-intro {
-  font-size: clamp(0.72rem, 0.82vw, 0.90rem) !important;
-  color: rgba(157, 215, 238, 0.88) !important;
-  line-height: 1.6;
-  margin-bottom: 14px;
-}
-
-body.page-has-right-panel .dash-section {
-  padding: 12px 16px !important;
-  margin-bottom: 10px;
-  background: linear-gradient(180deg, rgba(5, 12, 28, 0.88), rgba(1, 5, 14, 0.94)) !important;
-  border: 0 !important;
-  border-radius: 0 !important;
-  box-shadow:
-    4px 4px 0 rgba(0, 0, 0, 0.80),
-    0 0 0 2px rgba(0, 229, 255, 0.55),
-    0 0 0 4px rgba(255, 45, 120, 0.15),
-    inset 0 0 0 1px rgba(0, 229, 255, 0.12) !important;
-  clip-path: polygon(
-    0 6px, 6px 0,
-    calc(100% - 6px) 0, 100% 6px,
-    100% calc(100% - 6px), calc(100% - 6px) 100%,
-    6px 100%, 0 calc(100% - 6px)
-  );
-}
-
-body.page-has-right-panel .dash-section-heading {
-  padding: 6px 0 8px !important;
-  border-bottom: 2px solid rgba(0, 229, 255, 0.28) !important;
-  margin-bottom: 10px !important;
-}
-
-/* ── SAM panels ─────────────────────────────────────────────── */
-body.page-has-right-panel .sam-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 10px;
-}
-
-body.page-has-right-panel .sam-panel {
-  padding: 12px 14px !important;
-  background: linear-gradient(180deg, rgba(5, 12, 28, 0.90), rgba(1, 5, 14, 0.96)) !important;
-  border: 0 !important;
-  border-radius: 0 !important;
-  box-shadow:
-    4px 4px 0 rgba(0, 0, 0, 0.80),
-    0 0 0 2px rgba(255, 45, 120, 0.70),
-    0 0 0 4px rgba(0, 229, 255, 0.20),
-    inset 0 0 0 1px rgba(0, 229, 255, 0.18) !important;
-  clip-path: polygon(
-    0 6px, 6px 0,
-    calc(100% - 6px) 0, 100% 6px,
-    100% calc(100% - 6px), calc(100% - 6px) 100%,
-    6px 100%, 0 calc(100% - 6px)
-  );
-}
-
-body.page-has-right-panel .sam-panel.sam-panel--blue {
-  box-shadow:
-    4px 4px 0 rgba(0, 0, 0, 0.80),
-    0 0 0 2px rgba(0, 229, 255, 0.75),
-    0 0 0 4px rgba(255, 45, 120, 0.18),
-    inset 0 0 0 1px rgba(0, 229, 255, 0.22) !important;
-}
-
-body.page-has-right-panel .sam-panel.sam-panel--yellow {
-  box-shadow:
-    4px 4px 0 rgba(0, 0, 0, 0.80),
-    0 0 0 2px rgba(255, 214, 0, 0.70),
-    0 0 0 4px rgba(0, 229, 255, 0.18),
-    inset 0 0 0 1px rgba(255, 214, 0, 0.18) !important;
-}
-
-body.page-has-right-panel .sam-panel.sam-panel--green {
-  box-shadow:
-    4px 4px 0 rgba(0, 0, 0, 0.80),
-    0 0 0 2px rgba(57, 255, 20, 0.65),
-    0 0 0 4px rgba(0, 229, 255, 0.18),
-    inset 0 0 0 1px rgba(57, 255, 20, 0.18) !important;
-}
-
-body.page-has-right-panel .sam-panel.sam-panel--red {
-  box-shadow:
-    4px 4px 0 rgba(0, 0, 0, 0.80),
-    0 0 0 2px rgba(255, 45, 120, 0.75),
-    0 0 0 4px rgba(190, 76, 247, 0.20),
-    inset 0 0 0 1px rgba(255, 45, 120, 0.22) !important;
-}
-
-body.page-has-right-panel .sam-panel-title {
-  font-family: var(--font-pixel, "Press Start 2P", monospace) !important;
-  color: var(--neon-cyan) !important;
-  text-shadow: 0 0 7px rgba(0, 229, 255, 0.65), 1px 1px 0 #000 !important;
-  text-transform: uppercase;
-  letter-spacing: 0.07em;
-  margin-bottom: 8px;
-  padding-bottom: 6px;
-  border-bottom: 2px solid rgba(0, 229, 255, 0.22) !important;
-}
-
-body.page-has-right-panel .sam-graph-section {
-  padding: 12px 14px !important;
-  margin-top: 12px;
-  background: linear-gradient(180deg, rgba(3, 8, 20, 0.92), rgba(1, 4, 12, 0.97)) !important;
-  border: 0 !important;
-  box-shadow:
-    4px 4px 0 rgba(0, 0, 0, 0.80),
-    0 0 0 2px rgba(0, 229, 255, 0.55),
-    inset 0 0 0 1px rgba(0, 229, 255, 0.12) !important;
-}
-
-body.page-has-right-panel .sam-graph-title {
-  font-family: var(--font-pixel, "Press Start 2P", monospace) !important;
-  color: var(--neon-cyan) !important;
-  text-shadow: 0 0 7px rgba(0, 229, 255, 0.65), 1px 1px 0 #000 !important;
-  text-transform: uppercase;
-  letter-spacing: 0.07em;
-  margin-bottom: 6px;
-}
-
-/* ── Wiki content panels ─────────────────────────────────────── */
-body.page-has-right-panel .wiki-content {
-  min-width: 0;
-  max-width: 100%;
-}
-
-body.page-has-right-panel .wiki-section {
-  margin-bottom: 14px;
-  padding: 10px 14px !important;
-  background: linear-gradient(180deg, rgba(5, 12, 28, 0.85), rgba(1, 5, 14, 0.92)) !important;
-  border-left: 4px solid rgba(0, 229, 255, 0.50) !important;
-  border-bottom: 1px solid rgba(0, 229, 255, 0.15) !important;
-  box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.65) !important;
-}
-
-body.page-has-right-panel .wiki-section h2 {
-  margin-top: 0;
-  padding-bottom: 6px;
-  border-bottom: 2px solid rgba(0, 229, 255, 0.22) !important;
-  margin-bottom: 10px;
-}
-
-body.page-has-right-panel .lore-fact-block {
-  padding: 8px 10px !important;
-  margin-bottom: 8px;
-  background: rgba(0, 229, 255, 0.04) !important;
-  border-left: 3px solid rgba(255, 45, 120, 0.50) !important;
-}
-
-body.page-has-right-panel .lore-paragraph,
-body.page-has-right-panel .lead-paragraph {
-  font-size: clamp(0.72rem, 0.82vw, 0.90rem) !important;
-  color: var(--color-text, #d4f0ff) !important;
-  line-height: 1.65;
-  min-width: 0;
-  max-width: 100%;
-  overflow-wrap: anywhere;
-}
-
-/* ── Article meta / badges ───────────────────────────────────── */
-body.page-has-right-panel .article-meta {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin-bottom: 12px;
-  align-items: center;
-}
-
-body.page-has-right-panel .article-badge {
-  display: inline-block;
-  font-family: var(--font-pixel, "Press Start 2P", monospace) !important;
-  padding: 3px 7px !important;
-  background: rgba(0, 229, 255, 0.10) !important;
-  border: 1px solid rgba(0, 229, 255, 0.45) !important;
-  color: var(--neon-cyan) !important;
-  letter-spacing: 0.05em;
-}
-
-body.page-has-right-panel .meta-item {
-  font-family: var(--font-pixel, "Press Start 2P", monospace) !important;
-  color: var(--color-text-muted) !important;
-  letter-spacing: 0.04em;
-}
-
-body.page-has-right-panel .article-stats {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 5px;
-  margin-bottom: 10px;
-}
-
-/* ── Notice / info boxes ─────────────────────────────────────── */
-body.page-has-right-panel .notice {
-  padding: 10px 14px !important;
-  margin-bottom: 10px;
-  background: rgba(0, 229, 255, 0.05) !important;
-  border: 0 !important;
-  border-left: 4px solid var(--neon-cyan) !important;
-  border-radius: 0 !important;
-  box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.65) !important;
-}
-
-body.page-has-right-panel .notice.info {
-  border-left-color: var(--neon-cyan) !important;
-  background: rgba(0, 229, 255, 0.05) !important;
-}
-
-body.page-has-right-panel .notice.warning {
-  border-left-color: var(--neon-yellow) !important;
-  background: rgba(255, 214, 0, 0.05) !important;
-}
-
-body.page-has-right-panel .notice-icon {
-  color: var(--neon-cyan) !important;
-  text-shadow: 0 0 6px rgba(0, 229, 255, 0.65) !important;
-}
-
-/* ── Text overflow guards ────────────────────────────────────── */
-body.page-has-right-panel .retro-hud-body,
-body.page-has-right-panel .retro-hud-body *,
-body.page-has-right-panel .category-card,
-body.page-has-right-panel .category-card *,
-body.page-has-right-panel .article-card,
-body.page-has-right-panel .article-card *,
-body.page-has-right-panel .article-list-item,
-body.page-has-right-panel .article-list-item *,
-body.page-has-right-panel .timeline-item,
-body.page-has-right-panel .timeline-item *,
-body.page-has-right-panel .dash-section,
-body.page-has-right-panel .dash-section *,
-body.page-has-right-panel .sam-panel,
-body.page-has-right-panel .sam-panel * {
-  min-width: 0;
-  max-width: 100%;
-  overflow-wrap: anywhere;
-  word-break: normal;
-}
-
-/* ==========================================================================
-   NON-HOME PAGES — EXTEND BROKEN NEON FRAME TO RETRO-HUD-BOX
-   Mirror the body.page-home enhanced HUD panel treatment for all pages
-   that carry page-has-right-panel or page-game.
-   Shared non-home shell reinforcement. Keep homepage-only hero rules under body.page-home.
-   ========================================================================== */
-
-body.page-has-right-panel .retro-hud-box,
-body.page-game .retro-hud-box {
-  position: relative;
-  isolation: isolate;
-  border: 0 !important;
-  border-radius: 0 !important;
-  background:
-    linear-gradient(180deg, rgba(7, 14, 34, 0.88), rgba(1, 5, 14, 0.94)) padding-box !important;
-  box-shadow:
-    6px 6px 0 rgba(0, 0, 0, 0.88),
-    0 0 0 2px rgba(255, 45, 120, 0.80),
-    0 0 0 5px rgba(0, 229, 255, 0.23),
-    0 0 22px rgba(255, 45, 120, 0.28),
-    inset 0 0 0 2px rgba(0, 229, 255, 0.20) !important;
-  clip-path: polygon(
-    0 10px, 10px 0,
-    calc(100% - 10px) 0, 100% 10px,
-    100% calc(100% - 10px), calc(100% - 10px) 100%,
-    10px 100%, 0 calc(100% - 10px)
-  );
-}
-
-body.page-has-right-panel .retro-hud-box::before,
-body.page-game .retro-hud-box::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: 2;
-  pointer-events: none;
-  background:
-    linear-gradient(90deg,
-      var(--neon-magenta) 0 42px, transparent 42px 62px,
-      var(--neon-cyan) 62px 132px, transparent 132px 178px,
-      var(--neon-magenta) 178px 238px, transparent 238px 100%) top left / 100% 3px no-repeat,
-    linear-gradient(90deg,
-      transparent 0 8%, var(--neon-cyan) 8% 21%, transparent 21% 34%,
-      var(--neon-magenta) 34% 56%, transparent 56% 74%,
-      var(--neon-cyan) 74% 92%, transparent 92% 100%) bottom left / 100% 3px no-repeat,
-    linear-gradient(180deg,
-      var(--neon-cyan) 0 26px, transparent 26px 58px,
-      var(--neon-magenta) 58px 122px, transparent 122px 190px,
-      var(--neon-cyan) 190px 260px, transparent 260px 100%) top left / 3px 100% no-repeat,
-    linear-gradient(180deg,
-      transparent 0 12%, var(--neon-magenta) 12% 28%, transparent 28% 42%,
-      var(--neon-cyan) 42% 64%, transparent 64% 82%,
-      var(--neon-magenta) 82% 100%) top right / 3px 100% no-repeat;
-  opacity: 0.90;
-  filter: drop-shadow(0 0 4px rgba(0, 229, 255, 0.55));
-  animation: neonFramePulse 3.8s steps(3, end) infinite;
-}
-
-body.page-has-right-panel .retro-hud-box::after,
-body.page-game .retro-hud-box::after {
-  content: "";
-  position: absolute;
-  inset: 5px;
-  z-index: 3;
-  pointer-events: none;
-  background:
-    linear-gradient(var(--neon-yellow), var(--neon-yellow)) top left / 18px 3px no-repeat,
-    linear-gradient(var(--neon-yellow), var(--neon-yellow)) top left / 3px 18px no-repeat,
-    linear-gradient(var(--neon-cyan), var(--neon-cyan)) top right / 26px 3px no-repeat,
-    linear-gradient(var(--neon-cyan), var(--neon-cyan)) top right / 3px 26px no-repeat,
-    linear-gradient(var(--neon-magenta), var(--neon-magenta)) bottom left / 30px 3px no-repeat,
-    linear-gradient(var(--neon-magenta), var(--neon-magenta)) bottom left / 3px 30px no-repeat,
-    linear-gradient(var(--neon-cyan), var(--neon-cyan)) bottom right / 22px 3px no-repeat,
-    linear-gradient(var(--neon-cyan), var(--neon-cyan)) bottom right / 3px 22px no-repeat;
-  opacity: 0.93;
-  filter: drop-shadow(0 0 6px rgba(255, 45, 120, 0.65));
-  animation: neonCornerGlitch 5.4s steps(4, end) infinite;
-}
-
-body.page-has-right-panel .retro-hud-box > *,
-body.page-game .retro-hud-box > * {
-  position: relative;
-  z-index: 5;
-}
-
-/* Enhanced sidebar heading for all non-home pages */
-body.page-has-right-panel .sidebar-heading,
-body.page-game .sidebar-heading {
-  background:
-    repeating-linear-gradient(90deg, rgba(255, 45, 120, 0.14) 0 4px, rgba(0, 229, 255, 0.04) 4px 7px, transparent 7px 12px),
-    linear-gradient(90deg, rgba(255, 45, 120, 0.18), rgba(0, 0, 0, 0)) !important;
-  border-left: 3px solid var(--neon-magenta) !important;
-  border-bottom: 1px solid rgba(0, 229, 255, 0.22) !important;
-  box-shadow: inset 2px 0 6px rgba(255, 45, 120, 0.08) !important;
-  padding: 9px 14px 7px !important;
-}
-
-body.page-has-right-panel .sidebar-nav a,
-body.page-game .sidebar-nav a {
-  border-bottom: 1px solid rgba(0, 229, 255, 0.07);
-}
-body.page-has-right-panel .sidebar-nav a:hover,
-body.page-game .sidebar-nav a:hover {
-  background: rgba(0, 229, 255, 0.10);
-  box-shadow: inset 3px 0 0 var(--neon-cyan);
-}
-body.page-has-right-panel .sidebar-nav a.active,
-body.page-game .sidebar-nav a.active {
-  background: rgba(255, 45, 120, 0.14);
-  box-shadow: inset 3px 0 0 var(--neon-magenta);
-}
-
-/* ==========================================================================
-   JS-INJECTED STATUS PANELS — Override inline border-radius from CSP/LAS
-   connection-status-panel.js and live-activity-summary.js inject styles
-   that include border-radius. Override here to enforce neon HUD look.
-   ========================================================================== */
+/* ============================================================================
+   JS-INJECTED STATUS PANELS
+   Keep injected status widgets visually aligned with the retro shell.
+   ============================================================================ */
 
 .csp-panel {
   border-radius: 0 !important;
@@ -4486,12 +2783,6 @@ body.page-game .sidebar-nav a.active {
     0 0 0 2px rgba(0, 229, 255, 0.50),
     0 0 0 4px rgba(255, 45, 120, 0.12),
     inset 0 0 0 1px rgba(0, 229, 255, 0.10) !important;
-  clip-path: polygon(
-    0 5px, 5px 0,
-    calc(100% - 5px) 0, 100% 5px,
-    100% calc(100% - 5px), calc(100% - 5px) 100%,
-    5px 100%, 0 calc(100% - 5px)
-  );
 }
 
 .las-panel {
@@ -4504,503 +2795,215 @@ body.page-game .sidebar-nav a.active {
     0 0 0 2px rgba(190, 76, 247, 0.45),
     0 0 0 4px rgba(0, 229, 255, 0.10),
     inset 0 0 0 1px rgba(190, 76, 247, 0.10) !important;
-  clip-path: polygon(
-    0 5px, 5px 0,
-    calc(100% - 5px) 0, 100% 5px,
-    100% calc(100% - 5px), calc(100% - 5px) 100%,
-    5px 100%, 0 calc(100% - 5px)
-  );
 }
 
-/* ==========================================================================
-   GAME SHELL PAGES — LEADERBOARD NEON HUD OVERRIDES
-   body.page-game scoped rules for leaderboard-specific classes.
-   These override old SaaS styles from wiki.css and leaderboard inline CSS.
-   ========================================================================== */
+/* ============================================================================
+   GAME PAGE TABLE READABILITY
+   ============================================================================ */
 
 body.page-game .lb-intro {
   color: rgba(157, 215, 238, 0.85) !important;
-  font-size: clamp(0.72rem, 0.82vw, 0.88rem) !important;
+  font-size: clamp(0.86rem, 0.92vw, 0.96rem) !important;
   margin-bottom: 20px;
   line-height: 1.6;
 }
 
-body.page-game .lb-tab {
-  border-radius: 0 !important;
-  border: 2px solid rgba(0, 229, 255, 0.45) !important;
-  background: rgba(0, 0, 0, 0.75) !important;
-  color: rgba(157, 215, 238, 0.80) !important;
-  font-family: var(--font-pixel, "Press Start 2P", monospace) !important;
-  text-transform: uppercase !important;
-  letter-spacing: 0.07em !important;
-  clip-path: polygon(
-    0 4px, 4px 0, calc(100% - 4px) 0, 100% 4px,
-    100% calc(100% - 4px), calc(100% - 4px) 100%, 4px 100%, 0 calc(100% - 4px)
-  );
-  box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.75) !important;
-  padding: 7px 16px !important;
-}
-
-body.page-game .lb-tab:hover {
-  background: rgba(0, 229, 255, 0.10) !important;
-  color: var(--neon-cyan) !important;
-  border-color: var(--neon-cyan) !important;
-  box-shadow: 3px 3px 0 rgba(0, 229, 255, 0.22) !important;
-}
-
-body.page-game .lb-tab.active {
-  background: rgba(0, 229, 255, 0.14) !important;
-  border-color: var(--neon-cyan) !important;
-  color: var(--neon-cyan) !important;
-  text-shadow: 0 0 6px rgba(0, 229, 255, 0.55) !important;
-  box-shadow: 3px 3px 0 rgba(0, 229, 255, 0.22) !important;
-}
-
-body.page-game .lb-table-outer {
-  border-radius: 0 !important;
-  border: 0 !important;
-  background: linear-gradient(180deg, rgba(5, 12, 28, 0.90), rgba(1, 5, 14, 0.96)) !important;
-  box-shadow:
-    4px 4px 0 rgba(0, 0, 0, 0.85),
-    0 0 0 2px rgba(0, 229, 255, 0.55),
-    0 0 0 4px rgba(255, 45, 120, 0.18),
-    inset 0 0 0 1px rgba(0, 229, 255, 0.12) !important;
-  clip-path: polygon(
-    0 6px, 6px 0, calc(100% - 6px) 0, 100% 6px,
-    100% calc(100% - 6px), calc(100% - 6px) 100%, 6px 100%, 0 calc(100% - 6px)
-  );
-}
-
-body.page-game .lb-table thead th {
-  background: rgba(0, 0, 0, 0.70) !important;
-  color: var(--neon-yellow) !important;
-  font-family: var(--font-pixel, "Press Start 2P", monospace) !important;
-  font-size: 0.50rem !important;
-  text-transform: uppercase !important;
-  letter-spacing: 0.08em !important;
-  border-bottom: 2px solid rgba(0, 229, 255, 0.35) !important;
-  text-shadow: 0 0 6px rgba(255, 214, 0, 0.55) !important;
-  white-space: nowrap;
-}
-
-body.page-game .lb-table tbody tr:hover { background: rgba(0, 229, 255, 0.07) !important; }
-body.page-game .lb-table tbody tr.selected {
-  background: rgba(0, 229, 255, 0.11) !important;
-  box-shadow: inset 0 0 0 1px rgba(0, 229, 255, 0.66) !important;
-  outline: none !important;
-}
-body.page-game .lb-table tbody tr { border-bottom: 1px solid rgba(0, 229, 255, 0.10) !important; }
-body.page-game .lb-table tbody tr:last-child { border-bottom: none !important; }
-
-body.page-game .lb-rank {
-  font-family: var(--font-pixel, "Press Start 2P", monospace) !important;
-  font-size: 0.50rem !important;
-  color: var(--neon-yellow) !important;
-  text-shadow: 0 0 6px rgba(255, 214, 0, 0.55) !important;
-  text-align: center !important;
-}
-
-body.page-game .lb-score {
-  font-family: var(--font-pixel, "Press Start 2P", monospace) !important;
-  font-size: 0.50rem !important;
-  color: var(--neon-cyan) !important;
-  text-shadow: 0 0 6px rgba(0, 229, 255, 0.55) !important;
-  text-align: center !important;
-}
-
-body.page-game .lb-faction {
-  border-radius: 0 !important;
-  border: 1px solid rgba(0, 229, 255, 0.45) !important;
-  background: rgba(0, 229, 255, 0.08) !important;
-  font-family: var(--font-pixel, "Press Start 2P", monospace) !important;
-  font-size: 0.50rem !important;
-  color: var(--neon-cyan) !important;
-  text-transform: uppercase !important;
-  letter-spacing: 0.05em !important;
-  clip-path: polygon(
-    0 3px, 3px 0, calc(100% - 3px) 0, 100% 3px,
-    100% calc(100% - 3px), calc(100% - 3px) 100%, 3px 100%, 0 calc(100% - 3px)
-  );
-  padding: 3px 8px !important;
-}
-
-#lb-refresh-btn {
-  border-radius: 0 !important;
-  border: 2px solid rgba(0, 229, 255, 0.55) !important;
-  background: rgba(0, 0, 0, 0.75) !important;
-  color: var(--neon-cyan) !important;
-  font-family: var(--font-pixel, "Press Start 2P", monospace) !important;
-  font-size: 0.50rem !important;
-  text-transform: uppercase !important;
-  letter-spacing: 0.07em !important;
-  cursor: pointer;
-  clip-path: polygon(
-    0 4px, 4px 0, calc(100% - 4px) 0, 100% 4px,
-    100% calc(100% - 4px), calc(100% - 4px) 100%, 4px 100%, 0 calc(100% - 4px)
-  );
-  box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.80) !important;
-  padding: 7px 16px !important;
-}
-#lb-refresh-btn:hover {
-  background: rgba(0, 229, 255, 0.12) !important;
-  box-shadow: 3px 3px 0 rgba(0, 229, 255, 0.25) !important;
-}
-#lb-refresh-btn:disabled { opacity: 0.45; cursor: default; }
-
-body.page-game .lb-linked-identity {
-  border-radius: 0 !important;
-  border: 0 !important;
-  padding: 10px 12px;
-  background: linear-gradient(180deg, rgba(5, 12, 28, 0.90), rgba(1, 5, 14, 0.96)) !important;
-  color: rgba(157, 215, 238, 0.88) !important;
-  box-shadow:
-    3px 3px 0 rgba(0, 0, 0, 0.80),
-    0 0 0 2px rgba(255, 45, 120, 0.55),
-    0 0 0 4px rgba(0, 229, 255, 0.12),
-    inset 0 0 0 1px rgba(255, 45, 120, 0.18) !important;
-  clip-path: polygon(
-    0 5px, 5px 0, calc(100% - 5px) 0, 100% 5px,
-    100% calc(100% - 5px), calc(100% - 5px) 100%, 5px 100%, 0 calc(100% - 5px)
-  );
-}
-body.page-game .lb-linked-identity strong {
-  font-family: var(--font-pixel, "Press Start 2P", monospace) !important;
-  font-size: 0.50rem !important;
-  color: var(--neon-magenta) !important;
-  text-shadow: 0 0 6px rgba(255, 45, 120, 0.55) !important;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-}
-body.page-game .lb-linked-identity.sync-state--good {
-  box-shadow:
-    3px 3px 0 rgba(0, 0, 0, 0.80),
-    0 0 0 2px rgba(57, 255, 20, 0.80),
-    0 0 0 4px rgba(0, 229, 255, 0.18),
-    inset 0 0 0 1px rgba(57, 255, 20, 0.25) !important;
-  color: rgba(200, 255, 220, 0.90) !important;
-}
-body.page-game .lb-linked-identity.sync-state--good strong {
-  color: var(--neon-green, #39ff14) !important;
-  text-shadow: 0 0 8px rgba(57, 255, 20, 0.65) !important;
-}
-
+body.page-game .lb-tab,
+body.page-game #lb-refresh-btn,
 body.page-game .lb-presence-btn {
-  border-radius: 0 !important;
-  border: 2px solid rgba(0, 229, 255, 0.50) !important;
-  background: rgba(0, 0, 0, 0.75) !important;
-  color: var(--neon-cyan) !important;
-  font-family: var(--font-pixel, "Press Start 2P", monospace) !important;
-  font-size: 0.50rem !important;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  cursor: pointer;
-  clip-path: polygon(
-    0 4px, 4px 0, calc(100% - 4px) 0, 100% 4px,
-    100% calc(100% - 4px), calc(100% - 4px) 100%, 4px 100%, 0 calc(100% - 4px)
-  );
-  box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.75) !important;
-  padding: 8px 14px !important;
+  font-size: 0.56rem !important;
 }
 
-#lb-breakdown-panel {
-  border-radius: 0 !important;
-  border: 0 !important;
-  background: linear-gradient(180deg, rgba(5, 12, 28, 0.90), rgba(1, 5, 14, 0.96)) !important;
-  box-shadow:
-    4px 4px 0 rgba(0, 0, 0, 0.85),
-    0 0 0 2px rgba(0, 229, 255, 0.55),
-    0 0 0 4px rgba(255, 45, 120, 0.15),
-    inset 0 0 0 1px rgba(0, 229, 255, 0.12) !important;
-  clip-path: polygon(
-    0 6px, 6px 0, calc(100% - 6px) 0, 100% 6px,
-    100% calc(100% - 6px), calc(100% - 6px) 100%, 6px 100%, 0 calc(100% - 6px)
-  );
-}
-
-body.page-game .lb-bd-player {
-  font-family: var(--font-pixel, "Press Start 2P", monospace) !important;
-  font-size: 0.50rem !important;
-  color: var(--neon-cyan) !important;
-  text-shadow: 0 0 6px rgba(0, 229, 255, 0.55) !important;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-}
-body.page-game .lb-bd-total {
-  font-family: var(--font-pixel, "Press Start 2P", monospace) !important;
-  font-size: 0.50rem !important;
-  color: var(--neon-yellow) !important;
-  text-shadow: 0 0 6px rgba(255, 214, 0, 0.55) !important;
-  font-variant-numeric: tabular-nums;
-}
-body.page-game .lb-bd-row {
-  border-radius: 0 !important;
-  border: 0 !important;
-  background: rgba(0, 229, 255, 0.04) !important;
-  box-shadow:
-    2px 2px 0 rgba(0, 0, 0, 0.75),
-    0 0 0 1px rgba(0, 229, 255, 0.30) !important;
-  clip-path: polygon(
-    0 3px, 3px 0, calc(100% - 3px) 0, 100% 3px,
-    100% calc(100% - 3px), calc(100% - 3px) 100%, 3px 100%, 0 calc(100% - 3px)
-  );
-}
-body.page-game .lb-bd-label {
-  font-family: var(--font-pixel, "Press Start 2P", monospace) !important;
-  font-size: 0.50rem !important;
-  color: rgba(157, 215, 238, 0.70) !important;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-}
-body.page-game .lb-bd-val {
-  font-family: var(--font-pixel, "Press Start 2P", monospace) !important;
-  font-size: 0.50rem !important;
-  color: var(--neon-cyan) !important;
-  text-shadow: 0 0 5px rgba(0, 229, 255, 0.50) !important;
-  font-variant-numeric: tabular-nums;
-}
-body.page-game .lb-bd-bonus .lb-bd-val {
-  color: var(--neon-green, #39ff14) !important;
-  text-shadow: 0 0 5px rgba(57, 255, 20, 0.50) !important;
-}
-
-body.page-game .lb-graph-heading {
-  font-family: var(--font-pixel, "Press Start 2P", monospace) !important;
-  font-size: 0.50rem !important;
-  color: var(--neon-cyan) !important;
-  text-shadow: 0 0 7px rgba(0, 229, 255, 0.55) !important;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-}
-body.page-game .lb-graph-heading::after {
-  background: linear-gradient(90deg, rgba(0, 229, 255, 0.45), transparent) !important;
-}
-
-body.page-game .lb-graph-wrap {
-  border-radius: 0 !important;
-  border: 0 !important;
-  background: linear-gradient(170deg, rgba(3, 8, 20, 0.95), rgba(1, 4, 12, 0.97)) !important;
-  box-shadow:
-    4px 4px 0 rgba(0, 0, 0, 0.85),
-    0 0 0 2px rgba(0, 229, 255, 0.50),
-    0 0 0 4px rgba(255, 45, 120, 0.12),
-    inset 0 0 0 1px rgba(0, 229, 255, 0.10) !important;
-  clip-path: polygon(
-    0 6px, 6px 0, calc(100% - 6px) 0, 100% 6px,
-    100% calc(100% - 6px), calc(100% - 6px) 100%, 6px 100%, 0 calc(100% - 6px)
-  );
-}
-
+body.page-game .lb-table thead th,
+body.page-game .lb-rank,
+body.page-game .lb-score,
+body.page-game .lb-faction,
+body.page-game .lb-linked-identity strong,
+body.page-game .lb-bd-player,
+body.page-game .lb-bd-total,
+body.page-game .lb-bd-label,
+body.page-game .lb-bd-val,
+body.page-game .lb-graph-heading,
 body.page-game #lb-graph-reset {
-  border-radius: 0 !important;
-  border: 1px solid rgba(0, 229, 255, 0.40) !important;
-  background: rgba(0, 0, 0, 0.85) !important;
-  color: rgba(157, 215, 238, 0.70) !important;
-  font-family: var(--font-pixel, "Press Start 2P", monospace) !important;
-  font-size: 0.50rem !important;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.70) !important;
-  clip-path: polygon(
-    0 3px, 3px 0, calc(100% - 3px) 0, 100% 3px,
-    100% calc(100% - 3px), calc(100% - 3px) 100%, 3px 100%, 0 calc(100% - 3px)
-  );
-}
-body.page-game #lb-graph-reset:hover {
-  background: rgba(0, 229, 255, 0.10) !important;
-  color: var(--neon-cyan) !important;
+  font-size: 0.56rem !important;
 }
 
 body.page-game .lb-legend-item {
   font-size: 0.72rem !important;
-  color: rgba(157, 215, 238, 0.65) !important;
 }
 
 body.page-game .lb-hint {
-  font-size: clamp(0.62rem, 0.72vw, 0.78rem) !important;
+  font-size: clamp(0.68rem, 0.8vw, 0.82rem) !important;
   color: rgba(157, 215, 238, 0.65) !important;
 }
 
-/* ==========================================================================
-   FINAL SHARED SITE SHELL NORMALISATION
-   Single source of truth for all non-home shared shell page typography.
-   Applies to every page carrying page-has-right-panel or page-game.
-   Uses :is() for grouped selectors where possible.
-   All font-size values meet or exceed hard minimums defined in design spec.
-   DO NOT touch: gameplay JS, Worker files, XP logic, leaderboard logic,
-   submitScore, Telegram/auth, Block Topia multiplayer, score APIs.
-   ========================================================================== */
+/* FINAL SITE SHELL CONTRACT */
 
-/* ── Base font-size anchor ────────────────────────────────────── */
-body.page-has-right-panel,
-body.page-game {
+:is(body.page-has-right-panel, body.page-game) {
   font-size: 16px;
 }
 
-/* ── Page title / h1 — override wiki.css 2rem ───────────────── */
-:is(body.page-has-right-panel, body.page-game) h1,
-:is(body.page-has-right-panel, body.page-game) .page-title {
-  font-size: clamp(0.68rem, 1.6vw, 0.88rem) !important;
-  line-height: 1.45 !important;
+:is(body.page-has-right-panel, body.page-game) #site-header {
+  height: var(--color-header-h);
+  min-height: var(--color-header-h);
 }
 
-/* ── Header logo — minimum 0.78rem for brand legibility ───────── */
-body.page-has-right-panel .site-logo .logo-text,
-body.page-game .site-logo .logo-text {
+:is(body.page-has-right-panel, body.page-game) .site-logo .logo-text {
   font-size: 0.78rem !important;
+  line-height: 1.3;
 }
 
-body.page-has-right-panel .site-logo .logo-sub,
-body.page-game .site-logo .logo-sub {
-  font-size: 0.46rem !important;
-}
-
-/* ── Header search ──────────────────────────────────────────── */
-body.page-has-right-panel #header-search input,
-body.page-game #header-search input {
-  font-size: 0.80rem !important;
-  font-family: var(--font-mono, "Courier New", monospace) !important;
-}
-
-/* ── Header nav ─────────────────────────────────────────────── */
-body.page-has-right-panel .header-nav a,
-body.page-game .header-nav a {
+:is(body.page-has-right-panel, body.page-game) .header-nav a {
   font-size: 0.56rem !important;
+  line-height: 1.45;
 }
 
-/* ── Sidebar headings ───────────────────────────────────────── */
-body.page-has-right-panel .sidebar-heading,
-body.page-game .sidebar-heading {
+:is(body.page-has-right-panel, body.page-game) #header-search {
+  max-width: 560px;
+}
+
+:is(body.page-has-right-panel, body.page-game) #header-search input {
+  font-size: 0.82rem !important;
+  line-height: 1.35;
+}
+
+:is(body.page-has-right-panel, body.page-game) #layout {
+  min-height: calc(100vh - var(--color-header-h));
+  display: grid !important;
+  align-items: start;
+}
+
+body.page-has-right-panel #layout {
+  grid-template-columns: var(--color-sidebar-w) minmax(0, 1fr) var(--right-panel-w);
+}
+
+body.page-game #layout {
+  grid-template-columns: var(--color-sidebar-w) minmax(0, 1fr);
+}
+
+:is(body.page-has-right-panel, body.page-game) #sidebar {
+  width: var(--color-sidebar-w);
+  min-width: var(--color-sidebar-w);
+  max-width: var(--color-sidebar-w);
+  position: sticky;
+  top: var(--color-header-h);
+  height: calc(100vh - var(--color-header-h));
+  overflow-y: auto;
+}
+
+:is(body.page-has-right-panel, body.page-game) #main-wrapper {
+  min-width: 0;
+  max-width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+body.page-has-right-panel #layout > #homepage-right-panel {
+  position: sticky !important;
+  top: var(--color-header-h) !important;
+  width: var(--right-panel-w) !important;
+  min-width: var(--right-panel-w) !important;
+  max-width: var(--right-panel-w) !important;
+  height: calc(100vh - var(--color-header-h)) !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  padding: 14px 10px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 14px !important;
+}
+
+body.page-game #layout > #homepage-right-panel {
+  display: none !important;
+}
+
+:is(body.page-has-right-panel, body.page-game) .sidebar-heading {
   font-size: 0.58rem !important;
+  line-height: 1.45;
 }
 
-/* ── Sidebar nav links ──────────────────────────────────────── */
-body.page-has-right-panel .sidebar-nav a,
-body.page-game .sidebar-nav a {
+:is(body.page-has-right-panel, body.page-game) .sidebar-nav a {
   font-size: 0.56rem !important;
   line-height: 1.55 !important;
 }
 
-/* ── Right HUD titles ───────────────────────────────────────── */
-body.page-has-right-panel .retro-hud-title,
-body.page-has-right-panel #homepage-right-panel .retro-hud-title,
-body.page-game .retro-hud-title,
-body.page-game #homepage-right-panel .retro-hud-title {
+:is(body.page-has-right-panel, body.page-game) .retro-hud-title {
   font-size: 0.56rem !important;
+  line-height: 1.35;
 }
 
-/* ── Right HUD body text ────────────────────────────────────── */
-body.page-has-right-panel .retro-hud-body,
-body.page-has-right-panel #homepage-right-panel .retro-hud-body,
-body.page-game .retro-hud-body,
-body.page-game #homepage-right-panel .retro-hud-body {
-  font-size: 0.72rem !important;
+:is(body.page-has-right-panel, body.page-game) .retro-hud-body {
+  font-size: 0.68rem !important;
+  line-height: 1.55;
 }
 
-/* ── HUD label / value text ─────────────────────────────────── */
-body.page-has-right-panel .retro-hud-body [class*="label"],
-body.page-game .retro-hud-body [class*="label"] {
+:is(body.page-has-right-panel, body.page-game) .hud-label {
   font-size: 0.56rem !important;
+  line-height: 1.45;
 }
 
-body.page-has-right-panel .hud-label,
-body.page-has-right-panel #homepage-right-panel .hud-label,
-body.page-game .hud-label,
-body.page-game #homepage-right-panel .hud-label {
-  font-size: 0.56rem !important;
-}
-
-body.page-has-right-panel .hud-value,
-body.page-has-right-panel #homepage-right-panel .hud-value,
-body.page-game .hud-value,
-body.page-game #homepage-right-panel .hud-value {
+:is(body.page-has-right-panel, body.page-game) .hud-value {
   font-size: 0.58rem !important;
+  line-height: 1.45;
 }
 
-/* ── Game / article list card text ─────────────────────────── */
-body.page-has-right-panel .ali-title,
-body.page-game .ali-title {
+:is(body.page-has-right-panel, body.page-game) .article-card,
+:is(body.page-has-right-panel, body.page-game) .article-list-item,
+:is(body.page-has-right-panel, body.page-game) .timeline-item,
+:is(body.page-has-right-panel, body.page-game) .category-card,
+:is(body.page-has-right-panel, body.page-game) .dash-section,
+:is(body.page-has-right-panel, body.page-game) .sam-panel,
+:is(body.page-has-right-panel, body.page-game) .game-card,
+:is(body.page-has-right-panel, body.page-game) .arcade-card {
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+:is(body.page-has-right-panel, body.page-game) .ali-title,
+:is(body.page-has-right-panel, body.page-game) .timeline-hero,
+:is(body.page-has-right-panel, body.page-game) .article-card-title {
   font-size: 0.62rem !important;
+  line-height: 1.45;
 }
 
-body.page-has-right-panel .ali-desc,
-body.page-game .ali-desc {
-  font-size: clamp(0.86rem, 0.9vw, 0.96rem) !important;
+:is(body.page-has-right-panel, body.page-game) .ali-desc,
+:is(body.page-has-right-panel, body.page-game) .article-card-desc,
+:is(body.page-has-right-panel, body.page-game) .retro-hud-body p,
+:is(body.page-has-right-panel, body.page-game) .dash-section p,
+:is(body.page-has-right-panel, body.page-game) .sam-panel p,
+:is(body.page-has-right-panel, body.page-game) .wiki-content p,
+:is(body.page-has-right-panel, body.page-game) .article-body {
+  font-size: 0.9rem !important;
+  line-height: 1.6 !important;
 }
 
-body.page-has-right-panel .ali-meta,
-body.page-game .ali-meta {
+:is(body.page-has-right-panel, body.page-game) .ali-meta,
+:is(body.page-has-right-panel, body.page-game) .tl-tag,
+:is(body.page-has-right-panel, body.page-game) .tl-event-badge,
+:is(body.page-has-right-panel, body.page-game) .era-badge,
+:is(body.page-has-right-panel, body.page-game) .article-badge,
+:is(body.page-has-right-panel, body.page-game) .meta-item {
   font-size: 0.55rem !important;
+  line-height: 1.4;
 }
 
-/* ── Leaderboard tab buttons ────────────────────────────────── */
-body.page-game .lb-tab {
-  font-size: 0.56rem !important;
-}
+@media (max-width: 1200px) {
+  body.page-has-right-panel #layout,
+  body.page-game #layout {
+    grid-template-columns: var(--color-sidebar-w) minmax(0, 1fr);
+  }
 
-/* ── Timeline item titles and tags ──────────────────────────── */
-body.page-has-right-panel .tl-title a,
-body.page-game .tl-title a {
-  font-size: 0.56rem !important;
-}
-
-body.page-has-right-panel .tl-tag,
-body.page-game .tl-tag {
-  font-size: 0.44rem !important;
-}
-
-body.page-has-right-panel .tl-event-badge,
-body.page-has-right-panel .era-badge,
-body.page-game .tl-event-badge,
-body.page-game .era-badge {
-  font-size: 0.44rem !important;
-}
-
-body.page-has-right-panel .view-btn,
-body.page-game .view-btn {
-  font-size: 0.52rem !important;
-}
-
-/* ── SAM panel titles ───────────────────────────────────────── */
-body.page-has-right-panel .sam-panel-title,
-body.page-game .sam-panel-title {
-  font-size: 0.58rem !important;
-}
-
-body.page-has-right-panel .sam-graph-title,
-body.page-game .sam-graph-title {
-  font-size: 0.58rem !important;
-}
-
-/* ── Article meta badges ────────────────────────────────────── */
-body.page-has-right-panel .article-badge,
-body.page-game .article-badge {
-  font-size: 0.44rem !important;
-}
-
-body.page-has-right-panel .meta-item,
-body.page-game .meta-item {
-  font-size: 0.50rem !important;
-}
-
-/* ── Mobile: keep sidebar nav readable ─────────────────────── */
-@media (max-width: 900px) {
-  body.page-has-right-panel .sidebar-nav a,
-  body.page-game .sidebar-nav a {
-    font-size: 0.60rem !important;
+  body.page-has-right-panel #layout > #homepage-right-panel,
+  body.page-game #layout > #homepage-right-panel {
+    display: none !important;
   }
 }
 
-/* ── CSP / LAS injected panels and live feed — enforce readable scale ── */
-:is(body.page-has-right-panel, body.page-game) .csp-panel,
-:is(body.page-has-right-panel, body.page-game) [data-csp-panel],
-:is(body.page-has-right-panel, body.page-game) .las-panel,
-:is(body.page-has-right-panel, body.page-game) [data-las-panel],
-:is(body.page-has-right-panel, body.page-game) #live-feed-widget {
-  font-size: 0.68rem !important;
-}
-
-/* ── Article / lore body text — must meet 0.9rem minimum ───────── */
-:is(body.page-has-right-panel, body.page-game) .lore-paragraph,
-:is(body.page-has-right-panel, body.page-game) .lead-paragraph {
-  font-size: clamp(0.90rem, 1.0vw, 1.0rem) !important;
+@media (max-width: 900px) {
+  body.page-has-right-panel #layout,
+  body.page-game #layout {
+    display: flex !important;
+    flex-direction: column;
+  }
 }
