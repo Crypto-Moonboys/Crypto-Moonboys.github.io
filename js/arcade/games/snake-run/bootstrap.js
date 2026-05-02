@@ -622,19 +622,37 @@ function updateHud(state) {
   if (state.heatEl) state.heatEl.textContent = 'HEAT ' + Math.round(clamp(state.director.intensity || 0, 0, 100)) + '%';
 }
 
+// ── SnakeRun sizing authority ─────────────────────────────────────────────
+// Layout owner: #snakeCanvas (the canvas element itself).
+// Sizing source of truth: the actual playfield grid, not the abstract world bounds.
+//   GRID_W = GRID_COLS * CELL = 1408  (playfield width  in world units)
+//   GRID_H = GRID_ROWS * CELL = 832   (playfield height in world units)
+// view.scale = CSS display-pixels per world-unit = dw / GRID_W.
+// updateViewport() is the single function that syncs canvas buffer resolution,
+// CSS display size, and view.scale.  It is called on: page load, resize, and
+// fullscreenchange (via registerResize / fsHandler).  The overlay open/close
+// fires a synthetic resize event (game-fullscreen.js:openOverlay/closeOverlay)
+// which routes back here so fullscreen always gets the correct scale.
 function updateViewport(state) {
   if (!state.canvas) return;
+  const GRID_W = GRID_COLS * CELL; // 1408 — authoritative playfield width
+  const GRID_H = GRID_ROWS * CELL; // 832  — authoritative playfield height
   const dpr = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
+  // Use the parent element's available width as the display-size source.
   const rect = state.canvas.parentElement ? state.canvas.parentElement.getBoundingClientRect() : state.canvas.getBoundingClientRect();
   const overlay = document.getElementById('game-overlay');
   const overlayOpen = !!(overlay && overlay.classList.contains('active'));
-  const aspect = WORLD_W / WORLD_H;
+  // Aspect ratio is the GRID (playfield) ratio, not the abstract world ratio.
+  // This eliminates the unused dark margins that appeared when the grid
+  // (1408×832) was rendered inside a 1600×900-ratio canvas.
+  const aspect = GRID_W / GRID_H;
 
   const aw = Math.max(320, Math.floor(rect.width - 8));
   let targetW = aw;
   let targetH = targetW / aspect;
 
   if (overlayOpen) {
+    // Constrain height to fit between the control-bar chrome and the HUD.
     const hudHeight = state.root ? ((state.root.querySelector('.hud') || {}).offsetHeight || 0) : 0;
     const chromeHeight = 36 + hudHeight + 28;
     const vh = window.innerHeight || rect.height;
@@ -647,16 +665,24 @@ function updateViewport(state) {
 
   const dw = Math.max(320, Math.floor(targetW));
   const dh = Math.max(180, Math.floor(targetH));
+  // Set CSS display size via inline styles.  The overlay CSS uses
+  // !important for width/height:auto on all canvases, then a specific
+  // #snakeCanvas rule overrides with min(100%, height-based-width).
+  // Both routes use the 1408/832 aspect ratio so they agree with view.scale.
   state.canvas.style.width = dw + 'px';
   state.canvas.style.height = dh + 'px';
   state.canvas.style.maxWidth = 'none';
   state.canvas.style.display = 'block';
   state.canvas.style.margin = '0 auto';
-  state.canvas.style.aspectRatio = String(WORLD_W) + ' / ' + String(WORLD_H);
+  // aspect-ratio matches the GRID so CSS sizing stays consistent with JS.
+  state.canvas.style.aspectRatio = GRID_W + ' / ' + GRID_H;
 
+  // Sync canvas buffer resolution to CSS display size × DPR.
   state.canvas.width = Math.floor(dw * dpr);
   state.canvas.height = Math.floor(dh * dpr);
-  state.view.scale = dw / WORLD_W;
+  // view.scale: CSS display-pixels per 1 world-unit.
+  // With this scale, GRID_W world units map to exactly dw display pixels.
+  state.view.scale = dw / GRID_W;
   state.view.width = dw;
   state.view.height = dh;
   state.view.offsetX = (aw - dw) * 0.5;
@@ -1159,12 +1185,19 @@ function renderWorld(state) {
 
   ctx.save();
   const viewScale = state.view.scale;
-  ctx.translate((state.view.width - WORLD_W * viewScale) * 0.5, (state.view.height - WORLD_H * viewScale) * 0.5);
+  // Centre the playfield in the canvas.  With viewScale = view.width / (GRID_COLS*CELL)
+  // both offsets evaluate to 0, meaning the grid fills the canvas exactly —
+  // no unused dark margins on any side.
+  ctx.translate(
+    (state.view.width - GRID_COLS * CELL * viewScale) * 0.5,
+    (state.view.height - GRID_ROWS * CELL * viewScale) * 0.5
+  );
   ctx.scale(viewScale, viewScale);
   ctx.translate(-camX + shakeX, -camY + shakeY);
 
   const tint = clamp((state.director.intensity || 0) / 100, 0, 1);
-  const bg = ctx.createLinearGradient(0, 0, WORLD_W, WORLD_H);
+  // Gradient spans the playfield (GRID dimensions), not the abstract world bounds.
+  const bg = ctx.createLinearGradient(0, 0, GRID_COLS * CELL, GRID_ROWS * CELL);
   bg.addColorStop(0, 'rgba(10,18,34,1)');
   bg.addColorStop(1, 'rgba(' + Math.floor(16 + tint * 38) + ',7,22,1)');
   ctx.fillStyle = bg;
