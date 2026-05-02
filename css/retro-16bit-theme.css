@@ -5006,8 +5006,9 @@ body.page-game .meta-item {
 }
 
 /* ==========================================================================
-   INDEX VISUAL TRUTH ENFORCEMENT
-   End-of-file cascade guard to unify shell pages to index visual baseline.
+   END-OF-FILE CASCADE GUARD (SHELL ENFORCEMENT)
+   This guard reinforces the existing "FINAL SHARED SITE SHELL NORMALISATION"
+   source-of-truth block above where legacy specificity still leaks through.
    ========================================================================== */
 
 :is(body.page-home, body.page-has-right-panel, body.page-game) {
@@ -5056,6 +5057,7 @@ body.page-game #layout {
 }
 
 :is(body.page-has-right-panel, body.page-game) {
+  overflow-x: hidden;
   overflow-x: clip;
 }
 
@@ -5109,7 +5111,9 @@ body.page-game #layout {
   box-shadow: inset 0 0 0 1px rgba(0, 229, 255, 0.15) !important;
 }
 
-:is(body.page-home, body.page-has-right-panel, body.page-game) #layout > #homepage-right-panel {
+body.page-home #layout > #homepage-right-panel:not(#sidebar):not(#main-wrapper),
+body.page-has-right-panel #layout > #homepage-right-panel:not(#sidebar):not(#main-wrapper),
+body.page-game #layout > #homepage-right-panel:not(#sidebar):not(#main-wrapper) {
   position: sticky !important;
   top: var(--color-header-h) !important;
   width: 270px !important;
@@ -5143,21 +5147,29 @@ body.page-game #layout {
   font-size: 0.62rem !important;
 }
 
-:is(body.page-home, body.page-has-right-panel, body.page-game) #homepage-right-panel .retro-hud-title {
+body.page-home #layout > #homepage-right-panel:not(#sidebar):not(#main-wrapper) .retro-hud-title,
+body.page-has-right-panel #layout > #homepage-right-panel:not(#sidebar):not(#main-wrapper) .retro-hud-title,
+body.page-game #layout > #homepage-right-panel:not(#sidebar):not(#main-wrapper) .retro-hud-title {
   font-size: 0.62rem !important;
   line-height: 1.35 !important;
 }
 
-:is(body.page-home, body.page-has-right-panel, body.page-game) #homepage-right-panel .retro-hud-body {
+body.page-home #layout > #homepage-right-panel:not(#sidebar):not(#main-wrapper) .retro-hud-body,
+body.page-has-right-panel #layout > #homepage-right-panel:not(#sidebar):not(#main-wrapper) .retro-hud-body,
+body.page-game #layout > #homepage-right-panel:not(#sidebar):not(#main-wrapper) .retro-hud-body {
   font-size: 0.74rem !important;
   line-height: 1.5 !important;
 }
 
-:is(body.page-home, body.page-has-right-panel, body.page-game) #homepage-right-panel .hud-label {
+body.page-home #layout > #homepage-right-panel:not(#sidebar):not(#main-wrapper) .hud-label,
+body.page-has-right-panel #layout > #homepage-right-panel:not(#sidebar):not(#main-wrapper) .hud-label,
+body.page-game #layout > #homepage-right-panel:not(#sidebar):not(#main-wrapper) .hud-label {
   font-size: 0.60rem !important;
 }
 
-:is(body.page-home, body.page-has-right-panel, body.page-game) #homepage-right-panel .hud-value {
+body.page-home #layout > #homepage-right-panel:not(#sidebar):not(#main-wrapper) .hud-value,
+body.page-has-right-panel #layout > #homepage-right-panel:not(#sidebar):not(#main-wrapper) .hud-value,
+body.page-game #layout > #homepage-right-panel:not(#sidebar):not(#main-wrapper) .hud-value {
   font-size: 0.62rem !important;
 }
 
@@ -5187,11 +5199,14 @@ body.page-game #layout {
 }
 
 @media (max-width: 1360px) {
+  /* Homepage follows the same collapse rule at <=1360 for shell consistency. */
+  body.page-home #layout,
   body.page-has-right-panel #layout,
   body.page-game #layout {
     grid-template-columns: var(--color-sidebar-w) minmax(0, 1fr);
   }
 
+  body.page-home #layout > #homepage-right-panel:not(#sidebar):not(#main-wrapper),
   body.page-has-right-panel #layout > #homepage-right-panel:not(#sidebar):not(#main-wrapper),
   body.page-game #layout > #homepage-right-panel:not(#sidebar):not(#main-wrapper) {
     display: none !important;

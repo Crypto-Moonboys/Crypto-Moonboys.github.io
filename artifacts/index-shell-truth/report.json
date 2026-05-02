@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-05-02T19:55:19.066Z",
+  "generatedAt": "2026-05-02T20:10:37.468Z",
   "viewport": {
     "width": 1600,
     "height": 980
@@ -7,7 +7,7 @@
   "results": [
     {
       "page": "index",
-      "screenshot": "C:\\Users\\GOD\\Crypto-Moonboys.github.io\\artifacts\\index-shell-truth\\index-desktop.png",
+      "screenshot": "artifacts/index-shell-truth/index-desktop.png",
       "metrics": {
         "path": "/index.html",
         "overflowX": false,
@@ -22,7 +22,7 @@
     },
     {
       "page": "games",
-      "screenshot": "C:\\Users\\GOD\\Crypto-Moonboys.github.io\\artifacts\\index-shell-truth\\games-desktop.png",
+      "screenshot": "artifacts/index-shell-truth/games-desktop.png",
       "metrics": {
         "path": "/games/",
         "overflowX": false,
@@ -37,7 +37,7 @@
     },
     {
       "page": "dashboard",
-      "screenshot": "C:\\Users\\GOD\\Crypto-Moonboys.github.io\\artifacts\\index-shell-truth\\dashboard-desktop.png",
+      "screenshot": "artifacts/index-shell-truth/dashboard-desktop.png",
       "metrics": {
         "path": "/dashboard.html",
         "overflowX": false,
@@ -52,7 +52,7 @@
     },
     {
       "page": "leaderboard",
-      "screenshot": "C:\\Users\\GOD\\Crypto-Moonboys.github.io\\artifacts\\index-shell-truth\\leaderboard-desktop.png",
+      "screenshot": "artifacts/index-shell-truth/leaderboard-desktop.png",
       "metrics": {
         "path": "/games/leaderboard.html",
         "overflowX": false,
