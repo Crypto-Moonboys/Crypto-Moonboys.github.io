@@ -1034,7 +1034,6 @@ a.hero-stat-link:hover {
     box-shadow: 4px 0 16px rgba(0,0,0,.4);
   }
   #sidebar.open { transform: translateX(0); }
-  /* Safety: overlay must be non-interactive unless explicitly opened. */
   #sidebar-overlay {
     display: none;
     position: fixed;
@@ -1042,12 +1041,8 @@ a.hero-stat-link:hover {
     top: var(--color-header-h);
     background: rgba(0,0,0,.5);
     z-index: 140;
-    pointer-events: none;
   }
-  #sidebar-overlay.open, #sidebar-overlay.active {
-    display: block;
-    pointer-events: auto;
-  }
+  #sidebar-overlay.open, #sidebar-overlay.active { display: block; }
   .hamburger { display: flex; }
   #content { padding: 20px 18px 40px; }
   .infobox { float: none; width: 100%; margin: 0 0 20px 0; }
