@@ -1934,17 +1934,19 @@ body.page-home .launch-subcopy {
 
 /* ==========================================================================
    HUD REBUILD — REFERENCE MATCH
-   Scope: homepage only (body.page-home), index.html structural markup only.
+   Scope: homepage only.
+   - Right-panel classes scoped under: body.page-home #homepage-right-panel
+   - Hero logo wrap scoped under: body.page-home
    No JS / gameplay / auth / XP / worker logic touched.
    ========================================================================== */
 
 /* ── Mascot icons in HUD title bar ─────────────────────────────── */
-.retro-hud-title {
+body.page-home #homepage-right-panel .retro-hud-title {
   display: flex;
   align-items: center;
   flex-wrap: nowrap;
 }
-.retro-hud-mascot {
+body.page-home #homepage-right-panel .retro-hud-mascot {
   margin-left: auto;
   padding-left: 6px;
   font-size: 1.35rem;
@@ -2002,10 +2004,10 @@ body.page-home .hud-box--feed .retro-hud-title {
   color: var(--neon-purple) !important;
   text-shadow: 0 0 8px var(--neon-purple), 2px 2px 0 #000 !important;
 }
-body.page-home .hud-box--feed .retro-hud-mascot {
+body.page-home #homepage-right-panel .hud-box--feed .retro-hud-mascot {
   filter: drop-shadow(0 0 6px rgba(190, 76, 247, 0.80));
 }
-body.page-home .hud-box--system .retro-hud-mascot {
+body.page-home #homepage-right-panel .hud-box--system .retro-hud-mascot {
   filter: drop-shadow(0 0 6px rgba(0, 229, 255, 0.80));
 }
 
@@ -2018,14 +2020,14 @@ body.page-home .hud-box--feed::before   { border-color: var(--neon-purple) !impo
 body.page-home .hud-box--feed::after    { border-color: var(--neon-cyan) !important; }
 
 /* ── Player Portrait Row ─────────────────────────────────────── */
-.hud-player-portrait-row {
+body.page-home #homepage-right-panel .hud-player-portrait-row {
   display: flex;
   gap: 10px;
   align-items: flex-start;
   margin-bottom: 10px;
 }
 
-.hud-avatar-box {
+body.page-home #homepage-right-panel .hud-avatar-box {
   flex-shrink: 0;
   width: 64px;
   height: 64px;
@@ -2043,14 +2045,14 @@ body.page-home .hud-box--feed::after    { border-color: var(--neon-cyan) !import
   position: relative;
 }
 
-.hud-avatar-icon {
+body.page-home #homepage-right-panel .hud-avatar-icon {
   font-size: 2.5rem;
   line-height: 1;
   image-rendering: pixelated;
   filter: drop-shadow(0 0 5px rgba(0, 229, 255, 0.65));
 }
 
-.hud-player-info {
+body.page-home #homepage-right-panel .hud-player-info {
   flex: 1;
   min-width: 0;
   display: flex;
@@ -2058,7 +2060,7 @@ body.page-home .hud-box--feed::after    { border-color: var(--neon-cyan) !import
   gap: 5px;
 }
 
-.hud-info-row {
+body.page-home #homepage-right-panel .hud-info-row {
   display: flex;
   align-items: baseline;
   gap: 5px;
@@ -2067,7 +2069,7 @@ body.page-home .hud-box--feed::after    { border-color: var(--neon-cyan) !import
   min-width: 0;
 }
 
-.hud-label {
+body.page-home #homepage-right-panel .hud-label {
   font-family: var(--font-pixel);
   font-size: 0.38rem;
   color: var(--neon-magenta);
@@ -2079,7 +2081,7 @@ body.page-home .hud-box--feed::after    { border-color: var(--neon-cyan) !import
   line-height: 1.6;
 }
 
-.hud-value {
+body.page-home #homepage-right-panel .hud-value {
   font-family: var(--font-pixel);
   font-size: 0.40rem;
   color: #eaf8ff;
@@ -2093,25 +2095,25 @@ body.page-home .hud-box--feed::after    { border-color: var(--neon-cyan) !import
   line-height: 1.6;
 }
 
-.hud-rank-val {
+body.page-home #homepage-right-panel .hud-rank-val {
   color: var(--neon-yellow) !important;
   text-shadow: 0 0 8px rgba(255, 214, 0, 0.70), 1px 1px 0 #000 !important;
 }
 
-.hud-xp-inline {
+body.page-home #homepage-right-panel .hud-xp-inline {
   color: var(--neon-cyan) !important;
   text-shadow: 0 0 6px rgba(0, 229, 255, 0.60), 1px 1px 0 #000 !important;
 }
 
 /* ── XP Progress Bar ─────────────────────────────────────────── */
-.hud-xp-bar-wrap {
+body.page-home #homepage-right-panel .hud-xp-bar-wrap {
   display: flex;
   align-items: center;
   gap: 6px;
   margin-bottom: 9px;
 }
 
-.hud-xp-label {
+body.page-home #homepage-right-panel .hud-xp-label {
   font-family: var(--font-pixel);
   font-size: 0.38rem;
   color: var(--neon-magenta);
@@ -2121,7 +2123,7 @@ body.page-home .hud-box--feed::after    { border-color: var(--neon-cyan) !import
   line-height: 1;
 }
 
-.hud-xp-track {
+body.page-home #homepage-right-panel .hud-xp-track {
   flex: 1;
   height: 10px;
   background: rgba(0, 0, 0, 0.65);
@@ -2131,7 +2133,7 @@ body.page-home .hud-box--feed::after    { border-color: var(--neon-cyan) !import
   box-shadow: inset 0 0 0 1px rgba(0, 229, 255, 0.10);
 }
 
-.hud-xp-fill {
+body.page-home #homepage-right-panel .hud-xp-fill {
   height: 100%;
   background: repeating-linear-gradient(
     90deg,
@@ -2145,7 +2147,7 @@ body.page-home .hud-box--feed::after    { border-color: var(--neon-cyan) !import
   transition: width 0.4s ease;
 }
 
-.hud-xp-pct {
+body.page-home #homepage-right-panel .hud-xp-pct {
   font-family: var(--font-pixel);
   font-size: 0.38rem;
   color: var(--neon-cyan);
@@ -2157,14 +2159,14 @@ body.page-home .hud-box--feed::after    { border-color: var(--neon-cyan) !import
 }
 
 /* ── Stats Row (coins / gems / energy) ───────────────────────── */
-.hud-stats-row {
+body.page-home #homepage-right-panel .hud-stats-row {
   display: flex;
   gap: 5px;
   justify-content: space-between;
   margin-bottom: 10px;
 }
 
-.hud-stat-chip {
+body.page-home #homepage-right-panel .hud-stat-chip {
   flex: 1;
   display: flex;
   align-items: center;
@@ -2178,13 +2180,13 @@ body.page-home .hud-box--feed::after    { border-color: var(--neon-cyan) !import
   overflow: hidden;
 }
 
-.hud-stat-icon {
+body.page-home #homepage-right-panel .hud-stat-icon {
   font-size: 0.88rem;
   line-height: 1;
   flex-shrink: 0;
 }
 
-.hud-stat-val {
+body.page-home #homepage-right-panel .hud-stat-val {
   font-family: var(--font-pixel);
   font-size: 0.38rem;
   color: var(--neon-cyan);
@@ -2197,14 +2199,14 @@ body.page-home .hud-box--feed::after    { border-color: var(--neon-cyan) !import
 }
 
 /* ── System Status Table ─────────────────────────────────────── */
-.hud-sys-table {
+body.page-home #homepage-right-panel .hud-sys-table {
   display: flex;
   flex-direction: column;
   gap: 0;
   margin-bottom: 6px;
 }
 
-.hud-sys-row {
+body.page-home #homepage-right-panel .hud-sys-row {
   display: flex;
   align-items: center;
   gap: 5px;
@@ -2212,9 +2214,9 @@ body.page-home .hud-box--feed::after    { border-color: var(--neon-cyan) !import
   border-bottom: 1px solid rgba(0, 229, 255, 0.12);
   min-width: 0;
 }
-.hud-sys-row:last-child { border-bottom: none; }
+body.page-home #homepage-right-panel .hud-sys-row:last-child { border-bottom: none; }
 
-.hud-sys-label {
+body.page-home #homepage-right-panel .hud-sys-label {
   font-family: var(--font-pixel);
   font-size: 0.36rem;
   color: var(--color-text-muted);
@@ -2228,7 +2230,7 @@ body.page-home .hud-box--feed::after    { border-color: var(--neon-cyan) !import
   line-height: 1.6;
 }
 
-.hud-sys-val {
+body.page-home #homepage-right-panel .hud-sys-val {
   font-family: var(--font-pixel);
   font-size: 0.38rem;
   letter-spacing: 0.06em;
@@ -2238,12 +2240,12 @@ body.page-home .hud-box--feed::after    { border-color: var(--neon-cyan) !import
   line-height: 1.6;
 }
 
-.hud-sys-online { color: var(--neon-green); }
-.hud-sys-count  { color: var(--neon-yellow); }
-.hud-sys-warn   { color: var(--neon-orange); }
-.hud-sys-error  { color: var(--neon-magenta); }
+body.page-home #homepage-right-panel .hud-sys-online { color: var(--neon-green); }
+body.page-home #homepage-right-panel .hud-sys-count  { color: var(--neon-yellow); }
+body.page-home #homepage-right-panel .hud-sys-warn   { color: var(--neon-orange); }
+body.page-home #homepage-right-panel .hud-sys-error  { color: var(--neon-magenta); }
 
-.hud-sys-dot {
+body.page-home #homepage-right-panel .hud-sys-dot {
   width: 8px;
   height: 8px;
   min-width: 8px;
@@ -2255,8 +2257,8 @@ body.page-home .hud-box--feed::after    { border-color: var(--neon-cyan) !import
 }
 
 /* ── Live Feed Items ─────────────────────────────────────────── */
-.hud-feed-item,
-#homepage-right-panel .feed-item {
+body.page-home #homepage-right-panel .hud-feed-item,
+body.page-home #homepage-right-panel .feed-item {
   display: flex !important;
   align-items: flex-start !important;
   gap: 5px !important;
@@ -2264,10 +2266,10 @@ body.page-home .hud-box--feed::after    { border-color: var(--neon-cyan) !import
   border-bottom: 1px solid rgba(190, 76, 247, 0.18) !important;
   min-width: 0;
 }
-.hud-feed-item:last-child,
-#homepage-right-panel .feed-item:last-child { border-bottom: none !important; }
+body.page-home #homepage-right-panel .hud-feed-item:last-child,
+body.page-home #homepage-right-panel .feed-item:last-child { border-bottom: none !important; }
 
-.hud-feed-icon {
+body.page-home #homepage-right-panel .hud-feed-icon {
   font-size: 0.78rem;
   line-height: 1.35;
   flex-shrink: 0;
@@ -2275,8 +2277,8 @@ body.page-home .hud-box--feed::after    { border-color: var(--neon-cyan) !import
   text-align: center;
 }
 
-.hud-feed-text,
-#homepage-right-panel .feed-text {
+body.page-home #homepage-right-panel .hud-feed-text,
+body.page-home #homepage-right-panel .feed-text {
   font-family: var(--font-pixel) !important;
   font-size: 0.36rem !important;
   color: #d0eaff !important;
@@ -2287,8 +2289,8 @@ body.page-home .hud-box--feed::after    { border-color: var(--neon-cyan) !import
   letter-spacing: 0.02em;
 }
 
-.hud-feed-time,
-#homepage-right-panel .feed-time {
+body.page-home #homepage-right-panel .hud-feed-time,
+body.page-home #homepage-right-panel .feed-time {
   font-family: var(--font-pixel) !important;
   font-size: 0.34rem !important;
   color: var(--neon-cyan) !important;
@@ -2479,7 +2481,7 @@ body.page-home [data-las-panel] .las-event-text {
 }
 
 /* ── Hero logo frame wrapper ─────────────────────────────────── */
-.hud-hero-logo-wrap {
+body.page-home .hud-hero-logo-wrap {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -2492,7 +2494,7 @@ body.page-home [data-las-panel] .las-event-text {
 }
 
 /* Outer broken-segment magenta frame */
-.hud-hero-logo-wrap::before {
+body.page-home .hud-hero-logo-wrap::before {
   content: '';
   position: absolute;
   inset: 0;
@@ -2529,7 +2531,7 @@ body.page-home [data-las-panel] .las-event-text {
 }
 
 /* Inner corner bracket accents */
-.hud-hero-logo-wrap::after {
+body.page-home .hud-hero-logo-wrap::after {
   content: '';
   position: absolute;
   inset: -2px;
@@ -2548,7 +2550,7 @@ body.page-home [data-las-panel] .las-event-text {
   animation: neonCornerGlitch 5.4s steps(4, end) infinite;
 }
 
-.hud-hero-logo-wrap .hero-logo-img {
+body.page-home .hud-hero-logo-wrap .hero-logo-img {
   margin: 0 !important;
   position: relative;
   z-index: 3;
@@ -2556,8 +2558,8 @@ body.page-home [data-las-panel] .las-event-text {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .hud-hero-logo-wrap::before,
-  .hud-hero-logo-wrap::after {
+  body.page-home .hud-hero-logo-wrap::before,
+  body.page-home .hud-hero-logo-wrap::after {
     animation: none !important;
   }
 }
