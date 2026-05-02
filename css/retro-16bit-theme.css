@@ -2763,3 +2763,95 @@ body.page-home .sidebar-nav a.active {
     animation: none !important;
   }
 }
+
+/* ==========================================================================
+   SHARED PAGE PANELS — ALL NON-HOME PAGES
+   Applies to pages using .page-hero / .section / .route-pill patterns.
+   Uses !important to beat same-specificity inline <style> blocks that load
+   after this file in the HTML cascade (how-to-play, gkniftyheads-incubator,
+   community, about/*, wiki/*, etc.).
+   No gameplay / XP / auth / worker logic touched.
+   ========================================================================== */
+
+/* ── Page hero panel ───────────────────────────────────────────── */
+.page-hero {
+  border: 3px solid var(--neon-magenta) !important;
+  border-radius: 0 !important;
+  background: rgba(3, 10, 22, 0.92) !important;
+  box-shadow:
+    0 0 0 1px rgba(0, 229, 255, 0.20),
+    5px 5px 0 rgba(0, 0, 0, 0.82),
+    0 0 18px rgba(255, 45, 120, 0.22) !important;
+  clip-path: polygon(
+    0 10px, 10px 0,
+    calc(100% - 10px) 0, 100% 10px,
+    100% calc(100% - 10px), calc(100% - 10px) 100%,
+    10px 100%, 0 calc(100% - 10px)
+  );
+}
+
+.page-hero h1 {
+  font-family: var(--font-pixel) !important;
+  color: var(--neon-cyan) !important;
+  text-shadow:
+    0 0 10px rgba(0, 229, 255, 0.65),
+    2px 2px 0 rgba(0, 0, 0, 0.85) !important;
+  text-transform: uppercase;
+  line-height: 1.45;
+  letter-spacing: 0.04em;
+}
+
+/* ── Section cards ─────────────────────────────────────────────── */
+.section {
+  border: 2px solid rgba(0, 229, 255, 0.38) !important;
+  border-left: 4px solid var(--neon-magenta) !important;
+  border-radius: 0 !important;
+  background: rgba(3, 10, 22, 0.88) !important;
+  box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.70) !important;
+}
+
+.section h2 {
+  font-family: var(--font-pixel) !important;
+  color: var(--neon-cyan) !important;
+  text-shadow:
+    0 0 8px rgba(0, 229, 255, 0.60),
+    1px 1px 0 rgba(0, 0, 0, 0.9) !important;
+  font-size: clamp(0.48rem, 1.2vw, 0.62rem) !important;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  border-bottom: 2px solid rgba(0, 229, 255, 0.22) !important;
+  padding-bottom: 6px !important;
+}
+
+/* ── Route pill (how-to-play, etc.) ───────────────────────────── */
+.route-pill {
+  background: rgba(2, 6, 14, 0.96) !important;
+  border: 2px solid var(--neon-cyan) !important;
+  border-radius: 0 !important;
+  color: var(--neon-cyan) !important;
+}
+
+/* ── Breadcrumb neon links ─────────────────────────────────────── */
+.breadcrumb a {
+  color: var(--neon-cyan) !important;
+}
+.breadcrumb a:hover {
+  color: var(--neon-magenta) !important;
+}
+
+/* ── Shared btn-secondary retro treatment ─────────────────────── */
+/* Only overrides visual properties; layout/size left to wiki.css */
+.btn-secondary {
+  background: rgba(0, 0, 0, 0.88) !important;
+  border: 2px solid rgba(0, 229, 255, 0.55) !important;
+  border-radius: 0 !important;
+  color: var(--neon-cyan) !important;
+  box-shadow: 3px 3px 0 rgba(0, 229, 255, 0.18) !important;
+}
+.btn-secondary:hover {
+  background: rgba(0, 229, 255, 0.12) !important;
+  border-color: var(--neon-cyan) !important;
+  transform: translate(-1px, -1px);
+  text-decoration: none;
+  box-shadow: 4px 4px 0 rgba(0, 229, 255, 0.28) !important;
+}
