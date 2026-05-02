@@ -34,7 +34,7 @@
   <link rel="stylesheet" href="/css/retro-16bit-theme.css">
   <link rel="icon" href="/img/favicon.svg" type="image/svg+xml">
 </head>
-<body>
+<body class="page-article page-has-right-panel">
 
 <a class="skip-link" href="#content">Skip to content</a>
 
@@ -246,8 +246,109 @@
       </div>
     </footer>
   </div>
-</div>
 
+  <!-- ── Right-hand HUD panels ── -->
+  <aside id="homepage-right-panel" aria-label="Player and system status">
+
+    <!-- ── PLAYER STATUS ── -->
+    <div class="retro-hud-box hud-box--player">
+      <div class="retro-hud-title">
+        <span class="retro-hud-title-icon" aria-hidden="true">▶</span>
+        Player Status
+        <span class="retro-hud-mascot" aria-hidden="true">🐻</span>
+      </div>
+      <div class="retro-hud-body">
+        <div class="hud-player-portrait-row">
+          <div class="hud-avatar-box" role="img" aria-label="Player avatar">
+            <span class="hud-avatar-icon" aria-hidden="true">👾</span>
+          </div>
+          <div class="hud-player-info">
+            <div class="hud-info-row">
+              <span class="hud-label">PLAYER:</span>
+              <span class="hud-value hud-player-name">—</span>
+            </div>
+            <div class="hud-info-row">
+              <span class="hud-label">RANK:</span>
+              <span class="hud-value hud-rank-val">—</span>
+            </div>
+            <div class="hud-info-row">
+              <span class="hud-label">XP:</span>
+              <span class="hud-value hud-xp-inline"><span class="hud-xp-cur">--</span>&thinsp;/&thinsp;<span class="hud-xp-max">--</span></span>
+            </div>
+          </div>
+        </div>
+        <div class="hud-xp-bar-wrap">
+          <span class="hud-xp-label">XP</span>
+          <div class="hud-xp-track"><div class="hud-xp-fill"></div></div>
+          <span class="hud-xp-pct">--</span>
+        </div>
+        <div class="hud-stats-row">
+          <div class="hud-stat-chip"><span class="hud-stat-icon" aria-hidden="true">🪙</span><span class="hud-stat-val">--</span></div>
+          <div class="hud-stat-chip"><span class="hud-stat-icon" aria-hidden="true">💎</span><span class="hud-stat-val">--</span></div>
+          <div class="hud-stat-chip"><span class="hud-stat-icon" aria-hidden="true">⚡</span><span class="hud-stat-val">--</span></div>
+        </div>
+        <div data-csp-panel></div>
+      </div>
+    </div>
+
+    <!-- ── SYSTEM STATUS ── -->
+    <div class="retro-hud-box hud-box--system">
+      <div class="retro-hud-title">
+        <span class="retro-hud-title-icon" aria-hidden="true">▶</span>
+        System Status
+        <span class="retro-hud-mascot" aria-hidden="true">🤖</span>
+      </div>
+      <div class="retro-hud-body">
+        <div class="hud-sys-table" aria-label="System status indicators">
+          <div class="hud-sys-row">
+            <span class="hud-sys-label">NETWORK</span>
+            <span class="hud-sys-val hud-sys-online">ONLINE</span>
+            <span class="hud-sys-dot" aria-hidden="true"></span>
+          </div>
+          <div class="hud-sys-row">
+            <span class="hud-sys-label">ORACLE FEED</span>
+            <span class="hud-sys-val hud-sys-online">SYNCED</span>
+            <span class="hud-sys-dot" aria-hidden="true"></span>
+          </div>
+          <div class="hud-sys-row">
+            <span class="hud-sys-label">BATTLE CHAMBER</span>
+            <span class="hud-sys-val hud-sys-online">ACTIVE</span>
+            <span class="hud-sys-dot" aria-hidden="true"></span>
+          </div>
+          <div class="hud-sys-row">
+            <span class="hud-sys-label">ARCADE SERVER</span>
+            <span class="hud-sys-val hud-sys-online">ONLINE</span>
+            <span class="hud-sys-dot" aria-hidden="true"></span>
+          </div>
+          <div class="hud-sys-row">
+            <span class="hud-sys-label">WIKI NODES</span>
+            <span class="hud-sys-val hud-sys-ratio">— / —</span>
+            <span class="hud-sys-dot" aria-hidden="true"></span>
+          </div>
+        </div>
+        <div data-las-panel></div>
+      </div>
+    </div>
+
+    <!-- ── LIVE SYSTEM FEED ── -->
+    <div class="retro-hud-box hud-box--feed">
+      <div class="retro-hud-title">
+        <span class="retro-hud-title-icon" aria-hidden="true">▶</span>
+        Live System Feed
+        <span class="retro-hud-mascot" aria-hidden="true">⛑️</span>
+      </div>
+      <div class="retro-hud-body" id="live-feed-widget">
+        <div class="hud-feed-item">
+          <span class="hud-feed-icon" aria-hidden="true">📡</span>
+          <span class="hud-feed-text">Connecting to feed…</span>
+          <span class="hud-feed-time">--:--</span>
+        </div>
+      </div>
+    </div>
+
+  </aside><!-- /#homepage-right-panel -->
+
+</div>
 <button id="back-to-top" aria-label="Back to top">↑</button>
 <script src="/js/api-config.js"></script>
 <script src="/js/identity-gate.js"></script>

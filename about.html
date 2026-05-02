@@ -17,7 +17,7 @@
   <link rel="stylesheet" href="/css/retro-16bit-theme.css"><link rel="icon" href="/img/favicon.svg" type="image/svg+xml">
   <style>.page-hero,.section{border:1px solid rgba(86,220,255,.26);border-radius:12px;background:rgba(8,18,34,.72)}.page-hero{padding:clamp(30px,6vw,70px) clamp(20px,4vw,44px);margin-bottom:18px}.section{margin:0 0 18px;padding:18px}.section h2{margin:0 0 10px;text-transform:uppercase}.section p,.section li, .section td{color:var(--color-text-muted);line-height:1.7}.table{width:100%;border-collapse:collapse}.table td{padding:10px;border:1px solid rgba(86,220,255,.2)}.cta-row{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px}</style>
 </head>
-<body>
+<body class="page-about page-has-right-panel">
 <a class="skip-link" href="#content">Skip to content</a>
 <header id="site-header" role="banner"><button class="hamburger" id="hamburger" aria-label="Toggle navigation" aria-expanded="false" aria-controls="sidebar">☰</button><a href="/index.html" class="site-logo" aria-label="Crypto Moonboys home"><img src="/img/CRYPTO-MOONBOYS-BITCOIN-LOGO.png" alt="" aria-hidden="true"><span><span class="logo-text">Crypto Moonboys</span><span class="logo-sub">Play. Earn. Build. Own it.</span></span></a><div id="header-search" role="search"><input type="search" id="search-input" placeholder="Search the system..." aria-label="Search" autocomplete="off"><button id="search-btn" aria-label="Search">🔍</button><div id="search-results" role="listbox"></div></div><nav class="header-nav" aria-label="Main navigation"><a href="/index.html">Home</a><a href="/games/">Arcade</a></nav></header>
 <div id="sidebar-overlay" aria-hidden="true"></div>
@@ -34,7 +34,109 @@
 <section class="section"><h2>7. Live Now vs Future</h2><p><strong>Live now:</strong></p><ul><li>public wiki / knowledge system</li><li>lore and article pages</li><li>categories and archive structure</li><li>playable arcade games</li><li>accepted score submission</li><li>Arcade XP when Telegram linked</li><li>Telegram identity sync</li><li>leaderboard systems</li><li>Battle Chamber / community activity layers</li><li>faction gameplay effects in supported active games</li><li>Block Topia as a clean 2-player isometric map base</li><li>Block Topia gate = Telegram linked + 50 Arcade XP</li></ul><p><strong>Future:</strong></p><ul><li>NPC battles</li><li>deeper Block Topia gameplay</li><li>seasonal HODL Wars</li><li>richer faction progression</li><li>creator/IP expansion</li><li>wider economy systems</li><li>phygital drops</li><li>more game loops</li><li>community-built extensions</li><li>deeper lore automation</li><li>stronger links between wiki pages and gameplay</li></ul></section>
 <section class="section"><h2>8. Who It Is For</h2><p>This is for people who like systems, hidden layers, culture with roots, games, weird worlds, Web3 with actual movement, and projects still forming. It is not for people looking for passive rewards, guaranteed profit, or empty hype.</p></section>
 <section class="section"><h2>9. CTA</h2><div class="cta-row"><a href="/how-to-play.html" class="btn btn-secondary">How To Play</a><a href="/games/" class="btn btn-primary">Play Arcade</a><a href="/community.html" class="btn btn-secondary">Battle Chamber</a><a href="/gkniftyheads-incubator.html" class="btn btn-secondary">Link Telegram</a></div></section>
-</main><footer id="site-footer" role="contentinfo"><div class="footer-inner"><div class="footer-col"><h4>Crypto Moonboys</h4><p>Living Web3 wiki system.</p></div><div class="footer-col"><h4>Start</h4><ul><li><a href="/games/">Arcade</a></li><li><a href="/gkniftyheads-incubator.html">Link Telegram</a></li><li><a href="/community.html">Battle Chamber</a></li></ul></div></div><div class="footer-bottom"><p>© 2026 Crypto Moonboys · Not financial advice.</p></div></footer></div></div>
+</main><footer id="site-footer" role="contentinfo"><div class="footer-inner"><div class="footer-col"><h4>Crypto Moonboys</h4><p>Living Web3 wiki system.</p></div><div class="footer-col"><h4>Start</h4><ul><li><a href="/games/">Arcade</a></li><li><a href="/gkniftyheads-incubator.html">Link Telegram</a></li><li><a href="/community.html">Battle Chamber</a></li></ul></div></div><div class="footer-bottom"><p>© 2026 Crypto Moonboys · Not financial advice.</p></div></footer></div>
+  <!-- ── Right-hand HUD panels ── -->
+  <aside id="homepage-right-panel" aria-label="Player and system status">
+
+    <!-- ── PLAYER STATUS ── -->
+    <div class="retro-hud-box hud-box--player">
+      <div class="retro-hud-title">
+        <span class="retro-hud-title-icon" aria-hidden="true">▶</span>
+        Player Status
+        <span class="retro-hud-mascot" aria-hidden="true">🐻</span>
+      </div>
+      <div class="retro-hud-body">
+        <div class="hud-player-portrait-row">
+          <div class="hud-avatar-box" role="img" aria-label="Player avatar">
+            <span class="hud-avatar-icon" aria-hidden="true">👾</span>
+          </div>
+          <div class="hud-player-info">
+            <div class="hud-info-row">
+              <span class="hud-label">PLAYER:</span>
+              <span class="hud-value hud-player-name">—</span>
+            </div>
+            <div class="hud-info-row">
+              <span class="hud-label">RANK:</span>
+              <span class="hud-value hud-rank-val">—</span>
+            </div>
+            <div class="hud-info-row">
+              <span class="hud-label">XP:</span>
+              <span class="hud-value hud-xp-inline"><span class="hud-xp-cur">--</span>&thinsp;/&thinsp;<span class="hud-xp-max">--</span></span>
+            </div>
+          </div>
+        </div>
+        <div class="hud-xp-bar-wrap">
+          <span class="hud-xp-label">XP</span>
+          <div class="hud-xp-track"><div class="hud-xp-fill"></div></div>
+          <span class="hud-xp-pct">--</span>
+        </div>
+        <div class="hud-stats-row">
+          <div class="hud-stat-chip"><span class="hud-stat-icon" aria-hidden="true">🪙</span><span class="hud-stat-val">--</span></div>
+          <div class="hud-stat-chip"><span class="hud-stat-icon" aria-hidden="true">💎</span><span class="hud-stat-val">--</span></div>
+          <div class="hud-stat-chip"><span class="hud-stat-icon" aria-hidden="true">⚡</span><span class="hud-stat-val">--</span></div>
+        </div>
+        <div data-csp-panel></div>
+      </div>
+    </div>
+
+    <!-- ── SYSTEM STATUS ── -->
+    <div class="retro-hud-box hud-box--system">
+      <div class="retro-hud-title">
+        <span class="retro-hud-title-icon" aria-hidden="true">▶</span>
+        System Status
+        <span class="retro-hud-mascot" aria-hidden="true">🤖</span>
+      </div>
+      <div class="retro-hud-body">
+        <div class="hud-sys-table" aria-label="System status indicators">
+          <div class="hud-sys-row">
+            <span class="hud-sys-label">NETWORK</span>
+            <span class="hud-sys-val hud-sys-online">ONLINE</span>
+            <span class="hud-sys-dot" aria-hidden="true"></span>
+          </div>
+          <div class="hud-sys-row">
+            <span class="hud-sys-label">ORACLE FEED</span>
+            <span class="hud-sys-val hud-sys-online">SYNCED</span>
+            <span class="hud-sys-dot" aria-hidden="true"></span>
+          </div>
+          <div class="hud-sys-row">
+            <span class="hud-sys-label">BATTLE CHAMBER</span>
+            <span class="hud-sys-val hud-sys-online">ACTIVE</span>
+            <span class="hud-sys-dot" aria-hidden="true"></span>
+          </div>
+          <div class="hud-sys-row">
+            <span class="hud-sys-label">ARCADE SERVER</span>
+            <span class="hud-sys-val hud-sys-online">ONLINE</span>
+            <span class="hud-sys-dot" aria-hidden="true"></span>
+          </div>
+          <div class="hud-sys-row">
+            <span class="hud-sys-label">WIKI NODES</span>
+            <span class="hud-sys-val hud-sys-ratio">— / —</span>
+            <span class="hud-sys-dot" aria-hidden="true"></span>
+          </div>
+        </div>
+        <div data-las-panel></div>
+      </div>
+    </div>
+
+    <!-- ── LIVE SYSTEM FEED ── -->
+    <div class="retro-hud-box hud-box--feed">
+      <div class="retro-hud-title">
+        <span class="retro-hud-title-icon" aria-hidden="true">▶</span>
+        Live System Feed
+        <span class="retro-hud-mascot" aria-hidden="true">⛑️</span>
+      </div>
+      <div class="retro-hud-body" id="live-feed-widget">
+        <div class="hud-feed-item">
+          <span class="hud-feed-icon" aria-hidden="true">📡</span>
+          <span class="hud-feed-text">Connecting to feed…</span>
+          <span class="hud-feed-time">--:--</span>
+        </div>
+      </div>
+    </div>
+
+  </aside><!-- /#homepage-right-panel -->
+
+</div>
 <button id="back-to-top" aria-label="Back to top">↑</button>
 <script src="/js/api-config.js"></script><script src="/js/identity-gate.js"></script><script src="/js/components/ui-status-copy.js"></script><script src="/js/arcade/core/global-event-bus.js"></script><script src="/js/core/moonboys-state.js"></script><script src="/js/faction-alignment.js"></script><script src="/js/components/connection-status-panel.js"></script><script src="/js/components/global-player-header.js"></script><script src="/js/components/live-activity-summary.js"></script><script src="/js/wiki.js"></script><script src="/js/scroll-shell.js"></script><script src="/js/battle-layer.js"></script>
 </body>
