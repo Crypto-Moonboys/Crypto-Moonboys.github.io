@@ -5013,17 +5013,11 @@ body.page-game .meta-item {
   font-size: 0.56rem !important;
 }
 
-/* ── CSP / LAS injected panels — enforce readable scale ───────── */
+/* ── CSP / LAS injected panels and live feed — enforce readable scale ── */
 :is(body.page-has-right-panel, body.page-game) .csp-panel,
-:is(body.page-has-right-panel, body.page-game) [data-csp-panel] {
-  font-size: 0.68rem !important;
-}
-
+:is(body.page-has-right-panel, body.page-game) [data-csp-panel],
 :is(body.page-has-right-panel, body.page-game) .las-panel,
-:is(body.page-has-right-panel, body.page-game) [data-las-panel] {
-  font-size: 0.68rem !important;
-}
-
+:is(body.page-has-right-panel, body.page-game) [data-las-panel],
 :is(body.page-has-right-panel, body.page-game) #live-feed-widget {
   font-size: 0.68rem !important;
 }
