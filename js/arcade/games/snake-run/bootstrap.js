@@ -627,12 +627,15 @@ function updateHud(state) {
 // Sizing source of truth: the actual playfield grid, not the abstract world bounds.
 //   GRID_W = GRID_COLS * CELL = 1408  (playfield width  in world units)
 //   GRID_H = GRID_ROWS * CELL = 832   (playfield height in world units)
-// view.scale = CSS display-pixels per world-unit = dw / GRID_W.
-// updateViewport() is the single function that syncs canvas buffer resolution,
-// CSS display size, and view.scale.  It is called on: page load, resize, and
-// fullscreenchange (via registerResize / fsHandler).  The overlay open/close
-// fires a synthetic resize event (game-fullscreen.js:openOverlay/closeOverlay)
-// which routes back here so fullscreen always gets the correct scale.
+// view.scale = min(dw / GRID_W, dh / GRID_H) — fit-to-min so the scaled grid
+//   never exceeds available size in either dimension.
+// updateViewport() is the single function that syncs the canvas buffer resolution
+// and view.scale.  It also sets inline CSS display dimensions for normal page
+// layout; in fullscreen the overlay CSS (game-fullscreen.css #snakeCanvas rule)
+// may override those inline dimensions with its own size-constrained values.
+// Calling updateViewport() on fullscreenchange (via fsHandler) or on the
+// synthetic resize fired by overlay open/close ensures view.scale is always
+// recalculated against the actual container size in both modes.
 function updateViewport(state) {
   if (!state.canvas) return;
   const GRID_W = GRID_COLS * CELL; // 1408 — authoritative playfield width
@@ -648,6 +651,7 @@ function updateViewport(state) {
   const aspect = GRID_W / GRID_H;
 
   const aw = Math.max(320, Math.floor(rect.width - 8));
+  // Derive targetW/targetH from the container, preserving aspect ratio.
   let targetW = aw;
   let targetH = targetW / aspect;
 
@@ -663,12 +667,19 @@ function updateViewport(state) {
     }
   }
 
-  const dw = Math.max(320, Math.floor(targetW));
-  const dh = Math.max(180, Math.floor(targetH));
-  // Set CSS display size via inline styles.  The overlay CSS uses
-  // !important for width/height:auto on all canvases, then a specific
-  // #snakeCanvas rule overrides with min(100%, height-based-width).
-  // Both routes use the 1408/832 aspect ratio so they agree with view.scale.
+  // Fix 1: preserve exact grid aspect after rounding.
+  // Floor only dw; derive dh from dw using the exact ratio to avoid
+  // independent rounding drift between width and height.
+  // Apply minimums without breaking the ratio: if the minimum floors kick in,
+  // re-derive the other dimension so they stay proportional.
+  let dw = Math.max(320, Math.floor(targetW));
+  let dh = dw / aspect;
+  if (dh < 180) { dh = 180; dw = dh * aspect; }
+
+  // Set CSS display size via inline styles for normal (non-overlay) layout.
+  // In fullscreen the overlay CSS (#game-overlay #snakeCanvas) may override
+  // these with !important rules; updateViewport still runs so view.scale stays
+  // correct relative to the actual rendered container size.
   state.canvas.style.width = dw + 'px';
   state.canvas.style.height = dh + 'px';
   state.canvas.style.maxWidth = 'none';
@@ -680,9 +691,9 @@ function updateViewport(state) {
   // Sync canvas buffer resolution to CSS display size × DPR.
   state.canvas.width = Math.floor(dw * dpr);
   state.canvas.height = Math.floor(dh * dpr);
-  // view.scale: CSS display-pixels per 1 world-unit.
-  // With this scale, GRID_W world units map to exactly dw display pixels.
-  state.view.scale = dw / GRID_W;
+  // Fix 2: fit-to-min scale so the scaled grid never exceeds the available
+  // size in either dimension even after aspect-preserving rounding.
+  state.view.scale = Math.min(dw / GRID_W, dh / GRID_H);
   state.view.width = dw;
   state.view.height = dh;
   state.view.offsetX = (aw - dw) * 0.5;
@@ -1185,9 +1196,9 @@ function renderWorld(state) {
 
   ctx.save();
   const viewScale = state.view.scale;
-  // Centre the playfield in the canvas.  With viewScale = view.width / (GRID_COLS*CELL)
-  // both offsets evaluate to 0, meaning the grid fills the canvas exactly —
-  // no unused dark margins on any side.
+  // Centre the playfield in the canvas.  Offsets are expected to be small
+  // or zero depending on aspect fitting and rounding; centering prevents any
+  // sub-pixel bias from accumulating on one side.
   ctx.translate(
     (state.view.width - GRID_COLS * CELL * viewScale) * 0.5,
     (state.view.height - GRID_ROWS * CELL * viewScale) * 0.5
