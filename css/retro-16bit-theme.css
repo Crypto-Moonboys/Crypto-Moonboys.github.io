@@ -4909,12 +4909,16 @@ body.page-game .retro-hud-body [class*="label"] {
 }
 
 body.page-has-right-panel .hud-label,
-body.page-game .hud-label {
+body.page-has-right-panel #homepage-right-panel .hud-label,
+body.page-game .hud-label,
+body.page-game #homepage-right-panel .hud-label {
   font-size: 0.56rem !important;
 }
 
 body.page-has-right-panel .hud-value,
-body.page-game .hud-value {
+body.page-has-right-panel #homepage-right-panel .hud-value,
+body.page-game .hud-value,
+body.page-game #homepage-right-panel .hud-value {
   font-size: 0.58rem !important;
 }
 
