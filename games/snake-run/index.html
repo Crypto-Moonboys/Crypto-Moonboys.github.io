@@ -75,6 +75,9 @@
           <div class="stat"><div class="label">Combo</div><div class="value" id="combo">x1.00</div></div>
           <div class="stat"><div class="label">Heat</div><div class="value" id="speedLabel">HEAT 0%</div></div>
         </div>
+        <!-- Initial buffer = GRID_COLS*CELL × GRID_ROWS*CELL = 44*32 × 26*32.
+             updateViewport() in bootstrap.js recalculates and overwrites these
+             on init, resize, and fullscreenchange using the same GRID constants. -->
         <canvas id="snakeCanvas" width="1408" height="832" aria-label="Snake game"></canvas>
         <div class="row">
           <button class="game-btn" id="startBtn">Start</button>

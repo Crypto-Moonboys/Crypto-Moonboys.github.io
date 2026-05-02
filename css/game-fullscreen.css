@@ -425,8 +425,8 @@ body.overlay-open {
 
 #game-overlay #snakeCanvas {
   /* Overlay sizing for SnakeRun: constrain by height, preserve 1408/832 grid ratio.
-     This matches the GRID_COLS*CELL / GRID_ROWS*CELL aspect used in bootstrap.js
-     updateViewport() so CSS display size and JS view.scale stay in agreement.
+     1408 = GRID_COLS*CELL (44*32), 832 = GRID_ROWS*CELL (26*32) — must stay in
+     sync with the same constants in bootstrap.js updateViewport().
      The general canvas rule sets width/height:auto; this rule wins via specificity. */
   width: min(100%, calc((100dvh - 36px - 140px) * 1408 / 832)) !important;
   max-width: none !important;
@@ -440,6 +440,7 @@ body.overlay-open {
 }
 
 @supports not (height: 1dvh) {
+  /* Fallback for browsers without dvh — values mirror the dvh rule above. */
   #game-overlay #snakeCanvas {
     width: min(100%, calc((100vh - 36px - 140px) * 1408 / 832)) !important;
     max-height: calc(100vh - 36px - 140px) !important;
