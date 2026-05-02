@@ -291,7 +291,6 @@
   var cachedLiveProjectedXp = null;
   var cachedProjectedHint = null;
   var cachedLiveBest  = null;
-  var cachedRightBest = null;
   var cachedSyncStatus = null;
   var cachedSyncIdentity = null;
   var cachedSyncActions = null;
@@ -706,7 +705,6 @@
     cachedLiveBest = el('div', 'score-val', '0');
     cachedLiveBest.id = 'overlay-live-best';
     scoreCard.appendChild(cachedLiveBest);
-    cachedRightBest = cachedLiveBest;
     sideRight.appendChild(scoreCard);
     // Sync card — Telegram identity + status + actions
     var syncCard = el('div', 'fs-card');
@@ -743,8 +741,7 @@
     if (inlineProjectedXpValue) inlineProjectedXpValue.textContent = String(projected);
     if (bestNode) {
       var b = bestNode.textContent || '0';
-      if (cachedLiveBest)  cachedLiveBest.textContent  = b;
-      if (cachedRightBest) cachedRightBest.textContent = b;
+      if (cachedLiveBest) cachedLiveBest.textContent = b;
     }
   }
 
