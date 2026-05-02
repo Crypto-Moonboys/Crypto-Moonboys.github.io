@@ -894,12 +894,12 @@ body.page-home #layout > #homepage-right-panel:not(#sidebar):not(#main-wrapper) 
 
 /* ── HUD BOXES ───────────────────────────────────────────────── */
 /*
- * Pixel-art game window style:
- * ─ Square corners (no border-radius)
- * ─ Solid 3px colored border + dark inset ring
- * ─ 5-D offset box-shadow for depth
- * ─ Corner bracket accents at all 4 corners via pseudo + gradient
- * ─ Flat colored title bar
+ * Retro HUD boxes:
+ * ─ bright neon outer borders
+ * ─ cyan/magenta outer glow rings
+ * ─ hard black pixel shadow offset
+ * ─ two-corner bracket accents via ::before and ::after
+ * ─ title-bar stripe treatment
  */
 .retro-hud-box {
   background: rgba(3, 10, 22, 0.96);
