@@ -2579,3 +2579,184 @@ body.page-home .hud-box--system .retro-hud-body,
 body.page-home .hud-box--feed .retro-hud-body {
   padding: 12px 10px !important;
 }
+
+/* ==========================================================================
+   LEFT SIDEBAR HUD UPGRADE — homepage neon frame treatment
+   Scope: body.page-home only.
+   Matches left sidebar section containers to right-panel retro-hud-box style:
+   layered neon frame, segmented broken lines, corner brackets, title bar strip.
+   Only file changed: css/retro-16bit-theme.css
+   ========================================================================== */
+
+/* ── Sidebar section containers — full HUD box frame ───────── */
+body.page-home .sidebar-section {
+  position: relative;
+  isolation: isolate;
+  margin: 10px 8px !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: linear-gradient(180deg, rgba(7, 14, 34, 0.90), rgba(1, 5, 14, 0.96)) !important;
+  box-shadow:
+    6px 6px 0 rgba(0, 0, 0, 0.88),
+    0 0 0 2px rgba(255, 45, 120, 0.82),
+    0 0 0 5px rgba(0, 229, 255, 0.24),
+    0 0 22px rgba(255, 45, 120, 0.28),
+    inset 0 0 0 2px rgba(0, 229, 255, 0.20) !important;
+  clip-path: polygon(
+    0 8px, 8px 0,
+    calc(100% - 8px) 0, 100% 8px,
+    100% calc(100% - 8px), calc(100% - 8px) 100%,
+    8px 100%, 0 calc(100% - 8px)
+  );
+  filter: drop-shadow(0 0 10px rgba(255, 45, 120, 0.52));
+}
+
+/* Kill the plain border-top between sections — gap is now handled by margin */
+body.page-home .sidebar-section + .sidebar-section {
+  border-top: 0 !important;
+}
+
+/* Nth-child color themes: cyan for 2nd, purple for 3rd (mirrors right-panel cadence) */
+body.page-home .sidebar-section:nth-child(2) {
+  box-shadow:
+    6px 6px 0 rgba(0, 0, 0, 0.88),
+    0 0 0 2px rgba(0, 229, 255, 0.82),
+    0 0 0 5px rgba(255, 45, 120, 0.24),
+    0 0 22px rgba(0, 229, 255, 0.25),
+    inset 0 0 0 2px rgba(255, 45, 120, 0.20) !important;
+  filter: drop-shadow(0 0 10px rgba(0, 229, 255, 0.50));
+}
+body.page-home .sidebar-section:nth-child(3) {
+  box-shadow:
+    6px 6px 0 rgba(0, 0, 0, 0.88),
+    0 0 0 2px rgba(190, 76, 247, 0.72),
+    0 0 0 5px rgba(0, 229, 255, 0.22),
+    0 0 22px rgba(190, 76, 247, 0.25),
+    inset 0 0 0 2px rgba(0, 229, 255, 0.18) !important;
+  filter: drop-shadow(0 0 10px rgba(190, 76, 247, 0.48));
+}
+
+/* ── Segmented / broken frame lines (top, bottom, left, right) ── */
+body.page-home .sidebar-section::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  background:
+    linear-gradient(90deg,
+      var(--ui-pink) 0 42px, transparent 42px 62px,
+      var(--ui-cyan) 62px 132px, transparent 132px 178px,
+      var(--ui-pink) 178px 238px, transparent 238px 100%) top left / 100% 3px no-repeat,
+    linear-gradient(90deg,
+      transparent 0 8%, var(--ui-cyan) 8% 21%, transparent 21% 34%,
+      var(--ui-pink) 34% 56%, transparent 56% 74%,
+      var(--ui-cyan) 74% 92%, transparent 92% 100%) bottom left / 100% 3px no-repeat,
+    linear-gradient(180deg,
+      var(--ui-cyan) 0 26px, transparent 26px 58px,
+      var(--ui-pink) 58px 122px, transparent 122px 190px,
+      var(--ui-cyan) 190px 260px, transparent 260px 100%) top left / 3px 100% no-repeat,
+    linear-gradient(180deg,
+      transparent 0 12%, var(--ui-pink) 12% 28%, transparent 28% 42%,
+      var(--ui-cyan) 42% 64%, transparent 64% 82%,
+      var(--ui-pink) 82% 100%) top right / 3px 100% no-repeat;
+  opacity: 0.90;
+  filter: drop-shadow(0 0 5px rgba(0, 229, 255, 0.65));
+  animation: neonFramePulse 3.8s steps(3, end) infinite;
+}
+
+/* ── Corner bracket accents (all four corners) ───────────────── */
+body.page-home .sidebar-section::after {
+  content: "";
+  position: absolute;
+  inset: 5px;
+  z-index: 3;
+  pointer-events: none;
+  background:
+    linear-gradient(var(--ui-yellow), var(--ui-yellow)) top left    / 16px 3px no-repeat,
+    linear-gradient(var(--ui-yellow), var(--ui-yellow)) top left    / 3px 16px no-repeat,
+    linear-gradient(var(--ui-cyan),   var(--ui-cyan))   top right   / 22px 3px no-repeat,
+    linear-gradient(var(--ui-cyan),   var(--ui-cyan))   top right   / 3px 22px no-repeat,
+    linear-gradient(var(--ui-pink),   var(--ui-pink))   bottom left / 26px 3px no-repeat,
+    linear-gradient(var(--ui-pink),   var(--ui-pink))   bottom left / 3px 26px no-repeat,
+    linear-gradient(var(--ui-cyan),   var(--ui-cyan))   bottom right / 20px 3px no-repeat,
+    linear-gradient(var(--ui-cyan),   var(--ui-cyan))   bottom right / 3px 20px no-repeat;
+  opacity: 0.95;
+  filter: drop-shadow(0 0 7px rgba(255, 45, 120, 0.70));
+  animation: neonCornerGlitch 5.4s steps(4, end) infinite;
+}
+
+/* Lift all direct children above the pseudo-element layers */
+body.page-home .sidebar-section > * {
+  position: relative;
+  z-index: 5;
+}
+
+/* ── Sidebar heading — match retro-hud-title title-bar strip ─── */
+body.page-home .sidebar-heading {
+  min-height: 36px;
+  margin: 0 !important;
+  padding: 10px 10px 9px !important;
+  background:
+    repeating-linear-gradient(90deg, rgba(255, 45, 120, 0.20) 0 4px, rgba(0, 229, 255, 0.07) 4px 7px, transparent 7px 12px),
+    linear-gradient(90deg, rgba(255, 45, 120, 0.32), rgba(0, 0, 0, 0)) !important;
+  border-left: 0 !important;
+  border-bottom: 3px solid var(--ui-cyan) !important;
+  color: var(--ui-cyan) !important;
+  font-size: 0.48rem !important;
+  line-height: 1.4 !important;
+  text-shadow: 0 0 8px var(--ui-cyan), 2px 2px 0 #000 !important;
+  box-shadow: none !important;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+body.page-home .sidebar-section:nth-child(2) .sidebar-heading {
+  background:
+    repeating-linear-gradient(90deg, rgba(0, 229, 255, 0.18) 0 4px, rgba(255, 45, 120, 0.05) 4px 7px, transparent 7px 12px),
+    linear-gradient(90deg, rgba(0, 229, 255, 0.28), rgba(0, 0, 0, 0)) !important;
+  border-bottom-color: var(--ui-pink) !important;
+  color: var(--ui-pink) !important;
+  text-shadow: 0 0 8px var(--ui-pink), 2px 2px 0 #000 !important;
+}
+body.page-home .sidebar-section:nth-child(3) .sidebar-heading {
+  background:
+    repeating-linear-gradient(90deg, rgba(190, 76, 247, 0.18) 0 4px, rgba(0, 229, 255, 0.05) 4px 7px, transparent 7px 12px),
+    linear-gradient(90deg, rgba(190, 76, 247, 0.28), rgba(0, 0, 0, 0)) !important;
+  border-bottom-color: var(--neon-purple) !important;
+  color: var(--neon-purple) !important;
+  text-shadow: 0 0 8px var(--neon-purple), 2px 2px 0 #000 !important;
+}
+
+/* ── Sidebar nav body — subtle scanline backdrop ─────────────── */
+body.page-home .sidebar-nav {
+  padding: 6px 0 8px;
+  background:
+    repeating-linear-gradient(0deg, rgba(0, 229, 255, 0.018) 0 2px, transparent 2px 6px),
+    rgba(0, 0, 0, 0.14);
+}
+
+/* ── Sidebar nav links — compact HUD row treatment ───────────── */
+body.page-home .sidebar-nav a {
+  margin: 3px 8px !important;
+  padding: 7px 9px !important;
+  border-left: 3px solid transparent !important;
+  border-bottom: 1px solid rgba(0, 229, 255, 0.10) !important;
+  font-size: 0.44rem !important;
+  line-height: 1.55 !important;
+}
+body.page-home .sidebar-nav a:hover,
+body.page-home .sidebar-nav a.active {
+  background: rgba(0, 229, 255, 0.12) !important;
+  border-left-color: var(--ui-pink) !important;
+  color: #fff !important;
+  box-shadow: inset 0 0 0 1px rgba(0, 229, 255, 0.28), 0 0 10px rgba(0, 229, 255, 0.16) !important;
+}
+
+/* ── Reduced-motion fallback for sidebar section animations ─── */
+@media (prefers-reduced-motion: reduce) {
+  body.page-home .sidebar-section::before,
+  body.page-home .sidebar-section::after {
+    animation: none !important;
+  }
+}
