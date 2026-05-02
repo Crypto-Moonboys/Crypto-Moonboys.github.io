@@ -5004,3 +5004,216 @@ body.page-game .meta-item {
 :is(body.page-has-right-panel, body.page-game) .lead-paragraph {
   font-size: clamp(0.90rem, 1.0vw, 1.0rem) !important;
 }
+
+/* ==========================================================================
+   END-OF-FILE CASCADE GUARD (SHELL ENFORCEMENT)
+   This guard reinforces the existing "FINAL SHARED SITE SHELL NORMALISATION"
+   source-of-truth block above where legacy specificity still leaks through.
+   ========================================================================== */
+
+:is(body.page-home, body.page-has-right-panel, body.page-game) {
+  font-size: 16px;
+}
+
+:is(body.page-home, body.page-has-right-panel, body.page-game) #site-header {
+  height: var(--color-header-h);
+  min-height: var(--color-header-h);
+}
+
+:is(body.page-home, body.page-has-right-panel, body.page-game) .site-logo .logo-text {
+  font-size: 0.86rem !important;
+  line-height: 1.28 !important;
+  font-weight: 400 !important;
+}
+
+:is(body.page-home, body.page-has-right-panel, body.page-game) .site-logo .logo-sub {
+  font-size: 0.56rem !important;
+  line-height: 1.2 !important;
+}
+
+:is(body.page-home, body.page-has-right-panel, body.page-game) #header-search {
+  max-width: 560px;
+}
+
+:is(body.page-home, body.page-has-right-panel, body.page-game) #header-search input {
+  font-size: 0.84rem !important;
+  line-height: 1.35 !important;
+  font-family: var(--font-mono, "Courier New", monospace) !important;
+}
+
+:is(body.page-home, body.page-has-right-panel, body.page-game) .header-nav a {
+  font-size: 0.62rem !important;
+  line-height: 1.45 !important;
+  padding: 8px 10px !important;
+}
+
+body.page-has-right-panel #layout,
+body.page-game #layout {
+  display: grid !important;
+  grid-template-columns: var(--color-sidebar-w) minmax(0, 1fr) 270px;
+  min-height: calc(100vh - var(--color-header-h));
+  align-items: start;
+  min-width: 0 !important;
+}
+
+:is(body.page-has-right-panel, body.page-game) {
+  overflow-x: hidden;
+  overflow-x: clip;
+}
+
+:is(body.page-home, body.page-has-right-panel, body.page-game) #sidebar {
+  width: var(--color-sidebar-w);
+  min-width: var(--color-sidebar-w);
+  max-width: var(--color-sidebar-w);
+}
+
+:is(body.page-home, body.page-has-right-panel, body.page-game) .sidebar-heading {
+  font-size: 0.64rem !important;
+  line-height: 1.45 !important;
+  letter-spacing: 0.06em !important;
+  color: #00f0ff !important;
+  background: linear-gradient(90deg, rgba(255, 0, 128, 0.34), rgba(0, 240, 255, 0.12)) !important;
+  border-bottom: 1px solid rgba(0, 240, 255, 0.42) !important;
+  box-shadow: inset 0 -1px 0 rgba(255, 0, 128, 0.25) !important;
+}
+
+:is(body.page-home, body.page-has-right-panel, body.page-game) .sidebar-nav a {
+  min-height: 34px;
+  font-size: 0.62rem !important;
+  line-height: 1.6 !important;
+  font-weight: 700 !important;
+  padding: 8px 10px !important;
+  border: 1px solid transparent !important;
+}
+
+:is(body.page-home, body.page-has-right-panel, body.page-game) .nav-icon {
+  font-size: 0.64rem !important;
+  width: 16px !important;
+  min-width: 16px !important;
+  text-align: center;
+  text-shadow: 0 0 6px rgba(0, 229, 255, 0.35), 1px 1px 0 #000;
+}
+
+:is(body.page-home, body.page-has-right-panel, body.page-game) .sidebar-section {
+  border: 2px solid rgba(0, 240, 255, 0.78) !important;
+  box-shadow: 0 0 14px rgba(0, 240, 255, 0.22), inset 0 0 8px rgba(255, 0, 128, 0.12) !important;
+  background: linear-gradient(180deg, rgba(9, 17, 52, 0.84), rgba(6, 11, 36, 0.84)) !important;
+}
+
+:is(body.page-home, body.page-has-right-panel, body.page-game) .sidebar-section:nth-child(odd),
+:is(body.page-home, body.page-has-right-panel, body.page-game) .sidebar-section:nth-child(even) {
+  border-color: rgba(0, 240, 255, 0.78) !important;
+}
+
+:is(body.page-home, body.page-has-right-panel, body.page-game) .sidebar-nav a.is-active,
+:is(body.page-home, body.page-has-right-panel, body.page-game) .sidebar-nav a[aria-current="page"] {
+  border-color: rgba(0, 229, 255, 0.45) !important;
+  box-shadow: inset 0 0 0 1px rgba(0, 229, 255, 0.15) !important;
+}
+
+body.page-home #layout > #homepage-right-panel:not(#sidebar):not(#main-wrapper),
+body.page-has-right-panel #layout > #homepage-right-panel:not(#sidebar):not(#main-wrapper),
+body.page-game #layout > #homepage-right-panel:not(#sidebar):not(#main-wrapper) {
+  position: sticky !important;
+  top: var(--color-header-h) !important;
+  width: 270px !important;
+  min-width: 270px !important;
+  max-width: 270px !important;
+  box-sizing: border-box !important;
+  height: calc(100vh - var(--color-header-h)) !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  padding: 12px 8px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 12px !important;
+}
+
+:is(body.page-home, body.page-has-right-panel, body.page-game) .retro-hud-title {
+  font-size: 0.62rem !important;
+  line-height: 1.35 !important;
+}
+
+:is(body.page-home, body.page-has-right-panel, body.page-game) .retro-hud-body {
+  font-size: 0.74rem !important;
+  line-height: 1.5 !important;
+}
+
+:is(body.page-home, body.page-has-right-panel, body.page-game) .hud-label {
+  font-size: 0.60rem !important;
+}
+
+:is(body.page-home, body.page-has-right-panel, body.page-game) .hud-value {
+  font-size: 0.62rem !important;
+}
+
+body.page-home #layout > #homepage-right-panel:not(#sidebar):not(#main-wrapper) .retro-hud-title,
+body.page-has-right-panel #layout > #homepage-right-panel:not(#sidebar):not(#main-wrapper) .retro-hud-title,
+body.page-game #layout > #homepage-right-panel:not(#sidebar):not(#main-wrapper) .retro-hud-title {
+  font-size: 0.62rem !important;
+  line-height: 1.35 !important;
+}
+
+body.page-home #layout > #homepage-right-panel:not(#sidebar):not(#main-wrapper) .retro-hud-body,
+body.page-has-right-panel #layout > #homepage-right-panel:not(#sidebar):not(#main-wrapper) .retro-hud-body,
+body.page-game #layout > #homepage-right-panel:not(#sidebar):not(#main-wrapper) .retro-hud-body {
+  font-size: 0.74rem !important;
+  line-height: 1.5 !important;
+}
+
+body.page-home #layout > #homepage-right-panel:not(#sidebar):not(#main-wrapper) .hud-label,
+body.page-has-right-panel #layout > #homepage-right-panel:not(#sidebar):not(#main-wrapper) .hud-label,
+body.page-game #layout > #homepage-right-panel:not(#sidebar):not(#main-wrapper) .hud-label {
+  font-size: 0.60rem !important;
+}
+
+body.page-home #layout > #homepage-right-panel:not(#sidebar):not(#main-wrapper) .hud-value,
+body.page-has-right-panel #layout > #homepage-right-panel:not(#sidebar):not(#main-wrapper) .hud-value,
+body.page-game #layout > #homepage-right-panel:not(#sidebar):not(#main-wrapper) .hud-value {
+  font-size: 0.62rem !important;
+}
+
+:is(body.page-has-right-panel, body.page-game) h1,
+:is(body.page-has-right-panel, body.page-game) .page-title {
+  font-size: clamp(1.02rem, 1.45vw, 1.20rem) !important;
+  line-height: 1.4 !important;
+}
+
+:is(body.page-has-right-panel, body.page-game) .page-hero,
+:is(body.page-has-right-panel, body.page-game) .section,
+:is(body.page-has-right-panel, body.page-game) .dash-section,
+:is(body.page-has-right-panel, body.page-game) .article-card,
+:is(body.page-has-right-panel, body.page-game) .category-card,
+:is(body.page-has-right-panel, body.page-game) .article-list-item,
+:is(body.page-has-right-panel, body.page-game) .retro-hud-box {
+  border-radius: 0 !important;
+}
+
+:is(body.page-has-right-panel, body.page-game) #content {
+  max-width: 980px;
+  min-width: 0 !important;
+}
+
+:is(body.page-has-right-panel, body.page-game) #main-wrapper {
+  min-width: 0 !important;
+}
+
+@media (max-width: 1360px) {
+  /* Homepage follows the same collapse rule at <=1360 for shell consistency. */
+  body.page-home #layout,
+  body.page-has-right-panel #layout,
+  body.page-game #layout {
+    grid-template-columns: var(--color-sidebar-w) minmax(0, 1fr);
+  }
+
+  body.page-home #layout > #homepage-right-panel:not(#sidebar):not(#main-wrapper),
+  body.page-has-right-panel #layout > #homepage-right-panel:not(#sidebar):not(#main-wrapper),
+  body.page-game #layout > #homepage-right-panel:not(#sidebar):not(#main-wrapper) {
+    display: none !important;
+    width: 0 !important;
+    min-width: 0 !important;
+    max-width: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+  }
+}
