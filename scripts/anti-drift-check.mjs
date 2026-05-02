@@ -77,6 +77,8 @@ const requiredGames = [
   'games/pac-chain',
   'games/snake-run',
   'games/tetris-block-topia',
+  'games/crystal-quest',
+  'games/block-topia-quest-maze',
 ];
 for (const g of requiredGames) {
   if (exists(g)) {
@@ -94,8 +96,18 @@ const forbiddenPaths = [
   'games/block-topia/ui',
   'games/block-topia/economy',
   'games/block-topia/duel',
-  // Old HexGL variants
+  // Dead HexGL game folders
   'games/hexgl',
+  'games/hexgl-local',
+  'games/hexgl-monster-max',
+  // Dead JS arcade bootstrap directories
+  'js/arcade/games/hexgl',
+  'js/arcade/games/hexgl-monster',
+  'js/arcade/games/hexgl-monster-max',
+  'js/arcade/games/blocktopia-phaser',
+  'js/arcade/games/blocktopia-social-hub',
+  'js/arcade/games/breakout',
+  'js/arcade/games/snake',
 ];
 for (const f of forbiddenPaths) {
   if (!exists(f)) {
@@ -127,28 +139,23 @@ if (!readme) {
   }
 }
 
-// ── 5. HexGL must not be re-activated as an XP source ────────────────────────
-console.log('\n[5] HexGL XP source check');
-const hexglBootstrap = read('js/arcade/games/hexgl-monster-max/bootstrap.js');
-if (hexglBootstrap === null) {
-  pass('hexgl-monster-max bootstrap not present (deprecated)');
+// ── 5. Arcade manifest contains only live games ───────────────────────────────
+console.log('\n[5] Arcade manifest contains only live arcade games');
+const manifestSrc = read('js/arcade/arcade-manifest.js');
+const LIVE_GAME_IDS = new Set([
+  'invaders', 'pacchain', 'asteroids', 'breakout-bullrun',
+  'snake-run', 'tetris', 'blocktopia', 'crystal',
+]);
+const DEAD_GAME_REFS = ['hexgl', 'hexgl-monster-max', 'hexgl-local', 'breakout/', 'snake/'];
+if (!manifestSrc) {
+  fail('js/arcade/arcade-manifest.js not found');
 } else {
-  // Score submission must remain disabled.
-  // Check each line: if it contains submitScore( and is NOT a comment line, flag it.
-  const activeSubmitLine = hexglBootstrap.split('\n').some((line) => {
-    const trimmed = line.trim();
-    // Skip single-line comments and block-comment lines
-    if (trimmed.startsWith('//') || trimmed.startsWith('*') || trimmed.startsWith('/*')) {
-      return false;
+  for (const dead of DEAD_GAME_REFS) {
+    if (manifestSrc.includes(dead)) {
+      fail(`Arcade manifest references dead game: "${dead}"`);
+    } else {
+      pass(`Arcade manifest does not reference dead game: "${dead}"`);
     }
-    // Also remove inline trailing comments before testing
-    const withoutInlineComment = trimmed.replace(/\/\/.*$/, '');
-    return /submitScore\s*\(/.test(withoutInlineComment);
-  });
-  if (activeSubmitLine) {
-    fail('hexgl-monster-max bootstrap appears to have score submission re-enabled');
-  } else {
-    pass('hexgl-monster-max score submission remains disabled');
   }
 }
 

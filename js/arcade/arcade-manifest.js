@@ -1,5 +1,5 @@
 /**
- * arcade-manifest.js — Central registry of all arcade games.
+ * arcade-manifest.js — Central registry of all live arcade games.
  *
  * Each entry describes:
  *   id            — unique game key (matches config.id and leaderboard key)
@@ -8,6 +8,9 @@
  *   bootstrapPath — absolute path to the bootstrap module
  *   adapterExport — named export from the bootstrap module that is the adapter
  *   crossGameTags — compatibility tags for cross-game modifier system
+ *
+ * Live arcade games: invaders-3008, pac-chain, asteroid-fork, breakout-bullrun,
+ *   tetris-block-topia, crystal-quest, block-topia-quest-maze, snake-run
  *
  * Consumed by:
  *   js/arcade/core/auto-mount-game.js   (browser auto-mount)
@@ -62,14 +65,6 @@ export const ARCADE_MANIFEST = Object.freeze([
     bootstrapPath: '/js/arcade/games/tetris/bootstrap.js',
     adapterExport: 'TETRIS_ADAPTER',
     crossGameTags: Object.freeze(['physics']),
-  },
-  {
-    id: 'hexgl',
-    label: '🏁 HexGL Monster Mode',
-    page: '/games/hexgl-monster-max/',
-    bootstrapPath: '/js/arcade/games/hexgl-monster-max/bootstrap.js',
-    adapterExport: 'HEXGL_MONSTER_MAX_ADAPTER',
-    crossGameTags: Object.freeze(['physics', 'racing']),
   },
   {
     id: 'blocktopia',

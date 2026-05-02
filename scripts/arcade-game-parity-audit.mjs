@@ -118,6 +118,12 @@ const ACTIVE_GAMES_AUDIT = {
     noUpgrades: 'Quiz/lore format — upgrade layer N/A (streak + rare question events serve equivalent role)',
     noShield:   'Quiz/lore format — shield system N/A',
   },
+  blocktopia: {
+    noFactionImport: 'Phaser 3 IIFE bootstrap — faction-effect-system not yet wired',
+    noModifierImport: 'Phaser 3 IIFE bootstrap — cross-game-modifier-system not yet wired',
+    noMissionHook:   'Phaser 3 IIFE bootstrap — recordMissionProgress not yet wired',
+    noContribHook:   'Phaser 3 IIFE bootstrap — recordContribution not yet wired',
+  },
 };
 
 // ── Fake XP wording patterns ──────────────────────────────────────────────────

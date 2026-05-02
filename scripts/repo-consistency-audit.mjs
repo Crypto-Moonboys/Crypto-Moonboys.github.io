@@ -139,13 +139,14 @@ if (!btHtml) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-console.log('\n[6] No orphaned game directory appears in arcade-manifest.js');
+console.log('\n[6] No dead game directory appears in arcade-manifest.js');
 const manifest = read('js/arcade/arcade-manifest.js');
 const orphanedDirs = [
   'js/arcade/games/breakout/',
   'js/arcade/games/snake/',
   'js/arcade/games/hexgl/',
   'js/arcade/games/hexgl-monster/',
+  'js/arcade/games/hexgl-monster-max/',
   'js/arcade/games/blocktopia-phaser/',
   'js/arcade/games/blocktopia-social-hub/',
 ];

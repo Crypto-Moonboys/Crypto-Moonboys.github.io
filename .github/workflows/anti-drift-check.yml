@@ -22,6 +22,12 @@ jobs:
       - name: Run anti-drift checks
         run: node scripts/anti-drift-check.mjs
 
+      - name: Arcade architecture audit
+        run: node scripts/arcade-architecture-audit.mjs
+
+      - name: Arcade game parity audit
+        run: node scripts/arcade-game-parity-audit.mjs
+
       - name: No dead placeholder copy
         run: node scripts/no-dead-placeholder-copy.mjs
 
