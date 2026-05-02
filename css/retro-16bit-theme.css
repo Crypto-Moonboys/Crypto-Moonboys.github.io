@@ -1600,9 +1600,7 @@ body.page-home .retro-hud-body {
   letter-spacing: 0.02em !important;
 }
 
-body.page-home .retro-hud-body [class*="label"],
-body.page-home .retro-hud-body strong,
-body.page-home .retro-hud-body b {
+body.page-home .retro-hud-body [class*="label"] {
   font-family: var(--font-pixel, "Press Start 2P", monospace) !important;
   font-size: 0.46rem !important;
   line-height: 1.55 !important;
@@ -1611,9 +1609,27 @@ body.page-home .retro-hud-body b {
   text-shadow: 0 0 6px rgba(0,229,255,.75), 2px 2px 0 #000;
 }
 
+body.page-home .retro-hud-body strong,
+body.page-home .retro-hud-body b {
+  font-size: inherit !important;
+  color: var(--ui-text) !important;
+  text-shadow: 0 0 6px rgba(255,255,255,.22), 2px 2px 0 #000;
+}
+
 body.page-home #homepage-right-panel {
   min-width: 250px;
   max-width: 310px;
+}
+
+body.page-home #layout > #homepage-right-panel:not(#sidebar):not(#main-wrapper) {
+  background:
+    repeating-linear-gradient(0deg, rgba(0,229,255,.035) 0 2px, transparent 2px 5px),
+    linear-gradient(180deg, rgba(4, 8, 24, .86), rgba(1, 4, 12, .95)) !important;
+  border-left: 4px solid var(--ui-pink) !important;
+  box-shadow:
+    inset 3px 0 0 rgba(0, 229, 255, 0.55),
+    -10px 0 22px rgba(255, 45, 120, 0.16),
+    0 0 24px rgba(0, 229, 255, 0.10) !important;
 }
 
 body.page-home .article-card-desc {
@@ -1665,8 +1681,6 @@ body.page-home .home-widget {
 
 body.page-home .home-hero::before,
 body.page-home .retro-hud-box::before,
-body.page-home .category-card::before,
-body.page-home .article-card::before,
 body.page-home .launch-route::before,
 body.page-home .retro-info-panel::before,
 body.page-home .home-widget::before {
@@ -1699,8 +1713,6 @@ body.page-home .home-widget::before {
 
 body.page-home .home-hero::after,
 body.page-home .retro-hud-box::after,
-body.page-home .category-card::after,
-body.page-home .article-card::after,
 body.page-home .launch-route::after,
 body.page-home .retro-info-panel::after,
 body.page-home .home-widget::after {
@@ -1723,7 +1735,7 @@ body.page-home .home-widget::after {
   animation: neonCornerGlitch 5.4s steps(4, end) infinite;
 }
 
-body.page-home .home-hero > *,
+body.page-home .home-hero > :not(.retro-hero-bg),
 body.page-home .retro-hud-box > *,
 body.page-home .category-card > *,
 body.page-home .article-card > *,
@@ -1771,8 +1783,7 @@ body.page-home .retro-hud-body > * {
 }
 
 body.page-home .retro-hud-body .status-row,
-body.page-home .retro-hud-body .stat-row,
-body.page-home .retro-hud-body [class*="row"] {
+body.page-home .retro-hud-body .stat-row {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   gap: 8px;
@@ -1890,10 +1901,6 @@ body.page-home .launch-subcopy {
   body.page-home .home-hero::after,
   body.page-home .retro-hud-box::before,
   body.page-home .retro-hud-box::after,
-  body.page-home .category-card::before,
-  body.page-home .category-card::after,
-  body.page-home .article-card::before,
-  body.page-home .article-card::after,
   body.page-home .launch-route::before,
   body.page-home .launch-route::after,
   body.page-home .retro-info-panel::before,
