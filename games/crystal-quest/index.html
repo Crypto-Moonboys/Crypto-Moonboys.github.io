@@ -272,14 +272,14 @@ mountModifierPanel();
     var roots = document.querySelectorAll(GAME_ROOT_SELECTOR);
     var container = document.querySelector(INTENDED_CONTAINER);
     var fsControls = document.querySelectorAll('#' + FS_CONTROLS_ID);
-    var overlayActive = document.getElementById('game-overlay') &&
-      document.getElementById('game-overlay').classList.contains('active');
+    var overlay = document.getElementById('game-overlay');
+    var overlayActive = !!(overlay && overlay.classList.contains('active'));
     var issues = [];
     if (roots.length > 1) issues.push('Duplicate Crystal Quest roots: ' + roots.length);
     if (!overlayActive && container && roots.length === 1 && !container.contains(roots[0])) {
       issues.push('Game root is outside ' + INTENDED_CONTAINER + ' while not in fullscreen');
     }
-    if (document.body.classList.contains('overlay-open') && overlayActive === false) {
+    if (document.body.classList.contains('overlay-open') && !overlayActive) {
       issues.push('overlay-open class on body but overlay not active');
     }
     if (fsControls.length > 1) issues.push('Duplicate overlay ctrl bars: ' + fsControls.length);

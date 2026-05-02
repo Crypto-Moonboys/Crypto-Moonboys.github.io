@@ -1046,6 +1046,7 @@ body.conflict-active #game-overlay {
   max-height: 100%;
   overflow-y: auto;
   align-self: flex-start;
+  align-items: stretch;
   padding: 14px 16px !important;
 }
 
@@ -1059,6 +1060,9 @@ body.conflict-active #game-overlay {
       hides button rows for canvas games (where the overlay ctrl bar takes over). */
 #game-overlay .crystal-quest-card .row {
   display: flex !important;
+  width: 100%;
+  align-self: stretch;
+  justify-content: flex-start;
   flex-wrap: wrap;
   gap: 8px;
 }
