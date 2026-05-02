@@ -2241,7 +2241,7 @@ body.page-home #homepage-right-panel .hud-sys-val {
 }
 
 body.page-home #homepage-right-panel .hud-sys-online { color: var(--neon-green); }
-body.page-home #homepage-right-panel .hud-sys-count  { color: var(--neon-yellow); }
+body.page-home #homepage-right-panel .hud-sys-ratio  { color: var(--neon-yellow); }
 body.page-home #homepage-right-panel .hud-sys-warn   { color: var(--neon-orange); }
 body.page-home #homepage-right-panel .hud-sys-error  { color: var(--neon-magenta); }
 
