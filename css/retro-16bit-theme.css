@@ -2540,8 +2540,8 @@ body.page-home [data-las-panel] .las-event-text {
     linear-gradient(var(--neon-yellow), var(--neon-yellow)) top left / 3px 16px no-repeat,
     linear-gradient(var(--neon-cyan),   var(--neon-cyan))   top right / 20px 3px no-repeat,
     linear-gradient(var(--neon-cyan),   var(--neon-cyan))   top right / 3px 20px no-repeat,
-    linear-gradient(var(--neon-magenta),var(--neon-magenta)) bottom left / 20px 3px no-repeat,
-    linear-gradient(var(--neon-magenta),var(--neon-magenta)) bottom left / 3px 20px no-repeat,
+    linear-gradient(var(--neon-magenta), var(--neon-magenta)) bottom left / 20px 3px no-repeat,
+    linear-gradient(var(--neon-magenta), var(--neon-magenta)) bottom left / 3px 20px no-repeat,
     linear-gradient(var(--neon-cyan),   var(--neon-cyan))   bottom right / 16px 3px no-repeat,
     linear-gradient(var(--neon-cyan),   var(--neon-cyan))   bottom right / 3px 16px no-repeat;
   filter: drop-shadow(0 0 6px rgba(255, 214, 0, 0.70));
