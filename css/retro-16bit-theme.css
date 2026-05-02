@@ -280,7 +280,6 @@ a:hover           { color: var(--neon-magenta); }
 
 .sidebar-nav a {
   color: var(--color-text-muted);
-  font-size: 0.78rem;
   font-family: var(--font-pixel);
   font-size: 0.40rem;
   letter-spacing: 0.06em;
