@@ -1,0 +1,69 @@
+{
+  "generatedAt": "2026-05-02T19:55:19.066Z",
+  "viewport": {
+    "width": 1600,
+    "height": 980
+  },
+  "results": [
+    {
+      "page": "index",
+      "screenshot": "C:\\Users\\GOD\\Crypto-Moonboys.github.io\\artifacts\\index-shell-truth\\index-desktop.png",
+      "metrics": {
+        "path": "/index.html",
+        "overflowX": false,
+        "sidebarWidth": 260,
+        "navIconFontSize": "10.24px",
+        "navLinkFontSize": "9.92px",
+        "headingFontSize": "10.24px",
+        "rightPanelWidth": 270,
+        "rightHudTitleSize": "9.92px",
+        "rightHudBodySize": "11.84px"
+      }
+    },
+    {
+      "page": "games",
+      "screenshot": "C:\\Users\\GOD\\Crypto-Moonboys.github.io\\artifacts\\index-shell-truth\\games-desktop.png",
+      "metrics": {
+        "path": "/games/",
+        "overflowX": false,
+        "sidebarWidth": 260,
+        "navIconFontSize": "10.24px",
+        "navLinkFontSize": "9.92px",
+        "headingFontSize": "10.24px",
+        "rightPanelWidth": 270,
+        "rightHudTitleSize": "9.92px",
+        "rightHudBodySize": "11.84px"
+      }
+    },
+    {
+      "page": "dashboard",
+      "screenshot": "C:\\Users\\GOD\\Crypto-Moonboys.github.io\\artifacts\\index-shell-truth\\dashboard-desktop.png",
+      "metrics": {
+        "path": "/dashboard.html",
+        "overflowX": false,
+        "sidebarWidth": 260,
+        "navIconFontSize": "10.24px",
+        "navLinkFontSize": "9.92px",
+        "headingFontSize": "10.24px",
+        "rightPanelWidth": 270,
+        "rightHudTitleSize": "9.92px",
+        "rightHudBodySize": "11.84px"
+      }
+    },
+    {
+      "page": "leaderboard",
+      "screenshot": "C:\\Users\\GOD\\Crypto-Moonboys.github.io\\artifacts\\index-shell-truth\\leaderboard-desktop.png",
+      "metrics": {
+        "path": "/games/leaderboard.html",
+        "overflowX": false,
+        "sidebarWidth": 260,
+        "navIconFontSize": "10.24px",
+        "navLinkFontSize": "9.92px",
+        "headingFontSize": "10.24px",
+        "rightPanelWidth": 270,
+        "rightHudTitleSize": "9.92px",
+        "rightHudBodySize": "11.84px"
+      }
+    }
+  ]
+}
