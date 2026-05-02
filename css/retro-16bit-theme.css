@@ -640,18 +640,18 @@ a.hero-stat-link:hover {
 .hero-split-middle { top: 33.333%; z-index: 1; }
 .hero-split-bottom { top: 66.666%; z-index: 1; }
 
-.hero-split-overlay { opacity: 0.34; z-index: 2; }
+.hero-split-overlay { opacity: 0.35; z-index: 2; }
 .hero-split-overlay-top {
   top: 0;
-  animation: hero-overlay-drift 44s linear infinite alternate;
+  animation: hero-overlay-drift 18s linear infinite alternate;
 }
 .hero-split-overlay-middle {
   top: 33.333%;
-  animation: hero-overlay-flicker 6.5s steps(3, end) infinite;
+  animation: hero-overlay-flicker 3.2s steps(4, end) infinite;
 }
 .hero-split-overlay-bottom {
   top: 66.666%;
-  animation: hero-overlay-drift 52s linear infinite alternate-reverse;
+  animation: hero-overlay-drift 22s linear infinite alternate-reverse;
 }
 
 .hero-real-ui-overlay {
@@ -668,16 +668,16 @@ a.hero-stat-link:hover {
 }
 
 @keyframes hero-overlay-drift {
-  from { transform: translate3d(-1.2%, 0, 0); }
-  to { transform: translate3d(1.2%, 0, 0); }
+  from { transform: translate3d(-6%, 0, 0); }
+  to { transform: translate3d(6%, -1%, 0); }
 }
 
 @keyframes hero-overlay-flicker {
-  0%, 100% { opacity: 0.28; }
-  18% { opacity: 0.4; }
-  39% { opacity: 0.23; }
-  63% { opacity: 0.36; }
-  84% { opacity: 0.25; }
+  0%, 100% { opacity: 0.36; }
+  18% { opacity: 0.72; }
+  33% { opacity: 0.42; }
+  57% { opacity: 0.78; }
+  76% { opacity: 0.30; }
 }
 
 @media (prefers-reduced-motion: reduce) {
