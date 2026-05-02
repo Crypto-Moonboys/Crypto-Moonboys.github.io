@@ -16,7 +16,7 @@
   <link rel="stylesheet" href="/css/retro-16bit-theme.css">
   <link rel="icon" href="/img/favicon.svg" type="image/svg+xml">
   <style>
-    /* ── Leaderboard page — neon HUD layout shell ──────────────────── */
+    /* ── Leaderboard page — minimal layout overrides (HUD styling in retro-16bit-theme.css) ── */
     .lb-intro {
       margin-bottom: 20px;
       line-height: 1.6;
@@ -38,10 +38,9 @@
       font-size: .9rem;
     }
     .lb-col-player { text-align: left; min-width: 180px; overflow: visible; text-overflow: clip; }
-    .lb-table tbody tr:focus { outline: 2px solid rgba(0, 229, 255, .66); outline-offset: -2px; }
+    .lb-table tbody tr:focus { outline: 2px solid var(--neon-cyan, rgba(0, 229, 255, 1)); outline-offset: -2px; }
     .lb-table th,
-    .lb-table td { padding: 10px 14px; white-space: nowrap; }
-    .lb-table td { vertical-align: middle; }
+    .lb-table td { padding: 10px 14px; white-space: nowrap; vertical-align: middle; }
     .lb-rank { text-align: center; }
     .lb-player { overflow: visible; text-overflow: clip; }
     .lb-faction-cell { text-align: center; }
