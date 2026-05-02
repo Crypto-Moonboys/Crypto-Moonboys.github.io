@@ -300,6 +300,16 @@ body.overlay-open {
   line-height: 1.35;
 }
 
+/* Reusable sidebar card block — shared visual style for left and right panels */
+#game-overlay .overlay-side .fs-card {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  padding: 10px 10px 6px;
+  margin-bottom: 8px;
+  flex-shrink: 0;
+}
+
 /* 7. Game stage — centres the game-card */
 #game-overlay .game-stage {
   flex: 1;
@@ -786,14 +796,11 @@ body.overlay-open {
 
 /* D. Desktop standard */
 @media (min-width: 1100px) and (max-width: 1399px) {
-  #game-overlay .overlay-side--left {
+  #game-overlay .overlay-side--left,
+  #game-overlay .overlay-side--right {
     display: flex;
     flex-direction: column;
     width: 180px;
-  }
-
-  #game-overlay .overlay-side--right {
-    display: none;
   }
 
   #game-overlay canvas:not(#nextCanvas) {
