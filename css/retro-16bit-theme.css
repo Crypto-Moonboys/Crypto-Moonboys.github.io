@@ -4882,13 +4882,17 @@ body.page-game .sidebar-nav a {
 
 /* ── Right HUD titles ───────────────────────────────────────── */
 body.page-has-right-panel .retro-hud-title,
-body.page-game .retro-hud-title {
+body.page-has-right-panel #homepage-right-panel .retro-hud-title,
+body.page-game .retro-hud-title,
+body.page-game #homepage-right-panel .retro-hud-title {
   font-size: 0.56rem !important;
 }
 
 /* ── Right HUD body text ────────────────────────────────────── */
 body.page-has-right-panel .retro-hud-body,
-body.page-game .retro-hud-body {
+body.page-has-right-panel #homepage-right-panel .retro-hud-body,
+body.page-game .retro-hud-body,
+body.page-game #homepage-right-panel .retro-hud-body {
   font-size: 0.72rem !important;
 }
 
@@ -4984,33 +4988,6 @@ body.page-game .meta-item {
   body.page-game .sidebar-nav a {
     font-size: 0.60rem !important;
   }
-}
-
-/* ── Right HUD #homepage-right-panel — beat ID-specificity rules ── */
-/* Needed because earlier blocks use #homepage-right-panel with !important */
-:is(body.page-has-right-panel, body.page-game) #homepage-right-panel .retro-hud-title {
-  font-size: 0.56rem !important;
-}
-
-:is(body.page-has-right-panel, body.page-game) #homepage-right-panel .retro-hud-body {
-  font-size: 0.72rem !important;
-}
-
-:is(body.page-has-right-panel, body.page-game) #homepage-right-panel .hud-label {
-  font-size: 0.56rem !important;
-}
-
-:is(body.page-has-right-panel, body.page-game) #homepage-right-panel .hud-value {
-  font-size: 0.58rem !important;
-}
-
-/* ── Left sidebar #sidebar — beat ID-specificity rules ─────────── */
-:is(body.page-has-right-panel, body.page-game) #sidebar .sidebar-heading {
-  font-size: 0.58rem !important;
-}
-
-:is(body.page-has-right-panel, body.page-game) #sidebar .sidebar-nav a {
-  font-size: 0.56rem !important;
 }
 
 /* ── CSP / LAS injected panels and live feed — enforce readable scale ── */
