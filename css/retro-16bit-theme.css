@@ -1931,3 +1931,649 @@ body.page-home .launch-subcopy {
     justify-content: center;
   }
 }
+
+/* ==========================================================================
+   HUD REBUILD — REFERENCE MATCH
+   Scope: homepage only (body.page-home), index.html structural markup only.
+   No JS / gameplay / auth / XP / worker logic touched.
+   ========================================================================== */
+
+/* ── Mascot icons in HUD title bar ─────────────────────────────── */
+.retro-hud-title {
+  display: flex;
+  align-items: center;
+  flex-wrap: nowrap;
+}
+.retro-hud-mascot {
+  margin-left: auto;
+  padding-left: 6px;
+  font-size: 1.35rem;
+  line-height: 1;
+  flex-shrink: 0;
+  filter: drop-shadow(0 0 6px rgba(255, 45, 120, 0.75));
+  image-rendering: pixelated;
+}
+
+/* ── Per-box hard-edge border + glow (overrides border:0 from frame system) ── */
+body.page-home .retro-hud-box.hud-box--player {
+  border: 3px solid var(--neon-magenta) !important;
+  box-shadow:
+    inset 0 0 0 2px rgba(0, 229, 255, 0.32),
+    6px 6px 0 rgba(0, 0, 0, 0.90) !important;
+  filter: drop-shadow(0 0 10px rgba(255, 45, 120, 0.55));
+}
+body.page-home .retro-hud-box.hud-box--system {
+  border: 3px solid var(--neon-cyan) !important;
+  box-shadow:
+    inset 0 0 0 2px rgba(255, 45, 120, 0.32),
+    6px 6px 0 rgba(0, 0, 0, 0.90) !important;
+  filter: drop-shadow(0 0 10px rgba(0, 229, 255, 0.55));
+}
+body.page-home .retro-hud-box.hud-box--feed {
+  border: 3px solid var(--neon-purple) !important;
+  box-shadow:
+    inset 0 0 0 2px rgba(0, 229, 255, 0.28),
+    6px 6px 0 rgba(0, 0, 0, 0.90) !important;
+  filter: drop-shadow(0 0 10px rgba(190, 76, 247, 0.50));
+}
+
+/* Title bar accent per box */
+body.page-home .hud-box--player .retro-hud-title {
+  background:
+    repeating-linear-gradient(90deg, rgba(255,45,120,.22) 0 4px, rgba(0,229,255,.06) 4px 7px, transparent 7px 12px),
+    linear-gradient(90deg, rgba(255,45,120,.35), rgba(0,0,0,0)) !important;
+  border-bottom: 3px solid var(--neon-cyan) !important;
+  color: var(--neon-magenta) !important;
+  text-shadow: 0 0 8px var(--neon-magenta), 2px 2px 0 #000 !important;
+}
+body.page-home .hud-box--system .retro-hud-title {
+  background:
+    repeating-linear-gradient(90deg, rgba(0,229,255,.18) 0 4px, rgba(255,45,120,.05) 4px 7px, transparent 7px 12px),
+    linear-gradient(90deg, rgba(0,229,255,.28), rgba(0,0,0,0)) !important;
+  border-bottom: 3px solid var(--neon-magenta) !important;
+  color: var(--neon-cyan) !important;
+  text-shadow: 0 0 8px var(--neon-cyan), 2px 2px 0 #000 !important;
+}
+body.page-home .hud-box--feed .retro-hud-title {
+  background:
+    repeating-linear-gradient(90deg, rgba(190,76,247,.20) 0 4px, rgba(0,229,255,.05) 4px 7px, transparent 7px 12px),
+    linear-gradient(90deg, rgba(190,76,247,.30), rgba(0,0,0,0)) !important;
+  border-bottom: 3px solid var(--neon-purple) !important;
+  color: var(--neon-purple) !important;
+  text-shadow: 0 0 8px var(--neon-purple), 2px 2px 0 #000 !important;
+}
+body.page-home .hud-box--feed .retro-hud-mascot {
+  filter: drop-shadow(0 0 6px rgba(190, 76, 247, 0.80));
+}
+body.page-home .hud-box--system .retro-hud-mascot {
+  filter: drop-shadow(0 0 6px rgba(0, 229, 255, 0.80));
+}
+
+/* ── Corner bracket accents per box ────────────────────────────── */
+body.page-home .hud-box--player::before { border-color: var(--neon-cyan) !important; }
+body.page-home .hud-box--player::after  { border-color: var(--neon-magenta) !important; }
+body.page-home .hud-box--system::before { border-color: var(--neon-magenta) !important; }
+body.page-home .hud-box--system::after  { border-color: var(--neon-cyan) !important; }
+body.page-home .hud-box--feed::before   { border-color: var(--neon-purple) !important; }
+body.page-home .hud-box--feed::after    { border-color: var(--neon-cyan) !important; }
+
+/* ── Player Portrait Row ─────────────────────────────────────── */
+.hud-player-portrait-row {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  margin-bottom: 10px;
+}
+
+.hud-avatar-box {
+  flex-shrink: 0;
+  width: 64px;
+  height: 64px;
+  background: rgba(0, 0, 0, 0.80);
+  border: 3px solid var(--neon-magenta);
+  box-shadow:
+    inset 0 0 0 1px rgba(0, 229, 255, 0.40),
+    0 0 10px rgba(255, 45, 120, 0.45),
+    2px 2px 0 rgba(0, 0, 0, 0.90);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  image-rendering: pixelated;
+  position: relative;
+}
+
+.hud-avatar-icon {
+  font-size: 2.5rem;
+  line-height: 1;
+  image-rendering: pixelated;
+  filter: drop-shadow(0 0 5px rgba(0, 229, 255, 0.65));
+}
+
+.hud-player-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.hud-info-row {
+  display: flex;
+  align-items: baseline;
+  gap: 5px;
+  flex-wrap: nowrap;
+  overflow: hidden;
+  min-width: 0;
+}
+
+.hud-label {
+  font-family: var(--font-pixel);
+  font-size: 0.38rem;
+  color: var(--neon-magenta);
+  text-shadow: 0 0 6px rgba(255, 45, 120, 0.65);
+  letter-spacing: 0.07em;
+  flex-shrink: 0;
+  white-space: nowrap;
+  text-transform: uppercase;
+  line-height: 1.6;
+}
+
+.hud-value {
+  font-family: var(--font-pixel);
+  font-size: 0.40rem;
+  color: #eaf8ff;
+  text-shadow: 1px 1px 0 #000;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+  max-width: 100%;
+  line-height: 1.6;
+}
+
+.hud-rank-val {
+  color: var(--neon-yellow) !important;
+  text-shadow: 0 0 8px rgba(255, 214, 0, 0.70), 1px 1px 0 #000 !important;
+}
+
+.hud-xp-inline {
+  color: var(--neon-cyan) !important;
+  text-shadow: 0 0 6px rgba(0, 229, 255, 0.60), 1px 1px 0 #000 !important;
+}
+
+/* ── XP Progress Bar ─────────────────────────────────────────── */
+.hud-xp-bar-wrap {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 9px;
+}
+
+.hud-xp-label {
+  font-family: var(--font-pixel);
+  font-size: 0.38rem;
+  color: var(--neon-magenta);
+  text-shadow: 0 0 6px rgba(255, 45, 120, 0.65);
+  flex-shrink: 0;
+  letter-spacing: 0.08em;
+  line-height: 1;
+}
+
+.hud-xp-track {
+  flex: 1;
+  height: 10px;
+  background: rgba(0, 0, 0, 0.65);
+  border: 2px solid rgba(0, 229, 255, 0.55);
+  overflow: hidden;
+  position: relative;
+  box-shadow: inset 0 0 0 1px rgba(0, 229, 255, 0.10);
+}
+
+.hud-xp-fill {
+  height: 100%;
+  background: repeating-linear-gradient(
+    90deg,
+    var(--neon-green) 0,
+    var(--neon-green) 4px,
+    rgba(57, 255, 20, 0.72) 4px,
+    rgba(57, 255, 20, 0.72) 6px
+  );
+  box-shadow: 0 0 6px var(--neon-green);
+  min-width: 0;
+  transition: width 0.4s ease;
+}
+
+.hud-xp-pct {
+  font-family: var(--font-pixel);
+  font-size: 0.38rem;
+  color: var(--neon-cyan);
+  text-shadow: 0 0 6px rgba(0, 229, 255, 0.65);
+  flex-shrink: 0;
+  min-width: 2.6em;
+  text-align: right;
+  line-height: 1;
+}
+
+/* ── Stats Row (coins / gems / energy) ───────────────────────── */
+.hud-stats-row {
+  display: flex;
+  gap: 5px;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.hud-stat-chip {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  justify-content: center;
+  padding: 5px 3px;
+  background: rgba(0, 0, 0, 0.60);
+  border: 2px solid rgba(255, 45, 120, 0.50);
+  box-shadow: inset 0 0 0 1px rgba(0, 229, 255, 0.10), 2px 2px 0 rgba(0,0,0,0.7);
+  min-width: 0;
+  overflow: hidden;
+}
+
+.hud-stat-icon {
+  font-size: 0.88rem;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.hud-stat-val {
+  font-family: var(--font-pixel);
+  font-size: 0.38rem;
+  color: var(--neon-cyan);
+  text-shadow: 0 0 5px rgba(0, 229, 255, 0.55);
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  line-height: 1;
+}
+
+/* ── System Status Table ─────────────────────────────────────── */
+.hud-sys-table {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin-bottom: 6px;
+}
+
+.hud-sys-row {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 6px;
+  border-bottom: 1px solid rgba(0, 229, 255, 0.12);
+  min-width: 0;
+}
+.hud-sys-row:last-child { border-bottom: none; }
+
+.hud-sys-label {
+  font-family: var(--font-pixel);
+  font-size: 0.36rem;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.6;
+}
+
+.hud-sys-val {
+  font-family: var(--font-pixel);
+  font-size: 0.38rem;
+  letter-spacing: 0.06em;
+  flex-shrink: 0;
+  text-shadow: 0 0 6px currentColor;
+  white-space: nowrap;
+  line-height: 1.6;
+}
+
+.hud-sys-online { color: var(--neon-green); }
+.hud-sys-count  { color: var(--neon-yellow); }
+.hud-sys-warn   { color: var(--neon-orange); }
+.hud-sys-error  { color: var(--neon-magenta); }
+
+.hud-sys-dot {
+  width: 8px;
+  height: 8px;
+  min-width: 8px;
+  border-radius: 50%;
+  background: var(--neon-green);
+  box-shadow: 0 0 7px var(--neon-green);
+  flex-shrink: 0;
+  display: inline-block;
+}
+
+/* ── Live Feed Items ─────────────────────────────────────────── */
+.hud-feed-item,
+#homepage-right-panel .feed-item {
+  display: flex !important;
+  align-items: flex-start !important;
+  gap: 5px !important;
+  padding: 5px 0 !important;
+  border-bottom: 1px solid rgba(190, 76, 247, 0.18) !important;
+  min-width: 0;
+}
+.hud-feed-item:last-child,
+#homepage-right-panel .feed-item:last-child { border-bottom: none !important; }
+
+.hud-feed-icon {
+  font-size: 0.78rem;
+  line-height: 1.35;
+  flex-shrink: 0;
+  width: 16px;
+  text-align: center;
+}
+
+.hud-feed-text,
+#homepage-right-panel .feed-text {
+  font-family: var(--font-pixel) !important;
+  font-size: 0.36rem !important;
+  color: #d0eaff !important;
+  flex: 1 !important;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  line-height: 1.65;
+  letter-spacing: 0.02em;
+}
+
+.hud-feed-time,
+#homepage-right-panel .feed-time {
+  font-family: var(--font-pixel) !important;
+  font-size: 0.34rem !important;
+  color: var(--neon-cyan) !important;
+  text-shadow: 0 0 5px rgba(0, 229, 255, 0.60) !important;
+  flex-shrink: 0 !important;
+  opacity: 1 !important;
+  white-space: nowrap;
+  align-self: flex-start;
+  padding-top: 2px;
+}
+
+/* ── Override CSP inline styles to match retro ──────────────── */
+body.page-home [data-csp-panel] .csp-panel {
+  background: transparent !important;
+  border: none !important;
+  border-radius: 0 !important;
+  padding: 2px 0 0 !important;
+  font-family: var(--font-pixel) !important;
+  font-size: 0.38rem !important;
+  color: var(--color-text) !important;
+}
+
+body.page-home [data-csp-panel] .csp-row {
+  font-family: var(--font-pixel) !important;
+  font-size: 0.38rem !important;
+  gap: 6px !important;
+  margin-bottom: 6px !important;
+}
+
+body.page-home [data-csp-panel] .csp-grid {
+  gap: 5px !important;
+}
+
+body.page-home [data-csp-panel] .csp-item {
+  background: rgba(0, 0, 0, 0.50) !important;
+  border: 2px solid rgba(0, 229, 255, 0.35) !important;
+  border-radius: 0 !important;
+  box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.75) !important;
+  padding: 6px 8px !important;
+}
+
+body.page-home [data-csp-panel] .csp-item-label {
+  font-family: var(--font-pixel) !important;
+  font-size: 0.34rem !important;
+  color: var(--neon-magenta) !important;
+  text-shadow: 0 0 5px rgba(255, 45, 120, 0.55) !important;
+  letter-spacing: 0.06em !important;
+  font-weight: 400 !important;
+}
+
+body.page-home [data-csp-panel] .csp-item-note {
+  font-family: var(--font-pixel) !important;
+  font-size: 0.30rem !important;
+  color: var(--color-text-muted) !important;
+  opacity: 0.85 !important;
+}
+
+body.page-home [data-csp-panel] .csp-item-val {
+  font-family: var(--font-pixel) !important;
+  font-size: 0.36rem !important;
+  color: #eaf8ff !important;
+  font-weight: 400 !important;
+  margin-top: 3px !important;
+}
+
+body.page-home [data-csp-panel] .csp-item-val--badge {
+  border-radius: 0 !important;
+  padding: 2px 6px !important;
+}
+
+body.page-home [data-csp-panel] .csp-badge--good {
+  background: rgba(57, 255, 20, 0.10) !important;
+  border: 2px solid rgba(57, 255, 20, 0.55) !important;
+  color: var(--neon-green) !important;
+  border-radius: 0 !important;
+}
+body.page-home [data-csp-panel] .csp-badge--warn {
+  background: rgba(255, 138, 0, 0.10) !important;
+  border: 2px solid rgba(255, 138, 0, 0.55) !important;
+  color: var(--neon-orange) !important;
+  border-radius: 0 !important;
+}
+body.page-home [data-csp-panel] .csp-badge--bad {
+  background: rgba(255, 45, 120, 0.10) !important;
+  border: 2px solid rgba(255, 45, 120, 0.55) !important;
+  color: var(--neon-magenta) !important;
+  border-radius: 0 !important;
+}
+
+body.page-home [data-csp-panel] .csp-dot {
+  border-radius: 0 !important;
+}
+body.page-home [data-csp-panel] .csp-dot--green {
+  background: var(--neon-green) !important;
+  box-shadow: 0 0 6px var(--neon-green) !important;
+}
+body.page-home [data-csp-panel] .csp-dot--red {
+  background: var(--neon-magenta) !important;
+  box-shadow: 0 0 6px var(--neon-magenta) !important;
+}
+body.page-home [data-csp-panel] .csp-val-good   { color: var(--neon-green)   !important; }
+body.page-home [data-csp-panel] .csp-val-locked { color: var(--neon-magenta) !important; }
+body.page-home [data-csp-panel] .csp-link {
+  color: var(--neon-cyan) !important;
+  font-family: var(--font-pixel) !important;
+  font-size: 0.36rem !important;
+}
+
+/* ── Override LAS inline styles to match retro ──────────────── */
+body.page-home [data-las-panel] .las-panel {
+  background: transparent !important;
+  border: none !important;
+  border-radius: 0 !important;
+  padding: 4px 0 0 !important;
+  font-family: var(--font-pixel) !important;
+  font-size: 0.36rem !important;
+  color: var(--color-text) !important;
+  gap: 2px !important;
+}
+
+body.page-home [data-las-panel] .las-row {
+  padding: 3px 4px !important;
+  border-bottom: 1px solid rgba(0, 229, 255, 0.10) !important;
+  flex-wrap: nowrap !important;
+  gap: 6px !important;
+}
+
+body.page-home [data-las-panel] .las-label {
+  font-family: var(--font-pixel) !important;
+  font-size: 0.34rem !important;
+  color: var(--color-text-muted) !important;
+  min-width: 52px !important;
+  letter-spacing: 0.05em !important;
+  font-weight: 400 !important;
+}
+
+body.page-home [data-las-panel] .las-val {
+  font-family: var(--font-pixel) !important;
+  font-size: 0.36rem !important;
+  color: #eaf8ff !important;
+  font-weight: 400 !important;
+}
+body.page-home [data-las-panel] .las-val--good { color: var(--neon-green)   !important; }
+body.page-home [data-las-panel] .las-val--bad  { color: var(--neon-magenta) !important; }
+body.page-home [data-las-panel] .las-val--warn { color: var(--neon-orange)  !important; }
+
+body.page-home [data-las-panel] .las-link {
+  color: var(--neon-cyan) !important;
+  font-family: var(--font-pixel) !important;
+  font-size: 0.34rem !important;
+}
+
+body.page-home [data-las-panel] .las-event-log {
+  border-top: 2px solid rgba(0, 229, 255, 0.20) !important;
+  border-radius: 0 !important;
+  margin-top: 4px !important;
+  padding-top: 4px !important;
+  gap: 2px !important;
+}
+
+body.page-home [data-las-panel] .las-event-row {
+  padding: 3px 0 !important;
+  border-bottom: 1px solid rgba(190, 76, 247, 0.10) !important;
+  gap: 5px !important;
+}
+
+body.page-home [data-las-panel] .las-event-time {
+  font-family: var(--font-pixel) !important;
+  font-size: 0.32rem !important;
+  color: var(--neon-cyan) !important;
+  text-shadow: 0 0 5px rgba(0, 229, 255, 0.55) !important;
+}
+
+body.page-home [data-las-panel] .las-event-icon {
+  flex-shrink: 0 !important;
+  width: 14px;
+  text-align: center;
+}
+
+body.page-home [data-las-panel] .las-event-text {
+  font-family: var(--font-pixel) !important;
+  font-size: 0.34rem !important;
+  color: #d0eaff !important;
+  opacity: 1 !important;
+  overflow-wrap: anywhere;
+  min-width: 0;
+  flex: 1;
+}
+
+/* ── Hero logo frame wrapper ─────────────────────────────────── */
+.hud-hero-logo-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  z-index: 10;
+  margin: 16px auto 12px;
+  width: fit-content;
+  max-width: 100%;
+  padding: 8px;
+}
+
+/* Outer broken-segment magenta frame */
+.hud-hero-logo-wrap::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  background:
+    /* top — left segment */
+    linear-gradient(var(--neon-magenta), var(--neon-magenta))
+      top left / 32% 2px no-repeat,
+    /* top — right segment */
+    linear-gradient(var(--neon-cyan), var(--neon-cyan))
+      top right / 32% 2px no-repeat,
+    /* bottom — left segment */
+    linear-gradient(var(--neon-cyan), var(--neon-cyan))
+      bottom left / 38% 2px no-repeat,
+    /* bottom — right segment */
+    linear-gradient(var(--neon-magenta), var(--neon-magenta))
+      bottom right / 38% 2px no-repeat,
+    /* left — top segment */
+    linear-gradient(var(--neon-magenta), var(--neon-magenta))
+      top left / 2px 28% no-repeat,
+    /* left — bottom segment */
+    linear-gradient(var(--neon-cyan), var(--neon-cyan))
+      bottom left / 2px 28% no-repeat,
+    /* right — top segment */
+    linear-gradient(var(--neon-cyan), var(--neon-cyan))
+      top right / 2px 28% no-repeat,
+    /* right — bottom segment */
+    linear-gradient(var(--neon-magenta), var(--neon-magenta))
+      bottom right / 2px 28% no-repeat;
+  filter: drop-shadow(0 0 5px rgba(255, 45, 120, 0.70))
+          drop-shadow(0 0 10px rgba(0, 229, 255, 0.45));
+  animation: neonFramePulse 3.8s steps(3, end) infinite;
+}
+
+/* Inner corner bracket accents */
+.hud-hero-logo-wrap::after {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  pointer-events: none;
+  z-index: 2;
+  background:
+    linear-gradient(var(--neon-yellow), var(--neon-yellow)) top left / 16px 3px no-repeat,
+    linear-gradient(var(--neon-yellow), var(--neon-yellow)) top left / 3px 16px no-repeat,
+    linear-gradient(var(--neon-cyan),   var(--neon-cyan))   top right / 20px 3px no-repeat,
+    linear-gradient(var(--neon-cyan),   var(--neon-cyan))   top right / 3px 20px no-repeat,
+    linear-gradient(var(--neon-magenta),var(--neon-magenta)) bottom left / 20px 3px no-repeat,
+    linear-gradient(var(--neon-magenta),var(--neon-magenta)) bottom left / 3px 20px no-repeat,
+    linear-gradient(var(--neon-cyan),   var(--neon-cyan))   bottom right / 16px 3px no-repeat,
+    linear-gradient(var(--neon-cyan),   var(--neon-cyan))   bottom right / 3px 16px no-repeat;
+  filter: drop-shadow(0 0 6px rgba(255, 214, 0, 0.70));
+  animation: neonCornerGlitch 5.4s steps(4, end) infinite;
+}
+
+.hud-hero-logo-wrap .hero-logo-img {
+  margin: 0 !important;
+  position: relative;
+  z-index: 3;
+  display: block;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hud-hero-logo-wrap::before,
+  .hud-hero-logo-wrap::after {
+    animation: none !important;
+  }
+}
+
+/* ── HUD body scanline backdrop for retro depth ─────────────── */
+body.page-home .hud-box--player .retro-hud-body,
+body.page-home .hud-box--system .retro-hud-body,
+body.page-home .hud-box--feed .retro-hud-body {
+  background:
+    repeating-linear-gradient(0deg, rgba(0,229,255,.018) 0 2px, transparent 2px 6px),
+    rgba(0, 0, 0, 0.28) !important;
+}
+
+/* ── Tighten HUD body padding for content fit ───────────────── */
+body.page-home .hud-box--player .retro-hud-body,
+body.page-home .hud-box--system .retro-hud-body,
+body.page-home .hud-box--feed .retro-hud-body {
+  padding: 12px 10px !important;
+}
