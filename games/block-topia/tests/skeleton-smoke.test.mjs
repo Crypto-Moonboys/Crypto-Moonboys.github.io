@@ -26,6 +26,7 @@ const mainSource = await fs.readFile(mainPath, 'utf8');
 const REQUIRED_EXPORTS = [
   'connectMultiplayer',
   'sendMovement',
+  'sendExtract',
   'isConnected',
   'getRoom',
   'reconnectMultiplayer',
@@ -141,12 +142,23 @@ assert.ok(
   'main.js should include extraction unlock and mission complete feedback states.',
 );
 assert.ok(
+  /function\s+shouldSuppressFeedMessage\s*\(/.test(mainSource) &&
+  /normalized\.includes\('neutralized npc_'\)/.test(mainSource) &&
+  /normalized\.includes\('was downed by npc_'\)/.test(mainSource) &&
+  /normalized\.includes\('hit'\)/.test(mainSource),
+  'main.js should suppress post-completion combat feed messages.',
+);
+assert.ok(
   /if\s*\(\s*runtime\.mission\.completed\s*\)\s*{[\s\S]*pushFeedback\(\s*MISSION_COMPLETE_MSG\s*,\s*MISSION_COMPLETE_TOAST_MS/.test(tryAttackBody) &&
   /if\s*\(\s*runtime\.mission\.completed\s*\)\s*{[\s\S]*return;/.test(tryAttackBody),
   'main.js should lock out local attack attempts after mission completion.',
 );
 assert.ok(
-  /runtime\.mission\.completed\s*&&\s*\(classificationKey\.startsWith\('neutralized:'\)\s*\|\|\s*classificationKey\.startsWith\('downed:'\)\)\s*\)\s*{\s*return;/.test(pushFeedBody),
+  /if\s*\(\s*runtime\.mission\.completed\s*\)\s*{[\s\S]*trySendExtractIntent\(\);/.test(tryAttackBody),
+  'main.js should send extract intent when mission is already complete.',
+);
+assert.ok(
+  /if\s*\(\s*shouldSuppressFeedMessage\s*\(\s*text\s*\)\s*\)\s*return;/.test(pushFeedBody),
   'main.js should suppress neutralized/downed combat feed spam after mission completion.',
 );
 assert.ok(
@@ -154,7 +166,9 @@ assert.ok(
   mainSource.includes('Run summary: Kills') &&
   mainSource.includes('const MISSION_COMPLETE_MSG =') &&
   mainSource.includes('const MISSION_COMPLETE_TOAST_MS =') &&
-  mainSource.includes('const MISSION_COMPLETE_TOAST_THROTTLE_MS ='),
+  mainSource.includes('const MISSION_COMPLETE_TOAST_THROTTLE_MS =') &&
+  mainSource.includes('setExtractSink(fn)') &&
+  mainSource.includes('shouldSuppressFeedMessage(message)'),
   'main.js should render a clear mission-complete banner and run summary.',
 );
 const localPlayerFnStart = mainSource.indexOf('function setLocalPlayer(');

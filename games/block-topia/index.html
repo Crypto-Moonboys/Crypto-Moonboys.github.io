@@ -310,7 +310,7 @@
         // server-side XP gate has been verified.  Loading them earlier would
         // render the map canvas before the check completes.
         await import("./main.js");
-        const { connectMultiplayer, sendMovement, sendAttack } = await import("./network.js");
+        const { connectMultiplayer, sendMovement, sendAttack, sendExtract } = await import("./network.js");
 
         // main.js registers window.BlockTopiaMap synchronously during evaluation.
         const api = window.BlockTopiaMap;
@@ -366,6 +366,7 @@
             }
           },
           onFeed(msg) {
+            if (window.BlockTopiaMap?.shouldSuppressFeedMessage?.(msg)) return;
             console.log("[BlockTopia feed]", msg);
             window.BlockTopiaMap?.pushFeed(msg);
           },
@@ -379,6 +380,7 @@
               const isConnected = Boolean(status?.joined) && status?.ws === "connected";
               return { ok: false, reason: isConnected ? "cooldown" : "disconnected" };
             });
+            window.BlockTopiaMap?.setExtractSink(() => sendExtract());
           }
         });
       }

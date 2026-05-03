@@ -256,6 +256,15 @@ export function sendAttack() {
   return true;
 }
 
+export function sendExtract() {
+  if (!isRoomOpen()) {
+    warnClosedRoom('extract');
+    return false;
+  }
+  room.send('extract', {});
+  return true;
+}
+
 export function getRoom() {
   return room;
 }
