@@ -347,6 +347,11 @@
         const upgradePanel = document.getElementById("bt-upgrade-panel");
         const upgradeButtons = document.getElementById("bt-upgrade-buttons");
         const upgradeWarning = document.getElementById("bt-upgrade-warning");
+        const syncStartOverlayVisibility = () => {
+          if (!overlay) return;
+          const required = window.BlockTopiaMap?.isStartOverlayRequired?.() !== false;
+          overlay.style.display = required ? "flex" : "none";
+        };
         const prettyUpgrade = (id) => String(id || "").replaceAll("_", " ").toUpperCase();
         const syncNextLevelButton = () => {
           if (!playAgainBtn) return;
@@ -396,14 +401,26 @@
           }
         };
         if (startBtn && overlay) {
-          startBtn.addEventListener("click", () => {
+          startBtn.addEventListener("click", async () => {
+            syncStartOverlayVisibility();
             const readySent = api.signalReady?.() === true;
             if (!readySent) {
               api.pushFeedback?.("Connecting to city... please wait", 1000);
+              try { await import("./network.js").then((m) => m.reconnectMultiplayer?.()); } catch {}
+              const sentAfterReconnect = api.signalReady?.() === true;
+              if (!sentAfterReconnect) {
+                syncStartOverlayVisibility();
+                return;
+              }
+            }
+            const snap = api.getSnapshot?.();
+            const readyNow = snap?.localPlayer?.ready === true;
+            if (!readyNow) {
+              syncStartOverlayVisibility();
               return;
             }
-            overlay.style.display = "none";
             api.setInputEnabled?.(true);
+            syncStartOverlayVisibility();
           });
         }
         if (controlsBtn && controlsCopy) {
@@ -436,9 +453,11 @@
             if (typeof status.sessionId === "string" && status.sessionId) {
               window.BlockTopiaMap?.setLocalPlayer({ sessionId: status.sessionId });
             }
+            syncStartOverlayVisibility();
           },
           onPlayers(players) {
             window.BlockTopiaMap?.updatePlayers(players);
+            syncStartOverlayVisibility();
           },
           onNpcs(npcs) {
             window.BlockTopiaMap?.setNpcs(npcs);
@@ -448,6 +467,7 @@
               window.BlockTopiaMap?.setWorldState?.(world);
               syncNextLevelButton();
             }
+            syncStartOverlayVisibility();
           },
           onFeed(msg) {
             if (window.BlockTopiaMap?.shouldSuppressFeedMessage?.(msg)) return;
@@ -468,10 +488,7 @@
             window.BlockTopiaMap?.setReadySink(() => sendReady());
             window.BlockTopiaMap?.setRestartRunSink(() => sendRestartRun());
             window.BlockTopiaMap?.setChooseUpgradeSink((upgradeId) => sendChooseUpgrade(upgradeId));
-            const overlay = document.getElementById("bt-start-overlay");
-            if (overlay && overlay.style.display === "none") {
-              window.BlockTopiaMap?.signalReady?.();
-            }
+            syncStartOverlayVisibility();
             syncNextLevelButton();
           }
         });
