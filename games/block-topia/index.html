@@ -356,7 +356,7 @@
           playAgainBtn.textContent = `Skip Recovery / Start Level ${level + 1}`;
           const choices = Array.isArray(snap?.localPlayer?.upgradeChoices) ? snap.localPlayer.upgradeChoices : [];
           if (!upgradeRow || !upgradeButtons) return;
-          if (!choices.length || !(phase === "MISSION_COMPLETE" || phase === "RECOVERY")) {
+          if (!choices.length || phase !== "RECOVERY") {
             upgradeRow.style.display = "none";
             upgradeButtons.innerHTML = "";
             return;

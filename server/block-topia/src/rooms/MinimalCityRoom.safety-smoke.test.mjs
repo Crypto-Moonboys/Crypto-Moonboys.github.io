@@ -19,6 +19,7 @@ must(/const\s+OBJECTIVE_PATROL_SWEEP\s*=\s*'PATROL_SWEEP'/, 'Patrol objective co
 must(/const\s+OBJECTIVE_SIGNAL_HACK\s*=\s*'SIGNAL_HACK'/, 'Signal hack objective constant should exist.');
 must(/const\s+UPGRADE_POOL\s*=\s*\[/, 'Upgrade pool should exist.');
 must(/this\.onMessage\(\s*'chooseUpgrade'/, 'Server should accept chooseUpgrade intent.');
+must(/if\s*\(\s*this\.state\.worldPhase\s*!==\s*PHASE_RECOVERY\s*\)\s*return/, 'chooseUpgrade should only be accepted during RECOVERY where choices are generated.');
 must(/safeParseJsonArray\(player\.upgradeChoicesJson\)/, 'Server should validate upgrade against offered choices.');
 must(/_applyUpgrade\(\s*player\s*,\s*upgradeId\s*\)/, 'Server should apply validated upgrade IDs.');
 must(/_scannerTargetBonus\(\)\s*{/, 'Scanner bonus helper should exist.');
@@ -33,8 +34,11 @@ must(/if\s*\(\s*this\.completedSessions\.has\s*\(\s*target\?\.id\s*\)\s*\)\s*ret
 must(/target\.hp\s*=\s*Math\.max\s*\(\s*0\s*,\s*target\.hp\s*-\s*reducedDamage\s*\)/, 'NPC contact damage should clamp hp.');
 must(/if\s*\(\s*target\.secondWindAvailable\s*&&\s*!target\.secondWindUsed\s*\)/, 'Second wind single-revive guard should exist.');
 must(/if\s*\(\s*this\.state\.players\.length\s*===\s*0\s*\)\s*return/, 'Phase ticker should not progress when room is empty.');
+must(/else\s+if\s*\(\s*this\.state\.worldPhase\s*===\s*PHASE_EVENT_ACTIVE\s*\)\s*{[\s\S]*if\s*\(\s*this\._isObjectiveComplete\(\)\s*\)\s*this\._setPhase\(\s*PHASE_MISSION_COMPLETE\s*\);[\s\S]*else\s*this\._setPhase\(\s*PHASE_RECOVERY\s*\);/, 'EVENT_ACTIVE phase transition should explicitly branch objective-complete vs timeout recovery.');
 must(/this\.state\.eventLevel\s*\+=\s*1/, 'Event level progression should exist.');
 must(/_advanceToNextLevel\(\)\s*{[\s\S]*this\.completedSessions\.clear\(\)/, 'Advancing level should clear completed sessions.');
+must(/_advanceToNextLevel\(\)\s*{[\s\S]*this\.runGeneration\s*\+=\s*1/, 'Advancing level should increment generation for stale timeout invalidation.');
+must(/_advanceToNextLevel\(\)\s*{[\s\S]*this\.pendingRespawnByNpcId\.clear\(\)/, 'Advancing level should clear pending NPC respawn guards.');
 must(/_advanceToNextLevel\(\)\s*{[\s\S]*this\.state\.objectiveProgress\s*=\s*0/, 'Advancing level should reset objective progress.');
 must(/_advanceToNextLevel\(\)\s*{[\s\S]*this\.spawnProtectedUntilBySession\.set\(player\.id,\s*now\s*\+\s*SPAWN_GRACE_MS\)/, 'Advancing level should reapply spawn grace.');
 must(/_advanceToNextLevel\(\)\s*{[\s\S]*this\.lastAttackAtBySession\.clear\(\)/, 'Advancing level should clear attack cooldown/session completion remnants.');

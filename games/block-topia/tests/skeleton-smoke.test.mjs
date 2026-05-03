@@ -127,8 +127,9 @@ assert.ok(
 assert.ok(
   indexHtml.includes('bt-upgrade-row') &&
   indexHtml.includes('setChooseUpgradeSink') &&
-  indexHtml.includes('sendChooseUpgrade'),
-  'index.html should render upgrade choice controls and wire chooseUpgrade intent.',
+  indexHtml.includes('sendChooseUpgrade') &&
+  indexHtml.includes('phase !== "RECOVERY"'),
+  'index.html should render upgrade choice controls, wire chooseUpgrade intent, and only show upgrade cards during RECOVERY.',
 );
 assert.equal(
   mainSource.includes('Arrow/WASD move | Click tile move | Space attack'),

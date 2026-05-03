@@ -265,7 +265,7 @@ export class MinimalCityRoom extends Room {
     this.onMessage('chooseUpgrade', (client, data) => {
       const player = this.playersBySession.get(client.sessionId);
       if (!player || !player.ready) return;
-      if (this.state.worldPhase !== PHASE_MISSION_COMPLETE && this.state.worldPhase !== PHASE_RECOVERY) return;
+      if (this.state.worldPhase !== PHASE_RECOVERY) return;
       const upgradeId = String(data?.upgradeId || '').trim();
       if (!upgradeId) return;
       const choices = safeParseJsonArray(player.upgradeChoicesJson);
@@ -483,7 +483,7 @@ export class MinimalCityRoom extends Room {
     if (this.state.worldPhase === PHASE_FREE_ROAM) this._setPhase(PHASE_WARNING);
     else if (this.state.worldPhase === PHASE_WARNING) this._setPhase(PHASE_EVENT_ACTIVE);
     else if (this.state.worldPhase === PHASE_EVENT_ACTIVE) {
-      if (this._isObjectiveComplete()) this._setPhase(PHASE_RECOVERY);
+      if (this._isObjectiveComplete()) this._setPhase(PHASE_MISSION_COMPLETE);
       else this._setPhase(PHASE_RECOVERY);
     }
     else if (this.state.worldPhase === PHASE_RECOVERY) this._setPhase(PHASE_WARNING);
@@ -509,11 +509,13 @@ export class MinimalCityRoom extends Room {
 
   _advanceToNextLevel() {
     const now = Date.now();
+    this.runGeneration += 1;
     this.completedSessions.clear();
     this.lastAttackAtBySession.clear();
     this.lastNpcDamageAtByTarget.clear();
     this.lastNpcDamageAtByNpcAndTarget.clear();
     this.pendingRespawnBySession.clear();
+    this.pendingRespawnByNpcId.clear();
     this.state.eventLevel += 1;
     this.state.objectiveProgress = 0;
     for (const player of this.state.players) {
