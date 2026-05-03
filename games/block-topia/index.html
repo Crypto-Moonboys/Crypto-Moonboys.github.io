@@ -235,7 +235,7 @@
         // server-side XP gate has been verified.  Loading them earlier would
         // render the map canvas before the check completes.
         await import("./main.js");
-        const { connectMultiplayer, sendMovement } = await import("./network.js");
+        const { connectMultiplayer, sendMovement, sendAttack } = await import("./network.js");
 
         // main.js registers window.BlockTopiaMap synchronously during evaluation.
         const api = window.BlockTopiaMap;
@@ -262,12 +262,22 @@
           onPlayers(players) {
             window.BlockTopiaMap?.updatePlayers(players);
           },
+          onNpcs(npcs) {
+            window.BlockTopiaMap?.setNpcs(npcs);
+          },
+          onWorld(world) {
+            if (world && world.mode) {
+              window.BlockTopiaMap?.setWorldMode(world.mode);
+            }
+          },
           onFeed(msg) {
             console.log("[BlockTopia feed]", msg);
+            window.BlockTopiaMap?.pushFeed(msg);
           },
         }).then((connectedRoom) => {
           if (connectedRoom) {
             window.BlockTopiaMap?.setPositionBroadcastSink(({ x, y }) => sendMovement(x, y));
+            window.BlockTopiaMap?.setAttackSink(() => sendAttack());
           }
         });
       }
