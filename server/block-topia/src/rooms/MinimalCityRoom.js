@@ -34,6 +34,7 @@ const FREE_ROAM_MS = 60_000; // Production target: 10 minutes.
 const WARNING_MS = 10_000;
 const EVENT_MS = 90_000;
 const RECOVERY_MS = 30_000; // Production target: 10 minutes.
+const MISSION_COMPLETE_MS = 8000;
 const MAX_ROOM_RUN_MS = 20 * 60_000;
 const IDLE_RESET_MS = 2 * 60_000;
 const PHASE_FREE_ROAM = 'FREE_ROAM';
@@ -312,6 +313,7 @@ export class MinimalCityRoom extends Room {
     if (phase === PHASE_WARNING) return WARNING_MS;
     if (phase === PHASE_EVENT_ACTIVE) return EVENT_MS;
     if (phase === PHASE_RECOVERY) return RECOVERY_MS;
+    if (phase === PHASE_MISSION_COMPLETE) return MISSION_COMPLETE_MS;
     return 0;
   }
 
@@ -320,7 +322,6 @@ export class MinimalCityRoom extends Room {
     this.state.worldPhase = phase;
     this.state.phaseStartedAt = now;
     this.state.phaseEndsAt = now + this._phaseDuration(phase);
-    if (phase === PHASE_MISSION_COMPLETE) this.state.phaseEndsAt = 0;
     if (phase === PHASE_EVENT_ACTIVE) {
       this.state.eventObjective = `Patrol Sweep L${this.state.eventLevel}: survive and neutralize ${MISSION_REQUIRED_KILLS} NPCs, then extract.`;
     } else if (phase === PHASE_WARNING) {
@@ -330,7 +331,7 @@ export class MinimalCityRoom extends Room {
     } else if (phase === PHASE_FREE_ROAM) {
       this.state.eventObjective = `Free roam: explore the city. Event level ${this.state.eventLevel} starts soon.`;
     } else if (phase === PHASE_MISSION_COMPLETE) {
-      this.state.eventObjective = 'Mission complete. Extracted squad can play again or return to arcade.';
+      this.state.eventObjective = `Level ${this.state.eventLevel} complete. Recovery before level ${this.state.eventLevel + 1}.`;
     }
   }
 
@@ -369,7 +370,6 @@ export class MinimalCityRoom extends Room {
   _tickPhase() {
     const now = Date.now();
     if (this.state.players.length === 0) return;
-    if (this.state.worldPhase === PHASE_MISSION_COMPLETE) return;
     if (this.state.roomRunStartedAt && now - this.state.roomRunStartedAt > MAX_ROOM_RUN_MS) {
       this._setPhase(PHASE_MISSION_COMPLETE);
       return;
@@ -381,6 +381,8 @@ export class MinimalCityRoom extends Room {
     else if (this.state.worldPhase === PHASE_RECOVERY) {
       this.state.eventLevel += 1;
       this._setPhase(PHASE_WARNING);
+    } else if (this.state.worldPhase === PHASE_MISSION_COMPLETE) {
+      this._advanceToNextLevel();
     } else this._setPhase(PHASE_FREE_ROAM);
   }
 
@@ -397,6 +399,27 @@ export class MinimalCityRoom extends Room {
     if (!readyPlayers.length) return;
     const allReadyCompleted = readyPlayers.every((p) => this.completedSessions.has(p.id));
     if (allReadyCompleted) this._setPhase(PHASE_MISSION_COMPLETE);
+  }
+
+  _advanceToNextLevel() {
+    const now = Date.now();
+    this.completedSessions.clear();
+    this.state.eventLevel += 1;
+    for (const player of this.state.players) {
+      if (!player || !player.ready) continue;
+      player.hp = PLAYER_MAX_HP;
+      player.kills = 0;
+      player.respawnAt = 0;
+      this.spawnProtectedUntilBySession.set(player.id, now + SPAWN_GRACE_MS);
+      this.missionStartedAtBySession.set(player.id, now);
+    }
+    for (const npc of this.state.npcs) {
+      if (!npc) continue;
+      npc.hp = NPC_MAX_HP;
+      npc.maxHp = NPC_MAX_HP;
+      npc.targetSessionId = '';
+    }
+    this._setPhase(PHASE_RECOVERY);
   }
 
   _isPassable(x, y) {
@@ -516,7 +539,8 @@ export class MinimalCityRoom extends Room {
 
     const pairKey = `${npc.id}:${target.id}`;
     const lastPairDamageAt = this.lastNpcDamageAtByNpcAndTarget.get(pairKey) || 0;
-    if (now - lastPairDamageAt < NPC_ATTACK_COOLDOWN_MS) return;
+    const npcAttackCooldown = Math.max(800, NPC_ATTACK_COOLDOWN_MS - Math.max(0, this.state.eventLevel - 1) * 60);
+    if (now - lastPairDamageAt < npcAttackCooldown) return;
 
     const lastTargetDamageAt = this.lastNpcDamageAtByTarget.get(target.id) || 0;
     if (now - lastTargetDamageAt < PLAYER_NPC_DAMAGE_COOLDOWN_MS) return;
@@ -524,7 +548,8 @@ export class MinimalCityRoom extends Room {
     this.lastNpcDamageAtByNpcAndTarget.set(pairKey, now);
     this.lastNpcDamageAtByTarget.set(target.id, now);
 
-    target.hp = Math.max(0, target.hp - NPC_CONTACT_DAMAGE);
+    const npcDamage = NPC_CONTACT_DAMAGE + Math.min(8, Math.max(0, this.state.eventLevel - 1) * 2);
+    target.hp = Math.max(0, target.hp - npcDamage);
     if (target.hp > 0) return;
 
     target.hp = 0;

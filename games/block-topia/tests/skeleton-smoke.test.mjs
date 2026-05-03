@@ -89,6 +89,10 @@ assert.ok(
   'index.html should expose Play Again and wire restartRun network intent.',
 );
 assert.ok(
+  indexHtml.includes('Restart Run (Level 1)'),
+  'index.html should label restart action clearly as Level 1 restart.',
+);
+assert.ok(
   indexHtml.includes('bt-help-toggle'),
   'index.html should expose help panel collapse toggle.',
 );
@@ -165,6 +169,18 @@ assert.ok(
   mainSource.includes('PHASE ') &&
   mainSource.includes('EVENT ACTIVE'),
   'main.js should render shared world phase data from server state.',
+);
+assert.ok(
+  mainSource.includes('function phaseJoinHint(') &&
+  mainSource.includes('You joined during recovery. Next event soon.') &&
+  mainSource.includes('Late join: event already in progress.'),
+  'main.js should render phase-specific late-join guidance instead of a generic in-progress message.',
+);
+assert.ok(
+  mainSource.includes('function formatCountdown(') &&
+  mainSource.includes('Next Event: Patrol Sweep Level') &&
+  mainSource.includes('starts in ${formatCountdown(phaseMsLeft)}'),
+  'main.js should show next level preview and countdown during post-mission flow.',
 );
 assert.ok(
   /function\s+shouldSuppressFeedMessage\s*\(/.test(mainSource) &&
