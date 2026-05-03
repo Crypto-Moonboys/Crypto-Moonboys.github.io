@@ -333,16 +333,34 @@ document.addEventListener('DOMContentLoaded', async () => {
   const _sidebar   = document.getElementById('sidebar');
   const _overlay   = document.getElementById('sidebar-overlay');
 
+  function _setSidebarState(expanded) {
+    if (!_sidebar) return;
+    _sidebar.classList.toggle('open', expanded);
+    _sidebar.classList.toggle('active', expanded);
+    if (_hamburger) _hamburger.setAttribute('aria-expanded', String(expanded));
+    if (_overlay) {
+      _overlay.classList.toggle('open', expanded);
+      _overlay.classList.toggle('active', expanded);
+    }
+  }
+
   function _toggleSidebar(open) {
     if (!_sidebar) return;
     const expanded = open !== undefined ? open : !_sidebar.classList.contains('open');
-    _sidebar.classList.toggle('open', expanded);
-    if (_hamburger) _hamburger.setAttribute('aria-expanded', String(expanded));
-    if (_overlay)   _overlay.classList.toggle('active', expanded);
+    _setSidebarState(expanded);
   }
 
   if (_hamburger) _hamburger.addEventListener('click', () => _toggleSidebar());
   if (_overlay)   _overlay.addEventListener('click',   () => _toggleSidebar(false));
+  if (_sidebar) {
+    _sidebar.addEventListener('click', (event) => {
+      const link = event.target && event.target.closest ? event.target.closest('a') : null;
+      if (link) _toggleSidebar(false);
+    });
+  }
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape') _toggleSidebar(false);
+  });
 
   // ── Back to top ──────────────────────────────────────────────────────────
   const _backToTop = document.getElementById('back-to-top');

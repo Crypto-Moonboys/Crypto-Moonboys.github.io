@@ -1048,6 +1048,10 @@ a.hero-stat-link:hover {
     display: block;
     pointer-events: auto;
   }
+  #sidebar-overlay:not(.open):not(.active) {
+    display: none !important;
+    pointer-events: none !important;
+  }
   .hamburger { display: flex; }
   #content { padding: 20px 18px 40px; }
   .infobox { float: none; width: 100%; margin: 0 0 20px 0; }
