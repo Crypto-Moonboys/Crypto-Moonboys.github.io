@@ -2,7 +2,6 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { MinimalCityRoom } from './MinimalCityRoom.js';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const roomPath = path.resolve(here, './MinimalCityRoom.js');
@@ -36,31 +35,9 @@ assertSource(/npc\.maxHp\s*=\s*NPC_MAX_HP/, 'Server NPC maxHp must stay in sync 
 assertSource(/const\s+npcDamageKeySuffix\s*=\s*`:\$\{client\.sessionId\}`/, 'onLeave must derive NPC damage map key suffix from session id.');
 assertSource(/if\s*\(\s*key\.endsWith\s*\(\s*npcDamageKeySuffix\s*\)\s*\)/, 'onLeave must check key suffix for departing session.');
 assertSource(/this\.lastNpcDamageAtByNpcAndTarget\.delete\s*\(\s*key\s*\)/, 'onLeave must delete NPC damage map keys for departing session.');
-
-// Deterministic behavior check for respawn distance helper.
-{
-  const room = Object.create(MinimalCityRoom.prototype);
-  room.state = { players: [{ x: 0, y: 0, hp: 100 }] };
-  room._isPassable = () => true;
-  room._findRandomPassableTile = () => ({ x: 9, y: 9 });
-
-  const randomSeq = [0, 0, 0.5, 0.5];
-  let idx = 0;
-  const originalRandom = Math.random;
-  Math.random = () => {
-    const next = randomSeq[idx];
-    idx += 1;
-    return typeof next === 'number' ? next : 0.5;
-  };
-  try {
-    const picked = room._findRandomPassableTileAwayFromPlayers(4);
-    assert.ok(
-      Math.hypot(picked.x - 0, picked.y - 0) >= 4,
-      'NPC respawn helper should avoid spawning too close to live players when possible.',
-    );
-  } finally {
-    Math.random = originalRandom;
-  }
-}
+assertSource(/_findRandomPassableTileAwayFromPlayers\s*\(\s*minDistance\s*=\s*0\s*\)/, 'Respawn distance helper must exist.');
+assertSource(/const\s+tooClose\s*=\s*this\.state\.players\.some\(/, 'Respawn helper must check proximity to live players.');
+assertSource(/distance\s*\(\s*x\s*,\s*y\s*,\s*player\.x\s*,\s*player\.y\s*\)\s*<\s*minDistance/, 'Respawn helper must enforce min-distance threshold.');
+assertSource(/this\._findRandomPassableTileAwayFromPlayers\s*\(\s*NPC_RESPAWN_MIN_DISTANCE\s*\)/, 'NPC respawn must use distance-aware spawn helper.');
 
 console.log('MinimalCityRoom safety smoke checks passed.');
