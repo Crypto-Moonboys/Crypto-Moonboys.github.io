@@ -29,6 +29,7 @@ const NPC_RESPAWN_DELAY_MS = 6500;
 const NPC_RESPAWN_MIN_DISTANCE = 4;
 const MISSION_SURVIVE_MS = 60000;
 const MISSION_REQUIRED_KILLS = 5;
+const READY_TIMEOUT_MS = 30000;
 const PASSABLE_TERRAIN = new Set(['road', 'grass']);
 
 class PlayerState extends Schema {
@@ -112,6 +113,7 @@ export class MinimalCityRoom extends Room {
     this.spawnProtectedUntilBySession = new Map();
     this.pendingRespawnBySession = new Map();
     this.pendingRespawnByNpcId = new Map();
+    this.pendingReadyTimeoutBySession = new Map();
     this.completedSessions = new Set();
     this.missionStartedAtBySession = new Map();
     this.terrain = buildTerrainGrid(MAP_WIDTH, MAP_HEIGHT);
@@ -197,6 +199,7 @@ export class MinimalCityRoom extends Room {
     this.completedSessions.delete(client.sessionId);
     this.missionStartedAtBySession.set(client.sessionId, 0);
     this.spawnProtectedUntilBySession.set(client.sessionId, Date.now() + SPAWN_GRACE_MS);
+    this._scheduleReadyTimeout(client.sessionId);
     this._updateWorldMode();
 
     this.broadcast('system', {
@@ -222,6 +225,7 @@ export class MinimalCityRoom extends Room {
     this.spawnProtectedUntilBySession.delete(client.sessionId);
     this.lastNpcDamageAtByTarget.delete(client.sessionId);
     this.pendingRespawnBySession.delete(client.sessionId);
+    this.pendingReadyTimeoutBySession.delete(client.sessionId);
     this.missionStartedAtBySession.delete(client.sessionId);
     if (player) {
       const index = this.state.players.findIndex((entry) => entry.id === client.sessionId);
@@ -388,10 +392,23 @@ export class MinimalCityRoom extends Room {
     const player = this.playersBySession.get(sessionId);
     if (!player || player.ready) return;
     player.ready = true;
+    this.pendingReadyTimeoutBySession.delete(sessionId);
     player.hp = PLAYER_MAX_HP;
     player.respawnAt = 0;
     this.missionStartedAtBySession.set(sessionId, Date.now());
     this.spawnProtectedUntilBySession.set(sessionId, Date.now() + SPAWN_GRACE_MS);
+  }
+
+  _scheduleReadyTimeout(sessionId) {
+    if (this.pendingReadyTimeoutBySession.get(sessionId)) return;
+    this.pendingReadyTimeoutBySession.set(sessionId, true);
+    this.clock.setTimeout(() => {
+      this.pendingReadyTimeoutBySession.delete(sessionId);
+      const player = this.playersBySession.get(sessionId);
+      if (!player || player.ready) return;
+      const client = this.clients.find((entry) => entry?.sessionId === sessionId);
+      if (client) this.disconnect(client, 4401);
+    }, READY_TIMEOUT_MS);
   }
 
   _canExtractPlayer(sessionId, player) {

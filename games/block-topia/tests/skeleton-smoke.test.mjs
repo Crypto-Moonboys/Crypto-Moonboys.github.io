@@ -104,7 +104,10 @@ assert.ok(
   'index.html should synchronize hidden state with collapsed help panel state.',
 );
 assert.ok(
-  indexHtml.includes('api.signalReady?.();') && indexHtml.includes('setReadySink(() => sendReady())'),
+  indexHtml.includes('const readySent = api.signalReady?.() === true;') &&
+  indexHtml.includes('if (!readySent) {') &&
+  indexHtml.includes('api.setInputEnabled?.(true);') &&
+  indexHtml.includes('setReadySink(() => sendReady())'),
   'index.html start flow should send ready/startRun before gameplay starts.',
 );
 assert.equal(
@@ -179,6 +182,7 @@ assert.ok(
   mainSource.includes('setExtractSink(fn)') &&
   mainSource.includes('setReadySink(fn)') &&
   mainSource.includes('signalReady()') &&
+  mainSource.includes('readyRequested') &&
   mainSource.includes('shouldSuppressFeedMessage(message)'),
   'main.js should render a clear mission-complete banner and run summary.',
 );

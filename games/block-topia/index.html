@@ -330,8 +330,12 @@
         const controlsCopy = document.getElementById("bt-controls-copy");
         if (startBtn && overlay) {
           startBtn.addEventListener("click", () => {
+            const readySent = api.signalReady?.() === true;
+            if (!readySent) {
+              api.pushFeedback?.("Connecting to city... please wait", 1000);
+              return;
+            }
             overlay.style.display = "none";
-            api.signalReady?.();
             api.setInputEnabled?.(true);
           });
         }

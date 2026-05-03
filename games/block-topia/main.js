@@ -25,7 +25,7 @@ let cameraY = 0;
 let cameraScale = 1;
 
 const runtime = {
-  localPlayer: { id: 'local', x: 1, y: 1, color: '#6da9ff', name: 'You', sessionId: '', hp: 100, kills: 0, downs: 0, respawnAt: 0, ready: false },
+  localPlayer: { id: 'local', x: 1, y: 1, color: '#6da9ff', name: 'You', sessionId: '', hp: 100, kills: 0, downs: 0, respawnAt: 0, ready: false, readyRequested: false },
   remotePlayer: { id: 'remote', x: GRID_SIZE - 2, y: GRID_SIZE - 2, color: '#f6fbff', name: 'Remote', connected: false, sessionId: '', hp: 100, kills: 0, downs: 0, respawnAt: 0 },
   npcs: [],
   worldMode: 'single-player-vs-npc',
@@ -733,7 +733,10 @@ function setLocalPlayer(payload = {}) {
   if (Number.isFinite(payload.kills)) runtime.localPlayer.kills = Math.max(0, Math.floor(payload.kills));
   if (Number.isFinite(payload.downs)) runtime.localPlayer.downs = Math.max(0, Math.floor(payload.downs));
   if (Number.isFinite(payload.respawnAt)) runtime.localPlayer.respawnAt = Math.max(0, Math.floor(payload.respawnAt));
-  if (typeof payload.ready === 'boolean') runtime.localPlayer.ready = payload.ready;
+  if (typeof payload.ready === 'boolean') {
+    runtime.localPlayer.ready = payload.ready;
+    if (payload.ready) runtime.localPlayer.readyRequested = false;
+  }
   if (!runtime.mission.completed && runtime.localPlayer.hp < prevHp) {
     pushFeedback(`HIT -${prevHp - runtime.localPlayer.hp}`, 850, 'rgba(255, 146, 146, 0.98)');
     pushFlash('player_hit', 260);
@@ -886,10 +889,10 @@ window.BlockTopiaMap = {
     runtime.readySink = typeof fn === 'function' ? fn : null;
   },
   signalReady() {
-    if (runtime.localPlayer.ready) return false;
+    if (runtime.localPlayer.ready || runtime.localPlayer.readyRequested) return false;
     if (!runtime.readySink) return false;
     const sent = runtime.readySink();
-    if (sent) runtime.localPlayer.ready = true;
+    if (sent) runtime.localPlayer.readyRequested = true;
     return Boolean(sent);
   },
   shouldSuppressFeedMessage(message) {
