@@ -80,6 +80,7 @@ class PlayerState extends Schema {
     this.upgradesJson = '[]';
     this.upgradeChoicesJson = '[]';
     this.upgradeChoicesMetaJson = '[]';
+    this.upgradeState = '';
     this.objectiveProgress = 0;
   }
 }
@@ -106,6 +107,7 @@ defineTypes(PlayerState, {
   upgradesJson: 'string',
   upgradeChoicesJson: 'string',
   upgradeChoicesMetaJson: 'string',
+  upgradeState: 'string',
   objectiveProgress: 'number',
 });
 
@@ -267,7 +269,7 @@ export class MinimalCityRoom extends Room {
     this.onMessage('chooseUpgrade', (client, data) => {
       const player = this.playersBySession.get(client.sessionId);
       if (!player || !player.ready) return;
-      if (this.state.worldPhase !== PHASE_RECOVERY) return;
+      if (this.state.worldPhase !== PHASE_RECOVERY && this.state.worldPhase !== PHASE_MISSION_COMPLETE) return;
       const upgradeId = String(data?.upgradeId || '').trim();
       if (!upgradeId) return;
       const choices = safeParseJsonArray(player.upgradeChoicesJson);
@@ -275,6 +277,7 @@ export class MinimalCityRoom extends Room {
       this._applyUpgrade(player, upgradeId);
       player.upgradeChoicesJson = '[]';
       player.upgradeChoicesMetaJson = '[]';
+      player.upgradeState = 'selected';
       this.broadcast('system', { message: `${player.name} activated ${upgradeId.replaceAll('_', ' ').toUpperCase()}.`, mode: this.state.worldMode });
     });
 
@@ -308,6 +311,7 @@ export class MinimalCityRoom extends Room {
     player.faction = String(options?.faction || 'Liberators').slice(0, 24);
     player.district = String(options?.district || 'neon-slums').slice(0, 32);
     player.ready = false;
+    player.upgradeState = this.state.eventLevel > 1 ? 'joined_late' : '';
 
     this.state.players.push(player);
     this.playersBySession.set(client.sessionId, player);
@@ -408,17 +412,12 @@ export class MinimalCityRoom extends Room {
       this.state.eventObjective = `Warning: patrol sweep level ${this.state.eventLevel} incoming.`;
     } else if (phase === PHASE_RECOVERY) {
       this.state.eventObjective = `Recovery: regroup before level ${this.state.eventLevel + 1}.`;
-      for (const player of this.state.players) {
-        if (!player || !player.ready) continue;
-        if (safeParseJsonArray(player.upgradeChoicesJson).length) continue;
-        const choices = pickUpgradeChoices(player.upgradesJson);
-        player.upgradeChoicesJson = JSON.stringify(choices);
-        player.upgradeChoicesMetaJson = JSON.stringify(choices.map((choiceId) => toUpgradeMeta(choiceId)));
-      }
+      this._ensureUpgradeChoicesForReadyPlayers();
     } else if (phase === PHASE_FREE_ROAM) {
       this.state.eventObjective = `Free roam: explore the city. Event level ${this.state.eventLevel} starts soon.`;
     } else if (phase === PHASE_MISSION_COMPLETE) {
       this.state.eventObjective = `Level ${this.state.eventLevel} complete. Recovery before level ${this.state.eventLevel + 1}.`;
+      this._ensureUpgradeChoicesForReadyPlayers();
     }
   }
 
@@ -449,6 +448,7 @@ export class MinimalCityRoom extends Room {
       player.runLevel = this.state.eventLevel;
       player.upgradeChoicesJson = '[]';
       player.upgradeChoicesMetaJson = '[]';
+      player.upgradeState = '';
       player.objectiveProgress = 0;
       player.hp = player.maxHp;
       player.kills = 0;
@@ -522,6 +522,11 @@ export class MinimalCityRoom extends Room {
     this.state.objectiveProgress = 0;
     for (const player of this.state.players) {
       if (!player || !player.ready) continue;
+      if (safeParseJsonArray(player.upgradeChoicesJson).length && player.upgradeState !== 'selected') {
+        player.upgradeState = 'missed';
+      } else if (player.upgradeState === 'selected') {
+        player.upgradeState = '';
+      }
       player.runLevel = this.state.eventLevel;
       player.secondWindUsed = false;
       player.objectiveProgress = 0;
@@ -541,6 +546,18 @@ export class MinimalCityRoom extends Room {
       npc.targetSessionId = '';
     }
     this._setPhase(PHASE_FREE_ROAM);
+  }
+
+  _ensureUpgradeChoicesForReadyPlayers() {
+    for (const player of this.state.players) {
+      if (!player || !player.ready) continue;
+      if (player.upgradeState === 'selected') continue;
+      if (safeParseJsonArray(player.upgradeChoicesJson).length) continue;
+      const choices = pickUpgradeChoices(player.upgradesJson);
+      player.upgradeChoicesJson = JSON.stringify(choices);
+      player.upgradeChoicesMetaJson = JSON.stringify(choices.map((choiceId) => toUpgradeMeta(choiceId)));
+      player.upgradeState = choices.length ? 'pending' : 'none';
+    }
   }
 
   _isPassable(x, y) {

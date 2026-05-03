@@ -81,6 +81,7 @@ function toPlayerList(playersState) {
       upgrades: parseJsonArray(player?.upgradesJson),
       upgradeChoices: parseJsonArray(player?.upgradeChoicesJson),
       upgradeChoicesMeta: parseJsonObjectArray(player?.upgradeChoicesMetaJson),
+      upgradeState: String(player?.upgradeState || ''),
       objectiveProgress: Math.max(0, Number(player?.objectiveProgress) || 0),
     });
   };
