@@ -403,23 +403,46 @@
         if (startBtn && overlay) {
           startBtn.addEventListener("click", async () => {
             syncStartOverlayVisibility();
+            const beforeSnap = api.getSnapshot?.();
+            const alreadyReady = beforeSnap?.localPlayer?.ready === true;
+            const joined = beforeSnap?.connectionStatus?.joined === true;
+            const connected = beforeSnap?.connectionStatus?.ws === "connected";
+            if (alreadyReady && joined && connected) {
+              api.setInputEnabled?.(true);
+              syncStartOverlayVisibility();
+              return;
+            }
             const readySent = api.signalReady?.() === true;
             if (!readySent) {
-              api.pushFeedback?.("Connecting to city... please wait", 1000);
-              try { await import("./network.js").then((m) => m.reconnectMultiplayer?.()); } catch {}
+              if (!joined || !connected) {
+                api.pushFeedback?.("Connecting to city... please wait", 1000);
+                try { await import("./network.js").then((m) => m.reconnectMultiplayer?.()); } catch {}
+              }
+              const snapAfterReconnect = api.getSnapshot?.();
+              const readyAfterReconnect = snapAfterReconnect?.localPlayer?.ready === true;
+              const joinedAfterReconnect = snapAfterReconnect?.connectionStatus?.joined === true;
+              const connectedAfterReconnect = snapAfterReconnect?.connectionStatus?.ws === "connected";
+              if (readyAfterReconnect && joinedAfterReconnect && connectedAfterReconnect) {
+                api.setInputEnabled?.(true);
+                syncStartOverlayVisibility();
+                return;
+              }
               const sentAfterReconnect = api.signalReady?.() === true;
-              if (!sentAfterReconnect) {
+              if (!sentAfterReconnect && !(readyAfterReconnect && joinedAfterReconnect && connectedAfterReconnect)) {
                 syncStartOverlayVisibility();
                 return;
               }
             }
-            const snap = api.getSnapshot?.();
-            const readyNow = snap?.localPlayer?.ready === true;
-            if (!readyNow) {
+            window.setTimeout(() => {
+              const snap = api.getSnapshot?.();
+              const readyNow = snap?.localPlayer?.ready === true;
+              const joinedNow = snap?.connectionStatus?.joined === true;
+              const connectedNow = snap?.connectionStatus?.ws === "connected";
+              if (readyNow && joinedNow && connectedNow) {
+                api.setInputEnabled?.(true);
+              }
               syncStartOverlayVisibility();
-              return;
-            }
-            api.setInputEnabled?.(true);
+            }, 80);
             syncStartOverlayVisibility();
           });
         }

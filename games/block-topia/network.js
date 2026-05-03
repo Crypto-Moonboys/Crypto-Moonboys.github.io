@@ -209,9 +209,8 @@ export async function connectMultiplayer({
       });
 
       room.onStateChange((state) => {
-        const me = typeof state?.players?.find === 'function'
-          ? state.players.find((entry) => String(entry?.id || '') === String(room?.sessionId || ''))
-          : null;
+        const playerList = toPlayerList(state?.players);
+        const me = playerList.find((entry) => String(entry?.id || '') === String(room?.sessionId || ''));
         if (me?.ready === true) _preStartDisconnectCount = 0;
         const nextEventLevel = Number(state.eventLevel);
         if (Number.isFinite(nextEventLevel) && nextEventLevel >= 1) {
