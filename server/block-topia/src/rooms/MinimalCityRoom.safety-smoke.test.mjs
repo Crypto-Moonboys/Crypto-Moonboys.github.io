@@ -34,7 +34,7 @@ must(/if\s*\(\s*this\.completedSessions\.has\s*\(\s*target\?\.id\s*\)\s*\)\s*ret
 must(/target\.hp\s*=\s*Math\.max\s*\(\s*0\s*,\s*target\.hp\s*-\s*reducedDamage\s*\)/, 'NPC contact damage should clamp hp.');
 must(/if\s*\(\s*target\.secondWindAvailable\s*&&\s*!target\.secondWindUsed\s*\)/, 'Second wind single-revive guard should exist.');
 must(/if\s*\(\s*this\.state\.players\.length\s*===\s*0\s*\)\s*return/, 'Phase ticker should not progress when room is empty.');
-must(/else\s+if\s*\(\s*this\.state\.worldPhase\s*===\s*PHASE_EVENT_ACTIVE\s*\)\s*{[\s\S]*if\s*\(\s*this\._isObjectiveComplete\(\)\s*\)\s*this\._setPhase\(\s*PHASE_MISSION_COMPLETE\s*\);[\s\S]*else\s*this\._setPhase\(\s*PHASE_RECOVERY\s*\);/, 'EVENT_ACTIVE phase transition should explicitly branch objective-complete vs timeout recovery.');
+must(/else\s+if\s*\(\s*this\.state\.worldPhase\s*===\s*PHASE_EVENT_ACTIVE\s*\)\s*this\._setPhase\(\s*PHASE_RECOVERY\s*\);/, 'EVENT_ACTIVE should route through RECOVERY so upgrade phase remains available.');
 must(/this\.state\.eventLevel\s*\+=\s*1/, 'Event level progression should exist.');
 must(/_advanceToNextLevel\(\)\s*{[\s\S]*this\.completedSessions\.clear\(\)/, 'Advancing level should clear completed sessions.');
 must(/_advanceToNextLevel\(\)\s*{[\s\S]*this\.state\.objectiveProgress\s*=\s*0/, 'Advancing level should reset objective progress.');
@@ -47,6 +47,7 @@ must(/this\.state\.eventObjectiveType\s*=\s*this\.state\.eventLevel\s*%\s*2\s*==
 must(/_findRandomPassableTileAwayFromPlayers\(\s*NPC_RESPAWN_MIN_DISTANCE\s*\)/, 'NPC respawn should avoid spawning near players.');
 must(/const\s+nearExtraction\s*=.+EXTRACTION_SAFE_DISTANCE/, 'NPC respawn should avoid extraction area in recovery/complete.');
 must(/if\s*\(\s*scheduledGeneration\s*!==\s*this\.runGeneration\s*\)\s*return/, 'Respawn callbacks should ignore stale generations.');
+must(/if\s*\(\s*this\.state\.eventObjectiveType\s*===\s*OBJECTIVE_SIGNAL_HACK\s*\)\s*{\s*return\s+this\.state\.objectiveProgress\s*>=\s*this\.state\.hackProgressTarget;\s*}/, 'SIGNAL_HACK extraction gate should use shared squad objective progress.');
 must(/const\s+ex\s*=\s*Number\(this\.state\.extractionX\)/, 'Extraction validation should read authoritative extractionX.');
 must(/const\s+ey\s*=\s*Number\(this\.state\.extractionY\)/, 'Extraction validation should read authoritative extractionY.');
 must(/return\s+x\s*===\s*ex\s*&&\s*y\s*===\s*ey/, 'Extraction validation should match player tile against authoritative extraction coordinates.');

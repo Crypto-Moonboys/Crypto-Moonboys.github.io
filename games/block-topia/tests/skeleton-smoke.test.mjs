@@ -146,6 +146,11 @@ assert.ok(
   /Mission 2: Signal Hack \(\$\{hackProgress\}\/\$\{runtime\.world\.hackProgressTarget\}\)/.test(mainSource),
   'main.js SIGNAL_HACK HUD should use hack/objective progress, not neutralized kill count.',
 );
+assert.ok(
+  /const\s+sharedHackProgress\s*=\s*Math\.min\([\s\S]*runtime\.world\.objectiveProgress/.test(mainSource) &&
+  /const\s+killDone\s*=\s*runtime\.world\.objectiveType\s*===\s*'SIGNAL_HACK'[\s\S]*sharedHackProgress\s*>=\s*Number\(runtime\.world\.hackProgressTarget/.test(mainSource),
+  'main.js SIGNAL_HACK mission completion logic should use shared world objective progress.',
+);
 function extractFunctionSource(source, functionName) {
   const start = source.indexOf(`function ${functionName}(`);
   if (start < 0) return '';

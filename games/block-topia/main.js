@@ -155,8 +155,12 @@ function updateMissionProgress() {
   const elapsedAnchor = runtime.mission.completedAt || now;
   const elapsed = runtime.mission.startedAt ? elapsedAnchor - runtime.mission.startedAt : 0;
   const survivalDone = elapsed >= runtime.mission.surviveMs;
+  const sharedHackProgress = Math.min(
+    Number(runtime.world.objectiveProgress || 0),
+    Number(runtime.world.hackProgressTarget || 0),
+  );
   const killDone = runtime.world.objectiveType === 'SIGNAL_HACK'
-    ? Number(runtime.localPlayer.objectiveProgress || 0) >= Number(runtime.world.hackProgressTarget || 0)
+    ? sharedHackProgress >= Number(runtime.world.hackProgressTarget || 0)
     : kills >= runtime.mission.requiredKills;
   if (!runtime.mission.extractionUnlocked && survivalDone && killDone) {
     runtime.mission.extractionUnlocked = true;

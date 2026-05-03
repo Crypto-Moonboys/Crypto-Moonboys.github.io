@@ -482,10 +482,7 @@ export class MinimalCityRoom extends Room {
     if (this.state.phaseEndsAt && now < this.state.phaseEndsAt) return;
     if (this.state.worldPhase === PHASE_FREE_ROAM) this._setPhase(PHASE_WARNING);
     else if (this.state.worldPhase === PHASE_WARNING) this._setPhase(PHASE_EVENT_ACTIVE);
-    else if (this.state.worldPhase === PHASE_EVENT_ACTIVE) {
-      if (this._isObjectiveComplete()) this._setPhase(PHASE_MISSION_COMPLETE);
-      else this._setPhase(PHASE_RECOVERY);
-    }
+    else if (this.state.worldPhase === PHASE_EVENT_ACTIVE) this._setPhase(PHASE_RECOVERY);
     else if (this.state.worldPhase === PHASE_RECOVERY) this._setPhase(PHASE_WARNING);
     else if (this.state.worldPhase === PHASE_MISSION_COMPLETE) {
       this._advanceToNextLevel();
@@ -849,7 +846,7 @@ export class MinimalCityRoom extends Room {
   _isObjectiveCompleteForPlayer(player) {
     if (!player) return false;
     if (this.state.eventObjectiveType === OBJECTIVE_SIGNAL_HACK) {
-      return player.objectiveProgress >= this.state.hackProgressTarget;
+      return this.state.objectiveProgress >= this.state.hackProgressTarget;
     }
     return (player.kills || 0) >= this.state.objectiveTarget;
   }
