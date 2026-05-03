@@ -27,6 +27,7 @@ const runtime = {
   worldMode: 'single-player-vs-npc',
   feed: [],
   feedMeta: { lastMessage: '', lastAt: 0 },
+  feedClassMeta: {},
   feedback: [],
   flashes: [],
   attackCooldownUntil: 0,
@@ -488,17 +489,20 @@ function drawHud() {
   const surviveDone = elapsed >= runtime.mission.surviveMs;
   const neutralized = runtime.mission.neutralizedCount;
   const killDone = neutralized >= runtime.mission.requiredKills;
+  const mission2Label = surviveDone ? 'Mission 2' : 'Mission 2 (tracking - unlocks after Mission 1)';
   const extractionText = runtime.mission.extractionUnlocked
     ? runtime.mission.completed
       ? 'Extraction reached'
       : `Reach extraction tile (${runtime.mission.extractionTile?.x},${runtime.mission.extractionTile?.y})`
-    : 'Extraction locked';
+    : surviveDone
+      ? 'Extraction locked (complete neutralize target)'
+      : 'Extraction locked until survival + neutralize target complete';
 
   ctx.font = '700 12px Segoe UI';
   ctx.fillStyle = surviveDone ? 'rgba(152, 255, 173, 0.96)' : 'rgba(255, 234, 151, 0.96)';
   ctx.fillText(`Mission 1: Survive ${surviveTotalSec}s (${surviveLeftSec}s left)`, 12, 84);
   ctx.fillStyle = killDone ? 'rgba(152, 255, 173, 0.96)' : 'rgba(255, 234, 151, 0.96)';
-  ctx.fillText(`Mission 2: Neutralize ${runtime.mission.requiredKills} NPCs (${Math.min(neutralized, runtime.mission.requiredKills)}/${runtime.mission.requiredKills})`, 12, 102);
+  ctx.fillText(`${mission2Label}: Neutralize ${runtime.mission.requiredKills} NPCs (${Math.min(neutralized, runtime.mission.requiredKills)}/${runtime.mission.requiredKills})`, 12, 102);
   ctx.fillStyle = runtime.mission.completed ? 'rgba(152, 255, 173, 0.96)' : 'rgba(198, 223, 255, 0.96)';
   ctx.fillText(`Mission 3: ${extractionText}`, 12, 120);
 
@@ -737,11 +741,25 @@ function pushFeed(message) {
   if (!message) return;
   const text = String(message);
   const now = Date.now();
-  if (runtime.feedMeta.lastMessage === text && now - runtime.feedMeta.lastAt < 1500) return;
+  if (runtime.feedMeta.lastMessage === text && now - runtime.feedMeta.lastAt < 2200) return;
+  const classification = classifyFeedMessage(text);
+  if (classification) {
+    const lastClassAt = runtime.feedClassMeta[classification] || 0;
+    const classWindowMs = classification === 'neutralized' ? 3200 : 4200;
+    if (now - lastClassAt < classWindowMs) return;
+    runtime.feedClassMeta[classification] = now;
+  }
   runtime.feedMeta.lastMessage = text;
   runtime.feedMeta.lastAt = now;
   runtime.feed.push(text);
   if (runtime.feed.length > 6) runtime.feed.shift();
+}
+
+function classifyFeedMessage(text) {
+  const normalized = String(text || '').toLowerCase();
+  if (normalized.includes('neutralized npc_')) return 'neutralized';
+  if (normalized.includes('was downed by npc_')) return 'downed';
+  return '';
 }
 
 window.BlockTopiaMap = {

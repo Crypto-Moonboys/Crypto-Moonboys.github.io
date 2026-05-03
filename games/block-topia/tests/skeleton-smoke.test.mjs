@@ -107,8 +107,8 @@ assert.equal(
   'main.js must not render old top-right controls hint text that overlaps the global badge.',
 );
 assert.ok(
-  mainSource.includes('Mission 1: Survive ${surviveTotalSec}s') &&
-  mainSource.includes('Mission 2: Neutralize ${runtime.mission.requiredKills} NPCs'),
+  /Mission 1:\s*Survive \$\{surviveTotalSec\}s/.test(mainSource) &&
+  /Neutralize \$\{runtime\.mission\.requiredKills\} NPCs/.test(mainSource),
   'main.js should derive mission HUD text from mission config values.',
 );
 function extractFunctionSource(source, functionName) {

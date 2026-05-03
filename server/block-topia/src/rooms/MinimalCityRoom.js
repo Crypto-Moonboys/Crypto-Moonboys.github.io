@@ -16,16 +16,17 @@ const SPAWN_SLOTS = [
 const NPC_COUNT = 14;
 const SIM_TICK_MS = 200;
 const ATTACK_RANGE = 1.3;
-const ATTACK_DAMAGE = 24;
-const ATTACK_COOLDOWN_MS = 350;
+const ATTACK_DAMAGE = 20;
+const ATTACK_COOLDOWN_MS = 750;
 const PLAYER_MAX_HP = 100;
-const NPC_MAX_HP = 40;
+const NPC_MAX_HP = 60;
 const NPC_CONTACT_DAMAGE = 12;
 const NPC_ATTACK_COOLDOWN_MS = 1200;
 const PLAYER_NPC_DAMAGE_COOLDOWN_MS = 1000;
 const SPAWN_GRACE_MS = 4000;
 const RESPAWN_DELAY_MS = 3000;
-const RESPAWN_MS = 5000;
+const NPC_RESPAWN_DELAY_MS = 6500;
+const NPC_RESPAWN_MIN_DISTANCE = 4;
 const PASSABLE_TERRAIN = new Set(['road', 'grass']);
 
 class PlayerState extends Schema {
@@ -237,6 +238,18 @@ export class MinimalCityRoom extends Room {
     return { x: 1, y: 1 };
   }
 
+  _findRandomPassableTileAwayFromPlayers(minDistance = 0) {
+    for (let i = 0; i < 1000; i += 1) {
+      const x = Math.floor(Math.random() * MAP_WIDTH);
+      const y = Math.floor(Math.random() * MAP_HEIGHT);
+      if (!this._isPassable(x, y)) continue;
+      if (minDistance <= 0) return { x, y };
+      const tooClose = this.state.players.some((player) => player && player.hp > 0 && distance(x, y, player.x, player.y) < minDistance);
+      if (!tooClose) return { x, y };
+    }
+    return this._findRandomPassableTile();
+  }
+
   _findNearestNpc(player, range) {
     let best = null;
     let bestDist = Number.POSITIVE_INFINITY;
@@ -345,13 +358,13 @@ export class MinimalCityRoom extends Room {
       this.pendingRespawnByNpcId.delete(npcId);
       const npc = this.state.npcs.find((entry) => entry.id === npcId);
       if (!npc) return;
-      const spawn = this._findRandomPassableTile();
+      const spawn = this._findRandomPassableTileAwayFromPlayers(NPC_RESPAWN_MIN_DISTANCE);
       npc.x = spawn.x;
       npc.y = spawn.y;
       npc.hp = NPC_MAX_HP;
       npc.maxHp = NPC_MAX_HP;
       npc.targetSessionId = '';
-    }, RESPAWN_MS);
+    }, NPC_RESPAWN_DELAY_MS);
   }
 }
 
