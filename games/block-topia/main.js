@@ -25,7 +25,7 @@ let cameraY = 0;
 let cameraScale = 1;
 
 const runtime = {
-  localPlayer: { id: 'local', x: 1, y: 1, color: '#6da9ff', name: 'You', sessionId: '', hp: 100, kills: 0, downs: 0, respawnAt: 0 },
+  localPlayer: { id: 'local', x: 1, y: 1, color: '#6da9ff', name: 'You', sessionId: '', hp: 100, kills: 0, downs: 0, respawnAt: 0, ready: false, readyRequested: false },
   remotePlayer: { id: 'remote', x: GRID_SIZE - 2, y: GRID_SIZE - 2, color: '#f6fbff', name: 'Remote', connected: false, sessionId: '', hp: 100, kills: 0, downs: 0, respawnAt: 0 },
   npcs: [],
   worldMode: 'single-player-vs-npc',
@@ -37,7 +37,7 @@ const runtime = {
   lastExtractIntentAt: 0,
   flashes: [],
   attackCooldownUntil: 0,
-  inputEnabled: true,
+  inputEnabled: false,
   mission: {
     startedAt: 0,
     surviveMs: 60000,
@@ -54,6 +54,7 @@ const runtime = {
   positionSink: null,
   attackSink: null,
   extractSink: null,
+  readySink: null,
   tiles: createTiles(),
 };
 
@@ -286,6 +287,10 @@ function onKeyDown(event) {
 }
 
 function tryAttack() {
+  if (!runtime.localPlayer.ready) {
+    pushFeedback('Press Start / Continue to enter the city', 900);
+    return;
+  }
   ensureMissionStart();
   if (runtime.mission.completed) {
     trySendExtractIntent();
@@ -512,6 +517,11 @@ function drawHud() {
   ctx.fillStyle = 'rgba(214, 226, 245, 0.85)';
   ctx.font = '600 12px Segoe UI';
   ctx.fillText(`NET ${String(status.ws || 'offline').toUpperCase()}${status.roomId ? ` | ROOM ${status.roomId}` : ''}${status.error ? ` | ${status.error}` : ''}`, 12, 64);
+  if (!runtime.localPlayer.ready) {
+    ctx.font = '700 13px Segoe UI';
+    ctx.fillStyle = 'rgba(255, 234, 151, 0.98)';
+    ctx.fillText('WAITING TO START - Press Start / Continue to enter the city', 12, 84);
+  }
   const surviveTotalSec = Math.ceil(runtime.mission.surviveMs / 1000);
   const elapsedAnchor = runtime.mission.completedAt || now;
   const elapsed = runtime.mission.startedAt ? elapsedAnchor - runtime.mission.startedAt : 0;
@@ -530,11 +540,11 @@ function drawHud() {
 
   ctx.font = '700 12px Segoe UI';
   ctx.fillStyle = surviveDone ? 'rgba(152, 255, 173, 0.96)' : 'rgba(255, 234, 151, 0.96)';
-  ctx.fillText(`Mission 1: Survive ${surviveTotalSec}s (${surviveLeftSec}s left)`, 12, 84);
+  ctx.fillText(`Mission 1: Survive ${surviveTotalSec}s (${surviveLeftSec}s left)`, 12, 84 + (runtime.localPlayer.ready ? 0 : 18));
   ctx.fillStyle = killDone ? 'rgba(152, 255, 173, 0.96)' : 'rgba(255, 234, 151, 0.96)';
-  ctx.fillText(`${mission2Label}: Neutralize ${runtime.mission.requiredKills} NPCs (${Math.min(neutralized, runtime.mission.requiredKills)}/${runtime.mission.requiredKills})`, 12, 102);
+  ctx.fillText(`${mission2Label}: Neutralize ${runtime.mission.requiredKills} NPCs (${Math.min(neutralized, runtime.mission.requiredKills)}/${runtime.mission.requiredKills})`, 12, 102 + (runtime.localPlayer.ready ? 0 : 18));
   ctx.fillStyle = runtime.mission.completed ? 'rgba(152, 255, 173, 0.96)' : 'rgba(198, 223, 255, 0.96)';
-  ctx.fillText(`Mission 3: ${extractionText}`, 12, 120);
+  ctx.fillText(`Mission 3: ${extractionText}`, 12, 120 + (runtime.localPlayer.ready ? 0 : 18));
   if (runtime.mission.completed) {
     const survivedSec = Math.max(0, Math.ceil(elapsed / 1000));
     ctx.fillStyle = 'rgba(170, 246, 197, 0.98)';
@@ -723,6 +733,10 @@ function setLocalPlayer(payload = {}) {
   if (Number.isFinite(payload.kills)) runtime.localPlayer.kills = Math.max(0, Math.floor(payload.kills));
   if (Number.isFinite(payload.downs)) runtime.localPlayer.downs = Math.max(0, Math.floor(payload.downs));
   if (Number.isFinite(payload.respawnAt)) runtime.localPlayer.respawnAt = Math.max(0, Math.floor(payload.respawnAt));
+  if (typeof payload.ready === 'boolean') {
+    runtime.localPlayer.ready = payload.ready;
+    if (payload.ready) runtime.localPlayer.readyRequested = false;
+  }
   if (!runtime.mission.completed && runtime.localPlayer.hp < prevHp) {
     pushFeedback(`HIT -${prevHp - runtime.localPlayer.hp}`, 850, 'rgba(255, 146, 146, 0.98)');
     pushFlash('player_hit', 260);
@@ -818,8 +832,13 @@ function pushFeed(message) {
 }
 
 function shouldSuppressFeedMessage(message) {
-  if (!runtime.mission.completed) return false;
   const normalized = String(message || '').toLowerCase();
+  if (!runtime.localPlayer.ready) {
+    if (normalized.includes('neutralized npc_')) return true;
+    if (normalized.includes('was downed by npc_')) return true;
+    if (normalized.includes('hit')) return true;
+  }
+  if (!runtime.mission.completed) return false;
   if (normalized.includes('neutralized npc_')) return true;
   if (normalized.includes('was downed by npc_')) return true;
   if (normalized.includes('hit')) return true;
@@ -865,6 +884,16 @@ window.BlockTopiaMap = {
   },
   setExtractSink(fn) {
     runtime.extractSink = typeof fn === 'function' ? fn : null;
+  },
+  setReadySink(fn) {
+    runtime.readySink = typeof fn === 'function' ? fn : null;
+  },
+  signalReady() {
+    if (runtime.localPlayer.ready || runtime.localPlayer.readyRequested) return false;
+    if (!runtime.readySink) return false;
+    const sent = runtime.readySink();
+    if (sent) runtime.localPlayer.readyRequested = true;
+    return Boolean(sent);
   },
   shouldSuppressFeedMessage(message) {
     return shouldSuppressFeedMessage(message);

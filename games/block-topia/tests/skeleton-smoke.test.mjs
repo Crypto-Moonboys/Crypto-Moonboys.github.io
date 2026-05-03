@@ -27,6 +27,7 @@ const REQUIRED_EXPORTS = [
   'connectMultiplayer',
   'sendMovement',
   'sendExtract',
+  'sendReady',
   'isConnected',
   'getRoom',
   'reconnectMultiplayer',
@@ -102,6 +103,13 @@ assert.ok(
   indexHtml.includes('panelBody.hidden = collapsed'),
   'index.html should synchronize hidden state with collapsed help panel state.',
 );
+assert.ok(
+  indexHtml.includes('const readySent = api.signalReady?.() === true;') &&
+  indexHtml.includes('if (!readySent) {') &&
+  indexHtml.includes('api.setInputEnabled?.(true);') &&
+  indexHtml.includes('setReadySink(() => sendReady())'),
+  'index.html start flow should send ready/startRun before gameplay starts.',
+);
 assert.equal(
   mainSource.includes('Arrow/WASD move | Click tile move | Space attack'),
   false,
@@ -142,6 +150,10 @@ assert.ok(
   'main.js should include extraction unlock and mission complete feedback states.',
 );
 assert.ok(
+  mainSource.includes('WAITING TO START - Press Start / Continue to enter the city'),
+  'main.js should show a clear pre-start waiting HUD state.',
+);
+assert.ok(
   /function\s+shouldSuppressFeedMessage\s*\(/.test(mainSource) &&
   /normalized\.includes\('neutralized npc_'\)/.test(mainSource) &&
   /normalized\.includes\('was downed by npc_'\)/.test(mainSource) &&
@@ -168,6 +180,9 @@ assert.ok(
   mainSource.includes('const MISSION_COMPLETE_TOAST_MS =') &&
   mainSource.includes('const MISSION_COMPLETE_TOAST_THROTTLE_MS =') &&
   mainSource.includes('setExtractSink(fn)') &&
+  mainSource.includes('setReadySink(fn)') &&
+  mainSource.includes('signalReady()') &&
+  mainSource.includes('readyRequested') &&
   mainSource.includes('shouldSuppressFeedMessage(message)'),
   'main.js should render a clear mission-complete banner and run summary.',
 );

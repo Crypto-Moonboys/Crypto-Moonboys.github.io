@@ -310,7 +310,7 @@
         // server-side XP gate has been verified.  Loading them earlier would
         // render the map canvas before the check completes.
         await import("./main.js");
-        const { connectMultiplayer, sendMovement, sendAttack, sendExtract } = await import("./network.js");
+        const { connectMultiplayer, sendMovement, sendAttack, sendExtract, sendReady } = await import("./network.js");
 
         // main.js registers window.BlockTopiaMap synchronously during evaluation.
         const api = window.BlockTopiaMap;
@@ -330,6 +330,11 @@
         const controlsCopy = document.getElementById("bt-controls-copy");
         if (startBtn && overlay) {
           startBtn.addEventListener("click", () => {
+            const readySent = api.signalReady?.() === true;
+            if (!readySent) {
+              api.pushFeedback?.("Connecting to city... please wait", 1000);
+              return;
+            }
             overlay.style.display = "none";
             api.setInputEnabled?.(true);
           });
@@ -381,6 +386,11 @@
               return { ok: false, reason: isConnected ? "cooldown" : "disconnected" };
             });
             window.BlockTopiaMap?.setExtractSink(() => sendExtract());
+            window.BlockTopiaMap?.setReadySink(() => sendReady());
+            const overlay = document.getElementById("bt-start-overlay");
+            if (overlay && overlay.style.display === "none") {
+              window.BlockTopiaMap?.signalReady?.();
+            }
           }
         });
       }

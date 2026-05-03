@@ -71,6 +71,7 @@ function toPlayerList(playersState) {
       kills: Math.max(0, Number(player?.kills) || 0),
       downs: Math.max(0, Number(player?.downs) || 0),
       respawnAt: Math.max(0, Number(player?.respawnAt) || 0),
+      ready: player?.ready === true,
     });
   };
 
@@ -262,6 +263,15 @@ export function sendExtract() {
     return false;
   }
   room.send('extract', {});
+  return true;
+}
+
+export function sendReady() {
+  if (!isRoomOpen()) {
+    warnClosedRoom('ready');
+    return false;
+  }
+  room.send('ready', {});
   return true;
 }
 
