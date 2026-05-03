@@ -20,6 +20,11 @@ const ATTACK_DAMAGE = 24;
 const ATTACK_COOLDOWN_MS = 350;
 const PLAYER_MAX_HP = 100;
 const NPC_MAX_HP = 40;
+const NPC_CONTACT_DAMAGE = 12;
+const NPC_ATTACK_COOLDOWN_MS = 1200;
+const PLAYER_NPC_DAMAGE_COOLDOWN_MS = 1000;
+const SPAWN_GRACE_MS = 4000;
+const RESPAWN_DELAY_MS = 3000;
 const RESPAWN_MS = 5000;
 const PASSABLE_TERRAIN = new Set(['road', 'grass']);
 
@@ -35,6 +40,7 @@ class PlayerState extends Schema {
     this.hp = PLAYER_MAX_HP;
     this.kills = 0;
     this.downs = 0;
+    this.respawnAt = 0;
   }
 }
 
@@ -48,6 +54,7 @@ defineTypes(PlayerState, {
   hp: 'number',
   kills: 'number',
   downs: 'number',
+  respawnAt: 'number',
 });
 
 class NpcState extends Schema {
@@ -93,6 +100,10 @@ export class MinimalCityRoom extends Room {
     this.autoDispose = false;
     this.playersBySession = new Map();
     this.lastAttackAtBySession = new Map();
+    this.lastNpcDamageAtByNpcAndTarget = new Map();
+    this.lastNpcDamageAtByTarget = new Map();
+    this.spawnProtectedUntilBySession = new Map();
+    this.pendingRespawnBySession = new Map();
     this.pendingRespawnByNpcId = new Map();
     this.terrain = buildTerrainGrid(MAP_WIDTH, MAP_HEIGHT);
     this._seedNpcs();
@@ -155,6 +166,7 @@ export class MinimalCityRoom extends Room {
 
     this.state.players.push(player);
     this.playersBySession.set(client.sessionId, player);
+    this.spawnProtectedUntilBySession.set(client.sessionId, Date.now() + SPAWN_GRACE_MS);
     this._updateWorldMode();
 
     this.broadcast('system', {
@@ -170,6 +182,9 @@ export class MinimalCityRoom extends Room {
     const player = this.playersBySession.get(client.sessionId);
     this.playersBySession.delete(client.sessionId);
     this.lastAttackAtBySession.delete(client.sessionId);
+    this.spawnProtectedUntilBySession.delete(client.sessionId);
+    this.lastNpcDamageAtByTarget.delete(client.sessionId);
+    this.pendingRespawnBySession.delete(client.sessionId);
     if (player) {
       const index = this.state.players.findIndex((entry) => entry.id === client.sessionId);
       if (index >= 0) this.state.players.splice(index, 1);
@@ -253,19 +268,7 @@ export class MinimalCityRoom extends Room {
       npc.targetSessionId = target.id;
       const dist = distance(npc.x, npc.y, target.x, target.y);
       if (dist <= 1.01) {
-        target.hp = Math.max(0, target.hp - 4);
-        if (target.hp <= 0) {
-          target.downs += 1;
-          this.broadcast('system', { message: `${target.name} was downed by ${npc.id}.`, mode: this.state.worldMode });
-          this.clock.setTimeout(() => {
-            const live = this.playersBySession.get(target.id);
-            if (!live) return;
-            const spawn = this._findRandomPassableTile();
-            live.x = spawn.x;
-            live.y = spawn.y;
-            live.hp = PLAYER_MAX_HP;
-          }, 1500);
-        }
+        this._tryNpcDamagePlayer(npc, target);
         continue;
       }
 
@@ -282,6 +285,48 @@ export class MinimalCityRoom extends Room {
         npc.y = move.y;
       }
     }
+  }
+
+  _tryNpcDamagePlayer(npc, target) {
+    if (!npc || !target || target.hp <= 0) return;
+    const now = Date.now();
+    const graceUntil = this.spawnProtectedUntilBySession.get(target.id) || 0;
+    if (graceUntil > now) return;
+
+    const pairKey = `${npc.id}:${target.id}`;
+    const lastPairDamageAt = this.lastNpcDamageAtByNpcAndTarget.get(pairKey) || 0;
+    if (now - lastPairDamageAt < NPC_ATTACK_COOLDOWN_MS) return;
+
+    const lastTargetDamageAt = this.lastNpcDamageAtByTarget.get(target.id) || 0;
+    if (now - lastTargetDamageAt < PLAYER_NPC_DAMAGE_COOLDOWN_MS) return;
+
+    this.lastNpcDamageAtByNpcAndTarget.set(pairKey, now);
+    this.lastNpcDamageAtByTarget.set(target.id, now);
+
+    target.hp = Math.max(0, target.hp - NPC_CONTACT_DAMAGE);
+    if (target.hp > 0) return;
+
+    target.hp = 0;
+    target.downs += 1;
+    target.respawnAt = now + RESPAWN_DELAY_MS;
+    this.broadcast('system', { message: `${target.name} was downed by ${npc.id}.`, mode: this.state.worldMode });
+    this._schedulePlayerRespawn(target.id);
+  }
+
+  _schedulePlayerRespawn(sessionId) {
+    if (this.pendingRespawnBySession.get(sessionId)) return;
+    this.pendingRespawnBySession.set(sessionId, true);
+    this.clock.setTimeout(() => {
+      this.pendingRespawnBySession.delete(sessionId);
+      const live = this.playersBySession.get(sessionId);
+      if (!live) return;
+      const spawn = this._findRandomPassableTile();
+      live.x = spawn.x;
+      live.y = spawn.y;
+      live.hp = PLAYER_MAX_HP;
+      live.respawnAt = 0;
+      this.spawnProtectedUntilBySession.set(sessionId, Date.now() + SPAWN_GRACE_MS);
+    }, RESPAWN_DELAY_MS);
   }
 
   _scheduleNpcRespawn(npcId) {

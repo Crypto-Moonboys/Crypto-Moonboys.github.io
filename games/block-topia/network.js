@@ -70,6 +70,7 @@ function toPlayerList(playersState) {
       hp: Math.max(0, Number(player?.hp) || 0),
       kills: Math.max(0, Number(player?.kills) || 0),
       downs: Math.max(0, Number(player?.downs) || 0),
+      respawnAt: Math.max(0, Number(player?.respawnAt) || 0),
     });
   };
 

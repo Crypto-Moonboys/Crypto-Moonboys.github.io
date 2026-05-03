@@ -19,11 +19,12 @@ let cameraY = 0;
 let cameraScale = 1;
 
 const runtime = {
-  localPlayer: { id: 'local', x: 1, y: 1, color: '#6da9ff', name: 'You', sessionId: '', hp: 100, kills: 0, downs: 0 },
-  remotePlayer: { id: 'remote', x: GRID_SIZE - 2, y: GRID_SIZE - 2, color: '#ff7b7b', name: 'Remote', connected: false, sessionId: '', hp: 100, kills: 0, downs: 0 },
+  localPlayer: { id: 'local', x: 1, y: 1, color: '#6da9ff', name: 'You', sessionId: '', hp: 100, kills: 0, downs: 0, respawnAt: 0 },
+  remotePlayer: { id: 'remote', x: GRID_SIZE - 2, y: GRID_SIZE - 2, color: '#ff7b7b', name: 'Remote', connected: false, sessionId: '', hp: 100, kills: 0, downs: 0, respawnAt: 0 },
   npcs: [],
   worldMode: 'single-player-vs-npc',
   feed: [],
+  feedMeta: { lastMessage: '', lastAt: 0 },
   connectionStatus: { ws: 'offline', joined: false, roomId: '', error: '' },
   positionSink: null,
   attackSink: null,
@@ -313,15 +314,20 @@ function drawNpcs() {
 function drawHud() {
   const status = runtime.connectionStatus;
   const remoteState = runtime.remotePlayer.connected ? 'ONLINE' : 'OFFLINE';
+  const now = Date.now();
+  const localRespawnSec = runtime.localPlayer.respawnAt > now ? Math.ceil((runtime.localPlayer.respawnAt - now) / 1000) : 0;
+  const remoteRespawnSec = runtime.remotePlayer.respawnAt > now ? Math.ceil((runtime.remotePlayer.respawnAt - now) / 1000) : 0;
+  const localHpLabel = runtime.localPlayer.hp <= 0 ? `DOWNED${localRespawnSec > 0 ? ` (${localRespawnSec}s)` : ''}` : `HP ${runtime.localPlayer.hp}`;
+  const remoteHpLabel = runtime.remotePlayer.hp <= 0 ? `DOWNED${remoteRespawnSec > 0 ? ` (${remoteRespawnSec}s)` : ''}` : `HP ${runtime.remotePlayer.hp}`;
 
   ctx.textAlign = 'left';
   ctx.textBaseline = 'top';
   ctx.font = '700 13px Segoe UI';
   ctx.fillStyle = 'rgba(228, 240, 255, 0.95)';
-  ctx.fillText(`P1 HP ${runtime.localPlayer.hp} | K ${runtime.localPlayer.kills} D ${runtime.localPlayer.downs} (${runtime.localPlayer.x},${runtime.localPlayer.y})`, 12, 10);
+  ctx.fillText(`P1 ${localHpLabel} | K ${runtime.localPlayer.kills} D ${runtime.localPlayer.downs} (${runtime.localPlayer.x},${runtime.localPlayer.y})`, 12, 10);
 
   ctx.fillStyle = runtime.remotePlayer.connected ? 'rgba(255, 210, 210, 0.95)' : 'rgba(196, 201, 214, 0.9)';
-  ctx.fillText(`P2 ${remoteState} HP ${runtime.remotePlayer.hp} | K ${runtime.remotePlayer.kills} D ${runtime.remotePlayer.downs} (${runtime.remotePlayer.x},${runtime.remotePlayer.y})`, 12, 28);
+  ctx.fillText(`P2 ${remoteState} ${remoteHpLabel} | K ${runtime.remotePlayer.kills} D ${runtime.remotePlayer.downs} (${runtime.remotePlayer.x},${runtime.remotePlayer.y})`, 12, 28);
 
   ctx.fillStyle = 'rgba(180, 224, 255, 0.95)';
   ctx.fillText(`MODE ${runtime.worldMode.toUpperCase()} | NPC ${runtime.npcs.filter((n) => n.hp > 0).length}`, 12, 46);
@@ -465,6 +471,7 @@ function setLocalPlayer(payload = {}) {
   if (Number.isFinite(payload.hp)) runtime.localPlayer.hp = Math.max(0, Math.floor(payload.hp));
   if (Number.isFinite(payload.kills)) runtime.localPlayer.kills = Math.max(0, Math.floor(payload.kills));
   if (Number.isFinite(payload.downs)) runtime.localPlayer.downs = Math.max(0, Math.floor(payload.downs));
+  if (Number.isFinite(payload.respawnAt)) runtime.localPlayer.respawnAt = Math.max(0, Math.floor(payload.respawnAt));
 }
 
 function setRemotePlayer(payload = {}) {
@@ -478,6 +485,7 @@ function setRemotePlayer(payload = {}) {
   if (Number.isFinite(payload.hp)) runtime.remotePlayer.hp = Math.max(0, Math.floor(payload.hp));
   if (Number.isFinite(payload.kills)) runtime.remotePlayer.kills = Math.max(0, Math.floor(payload.kills));
   if (Number.isFinite(payload.downs)) runtime.remotePlayer.downs = Math.max(0, Math.floor(payload.downs));
+  if (Number.isFinite(payload.respawnAt)) runtime.remotePlayer.respawnAt = Math.max(0, Math.floor(payload.respawnAt));
 }
 
 function updatePlayers(players = []) {
@@ -516,7 +524,12 @@ function setWorldMode(mode) {
 
 function pushFeed(message) {
   if (!message) return;
-  runtime.feed.push(String(message));
+  const text = String(message);
+  const now = Date.now();
+  if (runtime.feedMeta.lastMessage === text && now - runtime.feedMeta.lastAt < 1500) return;
+  runtime.feedMeta.lastMessage = text;
+  runtime.feedMeta.lastAt = now;
+  runtime.feed.push(text);
   if (runtime.feed.length > 6) runtime.feed.shift();
 }
 
