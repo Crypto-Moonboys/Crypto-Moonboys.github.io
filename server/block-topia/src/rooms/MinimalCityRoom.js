@@ -407,7 +407,8 @@ export class MinimalCityRoom extends Room {
       const player = this.playersBySession.get(sessionId);
       if (!player || player.ready) return;
       const client = this.clients.find((entry) => entry?.sessionId === sessionId);
-      if (client) this.disconnect(client, 4401);
+      if (!client) return;
+      client.leave(1000);
     }, READY_TIMEOUT_MS);
   }
 

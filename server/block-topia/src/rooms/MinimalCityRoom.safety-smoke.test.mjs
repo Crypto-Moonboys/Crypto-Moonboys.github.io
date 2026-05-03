@@ -64,6 +64,12 @@ assertSource(/this\.missionStartedAtBySession\.set\s*\(\s*client\.sessionId\s*,\
 assertSource(/player\.ready\s*=\s*true/, 'Ready/start message should set player ready=true.');
 assertSource(/this\._scheduleReadyTimeout\s*\(\s*client\.sessionId\s*\)/, 'Server should schedule timeout for not-ready players.');
 assertSource(/if\s*\(\s*!player\s*\|\|\s*player\.ready\s*\)\s*return/, 'Ready timeout should ignore missing or already-ready players.');
-assertSource(/this\.disconnect\s*\(\s*client\s*,\s*4401\s*\)/, 'Not-ready timeout should disconnect seat-blocking clients.');
+assertSource(/client\.leave\s*\(\s*1000\s*\)/, 'Not-ready timeout should reclaim stale seats with numeric close code.');
+if (/\.leave\s*\(\s*['"`]/.test(source)) {
+  throw new Error('Invalid string-only .leave(...) usage detected.');
+}
+if (/\.close\s*\(\s*['"`]/.test(source)) {
+  throw new Error('Invalid string-only .close(...) usage detected.');
+}
 
 console.log('MinimalCityRoom safety smoke checks passed.');
