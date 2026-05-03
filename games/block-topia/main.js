@@ -28,8 +28,20 @@ const runtime = {
   feed: [],
   feedMeta: { lastMessage: '', lastAt: 0 },
   feedback: [],
+  flashes: [],
   attackCooldownUntil: 0,
   inputEnabled: true,
+  mission: {
+    startedAt: 0,
+    surviveMs: 60000,
+    requiredKills: 5,
+    extractionUnlocked: false,
+    extractionTile: null,
+    completed: false,
+    completedAt: 0,
+    neutralizedCount: 0,
+  },
+  npcHpById: {},
   connectionStatus: { ws: 'offline', joined: false, roomId: '', error: '' },
   positionSink: null,
   attackSink: null,
@@ -90,6 +102,54 @@ function pushFeedback(message, durationMs = 1200, color = 'rgba(255, 234, 151, 0
     color,
   });
   if (runtime.feedback.length > 5) runtime.feedback.shift();
+}
+
+function pushFlash(type, durationMs = 350) {
+  runtime.flashes.push({ type, expiresAt: Date.now() + durationMs });
+  if (runtime.flashes.length > 8) runtime.flashes.shift();
+}
+
+function ensureMissionStart() {
+  if (!runtime.mission.startedAt) runtime.mission.startedAt = Date.now();
+}
+
+function pickExtractionTile() {
+  const candidates = [
+    { x: GRID_SIZE - 2, y: GRID_SIZE - 2 },
+    { x: GRID_SIZE - 2, y: 1 },
+    { x: 1, y: GRID_SIZE - 2 },
+    { x: Math.floor(GRID_SIZE / 2), y: GRID_SIZE - 2 },
+  ];
+  const pick = candidates.find((t) => isPassable(t.x, t.y));
+  if (pick) return pick;
+  for (let y = GRID_SIZE - 1; y >= 0; y -= 1) {
+    for (let x = GRID_SIZE - 1; x >= 0; x -= 1) {
+      if (isPassable(x, y)) return { x, y };
+    }
+  }
+  return { x: GRID_SIZE - 2, y: GRID_SIZE - 2 };
+}
+
+function updateMissionProgress() {
+  const kills = Math.max(0, Number(runtime.localPlayer.kills) || 0);
+  runtime.mission.neutralizedCount = kills;
+  const elapsed = runtime.mission.startedAt ? Date.now() - runtime.mission.startedAt : 0;
+  const surviveTotalSec = Math.ceil(runtime.mission.surviveMs / 1000);
+  const survivalDone = elapsed >= runtime.mission.surviveMs;
+  const killDone = kills >= runtime.mission.requiredKills;
+  if (!runtime.mission.extractionUnlocked && survivalDone && killDone) {
+    runtime.mission.extractionUnlocked = true;
+    runtime.mission.extractionTile = pickExtractionTile();
+    pushFeedback('Extraction unlocked', 1400, 'rgba(170, 246, 197, 0.98)');
+  }
+  if (runtime.mission.extractionUnlocked && !runtime.mission.completed && runtime.mission.extractionTile && survivalDone && killDone) {
+    const tile = runtime.mission.extractionTile;
+    if (runtime.localPlayer.x === tile.x && runtime.localPlayer.y === tile.y) {
+      runtime.mission.completed = true;
+      runtime.mission.completedAt = Date.now();
+      pushFeedback('MISSION COMPLETE', 2200, 'rgba(152, 255, 173, 0.98)');
+    }
+  }
 }
 
 function isPassable(x, y) {
@@ -206,6 +266,7 @@ function onKeyDown(event) {
 }
 
 function tryAttack() {
+  ensureMissionStart();
   if (runtime.localPlayer.hp <= 0) {
     const now = Date.now();
     const seconds = runtime.localPlayer.respawnAt > now ? Math.ceil((runtime.localPlayer.respawnAt - now) / 1000) : 0;
@@ -252,6 +313,7 @@ function tryAttack() {
 
 function onPointerDown(event) {
   if (!runtime.inputEnabled) return;
+  ensureMissionStart();
   if (!canvas) return;
   const rect = canvas.getBoundingClientRect();
   const px = event.clientX - rect.left;
@@ -372,6 +434,21 @@ function drawNpc(npc) {
   ctx.fillRect(sx - 8 * cameraScale, cy - 12 * cameraScale, 16 * cameraScale * aliveRatio, 2.5 * cameraScale);
 }
 
+function drawExtractionMarker() {
+  const mission = runtime.mission;
+  if (!mission.extractionUnlocked || !mission.extractionTile || mission.completed) return;
+  const [sx, sy] = tileToScreen(mission.extractionTile.x, mission.extractionTile.y);
+  const th = TILE_HEIGHT * cameraScale;
+  const cy = sy + th / 2 - 14 * cameraScale;
+  ctx.beginPath();
+  ctx.arc(sx, cy, 12 * cameraScale, 0, Math.PI * 2);
+  ctx.strokeStyle = 'rgba(152, 255, 173, 0.95)';
+  ctx.lineWidth = 2.2 * cameraScale;
+  ctx.stroke();
+  ctx.fillStyle = 'rgba(152, 255, 173, 0.22)';
+  ctx.fill();
+}
+
 function drawPlayers() {
   drawMarker(runtime.localPlayer, 'L', true);
   drawMarker(runtime.remotePlayer, 'R', runtime.remotePlayer.connected);
@@ -379,6 +456,7 @@ function drawPlayers() {
 
 function drawNpcs() {
   for (const npc of runtime.npcs) drawNpc(npc);
+  drawExtractionMarker();
 }
 
 function drawHud() {
@@ -405,22 +483,24 @@ function drawHud() {
   ctx.fillStyle = 'rgba(214, 226, 245, 0.85)';
   ctx.font = '600 12px Segoe UI';
   ctx.fillText(`NET ${String(status.ws || 'offline').toUpperCase()}${status.roomId ? ` | ROOM ${status.roomId}` : ''}${status.error ? ` | ${status.error}` : ''}`, 12, 64);
+  const elapsed = runtime.mission.startedAt ? Date.now() - runtime.mission.startedAt : 0;
+  const surviveLeftSec = Math.max(0, Math.ceil((runtime.mission.surviveMs - elapsed) / 1000));
+  const surviveDone = elapsed >= runtime.mission.surviveMs;
+  const neutralized = runtime.mission.neutralizedCount;
+  const killDone = neutralized >= runtime.mission.requiredKills;
+  const extractionText = runtime.mission.extractionUnlocked
+    ? runtime.mission.completed
+      ? 'Extraction reached'
+      : `Reach extraction tile (${runtime.mission.extractionTile?.x},${runtime.mission.extractionTile?.y})`
+    : 'Extraction locked';
 
-  const hint = 'Arrow/WASD move | Click tile move | Space attack';
-  const boxW = 315;
-  const boxH = 20;
-  const boxX = viewWidth - boxW - 10;
-  const boxY = 10;
-  ctx.fillStyle = 'rgba(5, 10, 22, 0.64)';
-  ctx.fillRect(boxX, boxY, boxW, boxH);
-  ctx.strokeStyle = 'rgba(166, 196, 255, 0.35)';
-  ctx.lineWidth = 1;
-  ctx.strokeRect(boxX + 0.5, boxY + 0.5, boxW - 1, boxH - 1);
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.font = '600 11px Segoe UI';
-  ctx.fillStyle = 'rgba(232, 241, 255, 0.9)';
-  ctx.fillText(hint, boxX + boxW / 2, boxY + boxH / 2 + 0.5);
+  ctx.font = '700 12px Segoe UI';
+  ctx.fillStyle = surviveDone ? 'rgba(152, 255, 173, 0.96)' : 'rgba(255, 234, 151, 0.96)';
+  ctx.fillText(`Mission 1: Survive ${surviveTotalSec}s (${surviveLeftSec}s left)`, 12, 84);
+  ctx.fillStyle = killDone ? 'rgba(152, 255, 173, 0.96)' : 'rgba(255, 234, 151, 0.96)';
+  ctx.fillText(`Mission 2: Neutralize ${runtime.mission.requiredKills} NPCs (${Math.min(neutralized, runtime.mission.requiredKills)}/${runtime.mission.requiredKills})`, 12, 102);
+  ctx.fillStyle = runtime.mission.completed ? 'rgba(152, 255, 173, 0.96)' : 'rgba(198, 223, 255, 0.96)';
+  ctx.fillText(`Mission 3: ${extractionText}`, 12, 120);
 
   const feed = runtime.feed[runtime.feed.length - 1];
   if (feed) {
@@ -456,6 +536,17 @@ function drawFeedback() {
   }
 }
 
+function drawDamageFlash() {
+  const now = Date.now();
+  runtime.flashes = runtime.flashes.filter((entry) => entry && entry.expiresAt > now);
+  if (!runtime.flashes.length) return;
+  const latest = runtime.flashes[runtime.flashes.length - 1];
+  if (!latest) return;
+  const alpha = latest.type === 'npc_hit' ? 0.08 : 0.14;
+  ctx.fillStyle = latest.type === 'npc_hit' ? `rgba(255, 120, 120, ${alpha})` : `rgba(255, 60, 60, ${alpha})`;
+  ctx.fillRect(0, 0, viewWidth, viewHeight);
+}
+
 function render() {
   if (!mounted || !ctx || !canvas) return;
   ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -465,6 +556,7 @@ function render() {
   drawPlayers();
   drawHud();
   drawFeedback();
+  drawDamageFlash();
 }
 
 function renderFrame() {
@@ -568,12 +660,14 @@ function setLocalPlayer(payload = {}) {
   if (Number.isFinite(payload.respawnAt)) runtime.localPlayer.respawnAt = Math.max(0, Math.floor(payload.respawnAt));
   if (runtime.localPlayer.hp < prevHp) {
     pushFeedback(`HIT -${prevHp - runtime.localPlayer.hp}`, 850, 'rgba(255, 146, 146, 0.98)');
+    pushFlash('player_hit', 260);
   }
   if (prevHp > 0 && runtime.localPlayer.hp <= 0) {
     const now = Date.now();
     const seconds = runtime.localPlayer.respawnAt > now ? Math.ceil((runtime.localPlayer.respawnAt - now) / 1000) : 0;
     pushFeedback(`DOWNED — respawning in ${seconds}s`, 1600, 'rgba(255, 153, 153, 0.98)');
   }
+  updateMissionProgress();
 }
 
 function setRemotePlayer(payload = {}) {
@@ -609,7 +703,7 @@ function updatePlayers(players = []) {
 
 function setNpcs(npcs = []) {
   if (!Array.isArray(npcs)) return;
-  runtime.npcs = npcs.map((npc) => ({
+  const next = npcs.map((npc) => ({
     id: String(npc?.id || ''),
     x: clamp(Math.floor(Number(npc?.x) || 0), 0, GRID_SIZE - 1),
     y: clamp(Math.floor(Number(npc?.y) || 0), 0, GRID_SIZE - 1),
@@ -618,6 +712,20 @@ function setNpcs(npcs = []) {
     kind: String(npc?.kind || 'drone'),
     targetSessionId: String(npc?.targetSessionId || ''),
   }));
+  const nextHpById = {};
+  for (const npc of next) {
+    nextHpById[npc.id] = npc.hp;
+    const prevHp = runtime.npcHpById[npc.id];
+    if (Number.isFinite(prevHp) && npc.hp < prevHp) {
+      pushFlash('npc_hit', 180);
+    }
+    if (Number.isFinite(prevHp) && prevHp > 0 && npc.hp <= 0) {
+      pushFeedback('+1 neutralized', 900, 'rgba(170, 246, 197, 0.98)');
+    }
+  }
+  runtime.npcHpById = nextHpById;
+  runtime.npcs = next;
+  updateMissionProgress();
 }
 
 function setWorldMode(mode) {
@@ -650,6 +758,7 @@ window.BlockTopiaMap = {
   pushFeedback,
   setInputEnabled(enabled) {
     runtime.inputEnabled = Boolean(enabled);
+    if (runtime.inputEnabled) ensureMissionStart();
   },
   triggerAttack() {
     tryAttack();
@@ -670,6 +779,7 @@ window.BlockTopiaMap = {
       connectionStatus: { ...runtime.connectionStatus },
       worldMode: runtime.worldMode,
       npcs: runtime.npcs.map((n) => ({ ...n })),
+      mission: { ...runtime.mission, extractionTile: runtime.mission.extractionTile ? { ...runtime.mission.extractionTile } : null },
       feedback: runtime.feedback.map((entry) => ({ ...entry })),
       inputEnabled: runtime.inputEnabled,
     };

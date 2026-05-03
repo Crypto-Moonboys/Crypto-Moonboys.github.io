@@ -24,17 +24,22 @@
     <div id="game-shell" style="display:none">
       <canvas id="game" aria-label="Block Topia isometric map"></canvas>
       <aside id="bt-controls-panel" aria-labelledby="bt-controls-panel-heading" style="position:absolute;left:12px;bottom:12px;z-index:12;max-width:360px;background:rgba(4,10,20,0.82);border:1px solid rgba(145,190,255,0.35);border-radius:10px;padding:12px;color:#e9f3ff;font:500 12px/1.45 'Segoe UI',sans-serif;box-shadow:0 8px 22px rgba(0,0,0,0.35)">
-        <div id="bt-controls-panel-heading" style="font:700 13px/1.3 'Segoe UI',sans-serif;margin-bottom:6px;color:#bfe2ff">Controls and Objective</div>
-        <div>Move: WASD / Arrow Keys</div>
-        <div>Click: move to tile</div>
-        <div>Attack: Spacebar</div>
-        <div style="margin-top:6px">Goal: survive NPC patrols, defeat NPCs, stay alive until P2 joins.</div>
-        <div style="margin-top:6px">Multiplayer: open this game on another linked account/device to join as P2.</div>
-        <div style="margin-top:8px;border-top:1px solid rgba(145,190,255,0.25);padding-top:8px">
-          <div style="font:700 12px/1.3 'Segoe UI',sans-serif;margin-bottom:4px;color:#d0ebff">Legend</div>
-          <div>Blue marker = you</div>
-          <div>White marker = P2</div>
-          <div>Red/hostile marker = NPC</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px">
+          <div id="bt-controls-panel-heading" style="font:700 13px/1.3 'Segoe UI',sans-serif;color:#bfe2ff">Controls and Objective</div>
+          <button id="bt-help-toggle" type="button" aria-expanded="true" aria-controls="bt-controls-panel-body" style="cursor:pointer;border:1px solid rgba(143,195,255,0.5);border-radius:8px;padding:5px 8px;background:rgba(12,27,52,0.8);color:#def0ff;font:700 11px/1 'Segoe UI',sans-serif">Hide Help</button>
+        </div>
+        <div id="bt-controls-panel-body">
+          <div>Move: WASD / Arrow Keys</div>
+          <div>Click: move to tile</div>
+          <div>Attack: Spacebar</div>
+          <div style="margin-top:6px">Goal: survive NPC patrols, defeat NPCs, stay alive until P2 joins.</div>
+          <div style="margin-top:6px">Multiplayer: open this game on another linked account/device to join as P2.</div>
+          <div style="margin-top:8px;border-top:1px solid rgba(145,190,255,0.25);padding-top:8px">
+            <div style="font:700 12px/1.3 'Segoe UI',sans-serif;margin-bottom:4px;color:#d0ebff">Legend</div>
+            <div>Blue marker = you</div>
+            <div>White marker = P2</div>
+            <div>Red/hostile marker = NPC</div>
+          </div>
         </div>
       </aside>
       <div id="bt-start-overlay" role="dialog" aria-modal="true" aria-labelledby="bt-start-title" style="display:none;position:absolute;inset:0;z-index:20;background:rgba(2,8,18,0.92);color:#e9f3ff;padding:24px;align-items:center;justify-content:center">
@@ -91,6 +96,44 @@
         if (shell) shell.style.display = "";
         const overlay = document.getElementById("bt-start-overlay");
         if (overlay) overlay.style.display = "flex";
+      }
+
+      function safeGetStorage(key) {
+        try { return window.localStorage.getItem(key); } catch { return null; }
+      }
+
+      function safeSetStorage(key, value) {
+        try { window.localStorage.setItem(key, value); } catch {}
+      }
+
+      function setupHelpPanel() {
+        const panel = document.getElementById("bt-controls-panel");
+        const panelBody = document.getElementById("bt-controls-panel-body");
+        const toggle = document.getElementById("bt-help-toggle");
+        if (!panel || !panelBody || !toggle) return;
+
+        const storageKey = "blocktopia_help_collapsed";
+        const smallScreen = window.matchMedia("(max-width: 900px)").matches;
+        const stored = safeGetStorage(storageKey);
+        let collapsed = stored == null ? smallScreen : stored === "1";
+        toggle.setAttribute("aria-controls", "bt-controls-panel-body");
+
+        const applyState = () => {
+          panelBody.style.display = collapsed ? "none" : "block";
+          panelBody.hidden = collapsed;
+          panel.style.maxWidth = collapsed ? "146px" : smallScreen ? "260px" : "360px";
+          panel.style.pointerEvents = "auto";
+          toggle.textContent = collapsed ? "Show Help" : "Hide Help";
+          toggle.setAttribute("aria-expanded", collapsed ? "false" : "true");
+          safeSetStorage(storageKey, collapsed ? "1" : "0");
+        };
+
+        toggle.addEventListener("click", () => {
+          collapsed = !collapsed;
+          applyState();
+        });
+
+        applyState();
       }
 
       function buildUnlinkedGate() {
@@ -280,6 +323,7 @@
 
         // Gate fully passed — reveal the game shell.
         showGameShell();
+        setupHelpPanel();
         const overlay = document.getElementById("bt-start-overlay");
         const startBtn = document.getElementById("bt-start-btn");
         const controlsBtn = document.getElementById("bt-controls-btn");
