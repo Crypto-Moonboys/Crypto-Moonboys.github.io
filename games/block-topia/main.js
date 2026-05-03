@@ -133,12 +133,16 @@ function pickExtractionTile() {
 function updateMissionProgress() {
   const kills = Math.max(0, Number(runtime.localPlayer.kills) || 0);
   runtime.mission.neutralizedCount = kills;
-  if (!runtime.mission.extractionUnlocked && kills >= runtime.mission.requiredKills) {
+  const elapsed = runtime.mission.startedAt ? Date.now() - runtime.mission.startedAt : 0;
+  const surviveTotalSec = Math.ceil(runtime.mission.surviveMs / 1000);
+  const survivalDone = elapsed >= runtime.mission.surviveMs;
+  const killDone = kills >= runtime.mission.requiredKills;
+  if (!runtime.mission.extractionUnlocked && survivalDone && killDone) {
     runtime.mission.extractionUnlocked = true;
     runtime.mission.extractionTile = pickExtractionTile();
     pushFeedback('Extraction unlocked', 1400, 'rgba(170, 246, 197, 0.98)');
   }
-  if (runtime.mission.extractionUnlocked && !runtime.mission.completed && runtime.mission.extractionTile) {
+  if (runtime.mission.extractionUnlocked && !runtime.mission.completed && runtime.mission.extractionTile && survivalDone && killDone) {
     const tile = runtime.mission.extractionTile;
     if (runtime.localPlayer.x === tile.x && runtime.localPlayer.y === tile.y) {
       runtime.mission.completed = true;
@@ -492,9 +496,9 @@ function drawHud() {
 
   ctx.font = '700 12px Segoe UI';
   ctx.fillStyle = surviveDone ? 'rgba(152, 255, 173, 0.96)' : 'rgba(255, 234, 151, 0.96)';
-  ctx.fillText(`Mission 1: Survive 60s (${surviveLeftSec}s left)`, 12, 84);
+  ctx.fillText(`Mission 1: Survive ${surviveTotalSec}s (${surviveLeftSec}s left)`, 12, 84);
   ctx.fillStyle = killDone ? 'rgba(152, 255, 173, 0.96)' : 'rgba(255, 234, 151, 0.96)';
-  ctx.fillText(`Mission 2: Neutralize 5 NPCs (${Math.min(neutralized, runtime.mission.requiredKills)}/${runtime.mission.requiredKills})`, 12, 102);
+  ctx.fillText(`Mission 2: Neutralize ${runtime.mission.requiredKills} NPCs (${Math.min(neutralized, runtime.mission.requiredKills)}/${runtime.mission.requiredKills})`, 12, 102);
   ctx.fillStyle = runtime.mission.completed ? 'rgba(152, 255, 173, 0.96)' : 'rgba(198, 223, 255, 0.96)';
   ctx.fillText(`Mission 3: ${extractionText}`, 12, 120);
 
@@ -643,7 +647,6 @@ function setConnectionStatus(status = {}) {
 }
 
 function setLocalPlayer(payload = {}) {
-  ensureMissionStart();
   const prevHp = runtime.localPlayer.hp;
   const nextX = Number.isFinite(payload.x) ? clamp(Math.floor(payload.x), 0, GRID_SIZE - 1) : runtime.localPlayer.x;
   const nextY = Number.isFinite(payload.y) ? clamp(Math.floor(payload.y), 0, GRID_SIZE - 1) : runtime.localPlayer.y;

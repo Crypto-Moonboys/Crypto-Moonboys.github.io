@@ -89,18 +89,49 @@ assert.ok(
   indexHtml.includes('setupHelpPanel'),
   'index.html should initialize persisted help panel behavior.',
 );
+assert.ok(
+  indexHtml.includes('function safeGetStorage(') && indexHtml.includes('function safeSetStorage('),
+  'index.html should guard localStorage access via safe helpers.',
+);
+assert.ok(
+  indexHtml.includes('aria-controls="bt-controls-panel-body"'),
+  'index.html help toggle should have aria-controls for panel body.',
+);
+assert.ok(
+  indexHtml.includes('panelBody.hidden = collapsed'),
+  'index.html should synchronize hidden state with collapsed help panel state.',
+);
 assert.equal(
   mainSource.includes('Arrow/WASD move | Click tile move | Space attack'),
   false,
   'main.js must not render old top-right controls hint text that overlaps the global badge.',
 );
 assert.ok(
-  /Mission 1:\s*Survive 60s/.test(mainSource) && /Mission 2:\s*Neutralize 5 NPCs/.test(mainSource),
-  'main.js should render mission loop HUD text.',
+  mainSource.includes('Mission 1: Survive ${surviveTotalSec}s') &&
+  mainSource.includes('Mission 2: Neutralize ${runtime.mission.requiredKills} NPCs'),
+  'main.js should derive mission HUD text from mission config values.',
 );
 assert.ok(
   mainSource.includes('Extraction unlocked') && mainSource.includes('MISSION COMPLETE'),
   'main.js should include extraction unlock and mission complete feedback states.',
+);
+const localPlayerFnStart = mainSource.indexOf('function setLocalPlayer(');
+const localPlayerFnEnd = mainSource.indexOf('function setRemotePlayer(');
+const localPlayerFnBody = localPlayerFnStart >= 0 && localPlayerFnEnd > localPlayerFnStart
+  ? mainSource.slice(localPlayerFnStart, localPlayerFnEnd)
+  : '';
+assert.equal(
+  localPlayerFnBody.includes('ensureMissionStart('),
+  false,
+  'main.js should not start mission from setLocalPlayer.',
+);
+assert.ok(
+  /setInputEnabled\(enabled\)\s*{[\s\S]*if \(runtime\.inputEnabled\) ensureMissionStart\(\);/.test(mainSource),
+  'main.js should start mission through setInputEnabled(true).',
+);
+assert.ok(
+  /const survivalDone = elapsed >= runtime\.mission\.surviveMs;[\s\S]*if \(!runtime\.mission\.extractionUnlocked && survivalDone && killDone\)/.test(mainSource),
+  'main.js should unlock extraction only after both survival and kill objectives are done.',
 );
 
 console.log('Block Topia skeleton smoke checks passed.');
