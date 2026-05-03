@@ -510,6 +510,10 @@ export class MinimalCityRoom extends Room {
   _advanceToNextLevel() {
     const now = Date.now();
     this.completedSessions.clear();
+    this.lastAttackAtBySession.clear();
+    this.lastNpcDamageAtByTarget.clear();
+    this.lastNpcDamageAtByNpcAndTarget.clear();
+    this.pendingRespawnBySession.clear();
     this.state.eventLevel += 1;
     this.state.objectiveProgress = 0;
     for (const player of this.state.players) {
@@ -780,16 +784,14 @@ export class MinimalCityRoom extends Room {
 
   _isExtractionTile(x, y) {
     if (!Number.isFinite(x) || !Number.isFinite(y)) return false;
-    const candidates = [
-      [MAP_WIDTH - 2, MAP_HEIGHT - 2],
-      [MAP_WIDTH - 2, 1],
-      [1, MAP_HEIGHT - 2],
-      [Math.floor(MAP_WIDTH / 2), MAP_HEIGHT - 2],
-    ];
-    for (const [cx, cy] of candidates) {
-      if (this._isPassable(cx, cy) && x === cx && y === cy) return true;
+    const ex = Number(this.state.extractionX);
+    const ey = Number(this.state.extractionY);
+    if (Number.isFinite(ex) && Number.isFinite(ey) && this._isPassable(ex, ey)) {
+      return x === ex && y === ey;
     }
-    return false;
+    const fallbackX = MAP_WIDTH - 2;
+    const fallbackY = MAP_HEIGHT - 2;
+    return this._isPassable(fallbackX, fallbackY) && x === fallbackX && y === fallbackY;
   }
 
   _scheduleNpcRespawn(npcId) {
@@ -822,7 +824,8 @@ export class MinimalCityRoom extends Room {
 
   _setupObjectiveForLevel() {
     this.state.objectiveProgress = 0;
-    this.state.objectiveTarget = this._scaledKillTarget();
+    const scannerBonus = this._scannerTargetBonus();
+    this.state.objectiveTarget = Math.max(1, this._scaledKillTarget() - scannerBonus);
     this.state.eventObjectiveType = this.state.eventLevel % 2 === 0 ? OBJECTIVE_SIGNAL_HACK : OBJECTIVE_PATROL_SWEEP;
     const extractionTile = this._findRandomPassableTileAwayFromPlayers(2);
     this.state.extractionX = extractionTile.x;
@@ -830,7 +833,8 @@ export class MinimalCityRoom extends Room {
     const hackTile = this._findRandomPassableTileAwayFromPlayers(2);
     this.state.hackX = hackTile.x;
     this.state.hackY = hackTile.y;
-    this.state.hackProgressTarget = 30 + Math.min(40, this.state.eventLevel * 5);
+    const baseHackTarget = 30 + Math.min(40, this.state.eventLevel * 5);
+    this.state.hackProgressTarget = Math.max(10, baseHackTarget - (scannerBonus * 6));
   }
 
   _isObjectiveComplete() {
@@ -876,8 +880,18 @@ export class MinimalCityRoom extends Room {
       player.secondWindAvailable = true;
       player.secondWindUsed = false;
     } else if (picked === 'scanner') {
-      this.state.objectiveProgress = Math.max(this.state.objectiveProgress, Math.floor(this.state.objectiveTarget * 0.35));
+      // Scanner improves next-level objective thresholds in _setupObjectiveForLevel().
+      // No immediate objective mutation here to avoid no-op/reset behavior.
     }
+  }
+
+  _scannerTargetBonus() {
+    for (const player of this.state.players) {
+      if (!player || !player.ready) continue;
+      const upgrades = safeParseJsonArray(player.upgradesJson);
+      if (upgrades.includes('scanner')) return 2;
+    }
+    return 0;
   }
 }
 
