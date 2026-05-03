@@ -4,6 +4,9 @@ const TILE_HEIGHT = 32;
 const MAP_SAFE_MARGIN_RATIO = 0.08;
 const ATTACK_RANGE = 1.3;
 const ATTACK_INPUT_COOLDOWN_MS = 350;
+const MISSION_COMPLETE_MSG = 'MISSION COMPLETE - extraction successful';
+const MISSION_COMPLETE_TOAST_MS = 1200;
+const MISSION_COMPLETE_TOAST_THROTTLE_MS = 1400;
 
 if (window.BlockTopiaMap && typeof window.BlockTopiaMap.destroy === 'function') {
   window.BlockTopiaMap.destroy();
@@ -272,9 +275,9 @@ function tryAttack() {
   ensureMissionStart();
   if (runtime.mission.completed) {
     const now = Date.now();
-    if (now - runtime.missionCompleteFeedbackAt >= 1400) {
+    if (now - runtime.missionCompleteFeedbackAt >= MISSION_COMPLETE_TOAST_THROTTLE_MS) {
       runtime.missionCompleteFeedbackAt = now;
-      pushFeedback('MISSION COMPLETE - extraction successful', 1200, 'rgba(170, 246, 197, 0.98)');
+      pushFeedback(MISSION_COMPLETE_MSG, MISSION_COMPLETE_TOAST_MS, 'rgba(170, 246, 197, 0.98)');
     }
     return;
   }
@@ -520,7 +523,7 @@ function drawHud() {
   if (runtime.mission.completed) {
     const survivedSec = Math.max(0, Math.ceil(elapsed / 1000));
     ctx.fillStyle = 'rgba(170, 246, 197, 0.98)';
-    ctx.fillText('MISSION COMPLETE - extraction successful', 12, 138);
+    ctx.fillText(MISSION_COMPLETE_MSG, 12, 138);
     ctx.fillStyle = 'rgba(214, 226, 245, 0.9)';
     ctx.fillText(`Run summary: Kills ${runtime.localPlayer.kills} | Downs ${runtime.localPlayer.downs} | Time ${survivedSec}s`, 12, 156);
   }
