@@ -80,6 +80,7 @@ function toPlayerList(playersState) {
       runLevel: Math.max(1, Number(player?.runLevel) || 1),
       upgrades: parseJsonArray(player?.upgradesJson),
       upgradeChoices: parseJsonArray(player?.upgradeChoicesJson),
+      upgradeChoicesMeta: parseJsonObjectArray(player?.upgradeChoicesMetaJson),
       objectiveProgress: Math.max(0, Number(player?.objectiveProgress) || 0),
     });
   };
@@ -148,6 +149,17 @@ function parseJsonArray(value) {
   try {
     const parsed = JSON.parse(value);
     return Array.isArray(parsed) ? parsed.map((entry) => String(entry || '')) : [];
+  } catch {
+    return [];
+  }
+}
+
+function parseJsonObjectArray(value) {
+  if (Array.isArray(value)) return value.filter((entry) => entry && typeof entry === 'object');
+  if (typeof value !== 'string' || !value) return [];
+  try {
+    const parsed = JSON.parse(value);
+    return Array.isArray(parsed) ? parsed.filter((entry) => entry && typeof entry === 'object') : [];
   } catch {
     return [];
   }

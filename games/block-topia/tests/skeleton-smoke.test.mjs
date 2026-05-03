@@ -127,10 +127,22 @@ assert.ok(
 assert.ok(
   indexHtml.includes('bt-upgrade-panel') &&
   indexHtml.includes('No upgrade choices received') &&
+  indexHtml.includes('upgradeChoicesMeta') &&
   indexHtml.includes('setChooseUpgradeSink') &&
   indexHtml.includes('sendChooseUpgrade') &&
   indexHtml.includes('phase !== "RECOVERY"'),
   'index.html should render upgrade choice controls, wire chooseUpgrade intent, and only show upgrade cards in RECOVERY.',
+);
+assert.equal(
+  indexHtml.includes('function upgradeDescription'),
+  false,
+  'index.html should not hardcode upgrade effect copy when metadata is supplied by server.',
+);
+assert.ok(
+  indexHtml.includes('const meta = choicesMeta.find') &&
+  indexHtml.includes('meta?.name') &&
+  indexHtml.includes('meta?.description'),
+  'index.html should render upgrade labels/descriptions from server-provided metadata.',
 );
 assert.equal(
   mainSource.includes('Arrow/WASD move | Click tile move | Space attack'),
@@ -303,7 +315,8 @@ assert.ok(
 );
 assert.ok(
   networkSource.includes('let _lastWorldEventLevel = 1;') &&
-  networkSource.includes('eventLevel: _lastWorldEventLevel'),
+  networkSource.includes('eventLevel: _lastWorldEventLevel') &&
+  networkSource.includes('upgradeChoicesMeta: parseJsonObjectArray(player?.upgradeChoicesMetaJson)'),
   'network.js should preserve world eventLevel across partial system payloads.',
 );
 

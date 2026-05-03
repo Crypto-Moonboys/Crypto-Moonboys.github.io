@@ -47,12 +47,12 @@ const OBJECTIVE_SIGNAL_HACK = 'SIGNAL_HACK';
 const MIN_ATTACK_COOLDOWN_MS = 350;
 const EXTRACTION_SAFE_DISTANCE = 3;
 const UPGRADE_POOL = [
-  { id: 'street_medic', label: 'STREET MEDIC' },
-  { id: 'spray_damage', label: 'SPRAY DAMAGE' },
-  { id: 'quick_trigger', label: 'QUICK TRIGGER' },
-  { id: 'armour_plate', label: 'ARMOUR PLATE' },
-  { id: 'second_wind', label: 'SECOND WIND' },
-  { id: 'scanner', label: 'SCANNER' },
+  { id: 'street_medic', name: 'Street Medic', description: '+25 max HP and full heal next level' },
+  { id: 'spray_damage', name: 'Spray Damage', description: '+10 attack damage' },
+  { id: 'quick_trigger', name: 'Quick Trigger', description: '-150ms attack cooldown' },
+  { id: 'armour_plate', name: 'Armour Plate', description: '-20% NPC contact damage' },
+  { id: 'second_wind', name: 'Second Wind', description: 'One emergency revive per level' },
+  { id: 'scanner', name: 'Scanner', description: 'Lower objective requirement this run' },
 ];
 const PASSABLE_TERRAIN = new Set(['road', 'grass']);
 
@@ -79,6 +79,7 @@ class PlayerState extends Schema {
     this.runLevel = 1;
     this.upgradesJson = '[]';
     this.upgradeChoicesJson = '[]';
+    this.upgradeChoicesMetaJson = '[]';
     this.objectiveProgress = 0;
   }
 }
@@ -104,6 +105,7 @@ defineTypes(PlayerState, {
   runLevel: 'number',
   upgradesJson: 'string',
   upgradeChoicesJson: 'string',
+  upgradeChoicesMetaJson: 'string',
   objectiveProgress: 'number',
 });
 
@@ -272,6 +274,7 @@ export class MinimalCityRoom extends Room {
       if (!choices.includes(upgradeId)) return;
       this._applyUpgrade(player, upgradeId);
       player.upgradeChoicesJson = '[]';
+      player.upgradeChoicesMetaJson = '[]';
       this.broadcast('system', { message: `${player.name} activated ${upgradeId.replaceAll('_', ' ').toUpperCase()}.`, mode: this.state.worldMode });
     });
 
@@ -410,6 +413,7 @@ export class MinimalCityRoom extends Room {
         if (safeParseJsonArray(player.upgradeChoicesJson).length) continue;
         const choices = pickUpgradeChoices(player.upgradesJson);
         player.upgradeChoicesJson = JSON.stringify(choices);
+        player.upgradeChoicesMetaJson = JSON.stringify(choices.map((choiceId) => toUpgradeMeta(choiceId)));
       }
     } else if (phase === PHASE_FREE_ROAM) {
       this.state.eventObjective = `Free roam: explore the city. Event level ${this.state.eventLevel} starts soon.`;
@@ -444,6 +448,7 @@ export class MinimalCityRoom extends Room {
       }
       player.runLevel = this.state.eventLevel;
       player.upgradeChoicesJson = '[]';
+      player.upgradeChoicesMetaJson = '[]';
       player.objectiveProgress = 0;
       player.hp = player.maxHp;
       player.kills = 0;
@@ -524,6 +529,7 @@ export class MinimalCityRoom extends Room {
       player.kills = 0;
       player.respawnAt = 0;
       player.upgradeChoicesJson = '[]';
+      player.upgradeChoicesMetaJson = '[]';
       this.spawnProtectedUntilBySession.set(player.id, now + SPAWN_GRACE_MS);
       this.missionStartedAtBySession.set(player.id, now);
     }
@@ -565,7 +571,8 @@ export class MinimalCityRoom extends Room {
       const nearExtraction = distance(x, y, this.state.extractionX, this.state.extractionY) < EXTRACTION_SAFE_DISTANCE;
       const nearHack = objectiveType === OBJECTIVE_SIGNAL_HACK && distance(x, y, this.state.hackX, this.state.hackY) < EXTRACTION_SAFE_DISTANCE;
       const clustered = this.state.npcs.some((npc) => npc && npc.hp > 0 && distance(x, y, npc.x, npc.y) < 1.5);
-      if ((inRecoveryOrComplete || nearHack || nearExtraction) && (nearExtraction || nearHack)) continue;
+      const avoidObjectiveArea = (inRecoveryOrComplete && nearExtraction) || nearHack;
+      if (avoidObjectiveArea) continue;
       if (clustered) continue;
       if (!tooClose) return { x, y };
     }
@@ -999,6 +1006,12 @@ function pickUpgradeChoices(existingUpgradesJson) {
     picks.push(pick.id);
   }
   return picks;
+}
+
+function toUpgradeMeta(upgradeId) {
+  const match = UPGRADE_POOL.find((entry) => entry.id === upgradeId);
+  if (!match) return { id: String(upgradeId || ''), name: String(upgradeId || '').toUpperCase(), description: 'Run upgrade' };
+  return { id: match.id, name: match.name, description: match.description };
 }
 
 function buildTerrainGrid(width, height) {

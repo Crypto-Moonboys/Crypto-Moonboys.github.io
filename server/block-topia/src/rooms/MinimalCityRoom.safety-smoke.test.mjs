@@ -18,6 +18,8 @@ must(/const\s+RECOVERY_MS\s*=\s*30_000;\s*\/\/\s*Dev timing\./, 'RECOVERY dev ti
 must(/const\s+OBJECTIVE_PATROL_SWEEP\s*=\s*'PATROL_SWEEP'/, 'Patrol objective constant should exist.');
 must(/const\s+OBJECTIVE_SIGNAL_HACK\s*=\s*'SIGNAL_HACK'/, 'Signal hack objective constant should exist.');
 must(/const\s+UPGRADE_POOL\s*=\s*\[/, 'Upgrade pool should exist.');
+must(/name:\s*'Street Medic'/, 'Upgrade metadata should include display name.');
+must(/description:\s*'\+25 max HP and full heal next level'/, 'Upgrade metadata should include authoritative description text.');
 must(/const\s+NPC_CONTACT_DAMAGE\s*=\s*6/, 'NPC contact damage should be reduced for playable pacing.');
 must(/const\s+NPC_ATTACK_COOLDOWN_MS\s*=\s*2500/, 'NPC attack cooldown should be reduced in frequency for playability.');
 must(/const\s+PLAYER_NPC_DAMAGE_COOLDOWN_MS\s*=\s*2500/, 'Player-target damage cooldown should be reduced in frequency for playability.');
@@ -26,6 +28,8 @@ must(/this\.onMessage\(\s*'chooseUpgrade'/, 'Server should accept chooseUpgrade 
 must(/if\s*\(\s*this\.state\.worldPhase\s*!==\s*PHASE_RECOVERY\s*\)\s*return/, 'chooseUpgrade should only be accepted during RECOVERY where choices are generated.');
 must(/safeParseJsonArray\(player\.upgradeChoicesJson\)/, 'Server should validate upgrade against offered choices.');
 must(/_applyUpgrade\(\s*player\s*,\s*upgradeId\s*\)/, 'Server should apply validated upgrade IDs.');
+must(/player\.upgradeChoicesMetaJson\s*=\s*JSON\.stringify\(choices\.map\(\(choiceId\)\s*=>\s*toUpgradeMeta\(choiceId\)\)\)/, 'Server should send upgrade metadata with recovery choices.');
+must(/player\.upgradeChoicesMetaJson\s*=\s*'\[\]'/, 'Server should clear upgrade metadata after choose/reset.');
 must(/_scannerTargetBonus\(\)\s*{/, 'Scanner bonus helper should exist.');
 must(/this\.state\.objectiveTarget\s*=\s*Math\.max\(\s*1\s*,\s*this\._scaledKillTarget\(\)\s*-\s*scannerBonus\s*\)/, 'Scanner should reduce patrol objective target in real completion logic.');
 must(/this\.state\.hackProgressTarget\s*=\s*Math\.max\(\s*10\s*,\s*baseHackTarget\s*-\s*\(scannerBonus\s*\*\s*6\)\s*\)/, 'Scanner should reduce signal hack target in real completion logic.');
@@ -51,6 +55,7 @@ must(/this\.state\.eventObjectiveType\s*=\s*this\.state\.eventLevel\s*%\s*2\s*==
 must(/_findRandomPassableTileAwayFromPlayers\(\s*NPC_RESPAWN_MIN_DISTANCE\s*\)/, 'NPC respawn should avoid spawning near players.');
 must(/const\s+nearExtraction\s*=.+EXTRACTION_SAFE_DISTANCE/, 'NPC respawn should avoid extraction area in recovery/complete.');
 must(/const\s+nearHack\s*=.+EXTRACTION_SAFE_DISTANCE/, 'NPC respawn should avoid hack area in signal-hack levels.');
+must(/const\s+avoidObjectiveArea\s*=\s*\(inRecoveryOrComplete\s*&&\s*nearExtraction\)\s*\|\|\s*nearHack/, 'NPC respawn objective-avoidance logic should be explicit and non-redundant.');
 must(/if\s*\(\s*scheduledGeneration\s*!==\s*this\.runGeneration\s*\)\s*return/, 'Respawn callbacks should ignore stale generations.');
 must(/if\s*\(\s*this\.state\.eventObjectiveType\s*===\s*OBJECTIVE_SIGNAL_HACK\s*\)\s*{\s*return\s+this\.state\.objectiveProgress\s*>=\s*this\.state\.hackProgressTarget;\s*}/, 'SIGNAL_HACK extraction gate should use shared squad objective progress.');
 must(/const\s+ex\s*=\s*Number\(this\.state\.extractionX\)/, 'Extraction validation should read authoritative extractionX.');

@@ -30,7 +30,7 @@ let cameraY = 0;
 let cameraScale = 1;
 
 const runtime = {
-  localPlayer: { id: 'local', x: 1, y: 1, color: '#6da9ff', name: 'You', sessionId: '', hp: 100, maxHp: 100, kills: 0, downs: 0, respawnAt: 0, ready: false, readyRequested: false, attackDamage: 20, attackCooldownMs: 750, armorPct: 0, runLevel: 1, upgrades: [], upgradeChoices: [], objectiveProgress: 0 },
+  localPlayer: { id: 'local', x: 1, y: 1, color: '#6da9ff', name: 'You', sessionId: '', hp: 100, maxHp: 100, kills: 0, downs: 0, respawnAt: 0, ready: false, readyRequested: false, attackDamage: 20, attackCooldownMs: 750, armorPct: 0, runLevel: 1, upgrades: [], upgradeChoices: [], upgradeChoicesMeta: [], objectiveProgress: 0 },
   remotePlayer: { id: 'remote', x: GRID_SIZE - 2, y: GRID_SIZE - 2, color: '#f6fbff', name: 'Remote', connected: false, sessionId: '', hp: 100, kills: 0, downs: 0, respawnAt: 0 },
   npcs: [],
   worldMode: 'single-player-vs-npc',
@@ -821,6 +821,7 @@ function setLocalPlayer(payload = {}) {
   if (Number.isFinite(payload.runLevel)) runtime.localPlayer.runLevel = Math.max(1, Math.floor(payload.runLevel));
   if (Array.isArray(payload.upgrades)) runtime.localPlayer.upgrades = payload.upgrades.map((entry) => String(entry || ''));
   if (Array.isArray(payload.upgradeChoices)) runtime.localPlayer.upgradeChoices = payload.upgradeChoices.map((entry) => String(entry || ''));
+  if (Array.isArray(payload.upgradeChoicesMeta)) runtime.localPlayer.upgradeChoicesMeta = payload.upgradeChoicesMeta.filter((entry) => entry && typeof entry === 'object');
   if (Number.isFinite(payload.objectiveProgress)) runtime.localPlayer.objectiveProgress = Math.max(0, Math.floor(payload.objectiveProgress));
   if (typeof payload.ready === 'boolean') {
     runtime.localPlayer.ready = payload.ready;

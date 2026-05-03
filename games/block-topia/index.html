@@ -348,16 +348,6 @@
         const upgradeButtons = document.getElementById("bt-upgrade-buttons");
         const upgradeWarning = document.getElementById("bt-upgrade-warning");
         const prettyUpgrade = (id) => String(id || "").replaceAll("_", " ").toUpperCase();
-        const upgradeDescription = (id) => {
-          const key = String(id || "").toLowerCase();
-          if (key === "street_medic") return "+25 max HP, full heal next level";
-          if (key === "spray_damage") return "+10 attack damage";
-          if (key === "quick_trigger") return "-150ms attack cooldown";
-          if (key === "armour_plate") return "-20% NPC contact damage";
-          if (key === "second_wind") return "1 emergency revive each level";
-          if (key === "scanner") return "Lower objective requirement this run";
-          return "Run upgrade";
-        };
         const syncNextLevelButton = () => {
           if (!playAgainBtn) return;
           const snap = api.getSnapshot?.();
@@ -368,6 +358,7 @@
           playAgainBtn.style.display = showNext ? "inline-flex" : "none";
           playAgainBtn.textContent = `Skip Recovery / Start Level ${level + 1}`;
           const choices = Array.isArray(snap?.localPlayer?.upgradeChoices) ? snap.localPlayer.upgradeChoices : [];
+          const choicesMeta = Array.isArray(snap?.localPlayer?.upgradeChoicesMeta) ? snap.localPlayer.upgradeChoicesMeta : [];
           if (!upgradePanel || !upgradeButtons || !upgradeWarning) return;
           if (phase !== "RECOVERY") {
             upgradePanel.style.display = "none";
@@ -383,9 +374,12 @@
           }
           upgradeWarning.style.display = "none";
           for (const choice of choices) {
+            const meta = choicesMeta.find((entry) => String(entry?.id || "") === String(choice || ""));
+            const label = String(meta?.name || prettyUpgrade(choice));
+            const desc = String(meta?.description || "Run upgrade");
             const btn = document.createElement("button");
             btn.type = "button";
-            btn.textContent = `${prettyUpgrade(choice)} - ${upgradeDescription(choice)}`;
+            btn.textContent = `${label} - ${desc}`;
             btn.style.cursor = "pointer";
             btn.style.border = "1px solid rgba(143,255,178,0.6)";
             btn.style.borderRadius = "8px";
