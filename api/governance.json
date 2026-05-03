@@ -1,13 +1,13 @@
 {
-  "generated_at": "2026-05-02T05:41:30.966Z",
+  "generated_at": "2026-05-03T06:08:50.131Z",
   "phase": "phase_6",
   "schema_version": "1.0",
   "summary": {
     "total_entries": 226,
     "by_governance_action": {
       "prioritize": 5,
-      "review": 17,
-      "watch": 204,
+      "review": 18,
+      "watch": 203,
       "defer": 0
     },
     "by_trust_band": {
@@ -158,6 +158,16 @@
       "governance_action": "review"
     },
     {
+      "url": "/wiki/crypto-moonboys.html",
+      "title": "Crypto Moonboys — Crypto Moonboys Wiki",
+      "governance_priority_score": 47,
+      "trust_band": "high",
+      "authority_band": "developing",
+      "narrative_importance": 40,
+      "editorial_risk": 0,
+      "governance_action": "review"
+    },
+    {
       "url": "/wiki/hard-fork-games.html",
       "title": "Hard Fork Games — Crypto Moonboys Wiki",
       "governance_priority_score": 47,
@@ -198,8 +208,8 @@
       "governance_action": "review"
     },
     {
-      "url": "/wiki/crypto-moonboys.html",
-      "title": "Crypto Moonboys — Crypto Moonboys Wiki",
+      "url": "/wiki/patchwork.html",
+      "title": "Patchwork — Crypto Moonboys Wiki",
       "governance_priority_score": 46,
       "trust_band": "high",
       "authority_band": "weak",
@@ -208,8 +218,8 @@
       "governance_action": "review"
     },
     {
-      "url": "/wiki/patchwork.html",
-      "title": "Patchwork — Crypto Moonboys Wiki",
+      "url": "/wiki/pyralith.html",
+      "title": "PYRALITH — Crypto Moonboys Wiki",
       "governance_priority_score": 46,
       "trust_band": "high",
       "authority_band": "weak",
@@ -228,12 +238,12 @@
       "governance_action": "review"
     },
     {
-      "url": "/wiki/pyralith.html",
-      "title": "PYRALITH — Crypto Moonboys Wiki",
+      "url": "/wiki/graffpunks-247-radio.html",
+      "title": "GraffPUNKS 247 Radio — Crypto Moonboys Wiki",
       "governance_priority_score": 45,
       "trust_band": "high",
-      "authority_band": "weak",
-      "narrative_importance": 40,
+      "authority_band": "developing",
+      "narrative_importance": 10,
       "editorial_risk": 0,
       "governance_action": "review"
     },
@@ -245,16 +255,6 @@
       "authority_band": "developing",
       "narrative_importance": 0,
       "editorial_risk": 3,
-      "governance_action": "watch"
-    },
-    {
-      "url": "/wiki/graffpunks-247-radio.html",
-      "title": "GraffPUNKS 247 Radio — Crypto Moonboys Wiki",
-      "governance_priority_score": 44,
-      "trust_band": "high",
-      "authority_band": "developing",
-      "narrative_importance": 10,
-      "editorial_risk": 0,
       "governance_action": "watch"
     },
     {
@@ -318,6 +318,16 @@
       "governance_action": "watch"
     },
     {
+      "url": "/wiki/gk.html",
+      "title": "$GK — Crypto Moonboys Wiki",
+      "governance_priority_score": 41,
+      "trust_band": "high",
+      "authority_band": "weak",
+      "narrative_importance": 20,
+      "editorial_risk": 0,
+      "governance_action": "watch"
+    },
+    {
       "url": "/wiki/metaverse-battles.html",
       "title": "Metaverse Battles — Crypto Moonboys Wiki",
       "governance_priority_score": 41,
@@ -361,16 +371,6 @@
       "url": "/wiki/web3.html",
       "title": "Web3 — Crypto Moonboys Wiki",
       "governance_priority_score": 41,
-      "trust_band": "high",
-      "authority_band": "weak",
-      "narrative_importance": 20,
-      "editorial_risk": 0,
-      "governance_action": "watch"
-    },
-    {
-      "url": "/wiki/gk.html",
-      "title": "$GK — Crypto Moonboys Wiki",
-      "governance_priority_score": 40,
       "trust_band": "high",
       "authority_band": "weak",
       "narrative_importance": 20,
@@ -458,6 +458,16 @@
       "governance_action": "watch"
     },
     {
+      "url": "/wiki/2025-metaverse-launch-party.html",
+      "title": "2025 Metaverse Launch Party — Crypto Moonboys Wiki",
+      "governance_priority_score": 36,
+      "trust_band": "high",
+      "authority_band": "weak",
+      "narrative_importance": 10,
+      "editorial_risk": 0,
+      "governance_action": "watch"
+    },
+    {
       "url": "/wiki/gk-token.html",
       "title": "$GK Token — Crypto Moonboys Wiki",
       "governance_priority_score": 36,
@@ -495,16 +505,6 @@
       "authority_band": "developing",
       "narrative_importance": 0,
       "editorial_risk": 3,
-      "governance_action": "watch"
-    },
-    {
-      "url": "/wiki/2025-metaverse-launch-party.html",
-      "title": "2025 Metaverse Launch Party — Crypto Moonboys Wiki",
-      "governance_priority_score": 35,
-      "trust_band": "high",
-      "authority_band": "weak",
-      "narrative_importance": 10,
-      "editorial_risk": 0,
       "governance_action": "watch"
     },
     {
@@ -608,6 +608,16 @@
       "governance_action": "watch"
     },
     {
+      "url": "/wiki/samaelexe.html",
+      "title": "Samael.exe — Crypto Moonboys Wiki",
+      "governance_priority_score": 33,
+      "trust_band": "medium",
+      "authority_band": "developing",
+      "narrative_importance": 0,
+      "editorial_risk": 0,
+      "governance_action": "watch"
+    },
+    {
       "url": "/wiki/stake-for-gk-tokens.html",
       "title": "Stake for $GK Tokens — Crypto Moonboys Wiki",
       "governance_priority_score": 33,
@@ -618,9 +628,9 @@
       "governance_action": "watch"
     },
     {
-      "url": "/wiki/samaelexe.html",
-      "title": "Samael.exe — Crypto Moonboys Wiki",
-      "governance_priority_score": 32,
+      "url": "/wiki/the-nice-easy-bois.html",
+      "title": "The NICE &amp; EASY BOIS — Crypto Moonboys Wiki",
+      "governance_priority_score": 33,
       "trust_band": "medium",
       "authority_band": "developing",
       "narrative_importance": 0,
@@ -628,8 +638,8 @@
       "governance_action": "watch"
     },
     {
-      "url": "/wiki/the-nice-easy-bois.html",
-      "title": "The NICE &amp; EASY BOIS — Crypto Moonboys Wiki",
+      "url": "/wiki/the-crypto-moongirls.html",
+      "title": "The CRYPTO MOONGIRLS — Crypto Moonboys Wiki",
       "governance_priority_score": 32,
       "trust_band": "medium",
       "authority_band": "developing",
@@ -688,16 +698,6 @@
       "governance_action": "watch"
     },
     {
-      "url": "/wiki/the-crypto-moongirls.html",
-      "title": "The CRYPTO MOONGIRLS — Crypto Moonboys Wiki",
-      "governance_priority_score": 31,
-      "trust_band": "medium",
-      "authority_band": "developing",
-      "narrative_importance": 0,
-      "editorial_risk": 0,
-      "governance_action": "watch"
-    },
-    {
       "url": "/wiki/the-crypto-stoned-boys.html",
       "title": "The CRYPTO STONED BOYS — Crypto Moonboys Wiki",
       "governance_priority_score": 31,
@@ -720,6 +720,16 @@
     {
       "url": "/wiki/bear-market-siege.html",
       "title": "The Bear Market Siege — Crypto Moonboys Wiki",
+      "governance_priority_score": 30,
+      "trust_band": "medium",
+      "authority_band": "weak",
+      "narrative_importance": 0,
+      "editorial_risk": 0,
+      "governance_action": "watch"
+    },
+    {
+      "url": "/wiki/canvas-clash.html",
+      "title": "The Canvas Clash — Crypto Moonboys Wiki",
       "governance_priority_score": 30,
       "trust_band": "medium",
       "authority_band": "weak",
@@ -800,6 +810,16 @@
     {
       "url": "/wiki/street-kingdoms.html",
       "title": "Street Kingdoms — Crypto Moonboys Wiki",
+      "governance_priority_score": 30,
+      "trust_band": "medium",
+      "authority_band": "weak",
+      "narrative_importance": 0,
+      "editorial_risk": 0,
+      "governance_action": "watch"
+    },
+    {
+      "url": "/wiki/the-blockstars.html",
+      "title": "The BLOCKSTARS — Crypto Moonboys Wiki",
       "governance_priority_score": 30,
       "trust_band": "medium",
       "authority_band": "weak",
@@ -968,9 +988,9 @@
       "governance_action": "watch"
     },
     {
-      "url": "/wiki/canvas-clash.html",
-      "title": "The Canvas Clash — Crypto Moonboys Wiki",
-      "governance_priority_score": 29,
+      "url": "/wiki/whale-lords.html",
+      "title": "The Whale Lords — Crypto Moonboys Wiki",
+      "governance_priority_score": 30,
       "trust_band": "medium",
       "authority_band": "weak",
       "narrative_importance": 0,
@@ -1030,6 +1050,26 @@
     {
       "url": "/wiki/lady-ink.html",
       "title": "Lady-INK — Crypto Moonboys Wiki",
+      "governance_priority_score": 29,
+      "trust_band": "medium",
+      "authority_band": "weak",
+      "narrative_importance": 0,
+      "editorial_risk": 0,
+      "governance_action": "watch"
+    },
+    {
+      "url": "/wiki/loopfiend.html",
+      "title": "Loopfiend — Crypto Moonboys Wiki",
+      "governance_priority_score": 29,
+      "trust_band": "medium",
+      "authority_band": "weak",
+      "narrative_importance": 0,
+      "editorial_risk": 0,
+      "governance_action": "watch"
+    },
+    {
+      "url": "/wiki/m1ntr-k1ll.html",
+      "title": "M1nTr K1ll — Crypto Moonboys Wiki",
       "governance_priority_score": 29,
       "trust_band": "medium",
       "authority_band": "weak",
@@ -1108,16 +1148,6 @@
       "governance_action": "watch"
     },
     {
-      "url": "/wiki/the-blockstars.html",
-      "title": "The BLOCKSTARS — Crypto Moonboys Wiki",
-      "governance_priority_score": 29,
-      "trust_band": "medium",
-      "authority_band": "weak",
-      "narrative_importance": 0,
-      "editorial_risk": 0,
-      "governance_action": "watch"
-    },
-    {
       "url": "/wiki/the-squeaky-pinks.html",
       "title": "The Squeaky Pinks — Crypto Moonboys Wiki",
       "governance_priority_score": 29,
@@ -1150,16 +1180,6 @@
     {
       "url": "/wiki/wagmi-prophecy.html",
       "title": "The WAGMI Prophecy — Crypto Moonboys Wiki",
-      "governance_priority_score": 29,
-      "trust_band": "medium",
-      "authority_band": "weak",
-      "narrative_importance": 0,
-      "editorial_risk": 0,
-      "governance_action": "watch"
-    },
-    {
-      "url": "/wiki/whale-lords.html",
-      "title": "The Whale Lords — Crypto Moonboys Wiki",
       "governance_priority_score": 29,
       "trust_band": "medium",
       "authority_band": "weak",
@@ -1298,6 +1318,16 @@
       "governance_action": "watch"
     },
     {
+      "url": "/wiki/graffiti-kings.html",
+      "title": "Graffiti Kings — Crypto Moonboys Wiki",
+      "governance_priority_score": 28,
+      "trust_band": "medium",
+      "authority_band": "weak",
+      "narrative_importance": 0,
+      "editorial_risk": 3,
+      "governance_action": "watch"
+    },
+    {
       "url": "/wiki/graffpunks-collection.html",
       "title": "GraffPUNKS Collection — Crypto Moonboys Wiki",
       "governance_priority_score": 28,
@@ -1328,6 +1358,16 @@
       "governance_action": "watch"
     },
     {
+      "url": "/wiki/hex-tagger-prime.html",
+      "title": "HEX-TAGGER PRIME — Crypto Moonboys Wiki",
+      "governance_priority_score": 28,
+      "trust_band": "medium",
+      "authority_band": "weak",
+      "narrative_importance": 0,
+      "editorial_risk": 0,
+      "governance_action": "watch"
+    },
+    {
       "url": "/wiki/hodl-wars-ecosystem.html",
       "title": "HODL Wars Ecosystem — Crypto Moonboys Wiki",
       "governance_priority_score": 28,
@@ -1348,18 +1388,8 @@
       "governance_action": "watch"
     },
     {
-      "url": "/wiki/loopfiend.html",
-      "title": "Loopfiend — Crypto Moonboys Wiki",
-      "governance_priority_score": 28,
-      "trust_band": "medium",
-      "authority_band": "weak",
-      "narrative_importance": 0,
-      "editorial_risk": 0,
-      "governance_action": "watch"
-    },
-    {
-      "url": "/wiki/m1ntr-k1ll.html",
-      "title": "M1nTr K1ll — Crypto Moonboys Wiki",
+      "url": "/wiki/lfgk.html",
+      "title": "$LFGK — Crypto Moonboys Wiki",
       "governance_priority_score": 28,
       "trust_band": "medium",
       "authority_band": "weak",
@@ -1498,6 +1528,16 @@
       "governance_action": "watch"
     },
     {
+      "url": "/wiki/darren-cullen-ser.html",
+      "title": "Darren Cullen (SER) — Crypto Moonboys Wiki",
+      "governance_priority_score": 27,
+      "trust_band": "medium",
+      "authority_band": "weak",
+      "narrative_importance": 0,
+      "editorial_risk": 0,
+      "governance_action": "watch"
+    },
+    {
       "url": "/wiki/gang-signs-card-game.html",
       "title": "Gang Signs (Card Game) — Crypto Moonboys Wiki",
       "governance_priority_score": 27,
@@ -1518,16 +1558,6 @@
       "governance_action": "watch"
     },
     {
-      "url": "/wiki/graffiti-kings.html",
-      "title": "Graffiti Kings — Crypto Moonboys Wiki",
-      "governance_priority_score": 27,
-      "trust_band": "medium",
-      "authority_band": "weak",
-      "narrative_importance": 0,
-      "editorial_risk": 3,
-      "governance_action": "watch"
-    },
-    {
       "url": "/wiki/graffiti-queens-in-decentraland.html",
       "title": "Graffiti Queens in Decentraland — Crypto Moonboys Wiki",
       "governance_priority_score": 27,
@@ -1538,28 +1568,8 @@
       "governance_action": "watch"
     },
     {
-      "url": "/wiki/hex-tagger-prime.html",
-      "title": "HEX-TAGGER PRIME — Crypto Moonboys Wiki",
-      "governance_priority_score": 27,
-      "trust_band": "medium",
-      "authority_band": "weak",
-      "narrative_importance": 0,
-      "editorial_risk": 0,
-      "governance_action": "watch"
-    },
-    {
       "url": "/wiki/hodl-wars-game.html",
       "title": "HODL Wars (Game) — Crypto Moonboys Wiki",
-      "governance_priority_score": 27,
-      "trust_band": "medium",
-      "authority_band": "weak",
-      "narrative_importance": 0,
-      "editorial_risk": 0,
-      "governance_action": "watch"
-    },
-    {
-      "url": "/wiki/lfgk.html",
-      "title": "$LFGK — Crypto Moonboys Wiki",
       "governance_priority_score": 27,
       "trust_band": "medium",
       "authority_band": "weak",
@@ -1588,6 +1598,26 @@
       "governance_action": "watch"
     },
     {
+      "url": "/wiki/queen-sarah-p-fly.html",
+      "title": "Queen Sarah P-fly — Crypto Moonboys Wiki",
+      "governance_priority_score": 27,
+      "trust_band": "medium",
+      "authority_band": "weak",
+      "narrative_importance": 0,
+      "editorial_risk": 0,
+      "governance_action": "watch"
+    },
+    {
+      "url": "/wiki/substack-posts-on-graffpunkssubstackcom.html",
+      "title": "Substack Posts on graffpunks.substack.com — Crypto Moonboys Wiki",
+      "governance_priority_score": 27,
+      "trust_band": "medium",
+      "authority_band": "weak",
+      "narrative_importance": 0,
+      "editorial_risk": 0,
+      "governance_action": "watch"
+    },
+    {
       "url": "/wiki/the-great-dip.html",
       "title": "The Great Dip — Crypto Moonboys Wiki",
       "governance_priority_score": 27,
@@ -1600,16 +1630,6 @@
     {
       "url": "/wiki/1m-free-nfts-program.html",
       "title": "1M Free NFTs Program — Crypto Moonboys Wiki",
-      "governance_priority_score": 26,
-      "trust_band": "medium",
-      "authority_band": "weak",
-      "narrative_importance": 0,
-      "editorial_risk": 0,
-      "governance_action": "watch"
-    },
-    {
-      "url": "/wiki/darren-cullen-ser.html",
-      "title": "Darren Cullen (SER) — Crypto Moonboys Wiki",
       "governance_priority_score": 26,
       "trust_band": "medium",
       "authority_band": "weak",
@@ -1638,16 +1658,6 @@
       "governance_action": "watch"
     },
     {
-      "url": "/wiki/queen-sarah-p-fly.html",
-      "title": "Queen Sarah P-fly — Crypto Moonboys Wiki",
-      "governance_priority_score": 26,
-      "trust_band": "medium",
-      "authority_band": "weak",
-      "narrative_importance": 0,
-      "editorial_risk": 0,
-      "governance_action": "watch"
-    },
-    {
       "url": "/wiki/rug-pull-wars.html",
       "title": "Rug Pull Wars — Crypto Moonboys Wiki",
       "governance_priority_score": 26,
@@ -1668,8 +1678,8 @@
       "governance_action": "watch"
     },
     {
-      "url": "/wiki/substack-posts-on-graffpunkssubstackcom.html",
-      "title": "Substack Posts on graffpunks.substack.com — Crypto Moonboys Wiki",
+      "url": "/wiki/the-gkniftyheads.html",
+      "title": "The GKniftyHEADS — Crypto Moonboys Wiki",
       "governance_priority_score": 26,
       "trust_band": "medium",
       "authority_band": "weak",
@@ -1678,9 +1688,9 @@
       "governance_action": "watch"
     },
     {
-      "url": "/wiki/the-gkniftyheads.html",
-      "title": "The GKniftyHEADS — Crypto Moonboys Wiki",
-      "governance_priority_score": 26,
+      "url": "/wiki/alfie-bitcoin-kid-blaze.html",
+      "title": "Alfie 'Bitcoin Kid' Blaze — Crypto Moonboys Wiki",
+      "governance_priority_score": 25,
       "trust_band": "medium",
       "authority_band": "weak",
       "narrative_importance": 0,
@@ -1798,9 +1808,9 @@
       "governance_action": "watch"
     },
     {
-      "url": "/wiki/alfie-bitcoin-kid-blaze.html",
-      "title": "Alfie 'Bitcoin Kid' Blaze — Crypto Moonboys Wiki",
-      "governance_priority_score": 24,
+      "url": "/wiki/waxp.html",
+      "title": "$WAXP — Crypto Moonboys Wiki",
+      "governance_priority_score": 25,
       "trust_band": "medium",
       "authority_band": "weak",
       "narrative_importance": 0,
@@ -1868,6 +1878,16 @@
       "governance_action": "watch"
     },
     {
+      "url": "/wiki/graffiti-queens-exhibition.html",
+      "title": "Graffiti Queens Exhibition — Crypto Moonboys Wiki",
+      "governance_priority_score": 24,
+      "trust_band": "medium",
+      "authority_band": "weak",
+      "narrative_importance": 0,
+      "editorial_risk": 0,
+      "governance_action": "watch"
+    },
+    {
       "url": "/wiki/graffiti-queens-in-decentraland-ecosystem.html",
       "title": "Graffiti Queens In Decentraland Ecosystem — Crypto Moonboys Wiki",
       "governance_priority_score": 24,
@@ -1910,6 +1930,16 @@
     {
       "url": "/wiki/hard-fork-games-game.html",
       "title": "Hard Fork Games — Crypto Moonboys Wiki",
+      "governance_priority_score": 24,
+      "trust_band": "medium",
+      "authority_band": "weak",
+      "narrative_importance": 0,
+      "editorial_risk": 0,
+      "governance_action": "watch"
+    },
+    {
+      "url": "/wiki/leake-street-tunnel.html",
+      "title": "Leake Street Tunnel — Crypto Moonboys Wiki",
       "governance_priority_score": 24,
       "trust_band": "medium",
       "authority_band": "weak",
@@ -2008,6 +2038,16 @@
       "governance_action": "watch"
     },
     {
+      "url": "/wiki/punk-coin.html",
+      "title": "PUNK Coin — Crypto Moonboys Wiki",
+      "governance_priority_score": 24,
+      "trust_band": "medium",
+      "authority_band": "weak",
+      "narrative_importance": 0,
+      "editorial_risk": 0,
+      "governance_action": "watch"
+    },
+    {
       "url": "/wiki/smart-nft-mechanics.html",
       "title": "SMArT NFT Mechanics — Crypto Moonboys Wiki",
       "governance_priority_score": 24,
@@ -2078,16 +2118,6 @@
       "governance_action": "watch"
     },
     {
-      "url": "/wiki/waxp.html",
-      "title": "$WAXP — Crypto Moonboys Wiki",
-      "governance_priority_score": 24,
-      "trust_band": "medium",
-      "authority_band": "weak",
-      "narrative_importance": 0,
-      "editorial_risk": 0,
-      "governance_action": "watch"
-    },
-    {
       "url": "/wiki/xrp-kids-genesis-nfts.html",
       "title": "XRP KIDs Genesis NFTs — Crypto Moonboys Wiki",
       "governance_priority_score": 24,
@@ -2148,16 +2178,6 @@
       "governance_action": "watch"
     },
     {
-      "url": "/wiki/graffiti-queens-exhibition.html",
-      "title": "Graffiti Queens Exhibition — Crypto Moonboys Wiki",
-      "governance_priority_score": 23,
-      "trust_band": "medium",
-      "authority_band": "weak",
-      "narrative_importance": 0,
-      "editorial_risk": 0,
-      "governance_action": "watch"
-    },
-    {
       "url": "/wiki/graffpunks-247.html",
       "title": "GraffPUNKS 247 — Crypto Moonboys Wiki",
       "governance_priority_score": 23,
@@ -2188,28 +2208,8 @@
       "governance_action": "watch"
     },
     {
-      "url": "/wiki/leake-street-tunnel.html",
-      "title": "Leake Street Tunnel — Crypto Moonboys Wiki",
-      "governance_priority_score": 23,
-      "trust_band": "medium",
-      "authority_band": "weak",
-      "narrative_importance": 0,
-      "editorial_risk": 0,
-      "governance_action": "watch"
-    },
-    {
       "url": "/wiki/nine-armies.html",
       "title": "Nine Armies — Crypto Moonboys Wiki",
-      "governance_priority_score": 23,
-      "trust_band": "medium",
-      "authority_band": "weak",
-      "narrative_importance": 0,
-      "editorial_risk": 0,
-      "governance_action": "watch"
-    },
-    {
-      "url": "/wiki/punk-coin.html",
-      "title": "PUNK Coin — Crypto Moonboys Wiki",
       "governance_priority_score": 23,
       "trust_band": "medium",
       "authority_band": "weak",
