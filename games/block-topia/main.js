@@ -134,7 +134,9 @@ function pickExtractionTile() {
 function updateMissionProgress() {
   const kills = Math.max(0, Number(runtime.localPlayer.kills) || 0);
   runtime.mission.neutralizedCount = kills;
-  const elapsed = runtime.mission.startedAt ? Date.now() - runtime.mission.startedAt : 0;
+  const now = Date.now();
+  const elapsedAnchor = runtime.mission.completedAt || now;
+  const elapsed = runtime.mission.startedAt ? elapsedAnchor - runtime.mission.startedAt : 0;
   const survivalDone = elapsed >= runtime.mission.surviveMs;
   const killDone = kills >= runtime.mission.requiredKills;
   if (!runtime.mission.extractionUnlocked && survivalDone && killDone) {
@@ -146,7 +148,7 @@ function updateMissionProgress() {
     const tile = runtime.mission.extractionTile;
     if (runtime.localPlayer.x === tile.x && runtime.localPlayer.y === tile.y) {
       runtime.mission.completed = true;
-      runtime.mission.completedAt = Date.now();
+      runtime.mission.completedAt = now;
       pushFeedback('MISSION COMPLETE', 2200, 'rgba(152, 255, 173, 0.98)');
     }
   }
@@ -267,6 +269,10 @@ function onKeyDown(event) {
 
 function tryAttack() {
   ensureMissionStart();
+  if (runtime.mission.completed) {
+    pushFeedback('MISSION COMPLETE - extraction successful', 1200, 'rgba(170, 246, 197, 0.98)');
+    return;
+  }
   if (runtime.localPlayer.hp <= 0) {
     const now = Date.now();
     const seconds = runtime.localPlayer.respawnAt > now ? Math.ceil((runtime.localPlayer.respawnAt - now) / 1000) : 0;
@@ -484,7 +490,8 @@ function drawHud() {
   ctx.font = '600 12px Segoe UI';
   ctx.fillText(`NET ${String(status.ws || 'offline').toUpperCase()}${status.roomId ? ` | ROOM ${status.roomId}` : ''}${status.error ? ` | ${status.error}` : ''}`, 12, 64);
   const surviveTotalSec = Math.ceil(runtime.mission.surviveMs / 1000);
-  const elapsed = runtime.mission.startedAt ? Date.now() - runtime.mission.startedAt : 0;
+  const elapsedAnchor = runtime.mission.completedAt || Date.now();
+  const elapsed = runtime.mission.startedAt ? elapsedAnchor - runtime.mission.startedAt : 0;
   const surviveLeftSec = Math.max(0, Math.ceil((runtime.mission.surviveMs - elapsed) / 1000));
   const surviveDone = elapsed >= runtime.mission.surviveMs;
   const neutralized = runtime.mission.neutralizedCount;
@@ -505,6 +512,13 @@ function drawHud() {
   ctx.fillText(`${mission2Label}: Neutralize ${runtime.mission.requiredKills} NPCs (${Math.min(neutralized, runtime.mission.requiredKills)}/${runtime.mission.requiredKills})`, 12, 102);
   ctx.fillStyle = runtime.mission.completed ? 'rgba(152, 255, 173, 0.96)' : 'rgba(198, 223, 255, 0.96)';
   ctx.fillText(`Mission 3: ${extractionText}`, 12, 120);
+  if (runtime.mission.completed) {
+    const survivedSec = Math.max(0, Math.ceil(elapsed / 1000));
+    ctx.fillStyle = 'rgba(170, 246, 197, 0.98)';
+    ctx.fillText('MISSION COMPLETE - extraction successful', 12, 138);
+    ctx.fillStyle = 'rgba(214, 226, 245, 0.9)';
+    ctx.fillText(`Run summary: Kills ${runtime.localPlayer.kills} | Downs ${runtime.localPlayer.downs} | Time ${survivedSec}s | P2 can join for co-op test`, 12, 156);
+  }
 
   const feed = runtime.feed[runtime.feed.length - 1];
   if (feed) {
@@ -540,6 +554,29 @@ function drawFeedback() {
   }
 }
 
+function drawMissionCompleteBanner() {
+  if (!runtime.mission.completed) return;
+  const now = Date.now();
+  if (runtime.mission.completedAt && now - runtime.mission.completedAt > 6000) return;
+  const w = Math.min(560, Math.max(300, Math.floor(viewWidth * 0.72)));
+  const h = 70;
+  const x = Math.floor((viewWidth - w) / 2);
+  const y = Math.floor(viewHeight * 0.1);
+  ctx.fillStyle = 'rgba(7, 22, 20, 0.84)';
+  ctx.fillRect(x, y, w, h);
+  ctx.strokeStyle = 'rgba(152, 255, 173, 0.85)';
+  ctx.lineWidth = 2;
+  ctx.strokeRect(x + 0.5, y + 0.5, w - 1, h - 1);
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.font = '800 24px Segoe UI';
+  ctx.fillStyle = 'rgba(170, 246, 197, 0.98)';
+  ctx.fillText('MISSION COMPLETE', x + Math.floor(w / 2), y + 28);
+  ctx.font = '700 13px Segoe UI';
+  ctx.fillStyle = 'rgba(218, 231, 255, 0.95)';
+  ctx.fillText('Extraction successful', x + Math.floor(w / 2), y + 50);
+}
+
 function drawDamageFlash() {
   const now = Date.now();
   runtime.flashes = runtime.flashes.filter((entry) => entry && entry.expiresAt > now);
@@ -560,6 +597,7 @@ function render() {
   drawPlayers();
   drawHud();
   drawFeedback();
+  drawMissionCompleteBanner();
   drawDamageFlash();
 }
 
@@ -662,11 +700,11 @@ function setLocalPlayer(payload = {}) {
   if (Number.isFinite(payload.kills)) runtime.localPlayer.kills = Math.max(0, Math.floor(payload.kills));
   if (Number.isFinite(payload.downs)) runtime.localPlayer.downs = Math.max(0, Math.floor(payload.downs));
   if (Number.isFinite(payload.respawnAt)) runtime.localPlayer.respawnAt = Math.max(0, Math.floor(payload.respawnAt));
-  if (runtime.localPlayer.hp < prevHp) {
+  if (!runtime.mission.completed && runtime.localPlayer.hp < prevHp) {
     pushFeedback(`HIT -${prevHp - runtime.localPlayer.hp}`, 850, 'rgba(255, 146, 146, 0.98)');
     pushFlash('player_hit', 260);
   }
-  if (prevHp > 0 && runtime.localPlayer.hp <= 0) {
+  if (!runtime.mission.completed && prevHp > 0 && runtime.localPlayer.hp <= 0) {
     const now = Date.now();
     const seconds = runtime.localPlayer.respawnAt > now ? Math.ceil((runtime.localPlayer.respawnAt - now) / 1000) : 0;
     pushFeedback(`DOWNED — respawning in ${seconds}s`, 1600, 'rgba(255, 153, 153, 0.98)');
@@ -720,10 +758,10 @@ function setNpcs(npcs = []) {
   for (const npc of next) {
     nextHpById[npc.id] = npc.hp;
     const prevHp = runtime.npcHpById[npc.id];
-    if (Number.isFinite(prevHp) && npc.hp < prevHp) {
+    if (!runtime.mission.completed && Number.isFinite(prevHp) && npc.hp < prevHp) {
       pushFlash('npc_hit', 180);
     }
-    if (Number.isFinite(prevHp) && prevHp > 0 && npc.hp <= 0) {
+    if (!runtime.mission.completed && Number.isFinite(prevHp) && prevHp > 0 && npc.hp <= 0) {
       pushFeedback('+1 neutralized', 900, 'rgba(170, 246, 197, 0.98)');
     }
   }
@@ -743,6 +781,9 @@ function pushFeed(message) {
   const now = Date.now();
   if (runtime.feedMeta.lastMessage === text && now - runtime.feedMeta.lastAt < 2200) return;
   const classificationKey = classifyFeedMessage(text);
+  if (runtime.mission.completed && (classificationKey.startsWith('neutralized:') || classificationKey.startsWith('downed:'))) {
+    return;
+  }
   if (classificationKey) {
     const lastClassAt = runtime.feedClassMeta[classificationKey] || 0;
     const classWindowMs = classificationKey.startsWith('neutralized:') ? 2600 : 3600;
