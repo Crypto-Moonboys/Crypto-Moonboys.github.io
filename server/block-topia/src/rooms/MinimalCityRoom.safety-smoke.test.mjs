@@ -25,6 +25,8 @@ assertSource(/const\s+FREE_ROAM_MS\s*=\s*60_000/, 'Free roam phase constant must
 assertSource(/const\s+WARNING_MS\s*=\s*10_000/, 'Warning phase constant must exist.');
 assertSource(/const\s+EVENT_MS\s*=\s*90_000/, 'Event phase constant must exist.');
 assertSource(/const\s+RECOVERY_MS\s*=\s*30_000/, 'Recovery phase constant must exist.');
+assertSource(/const\s+FREE_ROAM_MS\s*=\s*60_000;\s*\/\/\s*Dev timing\./, 'Free roam should be marked as dev timing.');
+assertSource(/const\s+RECOVERY_MS\s*=\s*30_000;\s*\/\/\s*Dev timing\./, 'Recovery should be marked as dev timing.');
 assertSource(/const\s+MISSION_COMPLETE_MS\s*=\s*8000/, 'Mission complete transition duration constant must exist.');
 assertSource(/const\s+PHASE_FREE_ROAM\s*=\s*'FREE_ROAM'/, 'FREE_ROAM phase label must exist.');
 assertSource(/const\s+PHASE_EVENT_ACTIVE\s*=\s*'EVENT_ACTIVE'/, 'EVENT_ACTIVE phase label must exist.');
@@ -91,6 +93,8 @@ assertSource(/const\s+allReadyCompleted\s*=\s*readyPlayers\.every\(/, 'Mission c
 assertSource(/this\.missionStartedAtBySession\.set\s*\(\s*player\.id\s*,\s*player\.ready\s*\?\s*now\s*:\s*0\s*\)/, 'startRun should anchor mission timer to now for already-ready players.');
 assertSource(/_advanceToNextLevel\s*\(\s*\)\s*{[\s\S]*this\.completedSessions\.clear\(\);[\s\S]*this\.state\.eventLevel\s*\+=\s*1/, 'Advancing level should clear completed state and increment event level.');
 assertSource(/if\s*\(\s*this\.state\.worldPhase\s*===\s*PHASE_MISSION_COMPLETE\s*\)\s*{\s*this\._advanceToNextLevel\(\);\s*}/, 'Phase ticker should auto-progress from mission complete to next level flow.');
+assertSource(/this\.state\.worldPhase\s*!==\s*PHASE_MISSION_COMPLETE[\s\S]*now\s*-\s*this\.state\.roomRunStartedAt\s*>\s*MAX_ROOM_RUN_MS/, 'Max run timeout should not reapply mission-complete every tick.');
+assertSource(/else if\s*\(\s*this\.state\.worldPhase\s*===\s*PHASE_RECOVERY\s*\)\s*this\._setPhase\s*\(\s*PHASE_WARNING\s*\)/, 'Recovery should transition to warning without duplicate event-level increment.');
 assertSource(/if\s*\(\s*this\.state\.worldPhase\s*===\s*PHASE_FREE_ROAM\s*\|\|\s*this\.state\.worldPhase\s*===\s*PHASE_RECOVERY\s*\)\s*{/, 'Free roam/recovery should reduce direct NPC pressure.');
 if (/\.leave\s*\(\s*['"`]/.test(source)) {
   throw new Error('Invalid string-only .leave(...) usage detected.');

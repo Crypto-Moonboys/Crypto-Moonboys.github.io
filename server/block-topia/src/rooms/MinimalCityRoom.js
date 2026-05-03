@@ -30,10 +30,10 @@ const NPC_RESPAWN_MIN_DISTANCE = 4;
 const MISSION_SURVIVE_MS = 60000;
 const MISSION_REQUIRED_KILLS = 5;
 const READY_TIMEOUT_MS = 30000;
-const FREE_ROAM_MS = 60_000; // Production target: 10 minutes.
+const FREE_ROAM_MS = 60_000; // Dev timing. Production target: 10 minutes.
 const WARNING_MS = 10_000;
 const EVENT_MS = 90_000;
-const RECOVERY_MS = 30_000; // Production target: 10 minutes.
+const RECOVERY_MS = 30_000; // Dev timing. Production target: 10 minutes.
 const MISSION_COMPLETE_MS = 8000;
 const MAX_ROOM_RUN_MS = 20 * 60_000;
 const IDLE_RESET_MS = 2 * 60_000;
@@ -370,7 +370,11 @@ export class MinimalCityRoom extends Room {
   _tickPhase() {
     const now = Date.now();
     if (this.state.players.length === 0) return;
-    if (this.state.roomRunStartedAt && now - this.state.roomRunStartedAt > MAX_ROOM_RUN_MS) {
+    if (
+      this.state.worldPhase !== PHASE_MISSION_COMPLETE &&
+      this.state.roomRunStartedAt &&
+      now - this.state.roomRunStartedAt > MAX_ROOM_RUN_MS
+    ) {
       this._setPhase(PHASE_MISSION_COMPLETE);
       return;
     }
@@ -378,10 +382,8 @@ export class MinimalCityRoom extends Room {
     if (this.state.worldPhase === PHASE_FREE_ROAM) this._setPhase(PHASE_WARNING);
     else if (this.state.worldPhase === PHASE_WARNING) this._setPhase(PHASE_EVENT_ACTIVE);
     else if (this.state.worldPhase === PHASE_EVENT_ACTIVE) this._setPhase(PHASE_RECOVERY);
-    else if (this.state.worldPhase === PHASE_RECOVERY) {
-      this.state.eventLevel += 1;
-      this._setPhase(PHASE_WARNING);
-    } else if (this.state.worldPhase === PHASE_MISSION_COMPLETE) {
+    else if (this.state.worldPhase === PHASE_RECOVERY) this._setPhase(PHASE_WARNING);
+    else if (this.state.worldPhase === PHASE_MISSION_COMPLETE) {
       this._advanceToNextLevel();
     } else this._setPhase(PHASE_FREE_ROAM);
   }

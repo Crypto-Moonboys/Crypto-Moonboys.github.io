@@ -535,17 +535,23 @@ function drawHud() {
   ctx.fillStyle = 'rgba(214, 226, 245, 0.85)';
   ctx.font = '600 12px Segoe UI';
   ctx.fillText(`NET ${String(status.ws || 'offline').toUpperCase()}${status.roomId ? ` | ROOM ${status.roomId}` : ''}${status.error ? ` | ${status.error}` : ''}`, 12, 82);
-  ctx.fillStyle = 'rgba(198, 223, 255, 0.92)';
-  ctx.fillText(`${runtime.world.eventObjective || 'City objective syncing...'}`, 12, 100);
+  const row = 18;
+  let y = 100;
+  const drawHudLine = (text, color = 'rgba(198, 223, 255, 0.92)', font = '700 12px Segoe UI') => {
+    if (!text) return;
+    if (y > viewHeight - 12) return;
+    ctx.font = font;
+    ctx.fillStyle = color;
+    ctx.fillText(text, 12, y);
+    y += row;
+  };
+  drawHudLine(`${runtime.world.eventObjective || 'City objective syncing...'}`, 'rgba(198, 223, 255, 0.92)', '600 12px Segoe UI');
   const joinHint = phaseJoinHint(runtime.world.phase);
   if (runtime.localPlayer.ready && joinHint) {
-    ctx.fillStyle = 'rgba(255, 228, 149, 0.95)';
-    ctx.fillText(joinHint, 12, 118);
+    drawHudLine(joinHint, 'rgba(255, 228, 149, 0.95)', '700 12px Segoe UI');
   }
   if (!runtime.localPlayer.ready) {
-    ctx.font = '700 13px Segoe UI';
-    ctx.fillStyle = 'rgba(255, 234, 151, 0.98)';
-    ctx.fillText('WAITING TO START - Press Start / Continue to enter the city', 12, 136);
+    drawHudLine('WAITING TO START - Press Start / Continue to enter the city', 'rgba(255, 234, 151, 0.98)', '700 13px Segoe UI');
   }
   const surviveTotalSec = Math.ceil(runtime.mission.surviveMs / 1000);
   const elapsedAnchor = runtime.mission.completedAt || now;
@@ -564,34 +570,22 @@ function drawHud() {
       : 'Extraction locked until survival is complete and the target is neutralized';
   const nextEventLabel = `Next Event: Patrol Sweep Level ${runtime.world.eventLevel + 1}`;
   const nextLevelCountdown = `Level ${runtime.world.eventLevel + 1} starts in ${formatCountdown(phaseMsLeft)}`;
-
-  ctx.font = '700 12px Segoe UI';
-  ctx.fillStyle = surviveDone ? 'rgba(152, 255, 173, 0.96)' : 'rgba(255, 234, 151, 0.96)';
-  ctx.fillText(`Mission 1: Survive ${surviveTotalSec}s (${surviveLeftSec}s left)`, 12, 154 + (runtime.localPlayer.ready ? 0 : 18));
-  ctx.fillStyle = killDone ? 'rgba(152, 255, 173, 0.96)' : 'rgba(255, 234, 151, 0.96)';
-  ctx.fillText(`${mission2Label}: Neutralize ${runtime.mission.requiredKills} NPCs (${Math.min(neutralized, runtime.mission.requiredKills)}/${runtime.mission.requiredKills})`, 12, 172 + (runtime.localPlayer.ready ? 0 : 18));
-  ctx.fillStyle = runtime.mission.completed ? 'rgba(152, 255, 173, 0.96)' : 'rgba(198, 223, 255, 0.96)';
-  ctx.fillText(`Mission 3: ${extractionText}`, 12, 190 + (runtime.localPlayer.ready ? 0 : 18));
+  drawHudLine(`Mission 1: Survive ${surviveTotalSec}s (${surviveLeftSec}s left)`, surviveDone ? 'rgba(152, 255, 173, 0.96)' : 'rgba(255, 234, 151, 0.96)');
+  drawHudLine(`${mission2Label}: Neutralize ${runtime.mission.requiredKills} NPCs (${Math.min(neutralized, runtime.mission.requiredKills)}/${runtime.mission.requiredKills})`, killDone ? 'rgba(152, 255, 173, 0.96)' : 'rgba(255, 234, 151, 0.96)');
+  drawHudLine(`Mission 3: ${extractionText}`, runtime.mission.completed ? 'rgba(152, 255, 173, 0.96)' : 'rgba(198, 223, 255, 0.96)');
   if (runtime.world.phase === PHASE_MISSION_COMPLETE || runtime.world.phase === PHASE_RECOVERY) {
-    ctx.fillStyle = 'rgba(195, 236, 255, 0.96)';
-    ctx.fillText(nextEventLabel, 12, 208 + (runtime.localPlayer.ready ? 0 : 18));
-    ctx.fillStyle = 'rgba(255, 234, 151, 0.96)';
-    ctx.fillText(nextLevelCountdown, 12, 226 + (runtime.localPlayer.ready ? 0 : 18));
-    ctx.fillStyle = 'rgba(214, 226, 245, 0.9)';
-    ctx.fillText('Explore, reposition, wait for next event, or return to arcade.', 12, 244 + (runtime.localPlayer.ready ? 0 : 18));
+    drawHudLine(nextEventLabel, 'rgba(195, 236, 255, 0.96)');
+    drawHudLine(nextLevelCountdown, 'rgba(255, 234, 151, 0.96)');
+    drawHudLine('Explore, reposition, wait for next event, or return to arcade.', 'rgba(214, 226, 245, 0.9)');
   } else if (runtime.world.phase === PHASE_WARNING) {
-    ctx.fillStyle = 'rgba(255, 234, 151, 0.96)';
-    ctx.fillText('Event starts soon - get ready.', 12, 208 + (runtime.localPlayer.ready ? 0 : 18));
+    drawHudLine('Event starts soon - get ready.', 'rgba(255, 234, 151, 0.96)');
   } else if (runtime.world.phase === PHASE_EVENT_ACTIVE) {
-    ctx.fillStyle = 'rgba(255, 234, 151, 0.96)';
-    ctx.fillText('Complete objectives.', 12, 208 + (runtime.localPlayer.ready ? 0 : 18));
+    drawHudLine('Complete objectives.', 'rgba(255, 234, 151, 0.96)');
   }
   if (runtime.mission.completed) {
     const survivedSec = Math.max(0, Math.ceil(elapsed / 1000));
-    ctx.fillStyle = 'rgba(170, 246, 197, 0.98)';
-    ctx.fillText(MISSION_COMPLETE_MSG, 12, 262);
-    ctx.fillStyle = 'rgba(214, 226, 245, 0.9)';
-    ctx.fillText(`Run summary: Kills ${runtime.localPlayer.kills} | Downs ${runtime.localPlayer.downs} | Time ${survivedSec}s`, 12, 280);
+    drawHudLine(MISSION_COMPLETE_MSG, 'rgba(170, 246, 197, 0.98)');
+    drawHudLine(`Run summary: Kills ${runtime.localPlayer.kills} | Downs ${runtime.localPlayer.downs} | Time ${survivedSec}s`, 'rgba(214, 226, 245, 0.9)');
   }
 
   const feed = runtime.feed[runtime.feed.length - 1];
@@ -993,20 +987,7 @@ window.BlockTopiaMap = {
   requestRestartRun() {
     if (!runtime.restartRunSink) return false;
     const sent = runtime.restartRunSink();
-    if (sent) {
-      runtime.mission = {
-        startedAt: 0,
-        surviveMs: runtime.mission.surviveMs,
-        requiredKills: runtime.mission.requiredKills,
-        extractionUnlocked: false,
-        extractionTile: null,
-        completed: false,
-        completedAt: 0,
-        neutralizedCount: 0,
-        extractionSent: false,
-      };
-      runtime.missionCompleteFeedbackAt = 0;
-    }
+    if (sent) pushFeedback('Restart requested. Waiting for server...', 1000, 'rgba(195, 236, 255, 0.96)');
     return Boolean(sent);
   },
   getSnapshot() {
