@@ -14,9 +14,11 @@ import { fileURLToPath } from 'node:url';
 const here = path.dirname(fileURLToPath(import.meta.url));
 const networkPath = path.resolve(here, '../network.js');
 const indexPath = path.resolve(here, '../index.html');
+const mainPath = path.resolve(here, '../main.js');
 
 const networkSource = await fs.readFile(networkPath, 'utf8');
 const indexHtml = await fs.readFile(indexPath, 'utf8');
+const mainSource = await fs.readFile(mainPath, 'utf8');
 
 // ---------------------------------------------------------------------------
 // 1. Required exports
@@ -78,6 +80,27 @@ assert.ok(
 assert.ok(
   indexHtml.includes('connectMultiplayer'),
   'index.html must call connectMultiplayer.',
+);
+assert.ok(
+  indexHtml.includes('bt-help-toggle'),
+  'index.html should expose help panel collapse toggle.',
+);
+assert.ok(
+  indexHtml.includes('setupHelpPanel'),
+  'index.html should initialize persisted help panel behavior.',
+);
+assert.equal(
+  mainSource.includes('Arrow/WASD move | Click tile move | Space attack'),
+  false,
+  'main.js must not render old top-right controls hint text that overlaps the global badge.',
+);
+assert.ok(
+  /Mission 1:\s*Survive 60s/.test(mainSource) && /Mission 2:\s*Neutralize 5 NPCs/.test(mainSource),
+  'main.js should render mission loop HUD text.',
+);
+assert.ok(
+  mainSource.includes('Extraction unlocked') && mainSource.includes('MISSION COMPLETE'),
+  'main.js should include extraction unlock and mission complete feedback states.',
 );
 
 console.log('Block Topia skeleton smoke checks passed.');
