@@ -495,8 +495,8 @@ function drawHud() {
       ? 'Extraction reached'
       : `Reach extraction tile (${runtime.mission.extractionTile?.x},${runtime.mission.extractionTile?.y})`
     : surviveDone
-      ? 'Extraction locked (complete neutralize target)'
-      : 'Extraction locked until survival + neutralize target complete';
+      ? 'Extraction locked (neutralize target to unlock)'
+      : 'Extraction locked until survival is complete and the target is neutralized';
 
   ctx.font = '700 12px Segoe UI';
   ctx.fillStyle = surviveDone ? 'rgba(152, 255, 173, 0.96)' : 'rgba(255, 234, 151, 0.96)';
@@ -742,12 +742,12 @@ function pushFeed(message) {
   const text = String(message);
   const now = Date.now();
   if (runtime.feedMeta.lastMessage === text && now - runtime.feedMeta.lastAt < 2200) return;
-  const classification = classifyFeedMessage(text);
-  if (classification) {
-    const lastClassAt = runtime.feedClassMeta[classification] || 0;
-    const classWindowMs = classification === 'neutralized' ? 3200 : 4200;
+  const classificationKey = classifyFeedMessage(text);
+  if (classificationKey) {
+    const lastClassAt = runtime.feedClassMeta[classificationKey] || 0;
+    const classWindowMs = classificationKey.startsWith('neutralized:') ? 2600 : 3600;
     if (now - lastClassAt < classWindowMs) return;
-    runtime.feedClassMeta[classification] = now;
+    runtime.feedClassMeta[classificationKey] = now;
   }
   runtime.feedMeta.lastMessage = text;
   runtime.feedMeta.lastAt = now;
@@ -757,8 +757,10 @@ function pushFeed(message) {
 
 function classifyFeedMessage(text) {
   const normalized = String(text || '').toLowerCase();
-  if (normalized.includes('neutralized npc_')) return 'neutralized';
-  if (normalized.includes('was downed by npc_')) return 'downed';
+  const neutralizedMatch = normalized.match(/neutralized\s+(npc_[a-z0-9_-]+)/);
+  if (neutralizedMatch) return `neutralized:${neutralizedMatch[1]}`;
+  const downedMatch = normalized.match(/^system:\s*([a-z0-9_]+)\s+was downed by\s+(npc_[a-z0-9_-]+)/);
+  if (downedMatch) return `downed:${downedMatch[1]}:${downedMatch[2]}`;
   return '';
 }
 
@@ -798,6 +800,7 @@ window.BlockTopiaMap = {
       worldMode: runtime.worldMode,
       npcs: runtime.npcs.map((n) => ({ ...n })),
       mission: { ...runtime.mission, extractionTile: runtime.mission.extractionTile ? { ...runtime.mission.extractionTile } : null },
+      feed: runtime.feed.slice(),
       feedback: runtime.feedback.map((entry) => ({ ...entry })),
       inputEnabled: runtime.inputEnabled,
     };

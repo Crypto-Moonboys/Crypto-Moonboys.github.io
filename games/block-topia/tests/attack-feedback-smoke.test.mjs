@@ -58,6 +58,10 @@ function feedbackMessages() {
   return (api.getSnapshot().feedback || []).map((entry) => String(entry.message || ''));
 }
 
+function feedMessages() {
+  return (api.getSnapshot().feed || []).map((entry) => String(entry || ''));
+}
+
 api.setInputEnabled(true);
 api.setConnectionStatus({ ws: 'connected', joined: true, roomId: 'city' });
 api.setNpcs([{ id: 'npc_1', x: 1, y: 1, hp: 20, maxHp: 40, kind: 'raider' }]);
@@ -115,5 +119,22 @@ assert.ok(
   feedbackMessages().some((msg) => msg.includes('Attack cooling down')),
   'Cooldown attack attempt should emit "Attack cooling down".',
 );
+
+// 6) Feed dedupe should throttle repeated identical class-key events only
+api.pushFeed('System: Player_1111 neutralized npc_2.');
+api.pushFeed('System: Player_1111 neutralized npc_2.');
+api.pushFeed('System: Player_1111 neutralized npc_3.');
+api.pushFeed('System: Player_1111 was downed by npc_9.');
+api.pushFeed('System: Player_1111 was downed by npc_9.');
+api.pushFeed('System: Player_2222 was downed by npc_9.');
+const feedAfter = feedMessages().slice(-6);
+const neutralizedNpc2Count = feedAfter.filter((msg) => msg.includes('neutralized npc_2')).length;
+const neutralizedNpc3Count = feedAfter.filter((msg) => msg.includes('neutralized npc_3')).length;
+const downed1111Count = feedAfter.filter((msg) => msg.includes('Player_1111 was downed by npc_9')).length;
+const downed2222Count = feedAfter.filter((msg) => msg.includes('Player_2222 was downed by npc_9')).length;
+assert.equal(neutralizedNpc2Count, 1, 'Repeated neutralized feed for same NPC should dedupe.');
+assert.equal(neutralizedNpc3Count, 1, 'Distinct NPC neutralization should still appear.');
+assert.equal(downed1111Count, 1, 'Repeated downed feed for same player/NPC pair should dedupe.');
+assert.equal(downed2222Count, 1, 'Distinct downed feed for another player should still appear.');
 
 console.log('Block Topia attack feedback smoke checks passed.');
