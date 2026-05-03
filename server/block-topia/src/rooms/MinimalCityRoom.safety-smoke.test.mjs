@@ -20,6 +20,7 @@ assertSource(/const\s+NPC_MAX_HP\s*=\s*60/, 'NPC max HP should be tuned for paci
 assertSource(/const\s+NPC_RESPAWN_DELAY_MS\s*=\s*6500/, 'NPC respawn delay constant must exist.');
 assertSource(/const\s+MISSION_SURVIVE_MS\s*=\s*60000/, 'Mission survival requirement constant must exist.');
 assertSource(/const\s+MISSION_REQUIRED_KILLS\s*=\s*5/, 'Mission kill requirement constant must exist.');
+assertSource(/const\s+READY_TIMEOUT_MS\s*=\s*30000/, 'Ready timeout constant must exist.');
 assertSource(/ready:\s*'boolean'/, 'Player schema should include ready state.');
 assertSource(/if\s*\(\s*!player\s*\|\|\s*!player\.ready\s*\|\|\s*player\.hp\s*<=\s*0\s*\)\s*return/, 'Dead/missing/not-ready attacker guard must exist.');
 assertSource(/if\s*\(\s*!player\s*\|\|\s*!player\.ready\s*\)\s*return/, 'Movement should be blocked until ready.');
@@ -61,6 +62,9 @@ assertSource(/return\s+this\._isExtractionTile\s*\(\s*player\?\.x\s*,\s*player\?
 assertSource(/player\.ready\s*=\s*false/, 'Players should start as ready=false on join.');
 assertSource(/this\.missionStartedAtBySession\.set\s*\(\s*client\.sessionId\s*,\s*0\s*\)/, 'Mission timer anchor should start at 0 before ready.');
 assertSource(/player\.ready\s*=\s*true/, 'Ready/start message should set player ready=true.');
+assertSource(/this\._scheduleReadyTimeout\s*\(\s*client\.sessionId\s*\)/, 'Server should schedule timeout for not-ready players.');
+assertSource(/if\s*\(\s*!player\s*\|\|\s*player\.ready\s*\)\s*return/, 'Ready timeout should ignore missing or already-ready players.');
+assertSource(/client\.leave\s*\(\s*1000\s*\)/, 'Not-ready timeout should reclaim stale seats with numeric close code.');
 if (/\.leave\s*\(\s*['"`]/.test(source)) {
   throw new Error('Invalid string-only .leave(...) usage detected.');
 }
