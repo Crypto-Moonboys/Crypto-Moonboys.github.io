@@ -125,11 +125,24 @@ assert.ok(
   'index.html start flow should send ready/startRun before gameplay starts.',
 );
 assert.ok(
-  indexHtml.includes('bt-upgrade-row') &&
+  indexHtml.includes('bt-upgrade-panel') &&
+  indexHtml.includes('No upgrade choices received') &&
+  indexHtml.includes('upgradeChoicesMeta') &&
   indexHtml.includes('setChooseUpgradeSink') &&
   indexHtml.includes('sendChooseUpgrade') &&
   indexHtml.includes('phase !== "RECOVERY"'),
   'index.html should render upgrade choice controls, wire chooseUpgrade intent, and only show upgrade cards in RECOVERY.',
+);
+assert.equal(
+  indexHtml.includes('function upgradeDescription'),
+  false,
+  'index.html should not hardcode upgrade effect copy when metadata is supplied by server.',
+);
+assert.ok(
+  indexHtml.includes('const meta = choicesMeta.find') &&
+  indexHtml.includes('meta?.name') &&
+  indexHtml.includes('meta?.description'),
+  'index.html should render upgrade labels/descriptions from server-provided metadata.',
 );
 assert.equal(
   mainSource.includes('Arrow/WASD move | Click tile move | Space attack'),
@@ -143,7 +156,7 @@ assert.ok(
 );
 assert.ok(
   /const\s+hackProgress\s*=\s*Math\.min\([\s\S]*runtime\.world\.objectiveProgress/.test(mainSource) &&
-  /Mission 2: Signal Hack \(\$\{hackProgress\}\/\$\{runtime\.world\.hackProgressTarget\}\)/.test(mainSource),
+  /Mission 2: Stand on the HACK TILE to charge signal \(\$\{hackProgress\}\/\$\{runtime\.world\.hackProgressTarget\}\)/.test(mainSource),
   'main.js SIGNAL_HACK HUD should use hack/objective progress, not neutralized kill count.',
 );
 assert.ok(
@@ -216,6 +229,7 @@ assert.ok(
 );
 assert.ok(
   /function\s+shouldSuppressFeedMessage\s*\(/.test(mainSource) &&
+  /runtime\.world\.phase === PHASE_RECOVERY \|\| runtime\.world\.phase === PHASE_MISSION_COMPLETE/.test(mainSource) &&
   /normalized\.includes\('neutralized npc_'\)/.test(mainSource) &&
   /normalized\.includes\('was downed by npc_'\)/.test(mainSource) &&
   /normalized\.includes\('hit'\)/.test(mainSource),
@@ -233,6 +247,17 @@ assert.ok(
 assert.ok(
   /if\s*\(\s*shouldSuppressFeedMessage\s*\(\s*text\s*\)\s*\)\s*return;/.test(pushFeedBody),
   'main.js should suppress neutralized/downed combat feed spam after mission completion.',
+);
+assert.ok(
+  /runtime\.feedMeta\.lastMessage === text && now - runtime\.feedMeta\.lastAt < 5000/.test(pushFeedBody) &&
+  /classWindowMs = classificationKey\.startsWith\('neutralized:'\) \|\| classificationKey\.startsWith\('downed:'\) \? 5000 : 3200/.test(pushFeedBody),
+  'main.js should dedupe repeated combat feed messages for at least five seconds.',
+);
+assert.ok(
+  mainSource.includes('function drawHackMarker()') &&
+  mainSource.includes('SIGNAL CHARGING...') &&
+  mainSource.includes('Hack complete - extract now.'),
+  'main.js should render SIGNAL_HACK marker and clear hack-complete feedback.',
 );
 assert.ok(
   requestRestartRunBody.includes('runtime.restartRunSink') &&
@@ -290,7 +315,8 @@ assert.ok(
 );
 assert.ok(
   networkSource.includes('let _lastWorldEventLevel = 1;') &&
-  networkSource.includes('eventLevel: _lastWorldEventLevel'),
+  networkSource.includes('eventLevel: _lastWorldEventLevel') &&
+  networkSource.includes('upgradeChoicesMeta: parseJsonObjectArray(player?.upgradeChoicesMetaJson)'),
   'network.js should preserve world eventLevel across partial system payloads.',
 );
 

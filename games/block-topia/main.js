@@ -30,7 +30,7 @@ let cameraY = 0;
 let cameraScale = 1;
 
 const runtime = {
-  localPlayer: { id: 'local', x: 1, y: 1, color: '#6da9ff', name: 'You', sessionId: '', hp: 100, maxHp: 100, kills: 0, downs: 0, respawnAt: 0, ready: false, readyRequested: false, attackDamage: 20, attackCooldownMs: 750, armorPct: 0, runLevel: 1, upgrades: [], upgradeChoices: [], objectiveProgress: 0 },
+  localPlayer: { id: 'local', x: 1, y: 1, color: '#6da9ff', name: 'You', sessionId: '', hp: 100, maxHp: 100, kills: 0, downs: 0, respawnAt: 0, ready: false, readyRequested: false, attackDamage: 20, attackCooldownMs: 750, armorPct: 0, runLevel: 1, upgrades: [], upgradeChoices: [], upgradeChoicesMeta: [], objectiveProgress: 0 },
   remotePlayer: { id: 'remote', x: GRID_SIZE - 2, y: GRID_SIZE - 2, color: '#f6fbff', name: 'Remote', connected: false, sessionId: '', hp: 100, kills: 0, downs: 0, respawnAt: 0 },
   npcs: [],
   worldMode: 'single-player-vs-npc',
@@ -503,6 +503,22 @@ function drawExtractionMarker() {
   ctx.fill();
 }
 
+function drawHackMarker() {
+  if (runtime.world.objectiveType !== 'SIGNAL_HACK') return;
+  if (runtime.world.phase !== PHASE_EVENT_ACTIVE) return;
+  if (!Number.isFinite(runtime.world.hackX) || !Number.isFinite(runtime.world.hackY)) return;
+  const [sx, sy] = tileToScreen(runtime.world.hackX, runtime.world.hackY);
+  const th = TILE_HEIGHT * cameraScale;
+  const cy = sy + th / 2 - 14 * cameraScale;
+  ctx.beginPath();
+  ctx.arc(sx, cy, 11 * cameraScale, 0, Math.PI * 2);
+  ctx.strokeStyle = 'rgba(109, 209, 255, 0.95)';
+  ctx.lineWidth = 2 * cameraScale;
+  ctx.stroke();
+  ctx.fillStyle = 'rgba(109, 209, 255, 0.2)';
+  ctx.fill();
+}
+
 function drawPlayers() {
   drawMarker(runtime.localPlayer, 'L', true);
   drawMarker(runtime.remotePlayer, 'R', runtime.remotePlayer.connected);
@@ -510,6 +526,7 @@ function drawPlayers() {
 
 function drawNpcs() {
   for (const npc of runtime.npcs) drawNpc(npc);
+  drawHackMarker();
   drawExtractionMarker();
 }
 
@@ -577,19 +594,30 @@ function drawHud() {
     : neutralized >= runtime.mission.requiredKills;
   const mission2Label = surviveDone ? 'Mission 2' : 'Mission 2 (tracking - unlocks after Mission 1)';
   const objectiveLabel = runtime.world.objectiveType === 'SIGNAL_HACK'
-    ? `Mission 2: Signal Hack (${hackProgress}/${runtime.world.hackProgressTarget})`
+    ? `Mission 2: Stand on the HACK TILE to charge signal (${hackProgress}/${runtime.world.hackProgressTarget})`
     : `${mission2Label}: Neutralize ${runtime.mission.requiredKills} NPCs (${Math.min(neutralized, runtime.mission.requiredKills)}/${runtime.mission.requiredKills})`;
+  const hackingNow = runtime.world.objectiveType === 'SIGNAL_HACK' &&
+    runtime.localPlayer.hp > 0 &&
+    runtime.world.phase === PHASE_EVENT_ACTIVE &&
+    runtime.localPlayer.x === runtime.world.hackX &&
+    runtime.localPlayer.y === runtime.world.hackY;
   const extractionText = runtime.mission.extractionUnlocked
     ? runtime.mission.completed
       ? 'Extraction reached'
       : `Reach extraction tile (${runtime.mission.extractionTile?.x},${runtime.mission.extractionTile?.y})`
-    : surviveDone
-      ? 'Extraction locked (neutralize target to unlock)'
-      : 'Extraction locked until survival is complete and the target is neutralized';
+    : runtime.world.objectiveType === 'SIGNAL_HACK'
+      ? 'Extraction locked until signal is fully charged'
+      : surviveDone
+        ? 'Extraction locked (neutralize target to unlock)'
+        : 'Extraction locked until survival is complete and the target is neutralized';
   const nextEventLabel = `Next Event: Patrol Sweep Level ${runtime.world.eventLevel + 1}`;
   const nextLevelCountdown = `Level ${runtime.world.eventLevel + 1} starts in ${formatCountdown(phaseMsLeft)}`;
   drawHudLine(`Mission 1: Survive ${surviveTotalSec}s (${surviveLeftSec}s left)`, surviveDone ? 'rgba(152, 255, 173, 0.96)' : 'rgba(255, 234, 151, 0.96)');
   drawHudLine(objectiveLabel, killDone ? 'rgba(152, 255, 173, 0.96)' : 'rgba(255, 234, 151, 0.96)');
+  if (runtime.world.objectiveType === 'SIGNAL_HACK') {
+    drawHudLine(hackingNow ? 'SIGNAL CHARGING...' : 'Mission 2: Move onto the hack tile and hold position.', hackingNow ? 'rgba(133, 223, 255, 0.98)' : 'rgba(198, 223, 255, 0.96)');
+    if (killDone && !runtime.mission.completed) drawHudLine('Hack complete - extract now.', 'rgba(170, 246, 197, 0.98)');
+  }
   drawHudLine(`Mission 3: ${extractionText}`, runtime.mission.completed ? 'rgba(152, 255, 173, 0.96)' : 'rgba(198, 223, 255, 0.96)');
   if (runtime.world.phase === PHASE_MISSION_COMPLETE || runtime.world.phase === PHASE_RECOVERY) {
     drawHudLine(nextEventLabel, 'rgba(195, 236, 255, 0.96)');
@@ -793,6 +821,7 @@ function setLocalPlayer(payload = {}) {
   if (Number.isFinite(payload.runLevel)) runtime.localPlayer.runLevel = Math.max(1, Math.floor(payload.runLevel));
   if (Array.isArray(payload.upgrades)) runtime.localPlayer.upgrades = payload.upgrades.map((entry) => String(entry || ''));
   if (Array.isArray(payload.upgradeChoices)) runtime.localPlayer.upgradeChoices = payload.upgradeChoices.map((entry) => String(entry || ''));
+  if (Array.isArray(payload.upgradeChoicesMeta)) runtime.localPlayer.upgradeChoicesMeta = payload.upgradeChoicesMeta.filter((entry) => entry && typeof entry === 'object');
   if (Number.isFinite(payload.objectiveProgress)) runtime.localPlayer.objectiveProgress = Math.max(0, Math.floor(payload.objectiveProgress));
   if (typeof payload.ready === 'boolean') {
     runtime.localPlayer.ready = payload.ready;
@@ -950,11 +979,11 @@ function pushFeed(message) {
   const text = String(message);
   if (shouldSuppressFeedMessage(text)) return;
   const now = Date.now();
-  if (runtime.feedMeta.lastMessage === text && now - runtime.feedMeta.lastAt < 2200) return;
+  if (runtime.feedMeta.lastMessage === text && now - runtime.feedMeta.lastAt < 5000) return;
   const classificationKey = classifyFeedMessage(text);
   if (classificationKey) {
     const lastClassAt = runtime.feedClassMeta[classificationKey] || 0;
-    const classWindowMs = classificationKey.startsWith('neutralized:') ? 2600 : 3600;
+    const classWindowMs = classificationKey.startsWith('neutralized:') || classificationKey.startsWith('downed:') ? 5000 : 3200;
     if (now - lastClassAt < classWindowMs) return;
     runtime.feedClassMeta[classificationKey] = now;
   }
@@ -966,6 +995,11 @@ function pushFeed(message) {
 
 function shouldSuppressFeedMessage(message) {
   const normalized = String(message || '').toLowerCase();
+  if (runtime.world.phase === PHASE_RECOVERY || runtime.world.phase === PHASE_MISSION_COMPLETE) {
+    if (normalized.includes('neutralized npc_')) return true;
+    if (normalized.includes('was downed by npc_')) return true;
+    if (normalized.includes('hit')) return true;
+  }
   if (!runtime.localPlayer.ready) {
     if (normalized.includes('neutralized npc_')) return true;
     if (normalized.includes('was downed by npc_')) return true;

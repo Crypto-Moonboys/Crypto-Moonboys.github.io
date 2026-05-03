@@ -20,10 +20,10 @@ const ATTACK_DAMAGE = 20;
 const ATTACK_COOLDOWN_MS = 750;
 const PLAYER_MAX_HP = 100;
 const NPC_MAX_HP = 60;
-const NPC_CONTACT_DAMAGE = 12;
-const NPC_ATTACK_COOLDOWN_MS = 1200;
-const PLAYER_NPC_DAMAGE_COOLDOWN_MS = 1000;
-const SPAWN_GRACE_MS = 4000;
+const NPC_CONTACT_DAMAGE = 6;
+const NPC_ATTACK_COOLDOWN_MS = 2500;
+const PLAYER_NPC_DAMAGE_COOLDOWN_MS = 2500;
+const SPAWN_GRACE_MS = 5000;
 const RESPAWN_DELAY_MS = 3000;
 const NPC_RESPAWN_DELAY_MS = 6500;
 const NPC_RESPAWN_MIN_DISTANCE = 4;
@@ -47,12 +47,12 @@ const OBJECTIVE_SIGNAL_HACK = 'SIGNAL_HACK';
 const MIN_ATTACK_COOLDOWN_MS = 350;
 const EXTRACTION_SAFE_DISTANCE = 3;
 const UPGRADE_POOL = [
-  { id: 'street_medic', label: 'STREET MEDIC' },
-  { id: 'spray_damage', label: 'SPRAY DAMAGE' },
-  { id: 'quick_trigger', label: 'QUICK TRIGGER' },
-  { id: 'armour_plate', label: 'ARMOUR PLATE' },
-  { id: 'second_wind', label: 'SECOND WIND' },
-  { id: 'scanner', label: 'SCANNER' },
+  { id: 'street_medic', name: 'Street Medic', description: '+25 max HP and full heal next level' },
+  { id: 'spray_damage', name: 'Spray Damage', description: '+10 attack damage' },
+  { id: 'quick_trigger', name: 'Quick Trigger', description: '-150ms attack cooldown' },
+  { id: 'armour_plate', name: 'Armour Plate', description: '-20% NPC contact damage' },
+  { id: 'second_wind', name: 'Second Wind', description: 'One emergency revive per level' },
+  { id: 'scanner', name: 'Scanner', description: 'Lower objective requirement this run' },
 ];
 const PASSABLE_TERRAIN = new Set(['road', 'grass']);
 
@@ -79,6 +79,7 @@ class PlayerState extends Schema {
     this.runLevel = 1;
     this.upgradesJson = '[]';
     this.upgradeChoicesJson = '[]';
+    this.upgradeChoicesMetaJson = '[]';
     this.objectiveProgress = 0;
   }
 }
@@ -104,6 +105,7 @@ defineTypes(PlayerState, {
   runLevel: 'number',
   upgradesJson: 'string',
   upgradeChoicesJson: 'string',
+  upgradeChoicesMetaJson: 'string',
   objectiveProgress: 'number',
 });
 
@@ -272,6 +274,7 @@ export class MinimalCityRoom extends Room {
       if (!choices.includes(upgradeId)) return;
       this._applyUpgrade(player, upgradeId);
       player.upgradeChoicesJson = '[]';
+      player.upgradeChoicesMetaJson = '[]';
       this.broadcast('system', { message: `${player.name} activated ${upgradeId.replaceAll('_', ' ').toUpperCase()}.`, mode: this.state.worldMode });
     });
 
@@ -410,6 +413,7 @@ export class MinimalCityRoom extends Room {
         if (safeParseJsonArray(player.upgradeChoicesJson).length) continue;
         const choices = pickUpgradeChoices(player.upgradesJson);
         player.upgradeChoicesJson = JSON.stringify(choices);
+        player.upgradeChoicesMetaJson = JSON.stringify(choices.map((choiceId) => toUpgradeMeta(choiceId)));
       }
     } else if (phase === PHASE_FREE_ROAM) {
       this.state.eventObjective = `Free roam: explore the city. Event level ${this.state.eventLevel} starts soon.`;
@@ -444,6 +448,7 @@ export class MinimalCityRoom extends Room {
       }
       player.runLevel = this.state.eventLevel;
       player.upgradeChoicesJson = '[]';
+      player.upgradeChoicesMetaJson = '[]';
       player.objectiveProgress = 0;
       player.hp = player.maxHp;
       player.kills = 0;
@@ -524,6 +529,7 @@ export class MinimalCityRoom extends Room {
       player.kills = 0;
       player.respawnAt = 0;
       player.upgradeChoicesJson = '[]';
+      player.upgradeChoicesMetaJson = '[]';
       this.spawnProtectedUntilBySession.set(player.id, now + SPAWN_GRACE_MS);
       this.missionStartedAtBySession.set(player.id, now);
     }
@@ -555,15 +561,19 @@ export class MinimalCityRoom extends Room {
 
   _findRandomPassableTileAwayFromPlayers(minDistance = 0) {
     const inRecoveryOrComplete = this.state.worldPhase === PHASE_RECOVERY || this.state.worldPhase === PHASE_MISSION_COMPLETE;
+    const objectiveType = this.state.eventObjectiveType;
     for (let i = 0; i < 1000; i += 1) {
       const x = Math.floor(Math.random() * MAP_WIDTH);
       const y = Math.floor(Math.random() * MAP_HEIGHT);
       if (!this._isPassable(x, y)) continue;
       if (minDistance <= 0) return { x, y };
       const tooClose = this.state.players.some((player) => player && player.hp > 0 && distance(x, y, player.x, player.y) < minDistance);
-      const nearExtraction = inRecoveryOrComplete && distance(x, y, this.state.extractionX, this.state.extractionY) < EXTRACTION_SAFE_DISTANCE;
+      const nearExtraction = distance(x, y, this.state.extractionX, this.state.extractionY) < EXTRACTION_SAFE_DISTANCE;
+      const nearHack = objectiveType === OBJECTIVE_SIGNAL_HACK && distance(x, y, this.state.hackX, this.state.hackY) < EXTRACTION_SAFE_DISTANCE;
       const clustered = this.state.npcs.some((npc) => npc && npc.hp > 0 && distance(x, y, npc.x, npc.y) < 1.5);
-      if (nearExtraction || clustered) continue;
+      const avoidObjectiveArea = (inRecoveryOrComplete && nearExtraction) || nearHack;
+      if (avoidObjectiveArea) continue;
+      if (clustered) continue;
       if (!tooClose) return { x, y };
     }
     return this._findRandomPassableTile();
@@ -611,6 +621,15 @@ export class MinimalCityRoom extends Room {
       npc.targetSessionId = target.id;
       if (this.state.worldPhase === PHASE_FREE_ROAM || this.state.worldPhase === PHASE_RECOVERY) {
         if (Math.random() < 0.08) this._roamNpc(npc);
+        continue;
+      }
+      if (
+        this.state.eventObjectiveType === OBJECTIVE_SIGNAL_HACK &&
+        target.x === this.state.hackX &&
+        target.y === this.state.hackY &&
+        Math.random() < 0.55
+      ) {
+        if (Math.random() < 0.06) this._roamNpc(npc);
         continue;
       }
       const dist = distance(npc.x, npc.y, target.x, target.y);
@@ -826,10 +845,10 @@ export class MinimalCityRoom extends Room {
     const scannerBonus = this._scannerTargetBonus();
     this.state.objectiveTarget = Math.max(1, this._scaledKillTarget() - scannerBonus);
     this.state.eventObjectiveType = this.state.eventLevel % 2 === 0 ? OBJECTIVE_SIGNAL_HACK : OBJECTIVE_PATROL_SWEEP;
-    const extractionTile = this._findRandomPassableTileAwayFromPlayers(2);
+    const extractionTile = this._findRandomPassableTileAwayFromPlayers(4);
     this.state.extractionX = extractionTile.x;
     this.state.extractionY = extractionTile.y;
-    const hackTile = this._findRandomPassableTileAwayFromPlayers(2);
+    const hackTile = this._findRandomPassableTileAwayFromPlayers(4);
     this.state.hackX = hackTile.x;
     this.state.hackY = hackTile.y;
     const baseHackTarget = 30 + Math.min(40, this.state.eventLevel * 5);
@@ -987,6 +1006,12 @@ function pickUpgradeChoices(existingUpgradesJson) {
     picks.push(pick.id);
   }
   return picks;
+}
+
+function toUpgradeMeta(upgradeId) {
+  const match = UPGRADE_POOL.find((entry) => entry.id === upgradeId);
+  if (!match) return { id: String(upgradeId || ''), name: String(upgradeId || '').toUpperCase(), description: 'Run upgrade' };
+  return { id: match.id, name: match.name, description: match.description };
 }
 
 function buildTerrainGrid(width, height) {
