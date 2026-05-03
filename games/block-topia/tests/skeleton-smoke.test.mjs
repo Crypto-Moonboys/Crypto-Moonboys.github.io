@@ -111,6 +111,29 @@ assert.ok(
   mainSource.includes('Mission 2: Neutralize ${runtime.mission.requiredKills} NPCs'),
   'main.js should derive mission HUD text from mission config values.',
 );
+function extractFunctionSource(source, functionName) {
+  const start = source.indexOf(`function ${functionName}(`);
+  if (start < 0) return '';
+  const openBrace = source.indexOf('{', start);
+  if (openBrace < 0) return '';
+
+  let depth = 0;
+  for (let i = openBrace; i < source.length; i += 1) {
+    const ch = source[i];
+    if (ch === '{') depth += 1;
+    if (ch === '}') {
+      depth -= 1;
+      if (depth === 0) return source.slice(start, i + 1);
+    }
+  }
+  return '';
+}
+
+const drawHudBody = extractFunctionSource(mainSource, 'drawHud');
+assert.ok(
+  /const\s+surviveTotalSec\s*=\s*Math\.ceil\s*\(\s*runtime\.mission\.surviveMs\s*\/\s*1000\s*\)\s*;/.test(drawHudBody),
+  'drawHud must define surviveTotalSec in its own scope before mission HUD text uses it.',
+);
 assert.ok(
   mainSource.includes('Extraction unlocked') && mainSource.includes('MISSION COMPLETE'),
   'main.js should include extraction unlock and mission complete feedback states.',

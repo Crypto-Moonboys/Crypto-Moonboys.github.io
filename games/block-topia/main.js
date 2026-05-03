@@ -134,7 +134,6 @@ function updateMissionProgress() {
   const kills = Math.max(0, Number(runtime.localPlayer.kills) || 0);
   runtime.mission.neutralizedCount = kills;
   const elapsed = runtime.mission.startedAt ? Date.now() - runtime.mission.startedAt : 0;
-  const surviveTotalSec = Math.ceil(runtime.mission.surviveMs / 1000);
   const survivalDone = elapsed >= runtime.mission.surviveMs;
   const killDone = kills >= runtime.mission.requiredKills;
   if (!runtime.mission.extractionUnlocked && survivalDone && killDone) {
@@ -483,6 +482,7 @@ function drawHud() {
   ctx.fillStyle = 'rgba(214, 226, 245, 0.85)';
   ctx.font = '600 12px Segoe UI';
   ctx.fillText(`NET ${String(status.ws || 'offline').toUpperCase()}${status.roomId ? ` | ROOM ${status.roomId}` : ''}${status.error ? ` | ${status.error}` : ''}`, 12, 64);
+  const surviveTotalSec = Math.ceil(runtime.mission.surviveMs / 1000);
   const elapsed = runtime.mission.startedAt ? Date.now() - runtime.mission.startedAt : 0;
   const surviveLeftSec = Math.max(0, Math.ceil((runtime.mission.surviveMs - elapsed) / 1000));
   const surviveDone = elapsed >= runtime.mission.surviveMs;
