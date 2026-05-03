@@ -44,6 +44,7 @@ class PlayerState extends Schema {
     this.kills = 0;
     this.downs = 0;
     this.respawnAt = 0;
+    this.ready = false;
   }
 }
 
@@ -58,6 +59,7 @@ defineTypes(PlayerState, {
   kills: 'number',
   downs: 'number',
   respawnAt: 'number',
+  ready: 'boolean',
 });
 
 class NpcState extends Schema {
@@ -117,7 +119,7 @@ export class MinimalCityRoom extends Room {
 
     this.onMessage('move', (client, data) => {
       const player = this.playersBySession.get(client.sessionId);
-      if (!player) return;
+      if (!player || !player.ready) return;
 
       const nextX = Number(data?.x);
       const nextY = Number(data?.y);
@@ -134,7 +136,7 @@ export class MinimalCityRoom extends Room {
     this.onMessage('attack', (client) => {
       const player = this.playersBySession.get(client.sessionId);
       if (this.completedSessions.has(client.sessionId)) return;
-      if (!player || player.hp <= 0) return;
+      if (!player || !player.ready || player.hp <= 0) return;
       const now = Date.now();
       const lastAttackAt = this.lastAttackAtBySession.get(client.sessionId) || 0;
       if (now - lastAttackAt < ATTACK_COOLDOWN_MS) return;
@@ -159,6 +161,13 @@ export class MinimalCityRoom extends Room {
       player.respawnAt = 0;
     });
 
+    this.onMessage('ready', (client) => {
+      this._setPlayerReady(client.sessionId);
+    });
+    this.onMessage('startRun', (client) => {
+      this._setPlayerReady(client.sessionId);
+    });
+
     this.clock.setInterval(() => {
       this._tickNpcs();
       this._updateWorldMode();
@@ -181,11 +190,12 @@ export class MinimalCityRoom extends Room {
     player.name = String(options?.name || `Player_${this.state.players.length + 1}`).slice(0, 24);
     player.faction = String(options?.faction || 'Liberators').slice(0, 24);
     player.district = String(options?.district || 'neon-slums').slice(0, 32);
+    player.ready = false;
 
     this.state.players.push(player);
     this.playersBySession.set(client.sessionId, player);
     this.completedSessions.delete(client.sessionId);
-    this.missionStartedAtBySession.set(client.sessionId, Date.now());
+    this.missionStartedAtBySession.set(client.sessionId, 0);
     this.spawnProtectedUntilBySession.set(client.sessionId, Date.now() + SPAWN_GRACE_MS);
     this._updateWorldMode();
 
@@ -287,7 +297,7 @@ export class MinimalCityRoom extends Room {
     let best = null;
     let bestDist = Number.POSITIVE_INFINITY;
     for (const player of this.state.players) {
-      if (!player || player.hp <= 0) continue;
+      if (!player || !player.ready || player.hp <= 0) continue;
       if (this.completedSessions.has(player.id)) continue;
       const dist = distance(player.x, player.y, npc.x, npc.y);
       if (dist < bestDist) {
@@ -330,6 +340,7 @@ export class MinimalCityRoom extends Room {
   }
 
   _tryNpcDamagePlayer(npc, target) {
+    if (!target?.ready) return;
     if (this.completedSessions.has(target?.id)) return;
     if (!npc || !target || target.hp <= 0) return;
     const now = Date.now();
@@ -373,7 +384,18 @@ export class MinimalCityRoom extends Room {
     }, RESPAWN_DELAY_MS);
   }
 
+  _setPlayerReady(sessionId) {
+    const player = this.playersBySession.get(sessionId);
+    if (!player || player.ready) return;
+    player.ready = true;
+    player.hp = PLAYER_MAX_HP;
+    player.respawnAt = 0;
+    this.missionStartedAtBySession.set(sessionId, Date.now());
+    this.spawnProtectedUntilBySession.set(sessionId, Date.now() + SPAWN_GRACE_MS);
+  }
+
   _canExtractPlayer(sessionId, player) {
+    if (!player?.ready) return false;
     const startedAt = this.missionStartedAtBySession.get(sessionId) || 0;
     if (Date.now() - startedAt < MISSION_SURVIVE_MS) return false;
     if ((player?.kills || 0) < MISSION_REQUIRED_KILLS) return false;
