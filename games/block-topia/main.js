@@ -2,6 +2,8 @@ const GRID_SIZE = 20;
 const TILE_WIDTH = 64;
 const TILE_HEIGHT = 32;
 const MAP_SAFE_MARGIN_RATIO = 0.08;
+const ATTACK_RANGE = 1.3;
+const ATTACK_INPUT_COOLDOWN_MS = 350;
 
 if (window.BlockTopiaMap && typeof window.BlockTopiaMap.destroy === 'function') {
   window.BlockTopiaMap.destroy();
@@ -20,11 +22,13 @@ let cameraScale = 1;
 
 const runtime = {
   localPlayer: { id: 'local', x: 1, y: 1, color: '#6da9ff', name: 'You', sessionId: '', hp: 100, kills: 0, downs: 0, respawnAt: 0 },
-  remotePlayer: { id: 'remote', x: GRID_SIZE - 2, y: GRID_SIZE - 2, color: '#ff7b7b', name: 'Remote', connected: false, sessionId: '', hp: 100, kills: 0, downs: 0, respawnAt: 0 },
+  remotePlayer: { id: 'remote', x: GRID_SIZE - 2, y: GRID_SIZE - 2, color: '#f6fbff', name: 'Remote', connected: false, sessionId: '', hp: 100, kills: 0, downs: 0, respawnAt: 0 },
   npcs: [],
   worldMode: 'single-player-vs-npc',
   feed: [],
   feedMeta: { lastMessage: '', lastAt: 0 },
+  feedback: [],
+  attackCooldownUntil: 0,
   connectionStatus: { ws: 'offline', joined: false, roomId: '', error: '' },
   positionSink: null,
   attackSink: null,
@@ -68,6 +72,23 @@ function forceRoad(tiles, x, y) {
 
 function clamp(value, min, max) {
   return Math.max(min, Math.min(max, value));
+}
+
+function distance(ax, ay, bx, by) {
+  const dx = ax - bx;
+  const dy = ay - by;
+  return Math.sqrt(dx * dx + dy * dy);
+}
+
+function pushFeedback(message, durationMs = 1200, color = 'rgba(255, 234, 151, 0.98)') {
+  if (!message) return;
+  const now = Date.now();
+  runtime.feedback.push({
+    message: String(message),
+    expiresAt: now + durationMs,
+    color,
+  });
+  if (runtime.feedback.length > 5) runtime.feedback.shift();
 }
 
 function isPassable(x, y) {
@@ -178,8 +199,38 @@ function onKeyDown(event) {
   }
   if (key === ' ' || key === 'Spacebar') {
     event.preventDefault();
-    runtime.attackSink?.();
+    tryAttack();
   }
+}
+
+function tryAttack() {
+  if (runtime.localPlayer.hp <= 0) {
+    const now = Date.now();
+    const seconds = runtime.localPlayer.respawnAt > now ? Math.ceil((runtime.localPlayer.respawnAt - now) / 1000) : 0;
+    pushFeedback(`DOWNED — respawning in ${seconds}s`, 1100, 'rgba(255, 153, 153, 0.98)');
+    return;
+  }
+
+  const now = Date.now();
+  if (now < runtime.attackCooldownUntil) {
+    pushFeedback('Attack cooling down', 900);
+    return;
+  }
+
+  const nearestNpcDist = runtime.npcs
+    .filter((npc) => npc && npc.hp > 0)
+    .reduce((best, npc) => Math.min(best, distance(runtime.localPlayer.x, runtime.localPlayer.y, npc.x, npc.y)), Number.POSITIVE_INFINITY);
+  if (!Number.isFinite(nearestNpcDist) || nearestNpcDist > ATTACK_RANGE) {
+    pushFeedback('No NPC in range', 1000);
+    return;
+  }
+
+  const sent = runtime.attackSink ? runtime.attackSink() : false;
+  if (sent === false) {
+    pushFeedback('Attack cooling down', 900);
+    return;
+  }
+  runtime.attackCooldownUntil = now + ATTACK_INPUT_COOLDOWN_MS;
 }
 
 function onPointerDown(event) {
@@ -318,8 +369,8 @@ function drawHud() {
   const now = Date.now();
   const localRespawnSec = runtime.localPlayer.respawnAt > now ? Math.ceil((runtime.localPlayer.respawnAt - now) / 1000) : 0;
   const remoteRespawnSec = runtime.remotePlayer.respawnAt > now ? Math.ceil((runtime.remotePlayer.respawnAt - now) / 1000) : 0;
-  const localHpLabel = runtime.localPlayer.hp <= 0 ? `DOWNED${localRespawnSec > 0 ? ` (${localRespawnSec}s)` : ''}` : `HP ${runtime.localPlayer.hp}`;
-  const remoteHpLabel = runtime.remotePlayer.hp <= 0 ? `DOWNED${remoteRespawnSec > 0 ? ` (${remoteRespawnSec}s)` : ''}` : `HP ${runtime.remotePlayer.hp}`;
+  const localHpLabel = runtime.localPlayer.hp <= 0 ? `DOWNED — respawning in ${Math.max(0, localRespawnSec)}s` : `HP ${runtime.localPlayer.hp}`;
+  const remoteHpLabel = runtime.remotePlayer.hp <= 0 ? `DOWNED — respawning in ${Math.max(0, remoteRespawnSec)}s` : `HP ${runtime.remotePlayer.hp}`;
 
   ctx.textAlign = 'left';
   ctx.textBaseline = 'top';
@@ -365,6 +416,28 @@ function drawHud() {
   }
 }
 
+function drawFeedback() {
+  const now = Date.now();
+  runtime.feedback = runtime.feedback.filter((entry) => entry && entry.expiresAt > now);
+  if (!runtime.feedback.length) return;
+
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  const centerX = Math.floor(viewWidth / 2);
+  let y = Math.floor(viewHeight * 0.18);
+  for (const entry of runtime.feedback) {
+    const w = Math.max(220, Math.min(460, entry.message.length * 8));
+    ctx.fillStyle = 'rgba(6, 13, 26, 0.82)';
+    ctx.fillRect(centerX - w / 2, y - 14, w, 26);
+    ctx.strokeStyle = 'rgba(146, 196, 255, 0.38)';
+    ctx.strokeRect(centerX - w / 2 + 0.5, y - 13.5, w - 1, 25);
+    ctx.fillStyle = entry.color || 'rgba(255, 234, 151, 0.98)';
+    ctx.font = '700 14px Segoe UI';
+    ctx.fillText(entry.message, centerX, y);
+    y += 30;
+  }
+}
+
 function render() {
   if (!mounted || !ctx || !canvas) return;
   ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -373,6 +446,7 @@ function render() {
   drawNpcs();
   drawPlayers();
   drawHud();
+  drawFeedback();
 }
 
 function renderFrame() {
@@ -463,6 +537,7 @@ function setConnectionStatus(status = {}) {
 }
 
 function setLocalPlayer(payload = {}) {
+  const prevHp = runtime.localPlayer.hp;
   const nextX = Number.isFinite(payload.x) ? clamp(Math.floor(payload.x), 0, GRID_SIZE - 1) : runtime.localPlayer.x;
   const nextY = Number.isFinite(payload.y) ? clamp(Math.floor(payload.y), 0, GRID_SIZE - 1) : runtime.localPlayer.y;
   runtime.localPlayer.x = nextX;
@@ -473,6 +548,14 @@ function setLocalPlayer(payload = {}) {
   if (Number.isFinite(payload.kills)) runtime.localPlayer.kills = Math.max(0, Math.floor(payload.kills));
   if (Number.isFinite(payload.downs)) runtime.localPlayer.downs = Math.max(0, Math.floor(payload.downs));
   if (Number.isFinite(payload.respawnAt)) runtime.localPlayer.respawnAt = Math.max(0, Math.floor(payload.respawnAt));
+  if (runtime.localPlayer.hp < prevHp) {
+    pushFeedback(`HIT -${prevHp - runtime.localPlayer.hp}`, 850, 'rgba(255, 146, 146, 0.98)');
+  }
+  if (prevHp > 0 && runtime.localPlayer.hp <= 0) {
+    const now = Date.now();
+    const seconds = runtime.localPlayer.respawnAt > now ? Math.ceil((runtime.localPlayer.respawnAt - now) / 1000) : 0;
+    pushFeedback(`DOWNED — respawning in ${seconds}s`, 1600, 'rgba(255, 153, 153, 0.98)');
+  }
 }
 
 function setRemotePlayer(payload = {}) {
@@ -546,6 +629,7 @@ window.BlockTopiaMap = {
   setNpcs,
   setWorldMode,
   pushFeed,
+  pushFeedback,
   setPositionBroadcastSink(fn) {
     runtime.positionSink = typeof fn === 'function' ? fn : null;
   },
