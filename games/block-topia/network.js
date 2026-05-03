@@ -176,11 +176,27 @@ export async function connectMultiplayer({
       room.onStateChange((state) => {
         onPlayers?.(toPlayerList(state.players));
         onNpcs?.(toNpcList(state.npcs));
-        onWorld?.({ mode: String(state.worldMode || '') });
+        onWorld?.({
+          mode: String(state.worldMode || ''),
+          phase: String(state.worldPhase || ''),
+          phaseStartedAt: Math.max(0, Number(state.phaseStartedAt) || 0),
+          phaseEndsAt: Math.max(0, Number(state.phaseEndsAt) || 0),
+          eventLevel: Math.max(1, Number(state.eventLevel) || 1),
+          eventObjective: String(state.eventObjective || ''),
+          roomRunStartedAt: Math.max(0, Number(state.roomRunStartedAt) || 0),
+        });
       });
 
       room.onMessage('system', (message) => {
-        if (message?.mode) onWorld?.({ mode: String(message.mode) });
+        if (message?.mode || message?.phase || message?.phaseEndsAt || message?.eventLevel || message?.eventObjective) {
+          onWorld?.({
+            mode: message?.mode ? String(message.mode) : '',
+            phase: message?.phase ? String(message.phase) : '',
+            phaseEndsAt: Math.max(0, Number(message?.phaseEndsAt) || 0),
+            eventLevel: Math.max(1, Number(message?.eventLevel) || 1),
+            eventObjective: String(message?.eventObjective || ''),
+          });
+        }
         onFeed?.(`System: ${message?.message || 'System update'}`);
       });
 
@@ -272,6 +288,15 @@ export function sendReady() {
     return false;
   }
   room.send('ready', {});
+  return true;
+}
+
+export function sendRestartRun() {
+  if (!isRoomOpen()) {
+    warnClosedRoom('restartRun');
+    return false;
+  }
+  room.send('restartRun', {});
   return true;
 }
 
