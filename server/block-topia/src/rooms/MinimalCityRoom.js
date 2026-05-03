@@ -27,6 +27,8 @@ const SPAWN_GRACE_MS = 4000;
 const RESPAWN_DELAY_MS = 3000;
 const NPC_RESPAWN_DELAY_MS = 6500;
 const NPC_RESPAWN_MIN_DISTANCE = 4;
+const MISSION_SURVIVE_MS = 60000;
+const MISSION_REQUIRED_KILLS = 5;
 const PASSABLE_TERRAIN = new Set(['road', 'grass']);
 
 class PlayerState extends Schema {
@@ -109,6 +111,7 @@ export class MinimalCityRoom extends Room {
     this.pendingRespawnBySession = new Map();
     this.pendingRespawnByNpcId = new Map();
     this.completedSessions = new Set();
+    this.missionStartedAtBySession = new Map();
     this.terrain = buildTerrainGrid(MAP_WIDTH, MAP_HEIGHT);
     this._seedNpcs();
 
@@ -149,7 +152,9 @@ export class MinimalCityRoom extends Room {
     this.onMessage('extract', (client) => {
       const player = this.playersBySession.get(client.sessionId);
       if (!player) return;
+      if (!this._canExtractPlayer(client.sessionId, player)) return;
       this.completedSessions.add(client.sessionId);
+      this.pendingRespawnBySession.delete(client.sessionId);
       player.hp = Math.max(1, player.hp);
       player.respawnAt = 0;
     });
@@ -180,6 +185,7 @@ export class MinimalCityRoom extends Room {
     this.state.players.push(player);
     this.playersBySession.set(client.sessionId, player);
     this.completedSessions.delete(client.sessionId);
+    this.missionStartedAtBySession.set(client.sessionId, Date.now());
     this.spawnProtectedUntilBySession.set(client.sessionId, Date.now() + SPAWN_GRACE_MS);
     this._updateWorldMode();
 
@@ -206,6 +212,7 @@ export class MinimalCityRoom extends Room {
     this.spawnProtectedUntilBySession.delete(client.sessionId);
     this.lastNpcDamageAtByTarget.delete(client.sessionId);
     this.pendingRespawnBySession.delete(client.sessionId);
+    this.missionStartedAtBySession.delete(client.sessionId);
     if (player) {
       const index = this.state.players.findIndex((entry) => entry.id === client.sessionId);
       if (index >= 0) this.state.players.splice(index, 1);
@@ -354,6 +361,7 @@ export class MinimalCityRoom extends Room {
     this.pendingRespawnBySession.set(sessionId, true);
     this.clock.setTimeout(() => {
       this.pendingRespawnBySession.delete(sessionId);
+      if (this.completedSessions.has(sessionId)) return;
       const live = this.playersBySession.get(sessionId);
       if (!live) return;
       const spawn = this._findRandomPassableTile();
@@ -363,6 +371,27 @@ export class MinimalCityRoom extends Room {
       live.respawnAt = 0;
       this.spawnProtectedUntilBySession.set(sessionId, Date.now() + SPAWN_GRACE_MS);
     }, RESPAWN_DELAY_MS);
+  }
+
+  _canExtractPlayer(sessionId, player) {
+    const startedAt = this.missionStartedAtBySession.get(sessionId) || 0;
+    if (Date.now() - startedAt < MISSION_SURVIVE_MS) return false;
+    if ((player?.kills || 0) < MISSION_REQUIRED_KILLS) return false;
+    return this._isExtractionTile(player?.x, player?.y);
+  }
+
+  _isExtractionTile(x, y) {
+    if (!Number.isFinite(x) || !Number.isFinite(y)) return false;
+    const candidates = [
+      [MAP_WIDTH - 2, MAP_HEIGHT - 2],
+      [MAP_WIDTH - 2, 1],
+      [1, MAP_HEIGHT - 2],
+      [Math.floor(MAP_WIDTH / 2), MAP_HEIGHT - 2],
+    ];
+    for (const [cx, cy] of candidates) {
+      if (this._isPassable(cx, cy) && x === cx && y === cy) return true;
+    }
+    return false;
   }
 
   _scheduleNpcRespawn(npcId) {

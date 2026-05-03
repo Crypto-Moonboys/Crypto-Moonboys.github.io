@@ -18,6 +18,8 @@ assertSource(/const\s+SPAWN_GRACE_MS\s*=\s*4000/, 'Spawn grace constant must exi
 assertSource(/const\s+NPC_ATTACK_COOLDOWN_MS\s*=\s*1200/, 'NPC attack cooldown constant must exist.');
 assertSource(/const\s+NPC_MAX_HP\s*=\s*60/, 'NPC max HP should be tuned for pacing.');
 assertSource(/const\s+NPC_RESPAWN_DELAY_MS\s*=\s*6500/, 'NPC respawn delay constant must exist.');
+assertSource(/const\s+MISSION_SURVIVE_MS\s*=\s*60000/, 'Mission survival requirement constant must exist.');
+assertSource(/const\s+MISSION_REQUIRED_KILLS\s*=\s*5/, 'Mission kill requirement constant must exist.');
 assertSource(/if\s*\(\s*!player\s*\|\|\s*player\.hp\s*<=\s*0\s*\)\s*return/, 'Dead/missing attacker guard must exist.');
 assertSource(/if\s*\(\s*now\s*-\s*lastAttackAt\s*<\s*ATTACK_COOLDOWN_MS\s*\)\s*return/, 'Attack cooldown guard must exist.');
 assertSource(/const\s+target\s*=\s*this\._findNearestNpc\s*\(\s*player\s*,\s*ATTACK_RANGE\s*\)/, 'Attack target must be server-resolved in range.');
@@ -25,6 +27,7 @@ assertSource(/if\s*\(\s*!target\s*\)\s*return/, 'Missing/out-of-range target mus
 assertSource(/target\.hp\s*=\s*Math\.max\s*\(\s*0\s*,\s*target\.hp\s*-\s*ATTACK_DAMAGE\s*\)/, 'Target hp must be clamped.');
 assertSource(/if\s*\(\s*this\.completedSessions\.has\s*\(\s*client\.sessionId\s*\)\s*\)\s*return/, 'Completed players must not attack after extraction.');
 assertSource(/this\.onMessage\s*\(\s*'extract'\s*,\s*\(\s*client\s*\)\s*=>/, 'Server should handle extract completion message.');
+assertSource(/if\s*\(\s*!this\._canExtractPlayer\s*\(\s*client\.sessionId\s*,\s*player\s*\)\s*\)\s*return/, 'Extract should require server-side completion validation.');
 assertSource(/this\.completedSessions\.add\s*\(\s*client\.sessionId\s*\)/, 'Extract completion should mark session as completed.');
 assertSource(/for\s*\(\s*const\s+npc\s+of\s+this\.state\.npcs\s*\)\s*{[\s\S]*if\s*\(\s*!npc\s*\|\|\s*npc\.hp\s*<=\s*0\s*\)\s*continue/, 'Dead NPCs must not be selected as attack targets.');
 assertSource(/if\s*\(\s*!Number\.isFinite\s*\(\s*nextX\s*\)\s*\|\|\s*!Number\.isFinite\s*\(\s*nextY\s*\)\s*\)\s*return/, 'Move payload must validate numeric coords.');
@@ -44,5 +47,9 @@ assertSource(/const\s+tooClose\s*=\s*this\.state\.players\.some\(/, 'Respawn hel
 assertSource(/distance\s*\(\s*x\s*,\s*y\s*,\s*player\.x\s*,\s*player\.y\s*\)\s*<\s*minDistance/, 'Respawn helper must enforce min-distance threshold.');
 assertSource(/this\._findRandomPassableTileAwayFromPlayers\s*\(\s*NPC_RESPAWN_MIN_DISTANCE\s*\)/, 'NPC respawn must use distance-aware spawn helper.');
 assertSource(/if\s*\(\s*this\.completedSessions\.has\s*\(\s*player\.id\s*\)\s*\)\s*continue/, 'NPC targeting should skip completed players.');
+assertSource(/if\s*\(\s*this\.completedSessions\.has\s*\(\s*sessionId\s*\)\s*\)\s*return/, 'Respawn timeout should not teleport completed players.');
+assertSource(/if\s*\(\s*Date\.now\s*\(\s*\)\s*-\s*startedAt\s*<\s*MISSION_SURVIVE_MS\s*\)\s*return\s+false/, 'Extract validation must enforce survival timer.');
+assertSource(/if\s*\(\s*\(\s*player\?\.kills\s*\|\|\s*0\s*\)\s*<\s*MISSION_REQUIRED_KILLS\s*\)\s*return\s+false/, 'Extract validation must enforce kill requirement.');
+assertSource(/return\s+this\._isExtractionTile\s*\(\s*player\?\.x\s*,\s*player\?\.y\s*\)/, 'Extract validation must enforce extraction tile position.');
 
 console.log('MinimalCityRoom safety smoke checks passed.');
