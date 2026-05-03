@@ -64,6 +64,7 @@ class NpcState extends Schema {
     this.x = 0;
     this.y = 0;
     this.hp = NPC_MAX_HP;
+    this.maxHp = NPC_MAX_HP;
     this.kind = 'drone';
     this.targetSessionId = '';
   }
@@ -74,6 +75,7 @@ defineTypes(NpcState, {
   x: 'number',
   y: 'number',
   hp: 'number',
+  maxHp: 'number',
   kind: 'string',
   targetSessionId: 'string',
 });
@@ -180,6 +182,12 @@ export class MinimalCityRoom extends Room {
 
   onLeave(client) {
     const player = this.playersBySession.get(client.sessionId);
+    const npcDamageKeySuffix = `:${client.sessionId}`;
+    for (const key of this.lastNpcDamageAtByNpcAndTarget.keys()) {
+      if (key.endsWith(npcDamageKeySuffix)) {
+        this.lastNpcDamageAtByNpcAndTarget.delete(key);
+      }
+    }
     this.playersBySession.delete(client.sessionId);
     this.lastAttackAtBySession.delete(client.sessionId);
     this.spawnProtectedUntilBySession.delete(client.sessionId);
@@ -201,6 +209,7 @@ export class MinimalCityRoom extends Room {
       npc.x = spawn.x;
       npc.y = spawn.y;
       npc.hp = NPC_MAX_HP;
+      npc.maxHp = NPC_MAX_HP;
       npc.kind = i % 2 === 0 ? 'drone' : 'raider';
       npc.targetSessionId = '';
       this.state.npcs.push(npc);
@@ -340,6 +349,7 @@ export class MinimalCityRoom extends Room {
       npc.x = spawn.x;
       npc.y = spawn.y;
       npc.hp = NPC_MAX_HP;
+      npc.maxHp = NPC_MAX_HP;
       npc.targetSessionId = '';
     }, RESPAWN_MS);
   }

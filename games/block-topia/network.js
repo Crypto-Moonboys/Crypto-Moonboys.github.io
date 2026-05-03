@@ -105,6 +105,7 @@ function toNpcList(npcsState) {
       x: Number(npc?.x) || 0,
       y: Number(npc?.y) || 0,
       hp: Math.max(0, Number(npc?.hp) || 0),
+      maxHp: Math.max(1, Number(npc?.maxHp ?? npc?.hpMax) || 40),
       kind: String(npc?.kind || 'drone'),
       targetSessionId: String(npc?.targetSessionId || ''),
     });

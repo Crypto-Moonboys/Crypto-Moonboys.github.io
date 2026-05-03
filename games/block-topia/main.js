@@ -289,7 +289,8 @@ function drawNpc(npc) {
   const [sx, sy] = tileToScreen(npc.x, npc.y);
   const th = TILE_HEIGHT * cameraScale;
   const cy = sy + th / 2 - 8 * cameraScale;
-  const aliveRatio = clamp((npc.hp || 0) / 40, 0, 1);
+  const maxHp = Math.max(1, Number(npc.maxHp || npc.hpMax || 40));
+  const aliveRatio = clamp((npc.hp || 0) / maxHp, 0, 1);
 
   ctx.beginPath();
   ctx.arc(sx, cy, 6.5 * cameraScale, 0, Math.PI * 2);
@@ -512,6 +513,7 @@ function setNpcs(npcs = []) {
     x: clamp(Math.floor(Number(npc?.x) || 0), 0, GRID_SIZE - 1),
     y: clamp(Math.floor(Number(npc?.y) || 0), 0, GRID_SIZE - 1),
     hp: Math.max(0, Math.floor(Number(npc?.hp) || 0)),
+    maxHp: Math.max(1, Number(npc?.maxHp ?? npc?.hpMax) || 40),
     kind: String(npc?.kind || 'drone'),
     targetSessionId: String(npc?.targetSessionId || ''),
   }));
