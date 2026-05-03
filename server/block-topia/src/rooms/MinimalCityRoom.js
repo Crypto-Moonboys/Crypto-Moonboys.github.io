@@ -108,6 +108,7 @@ export class MinimalCityRoom extends Room {
     this.spawnProtectedUntilBySession = new Map();
     this.pendingRespawnBySession = new Map();
     this.pendingRespawnByNpcId = new Map();
+    this.completedSessions = new Set();
     this.terrain = buildTerrainGrid(MAP_WIDTH, MAP_HEIGHT);
     this._seedNpcs();
 
@@ -129,6 +130,7 @@ export class MinimalCityRoom extends Room {
 
     this.onMessage('attack', (client) => {
       const player = this.playersBySession.get(client.sessionId);
+      if (this.completedSessions.has(client.sessionId)) return;
       if (!player || player.hp <= 0) return;
       const now = Date.now();
       const lastAttackAt = this.lastAttackAtBySession.get(client.sessionId) || 0;
@@ -142,6 +144,14 @@ export class MinimalCityRoom extends Room {
         this.broadcast('system', { message: `${player.name} neutralized ${target.id}.`, mode: this.state.worldMode });
         this._scheduleNpcRespawn(target.id);
       }
+    });
+
+    this.onMessage('extract', (client) => {
+      const player = this.playersBySession.get(client.sessionId);
+      if (!player) return;
+      this.completedSessions.add(client.sessionId);
+      player.hp = Math.max(1, player.hp);
+      player.respawnAt = 0;
     });
 
     this.clock.setInterval(() => {
@@ -169,6 +179,7 @@ export class MinimalCityRoom extends Room {
 
     this.state.players.push(player);
     this.playersBySession.set(client.sessionId, player);
+    this.completedSessions.delete(client.sessionId);
     this.spawnProtectedUntilBySession.set(client.sessionId, Date.now() + SPAWN_GRACE_MS);
     this._updateWorldMode();
 
@@ -190,6 +201,7 @@ export class MinimalCityRoom extends Room {
       }
     }
     this.playersBySession.delete(client.sessionId);
+    this.completedSessions.delete(client.sessionId);
     this.lastAttackAtBySession.delete(client.sessionId);
     this.spawnProtectedUntilBySession.delete(client.sessionId);
     this.lastNpcDamageAtByTarget.delete(client.sessionId);
@@ -269,6 +281,7 @@ export class MinimalCityRoom extends Room {
     let bestDist = Number.POSITIVE_INFINITY;
     for (const player of this.state.players) {
       if (!player || player.hp <= 0) continue;
+      if (this.completedSessions.has(player.id)) continue;
       const dist = distance(player.x, player.y, npc.x, npc.y);
       if (dist < bestDist) {
         best = player;
@@ -310,6 +323,7 @@ export class MinimalCityRoom extends Room {
   }
 
   _tryNpcDamagePlayer(npc, target) {
+    if (this.completedSessions.has(target?.id)) return;
     if (!npc || !target || target.hp <= 0) return;
     const now = Date.now();
     const graceUntil = this.spawnProtectedUntilBySession.get(target.id) || 0;

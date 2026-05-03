@@ -4,6 +4,7 @@ const TILE_HEIGHT = 32;
 const MAP_SAFE_MARGIN_RATIO = 0.08;
 const ATTACK_RANGE = 1.3;
 const ATTACK_INPUT_COOLDOWN_MS = 350;
+const EXTRACT_INTENT_THROTTLE_MS = 1000;
 const MISSION_COMPLETE_MSG = 'MISSION COMPLETE - extraction successful';
 const MISSION_COMPLETE_TOAST_MS = 1200;
 const MISSION_COMPLETE_TOAST_THROTTLE_MS = 1400;
@@ -33,6 +34,7 @@ const runtime = {
   feedClassMeta: {},
   feedback: [],
   missionCompleteFeedbackAt: 0,
+  lastExtractIntentAt: 0,
   flashes: [],
   attackCooldownUntil: 0,
   inputEnabled: true,
@@ -45,11 +47,13 @@ const runtime = {
     completed: false,
     completedAt: 0,
     neutralizedCount: 0,
+    extractionSent: false,
   },
   npcHpById: {},
   connectionStatus: { ws: 'offline', joined: false, roomId: '', error: '' },
   positionSink: null,
   attackSink: null,
+  extractSink: null,
   tiles: createTiles(),
 };
 
@@ -154,8 +158,18 @@ function updateMissionProgress() {
       runtime.mission.completed = true;
       runtime.mission.completedAt = now;
       pushFeedback('MISSION COMPLETE', 2200, 'rgba(152, 255, 173, 0.98)');
+      trySendExtractIntent();
     }
   }
+}
+
+function trySendExtractIntent() {
+  if (!runtime.mission.completed || runtime.mission.extractionSent || !runtime.extractSink) return;
+  const now = Date.now();
+  if (now - runtime.lastExtractIntentAt < EXTRACT_INTENT_THROTTLE_MS) return;
+  runtime.lastExtractIntentAt = now;
+  const sent = runtime.extractSink();
+  if (sent) runtime.mission.extractionSent = true;
 }
 
 function isPassable(x, y) {
@@ -274,6 +288,7 @@ function onKeyDown(event) {
 function tryAttack() {
   ensureMissionStart();
   if (runtime.mission.completed) {
+    trySendExtractIntent();
     const now = Date.now();
     if (now - runtime.missionCompleteFeedbackAt >= MISSION_COMPLETE_TOAST_THROTTLE_MS) {
       runtime.missionCompleteFeedbackAt = now;
@@ -786,12 +801,10 @@ function setWorldMode(mode) {
 function pushFeed(message) {
   if (!message) return;
   const text = String(message);
+  if (shouldSuppressFeedMessage(text)) return;
   const now = Date.now();
   if (runtime.feedMeta.lastMessage === text && now - runtime.feedMeta.lastAt < 2200) return;
   const classificationKey = classifyFeedMessage(text);
-  if (runtime.mission.completed && (classificationKey.startsWith('neutralized:') || classificationKey.startsWith('downed:'))) {
-    return;
-  }
   if (classificationKey) {
     const lastClassAt = runtime.feedClassMeta[classificationKey] || 0;
     const classWindowMs = classificationKey.startsWith('neutralized:') ? 2600 : 3600;
@@ -802,6 +815,15 @@ function pushFeed(message) {
   runtime.feedMeta.lastAt = now;
   runtime.feed.push(text);
   if (runtime.feed.length > 6) runtime.feed.shift();
+}
+
+function shouldSuppressFeedMessage(message) {
+  if (!runtime.mission.completed) return false;
+  const normalized = String(message || '').toLowerCase();
+  if (normalized.includes('neutralized npc_')) return true;
+  if (normalized.includes('was downed by npc_')) return true;
+  if (normalized.includes('hit')) return true;
+  return false;
 }
 
 function classifyFeedMessage(text) {
@@ -840,6 +862,12 @@ window.BlockTopiaMap = {
   },
   setAttackSink(fn) {
     runtime.attackSink = typeof fn === 'function' ? fn : null;
+  },
+  setExtractSink(fn) {
+    runtime.extractSink = typeof fn === 'function' ? fn : null;
+  },
+  shouldSuppressFeedMessage(message) {
+    return shouldSuppressFeedMessage(message);
   },
   getSnapshot() {
     return {

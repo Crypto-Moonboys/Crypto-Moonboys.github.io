@@ -23,9 +23,13 @@ assertSource(/if\s*\(\s*now\s*-\s*lastAttackAt\s*<\s*ATTACK_COOLDOWN_MS\s*\)\s*r
 assertSource(/const\s+target\s*=\s*this\._findNearestNpc\s*\(\s*player\s*,\s*ATTACK_RANGE\s*\)/, 'Attack target must be server-resolved in range.');
 assertSource(/if\s*\(\s*!target\s*\)\s*return/, 'Missing/out-of-range target must be ignored safely.');
 assertSource(/target\.hp\s*=\s*Math\.max\s*\(\s*0\s*,\s*target\.hp\s*-\s*ATTACK_DAMAGE\s*\)/, 'Target hp must be clamped.');
+assertSource(/if\s*\(\s*this\.completedSessions\.has\s*\(\s*client\.sessionId\s*\)\s*\)\s*return/, 'Completed players must not attack after extraction.');
+assertSource(/this\.onMessage\s*\(\s*'extract'\s*,\s*\(\s*client\s*\)\s*=>/, 'Server should handle extract completion message.');
+assertSource(/this\.completedSessions\.add\s*\(\s*client\.sessionId\s*\)/, 'Extract completion should mark session as completed.');
 assertSource(/for\s*\(\s*const\s+npc\s+of\s+this\.state\.npcs\s*\)\s*{[\s\S]*if\s*\(\s*!npc\s*\|\|\s*npc\.hp\s*<=\s*0\s*\)\s*continue/, 'Dead NPCs must not be selected as attack targets.');
 assertSource(/if\s*\(\s*!Number\.isFinite\s*\(\s*nextX\s*\)\s*\|\|\s*!Number\.isFinite\s*\(\s*nextY\s*\)\s*\)\s*return/, 'Move payload must validate numeric coords.');
 assertSource(/if\s*\(\s*!npc\s*\|\|\s*!target\s*\|\|\s*target\.hp\s*<=\s*0\s*\)\s*return/, 'Downed players must not receive repeated NPC damage.');
+assertSource(/if\s*\(\s*this\.completedSessions\.has\s*\(\s*target\?\.id\s*\)\s*\)\s*return/, 'Completed players should not receive NPC contact damage.');
 assertSource(/if\s*\(\s*graceUntil\s*>\s*now\s*\)\s*return/, 'Spawn grace guard must prevent immediate spawn damage.');
 assertSource(/if\s*\(\s*now\s*-\s*lastPairDamageAt\s*<\s*NPC_ATTACK_COOLDOWN_MS\s*\)\s*return/, 'Per-NPC damage cooldown guard must exist.');
 assertSource(/target\.hp\s*=\s*Math\.max\s*\(\s*0\s*,\s*target\.hp\s*-\s*NPC_CONTACT_DAMAGE\s*\)/, 'NPC damage must clamp hp at 0.');
@@ -39,5 +43,6 @@ assertSource(/_findRandomPassableTileAwayFromPlayers\s*\(\s*minDistance\s*=\s*0\
 assertSource(/const\s+tooClose\s*=\s*this\.state\.players\.some\(/, 'Respawn helper must check proximity to live players.');
 assertSource(/distance\s*\(\s*x\s*,\s*y\s*,\s*player\.x\s*,\s*player\.y\s*\)\s*<\s*minDistance/, 'Respawn helper must enforce min-distance threshold.');
 assertSource(/this\._findRandomPassableTileAwayFromPlayers\s*\(\s*NPC_RESPAWN_MIN_DISTANCE\s*\)/, 'NPC respawn must use distance-aware spawn helper.');
+assertSource(/if\s*\(\s*this\.completedSessions\.has\s*\(\s*player\.id\s*\)\s*\)\s*continue/, 'NPC targeting should skip completed players.');
 
 console.log('MinimalCityRoom safety smoke checks passed.');
