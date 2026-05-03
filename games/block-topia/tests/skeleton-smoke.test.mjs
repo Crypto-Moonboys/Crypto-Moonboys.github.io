@@ -89,8 +89,11 @@ assert.ok(
   'index.html should expose Play Again and wire restartRun network intent.',
 );
 assert.ok(
-  indexHtml.includes('Advance to Next Level'),
-  'index.html should label restart action as next-level progression.',
+  indexHtml.includes('display:none') &&
+  indexHtml.includes('syncNextLevelButton') &&
+  indexHtml.includes('phase === "RECOVERY" || phase === "MISSION_COMPLETE"') &&
+  indexHtml.includes('Skip Recovery / Start Level'),
+  'index.html should hide next-level control by default and gate it behind mission complete/recovery phases.',
 );
 assert.ok(
   indexHtml.includes('bt-help-toggle'),
@@ -217,6 +220,10 @@ assert.ok(
   requestRestartRunBody.includes('Restart requested. Waiting for server...') &&
   !requestRestartRunBody.includes('runtime.mission = {'),
   'main.js should defer mission reset until server-confirmed world update.',
+);
+assert.ok(
+  mainSource.includes('if (runtime.world.eventLevel > prevLevel)'),
+  'main.js should only apply level progression resets after server world level confirmation.',
 );
 assert.ok(
   mainSource.includes('drawMissionCompleteBanner') &&
