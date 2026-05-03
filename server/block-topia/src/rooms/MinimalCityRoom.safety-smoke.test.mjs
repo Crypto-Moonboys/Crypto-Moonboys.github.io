@@ -80,6 +80,12 @@ assertSource(/if\s*\(\s*!player\s*\|\|\s*player\.ready\s*\)\s*return/, 'Ready ti
 assertSource(/client\.leave\s*\(\s*1000\s*\)/, 'Not-ready timeout should reclaim stale seats with numeric close code.');
 assertSource(/this\._startRun\s*\(\s*\{\s*eventLevel:\s*1\s*\}\s*\)/, 'Server should initialize room run phase state on create.');
 assertSource(/_tickPhase\s*\(\s*\)/, 'Server should tick authoritative room phase state.');
+assertSource(/this\.runGeneration\s*=\s*0/, 'Server should initialize run generation tracking for timed callbacks.');
+assertSource(/this\.runGeneration\s*\+=\s*1/, 'Server should increment run generation on startRun to invalidate stale callbacks.');
+assertSource(/if\s*\(\s*scheduledGeneration\s*!==\s*this\.runGeneration\s*\)\s*return/, 'Respawn callbacks should ignore stale pre-restart generations.');
+assertSource(/if\s*\(\s*this\.state\.players\.length\s*===\s*0\s*\)\s*return/, 'Phase ticker should not advance while room is empty.');
+assertSource(/const\s+allReadyCompleted\s*=\s*readyPlayers\.every\(/, 'Mission complete phase should require all ready players extracted.');
+assertSource(/this\.missionStartedAtBySession\.set\s*\(\s*player\.id\s*,\s*player\.ready\s*\?\s*now\s*:\s*0\s*\)/, 'startRun should anchor mission timer to now for already-ready players.');
 assertSource(/if\s*\(\s*this\.state\.worldPhase\s*===\s*PHASE_FREE_ROAM\s*\|\|\s*this\.state\.worldPhase\s*===\s*PHASE_RECOVERY\s*\)\s*{/, 'Free roam/recovery should reduce direct NPC pressure.');
 if (/\.leave\s*\(\s*['"`]/.test(source)) {
   throw new Error('Invalid string-only .leave(...) usage detected.');

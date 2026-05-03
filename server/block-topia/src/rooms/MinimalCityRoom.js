@@ -140,9 +140,9 @@ export class MinimalCityRoom extends Room {
     this.completedSessions = new Set();
     this.missionStartedAtBySession = new Map();
     this.lastActiveAtBySession = new Map();
+    this.runGeneration = 0;
     this.terrain = buildTerrainGrid(MAP_WIDTH, MAP_HEIGHT);
     this._seedNpcs();
-    this._startRun({ eventLevel: 1 });
 
     this.onMessage('move', (client, data) => {
       const player = this.playersBySession.get(client.sessionId);
@@ -221,6 +221,10 @@ export class MinimalCityRoom extends Room {
     const validation = await validateMultiplayerEntry(options);
     if (!validation.ok) {
       throw new Error(validation.reason);
+    }
+
+    if (this.state.players.length === 0) {
+      this._startRun({ eventLevel: 1 });
     }
 
     const slotIndex = this.state.players.length % SPAWN_SLOTS.length;
@@ -332,7 +336,10 @@ export class MinimalCityRoom extends Room {
 
   _startRun({ eventLevel = 1 } = {}) {
     const now = Date.now();
+    this.runGeneration += 1;
     this.completedSessions.clear();
+    this.pendingRespawnBySession.clear();
+    this.pendingRespawnByNpcId.clear();
     this.state.eventLevel = Math.max(1, Math.floor(eventLevel));
     this.state.roomRunStartedAt = now;
     this._setPhase(PHASE_FREE_ROAM);
@@ -346,7 +353,7 @@ export class MinimalCityRoom extends Room {
       player.x = spawn.x;
       player.y = spawn.y;
       this.spawnProtectedUntilBySession.set(player.id, now + SPAWN_GRACE_MS);
-      this.missionStartedAtBySession.set(player.id, 0);
+      this.missionStartedAtBySession.set(player.id, player.ready ? now : 0);
     }
     for (const npc of this.state.npcs) {
       if (!npc) continue;
@@ -361,6 +368,7 @@ export class MinimalCityRoom extends Room {
 
   _tickPhase() {
     const now = Date.now();
+    if (this.state.players.length === 0) return;
     if (this.state.worldPhase === PHASE_MISSION_COMPLETE) return;
     if (this.state.roomRunStartedAt && now - this.state.roomRunStartedAt > MAX_ROOM_RUN_MS) {
       this._setPhase(PHASE_MISSION_COMPLETE);
@@ -387,8 +395,8 @@ export class MinimalCityRoom extends Room {
     if (this.state.worldPhase === PHASE_MISSION_COMPLETE) return;
     const readyPlayers = this.state.players.filter((p) => p && p.ready);
     if (!readyPlayers.length) return;
-    const extractedReady = readyPlayers.filter((p) => this.completedSessions.has(p.id));
-    if (extractedReady.length > 0) this._setPhase(PHASE_MISSION_COMPLETE);
+    const allReadyCompleted = readyPlayers.every((p) => this.completedSessions.has(p.id));
+    if (allReadyCompleted) this._setPhase(PHASE_MISSION_COMPLETE);
   }
 
   _isPassable(x, y) {
@@ -528,12 +536,15 @@ export class MinimalCityRoom extends Room {
 
   _schedulePlayerRespawn(sessionId) {
     if (this.pendingRespawnBySession.get(sessionId)) return;
+    const scheduledGeneration = this.runGeneration;
     this.pendingRespawnBySession.set(sessionId, true);
     this.clock.setTimeout(() => {
       this.pendingRespawnBySession.delete(sessionId);
+      if (scheduledGeneration !== this.runGeneration) return;
       if (this.completedSessions.has(sessionId)) return;
       const live = this.playersBySession.get(sessionId);
       if (!live) return;
+      if (live.hp > 0) return;
       const spawn = this._findRandomPassableTile();
       live.x = spawn.x;
       live.y = spawn.y;
@@ -612,11 +623,14 @@ export class MinimalCityRoom extends Room {
 
   _scheduleNpcRespawn(npcId) {
     if (this.pendingRespawnByNpcId.has(npcId)) return;
+    const scheduledGeneration = this.runGeneration;
     this.pendingRespawnByNpcId.set(npcId, true);
     this.clock.setTimeout(() => {
       this.pendingRespawnByNpcId.delete(npcId);
+      if (scheduledGeneration !== this.runGeneration) return;
       const npc = this.state.npcs.find((entry) => entry.id === npcId);
       if (!npc) return;
+      if (npc.hp > 0) return;
       const spawn = this._findRandomPassableTileAwayFromPlayers(NPC_RESPAWN_MIN_DISTANCE);
       npc.x = spawn.x;
       npc.y = spawn.y;
