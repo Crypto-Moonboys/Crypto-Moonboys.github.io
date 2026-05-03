@@ -43,3 +43,6 @@ jobs:
 
       - name: Skeleton smoke — network.js exports and no old handlers
         run: node games/block-topia/tests/skeleton-smoke.test.mjs
+
+      - name: Server safety smoke — MinimalCityRoom guards
+        run: node server/block-topia/src/rooms/MinimalCityRoom.safety-smoke.test.mjs

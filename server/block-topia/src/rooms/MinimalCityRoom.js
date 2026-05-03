@@ -373,6 +373,12 @@ function buildTerrainGrid(width, height) {
     }
     rows.push(row);
   }
+  forceRoad(rows, 1, 1);
+  forceRoad(rows, 2, 1);
+  forceRoad(rows, 1, 2);
+  forceRoad(rows, width - 2, height - 2);
+  forceRoad(rows, width - 3, height - 2);
+  forceRoad(rows, width - 2, height - 3);
   return rows;
 }
 
@@ -383,4 +389,11 @@ function decideTerrain(x, y) {
   if (lineRoad || diagonalRoad) return 'road';
   if (hash < 125) return 'block';
   return 'grass';
+}
+
+function forceRoad(rows, x, y) {
+  if (y < 0 || y >= rows.length) return;
+  const row = rows[y];
+  if (!row || x < 0 || x >= row.length) return;
+  row[x] = 'road';
 }
