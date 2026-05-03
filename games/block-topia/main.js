@@ -155,8 +155,12 @@ function updateMissionProgress() {
   const elapsedAnchor = runtime.mission.completedAt || now;
   const elapsed = runtime.mission.startedAt ? elapsedAnchor - runtime.mission.startedAt : 0;
   const survivalDone = elapsed >= runtime.mission.surviveMs;
+  const sharedHackProgress = Math.min(
+    Number(runtime.world.objectiveProgress || 0),
+    Number(runtime.world.hackProgressTarget || 0),
+  );
   const killDone = runtime.world.objectiveType === 'SIGNAL_HACK'
-    ? Number(runtime.localPlayer.objectiveProgress || 0) >= Number(runtime.world.hackProgressTarget || 0)
+    ? sharedHackProgress >= Number(runtime.world.hackProgressTarget || 0)
     : kills >= runtime.mission.requiredKills;
   if (!runtime.mission.extractionUnlocked && survivalDone && killDone) {
     runtime.mission.extractionUnlocked = true;
@@ -564,10 +568,16 @@ function drawHud() {
   const surviveLeftSec = Math.max(0, Math.ceil((runtime.mission.surviveMs - elapsed) / 1000));
   const surviveDone = elapsed >= runtime.mission.surviveMs;
   const neutralized = runtime.mission.neutralizedCount;
-  const killDone = neutralized >= runtime.mission.requiredKills;
+  const hackProgress = Math.min(
+    Number(runtime.world.objectiveProgress || 0),
+    Number(runtime.world.hackProgressTarget || 0),
+  );
+  const killDone = runtime.world.objectiveType === 'SIGNAL_HACK'
+    ? hackProgress >= Number(runtime.world.hackProgressTarget || 0)
+    : neutralized >= runtime.mission.requiredKills;
   const mission2Label = surviveDone ? 'Mission 2' : 'Mission 2 (tracking - unlocks after Mission 1)';
   const objectiveLabel = runtime.world.objectiveType === 'SIGNAL_HACK'
-    ? `Mission 2: Signal Hack (${Math.min(neutralized, runtime.world.hackProgressTarget)}/${runtime.world.hackProgressTarget})`
+    ? `Mission 2: Signal Hack (${hackProgress}/${runtime.world.hackProgressTarget})`
     : `${mission2Label}: Neutralize ${runtime.mission.requiredKills} NPCs (${Math.min(neutralized, runtime.mission.requiredKills)}/${runtime.mission.requiredKills})`;
   const extractionText = runtime.mission.extractionUnlocked
     ? runtime.mission.completed
@@ -866,6 +876,7 @@ function setWorldMode(mode) {
 function setWorldState(world = {}) {
   if (!world || typeof world !== 'object') return;
   const prevLevel = runtime.world.eventLevel;
+  const prevPhase = runtime.world.phase;
   if (typeof world.mode === 'string' && world.mode) runtime.worldMode = world.mode;
   if (typeof world.phase === 'string' && world.phase) runtime.world.phase = world.phase;
   if (Number.isFinite(world.phaseStartedAt)) runtime.world.phaseStartedAt = Math.max(0, Math.floor(world.phaseStartedAt));
@@ -886,16 +897,27 @@ function setWorldState(world = {}) {
   if (Number.isFinite(runtime.world.extractionX) && Number.isFinite(runtime.world.extractionY)) {
     runtime.mission.extractionTile = { x: runtime.world.extractionX, y: runtime.world.extractionY };
   }
-  if (runtime.world.eventLevel > prevLevel) {
-    runtime.mission.startedAt = runtime.inputEnabled ? Date.now() : 0;
-    runtime.mission.extractionUnlocked = false;
-    runtime.mission.extractionTile = null;
-    runtime.mission.completed = false;
-    runtime.mission.completedAt = 0;
-    runtime.mission.neutralizedCount = 0;
-    runtime.mission.extractionSent = false;
-    runtime.missionCompleteFeedbackAt = 0;
+  const nextPhase = runtime.world.phase;
+  const leftCompletionWindow = (
+    (prevPhase === PHASE_MISSION_COMPLETE || prevPhase === PHASE_RECOVERY) &&
+    (nextPhase === PHASE_FREE_ROAM || nextPhase === PHASE_WARNING || nextPhase === PHASE_EVENT_ACTIVE)
+  );
+  if (runtime.world.eventLevel > prevLevel || leftCompletionWindow) {
+    resetMissionForActiveLevel();
   }
+}
+
+function resetMissionForActiveLevel() {
+  runtime.mission.startedAt = runtime.inputEnabled ? Date.now() : 0;
+  runtime.mission.extractionUnlocked = false;
+  runtime.mission.extractionTile = null;
+  runtime.mission.completed = false;
+  runtime.mission.completedAt = 0;
+  runtime.mission.neutralizedCount = 0;
+  runtime.mission.extractionSent = false;
+  runtime.missionCompleteFeedbackAt = 0;
+  runtime.feedClassMeta = {};
+  runtime.feedback = [];
 }
 
 function describePhase(phase) {
