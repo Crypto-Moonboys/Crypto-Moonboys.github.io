@@ -112,6 +112,10 @@ assert.ok(
   'main.js should derive mission HUD text from mission config values.',
 );
 assert.ok(
+  /function drawHud\(\)[\s\S]*const surviveTotalSec = Math\.ceil\(runtime\.mission\.surviveMs \/ 1000\);/.test(mainSource),
+  'drawHud must define surviveTotalSec in-scope before mission HUD text uses it.',
+);
+assert.ok(
   mainSource.includes('Extraction unlocked') && mainSource.includes('MISSION COMPLETE'),
   'main.js should include extraction unlock and mission complete feedback states.',
 );
