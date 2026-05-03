@@ -29,6 +29,7 @@ const runtime = {
   feedMeta: { lastMessage: '', lastAt: 0 },
   feedback: [],
   attackCooldownUntil: 0,
+  inputEnabled: true,
   connectionStatus: { ws: 'offline', joined: false, roomId: '', error: '' },
   positionSink: null,
   attackSink: null,
@@ -175,6 +176,7 @@ function moveLocal(dx, dy) {
 }
 
 function onKeyDown(event) {
+  if (!runtime.inputEnabled) return;
   const key = event.key;
 
   if (key === 'ArrowUp' || key === 'w' || key === 'W') {
@@ -225,15 +227,31 @@ function tryAttack() {
     return;
   }
 
-  const sent = runtime.attackSink ? runtime.attackSink() : false;
-  if (sent === false) {
-    pushFeedback('Attack cooling down', 900);
+  const attackResult = runtime.attackSink ? runtime.attackSink() : { ok: false, reason: 'disconnected' };
+  if (attackResult === false) {
+    const notConnected = !runtime.connectionStatus.joined || runtime.connectionStatus.ws !== 'connected';
+    pushFeedback(notConnected ? 'Not connected' : 'Attack cooling down', 900);
+    return;
+  }
+  if (attackResult && typeof attackResult === 'object' && attackResult.ok === false) {
+    if (attackResult.reason === 'disconnected') {
+      pushFeedback('Not connected', 900);
+      return;
+    }
+    if (attackResult.reason === 'cooldown') {
+      pushFeedback('Attack cooling down', 900);
+      return;
+    }
+  }
+  if (!attackResult || (typeof attackResult === 'object' && attackResult.ok !== true)) {
+    pushFeedback('Not connected', 900);
     return;
   }
   runtime.attackCooldownUntil = now + ATTACK_INPUT_COOLDOWN_MS;
 }
 
 function onPointerDown(event) {
+  if (!runtime.inputEnabled) return;
   if (!canvas) return;
   const rect = canvas.getBoundingClientRect();
   const px = event.clientX - rect.left;
@@ -630,6 +648,15 @@ window.BlockTopiaMap = {
   setWorldMode,
   pushFeed,
   pushFeedback,
+  setInputEnabled(enabled) {
+    runtime.inputEnabled = Boolean(enabled);
+  },
+  triggerAttack() {
+    tryAttack();
+  },
+  clearFeedback() {
+    runtime.feedback = [];
+  },
   setPositionBroadcastSink(fn) {
     runtime.positionSink = typeof fn === 'function' ? fn : null;
   },
@@ -643,6 +670,8 @@ window.BlockTopiaMap = {
       connectionStatus: { ...runtime.connectionStatus },
       worldMode: runtime.worldMode,
       npcs: runtime.npcs.map((n) => ({ ...n })),
+      feedback: runtime.feedback.map((entry) => ({ ...entry })),
+      inputEnabled: runtime.inputEnabled,
     };
   },
 };
