@@ -127,8 +127,9 @@ assert.ok(
 assert.ok(
   indexHtml.includes('bt-upgrade-row') &&
   indexHtml.includes('setChooseUpgradeSink') &&
-  indexHtml.includes('sendChooseUpgrade'),
-  'index.html should render upgrade choice controls and wire chooseUpgrade intent.',
+  indexHtml.includes('sendChooseUpgrade') &&
+  indexHtml.includes('phase !== "RECOVERY"'),
+  'index.html should render upgrade choice controls, wire chooseUpgrade intent, and only show upgrade cards in RECOVERY.',
 );
 assert.equal(
   mainSource.includes('Arrow/WASD move | Click tile move | Space attack'),
@@ -139,6 +140,11 @@ assert.ok(
   /Mission 1:\s*Survive \$\{surviveTotalSec\}s/.test(mainSource) &&
   /Neutralize \$\{runtime\.mission\.requiredKills\} NPCs/.test(mainSource),
   'main.js should derive mission HUD text from mission config values.',
+);
+assert.ok(
+  /const\s+hackProgress\s*=\s*Math\.min\([\s\S]*runtime\.world\.objectiveProgress/.test(mainSource) &&
+  /Mission 2: Signal Hack \(\$\{hackProgress\}\/\$\{runtime\.world\.hackProgressTarget\}\)/.test(mainSource),
+  'main.js SIGNAL_HACK HUD should use hack/objective progress, not neutralized kill count.',
 );
 function extractFunctionSource(source, functionName) {
   const start = source.indexOf(`function ${functionName}(`);
@@ -230,8 +236,21 @@ assert.ok(
   'main.js should defer mission reset until server-confirmed world update.',
 );
 assert.ok(
-  mainSource.includes('if (runtime.world.eventLevel > prevLevel)'),
-  'main.js should only apply level progression resets after server world level confirmation.',
+  /runtime\.world\.eventLevel\s*>\s*prevLevel/.test(mainSource),
+  'main.js should apply level progression reset on server-confirmed event-level increases.',
+);
+assert.ok(
+  mainSource.includes('function resetMissionForActiveLevel()') &&
+  mainSource.includes('runtime.mission.completed = false;') &&
+  mainSource.includes('runtime.mission.completedAt = 0;') &&
+  mainSource.includes('runtime.mission.extractionSent = false;'),
+  'main.js should include a dedicated mission-state reset helper for new levels.',
+);
+assert.ok(
+  mainSource.includes('leftCompletionWindow') &&
+  mainSource.includes('prevPhase === PHASE_MISSION_COMPLETE || prevPhase === PHASE_RECOVERY') &&
+  mainSource.includes('nextPhase === PHASE_FREE_ROAM || nextPhase === PHASE_WARNING || nextPhase === PHASE_EVENT_ACTIVE'),
+  'main.js should reset mission state when phase exits mission-complete/recovery into active level phases.',
 );
 assert.ok(
   mainSource.includes('drawMissionCompleteBanner') &&
