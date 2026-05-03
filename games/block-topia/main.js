@@ -30,7 +30,7 @@ let cameraY = 0;
 let cameraScale = 1;
 
 const runtime = {
-  localPlayer: { id: 'local', x: 1, y: 1, color: '#6da9ff', name: 'You', sessionId: '', hp: 100, kills: 0, downs: 0, respawnAt: 0, ready: false, readyRequested: false },
+  localPlayer: { id: 'local', x: 1, y: 1, color: '#6da9ff', name: 'You', sessionId: '', hp: 100, maxHp: 100, kills: 0, downs: 0, respawnAt: 0, ready: false, readyRequested: false, attackDamage: 20, attackCooldownMs: 750, armorPct: 0, runLevel: 1, upgrades: [], upgradeChoices: [], objectiveProgress: 0 },
   remotePlayer: { id: 'remote', x: GRID_SIZE - 2, y: GRID_SIZE - 2, color: '#f6fbff', name: 'Remote', connected: false, sessionId: '', hp: 100, kills: 0, downs: 0, respawnAt: 0 },
   npcs: [],
   worldMode: 'single-player-vs-npc',
@@ -56,12 +56,13 @@ const runtime = {
   },
   npcHpById: {},
   connectionStatus: { ws: 'offline', joined: false, roomId: '', error: '' },
-  world: { phase: PHASE_FREE_ROAM, phaseStartedAt: 0, phaseEndsAt: 0, eventLevel: 1, eventObjective: '', roomRunStartedAt: 0 },
+  world: { phase: PHASE_FREE_ROAM, phaseStartedAt: 0, phaseEndsAt: 0, eventLevel: 1, eventObjective: '', roomRunStartedAt: 0, objectiveType: 'PATROL_SWEEP', objectiveTarget: 5, objectiveProgress: 0, extractionX: 0, extractionY: 0, hackX: 0, hackY: 0, hackProgressTarget: 0, runStartedAt: 0 },
   positionSink: null,
   attackSink: null,
   extractSink: null,
   readySink: null,
   restartRunSink: null,
+  chooseUpgradeSink: null,
   tiles: createTiles(),
 };
 
@@ -154,10 +155,14 @@ function updateMissionProgress() {
   const elapsedAnchor = runtime.mission.completedAt || now;
   const elapsed = runtime.mission.startedAt ? elapsedAnchor - runtime.mission.startedAt : 0;
   const survivalDone = elapsed >= runtime.mission.surviveMs;
-  const killDone = kills >= runtime.mission.requiredKills;
+  const killDone = runtime.world.objectiveType === 'SIGNAL_HACK'
+    ? Number(runtime.localPlayer.objectiveProgress || 0) >= Number(runtime.world.hackProgressTarget || 0)
+    : kills >= runtime.mission.requiredKills;
   if (!runtime.mission.extractionUnlocked && survivalDone && killDone) {
     runtime.mission.extractionUnlocked = true;
-    runtime.mission.extractionTile = pickExtractionTile();
+    runtime.mission.extractionTile = Number.isFinite(runtime.world.extractionX) && Number.isFinite(runtime.world.extractionY)
+      ? { x: runtime.world.extractionX, y: runtime.world.extractionY }
+      : pickExtractionTile();
     pushFeedback('Extraction unlocked', 1400, 'rgba(170, 246, 197, 0.98)');
   }
   if (runtime.mission.extractionUnlocked && !runtime.mission.completed && runtime.mission.extractionTile && survivalDone && killDone) {
@@ -517,7 +522,7 @@ function drawHud() {
   ctx.textBaseline = 'top';
   ctx.font = '700 13px Segoe UI';
   ctx.fillStyle = 'rgba(228, 240, 255, 0.95)';
-  ctx.fillText(`P1 ${localHpLabel} | K ${runtime.localPlayer.kills} D ${runtime.localPlayer.downs} (${runtime.localPlayer.x},${runtime.localPlayer.y})`, 12, 10);
+  ctx.fillText(`P1 ${localHpLabel}/${runtime.localPlayer.maxHp} | K ${runtime.localPlayer.kills} D ${runtime.localPlayer.downs} (${runtime.localPlayer.x},${runtime.localPlayer.y})`, 12, 10);
 
   ctx.fillStyle = runtime.remotePlayer.connected ? 'rgba(255, 210, 210, 0.95)' : 'rgba(196, 201, 214, 0.9)';
   ctx.fillText(`P2 ${remoteState} ${remoteHpLabel} | K ${runtime.remotePlayer.kills} D ${runtime.remotePlayer.downs} (${runtime.remotePlayer.x},${runtime.remotePlayer.y})`, 12, 28);
@@ -561,6 +566,9 @@ function drawHud() {
   const neutralized = runtime.mission.neutralizedCount;
   const killDone = neutralized >= runtime.mission.requiredKills;
   const mission2Label = surviveDone ? 'Mission 2' : 'Mission 2 (tracking - unlocks after Mission 1)';
+  const objectiveLabel = runtime.world.objectiveType === 'SIGNAL_HACK'
+    ? `Mission 2: Signal Hack (${Math.min(neutralized, runtime.world.hackProgressTarget)}/${runtime.world.hackProgressTarget})`
+    : `${mission2Label}: Neutralize ${runtime.mission.requiredKills} NPCs (${Math.min(neutralized, runtime.mission.requiredKills)}/${runtime.mission.requiredKills})`;
   const extractionText = runtime.mission.extractionUnlocked
     ? runtime.mission.completed
       ? 'Extraction reached'
@@ -571,7 +579,7 @@ function drawHud() {
   const nextEventLabel = `Next Event: Patrol Sweep Level ${runtime.world.eventLevel + 1}`;
   const nextLevelCountdown = `Level ${runtime.world.eventLevel + 1} starts in ${formatCountdown(phaseMsLeft)}`;
   drawHudLine(`Mission 1: Survive ${surviveTotalSec}s (${surviveLeftSec}s left)`, surviveDone ? 'rgba(152, 255, 173, 0.96)' : 'rgba(255, 234, 151, 0.96)');
-  drawHudLine(`${mission2Label}: Neutralize ${runtime.mission.requiredKills} NPCs (${Math.min(neutralized, runtime.mission.requiredKills)}/${runtime.mission.requiredKills})`, killDone ? 'rgba(152, 255, 173, 0.96)' : 'rgba(255, 234, 151, 0.96)');
+  drawHudLine(objectiveLabel, killDone ? 'rgba(152, 255, 173, 0.96)' : 'rgba(255, 234, 151, 0.96)');
   drawHudLine(`Mission 3: ${extractionText}`, runtime.mission.completed ? 'rgba(152, 255, 173, 0.96)' : 'rgba(198, 223, 255, 0.96)');
   if (runtime.world.phase === PHASE_MISSION_COMPLETE || runtime.world.phase === PHASE_RECOVERY) {
     drawHudLine(nextEventLabel, 'rgba(195, 236, 255, 0.96)');
@@ -765,9 +773,17 @@ function setLocalPlayer(payload = {}) {
   if (typeof payload.name === 'string') runtime.localPlayer.name = payload.name;
   if (typeof payload.sessionId === 'string') runtime.localPlayer.sessionId = payload.sessionId;
   if (Number.isFinite(payload.hp)) runtime.localPlayer.hp = Math.max(0, Math.floor(payload.hp));
+  if (Number.isFinite(payload.maxHp)) runtime.localPlayer.maxHp = Math.max(1, Math.floor(payload.maxHp));
   if (Number.isFinite(payload.kills)) runtime.localPlayer.kills = Math.max(0, Math.floor(payload.kills));
   if (Number.isFinite(payload.downs)) runtime.localPlayer.downs = Math.max(0, Math.floor(payload.downs));
   if (Number.isFinite(payload.respawnAt)) runtime.localPlayer.respawnAt = Math.max(0, Math.floor(payload.respawnAt));
+  if (Number.isFinite(payload.attackDamage)) runtime.localPlayer.attackDamage = Math.max(1, Math.floor(payload.attackDamage));
+  if (Number.isFinite(payload.attackCooldownMs)) runtime.localPlayer.attackCooldownMs = Math.max(100, Math.floor(payload.attackCooldownMs));
+  if (Number.isFinite(payload.armorPct)) runtime.localPlayer.armorPct = clamp(payload.armorPct, 0, 1);
+  if (Number.isFinite(payload.runLevel)) runtime.localPlayer.runLevel = Math.max(1, Math.floor(payload.runLevel));
+  if (Array.isArray(payload.upgrades)) runtime.localPlayer.upgrades = payload.upgrades.map((entry) => String(entry || ''));
+  if (Array.isArray(payload.upgradeChoices)) runtime.localPlayer.upgradeChoices = payload.upgradeChoices.map((entry) => String(entry || ''));
+  if (Number.isFinite(payload.objectiveProgress)) runtime.localPlayer.objectiveProgress = Math.max(0, Math.floor(payload.objectiveProgress));
   if (typeof payload.ready === 'boolean') {
     runtime.localPlayer.ready = payload.ready;
     if (payload.ready) runtime.localPlayer.readyRequested = false;
@@ -857,6 +873,19 @@ function setWorldState(world = {}) {
   if (Number.isFinite(world.eventLevel)) runtime.world.eventLevel = Math.max(1, Math.floor(world.eventLevel));
   if (typeof world.eventObjective === 'string' && world.eventObjective) runtime.world.eventObjective = world.eventObjective;
   if (Number.isFinite(world.roomRunStartedAt)) runtime.world.roomRunStartedAt = Math.max(0, Math.floor(world.roomRunStartedAt));
+  if (typeof world.objectiveType === 'string' && world.objectiveType) runtime.world.objectiveType = world.objectiveType;
+  if (Number.isFinite(world.objectiveTarget)) runtime.world.objectiveTarget = Math.max(0, Math.floor(world.objectiveTarget));
+  if (Number.isFinite(world.objectiveProgress)) runtime.world.objectiveProgress = Math.max(0, Math.floor(world.objectiveProgress));
+  if (Number.isFinite(world.extractionX)) runtime.world.extractionX = clamp(Math.floor(world.extractionX), 0, GRID_SIZE - 1);
+  if (Number.isFinite(world.extractionY)) runtime.world.extractionY = clamp(Math.floor(world.extractionY), 0, GRID_SIZE - 1);
+  if (Number.isFinite(world.hackX)) runtime.world.hackX = clamp(Math.floor(world.hackX), 0, GRID_SIZE - 1);
+  if (Number.isFinite(world.hackY)) runtime.world.hackY = clamp(Math.floor(world.hackY), 0, GRID_SIZE - 1);
+  if (Number.isFinite(world.hackProgressTarget)) runtime.world.hackProgressTarget = Math.max(0, Math.floor(world.hackProgressTarget));
+  if (Number.isFinite(world.runStartedAt)) runtime.world.runStartedAt = Math.max(0, Math.floor(world.runStartedAt));
+  if (runtime.world.objectiveTarget > 0) runtime.mission.requiredKills = runtime.world.objectiveTarget;
+  if (Number.isFinite(runtime.world.extractionX) && Number.isFinite(runtime.world.extractionY)) {
+    runtime.mission.extractionTile = { x: runtime.world.extractionX, y: runtime.world.extractionY };
+  }
   if (runtime.world.eventLevel > prevLevel) {
     runtime.mission.startedAt = runtime.inputEnabled ? Date.now() : 0;
     runtime.mission.extractionUnlocked = false;
@@ -890,7 +919,7 @@ function phaseJoinHint(phase) {
   if (phase === PHASE_WARNING) return 'You joined during event warning.';
   if (phase === PHASE_EVENT_ACTIVE) return 'Late join: event already in progress.';
   if (phase === PHASE_RECOVERY) return 'You joined during recovery. Next event soon.';
-  if (phase === PHASE_MISSION_COMPLETE) return 'Mission complete. Waiting for next event or Restart Run.';
+  if (phase === PHASE_MISSION_COMPLETE) return 'Mission complete. Waiting for next event or return to arcade.';
   return '';
 }
 
@@ -929,6 +958,9 @@ function shouldSuppressFeedMessage(message) {
 
 function classifyFeedMessage(text) {
   const normalized = String(text || '').toLowerCase();
+  if (normalized.includes('connected to city')) return 'conn:connected';
+  if (normalized.includes('joined block topia')) return 'conn:joined';
+  if (normalized.includes('connection lost')) return 'conn:lost';
   const neutralizedMatch = normalized.match(/neutralized\s+(npc_[a-z0-9_-]+)/);
   if (neutralizedMatch) return `neutralized:${neutralizedMatch[1]}`;
   const downedMatch = normalized.match(/^system:\s*([a-z0-9_]+)\s+was downed by\s+(npc_[a-z0-9_-]+)/);
@@ -974,6 +1006,9 @@ window.BlockTopiaMap = {
   setRestartRunSink(fn) {
     runtime.restartRunSink = typeof fn === 'function' ? fn : null;
   },
+  setChooseUpgradeSink(fn) {
+    runtime.chooseUpgradeSink = typeof fn === 'function' ? fn : null;
+  },
   signalReady() {
     if (runtime.localPlayer.ready || runtime.localPlayer.readyRequested) return false;
     if (!runtime.readySink) return false;
@@ -989,6 +1024,16 @@ window.BlockTopiaMap = {
     const sent = runtime.restartRunSink();
     if (sent) pushFeedback('Restart requested. Waiting for server...', 1000, 'rgba(195, 236, 255, 0.96)');
     return Boolean(sent);
+  },
+  requestUpgrade(upgradeId) {
+    if (!runtime.chooseUpgradeSink) return false;
+    const id = String(upgradeId || '').trim();
+    if (!id) return false;
+    if (!runtime.localPlayer.upgradeChoices.includes(id)) return false;
+    const sent = runtime.chooseUpgradeSink(id);
+    if (!sent) return false;
+    pushFeedback(`${id.replaceAll('_', ' ').toUpperCase()} selected`, 1000, 'rgba(170, 246, 197, 0.98)');
+    return true;
   },
   getSnapshot() {
     return {

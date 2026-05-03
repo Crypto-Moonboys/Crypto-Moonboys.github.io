@@ -29,6 +29,7 @@ const REQUIRED_EXPORTS = [
   'sendExtract',
   'sendReady',
   'sendRestartRun',
+  'sendChooseUpgrade',
   'isConnected',
   'getRoom',
   'reconnectMultiplayer',
@@ -89,11 +90,12 @@ assert.ok(
   'index.html should expose Play Again and wire restartRun network intent.',
 );
 assert.ok(
-  indexHtml.includes('display:none') &&
+  /id="bt-play-again-btn"[^>]*style="[^"]*display:none/.test(indexHtml) &&
   indexHtml.includes('syncNextLevelButton') &&
-  indexHtml.includes('phase === "RECOVERY" || phase === "MISSION_COMPLETE"') &&
+  indexHtml.includes('phase === "MISSION_COMPLETE"') &&
+  !indexHtml.includes('phase === "RECOVERY" || phase === "MISSION_COMPLETE"') &&
   indexHtml.includes('Skip Recovery / Start Level'),
-  'index.html should hide next-level control by default and gate it behind mission complete/recovery phases.',
+  'index.html should hide next-level control by default and gate it behind mission-complete phase only.',
 );
 assert.ok(
   indexHtml.includes('bt-help-toggle'),
@@ -121,6 +123,12 @@ assert.ok(
   indexHtml.includes('api.setInputEnabled?.(true);') &&
   indexHtml.includes('setReadySink(() => sendReady())'),
   'index.html start flow should send ready/startRun before gameplay starts.',
+);
+assert.ok(
+  indexHtml.includes('bt-upgrade-row') &&
+  indexHtml.includes('setChooseUpgradeSink') &&
+  indexHtml.includes('sendChooseUpgrade'),
+  'index.html should render upgrade choice controls and wire chooseUpgrade intent.',
 );
 assert.equal(
   mainSource.includes('Arrow/WASD move | Click tile move | Space attack'),
