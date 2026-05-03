@@ -6,6 +6,7 @@ let _reconnectOptions = null;
 let _reconnecting = false;
 let _isConnecting = false;
 let _cityUnavailable = false;
+let _preStartDisconnectCount = 0;
 let _lastWorldEventLevel = 1;
 const CLOSED_ROOM_WARN_THROTTLE_MS = 3000;
 const _closedRoomWarnAt = {};
@@ -203,10 +204,14 @@ export async function connectMultiplayer({
         if (room === capturedRoomRef) room = null;
         onStatus?.({ ws: 'disconnected', joined: false, error: `Disconnected (code: ${code})`, roomId: joinedRoomName });
         onFeed?.(`Multiplayer connection lost (code: ${code})`);
-        _scheduleReconnect();
+        _preStartDisconnectCount += 1;
+        if (_preStartDisconnectCount <= 1) _scheduleReconnect();
       });
 
       room.onStateChange((state) => {
+        const playerList = toPlayerList(state?.players);
+        const me = playerList.find((entry) => String(entry?.id || '') === String(room?.sessionId || ''));
+        if (me?.ready === true) _preStartDisconnectCount = 0;
         const nextEventLevel = Number(state.eventLevel);
         if (Number.isFinite(nextEventLevel) && nextEventLevel >= 1) {
           _lastWorldEventLevel = Math.max(1, Math.floor(nextEventLevel));
@@ -306,7 +311,7 @@ function warnClosedRoom(msgType) {
 
 export function sendMovement(x, y) {
   if (!isRoomOpen()) {
-    warnClosedRoom('move');
+    warnClosedRoom('move-prestart');
     return false;
   }
   room.send('move', { x, y });
@@ -315,7 +320,7 @@ export function sendMovement(x, y) {
 
 export function sendAttack() {
   if (!isRoomOpen()) {
-    warnClosedRoom('attack');
+    warnClosedRoom('attack-prestart');
     return false;
   }
   room.send('attack', {});
