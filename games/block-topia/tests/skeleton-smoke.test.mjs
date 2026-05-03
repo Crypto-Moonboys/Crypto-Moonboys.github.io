@@ -130,6 +130,8 @@ function extractFunctionSource(source, functionName) {
 }
 
 const drawHudBody = extractFunctionSource(mainSource, 'drawHud');
+const tryAttackBody = extractFunctionSource(mainSource, 'tryAttack');
+const pushFeedBody = extractFunctionSource(mainSource, 'pushFeed');
 assert.ok(
   /const\s+surviveTotalSec\s*=\s*Math\.ceil\s*\(\s*runtime\.mission\.surviveMs\s*\/\s*1000\s*\)\s*;/.test(drawHudBody),
   'drawHud must define surviveTotalSec in its own scope before mission HUD text uses it.',
@@ -139,17 +141,20 @@ assert.ok(
   'main.js should include extraction unlock and mission complete feedback states.',
 );
 assert.ok(
-  /if\s*\(\s*runtime\.mission\.completed\s*\)\s*{[\s\S]*pushFeedback\('MISSION COMPLETE - extraction successful'/.test(mainSource),
+  /if\s*\(\s*runtime\.mission\.completed\s*\)\s*{[\s\S]*pushFeedback\(\s*MISSION_COMPLETE_MSG\s*,\s*MISSION_COMPLETE_TOAST_MS/.test(tryAttackBody) &&
+  /if\s*\(\s*runtime\.mission\.completed\s*\)\s*{[\s\S]*return;/.test(tryAttackBody),
   'main.js should lock out local attack attempts after mission completion.',
 );
 assert.ok(
-  /runtime\.mission\.completed\s*&&\s*\(classificationKey\.startsWith\('neutralized:'\)\s*\|\|\s*classificationKey\.startsWith\('downed:'\)\)\s*\)\s*{\s*return;/.test(mainSource),
+  /runtime\.mission\.completed\s*&&\s*\(classificationKey\.startsWith\('neutralized:'\)\s*\|\|\s*classificationKey\.startsWith\('downed:'\)\)\s*\)\s*{\s*return;/.test(pushFeedBody),
   'main.js should suppress neutralized/downed combat feed spam after mission completion.',
 );
 assert.ok(
   mainSource.includes('drawMissionCompleteBanner') &&
   mainSource.includes('Run summary: Kills') &&
-  mainSource.includes('MISSION COMPLETE - extraction successful'),
+  mainSource.includes('const MISSION_COMPLETE_MSG =') &&
+  mainSource.includes('const MISSION_COMPLETE_TOAST_MS =') &&
+  mainSource.includes('const MISSION_COMPLETE_TOAST_THROTTLE_MS ='),
   'main.js should render a clear mission-complete banner and run summary.',
 );
 const localPlayerFnStart = mainSource.indexOf('function setLocalPlayer(');
