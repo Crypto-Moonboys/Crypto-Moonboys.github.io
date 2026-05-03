@@ -143,6 +143,7 @@ export class MinimalCityRoom extends Room {
     this.runGeneration = 0;
     this.terrain = buildTerrainGrid(MAP_WIDTH, MAP_HEIGHT);
     this._seedNpcs();
+    this._startRun({ eventLevel: 1 });
 
     this.onMessage('move', (client, data) => {
       const player = this.playersBySession.get(client.sessionId);
