@@ -89,6 +89,10 @@ assert.ok(
   'index.html should expose Play Again and wire restartRun network intent.',
 );
 assert.ok(
+  indexHtml.includes('Advance to Next Level'),
+  'index.html should label restart action as next-level progression.',
+);
+assert.ok(
   indexHtml.includes('bt-help-toggle'),
   'index.html should expose help panel collapse toggle.',
 );
@@ -146,6 +150,11 @@ function extractFunctionSource(source, functionName) {
 const drawHudBody = extractFunctionSource(mainSource, 'drawHud');
 const tryAttackBody = extractFunctionSource(mainSource, 'tryAttack');
 const pushFeedBody = extractFunctionSource(mainSource, 'pushFeed');
+const requestRestartRunStart = mainSource.indexOf('requestRestartRun() {');
+const requestRestartRunEnd = requestRestartRunStart >= 0 ? mainSource.indexOf('getSnapshot()', requestRestartRunStart) : -1;
+const requestRestartRunBody = requestRestartRunStart >= 0 && requestRestartRunEnd > requestRestartRunStart
+  ? mainSource.slice(requestRestartRunStart, requestRestartRunEnd)
+  : '';
 assert.ok(
   /const\s+surviveTotalSec\s*=\s*Math\.ceil\s*\(\s*runtime\.mission\.surviveMs\s*\/\s*1000\s*\)\s*;/.test(drawHudBody),
   'drawHud must define surviveTotalSec in its own scope before mission HUD text uses it.',
@@ -167,6 +176,23 @@ assert.ok(
   'main.js should render shared world phase data from server state.',
 );
 assert.ok(
+  mainSource.includes('function phaseJoinHint(') &&
+  mainSource.includes('You joined during recovery. Next event soon.') &&
+  mainSource.includes('Late join: event already in progress.'),
+  'main.js should render phase-specific late-join guidance instead of a generic in-progress message.',
+);
+assert.ok(
+  mainSource.includes('function formatCountdown(') &&
+  mainSource.includes('Next Event: Patrol Sweep Level') &&
+  mainSource.includes('starts in ${formatCountdown(phaseMsLeft)}'),
+  'main.js should show next level preview and countdown during post-mission flow.',
+);
+assert.ok(
+  drawHudBody.includes('const drawHudLine =') &&
+  drawHudBody.includes('if (y > viewHeight - 12) return;'),
+  'main.js should use bounded HUD row rendering for small view heights.',
+);
+assert.ok(
   /function\s+shouldSuppressFeedMessage\s*\(/.test(mainSource) &&
   /normalized\.includes\('neutralized npc_'\)/.test(mainSource) &&
   /normalized\.includes\('was downed by npc_'\)/.test(mainSource) &&
@@ -185,6 +211,12 @@ assert.ok(
 assert.ok(
   /if\s*\(\s*shouldSuppressFeedMessage\s*\(\s*text\s*\)\s*\)\s*return;/.test(pushFeedBody),
   'main.js should suppress neutralized/downed combat feed spam after mission completion.',
+);
+assert.ok(
+  requestRestartRunBody.includes('runtime.restartRunSink') &&
+  requestRestartRunBody.includes('Restart requested. Waiting for server...') &&
+  !requestRestartRunBody.includes('runtime.mission = {'),
+  'main.js should defer mission reset until server-confirmed world update.',
 );
 assert.ok(
   mainSource.includes('drawMissionCompleteBanner') &&
@@ -216,6 +248,11 @@ assert.ok(
 assert.ok(
   /const survivalDone = elapsed >= runtime\.mission\.surviveMs;[\s\S]*if \(!runtime\.mission\.extractionUnlocked && survivalDone && killDone\)/.test(mainSource),
   'main.js should unlock extraction only after both survival and kill objectives are done.',
+);
+assert.ok(
+  networkSource.includes('let _lastWorldEventLevel = 1;') &&
+  networkSource.includes('eventLevel: _lastWorldEventLevel'),
+  'network.js should preserve world eventLevel across partial system payloads.',
 );
 
 console.log('Block Topia skeleton smoke checks passed.');

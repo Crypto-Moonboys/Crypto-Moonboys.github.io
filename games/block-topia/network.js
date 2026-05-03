@@ -6,6 +6,7 @@ let _reconnectOptions = null;
 let _reconnecting = false;
 let _isConnecting = false;
 let _cityUnavailable = false;
+let _lastWorldEventLevel = 1;
 const CLOSED_ROOM_WARN_THROTTLE_MS = 3000;
 const _closedRoomWarnAt = {};
 const MAX_RETRIES = 3;
@@ -144,6 +145,7 @@ export async function connectMultiplayer({
   onFeed,
 }) {
   _reconnectOptions = { playerName, roomId, telegramAuth, onStatus, onPlayers, onNpcs, onWorld, onFeed };
+  _lastWorldEventLevel = 1;
 
   const rawEndpoint = window.BLOCK_TOPIA_SERVER || 'wss://game.cryptomoonboys.com';
   const endpoint = rawEndpoint.replace(/^https:\/\//, 'wss://').replace(/^http:\/\//, 'ws://');
@@ -174,6 +176,10 @@ export async function connectMultiplayer({
       });
 
       room.onStateChange((state) => {
+        const nextEventLevel = Number(state.eventLevel);
+        if (Number.isFinite(nextEventLevel) && nextEventLevel >= 1) {
+          _lastWorldEventLevel = Math.max(1, Math.floor(nextEventLevel));
+        }
         onPlayers?.(toPlayerList(state.players));
         onNpcs?.(toNpcList(state.npcs));
         onWorld?.({
@@ -181,19 +187,22 @@ export async function connectMultiplayer({
           phase: String(state.worldPhase || ''),
           phaseStartedAt: Math.max(0, Number(state.phaseStartedAt) || 0),
           phaseEndsAt: Math.max(0, Number(state.phaseEndsAt) || 0),
-          eventLevel: Math.max(1, Number(state.eventLevel) || 1),
+          eventLevel: _lastWorldEventLevel,
           eventObjective: String(state.eventObjective || ''),
           roomRunStartedAt: Math.max(0, Number(state.roomRunStartedAt) || 0),
         });
       });
 
       room.onMessage('system', (message) => {
+        const messageEventLevel = Number(message?.eventLevel);
+        const hasEventLevel = Number.isFinite(messageEventLevel) && messageEventLevel >= 1;
+        if (hasEventLevel) _lastWorldEventLevel = Math.max(1, Math.floor(messageEventLevel));
         if (message?.mode || message?.phase || message?.phaseEndsAt || message?.eventLevel || message?.eventObjective) {
           onWorld?.({
             mode: message?.mode ? String(message.mode) : '',
             phase: message?.phase ? String(message.phase) : '',
             phaseEndsAt: Math.max(0, Number(message?.phaseEndsAt) || 0),
-            eventLevel: Math.max(1, Number(message?.eventLevel) || 1),
+            eventLevel: _lastWorldEventLevel,
             eventObjective: String(message?.eventObjective || ''),
           });
         }

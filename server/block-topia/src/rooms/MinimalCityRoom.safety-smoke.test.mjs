@@ -25,6 +25,9 @@ assertSource(/const\s+FREE_ROAM_MS\s*=\s*60_000/, 'Free roam phase constant must
 assertSource(/const\s+WARNING_MS\s*=\s*10_000/, 'Warning phase constant must exist.');
 assertSource(/const\s+EVENT_MS\s*=\s*90_000/, 'Event phase constant must exist.');
 assertSource(/const\s+RECOVERY_MS\s*=\s*30_000/, 'Recovery phase constant must exist.');
+assertSource(/const\s+FREE_ROAM_MS\s*=\s*60_000;\s*\/\/\s*Dev timing\./, 'Free roam should be marked as dev timing.');
+assertSource(/const\s+RECOVERY_MS\s*=\s*30_000;\s*\/\/\s*Dev timing\./, 'Recovery should be marked as dev timing.');
+assertSource(/const\s+MISSION_COMPLETE_MS\s*=\s*8000/, 'Mission complete transition duration constant must exist.');
 assertSource(/const\s+PHASE_FREE_ROAM\s*=\s*'FREE_ROAM'/, 'FREE_ROAM phase label must exist.');
 assertSource(/const\s+PHASE_EVENT_ACTIVE\s*=\s*'EVENT_ACTIVE'/, 'EVENT_ACTIVE phase label must exist.');
 assertSource(/worldPhase:\s*'string'/, 'Room state should expose worldPhase.');
@@ -54,8 +57,10 @@ assertSource(/if\s*\(\s*!target\?\.ready\s*\)\s*return/, 'NPC damage should igno
 assertSource(/if\s*\(\s*this\.state\.worldPhase\s*!==\s*PHASE_EVENT_ACTIVE\s*\)\s*return/, 'NPC damage should be disabled outside event-active phase.');
 assertSource(/if\s*\(\s*this\.completedSessions\.has\s*\(\s*target\?\.id\s*\)\s*\)\s*return/, 'Completed players should not receive NPC contact damage.');
 assertSource(/if\s*\(\s*graceUntil\s*>\s*now\s*\)\s*return/, 'Spawn grace guard must prevent immediate spawn damage.');
-assertSource(/if\s*\(\s*now\s*-\s*lastPairDamageAt\s*<\s*NPC_ATTACK_COOLDOWN_MS\s*\)\s*return/, 'Per-NPC damage cooldown guard must exist.');
-assertSource(/target\.hp\s*=\s*Math\.max\s*\(\s*0\s*,\s*target\.hp\s*-\s*NPC_CONTACT_DAMAGE\s*\)/, 'NPC damage must clamp hp at 0.');
+assertSource(/const\s+npcAttackCooldown\s*=\s*Math\.max\(\s*800\s*,\s*NPC_ATTACK_COOLDOWN_MS\s*-\s*Math\.max\(\s*0\s*,\s*this\.state\.eventLevel\s*-\s*1\s*\)\s*\*\s*60\s*\)/, 'Per-NPC cooldown should scale safely by event level.');
+assertSource(/if\s*\(\s*now\s*-\s*lastPairDamageAt\s*<\s*npcAttackCooldown\s*\)\s*return/, 'Per-NPC damage cooldown guard must use scaled cooldown.');
+assertSource(/const\s+npcDamage\s*=\s*NPC_CONTACT_DAMAGE\s*\+\s*Math\.min\(\s*8\s*,\s*Math\.max\(\s*0\s*,\s*this\.state\.eventLevel\s*-\s*1\s*\)\s*\*\s*2\s*\)/, 'NPC damage should scale safely by event level.');
+assertSource(/target\.hp\s*=\s*Math\.max\s*\(\s*0\s*,\s*target\.hp\s*-\s*npcDamage\s*\)/, 'NPC damage must clamp hp at 0.');
 assertSource(/target\.respawnAt\s*=\s*now\s*\+\s*RESPAWN_DELAY_MS/, 'Downed state must set respawn timestamp.');
 assertSource(/live\.hp\s*=\s*PLAYER_MAX_HP/, 'Respawn must restore player hp.');
 assertSource(/npc\.maxHp\s*=\s*NPC_MAX_HP/, 'Server NPC maxHp must stay in sync with NPC_MAX_HP for client bars.');
@@ -78,7 +83,7 @@ assertSource(/player\.ready\s*=\s*true/, 'Ready/start message should set player 
 assertSource(/this\._scheduleReadyTimeout\s*\(\s*client\.sessionId\s*\)/, 'Server should schedule timeout for not-ready players.');
 assertSource(/if\s*\(\s*!player\s*\|\|\s*player\.ready\s*\)\s*return/, 'Ready timeout should ignore missing or already-ready players.');
 assertSource(/client\.leave\s*\(\s*1000\s*\)/, 'Not-ready timeout should reclaim stale seats with numeric close code.');
-assertSource(/this\._startRun\s*\(\s*\{\s*eventLevel:\s*1\s*\}\s*\)/, 'Server should initialize room run phase state on create.');
+assertSource(/if\s*\(\s*this\.state\.players\.length\s*===\s*0\s*\)\s*{\s*this\._startRun\s*\(\s*\{\s*eventLevel:\s*1\s*\}\s*\);\s*}/, 'Server should initialize run when first player joins.');
 assertSource(/_tickPhase\s*\(\s*\)/, 'Server should tick authoritative room phase state.');
 assertSource(/this\.runGeneration\s*=\s*0/, 'Server should initialize run generation tracking for timed callbacks.');
 assertSource(/this\.runGeneration\s*\+=\s*1/, 'Server should increment run generation on startRun to invalidate stale callbacks.');
@@ -86,6 +91,10 @@ assertSource(/if\s*\(\s*scheduledGeneration\s*!==\s*this\.runGeneration\s*\)\s*r
 assertSource(/if\s*\(\s*this\.state\.players\.length\s*===\s*0\s*\)\s*return/, 'Phase ticker should not advance while room is empty.');
 assertSource(/const\s+allReadyCompleted\s*=\s*readyPlayers\.every\(/, 'Mission complete phase should require all ready players extracted.');
 assertSource(/this\.missionStartedAtBySession\.set\s*\(\s*player\.id\s*,\s*player\.ready\s*\?\s*now\s*:\s*0\s*\)/, 'startRun should anchor mission timer to now for already-ready players.');
+assertSource(/_advanceToNextLevel\s*\(\s*\)\s*{[\s\S]*this\.completedSessions\.clear\(\);[\s\S]*this\.state\.eventLevel\s*\+=\s*1/, 'Advancing level should clear completed state and increment event level.');
+assertSource(/if\s*\(\s*this\.state\.worldPhase\s*===\s*PHASE_MISSION_COMPLETE\s*\)\s*{\s*this\._advanceToNextLevel\(\);\s*}/, 'Phase ticker should auto-progress from mission complete to next level flow.');
+assertSource(/this\.state\.worldPhase\s*!==\s*PHASE_MISSION_COMPLETE[\s\S]*now\s*-\s*this\.state\.roomRunStartedAt\s*>\s*MAX_ROOM_RUN_MS/, 'Max run timeout should not reapply mission-complete every tick.');
+assertSource(/else if\s*\(\s*this\.state\.worldPhase\s*===\s*PHASE_RECOVERY\s*\)\s*this\._setPhase\s*\(\s*PHASE_WARNING\s*\)/, 'Recovery should transition to warning without duplicate event-level increment.');
 assertSource(/if\s*\(\s*this\.state\.worldPhase\s*===\s*PHASE_FREE_ROAM\s*\|\|\s*this\.state\.worldPhase\s*===\s*PHASE_RECOVERY\s*\)\s*{/, 'Free roam/recovery should reduce direct NPC pressure.');
 if (/\.leave\s*\(\s*['"`]/.test(source)) {
   throw new Error('Invalid string-only .leave(...) usage detected.');
