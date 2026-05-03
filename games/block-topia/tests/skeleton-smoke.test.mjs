@@ -138,6 +138,20 @@ assert.ok(
   mainSource.includes('Extraction unlocked') && mainSource.includes('MISSION COMPLETE'),
   'main.js should include extraction unlock and mission complete feedback states.',
 );
+assert.ok(
+  /if\s*\(\s*runtime\.mission\.completed\s*\)\s*{[\s\S]*pushFeedback\('MISSION COMPLETE - extraction successful'/.test(mainSource),
+  'main.js should lock out local attack attempts after mission completion.',
+);
+assert.ok(
+  /runtime\.mission\.completed\s*&&\s*\(classificationKey\.startsWith\('neutralized:'\)\s*\|\|\s*classificationKey\.startsWith\('downed:'\)\)\s*\)\s*{\s*return;/.test(mainSource),
+  'main.js should suppress neutralized/downed combat feed spam after mission completion.',
+);
+assert.ok(
+  mainSource.includes('drawMissionCompleteBanner') &&
+  mainSource.includes('Run summary: Kills') &&
+  mainSource.includes('MISSION COMPLETE - extraction successful'),
+  'main.js should render a clear mission-complete banner and run summary.',
+);
 const localPlayerFnStart = mainSource.indexOf('function setLocalPlayer(');
 const localPlayerFnEnd = mainSource.indexOf('function setRemotePlayer(');
 const localPlayerFnBody = localPlayerFnStart >= 0 && localPlayerFnEnd > localPlayerFnStart
