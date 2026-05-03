@@ -139,7 +139,7 @@ assert.ok(
   'main.js should include extraction unlock and mission complete feedback states.',
 );
 assert.ok(
-  /if\s*\(\s*runtime\.mission\.completed\s*\)\s*{\s*pushFeedback\('MISSION COMPLETE - extraction successful'/.test(mainSource),
+  /if\s*\(\s*runtime\.mission\.completed\s*\)\s*{[\s\S]*pushFeedback\('MISSION COMPLETE - extraction successful'/.test(mainSource),
   'main.js should lock out local attack attempts after mission completion.',
 );
 assert.ok(

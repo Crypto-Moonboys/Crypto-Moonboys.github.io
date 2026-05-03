@@ -29,6 +29,7 @@ const runtime = {
   feedMeta: { lastMessage: '', lastAt: 0 },
   feedClassMeta: {},
   feedback: [],
+  missionCompleteFeedbackAt: 0,
   flashes: [],
   attackCooldownUntil: 0,
   inputEnabled: true,
@@ -270,7 +271,11 @@ function onKeyDown(event) {
 function tryAttack() {
   ensureMissionStart();
   if (runtime.mission.completed) {
-    pushFeedback('MISSION COMPLETE - extraction successful', 1200, 'rgba(170, 246, 197, 0.98)');
+    const now = Date.now();
+    if (now - runtime.missionCompleteFeedbackAt >= 1400) {
+      runtime.missionCompleteFeedbackAt = now;
+      pushFeedback('MISSION COMPLETE - extraction successful', 1200, 'rgba(170, 246, 197, 0.98)');
+    }
     return;
   }
   if (runtime.localPlayer.hp <= 0) {
@@ -490,7 +495,7 @@ function drawHud() {
   ctx.font = '600 12px Segoe UI';
   ctx.fillText(`NET ${String(status.ws || 'offline').toUpperCase()}${status.roomId ? ` | ROOM ${status.roomId}` : ''}${status.error ? ` | ${status.error}` : ''}`, 12, 64);
   const surviveTotalSec = Math.ceil(runtime.mission.surviveMs / 1000);
-  const elapsedAnchor = runtime.mission.completedAt || Date.now();
+  const elapsedAnchor = runtime.mission.completedAt || now;
   const elapsed = runtime.mission.startedAt ? elapsedAnchor - runtime.mission.startedAt : 0;
   const surviveLeftSec = Math.max(0, Math.ceil((runtime.mission.surviveMs - elapsed) / 1000));
   const surviveDone = elapsed >= runtime.mission.surviveMs;
@@ -517,7 +522,7 @@ function drawHud() {
     ctx.fillStyle = 'rgba(170, 246, 197, 0.98)';
     ctx.fillText('MISSION COMPLETE - extraction successful', 12, 138);
     ctx.fillStyle = 'rgba(214, 226, 245, 0.9)';
-    ctx.fillText(`Run summary: Kills ${runtime.localPlayer.kills} | Downs ${runtime.localPlayer.downs} | Time ${survivedSec}s | P2 can join for co-op test`, 12, 156);
+    ctx.fillText(`Run summary: Kills ${runtime.localPlayer.kills} | Downs ${runtime.localPlayer.downs} | Time ${survivedSec}s`, 12, 156);
   }
 
   const feed = runtime.feed[runtime.feed.length - 1];
