@@ -70,6 +70,7 @@ function toPlayerList(playersState) {
       hp: Math.max(0, Number(player?.hp) || 0),
       kills: Math.max(0, Number(player?.kills) || 0),
       downs: Math.max(0, Number(player?.downs) || 0),
+      respawnAt: Math.max(0, Number(player?.respawnAt) || 0),
     });
   };
 
@@ -104,6 +105,7 @@ function toNpcList(npcsState) {
       x: Number(npc?.x) || 0,
       y: Number(npc?.y) || 0,
       hp: Math.max(0, Number(npc?.hp) || 0),
+      maxHp: Math.max(1, Number(npc?.maxHp ?? npc?.hpMax) || 40),
       kind: String(npc?.kind || 'drone'),
       targetSessionId: String(npc?.targetSessionId || ''),
     });
