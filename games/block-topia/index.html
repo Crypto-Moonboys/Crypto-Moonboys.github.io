@@ -58,6 +58,10 @@
             <button id="bt-play-again-btn" style="display:none;cursor:pointer;border:1px solid rgba(143,255,178,0.6);border-radius:8px;padding:10px 14px;background:rgba(14,43,34,0.85);color:#dcffe9;font:700 13px/1 'Segoe UI',sans-serif">Skip Recovery / Start Level 2</button>
             <a id="bt-return-arcade-btn" href="/games/" style="display:inline-flex;align-items:center;justify-content:center;border:1px solid rgba(143,195,255,0.5);border-radius:8px;padding:10px 14px;background:rgba(12,27,52,0.8);color:#def0ff;font:700 13px/1 'Segoe UI',sans-serif;text-decoration:none">Return to Arcade</a>
           </div>
+          <div id="bt-upgrade-row" style="display:none;margin-top:12px;border-top:1px solid rgba(143,195,255,0.3);padding-top:10px">
+            <div style="font:700 12px/1.4 'Segoe UI',sans-serif;color:#c7ecff;margin-bottom:6px">Choose 1 upgrade for next level</div>
+            <div id="bt-upgrade-buttons" style="display:flex;flex-wrap:wrap;gap:8px"></div>
+          </div>
         </div>
       </div>
     </div>
@@ -312,7 +316,7 @@
         // server-side XP gate has been verified.  Loading them earlier would
         // render the map canvas before the check completes.
         await import("./main.js");
-        const { connectMultiplayer, sendMovement, sendAttack, sendExtract, sendReady, sendRestartRun } = await import("./network.js");
+        const { connectMultiplayer, sendMovement, sendAttack, sendExtract, sendReady, sendRestartRun, sendChooseUpgrade } = await import("./network.js");
 
         // main.js registers window.BlockTopiaMap synchronously during evaluation.
         const api = window.BlockTopiaMap;
@@ -331,15 +335,45 @@
         const controlsBtn = document.getElementById("bt-controls-btn");
         const controlsCopy = document.getElementById("bt-controls-copy");
         const playAgainBtn = document.getElementById("bt-play-again-btn");
+        const upgradeRow = document.getElementById("bt-upgrade-row");
+        const upgradeButtons = document.getElementById("bt-upgrade-buttons");
+        const prettyUpgrade = (id) => String(id || "").replaceAll("_", " ").toUpperCase();
         const syncNextLevelButton = () => {
           if (!playAgainBtn) return;
           const snap = api.getSnapshot?.();
           const phase = String(snap?.world?.phase || "");
           const level = Math.max(1, Number(snap?.world?.eventLevel) || 1);
           const missionCompleted = snap?.mission?.completed === true;
-          const showNext = missionCompleted || phase === "RECOVERY" || phase === "MISSION_COMPLETE";
+          const showNext = missionCompleted || phase === "MISSION_COMPLETE";
           playAgainBtn.style.display = showNext ? "inline-flex" : "none";
           playAgainBtn.textContent = `Skip Recovery / Start Level ${level + 1}`;
+          const choices = Array.isArray(snap?.localPlayer?.upgradeChoices) ? snap.localPlayer.upgradeChoices : [];
+          if (!upgradeRow || !upgradeButtons) return;
+          if (!choices.length || !(phase === "MISSION_COMPLETE" || phase === "RECOVERY")) {
+            upgradeRow.style.display = "none";
+            upgradeButtons.innerHTML = "";
+            return;
+          }
+          upgradeRow.style.display = "block";
+          upgradeButtons.innerHTML = "";
+          for (const choice of choices) {
+            const btn = document.createElement("button");
+            btn.type = "button";
+            btn.textContent = prettyUpgrade(choice);
+            btn.style.cursor = "pointer";
+            btn.style.border = "1px solid rgba(143,255,178,0.6)";
+            btn.style.borderRadius = "8px";
+            btn.style.padding = "8px 10px";
+            btn.style.background = "rgba(14,43,34,0.85)";
+            btn.style.color = "#dcffe9";
+            btn.style.font = "700 12px/1 'Segoe UI',sans-serif";
+            btn.addEventListener("click", () => {
+              const sent = api.requestUpgrade?.(choice) === true;
+              if (!sent) api.pushFeedback?.("Upgrade choice failed. Wait for sync.", 900);
+              syncNextLevelButton();
+            });
+            upgradeButtons.appendChild(btn);
+          }
         };
         if (startBtn && overlay) {
           startBtn.addEventListener("click", () => {
@@ -413,6 +447,7 @@
             window.BlockTopiaMap?.setExtractSink(() => sendExtract());
             window.BlockTopiaMap?.setReadySink(() => sendReady());
             window.BlockTopiaMap?.setRestartRunSink(() => sendRestartRun());
+            window.BlockTopiaMap?.setChooseUpgradeSink((upgradeId) => sendChooseUpgrade(upgradeId));
             const overlay = document.getElementById("bt-start-overlay");
             if (overlay && overlay.style.display === "none") {
               window.BlockTopiaMap?.signalReady?.();

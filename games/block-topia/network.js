@@ -73,6 +73,14 @@ function toPlayerList(playersState) {
       downs: Math.max(0, Number(player?.downs) || 0),
       respawnAt: Math.max(0, Number(player?.respawnAt) || 0),
       ready: player?.ready === true,
+      maxHp: Math.max(1, Number(player?.maxHp) || 100),
+      attackDamage: Math.max(1, Number(player?.attackDamage) || 20),
+      attackCooldownMs: Math.max(100, Number(player?.attackCooldownMs) || 750),
+      armorPct: Math.max(0, Math.min(1, Number(player?.armorPct) || 0)),
+      runLevel: Math.max(1, Number(player?.runLevel) || 1),
+      upgrades: parseJsonArray(player?.upgradesJson),
+      upgradeChoices: parseJsonArray(player?.upgradeChoicesJson),
+      objectiveProgress: Math.max(0, Number(player?.objectiveProgress) || 0),
     });
   };
 
@@ -134,6 +142,17 @@ function toNpcList(npcsState) {
   return list;
 }
 
+function parseJsonArray(value) {
+  if (Array.isArray(value)) return value.map((entry) => String(entry || ''));
+  if (typeof value !== 'string' || !value) return [];
+  try {
+    const parsed = JSON.parse(value);
+    return Array.isArray(parsed) ? parsed.map((entry) => String(entry || '')) : [];
+  } catch {
+    return [];
+  }
+}
+
 export async function connectMultiplayer({
   playerName,
   roomId = 'city',
@@ -190,6 +209,15 @@ export async function connectMultiplayer({
           eventLevel: _lastWorldEventLevel,
           eventObjective: String(state.eventObjective || ''),
           roomRunStartedAt: Math.max(0, Number(state.roomRunStartedAt) || 0),
+          objectiveType: String(state.eventObjectiveType || ''),
+          objectiveTarget: Math.max(0, Number(state.objectiveTarget) || 0),
+          objectiveProgress: Math.max(0, Number(state.objectiveProgress) || 0),
+          extractionX: Math.max(0, Number(state.extractionX) || 0),
+          extractionY: Math.max(0, Number(state.extractionY) || 0),
+          hackX: Math.max(0, Number(state.hackX) || 0),
+          hackY: Math.max(0, Number(state.hackY) || 0),
+          hackProgressTarget: Math.max(0, Number(state.hackProgressTarget) || 0),
+          runStartedAt: Math.max(0, Number(state.runStartedAt) || 0),
         });
       });
 
@@ -306,6 +334,15 @@ export function sendRestartRun() {
     return false;
   }
   room.send('restartRun', {});
+  return true;
+}
+
+export function sendChooseUpgrade(upgradeId) {
+  if (!isRoomOpen()) {
+    warnClosedRoom('chooseUpgrade');
+    return false;
+  }
+  room.send('chooseUpgrade', { upgradeId: String(upgradeId || '') });
   return true;
 }
 
