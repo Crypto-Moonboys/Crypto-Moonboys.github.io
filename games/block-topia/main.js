@@ -8,6 +8,11 @@ const EXTRACT_INTENT_THROTTLE_MS = 1000;
 const MISSION_COMPLETE_MSG = 'MISSION COMPLETE - extraction successful';
 const MISSION_COMPLETE_TOAST_MS = 1200;
 const MISSION_COMPLETE_TOAST_THROTTLE_MS = 1400;
+const PHASE_FREE_ROAM = 'FREE_ROAM';
+const PHASE_WARNING = 'WARNING';
+const PHASE_EVENT_ACTIVE = 'EVENT_ACTIVE';
+const PHASE_RECOVERY = 'RECOVERY';
+const PHASE_MISSION_COMPLETE = 'MISSION_COMPLETE';
 
 if (window.BlockTopiaMap && typeof window.BlockTopiaMap.destroy === 'function') {
   window.BlockTopiaMap.destroy();
@@ -51,10 +56,12 @@ const runtime = {
   },
   npcHpById: {},
   connectionStatus: { ws: 'offline', joined: false, roomId: '', error: '' },
+  world: { phase: PHASE_FREE_ROAM, phaseStartedAt: 0, phaseEndsAt: 0, eventLevel: 1, eventObjective: '', roomRunStartedAt: 0 },
   positionSink: null,
   attackSink: null,
   extractSink: null,
   readySink: null,
+  restartRunSink: null,
   tiles: createTiles(),
 };
 
@@ -309,6 +316,10 @@ function tryAttack() {
   }
 
   const now = Date.now();
+  if (runtime.world.phase !== PHASE_EVENT_ACTIVE) {
+    pushFeedback('Combat inactive until EVENT ACTIVE', 900);
+    return;
+  }
   if (now < runtime.attackCooldownUntil) {
     pushFeedback('Attack cooling down', 900);
     return;
@@ -513,14 +524,27 @@ function drawHud() {
 
   ctx.fillStyle = 'rgba(180, 224, 255, 0.95)';
   ctx.fillText(`MODE ${runtime.worldMode.toUpperCase()} | NPC ${runtime.npcs.filter((n) => n.hp > 0).length}`, 12, 46);
+  const phaseNow = Date.now();
+  const phaseMsLeft = runtime.world.phaseEndsAt > 0 ? Math.max(0, runtime.world.phaseEndsAt - phaseNow) : 0;
+  const phaseSecLeft = Math.ceil(phaseMsLeft / 1000);
+  const phaseLabel = describePhase(runtime.world.phase);
+  const phaseTimerLabel = runtime.world.phase === PHASE_MISSION_COMPLETE ? 'COMPLETE' : `${phaseSecLeft}s`;
+  ctx.fillStyle = 'rgba(177, 237, 203, 0.95)';
+  ctx.fillText(`PHASE ${phaseLabel} | T-${phaseTimerLabel} | L${runtime.world.eventLevel}`, 12, 64);
 
   ctx.fillStyle = 'rgba(214, 226, 245, 0.85)';
   ctx.font = '600 12px Segoe UI';
-  ctx.fillText(`NET ${String(status.ws || 'offline').toUpperCase()}${status.roomId ? ` | ROOM ${status.roomId}` : ''}${status.error ? ` | ${status.error}` : ''}`, 12, 64);
+  ctx.fillText(`NET ${String(status.ws || 'offline').toUpperCase()}${status.roomId ? ` | ROOM ${status.roomId}` : ''}${status.error ? ` | ${status.error}` : ''}`, 12, 82);
+  ctx.fillStyle = 'rgba(198, 223, 255, 0.92)';
+  ctx.fillText(`${runtime.world.eventObjective || 'City objective syncing...'}`, 12, 100);
+  if (runtime.localPlayer.ready && runtime.world.phase !== PHASE_FREE_ROAM) {
+    ctx.fillStyle = 'rgba(255, 228, 149, 0.95)';
+    ctx.fillText('Late join: city event already in progress', 12, 118);
+  }
   if (!runtime.localPlayer.ready) {
     ctx.font = '700 13px Segoe UI';
     ctx.fillStyle = 'rgba(255, 234, 151, 0.98)';
-    ctx.fillText('WAITING TO START - Press Start / Continue to enter the city', 12, 84);
+    ctx.fillText('WAITING TO START - Press Start / Continue to enter the city', 12, 136);
   }
   const surviveTotalSec = Math.ceil(runtime.mission.surviveMs / 1000);
   const elapsedAnchor = runtime.mission.completedAt || now;
@@ -540,17 +564,17 @@ function drawHud() {
 
   ctx.font = '700 12px Segoe UI';
   ctx.fillStyle = surviveDone ? 'rgba(152, 255, 173, 0.96)' : 'rgba(255, 234, 151, 0.96)';
-  ctx.fillText(`Mission 1: Survive ${surviveTotalSec}s (${surviveLeftSec}s left)`, 12, 84 + (runtime.localPlayer.ready ? 0 : 18));
+  ctx.fillText(`Mission 1: Survive ${surviveTotalSec}s (${surviveLeftSec}s left)`, 12, 154 + (runtime.localPlayer.ready ? 0 : 18));
   ctx.fillStyle = killDone ? 'rgba(152, 255, 173, 0.96)' : 'rgba(255, 234, 151, 0.96)';
-  ctx.fillText(`${mission2Label}: Neutralize ${runtime.mission.requiredKills} NPCs (${Math.min(neutralized, runtime.mission.requiredKills)}/${runtime.mission.requiredKills})`, 12, 102 + (runtime.localPlayer.ready ? 0 : 18));
+  ctx.fillText(`${mission2Label}: Neutralize ${runtime.mission.requiredKills} NPCs (${Math.min(neutralized, runtime.mission.requiredKills)}/${runtime.mission.requiredKills})`, 12, 172 + (runtime.localPlayer.ready ? 0 : 18));
   ctx.fillStyle = runtime.mission.completed ? 'rgba(152, 255, 173, 0.96)' : 'rgba(198, 223, 255, 0.96)';
-  ctx.fillText(`Mission 3: ${extractionText}`, 12, 120 + (runtime.localPlayer.ready ? 0 : 18));
+  ctx.fillText(`Mission 3: ${extractionText}`, 12, 190 + (runtime.localPlayer.ready ? 0 : 18));
   if (runtime.mission.completed) {
     const survivedSec = Math.max(0, Math.ceil(elapsed / 1000));
     ctx.fillStyle = 'rgba(170, 246, 197, 0.98)';
-    ctx.fillText(MISSION_COMPLETE_MSG, 12, 138);
+    ctx.fillText(MISSION_COMPLETE_MSG, 12, 208);
     ctx.fillStyle = 'rgba(214, 226, 245, 0.9)';
-    ctx.fillText(`Run summary: Kills ${runtime.localPlayer.kills} | Downs ${runtime.localPlayer.downs} | Time ${survivedSec}s`, 12, 156);
+    ctx.fillText(`Run summary: Kills ${runtime.localPlayer.kills} | Downs ${runtime.localPlayer.downs} | Time ${survivedSec}s`, 12, 226);
   }
 
   const feed = runtime.feed[runtime.feed.length - 1];
@@ -812,6 +836,26 @@ function setWorldMode(mode) {
   runtime.worldMode = mode;
 }
 
+function setWorldState(world = {}) {
+  if (!world || typeof world !== 'object') return;
+  if (typeof world.mode === 'string' && world.mode) runtime.worldMode = world.mode;
+  if (typeof world.phase === 'string' && world.phase) runtime.world.phase = world.phase;
+  if (Number.isFinite(world.phaseStartedAt)) runtime.world.phaseStartedAt = Math.max(0, Math.floor(world.phaseStartedAt));
+  if (Number.isFinite(world.phaseEndsAt)) runtime.world.phaseEndsAt = Math.max(0, Math.floor(world.phaseEndsAt));
+  if (Number.isFinite(world.eventLevel)) runtime.world.eventLevel = Math.max(1, Math.floor(world.eventLevel));
+  if (typeof world.eventObjective === 'string' && world.eventObjective) runtime.world.eventObjective = world.eventObjective;
+  if (Number.isFinite(world.roomRunStartedAt)) runtime.world.roomRunStartedAt = Math.max(0, Math.floor(world.roomRunStartedAt));
+}
+
+function describePhase(phase) {
+  if (phase === PHASE_FREE_ROAM) return 'FREE ROAM';
+  if (phase === PHASE_WARNING) return 'WARNING';
+  if (phase === PHASE_EVENT_ACTIVE) return 'EVENT ACTIVE';
+  if (phase === PHASE_RECOVERY) return 'RECOVERY';
+  if (phase === PHASE_MISSION_COMPLETE) return 'MISSION COMPLETE';
+  return String(phase || 'UNKNOWN');
+}
+
 function pushFeed(message) {
   if (!message) return;
   const text = String(message);
@@ -864,6 +908,7 @@ window.BlockTopiaMap = {
   applyMultiplayerState: updatePlayers,
   setNpcs,
   setWorldMode,
+  setWorldState,
   pushFeed,
   pushFeedback,
   setInputEnabled(enabled) {
@@ -888,6 +933,9 @@ window.BlockTopiaMap = {
   setReadySink(fn) {
     runtime.readySink = typeof fn === 'function' ? fn : null;
   },
+  setRestartRunSink(fn) {
+    runtime.restartRunSink = typeof fn === 'function' ? fn : null;
+  },
   signalReady() {
     if (runtime.localPlayer.ready || runtime.localPlayer.readyRequested) return false;
     if (!runtime.readySink) return false;
@@ -898,12 +946,32 @@ window.BlockTopiaMap = {
   shouldSuppressFeedMessage(message) {
     return shouldSuppressFeedMessage(message);
   },
+  requestRestartRun() {
+    if (!runtime.restartRunSink) return false;
+    const sent = runtime.restartRunSink();
+    if (sent) {
+      runtime.mission = {
+        startedAt: 0,
+        surviveMs: runtime.mission.surviveMs,
+        requiredKills: runtime.mission.requiredKills,
+        extractionUnlocked: false,
+        extractionTile: null,
+        completed: false,
+        completedAt: 0,
+        neutralizedCount: 0,
+        extractionSent: false,
+      };
+      runtime.missionCompleteFeedbackAt = 0;
+    }
+    return Boolean(sent);
+  },
   getSnapshot() {
     return {
       localPlayer: { ...runtime.localPlayer },
       remotePlayer: { ...runtime.remotePlayer },
       connectionStatus: { ...runtime.connectionStatus },
       worldMode: runtime.worldMode,
+      world: { ...runtime.world },
       npcs: runtime.npcs.map((n) => ({ ...n })),
       mission: { ...runtime.mission, extractionTile: runtime.mission.extractionTile ? { ...runtime.mission.extractionTile } : null },
       feed: runtime.feed.slice(),

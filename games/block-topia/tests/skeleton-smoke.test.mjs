@@ -28,6 +28,7 @@ const REQUIRED_EXPORTS = [
   'sendMovement',
   'sendExtract',
   'sendReady',
+  'sendRestartRun',
   'isConnected',
   'getRoom',
   'reconnectMultiplayer',
@@ -82,6 +83,10 @@ assert.ok(
 assert.ok(
   indexHtml.includes('connectMultiplayer'),
   'index.html must call connectMultiplayer.',
+);
+assert.ok(
+  indexHtml.includes('bt-play-again-btn') && indexHtml.includes('sendRestartRun'),
+  'index.html should expose Play Again and wire restartRun network intent.',
 );
 assert.ok(
   indexHtml.includes('bt-help-toggle'),
@@ -152,6 +157,14 @@ assert.ok(
 assert.ok(
   mainSource.includes('WAITING TO START - Press Start / Continue to enter the city'),
   'main.js should show a clear pre-start waiting HUD state.',
+);
+assert.ok(
+  mainSource.includes('const PHASE_FREE_ROAM =') &&
+  mainSource.includes('const PHASE_EVENT_ACTIVE =') &&
+  mainSource.includes('function setWorldState(') &&
+  mainSource.includes('PHASE ') &&
+  mainSource.includes('EVENT ACTIVE'),
+  'main.js should render shared world phase data from server state.',
 );
 assert.ok(
   /function\s+shouldSuppressFeedMessage\s*\(/.test(mainSource) &&

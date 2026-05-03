@@ -30,6 +30,17 @@ const NPC_RESPAWN_MIN_DISTANCE = 4;
 const MISSION_SURVIVE_MS = 60000;
 const MISSION_REQUIRED_KILLS = 5;
 const READY_TIMEOUT_MS = 30000;
+const FREE_ROAM_MS = 60_000; // Production target: 10 minutes.
+const WARNING_MS = 10_000;
+const EVENT_MS = 90_000;
+const RECOVERY_MS = 30_000; // Production target: 10 minutes.
+const MAX_ROOM_RUN_MS = 20 * 60_000;
+const IDLE_RESET_MS = 2 * 60_000;
+const PHASE_FREE_ROAM = 'FREE_ROAM';
+const PHASE_WARNING = 'WARNING';
+const PHASE_EVENT_ACTIVE = 'EVENT_ACTIVE';
+const PHASE_RECOVERY = 'RECOVERY';
+const PHASE_MISSION_COMPLETE = 'MISSION_COMPLETE';
 const PASSABLE_TERRAIN = new Set(['road', 'grass']);
 
 class PlayerState extends Schema {
@@ -92,6 +103,12 @@ class MinimalRoomState extends Schema {
     this.players = new ArraySchema();
     this.npcs = new ArraySchema();
     this.worldMode = 'single-player';
+    this.worldPhase = PHASE_FREE_ROAM;
+    this.phaseStartedAt = 0;
+    this.phaseEndsAt = 0;
+    this.eventLevel = 1;
+    this.eventObjective = 'Patrol Sweep: survive and neutralize 5 NPCs, then extract.';
+    this.roomRunStartedAt = 0;
   }
 }
 
@@ -99,6 +116,12 @@ defineTypes(MinimalRoomState, {
   players: [PlayerState],
   npcs: [NpcState],
   worldMode: 'string',
+  worldPhase: 'string',
+  phaseStartedAt: 'number',
+  phaseEndsAt: 'number',
+  eventLevel: 'number',
+  eventObjective: 'string',
+  roomRunStartedAt: 'number',
 });
 
 export class MinimalCityRoom extends Room {
@@ -116,6 +139,8 @@ export class MinimalCityRoom extends Room {
     this.pendingReadyTimeoutBySession = new Map();
     this.completedSessions = new Set();
     this.missionStartedAtBySession = new Map();
+    this.lastActiveAtBySession = new Map();
+    this.runGeneration = 0;
     this.terrain = buildTerrainGrid(MAP_WIDTH, MAP_HEIGHT);
     this._seedNpcs();
 
@@ -133,6 +158,7 @@ export class MinimalCityRoom extends Room {
 
       player.x = x;
       player.y = y;
+      this._markActivity(client.sessionId);
     });
 
     this.onMessage('attack', (client) => {
@@ -142,6 +168,7 @@ export class MinimalCityRoom extends Room {
       const now = Date.now();
       const lastAttackAt = this.lastAttackAtBySession.get(client.sessionId) || 0;
       if (now - lastAttackAt < ATTACK_COOLDOWN_MS) return;
+      if (this.state.worldPhase !== PHASE_EVENT_ACTIVE) return;
       this.lastAttackAtBySession.set(client.sessionId, now);
       const target = this._findNearestNpc(player, ATTACK_RANGE);
       if (!target) return;
@@ -151,6 +178,7 @@ export class MinimalCityRoom extends Room {
         this.broadcast('system', { message: `${player.name} neutralized ${target.id}.`, mode: this.state.worldMode });
         this._scheduleNpcRespawn(target.id);
       }
+      this._markActivity(client.sessionId);
     });
 
     this.onMessage('extract', (client) => {
@@ -161,17 +189,30 @@ export class MinimalCityRoom extends Room {
       this.pendingRespawnBySession.delete(client.sessionId);
       player.hp = Math.max(1, player.hp);
       player.respawnAt = 0;
+      this._markActivity(client.sessionId);
+      this._maybeMarkMissionComplete();
     });
 
     this.onMessage('ready', (client) => {
       this._setPlayerReady(client.sessionId);
+      this._markActivity(client.sessionId);
     });
     this.onMessage('startRun', (client) => {
       this._setPlayerReady(client.sessionId);
+      this._markActivity(client.sessionId);
+    });
+    this.onMessage('restartRun', (client) => {
+      const player = this.playersBySession.get(client.sessionId);
+      if (!player || !player.ready) return;
+      if (!this._canRestartRun()) return;
+      this._startRun({ eventLevel: this.state.eventLevel + 1 });
+      this.broadcast('system', { message: `City run restarted at event level ${this.state.eventLevel}.`, mode: this.state.worldMode });
     });
 
     this.clock.setInterval(() => {
+      this._tickPhase();
       this._tickNpcs();
+      this._tickIdleTimeouts();
       this._updateWorldMode();
     }, SIM_TICK_MS);
   }
@@ -180,6 +221,10 @@ export class MinimalCityRoom extends Room {
     const validation = await validateMultiplayerEntry(options);
     if (!validation.ok) {
       throw new Error(validation.reason);
+    }
+
+    if (this.state.players.length === 0) {
+      this._startRun({ eventLevel: 1 });
     }
 
     const slotIndex = this.state.players.length % SPAWN_SLOTS.length;
@@ -199,6 +244,7 @@ export class MinimalCityRoom extends Room {
     this.completedSessions.delete(client.sessionId);
     this.missionStartedAtBySession.set(client.sessionId, 0);
     this.spawnProtectedUntilBySession.set(client.sessionId, Date.now() + SPAWN_GRACE_MS);
+    this.lastActiveAtBySession.set(client.sessionId, Date.now());
     this._scheduleReadyTimeout(client.sessionId);
     this._updateWorldMode();
 
@@ -208,6 +254,10 @@ export class MinimalCityRoom extends Room {
       playerSpeed: PLAYER_SPEED_HINT,
       npcCount: this.state.npcs.length,
       mode: this.state.worldMode,
+      phase: this.state.worldPhase,
+      phaseEndsAt: this.state.phaseEndsAt,
+      eventLevel: this.state.eventLevel,
+      eventObjective: this.state.eventObjective,
     });
   }
 
@@ -227,11 +277,13 @@ export class MinimalCityRoom extends Room {
     this.pendingRespawnBySession.delete(client.sessionId);
     this.pendingReadyTimeoutBySession.delete(client.sessionId);
     this.missionStartedAtBySession.delete(client.sessionId);
+    this.lastActiveAtBySession.delete(client.sessionId);
     if (player) {
       const index = this.state.players.findIndex((entry) => entry.id === client.sessionId);
       if (index >= 0) this.state.players.splice(index, 1);
       this.broadcast('system', { message: `${player.name} left the city.` });
     }
+    if (this.state.players.length === 0) this._startRun({ eventLevel: 1 });
     this._updateWorldMode();
   }
 
@@ -253,6 +305,98 @@ export class MinimalCityRoom extends Room {
   _updateWorldMode() {
     const count = this.state.players.length;
     this.state.worldMode = count >= 2 ? 'duo-vs-npc' : 'single-player-vs-npc';
+  }
+
+  _phaseDuration(phase) {
+    if (phase === PHASE_FREE_ROAM) return FREE_ROAM_MS;
+    if (phase === PHASE_WARNING) return WARNING_MS;
+    if (phase === PHASE_EVENT_ACTIVE) return EVENT_MS;
+    if (phase === PHASE_RECOVERY) return RECOVERY_MS;
+    return 0;
+  }
+
+  _setPhase(phase) {
+    const now = Date.now();
+    this.state.worldPhase = phase;
+    this.state.phaseStartedAt = now;
+    this.state.phaseEndsAt = now + this._phaseDuration(phase);
+    if (phase === PHASE_MISSION_COMPLETE) this.state.phaseEndsAt = 0;
+    if (phase === PHASE_EVENT_ACTIVE) {
+      this.state.eventObjective = `Patrol Sweep L${this.state.eventLevel}: survive and neutralize ${MISSION_REQUIRED_KILLS} NPCs, then extract.`;
+    } else if (phase === PHASE_WARNING) {
+      this.state.eventObjective = `Warning: patrol sweep level ${this.state.eventLevel} incoming.`;
+    } else if (phase === PHASE_RECOVERY) {
+      this.state.eventObjective = `Recovery: regroup before level ${this.state.eventLevel + 1}.`;
+    } else if (phase === PHASE_FREE_ROAM) {
+      this.state.eventObjective = `Free roam: explore the city. Event level ${this.state.eventLevel} starts soon.`;
+    } else if (phase === PHASE_MISSION_COMPLETE) {
+      this.state.eventObjective = 'Mission complete. Extracted squad can play again or return to arcade.';
+    }
+  }
+
+  _startRun({ eventLevel = 1 } = {}) {
+    const now = Date.now();
+    this.runGeneration += 1;
+    this.completedSessions.clear();
+    this.pendingRespawnBySession.clear();
+    this.pendingRespawnByNpcId.clear();
+    this.state.eventLevel = Math.max(1, Math.floor(eventLevel));
+    this.state.roomRunStartedAt = now;
+    this._setPhase(PHASE_FREE_ROAM);
+    for (const player of this.state.players) {
+      if (!player) continue;
+      player.hp = PLAYER_MAX_HP;
+      player.kills = 0;
+      player.downs = 0;
+      player.respawnAt = 0;
+      const spawn = this._findRandomPassableTile();
+      player.x = spawn.x;
+      player.y = spawn.y;
+      this.spawnProtectedUntilBySession.set(player.id, now + SPAWN_GRACE_MS);
+      this.missionStartedAtBySession.set(player.id, player.ready ? now : 0);
+    }
+    for (const npc of this.state.npcs) {
+      if (!npc) continue;
+      const spawn = this._findRandomPassableTileAwayFromPlayers(NPC_RESPAWN_MIN_DISTANCE);
+      npc.x = spawn.x;
+      npc.y = spawn.y;
+      npc.hp = NPC_MAX_HP;
+      npc.maxHp = NPC_MAX_HP;
+      npc.targetSessionId = '';
+    }
+  }
+
+  _tickPhase() {
+    const now = Date.now();
+    if (this.state.players.length === 0) return;
+    if (this.state.worldPhase === PHASE_MISSION_COMPLETE) return;
+    if (this.state.roomRunStartedAt && now - this.state.roomRunStartedAt > MAX_ROOM_RUN_MS) {
+      this._setPhase(PHASE_MISSION_COMPLETE);
+      return;
+    }
+    if (this.state.phaseEndsAt && now < this.state.phaseEndsAt) return;
+    if (this.state.worldPhase === PHASE_FREE_ROAM) this._setPhase(PHASE_WARNING);
+    else if (this.state.worldPhase === PHASE_WARNING) this._setPhase(PHASE_EVENT_ACTIVE);
+    else if (this.state.worldPhase === PHASE_EVENT_ACTIVE) this._setPhase(PHASE_RECOVERY);
+    else if (this.state.worldPhase === PHASE_RECOVERY) {
+      this.state.eventLevel += 1;
+      this._setPhase(PHASE_WARNING);
+    } else this._setPhase(PHASE_FREE_ROAM);
+  }
+
+  _canRestartRun() {
+    if (this.state.worldPhase !== PHASE_MISSION_COMPLETE) return false;
+    const readyPlayers = this.state.players.filter((p) => p && p.ready);
+    if (!readyPlayers.length) return true;
+    return readyPlayers.every((p) => this.completedSessions.has(p.id));
+  }
+
+  _maybeMarkMissionComplete() {
+    if (this.state.worldPhase === PHASE_MISSION_COMPLETE) return;
+    const readyPlayers = this.state.players.filter((p) => p && p.ready);
+    if (!readyPlayers.length) return;
+    const allReadyCompleted = readyPlayers.every((p) => this.completedSessions.has(p.id));
+    if (allReadyCompleted) this._setPhase(PHASE_MISSION_COMPLETE);
   }
 
   _isPassable(x, y) {
@@ -318,10 +462,15 @@ export class MinimalCityRoom extends Room {
       const target = this._findNearestAlivePlayer(npc);
       if (!target) {
         npc.targetSessionId = '';
+        if (Math.random() < 0.05) this._roamNpc(npc);
         continue;
       }
 
       npc.targetSessionId = target.id;
+      if (this.state.worldPhase === PHASE_FREE_ROAM || this.state.worldPhase === PHASE_RECOVERY) {
+        if (Math.random() < 0.08) this._roamNpc(npc);
+        continue;
+      }
       const dist = distance(npc.x, npc.y, target.x, target.y);
       if (dist <= 1.01) {
         this._tryNpcDamagePlayer(npc, target);
@@ -343,10 +492,24 @@ export class MinimalCityRoom extends Room {
     }
   }
 
+  _roamNpc(npc) {
+    const candidates = [
+      { x: npc.x + 1, y: npc.y },
+      { x: npc.x - 1, y: npc.y },
+      { x: npc.x, y: npc.y + 1 },
+      { x: npc.x, y: npc.y - 1 },
+    ].filter((c) => this._isPassable(c.x, c.y));
+    if (!candidates.length) return;
+    const pick = candidates[Math.floor(Math.random() * candidates.length)];
+    npc.x = pick.x;
+    npc.y = pick.y;
+  }
+
   _tryNpcDamagePlayer(npc, target) {
     if (!target?.ready) return;
     if (this.completedSessions.has(target?.id)) return;
     if (!npc || !target || target.hp <= 0) return;
+    if (this.state.worldPhase !== PHASE_EVENT_ACTIVE) return;
     const now = Date.now();
     const graceUntil = this.spawnProtectedUntilBySession.get(target.id) || 0;
     if (graceUntil > now) return;
@@ -373,12 +536,15 @@ export class MinimalCityRoom extends Room {
 
   _schedulePlayerRespawn(sessionId) {
     if (this.pendingRespawnBySession.get(sessionId)) return;
+    const scheduledGeneration = this.runGeneration;
     this.pendingRespawnBySession.set(sessionId, true);
     this.clock.setTimeout(() => {
       this.pendingRespawnBySession.delete(sessionId);
+      if (scheduledGeneration !== this.runGeneration) return;
       if (this.completedSessions.has(sessionId)) return;
       const live = this.playersBySession.get(sessionId);
       if (!live) return;
+      if (live.hp > 0) return;
       const spawn = this._findRandomPassableTile();
       live.x = spawn.x;
       live.y = spawn.y;
@@ -397,6 +563,7 @@ export class MinimalCityRoom extends Room {
     player.respawnAt = 0;
     this.missionStartedAtBySession.set(sessionId, Date.now());
     this.spawnProtectedUntilBySession.set(sessionId, Date.now() + SPAWN_GRACE_MS);
+    this.lastActiveAtBySession.set(sessionId, Date.now());
   }
 
   _scheduleReadyTimeout(sessionId) {
@@ -412,8 +579,28 @@ export class MinimalCityRoom extends Room {
     }, READY_TIMEOUT_MS);
   }
 
+  _markActivity(sessionId) {
+    if (!sessionId) return;
+    this.lastActiveAtBySession.set(sessionId, Date.now());
+  }
+
+  _tickIdleTimeouts() {
+    const now = Date.now();
+    for (const client of this.clients) {
+      const sessionId = client?.sessionId;
+      if (!sessionId) continue;
+      const lastActiveAt = this.lastActiveAtBySession.get(sessionId) || now;
+      if (now - lastActiveAt < IDLE_RESET_MS) continue;
+      const player = this.playersBySession.get(sessionId);
+      if (!player) continue;
+      if (!player.ready) continue;
+      client.leave(1000);
+    }
+  }
+
   _canExtractPlayer(sessionId, player) {
     if (!player?.ready) return false;
+    if (this.state.worldPhase !== PHASE_EVENT_ACTIVE) return false;
     const startedAt = this.missionStartedAtBySession.get(sessionId) || 0;
     if (Date.now() - startedAt < MISSION_SURVIVE_MS) return false;
     if ((player?.kills || 0) < MISSION_REQUIRED_KILLS) return false;
@@ -436,11 +623,14 @@ export class MinimalCityRoom extends Room {
 
   _scheduleNpcRespawn(npcId) {
     if (this.pendingRespawnByNpcId.has(npcId)) return;
+    const scheduledGeneration = this.runGeneration;
     this.pendingRespawnByNpcId.set(npcId, true);
     this.clock.setTimeout(() => {
       this.pendingRespawnByNpcId.delete(npcId);
+      if (scheduledGeneration !== this.runGeneration) return;
       const npc = this.state.npcs.find((entry) => entry.id === npcId);
       if (!npc) return;
+      if (npc.hp > 0) return;
       const spawn = this._findRandomPassableTileAwayFromPlayers(NPC_RESPAWN_MIN_DISTANCE);
       npc.x = spawn.x;
       npc.y = spawn.y;
