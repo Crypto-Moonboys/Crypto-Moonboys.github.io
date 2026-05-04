@@ -1,0 +1,18 @@
+{
+  "name": "crypto-moonboys.github.io",
+  "version": "1.0.0",
+  "description": "Crypto Moonboys is the live website for the project, including the arcade and shared frontend support assets.",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "playwright": "^1.59.1"
+  }
+}
