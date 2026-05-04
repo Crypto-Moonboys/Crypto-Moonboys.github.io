@@ -374,7 +374,7 @@ function tryAttack() {
     pushFeedback('Not connected', 900);
     return;
   }
-  const serverCooldownMs = (runtime.localPlayer && runtime.localPlayer.attackCooldownMs) || ATTACK_INPUT_COOLDOWN_MS;
+  const serverCooldownMs = (runtime.localPlayer?.attackCooldownMs ?? ATTACK_INPUT_COOLDOWN_MS);
   runtime.attackCooldownUntil = now + Math.max(ATTACK_INPUT_COOLDOWN_MS, serverCooldownMs);
 }
 

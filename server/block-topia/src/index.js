@@ -81,11 +81,20 @@ function buildMonitorAuthMiddleware() {
     const reqUser = colonIdx >= 0 ? decoded.slice(0, colonIdx) : decoded;
     const reqPass = colonIdx >= 0 ? decoded.slice(colonIdx + 1) : '';
     // Use constant-time comparison to prevent timing-based credential inference.
-    const userOk = reqUser.length === user.length &&
-      crypto.timingSafeEqual(Buffer.from(reqUser), Buffer.from(user));
-    const passOk = reqPass.length === pass.length &&
-      crypto.timingSafeEqual(Buffer.from(reqPass), Buffer.from(pass));
-    if (userOk && passOk) return next();
+    // Always compare buffers of the same length to avoid leaking credential length.
+    // Buffers are padded to the length of the longer value; a length difference still
+    // results in a comparison mismatch without a timing side-channel.
+    const maxUserLen = Math.max(reqUser.length, user.length);
+    const maxPassLen = Math.max(reqPass.length, pass.length);
+    const reqUserBuf  = Buffer.alloc(maxUserLen); Buffer.from(reqUser).copy(reqUserBuf);
+    const userBuf     = Buffer.alloc(maxUserLen); Buffer.from(user).copy(userBuf);
+    const reqPassBuf  = Buffer.alloc(maxPassLen); Buffer.from(reqPass).copy(reqPassBuf);
+    const passBuf     = Buffer.alloc(maxPassLen); Buffer.from(pass).copy(passBuf);
+    const userOk = crypto.timingSafeEqual(reqUserBuf, userBuf);
+    const passOk = crypto.timingSafeEqual(reqPassBuf, passBuf);
+    // Both length and content must match (length difference → buffer copy mismatch → false).
+    const lengthOk = reqUser.length === user.length && reqPass.length === pass.length;
+    if (userOk && passOk && lengthOk) return next();
     res.setHeader('WWW-Authenticate', 'Basic realm="Colyseus Monitor"');
     return res.status(401).send('Unauthorized');
   };
