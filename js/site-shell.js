@@ -153,9 +153,47 @@
     '</div>',
   ].join('\n');
 
-  /* ── 7. Right panel (only when body has class page-has-right-panel) */
+  /* ── 7. Right panel ─────────────────────────────────────────────
+   *
+   * shouldShowRightPanel(pathname, body)
+   *   Canonical, drift-resistant check.  Returns true when either:
+   *     a) body carries the 'page-has-right-panel' CSS class, OR
+   *     b) the pathname is in the canonical allowlist below.
+   *   Rule (b) fires even when the class is accidentally absent.
+   */
+  function shouldShowRightPanel(pn, body) {
+    if (body.classList.contains('page-has-right-panel')) return true;
+    /* Normalise: '/' → '/index.html'; strip trailing slash on other paths */
+    var p = pn === '/' ? '/index.html'
+          : (pn.length > 1 && pn.charAt(pn.length - 1) === '/')
+            ? pn.slice(0, -1)
+            : pn;
+    /* Exact allowlist */
+    var exact = [
+      '/index.html',
+      '/sam.html',
+      '/graph.html',
+      '/search.html',
+      '/timeline.html',
+      '/dashboard.html',
+      '/community.html',
+      '/how-to-play.html',
+      '/games',
+      '/games/',
+      '/games/index.html',
+      '/games/leaderboard.html',
+    ];
+    if (exact.indexOf(p) !== -1) return true;
+    /* Prefix allowlist */
+    var prefixes = ['/categories/', '/wiki/'];
+    for (var i = 0; i < prefixes.length; i++) {
+      if (p.indexOf(prefixes[i]) === 0) return true;
+    }
+    return false;
+  }
+
   var rightPanel = null;
-  if (document.body.classList.contains('page-has-right-panel')) {
+  if (shouldShowRightPanel(window.location.pathname, document.body)) {
     rightPanel = document.createElement('aside');
     rightPanel.id = 'homepage-right-panel';
     rightPanel.setAttribute('aria-label', 'Player and system status');

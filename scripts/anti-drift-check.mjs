@@ -988,6 +988,161 @@ console.log('\n[16] No removed-effect comment remnants in shell files');
   }
 }
 
+// ── 17. Right-panel HUD anti-drift ───────────────────────────────────────────
+// Ensures the live-feed / right-HUD system cannot silently disappear again.
+console.log('\n[17] Right-panel HUD anti-drift');
+{
+  // Named shell pages that MUST have the right panel.
+  const RIGHT_PANEL_PAGES = [
+    'index.html',
+    'sam.html',
+    'graph.html',
+    'search.html',
+    'timeline.html',
+    'dashboard.html',
+    'community.html',
+    'how-to-play.html',
+    'games/index.html',
+    'games/leaderboard.html',
+  ];
+
+  // Canonical pathnames that shouldShowRightPanel() allows (must be present in
+  // js/site-shell.js).  Prefix entries are listed without trailing '*'.
+  const ALLOWLIST_EXACT = [
+    '/index.html',
+    '/sam.html',
+    '/graph.html',
+    '/search.html',
+    '/timeline.html',
+    '/dashboard.html',
+    '/community.html',
+    '/how-to-play.html',
+    '/games/',
+    '/games/index.html',
+    '/games/leaderboard.html',
+  ];
+  const ALLOWLIST_PREFIXES = ['/categories/', '/wiki/'];
+
+  // (a) site-shell.js must contain the canonical allowlist entries
+  const shellSrc17 = read('js/site-shell.js');
+  let check17aClean = true;
+  if (!shellSrc17) {
+    fail('[17] js/site-shell.js not found');
+    check17aClean = false;
+  } else {
+    for (const entry of ALLOWLIST_EXACT) {
+      if (!shellSrc17.includes(`'${entry}'`)) {
+        fail(`[17] site-shell.js: canonical allowlist missing entry '${entry}'`);
+        check17aClean = false;
+      }
+    }
+    for (const prefix of ALLOWLIST_PREFIXES) {
+      if (!shellSrc17.includes(`'${prefix}'`)) {
+        fail(`[17] site-shell.js: canonical prefix allowlist missing '${prefix}'`);
+        check17aClean = false;
+      }
+    }
+    if (check17aClean) pass('[17] site-shell.js canonical allowlist entries present');
+  }
+
+  // (b) site-shell.js must contain the right-panel element markers
+  const SHELL_REQUIRED_STRINGS = [
+    'homepage-right-panel',
+    'live-feed-widget',
+    'data-csp-panel',
+    'data-las-panel',
+    'shouldShowRightPanel',
+  ];
+  let check17bClean = true;
+  if (shellSrc17) {
+    for (const needle of SHELL_REQUIRED_STRINGS) {
+      if (shellSrc17.includes(needle)) {
+        pass(`[17] site-shell.js contains: ${needle}`);
+      } else {
+        fail(`[17] site-shell.js missing required string: "${needle}"`);
+        check17bClean = false;
+      }
+    }
+  }
+
+  // (c) Each named page must have page-has-right-panel class OR be in the allowlist
+  //     (covered by shouldShowRightPanel in site-shell.js).  Here we enforce that at
+  //     least one of the two signals is present so drift is caught even if site-shell
+  //     loses the allowlist entry.
+  for (const rel of RIGHT_PANEL_PAGES) {
+    const src = read(rel);
+    if (!src) { warn(`[17] ${rel} not found — skipping right-panel check`); continue; }
+    const hasClass = src.includes('page-has-right-panel');
+    const normPath = '/' + rel.replace(/\\/g, '/');
+    const inExact = ALLOWLIST_EXACT.includes(normPath);
+    const inPrefix = ALLOWLIST_PREFIXES.some(px => normPath.startsWith(px));
+    if (hasClass || inExact || inPrefix) {
+      pass(`[17] ${rel}: right-panel trigger present`);
+    } else {
+      fail(`[17] ${rel}: missing page-has-right-panel class AND not in canonical allowlist`);
+    }
+  }
+
+  // (d) Named shell pages must load site-shell.js BEFORE the shared components
+  //     connection-status-panel.js, global-player-header.js, live-activity-summary.js
+  const SHARED_COMPONENTS = [
+    '/js/components/connection-status-panel.js',
+    '/js/components/global-player-header.js',
+    '/js/components/live-activity-summary.js',
+  ];
+  for (const rel of RIGHT_PANEL_PAGES) {
+    const src = read(rel);
+    if (!src) continue;
+    const shellIdx = src.indexOf('/js/site-shell.js');
+    if (shellIdx === -1) {
+      // Already caught by check 13; skip to avoid double-fail.
+      continue;
+    }
+    for (const comp of SHARED_COMPONENTS) {
+      const compIdx = src.indexOf(comp);
+      if (compIdx !== -1 && compIdx < shellIdx) {
+        fail(`[17] ${rel}: ${comp} is loaded BEFORE site-shell.js`);
+      }
+    }
+  }
+
+  // (e) Named shell pages must include live-activity-summary.js
+  for (const rel of RIGHT_PANEL_PAGES) {
+    const src = read(rel);
+    if (!src) continue;
+    if (src.includes('/js/components/live-activity-summary.js')) {
+      pass(`[17] ${rel}: live-activity-summary.js present`);
+    } else {
+      fail(`[17] ${rel}: missing live-activity-summary.js`);
+    }
+  }
+}
+
+// ── 18. site-shell.js DOM smoke test (static string check) ───────────────────
+// Confirms the generated right-panel HTML in site-shell.js contains every
+// required element identifier.  This is a static source check (no jsdom needed).
+console.log('\n[18] site-shell.js DOM smoke test (static)');
+{
+  const shellSmoke = read('js/site-shell.js');
+  if (!shellSmoke) {
+    fail('[18] js/site-shell.js not found');
+  } else {
+    const REQUIRED_SHELL_ELEMENTS = [
+      { needle: "rightPanel.id = 'homepage-right-panel'", label: '#homepage-right-panel element' },
+      { needle: 'data-csp-panel',             label: '[data-csp-panel] attribute' },
+      { needle: 'data-las-panel',             label: '[data-las-panel] attribute' },
+      { needle: 'id="live-feed-widget"',      label: '#live-feed-widget element' },
+    ];
+    for (const { needle, label } of REQUIRED_SHELL_ELEMENTS) {
+      if (shellSmoke.includes(needle)) {
+        pass(`[18] site-shell.js DOM smoke: ${label} present`);
+      } else {
+        fail(`[18] site-shell.js DOM smoke: ${label} MISSING — right HUD will not render`);
+      }
+    }
+  }
+}
+
 // ── Summary ───────────────────────────────────────────────────────────────────
 console.log('\n─────────────────────────────────────────');
 console.log(`Anti-drift check complete.`);

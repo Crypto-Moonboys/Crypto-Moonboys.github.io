@@ -130,7 +130,35 @@
   </style>
 </head>
 <body class="page-timeline page-has-right-panel">
-<main id="content" role="main"></main>
+<main id="content" role="main">
+  <div class="timeline-page">
+
+    <nav class="breadcrumb" aria-label="Breadcrumb">
+      <a href="/index.html">Home</a><span class="sep">›</span><span aria-current="page">Timeline</span>
+    </nav>
+
+    <div class="timeline-hero">
+      <h1>📅 Timeline</h1>
+      <p>Chronological events across the Crypto Moonboys universe</p>
+    </div>
+
+    <div class="view-toggle" role="group" aria-label="View mode">
+      <button class="view-btn active" id="view-eras" type="button">By Era</button>
+      <button class="view-btn" id="view-cats" type="button">By Category</button>
+      <button class="view-btn" id="view-events" type="button">Events Only</button>
+    </div>
+
+    <div id="timeline-filter-row" class="timeline-filter" aria-label="Filter by era"></div>
+
+    <div id="timeline-loading" aria-live="polite">Loading timeline…</div>
+    <div id="timeline-error" role="alert"></div>
+
+    <div id="timeline-app" aria-busy="true" style="display:none">
+      <div id="timeline-body"></div>
+    </div>
+
+  </div>
+</main>
 
 <!-- ── CANONICAL SCRIPT BOOT ─────────────────────────────────────── -->
 <!-- 1. Core config -->
