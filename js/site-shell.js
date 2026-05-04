@@ -163,8 +163,11 @@
    */
   function shouldShowRightPanel(pn, body) {
     if (body.classList.contains('page-has-right-panel')) return true;
-    /* Normalise: treat bare '/' as '/index.html' for the check */
-    var p = (pn === '/' ? '/index.html' : pn);
+    /* Normalise: '/' → '/index.html'; strip trailing slash on other paths */
+    var p = pn === '/' ? '/index.html'
+          : (pn.length > 1 && pn.charAt(pn.length - 1) === '/')
+            ? pn.slice(0, -1)
+            : pn;
     /* Exact allowlist */
     var exact = [
       '/index.html',
