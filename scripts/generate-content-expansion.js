@@ -305,7 +305,13 @@ if (!fs.existsSync(SAM_MANIFEST)) {
   console.log('[SAM guard] Content expansion requires SAM provenance. No pages created. Exiting cleanly.');
   process.exit(0);
 }
-const samManifest = JSON.parse(fs.readFileSync(SAM_MANIFEST, 'utf8'));
+let samManifest;
+try {
+  samManifest = JSON.parse(fs.readFileSync(SAM_MANIFEST, 'utf8'));
+} catch (e) {
+  console.error('::error file=js/sam-export-manifest.json::Invalid JSON in js/sam-export-manifest.json: ' + e.message);
+  process.exit(1);
+}
 if (!samManifest.sam_export_id && !samManifest.approved_source_pack_id) {
   console.log('[SAM guard] sam_export_id / approved_source_pack_id missing in js/sam-export-manifest.json.');
   console.log('[SAM guard] No content expansion applied. Exiting cleanly.');
