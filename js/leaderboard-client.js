@@ -199,10 +199,11 @@ export async function submitScore(player, score, game = "global") {
   let shouldSyncMeta = false;
 
   if (linked) {
+    const telegramAuth = await ArcadeSync.getTelegramAuth();
     emitArcadeDebug("auth_restore_result", {
       linked,
       hasTelegramId: !!telegramId,
-      hasSignedAuth: !!(await ArcadeSync.getTelegramAuth()),
+      hasSignedAuth: !!telegramAuth,
     });
     markSyncHealth("good", "linked_ready");
     emitArcadeSubmissionStatus({
@@ -215,7 +216,7 @@ export async function submitScore(player, score, game = "global") {
       const res = await fetch(api, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ player: resolvedPlayer, score, game, telegram_id: telegramId, faction: getCurrentFactionKey() })
+        body: JSON.stringify({ player: resolvedPlayer, score, game, telegram_id: telegramId, faction: getCurrentFactionKey(), telegram_auth: telegramAuth })
       });
       const data = await res.json().catch(() => ({}));
       emitArcadeDebug("leaderboard_result", {

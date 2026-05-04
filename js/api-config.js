@@ -45,7 +45,7 @@ Object.assign(window.MOONBOYS_API, {
     COMMENTS:           false,  // Article comments — /comments endpoint not yet live
     LIKES:              false,  // Page likes — /likes endpoint not yet live
     CITATION_VOTES:     false,  // Citation votes — /citation-votes endpoint not yet live
-    LEADERBOARD:        false,  // Engagement leaderboard — /leaderboard endpoint not yet live
+    LEADERBOARD:        true,   // Engagement leaderboard — live at moonboys-leaderboard.sercullen.workers.dev
     LIVE_FEED:          false,  // Activity feed — /feed endpoint not yet live
     SAM_STATUS:         true,   // SAM agent status widget (/sam/status — live)
     ACTIVITY_PANEL:     false,  // Trending pages — /activity/hot endpoint not yet live
