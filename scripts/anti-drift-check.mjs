@@ -1219,53 +1219,62 @@ console.log('\n[19] Rocket Loader bypass: canonical boot scripts have data-cfasy
 // games/index.html (arcade hub) and the arcade sidebar section in site-shell.js
 // must contain a link to EVERY game page defined in ARCADE_MANIFEST.
 // Extra links (e.g. Block Topia Multiplayer) are fine — only omissions fail.
+//
+// Page paths are parsed directly from js/arcade/arcade-manifest.js source
+// (the same `manifestSrc` read in check 5) so this check cannot drift from
+// the manifest without also failing check 5.
 console.log('\n[20] Arcade hub/sidebar parity with manifest pages');
 {
-  // Canonical page paths — derived from ARCADE_MANIFEST page values.
-  // Must be kept in sync with js/arcade/arcade-manifest.js.
-  const MANIFEST_GAME_PAGES = [
-    '/games/invaders-3008/',
-    '/games/pac-chain/',
-    '/games/asteroid-fork/',
-    '/games/breakout-bullrun/',
-    '/games/snake-run/',
-    '/games/tetris-block-topia/',
-    '/games/block-topia-quest-maze/',
-    '/games/crystal-quest/',
-  ];
-
-  // (a) Check games/index.html (arcade hub)
-  const hubSrc = read('games/index.html');
-  if (!hubSrc) {
-    fail('[20] games/index.html not found');
+  if (!manifestSrc) {
+    fail('[20] js/arcade/arcade-manifest.js not found — cannot run parity check');
   } else {
-    let hubClean = true;
-    for (const gamePage of MANIFEST_GAME_PAGES) {
-      if (!hubSrc.includes(`href="${gamePage}"`)) {
-        fail(`[20] games/index.html missing link to manifest game page: ${gamePage}`);
-        hubClean = false;
-      }
+    // Extract all page: '/...' values from the manifest source.
+    const pagePattern = /\bpage\s*:\s*['"]([^'"]+)['"]/g;
+    const manifestPages = [];
+    let pm;
+    while ((pm = pagePattern.exec(manifestSrc)) !== null) {
+      manifestPages.push(pm[1]);
     }
-    if (hubClean) pass('[20] games/index.html contains all manifest game page links');
-  }
 
-  // (b) Check js/site-shell.js arcade sidebar
-  const shellSrc20 = read('js/site-shell.js');
-  if (!shellSrc20) {
-    fail('[20] js/site-shell.js not found');
-  } else {
-    const arcadeIdx = shellSrc20.indexOf("sidebarExtra === 'arcade'");
-    if (arcadeIdx === -1) {
-      fail("[20] js/site-shell.js: arcade sidebar section not found (expected sidebarExtra === 'arcade')");
+    if (manifestPages.length === 0) {
+      fail('[20] No page: entries found in arcade-manifest.js — regex may need updating');
     } else {
-      let sidebarClean = true;
-      for (const gamePage of MANIFEST_GAME_PAGES) {
-        if (!shellSrc20.includes(`href="${gamePage}"`)) {
-          fail(`[20] js/site-shell.js arcade sidebar missing link to manifest game page: ${gamePage}`);
-          sidebarClean = false;
+      pass(`[20] Parsed ${manifestPages.length} page paths from arcade-manifest.js`);
+
+      // (a) Check games/index.html (arcade hub)
+      const hubSrc = read('games/index.html');
+      if (!hubSrc) {
+        fail('[20] games/index.html not found');
+      } else {
+        let hubClean = true;
+        for (const gamePage of manifestPages) {
+          if (!hubSrc.includes(`href="${gamePage}"`)) {
+            fail(`[20] games/index.html missing link to manifest game page: ${gamePage}`);
+            hubClean = false;
+          }
+        }
+        if (hubClean) pass('[20] games/index.html contains all manifest game page links');
+      }
+
+      // (b) Check js/site-shell.js arcade sidebar
+      const shellSrc20 = read('js/site-shell.js');
+      if (!shellSrc20) {
+        fail('[20] js/site-shell.js not found');
+      } else {
+        const arcadeIdx = shellSrc20.indexOf("sidebarExtra === 'arcade'");
+        if (arcadeIdx === -1) {
+          fail("[20] js/site-shell.js: arcade sidebar section not found (expected sidebarExtra === 'arcade')");
+        } else {
+          let sidebarClean = true;
+          for (const gamePage of manifestPages) {
+            if (!shellSrc20.includes(`href="${gamePage}"`)) {
+              fail(`[20] js/site-shell.js arcade sidebar missing link to manifest game page: ${gamePage}`);
+              sidebarClean = false;
+            }
+          }
+          if (sidebarClean) pass('[20] js/site-shell.js arcade sidebar contains all manifest game page links');
         }
       }
-      if (sidebarClean) pass('[20] js/site-shell.js arcade sidebar contains all manifest game page links');
     }
   }
 }
