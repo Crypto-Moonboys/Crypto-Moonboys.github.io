@@ -287,6 +287,29 @@ ${(rec.reasons || []).map(r => `            <li>${escapeHtml(r)}</li>`).join('\n
 }
 
 // ---------------------------------------------------------------------------
+// SAM provenance guard
+// ---------------------------------------------------------------------------
+// Hub reinforcement creates new wiki hub pages — it is a lore creation
+// operation. This script must only run when a SAM-approved export manifest
+// is present (js/sam-export-manifest.json) with a valid sam_export_id.
+// While SAM is paused, exit cleanly with no hub pages created.
+
+const SAM_MANIFEST = path.join(ROOT, 'js/sam-export-manifest.json');
+if (!fs.existsSync(SAM_MANIFEST)) {
+  console.log('[SAM guard] js/sam-export-manifest.json not found.');
+  console.log('[SAM guard] SAM is paused or no approved export is present.');
+  console.log('[SAM guard] Hub reinforcement requires SAM provenance. No pages created. Exiting cleanly.');
+  process.exit(0);
+}
+const samManifest = JSON.parse(fs.readFileSync(SAM_MANIFEST, 'utf8'));
+if (!samManifest.sam_export_id && !samManifest.approved_source_pack_id) {
+  console.log('[SAM guard] sam_export_id / approved_source_pack_id missing in js/sam-export-manifest.json.');
+  console.log('[SAM guard] No hub pages created. Exiting cleanly.');
+  process.exit(0);
+}
+console.log('[SAM guard] Provenance OK — export id:', samManifest.sam_export_id || samManifest.approved_source_pack_id);
+
+// ---------------------------------------------------------------------------
 // Load inputs
 // ---------------------------------------------------------------------------
 

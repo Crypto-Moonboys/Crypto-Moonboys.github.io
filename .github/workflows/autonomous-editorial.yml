@@ -1,20 +1,45 @@
-name: Autonomous Editorial Operations
+name: SAM Lore Ingest
+
+# LANE 1 — SAM Lore Ingest
+#
+# Purpose:
+#   Receive SAM-approved lore/fact exports and update wiki/lore display
+#   surfaces. Regenerates indexes, sitemap, graph, trending, and public
+#   JSON surfaces from committed SAM export data.
+#
+# Trigger:
+#   - manual workflow_dispatch while SAM is paused
+#   - switch to repository_dispatch only when SAM resumes
+#
+# No daily cron while SAM is paused.
+#
+# Allowed outputs:
+#   wiki/**  snapshots/**  sitemap.xml  sam-memory.json  index_stats.json
+#   js/wiki-index.json  js/entity-map.json  js/site-stats.json
+#   js/graph-data.json  js/entity-graph-lite.json  js/cluster-health.json
+#   js/authority-drift.json  js/entity-changelog.json
+#   js/authority-trust.json  js/timeline-intelligence.json
+#   api/authority.json  api/timeline.json  api/editorial.json
+#
+# BLOCKED automated outputs (workflow fails if any are changed):
+#   server/**  workers/**  shared/**  docs/block-topia/**
+#   Crypto_Moonboys_Master_Source_of_Truth_v1.md
+#   city_block_topia_dev_build_deck.md
+#   AGENT_ENFORCEMENT.md
 
 on:
-  schedule:
-    # Runs daily at 03:00 UTC
-    - cron: '0 3 * * *'
   workflow_dispatch:
+  # future: repository_dispatch (type: sam-lore-export) when SAM resumes
 
 permissions:
   contents: write
 
 concurrency:
-  group: autonomous-editorial-${{ github.ref }}
+  group: sam-lore-ingest-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  autonomous-editorial:
+  sam-lore-ingest:
     runs-on: ubuntu-latest
     # Never run as a bot commit to avoid self-triggering loops
     if: |
@@ -33,21 +58,13 @@ jobs:
         with:
           node-version: '22'
 
-      # ── Phase 4: Autonomous Editorial Scripts ──────────────────────────────
-
-      - name: Apply stub promotions
-        run: node scripts/apply-stub-promotions.js
-
-      - name: Generate content expansion
-        run: node scripts/generate-content-expansion.js
-
-      - name: Ingest external intelligence
-        run: node scripts/ingest-external-intelligence.js
-
-      - name: Apply hub reinforcement
-        run: node scripts/apply-hub-reinforcement.js
-
-      # ── Regenerate downstream assets ──────────────────────────────────────
+      # ── Regenerate display surfaces from committed wiki/SAM data ──────────
+      # NOTE: apply-stub-promotions, generate-content-expansion,
+      #       ingest-external-intelligence, and apply-hub-reinforcement are
+      #       NOT run here. Those scripts create or expand lore content and
+      #       require explicit SAM-approved provenance before any automated
+      #       run. They remain available for manual execution with a valid
+      #       js/sam-export-manifest.json in place.
 
       - name: Generate wiki index
         run: node scripts/generate-wiki-index.js
@@ -172,17 +189,46 @@ jobs:
       - name: Run smoke tests
         run: node scripts/smoke-test.js
 
-      # ── Commit deterministic changes ──────────────────────────────────────
+      # ── Diff guard: fail if automation touched any blocked path ───────────
 
-      - name: Commit autonomous editorial outputs
+      - name: Diff guard — block changes to protected paths
+        shell: bash
+        run: |
+          BLOCKED=(
+            "server/"
+            "workers/"
+            "shared/"
+            "docs/block-topia/"
+            "Crypto_Moonboys_Master_Source_of_Truth_v1.md"
+            "city_block_topia_dev_build_deck.md"
+            "AGENT_ENFORCEMENT.md"
+          )
+          FAIL=0
+          for pattern in "${BLOCKED[@]}"; do
+            if git diff --name-only HEAD 2>/dev/null | grep -qF "$pattern"; then
+              echo "::error::Automation attempted to modify blocked path: $pattern"
+              FAIL=1
+            fi
+          done
+          if [ "$FAIL" -ne 0 ]; then
+            echo "Aborting: blocked path(s) modified. No commit will be made."
+            exit 1
+          fi
+          echo "Diff guard passed — no blocked paths modified."
+
+      # ── Commit SAM lore ingest outputs ────────────────────────────────────
+
+      - name: Commit SAM lore ingest outputs
         shell: bash
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
+          # js/editorial-changelog.json is written by Phase 6 scripts:
+          # generate-governance-signals, generate-predictive-growth,
+          # generate-publishing-readiness.
           git add \
             js/editorial-changelog.json \
-            js/ingested-intelligence.json \
             js/wiki-index.json \
             js/entity-map.json \
             js/site-stats.json \
@@ -213,5 +259,5 @@ jobs:
             exit 0
           fi
 
-          git commit -m "chore: autonomous editorial operations [skip ci]"
+          git commit -m "chore: SAM lore ingest — regenerate display surfaces [skip ci]"
           git push origin HEAD:main || echo "Push skipped"
