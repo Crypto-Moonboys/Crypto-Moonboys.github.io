@@ -192,6 +192,9 @@ jobs:
         run: node scripts/smoke-test.js
 
       # ── Diff guard: fail if automation touched any blocked path ───────────
+      # CHANGED_FILES includes BOTH tracked changes (git diff) AND untracked
+      # new files (git ls-files --others) so the guard catches newly created
+      # files inside protected directories as well as edits to existing ones.
 
       - name: Diff guard — block changes to protected paths
         shell: bash
@@ -201,13 +204,21 @@ jobs:
             "workers/"
             "shared/"
             "docs/block-topia/"
+            "games/block-topia/"
             "Crypto_Moonboys_Master_Source_of_Truth_v1.md"
             "city_block_topia_dev_build_deck.md"
             "AGENT_ENFORCEMENT.md"
           )
+
+          # Build CHANGED_FILES from both tracked diffs and untracked new files.
+          CHANGED_FILES=$(
+            { git diff --name-only HEAD 2>/dev/null; \
+              git ls-files --others --exclude-standard 2>/dev/null; } | sort -u
+          )
+
           FAIL=0
           for pattern in "${BLOCKED[@]}"; do
-            if git diff --name-only HEAD 2>/dev/null | grep -qF "$pattern"; then
+            if echo "$CHANGED_FILES" | grep -qF "$pattern"; then
               echo "::error::Automation attempted to modify blocked path: $pattern"
               FAIL=1
             fi
@@ -216,7 +227,7 @@ jobs:
           # README guard: block any README* or READ.ME* file (any extension, any case).
           # Uses the broader regex to catch README.md, README.txt, README-old.md, etc.
           # README / source-truth changes must happen in separate human-reviewed docs PRs.
-          if git diff --name-only HEAD 2>/dev/null | grep -iEq '(^|/)(README[^/]*|READ\.ME[^/]*)$'; then
+          if echo "$CHANGED_FILES" | grep -iEq '(^|/)(README[^/]*|READ\.ME[^/]*)$'; then
             echo "::error::Automation attempted to modify README file(s). README changes require a separate human-reviewed PR."
             FAIL=1
           fi

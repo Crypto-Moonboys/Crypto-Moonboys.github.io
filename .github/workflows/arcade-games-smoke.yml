@@ -25,6 +25,7 @@ on:
       - 'games/crystal-quest/**'
       - 'workers/leaderboard-worker.js'
       - 'scripts/arcade-smoke.test.mjs'
+      - 'scripts/leaderboard-hmac-test.mjs'
       - '.github/workflows/arcade-games-smoke.yml'
   push:
     branches:
@@ -40,6 +41,7 @@ on:
       - 'games/crystal-quest/**'
       - 'workers/leaderboard-worker.js'
       - 'scripts/arcade-smoke.test.mjs'
+      - 'scripts/leaderboard-hmac-test.mjs'
       - '.github/workflows/arcade-games-smoke.yml'
   workflow_dispatch:
 
@@ -71,3 +73,6 @@ jobs:
 
       - name: Arcade smoke — config IDs, exports, manifest, leaderboard aliases
         run: node scripts/arcade-smoke.test.mjs
+
+      - name: Leaderboard HMAC validation — CRIT-01 tests
+        run: node scripts/leaderboard-hmac-test.mjs

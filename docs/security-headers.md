@@ -110,7 +110,42 @@ and is additionally restricted by the `MONITOR_PASSWORD` environment variable.
 
 ---
 
-## 5. Deployment Checklist
+## 5. Accepted Risk — MED-03: D1 Database ID in wrangler.toml
+
+The Cloudflare D1 `database_id` (`8a36e17a-18fa-4b98-90e1-3f269164b166`) is present
+in the following committed `wrangler.toml` files:
+
+- `workers/anti-cheat/wrangler.toml`
+- `workers/leaderboard/wrangler.toml`
+- `workers/moonboys-api/wrangler.toml`
+
+**Why this is accepted risk:**
+
+The `database_id` alone does not grant any access to the database.
+Cloudflare D1 access is controlled by:
+
+1. **Cloudflare Account credentials** — the full `wrangler.toml` must be paired with a
+   valid `CLOUDFLARE_API_TOKEN` that has D1 access. This token is never committed.
+2. **Worker execution context** — only authenticated Cloudflare Workers bound to the
+   database (via the `DB` binding in `wrangler.toml`) can query it.
+3. **Admin routes** — all write/admin paths in the Workers require `X-Admin-Secret`
+   header validation before any database operation.
+
+**Accepted posture:**
+
+The `database_id` is treated the same as a public database name — it identifies the
+resource but provides no access path without Cloudflare credentials. This is consistent
+with Cloudflare's own documentation and threat model.
+
+**Future migration (optional):**
+
+If required for compliance, move the `database_id` to an environment-level variable
+(`wrangler.toml` `[vars]` section or Cloudflare dashboard binding) and remove it from
+the committed file. This would require updating the deployment workflow.
+
+---
+
+## 6. Deployment Checklist
 
 - [ ] Cloudflare Transform Rule (or Worker route) injects security headers on
       GitHub Pages responses.
@@ -118,3 +153,8 @@ and is additionally restricted by the `MONITOR_PASSWORD` environment variable.
 - [ ] `MONITOR_PASSWORD` is set on the Block Topia game server in production.
 - [ ] Worker secrets (`TELEGRAM_BOT_TOKEN`, `ADMIN_SECRET`) are set via
       `wrangler secret put`, never in `wrangler.toml`.
+- [ ] D1 `database_id` exposure is accepted per MED-03 above (no Cloudflare credentials
+      committed; access requires bound Worker + valid API token).
+- [ ] Stub workers (blocktopia-leaderboard, blocktopia-district, blocktopia-realtime,
+      blocktopia-engagement) are **not deployed** until `YOUR_*_KV_ID` placeholders are
+      replaced. Run `scripts/stub-worker-deploy-guard.yml` manually before any deploy.

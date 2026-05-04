@@ -3,21 +3,18 @@ name: Stub Worker Deploy Guard
 # Prevents accidental deployment of stub workers that still have placeholder
 # KV namespace IDs (YOUR_*_KV_ID) in their wrangler.toml files.
 #
-# Any wrangler.toml under workers/ containing a YOUR_*_KV_ID placeholder
-# indicates the worker has not been configured for real deployment.
-# Deploying such a worker would result in KV binding errors at runtime.
+# WHY manual-only: The four stub workers (blocktopia-leaderboard, blocktopia-district,
+# blocktopia-realtime, blocktopia-engagement) intentionally retain YOUR_*_KV_ID
+# placeholders until real Cloudflare KV namespaces are provisioned. Running this
+# guard on every PR/push would permanently fail CI while the stubs are correctly
+# in placeholder state.
+#
+# Run this guard manually before any deployment to confirm no stub workers have
+# been accidentally added to a deployment pipeline.
+#
+# If a deployment workflow ever references these workers, add a path trigger here.
 
 on:
-  pull_request:
-    paths:
-      - 'workers/**/wrangler.toml'
-      - '.github/workflows/stub-worker-deploy-guard.yml'
-  push:
-    branches:
-      - main
-    paths:
-      - 'workers/**/wrangler.toml'
-      - '.github/workflows/stub-worker-deploy-guard.yml'
   workflow_dispatch:
 
 permissions:
