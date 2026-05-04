@@ -24,10 +24,11 @@ name: SAM Lore Ingest
 #   api/predictive-growth.json  api/governance.json  api/publishing.json
 #
 # BLOCKED automated outputs (workflow fails if any are changed):
-#   server/**  workers/**  shared/**  docs/block-topia/**
+#   server/**  workers/**  shared/**  docs/block-topia/**  games/block-topia/**
 #   Crypto_Moonboys_Master_Source_of_Truth_v1.md
 #   city_block_topia_dev_build_deck.md
 #   AGENT_ENFORCEMENT.md
+#   README* (any README file unless this is an explicit human-approved docs PR)
 
 on:
   workflow_dispatch:
