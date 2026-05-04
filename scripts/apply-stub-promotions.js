@@ -98,7 +98,7 @@ function applyStubPromotion(html) {
 // ---------------------------------------------------------------------------
 // Stub promotion changes page indexability and content status — it is a lore
 // operation. This script must only run when a SAM-approved export manifest is
-// present (js/sam-export-manifest.json) with a valid sam_export_id.
+// present (js/sam-export-manifest.json) with a valid sam_export_id or approved_source_pack_id.
 // While SAM is paused, exit cleanly with no changes.
 
 const SAM_MANIFEST = path.join(ROOT, 'js/sam-export-manifest.json');

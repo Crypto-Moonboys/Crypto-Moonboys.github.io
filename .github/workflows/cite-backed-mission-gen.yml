@@ -289,4 +289,4 @@ jobs:
           fi
 
           git commit -m "chore: cite-backed mission generation from SAM-approved facts [skip ci]"
-          git push origin HEAD:main || echo "Push skipped"
+          git push origin HEAD:${{ github.ref_name }} || echo "Push skipped"

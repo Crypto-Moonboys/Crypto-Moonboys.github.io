@@ -291,7 +291,7 @@ ${(rec.reasons || []).map(r => `            <li>${escapeHtml(r)}</li>`).join('\n
 // ---------------------------------------------------------------------------
 // Hub reinforcement creates new wiki hub pages — it is a lore creation
 // operation. This script must only run when a SAM-approved export manifest
-// is present (js/sam-export-manifest.json) with a valid sam_export_id.
+// is present (js/sam-export-manifest.json) with a valid sam_export_id or approved_source_pack_id.
 // While SAM is paused, exit cleanly with no hub pages created.
 
 const SAM_MANIFEST = path.join(ROOT, 'js/sam-export-manifest.json');

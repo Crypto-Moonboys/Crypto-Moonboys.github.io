@@ -98,12 +98,28 @@ ${items}
       </section>`;
 }
 
-function buildStubHtml(action) {
+function buildStubHtml(action, provenance) {
   const slug         = action.target_url_slug;
   const title        = slugToTitle(slug);
   const fullTitle    = `${title} — Crypto Moonboys Wiki`;
   const canonicalUrl = `https://crypto-moonboys.github.io/wiki/${slug}.html`;
   const relatedHtml  = buildRelatedLinksHtml(action.related_pages);
+
+  // Machine-readable SAM provenance metadata for this generated page
+  const provenanceObj = {
+    sam_export_id:           provenance.sam_export_id || null,
+    approved_source_pack_id: provenance.approved_source_pack_id || null,
+    source_fact_ids:         provenance.source_fact_ids || [],
+    source_citations:        (Array.isArray(provenance.source_citations) && provenance.source_citations.length > 0)
+      ? provenance.source_citations : null,
+    source_archive_refs:     (Array.isArray(provenance.source_archive_refs) && provenance.source_archive_refs.length > 0)
+      ? provenance.source_archive_refs : null,
+    generator_script:        'scripts/generate-content-expansion.js',
+    generated_at:            new Date().toISOString(),
+  };
+  // Omit null-valued fields from the block
+  Object.keys(provenanceObj).forEach(k => provenanceObj[k] === null && delete provenanceObj[k]);
+  const provenanceJson = JSON.stringify(provenanceObj, null, 2);
 
   const sectionsHtml = (action.recommended_sections || [])
     .map((sec, i) => {
@@ -155,6 +171,9 @@ function buildStubHtml(action) {
     }
   }
   <\/script>
+  <script type="application/json" id="sam-provenance">
+${provenanceJson}
+  </script>
 </head>
 <body data-wiki-stub="true">
 <a class="skip-link" href="#wiki-content">Skip to content</a>
@@ -264,7 +283,8 @@ ${relatedHtml}
       <div class="footer-inner">
         <div class="footer-col">
           <h4>🌙 The Crypto Moonboys GK Wiki</h4>
-          <p>Fan-driven encyclopedia for the crypto community.</p>
+          <p>Crypto Moonboys is a living Web3 wiki. The wiki is alive.</p>
+          <p>The pages explain the world. The arcade lets you enter it.</p>
         </div>
         <div class="footer-col">
           <h4>Explore</h4>
@@ -295,7 +315,7 @@ ${relatedHtml}
 // ---------------------------------------------------------------------------
 // Content expansion creates new wiki pages — it is a lore creation operation.
 // This script must only run when a SAM-approved export manifest is present
-// (js/sam-export-manifest.json) with a valid sam_export_id.
+// (js/sam-export-manifest.json) with a valid sam_export_id or approved_source_pack_id.
 // While SAM is paused, exit cleanly with no pages created.
 
 const SAM_MANIFEST = path.join(ROOT, 'js/sam-export-manifest.json');
@@ -386,7 +406,7 @@ for (const action of sortedActions) {
     continue;
   }
 
-  const html = buildStubHtml(action);
+  const html = buildStubHtml(action, samManifest);
   fs.writeFileSync(targetPath, html, 'utf8');
 
   actions.push({
