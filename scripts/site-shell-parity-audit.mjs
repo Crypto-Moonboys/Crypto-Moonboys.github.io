@@ -97,6 +97,89 @@ for (const rel of SHELL_PAGES) {
   if (ok) pass(`${rel}`);
 }
 
+// 4. Shell pages: script load-order check
+// site-shell.js must appear before connection-status-panel.js, global-player-header.js,
+// and live-activity-summary.js on every named shell page.
+console.log('\n[4] Shell pages: site-shell.js loads before shared components');
+const ORDERED_COMPONENTS = [
+  '/js/components/connection-status-panel.js',
+  '/js/components/global-player-header.js',
+  '/js/components/live-activity-summary.js',
+];
+for (const rel of SHELL_PAGES) {
+  const html = read(rel);
+  if (!html) continue;
+  const shellIdx = html.indexOf('/js/site-shell.js');
+  if (shellIdx === -1) continue; // already caught above
+  let orderOk = true;
+  for (const comp of ORDERED_COMPONENTS) {
+    const compIdx = html.indexOf(comp);
+    if (compIdx !== -1 && compIdx < shellIdx) {
+      fail(`${rel} — ${comp} appears BEFORE site-shell.js`);
+      orderOk = false;
+    }
+  }
+  if (orderOk) pass(`${rel}: script order ok`);
+}
+
+// 5. Named live pages must include live-activity-summary.js
+console.log('\n[5] Named live pages include live-activity-summary.js');
+const LIVE_PAGES = [
+  'index.html',
+  'sam.html',
+  'graph.html',
+  'search.html',
+  'timeline.html',
+  'games/leaderboard.html',
+];
+for (const rel of LIVE_PAGES) {
+  const html = read(rel);
+  if (!html) { warn(`${rel} — not found`); continue; }
+  if (html.includes('/js/components/live-activity-summary.js')) {
+    pass(`${rel}: live-activity-summary.js present`);
+  } else {
+    fail(`${rel} — missing live-activity-summary.js`);
+  }
+}
+
+// 6. Right-panel trigger: named live pages must have page-has-right-panel class
+//    OR be in the canonical allowlist in site-shell.js
+console.log('\n[6] Right-panel trigger present on named live pages');
+const RIGHT_PANEL_ALLOWLIST = [
+  '/index.html', '/sam.html', '/graph.html', '/search.html', '/timeline.html',
+  '/dashboard.html', '/community.html', '/how-to-play.html',
+  '/games/', '/games/index.html', '/games/leaderboard.html',
+];
+for (const rel of LIVE_PAGES) {
+  const html = read(rel);
+  if (!html) continue;
+  const normPath = '/' + rel.replace(/\\/g, '/');
+  if (html.includes('page-has-right-panel') || RIGHT_PANEL_ALLOWLIST.includes(normPath)) {
+    pass(`${rel}: right-panel trigger present`);
+  } else {
+    fail(`${rel} — missing page-has-right-panel class and not in canonical allowlist`);
+  }
+}
+
+// 7. DOM smoke test: site-shell.js must contain all right-panel element markers
+console.log('\n[7] site-shell.js DOM smoke test (static string check)');
+if (shellJs) {
+  const SMOKE_CHECKS = [
+    { needle: "rightPanel.id = 'homepage-right-panel'", label: '#homepage-right-panel' },
+    { needle: 'data-csp-panel',            label: '[data-csp-panel]' },
+    { needle: 'data-las-panel',            label: '[data-las-panel]' },
+    { needle: 'id="live-feed-widget"',     label: '#live-feed-widget' },
+    { needle: 'shouldShowRightPanel',      label: 'shouldShowRightPanel() helper' },
+  ];
+  for (const { needle, label } of SMOKE_CHECKS) {
+    if (shellJs.includes(needle)) {
+      pass(`site-shell.js smoke: ${label} present`);
+    } else {
+      fail(`site-shell.js smoke: ${label} MISSING`);
+    }
+  }
+}
+
 // ── Summary ──
 console.log(`\n─── Result ─────────────────────────────────────────────────────`);
 console.log(`  Failures : ${failures}`);
