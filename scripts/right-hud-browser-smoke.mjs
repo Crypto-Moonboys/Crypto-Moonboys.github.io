@@ -14,12 +14,14 @@
  *   - Another script removing or overwriting the inserted panel
  *
  * Pages tested:
- *   /sam.html  /graph.html  /search.html  /timeline.html
+ *   /  /index.html  /sam.html  /graph.html  /search.html  /timeline.html
  *   /games/leaderboard.html  /games/
  *
  * Assertions per page (after all scripts run):
  *   ✓ document.querySelector('#homepage-right-panel') exists
+ *   ✓ #homepage-right-panel is visible (display≠none, visibility≠hidden, bbox>0)
  *   ✓ document.querySelector('#live-feed-widget') exists
+ *   ✓ #live-feed-widget is visible
  *   ✓ document.querySelector('[data-csp-panel]') exists
  *   ✓ document.querySelector('[data-las-panel]') exists
  *   ✓ document.body.textContent includes "Live System Feed"
@@ -29,14 +31,22 @@
  * Also logged per page:
  *   • window.location.pathname
  *   • document.body.className
- *   • shouldShowRightPanel() result (via window.SITE_SHELL_DEBUG if exposed,
- *     otherwise derived from the same logic)
+ *   • shouldShowRightPanel() result (derived locally from the same logic as
+ *     site-shell.js — not read from a window debug hook)
  *   • whether /js/site-shell.js loaded successfully
  *   • any browser console errors
  *   • any failed script requests
  *
  * Run:
  *   node scripts/right-hud-browser-smoke.mjs
+ *
+ * Port:
+ *   Uses an ephemeral port by default (OS assigns a free port).
+ *   Override with env RIGHT_HUD_SMOKE_PORT=<number>.
+ *
+ * Viewport:
+ *   Set to 1440×900 so the CSS rule that makes the right panel visible
+ *   (min-width ≥ 1201 px) is active during computed-style assertions.
  */
 
 import http from 'node:http';
@@ -47,10 +57,12 @@ import { chromium } from 'playwright';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(HERE, '..');
-const PORT = 4299;
+const PORT = Number(process.env.RIGHT_HUD_SMOKE_PORT) || 0; // 0 = OS picks a free port
 
 // ── Pages to test ─────────────────────────────────────────────────────────────
 const PAGES = [
+  '/',
+  '/index.html',
   '/sam.html',
   '/graph.html',
   '/search.html',
@@ -84,26 +96,41 @@ function mimeType(filePath) {
 function createServer() {
   return http.createServer((req, res) => {
     try {
-      const rawPath = decodeURIComponent((req.url || '/').split('?')[0]);
-      const clean   = rawPath.replace(/^\/+/, '');
-      let filePath  = path.join(ROOT, clean);
-
-      // Directory index
-      if (rawPath.endsWith('/') || rawPath === '') {
-        filePath = path.join(ROOT, clean, 'index.html');
-      }
-
-      // Serve only if it exists and is a file
-      if (!fs.existsSync(filePath) || fs.statSync(filePath).isDirectory()) {
-        res.statusCode = 404;
-        res.end('Not found: ' + rawPath);
+      // Decode percent-encoding, strip query string
+      let decoded;
+      try {
+        decoded = decodeURIComponent((req.url || '/').split('?')[0]);
+      } catch (_) {
+        res.statusCode = 400;
+        res.end('Bad request');
         return;
       }
 
-      res.setHeader('Content-Type', mimeType(filePath));
+      // Build candidate path and resolve to absolute
+      const candidate = decoded.endsWith('/') || decoded === ''
+        ? path.join(ROOT, decoded, 'index.html')
+        : path.join(ROOT, decoded);
+      const resolved  = path.resolve(candidate);
+
+      // Path traversal guard: resolved path must be inside ROOT
+      const rel = path.relative(ROOT, resolved);
+      if (rel.startsWith('..') || path.isAbsolute(rel)) {
+        res.statusCode = 403;
+        res.end('Forbidden');
+        return;
+      }
+
+      // Serve only if it exists and is a file
+      if (!fs.existsSync(resolved) || fs.statSync(resolved).isDirectory()) {
+        res.statusCode = 404;
+        res.end('Not found: ' + decoded);
+        return;
+      }
+
+      res.setHeader('Content-Type', mimeType(resolved));
       // No-cache so tests always see the freshest build
       res.setHeader('Cache-Control', 'no-store');
-      fs.createReadStream(filePath).pipe(res);
+      fs.createReadStream(resolved).pipe(res);
     } catch (err) {
       res.statusCode = 500;
       res.end(String(err));
@@ -131,8 +158,8 @@ function info(msg) {
 }
 
 // ── Per-page test ─────────────────────────────────────────────────────────────
-async function testPage(page, pathname) {
-  const url = `http://127.0.0.1:${PORT}${pathname}`;
+async function testPage(page, pathname, port) {
+  const url = `http://127.0.0.1:${port}${pathname}`;
   process.stdout.write(`\n── ${pathname} ──────────────────────────────────────────\n`);
 
   const consoleErrors  = [];
@@ -152,17 +179,28 @@ async function testPage(page, pathname) {
     }
   });
 
-  // Navigate and wait until network is idle so all scripts have run
+  // Navigate and wait until initial HTML + render-blocking scripts have run.
+  // We do NOT use 'networkidle' because external API calls (fonts, analytics,
+  // Telegram etc.) vary in timing and would make the test flaky.  'load' is
+  // used instead of 'domcontentloaded' so that stylesheets are fully applied
+  // before we read computed styles (visibility assertions require the CSSOM).
   try {
-    await page.goto(url, { waitUntil: 'networkidle', timeout: 20000 });
+    await page.goto(url, { waitUntil: 'load', timeout: 20000 });
   } catch (err) {
     fail(`page load failed: ${err.message}`);
     return;
   }
 
+  // Wait for the shell to finish injecting the right panel (up to 5 s).
+  // If it never appears the later assertions will record the failure cleanly.
+  try {
+    await page.waitForSelector('#homepage-right-panel', { timeout: 5000 });
+  } catch (_) { /* assertion below will record the failure */ }
+
   // ── Diagnostic info ──────────────────────────────────────────────────
   const diag = await page.evaluate(() => {
-    /* replicate shouldShowRightPanel logic from site-shell.js */
+    /* replicate shouldShowRightPanel logic from site-shell.js — derived
+       locally; not read from a window debug hook */
     function shouldShowRightPanel(pn, body) {
       if (body.classList.contains('page-has-right-panel')) return true;
       var p = pn === '/' ? '/index.html'
@@ -182,12 +220,27 @@ async function testPage(page, pathname) {
       }
       return false;
     }
+
+    function visibilityInfo(sel) {
+      var el = document.querySelector(sel);
+      if (!el) return { exists: false, display: null, visibility: null, w: 0, h: 0 };
+      var cs = window.getComputedStyle(el);
+      var bb = el.getBoundingClientRect();
+      return {
+        exists:     true,
+        display:    cs.display,
+        visibility: cs.visibility,
+        w:          bb.width,
+        h:          bb.height,
+      };
+    }
+
     return {
       pathname:          window.location.pathname,
       bodyClass:         document.body.className,
       shouldShowPanel:   shouldShowRightPanel(window.location.pathname, document.body),
-      rightPanelInDOM:   !!document.querySelector('#homepage-right-panel'),
-      liveFeedInDOM:     !!document.querySelector('#live-feed-widget'),
+      rightPanel:        visibilityInfo('#homepage-right-panel'),
+      liveFeed:          visibilityInfo('#live-feed-widget'),
       cspPanelInDOM:     !!document.querySelector('[data-csp-panel]'),
       lasPanelInDOM:     !!document.querySelector('[data-las-panel]'),
       textLiveFeed:      document.body.textContent.includes('Live System Feed'),
@@ -219,16 +272,43 @@ async function testPage(page, pathname) {
   }
 
   // ── Assertions ────────────────────────────────────────────────────────
-  if (diag.rightPanelInDOM) {
+  const rp = diag.rightPanel;
+  if (rp.exists) {
     pass('#homepage-right-panel exists in post-JS DOM');
   } else {
     fail('#homepage-right-panel MISSING from post-JS DOM');
   }
 
-  if (diag.liveFeedInDOM) {
+  // Visibility assertions for #homepage-right-panel
+  if (rp.exists && rp.display !== 'none') {
+    pass('#homepage-right-panel display !== "none"');
+  } else if (rp.exists) {
+    fail('#homepage-right-panel has display:none (hidden)');
+  }
+
+  if (rp.exists && rp.visibility !== 'hidden') {
+    pass('#homepage-right-panel visibility !== "hidden"');
+  } else if (rp.exists) {
+    fail('#homepage-right-panel has visibility:hidden');
+  }
+
+  if (rp.exists && rp.w > 0 && rp.h > 0) {
+    pass(`#homepage-right-panel bounding box ${rp.w.toFixed(0)}×${rp.h.toFixed(0)} > 0`);
+  } else if (rp.exists) {
+    fail(`#homepage-right-panel bounding box is zero (${rp.w}×${rp.h})`);
+  }
+
+  const lf = diag.liveFeed;
+  if (lf.exists) {
     pass('#live-feed-widget exists in post-JS DOM');
   } else {
     fail('#live-feed-widget MISSING from post-JS DOM');
+  }
+
+  if (lf.exists && lf.display !== 'none') {
+    pass('#live-feed-widget display !== "none"');
+  } else if (lf.exists) {
+    fail('#live-feed-widget has display:none (hidden)');
   }
 
   if (diag.cspPanelInDOM) {
@@ -264,20 +344,21 @@ async function testPage(page, pathname) {
 
 // ── Main ──────────────────────────────────────────────────────────────────────
 async function main() {
-  process.stdout.write('\n═══ Right HUD Browser Smoke Test ═══════════════════════════════\n');
-  process.stdout.write(`    Serving repo from: ${ROOT}\n`);
-  process.stdout.write(`    Port: ${PORT}\n`);
-
-  // Start local HTTP server
+  // Start local HTTP server on ephemeral port (or env override)
   const server = createServer();
-  await new Promise((resolve, reject) => {
+  const port = await new Promise((resolve, reject) => {
     server.once('error', reject);
-    server.listen(PORT, '127.0.0.1', resolve);
+    server.listen(PORT, '127.0.0.1', () => resolve(server.address().port));
   });
 
-  // Launch Playwright Chromium
+  process.stdout.write('\n═══ Right HUD Browser Smoke Test ═══════════════════════════════\n');
+  process.stdout.write(`    Serving repo from: ${ROOT}\n`);
+  process.stdout.write(`    Port: ${port}\n`);
+
+  // Launch Playwright Chromium with a 1440×900 viewport so the right panel's
+  // CSS show-rule (≥1201 px) is active during visibility assertions.
   const browser = await chromium.launch({ headless: true });
-  const context = await browser.newContext();
+  const context = await browser.newContext({ viewport: { width: 1440, height: 900 } });
 
   let exitCode = 0;
 
@@ -285,7 +366,7 @@ async function main() {
     for (const pathname of PAGES) {
       const page = await context.newPage();
       try {
-        await testPage(page, pathname);
+        await testPage(page, pathname, port);
       } finally {
         await page.close();
       }
