@@ -201,8 +201,8 @@ async function testPage(page, pathname) {
   // ── Log diagnostics ──────────────────────────────────────────────────
   info(`pathname:            ${diag.pathname}`);
   info(`body.className:      ${diag.bodyClass}`);
-  info(`shouldShowRightPanel:${diag.shouldShowPanel}`);
-  info(`site-shell.js loaded:${shellLoaded}`);
+  info(`shouldShowRightPanel: ${diag.shouldShowPanel}`);
+  info(`site-shell.js loaded: ${shellLoaded}`);
   info(`#layout in DOM:      ${diag.layoutId}`);
   info(`#main-wrapper in DOM:${diag.mainWrapperId}`);
 
