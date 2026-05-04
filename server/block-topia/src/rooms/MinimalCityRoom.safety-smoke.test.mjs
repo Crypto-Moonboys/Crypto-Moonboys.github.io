@@ -11,10 +11,10 @@ function must(pattern, message) {
   assert.ok(pattern.test(source), message);
 }
 
-must(/const\s+FREE_ROAM_MS\s*=\s*60_000;\s*\/\/\s*Dev timing\./, 'FREE_ROAM dev timing constant should exist.');
-must(/const\s+WARNING_MS\s*=\s*10_000/, 'WARNING constant should exist.');
-must(/const\s+EVENT_MS\s*=\s*90_000/, 'EVENT constant should exist.');
-must(/const\s+RECOVERY_MS\s*=\s*30_000;\s*\/\/\s*Dev timing\./, 'RECOVERY dev timing constant should exist.');
+must(/const\s+FREE_ROAM_MS\s*=\s*parseInt\(process\.env\.BLOCKTOPIA_FREE_ROAM_MS,\s*10\)\s*\|\|\s*\(IS_PROD\s*\?\s*600_000\s*:\s*60_000\)/, 'FREE_ROAM_MS should be env-configurable with production/dev defaults.');
+must(/const\s+WARNING_MS\s*=\s*parseInt\(process\.env\.BLOCKTOPIA_WARNING_MS,\s*10\)\s*\|\|/, 'WARNING_MS should be env-configurable.');
+must(/const\s+EVENT_MS\s*=\s*parseInt\(process\.env\.BLOCKTOPIA_EVENT_MS,\s*10\)\s*\|\|/, 'EVENT_MS should be env-configurable.');
+must(/const\s+RECOVERY_MS\s*=\s*parseInt\(process\.env\.BLOCKTOPIA_RECOVERY_MS,\s*10\)\s*\|\|\s*\(IS_PROD\s*\?\s*600_000\s*:\s*30_000\)/, 'RECOVERY_MS should be env-configurable with production/dev defaults.');
 must(/const\s+OBJECTIVE_PATROL_SWEEP\s*=\s*'PATROL_SWEEP'/, 'Patrol objective constant should exist.');
 must(/const\s+OBJECTIVE_SIGNAL_HACK\s*=\s*'SIGNAL_HACK'/, 'Signal hack objective constant should exist.');
 must(/const\s+UPGRADE_POOL\s*=\s*\[/, 'Upgrade pool should exist.');

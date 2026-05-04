@@ -193,6 +193,9 @@ jobs:
         run: node scripts/smoke-test.js
 
       # ── Diff guard: fail if automation touched any blocked path ───────────
+      # CHANGED_FILES includes BOTH tracked changes (git diff) AND untracked
+      # new files (git ls-files --others) so the guard catches newly created
+      # files inside protected directories as well as edits to existing ones.
 
       - name: Diff guard — block changes to protected paths
         shell: bash
@@ -207,11 +210,13 @@ jobs:
             "city_block_topia_dev_build_deck.md"
             "AGENT_ENFORCEMENT.md"
           )
-          # Collect both modified tracked files and new untracked files
+
+          # Build CHANGED_FILES from both tracked diffs and untracked new files.
           CHANGED_FILES=$(
             { git diff --name-only HEAD 2>/dev/null; \
               git ls-files --others --exclude-standard 2>/dev/null; } | sort -u
           )
+
           FAIL=0
           for pattern in "${BLOCKED[@]}"; do
             if echo "$CHANGED_FILES" | grep -qF "$pattern"; then
@@ -219,13 +224,15 @@ jobs:
               FAIL=1
             fi
           done
-          # README-style files are blocked for this automation regardless of directory.
-          # Covers: README, README.md, readme.md, READ.ME, read.me, etc.
-          # README/source-truth changes must happen in a separate human-reviewed docs PR.
-          if echo "$CHANGED_FILES" | grep -iEq '(^|/)(README|READ\.ME)(\.md)?$'; then
-            echo "::error::Automation attempted to modify a README-style file. README/source-truth changes must happen in a separate human-reviewed docs PR."
+
+          # README guard: block any README* or READ.ME* file (any extension, any case).
+          # Uses the broader regex to catch README.md, README.txt, README-old.md, etc.
+          # README / source-truth changes must happen in separate human-reviewed docs PRs.
+          if echo "$CHANGED_FILES" | grep -iEq '(^|/)(README[^/]*|READ\.ME[^/]*)$'; then
+            echo "::error::Automation attempted to modify README file(s). README changes require a separate human-reviewed PR."
             FAIL=1
           fi
+
           if [ "$FAIL" -ne 0 ]; then
             echo "Aborting: blocked path(s) modified. No commit will be made."
             exit 1

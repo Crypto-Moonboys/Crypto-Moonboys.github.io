@@ -3,8 +3,9 @@ import { ArcadeSync } from '/js/arcade-sync.js';
 import '/js/arcade-meta-ui.js';
 import '/js/arcade-retention-engine.js';
 
-// Deployed Cloudflare Worker URL for the shared arcade leaderboard.
-// Update this constant when the worker is published.
+// Fallback leaderboard URL — used only when window.MOONBOYS_API.LEADERBOARD_URL is not set.
+// The primary source of truth is window.MOONBOYS_API.LEADERBOARD_URL (set in js/api-config.js).
+// Update this constant only if the worker is permanently renamed.
 const PRODUCTION_LEADERBOARD_URL = "https://moonboys-leaderboard.sercullen.workers.dev";
 
 // localStorage key shared with identity-gate.js
@@ -50,8 +51,12 @@ function markSyncHealth(state, reason = "") {
 
 
 function getApiUrl() {
-  if (typeof window !== "undefined" && window.LEADERBOARD_API_URL) {
-    return String(window.LEADERBOARD_API_URL).replace(/\/$/, "");
+  if (typeof window !== "undefined") {
+    // Primary: use the centralised MOONBOYS_API config (set by js/api-config.js)
+    const cfg = window.MOONBOYS_API;
+    if (cfg && cfg.LEADERBOARD_URL) return String(cfg.LEADERBOARD_URL).replace(/\/$/, "");
+    // Legacy override: direct window.LEADERBOARD_API_URL
+    if (window.LEADERBOARD_API_URL) return String(window.LEADERBOARD_API_URL).replace(/\/$/, "");
   }
   return PRODUCTION_LEADERBOARD_URL;
 }

@@ -3,6 +3,10 @@ const TILE_WIDTH = 64;
 const TILE_HEIGHT = 32;
 const MAP_SAFE_MARGIN_RATIO = 0.08;
 const ATTACK_RANGE = 1.3;
+// Minimum client-side input debounce for attack (ms).
+// The actual cooldown applied is runtime.localPlayer.attackCooldownMs (server-authoritative,
+// starts at 750ms and is updated via player state payloads).  ATTACK_INPUT_COOLDOWN_MS is
+// used only as the floor so the UI never fires faster than the server minimum (MIN_ATTACK_COOLDOWN_MS = 350).
 const ATTACK_INPUT_COOLDOWN_MS = 350;
 const EXTRACT_INTENT_THROTTLE_MS = 1000;
 const MISSION_COMPLETE_MSG = 'MISSION COMPLETE - extraction successful';
@@ -370,7 +374,8 @@ function tryAttack() {
     pushFeedback('Not connected', 900);
     return;
   }
-  runtime.attackCooldownUntil = now + ATTACK_INPUT_COOLDOWN_MS;
+  const serverCooldownMs = (runtime.localPlayer?.attackCooldownMs ?? ATTACK_INPUT_COOLDOWN_MS);
+  runtime.attackCooldownUntil = now + Math.max(ATTACK_INPUT_COOLDOWN_MS, serverCooldownMs);
 }
 
 function onPointerDown(event) {

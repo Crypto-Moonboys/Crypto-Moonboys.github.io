@@ -56,8 +56,9 @@ function jsonError(message, status, origin) {
 }
 
 function isAdmin(request, env) {
-  const secret = request.headers.get('X-Admin-Secret')
-    || new URL(request.url).searchParams.get('admin_secret');
+  // Secrets must be passed via the X-Admin-Secret header only.
+  // URL query params are logged by proxies and browser history.
+  const secret = request.headers.get('X-Admin-Secret');
   return secret && secret === env.ADMIN_SECRET;
 }
 

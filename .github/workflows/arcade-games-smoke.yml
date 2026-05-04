@@ -1,0 +1,78 @@
+name: Arcade Games Smoke
+
+# Smoke tests for all 6 arcade games that do not have dedicated per-game
+# test files: Snake Run, Breakout Bullrun, Asteroid Fork, Pac-Chain,
+# Tetris Block Topia, Crystal Quest.
+#
+# Tests:
+#   - config.js uses canonical leaderboard game IDs
+#   - bootstrap.js imports ArcadeSync + submitScore
+#   - bootstrap.js exports the correct adapter symbol
+#   - arcade-manifest.js uses canonical IDs
+#   - leaderboard worker has GAME_KEY_ALIASES for snake-run and breakout-bullrun
+#   - leaderboard worker has Telegram HMAC verification
+
+on:
+  pull_request:
+    paths:
+      - 'js/arcade/games/**'
+      - 'js/arcade/arcade-manifest.js'
+      - 'games/snake-run/**'
+      - 'games/breakout-bullrun/**'
+      - 'games/asteroid-fork/**'
+      - 'games/pac-chain/**'
+      - 'games/tetris-block-topia/**'
+      - 'games/crystal-quest/**'
+      - 'workers/leaderboard-worker.js'
+      - 'scripts/arcade-smoke.test.mjs'
+      - 'scripts/leaderboard-hmac-test.mjs'
+      - '.github/workflows/arcade-games-smoke.yml'
+  push:
+    branches:
+      - main
+    paths:
+      - 'js/arcade/games/**'
+      - 'js/arcade/arcade-manifest.js'
+      - 'games/snake-run/**'
+      - 'games/breakout-bullrun/**'
+      - 'games/asteroid-fork/**'
+      - 'games/pac-chain/**'
+      - 'games/tetris-block-topia/**'
+      - 'games/crystal-quest/**'
+      - 'workers/leaderboard-worker.js'
+      - 'scripts/arcade-smoke.test.mjs'
+      - 'scripts/leaderboard-hmac-test.mjs'
+      - '.github/workflows/arcade-games-smoke.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  arcade-smoke:
+    name: Arcade games structural smoke
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Syntax check — arcade game bootstrap modules
+        run: |
+          node --check js/arcade/games/snake-run/bootstrap.js
+          node --check js/arcade/games/breakout-bullrun/bootstrap.js
+          node --check js/arcade/games/asteroid-fork/bootstrap.js
+          node --check js/arcade/games/pac-chain/bootstrap.js
+          node --check js/arcade/games/tetris/bootstrap.js
+          node --check js/arcade/games/crystal-quest/bootstrap.js
+          node --check workers/leaderboard-worker.js
+
+      - name: Arcade smoke — config IDs, exports, manifest, leaderboard aliases
+        run: node scripts/arcade-smoke.test.mjs
+
+      - name: Leaderboard HMAC validation — CRIT-01 tests
+        run: node scripts/leaderboard-hmac-test.mjs

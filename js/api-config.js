@@ -19,6 +19,11 @@ window.MOONBOYS_API = window.MOONBOYS_API || {};
 if (!window.MOONBOYS_API.BASE_URL) {
   window.MOONBOYS_API.BASE_URL = "https://moonboys-api.sercullen.workers.dev";
 }
+// Centralised leaderboard URL — consumed by js/leaderboard-client.js.
+// Always set this here so leaderboard-client.js does not need a hardcoded fallback.
+if (!window.MOONBOYS_API.LEADERBOARD_URL) {
+  window.MOONBOYS_API.LEADERBOARD_URL = "https://moonboys-leaderboard.sercullen.workers.dev";
+}
 
 Object.assign(window.MOONBOYS_API, {
 

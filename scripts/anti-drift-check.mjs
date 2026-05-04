@@ -143,8 +143,8 @@ if (!readme) {
 console.log('\n[5] Arcade manifest contains only live arcade games');
 const manifestSrc = read('js/arcade/arcade-manifest.js');
 const LIVE_GAME_IDS = new Set([
-  'invaders', 'pacchain', 'asteroids', 'breakout-bullrun',
-  'snake-run', 'tetris', 'blocktopia', 'crystal',
+  'invaders', 'pacchain', 'asteroids', 'breakout',
+  'snake', 'tetris', 'blocktopia', 'crystal',
 ]);
 if (!manifestSrc) {
   fail('js/arcade/arcade-manifest.js not found');
@@ -507,6 +507,60 @@ if (!cspSrc) {
     fail(`Runtime drift detected: ${CSP_FILE} references arcade_xp_total — Arcade XP must come from MOONBOYS_STATE`);
   } else {
     pass('CSP: arcade_xp_total not referenced (XP source is MOONBOYS_STATE)');
+  }
+}
+
+// ── TELEGRAM_AUTH_MAX_AGE consistency check ───────────────────────────────────
+// Ensures the max auth age constant is the same value (86400 seconds = 24 hours)
+// across all three places it is defined. If these drift, the leaderboard worker
+// will silently reject valid auths or accept expired ones.
+{
+  const workerSrc     = read('workers/leaderboard-worker.js');
+  const apiConfigSrc  = read('workers/moonboys-api/blocktopia/config.js');
+  const identitySrc   = read('js/identity-gate.js');
+
+  const workerMatch     = workerSrc  && workerSrc.match(/TELEGRAM_AUTH_MAX_AGE_SECONDS\s*=\s*(\d+)/);
+  const apiConfigMatch  = apiConfigSrc && apiConfigSrc.match(/TELEGRAM_AUTH_MAX_AGE\s*=\s*(\d+)/);
+  const identityMatch   = identitySrc && identitySrc.match(/TELEGRAM_AUTH_MAX_AGE_SECONDS\s*=\s*(\d+)/);
+
+  const values = {
+    'leaderboard-worker.js TELEGRAM_AUTH_MAX_AGE_SECONDS':    workerMatch?.[1],
+    'moonboys-api/blocktopia/config.js TELEGRAM_AUTH_MAX_AGE': apiConfigMatch?.[1],
+    'js/identity-gate.js TELEGRAM_AUTH_MAX_AGE_SECONDS':       identityMatch?.[1],
+  };
+
+  const unique = new Set(Object.values(values).filter(Boolean));
+  if (unique.size === 1) {
+    pass(`TELEGRAM_AUTH_MAX_AGE consistent across all 3 locations: ${[...unique][0]}s`);
+  } else {
+    for (const [loc, val] of Object.entries(values)) {
+      if (!val) fail(`TELEGRAM_AUTH_MAX_AGE missing in ${loc}`);
+    }
+    if (unique.size > 1) {
+      fail(`TELEGRAM_AUTH_MAX_AGE drift: ${JSON.stringify(values)}`);
+    }
+  }
+}
+
+// ── SEASON constants drift check ──────────────────────────────────────────────
+// SEASON_EPOCH_MS and SEASON_LENGTH_MS must be identical in leaderboard-worker.js
+// and moonboys-api/worker.js, otherwise the two workers compute different current-
+// season numbers which will break season displays and scoring across both systems.
+{
+  const lbSrc  = read('workers/leaderboard-worker.js');
+  const apiSrc = read('workers/moonboys-api/worker.js');
+
+  const lbEpoch  = lbSrc  && lbSrc.match(/SEASON_EPOCH_MS\s*=\s*(\d+)/)?.[1];
+  const apiEpoch = apiSrc && apiSrc.match(/SEASON_EPOCH_MS\s*=\s*(\d+)/)?.[1];
+
+  if (lbEpoch && apiEpoch && lbEpoch !== apiEpoch) {
+    fail(`SEASON_EPOCH_MS drift: leaderboard=${lbEpoch} moonboys-api=${apiEpoch}`);
+  } else if (lbEpoch && apiEpoch) {
+    pass(`SEASON_EPOCH_MS consistent: ${lbEpoch}`);
+  } else if (lbEpoch) {
+    pass(`SEASON_EPOCH_MS defined in leaderboard-worker.js (${lbEpoch}); not found in moonboys-api (single source)`);
+  } else {
+    fail('SEASON_EPOCH_MS missing from leaderboard-worker.js');
   }
 }
 

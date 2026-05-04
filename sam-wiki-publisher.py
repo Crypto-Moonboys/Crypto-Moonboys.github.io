@@ -269,7 +269,7 @@ def render_html(
     <img src="/img/CRYPTO-MOONBOYS-BITCOIN-LOGO.png" alt="" aria-hidden="true">
     <span>
       <span class="logo-text">🌙 The Crypto Moonboys GK Wiki</span>
-      <span class="logo-sub">Blockchain Cryptoism Encyclopedia ⚡️⚡️⚡️</span>
+      <span class="logo-sub">Living Web3 Wiki</span>
     </span>
   </a>
   <div id="header-search" role="search">
@@ -370,7 +370,7 @@ def render_html(
       <div class="footer-inner">
         <div class="footer-col">
           <h4>🌙 The Crypto Moonboys GK Wiki</h4>
-          <p>Fan-driven encyclopedia for the crypto community.</p>
+          <p>Crypto Moonboys is a living Web3 wiki.</p>
         </div>
         <div class="footer-col">
           <h4>Explore</h4>

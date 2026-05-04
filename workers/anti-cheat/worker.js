@@ -9,7 +9,8 @@
  *   LEADERBOARD — KV namespace (same as leaderboard-worker)
  *
  * Secrets (set via `wrangler secret put`):
- *   ADMIN_SECRET — required header/param value for all admin routes
+ *   ADMIN_SECRET — required X-Admin-Secret header for all admin routes.
+ *                  URL query parameter admin_secret is NOT accepted (would leak into logs).
  *
  * Cron trigger: "0 0 * * 0" — every Sunday at 00:00 UTC
  *
@@ -72,12 +73,34 @@ const QUEST_WEEK_TIERS = [
 
 // ── Shared helpers ────────────────────────────────────────────────────────────
 
-const CORS_HEADERS = {
-  'Access-Control-Allow-Origin':  '*',
-  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type, X-Admin-Secret',
-  'Content-Type': 'application/json',
-};
+const DEFAULT_CORS_ALLOWED_ORIGINS = [
+  'https://cryptomoonboys.com',
+  'https://crypto-moonboys.github.io',
+];
+
+function buildCorsHeaders(request, env) {
+  const origin = (request && request.headers) ? (request.headers.get('Origin') || '') : '';
+  const allowed = env && env.CORS_ALLOWED_ORIGINS
+    ? String(env.CORS_ALLOWED_ORIGINS).split(',').map(s => s.trim()).filter(Boolean)
+    : DEFAULT_CORS_ALLOWED_ORIGINS;
+  const allowedOrigin = allowed.includes(origin) ? origin : (allowed[0] || 'null');
+  return {
+    'Access-Control-Allow-Origin':  allowedOrigin,
+    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type, X-Admin-Secret',
+    'Content-Type': 'application/json',
+    'X-Content-Type-Options': 'nosniff',
+    'Referrer-Policy': 'strict-origin-when-cross-origin',
+    'X-Frame-Options': 'DENY',
+  };
+}
+
+// Per-request CORS headers, set at the start of each fetch() invocation.
+// Cloudflare Workers run each request in its own V8 isolate context, so there is no
+// concurrent-request race condition — module-level state is request-scoped in practice.
+// NOTE: Do not reuse this worker outside a Cloudflare Workers runtime without refactoring
+// this to a parameter-passing pattern.
+let CORS_HEADERS = buildCorsHeaders(null, null);
 
 function json(data, status = 200) {
   return new Response(JSON.stringify(data), { status, headers: CORS_HEADERS });
@@ -111,6 +134,9 @@ function currentUtcYear(now = Date.now()) {
 }
 
 // ── Admin authorisation ───────────────────────────────────────────────────────
+// Secrets must be passed via the X-Admin-Secret request header only.
+// URL query parameter admin_secret is NOT accepted — query params are logged by
+// proxies, CDNs, and browser history, which would expose the secret.
 
 function isAdminAuthorised(request, env) {
   const secret = env.ADMIN_SECRET;
@@ -119,8 +145,7 @@ function isAdminAuthorised(request, env) {
     return false;
   }
   const header = request.headers.get('X-Admin-Secret');
-  const param  = new URL(request.url).searchParams.get('admin_secret');
-  return header === secret || param === secret;
+  return header === secret;
 }
 
 // ── @username → telegram_id lookup ───────────────────────────────────────────
@@ -468,6 +493,9 @@ export default {
   async fetch(request, env) {
     const url  = new URL(request.url);
     const path = url.pathname.replace(/\/$/, '') || '/';
+
+    // Set per-request CORS headers reflecting the request's Origin.
+    CORS_HEADERS = buildCorsHeaders(request, env);
 
     if (request.method === 'OPTIONS') {
       return new Response(null, { status: 204, headers: CORS_HEADERS });

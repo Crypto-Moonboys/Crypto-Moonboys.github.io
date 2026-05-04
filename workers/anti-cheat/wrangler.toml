@@ -24,4 +24,5 @@ crons = ["0 0 * * SUN"]
 
 # Admin secret — set via CLI, never commit the value:
 #   wrangler secret put ADMIN_SECRET
-# All admin routes require the X-Admin-Secret header (or ?admin_secret= param).
+# All admin routes require the X-Admin-Secret header ONLY.
+# URL query parameter admin_secret is NOT accepted (would leak into Cloudflare logs).

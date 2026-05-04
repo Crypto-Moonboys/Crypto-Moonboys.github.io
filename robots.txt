@@ -1,4 +1,8 @@
 User-agent: *
 Allow: /
 
+# Internal admin and agent pages — not intended for search engine indexing.
+Disallow: /admin-tools.html
+Disallow: /agent.html
+
 Sitemap: https://crypto-moonboys.github.io/sitemap.xml

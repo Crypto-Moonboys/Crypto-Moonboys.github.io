@@ -15,8 +15,176 @@ const ALL_TIME_TOP_SEASONAL = 50;    // top N seasonal players evaluated for all
  * Master season epoch: 2024-01-01T00:00:00.000Z (Unix ms 1704067200000).
  * Must match SEASON_EPOCH_MS in workers/moonboys-api/worker.js so both workers
  * always report the same current season number regardless of deployment order.
+ * Anti-drift: scripts/anti-drift-check.mjs verifies this value matches moonboys-api.
  */
 const SEASON_EPOCH_MS = 1704067200000;
+
+/**
+ * Telegram auth tokens are considered valid for 24 hours (86400 seconds).
+ * Must match TELEGRAM_AUTH_MAX_AGE in workers/moonboys-api/blocktopia/config.js
+ * and TELEGRAM_AUTH_MAX_AGE_SECONDS in js/identity-gate.js.
+ * Anti-drift: if any of these diverge, leaderboard auth will silently mismatch.
+ */
+const TELEGRAM_AUTH_MAX_AGE_SECONDS = 86400;
+
+/**
+ * Game-key aliases: map non-canonical client-submitted keys to the canonical
+ * GAMES array values.  GET requests also normalise via this map so that
+ * ?game=snake-run and ?game=snake both return the same board.
+ */
+const GAME_KEY_ALIASES = {
+  'snake-run':           'snake',
+  'breakout-bullrun':    'breakout',
+  'asteroid-fork':       'asteroids',
+  'pac-chain':           'pacchain',
+  'tetris-block-topia':  'tetris',
+  'crystal-quest':       'crystal',
+  'block-topia-quest-maze': 'blocktopia',
+};
+
+/**
+ * CORS allowed origins for browser-facing routes.
+ * Only origins in this list receive the Access-Control-Allow-Origin header.
+ * Configured via CORS_ALLOWED_ORIGINS env var (comma-separated).
+ */
+const DEFAULT_ALLOWED_ORIGINS = [
+  'https://cryptomoonboys.com',
+  'https://crypto-moonboys.github.io',
+];
+
+// ── Telegram HMAC verification ───────────────────────────────────────────────
+// Mirrors the algorithm in workers/moonboys-api/worker.js verifyTelegramAuth /
+// buildTelegramAuthCheckString.  Must stay in sync if the upstream implementation
+// changes.
+
+function buildTelegramAuthCheckString(fields) {
+  return Object.keys(fields || {})
+    .filter(k => fields[k] != null)
+    .sort()
+    .map(k => `${k}=${fields[k]}`)
+    .join('\n');
+}
+
+async function verifyTelegramHmac(data, botToken) {
+  if (!botToken || !data || !data.hash) return false;
+  const { hash, ...fields } = data;
+  const checkString = buildTelegramAuthCheckString(fields);
+  const secretKeyBytes = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(botToken));
+  const hmacKey = await crypto.subtle.importKey(
+    'raw', secretKeyBytes, { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']
+  );
+  const sigBytes = await crypto.subtle.sign('HMAC', hmacKey, new TextEncoder().encode(checkString));
+  const sig = Array.from(new Uint8Array(sigBytes)).map(b => b.toString(16).padStart(2, '0')).join('');
+  return sig === hash;
+}
+
+/**
+ * Parses and HMAC-verifies a Telegram auth payload from a POST body.
+ *
+ * Returns { ok: true, telegramId: "123" } on success.
+ * Returns { ok: false, error: "...", status: 4xx } on failure.
+ *
+ * Accepts telegram_auth or auth_evidence field (object or JSON string).
+ */
+async function verifyLeaderboardTelegramAuth(body, env) {
+  if (!env.TELEGRAM_BOT_TOKEN) {
+    return { ok: false, error: 'server_config_error', status: 503 };
+  }
+
+  const rawAuth = body?.telegram_auth ?? body?.auth_evidence ?? null;
+  if (!rawAuth) {
+    return { ok: false, error: 'telegram_sync_required', status: 403 };
+  }
+
+  let tg;
+  if (typeof rawAuth === 'object') {
+    tg = rawAuth;
+  } else if (typeof rawAuth === 'string') {
+    try { tg = JSON.parse(rawAuth); } catch { tg = null; }
+  }
+  if (!tg || typeof tg !== 'object') {
+    return { ok: false, error: 'telegram_sync_required', status: 403 };
+  }
+
+  const telegramId = String(tg.id || '').trim();
+  const authDate   = String(tg.auth_date || '').trim();
+  const hash       = String(tg.hash || '').trim();
+
+  if (!/^\d{1,20}$/.test(telegramId)) {
+    return { ok: false, error: 'telegram_auth_invalid', status: 401 };
+  }
+  if (!/^\d{1,12}$/.test(authDate)) {
+    return { ok: false, error: 'telegram_auth_invalid', status: 401 };
+  }
+  if (!/^[a-f0-9]{64}$/i.test(hash)) {
+    return { ok: false, error: 'telegram_auth_invalid', status: 401 };
+  }
+
+  const authDateSeconds = parseInt(authDate, 10);
+  const nowSeconds = Math.floor(Date.now() / 1000);
+  if (!Number.isFinite(authDateSeconds) || authDateSeconds > nowSeconds + 300) {
+    return { ok: false, error: 'telegram_auth_invalid', status: 401 };
+  }
+  if (nowSeconds - authDateSeconds > TELEGRAM_AUTH_MAX_AGE_SECONDS) {
+    return { ok: false, error: 'telegram_auth_expired', status: 401 };
+  }
+
+  let valid = false;
+  try {
+    valid = await verifyTelegramHmac(
+      { id: telegramId, first_name: tg.first_name, last_name: tg.last_name,
+        username: tg.username, photo_url: tg.photo_url, auth_date: authDate, hash },
+      env.TELEGRAM_BOT_TOKEN,
+    );
+  } catch {
+    return { ok: false, error: 'telegram_auth_verification_error', status: 500 };
+  }
+  if (!valid) {
+    return { ok: false, error: 'telegram_auth_invalid', status: 401 };
+  }
+
+  // If caller also supplied body.telegram_id, it must match the verified ID.
+  if (body.telegram_id != null) {
+    const claimed = String(body.telegram_id).trim();
+    if (claimed && claimed !== telegramId) {
+      return { ok: false, error: 'telegram_id_mismatch', status: 403 };
+    }
+  }
+
+  return { ok: true, telegramId };
+}
+
+// ── CORS helpers ─────────────────────────────────────────────────────────────
+
+function getAllowedOrigins(env) {
+  const envVal = env.CORS_ALLOWED_ORIGINS;
+  if (envVal) {
+    return String(envVal).split(',').map(s => s.trim()).filter(Boolean);
+  }
+  return DEFAULT_ALLOWED_ORIGINS;
+}
+
+function getCorsHeaders(request, env) {
+  const origin = request.headers.get('Origin') || '';
+  const allowed = getAllowedOrigins(env);
+  const allowedOrigin = allowed.includes(origin) ? origin : (allowed[0] || 'null');
+  return {
+    'Access-Control-Allow-Origin': allowedOrigin,
+    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type',
+    'Content-Type': 'application/json',
+    // Security headers on every JSON response
+    'X-Content-Type-Options': 'nosniff',
+    'Referrer-Policy': 'strict-origin-when-cross-origin',
+    'X-Frame-Options': 'DENY',
+  };
+}
+
+/** Normalise a submitted game key to its canonical GAMES value. */
+function normaliseGameKey(raw) {
+  const cleaned = String(raw || 'global').replace(/[^a-z0-9_-]/gi, '').toLowerCase() || 'global';
+  return GAME_KEY_ALIASES[cleaned] || cleaned;
+}
 
 export default {
   async fetch(request, env) {
@@ -25,12 +193,7 @@ export default {
     // Legacy GET/POST handlers use url.searchParams instead (no path routing).
     const path = url.pathname.replace(/\/$/, '') || '/';
 
-    const corsHeaders = {
-      "Access-Control-Allow-Origin": "*",
-      "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-      "Access-Control-Allow-Headers": "Content-Type",
-      "Content-Type": "application/json"
-    };
+    const corsHeaders = getCorsHeaders(request, env);
 
     if (request.method === "OPTIONS") {
       return new Response(null, { status: 204, headers: corsHeaders });
@@ -59,7 +222,9 @@ export default {
     }
 
     if (request.method === "GET") {
-      const game = url.searchParams.get("game") || "global";
+      // Normalise game alias on GET so ?game=snake-run returns the 'snake' board
+      const rawGame = url.searchParams.get("game") || "global";
+      const game = normaliseGameKey(rawGame) || rawGame;
       const mode = (url.searchParams.get("mode") || "raw").toLowerCase();
 
       if (mode === "meta") {
@@ -97,24 +262,31 @@ export default {
         );
       }
 
-      const { player, score, game, telegram_id } = body;
+      // ── CRIT-01: Verify Telegram identity via HMAC before trusting any ID ──
+      // body.telegram_id is never trusted directly. The verified ID is derived
+      // exclusively from the signed telegram_auth payload.
+      const authResult = await verifyLeaderboardTelegramAuth(body, env);
+      if (!authResult.ok) {
+        return new Response(
+          JSON.stringify({ error: authResult.error }),
+          { status: authResult.status, headers: corsHeaders }
+        );
+      }
+      const telegramId = authResult.telegramId;
+
+      const { player, score, game } = body;
       const rawFaction = String(body.faction || "unaligned").toLowerCase().trim();
       const faction = ["diamond-hands", "hodl-warriors", "graffpunks"].includes(rawFaction) ? rawFaction : "unaligned";
       const submissionMode = String(body.score_type || "raw").toLowerCase();
 
-      // Competitive action — seasonal and all-time score submission requires
-      // a Telegram-synced identity.  Guests can play locally but scores are
-      // not persisted to any leaderboard without a linked Telegram account.
-      if (!telegram_id || !String(telegram_id).trim()) {
-        return new Response(
-          JSON.stringify({ error: "telegram_sync_required" }),
-          { status: 403, headers: corsHeaders }
-        );
-      }
-
       // Anti-cheat gate — the anti-cheat worker writes anticheat:blocked:{id}
-      // into this same KV namespace when a user's risk ceiling is breached.
-      const blockStatus = await env.LEADERBOARD.get(`anticheat:blocked:${String(telegram_id).trim()}`);
+      // into the SHARED KV namespace (same ID as leaderboard worker's LEADERBOARD binding).
+      // KEY FORMAT: anticheat:blocked:{telegram_id}
+      // This prefix must match exactly what the anti-cheat worker writes in
+      // workers/anti-cheat/worker.js. If the key format changes in either worker,
+      // both must be updated together. See workers/leaderboard/wrangler.toml for the
+      // shared KV namespace requirement documentation.
+      const blockStatus = await env.LEADERBOARD.get(`anticheat:blocked:${telegramId}`);
       if (blockStatus) {
         return new Response(
           JSON.stringify({ error: "account_blocked", block_type: blockStatus }),
@@ -138,13 +310,10 @@ export default {
         );
       }
 
-      // Sanitise game key — only lowercase alphanumeric, hyphen, underscore
-      const gameKey = String(game || "global")
-        .replace(/[^a-z0-9_-]/gi, "")
-        .toLowerCase() || "global";
+      // Normalise game key — aliases (e.g. snake-run → snake) and sanitise
+      const gameKey = normaliseGameKey(game);
 
       const playerName = player.trim();
-      const telegramId = String(telegram_id).trim();
       const floorScore = Math.floor(parsedScore);
 
       if (submissionMode === "meta") {
