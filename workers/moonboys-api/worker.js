@@ -251,7 +251,6 @@ function isAdminTelegramUser(telegramId, env) {
 function readAdminSecret(request) {
   return request.headers.get('x-admin-secret')
     || request.headers.get('X-Admin-Secret')
-    || request.headers.get('x-admin-token')
     || '';
 }
 
