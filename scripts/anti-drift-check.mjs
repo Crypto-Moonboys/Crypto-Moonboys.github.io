@@ -267,6 +267,81 @@ function walkJs(relDir) {
   return results;
 }
 
+// ── Helper: recursively collect all .html file paths under a directory ─────────
+function walkHtml(relDir) {
+  const results = [];
+  const abs = path.join(ROOT, relDir);
+  if (!fs.existsSync(abs)) return results;
+  (function walk(dir) {
+    for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+      const p = path.join(dir, entry.name);
+      if (entry.isDirectory()) {
+        walk(p);
+      } else if (entry.name.endsWith('.html')) {
+        results.push(path.relative(ROOT, p));
+      }
+    }
+  }(abs));
+  return results;
+}
+
+// Game runtime HTML directories — these contain actual game engine HTML and are
+// exempt from shell checks. Only the subdirectories with live game runtimes are
+// listed; games/index.html and games/leaderboard.html are shell pages and included.
+const GAME_HTML_EXEMPT_DIRS = new Set([
+  'games/asteroid-fork',
+  'games/block-topia',
+  'games/block-topia-quest-maze',
+  'games/breakout-bullrun',
+  'games/crystal-quest',
+  'games/invaders-3008',
+  'games/pac-chain',
+  'games/snake-run',
+  'games/tetris-block-topia',
+  'games/template',
+]);
+
+// Helper: collect all shell HTML files.
+// Includes: root *.html, wiki/**/*.html, categories/**/*.html, about/**/*.html,
+//           games/index.html, games/leaderboard.html.
+// Excludes: actual game runtime index.html files (GAME_HTML_EXEMPT_DIRS).
+function collectShellHtml() {
+  const results = [];
+  // Root-level HTML
+  for (const f of fs.readdirSync(ROOT)) {
+    if (f.endsWith('.html')) results.push(f);
+  }
+  // Subdirectory HTML — walk nested dirs
+  const subDirs = ['wiki', 'categories', 'about', 'games'];
+  for (const dir of subDirs) {
+    for (const rel of walkHtml(dir)) {
+      // Derive the first two path segments to check against the exempt set
+      const parts = rel.replace(/\\/g, '/').split('/');
+      const topTwo = parts.slice(0, 2).join('/');
+      if (GAME_HTML_EXEMPT_DIRS.has(topTwo)) continue;
+      results.push(rel);
+    }
+  }
+  return results;
+}
+
+// ── Helper: check whether a CSS selector line refers to an interactive shell element.
+// Uses word-boundary regex for standalone 'a' and 'button' type selectors to avoid
+// false-positives on selectors like '.has-animation' that contain 'a ' as substring.
+function isShellInteractiveSelector(line) {
+  // Standalone anchor type selector
+  if (/(?:^|[\s,+~>])a(?=[\s{:,+~>\[.]|$)/.test(line)) return true;
+  // Standalone button type selector
+  if (/(?:^|[\s,+~>])button(?=[\s{:,+~>\[.]|$)/.test(line)) return true;
+  // Class / ID selectors specific to interactive shell elements
+  const classKeys = [
+    '.btn', '.article-card', '.category-card', '.article-list-item',
+    '.faction-btn', '.battle-link-card', '.price-card', '.home-widget',
+    '.retro-pixel-card', '.launch-cta', '.home-search', '#back-to-top', '.lb-tab',
+  ];
+  return classKeys.some(kw => line.includes(kw));
+}
+
 // Helper: strip single-line comment content so patterns don't match comments.
 // Removes lines that are pure // comments, JSDoc/block-comment body lines
 // (lines whose first non-whitespace char is * — distinguishable from code
@@ -567,8 +642,8 @@ if (!cspSrc) {
 // ── 13. Deleted global UI effect identifiers must not return ──────────────────
 // Deleted tron-react-engine/tron-audio identifiers must not appear in shell
 // (non-gameplay) files. Game runtime files (js/arcade/, js/audio-manager.js,
-// js/arcade-meta-ui.js, js/arcade-retention-engine.js, css/game-fullscreen.css)
-// are exempt from this check as they contain legitimate gameplay audio/interaction.
+// js/arcade-meta-ui.js, js/arcade-retention-engine.js, css/game-fullscreen.css,
+// game runtime HTML) are exempt as they contain legitimate gameplay interaction.
 console.log('\n[13] Deleted global UI effect identifiers absent from shell files');
 {
   // Game runtime JS files — exempt from this check
@@ -594,36 +669,45 @@ console.log('\n[13] Deleted global UI effect identifiers absent from shell files
         .filter(rel => !GAME_CSS_EXEMPT.has(rel))
     : [];
 
-  // Root HTML files (index.html and peers)
-  const rootHtml = fs.readdirSync(ROOT)
-    .filter(f => f.endsWith('.html'))
-    .map(f => f);
+  // Shell HTML: all non-gameplay HTML (root, wiki, categories, about, games/index etc.)
+  const shellHtmlFiles = collectShellHtml();
 
-  const allShellFiles = [...shellJsFiles, ...shellCssFiles, ...rootHtml];
+  const allShellFiles = [...shellJsFiles, ...shellCssFiles, ...shellHtmlFiles];
 
-  // Forbidden identifiers that must not appear in shell files.
-  // Note: playSound/new Audio are allowed in game runtime files (excluded above).
+  // Every deleted tron-engine identifier, CSS animation name, and event name.
   const deletedUiIdents = [
-    { pattern: /\btron-react-engine\b/i,   label: 'tron-react-engine reference' },
-    { pattern: /\btron-audio\b/i,           label: 'tron-audio reference' },
-    { pattern: /\bTRON_AUDIO\b/,            label: 'TRON_AUDIO reference' },
-    { pattern: /\bwindow\.TRON\b/,          label: 'window.TRON reference' },
-    { pattern: /\bensureTronAssets\b/,      label: 'ensureTronAssets reference' },
-    { pattern: /\bemitTron\b/,              label: 'emitTron reference' },
-    { pattern: /\bhoverSound\b/,            label: 'hoverSound reference' },
-    { pattern: /\bclickSound\b/,            label: 'clickSound reference' },
-    { pattern: /\bTRON_AUDIO\.play\b/,      label: 'TRON_AUDIO.play reference' },
-    { pattern: /tron:event/,                label: 'tron:event dispatch' },
-    { pattern: /tron:wake/,                 label: 'tron:wake dispatch' },
-    { pattern: /tron:hover/,               label: 'tron:hover dispatch' },
-    { pattern: /tron:click/,               label: 'tron:click dispatch' },
-    { pattern: /\bedgeFlicker\b/,           label: 'edgeFlicker — deleted @keyframes' },
-    { pattern: /\bneonFramePulse\b/,        label: 'neonFramePulse — deleted @keyframes' },
-    { pattern: /\bneonCornerGlitch\b/,      label: 'neonCornerGlitch — deleted @keyframes' },
-    { pattern: /\bheroBgDrift\b/,           label: 'heroBgDrift — deleted @keyframes' },
-    { pattern: /\bhome-neon-haze\b/,        label: 'home-neon-haze — deleted @keyframes' },
-    { pattern: /\bpulse-grid\b/,            label: 'pulse-grid — deleted @keyframes' },
-    { pattern: /\btrace-scan\b/,            label: 'trace-scan — deleted @keyframes' },
+    // Deleted JS files / modules
+    { pattern: /\btron-react-engine\b/i,         label: 'tron-react-engine reference' },
+    { pattern: /\btron-audio\b/i,                 label: 'tron-audio reference' },
+    { pattern: /tron-react-engine\.css/i,         label: 'tron-react-engine.css reference' },
+    // Deleted JS globals / functions
+    { pattern: /\bTRON_AUDIO\b/,                  label: 'TRON_AUDIO reference' },
+    { pattern: /\bwindow\.TRON\b/,                label: 'window.TRON reference' },
+    { pattern: /\bensureTronAssets\b/,            label: 'ensureTronAssets reference' },
+    { pattern: /\bemitTron\b/,                    label: 'emitTron reference' },
+    { pattern: /\bhoverSound\b/,                  label: 'hoverSound reference' },
+    { pattern: /\bclickSound\b/,                  label: 'clickSound reference' },
+    { pattern: /\bTRON_AUDIO\.play\b/,            label: 'TRON_AUDIO.play reference' },
+    // Deleted Tron custom event names
+    { pattern: /tron:event/,                      label: 'tron:event dispatch' },
+    { pattern: /tron:wake/,                       label: 'tron:wake dispatch' },
+    { pattern: /tron:wakeup/,                     label: 'tron:wakeup dispatch' },
+    { pattern: /tron:hover/,                      label: 'tron:hover dispatch' },
+    { pattern: /tron:click/,                      label: 'tron:click dispatch' },
+    { pattern: /tron:sam/,                        label: 'tron:sam dispatch' },
+    { pattern: /tron:leaderboard/,               label: 'tron:leaderboard dispatch' },
+    { pattern: /tron:score/,                      label: 'tron:score dispatch' },
+    { pattern: /tron:api-online/,                 label: 'tron:api-online dispatch' },
+    { pattern: /tron:api-offline/,                label: 'tron:api-offline dispatch' },
+    // Deleted CSS animation / keyframe names
+    { pattern: /\bsyncPulseGreen\b/,              label: 'syncPulseGreen — deleted @keyframes' },
+    { pattern: /\bedgeFlicker\b/,                 label: 'edgeFlicker — deleted @keyframes' },
+    { pattern: /\bneonFramePulse\b/,              label: 'neonFramePulse — deleted @keyframes' },
+    { pattern: /\bneonCornerGlitch\b/,            label: 'neonCornerGlitch — deleted @keyframes' },
+    { pattern: /\bheroBgDrift\b/,                 label: 'heroBgDrift — deleted @keyframes' },
+    { pattern: /\bhome-neon-haze\b/,              label: 'home-neon-haze — deleted @keyframes' },
+    { pattern: /\bpulse-grid\b/,                  label: 'pulse-grid — deleted @keyframes' },
+    { pattern: /\btrace-scan\b/,                  label: 'trace-scan — deleted @keyframes' },
   ];
 
   let check13Clean = true;
@@ -705,13 +789,6 @@ console.log('\n[14] Shell CSS: no motion animation/transform on interactive shel
 
     // Check for animation: (non-none) on known interactive shell element selectors.
     // For each line with animation:, walk backward to find the enclosing rule selector.
-    const SHELL_SELECTOR_KEYWORDS = [
-      'a ', 'a:', 'a.', 'a,', 'button', '.btn', '.article-card', '.category-card',
-      '.article-list-item', '.faction-btn', '.battle-link-card', '.price-card',
-      '.home-widget', '.retro-pixel-card', '.launch-cta', '.home-search',
-      '#back-to-top', '.lb-tab',
-    ];
-
     for (let li = 0; li < srcLines.length; li++) {
       const line = srcLines[li];
       if (!/\banimation\s*:\s*(?!none\b)/.test(line)) continue;
@@ -735,12 +812,9 @@ console.log('\n[14] Shell CSS: no motion animation/transform on interactive shel
         if (foundSelectorLine) break;
       }
 
-      if (foundSelectorLine) {
-        const isShellSelector = SHELL_SELECTOR_KEYWORDS.some(kw => foundSelectorLine.includes(kw));
-        if (isShellSelector) {
-          fail(`Shell CSS motion drift: ${rel}:${li + 1} has animation: on interactive shell element (selector: ${foundSelectorLine.trim()})`);
-          check14Clean = false;
-        }
+      if (foundSelectorLine && isShellInteractiveSelector(foundSelectorLine)) {
+        fail(`Shell CSS motion drift: ${rel}:${li + 1} has animation: on interactive shell element (selector: ${foundSelectorLine.trim()})`);
+        check14Clean = false;
       }
     }
   }
@@ -767,10 +841,13 @@ console.log('\n[15] Non-gameplay JS: no UI hover/click/touch audio');
   );
 
   const uiAudioPatterns = [
-    { re: /\bhoverSound\s*\(/,           label: 'hoverSound() call' },
-    { re: /\bclickSound\s*\(/,           label: 'clickSound() call' },
-    { re: /TRON_AUDIO\s*\.\s*play\s*\(/, label: 'TRON_AUDIO.play() call' },
-    { re: /window\s*\.\s*TRON_AUDIO\b/,  label: 'window.TRON_AUDIO reference' },
+    { re: /\bnew\s+Audio\s*\(/,                    label: 'new Audio() instantiation' },
+    { re: /\bwindow\s*\.\s*Audio\s*\(/,             label: 'window.Audio() instantiation' },
+    { re: /\bglobalThis\s*\.\s*Audio\s*\(/,         label: 'globalThis.Audio() instantiation' },
+    { re: /\bhoverSound\s*\(/,                       label: 'hoverSound() call' },
+    { re: /\bclickSound\s*\(/,                       label: 'clickSound() call' },
+    { re: /TRON_AUDIO\s*\.\s*play\s*\(/,             label: 'TRON_AUDIO.play() call' },
+    { re: /window\s*\.\s*TRON_AUDIO\b/,              label: 'window.TRON_AUDIO reference' },
   ];
 
   let check15Clean = true;
@@ -814,7 +891,10 @@ console.log('\n[16] No removed-effect comment remnants in shell files');
         .filter(rel => !GAME_CSS_EXEMPT16.has(rel))
     : [];
 
-  const shellFiles3 = [...shellJsFiles3, ...shellCssFiles3];
+  // Shell HTML: all non-gameplay HTML pages
+  const shellHtmlFiles16 = collectShellHtml();
+
+  const shellFiles3 = [...shellJsFiles3, ...shellCssFiles3, ...shellHtmlFiles16];
 
   // Comment patterns that describe the removed interaction system
   const effectCommentPatterns = [
