@@ -2,17 +2,17 @@
 
 ## What Exists Now
 
-Block Topia is a **clean 2-player isometric map base**.
+Block Topia Live City is the current gated 2-player Colyseus survival/mission prototype.
 
 ### Active files
 
 | File | Role |
 |---|---|
 | `index.html` | Entry point. Loads Colyseus v0.16 CDN, mounts canvas, starts multiplayer. |
-| `main.js` | Self-contained canvas renderer. 20×20 isometric tile grid, L/R player markers, P1/P2 coord HUD, WASD + click-to-move. No external imports. |
+| `main.js` | Self-contained canvas renderer. Isometric tile grid, player markers, attack/HP/respawn rendering, phase and upgrade HUD. |
 | `network.js` | Client-side Colyseus v0.16 only. Exports `connectMultiplayer`, `sendMovement`, `isConnected`, `getRoom`, `reconnectMultiplayer`. |
 | `styles.css` | Active stylesheet. |
-| `server/src/rooms/MinimalCityRoom.js` | Authoritative Colyseus room. `maxClients=2`, `autoDispose=false`, `move` handler only. |
+| `server/src/rooms/MinimalCityRoom.js` | Authoritative Colyseus room. `maxClients=2`, `autoDispose=false`, NPC patrols, attacks, HP, respawns, timed world phases, extraction, upgrade windows, chooseUpgrade handler. |
 | `server/src/index.js` | Express + Colyseus server entry. Registers `MinimalCityRoom` + SAM webhook stub. |
 | `server/src/webhooks/samWebhook.js` | SAM webhook stub. Logs payload, no broadcast. |
 

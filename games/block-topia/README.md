@@ -1,17 +1,16 @@
 # Block Topia
 
-Block Topia is currently a clean 2-player isometric map base.
+Block Topia Live City is the current gated 2-player Colyseus survival/mission prototype.
 
 ## Current State
 
-- 2-player isometric map — local and remote player marker support.
+- 2-player isometric multiplayer with NPCs, attacks, HP, and respawns.
+- Timed world phases: FREE_ROAM → WARNING → EVENT_ACTIVE → RECOVERY → MISSION_COMPLETE.
+- Extraction mechanic (SIGNAL_HACK objective progress).
+- Upgrade windows in RECOVERY and MISSION_COMPLETE phases.
+- Ready / Start / Continue / Restart flow.
 - Minimal connection HUD (connect / disconnect status).
 - Telegram-linked account required. 50 Arcade XP required to enter.
-- No Pressure Protocol runtime.
-- No solo mode.
-- No old Block Topia variants.
-- No street-signal builds.
-- No old feed/event/SAM UI.
 
 ## Run
 

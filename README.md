@@ -74,16 +74,8 @@ The authoritative gate value is returned by the server as `progression.required_
 
 ## Block Topia Status (Current)
 
-`/games/block-topia/` is now only a clean 2-player isometric map base.
+`/games/block-topia/` is the Block Topia Live City — a gated 2-player Colyseus survival/mission prototype with NPCs, attacks, HP, respawns, timed world phases, extraction, upgrade windows, and ready/start/restart flow.
 
-What that means:
-
-- No Pressure Protocol runtime
-- No solo mode
-- No old Block Topia variants
-- No street-signal builds
-- No old feed/event/SAM UI in Block Topia
-
-The Block Topia page should remain a clean passive map foundation with local and remote player marker support and minimal connection HUD behavior only.
-
-Entry requires: Telegram-linked account + 50 Arcade XP.
+- Entry requires: Telegram-linked account + 50 Arcade XP.
+- `/games/block-topia-quest-maze/` is a separate Quest Maze arcade/RPG score game.
+- City Block Topia / Neon Sprawl is a planned separate deeper living-wiki layer, not the current live runtime.

@@ -1,10 +1,32 @@
-name: Autonomous Editorial Operations
+name: Autonomous Editorial Operations (DISABLED — Human Emergency Recovery Only)
+
+# ⚠️  WARNING — DO NOT RE-ENABLE THE CRON SCHEDULE.
+#
+# SAM (HODLKONG64/HAY-MUM-IM-BUILDING-AGENTS-OF-CHANGE) is the brain / lore
+# validator.  This website is the DISPLAY LAYER only.
+#
+# This workflow is intentionally manual-only.  It must NOT run on a schedule.
+# It must NOT autonomously create or commit lore/content to main.
+#
+# Only trigger this manually if a human explicitly needs emergency recovery of
+# derived display files (wiki-index, sitemap, api outputs, etc.) after a
+# confirmed SAM export.  Do not use it to generate new lore independently.
+#
+# Once SAM is resumed, content updates flow:
+#   SAM validates → SAM exports → website ingests SAM output only.
+#
+# Do NOT add repository_dispatch, a schedule, or any automatic trigger here
+# until the SAM architecture is fully re-enabled and explicitly approved.
 
 on:
-  schedule:
-    # Runs daily at 03:00 UTC
-    - cron: '0 3 * * *'
   workflow_dispatch:
+    inputs:
+      confirm:
+        description: >
+          Type CONFIRM to acknowledge this is a human-initiated emergency
+          recovery run, not an autonomous lore generation run.
+        required: true
+        default: ''
 
 permissions:
   contents: write
@@ -16,8 +38,9 @@ concurrency:
 jobs:
   autonomous-editorial:
     runs-on: ubuntu-latest
-    # Never run as a bot commit to avoid self-triggering loops
+    # Guard: only run when a human explicitly confirmed the emergency trigger.
     if: |
+      github.event.inputs.confirm == 'CONFIRM' &&
       github.actor != 'github-actions[bot]' &&
       github.actor != 'github-actions'
 

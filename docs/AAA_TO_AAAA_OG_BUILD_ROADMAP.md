@@ -586,9 +586,10 @@ No AAAA system may be described as live until it ships and this document is upda
 ### 9.5 — Block Topia Rules
 
 12. Block Topia must be described accurately at all times:
-    - LIVE NOW = clean 2-player isometric map base (20×20, MinimalCityRoom, maxClients=2)
+    - LIVE NOW = Block Topia Live City — gated 2-player Colyseus survival/mission prototype with NPCs, attacks, HP, respawns, timed world phases (FREE_ROAM/WARNING/EVENT_ACTIVE/RECOVERY/MISSION_COMPLETE), extraction, and upgrade windows.
     - GATE = Telegram linked + 50 Arcade XP (server-enforced)
-    - All deeper gameplay = FUTURE unless an ADR documents it as shipped
+    - /games/block-topia-quest-maze/ = separate Quest Maze arcade/RPG score game
+    - City Block Topia / Neon Sprawl = planned separate deeper living-wiki layer, not the current live runtime
 
 13. Do not reintroduce systems listed as removed in `docs/block-topia/CURRENT_RUNTIME_TRUTH.md` without a new deliberate ADR.
 
