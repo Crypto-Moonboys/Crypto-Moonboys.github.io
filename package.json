@@ -7,7 +7,12 @@
     "doc": "docs"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "node scripts/smoke-test.js && node scripts/site-shell-parity-audit.mjs && node scripts/right-hud-browser-smoke.mjs",
+    "test:smoke": "node scripts/smoke-test.js",
+    "test:shell-parity": "node scripts/site-shell-parity-audit.mjs",
+    "test:right-hud": "node scripts/right-hud-browser-smoke.mjs",
+    "test:anti-drift": "node scripts/anti-drift-check.mjs",
+    "lint:shell": "node --check js/site-shell.js"
   },
   "keywords": [],
   "author": "",
