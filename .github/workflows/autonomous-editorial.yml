@@ -219,10 +219,11 @@ jobs:
               FAIL=1
             fi
           done
-          # README-style files are blocked regardless of directory.
+          # README-style files are blocked for this automation regardless of directory.
           # Covers: README, README.md, readme.md, READ.ME, read.me, etc.
+          # README/source-truth changes must happen in a separate human-reviewed docs PR.
           if echo "$CHANGED_FILES" | grep -iEq '(^|/)(README|READ\.ME)(\.md)?$'; then
-            echo "::error::Automation attempted to modify a README-style file (blocked unless human-approved docs PR)"
+            echo "::error::Automation attempted to modify a README-style file. README/source-truth changes must happen in a separate human-reviewed docs PR."
             FAIL=1
           fi
           if [ "$FAIL" -ne 0 ]; then
