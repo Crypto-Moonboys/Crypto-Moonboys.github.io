@@ -63,6 +63,14 @@ await test('submitScore has missing-auth guard before POST', async () => {
   );
 });
 
+await test('submitScore missing-auth guard sets result.state before returning', async () => {
+  // The result object returned to the caller must have state = "relink_required".
+  assert(
+    src.includes('result.state = "relink_required"'),
+    'submitScore() missing-auth guard must set result.state = "relink_required" before returning',
+  );
+});
+
 await test('submitScore missing-auth guard returns before POSTing', async () => {
   // The guard must contain an explicit return so no fetch is issued.
   // Verify the guard block has "return result" before the first fetch() call.
@@ -202,9 +210,11 @@ async function runSubmitScoreGuard(telegramAuth) {
 
   // Mirror the guard added in leaderboard-client.js submitScore()
   if (!telegramAuth || !telegramAuth.hash || !telegramAuth.auth_date) {
+    result.state = 'relink_required';
+    result.message = 'Telegram auth expired or missing. Run /gklink again to restore sync.';
     healthCalls.push({ state: 'bad', reason: 'auth_expired' });
     statusCalls.push({ state: 'relink_required' });
-    return { outcome: 'aborted', fetchCalls, healthCalls, statusCalls };
+    return { outcome: 'aborted', result, fetchCalls, healthCalls, statusCalls };
   }
 
   // Guard passed — would POST
@@ -219,7 +229,7 @@ async function runSubmitScoreGuard(telegramAuth) {
     },
   });
 
-  return { outcome: 'posted', fetchCalls, healthCalls, statusCalls };
+  return { outcome: 'posted', result, fetchCalls, healthCalls, statusCalls };
 }
 
 await test('BEH: linked user with valid telegram_auth POSTs with telegram_auth in body', async () => {
@@ -232,9 +242,10 @@ await test('BEH: linked user with valid telegram_auth POSTs with telegram_auth i
 });
 
 await test('BEH: linked user with null telegramAuth aborts and does NOT POST', async () => {
-  const { outcome, fetchCalls, healthCalls, statusCalls } = await runSubmitScoreGuard(null);
+  const { outcome, result, fetchCalls, healthCalls, statusCalls } = await runSubmitScoreGuard(null);
   assert(outcome === 'aborted', `expected aborted, got ${outcome}`);
   assert(fetchCalls.length === 0, 'must not make any fetch call when telegramAuth is null');
+  assert(result.state === 'relink_required', `returned result.state must be "relink_required", got "${result.state}"`);
   assert(healthCalls.some(h => h.state === 'bad'), 'must mark sync health as bad');
   assert(statusCalls.some(s => s.state === 'relink_required'), 'must emit relink_required status');
 });

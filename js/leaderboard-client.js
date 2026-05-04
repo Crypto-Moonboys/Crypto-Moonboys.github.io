@@ -208,11 +208,13 @@ export async function submitScore(player, score, game = "global") {
     });
 
     if (!telegramAuth || !telegramAuth.hash || !telegramAuth.auth_date) {
+      result.state = "relink_required";
+      result.message = "Telegram auth expired or missing. Run /gklink again to restore sync.";
       markSyncHealth("bad", "auth_expired");
       emitArcadeSubmissionStatus({
         ...result,
         state: "relink_required",
-        message: "Telegram auth expired or missing. Run /gklink again to restore sync.",
+        message: result.message,
       });
       emitMicroNotification("Sync expired. Re-link required.", "warning");
       if (typeof window !== "undefined" && window.MOONBOYS_IDENTITY &&
