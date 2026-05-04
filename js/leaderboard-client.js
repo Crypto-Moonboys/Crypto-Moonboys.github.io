@@ -197,14 +197,31 @@ export async function submitScore(player, score, game = "global") {
   result.identityLabel = linked ? getLinkedIdentityLabel() : null;
   const resolvedPlayer = (linkedName && linkedName.trim()) ? linkedName.trim() : String(player || "Guest");
   let shouldSyncMeta = false;
+  let telegramAuth = null;
 
   if (linked) {
-    const telegramAuth = await ArcadeSync.getTelegramAuth();
+    telegramAuth = await ArcadeSync.getTelegramAuth();
     emitArcadeDebug("auth_restore_result", {
       linked,
       hasTelegramId: !!telegramId,
       hasSignedAuth: !!telegramAuth,
     });
+
+    if (!telegramAuth || !telegramAuth.hash || !telegramAuth.auth_date) {
+      markSyncHealth("bad", "auth_expired");
+      emitArcadeSubmissionStatus({
+        ...result,
+        state: "relink_required",
+        message: "Telegram auth expired or missing. Run /gklink again to restore sync.",
+      });
+      emitMicroNotification("Sync expired. Re-link required.", "warning");
+      if (typeof window !== "undefined" && window.MOONBOYS_IDENTITY &&
+          typeof window.MOONBOYS_IDENTITY.showSyncGateModal === "function") {
+        window.MOONBOYS_IDENTITY.showSyncGateModal();
+      }
+      return result;
+    }
+
     markSyncHealth("good", "linked_ready");
     emitArcadeSubmissionStatus({
       ...result,
@@ -408,7 +425,8 @@ export async function submitScore(player, score, game = "global") {
         telegram_id: telegramId,
         game: metaResult.game,
         score: metaResult.meta_points,
-        timestamp: metaResult.timestamp
+        timestamp: metaResult.timestamp,
+        telegram_auth: telegramAuth,
       });
     } catch (err) {
       console.error("[leaderboard-client] Meta sync failed:", err);
@@ -484,9 +502,10 @@ export async function submitScore(player, score, game = "global") {
   return result;
 }
 
-async function submitMetaScore({ player, telegram_id, game, score, timestamp }) {
+async function submitMetaScore({ player, telegram_id, game, score, timestamp, telegram_auth }) {
   if (!telegram_id || !isTelegramLinked()) return;
   if (!Number.isFinite(Number(score)) || Number(score) < 0) return;
+  if (!telegram_auth || !telegram_auth.hash || !telegram_auth.auth_date) return;
   const api = getApiUrl();
   await fetch(api, {
     method: "POST",
@@ -496,6 +515,7 @@ async function submitMetaScore({ player, telegram_id, game, score, timestamp }) 
       score: Math.floor(Number(score)),
       game: String(game || "global"),
       telegram_id: String(telegram_id),
+      telegram_auth,
       score_type: "meta",
       timestamp: Number(timestamp) || Date.now()
     })
