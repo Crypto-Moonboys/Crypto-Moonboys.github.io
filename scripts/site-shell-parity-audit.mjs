@@ -90,8 +90,8 @@ for (const rel of SHELL_PAGES) {
     fail(`${rel} — contains hardcoded <footer id="site-footer">`);
     ok = false;
   }
-  if (!html.includes('<script src="/js/site-shell.js">')) {
-    fail(`${rel} — missing <script src="/js/site-shell.js">`);
+  if (!html.includes('<script data-cfasync="false" src="/js/site-shell.js">')) {
+    fail(`${rel} — missing <script data-cfasync="false" src="/js/site-shell.js">`);
     ok = false;
   }
   if (ok) pass(`${rel}`);
@@ -120,6 +120,43 @@ for (const rel of SHELL_PAGES) {
     }
   }
   if (orderOk) pass(`${rel}: script order ok`);
+}
+
+// 4b. Rocket Loader bypass: all canonical boot scripts must have data-cfasync="false"
+console.log('\n[4b] Canonical boot scripts must have data-cfasync="false" (Rocket Loader bypass)');
+const CANONICAL_BOOT_SRCS = [
+  '/js/api-config.js',
+  '/js/arcade/core/global-event-bus.js',
+  '/js/identity-gate.js',
+  '/js/core/moonboys-state.js',
+  '/js/site-shell.js',
+  '/js/components/connection-status-panel.js',
+  '/js/components/global-player-header.js',
+  '/js/components/live-activity-summary.js',
+];
+for (const rel of SHELL_PAGES) {
+  const html = read(rel);
+  if (!html) continue;
+  let cfOk = true;
+  for (const src of CANONICAL_BOOT_SRCS) {
+    // Match a <script tag for this src that contains data-cfasync="false"
+    // A script tag is compliant if it has data-cfasync="false" before the src, or
+    // simply if data-cfasync="false" appears on the same script tag.
+    // We check by looking for data-cfasync="false" src="<src>" or src="<src>" ... data-cfasync
+    const pattern = new RegExp(
+      '<script[^>]*data-cfasync=["\']false["\'][^>]*src=["\']' +
+      src.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') +
+      '["\']|' +
+      '<script[^>]*src=["\']' +
+      src.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') +
+      '["\'][^>]*data-cfasync=["\']false["\']'
+    );
+    if (!pattern.test(html)) {
+      fail(`${rel} — canonical boot script missing data-cfasync="false": ${src}`);
+      cfOk = false;
+    }
+  }
+  if (cfOk) pass(`${rel}: all canonical boot scripts have data-cfasync="false"`);
 }
 
 // 5. Named live pages must include live-activity-summary.js

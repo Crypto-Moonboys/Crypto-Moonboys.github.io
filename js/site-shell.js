@@ -318,30 +318,24 @@
   }
 
   /* ── 10. Build final body ────────────────────────────────────── */
-  // Clear body of everything before reinserting
-  // (keep script nodes so they continue executing)
-  var scripts = [];
-  var child = document.body.firstChild;
-  while (child) {
-    var next = child.nextSibling;
-    if (child.nodeName === 'SCRIPT') {
-      scripts.push(child);
+  // Remove only known old shell nodes to avoid duplication on re-run.
+  // Do NOT remove arbitrary body children — Cloudflare Rocket Loader
+  // replaces later <script> tags with placeholder nodes that are not
+  // SCRIPT elements, and removing them causes:
+  //   [ROCKET LOADER] Placeholder for script … was detached from document.
+  // Only the four IDs that site-shell.js itself creates are safe to remove.
+  var OLD_SHELL_IDS = ['site-header', 'sidebar-overlay', 'layout', 'back-to-top'];
+  for (var si = 0; si < OLD_SHELL_IDS.length; si++) {
+    var oldNode = document.getElementById(OLD_SHELL_IDS[si]);
+    if (oldNode && oldNode.parentNode === document.body) {
+      document.body.removeChild(oldNode);
     }
-    child = next;
-  }
-  // Remove all non-script children
-  child = document.body.firstChild;
-  while (child) {
-    var nextNode = child.nextSibling;
-    if (child.nodeName !== 'SCRIPT') {
-      document.body.removeChild(child);
-    }
-    child = nextNode;
   }
 
-  // Insert shell nodes at beginning of body
-  var firstScript = document.body.firstChild;
-  document.body.insertBefore(backToTop, firstScript);
+  // Insert shell nodes at the very beginning of body, before any existing
+  // children (scripts, text nodes, Rocket Loader placeholder nodes, etc.).
+  var firstChild = document.body.firstChild;
+  document.body.insertBefore(backToTop, firstChild);
   document.body.insertBefore(layout, backToTop);
   document.body.insertBefore(overlay, layout);
   document.body.insertBefore(header, overlay);

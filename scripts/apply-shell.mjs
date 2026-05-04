@@ -30,21 +30,28 @@ const GLOBAL_SCRIPTS = new Set([
 ]);
 
 /* ── Canonical boot block ──────────────────────────────────────── */
+// data-cfasync="false" on every script bypasses Cloudflare Rocket Loader.
+// Without it Rocket Loader replaces later <script> tags with placeholder
+// nodes; site-shell.js then detaches those placeholders when it rewrites
+// the body, causing "Placeholder … was detached" errors and silently
+// preventing the affected scripts from executing.
 const CANONICAL_BOOT = `\
 <!-- ── CANONICAL SCRIPT BOOT ─────────────────────────────────────── -->
+<!-- data-cfasync="false" disables Cloudflare Rocket Loader per-script  -->
+<!-- so placeholder nodes are never injected into the boot sequence.    -->
 <!-- 1. Core config -->
-<script src="/js/api-config.js"></script>
+<script data-cfasync="false" src="/js/api-config.js"></script>
 <!-- 2. Event bus -->
-<script src="/js/arcade/core/global-event-bus.js"></script>
+<script data-cfasync="false" src="/js/arcade/core/global-event-bus.js"></script>
 <!-- 3. Identity -->
-<script src="/js/identity-gate.js"></script>
+<script data-cfasync="false" src="/js/identity-gate.js"></script>
 <!-- 4. State -->
-<script src="/js/core/moonboys-state.js"></script>
+<script data-cfasync="false" src="/js/core/moonboys-state.js"></script>
 <!-- 5. Shell + shared components -->
-<script src="/js/site-shell.js"></script>
-<script src="/js/components/connection-status-panel.js"></script>
-<script src="/js/components/global-player-header.js"></script>
-<script src="/js/components/live-activity-summary.js"></script>
+<script data-cfasync="false" src="/js/site-shell.js"></script>
+<script data-cfasync="false" src="/js/components/connection-status-panel.js"></script>
+<script data-cfasync="false" src="/js/components/global-player-header.js"></script>
+<script data-cfasync="false" src="/js/components/live-activity-summary.js"></script>
 <!-- 6. Page-specific scripts -->`;
 
 /* ── Files to process ──────────────────────────────────────────── */
@@ -75,6 +82,14 @@ function collectFiles() {
   if (fs.existsSync(wikiDir)) {
     for (const f of fs.readdirSync(wikiDir)) {
       if (f.endsWith('.html')) files.push('wiki/' + f);
+    }
+  }
+
+  // about/*.html
+  const aboutDir = path.join(ROOT, 'about');
+  if (fs.existsSync(aboutDir)) {
+    for (const f of fs.readdirSync(aboutDir)) {
+      if (f.endsWith('.html')) files.push('about/' + f);
     }
   }
 
@@ -141,12 +156,18 @@ function extractPageScripts(html, relPath) {
       const src = srcMatch[1];
       // Check against global scripts set
       if (!GLOBAL_SCRIPTS.has(src)) {
-        // Preserve script but strip defer from wiki.js to normalise
-        const cleanAttrs = attrs.replace(/\s+defer\b/gi, '').replace(/\bdefer\s*/gi, '');
+        // Preserve script but strip defer from wiki.js to normalise.
+        // Add data-cfasync="false" if not already present so Rocket Loader
+        // does not replace page-specific scripts with placeholder nodes.
+        let cleanAttrs = attrs.replace(/\s+defer\b/gi, '').replace(/\bdefer\s*/gi, '');
+        if (!cleanAttrs.includes('data-cfasync')) {
+          cleanAttrs = ' data-cfasync="false"' + cleanAttrs;
+        }
         pageScripts.push(`<script${cleanAttrs}></script>`);
       }
     } else if (attrs.includes('type="module"') || attrs.includes("type='module'")) {
-      // Keep module scripts verbatim
+      // Keep module scripts verbatim (modules are deferred by nature and not
+      // subject to Rocket Loader's placeholder injection).
       pageScripts.push(`<script${attrs}>${body}</script>`);
     } else if (body.trim()) {
       // Inline script — keep verbatim
@@ -160,9 +181,9 @@ function extractPageScripts(html, relPath) {
     // Insert before first module script, or at start
     const modIdx = pageScripts.findIndex(s => s.includes('type="module"') || s.includes("type='module'"));
     if (modIdx !== -1) {
-      pageScripts.splice(modIdx, 0, '<script src="/js/wiki.js"></script>');
+      pageScripts.splice(modIdx, 0, '<script data-cfasync="false" src="/js/wiki.js"></script>');
     } else {
-      pageScripts.unshift('<script src="/js/wiki.js"></script>');
+      pageScripts.unshift('<script data-cfasync="false" src="/js/wiki.js"></script>');
     }
   }
 
