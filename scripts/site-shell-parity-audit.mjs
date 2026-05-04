@@ -17,8 +17,9 @@
 
 import fs from 'node:fs';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
-const ROOT = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..');
+const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
 let failures = 0;
 let warnings = 0;
@@ -142,7 +143,7 @@ function findShellOverrides(css, selector) {
   ];
 
   // Escape selector for regex use
-  const escaped = selector.replace(/[#.[\]]/g, (c) => `\\${c}`);
+  const escaped = selector.replace(/[#.\[\]]/g, (c) => `\\${c}`);
   // Match rules like `selector { ... }` or `body.foo selector { ... }`
   const ruleRe = new RegExp(
     `[^{}]*${escaped}[^{}]*\\{([^}]*)\\}`,
