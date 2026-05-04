@@ -9,7 +9,7 @@
  *  2. Required game directories must exist.
  *  3. Forbidden paths must not exist.
  *  4. README.md must not be empty and must contain key headings.
- *  5. HexGL must not be re-activated as an XP source.
+ *  5. Arcade manifest contains only live game IDs (no old breakout-bullrun / snake-run IDs).
  *  6. Block Topia client must not re-introduce removed directories.
  *  7. robots.txt must remain at repo root.
  *  8. Arcade game index pages must not reference removed modules.
@@ -17,6 +17,14 @@
  * 10. No bus-driven direct UI state updates in component files.
  * 11. LAS (live-activity-summary.js) must follow the subscriber-only contract.
  * 12. CSP (connection-status-panel.js) XP display contract.
+ * 13. Shell pages must not contain hardcoded shell markup; must load site-shell.js.
+ * 14. Shell CSS must not use motion animation/transform on interactive shell elements.
+ * 15. Non-gameplay JS must not create UI hover/click/touch sound.
+ * 16. No removed-effect comment remnants in shell files.
+ * 17. Right-panel HUD anti-drift.
+ * 18. site-shell.js DOM smoke test (static).
+ * 19. Rocket Loader bypass: canonical boot scripts have data-cfasync="false".
+ * 20. Arcade hub (games/index.html) and sidebar (site-shell.js) link to all manifest game pages.
  */
 
 import fs from 'node:fs';
@@ -1204,6 +1212,61 @@ console.log('\n[19] Rocket Loader bypass: canonical boot scripts have data-cfasy
   }
   if (check19Clean) {
     pass('[19] All canonical boot scripts have data-cfasync="false" and site-shell.js is Rocket Loader safe');
+  }
+}
+
+// ── 20. Arcade hub and sidebar parity with manifest pages ────────────────────
+// games/index.html (arcade hub) and the arcade sidebar section in site-shell.js
+// must contain a link to EVERY game page defined in ARCADE_MANIFEST.
+// Extra links (e.g. Block Topia Multiplayer) are fine — only omissions fail.
+console.log('\n[20] Arcade hub/sidebar parity with manifest pages');
+{
+  // Canonical page paths — derived from ARCADE_MANIFEST page values.
+  // Must be kept in sync with js/arcade/arcade-manifest.js.
+  const MANIFEST_GAME_PAGES = [
+    '/games/invaders-3008/',
+    '/games/pac-chain/',
+    '/games/asteroid-fork/',
+    '/games/breakout-bullrun/',
+    '/games/snake-run/',
+    '/games/tetris-block-topia/',
+    '/games/block-topia-quest-maze/',
+    '/games/crystal-quest/',
+  ];
+
+  // (a) Check games/index.html (arcade hub)
+  const hubSrc = read('games/index.html');
+  if (!hubSrc) {
+    fail('[20] games/index.html not found');
+  } else {
+    let hubClean = true;
+    for (const gamePage of MANIFEST_GAME_PAGES) {
+      if (!hubSrc.includes(`href="${gamePage}"`)) {
+        fail(`[20] games/index.html missing link to manifest game page: ${gamePage}`);
+        hubClean = false;
+      }
+    }
+    if (hubClean) pass('[20] games/index.html contains all manifest game page links');
+  }
+
+  // (b) Check js/site-shell.js arcade sidebar
+  const shellSrc20 = read('js/site-shell.js');
+  if (!shellSrc20) {
+    fail('[20] js/site-shell.js not found');
+  } else {
+    const arcadeIdx = shellSrc20.indexOf("sidebarExtra === 'arcade'");
+    if (arcadeIdx === -1) {
+      fail("[20] js/site-shell.js: arcade sidebar section not found (expected sidebarExtra === 'arcade')");
+    } else {
+      let sidebarClean = true;
+      for (const gamePage of MANIFEST_GAME_PAGES) {
+        if (!shellSrc20.includes(`href="${gamePage}"`)) {
+          fail(`[20] js/site-shell.js arcade sidebar missing link to manifest game page: ${gamePage}`);
+          sidebarClean = false;
+        }
+      }
+      if (sidebarClean) pass('[20] js/site-shell.js arcade sidebar contains all manifest game page links');
+    }
   }
 }
 
