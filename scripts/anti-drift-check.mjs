@@ -662,57 +662,85 @@ console.log('\n[14] Shell CSS: no motion animation/transform on interactive shel
   for (const rel of shellCssFiles2) {
     const src = read(rel);
     if (!src) continue;
+    const srcLines = src.split('\n');
 
-    // Check for transform: (motion) in :hover/:active/:focus-visible rules.
-    // We exclude text-transform: which is not motion.
-    // The regex finds any :hover/:active/:focus-visible block containing transform: (non text-transform).
-    let m;
-    const hoverTransformPat = /:(hover|active|focus-visible)\s*\{[^}]*(?<!\btext-)transform\s*:/gs;
-    const srcCopy1 = src;
-    while ((m = hoverTransformPat.exec(srcCopy1)) !== null) {
-      const lineNum = srcCopy1.slice(0, m.index).split('\n').length;
-      fail(`Shell CSS motion drift: ${rel}:${lineNum} has transform: in :${m[1]} rule`);
-      check14Clean = false;
+    // Check for motion transform: in :hover/:active/:focus-visible rules.
+    // We scan line-by-line so we can skip text-transform: accurately.
+    // Strategy: find lines with :hover/:active/:focus-visible selector, then look
+    // inside the rule block for transform: (excluding text-transform:).
+    let inTargetBlock = false;
+    let braceDepth = 0;
+    let blockSelectorLine = 0;
+    let blockPseudo = '';
+
+    for (let li = 0; li < srcLines.length; li++) {
+      const line = srcLines[li];
+
+      if (!inTargetBlock) {
+        // Detect a rule that opens with a hover/active/focus-visible selector
+        const pseudoMatch = /:(hover|active|focus-visible)\s*\{/.exec(line);
+        if (pseudoMatch) {
+          inTargetBlock = true;
+          braceDepth = (line.match(/\{/g) || []).length - (line.match(/\}/g) || []).length;
+          blockSelectorLine = li + 1;
+          blockPseudo = pseudoMatch[1];
+          // Check the same opening line for inline transform: (not text-transform:)
+          if (/(?<!text-)transform\s*:/.test(line)) {
+            fail(`Shell CSS motion drift: ${rel}:${blockSelectorLine} has transform: in :${blockPseudo} rule`);
+            check14Clean = false;
+          }
+        }
+      } else {
+        braceDepth += (line.match(/\{/g) || []).length;
+        braceDepth -= (line.match(/\}/g) || []).length;
+        if (braceDepth <= 0) {
+          inTargetBlock = false;
+          braceDepth = 0;
+        } else if (/(?<!text-)transform\s*:/.test(line)) {
+          fail(`Shell CSS motion drift: ${rel}:${li + 1} has transform: in :${blockPseudo} rule`);
+          check14Clean = false;
+        }
+      }
     }
 
     // Check for animation: (non-none) on known interactive shell element selectors.
-    // Selector must contain a shell interactive keyword (not inside pseudo-elements).
-    // We use a two-step approach: find animation: lines then check surrounding context.
-    const animLines = [];
-    let lineIdx = 0;
-    for (const line of src.split('\n')) {
-      lineIdx++;
-      if (/\banimation\s*:\s*(?!none\b)/.test(line)) {
-        animLines.push({ lineIdx, line });
-      }
-    }
+    // For each line with animation:, walk backward to find the enclosing rule selector.
+    const SHELL_SELECTOR_KEYWORDS = [
+      'a ', 'a:', 'a.', 'a,', 'button', '.btn', '.article-card', '.category-card',
+      '.article-list-item', '.faction-btn', '.battle-link-card', '.price-card',
+      '.home-widget', '.retro-pixel-card', '.launch-cta', '.home-search',
+      '#back-to-top', '.lb-tab',
+    ];
 
-    // For each animation line, walk backward to find the most recent selector
-    const srcLines = src.split('\n');
-    const shellSelectorRe = /(?:^|\s)(?:a\s*[\{:,]|button\s*[\{:,]|\.btn\b|\.article-card\b|\.category-card\b|\.article-list-item\b|\.faction-btn\b|\.battle-link-card\b|\.price-card\b|\.home-widget\b|\.retro-pixel-card\b|\.launch-cta|\.home-search\s+button\b|#back-to-top\b|\.lb-tab\b)/;
+    for (let li = 0; li < srcLines.length; li++) {
+      const line = srcLines[li];
+      if (!/\banimation\s*:\s*(?!none\b)/.test(line)) continue;
 
-    for (const { lineIdx: li, line } of animLines) {
-      // Walk backward from this line to find the opening rule's selector
-      let bracketDepth = 0;
-      let foundSelector = '';
-      for (let i = li - 1; i >= 0; i--) {
+      // Walk backward to find the rule selector line (the line with the opening `{`)
+      let depth = 0;
+      let foundSelectorLine = '';
+      for (let i = li; i >= 0; i--) {
         const l = srcLines[i];
-        // Count braces to find the rule start
-        for (const ch of [...l].reverse()) {
-          if (ch === '}') bracketDepth++;
+        for (let j = l.length - 1; j >= 0; j--) {
+          const ch = l[j];
+          if (ch === '}') depth++;
           else if (ch === '{') {
-            if (bracketDepth === 0) {
-              foundSelector = srcLines[i];
+            if (depth === 0) {
+              foundSelectorLine = l;
               break;
             }
-            bracketDepth--;
+            depth--;
           }
         }
-        if (foundSelector) break;
+        if (foundSelectorLine) break;
       }
-      if (foundSelector && shellSelectorRe.test(foundSelector)) {
-        fail(`Shell CSS motion drift: ${rel}:${li} has animation: on interactive shell element (selector: ${foundSelector.trim()})`);
-        check14Clean = false;
+
+      if (foundSelectorLine) {
+        const isShellSelector = SHELL_SELECTOR_KEYWORDS.some(kw => foundSelectorLine.includes(kw));
+        if (isShellSelector) {
+          fail(`Shell CSS motion drift: ${rel}:${li + 1} has animation: on interactive shell element (selector: ${foundSelectorLine.trim()})`);
+          check14Clean = false;
+        }
       }
     }
   }
