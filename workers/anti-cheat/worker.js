@@ -96,6 +96,10 @@ function buildCorsHeaders(request, env) {
 }
 
 // Per-request CORS headers, set at the start of each fetch() invocation.
+// Cloudflare Workers run each request in its own V8 isolate context, so there is no
+// concurrent-request race condition — module-level state is request-scoped in practice.
+// NOTE: Do not reuse this worker outside a Cloudflare Workers runtime without refactoring
+// this to a parameter-passing pattern.
 let CORS_HEADERS = buildCorsHeaders(null, null);
 
 function json(data, status = 200) {

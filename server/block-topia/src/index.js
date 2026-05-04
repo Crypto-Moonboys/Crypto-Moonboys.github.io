@@ -1,6 +1,7 @@
 import http from 'http';
 import express from 'express';
 import cors from 'cors';
+import crypto from 'node:crypto';
 import dotenv from 'dotenv';
 import { Server, matchMaker } from 'colyseus';
 import { monitor } from '@colyseus/monitor';
@@ -79,7 +80,12 @@ function buildMonitorAuthMiddleware() {
     const colonIdx = decoded.indexOf(':');
     const reqUser = colonIdx >= 0 ? decoded.slice(0, colonIdx) : decoded;
     const reqPass = colonIdx >= 0 ? decoded.slice(colonIdx + 1) : '';
-    if (reqUser === user && reqPass === pass) return next();
+    // Use constant-time comparison to prevent timing-based credential inference.
+    const userOk = reqUser.length === user.length &&
+      crypto.timingSafeEqual(Buffer.from(reqUser), Buffer.from(user));
+    const passOk = reqPass.length === pass.length &&
+      crypto.timingSafeEqual(Buffer.from(reqPass), Buffer.from(pass));
+    if (userOk && passOk) return next();
     res.setHeader('WWW-Authenticate', 'Basic realm="Colyseus Monitor"');
     return res.status(401).send('Unauthorized');
   };

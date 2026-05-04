@@ -280,8 +280,12 @@ export default {
       const submissionMode = String(body.score_type || "raw").toLowerCase();
 
       // Anti-cheat gate — the anti-cheat worker writes anticheat:blocked:{id}
-      // into this same KV namespace when a user's risk ceiling is breached.
-      // Uses the verified telegramId, never body.telegram_id.
+      // into the SHARED KV namespace (same ID as leaderboard worker's LEADERBOARD binding).
+      // KEY FORMAT: anticheat:blocked:{telegram_id}
+      // This prefix must match exactly what the anti-cheat worker writes in
+      // workers/anti-cheat/worker.js. If the key format changes in either worker,
+      // both must be updated together. See workers/leaderboard/wrangler.toml for the
+      // shared KV namespace requirement documentation.
       const blockStatus = await env.LEADERBOARD.get(`anticheat:blocked:${telegramId}`);
       if (blockStatus) {
         return new Response(

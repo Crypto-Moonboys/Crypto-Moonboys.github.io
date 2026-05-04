@@ -110,10 +110,12 @@ function err(message, status = 400) {
   return json({ error: message }, status);
 }
 
-// CORS_HEADERS is a module-level constant set per-request at the start of fetch().
-// We use a mutable reference so all helpers in a single request invocation share
-// the same (correctly origin-reflected) headers without threading request through
-// every call site.
+// CORS_HEADERS is a module-level reference updated at the start of each fetch() invocation.
+// Cloudflare Workers run each request in its own V8 isolate context, so there is no
+// concurrent-request race condition — module-level state is request-scoped in practice.
+// The mutable reference avoids threading `request` through every json()/err() call site.
+// NOTE: Do not reuse this worker outside a Cloudflare Workers runtime without refactoring
+// this to a parameter-passing pattern.
 let CORS_HEADERS = buildCorsHeaders(null, null);
 
 function logApiFailure(event, context = {}) {
