@@ -24,10 +24,11 @@ name: SAM Lore Ingest
 #   api/predictive-growth.json  api/governance.json  api/publishing.json
 #
 # BLOCKED automated outputs (workflow fails if any are changed):
-#   server/**  workers/**  shared/**  docs/block-topia/**
+#   server/**  workers/**  shared/**  docs/block-topia/**  games/block-topia/**
 #   Crypto_Moonboys_Master_Source_of_Truth_v1.md
 #   city_block_topia_dev_build_deck.md
 #   AGENT_ENFORCEMENT.md
+#   README* (any README file unless this is an explicit human-approved docs PR)
 
 on:
   workflow_dispatch:
@@ -201,17 +202,30 @@ jobs:
             "workers/"
             "shared/"
             "docs/block-topia/"
+            "games/block-topia/"
             "Crypto_Moonboys_Master_Source_of_Truth_v1.md"
             "city_block_topia_dev_build_deck.md"
             "AGENT_ENFORCEMENT.md"
           )
+          # Collect both modified tracked files and new untracked files
+          CHANGED_FILES=$(
+            { git diff --name-only HEAD 2>/dev/null; \
+              git ls-files --others --exclude-standard 2>/dev/null; } | sort -u
+          )
           FAIL=0
           for pattern in "${BLOCKED[@]}"; do
-            if git diff --name-only HEAD 2>/dev/null | grep -qF "$pattern"; then
+            if echo "$CHANGED_FILES" | grep -qF "$pattern"; then
               echo "::error::Automation attempted to modify blocked path: $pattern"
               FAIL=1
             fi
           done
+          # README-style files are blocked for this automation regardless of directory.
+          # Covers: README, README.md, readme.md, READ.ME, read.me, etc.
+          # README/source-truth changes must happen in a separate human-reviewed docs PR.
+          if echo "$CHANGED_FILES" | grep -iEq '(^|/)(README|READ\.ME)(\.md)?$'; then
+            echo "::error::Automation attempted to modify a README-style file. README/source-truth changes must happen in a separate human-reviewed docs PR."
+            FAIL=1
+          fi
           if [ "$FAIL" -ne 0 ]; then
             echo "Aborting: blocked path(s) modified. No commit will be made."
             exit 1
