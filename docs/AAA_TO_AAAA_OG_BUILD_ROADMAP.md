@@ -112,7 +112,7 @@ All active games accept score submissions, queue Arcade XP sync, and are linked 
 | System | Status | Notes |
 |---|---|---|
 | Block Topia entry gate | ✅ Live | Telegram linked + ≥50 Arcade XP required |
-| Block Topia multiplayer map | ✅ Live | 2-player isometric grid (20×20), P1 and P2 movement, no NPC |
+| Block Topia multiplayer map | ✅ Live | 2-player isometric grid (20×20), NPCs, attacks, HP, downs, phases, objectives, extraction, upgrades |
 | Colyseus server (MinimalCityRoom) | ✅ Live | maxClients=2, server-authoritative positions, autoDispose=false |
 
 ### 1.5 — Partial / Scaffolded (local-only, not server-backed)
@@ -380,7 +380,7 @@ The Crypto Moonboys visual identity must remain:
 
 | System | Description |
 |---|---|
-| Persistent world hub | Block Topia evolves beyond the 2-player skeleton into a persistent world with more players, districts, and ambient life |
+| Persistent world hub | Block Topia Live City evolves into a persistent world with more players, districts, and ambient life (follow safe-phase order in docs/block-topia/CURRENT_RUNTIME_TRUTH.md) |
 | Deeper Block Topia gameplay | NPC lite → events → district control → economy scaffolding (follow Block Topia safe-phase order in docs/block-topia/CURRENT_RUNTIME_TRUTH.md) |
 | Faction-controlled zones | Factions compete to hold districts in Block Topia — outcomes affect modifiers and standings |
 | Player inventory | Carry cosmetics, titles, badges, artefacts across sessions |
@@ -586,9 +586,10 @@ No AAAA system may be described as live until it ships and this document is upda
 ### 9.5 — Block Topia Rules
 
 12. Block Topia must be described accurately at all times:
-    - LIVE NOW = clean 2-player isometric map base (20×20, MinimalCityRoom, maxClients=2)
+    - LIVE NOW = Block Topia Live City: 2-player Colyseus survival/mission prototype (MinimalCityRoom, maxClients=2, NPCs, attacks, HP, phases, objectives, extraction, upgrades live)
     - GATE = Telegram linked + 50 Arcade XP (server-enforced)
-    - All deeper gameplay = FUTURE unless an ADR documents it as shipped
+    - City Block Topia / Neon Sprawl = separate future route — not the current live runtime
+    - All deeper unbuilt gameplay = FUTURE unless an ADR documents it as shipped
 
 13. Do not reintroduce systems listed as removed in `docs/block-topia/CURRENT_RUNTIME_TRUTH.md` without a new deliberate ADR.
 

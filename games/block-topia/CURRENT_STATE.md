@@ -1,28 +1,28 @@
-# Block Topia — Current State
+# Block Topia Live City — Current State
 
 ## What Exists Now
 
-Block Topia is a **clean 2-player isometric map base**.
+Block Topia (`/games/block-topia/`) is the current live gated 2-player Colyseus multiplayer survival/mission prototype.
 
 ### Active files
 
 | File | Role |
 |---|---|
-| `index.html` | Entry point. Loads Colyseus v0.16 CDN, mounts canvas, starts multiplayer. |
-| `main.js` | Self-contained canvas renderer. 20×20 isometric tile grid, L/R player markers, P1/P2 coord HUD, WASD + click-to-move. No external imports. |
+| `index.html` | Entry point. Entry gate check (Telegram-linked + 50 Arcade XP). Loads Colyseus v0.16 CDN, mounts canvas, starts multiplayer. Ready/Start/Restart flow controls input enable/disable. |
+| `main.js` | Canvas renderer. 20×20 isometric tile grid. Renders local and remote player markers, NPCs, objective markers, and combat/mission HUD state. Handles WASD + click-to-move, attacks, upgrade UI, and phase HUD. |
 | `network.js` | Client-side Colyseus v0.16 only. Exports `connectMultiplayer`, `sendMovement`, `isConnected`, `getRoom`, `reconnectMultiplayer`. |
 | `styles.css` | Active stylesheet. |
-| `server/src/rooms/MinimalCityRoom.js` | Authoritative Colyseus room. `maxClients=2`, `autoDispose=false`, `move` handler only. |
-| `server/src/index.js` | Express + Colyseus server entry. Registers `MinimalCityRoom` + SAM webhook stub. |
-| `server/src/webhooks/samWebhook.js` | SAM webhook stub. Logs payload, no broadcast. |
+| `server/block-topia/src/rooms/MinimalCityRoom.js` | Authoritative Colyseus room. `maxClients=2`, `autoDispose=false`. Tracks HP, downs, respawns, NPCs, attacks, world phases (FREE_ROAM → WARNING → EVENT_ACTIVE → RECOVERY → MISSION_COMPLETE), objectives, extraction, and upgrade choices (generated/ensured in RECOVERY and MISSION_COMPLETE; `chooseUpgrade` accepted in both). |
+| `server/block-topia/src/index.js` | Express + Colyseus server entry. Registers `MinimalCityRoom` + SAM webhook stub. |
+| `server/block-topia/src/webhooks/samWebhook.js` | SAM webhook stub. Logs payload, no live broadcast. |
 
-### Kept as archive / data
+### Kept as dormant scaffolding / data
 
 | Path | Notes |
 |---|---|
-| `assets/` | SVG tile, building, prop, NPC spritesheets. Not loaded by active renderer; retained for future use. |
-| `data/` | Old data models (`districts.json`, `sam-phases.json`, etc.). Not imported. Retained as design reference. |
-| `render/iso-renderer.js` | Full iso-renderer. Not imported by active code. Retained as reference for future renderer work. |
+| `assets/` | SVG tile, building, prop, NPC spritesheets. Not all loaded by active renderer; retained for future use. |
+| `data/` | Old data models (`districts.json`, `sam-phases.json`, etc.). Not all imported. Retained as design reference. |
+| `render/iso-renderer.js` | Full iso-renderer. Not imported by active code. Retained as reference. |
 
 ### Active tests
 
@@ -33,7 +33,7 @@ Block Topia is a **clean 2-player isometric map base**.
 
 ---
 
-## What Was Removed (this PR)
+## What Was Removed (earlier PRs)
 
 The following directories and files were deleted. None were imported by any active entry point.
 
@@ -61,14 +61,16 @@ The following directories and files were deleted. None were imported by any acti
 
 ---
 
-## Next Build Direction
+## Current Product Split
 
-New gameplay is added in small, reviewable layers on top of this clean skeleton using the `/games/template` pattern:
+- `/games/block-topia/` = Block Topia Live City, current gated 2-player Colyseus survival/mission prototype.
+- `/games/block-topia-quest-maze/` = separate Quest Maze arcade/RPG score game.
+- `/games/city-block-topia/` or `/games/block-topia/neon-sprawl/` = planned City Block Topia / Neon Sprawl deeper living-wiki layer, not current live runtime.
 
-1. **Player name display** — wire `playerName` through HUD.
-2. **Chat / feed strip** — narrow bottom bar fed by `onFeed` (already called for `system` messages).
-3. **Tile asset loader** — load `assets/manifest.json` with a procedural-colour fallback when SVGs are absent.
-4. **Larger map** — increase `GRID_SIZE` in `main.js` and `MAP_WIDTH`/`MAP_HEIGHT` in `MinimalCityRoom.js` together.
-5. **More players** — raise `maxClients`, update `updatePlayers()` to render more than 2 markers.
+---
 
-Do **not** re-introduce SAM, Pressure Protocol, NPC, quest, covert-ops, or duel systems until a dedicated gameplay PR has been reviewed and approved.
+## Do Not Drift
+
+- Do not describe Block Topia Live City as a clean map base only.
+- Do not re-introduce SAM, Pressure Protocol, full NPC ecosystem, covert-ops, or duel systems until a dedicated gameplay PR has been reviewed and approved.
+- Do not merge City Block Topia / Neon Sprawl into this runtime without a separate phase decision.
