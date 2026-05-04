@@ -81,6 +81,20 @@ function slugToTitle(slug) {
     .join(' ');
 }
 
+/**
+ * Serialize a value to JSON that is safe to embed inside an HTML <script> block.
+ * Escapes <, >, &, U+2028, and U+2029 so that a string value cannot break out
+ * of the enclosing script tag or trigger HTML parsing edge cases.
+ */
+function safeJsonForHtmlScript(value) {
+  return JSON.stringify(value, null, 2)
+    .replace(/</g, '\\u003c')
+    .replace(/>/g, '\\u003e')
+    .replace(/&/g, '\\u0026')
+    .replace(/\u2028/g, '\\u2028')
+    .replace(/\u2029/g, '\\u2029');
+}
+
 function buildRelatedLinksHtml(relatedPages) {
   if (!Array.isArray(relatedPages) || relatedPages.length === 0) return '';
   const items = relatedPages
@@ -119,7 +133,7 @@ function buildStubHtml(action, provenance) {
   };
   // Omit null-valued fields from the block
   Object.keys(provenanceObj).forEach(k => provenanceObj[k] === null && delete provenanceObj[k]);
-  const provenanceJson = JSON.stringify(provenanceObj, null, 2);
+  const provenanceJson = safeJsonForHtmlScript(provenanceObj);
 
   const sectionsHtml = (action.recommended_sections || [])
     .map((sec, i) => {
