@@ -342,6 +342,114 @@ async function testPage(page, pathname, port) {
   }
 }
 
+// ── Rocket Loader placeholder simulation ─────────────────────────────────────
+//
+// Simulates what Cloudflare Rocket Loader does: it replaces later <script>
+// tags with placeholder <div data-cflasync> nodes before those scripts execute.
+// site-shell.js must NOT detach those placeholder nodes when it rebuilds body.
+//
+// This test:
+//   1. Loads /index.html (which has site-shell.js) in a fresh page.
+//   2. Before site-shell.js has a chance to run, injects 3 fake Rocket Loader
+//      placeholder divs into body (simulating CFL behaviour).
+//   3. Allows site-shell.js to execute.
+//   4. Asserts that ALL 3 placeholder nodes are still attached to document.body.
+//   5. Asserts #homepage-right-panel was still created correctly.
+async function testRocketLoaderPlaceholders(context, port) {
+  process.stdout.write('\n── Rocket Loader placeholder simulation ─────────────────────────\n');
+
+  const page = await context.newPage();
+  try {
+    // Block site-shell.js loading briefly so we can inject placeholders first.
+    // We achieve this by intercepting the HTML response and injecting a tiny
+    // synchronous inline script that inserts placeholder nodes BEFORE
+    // site-shell.js executes (site-shell.js is synchronous at end of body).
+    await page.route('**/index.html', async route => {
+      const response = await route.fetch();
+      let html = await response.text();
+      // Inject placeholder nodes immediately before the site-shell.js <script>
+      // tag, mimicking Rocket Loader replacing later scripts with placeholders.
+      const placeholderInjection =
+        '<div data-cflasync="placeholder-1" id="rl-placeholder-1" style="display:none"></div>' +
+        '<div data-cflasync="placeholder-2" id="rl-placeholder-2" style="display:none"></div>' +
+        '<div data-cflasync="placeholder-3" id="rl-placeholder-3" style="display:none"></div>';
+      html = html.replace(
+        /(<script[^>]*data-cfasync="false"[^>]*src="\/js\/site-shell\.js"[^>]*>)/,
+        placeholderInjection + '$1'
+      );
+      await route.fulfill({ response, body: html });
+    });
+
+    const consoleErrors = [];
+    page.on('console', msg => {
+      if (msg.type() === 'error') consoleErrors.push(msg.text());
+    });
+
+    try {
+      await page.goto(`http://127.0.0.1:${port}/index.html`, { waitUntil: 'load', timeout: 20000 });
+    } catch (err) {
+      fail(`Rocket Loader sim: page load failed: ${err.message}`);
+      return;
+    }
+
+    try {
+      await page.waitForSelector('#homepage-right-panel', { timeout: 5000 });
+    } catch (_) { /* assertion below will record the failure */ }
+
+    const result = await page.evaluate(() => {
+      return {
+        ph1: !!document.getElementById('rl-placeholder-1'),
+        ph2: !!document.getElementById('rl-placeholder-2'),
+        ph3: !!document.getElementById('rl-placeholder-3'),
+        ph1InBody: document.getElementById('rl-placeholder-1')
+          ? document.getElementById('rl-placeholder-1').isConnected
+          : false,
+        ph2InBody: document.getElementById('rl-placeholder-2')
+          ? document.getElementById('rl-placeholder-2').isConnected
+          : false,
+        ph3InBody: document.getElementById('rl-placeholder-3')
+          ? document.getElementById('rl-placeholder-3').isConnected
+          : false,
+        rightPanelExists: !!document.getElementById('homepage-right-panel'),
+      };
+    });
+
+    if (result.ph1 && result.ph1InBody) {
+      pass('Rocket Loader sim: placeholder-1 still attached after site-shell.js ran');
+    } else {
+      fail('Rocket Loader sim: placeholder-1 was DETACHED by site-shell.js');
+    }
+
+    if (result.ph2 && result.ph2InBody) {
+      pass('Rocket Loader sim: placeholder-2 still attached after site-shell.js ran');
+    } else {
+      fail('Rocket Loader sim: placeholder-2 was DETACHED by site-shell.js');
+    }
+
+    if (result.ph3 && result.ph3InBody) {
+      pass('Rocket Loader sim: placeholder-3 still attached after site-shell.js ran');
+    } else {
+      fail('Rocket Loader sim: placeholder-3 was DETACHED by site-shell.js');
+    }
+
+    if (result.rightPanelExists) {
+      pass('Rocket Loader sim: #homepage-right-panel still created correctly');
+    } else {
+      fail('Rocket Loader sim: #homepage-right-panel MISSING after placeholder injection');
+    }
+
+    // No Rocket Loader "detached" errors in console
+    const rlErrors = consoleErrors.filter(e => /ROCKET LOADER.*detached/i.test(e));
+    if (rlErrors.length === 0) {
+      pass('Rocket Loader sim: no "[ROCKET LOADER] detached" console errors');
+    } else {
+      rlErrors.forEach(e => fail(`Rocket Loader sim: console error: ${e}`));
+    }
+  } finally {
+    await page.close();
+  }
+}
+
 // ── Main ──────────────────────────────────────────────────────────────────────
 async function main() {
   // Start local HTTP server on ephemeral port (or env override)
@@ -370,6 +478,14 @@ async function main() {
       } finally {
         await page.close();
       }
+    }
+
+    // Rocket Loader placeholder simulation (uses a fresh context with routing)
+    const rlContext = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+    try {
+      await testRocketLoaderPlaceholders(rlContext, port);
+    } finally {
+      await rlContext.close();
     }
   } finally {
     await browser.close();

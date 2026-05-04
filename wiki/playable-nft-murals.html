@@ -146,19 +146,21 @@
     </main>
 
 <!-- ── CANONICAL SCRIPT BOOT ─────────────────────────────────────── -->
+<!-- data-cfasync="false" disables Cloudflare Rocket Loader per-script  -->
+<!-- so placeholder nodes are never injected into the boot sequence.    -->
 <!-- 1. Core config -->
-<script src="/js/api-config.js"></script>
+<script data-cfasync="false" src="/js/api-config.js"></script>
 <!-- 2. Event bus -->
-<script src="/js/arcade/core/global-event-bus.js"></script>
+<script data-cfasync="false" src="/js/arcade/core/global-event-bus.js"></script>
 <!-- 3. Identity -->
-<script src="/js/identity-gate.js"></script>
+<script data-cfasync="false" src="/js/identity-gate.js"></script>
 <!-- 4. State -->
-<script src="/js/core/moonboys-state.js"></script>
+<script data-cfasync="false" src="/js/core/moonboys-state.js"></script>
 <!-- 5. Shell + shared components -->
-<script src="/js/site-shell.js"></script>
-<script src="/js/components/connection-status-panel.js"></script>
-<script src="/js/components/global-player-header.js"></script>
-<script src="/js/components/live-activity-summary.js"></script>
+<script data-cfasync="false" src="/js/site-shell.js"></script>
+<script data-cfasync="false" src="/js/components/connection-status-panel.js"></script>
+<script data-cfasync="false" src="/js/components/global-player-header.js"></script>
+<script data-cfasync="false" src="/js/components/live-activity-summary.js"></script>
 <!-- 6. Page-specific scripts -->
 
 <script type="application/ld+json">
@@ -224,11 +226,53 @@
     }
   }
   </script>
-<script src="/js/faction-alignment.js"></script>
-<script src="/js/wiki.js"></script>
-<script src="/js/bible-loader.js"></script>
-<script src="/js/engagement.js"></script>
-<script src="/js/comments.js"></script>
-<script src="/js/battle-layer.js"></script>
+<script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "headline": "Playable NFT Murals",
+    "description": "Playable NFT murals are the beating heart of rebellion in the Crypto Moonboys universe, evolving static street art into dynamic blockchain assets that NFT holde",
+    "url": "https://crypto-moonboys.github.io/wiki/playable-nft-murals.html",
+    "author": {
+      "@type": "Organization",
+      "name": "Crypto Moonboys"
+    },
+    "publisher": {
+      "@type": "Organization",
+      "name": "Crypto Moonboys",
+      "logo": {
+        "@type": "ImageObject",
+        "url": "https://crypto-moonboys.github.io/img/CRYPTO-MOONBOYS-BITCOIN-LOGO.png"
+      }
+    }
+  }
+  </script>
+<script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "headline": "Playable NFT Murals",
+    "description": "Playable NFT murals are the beating heart of rebellion in the Crypto Moonboys universe, evolving static street art into dynamic blockchain assets that NFT holde",
+    "url": "https://crypto-moonboys.github.io/wiki/playable-nft-murals.html",
+    "author": {
+      "@type": "Organization",
+      "name": "Crypto Moonboys"
+    },
+    "publisher": {
+      "@type": "Organization",
+      "name": "Crypto Moonboys",
+      "logo": {
+        "@type": "ImageObject",
+        "url": "https://crypto-moonboys.github.io/img/CRYPTO-MOONBOYS-BITCOIN-LOGO.png"
+      }
+    }
+  }
+  </script>
+<script data-cfasync="false" src="/js/faction-alignment.js"></script>
+<script data-cfasync="false" src="/js/wiki.js"></script>
+<script data-cfasync="false" src="/js/bible-loader.js"></script>
+<script data-cfasync="false" src="/js/engagement.js"></script>
+<script data-cfasync="false" src="/js/comments.js"></script>
+<script data-cfasync="false" src="/js/battle-layer.js"></script>
 </body>
 </html>

@@ -307,9 +307,9 @@ const GAME_HTML_EXEMPT_DIRS = new Set([
 // Excludes: actual game runtime index.html files (GAME_HTML_EXEMPT_DIRS).
 function collectShellHtml() {
   const results = [];
-  // Root-level HTML
+  // Root-level HTML — skip files starting with '_' (templates, not deployed by apply-shell.mjs)
   for (const f of fs.readdirSync(ROOT)) {
-    if (f.endsWith('.html')) results.push(f);
+    if (f.endsWith('.html') && !f.startsWith('_')) results.push(f);
   }
   // Subdirectory HTML — walk nested dirs
   const subDirs = ['wiki', 'categories', 'about', 'games'];
@@ -930,9 +930,9 @@ console.log('\n[16] No removed-effect comment remnants in shell files');
 
   const shellCheckFiles = [];
 
-  // Root *.html files
+  // Root *.html files — skip '_' prefixed templates (not processed by apply-shell.mjs)
   for (const f of fs.readdirSync(ROOT)) {
-    if (f.endsWith('.html')) shellCheckFiles.push(f);
+    if (f.endsWith('.html') && !f.startsWith('_')) shellCheckFiles.push(f);
   }
 
   // categories/*.html
@@ -977,8 +977,8 @@ console.log('\n[16] No removed-effect comment remnants in shell files');
       }
     }
 
-    if (!src.includes('<script src="/js/site-shell.js">')) {
-      fail(`[13] ${rel} — missing <script src="/js/site-shell.js">`);
+    if (!src.includes('<script data-cfasync="false" src="/js/site-shell.js">')) {
+      fail(`[13] ${rel} — missing <script data-cfasync="false" src="/js/site-shell.js">`);
       check13Clean = false;
     }
   }
@@ -1140,6 +1140,70 @@ console.log('\n[18] site-shell.js DOM smoke test (static)');
         fail(`[18] site-shell.js DOM smoke: ${label} MISSING — right HUD will not render`);
       }
     }
+  }
+}
+
+// ── 19. Rocket Loader bypass: canonical boot scripts must have data-cfasync="false" ─
+// All <script> tags in the canonical boot block must carry data-cfasync="false"
+// to prevent Cloudflare Rocket Loader from replacing them with placeholder nodes.
+// When Rocket Loader injects placeholder nodes and site-shell.js rewrites body,
+// those placeholders get detached, causing the scripts to silently not execute.
+// This is enforced at the HTML level (belt-and-suspenders with data-cfasync).
+console.log('\n[19] Rocket Loader bypass: canonical boot scripts have data-cfasync="false"');
+{
+  const CANONICAL_BOOT_SRCS = [
+    '/js/api-config.js',
+    '/js/arcade/core/global-event-bus.js',
+    '/js/identity-gate.js',
+    '/js/core/moonboys-state.js',
+    '/js/site-shell.js',
+    '/js/components/connection-status-panel.js',
+    '/js/components/global-player-header.js',
+    '/js/components/live-activity-summary.js',
+  ];
+
+  // Collect all shell HTML pages
+  const cfCheckFiles = collectShellHtml();
+
+  let check19Clean = true;
+  for (const rel of cfCheckFiles) {
+    const src = read(rel);
+    if (!src) continue;
+    for (const bootSrc of CANONICAL_BOOT_SRCS) {
+      // Look for a <script> tag referencing this src — if it exists it must
+      // carry data-cfasync="false".
+      const escapedSrc = bootSrc.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const scriptTagRe = new RegExp(`<script([^>]*)src=["']${escapedSrc}["'][^>]*>`, 'i');
+      const m = scriptTagRe.exec(src);
+      if (!m) continue; // script not present on this page — skip
+      const attrs = m[1] + m[0]; // full tag attrs
+      if (!attrs.includes('data-cfasync="false"') && !attrs.includes("data-cfasync='false'")) {
+        fail(`[19] ${rel} — canonical boot script missing data-cfasync="false": ${bootSrc}`);
+        check19Clean = false;
+      }
+    }
+  }
+  // Also check site-shell.js itself does NOT use the old body-clearing approach
+  const shellSrc19 = read('js/site-shell.js');
+  if (shellSrc19) {
+    if (/child\.nodeName\s*!==\s*['"]SCRIPT['"].*removeChild/s.test(shellSrc19) ||
+        /removeChild.*nodeName\s*!==\s*['"]SCRIPT['"]/s.test(shellSrc19)) {
+      fail('[19] site-shell.js still uses old "remove all non-SCRIPT children" body clear — ' +
+           'this detaches Rocket Loader placeholder nodes');
+      check19Clean = false;
+    } else {
+      pass('[19] site-shell.js: no broad non-SCRIPT body clear detected');
+    }
+    // Must use the safe OLD_SHELL_IDS removal approach
+    if (shellSrc19.includes('OLD_SHELL_IDS')) {
+      pass('[19] site-shell.js: uses safe OLD_SHELL_IDS targeted removal');
+    } else {
+      fail('[19] site-shell.js: missing OLD_SHELL_IDS — safe Rocket Loader insertion approach not found');
+      check19Clean = false;
+    }
+  }
+  if (check19Clean) {
+    pass('[19] All canonical boot scripts have data-cfasync="false" and site-shell.js is Rocket Loader safe');
   }
 }
 
