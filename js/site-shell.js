@@ -178,6 +178,7 @@
       '/dashboard.html',
       '/community.html',
       '/how-to-play.html',
+      '/games',
       '/games/',
       '/games/index.html',
       '/games/leaderboard.html',
