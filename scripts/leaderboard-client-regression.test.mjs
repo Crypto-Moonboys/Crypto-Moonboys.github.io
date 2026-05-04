@@ -48,9 +48,18 @@ async function test(name, fn) {
 const src = await readFile('js/leaderboard-client.js');
 
 await test('submitScore POST body contains telegram_auth field', async () => {
+  // Scope the check to inside submitScore()'s own fetch block, so changes to
+  // submitMetaScore() or its call site cannot produce a false pass.
+  const submitScoreStart = src.indexOf('export async function submitScore(');
+  assert(submitScoreStart !== -1, 'submitScore function not found in source');
+
+  const firstFetch = src.indexOf('await fetch(api', submitScoreStart);
+  assert(firstFetch !== -1, 'submitScore fetch(api) call not found');
+
+  const fetchBlock = src.slice(firstFetch, src.indexOf('const data = await res.json', firstFetch));
   assert(
-    src.includes('telegram_auth: telegramAuth'),
-    'Expected "telegram_auth: telegramAuth" in submitScore POST body',
+    fetchBlock.includes('telegram_auth: telegramAuth'),
+    'submitScore leaderboard POST body must include telegram_auth: telegramAuth',
   );
 });
 
@@ -112,9 +121,14 @@ await test('submitMetaScore has guard against missing telegram_auth', async () =
 });
 
 await test('submitMetaScore call site passes telegram_auth', async () => {
-  // The call in submitScore should forward telegram_auth.
+  // The call inside submitScore() that forwards to submitMetaScore() must include telegram_auth.
+  const submitScoreStart = src.indexOf('export async function submitScore(');
+  assert(submitScoreStart !== -1, 'submitScore function not found');
+  const metaCallIdx = src.indexOf('await submitMetaScore(', submitScoreStart);
+  assert(metaCallIdx !== -1, 'submitMetaScore call not found inside submitScore()');
+  const metaCallBlock = src.slice(metaCallIdx, src.indexOf(');', metaCallIdx) + 2);
   assert(
-    src.includes('telegram_auth: telegramAuth,'),
+    metaCallBlock.includes('telegram_auth'),
     'submitMetaScore call site must forward telegram_auth: telegramAuth',
   );
 });
