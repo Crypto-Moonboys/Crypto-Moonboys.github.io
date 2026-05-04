@@ -19,7 +19,9 @@ name: SAM Lore Ingest
 #   js/graph-data.json  js/entity-graph-lite.json  js/cluster-health.json
 #   js/authority-drift.json  js/entity-changelog.json
 #   js/authority-trust.json  js/timeline-intelligence.json
+#   js/predictive-growth.json  js/governance-signals.json  js/publishing-readiness.json
 #   api/authority.json  api/timeline.json  api/editorial.json
+#   api/predictive-growth.json  api/governance.json  api/publishing.json
 #
 # BLOCKED automated outputs (workflow fails if any are changed):
 #   server/**  workers/**  shared/**  docs/block-topia/**
@@ -260,4 +262,4 @@ jobs:
           fi
 
           git commit -m "chore: SAM lore ingest — regenerate display surfaces [skip ci]"
-          git push origin HEAD:main || echo "Push skipped"
+          git push origin HEAD:${{ github.ref_name }} || echo "Push skipped"

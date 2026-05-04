@@ -261,6 +261,52 @@ function checkBlockTopiaCleanState() {
   }
 }
 
+function checkSamProvenanceEscaping() {
+  // Verify that safeJsonForHtmlScript (used in generate-content-expansion.js) correctly
+  // escapes HTML-significant characters so that provenance data cannot break out of a
+  // <script> block in generated wiki stub pages.
+  const scriptPath = abs('scripts/generate-content-expansion.js');
+  if (!exists('scripts/generate-content-expansion.js')) {
+    fail('Missing scripts/generate-content-expansion.js');
+  }
+
+  // Dynamically load and exercise just the helper function by extracting it.
+  const source = read('scripts/generate-content-expansion.js');
+  const match = source.match(/function safeJsonForHtmlScript[\s\S]*?^}/m);
+  if (!match) {
+    fail('safeJsonForHtmlScript helper not found in generate-content-expansion.js');
+  }
+
+  // Evaluate the isolated helper.
+  // eslint-disable-next-line no-new-func
+  const safeJsonForHtmlScript = new Function(`${match[0]}; return safeJsonForHtmlScript;`)();
+
+  const xssPayload = '<script>alert(1)</script>';
+  const testObj = { id: 'test', field: xssPayload };
+  const result  = safeJsonForHtmlScript(testObj);
+
+  // Must NOT contain the raw script tag.
+  if (result.includes('<script>') || result.includes('</script>')) {
+    fail('safeJsonForHtmlScript did not escape <script> tags — XSS sink in generated pages!');
+  }
+
+  // Must contain the unicode-escaped form.
+  if (!result.includes('\\u003c') || !result.includes('\\u003e')) {
+    fail('safeJsonForHtmlScript did not produce \\u003c/\\u003e escape sequences');
+  }
+
+  // The JSON must still be valid and round-trip correctly.
+  let parsed;
+  try {
+    parsed = JSON.parse(result);
+  } catch (e) {
+    fail(`safeJsonForHtmlScript output is not valid JSON: ${e.message}`);
+  }
+  if (parsed.field !== xssPayload) {
+    fail(`safeJsonForHtmlScript round-trip failed: expected "${xssPayload}", got "${parsed.field}"`);
+  }
+}
+
 function run() {
   console.log('Running smoke tests...');
 
@@ -272,6 +318,7 @@ function run() {
   checkSitemap();
   checkSearchPage();
   checkBlockTopiaCleanState();
+  checkSamProvenanceEscaping();
 
   console.log('Smoke tests passed ✅');
 }

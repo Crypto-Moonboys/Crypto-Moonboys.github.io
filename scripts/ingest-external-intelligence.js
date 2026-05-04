@@ -48,7 +48,8 @@ const MIN_INGEST_WEIGHT = 0.6;   // minimum source score_weight to allow ingesti
 // ---------------------------------------------------------------------------
 // External intelligence ingest must only consume SAM-approved export data,
 // not independently sourced external feeds. This script requires a valid
-// SAM export manifest (js/sam-export-manifest.json) before it will run.
+// SAM export manifest (js/sam-export-manifest.json) with a valid sam_export_id
+// or approved_source_pack_id before it will run.
 // While SAM is paused, exit cleanly with no changes.
 
 const SAM_MANIFEST = path.join(ROOT, 'js/sam-export-manifest.json');
