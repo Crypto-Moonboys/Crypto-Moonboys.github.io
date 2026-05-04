@@ -219,9 +219,10 @@ jobs:
               FAIL=1
             fi
           done
-          # README files are blocked regardless of directory
-          if echo "$CHANGED_FILES" | grep -iEq '(^|/)README'; then
-            echo "::error::Automation attempted to modify a README file (blocked unless human-approved docs PR)"
+          # README-style files are blocked regardless of directory.
+          # Covers: README, README.md, readme.md, READ.ME, read.me, etc.
+          if echo "$CHANGED_FILES" | grep -iEq '(^|/)(README|READ\.ME)'; then
+            echo "::error::Automation attempted to modify a README-style file (blocked unless human-approved docs PR)"
             FAIL=1
           fi
           if [ "$FAIL" -ne 0 ]; then
