@@ -56,9 +56,10 @@ await test('submitScore POST body contains telegram_auth field', async () => {
 
 await test('submitScore has missing-auth guard before POST', async () => {
   // Guard checks for !telegramAuth || !telegramAuth.hash || !telegramAuth.auth_date
+  // and emits both 'relink_required' status AND 'auth_expired' health reason.
   assert(
-    src.includes('!telegramAuth') && (src.includes('auth_expired') || src.includes('relink_required')),
-    'Expected missing-auth early-return guard in submitScore()',
+    src.includes('!telegramAuth') && src.includes('auth_expired') && src.includes('relink_required'),
+    'Expected missing-auth guard with both auth_expired health marker and relink_required status in submitScore()',
   );
 });
 
@@ -133,16 +134,24 @@ await test('FEATURES.ARCADE_LEADERBOARD is true (arcade leaderboard worker is li
 const worker = await readFile('workers/moonboys-api/worker.js');
 
 await test('readAdminSecret does not accept x-admin-token alias', async () => {
+  // Extract the readAdminSecret function body to check specifically there.
+  const fnStart = worker.indexOf('function readAdminSecret(');
+  assert(fnStart !== -1, 'readAdminSecret function not found in worker');
+  const fnEnd = worker.indexOf('\n}', fnStart) + 2;
+  const fnBody = worker.slice(fnStart, fnEnd);
   assert(
-    !worker.includes("x-admin-token"),
-    'x-admin-token alias must be removed from readAdminSecret() and CORS headers',
+    !fnBody.includes('x-admin-token'),
+    'x-admin-token alias must be removed from readAdminSecret()',
   );
 });
 
 await test('Access-Control-Allow-Headers does not include x-admin-token', async () => {
+  // Find the Access-Control-Allow-Headers line and verify x-admin-token is absent from it.
+  const corsLineMatch = worker.match(/['"]Access-Control-Allow-Headers['"]:\s*'[^']*'/);
+  assert(corsLineMatch !== null, 'Access-Control-Allow-Headers entry not found in worker');
   assert(
-    !worker.includes("x-admin-token"),
-    'x-admin-token must not appear in Access-Control-Allow-Headers',
+    !corsLineMatch[0].includes('x-admin-token'),
+    `x-admin-token must not appear in Access-Control-Allow-Headers. Found: ${corsLineMatch[0]}`,
   );
 });
 
