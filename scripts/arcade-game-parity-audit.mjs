@@ -111,8 +111,8 @@ const ACTIVE_GAMES_AUDIT = {
   invaders:           null,
   pacchain:           null,
   asteroids:          null,
-  'breakout-bullrun': null,
-  'snake-run':        null,
+  breakout:           null,
+  snake:              null,
   tetris:             null,
   crystal: {
     noUpgrades: 'Quiz/lore format — upgrade layer N/A (streak + rare question events serve equivalent role)',
