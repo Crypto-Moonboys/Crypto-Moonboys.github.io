@@ -43,7 +43,7 @@ npm run dev
 
 ### Production
 ```bash
-npm start
+NODE_ENV=production npm start
 ```
 
 The server will start on port `2567` by default. You can override this using an environment variable:
@@ -52,12 +52,41 @@ The server will start on port `2567` by default. You can override this using an 
 PORT=3000 npm start
 ```
 
+## Environment Variables
+
+Copy `.env.example` to `.env` and configure before starting:
+
+| Variable | Required | Default | Description |
+|----------|----------|---------|-------------|
+| `PORT` | No | `2567` | Server listen port |
+| `NODE_ENV` | Yes (prod) | `development` | Set to `production` in production |
+| `CORS_ORIGIN` | No | `https://cryptomoonboys.com,https://crypto-moonboys.github.io` | Comma-separated allowed browser origins |
+| `MONITOR_USERNAME` | No | `admin` | Username for `/colyseus` monitor Basic Auth |
+| `MONITOR_PASSWORD` | **Yes in production** | _(none)_ | Password for `/colyseus` monitor. **Required in production** — if not set, `/colyseus` is disabled entirely |
+| `BLOCKTOPIA_FREE_ROAM_MS` | No | `600000` (prod) / `60000` (dev) | Free-roam phase duration in ms |
+| `BLOCKTOPIA_WARNING_MS` | No | `10000` | Event-incoming warning duration in ms |
+| `BLOCKTOPIA_EVENT_MS` | No | `90000` | Active event phase duration in ms |
+| `BLOCKTOPIA_RECOVERY_MS` | No | `600000` (prod) / `30000` (dev) | Recovery/upgrade phase duration in ms |
+| `BLOCKTOPIA_MISSION_COMPLETE_MS` | No | `8000` | Mission-complete display phase in ms |
+
 ## Endpoints
-| Endpoint | Description |
-|---------|-------------|
-| `/health` | Health check for monitoring |
-| `/colyseus` | Colyseus monitor dashboard |
-| `/webhooks/sam` | Receives events from the SAM wiki agent |
+| Endpoint | Auth | Description |
+|---------|------|-------------|
+| `/health` | None | Health check — always public |
+| `/colyseus` | Basic Auth | Colyseus monitor dashboard — requires `MONITOR_PASSWORD` in production |
+| `/webhooks/sam` | None | Receives events from the SAM wiki agent |
+
+### Colyseus Monitor
+
+The `/colyseus` monitor dashboard is protected by HTTP Basic Auth in all environments.
+
+- **Development**: username `admin`, password from `.env` (or blank = unprotected in dev only)
+- **Production**: **MONITOR_PASSWORD must be set**. If it is missing, the `/colyseus` route returns 404.
+
+Set credentials:
+```bash
+MONITOR_USERNAME=admin MONITOR_PASSWORD=<secret> npm start
+```
 
 ## Connecting from the Client
 Install the Colyseus client in your frontend project:

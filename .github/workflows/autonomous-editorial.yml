@@ -212,6 +212,15 @@ jobs:
               FAIL=1
             fi
           done
+
+          # README guard: block any README* or READ.ME* file (any extension, any case).
+          # Uses the broader regex to catch README.md, README.txt, README-old.md, etc.
+          # README / source-truth changes must happen in separate human-reviewed docs PRs.
+          if git diff --name-only HEAD 2>/dev/null | grep -iEq '(^|/)(README[^/]*|READ\.ME[^/]*)$'; then
+            echo "::error::Automation attempted to modify README file(s). README changes require a separate human-reviewed PR."
+            FAIL=1
+          fi
+
           if [ "$FAIL" -ne 0 ]; then
             echo "Aborting: blocked path(s) modified. No commit will be made."
             exit 1
