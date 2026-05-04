@@ -66,6 +66,14 @@ const runtime = {
   tiles: createTiles(),
 };
 
+function shouldShowStartOverlay() {
+  if (runtime.localPlayer.ready !== true) return true;
+  if (runtime.inputEnabled === false) return true;
+  if (runtime.connectionStatus?.joined !== true) return true;
+  if (runtime.connectionStatus?.ws !== 'connected') return true;
+  return false;
+}
+
 function getTileId(x, y) {
   return y * GRID_SIZE + x;
 }
@@ -1042,6 +1050,9 @@ window.BlockTopiaMap = {
     runtime.inputEnabled = Boolean(enabled);
     if (runtime.inputEnabled) ensureMissionStart();
   },
+  isStartOverlayRequired() {
+    return shouldShowStartOverlay();
+  },
   triggerAttack() {
     tryAttack();
   },
@@ -1068,6 +1079,7 @@ window.BlockTopiaMap = {
   },
   signalReady() {
     if (runtime.localPlayer.ready || runtime.localPlayer.readyRequested) return false;
+    if (runtime.connectionStatus?.joined !== true || runtime.connectionStatus?.ws !== 'connected') return false;
     if (!runtime.readySink) return false;
     const sent = runtime.readySink();
     if (sent) runtime.localPlayer.readyRequested = true;

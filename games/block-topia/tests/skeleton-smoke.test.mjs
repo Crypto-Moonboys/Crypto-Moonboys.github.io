@@ -206,6 +206,19 @@ assert.ok(
   'main.js should show a clear pre-start waiting HUD state.',
 );
 assert.ok(
+  mainSource.includes('function shouldShowStartOverlay(') &&
+  mainSource.includes('isStartOverlayRequired()') &&
+  mainSource.includes("runtime.localPlayer.ready !== true") &&
+  mainSource.includes("runtime.inputEnabled === false"),
+  'main.js should expose a strict start-overlay invariant for not-ready/input-disabled/disconnected states.',
+);
+assert.ok(
+  indexHtml.includes('const syncStartOverlayVisibility = () => {') &&
+  indexHtml.includes('window.BlockTopiaMap?.isStartOverlayRequired?.()') &&
+  indexHtml.includes('syncStartOverlayVisibility();'),
+  'index.html should keep Start / Continue overlay synchronized with map runtime state.',
+);
+assert.ok(
   mainSource.includes('const PHASE_FREE_ROAM =') &&
   mainSource.includes('const PHASE_EVENT_ACTIVE =') &&
   mainSource.includes('function setWorldState(') &&
