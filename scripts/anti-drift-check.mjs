@@ -924,6 +924,70 @@ console.log('\n[16] No removed-effect comment remnants in shell files');
   }
 }
 
+// ── [13] Shell-clean check ────────────────────────────────────────────────────
+{
+  console.log('\n[13] Shell-clean: no hardcoded shell markup in HTML pages');
+
+  const shellCheckFiles = [];
+
+  // Root *.html files
+  for (const f of fs.readdirSync(ROOT)) {
+    if (f.endsWith('.html')) shellCheckFiles.push(f);
+  }
+
+  // categories/*.html
+  const catDir2 = path.join(ROOT, 'categories');
+  if (fs.existsSync(catDir2)) {
+    for (const f of fs.readdirSync(catDir2)) {
+      if (f.endsWith('.html')) shellCheckFiles.push('categories/' + f);
+    }
+  }
+
+  // wiki/*.html
+  const wikiDir2 = path.join(ROOT, 'wiki');
+  if (fs.existsSync(wikiDir2)) {
+    for (const f of fs.readdirSync(wikiDir2)) {
+      if (f.endsWith('.html')) shellCheckFiles.push('wiki/' + f);
+    }
+  }
+
+  // games/index.html and games/leaderboard.html
+  shellCheckFiles.push('games/index.html');
+  shellCheckFiles.push('games/leaderboard.html');
+
+  // Shell markup markers to forbid
+  const shellMarkers = [
+    '<header id="site-header"',
+    '<nav id="sidebar"',
+    '<footer id="site-footer"',
+    '<aside id="homepage-right-panel"',
+  ];
+
+  let check13Clean = true;
+
+  for (const rel of shellCheckFiles) {
+    const full = path.join(ROOT, rel);
+    if (!fs.existsSync(full)) continue;
+    const src = fs.readFileSync(full, 'utf8');
+
+    for (const marker of shellMarkers) {
+      if (src.includes(marker)) {
+        fail(`[13] ${rel} — contains hardcoded shell markup: ${marker}`);
+        check13Clean = false;
+      }
+    }
+
+    if (!src.includes('<script src="/js/site-shell.js">')) {
+      fail(`[13] ${rel} — missing <script src="/js/site-shell.js">`);
+      check13Clean = false;
+    }
+  }
+
+  if (check13Clean) {
+    pass('[13] All shell pages are clean and load site-shell.js');
+  }
+}
+
 // ── Summary ───────────────────────────────────────────────────────────────────
 console.log('\n─────────────────────────────────────────');
 console.log(`Anti-drift check complete.`);

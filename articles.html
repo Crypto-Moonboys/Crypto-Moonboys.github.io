@@ -15,8 +15,8 @@
   <link rel="stylesheet" href="/css/wiki.css">
   <link rel="icon" href="/img/favicon.svg" type="image/svg+xml">
 </head>
-<body>
-  <main id="content" role="main" style="max-width:760px;margin:80px auto;padding:24px;text-align:center">
+<body >
+<main id="content" role="main">
     <h1>All Articles moved</h1>
     <p>This legacy page has been retired.</p>
     <p>
@@ -26,7 +26,24 @@
     <p>If you are not redirected automatically, use the link above.</p>
   </main>
 
-  <script>
+<!-- ── CANONICAL SCRIPT BOOT ─────────────────────────────────────── -->
+<!-- 1. Core config -->
+<script src="/js/api-config.js"></script>
+<!-- 2. Event bus -->
+<script src="/js/arcade/core/global-event-bus.js"></script>
+<!-- 3. Identity -->
+<script src="/js/identity-gate.js"></script>
+<!-- 4. State -->
+<script src="/js/core/moonboys-state.js"></script>
+<!-- 5. Shell + shared components -->
+<script src="/js/site-shell.js"></script>
+<script src="/js/components/connection-status-panel.js"></script>
+<script src="/js/components/global-player-header.js"></script>
+<script src="/js/components/live-activity-summary.js"></script>
+<!-- 6. Page-specific scripts -->
+
+<script src="/js/wiki.js"></script>
+<script>
     window.location.replace('/search.html');
   </script>
 </body>
