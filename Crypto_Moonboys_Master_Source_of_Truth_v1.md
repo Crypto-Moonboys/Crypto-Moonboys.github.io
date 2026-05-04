@@ -1,16 +1,16 @@
 # Crypto Moonboys / GK Living Web3 Wiki and Game System - Master Source of Truth
 
-Version: 1.0  
+Version: 1.1  
 Date: May 2026  
 Purpose: internal source-of-truth document for future AI agents, developers, writers, game builders, lore builders, marketing agents, and reviewers working on the Crypto Moonboys / GK wiki and game system.
 
 ## Read This First
 
-This document exists because the project can look confusing if an agent only sees one page, one repo, one game file, one Substack post, or one piece of lore. Crypto Moonboys is not a normal wiki, not just a game, not just an NFT project, and not just another Web3 community.
+This document exists because the project can look confusing if an agent only sees one page, one repo, one game file, one Substack post, one piece of lore, or one build deck. Crypto Moonboys is not a normal wiki, not just a game, not just an NFT project, and not just another Web3 community.
 
 The correct definition is:
 
-**Crypto Moonboys is a living Web3 wiki for the Graffiti Kings / GKniftyHEADS universe, powered by lore, arcade games, XP, Telegram identity, factions, Battle Chamber activity, Block Topia access, and future creator/IP layers.**
+**Crypto Moonboys is a living Web3 wiki for the Graffiti Kings / GKniftyHEADS universe, powered by lore, arcade games, XP, Telegram identity, factions, Battle Chamber activity, Block Topia Live City access, and future creator/IP layers.**
 
 The shortest possible operating line:
 
@@ -25,6 +25,14 @@ The culture line:
 **Stop logging in to claim. Start showing up to build.**
 
 The wiki is not being replaced. The wiki is the foundation. The system makes it alive.
+
+There are now three Block Topia-adjacent products that must not be blurred:
+
+1. **Block Topia Live City** — the current `/games/block-topia/` gated 2-player Colyseus multiplayer survival/mission prototype.
+2. **Block Topia Quest Maze** — the separate `/games/block-topia-quest-maze/` arcade/RPG score game and Arcade XP path.
+3. **City Block Topia / Neon Sprawl** — the deeper Three.js living-wiki territory layer planned for separate integration, not the current `/games/block-topia/` runtime.
+
+Any future agent that collapses these into one thing will create drift.
 
 ---
 
@@ -42,7 +50,7 @@ The site should never be described as only an encyclopedia. It should never be d
 
 ## The one-paragraph pitch
 
-Crypto Moonboys is a street-born, lore-heavy, game-powered Web3 wiki. The pages explain the universe. The arcade lets users enter it. XP proves action. Telegram makes identity persistent. The Battle Chamber shows who is moving. Block Topia is the gated next layer. Future layers expand into deeper gameplay, factions, creator IP, seasonal events, phygital products, and community-built worlds.
+Crypto Moonboys is a street-born, lore-heavy, game-powered Web3 wiki. The pages explain the universe. The arcade lets users enter it. XP proves action. Telegram makes identity persistent. The Battle Chamber shows who is moving. Block Topia Live City is the gated next layer currently available through the website. City Block Topia / Neon Sprawl is the deeper playable-wiki territory layer planned for separate integration. Future layers expand into deeper gameplay, factions, creator IP, seasonal events, phygital products, and community-built worlds.
 
 ## The WTF/WOW pitch
 
@@ -87,6 +95,9 @@ Do not say Crypto Moonboys is only:
 - just a lore archive
 - just a metaverse project
 - just a token project
+- just Block Topia
+- just City Block Topia
+- just Quest Maze
 
 All of those are either wrong or incomplete.
 
@@ -96,10 +107,13 @@ All of those are either wrong or incomplete.
 |---|---|
 | Wiki | The base layer: lore, pages, memory, categories, article structure, world explanation |
 | Arcade | The entry action layer: fast play, score, first movement |
-| XP | Progression signal: proof of activity and access gate logic |
+| Score | How well a player performs in a game run; leaderboard ranking signal only |
+| Arcade XP | Proof-of-activity progression earned from accepted synced arcade activity; gates Block Topia access |
 | Telegram | Identity layer: persistent player/account link |
 | Battle Chamber | Proof layer: visible activity, community status, faction signals |
-| Block Topia | Next gated layer: currently clean 2-player isometric map base |
+| Block Topia Live City | Current gated `/games/block-topia/` multiplayer survival/mission prototype |
+| Block Topia Quest Maze | Separate arcade/RPG route at `/games/block-topia-quest-maze/`; score and Arcade XP path |
+| City Block Topia / Neon Sprawl | Separate deeper living-wiki territory layer planned for integration |
 | NFTs / IP | Ownership and identity layer: art, access, rights, future creator expansion |
 | Factions | Belonging and competition layer |
 | SAM / agents | Intelligence, publishing, crawling, and lore-building support layers |
@@ -155,34 +169,57 @@ Future agents must not guess what is live. The following is the current working 
 | Public wiki | Live pages, lore, categories, search, article structure, timelines/graphs where available |
 | Arcade | Playable arcade games under `/games/` |
 | Accepted scores | Active score submission flow for supported arcade games |
-| Arcade XP | Server-side when Telegram identity is linked |
+| Arcade XP | Server-side when Telegram identity is linked and accepted game activity is synced |
 | Telegram sync | `/gklink` in `@WIKICOMSBOT` connects identity |
-| Leaderboard | Active shared leaderboard routes exist |
-| Battle Chamber | Activity/proof/community panels exist |
-| Faction effects | Gameplay effects active in main arcade games where wired |
-| Block Topia | Currently a clean 2-player isometric map base |
+| Leaderboard | Shared leaderboard routes and score display exist where wired |
+| Battle Chamber | Activity/proof/community panels exist; it is the proof layer, not just a forum |
+| Faction effects | Gameplay effects are active in supported arcade games where wired |
+| Block Topia Live City | Current `/games/block-topia/` gated 2-player Colyseus multiplayer survival/mission prototype |
+| Block Topia Live City mechanics | NPCs, attacks, HP, respawns, phases, objectives, extraction, upgrades, ready/start/restart flow, and room state sync are present in the current runtime |
 | Block Topia gate | Requires Telegram linked account plus 50 Arcade XP |
+| Block Topia Quest Maze | Separate `/games/block-topia-quest-maze/` arcade/RPG score game and Arcade XP route |
 | Wiki identity | Must remain the foundation: this is a living wiki |
 
-## Coming / planned only
+## Not live / planned / integration-staged
 
 | Future layer | Required wording |
 |---|---|
-| NPC battles | planned / future layer / not live yet |
-| Seasonal HODL Wars | planned / future layer / not live yet |
-| Extended Block Topia gameplay | planned / in development |
-| Deeper economy systems | planned / future layer |
-| Creator/IP expansion | planned / future layer |
-| Cross-player faction war persistence | planned / not live unless verified |
-| Full world persistence | planned unless confirmed |
+| City Block Topia / Neon Sprawl route | planned integration route; not the current `/games/block-topia/` runtime |
+| City Block Topia package features | source-present or design-present until imported, wired, tested, and documented in the website repo |
+| Full persistent Block Topia profile save | planned unless a server-backed persistence route is verified |
+| 60-second warm-slot reconnect | planned stability work unless verified in server runtime |
+| Redis / Postgres / horizontal room scaling | planned infrastructure |
+| SAM live room events | planned; webhook stubs do not equal live gameplay integration |
+| Full district/faction control persistence | planned |
+| Party system / invites / join-on-friend | planned |
+| In-room chat and moderation tools | planned unless verified live |
+| Seasonal HODL Wars gameplay | planned future layer |
+| Marketplace / player economy / token rewards | planned or out of scope unless legally and technically confirmed |
+| Full creator/IP expansion | planned future layer |
+| Cross-player faction war persistence | planned unless verified |
+| City Block Topia Battle Chamber event bridge | planned until event routes are wired and tested |
 
-## Important truth boundary
+## Important truth boundaries
 
-Block Topia must be described exactly enough to avoid overclaiming:
+### Block Topia Live City
 
-**Block Topia is currently a clean 2-player isometric map base. Access requires Telegram linked and 50 Arcade XP. Deeper gameplay systems are planned and not live yet.**
+Use this:
 
-This language protects trust.
+**Block Topia Live City is the current gated `/games/block-topia/` 2-player Colyseus multiplayer survival/mission prototype. Access requires Telegram link plus 50 Arcade XP. The current runtime includes NPC survival combat, attacks, HP, respawns, phases, objectives, extraction, upgrades, and ready/start/restart flow. Durable persistence, party systems, SAM live events, large rooms, and full economy systems are planned unless separately verified.**
+
+Do not describe it as only a bare map skeleton. That wording is now stale.
+
+### Block Topia Quest Maze
+
+Use this:
+
+**Block Topia Quest Maze is a separate arcade/RPG score game at `/games/block-topia-quest-maze/`. It is part of the arcade and score/Arcade XP path. It is not the same product as Block Topia Live City.**
+
+### City Block Topia / Neon Sprawl
+
+Use this:
+
+**City Block Topia / Neon Sprawl is a separate deeper living-wiki game layer planned for integration, preferably under `/games/city-block-topia/` or `/games/block-topia/neon-sprawl/`. It must not be confused with the current `/games/block-topia/` live runtime until it is imported, wired, smoke-tested, and documented.**
 
 ---
 
@@ -200,8 +237,9 @@ The user journey must be consistent across homepage, About pages, How to Play, I
 6. Link Telegram identity.
 7. See proof/activity in Battle Chamber.
 8. Build enough Arcade XP for Block Topia gate.
-9. Enter Block Topia.
+9. Enter Block Topia Live City.
 10. Return, build, join factions, and move deeper.
+11. Later, enter City Block Topia / Neon Sprawl when that separate route is integrated and verified.
 
 ## The exact route line
 
@@ -216,14 +254,15 @@ Use this consistently:
 - XP tracks participation.
 - Telegram creates persistent identity.
 - Battle Chamber creates proof.
-- Block Topia creates the next layer.
+- Block Topia Live City creates the gated next layer.
+- City Block Topia / Neon Sprawl becomes the deeper playable-wiki territory layer after integration.
 - Building gives long-term purpose.
 
 ---
 
-# 6. Score, XP, and Identity: The Non-Negotiable Definitions
+# 6. Score, XP, Identity, and Currency: The Non-Negotiable Definitions
 
-Future agents must not blur score and XP.
+Future agents must not blur score, XP, identity, or in-game resources.
 
 ## Score
 
@@ -233,9 +272,9 @@ Score is generated by individual game runs. Score determines leaderboard rank on
 
 ## Arcade XP
 
-**XP = proof that you showed up.**
+**Arcade XP = proof that you showed up through accepted synced arcade activity.**
 
-Arcade XP comes from accepted synced runs after Telegram identity is linked. Arcade XP gates Block Topia entry.
+Arcade XP comes from accepted synced runs after Telegram identity is linked. Arcade XP gates Block Topia Live City entry.
 
 Use this line wherever XP is explained:
 
@@ -247,14 +286,21 @@ Use this line wherever XP is explained:
 
 Telegram sync turns a temporary browser player into a persistent player identity. It is required for server-side progression.
 
-## Four progression signals
+## Current and future progression signals
 
 | Signal | Source | Purpose |
 |---|---|---|
-| Score | Every accepted run | Leaderboard rank only; does not affect XP |
-| Arcade XP | Accepted runs synced via Telegram | Gates Block Topia entry; server-side progression |
+| Score | Every accepted game run | Leaderboard rank only; does not affect XP directly |
+| Arcade XP | Accepted runs synced via Telegram | Gates Block Topia Live City entry; server-side progression |
 | Faction XP | Faction earn events | Faction alignment level and HUD/status only |
-| Block Topia XP | In-game Block Topia progression | Separate in-game progression inside Block Topia |
+| Block Topia run state | Current live room actions | Per-room / per-run survival state unless durable persistence is explicitly wired |
+| Block Topia XP / City XP | Future in-game progression | Separate from Arcade XP; only claim persistence when server-backed |
+| Rebel Ink | City Block Topia in-game resource | Local/game resource for tagging, upgrades, contracts, or squad actions; not a token |
+| Tokens / NFTs | Optional future ownership/IP layer | Art, identity, access, cosmetics, rights, or future utility; never guaranteed returns |
+
+## Hard rule
+
+Do not use “XP” generically where the system needs precision. Say **Arcade XP**, **Faction XP**, **Block Topia XP**, or **City XP**.
 
 ---
 
@@ -301,7 +347,8 @@ Bullets:
 - XP tracks participation
 - Telegram makes identity persistent
 - Battle Chamber shows activity
-- Block Topia is the gated next layer
+- Block Topia Live City is the gated multiplayer layer
+- City Block Topia / Neon Sprawl is the deeper playable-wiki layer planned for separate integration
 
 Then add:
 
@@ -321,6 +368,7 @@ Must communicate:
 - Pages explain the world.
 - Arcade lets users enter it.
 - Route is Read -> Play -> Earn XP -> Link -> Battle Chamber -> Block Topia -> Build.
+- Block Topia Live City is gated by Telegram link plus 50 Arcade XP.
 
 ## `about.html` - Short About / trust page
 
@@ -338,7 +386,8 @@ Must include:
 - System loop
 - Score / XP / Telegram definitions
 - What exists today vs what is coming
-- Block Topia truth
+- Block Topia Live City truth
+- City Block Topia / Neon Sprawl separation
 - Entry links
 
 ## `how-to-play.html` - Mechanics guide
@@ -349,9 +398,11 @@ Must include:
 
 - Score does not equal XP
 - Arcade XP requires Telegram sync to persist
-- 50 Arcade XP gate for Block Topia
-- Block Topia is a clean map base now
-- deeper gameplay is planned
+- 50 Arcade XP gate for Block Topia Live City
+- Block Topia Live City is the current gated multiplayer survival/mission prototype
+- durable persistence, larger rooms, party systems, SAM events, and deeper economy are planned unless verified
+- Block Topia Quest Maze is a separate arcade/RPG score route
+- City Block Topia / Neon Sprawl is a future/deeper route, not the current live city runtime
 
 ## `gkniftyheads-incubator.html` - Telegram sync / identity page
 
@@ -372,8 +423,9 @@ Job: Proof layer.
 Must communicate:
 
 - This is where activity shows.
-- XP, activity, faction signals, missions/panels surface here.
+- XP, activity, faction signals, missions/panels surface here where wired.
 - If you act, it shows.
+- If a feed/event bridge is not wired, say planned.
 
 ## `/games/` - Arcade index
 
@@ -385,16 +437,32 @@ Must communicate:
 - build score
 - link Telegram to save progression
 - accepted synced runs build Arcade XP
+- Block Topia Live City is gated and separate from score arcade games
+- Block Topia Quest Maze is the Block Topia-themed score arcade/RPG path
 
-## `/games/block-topia/` - Block Topia clean base
+## `/games/block-topia/` - Block Topia Live City
 
-Job: Current gated next layer.
-
-Must not overclaim.
+Job: Current gated multiplayer layer.
 
 Use:
 
-**Block Topia is currently a clean 2-player isometric map base. Access requires Telegram linked and 50 Arcade XP. Deeper gameplay systems are planned and not live yet.**
+**Block Topia Live City is a 2-player Colyseus multiplayer survival/mission prototype. Access requires Telegram linked and 50 Arcade XP. The current runtime includes NPCs, attacks, HP, respawns, phases, objectives, extraction, upgrades, and ready/start/restart flow. Durable persistence, party systems, SAM live events, large-room scaling, and deeper economy are planned unless separately verified.**
+
+## `/games/block-topia-quest-maze/` - Block Topia Quest Maze
+
+Job: Arcade/RPG score game and Arcade XP path.
+
+Use:
+
+**Block Topia Quest Maze is a separate arcade/RPG score game. It can feed the arcade score and Arcade XP path when accepted and synced, but it is not the same runtime as Block Topia Live City.**
+
+## `/games/city-block-topia/` or `/games/block-topia/neon-sprawl/` - City Block Topia / Neon Sprawl
+
+Job: Future/deeper playable-wiki territory layer after integration.
+
+Use only after the route exists:
+
+**City Block Topia / Neon Sprawl is the deeper living-wiki territory layer where zones, tags, Rebel Ink, Rebellion, lore unlocks, and Battle Chamber events can connect. It is separate from the current Block Topia Live City runtime.**
 
 ---
 
@@ -408,7 +476,7 @@ The wider project should be understood as a split system. Future agents should n
 
 Role: public display layer.
 
-This repo displays the world. It hosts static pages, wiki pages, category pages, arcade games, shared frontend assets, and public-facing UI.
+This repo displays the world. It hosts static pages, wiki pages, category pages, arcade games, shared frontend assets, public-facing UI, current static game routes, and the current Block Topia client files. The Colyseus multiplayer server lives in `server/block-topia/` inside the repo but is deployed separately from GitHub Pages.
 
 It should stay lean, predictable, and stable.
 
@@ -443,6 +511,8 @@ If everything lives in one repo, the project becomes unmanageable:
 The split creates discipline:
 
 - public frontend repo displays
+- Colyseus server owns real-time multiplayer runtime
+- worker/API layer owns persistence and progression routes
 - field hunter repo discovers and prepares
 - SAM V2 understands and governs long-term structure
 
@@ -454,26 +524,31 @@ When sources disagree, future agents must follow this hierarchy.
 
 | Priority | Source | Use case |
 |---|---|---|
-| 1 | `README.md` | product truth, current game state, XP definitions |
-| 2 | `.copilot-instructions.md` | agent behavior rules and language rules |
-| 3 | `AGENT_ENFORCEMENT.md` | hard anti-drift technical rules |
-| 4 | Current live pages | visible copy and user-facing route |
-| 5 | Game source code | actual live mechanics and wiring |
-| 6 | Build decks and dev docs | planning and future roadmap |
-| 7 | Substack / lore posts | lore, vibe, history, canon material, but not always implementation truth |
-| 8 | Agent-generated suggestions | never source of truth unless accepted into docs or code |
+| 1 | Current runtime source code | What is actually live and wired |
+| 2 | `README.md` and runtime truth docs | Product truth, current game state, XP definitions |
+| 3 | `.copilot-instructions.md` | Agent behavior rules and language rules |
+| 4 | `AGENT_ENFORCEMENT.md` | hard anti-drift technical rules |
+| 5 | Current live pages | visible copy and user-facing route |
+| 6 | This Master Source of Truth | product positioning, naming, truth boundaries, website/game rules |
+| 7 | Build decks and dev docs | planning and future roadmap |
+| 8 | Substack / lore posts | lore, vibe, history, canon material, but not always implementation truth |
+| 9 | Agent-generated suggestions | never source of truth unless accepted into docs or code |
 
 ## Rule
 
-If a page says a feature is live but README says it is planned, README wins.
+If a page says a feature is live but code does not wire it, code wins and the page must be corrected.
+
+If an older doc says Block Topia is only a bare map skeleton but the current runtime includes NPC survival/mission systems, the older doc is stale and must be rewritten.
 
 If lore says a mechanic exists but code does not wire it, call it lore/planned, not live.
+
+If build decks describe City Block Topia / Neon Sprawl, treat them as integration planning until the route exists and passes smoke tests.
 
 ---
 
 # 11. Technical Anti-Drift Rules
 
-Future agents must protect the repo from reintroducing old broken systems.
+Future agents must protect the repo from reintroducing old broken systems or stale copy.
 
 ## Required root files
 
@@ -498,17 +573,23 @@ Current active games include:
 - `snake-run`
 - `tetris-block-topia`
 
-## Forbidden Block Topia reintroductions
+## Block Topia Live City guardrails
 
-Do not reintroduce:
+Do not casually reintroduce old dead systems into `/games/block-topia/` or `server/block-topia/` without a documented phase decision, runtime truth update, and tests.
 
-- `games/block-topia/world/`
-- `games/block-topia/ui/`
-- `games/block-topia/economy/`
-- `games/block-topia/duel/`
-- PressureProtocol references
-- street-signal references
-- solo mode references
+Guard against accidental reintroduction of:
+
+- old `games/block-topia/world/` systems into the live city route
+- old `games/block-topia/ui/` overlays into the live city route
+- old `games/block-topia/economy/` systems into the live city route
+- old `games/block-topia/duel/` systems into the live city route
+- Pressure Protocol references as if live
+- street-signal references as if live
+- solo mode references as if live
+- SAM live event claims without actual room broadcast wiring
+- economy/token reward claims without legal and technical confirmation
+
+If a new City Block Topia route needs its own `world/`, `systems/`, or `ui/` folders, place them under the new route or a clearly named package path. Do not make agents think those systems are active in `/games/block-topia/`.
 
 ## HexGL
 
@@ -532,9 +613,11 @@ Use:
 - Read -> Play -> Earn XP -> Link -> Battle Chamber -> Block Topia -> Build.
 - XP is not given. It is earned through activity.
 - Score = how well you play.
-- XP = proof that you showed up.
+- Arcade XP = proof of accepted synced activity.
 - Telegram = your identity.
 - No action = nothing happens. More action = more access.
+- Block Topia Live City is the current gated multiplayer survival/mission prototype.
+- City Block Topia / Neon Sprawl is a separate deeper playable-wiki layer planned for integration.
 
 ## Avoid phrases
 
@@ -546,11 +629,15 @@ Do not use:
 - claim rewards
 - earn by logging in
 - guaranteed rewards
-- NPC battles live
 - full game live
+- full MMO live
+- full economy live
+- SAM events live, unless room broadcast wiring is verified
+- NPC faction ecosystem live, unless verified beyond the current survival NPC loop
 - XXX XP
 - platform, unless unavoidable
 - immersive, revolutionary, dynamic, engaging as filler adjectives
+- stale map-base wording for current Block Topia Live City
 
 ## Future feature language
 
@@ -561,6 +648,8 @@ Use:
 - future layer
 - in development
 - not live yet
+- integration-staged
+- source-present but not verified
 
 Do not present future features as current features.
 
@@ -585,16 +674,18 @@ The arcade turns passive reading into action. It gives users an immediate way to
 | Pac-Chain | maze/routing game |
 | Snake Run | snake/combo survival game |
 | Tetris Block Topia | block/puzzle strategy game |
-| Block Topia Quest Maze | maze/world-adjacent arcade route |
+| Block Topia Quest Maze | separate Block Topia-themed arcade/RPG score and Arcade XP route |
 
 ## Arcade product truth
 
 - Arcade games are playable.
 - Score is generated through play.
-- Accepted scores feed leaderboards.
+- Accepted scores feed leaderboards where wired.
 - Arcade XP is earned from accepted synced runs.
 - Telegram-linked users can persist progression server-side.
 - Unsynced users stay local and should be prompted to link.
+- Block Topia Live City is gated by Arcade XP but is not a score-submission arcade game unless explicitly changed.
+- Block Topia Quest Maze is the Block Topia-themed score/Arcade XP path.
 
 ---
 
@@ -611,11 +702,12 @@ It should display or route toward:
 - XP activity
 - leaderboard activity
 - faction alignment
-- mission panels
-- live feed
+- mission panels where wired
+- live feed where wired
 - user profile / Telegram sync state
 - daily status if live
 - community actions
+- future City Block Topia zone events after event routes are implemented
 
 ## Copy line
 
@@ -626,6 +718,8 @@ Use:
 ## What not to do
 
 Do not describe Battle Chamber as only a discussion forum or comment area. It is a proof layer.
+
+Do not claim a City Block Topia event bridge exists until event routes are wired and visible.
 
 ---
 
@@ -668,41 +762,77 @@ Do not claim a command is live unless verified.
 
 ---
 
-# 16. Block Topia
+# 16. Block Topia Live City
 
-Block Topia is the next gated layer, but must stay honest in current copy.
+Block Topia Live City is the current gated multiplayer layer at `/games/block-topia/`.
 
 ## Current truth
 
-**Block Topia is currently a clean 2-player isometric map base.**
+**Block Topia Live City is a 2-player Colyseus multiplayer survival/mission prototype.**
 
 Access requires:
 
 - Telegram linked
 - 50 Arcade XP
 
-Deeper gameplay systems are planned and not live yet.
+Current runtime includes:
 
-## What not to claim as live
+- 2-player room cap
+- Colyseus room state sync
+- Telegram/Arcade XP entry gate
+- ready/start flow
+- restart/next-level flow
+- 20x20 isometric client map
+- server-side room state
+- NPCs
+- attacks
+- HP
+- respawns
+- spawn grace
+- FREE_ROAM / WARNING / EVENT_ACTIVE / RECOVERY / MISSION_COMPLETE phases
+- objective variants such as patrol sweep and signal hack
+- extraction
+- upgrade choice flow
+- client HUD and feedback states
 
-Do not claim the following are live unless verified in the current implementation:
+## Current limits
 
-- NPC battles
-- economy system
-- duel mode
-- solo mode
-- Pressure Protocol
-- street-signal builds
-- full HODL Wars gameplay
-- cross-player faction war persistence
+Do not claim these are live unless separately verified:
+
+- durable saved player profiles inside Block Topia Live City
+- Redis presence
+- Postgres persistence
+- 60-second server warm-slot reconnect
+- 100-player room scaling
+- party system
+- invites
+- join-on-friend
+- in-room chat
+- moderation tools
+- full district ownership persistence
+- faction war persistence
+- full economy or marketplace
+- SAM live world event broadcasts
+- HODL Wars seasonal gameplay
+- City Block Topia / Neon Sprawl inside the current live city route
+
+## Exact public copy
+
+Use:
+
+**Block Topia Live City is the current gated 2-player multiplayer survival/mission prototype. Access requires Telegram linked and 50 Arcade XP. The current runtime includes NPCs, attacks, HP, respawns, phases, objectives, extraction, upgrades, and ready/start/restart flow. Durable persistence, party systems, SAM live events, large-room scaling, and deeper economy are planned unless separately verified.**
 
 ## Future direction
 
-Block Topia can evolve into:
+Block Topia Live City can evolve into:
 
+- stronger movement authority
+- reconnect warm-slots
+- server-side persistence
+- larger rooms
 - district-based exploration
 - faction control
-- NPC interactions
+- NPC archetypes
 - player missions
 - wiki-linked zones
 - lore unlocks
@@ -713,13 +843,42 @@ But until live, say planned.
 
 ---
 
-# 17. City Block Topia: GraffPunk Infiltration
+# 17. Block Topia Quest Maze
 
-A newer uploaded package extends the game vision into a deeper Three.js world. This should not be confused with the current clean Block Topia map base unless and until it is integrated.
+Block Topia Quest Maze is separate from Block Topia Live City.
+
+## Current role
+
+**Block Topia Quest Maze is the Block Topia-themed arcade/RPG score game at `/games/block-topia-quest-maze/`.**
+
+It belongs to the arcade layer. It can support:
+
+- score submission where wired
+- Arcade XP sync where accepted
+- leaderboard participation
+- arcade-to-Block-Topia access path
+
+## What not to do
+
+Do not describe Quest Maze as the Colyseus multiplayer city.
+
+Do not describe Quest Maze as City Block Topia / Neon Sprawl.
+
+Do not use its arcade manifest ID or score path to imply it is the same runtime as `/games/block-topia/`.
+
+---
+
+# 18. City Block Topia: GraffPunk Infiltration / Neon Sprawl
+
+City Block Topia is the deeper living-wiki game layer planned for separate integration. It must not be confused with Block Topia Live City unless and until a documented transfer architecture is implemented.
 
 ## Working title
 
 **City Block Topia: GraffPunk Infiltration**
+
+## World / district name
+
+**Neon Sprawl**
 
 ## Correct positioning
 
@@ -731,7 +890,7 @@ A neon isometric rebellion game where GraffPunk squads reclaim a corporate-contr
 
 ## Current package identity
 
-The package shows a serious foundation:
+The package/deck direction shows a serious foundation:
 
 - Three.js isometric scene
 - Orthographic camera
@@ -748,27 +907,19 @@ The package shows a serious foundation:
 - VFX spray bursts
 - district names and faction connections
 
-## Current loop
+## Current loop in the City Block Topia design
 
 **Click -> Tag -> Zone reacts -> Ink earned -> Rebellion rises -> Zone captured**
 
 ## Important audit rule
 
-Treat advanced modules as source-present but needing integration verification unless proven live.
+Treat City Block Topia systems as planned, package-present, or integration-staged until they are:
 
-## Live / evident from package
-
-- scene and world build
-- buildings
-- starter squad
-- NPC spawn pass
-- click-to-tag
-- zone detection
-- tag counts
-- Rebel Ink
-- Rebellion meter
-- UI/minimap
-- spray VFX
+1. imported into the repo,
+2. placed under a clear route,
+3. wired to a page,
+4. smoke-tested,
+5. documented in runtime truth docs.
 
 ## Needs verification before live claims
 
@@ -781,23 +932,26 @@ Treat advanced modules as source-present but needing integration verification un
 - anomalies
 - zone wars
 - combat depth
+- Telegram save sync
+- Battle Chamber event bridge
+- dual-map transfer with Block Topia Live City
 
 ## Integration recommendation
 
-Do not replace the current clean Block Topia page with this blindly.
+Do not replace `/games/block-topia/` with City Block Topia.
 
 Preferred routes:
 
 - `/games/city-block-topia/`
 - `/games/block-topia/neon-sprawl/`
 
-This preserves the clean base while adding a deeper playable wiki world.
+This preserves Block Topia Live City while adding a deeper playable wiki world.
 
 ---
 
-# 18. City Block Topia World Structure
+# 19. City Block Topia World Structure
 
-The current district is **Neon Sprawl**.
+The City Block Topia district is **Neon Sprawl**.
 
 ## Key zones
 
@@ -826,9 +980,15 @@ Every zone should eventually have:
 - future unlock table
 - Battle Chamber activity events
 
+## Route boundary
+
+These zones belong to City Block Topia / Neon Sprawl planning unless they are explicitly added to Block Topia Live City.
+
+Do not let agents assume these zones are present in `/games/block-topia/`.
+
 ---
 
-# 19. City Block Topia Game Mechanics
+# 20. City Block Topia Game Mechanics
 
 ## Tagging
 
@@ -845,11 +1005,13 @@ Future implementation must make tagging meaningful:
 
 ## Rebel Ink
 
-Rebel Ink is the local game resource. It should not be confused with XP.
+Rebel Ink is the local City Block Topia game resource. It should not be confused with XP or tokens.
 
 - Rebel Ink = in-game resource for City Block Topia.
 - Arcade XP = global progression signal from arcade games.
 - Faction XP = faction alignment level.
+- Block Topia run state = current live room/run data.
+- City XP = future/in-game City Block Topia progression if implemented.
 
 ## Rebellion meter
 
@@ -888,7 +1050,7 @@ Future agents should map these to lore pages and faction identity.
 
 ---
 
-# 20. Lore and Faction Pillars
+# 21. Lore and Faction Pillars
 
 The lore is not decoration. It is the reason the wiki matters.
 
@@ -919,7 +1081,7 @@ A lore page can talk about future wars. A product page must say whether the feat
 
 ---
 
-# 21. Factions
+# 22. Factions
 
 Factions create belonging. They are not just labels.
 
@@ -948,9 +1110,11 @@ Factions create belonging. They are not just labels.
 
 Do not invent final faction mechanics unless design docs are updated. Treat faction gameplay effects as live only where wired.
 
+Do not claim cross-player faction war persistence is live unless server-backed shared state exists and is visible.
+
 ---
 
-# 22. NFTs, Tokens, Ownership, and Economy
+# 23. NFTs, Tokens, Ownership, and Economy
 
 ## Correct framing
 
@@ -985,7 +1149,7 @@ Use:
 
 ---
 
-# 23. SAM and Agent System Guidance
+# 24. SAM and Agent System Guidance
 
 Future agents need to understand their role.
 
@@ -1001,14 +1165,17 @@ Should focus on:
 - data display
 - live/future truth separation
 - no drift
+- keeping Block Topia Live City, Quest Maze, and City Block Topia separate unless architecture merges them deliberately
 
 Should not:
 
 - invent canon
 - claim future features as live
 - remove wiki identity
-- mutate game rules without README update
+- mutate game rules without runtime truth update
 - bypass anti-drift checks
+- import stale systems into live routes without tests
+- claim SAM live events when only webhook stubs exist
 
 ## Lore agents
 
@@ -1032,6 +1199,8 @@ Should focus on:
 - battle/challenge loops
 - feature flags
 - live-state audit
+- real two-client multiplayer testing for Block Topia Live City
+- route isolation for City Block Topia / Neon Sprawl
 
 ## SAM V2 brain agents
 
@@ -1046,7 +1215,7 @@ Should focus on:
 
 ---
 
-# 24. Development Workflow for Future Agents
+# 25. Development Workflow for Future Agents
 
 Every agent should follow this workflow before editing.
 
@@ -1057,8 +1226,11 @@ Read:
 - `README.md`
 - `.copilot-instructions.md`
 - `AGENT_ENFORCEMENT.md`
+- `docs/current-live-system-truth.md`
+- `docs/block-topia/CURRENT_RUNTIME_TRUTH.md` if Block Topia is involved
 - current target page
 - related game source if editing mechanics
+- current build deck if City Block Topia is involved
 
 ## Step 2: Classify the work
 
@@ -1071,7 +1243,9 @@ Is it:
 - XP/progression
 - Telegram sync
 - Battle Chamber UI
-- Block Topia / game world
+- Block Topia Live City
+- Block Topia Quest Maze
+- City Block Topia / Neon Sprawl
 - automation / SAM
 
 ## Step 3: Check live vs planned
@@ -1081,14 +1255,18 @@ Before claiming a feature:
 - Is it in code?
 - Is it wired?
 - Is it accessible to users?
-- Is it documented in README?
+- Is it documented in runtime truth?
 - Does it pass anti-drift?
+- Does it have a public route?
+- Does it have a smoke test?
 
-If not, label it planned.
+If not, label it planned, integration-staged, or source-present but not verified.
 
 ## Step 4: Make minimal changes
 
 Do not rewrite hundreds of files unless it is a controlled global language pass.
+
+Do not leave old conflicting wording visible in the same source-of-truth file.
 
 ## Step 5: Run checks
 
@@ -1102,7 +1280,22 @@ Manual smoke test:
 - `/about/what-is-crypto-moonboys.html` loads
 - `/gkniftyheads-incubator.html` loads
 - `/community.html` loads
+- `/games/block-topia/` loads and gate behavior is honest
+- `/games/block-topia-quest-maze/` loads if edited
 - mobile sidebar works
+
+If Block Topia Live City is edited, run or add tests for:
+
+- first player join
+- second player join
+- room full
+- ready/start flow
+- movement
+- attack
+- extraction
+- hard refresh
+- reconnect during a run
+- disconnect before start
 
 ## Step 6: PR description
 
@@ -1113,10 +1306,12 @@ Every PR should include:
 - how to test
 - live/future state impacts
 - whether README or agent rules changed
+- whether runtime truth docs changed
+- whether public copy changed
 
 ---
 
-# 25. Future Roadmap
+# 26. Future Roadmap
 
 This roadmap is directional, not a promise.
 
@@ -1126,6 +1321,8 @@ This roadmap is directional, not a promise.
 - Lock copy rules.
 - Stop wiki/system identity drift.
 - Separate live vs planned.
+- Remove stale skeleton-only language from current Block Topia docs.
+- Keep Block Topia Live City, Quest Maze, and City Block Topia separate.
 
 ## Phase 1 - Living wiki baseline
 
@@ -1134,56 +1331,79 @@ This roadmap is directional, not a promise.
 - How to Play explains mechanics.
 - Incubator links identity.
 - Battle Chamber shows activity.
+- `/games/` explains score vs Arcade XP clearly.
 
 ## Phase 2 - Arcade to identity loop
 
 - Make arcade-to-XP-to-Telegram prompts unavoidable but not annoying.
 - Improve feedback after first run.
 - Clarify score vs XP inside UI.
+- Keep Quest Maze clearly inside the arcade/score path.
 
-## Phase 3 - Battle Chamber proof layer
+## Phase 3 - Block Topia Live City stability
 
-- Better live activity summaries.
-- Better profile cards.
-- Better faction status.
-- Better mission visibility.
+- Harden start/reconnect/restart state.
+- Add 60-second warm-slot reconnect.
+- Add real two-client regression tests.
+- Protect production monitor/admin surfaces.
+- Restrict CORS and public server surfaces.
+- Fix movement authority and anti-cheat baselines.
 
-## Phase 4 - Block Topia stable expansion
+## Phase 4 - Block Topia Live City feel and authority
 
-- Keep current clean map stable.
-- Add only verified layers.
-- Consider separate City Block Topia route for deeper game world.
+- Improve pathing, camera, click feedback, and interpolation.
+- Keep the server authoritative.
+- Add movement validation:
+  - adjacency
+  - speed/rate limit
+  - passable-tile validation
+  - stale-position rejection
 
-## Phase 5 - City Block Topia / Neon Sprawl integration
+## Phase 5 - City Block Topia / Neon Sprawl route integration
 
 - Add as `/games/city-block-topia/` or `/games/block-topia/neon-sprawl/`.
+- Do not replace `/games/block-topia/`.
+- Smoke-test scene, tagging, Rebel Ink, Rebellion, HUD, minimap, and import paths.
+- Mark advanced modules as unverified until wired.
+
+## Phase 6 - Living wiki layer for City Block Topia
+
 - Connect zones to wiki pages.
 - Add tag -> lore unlock loops.
-- Add Battle Chamber event outputs.
-- Add Telegram save state only after stability.
+- Add Bitcoin Kid onboarding.
+- Add zone codex.
+- Add Battle Chamber event outputs only after event routes are wired.
 
-## Phase 6 - Faction and season systems
+## Phase 7 - Persistent identity and save systems
+
+- Add server-backed save/load only after schema is stable.
+- Keep Arcade XP, Faction XP, Block Topia XP / City XP, and Rebel Ink separate.
+- Add economy sanity audits before rewards.
+
+## Phase 8 - Faction and season systems
 
 - Add clear seasonal windows.
 - Keep all reward language non-financial unless legally/technically confirmed.
 - Add faction leaderboards.
 - Add season archives.
+- Do not claim cross-player faction war persistence until server-backed.
 
-## Phase 7 - Creator/IP layer
+## Phase 9 - Creator/IP layer
 
 - Add clear creator routes.
 - Add IP terms pages.
 - Add holder/building permissions.
 - Add examples of approved community builds.
 
-## Phase 8 - Phygital and street activation
+## Phase 10 - Phygital and street activation
 
 - Connect real walls, events, QR codes, stickers, radio, drops, and wiki pages.
 - Build street-to-wiki-to-arcade loops.
+- Keep GK as the floor and community build-on-top as the operating principle.
 
 ---
 
-# 26. Risk Register
+# 27. Risk Register
 
 | Risk | Why it matters | Fix |
 |---|---|---|
@@ -1191,16 +1411,24 @@ This roadmap is directional, not a promise.
 | Static encyclopedia language | Makes site feel dead | Use "The wiki is alive" |
 | Future features claimed live | Breaks trust | Always label planned features |
 | Score/XP confusion | Breaks progression logic | Use exact definitions |
-| Block Topia overclaim | Creates false expectations | Clean map base wording only |
+| Arcade XP / City XP / Rebel Ink confusion | Creates false reward and economy claims | Keep terms separate everywhere |
+| Block Topia described with skeleton-only wording | Creates stale truth and hides current runtime | Use current Live City wording |
+| Block Topia overclaimed as full live MMO | Creates false expectations | Say 2-player survival/mission prototype |
+| Quest Maze confused with Live City | Breaks game routing and progression clarity | Keep separate product definitions |
+| City Block Topia merged into wrong route | Breaks current Block Topia Live City | Use separate route and integration deck |
+| City Block Topia features claimed live before import | Creates build drift | Call source-present or planned until route/tested |
 | Copilot/agent drift | Adds generic filler | Use exact copy blocks and source truth |
 | Over-hype financial language | Risky and weak | No guaranteed rewards or passive income |
 | Too much complexity at entry | Loses users | Homepage: read, play, link |
 | Lore vs mechanics confusion | Canon becomes messy | Separate lore statement from live product state |
-| Game merge into wrong route | Breaks current clean Block Topia | Use separate City Block Topia route |
+| SAM webhook stub called live events | Misleads product copy | Claim SAM room events only when broadcast wiring exists |
+| Dead systems reintroduced silently | Breaks runtime and trust | Require ADR, tests, and runtime truth update |
+| Public monitor/admin surfaces exposed | Operational risk | Protect or disable in production |
+| Reconnect claims without server warm-slot | Player frustration | Only claim robust reconnect after tests pass |
 
 ---
 
-# 27. Agent Copy Blocks
+# 28. Agent Copy Blocks
 
 Use these exact blocks when needed.
 
@@ -1223,22 +1451,42 @@ XP is not given. It is earned through activity.
 The system is simple:
 
 - Score = how well you play
-- XP = proof that you showed up
+- Arcade XP = proof of accepted synced activity
 - Telegram = your identity
 
 No action = nothing happens.
 More action = more access.
 
-## Block Topia
+## Progression clarity
 
-Block Topia is currently a clean 2-player isometric map base.
+Do not blur progression signals:
+
+- Score ranks game performance.
+- Arcade XP gates Block Topia access.
+- Faction XP tracks faction alignment.
+- Block Topia XP / City XP is in-game progression only when implemented.
+- Rebel Ink is a City Block Topia resource, not a token.
+
+## Block Topia Live City
+
+Block Topia Live City is the current gated 2-player multiplayer survival/mission prototype.
 
 Access requires:
 
 - Telegram linked
 - 50 Arcade XP
 
-Deeper gameplay systems are planned and not live yet.
+The current runtime includes NPCs, attacks, HP, respawns, phases, objectives, extraction, upgrades, and ready/start/restart flow.
+
+Durable persistence, party systems, SAM live events, large-room scaling, and deeper economy are planned unless separately verified.
+
+## Block Topia Quest Maze
+
+Block Topia Quest Maze is a separate arcade/RPG score game and Arcade XP path. It is not the same runtime as Block Topia Live City.
+
+## City Block Topia / Neon Sprawl
+
+City Block Topia / Neon Sprawl is the deeper living-wiki territory layer planned for separate integration. It should live under `/games/city-block-topia/` or `/games/block-topia/neon-sprawl/`, not replace `/games/block-topia/`.
 
 ## Living wiki explanation
 
@@ -1249,11 +1497,12 @@ Most wikis are static. This one reacts.
 - XP tracks participation
 - Telegram makes identity persistent
 - Battle Chamber shows activity
-- Block Topia is the gated next layer
+- Block Topia Live City is the gated multiplayer layer
+- City Block Topia / Neon Sprawl is the deeper playable-wiki layer planned for separate integration
 
 ---
 
-# 28. Blog / Manifesto Core
+# 29. Blog / Manifesto Core
 
 Use this when writing public-facing long form.
 
@@ -1265,13 +1514,13 @@ That is exactly how they miss it.
 
 Crypto Moonboys is not one of those things. It is a living Web3 wiki. A universe you can read. A system you can enter. A game layer you can play. A culture map you can explore. A community machine you can help build.
 
-The wiki is the foundation. The arcade is the entry. XP is proof of action. Telegram is identity. The Battle Chamber is proof. Block Topia is the next layer.
+The wiki is the foundation. The arcade is the entry. XP is proof of action. Telegram is identity. The Battle Chamber is proof. Block Topia Live City is the gated multiplayer layer. City Block Topia / Neon Sprawl is the deeper playable-wiki territory layer planned for separate integration.
 
 The wiki is alive.
 
 ---
 
-# 29. What Future Agents Must Not Break
+# 30. What Future Agents Must Not Break
 
 Do not break:
 
@@ -1280,9 +1529,13 @@ Do not break:
 - search and wiki page discoverability
 - arcade entry route
 - score vs XP distinction
+- Arcade XP vs Faction XP vs City XP distinction
+- Rebel Ink vs token distinction
 - Telegram sync route
 - Block Topia 50 XP gate
-- current clean Block Topia state
+- current Block Topia Live City route
+- Block Topia Quest Maze route
+- City Block Topia route separation once created
 - anti-drift rules
 - live vs planned clarity
 - no financial-promise language
@@ -1290,13 +1543,16 @@ Do not break:
 Do not rewrite:
 
 - every wiki page for style unless asked
-- game mechanics without updating README
+- GK cultural truth for convenience
+- game mechanics without updating runtime truth
 - source of truth hierarchy
 - copy blocks unless a human explicitly updates the line
 
+Do not leave visible conflicts inside this file. If the live game state changes, update every related section in one pass.
+
 ---
 
-# 30. Final Source-of-Truth Summary
+# 31. Final Source-of-Truth Summary
 
 Crypto Moonboys is a living Web3 wiki for the GK / GKniftyHEADS universe.
 
@@ -1304,17 +1560,21 @@ The wiki is the foundation.
 
 The arcade makes it active.
 
-XP tracks participation.
+Score ranks performance.
+
+Arcade XP tracks accepted synced activity.
 
 Telegram makes identity persistent.
 
 The Battle Chamber shows proof.
 
-Block Topia is currently a clean 2-player isometric map base gated by Telegram link plus 50 Arcade XP.
+Block Topia Live City is the current gated `/games/block-topia/` 2-player Colyseus multiplayer survival/mission prototype. It is gated by Telegram link plus 50 Arcade XP. The current runtime includes NPCs, attacks, HP, respawns, phases, objectives, extraction, upgrades, and ready/start/restart flow.
+
+Block Topia Quest Maze is a separate arcade/RPG score game and Arcade XP path at `/games/block-topia-quest-maze/`.
+
+City Block Topia / Neon Sprawl is a separate deeper living-wiki territory layer planned for integration, preferably under `/games/city-block-topia/` or `/games/block-topia/neon-sprawl/`. It must not be treated as the current `/games/block-topia/` runtime until it is imported, wired, smoke-tested, and documented.
 
 Deeper systems are planned, not live, unless explicitly verified and documented.
-
-City Block Topia / Neon Sprawl is a strong future playable-wiki layer, but should be integrated as a separate route or clearly staged expansion, not blindly merged into the clean Block Topia base.
 
 The project should feel street-born, lore-rich, weird, fun, alive, and built for people who want the full picture.
 
