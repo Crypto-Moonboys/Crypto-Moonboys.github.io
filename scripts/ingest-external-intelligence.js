@@ -44,6 +44,35 @@ function writeJson(relPath, data) {
 const MIN_INGEST_WEIGHT = 0.6;   // minimum source score_weight to allow ingestion
 
 // ---------------------------------------------------------------------------
+// SAM provenance guard
+// ---------------------------------------------------------------------------
+// External intelligence ingest must only consume SAM-approved export data,
+// not independently sourced external feeds. This script requires a valid
+// SAM export manifest (js/sam-export-manifest.json) before it will run.
+// While SAM is paused, exit cleanly with no changes.
+
+const SAM_MANIFEST = path.join(ROOT, 'js/sam-export-manifest.json');
+if (!fs.existsSync(SAM_MANIFEST)) {
+  console.log('[SAM guard] js/sam-export-manifest.json not found.');
+  console.log('[SAM guard] SAM is paused or no approved export is present.');
+  console.log('[SAM guard] Intelligence ingest requires SAM provenance. No data ingested. Exiting cleanly.');
+  process.exit(0);
+}
+let samManifest;
+try {
+  samManifest = JSON.parse(fs.readFileSync(SAM_MANIFEST, 'utf8'));
+} catch (e) {
+  console.error('::error file=js/sam-export-manifest.json::Invalid JSON in js/sam-export-manifest.json: ' + e.message);
+  process.exit(1);
+}
+if (!samManifest.sam_export_id && !samManifest.approved_source_pack_id) {
+  console.log('[SAM guard] sam_export_id / approved_source_pack_id missing in js/sam-export-manifest.json.');
+  console.log('[SAM guard] No intelligence ingested. Exiting cleanly.');
+  process.exit(0);
+}
+console.log('[SAM guard] Provenance OK — export id:', samManifest.sam_export_id || samManifest.approved_source_pack_id);
+
+// ---------------------------------------------------------------------------
 // Load inputs
 // ---------------------------------------------------------------------------
 

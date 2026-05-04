@@ -1,0 +1,292 @@
+name: Cite-Backed Mission / Quest Generation
+
+# LANE 2 — Cite-Backed Mission / Quest Generation
+#
+# Purpose:
+#   Generate game missions, quest objectives, daily/weekly lore missions, and
+#   playable wrappers from SAM-approved facts only.
+#
+# Rules:
+#   - Every factual claim must trace back to a SAM-approved fact/citation.
+#   - Generated missions must carry provenance metadata:
+#       sam_export_id (or approved_source_pack_id)
+#       source_fact_ids
+#       source_citations (or source_archive_refs)
+#       source_page_slugs
+#       generated_at
+#       generator_script
+#   - If provenance metadata is absent, the workflow fails before commit.
+#   - Mission mechanics may be original; lore facts cannot be invented.
+#   - If no approved source facts changed, no commit is made.
+#
+# Trigger:
+#   - manual workflow_dispatch while SAM is paused
+#   - switch to repository_dispatch (type: sam-lore-export) when SAM resumes
+#
+# BLOCKED automated outputs (workflow fails if any are changed):
+#   server/**  workers/**  shared/**  docs/block-topia/**
+#   Crypto_Moonboys_Master_Source_of_Truth_v1.md
+#   city_block_topia_dev_build_deck.md
+#   AGENT_ENFORCEMENT.md
+
+on:
+  workflow_dispatch:
+  # future: repository_dispatch (type: sam-lore-export) when SAM resumes
+
+permissions:
+  contents: write
+
+concurrency:
+  group: cite-backed-mission-gen-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  cite-backed-mission-gen:
+    runs-on: ubuntu-latest
+    # Never run as a bot commit to avoid self-triggering loops
+    if: |
+      github.actor != 'github-actions[bot]' &&
+      github.actor != 'github-actions'
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      # ── SAM provenance guard ──────────────────────────────────────────────
+      # Fail fast if no SAM export manifest is present with all required fields.
+      # Mission generation is blocked while SAM is paused (no manifest on disk).
+
+      - name: SAM provenance guard
+        shell: bash
+        run: |
+          node -e "
+          const fs = require('fs');
+          const manifestPath = 'js/sam-export-manifest.json';
+          if (!fs.existsSync(manifestPath)) {
+            console.error('::error file=' + manifestPath + '::js/sam-export-manifest.json not found. Mission generation requires a SAM-approved export. While SAM is paused, no new missions can be generated.');
+            process.exit(1);
+          }
+          let manifest;
+          try {
+            manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+          } catch (e) {
+            console.error('::error file=' + manifestPath + '::Invalid JSON in js/sam-export-manifest.json: ' + e.message);
+            process.exit(1);
+          }
+          const missing = [];
+          if (!manifest.sam_export_id && !manifest.approved_source_pack_id) {
+            missing.push('sam_export_id or approved_source_pack_id');
+          }
+          if (!Array.isArray(manifest.source_fact_ids) || !manifest.source_fact_ids.length) {
+            missing.push('source_fact_ids');
+          }
+          const hasCitations = Array.isArray(manifest.source_citations) && manifest.source_citations.length > 0;
+          const hasArchiveRefs = Array.isArray(manifest.source_archive_refs) && manifest.source_archive_refs.length > 0;
+          if (!hasCitations && !hasArchiveRefs) {
+            missing.push('source_citations or source_archive_refs');
+          }
+          if (missing.length) {
+            console.error('::error file=' + manifestPath + '::SAM provenance guard FAIL: missing required fields in js/sam-export-manifest.json: ' + missing.join(', '));
+            process.exit(1);
+          }
+          const exportId = manifest.sam_export_id || manifest.approved_source_pack_id;
+          console.log('[provenance-guard] PASS — export id: ' + exportId);
+          console.log('[provenance-guard] source_fact_ids: ' + manifest.source_fact_ids.length);
+          "
+
+      # ── Mission / Quest generation ────────────────────────────────────────
+      # Each script registered here must:
+      #   1. Read from js/sam-export-manifest.json for approved facts.
+      #   2. Attach provenance metadata to every generated output:
+      #        sam_export_id, source_fact_ids, source_citations,
+      #        source_page_slugs, generated_at, generator_script.
+      #   3. Refuse to publish any factual lore claim that lacks a citation.
+      #   4. Produce no output when no approved source facts have changed.
+      #
+      # Add scripts below as they are created alongside SAM export integrations.
+
+      - name: Generate cite-backed missions
+        shell: bash
+        run: |
+          echo "No mission generation scripts registered yet."
+          echo "Add scripts here when SAM resumes and approved fact exports are available."
+          echo "Each script must read js/sam-export-manifest.json and attach"
+          echo "sam_export_id + source_fact_ids + source_citations to all outputs."
+
+      # ── Provenance validation on all generated mission and quest outputs ──
+      # Recursively validates missions/**/*.json and quests/**/*.json.
+      # Every mission/quest object must carry all six provenance fields.
+      # source_page_slugs is required unless the object is explicitly marked
+      # pure_gameplay: true (gameplay-only mechanic with no lore assertions).
+      # Validation runs BEFORE git add — failures prevent any commit.
+
+      - name: Validate mission and quest provenance
+        shell: bash
+        run: |
+          node -e "
+          const fs   = require('fs');
+          const path = require('path');
+
+          // ── Recursive JSON file collector ─────────────────────────────────
+          function collectJsonFiles(dir, results) {
+            results = results || [];
+            if (!fs.existsSync(dir)) return results;
+            for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+              const full = path.join(dir, entry.name);
+              if (entry.isDirectory()) {
+                collectJsonFiles(full, results);
+              } else if (entry.isFile() && entry.name.endsWith('.json')) {
+                results.push(full);
+              }
+            }
+            return results;
+          }
+
+          // ── Validate a single mission/quest object ────────────────────────
+          // Returns array of violation strings (empty = valid).
+          function validateObject(obj, filePath, index) {
+            const id = obj.id || obj.mission_id || obj.quest_id || ('item[' + index + ']');
+            const violations = [];
+
+            if (!obj.sam_export_id && !obj.approved_source_pack_id) {
+              violations.push('missing sam_export_id or approved_source_pack_id');
+            }
+            if (!Array.isArray(obj.source_fact_ids) || obj.source_fact_ids.length === 0) {
+              violations.push('source_fact_ids must be a non-empty array');
+            }
+            const hasCitations  = Array.isArray(obj.source_citations)   && obj.source_citations.length   > 0;
+            const hasArchiveRef = Array.isArray(obj.source_archive_refs) && obj.source_archive_refs.length > 0;
+            if (!hasCitations && !hasArchiveRef) {
+              violations.push('source_citations or source_archive_refs must be a non-empty array');
+            }
+            // source_page_slugs required unless explicitly marked as pure gameplay (no lore assertions)
+            if (!obj.pure_gameplay) {
+              if (!Array.isArray(obj.source_page_slugs) || obj.source_page_slugs.length === 0) {
+                violations.push('source_page_slugs must be a non-empty array (or set pure_gameplay: true for lore-free mechanics)');
+              }
+            }
+            if (!obj.generated_at) {
+              violations.push('missing generated_at');
+            }
+            if (!obj.generator_script) {
+              violations.push('missing generator_script');
+            }
+            return { id, violations };
+          }
+
+          // ── Collect and validate all JSON files ───────────────────────────
+          const dirs = ['missions', 'quests'];
+          const jsonFiles = [];
+          for (const dir of dirs) {
+            collectJsonFiles(dir, jsonFiles);
+          }
+
+          if (jsonFiles.length === 0) {
+            console.log('No mission/quest JSON files found — nothing to validate.');
+            process.exit(0);
+          }
+
+          console.log('Validating ' + jsonFiles.length + ' mission/quest JSON file(s)...');
+          let failed = false;
+
+          for (const filePath of jsonFiles.sort()) {
+            let data;
+            try {
+              data = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+            } catch (e) {
+              console.error('::error file=' + filePath + '::Invalid JSON: ' + e.message);
+              failed = true;
+              continue;
+            }
+
+            // Support three shapes: bare object, array of objects, or {missions:[]} / {quests:[]}
+            let objects;
+            if (Array.isArray(data)) {
+              objects = data;
+            } else if (Array.isArray(data.missions)) {
+              objects = data.missions;
+            } else if (Array.isArray(data.quests)) {
+              objects = data.quests;
+            } else {
+              objects = [data];
+            }
+
+            for (let i = 0; i < objects.length; i++) {
+              const { id, violations } = validateObject(objects[i], filePath, i);
+              if (violations.length) {
+                for (const v of violations) {
+                  console.error('::error file=' + filePath + '::Provenance violation in \"' + id + '\": ' + v);
+                }
+                failed = true;
+              }
+            }
+          }
+
+          if (failed) {
+            console.error('');
+            console.error('Provenance validation FAILED. No commit will be made.');
+            console.error('Every mission/quest object must include: sam_export_id (or approved_source_pack_id),');
+            console.error('source_fact_ids, source_citations (or source_archive_refs), source_page_slugs,');
+            console.error('generated_at, generator_script.');
+            console.error('Lore facts cannot be invented. Mission mechanics may be original (pure_gameplay: true).');
+            process.exit(1);
+          }
+          console.log('All mission/quest provenance checks passed (' + jsonFiles.length + ' file(s) validated).');
+          "
+
+      # ── Diff guard: fail if automation touched any blocked path ───────────
+
+      - name: Diff guard — block changes to protected paths
+        shell: bash
+        run: |
+          BLOCKED=(
+            "server/"
+            "workers/"
+            "shared/"
+            "docs/block-topia/"
+            "Crypto_Moonboys_Master_Source_of_Truth_v1.md"
+            "city_block_topia_dev_build_deck.md"
+            "AGENT_ENFORCEMENT.md"
+          )
+          FAIL=0
+          for pattern in "${BLOCKED[@]}"; do
+            if git diff --name-only HEAD 2>/dev/null | grep -qF "$pattern"; then
+              echo "::error::Automation attempted to modify blocked path: $pattern"
+              FAIL=1
+            fi
+          done
+          if [ "$FAIL" -ne 0 ]; then
+            echo "Aborting: blocked path(s) modified. No commit will be made."
+            exit 1
+          fi
+          echo "Diff guard passed — no blocked paths modified."
+
+      # ── Commit cite-backed mission outputs ────────────────────────────────
+      # Only mission/quest output paths are staged. Nothing outside these
+      # directories will be committed.
+
+      - name: Commit mission outputs
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          # Stage only mission/quest output directories
+          git add missions/ 2>/dev/null || true
+          git add quests/ 2>/dev/null || true
+
+          if git diff --cached --quiet; then
+            echo "No mission changes to commit. (No approved source facts changed.)"
+            exit 0
+          fi
+
+          git commit -m "chore: cite-backed mission generation from SAM-approved facts [skip ci]"
+          git push origin HEAD:main || echo "Push skipped"
