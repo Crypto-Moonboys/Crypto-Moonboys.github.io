@@ -1,0 +1,23 @@
+{
+  "name": "crypto-moonboys.github.io",
+  "version": "1.0.0",
+  "description": "Crypto Moonboys is the live website for the project, including the arcade and shared frontend support assets.",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "test": "node scripts/smoke-test.js && node scripts/site-shell-parity-audit.mjs && node scripts/right-hud-browser-smoke.mjs",
+    "test:smoke": "node scripts/smoke-test.js",
+    "test:shell-parity": "node scripts/site-shell-parity-audit.mjs",
+    "test:right-hud": "node scripts/right-hud-browser-smoke.mjs",
+    "test:anti-drift": "node scripts/anti-drift-check.mjs",
+    "lint:shell": "node --check js/site-shell.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "playwright": "^1.59.1"
+  }
+}
