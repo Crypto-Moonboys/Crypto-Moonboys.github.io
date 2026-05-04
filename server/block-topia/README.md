@@ -1,13 +1,15 @@
 # Block Topia Multiplayer Server
 
-This directory contains the Colyseus-based multiplayer backend for Block Topia. The server is designed to run on a Contabo VPS and provide authoritative room-based gameplay for the frontend hosted on GitHub Pages.
+This directory contains the Colyseus-based multiplayer backend for Block Topia Live City (`/games/block-topia/`). The server is designed to run on a Contabo VPS and provide authoritative room-based gameplay for the frontend hosted on GitHub Pages.
 
 ## Features
-- Room-based multiplayer using Colyseus
-- Support for up to 100 players per `CityRoom`
-- Server-authoritative player movement
-- Basic interaction messaging
-- SAM webhook endpoint for live world events
+- Room-based multiplayer using Colyseus (`MinimalCityRoom`)
+- 2-player cap per room
+- Server-authoritative player movement, NPCs, attacks, HP, downs, and respawns
+- Timed world phases (FREE_ROAM → WARNING → EVENT_ACTIVE → RECOVERY → MISSION_COMPLETE)
+- Objectives and extraction
+- Upgrade choices generated in RECOVERY / MISSION_COMPLETE phases
+- SAM webhook endpoint stub (not live world control)
 - Health check endpoint for monitoring
 
 ## Folder Structure
@@ -18,7 +20,7 @@ server/block-topia/
   src/
     index.js
     rooms/
-      CityRoom.js
+      MinimalCityRoom.js
     webhooks/
       samWebhook.js
 ```
@@ -144,11 +146,24 @@ sudo systemctl reload nginx
 ```
 
 ## Next Steps
-- Add Redis for presence and scaling.
-- Integrate PostgreSQL for persistent player data.
-- Implement faction, district, and quest systems on the server.
-- Broadcast SAM-driven Signal Rush events to active rooms.
+- Add Redis for presence and scaling (future phase).
+- Integrate PostgreSQL for persistent player data (future phase).
+- Implement faction, district, and quest systems on the server (future phase).
+- Wire SAM-driven Signal Rush events to active rooms once SAM webhook stub is properly specced and tested.
+
+## Current Product Split
+
+- `/games/block-topia/` = Block Topia Live City, current gated 2-player Colyseus survival/mission prototype.
+- `/games/block-topia-quest-maze/` = separate Quest Maze arcade/RPG score game.
+- `/games/city-block-topia/` or `/games/block-topia/neon-sprawl/` = planned City Block Topia / Neon Sprawl deeper living-wiki layer, not current live runtime.
+
+## Do Not Drift
+
+- Do not describe Block Topia Live City as a clean map base only.
+- Do not merge City Block Topia / Neon Sprawl into the current live Block Topia page.
+- Do not claim SAM, seasons, full economy, full HODL Wars, or Neon Sprawl integration are live unless the code is wired, accessible, tested, and documented.
+- Do not blur Score, Arcade XP, Faction XP, Block Topia XP / City XP, Rebel Ink, tokens, or NFTs.
 
 ---
 
-Block Topia is now ready to evolve into a fully multiplayer living city.
+Block Topia Live City is running. Evolve it in deliberate phases.
