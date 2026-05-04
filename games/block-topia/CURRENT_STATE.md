@@ -9,12 +9,12 @@ Block Topia (`/games/block-topia/`) is the current live gated 2-player Colyseus 
 | File | Role |
 |---|---|
 | `index.html` | Entry point. Entry gate check (Telegram-linked + 50 Arcade XP). Loads Colyseus v0.16 CDN, mounts canvas, starts multiplayer. Ready/Start/Restart flow controls input enable/disable. |
-| `main.js` | Canvas renderer. 20×20 isometric tile grid. Renders P1/P2 markers, NPCs, and combat animations. Handles WASD + click-to-move, attacks, upgrade UI, and phase HUD. |
+| `main.js` | Canvas renderer. 20×20 isometric tile grid. Renders local and remote player markers, NPCs, objective markers, and combat/mission HUD state. Handles WASD + click-to-move, attacks, upgrade UI, and phase HUD. |
 | `network.js` | Client-side Colyseus v0.16 only. Exports `connectMultiplayer`, `sendMovement`, `isConnected`, `getRoom`, `reconnectMultiplayer`. |
 | `styles.css` | Active stylesheet. |
-| `server/src/rooms/MinimalCityRoom.js` | Authoritative Colyseus room. `maxClients=2`, `autoDispose=false`. Tracks HP, downs, respawns, NPCs, attacks, world phases (FREE_ROAM → WARNING → EVENT_ACTIVE → RECOVERY → MISSION_COMPLETE), objectives, extraction, and upgrade choices. |
-| `server/src/index.js` | Express + Colyseus server entry. Registers `MinimalCityRoom` + SAM webhook stub. |
-| `server/src/webhooks/samWebhook.js` | SAM webhook stub. Logs payload, no live broadcast. |
+| `server/block-topia/src/rooms/MinimalCityRoom.js` | Authoritative Colyseus room. `maxClients=2`, `autoDispose=false`. Tracks HP, downs, respawns, NPCs, attacks, world phases (FREE_ROAM → WARNING → EVENT_ACTIVE → RECOVERY → MISSION_COMPLETE), objectives, extraction, and upgrade choices (generated/ensured in RECOVERY and MISSION_COMPLETE; `chooseUpgrade` accepted in both). |
+| `server/block-topia/src/index.js` | Express + Colyseus server entry. Registers `MinimalCityRoom` + SAM webhook stub. |
+| `server/block-topia/src/webhooks/samWebhook.js` | SAM webhook stub. Logs payload, no live broadcast. |
 
 ### Kept as dormant scaffolding / data
 

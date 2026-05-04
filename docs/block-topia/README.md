@@ -13,7 +13,7 @@ Block Topia is a living multiplayer city. This documentation tree tracks both wh
 - 20×20 isometric tile map rendered in the browser canvas.
 - Up to 2 players can join the same Colyseus `MinimalCityRoom` simultaneously.
 - Server-authoritative movement (WASD or tile-click, clamped to grid bounds).
-- P1 (blue) and P2 (red) markers with connection-status HUD.
+- Local and remote player markers with connection-status HUD.
 - Colyseus v0.16 server hosted on Contabo VPS; GitHub Pages hosts the static frontend.
 - NPCs exist. Attacks exist.
 - HP, downs, and respawns exist.

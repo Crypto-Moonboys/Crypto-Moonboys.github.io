@@ -11,7 +11,7 @@
 | File | Role |
 |------|------|
 | `games/block-topia/index.html` | Single-page shell. Mounts canvas, loads `main.js` and `network.js` via ESM `<script type="module">`. Entry gate: Telegram-linked account + 50 Arcade XP check before connect. Ready/Start/Restart flow controls input enable/disable. |
-| `games/block-topia/main.js` | Isometric map renderer. Renders P1 (blue) and P2 (red) markers, NPCs, and combat animations. Exposes `window.BlockTopiaMap` API. Handles WASD / tile-click movement, attacks, upgrade UI, and phase HUD. |
+| `games/block-topia/main.js` | Isometric map renderer. Renders local and remote player markers, NPCs, objective markers, and combat/mission HUD state. Exposes `window.BlockTopiaMap` API. Handles WASD / tile-click movement, attacks, upgrade UI, and phase HUD. |
 | `games/block-topia/network.js` | Colyseus v0.16 client wrapper. Exports `connectMultiplayer`, `sendMovement`, `isConnected`, `getRoom`, `reconnectMultiplayer`. Joins the persistent server-created "city" room only — never creates a room from the browser. Handles reconnect with MAX\_RETRIES=3. Error codes: 4211 (city not bootstrapped), 4213 (room full). |
 | `games/block-topia/styles.css` | Basic game shell styling. |
 
@@ -19,7 +19,7 @@
 | File | Role |
 |------|------|
 | `server/block-topia/src/index.js` | Express + Colyseus v0.16 server. Registers `MinimalCityRoom` as the "city" room. Pre-creates the persistent "city" room on boot via `matchMaker.createRoom`. Health check at `/health`. SAM webhook router mounted at `/webhooks/sam` (stub only — not live world control). Colyseus monitor at `/colyseus`. |
-| `server/block-topia/src/rooms/MinimalCityRoom.js` | The only active game room. `maxClients = 2`. `autoDispose = false`. Tracks timed world phases: FREE_ROAM → WARNING → EVENT_ACTIVE → RECOVERY → MISSION_COMPLETE. `PlayerState` includes: `id`, `x`, `y`, `name`, `faction`, `district`, `hp`, `downs`, `upgradeState`. NPCs exist and are server-ticked. Attacks exist. HP, downs, and respawns exist. Objectives and extraction exist. Upgrade choices generated in RECOVERY and MISSION_COMPLETE phases; `chooseUpgrade` message accepted during RECOVERY. |
+| `server/block-topia/src/rooms/MinimalCityRoom.js` | The only active game room. `maxClients = 2`. `autoDispose = false`. Tracks timed world phases: FREE_ROAM → WARNING → EVENT_ACTIVE → RECOVERY → MISSION_COMPLETE. `PlayerState` includes: `id`, `x`, `y`, `name`, `faction`, `district`, `hp`, `downs`, `upgradeState`. NPCs exist and are server-ticked. Attacks exist. HP, downs, and respawns exist. Objectives and extraction exist. Upgrade choices are generated/ensured during RECOVERY and MISSION_COMPLETE; `chooseUpgrade` is accepted during RECOVERY and MISSION_COMPLETE. |
 
 ### What the room actually does
 - Accepts up to 2 browser clients.
