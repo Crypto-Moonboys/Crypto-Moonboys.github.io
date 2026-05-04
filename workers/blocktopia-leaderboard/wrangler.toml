@@ -2,10 +2,27 @@ name               = "blocktopia-leaderboard"
 main               = "worker.js"
 compatibility_date = "2025-01-01"
 
+# ════════════════════════════════════════════════════════════════════════════
+# ⚠️  STUB WORKER — DO NOT DEPLOY UNTIL KV BINDINGS ARE CONFIGURED
+#
+# This worker cannot be deployed in its current state.
+# All KV namespace IDs are placeholders (YOUR_*_KV_ID).
+# Deploying with placeholder IDs will cause runtime KV binding errors.
+#
+# Before deploying:
+#   1. Run: wrangler kv:namespace create DISTRICTS
+#           wrangler kv:namespace create SEASONS
+#           wrangler kv:namespace create CACHE
+#   2. Replace each YOUR_*_KV_ID below with the returned namespace IDs.
+#   3. Run: wrangler secret put ADMIN_SECRET
+#           wrangler secret put TELEGRAM_BOT_TOKEN
+#   4. Remove this warning block.
+#
+# CI guard: .github/workflows/stub-worker-deploy-guard.yml will fail if
+# any wrangler.toml in workers/ still contains YOUR_*_KV_ID.
+# ════════════════════════════════════════════════════════════════════════════
+
 # ── KV namespace bindings ─────────────────────────────────────────────────────
-# Create each namespace with `wrangler kv:namespace create <NAME>` and paste
-# the returned IDs below.  Never commit live IDs to source control — replace
-# the placeholders after first deploy.
 
 [[kv_namespaces]]
 binding    = "DISTRICTS"

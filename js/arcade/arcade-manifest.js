@@ -43,7 +43,7 @@ export const ARCADE_MANIFEST = Object.freeze([
     crossGameTags: Object.freeze(['shooter', 'physics']),
   },
   {
-    id: 'breakout-bullrun',
+    id: 'breakout',
     label: '🧱 Breakout Bullrun',
     page: '/games/breakout-bullrun/',
     bootstrapPath: '/js/arcade/games/breakout-bullrun/bootstrap.js',
@@ -51,7 +51,7 @@ export const ARCADE_MANIFEST = Object.freeze([
     crossGameTags: Object.freeze(['breakout']),
   },
   {
-    id: 'snake-run',
+    id: 'snake',
     label: '🐍 SnakeRun 3008',
     page: '/games/snake-run/',
     bootstrapPath: '/js/arcade/games/snake-run/bootstrap.js',

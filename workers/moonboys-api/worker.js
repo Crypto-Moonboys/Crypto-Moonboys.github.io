@@ -71,11 +71,31 @@ const BLOCKTOPIA_ADMIN_XP_GRANT_MAX = 50000;
 const BLOCKTOPIA_ADMIN_GEMS_GRANT_MAX = 50000;
 const ARCADE_ADMIN_XP_GRANT_MAX = 50000;
 
-const CORS_HEADERS = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type, X-Admin-Secret, x-admin-secret',
-};
+const DEFAULT_CORS_ALLOWED_ORIGINS = [
+  'https://cryptomoonboys.com',
+  'https://crypto-moonboys.github.io',
+];
+
+/**
+ * Returns CORS + security headers for a given request.
+ * Reflects the request Origin only if it is in the allowlist.
+ * CORS_ALLOWED_ORIGINS env var overrides the default list (comma-separated).
+ */
+function buildCorsHeaders(request, env) {
+  const origin = (request && request.headers) ? (request.headers.get('Origin') || '') : '';
+  const allowed = env && env.CORS_ALLOWED_ORIGINS
+    ? String(env.CORS_ALLOWED_ORIGINS).split(',').map(s => s.trim()).filter(Boolean)
+    : DEFAULT_CORS_ALLOWED_ORIGINS;
+  const allowedOrigin = allowed.includes(origin) ? origin : (allowed[0] || 'null');
+  return {
+    'Access-Control-Allow-Origin': allowedOrigin,
+    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type, X-Admin-Secret, x-admin-secret',
+    'X-Content-Type-Options': 'nosniff',
+    'Referrer-Policy': 'strict-origin-when-cross-origin',
+    'X-Frame-Options': 'DENY',
+  };
+}
 
 // ── Shared utilities ──────────────────────────────────────────────────────────
 
@@ -89,6 +109,12 @@ function json(data, status = 200) {
 function err(message, status = 400) {
   return json({ error: message }, status);
 }
+
+// CORS_HEADERS is a module-level constant set per-request at the start of fetch().
+// We use a mutable reference so all helpers in a single request invocation share
+// the same (correctly origin-reflected) headers without threading request through
+// every call site.
+let CORS_HEADERS = buildCorsHeaders(null, null);
 
 function logApiFailure(event, context = {}) {
   console.log('[moonboys-api]', JSON.stringify({
@@ -827,6 +853,9 @@ export default {
   async fetch(request, env) {
     const url  = new URL(request.url);
     const path = url.pathname === '/' ? '/' : url.pathname.replace(/\/$/, '');
+
+    // Set per-request CORS headers reflecting the request's Origin.
+    CORS_HEADERS = buildCorsHeaders(request, env);
 
     if (request.method === 'OPTIONS') {
       return new Response(null, { status: 204, headers: CORS_HEADERS });

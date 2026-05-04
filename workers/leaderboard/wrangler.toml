@@ -7,6 +7,15 @@ binding    = "LEADERBOARD"
 id         = "a621c334d9ac439ebaf5f35dd31dddd5"
 preview_id = "a621c334d9ac439ebaf5f35dd31dddd5"
 
+# ── Shared KV dependency ──────────────────────────────────────────────────────
+# The LEADERBOARD KV namespace above is SHARED with the moonboys-anti-cheat worker
+# (workers/anti-cheat/wrangler.toml).  The anti-cheat worker writes
+# anticheat:blocked:{telegram_id} keys that this leaderboard worker reads before
+# accepting any score submission.  Both workers MUST reference the same KV namespace
+# ID (a621c334d9ac439ebaf5f35dd31dddd5).  If one is recreated with a new ID the
+# anti-cheat block mechanism will stop functioning silently.
+# See docs/deployment-checklist.md for the deployment order requirement.
+
 [triggers]
 crons = ["0 0 * * *"]
 
@@ -14,3 +23,13 @@ crons = ["0 0 * * *"]
 binding       = "DB"
 database_name = "wikicoms"
 database_id   = "8a36e17a-18fa-4b98-90e1-3f269164b166"
+
+# ── Required secrets (set via Wrangler CLI — never commit values) ────────────
+# wrangler secret put TELEGRAM_BOT_TOKEN
+# TELEGRAM_BOT_TOKEN — Required for HMAC verification of POST /  score submissions.
+#                      Must match the bot token used in moonboys-api.
+#                      Without this secret all POST score submissions are rejected (503).
+#
+# Optional variables:
+# CORS_ALLOWED_ORIGINS — Comma-separated list of allowed browser origins.
+#                        Defaults to https://cryptomoonboys.com,https://crypto-moonboys.github.io

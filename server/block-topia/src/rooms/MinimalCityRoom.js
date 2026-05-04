@@ -30,11 +30,25 @@ const NPC_RESPAWN_MIN_DISTANCE = 4;
 const MISSION_SURVIVE_MS = 60000;
 const MISSION_REQUIRED_KILLS = 5;
 const READY_TIMEOUT_MS = 30000;
-const FREE_ROAM_MS = 60_000; // Dev timing. Production target: 10 minutes.
-const WARNING_MS = 10_000;
-const EVENT_MS = 90_000;
-const RECOVERY_MS = 30_000; // Dev timing. Production target: 10 minutes.
-const MISSION_COMPLETE_MS = 8000;
+
+// ── Phase timing configuration ────────────────────────────────────────────────
+// Override these in .env for each environment:
+//   BLOCKTOPIA_FREE_ROAM_MS       default 600000 (10 min) — time between events
+//   BLOCKTOPIA_WARNING_MS         default 10000  (10 s)   — event-incoming warning
+//   BLOCKTOPIA_EVENT_MS           default 90000  (90 s)   — event active duration
+//   BLOCKTOPIA_RECOVERY_MS        default 600000 (10 min) — post-event recovery/upgrade
+//   BLOCKTOPIA_MISSION_COMPLETE_MS default 8000  (8 s)    — mission-complete display
+//
+// In development (NODE_ENV !== 'production'), short defaults are used so the
+// full phase cycle can be observed in a single dev session.
+const IS_PROD = process.env.NODE_ENV === 'production';
+const FREE_ROAM_MS       = parseInt(process.env.BLOCKTOPIA_FREE_ROAM_MS, 10)        || (IS_PROD ? 600_000 : 60_000);
+const WARNING_MS         = parseInt(process.env.BLOCKTOPIA_WARNING_MS, 10)          || 10_000;
+const EVENT_MS           = parseInt(process.env.BLOCKTOPIA_EVENT_MS, 10)            || 90_000;
+const RECOVERY_MS        = parseInt(process.env.BLOCKTOPIA_RECOVERY_MS, 10)         || (IS_PROD ? 600_000 : 30_000);
+const MISSION_COMPLETE_MS = parseInt(process.env.BLOCKTOPIA_MISSION_COMPLETE_MS, 10) || 8_000;
+// ──────────────────────────────────────────────────────────────────────────────
+
 const MAX_ROOM_RUN_MS = 20 * 60_000;
 const IDLE_RESET_MS = 2 * 60_000;
 const PHASE_FREE_ROAM = 'FREE_ROAM';

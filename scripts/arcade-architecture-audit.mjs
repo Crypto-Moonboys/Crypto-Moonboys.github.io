@@ -158,9 +158,9 @@ const ACTIVE_GAME_DIRS = [
 const DIR_TO_ID = {
   'games/invaders-3008': 'invaders',
   'games/asteroid-fork': 'asteroids',
-  'games/breakout-bullrun': 'breakout-bullrun',
+  'games/breakout-bullrun': 'breakout',
   'games/pac-chain': 'pacchain',
-  'games/snake-run': 'snake-run',
+  'games/snake-run': 'snake',
   'games/tetris-block-topia': 'tetris',
   'games/block-topia-quest-maze': 'blocktopia',
   'games/crystal-quest': 'crystal',
