@@ -711,11 +711,10 @@ a.hero-stat-link {
   display: inline-block;
   border-radius: 8px;
   padding: 6px 12px;
-  transition: background 0.2s, transform 0.15s;
+  transition: background 0.2s;
 }
 a.hero-stat-link:hover {
   background: var(--color-border);
-  transform: translateY(-2px);
 }
 .hero-stat .stat-num {
   font-size: 1.6rem;
@@ -788,13 +787,12 @@ a.hero-stat-link:hover {
   border: 1px solid var(--color-border);
   border-radius: var(--radius);
   overflow: hidden;
-  transition: border-color .2s, transform .15s;
+  transition: border-color .2s;
   display: flex;
   flex-direction: column;
 }
 .article-card:hover {
   border-color: var(--color-accent);
-  transform: translateY(-2px);
   text-decoration: none;
 }
 .article-card-img {
@@ -864,9 +862,8 @@ a.hero-stat-link:hover {
   font-size: .85rem;
   font-weight: 600;
   cursor: pointer;
-  transition: background .15s, transform .1s;
+  transition: background .15s;
 }
-.btn:active { transform: scale(.97); }
 .btn-primary {
   background: var(--color-accent);
   color: #000;
@@ -895,12 +892,11 @@ a.hero-stat-link:hover {
   background: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: var(--radius);
-  transition: border-color .2s, transform .15s;
+  transition: border-color .2s;
   color: var(--color-text);
 }
 .category-card:hover {
   border-color: var(--color-accent);
-  transform: translateY(-2px);
   text-decoration: none;
 }
 .category-card .cat-icon { font-size: 1.6rem; flex-shrink: 0; }
@@ -929,12 +925,11 @@ a.hero-stat-link:hover {
   background: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: var(--radius);
-  transition: border-color .15s, transform .1s;
+  transition: border-color .15s;
   color: var(--color-text);
 }
 .article-list-item:hover {
   border-color: var(--color-accent);
-  transform: translateX(3px);
   text-decoration: none;
 }
 .ali-icon { font-size: 1.8rem; flex-shrink: 0; }
@@ -1005,11 +1000,11 @@ a.hero-stat-link:hover {
   align-items: center;
   justify-content: center;
   box-shadow: var(--shadow);
-  transition: background .2s, transform .15s;
+  transition: background .2s;
   z-index: 100;
 }
 #back-to-top.visible { display: flex; }
-#back-to-top:hover   { background: var(--color-accent-dark); transform: translateY(-2px); }
+#back-to-top:hover   { background: var(--color-accent-dark); }
 
 /* ── MOBILE ────────────────────────────────────────────── */
 /* At mid-range widths, hide lower-priority nav links to prevent
@@ -1132,11 +1127,10 @@ a.hero-stat-link:hover {
   border: 1px solid var(--color-border);
   border-radius: var(--radius);
   padding: 14px;
-  transition: border-color .2s, transform .15s, opacity .2s;
+  transition: border-color .2s, opacity .2s;
 }
 .price-card:hover {
   border-color: var(--color-accent);
-  transform: translateY(-2px);
 }
 .price-card--loading {
   opacity: .55;
@@ -1624,12 +1618,11 @@ a.hero-stat-link:hover {
   font-family: var(--font-sans);
   padding: 6px 14px;
   cursor: pointer;
-  transition: background .15s, border-color .15s, transform .1s;
+  transition: background .15s, border-color .15s;
 }
 .like-btn:hover:not(:disabled) {
   background: var(--color-surface-2);
   border-color: var(--color-red);
-  transform: scale(1.04);
 }
 .like-btn--active {
   background: rgba(255,123,114,.12);
@@ -1942,7 +1935,6 @@ body::before {
   background-size: 72px 72px;
   opacity: .22;
   mask-image: radial-gradient(circle at center, rgba(255,255,255,.75), transparent 92%);
-  animation: pulse-grid 10s ease-in-out infinite;
 }
 
 body::after {
@@ -1951,17 +1943,6 @@ body::after {
     radial-gradient(circle at 40% 40%, rgba(86,220,255,.08), transparent 55%);
   mix-blend-mode: screen;
   opacity: .4;
-  animation: trace-scan 11s linear infinite;
-}
-
-@keyframes pulse-grid {
-  0%, 100% { opacity: .18; transform: scale(1); }
-  50% { opacity: .30; transform: scale(1.02); }
-}
-
-@keyframes trace-scan {
-  from { background-position: 110% 0, center; }
-  to   { background-position: -130% 0, center; }
 }
 
 #site-header {
@@ -2079,7 +2060,7 @@ body::after {
 .community-row,
 .tg-lb-row,
 .tg-quest-card {
-  transition: border-color .2s, transform .15s, box-shadow .2s, background .2s;
+  transition: border-color .2s, box-shadow .2s, background .2s;
 }
 
 .article-card:hover,
@@ -2140,10 +2121,6 @@ body::after {
 
 .article-list-item {
   border-color: rgba(99, 211, 255, 0.2);
-}
-
-.article-list-item:hover {
-  transform: translateX(2px);
 }
 
 /* ── Drag/hold scroll shell (shared) ───────────────────────────── */

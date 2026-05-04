@@ -23,12 +23,6 @@ function emitMicroNotification(message, tone = "info") {
   dispatchUiState("moonboys:micro-notify", { message: String(message), tone, ts: Date.now() });
 }
 
-function emitTron(type, data = {}) {
-  if (typeof window === "undefined" || typeof window.dispatchEvent !== "function") return;
-  window.dispatchEvent(new CustomEvent(`tron:${type}`, { detail: data }));
-  window.dispatchEvent(new CustomEvent("tron:event", { detail: { type, data } }));
-}
-
 function emitArcadeSubmissionStatus(detail = {}) {
   if (typeof window === "undefined" || typeof window.dispatchEvent !== "function") return;
   window.dispatchEvent(new CustomEvent("arcade:submission-status", { detail }));
@@ -279,7 +273,6 @@ export async function submitScore(player, score, game = "global") {
         shouldSyncMeta = true;
         result.accepted = true;
         result.state = "accepted_score";
-        emitTron("score", { game, score, player: resolvedPlayer, source: "leaderboard-client" });
         dispatchUiState("moonboys:score-updated", { game: gameKey, player: resolvedPlayer, score, ts: Date.now() });
         emitMicroNotification(`${resolvedPlayer} score accepted (${score}).`, "success");
         emitArcadeSubmissionStatus({
@@ -531,9 +524,6 @@ export async function fetchLeaderboard(game = "global", options = {}) {
     const res = await fetch(`${api}?game=${encodeURIComponent(game)}&mode=${encodeURIComponent(mode)}`);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const data = await res.json();
-    if (Array.isArray(data) && data.length) {
-      emitTron("leaderboard", { game, mode, count: data.length, source: "leaderboard-client" });
-    }
     return data;
   } catch (err) {
     console.error("[leaderboard-client] Leaderboard fetch failed:", err);

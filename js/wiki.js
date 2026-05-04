@@ -29,45 +29,6 @@ function goToSearch(q) {
     : '/search.html';
 }
 
-/* ── GLOBAL TRON REACT ENGINE LOADER ─────────────────────────────────────── */
-function ensureTronAssets() {
-  const head = document.head || document.getElementsByTagName('head')[0];
-  if (!head) return;
-
-  if (!document.querySelector('link[data-tron-react-engine="css"]')) {
-    const link = document.createElement('link');
-    link.rel = 'stylesheet';
-    link.href = '/css/tron-react-engine.css';
-    link.setAttribute('data-tron-react-engine', 'css');
-    head.appendChild(link);
-  }
-
-  function appendScript(src, marker, done) {
-    const alreadyInjected = !!document.querySelector(`script[data-tron-react-engine="${marker}"]`);
-    const engineReady = marker === 'engine' && !!window.TRON;
-    const audioReady = marker === 'audio' && !!window.TRON_AUDIO;
-    if (alreadyInjected || engineReady || audioReady) {
-      if (typeof done === 'function') done();
-      return;
-    }
-    const s = document.createElement('script');
-    s.src = src;
-    s.async = false;
-    s.setAttribute('data-tron-react-engine', marker);
-    if (typeof done === 'function') {
-      s.addEventListener('load', done, { once: true });
-      s.addEventListener('error', done, { once: true });
-    }
-    head.appendChild(s);
-  }
-
-  appendScript('/js/tron-audio.js', 'audio', () => {
-    appendScript('/js/tron-react-engine.js', 'engine');
-  });
-}
-
-ensureTronAssets();
-
 /* ── SEARCH INDEX ────────────────────────────────────────────────────────── */
 let WIKI_INDEX = [];
 

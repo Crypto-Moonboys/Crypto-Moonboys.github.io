@@ -136,12 +136,11 @@
   padding: 14px 12px;
   text-align: left;
   cursor: pointer;
-  transition: transform 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+  transition: border-color 0.15s ease, background 0.15s ease;
 }
 
 .faction-btn:hover,
 .faction-btn:focus-visible {
-  transform: translateY(-2px);
   border-color: rgba(255,209,102,0.5);
   background: rgba(255,255,255,0.08);
 }
@@ -193,7 +192,6 @@
 .faction-state--active {
   border-color: color-mix(in srgb, var(--faction-color) 65%, white);
   box-shadow: 0 0 12px color-mix(in srgb, var(--faction-color) 45%, transparent);
-  animation: syncPulseGreen 1.15s ease-in-out infinite alternate;
 }
 
 .faction-state--dim {
@@ -221,11 +219,6 @@
   padding: 8px 10px;
   text-align: left;
   cursor: pointer;
-}
-
-@keyframes syncPulseGreen {
-  from { filter: brightness(1); }
-  to { filter: brightness(1.15); }
 }
 
 .battle-deck {
@@ -340,7 +333,6 @@
 }
 
 .battle-link-card:hover {
-  transform: translateY(-2px);
   background: rgba(255,255,255,0.06);
 }
 
@@ -650,28 +642,8 @@
   color: #a5edf9;
 }
 
-/* === Reactive battle state layer === */
-.faction-player-card.sync-live,
-.faction-player-card.faction-state--active {
-  animation: heartbeat 2.5s infinite;
-}
-
-.faction-player-card.sync-error {
-  animation: alertFlash 1s infinite;
-}
-
-.faction-player-card.faction-boost {
-  animation: statePulse 1.15s ease;
-}
-
 body.conflict-active .battle-shell,
 body.conflict-active .battle-card,
 body.conflict-active .community-card {
   box-shadow: 0 0 0 1px rgba(255,0,80,.22) inset, 0 0 26px rgba(255,0,80,.2);
-}
-
-body.conflict-active .battle-shell::before,
-body.conflict-active .battle-card::before {
-  opacity: .95;
-  filter: saturate(1.2) brightness(1.1);
 }
