@@ -198,7 +198,7 @@ ${provenanceJson}
     <img src="/img/CRYPTO-MOONBOYS-BITCOIN-LOGO.png" alt="" aria-hidden="true">
     <span>
       <span class="logo-text">🌙 The Crypto Moonboys GK Wiki</span>
-      <span class="logo-sub">Blockchain Cryptoism Encyclopedia ⚡️⚡️⚡️</span>
+      <span class="logo-sub">Living Web3 Wiki</span>
     </span>
   </a>
   <div id="header-search" role="search">

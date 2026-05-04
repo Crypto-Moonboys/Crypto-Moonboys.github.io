@@ -522,7 +522,7 @@ function generateHubPageHtml(meta, byUrl, allHubMetas) {
     <img src="/img/CRYPTO-MOONBOYS-BITCOIN-LOGO.png" alt="" aria-hidden="true">
     <span>
       <span class="logo-text">🌙 The Crypto Moonboys GK Wiki</span>
-      <span class="logo-sub">Blockchain Cryptoism Encyclopedia ⚡️⚡️⚡️</span>
+      <span class="logo-sub">Living Web3 Wiki</span>
     </span>
   </a>
   <div id="header-search" role="search">
@@ -633,7 +633,7 @@ ${membersHtml}
 
     <footer id="site-footer" role="contentinfo">
       <div class="footer-inner">
-        <div class="footer-col"><h4>🌙 The Crypto Moonboys GK Wiki</h4><p>Fan-driven encyclopedia for the crypto community.</p></div>
+        <div class="footer-col"><h4>🌙 The Crypto Moonboys GK Wiki</h4><p>Crypto Moonboys is a living Web3 wiki.</p></div>
         <div class="footer-col"><h4>Explore</h4><ul><li><a href="/index.html">Main Page</a></li><li><a href="/categories/index.html">Categories</a></li><li><a href="/articles.html">All Articles</a></li><li><a href="/about.html">About</a></li></ul></div>
         <div class="footer-col"><h4>🌐 Hubs</h4><ul>${footerHubLinks}</ul></div>
       </div>
