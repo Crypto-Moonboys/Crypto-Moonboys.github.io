@@ -33,6 +33,7 @@ must(/player\.upgradeChoicesMetaJson\s*=\s*'\[\]'/, 'Server should clear upgrade
 must(/player\.upgradeState\s*=\s*'selected'/, 'Server should mark selected upgrade state.');
 must(/player\.upgradeState\s*=\s*this\.state\.eventLevel\s*>\s*1\s*\?\s*'joined_late'\s*:\s*''/, 'Late joiners should receive joined_late upgrade-state guidance.');
 must(/_ensureUpgradeChoicesForReadyPlayers\(\)/, 'Server should have a shared helper for upgrade choice generation.');
+must(/if\s*\(\s*this\.state\.worldPhase\s*===\s*PHASE_RECOVERY\s*\|\|\s*this\.state\.worldPhase\s*===\s*PHASE_MISSION_COMPLETE\s*\)\s*{\s*this\._ensureUpgradeChoicesForReadyPlayers\(\);\s*}/, 'Players that become ready during an active upgrade window should receive choices immediately.');
 must(/if\s*\(\s*player\.upgradeState\s*===\s*'selected'\s*\)\s*continue/, 'Server should not regenerate choices after selection.');
 must(/player\.upgradeState\s*=\s*choices\.length\s*\?\s*'pending'\s*:\s*'none'/, 'Server should expose pending/none choice state for client messaging.');
 must(/player\.upgradeState\s*=\s*'missed'/, 'Server should mark missed upgrade window when level advances without selection.');

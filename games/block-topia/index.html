@@ -389,6 +389,10 @@
               upgradeWarning.style.display = "block";
               return;
             }
+            if (upgradeState === "selected") {
+              upgradeWarning.style.display = "none";
+              return;
+            }
             if (showUpgradeWindow) {
               upgradeWarning.textContent = "No upgrade choices received";
               upgradeWarning.style.display = "block";

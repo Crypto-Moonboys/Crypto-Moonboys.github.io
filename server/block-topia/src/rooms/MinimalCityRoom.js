@@ -774,6 +774,9 @@ export class MinimalCityRoom extends Room {
     this.missionStartedAtBySession.set(sessionId, Date.now());
     this.spawnProtectedUntilBySession.set(sessionId, Date.now() + SPAWN_GRACE_MS);
     this.lastActiveAtBySession.set(sessionId, Date.now());
+    if (this.state.worldPhase === PHASE_RECOVERY || this.state.worldPhase === PHASE_MISSION_COMPLETE) {
+      this._ensureUpgradeChoicesForReadyPlayers();
+    }
   }
 
   _scheduleReadyTimeout(sessionId) {

@@ -136,6 +136,11 @@ assert.ok(
   indexHtml.includes('Joined at Level ${level} - no previous upgrades selected'),
   'index.html should render upgrade choice controls, wire chooseUpgrade intent, and only show upgrade cards in RECOVERY.',
 );
+assert.ok(
+  indexHtml.includes('if (upgradeState === "selected")') &&
+  indexHtml.includes('upgradeWarning.style.display = "none";'),
+  'index.html should not show missing-choice warning after a successful upgrade selection.',
+);
 assert.equal(
   indexHtml.includes('function upgradeDescription'),
   false,
