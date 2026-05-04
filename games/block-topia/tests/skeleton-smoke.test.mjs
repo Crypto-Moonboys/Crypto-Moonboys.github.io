@@ -92,8 +92,7 @@ assert.ok(
 assert.ok(
   /id="bt-play-again-btn"[^>]*style="[^"]*display:none/.test(indexHtml) &&
   indexHtml.includes('syncNextLevelButton') &&
-  indexHtml.includes('phase === "MISSION_COMPLETE"') &&
-  !indexHtml.includes('phase === "RECOVERY" || phase === "MISSION_COMPLETE"') &&
+  /const\s+showNext\s*=\s*missionCompleted\s*\|\|\s*phase\s*===\s*"MISSION_COMPLETE"/.test(indexHtml) &&
   indexHtml.includes('Skip Recovery / Start Level'),
   'index.html should hide next-level control by default and gate it behind mission-complete phase only.',
 );
@@ -127,11 +126,20 @@ assert.ok(
 assert.ok(
   indexHtml.includes('bt-upgrade-panel') &&
   indexHtml.includes('No upgrade choices received') &&
+  indexHtml.includes('bt-upgrade-title') &&
   indexHtml.includes('upgradeChoicesMeta') &&
+  indexHtml.includes('upgradeState') &&
   indexHtml.includes('setChooseUpgradeSink') &&
   indexHtml.includes('sendChooseUpgrade') &&
-  indexHtml.includes('phase !== "RECOVERY"'),
+  indexHtml.includes('phase === "RECOVERY" || phase === "MISSION_COMPLETE"') &&
+  indexHtml.includes('Upgrade window missed for this level') &&
+  indexHtml.includes('Joined at Level ${level} - no previous upgrades selected'),
   'index.html should render upgrade choice controls, wire chooseUpgrade intent, and only show upgrade cards in RECOVERY.',
+);
+assert.ok(
+  indexHtml.includes('if (upgradeState === "selected")') &&
+  indexHtml.includes('upgradeWarning.style.display = "none";'),
+  'index.html should not show missing-choice warning after a successful upgrade selection.',
 );
 assert.equal(
   indexHtml.includes('function upgradeDescription'),
@@ -329,7 +337,8 @@ assert.ok(
 assert.ok(
   networkSource.includes('let _lastWorldEventLevel = 1;') &&
   networkSource.includes('eventLevel: _lastWorldEventLevel') &&
-  networkSource.includes('upgradeChoicesMeta: parseJsonObjectArray(player?.upgradeChoicesMetaJson)'),
+  networkSource.includes('upgradeChoicesMeta: parseJsonObjectArray(player?.upgradeChoicesMetaJson)') &&
+  networkSource.includes("upgradeState: String(player?.upgradeState || '')"),
   'network.js should preserve world eventLevel across partial system payloads.',
 );
 
