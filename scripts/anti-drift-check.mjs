@@ -267,6 +267,81 @@ function walkJs(relDir) {
   return results;
 }
 
+// ── Helper: recursively collect all .html file paths under a directory ─────────
+function walkHtml(relDir) {
+  const results = [];
+  const abs = path.join(ROOT, relDir);
+  if (!fs.existsSync(abs)) return results;
+  (function walk(dir) {
+    for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+      const p = path.join(dir, entry.name);
+      if (entry.isDirectory()) {
+        walk(p);
+      } else if (entry.name.endsWith('.html')) {
+        results.push(path.relative(ROOT, p));
+      }
+    }
+  }(abs));
+  return results;
+}
+
+// Game runtime HTML directories — these contain actual game engine HTML and are
+// exempt from shell checks. Only the subdirectories with live game runtimes are
+// listed; games/index.html and games/leaderboard.html are shell pages and included.
+const GAME_HTML_EXEMPT_DIRS = new Set([
+  'games/asteroid-fork',
+  'games/block-topia',
+  'games/block-topia-quest-maze',
+  'games/breakout-bullrun',
+  'games/crystal-quest',
+  'games/invaders-3008',
+  'games/pac-chain',
+  'games/snake-run',
+  'games/tetris-block-topia',
+  'games/template',
+]);
+
+// Helper: collect all shell HTML files.
+// Includes: root *.html, wiki/**/*.html, categories/**/*.html, about/**/*.html,
+//           games/index.html, games/leaderboard.html.
+// Excludes: actual game runtime index.html files (GAME_HTML_EXEMPT_DIRS).
+function collectShellHtml() {
+  const results = [];
+  // Root-level HTML
+  for (const f of fs.readdirSync(ROOT)) {
+    if (f.endsWith('.html')) results.push(f);
+  }
+  // Subdirectory HTML — walk nested dirs
+  const subDirs = ['wiki', 'categories', 'about', 'games'];
+  for (const dir of subDirs) {
+    for (const rel of walkHtml(dir)) {
+      // Derive the first two path segments to check against the exempt set
+      const parts = rel.replace(/\\/g, '/').split('/');
+      const topTwo = parts.slice(0, 2).join('/');
+      if (GAME_HTML_EXEMPT_DIRS.has(topTwo)) continue;
+      results.push(rel);
+    }
+  }
+  return results;
+}
+
+// ── Helper: check whether a CSS selector line refers to an interactive shell element.
+// Uses word-boundary regex for standalone 'a' and 'button' type selectors to avoid
+// false-positives on selectors like '.has-animation' that contain 'a ' as substring.
+function isShellInteractiveSelector(line) {
+  // Standalone anchor type selector
+  if (/(?:^|[\s,+~>])a(?=[\s{:,+~>\[.]|$)/.test(line)) return true;
+  // Standalone button type selector
+  if (/(?:^|[\s,+~>])button(?=[\s{:,+~>\[.]|$)/.test(line)) return true;
+  // Class / ID selectors specific to interactive shell elements
+  const classKeys = [
+    '.btn', '.article-card', '.category-card', '.article-list-item',
+    '.faction-btn', '.battle-link-card', '.price-card', '.home-widget',
+    '.retro-pixel-card', '.launch-cta', '.home-search', '#back-to-top', '.lb-tab',
+  ];
+  return classKeys.some(kw => line.includes(kw));
+}
+
 // Helper: strip single-line comment content so patterns don't match comments.
 // Removes lines that are pure // comments, JSDoc/block-comment body lines
 // (lines whose first non-whitespace char is * — distinguishable from code
@@ -561,6 +636,291 @@ if (!cspSrc) {
     pass(`SEASON_EPOCH_MS defined in leaderboard-worker.js (${lbEpoch}); not found in moonboys-api (single source)`);
   } else {
     fail('SEASON_EPOCH_MS missing from leaderboard-worker.js');
+  }
+}
+
+// ── 13. Deleted global UI effect identifiers must not return ──────────────────
+// Deleted tron-react-engine/tron-audio identifiers must not appear in shell
+// (non-gameplay) files. Game runtime files (js/arcade/, js/audio-manager.js,
+// js/arcade-meta-ui.js, js/arcade-retention-engine.js, css/game-fullscreen.css,
+// game runtime HTML) are exempt as they contain legitimate gameplay interaction.
+console.log('\n[13] Deleted global UI effect identifiers absent from shell files');
+{
+  // Game runtime JS files — exempt from this check
+  const GAME_JS_EXEMPT = new Set([
+    'js/audio-manager.js',
+    'js/arcade-meta-ui.js',
+    'js/arcade-retention-engine.js',
+  ]);
+
+  // Shell JS files: js/ excluding arcade/ subdirectory and game runtime helpers
+  const allJs = walkJs('js');
+  const shellJsFiles = allJs.filter(rel =>
+    !rel.startsWith('js/arcade/') && !GAME_JS_EXEMPT.has(rel)
+  );
+
+  // Shell CSS files: css/ excluding game-specific CSS
+  const GAME_CSS_EXEMPT = new Set(['css/game-fullscreen.css']);
+  const cssDir = path.join(ROOT, 'css');
+  const shellCssFiles = fs.existsSync(cssDir)
+    ? fs.readdirSync(cssDir)
+        .filter(f => f.endsWith('.css'))
+        .map(f => `css/${f}`)
+        .filter(rel => !GAME_CSS_EXEMPT.has(rel))
+    : [];
+
+  // Shell HTML: all non-gameplay HTML (root, wiki, categories, about, games/index etc.)
+  const shellHtmlFiles = collectShellHtml();
+
+  const allShellFiles = [...shellJsFiles, ...shellCssFiles, ...shellHtmlFiles];
+
+  // Every deleted tron-engine identifier, CSS animation name, and event name.
+  const deletedUiIdents = [
+    // Deleted JS files / modules
+    { pattern: /\btron-react-engine\b/i,         label: 'tron-react-engine reference' },
+    { pattern: /\btron-audio\b/i,                 label: 'tron-audio reference' },
+    { pattern: /tron-react-engine\.css/i,         label: 'tron-react-engine.css reference' },
+    // Deleted JS globals / functions
+    { pattern: /\bTRON_AUDIO\b/,                  label: 'TRON_AUDIO reference' },
+    { pattern: /\bwindow\.TRON\b/,                label: 'window.TRON reference' },
+    { pattern: /\bensureTronAssets\b/,            label: 'ensureTronAssets reference' },
+    { pattern: /\bemitTron\b/,                    label: 'emitTron reference' },
+    { pattern: /\bhoverSound\b/,                  label: 'hoverSound reference' },
+    { pattern: /\bclickSound\b/,                  label: 'clickSound reference' },
+    { pattern: /\bTRON_AUDIO\.play\b/,            label: 'TRON_AUDIO.play reference' },
+    // Deleted Tron custom event names
+    { pattern: /tron:event/,                      label: 'tron:event dispatch' },
+    { pattern: /tron:wake/,                       label: 'tron:wake dispatch' },
+    { pattern: /tron:wakeup/,                     label: 'tron:wakeup dispatch' },
+    { pattern: /tron:hover/,                      label: 'tron:hover dispatch' },
+    { pattern: /tron:click/,                      label: 'tron:click dispatch' },
+    { pattern: /tron:sam/,                        label: 'tron:sam dispatch' },
+    { pattern: /tron:leaderboard/,               label: 'tron:leaderboard dispatch' },
+    { pattern: /tron:score/,                      label: 'tron:score dispatch' },
+    { pattern: /tron:api-online/,                 label: 'tron:api-online dispatch' },
+    { pattern: /tron:api-offline/,                label: 'tron:api-offline dispatch' },
+    // Deleted CSS animation / keyframe names
+    { pattern: /\bsyncPulseGreen\b/,              label: 'syncPulseGreen — deleted @keyframes' },
+    { pattern: /\bedgeFlicker\b/,                 label: 'edgeFlicker — deleted @keyframes' },
+    { pattern: /\bneonFramePulse\b/,              label: 'neonFramePulse — deleted @keyframes' },
+    { pattern: /\bneonCornerGlitch\b/,            label: 'neonCornerGlitch — deleted @keyframes' },
+    { pattern: /\bheroBgDrift\b/,                 label: 'heroBgDrift — deleted @keyframes' },
+    { pattern: /\bhome-neon-haze\b/,              label: 'home-neon-haze — deleted @keyframes' },
+    { pattern: /\bpulse-grid\b/,                  label: 'pulse-grid — deleted @keyframes' },
+    { pattern: /\btrace-scan\b/,                  label: 'trace-scan — deleted @keyframes' },
+  ];
+
+  let check13Clean = true;
+  for (const rel of allShellFiles) {
+    const src = read(rel);
+    if (!src) continue;
+    const stripped = stripLineComments(src);
+    for (const { pattern, label } of deletedUiIdents) {
+      if (pattern.test(stripped)) {
+        fail(`Deleted UI effect returned: ${rel} contains ${label}`);
+        check13Clean = false;
+      }
+    }
+  }
+  if (check13Clean) {
+    pass('No deleted global UI effect identifiers found in shell files');
+  }
+}
+
+// ── 14. Shell CSS must not use motion animation/transform on interactive elements ─
+// Global shell CSS files must not apply transform: in :hover/:active/:focus-visible
+// rules, nor animation: (non-none) on interactive shell elements.
+// Game CSS (game-fullscreen.css) is exempt as it is game runtime CSS.
+console.log('\n[14] Shell CSS: no motion animation/transform on interactive shell elements');
+{
+  const GAME_CSS_EXEMPT14 = new Set(['css/game-fullscreen.css']);
+  const shellCssDir = path.join(ROOT, 'css');
+  const shellCssFiles2 = fs.existsSync(shellCssDir)
+    ? fs.readdirSync(shellCssDir)
+        .filter(f => f.endsWith('.css'))
+        .map(f => `css/${f}`)
+        .filter(rel => !GAME_CSS_EXEMPT14.has(rel))
+    : [];
+
+  let check14Clean = true;
+  for (const rel of shellCssFiles2) {
+    const src = read(rel);
+    if (!src) continue;
+    const srcLines = src.split('\n');
+
+    // Check for motion transform: in :hover/:active/:focus-visible rules.
+    // We scan line-by-line so we can skip text-transform: accurately.
+    // Strategy: find lines with :hover/:active/:focus-visible selector, then look
+    // inside the rule block for transform: (excluding text-transform:).
+    let inTargetBlock = false;
+    let braceDepth = 0;
+    let blockSelectorLine = 0;
+    let blockPseudo = '';
+
+    for (let li = 0; li < srcLines.length; li++) {
+      const line = srcLines[li];
+
+      if (!inTargetBlock) {
+        // Detect a rule that opens with a hover/active/focus-visible selector
+        const pseudoMatch = /:(hover|active|focus-visible)\s*\{/.exec(line);
+        if (pseudoMatch) {
+          inTargetBlock = true;
+          braceDepth = (line.match(/\{/g) || []).length - (line.match(/\}/g) || []).length;
+          blockSelectorLine = li + 1;
+          blockPseudo = pseudoMatch[1];
+          // Check the same opening line for inline transform: (not text-transform:)
+          if (/(?<!text-)transform\s*:/.test(line)) {
+            fail(`Shell CSS motion drift: ${rel}:${blockSelectorLine} has transform: in :${blockPseudo} rule`);
+            check14Clean = false;
+          }
+        }
+      } else {
+        braceDepth += (line.match(/\{/g) || []).length;
+        braceDepth -= (line.match(/\}/g) || []).length;
+        if (braceDepth <= 0) {
+          inTargetBlock = false;
+          braceDepth = 0;
+        } else if (/(?<!text-)transform\s*:/.test(line)) {
+          fail(`Shell CSS motion drift: ${rel}:${li + 1} has transform: in :${blockPseudo} rule`);
+          check14Clean = false;
+        }
+      }
+    }
+
+    // Check for animation: (non-none) on known interactive shell element selectors.
+    // For each line with animation:, walk backward to find the enclosing rule selector.
+    for (let li = 0; li < srcLines.length; li++) {
+      const line = srcLines[li];
+      if (!/\banimation\s*:\s*(?!none\b)/.test(line)) continue;
+
+      // Walk backward to find the rule selector line (the line with the opening `{`)
+      let depth = 0;
+      let foundSelectorLine = '';
+      for (let i = li; i >= 0; i--) {
+        const l = srcLines[i];
+        for (let j = l.length - 1; j >= 0; j--) {
+          const ch = l[j];
+          if (ch === '}') depth++;
+          else if (ch === '{') {
+            if (depth === 0) {
+              foundSelectorLine = l;
+              break;
+            }
+            depth--;
+          }
+        }
+        if (foundSelectorLine) break;
+      }
+
+      if (foundSelectorLine && isShellInteractiveSelector(foundSelectorLine)) {
+        fail(`Shell CSS motion drift: ${rel}:${li + 1} has animation: on interactive shell element (selector: ${foundSelectorLine.trim()})`);
+        check14Clean = false;
+      }
+    }
+  }
+  if (check14Clean) {
+    pass('Shell CSS: no motion transform/animation on interactive shell elements');
+  }
+}
+
+// ── 15. Non-gameplay JS must not create UI hover/click/touch sound ────────────
+// Shell JS files (js/*.js) must not instantiate Audio objects or call UI sound
+// helpers for hover/click/touch events.
+// Game runtime files (js/arcade/, js/audio-manager.js, js/arcade-meta-ui.js,
+// js/arcade-retention-engine.js) are exempt.
+console.log('\n[15] Non-gameplay JS: no UI hover/click/touch audio');
+{
+  const GAME_JS_EXEMPT15 = new Set([
+    'js/audio-manager.js',
+    'js/arcade-meta-ui.js',
+    'js/arcade-retention-engine.js',
+  ]);
+  const allJs15 = walkJs('js');
+  const shellJsFiles2 = allJs15.filter(rel =>
+    !rel.startsWith('js/arcade/') && !GAME_JS_EXEMPT15.has(rel)
+  );
+
+  const uiAudioPatterns = [
+    { re: /\bnew\s+Audio\s*\(/,                    label: 'new Audio() instantiation' },
+    { re: /\bwindow\s*\.\s*Audio\s*\(/,             label: 'window.Audio() instantiation' },
+    { re: /\bglobalThis\s*\.\s*Audio\s*\(/,         label: 'globalThis.Audio() instantiation' },
+    { re: /\bhoverSound\s*\(/,                       label: 'hoverSound() call' },
+    { re: /\bclickSound\s*\(/,                       label: 'clickSound() call' },
+    { re: /TRON_AUDIO\s*\.\s*play\s*\(/,             label: 'TRON_AUDIO.play() call' },
+    { re: /window\s*\.\s*TRON_AUDIO\b/,              label: 'window.TRON_AUDIO reference' },
+  ];
+
+  let check15Clean = true;
+  for (const rel of shellJsFiles2) {
+    const src = read(rel);
+    if (!src) continue;
+    const stripped = stripLineComments(src);
+    for (const { re, label } of uiAudioPatterns) {
+      if (re.test(stripped)) {
+        fail(`UI audio drift: ${rel} contains ${label}`);
+        check15Clean = false;
+      }
+    }
+  }
+  if (check15Clean) {
+    pass('No UI hover/click/touch audio in non-gameplay JS');
+  }
+}
+
+// ── 16. No removed-effect comments remaining ──────────────────────────────────
+// Shell files must not contain comments that describe the removed interaction
+// system (tron engine, UI sounds, pulse/shake/bounce/flicker descriptions).
+console.log('\n[16] No removed-effect comment remnants in shell files');
+{
+  const GAME_JS_EXEMPT16 = new Set([
+    'js/audio-manager.js',
+    'js/arcade-meta-ui.js',
+    'js/arcade-retention-engine.js',
+  ]);
+  const allJs16 = walkJs('js');
+  const shellJsFiles3 = allJs16.filter(rel =>
+    !rel.startsWith('js/arcade/') && !GAME_JS_EXEMPT16.has(rel)
+  );
+
+  const GAME_CSS_EXEMPT16 = new Set(['css/game-fullscreen.css']);
+  const shellCssDir16 = path.join(ROOT, 'css');
+  const shellCssFiles3 = fs.existsSync(shellCssDir16)
+    ? fs.readdirSync(shellCssDir16)
+        .filter(f => f.endsWith('.css'))
+        .map(f => `css/${f}`)
+        .filter(rel => !GAME_CSS_EXEMPT16.has(rel))
+    : [];
+
+  // Shell HTML: all non-gameplay HTML pages
+  const shellHtmlFiles16 = collectShellHtml();
+
+  const shellFiles3 = [...shellJsFiles3, ...shellCssFiles3, ...shellHtmlFiles16];
+
+  // Comment patterns that describe the removed interaction system
+  const effectCommentPatterns = [
+    /\/\/.*\bTRON\s+REACT\s+ENGINE\b/i,
+    /\/\/.*\btron.audio\b/i,
+    /\/\*.*\bTRON\s+REACT\s+ENGINE\b.*\*\//i,
+    /\/\*.*\btron.audio\b.*\*\//i,
+    /\/\/.*\bhoverSound\b/i,
+    /\/\/.*\bclickSound\b/i,
+    /\/\/.*\bemitTron\b/i,
+    /\/\/.*\bensureTronAssets\b/i,
+  ];
+
+  let check16Clean = true;
+  for (const rel of shellFiles3) {
+    const src = read(rel);
+    if (!src) continue;
+    for (const pattern of effectCommentPatterns) {
+      if (pattern.test(src)) {
+        fail(`Removed-effect comment found: ${rel} — remove comment referencing deleted system`);
+        check16Clean = false;
+      }
+    }
+  }
+  if (check16Clean) {
+    pass('No removed-effect comment remnants found');
   }
 }
 
